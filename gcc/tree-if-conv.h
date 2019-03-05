@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,6 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_IF_CONV_H
 #define GCC_TREE_IF_CONV_H
 
-unsigned int tree_if_conversion (struct loop *);
+unsigned int tree_if_conversion (struct loop *, vec<gimple *> * = NULL);
 
 #endif  /* GCC_TREE_IF_CONV_H  */

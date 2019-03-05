@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -11096,6 +11096,9 @@ package body Sem_Ch12 is
                 Object_Definition      => Def,
                 Expression             => New_Copy_Tree
                                             (Default_Expression (Formal)));
+
+            Set_Corresponding_Generic_Association
+              (Decl_Node, Expression (Decl_Node));
 
             Append (Decl_Node, List);
             Set_Analyzed (Expression (Decl_Node), False);

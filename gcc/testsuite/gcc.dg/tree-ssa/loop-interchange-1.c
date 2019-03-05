@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -floop-interchange -fassociative-math -fno-signed-zeros -fno-trapping-math -fdump-tree-linterchange-details" } */
-/* { dg-skip-if "too big data segment" { avr-*-* visium-*-* } } */
+/* { dg-require-effective-target size32plus } */
+/* { dg-skip-if "too big data segment" { visium-*-* } } */
 
 /* Copied from graphite/interchange-4.c */
 

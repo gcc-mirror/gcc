@@ -1,5 +1,5 @@
 /* A type-safe hash map.
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -223,10 +223,23 @@ public:
       return *this;
     }
 
-    std::pair<const Key&, Value&> operator* ()
+    /* Can't use std::pair here, because GCC before 4.3 don't handle
+       std::pair where template parameters are references well.
+       See PR86739.  */
+    struct reference_pair {
+      const Key &first;
+      Value &second;
+
+      reference_pair (const Key &key, Value &value) : first (key), second (value) {}
+
+      template <typename K, typename V>
+      operator std::pair<K, V> () const { return std::pair<K, V> (first, second); }
+    };
+
+    reference_pair operator* ()
     {
       hash_entry &e = *m_iter;
-      return std::pair<const Key&, Value&> (e.m_key, e.m_value);
+      return reference_pair (e.m_key, e.m_value);
     }
 
     bool

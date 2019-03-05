@@ -1,5 +1,5 @@
 /* A pass for lowering trees to RTL.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -470,6 +470,8 @@ add_stack_var_conflict (size_t x, size_t y)
 {
   struct stack_var *a = &stack_vars[x];
   struct stack_var *b = &stack_vars[y];
+  if (x == y)
+    return;
   if (!a->conflicts)
     a->conflicts = BITMAP_ALLOC (&stack_var_bitmap_obstack);
   if (!b->conflicts)
@@ -1124,14 +1126,23 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 	      && frame_offset.is_constant (&prev_offset)
 	      && stack_vars[i].size.is_constant ())
 	    {
+	      if (data->asan_vec.is_empty ())
+		{
+		  alloc_stack_frame_space (0, ASAN_RED_ZONE_SIZE);
+		  prev_offset = frame_offset.to_constant ();
+		}
 	      prev_offset = align_base (prev_offset,
-					MAX (alignb, ASAN_RED_ZONE_SIZE),
+					ASAN_MIN_RED_ZONE_SIZE,
 					!FRAME_GROWS_DOWNWARD);
 	      tree repr_decl = NULL_TREE;
-	      offset
-		= alloc_stack_frame_space (stack_vars[i].size
-					   + ASAN_RED_ZONE_SIZE,
-					   MAX (alignb, ASAN_RED_ZONE_SIZE));
+	      unsigned HOST_WIDE_INT size
+		= asan_var_and_redzone_size (stack_vars[i].size.to_constant ());
+	      if (data->asan_vec.is_empty ())
+		size = MAX (size, ASAN_RED_ZONE_SIZE);
+
+	      unsigned HOST_WIDE_INT alignment = MAX (alignb,
+						      ASAN_MIN_RED_ZONE_SIZE);
+	      offset = alloc_stack_frame_space (size, alignment);
 
 	      data->asan_vec.safe_push (prev_offset);
 	      /* Allocating a constant amount of space from a constant
@@ -1674,7 +1685,12 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
       /* Reject variables which cover more than half of the address-space.  */
       if (really_expand)
 	{
-	  error ("size of variable %q+D is too large", var);
+	  if (DECL_NONLOCAL_FRAME (var))
+	    error_at (DECL_SOURCE_LOCATION (current_function_decl),
+		      "total size of local objects is too large");
+	  else
+	    error_at (DECL_SOURCE_LOCATION (var),
+		      "size of variable %q+D is too large", var);
 	  expand_one_error_var (var);
 	}
     }
@@ -2836,6 +2852,42 @@ tree_conflicts_with_clobbers_p (tree t, HARD_REG_SET *clobbered_regs)
   return false;
 }
 
+/* Check that the given REGNO spanning NREGS is a valid
+   asm clobber operand.  Some HW registers cannot be
+   saved/restored, hence they should not be clobbered by
+   asm statements.  */
+static bool
+asm_clobber_reg_is_valid (int regno, int nregs, const char *regname)
+{
+  bool is_valid = true;
+  HARD_REG_SET regset;
+
+  CLEAR_HARD_REG_SET (regset);
+
+  add_range_to_hard_reg_set (&regset, regno, nregs);
+
+  /* Clobbering the PIC register is an error.  */
+  if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM
+      && overlaps_hard_reg_set_p (regset, Pmode, PIC_OFFSET_TABLE_REGNUM))
+    {
+      /* ??? Diagnose during gimplification?  */
+      error ("PIC register clobbered by %qs in %<asm%>", regname);
+      is_valid = false;
+    }
+  /* Clobbering the stack pointer register is deprecated.  GCC expects
+     the value of the stack pointer after an asm statement to be the same
+     as it was before, so no asm can validly clobber the stack pointer in
+     the usual sense.  Adding the stack pointer to the clobber list has
+     traditionally had some undocumented and somewhat obscure side-effects.  */
+  if (overlaps_hard_reg_set_p (regset, Pmode, STACK_POINTER_REGNUM)
+      && warning (OPT_Wdeprecated, "listing the stack pointer register"
+		  " %qs in a clobber list is deprecated", regname))
+    inform (input_location, "the value of the stack pointer after an %<asm%>"
+	    " statement must be the same as it was before the statement");
+
+  return is_valid;
+}
+
 /* Generate RTL for an asm statement with arguments.
    STRING is the instruction template.
    OUTPUTS is a list of output arguments (lvalues); INPUTS a list of inputs.
@@ -2968,14 +3020,8 @@ expand_asm_stmt (gasm *stmt)
 	  else
 	    for (int reg = j; reg < j + nregs; reg++)
 	      {
-		/* Clobbering the PIC register is an error.  */
-		if (reg == (int) PIC_OFFSET_TABLE_REGNUM)
-		  {
-		    /* ??? Diagnose during gimplification?  */
-		    error ("PIC register clobbered by %qs in %<asm%>",
-			   regname);
-		    return;
-		  }
+		if (!asm_clobber_reg_is_valid (reg, nregs, regname))
+		  return;
 
 	        SET_HARD_REG_BIT (clobbered_regs, reg);
 	        rtx x = gen_rtx_REG (reg_raw_mode[reg], reg);
@@ -3004,6 +3050,55 @@ expand_asm_stmt (gasm *stmt)
       if (!parse_output_constraint (&constraint, i, ninputs, noutputs,
 				    &allows_mem, &allows_reg, &is_inout))
 	return;
+
+      /* If the output is a hard register, verify it doesn't conflict with
+	 any other operand's possible hard register use.  */
+      if (DECL_P (val)
+	  && REG_P (DECL_RTL (val))
+	  && HARD_REGISTER_P (DECL_RTL (val)))
+	{
+	  unsigned j, output_hregno = REGNO (DECL_RTL (val));
+	  bool early_clobber_p = strchr (constraints[i], '&') != NULL;
+	  unsigned long match;
+
+	  /* Verify the other outputs do not use the same hard register.  */
+	  for (j = i + 1; j < noutputs; ++j)
+	    if (DECL_P (output_tvec[j])
+		&& REG_P (DECL_RTL (output_tvec[j]))
+		&& HARD_REGISTER_P (DECL_RTL (output_tvec[j]))
+		&& output_hregno == REGNO (DECL_RTL (output_tvec[j])))
+	      error ("invalid hard register usage between output operands");
+
+	  /* Verify matching constraint operands use the same hard register
+	     and that the non-matching constraint operands do not use the same
+	     hard register if the output is an early clobber operand.  */
+	  for (j = 0; j < ninputs; ++j)
+	    if (DECL_P (input_tvec[j])
+		&& REG_P (DECL_RTL (input_tvec[j]))
+		&& HARD_REGISTER_P (DECL_RTL (input_tvec[j])))
+	      {
+		unsigned input_hregno = REGNO (DECL_RTL (input_tvec[j]));
+		switch (*constraints[j + noutputs])
+		  {
+		  case '0':  case '1':  case '2':  case '3':  case '4':
+		  case '5':  case '6':  case '7':  case '8':  case '9':
+		    match = strtoul (constraints[j + noutputs], NULL, 10);
+		    break;
+		  default:
+		    match = ULONG_MAX;
+		    break;
+		  }
+		if (i == match
+		    && output_hregno != input_hregno)
+		  error ("invalid hard register usage between output operand "
+			 "and matching constraint operand");
+		else if (early_clobber_p
+			 && i != match
+			 && output_hregno == input_hregno)
+		  error ("invalid hard register usage between earlyclobber "
+			 "operand and input operand");
+	      }
+	}
 
       if (! allows_reg
 	  && (allows_mem
@@ -6130,7 +6225,25 @@ stack_protect_prologue (void)
   tree guard_decl = targetm.stack_protect_guard ();
   rtx x, y;
 
+  crtl->stack_protect_guard_decl = guard_decl;
   x = expand_normal (crtl->stack_protect_guard);
+
+  if (targetm.have_stack_protect_combined_set () && guard_decl)
+    {
+      gcc_assert (DECL_P (guard_decl));
+      y = DECL_RTL (guard_decl);
+
+      /* Allow the target to compute address of Y and copy it to X without
+	 leaking Y into a register.  This combined address + copy pattern
+	 allows the target to prevent spilling of any intermediate results by
+	 splitting it after register allocator.  */
+      if (rtx_insn *insn = targetm.gen_stack_protect_combined_set (x, y))
+	{
+	  emit_insn (insn);
+	  return;
+	}
+    }
+
   if (guard_decl)
     y = expand_normal (guard_decl);
   else
@@ -6505,18 +6618,20 @@ pass_expand::execute (function *fun)
   find_many_sub_basic_blocks (blocks);
   purge_all_dead_edges ();
 
+  /* After initial rtl generation, call back to finish generating
+     exception support code.  We need to do this before cleaning up
+     the CFG as the code does not expect dead landing pads.  */
+  if (fun->eh->region_tree != NULL)
+    finish_eh_generation ();
+
+  /* Call expand_stack_alignment after finishing all
+     updates to crtl->preferred_stack_boundary.  */
   expand_stack_alignment ();
 
   /* Fixup REG_EQUIV notes in the prologue if there are tailcalls in this
      function.  */
   if (crtl->tail_call_emit)
     fixup_tail_calls ();
-
-  /* After initial rtl generation, call back to finish generating
-     exception support code.  We need to do this before cleaning up
-     the CFG as the code does not expect dead landing pads.  */
-  if (fun->eh->region_tree != NULL)
-    finish_eh_generation ();
 
   /* BB subdivision may have created basic blocks that are are only reachable
      from unlikely bbs but not marked as such in the profile.  */

@@ -1,5 +1,5 @@
 /* Generate code from machine description to compute values of attributes.
-   Copyright (C) 1991-2018 Free Software Foundation, Inc.
+   Copyright (C) 1991-2019 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -266,9 +266,9 @@ static int compares_alternatives_p (rtx);
 static void make_internal_attr     (const char *, rtx, int);
 static void insert_insn_ent        (struct attr_value *, struct insn_ent *);
 static void walk_attr_value	   (rtx);
-static int max_attr_value	   (rtx, int*);
-static int min_attr_value	   (rtx, int*);
-static int or_attr_value	   (rtx, int*);
+static int max_attr_value	   (rtx);
+static int min_attr_value	   (rtx);
+static unsigned int attr_value_alignment (rtx);
 static rtx simplify_test_exp	   (rtx, int, int);
 static rtx simplify_test_exp_in_temp (rtx, int, int);
 static rtx copy_rtx_unchanging	   (rtx);
@@ -1550,15 +1550,13 @@ one_fn (rtx exp ATTRIBUTE_UNUSED)
 static rtx
 max_fn (rtx exp)
 {
-  int unknown;
-  return make_numeric_value (max_attr_value (exp, &unknown));
+  return make_numeric_value (max_attr_value (exp));
 }
 
 static rtx
 min_fn (rtx exp)
 {
-  int unknown;
-  return make_numeric_value (min_attr_value (exp, &unknown));
+  return make_numeric_value (min_attr_value (exp));
 }
 
 static void
@@ -1568,24 +1566,21 @@ write_length_unit_log (FILE *outf)
   struct attr_value *av;
   struct insn_ent *ie;
   unsigned int length_unit_log, length_or;
-  int unknown = 0;
 
   if (length_attr)
     {
-      length_or = or_attr_value (length_attr->default_val->value, &unknown);
+      length_or = attr_value_alignment (length_attr->default_val->value);
       for (av = length_attr->first_value; av; av = av->next)
 	for (ie = av->first_insn; ie; ie = ie->next)
-	  length_or |= or_attr_value (av->value, &unknown);
-    }
+	  length_or |= attr_value_alignment (av->value);
 
-  if (length_attr == NULL || unknown)
-    length_unit_log = 0;
-  else
-    {
       length_or = ~length_or;
       for (length_unit_log = 0; length_or & 1; length_or >>= 1)
 	length_unit_log++;
     }
+  else
+    length_unit_log = 0;
+
   fprintf (outf, "EXPORTED_CONST int length_unit_log = %u;\n", length_unit_log);
 }
 
@@ -3753,11 +3748,12 @@ write_test_expr (FILE *outf, rtx exp, unsigned int attrs_cached, int flags,
   return attrs_cached;
 }
 
-/* Given an attribute value, return the maximum CONST_STRING argument
-   encountered.  Set *UNKNOWNP and return INT_MAX if the value is unknown.  */
+/* Given an attribute value expression, return the maximum value that
+   might be evaluated.  Return INT_MAX if the value can't be
+   calculated by this function.  */
 
 static int
-max_attr_value (rtx exp, int *unknownp)
+max_attr_value (rtx exp)
 {
   int current_max;
   int i, n;
@@ -3768,25 +3764,61 @@ max_attr_value (rtx exp, int *unknownp)
       current_max = atoi (XSTR (exp, 0));
       break;
 
+    case CONST_INT:
+      current_max = INTVAL (exp);
+      break;
+
+    case PLUS:
+      current_max = max_attr_value (XEXP (exp, 0));
+      if (current_max != INT_MAX)
+	{
+	  n = current_max;
+	  current_max = max_attr_value (XEXP (exp, 1));
+	  if (current_max != INT_MAX)
+	    current_max += n;
+	}
+      break;
+
+    case MINUS:
+      current_max = max_attr_value (XEXP (exp, 0));
+      if (current_max != INT_MAX)
+	{
+	  n = current_max;
+	  current_max = min_attr_value (XEXP (exp, 1));
+	  if (current_max != INT_MAX)
+	    current_max = n - current_max;
+	}
+      break;
+
+    case MULT:
+      current_max = max_attr_value (XEXP (exp, 0));
+      if (current_max != INT_MAX)
+	{
+	  n = current_max;
+	  current_max = max_attr_value (XEXP (exp, 1));
+	  if (current_max != INT_MAX)
+	    current_max *= n;
+	}
+      break;
+
     case COND:
-      current_max = max_attr_value (XEXP (exp, 1), unknownp);
+      current_max = max_attr_value (XEXP (exp, 1));
       for (i = 0; i < XVECLEN (exp, 0); i += 2)
 	{
-	  n = max_attr_value (XVECEXP (exp, 0, i + 1), unknownp);
+	  n = max_attr_value (XVECEXP (exp, 0, i + 1));
 	  if (n > current_max)
 	    current_max = n;
 	}
       break;
 
     case IF_THEN_ELSE:
-      current_max = max_attr_value (XEXP (exp, 1), unknownp);
-      n = max_attr_value (XEXP (exp, 2), unknownp);
+      current_max = max_attr_value (XEXP (exp, 1));
+      n = max_attr_value (XEXP (exp, 2));
       if (n > current_max)
 	current_max = n;
       break;
 
     default:
-      *unknownp = 1;
       current_max = INT_MAX;
       break;
     }
@@ -3794,11 +3826,15 @@ max_attr_value (rtx exp, int *unknownp)
   return current_max;
 }
 
-/* Given an attribute value, return the minimum CONST_STRING argument
-   encountered.  Set *UNKNOWNP and return 0 if the value is unknown.  */
+/* Given an attribute value expression, return the minimum value that
+   might be evaluated.  Return INT_MAX if the value can't be
+   calculated by this function.  Note that when this function can
+   calculate one value inside IF_THEN_ELSE or some but not all values
+   inside COND, then it returns the minimum among those values it can
+   calculate.  */
 
 static int
-min_attr_value (rtx exp, int *unknownp)
+min_attr_value (rtx exp)
 {
   int current_min;
   int i, n;
@@ -3809,25 +3845,61 @@ min_attr_value (rtx exp, int *unknownp)
       current_min = atoi (XSTR (exp, 0));
       break;
 
+    case CONST_INT:
+      current_min = INTVAL (exp);
+      break;
+
+    case PLUS:
+      current_min = min_attr_value (XEXP (exp, 0));
+      if (current_min != INT_MAX)
+	{
+	  n = current_min;
+	  current_min = min_attr_value (XEXP (exp, 1));
+	  if (current_min != INT_MAX)
+	    current_min += n;
+	}
+      break;
+
+    case MINUS:
+      current_min = min_attr_value (XEXP (exp, 0));
+      if (current_min != INT_MAX)
+	{
+	  n = current_min;
+	  current_min = max_attr_value (XEXP (exp, 1));
+	  if (current_min != INT_MAX)
+	    current_min = n - current_min;
+	}
+      break;
+
+    case MULT:
+      current_min = min_attr_value (XEXP (exp, 0));
+      if (current_min != INT_MAX)
+	{
+	  n = current_min;
+	  current_min = min_attr_value (XEXP (exp, 1));
+	  if (current_min != INT_MAX)
+	    current_min *= n;
+	}
+      break;
+
     case COND:
-      current_min = min_attr_value (XEXP (exp, 1), unknownp);
+      current_min = min_attr_value (XEXP (exp, 1));
       for (i = 0; i < XVECLEN (exp, 0); i += 2)
 	{
-	  n = min_attr_value (XVECEXP (exp, 0, i + 1), unknownp);
+	  n = min_attr_value (XVECEXP (exp, 0, i + 1));
 	  if (n < current_min)
 	    current_min = n;
 	}
       break;
 
     case IF_THEN_ELSE:
-      current_min = min_attr_value (XEXP (exp, 1), unknownp);
-      n = min_attr_value (XEXP (exp, 2), unknownp);
+      current_min = min_attr_value (XEXP (exp, 1));
+      n = min_attr_value (XEXP (exp, 2));
       if (n < current_min)
 	current_min = n;
       break;
 
     default:
-      *unknownp = 1;
       current_min = INT_MAX;
       break;
     }
@@ -3835,14 +3907,14 @@ min_attr_value (rtx exp, int *unknownp)
   return current_min;
 }
 
-/* Given an attribute value, return the result of ORing together all
-   CONST_STRING arguments encountered.  Set *UNKNOWNP and return -1
-   if the numeric value is not known.  */
+/* Given an attribute value expression, return the alignment of values.
+   Return 0 if EXP is known to be zero, and 1 if the value can't be
+   calculated by this function.  */
 
-static int
-or_attr_value (rtx exp, int *unknownp)
+static unsigned int
+attr_value_alignment (rtx exp)
 {
-  int current_or;
+  unsigned int current_or;
   int i;
 
   switch (GET_CODE (exp))
@@ -3851,24 +3923,38 @@ or_attr_value (rtx exp, int *unknownp)
       current_or = atoi (XSTR (exp, 0));
       break;
 
+    case CONST_INT:
+      current_or = INTVAL (exp);
+      break;
+
+    case PLUS:
+    case MINUS:
+      current_or = attr_value_alignment (XEXP (exp, 0));
+      current_or |= attr_value_alignment (XEXP (exp, 1));
+      break;
+
+    case MULT:
+      current_or = attr_value_alignment (XEXP (exp, 0));
+      current_or *= attr_value_alignment (XEXP (exp, 1));
+      break;
+
     case COND:
-      current_or = or_attr_value (XEXP (exp, 1), unknownp);
+      current_or = attr_value_alignment (XEXP (exp, 1));
       for (i = 0; i < XVECLEN (exp, 0); i += 2)
-	current_or |= or_attr_value (XVECEXP (exp, 0, i + 1), unknownp);
+	current_or |= attr_value_alignment (XVECEXP (exp, 0, i + 1));
       break;
 
     case IF_THEN_ELSE:
-      current_or = or_attr_value (XEXP (exp, 1), unknownp);
-      current_or |= or_attr_value (XEXP (exp, 2), unknownp);
+      current_or = attr_value_alignment (XEXP (exp, 1));
+      current_or |= attr_value_alignment (XEXP (exp, 2));
       break;
 
     default:
-      *unknownp = 1;
-      current_or = -1;
+      current_or = 1;
       break;
     }
 
-  return current_or;
+  return current_or & -current_or;
 }
 
 /* Scan an attribute value, possibly a conditional, and record what actions
@@ -4341,6 +4427,16 @@ write_attr_value (FILE *outf, struct attr_desc *attr, rtx value)
       fputc (op,  outf);
       fputc (' ', outf);
       write_attr_value (outf, attr, XEXP (value, 1));
+      break;
+
+    case IF_THEN_ELSE:
+      fprintf (outf, "(");
+      write_test_expr (outf, XEXP (value, 0), 0, 0, false);
+      fprintf (outf, " ? ");
+      write_attr_value (outf, attr, XEXP (value, 1));
+      fprintf (outf, " : ");
+      write_attr_value (outf, attr, XEXP (value, 2));
+      fprintf (outf, ")");
       break;
 
     default:

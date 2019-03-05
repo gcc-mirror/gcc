@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997-2018 Free Software Foundation, Inc.
+// Copyright (C) 1997-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -62,6 +62,7 @@ namespace std
 #if __cplusplus >= 201703L
 namespace std
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 #define __cpp_lib_byte 201603
 
   /// std::byte
@@ -74,6 +75,9 @@ namespace std
   template<> struct __byte_operand<unsigned char> { using __type = byte; };
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<> struct __byte_operand<wchar_t> { using __type = byte; };
+#endif
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<> struct __byte_operand<char8_t> { using __type = byte; };
 #endif
   template<> struct __byte_operand<char16_t> { using __type = byte; };
   template<> struct __byte_operand<char32_t> { using __type = byte; };
@@ -187,6 +191,7 @@ namespace std
     to_integer(__byte_op_t<_IntegerType> __b) noexcept
     { return _IntegerType(__b); }
 
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++17
 } // extern "C++"

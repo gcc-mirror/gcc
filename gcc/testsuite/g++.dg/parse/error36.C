@@ -25,7 +25,7 @@ template <class T> struct B
 
 // PR c++/40738
 template <class T>
-void g(const A<T>::type &t);	// { dg-error "typename" "typename" }
+void g(const A<T>::type &t);	// { dg-error "typename" }
 
 // PR c++/18451
-template <class T> A<T>::B A<T>::b; // { dg-error "typename" }
+template <class T> A<T>::B A<T>::b; // { dg-error "typename" "" { target c++17_down } }

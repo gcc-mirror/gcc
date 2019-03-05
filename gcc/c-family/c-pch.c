@@ -1,5 +1,5 @@
 /* Precompiled header implementation for the C languages.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -44,10 +44,6 @@ static const struct c_pch_matching
 enum {
   MATCH_SIZE = ARRAY_SIZE (pch_matching)
 };
-
-/* The value of the checksum in the dummy compiler that is actually
-   checksummed.  That compiler should never be run.  */
-static const char no_checksum[16] = { 0 };
 
 /* Information about flags and suchlike that affect PCH validity.
 
@@ -110,8 +106,6 @@ pch_init (void)
     fatal_error (input_location, "can%'t create precompiled header %s: %m",
 		 pch_file);
   pch_outfile = f;
-
-  gcc_assert (memcmp (executable_checksum, no_checksum, 16) != 0);
 
   memset (&v, '\0', sizeof (v));
   v.debug_info_type = write_symbols;
@@ -211,8 +205,6 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
 
   /* Perform a quick test of whether this is a valid
      precompiled header for the current language.  */
-
-  gcc_assert (memcmp (executable_checksum, no_checksum, 16) != 0);
 
   sizeread = read (fd, ident, IDENT_LENGTH + 16);
   if (sizeread == -1)

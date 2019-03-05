@@ -1,5 +1,5 @@
 /* High-level loop manipulation functions.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -773,10 +773,12 @@ verify_loop_closed_ssa (bool verify_ssa_p, struct loop *loop)
 }
 
 /* Split loop exit edge EXIT.  The things are a bit complicated by a need to
-   preserve the loop closed ssa form.  The newly created block is returned.  */
+   preserve the loop closed ssa form.  If COPY_CONSTANTS_P is true then
+   forwarder PHIs are also created for constant arguments.
+   The newly created block is returned.  */
 
 basic_block
-split_loop_exit_edge (edge exit)
+split_loop_exit_edge (edge exit, bool copy_constants_p)
 {
   basic_block dest = exit->dest;
   basic_block bb = split_edge (exit);
@@ -784,7 +786,7 @@ split_loop_exit_edge (edge exit)
   tree new_name, name;
   use_operand_p op_p;
   gphi_iterator psi;
-  source_location locus;
+  location_t locus;
 
   for (psi = gsi_start_phis (dest); !gsi_end_p (psi); gsi_next (&psi))
     {
@@ -796,12 +798,13 @@ split_loop_exit_edge (edge exit)
 
       /* If the argument of the PHI node is a constant, we do not need
 	 to keep it inside loop.  */
-      if (TREE_CODE (name) != SSA_NAME)
+      if (TREE_CODE (name) != SSA_NAME
+	  && !copy_constants_p)
 	continue;
 
       /* Otherwise create an auxiliary phi node that will copy the value
 	 of the SSA name out of the loop.  */
-      new_name = duplicate_ssa_name (name, NULL);
+      new_name = duplicate_ssa_name (PHI_RESULT (phi), NULL);
       new_phi = create_phi_node (new_name, bb);
       add_phi_arg (new_phi, name, exit, locus);
       SET_USE (op_p, new_name);

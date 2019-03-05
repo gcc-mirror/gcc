@@ -1,5 +1,5 @@
 # libgcc host-specific configuration file.
-# Copyright (C) 1997-2018 Free Software Foundation, Inc.
+# Copyright (C) 1997-2019 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -91,6 +91,10 @@ alpha*-*-*)
 am33_2.0-*-linux*)
 	cpu_type=mn10300
 	;;
+amdgcn*-*-*)
+	cpu_type=gcn
+	tmake_file="${tmake_file} t-softfp-sfdf t-softfp"
+	;;
 arc*-*-*)
 	cpu_type=arc
 	;;
@@ -164,6 +168,9 @@ nds32*-*)
 	;;
 nios2*-*-*)
 	cpu_type=nios2
+	;;
+or1k*-*-*)
+	cpu_type=or1k
 	;;
 powerpc*-*-*)
 	cpu_type=rs6000
@@ -383,6 +390,10 @@ alpha*-dec-*vms*)
 	tmake_file="$tmake_file alpha/t-alpha alpha/t-ieee alpha/t-vms t-slibgcc-vms"
 	extra_parts="$extra_parts vms-dwarf2.o vms-dwarf2eh.o"
 	md_unwind_header=alpha/vms-unwind.h
+	;;
+amdgcn*-*-amdhsa)
+	tmake_file="$tmake_file gcn/t-amdgcn"
+	extra_parts="crt0.o"
 	;;
 arc*-*-elf*)
 	tmake_file="arc/t-arc"
@@ -1038,6 +1049,15 @@ nios2-*-linux*)
 nios2-*-*)
 	tmake_file="$tmake_file nios2/t-nios2 t-softfp-sfdf t-softfp-excl t-softfp"
 	extra_parts="$extra_parts crti.o crtn.o"
+	;;
+or1k-*-linux*)
+	tmake_file="$tmake_file or1k/t-or1k"
+	tmake_file="$tmake_file t-softfp-sfdf t-softfp"
+	md_unwind_header=or1k/linux-unwind.h
+	;;
+or1k-*-*)
+	tmake_file="$tmake_file or1k/t-or1k"
+	tmake_file="$tmake_file t-softfp-sfdf t-softfp"
 	;;
 pdp11-*-*)
 	tmake_file="pdp11/t-pdp11 t-fdpbit"

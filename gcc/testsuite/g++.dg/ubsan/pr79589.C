@@ -1,6 +1,6 @@
 // PR sanitizer/79589
-// { dg-do compile }
-// { dg-options "-fsanitize=undefined -std=c++17" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fsanitize=undefined" }
 
 struct A { char a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r; } a[64];
 

@@ -1,6 +1,6 @@
 // Position types -*- C++ -*-
 
-// Copyright (C) 1997-2018 Free Software Foundation, Inc.
+// Copyright (C) 1997-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -234,6 +234,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   typedef fpos<mbstate_t> streampos;
   /// File position for wchar_t streams.
   typedef fpos<mbstate_t> wstreampos;
+
+#ifdef _GLIBCXX_USE_CHAR8_T
+  /// File position for char8_t streams.
+  typedef fpos<mbstate_t> u8streampos;
+#endif
 
 #if __cplusplus >= 201103L
   /// File position for char16_t streams.

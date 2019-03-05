@@ -1,7 +1,7 @@
 /* This file contains routines to construct OpenACC and OpenMP constructs,
    called from parsing in the C and C++ front ends.
 
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>,
 		  Diego Novillo <dnovillo@redhat.com>.
 
@@ -28,8 +28,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-common.h"
 #include "gimple-expr.h"
 #include "c-pragma.h"
+#include "stringpool.h"
 #include "omp-general.h"
 #include "gomp-constants.h"
+#include "memmodel.h"
 
 
 /* Complete a #pragma oacc wait construct.  LOC is the location of
@@ -70,7 +72,7 @@ c_finish_oacc_wait (location_t loc, tree parms, tree clauses)
 }
 
 /* Complete a #pragma omp master construct.  STMT is the structured-block
-   that follows the pragma.  LOC is the l*/
+   that follows the pragma.  LOC is the location of the #pragma.  */
 
 tree
 c_finish_omp_master (location_t loc, tree stmt)
@@ -80,18 +82,21 @@ c_finish_omp_master (location_t loc, tree stmt)
   return t;
 }
 
-/* Complete a #pragma omp taskgroup construct.  STMT is the structured-block
-   that follows the pragma.  LOC is the l*/
+/* Complete a #pragma omp taskgroup construct.  BODY is the structured-block
+   that follows the pragma.  LOC is the location of the #pragma.  */
 
 tree
-c_finish_omp_taskgroup (location_t loc, tree stmt)
+c_finish_omp_taskgroup (location_t loc, tree body, tree clauses)
 {
-  tree t = add_stmt (build1 (OMP_TASKGROUP, void_type_node, stmt));
-  SET_EXPR_LOCATION (t, loc);
-  return t;
+  tree stmt = make_node (OMP_TASKGROUP);
+  TREE_TYPE (stmt) = void_type_node;
+  OMP_TASKGROUP_BODY (stmt) = body;
+  OMP_TASKGROUP_CLAUSES (stmt) = clauses;
+  SET_EXPR_LOCATION (stmt, loc);
+  return add_stmt (stmt);
 }
 
-/* Complete a #pragma omp critical construct.  STMT is the structured-block
+/* Complete a #pragma omp critical construct.  BODY is the structured-block
    that follows the pragma, NAME is the identifier in the pragma, or null
    if it was omitted.  LOC is the location of the #pragma.  */
 
@@ -181,8 +186,8 @@ c_finish_omp_taskyield (location_t loc)
 tree
 c_finish_omp_atomic (location_t loc, enum tree_code code,
 		     enum tree_code opcode, tree lhs, tree rhs,
-		     tree v, tree lhs1, tree rhs1, bool swapped, bool seq_cst,
-		     bool test)
+		     tree v, tree lhs1, tree rhs1, bool swapped,
+		     enum omp_memory_order memory_order, bool test)
 {
   tree x, type, addr, pre = NULL_TREE;
   HOST_WIDE_INT bitpos = 0, bitsize = 0;
@@ -264,7 +269,7 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
     {
       x = build1 (OMP_ATOMIC_READ, type, addr);
       SET_EXPR_LOCATION (x, loc);
-      OMP_ATOMIC_SEQ_CST (x) = seq_cst;
+      OMP_ATOMIC_MEMORY_ORDER (x) = memory_order;
       if (blhs)
 	x = build3_loc (loc, BIT_FIELD_REF, TREE_TYPE (blhs), x,
 			bitsize_int (bitsize), bitsize_int (bitpos));
@@ -315,7 +320,7 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
     type = void_type_node;
   x = build2 (code, type, addr, rhs);
   SET_EXPR_LOCATION (x, loc);
-  OMP_ATOMIC_SEQ_CST (x) = seq_cst;
+  OMP_ATOMIC_MEMORY_ORDER (x) = memory_order;
 
   /* Generally it is hard to prove lhs1 and lhs are the same memory
      location, just diagnose different variables.  */
@@ -373,8 +378,11 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
 	    }
 	}
       if (blhs)
-	x = build3_loc (loc, BIT_FIELD_REF, TREE_TYPE (blhs), x,
-			bitsize_int (bitsize), bitsize_int (bitpos));
+	{
+	  x = build3_loc (loc, BIT_FIELD_REF, TREE_TYPE (blhs), x,
+			  bitsize_int (bitsize), bitsize_int (bitpos));
+	  type = TREE_TYPE (blhs);
+	}
       x = build_modify_expr (loc, v, NULL_TREE, NOP_EXPR,
 			     loc, x, NULL_TREE);
       if (rhs1 && rhs1 != orig_lhs)
@@ -413,17 +421,173 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
 }
 
 
+/* Return true if TYPE is the implementation's omp_depend_t.  */
+
+bool
+c_omp_depend_t_p (tree type)
+{
+  type = TYPE_MAIN_VARIANT (type);
+  return (TREE_CODE (type) == RECORD_TYPE
+	  && TYPE_NAME (type)
+	  && ((TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+	       ? DECL_NAME (TYPE_NAME (type)) : TYPE_NAME (type))
+	      == get_identifier ("omp_depend_t"))
+	  && (!TYPE_CONTEXT (type)
+	      || TREE_CODE (TYPE_CONTEXT (type)) == TRANSLATION_UNIT_DECL)
+	  && COMPLETE_TYPE_P (type)
+	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+	  && !compare_tree_int (TYPE_SIZE (type),
+				2 * tree_to_uhwi (TYPE_SIZE (ptr_type_node))));
+}
+
+
+/* Complete a #pragma omp depobj construct.  LOC is the location of the
+   #pragma.  */
+
+void
+c_finish_omp_depobj (location_t loc, tree depobj,
+		     enum omp_clause_depend_kind kind, tree clause)
+{
+  tree t = NULL_TREE;
+  if (!error_operand_p (depobj))
+    {
+      if (!c_omp_depend_t_p (TREE_TYPE (depobj)))
+	{
+	  error_at (EXPR_LOC_OR_LOC (depobj, loc),
+		    "type of %<depobj%> expression is not %<omp_depend_t%>");
+	  depobj = error_mark_node;
+	}
+      else if (TYPE_READONLY (TREE_TYPE (depobj)))
+	{
+	  error_at (EXPR_LOC_OR_LOC (depobj, loc),
+		    "%<const%> qualified %<depobj%> expression");
+	  depobj = error_mark_node;
+	}
+    }
+  else
+    depobj = error_mark_node;
+
+  if (clause == error_mark_node)
+    return;
+
+  if (clause)
+    {
+      gcc_assert (TREE_CODE (clause) == OMP_CLAUSE
+		  && OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_DEPEND);
+      if (OMP_CLAUSE_CHAIN (clause))
+	error_at (OMP_CLAUSE_LOCATION (clause),
+		  "more than one locator in %<depend%> clause on %<depobj%> "
+		  "construct");
+      switch (OMP_CLAUSE_DEPEND_KIND (clause))
+	{
+	case OMP_CLAUSE_DEPEND_DEPOBJ:
+	  error_at (OMP_CLAUSE_LOCATION (clause),
+		    "%<depobj%> dependence type specified in %<depend%> "
+		    "clause on %<depobj%> construct");
+	  return;
+	case OMP_CLAUSE_DEPEND_SOURCE:
+	case OMP_CLAUSE_DEPEND_SINK:
+	  error_at (OMP_CLAUSE_LOCATION (clause),
+		    "%<depend(%s)%> is only allowed in %<omp ordered%>",
+		    OMP_CLAUSE_DEPEND_KIND (clause) == OMP_CLAUSE_DEPEND_SOURCE
+		    ? "source" : "sink");
+	  return;
+	case OMP_CLAUSE_DEPEND_IN:
+	case OMP_CLAUSE_DEPEND_OUT:
+	case OMP_CLAUSE_DEPEND_INOUT:
+	case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
+	  kind = OMP_CLAUSE_DEPEND_KIND (clause);
+	  t = OMP_CLAUSE_DECL (clause);
+	  gcc_assert (t);
+	  if (TREE_CODE (t) == TREE_LIST
+	      && TREE_PURPOSE (t)
+	      && TREE_CODE (TREE_PURPOSE (t)) == TREE_VEC)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (clause),
+			"%<iterator%> modifier may not be specified on "
+			"%<depobj%> construct");
+	      return;
+	    }
+	  if (TREE_CODE (t) == COMPOUND_EXPR)
+	    {
+	      tree t1 = build_fold_addr_expr (TREE_OPERAND (t, 1));
+	      t = build2 (COMPOUND_EXPR, TREE_TYPE (t1), TREE_OPERAND (t, 0),
+			  t1);
+	    }
+	  else
+	    t = build_fold_addr_expr (t);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  else
+    gcc_assert (kind != OMP_CLAUSE_DEPEND_SOURCE);
+
+  if (depobj == error_mark_node)
+    return;
+
+  depobj = build_fold_addr_expr_loc (EXPR_LOC_OR_LOC (depobj, loc), depobj);
+  tree dtype
+    = build_pointer_type_for_mode (ptr_type_node, TYPE_MODE (ptr_type_node),
+				   true);
+  depobj = fold_convert (dtype, depobj);
+  tree r;
+  if (clause)
+    {
+      depobj = save_expr (depobj);
+      r = build_indirect_ref (loc, depobj, RO_UNARY_STAR);
+      add_stmt (build2 (MODIFY_EXPR, void_type_node, r, t));
+    }
+  int k;
+  switch (kind)
+    {
+    case OMP_CLAUSE_DEPEND_IN:
+      k = GOMP_DEPEND_IN;
+      break;
+    case OMP_CLAUSE_DEPEND_OUT:
+      k = GOMP_DEPEND_OUT;
+      break;
+    case OMP_CLAUSE_DEPEND_INOUT:
+      k = GOMP_DEPEND_INOUT;
+      break;
+    case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
+      k = GOMP_DEPEND_MUTEXINOUTSET;
+      break;
+    case OMP_CLAUSE_DEPEND_LAST:
+      k = -1;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  t = build_int_cst (ptr_type_node, k);
+  depobj = build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (depobj), depobj,
+		       TYPE_SIZE_UNIT (ptr_type_node));
+  r = build_indirect_ref (loc, depobj, RO_UNARY_STAR);
+  add_stmt (build2 (MODIFY_EXPR, void_type_node, r, t));
+}
+
+
 /* Complete a #pragma omp flush construct.  We don't do anything with
    the variable list that the syntax allows.  LOC is the location of
    the #pragma.  */
 
 void
-c_finish_omp_flush (location_t loc)
+c_finish_omp_flush (location_t loc, int mo)
 {
   tree x;
 
-  x = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
-  x = build_call_expr_loc (loc, x, 0);
+  if (mo == MEMMODEL_LAST)
+    {
+      x = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
+      x = build_call_expr_loc (loc, x, 0);
+    }
+  else
+    {
+      x = builtin_decl_explicit (BUILT_IN_ATOMIC_THREAD_FENCE);
+      x = build_call_expr_loc (loc, x, 1,
+			       build_int_cst (integer_type_node, mo));
+    }
   add_stmt (x);
 }
 
@@ -454,17 +618,17 @@ check_omp_for_incr_expr (location_t loc, tree exp, tree decl)
       t = check_omp_for_incr_expr (loc, TREE_OPERAND (exp, 0), decl);
       if (t != error_mark_node)
         return fold_build2_loc (loc, MINUS_EXPR,
-			    TREE_TYPE (exp), t, TREE_OPERAND (exp, 1));
+				TREE_TYPE (exp), t, TREE_OPERAND (exp, 1));
       break;
     case PLUS_EXPR:
       t = check_omp_for_incr_expr (loc, TREE_OPERAND (exp, 0), decl);
       if (t != error_mark_node)
         return fold_build2_loc (loc, PLUS_EXPR,
-			    TREE_TYPE (exp), t, TREE_OPERAND (exp, 1));
+				TREE_TYPE (exp), t, TREE_OPERAND (exp, 1));
       t = check_omp_for_incr_expr (loc, TREE_OPERAND (exp, 1), decl);
       if (t != error_mark_node)
         return fold_build2_loc (loc, PLUS_EXPR,
-			    TREE_TYPE (exp), TREE_OPERAND (exp, 0), t);
+				TREE_TYPE (exp), TREE_OPERAND (exp, 0), t);
       break;
     case COMPOUND_EXPR:
       {
@@ -530,7 +694,7 @@ c_omp_for_incr_canonicalize_ptr (location_t loc, tree decl, tree incr)
 tree
 c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 		  tree orig_declv, tree initv, tree condv, tree incrv,
-		  tree body, tree pre_body)
+		  tree body, tree pre_body, bool final_p)
 {
   location_t elocus;
   bool fail = false;
@@ -667,7 +831,8 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 		{
 		  if (!INTEGRAL_TYPE_P (TREE_TYPE (decl)))
 		    {
-		      cond_ok = false;
+		      if (code == OACC_LOOP || TREE_CODE (cond) == EQ_EXPR)
+			cond_ok = false;
 		    }
 		  else if (operand_equal_p (TREE_OPERAND (cond, 1),
 					    TYPE_MIN_VALUE (TREE_TYPE (decl)),
@@ -679,7 +844,7 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 					    0))
 		    TREE_SET_CODE (cond, TREE_CODE (cond) == NE_EXPR
 					 ? LT_EXPR : GE_EXPR);
-		  else
+		  else if (code == OACC_LOOP || TREE_CODE (cond) == EQ_EXPR)
 		    cond_ok = false;
 		}
 
@@ -730,6 +895,21 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 		break;
 
 	      incr_ok = true;
+	      if (!fail
+		  && TREE_CODE (cond) == NE_EXPR
+		  && TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
+		  && TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl)))
+		  && (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl))))
+		      != INTEGER_CST))
+		{
+		  /* For pointer to VLA, transform != into < or >
+		     depending on whether incr is increment or decrement.  */
+		  if (TREE_CODE (incr) == PREINCREMENT_EXPR
+		      || TREE_CODE (incr) == POSTINCREMENT_EXPR)
+		    TREE_SET_CODE (cond, LT_EXPR);
+		  else
+		    TREE_SET_CODE (cond, GT_EXPR);
+		}
 	      incr = c_omp_for_incr_canonicalize_ptr (elocus, decl, incr);
 	      break;
 
@@ -763,6 +943,58 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 		      incr_ok = true;
 		      t = build2 (PLUS_EXPR, TREE_TYPE (decl), decl, t);
 		      incr = build2 (MODIFY_EXPR, void_type_node, decl, t);
+		    }
+		}
+	      if (!fail
+		  && incr_ok
+		  && TREE_CODE (cond) == NE_EXPR)
+		{
+		  tree i = TREE_OPERAND (incr, 1);
+		  i = TREE_OPERAND (i, TREE_OPERAND (i, 0) == decl);
+		  i = c_fully_fold (i, false, NULL);
+		  if (!final_p
+		      && TREE_CODE (i) != INTEGER_CST)
+		    ;
+		  else if (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE)
+		    {
+		      tree unit
+			= TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl)));
+		      if (unit)
+			{
+			  enum tree_code ccode = GT_EXPR;
+			  unit = c_fully_fold (unit, false, NULL);
+			  i = fold_convert (TREE_TYPE (unit), i);
+			  if (operand_equal_p (unit, i, 0))
+			    ccode = LT_EXPR;
+			  if (ccode == GT_EXPR)
+			    {
+			      i = fold_unary (NEGATE_EXPR, TREE_TYPE (i), i);
+			      if (i == NULL_TREE
+				  || !operand_equal_p (unit, i, 0))
+				{
+				  error_at (elocus,
+					    "increment is not constant 1 or "
+					    "-1 for != condition");
+				  fail = true;
+				}
+			    }
+			  if (TREE_CODE (unit) != INTEGER_CST)
+			    /* For pointer to VLA, transform != into < or >
+			       depending on whether the pointer is
+			       incremented or decremented in each
+			       iteration.  */
+			    TREE_SET_CODE (cond, ccode);
+			}
+		    }
+		  else
+		    {
+		      if (!integer_onep (i) && !integer_minus_onep (i))
+			{
+			  error_at (elocus,
+				    "increment is not constant 1 or -1 for"
+				    " != condition");
+			  fail = true;
+			}
 		    }
 		}
 	      break;
@@ -829,7 +1061,13 @@ c_omp_check_loop_iv_r (tree *tp, int *walk_subtrees, void *data)
       for (i = 0; i < TREE_VEC_LENGTH (d->declv); i++)
 	if (*tp == TREE_VEC_ELT (d->declv, i)
 	    || (TREE_CODE (TREE_VEC_ELT (d->declv, i)) == TREE_LIST
-		&& *tp == TREE_PURPOSE (TREE_VEC_ELT (d->declv, i))))
+		&& *tp == TREE_PURPOSE (TREE_VEC_ELT (d->declv, i)))
+	    || (TREE_CODE (TREE_VEC_ELT (d->declv, i)) == TREE_LIST
+		&& TREE_CHAIN (TREE_VEC_ELT (d->declv, i))
+		&& (TREE_CODE (TREE_CHAIN (TREE_VEC_ELT (d->declv, i)))
+		    == TREE_VEC)
+		&& *tp == TREE_VEC_ELT (TREE_CHAIN (TREE_VEC_ELT (d->declv,
+								  i)), 2)))
 	  {
 	    location_t loc = d->expr_loc;
 	    if (loc == UNKNOWN_LOCATION)
@@ -1025,18 +1263,24 @@ c_oacc_split_loop_clauses (tree clauses, tree *not_loop_clauses,
 }
 
 /* This function attempts to split or duplicate clauses for OpenMP
-   combined/composite constructs.  Right now there are 21 different
+   combined/composite constructs.  Right now there are 26 different
    constructs.  CODE is the innermost construct in the combined construct,
    and MASK allows to determine which constructs are combined together,
    as every construct has at least one clause that no other construct
-   has (except for OMP_SECTIONS, but that can be only combined with parallel).
+   has (except for OMP_SECTIONS, but that can be only combined with parallel,
+   and OMP_MASTER, which doesn't have any clauses at all).
    OpenMP combined/composite constructs are:
    #pragma omp distribute parallel for
    #pragma omp distribute parallel for simd
    #pragma omp distribute simd
    #pragma omp for simd
+   #pragma omp master taskloop
+   #pragma omp master taskloop simd
    #pragma omp parallel for
    #pragma omp parallel for simd
+   #pragma omp parallel master
+   #pragma omp parallel master taskloop
+   #pragma omp parallel master taskloop simd
    #pragma omp parallel sections
    #pragma omp target parallel
    #pragma omp target parallel for
@@ -1070,8 +1314,9 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
       {
       case OMP_FOR:
       case OMP_SIMD:
-        cclauses[C_OMP_CLAUSE_SPLIT_FOR]
-	  = build_omp_clause (loc, OMP_CLAUSE_NOWAIT);
+	if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SCHEDULE)) != 0)
+	  cclauses[C_OMP_CLAUSE_SPLIT_FOR]
+	    = build_omp_clause (loc, OMP_CLAUSE_NOWAIT);
 	break;
       case OMP_SECTIONS:
 	cclauses[C_OMP_CLAUSE_SPLIT_SECTIONS]
@@ -1118,6 +1363,7 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	case OMP_CLAUSE_SAFELEN:
 	case OMP_CLAUSE_SIMDLEN:
 	case OMP_CLAUSE_ALIGNED:
+	case OMP_CLAUSE_NONTEMPORAL:
 	  s = C_OMP_CLAUSE_SPLIT_SIMD;
 	  break;
 	case OMP_CLAUSE_GRAINSIZE:
@@ -1175,8 +1421,8 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	  else
 	    s = C_OMP_CLAUSE_SPLIT_DISTRIBUTE;
 	  break;
-	/* Private clause is supported on all constructs,
-	   it is enough to put it on the innermost one.  For
+	/* Private clause is supported on all constructs but master,
+	   it is enough to put it on the innermost one other than master.  For
 	   #pragma omp {for,sections} put it on parallel though,
 	   as that's what we did for OpenMP 3.1.  */
 	case OMP_CLAUSE_PRIVATE:
@@ -1187,12 +1433,14 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	    case OMP_PARALLEL: s = C_OMP_CLAUSE_SPLIT_PARALLEL; break;
 	    case OMP_DISTRIBUTE: s = C_OMP_CLAUSE_SPLIT_DISTRIBUTE; break;
 	    case OMP_TEAMS: s = C_OMP_CLAUSE_SPLIT_TEAMS; break;
+	    case OMP_MASTER: s = C_OMP_CLAUSE_SPLIT_PARALLEL; break;
+	    case OMP_TASKLOOP: s = C_OMP_CLAUSE_SPLIT_TASKLOOP; break;
 	    default: gcc_unreachable ();
 	    }
 	  break;
 	/* Firstprivate clause is supported on all constructs but
-	   simd.  Put it on the outermost of those and duplicate on teams
-	   and parallel.  */
+	   simd and master.  Put it on the outermost of those and duplicate on
+	   teams and parallel.  */
 	case OMP_CLAUSE_FIRSTPRIVATE:
 	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP))
 	      != 0)
@@ -1231,6 +1479,11 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 		  else
 		    s = C_OMP_CLAUSE_SPLIT_DISTRIBUTE;
 		}
+	      else if ((mask & (OMP_CLAUSE_MASK_1
+				<< PRAGMA_OMP_CLAUSE_NOGROUP)) != 0)
+		/* This must be
+		   #pragma omp parallel master taskloop{, simd}.  */
+		s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
 	      else
 		/* This must be
 		   #pragma omp parallel{, for{, simd}, sections}
@@ -1260,8 +1513,10 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	  else if ((mask & (OMP_CLAUSE_MASK_1
 			    << PRAGMA_OMP_CLAUSE_NOGROUP)) != 0)
 	    {
-	      /* This must be #pragma omp taskloop simd.  */
-	      gcc_assert (code == OMP_SIMD);
+	      /* This must be #pragma omp {,{,parallel }master }taskloop simd
+		 or
+		 #pragma omp {,parallel }master taskloop.  */
+	      gcc_assert (code == OMP_SIMD || code == OMP_TASKLOOP);
 	      s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
 	    }
 	  else
@@ -1271,9 +1526,9 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	      s = C_OMP_CLAUSE_SPLIT_FOR;
 	    }
 	  break;
-	/* Lastprivate is allowed on distribute, for, sections and simd.  In
-	   parallel {for{, simd},sections} we actually want to put it on
-	   parallel rather than for or sections.  */
+	/* Lastprivate is allowed on distribute, for, sections, taskloop and
+	   simd.  In parallel {for{, simd},sections} we actually want to put
+	   it on parallel rather than for or sections.  */
 	case OMP_CLAUSE_LASTPRIVATE:
 	  if (code == OMP_DISTRIBUTE)
 	    {
@@ -1287,6 +1542,8 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 				    OMP_CLAUSE_LASTPRIVATE);
 	      OMP_CLAUSE_DECL (c) = OMP_CLAUSE_DECL (clauses);
 	      OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_DISTRIBUTE];
+	      OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c)
+		= OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (clauses);
 	      cclauses[C_OMP_CLAUSE_SPLIT_DISTRIBUTE] = c;
 	    }
 	  if (code == OMP_FOR || code == OMP_SECTIONS)
@@ -1298,12 +1555,19 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 		s = C_OMP_CLAUSE_SPLIT_FOR;
 	      break;
 	    }
+	  if (code == OMP_TASKLOOP)
+	    {
+	      s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
+	      break;
+	    }
 	  gcc_assert (code == OMP_SIMD);
 	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SCHEDULE)) != 0)
 	    {
 	      c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
 				    OMP_CLAUSE_LASTPRIVATE);
 	      OMP_CLAUSE_DECL (c) = OMP_CLAUSE_DECL (clauses);
+	      OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c)
+		= OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (clauses);
 	      if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NUM_THREADS))
 		  != 0)
 		s = C_OMP_CLAUSE_SPLIT_PARALLEL;
@@ -1311,6 +1575,16 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 		s = C_OMP_CLAUSE_SPLIT_FOR;
 	      OMP_CLAUSE_CHAIN (c) = cclauses[s];
 	      cclauses[s] = c;
+	    }
+	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOGROUP)) != 0)
+	    {
+	      c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+				    OMP_CLAUSE_LASTPRIVATE);
+	      OMP_CLAUSE_DECL (c) = OMP_CLAUSE_DECL (clauses);
+	      OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c)
+		= OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (clauses);
+	      OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_TASKLOOP];
+	      cclauses[C_OMP_CLAUSE_SPLIT_TASKLOOP] = c;
 	    }
 	  s = C_OMP_CLAUSE_SPLIT_SIMD;
 	  break;
@@ -1321,6 +1595,19 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOGROUP))
 	      != 0)
 	    {
+	      if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NUM_THREADS))
+		  != 0)
+		{
+		  c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+					OMP_CLAUSE_CODE (clauses));
+		  if (OMP_CLAUSE_CODE (clauses) == OMP_CLAUSE_SHARED)
+		    OMP_CLAUSE_DECL (c) = OMP_CLAUSE_DECL (clauses);
+		  else
+		    OMP_CLAUSE_DEFAULT_KIND (c)
+		      = OMP_CLAUSE_DEFAULT_KIND (clauses);
+		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL];
+		  cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL] = c;
+		}
 	      s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
 	      break;
 	    }
@@ -1345,10 +1632,33 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	    }
 	  s = C_OMP_CLAUSE_SPLIT_PARALLEL;
 	  break;
-	/* Reduction is allowed on simd, for, parallel, sections and teams.
-	   Duplicate it on all of them, but omit on for or sections if
-	   parallel is present.  */
+	/* Reduction is allowed on simd, for, parallel, sections, taskloop
+	   and teams.  Duplicate it on all of them, but omit on for or
+	   sections if parallel is present.  If taskloop is combined with
+	   parallel, omit it on parallel.  */
 	case OMP_CLAUSE_REDUCTION:
+	  if (OMP_CLAUSE_REDUCTION_TASK (clauses))
+	    {
+	      if (code == OMP_SIMD /* || code == OMP_LOOP */)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (clauses),
+			    "invalid %<task%> reduction modifier on construct "
+			    "combined with %<simd%>" /* or %<loop%> */);
+		  OMP_CLAUSE_REDUCTION_TASK (clauses) = 0;
+		}
+	      else if (code != OMP_SECTIONS
+		       && (mask & (OMP_CLAUSE_MASK_1
+				   << PRAGMA_OMP_CLAUSE_SCHEDULE)) == 0
+		       && (mask & (OMP_CLAUSE_MASK_1
+				   << PRAGMA_OMP_CLAUSE_SCHEDULE)) == 0)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (clauses),
+			    "invalid %<task%> reduction modifier on construct "
+			    "not combined with %<parallel%>, %<for%> or "
+			    "%<sections%>");
+		  OMP_CLAUSE_REDUCTION_TASK (clauses) = 0;
+		}
+	    }
 	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SCHEDULE)) != 0)
 	    {
 	      if (code == OMP_SIMD)
@@ -1377,9 +1687,9 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 		    = OMP_CLAUSE_REDUCTION_PLACEHOLDER (clauses);
 		  OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (c)
 		    = OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (clauses);
-		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL];
-		  cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL] = c;
-		  s = C_OMP_CLAUSE_SPLIT_TEAMS;
+		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_TEAMS];
+		  cclauses[C_OMP_CLAUSE_SPLIT_TEAMS] = c;
+		  s = C_OMP_CLAUSE_SPLIT_PARALLEL;
 		}
 	      else if ((mask & (OMP_CLAUSE_MASK_1
 				<< PRAGMA_OMP_CLAUSE_NUM_THREADS)) != 0)
@@ -1387,46 +1697,154 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	      else
 		s = C_OMP_CLAUSE_SPLIT_FOR;
 	    }
-	  else if (code == OMP_SECTIONS || code == OMP_PARALLEL)
+	  else if (code == OMP_SECTIONS
+		   || code == OMP_PARALLEL
+		   || code == OMP_MASTER)
 	    s = C_OMP_CLAUSE_SPLIT_PARALLEL;
+	  else if (code == OMP_TASKLOOP)
+	    s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
 	  else if (code == OMP_SIMD)
-	    s = C_OMP_CLAUSE_SPLIT_SIMD;
+	    {
+	      if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOGROUP))
+		  != 0)
+		{
+		  c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+					OMP_CLAUSE_REDUCTION);
+		  OMP_CLAUSE_DECL (c) = OMP_CLAUSE_DECL (clauses);
+		  OMP_CLAUSE_REDUCTION_CODE (c)
+		    = OMP_CLAUSE_REDUCTION_CODE (clauses);
+		  OMP_CLAUSE_REDUCTION_PLACEHOLDER (c)
+		    = OMP_CLAUSE_REDUCTION_PLACEHOLDER (clauses);
+		  OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (c)
+		    = OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (clauses);
+		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_TASKLOOP];
+		  cclauses[C_OMP_CLAUSE_SPLIT_TASKLOOP] = c;
+		}
+	      s = C_OMP_CLAUSE_SPLIT_SIMD;
+	    }
 	  else
 	    s = C_OMP_CLAUSE_SPLIT_TEAMS;
 	  break;
+	case OMP_CLAUSE_IN_REDUCTION:
+	  /* in_reduction on taskloop simd becomes reduction on the simd
+	     and keeps being in_reduction on taskloop.  */
+	  if (code == OMP_SIMD)
+	    {
+	      c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+				    OMP_CLAUSE_REDUCTION);
+	      OMP_CLAUSE_DECL (c) = OMP_CLAUSE_DECL (clauses);
+	      OMP_CLAUSE_REDUCTION_CODE (c)
+		= OMP_CLAUSE_REDUCTION_CODE (clauses);
+	      OMP_CLAUSE_REDUCTION_PLACEHOLDER (c)
+		= OMP_CLAUSE_REDUCTION_PLACEHOLDER (clauses);
+	      OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (c)
+		= OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (clauses);
+	      OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_SIMD];
+	      cclauses[C_OMP_CLAUSE_SPLIT_SIMD] = c;
+	    }
+	  s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
+	  break;
 	case OMP_CLAUSE_IF:
+	  if (OMP_CLAUSE_IF_MODIFIER (clauses) != ERROR_MARK)
+	    {
+	      s = C_OMP_CLAUSE_SPLIT_COUNT;
+	      switch (OMP_CLAUSE_IF_MODIFIER (clauses))
+		{
+		case OMP_PARALLEL:
+		  if ((mask & (OMP_CLAUSE_MASK_1
+			       << PRAGMA_OMP_CLAUSE_NUM_THREADS)) != 0)
+		    s = C_OMP_CLAUSE_SPLIT_PARALLEL;
+		  break;
+		case OMP_SIMD:
+		  if (code == OMP_SIMD)
+		    s = C_OMP_CLAUSE_SPLIT_SIMD;
+		  break;
+		case OMP_TASKLOOP:
+		  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOGROUP))
+		      != 0)
+		    s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
+		  break;
+		case OMP_TARGET:
+		  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP))
+		      != 0)
+		    s = C_OMP_CLAUSE_SPLIT_TARGET;
+		  break;
+		default:
+		  break;
+		}
+	      if (s != C_OMP_CLAUSE_SPLIT_COUNT)
+		break;
+	      /* Error-recovery here, invalid if-modifier specified, add the
+		 clause to just one construct.  */
+	      if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP)) != 0)
+		s = C_OMP_CLAUSE_SPLIT_TARGET;
+	      else if ((mask & (OMP_CLAUSE_MASK_1
+				<< PRAGMA_OMP_CLAUSE_NUM_THREADS)) != 0)
+		s = C_OMP_CLAUSE_SPLIT_PARALLEL;
+	      else if ((mask & (OMP_CLAUSE_MASK_1
+				<< PRAGMA_OMP_CLAUSE_NOGROUP)) != 0)
+		s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
+	      else if (code == OMP_SIMD)
+		s = C_OMP_CLAUSE_SPLIT_SIMD;
+	      else
+		gcc_unreachable ();
+	      break;
+	    }
+	  /* Otherwise, duplicate if clause to all constructs.  */
+	  if (code == OMP_SIMD)
+	    {
+	      if ((mask & ((OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP)
+			   | (OMP_CLAUSE_MASK_1
+			      << PRAGMA_OMP_CLAUSE_NUM_THREADS)
+			   | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOGROUP)))
+		  != 0)
+		{
+		  c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+					OMP_CLAUSE_IF);
+		  OMP_CLAUSE_IF_MODIFIER (c)
+		    = OMP_CLAUSE_IF_MODIFIER (clauses);
+		  OMP_CLAUSE_IF_EXPR (c) = OMP_CLAUSE_IF_EXPR (clauses);
+		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_SIMD];
+		  cclauses[C_OMP_CLAUSE_SPLIT_SIMD] = c;
+		}
+	      else
+		{
+		  s = C_OMP_CLAUSE_SPLIT_SIMD;
+		  break;
+		}
+	    }
 	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOGROUP))
 	      != 0)
-	    s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
+	    {
+	      if ((mask & (OMP_CLAUSE_MASK_1
+			   << PRAGMA_OMP_CLAUSE_NUM_THREADS)) != 0)
+		{
+		  c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+					OMP_CLAUSE_IF);
+		  OMP_CLAUSE_IF_MODIFIER (c)
+		    = OMP_CLAUSE_IF_MODIFIER (clauses);
+		  OMP_CLAUSE_IF_EXPR (c) = OMP_CLAUSE_IF_EXPR (clauses);
+		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_TASKLOOP];
+		  cclauses[C_OMP_CLAUSE_SPLIT_TASKLOOP] = c;
+		  s = C_OMP_CLAUSE_SPLIT_PARALLEL;
+		}
+	      else
+		s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
+	    }
 	  else if ((mask & (OMP_CLAUSE_MASK_1
 			    << PRAGMA_OMP_CLAUSE_NUM_THREADS)) != 0)
 	    {
 	      if ((mask & (OMP_CLAUSE_MASK_1
 			   << PRAGMA_OMP_CLAUSE_MAP)) != 0)
 		{
-		  if (OMP_CLAUSE_IF_MODIFIER (clauses) == OMP_PARALLEL)
-		    s = C_OMP_CLAUSE_SPLIT_PARALLEL;
-		  else if (OMP_CLAUSE_IF_MODIFIER (clauses) == OMP_TARGET)
-		    s = C_OMP_CLAUSE_SPLIT_TARGET;
-		  else if (OMP_CLAUSE_IF_MODIFIER (clauses) == ERROR_MARK)
-		    {
-		      c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
-					    OMP_CLAUSE_IF);
-		      OMP_CLAUSE_IF_MODIFIER (c)
-			= OMP_CLAUSE_IF_MODIFIER (clauses);
-		      OMP_CLAUSE_IF_EXPR (c) = OMP_CLAUSE_IF_EXPR (clauses);
-		      OMP_CLAUSE_CHAIN (c)
-			= cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
-		      cclauses[C_OMP_CLAUSE_SPLIT_TARGET] = c;
-		      s = C_OMP_CLAUSE_SPLIT_PARALLEL;
-		    }
-		  else
-		    {
-		      error_at (OMP_CLAUSE_LOCATION (clauses),
-				"expected %<parallel%> or %<target%> %<if%> "
-				"clause modifier");
-		      continue;
-		    }
+		  c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+					OMP_CLAUSE_IF);
+		  OMP_CLAUSE_IF_MODIFIER (c)
+		    = OMP_CLAUSE_IF_MODIFIER (clauses);
+		  OMP_CLAUSE_IF_EXPR (c) = OMP_CLAUSE_IF_EXPR (clauses);
+		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
+		  cclauses[C_OMP_CLAUSE_SPLIT_TARGET] = c;
+		  s = C_OMP_CLAUSE_SPLIT_PARALLEL;
 		}
 	      else
 		s = C_OMP_CLAUSE_SPLIT_PARALLEL;
@@ -1610,11 +2028,6 @@ c_omp_declare_simd_clauses_to_decls (tree fndecl, tree clauses)
 enum omp_clause_default_kind
 c_omp_predetermined_sharing (tree decl)
 {
-  /* Variables with const-qualified type having no mutable member
-     are predetermined shared.  */
-  if (TREE_READONLY (decl))
-    return OMP_CLAUSE_DEFAULT_SHARED;
-
   /* Predetermine artificial variables holding integral values, those
      are usually result of gimplify_one_sizepos or SAVE_EXPR
      gimplification.  */

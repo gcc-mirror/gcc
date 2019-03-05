@@ -1,5 +1,5 @@
 /* Header file for any pass which requires SSA routines.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,14 +24,14 @@ along with GCC; see the file COPYING3.  If not see
 struct edge_var_map {
   tree result;			/* PHI result.  */
   tree def;			/* PHI arg definition.  */
-  source_location locus;        /* PHI arg location.  */
+  location_t locus;        /* PHI arg location.  */
 };
 
 /* A vector of var maps.  */
 typedef vec<edge_var_map, va_heap, vl_embed> edge_var_map_vector;
 
 
-extern void redirect_edge_var_map_add (edge, tree, tree, source_location);
+extern void redirect_edge_var_map_add (edge, tree, tree, location_t);
 extern void redirect_edge_var_map_clear (edge);
 extern void redirect_edge_var_map_dup (edge, edge);
 extern vec<edge_var_map> *redirect_edge_var_map_vector (edge);
@@ -74,7 +74,7 @@ redirect_edge_var_map_result (edge_var_map *v)
 
 /* Given an edge_var_map V, return the PHI arg location.  */
 
-static inline source_location
+static inline location_t
 redirect_edge_var_map_location (edge_var_map *v)
 {
   return v->locus;

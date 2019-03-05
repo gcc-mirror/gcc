@@ -1,4 +1,4 @@
-dnl Copyright (C) 2005-2018 Free Software Foundation, Inc.
+dnl Copyright (C) 2005-2019 Free Software Foundation, Inc.
 dnl
 dnl This file is part of GCC.
 dnl
@@ -374,16 +374,16 @@ EOF
 	      cat > conftest.s <<EOF
 .section $sh_quote.fini_array.65530$sh_quote,$sh_flags,$sh_type
 .align 4
-.byte 'C', 'C', 'C', 'C'
+.byte 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C'
 .section $sh_quote.init_array.65530$sh_quote,$sh_flags,$sh_type
 .align 4
-.byte 'D', 'D', 'D', 'D'
+.byte 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D'
 .section $sh_quote.fini_array.01005$sh_quote,$sh_flags,$sh_type
 .align 4
-.byte 'G', 'G', 'G', 'G'
+.byte 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'
 .section $sh_quote.init_array.01005$sh_quote,$sh_flags,$sh_type
 .align 4
-.byte 'H', 'H', 'H', 'H'
+.byte 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'
 .text
 .globl _start
 _start:
@@ -391,9 +391,9 @@ EOF
 	      if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
 	         && $gcc_cv_ld -o conftest conftest.o > /dev/null 2>&1 \
 	         && $gcc_cv_objdump -s -j .init_array conftest \
-		    | grep HHHHDDDD > /dev/null 2>&1 \
+		    | grep HHHHHHHHDDDDDDDD > /dev/null 2>&1 \
 	         && $gcc_cv_objdump -s -j .fini_array conftest \
-		    | grep GGGGCCCC > /dev/null 2>&1; then
+		    | grep GGGGGGGGCCCCCCCC > /dev/null 2>&1; then
 	        gcc_cv_initfini_array=yes
 	      fi
 	      ;;

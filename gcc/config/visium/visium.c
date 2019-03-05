@@ -1,5 +1,5 @@
 /* Output routines for Visium.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by C.Nettleton, J.P.Parkes and P.Garbett.
 
    This file is part of GCC.
@@ -484,20 +484,6 @@ visium_option_override (void)
       else
 	str_align_jumps = "8";
     }
-
-  /* We register a machine-specific pass.  This pass must be scheduled as
-     late as possible so that we have the (essentially) final form of the
-     insn stream to work on.  Registering the pass must be done at start up.
-     It's convenient to do it here.  */
-  opt_pass *visium_reorg_pass = make_pass_visium_reorg (g);
-  struct register_pass_info insert_pass_visium_reorg =
-    {
-      visium_reorg_pass,		/* pass */
-      "dbr",				/* reference_pass_name */
-      1,				/* ref_pass_instance_number */
-      PASS_POS_INSERT_AFTER		/* po_op */
-    };
-  register_pass (&insert_pass_visium_reorg);
 }
 
 /* Register the Visium-specific libfuncs with the middle-end.  */
@@ -2725,6 +2711,7 @@ visium_trampoline_init (rtx m_tramp, tree fndecl, rtx static_chain)
 
 	moviu   r9,%u FUNCTION
 	movil   r9,%l FUNCTION
+	[nop]
 	moviu   r20,%u STATIC
 	bra     tr,r9,r9
 	 movil   r20,%l STATIC
@@ -2744,6 +2731,14 @@ visium_trampoline_init (rtx m_tramp, tree fndecl, rtx static_chain)
 				 expand_and (SImode, fnaddr, GEN_INT (0xffff),
 					     NULL_RTX),
 				 0x04890000));
+
+  if (visium_cpu == PROCESSOR_GR6)
+    {
+      /* For the GR6, the BRA insn must be aligned on a 64-bit boundary.  */
+      gcc_assert (TRAMPOLINE_ALIGNMENT >= 64);
+      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (Pmode, addr, 12)),
+		      gen_int_mode (0, SImode));
+    }
 
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant (Pmode, addr, 8)),
 		  plus_constant (SImode,
@@ -3059,9 +3054,9 @@ output_branch (rtx label, const char *cond, rtx_insn *insn)
   gcc_assert (cond);
   operands[0] = label;
 
-  /* If the length of the instruction is greater than 8, then this is a
+  /* If the length of the instruction is greater than 12, then this is a
      long branch and we need to work harder to emit it properly.  */
-  if (get_attr_length (insn) > 8)
+  if (get_attr_length (insn) > 12)
     {
       bool spilled;
 

@@ -1,11 +1,13 @@
 // P0806R2
-// { dg-do compile }
-// { dg-options "-std=c++17" }
+// { dg-do compile { target c++17 } }
+// { dg-options "" }
 
 struct X {
   int x;
   void foo (int n) {
-    auto a1 = [=] { x = n; }; // { dg-bogus "implicit capture" }
+    auto a1 = [=] { x = n; }; // { dg-bogus "implicit capture" "" { target c++17_down } }
+			      // { dg-warning "implicit capture of 'this' via '\\\[=\\\]' is deprecated" "" { target c++2a } .-1 }
+			      // { dg-message "add explicit 'this' or '\\\*this' capture" "" { target c++2a } .-2 }
     auto a2 = [=, this] { x = n; };
     // { dg-warning "explicit by-copy capture" "" { target c++17_down } .-1 }
     auto a3 = [=, *this]() mutable { x = n; };
@@ -13,9 +15,15 @@ struct X {
     auto a5 = [&, this] { x = n; };
     auto a6 = [&, *this]() mutable { x = n; };
 
-    auto a7 = [=] { // { dg-bogus "implicit capture" }
-      auto a = [=] { // { dg-bogus "implicit capture" }
-	 auto a2 = [=] { x = n; }; // { dg-bogus "implicit capture" }
+    auto a7 = [=] { // { dg-bogus "implicit capture" "" { target c++17_down } }
+		    // { dg-warning "implicit capture of 'this' via '\\\[=\\\]' is deprecated" "" { target c++2a } .-1 }
+		    // { dg-message "add explicit 'this' or '\\\*this' capture" "" { target c++2a } .-2 }
+      auto a = [=] { // { dg-bogus "implicit capture" "" { target c++17_down } }
+		     // { dg-warning "implicit capture of 'this' via '\\\[=\\\]' is deprecated" "" { target c++2a } .-1 }
+		     // { dg-message "add explicit 'this' or '\\\*this' capture" "" { target c++2a } .-2 }
+	 auto a2 = [=] { x = n; }; // { dg-bogus "implicit capture" "" { target c++17_down } }
+				   // { dg-warning "implicit capture of 'this' via '\\\[=\\\]' is deprecated" "" { target c++2a } .-1 }
+				   // { dg-message "add explicit 'this' or '\\\*this' capture" "" { target c++2a } .-2 }
       };
     };
 

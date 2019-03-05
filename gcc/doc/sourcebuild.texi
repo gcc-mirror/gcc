@@ -1,4 +1,4 @@
-@c Copyright (C) 2002-2018 Free Software Foundation, Inc.
+@c Copyright (C) 2002-2019 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -66,7 +66,7 @@ include it in @code{libc}.
 The Ada runtime library.
 
 @item libatomic
-The runtime support library for atomic operations (e.g. for @code{__sync}
+The runtime support library for atomic operations (e.g.@: for @code{__sync}
 and @code{__atomic}).
 
 @item libcpp
@@ -105,6 +105,10 @@ The Objective-C and Objective-C++ runtime library.
 
 @item libquadmath
 The runtime support library for quad-precision math operations.
+
+@item libphobos
+The D standard and runtime library.  The bulk of this library is mirrored
+from the @uref{https://github.com/@/dlang, master D repositories}.
 
 @item libssp
 The Stack protector runtime library.
@@ -1356,6 +1360,12 @@ Target has @code{int} that is 16 bits or shorter.
 @item long_neq_int
 Target has @code{int} and @code{long} with different sizes.
 
+@item int_eq_float
+Target has @code{int} and @code{float} with the same size.
+
+@item ptr_eq_long
+Target has pointers (@code{void *}) and @code{long} with the same size.
+
 @item large_double
 Target supports @code{double} that is longer than @code{float}.
 
@@ -1365,8 +1375,13 @@ Target supports @code{long double} that is longer than @code{double}.
 @item ptr32plus
 Target has pointers that are 32 bits or longer.
 
+@item size20plus
+Target has a 20-bit or larger address space, so at least supports
+16-bit array and structure sizes.
+
 @item size32plus
-Target supports array and structure sizes that are 32 bits or longer.
+Target has a 32-bit or larger address space, so at least supports
+24-bit array and structure sizes.
 
 @item 4byte_wchar_t
 Target has @code{wchar_t} that is at least 4 bytes.
@@ -1389,8 +1404,11 @@ for any options added with @code{dg-add-options}.
 Target has runtime support for any options added with
 @code{dg-add-options} for any @code{_Float@var{n}} or
 @code{_Float@var{n}x} type.
-@end table
 
+@item inf
+Target supports floating point infinite (@code{inf}) for type
+@code{double}.
+@end table
 @subsubsection Fortran-specific attributes
 
 @table @code
@@ -2099,13 +2117,23 @@ Target provides a full C99 runtime.
 Target @code{string.h} and @code{wchar.h} headers provide C++ required
 overloads for @code{strchr} etc. functions.
 
+@item d_runtime
+Target provides the D runtime.
+
 @item dummy_wcsftime
 Target uses a dummy @code{wcsftime} function that always returns zero.
 
 @item fd_truncate
 Target can truncate a file from a file descriptor, as used by
-@file{libgfortran/io/unix.c:fd_truncate}; i.e. @code{ftruncate} or
+@file{libgfortran/io/unix.c:fd_truncate}; i.e.@: @code{ftruncate} or
 @code{chsize}.
+
+@item fenv
+Target provides @file{fenv.h} include file.
+
+@item fenv_exceptions
+Target supports @file{fenv.h} with all the standard IEEE exceptions
+and floating-point exceptions are raised by arithmetic operations.
 
 @item freestanding
 Target is @samp{freestanding} as defined in section 4 of the C99 standard.
@@ -2137,6 +2165,10 @@ Target supports @code{mmap}.
 @item newlib
 Target supports Newlib.
 
+@item newlib_nano_io
+GCC was configured with @code{--enable-newlib-nano-formatted-io}, which reduces
+the code size of Newlib formatted I/O functions.
+
 @item pow10
 Target provides @code{pow10} function.
 
@@ -2152,8 +2184,8 @@ time) should be run on this target.  This can be enabled by setting the
 @env{GCC_TEST_RUN_EXPENSIVE} environment variable to a non-empty string.
 
 @item simulator
-Test system runs executables on a simulator (i.e. slowly) rather than
-hardware (i.e. fast).
+Test system runs executables on a simulator (i.e.@: slowly) rather than
+hardware (i.e.@: fast).
 
 @item signal
 Target has @code{signal.h}.
@@ -2203,6 +2235,9 @@ Target uses @code{__cxa_atexit}.
 @item default_packed
 Target has packed layout of structure members by default.
 
+@item exceptions
+Target supports exceptions.
+
 @item fgraphite
 Target supports Graphite optimizations.
 
@@ -2237,8 +2272,15 @@ Target uses GNU @command{ld}.
 Target keeps null pointer checks, either due to the use of
 @option{-fno-delete-null-pointer-checks} or hardwired into the target.
 
+@item llvm_binutils
+Target is using an LLVM assembler and/or linker, instead of GNU Binutils.
+
 @item lto
 Compiler has been configured to support link-time optimization (LTO).
+
+@item lto_incremental
+Compiler and linker support link-time optimization relocatable linking
+with @option{-r} and @option{-flto} options.
 
 @item naked_functions
 Target supports the @code{naked} function attribute.
@@ -2256,6 +2298,9 @@ Target uses natural alignment (aligned to type size) for types of
 
 @item nonpic
 Target does not generate PIC by default.
+
+@item offload_gcn
+Target has been configured for OpenACC/OpenMP offloading on AMD GCN.
 
 @item pie_enabled
 Target generates PIE by default.
@@ -2484,6 +2529,10 @@ Add the flags needed to define macro STACK_SIZE and set it to the stack size
 limit associated with the @ref{stack_size_et,,@code{stack_size} effective
 target}.
 
+@item sqrt_insn
+Add the target-specific flags needed to enable hardware square root
+instructions, if any.
+
 @item tls
 Add the target-specific flags needed to use thread-local storage.
 @end table
@@ -2615,7 +2664,8 @@ assembly output.
 @subsubsection Scan optimization dump files
 
 These commands are available for @var{kind} of @code{tree}, @code{ltrans-tree},
-@code{offload-tree}, @code{rtl}, @code{ipa}, and @code{wpa-ipa}.
+@code{offload-tree}, @code{rtl}, @code{offload-rtl}, @code{ipa}, and
+@code{wpa-ipa}.
 
 @table @code
 @item scan-@var{kind}-dump @var{regex} @var{suffix} [@{ target/xfail @var{selector} @}]
@@ -2638,7 +2688,7 @@ Passes if @var{regex} does not match demangled text in the dump file with
 suffix @var{suffix}.
 @end table
 
-@subsubsection Verify that an output files exists or not
+@subsubsection Check for output files
 
 @table @code
 @item output-exists [@{ target/xfail @var{selector} @}]
@@ -2646,13 +2696,12 @@ Passes if compiler output file exists.
 
 @item output-exists-not [@{ target/xfail @var{selector} @}]
 Passes if compiler output file does not exist.
-@end table
 
-@subsubsection Check for LTO tests
-
-@table @code
 @item scan-symbol @var{regexp} [@{ target/xfail @var{selector} @}]
 Passes if the pattern is present in the final executable.
+
+@item scan-symbol-not @var{regexp} [@{ target/xfail @var{selector} @}]
+Passes if the pattern is absent from the final executable.
 @end table
 
 @subsubsection Checks for @command{gcov} tests
@@ -3214,7 +3263,7 @@ bb_5:
 
 The @code{startwith} argument indicates at which pass to begin.
 
-Use the dump modifier @code{-gimple} (e.g. @option{-fdump-tree-all-gimple})
+Use the dump modifier @code{-gimple} (e.g.@: @option{-fdump-tree-all-gimple})
 to make tree dumps more closely follow the format accepted by the GIMPLE
 parser.
 

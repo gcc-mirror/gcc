@@ -1,6 +1,6 @@
 /* RTX cost tables shared between arm and aarch64.
 
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -440,26 +440,26 @@ const struct cpu_cost_table xgene1_extra_costs =
   {
     0,                 /* arith.  */
     0,                 /* logical.  */
-    0,                 /* shift.  */
+    COSTS_N_INSNS (1), /* shift.  */
     COSTS_N_INSNS (1), /* shift_reg.  */
-    COSTS_N_INSNS (1), /* arith_shift.  */
-    COSTS_N_INSNS (1), /* arith_shift_reg.  */
-    COSTS_N_INSNS (1), /* log_shift.  */
-    COSTS_N_INSNS (1), /* log_shift_reg.  */
-    COSTS_N_INSNS (1), /* extend.  */
-    0,                 /* extend_arithm.  */
-    COSTS_N_INSNS (1), /* bfi.  */
-    COSTS_N_INSNS (1), /* bfx.  */
+    COSTS_N_INSNS (2), /* arith_shift.  */
+    COSTS_N_INSNS (2), /* arith_shift_reg.  */
+    COSTS_N_INSNS (2), /* log_shift.  */
+    COSTS_N_INSNS (2), /* log_shift_reg.  */
+    0,                 /* extend.  */
+    COSTS_N_INSNS (1), /* extend_arithm.  */
+    0,                 /* bfi.  */
+    0,                 /* bfx.  */
     0,                 /* clz.  */
-    COSTS_N_INSNS (1), /* rev.  */
+    0,                 /* rev.  */
     0,                 /* non_exec.  */
     true               /* non_exec_costs_exec.  */
   },
   {
     /* MULT SImode */
     {
-      COSTS_N_INSNS (4),       /* simple.  */
-      COSTS_N_INSNS (4),       /* flag_setting.  */
+      COSTS_N_INSNS (3),       /* simple.  */
+      COSTS_N_INSNS (3),       /* flag_setting.  */
       COSTS_N_INSNS (4),       /* extend.  */
       COSTS_N_INSNS (4),       /* add.  */
       COSTS_N_INSNS (4),       /* extend_add.  */
@@ -467,8 +467,8 @@ const struct cpu_cost_table xgene1_extra_costs =
     },
     /* MULT DImode */
     {
-      COSTS_N_INSNS (5),       /* simple.  */
-      0,                       /* flag_setting (N/A).  */
+      COSTS_N_INSNS (4),       /* simple.  */
+      COSTS_N_INSNS (4),       /* flag_setting (N/A).  */
       COSTS_N_INSNS (5),       /* extend.  */
       COSTS_N_INSNS (5),       /* add.  */
       COSTS_N_INSNS (5),       /* extend_add.  */
@@ -477,55 +477,55 @@ const struct cpu_cost_table xgene1_extra_costs =
   },
   /* LD/ST */
   {
-    COSTS_N_INSNS (5),         /* load.  */
-    COSTS_N_INSNS (6),         /* load_sign_extend.  */
-    COSTS_N_INSNS (5),         /* ldrd.  */
+    COSTS_N_INSNS (4),         /* load.  */
+    COSTS_N_INSNS (5),         /* load_sign_extend.  */
+    COSTS_N_INSNS (4),         /* ldrd.  */
     COSTS_N_INSNS (5),         /* ldm_1st.  */
     1,                         /* ldm_regs_per_insn_1st.  */
     1,                         /* ldm_regs_per_insn_subsequent.  */
-    COSTS_N_INSNS (10),        /* loadf.  */
-    COSTS_N_INSNS (10),        /* loadd.  */
-    COSTS_N_INSNS (5),         /* load_unaligned.  */
+    COSTS_N_INSNS (9),         /* loadf.  */
+    COSTS_N_INSNS (9),         /* loadd.  */
+    0,                         /* load_unaligned.  */
     0,                         /* store.  */
     0,                         /* strd.  */
     0,                         /* stm_1st.  */
     1,                         /* stm_regs_per_insn_1st.  */
     1,                         /* stm_regs_per_insn_subsequent.  */
-    0,                         /* storef.  */
-    0,                         /* stored.  */
+    COSTS_N_INSNS (3),         /* storef.  */
+    COSTS_N_INSNS (3),         /* stored.  */
     0,                         /* store_unaligned.  */
-    COSTS_N_INSNS (1),         /* loadv.  */
-    COSTS_N_INSNS (1)          /* storev.  */
+    COSTS_N_INSNS (9),         /* loadv.  */
+    COSTS_N_INSNS (3)          /* storev.  */
   },
   {
     /* FP SFmode */
     {
-      COSTS_N_INSNS (23),      /* div.  */
-      COSTS_N_INSNS (5),       /* mult.  */
-      COSTS_N_INSNS (5),       /* mult_addsub. */
-      COSTS_N_INSNS (5),       /* fma.  */
-      COSTS_N_INSNS (5),       /* addsub.  */
-      COSTS_N_INSNS (2),       /* fpconst. */
-      COSTS_N_INSNS (3),       /* neg.  */
-      COSTS_N_INSNS (2),       /* compare.  */
-      COSTS_N_INSNS (6),       /* widen.  */
-      COSTS_N_INSNS (6),       /* narrow.  */
+      COSTS_N_INSNS (22),      /* div.  */
+      COSTS_N_INSNS (4),       /* mult.  */
+      COSTS_N_INSNS (4),       /* mult_addsub. */
+      COSTS_N_INSNS (4),       /* fma.  */
+      COSTS_N_INSNS (4),       /* addsub.  */
+      COSTS_N_INSNS (1),       /* fpconst. */
+      COSTS_N_INSNS (4),       /* neg.  */
+      COSTS_N_INSNS (9),       /* compare.  */
+      COSTS_N_INSNS (4),       /* widen.  */
+      COSTS_N_INSNS (4),       /* narrow.  */
       COSTS_N_INSNS (4),       /* toint.  */
       COSTS_N_INSNS (4),       /* fromint.  */
       COSTS_N_INSNS (4)        /* roundint.  */
     },
     /* FP DFmode */
     {
-      COSTS_N_INSNS (29),      /* div.  */
-      COSTS_N_INSNS (5),       /* mult.  */
-      COSTS_N_INSNS (5),       /* mult_addsub.  */
-      COSTS_N_INSNS (5),       /* fma.  */
-      COSTS_N_INSNS (5),       /* addsub.  */
-      COSTS_N_INSNS (3),       /* fpconst.  */
-      COSTS_N_INSNS (3),       /* neg.  */
-      COSTS_N_INSNS (2),       /* compare.  */
-      COSTS_N_INSNS (6),       /* widen.  */
-      COSTS_N_INSNS (6),       /* narrow.  */
+      COSTS_N_INSNS (27),      /* div.  */
+      COSTS_N_INSNS (4),       /* mult.  */
+      COSTS_N_INSNS (4),       /* mult_addsub.  */
+      COSTS_N_INSNS (4),       /* fma.  */
+      COSTS_N_INSNS (4),       /* addsub.  */
+      COSTS_N_INSNS (1),       /* fpconst.  */
+      COSTS_N_INSNS (4),       /* neg.  */
+      COSTS_N_INSNS (9),       /* compare.  */
+      COSTS_N_INSNS (4),       /* widen.  */
+      COSTS_N_INSNS (4),       /* narrow.  */
       COSTS_N_INSNS (4),       /* toint.  */
       COSTS_N_INSNS (4),       /* fromint.  */
       COSTS_N_INSNS (4)        /* roundint.  */

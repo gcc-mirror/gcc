@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2019 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -89,7 +89,7 @@ struct __cxa_eh_globals
 
 extern void *__cxa_allocate_exception (size_t) WEAK;
 extern void __cxa_free_exception (void *) WEAK;
-extern void __cxa_throw (void *, void *, void *) WEAK;
+extern void __cxa_throw (void *, void *, void (*) (void *)) WEAK;
 extern void *__cxa_begin_catch (void *) WEAK;
 extern void __cxa_end_catch (void) WEAK;
 extern void __cxa_tm_cleanup (void *, void *, unsigned int) WEAK;
@@ -98,7 +98,7 @@ extern __cxa_eh_globals *__cxa_get_globals (void) WEAK;
 #if !defined (HAVE_ELF_STYLE_WEAKREF) 
 void *__cxa_allocate_exception (size_t) { return NULL; }
 void __cxa_free_exception (void *) { return; }
-void __cxa_throw (void *, void *, void *) { return; }
+void __cxa_throw (void *, void *, void (*) (void *)) { return; }
 void *__cxa_begin_catch (void *) { return NULL; }
 void __cxa_end_catch (void) { return; }
 void __cxa_tm_cleanup (void *, void *, unsigned int) { return; }
@@ -136,7 +136,7 @@ _ITM_cxa_free_exception (void *exc_ptr)
 }
 
 void
-_ITM_cxa_throw (void *obj, void *tinfo, void *dest)
+_ITM_cxa_throw (void *obj, void *tinfo, void (*dest) (void *))
 {
   // This used to be instrumented, but does not need to be anymore.
   __cxa_throw (obj, tinfo, dest);

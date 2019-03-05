@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *          Copyright (C) 1992-2018, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2019, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -166,6 +166,7 @@ gnat_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       /* These are handled by the front-end.  */
       break;
 
+    case OPT_fopenacc:
     case OPT_fshort_enums:
     case OPT_fsigned_char:
     case OPT_funsigned_char:
@@ -392,7 +393,7 @@ gnat_init_gcc_eh (void)
   using_eh_for_cleanups ();
 
   /* Turn on -fexceptions, -fnon-call-exceptions and -fdelete-dead-exceptions.
-     The first one triggers the generation of the necessary exception tables.
+     The first one activates the support for exceptions in the compiler.
      The second one is useful for two reasons: 1/ we map some asynchronous
      signals like SEGV to exceptions, so we need to ensure that the insns
      which can lead to such signals are correctly attached to the exception
@@ -402,10 +403,26 @@ gnat_init_gcc_eh (void)
      for such calls to actually raise in Ada.
      The third one is an optimization that makes it possible to delete dead
      instructions that may throw exceptions, most notably loads and stores,
-     as permitted in Ada.  */
+     as permitted in Ada.
+     Turn off -faggressive-loop-optimizations because it may optimize away
+     out-of-bound array accesses that we want to be able to catch.
+     If checks are disabled, we use the same settings as the C++ compiler,
+     except for the runtime on platforms where S'Machine_Overflow is true
+     because the runtime depends on FP (hardware) checks being properly
+     handled despite being compiled in -gnatp mode.  */
   flag_exceptions = 1;
-  flag_non_call_exceptions = 1;
   flag_delete_dead_exceptions = 1;
+  if (Suppress_Checks)
+    {
+      if (!global_options_set.x_flag_non_call_exceptions)
+	flag_non_call_exceptions = Machine_Overflows_On_Target && GNAT_Mode;
+    }
+  else
+    {
+      flag_non_call_exceptions = 1;
+      flag_aggressive_loop_optimizations = 0;
+      warn_aggressive_loop_optimizations = 0;
+    }
 
   init_eh ();
 }
@@ -710,6 +727,10 @@ gnat_get_alias_set (tree type)
   if (TYPE_IS_PADDING_P (type))
     return get_alias_set (TREE_TYPE (TYPE_FIELDS (type)));
 
+  /* If this is an extra subtype, use the base type.  */
+  else if (TYPE_IS_EXTRA_SUBTYPE_P (type))
+    return get_alias_set (get_base_type (type));
+
   /* If the type is an unconstrained array, use the type of the
      self-referential array we make.  */
   else if (TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE)
@@ -736,59 +757,22 @@ gnat_type_max_size (const_tree gnu_type)
      elaborated and possibly replaced by a VAR_DECL.  */
   tree max_size_unit = max_size (TYPE_SIZE_UNIT (gnu_type), true);
 
-  /* If we don't have a constant, try to look at attributes which should have
-     stayed untouched.  */
-  if (!tree_fits_uhwi_p (max_size_unit))
+  /* If we don't have a constant, see what we can get from TYPE_ADA_SIZE,
+     which should stay untouched.  */
+  if (!tree_fits_uhwi_p (max_size_unit)
+      && RECORD_OR_UNION_TYPE_P (gnu_type)
+      && !TYPE_FAT_POINTER_P (gnu_type)
+      && TYPE_ADA_SIZE (gnu_type))
     {
-      /* For record types, see what we can get from TYPE_ADA_SIZE.  */
-      if (RECORD_OR_UNION_TYPE_P (gnu_type)
-	  && !TYPE_FAT_POINTER_P (gnu_type)
-	  && TYPE_ADA_SIZE (gnu_type))
-	{
-	  tree max_ada_size = max_size (TYPE_ADA_SIZE (gnu_type), true);
+      tree max_ada_size = max_size (TYPE_ADA_SIZE (gnu_type), true);
 
-	  /* If we have succeeded in finding a constant, round it up to the
-	     type's alignment and return the result in units.  */
-	  if (tree_fits_uhwi_p (max_ada_size))
-	    max_size_unit
-	      = size_binop (CEIL_DIV_EXPR,
-			    round_up (max_ada_size, TYPE_ALIGN (gnu_type)),
-			    bitsize_unit_node);
-	}
-
-      /* For array types, see what we can get from TYPE_INDEX_TYPE.  */
-      else if (TREE_CODE (gnu_type) == ARRAY_TYPE
-	       && TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type))
-	       && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (gnu_type))))
-	{
-	  tree lb = TYPE_MIN_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type)));
-	  tree hb = TYPE_MAX_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type)));
-	  if (TREE_CODE (lb) != INTEGER_CST
-	      && TYPE_RM_SIZE (TREE_TYPE (lb))
-	      && compare_tree_int (TYPE_RM_SIZE (TREE_TYPE (lb)), 16) <= 0)
-	    lb = TYPE_MIN_VALUE (TREE_TYPE (lb));
-	  if (TREE_CODE (hb) != INTEGER_CST
-	      && TYPE_RM_SIZE (TREE_TYPE (hb))
-	      && compare_tree_int (TYPE_RM_SIZE (TREE_TYPE (hb)), 16) <= 0)
-	    hb = TYPE_MAX_VALUE (TREE_TYPE (hb));
-	  if (TREE_CODE (lb) == INTEGER_CST && TREE_CODE (hb) == INTEGER_CST)
-	    {
-	      tree ctype = get_base_type (TREE_TYPE (lb));
-	      lb = fold_convert (ctype, lb);
-	      hb = fold_convert (ctype, hb);
-	      if (tree_int_cst_le (lb, hb))
-		{
-		  tree length
-		    = fold_build2 (PLUS_EXPR, ctype,
-				   fold_build2 (MINUS_EXPR, ctype, hb, lb),
-				   build_int_cst (ctype, 1));
-		  max_size_unit
-		    = fold_build2 (MULT_EXPR, sizetype,
-				   fold_convert (sizetype, length),
-				   TYPE_SIZE_UNIT (TREE_TYPE (gnu_type)));
-		}
-	    }
-	}
+      /* If we have succeeded in finding a constant, round it up to the
+	 type's alignment and return the result in units.  */
+      if (tree_fits_uhwi_p (max_ada_size))
+	max_size_unit
+	  = size_binop (CEIL_DIV_EXPR,
+			round_up (max_ada_size, TYPE_ALIGN (gnu_type)),
+			bitsize_unit_node);
     }
 
   return max_size_unit;

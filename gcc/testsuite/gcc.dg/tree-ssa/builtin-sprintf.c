@@ -4,6 +4,7 @@
    link if any of the assertions fails.  Without optimization the test
    aborts at runtime if any of the assertions fails.  */
 /* { dg-do run } */
+/* { dg-skip-if "not IEEE float layout" { "pdp11-*-*" } } */
 /* { dg-additional-options "-O2 -Wall -Wno-pedantic -fprintf-return-value" } */
 
 #ifndef LINE

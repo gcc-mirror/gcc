@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2004-2018 Free Software Foundation, Inc.
+// Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -220,6 +220,7 @@ check_version(symbol& test, bool added)
       known_versions.push_back("CXXABI_1.3.9");
       known_versions.push_back("CXXABI_1.3.10");
       known_versions.push_back("CXXABI_1.3.11");
+      known_versions.push_back("CXXABI_1.3.12");
       known_versions.push_back("CXXABI_TM_1");
       known_versions.push_back("CXXABI_FLOAT128");
     }
@@ -238,7 +239,7 @@ check_version(symbol& test, bool added)
 
       // Check that added symbols are added in the latest pre-release version.
       bool latestp = (test.version_name == "GLIBCXX_3.4.26"
-		     || test.version_name == "CXXABI_1.3.11"
+		     || test.version_name == "CXXABI_1.3.12"
 		     || test.version_name == "CXXABI_FLOAT128"
 		     || test.version_name == "CXXABI_TM_1");
       if (added && !latestp)

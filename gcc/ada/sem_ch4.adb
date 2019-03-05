@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -171,7 +171,6 @@ package body Sem_Ch4 is
    --  being called. The caller will have verified that the object is legal
    --  for the call. If the remaining parameters match, the first parameter
    --  will rewritten as a dereference if needed, prior to completing analysis.
-
    procedure Check_Misspelled_Selector
      (Prefix : Entity_Id;
       Sel    : Node_Id);
@@ -675,7 +674,11 @@ package body Sem_Ch4 is
                   return;
                end if;
 
-               if Expander_Active then
+               --  In GNATprove mode we need to preserve the link between
+               --  the original subtype indication and the anonymous subtype,
+               --  to extend proofs to constrained acccess types.
+
+               if Expander_Active or else GNATprove_Mode then
                   Def_Id := Make_Temporary (Loc, 'S');
 
                   Insert_Action (E,
@@ -1905,8 +1908,8 @@ package body Sem_Ch4 is
          while Present (Op_Id) loop
             if Ekind (Op_Id) = E_Operator then
 
-               --  Do not consider operators declared in dead code, they can
-               --  not be part of the resolution.
+               --  Do not consider operators declared in dead code, they
+               --  cannot be part of the resolution.
 
                if Is_Eliminated (Op_Id) then
                   null;
@@ -7509,7 +7512,7 @@ package body Sem_Ch4 is
    begin
       if Is_Overloaded (N) then
          if Debug_Flag_V then
-            Write_Str ("Remove_Abstract_Operations: ");
+            Write_Line ("Remove_Abstract_Operations: ");
             Write_Overloads (N);
          end if;
 
@@ -7704,7 +7707,7 @@ package body Sem_Ch4 is
          end if;
 
          if Debug_Flag_V then
-            Write_Str ("Remove_Abstract_Operations done: ");
+            Write_Line ("Remove_Abstract_Operations done: ");
             Write_Overloads (N);
          end if;
       end if;

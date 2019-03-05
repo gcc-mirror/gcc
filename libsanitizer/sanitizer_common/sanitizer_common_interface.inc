@@ -6,6 +6,7 @@
 //===----------------------------------------------------------------------===//
 // Sanitizer Common interface list.
 //===----------------------------------------------------------------------===//
+INTERFACE_FUNCTION(__sanitizer_acquire_crash_state)
 INTERFACE_FUNCTION(__sanitizer_annotate_contiguous_container)
 INTERFACE_FUNCTION(__sanitizer_contiguous_container_find_bad_address)
 INTERFACE_FUNCTION(__sanitizer_set_death_callback)
@@ -32,6 +33,7 @@ INTERFACE_FUNCTION(__sanitizer_get_heap_size)
 INTERFACE_FUNCTION(__sanitizer_get_ownership)
 INTERFACE_FUNCTION(__sanitizer_get_unmapped_bytes)
 INTERFACE_FUNCTION(__sanitizer_install_malloc_and_free_hooks)
+INTERFACE_FUNCTION(__sanitizer_purge_allocator)
 INTERFACE_FUNCTION(__sanitizer_print_memory_profile)
 INTERFACE_WEAK_FUNCTION(__sanitizer_free_hook)
 INTERFACE_WEAK_FUNCTION(__sanitizer_malloc_hook)

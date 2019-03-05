@@ -1,5 +1,5 @@
 /* Post reload partially redundant load elimination
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1170,8 +1170,18 @@ eliminate_partially_redundant_load (basic_block bb, rtx_insn *insn,
   if (ok_count.to_gcov_type ()
       < GCSE_AFTER_RELOAD_PARTIAL_FRACTION * not_ok_count.to_gcov_type ())
     goto cleanup;
-  if (ok_count.to_gcov_type ()
-      < GCSE_AFTER_RELOAD_CRITICAL_FRACTION * critical_count.to_gcov_type ())
+
+  gcov_type threshold;
+#if (GCC_VERSION >= 5000)
+  if (__builtin_mul_overflow (GCSE_AFTER_RELOAD_CRITICAL_FRACTION,
+			      critical_count.to_gcov_type (), &threshold))
+    threshold = profile_count::max_count;
+#else
+  threshold
+    = GCSE_AFTER_RELOAD_CRITICAL_FRACTION * critical_count.to_gcov_type ();
+#endif
+
+  if (ok_count.to_gcov_type () < threshold)
     goto cleanup;
 
   /* Generate moves to the loaded register from where
@@ -1382,7 +1392,7 @@ gcse_after_reload_main (rtx f ATTRIBUTE_UNUSED)
 	 increase the number of redundant loads found.  So compute transparency
 	 information for each memory expression in the hash table.  */
       df_analyze ();
-      /* This can not be part of the normal allocation routine because
+      /* This cannot be part of the normal allocation routine because
 	 we have to know the number of elements in the hash table.  */
       transp = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
 				     expr_table->elements ());

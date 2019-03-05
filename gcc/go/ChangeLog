@@ -1,17 +1,78 @@
-2018-09-25  Martin Liska  <mliska@suse.cz>
+2019-02-15  Cherry Zhang  <cherryyz@google.com>
 
-	* gofrontend/escape.cc (Gogo::analyze_escape): Remove
-	usage of a parameter.
-	(Gogo::assign_connectivity): Likewise.
-	(class Escape_analysis_tag): Likewise.
-	(Gogo::tag_function): Likewise.
-	* gofrontend/expressions.cc (Call_expression::do_type): Likewise.
-	* gofrontend/gogo.h (class Gogo): Likewise.
-	* gofrontend/types.cc (class Call_multiple_result_type): Likewise.
-	(Type::make_call_multiple_result_type): Likewise.
-	* gofrontend/types.h (class Type): Likewise.
-	* gofrontend/wb.cc (class Check_escape): Likewise.
-	(Gogo::add_write_barriers): Likewise.
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Define __builtin_dwarf_cfa
+	instead of __builtin_frame_address.
+
+2019-02-14  Ian Lance Taylor  <iant@golang.org>
+
+	* go-backend.c (go_imported_unsafe): Update
+	optimization_default_node.
+
+2019-02-13  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc: #include "opts.h".
+	(Gcc_backend::function): Compile thunks with -Os.
+
+2019-02-05  Nikhil Benesch  <nikhil.benesch@gmail.com>
+
+        PR go/89019
+        * go-gcc.cc (Gcc_backend::placeholder_struct_type): Mark
+        placeholder structs as requiring structural equality.
+        (Gcc_backend::set_placeholder_pointer_type): Propagate the
+	canonical type from the desired pointer type to the placeholder
+	pointer type.
+
+2019-01-09  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/86343
+	* go-gcc.cc (Gcc_backend::set_placeholder_struct_type): Go back to
+	build_distinct_type_copy, but copy the fields so that they have
+	the right DECL_CONTEXT.
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* go-backend.c: Mechanically replace "can not" with "cannot".
+	* go-gcc.cc: Likewise.
+
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* gccgo.texi: Bump @copyrights-go year.
+
+2018-11-27  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::function): Handle function_only_inline
+	flag.
+
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* go-gcc-diagnostics.cc: Replace "source_location" with "location_t".
+	* go-gcc.cc: Likewise.
+	* go-linemap.cc: Likewise.
+	* go-location.h: Likewise.
+	* gofrontend/README: Likewise.
+
+2018-10-31  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::write_global_definitions): Don't call
+	gimplify_function_tree.  Instead call allocate_struct_function if
+	necessary.
+
+2018-10-29  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::function): Change to use a single flags
+	parameter.
+
+2018-10-29  Ian Lance Taylor  <iant@golang.org>
+
+	* go-linemap.cc (Gcc_linemap::location_file): New method.
+
+2018-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (selftest-go): New.
 
 2018-09-20  Allan Sandfeld Jensen  <allan.jensen@qt.io>
 
@@ -1570,7 +1631,7 @@
 
 	Go frontend added to gcc repository.
 
-Copyright (C) 2010-2018 Free Software Foundation, Inc.
+Copyright (C) 2010-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

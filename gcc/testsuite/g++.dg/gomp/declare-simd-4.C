@@ -5,6 +5,7 @@ f1 (int *p, int *q, short *s)
   return *p + *q + *s;
 }
 
+// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-5 }
 // { dg-final { scan-assembler-times "_ZGVbM4l4ln4ln6__Z2f1PiS_Ps:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVbN4l4ln4ln6__Z2f1PiS_Ps:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVcM4l4ln4ln6__Z2f1PiS_Ps:" 1 { target { i?86-*-* x86_64-*-* } } } }
@@ -21,6 +22,7 @@ f2 (int *p, short *q, int s, int r, int &t)
   return *p + *q + r;
 }
 
+// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-5 }
 // { dg-final { scan-assembler-times "_ZGVbN8ls2ls4uls2u__Z2f2PiPsiiRi:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVcN8ls2ls4uls2u__Z2f2PiPsiiRi:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVdN8ls2ls4uls2u__Z2f2PiPsiiRi:" 1 { target { i?86-*-* x86_64-*-* } } } }
@@ -33,6 +35,7 @@ f3 (int &p, short &q, int s, int &r, int &t)
   return p + q + r;
 }
 
+// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-5 }
 // { dg-final { scan-assembler-times "_ZGVbN8Rs2Ls4uUs2u__Z2f3RiRsiS_S_:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVcN8Rs2Ls4uUs2u__Z2f3RiRsiS_S_:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVdN8Rs2Ls4uUs2u__Z2f3RiRsiS_S_:" 1 { target { i?86-*-* x86_64-*-* } } } }

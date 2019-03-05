@@ -1,5 +1,5 @@
 /* SCC value numbering for trees
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>
 
 This file is part of GCC.
@@ -68,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "tree-ssa-loop.h"
 #include "tree-scalar-evolution.h"
+#include "tree-ssa-loop-niter.h"
 #include "tree-ssa-sccvn.h"
 
 /* This algorithm is based on the SCC algorithm presented by Keith
@@ -1206,11 +1207,11 @@ copy_reference_ops_from_call (gcall *call,
 
   /* Copy the type, opcode, function, static chain and EH region, if any.  */
   memset (&temp, 0, sizeof (temp));
-  temp.type = gimple_call_return_type (call);
+  temp.type = gimple_call_fntype (call);
   temp.opcode = CALL_EXPR;
   temp.op0 = gimple_call_fn (call);
   temp.op1 = gimple_call_chain (call);
-  if (stmt_could_throw_p (call) && (lr = lookup_stmt_eh_lp (call)) > 0)
+  if (stmt_could_throw_p (cfun, call) && (lr = lookup_stmt_eh_lp (call)) > 0)
     temp.op2 = size_int (lr);
   temp.off = -1;
   result->safe_push (temp);
@@ -1864,6 +1865,86 @@ vn_nary_simplify (vn_nary_op_t nary)
   return vn_nary_build_or_lookup_1 (&op, false);
 }
 
+/* Elimination engine.  */
+
+class eliminate_dom_walker : public dom_walker
+{
+public:
+  eliminate_dom_walker (cdi_direction, bitmap);
+  ~eliminate_dom_walker ();
+
+  virtual edge before_dom_children (basic_block);
+  virtual void after_dom_children (basic_block);
+
+  virtual tree eliminate_avail (basic_block, tree op);
+  virtual void eliminate_push_avail (basic_block, tree op);
+  tree eliminate_insert (basic_block, gimple_stmt_iterator *gsi, tree val);
+
+  void eliminate_stmt (basic_block, gimple_stmt_iterator *);
+
+  unsigned eliminate_cleanup (bool region_p = false);
+
+  bool do_pre;
+  unsigned int el_todo;
+  unsigned int eliminations;
+  unsigned int insertions;
+
+  /* SSA names that had their defs inserted by PRE if do_pre.  */
+  bitmap inserted_exprs;
+
+  /* Blocks with statements that have had their EH properties changed.  */
+  bitmap need_eh_cleanup;
+
+  /* Blocks with statements that have had their AB properties changed.  */
+  bitmap need_ab_cleanup;
+
+  /* Local state for the eliminate domwalk.  */
+  auto_vec<gimple *> to_remove;
+  auto_vec<gimple *> to_fixup;
+  auto_vec<tree> avail;
+  auto_vec<tree> avail_stack;
+};
+
+/* Adaptor to the elimination engine using RPO availability.  */
+
+class rpo_elim : public eliminate_dom_walker
+{
+public:
+  rpo_elim(basic_block entry_)
+    : eliminate_dom_walker (CDI_DOMINATORS, NULL), entry (entry_) {}
+  ~rpo_elim();
+
+  virtual tree eliminate_avail (basic_block, tree op);
+
+  virtual void eliminate_push_avail (basic_block, tree);
+
+  basic_block entry;
+  /* Instead of having a local availability lattice for each
+     basic-block and availability at X defined as union of
+     the local availabilities at X and its dominators we're
+     turning this upside down and track availability per
+     value given values are usually made available at very
+     few points (at least one).
+     So we have a value -> vec<location, leader> map where
+     LOCATION is specifying the basic-block LEADER is made
+     available for VALUE.  We push to this vector in RPO
+     order thus for iteration we can simply pop the last
+     entries.
+     LOCATION is the basic-block index and LEADER is its
+     SSA name version.  */
+  /* ???  We'd like to use auto_vec here with embedded storage
+     but that doesn't play well until we can provide move
+     constructors and use std::move on hash-table expansion.
+     So for now this is a bit more expensive than necessary.
+     We eventually want to switch to a chaining scheme like
+     for hashtable entries for unwinding which would make
+     making the vector part of the vn_ssa_aux structure possible.  */
+  typedef hash_map<tree, vec<std::pair<int, int> > > rpo_avail_t;
+  rpo_avail_t m_rpo_avail;
+};
+
+/* Global RPO state for access from hooks.  */
+static rpo_elim *rpo_avail;
 basic_block vn_context_bb;
 
 /* Callback for walk_non_aliased_vuses.  Tries to perform a lookup
@@ -1926,7 +2007,16 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	 VN_WALKREWRITE guard).  */
       if (vn_walk_kind == VN_WALKREWRITE
 	  && is_gimple_reg_type (TREE_TYPE (lhs))
-	  && types_compatible_p (TREE_TYPE (lhs), vr->type))
+	  && types_compatible_p (TREE_TYPE (lhs), vr->type)
+	  /* The overlap restriction breaks down when either access
+	     alias-set is zero.  Still for accesses of the size of
+	     an addressable unit there can be no overlaps.  Overlaps
+	     between different union members are not an issue since
+	     activation of a union member via a store makes the
+	     values of untouched bytes unspecified.  */
+	  && (known_eq (ref->size, BITS_PER_UNIT)
+	      || (get_alias_set (lhs) != 0
+		  && ao_ref_alias_set (ref) != 0)))
 	{
 	  tree *saved_last_vuse_ptr = last_vuse_ptr;
 	  /* Do not update last_vuse_ptr in vn_reference_lookup_2.  */
@@ -2114,6 +2204,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
 				       &offset2, &size2, &maxsize2, &reverse);
       if (known_size_p (maxsize2)
+	  && known_eq (maxsize2, size2)
 	  && operand_equal_p (base, base2, 0)
 	  && known_subrange_p (offset, maxsize, offset2, size2))
 	{
@@ -2207,6 +2298,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
 				       &offset2, &size2, &maxsize2,
 				       &reverse);
+      tree def_rhs = gimple_assign_rhs1 (def_stmt);
       if (!reverse
 	  && known_size_p (maxsize2)
 	  && known_eq (maxsize2, size2)
@@ -2218,11 +2310,13 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	     according to endianness.  */
 	  && (! INTEGRAL_TYPE_P (vr->type)
 	      || known_eq (ref->size, TYPE_PRECISION (vr->type)))
-	  && multiple_p (ref->size, BITS_PER_UNIT))
+	  && multiple_p (ref->size, BITS_PER_UNIT)
+	  && (! INTEGRAL_TYPE_P (TREE_TYPE (def_rhs))
+	      || type_has_mode_precision_p (TREE_TYPE (def_rhs))))
 	{
 	  gimple_match_op op (gimple_match_cond::UNCOND,
 			      BIT_FIELD_REF, vr->type,
-			      vn_valueize (gimple_assign_rhs1 (def_stmt)),
+			      vn_valueize (def_rhs),
 			      bitsize_int (ref->size),
 			      bitsize_int (offset - offset2));
 	  tree val = vn_nary_build_or_lookup (&op);
@@ -3832,7 +3926,15 @@ visit_nary_op (tree lhs, gassign *stmt)
 		  ops[0] = vn_nary_op_lookup_pieces
 		      (2, gimple_assign_rhs_code (def), type, ops, NULL);
 		  /* We have wider operation available.  */
-		  if (ops[0])
+		  if (ops[0]
+		      /* If the leader is a wrapping operation we can
+		         insert it for code hoisting w/o introducing
+			 undefined overflow.  If it is not it has to
+			 be available.  See PR86554.  */
+		      && (TYPE_OVERFLOW_WRAPS (TREE_TYPE (ops[0]))
+			  || (rpo_avail && vn_context_bb
+			      && rpo_avail->eliminate_avail (vn_context_bb,
+							     ops[0]))))
 		    {
 		      unsigned lhs_prec = TYPE_PRECISION (type);
 		      unsigned rhs_prec = TYPE_PRECISION (TREE_TYPE (rhs1));
@@ -4194,12 +4296,20 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
      value from the backedge as that confuses the alias-walking code.
      See gcc.dg/torture/pr87176.c.  If the value is the same on a
      non-backedge everything is OK though.  */
-  if (backedge_val
-      && !seen_non_backedge
-      && TREE_CODE (backedge_val) == SSA_NAME
-      && sameval == backedge_val
-      && (SSA_NAME_IS_VIRTUAL_OPERAND (backedge_val)
-	  || SSA_VAL (backedge_val) != backedge_val))
+  bool visited_p;
+  if ((backedge_val
+       && !seen_non_backedge
+       && TREE_CODE (backedge_val) == SSA_NAME
+       && sameval == backedge_val
+       && (SSA_NAME_IS_VIRTUAL_OPERAND (backedge_val)
+	   || SSA_VAL (backedge_val) != backedge_val))
+      /* Do not value-number a virtual operand to sth not visited though
+	 given that allows us to escape a region in alias walking.  */
+      || (sameval
+	  && TREE_CODE (sameval) == SSA_NAME
+	  && !SSA_NAME_IS_DEFAULT_DEF (sameval)
+	  && SSA_NAME_IS_VIRTUAL_OPERAND (sameval)
+	  && (SSA_VAL (sameval, &visited_p), !visited_p)))
     /* Note this just drops to VARYING without inserting the PHI into
        the hashes.  */
     result = PHI_RESULT (phi);
@@ -4635,45 +4745,6 @@ vn_nary_may_trap (vn_nary_op_t nary)
   return false;
 }
 
-
-class eliminate_dom_walker : public dom_walker
-{
-public:
-  eliminate_dom_walker (cdi_direction, bitmap);
-  ~eliminate_dom_walker ();
-
-  virtual edge before_dom_children (basic_block);
-  virtual void after_dom_children (basic_block);
-
-  virtual tree eliminate_avail (basic_block, tree op);
-  virtual void eliminate_push_avail (basic_block, tree op);
-  tree eliminate_insert (basic_block, gimple_stmt_iterator *gsi, tree val);
-
-  void eliminate_stmt (basic_block, gimple_stmt_iterator *);
-
-  unsigned eliminate_cleanup (bool region_p = false);
-
-  bool do_pre;
-  unsigned int el_todo;
-  unsigned int eliminations;
-  unsigned int insertions;
-
-  /* SSA names that had their defs inserted by PRE if do_pre.  */
-  bitmap inserted_exprs;
-
-  /* Blocks with statements that have had their EH properties changed.  */
-  bitmap need_eh_cleanup;
-
-  /* Blocks with statements that have had their AB properties changed.  */
-  bitmap need_ab_cleanup;
-
-  /* Local state for the eliminate domwalk.  */
-  auto_vec<gimple *> to_remove;
-  auto_vec<gimple *> to_fixup;
-  auto_vec<tree> avail;
-  auto_vec<tree> avail_stack;
-};
-
 eliminate_dom_walker::eliminate_dom_walker (cdi_direction direction,
 					    bitmap inserted_exprs_)
   : dom_walker (direction), do_pre (inserted_exprs_ != NULL),
@@ -4965,10 +5036,6 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	    return;
 
 	  /* Else replace its RHS.  */
-	  bool can_make_abnormal_goto
-	      = is_gimple_call (stmt)
-	      && stmt_can_make_abnormal_goto (stmt);
-
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Replaced ");
@@ -4978,12 +5045,23 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	      fprintf (dump_file, " in ");
 	      print_gimple_stmt (dump_file, stmt, 0);
 	    }
-
 	  eliminations++;
+
+	  bool can_make_abnormal_goto = (is_gimple_call (stmt)
+					 && stmt_can_make_abnormal_goto (stmt));
 	  gimple *orig_stmt = stmt;
 	  if (!useless_type_conversion_p (TREE_TYPE (lhs),
 					  TREE_TYPE (sprime)))
-	    sprime = fold_convert (TREE_TYPE (lhs), sprime);
+	    {
+	      /* We preserve conversions to but not from function or method
+		 types.  This asymmetry makes it necessary to re-instantiate
+		 conversions here.  */
+	      if (POINTER_TYPE_P (TREE_TYPE (lhs))
+		  && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (lhs))))
+		sprime = fold_convert (TREE_TYPE (lhs), sprime);
+	      else
+		gcc_unreachable ();
+	    }
 	  tree vdef = gimple_vdef (stmt);
 	  tree vuse = gimple_vuse (stmt);
 	  propagate_tree_value_into_stmt (gsi, sprime);
@@ -5200,7 +5278,7 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	  ipa_polymorphic_call_context context (current_function_decl,
 						fn, stmt, &instance);
 	  context.get_dynamic_type (instance, OBJ_TYPE_REF_OBJECT (fn),
-				    otr_type, stmt);
+				    otr_type, stmt, NULL);
 	  bool final;
 	  vec <cgraph_node *> targets
 	      = possible_polymorphic_call_targets (obj_type_ref_class (fn),
@@ -5622,47 +5700,6 @@ free_rpo_vn (void)
   BITMAP_FREE (constant_value_ids);
 }
 
-/* Adaptor to the elimination engine using RPO availability.  */
-
-class rpo_elim : public eliminate_dom_walker
-{
-public:
-  rpo_elim(basic_block entry_)
-    : eliminate_dom_walker (CDI_DOMINATORS, NULL), entry (entry_) {}
-  ~rpo_elim();
-
-  virtual tree eliminate_avail (basic_block, tree op);
-
-  virtual void eliminate_push_avail (basic_block, tree);
-
-  basic_block entry;
-  /* Instead of having a local availability lattice for each
-     basic-block and availability at X defined as union of
-     the local availabilities at X and its dominators we're
-     turning this upside down and track availability per
-     value given values are usually made available at very
-     few points (at least one).
-     So we have a value -> vec<location, leader> map where
-     LOCATION is specifying the basic-block LEADER is made
-     available for VALUE.  We push to this vector in RPO
-     order thus for iteration we can simply pop the last
-     entries.
-     LOCATION is the basic-block index and LEADER is its
-     SSA name version.  */
-  /* ???  We'd like to use auto_vec here with embedded storage
-     but that doesn't play well until we can provide move
-     constructors and use std::move on hash-table expansion.
-     So for now this is a bit more expensive than necessary.
-     We eventually want to switch to a chaining scheme like
-     for hashtable entries for unwinding which would make
-     making the vector part of the vn_ssa_aux structure possible.  */
-  typedef hash_map<tree, vec<std::pair<int, int> > > rpo_avail_t;
-  rpo_avail_t m_rpo_avail;
-};
-
-/* Global RPO state for access from hooks.  */
-static rpo_elim *rpo_avail;
-
 /* Hook for maybe_push_res_to_seq, lookup the expression in the VN tables.  */
 
 static tree
@@ -5895,6 +5932,16 @@ process_bb (rpo_elim &avail, basic_block bb,
 	  lc_phi_nodes = true;
 	  break;
 	}
+
+  /* When we visit a loop header substitute into loop info.  */
+  if (!iterate && eliminate && bb->loop_father->header == bb)
+    {
+      /* Keep fields in sync with substitute_in_loop_info.  */
+      if (bb->loop_father->nb_iterations)
+	bb->loop_father->nb_iterations
+	  = simplify_replace_tree (bb->loop_father->nb_iterations,
+				   NULL_TREE, NULL_TREE, vn_valueize);
+    }
 
   /* Value-number all defs in the basic-block.  */
   for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
@@ -6449,7 +6496,6 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 	      FOR_EACH_EDGE (e, ei, header->preds)
 		if (e->flags & EDGE_DFS_BACK)
 		  {
-		    e->flags |= EDGE_EXECUTABLE;
 		    /* There can be a non-latch backedge into the header
 		       which is part of an outer irreducible region.  We
 		       cannot avoid iterating this block then.  */
@@ -6462,6 +6508,8 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 				   e->src->index, e->dest->index, loop->num);
 			non_latch_backedge = true;
 		      }
+		    else
+		      e->flags |= EDGE_EXECUTABLE;
 		  }
 	      rpo_state[bb_to_rpo[header->index]].iterate = non_latch_backedge;
 	    }
@@ -6691,6 +6739,7 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 
   XDELETEVEC (bb_to_rpo);
   XDELETEVEC (rpo);
+  XDELETEVEC (rpo_state);
 
   return todo;
 }

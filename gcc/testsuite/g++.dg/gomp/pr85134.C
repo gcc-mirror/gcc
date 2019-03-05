@@ -5,7 +5,7 @@
 void
 foo (int i)
 {
-  constexpr int x[i] = {};	// { dg-error "'constexpr' variable 'x' has variably-modified type" }
+  constexpr int x[i] = {};	// { dg-error "17:'constexpr' variable 'x' has variably-modified type" }
 #pragma omp parallel shared(x)
   ;
 }

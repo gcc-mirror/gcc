@@ -1,5 +1,5 @@
 # Top level -*- makefile -*- fragment for libgccjit.so.
-#   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+#   Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -269,6 +269,9 @@ lang_checks_parallelized += check-jit
 # than all the others (test-combination.c and test-threads.c) so
 # we want them to be placed in different "buckets".
 check_jit_parallelize = 10
+
+# No jit-specific selftests
+selftest-jit:
 
 #
 # Install hooks:

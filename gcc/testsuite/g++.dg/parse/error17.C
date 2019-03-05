@@ -6,4 +6,4 @@ template <typename T> struct B {
 }; 
 struct D : B<int>, B<char> {}; 
  
-int i2 = D::Bar(2); // { dg-error "10:reference to 'Bar' is ambiguous" }
+int i2 = D::Bar(2); // { dg-error "13:reference to 'Bar' is ambiguous" }

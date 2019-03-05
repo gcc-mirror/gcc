@@ -1,6 +1,6 @@
 /* Call-backs for C++ error reporting.
    This code is non-reentrant.
-   Copyright (C) 1993-2018 Free Software Foundation, Inc.
+   Copyright (C) 1993-2019 Free Software Foundation, Inc.
    This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify
@@ -18,6 +18,8 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+/* For use with name_hint.  */
+#define INCLUDE_UNIQUE_PTR
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
@@ -32,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ubsan.h"
 #include "internal-fn.h"
 #include "gcc-rich-location.h"
+#include "cp-name-hint.h"
 
 #define pp_separate_with_comma(PP) pp_cxx_separate_with (PP, ',')
 #define pp_separate_with_semicolon(PP) pp_cxx_separate_with (PP, ';')
@@ -54,7 +57,6 @@ static const char *args_to_string (tree, int);
 static const char *code_to_string (enum tree_code);
 static const char *cv_to_string (tree, int);
 static const char *decl_to_string (tree, int);
-static const char *expr_to_string (tree);
 static const char *fndecl_to_string (tree, int);
 static const char *op_to_string	(bool, enum tree_code);
 static const char *parm_to_string (int);
@@ -180,6 +182,12 @@ dump_scope (cxx_pretty_printer *pp, tree scope, int flags)
   if (scope == NULL_TREE)
     return;
 
+  /* Enum values within an unscoped enum will be CONST_DECL with an
+     ENUMERAL_TYPE as their "scope".  Use CP_TYPE_CONTEXT of the
+     ENUMERAL_TYPE, so as to print any enclosing namespace.  */
+  if (UNSCOPED_ENUM_P (scope))
+    scope = CP_TYPE_CONTEXT (scope);
+
   if (TREE_CODE (scope) == NAMESPACE_DECL)
     {
       if (scope != global_namespace)
@@ -188,7 +196,8 @@ dump_scope (cxx_pretty_printer *pp, tree scope, int flags)
 	  pp_cxx_colon_colon (pp);
 	}
     }
-  else if (AGGREGATE_TYPE_P (scope))
+  else if (AGGREGATE_TYPE_P (scope)
+	   || SCOPED_ENUM_P (scope))
     {
       dump_type (pp, scope, f);
       pp_cxx_colon_colon (pp);
@@ -537,6 +546,12 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
       pp_cxx_cv_qualifier_seq (pp, t);
       if (tree c = PLACEHOLDER_TYPE_CONSTRAINTS (t))
 	pp_cxx_constrained_type_spec (pp, c);
+      else if (template_placeholder_p (t))
+	{
+	  t = TREE_TYPE (CLASS_PLACEHOLDER_TEMPLATE (t));
+	  pp_cxx_tree_identifier (pp, TYPE_IDENTIFIER (t));
+	  pp_string (pp, "<...auto...>");
+	}
       else if (TYPE_IDENTIFIER (t))
 	pp_cxx_tree_identifier (pp, TYPE_IDENTIFIER (t));
       else
@@ -1004,6 +1019,9 @@ dump_global_iord (cxx_pretty_printer *pp, tree t)
 static void
 dump_simple_decl (cxx_pretty_printer *pp, tree t, tree type, int flags)
 {
+  if (template_parm_object_p (t))
+    return dump_expr (pp, DECL_INITIAL (t), flags);
+
   if (flags & TFF_DECL_SPECIFIERS)
     {
       if (VAR_P (t) && DECL_DECLARED_CONSTEXPR_P (t))
@@ -3059,7 +3077,7 @@ decl_to_string (tree decl, int verbose)
   return pp_ggc_formatted_text (cxx_pp);
 }
 
-static const char *
+const char *
 expr_to_string (tree decl)
 {
   reinit_cxx_pp ();
@@ -4256,20 +4274,61 @@ qualified_name_lookup_error (tree scope, tree name,
 	  print_candidates (decl);
 	}
       else
-	error_at (location, "%qD is not a member of %qT", name, scope);
+	{
+	  name_hint hint;
+	  if (SCOPED_ENUM_P (scope) && TREE_CODE (name) == IDENTIFIER_NODE)
+	    hint = suggest_alternative_in_scoped_enum (name, scope);
+	  if (const char *suggestion = hint.suggestion ())
+	    {
+	      gcc_rich_location richloc (location);
+	      richloc.add_fixit_replace (suggestion);
+	      error_at (&richloc,
+			"%qD is not a member of %qT; did you mean %qs?",
+			name, scope, suggestion);
+	    }
+	  else
+	    error_at (location, "%qD is not a member of %qT", name, scope);
+	}
     }
   else if (scope != global_namespace)
     {
       auto_diagnostic_group d;
-      error_at (location, "%qD is not a member of %qD", name, scope);
-      if (!suggest_alternative_in_explicit_scope (location, name, scope))
-	suggest_alternatives_for (location, name, false);
+      bool emit_fixit = true;
+      name_hint hint
+	= suggest_alternative_in_explicit_scope (location, name, scope);
+      if (!hint)
+	{
+	  hint = suggest_alternatives_in_other_namespaces (location, name);
+	  /* "location" is just the location of the name, not of the explicit
+	     scope, and it's not easy to get at the latter, so we can't issue
+	     fix-it hints for the suggestion.  */
+	  emit_fixit = false;
+	}
+      if (const char *suggestion = hint.suggestion ())
+	{
+	  gcc_rich_location richloc (location);
+	  if (emit_fixit)
+	    richloc.add_fixit_replace (suggestion);
+	  error_at (&richloc, "%qD is not a member of %qD; did you mean %qs?",
+		    name, scope, suggestion);
+	}
+      else
+	error_at (location, "%qD is not a member of %qD", name, scope);
     }
   else
     {
       auto_diagnostic_group d;
-      error_at (location, "%<::%D%> has not been declared", name);
-      suggest_alternatives_for (location, name, true);
+      name_hint hint = suggest_alternatives_for (location, name, true);
+      if (const char *suggestion = hint.suggestion ())
+	{
+	  gcc_rich_location richloc (location);
+	  richloc.add_fixit_replace (suggestion);
+	  error_at (&richloc,
+		    "%<::%D%> has not been declared; did you mean %qs?",
+		    name, suggestion);
+	}
+      else
+	error_at (location, "%<::%D%> has not been declared", name);
     }
 }
 

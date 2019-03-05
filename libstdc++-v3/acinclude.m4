@@ -634,34 +634,43 @@ dnl  XSL_STYLE_DIR
 dnl
 AC_DEFUN([GLIBCXX_CONFIGURE_DOCBOOK], [
 
-AC_MSG_CHECKING([for docbook stylesheets for documentation creation])
-glibcxx_stylesheets=no
-if test x${XSLTPROC} = xyes && echo '<title/>' | xsltproc --noout --nonet --xinclude http://docbook.sourceforge.net/release/xsl-ns/current/xhtml-1_1/docbook.xsl - 2>/dev/null; then
-  glibcxx_stylesheets=yes
-fi
-AC_MSG_RESULT($glibcxx_stylesheets)
+glibcxx_docbook_url=http://docbook.sourceforge.net/release/xsl-ns/current/
 
 AC_MSG_CHECKING([for local stylesheet directory])
 glibcxx_local_stylesheets=no
-if test x"$glibcxx_stylesheets" = x"yes"; then
-  if test -d /usr/share/sgml/docbook/xsl-ns-stylesheets; then
-    glibcxx_local_stylesheets=yes
-    XSL_STYLE_DIR=/usr/share/sgml/docbook/xsl-ns-stylesheets
-  fi
-  if test -d /usr/share/xml/docbook/stylesheet/docbook-xsl-ns; then
-    glibcxx_local_stylesheets=yes
-    XSL_STYLE_DIR=/usr/share/xml/docbook/stylesheet/docbook-xsl-ns
-  fi
-  if test -d /usr/share/xml/docbook/stylesheet/nwalsh5/current; then
-    glibcxx_local_stylesheets=yes
-    XSL_STYLE_DIR=/usr/share/xml/docbook/stylesheet/nwalsh5/current
-  fi
+if test x${XMLCATALOG} = xyes && xsl_style_dir=`xmlcatalog "" $glibcxx_docbook_url 2>/dev/null`
+then
+  XSL_STYLE_DIR=`echo $xsl_style_dir | sed -n 's;^file://;;p'`
+  glibcxx_local_stylesheets=yes
+else
+  for dir in \
+    /usr/share/sgml/docbook/xsl-ns-stylesheets \
+    /usr/share/xml/docbook/stylesheet/docbook-xsl-ns \
+    /usr/share/xml/docbook/stylesheet/nwalsh5/current \
+    /usr/share/xml/docbook/stylesheet/nwalsh/current
+  do
+    if test -d $dir; then
+      glibcxx_local_stylesheets=yes
+      XSL_STYLE_DIR=$dir
+      break
+    fi
+  done
 fi
 AC_MSG_RESULT($glibcxx_local_stylesheets)
 
 if test x"$glibcxx_local_stylesheets" = x"yes"; then
   AC_SUBST(XSL_STYLE_DIR)
   AC_MSG_NOTICE($XSL_STYLE_DIR)
+
+  AC_MSG_CHECKING([for docbook stylesheets for documentation creation])
+  glibcxx_stylesheets=no
+  if test x${XMLCATALOG} = xno || xmlcatalog "" $glibcxx_docbook_url/xhtml/docbook.xsl >/dev/null 2>&1; then
+    if test x${XSLTPROC} = xyes && echo '<title/>' | xsltproc --noout --nonet --xinclude $glibcxx_docbook_url/xhtml/docbook.xsl - 2>/dev/null; then
+      glibcxx_stylesheets=yes
+    fi
+  fi
+  AC_MSG_RESULT($glibcxx_stylesheets)
+
 else
   glibcxx_stylesheets=no
 fi
@@ -2073,27 +2082,31 @@ AC_DEFUN([GLIBCXX_CHECK_UCHAR_H], [
 
 
 dnl
-dnl Check whether "/dev/random" and "/dev/urandom" are available for the
+dnl Check whether "/dev/random" and "/dev/urandom" are available for
+dnl class std::random_device from C++ 2011 [rand.device], and
 dnl random_device of "TR1" (Chapter 5.1, "Random number generation").
 dnl
-AC_DEFUN([GLIBCXX_CHECK_RANDOM_TR1], [
+AC_DEFUN([GLIBCXX_CHECK_DEV_RANDOM], [
 
-  AC_MSG_CHECKING([for "/dev/random" and "/dev/urandom" for TR1 random_device])
-  AC_CACHE_VAL(glibcxx_cv_random_tr1, [
+  AC_MSG_CHECKING([for "/dev/random" and "/dev/urandom" for std::random_device])
+  AC_CACHE_VAL(glibcxx_cv_dev_random, [
     if test -r /dev/random && test -r /dev/urandom; then
-  ## For MSys environment the test above is detect as false-positive
-  ## on mingw-targets.  So disable it explicit for them.
+  ## For MSys environment the test above is detected as false-positive
+  ## on mingw-targets.  So disable it explicitly for them.
       case ${target_os} in
-	*mingw*) glibcxx_cv_random_tr1=no ;;
-	*) glibcxx_cv_random_tr1=yes ;;
+	*mingw*) glibcxx_cv_dev_random=no ;;
+	*) glibcxx_cv_dev_random=yes ;;
       esac
     else
-      glibcxx_cv_random_tr1=no;
+      glibcxx_cv_dev_random=no;
     fi
   ])
-  AC_MSG_RESULT($glibcxx_cv_random_tr1)
+  AC_MSG_RESULT($glibcxx_cv_dev_random)
 
-  if test x"$glibcxx_cv_random_tr1" = x"yes"; then
+  if test x"$glibcxx_cv_dev_random" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_DEV_RANDOM, 1,
+	      [Define if /dev/random and /dev/urandom are available for
+	       std::random_device.])
     AC_DEFINE(_GLIBCXX_USE_RANDOM_TR1, 1,
 	      [Define if /dev/random and /dev/urandom are available for
 	       the random_device of TR1 (Chapter 5.1).])
@@ -3558,6 +3571,72 @@ EOF
 
 ])
 
+dnl
+dnl Set default lock policy for synchronizing shared_ptr reference counting.
+dnl
+dnl --with-libstdcxx-lock-policy=auto
+dnl	Use atomic operations for shared_ptr reference counting only if
+dnl	the default target supports atomic compare-and-swap.
+dnl --with-libstdcxx-lock-policy=atomic
+dnl	Use atomic operations for shared_ptr reference counting.
+dnl --with-libstdcxx-lock-policy=mutex
+dnl	Use a mutex to synchronize shared_ptr reference counting.
+dnl
+dnl This controls the value of __gnu_cxx::__default_lock_policy, which
+dnl determines how shared_ptr reference counts are synchronized.
+dnl The option "atomic" means that atomic operations should be used,
+dnl "mutex" means that a mutex will be used. The default option, "auto",
+dnl will check if the target supports the compiler-generated builtins
+dnl for atomic compare-and-swap operations for 2-byte and 4-byte integers,
+dnl and will use "atomic" if supported, "mutex" otherwise.
+dnl This option is ignored if the thread model used by GCC is "single",
+dnl as no synchronization is used at all in that case.
+dnl This option affects the library ABI (except in the "single" thread model).
+dnl
+dnl Defines _GLIBCXX_HAVE_ATOMIC_LOCK_POLICY to 1 if atomics should be used.
+dnl
+AC_DEFUN([GLIBCXX_ENABLE_LOCK_POLICY], [
+
+  AC_ARG_WITH([libstdcxx-lock-policy],
+    AC_HELP_STRING([--with-libstdcxx-lock-policy={atomic,mutex,auto}],
+      [synchronization policy for shared_ptr reference counting [default=auto]]),
+              [libstdcxx_atomic_lock_policy=$withval],
+              [libstdcxx_atomic_lock_policy=auto])
+
+  case "$libstdcxx_atomic_lock_policy" in
+    atomic|mutex|auto) ;;
+    *) AC_MSG_ERROR([Invalid argument for --with-libstdcxx-lock-policy]) ;;
+  esac
+  AC_MSG_CHECKING([for lock policy for shared_ptr reference counts])
+
+  if test x"$libstdcxx_atomic_lock_policy" = x"auto"; then
+    AC_LANG_SAVE
+    AC_LANG_CPLUSPLUS
+    ac_save_CXXFLAGS="$CXXFLAGS"
+
+    dnl Why do we care about 2-byte CAS on targets with 4-byte _Atomic_word?!
+    AC_TRY_COMPILE([
+    #if ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2
+    # error "No 2-byte compare-and-swap"
+    #elif ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
+    # error "No 4-byte compare-and-swap"
+    #endif
+    ],,
+    [libstdcxx_atomic_lock_policy=atomic],
+    [libstdcxx_atomic_lock_policy=mutex])
+    AC_LANG_RESTORE
+    CXXFLAGS="$ac_save_CXXFLAGS"
+  fi
+
+  if test x"$libstdcxx_atomic_lock_policy" = x"atomic"; then
+    AC_MSG_RESULT(atomic)
+    AC_DEFINE(HAVE_ATOMIC_LOCK_POLICY,1,
+      [Defined if shared_ptr reference counting should use atomic operations.])
+  else
+    AC_MSG_RESULT(mutex)
+  fi
+
+])
 
 dnl
 dnl Allow visibility attributes to be used on namespaces, objects, etc.
@@ -4382,6 +4461,40 @@ dnl
     fi
     AC_MSG_RESULT($glibcxx_cv_utimensat)
 dnl
+    AC_MSG_CHECKING([for utime])
+    AC_CACHE_VAL(glibcxx_cv_utime, [dnl
+      GCC_TRY_COMPILE_OR_LINK(
+        [
+          #include <utime.h>
+        ],
+        [
+          struct utimbuf t = { 1, 1 };
+          int i = utime("path", &t);
+        ],
+        [glibcxx_cv_utime=yes],
+        [glibcxx_cv_utime=no])
+    ])
+    if test $glibcxx_cv_utime = yes; then
+      AC_DEFINE(_GLIBCXX_USE_UTIME, 1, [Define if utime is available in <utime.h>.])
+    fi
+    AC_MSG_RESULT($glibcxx_cv_utime)
+dnl
+    AC_MSG_CHECKING([for lstat])
+    AC_CACHE_VAL(glibcxx_cv_lstat, [dnl
+      GCC_TRY_COMPILE_OR_LINK(
+        [ #include <sys/stat.h> ],
+        [
+          struct stat st;
+          int i = lstat("path", &st);
+        ],
+        [glibcxx_cv_lstat=yes],
+        [glibcxx_cv_lstat=no])
+    ])
+    if test $glibcxx_cv_lstat = yes; then
+      AC_DEFINE(_GLIBCXX_USE_LSTAT, 1, [Define if lstat is available in <sys/stat.h>.])
+    fi
+    AC_MSG_RESULT($glibcxx_cv_lstat)
+dnl
     AC_MSG_CHECKING([for struct stat.st_mtim.tv_nsec])
     AC_CACHE_VAL(glibcxx_cv_st_mtim, [dnl
       GCC_TRY_COMPILE_OR_LINK(
@@ -4485,6 +4598,19 @@ dnl
       AC_DEFINE(HAVE_SYMLINK, 1, [Define if symlink is available in <unistd.h>.])
     fi
     AC_MSG_RESULT($glibcxx_cv_symlink)
+dnl
+    AC_MSG_CHECKING([for truncate])
+    AC_CACHE_VAL(glibcxx_cv_truncate, [dnl
+      GCC_TRY_COMPILE_OR_LINK(
+        [#include <unistd.h>],
+        [truncate("", 99);],
+        [glibcxx_cv_truncate=yes],
+        [glibcxx_cv_truncate=no])
+    ])
+    if test $glibcxx_cv_truncate = yes; then
+      AC_DEFINE(HAVE_TRUNCATE, 1, [Define if truncate is available in <unistd.h>.])
+    fi
+    AC_MSG_RESULT($glibcxx_cv_truncate)
 dnl
     CXXFLAGS="$ac_save_CXXFLAGS"
     AC_LANG_RESTORE

@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-prune-output "\\\[-Wbuiltin-declaration-mismatch" } */
 
 void *ext2fs_resize_mem_p;
 struct ext2_icount_el {

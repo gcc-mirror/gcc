@@ -1,5 +1,6 @@
 /* testsuite/gcc.target/arm/pr48183.c */
 /* { dg-do compile } */
+/* { dg-skip-if "-mslow-flash-data and -mword-relocations incompatible" { *-*-* } { "-mslow-flash-data" } } */
 /* { dg-options "-O2 -mword-relocations -march=armv7-a -marm" } */
 /* { dg-final { scan-assembler-not "\[\\t \]+movw" } } */
 

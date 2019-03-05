@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -138,7 +138,7 @@ package Types is
    -- Types Used for Text Buffer Handling --
    -----------------------------------------
 
-   --  We can not use type String for text buffers, since we must use the
+   --  We cannot use type String for text buffers, since we must use the
    --  standard 32-bit integer as an index value, since we count on all index
    --  values being the same size.
 

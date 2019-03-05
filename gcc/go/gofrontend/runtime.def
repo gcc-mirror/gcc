@@ -85,10 +85,10 @@ DEF_GO_RUNTIME(COMPLEX128_DIV, "__go_complex128_div",
 
 // Make a slice.
 DEF_GO_RUNTIME(MAKESLICE, "runtime.makeslice", P3(TYPE, INT, INT),
-	       R1(SLICE))
+	       R1(POINTER))
 
 DEF_GO_RUNTIME(MAKESLICE64, "runtime.makeslice64", P3(TYPE, INT64, INT64),
-	       R1(SLICE))
+	       R1(POINTER))
 
 
 // Make a map with a hint and an (optional, unused) map structure.
@@ -168,10 +168,10 @@ DEF_GO_RUNTIME(GORECOVER, "runtime.gorecover", P0(), R1(EFACE))
 DEF_GO_RUNTIME(DEFERREDRECOVER, "runtime.deferredrecover", P0(), R1(EFACE))
 
 // Decide whether this function can call recover.
-DEF_GO_RUNTIME(CANRECOVER, "runtime.canrecover", P1(POINTER), R1(BOOL))
+DEF_GO_RUNTIME(CANRECOVER, "runtime.canrecover", P1(UINTPTR), R1(BOOL))
 
 // Set the return address for defer in a defer thunk.
-DEF_GO_RUNTIME(SETDEFERRETADDR, "runtime.setdeferretaddr", P1(POINTER),
+DEF_GO_RUNTIME(SETDEFERRETADDR, "runtime.setdeferretaddr", P1(UINTPTR),
 	       R1(BOOL))
 
 // Check for a deferred function in an exception handler.
@@ -213,10 +213,10 @@ DEF_GO_RUNTIME(REGISTER_GC_ROOTS, "runtime.registerGCRoots", P1(POINTER), R0())
 DEF_GO_RUNTIME(NEW, "runtime.newobject", P1(TYPE), R1(POINTER))
 
 // Start a new goroutine.
-DEF_GO_RUNTIME(GO, "__go_go", P2(FUNC_PTR, POINTER), R0())
+DEF_GO_RUNTIME(GO, "__go_go", P2(UINTPTR, POINTER), R1(POINTER))
 
 // Defer a function.
-DEF_GO_RUNTIME(DEFERPROC, "runtime.deferproc", P3(BOOLPTR, FUNC_PTR, POINTER),
+DEF_GO_RUNTIME(DEFERPROC, "runtime.deferproc", P3(BOOLPTR, UINTPTR, POINTER),
 	       R0())
 
 
@@ -303,7 +303,7 @@ DEF_GO_RUNTIME(IFACEEFACEEQ, "runtime.ifaceefaceeq", P2(IFACE, EFACE),
 
 // Set *dst = src where dst is a pointer to a pointer and src is a pointer.
 DEF_GO_RUNTIME(GCWRITEBARRIER, "runtime.gcWriteBarrier",
-	       P2(POINTER, POINTER), R0())
+	       P2(POINTER, UINTPTR), R0())
 
 // Set *dst = *src for an arbitrary type.
 DEF_GO_RUNTIME(TYPEDMEMMOVE, "runtime.typedmemmove",

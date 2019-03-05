@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6605,15 +6605,25 @@ package body Exp_Attr is
       ----------------
 
       --  Transforms System'To_Address (X) and System.Address'Ref (X) into
-      --  unchecked conversion from (integral) type of X to type address.
+      --  unchecked conversion from (integral) type of X to type address. If
+      --  the To_Address is a static expression, the transformed expression
+      --  also needs to be static, because we do some legality checks (e.g.
+      --  for Thread_Local_Storage) after this transformation.
 
       when Attribute_Ref
          | Attribute_To_Address
       =>
-         Rewrite (N,
-           Unchecked_Convert_To (RTE (RE_Address),
-             Relocate_Node (First (Exprs))));
-         Analyze_And_Resolve (N, RTE (RE_Address));
+         To_Address : declare
+            Is_Static : constant Boolean := Is_Static_Expression (N);
+
+         begin
+            Rewrite (N,
+              Unchecked_Convert_To (RTE (RE_Address),
+                Relocate_Node (First (Exprs))));
+            Set_Is_Static_Expression (N, Is_Static);
+
+            Analyze_And_Resolve (N, RTE (RE_Address));
+         end To_Address;
 
       ------------
       -- To_Any --

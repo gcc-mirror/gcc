@@ -1,4 +1,4 @@
-/* Copyright (C) 2006-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2019 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -2302,7 +2302,7 @@ static inline vec_int4 vec_unpackh(vec_short8 a)
 
 #ifdef SUPPORT_UNPACK_PIXEL
 /* Due to type conflicts, unpacking of pixel types and boolean shorts
- * can not simultaneously be supported. By default, the boolean short is
+ * cannot simultaneously be supported. By default, the boolean short is
  * supported.
  */
 static inline vec_uint4 vec_unpackh(vec_pixel8 a)
@@ -2356,7 +2356,7 @@ static inline vec_int4 vec_unpackl(vec_short8 a)
 
 #ifdef SUPPORT_UNPACK_PIXEL
 /* Due to type conflicts, unpacking of pixel types and boolean shorts
- * can not simultaneously be supported. By default, the boolean short is
+ * cannot simultaneously be supported. By default, the boolean short is
  * supported.
  */
 static inline vec_uint4 vec_unpackl(vec_pixel8 a)

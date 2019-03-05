@@ -1,4 +1,5 @@
 // PR c++/58678
+// { dg-do compile }
 // { dg-options "-O3 -fdump-ipa-devirt" }
 
 // We shouldn't speculatively devirtualize to ~B because B is an abstract

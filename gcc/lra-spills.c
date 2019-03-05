@@ -1,5 +1,5 @@
 /* Change pseudos by memory.
-   Copyright (C) 2010-2018 Free Software Foundation, Inc.
+   Copyright (C) 2010-2019 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -232,7 +232,7 @@ assign_spill_hard_regs (int *pseudo_regnos, int n)
   basic_block bb;
   HARD_REG_SET conflict_hard_regs;
   bitmap setjump_crosses = regstat_get_setjmp_crosses ();
-  /* Hard registers which can not be used for any purpose at given
+  /* Hard registers which cannot be used for any purpose at given
      program point because they are unallocatable or already allocated
      for other pseudos.	 */
   HARD_REG_SET *reserved_hard_regs;
@@ -740,6 +740,7 @@ lra_final_code_change (void)
   int i, hard_regno;
   basic_block bb;
   rtx_insn *insn, *curr;
+  rtx set;
   int max_regno = max_reg_num ();
 
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
@@ -818,5 +819,19 @@ lra_final_code_change (void)
 	      }
 	  if (insn_change_p)
 	    lra_update_operator_dups (id);
+
+	  if ((set = single_set (insn)) != NULL
+	      && REG_P (SET_SRC (set)) && REG_P (SET_DEST (set))
+	      && REGNO (SET_SRC (set)) == REGNO (SET_DEST (set)))
+	    {
+	      /* Remove an useless move insn.  IRA can generate move
+		 insns involving pseudos.  It is better remove them
+		 earlier to speed up compiler a bit.  It is also
+		 better to do it here as they might not pass final RTL
+		 check in LRA, (e.g. insn moving a control register
+		 into itself).  */
+	      lra_invalidate_insn_data (insn);
+	      delete_insn (insn);
+	    }
 	}
 }

@@ -1,5 +1,5 @@
 ;; Machine description of the Synopsys DesignWare ARC cpu for GNU C compiler
-;; Copyright (C) 1994-2018 Free Software Foundation, Inc.
+;; Copyright (C) 1994-2019 Free Software Foundation, Inc.
 
 ;; Sources derived from work done by Sankhya Technologies (www.sankhya.com) on
 ;; behalf of Synopsys Inc.
@@ -163,6 +163,7 @@
   VUNSPEC_ARC_SC
   VUNSPEC_ARC_LL
   VUNSPEC_ARC_BLOCKAGE
+  VUNSPEC_ARC_EH_RETURN
   ])
 
 (define_constants
@@ -170,18 +171,37 @@
    (R1_REG 1)
    (R2_REG 2)
    (R3_REG 3)
+   (R4_REG 4)
+
+   (R9_REG 9)
    (R10_REG 10)
+
    (R12_REG 12)
+
+   (R15_REG 15)
+   (R16_REG 16)
+
+   (R25_REG 25)
    (SP_REG 28)
-   (ILINK1_REGNUM 29)
-   (ILINK2_REGNUM 30)
+   (ILINK1_REG 29)
+   (ILINK2_REG 30)
+   (R30_REG 30)
    (RETURN_ADDR_REGNUM 31)
+   (R32_REG 32)
+   (R40_REG 40)
+   (R41_REG 41)
+   (R42_REG 42)
+   (R43_REG 43)
+   (R44_REG 44)
+   (R57_REG 57)
    (MUL64_OUT_REG 58)
    (MUL32x16_REG 56)
    (ARCV2_ACC 58)
+   (R59_REG 59)
 
    (LP_COUNT 60)
    (CC_REG 61)
+   (PCL_REG 63)
    (LP_START 144)
    (LP_END 145)
   ]
@@ -600,11 +620,13 @@
 ;;   somehow modify them to become inelegible for delay slots if a decision
 ;;   is made that makes conditional execution required.
 
-(define_attr "tune" "none,arc600,arc700_4_2_std,arc700_4_2_xmac, core_3, \
-archs4x, archs4xd, archs4xd_slow"
+(define_attr "tune" "none,arc600,arc7xx,arc700_4_2_std,arc700_4_2_xmac, \
+core_3, archs4x, archs4xd, archs4xd_slow"
   (const
    (cond [(symbol_ref "arc_tune == TUNE_ARC600")
 	  (const_string "arc600")
+	  (symbol_ref "arc_tune == ARC_TUNE_ARC7XX")
+	  (const_string "arc7xx")
 	  (symbol_ref "arc_tune == TUNE_ARC700_4_2_STD")
 	  (const_string "arc700_4_2_std")
 	  (symbol_ref "arc_tune == TUNE_ARC700_4_2_XMAC")
@@ -619,7 +641,7 @@ archs4x, archs4xd, archs4xd_slow"
 	 (const_string "none"))))
 
 (define_attr "tune_arc700" "false,true"
-  (if_then_else (eq_attr "tune" "arc700_4_2_std, arc700_4_2_xmac")
+  (if_then_else (eq_attr "tune" "arc7xx, arc700_4_2_std, arc700_4_2_xmac")
 		(const_string "true")
 		(const_string "false")))
 
@@ -649,8 +671,8 @@ archs4x, archs4xd, archs4xd_slow"
 ; The iscompact attribute allows the epilogue expander to know for which
 ; insns it should lengthen the return insn.
 (define_insn "*movqi_insn"
-  [(set (match_operand:QI 0 "move_dest_operand" "=Rcq,Rcq#q,    w,Rcq#q,   h,w*l,w*l,???w,h,w*l,Rcq,  S,!*x,  r,r, Ucm,m,???m,  m,Usc")
-	(match_operand:QI 1 "move_src_operand"  "  cL,   cP,Rcq#q,    P,hCm1, cL,  I,?Rac,i, ?i,  T,Rcq,Usd,Ucm,m,?Rac,c,?Rac,Cm3,i"))]
+  [(set (match_operand:QI 0 "move_dest_operand" "=Rcq,Rcq#q,    w,Rcq#q,   h, w, w,???w,h, w,Rcq,  S,!*x,  r,r, Ucm,m,???m,  m,Usc")
+	(match_operand:QI 1 "move_src_operand"  "  cL,   cP,Rcq#q,    P,hCm1,cL, I,?Rac,i,?i,  T,Rcq,Usd,Ucm,m,?Rac,c,?Rac,Cm3,i"))]
   "register_operand (operands[0], QImode)
    || register_operand (operands[1], QImode)"
   "@
@@ -686,8 +708,8 @@ archs4x, archs4xd, archs4xd_slow"
   "if (prepare_move_operands (operands, HImode)) DONE;")
 
 (define_insn "*movhi_insn"
-  [(set (match_operand:HI 0 "move_dest_operand" "=Rcq,Rcq#q,    w,Rcq#q,   h,w*l,w*l,???w,Rcq#q,h,w*l,Rcq,  S,  r,r, Ucm,m,???m,  m,VUsc")
-	(match_operand:HI 1 "move_src_operand" "   cL,   cP,Rcq#q,    P,hCm1, cL,  I,?Rac,    i,i, ?i,  T,Rcq,Ucm,m,?Rac,c,?Rac,Cm3,i"))]
+  [(set (match_operand:HI 0 "move_dest_operand" "=Rcq,Rcq#q,    w,Rcq#q,   h, w, w,???w,Rcq#q,h, w,Rcq,  S,  r,r, Ucm,m,???m,  m,VUsc")
+	(match_operand:HI 1 "move_src_operand" "   cL,   cP,Rcq#q,    P,hCm1,cL, I,?Rac,    i,i,?i,  T,Rcq,Ucm,m,?Rac,c,?Rac,Cm3,i"))]
   "register_operand (operands[0], HImode)
    || register_operand (operands[1], HImode)
    || (CONSTANT_P (operands[1])
@@ -737,9 +759,9 @@ archs4x, archs4xd, archs4xd_slow"
 ; the iscompact attribute allows the epilogue expander to know for which
 ; insns it should lengthen the return insn.
 ; N.B. operand 1 of alternative 7 expands into pcl,symbol@gotpc .
-(define_insn "*movsi_insn"                      ;   0     1     2     3    4  5    6   7   8   9   10    11  12  13    14  15   16  17  18     19     20  21  22    23    24 25 26    27 28  29  30   31
-  [(set (match_operand:SI 0 "move_dest_operand" "=Rcq,Rcq#q,    w,Rcq#q,   h,w*l,w*l,  w,  w,  w,  w,  ???w, ?w,  w,Rcq#q,  h, w*l,Rcq,  S,   Us<,RcqRck,!*x,  r,!*Rsd,!*Rcd,r,Ucm,  Usd,m,???m,  m,VUsc")
-	(match_operand:SI 1 "move_src_operand"  "  cL,   cP,Rcq#q,    P,hCm1, cL,  I,Crr,Clo,Chi,Cbi,?Rac*l,Cpc,Clb, ?Cal,Cal,?Cal,Uts,Rcq,RcqRck,   Us>,Usd,Ucm,  Usd,  Ucd,m,  w,!*Rzd,c,?Rac,Cm3, C32"))]
+(define_insn "*movsi_insn"			;   0     1     2     3    4  5  6   7   8   9   10  11  12  13    14  15   16  17  18     19     20  21  22    23    24 25 26    27 28  29  30   31
+  [(set (match_operand:SI 0 "move_dest_operand" "=Rcq,Rcq#q,    w,Rcq#q,   h,wl, w,  w,  w,  w,  w,???w, ?w,  w,Rcq#q,  h,  wl,Rcq,  S,   Us<,RcqRck,!*x,  r,!*Rsd,!*Rcd,r,Ucm,  Usd,m,???m,  m,VUsc")
+	(match_operand:SI 1 "move_src_operand"  "  cL,   cP,Rcq#q,    P,hCm1,cL, I,Crr,Clo,Chi,Cbi,?Rac,Cpc,Clb, ?Cal,Cal,?Cal,Uts,Rcq,RcqRck,   Us>,Usd,Ucm,  Usd,  Ucd,m,  w,!*Rzd,c,?Rac,Cm3, C32"))]
   "register_operand (operands[0], SImode)
    || register_operand (operands[1], SImode)
    || (CONSTANT_P (operands[1])
@@ -2076,43 +2098,20 @@ archs4x, archs4xd, archs4xd_slow"
 ;; SI <- SI * SI
 
 (define_expand "mulsi3"
- [(set (match_operand:SI 0 "nonimmediate_operand"            "")
+ [(set (match_operand:SI 0 "register_operand"            "")
 	(mult:SI (match_operand:SI 1 "register_operand"  "")
 		 (match_operand:SI 2 "nonmemory_operand" "")))]
-  ""
+  "TARGET_ANY_MPY"
 {
-  if (TARGET_MPY)
+  if (TARGET_MUL64_SET)
     {
-      if (!register_operand (operands[0], SImode))
-	{
-	  rtx result = gen_reg_rtx (SImode);
-
-	  emit_insn (gen_mulsi3 (result, operands[1], operands[2]));
-	  emit_move_insn (operands[0], result);
-	  DONE;
-	}
-    }
-  else if (TARGET_MUL64_SET)
-    {
-     rtx tmp = gen_reg_rtx (SImode);
-     emit_insn (gen_mulsi64 (tmp, operands[1], operands[2]));
-     emit_move_insn (operands[0], tmp);
+     emit_insn (gen_mulsi64 (operands[0], operands[1], operands[2]));
      DONE;
     }
   else if (TARGET_MULMAC_32BY16_SET)
     {
-     rtx tmp = gen_reg_rtx (SImode);
-     emit_insn (gen_mulsi32x16 (tmp, operands[1], operands[2]));
-     emit_move_insn (operands[0], tmp);
+     emit_insn (gen_mulsi32x16 (operands[0], operands[1], operands[2]));
      DONE;
-    }
-  else
-    {
-      emit_move_insn (gen_rtx_REG (SImode, R0_REG), operands[1]);
-      emit_move_insn (gen_rtx_REG (SImode, R1_REG), operands[2]);
-      emit_insn (gen_mulsi3_600_lib ());
-      emit_move_insn (operands[0], gen_rtx_REG (SImode, R0_REG));
-      DONE;
     }
 })
 
@@ -2228,27 +2227,6 @@ archs4x, archs4xd, archs4xd_slow"
    (set_attr "type" "multi,multi,multi,multi")
    (set_attr "predicable" "yes,yes,no,yes")
    (set_attr "cond" "canuse,canuse,canuse_limm,canuse")])
-
-; If we compile without an mul option enabled, but link with libraries
-; for a mul option, we'll see clobbers of multiplier output registers.
-; There is also an implementation using norm that clobbers the loop registers.
-(define_insn "mulsi3_600_lib"
-  [(set (reg:SI R0_REG)
-	(mult:SI (reg:SI R0_REG) (reg:SI R1_REG)))
-   (clobber (reg:SI RETURN_ADDR_REGNUM))
-   (clobber (reg:SI R1_REG))
-   (clobber (reg:SI R2_REG))
-   (clobber (reg:SI R3_REG))
-   (clobber (reg:DI MUL64_OUT_REG))
-   (clobber (reg:SI LP_COUNT))
-   (clobber (reg:SI LP_START))
-   (clobber (reg:SI LP_END))
-   (clobber (reg:CC CC_REG))]
-  "!TARGET_ANY_MPY
-   && SFUNC_CHECK_PREDICABLE"
-  "*return arc_output_libcall (\"__mulsi3\");"
-  [(set_attr "is_sfunc" "yes")
-   (set_attr "predicable" "yes")])
 
 (define_insn_and_split "mulsidi_600"
   [(set (match_operand:DI 0 "register_operand"                               "=c, c,c,  c")
@@ -2504,48 +2482,6 @@ archs4x, archs4xd, archs4xd_slow"
    (set_attr "predicable" "yes,no,yes,no")
    (set_attr "cond" "canuse,nocond,canuse,nocond")])
 
-; Implementations include additional labels for umulsidi3, so we got all
-; the same clobbers - plus one for the result low part.  */
-(define_insn "umulsi3_highpart_600_lib_le"
-  [(set (reg:SI R1_REG)
-	(truncate:SI
-	 (lshiftrt:DI
-	  (mult:DI (zero_extend:DI (reg:SI R0_REG))
-		   (zero_extend:DI (reg:SI R1_REG)))
-	  (const_int 32))))
-   (clobber (reg:SI RETURN_ADDR_REGNUM))
-   (clobber (reg:SI R0_REG))
-   (clobber (reg:DI R2_REG))
-   (clobber (reg:SI R12_REG))
-   (clobber (reg:DI MUL64_OUT_REG))
-   (clobber (reg:CC CC_REG))]
-  "!TARGET_BIG_ENDIAN
-   && !TARGET_ANY_MPY
-   && SFUNC_CHECK_PREDICABLE"
-  "*return arc_output_libcall (\"__umulsi3_highpart\");"
-  [(set_attr "is_sfunc" "yes")
-   (set_attr "predicable" "yes")])
-
-(define_insn "umulsi3_highpart_600_lib_be"
-  [(set (reg:SI R0_REG)
-	(truncate:SI
-	 (lshiftrt:DI
-	  (mult:DI (zero_extend:DI (reg:SI R0_REG))
-		   (zero_extend:DI (reg:SI R1_REG)))
-	  (const_int 32))))
-   (clobber (reg:SI RETURN_ADDR_REGNUM))
-   (clobber (reg:SI R1_REG))
-   (clobber (reg:DI R2_REG))
-   (clobber (reg:SI R12_REG))
-   (clobber (reg:DI MUL64_OUT_REG))
-   (clobber (reg:CC CC_REG))]
-  "TARGET_BIG_ENDIAN
-   && !TARGET_ANY_MPY
-   && SFUNC_CHECK_PREDICABLE"
-  "*return arc_output_libcall (\"__umulsi3_highpart\");"
-  [(set_attr "is_sfunc" "yes")
-   (set_attr "predicable" "yes")])
-
 ;; (zero_extend:DI (const_int)) leads to internal errors in combine, so we
 ;; need a separate pattern for immediates
 ;; ??? This is fine for combine, but not for reload.
@@ -2572,22 +2508,10 @@ archs4x, archs4xd, archs4xd_slow"
 	   (zero_extend:DI (match_operand:SI 1 "register_operand" ""))
 	   (zero_extend:DI (match_operand:SI 2 "nonmemory_operand" "")))
 	  (const_int 32))))]
-  "!TARGET_MUL64_SET && !TARGET_MULMAC_32BY16_SET"
+  "TARGET_MPY"
   "
 {
   rtx target = operands[0];
-
-  if (!TARGET_MPY)
-    {
-      emit_move_insn (gen_rtx_REG (SImode, 0), operands[1]);
-      emit_move_insn (gen_rtx_REG (SImode, 1), operands[2]);
-      if (TARGET_BIG_ENDIAN)
-	emit_insn (gen_umulsi3_highpart_600_lib_be ());
-      else
-	emit_insn (gen_umulsi3_highpart_600_lib_le ());
-      emit_move_insn (target, gen_rtx_REG (SImode, 0));
-      DONE;
-    }
 
   if (!register_operand (target, SImode))
     target = gen_reg_rtx (SImode);
@@ -2607,7 +2531,7 @@ archs4x, archs4xd, archs4xd_slow"
   [(set (match_operand:DI 0 "register_operand" "")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" ""))
 		 (zero_extend:DI (match_operand:SI 2 "nonmemory_operand" ""))))]
-  ""
+  "TARGET_ANY_MPY"
 {
   if (TARGET_PLUS_MACD)
     {
@@ -2646,12 +2570,8 @@ archs4x, archs4xd, archs4xd_slow"
       DONE;
     }
   else
-    {
-      emit_move_insn (gen_rtx_REG (SImode, R0_REG), operands[1]);
-      emit_move_insn (gen_rtx_REG (SImode, R1_REG), operands[2]);
-      emit_insn (gen_umulsidi3_600_lib ());
-      emit_move_insn (operands[0], gen_rtx_REG (DImode, R0_REG));
-      DONE;
+  {
+   gcc_unreachable ();
     }
 })
 
@@ -2729,7 +2649,7 @@ archs4x, archs4xd, archs4xd_slow"
 		 (zero_extend:DI (match_operand:SI 2 "extend_operand" "cL"))))]
   "TARGET_MPY && !TARGET_PLUS_MACD"
   "#"
-  "reload_completed"
+  "TARGET_MPY && !TARGET_PLUS_MACD && reload_completed"
   [(const_int 0)]
 {
   int hi = !TARGET_BIG_ENDIAN;
@@ -2742,42 +2662,6 @@ archs4x, archs4xd, archs4xd_slow"
 }
   [(set_attr "type" "umulti")
   (set_attr "length" "8")])
-
-(define_insn "umulsidi3_600_lib"
-  [(set (reg:DI R0_REG)
-	(mult:DI (zero_extend:DI (reg:SI R0_REG))
-		 (zero_extend:DI (reg:SI R1_REG))))
-   (clobber (reg:SI RETURN_ADDR_REGNUM))
-   (clobber (reg:DI R2_REG))
-   (clobber (reg:SI R12_REG))
-   (clobber (reg:DI MUL64_OUT_REG))
-   (clobber (reg:CC CC_REG))]
-   "!TARGET_ANY_MPY
-   && SFUNC_CHECK_PREDICABLE"
-  "*return arc_output_libcall (\"__umulsidi3\");"
-  [(set_attr "is_sfunc" "yes")
-   (set_attr "predicable" "yes")])
-
-(define_peephole2
-  [(parallel
-     [(set (reg:DI R0_REG)
-	   (mult:DI (zero_extend:DI (reg:SI R0_REG))
-		    (zero_extend:DI (reg:SI R1_REG))))
-      (clobber (reg:SI RETURN_ADDR_REGNUM))
-      (clobber (reg:DI R2_REG))
-      (clobber (reg:SI R12_REG))
-      (clobber (reg:DI MUL64_OUT_REG))
-      (clobber (reg:CC CC_REG))])]
-  "!TARGET_ANY_MPY
-   && peep2_regno_dead_p (1, TARGET_BIG_ENDIAN ? R1_REG : R0_REG)"
-  [(pc)]
-{
-  if (TARGET_BIG_ENDIAN)
-    emit_insn (gen_umulsi3_highpart_600_lib_be ());
-  else
-    emit_insn (gen_umulsi3_highpart_600_lib_le ());
-  DONE;
-})
 
 (define_expand "addsi3"
   [(set (match_operand:SI 0 "dest_reg_operand" "")
@@ -4106,60 +3990,70 @@ archs4x, archs4xd, archs4xd_slow"
    (set_attr "cond" "canuse,canuse_limm,canuse,canuse,canuse")])
 
 ;; Implement a switch statement.
-
 (define_expand "casesi"
-  [(set (match_dup 5)
-	(minus:SI (match_operand:SI 0 "register_operand" "")
-		  (match_operand:SI 1 "nonmemory_operand" "")))
-   (set (reg:CC CC_REG)
-	(compare:CC (match_dup 5)
-		    (match_operand:SI 2 "nonmemory_operand" "")))
-   (set (pc)
-	(if_then_else (gtu (reg:CC CC_REG)
-			   (const_int 0))
-		      (label_ref (match_operand 4 "" ""))
-		      (pc)))
-   (set (match_dup 6)
-	(unspec:SI [(match_operand 3 "" "")
-		    (match_dup 5) (match_dup 7)] UNSPEC_ARC_CASESI))
-   (parallel [(set (pc) (match_dup 6)) (use (match_dup 7))])]
+  [(match_operand:SI 0 "register_operand" "")	; Index
+   (match_operand:SI 1 "const_int_operand" "")	; Lower bound
+   (match_operand:SI 2 "const_int_operand" "")	; Total range
+   (match_operand:SI 3 "" "")		; Table label
+   (match_operand:SI 4 "" "")]		; Out of range label
   ""
-  "
 {
-  rtx x;
-
-  operands[5] = gen_reg_rtx (SImode);
-  operands[6] = gen_reg_rtx (SImode);
-  operands[7] = operands[3];
-  emit_insn (gen_subsi3 (operands[5], operands[0], operands[1]));
-  emit_insn (gen_cmpsi_cc_insn_mixed (operands[5], operands[2]));
-  x = gen_rtx_GTU (VOIDmode, gen_rtx_REG (CCmode, CC_REG), const0_rtx);
-  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
-			    gen_rtx_LABEL_REF (VOIDmode, operands[4]), pc_rtx);
-  emit_jump_insn (gen_rtx_SET (pc_rtx, x));
-  if (TARGET_COMPACT_CASESI)
+  if (operands[1] != const0_rtx)
     {
-      emit_jump_insn (gen_casesi_compact_jump (operands[5], operands[7]));
+      rtx reg = gen_reg_rtx (SImode);
+      emit_insn (gen_subsi3 (reg, operands[0], operands[1]));
+      operands[0] = reg;
     }
+  emit_jump_insn (gen_cbranchsi4 (gen_rtx_GTU (SImode, operands[0],
+					       operands[2]),
+				  operands[0], operands[2], operands[4]));
+  if (TARGET_BI_BIH)
+    emit_jump_insn (gen_casesi_dispatch (operands[0], operands[3]));
   else
     {
+      rtx reg = gen_reg_rtx (SImode);
+      rtx lbl = operands[3];
       operands[3] = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
-      if (flag_pic || !cse_not_expected)
+      if (flag_pic)
 	operands[3] = force_reg (Pmode, operands[3]);
-      emit_insn (gen_casesi_load (operands[6],
-				  operands[3], operands[5], operands[7]));
+      emit_insn (gen_casesi_load (reg,
+				  operands[3], operands[0], lbl));
       if (CASE_VECTOR_PC_RELATIVE || flag_pic)
-	emit_insn (gen_addsi3 (operands[6], operands[6], operands[3]));
-      emit_jump_insn (gen_casesi_jump (operands[6], operands[7]));
+	emit_insn (gen_addsi3 (reg, reg, operands[3]));
+      emit_jump_insn (gen_casesi_jump (reg, lbl));
     }
   DONE;
-}")
+})
+
+(define_insn "casesi_dispatch"
+  [(set (pc)
+	(unspec:SI [(match_operand:SI 0 "register_operand" "r")
+		    (label_ref (match_operand 1 "" ""))]
+		   UNSPEC_ARC_CASESI))]
+  "TARGET_BI_BIH"
+{
+  rtx diff_vec = PATTERN (next_nonnote_insn (as_a<rtx_insn *> (operands[1])));
+  gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
+  switch (GET_MODE (diff_vec))
+    {
+    case E_SImode:
+      return \"bi\\t[%0]\";
+    case E_HImode:
+    case E_QImode:
+      return \"bih\\t[%0]\";
+    default: gcc_unreachable ();
+    }
+}
+  [(set_attr "type" "brcc_no_delay_slot")
+   (set_attr "iscompact" "false")
+   (set_attr "length" "4")])
 
 (define_insn "casesi_load"
-  [(set (match_operand:SI 0 "register_operand"             "=Rcq,r,r")
-	(unspec:SI [(match_operand:SI 1 "nonmemory_operand" "Rcq,c,Cal")
-		    (match_operand:SI 2 "register_operand"  "Rcq,c,c")
-		    (label_ref (match_operand 3 "" ""))] UNSPEC_ARC_CASESI))]
+  [(set (match_operand:SI 0 "register_operand"             "=q,r,r")
+	(mem:SI (unspec:SI [(match_operand:SI 1 "nonmemory_operand" "q,r,Cal")
+			    (match_operand:SI 2 "register_operand"  "q,r,r")]
+			   UNSPEC_ARC_CASESI)))
+   (use (label_ref (match_operand 3 "" "")))]
   ""
   "*
 {
@@ -4175,15 +4069,15 @@ archs4x, archs4xd, archs4xd_slow"
   switch (GET_MODE (diff_vec))
     {
     case E_SImode:
-      return \"ld.as %0,[%1,%2]%&\";
+      return \"ld.as\\t%0,[%1,%2]%&\";
     case E_HImode:
       if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
-	return \"ld%_.as %0,[%1,%2]\";
-      return \"ld%_.x.as %0,[%1,%2]\";
+	return \"ld%_.as\\t%0,[%1,%2]\";
+      return \"ld%_.x.as\\t%0,[%1,%2]\";
     case E_QImode:
       if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
-	return \"ldb%? %0,[%1,%2]%&\";
-      return \"ldb.x %0,[%1,%2]\";
+	return \"ldb%?\\t%0,[%1,%2]%&\";
+      return \"ldb.x\\t%0,[%1,%2]\";
     default:
       gcc_unreachable ();
     }
@@ -4222,110 +4116,6 @@ archs4x, archs4xd, archs4xd_slow"
   [(set_attr "type" "jump")
    (set_attr "iscompact" "false,maybe,false")
    (set_attr "cond" "canuse")])
-
-(define_insn "casesi_compact_jump"
-  [(set (pc)
-	(unspec:SI [(match_operand:SI 0 "register_operand" "c,q")]
-		   UNSPEC_ARC_CASESI))
-   (use (label_ref (match_operand 1 "" "")))
-   (clobber (match_scratch:SI 2 "=q,0"))]
-  "TARGET_COMPACT_CASESI"
-  "*
-{
-  rtx diff_vec = PATTERN (next_nonnote_insn (as_a<rtx_insn *> (operands[1])));
-  int unalign = arc_get_unalign ();
-  rtx xop[3];
-  const char *s;
-
-  xop[0] = operands[0];
-  xop[2] = operands[2];
-  gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
-
-  switch (GET_MODE (diff_vec))
-    {
-    case E_SImode:
-      /* Max length can be 12 in this case, but this is OK because
-	 2 of these are for alignment, and are anticipated in the length
-	 of the ADDR_DIFF_VEC.  */
-      if (unalign && !satisfies_constraint_Rcq (xop[0]))
-	s = \"add2 %2,pcl,%0\n\tld_s %2,[%2,12]\";
-      else if (unalign)
-	s = \"add_s %2,%0,2\n\tld.as %2,[pcl,%2]\";
-      else
-	s = \"add %2,%0,2\n\tld.as %2,[pcl,%2]\";
-      arc_clear_unalign ();
-      break;
-    case E_HImode:
-      if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
-	{
-	  if (satisfies_constraint_Rcq (xop[0]))
-	    {
-	      s = \"add_s %2,%0,%1\n\tld%_.as %2,[pcl,%2]\";
-	      xop[1] = GEN_INT ((10 - unalign) / 2U);
-	    }
-	  else
-	    {
-	      s = \"add1 %2,pcl,%0\n\tld%__s %2,[%2,%1]\";
-	      xop[1] = GEN_INT (10 + unalign);
-	    }
-	}
-      else
-	{
-	  if (satisfies_constraint_Rcq (xop[0]))
-	    {
-	      s = \"add_s %2,%0,%1\n\tld%_.x.as %2,[pcl,%2]\";
-	      xop[1] = GEN_INT ((10 - unalign) / 2U);
-	    }
-	  else
-	    {
-	      s = \"add1 %2,pcl,%0\n\tld%__s.x %2,[%2,%1]\";
-	      xop[1] = GEN_INT (10 + unalign);
-	    }
-	}
-      arc_toggle_unalign ();
-      break;
-    case E_QImode:
-      if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
-	{
-	  if ((rtx_equal_p (xop[2], xop[0])
-	       || find_reg_note (insn, REG_DEAD, xop[0]))
-	      && satisfies_constraint_Rcq (xop[0]))
-	    {
-	      s = \"add_s %0,%0,pcl\n\tldb_s %2,[%0,%1]\";
-	      xop[1] = GEN_INT (8 + unalign);
-	    }
-	  else
-	    {
-	      s = \"add %2,%0,pcl\n\tldb_s %2,[%2,%1]\";
-	      xop[1] = GEN_INT (10 + unalign);
-	      arc_toggle_unalign ();
-	    }
-	}
-      else if ((rtx_equal_p (xop[0], xop[2])
-		|| find_reg_note (insn, REG_DEAD, xop[0]))
-	       && satisfies_constraint_Rcq (xop[0]))
-	{
-	  s = \"add_s %0,%0,%1\n\tldb.x %2,[pcl,%0]\";
-	  xop[1] = GEN_INT (10 - unalign);
-	  arc_toggle_unalign ();
-	}
-      else
-	{
-	  /* ??? Length is 12.  */
-	  s = \"add %2,%0,%1\n\tldb.x %2,[pcl,%2]\";
-	  xop[1] = GEN_INT (8 + unalign);
-	}
-      break;
-    default:
-      gcc_unreachable ();
-    }
-  output_asm_insn (s, xop);
-  return \"add_s %2,%2,pcl\n\tj_s%* [%2]\";
-}"
-  [(set_attr "length" "10")
-   (set_attr "type" "jump")
-   (set_attr "iscompact" "true")
-   (set_attr "cond" "nocond")])
 
 (define_expand "call"
   ;; operands[1] is stack_size_rtx
@@ -5231,12 +5021,12 @@ archs4x, archs4xd, archs4xd_slow"
 })
 
 (define_insn "arc_lp"
-  [(unspec:SI [(match_operand:SI 0 "register_operand" "l")]
+  [(unspec:SI [(reg:SI LP_COUNT)]
 	      UNSPEC_ARC_LP)
-   (use (label_ref (match_operand 1 "" "")))
-   (use (label_ref (match_operand 2 "" "")))]
+   (use (label_ref (match_operand 0 "" "")))
+   (use (label_ref (match_operand 1 "" "")))]
   ""
-  "lp\\t@%l2\\t; %0:@%l1->@%l2"
+  "lp\\t@%l1\\t; lp_count:@%l0->@%l1"
   [(set_attr "type" "loop_setup")
    (set_attr "length" "4")])
 
@@ -5244,16 +5034,16 @@ archs4x, archs4xd, archs4xd_slow"
 ;; register, instead of going to memory.
 (define_insn "loop_end"
   [(set (pc)
-	(if_then_else (ne (match_operand:SI 2 "nonimmediate_operand" "0,0")
+	(if_then_else (ne (match_operand:SI 2 "nonimmediate_operand" "0,m")
 			  (const_int 1))
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))
-   (set (match_operand:SI 0 "nonimmediate_operand" "=l!r,m")
+   (set (match_operand:SI 0 "nonimmediate_operand" "=r,m")
 	(plus (match_dup 2) (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_ARC_LP)
    (clobber (match_scratch:SI 3 "=X,&r"))]
   ""
-  "\\t;%0 %1 %2"
+  "; ZOL_END, begins @%l1"
   [(set_attr "length" "0")
    (set_attr "predicable" "no")
    (set_attr "type" "loop_end")])
@@ -5298,7 +5088,7 @@ archs4x, archs4xd, archs4xd_slow"
 (define_insn_and_split "dbnz"
   [(set (pc)
 	(if_then_else
-	 (ne (plus:SI (match_operand:SI 0 "nonimmediate_operand" "+r!l,m")
+	 (ne (plus:SI (match_operand:SI 0 "nonimmediate_operand" "+rl,m")
 		      (const_int -1))
 	     (const_int 0))
 	 (label_ref (match_operand 1 "" ""))
@@ -5447,27 +5237,6 @@ archs4x, archs4xd, archs4xd_slow"
 }
   [(set_attr "type" "call")
    (set_attr "is_SIBCALL" "yes")])
-
-(define_insn "tls_load_tp_soft"
-  [(set (reg:SI R0_REG) (unspec:SI [(const_int 0)] UNSPEC_TLS_OFF))
-   (clobber (reg:SI RETURN_ADDR_REGNUM))]
-  ""
-  "*return arc_output_libcall (\"__read_tp\");"
-  [(set_attr "is_sfunc" "yes")
-   (set_attr "predicable" "yes")])
-
-(define_insn "tls_gd_get_addr"
-  [(set (reg:SI R0_REG)
-	(call:SI (mem:SI (unspec:SI [(match_operand:SI 0
-				      "symbolic_operand" "X,X")]
-			  UNSPEC_TLS_GD))
-		 (const_int 0)))
-   (clobber (reg:SI RETURN_ADDR_REGNUM))]
-  ""
-  ".tls_gd_ld %0`bl%* __tls_get_addr@plt"
-  [(set_attr "type" "call")
-   ; With TARGET_MEDIUM_CALLS, plt calls are not predicable.
-   (set_attr "predicable" "no")])
 
 ;; For thread pointer builtins
 (define_expand "get_thread_pointersi"
@@ -6533,8 +6302,8 @@ archs4x, archs4xd, archs4xd_slow"
 
 (define_insn "stack_tie"
   [(set (mem:BLK (scratch))
-	(unspec:BLK [(match_operand:SI 0 "register_operand" "rb")
-		     (match_operand:SI 1 "register_operand" "rb")]
+	(unspec:BLK [(match_operand:SI 0 "register_operand" "r")
+		     (match_operand:SI 1 "register_operand" "r")]
 		    UNSPEC_ARC_STKTIE))]
   ""
   ""
@@ -6614,6 +6383,265 @@ archs4x, archs4xd, archs4xd_slow"
   [(set (reg:CC CC_REG) (compare:CC (match_dup 3)
 				    (ashift:SI (match_dup 1) (match_dup 2))))])
 
+(define_peephole2 ; std
+  [(set (match_operand:SI 2 "memory_operand" "")
+	(match_operand:SI 0 "register_operand" ""))
+   (set (match_operand:SI 3 "memory_operand" "")
+	(match_operand:SI 1 "register_operand" ""))]
+  "TARGET_LL64"
+  [(const_int 0)]
+{
+  if (!gen_operands_ldd_std (operands, false, false))
+    FAIL;
+  operands[0] = gen_rtx_REG (DImode, REGNO (operands[0]));
+  operands[2] = adjust_address (operands[2], DImode, 0);
+  emit_insn (gen_rtx_SET (operands[2], operands[0]));
+  DONE;
+})
+
+(define_peephole2 ; ldd
+  [(set (match_operand:SI 0 "register_operand" "")
+	(match_operand:SI 2 "memory_operand" ""))
+   (set (match_operand:SI 1 "register_operand" "")
+	(match_operand:SI 3 "memory_operand" ""))]
+  "TARGET_LL64"
+  [(const_int 0)]
+{
+  if (!gen_operands_ldd_std (operands, true, false))
+    FAIL;
+  operands[0] = gen_rtx_REG (DImode, REGNO (operands[0]));
+  operands[2] = adjust_address (operands[2], DImode, 0);
+  emit_insn (gen_rtx_SET (operands[0], operands[2]));
+  DONE;
+})
+
+;; We require consecutive registers for LDD instruction.  Check if we
+;; can reorder them and use an LDD.
+
+(define_peephole2 ; swap the destination registers of two loads
+		  ; before a commutative operation.
+  [(set (match_operand:SI 0 "register_operand" "")
+	(match_operand:SI 2 "memory_operand" ""))
+   (set (match_operand:SI 1 "register_operand" "")
+	(match_operand:SI 3 "memory_operand" ""))
+   (set (match_operand:SI 4 "register_operand" "")
+	(match_operator:SI 5 "commutative_operator"
+			   [(match_operand 6 "register_operand" "")
+			    (match_operand 7 "register_operand" "") ]))]
+  "TARGET_LL64
+   && (((rtx_equal_p (operands[0], operands[6]))
+	 && (rtx_equal_p (operands[1], operands[7])))
+	|| ((rtx_equal_p (operands[0], operands[7]))
+	     && (rtx_equal_p (operands[1], operands[6]))))
+   && (peep2_reg_dead_p (3, operands[0])
+       || rtx_equal_p (operands[0], operands[4]))
+   && (peep2_reg_dead_p (3, operands[1])
+       || rtx_equal_p (operands[1], operands[4]))"
+  [(set (match_dup 0) (match_dup 2))
+   (set (match_dup 4) (match_op_dup 5 [(match_dup 6) (match_dup 7)]))]
+  {
+    if (!gen_operands_ldd_std (operands, true, true))
+     {
+	FAIL;
+     }
+    else
+     {
+	operands[0] = gen_rtx_REG (DImode, REGNO (operands[0]));
+	operands[2] = adjust_address (operands[2], DImode, 0);
+     }
+   }
+)
+
+(define_insn "*push_multi_fp"
+  [(match_parallel 0 "push_multi_operand"
+		   [(set (reg:SI SP_REG)
+			 (plus:SI (reg:SI SP_REG)
+				  (match_operand 1 "immediate_operand" "")))
+		    (set (mem:SI (plus:SI (reg:SI SP_REG)
+					  (match_dup 1)))
+			 (reg:SI 13))])]
+  "TARGET_CODE_DENSITY"
+  {
+   int len = XVECLEN (operands[0], 0);
+   rtx tmp = XVECEXP (operands[0], 0, len - 1);
+   if (MEM_P (XEXP (tmp, 0)))
+     {
+      operands[2] = XEXP (tmp, 1);
+      return "enter_s\\t{r13-%2} ; sp=sp-%1";
+     }
+   else
+     {
+      tmp = XVECEXP (operands[0], 0, len - 3);
+      operands[2] = XEXP (tmp, 1);
+      return "enter_s\\t{r13-%2, fp} ; sp=sp-%1";
+     }
+  }
+  [(set_attr "type" "call_no_delay_slot")
+   (set_attr "length" "2")])
+
+(define_insn "*push_multi_fp_blink"
+  [(match_parallel 0 "push_multi_operand"
+		   [(set (reg:SI SP_REG)
+			 (plus:SI (reg:SI SP_REG)
+				  (match_operand 1 "immediate_operand" "")))
+		    (set (mem:SI (plus:SI (reg:SI SP_REG)
+					  (match_dup 1)))
+			 (reg:SI RETURN_ADDR_REGNUM))])]
+  "TARGET_CODE_DENSITY"
+  {
+   int len = XVECLEN (operands[0], 0);
+   rtx tmp = XVECEXP (operands[0], 0, len - 1);
+   if (MEM_P (XEXP (tmp, 0)))
+     {
+      operands[2] = XEXP (tmp, 1);
+      return "enter_s\\t{r13-%2, blink} ; sp=sp-%1";
+     }
+   else
+     {
+      tmp = XVECEXP (operands[0], 0, len - 3);
+      operands[2] = XEXP (tmp, 1);
+      return "enter_s\\t{r13-%2, fp, blink} ; sp=sp-%1";
+     }
+  }
+  [(set_attr "type" "call_no_delay_slot")
+   (set_attr "length" "2")])
+
+(define_insn "*pop_multi_fp"
+  [(match_parallel 0 "pop_multi_operand"
+		   [(set (reg:SI SP_REG)
+			 (plus:SI (reg:SI SP_REG)
+				  (match_operand 1 "immediate_operand" "")))
+		    (set (reg:SI 13)
+			 (mem:SI
+			  (plus:SI
+			   (reg:SI SP_REG)
+			   (match_operand 2 "immediate_operand" ""))))])]
+  "TARGET_CODE_DENSITY"
+  {
+   int len = XVECLEN (operands[0], 0);
+   rtx tmp = XVECEXP (operands[0], 0, len - 1);
+   if (XEXP (tmp, 0) != frame_pointer_rtx)
+     {
+      operands[3] = XEXP (tmp, 0);
+      gcc_assert (INTVAL (operands[1]) == INTVAL (operands[2]));
+      return "leave_s\\t{r13-%3} ; sp=sp+%1";
+     }
+   else
+     {
+      tmp = XVECEXP (operands[0], 0, len - 2);
+      operands[3] = XEXP (tmp, 0);
+      return "leave_s\\t{r13-%3, fp} ; sp=sp+%1";
+     }
+  }
+  [(set_attr "type" "call_no_delay_slot")
+   (set_attr "length" "2")])
+
+(define_insn "*pop_multi_fp_blink"
+  [(match_parallel 0 "pop_multi_operand"
+		   [(set (reg:SI SP_REG)
+			 (plus:SI (reg:SI SP_REG)
+				  (match_operand 1 "immediate_operand" "")))
+		    (set (reg:SI RETURN_ADDR_REGNUM)
+			 (mem:SI
+			  (plus:SI
+			   (reg:SI SP_REG)
+			   (match_operand 2 "immediate_operand" ""))))])]
+  "TARGET_CODE_DENSITY"
+  {
+   int len = XVECLEN (operands[0], 0);
+   rtx tmp = XVECEXP (operands[0], 0, len - 1);
+   if (XEXP (tmp, 0) != frame_pointer_rtx)
+     {
+      operands[3] = XEXP (tmp, 0);
+      gcc_assert (INTVAL (operands[1]) == INTVAL (operands[2]));
+      return "leave_s\\t{r13-%3, blink} ; sp=sp+%1";
+     }
+   else
+     {
+      tmp = XVECEXP (operands[0], 0, len - 2);
+      operands[3] = XEXP (tmp, 0);
+      return "leave_s\\t{r13-%3, fp, blink} ; sp=sp+%1";
+     }
+  }
+  [(set_attr "type" "call_no_delay_slot")
+   (set_attr "length" "2")])
+
+(define_insn "*pop_multi_fp_ret"
+  [(match_parallel 0 "pop_multi_operand"
+		   [(return)
+		    (set (reg:SI SP_REG)
+			 (plus:SI (reg:SI SP_REG)
+				  (match_operand 1 "immediate_operand" "")))
+		    (set (reg:SI 13)
+			 (mem:SI
+			  (plus:SI
+			   (reg:SI SP_REG)
+			   (match_operand 2 "immediate_operand" ""))))])]
+  "TARGET_CODE_DENSITY"
+  {
+   int len = XVECLEN (operands[0], 0);
+   rtx tmp = XVECEXP (operands[0], 0, len - 1);
+   if (XEXP (tmp, 0) != frame_pointer_rtx)
+     {
+      operands[3] = XEXP (tmp, 0);
+      gcc_assert (INTVAL (operands[1]) == INTVAL (operands[2]));
+      return "leave_s\\t{r13-%3, pcl} ; sp=sp+%1";
+     }
+   else
+     {
+      tmp = XVECEXP (operands[0], 0, len - 2);
+      operands[3] = XEXP (tmp, 0);
+      return "leave_s\\t{r13-%3, fp, pcl} ; sp=sp+%1";
+     }
+  }
+  [(set_attr "type" "call_no_delay_slot")
+   (set_attr "length" "2")])
+
+(define_insn "*pop_multi_fp_blink_ret"
+  [(match_parallel 0 "pop_multi_operand"
+		   [(return)
+		    (set (reg:SI SP_REG)
+			 (plus:SI (reg:SI SP_REG)
+				  (match_operand 1 "immediate_operand" "")))
+		    (set (reg:SI RETURN_ADDR_REGNUM)
+			 (mem:SI
+			  (plus:SI
+			   (reg:SI SP_REG)
+			   (match_operand 2 "immediate_operand" ""))))])]
+  "TARGET_CODE_DENSITY"
+  {
+   int len = XVECLEN (operands[0], 0);
+   rtx tmp = XVECEXP (operands[0], 0, len - 1);
+   if (XEXP (tmp, 0) != frame_pointer_rtx)
+     {
+      operands[3] = XEXP (tmp, 0);
+      gcc_assert (INTVAL (operands[1]) == INTVAL (operands[2]));
+      return "leave_s\\t{r13-%3, blink, pcl} ; sp=sp+%1";
+     }
+   else
+     {
+      tmp = XVECEXP (operands[0], 0, len - 2);
+      operands[3] = XEXP (tmp, 0);
+      return "leave_s\\t{r13-%3, fp, blink, pcl} ; sp=sp+%1";
+     }
+  }
+  [(set_attr "type" "call_no_delay_slot")
+   (set_attr "length" "2")])
+
+;; Patterns for exception handling
+(define_insn_and_split "eh_return"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")]
+		    VUNSPEC_ARC_EH_RETURN)]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  "
+  {
+    arc_eh_return_address_location (operands[0]);
+    DONE;
+  }"
+)
 ;; include the arc-FPX instructions
 (include "fpx.md")
 

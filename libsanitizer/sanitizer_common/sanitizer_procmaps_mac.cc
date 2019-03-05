@@ -38,7 +38,7 @@ namespace __sanitizer {
 struct MemoryMappedSegmentData {
   char name[kMaxSegName];
   uptr nsects;
-  char *current_load_cmd_addr;
+  const char *current_load_cmd_addr;
   u32 lc_type;
   uptr base_virt_addr;
   uptr addr_mask;
@@ -138,12 +138,6 @@ void MemoryMappingLayout::LoadFromCache() {
 // early in the process, when dyld is one of the only images loaded,
 // so it will be hit after only a few iterations.
 static mach_header *get_dyld_image_header() {
-  mach_port_name_t port;
-  if (task_for_pid(mach_task_self(), internal_getpid(), &port) !=
-      KERN_SUCCESS) {
-    return nullptr;
-  }
-
   unsigned depth = 1;
   vm_size_t size = 0;
   vm_address_t address = 0;
@@ -152,7 +146,7 @@ static mach_header *get_dyld_image_header() {
 
   while (true) {
     struct vm_region_submap_info_64 info;
-    err = vm_region_recurse_64(port, &address, &size, &depth,
+    err = vm_region_recurse_64(mach_task_self(), &address, &size, &depth,
                                (vm_region_info_t)&info, &count);
     if (err != KERN_SUCCESS) return nullptr;
 
@@ -210,7 +204,7 @@ MemoryMappedSegmentData *seg_data, MemoryMappingLayoutData &layout_data) {
     if (seg_data) {
       seg_data->nsects = sc->nsects;
       seg_data->current_load_cmd_addr =
-          (char *)lc + sizeof(SegmentCommand);
+          (const char *)lc + sizeof(SegmentCommand);
       seg_data->lc_type = kLCSegment;
       seg_data->base_virt_addr = base_virt_addr;
       seg_data->addr_mask = addr_mask;
@@ -263,7 +257,7 @@ ModuleArch ModuleArchFromCpuType(cpu_type_t cputype, cpu_subtype_t cpusubtype) {
 }
 
 static const load_command *NextCommand(const load_command *lc) {
-  return (const load_command *)((char *)lc + lc->cmdsize);
+  return (const load_command *)((const char *)lc + lc->cmdsize);
 }
 
 static void FindUUID(const load_command *first_lc, u8 *uuid_output) {
@@ -307,12 +301,13 @@ bool MemoryMappingLayout::Next(MemoryMappedSegment *segment) {
       switch (data_.current_magic) {
 #ifdef MH_MAGIC_64
         case MH_MAGIC_64: {
-          data_.current_load_cmd_addr = (char *)hdr + sizeof(mach_header_64);
+          data_.current_load_cmd_addr =
+              (const char *)hdr + sizeof(mach_header_64);
           break;
         }
 #endif
         case MH_MAGIC: {
-          data_.current_load_cmd_addr = (char *)hdr + sizeof(mach_header);
+          data_.current_load_cmd_addr = (const char *)hdr + sizeof(mach_header);
           break;
         }
         default: {

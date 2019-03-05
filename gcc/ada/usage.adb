@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -402,7 +402,7 @@ begin
 
    Write_Switch_Char ("R?");
    Write_Line
-     ("List rep info (?=0/1/2/3/e/m for none/types/all/symbolic/ext/mech)");
+     ("List rep info (?=0/1/2/3/4/e/m for none/types/all/sym/cg/ext/mech)");
    Write_Switch_Char ("R?j");
    Write_Line ("List rep info in the JSON data interchange format");
    Write_Switch_Char ("R?s");

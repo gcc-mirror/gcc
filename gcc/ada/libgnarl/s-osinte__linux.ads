@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-2017, Florida State University            --
---          Copyright (C) 1995-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a GNU/Linux (GNU/LinuxThreads) version of this package
+--  This is a GNU/Linux version of this package
 
 --  This package encapsulates all direct interfaces to OS services
 --  that are needed by the tasking run-time (libgnarl).
@@ -90,37 +90,38 @@ package System.OS_Interface is
    SIGTRAP    : constant := System.Linux.SIGTRAP;
    SIGIOT     : constant := System.Linux.SIGIOT;
    SIGABRT    : constant := System.Linux.SIGABRT;
+   SIGBUS     : constant := System.Linux.SIGBUS;
    SIGFPE     : constant := System.Linux.SIGFPE;
    SIGKILL    : constant := System.Linux.SIGKILL;
-   SIGBUS     : constant := System.Linux.SIGBUS;
+   SIGUSR1    : constant := System.Linux.SIGUSR1;
    SIGSEGV    : constant := System.Linux.SIGSEGV;
+   SIGUSR2    : constant := System.Linux.SIGUSR2;
    SIGPIPE    : constant := System.Linux.SIGPIPE;
    SIGALRM    : constant := System.Linux.SIGALRM;
    SIGTERM    : constant := System.Linux.SIGTERM;
-   SIGUSR1    : constant := System.Linux.SIGUSR1;
-   SIGUSR2    : constant := System.Linux.SIGUSR2;
+   SIGSTKFLT  : constant := System.Linux.SIGSTKFLT;
    SIGCLD     : constant := System.Linux.SIGCLD;
    SIGCHLD    : constant := System.Linux.SIGCHLD;
-   SIGPWR     : constant := System.Linux.SIGPWR;
-   SIGWINCH   : constant := System.Linux.SIGWINCH;
+   SIGCONT    : constant := System.Linux.SIGCONT;
+   SIGSTOP    : constant := System.Linux.SIGSTOP;
+   SIGTSTP    : constant := System.Linux.SIGTSTP;
+   SIGTTIN    : constant := System.Linux.SIGTTIN;
+   SIGTTOU    : constant := System.Linux.SIGTTOU;
    SIGURG     : constant := System.Linux.SIGURG;
+   SIGXCPU    : constant := System.Linux.SIGXCPU;
+   SIGXFSZ    : constant := System.Linux.SIGXFSZ;
+   SIGVTALRM  : constant := System.Linux.SIGVTALRM;
+   SIGPROF    : constant := System.Linux.SIGPROF;
+   SIGWINCH   : constant := System.Linux.SIGWINCH;
    SIGPOLL    : constant := System.Linux.SIGPOLL;
    SIGIO      : constant := System.Linux.SIGIO;
    SIGLOST    : constant := System.Linux.SIGLOST;
-   SIGSTOP    : constant := System.Linux.SIGSTOP;
-   SIGTSTP    : constant := System.Linux.SIGTSTP;
-   SIGCONT    : constant := System.Linux.SIGCONT;
-   SIGTTIN    : constant := System.Linux.SIGTTIN;
-   SIGTTOU    : constant := System.Linux.SIGTTOU;
-   SIGVTALRM  : constant := System.Linux.SIGVTALRM;
-   SIGPROF    : constant := System.Linux.SIGPROF;
-   SIGXCPU    : constant := System.Linux.SIGXCPU;
-   SIGXFSZ    : constant := System.Linux.SIGXFSZ;
+   SIGPWR     : constant := System.Linux.SIGPWR;
+   SIGSYS     : constant := System.Linux.SIGSYS;
    SIGUNUSED  : constant := System.Linux.SIGUNUSED;
-   SIGSTKFLT  : constant := System.Linux.SIGSTKFLT;
-   SIGLTHRRES : constant := System.Linux.SIGLTHRRES;
-   SIGLTHRCAN : constant := System.Linux.SIGLTHRCAN;
-   SIGLTHRDBG : constant := System.Linux.SIGLTHRDBG;
+   SIG32      : constant := System.Linux.SIG32;
+   SIG33      : constant := System.Linux.SIG33;
+   SIG34      : constant := System.Linux.SIG34;
 
    SIGADAABORT : constant := SIGABRT;
    --  Change this to use another signal for task abort. SIGTERM might be a
@@ -142,16 +143,19 @@ package System.OS_Interface is
       SIGPROF,
       --  To avoid confusing the profiler
 
-      SIGKILL, SIGSTOP,
+      SIGKILL, SIGSTOP
       --  These two signals actually can't be masked (POSIX won't allow it)
+      );
 
-      SIGLTHRRES, SIGLTHRCAN, SIGLTHRDBG);
-      --  These three signals are used by GNU/LinuxThreads starting from glibc
-      --  2.1 (future 2.2).
-
-   Reserved : constant Signal_Set := (SIGVTALRM, SIGUNUSED);
-   --  Not clear why these two signals are reserved. Perhaps they are not
-   --  supported by this version of GNU/Linux ???
+   Reserved : constant Signal_Set := (
+      SIG32, SIG33, SIG34
+      --  glibc POSIX threads implementation uses two (NPTL) or three
+      --  (LinuxThreads) real-time signals for its own use (see SIGNAL(7)).
+      --  These signals are considered reserved and not unmasked as glibc does
+      --  not permit these signals to be used by the public signal.h API.
+      --  While LinuxThreads is mostly likely unused now, SIG34 is still
+      --  reserved as this behavior is consistent with past GNAT releases.
+      );
 
    type sigset_t is private;
 

@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2018 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2019 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1732,7 +1732,7 @@ Note that this generally is smaller than the number of
 @code{HOST_WIDE_INT}s implied by the mode size.
 
 @findex CONST_WIDE_INT_ELT
-@item CONST_WIDE_INT_NUNITS (@var{code},@var{i})
+@item CONST_WIDE_INT_ELT (@var{code},@var{i})
 Returns the @code{i}th element of the array.   Element 0 is contains
 the low order bits of the constant.
 
@@ -1806,7 +1806,7 @@ CONST_VECTOR_NELTS_PER_PATTERN (@var{v}) == 3
 Thus the first 6 elements (@samp{@{ 0, 1, 2, 6, 3, 8 @}}) are enough
 to determine the whole sequence; we refer to them as the ``encoded''
 elements.  They are the only elements present in the square brackets
-for variable-length @code{const_vector}s (i.e. for
+for variable-length @code{const_vector}s (i.e.@: for
 @code{const_vector}s whose mode @var{m} has a variable number of
 elements).  However, as a convenience to code that needs to handle
 both @code{const_vector}s and @code{parallel}s, all elements are
@@ -1883,14 +1883,14 @@ of relocation operator.  @var{m} should be a valid address mode.
 
 @findex high
 @item (high:@var{m} @var{exp})
-Represents the high-order bits of @var{exp}, usually a
-@code{symbol_ref}.  The number of bits is machine-dependent and is
+Represents the high-order bits of @var{exp}.  
+The number of bits is machine-dependent and is
 normally the number of bits specified in an instruction that initializes
 the high order bits of a register.  It is used with @code{lo_sum} to
 represent the typical two-instruction sequence used in RISC machines to
-reference a global memory location.
-
-@var{m} should be @code{Pmode}.
+reference large immediate values and/or link-time constants such
+as global memory addresses.  In the latter case, @var{m} is @code{Pmode}
+and @var{exp} is usually a constant expression involving @code{symbol_ref}.
 @end table
 
 @findex CONST0_RTX
@@ -2429,14 +2429,14 @@ saturates at the maximum signed value representable in @var{m};
 
 This expression represents the sum of @var{x} and the low-order bits
 of @var{y}.  It is used with @code{high} (@pxref{Constants}) to
-represent the typical two-instruction sequence used in RISC machines
-to reference a global memory location.
+represent the typical two-instruction sequence used in RISC machines to
+reference large immediate values and/or link-time constants such
+as global memory addresses.  In the latter case, @var{m} is @code{Pmode}
+and @var{y} is usually a constant expression involving @code{symbol_ref}.
 
 The number of low order bits is machine-dependent but is
-normally the number of bits in a @code{Pmode} item minus the number of
+normally the number of bits in mode @var{m} minus the number of
 bits set by @code{high}.
-
-@var{m} should be @code{Pmode}.
 
 @findex minus
 @findex ss_minus
@@ -2897,7 +2897,7 @@ in the @code{insv} or @code{extv} pattern.
 The mode @var{m} is the same as the mode that would be used for
 @var{loc} if it were a register.
 
-A @code{sign_extract} can not appear as an lvalue, or part thereof,
+A @code{sign_extract} cannot appear as an lvalue, or part thereof,
 in RTL.
 
 @findex zero_extract
@@ -3157,7 +3157,7 @@ given the value @var{x} and the rest of the register is not changed.
 If @var{lval} is a @code{zero_extract}, then the referenced part of
 the bit-field (a memory or register reference) specified by the
 @code{zero_extract} is given the value @var{x} and the rest of the
-bit-field is not changed.  Note that @code{sign_extract} can not
+bit-field is not changed.  Note that @code{sign_extract} cannot
 appear in @var{lval}.
 
 If @var{lval} is @code{(cc0)}, it has no machine mode, and @var{x} may
@@ -3417,7 +3417,7 @@ side-effects.
 @item (sequence [@var{insns} @dots{}])
 Represents a sequence of insns.  If a @code{sequence} appears in the
 chain of insns, then each of the @var{insns} that appears in the sequence
-must be suitable for appearing in the chain of insns, i.e. must satisfy
+must be suitable for appearing in the chain of insns, i.e.@: must satisfy
 the @code{INSN_P} predicate.
 
 After delay-slot scheduling is completed, an insn and all the insns that

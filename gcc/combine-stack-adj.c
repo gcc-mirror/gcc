@@ -1,5 +1,5 @@
 /* Combine stack adjustments.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -540,7 +540,7 @@ combine_stack_adjustments_for_block (basic_block bb)
 		 Also we need to be careful to not move stack pointer
 		 such that we create stack accesses outside the allocated
 		 area.  We can combine an allocation into the first insn,
-		 or a deallocation into the second insn.  We can not
+		 or a deallocation into the second insn.  We cannot
 		 combine an allocation followed by a deallocation.
 
 		 The only somewhat frequent occurrence of the later is when

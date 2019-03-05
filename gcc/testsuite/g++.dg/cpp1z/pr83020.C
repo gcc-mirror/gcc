@@ -1,5 +1,5 @@
 // PR c++/83020
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 struct NoDefault {
     int val = 1234;

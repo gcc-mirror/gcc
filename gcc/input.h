@@ -1,6 +1,6 @@
 /* Declarations for variables relating to reading the source file.
    Used by parsers, lexical analyzers, and error message routines.
-   Copyright (C) 1993-2018 Free Software Foundation, Inc.
+   Copyright (C) 1993-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,17 +27,17 @@ extern GTY(()) struct line_maps *line_table;
 extern GTY(()) struct line_maps *saved_line_table;
 
 /* A value which will never be used to represent a real location.  */
-#define UNKNOWN_LOCATION ((source_location) 0)
+#define UNKNOWN_LOCATION ((location_t) 0)
 
 /* The location for declarations in "<built-in>" */
-#define BUILTINS_LOCATION ((source_location) 1)
+#define BUILTINS_LOCATION ((location_t) 1)
 
 /* line-map.c reserves RESERVED_LOCATION_COUNT to the user.  Ensure
    both UNKNOWN_LOCATION and BUILTINS_LOCATION fit into that.  */
 STATIC_ASSERT (BUILTINS_LOCATION < RESERVED_LOCATION_COUNT);
 
-extern bool is_location_from_builtin_token (source_location);
-extern expanded_location expand_location (source_location);
+extern bool is_location_from_builtin_token (location_t);
+extern expanded_location expand_location (location_t);
 
 /* A class capturing the bounds of a buffer, to allow for run-time
    bounds-checking in a checked build.  */
@@ -86,15 +86,11 @@ extern char_span location_get_source_line (const char *file_path, int line);
 
 extern bool location_missing_trailing_newline (const char *file_path);
 extern expanded_location
-expand_location_to_spelling_point (source_location,
+expand_location_to_spelling_point (location_t,
 				   enum location_aspect aspect
 				     = LOCATION_ASPECT_CARET);
-extern source_location expansion_point_location_if_in_system_header (source_location);
-extern source_location expansion_point_location (source_location);
-
-/* Historically GCC used location_t, while cpp used source_location.
-   This could be removed but it hardly seems worth the effort.  */
-typedef source_location location_t;
+extern location_t expansion_point_location_if_in_system_header (location_t);
+extern location_t expansion_point_location (location_t);
 
 extern location_t input_location;
 

@@ -33,7 +33,7 @@
 // variable, is simply "PKGPATH.NAME".  Note that NAME is not the
 // packed form used for the "hidden" name internally in the compiler;
 // it is the name that appears in the source code.  PKGPATH is the
-// -fgo-pkgpath option as adjusted by Gogo::pkgpath_for_symbol.  Note
+// -fgo-pkgpath option as adjusted by Gogo::pkgpath_for_symbol. Note
 // that PKGPATH can not contain a dot and neither can NAME.  Also,
 // NAME may not begin with a digit.  NAME may require further encoding
 // for non-ASCII characters as described below, but until that
@@ -188,12 +188,17 @@
 // encoding unambiguous, we introduce it with two consecutive dots.
 // This is followed by the letter u and four hex digits or the letter
 // U and eight digits, just as in the language only using ..u and ..U
-// instead of \u and \U.  Since before this encoding names can never
-// contain consecutive dots followed by 'u' or 'U', and after this
-// encoding "..u" and "..U" are followed by a known number of
+// instead of \u and \U.  The compiler also produces identifiers that
+// are qualified by package path, which means that there may also be ASCII
+// characters that are not assembler-friendly (ex: '=', '/'). The encoding
+// scheme translates such characters into the "..zNN" where NN is the
+// hex value for the character. Since before this encoding names can never
+// contain consecutive dots followed by 'z', 'u' or 'U', and after this
+// encoding "..z", "..u" and "..U" are followed by a known number of
 // characters, this is unambiguous.
 //
 // Demangling these names is straightforward:
+//  - replace ..zXX with an ASCII character
 //  - replace ..uXXXX with a unicode character
 //  - replace ..UXXXXXXXX with a unicode character
 //  - replace .D, where D is a digit, with the character from the above
@@ -215,9 +220,9 @@ Gogo::function_asm_name(const std::string& go_name, const Package* package,
   if (rtype != NULL)
     ret = rtype->deref()->mangled_name(this);
   else if (package == NULL)
-    ret = this->pkgpath_symbol();
+    ret = this->pkgpath();
   else
-    ret = package->pkgpath_symbol();
+    ret = package->pkgpath();
   ret.push_back('.');
   // Check for special names that will break if we use
   // Gogo::unpack_hidden_name.
@@ -268,7 +273,7 @@ Gogo::stub_method_name(const Package* package, const std::string& mname)
 
   // We are creating a stub method for an unexported method of an
   // imported embedded type.  We need to disambiguate the method name.
-  std::string ret = this->pkgpath_symbol_for_package(mpkgpath);
+  std::string ret = mpkgpath;
   ret.push_back('.');
   ret.append(Gogo::unpack_hidden_name(mname));
   ret.append("..stub");
@@ -302,9 +307,9 @@ Gogo::global_var_asm_name(const std::string& go_name, const Package* package)
 {
   std::string ret;
   if (package == NULL)
-    ret = this->pkgpath_symbol();
+    ret = this->pkgpath();
   else
-    ret = package->pkgpath_symbol();
+    ret = package->pkgpath();
   ret.append(1, '.');
   ret.append(Gogo::unpack_hidden_name(go_name));
   return go_encode_id(ret);
@@ -341,7 +346,7 @@ Gogo::thunk_name()
   char thunk_name[50];
   snprintf(thunk_name, sizeof thunk_name, "..thunk%d", thunk_count);
   ++thunk_count;
-  std::string ret = this->pkgpath_symbol();
+  std::string ret = this->pkgpath();
   return ret + thunk_name;
 }
 
@@ -370,7 +375,7 @@ Gogo::init_function_name()
   char buf[30];
   snprintf(buf, sizeof buf, "..init%d", init_count);
   ++init_count;
-  std::string ret = this->pkgpath_symbol();
+  std::string ret = this->pkgpath();
   return ret + buf;
 }
 
@@ -726,7 +731,7 @@ Struct_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 
 	  if (!p->is_anonymous())
 	    {
-	      ret->append(Gogo::mangle_possibly_hidden_name(p->field_name()));
+              Gogo::append_possibly_hidden_name(ret, p->field_name());
 	      ret->push_back(' ');
 	    }
 
@@ -827,7 +832,7 @@ Interface_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 
 	  if (!p->name().empty())
 	    {
-	      ret->append(Gogo::mangle_possibly_hidden_name(p->name()));
+              Gogo::append_possibly_hidden_name(ret, p->name());
 	      ret->push_back(' ');
 	    }
 
@@ -854,9 +859,9 @@ Forward_declaration_type::do_mangled_name(Gogo* gogo, std::string* ret) const
     {
       const Named_object* no = this->named_object();
       if (no->package() == NULL)
-	ret->append(gogo->pkgpath_symbol());
+	ret->append(gogo->pkgpath());
       else
-	ret->append(no->package()->pkgpath_symbol());
+	ret->append(no->package()->pkgpath());
       ret->push_back('.');
       ret->append(Gogo::unpack_hidden_name(no->name()));
     }
@@ -894,18 +899,18 @@ Named_type::append_mangled_type_name(Gogo* gogo, bool use_alias,
 	  if (rcvr != NULL)
 	    ret->append(rcvr->type()->deref()->mangled_name(gogo));
 	  else if (this->in_function_->package() == NULL)
-	    ret->append(gogo->pkgpath_symbol());
+	    ret->append(gogo->pkgpath());
 	  else
-	    ret->append(this->in_function_->package()->pkgpath_symbol());
+	    ret->append(this->in_function_->package()->pkgpath());
 	  ret->push_back('.');
 	  ret->append(Gogo::unpack_hidden_name(this->in_function_->name()));
 	}
       else
 	{
 	  if (no->package() == NULL)
-	    ret->append(gogo->pkgpath_symbol());
+	    ret->append(gogo->pkgpath());
 	  else
-	    ret->append(no->package()->pkgpath_symbol());
+	    ret->append(no->package()->pkgpath());
 	}
       ret->push_back('.');
     }
@@ -951,22 +956,22 @@ Gogo::type_descriptor_name(Type* type, Named_type* nt)
 	  if (rcvr != NULL)
 	    ret.append(rcvr->type()->deref()->mangled_name(this));
 	  else if (in_function->package() == NULL)
-	    ret.append(this->pkgpath_symbol());
+	    ret.append(this->pkgpath());
 	  else
-	    ret.append(in_function->package()->pkgpath_symbol());
+	    ret.append(in_function->package()->pkgpath());
 	  ret.push_back('.');
 	  ret.append(Gogo::unpack_hidden_name(in_function->name()));
 	  ret.push_back('.');
 	}
 
       if (no->package() == NULL)
-	ret.append(this->pkgpath_symbol());
+	ret.append(this->pkgpath());
       else
-	ret.append(no->package()->pkgpath_symbol());
+	ret.append(no->package()->pkgpath());
       ret.push_back('.');
     }
 
-  ret.append(Gogo::mangle_possibly_hidden_name(no->name()));
+  Gogo::append_possibly_hidden_name(&ret, no->name());
 
   if (in_function != NULL && index > 0)
     {

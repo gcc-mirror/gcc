@@ -1,6 +1,6 @@
 /* Print GENERIC declaration (functions, variables, types) trees coming from
    the C and C++ front-ends as well as macros in Ada syntax.
-   Copyright (C) 2010-2018 Free Software Foundation, Inc.
+   Copyright (C) 2010-2019 Free Software Foundation, Inc.
    Adapted from tree-pretty-print.c by Arnaud Charlet  <charlet@adacore.com>
 
 This file is part of GCC.
@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "stringpool.h"
 #include "tree.h"
 #include "c-ada-spec.h"
 #include "fold-const.h"
@@ -1041,7 +1042,7 @@ get_underlying_decl (tree type)
 static bool
 has_static_fields (const_tree type)
 {
-  if (!type || !RECORD_OR_UNION_TYPE_P (type))
+  if (!type || !RECORD_OR_UNION_TYPE_P (type) || !COMPLETE_TYPE_P (type))
     return false;
 
   for (tree fld = TYPE_FIELDS (type); fld; fld = TREE_CHAIN (fld))
@@ -1057,7 +1058,7 @@ has_static_fields (const_tree type)
 static bool
 is_tagged_type (const_tree type)
 {
-  if (!type || !RECORD_OR_UNION_TYPE_P (type))
+  if (!type || !RECORD_OR_UNION_TYPE_P (type) || !COMPLETE_TYPE_P (type))
     return false;
 
   for (tree fld = TYPE_FIELDS (type); fld; fld = TREE_CHAIN (fld))
@@ -1075,7 +1076,7 @@ is_tagged_type (const_tree type)
 static bool
 has_nontrivial_methods (tree type)
 {
-  if (!type || !RECORD_OR_UNION_TYPE_P (type))
+  if (!type || !RECORD_OR_UNION_TYPE_P (type) || !COMPLETE_TYPE_P (type))
     return false;
 
   /* Only C++ types can have methods.  */
@@ -2092,7 +2093,10 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
     case INTEGER_TYPE:
     case FIXED_POINT_TYPE:
     case BOOLEAN_TYPE:
-      if (TYPE_NAME (node))
+      if (TYPE_NAME (node)
+	  && !(TREE_CODE (TYPE_NAME (node)) == TYPE_DECL
+	       && !strcmp (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (node))),
+			   "__int128")))
 	{
 	  if (TREE_CODE (TYPE_NAME (node)) == IDENTIFIER_NODE)
 	    pp_ada_tree_identifier (buffer, TYPE_NAME (node), node,
@@ -2568,6 +2572,73 @@ dump_nested_type (pretty_printer *buffer, tree field, tree t, tree parent,
     }
 }
 
+/* Hash table of overloaded names that we cannot support.  It is needed even
+   in Ada 2012 because we merge different types, e.g. void * and const void *
+   in System.Address, so we cannot have overloading for them in Ada.  */
+
+struct overloaded_name_hash {
+  hashval_t hash;
+  tree name;
+  unsigned int n;
+};
+
+struct overloaded_name_hasher : delete_ptr_hash<overloaded_name_hash>
+{
+  static inline hashval_t hash (overloaded_name_hash *t)
+    { return t->hash; }
+  static inline bool equal (overloaded_name_hash *a, overloaded_name_hash *b)
+    { return a->name == b->name; }
+};
+
+static hash_table<overloaded_name_hasher> *overloaded_names;
+
+/* Initialize the table with the problematic overloaded names.  */
+
+static hash_table<overloaded_name_hasher> *
+init_overloaded_names (void)
+{
+  static const char *names[] =
+  /* The overloaded names from the /usr/include/string.h file.  */
+  { "memchr", "rawmemchr", "memrchr", "strchr", "strrchr", "strchrnul",
+    "strpbrk", "strstr", "strcasestr", "index", "rindex", "basename" };
+
+  hash_table<overloaded_name_hasher> *table
+    = new hash_table<overloaded_name_hasher> (64);
+
+  for (unsigned int i = 0; i < ARRAY_SIZE (names); i++)
+    {
+      struct overloaded_name_hash in, *h, **slot;
+      tree id = get_identifier (names[i]);
+      hashval_t hash = htab_hash_pointer (id);
+      in.hash = hash;
+      in.name = id;
+      slot = table->find_slot_with_hash (&in, hash, INSERT);
+      h = new overloaded_name_hash;
+      h->hash = hash;
+      h->name = id;
+      h->n = 0;
+      *slot = h;
+    }
+
+  return table;
+}
+
+/* Return whether NAME cannot be supported as overloaded name.  */
+
+static bool
+overloaded_name_p (tree name)
+{
+  if (!overloaded_names)
+    overloaded_names = init_overloaded_names ();
+
+  struct overloaded_name_hash in, *h;
+  hashval_t hash = htab_hash_pointer (name);
+  in.hash = hash;
+  in.name = name;
+  h = overloaded_names->find_with_hash (&in, hash);
+  return h && ++h->n > 1;
+}
+
 /* Dump in BUFFER constructor spec corresponding to T for TYPE.  */
 
 static void
@@ -2603,7 +2674,7 @@ type_name (tree t)
     return IDENTIFIER_POINTER (DECL_NAME (n));
 }
 
-/* Dump in BUFFER the declaration of a variable T of type TYPE in Ada syntax.
+/* Dump in BUFFER the declaration of object T of type TYPE in Ada syntax.
    SPC is the indentation level.  Return 1 if a declaration was printed,
    0 otherwise.  */
 
@@ -2628,22 +2699,24 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
     {
       orig = DECL_ORIGINAL_TYPE (t);
 
+      /* This is a typedef.  */
       if (orig && TYPE_STUB_DECL (orig))
 	{
 	  tree stub = TYPE_STUB_DECL (orig);
-	  tree typ = TREE_TYPE (stub);
 
-	  if (TYPE_NAME (typ))
+	  /* If this is a typedef of a named type, then output it as a subtype
+	     declaration.  ??? Use a derived type declaration instead.  */
+	  if (TYPE_NAME (orig))
 	    {
 	      /* If the types have the same name (ignoring casing), then ignore
 		 the second type, but forward declare the first if need be.  */
-	      if (type_name (typ) == type_name (TREE_TYPE (t))
-		  || !strcasecmp (type_name (typ), type_name (TREE_TYPE (t))))
+	      if (type_name (orig) == type_name (TREE_TYPE (t))
+		  || !strcasecmp (type_name (orig), type_name (TREE_TYPE (t))))
 		{
-		  if (RECORD_OR_UNION_TYPE_P (typ) && !TREE_VISITED (stub))
+		  if (RECORD_OR_UNION_TYPE_P (orig) && !TREE_VISITED (stub))
 		    {
 		      INDENT (spc);
-		      dump_forward_type (buffer, typ, t, 0);
+		      dump_forward_type (buffer, orig, t, 0);
 		    }
 
 		  TREE_VISITED (t) = 1;
@@ -2652,19 +2725,25 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 
 	      INDENT (spc);
 
-	      if (RECORD_OR_UNION_TYPE_P (typ) && !TREE_VISITED (stub))
-		dump_forward_type (buffer, typ, t, spc);
+	      if (RECORD_OR_UNION_TYPE_P (orig) && !TREE_VISITED (stub))
+		dump_forward_type (buffer, orig, t, spc);
 
 	      pp_string (buffer, "subtype ");
 	      dump_ada_node (buffer, t, type, spc, false, true);
 	      pp_string (buffer, " is ");
-	      dump_ada_node (buffer, typ, type, spc, false, true);
+	      dump_ada_node (buffer, orig, type, spc, false, true);
 	      pp_string (buffer, ";  -- ");
 	      dump_sloc (buffer, t);
 
 	      TREE_VISITED (t) = 1;
 	      return 1;
 	    }
+
+	  /* This is a typedef of an anonymous type.  We'll output the full
+	     type declaration of the anonymous type with the typedef'ed name
+	     below.  Prevent forward declarations for the anonymous type to
+	     be emitted from now on.  */
+	  TREE_VISITED (stub) = 1;
 	}
 
       /* Skip unnamed or anonymous structs/unions/enum types.  */
@@ -2764,6 +2843,7 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	  default:
 	    pp_string (buffer, "subtype ");
 	}
+
       TREE_VISITED (t) = 1;
     }
   else
@@ -2825,7 +2905,7 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
       bool is_copy_constructor = false;
       bool is_move_constructor = false;
 
-      if (!decl_name)
+      if (!decl_name || overloaded_name_p (decl_name))
 	return 0;
 
       if (cpp_check)
@@ -2863,8 +2943,9 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	  return 1;
 	}
 
-      if (need_indent)
-	INDENT (spc);
+      INDENT (spc);
+
+      dump_forward_type (buffer, TREE_TYPE (t), t, spc);
 
       if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (t))) && !is_constructor)
 	pp_string (buffer, "procedure ");
@@ -2926,9 +3007,6 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
     {
       bool is_interface = false;
       bool is_abstract_record = false;
-
-      if (need_indent)
-	INDENT (spc);
 
       /* Anonymous structs/unions.  */
       dump_ada_node (buffer, TREE_TYPE (t), t, spc, false, true);
@@ -3346,4 +3424,5 @@ dump_ada_specs (void (*collect_all_refs)(const char *),
 
   /* Free various tables.  */
   free (source_refs);
+  delete overloaded_names;
 }

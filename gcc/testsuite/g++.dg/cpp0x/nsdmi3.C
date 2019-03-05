@@ -13,6 +13,7 @@ struct B
   A a3 = { 3 };			// { dg-error "explicit" }
 };
 
-constexpr B b;			// { dg-error "B::B" }
+constexpr B b;
 
+// { dg-prune-output "B::B. is not usable" }
 // { dg-prune-output "B::a1" }

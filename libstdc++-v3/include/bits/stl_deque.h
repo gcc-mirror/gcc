@@ -1,6 +1,6 @@
 // Deque implementation -*- C++ -*-
 
-// Copyright (C) 2001-2018 Free Software Foundation, Inc.
+// Copyright (C) 2001-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -61,6 +61,7 @@
 #include <bits/stl_iterator_base_funcs.h>
 #if __cplusplus >= 201103L
 #include <initializer_list>
+#include <bits/stl_uninitialized.h> // for __is_bitwise_relocatable
 #endif
 
 #include <debug/assertions.h>
@@ -1376,7 +1377,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns true if the %deque is empty.  (Thus begin() would
        *  equal end().)
        */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const _GLIBCXX_NOEXCEPT
       { return this->_M_impl._M_finish == this->_M_impl._M_start; }
 
@@ -2366,6 +2367,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #undef _GLIBCXX_DEQUE_BUF_SIZE
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
+
+#if __cplusplus >= 201103L
+  // std::allocator is safe, but it is not the only allocator
+  // for which this is valid.
+  template<class _Tp>
+    struct __is_bitwise_relocatable<_GLIBCXX_STD_C::deque<_Tp>>
+    : true_type { };
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

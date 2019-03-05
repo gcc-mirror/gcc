@@ -1,5 +1,5 @@
 ; Options for the Fortran front end.
-; Copyright (C) 2003-2018 Free Software Foundation, Inc.
+; Copyright (C) 2003-2019 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -440,6 +440,10 @@ fdec
 Fortran Var(flag_dec)
 Enable all DEC language extensions.
 
+fdec-include
+Fortran Var(flag_dec_include)
+Enable legacy parsing of INCLUDE as statement.
+
 fdec-intrinsic-ints
 Fortran Var(flag_dec_intrinsic_ints)
 Enable kind-specific variants of integer intrinsic functions.
@@ -531,6 +535,10 @@ Allow arbitrary character line width in fixed mode.
 ffixed-line-length-
 Fortran RejectNegative Joined UInteger Var(flag_fixed_line_length) Init(72)
 -ffixed-line-length-<n>	Use n as character line width in fixed mode.
+
+fpad-source
+Fortran Var(flag_pad_source) Init(1)
+Pad shorter fixed form lines to line width with spaces.
 
 ffpe-trap=
 Fortran RejectNegative JoinedOrMissing
@@ -661,6 +669,10 @@ Fortran
 fprotect-parens
 Fortran Var(flag_protect_parens) Init(-1)
 Protect parentheses in expressions.
+
+fpre-include=
+Fortran RejectNegative Joined Var(flag_pre_include) Undocumented
+Path to header file that should be pre-included before each compilation unit.
 
 frange-check
 Fortran Var(flag_range_check) Init(1)

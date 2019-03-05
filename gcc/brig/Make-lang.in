@@ -1,7 +1,7 @@
 # Make-lang.in -- Top level -*- makefile -*- fragment for gcc BRIG (HSAIL)
 # frontend.
 
-# Copyright (C) 2015-2018 Free Software Foundation, Inc.
+# Copyright (C) 2015-2019 Free Software Foundation, Inc.
 
 # This file is part of GCC.
 
@@ -147,6 +147,9 @@ brig.srcman: doc/gccbrig.1
 	-cp -p $^ $(srcdir)/doc
 
 lang_checks += check-brig
+
+# No brig-specific selftests
+selftest-brig:
 
 # Install hooks.
 

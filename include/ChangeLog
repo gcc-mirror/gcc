@@ -1,3 +1,55 @@
+2019-02-11  Philippe Waroquiers  <philippe.waroquiers@skynet.be>
+
+	* splay-tree.h (splay_tree_delete_key_fn): Update comment.
+	(splay_tree_delete_value_fn): Likewise.
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* libiberty.h: Mechanically replace "can not" with "cannot".
+	* plugin-api.h: Likewise.
+
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-12-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gomp-constants.h (GOACC_FLAG_HOST_FALLBACK)
+	(GOACC_FLAGS_MARSHAL_OP, GOACC_FLAGS_UNMARSHAL): Define.
+
+2018-12-22  Jason Merrill  <jason@redhat.com>
+
+	* demangle.h: Remove support for ancient GNU (pre-3.0), Lucid,
+	ARM, HP, and EDG demangling styles.
+
+2018-12-11  Nick Clifton  <nickc@redhat.com>
+
+	PR 88409
+	* demangle.h (DEMANGLE_RECURSION_LIMIT): Increase to 2048.
+
+2018-12-07  Nick Clifton  <nickc@redhat.com>
+
+	* demangle.h (DMGL_NO_RECURSE_LIMIT): Define.
+        (DEMANGLE_RECURSION_LIMIT): Define
+
+2018-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* gomp-constants.h (GOMP_TASK_FLAG_REDUCTION,
+	GOMP_DEPEND_IN, GOMP_DEPEND_OUT, GOMP_DEPEND_INOUT,
+	GOMP_DEPEND_MUTEXINOUTSET): Define.
+
+2018-10-19  Jason Merrill  <jason@redhat.com>
+
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_TPARM_OBJ.
+
+2018-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* unique-ptr.h (gnu::move): Generalize so it applies to all
+	lvalue references, rather than just to unique_ptr values.
+
 2018-07-26  Martin Liska  <mliska@suse.cz>
 
 	PR lto/86548

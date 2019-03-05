@@ -1,5 +1,5 @@
 /* RTL reader for GCC.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -272,12 +272,15 @@ apply_subst_iterator (rtx rt, unsigned int, int value)
   rtx new_attr;
   rtvec attrs_vec, new_attrs_vec;
   int i;
-  if (value == 1)
+  /* define_split has no attributes.  */
+  if (value == 1 || GET_CODE (rt) == DEFINE_SPLIT)
     return;
   gcc_assert (GET_CODE (rt) == DEFINE_INSN
+	      || GET_CODE (rt) == DEFINE_INSN_AND_SPLIT
 	      || GET_CODE (rt) == DEFINE_EXPAND);
 
-  attrs_vec = XVEC (rt, 4);
+  int attrs = GET_CODE (rt) == DEFINE_INSN_AND_SPLIT ? 7 : 4;
+  attrs_vec = XVEC (rt, attrs);
 
   /* If we've already added attribute 'current_iterator_name', then we
      have nothing to do now.  */
@@ -309,7 +312,7 @@ apply_subst_iterator (rtx rt, unsigned int, int value)
 	      GET_NUM_ELEM (attrs_vec) * sizeof (rtx));
       new_attrs_vec->elem[GET_NUM_ELEM (attrs_vec)] = new_attr;
     }
-  XVEC (rt, 4) = new_attrs_vec;
+  XVEC (rt, attrs) = new_attrs_vec;
 }
 
 /* Map subst-attribute ATTR to subst iterator ITER.  */
@@ -1690,6 +1693,7 @@ rtx_reader::read_rtx_operand (rtx return_rtx, int idx)
 	struct obstack vector_stack;
 	int list_counter = 0;
 	rtvec return_vec = NULL_RTVEC;
+	rtx saved_rtx = NULL_RTX;
 
 	require_char_ws ('[');
 
@@ -1700,8 +1704,34 @@ rtx_reader::read_rtx_operand (rtx return_rtx, int idx)
 	    if (c == EOF)
 	      fatal_expected_char (']', c);
 	    unread_char (c);
-	    list_counter++;
-	    obstack_ptr_grow (&vector_stack, read_nested_rtx ());
+
+	    rtx value;
+	    int repeat_count = 1;
+	    if (c == 'r')
+	      {
+		/* Process "repeated xN" directive.  */
+		read_name (&name);
+		if (strcmp (name.string, "repeated"))
+		  fatal_with_file_and_line ("invalid directive \"%s\"\n",
+					    name.string);
+		read_name (&name);
+		if (!sscanf (name.string, "x%d", &repeat_count))
+		  fatal_with_file_and_line ("invalid repeat count \"%s\"\n",
+					    name.string);
+
+		/* We already saw one of the instances.  */
+		repeat_count--;
+		value = saved_rtx;
+	      }
+	    else
+	      value = read_nested_rtx ();
+
+	    for (; repeat_count > 0; repeat_count--)
+	      {
+		list_counter++;
+		obstack_ptr_grow (&vector_stack, value);
+	      }
+	    saved_rtx = value;
 	  }
 	if (list_counter > 0)
 	  {

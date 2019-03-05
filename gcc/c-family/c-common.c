@@ -1,5 +1,5 @@
 /* Subroutines shared by all languages that are variants of C.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -79,6 +79,7 @@ machine_mode c_default_pointer_mode = VOIDmode;
 	tree signed_char_type_node;
 	tree wchar_type_node;
 
+	tree char8_type_node;
 	tree char16_type_node;
 	tree char32_type_node;
 
@@ -127,6 +128,11 @@ machine_mode c_default_pointer_mode = VOIDmode;
    Used when a wide string literal is created.
 
 	tree wchar_array_type_node;
+
+   Type `char8_t[SOMENUMBER]' or something like it.
+   Used when a UTF-8 string literal is created.
+
+	tree char8_array_type_node;
 
    Type `char16_t[SOMENUMBER]' or something like it.
    Used when a UTF-16 string literal is created.
@@ -213,6 +219,10 @@ int flag_isoc99;
 /* Nonzero means use the ISO C11 dialect of C.  */
 
 int flag_isoc11;
+
+/* Nonzero means use the ISO C2X dialect of C.  */
+
+int flag_isoc2x;
 
 /* Nonzero means that we have builtin functions, and main is an int.  */
 
@@ -372,6 +382,8 @@ const struct c_common_resword c_common_reswords[] =
     RID_BUILTIN_CALL_WITH_STATIC_CHAIN, D_CONLY },
   { "__builtin_choose_expr", RID_CHOOSE_EXPR, D_CONLY },
   { "__builtin_complex", RID_BUILTIN_COMPLEX, D_CONLY },
+  { "__builtin_convertvector", RID_BUILTIN_CONVERTVECTOR, 0 },
+  { "__builtin_has_attribute", RID_BUILTIN_HAS_ATTRIBUTE, 0 },
   { "__builtin_launder", RID_BUILTIN_LAUNDER, D_CXXONLY },
   { "__builtin_shuffle", RID_BUILTIN_SHUFFLE, 0 },
   { "__builtin_tgmath", RID_BUILTIN_TGMATH, D_CONLY },
@@ -446,6 +458,7 @@ const struct c_common_resword c_common_reswords[] =
   { "case",		RID_CASE,	0 },
   { "catch",		RID_CATCH,	D_CXX_OBJC | D_CXXWARN },
   { "char",		RID_CHAR,	0 },
+  { "char8_t",		RID_CHAR8,	D_CXX_CHAR8_T_FLAGS | D_CXXWARN },
   { "char16_t",		RID_CHAR16,	D_CXXONLY | D_CXX11 | D_CXXWARN },
   { "char32_t",		RID_CHAR32,	D_CXXONLY | D_CXX11 | D_CXXWARN },
   { "class",		RID_CLASS,	D_CXX_OBJC | D_CXXWARN },
@@ -733,30 +746,48 @@ tree
 fix_string_type (tree value)
 {
   int length = TREE_STRING_LENGTH (value);
-  int nchars;
+  int nchars, charsz;
   tree e_type, i_type, a_type;
 
   /* Compute the number of elements, for the array type.  */
   if (TREE_TYPE (value) == char_array_type_node || !TREE_TYPE (value))
     {
-      nchars = length;
+      charsz = 1;
       e_type = char_type_node;
+    }
+  else if (flag_char8_t && TREE_TYPE (value) == char8_array_type_node)
+    {
+      charsz = TYPE_PRECISION (char8_type_node) / BITS_PER_UNIT;
+      e_type = char8_type_node;
     }
   else if (TREE_TYPE (value) == char16_array_type_node)
     {
-      nchars = length / (TYPE_PRECISION (char16_type_node) / BITS_PER_UNIT);
+      charsz = TYPE_PRECISION (char16_type_node) / BITS_PER_UNIT;
       e_type = char16_type_node;
     }
   else if (TREE_TYPE (value) == char32_array_type_node)
     {
-      nchars = length / (TYPE_PRECISION (char32_type_node) / BITS_PER_UNIT);
+      charsz = TYPE_PRECISION (char32_type_node) / BITS_PER_UNIT;
       e_type = char32_type_node;
     }
   else
     {
-      nchars = length / (TYPE_PRECISION (wchar_type_node) / BITS_PER_UNIT);
+      charsz = TYPE_PRECISION (wchar_type_node) / BITS_PER_UNIT;
       e_type = wchar_type_node;
     }
+
+  /* This matters only for targets where ssizetype has smaller precision
+     than 32 bits.  */
+  if (wi::lts_p (wi::to_wide (TYPE_MAX_VALUE (ssizetype)), length))
+    {
+      error ("size of string literal is too large");
+      length = tree_to_shwi (TYPE_MAX_VALUE (ssizetype)) / charsz * charsz;
+      char *str = CONST_CAST (char *, TREE_STRING_POINTER (value));
+      memset (str + length, '\0',
+	      MIN (TREE_STRING_LENGTH (value) - length, charsz));
+      TREE_STRING_LENGTH (value) = length;
+    }
+  nchars = length / charsz;
 
   /* C89 2.2.4.1, C99 5.2.4.1 (Translation limits).  The analogous
      limit in C++98 Annex B is very large (65536) and is not normative,
@@ -809,7 +840,8 @@ fix_string_type (tree value)
    CPP_STRING16, or CPP_STRING32.  Return CPP_OTHER in case of error.
    This may not be exactly the string token type that initially created
    the string, since CPP_WSTRING is indistinguishable from the 16/32 bit
-   string type at this point.
+   string type, and CPP_UTF8STRING is indistinguishable from CPP_STRING
+   at this point.
 
    This effectively reverses part of the logic in lex_string and
    fix_string_type.  */
@@ -858,13 +890,13 @@ c_get_substring_location (const substring_loc &substr_loc,
   if (tok_type == CPP_OTHER)
     return "unrecognized string type";
 
-  return get_source_location_for_substring (parse_in, g_string_concat_db,
-					    substr_loc.get_fmt_string_loc (),
-					    tok_type,
-					    substr_loc.get_caret_idx (),
-					    substr_loc.get_start_idx (),
-					    substr_loc.get_end_idx (),
-					    out_loc);
+  return get_location_within_string (parse_in, g_string_concat_db,
+				     substr_loc.get_fmt_string_loc (),
+				     tok_type,
+				     substr_loc.get_caret_idx (),
+				     substr_loc.get_start_idx (),
+				     substr_loc.get_end_idx (),
+				     out_loc);
 }
 
 
@@ -1054,6 +1086,70 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
   return ret;
 }
 
+/* Build a VEC_CONVERT ifn for __builtin_convertvector builtin.  */
+
+tree
+c_build_vec_convert (location_t loc1, tree expr, location_t loc2, tree type,
+		     bool complain)
+{
+  if (error_operand_p (type))
+    return error_mark_node;
+  if (error_operand_p (expr))
+    return error_mark_node;
+
+  if (!VECTOR_INTEGER_TYPE_P (TREE_TYPE (expr))
+      && !VECTOR_FLOAT_TYPE_P (TREE_TYPE (expr)))
+    {
+      if (complain)
+	error_at (loc1, "%<__builtin_convertvector%> first argument must "
+			"be an integer or floating vector");
+      return error_mark_node;
+    }
+
+  if (!VECTOR_INTEGER_TYPE_P (type) && !VECTOR_FLOAT_TYPE_P (type))
+    {
+      if (complain)
+	error_at (loc2, "%<__builtin_convertvector%> second argument must "
+			"be an integer or floating vector type");
+      return error_mark_node;
+    }
+
+  if (maybe_ne (TYPE_VECTOR_SUBPARTS (TREE_TYPE (expr)),
+		TYPE_VECTOR_SUBPARTS (type)))
+    {
+      if (complain)
+	error_at (loc1, "%<__builtin_convertvector%> number of elements "
+			"of the first argument vector and the second argument "
+			"vector type should be the same");
+      return error_mark_node;
+    }
+
+  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (expr)))
+       == TYPE_MAIN_VARIANT (TREE_TYPE (type)))
+      || (VECTOR_INTEGER_TYPE_P (TREE_TYPE (expr))
+	  && VECTOR_INTEGER_TYPE_P (type)
+	  && (TYPE_PRECISION (TREE_TYPE (TREE_TYPE (expr)))
+	      == TYPE_PRECISION (TREE_TYPE (type)))))
+    return build1_loc (loc1, VIEW_CONVERT_EXPR, type, expr);
+
+  bool wrap = true;
+  bool maybe_const = false;
+  tree ret;
+  if (!c_dialect_cxx ())
+    {
+      /* Avoid C_MAYBE_CONST_EXPRs inside of VEC_CONVERT argument.  */
+      expr = c_fully_fold (expr, false, &maybe_const);
+      wrap &= maybe_const;
+    }
+
+  ret = build_call_expr_internal_loc (loc1, IFN_VEC_CONVERT, type, 1, expr);
+
+  if (!wrap)
+    ret = c_wrap_maybe_const (ret, true);
+
+  return ret;
+}
+
 /* Like tree.c:get_narrower, but retain conversion from C++0x scoped enum
    to integral type.  */
 
@@ -1231,6 +1327,8 @@ unsafe_conversion_p (location_t loc, tree type, tree expr, tree result,
 		    && TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant);
 
     loc = expansion_point_location_if_in_system_header (loc);
+
+  expr = fold_for_warn (expr);
 
   if (TREE_CODE (expr) == REAL_CST || TREE_CODE (expr) == INTEGER_CST)
     {
@@ -1929,6 +2027,13 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
       writer = 0;
       goto restart;
 
+    case VIEW_CONVERT_EXPR:
+      if (location_wrapper_p (x))
+	{
+	  x = TREE_OPERAND (x, 0);
+	  goto restart;
+	}
+      gcc_fallthrough ();
     default:
       /* For other expressions, simply recurse on their operands.
 	 Manual tail recursion for unary expressions.
@@ -3012,6 +3117,12 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
       primop0 = op0;
       primop1 = op1;
 
+      /* We want to fold unsigned comparisons of >= and < against zero.
+	 For these, we may also issue a warning if we have a non-constant
+	 compared against zero, where the zero was spelled as "0" (rather
+	 than merely folding to it).
+	 If we have at least one constant, then op1 is constant
+	 and we may have a non-constant expression as op0.  */
       if (!real1 && !real2 && integer_zerop (primop1)
 	  && TYPE_UNSIGNED (*restype_ptr))
 	{
@@ -3020,13 +3131,14 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
 	     if OP0 is a constant that is >= 0, the signedness of
 	     the comparison isn't an issue, so suppress the
 	     warning.  */
+	  tree folded_op0 = fold_for_warn (op0);
 	  bool warn = 
 	    warn_type_limits && !in_system_header_at (loc)
-	    && !(TREE_CODE (primop0) == INTEGER_CST
+	    && !(TREE_CODE (folded_op0) == INTEGER_CST
 		 && !TREE_OVERFLOW (convert (c_common_signed_type (type),
-					     primop0)))
+					     folded_op0)))
 	    /* Do not warn for enumeration types.  */
-	    && (TREE_CODE (expr_original_type (primop0)) != ENUMERAL_TYPE);
+	    && (TREE_CODE (expr_original_type (folded_op0)) != ENUMERAL_TYPE);
 	  
 	  switch (code)
 	    {
@@ -3223,6 +3335,7 @@ decl_with_nonnull_addr_p (const_tree expr)
 tree
 c_common_truthvalue_conversion (location_t location, tree expr)
 {
+  STRIP_ANY_LOCATION_WRAPPER (expr);
   switch (TREE_CODE (expr))
     {
     case EQ_EXPR:   case NE_EXPR:   case UNEQ_EXPR: case LTGT_EXPR:
@@ -3442,6 +3555,14 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 	}
       break;
 
+    case CONST_DECL:
+      {
+	tree folded_expr = fold_for_warn (expr);
+	if (folded_expr != expr)
+	  return c_common_truthvalue_conversion (location, folded_expr);
+      }
+      break;
+
     default:
       break;
     }
@@ -3539,8 +3660,12 @@ c_common_get_alias_set (tree t)
   if (!TYPE_P (t))
     return -1;
 
+  /* Unlike char, char8_t doesn't alias. */
+  if (flag_char8_t && t == char8_type_node)
+    return -1;
+
   /* The C standard guarantees that any object may be accessed via an
-     lvalue that has character type.  */
+     lvalue that has narrow character type (except char8_t).  */
   if (t == char_type_node
       || t == signed_char_type_node
       || t == unsigned_char_type_node)
@@ -3949,6 +4074,7 @@ c_get_ident (const char *id)
 void
 c_common_nodes_and_builtins (void)
 {
+  int char8_type_size;
   int char16_type_size;
   int char32_type_size;
   int wchar_type_size;
@@ -4177,18 +4303,13 @@ c_common_nodes_and_builtins (void)
 			 COMPLEX_FLOATN_NX_TYPE_NODE (i)));
 	}
 
-  if (c_dialect_cxx ())
-    {
-      /* For C++, make fileptr_type_node a distinct void * type until
-	 FILE type is defined.  Likewise for const struct tm*.  */
-      for (unsigned i = 0;
-	   i < sizeof (builtin_structptr_types)
-	       / sizeof (builtin_structptr_type);
-	   ++i)
-	builtin_structptr_types[i].node =
-	  build_variant_type_copy (builtin_structptr_types[i].base);
-
-    }
+  /* Make fileptr_type_node a distinct void * type until
+     FILE type is defined.  Likewise for const struct tm*.  */
+  for (unsigned i = 0;
+       i < sizeof (builtin_structptr_types) / sizeof (builtin_structptr_type);
+       ++i)
+    builtin_structptr_types[i].node
+      = build_variant_type_copy (builtin_structptr_types[i].base);
 
   record_builtin_type (RID_VOID, NULL, void_type_node);
 
@@ -4239,6 +4360,22 @@ c_common_nodes_and_builtins (void)
   /* This is for wide string constants.  */
   wchar_array_type_node
     = build_array_type (wchar_type_node, array_domain_type);
+
+  /* Define 'char8_t'.  */
+  char8_type_node = get_identifier (CHAR8_TYPE);
+  char8_type_node = TREE_TYPE (identifier_global_value (char8_type_node));
+  char8_type_size = TYPE_PRECISION (char8_type_node);
+  if (c_dialect_cxx ())
+    {
+      char8_type_node = make_unsigned_type (char8_type_size);
+
+      if (flag_char8_t)
+        record_builtin_type (RID_CHAR8, "char8_t", char8_type_node);
+    }
+
+  /* This is for UTF-8 string constants.  */
+  char8_array_type_node
+    = build_array_type (char8_type_node, array_domain_type);
 
   /* Define 'char16_t'.  */
   char16_type_node = get_identifier (CHAR16_TYPE);
@@ -5037,6 +5174,8 @@ c_stddef_cpp_builtins(void)
   builtin_define_with_value ("__WINT_TYPE__", WINT_TYPE, 0);
   builtin_define_with_value ("__INTMAX_TYPE__", INTMAX_TYPE, 0);
   builtin_define_with_value ("__UINTMAX_TYPE__", UINTMAX_TYPE, 0);
+  if (flag_char8_t)
+    builtin_define_with_value ("__CHAR8_TYPE__", CHAR8_TYPE, 0);
   builtin_define_with_value ("__CHAR16_TYPE__", CHAR16_TYPE, 0);
   builtin_define_with_value ("__CHAR32_TYPE__", CHAR32_TYPE, 0);
   if (SIG_ATOMIC_TYPE)
@@ -5119,37 +5258,65 @@ c_init_attributes (void)
 #undef DEF_ATTR_TREE_LIST
 }
 
-/* Check whether ALIGN is a valid user-specified alignment.  If so,
-   return its base-2 log; if not, output an error and return -1.  If
-   ALLOW_ZERO then 0 is valid and should result in a return of -1 with
-   no error.  */
-int
-check_user_alignment (const_tree align, bool allow_zero)
-{
-  int i;
+/* Check whether the byte alignment ALIGN is a valid user-specified
+   alignment less than the supported maximum.  If so, return ALIGN's
+   base-2 log; if not, output an error and return -1.  If OBJFILE
+   then reject alignments greater than MAX_OFILE_ALIGNMENT when
+   converted to bits.  Otherwise, consider valid only alignments
+   that are less than HOST_BITS_PER_INT - LOG2_BITS_PER_UNIT.
+   Zero is not considered a valid argument (and results in -1 on
+   return) but it only triggers a warning when WARN_ZERO is set.  */
 
+int
+check_user_alignment (const_tree align, bool objfile, bool warn_zero)
+{
   if (error_operand_p (align))
     return -1;
+
   if (TREE_CODE (align) != INTEGER_CST
       || !INTEGRAL_TYPE_P (TREE_TYPE (align)))
     {
       error ("requested alignment is not an integer constant");
       return -1;
     }
-  else if (allow_zero && integer_zerop (align))
-    return -1;
-  else if (tree_int_cst_sgn (align) == -1
-           || (i = tree_log2 (align)) == -1)
+
+  if (integer_zerop (align))
     {
-      error ("requested alignment is not a positive power of 2");
+      if (warn_zero)
+	warning (OPT_Wattributes,
+		 "requested alignment %qE is not a positive power of 2",
+		 align);
       return -1;
     }
-  else if (i >= HOST_BITS_PER_INT - LOG2_BITS_PER_UNIT)
+
+  int log2bitalign;
+  if (tree_int_cst_sgn (align) == -1
+      || (log2bitalign = tree_log2 (align)) == -1)
     {
-      error ("requested alignment is too large");
+      error ("requested alignment %qE is not a positive power of 2",
+	     align);
       return -1;
     }
-  return i;
+
+  if (objfile)
+    {
+      unsigned maxalign = MAX_OFILE_ALIGNMENT / BITS_PER_UNIT;
+      if (tree_to_shwi (align) > maxalign)
+	{
+	  error ("requested alignment %qE exceeds object file maximum %u",
+		 align, maxalign);
+	  return -1;
+	}
+    }
+
+  if (log2bitalign >= HOST_BITS_PER_INT - LOG2_BITS_PER_UNIT)
+    {
+      error ("requested alignment %qE exceeds maximum %u",
+	     align, 1U << (HOST_BITS_PER_INT - 1));
+      return -1;
+    }
+
+  return log2bitalign;
 }
 
 /* Determine the ELF symbol visibility for DECL, which is either a
@@ -5297,7 +5464,7 @@ check_function_sentinel (const_tree fntype, int nargs, tree *argarray)
 	}
 
       /* Validate the sentinel.  */
-      sentinel = argarray[nargs - 1 - pos];
+      sentinel = fold_for_warn (argarray[nargs - 1 - pos]);
       if ((!POINTER_TYPE_P (TREE_TYPE (sentinel))
 	   || !integer_zerop (sentinel))
 	  /* Although __null (in C++) is only an integer we allow it
@@ -5316,10 +5483,15 @@ check_function_sentinel (const_tree fntype, int nargs, tree *argarray)
 
 static bool
 check_function_restrict (const_tree fndecl, const_tree fntype,
-			 int nargs, tree *argarray)
+			 int nargs, tree *unfolded_argarray)
 {
   int i;
   tree parms = TYPE_ARG_TYPES (fntype);
+
+  /* Call fold_for_warn on all of the arguments.  */
+  auto_vec<tree> argarray (nargs);
+  for (i = 0; i < nargs; i++)
+    argarray.quick_push (fold_for_warn (unfolded_argarray[i]));
 
   if (fndecl
       && TREE_CODE (fndecl) == FUNCTION_DECL)
@@ -5357,7 +5529,7 @@ check_function_restrict (const_tree fndecl, const_tree fntype,
       if (POINTER_TYPE_P (type)
 	  && TYPE_RESTRICT (type)
 	  && !TYPE_READONLY (TREE_TYPE (type)))
-	warned |= warn_for_restrict (i, argarray, nargs);
+	warned |= warn_for_restrict (i, argarray.address (), nargs);
     }
 
   for (i = 0; i < nargs; i++)
@@ -5492,8 +5664,6 @@ parse_optimize_options (tree args, bool attr_p)
 		  next_p = NULL;
 		}
 
-	      r = q = (char *) ggc_alloc_atomic (len2 + 3);
-
 	      /* If the user supplied -Oxxx or -fxxx, only allow -Oxxx or -fxxx
 		 options.  */
 	      if (*p == '-' && p[1] != 'O' && p[1] != 'f')
@@ -5507,6 +5677,9 @@ parse_optimize_options (tree args, bool attr_p)
 			     "bad option %qs to pragma %<optimize%>", p);
 		  continue;
 		}
+
+	      /* Can't use GC memory here, see PR88007.  */
+	      r = q = XOBNEWVEC (&opts_obstack, char, len2 + 3);
 
 	      if (*p != '-')
 		{
@@ -5604,7 +5777,11 @@ attribute_fallthrough_p (tree attr)
 /* Check for valid arguments being passed to a function with FNTYPE.
    There are NARGS arguments in the array ARGARRAY.  LOC should be used
    for diagnostics.  Return true if either -Wnonnull or -Wrestrict has
-   been issued.  */
+   been issued.
+
+   The arguments in ARGARRAY may not have been folded yet (e.g. for C++,
+   to preserve location wrappers); checks that require folded arguments
+   should call fold_for_warn on them.  */
 
 bool
 check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
@@ -5622,7 +5799,8 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
   /* Check for errors in format strings.  */
 
   if (warn_format || warn_suggest_attribute_format)
-    check_function_format (TYPE_ATTRIBUTES (fntype), nargs, argarray, arglocs);
+    check_function_format (fntype, TYPE_ATTRIBUTES (fntype), nargs, argarray,
+			   arglocs);
 
   if (warn_format)
     check_function_sentinel (fntype, nargs, argarray);
@@ -6068,7 +6246,7 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token_type,
    message, or 0 if none.  */
 
 static int
-c_option_controlling_cpp_error (int reason)
+c_option_controlling_cpp_diagnostic (enum cpp_warning_reason reason)
 {
   const struct cpp_reason_option_codes_t *entry;
 
@@ -6080,7 +6258,7 @@ c_option_controlling_cpp_error (int reason)
   return 0;
 }
 
-/* Callback from cpp_error for PFILE to print diagnostics from the
+/* Callback from cpp_diagnostic for PFILE to print diagnostics from the
    preprocessor.  The diagnostic is of type LEVEL, with REASON set
    to the reason code if LEVEL is represents a warning, at location
    RICHLOC unless this is after lexing and the compiler's location
@@ -6089,9 +6267,11 @@ c_option_controlling_cpp_error (int reason)
    otherwise.  */
 
 bool
-c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
-	     rich_location *richloc,
-	     const char *msg, va_list *ap)
+c_cpp_diagnostic (cpp_reader *pfile ATTRIBUTE_UNUSED,
+		  enum cpp_diagnostic_level level,
+		  enum cpp_warning_reason reason,
+		  rich_location *richloc,
+		  const char *msg, va_list *ap)
 {
   diagnostic_info diagnostic;
   diagnostic_t dlevel;
@@ -6134,8 +6314,9 @@ c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
     richloc->set_range (0, input_location, SHOW_RANGE_WITH_CARET);
   diagnostic_set_info_translated (&diagnostic, msg, ap,
 				  richloc, dlevel);
-  diagnostic_override_option_index (&diagnostic,
-                                    c_option_controlling_cpp_error (reason));
+  diagnostic_override_option_index
+    (&diagnostic,
+     c_option_controlling_cpp_diagnostic (reason));
   ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
   if (level == CPP_DL_WARNING_SYSHDR)
     global_dc->dc_warn_system_headers = save_warn_system_headers;
@@ -6219,6 +6400,7 @@ fold_offsetof (tree expr, tree type, enum tree_code ctx)
 	return base;
 
       t = TREE_OPERAND (expr, 1);
+      STRIP_ANY_LOCATION_WRAPPER (t);
 
       /* Check if the offset goes beyond the upper bound of the array.  */
       if (TREE_CODE (t) == INTEGER_CST && tree_int_cst_sgn (t) >= 0)
@@ -6297,6 +6479,8 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
   maxindex = size_zero_node;
   if (initial_value)
     {
+      STRIP_ANY_LOCATION_WRAPPER (initial_value);
+
       if (TREE_CODE (initial_value) == STRING_CST)
 	{
 	  int eltsize
@@ -7710,6 +7894,7 @@ keyword_begins_type_specifier (enum rid keyword)
     case RID_ACCUM:
     case RID_BOOL:
     case RID_WCHAR:
+    case RID_CHAR8:
     case RID_CHAR16:
     case RID_CHAR32:
     case RID_SAT:
@@ -7846,6 +8031,7 @@ convert_vector_to_array_for_subscript (location_t loc,
 
       ret = !lvalue_p (*vecp);
 
+      index = fold_for_warn (index);
       if (TREE_CODE (index) == INTEGER_CST)
         if (!tree_fits_uhwi_p (index)
 	    || maybe_ge (tree_to_uhwi (index), TYPE_VECTOR_SUBPARTS (type)))
@@ -8052,29 +8238,89 @@ reject_gcc_builtin (const_tree expr, location_t loc /* = UNKNOWN_LOCATION */)
   return false;
 }
 
+/* Issue an ERROR for an invalid SIZE of array NAME which is null
+   for unnamed arrays.  */
+
+void
+invalid_array_size_error (location_t loc, cst_size_error error,
+			  const_tree size, const_tree name)
+{
+  tree maxsize = max_object_size ();
+  switch (error)
+    {
+    case cst_size_not_constant:
+      if (name)
+	error_at (loc, "size of array %qE is not a constant expression",
+		  name);
+      else
+	error_at (loc, "size of array is not a constant expression");
+      break;
+    case cst_size_negative:
+      if (name)
+	error_at (loc, "size %qE of array %qE is negative",
+		  size, name);
+      else
+	error_at (loc, "size %qE of array is negative",
+		  size);
+      break;
+    case cst_size_too_big:
+      if (name)
+	error_at (loc, "size %qE of array %qE exceeds maximum "
+		  "object size %qE", size, name, maxsize);
+      else
+	error_at (loc, "size %qE of array exceeds maximum "
+		  "object size %qE", size, maxsize);
+      break;
+    case cst_size_overflow:
+      if (name)
+	error_at (loc, "size of array %qE exceeds maximum "
+		  "object size %qE", name, maxsize);
+      else
+	error_at (loc, "size of array exceeds maximum "
+		  "object size %qE", maxsize);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Check if array size calculations overflow or if the array covers more
    than half of the address space.  Return true if the size of the array
-   is valid, false otherwise.  TYPE is the type of the array and NAME is
-   the name of the array, or NULL_TREE for unnamed arrays.  */
+   is valid, false otherwise.  T is either the type of the array or its
+   size, and NAME is the name of the array, or null for unnamed arrays.  */
 
 bool
-valid_array_size_p (location_t loc, tree type, tree name, bool complain)
+valid_array_size_p (location_t loc, const_tree t, tree name, bool complain)
 {
-  if (type != error_mark_node
-      && COMPLETE_TYPE_P (type)
-      && TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST
-      && !valid_constant_size_p (TYPE_SIZE_UNIT (type)))
+  if (t == error_mark_node)
+    return true;
+
+  const_tree size;
+  if (TYPE_P (t))
     {
-      if (complain)
-	{
-	  if (name)
-	    error_at (loc, "size of array %qE is too large", name);
-	  else
-	    error_at (loc, "size of unnamed array is too large");
-	}
-      return false;
+      if (!COMPLETE_TYPE_P (t))
+	return true;
+      size = TYPE_SIZE_UNIT (t);
     }
-  return true;
+  else
+    size = t;
+
+  if (TREE_CODE (size) != INTEGER_CST)
+    return true;
+
+  cst_size_error error;
+  if (valid_constant_size_p (size, &error))
+    return true;
+
+  if (!complain)
+    return false;
+
+  if (TREE_CODE (TREE_TYPE (size)) == ENUMERAL_TYPE)
+    /* Show the value of the enumerator rather than its name.  */
+    size = convert (ssizetype, const_cast<tree> (size));
+
+  invalid_array_size_error (loc, error, size, name);
+  return false;
 }
 
 /* Read SOURCE_DATE_EPOCH from environment to have a deterministic

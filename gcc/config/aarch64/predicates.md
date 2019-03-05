@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2019 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -29,6 +29,10 @@
 (define_predicate "aarch64_call_insn_operand"
   (ior (match_code "symbol_ref")
        (match_operand 0 "register_operand")))
+
+(define_predicate "aarch64_general_reg"
+  (and (match_operand 0 "register_operand")
+       (match_test "REGNO_REG_CLASS (REGNO (op)) == GENERAL_REGS")))
 
 ;; Return true if OP a (const_int 0) operand.
 (define_predicate "const0_operand"
@@ -113,6 +117,18 @@
 (define_predicate "aarch64_plus_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_plus_immediate")))
+
+(define_predicate "aarch64_plushi_immediate"
+  (match_code "const_int")
+{
+  HOST_WIDE_INT val = INTVAL (op);
+  /* The HImode value must be zero-extendable to an SImode plus_operand.  */
+  return ((val & 0xfff) == val || sext_hwi (val & 0xf000, 16) == val);
+})
+
+(define_predicate "aarch64_plushi_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "aarch64_plushi_immediate")))
 
 (define_predicate "aarch64_pluslong_immediate"
   (and (match_code "const_int")
@@ -307,6 +323,12 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "const_scalar_int_operand")))
 
+(define_predicate "aarch64_smin"
+  (match_code "smin"))
+
+(define_predicate "aarch64_umin"
+  (match_code "umin"))
+
 ;; True for integer comparisons and for FP comparisons other than LTGT or UNEQ.
 (define_special_predicate "aarch64_comparison_operator"
   (match_code "eq,ne,le,lt,ge,gt,geu,gtu,leu,ltu,unordered,
@@ -335,23 +357,37 @@
   (match_code "eq,ne"))
 
 (define_special_predicate "aarch64_carry_operation"
-  (match_code "ne,geu")
+  (match_code "ltu,geu")
 {
   if (XEXP (op, 1) != const0_rtx)
     return false;
-  machine_mode ccmode = (GET_CODE (op) == NE ? CC_Cmode : CCmode);
   rtx op0 = XEXP (op, 0);
-  return REG_P (op0) && REGNO (op0) == CC_REGNUM && GET_MODE (op0) == ccmode;
+  if (!REG_P (op0) || REGNO (op0) != CC_REGNUM)
+    return false;
+  machine_mode ccmode = GET_MODE (op0);
+  if (ccmode == CC_Cmode)
+    return GET_CODE (op) == LTU;
+  if (ccmode == CC_ADCmode || ccmode == CCmode)
+    return GET_CODE (op) == GEU;
+  return false;
 })
 
+; borrow is essentially the inverse of carry since the sense of the C flag
+; is inverted during subtraction.  See the note in aarch64-modes.def.
 (define_special_predicate "aarch64_borrow_operation"
-  (match_code "eq,ltu")
+  (match_code "geu,ltu")
 {
   if (XEXP (op, 1) != const0_rtx)
     return false;
-  machine_mode ccmode = (GET_CODE (op) == EQ ? CC_Cmode : CCmode);
   rtx op0 = XEXP (op, 0);
-  return REG_P (op0) && REGNO (op0) == CC_REGNUM && GET_MODE (op0) == ccmode;
+  if (!REG_P (op0) || REGNO (op0) != CC_REGNUM)
+    return false;
+  machine_mode ccmode = GET_MODE (op0);
+  if (ccmode == CC_Cmode)
+    return GET_CODE (op) == GEU;
+  if (ccmode == CC_ADCmode || ccmode == CCmode)
+    return GET_CODE (op) == LTU;
+  return false;
 })
 
 ;; True if the operand is memory reference suitable for a load/store exclusive.

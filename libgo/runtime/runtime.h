@@ -94,7 +94,7 @@ struct String
 
 struct FuncVal
 {
-	void	(*fn)(void);
+	uintptr_t fn;
 	// variable-size, fn-specific data here
 };
 
@@ -268,7 +268,7 @@ void*	runtime_sysAlloc(uintptr, uint64*)
 void	runtime_sysFree(void*, uintptr, uint64*)
   __asm__ (GOSYM_PREFIX "runtime.sysFree");
 void	runtime_mprofinit(void);
-#define runtime_getcallersp() __builtin_frame_address(0)
+#define runtime_getcallersp() __builtin_dwarf_cfa()
 void	runtime_mcall(FuncVal*)
   __asm__ (GOSYM_PREFIX "runtime.mcall");
 int32	runtime_timediv(int64, int32, int32*)
@@ -276,22 +276,8 @@ int32	runtime_timediv(int64, int32, int32*)
 int32	runtime_round2(int32 x); // round x up to a power of 2.
 
 // atomic operations
-#define runtime_cas(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
-#define runtime_cas64(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
-#define runtime_casp(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
-// Don't confuse with XADD x86 instruction,
-// this one is actually 'addx', that is, add-and-fetch.
-#define runtime_xadd(p, v) __sync_add_and_fetch (p, v)
-#define runtime_xadd64(p, v) __sync_add_and_fetch (p, v)
-#define runtime_xchg(p, v) __atomic_exchange_n (p, v, __ATOMIC_SEQ_CST)
-#define runtime_xchg64(p, v) __atomic_exchange_n (p, v, __ATOMIC_SEQ_CST)
-#define runtime_xchgp(p, v) __atomic_exchange_n (p, v, __ATOMIC_SEQ_CST)
+#define runtime_xadd(p, v) __atomic_add_fetch (p, v, __ATOMIC_SEQ_CST)
 #define runtime_atomicload(p) __atomic_load_n (p, __ATOMIC_SEQ_CST)
-#define runtime_atomicstore(p, v) __atomic_store_n (p, v, __ATOMIC_SEQ_CST)
-#define runtime_atomicstore64(p, v) __atomic_store_n (p, v, __ATOMIC_SEQ_CST)
-#define runtime_atomicload64(p) __atomic_load_n (p, __ATOMIC_SEQ_CST)
-#define runtime_atomicloadp(p) __atomic_load_n (p, __ATOMIC_SEQ_CST)
-#define runtime_atomicstorep(p, v) __atomic_store_n (p, v, __ATOMIC_SEQ_CST)
 
 void runtime_setg(G*)
   __asm__ (GOSYM_PREFIX "runtime.setg");
@@ -309,7 +295,7 @@ void	runtime_entersyscall()
   __asm__ (GOSYM_PREFIX "runtime.entersyscall");
 void	runtime_entersyscallblock()
   __asm__ (GOSYM_PREFIX "runtime.entersyscallblock");
-G*	__go_go(void (*pfn)(void*), void*);
+G*	__go_go(uintptr, void*);
 int32	runtime_callers(int32, Location*, int32, bool keep_callers);
 int64	runtime_nanotime(void)	// monotonic time
   __asm__(GOSYM_PREFIX "runtime.nanotime");
@@ -394,7 +380,7 @@ void __wrap_rtems_task_variable_add(void **);
  */
 void reflect_call(const struct __go_func_type *, FuncVal *, _Bool, _Bool,
 		  void **, void **)
-  __asm__ (GOSYM_PREFIX "reflect.call");
+  __asm__ (GOSYM_PREFIX "runtime.reflectcall");
 void runtime_panic(Eface)
   __asm__ (GOSYM_PREFIX "runtime.gopanic");
 void runtime_panic(Eface)
@@ -403,7 +389,7 @@ void runtime_panic(Eface)
 /*
  * runtime c-called (but written in Go)
  */
-void	runtime_newErrorCString(const char*, Eface*)
+void	runtime_newErrorCString(uintptr, Eface*)
      __asm__ (GOSYM_PREFIX "runtime.NewErrorCString");
 
 /*
@@ -502,3 +488,22 @@ struct funcfileline_return
 struct funcfileline_return
 runtime_funcfileline (uintptr targetpc, int32 index)
   __asm__ (GOSYM_PREFIX "runtime.funcfileline");
+
+/*
+ * helpers for stack scan.
+ */
+bool scanstackwithmap(void*)
+  __asm__(GOSYM_PREFIX "runtime.scanstackwithmap");
+bool doscanstack(G*, void*)
+  __asm__("runtime.doscanstack");
+
+bool runtime_usestackmaps;
+
+bool probestackmaps(void)
+  __asm__("runtime.probestackmaps");
+
+// This is set to non-zero when calling backtrace_full.  This is used
+// to avoid getting hanging on a recursive lock in dl_iterate_phdr on
+// older versions of glibc when a SIGPROF signal arrives while
+// collecting a backtrace.
+extern uint32 __go_runtime_in_callers;

@@ -1,3 +1,170 @@
+2019-02-27  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-02-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* MAINTAINERS (amdgcn port): Add myself and Julian Brown.
+	(Write After Approval): Remove myself and Julian.
+
+2019-01-26  Harald Anlauf  <anlauf@gmx.de>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-01-24  Xiong Hu Luo  <luoxhu@linux.vnet.ibm.com>
+
+	* ChangeLog: Replace space with tab.
+	* MAINTAINERS: Delete 1 tab to keep alignment.
+
+2019-01-21  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-01-18  Li Jia He  <helijia@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-01-17  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+	    Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+	* contrib/config-list.mk: Add amdgcn-amdhsa.
+
+2019-01-16  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-01-16  Xiong Hu Luo  <luoxhu@linux.vnet.ibm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-01-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/88535
+	* config.guess: Import upstream version 2019-01-03.
+	* config.sub: Import upstream version 2019-01-01.
+
+2018-12-21  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
+
+	* MAINTAINERS (Write After Approval): Update my maintainer address.
+
+2018-12-21  Gergö Barany  <gergo@codesourcery.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2018-12-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* contrib/config-list.mk: Remove powerpc-eabispe and powerpc-linux_spe.
+
+2018-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.ac (NCN_STRICT_CHECK_TOOLS): Check otool.
+	(ACX_CHECK_INSTALLED_TARGET_TOOL): Likewise
+	(GCC_TARGET_TOOL): Likewise.
+	* Makefile.tpl (HOST_EXPORTS): Add OTOOL, OTOOL_FOR_TARGET.
+	(BASE_TARGET_EXPORTS): OTOOL, export OTOOL_FOR_TARGET.
+	OTOOL, OTOOL_FOR_TARGET: New substitutions.
+	(EXTRA_HOST_FLAGS, EXTRA_TARGET_FLAGS): Add OTOOL.
+	* configure: Regenerate.
+	* Makefile.in: Likewise.
+
+2018-11-28  Johannes Pfau  <johannespfau@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2018-11-13  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/pr87930.c: Move to ...
+	* gcc.dg/asan/pr87930.c: ... here.  Guard for i?86/x86_64 targets.
+
+2018-11-10  Stafford Horne  <shorne@gmail.com>
+
+	* MAINTAINERS (CPU Port Maintainers): Add myself for or1k.
+	(Write After Approval): Remove myself.
+
+2018-11-06  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* config/iconv.m4 (AM_ICONV_LINK): Don't overwrite CPPFLAGS.
+	Append $INCICONV to it.
+
+2018-11-04  Stafford Horne  <shorne@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* multilib.am: New file.  From automake.
+
+	Merge from binutils-gdb:
+	2018-06-19  Simon Marchi  <simon.marchi@ericsson.com>
+
+	* libtool.m4: Use AC_LANG_SOURCE.
+	* configure.ac: Remove AC_PREREQ, use AC_LANG_SOURCE.
+	* ar-lib: New file.
+	* test-driver: New file.
+	* configure: Re-generate.
+
+2018-10-31  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2018-10-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR bootstrap/87788
+	PR d/87799
+	* configure: Rebuild.
+	* configure.ac: Disable D on systems where it is known not to work.
+
+2018-10-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.def (target_modules): Add libphobos.
+	(flags_to_pass): Add GDC, GDCFLAGS, GDC_FOR_TARGET and
+	GDCFLAGS_FOR_TARGET.
+	(dependencies): Make libphobos depend on libatomic, libbacktrace
+	configure, and zlib configure.
+	(language): Add language d.
+	* Makefile.in: Rebuild.
+	* Makefile.tpl (BUILD_EXPORTS): Add GDC and GDCFLAGS.
+	(HOST_EXPORTS): Add GDC.
+	(POSTSTAGE1_HOST_EXPORTS): Add GDC and GDC_FOR_BUILD.
+	(BASE_TARGET_EXPORTS): Add GDC.
+	(GDC_FOR_BUILD, GDC, GDCFLAGS): New variables.
+	(GDC_FOR_TARGET, GDC_FLAGS_FOR_TARGET): New variables.
+	(EXTRA_HOST_FLAGS): Add GDC.
+	(STAGE1_FLAGS_TO_PASS): Add GDC.
+	(EXTRA_TARGET_FLAGS): Add GDC and GDCFLAGS.
+	* config-ml.in: Treat GDC and GDCFLAGS like other compiler/flag
+	environment variables.
+	* configure: Rebuild.
+	* configure.ac: Add target-libphobos to target_libraries.  Set and
+	substitute GDC_FOR_BUILD and GDC_FOR_TARGET.
+
+2018-10-24  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2018-10-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* MAINTAINERS (Write After Approval): Remove myself.
+
+2018-10-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* MAINTAINERS: Add myself as D front-end and libphobos maintainer.
+
+2018-10-14  Bin Cheng <bin.cheng@linux.alibaba.com>
+
+	* MAINTAINERS: Update my email address.
+
 2018-10-04  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* MAINTAINERS: List myself as "libgomp (OpenACC)" and "OpenACC"

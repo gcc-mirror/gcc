@@ -1,5 +1,5 @@
 ;; ARM VFP instruction patterns
-;; Copyright (C) 2003-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2003-2019 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.
@@ -259,7 +259,7 @@
 ;; arm_restrict_it.
 (define_insn "*thumb2_movsi_vfp"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,l,r,r, l,*hk,m, *m,*t, r,*t,*t,  *Uv")
-	(match_operand:SI 1 "general_operand"	   "rk,I,Py,K,j,mi,*mi,l,*hk, r,*t,*t,*Uvi,*t"))]
+	(match_operand:SI 1 "general_operand"	   "rk,I,Py,K,j,mi,*mi,l,*hk, r,*t,*t,*UvTu,*t"))]
   "TARGET_THUMB2 && TARGET_HARD_FLOAT
    && (   s_register_operand (operands[0], SImode)
        || s_register_operand (operands[1], SImode))"
@@ -276,6 +276,9 @@
       return \"movw%?\\t%0, %1\";
     case 5:
     case 6:
+      /* Cannot load it directly, split to load it via MOV / MOVT.  */
+      if (!MEM_P (operands[1]) && arm_disable_literal_pool)
+	return \"#\";
       return \"ldr%?\\t%0, %1\";
     case 7:
     case 8:
@@ -304,8 +307,8 @@
 ;; DImode moves
 
 (define_insn "*movdi_vfp"
-  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r,r,r,r,q,q,m,w,!r,w,w, Uv")
-       (match_operand:DI 1 "di_operand"              "r,rDa,Db,Dc,mi,mi,q,r,w,w,Uvi,w"))]
+  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r,r,r,r,r,r,m,w,!r,w,w, Uv")
+	(match_operand:DI 1 "di_operand"	      "r,rDa,Db,Dc,mi,mi,r,r,w,w,UvTu,w"))]
   "TARGET_32BIT && TARGET_HARD_FLOAT
    && (   register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))
@@ -321,6 +324,10 @@
       return \"#\";
     case 4:
     case 5:
+      /* Cannot load it directly, split to load it via MOV / MOVT.  */
+      if (!MEM_P (operands[1]) && arm_disable_literal_pool)
+	return \"#\";
+      /* Fall through.  */
     case 6:
       return output_move_double (operands, true, NULL);
     case 7:
@@ -587,7 +594,7 @@
 
 (define_insn "*thumb2_movsf_vfp"
   [(set (match_operand:SF 0 "nonimmediate_operand" "=t,?r,t, t  ,Uv,r ,m,t,r")
-	(match_operand:SF 1 "general_operand"	   " ?r,t,Dv,UvE,t, mE,r,t,r"))]
+	(match_operand:SF 1 "hard_sf_operand"	   " ?r,t,Dv,UvHa,t, mHa,r,t,r"))]
   "TARGET_THUMB2 && TARGET_HARD_FLOAT
    && (   s_register_operand (operands[0], SFmode)
        || s_register_operand (operands[1], SFmode))"
@@ -676,7 +683,7 @@
 
 (define_insn "*thumb2_movdf_vfp"
   [(set (match_operand:DF 0 "nonimmediate_soft_df_operand" "=w,?r,w ,w,w  ,Uv,r ,m,w,r")
-	(match_operand:DF 1 "soft_df_operand"		   " ?r,w,Dy,G,UvF,w, mF,r, w,r"))]
+	(match_operand:DF 1 "hard_df_operand"		   " ?r,w,Dy,G,UvHa,w, mHa,r, w,r"))]
   "TARGET_THUMB2 && TARGET_HARD_FLOAT
    && (   register_operand (operands[0], DFmode)
        || register_operand (operands[1], DFmode))"
@@ -864,14 +871,15 @@
   if (REGNO (operands[0]) == REGNO (operands[1]))
     {
       operands[0] = gen_highpart (SImode, operands[0]);
-      operands[1] = gen_rtx_XOR (SImode, operands[0], GEN_INT (0x80000000));
+      operands[1] = gen_rtx_XOR (SImode, operands[0],
+				 gen_int_mode (0x80000000, SImode));
     }
   else
     {
       rtx in_hi, in_lo, out_hi, out_lo;
 
       in_hi = gen_rtx_XOR (SImode, gen_highpart (SImode, operands[1]),
-			   GEN_INT (0x80000000));
+			   gen_int_mode (0x80000000, SImode));
       in_lo = gen_lowpart (SImode, operands[1]);
       out_hi = gen_highpart (SImode, operands[0]);
       out_lo = gen_lowpart (SImode, operands[0]);
@@ -1983,39 +1991,50 @@
 ;; Support for xD (single precision only) variants.
 ;; fmrrs, fmsrr
 
-;; Split an immediate DF move to two immediate SI moves.
+;; Load a DF immediate via GPR (where combinations of MOV and MOVT can be used)
+;; and then move it into a VFP register.
 (define_insn_and_split "no_literal_pool_df_immediate"
-  [(set (match_operand:DF 0 "s_register_operand" "")
-	(match_operand:DF 1 "const_double_operand" ""))]
-  "TARGET_THUMB2 && arm_disable_literal_pool
-  && !(TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE
-       && vfp3_const_double_rtx (operands[1]))"
+  [(set (match_operand:DF 0 "s_register_operand" "=w")
+	(match_operand:DF 1 "const_double_operand" "F"))
+   (clobber (match_operand:DF 2 "s_register_operand" "=r"))]
+  "arm_disable_literal_pool
+   && TARGET_HARD_FLOAT
+   && !arm_const_double_rtx (operands[1])
+   && !(TARGET_VFP_DOUBLE && vfp3_const_double_rtx (operands[1]))"
   "#"
-  "&& !reload_completed"
-  [(set (subreg:SI (match_dup 1) 0) (match_dup 2))
-   (set (subreg:SI (match_dup 1) 4) (match_dup 3))
-   (set (match_dup 0) (match_dup 1))]
-  "
+  ""
+  [(const_int 0)]
+{
   long buf[2];
+  int order = BYTES_BIG_ENDIAN ? 1 : 0;
   real_to_target (buf, CONST_DOUBLE_REAL_VALUE (operands[1]), DFmode);
-  operands[2] = GEN_INT ((int) buf[0]);
-  operands[3] = GEN_INT ((int) buf[1]);
-  operands[1] = gen_reg_rtx (DFmode);
-  ")
+  unsigned HOST_WIDE_INT ival = zext_hwi (buf[order], 32);
+  ival |= (zext_hwi (buf[1 - order], 32) << 32);
+  rtx cst = gen_int_mode (ival, DImode);
+  emit_move_insn (simplify_gen_subreg (DImode, operands[2], DFmode, 0), cst);
+  emit_move_insn (operands[0], operands[2]);
+  DONE;
+}
+)
 
-;; Split an immediate SF move to one immediate SI move.
+;; Load a SF immediate via GPR (where combinations of MOV and MOVT can be used)
+;; and then move it into a VFP register.
 (define_insn_and_split "no_literal_pool_sf_immediate"
-  [(set (match_operand:SF 0 "s_register_operand" "")
-	(match_operand:SF 1 "const_double_operand" ""))]
-  "TARGET_THUMB2 && arm_disable_literal_pool
-  && !(TARGET_HARD_FLOAT && vfp3_const_double_rtx (operands[1]))"
+  [(set (match_operand:SF 0 "s_register_operand" "=t")
+	(match_operand:SF 1 "const_double_operand" "E"))
+   (clobber (match_operand:SF 2 "s_register_operand" "=r"))]
+  "arm_disable_literal_pool
+   && TARGET_HARD_FLOAT
+   && !vfp3_const_double_rtx (operands[1])"
   "#"
-  "&& !reload_completed"
-  [(set (subreg:SI (match_dup 1) 0) (match_dup 2))
-   (set (match_dup 0) (match_dup 1))]
-  "
+  ""
+  [(const_int 0)]
+{
   long buf;
   real_to_target (&buf, CONST_DOUBLE_REAL_VALUE (operands[1]), SFmode);
-  operands[2] = GEN_INT ((int) buf);
-  operands[1] = gen_reg_rtx (SFmode);
-  ")
+  rtx cst = gen_int_mode (buf, SImode);
+  emit_move_insn (simplify_gen_subreg (SImode, operands[2], SFmode, 0), cst);
+  emit_move_insn (operands[0], operands[2]);
+  DONE;
+}
+)

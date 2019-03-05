@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 1998-2018 Free Software Foundation, Inc.
+   Copyright (C) 1998-2019 Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -4340,7 +4340,7 @@ cris_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 /* Return the preferred minimum alignment for a static object.  */
 
 static HOST_WIDE_INT
-cris_preferred_mininum_alignment (void)
+cris_preferred_minimum_alignment (void)
 {
   if (!TARGET_CONST_ALIGN)
     return 8;
@@ -4354,7 +4354,7 @@ cris_preferred_mininum_alignment (void)
 static HOST_WIDE_INT
 cris_static_rtx_alignment (machine_mode mode)
 {
-  return MAX (cris_preferred_mininum_alignment (), GET_MODE_ALIGNMENT (mode));
+  return MAX (cris_preferred_minimum_alignment (), GET_MODE_ALIGNMENT (mode));
 }
 
 /* Implement TARGET_CONSTANT_ALIGNMENT.  Note that this hook has the
@@ -4367,7 +4367,7 @@ cris_static_rtx_alignment (machine_mode mode)
 static HOST_WIDE_INT
 cris_constant_alignment (const_tree, HOST_WIDE_INT basic_align)
 {
-  return MAX (cris_preferred_mininum_alignment (), basic_align);
+  return MAX (cris_preferred_minimum_alignment (), basic_align);
 }
 
 #if 0

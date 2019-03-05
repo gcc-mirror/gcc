@@ -1,5 +1,5 @@
 /* Thread edges through blocks and update the control flow and SSA graphs.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -336,7 +336,17 @@ create_block_for_threading (basic_block bb,
   rd->dup_blocks[count] = duplicate_block (bb, NULL, NULL);
 
   FOR_EACH_EDGE (e, ei, rd->dup_blocks[count]->succs)
-    e->aux = NULL;
+    {
+      e->aux = NULL;
+
+      /* If we duplicate a block with an outgoing edge marked as
+	 EDGE_IGNORE, we must clear EDGE_IGNORE so that it doesn't
+	 leak out of the current pass.
+
+	 It would be better to simplify switch statements and remove
+	 the edges before we get here, but the sequencing is nontrivial.  */
+      e->flags &= ~EDGE_IGNORE;
+    }
 
   /* Zero out the profile, since the block is unreachable for now.  */
   rd->dup_blocks[count]->count = profile_count::uninitialized ();
@@ -431,7 +441,7 @@ copy_phi_arg_into_existing_phi (edge src_e, edge tgt_e)
       gphi *src_phi = gsi.phi ();
       gphi *dest_phi = gsi2.phi ();
       tree val = gimple_phi_arg_def (src_phi, src_idx);
-      source_location locus = gimple_phi_arg_location (src_phi, src_idx);
+      location_t locus = gimple_phi_arg_location (src_phi, src_idx);
 
       SET_PHI_ARG_DEF (dest_phi, tgt_idx, val);
       gimple_phi_arg_set_location (dest_phi, tgt_idx, locus);
@@ -445,7 +455,7 @@ copy_phi_arg_into_existing_phi (edge src_e, edge tgt_e)
 
 static tree
 get_value_locus_in_path (tree def, vec<jump_thread_edge *> *path,
-			 basic_block bb, int idx, source_location *locus)
+			 basic_block bb, int idx, location_t *locus)
 {
   tree arg;
   gphi *def_phi;
@@ -499,7 +509,7 @@ copy_phi_args (basic_block bb, edge src_e, edge tgt_e,
     {
       gphi *phi = gsi.phi ();
       tree def = gimple_phi_arg_def (phi, src_indx);
-      source_location locus = gimple_phi_arg_location (phi, src_indx);
+      location_t locus = gimple_phi_arg_location (phi, src_indx);
 
       if (TREE_CODE (def) == SSA_NAME
 	  && !virtual_operand_p (gimple_phi_result (phi)))
@@ -2540,7 +2550,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
      Consider if we have two jump threading paths A and B.  If the
      target edge of A is the starting edge of B and we thread path A
      first, then we create an additional incoming edge into B->dest that
-     we can not discover as a jump threading path on this iteration.
+     we cannot discover as a jump threading path on this iteration.
 
      If we instead thread B first, then the edge into B->dest will have
      already been redirected before we process path A and path A will

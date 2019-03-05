@@ -12,5 +12,5 @@ void foo (int n)
     bar(i);
 }
 
-/* { dg-final { scan-tree-dump-times "GOMP_loop_dynamic_start" 1 "ompexp" } } */
-/* { dg-final { scan-tree-dump-times "GOMP_loop_dynamic_next" 1 "ompexp" } } */
+/* { dg-final { scan-tree-dump-times "GOMP_loop_nonmonotonic_dynamic_start" 1 "ompexp" } } */
+/* { dg-final { scan-tree-dump-times "GOMP_loop_nonmonotonic_dynamic_next" 1 "ompexp" } } */

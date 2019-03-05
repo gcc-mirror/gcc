@@ -1,5 +1,5 @@
 /* IRA allocation based on graph coloring.
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -1575,7 +1575,7 @@ update_conflict_hard_regno_costs (int *costs, enum reg_class aclass,
 /* Set up conflicting (through CONFLICT_REGS) for each object of
    allocno A and the start allocno profitable regs (through
    START_PROFITABLE_REGS).  Remember that the start profitable regs
-   exclude hard regs which can not hold value of mode of allocno A.
+   exclude hard regs which cannot hold value of mode of allocno A.
    This covers mostly cases when multi-register value should be
    aligned.  */
 static inline void
@@ -2272,7 +2272,7 @@ bucket_allocno_compare_func (const void *v1p, const void *v2p)
   /* Push pseudos requiring less hard registers first.  It means that
      we will assign pseudos requiring more hard registers first
      avoiding creation small holes in free hard register file into
-     which the pseudos requiring more hard registers can not fit.  */
+     which the pseudos requiring more hard registers cannot fit.  */
   if ((diff = (ira_reg_class_max_nregs[cl1][ALLOCNO_MODE (a1)]
 	       - ira_reg_class_max_nregs[cl2][ALLOCNO_MODE (a2)])) != 0)
     return diff;
@@ -4852,7 +4852,8 @@ color (void)
 static void
 fast_allocation (void)
 {
-  int i, j, k, num, class_size, hard_regno;
+  int i, j, k, num, class_size, hard_regno, best_hard_regno, cost, min_cost;
+  int *costs;
 #ifdef STACK_REGS
   bool no_stack_reg_p;
 #endif
@@ -4903,6 +4904,9 @@ fast_allocation (void)
       no_stack_reg_p = ALLOCNO_NO_STACK_REG_P (a);
 #endif
       class_size = ira_class_hard_regs_num[aclass];
+      costs = ALLOCNO_HARD_REG_COSTS (a);
+      min_cost = INT_MAX;
+      best_hard_regno = -1;
       for (j = 0; j < class_size; j++)
 	{
 	  hard_regno = ira_class_hard_regs[aclass][j];
@@ -4915,16 +4919,28 @@ fast_allocation (void)
 	      || (TEST_HARD_REG_BIT
 		  (ira_prohibited_class_mode_regs[aclass][mode], hard_regno)))
 	    continue;
-	  ALLOCNO_HARD_REGNO (a) = hard_regno;
-	  for (l = 0; l < nr; l++)
+	  if (costs == NULL)
 	    {
-	      ira_object_t obj = ALLOCNO_OBJECT (a, l);
-	      for (r = OBJECT_LIVE_RANGES (obj); r != NULL; r = r->next)
-		for (k = r->start; k <= r->finish; k++)
-		  IOR_HARD_REG_SET (used_hard_regs[k],
-				    ira_reg_mode_hard_regset[hard_regno][mode]);
+	      best_hard_regno = hard_regno;
+	      break;
 	    }
-	  break;
+	  cost = costs[j];
+	  if (min_cost > cost)
+	    {
+	      min_cost = cost;
+	      best_hard_regno = hard_regno;
+	    }
+	}
+      if (best_hard_regno < 0)
+	continue;
+      ALLOCNO_HARD_REGNO (a) = hard_regno = best_hard_regno;
+      for (l = 0; l < nr; l++)
+	{
+	  ira_object_t obj = ALLOCNO_OBJECT (a, l);
+	  for (r = OBJECT_LIVE_RANGES (obj); r != NULL; r = r->next)
+	    for (k = r->start; k <= r->finish; k++)
+	      IOR_HARD_REG_SET (used_hard_regs[k],
+				ira_reg_mode_hard_regset[hard_regno][mode]);
 	}
     }
   ira_free (sorted_allocnos);

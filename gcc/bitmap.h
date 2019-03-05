@@ -1,5 +1,5 @@
 /* Functions to support general ended bitmaps.
-   Copyright (C) 1997-2018 Free Software Foundation, Inc.
+   Copyright (C) 1997-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,16 +20,21 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_BITMAP_H
 #define GCC_BITMAP_H
 
-/* Implementation of sparse integer sets as a linked list.
+/* Implementation of sparse integer sets as a linked list or tree.
 
    This sparse set representation is suitable for sparse sets with an
-   unknown (a priori) universe.  The set is represented as a double-linked
-   list of container nodes (struct bitmap_element).  Each node consists
-   of an index for the first member that could be held in the container,
-   a small array of integers that represent the members in the container,
-   and pointers to the next and previous element in the linked list.  The
-   elements in the list are sorted in ascending order, i.e. the head of
+   unknown (a priori) universe.
+
+   Sets are represented as double-linked lists of container nodes of
+   type "struct bitmap_element" or as a binary trees of the same
+   container nodes.  Each container node consists of an index for the
+   first member that could be held in the container, a small array of
+   integers that represent the members in the container, and pointers
+   to the next and previous element in the linked list, or left and
+   right children in the tree.  In linked-list form, the container
+   nodes in the list are sorted in ascending order, i.e. the head of
    the list holds the element with the smallest member of the set.
+   In tree form, nodes to the left have a smaller container index.
 
    For a given member I in the set:
      - the element for I will have index is I / (bits per element)
@@ -42,34 +47,97 @@ along with GCC; see the file COPYING3.  If not see
    high storage overhead *per element*, but a small overall overhead if
    the set is very sparse.
 
-   The downside is that many operations are relatively slow because the
-   linked list has to be traversed to test membership (i.e. member_p/
-   add_member/remove_member).  To improve the performance of this set
-   representation, the last accessed element and its index are cached.
-   For membership tests on members close to recently accessed members,
-   the cached last element improves membership test to a constant-time
-   operation.
+   The storage requirements for linked-list sparse sets are O(E), with E->N
+   in the worst case (a sparse set with large distances between the values
+   of the set members).
 
-   The following operations can always be performed in O(1) time:
+   This representation also works well for data flow problems where the size
+   of the set may grow dynamically, but care must be taken that the member_p,
+   add_member, and remove_member operations occur with a suitable access
+   pattern.
+
+   The linked-list set representation works well for problems involving very
+   sparse sets.  The canonical example in GCC is, of course, the "set of
+   sets" for some CFG-based data flow problems (liveness analysis, dominance
+   frontiers, etc.).
+   
+   For random-access sparse sets of unknown universe, the binary tree
+   representation is likely to be a more suitable choice.  Theoretical
+   access times for the binary tree representation are better than those
+   for the linked-list, but in practice this is only true for truely
+   random access.
+
+   Often the most suitable representation during construction of the set
+   is not the best choice for the usage of the set.  For such cases, the
+   "view" of the set can be changed from one representation to the other.
+   This is an O(E) operation:
+
+     * from list to tree view	: bitmap_tree_view
+     * from tree to list view	: bitmap_list_view
+
+   Traversing linked lists or trees can be cache-unfriendly.  Performance
+   can be improved by keeping container nodes in the set grouped together
+   in  memory, using a dedicated obstack for a set (or group of related
+   sets).  Elements allocated on obstacks are released to a free-list and
+   taken off the free list.  If multiple sets are allocated on the same
+   obstack, elements freed from one set may be re-used for one of the other
+   sets.  This usually helps avoid cache misses.
+
+   A single free-list is used for all sets allocated in GGC space.  This is
+   bad for persistent sets, so persistent sets should be allocated on an
+   obstack whenever possible.
+
+   For random-access sets with a known, relatively small universe size, the
+   SparseSet or simple bitmap representations may be more efficient than a
+   linked-list set.
+
+
+   LINKED LIST FORM
+   ================
+
+   In linked-list form, in-order iterations of the set can be executed
+   efficiently.  The downside is that many random-access operations are
+   relatively slow, because the linked list has to be traversed to test
+   membership (i.e. member_p/ add_member/remove_member).
+   
+   To improve the performance of this set representation, the last
+   accessed element and its index are cached.  For membership tests on
+   members close to recently accessed members, the cached last element
+   improves membership test to a constant-time operation.
+
+   The following operations can always be performed in O(1) time in
+   list view:
 
      * clear			: bitmap_clear
+     * smallest_member		: bitmap_first_set_bit
      * choose_one		: (not implemented, but could be
-				   implemented in constant time)
+				   in constant time)
 
-   The following operations can be performed in O(E) time worst-case (with
-   E the number of elements in the linked list), but in O(1) time with a
-   suitable access patterns:
+   The following operations can be performed in O(E) time worst-case in
+   list view (with E the number of elements in the linked list), but in
+   O(1) time with a suitable access patterns:
 
      * member_p			: bitmap_bit_p
-     * add_member		: bitmap_set_bit
-     * remove_member		: bitmap_clear_bit
+     * add_member		: bitmap_set_bit / bitmap_set_range
+     * remove_member		: bitmap_clear_bit / bitmap_clear_range
 
-   The following operations can be performed in O(E) time:
+   The following operations can be performed in O(E) time in list view:
 
      * cardinality		: bitmap_count_bits
-     * set_size			: bitmap_last_set_bit (but this could
+     * largest_member		: bitmap_last_set_bit (but this could
 				  in constant time with a pointer to
 				  the last element in the chain)
+     * set_size			: bitmap_last_set_bit
+
+   In tree view the following operations can all be performed in O(log E)
+   amortized time with O(E) worst-case behavior.
+
+     * smallest_member
+     * largest_member
+     * set_size
+     * member_p
+     * add_member
+     * remove_member
 
    Additionally, the linked-list sparse set representation supports
    enumeration of the members in O(E) time:
@@ -93,39 +161,53 @@ along with GCC; see the file COPYING3.  If not see
      * A | (B & ~C)		: bitmap_ior_and_compl /
 				  bitmap_ior_and_compl_into
 
-   The storage requirements for linked-list sparse sets are O(E), with E->N
-   in the worst case (a sparse set with large distances between the values
-   of the set members).
 
-   The linked-list set representation works well for problems involving very
-   sparse sets.  The canonical example in GCC is, of course, the "set of
-   sets" for some CFG-based data flow problems (liveness analysis, dominance
-   frontiers, etc.).
-   
-   This representation also works well for data flow problems where the size
-   of the set may grow dynamically, but care must be taken that the member_p,
-   add_member, and remove_member operations occur with a suitable access
-   pattern.
-   
-   For random-access sets with a known, relatively small universe size, the
-   SparseSet or simple bitmap representations may be more efficient than a
-   linked-list set.  For random-access sets of unknown universe, a hash table
-   or a balanced binary tree representation is likely to be a more suitable
-   choice.
+   BINARY TREE FORM
+   ================
+   An alternate "view" of a bitmap is its binary tree representation.
+   For this representation, splay trees are used because they can be
+   implemented using the same data structures as the linked list, with
+   no overhead for meta-data (like color, or rank) on the tree nodes.
 
-   Traversing linked lists is usually cache-unfriendly, even with the last
-   accessed element cached.
+   In binary tree form, random-access to the set is much more efficient
+   than for the linked-list representation.  Downsides are the high cost
+   of clearing the set, and the relatively large number of operations
+   necessary to balance the tree.  Also, iterating the set members is
+   not supported.
    
-   Cache performance can be improved by keeping the elements in the set
-   grouped together in memory, using a dedicated obstack for a set (or group
-   of related sets).  Elements allocated on obstacks are released to a
-   free-list and taken off the free list.  If multiple sets are allocated on
-   the same obstack, elements freed from one set may be re-used for one of
-   the other sets.  This usually helps avoid cache misses.
+   As for the linked-list representation, the last accessed element and
+   its index are cached, so that membership tests on the latest accessed
+   members is a constant-time operation.  Other lookups take O(logE)
+   time amortized (but O(E) time worst-case).
 
-   A single free-list is used for all sets allocated in GGC space.  This is
-   bad for persistent sets, so persistent sets should be allocated on an
-   obstack whenever possible.  */
+   The following operations can always be performed in O(1) time:
+
+     * choose_one		: (not implemented, but could be
+				   implemented in constant time)
+
+   The following operations can be performed in O(logE) time amortized
+   but O(E) time worst-case, but in O(1) time if the same element is
+   accessed.
+
+     * member_p			: bitmap_bit_p
+     * add_member		: bitmap_set_bit
+     * remove_member		: bitmap_clear_bit
+
+   The following operations can be performed in O(logE) time amortized
+   but O(E) time worst-case:
+
+     * smallest_member		: bitmap_first_set_bit
+     * largest_member		: bitmap_last_set_bit
+     * set_size			: bitmap_last_set_bit
+
+   The following operations can be performed in O(E) time:
+
+     * clear			: bitmap_clear
+
+   The binary tree sparse set representation does *not* support any form
+   of enumeration, and does also *not* support logical operations on sets.
+   The binary tree representation is only supposed to be used for sets
+   on which many random-access membership tests will happen.  */
 
 #include "obstack.h"
 
@@ -157,14 +239,14 @@ struct bitmap_usage: public mem_usage
   {
     char *location_string = loc->to_string ();
 
-    fprintf (stderr, "%-48s %10" PRIu64 ":%5.1f%%"
-	     "%10" PRIu64 "%10" PRIu64 ":%5.1f%%"
-	     "%12" PRIu64 "%12" PRIu64 "%10s\n",
-	     location_string, (uint64_t)m_allocated,
+    fprintf (stderr, "%-48s " PRsa (9) ":%5.1f%%"
+	     PRsa (9) PRsa (9) ":%5.1f%%"
+	     PRsa (11) PRsa (11) "%10s\n",
+	     location_string, SIZE_AMOUNT (m_allocated),
 	     get_percent (m_allocated, total.m_allocated),
-	     (uint64_t)m_peak, (uint64_t)m_times,
+	     SIZE_AMOUNT (m_peak), SIZE_AMOUNT (m_times),
 	     get_percent (m_times, total.m_times),
-	     m_nsearches, m_search_iter,
+	     SIZE_AMOUNT (m_nsearches), SIZE_AMOUNT (m_search_iter),
 	     loc->m_ggc ? "ggc" : "heap");
 
     free (location_string);
@@ -176,7 +258,6 @@ struct bitmap_usage: public mem_usage
   {
     fprintf (stderr, "%-48s %11s%16s%17s%12s%12s%10s\n", name, "Leak", "Peak",
 	     "Times", "N searches", "Search iter", "Type");
-    print_dash_line ();
   }
 
   /* Number search operations.  */
@@ -206,10 +287,10 @@ typedef unsigned long BITMAP_WORD;
 #define BITMAP_ELEMENT_ALL_BITS (BITMAP_ELEMENT_WORDS * BITMAP_WORD_BITS)
 
 /* Obstack for allocating bitmaps and elements from.  */
-struct GTY (()) bitmap_obstack {
+struct bitmap_obstack {
   struct bitmap_element *elements;
   struct bitmap_head *heads;
-  struct obstack GTY ((skip)) obstack;
+  struct obstack obstack;
 };
 
 /* Bitmap set element.  We use a linked list to hold only the bits that
@@ -224,30 +305,51 @@ struct GTY (()) bitmap_obstack {
    bitmap_elt_clear_from to be implemented in unit time rather than
    linear in the number of elements to be freed.  */
 
-struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) bitmap_element {
-  struct bitmap_element *next;	/* Next element.  */
-  struct bitmap_element *prev;	/* Previous element.  */
-  unsigned int indx;			/* regno/BITMAP_ELEMENT_ALL_BITS.  */
-  BITMAP_WORD bits[BITMAP_ELEMENT_WORDS]; /* Bits that are set.  */
+struct GTY((chain_next ("%h.next"))) bitmap_element {
+  /* In list form, the next element in the linked list;
+     in tree form, the left child node in the tree.  */
+  struct bitmap_element *next;
+  /* In list form, the previous element in the linked list;
+     in tree form, the right child node in the tree.  */
+  struct bitmap_element *prev;
+  /* regno/BITMAP_ELEMENT_ALL_BITS.  */
+  unsigned int indx;
+  /* Bits that are set, counting from INDX, inclusive  */
+  BITMAP_WORD bits[BITMAP_ELEMENT_WORDS];
 };
 
 /* Head of bitmap linked list.  The 'current' member points to something
    already pointed to by the chain started by first, so GTY((skip)) it.  */
 
 struct GTY(()) bitmap_head {
-  unsigned int indx;			/* Index of last element looked at.  */
-  unsigned int descriptor_id;		/* Unique identifier for the allocation
-					   site of this bitmap, for detailed
-					   statistics gathering.  */
-  bitmap_element *first;		/* First element in linked list.  */
-  bitmap_element * GTY((skip(""))) current; /* Last element looked at.  */
-  bitmap_obstack *obstack;		/* Obstack to allocate elements from.
-					   If NULL, then use GGC allocation.  */
+  static bitmap_obstack crashme;
+  /* Poison obstack to not make it not a valid initialized GC bitmap.  */
+  CONSTEXPR bitmap_head()
+    : indx(0), tree_form(false), first(NULL), current(NULL),
+      obstack (&crashme)
+  {}
+  /* Index of last element looked at.  */
+  unsigned int indx;
+  /* False if the bitmap is in list form; true if the bitmap is in tree form.
+     Bitmap iterators only work on bitmaps in list form.  */
+  bool tree_form;
+  /* In list form, the first element in the linked list;
+     in tree form, the root of the tree.   */
+  bitmap_element *first;
+  /* Last element looked at.  */
+  bitmap_element * GTY((skip(""))) current;
+  /* Obstack to allocate elements from.  If NULL, then use GGC allocation.  */
+  bitmap_obstack * GTY((skip(""))) obstack;
+  void dump ();
 };
 
 /* Global data */
 extern bitmap_element bitmap_zero_bits;	/* Zero bitmap element */
 extern bitmap_obstack bitmap_default_obstack;   /* Default bitmap obstack */
+
+/* Change the view of the bitmap to list, or tree.  */
+void bitmap_list_view (bitmap);
+void bitmap_tree_view (bitmap);
 
 /* Clear a bitmap by freeing up the linked list.  */
 extern void bitmap_clear (bitmap);
@@ -315,10 +417,10 @@ extern bool bitmap_clear_bit (bitmap, int);
 /* Set a single bit in a bitmap.  Return true if the bit changed.  */
 extern bool bitmap_set_bit (bitmap, int);
 
-/* Return true if a register is set in a register set.  */
+/* Return true if a bit is set in a bitmap.  */
 extern int bitmap_bit_p (bitmap, int);
 
-/* Debug functions to print a bitmap linked list.  */
+/* Debug functions to print a bitmap.  */
 extern void debug_bitmap (const_bitmap);
 extern void debug_bitmap_file (FILE *, const_bitmap);
 
@@ -338,9 +440,22 @@ static inline void
 bitmap_initialize (bitmap head, bitmap_obstack *obstack CXX_MEM_STAT_INFO)
 {
   head->first = head->current = NULL;
+  head->indx = head->tree_form = 0;
   head->obstack = obstack;
   if (GATHER_STATISTICS)
     bitmap_register (head PASS_MEM_STAT);
+}
+
+/* Release a bitmap (but not its head).  This is suitable for pairing with
+   bitmap_initialize.  */
+
+static inline void
+bitmap_release (bitmap head)
+{
+  bitmap_clear (head);
+  /* Poison the obstack pointer so the obstack can be safely released.
+     Do not zero it as the bitmap then becomes initialized GC.  */
+  head->obstack = &bitmap_head::crashme;
 }
 
 /* Allocate and free bitmaps from obstack, malloc and gc'd memory.  */
@@ -397,6 +512,8 @@ bmp_iter_set_init (bitmap_iterator *bi, const_bitmap map,
   bi->elt1 = map->first;
   bi->elt2 = NULL;
 
+  gcc_checking_assert (!map->tree_form);
+
   /* Advance elt1 until it is not before the block containing start_bit.  */
   while (1)
     {
@@ -438,6 +555,8 @@ bmp_iter_and_init (bitmap_iterator *bi, const_bitmap map1, const_bitmap map2,
 {
   bi->elt1 = map1->first;
   bi->elt2 = map2->first;
+
+  gcc_checking_assert (!map1->tree_form && !map2->tree_form);
 
   /* Advance elt1 until it is not before the block containing
      start_bit.  */
@@ -497,8 +616,7 @@ bmp_iter_and_init (bitmap_iterator *bi, const_bitmap map1, const_bitmap map2,
   *bit_no = start_bit;
 }
 
-/* Initialize an iterator to iterate over the bits in MAP1 & ~MAP2.
-   */
+/* Initialize an iterator to iterate over the bits in MAP1 & ~MAP2.  */
 
 static inline void
 bmp_iter_and_compl_init (bitmap_iterator *bi,
@@ -507,6 +625,8 @@ bmp_iter_and_compl_init (bitmap_iterator *bi,
 {
   bi->elt1 = map1->first;
   bi->elt2 = map2->first;
+
+  gcc_checking_assert (!map1->tree_form && !map2->tree_form);
 
   /* Advance elt1 until it is not before the block containing start_bit.  */
   while (1)

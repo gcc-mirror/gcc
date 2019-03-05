@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2018, AdaCore                     --
+--                     Copyright (C) 2001-2019, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,7 @@
 
 with Ada.Streams;              use Ada.Streams;
 with Ada.Exceptions;           use Ada.Exceptions;
+with Ada.Containers.Generic_Array_Sort;
 with Ada.Finalization;
 with Ada.Unchecked_Conversion;
 
@@ -50,6 +51,12 @@ package body GNAT.Sockets is
 
    package C renames Interfaces.C;
 
+   type IPV6_Mreq is record
+      ipv6mr_multiaddr : In6_Addr;
+      ipv6mr_interface : C.unsigned;
+   end record with Convention => C;
+   --  Record to Add/Drop_Membership for multicast in IPv6
+
    ENOERROR : constant := 0;
 
    Netdb_Buffer_Size : constant := SOSC.Need_Netdb_Buffer * 1024;
@@ -62,10 +69,11 @@ package body GNAT.Sockets is
    --  Correspondence tables
 
    Levels : constant array (Level_Type) of C.int :=
-              (Socket_Level              => SOSC.SOL_SOCKET,
-               IP_Protocol_For_IP_Level  => SOSC.IPPROTO_IP,
-               IP_Protocol_For_UDP_Level => SOSC.IPPROTO_UDP,
-               IP_Protocol_For_TCP_Level => SOSC.IPPROTO_TCP);
+              (Socket_Level               => SOSC.SOL_SOCKET,
+               IP_Protocol_For_IP_Level   => SOSC.IPPROTO_IP,
+               IP_Protocol_For_IPv6_Level => SOSC.IPPROTO_IPV6,
+               IP_Protocol_For_UDP_Level  => SOSC.IPPROTO_UDP,
+               IP_Protocol_For_TCP_Level  => SOSC.IPPROTO_TCP);
 
    Modes : constant array (Mode_Type) of C.int :=
              (Socket_Stream   => SOSC.SOCK_STREAM,
@@ -89,12 +97,18 @@ package body GNAT.Sockets is
                 Linger              => SOSC.SO_LINGER,
                 Error               => SOSC.SO_ERROR,
                 No_Delay            => SOSC.TCP_NODELAY,
-                Add_Membership      => SOSC.IP_ADD_MEMBERSHIP,
-                Drop_Membership     => SOSC.IP_DROP_MEMBERSHIP,
-                Multicast_If        => SOSC.IP_MULTICAST_IF,
-                Multicast_TTL       => SOSC.IP_MULTICAST_TTL,
-                Multicast_Loop      => SOSC.IP_MULTICAST_LOOP,
+                Add_Membership_V4   => SOSC.IP_ADD_MEMBERSHIP,
+                Drop_Membership_V4  => SOSC.IP_DROP_MEMBERSHIP,
+                Multicast_If_V4     => SOSC.IP_MULTICAST_IF,
+                Multicast_Loop_V4   => SOSC.IP_MULTICAST_LOOP,
                 Receive_Packet_Info => SOSC.IP_PKTINFO,
+                Multicast_TTL       => SOSC.IP_MULTICAST_TTL,
+                Add_Membership_V6   => SOSC.IPV6_ADD_MEMBERSHIP,
+                Drop_Membership_V6  => SOSC.IPV6_DROP_MEMBERSHIP,
+                Multicast_If_V6     => SOSC.IPV6_MULTICAST_IF,
+                Multicast_Loop_V6   => SOSC.IPV6_MULTICAST_LOOP,
+                Multicast_Hops      => SOSC.IPV6_MULTICAST_HOPS,
+                IPv6_Only           => SOSC.IPV6_V6ONLY,
                 Send_Timeout        => SOSC.SO_SNDTIMEO,
                 Receive_Timeout     => SOSC.SO_RCVTIMEO,
                 Busy_Polling        => SOSC.SO_BUSY_POLL);
@@ -110,8 +124,16 @@ package body GNAT.Sockets is
    Socket_Error_Id : constant Exception_Id := Socket_Error'Identity;
    Host_Error_Id   : constant Exception_Id := Host_Error'Identity;
 
-   Hex_To_Char : constant String (1 .. 16) := "0123456789ABCDEF";
-   --  Use to print in hexadecimal format
+   type In_Addr_Union (Family : Family_Type) is record
+      case Family is
+         when Family_Inet =>
+            In4 : In_Addr;
+         when Family_Inet6 =>
+            In6 : In6_Addr;
+         when Family_Unspec =>
+            null;
+      end case;
+   end record with Unchecked_Union;
 
    -----------------------
    -- Local subprograms --
@@ -133,36 +155,12 @@ package body GNAT.Sockets is
    function Set_Forced_Flags (F : C.int) return C.int;
    --  Return F with the bits from SOSC.MSG_Forced_Flags forced set
 
-   function Short_To_Network
-     (S : C.unsigned_short) return C.unsigned_short;
-   pragma Inline (Short_To_Network);
-   --  Convert a port number into a network port number
-
-   function Network_To_Short
-     (S : C.unsigned_short) return C.unsigned_short
-   renames Short_To_Network;
-   --  Symmetric operation
-
-   function Image
-     (Val : Inet_Addr_Bytes;
-      Hex : Boolean := False) return String;
-   --  Output an array of inet address components in hex or decimal mode
-
-   function Is_IP_Address (Name : String) return Boolean;
-   --  Return true when Name is an IPv4 address in dotted quad notation
-
    procedure Netdb_Lock;
    pragma Inline (Netdb_Lock);
    procedure Netdb_Unlock;
    pragma Inline (Netdb_Unlock);
    --  Lock/unlock operation used to protect netdb access for platforms that
    --  require such protection.
-
-   function To_In_Addr (Addr : Inet_Addr_Type) return In_Addr;
-   procedure To_Inet_Addr
-     (Addr   : In_Addr;
-      Result : out Inet_Addr_Type);
-   --  Conversion functions
 
    function To_Host_Entry (E : Hostent_Access) return Host_Entry_Type;
    --  Conversion function
@@ -180,6 +178,12 @@ package body GNAT.Sockets is
    --  Reconstruct a Duration value from a Timeval record (seconds and
    --  microseconds).
 
+   function Dedot (Value : String) return String
+   is (if Value /= "" and then Value (Value'Last) = '.'
+       then Value (Value'First .. Value'Last - 1)
+       else Value);
+   --  Removes dot at the end of error message
+
    procedure Raise_Socket_Error (Error : Integer);
    --  Raise Socket_Error with an exception message describing the error code
    --  from errno.
@@ -188,6 +192,13 @@ package body GNAT.Sockets is
    --  Raise Host_Error exception with message describing error code (note
    --  hstrerror seems to be obsolete) from h_errno. Name is the name
    --  or address that was being looked up.
+
+   procedure Raise_GAI_Error (RC : C.int; Name : String);
+   --  Raise Host_Error with exception message in case of errors in
+   --  getaddrinfo and getnameinfo.
+
+   function Is_Windows return Boolean with Inline;
+   --  Returns True on Windows platform
 
    procedure Narrow (Item : in out Socket_Set_Type);
    --  Update Last as it may be greater than the real last socket
@@ -328,7 +339,7 @@ package body GNAT.Sockets is
       Address : out Sock_Addr_Type)
    is
       Res : C.int;
-      Sin : aliased Sockaddr_In;
+      Sin : aliased Sockaddr;
       Len : aliased C.int := Sin'Size / 8;
 
    begin
@@ -339,9 +350,7 @@ package body GNAT.Sockets is
       end if;
 
       Socket := Socket_Type (Res);
-
-      To_Inet_Addr (Sin.Sin_Addr, Address.Addr);
-      Address.Port := Port_Type (Network_To_Short (Sin.Sin_Port));
+      Address := Get_Address (Sin);
    end Accept_Socket;
 
    -------------------
@@ -451,20 +460,11 @@ package body GNAT.Sockets is
       Address : Sock_Addr_Type)
    is
       Res : C.int;
-      Sin : aliased Sockaddr_In;
+      Sin : aliased Sockaddr;
       Len : constant C.int := Sin'Size / 8;
-      --  This assumes that Address.Family = Family_Inet???
 
    begin
-      if Address.Family = Family_Inet6 then
-         raise Socket_Error with "IPv6 not supported";
-      end if;
-
-      Set_Family  (Sin.Sin_Family, Address.Family);
-      Set_Address (Sin'Unchecked_Access, To_In_Addr (Address.Addr));
-      Set_Port
-        (Sin'Unchecked_Access,
-         Short_To_Network (C.unsigned_short (Address.Port)));
+      Set_Address (Sin'Unchecked_Access, Address);
 
       Res := C_Bind (C.int (Socket), Sin'Address, Len);
 
@@ -478,14 +478,12 @@ package body GNAT.Sockets is
    ----------------------
 
    procedure Check_For_Fd_Set (Fd : Socket_Type) is
-      use SOSC;
-
    begin
       --  On Windows, fd_set is a FD_SETSIZE array of socket ids:
       --  no check required. Warnings suppressed because condition
       --  is known at compile time.
 
-      if Target_OS = Windows then
+      if Is_Windows then
 
          return;
 
@@ -667,19 +665,11 @@ package body GNAT.Sockets is
      (Socket : Socket_Type;
       Server : Sock_Addr_Type) return C.int
    is
-      Sin : aliased Sockaddr_In;
+      Sin : aliased Sockaddr;
       Len : constant C.int := Sin'Size / 8;
 
    begin
-      if Server.Family = Family_Inet6 then
-         raise Socket_Error with "IPv6 not supported";
-      end if;
-
-      Set_Family  (Sin.Sin_Family, Server.Family);
-      Set_Address (Sin'Unchecked_Access, To_In_Addr (Server.Addr));
-      Set_Port
-        (Sin'Unchecked_Access,
-         Short_To_Network (C.unsigned_short (Server.Port)));
+      Set_Address (Sin'Unchecked_Access, Server);
 
       return C_Connect (C.int (Socket), Sin'Address, Len);
    end Connect_Socket;
@@ -861,12 +851,13 @@ package body GNAT.Sockets is
    procedure Create_Socket
      (Socket : out Socket_Type;
       Family : Family_Type := Family_Inet;
-      Mode   : Mode_Type   := Socket_Stream)
+      Mode   : Mode_Type   := Socket_Stream;
+      Level  : Level_Type  := IP_Protocol_For_IP_Level)
    is
       Res : C.int;
 
    begin
-      Res := C_Socket (Families (Family), Modes (Mode), 0);
+      Res := C_Socket (Families (Family), Modes (Mode), Levels (Level));
 
       if Res = Failure then
          Raise_Socket_Error (Socket_Errno);
@@ -959,6 +950,228 @@ package body GNAT.Sockets is
       end if;
    end Get_Address;
 
+   ---------------------
+   -- Raise_GAI_Error --
+   ---------------------
+
+   procedure Raise_GAI_Error (RC : C.int; Name : String) is
+   begin
+      if RC = SOSC.EAI_SYSTEM then
+         declare
+            Errcode : constant Integer := Socket_Errno;
+         begin
+            raise Host_Error with Err_Code_Image (Errcode)
+              & Dedot (Socket_Error_Message (Errcode)) & ": " & Name;
+         end;
+      else
+         raise Host_Error with Err_Code_Image (Integer (RC))
+           & Dedot (CS.Value (C_GAI_Strerror (RC))) & ": " & Name;
+      end if;
+   end Raise_GAI_Error;
+
+   ----------------------
+   -- Get_Address_Info --
+   ----------------------
+
+   function Get_Address_Info
+     (Host         : String;
+      Service      : String;
+      Family       : Family_Type := Family_Unspec;
+      Mode         : Mode_Type   := Socket_Stream;
+      Level        : Level_Type  := IP_Protocol_For_IP_Level;
+      Numeric_Host : Boolean     := False;
+      Passive      : Boolean     := False;
+      Unknown      : access procedure
+        (Family, Mode, Level, Length : Integer) := null)
+      return Address_Info_Array
+   is
+      A : aliased Addrinfo_Access;
+      N : aliased C.char_array := C.To_C (Host);
+      S : aliased C.char_array := C.To_C (if Service = "" then "0"
+                                          else Service);
+      Hints : aliased constant Addrinfo :=
+        (ai_family   => Families (Family),
+         ai_socktype => Modes (Mode),
+         ai_protocol => Levels (Level),
+         ai_flags    => (if Numeric_Host then SOSC.AI_NUMERICHOST else 0) +
+                        (if Passive then SOSC.AI_PASSIVE else 0),
+         ai_addrlen  => 0,
+         others      => <>);
+
+      R     : C.int;
+      Iter  : Addrinfo_Access;
+      Found : Boolean;
+
+      function To_Array return Address_Info_Array;
+      --  Convert taken from OS addrinfo list A into Address_Info_Array
+
+      --------------
+      -- To_Array --
+      --------------
+
+      function To_Array return Address_Info_Array is
+         Result : Address_Info_Array (1 .. 8);
+
+         procedure Unsupported;
+         --  Calls Unknown callback if defiend
+
+         -----------------
+         -- Unsupported --
+         -----------------
+
+         procedure Unsupported is
+         begin
+            if Unknown /= null then
+               Unknown
+                 (Integer (Iter.ai_family),
+                  Integer (Iter.ai_socktype),
+                  Integer (Iter.ai_protocol),
+                  Integer (Iter.ai_addrlen));
+            end if;
+         end Unsupported;
+
+      --  Start of processing for To_Array
+
+      begin
+         for J in Result'Range loop
+            Look_For_Supported : loop
+               if Iter = null then
+                  return Result (1 .. J - 1);
+               end if;
+
+               Result (J).Addr := Get_Address (Iter.ai_addr.all);
+
+               if Result (J).Addr.Family = Family_Unspec then
+                  Unsupported;
+               else
+                  for M in Modes'Range loop
+                     Found := False;
+                     if Modes (M) = Iter.ai_socktype then
+                        Result (J).Mode := M;
+                        Found := True;
+                        exit;
+                     end if;
+                  end loop;
+
+                  if Found then
+                     for L in Levels'Range loop
+                        if Levels (L) = Iter.ai_protocol then
+                           Result (J).Level := L;
+                           exit;
+                        end if;
+                     end loop;
+
+                     exit Look_For_Supported;
+                  else
+                     Unsupported;
+                  end if;
+               end if;
+
+               Iter := Iter.ai_next;
+
+               if Iter = null then
+                  return Result (1 .. J - 1);
+               end if;
+            end loop Look_For_Supported;
+
+            Iter := Iter.ai_next;
+         end loop;
+
+         return Result & To_Array;
+      end To_Array;
+
+   --  Start of processing for Get_Address_Info
+
+   begin
+      R := C_Getaddrinfo
+        (Node    => (if Host = "" then null else N'Unchecked_Access),
+         Service => S'Unchecked_Access,
+         Hints   => Hints'Unchecked_Access,
+         Res     => A'Access);
+
+      if R /= 0 then
+         Raise_GAI_Error
+           (R, Host & (if Service = "" then "" else ':' & Service));
+      end if;
+
+      Iter := A;
+
+      return Result : constant Address_Info_Array := To_Array do
+         C_Freeaddrinfo (A);
+      end return;
+   end Get_Address_Info;
+
+   ----------
+   -- Sort --
+   ----------
+
+   procedure Sort
+     (Addr_Info : in out Address_Info_Array;
+      Compare   : access function (Left, Right : Address_Info) return Boolean)
+   is
+      function Comp (Left, Right : Address_Info) return Boolean is
+         (Compare (Left, Right));
+      procedure Sorter is new Ada.Containers.Generic_Array_Sort
+        (Positive, Address_Info, Address_Info_Array, Comp);
+   begin
+      Sorter (Addr_Info);
+   end Sort;
+
+   ------------------------
+   -- IPv6_TCP_Preferred --
+   ------------------------
+
+   function IPv6_TCP_Preferred (Left, Right : Address_Info) return Boolean is
+   begin
+      pragma Assert (Family_Inet < Family_Inet6);
+      --  To be sure that Family_Type enumeration has appropriate elements
+      --  order
+
+      if Left.Addr.Family /= Right.Addr.Family then
+         return Left.Addr.Family > Right.Addr.Family;
+      end if;
+
+      pragma Assert (Socket_Stream < Socket_Datagram);
+      --  To be sure that Mode_Type enumeration has appropriate elements order
+
+      return Left.Mode < Right.Mode;
+   end IPv6_TCP_Preferred;
+
+   -------------------
+   -- Get_Name_Info --
+   -------------------
+
+   function Get_Name_Info
+     (Addr         : Sock_Addr_Type;
+      Numeric_Host : Boolean := False;
+      Numeric_Serv : Boolean := False) return Host_Service
+   is
+      SA : aliased Sockaddr;
+      H  : aliased C.char_array := (1 .. SOSC.NI_MAXHOST => C.nul);
+      S  : aliased C.char_array := (1 .. SOSC.NI_MAXSERV => C.nul);
+      RC : C.int;
+   begin
+      Set_Address (SA'Unchecked_Access, Addr);
+
+      RC := C_Getnameinfo
+        (SA'Unchecked_Access, socklen_t (Lengths (Addr.Family)),
+         H'Unchecked_Access, H'Length,
+         S'Unchecked_Access, S'Length,
+         (if Numeric_Host then SOSC.NI_NUMERICHOST else 0) +
+             (if Numeric_Serv then SOSC.NI_NUMERICSERV else 0));
+
+      if RC /= 0 then
+         Raise_GAI_Error (RC, Image (Addr));
+      end if;
+
+      declare
+         HR : constant String := C.To_Ada (H);
+         SR : constant String := C.To_Ada (S);
+      begin
+         return (HR'Length, SR'Length, HR, SR);
+      end;
+   end Get_Name_Info;
+
    -------------------------
    -- Get_Host_By_Address --
    -------------------------
@@ -969,17 +1182,33 @@ package body GNAT.Sockets is
    is
       pragma Unreferenced (Family);
 
-      HA     : aliased In_Addr := To_In_Addr (Address);
+      HA     : aliased In_Addr_Union (Address.Family);
       Buflen : constant C.int := Netdb_Buffer_Size;
       Buf    : aliased C.char_array (1 .. Netdb_Buffer_Size);
       Res    : aliased Hostent;
       Err    : aliased C.int;
 
    begin
+      case Address.Family is
+         when Family_Inet =>
+            HA.In4 := To_In_Addr (Address);
+         when Family_Inet6 =>
+            HA.In6 := To_In6_Addr (Address);
+         when Family_Unspec =>
+            return (0, 0, (1, " "), (1 .. 0 => (1, " ")),
+                    (1 .. 0 => No_Inet_Addr));
+      end case;
+
       Netdb_Lock;
 
-      if C_Gethostbyaddr (HA'Address, HA'Size / 8, SOSC.AF_INET,
-                             Res'Access, Buf'Address, Buflen, Err'Access) /= 0
+      if C_Gethostbyaddr
+        (HA'Address,
+         (case Address.Family is
+             when Family_Inet => HA.In4'Size,
+             when Family_Inet6 => HA.In6'Size,
+             when Family_Unspec => 0) / 8,
+         Families (Address.Family),
+         Res'Access, Buf'Address, Buflen, Err'Access) /= 0
       then
          Netdb_Unlock;
          Raise_Host_Error (Integer (Err), Image (Address));
@@ -1007,7 +1236,7 @@ package body GNAT.Sockets is
       --  If the given name actually is the string representation of
       --  an IP address, use Get_Host_By_Address instead.
 
-      if Is_IP_Address (Name) then
+      if Is_IPv4_Address (Name) or else Is_IPv6_Address (Name) then
          return Get_Host_By_Address (Inet_Addr (Name));
       end if;
 
@@ -1041,19 +1270,14 @@ package body GNAT.Sockets is
    -------------------
 
    function Get_Peer_Name (Socket : Socket_Type) return Sock_Addr_Type is
-      Sin : aliased Sockaddr_In;
+      Sin : aliased Sockaddr;
       Len : aliased C.int := Sin'Size / 8;
-      Res : Sock_Addr_Type (Family_Inet);
-
    begin
       if C_Getpeername (C.int (Socket), Sin'Address, Len'Access) = Failure then
          Raise_Socket_Error (Socket_Errno);
       end if;
 
-      To_Inet_Addr (Sin.Sin_Addr, Res.Addr);
-      Res.Port := Port_Type (Network_To_Short (Sin.Sin_Port));
-
-      return Res;
+      return Get_Address (Sin);
    end Get_Peer_Name;
 
    -------------------------
@@ -1127,20 +1351,17 @@ package body GNAT.Sockets is
    function Get_Socket_Name
      (Socket : Socket_Type) return Sock_Addr_Type
    is
-      Sin  : aliased Sockaddr_In;
-      Len  : aliased C.int := Sin'Size / 8;
-      Res  : C.int;
-      Addr : Sock_Addr_Type := No_Sock_Addr;
-
+      Sin : aliased Sockaddr;
+      Len : aliased C.int := Sin'Size / 8;
+      Res : C.int;
    begin
       Res := C_Getsockname (C.int (Socket), Sin'Address, Len'Access);
 
-      if Res /= Failure then
-         To_Inet_Addr (Sin.Sin_Addr, Addr.Addr);
-         Addr.Port := Port_Type (Network_To_Short (Sin.Sin_Port));
+      if Res = Failure then
+         return No_Sock_Addr;
       end if;
 
-      return Addr;
+      return Get_Address (Sin);
    end Get_Socket_Name;
 
    -----------------------
@@ -1153,11 +1374,12 @@ package body GNAT.Sockets is
       Name    : Option_Name;
       Optname : Interfaces.C.int := -1) return Option_Type
    is
-      use SOSC;
+      use type C.unsigned;
       use type C.unsigned_char;
 
       V8  : aliased Two_Ints;
       V4  : aliased C.int;
+      U4  : aliased C.unsigned;
       V1  : aliased C.unsigned_char;
       VT  : aliased Timeval;
       Len : aliased C.int;
@@ -1178,8 +1400,7 @@ package body GNAT.Sockets is
       end if;
 
       case Name is
-         when Multicast_Loop
-            | Multicast_TTL
+         when Multicast_TTL
             | Receive_Packet_Info
          =>
             Len := V1'Size / 8;
@@ -1190,11 +1411,16 @@ package body GNAT.Sockets is
             | Error
             | Generic_Option
             | Keep_Alive
-            | Multicast_If
+            | Multicast_If_V4
+            | Multicast_If_V6
+            | Multicast_Loop_V4
+            | Multicast_Loop_V6
+            | Multicast_Hops
             | No_Delay
             | Receive_Buffer
             | Reuse_Address
             | Send_Buffer
+            | IPv6_Only
          =>
             Len := V4'Size / 8;
             Add := V4'Address;
@@ -1206,18 +1432,23 @@ package body GNAT.Sockets is
             --  struct timeval, but on Windows it is a milliseconds count in
             --  a DWORD.
 
-            if Target_OS = Windows then
-               Len := V4'Size / 8;
-               Add := V4'Address;
-
+            if Is_Windows then
+               Len := U4'Size / 8;
+               Add := U4'Address;
             else
                Len := VT'Size / 8;
                Add := VT'Address;
             end if;
 
-         when Add_Membership
-            | Drop_Membership
-            | Linger
+         when Add_Membership_V4
+            | Add_Membership_V6
+            | Drop_Membership_V4
+            | Drop_Membership_V6
+         =>
+            raise Socket_Error with
+              "Add/Drop membership valid only for Set_Socket_Option";
+
+         when Linger
          =>
             Len := V8'Size / 8;
             Add := V8'Address;
@@ -1243,6 +1474,9 @@ package body GNAT.Sockets is
             | Keep_Alive
             | No_Delay
             | Reuse_Address
+            | Multicast_Loop_V4
+            | Multicast_Loop_V6
+            | IPv6_Only
          =>
             Opt.Enabled := (V4 /= 0);
 
@@ -1261,35 +1495,43 @@ package body GNAT.Sockets is
          when Error =>
             Opt.Error := Resolve_Error (Integer (V4));
 
-         when Add_Membership
-            | Drop_Membership
+         when Add_Membership_V4
+            | Add_Membership_V6
+            | Drop_Membership_V4
+            | Drop_Membership_V6
          =>
-            To_Inet_Addr (To_In_Addr (V8 (V8'First)), Opt.Multicast_Address);
-            To_Inet_Addr (To_In_Addr (V8 (V8'Last)), Opt.Local_Interface);
+            --  No way to be here. Exception raised in the first case Name
+            --  expression.
+            null;
 
-         when Multicast_If =>
+         when Multicast_If_V4 =>
             To_Inet_Addr (To_In_Addr (V4), Opt.Outgoing_If);
+
+         when Multicast_If_V6 =>
+            Opt.Outgoing_If_Index := Natural (V4);
 
          when Multicast_TTL =>
             Opt.Time_To_Live := Integer (V1);
 
-         when Multicast_Loop
-            | Receive_Packet_Info
+         when Multicast_Hops =>
+            Opt.Hop_Limit := Integer (V4);
+
+         when Receive_Packet_Info
          =>
             Opt.Enabled := (V1 /= 0);
 
          when Receive_Timeout
             | Send_Timeout
          =>
-            if Target_OS = Windows then
+            if Is_Windows then
 
                --  Timeout is in milliseconds, actual value is 500 ms +
                --  returned value (unless it is 0).
 
-               if V4 = 0 then
+               if U4 = 0 then
                   Opt.Timeout := 0.0;
                else
-                  Opt.Timeout := Natural (V4) * 0.001 + 0.500;
+                  Opt.Timeout :=  Duration (U4) / 1000 + 0.500;
                end if;
 
             else
@@ -1322,78 +1564,34 @@ package body GNAT.Sockets is
    -- Image --
    -----------
 
-   function Image
-     (Val : Inet_Addr_Bytes;
-      Hex : Boolean := False) return String
-   is
-      --  The largest Inet_Addr_Comp_Type image occurs with IPv4. It
-      --  has at most a length of 3 plus one '.' character.
-
-      Buffer    : String (1 .. 4 * Val'Length);
-      Length    : Natural := 1;
-      Separator : Character;
-
-      procedure Img10 (V : Inet_Addr_Comp_Type);
-      --  Append to Buffer image of V in decimal format
-
-      procedure Img16 (V : Inet_Addr_Comp_Type);
-      --  Append to Buffer image of V in hexadecimal format
-
-      -----------
-      -- Img10 --
-      -----------
-
-      procedure Img10 (V : Inet_Addr_Comp_Type) is
-         Img : constant String := V'Img;
-         Len : constant Natural := Img'Length - 1;
-      begin
-         Buffer (Length .. Length + Len - 1) := Img (2 .. Img'Last);
-         Length := Length + Len;
-      end Img10;
-
-      -----------
-      -- Img16 --
-      -----------
-
-      procedure Img16 (V : Inet_Addr_Comp_Type) is
-      begin
-         Buffer (Length)     := Hex_To_Char (Natural (V / 16) + 1);
-         Buffer (Length + 1) := Hex_To_Char (Natural (V mod 16) + 1);
-         Length := Length + 2;
-      end Img16;
-
-   --  Start of processing for Image
-
-   begin
-      Separator := (if Hex then ':' else '.');
-
-      for J in Val'Range loop
-         if Hex then
-            Img16 (Val (J));
-         else
-            Img10 (Val (J));
-         end if;
-
-         if J /= Val'Last then
-            Buffer (Length) := Separator;
-            Length := Length + 1;
-         end if;
-      end loop;
-
-      return Buffer (1 .. Length - 1);
-   end Image;
-
-   -----------
-   -- Image --
-   -----------
-
    function Image (Value : Inet_Addr_Type) return String is
+      use type CS.char_array_access;
+      Size : constant socklen_t :=
+        (case Value.Family is
+            when Family_Inet   => 4 * Value.Sin_V4'Length,
+            when Family_Inet6  => 6 * 5 + 4 * 4,
+            --  1234:1234:1234:1234:1234:1234:123.123.123.123
+            when Family_Unspec => 0);
+      Dst : aliased C.char_array := (1 .. C.size_t (Size) => C.nul);
+      Ia  : aliased In_Addr_Union (Value.Family);
    begin
-      if Value.Family = Family_Inet then
-         return Image (Inet_Addr_Bytes (Value.Sin_V4), Hex => False);
-      else
-         return Image (Inet_Addr_Bytes (Value.Sin_V6), Hex => True);
+      case Value.Family is
+         when Family_Inet6 =>
+            Ia.In6 := To_In6_Addr (Value);
+         when Family_Inet =>
+            Ia.In4 := To_In_Addr (Value);
+         when Family_Unspec =>
+            return "";
+      end case;
+
+      if Inet_Ntop
+        (Families (Value.Family), Ia'Address,
+         Dst'Unchecked_Access, Size) = null
+      then
+         Raise_Socket_Error (Socket_Errno);
       end if;
+
+      return C.To_Ada (Dst);
    end Image;
 
    -----------
@@ -1402,8 +1600,10 @@ package body GNAT.Sockets is
 
    function Image (Value : Sock_Addr_Type) return String is
       Port : constant String := Value.Port'Img;
+      function Ipv6_Brackets (S : String) return String is
+        (if Value.Family = Family_Inet6 then "[" & S & "]" else S);
    begin
-      return Image (Value.Addr) & ':' & Port (2 .. Port'Last);
+      return Ipv6_Brackets (Image (Value.Addr)) & ':' & Port (2 .. Port'Last);
    end Image;
 
    -----------
@@ -1454,10 +1654,11 @@ package body GNAT.Sockets is
       use Interfaces.C;
 
       Img    : aliased char_array := To_C (Image);
-      Addr   : aliased C.int;
       Res    : C.int;
       Result : Inet_Addr_Type;
-
+      IPv6   : constant Boolean := Is_IPv6_Address (Image);
+      Ia     : aliased In_Addr_Union
+                 (if IPv6 then Family_Inet6 else Family_Inet);
    begin
       --  Special case for an empty Image as on some platforms (e.g. Windows)
       --  calling Inet_Addr("") will not return an error.
@@ -1466,7 +1667,9 @@ package body GNAT.Sockets is
          Raise_Socket_Error (SOSC.EINVAL);
       end if;
 
-      Res := Inet_Pton (SOSC.AF_INET, Img'Address, Addr'Address);
+      Res := Inet_Pton
+        ((if IPv6 then SOSC.AF_INET6 else SOSC.AF_INET), Img'Address,
+         Ia'Address);
 
       if Res < 0 then
          Raise_Socket_Error (Socket_Errno);
@@ -1475,7 +1678,12 @@ package body GNAT.Sockets is
          Raise_Socket_Error (SOSC.EINVAL);
       end if;
 
-      To_Inet_Addr (To_In_Addr (Addr), Result);
+      if IPv6 then
+         To_Inet_Addr (Ia.In6, Result);
+      else
+         To_Inet_Addr (Ia.In4, Result);
+      end if;
+
       return Result;
    end Inet_Addr;
 
@@ -1525,6 +1733,16 @@ package body GNAT.Sockets is
       null;
    end Initialize;
 
+   ----------------
+   -- Is_Windows --
+   ----------------
+
+   function Is_Windows return Boolean is
+      use SOSC;
+   begin
+      return Target_OS = Windows;
+   end Is_Windows;
+
    --------------
    -- Is_Empty --
    --------------
@@ -1534,11 +1752,56 @@ package body GNAT.Sockets is
       return Item.Last = No_Socket;
    end Is_Empty;
 
-   -------------------
-   -- Is_IP_Address --
-   -------------------
+   ---------------------
+   -- Is_IPv6_Address --
+   ---------------------
 
-   function Is_IP_Address (Name : String) return Boolean is
+   function Is_IPv6_Address (Name : String) return Boolean is
+      Prev_Colon   : Natural := 0;
+      Double_Colon : Boolean := False;
+      Colons       : Natural := 0;
+   begin
+      for J in Name'Range loop
+         if Name (J) = ':' then
+            Colons := Colons + 1;
+
+            if Prev_Colon > 0 and then J = Prev_Colon + 1 then
+               if Double_Colon then
+                  --  Only one double colon allowed
+                  return False;
+               end if;
+
+               Double_Colon := True;
+
+            elsif J = Name'Last then
+               --  Single colon at the end is not allowed
+               return False;
+            end if;
+
+            Prev_Colon := J;
+
+         elsif Prev_Colon = Name'First then
+            --  Single colon at start is not allowed
+            return False;
+
+         elsif Name (J) = '.' then
+            return Prev_Colon > 0
+              and then Is_IPv4_Address (Name (Prev_Colon + 1 .. Name'Last));
+
+         elsif Name (J) not in '0' .. '9' | 'A' .. 'F' | 'a' .. 'f' then
+            return False;
+
+         end if;
+      end loop;
+
+      return Colons <= 7;
+   end Is_IPv6_Address;
+
+   ---------------------
+   -- Is_IPv4_Address --
+   ---------------------
+
+   function Is_IPv4_Address (Name : String) return Boolean is
       Dots : Natural := 0;
 
    begin
@@ -1569,7 +1832,7 @@ package body GNAT.Sockets is
       end loop;
 
       return Dots in 1 .. 3;
-   end Is_IP_Address;
+   end Is_IPv4_Address;
 
    -------------
    -- Is_Open --
@@ -1758,13 +2021,6 @@ package body GNAT.Sockets is
    ----------------------
 
    procedure Raise_Host_Error (H_Error : Integer; Name : String) is
-      function Dedot (Value : String) return String is
-        (if Value /= "" and then Value (Value'Last) = '.' then
-            Value (Value'First .. Value'Last - 1)
-         else
-            Value);
-      --  Removes dot at the end of error message
-
    begin
       raise Host_Error with
         Err_Code_Image (H_Error)
@@ -1861,7 +2117,7 @@ package body GNAT.Sockets is
       Flags  : Request_Flag_Type := No_Request_Flag)
    is
       Res : C.int;
-      Sin : aliased Sockaddr_In;
+      Sin : aliased Sockaddr;
       Len : aliased C.int := Sin'Size / 8;
 
    begin
@@ -1880,8 +2136,7 @@ package body GNAT.Sockets is
 
       Last := Last_Index (First => Item'First, Count => size_t (Res));
 
-      To_Inet_Addr (Sin.Sin_Addr, From.Addr);
-      From.Port := Port_Type (Network_To_Short (Sin.Sin_Port));
+      From := Get_Address (Sin);
    end Receive_Socket;
 
    --------------------
@@ -2140,17 +2395,13 @@ package body GNAT.Sockets is
    is
       Res  : C.int;
 
-      Sin  : aliased Sockaddr_In;
+      Sin  : aliased Sockaddr;
       C_To : System.Address;
       Len  : C.int;
 
    begin
       if To /= null then
-         Set_Family  (Sin.Sin_Family, To.Family);
-         Set_Address (Sin'Unchecked_Access, To_In_Addr (To.Addr));
-         Set_Port
-           (Sin'Unchecked_Access,
-            Short_To_Network (C.unsigned_short (To.Port)));
+         Set_Address (Sin'Unchecked_Access, To.all);
          C_To := Sin'Address;
          Len := Sin'Size / 8;
 
@@ -2292,10 +2543,12 @@ package body GNAT.Sockets is
       Level  : Level_Type := Socket_Level;
       Option : Option_Type)
    is
-      use SOSC;
+      use type C.unsigned;
 
+      MR  : aliased IPV6_Mreq;
       V8  : aliased Two_Ints;
       V4  : aliased C.int;
+      U4  : aliased C.unsigned;
       V1  : aliased C.unsigned_char;
       VT  : aliased Timeval;
       Len : C.int;
@@ -2314,6 +2567,9 @@ package body GNAT.Sockets is
             | Keep_Alive
             | No_Delay
             | Reuse_Address
+            | Multicast_Loop_V4
+            | Multicast_Loop_V6
+            | IPv6_Only
          =>
             V4  := C.int (Boolean'Pos (Option.Enabled));
             Len := V4'Size / 8;
@@ -2342,16 +2598,28 @@ package body GNAT.Sockets is
             Len := V4'Size / 8;
             Add := V4'Address;
 
-         when Add_Membership
-            | Drop_Membership
+         when Add_Membership_V4
+            | Drop_Membership_V4
          =>
             V8 (V8'First) := To_Int (To_In_Addr (Option.Multicast_Address));
             V8 (V8'Last)  := To_Int (To_In_Addr (Option.Local_Interface));
             Len := V8'Size / 8;
             Add := V8'Address;
 
-         when Multicast_If =>
+         when Add_Membership_V6
+            | Drop_Membership_V6 =>
+            MR.ipv6mr_multiaddr := To_In6_Addr (Option.Multicast_Address);
+            MR.ipv6mr_interface := C.unsigned (Option.Interface_Index);
+            Len := MR'Size / 8;
+            Add := MR'Address;
+
+         when Multicast_If_V4 =>
             V4  := To_Int (To_In_Addr (Option.Outgoing_If));
+            Len := V4'Size / 8;
+            Add := V4'Address;
+
+         when Multicast_If_V6 =>
+            V4  := C.int (Option.Outgoing_If_Index);
             Len := V4'Size / 8;
             Add := V4'Address;
 
@@ -2360,8 +2628,12 @@ package body GNAT.Sockets is
             Len := V1'Size / 8;
             Add := V1'Address;
 
-         when Multicast_Loop
-            | Receive_Packet_Info
+         when Multicast_Hops =>
+            V4  := C.int (Option.Hop_Limit);
+            Len := V4'Size / 8;
+            Add := V4'Address;
+
+         when Receive_Packet_Info
          =>
             V1  := C.unsigned_char (Boolean'Pos (Option.Enabled));
             Len := V1'Size / 8;
@@ -2370,23 +2642,23 @@ package body GNAT.Sockets is
          when Receive_Timeout
             | Send_Timeout
          =>
-            if Target_OS = Windows then
+            if Is_Windows then
 
                --  On Windows, the timeout is a DWORD in milliseconds, and
                --  the actual timeout is 500 ms + the given value (unless it
                --  is 0).
 
-               V4 := C.int (Option.Timeout / 0.001);
+               U4 := C.unsigned (Option.Timeout / 0.001);
 
-               if V4 > 500 then
-                  V4 := V4 - 500;
+               if U4 > 500 then
+                  U4 := U4 - 500;
 
-               elsif V4 > 0 then
-                  V4 := 1;
+               elsif U4 > 0 then
+                  U4 := 1;
                end if;
 
-               Len := V4'Size / 8;
-               Add := V4'Address;
+               Len := U4'Size / 8;
+               Add := U4'Address;
 
             else
                VT  := To_Timeval (Option.Timeout);
@@ -2415,28 +2687,6 @@ package body GNAT.Sockets is
          Raise_Socket_Error (Socket_Errno);
       end if;
    end Set_Socket_Option;
-
-   ----------------------
-   -- Short_To_Network --
-   ----------------------
-
-   function Short_To_Network (S : C.unsigned_short) return C.unsigned_short is
-      use type C.unsigned_short;
-
-   begin
-      --  Big-endian case. No conversion needed. On these platforms, htons()
-      --  defaults to a null procedure.
-
-      if Default_Bit_Order = High_Order_First then
-         return S;
-
-      --  Little-endian case. We must swap the high and low bytes of this
-      --  short to make the port number network compliant.
-
-      else
-         return (S / 256) + (S mod 256) * 256;
-      end if;
-   end Short_To_Network;
 
    ---------------------
    -- Shutdown_Socket --
@@ -2509,8 +2759,24 @@ package body GNAT.Sockets is
    -----------------
 
    function To_Duration (Val : Timeval) return Timeval_Duration is
+      Max_D : constant Long_Long_Integer := Long_Long_Integer (Forever - 0.5);
+      Tv_sec_64 : constant Boolean := SOSC.SIZEOF_tv_sec = 8;
+      --  Need to separate this condition into the constant declaration to
+      --  avoid GNAT warning about "always true" or "always false".
    begin
-      return Natural (Val.Tv_Sec) * 1.0 + Natural (Val.Tv_Usec) * 1.0E-6;
+      if Tv_sec_64 then
+         --  Check for possible Duration overflow when Tv_Sec field is 64 bit
+         --  integer.
+
+         if Val.Tv_Sec > time_t (Max_D) or else
+            (Val.Tv_Sec = time_t (Max_D) and then
+             Val.Tv_Usec > suseconds_t ((Forever - Duration (Max_D)) * 1E6))
+         then
+            return Forever;
+         end if;
+      end if;
+
+      return Duration (Val.Tv_Sec) + Duration (Val.Tv_Usec) * 1.0E-6;
    end To_Duration;
 
    -------------------
@@ -2518,15 +2784,18 @@ package body GNAT.Sockets is
    -------------------
 
    function To_Host_Entry (E : Hostent_Access) return Host_Entry_Type is
-      use type C.size_t;
-
       Aliases_Count, Addresses_Count : Natural;
 
-      --  H_Length is not used because it is currently only ever set to 4, as
-      --  we only handle the case of H_Addrtype being AF_INET.
+      Family : constant Family_Type :=
+                 (case Hostent_H_Addrtype (E) is
+                     when SOSC.AF_INET  => Family_Inet,
+                     when SOSC.AF_INET6 => Family_Inet6,
+                     when others        => Family_Unspec);
+
+      Addr_Len : constant C.size_t := C.size_t (Hostent_H_Length (E));
 
    begin
-      if Hostent_H_Addrtype (E) /= SOSC.AF_INET then
+      if Family = Family_Unspec then
          Raise_Socket_Error (SOSC.EPFNOSUPPORT);
       end if;
 
@@ -2554,60 +2823,34 @@ package body GNAT.Sockets is
 
          for J in Result.Addresses'Range loop
             declare
-               Addr : In_Addr;
+               Ia : In_Addr_Union (Family);
 
                --  Hostent_H_Addr (E, <index>) may return an address that is
                --  not correctly aligned for In_Addr, so we need to use
                --  an intermediate copy operation on a type with an alignment
                --  of 1 to recover the value.
 
-               subtype Addr_Buf_T is C.char_array (1 .. Addr'Size / 8);
+               subtype Addr_Buf_T is C.char_array (1 .. Addr_Len);
                Unaligned_Addr : Addr_Buf_T;
                for Unaligned_Addr'Address
                  use Hostent_H_Addr (E, C.int (J - Result.Addresses'First));
                pragma Import (Ada, Unaligned_Addr);
 
                Aligned_Addr : Addr_Buf_T;
-               for Aligned_Addr'Address use Addr'Address;
+               for Aligned_Addr'Address use Ia'Address;
                pragma Import (Ada, Aligned_Addr);
 
             begin
                Aligned_Addr := Unaligned_Addr;
-               To_Inet_Addr (Addr, Result.Addresses (J));
+               if Family = Family_Inet6 then
+                  To_Inet_Addr (Ia.In6, Result.Addresses (J));
+               else
+                  To_Inet_Addr (Ia.In4, Result.Addresses (J));
+               end if;
             end;
          end loop;
       end return;
    end To_Host_Entry;
-
-   ----------------
-   -- To_In_Addr --
-   ----------------
-
-   function To_In_Addr (Addr : Inet_Addr_Type) return In_Addr is
-   begin
-      if Addr.Family = Family_Inet then
-         return (S_B1 => C.unsigned_char (Addr.Sin_V4 (1)),
-                 S_B2 => C.unsigned_char (Addr.Sin_V4 (2)),
-                 S_B3 => C.unsigned_char (Addr.Sin_V4 (3)),
-                 S_B4 => C.unsigned_char (Addr.Sin_V4 (4)));
-      end if;
-
-      raise Socket_Error with "IPv6 not supported";
-   end To_In_Addr;
-
-   ------------------
-   -- To_Inet_Addr --
-   ------------------
-
-   procedure To_Inet_Addr
-     (Addr   : In_Addr;
-      Result : out Inet_Addr_Type) is
-   begin
-      Result.Sin_V4 (1) := Inet_Addr_Comp_Type (Addr.S_B1);
-      Result.Sin_V4 (2) := Inet_Addr_Comp_Type (Addr.S_B2);
-      Result.Sin_V4 (3) := Inet_Addr_Comp_Type (Addr.S_B3);
-      Result.Sin_V4 (4) := Inet_Addr_Comp_Type (Addr.S_B4);
-   end To_Inet_Addr;
 
    ------------
    -- To_Int --
@@ -2701,7 +2944,12 @@ package body GNAT.Sockets is
 
       else
          S  := time_t (Val - 0.5);
-         uS := suseconds_t (1_000_000 * (Val - Selector_Duration (S)));
+         uS := suseconds_t (1_000_000 * (Val - Selector_Duration (S)) - 0.5);
+
+         if uS = -1 then
+            --  It happen on integer duration
+            uS := 0;
+         end if;
       end if;
 
       return (S, uS);
@@ -2800,7 +3048,8 @@ package body GNAT.Sockets is
    is
      (case Family is
          when Family_Inet => (Family_Inet, Bytes),
-         when Family_Inet6 => (Family_Inet6, Bytes));
+         when Family_Inet6 => (Family_Inet6, Bytes),
+         when Family_Unspec => (Family => Family_Unspec));
 
    ---------------
    -- Get_Bytes --
@@ -2809,7 +3058,8 @@ package body GNAT.Sockets is
    function Get_Bytes (Addr : Inet_Addr_Type) return Inet_Addr_Bytes is
      (case Addr.Family is
          when Family_Inet => Addr.Sin_V4,
-         when Family_Inet6 => Addr.Sin_V6);
+         when Family_Inet6 => Addr.Sin_V6,
+         when Family_Unspec => (1 .. 0 => 0));
 
    ----------
    -- Mask --

@@ -38,7 +38,7 @@ static const void *goMemmem(const void *in, size_t inl, const void *s, size_t sl
 #endif
 
 intgo Compare(struct __go_open_array, struct __go_open_array)
-  __asm__(GOSYM_PREFIX "internal_bytealg.Compare")
+  __asm__(GOSYM_PREFIX "internal..z2fbytealg.Compare")
   __attribute__((no_split_stack));
 
 intgo Compare(struct __go_open_array a, struct __go_open_array b)
@@ -53,8 +53,10 @@ intgo Compare(struct __go_open_array a, struct __go_open_array b)
 		int i;
 
 		i = __builtin_memcmp(a.__values, b.__values, (size_t)(l));
-		if (i != 0) {
-			return i;
+		if (i < 0) {
+			return -1;
+		} else if (i > 0) {
+			return 1;
 		}
 	}
 	if (a.__count < b.__count) {
@@ -67,7 +69,7 @@ intgo Compare(struct __go_open_array a, struct __go_open_array b)
 }
 
 _Bool Equal(struct __go_open_array, struct __go_open_array)
-  __asm__(GOSYM_PREFIX "internal_bytealg.Equal")
+  __asm__(GOSYM_PREFIX "internal..z2fbytealg.Equal")
   __attribute__((no_split_stack));
 
 _Bool Equal(struct __go_open_array a, struct __go_open_array b)
@@ -82,7 +84,7 @@ _Bool Equal(struct __go_open_array a, struct __go_open_array b)
 }
 
 intgo IndexByte(struct __go_open_array, byte)
-  __asm__(GOSYM_PREFIX "internal_bytealg.IndexByte")
+  __asm__(GOSYM_PREFIX "internal..z2fbytealg.IndexByte")
   __attribute__((no_split_stack));
 
 intgo IndexByte(struct __go_open_array b, byte c)
@@ -98,7 +100,7 @@ intgo IndexByte(struct __go_open_array b, byte c)
 
 
 intgo IndexByteString(String, byte)
-  __asm__(GOSYM_PREFIX "internal_bytealg.IndexByteString")
+  __asm__(GOSYM_PREFIX "internal..z2fbytealg.IndexByteString")
   __attribute__((no_split_stack));
 
 intgo IndexByteString(String s, byte c)
@@ -113,7 +115,7 @@ intgo IndexByteString(String s, byte c)
 }
 
 intgo Index(struct __go_open_array, struct __go_open_array)
-  __asm__(GOSYM_PREFIX "internal_bytealg.Index")
+  __asm__(GOSYM_PREFIX "internal..z2fbytealg.Index")
   __attribute__((no_split_stack));
 
 intgo Index(struct __go_open_array a, struct __go_open_array b)
@@ -128,7 +130,7 @@ intgo Index(struct __go_open_array a, struct __go_open_array b)
 }
 
 intgo IndexString(String, String)
-  __asm__(GOSYM_PREFIX "internal_bytealg.IndexString")
+  __asm__(GOSYM_PREFIX "internal..z2fbytealg.IndexString")
   __attribute__((no_split_stack));
 
 intgo IndexString(String a, String b)

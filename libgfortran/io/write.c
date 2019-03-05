@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist output contributed by Paul Thomas
    F2003 I/O support contributed by Jerry DeLisle
@@ -1340,6 +1340,10 @@ write_integer (st_parameter_dt *dtp, const char *source, int kind)
 
     case 8:
       width = 20;
+      break;
+
+    case 16:
+      width = 40;
       break;
 
     default:

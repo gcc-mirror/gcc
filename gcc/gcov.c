@@ -1,6 +1,6 @@
 /* Gcov.c: prepend line execution counts and branch probabilities to a
    source file.
-   Copyright (C) 1990-2018 Free Software Foundation, Inc.
+   Copyright (C) 1990-2019 Free Software Foundation, Inc.
    Contributed by James E. Wilson of Cygnus Support.
    Mangled by Bob Manson of Cygnus Support.
    Mangled further by Nathan Sidwell <nathan@codesourcery.com>
@@ -44,7 +44,10 @@ along with Gcov; see the file COPYING3.  If not see
 #include "version.h"
 #include "demangle.h"
 #include "color-macros.h"
+#include "pretty-print.h"
+#include "json.h"
 
+#include <zlib.h>
 #include <getopt.h>
 
 #include "md5.h"
@@ -221,6 +224,10 @@ line_info::has_block (block_info *needle)
   return std::find (blocks.begin (), blocks.end (), needle) != blocks.end ();
 }
 
+/* Output demangled function names.  */
+
+static int flag_demangled_names = 0;
+
 /* Describes a single function. Contains an array of basic blocks.  */
 
 struct function_info
@@ -241,8 +248,8 @@ struct function_info
   }
 
   /* Name of function.  */
-  char *name;
-  char *demangled_name;
+  char *m_name;
+  char *m_demangled_name;
   unsigned ident;
   unsigned lineno_checksum;
   unsigned cfg_checksum;
@@ -284,6 +291,32 @@ struct function_info
 
   /* Next function.  */
   struct function_info *next;
+
+  /*  Get demangled name of a function.  The demangled name
+      is converted when it is used for the first time.  */
+  char *get_demangled_name ()
+  {
+    if (m_demangled_name == NULL)
+      {
+	m_demangled_name = cplus_demangle (m_name, DMGL_PARAMS);
+	if (!m_demangled_name)
+	  m_demangled_name = m_name;
+      }
+
+    return m_demangled_name;
+  }
+
+  /* Get name of the function based on flag_demangled_names.  */
+  char *get_name ()
+  {
+    return flag_demangled_names ? get_demangled_name () : m_name;
+  }
+
+  /* Return number of basic blocks (without entry and exit block).  */
+  unsigned get_block_count ()
+  {
+    return blocks.size () - 2;
+  }
 };
 
 /* Function info comparer that will sort functions according to starting
@@ -325,7 +358,10 @@ struct source_info
   /* Default constructor.  */
   source_info ();
 
-  vector<function_info *> get_functions_at_location (unsigned line_num) const;
+  vector<function_info *> *get_functions_at_location (unsigned line_num) const;
+
+  /* Register a new function.  */
+  void add_function (function_info *fn);
 
   /* Index of the source_info in sources vector.  */
   unsigned index;
@@ -344,7 +380,10 @@ struct source_info
 
   /* Functions in this source file.  These are in ascending line
      number order.  */
-  vector <function_info *> functions;
+  vector<function_info *> functions;
+
+  /* Line number to functions map.  */
+  vector<vector<function_info *> *> line_to_function_map;
 };
 
 source_info::source_info (): index (0), name (NULL), file_time (),
@@ -352,21 +391,33 @@ source_info::source_info (): index (0), name (NULL), file_time (),
 {
 }
 
-vector<function_info *>
+/* Register a new function.  */
+void
+source_info::add_function (function_info *fn)
+{
+  functions.push_back (fn);
+
+  if (fn->start_line >= line_to_function_map.size ())
+    line_to_function_map.resize (fn->start_line + 1);
+
+  vector<function_info *> **slot = &line_to_function_map[fn->start_line];
+  if (*slot == NULL)
+    *slot = new vector<function_info *> ();
+
+  (*slot)->push_back (fn);
+}
+
+vector<function_info *> *
 source_info::get_functions_at_location (unsigned line_num) const
 {
-  vector<function_info *> r;
+  if (line_num >= line_to_function_map.size ())
+    return NULL;
 
-  for (vector<function_info *>::const_iterator it = functions.begin ();
-       it != functions.end (); it++)
-    {
-      if ((*it)->start_line == line_num && (*it)->src == index)
-	r.push_back (*it);
-    }
+  vector<function_info *> *slot = line_to_function_map[line_num];
+  if (slot != NULL)
+    std::sort (slot->begin (), slot->end (), function_line_start_cmp ());
 
-  std::sort (r.begin (), r.end (), function_line_start_cmp ());
-
-  return r;
+  return slot;
 }
 
 class name_map
@@ -404,6 +455,9 @@ public:
 
 /* Vector of all functions.  */
 static vector<function_info *> functions;
+
+/* Function ident to function_info * map.  */
+static map<unsigned, function_info *> ident_to_fn;
 
 /* Vector of source files.  */
 static vector<source_info> sources;
@@ -477,13 +531,9 @@ static int flag_use_stdout = 0;
 
 static int flag_display_progress = 0;
 
-/* Output *.gcov file in intermediate format used by 'lcov'.  */
+/* Output *.gcov file in JSON intermediate format used by consumers.  */
 
-static int flag_intermediate_format = 0;
-
-/* Output demangled function names.  */
-
-static int flag_demangled_names = 0;
+static int flag_json_format = 0;
 
 /* For included files, make the gcov output file name include the name
    of the input source file.  For example, if x.h is included in a.c,
@@ -565,7 +615,8 @@ static void find_exception_blocks (function_info *);
 static void add_branch_counts (coverage_info *, const arc_info *);
 static void add_line_counts (coverage_info *, function_info *);
 static void executed_summary (unsigned, unsigned);
-static void function_summary (const coverage_info *, const char *);
+static void function_summary (const coverage_info *);
+static void file_summary (const coverage_info *);
 static const char *format_gcov (gcov_type, gcov_type, int);
 static void accumulate_line_counts (source_info *);
 static void output_gcov_file (const char *, source_info *);
@@ -576,7 +627,7 @@ static char *mangle_name (const char *, char *);
 static void release_structures (void);
 extern int main (int, char **);
 
-function_info::function_info (): name (NULL), demangled_name (NULL),
+function_info::function_info (): m_name (NULL), m_demangled_name (NULL),
   ident (0), lineno_checksum (0), cfg_checksum (0), has_catch (0),
   artificial (0), is_group (0),
   blocks (), blocks_executed (0), counts (),
@@ -596,9 +647,9 @@ function_info::~function_info ()
 	  free (arc);
 	}
     }
-  if (flag_demangled_names && demangled_name != name)
-    free (demangled_name);
-  free (name);
+  if (m_demangled_name != m_name)
+    free (m_demangled_name);
+  free (m_name);
 }
 
 bool function_info::group_line_p (unsigned n, unsigned src_idx)
@@ -807,7 +858,7 @@ main (int argc, char **argv)
 		argc - first_arg);
       process_file (argv[argno]);
 
-      if (flag_intermediate_format || argno == argc - 1)
+      if (flag_json_format || argno == argc - 1)
 	{
 	  process_all_functions ();
 	  generate_results (argv[argno]);
@@ -836,7 +887,7 @@ print_usage (int error_p)
   fnotice (file, "  -d, --display-progress          Display progress information\n");
   fnotice (file, "  -f, --function-summaries        Output summaries for each function\n");
   fnotice (file, "  -h, --help                      Print this help, then exit\n");
-  fnotice (file, "  -i, --intermediate-format       Output .gcov file in intermediate text format\n");
+  fnotice (file, "  -i, --json-format               Output JSON intermediate format into .gcov.json.gz file\n");
   fnotice (file, "  -j, --human-readable            Output human readable numbers\n");
   fnotice (file, "  -k, --use-colors                Emit colored output\n");
   fnotice (file, "  -l, --long-file-names           Use long output file names for included\n\
@@ -864,7 +915,7 @@ static void
 print_version (void)
 {
   fnotice (stdout, "gcov %s%s\n", pkgversion_string, version_string);
-  fprintf (stdout, "Copyright %s 2018 Free Software Foundation, Inc.\n",
+  fprintf (stdout, "Copyright %s 2019 Free Software Foundation, Inc.\n",
 	   _("(C)"));
   fnotice (stdout,
 	   _("This is free software; see the source for copying conditions.\n"
@@ -881,7 +932,7 @@ static const struct option options[] =
   { "all-blocks",           no_argument,       NULL, 'a' },
   { "branch-probabilities", no_argument,       NULL, 'b' },
   { "branch-counts",        no_argument,       NULL, 'c' },
-  { "intermediate-format",  no_argument,       NULL, 'i' },
+  { "json-format",	    no_argument,       NULL, 'i' },
   { "human-readable",	    no_argument,       NULL, 'j' },
   { "no-output",            no_argument,       NULL, 'n' },
   { "long-file-names",      no_argument,       NULL, 'l' },
@@ -963,12 +1014,12 @@ process_args (int argc, char **argv)
 	  flag_unconditional = 1;
 	  break;
 	case 'i':
-          flag_intermediate_format = 1;
-          flag_gcov_file = 1;
-          break;
-        case 'd':
-          flag_display_progress = 1;
-          break;
+	  flag_json_format = 1;
+	  flag_gcov_file = 1;
+	  break;
+	case 'd':
+	  flag_display_progress = 1;
+	  break;
 	case 'x':
 	  flag_hash_filenames = 1;
 	  break;
@@ -990,17 +1041,23 @@ process_args (int argc, char **argv)
   return optind;
 }
 
-/* Output intermediate LINE sitting on LINE_NUM to output file F.  */
+/* Output intermediate LINE sitting on LINE_NUM to JSON OBJECT.  */
 
 static void
-output_intermediate_line (FILE *f, line_info *line, unsigned line_num)
+output_intermediate_json_line (json::array *object,
+			       line_info *line, unsigned line_num)
 {
   if (!line->exists)
     return;
 
-  fprintf (f, "lcount:%u,%s,%d\n", line_num,
-	   format_gcov (line->count, 0, -1),
-	   line->has_unexecuted_block);
+  json::object *lineo = new json::object ();
+  lineo->set ("line_number", new json::number (line_num));
+  lineo->set ("count", new json::number (line->count));
+  lineo->set ("unexecuted_block",
+	      new json::literal (line->has_unexecuted_block));
+
+  json::array *branches = new json::array ();
+  lineo->set ("branches", branches);
 
   vector<arc_info *>::const_iterator it;
   if (flag_branches)
@@ -1009,21 +1066,16 @@ output_intermediate_line (FILE *f, line_info *line, unsigned line_num)
       {
 	if (!(*it)->is_unconditional && !(*it)->is_call_non_return)
 	  {
-	    const char *branch_type;
-	    /* branch:<line_num>,<branch_coverage_infoype>
-	       branch_coverage_infoype
-	       : notexec (Branch not executed)
-	       : taken (Branch executed and taken)
-	       : nottaken (Branch executed, but not taken)
-	       */
-	    if ((*it)->src->count)
-		 branch_type
-			= ((*it)->count > 0) ? "taken" : "nottaken";
-	    else
-	      branch_type = "notexec";
-	    fprintf (f, "branch:%d,%s\n", line_num, branch_type);
+	    json::object *branch = new json::object ();
+	    branch->set ("count", new json::number ((*it)->count));
+	    branch->set ("throw", new json::literal ((*it)->is_throw));
+	    branch->set ("fallthrough",
+			 new json::literal ((*it)->fall_through));
+	    branches->append (branch);
 	  }
       }
+
+  object->append (lineo);
 }
 
 /* Get the name of the gcov file.  The return value must be free'd.
@@ -1038,7 +1090,7 @@ output_intermediate_line (FILE *f, line_info *line, unsigned line_num)
 static char *
 get_gcov_intermediate_filename (const char *file_name)
 {
-  const char *gcov = ".gcov";
+  const char *gcov = ".gcov.json.gz";
   char *result;
   const char *cptr;
 
@@ -1051,53 +1103,64 @@ get_gcov_intermediate_filename (const char *file_name)
   return result;
 }
 
-/* Output the result in intermediate format used by 'lcov'.
-
-The intermediate format contains a single file named 'foo.cc.gcov',
-with no source code included.
-
-The default gcov outputs multiple files: 'foo.cc.gcov',
-'iostream.gcov', 'ios_base.h.gcov', etc. with source code
-included. Instead the intermediate format here outputs only a single
-file 'foo.cc.gcov' similar to the above example. */
+/* Output the result in JSON intermediate format.
+   Source info SRC is dumped into JSON_FILES which is JSON array.  */
 
 static void
-output_intermediate_file (FILE *gcov_file, source_info *src)
+output_json_intermediate_file (json::array *json_files, source_info *src)
 {
-  fprintf (gcov_file, "version:%s\n", version_string);
-  fprintf (gcov_file, "file:%s\n", src->name);    /* source file name */
-  fprintf (gcov_file, "cwd:%s\n", bbg_cwd);
+  json::object *root = new json::object ();
+  json_files->append (root);
+
+  root->set ("file", new json::string (src->name));
+
+  json::array *functions = new json::array ();
+  root->set ("functions", functions);
 
   std::sort (src->functions.begin (), src->functions.end (),
 	     function_line_start_cmp ());
   for (vector<function_info *>::iterator it = src->functions.begin ();
        it != src->functions.end (); it++)
     {
-      /* function:<name>,<line_number>,<execution_count> */
-      fprintf (gcov_file, "function:%d,%d,%s,%s\n", (*it)->start_line,
-	       (*it)->end_line, format_gcov ((*it)->blocks[0].count, 0, -1),
-	       flag_demangled_names ? (*it)->demangled_name : (*it)->name);
+      json::object *function = new json::object ();
+      function->set ("name", new json::string ((*it)->m_name));
+      function->set ("demangled_name",
+		     new json::string ((*it)->get_demangled_name ()));
+      function->set ("start_line", new json::number ((*it)->start_line));
+      function->set ("end_line", new json::number ((*it)->end_line));
+      function->set ("blocks",
+		     new json::number ((*it)->get_block_count ()));
+      function->set ("blocks_executed",
+		     new json::number ((*it)->blocks_executed));
+      function->set ("execution_count",
+		     new json::number ((*it)->blocks[0].count));
+
+      functions->append (function);
     }
+
+  json::array *lineso = new json::array ();
+  root->set ("lines", lineso);
 
   for (unsigned line_num = 1; line_num <= src->lines.size (); line_num++)
     {
-      vector<function_info *> fns = src->get_functions_at_location (line_num);
+      vector<function_info *> *fns = src->get_functions_at_location (line_num);
 
-      /* Print first group functions that begin on the line.  */
-      for (vector<function_info *>::iterator it2 = fns.begin ();
-	   it2 != fns.end (); it2++)
-	{
-	  vector<line_info> &lines = (*it2)->lines;
-	  for (unsigned i = 0; i < lines.size (); i++)
-	    {
-	      line_info *line = &lines[i];
-	      output_intermediate_line (gcov_file, line, line_num + i);
-	    }
-	}
+      if (fns != NULL)
+	/* Print first group functions that begin on the line.  */
+	for (vector<function_info *>::iterator it2 = fns->begin ();
+	     it2 != fns->end (); it2++)
+	  {
+	    vector<line_info> &lines = (*it2)->lines;
+	    for (unsigned i = 0; i < lines.size (); i++)
+	      {
+		line_info *line = &lines[i];
+		output_intermediate_json_line (lineso, line, line_num + i);
+	      }
+	  }
 
       /* Follow with lines associated with the source file.  */
       if (line_num < src->lines.size ())
-	output_intermediate_line (gcov_file, &src->lines[line_num], line_num);
+	output_intermediate_json_line (lineso, &src->lines[line_num], line_num);
     }
 }
 
@@ -1216,7 +1279,7 @@ process_all_functions (void)
       if (!fn->counts.empty () || no_data_file)
 	{
 	  source_info *s = &sources[src];
-	  s->functions.push_back (fn);
+	  s->add_function (fn);
 
 	  /* Mark last line in files touched by function.  */
 	  for (unsigned block_no = 0; block_no != fn->blocks.size ();
@@ -1301,8 +1364,7 @@ output_gcov_file (const char *file_name, source_info *src)
 static void
 generate_results (const char *file_name)
 {
-  FILE *gcov_intermediate_file = NULL;
-  char *gcov_intermediate_filename = NULL;
+  char *gcov_intermediate_filename;
 
   for (vector<function_info *>::iterator it = functions.begin ();
        it != functions.end (); it++)
@@ -1311,11 +1373,11 @@ generate_results (const char *file_name)
       coverage_info coverage;
 
       memset (&coverage, 0, sizeof (coverage));
-      coverage.name = flag_demangled_names ? fn->demangled_name : fn->name;
+      coverage.name = fn->get_name ();
       add_line_counts (flag_function_summary ? &coverage : NULL, fn);
       if (flag_function_summary)
 	{
-	  function_summary (&coverage, "Function");
+	  function_summary (&coverage);
 	  fnotice (stdout, "\n");
 	}
     }
@@ -1333,18 +1395,17 @@ generate_results (const char *file_name)
 	file_name = canonicalize_name (file_name);
     }
 
-  if (flag_gcov_file && flag_intermediate_format && !flag_use_stdout)
-    {
-      /* Open the intermediate file.  */
-      gcov_intermediate_filename = get_gcov_intermediate_filename (file_name);
-      gcov_intermediate_file = fopen (gcov_intermediate_filename, "w");
-      if (!gcov_intermediate_file)
-	{
-	  fnotice (stderr, "Cannot open intermediate output file %s\n",
-		   gcov_intermediate_filename);
-	  return;
-	}
-    }
+  gcov_intermediate_filename = get_gcov_intermediate_filename (file_name);
+
+  json::object *root = new json::object ();
+  root->set ("format_version", new json::string ("1"));
+  root->set ("gcc_version", new json::string (version_string));
+
+  if (bbg_cwd != NULL)
+    root->set ("current_working_directory", new json::string (bbg_cwd));
+
+  json::array *json_files = new json::array ();
+  root->set ("files", json_files);
 
   for (vector<source_info>::iterator it = sources.begin ();
        it != sources.end (); it++)
@@ -1367,16 +1428,13 @@ generate_results (const char *file_name)
       accumulate_line_counts (src);
 
       if (!flag_use_stdout)
-	function_summary (&src->coverage, "File");
+	file_summary (&src->coverage);
       total_lines += src->coverage.lines;
       total_executed += src->coverage.lines_executed;
       if (flag_gcov_file)
 	{
-	  if (flag_intermediate_format)
-	    /* Output the intermediate format without requiring source
-	       files.  This outputs a section to a *single* file.  */
-	    output_intermediate_file ((flag_use_stdout
-				       ? stdout : gcov_intermediate_file), src);
+	  if (flag_json_format)
+	    output_json_intermediate_file (json_files, src);
 	  else
 	    {
 	      if (flag_use_stdout)
@@ -1393,11 +1451,35 @@ generate_results (const char *file_name)
 	}
     }
 
-  if (flag_gcov_file && flag_intermediate_format && !flag_use_stdout)
+  if (flag_gcov_file && flag_json_format)
     {
-      /* Now we've finished writing the intermediate file.  */
-      fclose (gcov_intermediate_file);
-      XDELETEVEC (gcov_intermediate_filename);
+      if (flag_use_stdout)
+	{
+	  root->dump (stdout);
+	  printf ("\n");
+	}
+      else
+	{
+	  pretty_printer pp;
+	  root->print (&pp);
+	  pp_formatted_text (&pp);
+
+	  gzFile output = gzopen (gcov_intermediate_filename, "w");
+	  if (output == NULL)
+	    {
+	      fnotice (stderr, "Cannot open JSON output file %s\n",
+		       gcov_intermediate_filename);
+	      return;
+	    }
+
+	  if (gzputs (output, pp_formatted_text (&pp)) == EOF
+	      || gzclose (output))
+	    {
+	      fnotice (stderr, "Error writing JSON output file %s\n",
+		       gcov_intermediate_filename);
+	      return;
+	    }
+	}
     }
 
   if (!file_name)
@@ -1416,6 +1498,7 @@ release_structures (void)
   sources.resize (0);
   names.resize (0);
   functions.resize (0);
+  ident_to_fn.clear ();
 }
 
 /* Generate the names of the graph and data files.  If OBJECT_DIRECTORY
@@ -1634,13 +1717,9 @@ read_graph_file (void)
 
 	  fn = new function_info ();
 	  functions.push_back (fn);
-	  fn->name = function_name;
-	  if (flag_demangled_names)
-	    {
-	      fn->demangled_name = cplus_demangle (fn->name, DMGL_PARAMS);
-	      if (!fn->demangled_name)
-		fn->demangled_name = fn->name;
-	    }
+	  ident_to_fn[ident] = fn;
+
+	  fn->m_name = function_name;
 	  fn->ident = ident;
 	  fn->lineno_checksum = lineno_checksum;
 	  fn->cfg_checksum = cfg_checksum;
@@ -1656,7 +1735,7 @@ read_graph_file (void)
 	{
 	  if (!fn->blocks.empty ())
 	    fnotice (stderr, "%s:already seen blocks for '%s'\n",
-		     bbg_file_name, fn->name);
+		     bbg_file_name, fn->get_name ());
 	  else
 	    fn->blocks.resize (gcov_read_unsigned ());
 	}
@@ -1790,6 +1869,7 @@ read_count_file (void)
   unsigned tag;
   function_info *fn = NULL;
   int error = 0;
+  map<unsigned, function_info *>::iterator it;
 
   if (!gcov_open (da_file_name, 1))
     {
@@ -1839,21 +1919,11 @@ read_count_file (void)
       else if (tag == GCOV_TAG_FUNCTION && length == GCOV_TAG_FUNCTION_LENGTH)
 	{
 	  unsigned ident;
-
-	  /* Try to find the function in the list.  To speed up the
-	     search, first start from the last function found.  */
 	  ident = gcov_read_unsigned ();
-
 	  fn = NULL;
-	  for (vector<function_info *>::reverse_iterator it
-	       = functions.rbegin (); it != functions.rend (); it++)
-	    {
-	      if ((*it)->ident == ident)
-		{
-		  fn = *it;
-		  break;
-		}
-	    }
+	  it = ident_to_fn.find (ident);
+	  if (it != ident_to_fn.end ())
+	    fn = it->second;
 
 	  if (!fn)
 	    ;
@@ -1862,7 +1932,7 @@ read_count_file (void)
 	    {
 	    mismatch:;
 	      fnotice (stderr, "%s:profile mismatch for '%s'\n",
-		       da_file_name, fn->name);
+		       da_file_name, fn->get_name ());
 	      goto cleanup;
 	    }
 	}
@@ -1927,12 +1997,12 @@ solve_flow_graph (function_info *fn)
 
   if (fn->blocks.size () < 2)
     fnotice (stderr, "%s:'%s' lacks entry and/or exit blocks\n",
-	     bbg_file_name, fn->name);
+	     bbg_file_name, fn->get_name ());
   else
     {
       if (fn->blocks[ENTRY_BLOCK].num_pred)
 	fnotice (stderr, "%s:'%s' has arcs to entry block\n",
-		 bbg_file_name, fn->name);
+		 bbg_file_name, fn->get_name ());
       else
 	/* We can't deduce the entry block counts from the lack of
 	   predecessors.  */
@@ -1940,7 +2010,7 @@ solve_flow_graph (function_info *fn)
 
       if (fn->blocks[EXIT_BLOCK].num_succ)
 	fnotice (stderr, "%s:'%s' has arcs from exit block\n",
-		 bbg_file_name, fn->name);
+		 bbg_file_name, fn->get_name ());
       else
 	/* Likewise, we can't deduce exit block counts from the lack
 	   of its successors.  */
@@ -2149,7 +2219,7 @@ solve_flow_graph (function_info *fn)
     if (!fn->blocks[i].count_valid)
       {
 	fnotice (stderr, "%s:graph is unsolvable for '%s'\n",
-		 bbg_file_name, fn->name);
+		 bbg_file_name, fn->get_name ());
 	break;
       }
 }
@@ -2270,12 +2340,21 @@ executed_summary (unsigned lines, unsigned executed)
     fnotice (stdout, "No executable lines\n");
 }
 
-/* Output summary info for a function or file.  */
+/* Output summary info for a function.  */
 
 static void
-function_summary (const coverage_info *coverage, const char *title)
+function_summary (const coverage_info *coverage)
 {
-  fnotice (stdout, "%s '%s'\n", title, coverage->name);
+  fnotice (stdout, "%s '%s'\n", "Function", coverage->name);
+  executed_summary (coverage->lines, coverage->lines_executed);
+}
+
+/* Output summary info for a file.  */
+
+static void
+file_summary (const coverage_info *coverage)
+{
+  fnotice (stdout, "%s '%s'\n", "File", coverage->name);
   executed_summary (coverage->lines, coverage->lines_executed);
 
   if (flag_branches)
@@ -2451,6 +2530,9 @@ make_gcov_file_name (const char *input_name, const char *src_name)
   return result;
 }
 
+/* Mangle BASE name, copy it at the beginning of PTR buffer and
+   return address of the \0 character of the buffer.  */
+
 static char *
 mangle_name (char const *base, char *ptr)
 {
@@ -2458,14 +2540,13 @@ mangle_name (char const *base, char *ptr)
 
   /* Generate the source filename part.  */
   if (!flag_preserve_paths)
-    {
-      base = lbasename (base);
-      len = strlen (base);
-      memcpy (ptr, base, len);
-      ptr += len;
-    }
+    base = lbasename (base);
   else
-    ptr = mangle_path (base);
+    base = mangle_path (base);
+
+  len = strlen (base);
+  memcpy (ptr, base, len);
+  ptr += len;
 
   return ptr;
 }
@@ -2553,7 +2634,8 @@ add_line_counts (coverage_info *coverage, function_info *fn)
     }
 
   if (!has_any_line)
-    fnotice (stderr, "%s:no lines for '%s'\n", bbg_file_name, fn->name);
+    fnotice (stderr, "%s:no lines for '%s'\n", bbg_file_name,
+	     fn->get_name ());
 }
 
 /* Accumulate info for LINE that belongs to SRC source file.  If ADD_COVERAGE
@@ -2633,7 +2715,7 @@ accumulate_line_counts (source_info *src)
 
   /* If not using intermediate mode, sum lines of group functions and
      add them to lines that live in a source file.  */
-  if (!flag_intermediate_format)
+  if (!flag_json_format)
     for (vector<function_info *>::iterator it = src->functions.begin ();
 	 it != src->functions.end (); it++)
       {
@@ -2895,7 +2977,7 @@ output_line_details (FILE *f, const line_info *line, unsigned line_num)
 /* Output detail statistics about function FN to file F.  */
 
 static void
-output_function_details (FILE *f, const function_info *fn)
+output_function_details (FILE *f, function_info *fn)
 {
   if (!flag_branches)
     return;
@@ -2908,15 +2990,13 @@ output_function_details (FILE *f, const function_info *fn)
     if (arc->fake)
       return_count -= arc->count;
 
-  fprintf (f, "function %s",
-	   flag_demangled_names ? fn->demangled_name : fn->name);
+  fprintf (f, "function %s", fn->get_name ());
   fprintf (f, " called %s",
 	   format_gcov (called_count, 0, -1));
   fprintf (f, " returned %s",
 	   format_gcov (return_count, called_count, 0));
   fprintf (f, " blocks executed %s",
-	   format_gcov (fn->blocks_executed, fn->blocks.size () - 2,
-			0));
+	   format_gcov (fn->blocks_executed, fn->get_block_count (), 0));
   fprintf (f, "\n");
 }
 
@@ -2951,8 +3031,6 @@ output_lines (FILE *gcov_file, const source_info *src)
 	     SGR_SEQ (COLOR_BG_GREEN) "> 10%" SGR_RESET "\n");
 
   fprintf (gcov_file, DEFAULT_LINE_START "Source:%s\n", src->coverage.name);
-
-  fprintf (gcov_file, DEFAULT_LINE_START "Source:%s\n", src->coverage.name);
   if (!multiple_files)
     {
       fprintf (gcov_file, DEFAULT_LINE_START "Graph:%s\n", bbg_file_name);
@@ -2973,7 +3051,7 @@ output_lines (FILE *gcov_file, const source_info *src)
       source_lines.push_back (xstrdup (retval));
 
   unsigned line_start_group = 0;
-  vector<function_info *> fns;
+  vector<function_info *> *fns;
 
   for (unsigned line_num = 1; line_num <= source_lines.size (); line_num++)
     {
@@ -2989,18 +3067,18 @@ output_lines (FILE *gcov_file, const source_info *src)
       if (line_start_group == 0)
 	{
 	  fns = src->get_functions_at_location (line_num);
-	  if (fns.size () > 1)
+	  if (fns != NULL && fns->size () > 1)
 	    {
 	      /* It's possible to have functions that partially overlap,
 		 thus take the maximum end_line of functions starting
 		 at LINE_NUM.  */
-	      for (unsigned i = 0; i < fns.size (); i++)
-		if (fns[i]->end_line > line_start_group)
-		  line_start_group = fns[i]->end_line;
+	      for (unsigned i = 0; i < fns->size (); i++)
+		if ((*fns)[i]->end_line > line_start_group)
+		  line_start_group = (*fns)[i]->end_line;
 	    }
-	  else if (fns.size () == 1)
+	  else if (fns != NULL && fns->size () == 1)
 	    {
-	      function_info *fn = fns[0];
+	      function_info *fn = (*fns)[0];
 	      output_function_details (gcov_file, fn);
 	    }
 	}
@@ -3020,17 +3098,15 @@ output_lines (FILE *gcov_file, const source_info *src)
 
       if (line_start_group == line_num)
 	{
-	  for (vector<function_info *>::iterator it = fns.begin ();
-	       it != fns.end (); it++)
+	  for (vector<function_info *>::iterator it = fns->begin ();
+	       it != fns->end (); it++)
 	    {
 	      function_info *fn = *it;
 	      vector<line_info> &lines = fn->lines;
 
 	      fprintf (gcov_file, FN_SEPARATOR);
 
-	      string fn_name
-		= flag_demangled_names ? fn->demangled_name : fn->name;
-
+	      string fn_name = fn->get_name ();
 	      if (flag_use_colors)
 		{
 		  fn_name.insert (0, SGR_SEQ (COLOR_FG_CYAN));

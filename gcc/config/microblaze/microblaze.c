@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Xilinx MicroBlaze.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
 
    Contributed by Michael Eager <eager@eagercon.com>.
 
@@ -1180,7 +1180,7 @@ microblaze_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
       src = adjust_address (src, BLKmode, offset);
       dest = adjust_address (dest, BLKmode, offset);
       move_by_pieces (dest, src, length - offset,
-		      MIN (MEM_ALIGN (src), MEM_ALIGN (dest)), 0);
+		      MIN (MEM_ALIGN (src), MEM_ALIGN (dest)), RETURN_BEGIN);
     }
 }
 
@@ -1269,7 +1269,7 @@ microblaze_expand_block_move (rtx dest, rtx src, rtx length, rtx align_rtx)
 	{
 	  if (INTVAL (length) <= MAX_MOVE_BYTES)
 	    {
-	      move_by_pieces (dest, src, bytes, align, 0);
+	      move_by_pieces (dest, src, bytes, align, RETURN_BEGIN);
 	      return true;
 	    }
 	  else

@@ -1,5 +1,5 @@
 /* Wrapper to call lto.  Used by collect2 and the linker plugin.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
 
    Factored out of collect2 by Rafael Espindola <espindola@google.com>
 
@@ -71,7 +71,8 @@ static char **output_names;
 static char **offload_names;
 static char *offload_objects_file_name;
 static char *makefile;
-static char *debug_obj;
+static unsigned int num_deb_objs;
+static const char **early_debug_object_names;
 
 const char tool_name[] = "lto-wrapper";
 
@@ -90,8 +91,10 @@ tool_cleanup (bool)
     maybe_unlink (offload_objects_file_name);
   if (makefile)
     maybe_unlink (makefile);
-  if (debug_obj)
-    maybe_unlink (debug_obj);
+  if (early_debug_object_names)
+    for (i = 0; i < num_deb_objs; ++i)
+      if (early_debug_object_names[i])
+	maybe_unlink (early_debug_object_names[i]);
   for (i = 0; i < nr; ++i)
     {
       maybe_unlink (input_names[i]);
@@ -646,6 +649,7 @@ append_diag_options (obstack *argv_obstack, struct cl_decoded_option *opts,
       switch (option->opt_index)
 	{
 	case OPT_fdiagnostics_color_:
+	case OPT_fdiagnostics_format_:
 	case OPT_fdiagnostics_show_caret:
 	case OPT_fdiagnostics_show_labels:
 	case OPT_fdiagnostics_show_line_numbers:
@@ -1035,7 +1039,7 @@ find_and_merge_options (int fd, off_t file_offset, const char *prefix,
 const char *
 debug_objcopy (const char *infile, bool rename)
 {
-  const char *outfile;
+  char *outfile;
   const char *errmsg;
   int err;
 
@@ -1074,7 +1078,15 @@ debug_objcopy (const char *infile, bool rename)
       return NULL;
     }
 
-  outfile = make_temp_file ("debugobjtem");
+  if (save_temps)
+    {
+      outfile = (char *) xmalloc (strlen (infile)
+				  + sizeof (".debug.temp.o") + 1);
+      strcpy (outfile, infile);
+      strcat (outfile, ".debug.temp.o");
+    }
+  else
+    outfile = make_temp_file (".debug.temp.o");
   errmsg = simple_object_copy_lto_debug_sections (inobj, outfile, &err, rename);
   if (errmsg)
     {
@@ -1411,9 +1423,16 @@ cont1:
 
   if (lto_mode == LTO_MODE_LTO)
     {
-      flto_out = make_temp_file (".lto.o");
       if (linker_output)
-	obstack_ptr_grow (&argv_obstack, linker_output);
+	{
+	  obstack_ptr_grow (&argv_obstack, linker_output);
+	  flto_out = (char *) xmalloc (strlen (linker_output)
+				       + sizeof (".lto.o") + 1);
+	  strcpy (flto_out, linker_output);
+	  strcat (flto_out, ".lto.o");
+	}
+      else
+	flto_out = make_temp_file (".lto.o");
       obstack_ptr_grow (&argv_obstack, "-o");
       obstack_ptr_grow (&argv_obstack, flto_out);
     }
@@ -1486,82 +1505,23 @@ cont1:
   argv_ptr = &new_argv[new_head_argc];
   fork_execute (new_argv[0], CONST_CAST (char **, new_argv), true);
 
-  /* Handle early generated debug information.  At compile-time
-     we output early DWARF debug info into .gnu.debuglto_ prefixed
-     sections.  LTRANS object DWARF debug info refers to that.
-     So we need to transfer the .gnu.debuglto_ sections to the final
-     link.  Ideally the linker plugin interface would allow us to
-     not claim those sections and instruct the linker to keep
-     them, renaming them in the process.  For now we extract and
-     rename those sections via a simple-object interface to produce
-     regular objects containing only the early debug info.  We
-     then partially link those to a single early debug info object
-     and pass that as additional output back to the linker plugin.  */
-
-  /* Prepare the partial link to gather the compile-time generated
-     debug-info into a single input for the final link.  */
-  debug_obj = make_temp_file ("debugobj");
-  obstack_ptr_grow (&argv_obstack, collect_gcc);
-  for (i = 1; i < decoded_options_count; ++i)
-    {
-      /* Retain linker choice and -B.  */
-      if (decoded_options[i].opt_index == OPT_B
-	  || decoded_options[i].opt_index == OPT_fuse_ld_bfd
-	  || decoded_options[i].opt_index == OPT_fuse_ld_gold)
-	append_linker_options (&argv_obstack, &decoded_options[i-1], 2);
-      /* Retain all target options, this preserves -m32 for example.  */
-      if (cl_options[decoded_options[i].opt_index].flags & CL_TARGET)
-	append_linker_options (&argv_obstack, &decoded_options[i-1], 2);
-      /* Recognize -g0.  */
-      if (decoded_options[i].opt_index == OPT_g
-	  && strcmp (decoded_options[i].arg, "0") == 0)
-	skip_debug = true;
-    }
-  obstack_ptr_grow (&argv_obstack, "-r");
-  obstack_ptr_grow (&argv_obstack, "-nostdlib");
-  obstack_ptr_grow (&argv_obstack, "-o");
-  obstack_ptr_grow (&argv_obstack, debug_obj);
-
   /* Copy the early generated debug info from the objects to temporary
      files and append those to the partial link commandline.  */
   n_debugobj = 0;
+  early_debug_object_names = NULL;
   if (! skip_debug)
-    for (i = 0; i < ltoobj_argc; ++i)
-      {
-	const char *tem;
-	if ((tem = debug_objcopy (ltoobj_argv[i], !linker_output_rel)))
-	  {
-	    obstack_ptr_grow (&argv_obstack, tem);
-	    n_debugobj++;
-	  }
-      }
-
-  /* Link them all into a single object.  Ideally this would reduce
-     disk space usage mainly due to .debug_str merging but unfortunately
-     GNU ld doesn't perform this with -r.  */
-  if (n_debugobj)
     {
-      obstack_ptr_grow (&argv_obstack, NULL);
-      const char **debug_link_argv = XOBFINISH (&argv_obstack, const char **);
-      fork_execute (debug_link_argv[0],
-		    CONST_CAST (char **, debug_link_argv), false);
-
-      /* And dispose the temporaries.  */
-      for (i = 0; debug_link_argv[i]; ++i)
-	;
-      for (--i; i > 0; --i)
+      early_debug_object_names = XCNEWVEC (const char *, ltoobj_argc+ 1);
+      num_deb_objs = ltoobj_argc;
+      for (i = 0; i < ltoobj_argc; ++i)
 	{
-	  if (strcmp (debug_link_argv[i], debug_obj) == 0)
-	    break;
-	  maybe_unlink (debug_link_argv[i]);
+	  const char *tem;
+	  if ((tem = debug_objcopy (ltoobj_argv[i], !linker_output_rel)))
+	    {
+	      early_debug_object_names[i] = tem;
+	      n_debugobj++;
+	    }
 	}
-    }
-  else
-    {
-      unlink_if_ordinary (debug_obj);
-      free (debug_obj);
-      debug_obj = NULL;
-      skip_debug = true;
     }
 
   if (lto_mode == LTO_MODE_LTO)
@@ -1569,12 +1529,15 @@ cont1:
       printf ("%s\n", flto_out);
       if (!skip_debug)
 	{
-	  printf ("%s\n", debug_obj);
-	  free (debug_obj);
-	  debug_obj = NULL;
+	  for (i = 0; i < ltoobj_argc; ++i)
+	    if (early_debug_object_names[i] != NULL)
+	      printf ("%s\n", early_debug_object_names[i]);	      
 	}
+      /* These now belong to collect2.  */
       free (flto_out);
       flto_out = NULL;
+      free (early_debug_object_names);
+      early_debug_object_names = NULL;
     }
   else
     {
@@ -1738,21 +1701,24 @@ cont:
 	  for (i = 0; i < nr; ++i)
 	    maybe_unlink (input_names[i]);
 	}
-      if (!skip_debug)
-	{
-	  printf ("%s\n", debug_obj);
-	  free (debug_obj);
-	  debug_obj = NULL;
-	}
       for (i = 0; i < nr; ++i)
 	{
 	  fputs (output_names[i], stdout);
 	  putc ('\n', stdout);
 	  free (input_names[i]);
 	}
+      if (!skip_debug)
+	{
+	  for (i = 0; i < ltoobj_argc; ++i)
+	    if (early_debug_object_names[i] != NULL)
+	      printf ("%s\n", early_debug_object_names[i]);	      
+	}
       nr = 0;
       free (ltrans_priorities);
       free (output_names);
+      output_names = NULL;
+      free (early_debug_object_names);
+      early_debug_object_names = NULL;
       free (input_names);
       free (list_option_full);
       obstack_free (&env_obstack, NULL);

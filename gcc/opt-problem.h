@@ -1,5 +1,5 @@
 /* Rich information on why an optimization wasn't possible.
-   Copyright (C) 2018 Free Software Foundation, Inc.
+   Copyright (C) 2018-2019 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -214,7 +214,7 @@ class opt_result : public opt_wrapper <bool>
   /* Private ctor.  Instances should be created by the success and failure
      static member functions.  */
   opt_result (wrapped_t result, opt_problem *problem)
-  : opt_wrapper (result, problem)
+  : opt_wrapper <bool> (result, problem)
   {}
 };
 

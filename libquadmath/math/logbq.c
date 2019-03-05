@@ -13,8 +13,12 @@
  * ====================================================
  */
 
+#if defined(LIBM_SCCS) && !defined(lint)
+static char rcsid[] = "$NetBSD: $";
+#endif
+
 /*
- * long double logbl(x)
+ * long double logbq(x)
  * IEEE 754 logb. Included to pass IEEE test suite. Not recommend.
  * Use ilogb instead.
  */

@@ -1,6 +1,6 @@
 ## Makefile for the C++17 sources of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997-2018 Free Software Foundation, Inc.
+## Copyright (C) 1997-2019 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -27,23 +27,34 @@ noinst_LTLIBRARIES = libc++17convenience.la
 
 headers =
 
-sources = \
-	memory_resource.cc
-
 if ENABLE_DUAL_ABI
-extra_string_inst_sources =
+extra_string_inst_sources = cow-string-inst.cc
+extra_fs_sources = \
+	cow-fs_dir.cc \
+	cow-fs_ops.cc \
+	cow-fs_path.cc
 else
 extra_string_inst_sources =
+extra_fs_sources =
 endif
 
 if ENABLE_EXTERN_TEMPLATE
 # XTEMPLATE_FLAGS = -fno-implicit-templates
 inst_sources = \
+	ostream-inst.cc \
+	string-inst.cc \
 	$(extra_string_inst_sources)
 else
 # XTEMPLATE_FLAGS =
 inst_sources =
 endif
+
+sources = \
+	fs_dir.cc \
+	fs_ops.cc \
+	fs_path.cc \
+	memory_resource.cc \
+	$(extra_fs_sources)
 
 vpath % $(top_srcdir)/src/c++17
 
@@ -58,7 +69,8 @@ AM_CXXFLAGS = \
 	-std=gnu++17 \
 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
 	$(XTEMPLATE_FLAGS) $(VTV_CXXFLAGS) \
-	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS)
+	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS) \
+	-fimplicit-templates
 
 AM_MAKEFLAGS = \
 	"gxx_include_dir=$(gxx_include_dir)"

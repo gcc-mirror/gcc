@@ -1,0 +1,11 @@
+(function "repeat_examples"
+  (insn-chain
+    (block 2
+      (edge-from entry (flags "FALLTHRU"))
+      (cinsn 1
+        (parallel [(const_int 0) repeated x64])
+        "test.c":2 (nil))
+      (edge-to exit (flags "FALLTHRU"))
+    ) ;; block 2
+  ) ;; insn-chain
+) ;; function

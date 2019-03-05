@@ -533,12 +533,12 @@ func traceEvent(ev byte, skip int, args ...uint64) {
 }
 
 func traceEventLocked(extraBytes int, mp *m, pid int32, bufp *traceBufPtr, ev byte, skip int, args ...uint64) {
-	buf := (*bufp).ptr()
+	buf := bufp.ptr()
 	// TODO: test on non-zero extraBytes param.
 	maxSize := 2 + 5*traceBytesPerNumber + extraBytes // event type, length, sequence, timestamp, stack id and two add params
 	if buf == nil || len(buf.arr)-buf.pos < maxSize {
 		buf = traceFlush(traceBufPtrOf(buf), pid).ptr()
-		(*bufp).set(buf)
+		bufp.set(buf)
 	}
 
 	ticks := uint64(cputicks()) / traceTickDiv
@@ -585,7 +585,7 @@ func traceStackID(mp *m, buf []location, skip int) uint64 {
 	gp := mp.curg
 	var nstk int
 	if gp == _g_ {
-		nstk = callers(skip+1, buf[:])
+		nstk = callers(skip+1, buf)
 	} else if gp != nil {
 		// FIXME: get stack trace of different goroutine.
 	}
@@ -689,11 +689,11 @@ func traceString(bufp *traceBufPtr, pid int32, s string) (uint64, *traceBufPtr) 
 	// so there must be no memory allocation or any activities
 	// that causes tracing after this point.
 
-	buf := (*bufp).ptr()
+	buf := bufp.ptr()
 	size := 1 + 2*traceBytesPerNumber + len(s)
 	if buf == nil || len(buf.arr)-buf.pos < size {
 		buf = traceFlush(traceBufPtrOf(buf), pid).ptr()
-		(*bufp).set(buf)
+		bufp.set(buf)
 	}
 	buf.byte(traceEvString)
 	buf.varint(id)
@@ -708,7 +708,7 @@ func traceString(bufp *traceBufPtr, pid int32, s string) (uint64, *traceBufPtr) 
 	buf.varint(uint64(slen))
 	buf.pos += copy(buf.arr[buf.pos:], s[:slen])
 
-	(*bufp).set(buf)
+	bufp.set(buf)
 	return id, bufp
 }
 
@@ -1143,7 +1143,7 @@ func traceNextGC() {
 // To access runtime functions from runtime/trace.
 // See runtime/trace/annotation.go
 
-//go:linkname trace_userTaskCreate runtime_trace.userTaskCreate
+//go:linkname trace_userTaskCreate runtime..z2ftrace.userTaskCreate
 func trace_userTaskCreate(id, parentID uint64, taskType string) {
 	if !trace.enabled {
 		return
@@ -1161,12 +1161,12 @@ func trace_userTaskCreate(id, parentID uint64, taskType string) {
 	traceReleaseBuffer(pid)
 }
 
-//go:linkname trace_userTaskEnd runtime_trace.userTaskEnd
+//go:linkname trace_userTaskEnd runtime..z2ftrace.userTaskEnd
 func trace_userTaskEnd(id uint64) {
 	traceEvent(traceEvUserTaskEnd, 2, id)
 }
 
-//go:linkname trace_userRegion runtime_trace.userRegion
+//go:linkname trace_userRegion runtime..z2ftrace.userRegion
 func trace_userRegion(id, mode uint64, name string) {
 	if !trace.enabled {
 		return
@@ -1183,7 +1183,7 @@ func trace_userRegion(id, mode uint64, name string) {
 	traceReleaseBuffer(pid)
 }
 
-//go:linkname trace_userLog runtime_trace.userLog
+//go:linkname trace_userLog runtime..z2ftrace.userLog
 func trace_userLog(id uint64, category, message string) {
 	if !trace.enabled {
 		return
@@ -1201,7 +1201,7 @@ func trace_userLog(id uint64, category, message string) {
 	traceEventLocked(extraSpace, mp, pid, bufp, traceEvUserLog, 3, id, categoryID)
 	// traceEventLocked reserved extra space for val and len(val)
 	// in buf, so buf now has room for the following.
-	buf := (*bufp).ptr()
+	buf := bufp.ptr()
 
 	// double-check the message and its length can fit.
 	// Otherwise, truncate the message.

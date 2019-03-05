@@ -2,6 +2,7 @@
    routine.  */
 
 /* { dg-additional-options "-O2" }
+   { dg-additional-options "-fopt-info-optimized-omp" }
    { dg-additional-options "-fdump-tree-ompexp" }
    { dg-additional-options "-fdump-tree-oaccdevlow" } */
 
@@ -15,7 +16,7 @@ extern unsigned int *__restrict c;
 #pragma acc routine worker
 void ROUTINE ()
 {
-#pragma acc loop
+#pragma acc loop /* { dg-message "optimized: assigned OpenACC worker vector loop parallelism" } */
   for (unsigned int i = 0; i < N; i++)
     c[i] = a[i] + b[i];
 }

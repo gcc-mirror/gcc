@@ -1,5 +1,5 @@
 /* Constant folding for calls to built-in and internal functions.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h" /* For C[LT]Z_DEFINED_AT_ZERO.  */
 #include "builtins.h"
 #include "gimple-expr.h"
+#include "tree-vector-builder.h"
 
 /* Functions that test for certain constant types, abstracting away the
    decision about whether to check for overflow.  */
@@ -645,6 +646,49 @@ fold_const_reduction (tree type, tree arg, tree_code code)
   return res;
 }
 
+/* Fold a call to IFN_VEC_CONVERT (ARG) returning TYPE.  */
+
+static tree
+fold_const_vec_convert (tree ret_type, tree arg)
+{
+  enum tree_code code = NOP_EXPR;
+  tree arg_type = TREE_TYPE (arg);
+  if (TREE_CODE (arg) != VECTOR_CST)
+    return NULL_TREE;
+
+  gcc_checking_assert (VECTOR_TYPE_P (ret_type) && VECTOR_TYPE_P (arg_type));
+
+  if (INTEGRAL_TYPE_P (TREE_TYPE (ret_type))
+      && SCALAR_FLOAT_TYPE_P (TREE_TYPE (arg_type)))
+    code = FIX_TRUNC_EXPR;
+  else if (INTEGRAL_TYPE_P (TREE_TYPE (arg_type))
+	   && SCALAR_FLOAT_TYPE_P (TREE_TYPE (ret_type)))
+    code = FLOAT_EXPR;
+
+  /* We can't handle steps directly when extending, since the
+     values need to wrap at the original precision first.  */
+  bool step_ok_p
+    = (INTEGRAL_TYPE_P (TREE_TYPE (ret_type))
+       && INTEGRAL_TYPE_P (TREE_TYPE (arg_type))
+       && (TYPE_PRECISION (TREE_TYPE (ret_type))
+	   <= TYPE_PRECISION (TREE_TYPE (arg_type))));
+  tree_vector_builder elts;
+  if (!elts.new_unary_operation (ret_type, arg, step_ok_p))
+    return NULL_TREE;
+
+  unsigned int count = elts.encoded_nelts ();
+  for (unsigned int i = 0; i < count; ++i)
+    {
+      tree elt = fold_unary (code, TREE_TYPE (ret_type),
+			     VECTOR_CST_ELT (arg, i));
+      if (elt == NULL_TREE || !CONSTANT_CLASS_P (elt))
+	return NULL_TREE;
+      elts.quick_push (elt);
+    }
+
+  return elts.build ();
+}
+
 /* Try to evaluate:
 
       *RESULT = FN (*ARG)
@@ -1231,6 +1275,9 @@ fold_const_call (combined_fn fn, tree type, tree arg)
 
     case CFN_REDUC_XOR:
       return fold_const_reduction (type, arg, BIT_XOR_EXPR);
+
+    case CFN_VEC_CONVERT:
+      return fold_const_vec_convert (type, arg);
 
     default:
       return fold_const_call_1 (fn, type, arg);

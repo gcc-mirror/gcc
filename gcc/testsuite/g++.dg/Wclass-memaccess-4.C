@@ -29,7 +29,7 @@ struct C
 
 C::C (const C &c)
 {
-  memcpy (this, &c, sizeof c);    // { dg-warning "\\\[-Wclass-memaccess]" "pr84851" { xfail *-*-*} }
+  memcpy (this, &c, sizeof c);    // { dg-warning "\\\[-Wclass-memaccess]" }
 }
 
 C& C::operator= (const C &c)

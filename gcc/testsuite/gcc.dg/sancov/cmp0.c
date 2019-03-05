@@ -3,8 +3,14 @@
 /* { dg-options "-fsanitize-coverage=trace-cmp -fdump-tree-optimized" } */
 /* { dg-skip-if "different type layout" { avr-*-* } } */
 
+#if __SIZEOF_INT__ < 4
+typedef __INT32_TYPE__ int32;
+#else
+typedef int int32;
+#endif
+
 void
-foo (char *a, short *b, int *c, long long *d, float *e, double *f)
+foo (char *a, short *b, int32 *c, long long *d, float *e, double *f)
 {
   if (*a)
     *a += 1;
@@ -63,7 +69,7 @@ foo (char *a, short *b, int *c, long long *d, float *e, double *f)
 }
 
 void
-bar (int *c)
+bar (int32 *c)
 {
   if (*c == 27)
     *c += 2;
@@ -71,8 +77,8 @@ bar (int *c)
     *c += 2;
 }
 
-int
-baz (int *c, long long d, long long e)
+int32
+baz (int32 *c, long long d, long long e)
 {
   *c = (*c == 48) ? 12 : 24;
   return d == e;

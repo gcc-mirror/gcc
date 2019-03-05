@@ -1,6 +1,6 @@
 // Test that discarded statements differ from unevaluated operands in some
 // ways.
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 struct A { int i; };
 

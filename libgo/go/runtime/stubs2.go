@@ -7,6 +7,7 @@
 // +build !nacl
 // +build !js
 // +build !darwin
+// +build !aix
 
 package runtime
 

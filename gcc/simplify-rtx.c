@@ -1,5 +1,5 @@
 /* RTL simplification functions for GNU compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2857,6 +2857,38 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 					XEXP (op0, 1));
         }
 
+      /* The following happens with bitfield merging.
+         (X & C) | ((X | Y) & ~C) -> X | (Y & ~C) */
+      if (GET_CODE (op0) == AND
+	  && GET_CODE (op1) == AND
+	  && CONST_INT_P (XEXP (op0, 1))
+	  && CONST_INT_P (XEXP (op1, 1))
+	  && (INTVAL (XEXP (op0, 1))
+	      == ~INTVAL (XEXP (op1, 1))))
+	{
+	  /* The IOR may be on both sides.  */
+	  rtx top0 = NULL_RTX, top1 = NULL_RTX;
+	  if (GET_CODE (XEXP (op1, 0)) == IOR)
+	    top0 = op0, top1 = op1;
+	  else if (GET_CODE (XEXP (op0, 0)) == IOR)
+	    top0 = op1, top1 = op0;
+	  if (top0 && top1)
+	    {
+	      /* X may be on either side of the inner IOR.  */
+	      rtx tem = NULL_RTX;
+	      if (rtx_equal_p (XEXP (top0, 0),
+			       XEXP (XEXP (top1, 0), 0)))
+		tem = XEXP (XEXP (top1, 0), 1);
+	      else if (rtx_equal_p (XEXP (top0, 0),
+				    XEXP (XEXP (top1, 0), 1)))
+		tem = XEXP (XEXP (top1, 0), 0);
+	      if (tem)
+		return simplify_gen_binary (IOR, mode, XEXP (top0, 0),
+					    simplify_gen_binary
+					      (AND, mode, tem, XEXP (top1, 1)));
+	    }
+	}
+
       tem = simplify_byte_swapping_operation (code, mode, op0, op1);
       if (tem)
 	return tem;
@@ -5615,9 +5647,19 @@ simplify_merge_mask (rtx x, rtx mask, int op)
       rtx top0 = simplify_merge_mask (XEXP (x, 0), mask, op);
       rtx top1 = simplify_merge_mask (XEXP (x, 1), mask, op);
       if (top0 || top1)
-	return simplify_gen_binary (GET_CODE (x), GET_MODE (x),
-				    top0 ? top0 : XEXP (x, 0),
-				    top1 ? top1 : XEXP (x, 1));
+	{
+	  if (COMPARISON_P (x))
+	    return simplify_gen_relational (GET_CODE (x), GET_MODE (x),
+					    GET_MODE (XEXP (x, 0)) != VOIDmode
+					    ? GET_MODE (XEXP (x, 0))
+					    : GET_MODE (XEXP (x, 1)),
+					    top0 ? top0 : XEXP (x, 0),
+					    top1 ? top1 : XEXP (x, 1));
+	  else
+	    return simplify_gen_binary (GET_CODE (x), GET_MODE (x),
+					top0 ? top0 : XEXP (x, 0),
+					top1 ? top1 : XEXP (x, 1));
+	}
     }
   if (GET_RTX_CLASS (GET_CODE (x)) == RTX_TERNARY
       && VECTOR_MODE_P (GET_MODE (XEXP (x, 0)))
@@ -6031,8 +6073,10 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 
       if (!side_effects_p (op2))
 	{
-	  rtx top0 = simplify_merge_mask (op0, op2, 0);
-	  rtx top1 = simplify_merge_mask (op1, op2, 1);
+	  rtx top0
+	    = may_trap_p (op0) ? NULL_RTX : simplify_merge_mask (op0, op2, 0);
+	  rtx top1
+	    = may_trap_p (op1) ? NULL_RTX : simplify_merge_mask (op1, op2, 1);
 	  if (top0 || top1)
 	    return simplify_gen_ternary (code, mode, mode,
 					 top0 ? top0 : op0,
@@ -6539,7 +6583,7 @@ simplify_subreg (machine_mode outermode, rtx op,
 
 	  /* Propagate original regno.  We don't have any way to specify
 	     the offset inside original regno, so do so only for lowpart.
-	     The information is used only by alias analysis that can not
+	     The information is used only by alias analysis that cannot
 	     grog partial register anyway.  */
 
 	  if (known_eq (subreg_lowpart_offset (outermode, innermode), byte))
@@ -6600,6 +6644,23 @@ simplify_subreg (machine_mode outermode, rtx op,
 	return gen_rtx_SUBREG (outermode, part, final_offset);
       return NULL_RTX;
     }
+
+  /* Simplify
+	(subreg (vec_merge (X)
+			   (vector)
+			   (const_int ((1 << N) | M)))
+		(N * sizeof (outermode)))
+     to
+	(subreg (X) (N * sizeof (outermode)))
+   */
+  unsigned int idx;
+  if (constant_multiple_p (byte, GET_MODE_SIZE (outermode), &idx)
+      && idx < HOST_BITS_PER_WIDE_INT
+      && GET_CODE (op) == VEC_MERGE
+      && GET_MODE_INNER (innermode) == outermode
+      && CONST_INT_P (XEXP (op, 2))
+      && (UINTVAL (XEXP (op, 2)) & (HOST_WIDE_INT_1U << idx)) != 0)
+    return simplify_gen_subreg (outermode, XEXP (op, 0), innermode, byte);
 
   /* A SUBREG resulting from a zero extension may fold to zero if
      it extracts higher bits that the ZERO_EXTEND's source bits.  */
@@ -6831,15 +6892,29 @@ test_vector_ops_duplicate (machine_mode mode, rtx scalar_reg)
 		     simplify_binary_operation (VEC_SELECT, inner_mode,
 						duplicate, zero_par));
 
-  /* And again with the final element.  */
   unsigned HOST_WIDE_INT const_nunits;
   if (nunits.is_constant (&const_nunits))
     {
+      /* And again with the final element.  */
       rtx last_index = gen_int_mode (const_nunits - 1, word_mode);
       rtx last_par = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, last_index));
       ASSERT_RTX_PTR_EQ (scalar_reg,
 			 simplify_binary_operation (VEC_SELECT, inner_mode,
 						    duplicate, last_par));
+
+      /* Test a scalar subreg of a VEC_MERGE of a VEC_DUPLICATE.  */
+      rtx vector_reg = make_test_reg (mode);
+      for (unsigned HOST_WIDE_INT i = 0; i < const_nunits; i++)
+	{
+	  if (i >= HOST_BITS_PER_WIDE_INT)
+	    break;
+	  rtx mask = GEN_INT ((HOST_WIDE_INT_1U << i) | (i + 1));
+	  rtx vm = gen_rtx_VEC_MERGE (mode, duplicate, vector_reg, mask);
+	  poly_uint64 offset = i * GET_MODE_SIZE (inner_mode);
+	  ASSERT_RTX_EQ (scalar_reg,
+			 simplify_gen_subreg (inner_mode, vm,
+					      mode, offset));
+	}
     }
 
   /* Test a scalar subreg of a VEC_DUPLICATE.  */

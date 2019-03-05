@@ -1,5 +1,5 @@
 /* RTL-level loop invariant motion.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1053,7 +1053,7 @@ check_dependencies (rtx_insn *insn, bitmap depends_on)
   return true;
 }
 
-/* Pre-check candidate DEST to skip the one which can not make a valid insn
+/* Pre-check candidate DEST to skip the one which cannot make a valid insn
    during move_invariant_reg.  SIMPLE is to skip HARD_REGISTER.  */
 static bool
 pre_check_invariant_p (bool simple, rtx dest)
@@ -1365,7 +1365,7 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed,
        This usually has the effect that FP constant loads from the constant
        pool are not moved out of the loop.
 
-       Note that this also means that dependent invariants can not be moved.
+       Note that this also means that dependent invariants cannot be moved.
        However, the primary purpose of this pass is to move loop invariant
        address arithmetic out of loops, and address arithmetic that depends
        on floating point constants is unlikely to ever occur.  */
@@ -2201,7 +2201,7 @@ calculate_loop_reg_pressure (void)
 	    }
 	}
     }
-  bitmap_clear (&curr_regs_live);
+  bitmap_release (&curr_regs_live);
   if (flag_ira_region == IRA_REGION_MIXED
       || flag_ira_region == IRA_REGION_ALL)
     FOR_EACH_LOOP (loop, 0)

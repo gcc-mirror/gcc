@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -43,37 +43,9 @@
 
 #include <popcntintrin.h>
 
-#include <rdseedintrin.h>
-
-#include <prfchwintrin.h>
-
-#include <fxsrintrin.h>
-
-#include <xsaveintrin.h>
-
-#include <xsaveoptintrin.h>
-
-#endif /* __iamcu__ */
-
-#include <adxintrin.h>
-
-#ifndef __iamcu__
-
-#include <clwbintrin.h>
-
-#include <clflushoptintrin.h>
-
-#include <xsavesintrin.h>
-
-#include <xsavecintrin.h>
-
 #include <mwaitxintrin.h>
 
 #include <clzerointrin.h>
-
-#include <wbnoinvdintrin.h>
-
-#include <pkuintrin.h>
 
 #endif /* __iamcu__ */
 

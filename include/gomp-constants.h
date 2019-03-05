@@ -1,6 +1,6 @@
 /* Communication between GCC and libgomp.
 
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -189,12 +189,25 @@ enum gomp_map_kind
 #define GOMP_TASK_FLAG_GRAINSIZE	(1 << 9)
 #define GOMP_TASK_FLAG_IF		(1 << 10)
 #define GOMP_TASK_FLAG_NOGROUP		(1 << 11)
+#define GOMP_TASK_FLAG_REDUCTION	(1 << 12)
 
 /* GOMP_target{_ext,update_ext,enter_exit_data} flags argument.  */
 #define GOMP_TARGET_FLAG_NOWAIT		(1 << 0)
 #define GOMP_TARGET_FLAG_EXIT_DATA	(1 << 1)
 /* Internal to libgomp.  */
 #define GOMP_TARGET_FLAG_UPDATE		(1U << 31)
+
+
+/* OpenACC construct flags.  */
+
+/* Force host fallback execution.  */
+#define GOACC_FLAG_HOST_FALLBACK	(1 << 0)
+
+/* For legacy reasons, in the ABI, the GOACC_FLAGs are encoded as an inverted
+   bitmask.  */
+#define GOACC_FLAGS_MARSHAL_OP		BIT_NOT_EXPR
+#define GOACC_FLAGS_UNMARSHAL(X)	(~(X))
+
 
 /* Versions of libgomp and device-specific plugins.  GOMP_VERSION
    should be incremented whenever an ABI-incompatible change is introduced
@@ -250,6 +263,12 @@ enum gomp_map_kind
 /* If the value is directly embeded in target argument, it should be a 16-bit
    at most and shifted by this many bits.  */
 #define GOMP_TARGET_ARG_VALUE_SHIFT		16
+
+/* Dependence types in omp_depend_t objects.  */
+#define GOMP_DEPEND_IN			1
+#define GOMP_DEPEND_OUT			2
+#define GOMP_DEPEND_INOUT		3
+#define GOMP_DEPEND_MUTEXINOUTSET	4
 
 /* HSA specific data structures.  */
 

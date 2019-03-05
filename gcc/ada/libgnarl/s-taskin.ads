@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -565,7 +565,8 @@ package System.Tasking is
       --
       --  Protection: Self.L. Self will modify this field when Self.Accepting
       --  is False, and will not need the mutex to do so. Once a task sets
-      --  Pending_ATC_Level = 0, no other task can access this field.
+      --  Pending_ATC_Level = Level_Completed_Task, no other task can access
+      --  this field.
 
       LL : aliased Task_Primitives.Private_Data;
       --  Control block used by the underlying low-level tasking service
@@ -814,14 +815,32 @@ package System.Tasking is
    -----------------------------------
 
    Max_ATC_Nesting : constant Natural := 20;
+   --  The maximum number of nested asynchronous select statements supported
+   --  by the runtime.
 
-   subtype ATC_Level_Base is Integer range 0 .. Max_ATC_Nesting;
+   subtype ATC_Level_Base is Integer range -1 .. Max_ATC_Nesting;
+   --  Indicates the number of nested asynchronous task control statements
+   --  or entries a task is in.
 
-   ATC_Level_Infinity : constant ATC_Level_Base := ATC_Level_Base'Last;
+   Level_Completed_Task : constant ATC_Level_Base := -1;
+   --  ATC_Level of a task that has "completed". A task reaches the completed
+   --  state after an abort, exception propagation, or normal exit.
 
-   subtype ATC_Level is ATC_Level_Base range 0 .. ATC_Level_Base'Last - 1;
+   Level_No_ATC_Occurring : constant ATC_Level_Base := 0;
+   --  ATC_Level of a task not executing a entry call or an asynchronous
+   --  select statement.
 
-   subtype ATC_Level_Index is ATC_Level range 1 .. ATC_Level'Last;
+   Level_No_Pending_Abort : constant ATC_Level_Base := ATC_Level_Base'Last;
+   --  ATC_Level when there is no pending abort
+
+   subtype ATC_Level is ATC_Level_Base range
+     Level_No_ATC_Occurring .. Level_No_Pending_Abort - 1;
+   --  Nested ATC_Levels valid during the execution of a task
+
+   subtype ATC_Level_Index is ATC_Level range
+     Level_No_ATC_Occurring + 1 .. ATC_Level'Last;
+   --  ATC_Levels valid when a task is executing an entry call or asynchronous
+   --  task control statements.
 
    ----------------------------------
    -- Entry_Call_Record definition --
@@ -1082,7 +1101,7 @@ package System.Tasking is
 
       --  Beginning of counts
 
-      ATC_Nesting_Level : ATC_Level := 1;
+      ATC_Nesting_Level : ATC_Level := Level_No_ATC_Occurring;
       --  The dynamic level of ATC nesting (currently executing nested
       --  asynchronous select statements) in this task.
 
@@ -1102,13 +1121,17 @@ package System.Tasking is
 
       --  Protection: Only updated by Self; access assumed to be atomic
 
-      Pending_ATC_Level : ATC_Level_Base := ATC_Level_Infinity;
-      --  The ATC level to which this task is currently being aborted. If the
-      --  value is zero, the entire task has "completed". That may be via
-      --  abort, exception propagation, or normal exit. If the value is
-      --  ATC_Level_Infinity, the task is not being aborted to any level. If
-      --  the value is positive, the task has not completed. This should ONLY
-      --  be modified by Abort_To_Level and Exit_One_ATC_Level.
+      Pending_ATC_Level : ATC_Level_Base := Level_No_Pending_Abort;
+      --  Indicates the ATC level to which this task is currently being
+      --  aborted. Two special values exist:
+      --
+      --    * Level_Completed_Task: the task has completed.
+      --
+      --    * Level_No_Pending_Abort: the task is not being aborted to any
+      --                              level.
+      --
+      --  All other values indicate the task has not completed. This should
+      --  ONLY be modified by Abort_To_Level and Exit_One_ATC_Level.
       --
       --  Protection: Self.L
 

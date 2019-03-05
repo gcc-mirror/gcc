@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 AdvSIMD architecture.
-;; Copyright (C) 2011-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2019 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -419,6 +419,81 @@
 }
 )
 
+;; The fcadd and fcmla patterns are made UNSPEC for the explicitly due to the
+;; fact that their usage need to guarantee that the source vectors are
+;; contiguous.  It would be wrong to describe the operation without being able
+;; to describe the permute that is also required, but even if that is done
+;; the permute would have been created as a LOAD_LANES which means the values
+;; in the registers are in the wrong order.
+(define_insn "aarch64_fcadd<rot><mode>"
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")
+		       (match_operand:VHSDF 2 "register_operand" "w")]
+		       FCADD))]
+  "TARGET_COMPLEX"
+  "fcadd\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>, #<rot>"
+  [(set_attr "type" "neon_fcadd")]
+)
+
+(define_insn "aarch64_fcmla<rot><mode>"
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(plus:VHSDF (match_operand:VHSDF 1 "register_operand" "0")
+		    (unspec:VHSDF [(match_operand:VHSDF 2 "register_operand" "w")
+				   (match_operand:VHSDF 3 "register_operand" "w")]
+				   FCMLA)))]
+  "TARGET_COMPLEX"
+  "fcmla\t%0.<Vtype>, %2.<Vtype>, %3.<Vtype>, #<rot>"
+  [(set_attr "type" "neon_fcmla")]
+)
+
+
+(define_insn "aarch64_fcmla_lane<rot><mode>"
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(plus:VHSDF (match_operand:VHSDF 1 "register_operand" "0")
+		    (unspec:VHSDF [(match_operand:VHSDF 2 "register_operand" "w")
+				   (match_operand:VHSDF 3 "register_operand" "w")
+				   (match_operand:SI 4 "const_int_operand" "n")]
+				   FCMLA)))]
+  "TARGET_COMPLEX"
+{
+  operands[4] = aarch64_endian_lane_rtx (<VHALF>mode, INTVAL (operands[4]));
+  return "fcmla\t%0.<Vtype>, %2.<Vtype>, %3.<FCMLA_maybe_lane>, #<rot>";
+}
+  [(set_attr "type" "neon_fcmla")]
+)
+
+(define_insn "aarch64_fcmla_laneq<rot>v4hf"
+  [(set (match_operand:V4HF 0 "register_operand" "=w")
+	(plus:V4HF (match_operand:V4HF 1 "register_operand" "0")
+		   (unspec:V4HF [(match_operand:V4HF 2 "register_operand" "w")
+				 (match_operand:V8HF 3 "register_operand" "w")
+				 (match_operand:SI 4 "const_int_operand" "n")]
+				 FCMLA)))]
+  "TARGET_COMPLEX"
+{
+  operands[4] = aarch64_endian_lane_rtx (V4HFmode, INTVAL (operands[4]));
+  return "fcmla\t%0.4h, %2.4h, %3.h[%4], #<rot>";
+}
+  [(set_attr "type" "neon_fcmla")]
+)
+
+(define_insn "aarch64_fcmlaq_lane<rot><mode>"
+  [(set (match_operand:VQ_HSF 0 "register_operand" "=w")
+	(plus:VQ_HSF (match_operand:VQ_HSF 1 "register_operand" "0")
+		     (unspec:VQ_HSF [(match_operand:VQ_HSF 2 "register_operand" "w")
+				     (match_operand:<VHALF> 3 "register_operand" "w")
+				     (match_operand:SI 4 "const_int_operand" "n")]
+				     FCMLA)))]
+  "TARGET_COMPLEX"
+{
+  int nunits = GET_MODE_NUNITS (<VHALF>mode).to_constant ();
+  operands[4]
+    = gen_int_mode (ENDIAN_LANE_N (nunits / 2, INTVAL (operands[4])), SImode);
+  return "fcmla\t%0.<Vtype>, %2.<Vtype>, %3.<FCMLA_maybe_lane>, #<rot>";
+}
+  [(set_attr "type" "neon_fcmla")]
+)
+
 ;; These instructions map to the __builtins for the Dot Product operations.
 (define_insn "aarch64_<sur>dot<vsi2qi>"
   [(set (match_operand:VS 0 "register_operand" "=w")
@@ -428,7 +503,7 @@
 		DOTPROD)))]
   "TARGET_DOTPROD"
   "<sur>dot\\t%0.<Vtype>, %2.<Vdottype>, %3.<Vdottype>"
-  [(set_attr "type" "neon_dot")]
+  [(set_attr "type" "neon_dot<q>")]
 )
 
 ;; These expands map to the Dot Product optab the vectorizer checks for.
@@ -480,7 +555,7 @@
     operands[4] = aarch64_endian_lane_rtx (V8QImode, INTVAL (operands[4]));
     return "<sur>dot\\t%0.<Vtype>, %2.<Vdottype>, %3.4b[%4]";
   }
-  [(set_attr "type" "neon_dot")]
+  [(set_attr "type" "neon_dot<q>")]
 )
 
 (define_insn "aarch64_<sur>dot_laneq<vsi2qi>"
@@ -495,7 +570,7 @@
     operands[4] = aarch64_endian_lane_rtx (V16QImode, INTVAL (operands[4]));
     return "<sur>dot\\t%0.<Vtype>, %2.<Vdottype>, %3.4b[%4]";
   }
-  [(set_attr "type" "neon_dot")]
+  [(set_attr "type" "neon_dot<q>")]
 )
 
 (define_expand "copysign<mode>3"
@@ -630,13 +705,22 @@
   [(set_attr "type" "neon_abs<q>")]
 )
 
-(define_insn "abd<mode>_3"
+;; It's tempting to represent SABD as ABS (MINUS op1 op2).
+;; This isn't accurate as ABS treats always its input as a signed value.
+;; So (ABS:QI (minus:QI 64 -128)) == (ABS:QI (192 or -64 signed)) == 64.
+;; Whereas SABD would return 192 (-64 signed) on the above example.
+;; Use MINUS ([us]max (op1, op2), [us]min (op1, op2)) instead.
+(define_insn "*aarch64_<su>abd<mode>_3"
   [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
-	(abs:VDQ_BHSI (minus:VDQ_BHSI
-		       (match_operand:VDQ_BHSI 1 "register_operand" "w")
-		       (match_operand:VDQ_BHSI 2 "register_operand" "w"))))]
+	(minus:VDQ_BHSI
+	  (USMAX:VDQ_BHSI
+	    (match_operand:VDQ_BHSI 1 "register_operand" "w")
+	    (match_operand:VDQ_BHSI 2 "register_operand" "w"))
+	  (match_operator 3 "aarch64_<max_opp>"
+	    [(match_dup 1)
+	     (match_dup 2)])))]
   "TARGET_SIMD"
-  "sabd\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+  "<su>abd\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "type" "neon_abd<q>")]
 )
 

@@ -1,5 +1,5 @@
 /* CPP Library. (Directive handling.)
-   Copyright (C) 1986-2018 Free Software Foundation, Inc.
+   Copyright (C) 1986-2019 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -30,7 +30,7 @@ along with this program; see the file COPYING3.  If not see
 struct if_stack
 {
   struct if_stack *next;
-  source_location line;		/* Line where condition started.  */
+  location_t line;		/* Line where condition started.  */
   const cpp_hashnode *mi_cmacro;/* macro name for #ifndef around entire file */
   bool skip_elses;		/* Can future #else / #elif be skipped?  */
   bool was_skipping;		/* If were skipping on entry.  */
@@ -98,11 +98,12 @@ static void directive_diagnostics (cpp_reader *, const directive *, int);
 static void run_directive (cpp_reader *, int, const char *, size_t);
 static char *glue_header_name (cpp_reader *);
 static const char *parse_include (cpp_reader *, int *, const cpp_token ***,
-				  source_location *);
+				  location_t *);
 static void push_conditional (cpp_reader *, int, int, const cpp_hashnode *);
 static unsigned int read_flag (cpp_reader *, unsigned int);
 static bool strtolinenum (const uchar *, size_t, linenum_type *, bool *);
-static void do_diagnostic (cpp_reader *, int, int, int);
+static void do_diagnostic (cpp_reader *, enum cpp_diagnostic_level code,
+			   enum cpp_warning_reason reason, int);
 static cpp_hashnode *lex_macro_node (cpp_reader *, bool);
 static int undefine_macros (cpp_reader *, cpp_hashnode *, void *);
 static void do_include_common (cpp_reader *, enum include_type);
@@ -123,8 +124,8 @@ static void do_linemarker (cpp_reader *);
 static const cpp_token *get_token_no_padding (cpp_reader *);
 static const cpp_token *get__Pragma_string (cpp_reader *);
 static void destringize_and_run (cpp_reader *, const cpp_string *,
-				 source_location);
-static bool parse_answer (cpp_reader *, int, source_location, cpp_macro **);
+				 location_t);
+static bool parse_answer (cpp_reader *, int, location_t, cpp_macro **);
 static cpp_hashnode *parse_assertion (cpp_reader *, int, cpp_macro **);
 static cpp_macro **find_answer (cpp_hashnode *, const cpp_macro *);
 static void handle_assertion (cpp_reader *, const char *, int);
@@ -132,35 +133,30 @@ static void do_pragma_push_macro (cpp_reader *);
 static void do_pragma_pop_macro (cpp_reader *);
 static void cpp_pop_definition (cpp_reader *, struct def_pragma_macro *);
 
-/* This is the table of directive handlers.  It is ordered by
-   frequency of occurrence; the numbers at the end are directive
-   counts from all the source code I have lying around (egcs and libc
-   CVS as of 1999-05-18, plus grub-0.5.91, linux-2.2.9, and
-   pcmcia-cs-3.0.9).  This is no longer important as directive lookup
-   is now O(1).  All extensions other than #warning, #include_next,
-   and #import are deprecated.  The name is where the extension
-   appears to have come from.  */
+/* This is the table of directive handlers.  All extensions other than
+   #warning, #include_next, and #import are deprecated.  The name is
+   where the extension appears to have come from.  */
 
 #define DIRECTIVE_TABLE							\
-D(define,	T_DEFINE = 0,	KANDR,     IN_I)	   /* 270554 */ \
-D(include,	T_INCLUDE,	KANDR,     INCL | EXPAND)  /*  52262 */ \
-D(endif,	T_ENDIF,	KANDR,     COND)	   /*  45855 */ \
-D(ifdef,	T_IFDEF,	KANDR,     COND | IF_COND) /*  22000 */ \
-D(if,		T_IF,		KANDR, COND | IF_COND | EXPAND) /*  18162 */ \
-D(else,		T_ELSE,		KANDR,     COND)	   /*   9863 */ \
-D(ifndef,	T_IFNDEF,	KANDR,     COND | IF_COND) /*   9675 */ \
-D(undef,	T_UNDEF,	KANDR,     IN_I)	   /*   4837 */ \
-D(line,		T_LINE,		KANDR,     EXPAND)	   /*   2465 */ \
-D(elif,		T_ELIF,		STDC89,    COND | EXPAND)  /*    610 */ \
-D(error,	T_ERROR,	STDC89,    0)		   /*    475 */ \
-D(pragma,	T_PRAGMA,	STDC89,    IN_I)	   /*    195 */ \
-D(warning,	T_WARNING,	EXTENSION, 0)		   /*     22 */ \
-D(include_next,	T_INCLUDE_NEXT,	EXTENSION, INCL | EXPAND)  /*     19 */ \
-D(ident,	T_IDENT,	EXTENSION, IN_I)           /*     11 */ \
-D(import,	T_IMPORT,	EXTENSION, INCL | EXPAND)  /* 0 ObjC */	\
-D(assert,	T_ASSERT,	EXTENSION, DEPRECATED)	   /* 0 SVR4 */	\
-D(unassert,	T_UNASSERT,	EXTENSION, DEPRECATED)	   /* 0 SVR4 */	\
-D(sccs,		T_SCCS,		EXTENSION, IN_I)           /* 0 SVR4? */
+  D(define,	T_DEFINE = 0,	KANDR,     IN_I)			\
+  D(include,	T_INCLUDE,	KANDR,     INCL | EXPAND)		\
+  D(endif,	T_ENDIF,	KANDR,     COND)			\
+  D(ifdef,	T_IFDEF,	KANDR,     COND | IF_COND)		\
+  D(if,		T_IF,		KANDR, 	   COND | IF_COND | EXPAND) 	\
+  D(else,	T_ELSE,		KANDR,     COND)	   		\
+  D(ifndef,	T_IFNDEF,	KANDR,     COND | IF_COND)		\
+  D(undef,	T_UNDEF,	KANDR,     IN_I)			\
+  D(line,	T_LINE,		KANDR,     EXPAND)			\
+  D(elif,	T_ELIF,		STDC89,    COND | EXPAND)		\
+  D(error,	T_ERROR,	STDC89,    0)				\
+  D(pragma,	T_PRAGMA,	STDC89,    IN_I)			\
+  D(warning,	T_WARNING,	EXTENSION, 0)				\
+  D(include_next, T_INCLUDE_NEXT, EXTENSION, INCL | EXPAND)		\
+  D(ident,	T_IDENT,	EXTENSION, IN_I)			\
+  D(import,	T_IMPORT,	EXTENSION, INCL | EXPAND)  /* ObjC */	\
+  D(assert,	T_ASSERT,	EXTENSION, DEPRECATED)	   /* SVR4 */	\
+  D(unassert,	T_UNASSERT,	EXTENSION, DEPRECATED)	   /* SVR4 */	\
+  D(sccs,	T_SCCS,		EXTENSION, IN_I)   	   /*  SVR4? */
 
 /* #sccs is synonymous with #ident.  */
 #define do_sccs do_ident
@@ -208,8 +204,6 @@ static const directive linemarker_dir =
   do_linemarker, UC"#", 1, KANDR, IN_I
 };
 
-#define SEEN_EOL() (pfile->cur_token[-1].type == CPP_EOF)
-
 /* Skip any remaining tokens in a directive.  */
 static void
 skip_rest_of_line (cpp_reader *pfile)
@@ -227,7 +221,7 @@ skip_rest_of_line (cpp_reader *pfile)
 /* Helper function for check_oel.  */
 
 static void
-check_eol_1 (cpp_reader *pfile, bool expand, int reason)
+check_eol_1 (cpp_reader *pfile, bool expand, enum cpp_warning_reason reason)
 {
   if (! SEEN_EOL () && (expand
 			? cpp_get_token (pfile)
@@ -760,7 +754,7 @@ glue_header_name (cpp_reader *pfile)
 
 static const char *
 parse_include (cpp_reader *pfile, int *pangle_brackets,
-	       const cpp_token ***buf, source_location *location)
+	       const cpp_token ***buf, location_t *location)
 {
   char *fname;
   const cpp_token *header;
@@ -818,7 +812,7 @@ do_include_common (cpp_reader *pfile, enum include_type type)
   const char *fname;
   int angle_brackets;
   const cpp_token **buf = NULL;
-  source_location location;
+  location_t location;
 
   /* Re-enable saving of comments if requested, so that the include
      callback can dump comments which follow #include.  */
@@ -826,22 +820,15 @@ do_include_common (cpp_reader *pfile, enum include_type type)
 
   fname = parse_include (pfile, &angle_brackets, &buf, &location);
   if (!fname)
-    {
-      if (buf)
-	XDELETEVEC (buf);
-      return;
-    }
+    goto done;
 
   if (!*fname)
-  {
-    cpp_error_with_line (pfile, CPP_DL_ERROR, location, 0,
-			 "empty filename in #%s",
-			 pfile->directive->name);
-    XDELETEVEC (fname);
-    if (buf)
-      XDELETEVEC (buf);
-    return;
-  }
+    {
+      cpp_error_with_line (pfile, CPP_DL_ERROR, location, 0,
+			   "empty filename in #%s",
+			   pfile->directive->name);
+      goto done;
+    }
 
   /* Prevent #include recursion.  */
   if (pfile->line_table->depth >= CPP_STACK_MAX)
@@ -859,6 +846,7 @@ do_include_common (cpp_reader *pfile, enum include_type type)
       _cpp_stack_include (pfile, fname, angle_brackets, type, location);
     }
 
+ done:
   XDELETEVEC (fname);
   if (buf)
     XDELETEVEC (buf);
@@ -1103,7 +1091,7 @@ do_linemarker (cpp_reader *pfile)
     }
   /* Compensate for the increment in linemap_add that occurs in
      _cpp_do_file_change.  We're currently at the start of the line
-     *following* the #line directive.  A separate source_location for this
+     *following* the #line directive.  A separate location_t for this
      location makes no sense (until we do the LC_LEAVE), and
      complicates LAST_SOURCE_LINE_LOCATION.  */
   pfile->line_table->highest_location--;
@@ -1140,11 +1128,12 @@ _cpp_do_file_change (cpp_reader *pfile, enum lc_reason reason,
 /* Report a warning or error detected by the program we are
    processing.  Use the directive's tokens in the error message.  */
 static void
-do_diagnostic (cpp_reader *pfile, int code, int reason, int print_dir)
+do_diagnostic (cpp_reader *pfile, enum cpp_diagnostic_level code,
+	       enum cpp_warning_reason reason, int print_dir)
 {
   const unsigned char *dir_name;
   unsigned char *line;
-  source_location src_loc = pfile->cur_token[-1].src_loc;
+  location_t src_loc = pfile->cur_token[-1].src_loc;
 
   if (print_dir)
     dir_name = pfile->directive->name;
@@ -1166,7 +1155,7 @@ do_diagnostic (cpp_reader *pfile, int code, int reason, int print_dir)
 static void
 do_error (cpp_reader *pfile)
 {
-  do_diagnostic (pfile, CPP_DL_ERROR, 0, 1);
+  do_diagnostic (pfile, CPP_DL_ERROR, CPP_W_NONE, 1);
 }
 
 static void
@@ -1441,7 +1430,7 @@ do_pragma (cpp_reader *pfile)
 {
   const struct pragma_entry *p = NULL;
   const cpp_token *token, *pragma_token;
-  source_location pragma_token_virt_loc = 0;
+  location_t pragma_token_virt_loc = 0;
   cpp_token ns_token;
   unsigned int count = 1;
 
@@ -1547,7 +1536,7 @@ do_pragma_push_macro (cpp_reader *pfile)
   txt = get__Pragma_string (pfile);
   if (!txt)
     {
-      source_location src_loc = pfile->cur_token[-1].src_loc;
+      location_t src_loc = pfile->cur_token[-1].src_loc;
       cpp_error_with_line (pfile, CPP_DL_ERROR, src_loc, 0,
 		 "invalid #pragma push_macro directive");
       check_eol (pfile, false);
@@ -1602,7 +1591,7 @@ do_pragma_pop_macro (cpp_reader *pfile)
   txt = get__Pragma_string (pfile);
   if (!txt)
     {
-      source_location src_loc = pfile->cur_token[-1].src_loc;
+      location_t src_loc = pfile->cur_token[-1].src_loc;
       cpp_error_with_line (pfile, CPP_DL_ERROR, src_loc, 0,
 		 "invalid #pragma pop_macro directive");
       check_eol (pfile, false);
@@ -1704,7 +1693,7 @@ do_pragma_dependency (cpp_reader *pfile)
 {
   const char *fname;
   int angle_brackets, ordering;
-  source_location location;
+  location_t location;
 
   fname = parse_include (pfile, &angle_brackets, NULL, &location);
   if (!fname)
@@ -1720,7 +1709,7 @@ do_pragma_dependency (cpp_reader *pfile)
       if (cpp_get_token (pfile)->type != CPP_EOF)
 	{
 	  _cpp_backup_tokens (pfile, 1);
-	  do_diagnostic (pfile, CPP_DL_WARNING, 0, 0);
+	  do_diagnostic (pfile, CPP_DL_WARNING, CPP_W_NONE, 0);
 	}
     }
 
@@ -1810,7 +1799,7 @@ get__Pragma_string (cpp_reader *pfile)
    \" and \\ sequences, and process the result as a #pragma directive.  */
 static void
 destringize_and_run (cpp_reader *pfile, const cpp_string *in,
-		     source_location expansion_loc)
+		     location_t expansion_loc)
 {
   const unsigned char *src, *limit;
   char *dest, *result;
@@ -1930,7 +1919,7 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in,
 
 /* Handle the _Pragma operator.  Return 0 on error, 1 if ok.  */
 int
-_cpp_do__Pragma (cpp_reader *pfile, source_location expansion_loc)
+_cpp_do__Pragma (cpp_reader *pfile, location_t expansion_loc)
 {
   const cpp_token *string = get__Pragma_string (pfile);
   pfile->directive_result.type = CPP_PADDING;
@@ -2151,7 +2140,7 @@ push_conditional (cpp_reader *pfile, int skip, int type,
    ANSWERP to point to the answer.  PRED_LOC is the location of the
    predicate.  */
 static bool
-parse_answer (cpp_reader *pfile, int type, source_location pred_loc,
+parse_answer (cpp_reader *pfile, int type, location_t pred_loc,
 	      cpp_macro **answer_ptr)
 {
   /* In a conditional, it is legal to not have an open paren.  We
@@ -2616,6 +2605,8 @@ _cpp_pop_buffer (cpp_reader *pfile)
 
       _cpp_do_file_change (pfile, LC_LEAVE, 0, 0, 0);
     }
+  else if (to_free)
+    free ((void *)to_free);
 }
 
 /* Enter all recognized directives in the hash table.  */

@@ -1,5 +1,5 @@
 /* Standard problems for dataflow support routines.
-   Copyright (C) 1999-2018 Free Software Foundation, Inc.
+   Copyright (C) 1999-2019 Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -419,8 +419,8 @@ df_rd_local_compute (bitmap all_blocks)
 	}
     }
 
-  bitmap_clear (&seen_in_block);
-  bitmap_clear (&seen_in_insn);
+  bitmap_release (&seen_in_block);
+  bitmap_release (&seen_in_insn);
 }
 
 
@@ -1585,7 +1585,7 @@ df_live_free (void)
       df_live->block_info_size = 0;
       free (df_live->block_info);
       df_live->block_info = NULL;
-      bitmap_clear (&df_live_scratch);
+      bitmap_release (&df_live_scratch);
       bitmap_obstack_release (&problem_data->live_bitmaps);
       free (problem_data);
       df_live->problem_data = NULL;
@@ -4533,7 +4533,7 @@ df_md_local_compute (bitmap all_blocks)
       df_md_bb_local_compute (bb_index);
     }
 
-  bitmap_clear (&seen_in_insn);
+  bitmap_release (&seen_in_insn);
 
   frontiers = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
   FOR_ALL_BB_FN (bb, cfun)
@@ -4649,6 +4649,7 @@ df_md_free (void)
   struct df_md_problem_data *problem_data
     = (struct df_md_problem_data *) df_md->problem_data;
 
+  bitmap_release (&df_md_scratch);
   bitmap_obstack_release (&problem_data->md_bitmaps);
   free (problem_data);
   df_md->problem_data = NULL;

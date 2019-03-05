@@ -1,6 +1,6 @@
 /* More subroutines needed by GCC output code on some machines.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1989-2018 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1684,7 +1684,7 @@ FUNC (DWtype u)
 
   /* No leading bits means u == minimum.  */
   if (count == 0)
-    return -(Wtype_MAXp1_F * (Wtype_MAXp1_F / 2));
+    return Wtype_MAXp1_F * (FSTYPE) (hi | ((UWtype) u != 0));
 
   shift = 1 + W_TYPE_SIZE - count;
 
@@ -2162,11 +2162,14 @@ __eprintf (const char *string, const char *expression,
 /* Clear part of an instruction cache.  */
 
 void
-__clear_cache (char *beg __attribute__((__unused__)),
-	       char *end __attribute__((__unused__)))
+__clear_cache (void *beg __attribute__((__unused__)),
+	       void *end __attribute__((__unused__)))
 {
 #ifdef CLEAR_INSN_CACHE
-  CLEAR_INSN_CACHE (beg, end);
+  /* Cast the void* pointers to char* as some implementations
+     of the macro assume the pointers can be subtracted from
+     one another.  */
+  CLEAR_INSN_CACHE ((char *) beg, (char *) end);
 #endif /* CLEAR_INSN_CACHE */
 }
 

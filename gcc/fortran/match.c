@@ -1,5 +1,5 @@
 /* Matching subroutines in all sizes, shapes and colors.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1350,6 +1350,14 @@ gfc_match_assignment (void)
 
   rvalue = NULL;
   m = gfc_match (" %e%t", &rvalue);
+
+  if (lvalue->expr_type == EXPR_CONSTANT)
+    {
+      /* This clobbers %len and %kind.  */
+      m = MATCH_ERROR;
+      gfc_error ("Assignment to a constant expression at %C");
+    }
+
   if (m != MATCH_YES)
     {
       gfc_current_locus = old_loc;
@@ -2217,6 +2225,9 @@ found:
 	      return MATCH_NO;
 	    }
 
+	  if (e->expr_type != EXPR_CONSTANT)
+	    goto ohno;
+
 	  gfc_next_char (); /* Burn the ')'. */
 	  ts->kind = (int) mpz_get_si (e->value.integer);
 	  if (gfc_validate_kind (ts->type, ts->kind , true) == -1)
@@ -2230,6 +2241,8 @@ found:
 	  return MATCH_YES;
 	}
     }
+
+ohno:
 
   /* If a type is not matched, simply return MATCH_NO.  */
   gfc_current_locus = old_locus;
@@ -5131,7 +5144,7 @@ gfc_match_common (void)
                 }
 
               if (sym->attr.is_bind_c == 1)
-                gfc_error_now ("Variable %qs in common block %qs at %C can not "
+                gfc_error_now ("Variable %qs in common block %qs at %C cannot "
                                "be bind(c) since it is not global", sym->name,
 			       t->name);
             }

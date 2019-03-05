@@ -1,6 +1,6 @@
 # General rules that all sparc/ targets must have.
 #
-# Copyright (C) 2011-2018 Free Software Foundation, Inc.
+# Copyright (C) 2011-2019 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -21,5 +21,9 @@
 PASSES_EXTRA += $(srcdir)/config/sparc/sparc-passes.def
 
 sparc-c.o: $(srcdir)/config/sparc/sparc-c.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+sparc-d.o: $(srcdir)/config/sparc/sparc-d.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)

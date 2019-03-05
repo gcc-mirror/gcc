@@ -1,5 +1,5 @@
 /* Profile counter container type.
-   Copyright (C) 2017-2018 Free Software Foundation, Inc.
+   Copyright (C) 2017-2019 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -83,6 +83,8 @@ profile_count::dump (FILE *f) const
 	fprintf (f, " (auto FDO)");
       else if (m_quality == profile_guessed)
 	fprintf (f, " (guessed)");
+      else if (m_quality == profile_precise)
+	fprintf (f, " (precise)");
     }
 }
 

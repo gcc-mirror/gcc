@@ -3,7 +3,7 @@
 
 // 2010-02-25  Ed Smith-Rowland
 
-// Copyright (C) 2010-2018 Free Software Foundation, Inc.
+// Copyright (C) 2010-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,6 +42,9 @@ test01()
   VERIFY( std::numeric_limits<unsigned long>::max_digits10 == 0 );
   VERIFY( std::numeric_limits<long long>::max_digits10 == 0 );
   VERIFY( std::numeric_limits<unsigned long long>::max_digits10 == 0 );
+#ifdef _GLIBCXX_USE_CHAR8_T
+  VERIFY( std::numeric_limits<char8_t>::max_digits10 == 0 );
+#endif
   VERIFY( std::numeric_limits<char16_t>::max_digits10 == 0 );
   VERIFY( std::numeric_limits<char32_t>::max_digits10 == 0 );
 

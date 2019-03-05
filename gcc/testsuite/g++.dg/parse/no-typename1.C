@@ -6,6 +6,6 @@ template <typename T> struct A
 {
     template <typename U> struct B
     {
-        A<T>::template B<U> foo(); // { dg-error "" }
+        A<T>::template B<U> foo(); // { dg-error "" "" { target c++17_down } }
     };
 };

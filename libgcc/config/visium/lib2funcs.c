@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2014-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -315,7 +315,9 @@ __set_trampoline_parity (UWtype *addr)
 {
   int i;
 
-  for (i = 0; i < (TRAMPOLINE_SIZE * __CHAR_BIT__) / W_TYPE_SIZE; i++)
+  for (i = 0;
+       i < (__LIBGCC_TRAMPOLINE_SIZE__ * __CHAR_BIT__) / W_TYPE_SIZE;
+       i++)
     addr[i] |= parity_bit (addr[i]);
 }
 #endif

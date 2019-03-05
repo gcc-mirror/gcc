@@ -1,5 +1,5 @@
 /* Output routines for GCC for Renesas / SuperH SH.
-   Copyright (C) 1993-2018 Free Software Foundation, Inc.
+   Copyright (C) 1993-2019 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -921,7 +921,7 @@ sh_option_override (void)
 	 to the pressure on R0.  */
       /* Enable sched1 for SH4 if the user explicitly requests.
 	 When sched1 is enabled, the ready queue will be reordered by
-	 the target hooks if pressure is high.  We can not do this for
+	 the target hooks if pressure is high.  We cannot do this for
 	 PIC, SH3 and lower as they give spill failures for R0.  */
       if (!TARGET_HARD_SH4 || flag_pic)
 	flag_schedule_insns = 0;

@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2019 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -76,7 +76,15 @@ alloc_work_share (struct gomp_team *team)
 #endif
 
   team->work_share_chunk *= 2;
+  /* Allocating gomp_work_share structures aligned is just an
+     optimization, don't do it when using the fallback method.  */
+#ifdef GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC
+  ws = gomp_aligned_alloc (__alignof (struct gomp_work_share),
+			   team->work_share_chunk
+			   * sizeof (struct gomp_work_share));
+#else
   ws = gomp_malloc (team->work_share_chunk * sizeof (struct gomp_work_share));
+#endif
   ws->next_alloc = team->work_shares[0].next_alloc;
   team->work_shares[0].next_alloc = ws;
   team->work_share_list_alloc = &ws[1];
@@ -90,30 +98,35 @@ alloc_work_share (struct gomp_team *team)
    This shouldn't touch the next_alloc field.  */
 
 void
-gomp_init_work_share (struct gomp_work_share *ws, bool ordered,
+gomp_init_work_share (struct gomp_work_share *ws, size_t ordered,
 		      unsigned nthreads)
 {
   gomp_mutex_init (&ws->lock);
   if (__builtin_expect (ordered, 0))
     {
-#define INLINE_ORDERED_TEAM_IDS_CNT \
-  ((sizeof (struct gomp_work_share) \
-    - offsetof (struct gomp_work_share, inline_ordered_team_ids)) \
-   / sizeof (((struct gomp_work_share *) 0)->inline_ordered_team_ids[0]))
+#define INLINE_ORDERED_TEAM_IDS_SIZE \
+  (sizeof (struct gomp_work_share) \
+   - offsetof (struct gomp_work_share, inline_ordered_team_ids))
 
-      if (nthreads > INLINE_ORDERED_TEAM_IDS_CNT)
-	ws->ordered_team_ids
-	  = gomp_malloc (nthreads * sizeof (*ws->ordered_team_ids));
+      if (__builtin_expect (ordered != 1, 0))
+	{
+	  ordered += nthreads * sizeof (*ws->ordered_team_ids) - 1;
+	  ordered = ordered + __alignof__ (long long) - 1;
+	  ordered &= ~(__alignof__ (long long) - 1);
+	}
+      else
+	ordered = nthreads * sizeof (*ws->ordered_team_ids);
+      if (ordered > INLINE_ORDERED_TEAM_IDS_SIZE)
+	ws->ordered_team_ids = gomp_malloc (ordered);
       else
 	ws->ordered_team_ids = ws->inline_ordered_team_ids;
-      memset (ws->ordered_team_ids, '\0',
-	      nthreads * sizeof (*ws->ordered_team_ids));
+      memset (ws->ordered_team_ids, '\0', ordered);
       ws->ordered_num_used = 0;
       ws->ordered_owner = -1;
       ws->ordered_cur = 0;
     }
   else
-    ws->ordered_team_ids = NULL;
+    ws->ordered_team_ids = ws->inline_ordered_team_ids;
   gomp_ptrlock_init (&ws->next_ws, NULL);
   ws->threads_completed = 0;
 }
@@ -166,7 +179,7 @@ free_work_share (struct gomp_team *team, struct gomp_work_share *ws)
    if this was the first thread to reach this point.  */
 
 bool
-gomp_work_share_start (bool ordered)
+gomp_work_share_start (size_t ordered)
 {
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
@@ -178,7 +191,7 @@ gomp_work_share_start (bool ordered)
       ws = gomp_malloc (sizeof (*ws));
       gomp_init_work_share (ws, ordered, 1);
       thr->ts.work_share = ws;
-      return ws;
+      return true;
     }
 
   ws = thr->ts.work_share;

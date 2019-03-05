@@ -1,4 +1,4 @@
-@c Copyright (C) 2003-2018 Free Software Foundation, Inc.
+@c Copyright (C) 2003-2019 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -220,7 +220,11 @@ property is used.
 The option will turn off another option @var{othername}, which is
 the option name with the leading ``-'' removed.  This chain action will
 propagate through the @code{Negative} property of the option to be
-turned off.
+turned off.  The driver will prune options, removing those that are
+turned off by some later option.  This pruning is not done for options
+with @code{Joined} or @code{JoinedOrMissing} properties, unless the
+options have either @code{RejectNegative} property or the @code{Negative}
+property mentions an option other than itself.
 
 As a consequence, if you have a group of mutually-exclusive
 options, their @code{Negative} properties should form a circular chain.
@@ -314,6 +318,15 @@ The way that the state is stored depends on the type of option:
 The option is deprecated and every usage of such option will
 result in a warning.
 
+@item Var(@var{var}, @var{set})
+The option controls an integer variable @var{var} and is active when
+@var{var} equals @var{set}.  The option parser will set @var{var} to
+@var{set} when the positive form of the option is used and @code{!@var{set}}
+when the ``no-'' form is used.
+
+@var{var} is declared in the same way as for the single-argument form
+described above.
+
 @itemize @bullet
 @item
 If the option uses the @code{Mask} or @code{InverseMask} properties,
@@ -350,15 +363,6 @@ and wasn't given.
 
 The option-processing script will usually zero-initialize @var{var}.
 You can modify this behavior using @code{Init}.
-
-@item Var(@var{var}, @var{set})
-The option controls an integer variable @var{var} and is active when
-@var{var} equals @var{set}.  The option parser will set @var{var} to
-@var{set} when the positive form of the option is used and @code{!@var{set}}
-when the ``no-'' form is used.
-
-@var{var} is declared in the same way as for the single-argument form
-described above.
 
 @item Init(@var{value})
 The variable specified by the @code{Var} property should be statically

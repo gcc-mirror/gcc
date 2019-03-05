@@ -1,5 +1,5 @@
 /* Separate lexical analyzer for GNU C++.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -22,12 +22,16 @@ along with GCC; see the file COPYING3.  If not see
 /* This file is the lexical analyzer for GNU C++.  */
 
 #include "config.h"
+/* For use with name_hint.  */
+#define INCLUDE_UNIQUE_PTR
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
 #include "stringpool.h"
 #include "c-family/c-pragma.h"
 #include "c-family/c-objc.h"
+#include "gcc-rich-location.h"
+#include "cp-name-hint.h"
 
 static int interface_strcmp (const char *);
 static void init_cp_pragma (void);
@@ -229,6 +233,8 @@ init_reswords (void)
     mask |= D_CXX_CONCEPTS;
   if (!flag_tm)
     mask |= D_TRANSMEM;
+  if (!flag_char8_t)
+    mask |= D_CXX_CHAR8_T;
   if (flag_no_asm)
     mask |= D_ASM | D_EXT;
   if (flag_no_gnu_keywords)
@@ -289,7 +295,7 @@ cxx_init (void)
    IF_STMT,		CLEANUP_STMT,	FOR_STMT,
    RANGE_FOR_STMT,	WHILE_STMT,	DO_STMT,
    BREAK_STMT,		CONTINUE_STMT,	SWITCH_STMT,
-   EXPR_STMT
+   EXPR_STMT,		OMP_DEPOBJ
   };
 
   memset (&statement_code_p, 0, sizeof (statement_code_p));
@@ -500,8 +506,17 @@ unqualified_name_lookup_error (tree name, location_t loc)
       if (!objc_diagnose_private_ivar (name))
 	{
 	  auto_diagnostic_group d;
-	  error_at (loc, "%qD was not declared in this scope", name);
-	  suggest_alternatives_for (loc, name, true);
+	  name_hint hint = suggest_alternatives_for (loc, name, true);
+	  if (const char *suggestion = hint.suggestion ())
+	    {
+	      gcc_rich_location richloc (loc);
+	      richloc.add_fixit_replace (suggestion);
+	      error_at (&richloc,
+			"%qD was not declared in this scope; did you mean %qs?",
+			name, suggestion);
+	    }
+	  else
+	    error_at (loc, "%qD was not declared in this scope", name);
 	}
       /* Prevent repeated error messages by creating a VAR_DECL with
 	 this NAME in the innermost block scope.  */
@@ -527,6 +542,9 @@ unqualified_fn_lookup_error (cp_expr name_expr)
   location_t loc = name_expr.get_location ();
   if (loc == UNKNOWN_LOCATION)
     loc = input_location;
+
+  if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
+    name = TREE_OPERAND (name, 0);
 
   if (processing_template_decl)
     {

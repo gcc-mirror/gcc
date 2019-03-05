@@ -1,5 +1,5 @@
 /* Declarations for the C-SKY back end.
-   Copyright (C) 2018 Free Software Foundation, Inc.
+   Copyright (C) 2018-2019 Free Software Foundation, Inc.
    Contributed by C-SKY Microsystems and Mentor Graphics.
 
    This file is part of GCC.
@@ -292,6 +292,9 @@ extern int csky_arch_isa_features[];
 /* The register that holds the return address in exception handlers.  */
 #define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (SImode, CSKY_EH_STACKADJ_REGNUM)
 
+/* Select a format to encode pointers in exception handling data.  */
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL) \
+  (((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4)
 
 /* Registers That Address the Stack Frame  */
 
@@ -920,7 +923,7 @@ extern const int csky_dbx_regno[];
 #define MOVE_MAX 4
 
 /* Shift counts are truncated to 6-bits (0 to 63) instead of the expected
-   5-bits, so we can not define SHIFT_COUNT_TRUNCATED to true for this
+   5-bits, so we cannot define SHIFT_COUNT_TRUNCATED to true for this
    target.  */
 #define SHIFT_COUNT_TRUNCATED 0
 

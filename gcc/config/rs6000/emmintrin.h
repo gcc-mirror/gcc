@@ -1,4 +1,4 @@
-/* Copyright (C) 2003-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -85,7 +85,7 @@ typedef double __m128d __attribute__ ((__vector_size__ (16), __may_alias__));
 typedef long long __m128i_u __attribute__ ((__vector_size__ (16), __may_alias__, __aligned__ (1)));
 typedef double __m128d_u __attribute__ ((__vector_size__ (16), __may_alias__, __aligned__ (1)));
 
-/* Define two value permute mask */
+/* Define two value permute mask.  */
 #define _MM_SHUFFLE2(x,y) (((x) << 1) | (y))
 
 /* Create a vector with element 0 as F and the rest zero.  */
@@ -201,7 +201,7 @@ _mm_store_pd (double *__P, __m128d __A)
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_storeu_pd (double *__P, __m128d __A)
 {
-  *(__m128d *)__P = __A;
+  *(__m128d_u *)__P = __A;
 }
 
 /* Stores the lower DPFP value.  */
@@ -887,8 +887,13 @@ _mm_cvtpd_epi32 (__m128d __A)
       : );
 
 #ifdef _ARCH_PWR8
+#ifdef __LITTLE_ENDIAN__
   temp = vec_mergeo (temp, temp);
-  result = (__v4si)vec_vpkudum ((__vector long)temp, (__vector long)vzero);
+#else
+  temp = vec_mergee (temp, temp);
+#endif
+  result = (__v4si) vec_vpkudum ((__vector long long) temp,
+				 (__vector long long) vzero);
 #else
   {
     const __v16qu pkperm = {0x00, 0x01, 0x02, 0x03, 0x08, 0x09, 0x0a, 0x0b,
@@ -921,8 +926,13 @@ _mm_cvtpd_ps (__m128d __A)
       : );
 
 #ifdef _ARCH_PWR8
+#ifdef __LITTLE_ENDIAN__
   temp = vec_mergeo (temp, temp);
-  result = (__v4sf)vec_vpkudum ((__vector long)temp, (__vector long)vzero);
+#else
+  temp = vec_mergee (temp, temp);
+#endif
+  result = (__v4sf) vec_vpkudum ((__vector long long) temp,
+				 (__vector long long) vzero);
 #else
   {
     const __v16qu pkperm = {0x00, 0x01, 0x02, 0x03, 0x08, 0x09, 0x0a, 0x0b,
@@ -949,8 +959,13 @@ _mm_cvttpd_epi32 (__m128d __A)
       : );
 
 #ifdef _ARCH_PWR8
+#ifdef __LITTLE_ENDIAN__
   temp = vec_mergeo (temp, temp);
-  result = (__v4si)vec_vpkudum ((__vector long)temp, (__vector long)vzero);
+#else
+  temp = vec_mergee (temp, temp);
+#endif
+  result = (__v4si) vec_vpkudum ((__vector long long) temp,
+				 (__vector long long) vzero);
 #else
   {
     const __v16qu pkperm = {0x00, 0x01, 0x02, 0x03, 0x08, 0x09, 0x0a, 0x0b,
@@ -986,7 +1001,7 @@ _mm_cvtpi32_pd (__m64 __A)
 
   temp = (__v4si)vec_splats (__A);
   tmp2 = (__v2di)vec_unpackl (temp);
-  result = vec_ctf ((__vector signed long)tmp2, 0);
+  result = vec_ctf ((__vector signed long long) tmp2, 0);
   return (__m128d)result;
 }
 #endif
@@ -1030,7 +1045,7 @@ _mm_cvtps_pd (__m128 __A)
      lined up.  */
   temp = __builtin_vsx_xxsldwi (a, a, 3);
   temp = __builtin_vsx_xxsldwi (a, temp, 2);
-#elif __BIG_ENDIAN__
+#else
   /* The input float values are in elements {[0], [1]} but the convert
      instruction needs them in elements {[0], [2]}, So we use two
      shift left double vector word immediates to get the elements
@@ -1228,22 +1243,23 @@ _mm_loadl_pd (__m128d __A, double const *__B)
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_movemask_pd (__m128d  __A)
 {
-  __vector __m64 result;
+  __vector unsigned long long result;
   static const __vector unsigned int perm_mask =
     {
 #ifdef __LITTLE_ENDIAN__
 	0x80800040, 0x80808080, 0x80808080, 0x80808080
-#elif __BIG_ENDIAN__
-      0x80808080, 0x80808080, 0x80808080, 0x80800040
+#else
+      0x80808080, 0x80808080, 0x80808080, 0x80804000
 #endif
     };
 
-  result = (__vector __m64) vec_vbpermq ((__vector unsigned char) __A,
-					 (__vector unsigned char) perm_mask);
+  result = ((__vector unsigned long long)
+	    vec_vbpermq ((__vector unsigned char) __A,
+			 (__vector unsigned char) perm_mask));
 
 #ifdef __LITTLE_ENDIAN__
   return result[1];
-#elif __BIG_ENDIAN__
+#else
   return result[0];
 #endif
 }
@@ -1288,7 +1304,8 @@ _mm_unpackhi_epi32 (__m128i __A, __m128i __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_unpackhi_epi64 (__m128i __A, __m128i __B)
 {
-  return (__m128i) vec_mergel ((__vector long)__A, (__vector long)__B);
+  return (__m128i) vec_mergel ((__vector long long) __A,
+			       (__vector long long) __B);
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1312,7 +1329,8 @@ _mm_unpacklo_epi32 (__m128i __A, __m128i __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_unpacklo_epi64 (__m128i __A, __m128i __B)
 {
-  return (__m128i) vec_mergeh ((__vector long)__A, (__vector long)__B);
+  return (__m128i) vec_mergeh ((__vector long long) __A,
+			       (__vector long long) __B);
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1428,7 +1446,7 @@ _mm_mulhi_epi16 (__m128i __A, __m128i __B)
 #ifdef __LITTLE_ENDIAN__
       0x02, 0x03, 0x12, 0x13,  0x06, 0x07, 0x16, 0x17,
       0x0A, 0x0B, 0x1A, 0x1B,  0x0E, 0x0F, 0x1E, 0x1F
-#elif __BIG_ENDIAN__
+#else
       0x00, 0x01, 0x10, 0x11,  0x04, 0x05, 0x14, 0x15,
       0x08, 0x09, 0x18, 0x19,  0x0C, 0x0D, 0x1C, 0x1D
 #endif
@@ -1467,7 +1485,7 @@ _mm_mul_epu32 (__m128i __A, __m128i __B)
       : "=v" (result)
       : "v" (__A), "v" (__B)
       : );
-#elif __BIG_ENDIAN__
+#else
   /* VMX Vector Multiply Even Unsigned Word.  */
   __asm__(
       "vmuleuw %0,%1,%2"
@@ -1477,11 +1495,7 @@ _mm_mul_epu32 (__m128i __A, __m128i __B)
 #endif
   return (__m128i) result;
 #else
-#ifdef __LITTLE_ENDIAN__
   return (__m128i) vec_mule ((__v4su)__A, (__v4su)__B);
-#elif __BIG_ENDIAN__
-  return (__m128i) vec_mulo ((__v4su)__A, (__v4su)__B);
-#endif
 #endif
 }
 
@@ -1498,7 +1512,7 @@ _mm_slli_epi16 (__m128i __A, int __B)
       else
 	lshift = vec_splats ((unsigned short) __B);
 
-      result = vec_vslh ((__v8hi) __A, lshift);
+      result = vec_sl ((__v8hi) __A, lshift);
     }
 
   return (__m128i) result;
@@ -1517,7 +1531,7 @@ _mm_slli_epi32 (__m128i __A, int __B)
       else
 	lshift = vec_splats ((unsigned int) __B);
 
-      result = vec_vslw ((__v4si) __A, lshift);
+      result = vec_sl ((__v4si) __A, lshift);
     }
 
   return (__m128i) result;
@@ -1537,7 +1551,7 @@ _mm_slli_epi64 (__m128i __A, int __B)
       else
 	lshift = (__v2du) vec_splats ((unsigned int) __B);
 
-      result = vec_vsld ((__v2di) __A, lshift);
+      result = vec_sl ((__v2di) __A, lshift);
     }
 
   return (__m128i) result;
@@ -1557,7 +1571,7 @@ _mm_srai_epi16 (__m128i __A, int __B)
       else
 	rshift = vec_splats ((unsigned short) __B);
     }
-  result = vec_vsrah ((__v8hi) __A, rshift);
+  result = vec_sra ((__v8hi) __A, rshift);
 
   return (__m128i) result;
 }
@@ -1580,7 +1594,7 @@ _mm_srai_epi32 (__m128i __A, int __B)
       else
 	rshift = vec_splats ((unsigned int) __B);
     }
-  result = vec_vsraw ((__v4si) __A, rshift);
+  result = vec_sra ((__v4si) __A, rshift);
 
   return (__m128i) result;
 }
@@ -1606,15 +1620,21 @@ _mm_bsrli_si128 (__m128i __A, const int __N)
   const __v16qu zeros = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
   if (__N < 16)
+#ifdef __LITTLE_ENDIAN__
     if (__builtin_constant_p(__N))
       /* Would like to use Vector Shift Left Double by Octet
 	 Immediate here to use the immediate form and avoid
 	 load of __N * 8 value into a separate VR.  */
       result = vec_sld (zeros, (__v16qu) __A, (16 - __N));
     else
+#endif
       {
 	__v16qu shift = vec_splats((unsigned char)(__N*8));
+#ifdef __LITTLE_ENDIAN__
 	result = vec_sro ((__v16qu)__A, shift);
+#else
+	result = vec_slo ((__v16qu)__A, shift);
+#endif
       }
   else
     result = zeros;
@@ -1637,7 +1657,7 @@ _mm_slli_si128 (__m128i __A, const int _imm5)
   if (_imm5 < 16)
 #ifdef __LITTLE_ENDIAN__
     result = vec_sld ((__v16qu) __A, zeros, _imm5);
-#elif __BIG_ENDIAN__
+#else
     result = vec_sld (zeros, (__v16qu) __A, (16 - _imm5));
 #endif
   else
@@ -1660,7 +1680,7 @@ _mm_srli_epi16 (__m128i  __A, int __B)
       else
 	rshift = vec_splats ((unsigned short) __B);
 
-      result = vec_vsrh ((__v8hi) __A, rshift);
+      result = vec_sr ((__v8hi) __A, rshift);
     }
 
   return (__m128i) result;
@@ -1684,7 +1704,7 @@ _mm_srli_epi32 (__m128i __A, int __B)
       else
 	rshift = vec_splats ((unsigned int) __B);
 
-      result = vec_vsrw ((__v4si) __A, rshift);
+      result = vec_sr ((__v4si) __A, rshift);
     }
 
   return (__m128i) result;
@@ -1709,7 +1729,7 @@ _mm_srli_epi64 (__m128i __A, int __B)
       else
 	rshift = (__v2du) vec_splats ((unsigned int) __B);
 
-      result = vec_vsrd ((__v2di) __A, rshift);
+      result = vec_sr ((__v2di) __A, rshift);
     }
 
   return (__m128i) result;
@@ -1719,18 +1739,19 @@ _mm_srli_epi64 (__m128i __A, int __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sll_epi16 (__m128i __A, __m128i __B)
 {
-  __v8hu lshift, shmask;
+  __v8hu lshift;
+  __vector __bool short shmask;
   const __v8hu shmax = { 15, 15, 15, 15, 15, 15, 15, 15 };
   __v8hu result;
 
 #ifdef __LITTLE_ENDIAN__
-  lshift = vec_splat ((__v8hu)__B, 0);
-#elif __BIG_ENDIAN__
-  lshift = vec_splat ((__v8hu)__B, 3);
+  lshift = vec_splat ((__v8hu) __B, 0);
+#else
+  lshift = vec_splat ((__v8hu) __B, 3);
 #endif
-  shmask = lshift <= shmax;
-  result = vec_vslh ((__v8hu) __A, lshift);
-  result = vec_sel (shmask, result, shmask);
+  shmask = vec_cmple (lshift, shmax);
+  result = vec_sl ((__v8hu) __A, lshift);
+  result = vec_sel ((__v8hu) shmask, result, shmask);
 
   return (__m128i) result;
 }
@@ -1738,17 +1759,18 @@ _mm_sll_epi16 (__m128i __A, __m128i __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sll_epi32 (__m128i __A, __m128i __B)
 {
-  __v4su lshift, shmask;
+  __v4su lshift;
+  __vector __bool int shmask;
   const __v4su shmax = { 32, 32, 32, 32 };
   __v4su result;
 #ifdef __LITTLE_ENDIAN__
-  lshift = vec_splat ((__v4su)__B, 0);
-#elif __BIG_ENDIAN__
-  lshift = vec_splat ((__v4su)__B, 1);
+  lshift = vec_splat ((__v4su) __B, 0);
+#else
+  lshift = vec_splat ((__v4su) __B, 1);
 #endif
-  shmask = lshift < shmax;
-  result = vec_vslw ((__v4su) __A, lshift);
-  result = vec_sel (shmask, result, shmask);
+  shmask = vec_cmplt (lshift, shmax);
+  result = vec_sl ((__v4su) __A, lshift);
+  result = vec_sel ((__v4su) shmask, result, shmask);
 
   return (__m128i) result;
 }
@@ -1757,15 +1779,15 @@ _mm_sll_epi32 (__m128i __A, __m128i __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sll_epi64 (__m128i __A, __m128i __B)
 {
-  __v2du lshift, shmask;
+  __v2du lshift;
+  __vector __bool long long shmask;
   const __v2du shmax = { 64, 64 };
   __v2du result;
 
-  lshift = (__v2du) vec_splat ((__v2du)__B, 0);
-  shmask = lshift < shmax;
-  result = vec_vsld ((__v2du) __A, lshift);
-  result = (__v2du) vec_sel ((__v2df) shmask, (__v2df) result,
-			      (__v2df) shmask);
+  lshift = vec_splat ((__v2du) __B, 0);
+  shmask = vec_cmplt (lshift, shmax);
+  result = vec_sl ((__v2du) __A, lshift);
+  result = vec_sel ((__v2du) shmask, result, shmask);
 
   return (__m128i) result;
 }
@@ -1780,11 +1802,11 @@ _mm_sra_epi16 (__m128i __A, __m128i __B)
 
 #ifdef __LITTLE_ENDIAN__
   rshift = vec_splat ((__v8hu)__B, 0);
-#elif __BIG_ENDIAN__
+#else
   rshift = vec_splat ((__v8hu)__B, 3);
 #endif
   rshift = vec_min (rshift, rshmax);
-  result = vec_vsrah ((__v8hi) __A, rshift);
+  result = vec_sra ((__v8hi) __A, rshift);
 
   return (__m128i) result;
 }
@@ -1798,11 +1820,11 @@ _mm_sra_epi32 (__m128i __A, __m128i __B)
 
 #ifdef __LITTLE_ENDIAN__
   rshift = vec_splat ((__v4su)__B, 0);
-#elif __BIG_ENDIAN__
+#else
   rshift = vec_splat ((__v4su)__B, 1);
 #endif
   rshift = vec_min (rshift, rshmax);
-  result = vec_vsraw ((__v4si) __A, rshift);
+  result = vec_sra ((__v4si) __A, rshift);
 
   return (__m128i) result;
 }
@@ -1810,18 +1832,19 @@ _mm_sra_epi32 (__m128i __A, __m128i __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_srl_epi16 (__m128i __A, __m128i __B)
 {
-  __v8hu rshift, shmask;
+  __v8hu rshift;
+  __vector __bool short shmask;
   const __v8hu shmax = { 15, 15, 15, 15, 15, 15, 15, 15 };
   __v8hu result;
 
 #ifdef __LITTLE_ENDIAN__
-  rshift = vec_splat ((__v8hu)__B, 0);
-#elif __BIG_ENDIAN__
-  rshift = vec_splat ((__v8hu)__B, 3);
+  rshift = vec_splat ((__v8hu) __B, 0);
+#else
+  rshift = vec_splat ((__v8hu) __B, 3);
 #endif
-  shmask = rshift <= shmax;
-  result = vec_vsrh ((__v8hu) __A, rshift);
-  result = vec_sel (shmask, result, shmask);
+  shmask = vec_cmple (rshift, shmax);
+  result = vec_sr ((__v8hu) __A, rshift);
+  result = vec_sel ((__v8hu) shmask, result, shmask);
 
   return (__m128i) result;
 }
@@ -1829,18 +1852,19 @@ _mm_srl_epi16 (__m128i __A, __m128i __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_srl_epi32 (__m128i __A, __m128i __B)
 {
-  __v4su rshift, shmask;
+  __v4su rshift;
+  __vector __bool int shmask;
   const __v4su shmax = { 32, 32, 32, 32 };
   __v4su result;
 
 #ifdef __LITTLE_ENDIAN__
-  rshift = vec_splat ((__v4su)__B, 0);
-#elif __BIG_ENDIAN__
-  rshift = vec_splat ((__v4su)__B, 1);
+  rshift = vec_splat ((__v4su) __B, 0);
+#else
+  rshift = vec_splat ((__v4su) __B, 1);
 #endif
-  shmask = rshift < shmax;
-  result = vec_vsrw ((__v4su) __A, rshift);
-  result = vec_sel (shmask, result, shmask);
+  shmask = vec_cmplt (rshift, shmax);
+  result = vec_sr ((__v4su) __A, rshift);
+  result = vec_sel ((__v4su) shmask, result, shmask);
 
   return (__m128i) result;
 }
@@ -1849,14 +1873,15 @@ _mm_srl_epi32 (__m128i __A, __m128i __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_srl_epi64 (__m128i __A, __m128i __B)
 {
-  __v2du rshift, shmask;
+  __v2du rshift;
+  __vector __bool long long shmask;
   const __v2du shmax = { 64, 64 };
   __v2du result;
 
-  rshift = (__v2du) vec_splat ((__v2du)__B, 0);
-  shmask = rshift < shmax;
-  result = vec_vsrd ((__v2du) __A, rshift);
-  result = (__v2du)vec_sel ((__v2du)shmask, (__v2du)result, (__v2du)shmask);
+  rshift = vec_splat ((__v2du) __B, 0);
+  shmask = vec_cmplt (rshift, shmax);
+  result = vec_sr ((__v2du) __A, rshift);
+  result = vec_sel ((__v2du) shmask, result, shmask);
 
   return (__m128i) result;
 }
@@ -2012,24 +2037,20 @@ _mm_min_epu8 (__m128i __A, __m128i __B)
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_movemask_epi8 (__m128i __A)
 {
-  __vector __m64 result;
+  __vector unsigned long long result;
   static const __vector unsigned char perm_mask =
     {
-#ifdef __LITTLE_ENDIAN__
 	0x78, 0x70, 0x68, 0x60, 0x58, 0x50, 0x48, 0x40,
 	0x38, 0x30, 0x28, 0x20, 0x18, 0x10, 0x08, 0x00
-#elif __BIG_ENDIAN__
-	0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38,
-	0x40, 0x48, 0x50, 0x58, 0x60, 0x68, 0x70, 0x78
-#endif
     };
 
-  result = (__vector __m64) vec_vbpermq ((__vector unsigned char) __A,
-					 (__vector unsigned char) perm_mask);
+  result = ((__vector unsigned long long)
+	    vec_vbpermq ((__vector unsigned char) __A,
+			 (__vector unsigned char) perm_mask));
 
 #ifdef __LITTLE_ENDIAN__
   return result[1];
-#elif __BIG_ENDIAN__
+#else
   return result[0];
 #endif
 }
@@ -2043,7 +2064,7 @@ _mm_mulhi_epu16 (__m128i __A, __m128i __B)
 #ifdef __LITTLE_ENDIAN__
       0x02, 0x03, 0x12, 0x13,  0x06, 0x07, 0x16, 0x17,
       0x0A, 0x0B, 0x1A, 0x1B,  0x0E, 0x0F, 0x1E, 0x1F
-#elif __BIG_ENDIAN__
+#else
       0x00, 0x01, 0x10, 0x11,  0x04, 0x05, 0x14, 0x15,
       0x08, 0x09, 0x18, 0x19,  0x0C, 0x0D, 0x1C, 0x1D
 #endif
@@ -2065,35 +2086,24 @@ _mm_shufflehi_epi16 (__m128i __A, const int __mask)
     {
 #ifdef __LITTLE_ENDIAN__
 	      0x0908, 0x0B0A, 0x0D0C, 0x0F0E
-#elif __BIG_ENDIAN__
-	      0x0607, 0x0405, 0x0203, 0x0001
+#else
+	      0x0809, 0x0A0B, 0x0C0D, 0x0E0F
 #endif
     };
   __v2du pmask =
 #ifdef __LITTLE_ENDIAN__
-      { 0x1716151413121110UL,  0x1f1e1d1c1b1a1918UL};
-#elif __BIG_ENDIAN__
-      { 0x1011121314151617UL,  0x18191a1b1c1d1e1fUL};
+      { 0x1716151413121110UL,  0UL};
+#else
+      { 0x1011121314151617UL,  0UL};
 #endif
   __m64_union t;
   __v2du a, r;
 
-#ifdef __LITTLE_ENDIAN__
   t.as_short[0] = permute_selectors[element_selector_98];
   t.as_short[1] = permute_selectors[element_selector_BA];
   t.as_short[2] = permute_selectors[element_selector_DC];
   t.as_short[3] = permute_selectors[element_selector_FE];
-#elif __BIG_ENDIAN__
-  t.as_short[3] = permute_selectors[element_selector_98];
-  t.as_short[2] = permute_selectors[element_selector_BA];
-  t.as_short[1] = permute_selectors[element_selector_DC];
-  t.as_short[0] = permute_selectors[element_selector_FE];
-#endif
-#ifdef __LITTLE_ENDIAN__
   pmask[1] = t.as_m64;
-#elif __BIG_ENDIAN__
-  pmask[0] = t.as_m64;
-#endif
   a = (__v2du)__A;
   r = vec_perm (a, a, (__vector unsigned char)pmask);
   return (__m128i) r;
@@ -2110,30 +2120,23 @@ _mm_shufflelo_epi16 (__m128i __A, const int __mask)
     {
 #ifdef __LITTLE_ENDIAN__
 	      0x0100, 0x0302, 0x0504, 0x0706
-#elif __BIG_ENDIAN__
-	      0x0e0f, 0x0c0d, 0x0a0b, 0x0809
+#else
+	      0x0001, 0x0203, 0x0405, 0x0607
 #endif
     };
-  __v2du pmask = { 0x1011121314151617UL,  0x1f1e1d1c1b1a1918UL};
+  __v2du pmask =
+#ifdef __LITTLE_ENDIAN__
+                 { 0UL,  0x1f1e1d1c1b1a1918UL};
+#else
+                 { 0UL,  0x18191a1b1c1d1e1fUL};
+#endif
   __m64_union t;
   __v2du a, r;
-
-#ifdef __LITTLE_ENDIAN__
   t.as_short[0] = permute_selectors[element_selector_10];
   t.as_short[1] = permute_selectors[element_selector_32];
   t.as_short[2] = permute_selectors[element_selector_54];
   t.as_short[3] = permute_selectors[element_selector_76];
-#elif __BIG_ENDIAN__
-  t.as_short[3] = permute_selectors[element_selector_10];
-  t.as_short[2] = permute_selectors[element_selector_32];
-  t.as_short[1] = permute_selectors[element_selector_54];
-  t.as_short[0] = permute_selectors[element_selector_76];
-#endif
-#ifdef __LITTLE_ENDIAN__
   pmask[0] = t.as_m64;
-#elif __BIG_ENDIAN__
-  pmask[1] = t.as_m64;
-#endif
   a = (__v2du)__A;
   r = vec_perm (a, a, (__vector unsigned char)pmask);
   return (__m128i) r;
@@ -2150,23 +2153,16 @@ _mm_shuffle_epi32 (__m128i __A, const int __mask)
     {
 #ifdef __LITTLE_ENDIAN__
 	0x03020100, 0x07060504, 0x0B0A0908, 0x0F0E0D0C
-#elif __BIG_ENDIAN__
-      0x0C0D0E0F, 0x08090A0B, 0x04050607, 0x00010203
+#else
+      0x00010203, 0x04050607, 0x08090A0B, 0x0C0D0E0F
 #endif
     };
   __v4su t;
 
-#ifdef __LITTLE_ENDIAN__
   t[0] = permute_selectors[element_selector_10];
   t[1] = permute_selectors[element_selector_32];
   t[2] = permute_selectors[element_selector_54] + 0x10101010;
   t[3] = permute_selectors[element_selector_76] + 0x10101010;
-#elif __BIG_ENDIAN__
-  t[3] = permute_selectors[element_selector_10] + 0x10101010;
-  t[2] = permute_selectors[element_selector_32] + 0x10101010;
-  t[1] = permute_selectors[element_selector_54];
-  t[0] = permute_selectors[element_selector_76];
-#endif
   return (__m128i)vec_perm ((__v4si) __A, (__v4si)__A, (__vector unsigned char)t);
 }
 
@@ -2175,7 +2171,7 @@ _mm_maskmoveu_si128 (__m128i __A, __m128i __B, char *__C)
 {
   __v2du hibit = { 0x7f7f7f7f7f7f7f7fUL, 0x7f7f7f7f7f7f7f7fUL};
   __v16qu mask, tmp;
-  __m128i *p = (__m128i*)__C;
+  __m128i_u *p = (__m128i_u*)__C;
 
   tmp = (__v16qu)_mm_loadu_si128(p);
   mask = (__v16qu)vec_cmpgt ((__v16qu)__B, (__v16qu)hibit);
@@ -2217,7 +2213,7 @@ _mm_sad_epu8 (__m128i __A, __m128i __B)
   /* Rotate the sums into the correct position.  */
 #ifdef __LITTLE_ENDIAN__
   result = vec_sld (result, result, 4);
-#elif __BIG_ENDIAN__
+#else
   result = vec_sld (result, result, 6);
 #endif
   /* Rotate the sums into the correct position.  */

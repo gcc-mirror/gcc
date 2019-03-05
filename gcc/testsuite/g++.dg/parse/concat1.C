@@ -1,11 +1,9 @@
 /* PR c/3581 */
 /* { dg-do compile } */
 
-/* Intended as a compile-time test for string literal concatenation.
-   The fact that the string isn't actually used in the resulting program
-   should allow this to compile for any target.  */
+/* Intended as a compile-time test for string literal concatenation.  */
 
-#define e0	"a"
+#define e0	"a"    /* { dg-error "size of string literal is too large" "" { target { ! size32plus } } } */
 #define e1	e0 e0 e0 e0 e0 e0 e0 e0 e0 e0
 #define e2	e1 e1 e1 e1 e1 e1 e1 e1 e1 e1
 #define e3	e2 e2 e2 e2 e2 e2 e2 e2 e2 e2

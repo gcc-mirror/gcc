@@ -1,5 +1,5 @@
 /* Subroutines used for code generation for RISC-V.
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
    Based on MIPS target for GNU compiler.
 
@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define IN_TARGET_CODE 1
 
+#define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -236,6 +237,11 @@ bool riscv_slow_unaligned_access_p;
 
 /* Stack alignment to assume/maintain.  */
 unsigned riscv_stack_boundary;
+
+/* If non-zero, this is an offset to be added to SP to redefine the CFA
+   when restoring the FP register from the stack.  Only valid when generating
+   the epilogue.  */
+static int epilogue_cfa_sp_offset;
 
 /* Which tuning parameters to use.  */
 static const struct riscv_tune_info *tune_info;
@@ -2877,7 +2883,7 @@ riscv_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
       src = adjust_address (src, BLKmode, offset);
       dest = adjust_address (dest, BLKmode, offset);
       move_by_pieces (dest, src, length - offset,
-		      MIN (MEM_ALIGN (src), MEM_ALIGN (dest)), 0);
+		      MIN (MEM_ALIGN (src), MEM_ALIGN (dest)), RETURN_BEGIN);
     }
 }
 
@@ -3627,8 +3633,15 @@ riscv_restore_reg (rtx reg, rtx mem)
   rtx insn = riscv_emit_move (reg, mem);
   rtx dwarf = NULL_RTX;
   dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
-  REG_NOTES (insn) = dwarf;
 
+  if (epilogue_cfa_sp_offset && REGNO (reg) == HARD_FRAME_POINTER_REGNUM)
+    {
+      rtx cfa_adjust_rtx = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+					 GEN_INT (epilogue_cfa_sp_offset));
+      dwarf = alloc_reg_note (REG_CFA_DEF_CFA, cfa_adjust_rtx, dwarf);
+    }
+
+  REG_NOTES (insn) = dwarf;
   RTX_FRAME_RELATED_P (insn) = 1;
 }
 
@@ -3877,6 +3890,9 @@ riscv_expand_epilogue (int style)
       return;
     }
 
+  /* Reset the epilogue cfa info before starting to emit the epilogue.  */
+  epilogue_cfa_sp_offset = 0;
+
   /* Move past any dynamic stack allocations.  */
   if (cfun->calls_alloca)
     {
@@ -3940,6 +3956,12 @@ riscv_expand_epilogue (int style)
       RTX_FRAME_RELATED_P (insn) = 1;
 
       REG_NOTES (insn) = dwarf;
+    }
+  else if (frame_pointer_needed)
+    {
+      /* Tell riscv_restore_reg to emit dwarf to redefine CFA when restoring
+	 old value of FP.  */
+      epilogue_cfa_sp_offset = step2;
     }
 
   if (use_restore_libcall)
@@ -4156,6 +4178,20 @@ riscv_issue_rate (void)
   return tune_info->issue_rate;
 }
 
+/* Auxiliary function to emit RISC-V ELF attribute. */
+static void
+riscv_emit_attribute ()
+{
+  fprintf (asm_out_file, "\t.attribute arch, \"%s\"\n",
+	   riscv_arch_str ().c_str ());
+
+  fprintf (asm_out_file, "\t.attribute unaligned_access, %d\n",
+           TARGET_STRICT_ALIGN ? 0 : 1);
+
+  fprintf (asm_out_file, "\t.attribute stack_align, %d\n",
+           riscv_stack_boundary / 8);
+}
+
 /* Implement TARGET_ASM_FILE_START.  */
 
 static void
@@ -4170,6 +4206,9 @@ riscv_file_start (void)
      relaxation in the assembler.  */
   if (! riscv_mrelax)
     fprintf (asm_out_file, "\t.option norelax\n");
+
+  if (riscv_emit_attribute_p)
+    riscv_emit_attribute ();
 }
 
 /* Implement TARGET_ASM_OUTPUT_MI_THUNK.  Generate rtl rather than asm text
@@ -4340,6 +4379,17 @@ riscv_option_override (void)
 
       riscv_stack_boundary = 8 << riscv_preferred_stack_boundary_arg;
     }
+
+  if (riscv_emit_attribute_p < 0)
+#ifdef HAVE_AS_RISCV_ATTRIBUTE
+    riscv_emit_attribute_p = TARGET_RISCV_ATTRIBUTE;
+#else
+    riscv_emit_attribute_p = 0;
+
+  if (riscv_emit_attribute_p)
+    error ("-mriscv-attribute RISC-V ELF attribute requires GNU as 2.32"
+	   " [-mriscv-attribute]");
+#endif
 }
 
 /* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */

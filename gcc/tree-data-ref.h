@@ -1,5 +1,5 @@
 /* Data references and dependences detectors.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -138,7 +138,8 @@ struct dr_alias
    space. A vector space is a set that is closed under vector addition
    and scalar multiplication.  In this vector space, an element is a list of
    integers.  */
-typedef int *lambda_vector;
+typedef HOST_WIDE_INT lambda_int;
+typedef lambda_int *lambda_vector;
 
 /* An integer matrix.  A matrix consists of m vectors of length n (IE
    all vectors are the same length).  */
@@ -611,11 +612,11 @@ void split_constant_offset (tree , tree *, tree *);
 
 /* Compute the greatest common divisor of a VECTOR of SIZE numbers.  */
 
-static inline int
+static inline lambda_int
 lambda_vector_gcd (lambda_vector vector, int size)
 {
   int i;
-  int gcd1 = 0;
+  lambda_int gcd1 = 0;
 
   if (size > 0)
     {
@@ -632,7 +633,7 @@ static inline lambda_vector
 lambda_vector_new (int size)
 {
   /* ???  We shouldn't abuse the GC allocator here.  */
-  return ggc_cleared_vec_alloc<int> (size);
+  return ggc_cleared_vec_alloc<lambda_int> (size);
 }
 
 /* Clear out vector VEC1 of length SIZE.  */
@@ -686,7 +687,7 @@ lambda_matrix_new (int m, int n, struct obstack *lambda_obstack)
   mat = XOBNEWVEC (lambda_obstack, lambda_vector, m);
 
   for (i = 0; i < m; i++)
-    mat[i] = XOBNEWVEC (lambda_obstack, int, n);
+    mat[i] = XOBNEWVEC (lambda_obstack, lambda_int, n);
 
   return mat;
 }

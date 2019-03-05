@@ -1,5 +1,5 @@
 // PR c++/84420
-// { dg-additional-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 int main(){
     int a[1]{};

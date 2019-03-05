@@ -4,7 +4,7 @@
 
 struct A {
   int n;
-  int a[];  // { dg-warning "forbids flexible array member" }
+  int a[];  // { dg-warning "7:ISO C\\+\\+ forbids flexible array member" }
 };
 
 struct A foo (void)

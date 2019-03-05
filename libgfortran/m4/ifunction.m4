@@ -210,6 +210,16 @@ m'name`'rtype_qual`_'atype_code` ('rtype` * const restrict retarray,
   index_type mdelta;
   int mask_kind;
 
+  if (mask == NULL)
+    {
+#ifdef HAVE_BACK_ARG
+      name`'rtype_qual`_'atype_code (retarray, array, pdim, back);
+#else
+      name`'rtype_qual`_'atype_code (retarray, array, pdim);
+#endif
+      return;
+    }
+
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
@@ -388,7 +398,7 @@ void
   index_type dim;
 
 
-  if (*mask)
+  if (mask == NULL || *mask)
     {
 #ifdef HAVE_BACK_ARG
       name`'rtype_qual`_'atype_code (retarray, array, pdim, back);

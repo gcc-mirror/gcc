@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -431,7 +431,7 @@ is_trim_ok (st_parameter_dt *dtp)
   /* Check rank and stride.  */
   if (dtp->internal_unit_desc)
     return false;
-  /* Format strings can not have 'BZ' or '/'.  */
+  /* Format strings cannot have 'BZ' or '/'.  */
   if (dtp->common.flags & IOPARM_DT_HAS_FORMAT)
     {
       char *p = dtp->format;

@@ -1,5 +1,5 @@
 /* Builtin functions for rs6000/powerpc.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@linux.vnet.ibm.com)
 
    This file is part of GCC.
@@ -2117,6 +2117,11 @@ BU_P9V_VSX_2 (VSCEDPLT,	"scalar_cmp_exp_dp_lt",	CONST,	xscmpexpdp_lt)
 BU_P9V_VSX_2 (VSCEDPEQ,	"scalar_cmp_exp_dp_eq",	CONST,	xscmpexpdp_eq)
 BU_P9V_VSX_2 (VSCEDPUO,	"scalar_cmp_exp_dp_unordered",	CONST,	xscmpexpdp_unordered)
 
+BU_P9V_VSX_2 (VSCEQPGT,	"scalar_cmp_exp_qp_gt",	CONST,	xscmpexpqp_gt_kf)
+BU_P9V_VSX_2 (VSCEQPLT,	"scalar_cmp_exp_qp_lt",	CONST,	xscmpexpqp_lt_kf)
+BU_P9V_VSX_2 (VSCEQPEQ,	"scalar_cmp_exp_qp_eq",	CONST,	xscmpexpqp_eq_kf)
+BU_P9V_VSX_2 (VSCEQPUO,	"scalar_cmp_exp_qp_unordered",	CONST,	xscmpexpqp_unordered_kf)
+
 BU_FLOAT128_HW_VSX_2 (VSTDCQP, "scalar_test_data_class_qp",	CONST,	xststdcqp_kf)
 BU_P9V_VSX_2 (VSTDCDP,	"scalar_test_data_class_dp",	CONST,	xststdcdp)
 BU_P9V_VSX_2 (VSTDCSP,	"scalar_test_data_class_sp",	CONST,	xststdcsp)
@@ -2146,10 +2151,18 @@ BU_P9V_OVERLOAD_2 (VSTDCQP,	"scalar_test_data_class_qp")
 BU_P9V_OVERLOAD_2 (VSTDCDP,	"scalar_test_data_class_dp")
 BU_P9V_OVERLOAD_2 (VSTDCSP,	"scalar_test_data_class_sp")
 
-BU_P9V_OVERLOAD_2 (VSCEDPGT,	"scalar_cmp_exp_gt")
-BU_P9V_OVERLOAD_2 (VSCEDPLT,	"scalar_cmp_exp_lt")
-BU_P9V_OVERLOAD_2 (VSCEDPEQ,	"scalar_cmp_exp_eq")
-BU_P9V_OVERLOAD_2 (VSCEDPUO,	"scalar_cmp_exp_unordered")
+BU_P9V_OVERLOAD_2 (VSCEGT,	"scalar_cmp_exp_gt")
+BU_P9V_OVERLOAD_2 (VSCEDPGT,	"scalar_cmp_exp_dp_gt")
+BU_P9V_OVERLOAD_2 (VSCEQPGT,	"scalar_cmp_exp_qp_gt")
+BU_P9V_OVERLOAD_2 (VSCELT,	"scalar_cmp_exp_lt")
+BU_P9V_OVERLOAD_2 (VSCEDPLT,	"scalar_cmp_exp_dp_lt")
+BU_P9V_OVERLOAD_2 (VSCEQPLT,	"scalar_cmp_exp_qp_lt")
+BU_P9V_OVERLOAD_2 (VSCEEQ,	"scalar_cmp_exp_eq")
+BU_P9V_OVERLOAD_2 (VSCEDPEQ,	"scalar_cmp_exp_dp_eq")
+BU_P9V_OVERLOAD_2 (VSCEQPEQ,	"scalar_cmp_exp_qp_eq")
+BU_P9V_OVERLOAD_2 (VSCEUO,	"scalar_cmp_exp_unordered")
+BU_P9V_OVERLOAD_2 (VSCEDPUO,	"scalar_cmp_exp_dp_unordered")
+BU_P9V_OVERLOAD_2 (VSCEQPUO,	"scalar_cmp_exp_qp_unordered")
 
 /* 1 argument vsx vector functions added in ISA 3.0 (power9).  */
 BU_P9V_VSX_1 (VEEDP, "extract_exp_dp", CONST, xvxexpdp)
@@ -2405,13 +2418,22 @@ BU_P9_OVERLOAD_2 (CMPRB2,	"byte_in_either_range")
 BU_P9_OVERLOAD_2 (CMPEQB,	"byte_in_set")
 
 /* 1 argument crypto functions.  */
-BU_CRYPTO_1 (VSBOX,		"vsbox",	  CONST, crypto_vsbox)
+BU_CRYPTO_1 (VSBOX,		"vsbox",	  CONST, crypto_vsbox_v2di)
+BU_CRYPTO_1 (VSBOX_BE,		"vsbox_be",	  CONST, crypto_vsbox_v16qi)
 
 /* 2 argument crypto functions.  */
-BU_CRYPTO_2 (VCIPHER,		"vcipher",	  CONST, crypto_vcipher)
-BU_CRYPTO_2 (VCIPHERLAST,	"vcipherlast",	  CONST, crypto_vcipherlast)
-BU_CRYPTO_2 (VNCIPHER,		"vncipher",	  CONST, crypto_vncipher)
-BU_CRYPTO_2 (VNCIPHERLAST,	"vncipherlast",	  CONST, crypto_vncipherlast)
+BU_CRYPTO_2 (VCIPHER,		"vcipher",	  CONST, crypto_vcipher_v2di)
+BU_CRYPTO_2 (VCIPHER_BE,	"vcipher_be",	  CONST, crypto_vcipher_v16qi)
+BU_CRYPTO_2 (VCIPHERLAST,	"vcipherlast",
+	     CONST, crypto_vcipherlast_v2di)
+BU_CRYPTO_2 (VCIPHERLAST_BE,	"vcipherlast_be",
+	     CONST, crypto_vcipherlast_v16qi)
+BU_CRYPTO_2 (VNCIPHER,		"vncipher",	  CONST, crypto_vncipher_v2di)
+BU_CRYPTO_2 (VNCIPHER_BE,	"vncipher_be",	  CONST, crypto_vncipher_v16qi)
+BU_CRYPTO_2 (VNCIPHERLAST,	"vncipherlast",
+	     CONST, crypto_vncipherlast_v2di)
+BU_CRYPTO_2 (VNCIPHERLAST_BE,	"vncipherlast_be",
+	     CONST, crypto_vncipherlast_v16qi)
 BU_CRYPTO_2A (VPMSUMB,		"vpmsumb",	  CONST, crypto_vpmsumb)
 BU_CRYPTO_2A (VPMSUMH,		"vpmsumh",	  CONST, crypto_vpmsumh)
 BU_CRYPTO_2A (VPMSUMW,		"vpmsumw",	  CONST, crypto_vpmsumw)

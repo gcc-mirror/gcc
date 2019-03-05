@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -floop-interchange -fdump-tree-linterchange-details" } */
-/* { dg-skip-if "too big data segment" { avr-*-* visium-*-* } } */
+/* { dg-require-effective-target size20plus } */
+/* { dg-skip-if "too big data segment" { visium-*-* } } */
 
 #define M 256
 int a[M][M], b[M][M];

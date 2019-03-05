@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2018 Free Software Foundation, Inc.
+// Copyright (C) 2016-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,7 +24,7 @@
 int main()
 {
   std::map<int, int, std::less<int>,
-	   __gnu_cxx::malloc_allocator<std::pair<int, int> > > allocs;
+	   __gnu_cxx::malloc_allocator<std::pair<const int, int> > > allocs;
   allocs[9] = 3;
   std::vector<int, __gnu_cxx::malloc_allocator<int>> vec(10);
   vec[5] = 42;

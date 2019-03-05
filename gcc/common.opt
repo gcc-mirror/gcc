@@ -1,6 +1,6 @@
 ; Options for the language- and target-independent parts of the compiler.
 
-; Copyright (C) 2003-2018 Free Software Foundation, Inc.
+; Copyright (C) 2003-2019 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -551,8 +551,12 @@ Common Var(warn_attributes) Init(1) Warning
 Warn about inappropriate attribute usage.
 
 Wattribute-alias
-Common Var(warn_attributes) Init(1) Warning
-Warn about type safety and similar errors in attribute alias and related.
+Common Alias(Wattribute_alias=, 1, 0) Warning
+Warn about type safety and similar errors and mismatches in declarations with alias attributes.
+
+Wattribute-alias=
+Common Joined RejectNegative UInteger Var(warn_attribute_alias) Init(1) Warning IntegerRange(0, 2)
+Warn about type safety and similar errors and mismatches in declarations with alias attributes.
 
 Wcannot-profile
 Common Var(warn_cannot_profile) Init(1) Warning
@@ -570,6 +574,14 @@ Warn about pointer casts which increase alignment.
 Wcpp
 Common Var(warn_cpp) Init(1) Warning
 Warn when a #warning directive is encountered.
+
+Wattribute-warning
+Common Var(warn_attribute_warning) Init(1) Warning
+Warn about uses of __attribute__((warning)) declarations.
+
+Wdeprecated
+Common Var(warn_deprecated) Init(1) Warning
+Warn if a deprecated compiler feature, class, method, or field is used.
 
 Wdeprecated-declarations
 Common Var(warn_deprecated_decl) Init(1) Warning
@@ -1269,6 +1281,23 @@ Enum(diagnostic_color_rule) String(always) Value(DIAGNOSTICS_COLOR_YES)
 EnumValue
 Enum(diagnostic_color_rule) String(auto) Value(DIAGNOSTICS_COLOR_AUTO)
 
+fdiagnostics-format=
+Common Joined RejectNegative Enum(diagnostics_output_format)
+-fdiagnostics-format=[text|json] Select output format
+
+; Required for these enum values.
+SourceInclude
+diagnostic.h
+
+Enum
+Name(diagnostics_output_format) Type(int)
+
+EnumValue
+Enum(diagnostics_output_format) String(text) Value(DIAGNOSTICS_OUTPUT_FORMAT_TEXT)
+
+EnumValue
+Enum(diagnostics_output_format) String(json) Value(DIAGNOSTICS_OUTPUT_FORMAT_JSON)
+
 fdiagnostics-parseable-fixits
 Common Var(flag_diagnostics_parseable_fixits)
 Print fix-it hints in machine-readable form.
@@ -1280,6 +1309,10 @@ Print fix-it hints to stderr in unified diff format.
 fdiagnostics-show-option
 Common Var(flag_diagnostics_show_option) Init(1)
 Amend appropriate diagnostic messages with the command line option that controls them.
+
+fdiagnostics-minimum-margin-width=
+Common Joined UInteger Var(diagnostics_minimum_margin_width) Init(6)
+Set minimum width of left margin of source code when showing source
 
 fdisable-
 Common Joined RejectNegative Var(common_deferred_options) Defer
@@ -1714,7 +1747,15 @@ Perform Identical Code Folding for variables.
 
 fipa-reference
 Common Report Var(flag_ipa_reference) Init(0) Optimization
-Discover readonly and non addressable static variables.
+Discover read-only and non addressable static variables.
+
+fipa-reference-addressable
+Common Report Var(flag_ipa_reference_addressable) Init(0) Optimization
+Discover read-only, write-only and non-addressable static variables.
+
+fipa-stack-alignment
+Common Report Var(flag_ipa_stack_alignment) Init(1) Optimization
+Reduce stack alignment on call sites if possible.
 
 fipa-matrix-reorg
 Common Ignore
@@ -2059,6 +2100,14 @@ fprofile-update=
 Common Joined RejectNegative Enum(profile_update) Var(flag_profile_update) Init(PROFILE_UPDATE_SINGLE)
 -fprofile-update=[single|atomic|prefer-atomic]	Set the profile update method.
 
+fprofile-filter-files=
+Common Joined RejectNegative Var(flag_profile_filter_files)
+Instrument only functions from files where names match any regular expression (separated by a semi-colon).
+
+fprofile-exclude-files=
+Common Joined RejectNegative Var(flag_profile_exclude_files)
+Instrument only functions from files where names do not match all the regular expressions (separated by a semi-colon).
+
 Enum
 Name(profile_update) Type(enum profile_update) UnknownError(unknown profile update method %qs)
 
@@ -2135,6 +2184,24 @@ starts and when the destructor finishes.
 
 flifetime-dse=
 Common Joined RejectNegative UInteger Var(flag_lifetime_dse) Optimization IntegerRange(0, 2)
+
+flive-patching
+Common RejectNegative Alias(flive-patching=,inline-clone) Optimization
+
+flive-patching=
+Common Report Joined RejectNegative Enum(live_patching_level) Var(flag_live_patching) Init(LIVE_PATCHING_NONE) Optimization
+-flive-patching=[inline-only-static|inline-clone]	Control IPA
+optimizations to provide a safe compilation for live-patching.  At the same
+time, provides multiple-level control on the enabled IPA optimizations.
+
+Enum
+Name(live_patching_level) Type(enum live_patching_level) UnknownError(unknown Live-Patching Level %qs)
+
+EnumValue
+Enum(live_patching_level) String(inline-only-static) Value(LIVE_PATCHING_INLINE_ONLY_STATIC)
+
+EnumValue
+Enum(live_patching_level) String(inline-clone) Value(LIVE_PATCHING_INLINE_CLONE)
 
 flive-range-shrinkage
 Common Report Var(flag_live_range_shrinkage) Init(0) Optimization
@@ -2712,6 +2779,10 @@ fsplit-loops
 Common Report Var(flag_split_loops) Optimization
 Perform loop splitting.
 
+fversion-loops-for-strides
+Common Report Var(flag_version_loops_for_strides) Optimization
+Version loops based on whether indices have a stride of one.
+
 funwind-tables
 Common Report Var(flag_unwind_tables) Optimization
 Just generate unwind tables for exception handling.
@@ -2723,6 +2794,10 @@ Use the bfd linker instead of the default linker.
 fuse-ld=gold
 Common Driver Negative(fuse-ld=bfd)
 Use the gold linker instead of the default linker.
+
+fuse-ld=lld
+Common Driver Negative(fuse-ld=lld)
+Use the lld LLVM linker instead of the default linker.
 
 fuse-linker-plugin
 Common Undocumented Var(flag_use_linker_plugin)

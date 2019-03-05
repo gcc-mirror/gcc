@@ -18,5 +18,5 @@ int foo (int i, int j)
   return j;
 }
 
-/* { dg-final { scan-tree-dump "res_.: \\\[1, 1\\\]" "vrp1" } } */
+/* { dg-final { scan-tree-dump "res_.: int \\\[1, 1\\\]" "vrp1" } } */
 /* { dg-final { scan-tree-dump-not "Threaded" "vrp1" } } */

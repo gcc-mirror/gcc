@@ -70,15 +70,17 @@ class SizeClassAllocator64 {
   void Init(s32 release_to_os_interval_ms) {
     uptr TotalSpaceSize = kSpaceSize + AdditionalSize();
     if (kUsingConstantSpaceBeg) {
-      CHECK_EQ(kSpaceBeg, reinterpret_cast<uptr>(
-                              MmapFixedNoAccess(kSpaceBeg, TotalSpaceSize)));
+      CHECK_EQ(kSpaceBeg, address_range.Init(TotalSpaceSize,
+                                             PrimaryAllocatorName, kSpaceBeg));
     } else {
-      NonConstSpaceBeg =
-          reinterpret_cast<uptr>(MmapNoAccess(TotalSpaceSize));
+      NonConstSpaceBeg = address_range.Init(TotalSpaceSize,
+                                            PrimaryAllocatorName);
       CHECK_NE(NonConstSpaceBeg, ~(uptr)0);
     }
     SetReleaseToOSIntervalMs(release_to_os_interval_ms);
     MapWithCallbackOrDie(SpaceEnd(), AdditionalSize());
+    // Check that the RegionInfo array is aligned on the CacheLine size.
+    DCHECK_EQ(SpaceEnd() % kCacheLineSize, 0);
   }
 
   s32 ReleaseToOSIntervalMs() const {
@@ -88,6 +90,13 @@ class SizeClassAllocator64 {
   void SetReleaseToOSIntervalMs(s32 release_to_os_interval_ms) {
     atomic_store(&release_to_os_interval_ms_, release_to_os_interval_ms,
                  memory_order_relaxed);
+  }
+
+  void ForceReleaseToOS() {
+    for (uptr class_id = 1; class_id < kNumClasses; class_id++) {
+      BlockingMutexLock l(&GetRegionInfo(class_id)->mutex);
+      MaybeReleaseToOS(class_id, true /*force*/);
+    }
   }
 
   static bool CanAllocate(uptr size, uptr alignment) {
@@ -107,14 +116,18 @@ class SizeClassAllocator64 {
     // Failure to allocate free array space while releasing memory is non
     // recoverable.
     if (UNLIKELY(!EnsureFreeArraySpace(region, region_beg,
-                                       new_num_freed_chunks)))
-      DieOnFailure::OnOOM();
+                                       new_num_freed_chunks))) {
+      Report("FATAL: Internal error: %s's allocator exhausted the free list "
+             "space for size class %zd (%zd bytes).\n", SanitizerToolName,
+             class_id, ClassIdToSize(class_id));
+      Die();
+    }
     for (uptr i = 0; i < n_chunks; i++)
       free_array[old_num_chunks + i] = chunks[i];
     region->num_freed_chunks = new_num_freed_chunks;
     region->stats.n_freed += n_chunks;
 
-    MaybeReleaseToOS(class_id);
+    MaybeReleaseToOS(class_id, false /*force*/);
   }
 
   NOINLINE bool GetFromAllocator(AllocatorStats *stat, uptr class_id,
@@ -232,22 +245,28 @@ class SizeClassAllocator64 {
   }
 
   void PrintStats() {
-    uptr total_mapped = 0;
-    uptr n_allocated = 0;
-    uptr n_freed = 0;
-    for (uptr class_id = 1; class_id < kNumClasses; class_id++) {
-      RegionInfo *region = GetRegionInfo(class_id);
-      total_mapped += region->mapped_user;
-      n_allocated += region->stats.n_allocated;
-      n_freed += region->stats.n_freed;
-    }
-    Printf("Stats: SizeClassAllocator64: %zdM mapped in %zd allocations; "
-           "remains %zd\n",
-           total_mapped >> 20, n_allocated, n_allocated - n_freed);
     uptr rss_stats[kNumClasses];
     for (uptr class_id = 0; class_id < kNumClasses; class_id++)
       rss_stats[class_id] = SpaceBeg() + kRegionSize * class_id;
     GetMemoryProfile(FillMemoryProfile, rss_stats, kNumClasses);
+
+    uptr total_mapped = 0;
+    uptr total_rss = 0;
+    uptr n_allocated = 0;
+    uptr n_freed = 0;
+    for (uptr class_id = 1; class_id < kNumClasses; class_id++) {
+      RegionInfo *region = GetRegionInfo(class_id);
+      if (region->mapped_user != 0) {
+        total_mapped += region->mapped_user;
+        total_rss += rss_stats[class_id];
+      }
+      n_allocated += region->stats.n_allocated;
+      n_freed += region->stats.n_freed;
+    }
+
+    Printf("Stats: SizeClassAllocator64: %zdM mapped (%zdM rss) in "
+           "%zd allocations; remains %zd\n", total_mapped >> 20,
+           total_rss >> 20, n_allocated, n_allocated - n_freed);
     for (uptr class_id = 1; class_id < kNumClasses; class_id++)
       PrintStats(class_id, rss_stats[class_id]);
   }
@@ -529,6 +548,8 @@ class SizeClassAllocator64 {
  private:
   friend class MemoryMapper;
 
+  ReservedAddressRange address_range;
+
   static const uptr kRegionSize = kSpaceSize / kNumClassesRounded;
   // FreeArray is the array of free-d chunks (stored as 4-byte offsets).
   // In the worst case it may reguire kRegionSize/SizeClassMap::kMinSize
@@ -567,7 +588,7 @@ class SizeClassAllocator64 {
     u64 last_released_bytes;
   };
 
-  struct RegionInfo {
+  struct ALIGNED(SANITIZER_CACHE_LINE_SIZE) RegionInfo {
     BlockingMutex mutex;
     uptr num_freed_chunks;  // Number of elements in the freearray.
     uptr mapped_free_array;  // Bytes mapped for freearray.
@@ -580,24 +601,11 @@ class SizeClassAllocator64 {
     Stats stats;
     ReleaseToOsInfo rtoi;
   };
-  COMPILER_CHECK(sizeof(RegionInfo) >= kCacheLineSize);
-
-  u32 Rand(u32 *state) {  // ANSI C linear congruential PRNG.
-    return (*state = *state * 1103515245 + 12345) >> 16;
-  }
-
-  u32 RandN(u32 *state, u32 n) { return Rand(state) % n; }  // [0, n)
-
-  void RandomShuffle(u32 *a, u32 n, u32 *rand_state) {
-    if (n <= 1) return;
-    for (u32 i = n - 1; i > 0; i--)
-      Swap(a[i], a[RandN(rand_state, i + 1)]);
-  }
+  COMPILER_CHECK(sizeof(RegionInfo) % kCacheLineSize == 0);
 
   RegionInfo *GetRegionInfo(uptr class_id) const {
-    CHECK_LT(class_id, kNumClasses);
-    RegionInfo *regions =
-        reinterpret_cast<RegionInfo *>(SpaceBeg() + kSpaceSize);
+    DCHECK_LT(class_id, kNumClasses);
+    RegionInfo *regions = reinterpret_cast<RegionInfo *>(SpaceEnd());
     return &regions[class_id];
   }
 
@@ -622,7 +630,7 @@ class SizeClassAllocator64 {
   }
 
   bool MapWithCallback(uptr beg, uptr size) {
-    uptr mapped = reinterpret_cast<uptr>(MmapFixedOrDieOnFatalError(beg, size));
+    uptr mapped = address_range.Map(beg, size);
     if (UNLIKELY(!mapped))
       return false;
     CHECK_EQ(beg, mapped);
@@ -631,13 +639,13 @@ class SizeClassAllocator64 {
   }
 
   void MapWithCallbackOrDie(uptr beg, uptr size) {
-    CHECK_EQ(beg, reinterpret_cast<uptr>(MmapFixedOrDie(beg, size)));
+    CHECK_EQ(beg, address_range.MapOrDie(beg, size));
     MapUnmapCallback().OnMap(beg, size);
   }
 
   void UnmapWithCallbackOrDie(uptr beg, uptr size) {
     MapUnmapCallback().OnUnmap(beg, size);
-    UnmapOrDie(reinterpret_cast<void *>(beg), size);
+    address_range.Unmap(beg, size);
   }
 
   bool EnsureFreeArraySpace(RegionInfo *region, uptr region_beg,
@@ -656,55 +664,74 @@ class SizeClassAllocator64 {
     return true;
   }
 
+  // Check whether this size class is exhausted.
+  bool IsRegionExhausted(RegionInfo *region, uptr class_id,
+                         uptr additional_map_size) {
+    if (LIKELY(region->mapped_user + region->mapped_meta +
+               additional_map_size <= kRegionSize - kFreeArraySize))
+      return false;
+    if (!region->exhausted) {
+      region->exhausted = true;
+      Printf("%s: Out of memory. ", SanitizerToolName);
+      Printf("The process has exhausted %zuMB for size class %zu.\n",
+             kRegionSize >> 20, ClassIdToSize(class_id));
+    }
+    return true;
+  }
+
   NOINLINE bool PopulateFreeArray(AllocatorStats *stat, uptr class_id,
                                   RegionInfo *region, uptr requested_count) {
     // region->mutex is held.
-    const uptr size = ClassIdToSize(class_id);
-    const uptr new_space_beg = region->allocated_user;
-    const uptr new_space_end = new_space_beg + requested_count * size;
     const uptr region_beg = GetRegionBeginBySizeClass(class_id);
+    const uptr size = ClassIdToSize(class_id);
 
+    const uptr total_user_bytes =
+        region->allocated_user + requested_count * size;
     // Map more space for chunks, if necessary.
-    if (new_space_end > region->mapped_user) {
-      if (!kUsingConstantSpaceBeg && region->mapped_user == 0)
-        region->rand_state = static_cast<u32>(region_beg >> 12);  // From ASLR.
-      // Do the mmap for the user memory.
-      uptr map_size = kUserMapSize;
-      while (new_space_end > region->mapped_user + map_size)
-        map_size += kUserMapSize;
-      CHECK_GE(region->mapped_user + map_size, new_space_end);
-      if (UNLIKELY(!MapWithCallback(region_beg + region->mapped_user,
-                                    map_size)))
-        return false;
-      stat->Add(AllocatorStatMapped, map_size);
-      region->mapped_user += map_size;
-    }
-    const uptr new_chunks_count = (region->mapped_user - new_space_beg) / size;
-
-    // Calculate the required space for metadata.
-    const uptr requested_allocated_meta =
-        region->allocated_meta + new_chunks_count * kMetadataSize;
-    uptr requested_mapped_meta = region->mapped_meta;
-    while (requested_allocated_meta > requested_mapped_meta)
-      requested_mapped_meta += kMetaMapSize;
-    // Check whether this size class is exhausted.
-    if (region->mapped_user + requested_mapped_meta >
-        kRegionSize - kFreeArraySize) {
-      if (!region->exhausted) {
-        region->exhausted = true;
-        Printf("%s: Out of memory. ", SanitizerToolName);
-        Printf("The process has exhausted %zuMB for size class %zu.\n",
-               kRegionSize >> 20, size);
+    if (LIKELY(total_user_bytes > region->mapped_user)) {
+      if (UNLIKELY(region->mapped_user == 0)) {
+        if (!kUsingConstantSpaceBeg && kRandomShuffleChunks)
+          // The random state is initialized from ASLR.
+          region->rand_state = static_cast<u32>(region_beg >> 12);
+        // Postpone the first release to OS attempt for ReleaseToOSIntervalMs,
+        // preventing just allocated memory from being released sooner than
+        // necessary and also preventing extraneous ReleaseMemoryPagesToOS calls
+        // for short lived processes.
+        // Do it only when the feature is turned on, to avoid a potentially
+        // extraneous syscall.
+        if (ReleaseToOSIntervalMs() >= 0)
+          region->rtoi.last_release_at_ns = MonotonicNanoTime();
       }
-      return false;
-    }
-    // Map more space for metadata, if necessary.
-    if (requested_mapped_meta > region->mapped_meta) {
-      if (UNLIKELY(!MapWithCallback(
-              GetMetadataEnd(region_beg) - requested_mapped_meta,
-              requested_mapped_meta - region->mapped_meta)))
+      // Do the mmap for the user memory.
+      const uptr user_map_size =
+          RoundUpTo(total_user_bytes - region->mapped_user, kUserMapSize);
+      if (UNLIKELY(IsRegionExhausted(region, class_id, user_map_size)))
         return false;
-      region->mapped_meta = requested_mapped_meta;
+      if (UNLIKELY(!MapWithCallback(region_beg + region->mapped_user,
+                                    user_map_size)))
+        return false;
+      stat->Add(AllocatorStatMapped, user_map_size);
+      region->mapped_user += user_map_size;
+    }
+    const uptr new_chunks_count =
+        (region->mapped_user - region->allocated_user) / size;
+
+    if (kMetadataSize) {
+      // Calculate the required space for metadata.
+      const uptr total_meta_bytes =
+          region->allocated_meta + new_chunks_count * kMetadataSize;
+      const uptr meta_map_size = (total_meta_bytes > region->mapped_meta) ?
+          RoundUpTo(total_meta_bytes - region->mapped_meta, kMetaMapSize) : 0;
+      // Map more space for metadata, if necessary.
+      if (meta_map_size) {
+        if (UNLIKELY(IsRegionExhausted(region, class_id, meta_map_size)))
+          return false;
+        if (UNLIKELY(!MapWithCallback(
+            GetMetadataEnd(region_beg) - region->mapped_meta - meta_map_size,
+            meta_map_size)))
+          return false;
+        region->mapped_meta += meta_map_size;
+      }
     }
 
     // If necessary, allocate more space for the free array and populate it with
@@ -713,7 +740,7 @@ class SizeClassAllocator64 {
     if (UNLIKELY(!EnsureFreeArraySpace(region, region_beg, total_freed_chunks)))
       return false;
     CompactPtrT *free_array = GetFreeArray(region_beg);
-    for (uptr i = 0, chunk = new_space_beg; i < new_chunks_count;
+    for (uptr i = 0, chunk = region->allocated_user; i < new_chunks_count;
          i++, chunk += size)
       free_array[total_freed_chunks - 1 - i] = PointerToCompactPtr(0, chunk);
     if (kRandomShuffleChunks)
@@ -725,7 +752,7 @@ class SizeClassAllocator64 {
     region->num_freed_chunks += new_chunks_count;
     region->allocated_user += new_chunks_count * size;
     CHECK_LE(region->allocated_user, region->mapped_user);
-    region->allocated_meta = requested_allocated_meta;
+    region->allocated_meta += new_chunks_count * kMetadataSize;
     CHECK_LE(region->allocated_meta, region->mapped_meta);
     region->exhausted = false;
 
@@ -784,7 +811,7 @@ class SizeClassAllocator64 {
 
   // Attempts to release RAM occupied by freed chunks back to OS. The region is
   // expected to be locked.
-  void MaybeReleaseToOS(uptr class_id) {
+  void MaybeReleaseToOS(uptr class_id, bool force) {
     RegionInfo *region = GetRegionInfo(class_id);
     const uptr chunk_size = ClassIdToSize(class_id);
     const uptr page_size = GetPageSizeCached();
@@ -797,12 +824,16 @@ class SizeClassAllocator64 {
       return;  // Nothing new to release.
     }
 
-    s32 interval_ms = ReleaseToOSIntervalMs();
-    if (interval_ms < 0)
-      return;
+    if (!force) {
+      s32 interval_ms = ReleaseToOSIntervalMs();
+      if (interval_ms < 0)
+        return;
 
-    if (region->rtoi.last_release_at_ns + interval_ms * 1000000ULL > NanoTime())
-      return;  // Memory was returned recently.
+      if (region->rtoi.last_release_at_ns + interval_ms * 1000000ULL >
+          MonotonicNanoTime()) {
+        return;  // Memory was returned recently.
+      }
+    }
 
     MemoryMapper memory_mapper(*this, class_id);
 
@@ -816,6 +847,6 @@ class SizeClassAllocator64 {
       region->rtoi.num_releases += memory_mapper.GetReleasedRangesCount();
       region->rtoi.last_released_bytes = memory_mapper.GetReleasedBytes();
     }
-    region->rtoi.last_release_at_ns = NanoTime();
+    region->rtoi.last_release_at_ns = MonotonicNanoTime();
   }
 };

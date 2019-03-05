@@ -1,5 +1,5 @@
 /* Header for code translation functions
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -412,7 +412,7 @@ tree gfc_class_data_get (tree);
 tree gfc_class_vptr_get (tree);
 tree gfc_class_len_get (tree);
 tree gfc_class_len_or_zero_get (tree);
-gfc_expr * gfc_find_and_cut_at_last_class_ref (gfc_expr *);
+gfc_expr * gfc_find_and_cut_at_last_class_ref (gfc_expr *, bool is_mold = false);
 /* Get an accessor to the class' vtab's * field, when a class handle is
    available.  */
 tree gfc_class_vtab_hash_get (tree);
@@ -580,7 +580,8 @@ void gfc_merge_block_scope (stmtblock_t * block);
 tree gfc_get_label_decl (gfc_st_label *);
 
 /* Return the decl for an external function.  */
-tree gfc_get_extern_function_decl (gfc_symbol *);
+tree gfc_get_extern_function_decl (gfc_symbol *,
+				   gfc_actual_arglist *args = NULL);
 
 /* Return the decl for a function.  */
 tree gfc_get_function_decl (gfc_symbol *);
@@ -801,6 +802,8 @@ extern GTY(()) tree gfor_fndecl_ctime;
 extern GTY(()) tree gfor_fndecl_fdate;
 extern GTY(()) tree gfor_fndecl_in_pack;
 extern GTY(()) tree gfor_fndecl_in_unpack;
+extern GTY(()) tree gfor_fndecl_cfi_to_gfc;
+extern GTY(()) tree gfor_fndecl_gfc_to_cfi;
 extern GTY(()) tree gfor_fndecl_associated;
 extern GTY(()) tree gfor_fndecl_system_clock4;
 extern GTY(()) tree gfor_fndecl_system_clock8;
@@ -907,6 +910,7 @@ extern GTY(()) tree gfor_fndecl_size1;
 extern GTY(()) tree gfor_fndecl_iargc;
 extern GTY(()) tree gfor_fndecl_kill;
 extern GTY(()) tree gfor_fndecl_kill_sub;
+extern GTY(()) tree gfor_fndecl_is_contiguous0;
 
 /* Implemented in Fortran.  */
 extern GTY(()) tree gfor_fndecl_sc_kind;

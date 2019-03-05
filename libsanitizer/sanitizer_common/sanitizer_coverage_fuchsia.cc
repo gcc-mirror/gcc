@@ -1,9 +1,9 @@
-//===-- sanitizer_coverage_fuchsia.cc ------------------------------------===//
+//===-- sanitizer_coverage_fuchsia.cc -------------------------------------===//
 //
 // This file is distributed under the University of Illinois Open Source
 // License. See LICENSE.TXT for details.
 //
-//===---------------------------------------------------------------------===//
+//===----------------------------------------------------------------------===//
 //
 // Sanitizer Coverage Controller for Trace PC Guard, Fuchsia-specific version.
 //
@@ -47,7 +47,7 @@ constexpr const char kSancovSinkName[] = "sancov";
 
 // Collects trace-pc guard coverage.
 // This class relies on zero-initialization.
-class TracePcGuardController {
+class TracePcGuardController final {
  public:
   // For each PC location being tracked, there is a u32 reserved in global
   // data called the "guard".  At startup, we assign each guard slot a
@@ -111,11 +111,11 @@ class TracePcGuardController {
   // We can always spare the 32G of address space.
   static constexpr size_t MappingSize = sizeof(uptr) << 32;
 
-  BlockingMutex setup_lock_;
-  uptr *array_;
-  u32 next_index_;
-  zx_handle_t vmo_;
-  char vmo_name_[ZX_MAX_NAME_LEN];
+  BlockingMutex setup_lock_ = BlockingMutex(LINKER_INITIALIZED);
+  uptr *array_ = nullptr;
+  u32 next_index_ = 0;
+  zx_handle_t vmo_ = {};
+  char vmo_name_[ZX_MAX_NAME_LEN] = {};
 
   size_t DataSize() const { return next_index_ * sizeof(uintptr_t); }
 
@@ -145,8 +145,8 @@ class TracePcGuardController {
       // any multi-thread synchronization issues with that.
       uintptr_t mapping;
       status =
-          _zx_vmar_map(_zx_vmar_root_self(), 0, vmo_, 0, MappingSize,
-                       ZX_VM_FLAG_PERM_READ | ZX_VM_FLAG_PERM_WRITE, &mapping);
+          _zx_vmar_map(_zx_vmar_root_self(), ZX_VM_PERM_READ | ZX_VM_PERM_WRITE,
+                       0, vmo_, 0, MappingSize, &mapping);
       CHECK_EQ(status, ZX_OK);
 
       // Hereafter other threads are free to start storing into

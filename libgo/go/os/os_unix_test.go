@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin dragonfly freebsd linux netbsd openbsd solaris
+// +build aix darwin dragonfly freebsd hurd linux netbsd openbsd solaris
 
 package os_test
 
@@ -21,6 +21,9 @@ import (
 func init() {
 	isReadonlyError = func(err error) bool { return err == syscall.EROFS }
 }
+
+// For TestRawConnReadWrite.
+type syscallDescriptor = int
 
 func checkUidGid(t *testing.T, path string, uid, gid int) {
 	dir, err := Lstat(path)
@@ -234,7 +237,7 @@ func newFileTest(t *testing.T, blocking bool) {
 	}
 	defer syscall.Close(p[1])
 
-	// Set the the read-side to non-blocking.
+	// Set the read-side to non-blocking.
 	if !blocking {
 		if err := syscall.SetNonblock(p[0], true); err != nil {
 			syscall.Close(p[0])

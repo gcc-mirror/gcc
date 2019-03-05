@@ -1,5 +1,5 @@
 /* Scalar evolution detector.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <s.pop@laposte.net>
 
 This file is part of GCC.
@@ -257,7 +257,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "target.h"
 #include "rtl.h"
+#include "optabs-query.h"
 #include "tree.h"
 #include "gimple.h"
 #include "ssa.h"
@@ -282,6 +284,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "tree-into-ssa.h"
 #include "builtins.h"
+#include "case-cfn-macros.h"
 
 static tree analyze_scalar_evolution_1 (struct loop *, tree);
 static tree analyze_scalar_evolution_for_address_of (struct loop *loop,
@@ -376,6 +379,37 @@ find_var_scev_info (basic_block instantiated_below, tree var)
 
   return &res->chrec;
 }
+
+
+/* Hashtable helpers for a temporary hash-table used when
+   analyzing a scalar evolution, instantiating a CHREC or
+   resolving mixers.  */
+
+struct instantiate_cache_type
+{
+  htab_t map;
+  vec<scev_info_str> entries;
+
+  instantiate_cache_type () : map (NULL), entries (vNULL) {}
+  ~instantiate_cache_type ();
+  tree get (unsigned slot) { return entries[slot].chrec; }
+  void set (unsigned slot, tree chrec) { entries[slot].chrec = chrec; }
+};
+
+instantiate_cache_type::~instantiate_cache_type ()
+{
+  if (map != NULL)
+    {
+      htab_delete (map);
+      entries.release ();
+    }
+}
+
+/* Cache to avoid infinite recursion when instantiating an SSA name.
+   Live during the outermost analyze_scalar_evolution, instantiate_scev
+   or resolve_mixers call.  */
+static instantiate_cache_type *global_cache;
+
 
 /* Return true when CHREC contains symbolic names defined in
    LOOP_NB.  */
@@ -876,7 +910,7 @@ get_loop_exit_condition (const struct loop *loop)
       gimple *stmt;
 
       stmt = last_stmt (exit_edge->src);
-      if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
+      if (gcond *cond_stmt = safe_dyn_cast <gcond *> (stmt))
 	res = cond_stmt;
     }
 
@@ -2114,7 +2148,22 @@ analyze_scalar_evolution (struct loop *loop, tree var)
 
   res = get_scalar_evolution (block_before_loop (loop), var);
   if (res == chrec_not_analyzed_yet)
-    res = analyze_scalar_evolution_1 (loop, var);
+    {
+      /* We'll recurse into instantiate_scev, avoid tearing down the
+         instantiate cache repeatedly and keep it live from here.  */
+      bool destr = false;
+      if (!global_cache)
+	{
+	  global_cache = new instantiate_cache_type;
+	  destr = true;
+	}
+      res = analyze_scalar_evolution_1 (loop, var);
+      if (destr)
+	{
+	  delete global_cache;
+	  global_cache = NULL;
+	}
+    }
 
   if (dump_file && (dump_flags & TDF_SCEV))
     fprintf (dump_file, ")\n");
@@ -2227,34 +2276,6 @@ analyze_scalar_evolution_in_loop (struct loop *wrto_loop, struct loop *use_loop,
     }
 }
 
-
-/* Hashtable helpers for a temporary hash-table used when
-   instantiating a CHREC or resolving mixers.  For this use
-   instantiated_below is always the same.  */
-
-struct instantiate_cache_type
-{
-  htab_t map;
-  vec<scev_info_str> entries;
-
-  instantiate_cache_type () : map (NULL), entries (vNULL) {}
-  ~instantiate_cache_type ();
-  tree get (unsigned slot) { return entries[slot].chrec; }
-  void set (unsigned slot, tree chrec) { entries[slot].chrec = chrec; }
-};
-
-instantiate_cache_type::~instantiate_cache_type ()
-{
-  if (map != NULL)
-    {
-      htab_delete (map);
-      entries.release ();
-    }
-}
-
-/* Cache to avoid infinite recursion when instantiating an SSA name.
-   Live during the outermost instantiate_scev or resolve_mixers call.  */
-static instantiate_cache_type *global_cache;
 
 /* Computes a hash function for database element ELT.  */
 
@@ -2559,10 +2580,18 @@ instantiate_scev_binary (edge instantiate_below,
   if (op0 == chrec_dont_know)
     return chrec_dont_know;
 
-  op1 = instantiate_scev_r (instantiate_below, evolution_loop, inner_loop,
-			    c1, fold_conversions, size_expr);
-  if (op1 == chrec_dont_know)
-    return chrec_dont_know;
+  /* While we eventually compute the same op1 if c0 == c1 the process
+     of doing this is expensive so the following short-cut prevents
+     exponential compile-time behavior.  */
+  if (c0 != c1)
+    {
+      op1 = instantiate_scev_r (instantiate_below, evolution_loop, inner_loop,
+				c1, fold_conversions, size_expr);
+      if (op1 == chrec_dont_know)
+	return chrec_dont_know;
+    }
+  else
+    op1 = op0;
 
   if (c0 != op0
       || c1 != op1)
@@ -3500,6 +3529,36 @@ expression_expensive_p (tree expr)
     {
       tree arg;
       call_expr_arg_iterator iter;
+      /* Even though is_inexpensive_builtin might say true, we will get a
+	 library call for popcount when backend does not have an instruction
+	 to do so.  We consider this to be expenseive and generate
+	 __builtin_popcount only when backend defines it.  */
+      combined_fn cfn = get_call_combined_fn (expr);
+      switch (cfn)
+	{
+	CASE_CFN_POPCOUNT:
+	  /* Check if opcode for popcount is available in the mode required.  */
+	  if (optab_handler (popcount_optab,
+			     TYPE_MODE (TREE_TYPE (CALL_EXPR_ARG (expr, 0))))
+	      == CODE_FOR_nothing)
+	    {
+	      machine_mode mode;
+	      mode = TYPE_MODE (TREE_TYPE (CALL_EXPR_ARG (expr, 0)));
+	      scalar_int_mode int_mode;
+
+	      /* If the mode is of 2 * UNITS_PER_WORD size, we can handle
+		 double-word popcount by emitting two single-word popcount
+		 instructions.  */
+	      if (is_a <scalar_int_mode> (mode, &int_mode)
+		  && GET_MODE_SIZE (int_mode) == 2 * UNITS_PER_WORD
+		  && (optab_handler (popcount_optab, word_mode)
+		      != CODE_FOR_nothing))
+		  break;
+	      return true;
+	    }
+	default:
+	  break;
+	}
 
       if (!is_inexpensive_builtin (get_callee_fndecl (expr)))
 	return true;
@@ -3537,20 +3596,20 @@ expression_expensive_p (tree expr)
     }
 }
 
-/* Do final value replacement for LOOP.  */
+/* Do final value replacement for LOOP, return true if we did anything.  */
 
-void
+bool
 final_value_replacement_loop (struct loop *loop)
 {
   /* If we do not know exact number of iterations of the loop, we cannot
      replace the final value.  */
   edge exit = single_exit (loop);
   if (!exit)
-    return;
+    return false;
 
   tree niter = number_of_latch_executions (loop);
   if (niter == chrec_dont_know)
-    return;
+    return false;
 
   /* Ensure that it is possible to insert new statements somewhere.  */
   if (!single_pred_p (exit->dest))
@@ -3563,6 +3622,7 @@ final_value_replacement_loop (struct loop *loop)
     = superloop_at_depth (loop,
 			  loop_depth (exit->dest->loop_father) + 1);
 
+  bool any = false;
   gphi_iterator psi;
   for (psi = gsi_start_phis (exit->dest); !gsi_end_p (psi); )
     {
@@ -3620,6 +3680,7 @@ final_value_replacement_loop (struct loop *loop)
 	  fprintf (dump_file, " with expr: ");
 	  print_generic_expr (dump_file, def);
 	}
+      any = true;
       def = unshare_expr (def);
       remove_phi_node (&psi, false);
 
@@ -3662,100 +3723,8 @@ final_value_replacement_loop (struct loop *loop)
 	  fprintf (dump_file, "\n");
 	}
     }
-}
 
-/* Replace ssa names for that scev can prove they are constant by the
-   appropriate constants.  Also perform final value replacement in loops,
-   in case the replacement expressions are cheap.
-
-   We only consider SSA names defined by phi nodes; rest is left to the
-   ordinary constant propagation pass.  */
-
-unsigned int
-scev_const_prop (void)
-{
-  basic_block bb;
-  tree name, type, ev;
-  gphi *phi;
-  struct loop *loop;
-  bitmap ssa_names_to_remove = NULL;
-  unsigned i;
-  gphi_iterator psi;
-
-  if (number_of_loops (cfun) <= 1)
-    return 0;
-
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      loop = bb->loop_father;
-
-      for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
-	{
-	  phi = psi.phi ();
-	  name = PHI_RESULT (phi);
-
-	  if (virtual_operand_p (name))
-	    continue;
-
-	  type = TREE_TYPE (name);
-
-	  if (!POINTER_TYPE_P (type)
-	      && !INTEGRAL_TYPE_P (type))
-	    continue;
-
-	  ev = resolve_mixers (loop, analyze_scalar_evolution (loop, name),
-			       NULL);
-	  if (!is_gimple_min_invariant (ev)
-	      || !may_propagate_copy (name, ev))
-	    continue;
-
-	  /* Replace the uses of the name.  */
-	  if (name != ev)
-	    {
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		{
-		  fprintf (dump_file, "Replacing uses of: ");
-		  print_generic_expr (dump_file, name);
-		  fprintf (dump_file, " with: ");
-		  print_generic_expr (dump_file, ev);
-		  fprintf (dump_file, "\n");
-		}
-	      replace_uses_by (name, ev);
-	    }
-
-	  if (!ssa_names_to_remove)
-	    ssa_names_to_remove = BITMAP_ALLOC (NULL);
-	  bitmap_set_bit (ssa_names_to_remove, SSA_NAME_VERSION (name));
-	}
-    }
-
-  /* Remove the ssa names that were replaced by constants.  We do not
-     remove them directly in the previous cycle, since this
-     invalidates scev cache.  */
-  if (ssa_names_to_remove)
-    {
-      bitmap_iterator bi;
-
-      EXECUTE_IF_SET_IN_BITMAP (ssa_names_to_remove, 0, i, bi)
-	{
-	  gimple_stmt_iterator psi;
-	  name = ssa_name (i);
-	  phi = as_a <gphi *> (SSA_NAME_DEF_STMT (name));
-
-	  gcc_assert (gimple_code (phi) == GIMPLE_PHI);
-	  psi = gsi_for_stmt (phi);
-	  remove_phi_node (&psi, true);
-	}
-
-      BITMAP_FREE (ssa_names_to_remove);
-      scev_reset ();
-    }
-
-  /* Now the regular final value replacement.  */
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
-    final_value_replacement_loop (loop);
-
-  return 0;
+  return any;
 }
 
 #include "gt-tree-scalar-evolution.h"

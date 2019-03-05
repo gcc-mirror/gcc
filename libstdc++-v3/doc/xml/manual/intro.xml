@@ -43,6 +43,10 @@
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="status_cxx2017.xml">
     </xi:include>
 
+    <!-- Section 01.4 : Status C++ 2020 -->
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="status_cxx2020.xml">
+    </xi:include>
+
     <!-- Section 01.5 : Status C++ TR1 -->
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="status_cxxtr1.xml">
     </xi:include>
@@ -1116,11 +1120,34 @@ requirements of the license of GCC.
     ill-formed.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr2537"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2537">2537</link>:
+       <emphasis>Requirements on the first template parameter of container adaptors
+       </emphasis>
+    </term>
+    <listitem><para>Add static assertions to enforce the requirement.
+    </para></listitem></varlistentry>
+
+    <varlistentry xml:id="manual.bugs.dr2566"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2566">2566</link>:
+       <emphasis>Constructors for <code>priority_queue</code> taking allocators
+	 should call <code>make_heap</code>
+       </emphasis>
+    </term>
+    <listitem><para>Call <code>make_heap</code>.
+    </para></listitem></varlistentry>
+
     <varlistentry xml:id="manual.bugs.dr2583"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2583">2583</link>:
        <emphasis>There is no way to supply an allocator for <code>basic_string(str, pos)</code>
        </emphasis>
     </term>
-    <listitem><para>Add new constructor
+    <listitem><para>Add new constructor.
+    </para></listitem></varlistentry>
+
+    <varlistentry xml:id="manual.bugs.dr2586"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2586">2586</link>:
+       <emphasis>Wrong value category used in <code>scoped_allocator_adaptor::construct()</code>
+       </emphasis>
+    </term>
+    <listitem><para>Change internal helper for uses-allocator construction
+      to always check using const lvalue allocators.
     </para></listitem></varlistentry>
 
     <varlistentry xml:id="manual.bugs.dr2684"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2684">2684</link>:
@@ -1128,6 +1155,17 @@ requirements of the license of GCC.
        </emphasis>
     </term>
     <listitem><para>Define the <code>value_compare</code> typedef.
+    </para></listitem></varlistentry>
+
+    <varlistentry xml:id="manual.bugs.dr2735"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2735">2735</link>:
+       <emphasis><code>std::abs(short)</code>,
+	 <code>std::abs(signed char)</code> and others should return
+	 <code>int</code> instead of <code>double</code> in order to be
+	 compatible with C++98 and C
+       </emphasis>
+    </term>
+    <listitem><para>Resolved by the changes for
+      <link linkend="manual.bugs.dr2192">2192</link>.
     </para></listitem></varlistentry>
 
     <varlistentry xml:id="manual.bugs.dr2770"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2770">2770</link>:
@@ -1192,6 +1230,13 @@ requirements of the license of GCC.
        </emphasis>
     </term>
     <listitem><para>Change constructors to constrained templates.
+    </para></listitem></varlistentry>
+
+    <varlistentry xml:id="manual.bugs.dr3096"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#3096">3096</link>:
+       <emphasis><code>path::lexically_relative</code> is confused by trailing slashes
+       </emphasis>
+    </term>
+    <listitem><para>Implement the fix for trailing slashes.
     </para></listitem></varlistentry>
 
   </variablelist>

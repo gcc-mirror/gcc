@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to 1 if you have the `aligned_alloc' function. */
+#undef HAVE_ALIGNED_ALLOC
+
 /* Define to 1 if the target assembler supports .symver directive. */
 #undef HAVE_AS_SYMVER_DIRECTIVE
 
@@ -33,8 +36,14 @@
 /* Define to 1 if you have the `getgid' function. */
 #undef HAVE_GETGID
 
+/* Define if gethostname is supported. */
+#undef HAVE_GETHOSTNAME
+
 /* Define to 1 if you have the `getloadavg' function. */
 #undef HAVE_GETLOADAVG
+
+/* Define if getpid is supported. */
+#undef HAVE_GETPID
 
 /* Define to 1 if you have the `getuid' function. */
 #undef HAVE_GETUID
@@ -45,8 +54,14 @@
 /* Define to 1 if you have the `dl' library (-ldl). */
 #undef HAVE_LIBDL
 
+/* Define to 1 if you have the `memalign' function. */
+#undef HAVE_MEMALIGN
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the `posix_memalign' function. */
+#undef HAVE_POSIX_MEMALIGN
 
 /* Define if pthread_{,attr_}{g,s}etaffinity_np is supported. */
 #undef HAVE_PTHREAD_AFFINITY_NP
@@ -103,8 +118,14 @@
 /* Define to 1 if the target supports thread-local storage. */
 #undef HAVE_TLS
 
+/* Define if uname is supported and struct utsname has nodename field. */
+#undef HAVE_UNAME
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the `_aligned_malloc' function. */
+#undef HAVE__ALIGNED_MALLOC
 
 /* Define to 1 if you have the `__secure_getenv' function. */
 #undef HAVE___SECURE_GETENV
@@ -125,8 +146,8 @@
    */
 #undef LT_OBJDIR
 
-/* Define to offload targets, separated by commas. */
-#undef OFFLOAD_TARGETS
+/* Define to offload plugins, separated by commas. */
+#undef OFFLOAD_PLUGINS
 
 /* Name of package */
 #undef PACKAGE

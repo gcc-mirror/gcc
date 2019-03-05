@@ -1,6 +1,6 @@
 /* This file contains the definitions for timing variables used to
    measure run-time performance of the compiler.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
@@ -234,6 +234,7 @@ DEFTIMEVAR (TV_DSE1                  , "dead store elim1")
 DEFTIMEVAR (TV_DSE2                  , "dead store elim2")
 DEFTIMEVAR (TV_LOOP                  , "loop analysis")
 DEFTIMEVAR (TV_LOOP_INIT	     , "loop init")
+DEFTIMEVAR (TV_LOOP_VERSIONING	     , "loop versioning")
 DEFTIMEVAR (TV_LOOP_MOVE_INVARIANTS  , "loop invariant motion")
 DEFTIMEVAR (TV_LOOP_UNROLL           , "loop unrolling")
 DEFTIMEVAR (TV_LOOP_DOLOOP           , "loop doloop")

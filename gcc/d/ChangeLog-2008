@@ -1,0 +1,331 @@
+2008-12-12  Arthur Loiret  <arthur.loiret@u-psud.fr>
+
+	Bugzilla 929:
+
+	* dmd/mtype.c: Provide isZeroInit() overload in TypeAArray that
+	returns TRUE.
+	* dmd/mtype.h: Add prototype for TypeAArray::isZeroInit().
+
+	* dmd2/mtype.c, dmd2/mtype.h: Ditto.
+
+2008-07-21  David Friedman  <David Friedman>
+
+	* dmd/root.c, dmd2/root.c: Fix earlier patching error.
+
+	* phobos/config/x3.c, phobos2/config/x3.c: Fix problem when
+	building under MSYS.
+
+	* config-lang.in: Remove lang_requires.
+
+2008-07-20  David Friedman  <David Friedman>
+
+	* dmd/expression.c, dmd2/expression.c: Make integer conversion
+	fix work for other hosts/targets.
+
+2008-07-20  Arthur Loiret  <arthur.loiret@u-psud.fr>
+
+	* dmd/expression.c: Fix integer conversion routines on x86_64.
+	Patch from downs <default_357-line@yahoo.de>, thanks!
+	* dmd2/expression.c: Likewise.
+
+	* config-lang.in: Add lang_requires="c c++".
+
+2008-07-19  David Friedman  <David Friedman>
+
+	* patches/patch-gcc-4.0.x, patches/patch-gcc-4.1.x: Fix infinite
+	loop bug in patch.
+	* patches/patch-apple-gcc-4.0.x: Ditto.
+
+	* d-lang.cc: Do not assume D_OS_VERSYM is defined.
+	Handle TARGET_xxx_CPP_BUILTINS macros for more targets.
+
+2008-07-17  David Friedman  <dvdfrdmn@users.sf.net>
+
+        * dmd-script: Append an exe suffix to executables when the
+        target is Windows.
+
+	* phobos/gcc/deh.d, phobos2/gcc/deh.d: Fix for sjlj exceptions.
+
+2008-06-16  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-decls.cc: Correct logic for output constanting vars for V1.
+
+2008-06-01  David Friedman  <dvdfrdmn@users.sf.net>
+
+	Merge DMD.1.30 and 2.014
+
+	* dmd-script: Implement -man, -lib and single-object features.
+
+	* phobos2/Makefile.am: add bigint
+
+	* phobos2/config/{ldfuncs,ldfuncs-darwin,ldfuncs-ppclinux,noldfuncs},
+	Merge nanl change from std/c/math.d
+
+	* phobos2/gcc/support.d: Merge std/c/math.d changes.
+
+	* d-objfile.cc (obj_append): Implement.
+	* phobos2/std/c/unix/unix.d: Merge linux.d and socket.d changes
+
+	* d-glue.cc, d-irstate.cc, d-lang.cc: Update
+
+	* dmd/..., dmd2/..., phbobos/..., phobos2/...: Merge
+
+2008-05-26  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* asmstmt.cc, d-decls.cc, d-glue.cc, d-misc.c, d-objfile.{cc, h}:
+	Fix for -combine compilation.  Remove fileContext global and clean
+	up generation of unique symbol names.
+
+	* phobos/internal/object.d: Correct merge error
+
+	----
+
+	* dmd-script, lang.opt, d-lang.cc, : support -ignore
+
+	Merge DMD 1.029 and 2.013
+
+	* phobos2/std/perf.d: use std.c.unix.unix
+
+2008-05-22  Arthur Loiret  <arthur.loiret@u-psud.fr>
+
+	* target-ver-syms.sh: Add missing CPUs and fix
+	d_cpu_versym/d_cpu_versym64 for each.
+
+	* d-lang.cc: Fix build on non biarched 64-bit archs (alpha, ia64, ...)
+	and fix 64-bit cpu detection.
+
+	* Move patch-* to patches/
+	* setup-gcc.sh: Update.
+
+2008-05-10  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* lang-specs.h: Support a "cc1d" spec. (Bugzilla 2068)
+
+	Merge DMD 1.028 and 2.012
+
+	* d-codegen.{h,cc}: Add postblitting array libcalls.
+
+	* phobos2/internal/arrayassign.d
+	(_d_arraysetassign, _d_arraysetctor): Use size_t.
+
+	* d-glue.cc (AssignExp::toElem): Postblit-aware code
+
+	* phobos2/Makefile.am: Add arrayssign.d. Remove math2.d.
+
+	* dmd/..., dmd2/..., phbobos/..., phobos2/...: Merge
+
+2008-05-03  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-dmd-gcc.h, d-glue.cc, dmd*/toobj.c: Cleanup: Remove unused
+	d_gcc_aggregate_dtors.
+
+2008-05-02  David Friedman  <dvdfrdmn@users.sf.net>
+
+	Merge DMD 1.027 and 2.011
+
+	* termios.d: Point to std.c.unix.unix.  Leave original
+	termios.d as termios.d.orig-dmd
+
+	* asmstsmt.cc: Implement blockExit
+
+	* phobos2/config/unix.x3: Add termios stuff
+
+	* phobos2/std/c/unix/unix.d: Merge new funcs from std.c.linux.d
+
+	* d-objfile.cc: Implement stub obj_startaddress
+
+	* d-glue.cc (ForStatement::toIR): condition may be NULL
+	(DeleteExp::toIR): Use libcalls for interfaces
+
+	* dmd*/clone.c, dmd*/e2ir.c: New files.
+
+	* Make-lang.in: Add new clone.c
+
+	* d-codegen.{h, cc}, d-glue.cc: Use _d_callinterfacefinalizer.
+	Also use _d_delinterface instead of casting.
+
+	* dmd/..., dmd2/..., phbobos/..., phobos2/...: Merge
+
+2008-04-27  David Friedman  <dvdfrdmn@users.sf.net>
+
+	Merge DMD 1.026 and 2.010
+
+	* dmd/..., dmd2/..., phbobos/..., phobos2/...: Merge
+
+	---
+
+	* d-lang.cc (d_write_global_declarations): Make earlier change
+	regarding cgraph_optimize only apply to 4.0.x.
+
+	---
+
+	* d-decls.cc (VarDeclartion::toSymbol): Change for
+	V2 STCmanifest.  Make more constant vars have
+	static storage (instead of making CONST_DECLs) in
+	both V1 and V2.
+
+	* dmd2/constfold.c (Cmp): Compare wchar	and dchar
+	strings portably.
+
+	* asmstmt.cc (ExtAsmStatement::semantic): Heuristic
+	for evaluating operands:  If an input operand, evaluate.
+
+	* d-asm-i386.h: Make previous change apply to V1.
+
+	* d-glue.cc (TypeEnum::toCtype): Update.
+
+	Phobos changes (applies to V2 Phobos as well):
+
+	* phobos/Makefile.am, phobos/configure.in:
+	Deal with strerror_r portability.
+
+	* phobos/Makefile.in, phobos/configure, phobos/config.h.in:
+	Updated.
+
+	* phobos/gcc/cbridge_strerror.c: New file.
+
+	* phobos/std/c/string.d: Replace non-portable strerror_r with
+	_d_gnu_cbridge_strerror.
+
+	* phobos/std/file.d, phobos/std/loader.d, phobos/std/process.d,
+	phobos/std/socket.d, phobos/std/stdio.d: Use
+	_d_gnu_cbridge_strerror.
+
+	Merge DMD 2.009:
+
+	* dmd2/..., phobos2/...: Merge.
+
+	Merge DMD 1.025:
+
+	* dmd/..., phobos/...: Merge.
+
+2008-04-25  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* asmstmt.cc, d-asm-i386.h: Handle some other cases
+	for constant floating point operands.
+
+2008-04-19  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* dmd/toobj.c, dmd2/toobj.c (EnumDeclaration::toObjFile):
+	Output initializer correctly.
+
+	* d-decls.cc (EnumDeclaration::toInitializer): Correctly
+	set up initializer symbol. (Bugzilla 1746)
+
+2008-04-17  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* dmd/toobj.c (InterfaceDeclaration::toObjFile): Fix error.
+	(Bugzilla 1844)
+
+2008-04-16  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-codegen.{h, cc}: Clean up nested function / nested class /
+	closure code.
+
+	* phobos/std/c/stdlib.d, phobos2/...: Remove comment that hides
+	atof. (Bugzilla 1888)
+
+2008-03-11  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-glue.cc: cleanup
+
+	* dmd/expression.c (DotVarExp::semantic): Apply fix from dmd2/
+
+	* dmd2/expression.c (DotVarExp::semantic): Move fix to
+	better location.
+
+2008-03-09  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* dmd2/func.c (FuncDeclaration::needsClosure): Closures fix:
+	Change test from isVirtual to isThis.
+
+	* dmd2/expression.c (DotVarExp::semantic): Note change from DMD.
+
+	----
+
+	* patch-build_gcc-5465: Correctly build driver-driver
+
+	* phobos*/Makefile.am (MAIN_OBJS): Add std/cover.o
+
+	* phobos2/std/file.d: use 'mkdir -p' in unittest
+
+	* d-builtins2.cc: Fixes for pointer-to-function types (for V2)
+
+	* d-codegen.cc: Add _d_allocmemory libcall.
+	(emitLocalVar): Rework.
+	(var): New function to handle static-frame/closure variables
+	(convertTo): Use typesSame instead of typesCompatible
+	(assignValue): New function to handle Exp(v=value) vs. Exp(value)
+	(getFrameForFunction, getFrameForNestedClass): New interface
+	to get frames for nested functions.
+	(functionNeedsChain): Return false for nested functions that
+	take closures.
+
+	* d-decls.cc: Changes for const/invariant/STCinit
+
+	* d-glue.cc: Use new interface for nested functions.  Use
+	IRState::var instead of v->toSymbol()->Stree.  Create
+	closures.
+
+	* d-lang.cc: Implement CONVERT_PARM_FOR_INLINING hook
+
+	* d-objfile.cc: Add case for closure-using function when
+	setting the link-once attribute.
+
+	* package/simple.sh: install .../include/d2
+
+	* patch-build_gcc-4.0, patch-build_gcc-5465: Support D 2.0
+	includes and libraries.
+
+	* phobos2/std/bitmanip.d: Apply previous bitarray.d changes.
+
+	* phobos*/std/typeinfo/ti_ptr.d (getHash): Cast to hash_t.
+
+	* d-decls.cc (VarDeclaration::toSymbol): For D 2.0, use
+	isInvariant() and STCinit as criteria for making CONST_DECLs and
+	setting TREE_READONLY.
+
+	* phobos2/std/c/linux/linux.d: Do not import std.c.dirent.
+
+	* phobos2/std/c/dirent.d: Deprecated std.c.dirent.
+
+	* phobos2/std/c/unix/unix.d: Move dirent/DIR routines here.
+
+	* phobos*/std/c/darwin/ldblcompat.d: declare constants as 'string'
+
+	Merge DMD 2.008:
+
+	* dmd2/..., phobos2/...: Merge.
+
+	Merge DMD 1.024:
+
+	* phobos*/config/unix.x3: ensure MSG_NOSIGNAL is defined
+
+	* dmd/..., phobos/...: Merge.
+
+	------
+
+	* patch-apple-gcc-4.0.x, patch-apple-gcc-5465: Include patch
+	for SRA pass like the other 4.x patches.
+
+	* d-codegen.cc (convertTo): Ensure pointers are cast to an
+	unsigned type.
+
+	* d-objfile.cc (dt2tree_list_of_elems): Always generate a
+	CONSTRUCTOR for struct data.
+	(ObjectFile::ObjectFile): Use NULL_TREE for file context instead
+	of TRANSLATION_UNIT_DECL.
+
+	* d-lang.cc (d_write_global_declarations): Call
+	debug_hooks->global_decl before cgraph_optimize so that nested
+	class functions do not get passed to dwarf2out before the
+	outer class functions.
+
+	* Rename patch-build_gcc-4.0 to patch-build_gcc-4.0.x
+
+
+Copyright (C) 2008 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

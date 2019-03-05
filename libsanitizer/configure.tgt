@@ -43,6 +43,8 @@ case "${target}" in
 	;;
   s390*-*-linux*)
 	;;
+  sparc*-*-solaris2.11*)
+	;;
   arm*-*-linux*)
 	;;
   mips*64*-*-linux*)
@@ -60,6 +62,8 @@ case "${target}" in
 	;;
   x86_64-*-darwin[1]* | i?86-*-darwin[1]*)
 	TSAN_SUPPORTED=no
+	;;
+  x86_64-*-solaris2.11* | i?86-*-solaris2.11*)
 	;;
   *)
 	UNSUPPORTED=1

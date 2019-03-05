@@ -143,7 +143,7 @@ struct Sx23 {
 
 struct Sx24 {
   struct S;
-  S a_x [];                 // { dg-error "incomplete type" }
+  S a_x [];                 // { dg-error "5:field .a_x. has incomplete type" }
 };
 
 struct Sx25 {

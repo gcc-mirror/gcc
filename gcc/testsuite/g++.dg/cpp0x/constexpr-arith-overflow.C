@@ -27,6 +27,7 @@
 
 #define Assert(expr) static_assert ((expr), #expr)
 
+#if __cplusplus >= 201402L
 template <class T>
 constexpr T add (T x, T y, T z = T ())
 {
@@ -48,6 +49,11 @@ constexpr T mul (T x, T y, T z = T ())
 #define TEST_ADD(T, x, y, z) Assert (z == add<T>(x, y))
 #define TEST_SUB(T, x, y, z) Assert (z == sub<T>(x, y))
 #define TEST_MUL(T, x, y, z) Assert (z == mul<T>(x, y))
+#else
+#define TEST_ADD(T, x, y, z) Assert (true)
+#define TEST_SUB(T, x, y, z) Assert (true)
+#define TEST_MUL(T, x, y, z) Assert (true)
+#endif
 
 
 TEST_ADD (signed char,  0,         0,         0);

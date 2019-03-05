@@ -120,4 +120,4 @@ void qq (auto);		       // { dg-error "auto" "" { target { ! concepts } } }
 void qr (auto*);	       // { dg-error "auto" "" { target { ! concepts } } }
 
 // PR c++/46145
-typedef auto autot;		// { dg-error "auto" }
+typedef auto autot;		// { dg-error "9:typedef declared .auto." }

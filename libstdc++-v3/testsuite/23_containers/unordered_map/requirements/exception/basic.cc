@@ -3,7 +3,7 @@
 
 // 2009-11-30  Benjamin Kosnik  <benjamin@redhat.com>
 
-// Copyright (C) 2009-2018 Free Software Foundation, Inc.
+// Copyright (C) 2009-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,8 @@ void
 value()
 {
   typedef __gnu_cxx::throw_value_limit value_type;
-  typedef __gnu_cxx::throw_allocator_limit<value_type> allocator_type;
+  typedef std::pair<const value_type, value_type> pair_type;
+  typedef __gnu_cxx::throw_allocator_limit<pair_type> allocator_type;
   typedef std::hash<value_type> hash_type;
   typedef std::equal_to<value_type> pred_type;
   typedef std::unordered_map<value_type, value_type, hash_type, pred_type, allocator_type> test_type;

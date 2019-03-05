@@ -1,5 +1,5 @@
 /* Definitions of target machine for Visium.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by C.Nettleton, J.P.Parkes and P.Garbett.
 
    This file is part of GCC.
@@ -1045,16 +1045,20 @@ struct visium_args
 
 	moviu	r9,%u FUNCTION
 	movil	r9,%l FUNCTION
+	[nop]
 	moviu	r20,%u STATIC
 	bra	tr,r9,r0
-	movil	r20,%l STATIC
+	 movil	r20,%l STATIC
 
     A difficulty is setting the correct instruction parity at run time.
 
 
     TRAMPOLINE_SIZE 
     A C expression for the size in bytes of the trampoline, as an integer. */
-#define TRAMPOLINE_SIZE 20
+#define TRAMPOLINE_SIZE (visium_cpu == PROCESSOR_GR6 ? 24 : 20)
+
+/* Alignment required for trampolines, in bits.  */
+#define TRAMPOLINE_ALIGNMENT (visium_cpu == PROCESSOR_GR6 ? 64 : 32)
 
 /* Implicit calls to library routines
 

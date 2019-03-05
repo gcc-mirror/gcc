@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the DEC Alpha.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -6378,8 +6378,40 @@ alpha_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   offset = get_initialized_tmp_var (t, pre_p, NULL);
 
   indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+
   if (indirect)
-    type = build_pointer_type_for_mode (type, ptr_mode, true);
+    {
+      if (TREE_CODE (type) == COMPLEX_TYPE
+	  && targetm.calls.split_complex_arg (type))
+	{
+	  tree real_part, imag_part, real_temp;
+
+	  tree ptr_type = build_pointer_type_for_mode (TREE_TYPE (type),
+						       ptr_mode, true);
+
+	  real_part = alpha_gimplify_va_arg_1 (ptr_type, base,
+					       offset, pre_p);
+	  real_part = build_va_arg_indirect_ref (real_part);
+
+	  /* Copy the value into a new temporary, lest the formal temporary
+	     be reused out from under us.  */
+	  real_temp = get_initialized_tmp_var (real_part, pre_p, NULL);
+
+	  imag_part = alpha_gimplify_va_arg_1 (ptr_type, base,
+					       offset, pre_p);
+	  imag_part = build_va_arg_indirect_ref (imag_part);
+
+	  r = build2 (COMPLEX_EXPR, type, real_temp, imag_part);
+
+	  /* Stuff the offset temporary back into its field.  */
+	  gimplify_assign (unshare_expr (offset_field),
+			   fold_convert (TREE_TYPE (offset_field), offset),
+			   pre_p);
+	  return r;
+	}
+      else
+	type = build_pointer_type_for_mode (type, ptr_mode, true);
+    }
 
   /* Find the value.  Note that this will be a stable indirection, or
      a composite of stable indirections in the case of complex.  */

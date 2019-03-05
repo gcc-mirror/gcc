@@ -13,12 +13,12 @@
 #include "float.h"
 
 static void
-CALC (float *r, float src, int tbl)
+CALC (float *r, float dest, float src, int tbl)
 {
   switch (tbl & 0xf)
     {
     case 0:
-      *r = src;
+      *r = dest;
       break;
     case 1:
       *r = src;
@@ -81,8 +81,8 @@ TEST (void)
 
 
   float vals[2] = { -10, 10 };
-  int controls[16] = { 0x11111111,
-    0x77777777, 0x88888888, 0x99999999,
+  int controls[16] = { 0,
+    0x11111111, 0x88888888, 0x99999999,
     0xaaaaaaaa, 0xbbbbbbbb, 0xcccccccc,
     0x77777777, 0x88888888, 0x99999999,
     0xaaaaaaaa, 0xbbbbbbbb, 0xcccccccc,
@@ -101,7 +101,7 @@ TEST (void)
 	  res2.a[j] = DEFAULT_VALUE;
 	  res3.a[j] = DEFAULT_VALUE;
 
-	  CALC (&res_ref[j], s1.a[j], s2.a[j]);
+	  CALC (&res_ref[j], res1.a[j], s1.a[j], s2.a[j]);
 	}
 
       res1.x = INTRINSIC (_fixupimm_ps) (res1.x, s1.x, s2.x, 0);

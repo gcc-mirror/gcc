@@ -1,4 +1,4 @@
-  ! { dg-do "compile" }
+  ! { dg-do compile }
   ! { dg-options "-fdec-structure" }
   !
   ! Test that structures inside a common block do not require the

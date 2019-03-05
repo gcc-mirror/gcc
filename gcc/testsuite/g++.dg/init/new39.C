@@ -57,7 +57,7 @@ int
 main ()
 {
   try {
-    ::operator new(size_t(-1));
+    (void) ::operator new(size_t(-1));
     abort ();
   } catch (std::bad_alloc &) {
   }

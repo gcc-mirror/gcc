@@ -1,5 +1,5 @@
 /* Local Register Allocator (LRA) intercommunication header file.
-   Copyright (C) 2010-2018 Free Software Foundation, Inc.
+   Copyright (C) 2010-2019 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -91,10 +91,6 @@ struct lra_reg
   /* True if the pseudo should not be assigned to a stack register.  */
   bool no_stack_p;
 #endif
-  /* True if the pseudo crosses a call.	 It is setup in lra-lives.c
-     and used to check that the pseudo crossing a call did not get a
-     call used hard register.  */
-  bool call_p;
   /* Number of references and execution frequencies of the register in
      *non-debug* insns.	 */
   int nrefs, freq;
@@ -107,6 +103,8 @@ struct lra_reg
   int val;
   /* Offset from relative eliminate register to pesudo reg.  */
   poly_int64 offset;
+  /* Call instruction, if any, that may affect this psuedo reg.  */
+  rtx_insn *call_insn;
   /* These members are set up in lra-lives.c and updated in
      lra-coalesce.c.  */
   /* The biggest size mode in which each pseudo reg is referred in
@@ -288,6 +286,7 @@ typedef struct lra_insn_recog_data *lra_insn_recog_data_t;
 
 extern FILE *lra_dump_file;
 
+extern bool lra_asm_error_p;
 extern bool lra_reg_spill_p;
 
 extern HARD_REG_SET lra_no_alloc_regs;
@@ -335,7 +334,7 @@ extern void lra_create_copy (int, int, int);
 extern lra_copy_t lra_get_copy (int);
 extern bool lra_former_scratch_p (int);
 extern bool lra_former_scratch_operand_p (rtx_insn *, int);
-extern void lra_register_new_scratch_op (rtx_insn *, int);
+extern void lra_register_new_scratch_op (rtx_insn *, int, int);
 
 extern int lra_new_regno_start;
 extern int lra_constraint_new_regno_start;

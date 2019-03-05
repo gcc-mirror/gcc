@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Free Software Foundation, Inc.
+// Copyright (C) 2018-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,6 +17,7 @@
 
 // C++11 27.8.2.1  basic_stringbuf constructors  [stringbuf.cons]
 
+// { dg-options "-O0" }
 // { dg-do run { target c++11 } }
 
 #include <sstream>
@@ -29,7 +30,15 @@ void test01()
   test.operator()<std::stringbuf>();
 }
 
-int main() 
+void test02()
+{
+  // PR libstdc++/87618
+  // Compiled without optimisation to check this constructor is exported.
+  std::stringbuf sb;
+}
+
+int main()
 {
   test01();
+  test02();
 }

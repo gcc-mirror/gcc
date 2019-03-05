@@ -1,5 +1,5 @@
 /* Core data structures for the 'tree' type.
-   Copyright (C) 1989-2018 Free Software Foundation, Inc.
+   Copyright (C) 1989-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -156,7 +156,7 @@ enum built_in_class {
   BUILT_IN_NORMAL
 };
 
-/* Last marker used for LTO stremaing of built_in_class.  We can not add it
+/* Last marker used for LTO stremaing of built_in_class.  We cannot add it
    to the enum since we need the enumb to fit in 2 bits.  */
 #define BUILT_IN_LAST (BUILT_IN_NORMAL + 1)
 
@@ -258,6 +258,12 @@ enum omp_clause_code {
 		reductions.  */
   OMP_CLAUSE_REDUCTION,
 
+  /* OpenMP clause: task_reduction (operator:variable_list).  */
+  OMP_CLAUSE_TASK_REDUCTION,
+
+  /* OpenMP clause: in_reduction (operator:variable_list).  */
+  OMP_CLAUSE_IN_REDUCTION,
+
   /* OpenMP clause: copyin (variable_list).  */
   OMP_CLAUSE_COPYIN,
 
@@ -272,6 +278,9 @@ enum omp_clause_code {
 
   /* OpenMP clause: depend ({in,out,inout}:variable-list).  */
   OMP_CLAUSE_DEPEND,
+
+  /* OpenMP clause: nontemporal (variable-list).  */
+  OMP_CLAUSE_NONTEMPORAL,
 
   /* OpenMP clause: uniform (argument-list).  */
   OMP_CLAUSE_UNIFORM,
@@ -330,6 +339,9 @@ enum omp_clause_code {
 
   /* Internal clause: temporary for combined loops expansion.  */
   OMP_CLAUSE__LOOPTEMP_,
+
+  /* Internal clause: temporary for task reductions.  */
+  OMP_CLAUSE__REDUCTEMP_,
 
   /* OpenACC/OpenMP clause: if (scalar-expression).  */
   OMP_CLAUSE_IF,
@@ -491,6 +503,36 @@ enum omp_clause_default_kind {
   OMP_CLAUSE_DEFAULT_FIRSTPRIVATE,
   OMP_CLAUSE_DEFAULT_PRESENT,
   OMP_CLAUSE_DEFAULT_LAST
+};
+
+enum omp_clause_defaultmap_kind {
+  OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED,
+  OMP_CLAUSE_DEFAULTMAP_CATEGORY_SCALAR,
+  OMP_CLAUSE_DEFAULTMAP_CATEGORY_AGGREGATE,
+  OMP_CLAUSE_DEFAULTMAP_CATEGORY_ALLOCATABLE,
+  OMP_CLAUSE_DEFAULTMAP_CATEGORY_POINTER,
+  OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK = 7,
+  OMP_CLAUSE_DEFAULTMAP_ALLOC = 1 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
+  OMP_CLAUSE_DEFAULTMAP_TO = 2 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
+  OMP_CLAUSE_DEFAULTMAP_FROM = 3 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
+  OMP_CLAUSE_DEFAULTMAP_TOFROM = 4 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
+  OMP_CLAUSE_DEFAULTMAP_FIRSTPRIVATE
+    = 5 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
+  OMP_CLAUSE_DEFAULTMAP_NONE = 6 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
+  OMP_CLAUSE_DEFAULTMAP_DEFAULT
+    = 7 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
+  OMP_CLAUSE_DEFAULTMAP_MASK = 7 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1)
+};
+
+/* memory-order-clause on OpenMP atomic/flush constructs or
+   argument of atomic_default_mem_order clause.  */
+enum omp_memory_order {
+  OMP_MEMORY_ORDER_UNSPECIFIED,
+  OMP_MEMORY_ORDER_RELAXED,
+  OMP_MEMORY_ORDER_ACQUIRE,
+  OMP_MEMORY_ORDER_RELEASE,
+  OMP_MEMORY_ORDER_ACQ_REL,
+  OMP_MEMORY_ORDER_SEQ_CST
 };
 
 /* There is a TYPE_QUAL value for each type qualifier.  They can be
@@ -983,11 +1025,16 @@ struct GTY(()) tree_base {
     /* Internal function code.  */
     enum internal_fn ifn;
 
+    /* OMP_ATOMIC* memory order.  */
+    enum omp_memory_order omp_atomic_memory_order;
+
     /* The following two fields are used for MEM_REF and TARGET_MEM_REF
        expression trees and specify known data non-dependences.  For
        two memory references in a function they are known to not
        alias if dependence_info.clique are equal and dependence_info.base
-       are distinct.  */
+       are distinct.  Clique number zero means there is no information,
+       clique number one is populated from function global information
+       and thus needs no remapping on transforms like loop unrolling.  */
     struct {
       unsigned short clique;
       unsigned short base;
@@ -1095,7 +1142,7 @@ struct GTY(()) tree_base {
 	   OMP_CLAUSE_MAP
 
        OMP_CLAUSE_REDUCTION_OMP_ORIG_REF in
-	   OMP_CLAUSE_REDUCTION
+	   OMP_CLAUSE_{,TASK_,IN_}REDUCTION
 
        TRANSACTION_EXPR_RELAXED in
 	   TRANSACTION_EXPR
@@ -1123,9 +1170,6 @@ struct GTY(()) tree_base {
        OMP_PARALLEL_COMBINED in
            OMP_PARALLEL
 
-       OMP_ATOMIC_SEQ_CST in
-	   OMP_ATOMIC*
-
        OMP_CLAUSE_PRIVATE_OUTER_REF in
 	   OMP_CLAUSE_PRIVATE
 
@@ -1150,6 +1194,9 @@ struct GTY(()) tree_base {
 
        OMP_CLAUSE_LINEAR_VARIABLE_STRIDE in
 	   OMP_CLAUSE_LINEAR
+
+       ASM_INLINE_P in
+	   ASM_EXPR
 
    side_effects_flag:
 
@@ -1373,8 +1420,10 @@ enum omp_clause_depend_kind
   OMP_CLAUSE_DEPEND_IN,
   OMP_CLAUSE_DEPEND_OUT,
   OMP_CLAUSE_DEPEND_INOUT,
+  OMP_CLAUSE_DEPEND_MUTEXINOUTSET,
   OMP_CLAUSE_DEPEND_SOURCE,
   OMP_CLAUSE_DEPEND_SINK,
+  OMP_CLAUSE_DEPEND_DEPOBJ,
   OMP_CLAUSE_DEPEND_LAST
 };
 
@@ -1463,6 +1512,7 @@ struct GTY(()) tree_omp_clause {
     enum tree_code                 reduction_code;
     enum omp_clause_linear_kind    linear_kind;
     enum tree_code                 if_modifier;
+    enum omp_clause_defaultmap_kind defaultmap_kind;
     /* The dimension a OMP_CLAUSE__GRIDDIM_ clause of a gridified target
        construct describes.  */
     unsigned int		   dimension;

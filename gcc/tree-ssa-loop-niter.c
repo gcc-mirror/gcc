@@ -1,5 +1,5 @@
 /* Functions to determine/estimate number of iterations of a loop.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -353,7 +353,7 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
   mpz_t minm, maxm;
   basic_block bb;
   wide_int minv, maxv;
-  enum value_range_type rtype = VR_VARYING;
+  enum value_range_kind rtype = VR_VARYING;
 
   /* If the expression is a constant, we know its value exactly.  */
   if (integer_zerop (var))
@@ -1641,6 +1641,62 @@ dump_affine_iv (FILE *file, affine_iv *iv)
     }
 }
 
+/* Given exit condition IV0 CODE IV1 in TYPE, this function adjusts
+   the condition for loop-until-wrap cases.  For example:
+     (unsigned){8, -1}_loop < 10        => {0, 1} != 9
+     10 < (unsigned){0, max - 7}_loop   => {0, 1} != 8
+   Return true if condition is successfully adjusted.  */
+
+static bool
+adjust_cond_for_loop_until_wrap (tree type, affine_iv *iv0, tree_code *code,
+				 affine_iv *iv1)
+{
+  /* Only support simple cases for the moment.  */
+  if (TREE_CODE (iv0->base) != INTEGER_CST
+      || TREE_CODE (iv1->base) != INTEGER_CST)
+    return false;
+
+  tree niter_type = unsigned_type_for (type), high, low;
+  /* Case: i-- < 10.  */
+  if (integer_zerop (iv1->step))
+    {
+      /* TODO: Should handle case in which abs(step) != 1.  */
+      if (!integer_minus_onep (iv0->step))
+	return false;
+      /* Give up on infinite loop.  */
+      if (*code == LE_EXPR
+	  && tree_int_cst_equal (iv1->base, TYPE_MAX_VALUE (type)))
+	return false;
+      high = fold_build2 (PLUS_EXPR, niter_type,
+			  fold_convert (niter_type, iv0->base),
+			  build_int_cst (niter_type, 1));
+      low = fold_convert (niter_type, TYPE_MIN_VALUE (type));
+    }
+  else if (integer_zerop (iv0->step))
+    {
+      /* TODO: Should handle case in which abs(step) != 1.  */
+      if (!integer_onep (iv1->step))
+	return false;
+      /* Give up on infinite loop.  */
+      if (*code == LE_EXPR
+	  && tree_int_cst_equal (iv0->base, TYPE_MIN_VALUE (type)))
+	return false;
+      high = fold_convert (niter_type, TYPE_MAX_VALUE (type));
+      low = fold_build2 (MINUS_EXPR, niter_type,
+			 fold_convert (niter_type, iv1->base),
+			 build_int_cst (niter_type, 1));
+    }
+  else
+    gcc_unreachable ();
+
+  iv0->base = low;
+  iv0->step = fold_convert (niter_type, integer_one_node);
+  iv1->base = high;
+  iv1->step = build_int_cst (niter_type, 0);
+  *code = NE_EXPR;
+  return true;
+}
+
 /* Determine the number of iterations according to condition (for staying
    inside loop) which compares two induction variables using comparison
    operator CODE.  The induction variable on left side of the comparison
@@ -1764,24 +1820,25 @@ number_of_iterations_cond (struct loop *loop,
   if (integer_zerop (iv0->step) && integer_zerop (iv1->step))
     return false;
 
-  /* Ignore loops of while (i-- < 10) type.  */
-  if (code != NE_EXPR)
-    {
-      if (iv0->step && tree_int_cst_sign_bit (iv0->step))
-	return false;
-
-      if (!integer_zerop (iv1->step) && !tree_int_cst_sign_bit (iv1->step))
-	return false;
-    }
-
   /* If the loop exits immediately, there is nothing to do.  */
   tree tem = fold_binary (code, boolean_type_node, iv0->base, iv1->base);
   if (tem && integer_zerop (tem))
     {
+      if (!every_iteration)
+	return false;
       niter->niter = build_int_cst (unsigned_type_for (type), 0);
       niter->max = 0;
       return true;
     }
+
+  /* Handle special case loops: while (i-- < 10) and while (10 < i++) by
+     adjusting iv0, iv1 and code.  */
+  if (code != NE_EXPR
+      && (tree_int_cst_sign_bit (iv0->step)
+	  || (!integer_zerop (iv1->step)
+	      && !tree_int_cst_sign_bit (iv1->step)))
+      && !adjust_cond_for_loop_until_wrap (type, iv0, &code, iv1))
+    return false;
 
   /* OK, now we know we have a senseful loop.  Handle several cases, depending
      on what comparison operator is used.  */
@@ -1864,10 +1921,14 @@ number_of_iterations_cond (struct loop *loop,
   return ret;
 }
 
-/* Substitute NEW for OLD in EXPR and fold the result.  */
+/* Substitute NEW_TREE for OLD in EXPR and fold the result.
+   If VALUEIZE is non-NULL then OLD and NEW_TREE are ignored and instead
+   all SSA names are replaced with the result of calling the VALUEIZE
+   function with the SSA name as argument.  */
 
-static tree
-simplify_replace_tree (tree expr, tree old, tree new_tree)
+tree
+simplify_replace_tree (tree expr, tree old, tree new_tree,
+		       tree (*valueize) (tree))
 {
   unsigned i, n;
   tree ret = NULL_TREE, e, se;
@@ -1876,11 +1937,20 @@ simplify_replace_tree (tree expr, tree old, tree new_tree)
     return NULL_TREE;
 
   /* Do not bother to replace constants.  */
-  if (CONSTANT_CLASS_P (old))
+  if (CONSTANT_CLASS_P (expr))
     return expr;
 
-  if (expr == old
-      || operand_equal_p (expr, old, 0))
+  if (valueize)
+    {
+      if (TREE_CODE (expr) == SSA_NAME)
+	{
+	  new_tree = valueize (expr);
+	  if (new_tree != expr)
+	    return new_tree;
+	}
+    }
+  else if (expr == old
+	   || operand_equal_p (expr, old, 0))
     return unshare_expr (new_tree);
 
   if (!EXPR_P (expr))
@@ -1890,7 +1960,7 @@ simplify_replace_tree (tree expr, tree old, tree new_tree)
   for (i = 0; i < n; i++)
     {
       e = TREE_OPERAND (expr, i);
-      se = simplify_replace_tree (e, old, new_tree);
+      se = simplify_replace_tree (e, old, new_tree, valueize);
       if (e == se)
 	continue;
 
@@ -2589,11 +2659,9 @@ number_of_iterations_popcount (loop_p loop, edge exit,
   if (TREE_CODE (call) == INTEGER_CST)
     max = tree_to_uhwi (call);
   else
-    {
-      max = TYPE_PRECISION (TREE_TYPE (src));
-      if (adjust)
-	max = max - 1;
-    }
+    max = TYPE_PRECISION (TREE_TYPE (src));
+  if (adjust)
+    max = max - 1;
 
   niter->niter = iter;
   niter->assumptions = boolean_true_node;
@@ -2632,7 +2700,7 @@ number_of_iterations_exit (struct loop *loop, edge exit,
   if (integer_nonzerop (niter->assumptions))
     return true;
 
-  if (warn)
+  if (warn && dump_enabled_p ())
     dump_printf_loc (MSG_MISSED_OPTIMIZATION, stmt,
 		     "missed loop optimization: niters analysis ends up "
 		     "with assumptions.\n");
@@ -4439,7 +4507,7 @@ n_of_executions_at_most (gimple *stmt,
 
 	  /* By stmt_dominates_stmt_p we already know that STMT appears
 	     before NITER_BOUND->STMT.  Still need to test that the loop
-	     can not be terinated by a side effect in between.  */
+	     cannot be terinated by a side effect in between.  */
 	  for (bsi = gsi_for_stmt (stmt); gsi_stmt (bsi) != niter_bound->stmt;
 	       gsi_next (&bsi))
 	    if (gimple_has_side_effects (gsi_stmt (bsi)))
@@ -4673,7 +4741,7 @@ scev_var_range_cant_overflow (tree var, tree step, struct loop *loop)
 {
   tree type;
   wide_int minv, maxv, diff, step_wi;
-  enum value_range_type rtype;
+  enum value_range_kind rtype;
 
   if (TREE_CODE (step) != INTEGER_CST || !INTEGRAL_TYPE_P (TREE_TYPE (var)))
     return false;

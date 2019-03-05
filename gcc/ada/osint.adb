@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -786,6 +786,17 @@ package body Osint is
          return Src_Search_Directories.Table (Primary_Directory + Position);
       end if;
    end Dir_In_Src_Search_Path;
+
+   -----------------------------------------
+   -- Dump_Command_Line_Source_File_Names --
+   -----------------------------------------
+
+   procedure Dump_Command_Line_Source_File_Names is
+   begin
+      for J in 1 .. Number_Of_Files loop
+         Write_Str (File_Names (J).all & " ");
+      end loop;
+   end Dump_Command_Line_Source_File_Names;
 
    ----------------------------
    -- Dump_Source_File_Names --

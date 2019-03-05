@@ -1,5 +1,5 @@
 /* Gimple Represented as Polyhedra.
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@inria.fr>.
 
 This file is part of GCC.
@@ -210,6 +210,63 @@ print_graphite_statistics (FILE* file, vec<scop_p> scops)
     print_graphite_scop_statistics (file, scop);
 }
 
+struct seir_cache_key
+{
+  hashval_t hash;
+  int entry_dest;
+  int exit_src;
+  int loop_num;
+  tree expr;
+};
+
+struct sese_scev_hash : typed_noop_remove <seir_cache_key>
+{
+  typedef seir_cache_key value_type;
+  typedef seir_cache_key compare_type;
+  static hashval_t hash (const seir_cache_key &key) { return key.hash; }
+  static bool
+  equal (const seir_cache_key &key1, const seir_cache_key &key2)
+  {
+    return (key1.hash == key2.hash
+	    && key1.entry_dest == key2.entry_dest
+	    && key1.exit_src == key2.exit_src
+	    && key1.loop_num == key2.loop_num
+	    && operand_equal_p (key1.expr, key2.expr, 0));
+  }
+  static void mark_deleted (seir_cache_key &key) { key.expr = NULL_TREE; }
+  static void mark_empty (seir_cache_key &key) { key.entry_dest = 0; }
+  static bool is_deleted (const seir_cache_key &key) { return !key.expr; }
+  static bool is_empty (const seir_cache_key &key) { return key.entry_dest == 0; }
+};
+
+static hash_map<sese_scev_hash, tree> *seir_cache;
+
+/* Same as scalar_evolution_in_region but caches results so we avoid
+   re-computing evolutions during transform phase.  */
+
+tree
+cached_scalar_evolution_in_region (const sese_l &region, loop_p loop,
+				   tree expr)
+{
+  seir_cache_key key;
+  key.entry_dest = region.entry->dest->index;
+  key.exit_src = region.exit->src->index;
+  key.loop_num = loop->num;
+  key.expr = expr;
+  inchash::hash hstate (0);
+  hstate.add_int (key.entry_dest);
+  hstate.add_int (key.exit_src);
+  hstate.add_int (key.loop_num);
+  inchash::add_expr (key.expr, hstate);
+  key.hash = hstate.end ();
+  
+  bool existed;
+  tree &chrec = seir_cache->get_or_insert (key, &existed);
+  if (!existed)
+    chrec = scalar_evolution_in_region (region, loop, expr);
+  return chrec;
+}
+
 /* Deletes all scops in SCOPS.  */
 
 static void
@@ -385,6 +442,8 @@ graphite_transform_loops (void)
       print_loops (dump_file, 3);
     }
 
+  seir_cache = new hash_map<sese_scev_hash, tree>;
+
   calculate_dominance_info (CDI_POST_DOMINATORS);
   build_scops (&scops);
   free_dominance_info (CDI_POST_DOMINATORS);
@@ -410,7 +469,8 @@ graphite_transform_loops (void)
 	  continue;
 
 	changed = true;
-	if (graphite_regenerate_ast_isl (scop))
+	if (graphite_regenerate_ast_isl (scop)
+	    && dump_enabled_p ())
 	  {
 	    dump_user_location_t loc = find_loop_location
 	      (scops[i]->scop_info->region.entry->dest->loop_father);
@@ -418,6 +478,9 @@ graphite_transform_loops (void)
 			     "loop nest optimized\n");
 	  }
       }
+
+  delete seir_cache;
+  seir_cache = NULL;
 
   if (changed)
     {

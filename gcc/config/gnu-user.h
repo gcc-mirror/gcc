@@ -1,7 +1,7 @@
 /* Definitions for systems using, at least optionally, a GNU
    (glibc-based) userspace or other userspace with libc derived from
    glibc (e.g. uClibc) or for which similar specs are appropriate.
-   Copyright (C) 1995-2018 Free Software Foundation, Inc.
+   Copyright (C) 1995-2019 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu (hjl@lucon.org).
 
@@ -40,41 +40,29 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define CRTOFFLOADEND ""
 #endif
 
+#define GNU_USER_TARGET_CRTI "crti.o%s"
+#define GNU_USER_TARGET_CRTN "crtn.o%s"
+
 /* Provide a STARTFILE_SPEC appropriate for GNU userspace.  Here we add
    the GNU userspace magical crtbegin.o file (see crtstuff.c) which
    provides part of the support for getting C++ file-scope static
    object constructed before entering `main'.  */
 
-#if defined HAVE_LD_PIE
 #define GNU_USER_TARGET_STARTFILE_SPEC \
   "%{shared:; \
      pg|p|profile:%{static-pie:grcrt1.o%s;:gcrt1.o%s}; \
      static:crt1.o%s; \
      static-pie:rcrt1.o%s; \
      " PIE_SPEC ":Scrt1.o%s; \
-     :crt1.o%s} \
-   crti.o%s \
+     :crt1.o%s} " \
+   GNU_USER_TARGET_CRTI " \
    %{static:crtbeginT.o%s; \
      shared|static-pie|" PIE_SPEC ":crtbeginS.o%s; \
      :crtbegin.o%s} \
    %{fvtable-verify=none:%s; \
      fvtable-verify=preinit:vtv_start_preinit.o%s; \
-     fvtable-verify=std:vtv_start.o%s} \
-   " CRTOFFLOADBEGIN
-#else
-#define GNU_USER_TARGET_STARTFILE_SPEC \
-  "%{shared:; \
-     pg|p|profile:gcrt1.o%s; \
-     :crt1.o%s} \
-   crti.o%s \
-   %{static:crtbeginT.o%s; \
-     shared|pie|static-pie:crtbeginS.o%s; \
-     :crtbegin.o%s} \
-   %{fvtable-verify=none:%s; \
-     fvtable-verify=preinit:vtv_start_preinit.o%s; \
-     fvtable-verify=std:vtv_start.o%s} \
-   " CRTOFFLOADBEGIN
-#endif
+     fvtable-verify=std:vtv_start.o%s} " \
+   CRTOFFLOADBEGIN
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC GNU_USER_TARGET_STARTFILE_SPEC
 
@@ -84,27 +72,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    object constructed before entering `main', followed by a normal
    GNU userspace "finalizer" file, `crtn.o'.  */
 
-#if defined HAVE_LD_PIE
 #define GNU_USER_TARGET_ENDFILE_SPEC \
   "%{fvtable-verify=none:%s; \
      fvtable-verify=preinit:vtv_end_preinit.o%s; \
      fvtable-verify=std:vtv_end.o%s} \
    %{static:crtend.o%s; \
      shared|static-pie|" PIE_SPEC ":crtendS.o%s; \
-     :crtend.o%s} \
-   crtn.o%s \
-   " CRTOFFLOADEND
-#else
-#define GNU_USER_TARGET_ENDFILE_SPEC \
-  "%{fvtable-verify=none:%s; \
-     fvtable-verify=preinit:vtv_end_preinit.o%s; \
-     fvtable-verify=std:vtv_end.o%s} \
-   %{static:crtend.o%s; \
-     shared|pie|static-pie:crtendS.o%s; \
-     :crtend.o%s} \
-   crtn.o%s \
-   " CRTOFFLOADEND
-#endif
+     :crtend.o%s} " \
+   GNU_USER_TARGET_CRTN " " \
+   CRTOFFLOADEND
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC GNU_USER_TARGET_ENDFILE_SPEC
 
@@ -133,10 +109,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define LINK_EH_SPEC "%{!static|static-pie:--eh-frame-hdr} "
 #endif
 
-#undef LINK_GCC_C_SEQUENCE_SPEC
-#define LINK_GCC_C_SEQUENCE_SPEC \
+#define GNU_USER_TARGET_LINK_GCC_C_SEQUENCE_SPEC \
   "%{static|static-pie:--start-group} %G %{!nolibc:%L} \
    %{static|static-pie:--end-group}%{!static:%{!static-pie:%G}}"
+
+#undef LINK_GCC_C_SEQUENCE_SPEC
+#define LINK_GCC_C_SEQUENCE_SPEC GNU_USER_TARGET_LINK_GCC_C_SEQUENCE_SPEC
 
 /* Use --as-needed -lgcc_s for eh support.  */
 #ifdef HAVE_LD_AS_NEEDED
@@ -170,3 +148,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   LD_STATIC_OPTION " --whole-archive -llsan --no-whole-archive " \
   LD_DYNAMIC_OPTION "}}%{!static-liblsan:-llsan}"
 #endif
+
+#undef TARGET_F951_OPTIONS
+#define TARGET_F951_OPTIONS "%{!nostdinc:\
+  %:fortran-preinclude-file(-fpre-include= math-vector-fortran.h finclude%s/)}"

@@ -9,12 +9,7 @@ int
 test_1 (const char *p)
 {
   int i;
-  return ssacnf (p, "%d", &i); /* { dg-error "10: .ssacnf. was not declared in this scope" } */
-  /* { dg-begin-multiline-output "" }
-   return ssacnf (p, "%d", &i);
-          ^~~~~~
-   { dg-end-multiline-output "" } */
-  // { dg-message "10: suggested alternative: 'sscafn'" "" { target *-*-* } 12 }
+  return ssacnf (p, "%d", &i); /* { dg-error "10: .ssacnf. was not declared in this scope; did you mean 'sscafn'\\?" } */
   /* { dg-begin-multiline-output "" }
    return ssacnf (p, "%d", &i);
           ^~~~~~
@@ -29,12 +24,7 @@ int
 test_2 (void)
 {
   int i;
-  return sacnf ("%d", &i); /* { dg-error "10: .sacnf. was not declared in this scope" } */
-  /* { dg-begin-multiline-output "" }
-   return sacnf ("%d", &i);
-          ^~~~~
-   { dg-end-multiline-output "" } */
-  // { dg-message "10: suggested alternative: 'scanf'" "" { target *-*-* } 32 }
+  return sacnf ("%d", &i); /* { dg-error "10: .sacnf. was not declared in this scope; did you mean 'scanf'\\?" } */
   /* { dg-begin-multiline-output "" }
    return sacnf ("%d", &i);
           ^~~~~

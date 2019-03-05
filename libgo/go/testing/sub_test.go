@@ -17,7 +17,7 @@ import (
 
 func init() {
 	// Make benchmark tests run 10* faster.
-	*benchTime = 100 * time.Millisecond
+	benchTime.d = 100 * time.Millisecond
 }
 
 func TestTestContext(t *T) {
@@ -411,6 +411,29 @@ func TestTRun(t *T) {
 			ch <- true
 			<-ch
 		},
+	}, {
+		desc: "log in finished sub test logs to parent",
+		ok:   false,
+		output: `
+		--- FAIL: log in finished sub test logs to parent (N.NNs)
+    sub_test.go:NNN: message2
+    sub_test.go:NNN: message1
+    sub_test.go:NNN: error`,
+		maxPar: 1,
+		f: func(t *T) {
+			ch := make(chan bool)
+			t.Run("sub", func(t2 *T) {
+				go func() {
+					<-ch
+					t2.Log("message1")
+					ch <- true
+				}()
+			})
+			t.Log("message2")
+			ch <- true
+			<-ch
+			t.Errorf("error")
+		},
 	}}
 	for _, tc := range testCases {
 		ctx := newTestContext(tc.maxPar, newMatcher(regexp.MatchString, "", ""))
@@ -570,7 +593,7 @@ func TestBRun(t *T) {
 				chatty: tc.chatty,
 			},
 			benchFunc: func(b *B) { ok = b.Run("test", tc.f) }, // Use Run to catch failure.
-			benchTime: time.Microsecond,
+			benchTime: benchTimeFlag{d: 1 * time.Microsecond},
 		}
 		root.runN(1)
 		if ok != !tc.failed {
@@ -594,8 +617,8 @@ func TestBRun(t *T) {
 
 func makeRegexp(s string) string {
 	s = regexp.QuoteMeta(s)
-	s = strings.Replace(s, ":NNN:", `:\d\d\d:`, -1)
-	s = strings.Replace(s, "N\\.NNs", `\d*\.\d*s`, -1)
+	s = strings.ReplaceAll(s, ":NNN:", `:\d\d\d:`)
+	s = strings.ReplaceAll(s, "N\\.NNs", `\d*\.\d*s`)
 	return s
 }
 
@@ -680,6 +703,55 @@ func TestRacyOutput(t *T) {
 
 	if races > 0 {
 		t.Errorf("detected %d racy Writes", races)
+	}
+}
+
+// The late log message did not include the test name.  Issue 29388.
+func TestLogAfterComplete(t *T) {
+	ctx := newTestContext(1, newMatcher(regexp.MatchString, "", ""))
+	var buf bytes.Buffer
+	t1 := &T{
+		common: common{
+			// Use a buffered channel so that tRunner can write
+			// to it although nothing is reading from it.
+			signal: make(chan bool, 1),
+			w:      &buf,
+		},
+		context: ctx,
+	}
+
+	c1 := make(chan bool)
+	c2 := make(chan string)
+	tRunner(t1, func(t *T) {
+		t.Run("TestLateLog", func(t *T) {
+			go func() {
+				defer close(c2)
+				defer func() {
+					p := recover()
+					if p == nil {
+						c2 <- "subtest did not panic"
+						return
+					}
+					s, ok := p.(string)
+					if !ok {
+						c2 <- fmt.Sprintf("subtest panic with unexpected value %v", p)
+						return
+					}
+					const want = "Log in goroutine after TestLateLog has completed"
+					if !strings.Contains(s, want) {
+						c2 <- fmt.Sprintf("subtest panic %q does not contain %q", s, want)
+					}
+				}()
+
+				<-c1
+				t.Log("log after test")
+			}()
+		})
+	})
+	close(c1)
+
+	if s := <-c2; s != "" {
+		t.Error(s)
 	}
 }
 

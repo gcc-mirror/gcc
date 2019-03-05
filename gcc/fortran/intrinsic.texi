@@ -1,5 +1,5 @@
 @ignore
-Copyright (C) 2005-2018 Free Software Foundation, Inc.
+Copyright (C) 2005-2019 Free Software Foundation, Inc.
 This is part of the GNU Fortran manual.   
 For copying conditions, see the file gfortran.texi.
 
@@ -148,6 +148,7 @@ Some basic guidelines for editing this document:
 * @code{FDATE}:         FDATE,     Subroutine (or function) to get the current time as a string
 * @code{FGET}:          FGET,      Read a single character in stream mode from stdin
 * @code{FGETC}:         FGETC,     Read a single character in stream mode
+* @code{FINDLOC}:       FINDLOC,   Search an array for a value
 * @code{FLOOR}:         FLOOR,     Integer floor function
 * @code{FLUSH}:         FLUSH,     Flush I/O unit(s)
 * @code{FNUM}:          FNUM,      File number function
@@ -194,6 +195,7 @@ Some basic guidelines for editing this document:
 * @code{IOR}:           IOR,       Bitwise logical or
 * @code{IPARITY}:       IPARITY,   Bitwise XOR of array elements
 * @code{IRAND}:         IRAND,     Integer pseudo-random number
+* @code{IS_CONTIGUOUS}:  IS_CONTIGUOUS, Test whether an array is contiguous
 * @code{IS_IOSTAT_END}:  IS_IOSTAT_END, Test for end-of-file value
 * @code{IS_IOSTAT_EOR}:  IS_IOSTAT_EOR, Test for end-of-record value
 * @code{ISATTY}:        ISATTY,    Whether a unit is a terminal device
@@ -1143,15 +1145,20 @@ Function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be either a scalar @code{INTEGER}
-type or a scalar @code{LOGICAL} type.
-@item @var{J} @tab The type shall be the same as the type of @var{I}.
+type or a scalar @code{LOGICAL} type or a boz-literal-constant.
+@item @var{J} @tab The type shall be the same as the type of @var{I} or
+a boz-literal-constant. @var{I} and @var{J} shall not both be
+boz-literal-constants.  If either @var{I} or @var{J} is a
+boz-literal-constant, then the other argument must be a scalar @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
 The return type is either a scalar @code{INTEGER} or a scalar
 @code{LOGICAL}.  If the kind type parameters differ, then the
 smaller kind type is implicitly converted to larger kind, and the 
-return has the larger kind.
+return has the larger kind.  A boz-literal-constant is 
+converted to an @code{INTEGER} with the kind type parameter of
+the other argument as-if a call to @ref{INT} occurred.
 
 @item @emph{Example}:
 @smallexample
@@ -6021,7 +6028,67 @@ END PROGRAM
 @ref{FGET}, @ref{FPUT}, @ref{FPUTC}
 @end table
 
+@node FINDLOC
+@section @code{FINDLOC} --- Search an array for a value
+@fnindex FINDLOC
+@cindex findloc
 
+@table @asis
+@item @emph{Description}:
+Determines the location of the element in the array with the value
+given in the @var{VALUE} argument, or, if the @var{DIM} argument is
+supplied, determines the locations of the maximum element along each
+row of the array in the @var{DIM} direction.  If @var{MASK} is
+present, only the elements for which @var{MASK} is @code{.TRUE.} are
+considered.  If more than one element in the array has the value
+@var{VALUE}, the location returned is that of the first such element
+in array element order if the @var{BACK} is not present or if it is
+@code{.FALSE.}. If @var{BACK} is true, the location returned is that
+of the last such element. If the array has zero size, or all of the
+elements of @var{MASK} are @code{.FALSE.}, then the result is an array
+of zeroes.  Similarly, if @var{DIM} is supplied and all of the
+elements of @var{MASK} along a given row are zero, the result value
+for that row is zero.
+
+@item @emph{Standard}:
+Fortran 2008 and later.
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@multitable @columnfractions .80
+@item @code{RESULT = FINDLOC(ARRAY, VALUE, DIM [, MASK] [,KIND] [,BACK])}
+@item @code{RESULT = FINDLOC(ARRAY, VALUE, [, MASK] [,KIND] [,BACK])}
+@end multitable
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ARRAY} @tab Shall be an array of intrinsic type.
+@item @var{VALUE} @tab A scalar of intrinsic type which is in type
+conformance with @var{ARRAY}.
+@item @var{DIM} @tab (Optional) Shall be a scalar of type
+@code{INTEGER}, with a value between one and the rank of @var{ARRAY},
+inclusive.  It may not be an optional dummy argument.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+expression indicating the kind parameter of the result.
+@item @var{BACK} @tab (Optional) A scalar of type @code{LOGICAL}.
+@end multitable
+
+@item @emph{Return value}:
+If @var{DIM} is absent, the result is a rank-one array with a length
+equal to the rank of @var{ARRAY}.  If @var{DIM} is present, the result
+is an array with a rank one less than the rank of @var{ARRAY}, and a
+size corresponding to the size of @var{ARRAY} with the @var{DIM}
+dimension removed.  If @var{DIM} is present and @var{ARRAY} has a rank
+of one, the result is a scalar.  If the optional argument @var{KIND}
+is present, the result is an integer of kind @var{KIND}, otherwise it
+is of default kind.
+
+@item @emph{See also}:
+@ref{MAXLOC}, @ref{MINLOC}
+
+@end table
 
 @node FLOOR
 @section @code{FLOOR} --- Integer floor function
@@ -6695,7 +6762,7 @@ kind.
 
 @item @emph{Return value}:
 After @code{GETARG} returns, the @var{VALUE} argument holds the
-@var{POS}th command line argument. If @var{VALUE} can not hold the
+@var{POS}th command line argument. If @var{VALUE} cannot hold the
 argument, it is truncated to fit the length of @var{VALUE}. If there are
 less than @var{POS} arguments specified at the command line, @var{VALUE}
 will be filled with blanks. If @math{@var{POS} = 0}, @var{VALUE} is set
@@ -6808,7 +6875,7 @@ and of default kind.
 
 @item @emph{Return value}:
 After @code{GET_COMMAND_ARGUMENT} returns, the @var{VALUE} argument holds the 
-@var{NUMBER}-th command line argument. If @var{VALUE} can not hold the argument, it is 
+@var{NUMBER}-th command line argument. If @var{VALUE} cannot hold the argument, it is 
 truncated to fit the length of @var{VALUE}. If there are less than @var{NUMBER}
 arguments specified at the command line, @var{VALUE} will be filled with blanks. 
 If @math{@var{NUMBER} = 0}, @var{VALUE} is set to the name of the program (on
@@ -7462,16 +7529,17 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER}.
-@item @var{J} @tab The type shall be @code{INTEGER}, of the same
-kind as @var{I}.  (As a GNU extension, different kinds are also 
-permitted.)
+@item @var{I} @tab The type shall be @code{INTEGER} or a boz-literal-constant.
+@item @var{J} @tab The type shall be @code{INTEGER} with the same
+kind type parameter as @var{I} or a boz-literal-constant.
+@var{I} and @var{J} shall not both be boz-literal-constants.
 @end multitable
 
 @item @emph{Return value}:
-The return type is @code{INTEGER}, of the same kind as the
-arguments.  (If the argument kinds differ, it is of the same kind as
-the larger argument.)
+The return type is @code{INTEGER} with the kind type parameter of the
+arguments.
+A boz-literal-constant is converted to an @code{INTEGER} with the kind
+type parameter of the other argument as-if a call to @ref{INT} occurred.
 
 @item @emph{Example}:
 @smallexample
@@ -7912,16 +7980,17 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER}.
-@item @var{J} @tab The type shall be @code{INTEGER}, of the same
-kind as @var{I}.  (As a GNU extension, different kinds are also 
-permitted.)
+@item @var{I} @tab The type shall be @code{INTEGER} or a boz-literal-constant.
+@item @var{J} @tab The type shall be @code{INTEGER} with the same
+kind type parameter as @var{I} or a boz-literal-constant.
+@var{I} and @var{J} shall not both be boz-literal-constants.
 @end multitable
 
 @item @emph{Return value}:
-The return type is @code{INTEGER}, of the same kind as the
-arguments.  (If the argument kinds differ, it is of the same kind as
-the larger argument.)
+The return type is @code{INTEGER} with the kind type parameter of the
+arguments.
+A boz-literal-constant is converted to an @code{INTEGER} with the kind
+type parameter of the other argument as-if a call to @ref{INT} occurred.
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
@@ -8230,16 +8299,17 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER}.
-@item @var{J} @tab The type shall be @code{INTEGER}, of the same
-kind as @var{I}.  (As a GNU extension, different kinds are also 
-permitted.)
+@item @var{I} @tab The type shall be @code{INTEGER} or a boz-literal-constant.
+@item @var{J} @tab The type shall be @code{INTEGER} with the same
+kind type parameter as @var{I} or a boz-literal-constant.
+@var{I} and @var{J} shall not both be boz-literal-constants.
 @end multitable
 
 @item @emph{Return value}:
-The return type is @code{INTEGER}, of the same kind as the
-arguments.  (If the argument kinds differ, it is of the same kind as
-the larger argument.)
+The return type is @code{INTEGER} with the kind type parameter of the
+arguments.
+A boz-literal-constant is converted to an @code{INTEGER} with the kind
+type parameter of the other argument as-if a call to @ref{INT} occurred.
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
@@ -8369,6 +8439,55 @@ end program test_irand
 
 
 
+@node IS_CONTIGUOUS
+@section @code{IS_CONTIGUOUS} --- Test whether an array is contiguous
+@fnindex IS_IOSTAT_EOR
+@cindex array, contiguity
+
+@table @asis
+@item @emph{Description}:
+@code{IS_CONTIGUOUS} tests whether an array is contiguous.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Inquiry function
+
+@item @emph{Syntax}:
+@code{RESULT = IS_CONTIGUOUS(ARRAY)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ARRAY} @tab Shall be an array of any type.
+@end multitable
+
+@item @emph{Return value}:
+Returns a @code{LOGICAL} of the default kind, which @code{.TRUE.} if
+@var{ARRAY} is contiguous and false otherwise.
+
+@item @emph{Example}:
+@smallexample
+program test
+  integer :: a(10)
+  a = [1,2,3,4,5,6,7,8,9,10]
+  call sub (a)      ! every element, is contiguous
+  call sub (a(::2)) ! every other element, is noncontiguous
+contains
+  subroutine sub (x)
+    integer :: x(:)
+    if (is_contiguous (x)) then
+      write (*,*) 'X is contiguous'
+    else
+      write (*,*) 'X is not contiguous'
+    end if
+  end subroutine sub
+end program test
+@end smallexample
+@end table
+
+
+
 @node IS_IOSTAT_END
 @section @code{IS_IOSTAT_END} --- Test for end-of-file value
 @fnindex IS_IOSTAT_END
@@ -8456,7 +8575,6 @@ PROGRAM iostat
 END PROGRAM
 @end smallexample
 @end table
-
 
 
 @node ISATTY
@@ -10039,7 +10157,7 @@ is present, the result is an integer of kind @var{KIND}, otherwise it
 is of default kind.
 
 @item @emph{See also}:
-@ref{MAX}, @ref{MAXVAL}
+@ref{FINDLOC}, @ref{MAX}, @ref{MAXVAL}
 
 @end table
 
@@ -10235,11 +10353,12 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I}    @tab Shall be of type @code{INTEGER}.
-@item @var{J}    @tab Shall be of type @code{INTEGER} and of the same
-kind as @var{I}.
-@item @var{MASK} @tab Shall be of type @code{INTEGER} and of the same
-kind as @var{I}.
+@item @var{I} @tab Shall be of type @code{INTEGER} or a boz-literal-constant.
+@item @var{J} @tab Shall be of type @code{INTEGER} with the same
+kind type parameter as @var{I} or a boz-literal-constant.
+@var{I} and @var{J} shall not both be boz-literal-constants.
+@item @var{MASK} @tab Shall be of type @code{INTEGER} or a boz-literal-constant
+and of the same kind as @var{I}.
 @end multitable
 
 @item @emph{Return value}:
@@ -10395,7 +10514,7 @@ is present, the result is an integer of kind @var{KIND}, otherwise it
 is of default kind.
 
 @item @emph{See also}:
-@ref{MIN}, @ref{MINVAL}
+@ref{FINDLOC}, @ref{MIN}, @ref{MINVAL}
 
 @end table
 
@@ -11064,15 +11183,20 @@ Function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be either a scalar @code{INTEGER}
-type or a scalar @code{LOGICAL} type.
-@item @var{J} @tab The type shall be the same as the type of @var{J}.
+type or a scalar @code{LOGICAL} type or a boz-literal-constant.
+@item @var{J} @tab The type shall be the same as the type of @var{I} or
+a boz-literal-constant. @var{I} and @var{J} shall not both be
+boz-literal-constants.  If either @var{I} and @var{J} is a
+boz-literal-constant, then the other argument must be a scalar @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
 The return type is either a scalar @code{INTEGER} or a scalar
 @code{LOGICAL}.  If the kind type parameters differ, then the
 smaller kind type is implicitly converted to larger kind, and the 
-return has the larger kind.
+return has the larger kind.  A boz-literal-constant is 
+converted to an @code{INTEGER} with the kind type parameter of
+the other argument as-if a call to @ref{INT} occurred.
 
 @item @emph{Example}:
 @smallexample
@@ -14578,16 +14702,21 @@ Function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be either  a scalar @code{INTEGER}
-type or a scalar @code{LOGICAL} type.
-@item @var{J} @tab The type shall be the same as the type of @var{I}.
+@item @var{I} @tab The type shall be either a scalar @code{INTEGER}
+type or a scalar @code{LOGICAL} type or a boz-literal-constant.
+@item @var{J} @tab The type shall be the same as the type of @var{I} or
+a boz-literal-constant. @var{I} and @var{J} shall not both be
+boz-literal-constants.  If either @var{I} and @var{J} is a
+boz-literal-constant, then the other argument must be a scalar @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
 The return type is either a scalar @code{INTEGER} or a scalar
 @code{LOGICAL}.  If the kind type parameters differ, then the
 smaller kind type is implicitly converted to larger kind, and the 
-return has the larger kind.
+return has the larger kind.  A boz-literal-constant is 
+converted to an @code{INTEGER} with the kind type parameter of
+the other argument as-if a call to @ref{INT} occurred.
 
 @item @emph{Example}:
 @smallexample

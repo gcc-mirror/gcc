@@ -1,3 +1,5 @@
+/* { dg-skip-if "small alignment" { pdp11-*-* } } */
+
 typedef __attribute__((aligned(16)))
 struct {
   unsigned long long w[3];

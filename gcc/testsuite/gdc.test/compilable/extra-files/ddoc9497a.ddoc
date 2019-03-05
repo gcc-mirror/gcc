@@ -1,0 +1,1 @@
+DDOC_UNDEFINED_MACRO=<!-- $(DOLLAR)($1 $+) -->

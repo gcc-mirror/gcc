@@ -1,5 +1,5 @@
 /* Output Go language descriptions of types.
-   Copyright (C) 2008-2018 Free Software Foundation, Inc.
+   Copyright (C) 2008-2019 Free Software Foundation, Inc.
    Written by Ian Lance Taylor <iant@google.com>.
 
 This file is part of GCC.
@@ -1181,7 +1181,7 @@ go_output_typedef (struct godump_container *container, tree decl)
 	return;
       *slot = CONST_CAST (void *, (const void *) type);
 
-      if (!go_format_type (container, TREE_TYPE (decl), false, false, NULL,
+      if (!go_format_type (container, TREE_TYPE (decl), true, false, NULL,
 			   false))
 	{
 	  fprintf (go_dump_file, "// ");

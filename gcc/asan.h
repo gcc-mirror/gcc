@@ -1,5 +1,5 @@
 /* AddressSanitizer, a fast memory error detector.
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by Kostya Serebryany <kcc@google.com>
 
 This file is part of GCC.
@@ -53,6 +53,11 @@ extern hash_set <tree> *asan_used_labels;
    up to 2 * ASAN_RED_ZONE_SIZE - 1 bytes.  */
 #define ASAN_RED_ZONE_SIZE	32
 
+/* Stack variable use more compact red zones.  The size includes also
+   size of variable itself.  */
+
+#define ASAN_MIN_RED_ZONE_SIZE	16
+
 /* Shadow memory values for stack protection.  Left is below protected vars,
    the first pointer in stack corresponding to that offset contains
    ASAN_STACK_FRAME_MAGIC word, the second pointer to a string describing
@@ -100,6 +105,26 @@ asan_red_zone_size (unsigned int size)
 {
   unsigned int c = size & (ASAN_RED_ZONE_SIZE - 1);
   return c ? 2 * ASAN_RED_ZONE_SIZE - c : ASAN_RED_ZONE_SIZE;
+}
+
+/* Return how much a stack variable occupis on a stack
+   including a space for red zone.  */
+
+static inline unsigned HOST_WIDE_INT
+asan_var_and_redzone_size (unsigned HOST_WIDE_INT size)
+{
+  if (size <= 4)
+    return 16;
+  else if (size <= 16)
+    return 32;
+  else if (size <= 128)
+    return size + 32;
+  else if (size <= 512)
+    return size + 64;
+  else if (size <= 4096)
+    return size + 128;
+  else
+    return size + 256;
 }
 
 extern bool set_asan_shadow_offset (const char *);

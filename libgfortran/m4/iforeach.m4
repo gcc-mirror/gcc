@@ -123,6 +123,13 @@ void
   index_type n;
   int mask_kind;
 
+
+  if (mask == NULL)
+    {
+      name`'rtype_qual`_'atype_code (retarray, array, back);
+      return;
+    }
+
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
     runtime_error ("Rank of array needs to be > 0");
@@ -247,7 +254,7 @@ void
   index_type n;
   rtype_name *dest;
 
-  if (*mask)
+  if (mask == NULL || *mask)
     {
       name`'rtype_qual`_'atype_code (retarray, array, back);
       return;

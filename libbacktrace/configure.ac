@@ -1,5 +1,5 @@
 # configure.ac -- Backtrace configure script.
-# Copyright (C) 2012-2018 Free Software Foundation, Inc.
+# Copyright (C) 2012-2019 Free Software Foundation, Inc.
 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -29,7 +29,6 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-AC_PREREQ(2.64)
 AC_INIT(package-unused, version-unused,, libbacktrace)
 AC_CONFIG_SRCDIR(backtrace.h)
 AC_CONFIG_HEADER(config.h)
@@ -78,6 +77,9 @@ AC_PROG_AWK
 case "$AWK" in
 "") AC_MSG_ERROR([can't build without awk]) ;;
 esac
+
+AC_CHECK_PROG(DWZ, dwz, dwz)
+AM_CONDITIONAL(HAVE_DWZ, test "$DWZ" != "")
 
 LT_INIT
 AM_PROG_LIBTOOL
@@ -257,6 +259,7 @@ elf64) elfsize=64 ;;
 *)     elfsize=unused
 esac
 AC_DEFINE_UNQUOTED([BACKTRACE_ELF_SIZE], [$elfsize], [ELF size: 32 or 64])
+AM_CONDITIONAL(HAVE_ELF, test "$FORMAT_FILE" = "elf.lo")
 
 # XCOFF defines.
 xcoffsize=
@@ -305,12 +308,12 @@ if test "$have_mmap" = "no"; then
   ALLOC_FILE=alloc.lo
 else
   VIEW_FILE=mmapio.lo
-  AC_PREPROC_IFELSE([
+  AC_PREPROC_IFELSE([AC_LANG_SOURCE([
 #include <sys/mman.h>
 #if !defined(MAP_ANONYMOUS) && !defined(MAP_ANON)
   #error no MAP_ANONYMOUS
 #endif
-], [ALLOC_FILE=mmap.lo], [ALLOC_FILE=alloc.lo])
+])], [ALLOC_FILE=mmap.lo], [ALLOC_FILE=alloc.lo])
 fi
 AC_SUBST(VIEW_FILE)
 AC_SUBST(ALLOC_FILE)
@@ -414,7 +417,7 @@ AC_CACHE_CHECK([whether -pthread is supported],
 [libgo_cv_lib_pthread],
 [CFLAGS_hold=$CFLAGS
 CFLAGS="$CFLAGS -pthread"
-AC_COMPILE_IFELSE([[int i;]],
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([int i;])],
 [libgo_cv_lib_pthread=yes],
 [libgo_cv_lib_pthread=no])
 CFLAGS=$CFLAGS_hold])
@@ -443,6 +446,7 @@ AM_CONDITIONAL(HAVE_COMPRESSED_DEBUG, test "$libgo_cv_ld_compress" = yes)
 
 AC_ARG_VAR(OBJCOPY, [location of objcopy])
 AC_CHECK_PROG(OBJCOPY, objcopy, objcopy,)
+AC_CHECK_PROG(READELF, readelf, readelf)
 AC_CACHE_CHECK([whether objcopy supports debuglink],
 [libbacktrace_cv_objcopy_debuglink],
 [if test -n "${with_target_subdir}"; then
@@ -470,6 +474,7 @@ else
 fi
 
 AC_CONFIG_FILES(Makefile backtrace-supported.h)
+AC_CONFIG_FILES(install-debuginfo-for-buildid.sh, chmod +x install-debuginfo-for-buildid.sh)
 
 # We need multilib support, but only if configuring for the target.
 AC_CONFIG_COMMANDS([default],

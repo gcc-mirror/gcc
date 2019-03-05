@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -51,6 +51,7 @@ max_size() const
 { return s_entry_allocator.max_size(); }
 
 PB_DS_CLASS_T_DEC
+_GLIBCXX_NODISCARD
 inline bool
 PB_DS_CLASS_C_DEC::
 empty() const

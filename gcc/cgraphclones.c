@@ -1,5 +1,5 @@
 /* Callgraph clones
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -317,8 +317,13 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
   gcc_checking_assert (!DECL_RESULT (new_decl));
   gcc_checking_assert (!DECL_RTL_SET_P (new_decl));
 
-  DECL_NAME (new_decl) = clone_function_name (thunk->decl, "artificial_thunk");
+  DECL_NAME (new_decl) = clone_function_name_numbered (thunk->decl,
+						       "artificial_thunk");
   SET_DECL_ASSEMBLER_NAME (new_decl, DECL_NAME (new_decl));
+
+  /* We need to force DECL_IGNORED_P because the new thunk is created after
+     early debug was run.  */
+  DECL_IGNORED_P (new_decl) = 1;
 
   new_thunk = cgraph_node::create (new_decl);
   set_new_clone_decl_and_node_flags (new_thunk);
@@ -512,13 +517,49 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
   return new_node;
 }
 
-static GTY(()) unsigned int clone_fn_id_num;
+static GTY(()) hash_map<const char *, unsigned> *clone_fn_ids;
 
-/* Return a new assembler name for a clone with SUFFIX of a decl named
-   NAME.  */
+/* Return a new assembler name for a clone of decl named NAME.  Apart
+   from the string SUFFIX, the new name will end with a unique (for
+   each NAME) unspecified number.  If clone numbering is not needed
+   then the two argument clone_function_name should be used instead.
+   Should not be called directly except for by
+   lto-partition.c:privatize_symbol_name_1.  */
 
 tree
-clone_function_name_1 (const char *name, const char *suffix)
+clone_function_name_numbered (const char *name, const char *suffix)
+{
+  /* Initialize the function->counter mapping the first time it's
+     needed.  */
+  if (!clone_fn_ids)
+    clone_fn_ids = hash_map<const char *, unsigned int>::create_ggc (64);
+  unsigned int &suffix_counter = clone_fn_ids->get_or_insert (
+				   IDENTIFIER_POINTER (get_identifier (name)));
+  return clone_function_name (name, suffix, suffix_counter++);
+}
+
+/* Return a new assembler name for a clone of DECL.  Apart from string
+   SUFFIX, the new name will end with a unique (for each DECL
+   assembler name) unspecified number.  If clone numbering is not
+   needed then the two argument clone_function_name should be used
+   instead.  */
+
+tree
+clone_function_name_numbered (tree decl, const char *suffix)
+{
+  tree name = DECL_ASSEMBLER_NAME (decl);
+  return clone_function_name_numbered (IDENTIFIER_POINTER (name),
+				       suffix);
+}
+
+/* Return a new assembler name for a clone of decl named NAME.  Apart
+   from the string SUFFIX, the new name will end with the specified
+   NUMBER.  If clone numbering is not needed then the two argument
+   clone_function_name should be used instead.  */
+
+tree
+clone_function_name (const char *name, const char *suffix,
+		     unsigned long number)
 {
   size_t len = strlen (name);
   char *tmp_name, *prefix;
@@ -527,22 +568,53 @@ clone_function_name_1 (const char *name, const char *suffix)
   memcpy (prefix, name, len);
   strcpy (prefix + len + 1, suffix);
   prefix[len] = symbol_table::symbol_suffix_separator ();
-  ASM_FORMAT_PRIVATE_NAME (tmp_name, prefix, clone_fn_id_num++);
+  ASM_FORMAT_PRIVATE_NAME (tmp_name, prefix, number);
   return get_identifier (tmp_name);
 }
 
-/* Return a new assembler name for a clone of DECL with SUFFIX.  */
+/* Return a new assembler name for a clone of DECL.  Apart from the
+   string SUFFIX, the new name will end with the specified NUMBER.  If
+   clone numbering is not needed then the two argument
+   clone_function_name should be used instead.  */
+
+tree
+clone_function_name (tree decl, const char *suffix,
+		     unsigned long number)
+{
+  return clone_function_name (
+	   IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), suffix, number);
+}
+
+/* Return a new assembler name ending with the string SUFFIX for a
+   clone of DECL.  */
 
 tree
 clone_function_name (tree decl, const char *suffix)
 {
-  tree name = DECL_ASSEMBLER_NAME (decl);
-  return clone_function_name_1 (IDENTIFIER_POINTER (name), suffix);
+  tree identifier = DECL_ASSEMBLER_NAME (decl);
+  /* For consistency this needs to behave the same way as
+     ASM_FORMAT_PRIVATE_NAME does, but without the final number
+     suffix.  */
+  char *separator = XALLOCAVEC (char, 2);
+  separator[0] = symbol_table::symbol_suffix_separator ();
+  separator[1] = 0;
+#if defined (NO_DOT_IN_LABEL) && defined (NO_DOLLAR_IN_LABEL)
+  const char *prefix = "__";
+#else
+  const char *prefix = "";
+#endif
+  char *result = ACONCAT ((prefix,
+			   IDENTIFIER_POINTER (identifier),
+			   separator,
+			   suffix,
+			   (char*)0));
+  return get_identifier (result);
 }
 
 
-/* Create callgraph node clone with new declaration.  The actual body will
-   be copied later at compilation stage.
+/* Create callgraph node clone with new declaration.  The actual body will be
+   copied later at compilation stage.  The name of the new clone will be
+   constructed from the name of the original node, SUFFIX and NUM_SUFFIX.
 
    TODO: after merging in ipa-sra use function call notes instead of args_to_skip
    bitmap interface.
@@ -550,7 +622,8 @@ clone_function_name (tree decl, const char *suffix)
 cgraph_node *
 cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
 				   vec<ipa_replace_map *, va_gc> *tree_map,
-				   bitmap args_to_skip, const char * suffix)
+				   bitmap args_to_skip, const char * suffix,
+				   unsigned num_suffix)
 {
   tree old_decl = decl;
   cgraph_node *new_node = NULL;
@@ -575,7 +648,7 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
   DECL_ARGUMENTS (new_decl) = NULL;
   DECL_INITIAL (new_decl) = NULL;
   DECL_RESULT (new_decl) = NULL; 
-  /* We can not do DECL_RESULT (new_decl) = NULL; here because of LTO partitioning
+  /* We cannot do DECL_RESULT (new_decl) = NULL; here because of LTO partitioning
      sometimes storing only clone decl instead of original.  */
 
   /* Generate a new name for the new version. */
@@ -585,7 +658,8 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
   strcpy (name + len + 1, suffix);
   name[len] = '.';
   DECL_NAME (new_decl) = get_identifier (name);
-  SET_DECL_ASSEMBLER_NAME (new_decl, clone_function_name (old_decl, suffix));
+  SET_DECL_ASSEMBLER_NAME (new_decl,
+			   clone_function_name (old_decl, suffix, num_suffix));
   SET_DECL_RTL (new_decl, NULL);
 
   new_node = create_clone (new_decl, count, false,
@@ -938,6 +1012,11 @@ cgraph_node::create_version_clone (tree new_decl,
    If non-NULL BLOCK_TO_COPY determine what basic blocks to copy.
    If non_NULL NEW_ENTRY determine new entry BB of the clone.
 
+   If TARGET_ATTRIBUTES is non-null, when creating a new declaration,
+   add the attributes to DECL_ATTRIBUTES.  And call valid_attribute_p
+   that will promote value of the attribute DECL_FUNCTION_SPECIFIC_TARGET
+   of the declaration.
+
    Return the new version's cgraph node.  */
 
 cgraph_node *
@@ -945,7 +1024,7 @@ cgraph_node::create_version_clone_with_body
   (vec<cgraph_edge *> redirect_callers,
    vec<ipa_replace_map *, va_gc> *tree_map, bitmap args_to_skip,
    bool skip_return, bitmap bbs_to_copy, basic_block new_entry_block,
-   const char *suffix)
+   const char *suffix, tree target_attributes)
 {
   tree old_decl = decl;
   cgraph_node *new_version_node = NULL;
@@ -964,9 +1043,24 @@ cgraph_node::create_version_clone_with_body
       = build_function_decl_skip_args (old_decl, args_to_skip, skip_return);
 
   /* Generate a new name for the new version. */
-  DECL_NAME (new_decl) = clone_function_name (old_decl, suffix);
+  DECL_NAME (new_decl) = clone_function_name_numbered (old_decl, suffix);
   SET_DECL_ASSEMBLER_NAME (new_decl, DECL_NAME (new_decl));
   SET_DECL_RTL (new_decl, NULL);
+
+  DECL_VIRTUAL_P (new_decl) = 0;
+
+  if (target_attributes)
+    {
+      DECL_ATTRIBUTES (new_decl) = target_attributes;
+
+      location_t saved_loc = input_location;
+      tree v = TREE_VALUE (target_attributes);
+      input_location = DECL_SOURCE_LOCATION (new_decl);
+      bool r = targetm.target_option.valid_attribute_p (new_decl, NULL, v, 0);
+      input_location = saved_loc;
+      if (!r)
+	return NULL;
+    }
 
   /* When the old decl was a con-/destructor make sure the clone isn't.  */
   DECL_STATIC_CONSTRUCTOR (new_decl) = 0;

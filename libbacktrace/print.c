@@ -1,5 +1,5 @@
 /* print.c -- Print the current backtrace.
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 Redistribution and use in source and binary forms, with or without
@@ -80,7 +80,7 @@ error_callback (void *data, const char *msg, int errnum)
 
 /* Print a backtrace.  */
 
-void
+void __attribute__((noinline))
 backtrace_print (struct backtrace_state *state, int skip, FILE *f)
 {
   struct print_data data;

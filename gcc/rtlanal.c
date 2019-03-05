@@ -1,5 +1,5 @@
 /* Analyze RTL for GNU compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -359,10 +359,10 @@ get_initial_register_offset (int from, int to)
   if (to == from)
     return 0;
 
-  /* It is not safe to call INITIAL_ELIMINATION_OFFSET
-     before the reload pass.  We need to give at least
-     an estimation for the resulting frame size.  */
-  if (! reload_completed)
+  /* It is not safe to call INITIAL_ELIMINATION_OFFSET before the epilogue
+     is completed, but we need to give at least an estimate for the stack
+     pointer based on the frame size.  */
+  if (!epilogue_completed)
     {
       offset1 = crtl->outgoing_args_size + get_frame_size ();
 #if !STACK_GROWS_DOWNWARD
@@ -1806,7 +1806,7 @@ reg_overlap_mentioned_p (const_rtx x, const_rtx in)
 {
   unsigned int regno, endregno;
 
-  /* If either argument is a constant, then modifying X can not
+  /* If either argument is a constant, then modifying X cannot
      affect IN.  Here we look at IN, we can profitably combine
      CONSTANT_P (x) with the switch statement below.  */
   if (CONSTANT_P (in))
@@ -2846,10 +2846,28 @@ may_trap_p_1 (const_rtx x, unsigned flags)
     case UMOD:
       if (HONOR_SNANS (x))
 	return 1;
-      if (SCALAR_FLOAT_MODE_P (GET_MODE (x)))
+      if (FLOAT_MODE_P (GET_MODE (x)))
 	return flag_trapping_math;
       if (!CONSTANT_P (XEXP (x, 1)) || (XEXP (x, 1) == const0_rtx))
 	return 1;
+      if (GET_CODE (XEXP (x, 1)) == CONST_VECTOR)
+	{
+	  /* For CONST_VECTOR, return 1 if any element is or might be zero.  */
+	  unsigned int n_elts;
+	  rtx op = XEXP (x, 1);
+	  if (!GET_MODE_NUNITS (GET_MODE (op)).is_constant (&n_elts))
+	    {
+	      if (!CONST_VECTOR_DUPLICATE_P (op))
+		return 1;
+	      for (unsigned i = 0; i < (unsigned int) XVECLEN (op, 0); i++)
+		if (CONST_VECTOR_ENCODED_ELT (op, i) == const0_rtx)
+		  return 1;
+	    }
+	  else
+	    for (unsigned i = 0; i < n_elts; i++)
+	      if (CONST_VECTOR_ELT (op, i) == const0_rtx)
+		return 1;
+	}
       break;
 
     case EXPR_LIST:
@@ -2898,12 +2916,16 @@ may_trap_p_1 (const_rtx x, unsigned flags)
     case NEG:
     case ABS:
     case SUBREG:
+    case VEC_MERGE:
+    case VEC_SELECT:
+    case VEC_CONCAT:
+    case VEC_DUPLICATE:
       /* These operations don't trap even with floating point.  */
       break;
 
     default:
       /* Any floating arithmetic may trap.  */
-      if (SCALAR_FLOAT_MODE_P (GET_MODE (x)) && flag_trapping_math)
+      if (FLOAT_MODE_P (GET_MODE (x)) && flag_trapping_math)
 	return 1;
     }
 
@@ -4485,12 +4507,12 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
      might be nonzero in its own mode, taking into account the fact that, on
      CISC machines, accessing an object in a wider mode generally causes the
      high-order bits to become undefined, so they are not known to be zero.
-     We extend this reasoning to RISC machines for rotate operations since the
-     semantics of the operations in the larger mode is not well defined.  */
+     We extend this reasoning to RISC machines for operations that might not
+     operate on the full registers.  */
   if (mode_width > xmode_width
       && xmode_width <= BITS_PER_WORD
       && xmode_width <= HOST_BITS_PER_WIDE_INT
-      && (!WORD_REGISTER_OPERATIONS || code == ROTATE || code == ROTATERT))
+      && !(WORD_REGISTER_OPERATIONS && word_register_operation_p (x)))
     {
       nonzero &= cached_nonzero_bits (x, xmode,
 				      known_x, known_mode, known_ret);
@@ -4758,13 +4780,16 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 	  nonzero &= cached_nonzero_bits (SUBREG_REG (x), mode,
 					  known_x, known_mode, known_ret);
 
-          /* On many CISC machines, accessing an object in a wider mode
+          /* On a typical CISC machine, accessing an object in a wider mode
 	     causes the high-order bits to become undefined.  So they are
-	     not known to be zero.  */
+	     not known to be zero.
+
+	     On a typical RISC machine, we only have to worry about the way
+	     loads are extended.  Otherwise, if we get a reload for the inner
+	     part, it may be loaded from the stack, and then we may lose all
+	     the zero bits that existed before the store to the stack.  */
 	  rtx_code extend_op;
 	  if ((!WORD_REGISTER_OPERATIONS
-	       /* If this is a typical RISC machine, we only have to worry
-		  about the way loads are extended.  */
 	       || ((extend_op = load_extend_op (inner_mode)) == SIGN_EXTEND
 		   ? val_signbit_known_set_p (inner_mode, nonzero)
 		   : extend_op != ZERO_EXTEND)
@@ -5025,10 +5050,9 @@ num_sign_bit_copies1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
     {
       /* If this machine does not do all register operations on the entire
 	 register and MODE is wider than the mode of X, we can say nothing
-	 at all about the high-order bits.  We extend this reasoning to every
-	 machine for rotate operations since the semantics of the operations
-	 in the larger mode is not well defined.  */
-      if (!WORD_REGISTER_OPERATIONS || code == ROTATE || code == ROTATERT)
+	 at all about the high-order bits.  We extend this reasoning to RISC
+	 machines for operations that might not operate on full registers.  */
+      if (!(WORD_REGISTER_OPERATIONS && word_register_operation_p (x)))
 	return 1;
 
       /* Likewise on machines that do, if the mode of the object is smaller
@@ -5107,13 +5131,12 @@ num_sign_bit_copies1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 	  /* For paradoxical SUBREGs on machines where all register operations
 	     affect the entire register, just look inside.  Note that we are
 	     passing MODE to the recursive call, so the number of sign bit
-	     copies will remain relative to that mode, not the inner mode.  */
+	     copies will remain relative to that mode, not the inner mode.
 
-	  /* This works only if loads sign extend.  Otherwise, if we get a
+	     This works only if loads sign extend.  Otherwise, if we get a
 	     reload for the inner part, it may be loaded from the stack, and
 	     then we lose all sign bit copies that existed before the store
 	     to the stack.  */
-
 	  if (WORD_REGISTER_OPERATIONS
 	      && load_extend_op (inner_mode) == SIGN_EXTEND
 	      && paradoxical_subreg_p (x)
@@ -6549,6 +6572,20 @@ contains_symbolic_reference_p (const_rtx x)
 
   return false;
 }
+
+/* Return true if RTL X contains a constant pool address.  */
+
+bool
+contains_constant_pool_address_p (const_rtx x)
+{
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, ALL)
+    if (SYMBOL_REF_P (*iter) && CONSTANT_POOL_ADDRESS_P (*iter))
+      return true;
+
+  return false;
+}
+
 
 /* Return true if X contains a thread-local symbol.  */
 

@@ -1,0 +1,526 @@
+Ddoc
+
+$(P Phobos is the standard runtime library that comes with the D language
+compiler.)
+
+$(P Generally, the $(D std) namespace is used for the main modules in the
+Phobos standard library. The $(D etc) namespace is used for external C/C++
+library bindings. The $(D core) namespace is used for low-level D runtime
+functions.)
+
+$(P The following table is a quick reference guide for which Phobos modules to
+use for a given category of functionality. Note that some modules may appear in
+more than one category, as some Phobos modules are quite generic and can be
+applied in a variety of situations.)
+
+$(BOOKTABLE ,
+    $(TR
+        $(TH Modules)
+        $(TH Description)
+    )
+    $(LEADINGROW Algorithms &amp; ranges)
+    $(TR
+        $(TDNW
+            $(MREF std,algorithm)$(BR)
+            $(MREF std,range)$(BR)
+            $(MREF std,range,primitives)$(BR)
+            $(MREF std,range,interfaces)$(BR)
+        )
+        $(TD Generic algorithms that work with $(MREF_ALTTEXT ranges, std,range)
+            of any type, including strings, arrays, and other kinds of
+            sequentially-accessed data. Algorithms include searching,
+            comparison, iteration, sorting, set operations, and mutation.
+        )
+    )
+    $(LEADINGROW Array manipulation)
+    $(TR
+        $(TDNW
+            $(MREF std,array)$(BR)
+            $(MREF std,algorithm)$(BR)
+        )
+        $(TD Convenient operations commonly used with built-in arrays.
+            Note that many common array operations are subsets of more generic
+            algorithms that work with arbitrary ranges, so they are found in
+            $(D std.algorithm).
+        )
+    )
+    $(LEADINGROW Containers)
+    $(TR
+        $(TDNW
+            $(MREF std,container,array)$(BR)
+            $(MREF std,container,binaryheap)$(BR)
+            $(MREF std,container,dlist)$(BR)
+            $(MREF std,container,rbtree)$(BR)
+            $(MREF std,container,slist)$(BR)
+        )
+        $(TD See $(MREF_ALTTEXT std.container.*, std,container) for an
+            overview.
+        )
+    )
+    $(LEADINGROW Data formats)
+    $(TR
+        $(TDNW $(MREF std,base64))
+        $(TD Encoding / decoding Base64 format.)
+    )
+    $(TR
+        $(TDNW $(MREF std,csv))
+        $(TD Read Comma Separated Values and its variants from an input range of $(CODE dchar).)
+    )
+    $(TR
+        $(TDNW $(MREF std,json))
+        $(TD Read/write data in JSON format.)
+    )
+    $(TR
+        $(TDNW $(MREF std,xml))
+        $(TD Read/write data in XML format.)
+    )
+    $(TR
+        $(TDNW $(MREF std,zip))
+        $(TD Read/write data in the ZIP archive format.)
+    )
+    $(TR
+        $(TDNW $(MREF std,zlib))
+        $(TD Compress/decompress data using the zlib library.)
+    )
+    $(LEADINGROW Data integrity)
+    $(TR
+        $(TDNW $(MREF std,experimental,checkedint))
+        $(TD Checked integral types.)
+    )
+    $(TR
+        $(TDNW $(MREF std,digest,crc))
+        $(TD Cyclic Redundancy Check (32-bit) implementation.)
+    )
+    $(TR
+        $(TDNW $(MREF std,digest,digest))
+        $(TD Compute digests such as md5, sha1 and crc32.)
+    )
+    $(TR
+        $(TDNW $(MREF std,digest,hmac))
+        $(TD Compute HMAC digests of arbitrary data.)
+    )
+    $(TR
+        $(TDNW $(MREF std,digest,md))
+        $(TD Compute MD5 hash of arbitrary data.)
+    )
+    $(TR
+        $(TDNW $(MREF std,digest,murmurhash))
+        $(TD Compute MurmurHash of arbitrary data.)
+    )
+    $(TR
+        $(TDNW $(MREF std,digest,ripemd))
+        $(TD Compute RIPEMD-160 hash of arbitrary data.)
+    )
+    $(TR
+        $(TDNW $(MREF std,digest,sha))
+        $(TD Compute SHA1 and SHA2 hashes of arbitrary data.)
+    )
+    $(LEADINGROW Date &amp; time)
+    $(TR
+        $(TDNW $(MREF std,datetime))
+        $(TD Provides convenient access to date and time representations.)
+    )
+    $(TR
+        $(TDNW $(MREF core,time))
+        $(TD Implements low-level time primitives.)
+    )
+    $(LEADINGROW Exception handling)
+    $(TR
+        $(TDNW $(MREF std,exception))
+        $(TD Implements routines related to exceptions.)
+    )
+    $(TR
+        $(TDNW $(MREF core,exception))
+        $(TD Defines built-in exception types and low-level
+            language hooks required by the compiler.)
+    )
+    $(LEADINGROW External library bindings)
+    $(TR
+        $(TDNW $(MREF etc,c,curl))
+        $(TD Interface to libcurl C library.)
+    )
+    $(TR
+        $(TDNW $(MREF etc,c,odbc,sql))
+        $(TD Interface to ODBC C library.)
+    )
+    $(TR
+        $(TDNW $(MREF etc,c,odbc,sqlext))
+    )
+    $(TR
+        $(TDNW $(MREF etc,c,odbc,sqltypes))
+    )
+    $(TR
+        $(TDNW $(MREF etc,c,odbc,sqlucode))
+    )
+    $(TR
+        $(TDNW $(MREF etc,c,sqlite3))
+        $(TD Interface to SQLite C library.)
+    )
+    $(TR
+        $(TDNW $(MREF etc,c,zlib))
+        $(TD Interface to zlib C library.)
+    )
+    $(LEADINGROW I/O &amp; File system)
+    $(TR
+        $(TDNW $(MREF std,file))
+        $(TD Manipulate files and directories.)
+    )
+    $(TR
+        $(TDNW $(MREF std,path))
+        $(TD Manipulate strings that represent filesystem paths.)
+    )
+    $(TR
+        $(TDNW $(MREF std,stdio))
+        $(TD Perform buffered I/O.)
+    )
+    $(LEADINGROW Interoperability)
+    $(TR
+        $(TDNW
+            $(MREF core,stdc,complex)$(BR)
+            $(MREF core,stdc,ctype)$(BR)
+            $(MREF core,stdc,errno)$(BR)
+            $(MREF core,stdc,fenv)$(BR)
+            $(MREF core,stdc,float_)$(BR)
+            $(MREF core,stdc,inttypes)$(BR)
+            $(MREF core,stdc,limits)$(BR)
+            $(MREF core,stdc,locale)$(BR)
+            $(MREF core,stdc,math)$(BR)
+            $(MREF core,stdc,signal)$(BR)
+            $(MREF core,stdc,stdarg)$(BR)
+            $(MREF core,stdc,stddef)$(BR)
+            $(MREF core,stdc,stdint)$(BR)
+            $(MREF core,stdc,stdio)$(BR)
+            $(MREF core,stdc,stdlib)$(BR)
+            $(MREF core,stdc,string)$(BR)
+            $(MREF core,stdc,tgmath)$(BR)
+            $(MREF core,stdc,time)$(BR)
+            $(MREF core,stdc,wchar_)$(BR)
+            $(MREF core,stdc,wctype)$(BR)
+        )
+        $(TD
+            D bindings for standard C headers.$(BR)$(BR)
+            These are mostly undocumented, as documentation
+            for the functions these declarations provide
+            bindings to can be found on external resources.
+        )
+    )
+    $(LEADINGROW Memory management)
+    $(TR
+        $(TDNW $(MREF core,memory))
+        $(TD Control the built-in garbage collector.)
+    )
+    $(TR
+        $(TDNW $(MREF std,typecons))
+        $(TD Build scoped variables and reference-counted types.)
+    )
+    $(LEADINGROW Metaprogramming)
+    $(TR
+        $(TDNW $(MREF core,attribute))
+        $(TD Definitions of special attributes recognized by the compiler.)
+    )
+    $(TR
+        $(TDNW $(MREF core,demangle))
+        $(TD Convert $(I mangled) D symbol identifiers to source representation.)
+    )
+    $(TR
+        $(TDNW $(MREF std,demangle))
+        $(TD A simple wrapper around core.demangle.)
+    )
+    $(TR
+        $(TDNW $(MREF std,meta))
+        $(TD Construct and manipulate template argument lists (aka type lists).)
+    )
+    $(TR
+        $(TDNW $(MREF std,traits))
+        $(TD Extract information about types and symbols at compile time.)
+    )
+    $(TR
+        $(TDNW $(MREF std,typecons))
+        $(TD Construct new, useful general purpose types.)
+    )
+    $(LEADINGROW Multitasking)
+    $(TR
+        $(TDNW $(MREF std,concurrency))
+        $(TD Low level messaging API for threads.)
+    )
+    $(TR
+        $(TDNW $(MREF std,parallelism))
+        $(TD High level primitives for SMP parallelism.)
+    )
+    $(TR
+        $(TDNW $(MREF std,process))
+        $(TD Starting and manipulating processes.)
+    )
+    $(TR
+        $(TDNW $(MREF core,atomic))
+        $(TD Basic support for lock-free concurrent programming.)
+    )
+    $(TR
+        $(TDNW $(MREF core,sync,barrier))
+        $(TD Synchronize the progress of a group of threads.)
+    )
+    $(TR
+        $(TDNW $(MREF core,sync,condition))
+        $(TD Synchronized condition checking.)
+    )
+    $(TR
+        $(TDNW $(MREF core,sync,exception))
+        $(TD Base class for synchronization exceptions.)
+    )
+    $(TR
+        $(TDNW $(MREF core,sync,mutex))
+        $(TD Mutex for mutually exclusive access.)
+    )
+    $(TR
+        $(TDNW $(MREF core,sync,rwmutex))
+        $(TD Shared read access and mutually exclusive write access.)
+    )
+    $(TR
+        $(TDNW $(MREF core,sync,semaphore))
+        $(TD General use synchronization semaphore.)
+    )
+    $(TR
+        $(TDNW $(MREF core,thread))
+        $(TD Thread creation and management.)
+    )
+    $(LEADINGROW Networking)
+    $(TR
+        $(TDNW $(MREF std,socket))
+        $(TD Socket primitives.)
+    )
+    $(TR
+        $(TDNW $(MREF std,net,curl))
+        $(TD Networking client functionality as provided by libcurl.)
+    )
+    $(TR
+        $(TDNW $(MREF std,net,isemail))
+        $(TD Validates an email address according to RFCs 5321, 5322 and others.)
+    )
+    $(TR
+        $(TDNW $(MREF std,uri))
+        $(TD Encode and decode Uniform Resource Identifiers (URIs).)
+    )
+    $(TR
+        $(TDNW $(MREF std,uuid))
+        $(TD Universally-unique identifiers for resources in distributed
+        systems.)
+    )
+    $(LEADINGROW Numeric)
+    $(TR
+        $(TDNW $(MREF std,bigint))
+        $(TD An arbitrary-precision integer type.)
+    )
+    $(TR
+        $(TDNW $(MREF std,complex))
+        $(TD A complex number type.)
+    )
+    $(TR
+        $(TDNW $(MREF std,math))
+        $(TD Elementary mathematical functions (powers, roots, trigonometry).)
+    )
+    $(TR
+        $(TDNW $(MREF std,mathspecial))
+        $(TD Families of transcendental functions.)
+    )
+    $(TR
+        $(TDNW $(MREF std,numeric))
+        $(TD Floating point numerics functions.)
+    )
+    $(TR
+        $(TDNW $(MREF std,random))
+        $(TD Pseudo-random number generators.)
+    )
+    $(TR
+        $(TDNW $(MREF core,checkedint))
+        $(TD Range-checking integral arithmetic primitives.)
+    )
+    $(TR
+        $(TDNW $(MREF core,math))
+        $(TD Built-in mathematical intrinsics.)
+    )
+    $(LEADINGROW Paradigms)
+    $(TR
+        $(TDNW $(MREF std,functional))
+        $(TD Functions that manipulate other functions.)
+    )
+    $(TR
+        $(TDNW $(MREF std,algorithm))
+        $(TD Generic algorithms for processing sequences.)
+    )
+    $(TR
+        $(TDNW $(MREF std,signals))
+        $(TD Signal-and-slots framework for event-driven programming.)
+    )
+    $(LEADINGROW Runtime utilities)
+    $(TR
+        $(TDNW $(MREF1 object))
+        $(TD Core language definitions. Automatically imported.)
+    )
+    $(TR
+        $(TDNW $(MREF std,getopt))
+        $(TD Parsing of command-line arguments.)
+    )
+    $(TR
+        $(TDNW $(MREF std,compiler))
+        $(TD Host compiler vendor string and language version.)
+    )
+    $(TR
+        $(TDNW $(MREF std,system))
+        $(TD Runtime environment, such as OS type and endianness.)
+    )
+    $(TR
+        $(TDNW $(MREF core,cpuid))
+        $(TD Capabilities of the CPU the program is running on.)
+    )
+    $(TR
+        $(TDNW $(MREF core,memory))
+        $(TD Control the built-in garbage collector.)
+    )
+    $(TR
+        $(TDNW $(MREF core,runtime))
+        $(TD Control and configure the D runtime.)
+    )
+    $(LEADINGROW String manipulation)
+    $(TR
+        $(TDNW $(MREF std,string))
+        $(TD Algorithms that work specifically with strings.)
+    )
+    $(TR
+        $(TDNW $(MREF std,array))
+        $(TD Manipulate builtin arrays.)
+    )
+    $(TR
+        $(TDNW $(MREF std,algorithm))
+        $(TD Generic algorithms for processing sequences.)
+    )
+    $(TR
+        $(TDNW $(MREF std,uni))
+        $(TD Fundamental Unicode algorithms and data structures.)
+    )
+    $(TR
+        $(TDNW $(MREF std,utf))
+        $(TD Encode and decode UTF-8, UTF-16 and UTF-32 strings.)
+    )
+    $(TR
+        $(TDNW $(MREF std,format))
+        $(TD Format data into strings.)
+    )
+    $(TR
+        $(TDNW $(MREF std,path))
+        $(TD Manipulate strings that represent filesystem paths.)
+    )
+    $(TR
+        $(TDNW $(MREF std,regex))
+        $(TD Regular expressions.)
+    )
+    $(TR
+        $(TDNW $(MREF std,ascii))
+        $(TD Routines specific to the ASCII subset of Unicode.)
+    )
+    $(TR
+        $(TDNW $(MREF std,encoding))
+        $(TD Handle and transcode between various text encodings.)
+    )
+    $(TR
+        $(TDNW $(MREF std,windows,charset))
+        $(TD Windows specific character set support.)
+    )
+    $(TR
+        $(TDNW $(MREF std,outbuffer))
+        $(TD Serialize data to $(CODE ubyte) arrays.)
+    )
+    $(LEADINGROW Type manipulations)
+    $(TR
+        $(TDNW $(MREF std,conv))
+        $(TD Convert types from one type to another.)
+    )
+    $(TR
+        $(TDNW $(MREF std,typecons))
+        $(TD Type constructors for scoped variables, ref counted types, etc.)
+    )
+    $(TR
+        $(TDNW $(MREF std,bitmanip))
+        $(TD High level bit level manipulation, bit arrays, bit fields.)
+    )
+    $(TR
+        $(TDNW $(MREF std,variant))
+        $(TD Discriminated unions and algebraic types.)
+    )
+    $(TR
+        $(TDNW $(MREF core,bitop))
+        $(TD Low level bit manipulation.)
+    )
+    $(LEADINGROW Vector programming)
+    $(TR
+        $(TDNW $(MREF core,simd))
+        $(TD SIMD intrinsics)
+    )
+
+$(COMMENT
+    $(LEADINGROW Undocumented modules (intentionally omitted).)
+    $(TR
+        $(TDNW
+            $(MREF core,sync,config)$(BR)
+            $(MREF std,container,util)$(BR)
+            $(MREF std,regex,internal,backtracking)$(BR)
+            $(MREF std,regex,internal,generator)$(BR)
+            $(MREF std,regex,internal,ir)$(BR)
+            $(MREF std,regex,internal,kickstart)$(BR)
+            $(MREF std,regex,internal,parser)$(BR)
+            $(MREF std,regex,internal,tests)$(BR)
+            $(MREF std,regex,internal,thompson)$(BR)
+        )
+        $(TD
+             Internal modules.
+        )
+    )
+    $(TR
+        $(TDNW
+            $(MREF core,vararg)$(BR)
+            $(MREF std,c,fenv)$(BR)
+            $(MREF std,c,linux,linux)$(BR)
+            $(MREF std,c,linux,socket)$(BR)
+            $(MREF std,c,locale)$(BR)
+            $(MREF std,c,math)$(BR)
+            $(MREF std,c,process)$(BR)
+            $(MREF std,c,stdarg)$(BR)
+            $(MREF std,c,stddef)$(BR)
+            $(MREF std,c,stdio)$(BR)
+            $(MREF std,c,stdlib)$(BR)
+            $(MREF std,c,string)$(BR)
+            $(MREF std,c,time)$(BR)
+            $(MREF std,c,wcharh)$(BR)
+            $(MREF std,stdint)$(BR)
+        )
+        $(TDN
+             Redirect modules.
+        )
+    )
+    $(TR
+        $(TDNW
+            $(MREF std,mmfile)$(BR)
+            $(MREF std,typetuple)$(BR)
+        )
+        $(TD
+             Deprecated modules.
+        )
+    )
+    $(TR
+        $(TDNW
+            $(MREF std,experimental,logger)$(BR)
+            $(MREF std,experimental,logger,core)$(BR)
+            $(MREF std,experimental,logger,filelogger)$(BR)
+            $(MREF std,experimental,logger,multilogger)$(BR)
+            $(MREF std,experimental,logger,nulllogger)$(BR)
+        )
+        $(TD
+             Experimental modules.
+        )
+    )
+)
+)
+
+Macros:
+        TITLE=Phobos Runtime Library
+        DDOC_BLANKLINE=
+        _=

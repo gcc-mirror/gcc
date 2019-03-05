@@ -1,6 +1,6 @@
 // <experimental/string> -*- C++ -*-
 
-// Copyright (C) 2015-2018 Free Software Foundation, Inc.
+// Copyright (C) 2015-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -73,6 +73,9 @@ inline namespace fundamentals_v2
     // basic_string typedef names using polymorphic allocator in namespace
     // std::experimental::pmr
     typedef basic_string<char> string;
+#ifdef _GLIBCXX_USE_CHAR8_T
+    typedef basic_string<char8_t> u8string;
+#endif
     typedef basic_string<char16_t> u16string;
     typedef basic_string<char32_t> u32string;
     typedef basic_string<wchar_t> wstring;

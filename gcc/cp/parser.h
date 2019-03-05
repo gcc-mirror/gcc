@@ -1,5 +1,5 @@
 /* Data structures and function exported by the C++ Parser.
-   Copyright (C) 2010-2018 Free Software Foundation, Inc.
+   Copyright (C) 2010-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -282,9 +282,12 @@ struct GTY(()) cp_parser {
      been seen that makes the expression non-constant.  */
   bool non_integral_constant_expression_p;
 
-  /* TRUE if local variable names and `this' are forbidden in the
-     current context.  */
-  bool local_variables_forbidden_p;
+  /* Used to track if local variable names and/or `this' are forbidden
+     in the current context.  */
+#define LOCAL_VARS_FORBIDDEN (1 << 0)
+#define THIS_FORBIDDEN (1 << 1)
+#define LOCAL_VARS_AND_THIS_FORBIDDEN (LOCAL_VARS_FORBIDDEN | THIS_FORBIDDEN)
+  unsigned char local_variables_forbidden_p;
 
   /* TRUE if the declaration we are parsing is part of a
      linkage-specification of the form `extern string-literal
@@ -320,10 +323,6 @@ struct GTY(()) cp_parser {
      such a situation, both "type (expr)" and "type (type)" are valid
      alternatives.  */
   bool in_type_id_in_expr_p;
-
-  /* TRUE if we are currently in a header file where declarations are
-     implicitly extern "C".  */
-  bool implicit_extern_c;
 
   /* TRUE if strings in expressions should be translated to the execution
      character set.  */

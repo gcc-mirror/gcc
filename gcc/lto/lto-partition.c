@@ -1,5 +1,5 @@
 /* LTO partitioning logic routines.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -250,14 +250,14 @@ add_symbol_to_partition (ltrans_partition part, symtab_node *node)
 {
   symtab_node *node1;
 
-  /* Verify that we do not try to duplicate something that can not be.  */
+  /* Verify that we do not try to duplicate something that cannot be.  */
   gcc_checking_assert (node->get_partitioning_class () == SYMBOL_DUPLICATE
 		       || !symbol_partitioned_p (node));
 
   while ((node1 = contained_in_symbol (node)) != node)
     node = node1;
 
-  /* If we have duplicated symbol contained in something we can not duplicate,
+  /* If we have duplicated symbol contained in something we cannot duplicate,
      we are very badly screwed.  The other way is possible, so we do not
      assert this in add_symbol_to_partition_1. 
 
@@ -951,6 +951,9 @@ validize_symbol_for_target (symtab_node *node)
     }
 }
 
+/* Maps symbol names to unique lto clone counters.  */
+static hash_map<const char *, unsigned> *lto_clone_numbers;
+
 /* Helper for privatize_symbol_name.  Mangle NODE symbol name
    represented by DECL.  */
 
@@ -963,9 +966,11 @@ privatize_symbol_name_1 (symtab_node *node, tree decl)
     return false;
 
   name = maybe_rewrite_identifier (name);
+  unsigned &clone_number = lto_clone_numbers->get_or_insert (name);
   symtab->change_decl_assembler_name (decl,
-				      clone_function_name_1 (name,
-							     "lto_priv"));
+				      clone_function_name (
+					  name, "lto_priv", clone_number));
+  clone_number++;
 
   if (node->lto_file_data)
     lto_record_renamed_decl (node->lto_file_data, name,
@@ -1088,7 +1093,7 @@ rename_statics (lto_symtab_encoder_t encoder, symtab_node *node)
     return;
 
   /* Now walk symbols sharing the same name and see if there are any conflicts.
-     (all types of symbols counts here, since we can not have static of the
+     (all types of symbols counts here, since we cannot have static of the
      same name as external or public symbol.)  */
   for (s = symtab_node::get_for_asmname (name);
        s; s = s->next_sharing_asm_name)
@@ -1157,6 +1162,8 @@ lto_promote_cross_file_statics (void)
       part->encoder = compute_ltrans_boundary (part->encoder);
     }
 
+  lto_clone_numbers = new hash_map<const char *, unsigned>;
+
   /* Look at boundaries and promote symbols as needed.  */
   for (i = 0; i < n_sets; i++)
     {
@@ -1187,6 +1194,7 @@ lto_promote_cross_file_statics (void)
           promote_symbol (node);
         }
     }
+  delete lto_clone_numbers;
 }
 
 /* Rename statics in the whole unit in the case that 
@@ -1196,9 +1204,12 @@ void
 lto_promote_statics_nonwpa (void)
 {
   symtab_node *node;
+
+  lto_clone_numbers = new hash_map<const char *, unsigned>;
   FOR_EACH_SYMBOL (node)
     {
       rename_statics (NULL, node);
       validize_symbol_for_target (node);
     }
+  delete lto_clone_numbers;
 }

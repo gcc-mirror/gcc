@@ -4,7 +4,7 @@ struct X {};
 
 struct A
 {
-    X x : 2;            // { dg-error "non-integral type" }
+    X x : 2;            // { dg-error "7:bit-field .x. with non-integral type .X." }
 };
 struct B : A {};
 
@@ -19,7 +19,7 @@ C<int> c;
 template <typename T>
 struct D
 {
-  T t : 3;              // { dg-error "non-integral type" }
+  T t : 3;              // { dg-error "5:bit-field .double D\\<double\\>::t. with non-integral type .double." }
 };
 
 D<double> d;            // { dg-message "required" }
@@ -28,7 +28,7 @@ template <typename T>
 struct E
 {
   typedef T* U;
-  U t : 3;             // { dg-error "non-integral type" }
+  U t : 3;             // { dg-error "5:bit-field .t. with non-integral type .E\\<T\\>::U." }
 };
 
 E<double> e;

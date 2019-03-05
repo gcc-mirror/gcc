@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build aix darwin dragonfly freebsd linux netbsd openbsd solaris
+// +build aix darwin dragonfly freebsd hurd linux netbsd openbsd solaris
 
 // Fork, exec, wait, etc.
 
@@ -297,9 +297,10 @@ func StartProcess(argv0 string, argv []string, attr *ProcAttr) (pid int, handle 
 func runtime_BeforeExec()
 func runtime_AfterExec()
 
-// execveSolaris is non-nil on Solaris, set to execve in exec_solaris.go; this
+// execveLibc is non-nil on OS using libc syscall, set to execve in exec_libc.go; this
 // avoids a build dependency for other platforms.
-var execveSolaris func(path uintptr, argv uintptr, envp uintptr) (err Errno)
+var execveLibc func(path uintptr, argv uintptr, envp uintptr) Errno
+var execveDarwin func(path *byte, argv **byte, envp **byte) error
 
 // Exec invokes the execve(2) system call.
 func Exec(argv0 string, argv []string, envv []string) (err error) {
@@ -317,7 +318,22 @@ func Exec(argv0 string, argv []string, envv []string) (err error) {
 	}
 	runtime_BeforeExec()
 
-	err1 := raw_execve(argv0p, &argvp[0], &envvp[0])
+	var err1 error
+	if runtime.GOOS == "solaris" || runtime.GOOS == "aix" || runtime.GOOS == "hurd" {
+		// RawSyscall should never be used on Solaris or AIX.
+		err1 = execveLibc(
+			uintptr(unsafe.Pointer(argv0p)),
+			uintptr(unsafe.Pointer(&argvp[0])),
+			uintptr(unsafe.Pointer(&envvp[0])))
+	} else if runtime.GOOS == "darwin" {
+		// Similarly on Darwin.
+		err1 = execveDarwin(argv0p, &argvp[0], &envvp[0])
+	} else {
+		_, _, err1 = RawSyscall(SYS_EXECVE,
+			uintptr(unsafe.Pointer(argv0p)),
+			uintptr(unsafe.Pointer(&argvp[0])),
+			uintptr(unsafe.Pointer(&envvp[0])))
+	}
 	runtime_AfterExec()
-	return Errno(err1)
+	return err1
 }

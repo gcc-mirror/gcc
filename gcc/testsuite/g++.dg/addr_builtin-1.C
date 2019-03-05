@@ -108,7 +108,7 @@ static F* test_taking_address_of_gcc_builtin ()
   a = p - __builtin_trap;            // { dg-error "built-in" }
 
   // Relational operators.  Ill-formed but allowed with -fpermissive.
-  a = __builtin_trap < p;            // { dg-error "built-in" }
+  a = __builtin_trap < p;            // { dg-error "built-in|invalid template-argument-list" }
   a = p < __builtin_trap;            // { dg-error "built-in" }
 
   a = __builtin_trap <= p;           // { dg-error "built-in" }

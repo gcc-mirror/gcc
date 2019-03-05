@@ -1,3 +1,17 @@
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* math.m4, tls.m4: Use AC_LANG_SOURCE.
+
+	Merge from binutils-gdb:
+	2018-06-19  Simon Marchi  <simon.marchi@ericsson.com>
+
+	* override.m4 (_GCC_AUTOCONF_VERSION): Bump from 2.64 to 2.69.
+
+2018-10-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* multi.m4: Set GDC.
+
 2018-07-05  James Clarke  <jrtc27@jrtc27.com>
 
 	* dfp.m4 (enable_decimal_float): Enable for x86_64*-*-gnu* to

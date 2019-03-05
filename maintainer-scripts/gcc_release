@@ -45,18 +45,18 @@
 # Functions
 ########################################################################
 
-# Issue the error message given by $1 and exit with a non-zero
+# Issue the error message given by $@ and exit with a non-zero
 # exit code.
 
 error() {
-    echo "gcc_release: error: $1"
+    echo "gcc_release: error: $@"
     exit 1
 }
 
-# Issue the informational message given by $1.
+# Issue the informational message given by $@.
 
 inform() {
-    echo "gcc_release: $1"
+    echo "gcc_release: $@"
 }
 
 # Issue a usage message explaining how to use this script.
@@ -128,12 +128,12 @@ build_sources() {
     previndex="http:\/\/gcc.gnu.org\/gcc-`expr ${RELEASE_MAJOR} - 1`\/index.html"
     sed -n -e "/^${thisindex}/,/^${thischanges}/p" NEWS |\
 	   sed -n -e "/Release History/,/References and Acknowledgments/p" |\
-	   grep -q "GCC ${RELEASE_MAJOR}.${RELEASE_MINOR}" ||\
+	   grep -q "^[[:blank:]]*GCC ${RELEASE_MAJOR}.${RELEASE_MINOR}" ||\
 	   error "GCC ${RELEASE_MAJOR}.${RELEASE_MINOR} not mentioned "\
 		 "in gcc-${RELEASE_MAJOR}/index.html"
 
     sed -n -e "/^${thischanges}/,/^${previndex}/p" NEWS |\
-	   grep -q "^GCC ${RELEASE_MAJOR}.${RELEASE_MINOR}" ||\
+	   grep -q "^[[:blank:]]*GCC ${RELEASE_MAJOR}.${RELEASE_MINOR}" ||\
 	   error "GCC ${RELEASE_MAJOR}.${RELEASE_MINOR} not mentioned "\
 		 "in gcc-${RELEASE_MAJOR}/changes.html"
 

@@ -1,4 +1,3 @@
-/* { dg-xfail-if "cast to pointer of different size" { "avr-*-*" x86_64-*-mingw* } } */
 typedef struct HDC__ { int unused; } *HDC;
 typedef struct HFONT__ { int unused; } *HFONT;
 

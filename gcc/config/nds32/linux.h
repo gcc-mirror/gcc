@@ -1,5 +1,5 @@
 /* Definitions of target machine of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2014 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -29,13 +29,6 @@
 #undef  PTRDIFF_TYPE
 #define PTRDIFF_TYPE "int"
 
-#ifdef TARGET_DEFAULT_TLSDESC_TRAMPOLINE
-  #define NDS32_TLSDESC_TRAMPOLINE_SPEC \
-    " %{!mno-tlsdesc-trampoline:--mtlsdesc-trampoline}"
-#else
-  #define NDS32_TLSDESC_TRAMPOLINE_SPEC ""
-#endif
-
 #define TARGET_OS_CPP_BUILTINS()                \
   do                                            \
     {                                           \
@@ -43,7 +36,25 @@
     }                                           \
   while (0)
 
-#define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
+#ifdef TARGET_BIG_ENDIAN_DEFAULT
+#define LD_SO_ENDIAN_SPEC "%{mlittle-endian:le}%{!mlittle-endian:be}"
+#else
+#define LD_SO_ENDIAN_SPEC "%{mbig-endian:be}%{!mbig-endian:le}"
+#endif
+
+/* Record arch version in TARGET_ARCH_DEFAULT.
+   0 means soft ABI;
+   1 means hard ABI and using full floating-point instruction;
+   2 means hard ABI and only using single-precision floating-point
+   instruction.  */
+#if TARGET_ARCH_DEFAULT
+#define LD_SO_ABI_SPEC "%{!mabi=2:f}"
+#else
+#define LD_SO_ABI_SPEC "%{mabi=2fp+:f}"
+#endif
+
+#define GLIBC_DYNAMIC_LINKER \
+  "/lib/ld-linux-nds32" LD_SO_ENDIAN_SPEC LD_SO_ABI_SPEC ".so.1"
 
 /* In the configure stage we may use options --enable-default-relax,
    --enable-Os-default-ifc and --enable-Os-default-ex9.  They effect
@@ -59,8 +70,7 @@
       %{rdynamic:-export-dynamic} \
       -dynamic-linker " GNU_USER_DYNAMIC_LINKER "} \
     %{static:-static}}" \
-  NDS32_RELAX_SPEC \
-  NDS32_TLSDESC_TRAMPOLINE_SPEC
+  NDS32_RELAX_SPEC
 
 #define LINK_PIE_SPEC "%{pie:%{!fno-pie:%{!fno-PIE:%{!static:-pie}}}} "
 

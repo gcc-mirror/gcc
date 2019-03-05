@@ -1,6 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
-/* { dg-options "-mcpu=power7" } */
+/* { dg-options "-mdejagnu-cpu=power7" } */
 
 void foo ()
 {

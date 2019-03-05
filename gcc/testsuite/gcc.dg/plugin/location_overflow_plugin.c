@@ -12,11 +12,14 @@ int plugin_is_GPL_compatible;
 
 static location_t base_location;
 
-/* Callback handler for the PLUGIN_START_UNIT event; pretend
-   we parsed a very large include file.  */
+/* Callback handler for the PLUGIN_PRAGMAS event; pretend we parsed a
+   very large include file.  This is used to set the initial line table
+   offset for the preprocessor, to make it appear as if we had parsed a
+   very large file.  PRAGMA_START_UNIT is not suitable here as is not
+   invoked during the preprocessor stage.  */
 
 static void
-on_start_unit (void */*gcc_data*/, void */*user_data*/)
+on_pragma_registration (void */*gcc_data*/, void */*user_data*/)
 {
   /* Act as if we've already parsed a large body of code;
      so that we can simulate various fallbacks in libcpp:
@@ -39,7 +42,8 @@ static diagnostic_finalizer_fn original_finalizer = NULL;
 
 static void
 verify_unpacked_ranges  (diagnostic_context *context,
-			 diagnostic_info *diagnostic)
+			 diagnostic_info *diagnostic,
+			 diagnostic_t orig_diag_kind)
 {
   /* Verify that the locations are ad-hoc, not packed. */
   location_t loc = diagnostic_location (diagnostic);
@@ -47,12 +51,13 @@ verify_unpacked_ranges  (diagnostic_context *context,
 
   /* We're done testing; chain up to original finalizer.  */
   gcc_assert (original_finalizer);
-  original_finalizer (context, diagnostic);
+  original_finalizer (context, diagnostic, orig_diag_kind);
 }
 
 static void
 verify_no_columns  (diagnostic_context *context,
-		    diagnostic_info *diagnostic)
+		    diagnostic_info *diagnostic,
+		    diagnostic_t orig_diag_kind)
 {
   /* Verify that the locations have no columns. */
   location_t loc = diagnostic_location (diagnostic);
@@ -60,7 +65,7 @@ verify_no_columns  (diagnostic_context *context,
 
   /* We're done testing; chain up to original finalizer.  */
   gcc_assert (original_finalizer);
-  original_finalizer (context, diagnostic);
+  original_finalizer (context, diagnostic, orig_diag_kind);
 }
 
 int
@@ -79,8 +84,8 @@ plugin_init (struct plugin_name_args *plugin_info,
     error_at (UNKNOWN_LOCATION, "missing plugin argument");
 
   register_callback (plugin_info->base_name,
-		     PLUGIN_START_UNIT,
-		     on_start_unit,
+		     PLUGIN_PRAGMAS,
+		     on_pragma_registration,
 		     NULL); /* void *user_data */
 
   /* Hack in additional testing, based on the exact value supplied.  */

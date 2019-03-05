@@ -19,8 +19,8 @@
 - (void) log2: (int)level  message: (const char *) my_format, ...  __attribute__ ((format (printf, 2)));    /* { dg-error "wrong" } */
 + (void) debug2: (const char *) my_format, ...  __attribute__ ((format (printf))); /* { dg-error "wrong" } */
 - (void) debug2: (const char *) my_format, ...  __attribute__ ((format (printf))); /* { dg-error "wrong" } */
-+ (void) alert: (const char *) my_format __attribute__ ((format (printf, 1, 2))); /* { dg-error "args to be formatted is not ..." } */
-- (void) alert: (const char *) my_format __attribute__ ((format (printf, 1, 2))); /* { dg-error "args to be formatted is not ..." } */
++ (void) alert: (const char *) my_format __attribute__ ((format (printf, 1, 2))); /* { dg-error "does not refer to a variable argument list" } */
+- (void) alert: (const char *) my_format __attribute__ ((format (printf, 1, 2))); /* { dg-error "does not refer to a variable argument list" } */
 @end
 
 void test (LogObject *object)

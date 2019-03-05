@@ -1,5 +1,5 @@
 /* Map (unsigned int) keys to (source file, line, column) triples.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -28,21 +28,21 @@ along with this program; see the file COPYING3.  If not see
 
 static void trace_include (const struct line_maps *, const line_map_ordinary *);
 static const line_map_ordinary * linemap_ordinary_map_lookup (struct line_maps *,
-							      source_location);
+							      location_t);
 static const line_map_macro* linemap_macro_map_lookup (struct line_maps *,
-						       source_location);
-static source_location linemap_macro_map_loc_to_def_point
-(const line_map_macro *, source_location);
-static source_location linemap_macro_map_loc_to_exp_point
-(const line_map_macro *, source_location);
-static source_location linemap_macro_loc_to_spelling_point
-(struct line_maps *, source_location, const line_map_ordinary **);
-static source_location linemap_macro_loc_to_def_point (struct line_maps *,
-						       source_location,
-						       const line_map_ordinary **);
-static source_location linemap_macro_loc_to_exp_point (struct line_maps *,
-						       source_location,
-						       const line_map_ordinary **);
+						       location_t);
+static location_t linemap_macro_map_loc_to_def_point
+(const line_map_macro *, location_t);
+static location_t linemap_macro_map_loc_to_exp_point
+(const line_map_macro *, location_t);
+static location_t linemap_macro_loc_to_spelling_point
+(struct line_maps *, location_t, const line_map_ordinary **);
+static location_t linemap_macro_loc_to_def_point (line_maps *,
+						  location_t,
+						  const line_map_ordinary **);
+static location_t linemap_macro_loc_to_exp_point (line_maps *,
+						  location_t,
+						  const line_map_ordinary **);
 
 /* Counters defined in macro.c.  */
 extern unsigned num_expanded_macros_counter;
@@ -110,16 +110,16 @@ rebuild_location_adhoc_htab (struct line_maps *set)
 
 /* Helper function for get_combined_adhoc_loc.
    Can the given LOCUS + SRC_RANGE and DATA pointer be stored compactly
-   within a source_location, without needing to use an ad-hoc location.  */
+   within a location_t, without needing to use an ad-hoc location.  */
 
 static bool
 can_be_stored_compactly_p (struct line_maps *set,
-			   source_location locus,
+			   location_t locus,
 			   source_range src_range,
 			   void *data)
 {
   /* If there's an ad-hoc pointer, we can't store it directly in the
-     source_location, we need the lookaside.  */
+     location_t, we need the lookaside.  */
   if (data)
     return false;
 
@@ -139,7 +139,7 @@ can_be_stored_compactly_p (struct line_maps *set,
 
   /* All 3 locations must be within ordinary maps, typically, the same
      ordinary map.  */
-  source_location lowest_macro_loc = LINEMAPS_MACRO_LOWEST_LOCATION (set);
+  location_t lowest_macro_loc = LINEMAPS_MACRO_LOWEST_LOCATION (set);
   if (locus >= lowest_macro_loc)
     return false;
   if (src_range.m_start >= lowest_macro_loc)
@@ -153,9 +153,9 @@ can_be_stored_compactly_p (struct line_maps *set,
 
 /* Combine LOCUS and DATA to a combined adhoc loc.  */
 
-source_location
+location_t
 get_combined_adhoc_loc (struct line_maps *set,
-			source_location locus,
+			location_t locus,
 			source_range src_range,
 			void *data)
 {
@@ -164,7 +164,7 @@ get_combined_adhoc_loc (struct line_maps *set,
 
   if (IS_ADHOC_LOC (locus))
     locus
-      = set->location_adhoc_data_map.data[locus & MAX_SOURCE_LOCATION].locus;
+      = set->location_adhoc_data_map.data[locus & MAX_LOCATION_T].locus;
   if (locus == 0 && data == NULL)
     return 0;
 
@@ -186,7 +186,7 @@ get_combined_adhoc_loc (struct line_maps *set,
       unsigned int col_diff = (int_diff >> ordmap->m_range_bits);
       if (col_diff < (1U << ordmap->m_range_bits))
 	{
-	  source_location packed = locus | col_diff;
+	  location_t packed = locus | col_diff;
 	  set->num_optimized_ranges++;
 	  return packed;
 	}
@@ -243,28 +243,28 @@ get_combined_adhoc_loc (struct line_maps *set,
 /* Return the data for the adhoc loc.  */
 
 void *
-get_data_from_adhoc_loc (struct line_maps *set, source_location loc)
+get_data_from_adhoc_loc (struct line_maps *set, location_t loc)
 {
   linemap_assert (IS_ADHOC_LOC (loc));
-  return set->location_adhoc_data_map.data[loc & MAX_SOURCE_LOCATION].data;
+  return set->location_adhoc_data_map.data[loc & MAX_LOCATION_T].data;
 }
 
 /* Return the location for the adhoc loc.  */
 
-source_location
-get_location_from_adhoc_loc (struct line_maps *set, source_location loc)
+location_t
+get_location_from_adhoc_loc (struct line_maps *set, location_t loc)
 {
   linemap_assert (IS_ADHOC_LOC (loc));
-  return set->location_adhoc_data_map.data[loc & MAX_SOURCE_LOCATION].locus;
+  return set->location_adhoc_data_map.data[loc & MAX_LOCATION_T].locus;
 }
 
 /* Return the source_range for adhoc location LOC.  */
 
 static source_range
-get_range_from_adhoc_loc (struct line_maps *set, source_location loc)
+get_range_from_adhoc_loc (struct line_maps *set, location_t loc)
 {
   linemap_assert (IS_ADHOC_LOC (loc));
-  return set->location_adhoc_data_map.data[loc & MAX_SOURCE_LOCATION].src_range;
+  return set->location_adhoc_data_map.data[loc & MAX_LOCATION_T].src_range;
 }
 
 /* Get the source_range of location LOC, either from the ad-hoc
@@ -272,7 +272,7 @@ get_range_from_adhoc_loc (struct line_maps *set, source_location loc)
 
 source_range
 get_range_from_loc (struct line_maps *set,
-		    source_location loc)
+		    location_t loc)
 {
   if (IS_ADHOC_LOC (loc))
     return get_range_from_adhoc_loc (set, loc);
@@ -298,7 +298,7 @@ get_range_from_loc (struct line_maps *set,
    whether it is an ad-hoc location, or embeds range information.  */
 
 bool
-pure_location_p (line_maps *set, source_location loc)
+pure_location_p (line_maps *set, location_t loc)
 {
   if (IS_ADHOC_LOC (loc))
     return false;
@@ -317,12 +317,12 @@ pure_location_p (line_maps *set, source_location loc)
 /* Given location LOC within SET, strip away any packed range information
    or ad-hoc information.  */
 
-source_location
-get_pure_location (line_maps *set, source_location loc)
+location_t
+get_pure_location (line_maps *set, location_t loc)
 {
   if (IS_ADHOC_LOC (loc))
     loc
-      = set->location_adhoc_data_map.data[loc & MAX_SOURCE_LOCATION].locus;
+      = set->location_adhoc_data_map.data[loc & MAX_LOCATION_T].locus;
 
   if (loc >= LINEMAPS_MACRO_LOWEST_LOCATION (set))
     return loc;
@@ -340,7 +340,7 @@ get_pure_location (line_maps *set, source_location loc)
 
 void
 linemap_init (struct line_maps *set,
-	      source_location builtin_location)
+	      location_t builtin_location)
 {
 #if __GNUC__ == 4 && __GNUC_MINOR__ == 2 && !defined (__clang__)
   /* PR33916, needed to fix PR82939.  */
@@ -386,7 +386,7 @@ linemap_check_files_exited (struct line_maps *set)
    macro maps are allocated in different memory location.  */
 
 static struct line_map *
-new_linemap (struct line_maps *set,  source_location start_location)
+new_linemap (struct line_maps *set,  location_t start_location)
 {
   bool macro_p = start_location >= LINE_MAP_MAX_LOCATION;
   unsigned num_maps_allocated = LINEMAPS_ALLOCATED (set, macro_p);
@@ -464,7 +464,7 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
 {
   /* Generate a start_location above the current highest_location.
      If possible, make the low range bits be zero.  */
-  source_location start_location;
+  location_t start_location;
   if (set->highest_location < LINE_MAP_MAX_LOCATION_WITH_COLS)
     {
       start_location = set->highest_location + (1 << set->default_range_bits);
@@ -610,32 +610,26 @@ linemap_tracks_macro_expansion_locs_p (struct line_maps *set)
 
 const line_map_macro *
 linemap_enter_macro (struct line_maps *set, struct cpp_hashnode *macro_node,
-		     source_location expansion, unsigned int num_tokens)
+		     location_t expansion, unsigned int num_tokens)
 {
-  line_map_macro *map;
-  source_location start_location;
-  /* Cast away extern "C" from the type of xrealloc.  */
-  line_map_realloc reallocator = (set->reallocator
-				  ? set->reallocator
-				  : (line_map_realloc) xrealloc);
-
-  start_location = LINEMAPS_MACRO_LOWEST_LOCATION (set) - num_tokens;
+  location_t start_location
+    = LINEMAPS_MACRO_LOWEST_LOCATION (set) - num_tokens;
 
   if (start_location < LINE_MAP_MAX_LOCATION)
     /* We ran out of macro map space.   */
     return NULL;
 
-  map = linemap_check_macro (new_linemap (set, start_location));
+  line_map_macro *map = linemap_check_macro (new_linemap (set, start_location));
 
   map->macro = macro_node;
   map->n_tokens = num_tokens;
   map->macro_locations
-    = (source_location*) reallocator (NULL,
-				      2 * num_tokens
-				      * sizeof (source_location));
+    = (location_t*) set->reallocator (NULL,
+					   2 * num_tokens
+					   * sizeof (location_t));
   map->expansion = expansion;
   memset (MACRO_MAP_LOCATIONS (map), 0,
-	  num_tokens * sizeof (source_location));
+	  2 * num_tokens * sizeof (location_t));
 
   LINEMAPS_MACRO_CACHE (set) = LINEMAPS_MACRO_USED (set) - 1;
 
@@ -665,13 +659,13 @@ linemap_enter_macro (struct line_maps *set, struct cpp_hashnode *macro_node,
    either of the token itself or of a macro parameter that it
    replaces.  */
 
-source_location
+location_t
 linemap_add_macro_token (const line_map_macro *map,
 			 unsigned int token_no,
-			 source_location orig_loc,
-			 source_location orig_parm_replacement_loc)
+			 location_t orig_loc,
+			 location_t orig_parm_replacement_loc)
 {
-  source_location result;
+  location_t result;
 
   linemap_assert (linemap_macro_expansion_map_p (map));
   linemap_assert (token_no < MACRO_MAP_NUM_MACRO_TOKENS (map));
@@ -683,19 +677,19 @@ linemap_add_macro_token (const line_map_macro *map,
   return result;
 }
 
-/* Return a source_location for the start (i.e. column==0) of
+/* Return a location_t for the start (i.e. column==0) of
    (physical) line TO_LINE in the current source file (as in the
    most recent linemap_add).   MAX_COLUMN_HINT is the highest column
    number we expect to use in this line (but it does not change
    the highest_location).  */
 
-source_location
+location_t
 linemap_line_start (struct line_maps *set, linenum_type to_line,
 		    unsigned int max_column_hint)
 {
   line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (set);
-  source_location highest = set->highest_location;
-  source_location r;
+  location_t highest = set->highest_location;
+  location_t r;
   linenum_type last_line =
     SOURCE_LINE (map, set->highest_line);
   int line_delta = to_line - last_line;
@@ -723,7 +717,7 @@ linemap_line_start (struct line_maps *set, linenum_type to_line,
 	  || highest > LINE_MAP_MAX_LOCATION_WITH_COLS)
 	{
 	  /* If the column number is ridiculous or we've allocated a huge
-	     number of source_locations, give up on column numbers
+	     number of location_ts, give up on column numbers
 	     (and on packed ranges).  */
 	  max_column_hint = 0;
 	  column_bits = 0;
@@ -748,6 +742,11 @@ linemap_line_start (struct line_maps *set, linenum_type to_line,
       if (line_delta < 0
 	  || last_line != ORDINARY_MAP_STARTING_LINE_NUMBER (map)
 	  || SOURCE_COLUMN (map, highest) >= (1U << (column_bits - range_bits))
+	  || ( /* We can't reuse the map if the line offset is sufficiently
+		  large to cause overflow when computing location_t values.  */
+	      (to_line - ORDINARY_MAP_STARTING_LINE_NUMBER (map))
+	      >= (((uint64_t) 1)
+		  << (CHAR_BIT * sizeof (linenum_type) - column_bits)))
 	  || range_bits < map->m_range_bits)
 	map = linemap_check_ordinary
 	        (const_cast <line_map *>
@@ -788,15 +787,15 @@ linemap_line_start (struct line_maps *set, linenum_type to_line,
   return r;
 }
 
-/* Encode and return a source_location from a column number. The
+/* Encode and return a location_t from a column number. The
    source line considered is the last source line used to call
    linemap_line_start, i.e, the last source line which a location was
    encoded from.  */
 
-source_location
+location_t
 linemap_position_for_column (struct line_maps *set, unsigned int to_column)
 {
-  source_location r = set->highest_line;
+  location_t r = set->highest_line;
 
   linemap_assert
     (!linemap_macro_expansion_map_p (LINEMAPS_LAST_ORDINARY_MAP (set)));
@@ -806,7 +805,7 @@ linemap_position_for_column (struct line_maps *set, unsigned int to_column)
       if (r > LINE_MAP_MAX_LOCATION_WITH_COLS
 	  || to_column > LINE_MAP_MAX_COLUMN_NUMBER)
 	{
-	  /* Running low on source_locations - disable column numbers.  */
+	  /* Running low on location_ts - disable column numbers.  */
 	  return r;
 	}
       else
@@ -839,7 +838,7 @@ linemap_position_for_column (struct line_maps *set, unsigned int to_column)
 /* Encode and return a source location from a given line and
    column.  */
 
-source_location
+location_t
 linemap_position_for_line_and_column (line_maps *set,
 				      const line_map_ordinary *ord_map,
 				      linenum_type line,
@@ -847,13 +846,13 @@ linemap_position_for_line_and_column (line_maps *set,
 {
   linemap_assert (ORDINARY_MAP_STARTING_LINE_NUMBER (ord_map) <= line);
 
-  source_location r = MAP_START_LOCATION (ord_map);
+  location_t r = MAP_START_LOCATION (ord_map);
   r += ((line - ORDINARY_MAP_STARTING_LINE_NUMBER (ord_map))
 	<< ord_map->m_column_and_range_bits);
   if (r <= LINE_MAP_MAX_LOCATION_WITH_COLS)
     r += ((column & ((1 << ord_map->m_column_and_range_bits) - 1))
 	  << ord_map->m_range_bits);
-  source_location upper_limit = LINEMAPS_MACRO_LOWEST_LOCATION (set);
+  location_t upper_limit = LINEMAPS_MACRO_LOWEST_LOCATION (set);
   if (r >= upper_limit)
     r = upper_limit - 1;
   if (r > set->highest_location)
@@ -861,19 +860,19 @@ linemap_position_for_line_and_column (line_maps *set,
   return r;
 }
 
-/* Encode and return a source_location starting from location LOC and
+/* Encode and return a location_t starting from location LOC and
    shifting it by COLUMN_OFFSET columns.  This function does not support
    virtual locations.  */
 
-source_location
+location_t
 linemap_position_for_loc_and_offset (struct line_maps *set,
-				     source_location loc,
+				     location_t loc,
 				     unsigned int column_offset)
 {
   const line_map_ordinary * map = NULL;
 
   if (IS_ADHOC_LOC (loc))
-    loc = set->location_adhoc_data_map.data[loc & MAX_SOURCE_LOCATION].locus;
+    loc = set->location_adhoc_data_map.data[loc & MAX_LOCATION_T].locus;
 
   /* This function does not support virtual locations yet.  */
   if (linemap_location_from_macro_expansion_p (set, loc))
@@ -919,7 +918,7 @@ linemap_position_for_loc_and_offset (struct line_maps *set,
   if (column >= (1u << (map->m_column_and_range_bits - map->m_range_bits)))
     return loc;
 
-  source_location r = 
+  location_t r = 
     linemap_position_for_line_and_column (set, map, line, column);
   if (linemap_assert_fails (r <= set->highest_location)
       || linemap_assert_fails (map == linemap_lookup (set, r)))
@@ -932,10 +931,10 @@ linemap_position_for_loc_and_offset (struct line_maps *set,
    ordinary or a macro map), returns that map.  */
 
 const struct line_map*
-linemap_lookup (struct line_maps *set, source_location line)
+linemap_lookup (struct line_maps *set, location_t line)
 {
   if (IS_ADHOC_LOC (line))
-    line = set->location_adhoc_data_map.data[line & MAX_SOURCE_LOCATION].locus;
+    line = set->location_adhoc_data_map.data[line & MAX_LOCATION_T].locus;
   if (linemap_location_from_macro_expansion_p (set, line))
     return linemap_macro_map_lookup (set, line);
   return linemap_ordinary_map_lookup (set, line);
@@ -947,13 +946,13 @@ linemap_lookup (struct line_maps *set, source_location line)
    binary search.  */
 
 static const line_map_ordinary *
-linemap_ordinary_map_lookup (struct line_maps *set, source_location line)
+linemap_ordinary_map_lookup (struct line_maps *set, location_t line)
 {
   unsigned int md, mn, mx;
   const line_map_ordinary *cached, *result;
 
   if (IS_ADHOC_LOC (line))
-    line = set->location_adhoc_data_map.data[line & MAX_SOURCE_LOCATION].locus;
+    line = set->location_adhoc_data_map.data[line & MAX_LOCATION_T].locus;
 
   if (set ==  NULL || line < RESERVED_LOCATION_COUNT)
     return NULL;
@@ -995,13 +994,13 @@ linemap_ordinary_map_lookup (struct line_maps *set, source_location line)
    binary search.  */
 
 static const line_map_macro *
-linemap_macro_map_lookup (struct line_maps *set, source_location line)
+linemap_macro_map_lookup (struct line_maps *set, location_t line)
 {
   unsigned int md, mn, mx;
   const struct line_map_macro *cached, *result;
 
   if (IS_ADHOC_LOC (line))
-    line = set->location_adhoc_data_map.data[line & MAX_SOURCE_LOCATION].locus;
+    line = set->location_adhoc_data_map.data[line & MAX_LOCATION_T].locus;
 
   linemap_assert (line >= LINEMAPS_MACRO_LOWEST_LOCATION (set));
 
@@ -1051,9 +1050,9 @@ linemap_macro_expansion_map_p (const struct line_map *map)
    Read the comments of struct line_map and struct line_map_macro in
    line-map.h to understand what a macro expansion point is.  */
 
-static source_location
+static location_t
 linemap_macro_map_loc_to_exp_point (const line_map_macro *map,
-				    source_location location ATTRIBUTE_UNUSED)
+				    location_t location ATTRIBUTE_UNUSED)
 {
   linemap_assert (linemap_macro_expansion_map_p (map)
 		  && location >= MAP_START_LOCATION (map));
@@ -1071,9 +1070,9 @@ linemap_macro_map_loc_to_exp_point (const line_map_macro *map,
    Return the location of the token at the definition point of the
    macro.  */
 
-static source_location
+static location_t
 linemap_macro_map_loc_to_def_point (const line_map_macro *map,
-				    source_location location)
+				    location_t location)
 {
   unsigned token_no;
 
@@ -1095,10 +1094,10 @@ linemap_macro_map_loc_to_def_point (const line_map_macro *map,
 
    In other words, this returns the xI location presented in the
    comments of line_map_macro above.  */
-source_location
+location_t
 linemap_macro_map_loc_unwind_toward_spelling (line_maps *set,
 					      const line_map_macro* map,
-					      source_location location)
+					      location_t location)
 {
   unsigned token_no;
 
@@ -1126,13 +1125,13 @@ linemap_macro_map_loc_unwind_toward_spelling (line_maps *set,
 
 int
 linemap_get_expansion_line (struct line_maps *set,
-			    source_location location)
+			    location_t location)
 {
   const line_map_ordinary *map = NULL;
 
   if (IS_ADHOC_LOC (location))
     location = set->location_adhoc_data_map.data[location
-						 & MAX_SOURCE_LOCATION].locus;
+						 & MAX_LOCATION_T].locus;
 
   if (location < RESERVED_LOCATION_COUNT)
     return 0;
@@ -1154,13 +1153,13 @@ linemap_get_expansion_line (struct line_maps *set,
 
 const char*
 linemap_get_expansion_filename (struct line_maps *set,
-				source_location location)
+				location_t location)
 {
   const struct line_map_ordinary *map = NULL;
 
   if (IS_ADHOC_LOC (location))
     location = set->location_adhoc_data_map.data[location
-						 & MAX_SOURCE_LOCATION].locus;
+						 & MAX_LOCATION_T].locus;
 
   if (location < RESERVED_LOCATION_COUNT)
     return NULL;
@@ -1192,13 +1191,13 @@ linemap_map_get_macro_name (const line_map_macro *macro_map)
 
 int
 linemap_location_in_system_header_p (struct line_maps *set,
-				     source_location location)
+				     location_t location)
 {
   const struct line_map *map = NULL;
 
   if (IS_ADHOC_LOC (location))
     location = set->location_adhoc_data_map.data[location
-						 & MAX_SOURCE_LOCATION].locus;
+						 & MAX_LOCATION_T].locus;
 
   if (location < RESERVED_LOCATION_COUNT)
     return false;
@@ -1217,7 +1216,7 @@ linemap_location_in_system_header_p (struct line_maps *set,
 	      const line_map_macro *macro_map = linemap_check_macro (map);
 
 	      /* It's a token resulting from a macro expansion.  */
-	      source_location loc =
+	      location_t loc =
 		linemap_macro_map_loc_unwind_toward_spelling (set, macro_map, location);
 	      if (loc < RESERVED_LOCATION_COUNT)
 		/* This token might come from a built-in macro.  Let's
@@ -1238,13 +1237,13 @@ linemap_location_in_system_header_p (struct line_maps *set,
 
 bool
 linemap_location_from_macro_expansion_p (const struct line_maps *set,
-					 source_location location)
+					 location_t location)
 {
   if (IS_ADHOC_LOC (location))
     location = set->location_adhoc_data_map.data[location
-						 & MAX_SOURCE_LOCATION].locus;
+						 & MAX_LOCATION_T].locus;
 
-  return location >= LINE_MAP_MAX_LOCATION;
+  return IS_MACRO_LOC (location);
 }
 
 /* Given two virtual locations *LOC0 and *LOC1, return the first
@@ -1254,10 +1253,10 @@ linemap_location_from_macro_expansion_p (const struct line_maps *set,
 
 static const struct line_map*
 first_map_in_common_1 (struct line_maps *set,
-		       source_location *loc0,
-		       source_location *loc1)
+		       location_t *loc0,
+		       location_t *loc1)
 {
-  source_location l0 = *loc0, l1 = *loc1;
+  location_t l0 = *loc0, l1 = *loc1;
   const struct line_map *map0 = linemap_lookup (set, l0),
     *map1 = linemap_lookup (set, l1);
 
@@ -1296,10 +1295,10 @@ first_map_in_common_1 (struct line_maps *set,
 
 static const struct line_map*
 first_map_in_common (struct line_maps *set,
-		     source_location loc0,
-		     source_location loc1,
-		     source_location  *res_loc0,
-		     source_location  *res_loc1)
+		     location_t loc0,
+		     location_t loc1,
+		     location_t  *res_loc0,
+		     location_t  *res_loc1)
 {
   *res_loc0 = loc0;
   *res_loc1 = loc1;
@@ -1314,11 +1313,11 @@ first_map_in_common (struct line_maps *set,
 
 int
 linemap_compare_locations (struct line_maps *set,
-			   source_location  pre,
-			   source_location post)
+			   location_t  pre,
+			   location_t post)
 {
   bool pre_virtual_p, post_virtual_p;
-  source_location l0 = pre, l1 = post;
+  location_t l0 = pre, l1 = post;
 
   if (IS_ADHOC_LOC (l0))
     l0 = get_location_from_adhoc_loc (set, l0);
@@ -1384,9 +1383,9 @@ trace_include (const struct line_maps *set, const line_map_ordinary *map)
 
    This is a subroutine for linemap_resolve_location.  */
 
-static source_location
+static location_t
 linemap_macro_loc_to_spelling_point (struct line_maps *set,
-				     source_location location,
+				     location_t location,
 				     const line_map_ordinary **original_map)
 {
   linemap_assert (set && location >= RESERVED_LOCATION_COUNT);
@@ -1418,16 +1417,16 @@ linemap_macro_loc_to_spelling_point (struct line_maps *set,
 
    This is a subroutine of linemap_resolve_location.  */
 
-static source_location
+static location_t
 linemap_macro_loc_to_def_point (struct line_maps *set,
-				source_location location,
+				location_t location,
 				const line_map_ordinary **original_map)
 {
   linemap_assert (set && location >= RESERVED_LOCATION_COUNT);
 
   for (;;)
     {
-      source_location caret_loc = location;
+      location_t caret_loc = location;
       if (IS_ADHOC_LOC (caret_loc))
 	caret_loc = get_location_from_adhoc_loc (set, caret_loc);
 
@@ -1460,16 +1459,16 @@ linemap_macro_loc_to_def_point (struct line_maps *set,
 
    This is a subroutine of linemap_resolve_location.  */
 
-static source_location
+static location_t
 linemap_macro_loc_to_exp_point (struct line_maps *set,
-				source_location location,
+				location_t location,
 				const line_map_ordinary **original_map)
 {
   struct line_map *map;
 
   if (IS_ADHOC_LOC (location))
     location = set->location_adhoc_data_map.data[location
-						 & MAX_SOURCE_LOCATION].locus;
+						 & MAX_LOCATION_T].locus;
 
   linemap_assert (set && location >= RESERVED_LOCATION_COUNT);
 
@@ -1535,15 +1534,15 @@ linemap_macro_loc_to_exp_point (struct line_maps *set,
    resolves to a location reserved for the client code, like
    UNKNOWN_LOCATION or BUILTINS_LOCATION in GCC.  */
 
-source_location
+location_t
 linemap_resolve_location (struct line_maps *set,
-			  source_location loc,
+			  location_t loc,
 			  enum location_resolution_kind lrk,
 			  const line_map_ordinary **map)
 {
-  source_location locus = loc;
+  location_t locus = loc;
   if (IS_ADHOC_LOC (loc))
-    locus = set->location_adhoc_data_map.data[loc & MAX_SOURCE_LOCATION].locus;
+    locus = set->location_adhoc_data_map.data[loc & MAX_LOCATION_T].locus;
 
   if (locus < RESERVED_LOCATION_COUNT)
     {
@@ -1577,7 +1576,7 @@ linemap_resolve_location (struct line_maps *set,
 
 bool
 linemap_location_from_macro_definition_p (struct line_maps *set,
-					  source_location loc)
+					  location_t loc)
 {
   if (IS_ADHOC_LOC (loc))
     loc = get_location_from_adhoc_loc (set, loc);
@@ -1590,13 +1589,13 @@ linemap_location_from_macro_definition_p (struct line_maps *set,
       const struct line_map_macro *map
 	= linemap_check_macro (linemap_lookup (set, loc));
 
-      source_location s_loc
+      location_t s_loc
 	= linemap_macro_map_loc_unwind_toward_spelling (set, map, loc);
       if (linemap_location_from_macro_expansion_p (set, s_loc))
 	loc = s_loc;
       else
 	{
-	  source_location def_loc
+	  location_t def_loc
 	    = linemap_macro_map_loc_to_def_point (map, loc);
 	  return s_loc == def_loc;
 	}
@@ -1615,17 +1614,17 @@ linemap_location_from_macro_definition_p (struct line_maps *set,
    *LOC_MAP must be set to the map of LOC.  This function then sets it
    to the map of the returned location.  */
 
-source_location
+location_t
 linemap_unwind_toward_expansion (struct line_maps *set,
-				 source_location loc,
+				 location_t loc,
 				 const struct line_map **map)
 {
-  source_location resolved_location;
+  location_t resolved_location;
   const line_map_macro *macro_map = linemap_check_macro (*map);
   const struct line_map *resolved_map;
 
   if (IS_ADHOC_LOC (loc))
-    loc = set->location_adhoc_data_map.data[loc & MAX_SOURCE_LOCATION].locus;
+    loc = set->location_adhoc_data_map.data[loc & MAX_LOCATION_T].locus;
 
   resolved_location =
     linemap_macro_map_loc_unwind_toward_spelling (set, macro_map, loc);
@@ -1655,17 +1654,17 @@ linemap_unwind_toward_expansion (struct line_maps *set,
 
    *MAP is set to the map of the returned location if the later is
    different from LOC.  */
-source_location
+location_t
 linemap_unwind_to_first_non_reserved_loc (struct line_maps *set,
-					  source_location loc,
+					  location_t loc,
 					  const struct line_map **map)
 {
-  source_location resolved_loc;
+  location_t resolved_loc;
   const struct line_map *map0 = NULL;
   const line_map_ordinary *map1 = NULL;
 
   if (IS_ADHOC_LOC (loc))
-    loc = set->location_adhoc_data_map.data[loc & MAX_SOURCE_LOCATION].locus;
+    loc = set->location_adhoc_data_map.data[loc & MAX_LOCATION_T].locus;
 
   map0 = linemap_lookup (set, loc);
   if (!linemap_macro_expansion_map_p (map0))
@@ -1702,7 +1701,7 @@ linemap_unwind_to_first_non_reserved_loc (struct line_maps *set,
 expanded_location
 linemap_expand_location (struct line_maps *set,
 			 const struct line_map *map,
-			 source_location loc)
+			 location_t loc)
 
 {
   expanded_location xloc;
@@ -1711,8 +1710,8 @@ linemap_expand_location (struct line_maps *set,
   if (IS_ADHOC_LOC (loc))
     {
       xloc.data
-	= set->location_adhoc_data_map.data[loc & MAX_SOURCE_LOCATION].data;
-      loc = set->location_adhoc_data_map.data[loc & MAX_SOURCE_LOCATION].locus;
+	= set->location_adhoc_data_map.data[loc & MAX_LOCATION_T].data;
+      loc = set->location_adhoc_data_map.data[loc & MAX_LOCATION_T].locus;
     }
 
   if (loc < RESERVED_LOCATION_COUNT)
@@ -1807,16 +1806,16 @@ linemap_dump (FILE *stream, struct line_maps *set, unsigned ix, bool is_macro)
 
 void
 linemap_dump_location (struct line_maps *set,
-		       source_location loc,
+		       location_t loc,
 		       FILE *stream)
 {
   const line_map_ordinary *map;
-  source_location location;
+  location_t location;
   const char *path = "", *from = "";
   int l = -1, c = -1, s = -1, e = -1;
 
   if (IS_ADHOC_LOC (loc))
-    loc = set->location_adhoc_data_map.data[loc & MAX_SOURCE_LOCATION].locus;
+    loc = set->location_adhoc_data_map.data[loc & MAX_LOCATION_T].locus;
 
   if (loc == 0)
     return;
@@ -1858,7 +1857,7 @@ linemap_dump_location (struct line_maps *set,
 bool
 linemap_get_file_highest_location (struct line_maps *set,
 				   const char *file_name,
-				   source_location *loc)
+				   location_t *loc)
 {
   /* If the set is empty or no ordinary map has been created then
      there is no file to look for ...  */
@@ -1880,7 +1879,7 @@ linemap_get_file_highest_location (struct line_maps *set,
   /* The highest location for a given map is either the starting
      location of the next map minus one, or -- if the map is the
      latest one -- the highest location of the set.  */
-  source_location result;
+  location_t result;
   if (i == (int) set->info_ordinary.used - 1)
     result = set->highest_location;
   else
@@ -1921,14 +1920,14 @@ linemap_get_statistics (struct line_maps *set,
       linemap_assert (linemap_macro_expansion_map_p (cur_map));
 
       macro_maps_locations_size +=
-	2 * MACRO_MAP_NUM_MACRO_TOKENS (cur_map) * sizeof (source_location);
+	2 * MACRO_MAP_NUM_MACRO_TOKENS (cur_map) * sizeof (location_t);
 
       for (i = 0; i < 2 * MACRO_MAP_NUM_MACRO_TOKENS (cur_map); i += 2)
 	{
 	  if (MACRO_MAP_LOCATIONS (cur_map)[i] ==
 	      MACRO_MAP_LOCATIONS (cur_map)[i + 1])
 	    duplicated_macro_maps_locations_size +=
-	      sizeof (source_location);
+	      sizeof (location_t);
 	}
     }
 
@@ -1995,7 +1994,7 @@ line_table_dump (FILE *stream, struct line_maps *set, unsigned int num_ordinary,
 
 /* Construct a rich_location with location LOC as its initial range.  */
 
-rich_location::rich_location (line_maps *set, source_location loc,
+rich_location::rich_location (line_maps *set, location_t loc,
 			      const range_label *label) :
   m_line_table (set),
   m_ranges (),
@@ -2018,7 +2017,7 @@ rich_location::~rich_location ()
 
 /* Get location IDX within this rich_location.  */
 
-source_location
+location_t
 rich_location::get_loc (unsigned int idx) const
 {
   const location_range *locrange = get_range (idx);
@@ -2081,7 +2080,7 @@ rich_location::override_column (int column)
 /* Add the given range.  */
 
 void
-rich_location::add_range (source_location loc,
+rich_location::add_range (location_t loc,
 			  enum range_display_kind range_display_kind,
 			  const range_label *label)
 {
@@ -2106,7 +2105,7 @@ rich_location::add_range (source_location loc,
    - the "%C" and "%L" format codes in the Fortran frontend.  */
 
 void
-rich_location::set_range (unsigned int idx, source_location loc,
+rich_location::set_range (unsigned int idx, location_t loc,
 			  enum range_display_kind range_display_kind)
 {
   /* We can either overwrite an existing range, or add one exactly
@@ -2142,10 +2141,10 @@ rich_location::add_fixit_insert_before (const char *new_content)
    immediately before the start of WHERE.  */
 
 void
-rich_location::add_fixit_insert_before (source_location where,
+rich_location::add_fixit_insert_before (location_t where,
 					const char *new_content)
 {
-  source_location start = get_range_from_loc (m_line_table, where).m_start;
+  location_t start = get_range_from_loc (m_line_table, where).m_start;
   maybe_add_fixit (start, start, new_content);
 }
 
@@ -2162,11 +2161,11 @@ rich_location::add_fixit_insert_after (const char *new_content)
    immediately after the end-point of WHERE.  */
 
 void
-rich_location::add_fixit_insert_after (source_location where,
+rich_location::add_fixit_insert_after (location_t where,
 				       const char *new_content)
 {
-  source_location finish = get_range_from_loc (m_line_table, where).m_finish;
-  source_location next_loc
+  location_t finish = get_range_from_loc (m_line_table, where).m_finish;
+  location_t next_loc
     = linemap_position_for_loc_and_offset (m_line_table, finish, 1);
 
   /* linemap_position_for_loc_and_offset can fail, if so, it returns
@@ -2195,7 +2194,7 @@ rich_location::add_fixit_remove ()
    the start and finish of WHERE.  */
 
 void
-rich_location::add_fixit_remove (source_location where)
+rich_location::add_fixit_remove (location_t where)
 {
   source_range range = get_range_from_loc (m_line_table, where);
   add_fixit_remove (range);
@@ -2225,7 +2224,7 @@ rich_location::add_fixit_replace (const char *new_content)
    the start and finish of WHERE with NEW_CONTENT.  */
 
 void
-rich_location::add_fixit_replace (source_location where,
+rich_location::add_fixit_replace (location_t where,
 				  const char *new_content)
 {
   source_range range = get_range_from_loc (m_line_table, where);
@@ -2239,11 +2238,11 @@ void
 rich_location::add_fixit_replace (source_range src_range,
 				  const char *new_content)
 {
-  source_location start = get_pure_location (m_line_table, src_range.m_start);
-  source_location finish = get_pure_location (m_line_table, src_range.m_finish);
+  location_t start = get_pure_location (m_line_table, src_range.m_start);
+  location_t finish = get_pure_location (m_line_table, src_range.m_finish);
 
   /* Fix-it hints use half-closed ranges, so attempt to offset the endpoint.  */
-  source_location next_loc
+  location_t next_loc
     = linemap_position_for_loc_and_offset (m_line_table, finish, 1);
   /* linemap_position_for_loc_and_offset can fail, if so, it returns
      its input value.  */
@@ -2274,7 +2273,7 @@ rich_location::get_last_fixit_hint () const
    Otherwise (the common case), return false.  */
 
 bool
-rich_location::reject_impossible_fixit (source_location where)
+rich_location::reject_impossible_fixit (location_t where)
 {
   /* Fix-its within a rich_location should either all be suggested, or
      none of them should be suggested.
@@ -2312,8 +2311,8 @@ rich_location::stop_supporting_fixits ()
    consolidating into the prior fixit if possible.  */
 
 void
-rich_location::maybe_add_fixit (source_location start,
-				source_location next_loc,
+rich_location::maybe_add_fixit (location_t start,
+				location_t next_loc,
 				const char *new_content)
 {
   if (reject_impossible_fixit (start))
@@ -2394,8 +2393,8 @@ rich_location::maybe_add_fixit (source_location start,
 
 /* class fixit_hint.  */
 
-fixit_hint::fixit_hint (source_location start,
-			source_location next_loc,
+fixit_hint::fixit_hint (location_t start,
+			location_t next_loc,
 			const char *new_content)
 : m_start (start),
   m_next_loc (next_loc),
@@ -2433,8 +2432,8 @@ fixit_hint::affects_line_p (const char *file, int line) const
    Otherwise return false.  */
 
 bool
-fixit_hint::maybe_append (source_location start,
-			  source_location next_loc,
+fixit_hint::maybe_append (location_t start,
+			  location_t next_loc,
 			  const char *new_content)
 {
   /* For consolidation to be possible, START must be at this hint's

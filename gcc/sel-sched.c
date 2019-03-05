@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.  Selective scheduler and pipeliner.
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -473,8 +473,7 @@ static int first_emitted_uid;
 
 /* Set of basic blocks that are forced to start new ebbs.  This is a subset
    of all the ebb heads.  */
-static bitmap_head _forced_ebb_heads;
-bitmap_head *forced_ebb_heads = &_forced_ebb_heads;
+bitmap forced_ebb_heads;
 
 /* Blocks that need to be rescheduled after pipelining.  */
 bitmap blocks_to_reschedule = NULL;
@@ -1103,7 +1102,7 @@ init_regs_for_mode (machine_mode mode)
       if (i >= 0)
         continue;
 
-      if (targetm.hard_regno_call_part_clobbered (cur_reg, mode))
+      if (targetm.hard_regno_call_part_clobbered (NULL, cur_reg, mode))
         SET_HARD_REG_BIT (sel_hrd.regs_for_call_clobbered[mode],
                           cur_reg);
 
@@ -1252,7 +1251,7 @@ mark_unavailable_hard_regs (def_t def, struct reg_rename *reg_rename_p,
 
   /* Exclude registers that are partially call clobbered.  */
   if (def->crosses_call
-      && !targetm.hard_regno_call_part_clobbered (regno, mode))
+      && !targetm.hard_regno_call_part_clobbered (NULL, regno, mode))
     AND_COMPL_HARD_REG_SET (reg_rename_p->available_for_renaming,
                             sel_hrd.regs_for_call_clobbered[mode]);
 
@@ -3228,7 +3227,7 @@ get_spec_check_type_for_insn (insn_t insn, expr_t expr)
    ORIGINAL_INSNS list.
 
    REG_RENAME_P denotes the set of hardware registers that
-   can not be used with renaming due to the register class restrictions,
+   cannot be used with renaming due to the register class restrictions,
    mode restrictions and other (the register we'll choose should be
    compatible class with the original uses, shouldn't be in call_used_regs,
    should be HARD_REGNO_RENAME_OK etc).
@@ -5850,7 +5849,7 @@ maybe_emit_renaming_copy (rtx_insn *insn,
   bool insn_emitted  = false;
   rtx cur_reg;
 
-  /* Bail out early when expression can not be renamed at all.  */
+  /* Bail out early when expression cannot be renamed at all.  */
   if (!EXPR_SEPARABLE_P (params->c_expr))
     return false;
 
@@ -6947,8 +6946,7 @@ sel_region_init (int rgn)
   memset (reg_rename_tick, 0, sizeof reg_rename_tick);
   reg_rename_this_tick = 0;
 
-  bitmap_initialize (forced_ebb_heads, 0);
-  bitmap_clear (forced_ebb_heads);
+  forced_ebb_heads = BITMAP_ALLOC (NULL);
 
   setup_nop_vinsn ();
   current_copies = BITMAP_ALLOC (NULL);
@@ -7290,7 +7288,7 @@ sel_region_finish (bool reset_sched_cycles_p)
 
   sel_finish_global_and_expr ();
 
-  bitmap_clear (forced_ebb_heads);
+  BITMAP_FREE (forced_ebb_heads);
 
   free_nop_vinsn ();
 

@@ -1,5 +1,5 @@
 # Linker script for libgccjit.so
-#   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+#   Copyright (C) 2013-2019 Free Software Foundation, Inc.
 #   Contributed by David Malcolm <dmalcolm@redhat.com>.
 #
 # This file is part of GCC.
@@ -170,3 +170,8 @@ LIBGCCJIT_ABI_10 {
   global:
     gcc_jit_context_new_rvalue_from_vector;
 } LIBGCCJIT_ABI_9;
+
+LIBGCCJIT_ABI_11 {
+  global:
+    gcc_jit_context_add_driver_option;
+} LIBGCCJIT_ABI_10;

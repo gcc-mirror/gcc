@@ -1,5 +1,5 @@
 /* GNU Objective-C Runtime API - Modern API
-   Copyright (C) 2010-2018 Free Software Foundation, Inc.
+   Copyright (C) 2010-2019 Free Software Foundation, Inc.
    Contributed by Nicola Pero <nicola.pero@meta-innovation.com>
 
 This file is part of GCC.
@@ -224,8 +224,8 @@ objc_EXPORT SEL * sel_copyTypedSelectorList (const char *name,
    This is useful if you have the name of the selector, and would
    really like to get a selector for it that includes the type
    encoding.  Unfortunately, if the program contains multiple selector
-   with the same name but different types, sel_getTypedSelector can
-   not possibly know which one you need, and so will return NULL.
+   with the same name but different types, sel_getTypedSelector cannot
+   possibly know which one you need, and so will return NULL.
 
    Compatibility Note: the Apple/NeXT runtime has untyped selectors,
    so it does not have this function, which is specific to the GNU
@@ -342,7 +342,7 @@ objc_EXPORT Ivar * class_copyIvarList (Class class_, unsigned int *numberOfRetur
 /* Add an instance variable with name 'ivar_name' to class 'class_',
    where 'class_' is a class in construction that has been created
    using objc_allocateClassPair() and has not been registered with the
-   runtime using objc_registerClassPair() yet.  You can not add
+   runtime using objc_registerClassPair() yet.  You cannot add
    instance variables to classes already registered with the runtime.
    'size' is the size of the instance variable, 'log_2_of_alignment'
    the alignment as a power of 2 (so 0 means alignment to a 1 byte
@@ -373,7 +373,7 @@ objc_EXPORT const char * property_getName (Property property);
 objc_EXPORT const char * property_getAttributes (Property property);
 
 /* Return the property with name 'propertyName' of the class 'class_'.
-   This function returns NULL if the required property can not be
+   This function returns NULL if the required property cannot be
    found.  Return NULL if 'class_' or 'propertyName' is NULL.
 
    Note that the traditional ABI does not store the list of properties
@@ -568,7 +568,7 @@ method_exchangeImplementations (Method method_a, Method method_b);
    class_addMethod (object_getClass (class), method)) that are
    required, and then you need to call objc_registerClassPair() to
    activate the class.  If you need to create a hierarchy of classes,
-   you need to create and register them one at a time.  You can not
+   you need to create and register them one at a time.  You cannot
    create a new class using another class in construction as
    superclass.  Return Nil if 'class-name' is NULL or if a class with
    that name already exists or 'superclass' is a class still in
@@ -876,7 +876,7 @@ objc_EXPORT struct objc_method_description *protocol_copyMethodDescriptionList (
    properties.  At the moment, optional properties and class
    properties are not part of the Objective-C language, so both
    'requiredProperty' and 'instanceProperty' should be set to YES.
-   This function returns NULL if the required property can not be
+   This function returns NULL if the required property cannot be
    found.
 
    Note that the traditional ABI does not store the list of properties

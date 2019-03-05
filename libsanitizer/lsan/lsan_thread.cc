@@ -153,4 +153,9 @@ void UnlockThreadRegistry() {
   thread_registry->Unlock();
 }
 
+ThreadRegistry *GetThreadRegistryLocked() {
+  thread_registry->CheckLocked();
+  return thread_registry;
+}
+
 } // namespace __lsan

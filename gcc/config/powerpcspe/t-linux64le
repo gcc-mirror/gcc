@@ -1,3 +1,0 @@
-#rs6000/t-linux64le
-
-MULTILIB_OSDIRNAMES := $(subst -linux,le-linux,$(MULTILIB_OSDIRNAMES))

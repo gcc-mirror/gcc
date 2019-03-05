@@ -1,5 +1,5 @@
 /* Functions dealing with attribute handling, used by most front ends.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,6 +30,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin.h"
 #include "selftest.h"
 #include "hash-set.h"
+#include "diagnostic.h"
+#include "pretty-print.h"
+#include "intl.h"
 
 /* Table of the tables of attributes (common, language, format, machine)
    searched.  */
@@ -1688,6 +1691,8 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
 	     a function global scope, unless declared static.  */
 	  if (current_function_decl != NULL_TREE && !TREE_STATIC (node))
 	    TREE_PUBLIC (node) = 1;
+	  /* Clear TREE_STATIC because DECL_EXTERNAL is set.  */
+	  TREE_STATIC (node) = 0;
 	}
 
       if (*no_add_attrs == false)
@@ -1811,6 +1816,198 @@ private_lookup_attribute (const char *attr_name, size_t attr_len, tree list)
 
   return list;
 }
+
+/* Return true if the function decl or type NODE has been declared
+   with attribute ANAME among attributes ATTRS.  */
+
+static bool
+has_attribute (tree node, tree attrs, const char *aname)
+{
+  if (!strcmp (aname, "const"))
+    {
+      if (DECL_P (node) && TREE_READONLY (node))
+	return true;
+    }
+  else if (!strcmp (aname, "malloc"))
+    {
+      if (DECL_P (node) && DECL_IS_MALLOC (node))
+	return true;
+    }
+  else if (!strcmp (aname, "noreturn"))
+    {
+      if (DECL_P (node) && TREE_THIS_VOLATILE (node))
+	return true;
+    }
+  else if (!strcmp (aname, "nothrow"))
+    {
+      if (TREE_NOTHROW (node))
+	return true;
+    }
+  else if (!strcmp (aname, "pure"))
+    {
+      if (DECL_P (node) && DECL_PURE_P (node))
+	return true;
+    }
+
+  return lookup_attribute (aname, attrs);
+}
+
+/* Return the number of mismatched function or type attributes between
+   the "template" function declaration TMPL and DECL.  The word "template"
+   doesn't necessarily refer to a C++ template but rather a declaration
+   whose attributes should be matched by those on DECL.  For a non-zero
+   return value set *ATTRSTR to a string representation of the list of
+   mismatched attributes with quoted names.
+   ATTRLIST is a list of additional attributes that SPEC should be
+   taken to ultimately be declared with.  */
+
+unsigned
+decls_mismatched_attributes (tree tmpl, tree decl, tree attrlist,
+			     const char* const blacklist[],
+			     pretty_printer *attrstr)
+{
+  if (TREE_CODE (tmpl) != FUNCTION_DECL)
+    return 0;
+
+  /* Avoid warning if either declaration or its type is deprecated.  */
+  if (TREE_DEPRECATED (tmpl)
+      || TREE_DEPRECATED (decl))
+    return 0;
+
+  const tree tmpls[] = { tmpl, TREE_TYPE (tmpl) };
+  const tree decls[] = { decl, TREE_TYPE (decl) };
+
+  if (TREE_DEPRECATED (tmpls[1])
+      || TREE_DEPRECATED (decls[1])
+      || TREE_DEPRECATED (TREE_TYPE (tmpls[1]))
+      || TREE_DEPRECATED (TREE_TYPE (decls[1])))
+    return 0;
+
+  tree tmpl_attrs[] = { DECL_ATTRIBUTES (tmpl), TYPE_ATTRIBUTES (tmpls[1]) };
+  tree decl_attrs[] = { DECL_ATTRIBUTES (decl), TYPE_ATTRIBUTES (decls[1]) };
+
+  if (!decl_attrs[0])
+    decl_attrs[0] = attrlist;
+  else if (!decl_attrs[1])
+    decl_attrs[1] = attrlist;
+
+  /* Avoid warning if the template has no attributes.  */
+  if (!tmpl_attrs[0] && !tmpl_attrs[1])
+    return 0;
+
+  /* Avoid warning if either declaration contains an attribute on
+     the white list below.  */
+  const char* const whitelist[] = {
+    "error", "warning"
+  };
+
+  for (unsigned i = 0; i != 2; ++i)
+    for (unsigned j = 0; j != sizeof whitelist / sizeof *whitelist; ++j)
+      if (lookup_attribute (whitelist[j], tmpl_attrs[i])
+	  || lookup_attribute (whitelist[j], decl_attrs[i]))
+	return 0;
+
+  /* Put together a list of the black-listed attributes that the template
+     is declared with and the declaration is not, in case it's not apparent
+     from the most recent declaration of the template.  */
+  unsigned nattrs = 0;
+
+  for (unsigned i = 0; blacklist[i]; ++i)
+    {
+      /* Attribute leaf only applies to extern functions.  Avoid mentioning
+	 it when it's missing from a static declaration.  */
+      if (!TREE_PUBLIC (decl)
+	  && !strcmp ("leaf", blacklist[i]))
+	continue;
+
+      for (unsigned j = 0; j != 2; ++j)
+	{
+	  if (!has_attribute (tmpls[j], tmpl_attrs[j], blacklist[i]))
+	    continue;
+
+	  unsigned kmax = 1 + !!decl_attrs[1];
+	  for (unsigned k = 0; k != kmax; ++k)
+	    {
+	      if (has_attribute (decls[k], decl_attrs[k], blacklist[i]))
+		break;
+
+	      if (!k && kmax > 1)
+		continue;
+
+	      if (nattrs)
+		pp_string (attrstr, ", ");
+	      pp_begin_quote (attrstr, pp_show_color (global_dc->printer));
+	      pp_string (attrstr, blacklist[i]);
+	      pp_end_quote (attrstr, pp_show_color (global_dc->printer));
+	      ++nattrs;
+	    }
+	}
+    }
+
+  return nattrs;
+}
+
+/* Issue a warning for the declaration ALIAS for TARGET where ALIAS
+   specifies either attributes that are incompatible with those of
+   TARGET, or attributes that are missing and that declaring ALIAS
+   with would benefit.  */
+
+void
+maybe_diag_alias_attributes (tree alias, tree target)
+{
+  /* Do not expect attributes to match between aliases and ifunc
+     resolvers.  There is no obvious correspondence between them.  */
+  if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (alias)))
+    return;
+
+  const char* const blacklist[] = {
+    "alloc_align", "alloc_size", "cold", "const", "hot", "leaf", "malloc",
+    "nonnull", "noreturn", "nothrow", "pure", "returns_nonnull",
+    "returns_twice", NULL
+  };
+
+  pretty_printer attrnames;
+  if (warn_attribute_alias > 1)
+    {
+      /* With -Wattribute-alias=2 detect alias declarations that are more
+	 restrictive than their targets first.  Those indicate potential
+	 codegen bugs.  */
+      if (unsigned n = decls_mismatched_attributes (alias, target, NULL_TREE,
+						    blacklist, &attrnames))
+	{
+	  auto_diagnostic_group d;
+	  if (warning_n (DECL_SOURCE_LOCATION (alias),
+			 OPT_Wattribute_alias_, n,
+			 "%qD specifies more restrictive attribute than "
+			 "its target %qD: %s",
+			 "%qD specifies more restrictive attributes than "
+			 "its target %qD: %s",
+			 alias, target, pp_formatted_text (&attrnames)))
+	    inform (DECL_SOURCE_LOCATION (target),
+		    "%qD target declared here", alias);
+	  return;
+	}
+    }
+
+  /* Detect alias declarations that are less restrictive than their
+     targets.  Those suggest potential optimization opportunities
+     (solved by adding the missing attribute(s) to the alias).  */
+  if (unsigned n = decls_mismatched_attributes (target, alias, NULL_TREE,
+						blacklist, &attrnames))
+    {
+      auto_diagnostic_group d;
+      if (warning_n (DECL_SOURCE_LOCATION (alias),
+		     OPT_Wmissing_attributes, n,
+		     "%qD specifies less restrictive attribute than "
+		     "its target %qD: %s",
+		     "%qD specifies less restrictive attributes than "
+		     "its target %qD: %s",
+		     alias, target, pp_formatted_text (&attrnames)))
+	inform (DECL_SOURCE_LOCATION (target),
+		"%qD target declared here", alias);
+    }
+}
+
 
 #if CHECKING_P
 

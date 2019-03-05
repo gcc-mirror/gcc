@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2018 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2019 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -132,7 +132,7 @@ print "/* Structure to save/restore optimization and target specific options.  *
 print "struct GTY(()) cl_optimization";
 print "{";
 
-n_opt_char = 3;
+n_opt_char = 4;
 n_opt_short = 0;
 n_opt_int = 0;
 n_opt_enum = 0;
@@ -140,6 +140,7 @@ n_opt_other = 0;
 var_opt_char[0] = "unsigned char x_optimize";
 var_opt_char[1] = "unsigned char x_optimize_size";
 var_opt_char[2] = "unsigned char x_optimize_debug";
+var_opt_char[3] = "unsigned char x_optimize_fast";
 
 for (i = 0; i < n_opts; i++) {
 	if (flag_set_p("(Optimization|PerFunction)", flags[i])) {
@@ -503,8 +504,10 @@ print "/* Mapping from cpp message reasons to the options that enable them.  */"
 print "#include <cpplib.h>"
 print "struct cpp_reason_option_codes_t"
 print "{"
-print "  const int reason;		/* cpplib message reason.  */"
-print "  const int option_code;	/* gcc option that controls this message.  */"
+print "  /* cpplib message reason.  */"
+print "  const enum cpp_warning_reason reason;"
+print "  /* gcc option that controls this message.  */"
+print "  const int option_code;"
 print "};"
 print ""
 print "static const struct cpp_reason_option_codes_t cpp_reason_option_codes[] = {"

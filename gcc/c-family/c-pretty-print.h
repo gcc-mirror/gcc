@@ -1,5 +1,5 @@
 /* Various declarations for the C and C++ pretty-printers.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -128,11 +128,13 @@ void pp_c_logical_or_expression (c_pretty_printer *, tree);
 void pp_c_expression_list (c_pretty_printer *, tree);
 void pp_c_constructor_elts (c_pretty_printer *, vec<constructor_elt, va_gc> *);
 void pp_c_call_argument_list (c_pretty_printer *, tree);
+void pp_c_type_cast (c_pretty_printer *, tree);
 void pp_c_cast_expression (c_pretty_printer *, tree);
 void pp_c_init_declarator (c_pretty_printer *, tree);
 void pp_c_ws_string (c_pretty_printer *, const char *);
 void pp_c_identifier (c_pretty_printer *, const char *);
 void pp_c_string_literal (c_pretty_printer *, tree);
+void pp_c_integer_constant (c_pretty_printer *, tree);
 
 void print_c_tree (FILE *file, tree t);
 

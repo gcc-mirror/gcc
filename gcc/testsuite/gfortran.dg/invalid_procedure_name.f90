@@ -9,6 +9,6 @@ INTERFACE I1 ! { dg-error "" }
 END INTERFACE I1
 CONTAINS
  SUBROUTINE I1(I) ! { dg-error "already defined as a generic" }
- END SUBROUTINE I1
+ END SUBROUTINE I1 ! { dg-error "Expecting END PROGRAM statement" }
 END
 

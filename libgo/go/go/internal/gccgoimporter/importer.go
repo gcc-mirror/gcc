@@ -8,9 +8,9 @@ package gccgoimporter // import "go/internal/gccgoimporter"
 import (
 	"bytes"
 	"debug/elf"
-	"debug/xcoff"
 	"fmt"
 	"go/types"
+	"internal/xcoff"
 	"io"
 	"os"
 	"path/filepath"
@@ -64,6 +64,7 @@ func findExportFile(searchpaths []string, pkgpath string) (string, error) {
 const (
 	gccgov1Magic    = "v1;\n"
 	gccgov2Magic    = "v2;\n"
+	gccgov3Magic    = "v3;\n"
 	goimporterMagic = "\n$$ "
 	archiveMagic    = "!<ar"
 	aixbigafMagic   = "<big"
@@ -93,12 +94,12 @@ func openExportFile(fpath string) (reader io.ReadSeeker, closer io.Closer, err e
 
 	var objreader io.ReaderAt
 	switch string(magic[:]) {
-	case gccgov1Magic, gccgov2Magic, goimporterMagic:
+	case gccgov1Magic, gccgov2Magic, gccgov3Magic, goimporterMagic:
 		// Raw export data.
 		reader = f
 		return
 
-	case archiveMagic:
+	case archiveMagic, aixbigafMagic:
 		reader, err = arExportData(f)
 		return
 
@@ -128,6 +129,7 @@ func openExportFile(fpath string) (reader io.ReadSeeker, closer io.Closer, err e
 		return
 	}
 
+	err = fmt.Errorf("%s: unrecognized file format", fpath)
 	return
 }
 
@@ -208,7 +210,7 @@ func GetImporter(searchpaths []string, initmap map[*types.Package]InitData) Impo
 		}
 
 		switch magics {
-		case gccgov1Magic, gccgov2Magic:
+		case gccgov1Magic, gccgov2Magic, gccgov3Magic:
 			var p parser
 			p.init(fpath, reader, imports)
 			pkg = p.parsePackage()

@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Synopsys DesignWare ARC cpu.
-   Copyright (C) 1994-2018 Free Software Foundation, Inc.
+   Copyright (C) 1994-2019 Free Software Foundation, Inc.
 
    Sources derived from work done by Sankhya Technologies (www.sankhya.com) on
    behalf of Synopsys Inc.
@@ -87,14 +87,14 @@ HARD_REG_SET overrideregs;
 /* Maximum size of a loop.  */
 #define ARC_MAX_LOOP_LENGTH 4095
 
-/* ??? Loads can handle any constant, stores can only handle small ones.  */
-/* OTOH, LIMMs cost extra, so their usefulness is limited.  */
-#define RTX_OK_FOR_OFFSET_P(MODE, X) \
-(GET_CODE (X) == CONST_INT \
- && SMALL_INT_RANGE (INTVAL (X), (GET_MODE_SIZE (MODE) - 1) & -4, \
-		     (INTVAL (X) & (GET_MODE_SIZE (MODE) - 1) & 3 \
-		      ? 0 \
-		      : -(-GET_MODE_SIZE (MODE) | -4) >> 1)))
+/* Check if an rtx fits in the store instruction format.  Loads can
+   handle any constant.  */
+#define RTX_OK_FOR_OFFSET_P(MODE, X)					\
+  (GET_CODE (X) == CONST_INT						\
+   && SMALL_INT_RANGE (INTVAL (X), (GET_MODE_SIZE (MODE) - 1) & (~0x03), \
+		       (INTVAL (X) & (GET_MODE_SIZE (MODE) - 1) & 3	\
+			? 0						\
+			: -(-GET_MODE_SIZE (MODE) | (~0x03)) >> 1)))
 
 /* Array of valid operand punctuation characters.  */
 char arc_punct_chars[256];
@@ -170,6 +170,12 @@ static int rgf_banked_register_count;
    ? (get_attr_iscompact (INSN) == ISCOMPACT_TRUE \
       || get_attr_iscompact (INSN) == ISCOMPACT_TRUE_LIMM) \
    : get_attr_iscompact (INSN) != ISCOMPACT_FALSE)
+
+/* Start enter/leave register range.  */
+#define ENTER_LEAVE_START_REG 13
+
+/* End enter/leave register range.  */
+#define ENTER_LEAVE_END_REG 26
 
 /* The maximum number of insns skipped which will be conditionalised if
    possible.  */
@@ -728,11 +734,6 @@ arc_secondary_reload (bool in_p,
   if (cl == DOUBLE_REGS)
     return GENERAL_REGS;
 
-  /* The loop counter register can be stored, but not loaded directly.  */
-  if ((cl == LPCOUNT_REG || cl == WRITABLE_CORE_REGS)
-      && in_p && MEM_P (x))
-    return GENERAL_REGS;
-
  /* If we have a subreg (reg), where reg is a pseudo (that will end in
     a memory location), then we may need a scratch register to handle
     the fp/sp+largeoffset address.  */
@@ -750,8 +751,9 @@ arc_secondary_reload (bool in_p,
 	  if (regno != -1)
 	    return NO_REGS;
 
-	  /* It is a pseudo that ends in a stack location.  */
-	  if (reg_equiv_mem (REGNO (x)))
+	  /* It is a pseudo that ends in a stack location.  This
+	     procedure only works with the old reload step.  */
+	  if (reg_equiv_mem (REGNO (x)) && !lra_in_progress)
 	    {
 	      /* Get the equivalent address and check the range of the
 		 offset.  */
@@ -1290,37 +1292,26 @@ arc_override_options (void)
   if (arc_size_opt_level == 3)
     optimize_size = 1;
 
-  /* Compact casesi is not a valid option for ARCv2 family.  */
-  if (TARGET_V2)
-    {
-      if (TARGET_COMPACT_CASESI)
-	{
-	  warning (OPT_mcompact_casesi,
-		   "compact-casesi is not applicable to ARCv2");
-	  TARGET_COMPACT_CASESI = 0;
-	}
-    }
-  else if (optimize_size == 1
-	   && !global_options_set.x_TARGET_COMPACT_CASESI)
-    TARGET_COMPACT_CASESI = 1;
-
   if (flag_pic)
     target_flags |= MASK_NO_SDATA_SET;
 
   if (flag_no_common == 255)
     flag_no_common = !TARGET_NO_SDATA_SET;
 
-  /* TARGET_COMPACT_CASESI needs the "q" register class.  */
   if (TARGET_MIXED_CODE)
     TARGET_Q_CLASS = 1;
-  if (!TARGET_Q_CLASS)
-    TARGET_COMPACT_CASESI = 0;
-  if (TARGET_COMPACT_CASESI)
-    TARGET_CASE_VECTOR_PC_RELATIVE = 1;
 
   /* Check for small data option */
   if (!global_options_set.x_g_switch_value && !TARGET_NO_SDATA_SET)
     g_switch_value = TARGET_LL64 ? 8 : 4;
+
+  /* A7 has an issue with delay slots.  */
+  if (TARGET_ARC700 && (arc_tune != ARC_TUNE_ARC7XX))
+    flag_delayed_branch = 0;
+
+  /* Millicode thunks doesn't work with long calls.  */
+  if (TARGET_LONG_CALLS_SET)
+    target_flags &= ~MASK_MILLICODE_THUNK_SET;
 
   /* These need to be done at start up.  It's convenient to do them here.  */
   arc_init ();
@@ -1664,8 +1655,6 @@ enum reg_class arc_regno_reg_class[FIRST_PSEUDO_REGISTER];
 enum reg_class
 arc_preferred_reload_class (rtx, enum reg_class cl)
 {
-  if ((cl) == CHEAP_CORE_REGS  || (cl) == WRITABLE_CORE_REGS)
-    return GENERAL_REGS;
   return cl;
 }
 
@@ -1763,25 +1752,21 @@ arc_conditional_register_usage (void)
       strcpy (rname29, "ilink");
       strcpy (rname30, "r30");
 
-      if (!TEST_HARD_REG_BIT (overrideregs, 30))
+      if (!TEST_HARD_REG_BIT (overrideregs, R30_REG))
 	{
 	  /* No user interference.  Set the r30 to be used by the
 	     compiler.  */
-	  call_used_regs[30] = 1;
-	  fixed_regs[30] = 0;
+	  call_used_regs[R30_REG] = 1;
+	  fixed_regs[R30_REG] = 0;
 
-	  arc_regno_reg_class[30] = WRITABLE_CORE_REGS;
-	  SET_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], 30);
-	  SET_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], 30);
-	  SET_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], 30);
-	  SET_HARD_REG_BIT (reg_class_contents[MPY_WRITABLE_CORE_REGS], 30);
+	  arc_regno_reg_class[R30_REG] = GENERAL_REGS;
 	}
    }
 
   if (TARGET_MUL64_SET)
     {
-      fix_start = 57;
-      fix_end = 59;
+      fix_start = R57_REG;
+      fix_end = R59_REG;
 
       /* We don't provide a name for mmed.  In rtl / assembly resource lists,
 	 you are supposed to refer to it as mlo & mhi, e.g
@@ -1804,8 +1789,8 @@ arc_conditional_register_usage (void)
 
   if (TARGET_MULMAC_32BY16_SET)
     {
-      fix_start = 56;
-      fix_end = fix_end > 57 ? fix_end : 57;
+      fix_start = MUL32x16_REG;
+      fix_end = fix_end > R57_REG ? fix_end : R57_REG;
       strcpy (rname56, TARGET_BIG_ENDIAN ? "acc1" : "acc2");
       strcpy (rname57, TARGET_BIG_ENDIAN ? "acc2" : "acc1");
     }
@@ -1867,130 +1852,59 @@ arc_conditional_register_usage (void)
   /* Reduced configuration: don't use r4-r9, r16-r25.  */
   if (TARGET_RF16)
     {
-      for (i = 4; i <= 9; i++)
-	{
-	  fixed_regs[i] = call_used_regs[i] = 1;
-	}
-      for (i = 16; i <= 25; i++)
-	{
-	  fixed_regs[i] = call_used_regs[i] = 1;
-	}
-    }
-
-  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (!call_used_regs[regno])
-      CLEAR_HARD_REG_BIT (reg_class_contents[SIBCALL_REGS], regno);
-  for (regno = 32; regno < 60; regno++)
-    if (!fixed_regs[regno])
-      SET_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], regno);
-  if (!TARGET_ARC600_FAMILY)
-    {
-      for (regno = 32; regno <= 60; regno++)
-	CLEAR_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], regno);
-
-      /* If they have used -ffixed-lp_count, make sure it takes
-	 effect.  */
-      if (fixed_regs[LP_COUNT])
-	{
-	  CLEAR_HARD_REG_BIT (reg_class_contents[LPCOUNT_REG], LP_COUNT);
-	  CLEAR_HARD_REG_BIT (reg_class_contents[SIBCALL_REGS], LP_COUNT);
-	  CLEAR_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], LP_COUNT);
-
-	  /* Instead of taking out SF_MODE like below, forbid it outright.  */
-	  arc_hard_regno_modes[60] = 0;
-	}
-      else
-	arc_hard_regno_modes[60] = 1 << (int) S_MODE;
+      for (i = R4_REG; i <= R9_REG; i++)
+	fixed_regs[i] = call_used_regs[i] = 1;
+      for (i = R16_REG; i <= R25_REG; i++)
+	fixed_regs[i] = call_used_regs[i] = 1;
     }
 
   /* ARCHS has 64-bit data-path which makes use of the even-odd paired
      registers.  */
   if (TARGET_HS)
-    {
-      for (regno = 1; regno < 32; regno +=2)
-	{
-	  arc_hard_regno_modes[regno] = S_MODES;
-	}
-    }
+    for (regno = R1_REG; regno < R32_REG; regno +=2)
+      arc_hard_regno_modes[regno] = S_MODES;
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    {
-      if (i < 29)
-	{
-	  if ((TARGET_Q_CLASS || TARGET_RRQ_CLASS)
-	      && ((i <= 3) || ((i >= 12) && (i <= 15))))
-	    arc_regno_reg_class[i] = ARCOMPACT16_REGS;
-	  else
-	    arc_regno_reg_class[i] = GENERAL_REGS;
-	}
-      else if (i < 60)
-	arc_regno_reg_class[i]
-	  = (fixed_regs[i]
-	     ? (TEST_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], i)
-		? CHEAP_CORE_REGS : ALL_CORE_REGS)
-	     : (((!TARGET_ARC600_FAMILY)
-		 && TEST_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], i))
-		? CHEAP_CORE_REGS : WRITABLE_CORE_REGS));
-      else
-	arc_regno_reg_class[i] = NO_REGS;
-    }
-
-  /* ARCOMPACT16_REGS is empty, if TARGET_Q_CLASS / TARGET_RRQ_CLASS
-     has not been activated.  */
-  if (!TARGET_Q_CLASS && !TARGET_RRQ_CLASS)
-    CLEAR_HARD_REG_SET(reg_class_contents [ARCOMPACT16_REGS]);
-  if (!TARGET_Q_CLASS)
-    CLEAR_HARD_REG_SET(reg_class_contents [AC16_BASE_REGS]);
-
-  gcc_assert (FIRST_PSEUDO_REGISTER >= 144);
+    if (i < ILINK1_REG)
+      {
+	if ((TARGET_Q_CLASS || TARGET_RRQ_CLASS)
+	    && ((i <= R3_REG) || ((i >= R12_REG) && (i <= R15_REG))))
+	  arc_regno_reg_class[i] = ARCOMPACT16_REGS;
+	else
+	  arc_regno_reg_class[i] = GENERAL_REGS;
+      }
+    else if (i < LP_COUNT)
+      arc_regno_reg_class[i] = GENERAL_REGS;
+    else
+      arc_regno_reg_class[i] = NO_REGS;
 
   /* Handle Special Registers.  */
-  arc_regno_reg_class[29] = LINK_REGS; /* ilink1 register.  */
-  if (!TARGET_V2)
-    arc_regno_reg_class[30] = LINK_REGS; /* ilink2 register.  */
-  arc_regno_reg_class[31] = LINK_REGS; /* blink register.  */
-  arc_regno_reg_class[60] = LPCOUNT_REG;
-  arc_regno_reg_class[61] = NO_REGS;      /* CC_REG: must be NO_REGS.  */
+  arc_regno_reg_class[CC_REG] = NO_REGS;      /* CC_REG: must be NO_REGS.  */
   arc_regno_reg_class[62] = GENERAL_REGS;
 
   if (TARGET_DPFP)
-    {
-      for (i = 40; i < 44; ++i)
-	{
-	  arc_regno_reg_class[i] = DOUBLE_REGS;
-
-	  /* Unless they want us to do 'mov d1, 0x00000000' make sure
-	     no attempt is made to use such a register as a destination
-	     operand in *movdf_insn.  */
-	  if (!TARGET_ARGONAUT_SET)
-	    {
-	    /* Make sure no 'c', 'w', 'W', or 'Rac' constraint is
-	       interpreted to mean they can use D1 or D2 in their insn.  */
-	    CLEAR_HARD_REG_BIT(reg_class_contents[CHEAP_CORE_REGS       ], i);
-	    CLEAR_HARD_REG_BIT(reg_class_contents[ALL_CORE_REGS         ], i);
-	    CLEAR_HARD_REG_BIT(reg_class_contents[WRITABLE_CORE_REGS    ], i);
-	    CLEAR_HARD_REG_BIT(reg_class_contents[MPY_WRITABLE_CORE_REGS], i);
-	    }
-	}
-    }
+    for (i = R40_REG; i < R44_REG; ++i)
+      {
+	arc_regno_reg_class[i] = DOUBLE_REGS;
+	if (!TARGET_ARGONAUT_SET)
+	  CLEAR_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], i);
+      }
   else
     {
-      /* Disable all DOUBLE_REGISTER settings,
-	 if not generating DPFP code.  */
-      arc_regno_reg_class[40] = ALL_REGS;
-      arc_regno_reg_class[41] = ALL_REGS;
-      arc_regno_reg_class[42] = ALL_REGS;
-      arc_regno_reg_class[43] = ALL_REGS;
+      /* Disable all DOUBLE_REGISTER settings, if not generating DPFP
+	 code.  */
+      arc_regno_reg_class[R40_REG] = ALL_REGS;
+      arc_regno_reg_class[R41_REG] = ALL_REGS;
+      arc_regno_reg_class[R42_REG] = ALL_REGS;
+      arc_regno_reg_class[R43_REG] = ALL_REGS;
 
-      fixed_regs[40] = 1;
-      fixed_regs[41] = 1;
-      fixed_regs[42] = 1;
-      fixed_regs[43] = 1;
+      fixed_regs[R40_REG] = 1;
+      fixed_regs[R41_REG] = 1;
+      fixed_regs[R42_REG] = 1;
+      fixed_regs[R43_REG] = 1;
 
-      arc_hard_regno_modes[40] = 0;
-      arc_hard_regno_modes[42] = 0;
-
-      CLEAR_HARD_REG_SET(reg_class_contents [DOUBLE_REGS]);
+      arc_hard_regno_modes[R40_REG] = 0;
+      arc_hard_regno_modes[R42_REG] = 0;
     }
 
   if (TARGET_SIMD_SET)
@@ -2012,23 +1926,15 @@ arc_conditional_register_usage (void)
     }
 
   /* pc : r63 */
-  arc_regno_reg_class[PROGRAM_COUNTER_REGNO] = GENERAL_REGS;
+  arc_regno_reg_class[PCL_REG] = NO_REGS;
 
   /*ARCV2 Accumulator.  */
   if ((TARGET_V2
        && (TARGET_FP_DP_FUSED || TARGET_FP_SP_FUSED))
       || TARGET_PLUS_DMPY)
   {
-    arc_regno_reg_class[ACCL_REGNO] = WRITABLE_CORE_REGS;
-    arc_regno_reg_class[ACCH_REGNO] = WRITABLE_CORE_REGS;
-    SET_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], ACCL_REGNO);
-    SET_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], ACCH_REGNO);
-    SET_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], ACCL_REGNO);
-    SET_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], ACCH_REGNO);
-    SET_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], ACCL_REGNO);
-    SET_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], ACCH_REGNO);
-    SET_HARD_REG_BIT (reg_class_contents[MPY_WRITABLE_CORE_REGS], ACCL_REGNO);
-    SET_HARD_REG_BIT (reg_class_contents[MPY_WRITABLE_CORE_REGS], ACCH_REGNO);
+    arc_regno_reg_class[ACCL_REGNO] = GENERAL_REGS;
+    arc_regno_reg_class[ACCH_REGNO] = GENERAL_REGS;
 
     /* Allow the compiler to freely use them.  */
     if (!TEST_HARD_REG_BIT (overrideregs, ACCL_REGNO))
@@ -2632,9 +2538,8 @@ struct GTY (()) arc_frame_info
   unsigned int args_size;	/* # bytes that outgoing arguments take up.  */
   unsigned int reg_size;	/* # bytes needed to store regs.  */
   unsigned int var_size;	/* # bytes that variables take up.  */
-  unsigned int reg_offset;	/* Offset from new sp to store regs.  */
   unsigned int gmask;		/* Mask of saved gp registers.  */
-  int          initialized;	/* Nonzero if frame size already calculated.  */
+  bool initialized; /* FALSE if frame size already calculated.  */
   short millicode_start_reg;
   short millicode_end_reg;
   bool save_return_addr;
@@ -2850,10 +2755,12 @@ arc_compute_frame_size (void)
 {
   int regno;
   unsigned int total_size, var_size, args_size, pretend_size, extra_size;
-  unsigned int reg_size, reg_offset;
+  unsigned int reg_size;
   unsigned int gmask;
   struct arc_frame_info *frame_info;
   int size;
+  unsigned int extra_plus_reg_size;
+  unsigned int extra_plus_reg_size_aligned;
 
   /* The answer might already be known.  */
   if (cfun->machine->frame_info.initialized)
@@ -2897,23 +2804,23 @@ arc_compute_frame_size (void)
     for (regno = 0; EH_RETURN_DATA_REGNO (regno) != INVALID_REGNUM; regno++)
       {
 	reg_size += UNITS_PER_WORD;
-	gmask |= 1 << regno;
+	gmask |= 1L << regno;
       }
 
-  /* 4) Space for back trace data structure.
-	<return addr reg size> (if required) + <fp size> (if required).  */
-  frame_info->save_return_addr
-    = (!crtl->is_leaf || df_regs_ever_live_p (RETURN_ADDR_REGNUM)
-       || crtl->calls_eh_return);
-  /* Saving blink reg in case of leaf function for millicode thunk calls.  */
-  if (optimize_size
-      && !TARGET_NO_MILLICODE_THUNK_SET
+  /* Check if we need to save the return address.  */
+  frame_info->save_return_addr = (!crtl->is_leaf
+				  || df_regs_ever_live_p (RETURN_ADDR_REGNUM)
+				  || crtl->calls_eh_return);
+
+  /* Saving blink reg for millicode thunk calls.  */
+  if (TARGET_MILLICODE_THUNK_SET
       && !crtl->calls_eh_return)
     {
       if (arc_compute_millicode_save_restore_regs (gmask, frame_info))
 	frame_info->save_return_addr = true;
     }
 
+  /* 4) Calculate extra size made up of the blink + fp size.  */
   extra_size = 0;
   if (arc_must_save_return_addr (cfun))
     extra_size = 4;
@@ -2924,14 +2831,9 @@ arc_compute_frame_size (void)
   pretend_size	= crtl->args.pretend_args_size;
 
   /* Ensure everything before the locals is aligned appropriately.  */
-    {
-       unsigned int extra_plus_reg_size;
-       unsigned int extra_plus_reg_size_aligned;
-
-       extra_plus_reg_size = extra_size + reg_size;
-       extra_plus_reg_size_aligned = ARC_STACK_ALIGN(extra_plus_reg_size);
-       reg_size = extra_plus_reg_size_aligned - extra_size;
-    }
+  extra_plus_reg_size = extra_size + reg_size;
+  extra_plus_reg_size_aligned = ARC_STACK_ALIGN (extra_plus_reg_size);
+  reg_size = extra_plus_reg_size_aligned - extra_size;
 
   /* Compute total frame size.  */
   total_size = var_size + args_size + extra_size + pretend_size + reg_size;
@@ -2942,12 +2844,6 @@ arc_compute_frame_size (void)
      as an issue I've changed this to an assert for now.  */
   gcc_assert (total_size == ARC_STACK_ALIGN (total_size));
 
-  /* Compute offset of register save area from stack pointer:
-     Frame: pretend_size <blink> reg_size <fp> var_size args_size <--sp
-  */
-  reg_offset = (total_size - (pretend_size + reg_size + extra_size)
-		+ (arc_frame_pointer_needed () ? 4 : 0));
-
   /* Save computed information.  */
   frame_info->total_size   = total_size;
   frame_info->extra_size   = extra_size;
@@ -2955,194 +2851,12 @@ arc_compute_frame_size (void)
   frame_info->var_size     = var_size;
   frame_info->args_size    = args_size;
   frame_info->reg_size     = reg_size;
-  frame_info->reg_offset   = reg_offset;
   frame_info->gmask        = gmask;
   frame_info->initialized  = reload_completed;
 
   /* Ok, we're done.  */
   return total_size;
 }
-
-/* Common code to save/restore registers.  */
-/* BASE_REG is the base register to use for addressing and to adjust.
-   GMASK is a bitmask of general purpose registers to save/restore.
-   epilogue_p 0: prologue 1:epilogue 2:epilogue, sibling thunk
-   If *FIRST_OFFSET is non-zero, add it first to BASE_REG - preferably
-   using a pre-modify for the first memory access.  *FIRST_OFFSET is then
-   zeroed.  */
-
-static void
-arc_save_restore (rtx base_reg,
-		  unsigned int gmask, int epilogue_p, int *first_offset)
-{
-  unsigned int offset = 0;
-  int regno;
-  struct arc_frame_info *frame = &cfun->machine->frame_info;
-  rtx sibthunk_insn = NULL_RTX;
-
-  if (gmask)
-    {
-      /* Millicode thunks implementation:
-	 Generates calls to millicodes for registers starting from r13 to r25
-	 Present Limitations:
-	 - Only one range supported. The remaining regs will have the ordinary
-	   st and ld instructions for store and loads. Hence a gmask asking
-	   to store r13-14, r16-r25 will only generate calls to store and
-	   load r13 to r14 while store and load insns will be generated for
-	   r16 to r25 in the prologue and epilogue respectively.
-
-	 - Presently library only supports register ranges starting from r13.
-      */
-      if (epilogue_p == 2 || frame->millicode_end_reg > 14)
-	{
-	  int start_call = frame->millicode_start_reg;
-	  int end_call = frame->millicode_end_reg;
-	  int n_regs = end_call - start_call + 1;
-	  int i = 0, r, off = 0;
-	  rtx insn;
-	  rtx ret_addr = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
-
-	  if (*first_offset)
-	    {
-	      /* "reg_size" won't be more than 127 .  */
-	      gcc_assert (epilogue_p || abs (*first_offset) <= 127);
-	      frame_add (base_reg, *first_offset);
-	      *first_offset = 0;
-	    }
-	  insn = gen_rtx_PARALLEL
-		  (VOIDmode, rtvec_alloc ((epilogue_p == 2) + n_regs + 1));
-	  if (epilogue_p == 2)
-	    i += 2;
-	  else
-	    XVECEXP (insn, 0, n_regs) = gen_rtx_CLOBBER (VOIDmode, ret_addr);
-	  for (r = start_call; r <= end_call; r++, off += UNITS_PER_WORD, i++)
-	    {
-	      rtx reg = gen_rtx_REG (SImode, r);
-	      rtx mem
-		= gen_frame_mem (SImode, plus_constant (Pmode, base_reg, off));
-
-	      if (epilogue_p)
-		XVECEXP (insn, 0, i) = gen_rtx_SET (reg, mem);
-	      else
-		XVECEXP (insn, 0, i) = gen_rtx_SET (mem, reg);
-	      gmask = gmask & ~(1L << r);
-	    }
-	  if (epilogue_p == 2)
-	    sibthunk_insn = insn;
-	  else
-	    {
-	      insn = frame_insn (insn);
-	      for (r = start_call, off = 0;
-		   r <= end_call;
-		   r++, off += UNITS_PER_WORD)
-		{
-		  rtx reg = gen_rtx_REG (SImode, r);
-		  if (epilogue_p)
-		      add_reg_note (insn, REG_CFA_RESTORE, reg);
-		  else
-		    {
-		      rtx mem = gen_rtx_MEM (SImode, plus_constant (Pmode,
-								    base_reg,
-								    off));
-
-		      add_reg_note (insn, REG_CFA_OFFSET,
-				    gen_rtx_SET (mem, reg));
-		    }
-		}
-	    }
-	  offset += off;
-	}
-
-      for (regno = 0; regno <= 31; regno++)
-	{
-	  machine_mode mode = SImode;
-	  bool found = false;
-
-	  if (TARGET_LL64
-	      && (regno % 2 == 0)
-	      && ((gmask & (1L << regno)) != 0)
-	      && ((gmask & (1L << (regno+1))) != 0))
-	    {
-	      found = true;
-	      mode  = DImode;
-	    }
-	  else if ((gmask & (1L << regno)) != 0)
-	    {
-	      found = true;
-	      mode  = SImode;
-	    }
-
-	  if (found)
-	    {
-	      rtx reg = gen_rtx_REG (mode, regno);
-	      rtx addr, mem;
-	      int cfa_adjust = *first_offset;
-
-	      if (*first_offset)
-		{
-		  gcc_assert (!offset);
-		  addr = plus_constant (Pmode, base_reg, *first_offset);
-		  addr = gen_rtx_PRE_MODIFY (Pmode, base_reg, addr);
-		  *first_offset = 0;
-		}
-	      else
-		{
-		  gcc_assert (SMALL_INT (offset));
-		  addr = plus_constant (Pmode, base_reg, offset);
-		}
-	      mem = gen_frame_mem (mode, addr);
-	      if (epilogue_p)
-		{
-		  rtx insn =
-		    frame_move_inc (reg, mem, base_reg, addr);
-		  add_reg_note (insn, REG_CFA_RESTORE, reg);
-		  if (cfa_adjust)
-		    {
-		      enum reg_note note = REG_CFA_ADJUST_CFA;
-		      add_reg_note (insn, note,
-				    gen_rtx_SET (stack_pointer_rtx,
-						 plus_constant (Pmode,
-								stack_pointer_rtx,
-								cfa_adjust)));
-		    }
-		}
-	      else
-		frame_move_inc (mem, reg, base_reg, addr);
-	      offset += UNITS_PER_WORD;
-	      if (mode == DImode)
-		{
-		  offset += UNITS_PER_WORD;
-		  ++regno;
-		}
-	    } /* if */
-	} /* for */
-    }/* if */
-  if (sibthunk_insn)
-    {
-      int start_call = frame->millicode_start_reg;
-      int end_call = frame->millicode_end_reg;
-      int r;
-
-      rtx r12 = gen_rtx_REG (Pmode, 12);
-
-      frame_insn (gen_rtx_SET (r12, GEN_INT (offset)));
-      XVECEXP (sibthunk_insn, 0, 0) = ret_rtx;
-      XVECEXP (sibthunk_insn, 0, 1)
-	= gen_rtx_SET (stack_pointer_rtx,
-		       gen_rtx_PLUS (Pmode, stack_pointer_rtx, r12));
-      sibthunk_insn = emit_jump_insn (sibthunk_insn);
-      RTX_FRAME_RELATED_P (sibthunk_insn) = 1;
-
-      /* Would be nice if we could do this earlier, when the PARALLEL
-	 is populated, but these need to be attached after the
-	 emit.  */
-      for (r = start_call; r <= end_call; r++)
-	{
-	  rtx reg = gen_rtx_REG (SImode, r);
-	  add_reg_note (sibthunk_insn, REG_CFA_RESTORE, reg);
-	}
-    }
-} /* arc_save_restore */
 
 /* Build dwarf information when the context is saved via AUX_IRQ_CTRL
    mechanism.  */
@@ -3214,6 +2928,694 @@ arc_dwarf_emit_irq_save_regs (void)
   RTX_FRAME_RELATED_P (insn) = 1;
 }
 
+/* Helper for prologue: emit frame store with pre_modify or pre_dec to
+   save register REG on stack.  An initial offset OFFSET can be passed
+   to the function.  */
+
+static int
+frame_save_reg (rtx reg, HOST_WIDE_INT offset)
+{
+  rtx addr;
+
+  if (offset)
+    {
+      rtx tmp = plus_constant (Pmode, stack_pointer_rtx,
+			       offset - GET_MODE_SIZE (GET_MODE (reg)));
+      addr = gen_frame_mem (GET_MODE (reg),
+			    gen_rtx_PRE_MODIFY (Pmode,
+						stack_pointer_rtx,
+						tmp));
+    }
+  else
+    addr = gen_frame_mem (GET_MODE (reg), gen_rtx_PRE_DEC (Pmode,
+							   stack_pointer_rtx));
+  frame_move_inc (addr, reg, stack_pointer_rtx, 0);
+
+  return GET_MODE_SIZE (GET_MODE (reg)) - offset;
+}
+
+/* Helper for epilogue: emit frame load with post_modify or post_inc
+   to restore register REG from stack.  The initial offset is passed
+   via OFFSET.  */
+
+static int
+frame_restore_reg (rtx reg, HOST_WIDE_INT offset)
+{
+  rtx addr, insn;
+
+  if (offset)
+    {
+      rtx tmp = plus_constant (Pmode, stack_pointer_rtx,
+			       offset + GET_MODE_SIZE (GET_MODE (reg)));
+      addr = gen_frame_mem (GET_MODE (reg),
+			    gen_rtx_POST_MODIFY (Pmode,
+						 stack_pointer_rtx,
+						 tmp));
+    }
+  else
+    addr = gen_frame_mem (GET_MODE (reg), gen_rtx_POST_INC (Pmode,
+							    stack_pointer_rtx));
+  insn = frame_move_inc (reg, addr, stack_pointer_rtx, 0);
+  add_reg_note (insn, REG_CFA_RESTORE, reg);
+
+  if (reg == frame_pointer_rtx)
+    add_reg_note (insn, REG_CFA_DEF_CFA,
+		  plus_constant (Pmode, stack_pointer_rtx,
+				 GET_MODE_SIZE (GET_MODE (reg)) + offset));
+  else
+    add_reg_note (insn, REG_CFA_ADJUST_CFA,
+		  gen_rtx_SET (stack_pointer_rtx,
+			       plus_constant (Pmode, stack_pointer_rtx,
+					      GET_MODE_SIZE (GET_MODE (reg))
+					      + offset)));
+
+  return GET_MODE_SIZE (GET_MODE (reg)) + offset;
+}
+
+/* Check if we have a continous range to be save/restored with the
+   help of enter/leave instructions.  A vaild register range starts
+   from $r13 and is up to (including) $r26.  */
+
+static bool
+arc_enter_leave_p (unsigned int gmask)
+{
+  int regno;
+  unsigned int rmask = 0;
+
+  if (!gmask)
+    return false;
+
+  for (regno = ENTER_LEAVE_START_REG;
+       regno <= ENTER_LEAVE_END_REG && (gmask & (1L << regno)); regno++)
+    rmask |= 1L << regno;
+
+  if (rmask ^ gmask)
+    return false;
+
+  return true;
+}
+
+/* ARC's prologue, save any needed call-saved regs (and call-used if
+   this is an interrupt handler) for ARCompact ISA, using ST/STD
+   instructions.  */
+
+static int
+arc_save_callee_saves (unsigned int gmask,
+		       bool save_blink,
+		       bool save_fp,
+		       HOST_WIDE_INT offset)
+{
+  rtx reg;
+  int frame_allocated = 0;
+
+  /* The home-grown ABI says link register is saved first.  */
+  if (save_blink)
+    {
+      reg = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
+      frame_allocated += frame_save_reg (reg, offset);
+      offset = 0;
+    }
+
+  /* N.B. FRAME_POINTER_MASK and RETURN_ADDR_MASK are cleared in gmask.  */
+  if (gmask)
+    for (int i = 31; i >= 0; i--)
+      {
+	machine_mode save_mode = SImode;
+
+	if (TARGET_LL64
+	    && ((i - 1) % 2 == 0)
+	    && ((gmask & (1L << i)) != 0)
+	    && ((gmask & (1L << (i - 1))) != 0))
+	  {
+	    save_mode = DImode;
+	    --i;
+	  }
+	else if ((gmask & (1L << i)) == 0)
+	  continue;
+
+	reg = gen_rtx_REG (save_mode, i);
+	frame_allocated += frame_save_reg (reg, offset);
+	offset = 0;
+      }
+
+  /* Save frame pointer if needed.  First save the FP on stack, if not
+     autosaved.  Unfortunately, I cannot add it to gmask and use the
+     above loop to save fp because our ABI states fp goes aftert all
+     registers are saved.  */
+  if (save_fp)
+    {
+      frame_allocated += frame_save_reg (frame_pointer_rtx, offset);
+      offset = 0;
+    }
+
+  /* Emit mov fp,sp.  */
+  if (arc_frame_pointer_needed ())
+    frame_move (frame_pointer_rtx, stack_pointer_rtx);
+
+  return frame_allocated;
+}
+
+/* ARC's epilogue, restore any required call-saved regs (and call-used
+   if it is for an interrupt handler) using LD/LDD instructions.  */
+
+static int
+arc_restore_callee_saves (unsigned int gmask,
+			  bool restore_blink,
+			  bool restore_fp,
+			  HOST_WIDE_INT offset,
+			  HOST_WIDE_INT allocated)
+{
+  rtx reg;
+  int frame_deallocated = 0;
+
+  /* Emit mov fp,sp.  */
+  if (arc_frame_pointer_needed () && offset)
+    {
+      frame_move (stack_pointer_rtx, frame_pointer_rtx);
+      frame_deallocated += offset;
+      offset = 0;
+    }
+
+  if (restore_fp)
+    {
+      /* Any offset is taken care by previous if-statement.  */
+      gcc_assert (offset == 0);
+      frame_deallocated += frame_restore_reg (frame_pointer_rtx, 0);
+    }
+
+  if (offset)
+    {
+      /* No $fp involved, we need to do an add to set the $sp to the
+	 location of the first register.  */
+      frame_stack_add (offset);
+      frame_deallocated += offset;
+      offset = 0;
+    }
+
+  /* N.B. FRAME_POINTER_MASK and RETURN_ADDR_MASK are cleared in gmask.  */
+  if (gmask)
+    for (int i = 0; i <= 31; i++)
+      {
+	machine_mode restore_mode = SImode;
+
+	if (TARGET_LL64
+	    && ((i % 2) == 0)
+	    && ((gmask & (1L << i)) != 0)
+	    && ((gmask & (1L << (i + 1))) != 0))
+	  restore_mode = DImode;
+	else if ((gmask & (1L << i)) == 0)
+	  continue;
+
+	reg = gen_rtx_REG (restore_mode, i);
+	frame_deallocated += frame_restore_reg (reg, 0);
+	offset = 0;
+
+	if (restore_mode == DImode)
+	  i++;
+      }
+
+  if (restore_blink)
+    {
+      reg = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
+      frame_deallocated += frame_restore_reg (reg, allocated
+					      - frame_deallocated
+					      /* Consider as well the
+						 current restored
+						 register size.  */
+					      - UNITS_PER_WORD);
+    }
+
+  return frame_deallocated;
+}
+
+/* ARC prologue, save the registers using enter instruction.  Leave
+   instruction can also save $blink (SAVE_BLINK) and $fp (SAVE_FP)
+   register.  */
+
+static int
+arc_save_callee_enter (unsigned int gmask,
+		       bool save_blink,
+		       bool save_fp,
+		       HOST_WIDE_INT offset)
+{
+  int start_reg = ENTER_LEAVE_START_REG;
+  int end_reg = ENTER_LEAVE_END_REG;
+  int regno, indx, off, nregs;
+  rtx insn, reg, mem;
+  int frame_allocated = 0;
+
+  for (regno = start_reg; regno <= end_reg && (gmask & (1L << regno));)
+    regno++;
+
+  end_reg = regno - 1;
+  nregs = end_reg - start_reg + 1;
+  nregs += save_blink ? 1 : 0;
+  nregs += save_fp ? 1 : 0;
+
+  if (offset)
+    frame_stack_add (offset);
+
+  insn = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nregs + (save_fp ? 1 : 0)
+						  + 1));
+  indx = 0;
+
+  reg = gen_rtx_SET (stack_pointer_rtx,
+		     plus_constant (Pmode,
+				    stack_pointer_rtx,
+				    nregs * UNITS_PER_WORD));
+  RTX_FRAME_RELATED_P (reg) = 1;
+  XVECEXP (insn, 0, indx++) = reg;
+  off = nregs * UNITS_PER_WORD;
+
+  if (save_blink)
+    {
+      reg = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
+      mem = gen_frame_mem (Pmode, plus_constant (Pmode,
+						 stack_pointer_rtx,
+						 off));
+      XVECEXP (insn, 0, indx) = gen_rtx_SET (mem, reg);
+      RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx++)) = 1;
+      off -= UNITS_PER_WORD;
+      save_blink = false;
+    }
+
+  for (regno = start_reg;
+       regno <= end_reg;
+       regno++, indx++, off -= UNITS_PER_WORD)
+    {
+      reg = gen_rtx_REG (SImode, regno);
+      mem = gen_frame_mem (SImode, plus_constant (Pmode,
+						  stack_pointer_rtx,
+						  off));
+      XVECEXP (insn, 0, indx) = gen_rtx_SET (mem, reg);
+      RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx)) = 1;
+      gmask = gmask & ~(1L << regno);
+    }
+
+  if (save_fp)
+    {
+      mem = gen_frame_mem (Pmode, plus_constant (Pmode,
+						 stack_pointer_rtx,
+						 off));
+      XVECEXP (insn, 0, indx) = gen_rtx_SET (mem, frame_pointer_rtx);
+      RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx++)) = 1;
+      off -= UNITS_PER_WORD;
+
+      XVECEXP (insn, 0, indx) = gen_rtx_SET (frame_pointer_rtx,
+					     stack_pointer_rtx);
+      RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx++)) = 1;
+      save_fp = false;
+    }
+
+  gcc_assert (off == 0);
+  insn = frame_insn (insn);
+
+  add_reg_note (insn, REG_INC, stack_pointer_rtx);
+
+  frame_allocated = nregs * UNITS_PER_WORD;
+
+  /* offset is a negative number, make sure we add it.  */
+  return frame_allocated - offset;
+}
+
+/* ARC epilogue, restore the registers using leave instruction.  An
+   initial offset is passed in OFFSET.  Besides restoring an register
+   range, leave can also restore $blink (RESTORE_BLINK), or $fp
+   (RESTORE_FP), and can automatic return (RETURN_P).  */
+
+static int
+arc_restore_callee_leave (unsigned int gmask,
+			  bool restore_blink,
+			  bool restore_fp,
+			  bool return_p,
+			  HOST_WIDE_INT offset)
+{
+  int start_reg = ENTER_LEAVE_START_REG;
+  int end_reg = ENTER_LEAVE_END_REG;
+  int regno, indx, off, nregs;
+  rtx insn, reg, mem;
+  int frame_allocated = 0;
+
+  for (regno = start_reg; regno <= end_reg && (gmask & (1L << regno));)
+    regno++;
+
+  end_reg = regno - 1;
+  nregs = end_reg - start_reg + 1;
+  nregs += restore_blink ? 1 : 0;
+  nregs += restore_fp ? 1 : 0;
+
+  insn = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nregs + 1
+						  + (return_p ? 1 : 0)));
+  indx = 0;
+
+  if (return_p)
+    XVECEXP (insn, 0, indx++) = ret_rtx;
+
+  if (restore_fp)
+    {
+      /* I cannot emit set (sp, fp) here as cselib expects a single sp
+	 set and not two.  Thus, use the offset, and change sp adjust
+	 value.  */
+      frame_allocated += offset;
+    }
+
+  if (offset && !restore_fp)
+    {
+      /* This add is only emmited when we do not restore fp with leave
+	 instruction.  */
+      frame_stack_add (offset);
+      frame_allocated += offset;
+      offset = 0;
+    }
+
+  reg = gen_rtx_SET (stack_pointer_rtx,
+		     plus_constant (Pmode,
+				    stack_pointer_rtx,
+				    offset + nregs * UNITS_PER_WORD));
+  RTX_FRAME_RELATED_P (reg) = 1;
+  XVECEXP (insn, 0, indx++) = reg;
+  off = nregs * UNITS_PER_WORD;
+
+  if (restore_blink)
+    {
+      reg = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
+      mem = gen_frame_mem (Pmode, plus_constant (Pmode,
+						 stack_pointer_rtx,
+						 off));
+      XVECEXP (insn, 0, indx) = gen_rtx_SET (reg, mem);
+      RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx++)) = 1;
+      off -= UNITS_PER_WORD;
+    }
+
+  for (regno = start_reg;
+       regno <= end_reg;
+       regno++, indx++, off -= UNITS_PER_WORD)
+    {
+      reg = gen_rtx_REG (SImode, regno);
+      mem = gen_frame_mem (SImode, plus_constant (Pmode,
+						  stack_pointer_rtx,
+						  off));
+      XVECEXP (insn, 0, indx) = gen_rtx_SET (reg, mem);
+      RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx)) = 1;
+      gmask = gmask & ~(1L << regno);
+    }
+
+  if (restore_fp)
+    {
+      mem = gen_frame_mem (Pmode, plus_constant (Pmode,
+						 stack_pointer_rtx,
+						 off));
+      XVECEXP (insn, 0, indx) = gen_rtx_SET (frame_pointer_rtx, mem);
+      RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx++)) = 1;
+      off -= UNITS_PER_WORD;
+    }
+
+  gcc_assert (off == 0);
+  if (return_p)
+    {
+      insn = emit_jump_insn (insn);
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
+  else
+    insn = frame_insn (insn);
+
+  add_reg_note (insn, REG_INC, stack_pointer_rtx);
+
+  /* Dwarf related info.  */
+  if (restore_fp)
+    {
+      add_reg_note (insn, REG_CFA_RESTORE, frame_pointer_rtx);
+      add_reg_note (insn, REG_CFA_DEF_CFA,
+		    plus_constant (Pmode, stack_pointer_rtx,
+				   offset + nregs * UNITS_PER_WORD));
+    }
+  else
+    {
+      add_reg_note (insn, REG_CFA_ADJUST_CFA,
+		    gen_rtx_SET (stack_pointer_rtx,
+				 plus_constant (Pmode, stack_pointer_rtx,
+						nregs * UNITS_PER_WORD)));
+    }
+  if (restore_blink)
+    add_reg_note (insn, REG_CFA_RESTORE,
+		  gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM));
+  for (regno = start_reg; regno <= end_reg; regno++)
+    add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (SImode, regno));
+
+  frame_allocated += nregs * UNITS_PER_WORD;
+
+  return frame_allocated;
+}
+
+/* Millicode thunks implementation:
+   Generates calls to millicodes for registers starting from r13 to r25
+   Present Limitations:
+   - Only one range supported.  The remaining regs will have the ordinary
+   st and ld instructions for store and loads.  Hence a gmask asking
+   to store r13-14, r16-r25 will only generate calls to store and
+   load r13 to r14 while store and load insns will be generated for
+   r16 to r25 in the prologue and epilogue respectively.
+
+   - Presently library only supports register ranges starting from r13.
+*/
+
+static int
+arc_save_callee_milli (unsigned int gmask,
+		       bool save_blink,
+		       bool save_fp,
+		       HOST_WIDE_INT offset,
+		       HOST_WIDE_INT reg_size)
+{
+  int start_reg = 13;
+  int end_reg = 25;
+  int regno, indx, off, nregs;
+  rtx insn, reg, mem;
+  int frame_allocated = 0;
+
+  for (regno = start_reg; regno <= end_reg && (gmask & (1L << regno));)
+    regno++;
+
+  end_reg = regno - 1;
+  nregs = end_reg - start_reg + 1;
+  gcc_assert (end_reg > 14);
+
+
+  /* Allocate space on stack for the registers, and take into account
+     also the initial offset.  The registers will be saved using
+     offsets.  N.B. OFFSET is a negative number.  */
+  if (save_blink)
+    {
+      reg = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
+      frame_allocated += frame_save_reg (reg, offset);
+      offset = 0;
+    }
+
+  if (reg_size || offset)
+    {
+      frame_stack_add (offset - reg_size);
+      frame_allocated += nregs * UNITS_PER_WORD - offset;
+      offset = 0;
+    }
+
+  /* Start generate millicode call.  */
+  insn = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nregs + 1));
+  indx = 0;
+
+  /* This is a call, we clobber blink.  */
+  XVECEXP (insn, 0, nregs) =
+    gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM));
+
+  for (regno = start_reg, indx = 0, off = 0;
+       regno <= end_reg;
+       regno++, indx++, off += UNITS_PER_WORD)
+    {
+      reg = gen_rtx_REG (SImode, regno);
+      mem = gen_frame_mem (SImode, plus_constant (Pmode,
+						  stack_pointer_rtx,
+						  off));
+      XVECEXP (insn, 0, indx) = gen_rtx_SET (mem, reg);
+      RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx)) = 1;
+      gmask = gmask & ~(1L << regno);
+    }
+  insn = frame_insn (insn);
+
+  /* Add DWARF info.  */
+  for (regno = start_reg, off = 0;
+       regno <= end_reg;
+       regno++, off += UNITS_PER_WORD)
+    {
+      reg = gen_rtx_REG (SImode, regno);
+      mem = gen_rtx_MEM (SImode, plus_constant (Pmode,
+						stack_pointer_rtx, off));
+      add_reg_note (insn, REG_CFA_OFFSET, gen_rtx_SET (mem, reg));
+
+    }
+
+  /* In the case of millicode thunk, we need to restore the
+     clobbered blink register.  */
+  if (arc_must_save_return_addr (cfun))
+    {
+      emit_insn (gen_rtx_SET (gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM),
+			      gen_rtx_MEM (Pmode,
+					   plus_constant (Pmode,
+							  stack_pointer_rtx,
+							  reg_size))));
+    }
+
+  /* Save remaining registers using st instructions.  */
+  for (regno = 0; regno <= 31; regno++)
+    {
+      if ((gmask & (1L << regno)) == 0)
+	continue;
+
+      reg = gen_rtx_REG (SImode, regno);
+      mem = gen_frame_mem (SImode, plus_constant (Pmode,
+						  stack_pointer_rtx,
+						  off));
+      frame_move_inc (mem, reg, stack_pointer_rtx, 0);
+      frame_allocated += UNITS_PER_WORD;
+      off += UNITS_PER_WORD;
+    }
+
+  /* Save frame pointer if needed.  First save the FP on stack, if not
+     autosaved.  Unfortunately, I cannot add it to gmask and use the
+     above loop to save fp because our ABI states fp goes aftert all
+     registers are saved.  */
+  if (save_fp)
+    frame_allocated += frame_save_reg (frame_pointer_rtx, offset);
+
+  /* Emit mov fp,sp.  */
+  if (arc_frame_pointer_needed ())
+    frame_move (frame_pointer_rtx, stack_pointer_rtx);
+
+  return frame_allocated;
+}
+
+/* Like the previous function but restore.  */
+
+static int
+arc_restore_callee_milli (unsigned int gmask,
+			  bool restore_blink,
+			  bool restore_fp,
+			  bool return_p,
+			  HOST_WIDE_INT offset)
+{
+  int start_reg = 13;
+  int end_reg = 25;
+  int regno, indx, off, nregs;
+  rtx insn, reg, mem;
+  int frame_allocated = 0;
+
+  for (regno = start_reg; regno <= end_reg && (gmask & (1L << regno));)
+    regno++;
+
+  end_reg = regno - 1;
+  nregs = end_reg - start_reg + 1;
+  gcc_assert (end_reg > 14);
+
+  /* Emit mov fp,sp.  */
+  if (arc_frame_pointer_needed () && offset)
+    {
+      frame_move (stack_pointer_rtx, frame_pointer_rtx);
+      frame_allocated = offset;
+      offset = 0;
+    }
+
+  if (restore_fp)
+    frame_allocated += frame_restore_reg (frame_pointer_rtx, 0);
+
+  if (offset)
+    {
+      /* No fp involved, hence, we need to adjust the sp via an
+	 add.  */
+      frame_stack_add (offset);
+      frame_allocated += offset;
+      offset = 0;
+    }
+
+  /* Start generate millicode call.  */
+  insn = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc ((return_p ? 1 : 0)
+						  + nregs + 1));
+  indx = 0;
+
+  if (return_p)
+    {
+      /* sibling call, the blink is restored with the help of the
+	 value held into r12.  */
+      reg = gen_rtx_REG (Pmode, 12);
+      XVECEXP (insn, 0, indx++) = ret_rtx;
+      XVECEXP (insn, 0, indx++) =
+	gen_rtx_SET (stack_pointer_rtx,
+		     gen_rtx_PLUS (Pmode, stack_pointer_rtx, reg));
+      frame_allocated += UNITS_PER_WORD;
+    }
+  else
+    {
+      /* This is a call, we clobber blink.  */
+      XVECEXP (insn, 0, nregs) =
+	gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM));
+    }
+
+  for (regno = start_reg, off = 0;
+       regno <= end_reg;
+       regno++, indx++, off += UNITS_PER_WORD)
+    {
+      reg = gen_rtx_REG (SImode, regno);
+      mem = gen_frame_mem (SImode, plus_constant (Pmode,
+						  stack_pointer_rtx,
+						  off));
+      XVECEXP (insn, 0, indx) = gen_rtx_SET (reg, mem);
+      RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx)) = 1;
+      gmask = gmask & ~(1L << regno);
+    }
+
+  /* Restore remaining registers using LD instructions.  */
+  for (regno = 0; regno <= 31; regno++)
+    {
+      if ((gmask & (1L << regno)) == 0)
+	continue;
+
+      reg = gen_rtx_REG (SImode, regno);
+      mem = gen_frame_mem (SImode, plus_constant (Pmode,
+						  stack_pointer_rtx,
+						  off));
+      rtx tmp = frame_move_inc (reg, mem, stack_pointer_rtx, 0);
+      add_reg_note (tmp, REG_CFA_RESTORE, reg);
+      off += UNITS_PER_WORD;
+    }
+
+  /* Emit millicode call.  */
+  if (return_p)
+    {
+      reg = gen_rtx_REG (Pmode, 12);
+      frame_insn (gen_rtx_SET (reg, GEN_INT (off)));
+      frame_allocated += off;
+      insn = emit_jump_insn (insn);
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
+  else
+    insn = frame_insn (insn);
+
+  /* Add DWARF info.  */
+  for (regno = start_reg; regno <= end_reg; regno++)
+    {
+      reg = gen_rtx_REG (SImode, regno);
+      add_reg_note (insn, REG_CFA_RESTORE, reg);
+
+    }
+
+  if (restore_blink && !return_p)
+    {
+      reg = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
+      mem = gen_frame_mem (Pmode, plus_constant (Pmode, stack_pointer_rtx,
+						 off));
+      insn = frame_insn (gen_rtx_SET (reg, mem));
+      add_reg_note (insn, REG_CFA_RESTORE, reg);
+    }
+
+  return frame_allocated;
+}
+
 /* Set up the stack and frame pointer (if desired) for the function.  */
 
 void
@@ -3221,13 +3623,12 @@ arc_expand_prologue (void)
 {
   int size;
   unsigned int gmask = cfun->machine->frame_info.gmask;
-  /*  unsigned int frame_pointer_offset;*/
+  struct arc_frame_info *frame = &cfun->machine->frame_info;
   unsigned int frame_size_to_allocate;
-  /* (FIXME: The first store will use a PRE_MODIFY; this will usually be r13.
-     Change the stack layout so that we rather store a high register with the
-     PRE_MODIFY, thus enabling more short insn generation.)  */
   int first_offset = 0;
   unsigned int fn_type = arc_compute_function_type (cfun);
+  bool save_blink = false;
+  bool save_fp = false;
 
   /* Naked functions don't have prologue.  */
   if (ARC_NAKED_P (fn_type))
@@ -3250,87 +3651,42 @@ arc_expand_prologue (void)
   gcc_assert (!(size == 0 && gmask));
 
   /* Allocate space for register arguments if this is a variadic function.  */
-  if (cfun->machine->frame_info.pretend_size != 0)
-    {
-       /* Ensure pretend_size is maximum of 8 * word_size.  */
-      gcc_assert (cfun->machine->frame_info.pretend_size <= 32);
-
-      frame_stack_add (-(HOST_WIDE_INT)cfun->machine->frame_info.pretend_size);
-      frame_size_to_allocate -= cfun->machine->frame_info.pretend_size;
-    }
+  if (frame->pretend_size != 0)
+    first_offset = -frame->pretend_size;
 
   /* IRQ using automatic save mechanism will save the register before
      anything we do.  */
   if (ARC_AUTO_IRQ_P (fn_type)
       && !ARC_FAST_INTERRUPT_P (fn_type))
     {
+      frame_stack_add (first_offset);
+      first_offset = 0;
       arc_dwarf_emit_irq_save_regs ();
     }
 
-  /* The home-grown ABI says link register is saved first.  */
-  if (arc_must_save_return_addr (cfun)
-      && !ARC_AUTOBLINK_IRQ_P (fn_type))
-    {
-      rtx ra = gen_rtx_REG (SImode, RETURN_ADDR_REGNUM);
-      rtx mem = gen_frame_mem (Pmode,
-			       gen_rtx_PRE_DEC (Pmode,
-						stack_pointer_rtx));
+  save_blink = arc_must_save_return_addr (cfun)
+    && !ARC_AUTOBLINK_IRQ_P (fn_type);
+  save_fp = arc_frame_pointer_needed () && !ARC_AUTOFP_IRQ_P (fn_type);
 
-      frame_move_inc (mem, ra, stack_pointer_rtx, 0);
-      frame_size_to_allocate -= UNITS_PER_WORD;
-    }
+  /* Use enter/leave only for non-interrupt functions.  */
+  if (TARGET_CODE_DENSITY
+      && TARGET_CODE_DENSITY_FRAME
+      && !ARC_AUTOFP_IRQ_P (fn_type)
+      && !ARC_AUTOBLINK_IRQ_P (fn_type)
+      && !ARC_INTERRUPT_P (fn_type)
+      && arc_enter_leave_p (gmask))
+      frame_size_to_allocate -= arc_save_callee_enter (gmask, save_blink,
+						       save_fp,
+						       first_offset);
+  else if (frame->millicode_end_reg > 14)
+    frame_size_to_allocate -= arc_save_callee_milli (gmask, save_blink,
+						     save_fp,
+						     first_offset,
+						     frame->reg_size);
+  else
+    frame_size_to_allocate -= arc_save_callee_saves (gmask, save_blink, save_fp,
+						     first_offset);
 
-  /* Save any needed call-saved regs (and call-used if this is an
-     interrupt handler) for ARCompact ISA.  */
-  if (cfun->machine->frame_info.reg_size)
-    {
-      first_offset = -cfun->machine->frame_info.reg_size;
-      /* N.B. FRAME_POINTER_MASK and RETURN_ADDR_MASK are cleared in gmask.  */
-      arc_save_restore (stack_pointer_rtx, gmask, 0, &first_offset);
-      frame_size_to_allocate -= cfun->machine->frame_info.reg_size;
-    }
-
-  /* In the case of millicode thunk, we need to restore the clobbered
-     blink register.  */
-  if (cfun->machine->frame_info.millicode_end_reg > 0
-      && arc_must_save_return_addr (cfun))
-    {
-      HOST_WIDE_INT tmp = cfun->machine->frame_info.reg_size;
-      emit_insn (gen_rtx_SET (gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM),
-			      gen_rtx_MEM (Pmode,
-					   plus_constant (Pmode,
-							  stack_pointer_rtx,
-							  tmp))));
-    }
-
-  /* Save frame pointer if needed.  First save the FP on stack, if not
-     autosaved.  */
-  if (arc_frame_pointer_needed ()
-      && !ARC_AUTOFP_IRQ_P (fn_type))
-    {
-      rtx addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-			       GEN_INT (-UNITS_PER_WORD + first_offset));
-      rtx mem = gen_frame_mem (Pmode, gen_rtx_PRE_MODIFY (Pmode,
-							  stack_pointer_rtx,
-							  addr));
-      frame_move_inc (mem, frame_pointer_rtx, stack_pointer_rtx, 0);
-      frame_size_to_allocate -= UNITS_PER_WORD;
-      first_offset = 0;
-    }
-
-  /* Emit mov fp,sp.  */
-  if (arc_frame_pointer_needed ())
-    {
-      frame_move (frame_pointer_rtx, stack_pointer_rtx);
-    }
-
-  /* ??? We don't handle the case where the saved regs are more than 252
-     bytes away from sp.  This can be handled by decrementing sp once, saving
-     the regs, and then decrementing it again.  The epilogue doesn't have this
-     problem as the `ld' insn takes reg+limm values (though it would be more
-     efficient to avoid reg+limm).  */
-
-  frame_size_to_allocate -= first_offset;
   /* Allocate the stack frame.  */
   if (frame_size_to_allocate > 0)
     {
@@ -3339,8 +3695,7 @@ arc_expand_prologue (void)
 	 will prevent the scheduler from moving stores to the frame
 	 before the stack adjustment.  */
       if (arc_frame_pointer_needed ())
-	emit_insn (gen_stack_tie (stack_pointer_rtx,
-				  hard_frame_pointer_rtx));
+	emit_insn (gen_stack_tie (stack_pointer_rtx, hard_frame_pointer_rtx));
     }
 }
 
@@ -3352,170 +3707,71 @@ arc_expand_epilogue (int sibcall_p)
 {
   int size;
   unsigned int fn_type = arc_compute_function_type (cfun);
-
-  size = arc_compute_frame_size ();
-
-  unsigned int pretend_size = cfun->machine->frame_info.pretend_size;
-  unsigned int frame_size;
   unsigned int size_to_deallocate;
   int restored;
   int can_trust_sp_p = !cfun->calls_alloca;
-  int first_offset = 0;
-  int millicode_p = cfun->machine->frame_info.millicode_end_reg > 0;
-  rtx insn;
+  int first_offset;
+  bool restore_fp = arc_frame_pointer_needed () && !ARC_AUTOFP_IRQ_P (fn_type);
+  bool restore_blink = arc_must_save_return_addr (cfun)
+    && !ARC_AUTOBLINK_IRQ_P (fn_type);
+  unsigned int gmask = cfun->machine->frame_info.gmask;
+  bool return_p = !sibcall_p && fn_type == ARC_FUNCTION_NORMAL
+		   && !cfun->machine->frame_info.pretend_size;
+  struct arc_frame_info *frame = &cfun->machine->frame_info;
+
 
   /* Naked functions don't have epilogue.  */
   if (ARC_NAKED_P (fn_type))
     return;
 
+  size = arc_compute_frame_size ();
   size_to_deallocate = size;
 
-  frame_size = size - (pretend_size +
-		       cfun->machine->frame_info.reg_size +
-		       cfun->machine->frame_info.extra_size);
-
-  /* ??? There are lots of optimizations that can be done here.
-     EG: Use fp to restore regs if it's closer.
-     Maybe in time we'll do them all.  For now, always restore regs from
-     sp, but don't restore sp if we don't have to.  */
+  first_offset = size - (frame->pretend_size + frame->reg_size
+			 + frame->extra_size);
 
   if (!can_trust_sp_p)
     gcc_assert (arc_frame_pointer_needed ());
 
-  /* Restore stack pointer to the beginning of saved register area for
-     ARCompact ISA.  */
-  if (frame_size)
+  if (TARGET_CODE_DENSITY
+      && TARGET_CODE_DENSITY_FRAME
+      && !ARC_AUTOFP_IRQ_P (fn_type)
+      && !ARC_AUTOBLINK_IRQ_P (fn_type)
+      && !ARC_INTERRUPT_P (fn_type)
+      && arc_enter_leave_p (gmask))
     {
-      if (arc_frame_pointer_needed ())
-	frame_move (stack_pointer_rtx, frame_pointer_rtx);
-      else
-	first_offset = frame_size;
-      size_to_deallocate -= frame_size;
-    }
-  else if (!can_trust_sp_p)
-    frame_stack_add (-frame_size);
-
-
-  /* Restore any saved registers.  */
-  if (arc_frame_pointer_needed ()
-      && !ARC_AUTOFP_IRQ_P (fn_type))
-    {
-      rtx addr = gen_rtx_POST_INC (Pmode, stack_pointer_rtx);
-
-      insn = frame_move_inc (frame_pointer_rtx, gen_frame_mem (Pmode, addr),
-			     stack_pointer_rtx, 0);
-      add_reg_note (insn, REG_CFA_RESTORE, frame_pointer_rtx);
-      add_reg_note (insn, REG_CFA_DEF_CFA,
-		    plus_constant (SImode, stack_pointer_rtx,
-				   4));
-      size_to_deallocate -= UNITS_PER_WORD;
-    }
-
-  /* Load blink after the calls to thunk calls in case of optimize size.  */
-  if (millicode_p)
-    {
-	  int sibthunk_p = (!sibcall_p
-			    && fn_type == ARC_FUNCTION_NORMAL
-			    && !cfun->machine->frame_info.pretend_size);
-
-	  gcc_assert (!(cfun->machine->frame_info.gmask
-			& (FRAME_POINTER_MASK | RETURN_ADDR_MASK)));
-	  arc_save_restore (stack_pointer_rtx,
-			    cfun->machine->frame_info.gmask,
-			    1 + sibthunk_p, &first_offset);
-	  if (sibthunk_p)
-	    return;
-    }
-  /* If we are to restore registers, and first_offset would require
-     a limm to be encoded in a PRE_MODIFY, yet we can add it with a
-     fast add to the stack pointer, do this now.  */
-  if ((!SMALL_INT (first_offset)
-       && cfun->machine->frame_info.gmask
-       && ((TARGET_ARC700 && !optimize_size)
-	    ? first_offset <= 0x800
-	    : satisfies_constraint_C2a (GEN_INT (first_offset))))
-       /* Also do this if we have both gprs and return
-	  address to restore, and they both would need a LIMM.  */
-      || (arc_must_save_return_addr (cfun)
-	  && !SMALL_INT ((cfun->machine->frame_info.reg_size + first_offset) >> 2)
-	  && cfun->machine->frame_info.gmask))
-    {
-      frame_stack_add (first_offset);
-      first_offset = 0;
-    }
-  if (arc_must_save_return_addr (cfun)
-      && !ARC_AUTOBLINK_IRQ_P (fn_type))
-    {
-      rtx ra = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
-      int ra_offs = cfun->machine->frame_info.reg_size + first_offset;
-      rtx addr = plus_constant (Pmode, stack_pointer_rtx, ra_offs);
-      HOST_WIDE_INT cfa_adjust = 0;
-
-      /* If the load of blink would need a LIMM, but we can add
-	 the offset quickly to sp, do the latter.  */
-      if (!SMALL_INT (ra_offs >> 2)
-	  && !cfun->machine->frame_info.gmask
-	  && ((TARGET_ARC700 && !optimize_size)
-	       ? ra_offs <= 0x800
-	       : satisfies_constraint_C2a (GEN_INT (ra_offs))))
+      /* Using leave instruction.  */
+      size_to_deallocate -= arc_restore_callee_leave (gmask, restore_blink,
+						      restore_fp,
+						      return_p,
+						      first_offset);
+      if (return_p)
 	{
-	   size_to_deallocate -= ra_offs - first_offset;
-	   first_offset = 0;
-	   frame_stack_add (ra_offs);
-	   ra_offs = 0;
-	   addr = stack_pointer_rtx;
+	  gcc_assert (size_to_deallocate == 0);
+	  return;
 	}
-      /* See if we can combine the load of the return address with the
-	 final stack adjustment.
-	 We need a separate load if there are still registers to
-	 restore.  We also want a separate load if the combined insn
-	 would need a limm, but a separate load doesn't.  */
-      if (ra_offs
-	  && !cfun->machine->frame_info.gmask
-	  && (SMALL_INT (ra_offs) || !SMALL_INT (ra_offs >> 2)))
-	{
-	  addr = gen_rtx_PRE_MODIFY (Pmode, stack_pointer_rtx, addr);
-	  cfa_adjust = ra_offs;
-	  first_offset = 0;
-	  size_to_deallocate -= cfun->machine->frame_info.reg_size;
-	}
-      else if (!ra_offs && size_to_deallocate == UNITS_PER_WORD)
-	{
-	  addr = gen_rtx_POST_INC (Pmode, addr);
-	  cfa_adjust = GET_MODE_SIZE (Pmode);
-	  size_to_deallocate = 0;
-	}
-
-      insn = frame_move_inc (ra, gen_frame_mem (Pmode, addr),
-			     stack_pointer_rtx, addr);
-      if (cfa_adjust)
-	{
-	  enum reg_note note = REG_CFA_ADJUST_CFA;
-
-	  add_reg_note (insn, note,
-			gen_rtx_SET (stack_pointer_rtx,
-				     plus_constant (SImode, stack_pointer_rtx,
-						    cfa_adjust)));
-	}
-      add_reg_note (insn, REG_CFA_RESTORE, ra);
     }
-
-  if (!millicode_p)
+  else if (frame->millicode_end_reg > 14)
     {
-       if (cfun->machine->frame_info.reg_size)
-	 arc_save_restore (stack_pointer_rtx,
-	   /* The zeroing of these two bits is unnecessary, but leave this in for clarity.  */
-			   cfun->machine->frame_info.gmask
-			   & ~(FRAME_POINTER_MASK | RETURN_ADDR_MASK), 1, &first_offset);
+      /* Using millicode calls.  */
+      size_to_deallocate -= arc_restore_callee_milli (gmask, restore_blink,
+						      restore_fp,
+						      return_p,
+						      first_offset);
+      if (return_p)
+	{
+	  gcc_assert (size_to_deallocate == 0);
+	  return;
+	}
     }
+  else
+    size_to_deallocate -= arc_restore_callee_saves (gmask, restore_blink,
+						    restore_fp,
+						    first_offset,
+						    size_to_deallocate);
 
-  /* The rest of this function does the following:
-     ARCompact    : handle epilogue_delay, restore sp (phase-2), return
-  */
-
-  /* Keep track of how much of the stack pointer we've restored.
-     It makes the following a lot more readable.  */
-  size_to_deallocate += first_offset;
+  /* Keep track of how much of the stack pointer we've restored.  It
+     makes the following a lot more readable.  */
   restored = size - size_to_deallocate;
 
   if (size > restored)
@@ -3538,13 +3794,75 @@ arc_expand_epilogue (int sibcall_p)
     emit_jump_insn (gen_simple_return ());
 }
 
+/* Helper for {push/pop}_multi_operand: check if rtx OP is a suitable
+   construct to match either enter or leave instruction.  Which one
+   which is selected by PUSH_P argument.  */
+
+bool
+arc_check_multi (rtx op, bool push_p)
+{
+  HOST_WIDE_INT len = XVECLEN (op, 0);
+  unsigned int regno, i, start;
+  unsigned int memp = push_p ? 0 : 1;
+  rtx elt;
+
+  if (len <= 1)
+    return false;
+
+  start = 1;
+  elt = XVECEXP (op, 0, 0);
+  if (!push_p && GET_CODE (elt) == RETURN)
+    start = 2;
+
+  for (i = start, regno = ENTER_LEAVE_START_REG; i < len; i++, regno++)
+    {
+      rtx elt = XVECEXP (op, 0, i);
+      rtx reg, mem, addr;
+
+      if (GET_CODE (elt) != SET)
+	return false;
+      mem = XEXP (elt, memp);
+      reg = XEXP (elt, 1 - memp);
+
+      if (!REG_P (reg)
+	  || !MEM_P (mem))
+	return false;
+
+      /* Check for blink.  */
+      if (REGNO (reg) == RETURN_ADDR_REGNUM
+	  && i == start)
+	regno = 12;
+      else if (REGNO (reg) == FRAME_POINTER_REGNUM)
+	++i;
+      else if (REGNO (reg) != regno)
+	return false;
+
+      addr = XEXP (mem, 0);
+      if (GET_CODE (addr) == PLUS)
+	{
+	  if (!rtx_equal_p (stack_pointer_rtx, XEXP (addr, 0))
+	      || !CONST_INT_P (XEXP (addr, 1)))
+	    return false;
+	}
+      else
+	{
+	  if (!rtx_equal_p (stack_pointer_rtx, addr))
+	    return false;
+	}
+    }
+  return true;
+}
+
 /* Return rtx for the location of the return address on the stack,
    suitable for use in __builtin_eh_return.  The new return address
    will be written to this location in order to redirect the return to
-   the exception handler.  */
+   the exception handler.  Our ABI says the blink is pushed first on
+   stack followed by an unknown number of register saves, and finally
+   by fp.  Hence we cannot use the EH_RETURN_ADDRESS macro as the
+   stack is not finalized.  */
 
-rtx
-arc_eh_return_address_location (void)
+void
+arc_eh_return_address_location (rtx source)
 {
   rtx mem;
   int offset;
@@ -3572,8 +3890,8 @@ arc_eh_return_address_location (void)
      remove this store seems perfectly sensible.  Marking the memory
      address as volatile obviously has the effect of preventing DSE
      from removing the store.  */
-  MEM_VOLATILE_P (mem) = 1;
-  return mem;
+  MEM_VOLATILE_P (mem) = true;
+  emit_move_insn (mem, source);
 }
 
 /* PIC */
@@ -5561,51 +5879,32 @@ arc_raw_symbolic_reference_mentioned_p (rtx op, bool skip_local)
   return false;
 }
 
-/* Get the thread pointer.  */
+/* The __tls_get_attr symbol.  */
+static GTY(()) rtx arc_tls_symbol;
+
+/* Emit a call to __tls_get_addr.  TI is the argument to this function.
+   RET is an RTX for the return value location.  The entire insn sequence
+   is returned.  */
 
 static rtx
-arc_get_tp (void)
+arc_call_tls_get_addr (rtx ti)
 {
-   /* If arc_tp_regno has been set, we can use that hard register
-      directly as a base register.  */
-  if (arc_tp_regno != -1)
-    return gen_rtx_REG (Pmode, arc_tp_regno);
+  rtx arg = gen_rtx_REG (Pmode, R0_REG);
+  rtx ret = gen_rtx_REG (Pmode, R0_REG);
+  rtx fn;
+  rtx_insn *insn;
 
-  /* Otherwise, call __read_tp.  Copy the result to a pseudo to avoid
-     conflicts with function arguments / results.  */
-  rtx reg = gen_reg_rtx (Pmode);
-  emit_insn (gen_tls_load_tp_soft ());
-  emit_move_insn (reg, gen_rtx_REG (Pmode, R0_REG));
-  return reg;
-}
+  if (!arc_tls_symbol)
+    arc_tls_symbol = init_one_libfunc ("__tls_get_addr");
 
-/* Helper to be used by TLS Global dynamic model.  */
+  emit_move_insn (arg, ti);
+  fn = gen_rtx_MEM (SImode, arc_tls_symbol);
+  insn = emit_call_insn (gen_call_value (ret, fn, const0_rtx));
+  RTL_CONST_CALL_P (insn) = 1;
+  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), ret);
+  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), arg);
 
-static rtx
-arc_emit_call_tls_get_addr (rtx sym, int reloc, rtx eqv)
-{
-  rtx r0 = gen_rtx_REG (Pmode, R0_REG);
-  rtx call_fusage = NULL_RTX;
-
-  start_sequence ();
-
-  rtx x = arc_unspec_offset (sym, reloc);
-  emit_move_insn (r0, x);
-  use_reg (&call_fusage, r0);
-
-  gcc_assert (reloc == UNSPEC_TLS_GD);
-  rtx call_insn = emit_call_insn (gen_tls_gd_get_addr (sym));
-  /* Should we set RTL_CONST_CALL_P?  We read memory, but not in a
-     way that the application should care.  */
-  RTL_PURE_CALL_P (call_insn) = 1;
-  add_function_usage_to (call_insn, call_fusage);
-
-  rtx_insn *insns = get_insns ();
-  end_sequence ();
-
-  rtx dest = gen_reg_rtx (Pmode);
-  emit_libcall_block (insns, dest, r0, eqv);
-  return dest;
+  return ret;
 }
 
 #define DTPOFF_ZERO_SYM ".tdata"
@@ -5616,16 +5915,26 @@ arc_emit_call_tls_get_addr (rtx sym, int reloc, rtx eqv)
 static rtx
 arc_legitimize_tls_address (rtx addr, enum tls_model model)
 {
+  rtx tmp;
+
   if (!flag_pic && model == TLS_MODEL_LOCAL_DYNAMIC)
     model = TLS_MODEL_LOCAL_EXEC;
 
+
+  /* The TP pointer needs to be set.  */
+  gcc_assert (arc_tp_regno != -1);
+
   switch (model)
     {
+    case TLS_MODEL_GLOBAL_DYNAMIC:
+      tmp = gen_reg_rtx (Pmode);
+      emit_move_insn (tmp, arc_unspec_offset (addr, UNSPEC_TLS_GD));
+      return arc_call_tls_get_addr (tmp);
+
     case TLS_MODEL_LOCAL_DYNAMIC:
       rtx base;
       tree decl;
       const char *base_name;
-      rtvec v;
 
       decl = SYMBOL_REF_DECL (addr);
       base_name = DTPOFF_ZERO_SYM;
@@ -5633,31 +5942,21 @@ arc_legitimize_tls_address (rtx addr, enum tls_model model)
 	base_name = ".tbss";
 
       base = gen_rtx_SYMBOL_REF (Pmode, base_name);
-      if (strcmp (base_name, DTPOFF_ZERO_SYM) == 0)
-	{
-	  if (!flag_pic)
-	    goto local_exec;
-	  v = gen_rtvec (1, addr);
-	}
-      else
-	v = gen_rtvec (2, addr, base);
-      addr = gen_rtx_UNSPEC (Pmode, v, UNSPEC_TLS_OFF);
-      addr = gen_rtx_CONST (Pmode, addr);
-      base = arc_legitimize_tls_address (base, TLS_MODEL_GLOBAL_DYNAMIC);
-      return gen_rtx_PLUS (Pmode, force_reg (Pmode, base), addr);
-
-    case TLS_MODEL_GLOBAL_DYNAMIC:
-      return arc_emit_call_tls_get_addr (addr, UNSPEC_TLS_GD, addr);
+      tmp = gen_reg_rtx (Pmode);
+      emit_move_insn (tmp, arc_unspec_offset (base, UNSPEC_TLS_GD));
+      base = arc_call_tls_get_addr (tmp);
+      return gen_rtx_PLUS (Pmode, force_reg (Pmode, base),
+			   arc_unspec_offset (addr, UNSPEC_TLS_OFF));
 
     case TLS_MODEL_INITIAL_EXEC:
       addr = arc_unspec_offset (addr, UNSPEC_TLS_IE);
       addr = copy_to_mode_reg (Pmode, gen_const_mem (Pmode, addr));
-      return gen_rtx_PLUS (Pmode, arc_get_tp (), addr);
+      return gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode, arc_tp_regno), addr);
 
     case TLS_MODEL_LOCAL_EXEC:
-    local_exec:
       addr = arc_unspec_offset (addr, UNSPEC_TLS_OFF);
-      return gen_rtx_PLUS (Pmode, arc_get_tp (), addr);
+      return gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode, arc_tp_regno), addr);
+
     default:
       gcc_unreachable ();
     }
@@ -7175,11 +7474,90 @@ arc_invalid_within_doloop (const rtx_insn *insn)
   return NULL;
 }
 
+/* Return the next active insn, skiping the inline assembly code.  */
+
+static rtx_insn *
+arc_active_insn (rtx_insn *insn)
+{
+  rtx_insn *nxt = next_active_insn (insn);
+
+  if (nxt && GET_CODE (PATTERN (nxt)) == ASM_INPUT)
+    nxt = next_active_insn (nxt);
+  return nxt;
+}
+
+/* Search for a sequence made out of two stores and a given number of
+   loads, insert a nop if required.  */
+
+static void
+check_store_cacheline_hazard (void)
+{
+  rtx_insn *insn, *succ0, *insn1;
+  bool found = false;
+
+  for (insn = get_insns (); insn; insn = arc_active_insn (insn))
+    {
+      succ0 = arc_active_insn (insn);
+
+      if (!succ0)
+	return;
+
+      if (!single_set (insn) || !single_set (succ0))
+	continue;
+
+      if ((get_attr_type (insn) != TYPE_STORE)
+	  || (get_attr_type (succ0) != TYPE_STORE))
+	continue;
+
+      /* Found at least two consecutive stores.  Goto the end of the
+	 store sequence.  */
+      for (insn1 = succ0; insn1; insn1 = arc_active_insn (insn1))
+	if (!single_set (insn1) || get_attr_type (insn1) != TYPE_STORE)
+	  break;
+
+      /* Now, check the next two instructions for the following cases:
+         1. next instruction is a LD => insert 2 nops between store
+	    sequence and load.
+	 2. next-next instruction is a LD => inset 1 nop after the store
+	    sequence.  */
+      if (insn1 && single_set (insn1)
+	  && (get_attr_type (insn1) == TYPE_LOAD))
+	{
+	  found = true;
+	  emit_insn_before (gen_nopv (), insn1);
+	  emit_insn_before (gen_nopv (), insn1);
+	}
+      else
+	{
+	  if (insn1 && (get_attr_type (insn1) == TYPE_COMPARE))
+	    {
+	      /* REG_SAVE_NOTE is used by Haifa scheduler, we are in
+		 reorg, so it is safe to reuse it for avoiding the
+		 current compare insn to be part of a BRcc
+		 optimization.  */
+	      add_reg_note (insn1, REG_SAVE_NOTE, GEN_INT (3));
+	    }
+	  insn1 = arc_active_insn (insn1);
+	  if (insn1 && single_set (insn1)
+	      && (get_attr_type (insn1) == TYPE_LOAD))
+	    {
+	      found = true;
+	      emit_insn_before (gen_nopv (), insn1);
+	    }
+	}
+
+      insn = insn1;
+      if (found)
+	found = false;
+    }
+}
+
 /* Return true if a load instruction (CONSUMER) uses the same address as a
    store instruction (PRODUCER).  This function is used to avoid st/ld
    address hazard in ARC700 cores.  */
-bool
-arc_store_addr_hazard_p (rtx_insn* producer, rtx_insn* consumer)
+
+static bool
+arc_store_addr_hazard_internal_p (rtx_insn* producer, rtx_insn* consumer)
 {
   rtx in_set, out_set;
   rtx out_addr, in_addr;
@@ -7227,6 +7605,16 @@ arc_store_addr_hazard_p (rtx_insn* producer, rtx_insn* consumer)
   return false;
 }
 
+/* Return TRUE is we have an store address hazard.  */
+
+bool
+arc_store_addr_hazard_p (rtx_insn* producer, rtx_insn* consumer)
+{
+  if (TARGET_ARC700 && (arc_tune != ARC_TUNE_ARC7XX))
+    return true;
+  return arc_store_addr_hazard_internal_p (producer, consumer);
+}
+
 /* The same functionality as arc_hazard.  It is called in machine
    reorg before any other optimization.  Hence, the NOP size is taken
    into account when doing branch shortening.  */
@@ -7235,6 +7623,7 @@ static void
 workaround_arc_anomaly (void)
 {
   rtx_insn *insn, *succ0;
+  rtx_insn *succ1;
 
   /* For any architecture: call arc_hazard here.  */
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
@@ -7246,27 +7635,30 @@ workaround_arc_anomaly (void)
 	}
     }
 
-  if (TARGET_ARC700)
+  if (!TARGET_ARC700)
+    return;
+
+  /* Old A7 are suffering of a cache hazard, and we need to insert two
+     nops between any sequence of stores and a load.  */
+  if (arc_tune != ARC_TUNE_ARC7XX)
+    check_store_cacheline_hazard ();
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
-      rtx_insn *succ1;
-
-      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+      succ0 = next_real_insn (insn);
+      if (arc_store_addr_hazard_internal_p (insn, succ0))
 	{
-	  succ0 = next_real_insn (insn);
-	  if (arc_store_addr_hazard_p (insn, succ0))
-	    {
-	      emit_insn_after (gen_nopv (), insn);
-	      emit_insn_after (gen_nopv (), insn);
-	      continue;
-	    }
-
-	  /* Avoid adding nops if the instruction between the ST and LD is
-	     a call or jump.  */
-	  succ1 = next_real_insn (succ0);
-	  if (succ0 && !JUMP_P (succ0) && !CALL_P (succ0)
-	      && arc_store_addr_hazard_p (insn, succ1))
-	    emit_insn_after (gen_nopv (), insn);
+	  emit_insn_after (gen_nopv (), insn);
+	  emit_insn_after (gen_nopv (), insn);
+	  continue;
 	}
+
+      /* Avoid adding nops if the instruction between the ST and LD is
+	 a call or jump.  */
+      succ1 = next_real_insn (succ0);
+      if (succ0 && !JUMP_P (succ0) && !CALL_P (succ0)
+	  && arc_store_addr_hazard_internal_p (insn, succ1))
+	emit_insn_after (gen_nopv (), insn);
     }
 }
 
@@ -7318,6 +7710,25 @@ hwloop_fail (hwloop_info loop)
   delete_insn (loop->loop_end);
 }
 
+/* Return the next insn after INSN that is not a NOTE, but stop the
+   search before we enter another basic block.  This routine does not
+   look inside SEQUENCEs.  */
+
+static rtx_insn *
+next_nonnote_insn_bb (rtx_insn *insn)
+{
+  while (insn)
+    {
+      insn = NEXT_INSN (insn);
+      if (insn == 0 || !NOTE_P (insn))
+	break;
+      if (NOTE_INSN_BASIC_BLOCK_P (insn))
+	return NULL;
+    }
+
+  return insn;
+}
+
 /* Optimize LOOP.  */
 
 static bool
@@ -7335,32 +7746,32 @@ hwloop_optimize (hwloop_info loop)
   if (loop->depth > 1)
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d is not innermost\n",
-                 loop->loop_no);
+	fprintf (dump_file, ";; loop %d is not innermost\n",
+		 loop->loop_no);
       return false;
     }
 
   if (!loop->incoming_dest)
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d has more than one entry\n",
-                 loop->loop_no);
+	fprintf (dump_file, ";; loop %d has more than one entry\n",
+		 loop->loop_no);
       return false;
     }
 
   if (loop->incoming_dest != loop->head)
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d is not entered from head\n",
-                 loop->loop_no);
+	fprintf (dump_file, ";; loop %d is not entered from head\n",
+		 loop->loop_no);
       return false;
     }
 
   if (loop->has_call || loop->has_asm)
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d has invalid insn\n",
-                 loop->loop_no);
+	fprintf (dump_file, ";; loop %d has invalid insn\n",
+		 loop->loop_no);
       return false;
     }
 
@@ -7368,8 +7779,8 @@ hwloop_optimize (hwloop_info loop)
   if (loop->iter_reg_used || loop->iter_reg_used_outside)
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d uses iterator\n",
-                 loop->loop_no);
+	fprintf (dump_file, ";; loop %d uses iterator\n",
+		 loop->loop_no);
       return false;
     }
 
@@ -7378,13 +7789,23 @@ hwloop_optimize (hwloop_info loop)
   for (insn = loop->start_label;
        insn && insn != loop->loop_end;
        insn = NEXT_INSN (insn))
-    length += NONDEBUG_INSN_P (insn) ? get_attr_length (insn) : 0;
+    {
+      length += NONDEBUG_INSN_P (insn) ? get_attr_length (insn) : 0;
+      if (JUMP_TABLES_IN_TEXT_SECTION
+	  && JUMP_TABLE_DATA_P (insn))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, ";; loop %d has a jump table\n",
+		     loop->loop_no);
+	  return false;
+	}
+    }
 
   if (!insn)
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d start_label not before loop_end\n",
-                 loop->loop_no);
+	fprintf (dump_file, ";; loop %d start_label not before loop_end\n",
+		 loop->loop_no);
       return false;
     }
 
@@ -7402,12 +7823,21 @@ hwloop_optimize (hwloop_info loop)
       return false;
     }
 
-  /* Check if we use a register or not.  */
+  /* Check if we use a register or not.	 */
   if (!REG_P (loop->iter_reg))
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d iterator is MEM\n",
-                 loop->loop_no);
+	fprintf (dump_file, ";; loop %d iterator is MEM\n",
+		 loop->loop_no);
+      return false;
+    }
+
+  /* Check if we use a register or not.	 */
+  if (!REG_P (loop->iter_reg))
+    {
+      if (dump_file)
+	fprintf (dump_file, ";; loop %d iterator is MEM\n",
+		 loop->loop_no);
       return false;
     }
 
@@ -7425,7 +7855,11 @@ hwloop_optimize (hwloop_info loop)
 	  || (loop->incoming_src
 	      && REGNO_REG_SET_P (df_get_live_out (loop->incoming_src),
 				  LP_COUNT)))
-	return false;
+	{
+	  if (dump_file)
+	    fprintf (dump_file, ";; loop %d, lp_count is alive", loop->loop_no);
+	  return false;
+	}
       else
 	need_fix = true;
     }
@@ -7540,7 +7974,7 @@ hwloop_optimize (hwloop_info loop)
     {
       /* The loop uses a R-register, but the lp_count is free, thus
 	 use lp_count.  */
-      emit_insn (gen_movsi (lp_reg, iter_reg));
+      emit_insn (gen_rtx_SET (lp_reg, iter_reg));
       SET_HARD_REG_BIT (loop->regs_set_in_loop, LP_COUNT);
       iter_reg = lp_reg;
       if (dump_file)
@@ -7550,8 +7984,7 @@ hwloop_optimize (hwloop_info loop)
 	}
     }
 
-  insn = emit_insn (gen_arc_lp (iter_reg,
-				loop->start_label,
+  insn = emit_insn (gen_arc_lp (loop->start_label,
 				loop->end_label));
 
   seq = get_insns ();
@@ -7569,12 +8002,12 @@ hwloop_optimize (hwloop_info loop)
       seq = emit_label_before (gen_label_rtx (), seq);
       new_bb = create_basic_block (seq, insn, entry_bb);
       FOR_EACH_EDGE (e, ei, loop->incoming)
-        {
-          if (!(e->flags & EDGE_FALLTHRU))
-            redirect_edge_and_branch_force (e, new_bb);
-          else
-            redirect_edge_succ (e, new_bb);
-        }
+	{
+	  if (!(e->flags & EDGE_FALLTHRU))
+	    redirect_edge_and_branch_force (e, new_bb);
+	  else
+	    redirect_edge_succ (e, new_bb);
+	}
 
       make_edge (new_bb, loop->head, 0);
     }
@@ -7582,17 +8015,19 @@ hwloop_optimize (hwloop_info loop)
     {
 #if 0
       while (DEBUG_INSN_P (entry_after)
-             || (NOTE_P (entry_after)
-		 && NOTE_KIND (entry_after) != NOTE_INSN_BASIC_BLOCK))
+	     || (NOTE_P (entry_after)
+		 && NOTE_KIND (entry_after) != NOTE_INSN_BASIC_BLOCK
+		 /* Make sure we don't split a call and its corresponding
+		    CALL_ARG_LOCATION note.  */
+		 && NOTE_KIND (entry_after) != NOTE_INSN_CALL_ARG_LOCATION))
         entry_after = NEXT_INSN (entry_after);
 #endif
-      entry_after = next_nonnote_nondebug_insn_bb (entry_after);
+      entry_after = next_nonnote_insn_bb (entry_after);
 
       gcc_assert (entry_after);
       emit_insn_before (seq, entry_after);
     }
 
-  delete_insn (loop->loop_end);
   /* Insert the loop end label before the last instruction of the
      loop.  */
   emit_label_after (end_label, loop->last_insn);
@@ -7904,10 +8339,14 @@ arc_reorg (void)
 	      if (!link_insn)
 		continue;
 	      else
-		/* Check if this is a data dependency.  */
 		{
+		  /* Check if this is a data dependency.  */
 		  rtx op, cc_clob_rtx, op0, op1, brcc_insn, note;
 		  rtx cmp0, cmp1;
+
+		  /* Make sure we can use it for brcc insns.  */
+		  if (find_reg_note (link_insn, REG_SAVE_NOTE, GEN_INT (3)))
+		    continue;
 
 		  /* Ok this is the set cc. copy args here.  */
 		  op = XEXP (pc_target, 0);
@@ -8038,7 +8477,7 @@ arc_reorg (void)
         Brcc.d b, c, s9
         Brcc.d b, u6, s9
 
-        For cc={GT, LE, GTU, LEU}, u6=63 can not be allowed,
+        For cc={GT, LE, GTU, LEU}, u6=63 cannot be allowed,
       since they are encoded by the assembler as {GE, LT, HS, LS} 64, which
       does not have a delay slot
 
@@ -8240,26 +8679,6 @@ int
 arc_register_move_cost (machine_mode,
 			enum reg_class from_class, enum reg_class to_class)
 {
-  /* The ARC600 has no bypass for extension registers, hence a nop might be
-     needed to be inserted after a write so that reads are safe.  */
-  if (TARGET_ARC600)
-    {
-      if (to_class == MPY_WRITABLE_CORE_REGS)
-	return 3;
-     /* Instructions modifying LP_COUNT need 4 additional cycles before
-	the register will actually contain the value.  */
-      else if (to_class == LPCOUNT_REG)
-	return 6;
-      else if (to_class == WRITABLE_CORE_REGS)
-	return 6;
-    }
-
-  /* Using lp_count as scratch reg is a VERY bad idea.  */
-  if (from_class == LPCOUNT_REG)
-    return 1000;
-  if (to_class == LPCOUNT_REG)
-    return 6;
-
   /* Force an attempt to 'mov Dy,Dx' to spill.  */
   if ((TARGET_ARC700 || TARGET_EM) && TARGET_DPFP
       && from_class == DOUBLE_REGS && to_class == DOUBLE_REGS)
@@ -9478,17 +9897,20 @@ split_subsi (rtx *operands)
 static bool
 arc_process_double_reg_moves (rtx *operands)
 {
+  enum usesDxState { none, srcDx, destDx, maxDx };
+  enum usesDxState state = none;
   rtx dest = operands[0];
   rtx src  = operands[1];
 
-  enum usesDxState { none, srcDx, destDx, maxDx };
-  enum usesDxState state = none;
-
   if (refers_to_regno_p (40, 44, src, 0))
-    state = srcDx;
+    {
+      state = srcDx;
+      gcc_assert (REG_P (dest));
+    }
   if (refers_to_regno_p (40, 44, dest, 0))
     {
       /* Via arc_register_move_cost, we should never see D,D moves.  */
+      gcc_assert (REG_P (src));
       gcc_assert (state == none);
       state = destDx;
     }
@@ -9840,11 +10262,11 @@ arc_return_address_register (unsigned int fn_type)
   if (ARC_INTERRUPT_P (fn_type))
     {
       if ((fn_type & (ARC_FUNCTION_ILINK1 | ARC_FUNCTION_FIRQ)) != 0)
-        regno = ILINK1_REGNUM;
+	regno = ILINK1_REG;
       else if ((fn_type & ARC_FUNCTION_ILINK2) != 0)
-        regno = ILINK2_REGNUM;
+	regno = ILINK2_REG;
       else
-        gcc_unreachable ();
+	gcc_unreachable ();
     }
   else if (ARC_NORMAL_P (fn_type) || ARC_NAKED_P (fn_type))
     regno = RETURN_ADDR_REGNUM;
@@ -9895,14 +10317,12 @@ arc_eh_uses (int regno)
   return false;
 }
 
-#ifndef TARGET_NO_LRA
-#define TARGET_NO_LRA !TARGET_LRA
-#endif
+/* Return true if we use LRA instead of reload pass.  */
 
-static bool
+bool
 arc_lra_p (void)
 {
-  return !TARGET_NO_LRA;
+  return arc_lra_flag;
 }
 
 /* ??? Should we define TARGET_REGISTER_PRIORITY?  We might perfer to use
@@ -10815,6 +11235,167 @@ arc_cannot_substitute_mem_equiv_p (rtx)
   /* If SUBST is mem[base+index], the address may not fit ISA,
      thus return true.  */
   return true;
+}
+
+/* Checks whether the operands are valid for use in an LDD/STD
+   instruction.  Assumes that RT, and RT2 are REG.  This is guaranteed
+   by the patterns.  Assumes that the address in the base register RN
+   is word aligned.  Pattern guarantees that both memory accesses use
+   the same base register, the offsets are constants within the range,
+   and the gap between the offsets is 4.  If reload complete then
+   check that registers are legal.  */
+
+static bool
+operands_ok_ldd_std (rtx rt, rtx rt2, HOST_WIDE_INT offset)
+{
+  unsigned int t, t2;
+
+  if (!reload_completed)
+    return true;
+
+  if (!(SMALL_INT_RANGE (offset, (GET_MODE_SIZE (DImode) - 1) & (~0x03),
+			 (offset & (GET_MODE_SIZE (DImode) - 1) & 3
+			  ? 0 : -(-GET_MODE_SIZE (DImode) | (~0x03)) >> 1))))
+    return false;
+
+  t = REGNO (rt);
+  t2 = REGNO (rt2);
+
+  if ((t2 == PCL_REG)
+      || (t % 2 != 0)	/* First destination register is not even.  */
+      || (t2 != t + 1))
+      return false;
+
+  return true;
+}
+
+/* Helper for gen_operands_ldd_std.  Returns true iff the memory
+   operand MEM's address contains an immediate offset from the base
+   register and has no side effects, in which case it sets BASE and
+   OFFSET accordingly.  */
+
+static bool
+mem_ok_for_ldd_std (rtx mem, rtx *base, rtx *offset)
+{
+  rtx addr;
+
+  gcc_assert (base != NULL && offset != NULL);
+
+  /* TODO: Handle more general memory operand patterns, such as
+     PRE_DEC and PRE_INC.  */
+
+  if (side_effects_p (mem))
+    return false;
+
+  /* Can't deal with subregs.  */
+  if (GET_CODE (mem) == SUBREG)
+    return false;
+
+  gcc_assert (MEM_P (mem));
+
+  *offset = const0_rtx;
+
+  addr = XEXP (mem, 0);
+
+  /* If addr isn't valid for DImode, then we can't handle it.  */
+  if (!arc_legitimate_address_p (DImode, addr,
+				reload_in_progress || reload_completed))
+    return false;
+
+  if (REG_P (addr))
+    {
+      *base = addr;
+      return true;
+    }
+  else if (GET_CODE (addr) == PLUS || GET_CODE (addr) == MINUS)
+    {
+      *base = XEXP (addr, 0);
+      *offset = XEXP (addr, 1);
+      return (REG_P (*base) && CONST_INT_P (*offset));
+    }
+
+  return false;
+}
+
+/* Called from peephole2 to replace two word-size accesses with a
+   single LDD/STD instruction.  Returns true iff we can generate a new
+   instruction sequence.  That is, both accesses use the same base
+   register and the gap between constant offsets is 4.  OPERANDS are
+   the operands found by the peephole matcher; OPERANDS[0,1] are
+   register operands, and OPERANDS[2,3] are the corresponding memory
+   operands.  LOAD indicates whether the access is load or store.  */
+
+bool
+gen_operands_ldd_std (rtx *operands, bool load, bool commute)
+{
+  int i, gap;
+  HOST_WIDE_INT offsets[2], offset;
+  int nops = 2;
+  rtx cur_base, cur_offset, tmp;
+  rtx base = NULL_RTX;
+
+  /* Check that the memory references are immediate offsets from the
+     same base register.  Extract the base register, the destination
+     registers, and the corresponding memory offsets.  */
+  for (i = 0; i < nops; i++)
+    {
+      if (!mem_ok_for_ldd_std (operands[nops+i], &cur_base, &cur_offset))
+	return false;
+
+      if (i == 0)
+	base = cur_base;
+      else if (REGNO (base) != REGNO (cur_base))
+	return false;
+
+      offsets[i] = INTVAL (cur_offset);
+      if (GET_CODE (operands[i]) == SUBREG)
+	{
+	  tmp = SUBREG_REG (operands[i]);
+	  gcc_assert (GET_MODE (operands[i]) == GET_MODE (tmp));
+	  operands[i] = tmp;
+	}
+    }
+
+  /* Make sure there is no dependency between the individual loads.  */
+  if (load && REGNO (operands[0]) == REGNO (base))
+    return false; /* RAW.  */
+
+  if (load && REGNO (operands[0]) == REGNO (operands[1]))
+    return false; /* WAW.  */
+
+  /* Make sure the instructions are ordered with lower memory access first.  */
+  if (offsets[0] > offsets[1])
+    {
+      gap = offsets[0] - offsets[1];
+      offset = offsets[1];
+
+      /* Swap the instructions such that lower memory is accessed first.  */
+      std::swap (operands[0], operands[1]);
+      std::swap (operands[2], operands[3]);
+    }
+  else
+    {
+      gap = offsets[1] - offsets[0];
+      offset = offsets[0];
+    }
+
+  /* Make sure accesses are to consecutive memory locations.  */
+  if (gap != 4)
+    return false;
+
+  /* Make sure we generate legal instructions.  */
+  if (operands_ok_ldd_std (operands[0], operands[1], offset))
+    return true;
+
+  if (load && commute)
+    {
+      /* Try reordering registers.  */
+      std::swap (operands[0], operands[1]);
+      if (operands_ok_ldd_std (operands[0], operands[1], offset))
+	return true;
+    }
+
+  return false;
 }
 
 #undef TARGET_USE_ANCHORS_FOR_SYMBOL_P

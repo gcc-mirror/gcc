@@ -1,6 +1,6 @@
 /* This file contains the definitions of the GIMPLE IR tuples used in GCC.
 
-   Copyright (C) 2007-2018 Free Software Foundation, Inc.
+   Copyright (C) 2007-2019 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -279,9 +279,10 @@ DEFGSCODE(GIMPLE_OMP_FOR, "gimple_omp_for", GSS_OMP_FOR)
    BODY is the sequence of statements to execute in the master section.  */
 DEFGSCODE(GIMPLE_OMP_MASTER, "gimple_omp_master", GSS_OMP)
 
-/* GIMPLE_OMP_TASKGROUP <BODY> represents #pragma omp taskgroup.
-   BODY is the sequence of statements to execute in the taskgroup section.  */
-DEFGSCODE(GIMPLE_OMP_TASKGROUP, "gimple_omp_taskgroup", GSS_OMP)
+/* GIMPLE_OMP_TASKGROUP <BODY, CLAUSES> represents #pragma omp taskgroup.
+   BODY is the sequence of statements inside the taskgroup section.
+   CLAUSES is an OMP_CLAUSE chain holding the associated clauses.  */
+DEFGSCODE(GIMPLE_OMP_TASKGROUP, "gimple_omp_taskgroup", GSS_OMP_SINGLE_LAYOUT)
 
 /* GIMPLE_OMP_PARALLEL <BODY, CLAUSES, CHILD_FN, DATA_ARG> represents
 
@@ -366,10 +367,12 @@ DEFGSCODE(GIMPLE_OMP_SINGLE, "gimple_omp_single", GSS_OMP_SINGLE_LAYOUT)
    implement the MAP clauses.  */
 DEFGSCODE(GIMPLE_OMP_TARGET, "gimple_omp_target", GSS_OMP_PARALLEL_LAYOUT)
 
-/* GIMPLE_OMP_TEAMS <BODY, CLAUSES> represents #pragma omp teams
+/* GIMPLE_OMP_TEAMS <BODY, CLAUSES, CHILD_FN, DATA_ARG> represents
+   #pragma omp teams
    BODY is the sequence of statements inside the single section.
-   CLAUSES is an OMP_CLAUSE chain holding the associated clauses.  */
-DEFGSCODE(GIMPLE_OMP_TEAMS, "gimple_omp_teams", GSS_OMP_SINGLE_LAYOUT)
+   CLAUSES is an OMP_CLAUSE chain holding the associated clauses.
+   CHILD_FN and DATA_ARG like for GIMPLE_OMP_PARALLEL.  */
+DEFGSCODE(GIMPLE_OMP_TEAMS, "gimple_omp_teams", GSS_OMP_PARALLEL_LAYOUT)
 
 /* GIMPLE_OMP_ORDERED <BODY, CLAUSES> represents #pragma omp ordered.
    BODY is the sequence of statements to execute in the ordered section.

@@ -1,3 +1,299 @@
+2019-02-26  Tom de Vries  <tdevries@suse.de>
+
+	* btest.c (test5): Allow global.* as minimal symbol name for global.
+
+2019-02-26  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am (TESTS): Only add b3test_dwz_buildid if HAVE_DWZ.
+	* Makefile.in: Regenerate.
+
+2019-02-12  Tom de Vries  <tdevries@suse.de>
+
+	PR libbacktrace/81983
+	* dwarf.c (dwarf_lookup_pc): Don't call bsearch if nmemb == 0.
+
+2019-02-10  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am (BUILDTESTS): Add btest_lto.
+	* Makefile.in: Regenerate.
+	* btest.c (test1, f2, f3, test3, f22, f23): Declare with
+	__attribute__((noclone)).
+
+2019-02-08  Tom de Vries  <tdevries@suse.de>
+
+	* backtrace.c (backtrace_full): Declare with __attribute__((noinline)).
+	* print.c (backtrace_print): Same.
+	* simple.c (backtrace_simple): Same.
+
+2019-02-08  Tom de Vries  <tdevries@suse.de>
+
+	PR libbacktrace/78063
+	* dwarf.c (build_address_map): Keep all parsed units.
+	(read_referenced_name_from_attr): Handle DW_FORM_ref_addr.
+
+2019-01-31  Tom de Vries  <tdevries@suse.de>
+
+	PR libbacktrace/89136
+	* elf.c (elf_add): Read build-id if with_buildid_data.  Fix
+	'debugaltlink_name_len =+ 1'.
+
+2019-01-29  Tom de Vries  <tdevries@suse.de>
+
+	* install-debuginfo-for-buildid.sh.in: New script.
+	* Makefile.am (check_PROGRAMS): Add b2test and b3test.
+	(TESTS): Add b2test_buildid and b3test_dwz_buildid.
+	* Makefile.in: Regenerate.
+	* configure.ac (HAVE_ELF): Set with AM_CONDITIONAL.
+	(READELF): Set with AC_CHECK_PROG.
+	(install-debuginfo-for-buildid.sh): Generate with AC_CONFIG_FILES.
+	* configure: Regenerate.
+	* elf.c (SYSTEM_BUILD_ID_DIR): Factor out of ...
+	(elf_open_debugfile_by_buildid): ... here.
+
+2019-01-29  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am: Replace check_PROGRAMS with BUILDTESTS, except for
+	allocfail.
+	(TESTS): Don't add check_PROGRAMS. Add BUILDTESTS.
+	(check_PROGRAMS): Add BUILDTESTS.
+	* Makefile.in: Regenerate.
+
+2019-01-28  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am (xcoff_%.c): Generate sed result into temporary file.
+	Use $< to access prerequisite.
+	* Makefile.in: Regenerate.
+
+2019-01-25  Nathan Sidwell  <nathan@acm.org>
+
+	* elf.c (elf_add): Pass "" filename to recursive call with
+	separated debug.
+
+2019-01-25  Tom de Vries  <tdevries@suse.de>
+
+	* elf.c (elf_add): When handling .gnu_debugaltlink, call elf_add with
+	filename == "".
+	* Makefile.am (TESTS): Add btest_dwz_gnudebuglink.
+	* Makefile.in: Regenerate.
+
+2019-01-25  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am: Rewrite dtest rule into "%_gnudebuglink" pattern rule.
+	(TESTS): Rename dtest to btest_gnudebuglink.
+	* Makefile.in: Regenerate.
+
+2019-01-23  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (struct unit): Use size_t for low_offset/high_offset fields.
+	(units_search, find_unit): Use size_t for offset.
+	(build_address_map): Use size_t for unit_offset.
+
+2019-01-20  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* allocfail.c (main): Increase portability of printf statement.
+
+2019-01-18  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/88890
+	* mmapio.c (backtrace_get_view): Change size parameter to
+	uint64_t.  Check that value fits in size_t.
+	* read.c (backtrace_get_view): Likewise.
+	* internal.h (backtrace_get_view): Update declaration.
+	* elf.c (elf_add): Pass shstrhdr->sh_size to backtrace_get_view.
+
+2019-01-17  Tom de Vries  <tdevries@suse.de>
+
+	PR libbacktrace/82857
+	* configure.ac (DWZ): Set with AC_CHECK_PROG.
+	(HAVE_DWZ): Set with AM_CONDITIONAL.
+	* configure: Regenerate.
+	* Makefile.am (TESTS): Add btest_dwz.
+	* Makefile.in: Regenerate.
+
+2019-01-17  Tom de Vries  <tdevries@suse.de>
+
+	PR libbacktrace/82857
+	* dwarf.c (enum attr_val_encoding): Add ATTR_VAL_REF_ALT_INFO.
+	(read_attribute): Handle DW_FORM_GNU_ref_alt using
+	ATTR_VAL_REF_ALT_INFO.
+	(read_referenced_name_from_attr): Handle DW_FORM_GNU_ref_alt.
+
+2019-01-17  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (struct unit): Add low_offset and high_offset fields.
+	(struct unit_vector): New type.
+	(struct dwarf_data): Add units and units_counts fields.
+	(find_unit): New function.
+	(find_address_ranges): Add and handle unit_tag parameter.
+	(build_address_map): Add and handle units_vec parameter.
+	(build_dwarf_data): Pass units_vec to build_address_map.  Store resulting
+	units vector.
+
+2019-01-17  Tom de Vries  <tdevries@suse.de>
+
+	PR libbacktrace/82857
+	* dwarf.c (read_attribute): Handle DW_FORM_GNU_strp_alt
+	using altlink.
+
+2019-01-17  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (enum attr_val_encoding): Add ATTR_VAL_NONE.
+	(read_attribute): Add altlink parameter.  Handle missing altlink for
+	DW_FORM_GNU_strp_alt and DW_FORM_GNU_ref_alt.
+	(find_address_ranges, build_address_map, build_dwarf_data): Add and
+	handle altlink parameter.
+	(read_referenced_name, read_function_entry): Add argument to
+	read_attribute call.
+
+2019-01-17  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (struct dwarf_data): Add altlink field.
+	(backtrace_dwarf_add): Add and handle fileline_altlink parameter.
+	* elf.c	(elf_add): Add argument to backtrace_dwarf_add call.
+	(phdr_callback, backtrace_initialize): Add argument to elf_add calls.
+	* internal.h (backtrace_dwarf_add): Add fileline_altlink parameter.
+	* pecoff.c (coff_add): Add argument to backtrace_dwarf_add call.
+	* xcoff.c (xcoff_add): Same.
+
+2019-01-17  Tom de Vries  <tdevries@suse.de>
+
+	* internal.h (backtrace_dwarf_add): Add fileline_entry parameter.
+	* dwarf.c (backtrace_dwarf_add): Add and handle fileline_entry parameter.
+	* elf.c	(elf_add): Add and handle fileline_entry parameter.  Add
+	argument to backtrace_dwarf_add call.
+	(phdr_callback, backtrace_initialize): Add argument to elf_add calls.
+	* pecoff.c (coff_add): Add argument to backtrace_dwarf_add call.
+	* xcoff.c (xcoff_add): Same.
+
+2019-01-17  Tom de Vries  <tdevries@suse.de>
+
+	* elf.c (elf_add): Add and handle with_buildid_data and
+	with_buildid_size parameters.  Handle .gnu_debugaltlink section.
+	(phdr_callback, backtrace_initialize): Add arguments to elf_add calls.
+
+2019-01-16  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (read_referenced_name_from_attr): New function.  Factor out
+	of ...
+ 	(read_referenced_name): ... here, and ...
+	(read_function_entry): ... here.
+
+2019-01-16  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (read_referenced_name): Don't allow DW_AT_name to override any
+	name.
+	(read_function_entry): Same.  Don't allow name found via
+	DW_AT_abstract_origin or case DW_AT_specification to override linkage
+	name.
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* backtrace.h: Mechanically replace "can not" with "cannot".
+
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-12-29  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* Makefile.am (xcoff_%.c): Use an actual newline instead of \n
+	in sed pattern.
+	* Makefile.in: Regenerate.
+
+2018-12-28  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (build_address_map): Reuse unused units.
+
+2018-12-28  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (build_address_map): Simplify by removing local variable
+	abbrevs.
+
+2018-12-28  Ian Lance Taylor  <iant@golang.org>
+	    Tom de Vries  <tdevries@suse.de>
+
+	PR libbacktrace/88063
+	* dwarf.c (free_unit_addrs_vector): Remove.
+	(build_address_map): Keep track of allocated units in vector.  Free
+	allocated units and corresponding abbrevs upon failure.  Remove now
+	redundant call to free_unit_addrs_vector.  Free addrs vector upon
+	failure.  Free allocated unit vector.
+
+2018-12-28  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (build_address_map): Free addrs vector upon failure.
+
+2018-12-14  Tom de Vries  <tdevries@suse.de>
+
+	PR testsuite/88491
+	* allocfail.sh: Remove "set -o pipefail".
+
+2018-12-12  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am (TESTS): Add allocfail.sh.
+	(check_PROGRAMS): Add allocfail.
+	* Makefile.in: Regenerate.
+	* instrumented_alloc.c: New file.  Redefine malloc and realloc.
+	Include alloc.c.
+	* allocfail.c: New file.
+	* allocfail.sh: New file.
+
+2018-11-30  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am (check_PROGRAMS): Add test_elf, test_xcoff_32,
+	test_xcoff_64, test_pecoff and test_unknown.
+	* Makefile.in: Regenerate.
+	* test_format.c: New file.
+
+2018-11-30  Tom de Vries  <tdevries@suse.de>
+
+	* Makefile.am : Add _with_alloc version for each test in
+	check_PROGRAMS.
+	* Makefile.in: Regenerate.
+
+2018-11-30  Tom de Vries  <tdevries@suse.de>
+
+	* internal.h (backtrace_vector_free): New static inline fuction,
+	factored out of ...
+	* dwarf.c (read_line_info): ... here.
+
+2018-11-28  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (read_abbrevs): Fix handling of abbrevs->abbrevs allocation
+	failure.
+
+2018-11-27  Tom de Vries  <tdevries@suse.de>
+
+	* mmap.c (backtrace_vector_release): Same.
+	* unittest.c (test1): Add check.
+
+2018-11-27  Tom de Vries  <tdevries@suse.de>
+
+	* alloc.c (backtrace_vector_release): Handle vec->size == 0 using free
+	instead of realloc.
+	* Makefile.am (check_PROGRAMS): Add unittest.
+	* Makefile.in: Regenerate.
+	* unittest.c: New file.
+
+2018-11-22  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (read_initial_length): Factor out of ...
+	(build_address_map, read_line_info): ... here.
+
+2018-11-21  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (read_string): Factor out of ...
+	(read_attribute, read_line_header, read_line_program): ... here.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* Makefile.am: Include multilib.am.
+	* configure.ac: Remove AC_PREREQ.  Use AC_LANG_SOURCE.
+	* Makefile.in, aclocal.m4, config.h.in, configure: Regenerate.
+
 2018-10-05  Ian Lance Taylor  <iant@golang.org>
 
 	PR libbacktrace/87529
@@ -955,7 +1251,7 @@
 
 	* Initial implementation.
 
-Copyright (C) 2012-2018 Free Software Foundation, Inc.
+Copyright (C) 2012-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

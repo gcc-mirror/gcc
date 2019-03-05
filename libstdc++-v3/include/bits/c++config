@@ -1,6 +1,6 @@
 // Predefined symbols and macros -*- C++ -*-
 
-// Copyright (C) 1997-2018 Free Software Foundation, Inc.
+// Copyright (C) 1997-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -98,6 +98,14 @@
 #ifndef _GLIBCXX_ABI_TAG_CXX11
 # define _GLIBCXX_ABI_TAG_CXX11 __attribute ((__abi_tag__ ("cxx11")))
 #endif
+
+// Macro to warn about unused results.
+#if __cplusplus >= 201703L
+# define _GLIBCXX_NODISCARD [[__nodiscard__]]
+#else
+# define _GLIBCXX_NODISCARD
+#endif
+
 
 
 #if __cplusplus
@@ -617,6 +625,17 @@ namespace std
 # endif
 #endif
 
+// Unless explicitly specified, enable char8_t extensions only if the core
+// language char8_t feature macro is defined.
+#ifndef _GLIBCXX_USE_CHAR8_T
+# ifdef __cpp_char8_t
+#  define _GLIBCXX_USE_CHAR8_T 1
+# endif
+#endif
+#ifdef _GLIBCXX_USE_CHAR8_T
+# define __cpp_lib_char8_t 201811
+#endif
+
 /* Define if __float128 is supported on this host. */
 #if defined(__FLOAT128__) || defined(__SIZEOF_FLOAT128__)
 #define _GLIBCXX_USE_FLOAT128
@@ -627,6 +646,9 @@ namespace std
 # define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
 # define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
 # define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
+# if __GNUC__ >= 9
+#  define _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
+# endif
 #elif defined(__is_identifier)
 // For non-GNU compilers:
 # if ! __is_identifier(__has_unique_object_representations)
@@ -637,6 +659,9 @@ namespace std
 # endif
 # if ! __is_identifier(__builtin_launder)
 #  define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
+# endif
+# if ! __is_identifier(__builtin_is_constant_evaluated)
+#  define _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
 # endif
 #endif // GCC
 

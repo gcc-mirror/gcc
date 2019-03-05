@@ -135,6 +135,7 @@ func runfinq() {
 	)
 
 	gp := getg()
+	gp.isFinalizerGoroutine = true
 	for {
 		lock(&finlock)
 		fb := finq

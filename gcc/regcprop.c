@@ -1,5 +1,5 @@
 /* Copy propagation on hard registers for the GNU compiler.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -798,6 +798,22 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	    }
 	}
 
+      /* Detect obviously dead sets (via REG_UNUSED notes) and remove them.  */
+      if (set
+	  && INSN_P (insn)
+	  && !may_trap_p (insn)
+	  && find_reg_note (insn, REG_UNUSED, SET_DEST (set))
+	  && !side_effects_p (SET_SRC (set))
+	  && !side_effects_p (SET_DEST (set)))
+	{
+	  bool last = insn == BB_END (bb);
+	  delete_insn (insn);
+	  if (last)
+	    break;
+	  continue;
+	}
+	 
+
       extract_constrain_insn (insn);
       preprocess_constraints (insn);
       const operand_alternative *op_alt = which_op_alt ();
@@ -1054,7 +1070,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	    if ((TEST_HARD_REG_BIT (regs_invalidated_by_this_call, regno)
 		 || (targetm.hard_regno_call_part_clobbered
-		     (regno, vd->e[regno].mode)))
+		     (insn, regno, vd->e[regno].mode)))
 		&& (regno < set_regno || regno >= set_regno + set_nregs))
 	      kill_value_regno (regno, 1, vd);
 

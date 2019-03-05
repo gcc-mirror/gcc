@@ -1,5 +1,5 @@
 # Top level -*- makefile -*- fragment for GNU Objective-C
-#   Copyright (C) 1997-2018 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2019 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -97,6 +97,9 @@ lang_checks += check-objc
 # execute.exp tests will be run in parallel with all the other ones.
 lang_checks_parallelized += check-objc
 check_objc_parallelize = 6
+
+# No objc-c-specific selftests
+selftest-objc:
 
 #
 # Install hooks:

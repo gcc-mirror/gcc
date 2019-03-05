@@ -1,5 +1,5 @@
 /* Decompose multiword subregs.
-   Copyright (C) 2007-2018 Free Software Foundation, Inc.
+   Copyright (C) 2007-2019 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>
 		  Ian Lance Taylor <iant@google.com>
 
@@ -79,7 +79,7 @@ along with GCC; see the file COPYING3.  If not see
 static bitmap decomposable_context;
 
 /* Bit N in this bitmap is set if regno N is used in a context in
-   which it can not be decomposed.  */
+   which it cannot be decomposed.  */
 static bitmap non_decomposable_context;
 
 /* Bit N in this bitmap is set if regno N is used in a subreg
@@ -320,6 +320,24 @@ simple_move_operand (rtx x)
   return true;
 }
 
+/* If X is an operator that can be treated as a simple move that we
+   can split, then return the operand that is operated on.  */
+
+static rtx
+operand_for_swap_move_operator (rtx x)
+{
+  /* A word sized rotate of a register pair is equivalent to swapping
+     the registers in the register pair.  */
+  if (GET_CODE (x) == ROTATE
+      && GET_MODE (x) == twice_word_mode
+      && simple_move_operand (XEXP (x, 0))
+      && CONST_INT_P (XEXP (x, 1))
+      && INTVAL (XEXP (x, 1)) == BITS_PER_WORD)
+    return XEXP (x, 0);
+
+  return NULL_RTX;
+}
+
 /* If INSN is a single set between two objects that we want to split,
    return the single set.  SPEED_P says whether we are optimizing
    INSN for speed or size.
@@ -330,7 +348,7 @@ simple_move_operand (rtx x)
 static rtx
 simple_move (rtx_insn *insn, bool speed_p)
 {
-  rtx x;
+  rtx x, op;
   rtx set;
   machine_mode mode;
 
@@ -348,6 +366,9 @@ simple_move (rtx_insn *insn, bool speed_p)
     return NULL_RTX;
 
   x = SET_SRC (set);
+  if ((op = operand_for_swap_move_operator (x)) != NULL_RTX)
+    x = op;
+
   if (x != recog_data.operand[0] && x != recog_data.operand[1])
     return NULL_RTX;
   /* For the src we can handle ASM_OPERANDS, and it is beneficial for
@@ -386,8 +407,12 @@ find_pseudo_copy (rtx set)
 {
   rtx dest = SET_DEST (set);
   rtx src = SET_SRC (set);
+  rtx op;
   unsigned int rd, rs;
   bitmap b;
+
+  if ((op = operand_for_swap_move_operator (src)) != NULL_RTX)
+    src = op;
 
   if (!REG_P (dest) || !REG_P (src))
     return false;
@@ -536,7 +561,7 @@ find_decomposable_subregs (rtx *loc, enum classify_move_insn *pcmi)
 	     the register.
 
 	     If this is not a simple copy from one location to another,
-	     then we can not decompose this register.  If this is a simple
+	     then we cannot decompose this register.  If this is a simple
 	     copy we want to decompose, and the mode is right,
 	     then we mark the register as decomposable.
 	     Otherwise we don't say anything about this register --
@@ -846,6 +871,21 @@ can_decompose_p (rtx x)
   return true;
 }
 
+/* OPND is a concatn operand this is used with a simple move operator.
+   Return a new rtx with the concatn's operands swapped.  */
+
+static rtx
+resolve_operand_for_swap_move_operator (rtx opnd)
+{
+  gcc_assert (GET_CODE (opnd) == CONCATN);
+  rtx concatn = copy_rtx (opnd);
+  rtx op0 = XVECEXP (concatn, 0, 0);
+  rtx op1 = XVECEXP (concatn, 0, 1);
+  XVECEXP (concatn, 0, 0) = op1;
+  XVECEXP (concatn, 0, 1) = op0;
+  return concatn;
+}
+
 /* Decompose the registers used in a simple move SET within INSN.  If
    we don't change anything, return INSN, otherwise return the start
    of the sequence of moves.  */
@@ -853,7 +893,7 @@ can_decompose_p (rtx x)
 static rtx_insn *
 resolve_simple_move (rtx set, rtx_insn *insn)
 {
-  rtx src, dest, real_dest;
+  rtx src, dest, real_dest, src_op;
   rtx_insn *insns;
   machine_mode orig_mode, dest_mode;
   unsigned int orig_size, words;
@@ -875,6 +915,23 @@ resolve_simple_move (rtx set, rtx_insn *insn)
      register and then copy that to the destination.  */
 
   real_dest = NULL_RTX;
+
+  if ((src_op = operand_for_swap_move_operator (src)) != NULL_RTX)
+    {
+      if (resolve_reg_p (dest))
+	{
+	  /* DEST is a CONCATN, so swap its operands and strip
+	     SRC's operator.  */
+	  dest = resolve_operand_for_swap_move_operator (dest);
+	  src = src_op;
+	}
+      else if (resolve_reg_p (src_op))
+	{
+	  /* SRC is an operation on a CONCATN, so strip the operator and
+	     swap the CONCATN's operands.  */
+	  src = resolve_operand_for_swap_move_operator (src_op);
+	}
+    }
 
   if (GET_CODE (src) == SUBREG
       && resolve_reg_p (SUBREG_REG (src))
@@ -925,7 +982,7 @@ resolve_simple_move (rtx set, rtx_insn *insn)
   /* It's possible for the code to use a subreg of a decomposed
      register while forming an address.  We need to handle that before
      passing the address to emit_move_insn.  We pass NULL_RTX as the
-     insn parameter to resolve_subreg_use because we can not validate
+     insn parameter to resolve_subreg_use because we cannot validate
      the insn yet.  */
   if (MEM_P (src) || MEM_P (dest))
     {

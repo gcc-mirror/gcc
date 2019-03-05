@@ -1,8 +1,7 @@
-// { dg-options "-std=gnu++17 -lstdc++fs" }
+// { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
-// { dg-require-filesystem-ts "" }
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,8 +43,19 @@ test01()
   }
 }
 
+void
+test02()
+{
+  VERIFY( path("/").compare(path("////")) == 0 );
+  VERIFY( path("/a").compare(path("/")) > 0 );
+  VERIFY( path("/").compare(path("/a")) < 0 );
+  VERIFY( path("/ab").compare(path("/a")) > 0 );
+  VERIFY( path("/ab").compare(path("/a/b")) > 0 );
+}
+
 int
 main()
 {
   test01();
+  test02();
 }

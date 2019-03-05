@@ -1,3 +1,295 @@
+2019-02-21  Martin Sebor  <msebor@redhat.com>
+
+	* libgcc2.h (__clear_cache): Correct signature.
+	* libgcc2.c (__clear_cache): Same.
+
+2019-02-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/linux-unwind.h (alpha_fallback_frame_state):
+	Cast 'mcontext_t *' &rt_->uc.uc_mcontext to 'struct sigcontext *'.
+
+2019-02-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* unwind-dw2.c (_Unwind_GetGR) [DWARF_ZERO_REG]: Compare
+	regno instead of index to DWARF_ZERO_REG.
+
+2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/visium/lib2funcs.c (__set_trampoline_parity): Replace
+	TRAMPOLINE_SIZE with __LIBGCC_TRAMPOLINE_SIZE__.
+
+2019-01-31  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/t-linux: Add -mfp-rounding-mode=d
+	to HOST_LIBGCC2_CFLAGS.
+
+2019-01-23  Joseph Myers  <joseph@codesourcery.com>
+
+	PR libgcc/88931
+	* libgcc2.c (FSTYPE FUNC (DWtype u)): Correct no leading bits case.
+
+2019-01-18  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-profiler.c (__gcov_indirect_call_profiler_v2): Rename
+	to ...
+	(__gcov_indirect_call_profiler_v3): ... this.
+	* libgcov.h (__gcov_indirect_call_profiler_v2): Likewise.
+	(__gcov_indirect_call_profiler_v3): Likewise.
+	* Makefile.in: Bump function name.
+
+2019-01-18  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (GCOV_PROF_PREFIX): Define.
+	(gcov_version): Use in gcov_error.
+	(merge_one_data): Likewise.
+	(dump_one_gcov): Likewise.
+
+2019-01-18  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (gcov_version_string): New function.
+	(gcov_version): Convert version integer into string.
+
+2019-01-17  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* config.host: Recognize amdgcn*-*-amdhsa.
+	* config/gcn/crt0.c: New file.
+	* config/gcn/lib2-divmod-hi.c: New file.
+	* config/gcn/lib2-divmod.c: New file.
+	* config/gcn/lib2-gcn.h: New file.
+	* config/gcn/sfp-machine.h: New file.
+	* config/gcn/t-amdgcn: New file.
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* config/c6x/libunwind.S: Mechanically replace "can not" with
+	"cannot".
+	* config/tilepro/atomic.h: Likewise.
+	* config/vxlib-tls.c: Likewise.
+	* generic-morestack-thread.c: Likewise.
+	* generic-morestack.c: Likewise.
+	* mkmap-symver.awk: Likewise.
+
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-12-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* unwind-pe.h (read_encoded_value_with_base): Add GCC pragma
+	to ignore -Waddress-of-packed-member.
+
+2018-12-19  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
+
+	* /config/arm/lib1funcs.S (FUNC_START): Remove unused sp_section
+	parameter and corresponding code.
+	(ARM_FUNC_START): Likewise in both definitions.
+	Also update footer comment about condition that need to match with
+	gcc/config/arm/elf.h to also include libgcc/config/arm/t-arm.
+	* config/arm/ieee754-df.S (muldf3): Also build it if L_arm_muldf3 is
+	defined.  Weakly define it in this case.
+	* config/arm/ieee754-sf.S (mulsf3): Likewise with L_arm_mulsf3.
+	* config/arm/t-elf (LIB1ASMFUNCS): Build _arm_muldf3.o and
+	_arm_mulsf3.o before muldiv versions if targeting Thumb-1 only. Add
+	comment to keep condition in sync with the one in
+	libgcc/config/arm/lib1funcs.S and gcc/config/arm/elf.h.
+
+2018-12-18  Wei Xiao  <wei3.xiao@intel.com>
+
+	* config/i386/cpuinfo.c (get_intel_cpu): Handle cascadelake.
+	* config/i386/cpuinfo.h: Add INTEL_COREI7_CASCADELAKE.
+
+2018-12-12  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/rs6000/tramp.S (__trampoline_setup): Also emit .size
+	and .cfi_endproc directives for VxWorks targets.
+
+2018-12-05  Paul Koning  <ni1d@arrl.net>
+
+	* udivmodhi4.c (__udivmodhi4): Fix loop end check.
+
+2018-11-27  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/morestack.S (__stack_split_initialize),
+	(__morestack_get_guard, __morestack_set_guard),
+	(__morestack_make_guard): Provide CFI covering these functions.
+	* config/rs6000/tramp.S (__trampoline_setup): Likewise.
+
+2018-11-15  Xianmiao Qu  <xianmiao_qu@c-sky.com>
+
+	* config/csky/linux-unwind.h (sc_pt_regs): Update for kernel.
+	(sc_pt_regs_lr): Update for kernel.
+	(sc_pt_regs_tls): Update for kernel.
+
+2018-11-15  Xianmiao Qu  <xianmiao_qu@c-sky.com>
+
+	* config/csky/linux-unwind.h: Fix coding style.
+
+2018-11-13  Xianmiao Qu  <xianmiao_qu@c-sky.com>
+
+	* config/csky/linux-unwind.h (_sig_ucontext_t): Remove.
+	(csky_fallback_frame_state): Modify the check of the
+	instructions to adapt to changes in the kernel
+
+2018-11-09  Stafford Horne  <shorne@gmail.com>
+	    Richard Henderson  <rth@twiddle.net>
+
+	* config.host: Add OpenRISC support.
+	* config/or1k/*: New.
+
+2018-11-08  Kito Cheng  <kito@andestech.com>
+
+	* soft-fp/adddf3.c: Update from glibc.
+	* soft-fp/addsf3.c: Likewise.
+	* soft-fp/addtf3.c: Likewise.
+	* soft-fp/divdf3.c: Likewise.
+	* soft-fp/divsf3.c: Likewise.
+	* soft-fp/divtf3.c: Likewise.
+	* soft-fp/double.h: Likewise.
+	* soft-fp/eqdf2.c: Likewise.
+	* soft-fp/eqsf2.c: Likewise.
+	* soft-fp/eqtf2.c: Likewise.
+	* soft-fp/extenddftf2.c: Likewise.
+	* soft-fp/extended.h: Likewise.
+	* soft-fp/extendhftf2.c: Likewise.
+	* soft-fp/extendsfdf2.c: Likewise.
+	* soft-fp/extendsftf2.c: Likewise.
+	* soft-fp/extendxftf2.c: Likewise.
+	* soft-fp/fixdfdi.c: Likewise.
+	* soft-fp/fixdfsi.c: Likewise.
+	* soft-fp/fixdfti.c: Likewise.
+	* soft-fp/fixhfti.c: Likewise.
+	* soft-fp/fixsfdi.c: Likewise.
+	* soft-fp/fixsfsi.c: Likewise.
+	* soft-fp/fixsfti.c: Likewise.
+	* soft-fp/fixtfdi.c: Likewise.
+	* soft-fp/fixtfsi.c: Likewise.
+	* soft-fp/fixtfti.c: Likewise.
+	* soft-fp/fixunsdfdi.c: Likewise.
+	* soft-fp/fixunsdfsi.c: Likewise.
+	* soft-fp/fixunsdfti.c: Likewise.
+	* soft-fp/fixunshfti.c: Likewise.
+	* soft-fp/fixunssfdi.c: Likewise.
+	* soft-fp/fixunssfsi.c: Likewise.
+	* soft-fp/fixunssfti.c: Likewise.
+	* soft-fp/fixunstfdi.c: Likewise.
+	* soft-fp/fixunstfsi.c: Likewise.
+	* soft-fp/fixunstfti.c: Likewise.
+	* soft-fp/floatdidf.c: Likewise.
+	* soft-fp/floatdisf.c: Likewise.
+	* soft-fp/floatditf.c: Likewise.
+	* soft-fp/floatsidf.c: Likewise.
+	* soft-fp/floatsisf.c: Likewise.
+	* soft-fp/floatsitf.c: Likewise.
+	* soft-fp/floattidf.c: Likewise.
+	* soft-fp/floattihf.c: Likewise.
+	* soft-fp/floattisf.c: Likewise.
+	* soft-fp/floattitf.c: Likewise.
+	* soft-fp/floatundidf.c: Likewise.
+	* soft-fp/floatundisf.c: Likewise.
+	* soft-fp/floatunditf.c: Likewise.
+	* soft-fp/floatunsidf.c: Likewise.
+	* soft-fp/floatunsisf.c: Likewise.
+	* soft-fp/floatunsitf.c: Likewise.
+	* soft-fp/floatuntidf.c: Likewise.
+	* soft-fp/floatuntihf.c: Likewise.
+	* soft-fp/floatuntisf.c: Likewise.
+	* soft-fp/floatuntitf.c: Likewise.
+	* soft-fp/gedf2.c: Likewise.
+	* soft-fp/gesf2.c: Likewise.
+	* soft-fp/getf2.c: Likewise.
+	* soft-fp/half.h: Likewise.
+	* soft-fp/ledf2.c: Likewise.
+	* soft-fp/lesf2.c: Likewise.
+	* soft-fp/letf2.c: Likewise.
+	* soft-fp/muldf3.c: Likewise.
+	* soft-fp/mulsf3.c: Likewise.
+	* soft-fp/multf3.c: Likewise.
+	* soft-fp/negdf2.c: Likewise.
+	* soft-fp/negsf2.c: Likewise.
+	* soft-fp/negtf2.c: Likewise.
+	* soft-fp/op-1.h: Likewise.
+	* soft-fp/op-2.h: Likewise.
+	* soft-fp/op-4.h: Likewise.
+	* soft-fp/op-8.h: Likewise.
+	* soft-fp/op-common.h: Likewise.
+	* soft-fp/quad.h: Likewise.
+	* soft-fp/single.h: Likewise.
+	* soft-fp/soft-fp.h: Likewise.
+	* soft-fp/subdf3.c: Likewise.
+	* soft-fp/subsf3.c: Likewise.
+	* soft-fp/subtf3.c: Likewise.
+	* soft-fp/truncdfsf2.c: Likewise.
+	* soft-fp/trunctfdf2.c: Likewise.
+	* soft-fp/trunctfhf2.c: Likewise.
+	* soft-fp/trunctfsf2.c: Likewise.
+	* soft-fp/trunctfxf2.c: Likewise.
+	* soft-fp/unorddf2.c: Likewise.
+	* soft-fp/unordsf2.c: Likewise.
+	* soft-fp/unordtf2.c: Likewise.
+
+2018-11-04  Venkataramanan Kumar  <Venkataramanan.kumar@amd.com>
+
+	* config/i386/cpuinfo.c: (get_amd_cpu): Add znver2.
+	* config/i386/cpuinfo.h (processor_types): Add znver2.
+
+2018-11-01  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/t-pdp11 (LIB2ADD): Add divmod.c.
+	(HOST_LIBGCC2_CFLAGS): Change to optimize for size.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* configure.ac: Remove AC_PREREQ.  Use AC_LANG_SOURCE.
+	* configure: Regenerate.
+
+2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/lib1funcs.S (_muldi3): New function.
+	* config/arc/t-arc (LIB1ASMFUNCS): Add _muldi3.
+
+2018-10-30  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/gthr-vxworks.h (__gthread_mutex_destroy): Call semDelete.
+
+2018-10-25  Martin Liska  <mliska@suse.cz>
+
+	PR other/87735
+	* libgcov-profiler.c: Revert.
+
+2018-10-24  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-profiler.c: Start from 1 in order to distinguish
+	functions which were seen and these that were not.
+
+2018-10-18  Paul Koning  <ni1d@arrl.net>
+
+	* udivmodsi4.c (__udivmodsi4): Rename to conform to coding
+	standard.
+	* divmod.c: Update references to __udivmodsi4.
+	* udivmod.c: Ditto.
+	* udivhi3.c: New file.
+	* udivmodhi4.c: New file.
+	* config/pdp11/t-pdp11 (LIB2ADD): Add the new files.
+
+2018-10-17  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* Makefile.in (LIB2FUNCS_ST): Filter out LIB2FUNCS_EXCLUDE.
+
+2018-10-12  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/ibm-ldouble.c: Augment the toplevel guard with
+	defined (__FLOAT128_TYPE__) || defined (__LONG_DOUBLE_128__).
+
+2018-10-08  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/t-pdp11: Remove -mfloat32 switch.
+
 2018-10-04  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/84107
@@ -72,7 +364,7 @@
 
 2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
 
-	* config/unwind-dw2-fde-darwin.c 
+	* config/unwind-dw2-fde-darwin.c
 	(_darwin10_Unwind_FindEnclosingFunction): move from here ...
 	* config/darwin10-unwind-find-enc-func.c: … to here.
 	* config/t-darwin: Build Darwin10 unwinder shim crt.
@@ -9470,7 +9762,7 @@
 	shared-object.mk, siditi-object.mk, static-object.mk: New files.
 	* configure: Generated.
 
-Copyright (C) 2007-2018 Free Software Foundation, Inc.
+Copyright (C) 2007-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

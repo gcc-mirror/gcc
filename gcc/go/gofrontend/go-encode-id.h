@@ -20,6 +20,11 @@ go_id_needs_encoding(const std::string& str);
 extern std::string
 go_encode_id(const std::string &id);
 
+// Decodes an encoded ID, returning the original string handed off to
+// go_encode_id().
+extern std::string
+go_decode_id(const std::string &id);
+
 // Returns the empty string if the specified name needs encoding,
 // otherwise invokes go_encode_id on the name and returns the result.
 extern std::string

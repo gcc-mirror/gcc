@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2019 Free Software Foundation, Inc.
    Contributed by Martin Sebor <msebor@redhat.com>.
 
 This file is part of GCC.
@@ -65,9 +65,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "calls.h"
 #include "cfgloop.h"
+#include "tree-scalar-evolution.h"
+#include "tree-ssa-loop.h"
 #include "intl.h"
 #include "langhooks.h"
 
+#include "attribs.h"
 #include "builtins.h"
 #include "stor-layout.h"
 
@@ -120,7 +123,9 @@ struct format_result;
 class sprintf_dom_walker : public dom_walker
 {
  public:
-  sprintf_dom_walker () : dom_walker (CDI_DOMINATORS) {}
+  sprintf_dom_walker ()
+    : dom_walker (CDI_DOMINATORS),
+      evrp_range_analyzer (false) {}
   ~sprintf_dom_walker () {}
 
   edge before_dom_children (basic_block) FINAL OVERRIDE;
@@ -406,12 +411,12 @@ target_to_host (char *hostr, size_t hostsz, const char *targstr)
 }
 
 /* Convert the sequence of decimal digits in the execution character
-   starting at S to a long, just like strtol does.  Return the result
-   and set *END to one past the last converted character.  On range
-   error set ERANGE to the digit that caused it.  */
+   starting at *PS to a HOST_WIDE_INT, analogously to strtol.  Return
+   the result and set *PS to one past the last converted character.
+   On range error set ERANGE to the digit that caused it.  */
 
-static inline long
-target_strtol10 (const char **ps, const char **erange)
+static inline HOST_WIDE_INT
+target_strtowi (const char **ps, const char **erange)
 {
   unsigned HOST_WIDE_INT val = 0;
   for ( ; ; ++*ps)
@@ -422,9 +427,9 @@ target_strtol10 (const char **ps, const char **erange)
 	  c -= '0';
 
 	  /* Check for overflow.  */
-	  if (val > (LONG_MAX - c) / 10LU)
+	  if (val > ((unsigned HOST_WIDE_INT) HOST_WIDE_INT_MAX - c) / 10LU)
 	    {
-	      val = LONG_MAX;
+	      val = HOST_WIDE_INT_MAX;
 	      *erange = *ps;
 
 	      /* Skip the remaining digits.  */
@@ -940,6 +945,29 @@ struct sprintf_dom_walker::call_info
   {
     return bounded ? OPT_Wformat_truncation_ : OPT_Wformat_overflow_;
   }
+
+  /* Return true for calls to file formatted functions.  */
+  bool is_file_func () const
+  {
+    return (fncode == BUILT_IN_FPRINTF
+	    || fncode == BUILT_IN_FPRINTF_CHK
+	    || fncode == BUILT_IN_FPRINTF_UNLOCKED
+	    || fncode == BUILT_IN_VFPRINTF
+	    || fncode == BUILT_IN_VFPRINTF_CHK);
+  }
+
+  /* Return true for calls to string formatted functions.  */
+  bool is_string_func () const
+  {
+    return (fncode == BUILT_IN_SPRINTF
+	    || fncode == BUILT_IN_SPRINTF_CHK
+	    || fncode == BUILT_IN_SNPRINTF
+	    || fncode == BUILT_IN_SNPRINTF_CHK
+	    || fncode == BUILT_IN_VSPRINTF
+	    || fncode == BUILT_IN_VSPRINTF_CHK
+	    || fncode == BUILT_IN_VSNPRINTF
+	    || fncode == BUILT_IN_VSNPRINTF_CHK);
+  }
 };
 
 /* Return the result of formatting a no-op directive (such as '%n').  */
@@ -1052,9 +1080,7 @@ get_int_range (tree arg, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
 	{
 	  /* Try to determine the range of values of the integer argument.  */
 	  value_range *vr = vr_values->get_value_range (arg);
-	  if (vr->type == VR_RANGE
-	      && TREE_CODE (vr->min) == INTEGER_CST
-	      && TREE_CODE (vr->max) == INTEGER_CST)
+	  if (range_int_cst_p (vr))
 	    {
 	      HOST_WIDE_INT type_min
 		= (TYPE_UNSIGNED (argtype)
@@ -1063,8 +1089,8 @@ get_int_range (tree arg, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
 
 	      HOST_WIDE_INT type_max = tree_to_uhwi (TYPE_MAX_VALUE (argtype));
 
-	      *pmin = TREE_INT_CST_LOW (vr->min);
-	      *pmax = TREE_INT_CST_LOW (vr->max);
+	      *pmin = TREE_INT_CST_LOW (vr->min ());
+	      *pmax = TREE_INT_CST_LOW (vr->max ());
 
 	      if (*pmin < *pmax)
 		{
@@ -1354,12 +1380,10 @@ format_integer (const directive &dir, tree arg, vr_values *vr_values)
       /* Try to determine the range of values of the integer argument
 	 (range information is not available for pointers).  */
       value_range *vr = vr_values->get_value_range (arg);
-      if (vr->type == VR_RANGE
-	  && TREE_CODE (vr->min) == INTEGER_CST
-	  && TREE_CODE (vr->max) == INTEGER_CST)
+      if (range_int_cst_p (vr))
 	{
-	  argmin = vr->min;
-	  argmax = vr->max;
+	  argmin = vr->min ();
+	  argmax = vr->max ();
 
 	  /* Set KNOWNRANGE if the argument is in a known subrange
 	     of the directive's type and neither width nor precision
@@ -1372,12 +1396,11 @@ format_integer (const directive &dir, tree arg, vr_values *vr_values)
 	  res.argmin = argmin;
 	  res.argmax = argmax;
 	}
-      else if (vr->type == VR_ANTI_RANGE)
+      else if (vr->kind () == VR_ANTI_RANGE)
 	{
 	  /* Handle anti-ranges if/when bug 71690 is resolved.  */
 	}
-      else if (vr->type == VR_VARYING
-	       || vr->type == VR_UNDEFINED)
+      else if (vr->varying_p () || vr->undefined_p ())
 	{
 	  /* The argument here may be the result of promoting the actual
 	     argument to int.  Try to determine the type of the actual
@@ -2005,91 +2028,73 @@ get_string_length (tree str, unsigned eltsize)
   if (!str)
     return fmtresult ();
 
-  c_strlen_data data;
-  memset (&data, 0, sizeof (c_strlen_data));
-  tree slen = c_strlen (str, 1, &data, eltsize);
-  if (slen && TREE_CODE (slen) == INTEGER_CST)
-    {
-      /* The string is properly terminated and
-	 we know its length.  */
-      fmtresult res (tree_to_shwi (slen));
-      res.nonstr = NULL_TREE;
-      return res;
-    }
-  else if (!slen
-	   && data.decl
-	   && data.len
-	   && TREE_CODE (data.len) == INTEGER_CST)
-    {
-      /* STR was not properly NUL terminated, but we have
-	 length information about the unterminated string.  */
-      fmtresult res (tree_to_shwi (data.len));
-      res.nonstr = data.decl;
-      return res;
-    }
-
   /* Determine the length of the shortest and longest string referenced
      by STR.  Strings of unknown lengths are bounded by the sizes of
      arrays that subexpressions of STR may refer to.  Pointers that
-     aren't known to point any such arrays result in LENRANGE[1] set
-     to SIZE_MAX.  NONSTR is set to the declaration of the constant
-     array that is known not to be nul-terminated.  */
-  tree lenrange[2];
-  tree nonstr;
-  bool flexarray = get_range_strlen (str, lenrange, eltsize, false, &nonstr);
+     aren't known to point any such arrays result in LENDATA.MAXLEN
+     set to SIZE_MAX.  */
+  c_strlen_data lendata = { };
+  get_range_strlen (str, &lendata, eltsize);
 
-  if (lenrange [0] || lenrange [1])
+  /* Return the default result when nothing is known about the string. */
+  if (integer_all_onesp (lendata.maxbound)
+      && integer_all_onesp (lendata.maxlen))
+    return fmtresult ();
+
+  HOST_WIDE_INT min
+    = (tree_fits_uhwi_p (lendata.minlen)
+       ? tree_to_uhwi (lendata.minlen)
+       : 0);
+
+  HOST_WIDE_INT max
+    = (tree_fits_uhwi_p (lendata.maxbound)
+       ? tree_to_uhwi (lendata.maxbound)
+       : HOST_WIDE_INT_M1U);
+
+  const bool unbounded = integer_all_onesp (lendata.maxlen);
+
+  /* Set the max/likely counters to unbounded when a minimum is known
+     but the maximum length isn't bounded.  This implies that STR is
+     a conditional expression involving a string of known length and
+     and an expression of unknown/unbounded length.  */
+  if (min
+      && (unsigned HOST_WIDE_INT)min < HOST_WIDE_INT_M1U
+      && unbounded)
+    max = HOST_WIDE_INT_M1U;
+
+  /* get_range_strlen() returns the target value of SIZE_MAX for
+     strings of unknown length.  Bump it up to HOST_WIDE_INT_M1U
+     which may be bigger.  */
+  if ((unsigned HOST_WIDE_INT)min == target_size_max ())
+    min = HOST_WIDE_INT_M1U;
+  if ((unsigned HOST_WIDE_INT)max == target_size_max ())
+    max = HOST_WIDE_INT_M1U;
+
+  fmtresult res (min, max);
+  res.nonstr = lendata.decl;
+
+  /* Set RES.KNOWNRANGE to true if and only if all strings referenced
+     by STR are known to be bounded (though not necessarily by their
+     actual length but perhaps by their maximum possible length).  */
+  if (res.range.max < target_int_max ())
     {
-      HOST_WIDE_INT min
-	= (tree_fits_uhwi_p (lenrange[0])
-	   ? tree_to_uhwi (lenrange[0])
-	   : 0);
-
-      HOST_WIDE_INT max
-	= (tree_fits_uhwi_p (lenrange[1])
-	   ? tree_to_uhwi (lenrange[1])
-	   : HOST_WIDE_INT_M1U);
-
-      /* get_range_strlen() returns the target value of SIZE_MAX for
-	 strings of unknown length.  Bump it up to HOST_WIDE_INT_M1U
-	 which may be bigger.  */
-      if ((unsigned HOST_WIDE_INT)min == target_size_max ())
-	min = HOST_WIDE_INT_M1U;
-      if ((unsigned HOST_WIDE_INT)max == target_size_max ())
-	max = HOST_WIDE_INT_M1U;
-
-      fmtresult res (min, max);
-      res.nonstr = nonstr;
-
-      /* Set RES.KNOWNRANGE to true if and only if all strings referenced
-	 by STR are known to be bounded (though not necessarily by their
-	 actual length but perhaps by their maximum possible length).  */
-      if (res.range.max < target_int_max ())
-	{
-	  res.knownrange = true;
-	  /* When the the length of the longest string is known and not
-	     excessive use it as the likely length of the string(s).  */
-	  res.range.likely = res.range.max;
-	}
-      else
-	{
-	  /* When the upper bound is unknown (it can be zero or excessive)
-	     set the likely length to the greater of 1 and the length of
-	     the shortest string and reset the lower bound to zero.  */
-	  res.range.likely = res.range.min ? res.range.min : warn_level > 1;
-	  res.range.min = 0;
-	}
-
-      /* If the range of string length has been estimated from the size
-	 of an array at the end of a struct assume that it's longer than
-	 the array bound says it is in case it's used as a poor man's
-	 flexible array member, such as in struct S { char a[4]; };  */
-      res.range.unlikely = flexarray ? HOST_WIDE_INT_MAX : res.range.max;
-
-      return res;
+      res.knownrange = true;
+      /* When the the length of the longest string is known and not
+	 excessive use it as the likely length of the string(s).  */
+      res.range.likely = res.range.max;
+    }
+  else
+    {
+      /* When the upper bound is unknown (it can be zero or excessive)
+	 set the likely length to the greater of 1 and the length of
+	 the shortest string and reset the lower bound to zero.  */
+      res.range.likely = res.range.min ? res.range.min : warn_level > 1;
+      res.range.min = 0;
     }
 
-  return fmtresult ();
+  res.range.unlikely = unbounded ? HOST_WIDE_INT_MAX : res.range.max;
+
+  return res;
 }
 
 /* Return the minimum and maximum number of characters formatted
@@ -2329,6 +2334,8 @@ format_string (const directive &dir, tree arg, vr_values *)
 	  if ((unsigned HOST_WIDE_INT)dir.prec[1] < slen.range.max)
 	    res.range.max = dir.prec[1];
 	  res.range.likely = dir.prec[1] ? warn_level > 1 : 0;
+	  if ((unsigned HOST_WIDE_INT)dir.prec[1] < slen.range.unlikely)
+	    res.range.unlikely = dir.prec[1];
 	}
       else if (slen.range.min >= target_int_max ())
 	{
@@ -2338,6 +2345,7 @@ format_string (const directive &dir, tree arg, vr_values *)
 	     empty, while at level 1 they are assumed to be one byte
 	     long.  */
 	  res.range.likely = warn_level > 1;
+	  res.range.unlikely = HOST_WIDE_INT_MAX;
 	}
       else
 	{
@@ -2347,8 +2355,6 @@ format_string (const directive &dir, tree arg, vr_values *)
 	  if (res.range.likely >= target_int_max ())
 	    res.range.likely = warn_level > 1;
 	}
-
-      res.range.unlikely = res.range.max;
     }
 
   /* If the argument isn't a nul-terminated string and the number
@@ -2801,8 +2807,9 @@ format_directive (const sprintf_dom_walker::call_info &info,
   if (fmtres.nullp)
     {
       fmtwarn (dirloc, argloc, NULL, info.warnopt (),
-	       "%<%.*s%> directive argument is null",
-	       dirlen, target_to_host (hostdir, sizeof hostdir, dir.beg));
+	       "%G%<%.*s%> directive argument is null",
+	       info.callstmt, dirlen,
+	       target_to_host (hostdir, sizeof hostdir, dir.beg));
 
       /* Don't bother processing the rest of the format string.  */
       res->warned = true;
@@ -2857,6 +2864,8 @@ format_directive (const sprintf_dom_walker::call_info &info,
   if (!warned
       /* Only warn at level 2.  */
       && warn_level > 1
+      /* Only warn for string functions.  */
+      && info.is_string_func ()
       && (!minunder4k
 	  || (!maxunder4k && fmtres.range.max < HOST_WIDE_INT_MAX)))
     {
@@ -2865,7 +2874,9 @@ format_directive (const sprintf_dom_walker::call_info &info,
 	 of C11.  Warn on this only at level 2 but remember this and
 	 prevent folding the return value when done.  This allows for
 	 the possibility of the actual libc call failing due to ENOMEM
-	 (like Glibc does under some conditions).  */
+	 (like Glibc does with very large precision or width).
+	 Issue the "may exceed" warning only for string functions and
+	 not for fprintf or printf.  */
 
       if (fmtres.range.min == fmtres.range.max)
 	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
@@ -2873,14 +2884,18 @@ format_directive (const sprintf_dom_walker::call_info &info,
 			  "minimum required size of 4095", dirlen,
 			  target_to_host (hostdir, sizeof hostdir, dir.beg),
 			  fmtres.range.min);
-      else
+      else if (!minunder4k)
 	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
-			  minunder4k
-			  ? G_("%<%.*s%> directive output between %wu and %wu "
-			       "bytes may exceed minimum required size of "
-			       "4095")
-			  : G_("%<%.*s%> directive output between %wu and %wu "
-			       "bytes exceeds minimum required size of 4095"),
+			  "%<%.*s%> directive output between %wu and %wu "
+			  "bytes exceeds minimum required size of 4095",
+			  dirlen,
+			  target_to_host (hostdir, sizeof hostdir, dir.beg),
+			  fmtres.range.min, fmtres.range.max);
+      else if (!info.retval_used () && info.is_string_func ())
+	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			  "%<%.*s%> directive output between %wu and %wu "
+			  "bytes may exceed minimum required size of "
+			  "4095",
 			  dirlen,
 			  target_to_host (hostdir, sizeof hostdir, dir.beg),
 			  fmtres.range.min, fmtres.range.max);
@@ -2903,24 +2918,48 @@ format_directive (const sprintf_dom_walker::call_info &info,
 	      && maxximax
 	      && fmtres.range.max < HOST_WIDE_INT_MAX)))
     {
-      /* The directive output causes the total length of output
-	 to exceed INT_MAX bytes.  */
-
-      if (fmtres.range.min == fmtres.range.max)
+      if (fmtres.range.min > target_int_max ())
+	{
+	  /* The directive output exceeds INT_MAX bytes.  */
+	  if (fmtres.range.min == fmtres.range.max)
+	    warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			      "%<%.*s%> directive output of %wu bytes exceeds "
+			      "%<INT_MAX%>", dirlen,
+			      target_to_host (hostdir, sizeof hostdir, dir.beg),
+			      fmtres.range.min);
+	  else
+	    warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			      "%<%.*s%> directive output between %wu and "
+			      "%wu bytes exceeds %<INT_MAX%>", dirlen,
+			      target_to_host (hostdir, sizeof hostdir, dir.beg),
+			      fmtres.range.min, fmtres.range.max);
+	}
+      else if (res->range.min > target_int_max ())
+	{
+	  /* The directive output is under INT_MAX but causes the result
+	     to exceed INT_MAX bytes.  */
+	  if (fmtres.range.min == fmtres.range.max)
+	    warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			      "%<%.*s%> directive output of %wu bytes causes "
+			      "result to exceed %<INT_MAX%>", dirlen,
+			      target_to_host (hostdir, sizeof hostdir, dir.beg),
+			      fmtres.range.min);
+	  else
+	    warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			      "%<%.*s%> directive output between %wu and "
+			      "%wu bytes causes result to exceed %<INT_MAX%>",
+			      dirlen,
+			      target_to_host (hostdir, sizeof hostdir, dir.beg),
+			      fmtres.range.min, fmtres.range.max);
+	}
+      else if ((!info.retval_used () || !info.bounded)
+	       && (info.is_string_func ()))
+	/* Warn for calls to string functions that either aren't bounded
+	   (sprintf) or whose return value isn't used.  */
 	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
-			  "%<%.*s%> directive output of %wu bytes causes "
-			  "result to exceed %<INT_MAX%>", dirlen,
-			  target_to_host (hostdir, sizeof hostdir, dir.beg),
-			  fmtres.range.min);
-      else
-	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
-			  fmtres.range.min > target_int_max ()
-			  ? G_("%<%.*s%> directive output between %wu and "
-			       "%wu bytes causes result to exceed "
-			       "%<INT_MAX%>")
-			  : G_("%<%.*s%> directive output between %wu and "
-			       "%wu bytes may cause result to exceed "
-			       "%<INT_MAX%>"), dirlen,
+			  "%<%.*s%> directive output between %wu and "
+			  "%wu bytes may cause result to exceed "
+			  "%<INT_MAX%>", dirlen,
 			  target_to_host (hostdir, sizeof hostdir, dir.beg),
 			  fmtres.range.min, fmtres.range.max);
     }
@@ -2960,37 +2999,65 @@ format_directive (const sprintf_dom_walker::call_info &info,
 
   res->warned |= warned;
 
-  if (!dir.beg[0] && res->warned && info.objsize < HOST_WIDE_INT_MAX)
+  if (!dir.beg[0] && res->warned)
     {
-      /* If a warning has been issued for buffer overflow or truncation
-	 (but not otherwise) help the user figure out how big a buffer
-	 they need.  */
-
       location_t callloc = gimple_location (info.callstmt);
 
       unsigned HOST_WIDE_INT min = res->range.min;
       unsigned HOST_WIDE_INT max = res->range.max;
 
-      if (min == max)
-	inform (callloc,
-		(min == 1
-		 ? G_("%qE output %wu byte into a destination of size %wu")
-		 : G_("%qE output %wu bytes into a destination of size %wu")),
-		info.func, min, info.objsize);
-      else if (max < HOST_WIDE_INT_MAX)
-	inform (callloc,
-		"%qE output between %wu and %wu bytes into "
-		"a destination of size %wu",
-		info.func, min, max, info.objsize);
-      else if (min < res->range.likely && res->range.likely < max)
-	inform (callloc,
-		"%qE output %wu or more bytes (assuming %wu) into "
-		"a destination of size %wu",
-		info.func, min, res->range.likely, info.objsize);
-      else
-	inform (callloc,
-		"%qE output %wu or more bytes into a destination of size %wu",
-		info.func, min, info.objsize);
+      if (info.objsize < HOST_WIDE_INT_MAX)
+	{
+	  /* If a warning has been issued for buffer overflow or truncation
+	     help the user figure out how big a buffer they need.  */
+
+	  if (min == max)
+	    inform (callloc,
+		    (min == 1
+		     ? G_("%qE output %wu byte into a destination of size %wu")
+		     : G_("%qE output %wu bytes into a destination of size "
+			  "%wu")),
+		    info.func, min, info.objsize);
+	  else if (max < HOST_WIDE_INT_MAX)
+	    inform (callloc,
+		    "%qE output between %wu and %wu bytes into "
+		    "a destination of size %wu",
+		    info.func, min, max, info.objsize);
+	  else if (min < res->range.likely && res->range.likely < max)
+	    inform (callloc,
+		    "%qE output %wu or more bytes (assuming %wu) into "
+		    "a destination of size %wu",
+		    info.func, min, res->range.likely, info.objsize);
+	  else
+	    inform (callloc,
+		    "%qE output %wu or more bytes into a destination of size "
+		    "%wu",
+		    info.func, min, info.objsize);
+	}
+      else if (!info.is_string_func ())
+	{
+	  /* If the warning is for a file function function like fprintf
+	     of printf with no destination size just print the computed
+	     result.  */
+	  if (min == max)
+	    inform (callloc,
+		    (min == 1
+		     ? G_("%qE output %wu byte")
+		     : G_("%qE output %wu bytes")),
+		    info.func, min);
+	  else if (max < HOST_WIDE_INT_MAX)
+	    inform (callloc,
+		    "%qE output between %wu and %wu bytes",
+		    info.func, min, max);
+	  else if (min < res->range.likely && res->range.likely < max)
+	    inform (callloc,
+		    "%qE output %wu or more bytes (assuming %wu)",
+		    info.func, min, res->range.likely);
+	  else
+	    inform (callloc,
+		    "%qE output %wu or more bytes",
+		    info.func, min);
+	}
     }
 
   if (dump_file && *dir.beg)
@@ -3082,7 +3149,7 @@ parse_directive (sprintf_dom_walker::call_info &info,
 	 width and sort it out later after the next character has
 	 been seen.  */
       pwidth = pf;
-      width = target_strtol10 (&pf, &werange);
+      width = target_strtowi (&pf, &werange);
     }
   else if (target_to_host (*pf) == '*')
     {
@@ -3164,7 +3231,7 @@ parse_directive (sprintf_dom_walker::call_info &info,
 	{
 	  werange = 0;
 	  pwidth = pf;
-	  width = target_strtol10 (&pf, &werange);
+	  width = target_strtowi (&pf, &werange);
 	}
       else if (target_to_host (*pf) == '*')
 	{
@@ -3197,7 +3264,7 @@ parse_directive (sprintf_dom_walker::call_info &info,
       if (ISDIGIT (target_to_host (*pf)))
 	{
 	  pprec = pf;
-	  precision = target_strtol10 (&pf, &perange);
+	  precision = target_strtowi (&pf, &perange);
 	}
       else if (target_to_host (*pf) == '*')
 	{
@@ -3351,7 +3418,7 @@ parse_directive (sprintf_dom_walker::call_info &info,
     }
   else
     {
-      if (width == LONG_MAX && werange)
+      if (width == HOST_WIDE_INT_MAX && werange)
 	{
 	  size_t begin = dir.beg - info.fmtstr + (pwidth - pcnt);
 	  size_t caret = begin + (werange - pcnt);
@@ -3384,7 +3451,7 @@ parse_directive (sprintf_dom_walker::call_info &info,
     }
   else
     {
-      if (precision == LONG_MAX && perange)
+      if (precision == HOST_WIDE_INT_MAX && perange)
 	{
 	  size_t begin = dir.beg - info.fmtstr + (pprec - pcnt) - 1;
 	  size_t caret = dir.beg - info.fmtstr + (perange - pcnt) - 1;
@@ -3480,7 +3547,6 @@ sprintf_dom_walker::compute_format_length (call_info &info,
      by the known range [0, 0] (with no conversion resulting in a failure
      or producing more than 4K bytes) until determined otherwise.  */
   res->knownrange = true;
-  res->posunder4k = true;
   res->floating = false;
   res->warned = false;
 
@@ -3518,11 +3584,15 @@ sprintf_dom_walker::compute_format_length (call_info &info,
 }
 
 /* Return the size of the object referenced by the expression DEST if
-   available, or -1 otherwise.  */
+   available, or the maximum possible size otherwise.  */
 
 static unsigned HOST_WIDE_INT
 get_destination_size (tree dest)
 {
+  /* When there is no destination return the maximum.  */
+  if (!dest)
+    return HOST_WIDE_INT_MAX;
+
   /* Initialize object size info before trying to compute it.  */
   init_object_sizes ();
 
@@ -3536,7 +3606,7 @@ get_destination_size (tree dest)
   if (compute_builtin_object_size (dest, ost, &size))
     return size;
 
-  return HOST_WIDE_INT_M1U;
+  return HOST_WIDE_INT_MAX;
 }
 
 /* Return true if the call described by INFO with result RES safe to
@@ -3743,6 +3813,37 @@ try_simplify_call (gimple_stmt_iterator *gsi,
   return false;
 }
 
+/* Return the zero-based index of the format string argument of a printf
+   like function and set *IDX_ARGS to the first format argument.  When
+   no such index exists return UINT_MAX.  */
+
+static unsigned
+get_user_idx_format (tree fndecl, unsigned *idx_args)
+{
+  tree attrs = lookup_attribute ("format", DECL_ATTRIBUTES (fndecl));
+  if (!attrs)
+    attrs = lookup_attribute ("format", TYPE_ATTRIBUTES (TREE_TYPE (fndecl)));
+
+  if (!attrs)
+    return UINT_MAX;
+
+  attrs = TREE_VALUE (attrs);
+
+  tree archetype = TREE_VALUE (attrs);
+  if (strcmp ("printf", IDENTIFIER_POINTER (archetype)))
+    return UINT_MAX;
+
+  attrs = TREE_CHAIN (attrs);
+  tree fmtarg = TREE_VALUE (attrs);
+
+  attrs = TREE_CHAIN (attrs);
+  tree elliparg = TREE_VALUE (attrs);
+
+  /* Attribute argument indices are 1-based but we use zero-based.  */
+  *idx_args = tree_to_uhwi (elliparg) - 1;
+  return tree_to_uhwi (fmtarg) - 1;
+}
+
 /* Determine if a GIMPLE CALL is to one of the sprintf-like built-in
    functions and if so, handle it.  Return true if the call is removed
    and gsi_next should not be performed in the caller.  */
@@ -3753,11 +3854,22 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
   call_info info = call_info ();
 
   info.callstmt = gsi_stmt (*gsi);
-  if (!gimple_call_builtin_p (info.callstmt, BUILT_IN_NORMAL))
+  info.func = gimple_call_fndecl (info.callstmt);
+  if (!info.func)
     return false;
 
-  info.func = gimple_call_fndecl (info.callstmt);
   info.fncode = DECL_FUNCTION_CODE (info.func);
+
+  /* Format string argument number (valid for all functions).  */
+  unsigned idx_format = UINT_MAX;
+  if (!gimple_call_builtin_p (info.callstmt, BUILT_IN_NORMAL))
+    {
+      unsigned idx_args;
+      idx_format = get_user_idx_format (info.func, &idx_args);
+      if (idx_format == UINT_MAX)
+	return false;
+      info.argidx = idx_args;
+    }
 
   /* The size of the destination as in snprintf(dest, size, ...).  */
   unsigned HOST_WIDE_INT dstsize = HOST_WIDE_INT_M1U;
@@ -3765,17 +3877,70 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
   /* The size of the destination determined by __builtin_object_size.  */
   unsigned HOST_WIDE_INT objsize = HOST_WIDE_INT_M1U;
 
-  /* Buffer size argument number (snprintf and vsnprintf).  */
-  unsigned HOST_WIDE_INT idx_dstsize = HOST_WIDE_INT_M1U;
+  /* Zero-based buffer size argument number (snprintf and vsnprintf).  */
+  unsigned idx_dstsize = UINT_MAX;
 
   /* Object size argument number (snprintf_chk and vsnprintf_chk).  */
-  unsigned HOST_WIDE_INT idx_objsize = HOST_WIDE_INT_M1U;
+  unsigned idx_objsize = UINT_MAX;
 
-  /* Format string argument number (valid for all functions).  */
-  unsigned idx_format;
+  /* Destinaton argument number (valid for sprintf functions only).  */
+  unsigned idx_dstptr = 0;
 
   switch (info.fncode)
     {
+    case BUILT_IN_NONE:
+      // User-defined function with attribute format (printf).
+      idx_dstptr = -1;
+      break;
+
+    case BUILT_IN_FPRINTF:
+      // Signature:
+      //   __builtin_fprintf (FILE*, format, ...)
+      idx_format = 1;
+      info.argidx = 2;
+      idx_dstptr = -1;
+      break;
+
+    case BUILT_IN_FPRINTF_CHK:
+      // Signature:
+      //   __builtin_fprintf_chk (FILE*, ost, format, ...)
+      idx_format = 2;
+      info.argidx = 3;
+      idx_dstptr = -1;
+      break;
+
+    case BUILT_IN_FPRINTF_UNLOCKED:
+      // Signature:
+      //   __builtin_fprintf_unnlocked (FILE*, format, ...)
+      idx_format = 1;
+      info.argidx = 2;
+      idx_dstptr = -1;
+      break;
+
+    case BUILT_IN_PRINTF:
+      // Signature:
+      //   __builtin_printf (format, ...)
+      idx_format = 0;
+      info.argidx = 1;
+      idx_dstptr = -1;
+      break;
+
+    case BUILT_IN_PRINTF_CHK:
+      // Signature:
+      //   __builtin_printf_chk (ost, format, ...)
+      idx_format = 1;
+      info.argidx = 2;
+      idx_dstptr = -1;
+      break;
+
+    case BUILT_IN_PRINTF_UNLOCKED:
+      // Signature:
+      //   __builtin_printf (format, ...)
+      idx_format = 0;
+      info.argidx = 1;
+      idx_dstptr = -1;
+      break;
+
     case BUILT_IN_SPRINTF:
       // Signature:
       //   __builtin_sprintf (dst, format, ...)
@@ -3808,6 +3973,38 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
       idx_format = 4;
       info.argidx = 5;
       info.bounded = true;
+      break;
+
+    case BUILT_IN_VFPRINTF:
+      // Signature:
+      //   __builtin_vprintf (FILE*, format, va_list)
+      idx_format = 1;
+      info.argidx = -1;
+      idx_dstptr = -1;
+      break;
+
+    case BUILT_IN_VFPRINTF_CHK:
+      // Signature:
+      //   __builtin___vfprintf_chk (FILE*, ost, format, va_list)
+      idx_format = 2;
+      info.argidx = -1;
+      idx_dstptr = -1;
+      break;
+
+    case BUILT_IN_VPRINTF:
+      // Signature:
+      //   __builtin_vprintf (format, va_list)
+      idx_format = 0;
+      info.argidx = -1;
+      idx_dstptr = -1;
+      break;
+
+    case BUILT_IN_VPRINTF_CHK:
+      // Signature:
+      //   __builtin___vprintf_chk (ost, format, va_list)
+      idx_format = 1;
+      info.argidx = -1;
+      idx_dstptr = -1;
       break;
 
     case BUILT_IN_VSNPRINTF:
@@ -3851,16 +4048,19 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
   /* Set the global warning level for this function.  */
   warn_level = info.bounded ? warn_format_trunc : warn_format_overflow;
 
-  /* The first argument is a pointer to the destination.  */
-  tree dstptr = gimple_call_arg (info.callstmt, 0);
+  /* For all string functions the first argument is a pointer to
+     the destination.  */
+  tree dstptr = (idx_dstptr < gimple_call_num_args (info.callstmt)
+		 ? gimple_call_arg (info.callstmt, 0) : NULL_TREE);
 
   info.format = gimple_call_arg (info.callstmt, idx_format);
 
   /* True when the destination size is constant as opposed to the lower
      or upper bound of a range.  */
   bool dstsize_cst_p = true;
+  bool posunder4k = true;
 
-  if (idx_dstsize == HOST_WIDE_INT_M1U)
+  if (idx_dstsize == UINT_MAX)
     {
       /* For non-bounded functions like sprintf, determine the size
 	 of the destination from the object or pointer passed to it
@@ -3885,17 +4085,26 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
 	      /* Avoid warning if -Wstringop-overflow is specified since
 		 it also warns for the same thing though only for the
 		 checking built-ins.  */
-	      if ((idx_objsize == HOST_WIDE_INT_M1U
+	      if ((idx_objsize == UINT_MAX
 		   || !warn_stringop_overflow))
 		warning_at (gimple_location (info.callstmt), info.warnopt (),
 			    "specified bound %wu exceeds maximum object size "
 			    "%wu",
 			    dstsize, target_size_max () / 2);
+	      /* POSIX requires snprintf to fail if DSTSIZE is greater
+		 than INT_MAX.  Even though not all POSIX implementations
+		 conform to the requirement, avoid folding in this case.  */
+	      posunder4k = false;
 	    }
 	  else if (dstsize > target_int_max ())
-	    warning_at (gimple_location (info.callstmt), info.warnopt (),
-			"specified bound %wu exceeds %<INT_MAX%>",
-			dstsize);
+	    {
+	      warning_at (gimple_location (info.callstmt), info.warnopt (),
+			  "specified bound %wu exceeds %<INT_MAX%>",
+			  dstsize);
+	      /* POSIX requires snprintf to fail if DSTSIZE is greater
+		 than INT_MAX.  Avoid folding in that case.  */
+	      posunder4k = false;
+	    }
 	}
       else if (TREE_CODE (size) == SSA_NAME)
 	{
@@ -3903,12 +4112,30 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
 	     and use the greater of the two at level 1 and the smaller
 	     of them at level 2.  */
 	  value_range *vr = evrp_range_analyzer.get_value_range (size);
-	  if (vr->type == VR_RANGE
-	      && TREE_CODE (vr->min) == INTEGER_CST
-	      && TREE_CODE (vr->max) == INTEGER_CST)
-	    dstsize = (warn_level < 2
-		       ? TREE_INT_CST_LOW (vr->max)
-		       : TREE_INT_CST_LOW (vr->min));
+	  if (range_int_cst_p (vr))
+	    {
+	      unsigned HOST_WIDE_INT minsize = TREE_INT_CST_LOW (vr->min ());
+	      unsigned HOST_WIDE_INT maxsize = TREE_INT_CST_LOW (vr->max ());
+	      dstsize = warn_level < 2 ? maxsize : minsize;
+
+	      if (minsize > target_int_max ())
+		warning_at (gimple_location (info.callstmt), info.warnopt (),
+			    "specified bound range [%wu, %wu] exceeds "
+			    "%<INT_MAX%>",
+			    minsize, maxsize);
+
+	      /* POSIX requires snprintf to fail if DSTSIZE is greater
+		 than INT_MAX.  Avoid folding if that's possible.  */
+	      if (maxsize > target_int_max ())
+		posunder4k = false;
+	    }
+	  else if (vr->varying_p ())
+	    {
+	      /* POSIX requires snprintf to fail if DSTSIZE is greater
+		 than INT_MAX.  Since SIZE's range is unknown, avoid
+		 folding.  */
+	      posunder4k = false;
+	    }
 
 	  /* The destination size is not constant.  If the function is
 	     bounded (e.g., snprintf) a lower bound of zero doesn't
@@ -3917,7 +4144,7 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
 	}
     }
 
-  if (idx_objsize != HOST_WIDE_INT_M1U)
+  if (idx_objsize != UINT_MAX)
     if (tree size = gimple_call_arg (info.callstmt, idx_objsize))
       if (tree_fits_uhwi_p (size))
 	objsize = tree_to_uhwi (size);
@@ -3937,14 +4164,15 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
       /* For calls to non-bounded functions or to those of bounded
 	 functions with a non-zero size, warn if the destination
 	 pointer is null.  */
-      if (integer_zerop (dstptr))
+      if (dstptr && integer_zerop (dstptr))
 	{
 	  /* This is diagnosed with -Wformat only when the null is a constant
 	     pointer.  The warning here diagnoses instances where the pointer
 	     is not constant.  */
 	  location_t loc = gimple_location (info.callstmt);
 	  warning_at (EXPR_LOC_OR_LOC (dstptr, loc),
-		      info.warnopt (), "null destination pointer");
+		      info.warnopt (), "%Gnull destination pointer",
+		      info.callstmt);
 	  return false;
 	}
 
@@ -3957,7 +4185,7 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
 	  /* Avoid warning if -Wstringop-overflow is specified since
 	     it also warns for the same thing though only for the
 	     checking built-ins.  */
-	  && (idx_objsize == HOST_WIDE_INT_M1U
+	  && (idx_objsize == UINT_MAX
 	      || !warn_stringop_overflow))
 	{
 	  warning_at (gimple_location (info.callstmt), info.warnopt (),
@@ -3966,14 +4194,15 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
 	}
     }
 
-  if (integer_zerop (info.format))
+  /* Determine if the format argument may be null and warn if not
+     and if the argument is null.  */
+  if (integer_zerop (info.format)
+      && gimple_call_builtin_p (info.callstmt, BUILT_IN_NORMAL))
     {
-      /* This is diagnosed with -Wformat only when the null is a constant
-	 pointer.  The warning here diagnoses instances where the pointer
-	 is not constant.  */
       location_t loc = gimple_location (info.callstmt);
       warning_at (EXPR_LOC_OR_LOC (info.format, loc),
-		  info.warnopt (), "null format string");
+		  info.warnopt (), "%Gnull format string",
+		  info.callstmt);
       return false;
     }
 
@@ -3984,6 +4213,14 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
   /* The result is the number of bytes output by the formatted function,
      including the terminating NUL.  */
   format_result res = format_result ();
+
+  /* I/O functions with no destination argument (i.e., all forms of fprintf
+     and printf) may fail under any conditions.  Others (i.e., all forms of
+     sprintf) may only fail under specific conditions determined for each
+     directive.  Clear POSUNDER4K for the former set of functions and set
+     it to true for the latter (it can only be cleared later, but it is
+     never set to true again).  */
+  res.posunder4k = posunder4k && dstptr;
 
   bool success = compute_format_length (info, &res);
   if (res.warned)
@@ -4048,9 +4285,21 @@ pass_sprintf_length::execute (function *fun)
   init_target_to_host_charmap ();
 
   calculate_dominance_info (CDI_DOMINATORS);
+  bool use_scev = optimize > 0 && flag_printf_return_value;
+  if (use_scev)
+    {
+      loop_optimizer_init (LOOPS_NORMAL);
+      scev_initialize ();
+    }
 
   sprintf_dom_walker sprintf_dom_walker;
   sprintf_dom_walker.walk (ENTRY_BLOCK_PTR_FOR_FN (fun));
+
+  if (use_scev)
+    {
+      scev_finalize ();
+      loop_optimizer_finalize ();
+    }
 
   /* Clean up object size info.  */
   fini_object_sizes ();

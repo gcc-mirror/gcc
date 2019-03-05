@@ -1,6 +1,6 @@
 /* Limit this to known non-strict alignment targets.  */
 /* { dg-do run { target { i?86-*-linux* x86_64-*-linux* } } } */
-/* { dg-options "-O -fsanitize=alignment -fsanitize-recover=alignment" } */
+/* { dg-options "-O -fsanitize=alignment -fsanitize-recover=alignment -Wno-address-of-packed-member" } */
 
 struct R { int a; } r;
 struct S { struct R a; char b; long long c; short d[10]; };

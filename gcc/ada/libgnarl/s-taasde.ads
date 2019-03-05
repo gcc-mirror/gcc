@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1998-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -120,8 +120,8 @@ private
       Level : ATC_Level_Base;
       --  Normally Level is the ATC nesting level of the asynchronous select
       --  statement to which this delay belongs, but after a call has been
-      --  dequeued we set it to ATC_Level_Infinity so that the Cancel operation
-      --  can detect repeated calls, and act idempotently.
+      --  dequeued we set it to Level_No_Pending_Abort so that the Cancel
+      --  operation can detect repeated calls, and act idempotently.
 
       Resume_Time : Duration;
       --  The absolute wake up time, represented as Duration

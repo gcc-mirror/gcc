@@ -1,6 +1,6 @@
 /* Function declarations for libiberty.
 
-   Copyright (C) 1997-2018 Free Software Foundation, Inc.
+   Copyright (C) 1997-2019 Free Software Foundation, Inc.
    
    Note - certain prototypes declared in this header file are for
    functions whoes implementation copyright does not belong to the
@@ -558,7 +558,7 @@ extern FILE *pex_input_file (struct pex_obj *obj, int flags,
 extern FILE *pex_input_pipe (struct pex_obj *obj, int binary);
 
 /* Read the standard output of the last program to be executed.
-   pex_run can not be called after this.  BINARY should be non-zero if
+   pex_run cannot be called after this.  BINARY should be non-zero if
    the file should be opened in binary mode; this is ignored on Unix.
    Returns NULL on error.  Don't call fclose on the returned FILE; it
    will be closed by pex_free.  */
@@ -566,7 +566,7 @@ extern FILE *pex_input_pipe (struct pex_obj *obj, int binary);
 extern FILE *pex_read_output (struct pex_obj *, int binary);
 
 /* Read the standard error of the last program to be executed.
-   pex_run can not be called after this.  BINARY should be non-zero if
+   pex_run cannot be called after this.  BINARY should be non-zero if
    the file should be opened in binary mode; this is ignored on Unix.
    Returns NULL on error.  Don't call fclose on the returned FILE; it
    will be closed by pex_free.  */

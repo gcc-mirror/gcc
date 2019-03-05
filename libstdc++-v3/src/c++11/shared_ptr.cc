@@ -1,6 +1,6 @@
 // Support for pointer abstractions -*- C++ -*-
 
-// Copyright (C) 2011-2018 Free Software Foundation, Inc.
+// Copyright (C) 2011-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -93,6 +93,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
   }
 #endif
+
+  bool
+  _Sp_make_shared_tag::_S_eq(const type_info& ti) noexcept
+  {
+#if __cpp_rtti
+    return ti == typeid(_Sp_make_shared_tag);
+#else
+    // If libstdc++ itself is built with -fno-rtti then just assume that
+    // make_shared and allocate_shared will never be used with -frtti.
+    return false;
+#endif
+  }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

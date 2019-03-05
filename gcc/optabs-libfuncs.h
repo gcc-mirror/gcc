@@ -1,5 +1,5 @@
 /* Mapping from optabs to underlying library functions
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -63,7 +63,9 @@ void gen_satfract_conv_libfunc (convert_optab, const char *,
 void gen_satfractuns_conv_libfunc (convert_optab, const char *,
 				   machine_mode, machine_mode);
 
+tree build_libfunc_function_visibility (const char *, symbol_visibility);
 tree build_libfunc_function (const char *);
+rtx init_one_libfunc_visibility (const char *, symbol_visibility);
 rtx init_one_libfunc (const char *);
 rtx set_user_assembler_libfunc (const char *, const char *);
 

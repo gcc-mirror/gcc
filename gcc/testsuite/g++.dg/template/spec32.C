@@ -2,5 +2,5 @@
 
 struct A
 {
-  template<template<int> class B> struct B<0>;  // { dg-error "name of class shadows" }
+  template<template<int> class B> struct B<0>;  // { dg-error "declaration does not declare anything" }
 };

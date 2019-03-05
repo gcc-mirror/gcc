@@ -1,5 +1,6 @@
 // Test for std::byte aliasing properties.
-// { dg-options "-std=c++17 -O3" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-O3" }
 
 #include <cstddef>
 

@@ -1,5 +1,5 @@
 ;; Code and mode itertator and attribute definitions for the ARM backend
-;; Copyright (C) 2010-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2019 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -24,9 +24,9 @@
 ;;----------------------------------------------------------------------------
 
 ;; A list of modes that are exactly 64 bits in size. This is used to expand
-;; some splits that are the same for all modes when operating on ARM 
+;; some splits that are the same for all modes when operating on ARM
 ;; registers.
-(define_mode_iterator ANY64 [DI DF V8QI V4HI V2SI V2SF])
+(define_mode_iterator ANY64 [DI DF V8QI V4HI V4HF V2SI V2SF])
 
 (define_mode_iterator ANY128 [V2DI V2DF V16QI V8HI V4SI V4SF])
 
@@ -122,6 +122,13 @@
 ;; All supported floating-point vector modes (except V2DF).
 (define_mode_iterator VF [(V4HF "TARGET_NEON_FP16INST")
 			   (V8HF "TARGET_NEON_FP16INST") V2SF V4SF])
+
+;; Double vector modes.
+(define_mode_iterator VDF [V2SF V4HF])
+
+;; Quad vector Float modes with half/single elements.
+(define_mode_iterator VQ_HSF [V8HF V4SF])
+
 
 ;; All supported vector modes (except those with 64-bit integer elements).
 (define_mode_iterator VDQW [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF])
@@ -422,6 +429,9 @@
 (define_int_iterator DOTPROD [UNSPEC_DOT_S UNSPEC_DOT_U])
 
 (define_int_iterator VFMLHALVES [UNSPEC_VFML_LO UNSPEC_VFML_HI])
+
+(define_int_iterator VCADD [UNSPEC_VCADD90 UNSPEC_VCADD270])
+(define_int_iterator VCMLA [UNSPEC_VCMLA UNSPEC_VCMLA90 UNSPEC_VCMLA180 UNSPEC_VCMLA270])
 
 ;;----------------------------------------------------------------------------
 ;; Mode attributes
@@ -741,7 +751,7 @@
 (define_mode_attr F_constraint [(SF "t") (DF "w")])
 (define_mode_attr vfp_type [(SF "s") (DF "d")])
 (define_mode_attr vfp_double_cond [(SF "") (DF "&& TARGET_VFP_DOUBLE")])
-(define_mode_attr VF_constraint [(V2SF "t") (V4SF "w")])
+(define_mode_attr VF_constraint [(V4HF "t") (V8HF "t") (V2SF "t") (V4SF "w")])
 
 ;; Mode attribute used to build the "type" attribute.
 (define_mode_attr q [(V8QI "") (V16QI "_q")
@@ -988,6 +998,13 @@
                           (UNSPEC_SHA1M "V4SI") (UNSPEC_SHA1P "V4SI")
                           (UNSPEC_SHA1SU0 "V4SI") (UNSPEC_SHA256H "V4SI")
                           (UNSPEC_SHA256H2 "V4SI") (UNSPEC_SHA256SU1 "V4SI")])
+
+(define_int_attr rot [(UNSPEC_VCADD90 "90")
+		      (UNSPEC_VCADD270 "270")
+		      (UNSPEC_VCMLA "0")
+		      (UNSPEC_VCMLA90 "90")
+		      (UNSPEC_VCMLA180 "180")
+		      (UNSPEC_VCMLA270 "270")])
 
 ;; Both kinds of return insn.
 (define_code_iterator RETURNS [return simple_return])

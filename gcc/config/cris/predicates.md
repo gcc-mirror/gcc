@@ -1,5 +1,5 @@
 ;; Operand and operator predicates for the GCC CRIS port.
-;; Copyright (C) 2005-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 ;; This file is part of GCC.
 ;;

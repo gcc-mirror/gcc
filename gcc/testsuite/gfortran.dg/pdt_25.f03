@@ -1,4 +1,4 @@
-! {dg-do run }
+! { dg-do run }
 !
 ! Tests the fix for PR82978 in which all the parameterized string
 ! lengths with the same value of parameter 'k' had the same value

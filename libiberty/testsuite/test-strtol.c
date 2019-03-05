@@ -1,5 +1,5 @@
 /* Test program for strtol family of funtions,
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
    Written by Yury Gribov <y.gribov@samsung.com>
 
    This file is part of the libiberty library, which is part of GCC.

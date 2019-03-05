@@ -1,5 +1,5 @@
 /* Transformations based on profile information for values.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -627,11 +627,6 @@ gimple_value_profile_transformations (void)
   gimple_stmt_iterator gsi;
   bool changed = false;
 
-  /* Autofdo does its own transformations for indirect calls,
-     and otherwise does not support value profiling.  */
-  if (flag_auto_profile)
-    return false;
-
   FOR_EACH_BB_FN (bb, cfun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -1193,7 +1188,7 @@ init_node_map (bool local)
   cgraph_node_map = new hash_map<profile_id_hash, cgraph_node *>;
 
   FOR_EACH_DEFINED_FUNCTION (n)
-    if (n->has_gimple_body_p ())
+    if (n->has_gimple_body_p () || n->thunk.thunk_p)
       {
 	cgraph_node **val;
 	if (local)
@@ -1392,7 +1387,7 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
 
   /* Build an EH edge for the direct call if necessary.  */
   lp_nr = lookup_stmt_eh_lp (icall_stmt);
-  if (lp_nr > 0 && stmt_could_throw_p (dcall_stmt))
+  if (lp_nr > 0 && stmt_could_throw_p (cfun, dcall_stmt))
     {
       add_stmt_to_eh_lp (dcall_stmt, lp_nr);
     }
@@ -1410,7 +1405,7 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
 		     PHI_ARG_DEF_FROM_EDGE (phi, e_eh));
 	  }
        }
-  if (!stmt_could_throw_p (dcall_stmt))
+  if (!stmt_could_throw_p (cfun, dcall_stmt))
     gimple_purge_dead_eh_edges (dcall_bb);
   return dcall_stmt;
 }
@@ -1634,8 +1629,8 @@ gimple_stringop_fixed_value (gcall *vcall_stmt, tree icall_size, profile_probabi
     }
 
   /* Because these are all string op builtins, they're all nothrow.  */
-  gcc_assert (!stmt_could_throw_p (vcall_stmt));
-  gcc_assert (!stmt_could_throw_p (icall_stmt));
+  gcc_assert (!stmt_could_throw_p (cfun, vcall_stmt));
+  gcc_assert (!stmt_could_throw_p (cfun, icall_stmt));
 }
 
 /* Find values inside STMT for that we want to measure histograms for

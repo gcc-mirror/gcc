@@ -1,5 +1,5 @@
-/* Return cosine of complex __float128 value.
-   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
+/* Return cosine of a complex type.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -14,9 +14,8 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
 
 #include "quadmath-imp.h"
 
@@ -25,11 +24,29 @@ cacosq (__complex128 x)
 {
   __complex128 y;
   __complex128 res;
+  int rcls = fpclassifyq (__real__ x);
+  int icls = fpclassifyq (__imag__ x);
 
-  y = casinq (x);
+  if (rcls <= QUADFP_INFINITE || icls <= QUADFP_INFINITE
+      || (rcls == QUADFP_ZERO && icls == QUADFP_ZERO))
+    {
+      y = casinq (x);
 
-  __real__ res = M_PI_2q - __real__ y;
-  __imag__ res = -__imag__ y;
+      __real__ res = (__float128) M_PI_2q - __real__ y;
+      if (__real__ res == 0)
+	__real__ res = 0;
+      __imag__ res = -__imag__ y;
+    }
+  else
+    {
+      __real__ y = -__imag__ x;
+      __imag__ y = __real__ x;
+
+      y = __quadmath_kernel_casinhq (y, 1);
+
+      __real__ res = __imag__ y;
+      __imag__ res = __real__ y;
+    }
 
   return res;
 }

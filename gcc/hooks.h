@@ -1,5 +1,5 @@
 /* General-purpose hooks.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -40,7 +40,8 @@ extern bool hook_bool_const_rtx_insn_const_rtx_insn_true (const rtx_insn *,
 extern bool hook_bool_mode_uhwi_false (machine_mode,
 				       unsigned HOST_WIDE_INT);
 extern bool hook_bool_puint64_puint64_true (poly_uint64, poly_uint64);
-extern bool hook_bool_uint_mode_false (unsigned int, machine_mode);
+extern bool hook_bool_insn_uint_mode_false (rtx_insn *, unsigned int,
+					    machine_mode);
 extern bool hook_bool_uint_mode_true (unsigned int, machine_mode);
 extern bool hook_bool_tree_false (tree);
 extern bool hook_bool_const_tree_false (const_tree);
@@ -82,6 +83,7 @@ extern void hook_void_FILEptr_constcharptr_const_tree (FILE *, const char *,
 						       const_tree);
 extern bool hook_bool_FILEptr_rtx_false (FILE *, rtx);
 extern void hook_void_rtx_tree (rtx, tree);
+extern void hook_void_FILEptr_tree (FILE *, tree);
 extern void hook_void_tree (tree);
 extern void hook_void_tree_treeptr (tree, tree *);
 extern void hook_void_int_int (int, int);

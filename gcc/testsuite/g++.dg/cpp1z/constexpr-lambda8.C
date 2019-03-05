@@ -1,5 +1,5 @@
 // Testcase from P0170R1
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 auto Fwd = [](int (*fp)(int), auto a) { return fp(a); };
 auto C = [](auto a) { return a; };

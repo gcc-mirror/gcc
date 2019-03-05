@@ -1,7 +1,7 @@
 /* General types and functions that are uselful for processing of OpenMP,
    OpenACC and similar directivers at various stages of compilation.
 
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -36,6 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 
+enum omp_requires omp_requires_mask;
+
 tree
 omp_find_clause (tree clauses, enum omp_clause_code kind)
 {
@@ -54,18 +56,47 @@ omp_is_reference (tree decl)
   return lang_hooks.decls.omp_privatize_by_reference (decl);
 }
 
-/* Adjust *COND_CODE and *N2 so that the former is either LT_EXPR or
-   GT_EXPR.  */
+/* Adjust *COND_CODE and *N2 so that the former is either LT_EXPR or GT_EXPR,
+   given that V is the loop index variable and STEP is loop step. */
 
 void
-omp_adjust_for_condition (location_t loc, enum tree_code *cond_code, tree *n2)
+omp_adjust_for_condition (location_t loc, enum tree_code *cond_code, tree *n2,
+			  tree v, tree step)
 {
   switch (*cond_code)
     {
     case LT_EXPR:
     case GT_EXPR:
-    case NE_EXPR:
       break;
+
+    case NE_EXPR:
+      gcc_assert (TREE_CODE (step) == INTEGER_CST);
+      if (TREE_CODE (TREE_TYPE (v)) == INTEGER_TYPE)
+	{
+	  if (integer_onep (step))
+	    *cond_code = LT_EXPR;
+	  else
+	    {
+	      gcc_assert (integer_minus_onep (step));
+	      *cond_code = GT_EXPR;
+	    }
+	}
+      else
+	{
+	  tree unit = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (v)));
+	  gcc_assert (TREE_CODE (unit) == INTEGER_CST);
+	  if (tree_int_cst_equal (unit, step))
+	    *cond_code = LT_EXPR;
+	  else
+	    {
+	      gcc_assert (wi::neg (wi::to_widest (unit))
+			  == wi::to_widest (step));
+	      *cond_code = GT_EXPR;
+	    }
+	}
+
+      break;
+
     case LE_EXPR:
       if (POINTER_TYPE_P (TREE_TYPE (*n2)))
 	*n2 = fold_build_pointer_plus_hwi_loc (loc, *n2, 1);
@@ -136,6 +167,7 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
   fd->pre = NULL;
   fd->have_nowait = distribute || simd;
   fd->have_ordered = false;
+  fd->have_reductemp = false;
   fd->tiling = NULL_TREE;
   fd->collapse = 1;
   fd->ordered = 0;
@@ -186,6 +218,8 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	collapse_iter = &OMP_CLAUSE_TILE_ITERVAR (t);
 	collapse_count = &OMP_CLAUSE_TILE_COUNT (t);
 	break;
+      case OMP_CLAUSE__REDUCTEMP_:
+	fd->have_reductemp = true;
       default:
 	break;
       }
@@ -250,12 +284,16 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 
       loop->cond_code = gimple_omp_for_cond (for_stmt, i);
       loop->n2 = gimple_omp_for_final (for_stmt, i);
-      gcc_assert (loop->cond_code != NE_EXPR);
-      omp_adjust_for_condition (loc, &loop->cond_code, &loop->n2);
+      gcc_assert (loop->cond_code != NE_EXPR
+		  || (gimple_omp_for_kind (for_stmt)
+		      != GF_OMP_FOR_KIND_OACC_LOOP));
 
       t = gimple_omp_for_incr (for_stmt, i);
       gcc_assert (TREE_OPERAND (t, 0) == var);
       loop->step = omp_get_for_step_from_incr (loc, t);
+
+      omp_adjust_for_condition (loc, &loop->cond_code, &loop->n2, loop->v,
+				loop->step);
 
       if (simd
 	  || (fd->sched_kind == OMP_CLAUSE_SCHEDULE_STATIC
@@ -281,9 +319,8 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	      tree n;
 
 	      if (loop->cond_code == LT_EXPR)
-		n = fold_build2_loc (loc,
-				 PLUS_EXPR, TREE_TYPE (loop->v),
-				 loop->n2, loop->step);
+		n = fold_build2_loc (loc, PLUS_EXPR, TREE_TYPE (loop->v),
+				     loop->n2, loop->step);
 	      else
 		n = loop->n1;
 	      if (TREE_CODE (n) != INTEGER_CST
@@ -298,15 +335,13 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	      if (loop->cond_code == LT_EXPR)
 		{
 		  n1 = loop->n1;
-		  n2 = fold_build2_loc (loc,
-				    PLUS_EXPR, TREE_TYPE (loop->v),
-				    loop->n2, loop->step);
+		  n2 = fold_build2_loc (loc, PLUS_EXPR, TREE_TYPE (loop->v),
+					loop->n2, loop->step);
 		}
 	      else
 		{
-		  n1 = fold_build2_loc (loc,
-				    MINUS_EXPR, TREE_TYPE (loop->v),
-				    loop->n2, loop->step);
+		  n1 = fold_build2_loc (loc, MINUS_EXPR, TREE_TYPE (loop->v),
+					loop->n2, loop->step);
 		  n2 = loop->n1;
 		}
 	      if (TREE_CODE (n1) != INTEGER_CST
@@ -338,27 +373,31 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	      if (POINTER_TYPE_P (itype))
 		itype = signed_type_for (itype);
 	      t = build_int_cst (itype, (loop->cond_code == LT_EXPR ? -1 : 1));
-	      t = fold_build2_loc (loc,
-			       PLUS_EXPR, itype,
-			       fold_convert_loc (loc, itype, loop->step), t);
+	      t = fold_build2_loc (loc, PLUS_EXPR, itype,
+				   fold_convert_loc (loc, itype, loop->step),
+				   t);
 	      t = fold_build2_loc (loc, PLUS_EXPR, itype, t,
-			       fold_convert_loc (loc, itype, loop->n2));
+				   fold_convert_loc (loc, itype, loop->n2));
 	      t = fold_build2_loc (loc, MINUS_EXPR, itype, t,
-			       fold_convert_loc (loc, itype, loop->n1));
+				   fold_convert_loc (loc, itype, loop->n1));
 	      if (TYPE_UNSIGNED (itype) && loop->cond_code == GT_EXPR)
-		t = fold_build2_loc (loc, TRUNC_DIV_EXPR, itype,
-				 fold_build1_loc (loc, NEGATE_EXPR, itype, t),
-				 fold_build1_loc (loc, NEGATE_EXPR, itype,
-					      fold_convert_loc (loc, itype,
-								loop->step)));
+		{
+		  tree step = fold_convert_loc (loc, itype, loop->step);
+		  t = fold_build2_loc (loc, TRUNC_DIV_EXPR, itype,
+				       fold_build1_loc (loc, NEGATE_EXPR,
+							itype, t),
+				       fold_build1_loc (loc, NEGATE_EXPR,
+							itype, step));
+		}
 	      else
 		t = fold_build2_loc (loc, TRUNC_DIV_EXPR, itype, t,
-				 fold_convert_loc (loc, itype, loop->step));
+				     fold_convert_loc (loc, itype,
+						       loop->step));
 	      t = fold_convert_loc (loc, long_long_unsigned_type_node, t);
 	      if (count != NULL_TREE)
-		count = fold_build2_loc (loc,
-				     MULT_EXPR, long_long_unsigned_type_node,
-				     count, t);
+		count = fold_build2_loc (loc, MULT_EXPR,
+					 long_long_unsigned_type_node,
+					 count, t);
 	      else
 		count = t;
 	      if (TREE_CODE (count) != INTEGER_CST)
@@ -501,16 +540,26 @@ oacc_launch_pack (unsigned code, tree device, unsigned op)
 
 /* Replace any existing oacc fn attribute with updated dimensions.  */
 
-void
-oacc_replace_fn_attrib (tree fn, tree dims)
+/* Variant working on a list of attributes.  */
+
+tree
+oacc_replace_fn_attrib_attr (tree attribs, tree dims)
 {
   tree ident = get_identifier (OACC_FN_ATTRIB);
-  tree attribs = DECL_ATTRIBUTES (fn);
 
   /* If we happen to be present as the first attrib, drop it.  */
   if (attribs && TREE_PURPOSE (attribs) == ident)
     attribs = TREE_CHAIN (attribs);
-  DECL_ATTRIBUTES (fn) = tree_cons (ident, dims, attribs);
+  return tree_cons (ident, dims, attribs);
+}
+
+/* Variant working on a function decl.  */
+
+void
+oacc_replace_fn_attrib (tree fn, tree dims)
+{
+  DECL_ATTRIBUTES (fn)
+    = oacc_replace_fn_attrib_attr (DECL_ATTRIBUTES (fn), dims);
 }
 
 /* Scan CLAUSES for launch dimensions and attach them to the oacc

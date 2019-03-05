@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -223,7 +223,7 @@ namespace __gnu_pbds
 	    }
 	}
 
-	inline bool
+	_GLIBCXX_NODISCARD inline bool
 	empty() const
 	{ return m_bag.empty(); }
       };
@@ -279,7 +279,7 @@ namespace __gnu_pbds
 
       ~PB_DS_PAT_TRIE_NAME();
 
-      inline bool
+      _GLIBCXX_NODISCARD inline bool
       empty() const;
 
       inline size_type

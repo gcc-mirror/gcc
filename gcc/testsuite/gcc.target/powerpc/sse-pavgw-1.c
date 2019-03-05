@@ -1,6 +1,5 @@
 /* { dg-do run } */
 /* { dg-options "-O3 -mpower8-vector" } */
-/* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target p8vector_hw } */
 
 #define NO_WARN_X86_INTRINSICS 1
@@ -43,13 +42,12 @@ TEST (void)
     }
 
   if (u.as_m64 != e.as_m64)
-#if DEBUG
     {
+#if DEBUG
       printf ("test_mmx_pavgw_1; failed\n");
       printf ("\t _mm_avg_pu16 (%llx, %llx) -> %llx != %llx\n", s1.as_m64,
 	      s2.as_m64, u.as_m64, e.as_m64);
-    }
-#else
-  abort ();
 #endif
+      abort ();
+    }
 }

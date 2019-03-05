@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -171,7 +171,7 @@ package System.Tasking.Initialization is
    procedure Locked_Abort_To_Level
      (Self_ID : Task_Id;
       T       : Task_Id;
-      L       : ATC_Level);
+      L       : ATC_Level_Base);
    pragma Inline (Locked_Abort_To_Level);
    --  Abort a task to a specified ATC level. Call this only with T locked
 

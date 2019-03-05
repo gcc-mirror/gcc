@@ -1,5 +1,5 @@
 /* Subroutines used for code generation of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -1354,7 +1354,7 @@ nds32_emit_adjust_frame (rtx to_reg, rtx from_reg, int adjust_value)
       frame_adjust_insn = emit_insn (frame_adjust_insn);
 
       /* Because (tmp_reg <- full_value) may be split into two
-	 rtl patterns, we can not set its RTX_FRAME_RELATED_P.
+	 rtl patterns, we cannot set its RTX_FRAME_RELATED_P.
 	 We need to construct another (sp <- sp + full_value)
 	 and then insert it into sp_adjust_insn's reg note to
 	 represent a frame related expression.
@@ -2683,7 +2683,7 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 	      /* Now we see the [ + const_addr ] pattern, but we need
 		 some further checking.  */
 
-	      if (flag_pic)
+	      if (flag_pic || SYMBOL_REF_TLS_MODEL (op0))
 		return false;
 
 	      /* If -mcmodel=large, the 'const_addr' is not a valid address
@@ -3867,11 +3867,9 @@ nds32_dwarf_register_span (rtx reg)
 				   gen_rtvec (4, dwarf_low_re, dwarf_high_re,
 						 dwarf_high_im, dwarf_low_im));
 	}
-      else if (mode == SFmode || mode == SImode)
+      else if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
 	{
-	  /* Create new dwarf information with adjusted register number.  */
-	  dwarf_single = gen_rtx_REG (word_mode, regno);
-	  return gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, dwarf_single));
+	  return NULL_RTX;
 	}
       else
 	{
@@ -5352,7 +5350,7 @@ nds32_can_use_return_insn (void)
   int sp_adjust;
 
   /* Prior to reloading, we can't tell how many registers must be saved.
-     Thus we can not determine whether this function has null epilogue.  */
+     Thus we cannot determine whether this function has null epilogue.  */
   if (!reload_completed)
     return 0;
 

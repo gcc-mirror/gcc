@@ -1,6 +1,6 @@
 // Vector implementation -*- C++ -*-
 
-// Copyright (C) 2001-2018 Free Software Foundation, Inc.
+// Copyright (C) 2001-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -125,7 +125,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       struct _Vector_impl
 	: public _Tp_alloc_type, public _Vector_impl_data
       {
-	_Vector_impl() _GLIBCXX_NOEXCEPT_IF( noexcept(_Tp_alloc_type()) )
+	_Vector_impl() _GLIBCXX_NOEXCEPT_IF(
+	    is_nothrow_default_constructible<_Tp_alloc_type>::value)
 	: _Tp_alloc_type()
 	{ }
 
@@ -420,6 +421,51 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef size_t					size_type;
       typedef ptrdiff_t					difference_type;
       typedef _Alloc					allocator_type;
+
+    private:
+#if __cplusplus >= 201103L
+      static constexpr bool
+      _S_nothrow_relocate(true_type)
+      {
+	return noexcept(std::__relocate_a(std::declval<pointer>(),
+					  std::declval<pointer>(),
+					  std::declval<pointer>(),
+					  std::declval<_Tp_alloc_type&>()));
+      }
+
+      static constexpr bool
+      _S_nothrow_relocate(false_type)
+      { return false; }
+
+      static constexpr bool
+      _S_use_relocate()
+      {
+	// Instantiating std::__relocate_a might cause an error outside the
+	// immediate context (in __relocate_object_a's noexcept-specifier),
+	// so only do it if we know the type can be move-inserted into *this.
+	return _S_nothrow_relocate(__is_move_insertable<_Tp_alloc_type>{});
+      }
+
+      static pointer
+      _S_do_relocate(pointer __first, pointer __last, pointer __result,
+		     _Tp_alloc_type& __alloc, true_type) noexcept
+      {
+	return std::__relocate_a(__first, __last, __result, __alloc);
+      }
+
+      static pointer
+      _S_do_relocate(pointer, pointer, pointer __result,
+		     _Tp_alloc_type&, false_type) noexcept
+      { return __result; }
+
+      static pointer
+      _S_relocate(pointer __first, pointer __last, pointer __result,
+		  _Tp_alloc_type& __alloc) noexcept
+      {
+	using __do_it = __bool_constant<_S_use_relocate()>;
+	return _S_do_relocate(__first, __last, __result, __alloc, __do_it{});
+      }
+#endif // C++11
 
     protected:
       using _Base::_M_allocate;
@@ -954,7 +1000,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns true if the %vector is empty.  (Thus begin() would
        *  equal end().)
        */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const _GLIBCXX_NOEXCEPT
       { return begin() == end(); }
 
@@ -1726,7 +1772,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       static size_type
       _S_max_size(const _Tp_alloc_type& __a) _GLIBCXX_NOEXCEPT
       {
-	const size_t __diffmax = __gnu_cxx::__numeric_traits<ptrdiff_t>::__max;
+	// std::distance(begin(), end()) cannot be greater than PTRDIFF_MAX,
+	// and realistically we can't store more than PTRDIFF_MAX/sizeof(T)
+	// (even if std::allocator_traits::max_size says we can).
+	const size_t __diffmax
+	  = __gnu_cxx::__numeric_traits<ptrdiff_t>::__max / sizeof(_Tp);
 	const size_t __allocmax = _Alloc_traits::max_size(__a);
 	return (std::min)(__diffmax, __allocmax);
       }

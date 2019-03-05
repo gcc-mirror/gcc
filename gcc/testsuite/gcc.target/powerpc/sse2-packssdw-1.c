@@ -1,6 +1,5 @@
 /* { dg-do run } */
 /* { dg-options "-O3 -mpower8-vector -Wno-psabi" } */
-/* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target p8vector_hw } */
 
 #ifndef CHECK_H
@@ -56,18 +55,17 @@ TEST (void)
     }
 
   if (check_union128i_w (u, e))
+    {
 #if DEBUG
-  {
       printf ("sse2_test_packssdw_1; check_union128i_w failed\n");
-      printf (
-	  "\t ([%x,%x,%x,%x], [%x,%x,%x,%x]) -> [%x,%x,%x,%x, %x,%x,%x,%x]\n",
-	  s1.a[0], s1.a[1], s1.a[2], s1.a[3], s2.a[0], s2.a[1], s2.a[2],
-	  s2.a[3], u.a[0], u.a[1], u.a[2], u.a[3], u.a[4], u.a[5], u.a[6],
-	  u.a[7]);
+      printf ("\t ([%x,%x,%x,%x], [%x,%x,%x,%x])"
+	      " -> [%x,%x,%x,%x, %x,%x,%x,%x]\n",
+	      s1.a[0], s1.a[1], s1.a[2], s1.a[3], s2.a[0], s2.a[1], s2.a[2],
+	      s2.a[3], u.a[0], u.a[1], u.a[2], u.a[3], u.a[4], u.a[5], u.a[6],
+	      u.a[7]);
       printf ("\t expect [%x,%x,%x,%x, %x,%x,%x,%x]\n", e[0], e[1], e[2], e[3],
-			  e[4], e[5], e[6], e[7]);
-  }
-#else
-    abort ();
+	      e[4], e[5], e[6], e[7]);
 #endif
+      abort ();
+    }
 }

@@ -1,5 +1,5 @@
 /* Library interface to C++ front end.
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.  As it interacts with GDB through libcc1,
    they all become a single program as regards the GNU GPL's requirements.
@@ -178,15 +178,15 @@ struct plugin_context : public cc1_plugin::connection
     return t;
   }
 
-  source_location get_source_location (const char *filename,
-				       unsigned int line_number)
+  location_t get_location_t (const char *filename,
+			     unsigned int line_number)
   {
     if (filename == NULL)
       return UNKNOWN_LOCATION;
 
     filename = intern_filename (filename);
     linemap_add (line_table, LC_ENTER, false, filename, line_number);
-    source_location loc = linemap_line_start (line_table, line_number, 0);
+    location_t loc = linemap_line_start (line_table, line_number, 0);
     linemap_add (line_table, LC_LEAVE, false, NULL, 0);
     return loc;
   }
@@ -1028,7 +1028,7 @@ plugin_add_using_decl (cc1_plugin::connection *,
 static tree
 build_named_class_type (enum tree_code code,
 			tree id,
-			source_location loc)
+			location_t loc)
 {
   /* See at_fake_function_scope_p.  */
   gcc_assert (!at_function_scope_p ());
@@ -1114,7 +1114,7 @@ plugin_build_decl (cc1_plugin::connection *self,
       gcc_assert (!substitution_name);
     }
 
-  source_location loc = ctx->get_source_location (filename, line_number);
+  location_t loc = ctx->get_location_t (filename, line_number);
   bool class_member_p = at_class_scope_p ();
   bool ctor = false, dtor = false, assop = false;
   tree_code opcode = ERROR_MARK;
@@ -1742,7 +1742,7 @@ plugin_start_class_type (cc1_plugin::connection *self,
 			 unsigned int line_number)
 {
   plugin_context *ctx = static_cast<plugin_context *> (self);
-  source_location loc = ctx->get_source_location (filename, line_number);
+  location_t loc = ctx->get_location_t (filename, line_number);
   tree typedecl = convert_in (typedecl_in);
   tree type = TREE_TYPE (typedecl);
 
@@ -1802,8 +1802,8 @@ plugin_start_closure_class_type (cc1_plugin::connection *self,
 
   tree lambda_expr = build_lambda_expr ();
 
-  LAMBDA_EXPR_LOCATION (lambda_expr) = ctx->get_source_location (filename,
-								 line_number);
+  LAMBDA_EXPR_LOCATION (lambda_expr) = ctx->get_location_t (filename,
+							    line_number);
 
   tree type = begin_lambda_type (lambda_expr);
 
@@ -1936,7 +1936,7 @@ plugin_start_enum_type (cc1_plugin::connection *self,
 
   gcc_assert (is_new_type);
 
-  source_location loc = ctx->get_source_location (filename, line_number);
+  location_t loc = ctx->get_location_t (filename, line_number);
   tree type_decl = TYPE_NAME (type);
   DECL_SOURCE_LOCATION (type_decl) = loc;
   SET_OPAQUE_ENUM_P (type, false);
@@ -2244,7 +2244,7 @@ plugin_build_type_template_parameter (cc1_plugin::connection *self,
 				      unsigned int line_number)
 {
   plugin_context *ctx = static_cast<plugin_context *> (self);
-  source_location loc = ctx->get_source_location (filename, line_number);
+  location_t loc = ctx->get_location_t (filename, line_number);
 
   gcc_assert (template_parm_scope_p ());
 
@@ -2274,7 +2274,7 @@ plugin_build_template_template_parameter (cc1_plugin::connection *self,
 					  unsigned int line_number)
 {
   plugin_context *ctx = static_cast<plugin_context *> (self);
-  source_location loc = ctx->get_source_location (filename, line_number);
+  location_t loc = ctx->get_location_t (filename, line_number);
 
   gcc_assert (template_parm_scope_p ());
 
@@ -2309,7 +2309,7 @@ plugin_build_value_template_parameter (cc1_plugin::connection *self,
 				       unsigned int line_number)
 {
   plugin_context *ctx = static_cast<plugin_context *> (self);
-  source_location loc = ctx->get_source_location (filename, line_number);
+  location_t loc = ctx->get_location_t (filename, line_number);
 
   gcc_assert (template_parm_scope_p ());
 
@@ -3354,7 +3354,7 @@ plugin_build_function_template_specialization (cc1_plugin::connection *self,
 					       unsigned int line_number)
 {
   plugin_context *ctx = static_cast<plugin_context *> (self);
-  source_location loc = ctx->get_source_location (filename, line_number);
+  location_t loc = ctx->get_location_t (filename, line_number);
   tree name = convert_in (template_decl);
   tree targsl = targlist (targs);
 
@@ -3374,7 +3374,7 @@ plugin_build_class_template_specialization (cc1_plugin::connection *self,
 					    unsigned int line_number)
 {
   plugin_context *ctx = static_cast<plugin_context *> (self);
-  source_location loc = ctx->get_source_location (filename, line_number);
+  location_t loc = ctx->get_location_t (filename, line_number);
   tree name = convert_in (template_decl);
 
   tree tdecl = finish_template_type (name, targlist (args), false);;
@@ -3601,7 +3601,7 @@ plugin_build_constant (cc1_plugin::connection *self, gcc_type type_in,
   cst = build_int_cst (type, value);
   if (!TYPE_READONLY (type))
     type = build_qualified_type (type, TYPE_QUAL_CONST);
-  decl = build_decl (ctx->get_source_location (filename, line_number),
+  decl = build_decl (ctx->get_location_t (filename, line_number),
 		     VAR_DECL, get_identifier (name), type);
   TREE_STATIC (decl) = 1;
   TREE_READONLY (decl) = 1;
@@ -3637,7 +3637,7 @@ plugin_add_static_assert (cc1_plugin::connection *self,
   TREE_TYPE (message) = char_array_type_node;
   fix_string_type (message);
 
-  source_location loc = ctx->get_source_location (filename, line_number);
+  location_t loc = ctx->get_location_t (filename, line_number);
 
   bool member_p = at_class_scope_p ();
 

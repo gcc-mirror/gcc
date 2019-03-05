@@ -1,6 +1,6 @@
 // <experimental/deque> -*- C++ -*-
 
-// Copyright (C) 2015-2018 Free Software Foundation, Inc.
+// Copyright (C) 2015-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,7 +46,7 @@ namespace experimental
 inline namespace fundamentals_v2
 {
   template<typename _Tp, typename _Alloc, typename _Predicate>
-    void
+    inline void
     erase_if(deque<_Tp, _Alloc>& __cont, _Predicate __pred)
     {
       __cont.erase(std::remove_if(__cont.begin(), __cont.end(), __pred),
@@ -54,7 +54,7 @@ inline namespace fundamentals_v2
     }
 
   template<typename _Tp, typename _Alloc, typename _Up>
-    void
+    inline void
     erase(deque<_Tp, _Alloc>& __cont, const _Up& __value)
     {
       __cont.erase(std::remove(__cont.begin(), __cont.end(), __value),

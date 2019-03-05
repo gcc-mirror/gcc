@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Free Software Foundation, Inc.
+// Copyright (C) 2018-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -120,6 +120,8 @@ private:
   size_type n;
   static const char value = 'x';
 };
+
+const char Iter::value;
 
 Iter operator+(Iter i, Iter::difference_type n) { return i += n; }
 Iter operator+(Iter::difference_type n, Iter i) { return i += n; }

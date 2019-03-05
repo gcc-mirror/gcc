@@ -152,8 +152,7 @@ subroutine test1
         ! { dg-error "ACC LOOP iteration variable must be of type integer" "" { target *-*-* } 150 }
     end do
 
-    ! Both seq and independent are not allowed
-  !$acc loop independent seq ! { dg-error "SEQ conflicts with INDEPENDENT" }
+  !$acc loop independent seq
   do i = 1,10
   enddo
 

@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -419,7 +419,7 @@ add_deps_for_risky_insns (rtx_insn *head, rtx_insn *tail)
 	    case PRISKY_CANDIDATE:
 	      /* ??? We could implement better checking PRISKY_CANDIDATEs
 		 analogous to sched-rgn.c.  */
-	      /* We can not change the mode of the backward
+	      /* We cannot change the mode of the backward
 		 dependency because REG_DEP_ANTI has the lowest
 		 rank.  */
 	      if (! sched_insns_conditions_mutex_p (insn, prev))
@@ -588,15 +588,14 @@ schedule_ebbs_init (void)
   compute_bb_for_insn ();
 
   /* Initialize DONT_CALC_DEPS and ebb-{start, end} markers.  */
-  bitmap_initialize (&dont_calc_deps, 0);
-  bitmap_clear (&dont_calc_deps);
+  bitmap_initialize (&dont_calc_deps, &bitmap_default_obstack);
 }
 
 /* Perform cleanups after scheduling using schedules_ebbs or schedule_ebb.  */
 void
 schedule_ebbs_finish (void)
 {
-  bitmap_clear (&dont_calc_deps);
+  bitmap_release (&dont_calc_deps);
 
   /* Reposition the prologue and epilogue notes in case we moved the
      prologue/epilogue insns.  */

@@ -1,5 +1,5 @@
 /* Building internal representation for IRA.
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -45,7 +45,7 @@ ira_loop_tree_node_t ira_loop_tree_root;
 int ira_loop_tree_height;
 
 /* All nodes representing basic blocks are referred through the
-   following array.  We can not use basic block member `aux' for this
+   following array.  We cannot use basic block member `aux' for this
    because it is used for insertion of insns on edges.  */
 ira_loop_tree_node_t ira_bb_nodes;
 
@@ -259,7 +259,7 @@ add_loop_to_tree (struct loop *loop)
   struct loop *parent;
   ira_loop_tree_node_t loop_node, parent_node;
 
-  /* We can not use loop node access macros here because of potential
+  /* We cannot use loop node access macros here because of potential
      checking and because the nodes are not initialized enough
      yet.  */
   if (loop != NULL && loop_outer (loop) != NULL)
@@ -334,7 +334,7 @@ form_loop_tree (void)
   struct loop *parent;
   ira_loop_tree_node_t bb_node, loop_node;
 
-  /* We can not use loop/bb node access macros because of potential
+  /* We cannot use loop/bb node access macros because of potential
      checking and because the nodes are not initialized enough
      yet.  */
   FOR_EACH_BB_FN (bb, cfun)
@@ -2166,7 +2166,7 @@ low_pressure_loop_node_p (ira_loop_tree_node_t node)
 #ifdef STACK_REGS
 /* Return TRUE if LOOP has a complex enter or exit edge.  We don't
    form a region from such loop if the target use stack register
-   because reg-stack.c can not deal with such edges.  */
+   because reg-stack.c cannot deal with such edges.  */
 static bool
 loop_with_complex_edge_p (struct loop *loop)
 {
@@ -2619,8 +2619,8 @@ remove_unnecessary_regions (bool all_p)
 
 /* At this point true value of allocno attribute bad_spill_p means
    that there is an insn where allocno occurs and where the allocno
-   can not be used as memory.  The function updates the attribute, now
-   it can be true only for allocnos which can not be used as memory in
+   cannot be used as memory.  The function updates the attribute, now
+   it can be true only for allocnos which cannot be used as memory in
    an insn and in whose live ranges there is other allocno deaths.
    Spilling allocnos with true value will not improve the code because
    it will not make other allocnos colorable and additional reloads

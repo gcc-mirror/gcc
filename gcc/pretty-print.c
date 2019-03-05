@@ -1,5 +1,5 @@
 /* Various declarations for language-independent pretty-print subroutines.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -977,6 +977,7 @@ pp_indent (pretty_printer *pp)
    %ld, %li, %lo, %lu, %lx: long versions of the above.
    %lld, %lli, %llo, %llu, %llx: long long versions.
    %wd, %wi, %wo, %wu, %wx: HOST_WIDE_INT versions.
+   %f: double
    %c: character.
    %s: string.
    %p: pointer (printed in a host-dependent manner).
@@ -1305,6 +1306,10 @@ pp_format (pretty_printer *pp, text_info *text)
 	  else
 	    pp_integer_with_precision
 	      (pp, *text->args_ptr, precision, unsigned, "u");
+	  break;
+
+	case 'f':
+	  pp_double (pp, va_arg (*text->args_ptr, double));
 	  break;
 
 	case 'Z':
@@ -2160,6 +2165,7 @@ test_pp_format ()
   ASSERT_PP_FORMAT_2 ("17 12345678", "%wo %x", (HOST_WIDE_INT)15, 0x12345678);
   ASSERT_PP_FORMAT_2 ("0xcafebabe 12345678", "%wx %x", (HOST_WIDE_INT)0xcafebabe,
 		      0x12345678);
+  ASSERT_PP_FORMAT_2 ("1.000000 12345678", "%f %x", 1.0, 0x12345678);
   ASSERT_PP_FORMAT_2 ("A 12345678", "%c %x", 'A', 0x12345678);
   ASSERT_PP_FORMAT_2 ("hello world 12345678", "%s %x", "hello world",
 		      0x12345678);
@@ -2211,6 +2217,101 @@ test_pp_format ()
 		    "problem with %qs at line %i", "bar", 10);
 }
 
+/* A subclass of pretty_printer for use by test_prefixes_and_wrapping.  */
+
+class test_pretty_printer : public pretty_printer
+{
+ public:
+  test_pretty_printer (enum diagnostic_prefixing_rule_t rule,
+		       int max_line_length)
+  {
+    pp_set_prefix (this, xstrdup ("PREFIX: "));
+    wrapping.rule = rule;
+    pp_set_line_maximum_length (this, max_line_length);
+  }
+};
+
+/* Verify that the various values of enum diagnostic_prefixing_rule_t work
+   as expected, with and without line wrapping.  */
+
+static void
+test_prefixes_and_wrapping ()
+{
+  /* Tests of the various prefixing rules, without wrapping.
+     Newlines embedded in pp_string don't affect it; we have to
+     explicitly call pp_newline.  */
+  {
+    test_pretty_printer pp (DIAGNOSTICS_SHOW_PREFIX_ONCE, 0);
+    pp_string (&pp, "the quick brown fox");
+    pp_newline (&pp);
+    pp_string (&pp, "jumps over the lazy dog");
+    pp_newline (&pp);
+    ASSERT_STREQ (pp_formatted_text (&pp),
+		  "PREFIX: the quick brown fox\n"
+		  "   jumps over the lazy dog\n");
+  }
+  {
+    test_pretty_printer pp (DIAGNOSTICS_SHOW_PREFIX_NEVER, 0);
+    pp_string (&pp, "the quick brown fox");
+    pp_newline (&pp);
+    pp_string (&pp, "jumps over the lazy dog");
+    pp_newline (&pp);
+    ASSERT_STREQ (pp_formatted_text (&pp),
+		  "the quick brown fox\n"
+		  "jumps over the lazy dog\n");
+  }
+  {
+    test_pretty_printer pp (DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE, 0);
+    pp_string (&pp, "the quick brown fox");
+    pp_newline (&pp);
+    pp_string (&pp, "jumps over the lazy dog");
+    pp_newline (&pp);
+    ASSERT_STREQ (pp_formatted_text (&pp),
+		  "PREFIX: the quick brown fox\n"
+		  "PREFIX: jumps over the lazy dog\n");
+  }
+
+  /* Tests of the various prefixing rules, with wrapping.  */
+  {
+    test_pretty_printer pp (DIAGNOSTICS_SHOW_PREFIX_ONCE, 20);
+    pp_string (&pp, "the quick brown fox jumps over the lazy dog");
+    pp_newline (&pp);
+    pp_string (&pp, "able was I ere I saw elba");
+    pp_newline (&pp);
+    ASSERT_STREQ (pp_formatted_text (&pp),
+		  "PREFIX: the quick \n"
+		  "   brown fox jumps \n"
+		  "   over the lazy \n"
+		  "   dog\n"
+		  "   able was I ere I \n"
+		  "   saw elba\n");
+  }
+  {
+    test_pretty_printer pp (DIAGNOSTICS_SHOW_PREFIX_NEVER, 20);
+    pp_string (&pp, "the quick brown fox jumps over the lazy dog");
+    pp_newline (&pp);
+    pp_string (&pp, "able was I ere I saw elba");
+    pp_newline (&pp);
+    ASSERT_STREQ (pp_formatted_text (&pp),
+		  "the quick brown fox \n"
+		  "jumps over the lazy \n"
+		  "dog\n"
+		  "able was I ere I \n"
+		  "saw elba\n");
+  }
+  {
+    test_pretty_printer pp (DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE, 20);
+    pp_string (&pp, "the quick brown fox jumps over the lazy dog");
+    pp_newline (&pp);
+    pp_string (&pp, "able was I ere I saw elba");
+    pp_newline (&pp);
+    ASSERT_STREQ (pp_formatted_text (&pp),
+		  "PREFIX: the quick brown fox jumps over the lazy dog\n"
+		  "PREFIX: able was I ere I saw elba\n");
+  }
+
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -2218,6 +2319,7 @@ pretty_print_c_tests ()
 {
   test_basic_printing ();
   test_pp_format ();
+  test_prefixes_and_wrapping ();
 }
 
 } // namespace selftest

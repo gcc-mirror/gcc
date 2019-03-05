@@ -1,8 +1,7 @@
 /* Setting LOGICAL_OP_NON_SHORT_CIRCUIT to 0 leads to two conditional jumps
    when evaluating an && condition.  */
-/* { dg-do compile { target { ! { logical_op_short_circuit || { m68k*-*-* mmix*-*-* bfin*-*-* v850*-*-* moxie*-*-* cris*-*-* m32c*-*-* fr30*-*-* mcore*-*-* powerpc*-*-* xtensa*-*-* hppa*-*-* } } } } } */
-
-/* { dg-options "-O2 -fdump-tree-fre1-details" } */
+/* { dg-do compile } */
+/* { dg-options "-O2 -fdump-tree-fre1-details --param logical-op-non-short-circuit=1" } */
 
 struct bitmap_head_def;
 typedef struct bitmap_head_def *bitmap;

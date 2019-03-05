@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007-2018 Free Software Foundation, Inc.
+// Copyright (C) 2007-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -31,7 +31,7 @@
  *
  *  P. J. Varman, S. D. Scheufler, B. R. Iyer, and G. R. Ricard.
  *  Merging Multiple Lists on Hierarchical-Memory Multiprocessors.
- *  Journal of Parallel and Distributed Computing, 12(2):171–177, 1991.
+ *  Journal of Parallel and Distributed Computing, 12(2):171-177, 1991.
  *
  *  This file is a GNU parallel extension to the Standard C++ Library.
  */

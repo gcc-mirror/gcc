@@ -27,7 +27,5 @@
       call foo (Einc)
       END SUBROUTINE
 
-! We should vectorize (1) and (2)
-! { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "slp1" } }
-! We fail to vectorize at (3), this can be fixed in the future
-! { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 3 "slp1" { xfail *-*-* } } }
+! We should vectorize (1), (2) and (3)
+! { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 3 "slp1" } }

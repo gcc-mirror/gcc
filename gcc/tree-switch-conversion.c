@@ -1,6 +1,6 @@
 /* Lower GIMPLE_SWITCH expressions to something more efficient than
    a jump table.
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -44,6 +44,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
+#include "gimple-fold.h"
 #include "tree-cfg.h"
 #include "cfgloop.h"
 #include "alloc-pool.h"
@@ -439,25 +440,65 @@ switch_conversion::build_constructors ()
     }
 }
 
-/* If all values in the constructor vector are the same, return the value.
-   Otherwise return NULL_TREE.  Not supposed to be called for empty
-   vectors.  */
+/* If all values in the constructor vector are products of a linear function
+   a * x + b, then return true.  When true, COEFF_A and COEFF_B and
+   coefficients of the linear function.  Note that equal values are special
+   case of a linear function with a and b equal to zero.  */
 
-tree
-switch_conversion::contains_same_values_p (vec<constructor_elt, va_gc> *vec)
+bool
+switch_conversion::contains_linear_function_p (vec<constructor_elt, va_gc> *vec,
+					       wide_int *coeff_a,
+					       wide_int *coeff_b)
 {
   unsigned int i;
-  tree prev = NULL_TREE;
   constructor_elt *elt;
 
+  gcc_assert (vec->length () >= 2);
+
+  /* Let's try to find any linear function a * x + y that can apply to
+     given values. 'a' can be calculated as follows:
+
+     a = (y2 - y1) / (x2 - x1) where x2 - x1 = 1 (consecutive case indices)
+     a = y2 - y1
+
+     and
+
+     b = y2 - a * x2
+
+  */
+
+  tree elt0 = (*vec)[0].value;
+  tree elt1 = (*vec)[1].value;
+
+  if (TREE_CODE (elt0) != INTEGER_CST || TREE_CODE (elt1) != INTEGER_CST)
+    return false;
+
+  wide_int range_min
+    = wide_int::from (wi::to_wide (m_range_min),
+		      TYPE_PRECISION (TREE_TYPE (elt0)),
+		      TYPE_SIGN (TREE_TYPE (m_range_min)));
+  wide_int y1 = wi::to_wide (elt0);
+  wide_int y2 = wi::to_wide (elt1);
+  wide_int a = y2 - y1;
+  wide_int b = y2 - a * (range_min + 1);
+
+  /* Verify that all values fulfill the linear function.  */
   FOR_EACH_VEC_SAFE_ELT (vec, i, elt)
     {
-      if (!prev)
-	prev = elt->value;
-      else if (!operand_equal_p (elt->value, prev, OEP_ONLY_CONST))
-	return NULL_TREE;
+      if (TREE_CODE (elt->value) != INTEGER_CST)
+	return false;
+
+      wide_int value = wi::to_wide (elt->value);
+      if (a * range_min + b != value)
+	return false;
+
+      ++range_min;
     }
-  return prev;
+
+  *coeff_a = a;
+  *coeff_b = b;
+
+  return true;
 }
 
 /* Return type which should be used for array elements, either TYPE's
@@ -551,7 +592,7 @@ void
 switch_conversion::build_one_array (int num, tree arr_index_type,
 				    gphi *phi, tree tidx)
 {
-  tree name, cst;
+  tree name;
   gimple *load;
   gimple_stmt_iterator gsi = gsi_for_stmt (m_switch);
   location_t loc = gimple_location (m_switch);
@@ -561,9 +602,28 @@ switch_conversion::build_one_array (int num, tree arr_index_type,
   name = copy_ssa_name (PHI_RESULT (phi));
   m_target_inbound_names[num] = name;
 
-  cst = contains_same_values_p (m_constructors[num]);
-  if (cst)
-    load = gimple_build_assign (name, cst);
+  vec<constructor_elt, va_gc> *constructor = m_constructors[num];
+  wide_int coeff_a, coeff_b;
+  bool linear_p = contains_linear_function_p (constructor, &coeff_a, &coeff_b);
+  if (linear_p)
+    {
+      if (dump_file && coeff_a.to_uhwi () > 0)
+	fprintf (dump_file, "Linear transformation with A = %" PRId64
+		 " and B = %" PRId64 "\n", coeff_a.to_shwi (),
+		 coeff_b.to_shwi ());
+
+      /* We must use type of constructor values.  */
+      tree t = unsigned_type_for (TREE_TYPE ((*constructor)[0].value));
+      gimple_seq seq = NULL;
+      tree tmp = gimple_convert (&seq, t, m_index_expr);
+      tree tmp2 = gimple_build (&seq, MULT_EXPR, t,
+				wide_int_to_tree (t, coeff_a), tmp);
+      tree tmp3 = gimple_build (&seq, PLUS_EXPR, t, tmp2,
+				wide_int_to_tree (t, coeff_b));
+      tree tmp4 = gimple_convert (&seq, TREE_TYPE (name), tmp3);
+      gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
+      load = gimple_build_assign (name, tmp4);
+    }
   else
     {
       tree array_type, ctor, decl, value_type, fetch, default_type;
@@ -576,10 +636,10 @@ switch_conversion::build_one_array (int num, tree arr_index_type,
 	  unsigned int i;
 	  constructor_elt *elt;
 
-	  FOR_EACH_VEC_SAFE_ELT (m_constructors[num], i, elt)
+	  FOR_EACH_VEC_SAFE_ELT (constructor, i, elt)
 	    elt->value = fold_convert (value_type, elt->value);
 	}
-      ctor = build_constructor (array_type, m_constructors[num]);
+      ctor = build_constructor (array_type, constructor);
       TREE_CONSTANT (ctor) = true;
       TREE_STATIC (ctor) = true;
 
@@ -913,7 +973,14 @@ switch_conversion::expand (gswitch *swtch)
   /* Group case labels so that we get the right results from the heuristics
      that decide on the code generation approach for this switch.  */
   m_cfg_altered |= group_case_labels_stmt (swtch);
-  gcc_assert (gimple_switch_num_labels (swtch) >= 2);
+
+  /* If this switch is now a degenerate case with only a default label,
+     there is nothing left for us to do.  */
+  if (gimple_switch_num_labels (swtch) < 2)
+    {
+      m_reason = "switch is a degenerate case";
+      return;
+    }
 
   collect (swtch);
 
@@ -1878,7 +1945,8 @@ switch_decision_tree::emit (basic_block bb, tree index_expr,
       dump_case_nodes (dump_file, m_case_list, indent_step, 0);
     }
 
-  bb = emit_case_nodes (bb, index_expr, m_case_list, default_prob, index_type);
+  bb = emit_case_nodes (bb, index_expr, m_case_list, default_prob, index_type,
+			gimple_location (m_switch));
 
   if (bb)
     emit_jump (bb, m_default_bb);
@@ -2021,12 +2089,14 @@ basic_block
 switch_decision_tree::emit_cmp_and_jump_insns (basic_block bb, tree op0,
 					       tree op1, tree_code comparison,
 					       basic_block label_bb,
-					       profile_probability prob)
+					       profile_probability prob,
+					       location_t loc)
 {
   // TODO: it's once called with lhs != index.
   op1 = fold_convert (TREE_TYPE (op0), op1);
 
   gcond *cond = gimple_build_cond (comparison, op0, op1, NULL_TREE, NULL_TREE);
+  gimple_set_location (cond, loc);
   gimple_stmt_iterator gsi = gsi_last_bb (bb);
   gsi_insert_after (&gsi, cond, GSI_NEW_STMT);
 
@@ -2050,11 +2120,13 @@ switch_decision_tree::emit_cmp_and_jump_insns (basic_block bb, tree op0,
 basic_block
 switch_decision_tree::do_jump_if_equal (basic_block bb, tree op0, tree op1,
 					basic_block label_bb,
-					profile_probability prob)
+					profile_probability prob,
+					location_t loc)
 {
   op1 = fold_convert (TREE_TYPE (op0), op1);
 
   gcond *cond = gimple_build_cond (EQ_EXPR, op0, op1, NULL_TREE, NULL_TREE);
+  gimple_set_location (cond, loc);
   gimple_stmt_iterator gsi = gsi_last_bb (bb);
   gsi_insert_before (&gsi, cond, GSI_SAME_STMT);
 
@@ -2081,7 +2153,7 @@ basic_block
 switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 				       case_tree_node *node,
 				       profile_probability default_prob,
-				       tree index_type)
+				       tree index_type, location_t loc)
 {
   profile_probability p;
 
@@ -2096,7 +2168,7 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	 this node and then check our children, if any.  */
       p = node->m_c->m_prob / (node->m_c->m_subtree_prob + default_prob);
       bb = do_jump_if_equal (bb, index, node->m_c->get_low (),
-			     node->m_c->m_case_bb, p);
+			     node->m_c->m_case_bb, p, loc);
       /* Since this case is taken at this point, reduce its weight from
 	 subtree_weight.  */
       node->m_c->m_subtree_prob -= p;
@@ -2117,12 +2189,12 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	      p = (node->m_right->m_c->m_prob
 		   / (node->m_c->m_subtree_prob + default_prob));
 	      bb = do_jump_if_equal (bb, index, node->m_right->m_c->get_low (),
-				     node->m_right->m_c->m_case_bb, p);
+				     node->m_right->m_c->m_case_bb, p, loc);
 
 	      p = (node->m_left->m_c->m_prob
 		   / (node->m_c->m_subtree_prob + default_prob));
 	      bb = do_jump_if_equal (bb, index, node->m_left->m_c->get_low (),
-				     node->m_left->m_c->m_case_bb, p);
+				     node->m_left->m_c->m_case_bb, p, loc);
 	    }
 	  else
 	    {
@@ -2135,12 +2207,12 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 		    + default_prob.apply_scale (1, 2))
 		   / (node->m_c->m_subtree_prob + default_prob));
 	      bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (),
-					    GT_EXPR, test_bb, p);
+					    GT_EXPR, test_bb, p, loc);
 	      default_prob = default_prob.apply_scale (1, 2);
 
 	      /* Handle the left-hand subtree.  */
 	      bb = emit_case_nodes (bb, index, node->m_left,
-				    default_prob, index_type);
+				    default_prob, index_type, loc);
 
 	      /* If the left-hand subtree fell through,
 		 don't let it fall into the right-hand subtree.  */
@@ -2148,7 +2220,7 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 		emit_jump (bb, m_default_bb);
 
 	      bb = emit_case_nodes (test_bb, index, node->m_right,
-				    default_prob, index_type);
+				    default_prob, index_type, loc);
 	    }
 	}
       else if (node->m_left == NULL && node->m_right != NULL)
@@ -2168,11 +2240,11 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	      p = (default_prob.apply_scale (1, 2)
 		   / (node->m_c->m_subtree_prob + default_prob));
 	      bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_low (),
-					    LT_EXPR, m_default_bb, p);
+					    LT_EXPR, m_default_bb, p, loc);
 	      default_prob = default_prob.apply_scale (1, 2);
 
 	      bb = emit_case_nodes (bb, index, node->m_right, default_prob,
-				    index_type);
+				    index_type, loc);
 	    }
 	  else
 	    {
@@ -2182,7 +2254,7 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	      p = (node->m_right->m_c->m_subtree_prob
 		   / (node->m_c->m_subtree_prob + default_prob));
 	      bb = do_jump_if_equal (bb, index, node->m_right->m_c->get_low (),
-				     node->m_right->m_c->m_case_bb, p);
+				     node->m_right->m_c->m_case_bb, p, loc);
 	    }
 	}
       else if (node->m_left != NULL && node->m_right == NULL)
@@ -2195,11 +2267,11 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	      p = (default_prob.apply_scale (1, 2)
 		   / (node->m_c->m_subtree_prob + default_prob));
 	      bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (),
-					    GT_EXPR, m_default_bb, p);
+					    GT_EXPR, m_default_bb, p, loc);
 		  default_prob = default_prob.apply_scale (1, 2);
 
 	      bb = emit_case_nodes (bb, index, node->m_left, default_prob,
-				    index_type);
+				    index_type, loc);
 	    }
 	  else
 	    {
@@ -2209,7 +2281,7 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	      p = (node->m_left->m_c->m_subtree_prob
 		   / (node->m_c->m_subtree_prob + default_prob));
 	      bb = do_jump_if_equal (bb, index, node->m_left->m_c->get_low (),
-				     node->m_left->m_c->m_case_bb, p);
+				     node->m_left->m_c->m_case_bb, p, loc);
 	    }
 	}
     }
@@ -2233,17 +2305,17 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	       / (node->m_c->m_subtree_prob + default_prob));
 
 	  bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (),
-					GT_EXPR, test_bb, p);
+					GT_EXPR, test_bb, p, loc);
 	  default_prob = default_prob.apply_scale (1, 2);
 
 	  /* Value belongs to this node or to the left-hand subtree.  */
 	  p = node->m_c->m_prob / (node->m_c->m_subtree_prob + default_prob);
 	  bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_low (),
-					GE_EXPR, node->m_c->m_case_bb, p);
+					GE_EXPR, node->m_c->m_case_bb, p, loc);
 
 	  /* Handle the left-hand subtree.  */
 	  bb = emit_case_nodes (bb, index, node->m_left,
-				default_prob, index_type);
+				default_prob, index_type, loc);
 
 	  /* If the left-hand subtree fell through,
 	     don't let it fall into the right-hand subtree.  */
@@ -2251,7 +2323,7 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	    emit_jump (bb, m_default_bb);
 
 	  bb = emit_case_nodes (test_bb, index, node->m_right,
-				default_prob, index_type);
+				default_prob, index_type, loc);
 	}
       else
 	{
@@ -2264,7 +2336,7 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	  p = default_prob / (node->m_c->m_subtree_prob + default_prob);
 
 	  bb = emit_cmp_and_jump_insns (bb, lhs, rhs, GT_EXPR,
-					m_default_bb, p);
+					m_default_bb, p, loc);
 
 	  emit_jump (bb, node->m_c->m_case_bb);
 	  return NULL;

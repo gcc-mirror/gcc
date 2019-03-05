@@ -1,5 +1,5 @@
 /* Warn on problematic uses of alloca and variable length arrays.
-   Copyright (C) 2016-2018 Free Software Foundation, Inc.
+   Copyright (C) 2016-2019 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 
 This file is part of GCC.
@@ -272,7 +272,7 @@ alloca_call_type_by_arg (tree arg, tree arg_casted, edge e,
       && TREE_CODE (limit) == SSA_NAME)
     {
       wide_int min, max;
-      value_range_type range_type = get_range_info (limit, &min, &max);
+      value_range_kind range_type = get_range_info (limit, &min, &max);
 
       if (range_type == VR_UNDEFINED || range_type == VR_VARYING)
 	return alloca_type_and_limit (ALLOCA_BOUND_UNKNOWN);
@@ -364,7 +364,7 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
   // Check the range info if available.
   if (TREE_CODE (len) == SSA_NAME)
     {
-      value_range_type range_type = get_range_info (len, &min, &max);
+      value_range_kind range_type = get_range_info (len, &min, &max);
       if (range_type == VR_RANGE)
 	{
 	  if (wi::leu_p (max, max_size))

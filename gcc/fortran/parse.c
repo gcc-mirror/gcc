@@ -1,5 +1,5 @@
 /* Main parser.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -587,10 +587,16 @@ decode_statement (void)
     }
 
   /* All else has failed, so give up.  See if any of the matchers has
-     stored an error message of some sort.  */
-
+     stored an error message of some sort.  Suppress the "Unclassifiable
+     statement" if a previous error message was emitted, e.g., by
+     gfc_error_now ().  */
   if (!gfc_error_check ())
-    gfc_error_now ("Unclassifiable statement at %C");
+    {
+      int ecnt;
+      gfc_get_errors (NULL, &ecnt);
+      if (ecnt <= 0)
+        gfc_error_now ("Unclassifiable statement at %C");
+    }
 
   reject_statement ();
 
@@ -1072,6 +1078,7 @@ decode_gcc_attribute (void)
 
   match ("attributes", gfc_match_gcc_attributes, ST_ATTR_DECL);
   match ("unroll", gfc_match_gcc_unroll, ST_NONE);
+  match ("builtin", gfc_match_gcc_builtin, ST_NONE);
 
   /* All else has failed, so give up.  See if any of the matchers has
      stored an error message of some sort.  */
@@ -3739,7 +3746,7 @@ loop:
 	  break;
       }
 
-  /* If we find a statement that can not be followed by an IMPLICIT statement
+  /* If we find a statement that cannot be followed by an IMPLICIT statement
      (and thus we can expect to see none any further), type the function result
      if it has not yet been typed.  Be careful not to give the END statement
      to verify_st_order!  */
@@ -4536,7 +4543,7 @@ parse_associate (void)
 	 in case of association to a derived-type.  */
       sym->ts = a->target->ts;
 
-      /* Check if the target expression is array valued.  This can not always
+      /* Check if the target expression is array valued.  This cannot always
 	 be done by looking at target.rank, because that might not have been
 	 set yet.  Therefore traverse the chain of refs, looking for the last
 	 array ref and evaluate that.  */
@@ -4562,7 +4569,7 @@ parse_associate (void)
 	  else
 	    rank = a->target->rank;
 	  /* When the rank is greater than zero then sym will be an array.  */
-	  if (sym->ts.type == BT_CLASS)
+	  if (sym->ts.type == BT_CLASS && CLASS_DATA (sym))
 	    {
 	      if ((!CLASS_DATA (sym)->as && rank != 0)
 		  || (CLASS_DATA (sym)->as
@@ -5662,6 +5669,8 @@ parse_progunit (gfc_statement st)
 {
   gfc_state_data *p;
   int n;
+
+  gfc_adjust_builtins ();
 
   if (gfc_new_block
       && gfc_new_block->abr_modproc_decl

@@ -10,5 +10,5 @@ struct S {
 
 void foo (const char *a)
 {
-  const S s = { 1, { a, "b" } };   // { dg-warning "invalid conversion" }
+  static const S s = { 1, { a, "b" } };   // { dg-warning "invalid conversion" }
 }

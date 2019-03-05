@@ -1,5 +1,5 @@
 /* go-backend.c -- Go frontend interface to gcc backend.
-   Copyright (C) 2010-2018 Free Software Foundation, Inc.
+   Copyright (C) 2010-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -82,13 +82,14 @@ go_field_alignment (tree t)
 }
 
 /* This is called by the Go frontend proper if the unsafe package was
-   imported.  When that happens we can not do type-based alias
+   imported.  When that happens we cannot do type-based alias
    analysis.  */
 
 void
 go_imported_unsafe (void)
 {
   flag_strict_aliasing = false;
+  TREE_OPTIMIZATION (optimization_default_node)->x_flag_strict_aliasing = false;
 
   /* Let the backend know that the options have changed.  */
   targetm.override_options_after_change ();

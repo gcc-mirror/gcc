@@ -1,5 +1,5 @@
 /* Common hooks for ARM.
-   Copyright (C) 1991-2018 Free Software Foundation, Inc.
+   Copyright (C) 1991-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -309,7 +309,16 @@ arm_print_hint_for_cpu_option (const char *target,
 {
   auto_vec<const char*> candidates;
   for (; list->common.name != NULL; list++)
-    candidates.safe_push (list->common.name);
+    {
+      candidates.safe_push (list->common.name);
+      if (list->aliases)
+	{
+	  for (const cpu_alias *alias = list->aliases; alias->name != NULL;
+	       alias++)
+	    if (alias->visible)
+	      candidates.safe_push (alias->name);
+	}
+    }
 
 #ifdef HAVE_LOCAL_CPU_DETECT
   /* Add also "native" as possible value.  */
@@ -345,6 +354,16 @@ arm_parse_cpu_option_name (const cpu_option *list, const char *optname,
       if (strncmp (entry->common.name, target, len) == 0
 	  && entry->common.name[len] == '\0')
 	return entry;
+
+      /* Match against any legal alias for this CPU candidate.  */
+      if (entry->aliases)
+	{
+	  for (const cpu_alias *alias = entry->aliases; alias->name != NULL;
+	       alias++)
+	    if (strncmp (alias->name, target, len) == 0
+		&& alias->name[len] == '\0')
+	      return entry;
+	}
     }
 
   if (complain)

@@ -1,5 +1,5 @@
 /* Unit tests for hash-map.h.
-   Copyright (C) 2015-2018 Free Software Foundation, Inc.
+   Copyright (C) 2015-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -77,6 +77,26 @@ test_map_of_strings_to_int ()
   m.remove (eric);
   ASSERT_EQ (5, m.elements ());
   ASSERT_EQ (NULL, m.get (eric));
+
+  /* A plain char * key is hashed based on its value (address), rather
+     than the string it points to.  */
+  char *another_ant = static_cast <char *> (xcalloc (4, 1));
+  another_ant[0] = 'a';
+  another_ant[1] = 'n';
+  another_ant[2] = 't';
+  another_ant[3] = 0;
+  ASSERT_NE (ant, another_ant);
+  unsigned prev_size = m.elements ();
+  ASSERT_EQ (false, m.put (another_ant, 7));
+  ASSERT_EQ (prev_size + 1, m.elements ());
+
+  /* Need to use string_hash or nofree_string_hash key types to hash
+     based on the string contents.  */
+  hash_map <nofree_string_hash, int> string_map;
+  ASSERT_EQ (false, string_map.put (ant, 1));
+  ASSERT_EQ (1, string_map.elements ());
+  ASSERT_EQ (true, string_map.put (another_ant, 5));
+  ASSERT_EQ (1, string_map.elements ());
 }
 
 /* Run all of the selftests within this file.  */

@@ -1,6 +1,6 @@
 // Core algorithmic facilities -*- C++ -*-
 
-// Copyright (C) 2001-2018 Free Software Foundation, Inc.
+// Copyright (C) 2001-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -69,6 +69,9 @@
 #include <debug/debug.h>
 #include <bits/move.h> // For std::swap
 #include <bits/predefined_ops.h>
+#if __cplusplus >= 201103L
+# include <type_traits>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -275,6 +278,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Iterator>
     inline _Iterator
     __niter_base(_Iterator __it)
+    _GLIBCXX_NOEXCEPT_IF(std::is_nothrow_copy_constructible<_Iterator>::value)
     { return __it; }
 
   // Reverse the __niter_base transformation to get a

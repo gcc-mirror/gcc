@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for recording calls made to the JIT API.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -218,6 +218,12 @@ public:
   append_command_line_options (vec <char *> *argvec);
 
   void
+  add_driver_option (const char *optname);
+
+  void
+  append_driver_options (auto_string_vec *argvec);
+
+  void
   enable_dump (const char *dumpname,
 	       char **out_ptr);
 
@@ -317,6 +323,7 @@ private:
   bool m_bool_options[GCC_JIT_NUM_BOOL_OPTIONS];
   bool m_inner_bool_options[NUM_INNER_BOOL_OPTIONS];
   auto_vec <char *> m_command_line_options;
+  auto_vec <char *> m_driver_options;
 
   /* Dumpfiles that were requested via gcc_jit_context_enable_dump.  */
   auto_vec<requested_dump> m_requested_dumps;

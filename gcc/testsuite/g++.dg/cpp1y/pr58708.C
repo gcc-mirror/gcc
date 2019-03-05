@@ -1,4 +1,5 @@
 // { dg-do run { target c++14 } }
+// { dg-options -w }
 
 template<typename, typename>
   struct is_same

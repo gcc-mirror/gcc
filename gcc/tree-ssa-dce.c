@@ -1,5 +1,5 @@
 /* Dead code elimination pass for the GNU compiler.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Ben Elliston <bje@redhat.com>
    and Andrew MacLeod <amacleod@redhat.com>
    Adapted to use control dependence by Steven Bosscher, SUSE Labs.
@@ -195,7 +195,7 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
      throw.  If a statement could throw, it can be deemed necessary.  */
   if (cfun->can_throw_non_call_exceptions
       && !cfun->can_delete_dead_exceptions
-      && stmt_could_throw_p (stmt))
+      && stmt_could_throw_p (cfun, stmt))
     {
       mark_stmt_necessary (stmt, true);
       return;
@@ -420,7 +420,7 @@ find_obviously_necessary_stmts (bool aggressive)
 	if (!finite_loop_p (loop))
 	  {
 	    if (dump_file)
-	      fprintf (dump_file, "can not prove finiteness of loop %i\n", loop->num);
+	      fprintf (dump_file, "cannot prove finiteness of loop %i\n", loop->num);
 	    mark_control_dependent_edges_necessary (loop->latch, false);
 	  }
     }
@@ -473,7 +473,7 @@ mark_aliased_reaching_defs_necessary_1 (ao_ref *ref, tree vdef, void *data)
          ???  We only need to care about the RHS throwing.  For aggregate
 	 assignments or similar calls and non-call exceptions the LHS
 	 might throw as well.  */
-      && !stmt_can_throw_internal (def_stmt))
+      && !stmt_can_throw_internal (cfun, def_stmt))
     {
       tree base, lhs = gimple_get_lhs (def_stmt);
       poly_int64 size, offset, max_size;

@@ -15,12 +15,12 @@ void test_multiline (void)
        + second_function ()); /* { dg-warning "test" } */
 
 /* { dg-begin-multiline-output "" }
-14 |   x = ([32m[Kfirst_function ()[m[K
-   |        [32m[K~~~~~~~~~~~~~~~~~[m[K
-15 |        [01;35m[K+[m[K [34m[Ksecond_function ()[m[K);
-   |        [01;35m[K^[m[K [34m[K~~~~~~~~~~~~~~~~~~[m[K
-   |        [01;35m[K|[m[K
-   |        [01;35m[Klabel[m[K
+   14 |   x = ([32m[Kfirst_function ()[m[K
+      |        [32m[K~~~~~~~~~~~~~~~~~[m[K
+   15 |        [01;35m[K+[m[K [34m[Ksecond_function ()[m[K);
+      |        [01;35m[K^[m[K [34m[K~~~~~~~~~~~~~~~~~~[m[K
+      |        [01;35m[K|[m[K
+      |        [01;35m[Klabel[m[K
    { dg-end-multiline-output "" } */
 #endif
 }

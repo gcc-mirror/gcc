@@ -33,24 +33,25 @@
 
 // keywords: incomplete types, arrays, element types
 
-extern int extern_two_d [] [];		// { dg-error "" } invalid declaration
-int tenative_two_d [] [];		// { dg-error "" } caught by g++
-static int static_two_d [] [];		// { dg-error "" } caught by g++
+extern int extern_two_d [] [];		// { dg-error "12:declaration of .extern_two_d. as multidimensional" } invalid declaration
+int tenative_two_d [] [];		// { dg-error "5:declaration of .tenative_two_d. as multidimensional" } caught by g++
+static int static_two_d [] [];		// { dg-error "12:declaration of .static_two_d. as multidimensional" } caught by g++
 
-int (*pointer_to_two_d)[][];		// { dg-error "" } invalid declaration
+int (*pointer_to_two_d)[][];		// { dg-error "7:declaration of .pointer_to_two_d. as multidimensional" } invalid declaration
 
-void function_0 (int arg [] []) {	// { dg-error "" } invalid declaration
+void function_0 (int arg [] []) {	// { dg-error "22:declaration of .arg. as multidimensional" } invalid declaration
 }
 
 typedef int int_one_d_type [];
-typedef int_one_d_type int_two_d_type[];// { dg-error "" } invalid declaration
+typedef int_one_d_type int_two_d_type[];// { dg-error "24:declaration of .int_two_d_type. as multidimensional" } invalid declaration
 
 struct s;
 
 extern struct s extern_s_array [10];	// OK
-struct s tenative_s_array [10];		// { dg-error "" } object with incomplete type
-static struct s static_s_array [10];	// { dg-error "" } object with incomplete type
-
+struct s tenative_s_array [10];		// { dg-error "10:elements of array .s tenative_s_array \\\[10\\\]. have incomplete type" } object with incomplete type
+// { dg-error "10:storage size" "" { target *-*-* } .-1 }
+static struct s static_s_array [10];	// { dg-error "17:elements of array .s static_s_array \\\[10\\\]. have incomplete type" } object with incomplete type
+// { dg-error "17:storage size" "" { target *-*-* } .-1 }
 struct s (*pointer_to_s_array) [];	// OK
 
 void function_1 (struct s arg []) {	// OK

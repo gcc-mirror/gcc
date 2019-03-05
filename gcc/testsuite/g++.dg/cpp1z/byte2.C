@@ -1,4 +1,5 @@
-// { dg-options "-std=c++17 -Wall" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-Wall" }
 
 #include <cstddef>
 

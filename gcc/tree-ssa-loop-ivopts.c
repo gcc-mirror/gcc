@@ -1,5 +1,5 @@
 /* Induction variable optimizations.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -543,7 +543,7 @@ struct ivopts_data
 {
   /* The currently optimized loop.  */
   struct loop *current_loop;
-  source_location loop_loc;
+  location_t loop_loc;
 
   /* Numbers of iterations for all exits of the current loop.  */
   hash_map<edge, tree_niter_desc *> *niters;
@@ -1438,9 +1438,9 @@ find_givs_in_stmt_scev (struct ivopts_data *data, gimple *stmt, affine_iv *iv)
     return false;
 
   /* If STMT could throw, then do not consider STMT as defining a GIV.
-     While this will suppress optimizations, we can not safely delete this
+     While this will suppress optimizations, we cannot safely delete this
      GIV and associated statements, even if it appears it is not used.  */
-  if (stmt_could_throw_p (stmt))
+  if (stmt_could_throw_p (cfun, stmt))
     return false;
 
   return true;
@@ -2247,6 +2247,10 @@ may_be_nonaddressable_p (tree expr)
 {
   switch (TREE_CODE (expr))
     {
+    case VAR_DECL:
+      /* Check if it's a register variable.  */
+      return DECL_HARD_REGISTER (expr);
+
     case TARGET_MEM_REF:
       /* TARGET_MEM_REFs are translated directly to valid MEMs on the
 	 target, thus they are always addressable.  */
@@ -3037,7 +3041,7 @@ find_inv_vars (struct ivopts_data *data, tree *expr_p, bitmap *inv_vars)
    It's hard to make decision whether constant part should be stripped
    or not.  We choose to not strip based on below facts:
      1) We need to count ADD cost for constant part if it's stripped,
-	which is't always trivial where this functions is called.
+	which isn't always trivial where this functions is called.
      2) Stripping constant away may be conflict with following loop
 	invariant hoisting pass.
      3) Not stripping constant away results in more invariant exprs,
@@ -3222,7 +3226,7 @@ add_autoinc_candidates (struct ivopts_data *data, tree base, tree step,
      statement.  */
   if (use_bb->loop_father != data->current_loop
       || !dominated_by_p (CDI_DOMINATORS, data->current_loop->latch, use_bb)
-      || stmt_can_throw_internal (use->stmt)
+      || stmt_can_throw_internal (cfun, use->stmt)
       || !cst_and_fits_in_hwi (step))
     return;
 

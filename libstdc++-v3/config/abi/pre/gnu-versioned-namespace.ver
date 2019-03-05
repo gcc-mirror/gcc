@@ -1,6 +1,6 @@
 ## Linker script for GNU namespace versioning.
 ##
-## Copyright (C) 2002-2018 Free Software Foundation, Inc.
+## Copyright (C) 2002-2019 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ##
@@ -300,6 +300,11 @@ CXXABI_2.0 {
     _ZTSN10__cxxabiv119__pointer_type_infoE;
     _ZTSN10__cxxabiv120__si_class_type_infoE;
     _ZTSN10__cxxabiv121__vmi_class_type_infoE;
+
+    # typeinfo for char8_t
+    _ZTIDu;
+    _ZTIPDu;
+    _ZTIPKDu;
 
     # typeinfo for char16_t and char32_t
     _ZTIDs;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2018, AdaCore                     --
+--                     Copyright (C) 2001-2019, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -185,6 +185,26 @@ package body Adabkend is
             Lib.Store_Compilation_Switch (Switch_Chars);
             Opt.Suppress_Control_Flow_Optimizations := True;
             return;
+
+         --  Recognize -gxxx switches
+
+         elsif Switch_Chars (First) = 'g' then
+            Debugger_Level := 2;
+
+            if First < Last then
+               case Switch_Chars (First + 1) is
+                  when '0' =>
+                     Debugger_Level := 0;
+                  when '1' =>
+                     Debugger_Level := 1;
+                  when '2' =>
+                     Debugger_Level := 2;
+                  when '3' =>
+                     Debugger_Level := 3;
+                  when others =>
+                     null;
+               end case;
+            end if;
 
          --  Ignore all other back end switches
 

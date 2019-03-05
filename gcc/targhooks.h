@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -102,7 +102,7 @@ extern HOST_WIDE_INT constant_alignment_word_strings (const_tree,
 						      HOST_WIDE_INT);
 extern HOST_WIDE_INT default_vector_alignment (const_tree);
 
-extern HOST_WIDE_INT default_preferred_vector_alignment (const_tree);
+extern poly_uint64 default_preferred_vector_alignment (const_tree);
 extern bool default_builtin_vector_alignment_reachable (const_tree, bool);
 extern bool
 default_builtin_support_vector_misalignment (machine_mode mode,
@@ -121,7 +121,7 @@ extern void default_finish_cost (void *, unsigned *, unsigned *, unsigned *);
 extern void default_destroy_cost_data (void *);
 
 /* OpenACC hooks.  */
-extern bool default_goacc_validate_dims (tree, int [], int);
+extern bool default_goacc_validate_dims (tree, int [], int, unsigned);
 extern int default_goacc_dim_limit (int);
 extern bool default_goacc_fork_join (gcall *, const int [], bool);
 extern void default_goacc_reduction (gcall *);
@@ -284,5 +284,7 @@ extern tree default_preferred_else_value (unsigned, tree, unsigned, tree *);
 extern bool default_have_speculation_safe_value (bool);
 extern bool speculation_safe_value_not_needed (bool);
 extern rtx default_speculation_safe_value (machine_mode, rtx, rtx, rtx);
+extern void default_remove_extra_call_preserved_regs (rtx_insn *,
+						      HARD_REG_SET *);
 
 #endif /* GCC_TARGHOOKS_H */

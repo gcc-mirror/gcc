@@ -1,5 +1,5 @@
 /* Language independent return value optimizations
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -193,7 +193,7 @@ pass_nrv::execute (function *fun)
 	      if (found != NULL)
 		{
 		  /* If we found a return statement using a different variable
-		     than previous return statements, then we can not perform
+		     than previous return statements, then we cannot perform
 		     NRV optimizations.  */
 		  if (found != rhs)
 		    return 0;

@@ -5,9 +5,9 @@ constexpr int a() {
   __builtin_offsetof(struct { // { dg-error "types may not be defined" }
     int i;
     short b {
-      __builtin_offsetof(struct { // { dg-error "types may not be defined" }
+      __builtin_offsetof(struct {
 	int j;
-        struct c { // { dg-error "types may not be defined" }
+        struct c {
           void d() {
           }
         };

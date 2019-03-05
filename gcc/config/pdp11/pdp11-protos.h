@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the pdp-11
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GCC.
@@ -26,14 +26,12 @@ extern int legitimate_const_double_p (rtx);
 extern void notice_update_cc_on_set (rtx, rtx);
 extern void output_addr_const_pdp11 (FILE *, rtx);
 extern const char *output_move_multiple (rtx *);
-extern void expand_block_move (rtx *);
 extern const char *output_jump (rtx *, int, int);
 extern void print_operand_address (FILE *, rtx);
 typedef enum { no_action, dec_before, inc_after } pdp11_action;
 typedef enum { little, either, big } pdp11_partorder;
-extern bool pdp11_expand_operands (rtx *, rtx [][2], int,
+extern bool pdp11_expand_operands (rtx *, rtx [][2], int, int,
 				   pdp11_action *, pdp11_partorder);
-extern int pdp11_sp_frame_offset (void);
 extern int pdp11_initial_elimination_offset (int, int);
 extern enum reg_class pdp11_regno_reg_class (int);
 extern bool pdp11_fixed_cc_regs (unsigned int *, unsigned int *);
@@ -42,6 +40,8 @@ extern bool pdp11_expand_shift (rtx *, rtx (*) (rtx, rtx, rtx),
 				rtx (*) (rtx, rtx, rtx));
 extern const char * pdp11_assemble_shift (rtx *, machine_mode, int);
 extern int pdp11_shift_length (rtx *, machine_mode, int, bool);
+extern int pdp11_cmp_length (rtx *, int);
+extern bool pushpop_regeq (rtx, int);
 extern bool pdp11_small_shift (int);
 
 #endif /* RTX_CODE */

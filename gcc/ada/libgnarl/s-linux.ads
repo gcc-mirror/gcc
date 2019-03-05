@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 2008-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,34 +86,35 @@ package System.Linux is
    SIGFPE     : constant := 8; --  floating point exception
    SIGKILL    : constant := 9; --  kill (cannot be caught or ignored)
    SIGBUS     : constant := 7; --  bus error
+   SIGUSR1    : constant := 10; --  user defined signal 1
    SIGSEGV    : constant := 11; --  segmentation violation
+   SIGUSR2    : constant := 12; --  user defined signal 2
    SIGPIPE    : constant := 13; --  write on a pipe with no one to read it
    SIGALRM    : constant := 14; --  alarm clock
    SIGTERM    : constant := 15; --  software termination signal from kill
-   SIGUSR1    : constant := 10; --  user defined signal 1
-   SIGUSR2    : constant := 12; --  user defined signal 2
+   SIGSTKFLT  : constant := 16; --  coprocessor stack fault (Linux)
    SIGCLD     : constant := 17; --  alias for SIGCHLD
    SIGCHLD    : constant := 17; --  child status change
-   SIGPWR     : constant := 30; --  power-fail restart
-   SIGWINCH   : constant := 28; --  window size change
-   SIGURG     : constant := 23; --  urgent condition on IO channel
-   SIGPOLL    : constant := 29; --  pollable event occurred
-   SIGIO      : constant := 29; --  I/O now possible (4.2 BSD)
-   SIGLOST    : constant := 29; --  File lock lost
    SIGSTOP    : constant := 19; --  stop (cannot be caught or ignored)
    SIGTSTP    : constant := 20; --  user stop requested from tty
    SIGCONT    : constant := 18; --  stopped process has been continued
    SIGTTIN    : constant := 21; --  background tty read attempted
    SIGTTOU    : constant := 22; --  background tty write attempted
-   SIGVTALRM  : constant := 26; --  virtual timer expired
-   SIGPROF    : constant := 27; --  profiling timer expired
+   SIGURG     : constant := 23; --  urgent condition on IO channel
    SIGXCPU    : constant := 24; --  CPU time limit exceeded
    SIGXFSZ    : constant := 25; --  filesize limit exceeded
-   SIGUNUSED  : constant := 31; --  unused signal (GNU/Linux)
-   SIGSTKFLT  : constant := 16; --  coprocessor stack fault (Linux)
-   SIGLTHRRES : constant := 32; --  GNU/LinuxThreads restart signal
-   SIGLTHRCAN : constant := 33; --  GNU/LinuxThreads cancel signal
-   SIGLTHRDBG : constant := 34; --  GNU/LinuxThreads debugger signal
+   SIGVTALRM  : constant := 26; --  virtual timer expired
+   SIGPROF    : constant := 27; --  profiling timer expired
+   SIGWINCH   : constant := 28; --  window size change
+   SIGPOLL    : constant := 29; --  pollable event occurred
+   SIGIO      : constant := 29; --  I/O now possible (4.2 BSD)
+   SIGLOST    : constant := 29; --  File lock lost
+   SIGPWR     : constant := 30; --  power-fail restart
+   SIGSYS     : constant := 31; --  bad system call
+   SIGUNUSED  : constant := 31; --  unused signal (mapped to SIGSYS)
+   SIG32      : constant := 32; --  glibc internal signal
+   SIG33      : constant := 33; --  glibc internal signal
+   SIG34      : constant := 34; --  glibc internal signal
 
    --  struct_sigaction offsets
 

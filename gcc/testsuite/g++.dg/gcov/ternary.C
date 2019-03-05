@@ -9,4 +9,4 @@ int main()
   return a;
 }
 
-// { dg-final { run-gcov remove-gcda ternary.C } }
+// { dg-final { run-gcov ternary.C } }

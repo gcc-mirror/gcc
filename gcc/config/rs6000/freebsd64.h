@@ -1,5 +1,5 @@
 /* Definitions for 64-bit PowerPC running FreeBSD using the ELF format
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -306,15 +306,6 @@ extern int dot_symbols;
 #undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 
-
-/* Override rs6000.h definition.  */
-#undef  ASM_APP_ON
-#define ASM_APP_ON "#APP\n"
-
-/* Override rs6000.h definition.  */
-#undef  ASM_APP_OFF
-#define ASM_APP_OFF "#NO_APP\n"
-
 /* Function profiling bits */
 #undef  RS6000_MCOUNT
 #define RS6000_MCOUNT "_mcount"
@@ -409,13 +400,13 @@ extern int dot_symbols;
 #undef  ASM_OUTPUT_SPECIAL_POOL_ENTRY_P
 #define ASM_OUTPUT_SPECIAL_POOL_ENTRY_P(X, MODE)                        \
   (TARGET_TOC                                                           \
-   && (GET_CODE (X) == SYMBOL_REF                                       \
+   && (SYMBOL_REF_P (X)							\
        || (GET_CODE (X) == CONST && GET_CODE (XEXP (X, 0)) == PLUS      \
-           && GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF)           \
+           && SYMBOL_REF_P (XEXP (XEXP (X, 0), 0)))			\
        || GET_CODE (X) == LABEL_REF                                     \
-       || (GET_CODE (X) == CONST_INT                                    \
+       || (CONST_INT_P (X)						\
            && GET_MODE_BITSIZE (MODE) <= GET_MODE_BITSIZE (Pmode))      \
-       || (GET_CODE (X) == CONST_DOUBLE                                 \
+       || (CONST_DOUBLE_P (X)						\
            && ((TARGET_64BIT                                            \
                 && (TARGET_MINIMAL_TOC                                  \
                     || (SCALAR_FLOAT_MODE_P (GET_MODE (X))              \

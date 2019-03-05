@@ -1,5 +1,5 @@
 /* Common VxWorks target definitions for GNU compiler.
-   Copyright (C) 2007-2018 Free Software Foundation, Inc.
+   Copyright (C) 2007-2019 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -145,11 +145,14 @@ vxworks_override_options (void)
       targetm.emutls.debug_form_tls_address = true;
     }
 
-  /* We can use .ctors/.dtors sections only in RTP mode.  But, if the
-     compiler was built with --enable-initfini-array, assume the
-     toolchain implements the proper glue to make .init_array and
-     .fini_array work.  */
-  targetm.have_ctors_dtors = TARGET_VXWORKS_RTP || HAVE_INITFINI_ARRAY_SUPPORT;
+  /* Arrange to use .ctors/.dtors sections if the target VxWorks configuration
+     and mode supports it, or the init/fini_array sections if we were
+     configured with --enable-initfini-array explicitly.  In the latter case,
+     the toolchain user is expected to provide whatever linker level glue is
+     required to get things to operate properly.  */
+
+  targetm.have_ctors_dtors = 
+    TARGET_VXWORKS_HAVE_CTORS_DTORS || HAVE_INITFINI_ARRAY_SUPPORT;
 
   /* PIC is only supported for RTPs.  */
   if (flag_pic && !TARGET_VXWORKS_RTP)

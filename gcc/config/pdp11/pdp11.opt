@@ -1,6 +1,6 @@
 ; Options for the PDP11 port of the compiler.
 
-; Copyright (C) 2005-2018 Free Software Foundation, Inc.
+; Copyright (C) 2005-2019 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -68,4 +68,4 @@ Use UNIX assembler syntax.
 
 mlra
 Target Report Mask(LRA)
-Use LRA register allocator
+Use LRA register allocator.

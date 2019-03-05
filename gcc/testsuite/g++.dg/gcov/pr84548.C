@@ -16,4 +16,4 @@ int main()
   return 0;
 }
 
-// { dg-final { run-gcov remove-gcda pr84548.C } }
+// { dg-final { run-gcov pr84548.C } }

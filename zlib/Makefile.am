@@ -1,6 +1,6 @@
 ## Process this file with automake to create Makefile.in.
 
-AUTOMAKE_OPTIONS = 1.8 cygnus
+AUTOMAKE_OPTIONS = foreign
 
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
@@ -11,8 +11,8 @@ inflate.h inftrees.c inftrees.h trees.c trees.h uncompr.c zconf.h \
 zconf.h.in zlib.h zutil.c zutil.h
 
 if TARGET_LIBRARY
-noinst_LTLIBRARIES = libzgcj_convenience.la
-libzgcj_convenience_la_SOURCES = $(ZLIB_SOURCES)
+noinst_LTLIBRARIES = libz_convenience.la
+libz_convenience_la_SOURCES = $(ZLIB_SOURCES)
 else
 toolexeclib_LIBRARIES = libz.a
 libz_a_SOURCES = $(ZLIB_SOURCES)
@@ -59,3 +59,5 @@ AM_MAKEFLAGS = \
 	"PICFLAG=$(PICFLAG)" \
 	"RANLIB=$(RANLIB)" \
 	"DESTDIR=$(DESTDIR)"
+
+include $(top_srcdir)/../multilib.am

@@ -134,21 +134,17 @@ int test_7 (int one, T two, float three); // { dg-line test_7_decl }
 int test_7 (int first, const char *second, float third)
 {
   return test_7 <const char **> (first, second, third); // { dg-line test_7_usage }
-  // { dg-error "no matching function" "" { target *-*-* } test_7_usage }
-  /* { dg-begin-multiline-output "" }
-   return test_7 <const char **> (first, second, third);
-                                                      ^
-     { dg-end-multiline-output "" } */
-  // { dg-message "candidate: 'template<class T> int test_7\\(int, T, float\\)'" "" { target *-*-* } test_7_decl }
-  /* { dg-begin-multiline-output "" }
- int test_7 (int one, T two, float three);
-     ^~~~~~
-     { dg-end-multiline-output "" } */
-  // { dg-message "template argument deduction/substitution failed:" "" { target *-*-* } test_7_decl }
-  // { dg-message "cannot convert 'second' \\(type 'const char\\*'\\) to type 'const char\\*\\*'" "" { target *-*-* } test_7_usage }
+  // { dg-message "cannot convert 'const char\\*' to 'const char\\*\\*'" "" { target *-*-* } test_7_usage }
   /* { dg-begin-multiline-output "" }
    return test_7 <const char **> (first, second, third);
                                          ^~~~~~
+                                         |
+                                         const char*
+     { dg-end-multiline-output "" } */
+  // { dg-message "initializing argument 2 of 'int test_7\\(int, T, float\\) .with T = const char\\*\\*.'" "" { target *-*-* } test_7_decl }
+  /* { dg-begin-multiline-output "" }
+ int test_7 (int one, T two, float three);
+                      ~~^~~
      { dg-end-multiline-output "" } */
 }
 
@@ -208,7 +204,9 @@ int test_10 ()
   return v10_a - v10_b; // { dg-error "no match for" }
   /* { dg-begin-multiline-output "" }
    return v10_a - v10_b;
-          ~~~~~~^~~~~~~
+          ~~~~~ ^ ~~~~~
+          |       |
+          s10     s10
      { dg-end-multiline-output "" } */
   // { dg-message "candidate" "" { target *-*-* } s10_operator }
   /* { dg-begin-multiline-output "" }

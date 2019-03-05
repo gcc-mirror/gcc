@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -36,7 +36,6 @@ extern int vspltis_shifted (rtx);
 extern HOST_WIDE_INT const_vector_elt_as_int (rtx, unsigned int);
 extern bool macho_lo_sum_memory_operand (rtx, machine_mode);
 extern int num_insns_constant (rtx, machine_mode);
-extern int num_insns_constant_wide (HOST_WIDE_INT);
 extern int small_data_operand (rtx, machine_mode);
 extern bool mem_operand_gpr (rtx, machine_mode);
 extern bool mem_operand_ds_form (rtx, machine_mode);
@@ -47,6 +46,7 @@ extern bool legitimate_constant_pool_address_p (const_rtx, machine_mode,
 extern bool legitimate_indirect_address_p (rtx, int);
 extern bool legitimate_indexed_address_p (rtx, int);
 extern bool avoiding_indexed_address_p (machine_mode);
+extern rtx rs6000_force_indexed_or_indirect_mem (rtx x);
 
 extern rtx rs6000_got_register (rtx);
 extern rtx find_addr_reg (rtx);
@@ -90,13 +90,7 @@ extern bool quad_load_store_p (rtx, rtx);
 extern bool fusion_gpr_load_p (rtx, rtx, rtx, rtx);
 extern void expand_fusion_gpr_load (rtx *);
 extern void emit_fusion_addis (rtx, rtx);
-extern void emit_fusion_load_store (rtx, rtx, rtx, const char *);
 extern const char *emit_fusion_gpr_load (rtx, rtx);
-extern bool fusion_p9_p (rtx, rtx, rtx, rtx);
-extern void expand_fusion_p9_load (rtx *);
-extern void expand_fusion_p9_store (rtx *);
-extern const char *emit_fusion_p9_load (rtx, rtx, rtx);
-extern const char *emit_fusion_p9_store (rtx, rtx, rtx);
 extern enum reg_class (*rs6000_preferred_reload_class_ptr) (rtx,
 							    enum reg_class);
 extern enum reg_class (*rs6000_secondary_reload_class_ptr) (enum reg_class,
@@ -110,6 +104,11 @@ extern int ccr_bit (rtx, int);
 extern void rs6000_output_function_entry (FILE *, const char *);
 extern void print_operand (FILE *, rtx, int);
 extern void print_operand_address (FILE *, rtx);
+extern const char *rs6000_call_template (rtx *, unsigned int);
+extern const char *rs6000_sibcall_template (rtx *, unsigned int);
+extern const char *rs6000_indirect_call_template (rtx *, unsigned int);
+extern const char *rs6000_indirect_sibcall_template (rtx *, unsigned int);
+extern const char *rs6000_pltseq_template (rtx *, int);
 extern enum rtx_code rs6000_reverse_condition (machine_mode,
 					       enum rtx_code);
 extern rtx rs6000_emit_eqne (machine_mode, rtx, rtx, rtx);
@@ -131,7 +130,6 @@ extern void rs6000_expand_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
 extern void rs6000_emit_swdiv (rtx, rtx, rtx, bool);
 extern void rs6000_emit_swsqrt (rtx, rtx, bool);
 extern void output_toc (FILE *, rtx, int, machine_mode);
-extern rtx rs6000_longcall_ref (rtx);
 extern void rs6000_fatal_bad_address (rtx);
 extern rtx create_TOC_reference (rtx, rtx);
 extern void rs6000_split_multireg_move (rtx, rtx);
@@ -143,6 +141,7 @@ extern rtx (*rs6000_legitimize_reload_address_ptr) (rtx, machine_mode,
 						    int, int, int, int *);
 extern bool rs6000_legitimate_offset_address_p (machine_mode, rtx,
 						bool, bool);
+extern void rs6000_output_tlsargs (rtx *);
 extern rtx rs6000_find_base_term (rtx);
 extern rtx rs6000_return_addr (int, rtx);
 extern void rs6000_output_symbol_ref (FILE*, rtx);
@@ -152,7 +151,6 @@ extern void rs6000_emit_parity (rtx, rtx);
 
 extern rtx rs6000_machopic_legitimize_pic_address (rtx, machine_mode,
 						   rtx);
-extern rtx rs6000_address_for_fpconvert (rtx);
 extern rtx rs6000_allocate_stack_temp (machine_mode, bool, bool);
 extern align_flags rs6000_loop_align (rtx);
 extern void rs6000_split_logical (rtx [], enum rtx_code, bool, bool, bool);
@@ -200,6 +198,10 @@ extern void rs6000_split_stack_space_check (rtx, rtx);
 extern void rs6000_emit_eh_reg_restore (rtx, rtx);
 extern void rs6000_call_aix (rtx, rtx, rtx, rtx);
 extern void rs6000_sibcall_aix (rtx, rtx, rtx, rtx);
+extern void rs6000_call_sysv (rtx, rtx, rtx, rtx);
+extern void rs6000_sibcall_sysv (rtx, rtx, rtx, rtx);
+extern void rs6000_call_darwin (rtx, rtx, rtx, rtx);
+extern void rs6000_sibcall_darwin (rtx, rtx, rtx, rtx);
 extern void rs6000_aix_asm_output_dwarf_table_ref (char *);
 extern void get_ppc476_thunk_name (char name[32]);
 extern bool rs6000_overloaded_builtin_p (enum rs6000_builtins);
@@ -224,9 +226,8 @@ extern void rs6000_target_modify_macros (bool, HOST_WIDE_INT, HOST_WIDE_INT);
 extern void (*rs6000_target_modify_macros_ptr) (bool, HOST_WIDE_INT,
 						HOST_WIDE_INT);
 
-#if TARGET_MACHO
-char *output_call (rtx_insn *, rtx *, int, int);
-#endif
+/* Declare functions in rs6000-d.c  */
+extern void rs6000_d_target_versions (void);
 
 #ifdef NO_DOLLAR_IN_LABEL
 const char * rs6000_xcoff_strip_dollar (const char *);

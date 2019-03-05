@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2019 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -69,7 +69,7 @@ void
 omp_set_schedule (omp_sched_t kind, int chunk_size)
 {
   struct gomp_task_icv *icv = gomp_icv (true);
-  switch (kind)
+  switch (kind & ~omp_sched_monotonic)
     {
     case omp_sched_static:
       if (chunk_size < 1)

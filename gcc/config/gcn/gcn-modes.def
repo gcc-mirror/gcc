@@ -1,0 +1,41 @@
+/* Copyright (C) 2016-2019 Free Software Foundation, Inc.
+
+   This file is free software; you can redistribute it and/or modify it under
+   the terms of the GNU General Public License as published by the Free
+   Software Foundation; either version 3 of the License, or (at your option)
+   any later version.
+
+   This file is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* Half-precision floating point */
+FLOAT_MODE (HF, 2, 0);
+/* FIXME: No idea what format it is.  */
+ADJUST_FLOAT_FORMAT (HF, &ieee_half_format);
+
+/* Native vector modes.  */
+VECTOR_MODE (INT, QI, 64);      /*		  V64QI */
+VECTOR_MODE (INT, HI, 64);      /*		  V64HI */
+VECTOR_MODE (INT, SI, 64);      /*		  V64SI */
+VECTOR_MODE (INT, DI, 64);      /*		  V64DI */
+VECTOR_MODE (INT, TI, 64);      /*		  V64TI */
+VECTOR_MODE (FLOAT, HF, 64);    /*		  V64HF */
+VECTOR_MODE (FLOAT, SF, 64);    /*		  V64SF */
+VECTOR_MODE (FLOAT, DF, 64);    /*		  V64DF */
+
+/* Vector units handle reads independently and thus no large alignment
+   needed.  */
+ADJUST_ALIGNMENT (V64QI, 1);
+ADJUST_ALIGNMENT (V64HI, 2);
+ADJUST_ALIGNMENT (V64SI, 4);
+ADJUST_ALIGNMENT (V64DI, 8);
+ADJUST_ALIGNMENT (V64TI, 16);
+ADJUST_ALIGNMENT (V64HF, 2);
+ADJUST_ALIGNMENT (V64SF, 4);
+ADJUST_ALIGNMENT (V64DF, 8);

@@ -51,7 +51,7 @@ int test (id object)
     }
 
   @try { @throw object; }
-  @catch (id <MyProtocol>) /* { dg-error "@catch parameter can not be protocol-qualified" } */
+  @catch (id <MyProtocol>) /* { dg-error "@catch parameter cannot be protocol-qualified" } */
     {
       dummy++;
     }
@@ -63,7 +63,7 @@ int test (id object)
     }
 
   @try { @throw object; }
-  @catch (MyObject <MyProtocol> *)  /* { dg-error "@catch parameter can not be protocol-qualified" } */
+  @catch (MyObject <MyProtocol> *)  /* { dg-error "@catch parameter cannot be protocol-qualified" } */
     {
       dummy++;
     }
@@ -87,7 +87,7 @@ int test (id object)
     }
 
   @try { @throw object; }
-  @catch (MyObjectTypedef <MyProtocol> *) /* { dg-error "@catch parameter can not be protocol-qualified" } */
+  @catch (MyObjectTypedef <MyProtocol> *) /* { dg-error "@catch parameter cannot be protocol-qualified" } */
     {
       dummy++;
     }

@@ -10,6 +10,7 @@ import (
 	"cmd/go/internal/base"
 	"cmd/go/internal/cfg"
 	"cmd/go/internal/load"
+	"cmd/internal/sys"
 	"flag"
 	"fmt"
 	"os"
@@ -28,7 +29,8 @@ func BuildInit() {
 		p, err := filepath.Abs(cfg.BuildPkgdir)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "go %s: evaluating -pkgdir: %v\n", flag.Args()[0], err)
-			os.Exit(2)
+			base.SetExitStatus(2)
+			base.Exit()
 		}
 		cfg.BuildPkgdir = p
 	}
@@ -40,20 +42,19 @@ func instrumentInit() {
 	}
 	if cfg.BuildRace && cfg.BuildMSan {
 		fmt.Fprintf(os.Stderr, "go %s: may not use -race and -msan simultaneously\n", flag.Args()[0])
-		os.Exit(2)
+		base.SetExitStatus(2)
+		base.Exit()
 	}
-	if cfg.BuildMSan && (cfg.Goos != "linux" || cfg.Goarch != "amd64" && cfg.Goarch != "arm64") {
+	if cfg.BuildMSan && !sys.MSanSupported(cfg.Goos, cfg.Goarch) {
 		fmt.Fprintf(os.Stderr, "-msan is not supported on %s/%s\n", cfg.Goos, cfg.Goarch)
-		os.Exit(2)
+		base.SetExitStatus(2)
+		base.Exit()
 	}
 	if cfg.BuildRace {
-		platform := cfg.Goos + "/" + cfg.Goarch
-		switch platform {
-		default:
-			fmt.Fprintf(os.Stderr, "go %s: -race is only supported on linux/amd64, linux/ppc64le, freebsd/amd64, netbsd/amd64, darwin/amd64 and windows/amd64\n", flag.Args()[0])
-			os.Exit(2)
-		case "linux/amd64", "linux/ppc64le", "freebsd/amd64", "netbsd/amd64", "darwin/amd64", "windows/amd64":
-			// race supported on these platforms
+		if !sys.RaceDetectorSupported(cfg.Goos, cfg.Goarch) {
+			fmt.Fprintf(os.Stderr, "go %s: -race is only supported on linux/amd64, linux/ppc64le, linux/arm64, freebsd/amd64, netbsd/amd64, darwin/amd64 and windows/amd64\n", flag.Args()[0])
+			base.SetExitStatus(2)
+			base.Exit()
 		}
 	}
 	mode := "race"
@@ -64,7 +65,8 @@ func instrumentInit() {
 
 	if !cfg.BuildContext.CgoEnabled {
 		fmt.Fprintf(os.Stderr, "go %s: %s requires cgo; enable cgo by setting CGO_ENABLED=1\n", flag.Args()[0], modeFlag)
-		os.Exit(2)
+		base.SetExitStatus(2)
+		base.Exit()
 	}
 	forcedGcflags = append(forcedGcflags, modeFlag)
 	forcedLdflags = append(forcedLdflags, modeFlag)
@@ -85,23 +87,24 @@ func buildModeInit() {
 		pkgsFilter = pkgsNotMain
 	case "c-archive":
 		pkgsFilter = oneMainPkg
-		switch platform {
-		case "darwin/arm", "darwin/arm64":
-			codegenArg = "-shared"
-		default:
-			switch cfg.Goos {
-			case "dragonfly", "freebsd", "linux", "netbsd", "openbsd", "solaris":
-				if platform == "linux/ppc64" {
-					base.Fatalf("-buildmode=c-archive not supported on %s\n", platform)
-				}
-				// Use -shared so that the result is
-				// suitable for inclusion in a PIE or
-				// shared library.
-				codegenArg = "-shared"
-			}
-		}
 		if gccgo {
 			codegenArg = "-fPIC"
+		} else {
+			switch platform {
+			case "darwin/arm", "darwin/arm64":
+				codegenArg = "-shared"
+			default:
+				switch cfg.Goos {
+				case "dragonfly", "freebsd", "linux", "netbsd", "openbsd", "solaris":
+					if platform == "linux/ppc64" {
+						base.Fatalf("-buildmode=c-archive not supported on %s\n", platform)
+					}
+					// Use -shared so that the result is
+					// suitable for inclusion in a PIE or
+					// shared library.
+					codegenArg = "-shared"
+				}
+			}
 		}
 		cfg.ExeSuffix = ".a"
 		ldBuildmode = "c-archive"

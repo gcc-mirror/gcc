@@ -1,5 +1,5 @@
 /* Graphite polyhedral representation.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com> and
    Tobias Grosser <grosser@fim.uni-passau.de>.
 
@@ -460,6 +460,7 @@ carries_deps (__isl_keep isl_union_map *schedule,
 extern bool build_poly_scop (scop_p);
 extern bool graphite_regenerate_ast_isl (scop_p);
 extern void build_scops (vec<scop_p> *);
+extern tree cached_scalar_evolution_in_region (const sese_l &, loop_p, tree);
 extern void dot_all_sese (FILE *, vec<sese_l> &);
 extern void dot_sese (sese_l &);
 extern void dot_cfg ();

@@ -4,10 +4,10 @@ struct A;
 
 struct B
 {
-  constexpr A & operator= (const A &);  // { dg-warning "used" "" { target c++14_only } }
+  constexpr A & operator= (const A &);  // { dg-warning "used" "" { target c++14 } }
 };
 
-struct A : B  // { dg-error "cannot be overloaded" "" { target c++14_only } }
+struct A : B  // { dg-error "cannot be overloaded" "" { target c++14 } }
 {
   using B::operator=;
 } a { a = a };

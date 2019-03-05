@@ -1,10 +1,10 @@
-@c Copyright (C) 2004-2018 Free Software Foundation, Inc.
+@c Copyright (C) 2004-2019 Free Software Foundation, Inc.
 @c This is part of the GNU Fortran manual.   
 @c For copying conditions, see the file gfortran.texi.
 
 @ignore
 @c man begin COPYRIGHT
-Copyright @copyright{} 2004-2018 Free Software Foundation, Inc.
+Copyright @copyright{} 2004-2019 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -119,9 +119,9 @@ by type.  Explanations are in the following sections.
 @gccoptlist{-fall-intrinsics -fbackslash -fcray-pointer -fd-lines-as-code @gol
 -fd-lines-as-comments @gol
 -fdec -fdec-structure -fdec-intrinsic-ints -fdec-static -fdec-math @gol
--fdefault-double-8 -fdefault-integer-8 -fdefault-real-8 @gol
+-fdec-include -fdefault-double-8 -fdefault-integer-8 -fdefault-real-8 @gol
 -fdefault-real-10 -fdefault-real-16 -fdollar-ok -ffixed-line-length-@var{n} @gol
--ffixed-line-length-none -ffree-form -ffree-line-length-@var{n} @gol
+-ffixed-line-length-none -fpad-source -ffree-form -ffree-line-length-@var{n} @gol
 -ffree-line-length-none -fimplicit-none -finteger-4-integer-8 @gol
 -fmax-identifier-length -fmodule-private -ffixed-form -fno-range-check @gol
 -fopenacc -fopenmp -freal-4-real-10 -freal-4-real-16 -freal-4-real-8 @gol
@@ -277,6 +277,12 @@ functions (e.g. TAND, ATAND, etc...) for compatability with older code.
 Enable DEC-style STATIC and AUTOMATIC attributes to explicitly specify
 the storage of variables and other objects.
 
+@item -fdec-include
+@opindex @code{fdec-include}
+Enable parsing of INCLUDE as a statement in addition to parsing it as
+INCLUDE line.  When parsed as INCLUDE statement, INCLUDE does not have to
+be on a single line and can use line continuations.
+
 @item -fdollar-ok
 @opindex @code{fdollar-ok}
 @cindex @code{$}
@@ -315,8 +321,9 @@ declared as @code{PUBLIC}.
 @opindex @code{ffixed-line-length-}@var{n}
 @cindex file format, fixed
 Set column after which characters are ignored in typical fixed-form
-lines in the source file, and through which spaces are assumed (as
-if padded to that length) after the ends of short fixed-form lines.
+lines in the source file, and, unless @code{-fno-pad-source}, through which
+spaces are assumed (as if padded to that length) after the ends of short
+fixed-form lines.
 
 Popular values for @var{n} include 72 (the
 standard and the default), 80 (card image), and 132 (corresponding
@@ -326,6 +333,15 @@ and that continued character constants never have implicit spaces appended
 to them to fill out the line.
 @option{-ffixed-line-length-0} means the same thing as
 @option{-ffixed-line-length-none}.
+
+@item -fno-pad-source
+@opindex @code{fpad-source}
+By default fixed-form lines have spaces assumed (as if padded to that length)
+after the ends of short fixed-form lines.  This is not done either if
+@option{-ffixed-line-length-0}, @option{-ffixed-line-length-none} or
+if @option{-fno-pad-source} option is used.  With any of those options
+continued character constants never have implicit spaces appended
+to them to fill out the line.
 
 @item -ffree-line-length-@var{n}
 @opindex @code{ffree-line-length-}@var{n}
@@ -400,36 +416,45 @@ kind declaration.
 
 @item -fdefault-real-8
 @opindex @code{fdefault-real-8}
-Set the default real type to an 8 byte wide type. This option also affects
-the kind of non-double real constants like @code{1.0}, and does promote
-the default width of @code{DOUBLE PRECISION} to 16 bytes if possible, unless
-@code{-fdefault-double-8} is given, too. Unlike @option{-freal-4-real-8},
-it does not promote variables with explicit kind declaration.
+Set the default real type to an 8 byte wide type.  This option also affects
+the kind of non-double real constants like @code{1.0}.  This option promotes
+the default width of @code{DOUBLE PRECISION} and double real constants
+like @code{1.d0} to 16 bytes if possible.  If @code{-fdefault-double-8}
+is given along with @code{fdefault-real-8}, @code{DOUBLE PRECISION}
+and double real constants are not promoted.  Unlike @option{-freal-4-real-8},
+@code{fdefault-real-8} does not promote variables with explicit kind
+declarations.
 
 @item -fdefault-real-10
 @opindex @code{fdefault-real-10}
-Set the default real type to a 10 byte wide type. This option also affects
-the kind of non-double real constants like @code{1.0}, and does promote
-the default width of @code{DOUBLE PRECISION} to 16 bytes if possible, unless
-@code{-fdefault-double-8} is given. Unlike @option{-freal-4-real-10},
-it does not promote variables with explicit kind declaration.
+Set the default real type to an 10 byte wide type.  This option also affects
+the kind of non-double real constants like @code{1.0}.  This option promotes
+the default width of @code{DOUBLE PRECISION} and double real constants
+like @code{1.d0} to 16 bytes if possible.  If @code{-fdefault-double-8}
+is given along with @code{fdefault-real-10}, @code{DOUBLE PRECISION}
+and double real constants are not promoted.  Unlike @option{-freal-4-real-10},
+@code{fdefault-real-10} does not promote variables with explicit kind
+declarations.
 
 @item -fdefault-real-16
 @opindex @code{fdefault-real-16}
-Set the default real type to a 16 byte wide type. This option also affects
-the kind of non-double real constants like @code{1.0}, and does promote
-the default width of @code{DOUBLE PRECISION} to 16 bytes if possible, unless
-@code{-fdefault-double-8} is given. Unlike @option{-freal-4-real-16},
-it does not promote variables with explicit kind declaration.
+Set the default real type to an 16 byte wide type.  This option also affects
+the kind of non-double real constants like @code{1.0}.  This option promotes
+the default width of @code{DOUBLE PRECISION} and double real constants
+like @code{1.d0} to 16 bytes if possible.  If @code{-fdefault-double-8}
+is given along with @code{fdefault-real-16}, @code{DOUBLE PRECISION}
+and double real constants are not promoted.  Unlike @option{-freal-4-real-16},
+@code{fdefault-real-16} does not promote variables with explicit kind
+declarations.
 
 @item -fdefault-double-8
 @opindex @code{fdefault-double-8}
-Set the @code{DOUBLE PRECISION} type to an 8 byte wide type.  Do nothing if this
-is already the default.  If @option{-fdefault-real-8} is given,
-@code{DOUBLE PRECISION} would instead be promoted to 16 bytes if possible, and
-@option{-fdefault-double-8} can be used to prevent this.  The kind of real
-constants like @code{1.d0} will not be changed by @option{-fdefault-real-8}
-though, so also @option{-fdefault-double-8} does not affect it.
+Set the @code{DOUBLE PRECISION} type and double real constants
+like @code{1.d0} to an 8 byte wide type.  Do nothing if this
+is already the default.  This option prevents @option{-fdefault-real-8},
+@option{-fdefault-real-10}, and @option{-fdefault-real-16},
+from promoting @code{DOUBLE PRECISION} and double real constants like
+@code{1.d0} to 16 bytes.
 
 @item -finteger-4-integer-8
 @opindex @code{finteger-4-integer-8}
@@ -1096,7 +1121,7 @@ time.  This option is implied by @option{-Wall}.
 @item -Wdo-subscript
 @opindex @code{Wdo-subscript}
 Warn if an array subscript inside a DO loop could lead to an
-out-of-bounds access even if the compiler can not prove that the
+out-of-bounds access even if the compiler cannot prove that the
 statement is actually executed, in cases like
 @smallexample
   real a(3)
@@ -1178,6 +1203,12 @@ The first three exceptions (@samp{invalid}, @samp{zero}, and
 has provisions for dealing with these exceptions, enabling traps for
 these three exceptions is probably a good idea.
 
+If the option is used more than once in the command line, the lists will
+be joined: '@code{ffpe-trap=}@var{list1} @code{ffpe-trap=}@var{list2}'
+is equivalent to @code{ffpe-trap=}@var{list1},@var{list2}.
+
+Note that once enabled an exception cannot be disabled (no negative form).
+
 Many, if not most, floating point operations incur loss of precision
 due to rounding, and hence the @code{ffpe-trap=inexact} is likely to
 be uninteresting in practice.
@@ -1192,6 +1223,9 @@ to @code{ERROR_UNIT} when invoking @code{STOP} and @code{ERROR STOP}.
 of the following exceptions: @samp{invalid}, @samp{zero}, @samp{overflow},
 @samp{underflow}, @samp{inexact} and @samp{denormal}. (See
 @option{-ffpe-trap} for a description of the exceptions.)
+
+If the option is used more than once in the command line, only the
+last one will be used.
 
 By default, a summary for all exceptions but @samp{inexact} is shown.
 
@@ -1360,6 +1394,9 @@ provide this option under the name @option{-static} or @option{-save}.)
 The default, which is @option{-fautomatic}, uses the stack for local
 variables smaller than the value given by @option{-fmax-stack-var-size}.
 Use the option @option{-frecursive} to use no static memory. 
+
+Local variables or arrays having an explicit @code{SAVE} attribute are
+silently ignored unless the @option{-pedantic} option is added.
 
 @item -ff2c
 @opindex ff2c
@@ -1741,6 +1778,11 @@ and @code{COMPLEX} variables with a quiet NaN. For a signalling NaN
 use @option{-finit-real=snan}; note, however, that compile-time
 optimizations may convert them into quiet NaN and that trapping
 needs to be enabled (e.g. via @option{-ffpe-trap}).
+
+The @option{-finit-integer} option will parse the value into an
+integer of type @code{INTEGER(kind=C_LONG)} on the host.  Said value
+is then assigned to the integer variables in the Fortran code, which
+might result in wraparound if the value is too large for the kind.
 
 Finally, note that enabling any of the @option{-finit-*} options will
 silence warnings that would have been emitted by @option{-Wuninitialized}

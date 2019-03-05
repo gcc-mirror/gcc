@@ -14,7 +14,7 @@ integer :: i
 
 OPEN(99, access=4_'direct')     ! { dg-error "must be a character string of default kind" }
 OPEN(99, action=4_'read')       ! { dg-error "must be a character string of default kind" }
-OPEN(99, asynchronous=4_'no')   ! { dg-error "must be a character string of default kind" })
+OPEN(99, asynchronous=4_'no')   ! { dg-error "must be of default CHARACTER kind" }
 OPEN(99, blank=4_'null')        ! { dg-error "must be a character string of default kind" }
 OPEN(99, decimal=4_'comma')     ! { dg-error "must be a character string of default kind" }
 OPEN(99, delim=4_'quote')       ! { dg-error "must be a character string of default kind" }

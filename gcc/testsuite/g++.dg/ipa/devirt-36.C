@@ -1,3 +1,4 @@
+/* { dg-do compile } */
 /* { dg-options "-O2 -fdump-ipa-devirt-details -fdump-tree-fre1-details"  } */
 struct A {virtual int t(void) {return 1;}};
 struct B:A {B(); virtual int t(void) {return 2;}};

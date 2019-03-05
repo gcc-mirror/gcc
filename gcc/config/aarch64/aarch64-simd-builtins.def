@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -216,6 +216,25 @@
   BUILTIN_VB (QUADOPU_LANE, udot_lane, 0)
   BUILTIN_VB (QUADOP_LANE, sdot_laneq, 0)
   BUILTIN_VB (QUADOPU_LANE, udot_laneq, 0)
+
+  /* Implemented by aarch64_fcadd<rot><mode>.   */
+  BUILTIN_VHSDF (BINOP, fcadd90, 0)
+  BUILTIN_VHSDF (BINOP, fcadd270, 0)
+
+  /* Implemented by aarch64_fcmla{_lane}{q}<rot><mode>.   */
+  BUILTIN_VHSDF (TERNOP, fcmla0, 0)
+  BUILTIN_VHSDF (TERNOP, fcmla90, 0)
+  BUILTIN_VHSDF (TERNOP, fcmla180, 0)
+  BUILTIN_VHSDF (TERNOP, fcmla270, 0)
+  BUILTIN_VHSDF (QUADOP_LANE_PAIR, fcmla_lane0, 0)
+  BUILTIN_VHSDF (QUADOP_LANE_PAIR, fcmla_lane90, 0)
+  BUILTIN_VHSDF (QUADOP_LANE_PAIR, fcmla_lane180, 0)
+  BUILTIN_VHSDF (QUADOP_LANE_PAIR, fcmla_lane270, 0)
+
+  BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane0, 0)
+  BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane90, 0)
+  BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane180, 0)
+  BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane270, 0)
 
   BUILTIN_VDQ_I (SHIFTIMM, ashr, 3)
   VAR1 (SHIFTIMM, ashr_simd, 0, di)

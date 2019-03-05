@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -28,7 +28,7 @@
 #include "c-family/c-pragma.h"
 #include "stringpool.h"
 
-/* Output C specific EABI object attributes.  These can not be done in
+/* Output C specific EABI object attributes.  These cannot be done in
    arm.c because they require information from the C frontend.  */
 
 static void
@@ -76,6 +76,7 @@ arm_cpu_builtins (struct cpp_reader* pfile)
 
   def_or_undef_macro (pfile, "__ARM_FEATURE_CRC32", TARGET_CRC32);
   def_or_undef_macro (pfile, "__ARM_FEATURE_DOTPROD", TARGET_DOTPROD);
+  def_or_undef_macro (pfile, "__ARM_FEATURE_COMPLEX", TARGET_COMPLEX);
   def_or_undef_macro (pfile, "__ARM_32BIT_STATE", TARGET_32BIT);
 
   cpp_undef (pfile, "__ARM_FEATURE_CMSE");

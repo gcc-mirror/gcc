@@ -1,5 +1,6 @@
 // { dg-lto-do link }
 // { dg-require-effective-target fpic }
+// { dg-require-effective-target lto_incremental }
 // { dg-lto-options {{-fPIC -flto -Wno-return-type}} }
 // { dg-extra-ld-options "-fPIC -r -nostdlib" }
 

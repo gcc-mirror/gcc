@@ -8,8 +8,5 @@ package os
 
 import "syscall"
 
-//extern opendir64
-func libc_opendir(*byte) *syscall.DIR
-
 //extern closedir64
 func libc_closedir(*syscall.DIR) int

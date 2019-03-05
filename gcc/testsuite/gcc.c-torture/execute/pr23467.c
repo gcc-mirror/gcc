@@ -1,3 +1,5 @@
+/* { dg-skip-if "small alignment" { pdp11-*-* } } */
+
 struct s1
 {
   int __attribute__ ((aligned (8))) a;

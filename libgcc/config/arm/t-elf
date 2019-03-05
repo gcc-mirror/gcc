@@ -1,3 +1,19 @@
+ifeq (,$(findstring __symbian__,$(shell $(gcc_compile_bare) -dM -E - </dev/null)))
+
+ARM_ISA:=$(findstring __ARM_ARCH_ISA_ARM,$(shell $(gcc_compile_bare) -dM -E - </dev/null))
+THUMB1_ISA:=$(findstring __ARM_ARCH_ISA_THUMB 1,$(shell $(gcc_compile_bare) -dM -E - </dev/null))
+
+# The condition here must match the one in gcc/config/arm/elf.h and
+# libgcc/config/arm/lib1funcs.S.  _arm_muldf3 and _arm_mulsf3 must be included
+# first so that the weak multiplication symbols in the corresponding files are
+# chosen over the global symbols that _arm_muldivdf3 and _arm_muldivsf3
+# inclusion create when only multiplication is used, thus avoiding pulling in
+# useless division code.
+ifneq (__ARM_ARCH_ISA_THUMB 1,$(ARM_ISA)$(THUMB1_ISA))
+LIB1ASMFUNCS += _arm_muldf3 _arm_mulsf3
+endif
+endif # !__symbian__
+
 # For most CPUs we have an assembly soft-float implementations.
 # However this is not true for ARMv6M.  Here we want to use the soft-fp C
 # implementation.  The soft-fp code is only build for ARMv6M.  This pulls

@@ -1,5 +1,5 @@
 /* IA-32 common hooks.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -140,6 +140,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define OPTION_MASK_ISA_FSGSBASE_SET OPTION_MASK_ISA_FSGSBASE
 #define OPTION_MASK_ISA_RDRND_SET OPTION_MASK_ISA_RDRND
+#define OPTION_MASK_ISA_PTWRITE_SET OPTION_MASK_ISA_PTWRITE
 #define OPTION_MASK_ISA_F16C_SET \
   (OPTION_MASK_ISA_F16C | OPTION_MASK_ISA_AVX_SET)
 #define OPTION_MASK_ISA_MWAITX_SET OPTION_MASK_ISA_MWAITX
@@ -194,8 +195,10 @@ along with GCC; see the file COPYING3.  If not see
   (OPTION_MASK_ISA_AVX512F | OPTION_MASK_ISA_AVX512CD_UNSET \
    | OPTION_MASK_ISA_AVX512PF_UNSET | OPTION_MASK_ISA_AVX512ER_UNSET \
    | OPTION_MASK_ISA_AVX512DQ_UNSET | OPTION_MASK_ISA_AVX512BW_UNSET \
-   | OPTION_MASK_ISA_AVX512VL_UNSET | OPTION_MASK_ISA_AVX512VBMI2_UNSET \
-   | OPTION_MASK_ISA_AVX512VNNI_UNSET | OPTION_MASK_ISA_AVX512VPOPCNTDQ_UNSET \
+   | OPTION_MASK_ISA_AVX512VL_UNSET | OPTION_MASK_ISA_AVX512IFMA_UNSET \
+   | OPTION_MASK_ISA_AVX512VBMI2_UNSET \
+   | OPTION_MASK_ISA_AVX512VNNI_UNSET \
+   | OPTION_MASK_ISA_AVX512VPOPCNTDQ_UNSET \
    | OPTION_MASK_ISA_AVX512BITALG_UNSET)
 #define OPTION_MASK_ISA_AVX512CD_UNSET OPTION_MASK_ISA_AVX512CD
 #define OPTION_MASK_ISA_AVX512PF_UNSET OPTION_MASK_ISA_AVX512PF
@@ -265,6 +268,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define OPTION_MASK_ISA_FSGSBASE_UNSET OPTION_MASK_ISA_FSGSBASE
 #define OPTION_MASK_ISA_RDRND_UNSET OPTION_MASK_ISA_RDRND
+#define OPTION_MASK_ISA_PTWRITE_UNSET OPTION_MASK_ISA_PTWRITE
 #define OPTION_MASK_ISA_F16C_UNSET OPTION_MASK_ISA_F16C
 
 #define OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET \
@@ -1123,6 +1127,19 @@ ix86_handle_option (struct gcc_options *opts,
 	}
       return true;
 
+    case OPT_mptwrite:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_PTWRITE_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_PTWRITE_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_PTWRITE_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_PTWRITE_UNSET;
+	}
+      return true;
+
     case OPT_mf16c:
       if (value)
 	{
@@ -1394,7 +1411,7 @@ ix86_option_init_struct (struct gcc_options *opts)
 }
 
 /* On the x86 -fsplit-stack and -fstack-protector both use the same
-   field in the TCB, so they can not be used together.  */
+   field in the TCB, so they cannot be used together.  */
 
 static bool
 ix86_supports_split_stack (bool report ATTRIBUTE_UNUSED,
@@ -1461,7 +1478,7 @@ i386_except_unwind_info (struct gcc_options *opts)
 #define TARGET_SUPPORTS_SPLIT_STACK ix86_supports_split_stack
 
 /* This table must be in sync with enum processor_type in i386.h.  */
-const char *const processor_names[PROCESSOR_max] =
+const char *const processor_names[] =
 {
   "generic",
   "i386",
@@ -1487,6 +1504,7 @@ const char *const processor_names[PROCESSOR_max] =
   "cannonlake",
   "icelake-client",
   "icelake-server",
+  "cascadelake",
   "intel",
   "geode",
   "k6",
@@ -1499,8 +1517,12 @@ const char *const processor_names[PROCESSOR_max] =
   "bdver4",
   "btver1",
   "btver2",
-  "znver1"
+  "znver1",
+  "znver2"
 };
+
+/* Guarantee that the array is aligned with enum processor_type.  */
+STATIC_ASSERT (ARRAY_SIZE (processor_names) == PROCESSOR_max);
 
 const pta processor_alias_table[] =
 {
@@ -1563,6 +1585,8 @@ const pta processor_alias_table[] =
     PTA_ICELAKE_CLIENT},
   {"icelake-server", PROCESSOR_ICELAKE_SERVER, CPU_HASWELL,
     PTA_ICELAKE_SERVER},
+  {"cascadelake", PROCESSOR_CASCADELAKE, CPU_HASWELL,
+    PTA_CASCADELAKE},
   {"bonnell", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
   {"atom", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
   {"silvermont", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
@@ -1675,6 +1699,16 @@ const pta processor_alias_table[] =
       | PTA_RDRND | PTA_MOVBE | PTA_MWAITX | PTA_ADX | PTA_RDSEED
       | PTA_CLZERO | PTA_CLFLUSHOPT | PTA_XSAVEC | PTA_XSAVES
       | PTA_SHA | PTA_LZCNT | PTA_POPCNT},
+  {"znver2", PROCESSOR_ZNVER2, CPU_ZNVER1,
+    PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+      | PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1
+      | PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX | PTA_AVX2
+      | PTA_BMI | PTA_BMI2 | PTA_F16C | PTA_FMA | PTA_PRFCHW
+      | PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT | PTA_FSGSBASE
+      | PTA_RDRND | PTA_MOVBE | PTA_MWAITX | PTA_ADX | PTA_RDSEED
+      | PTA_CLZERO | PTA_CLFLUSHOPT | PTA_XSAVEC | PTA_XSAVES
+      | PTA_SHA | PTA_LZCNT | PTA_POPCNT | PTA_CLWB | PTA_RDPID
+      | PTA_WBNOINVD},
   {"btver1", PROCESSOR_BTVER1, CPU_GENERIC,
     PTA_64BIT | PTA_MMX |  PTA_SSE  | PTA_SSE2 | PTA_SSE3
       | PTA_SSSE3 | PTA_SSE4A |PTA_ABM | PTA_CX16 | PTA_PRFCHW
@@ -1707,11 +1741,24 @@ ix86_get_valid_option_values (int option_code,
     {
     case OPT_march_:
       for (unsigned i = 0; i < pta_size; i++)
-	v.safe_push (processor_alias_table[i].name);
+	{
+	  const char *name = processor_alias_table[i].name;
+	  gcc_checking_assert (name != NULL);
+	  v.safe_push (name);
+	}
+#ifdef HAVE_LOCAL_CPU_DETECT
+      /* Add also "native" as possible value.  */
+      v.safe_push ("native");
+#endif
+
       break;
     case OPT_mtune_:
       for (unsigned i = 0; i < PROCESSOR_max; i++)
-	v.safe_push (processor_names[i]);
+	{
+	  const char *name = processor_names[i];
+	  gcc_checking_assert (name != NULL);
+	  v.safe_push (name);
+	}
       break;
     default:
       break;

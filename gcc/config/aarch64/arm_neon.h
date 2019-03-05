@@ -1,6 +1,6 @@
 /* ARM NEON intrinsics include file.
 
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -33070,7 +33070,7 @@ vdotq_laneq_s32 (int32x4_t __r, int8x16_t __a, int8x16_t __b, const int __index)
 #pragma GCC pop_options
 
 #pragma GCC push_options
-#pragma GCC target(("arch=armv8.2-a+sm4"))
+#pragma GCC target ("arch=armv8.2-a+sm4")
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
@@ -33137,7 +33137,7 @@ vsm4ekeyq_u32 (uint32x4_t __a, uint32x4_t __b)
 #pragma GCC pop_options
 
 #pragma GCC push_options
-#pragma GCC target(("arch=armv8.2-a+crypto"))
+#pragma GCC target ("arch=armv8.2-a+sha3")
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
@@ -33294,71 +33294,546 @@ vbcaxq_s64 (int64x2_t __a, int64x2_t __b, int64x2_t __c)
   return __builtin_aarch64_bcaxqv2di (__a, __b, __c);
 }
 
+#pragma GCC pop_options
+
+/* AdvSIMD Complex numbers intrinsics.  */
+
+#pragma GCC push_options
+#pragma GCC target ("arch=armv8.3-a")
+
+#pragma GCC push_options
+#pragma GCC target ("+fp16")
+__extension__ extern __inline float16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcadd_rot90_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_aarch64_fcadd90v4hf (__a, __b);
+}
+
+__extension__ extern __inline float16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcaddq_rot90_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_aarch64_fcadd90v8hf (__a, __b);
+}
+
+__extension__ extern __inline float16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcadd_rot270_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_aarch64_fcadd270v4hf (__a, __b);
+}
+
+__extension__ extern __inline float16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcaddq_rot270_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_aarch64_fcadd270v8hf (__a, __b);
+}
+
+__extension__ extern __inline float16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_f16 (float16x4_t __r, float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_aarch64_fcmla0v4hf (__r, __a, __b);
+}
+
+__extension__ extern __inline float16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_f16 (float16x8_t __r, float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_aarch64_fcmla0v8hf (__r, __a, __b);
+}
+
+__extension__ extern __inline float16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_lane_f16 (float16x4_t __r, float16x4_t __a, float16x4_t __b,
+		const int __index)
+{
+  return __builtin_aarch64_fcmla_lane0v4hf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_laneq_f16 (float16x4_t __r, float16x4_t __a, float16x8_t __b,
+		 const int __index)
+{
+  return __builtin_aarch64_fcmla_laneq0v4hf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_lane_f16 (float16x8_t __r, float16x8_t __a, float16x4_t __b,
+		 const int __index)
+{
+  return __builtin_aarch64_fcmlaq_lane0v8hf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot90_lane_f16 (float16x8_t __r, float16x8_t __a, float16x4_t __b,
+		       const int __index)
+{
+  return __builtin_aarch64_fcmlaq_lane90v8hf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_rot90_laneq_f16 (float16x4_t __r, float16x4_t __a, float16x8_t __b,
+		       const int __index)
+{
+  return __builtin_aarch64_fcmla_laneq90v4hf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_rot90_lane_f16 (float16x4_t __r, float16x4_t __a, float16x4_t __b,
+		      const int __index)
+{
+  return __builtin_aarch64_fcmla_lane90v4hf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot90_f16 (float16x8_t __r, float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_aarch64_fcmla90v8hf (__r, __a, __b);
+}
+
+__extension__ extern __inline float16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_rot90_f16 (float16x4_t __r, float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_aarch64_fcmla90v4hf (__r, __a, __b);
+}
+
+__extension__ extern __inline float16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_laneq_f16 (float16x8_t __r, float16x8_t __a, float16x8_t __b,
+		  const int __index)
+{
+  return __builtin_aarch64_fcmla_lane0v8hf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_rot180_laneq_f16 (float16x4_t __r, float16x4_t __a, float16x8_t __b,
+			const int __index)
+{
+  return __builtin_aarch64_fcmla_laneq180v4hf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_rot180_lane_f16 (float16x4_t __r, float16x4_t __a, float16x4_t __b,
+		       const int __index)
+{
+  return __builtin_aarch64_fcmla_lane180v4hf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot180_f16 (float16x8_t __r, float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_aarch64_fcmla180v8hf (__r, __a, __b);
+}
+
+__extension__ extern __inline float16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_rot180_f16 (float16x4_t __r, float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_aarch64_fcmla180v4hf (__r, __a, __b);
+}
+
+__extension__ extern __inline float16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot90_laneq_f16 (float16x8_t __r, float16x8_t __a, float16x8_t __b,
+			const int __index)
+{
+  return __builtin_aarch64_fcmla_lane90v8hf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot270_laneq_f16 (float16x8_t __r, float16x8_t __a, float16x8_t __b,
+			 const int __index)
+{
+  return __builtin_aarch64_fcmla_lane270v8hf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot270_lane_f16 (float16x8_t __r, float16x8_t __a, float16x4_t __b,
+			const int __index)
+{
+  return __builtin_aarch64_fcmlaq_lane270v8hf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_rot270_laneq_f16 (float16x4_t __r, float16x4_t __a, float16x8_t __b,
+			const int __index)
+{
+  return __builtin_aarch64_fcmla_laneq270v4hf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot270_f16 (float16x8_t __r, float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_aarch64_fcmla270v8hf (__r, __a, __b);
+}
+
+__extension__ extern __inline float16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_rot270_f16 (float16x4_t __r, float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_aarch64_fcmla270v4hf (__r, __a, __b);
+}
+
+__extension__ extern __inline float16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot180_laneq_f16 (float16x8_t __r, float16x8_t __a, float16x8_t __b,
+			 const int __index)
+{
+  return __builtin_aarch64_fcmla_lane180v8hf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot180_lane_f16 (float16x8_t __r, float16x8_t __a, float16x4_t __b,
+			const int __index)
+{
+  return __builtin_aarch64_fcmlaq_lane180v8hf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_rot270_lane_f16 (float16x4_t __r, float16x4_t __a, float16x4_t __b,
+		       const int __index)
+{
+  return __builtin_aarch64_fcmla_lane270v4hf (__r, __a, __b, __index);
+}
+#pragma GCC pop_options
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcadd_rot90_f32 (float32x2_t __a, float32x2_t __b)
+{
+  return __builtin_aarch64_fcadd90v2sf (__a, __b);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcaddq_rot90_f32 (float32x4_t __a, float32x4_t __b)
+{
+  return __builtin_aarch64_fcadd90v4sf (__a, __b);
+}
+
+__extension__ extern __inline float64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcaddq_rot90_f64 (float64x2_t __a, float64x2_t __b)
+{
+  return __builtin_aarch64_fcadd90v2df (__a, __b);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcadd_rot270_f32 (float32x2_t __a, float32x2_t __b)
+{
+  return __builtin_aarch64_fcadd270v2sf (__a, __b);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcaddq_rot270_f32 (float32x4_t __a, float32x4_t __b)
+{
+  return __builtin_aarch64_fcadd270v4sf (__a, __b);
+}
+
+__extension__ extern __inline float64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcaddq_rot270_f64 (float64x2_t __a, float64x2_t __b)
+{
+  return __builtin_aarch64_fcadd270v2df (__a, __b);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_f32 (float32x2_t __r, float32x2_t __a, float32x2_t __b)
+{
+  return __builtin_aarch64_fcmla0v2sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_f32 (float32x4_t __r, float32x4_t __a, float32x4_t __b)
+{
+  return __builtin_aarch64_fcmla0v4sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_f64 (float64x2_t __r, float64x2_t __a, float64x2_t __b)
+{
+  return __builtin_aarch64_fcmla0v2df (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_lane_f32 (float32x2_t __r, float32x2_t __a, float32x2_t __b,
+		const int __index)
+{
+  return __builtin_aarch64_fcmla_lane0v2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_laneq_f32 (float32x2_t __r, float32x2_t __a, float32x4_t __b,
+		 const int __index)
+{
+  return __builtin_aarch64_fcmla_laneq0v2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_lane_f32 (float32x4_t __r, float32x4_t __a, float32x2_t __b,
+		 const int __index)
+{
+  return __builtin_aarch64_fcmlaq_lane0v4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_laneq_f32 (float32x4_t __r, float32x4_t __a, float32x4_t __b,
+		  const int __index)
+{
+  return __builtin_aarch64_fcmla_lane0v4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_rot90_f32 (float32x2_t __r, float32x2_t __a, float32x2_t __b)
+{
+  return __builtin_aarch64_fcmla90v2sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot90_f32 (float32x4_t __r, float32x4_t __a, float32x4_t __b)
+{
+  return __builtin_aarch64_fcmla90v4sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot90_f64 (float64x2_t __r, float64x2_t __a, float64x2_t __b)
+{
+  return __builtin_aarch64_fcmla90v2df (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_rot90_lane_f32 (float32x2_t __r, float32x2_t __a, float32x2_t __b,
+		      const int __index)
+{
+  return __builtin_aarch64_fcmla_lane90v2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_rot90_laneq_f32 (float32x2_t __r, float32x2_t __a, float32x4_t __b,
+		       const int __index)
+{
+  return __builtin_aarch64_fcmla_laneq90v2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot90_lane_f32 (float32x4_t __r, float32x4_t __a, float32x2_t __b,
+		       const int __index)
+{
+  return __builtin_aarch64_fcmlaq_lane90v4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot90_laneq_f32 (float32x4_t __r, float32x4_t __a, float32x4_t __b,
+			const int __index)
+{
+  return __builtin_aarch64_fcmla_lane90v4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_rot180_f32 (float32x2_t __r, float32x2_t __a, float32x2_t __b)
+{
+  return __builtin_aarch64_fcmla180v2sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot180_f32 (float32x4_t __r, float32x4_t __a, float32x4_t __b)
+{
+  return __builtin_aarch64_fcmla180v4sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot180_f64 (float64x2_t __r, float64x2_t __a, float64x2_t __b)
+{
+  return __builtin_aarch64_fcmla180v2df (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_rot180_lane_f32 (float32x2_t __r, float32x2_t __a, float32x2_t __b,
+		       const int __index)
+{
+  return __builtin_aarch64_fcmla_lane180v2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_rot180_laneq_f32 (float32x2_t __r, float32x2_t __a, float32x4_t __b,
+			const int __index)
+{
+  return __builtin_aarch64_fcmla_laneq180v2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot180_lane_f32 (float32x4_t __r, float32x4_t __a, float32x2_t __b,
+			const int __index)
+{
+  return __builtin_aarch64_fcmlaq_lane180v4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot180_laneq_f32 (float32x4_t __r, float32x4_t __a, float32x4_t __b,
+			 const int __index)
+{
+  return __builtin_aarch64_fcmla_lane180v4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_rot270_f32 (float32x2_t __r, float32x2_t __a, float32x2_t __b)
+{
+  return __builtin_aarch64_fcmla270v2sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot270_f32 (float32x4_t __r, float32x4_t __a, float32x4_t __b)
+{
+  return __builtin_aarch64_fcmla270v4sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot270_f64 (float64x2_t __r, float64x2_t __a, float64x2_t __b)
+{
+  return __builtin_aarch64_fcmla270v2df (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_rot270_lane_f32 (float32x2_t __r, float32x2_t __a, float32x2_t __b,
+		       const int __index)
+{
+  return __builtin_aarch64_fcmla_lane270v2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmla_rot270_laneq_f32 (float32x2_t __r, float32x2_t __a, float32x4_t __b,
+			const int __index)
+{
+  return __builtin_aarch64_fcmla_laneq270v2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot270_lane_f32 (float32x4_t __r, float32x4_t __a, float32x2_t __b,
+			const int __index)
+{
+  return __builtin_aarch64_fcmlaq_lane270v4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcmlaq_rot270_laneq_f32 (float32x4_t __r, float32x4_t __a, float32x4_t __b,
+			 const int __index)
+{
+  return __builtin_aarch64_fcmla_lane270v4sf (__r, __a, __b, __index);
+}
 
 #pragma GCC pop_options
 
 #pragma GCC push_options
-#pragma GCC target(("arch=armv8.2-a+fp16fml"))
+#pragma GCC target ("arch=armv8.2-a+fp16fml")
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlal_low_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
+vfmlal_low_f16 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
 {
   return __builtin_aarch64_fmlal_lowv2sf (__r, __a, __b);
 }
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlsl_low_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
+vfmlsl_low_f16 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
 {
   return __builtin_aarch64_fmlsl_lowv2sf (__r, __a, __b);
 }
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlalq_low_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
+vfmlalq_low_f16 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
 {
   return __builtin_aarch64_fmlalq_lowv4sf (__r, __a, __b);
 }
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlslq_low_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
+vfmlslq_low_f16 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
 {
   return __builtin_aarch64_fmlslq_lowv4sf (__r, __a, __b);
 }
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlal_high_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
+vfmlal_high_f16 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
 {
   return __builtin_aarch64_fmlal_highv2sf (__r, __a, __b);
 }
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlsl_high_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
+vfmlsl_high_f16 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
 {
   return __builtin_aarch64_fmlsl_highv2sf (__r, __a, __b);
 }
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlalq_high_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
+vfmlalq_high_f16 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
 {
   return __builtin_aarch64_fmlalq_highv4sf (__r, __a, __b);
 }
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlslq_high_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
+vfmlslq_high_f16 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
 {
   return __builtin_aarch64_fmlslq_highv4sf (__r, __a, __b);
 }
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlal_lane_low_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
+vfmlal_lane_low_f16 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
 		     const int __lane)
 {
   return __builtin_aarch64_fmlal_lane_lowv2sf (__r, __a, __b, __lane);
@@ -33366,7 +33841,7 @@ vfmlal_lane_low_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlsl_lane_low_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
+vfmlsl_lane_low_f16 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
 		     const int __lane)
 {
   return __builtin_aarch64_fmlsl_lane_lowv2sf (__r, __a, __b, __lane);
@@ -33374,7 +33849,7 @@ vfmlsl_lane_low_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlal_laneq_low_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
+vfmlal_laneq_low_f16 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
 		      const int __lane)
 {
   return __builtin_aarch64_fmlal_laneq_lowv2sf (__r, __a, __b, __lane);
@@ -33382,7 +33857,7 @@ vfmlal_laneq_low_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlsl_laneq_low_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
+vfmlsl_laneq_low_f16 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
 		      const int __lane)
 {
   return __builtin_aarch64_fmlsl_laneq_lowv2sf (__r, __a, __b, __lane);
@@ -33390,7 +33865,7 @@ vfmlsl_laneq_low_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlalq_lane_low_u32 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
+vfmlalq_lane_low_f16 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
 		      const int __lane)
 {
   return __builtin_aarch64_fmlalq_lane_lowv4sf (__r, __a, __b, __lane);
@@ -33398,7 +33873,7 @@ vfmlalq_lane_low_u32 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlslq_lane_low_u32 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
+vfmlslq_lane_low_f16 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
 		      const int __lane)
 {
   return __builtin_aarch64_fmlslq_lane_lowv4sf (__r, __a, __b, __lane);
@@ -33406,7 +33881,7 @@ vfmlslq_lane_low_u32 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlalq_laneq_low_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
+vfmlalq_laneq_low_f16 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
 		       const int __lane)
 {
   return __builtin_aarch64_fmlalq_laneq_lowv4sf (__r, __a, __b, __lane);
@@ -33414,7 +33889,7 @@ vfmlalq_laneq_low_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlslq_laneq_low_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
+vfmlslq_laneq_low_f16 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
 		      const int __lane)
 {
   return __builtin_aarch64_fmlslq_laneq_lowv4sf (__r, __a, __b, __lane);
@@ -33422,7 +33897,7 @@ vfmlslq_laneq_low_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlal_lane_high_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
+vfmlal_lane_high_f16 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
 		     const int __lane)
 {
   return __builtin_aarch64_fmlal_lane_highv2sf (__r, __a, __b, __lane);
@@ -33430,7 +33905,7 @@ vfmlal_lane_high_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlsl_lane_high_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
+vfmlsl_lane_high_f16 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
 		     const int __lane)
 {
   return __builtin_aarch64_fmlsl_lane_highv2sf (__r, __a, __b, __lane);
@@ -33438,7 +33913,7 @@ vfmlsl_lane_high_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlal_laneq_high_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
+vfmlal_laneq_high_f16 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
 		      const int __lane)
 {
   return __builtin_aarch64_fmlal_laneq_highv2sf (__r, __a, __b, __lane);
@@ -33446,7 +33921,7 @@ vfmlal_laneq_high_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlsl_laneq_high_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
+vfmlsl_laneq_high_f16 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
 		      const int __lane)
 {
   return __builtin_aarch64_fmlsl_laneq_highv2sf (__r, __a, __b, __lane);
@@ -33454,7 +33929,7 @@ vfmlsl_laneq_high_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlalq_lane_high_u32 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
+vfmlalq_lane_high_f16 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
 		      const int __lane)
 {
   return __builtin_aarch64_fmlalq_lane_highv4sf (__r, __a, __b, __lane);
@@ -33462,7 +33937,7 @@ vfmlalq_lane_high_u32 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlslq_lane_high_u32 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
+vfmlslq_lane_high_f16 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
 		      const int __lane)
 {
   return __builtin_aarch64_fmlslq_lane_highv4sf (__r, __a, __b, __lane);
@@ -33470,7 +33945,7 @@ vfmlslq_lane_high_u32 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlalq_laneq_high_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
+vfmlalq_laneq_high_f16 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
 		       const int __lane)
 {
   return __builtin_aarch64_fmlalq_laneq_highv4sf (__r, __a, __b, __lane);
@@ -33478,7 +33953,7 @@ vfmlalq_laneq_high_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vfmlslq_laneq_high_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
+vfmlslq_laneq_high_f16 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
 		      const int __lane)
 {
   return __builtin_aarch64_fmlslq_laneq_highv4sf (__r, __a, __b, __lane);

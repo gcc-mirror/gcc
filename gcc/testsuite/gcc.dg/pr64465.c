@@ -1,6 +1,7 @@
 /* PR tree-optimization/64465 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fexceptions" } */
+/* { dg-require-effective-target exceptions } */
 
 extern int foo (int *);
 extern int bar (int, int);

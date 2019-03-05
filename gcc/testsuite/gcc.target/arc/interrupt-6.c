@@ -18,5 +18,5 @@ foo(void)
   bar (p);
 }
 /* { dg-final { scan-assembler-not ".*fp,\\\[sp" } } */
-/* { dg-final { scan-assembler "ld.*blink,\\\[sp\\\]" } } */
+/* { dg-final { scan-assembler "ld.*blink,\\\[sp" } } */
 /* { dg-final { scan-assembler "push_s.*blink" } } */

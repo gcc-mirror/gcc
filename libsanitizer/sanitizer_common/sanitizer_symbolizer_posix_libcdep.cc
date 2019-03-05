@@ -75,6 +75,7 @@ static swift_demangle_ft swift_demangle_f;
 // symbolication.
 static void InitializeSwiftDemangler() {
   swift_demangle_f = (swift_demangle_ft)dlsym(RTLD_DEFAULT, "swift_demangle");
+  (void)dlerror(); // Cleanup error message in case of failure
 }
 
 // Attempts to demangle a Swift name. The demangler will return nullptr if a
@@ -312,8 +313,9 @@ class Addr2LinePool : public SymbolizerTool {
  public:
   explicit Addr2LinePool(const char *addr2line_path,
                          LowLevelAllocator *allocator)
-      : addr2line_path_(addr2line_path), allocator_(allocator),
-        addr2line_pool_(16) {}
+      : addr2line_path_(addr2line_path), allocator_(allocator) {
+    addr2line_pool_.reserve(16);
+  }
 
   bool SymbolizePC(uptr addr, SymbolizedStack *stack) override {
     if (const char *buf =
@@ -441,8 +443,6 @@ class InternalSymbolizer : public SymbolizerTool {
 const char *Symbolizer::PlatformDemangle(const char *name) {
   return DemangleSwiftAndCXX(name);
 }
-
-void Symbolizer::PlatformPrepareForSandboxing() {}
 
 static SymbolizerTool *ChooseExternalSymbolizer(LowLevelAllocator *allocator) {
   const char *path = common_flags()->external_symbolizer_path;

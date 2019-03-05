@@ -1,4 +1,4 @@
-#   Copyright (C) 1997-2018 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ proc verify-lines { testname testcase file } {
     while { [gets $fd line] >= 0 } {
         # We want to match both "-" and "#####" as count as well as numbers,
         # since we want to detect lines that shouldn't be marked as covered.
-	if [regexp "^ *(\[^:]*): *(\[0-9\\-#]+):.*count\\((\[0-9\\-#=\\.kMGTPEZY]+)\\)(.*)" \
+	if [regexp "^ *(\[^:]*): *(\[0-9\\-#]+):.*count\\((\[0-9\\-#=\\.kMGTPEZY\*]+)\\)(.*)" \
 		"$line" all is n shouldbe rest] {
 	    if [regexp "^ *{(.*)}" $rest all xfailed] {
 		switch [dg-process-target $xfailed] {
@@ -77,61 +77,6 @@ proc verify-lines { testname testcase file } {
 		pass "$testname count for line $n"
 	    }
 	}
-    }
-    close $fd
-    return $failed
-}
-
-
-#
-# verify-intermediate -- check that intermediate file has certain lines
-#
-# TESTNAME is the name of the test, including unique flags.
-# TESTCASE is the name of the test.
-# FILE is the name of the gcov output file.
-#
-# Checks are very loose, they are based on certain tags being present
-# in the output. They do not check for exact expected execution
-# counts. For that the regular gcov format should be checked.
-#
-proc verify-intermediate { testname testcase file } {
-    set failed 0
-    set srcfile 0
-    set function 0
-    set lcount 0
-    set branch 0
-    set fd [open $file r]
-    while { [gets $fd line] >= 0 } {
-	if [regexp "^file:" $line] {
-	    incr srcfile
-	}
-	if [regexp "^function:(\[0-9\]+),(\[0-9\]+),.*" $line] {
-	    incr function
-	}
-	if [regexp "^lcount:(\[0-9\]+),(\[0-9\]+),(\[01\])" $line] {
-	    incr lcount
-	}
-	if [regexp "^branch:(\[0-9\]+),(taken|nottaken|notexec)" $line] {
-	    incr branch
-	}
-    }
-
-    # We should see at least one tag of each type
-    if {$srcfile == 0} {
-	fail "$testname expected 'file:' tag not found"
-	incr failed
-    }
-    if {$function == 0} {
-	fail "$testname expected 'function:' tag not found"
-	incr failed
-    }
-    if {$lcount == 0} {
-	fail "$testname expected 'lcount:' tag not found"
-	incr failed
-    }
-    if {$branch == 0} {
-	fail "$testname expected 'branch:' tag not found"
-	incr failed
     }
     close $fd
     return $failed

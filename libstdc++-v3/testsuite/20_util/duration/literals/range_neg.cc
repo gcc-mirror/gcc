@@ -1,6 +1,6 @@
 // { dg-do compile { target c++14 } }
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,4 +28,4 @@ test01()
   auto h = 9223372036854775808h;
   // { dg-error "cannot be represented" "" { target *-*-* } 908 }
 }
-// { dg-prune-output "in constexpr expansion" } // needed for -O0
+// { dg-prune-output "in .constexpr. expansion" } // needed for -O0

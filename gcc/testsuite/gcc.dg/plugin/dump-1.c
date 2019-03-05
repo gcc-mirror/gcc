@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fopt-info-note" } */
+/* { dg-options "-fopt-info-loop-note" } */
 
 extern void test_string_literal (void);
 extern void test_tree (void);

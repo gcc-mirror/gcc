@@ -1,5 +1,6 @@
 /* { dg-do assemble } */
 /* { dg-options "-O -fno-if-conversion" } */
+/* { dg-require-effective-target int32 } */
 
 typedef unsigned char u8;
 typedef unsigned short u16;

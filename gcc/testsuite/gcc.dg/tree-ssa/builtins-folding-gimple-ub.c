@@ -31,4 +31,5 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "__builtin_memchr" 2 "optimized" } } */
+/* { dg-prune-output "-Wbuiltin-declaration-mismatch" }
+   { dg-final { scan-tree-dump-times "__builtin_memchr" 2 "optimized" } } */

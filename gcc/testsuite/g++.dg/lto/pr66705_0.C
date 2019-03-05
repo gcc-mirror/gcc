@@ -1,4 +1,5 @@
 // { dg-lto-do link }
+// { dg-require-effective-target lto_incremental }
 // { dg-lto-options { { -O2 -flto -flto-partition=max -fipa-pta } } }
 // { dg-extra-ld-options "-r -nostdlib" }
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2018, AdaCore                     --
+--                     Copyright (C) 2001-2019, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,7 +60,7 @@ package body Signalling_Fds is
       L_Sock, R_Sock, W_Sock : C.int := Failure;
       --  Listening socket, read socket and write socket
 
-      Sin : aliased Sockaddr_In;
+      Sin : aliased Sockaddr;
       Len : aliased C.int;
       --  Address of listening socket
 

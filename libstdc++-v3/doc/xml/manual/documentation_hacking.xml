@@ -777,7 +777,7 @@
       </para>
 
       <para>
-	For epub output, the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://sourceforge.net/projects/docbook/files/epub3/">stylesheets</link> for EPUB3 are required. These stylesheets are still in development. To validate the created file, <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://github.com/IDPF/epubcheck">epubcheck</link> is necessary.
+	For epub output, the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://sourceforge.net/projects/docbook/files/epub3/">stylesheets</link> for EPUB3 are required. These stylesheets are still in development. To validate the created file, <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://github.com/w3c/epubcheck">epubcheck</link> is necessary.
       </para>
     </section>
 

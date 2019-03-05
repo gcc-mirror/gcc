@@ -84,12 +84,12 @@ func badsystemstack() {
 // used only when the caller knows that *ptr contains no heap pointers
 // because either:
 //
-// 1. *ptr is initialized memory and its type is pointer-free.
+// *ptr is initialized memory and its type is pointer-free, or
 //
-// 2. *ptr is uninitialized memory (e.g., memory that's being reused
-//    for a new allocation) and hence contains only "junk".
+// *ptr is uninitialized memory (e.g., memory that's being reused
+// for a new allocation) and hence contains only "junk".
 //
-// in memclr_*.s
+// The (CPU-specific) implementations of this function are in memclr_*.s.
 //go:noescape
 func memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr)
 
@@ -164,7 +164,7 @@ func breakpoint()
 
 func asminit() {}
 
-//go:linkname reflectcall reflect.call
+//go:linkname reflectcall runtime.reflectcall
 //go:noescape
 func reflectcall(fntype *functype, fn *funcval, isInterface, isMethod bool, params, results *unsafe.Pointer)
 
@@ -231,6 +231,10 @@ func getcallerpc() uintptr
 //go:noescape
 func getcallersp() uintptr // implemented as an intrinsic on all platforms
 
+// getsp returns the stack pointer (SP) of the caller of getsp.
+//go:noinline
+func getsp() uintptr { return getcallersp() }
+
 func asmcgocall(fn, arg unsafe.Pointer) int32 {
 	throw("asmcgocall")
 	return 0
@@ -283,8 +287,7 @@ func eqstring(x, y string) bool {
 // For gccgo this is in the C code.
 func osyield()
 
-// For gccgo this can be called directly.
-//extern syscall
+//extern __go_syscall6
 func syscall(trap uintptr, a1, a2, a3, a4, a5, a6 uintptr) uintptr
 
 // For gccgo, to communicate from the C code to the Go code.
@@ -447,3 +450,22 @@ func bool2int(x bool) int {
 // signal handler, which will attempt to tear down the runtime
 // immediately.
 func abort()
+
+// usestackmaps is true if stack map (precise stack scan) is enabled.
+var usestackmaps bool
+
+// probestackmaps detects whether there are stack maps.
+//go:linkname probestackmaps runtime.probestackmaps
+func probestackmaps() bool
+
+// For the math/bits packages for gccgo.
+//go:linkname getDivideError runtime.getDivideError
+func getDivideError() error {
+	return divideError
+}
+
+// For the math/bits packages for gccgo.
+//go:linkname getOverflowError runtime.getOverflowError
+func getOverflowError() error {
+	return overflowError
+}

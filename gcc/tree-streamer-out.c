@@ -1,6 +1,6 @@
 /* Routines for emitting trees to a file stream.
 
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -127,6 +127,11 @@ pack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
   else if (TREE_CODE (expr) == SSA_NAME)
     {
       bp_pack_value (bp, SSA_NAME_IS_DEFAULT_DEF (expr), 1);
+      bp_pack_value (bp, 0, 8);
+    }
+  else if (TREE_CODE (expr) == CALL_EXPR)
+    {
+      bp_pack_value (bp, CALL_EXPR_BY_DESCRIPTOR (expr), 1);
       bp_pack_value (bp, 0, 8);
     }
   else
@@ -314,7 +319,6 @@ pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, TYPE_STRING_FLAG (expr), 1);
   /* TYPE_NO_FORCE_BLK is private to stor-layout and need
      no streaming.  */
-  bp_pack_value (bp, TYPE_NEEDS_CONSTRUCTING (expr), 1);
   bp_pack_value (bp, TYPE_PACKED (expr), 1);
   bp_pack_value (bp, TYPE_RESTRICT (expr), 1);
   bp_pack_value (bp, TYPE_USER_ALIGN (expr), 1);
@@ -396,6 +400,8 @@ pack_ts_omp_clause_value_fields (struct output_block *ob,
 		    OMP_CLAUSE_PROC_BIND_KIND (expr));
       break;
     case OMP_CLAUSE_REDUCTION:
+    case OMP_CLAUSE_TASK_REDUCTION:
+    case OMP_CLAUSE_IN_REDUCTION:
       bp_pack_enum (bp, tree_code, MAX_TREE_CODES,
 		    OMP_CLAUSE_REDUCTION_CODE (expr));
       break;
@@ -456,6 +462,8 @@ streamer_write_tree_bitfields (struct output_block *ob, tree expr)
 	  if (MR_DEPENDENCE_CLIQUE (expr) != 0)
 	    bp_pack_value (&bp, MR_DEPENDENCE_BASE (expr), sizeof (short) * 8);
 	}
+      else if (code == CALL_EXPR)
+	bp_pack_enum (&bp, internal_fn, IFN_LAST, CALL_EXPR_IFN (expr));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
@@ -595,7 +603,16 @@ write_ts_decl_common_tree_pointers (struct output_block *ob, tree expr,
      special handling in LTO, it must be handled by streamer hooks.  */
 
   stream_write_tree (ob, DECL_ATTRIBUTES (expr), ref_p);
-  stream_write_tree (ob, DECL_ABSTRACT_ORIGIN (expr), ref_p);
+
+  /* On non-early-LTO enabled targets we claim we compiled with -g0
+     but dwarf2out still did its set_decl_origin_self game fooling
+     itself late.  Und that here since we won't have access to the
+     early generated abstract DIEs.  */
+  tree ao = DECL_ABSTRACT_ORIGIN (expr);
+  if (debug_info_level == DINFO_LEVEL_NONE
+      && ao == expr)
+    ao = NULL_TREE;
+  stream_write_tree (ob, ao, ref_p);
 
   if ((VAR_P (expr) || TREE_CODE (expr) == PARM_DECL)
       && DECL_HAS_VALUE_EXPR_P (expr))
@@ -686,7 +703,7 @@ write_ts_type_common_tree_pointers (struct output_block *ob, tree expr,
   /* TYPE_CANONICAL is re-computed during type merging, so no need
      to stream it here.  */
   /* Do not stream TYPE_STUB_DECL; it is not needed by LTO but currently
-     it can not be freed by free_lang_data without triggering ICEs in
+     it cannot be freed by free_lang_data without triggering ICEs in
      langhooks.  */
 }
 
@@ -837,12 +854,18 @@ write_ts_omp_clause_tree_pointers (struct output_block *ob, tree expr,
   int i;
   for (i = 0; i < omp_clause_num_ops[OMP_CLAUSE_CODE (expr)]; i++)
     stream_write_tree (ob, OMP_CLAUSE_OPERAND (expr, i), ref_p);
-  if (OMP_CLAUSE_CODE (expr) == OMP_CLAUSE_REDUCTION)
+  switch (OMP_CLAUSE_CODE (expr))
     {
+    case OMP_CLAUSE_REDUCTION:
+    case OMP_CLAUSE_TASK_REDUCTION:
+    case OMP_CLAUSE_IN_REDUCTION:
       /* We don't stream these right now, handle it if streaming
 	 of them is needed.  */
       gcc_assert (OMP_CLAUSE_REDUCTION_GIMPLE_INIT (expr) == NULL);
       gcc_assert (OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (expr) == NULL);
+      break;
+    default:
+      break;
     }
   stream_write_tree (ob, OMP_CLAUSE_CHAIN (expr), ref_p);
 }

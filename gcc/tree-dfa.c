@@ -1,5 +1,5 @@
 /* Data flow functions for trees.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -184,8 +184,8 @@ dump_dfa_stats (FILE *file)
 
   unsigned long size, total = 0;
   const char * const fmt_str   = "%-30s%-13s%12s\n";
-  const char * const fmt_str_1 = "%-30s%13lu%11lu%c\n";
-  const char * const fmt_str_3 = "%-43s%11lu%c\n";
+  const char * const fmt_str_1 = "%-30s%13lu" PRsa (11) "\n";
+  const char * const fmt_str_3 = "%-43s" PRsa (11) "\n";
   const char *funcname
     = lang_hooks.decl_printable_name (current_function_decl, 2);
 
@@ -201,36 +201,36 @@ dump_dfa_stats (FILE *file)
   size = dfa_stats.num_uses * sizeof (tree *);
   total += size;
   fprintf (file, fmt_str_1, "USE operands", dfa_stats.num_uses,
-	   SCALE (size), LABEL (size));
+	   SIZE_AMOUNT (size));
 
   size = dfa_stats.num_defs * sizeof (tree *);
   total += size;
   fprintf (file, fmt_str_1, "DEF operands", dfa_stats.num_defs,
-	   SCALE (size), LABEL (size));
+	   SIZE_AMOUNT (size));
 
   size = dfa_stats.num_vuses * sizeof (tree *);
   total += size;
   fprintf (file, fmt_str_1, "VUSE operands", dfa_stats.num_vuses,
-	   SCALE (size), LABEL (size));
+	   SIZE_AMOUNT (size));
 
   size = dfa_stats.num_vdefs * sizeof (tree *);
   total += size;
   fprintf (file, fmt_str_1, "VDEF operands", dfa_stats.num_vdefs,
-	   SCALE (size), LABEL (size));
+	   SIZE_AMOUNT (size));
 
   size = dfa_stats.num_phis * sizeof (struct gphi);
   total += size;
   fprintf (file, fmt_str_1, "PHI nodes", dfa_stats.num_phis,
-	   SCALE (size), LABEL (size));
+	   SIZE_AMOUNT (size));
 
   size = dfa_stats.num_phi_args * sizeof (struct phi_arg_d);
   total += size;
   fprintf (file, fmt_str_1, "PHI arguments", dfa_stats.num_phi_args,
- 	   SCALE (size), LABEL (size));
+	   SIZE_AMOUNT (size));
 
   fprintf (file, "---------------------------------------------------------\n");
-  fprintf (file, fmt_str_3, "Total memory used by DFA/SSA data", SCALE (total),
-	   LABEL (total));
+  fprintf (file, fmt_str_3, "Total memory used by DFA/SSA data",
+	   SIZE_AMOUNT (total));
   fprintf (file, "---------------------------------------------------------\n");
   fprintf (file, "\n");
 

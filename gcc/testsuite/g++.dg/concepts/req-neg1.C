@@ -1,4 +1,5 @@
-// { dg-options "-std=c++17 -fconcepts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
 void f1(int a) requires true;         // OK
 auto f2(int a) -> bool requires true; // OK

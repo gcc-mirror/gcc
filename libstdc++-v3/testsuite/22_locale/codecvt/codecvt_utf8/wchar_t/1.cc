@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Free Software Foundation, Inc.
+// Copyright (C) 2018-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,7 +24,7 @@
 void
 test01()
 {
-  const char out[] = u8"\u00A33.50";
+  const auto out = (const char*)u8"\u00A33.50";
   wchar_t in[8] = {};
   std::codecvt_utf8<wchar_t> cvt;
   std::mbstate_t st;

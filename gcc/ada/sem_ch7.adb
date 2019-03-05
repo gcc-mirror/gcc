@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -441,7 +441,13 @@ package body Sem_Ch7 is
                      Discard : Boolean;
                      pragma Unreferenced (Discard);
                   begin
-                     --  Inspect the actions to find references to subprograms
+                     --  Inspect the actions to find references to subprograms.
+                     --  We assume that the actions do not contain other kinds
+                     --  of references and, therefore, we do not stop the scan
+                     --  or set Has_Referencer_Of_Non_Subprograms here. Doing
+                     --  it would pessimize common cases for which the actions
+                     --  contain the declaration of an init procedure, since
+                     --  such a procedure is automatically marked inline.
 
                      Discard :=
                        Has_Referencer (Actions (Decl),
@@ -470,7 +476,8 @@ package body Sem_Ch7 is
                     and then not Is_Exported (Decl_Id)
                     and then No (Interface_Name (Decl_Id))
                     and then
-                      (not Has_Referencer_Of_Non_Subprograms
+                      ((Nkind (Decl) /= N_Subprogram_Declaration
+                         and then not Has_Referencer_Of_Non_Subprograms)
                         or else (Nkind (Decl) = N_Subprogram_Declaration
                                   and then not Subprogram_Table.Get (Decl_Id)))
                   then
@@ -662,6 +669,7 @@ package body Sem_Ch7 is
 
       Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
       Saved_IGR  : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_EA   : constant Boolean         := Expander_Active;
       Saved_ISMP : constant Boolean         :=
                      Ignore_SPARK_Mode_Pragmas_In_Instance;
       --  Save the Ghost and SPARK mode-related data to restore on exit
@@ -772,6 +780,18 @@ package body Sem_Ch7 is
       --  expansion are properly flagged as ignored Ghost.
 
       Mark_And_Set_Ghost_Body (N, Spec_Id);
+
+      --  Deactivate expansion inside the body of ignored Ghost entities,
+      --  as this code will ultimately be ignored. This avoids requiring the
+      --  presence of run-time units which are not needed. Only do this for
+      --  user entities, as internally generated entitities might still need
+      --  to be expanded (e.g. those generated for types).
+
+      if Present (Ignored_Ghost_Region)
+        and then Comes_From_Source (Body_Id)
+      then
+         Expander_Active := False;
+      end if;
 
       --  If the body completes the initial declaration of a compilation unit
       --  which is subject to pragma Elaboration_Checks, set the model of the
@@ -1066,6 +1086,10 @@ package body Sem_Ch7 is
          then
             Qualify_Entity_Names (N);
          end if;
+      end if;
+
+      if Present (Ignored_Ghost_Region) then
+         Expander_Active := Saved_EA;
       end if;
 
       Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
@@ -2726,6 +2750,16 @@ package body Sem_Ch7 is
             Propagate_Concurrent_Flags (Priv, Base_Type (Full));
          end if;
 
+         --  As explained in Freeze_Entity, private types are required to point
+         --  to the same freeze node as their corresponding full view, if any.
+         --  But we ought not to overwrite a node already inserted in the tree.
+
+         pragma Assert
+           (Serious_Errors_Detected /= 0
+             or else No (Freeze_Node (Priv))
+             or else No (Parent (Freeze_Node (Priv)))
+             or else Freeze_Node (Priv) = Freeze_Node (Full));
+
          Set_Freeze_Node (Priv, Freeze_Node (Full));
 
          --  Propagate Default_Initial_Condition-related attributes from the
@@ -2813,8 +2847,9 @@ package body Sem_Ch7 is
          --  a) If the entity is an operator, it may be a primitive operator of
          --  a type for which there is a visible use-type clause.
 
-         --  b) for other entities, their use-visibility is determined by a
-         --  visible use clause for the package itself. For a generic instance,
+         --  b) For other entities, their use-visibility is determined by a
+         --  visible use clause for the package itself or a use-all-type clause
+         --  applied directly to the entity's type. For a generic instance,
          --  the instantiation of the formals appears in the visible part,
          --  but the formals are private and remain so.
 
@@ -2846,6 +2881,16 @@ package body Sem_Ch7 is
                else
                   Set_Is_Potentially_Use_Visible (Id);
                end if;
+
+            --  We need to avoid incorrectly marking enumeration literals as
+            --  non-visible when a visible use-all-type clause is in effect.
+
+            elsif Type_In_Use (Etype (Id))
+              and then Nkind (Current_Use_Clause (Etype (Id))) =
+                         N_Use_Type_Clause
+              and then All_Present (Current_Use_Clause (Etype (Id)))
+            then
+               null;
 
             else
                Set_Is_Potentially_Use_Visible (Id, False);

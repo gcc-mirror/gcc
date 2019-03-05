@@ -857,16 +857,6 @@ VX_SIGTRAMP_EXTRA_SRCS=sigtramp.h sigtramp-vxworks-target.inc
 # aside the library itself. Typically useful for crtbegin/crtend kind of files.
 EXTRA_ADALIB_OBJS=
 
-# crt files for VxWorks exception tables registration, referenced by
-# spec files in the runtime library.
-VX_CRTBE_EXTRA_ADALIB_OBJS=vx_crtbegin.o vx_crtbegin_array.o vx_crtend.o
-
-# Contructor attributes (with priorities) are only supported on VxWorks 7
-# or for RTPs.
-ifneq ($(strip $(filter vxworks7% rtp%,$(target_os) $(THREAD_KIND))),)
-VX_CRTBE_EXTRA_ADALIB_OBJS+=vx_crtbegin_attr.o
-endif
-
 # GCC spec files to be installed in $(libsubdir), so --specs=<spec-filename>
 # finds them at runtime.
 GCC_SPEC_FILES=
@@ -894,7 +884,6 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7 vxworks7spe,
 
   VX=$(strip $(if $(filter vxworks7%, $(target_os)), vxworks7, vxworks))
   SVX=system-$(VX)
-  GCC_SPEC_FILES+=$(VX)-gnat-crtbe-link.spec
 
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__vxworks.ads \
@@ -990,9 +979,6 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7 vxworks7spe,
   EXTRA_GNATRTL_TASKING_OBJS += s-vxwork.o s-vxwext.o
 
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
-
-  EXTRA_ADALIB_OBJS+=$(VX_CRTBE_EXTRA_ADALIB_OBJS)
-  EXTRA_LIBGNAT_SRCS+=vx_crtbegin.inc
 
   ifeq ($(strip $(filter-out vxworks7%, $(target_os))),)
     ifeq ($(strip $(filter-out powerpc64, $(target_cpu))),)
@@ -1137,7 +1123,6 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7,$(target_cpu) $(targe
 
   VX=$(strip $(if $(filter vxworks7%, $(target_os)), vxworks7, vxworks))
   SVX=system-$(VX)
-  GCC_SPEC_FILES+=$(VX)-gnat-crtbe-link.spec
 
   ifeq ($(strip $(filter-out x86_64, $(target_cpu))),)
      X86CPU=x86_64
@@ -1262,9 +1247,6 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7,$(target_cpu) $(targe
   EXTRA_LIBGNAT_OBJS+=sigtramp-vxworks.o
   EXTRA_LIBGNAT_SRCS+=$(VX_SIGTRAMP_EXTRA_SRCS)
 
-  EXTRA_ADALIB_OBJS+=$(VX_CRTBE_EXTRA_ADALIB_OBJS)
-  EXTRA_LIBGNAT_SRCS+=vx_crtbegin.inc
-
   ifeq ($(strip $(filter-out vxworks7%, $(target_os))),)
     GCC_SPEC_FILES+=vxworks7-$(X86CPU)-rtp-base-link.spec
   else
@@ -1300,7 +1282,6 @@ ifeq ($(strip $(filter-out aarch64 arm% coff wrs vx%,$(target_cpu) $(target_vend
   endif
 
   SVX=system-$(VX)
-  GCC_SPEC_FILES+=$(VX)-gnat-crtbe-link.spec
 
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__vxworks.ads \
@@ -1379,8 +1360,6 @@ ifeq ($(strip $(filter-out aarch64 arm% coff wrs vx%,$(target_cpu) $(target_vend
     ifeq ($(strip $(filter-out aarch64, $(target_cpu))),)
       GCC_SPEC_FILES+=vxworks7-rtp-base-link.spec
     endif
-    EXTRA_ADALIB_OBJS+=$(VX_CRTBE_EXTRA_ADALIB_OBJS)
-    EXTRA_LIBGNAT_SRCS+=vx_crtbegin.inc
 
     ifneq ($(strip $(filter-out vxworks7%, $(target_os))),)
       GCC_SPEC_FILES+=vxworks-arm-link.spec

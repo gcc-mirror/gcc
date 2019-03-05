@@ -1,6 +1,6 @@
 // Stack implementation -*- C++ -*-
 
-// Copyright (C) 2001-2018 Free Software Foundation, Inc.
+// Copyright (C) 2001-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -120,7 +120,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Alloc>
 	using _Uses = typename
 	  enable_if<uses_allocator<_Sequence, _Alloc>::value>::type;
-#endif
+
+#if __cplusplus >= 201703L
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2566. Requirements on the first template parameter of container
+      // adaptors
+      static_assert(is_same<_Tp, typename _Sequence::value_type>::value,
+	  "value_type must be the same as the underlying container");
+#endif // C++17
+#endif // C++11
 
     public:
       typedef typename _Sequence::value_type		value_type;
@@ -181,7 +189,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        *  Returns true if the %stack is empty.
        */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const
       { return c.empty(); }
 
@@ -275,6 +283,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 #endif // __cplusplus >= 201103L
     };
+
+#if __cpp_deduction_guides >= 201606
+  template<typename _Container,
+	   typename = _RequireNotAllocator<_Container>>
+    stack(_Container) -> stack<typename _Container::value_type, _Container>;
+
+  template<typename _Container, typename _Allocator,
+	   typename = _RequireNotAllocator<_Container>,
+	   typename = _RequireAllocator<_Allocator>>
+    stack(_Container, _Allocator)
+    -> stack<typename _Container::value_type, _Container>;
+#endif
 
   /**
    *  @brief  Stack equality comparison.

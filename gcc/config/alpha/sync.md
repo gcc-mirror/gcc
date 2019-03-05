@@ -1,5 +1,5 @@
 ;; GCC machine description for Alpha synchronization instructions.
-;; Copyright (C) 2005-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2019 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -65,7 +65,7 @@
 ;; the lock is cleared by a normal load or store.  This means we cannot
 ;; expand a ll/sc sequence before reload, lest a register spill is
 ;; inserted inside the sequence.  It is also UNPREDICTABLE whether the
-;; lock is cleared by a TAKEN branch.  This means that we can not expand
+;; lock is cleared by a TAKEN branch.  This means that we cannot expand
 ;; a ll/sc sequence containing a branch (i.e. compare-and-swap) until after
 ;; the final basic-block reordering pass.
 

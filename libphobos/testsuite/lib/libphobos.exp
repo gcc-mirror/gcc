@@ -1,0 +1,193 @@
+# Copyright (C) 2017-2019 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+#
+# DejaGnu does not have proper library search paths for load_lib.
+# We have to explicitly load everything that gdc.exp wants to load.
+#
+
+proc load_gcc_lib { filename } {
+    global srcdir loaded_libs
+
+    load_file $srcdir/../../gcc/testsuite/lib/$filename
+    set loaded_libs($filename) ""
+}
+
+load_lib dg.exp
+load_lib libgloss.exp
+
+load_gcc_lib target-supports.exp
+load_gcc_lib target-supports-dg.exp
+load_gcc_lib dg-options.exp
+load_gcc_lib target-libpath.exp
+load_gcc_lib timeout.exp
+load_gcc_lib wrapper.exp
+load_gcc_lib target-utils.exp
+load_gcc_lib gcc-defs.exp
+
+set TESTING_IN_BUILD_TREE 1
+
+# Define libphobos callbacks for dg.exp.
+
+proc libphobos-dg-test { prog do_what extra_tool_flags } {
+    set compile_type ""
+    set output_file ""
+
+    # Set up the compiler flags, based on what we're going to do.
+    switch $do_what {
+	"run" {
+	    set compile_type "executable"
+	    # FIXME: "./" is to cope with "." not being in $PATH.
+	    # Should this be handled elsewhere?
+	    # YES.
+	    set output_file "./[file rootname [file tail $prog]].exe"
+	    # This is the only place where we care if an executable was
+	    # created or not.  If it was, dg.exp will try to run it.
+	    catch { remote_file build delete $output_file }
+	}
+	"link" {
+	    set compile_type "executable"
+	    set output_file "./[file rootname [file tail $prog]].exe"
+	}
+	default {
+	    perror "$do_what: not a valid dg-do keyword"
+	    return ""
+	}
+    }
+
+    set select_compile "libphobos_target_compile"
+    set options ""
+    if { $extra_tool_flags != "" } {
+	lappend options "additional_flags=$extra_tool_flags"
+    }
+
+    set comp_output [$select_compile "$prog" "$output_file" "$compile_type" $options]
+
+    return [list $comp_output $output_file]
+}
+
+#
+# libphobos_init
+#
+
+proc libphobos_init { args } {
+    global env
+    global srcdir blddir objdir tool_root_dir
+    global exeext
+    global gdc gdcflags
+    global gdcpaths gdcldflags
+    global gluefile wrap_flags
+    global ld_library_path
+    global DEFAULT_DFLAGS
+
+    # If a testcase doesn't have special options, use these.
+    if ![info exists DEFAULT_DFLAGS] then {
+	set DEFAULT_DFLAGS ""
+    }
+
+    # By default, we assume we want to run program images.
+    global dg-do-what-default
+    if [isnative] {
+	set dg-do-what-default "run"
+    } else {
+	set dg-do-what-default "link"
+    }
+
+    # What arguments to pass to run program images.
+    global libphobos_run_args
+    set libphobos_run_args ""
+
+    # Default settings.
+    set blddir [lookfor_file [get_multilibs] libphobos]
+    set flags_file "${blddir}/testsuite/testsuite_flags"
+    set shlib_ext [get_shlib_extension]
+
+    set gdc [transform "gdc"]
+    set gdcflags "-fmessage-length=0"
+    set gdcpaths "-I${srcdir}"
+    set gdcldflags ""
+
+    if { [file exists $flags_file] } {
+	set gdc [exec sh $flags_file --gdc]
+	set gdcflags [exec sh $flags_file --gdcflags]
+	set gdcpaths [exec sh $flags_file --gdcpaths]
+	set gdcldflags [exec sh $flags_file --gdcldflags]
+    }
+
+    set exeext ""
+    if [info exists env(EXEEXT)] {
+	set exeext $env(EXEEXT)
+    }
+
+    # Compute what needs to be added to the existing LD_LIBRARY_PATH.
+    set ld_library_path ""
+
+    set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
+    if {$gccdir != ""} {
+	set gccdir [file dirname $gccdir]
+	append ld_library_path ":${gccdir}"
+    }
+
+    if { [file exists "${blddir}/libdruntime/.libs/libgdruntime.${shlib_ext}"] } {
+	append ld_library_path ":${blddir}/libdruntime/.libs"
+    }
+
+    if { [file exists "${blddir}/src/.libs/libgphobos.${shlib_ext}"] } {
+	append ld_library_path ":${blddir}/src/.libs"
+    }
+
+    set_ld_library_path_env_vars
+
+    libphobos_maybe_build_wrapper "${objdir}/testglue.o"
+}
+
+#
+# libphobos_target_compile -- compile a source file.
+#
+
+proc libphobos_target_compile { source dest type options } {
+    global gdc gdcflags
+    global gdcpaths gdcldflags
+    global gluefile wrap_flags
+
+    lappend options "additional_flags=-fno-diagnostics-show-caret -fdiagnostics-color=never"
+
+    if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
+	lappend options "libs=${gluefile}"
+	lappend options "ldflags=${wrap_flags}"
+    }
+
+    # Flag setting based on type argument.
+    if { $type == "executable" } {
+	# Link the support objects into executables.
+	lappend options "additional_flags=$gdcldflags"
+    }
+
+    # Set the compiler, only add D flags and paths if building D sources.
+    set gdc_final $gdc
+    if [regexp ".*\.d\$" $source] {
+	set gdc_final [concat $gdc_final $gdcflags]
+	set gdc_final [concat $gdc_final $gdcpaths]
+    }
+
+    lappend options "compiler=$gdc_final"
+    lappend options "timeout=[timeout_value]"
+
+    set options [dg-additional-files-options $options $source]
+    set comp_output [target_compile $source $dest $type $options]
+
+    return $comp_output
+}

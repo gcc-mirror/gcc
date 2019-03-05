@@ -1,5 +1,5 @@
 ;; Predicate definitions for Synopsys DesignWare ARC.
-;; Copyright (C) 2007-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2019 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -20,33 +20,12 @@
 (define_predicate "dest_reg_operand"
   (match_code "reg,subreg")
 {
-  rtx op0 = op;
-
-  if (GET_CODE (op0) == SUBREG)
-    op0 = SUBREG_REG (op0);
-  if (REG_P (op0) && REGNO (op0) < FIRST_PSEUDO_REGISTER
-      && TEST_HARD_REG_BIT (reg_class_contents[ALL_CORE_REGS],
-			    REGNO (op0))
-      && !TEST_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS],
-			    REGNO (op0)))
-    return 0;
   return register_operand (op, mode);
 })
 
 (define_predicate "mpy_dest_reg_operand"
   (match_code "reg,subreg")
 {
-  rtx op0 = op;
-
-  if (GET_CODE (op0) == SUBREG)
-    op0 = SUBREG_REG (op0);
-  if (REG_P (op0) && REGNO (op0) < FIRST_PSEUDO_REGISTER
-      && TEST_HARD_REG_BIT (reg_class_contents[ALL_CORE_REGS],
-			    REGNO (op0))
-      /* Make sure the destination register is not LP_COUNT.  */
-      && !TEST_HARD_REG_BIT (reg_class_contents[MPY_WRITABLE_CORE_REGS],
-			    REGNO (op0)))
-    return 0;
   return register_operand (op, mode);
 })
 
@@ -358,13 +337,14 @@
     case REG :
      /* Program Counter register cannot be the target of a move.  It is
 	 a readonly register.  */
-      if (REGNO (op) == PROGRAM_COUNTER_REGNO)
+      if (REGNO (op) == PCL_REG)
 	return 0;
       else if (TARGET_MULMAC_32BY16_SET
-	       && (REGNO (op) == 56 || REGNO(op) == 57))
+	       && (REGNO (op) == MUL32x16_REG || REGNO (op) == R57_REG))
 	return 0;
       else if (TARGET_MUL64_SET
-	       && (REGNO (op) == 57 || REGNO(op) == 58 || REGNO(op) == 59 ))
+	       && (REGNO (op) == R57_REG || REGNO (op) == MUL64_OUT_REG
+		   || REGNO (op) == R59_REG))
 	return 0;
       else if (REGNO (op) == LP_COUNT)
         return 1;
@@ -716,7 +696,7 @@
        (match_test "REGNO (op) == (TARGET_BIG_ENDIAN ? 59 : 58)")
        (match_test "TARGET_V2")))
 
-; Unfortunately, we can not allow a const_int_operand before reload, because
+; Unfortunately, we cannot allow a const_int_operand before reload, because
 ; reload needs a non-void mode to guide it how to reload the inside of a
 ; {sign_}extend.
 (define_predicate "extend_operand"
@@ -800,3 +780,15 @@
 (define_predicate "arc_short_operand"
   (ior (match_test "register_operand (op, mode)")
        (match_test "short_unsigned_const_operand (op, mode)")))
+
+(define_special_predicate "push_multi_operand"
+  (match_code "parallel")
+  {
+   return arc_check_multi (op, true);
+})
+
+(define_special_predicate "pop_multi_operand"
+  (match_code "parallel")
+  {
+   return arc_check_multi (op, false);
+})

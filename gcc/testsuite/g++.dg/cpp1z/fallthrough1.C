@@ -1,6 +1,6 @@
 // PR c/7652
-// { dg-do compile }
-// { dg-options "-std=c++17 -Wextra -Wall -Wpedantic" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-Wextra -Wall -Wpedantic" }
 
 // Check that we accept attribute [[fallthrough]].
 

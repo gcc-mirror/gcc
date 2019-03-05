@@ -1,5 +1,5 @@
 /* Basic block reordering routines for the GNU compiler.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1663,17 +1663,19 @@ find_rarely_executed_basic_blocks_and_crossing_edges (void)
 
       if (probably_never_executed_bb_p (cfun, bb))
         {
+          cold_bb = true;
+
           /* Handle profile insanities created by upstream optimizations
              by also checking the incoming edge weights. If there is a non-cold
              incoming edge, conservatively prevent this block from being split
              into the cold section.  */
-          cold_bb = true;
-          FOR_EACH_EDGE (e, ei, bb->preds)
-            if (!probably_never_executed_edge_p (cfun, e))
-              {
-                cold_bb = false;
-                break;
-              }
+	  if (!bb->count.precise_p ())
+	    FOR_EACH_EDGE (e, ei, bb->preds)
+	      if (!probably_never_executed_edge_p (cfun, e))
+		{
+		  cold_bb = false;
+		  break;
+		}
         }
       if (cold_bb)
         {

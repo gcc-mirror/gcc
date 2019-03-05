@@ -1,6 +1,6 @@
 # General rules that all rs6000/ targets must have.
 #
-# Copyright (C) 1995-2018 Free Software Foundation, Inc.
+# Copyright (C) 1995-2019 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -32,6 +32,10 @@ rs6000-string.o: $(srcdir)/config/rs6000/rs6000-string.c
 	$(POSTCOMPILE)
 
 rs6000-p8swap.o: $(srcdir)/config/rs6000/rs6000-p8swap.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+rs6000-d.o: $(srcdir)/config/rs6000/rs6000-d.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 

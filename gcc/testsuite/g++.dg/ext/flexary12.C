@@ -12,7 +12,7 @@ struct A {
 void f1 ()
 {
   // This is the meat of the test from c++/69290:
-  struct A a
+  static struct A a
     = { "c" };   // { dg-error "invalid conversion from .const char\\*. to .int." }
 
   (void)&a;
@@ -27,13 +27,13 @@ struct B {
 
 void f2 ()
 {
-  struct B b1
+  static struct B b1
     = { 0, "c" };   // { dg-error "invalid conversion from .const char\\*. to .int." }
 
   (void)&b1;
 
   const char s[] = "c";
-  struct B b2
+  static struct B b2
     = { 0, s };   // { dg-error "invalid conversion from .const char\\*. to .int." }
 
   (void)&b2;
@@ -57,7 +57,7 @@ struct C {
 
 void f3 ()
 {
-  struct C<double> cd
+  static struct C<double> cd
     = { "c" };   // { dg-error "cannot convert .const char\\*. to .double." }
 
   (void)&cd;

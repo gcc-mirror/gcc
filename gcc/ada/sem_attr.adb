@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6144,7 +6144,6 @@ package body Sem_Attr is
 
       when Attribute_To_Address => To_Address : declare
          Val : Uint;
-
       begin
          Check_E1;
          Analyze (P);
@@ -6153,10 +6152,7 @@ package body Sem_Attr is
          Generate_Reference (RTE (RE_Address), P);
          Analyze_And_Resolve (E1, Any_Integer);
          Set_Etype (N, RTE (RE_Address));
-
-         if Is_Static_Expression (E1) then
-            Set_Is_Static_Expression (N, True);
-         end if;
+         Set_Is_Static_Expression (N, Is_Static_Expression (E1));
 
          --  OK static expression case, check range and set appropriate type
 
@@ -6188,8 +6184,6 @@ package body Sem_Attr is
                Set_Etype (E1, Standard_Unsigned_64);
             end if;
          end if;
-
-         Set_Is_Static_Expression (N, True);
       end To_Address;
 
       ------------
@@ -7202,7 +7196,7 @@ package body Sem_Attr is
       P_Root_Type : Entity_Id;
       --  The root type of the prefix type
 
-      Static : Boolean;
+      Static : Boolean := False;
       --  True if the result is Static. This is set by the general processing
       --  to true if the prefix is static, and all expressions are static. It
       --  can be reset as processing continues for particular attributes. This
@@ -7563,10 +7557,16 @@ package body Sem_Attr is
    --  Start of processing for Eval_Attribute
 
    begin
+      --  The To_Address attribute can be static, but it cannot be evaluated at
+      --  compile time, so just return.
+
+      if Id = Attribute_To_Address then
+         return;
+      end if;
+
       --  Initialize result as non-static, will be reset if appropriate
 
       Set_Is_Static_Expression (N, False);
-      Static := False;
 
       --  Acquire first two expressions (at the moment, no attributes take more
       --  than two expressions in any case).
@@ -8283,8 +8283,8 @@ package body Sem_Attr is
          --  static attribute in GNAT.
 
          Analyze_And_Resolve (N, Standard_Boolean);
-            Static := True;
-            Set_Is_Static_Expression (N, True);
+         Static := True;
+         Set_Is_Static_Expression (N);
       end Atomic_Always_Lock_Free;
 
       ---------
@@ -8346,7 +8346,6 @@ package body Sem_Attr is
          --  attribute reference, and this reference is not static.
 
          Set_Is_Static_Expression (N, False);
-         null;
 
       ---------------
       -- Copy_Sign --
@@ -8737,8 +8736,8 @@ package body Sem_Attr is
          --  static attribute in GNAT.
 
          Analyze_And_Resolve (N, Standard_Boolean);
-            Static := True;
-            Set_Is_Static_Expression (N, True);
+         Static := True;
+         Set_Is_Static_Expression (N);
       end Lock_Free;
 
       ----------

@@ -1,5 +1,5 @@
 // PR c++/84015
-// { dg-additional-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 template <int I>
 struct A { };

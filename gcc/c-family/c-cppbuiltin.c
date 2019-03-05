@@ -1,5 +1,5 @@
 /* Define builtin-in macros for the C family front ends.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -702,6 +702,9 @@ cpp_atomic_builtins (cpp_reader *pfile)
 			(have_swap[SWAP_INDEX (boolean_type_node)]? 2 : 1));
   builtin_define_with_int_value ("__GCC_ATOMIC_CHAR_LOCK_FREE", 
 			(have_swap[SWAP_INDEX (signed_char_type_node)]? 2 : 1));
+  if (flag_char8_t)
+    builtin_define_with_int_value ("__GCC_ATOMIC_CHAR8_T_LOCK_FREE",
+			(have_swap[SWAP_INDEX (char8_type_node)]? 2 : 1));
   builtin_define_with_int_value ("__GCC_ATOMIC_CHAR16_T_LOCK_FREE", 
 			(have_swap[SWAP_INDEX (char16_type_node)]? 2 : 1));
   builtin_define_with_int_value ("__GCC_ATOMIC_CHAR32_T_LOCK_FREE", 
@@ -955,7 +958,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	}
       if (cxx_dialect > cxx14)
 	{
-	  /* Set feature test macros for C++1z.  */
+	  /* Set feature test macros for C++17.  */
 	  cpp_define (pfile, "__cpp_unicode_characters=201411");
 	  cpp_define (pfile, "__cpp_static_assert=201411");
 	  cpp_define (pfile, "__cpp_namespace_attributes=201411");
@@ -971,9 +974,20 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_aggregate_bases=201603");
 	  cpp_define (pfile, "__cpp_deduction_guides=201703");
 	  cpp_define (pfile, "__cpp_noexcept_function_type=201510");
+	  /* Old macro, superseded by
+	     __cpp_nontype_template_parameter_auto.  */
 	  cpp_define (pfile, "__cpp_template_auto=201606");
 	  cpp_define (pfile, "__cpp_structured_bindings=201606");
 	  cpp_define (pfile, "__cpp_variadic_using=201611");
+	  cpp_define (pfile, "__cpp_guaranteed_copy_elision=201606");
+	  cpp_define (pfile, "__cpp_nontype_template_parameter_auto=201606");
+	}
+      if (cxx_dialect > cxx17)
+	{
+	  /* Set feature test macros for C++2a.  */
+	  cpp_define (pfile, "__cpp_conditional_explicit=201806");
+	  cpp_define (pfile, "__cpp_nontype_template_parameter_class=201806");
+	  cpp_define (pfile, "__cpp_impl_destroying_delete=201806");
 	}
       if (flag_concepts)
 	cpp_define (pfile, "__cpp_concepts=201507");
@@ -993,6 +1007,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	cpp_define (pfile, "__cpp_template_template_args=201611");
       if (flag_threadsafe_statics)
 	cpp_define (pfile, "__cpp_threadsafe_static_init=200806");
+      if (flag_char8_t)
+        cpp_define (pfile, "__cpp_char8_t=201811");
     }
   /* Note that we define this for C as well, so that we know if
      __attribute__((cleanup)) will interface with EH.  */

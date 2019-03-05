@@ -1,5 +1,5 @@
 /* Implementation of the MAXVAL intrinsic
-   Copyright (C) 2017-2018 Free Software Foundation, Inc.
+   Copyright (C) 2017-2019 Free Software Foundation, Inc.
    Contributed by Thomas Koenig
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -26,15 +26,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 
 
-#if defined (HAVE_GFC_INTEGER_4) && defined (HAVE_GFC_INTEGER_4)
+#if defined (HAVE_GFC_UINTEGER_4) && defined (HAVE_GFC_UINTEGER_4)
 
 #include <string.h>
 #include <assert.h>
 
 static inline int
-compare_fcn (const GFC_INTEGER_4 *a, const GFC_INTEGER_4 *b, gfc_charlen_type n)
+compare_fcn (const GFC_UINTEGER_4 *a, const GFC_UINTEGER_4 *b, gfc_charlen_type n)
 {
-  if (sizeof (GFC_INTEGER_4) == 1)
+  if (sizeof (GFC_UINTEGER_4) == 1)
     return memcmp (a, b, n);
   else
     return memcmp_char4 (a, b, n);
@@ -54,8 +54,8 @@ maxval1_s4 (gfc_array_s4 * const restrict retarray,
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  const GFC_INTEGER_4 * restrict base;
-  GFC_INTEGER_4 * restrict dest;
+  const GFC_UINTEGER_4 * restrict base;
+  GFC_UINTEGER_4 * restrict dest;
   index_type rank;
   index_type n;
   index_type len;
@@ -119,7 +119,7 @@ maxval1_s4 (gfc_array_s4 * const restrict retarray,
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1]
       		 * string_len;
 
-      retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_INTEGER_4));
+      retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_UINTEGER_4));
       if (alloc_size == 0)
 	{
 	  /* Make sure we have a zero-sized array.  */
@@ -155,11 +155,11 @@ maxval1_s4 (gfc_array_s4 * const restrict retarray,
   continue_loop = 1;
   while (continue_loop)
     {
-      const GFC_INTEGER_4 * restrict src;
+      const GFC_UINTEGER_4 * restrict src;
       src = base;
       {
 
-	const GFC_INTEGER_4 *retval;
+	const GFC_UINTEGER_4 *retval;
 	retval = base;
 	if (len <= 0)
 	  memset (dest, 0, sizeof (*dest) * string_len);
@@ -228,8 +228,8 @@ mmaxval1_s4 (gfc_array_s4 * const restrict retarray,
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
   index_type mstride[GFC_MAX_DIMENSIONS];
-  GFC_INTEGER_4 * restrict dest;
-  const GFC_INTEGER_4 * restrict base;
+  GFC_UINTEGER_4 * restrict dest;
+  const GFC_UINTEGER_4 * restrict base;
   const GFC_LOGICAL_1 * restrict mbase;
   index_type rank;
   index_type dim;
@@ -238,6 +238,12 @@ mmaxval1_s4 (gfc_array_s4 * const restrict retarray,
   index_type delta;
   index_type mdelta;
   int mask_kind;
+
+  if (mask == NULL)
+    {
+      maxval1_s4 (retarray, xlen, array, pdim, string_len);
+      return;
+    }
 
   assert (xlen == string_len);
 
@@ -319,7 +325,7 @@ mmaxval1_s4 (gfc_array_s4 * const restrict retarray,
 	  return;
 	}
       else
-	retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_INTEGER_4));
+	retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_UINTEGER_4));
 
     }
   else
@@ -349,14 +355,14 @@ mmaxval1_s4 (gfc_array_s4 * const restrict retarray,
 
   while (base)
     {
-      const GFC_INTEGER_4 * restrict src;
+      const GFC_UINTEGER_4 * restrict src;
       const GFC_LOGICAL_1 * restrict msrc;
 
       src = base;
       msrc = mbase;
       {
 
-	const GFC_INTEGER_4 *retval;
+	const GFC_UINTEGER_4 *retval;
 	memset (dest, 0, sizeof (*dest) * string_len);
 	retval = dest;
 	for (n = 0; n < len; n++, src += delta, msrc += mdelta)
@@ -430,13 +436,13 @@ smaxval1_s4 (gfc_array_s4 * const restrict retarray,
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  GFC_INTEGER_4 * restrict dest;
+  GFC_UINTEGER_4 * restrict dest;
   index_type rank;
   index_type n;
   index_type dim;
 
 
-  if (*mask)
+  if (mask == NULL || *mask)
     {
       maxval1_s4 (retarray, xlen, array, pdim, string_len);
       return;
@@ -497,7 +503,7 @@ smaxval1_s4 (gfc_array_s4 * const restrict retarray,
 	  return;
 	}
       else
-	retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_INTEGER_4));
+	retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_UINTEGER_4));
     }
   else
     {

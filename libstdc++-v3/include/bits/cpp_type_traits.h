@@ -1,6 +1,6 @@
 // The  -*- C++ -*- type traits classes for internal use in libstdc++
 
-// Copyright (C) 2000-2018 Free Software Foundation, Inc.
+// Copyright (C) 2000-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,7 +48,7 @@
 // so function return values won't work:  We need compile-time entities.
 // We're left with types and constant  integral expressions.
 // Secondly, from the point of view of ease of use, type-based compile-time
-// information is -not- *that* convenient.  On has to write lots of
+// information is -not- *that* convenient.  One has to write lots of
 // overloaded functions and to hope that the compiler will select the right
 // one. As a net effect, the overall structure isn't very clear at first
 // glance.
@@ -170,6 +170,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef __true_type __type;
     };
 # endif
+
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<>
+    struct __is_integer<char8_t>
+    {
+      enum { __value = 1 };
+      typedef __true_type __type;
+    };
+#endif
 
 #if __cplusplus >= 201103L
   template<>

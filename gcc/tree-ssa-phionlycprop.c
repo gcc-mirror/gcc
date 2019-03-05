@@ -1,5 +1,5 @@
 /* Const/Copy propagation originating from degenerate PHIs
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -497,7 +497,7 @@ pass_phi_only_cprop::execute (function *fun)
 {
   bool cfg_altered = false;
 
-  /* Bitmap of blocks which need EH information updated.  We can not
+  /* Bitmap of blocks which need EH information updated.  We cannot
      update it on-the-fly as doing so invalidates the dominator tree.  */
   auto_bitmap need_eh_cleanup;
 

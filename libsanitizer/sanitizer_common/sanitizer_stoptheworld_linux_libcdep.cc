@@ -55,6 +55,14 @@
 #include "sanitizer_mutex.h"
 #include "sanitizer_placement_new.h"
 
+// Sufficiently old kernel headers don't provide this value, but we can still
+// call prctl with it. If the runtime kernel is new enough, the prctl call will
+// have the desired effect; if the kernel is too old, the call will error and we
+// can ignore said error.
+#ifndef PR_SET_PTRACER
+#define PR_SET_PTRACER 0x59616d61
+#endif
+
 // This module works by spawning a Linux task which then attaches to every
 // thread in the caller process with ptrace. This suspends the threads, and
 // PTRACE_GETREGS can then be used to obtain their register state. The callback
@@ -78,7 +86,7 @@ namespace __sanitizer {
 
 class SuspendedThreadsListLinux : public SuspendedThreadsList {
  public:
-  SuspendedThreadsListLinux() : thread_ids_(1024) {}
+  SuspendedThreadsListLinux() { thread_ids_.reserve(1024); }
 
   tid_t GetThreadID(uptr index) const;
   uptr ThreadCount() const;
@@ -199,26 +207,26 @@ void ThreadSuspender::KillAllThreads() {
 
 bool ThreadSuspender::SuspendAllThreads() {
   ThreadLister thread_lister(pid_);
-  bool added_threads;
-  bool first_iteration = true;
-  do {
-    // Run through the directory entries once.
-    added_threads = false;
-    pid_t tid = thread_lister.GetNextTID();
-    while (tid >= 0) {
+  bool retry = true;
+  InternalMmapVector<tid_t> threads;
+  threads.reserve(128);
+  for (int i = 0; i < 30 && retry; ++i) {
+    retry = false;
+    switch (thread_lister.ListThreads(&threads)) {
+      case ThreadLister::Error:
+        ResumeAllThreads();
+        return false;
+      case ThreadLister::Incomplete:
+        retry = true;
+        break;
+      case ThreadLister::Ok:
+        break;
+    }
+    for (tid_t tid : threads)
       if (SuspendThread(tid))
-        added_threads = true;
-      tid = thread_lister.GetNextTID();
-    }
-    if (thread_lister.error() || (first_iteration && !added_threads)) {
-      // Detach threads and fail.
-      ResumeAllThreads();
-      return false;
-    }
-    thread_lister.Reset();
-    first_iteration = false;
-  } while (added_threads);
-  return true;
+        retry = true;
+  };
+  return suspended_threads_list_.ThreadCount();
 }
 
 // Pointer to the ThreadSuspender instance for use in signal handler.
@@ -243,7 +251,8 @@ static void TracerThreadDieCallback() {
 }
 
 // Signal handler to wake up suspended threads when the tracer thread dies.
-static void TracerThreadSignalHandler(int signum, void *siginfo, void *uctx) {
+static void TracerThreadSignalHandler(int signum, __sanitizer_siginfo *siginfo,
+                                      void *uctx) {
   SignalContext ctx(siginfo, uctx);
   Printf("Tracer caught signal %d: addr=0x%zx pc=0x%zx sp=0x%zx\n", signum,
          ctx.addr, ctx.pc, ctx.sp);
@@ -284,7 +293,7 @@ static int TracerThread(void* argument) {
   thread_suspender_instance = &thread_suspender;
 
   // Alternate stack for signal handling.
-  InternalScopedBuffer<char> handler_stack_memory(kHandlerStackSize);
+  InternalMmapVector<char> handler_stack_memory(kHandlerStackSize);
   stack_t handler_stack;
   internal_memset(&handler_stack, 0, sizeof(handler_stack));
   handler_stack.ss_sp = handler_stack_memory.data();
@@ -431,9 +440,7 @@ void StopTheWorld(StopTheWorldCallback callback, void *argument) {
     ScopedSetTracerPID scoped_set_tracer_pid(tracer_pid);
     // On some systems we have to explicitly declare that we want to be traced
     // by the tracer thread.
-#ifdef PR_SET_PTRACER
     internal_prctl(PR_SET_PTRACER, tracer_pid, 0, 0, 0);
-#endif
     // Allow the tracer thread to start.
     tracer_thread_argument.mutex.Unlock();
     // NOTE: errno is shared between this thread and the tracer thread.

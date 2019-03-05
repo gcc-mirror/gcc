@@ -17,9 +17,14 @@ program main
 
   call acc_wait_async (0, 1)
 
+  ! Test unseen async-argument.
+  if (acc_async_test (2) .neqv. .TRUE.) call abort
+  call acc_wait_async (2, 1)
+
   call acc_wait (1)
 
   if (acc_async_test (0) .neqv. .TRUE.) call abort
   if (acc_async_test (1) .neqv. .TRUE.) call abort
+  if (acc_async_test (2) .neqv. .TRUE.) call abort
 
 end program

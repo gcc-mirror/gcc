@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2018 Free Software Foundation, Inc.
+// Copyright (C) 2017-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,7 @@ struct fails_on_copy {
   fails_on_copy(const fails_on_copy&) { throw 0; };
 };
 
-using value_type = std::pair<int, fails_on_copy>;
+using value_type = std::pair<const int, fails_on_copy>;
 
 void
 test01()

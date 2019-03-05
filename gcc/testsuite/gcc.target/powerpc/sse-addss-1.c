@@ -1,6 +1,5 @@
 /* { dg-do run } */
 /* { dg-options "-O3 -mpower8-vector -Wno-psabi" } */
-/* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target p8vector_hw } */
 
 #define NO_WARN_X86_INTRINSICS 1
@@ -40,17 +39,16 @@ TEST (void)
   e[3] = s1.a[3];
 
   if (check_union128 (u, e))
-#if DEBUG
   {
-	  printf ("sse_test_addss_1; check_union128 failed\n");
-      printf ("\t add ([%f,%f,%f,%f], [%f,%f,%f,%f]) -> [%f,%f,%f,%F]\n",
-    		  s1.x[0], s1.x[1], s1.x[2], s1.x[3],
-    		  s2.x[0], s2.x[1], s2.x[2], s2.x[3],
-			  u.x[0], u.x[1], u.x[2], u.x[3]);
-      printf ("\t expect [%f,%f,%f%f]\n",
-    		  e[0], e[1], e[2], e[3]);
-  }
-#else
-    abort ();
+#if DEBUG
+    printf ("sse_test_addss_1; check_union128 failed\n");
+    printf ("\t add ([%f,%f,%f,%f], [%f,%f,%f,%f]) -> [%f,%f,%f,%F]\n",
+	    s1.x[0], s1.x[1], s1.x[2], s1.x[3],
+	    s2.x[0], s2.x[1], s2.x[2], s2.x[3],
+	    u.x[0], u.x[1], u.x[2], u.x[3]);
+    printf ("\t expect [%f,%f,%f%f]\n",
+	    e[0], e[1], e[2], e[3]);
 #endif
+    abort ();
+  }
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2019 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -31,6 +31,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include "gstdint.h"
 
 /* barrier.c */
 
@@ -56,6 +57,12 @@ extern bool GOMP_loop_nonmonotonic_dynamic_start (long, long, long, long,
 						  long *, long *);
 extern bool GOMP_loop_nonmonotonic_guided_start (long, long, long, long,
 						 long *, long *);
+extern bool GOMP_loop_nonmonotonic_runtime_start (long, long, long,
+						  long *, long *);
+extern bool GOMP_loop_maybe_nonmonotonic_runtime_start (long, long, long,
+							long *, long *);
+extern bool GOMP_loop_start (long, long, long, long, long, long *, long *,
+			     uintptr_t *, void **);
 
 extern bool GOMP_loop_ordered_static_start (long, long, long, long,
 					    long *, long *);
@@ -64,6 +71,8 @@ extern bool GOMP_loop_ordered_dynamic_start (long, long, long, long,
 extern bool GOMP_loop_ordered_guided_start (long, long, long, long,
 					    long *, long *);
 extern bool GOMP_loop_ordered_runtime_start (long, long, long, long *, long *);
+extern bool GOMP_loop_ordered_start (long, long, long, long, long, long *,
+				     long *, uintptr_t *, void **);
 
 extern bool GOMP_loop_static_next (long *, long *);
 extern bool GOMP_loop_dynamic_next (long *, long *);
@@ -71,6 +80,8 @@ extern bool GOMP_loop_guided_next (long *, long *);
 extern bool GOMP_loop_runtime_next (long *, long *);
 extern bool GOMP_loop_nonmonotonic_dynamic_next (long *, long *);
 extern bool GOMP_loop_nonmonotonic_guided_next (long *, long *);
+extern bool GOMP_loop_nonmonotonic_runtime_next (long *, long *);
+extern bool GOMP_loop_maybe_nonmonotonic_runtime_next (long *, long *);
 
 extern bool GOMP_loop_ordered_static_next (long *, long *);
 extern bool GOMP_loop_ordered_dynamic_next (long *, long *);
@@ -85,6 +96,8 @@ extern bool GOMP_loop_doacross_guided_start (unsigned, long *, long, long *,
 					     long *);
 extern bool GOMP_loop_doacross_runtime_start (unsigned, long *, long *,
 					      long *);
+extern bool GOMP_loop_doacross_start (unsigned, long *, long, long, long *,
+				      long *, uintptr_t *, void **);
 
 extern void GOMP_parallel_loop_static_start (void (*)(void *), void *,
 					     unsigned, long, long, long, long);
@@ -112,6 +125,13 @@ extern void GOMP_parallel_loop_nonmonotonic_dynamic (void (*)(void *), void *,
 extern void GOMP_parallel_loop_nonmonotonic_guided (void (*)(void *), void *,
 						    unsigned, long, long,
 						    long, long, unsigned);
+extern void GOMP_parallel_loop_nonmonotonic_runtime (void (*)(void *), void *,
+						     unsigned, long, long,
+						     long, unsigned);
+extern void GOMP_parallel_loop_maybe_nonmonotonic_runtime (void (*)(void *),
+							   void *, unsigned,
+							   long, long,
+							   long, unsigned);
 
 extern void GOMP_loop_end (void);
 extern void GOMP_loop_end_nowait (void);
@@ -154,6 +174,21 @@ extern bool GOMP_loop_ull_nonmonotonic_guided_start (bool, unsigned long long,
 						     unsigned long long,
 						     unsigned long long *,
 						     unsigned long long *);
+extern bool GOMP_loop_ull_nonmonotonic_runtime_start (bool, unsigned long long,
+						      unsigned long long,
+						      unsigned long long,
+						      unsigned long long *,
+						      unsigned long long *);
+extern bool GOMP_loop_ull_maybe_nonmonotonic_runtime_start (bool,
+							    unsigned long long,
+							    unsigned long long,
+							    unsigned long long,
+							    unsigned long long *,
+							    unsigned long long *);
+extern bool GOMP_loop_ull_start (bool, unsigned long long, unsigned long long,
+				 unsigned long long, long, unsigned long long,
+				 unsigned long long *, unsigned long long *,
+				 uintptr_t *, void **);
 
 extern bool GOMP_loop_ull_ordered_static_start (bool, unsigned long long,
 						unsigned long long,
@@ -178,6 +213,13 @@ extern bool GOMP_loop_ull_ordered_runtime_start (bool, unsigned long long,
 						 unsigned long long,
 						 unsigned long long *,
 						 unsigned long long *);
+extern bool GOMP_loop_ull_ordered_start (bool, unsigned long long,
+					 unsigned long long,
+					 unsigned long long, long,
+					 unsigned long long,
+					 unsigned long long *,
+					 unsigned long long *,
+					 uintptr_t *, void **);
 
 extern bool GOMP_loop_ull_static_next (unsigned long long *,
 				       unsigned long long *);
@@ -191,6 +233,10 @@ extern bool GOMP_loop_ull_nonmonotonic_dynamic_next (unsigned long long *,
 						     unsigned long long *);
 extern bool GOMP_loop_ull_nonmonotonic_guided_next (unsigned long long *,
 						    unsigned long long *);
+extern bool GOMP_loop_ull_nonmonotonic_runtime_next (unsigned long long *,
+						     unsigned long long *);
+extern bool GOMP_loop_ull_maybe_nonmonotonic_runtime_next (unsigned long long *,
+							   unsigned long long *);
 
 extern bool GOMP_loop_ull_ordered_static_next (unsigned long long *,
 					       unsigned long long *);
@@ -220,6 +266,11 @@ extern bool GOMP_loop_ull_doacross_runtime_start (unsigned,
 						  unsigned long long *,
 						  unsigned long long *,
 						  unsigned long long *);
+extern bool GOMP_loop_ull_doacross_start (unsigned, unsigned long long *,
+					  long, unsigned long long,
+					  unsigned long long *,
+					  unsigned long long *,
+					  uintptr_t *, void **);
 
 /* ordered.c */
 
@@ -235,6 +286,8 @@ extern void GOMP_doacross_ull_wait (unsigned long long, ...);
 extern void GOMP_parallel_start (void (*) (void *), void *, unsigned);
 extern void GOMP_parallel_end (void);
 extern void GOMP_parallel (void (*) (void *), void *, unsigned, unsigned);
+extern unsigned GOMP_parallel_reductions (void (*) (void *), void *, unsigned,
+					  unsigned);
 extern bool GOMP_cancel (int, bool);
 extern bool GOMP_cancellation_point (int);
 
@@ -251,13 +304,19 @@ extern void GOMP_taskloop_ull (void (*) (void *), void *,
 			       unsigned long long, unsigned long long,
 			       unsigned long long);
 extern void GOMP_taskwait (void);
+extern void GOMP_taskwait_depend (void **);
 extern void GOMP_taskyield (void);
 extern void GOMP_taskgroup_start (void);
 extern void GOMP_taskgroup_end (void);
+extern void GOMP_taskgroup_reduction_register (uintptr_t *);
+extern void GOMP_taskgroup_reduction_unregister (uintptr_t *);
+extern void GOMP_task_reduction_remap (size_t, size_t, void **);
+extern void GOMP_workshare_task_reduction_unregister (bool);
 
 /* sections.c */
 
 extern unsigned GOMP_sections_start (unsigned);
+extern unsigned GOMP_sections2_start (unsigned, uintptr_t *, void **);
 extern unsigned GOMP_sections_next (void);
 extern void GOMP_parallel_sections_start (void (*) (void *), void *,
 					  unsigned, unsigned);
@@ -292,6 +351,11 @@ extern void GOMP_target_enter_exit_data (int, size_t, void **, size_t *,
 					 unsigned short *, unsigned int,
 					 void **);
 extern void GOMP_teams (unsigned int, unsigned int);
+
+/* teams.c */
+
+extern void GOMP_teams_reg (void (*) (void *), void *, unsigned, unsigned,
+			    unsigned);
 
 /* oacc-parallel.c */
 

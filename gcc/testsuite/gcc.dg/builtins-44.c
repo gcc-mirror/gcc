@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target inf } */
 /* { dg-options "-O1 -fno-trapping-math -fno-finite-math-only -fdump-tree-optimized" } */
   
 extern void f(int);

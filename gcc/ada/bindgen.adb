@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1186,7 +1186,7 @@ package body Bindgen is
       end loop;
       WBI ("     & ASCII.NUL;");
 
-      Set_Special_Output (null);
+      Cancel_Special_Output;
 
       Bind_Env_String_Built := True;
    end Gen_Bind_Env_String;

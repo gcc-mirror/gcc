@@ -58,7 +58,11 @@ main ()
     link_error ();
   if (_bzhi_u32 (c, 32) != c
       || _bzhi_u32 (c, 64) != c
-      || _bzhi_u32 (c, 255) != c)
+      || _bzhi_u32 (c, 255) != c
+      || _bzhi_u32 (c, 544) != c
+      || _bzhi_u32 (c, 0) != 0
+      || _bzhi_u32 (c, 256) != 0
+      || _bzhi_u32 (c, 1024) != 0)
     link_error ();
 #ifdef __x86_64__
   if (f21 () != 0 || f22 (-1ULL) != 0
@@ -70,7 +74,11 @@ main ()
       || f33 () != -1ULL || f34 (-1ULL) != -1ULL)
     link_error ();
   if (_bzhi_u64 (d, 64) != d
-      || _bzhi_u64 (d, 255) != d)
+      || _bzhi_u64 (d, 255) != d
+      || _bzhi_u64 (d, 576) != d
+      || _bzhi_u64 (d, 0) != 0
+      || _bzhi_u64 (d, 256) != 0
+      || _bzhi_u64 (d, 512) != 0)
     link_error ();
 #endif
   return 0;

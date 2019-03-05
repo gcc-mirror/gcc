@@ -1,5 +1,5 @@
 ;;- Instruction patterns for the System z vector facility
-;;  Copyright (C) 2015-2018 Free Software Foundation, Inc.
+;;  Copyright (C) 2015-2019 Free Software Foundation, Inc.
 ;;  Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
 
 ;; This file is part of GCC.
@@ -198,8 +198,8 @@
   ""
   "@
    vlr\t%v0,%v1
-   vl\t%v0,%1
-   vst\t%v1,%0
+   vl\t%v0,%1%A1
+   vst\t%v1,%0%A0
    vzero\t%v0
    vone\t%v0
    vgbm\t%v0,%t1
@@ -551,8 +551,8 @@
   "TARGET_VX"
   "@
    vmrhg\t%v0,%1,%N1
-   vl\t%v0,%1
-   vst\t%v1,%0
+   vl\t%v0,%1%A1
+   vst\t%v1,%0%A0
    vzero\t%v0
    vlvgp\t%v0,%1,%N1"
   [(set_attr "op_type" "VRR,VRX,VRX,VRI,VRR")])
@@ -563,8 +563,8 @@
   "TARGET_VX"
   "@
    vlr\t%v0,%v1
-   vl\t%v0,%1
-   vst\t%v1,%0
+   vl\t%v0,%1%A1
+   vst\t%v1,%0%A0
    vzero\t%v0
    vone\t%v0
    vlvgp\t%v0,%1,%N1"
@@ -1362,6 +1362,31 @@
   operands[4] = CONST0_RTX (V2DImode);
 })
 
+; Vector copysign, implement using vector select
+(define_expand "copysign<mode>3"
+  [(set (match_operand:VFT 0 "register_operand" "")
+	(if_then_else:VFT
+	 (eq (match_dup 3)
+	     (match_dup 4))
+	 (match_operand:VFT 1 "register_operand"  "")
+	 (match_operand:VFT 2 "register_operand"  "")))]
+  "TARGET_VX"
+{
+  int sz = GET_MODE_BITSIZE (GET_MODE_INNER (<MODE>mode));
+  int prec = GET_MODE_PRECISION (GET_MODE_INNER (<tointvec>mode));
+  wide_int mask_val = wi::shwi (1l << (sz - 1), prec);
+
+  rtx mask = gen_reg_rtx (<tointvec>mode);
+
+  int nunits = GET_MODE_NUNITS (<tointvec>mode);
+  rtvec v = rtvec_alloc (nunits);
+  for (int i = 0; i < nunits; i++)
+    RTVEC_ELT (v, i) = GEN_INT (mask_val.to_shwi ());
+
+  mask = gen_rtx_CONST_VECTOR (<tointvec>mode, v);
+  operands[3] = force_reg (<tointvec>mode, mask);
+  operands[4] = CONST0_RTX (<tointvec>mode);
+})
 
 ;;
 ;; Integer compares
@@ -1959,6 +1984,58 @@
   operands[5] = force_reg (V16QImode, constv);
   operands[6] = gen_reg_rtx (V16QImode);
 })
+
+;
+; BFP <-> integer conversions
+;
+
+; signed integer to floating point
+
+; op2: inexact exception not suppressed (IEEE 754 2008)
+; op3: according to current rounding mode
+
+(define_insn "floatv2div2df2"
+  [(set (match_operand:V2DF             0 "register_operand" "=v")
+	(float:V2DF (match_operand:V2DI 1 "register_operand"  "v")))]
+  "TARGET_VX"
+  "vcdgb\t%v0,%v1,0,0"
+  [(set_attr "op_type" "VRR")])
+
+; unsigned integer to floating point
+
+; op2: inexact exception not suppressed (IEEE 754 2008)
+; op3: according to current rounding mode
+
+(define_insn "floatunsv2div2df2"
+  [(set (match_operand:V2DF                      0 "register_operand" "=v")
+	(unsigned_float:V2DF (match_operand:V2DI 1 "register_operand"  "v")))]
+  "TARGET_VX"
+  "vcdlgb\t%v0,%v1,0,0"
+  [(set_attr "op_type" "VRR")])
+
+; floating point to signed integer
+
+; op2: inexact exception not suppressed (IEEE 754 2008)
+; op3: rounding mode 5 (round towards 0 C11 6.3.1.4)
+
+(define_insn "fix_truncv2dfv2di2"
+  [(set (match_operand:V2DI           0 "register_operand" "=v")
+	(fix:V2DI (match_operand:V2DF 1 "register_operand"  "v")))]
+  "TARGET_VX"
+  "vcgdb\t%v0,%v1,0,5"
+  [(set_attr "op_type" "VRR")])
+
+; floating point to unsigned integer
+
+; op2: inexact exception not suppressed (IEEE 754 2008)
+; op3: rounding mode 5 (round towards 0 C11 6.3.1.4)
+
+(define_insn "fixuns_truncv2dfv2di2"
+  [(set (match_operand:V2DI                    0 "register_operand" "=v")
+	(unsigned_fix:V2DI (match_operand:V2DF 1 "register_operand"  "v")))]
+  "TARGET_VX"
+  "vclgdb\t%v0,%v1,0,5"
+  [(set_attr "op_type" "VRR")])
 
 ; reduc_smin
 ; reduc_smax

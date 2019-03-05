@@ -1,5 +1,5 @@
 /* Callgraph based analysis of static variables.
-   Copyright (C) 2015-2018 Free Software Foundation, Inc.
+   Copyright (C) 2015-2019 Free Software Foundation, Inc.
    Contributed by Martin Liska <mliska@suse.cz>
 
 This file is part of GCC.
@@ -88,7 +88,7 @@ process_hsa_functions (void)
 	    continue;
 	  cgraph_node *clone
 	    = node->create_virtual_clone (vec <cgraph_edge *> (),
-					  NULL, NULL, "hsa");
+					  NULL, NULL, "hsa", 0);
 	  TREE_PUBLIC (clone->decl) = TREE_PUBLIC (node->decl);
 	  clone->externally_visible = node->externally_visible;
 
@@ -109,7 +109,7 @@ process_hsa_functions (void)
 	    continue;
 	  cgraph_node *clone
 	    = node->create_virtual_clone (vec <cgraph_edge *> (),
-					  NULL, NULL, "hsa");
+					  NULL, NULL, "hsa", 0);
 	  TREE_PUBLIC (clone->decl) = TREE_PUBLIC (node->decl);
 	  clone->externally_visible = node->externally_visible;
 

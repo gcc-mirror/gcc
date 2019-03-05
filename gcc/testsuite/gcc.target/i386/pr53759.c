@@ -12,5 +12,6 @@ foo (__m128 *x, __m64 *y)
   *x = _mm_add_ps (b, b);
 }
 
-/* { dg-final { scan-assembler "vmovlps\[ \\t\]" } } */
+/* { dg-final { scan-assembler "vmovq\[ \\t\]" } } */
+/* { dg-final { scan-assembler-not "vmovlps\[ \\t\]" } } */
 /* { dg-final { scan-assembler-not "vshufps\[ \\t\]" } } */

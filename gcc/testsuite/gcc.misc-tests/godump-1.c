@@ -468,6 +468,11 @@ struct { double d; uint8_t : 0; } sd_not_equiv;
 
 typedef struct s_undef_t s_undef_t2;
 
+typedef struct s_fwd *s_fwd_p;
+/* { dg-final { scan-file godump-1.out "(?n)^type _s_fwd_p \\*_s_fwd$" } } */
+
+struct s_fwd { };
+/* { dg-final { scan-file godump-1.out "(?n)^type _s_fwd struct \{ \}$" } } */
 
 /*** nested structs ***/
 typedef struct { struct { uint8_t ca[3]; } s; uint32_t i; } tsn;

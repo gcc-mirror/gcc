@@ -39,14 +39,14 @@ mpn_extract_flt128 (mp_ptr res_ptr, mp_size_t size,
   *expt = (int) u.ieee.exponent - IEEE854_FLOAT128_BIAS;
 
 #if BITS_PER_MP_LIMB == 32
-  res_ptr[0] = u.ieee.mant_low; /* Low-order 32 bits of fraction.  */
-  res_ptr[1] = (u.ieee.mant_low >> 32);
-  res_ptr[2] = u.ieee.mant_high;
-  res_ptr[3] = (u.ieee.mant_high >> 32); /* High-order 32 bits.  */
+  res_ptr[0] = u.ieee.mantissa3; /* Low-order 32 bits of fraction.  */
+  res_ptr[1] = u.ieee.mantissa2;
+  res_ptr[2] = u.ieee.mantissa1;
+  res_ptr[3] = u.ieee.mantissa0; /* High-order 32 bits.  */
   #define N 4
 #elif BITS_PER_MP_LIMB == 64
-  res_ptr[0] = u.ieee.mant_low;
-  res_ptr[1] = u.ieee.mant_high;
+  res_ptr[0] = ((mp_limb_t) u.ieee.mantissa2 << 32) | u.ieee.mantissa3;
+  res_ptr[1] = ((mp_limb_t) u.ieee.mantissa0 << 32) | u.ieee.mantissa1;
   #define N 2
 #else
   #error "mp_limb size " BITS_PER_MP_LIMB "not accounted for"

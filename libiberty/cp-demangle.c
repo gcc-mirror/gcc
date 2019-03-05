@@ -1,5 +1,5 @@
 /* Demangler for g++ V3 ABI.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Written by Ian Lance Taylor <ian@wasabisystems.com>.
 
    This file is part of the libiberty library, which is part of GCC.
@@ -625,6 +625,9 @@ d_dump (struct demangle_component *dc, int indent)
     case DEMANGLE_COMPONENT_TEMPLATE_PARAM:
       printf ("template parameter %ld\n", dc->u.s_number.number);
       return;
+    case DEMANGLE_COMPONENT_TPARM_OBJ:
+      printf ("template parameter object\n");
+      break;
     case DEMANGLE_COMPONENT_FUNCTION_PARAM:
       printf ("function parameter %ld\n", dc->u.s_number.number);
       return;
@@ -1007,6 +1010,7 @@ d_make_comp (struct d_info *di, enum demangle_component_type type,
     case DEMANGLE_COMPONENT_GLOBAL_DESTRUCTORS:
     case DEMANGLE_COMPONENT_NULLARY:
     case DEMANGLE_COMPONENT_TRINARY_ARG2:
+    case DEMANGLE_COMPONENT_TPARM_OBJ:
       if (left == NULL)
 	return NULL;
       break;
@@ -2007,6 +2011,7 @@ d_java_resource (struct d_info *di)
                   ::= TT <type>
                   ::= TI <type>
                   ::= TS <type>
+		  ::= TA <template-arg>
                   ::= GV <(object) name>
                   ::= T <call-offset> <(base) encoding>
                   ::= Tc <call-offset> <call-offset> <(base) encoding>
@@ -2098,6 +2103,10 @@ d_special_name (struct d_info *di)
 	case 'W':
 	  return d_make_comp (di, DEMANGLE_COMPONENT_TLS_WRAPPER,
 			      d_name (di), NULL);
+
+	case 'A':
+	  return d_make_comp (di, DEMANGLE_COMPONENT_TPARM_OBJ,
+			      d_template_arg (di), NULL);
 
 	default:
 	  return NULL;
@@ -2355,9 +2364,10 @@ cplus_demangle_builtin_types[D_BUILTIN_TYPE_COUNT] =
   /* 27 */ { NL ("decimal64"),	NL ("decimal64"),	D_PRINT_DEFAULT },
   /* 28 */ { NL ("decimal128"),	NL ("decimal128"),	D_PRINT_DEFAULT },
   /* 29 */ { NL ("half"),	NL ("half"),		D_PRINT_FLOAT },
-  /* 30 */ { NL ("char16_t"),	NL ("char16_t"),	D_PRINT_DEFAULT },
-  /* 31 */ { NL ("char32_t"),	NL ("char32_t"),	D_PRINT_DEFAULT },
-  /* 32 */ { NL ("decltype(nullptr)"),	NL ("decltype(nullptr)"),
+  /* 30 */ { NL ("char8_t"),	NL ("char8_t"),		D_PRINT_DEFAULT },
+  /* 31 */ { NL ("char16_t"),	NL ("char16_t"),	D_PRINT_DEFAULT },
+  /* 32 */ { NL ("char32_t"),	NL ("char32_t"),	D_PRINT_DEFAULT },
+  /* 33 */ { NL ("decltype(nullptr)"),	NL ("decltype(nullptr)"),
 	     D_PRINT_DEFAULT },
 };
 
@@ -2645,14 +2655,19 @@ cplus_demangle_type (struct d_info *di)
 	  ret = d_make_builtin_type (di, &cplus_demangle_builtin_types[29]);
 	  di->expansion += ret->u.s_builtin.type->len;
 	  break;
+	case 'u':
+	  /* char8_t */
+	  ret = d_make_builtin_type (di, &cplus_demangle_builtin_types[30]);
+	  di->expansion += ret->u.s_builtin.type->len;
+	  break;
 	case 's':
 	  /* char16_t */
-	  ret = d_make_builtin_type (di, &cplus_demangle_builtin_types[30]);
+	  ret = d_make_builtin_type (di, &cplus_demangle_builtin_types[31]);
 	  di->expansion += ret->u.s_builtin.type->len;
 	  break;
 	case 'i':
 	  /* char32_t */
-	  ret = d_make_builtin_type (di, &cplus_demangle_builtin_types[31]);
+	  ret = d_make_builtin_type (di, &cplus_demangle_builtin_types[32]);
 	  di->expansion += ret->u.s_builtin.type->len;
 	  break;
 
@@ -2678,7 +2693,7 @@ cplus_demangle_type (struct d_info *di)
 
         case 'n':
           /* decltype(nullptr) */
-	  ret = d_make_builtin_type (di, &cplus_demangle_builtin_types[32]);
+	  ret = d_make_builtin_type (di, &cplus_demangle_builtin_types[33]);
 	  di->expansion += ret->u.s_builtin.type->len;
 	  break;
 
@@ -2843,21 +2858,35 @@ d_ref_qualifier (struct d_info *di, struct demangle_component *sub)
 static struct demangle_component *
 d_function_type (struct d_info *di)
 {
-  struct demangle_component *ret;
+  struct demangle_component *ret = NULL;
 
-  if (! d_check_char (di, 'F'))
-    return NULL;
-  if (d_peek_char (di) == 'Y')
+  if ((di->options & DMGL_NO_RECURSE_LIMIT) == 0)
     {
-      /* Function has C linkage.  We don't print this information.
-	 FIXME: We should print it in verbose mode.  */
-      d_advance (di, 1);
-    }
-  ret = d_bare_function_type (di, 1);
-  ret = d_ref_qualifier (di, ret);
+      if (di->recursion_level > DEMANGLE_RECURSION_LIMIT)
+	/* FIXME: There ought to be a way to report
+	   that the recursion limit has been reached.  */
+	return NULL;
 
-  if (! d_check_char (di, 'E'))
-    return NULL;
+      di->recursion_level ++;
+    }
+
+  if (d_check_char (di, 'F'))
+    {
+      if (d_peek_char (di) == 'Y')
+	{
+	  /* Function has C linkage.  We don't print this information.
+	     FIXME: We should print it in verbose mode.  */
+	  d_advance (di, 1);
+	}
+      ret = d_bare_function_type (di, 1);
+      ret = d_ref_qualifier (di, ret);
+      
+      if (! d_check_char (di, 'E'))
+	ret = NULL;
+    }
+
+  if ((di->options & DMGL_NO_RECURSE_LIMIT) == 0)
+    di->recursion_level --;
   return ret;
 }
 
@@ -3327,11 +3356,11 @@ d_expression_1 (struct d_info *di)
     {
       /* Brace-enclosed initializer list, untyped or typed.  */
       struct demangle_component *type = NULL;
+      d_advance (di, 2);
       if (peek == 't')
 	type = cplus_demangle_type (di);
       if (!d_peek_next_char (di))
 	return NULL;
-      d_advance (di, 2);
       return d_make_comp (di, DEMANGLE_COMPONENT_INITIALIZER_LIST,
 			  type, d_exprlist (di, 'E'));
     }
@@ -4101,6 +4130,7 @@ d_count_templates_scopes (int *num_templates, int *num_scopes,
     case DEMANGLE_COMPONENT_VECTOR_TYPE:
     case DEMANGLE_COMPONENT_ARGLIST:
     case DEMANGLE_COMPONENT_TEMPLATE_ARGLIST:
+    case DEMANGLE_COMPONENT_TPARM_OBJ:
     case DEMANGLE_COMPONENT_INITIALIZER_LIST:
     case DEMANGLE_COMPONENT_CAST:
     case DEMANGLE_COMPONENT_CONVERSION:
@@ -4870,6 +4900,11 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
 
 	  dpi->templates = hold_dpt;
 	}
+      return;
+
+    case DEMANGLE_COMPONENT_TPARM_OBJ:
+      d_append_string (dpi, "template parameter object for ");
+      d_print_comp (dpi, options, d_left (dc));
       return;
 
     case DEMANGLE_COMPONENT_CTOR:
@@ -6172,13 +6207,13 @@ cplus_demangle_init_info (const char *mangled, int options, size_t len,
 
   di->n = mangled;
 
-  /* We can not need more components than twice the number of chars in
+  /* We cannot need more components than twice the number of chars in
      the mangled string.  Most components correspond directly to
      chars, but the ARGLIST types are exceptions.  */
   di->num_comps = 2 * len;
   di->next_comp = 0;
 
-  /* Similarly, we can not need more substitutions than there are
+  /* Similarly, we cannot need more substitutions than there are
      chars in the mangled string.  */
   di->num_subs = len;
   di->next_sub = 0;
@@ -6188,6 +6223,7 @@ cplus_demangle_init_info (const char *mangled, int options, size_t len,
   di->expansion = 0;
   di->is_expression = 0;
   di->is_conversion = 0;
+  di->recursion_level = 0;
 }
 
 /* Internal implementation for the demangler.  If MANGLED is a g++ v3 ABI
@@ -6226,6 +6262,20 @@ d_demangle_callback (const char *mangled, int options,
     }
 
   cplus_demangle_init_info (mangled, options, strlen (mangled), &di);
+
+  /* PR 87675 - Check for a mangled string that is so long
+     that we do not have enough stack space to demangle it.  */
+  if (((options & DMGL_NO_RECURSE_LIMIT) == 0)
+      /* This check is a bit arbitrary, since what we really want to do is to
+	 compare the sizes of the di.comps and di.subs arrays against the
+	 amount of stack space remaining.  But there is no portable way to do
+	 this, so instead we use the recursion limit as a guide to the maximum
+	 size of the arrays.  */
+      && (unsigned long) di.num_comps > DEMANGLE_RECURSION_LIMIT)
+    {
+      /* FIXME: We need a way to indicate that a stack limit has been reached.  */
+      return 0;
+    }
 
   {
 #ifdef CP_DYNAMIC_ARRAYS

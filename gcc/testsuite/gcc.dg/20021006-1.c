@@ -2,7 +2,7 @@
    This testcase was miscompiled on x86-64 due to wrong access to the struct
    members.  */
 
-extern void abort();
+extern void abort(void);
 
 struct A {
   long x;

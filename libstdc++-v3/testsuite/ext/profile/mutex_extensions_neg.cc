@@ -6,7 +6,7 @@
 // Otherwise we may get *multiple* errors.
 #undef _GLIBCXX_PARALLEL
 
-// Copyright (C) 2006-2018 Free Software Foundation, Inc.
+// Copyright (C) 2006-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,3 +29,5 @@
 
 // "template argument 1 is invalid"
 // { dg-prune-output "tuple:993" }
+// PMR alias templates cause ambiguities between debug and profile containers:
+// { dg-prune-output "is ambiguous" }

@@ -1,5 +1,5 @@
 /* Maintain binary trees of symbols.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -440,6 +440,9 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   const char *a1, *a2;
   int standard;
 
+  if (attr->artificial)
+    return true;
+
   if (where == NULL)
     where = &gfc_current_locus;
 
@@ -522,7 +525,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   /* The copying of procedure dummy arguments for module procedures in
      a submodule occur whilst the current state is COMP_CONTAINS. It
      is necessary, therefore, to let this through.  */
-  if (attr->dummy
+  if (name && attr->dummy
       && (attr->function || attr->subroutine)
       && gfc_current_state () == COMP_CONTAINS
       && !(gfc_new_block && gfc_new_block->abr_modproc_decl))
@@ -1303,7 +1306,8 @@ gfc_add_save (symbol_attribute *attr, save_state s, const char *name,
   if (s == SAVE_EXPLICIT)
     gfc_unset_implicit_pure (NULL);
 
-  if (s == SAVE_EXPLICIT && attr->save == SAVE_EXPLICIT)
+  if (s == SAVE_EXPLICIT && attr->save == SAVE_EXPLICIT
+      && (flag_automatic || pedantic))
     {
 	if (!gfc_notify_std (GFC_STD_LEGACY,
 			     "Duplicate SAVE attribute specified at %L",
@@ -2739,10 +2743,6 @@ gfc_define_st_label (gfc_st_label *lp, gfc_sl_type type, locus *label_locus)
 				  "DO termination statement which is not END DO"
 				  " or CONTINUE with label %d at %C", labelno))
 	    return;
-	  if (type == ST_LABEL_DO_TARGET
-	      && !gfc_notify_std (GFC_STD_F2018_OBS, "Labeled DO statement "
-				  "at %L", label_locus))
-	    return;
 	  break;
 
 	default:
@@ -2798,6 +2798,11 @@ gfc_reference_st_label (gfc_st_label *lp, gfc_sl_type type)
   if (lp->referenced == ST_LABEL_DO_TARGET && type == ST_LABEL_DO_TARGET
       && !gfc_notify_std (GFC_STD_F95_OBS | GFC_STD_F2018_DEL,
 			  "Shared DO termination label %d at %C", labelno))
+    return false;
+
+  if (type == ST_LABEL_DO_TARGET
+      && !gfc_notify_std (GFC_STD_F2018_OBS, "Labeled DO statement "
+			  "at %L", &gfc_current_locus))
     return false;
 
   if (lp->referenced != ST_LABEL_DO_TARGET)
@@ -4467,7 +4472,7 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
 	  && curr_comp->ts.u.derived->ts.is_iso_c != 1
           && curr_comp->ts.u.derived != derived_sym)
         {
-          /* This should be allowed; the draft says a derived-type can not
+          /* This should be allowed; the draft says a derived-type cannot
              have type parameters if it is has the BIND attribute.  Type
              parameters seem to be for making parameterized derived types.
              There's no need to verify the type if it is c_ptr/c_funptr.  */

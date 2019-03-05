@@ -1,6 +1,5 @@
 /* { dg-do run { target { powerpc*-*-* && { lp64 && p9vector_hw } } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
-/* { dg-options "-mcpu=power9 -O2 " } */
+/* { dg-options "-mdejagnu-cpu=power9 -O2 " } */
 
 /* PR83677: This test case used to fail due to mis-generation of the
    xxpermr instruction.  It requires inlining to create enough register

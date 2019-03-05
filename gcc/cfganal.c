@@ -1,5 +1,5 @@
 /* Control flow graph analysis code for GNU compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -951,10 +951,10 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
 				   bool include_entry_exit)
 {
   int pre_order_num = 0;
-  int rev_post_order_num = n_basic_blocks_for_fn (cfun) - 1;
+  int rev_post_order_num = n_basic_blocks_for_fn (fn) - 1;
 
   /* Allocate stack for back-tracking up CFG.  */
-  auto_vec<edge_iterator, 20> stack (n_basic_blocks_for_fn (cfun) + 1);
+  auto_vec<edge_iterator, 20> stack (n_basic_blocks_for_fn (fn) + 1);
 
   if (include_entry_exit)
     {
@@ -968,7 +968,7 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
     rev_post_order_num -= NUM_FIXED_BLOCKS;
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  auto_sbitmap visited (last_basic_block_for_fn (cfun));
+  auto_sbitmap visited (last_basic_block_for_fn (fn));
 
   /* None of the nodes in the CFG have been visited yet.  */
   bitmap_clear (visited);

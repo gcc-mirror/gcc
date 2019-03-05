@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib-4.0.1\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
-"POT-Creation-Date: 2018-01-26 22:47+0000\n"
+"POT-Creation-Date: 2019-02-01 23:01+0000\n"
 "PO-Revision-Date: 2005-11-25 22:56+0100\n"
 "Last-Translator: Mateu Gilles <gilles@mateu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -92,7 +92,7 @@ msgstr "el nom de caràcter universal  %.*s no és vàlid en un identificador"
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "el nom de caràcter universal  %.*s no és vàlid a l'inici d'un identificador"
 
-#: charset.c:1181 charset.c:2000
+#: charset.c:1181 charset.c:2002
 msgid "converting UCN to source character set"
 msgstr "convertint UCN al joc font de caràcters"
 
@@ -145,304 +145,304 @@ msgstr "convertint una seqüència d'escapa al joc de caràcters d'execució"
 msgid "missing open quote"
 msgstr ""
 
-#: charset.c:1827 charset.c:1891
+#: charset.c:1829 charset.c:1893
 msgid "character constant too long for its type"
 msgstr "constant de caràcter massa gran pel seu tipus"
 
-#: charset.c:1830
+#: charset.c:1832
 msgid "multi-character character constant"
 msgstr "constant de caràcter amb múltiples caràcters"
 
-#: charset.c:1931
+#: charset.c:1933
 msgid "empty character constant"
 msgstr "constant de caràter buida"
 
-#: charset.c:2047
+#: charset.c:2049
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr "fallada convertint %s a %s"
 
-#: directives.c:235 directives.c:278
+#: directives.c:229 directives.c:272
 #, c-format
 msgid "extra tokens at end of #%s directive"
 msgstr "elements superflus al final de la directiva #%s"
 
-#: directives.c:385
+#: directives.c:379
 #, c-format
 msgid "#%s is a GCC extension"
 msgstr "#%s és una extenció del GCC"
 
-#: directives.c:390
+#: directives.c:384
 #, fuzzy, c-format
 #| msgid "#%s is a GCC extension"
 msgid "#%s is a deprecated GCC extension"
 msgstr "#%s és una extenció del GCC"
 
-#: directives.c:403
+#: directives.c:397
 msgid "suggest not using #elif in traditional C"
 msgstr "es suggereix no usar #elif en C tradicional"
 
-#: directives.c:406
+#: directives.c:400
 #, c-format
 msgid "traditional C ignores #%s with the # indented"
 msgstr "C tradicional ignora #%s amb el # indentat"
 
-#: directives.c:410
+#: directives.c:404
 #, c-format
 msgid "suggest hiding #%s from traditional C with an indented #"
 msgstr "es suggereix ocultar #%s del C tradicional amb el # indentat"
 
-#: directives.c:436
+#: directives.c:430
 msgid "embedding a directive within macro arguments is not portable"
 msgstr "l'incrustació d'una directiva entre arguments de macro no és portable"
 
-#: directives.c:456
+#: directives.c:450
 msgid "style of line directive is a GCC extension"
 msgstr "la directiva d'estil de línia és una extenció del GCC"
 
-#: directives.c:537
+#: directives.c:531
 #, c-format
 msgid "invalid preprocessing directive #%s"
 msgstr "directiva de preprocessament #%s invàlida"
 
-#: directives.c:606
+#: directives.c:600
 msgid "\"defined\" cannot be used as a macro name"
 msgstr "\"defined\" no es pot usar com un nom de macro"
 
-#: directives.c:611
+#: directives.c:605
 #, fuzzy
 #| msgid "\"defined\" cannot be used as a macro name"
 msgid "\"__has_include__\" cannot be used as a macro name"
 msgstr "\"defined\" no es pot usar com un nom de macro"
 
-#: directives.c:617
+#: directives.c:611
 #, c-format
 msgid "\"%s\" cannot be used as a macro name as it is an operator in C++"
 msgstr "no es pot usar \"%s\" com un nom de macro perquè és un operador en C++"
 
-#: directives.c:620
+#: directives.c:614
 #, c-format
 msgid "no macro name given in #%s directive"
 msgstr "no es va donar un nom de macro en la directiva #%s"
 
-#: directives.c:623
+#: directives.c:617
 msgid "macro names must be identifiers"
 msgstr "els noms de macro han de ser identificadors"
 
-#: directives.c:672 directives.c:677
+#: directives.c:666 directives.c:671
 #, c-format
 msgid "undefining \"%s\""
 msgstr "esborrant la definició de \"%s\""
 
-#: directives.c:732
+#: directives.c:727
 msgid "missing terminating > character"
 msgstr "falta el caràcter de terminació >"
 
-#: directives.c:791
+#: directives.c:786
 #, c-format
 msgid "#%s expects \"FILENAME\" or <FILENAME>"
 msgstr "#%s espera \"NOM_DE_FITXER\" o <NOM_DE_FITXER>"
 
-#: directives.c:837
+#: directives.c:828
 #, c-format
 msgid "empty filename in #%s"
 msgstr "nom de fitxer buit en #%s"
 
-#: directives.c:847
+#: directives.c:835
 msgid "#include nested too deeply"
 msgstr "#include niat amb massa profunditat"
 
-#: directives.c:888
+#: directives.c:877
 msgid "#include_next in primary source file"
 msgstr "#include_next en el fitxer font primari"
 
-#: directives.c:914
+#: directives.c:903
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
 msgstr "indicador \"%s\" invàlid en la directiva de línia"
 
-#: directives.c:974
+#: directives.c:963
 msgid "unexpected end of file after #line"
 msgstr ""
 
-#: directives.c:977
+#: directives.c:966
 #, c-format
 msgid "\"%s\" after #line is not a positive integer"
 msgstr "\"%s\" desprès de #line no és un enter positiu"
 
-#: directives.c:983 directives.c:985
+#: directives.c:972 directives.c:974
 msgid "line number out of range"
 msgstr "nombre de línia fora de rang"
 
-#: directives.c:998 directives.c:1079
+#: directives.c:987 directives.c:1068
 #, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr "\"%s\" no és un nom de fitxer vàlid"
 
-#: directives.c:1039
+#: directives.c:1028
 #, c-format
 msgid "\"%s\" after # is not a positive integer"
 msgstr "\"%s\" desprès de # no és un enter positiu"
 
-#: directives.c:1098
+#: directives.c:1087
 #, c-format
 msgid "file \"%s\" linemarker ignored due to incorrect nesting"
 msgstr ""
 
-#: directives.c:1157 directives.c:1159 directives.c:1161 directives.c:1747
+#: directives.c:1147 directives.c:1149 directives.c:1151 directives.c:1737
 #, c-format
 msgid "%s"
 msgstr ""
 
-#: directives.c:1185
+#: directives.c:1175
 #, fuzzy, c-format
 #| msgid "invalid #ident directive"
 msgid "invalid #%s directive"
 msgstr "directiva #ident invàlida"
 
-#: directives.c:1248
+#: directives.c:1238
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
 msgstr ""
 
-#: directives.c:1257
+#: directives.c:1247
 #, fuzzy, c-format
 #| msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgstr "desant \"%s\" com a pragma i espai de noms de pragma"
 
-#: directives.c:1275
+#: directives.c:1265
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr "desant \"%s\" com a pragma i espai de noms de pragma"
 
-#: directives.c:1278
+#: directives.c:1268
 #, c-format
 msgid "#pragma %s %s is already registered"
 msgstr "ja s'ha desat #pragma %s %s"
 
-#: directives.c:1281
+#: directives.c:1271
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr "ja s'ha desat #pragma %s"
 
-#: directives.c:1311
+#: directives.c:1301
 msgid "registering pragma with NULL handler"
 msgstr ""
 
-#: directives.c:1528
+#: directives.c:1518
 msgid "#pragma once in main file"
 msgstr "#pragma una vegada en el fitxer principal"
 
-#: directives.c:1551
+#: directives.c:1541
 #, fuzzy
 #| msgid "invalid #pragma GCC poison directive"
 msgid "invalid #pragma push_macro directive"
 msgstr "directiva #pragma de GCC enverinada invàlida"
 
-#: directives.c:1606
+#: directives.c:1596
 #, fuzzy
 #| msgid "invalid #pragma GCC poison directive"
 msgid "invalid #pragma pop_macro directive"
 msgstr "directiva #pragma de GCC enverinada invàlida"
 
-#: directives.c:1661
+#: directives.c:1651
 msgid "invalid #pragma GCC poison directive"
 msgstr "directiva #pragma de GCC enverinada invàlida"
 
-#: directives.c:1670
+#: directives.c:1660
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr "enverinant la macro existent \"%s\""
 
-#: directives.c:1689
+#: directives.c:1679
 msgid "#pragma system_header ignored outside include file"
 msgstr "#pragma system_header ignorat fora del fitxer d'inclusió"
 
-#: directives.c:1714
+#: directives.c:1704
 #, c-format
 msgid "cannot find source file %s"
 msgstr "no es pot trobar la font %s"
 
-#: directives.c:1718
+#: directives.c:1708
 #, c-format
 msgid "current file is older than %s"
 msgstr "el fitxer actual és més vell que %s"
 
-#: directives.c:1742
+#: directives.c:1732
 #, fuzzy, c-format
 #| msgid "invalid #pragma GCC poison directive"
 msgid "invalid \"#pragma GCC %s\" directive"
 msgstr "directiva #pragma de GCC enverinada invàlida"
 
-#: directives.c:1943
+#: directives.c:1933
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "_Pragma pren una cadena literal entre parèntesis"
 
-#: directives.c:2064
+#: directives.c:2021
 msgid "#else without #if"
 msgstr "#else sense #if"
 
-#: directives.c:2069
+#: directives.c:2026
 msgid "#else after #else"
 msgstr "#else després de #else"
 
-#: directives.c:2071 directives.c:2104
+#: directives.c:2028 directives.c:2061
 msgid "the conditional began here"
 msgstr "el condicional va començar aquí"
 
-#: directives.c:2097
+#: directives.c:2054
 msgid "#elif without #if"
 msgstr "#elif sense #if"
 
-#: directives.c:2102
+#: directives.c:2059
 msgid "#elif after #else"
 msgstr "#elif després de #else"
 
-#: directives.c:2133
+#: directives.c:2090
 msgid "#endif without #if"
 msgstr "#endif sense #if"
 
-#: directives.c:2213
+#: directives.c:2166
 msgid "missing '(' after predicate"
 msgstr "falta \"(\" abans del predicat"
 
-#: directives.c:2228
+#: directives.c:2184
 msgid "missing ')' to complete answer"
 msgstr "falta \")\" per a completar la resposta"
 
-#: directives.c:2248
+#: directives.c:2196
 msgid "predicate's answer is empty"
 msgstr "el predicat de la resposta està buit"
 
-#: directives.c:2275
+#: directives.c:2226
 msgid "assertion without predicate"
 msgstr "afirmació sense predicat"
 
-#: directives.c:2278
+#: directives.c:2229
 msgid "predicate must be an identifier"
 msgstr "el predicat ha de ser un identificador"
 
-#: directives.c:2364
+#: directives.c:2311
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr "\"%s\" reafirmat"
 
-#: directives.c:2656
+#: directives.c:2587
 #, c-format
 msgid "unterminated #%s"
 msgstr "#%s sense acabar"
 
-#: directives-only.c:221 lex.c:2851 traditional.c:167
+#: directives-only.c:221 lex.c:2862 traditional.c:175
 msgid "unterminated comment"
 msgstr "comentari sense acabar"
 
-#: errors.c:284
+#: errors.c:291
 #, c-format
 msgid "%s: %s"
 msgstr "%s: %s"
 
-#: errors.c:296
+#: errors.c:304
 msgid "stdout"
 msgstr "stdout"
 
@@ -552,92 +552,92 @@ msgstr "(\"%s\" és un element alternatiu per a  \"%s\" en C++)"
 msgid "this use of \"defined\" may not be portable"
 msgstr "aquest ùs de \"defined\" podria no ser portable"
 
-#: expr.c:1125
+#: expr.c:1109
 #, fuzzy
 #| msgid "integer overflow in preprocessor expression"
 msgid "user-defined literal in preprocessor expression"
 msgstr "desbordament d'enter en l'expressió del preprocessador"
 
-#: expr.c:1130
+#: expr.c:1114
 msgid "floating constant in preprocessor expression"
 msgstr "constant de coma flotant en l'expressió del preprocessador"
 
-#: expr.c:1136
+#: expr.c:1120
 msgid "imaginary number in preprocessor expression"
 msgstr "nombre imaginari en l'expressió del preprocessador"
 
-#: expr.c:1189
+#: expr.c:1173
 #, fuzzy, c-format
 #| msgid "\"%s\" is not defined"
 msgid "\"%s\" is not defined, evaluates to 0"
 msgstr "\"%s\" no és definit"
 
-#: expr.c:1202
+#: expr.c:1186
 #, fuzzy
 #| msgid "#%s is a GCC extension"
 msgid "assertions are a GCC extension"
 msgstr "#%s és una extenció del GCC"
 
-#: expr.c:1205
+#: expr.c:1189
 msgid "assertions are a deprecated extension"
 msgstr ""
 
-#: expr.c:1451
+#: expr.c:1435
 #, fuzzy, c-format
 #| msgid "unbalanced stack in #if"
 msgid "unbalanced stack in %s"
 msgstr "pila desequilibrada en #if"
 
-#: expr.c:1471
+#: expr.c:1455
 #, c-format
 msgid "impossible operator '%u'"
 msgstr "operador \"%u\" impossible"
 
-#: expr.c:1572
+#: expr.c:1556
 msgid "missing ')' in expression"
 msgstr "\")\" faltant en l'expressió"
 
-#: expr.c:1601
+#: expr.c:1585
 msgid "'?' without following ':'"
 msgstr " \"?\" sense el \":\" següent"
 
-#: expr.c:1611
+#: expr.c:1595
 msgid "integer overflow in preprocessor expression"
 msgstr "desbordament d'enter en l'expressió del preprocessador"
 
-#: expr.c:1616
+#: expr.c:1600
 msgid "missing '(' in expression"
 msgstr "\"(\" faltant en l'expressió"
 
-#: expr.c:1648
+#: expr.c:1632
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr "l'operant esquera de \"%s\" canvia el signe quan és promogut"
 
-#: expr.c:1653
+#: expr.c:1637
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr "l'operant dreta de \"%s\" canvia el signe quan és promogut"
 
-#: expr.c:1912
+#: expr.c:1896
 msgid "traditional C rejects the unary plus operator"
 msgstr "C tradicional rebutja l'operador unari més"
 
-#: expr.c:2010
+#: expr.c:1994
 msgid "comma operator in operand of #if"
 msgstr "operador coma en operant de #if"
 
-#: expr.c:2146
+#: expr.c:2130
 msgid "division by zero in #if"
 msgstr "divisió per zero en #if"
 
-#: expr.c:2243
+#: expr.c:2227
 #, fuzzy
 #| msgid "operator \"defined\" requires an identifier"
 msgid "operator \"__has_include__\" requires a header string"
 msgstr "l'operador \"defined\" requereix un identificador"
 
-#: expr.c:2259
+#: expr.c:2243
 #, fuzzy
 #| msgid "missing ')' after \"defined\""
 msgid "missing ')' after \"__has_include__\""
@@ -656,40 +656,40 @@ msgstr "usi -Winvalid-pch per a més informació"
 msgid "no include path in which to search for %s"
 msgstr "no hi ha ruta d'inclusió en la qual cercar %s"
 
-#: files.c:1441
+#: files.c:1455
 msgid "Multiple include guards may be useful for:\n"
 msgstr "Múltiples guàrdies d'inclusió poden ser útils per a:\n"
 
-#: init.c:565
+#: init.c:569
 msgid "cppchar_t must be an unsigned type"
 msgstr "cppchar_t ha de ser d'un tipus unsigned"
 
-#: init.c:569
+#: init.c:573
 #, c-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
 msgstr "l'aritmètica del preprocesador té una precisió màxima de %lu bits; l'objectiu requereix %lu bits"
 
-#: init.c:576
+#: init.c:580
 msgid "CPP arithmetic must be at least as precise as a target int"
 msgstr "l'aritmètica de CPP ha de ser almenys tan precisa com un int de l'objectiu"
 
-#: init.c:579
+#: init.c:583
 msgid "target char is less than 8 bits wide"
 msgstr "el char de l'objectiu té menys de 8 bits d'ampliaria"
 
-#: init.c:583
+#: init.c:587
 msgid "target wchar_t is narrower than target char"
 msgstr "el wchar_t de l'objectiu és més estret qu'el char de l'objectiu"
 
-#: init.c:587
+#: init.c:591
 msgid "target int is narrower than target char"
 msgstr "el int de l'objectiu és més estret qu'el char de l'objectiu"
 
-#: init.c:592
+#: init.c:596
 msgid "CPP half-integer narrower than CPP character"
 msgstr "el half-integer de CPP és més estret que el caràcter de CPP"
 
-#: init.c:596
+#: init.c:600
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr "CPP no pot manejar constants de caràcter amples més enllà de %lu bits en aquest ordinador, però l'objectiu requereix %lu bits"
@@ -767,275 +767,275 @@ msgstr "__VA_ARGS__ solament pot aparèixer en l'expansió d'una macro variadic C9
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr ""
 
-#: lex.c:1811
+#: lex.c:1826
 msgid "raw string delimiter longer than 16 characters"
 msgstr ""
 
-#: lex.c:1815
+#: lex.c:1830
 msgid "invalid new-line in raw string delimiter"
 msgstr ""
 
-#: lex.c:1819
+#: lex.c:1834
 #, fuzzy, c-format
 #| msgid "universal character %.*s is not valid in an identifier"
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "el nom de caràcter universal  %.*s no és vàlid en un identificador"
 
-#: lex.c:1868 lex.c:1890
+#: lex.c:1883 lex.c:1905
 #, fuzzy
 #| msgid "unterminated #%s"
 msgid "unterminated raw string"
 msgstr "#%s sense acabar"
 
-#: lex.c:1912 lex.c:2043
+#: lex.c:1925 lex.c:2054
 msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
 msgstr ""
 
-#: lex.c:2024
+#: lex.c:2037
 msgid "null character(s) preserved in literal"
 msgstr "caràcter(es) nul(s) preservats en la literal"
 
-#: lex.c:2027
+#: lex.c:2040
 #, fuzzy, c-format
 #| msgid "missing terminating > character"
 msgid "missing terminating %c character"
 msgstr "falta el caràcter de terminació >"
 
-#: lex.c:2061
+#: lex.c:2072
 msgid "C++11 requires a space between string literal and macro"
 msgstr ""
 
-#: lex.c:2865 lex.c:2899
+#: lex.c:2876 lex.c:2910
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "els comentaris d'estil C++ no són permesos en ISO C90"
 
-#: lex.c:2867 lex.c:2878 lex.c:2901
+#: lex.c:2878 lex.c:2889 lex.c:2913
 msgid "(this will be reported only once per input file)"
 msgstr "(això es reportarà solament una vegada per cada fitxer d'entrada)"
 
-#: lex.c:2876
+#: lex.c:2887
 #, fuzzy
 #| msgid "C++ style comments are not allowed in ISO C90"
 msgid "C++ style comments are incompatible with C90"
 msgstr "els comentaris d'estil C++ no són permesos en ISO C90"
 
-#: lex.c:2907
+#: lex.c:2919
 msgid "multi-line comment"
 msgstr "comentari en múltiples línies"
 
-#: lex.c:3287
+#: lex.c:3299
 #, c-format
 msgid "unspellable token %s"
 msgstr "Element %s impronunciable"
 
-#: macro.c:93
+#: macro.c:94
 #, fuzzy
 #| msgid "'##' cannot appear at either end of a macro expansion"
 msgid "'##' cannot appear at either end of __VA_OPT__"
 msgstr "\"##\" no pot apareixer en o al final d'una expansió de macro"
 
-#: macro.c:352
+#: macro.c:354
 #, c-format
 msgid "macro \"%s\" is not used"
 msgstr "no s'usa la macro \"%s\""
 
-#: macro.c:391 macro.c:639
+#: macro.c:393 macro.c:641
 #, c-format
 msgid "invalid built-in macro \"%s\""
 msgstr "macro interna \"%s\" invàlida"
 
-#: macro.c:398 macro.c:500
+#: macro.c:400 macro.c:502
 #, c-format
 msgid "macro \"%s\" might prevent reproducible builds"
 msgstr ""
 
-#: macro.c:429
+#: macro.c:431
 #, fuzzy
 #| msgid "could not determine date and time"
 msgid "could not determine file timestamp"
 msgstr "no es pot determinar la data i l'hora"
 
-#: macro.c:546
+#: macro.c:548
 msgid "could not determine date and time"
 msgstr "no es pot determinar la data i l'hora"
 
-#: macro.c:562
+#: macro.c:564
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
 msgstr ""
 
-#: macro.c:758
+#: macro.c:760
 msgid "invalid string literal, ignoring final '\\'"
 msgstr "cadena literal invàlida, s'ignora el \"\\\" final"
 
-#: macro.c:820
+#: macro.c:822
 #, c-format
 msgid "pasting \"%s\" and \"%s\" does not give a valid preprocessing token"
 msgstr "enganxar \"%s\" i \"%s\" no dóna un element de preprocessament vàlid"
 
-#: macro.c:946
+#: macro.c:948
 msgid "ISO C++11 requires at least one argument for the \"...\" in a variadic macro"
 msgstr ""
 
-#: macro.c:950
+#: macro.c:952
 #, fuzzy
 #| msgid "ISO C99 requires rest arguments to be used"
 msgid "ISO C99 requires at least one argument for the \"...\" in a variadic macro"
 msgstr "ISO C99 requereix que la resta dels arguments sigui usat"
 
-#: macro.c:957
+#: macro.c:959
 #, c-format
 msgid "macro \"%s\" requires %u arguments, but only %u given"
 msgstr "la macro \"%s\" requereix %u arguments, però només %u passats"
 
-#: macro.c:962
+#: macro.c:964
 #, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr "la macro \"%s\" va rebre %u arguments, però en va prendre solament %u"
 
-#: macro.c:1156 traditional.c:819
+#: macro.c:1162 traditional.c:827
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr "llista d'arguments sense acabar a l'invocar la macro \"%s\""
 
-#: macro.c:1307
+#: macro.c:1304
 #, c-format
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "la funció de macro \"%s\" s'ha d'usar amb arguments en C tradicional"
 
-#: macro.c:2003
+#: macro.c:2083
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
 msgstr ""
 
-#: macro.c:2011 macro.c:2020
+#: macro.c:2091 macro.c:2100
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
 msgstr ""
 
-#: macro.c:2984
+#: macro.c:3059
 #, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "paràmetre de macro \"%s\" duplicat"
 
-#: macro.c:3033
+#: macro.c:3141
 #, c-format
-msgid "\"%s\" may not appear in macro parameter list"
-msgstr "\"%s\" podria faltar en la llista de paràmetre de macro"
+msgid "expected parameter name, found \"%s\""
+msgstr ""
 
-#: macro.c:3041
-msgid "macro parameters must be comma-separated"
-msgstr "els paràmetres de macro han de ser separats per comes"
+#: macro.c:3142
+#, c-format
+msgid "expected ',' or ')', found \"%s\""
+msgstr ""
 
-#: macro.c:3060
-msgid "parameter name missing"
-msgstr "falta el nom del paràmetre"
+#: macro.c:3143
+msgid "expected parameter name before end of line"
+msgstr ""
 
-#: macro.c:3081
+#: macro.c:3144
+msgid "expected ')' before end of line"
+msgstr ""
+
+#: macro.c:3145
+msgid "expected ')' after \"...\""
+msgstr ""
+
+#: macro.c:3202
 #, fuzzy
 #| msgid "anonymous variadic macros were introduced in C99"
 msgid "anonymous variadic macros were introduced in C++11"
 msgstr "els macros variadic anònims es van introduir en C99"
 
-#: macro.c:3085 macro.c:3090
+#: macro.c:3203 macro.c:3207
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "els macros variadic anònims es van introduir en C99"
 
-#: macro.c:3097
+#: macro.c:3213
 #, fuzzy
 #| msgid "ISO C does not permit named variadic macros"
 msgid "ISO C++ does not permit named variadic macros"
 msgstr "ISO C no permet macros variadic nomenats"
 
-#: macro.c:3100
+#: macro.c:3214
 msgid "ISO C does not permit named variadic macros"
 msgstr "ISO C no permet macros variadic nomenats"
 
-#: macro.c:3110
-msgid "missing ')' in macro parameter list"
-msgstr "\")\" faltant en la llista de paràmetres de macro"
-
-#: macro.c:3161
+#: macro.c:3260
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "\"##\" no pot apareixer en o al final d'una expansió de macro"
 
-#: macro.c:3198
+#: macro.c:3298
 #, fuzzy
 #| msgid "ISO C99 requires whitespace after the macro name"
 msgid "ISO C++11 requires whitespace after the macro name"
 msgstr "ISO C99 requereix espais en blanc després del nom de macro"
 
-#: macro.c:3201
+#: macro.c:3299
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr "ISO C99 requereix espais en blanc després del nom de macro"
 
-#: macro.c:3226
+#: macro.c:3323
 msgid "missing whitespace after the macro name"
 msgstr "espais en blanc faltant després del nom de macro"
 
-#: macro.c:3263
+#: macro.c:3373
 msgid "'#' is not followed by a macro parameter"
 msgstr "\"#\" no és seguit per un paràmetre de macro"
 
-#: macro.c:3430
+#: macro.c:3524
 #, c-format
 msgid "\"%s\" redefined"
 msgstr "\"%s\" re-definit"
 
-#: macro.c:3435
+#: macro.c:3529
 msgid "this is the location of the previous definition"
 msgstr "aquesta és la ubicació de la definició prèvia"
 
-#: macro.c:3496
+#: macro.c:3633
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr "l'argument de macro \"%s\" hauria de ser convertit en cadena en C traditional"
 
-#: macro.c:3532
-#, c-format
-msgid "invalid hash type %d in cpp_macro_definition"
-msgstr "tipus de hash %d invàlid en cpp_macro_definition"
-
-#: pch.c:89 pch.c:347 pch.c:361 pch.c:379 pch.c:385 pch.c:394 pch.c:401
+#: pch.c:90 pch.c:342 pch.c:356 pch.c:374 pch.c:380 pch.c:389 pch.c:396
 msgid "while writing precompiled header"
 msgstr "mentre escrivint capçalera precompilada"
 
-#: pch.c:621
+#: pch.c:616
 #, fuzzy, c-format
 #| msgid "%s: not used because `%s' is defined"
 msgid "%s: not used because `%.*s' is poisoned"
 msgstr "%s: no utilitzat perquè \"%s\" és definit"
 
-#: pch.c:643
+#: pch.c:638
 #, c-format
 msgid "%s: not used because `%.*s' not defined"
 msgstr "%s: no utilitzat perquè \"%.*s\" no està definit"
 
-#: pch.c:655
+#: pch.c:650
 #, c-format
 msgid "%s: not used because `%.*s' defined as `%s' not `%.*s'"
 msgstr "%s: no utilitzat perquè \"%.*s\" està definit com a \"%s\" i no com a \"%.*s\""
 
-#: pch.c:696
+#: pch.c:691
 #, c-format
 msgid "%s: not used because `%s' is defined"
 msgstr "%s: no utilitzat perquè \"%s\" és definit"
 
-#: pch.c:716
+#: pch.c:711
 #, fuzzy, c-format
 #| msgid "%s: not used because `%s' is defined"
 msgid "%s: not used because `__COUNTER__' is invalid"
 msgstr "%s: no utilitzat perquè \"%s\" és definit"
 
-#: pch.c:725 pch.c:903
+#: pch.c:720 pch.c:878
 msgid "while reading precompiled header"
 msgstr "mentre llegint capçalera precompilada"
 
-#: traditional.c:889
+#: traditional.c:896
 #, c-format
 msgid "detected recursion whilst expanding macro \"%s\""
 msgstr "whilst recursiu detectat en expandint la macro \"%s\""
 
-#: traditional.c:1108
+#: traditional.c:1119
 msgid "syntax error in macro parameter list"
 msgstr "error sintàctic en la llista de paràmetre de macro"
 
@@ -1108,3 +1108,18 @@ msgstr "error sintàctic en la llista de paràmetre de macro"
 #~ msgstr ""
 #~ ",\n"
 #~ "                 dès de %s:%u"
+
+#~ msgid "\"%s\" may not appear in macro parameter list"
+#~ msgstr "\"%s\" podria faltar en la llista de paràmetre de macro"
+
+#~ msgid "macro parameters must be comma-separated"
+#~ msgstr "els paràmetres de macro han de ser separats per comes"
+
+#~ msgid "parameter name missing"
+#~ msgstr "falta el nom del paràmetre"
+
+#~ msgid "missing ')' in macro parameter list"
+#~ msgstr "\")\" faltant en la llista de paràmetres de macro"
+
+#~ msgid "invalid hash type %d in cpp_macro_definition"
+#~ msgstr "tipus de hash %d invàlid en cpp_macro_definition"

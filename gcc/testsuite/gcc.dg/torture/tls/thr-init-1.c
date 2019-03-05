@@ -3,7 +3,7 @@
 /* { dg-add-options tls } */
 
 extern int printf (char *,...);
-extern void abort() ;
+extern void abort(void) ;
 
 int test_code(int b)
 {

@@ -1,5 +1,5 @@
 /* Implementation of the MINLOC intrinsic
-   Copyright (C) 2017-2018 Free Software Foundation, Inc.
+   Copyright (C) 2017-2019 Free Software Foundation, Inc.
    Contributed by Thomas Koenig
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -30,14 +30,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <limits.h>
 
 
-#if defined (HAVE_GFC_INTEGER_4) && defined (HAVE_GFC_INTEGER_16)
+#if defined (HAVE_GFC_UINTEGER_4) && defined (HAVE_GFC_INTEGER_16)
 
 #define HAVE_BACK_ARG 1
 
 static inline int
-compare_fcn (const GFC_INTEGER_4 *a, const GFC_INTEGER_4 *b, gfc_charlen_type n)
+compare_fcn (const GFC_UINTEGER_4 *a, const GFC_UINTEGER_4 *b, gfc_charlen_type n)
 {
-  if (sizeof (GFC_INTEGER_4) == 1)
+  if (sizeof (GFC_UINTEGER_4) == 1)
     return memcmp (a, b, n);
   else
     return memcmp_char4 (a, b, n);
@@ -56,7 +56,7 @@ minloc0_16_s4 (gfc_array_i16 * const restrict retarray,
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride;
-  const GFC_INTEGER_4 *base;
+  const GFC_UINTEGER_4 *base;
   GFC_INTEGER_16 * restrict dest;
   index_type rank;
   index_type n;
@@ -102,7 +102,7 @@ minloc0_16_s4 (gfc_array_i16 * const restrict retarray,
     dest[n * dstride] = 1;
   {
 
-  const GFC_INTEGER_4 *minval;
+  const GFC_UINTEGER_4 *minval;
    minval = NULL;
 
   while (base)
@@ -168,11 +168,21 @@ mminloc0_16_s4 (gfc_array_i16 * const restrict retarray,
   index_type mstride[GFC_MAX_DIMENSIONS];
   index_type dstride;
   GFC_INTEGER_16 *dest;
-  const GFC_INTEGER_4 *base;
+  const GFC_UINTEGER_4 *base;
   GFC_LOGICAL_1 *mbase;
   int rank;
   index_type n;
   int mask_kind;
+
+  if (mask == NULL)
+    {
+#ifdef HAVE_BACK_ARG    
+      minloc0_16_s4 (retarray, array, back, len);
+#else
+      minloc0_16_s4 (retarray, array, len);
+#endif
+      return;
+    }
 
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
@@ -234,7 +244,7 @@ mminloc0_16_s4 (gfc_array_i16 * const restrict retarray,
     dest[n * dstride] = 0;
   {
 
-  const GFC_INTEGER_4 *minval;
+  const GFC_UINTEGER_4 *minval;
 
   minval = NULL;
 
@@ -304,7 +314,7 @@ sminloc0_16_s4 (gfc_array_i16 * const restrict retarray,
   index_type n;
   GFC_INTEGER_16 *dest;
 
-  if (*mask)
+  if (mask == NULL || *mask)
     {
 #ifdef HAVE_BACK_ARG    
       minloc0_16_s4 (retarray, array, back, len);

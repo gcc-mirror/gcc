@@ -6,7 +6,7 @@
  *
  * SYNOPSIS:
  *
- * __float128 x, y, j0l();
+ * long double x, y, j0l();
  *
  * y = j0l( x );
  *
@@ -52,7 +52,7 @@
  *
  * SYNOPSIS:
  *
- * __float128 x, y, y0l();
+ * double x, y, y0l();
  *
  * y = y0l( x );
  *
@@ -88,8 +88,8 @@
     Lesser General Public License for more details.
 
     You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA */
+    License along with this library; if not, see
+    <http://www.gnu.org/licenses/>.  */
 
 #include "quadmath-imp.h"
 
@@ -97,7 +97,7 @@
 static const __float128 ONEOSQPI = 5.6418958354775628694807945156077258584405E-1Q;
 /* 2 / pi */
 static const __float128 TWOOPI = 6.3661977236758134307553505349005744813784E-1Q;
-static const __float128 zero = 0.0Q;
+static const __float128 zero = 0;
 
 /* J0(x) = 1 - x^2/4 + x^2 x^2 R(x^2)
    Peak relative error 3.4e-37
@@ -683,21 +683,21 @@ j0q (__float128 x)
       if (x != x)
 	return x + x;
       else
-	return 0.0Q;
+	return 0;
     }
-  if (x == 0.0Q)
-    return 1.0Q;
+  if (x == 0)
+    return 1;
 
   xx = fabsq (x);
-  if (xx <= 2.0Q)
+  if (xx <= 2)
     {
       if (xx < 0x1p-57Q)
-	return 1.0Q;
+	return 1;
       /* 0 <= x <= 2 */
       z = xx * xx;
       p = z * z * neval (z, J0_2N, NJ0_2N) / deval (z, J0_2D, NJ0_2D);
       p -= 0.25Q * z;
-      p += 1.0Q;
+      p += 1;
       return p;
     }
 
@@ -711,7 +711,7 @@ j0q (__float128 x)
   sincosq (xx, &s, &c);
   ss = s - c;
   cc = s + c;
-  if (xx <= FLT128_MAX / 2.0Q)
+  if (xx <= FLT128_MAX / 2)
     {
       z = -cosq (xx + xx);
       if ((s * c) < 0)
@@ -723,7 +723,7 @@ j0q (__float128 x)
   if (xx > 0x1p256Q)
     return ONEOSQPI * cc / sqrtq (xx);
 
-  xinv = 1.0Q / xx;
+  xinv = 1 / xx;
   z = xinv * xinv;
   if (xinv <= 0.25)
     {
@@ -781,7 +781,7 @@ j0q (__float128 x)
 	  q = neval (z, Q2_2r3N, NQ2_2r3N) / deval (z, Q2_2r3D, NQ2_2r3D);
 	}
     }
-  p = 1.0Q + z * p;
+  p = 1 + z * p;
   q = z * xinv * q;
   q = q - 0.125Q * xinv;
   z = ONEOSQPI * (p * cc - q * ss) / sqrtq (xx);
@@ -789,11 +789,12 @@ j0q (__float128 x)
 }
 
 
+
 /* Y0(x) = 2/pi * log(x) * J0(x) + R(x^2)
    Peak absolute error 1.7e-36 (relative where Y0 > 1)
    0 <= x <= 2   */
 #define NY0_2N 7
-static __float128 Y0_2N[NY0_2N + 1] = {
+static const __float128 Y0_2N[NY0_2N + 1] = {
  -1.062023609591350692692296993537002558155E19Q,
   2.542000883190248639104127452714966858866E19Q,
  -1.984190771278515324281415820316054696545E18Q,
@@ -804,7 +805,7 @@ static __float128 Y0_2N[NY0_2N + 1] = {
   8.230845651379566339707130644134372793322E6Q,
 };
 #define NY0_2D 7
-static __float128 Y0_2D[NY0_2D + 1] = {
+static const __float128 Y0_2D[NY0_2D + 1] = {
   1.438972634353286978700329883122253752192E20Q,
   1.856409101981569254247700169486907405500E18Q,
   1.219693352678218589553725579802986255614E16Q,
@@ -821,22 +822,22 @@ static const __float128 U0 = -7.3804295108687225274343927948483016310862e-02Q;
 /* Bessel function of the second kind, order zero.  */
 
 __float128
-y0q (__float128 x)
+ y0q(__float128 x)
 {
   __float128 xx, xinv, z, p, q, c, s, cc, ss;
 
   if (! finiteq (x))
     return 1 / (x + x * x);
-  if (x <= 0.0Q)
+  if (x <= 0)
     {
-      if (x < 0.0Q)
+      if (x < 0)
 	return (zero / (zero * x));
       return -1 / zero; /* -inf and divide by zero exception.  */
     }
   xx = fabsq (x);
   if (xx <= 0x1p-57)
     return U0 + TWOOPI * logq (x);
-  if (xx <= 2.0Q)
+  if (xx <= 2)
     {
       /* 0 <= x <= 2 */
       z = xx * xx;
@@ -855,7 +856,7 @@ y0q (__float128 x)
   sincosq (x, &s, &c);
   ss = s - c;
   cc = s + c;
-  if (xx <= FLT128_MAX / 2.0Q)
+  if (xx <= FLT128_MAX / 2)
     {
       z = -cosq (x + x);
       if ((s * c) < 0)
@@ -867,7 +868,7 @@ y0q (__float128 x)
   if (xx > 0x1p256Q)
     return ONEOSQPI * ss / sqrtq (x);
 
-  xinv = 1.0Q / xx;
+  xinv = 1 / xx;
   z = xinv * xinv;
   if (xinv <= 0.25)
     {
@@ -925,7 +926,7 @@ y0q (__float128 x)
 	  q = neval (z, Q2_2r3N, NQ2_2r3N) / deval (z, Q2_2r3D, NQ2_2r3D);
 	}
     }
-  p = 1.0Q + z * p;
+  p = 1 + z * p;
   q = z * xinv * q;
   q = q - 0.125Q * xinv;
   z = ONEOSQPI * (p * ss + q * cc) / sqrtq (x);

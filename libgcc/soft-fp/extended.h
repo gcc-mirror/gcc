@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Definitions for IEEE Extended Precision.
-   Copyright (C) 1999-2016 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Jakub Jelinek (jj@ultra.linux.cz).
 
@@ -88,7 +88,7 @@ union _FP_UNION_E
     unsigned exp : _FP_EXPBITS_E;
     unsigned sign : 1;
 # endif /* not bigendian */
-  } bits __attribute__ ((packed));
+  } bits;
 };
 
 

@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    tree codes used in GCC.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1186,6 +1186,11 @@ DEFTREECODE (OMP_CRITICAL, "omp_critical", tcc_statement, 3)
    Operand 1: OMP_SINGLE_CLAUSES: List of clauses.  */
 DEFTREECODE (OMP_SINGLE, "omp_single", tcc_statement, 2)
 
+/* OpenMP - #pragma omp taskgroup
+   Operand 0: OMP_TASKGROUP_BODY: Taskgroup body.
+   Operand 1: OMP_SINGLE_CLAUSES: List of clauses.  */
+DEFTREECODE (OMP_TASKGROUP, "omp_taskgroup", tcc_statement, 2)
+
 /* OpenMP - #pragma omp section
    Operand 0: OMP_SECTION_BODY: Section body.  */
 DEFTREECODE (OMP_SECTION, "omp_section", tcc_statement, 1)
@@ -1193,10 +1198,6 @@ DEFTREECODE (OMP_SECTION, "omp_section", tcc_statement, 1)
 /* OpenMP - #pragma omp master
    Operand 0: OMP_MASTER_BODY: Master section body.  */
 DEFTREECODE (OMP_MASTER, "omp_master", tcc_statement, 1)
-
-/* OpenMP - #pragma omp taskgroup
-   Operand 0: OMP_TASKGROUP_BODY: Taskgroup body.  */
-DEFTREECODE (OMP_TASKGROUP, "omp_taskgroup", tcc_statement, 1)
 
 /* OpenACC - #pragma acc cache (variable1 ... variableN)
    Operand 0: OACC_CACHE_CLAUSES: List of variables (transformed into

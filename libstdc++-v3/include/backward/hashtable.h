@@ -1,6 +1,6 @@
 // Hashtable implementation used by containers -*- C++ -*-
 
-// Copyright (C) 2001-2018 Free Software Foundation, Inc.
+// Copyright (C) 2001-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -379,7 +379,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       max_size() const
       { return size_type(-1); }
 
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const
       { return size() == 0; }
 

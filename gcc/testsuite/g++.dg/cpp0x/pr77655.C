@@ -3,7 +3,7 @@
 
 template <class F> void g(F);
 template <class... A>
-auto h(A &&... a) -> decltype(g(0, g<decltype(a)>(a)...)) {  // { dg-error "no matching" }
+auto h(A &&... a) -> decltype(g(0, g<decltype(a)>(a)...)) {  // { dg-error "" }
   h([] {});  // { dg-error "no matching" }
 }
 

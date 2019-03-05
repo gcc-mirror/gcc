@@ -1,5 +1,5 @@
 /* Basic IPA optimizations based on profile.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -391,7 +391,7 @@ ipa_propagate_frequency (struct cgraph_node *node)
   struct ipa_propagate_frequency_data d = {node, true, true, true, true};
   bool changed = false;
 
-  /* We can not propagate anything useful about externally visible functions
+  /* We cannot propagate anything useful about externally visible functions
      nor about virtuals.  */
   if (!node->local.local
       || node->alias
@@ -533,11 +533,10 @@ ipa_profile (void)
 		   cumulated_size * 100.0 / overall_size);
 	}
 
-      if (threshold > get_hot_bb_threshold ()
-	  || in_lto_p)
+      if (in_lto_p)
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "Threshold updated.\n");
+	    fprintf (dump_file, "Setting hotness threshold in LTO mode.\n");
           set_hot_bb_threshold (threshold);
 	}
     }

@@ -25,7 +25,7 @@ dnl provide a builtin type for TImode.
 dnl
 AC_DEFUN([LIBAT_HAVE_INT_MODE],[
   AC_CACHE_CHECK([for $2 byte integer],[libat_cv_have_mode_$1],
-    [AC_COMPILE_IFELSE([int x __attribute__((mode($1)));],
+    [AC_COMPILE_IFELSE([AC_LANG_SOURCE([int x __attribute__((mode($1)));])],
       [libat_cv_have_mode_$1=yes],[libat_cv_have_mode_$1=no])])
   LIBAT_DEFINE_YESNO([HAVE_INT$2], [$libat_cv_have_mode_$1],
       [Have support for $2 byte integers.])

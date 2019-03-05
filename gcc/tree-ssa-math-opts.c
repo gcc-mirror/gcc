@@ -1,5 +1,5 @@
 /* Global, SSA-based optimizations using mathematical identities.
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -652,8 +652,12 @@ optimize_recip_sqrt (gimple_stmt_iterator *def_gsi, tree def)
 	  print_gimple_stmt (dump_file, stmt, 0, TDF_NONE);
 	  fprintf (dump_file, "with new division\n");
 	}
-      gimple_assign_set_lhs (stmt, sqr_ssa_name);
-      gimple_assign_set_rhs2 (stmt, a);
+      stmt
+	= gimple_build_assign (sqr_ssa_name, gimple_assign_rhs_code (stmt),
+			       gimple_assign_rhs1 (stmt), a);
+      gsi_insert_before (def_gsi, stmt, GSI_SAME_STMT);
+      gsi_remove (def_gsi, true);
+      *def_gsi = gsi_for_stmt (stmt);
       fold_stmt_inplace (def_gsi);
       update_stmt (stmt);
 
@@ -704,7 +708,7 @@ optimize_recip_sqrt (gimple_stmt_iterator *def_gsi, tree def)
 
       gimple *new_stmt
 	= gimple_build_assign (x, MULT_EXPR,
-				orig_sqrt_ssa_name, sqr_ssa_name);
+			       orig_sqrt_ssa_name, sqr_ssa_name);
       gsi_insert_after (def_gsi, new_stmt, GSI_NEW_STMT);
       update_stmt (stmt);
     }
@@ -715,6 +719,8 @@ optimize_recip_sqrt (gimple_stmt_iterator *def_gsi, tree def)
       gsi_remove (&gsi2, true);
       release_defs (stmt);
     }
+  else
+    release_ssa_name (x);
 }
 
 /* Look for floating-point divisions among DEF's uses, and try to
@@ -951,7 +957,8 @@ pass_cse_reciprocals::execute (function *fun)
 	      stmt = gsi_stmt (gsi);
 	      if (flag_unsafe_math_optimizations
 		  && is_gimple_assign (stmt)
-		  && !stmt_can_throw_internal (stmt)
+		  && gimple_assign_lhs (stmt) == def
+		  && !stmt_can_throw_internal (cfun, stmt)
 		  && gimple_assign_rhs_code (stmt) == RDIV_EXPR)
 		optimize_recip_sqrt (&gsi, def);
 	    }
@@ -2904,7 +2911,8 @@ convert_mult_to_fma_1 (tree mul_result, tree op1, tree op2)
       else
 	fma_stmt = gimple_build_call_internal (IFN_FMA, 3, mulop1, op2, addop);
       gimple_set_lhs (fma_stmt, gimple_get_lhs (use_stmt));
-      gimple_call_set_nothrow (fma_stmt, !stmt_can_throw_internal (use_stmt));
+      gimple_call_set_nothrow (fma_stmt, !stmt_can_throw_internal (cfun,
+								   use_stmt));
       gsi_replace (&gsi, fma_stmt, true);
       /* Follow all SSA edges so that we generate FMS, FNMA and FNMS
 	 regardless of where the negation occurs.  */
@@ -3534,7 +3542,7 @@ divmod_candidate_p (gassign *stmt)
 static bool
 convert_to_divmod (gassign *stmt)
 {
-  if (stmt_can_throw_internal (stmt)
+  if (stmt_can_throw_internal (cfun, stmt)
       || !divmod_candidate_p (stmt))
     return false;
 
@@ -3560,7 +3568,7 @@ convert_to_divmod (gassign *stmt)
 	  && operand_equal_p (op1, gimple_assign_rhs1 (use_stmt), 0)
 	  && operand_equal_p (op2, gimple_assign_rhs2 (use_stmt), 0))
 	{
-	  if (stmt_can_throw_internal (use_stmt))
+	  if (stmt_can_throw_internal (cfun, use_stmt))
 	    continue;
 
 	  basic_block bb = gimple_bb (use_stmt);
@@ -3598,7 +3606,7 @@ convert_to_divmod (gassign *stmt)
 	  && operand_equal_p (top_op2, gimple_assign_rhs2 (use_stmt), 0))
 	{
 	  if (use_stmt == top_stmt
-	      || stmt_can_throw_internal (use_stmt)
+	      || stmt_can_throw_internal (cfun, use_stmt)
 	      || !dominated_by_p (CDI_DOMINATORS, gimple_bb (use_stmt), top_bb))
 	    continue;
 

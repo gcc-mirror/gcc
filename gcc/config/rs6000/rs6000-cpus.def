@@ -1,5 +1,5 @@
 /* IBM RS/6000 CPU names..
-   Copyright (C) 1991-2018 Free Software Foundation, Inc.
+   Copyright (C) 1991-2019 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -44,9 +44,10 @@
 				 | OPTION_MASK_ALTIVEC			\
 				 | OPTION_MASK_VSX)
 
-/* For now, don't provide an embedded version of ISA 2.07.  */
+/* For now, don't provide an embedded version of ISA 2.07.  Do not set power8
+   fusion here, instead set it in rs6000.c if we are tuning for a power8
+   system.  */
 #define ISA_2_7_MASKS_SERVER	(ISA_2_6_MASKS_SERVER			\
-				 | OPTION_MASK_P8_FUSION		\
 				 | OPTION_MASK_P8_VECTOR		\
 				 | OPTION_MASK_CRYPTO			\
 				 | OPTION_MASK_DIRECT_MOVE		\
@@ -60,7 +61,6 @@
 #define ISA_3_0_MASKS_SERVER	(ISA_2_7_MASKS_SERVER			\
 				 | OPTION_MASK_ISEL			\
 				 | OPTION_MASK_MODULO			\
-				 | OPTION_MASK_P9_FUSION		\
 				 | OPTION_MASK_P9_MINMAX		\
 				 | OPTION_MASK_P9_MISC			\
 				 | OPTION_MASK_P9_VECTOR)
@@ -121,7 +121,6 @@
 				 | OPTION_MASK_NO_UPDATE		\
 				 | OPTION_MASK_P8_FUSION		\
 				 | OPTION_MASK_P8_VECTOR		\
-				 | OPTION_MASK_P9_FUSION		\
 				 | OPTION_MASK_P9_MINMAX		\
 				 | OPTION_MASK_P9_MISC			\
 				 | OPTION_MASK_P9_VECTOR		\

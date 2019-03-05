@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---             Copyright (C) 2009-2018, Free Software Foundation, Inc.      --
+--             Copyright (C) 2009-2019, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -111,9 +111,9 @@ package System.Linux is
    SIGXCPU    : constant := 30; --  CPU time limit exceeded
    SIGXFSZ    : constant := 31; --  filesize limit exceeded
 
-   SIGLTHRRES : constant := 32; --  GNU/LinuxThreads restart signal
-   SIGLTHRCAN : constant := 33; --  GNU/LinuxThreads cancel signal
-   SIGLTHRDBG : constant := 34; --  GNU/LinuxThreads debugger signal
+   SIG32      : constant := 32; --  glibc internal signal
+   SIG33      : constant := 33; --  glibc internal signal
+   SIG34      : constant := 34; --  glibc internal signal
 
    --  These don't exist for Linux/MIPS.  The constants are present
    --  so that we can continue to use a-intnam-linux.ads.

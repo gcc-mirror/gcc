@@ -71,3 +71,4 @@ nodist_toolexeclib_HEADERS = libsanitizer.spec
 
 ## ################################################################
 
+include $(top_srcdir)/../multilib.am

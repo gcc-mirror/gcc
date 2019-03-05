@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -452,15 +452,15 @@ package body Sem_Ch5 is
 
       --  Local variables
 
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
+
       T1 : Entity_Id;
       T2 : Entity_Id;
 
       Save_Full_Analysis : Boolean := False;
       --  Force initialization to facilitate static analysis
-
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
-      --  Save the Ghost-related attributes to restore on exit
 
    --  Start of processing for Analyze_Assignment
 
@@ -476,15 +476,11 @@ package body Sem_Ch5 is
          Checks => True,
          Modes  => True);
 
-      --  Analyze the target of the assignment first in case the expression
-      --  contains references to Ghost entities. The checks that verify the
-      --  proper use of a Ghost entity need to know the enclosing context.
-
-      Analyze (Lhs);
-
       --  An assignment statement is Ghost when the left hand side denotes a
       --  Ghost entity. Set the mode now to ensure that any nodes generated
       --  during analysis and expansion are properly marked as Ghost.
+
+      Mark_And_Set_Ghost_Assignment (N);
 
       if Has_Target_Names (N) then
          Current_Assignment := N;
@@ -495,7 +491,7 @@ package body Sem_Ch5 is
          Current_Assignment := Empty;
       end if;
 
-      Mark_And_Set_Ghost_Assignment (N);
+      Analyze (Lhs);
       Analyze (Rhs);
 
       --  Ensure that we never do an assignment on a variable marked as

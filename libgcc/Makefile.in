@@ -1,6 +1,6 @@
 # Makefile.in
 
-# Copyright (C) 2005-2018 Free Software Foundation, Inc.
+# Copyright (C) 2005-2019 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -472,6 +472,8 @@ lib2funcs := $(filter-out $(LIB2FUNCS_EXCLUDE) $(LIB1ASMFUNCS),$(lib2funcs))
 LIB2_DIVMOD_FUNCS := $(filter-out $(LIB2FUNCS_EXCLUDE) $(LIB1ASMFUNCS), \
 		       $(LIB2_DIVMOD_FUNCS))
 
+LIB2FUNCS_ST := $(filter-out $(LIB2FUNCS_EXCLUDE),$(LIB2FUNCS_ST))
+
 # Build "libgcc1" (assembly) components.
 
 lib1asmfuncs-o = $(patsubst %,%$(objext),$(LIB1ASMFUNCS))
@@ -897,7 +899,7 @@ LIBGCOV_PROFILER = _gcov_interval_profiler				\
 	_gcov_average_profiler_atomic					\
 	_gcov_ior_profiler						\
 	_gcov_ior_profiler_atomic					\
-	_gcov_indirect_call_profiler_v2					\
+	_gcov_indirect_call_profiler_v3					\
 	_gcov_time_profiler						\
 	_gcov_indirect_call_topn_profiler
 LIBGCOV_INTERFACE = _gcov_dump _gcov_flush _gcov_fork			\

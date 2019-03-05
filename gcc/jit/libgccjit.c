@@ -1,5 +1,5 @@
 /* Implementation of the C API; all wrappers into the internal C++ API
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -2640,6 +2640,25 @@ gcc_jit_context_add_command_line_option (gcc_jit_context *ctxt,
     ctxt->get_logger ()->log ("optname: %s", optname);
 
   ctxt->add_command_line_option (optname);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   The real work is done by the
+   gcc::jit::recording::context::add_driver_option method in
+   jit-recording.c.  */
+
+void
+gcc_jit_context_add_driver_option (gcc_jit_context *ctxt,
+				   const char *optname)
+{
+  RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  RETURN_IF_FAIL (optname, ctxt, NULL, "NULL optname");
+  if (ctxt->get_logger ())
+    ctxt->get_logger ()->log ("optname: %s", optname);
+
+  ctxt->add_driver_option (optname);
 }
 
 /* Public entrypoint.  See description in libgccjit.h.

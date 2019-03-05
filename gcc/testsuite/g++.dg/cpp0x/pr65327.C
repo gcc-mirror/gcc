@@ -15,4 +15,4 @@ constexpr volatile int
 bar ()
 {
   return i;
-}
+} // { dg-error "lvalue-to-rvalue conversion of a volatile lvalue" }

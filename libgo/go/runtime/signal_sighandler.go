@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build aix darwin dragonfly freebsd linux nacl netbsd openbsd solaris
+// +build aix darwin dragonfly freebsd hurd linux nacl netbsd openbsd solaris
 
 package runtime
 
@@ -35,6 +35,28 @@ func sighandler(sig uint32, info *_siginfo_t, ctxt unsafe.Pointer, gp *g) {
 	c := &sigctxt{info, ctxt}
 
 	sigfault, sigpc := getSiginfo(info, ctxt)
+
+	if sig == _SIGURG && usestackmaps {
+		// We may be signaled to do a stack scan.
+		// The signal delivery races with enter/exitsyscall.
+		// We may be on g0 stack now. gp.m.curg is the g we
+		// want to scan.
+		// If we're not on g stack, give up. The sender will
+		// try again later.
+		// If we're not stopped at a safepoint (doscanstack will
+		// return false), also give up.
+		if s := readgstatus(gp.m.curg); s == _Gscansyscall {
+			if gp == gp.m.curg {
+				if doscanstack(gp, (*gcWork)(unsafe.Pointer(gp.scangcw))) {
+					gp.gcscanvalid = true
+					gp.gcscandone = true
+				}
+			}
+			gp.m.curg.scangcw = 0
+			notewakeup(&gp.m.scannote)
+			return
+		}
+	}
 
 	if sig == _SIGPROF {
 		sigprof(sigpc, gp, _g_.m)

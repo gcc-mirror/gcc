@@ -1,6 +1,6 @@
 #ifdef __powerpc64__
 # PowerPC64 support for -fsplit-stack.
-# Copyright (C) 2009-2018 Free Software Foundation, Inc.
+# Copyright (C) 2009-2019 Free Software Foundation, Inc.
 # Contributed by Alan Modra <amodra@gmail.com>.
 
 # This file is part of GCC.
@@ -304,12 +304,15 @@ DW.ref.__gcc_personality_v0:
 # new thread starts.  This is called from a constructor.
 # void __stack_split_initialize (void)
 ENTRY(__stack_split_initialize)
+	.cfi_startproc
 	addi %r3,%r1,-0x4000		# We should have at least 16K.
 	std %r3,-0x7000-64(%r13)	# tcbhead_t.__private_ss
 	# void __generic_morestack_set_initial_sp (void *sp, size_t len)
 	mr %r3,%r1
 	li %r4, 0x4000
 	b __generic_morestack_set_initial_sp
+# The lack of .cfi_endproc here is deliberate.  This function and the
+# following ones can all use the default FDE.
 	SIZE (__stack_split_initialize)
 
 
@@ -335,6 +338,7 @@ ENTRY0(__morestack_make_guard)
 	sub %r3,%r3,%r4
 	addi %r3,%r3,BACKOFF
 	blr
+	.cfi_endproc
 	SIZE (__morestack_make_guard)
 
 

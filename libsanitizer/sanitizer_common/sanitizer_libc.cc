@@ -70,18 +70,19 @@ void *internal_memmove(void *dest, const void *src, uptr n) {
   return dest;
 }
 
-// Semi-fast bzero for 16-aligned data. Still far from peak performance.
-void internal_bzero_aligned16(void *s, uptr n) {
-  struct ALIGNED(16) S16 { u64 a, b; };
-  CHECK_EQ((reinterpret_cast<uptr>(s) | n) & 15, 0);
-  for (S16 *p = reinterpret_cast<S16*>(s), *end = p + n / 16; p < end; p++) {
-    p->a = p->b = 0;
-    // Make sure this does not become memset.
-    SanitizerBreakOptimization(nullptr);
-  }
-}
-
 void *internal_memset(void* s, int c, uptr n) {
+  // Optimize for the most performance-critical case:
+  if ((reinterpret_cast<uptr>(s) % 16) == 0 && (n % 16) == 0) {
+    u64 *p = reinterpret_cast<u64*>(s);
+    u64 *e = p + n / 8;
+    u64 v = c;
+    v |= v << 8;
+    v |= v << 16;
+    v |= v << 32;
+    for (; p < e; p += 2)
+      p[0] = p[1] = v;
+    return s;
+  }
   // The next line prevents Clang from making a call to memset() instead of the
   // loop below.
   // FIXME: building the runtime with -ffreestanding is a better idea. However
@@ -104,14 +105,6 @@ uptr internal_strcspn(const char *s, const char *reject) {
 
 char* internal_strdup(const char *s) {
   uptr len = internal_strlen(s);
-  char *s2 = (char*)InternalAlloc(len + 1);
-  internal_memcpy(s2, s, len);
-  s2[len] = 0;
-  return s2;
-}
-
-char* internal_strndup(const char *s, uptr n) {
-  uptr len = internal_strnlen(s, n);
   char *s2 = (char*)InternalAlloc(len + 1);
   internal_memcpy(s2, s, len);
   s2[len] = 0;
@@ -232,13 +225,7 @@ char *internal_strstr(const char *haystack, const char *needle) {
   return nullptr;
 }
 
-uptr internal_wcslen(const wchar_t *s) {
-  uptr i = 0;
-  while (s[i]) i++;
-  return i;
-}
-
-s64 internal_simple_strtoll(const char *nptr, char **endptr, int base) {
+s64 internal_simple_strtoll(const char *nptr, const char **endptr, int base) {
   CHECK_EQ(base, 10);
   while (IsSpace(*nptr)) nptr++;
   int sgn = 1;

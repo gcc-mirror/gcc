@@ -3,7 +3,7 @@
 
 // 2010-02-25  Ed Smith-Rowland
 
-// Copyright (C) 2010-2018 Free Software Foundation, Inc.
+// Copyright (C) 2010-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -54,6 +54,9 @@ void test01()
   do_test<unsigned char>();
 #ifdef _GLIBCXX_USE_WCHAR_T
   do_test<wchar_t>();
+#endif
+#ifdef _GLIBCXX_USE_CHAR8_T
+  do_test<char8_t>();
 #endif
   do_test<char16_t>();
   do_test<char32_t>();

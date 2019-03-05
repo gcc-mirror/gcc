@@ -1,5 +1,5 @@
 /* Target definitions for x86 running Darwin.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -25,10 +25,10 @@ along with GCC; see the file COPYING3.  If not see
 #undef DARWIN_X86
 #define DARWIN_X86 1
 
-#undef  TARGET_64BIT
-#undef	TARGET_64BIT_P
+#undef TARGET_64BIT
 #define TARGET_64BIT TARGET_ISA_64BIT
-#define	TARGET_64BIT_P(x) TARGET_ISA_64BIT_P(x)
+#undef TARGET_64BIT_P
+#define TARGET_64BIT_P(x) TARGET_ISA_64BIT_P(x)
 
 #ifdef IN_LIBGCC2
 #undef TARGET_64BIT
@@ -70,14 +70,15 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef TARGET_FPMATH_DEFAULT
 #define TARGET_FPMATH_DEFAULT (TARGET_SSE ? FPMATH_SSE : FPMATH_387)
+#undef TARGET_FPMATH_DEFAULT_P
+#define TARGET_FPMATH_DEFAULT_P(x) \
+  (TARGET_SSE_P(x) ? FPMATH_SSE : FPMATH_387)
 
 #define TARGET_OS_CPP_BUILTINS()                \
-  do                                            \
-    {                                           \
-      builtin_define ("__LITTLE_ENDIAN__");     \
-      darwin_cpp_builtins (pfile);		\
-    }                                           \
-  while (0)
+  do {						\
+    builtin_define ("__LITTLE_ENDIAN__");	\
+    darwin_cpp_builtins (pfile);		\
+  } while (0)
 
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE (TARGET_64BIT ? "long int" : "int")
@@ -111,10 +112,6 @@ extern int darwin_emit_branch_islands;
 /* On Darwin, the stack is 128-bit aligned at the point of every call.
    Failure to ensure this will lead to a crash in the system libraries
    or dynamic loader.  */
-#undef STACK_BOUNDARY
-#define STACK_BOUNDARY \
- ((profile_flag || (TARGET_64BIT && ix86_abi == MS_ABI)) \
-  ? 128 : BITS_PER_WORD)
 
 #undef MAIN_STACK_BOUNDARY
 #define MAIN_STACK_BOUNDARY 128
@@ -125,7 +122,7 @@ extern int darwin_emit_branch_islands;
    than 128 bits for Darwin, but it's easier to up the alignment if
    it's below the minimum.  */
 #undef PREFERRED_STACK_BOUNDARY
-#define PREFERRED_STACK_BOUNDARY			\
+#define PREFERRED_STACK_BOUNDARY \
   MAX (128, ix86_preferred_stack_boundary)
 
 /* We want -fPIC by default, unless we're using -static to compile for
@@ -183,15 +180,15 @@ extern int darwin_emit_branch_islands;
    and returns float values in the 387.  */
 
 #undef TARGET_SUBTARGET_DEFAULT
-#define TARGET_SUBTARGET_DEFAULT (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_128BIT_LONG_DOUBLE)
+#define TARGET_SUBTARGET_DEFAULT \
+  (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_128BIT_LONG_DOUBLE)
 
 /* For darwin we want to target specific processor features as a minimum,
    but these unfortunately don't correspond to a specific processor.  */
 #undef TARGET_SUBTARGET32_ISA_DEFAULT
-#define TARGET_SUBTARGET32_ISA_DEFAULT (OPTION_MASK_ISA_MMX		\
-					| OPTION_MASK_ISA_SSE		\
-					| OPTION_MASK_ISA_SSE2		\
-					| OPTION_MASK_ISA_SSE3)
+#define TARGET_SUBTARGET32_ISA_DEFAULT			\
+  (OPTION_MASK_ISA_MMX | OPTION_MASK_ISA_SSE		\
+   | OPTION_MASK_ISA_SSE2 | OPTION_MASK_ISA_SSE3)
 
 #undef TARGET_SUBTARGET64_ISA_DEFAULT
 #define TARGET_SUBTARGET64_ISA_DEFAULT TARGET_SUBTARGET32_ISA_DEFAULT
@@ -213,29 +210,35 @@ extern int darwin_emit_branch_islands;
 #define SUBTARGET_ENCODE_SECTION_INFO  darwin_encode_section_info
 
 #undef ASM_OUTPUT_ALIGN
-#define ASM_OUTPUT_ALIGN(FILE,LOG)	\
- do { if ((LOG) != 0)			\
-        {				\
-          if (in_section == text_section) \
-            fprintf (FILE, "\t%s %d,0x90\n", ALIGN_ASM_OP, (LOG)); \
-          else				\
-            fprintf (FILE, "\t%s %d\n", ALIGN_ASM_OP, (LOG)); \
-        }				\
-    } while (0)
+#define ASM_OUTPUT_ALIGN(FILE,LOG)				   \
+  do {								   \
+    if ((LOG) != 0)						   \
+      {								   \
+	if (in_section == text_section)				   \
+	  fprintf (FILE, "\t%s %d,0x90\n", ALIGN_ASM_OP, (LOG));   \
+	else							   \
+	  fprintf (FILE, "\t%s %d\n", ALIGN_ASM_OP, (LOG));	   \
+      }								   \
+  } while (0)
+
+/* Darwin x86 assemblers support the .ident directive.  */
+
+#undef TARGET_ASM_OUTPUT_IDENT
+#define TARGET_ASM_OUTPUT_IDENT default_asm_output_ident_directive
 
 /* Darwin profiling -- call mcount.  */
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)				\
-    do {								\
-      if (TARGET_MACHO_BRANCH_ISLANDS 					\
-	   && MACHOPIC_INDIRECT && !TARGET_64BIT)			\
-	{								\
-	  const char *name = machopic_mcount_stub_name ();		\
-	  fprintf (FILE, "\tcall %s\n", name+1);  /*  skip '&'  */	\
-	  machopic_validate_stub_or_non_lazy_ptr (name);		\
-	}								\
-      else fprintf (FILE, "\tcall mcount\n");				\
-    } while (0)
+  do {									\
+    if (TARGET_MACHO_BRANCH_ISLANDS 					\
+	&& MACHOPIC_INDIRECT && !TARGET_64BIT)				\
+      {									\
+	const char *name = machopic_mcount_stub_name ();		\
+	fprintf (FILE, "\tcall %s\n", name+1);  /*  skip '&'  */	\
+	machopic_validate_stub_or_non_lazy_ptr (name);			\
+      }									\
+    else fprintf (FILE, "\tcall mcount\n");				\
+  } while (0)
 
 #define C_COMMON_OVERRIDE_OPTIONS					\
   do {									\
@@ -243,11 +246,11 @@ extern int darwin_emit_branch_islands;
   } while (0)
 
 #undef SUBTARGET_OVERRIDE_OPTIONS
-#define SUBTARGET_OVERRIDE_OPTIONS \
-do {									\
-  if (TARGET_64BIT && MACHO_DYNAMIC_NO_PIC_P)				\
-    target_flags &= ~MASK_MACHO_DYNAMIC_NO_PIC;				\
-} while (0)
+#define SUBTARGET_OVERRIDE_OPTIONS					\
+  do {									\
+    if (TARGET_64BIT && MACHO_DYNAMIC_NO_PIC_P)				\
+      target_flags &= ~MASK_MACHO_DYNAMIC_NO_PIC;			\
+  } while (0)
 
 /* Darwin on x86_64 uses dwarf-2 by default.  Pre-darwin9 32-bit
    compiles default to stabs+.  darwin9+ defaults to dwarf-2.  */
@@ -288,24 +291,24 @@ do {									\
    end of the instruction, but without the 4 we'd only have the right
    address for the start of the instruction.  */
 #undef ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX
-#define ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX(FILE, ENCODING, SIZE, ADDR, DONE)	\
-  if (TARGET_64BIT)				                                \
-    {                                                                           \
-      if ((SIZE) == 4 && ((ENCODING) & 0x70) == DW_EH_PE_pcrel)			\
-        {                                                                       \
-	   fputs (ASM_LONG, FILE);                                              \
-	   assemble_name (FILE, XSTR (ADDR, 0));				\
-	   fputs ("+4@GOTPCREL", FILE);                                         \
-	   goto DONE;                                                           \
-        }									\
-    }										\
-  else                                                                          \
-    {										\
-      if (ENCODING == ASM_PREFERRED_EH_DATA_FORMAT (2, 1))                      \
-        {                                                                       \
-          darwin_non_lazy_pcrel (FILE, ADDR);                                   \
-          goto DONE;								\
-        }                                                                       \
+#define ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX(FILE, ENCODING, SIZE, ADDR, DONE) \
+  if (TARGET_64BIT)							\
+    {									\
+      if ((SIZE) == 4 && ((ENCODING) & 0x70) == DW_EH_PE_pcrel)		\
+	{								\
+	  fputs (ASM_LONG, FILE);					\
+	  assemble_name (FILE, XSTR (ADDR, 0));				\
+	  fputs ("+4@GOTPCREL", FILE);					\
+	  goto DONE;							\
+	}								\
+    }									\
+  else									\
+    {									\
+      if (ENCODING == ASM_PREFERRED_EH_DATA_FORMAT (2, 1))		\
+        {								\
+          darwin_non_lazy_pcrel (FILE, ADDR);				\
+          goto DONE;							\
+        }								\
     }
 
 /* This needs to move since i386 uses the first flag and other flags are
@@ -320,9 +323,9 @@ do {									\
 #define SUBTARGET32_DEFAULT_CPU "i686"
 
 #undef  SUBTARGET_INIT_BUILTINS
-#define SUBTARGET_INIT_BUILTINS					\
-do {								\
-  ix86_builtins[(int) IX86_BUILTIN_CFSTRING]			\
-    = darwin_init_cfstring_builtins ((unsigned) (IX86_BUILTIN_CFSTRING));	\
-  darwin_rename_builtins ();					\
-} while(0)
+#define SUBTARGET_INIT_BUILTINS						\
+  do {									\
+    ix86_builtins[(int) IX86_BUILTIN_CFSTRING]				\
+      = darwin_init_cfstring_builtins ((unsigned) (IX86_BUILTIN_CFSTRING)); \
+    darwin_rename_builtins ();						\
+  } while(0)

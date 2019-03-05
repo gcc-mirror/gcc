@@ -1,5 +1,5 @@
 /* Compute remainder and a congruent to the quotient.
-   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997 and
 		  Jakub Jelinek <jj@ultra.linux.cz>, 1999.
@@ -15,12 +15,10 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
 
 #include "quadmath-imp.h"
-
 
 static const __float128 zero = 0.0;
 
@@ -102,8 +100,8 @@ remquoq (__float128 x, __float128 y, int *quo)
   *quo = qs ? -cquo : cquo;
 
   /* Ensure correct sign of zero result in round-downward mode.  */
-  if (x == 0.0Q)
-    x = 0.0Q;
+  if (x == 0)
+    x = 0;
   if (sx)
     x = -x;
   return x;

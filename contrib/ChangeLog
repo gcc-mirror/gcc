@@ -1,3 +1,40 @@
+2019-02-04  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	contrib/
+	* dg-extract-results.py: Keep timeout warnings next to their
+	matching test.
+	* dg-extract-results.sh: Likewise.
+
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py: Add Gerard Jungman as external author.
+
+2018-11-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* update-copyright.py (TestsuiteFilter): Skip .d tests.
+	(LibPhobosFilter): Add filter for upstream D sources.
+	(GCCCopyright): Add D Language Foundation as external author.
+	(GCCCmdLine): Add libphobos.
+
+2018-11-19  Martin Liska  <mliska@suse.cz>
+
+	* check_GNU_style_lib.py: Detect mixed usage
+	of spaces and tabs.
+
+2018-11-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc_update (files_and_dependencies): Handle libphobos.
+
+2018-10-25  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
+
+	* dg-cmp-results.sh: Print NA-FAIL and NA->UNRESOLVED changes at
+	default verbosity.
+
+2018-10-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config-list.mk (LIST): Switch to i686-solaris2.11,
+	sparc64-sun-solaris2.11.
+
 2018-10-04  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* unused_functions.py: Handle archive files.

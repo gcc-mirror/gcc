@@ -1,5 +1,5 @@
 # Makefile for GNU Ada Compiler (GNAT).
-#   Copyright (C) 1994-2017 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2018 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -434,19 +434,6 @@ gnattools2: ../stamp-tools
 	$(MAKE) -C tools -f ../Makefile $(TOOLS_FLAGS_TO_PASS) \
 	  TOOLSCASE=native common-tools $(EXTRA_GNATTOOLS)
 
-# those tools are only built for the cross version
-gnattools4: ../stamp-tools
-ifeq ($(ENABLE_VXADDR2LINE),true)
-	$(MAKE) -C tools -f ../Makefile $(TOOLS_FLAGS_TO_PASS) \
-	  TOOLSCASE=cross top_buildir=../../.. \
-	  ../../vxaddr2line$(exeext)
-endif
-ifeq ($(ENABLE_VXLINK),true)
-	$(MAKE) -C tools -f ../Makefile $(TOOLS_FLAGS_TO_PASS) \
-	  TOOLSCASE=cross top_build=../../.. \
-	  ../../vxlink$(exeext)
-endif
-
 common-tools: ../stamp-tools
 	$(GNATMAKE) -j0 -c -b $(ADA_INCLUDES) \
 	  --GNATBIND="$(GNATBIND)" --GCC="$(CC) $(ALL_ADAFLAGS)" \
@@ -476,18 +463,6 @@ common-tools: ../stamp-tools
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatdll
 	$(GNATLINK) -v gnatdll -o $@ \
 	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
-
-../../vxaddr2line$(exeext): ../stamp-tools
-	$(GNATMAKE) -c  $(ADA_INCLUDES) vxaddr2line --GCC="$(CC) $(ALL_ADAFLAGS)"
-	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) vxaddr2line
-	$(GNATLINK) -v vxaddr2line -o $@ \
-	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" ../targext.o $(CLIB)
-
-../../vxlink$(exeext): ../stamp-tools
-	$(GNATMAKE) -c  $(ADA_INCLUDES) vxlink-main --GCC="$(CC) $(ALL_ADAFLAGS)"
-	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) vxlink-main
-	$(GNATLINK) -v vxlink-main -o $@ \
-	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)"
 
 gnatmake-re: ../stamp-tools
 	$(GNATMAKE) -j0 $(ADA_INCLUDES) -u sdefault --GCC="$(CC) $(MOST_ADA_FLAGS)"
@@ -589,7 +564,7 @@ install-gnatlib: ../stamp-gnatlib-$(RTSDIR) install-gcc-specs
 	$(RM) ../stamp-gnatlib-$(RTSDIR)
 
 ../stamp-gnatlib1-$(RTSDIR): Makefile ../stamp-gnatlib2-$(RTSDIR)
-	$(MAKE) THREAD_KIND=$(THREAD_KIND) setup-rts
+	$(MAKE) MULTISUBDIR="$(MULTISUBDIR)" THREAD_KIND="$(THREAD_KIND)" setup-rts
 # Copy tsystem.h
 	$(CP) $(srcdir)/tsystem.h $(RTSDIR)
 	$(RM) ../stamp-gnatlib-$(RTSDIR)
@@ -713,6 +688,7 @@ gnatlib-shared-dual:
              GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	     GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
 	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C)" \
+	     PICFLAG_FOR_TARGET="$(PICFLAG_FOR_TARGET)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
              gnatlib-shared-default
@@ -829,12 +805,14 @@ gnatlib-shared:
 # commenting the pragma instead of deleting the line, as the latter might
 # result in getting multiple blank lines, hence possible style check errors.
 gnatlib-sjlj:
-	$(MAKE) $(FLAGS_TO_PASS) EH_MECHANISM="" \
-	THREAD_KIND="$(THREAD_KIND)" ../stamp-gnatlib1-$(RTSDIR)
+	$(MAKE) $(FLAGS_TO_PASS) \
+	     EH_MECHANISM="" \
+	     MULTISUBDIR="$(MULTISUBDIR)" \
+	     THREAD_KIND="$(THREAD_KIND)" \
+	     ../stamp-gnatlib1-$(RTSDIR)
 	sed \
 	  -e 's/Frontend_Exceptions.*/Frontend_Exceptions       : constant Boolean := True;/' \
 	  -e 's/ZCX_By_Default.*/ZCX_By_Default            : constant Boolean := False;/' \
-	  -e 's/\(pragma Linker.*crtbe.*\)/--  \1/' \
 	  $(RTSDIR)/system.ads > $(RTSDIR)/s.ads
 	$(MV) $(RTSDIR)/s.ads $(RTSDIR)/system.ads
 	$(MAKE) $(FLAGS_TO_PASS) \
@@ -845,11 +823,14 @@ gnatlib-sjlj:
 	     FORCE_DEBUG_ADAFLAGS="$(FORCE_DEBUG_ADAFLAGS)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
-	     PICFLAG_FOR_TARGET="$(PICFLAG_FOR_TARGET)" gnatlib
+	     gnatlib
 
 gnatlib-zcx:
-	$(MAKE) $(FLAGS_TO_PASS) EH_MECHANISM="-gcc" \
-	  THREAD_KIND="$(THREAD_KIND)" ../stamp-gnatlib1-$(RTSDIR)
+	$(MAKE) $(FLAGS_TO_PASS) \
+	     EH_MECHANISM="-gcc" \
+	     MULTISUBDIR="$(MULTISUBDIR)" \
+	     THREAD_KIND="$(THREAD_KIND)" \
+	     ../stamp-gnatlib1-$(RTSDIR)
 	sed \
 	  -e 's/Frontend_Exceptions.*/Frontend_Exceptions       : constant Boolean := False;/' \
 	  -e 's/ZCX_By_Default.*/ZCX_By_Default            : constant Boolean := True;/' \
@@ -863,7 +844,7 @@ gnatlib-zcx:
 	     FORCE_DEBUG_ADAFLAGS="$(FORCE_DEBUG_ADAFLAGS)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
-	     PICFLAG_FOR_TARGET="$(PICFLAG_FOR_TARGET)" gnatlib
+	     gnatlib
 
 # Compiling object files from source files.
 
@@ -934,21 +915,6 @@ cio.o     : cio.c
 
 init.o    : init.c adaint.h raise.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
-	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
-
-vx_crtbegin.o : vx_crtbegin.c vx_crtbegin.inc
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
-		 -iquote $(srcdir) -iquote $(ftop_srcdir)/libgcc \
-	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
-
-vx_crtbegin_auto.o : vx_crtbegin_auto.c vx_crtbegin.inc
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
-		 -iquote $(srcdir) -iquote $(ftop_srcdir)/libgcc \
-	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
-
-vx_crtend.o : vx_crtend.c
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
-		 -iquote $(srcdir) -iquote $(ftop_srcdir)/libgcc \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 init-vxsim.o : init-vxsim.c

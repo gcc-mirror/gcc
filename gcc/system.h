@@ -1,6 +1,6 @@
 /* Get common system includes and various definitions and declarations based
    on autoconf macros.
-   Copyright (C) 1998-2018 Free Software Foundation, Inc.
+   Copyright (C) 1998-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1207,5 +1207,34 @@ void gcc_stablesort (void *, size_t, size_t,
 #define PP_5th(a1, a2, a3, a4, a5, ...) a5
 #undef qsort
 #define qsort(...) PP_5th (__VA_ARGS__, gcc_qsort, 3, 2, qsort, 0) (__VA_ARGS__)
+
+#define ONE_K 1024
+#define ONE_M (ONE_K * ONE_K)
+
+/* Display a number as an integer multiple of either:
+   - 1024, if said integer is >= to 10 K (in base 2)
+   - 1024 * 1024, if said integer is >= 10 M in (base 2)
+ */
+#define SIZE_SCALE(x) (((x) < 10 * ONE_K \
+			? (x) \
+			: ((x) < 10 * ONE_M \
+			   ? (x) / ONE_K \
+			   : (x) / ONE_M)))
+
+/* For a given integer, display either:
+   - the character 'k', if the number is higher than 10 K (in base 2)
+     but strictly lower than 10 M (in base 2)
+   - the character 'M' if the number is higher than 10 M (in base2)
+   - the charcter ' ' if the number is strictly lower  than 10 K  */
+#define SIZE_LABEL(x) ((x) < 10 * ONE_K ? ' ' : ((x) < 10 * ONE_M ? 'k' : 'M'))
+
+/* Display an integer amount as multiple of 1K or 1M (in base 2).
+   Display the correct unit (either k, M, or ' ') after the amount, as
+   well.  */
+#define SIZE_AMOUNT(size) (uint64_t)SIZE_SCALE (size), SIZE_LABEL (size)
+
+/* Format string particle for printing a SIZE_AMOUNT with N being the width
+   of the number.  */
+#define PRsa(n) "%" #n PRIu64 "%c"
 
 #endif /* ! GCC_SYSTEM_H */

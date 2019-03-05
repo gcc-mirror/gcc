@@ -218,7 +218,7 @@ extern void omp_target_free(
     \return            true if storage is found, false otherwise.
 */
 extern int omp_target_is_present(
-    void *ptr,
+    const void *ptr,
     int device_num
 ) __GOMP_NOTHROW;
 
@@ -235,7 +235,7 @@ extern int omp_target_is_present(
 */
 extern int omp_target_memcpy(
     void   *dst, 
-    void   *src, 
+    const void *src,
     size_t  length, 
     size_t  dst_offset, 
     size_t  src_offset, 
@@ -261,7 +261,7 @@ extern int omp_target_memcpy(
 */
 extern int omp_target_memcpy_rect(
     void         *dst,
-    void         *src,
+    const void   *src,
     size_t        element_size,
     int           num_dims,
     const size_t *volume,
@@ -283,8 +283,8 @@ extern int omp_target_memcpy_rect(
     \return               0 on success, 1 otherwise.
 */
 extern int omp_target_associate_ptr(
-    void   *host_ptr, 
-    void   *device_ptr,
+    const void *host_ptr,
+    const void *device_ptr,
     size_t  size,
     size_t  device_offset,
     int     device_num
@@ -297,7 +297,7 @@ extern int omp_target_associate_ptr(
     \return            0 on success, 1 otherwise.
 */
 extern int omp_target_disassociate_ptr(
-    void   *host_ptr,
+    const void *host_ptr,
     int     device_num
 ) __GOMP_NOTHROW;
 

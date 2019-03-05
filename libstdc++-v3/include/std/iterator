@@ -1,6 +1,6 @@
 // <iterator> -*- C++ -*-
 
-// Copyright (C) 2001-2018 Free Software Foundation, Inc.
+// Copyright (C) 2001-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -66,5 +66,9 @@
 #include <bits/stream_iterator.h>
 #include <bits/streambuf_iterator.h>
 #include <bits/range_access.h>
+
+#if __cplusplus >= 201402L && ! defined _GLIBCXX_DEBUG // PR libstdc++/70303
+# define __cpp_lib_null_iterators 201304L
+#endif
 
 #endif /* _GLIBCXX_ITERATOR */

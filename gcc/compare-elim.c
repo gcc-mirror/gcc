@@ -1,5 +1,5 @@
 /* Post-reload compare elimination.
-   Copyright (C) 2010-2018 Free Software Foundation, Inc.
+   Copyright (C) 2010-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -123,9 +123,31 @@ struct comparison
 
   /* True if its inputs are still valid at the end of the block.  */
   bool inputs_valid;
+
+  /* Whether IN_A is wrapped in a NOT before being compared.  */
+  bool not_in_a;
 };
   
 static vec<comparison *> all_compares;
+
+/* Return whether X is a NOT unary expression.  */
+
+static bool
+is_not (rtx x)
+{
+  return GET_CODE (x) == NOT;
+}
+
+/* Strip a NOT unary expression around X, if any.  */
+
+static rtx
+strip_not (rtx x)
+{
+  if (is_not (x))
+    return XEXP (x, 0);
+
+  return x;
+}
 
 /* Look for a "conforming" comparison, as defined above.  If valid, return
    the rtx for the COMPARE itself.  */
@@ -147,7 +169,7 @@ conforming_compare (rtx_insn *insn)
   if (!REG_P (dest) || REGNO (dest) != targetm.flags_regnum)
     return NULL;
 
-  if (!REG_P (XEXP (src, 0)))
+  if (!REG_P (strip_not (XEXP (src, 0))))
     return NULL;
 
   if (CONSTANT_P (XEXP (src, 1)) || REG_P (XEXP (src, 1)))
@@ -278,8 +300,11 @@ can_eliminate_compare (rtx compare, rtx eh_note, struct comparison *cmp)
     return false;
 
   /* Make sure the compare is redundant with the previous.  */
-  if (!rtx_equal_p (XEXP (compare, 0), cmp->in_a)
+  if (!rtx_equal_p (strip_not (XEXP (compare, 0)), cmp->in_a)
       || !rtx_equal_p (XEXP (compare, 1), cmp->in_b))
+    return false;
+
+  if (is_not (XEXP (compare, 0)) != cmp->not_in_a)
     return false;
 
   /* New mode must be compatible with the previous compare mode.  */
@@ -365,8 +390,9 @@ find_comparison_dom_walker::before_dom_children (basic_block bb)
 	  last_cmp = XCNEW (struct comparison);
 	  last_cmp->insn = insn;
 	  last_cmp->prev_clobber = last_clobber;
-	  last_cmp->in_a = XEXP (src, 0);
+	  last_cmp->in_a = strip_not (XEXP (src, 0));
 	  last_cmp->in_b = XEXP (src, 1);
+	  last_cmp->not_in_a = is_not (XEXP (src, 0));
 	  last_cmp->eh_note = eh_note;
 	  last_cmp->orig_mode = GET_MODE (src);
 	  if (last_cmp->in_b == const0_rtx
@@ -734,7 +760,7 @@ try_merge_compare (struct comparison *cmp)
 static bool
 try_eliminate_compare (struct comparison *cmp)
 {
-  rtx flags, in_a, in_b, cmp_src;
+  rtx flags, in_a, in_b, cmp_a, cmp_b;
 
   if (try_merge_compare (cmp))
     return true;
@@ -786,7 +812,7 @@ try_eliminate_compare (struct comparison *cmp)
 
   rtx x = XVECEXP (PATTERN (insn), 0, 0);
   if (rtx_equal_p (SET_DEST (x), in_a))
-    cmp_src = SET_SRC (x);
+    cmp_a = SET_SRC (x);
 
   /* Also check operations with implicit extensions, e.g.:
      [(set (reg:DI)
@@ -800,7 +826,7 @@ try_eliminate_compare (struct comparison *cmp)
 	   && (GET_CODE (SET_SRC (x)) == ZERO_EXTEND
 	       || GET_CODE (SET_SRC (x)) == SIGN_EXTEND)
 	   && GET_MODE (XEXP (SET_SRC (x), 0)) == GET_MODE (in_a))
-    cmp_src = XEXP (SET_SRC (x), 0);
+    cmp_a = XEXP (SET_SRC (x), 0);
 
   /* Also check fully redundant comparisons, e.g.:
      [(set (reg:SI)
@@ -811,7 +837,7 @@ try_eliminate_compare (struct comparison *cmp)
 	   && GET_CODE (SET_SRC (x)) == MINUS
 	   && rtx_equal_p (XEXP (SET_SRC (x), 0), in_a)
 	   && rtx_equal_p (XEXP (SET_SRC (x), 1), in_b))
-    cmp_src = in_a;
+    cmp_a = in_a;
 
   else
     return false;
@@ -819,17 +845,28 @@ try_eliminate_compare (struct comparison *cmp)
   /* If the source uses addressing modes with side effects, we can't
      do the merge because we'd end up with a PARALLEL that has two
      instances of that side effect in it.  */
-  if (side_effects_p (cmp_src))
+  if (side_effects_p (cmp_a))
+    return false;
+
+  if (in_a == in_b)
+    cmp_b = cmp_a;
+  else if (rtx_equal_p (SET_DEST (x), in_b))
+    cmp_b = SET_SRC (x);
+  else
+    cmp_b = in_b;
+  if (side_effects_p (cmp_b))
     return false;
 
   /* Determine if we ought to use a different CC_MODE here.  */
-  flags = maybe_select_cc_mode (cmp, cmp_src, in_b);
+  flags = maybe_select_cc_mode (cmp, cmp_a, cmp_b);
   if (flags == NULL)
     flags = gen_rtx_REG (cmp->orig_mode, targetm.flags_regnum);
 
   /* Generate a new comparison for installation in the setter.  */
-  rtx y = copy_rtx (cmp_src);
-  y = gen_rtx_COMPARE (GET_MODE (flags), y, in_b);
+  rtx y = cmp->not_in_a
+	  ? gen_rtx_NOT (GET_MODE (cmp_a), copy_rtx (cmp_a))
+	  : copy_rtx (cmp_a);
+  y = gen_rtx_COMPARE (GET_MODE (flags), y, copy_rtx (cmp_b));
   y = gen_rtx_SET (flags, y);
 
   /* Canonicalize instruction to:

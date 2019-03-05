@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2019 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -86,9 +86,21 @@ enum memmodel
 
 /* alloc.c */
 
+#if defined(HAVE_ALIGNED_ALLOC) \
+    || defined(HAVE__ALIGNED_MALLOC) \
+    || defined(HAVE_POSIX_MEMALIGN) \
+    || defined(HAVE_MEMALIGN)
+/* Defined if gomp_aligned_alloc doesn't use fallback version
+   and free can be used instead of gomp_aligned_free.  */
+#define GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC 1
+#endif
+
 extern void *gomp_malloc (size_t) __attribute__((malloc));
 extern void *gomp_malloc_cleared (size_t) __attribute__((malloc));
 extern void *gomp_realloc (void *, size_t);
+extern void *gomp_aligned_alloc (size_t, size_t)
+  __attribute__((malloc, alloc_size (2)));
+extern void gomp_aligned_free (void *);
 
 /* Avoid conflicting prototypes of alloca() in system headers by using
    GCC's builtin alloca().  */
@@ -138,7 +150,8 @@ enum gomp_schedule_type
   GFS_STATIC,
   GFS_DYNAMIC,
   GFS_GUIDED,
-  GFS_AUTO
+  GFS_AUTO,
+  GFS_MONOTONIC = 0x80000000U
 };
 
 struct gomp_doacross_work_share
@@ -175,6 +188,8 @@ struct gomp_doacross_work_share
     /* Likewise, but for the ull implementation.  */
     unsigned long long boundary_ull;
   };
+  /* Pointer to extra memory if needed for lastprivate(conditional).  */
+  void *extra;
   /* Array of shift counts for each dimension if they can be flattened.  */
   unsigned int shift_counts[];
 };
@@ -276,6 +291,9 @@ struct gomp_work_share
     struct gomp_work_share *next_free;
   };
 
+  /* Task reductions for this work-sharing construct.  */
+  uintptr_t *task_reductions;
+
   /* If only few threads are in the team, ordered_team_ids can point
      to this array which fills the padding at the end of this struct.  */
   unsigned inline_ordered_team_ids[0];
@@ -366,6 +384,9 @@ extern void **gomp_places_list;
 extern unsigned long gomp_places_list_len;
 extern unsigned int gomp_num_teams_var;
 extern int gomp_debug_var;
+extern bool gomp_display_affinity_var;
+extern char *gomp_affinity_format_var;
+extern size_t gomp_affinity_format_len;
 extern int goacc_device_num;
 extern char *goacc_device_type;
 extern int goacc_default_dims[GOMP_DIM_MAX];
@@ -471,8 +492,10 @@ struct gomp_taskgroup
   struct gomp_taskgroup *prev;
   /* Queue of tasks that belong in this taskgroup.  */
   struct priority_queue taskgroup_queue;
+  uintptr_t *reductions;
   bool in_taskgroup_wait;
   bool cancelled;
+  bool workshare;
   gomp_sem_t taskgroup_sem;
   size_t num_children;
 };
@@ -615,6 +638,19 @@ struct gomp_thread
 
   /* User pthread thread pool */
   struct gomp_thread_pool *thread_pool;
+
+#if defined(LIBGOMP_USE_PTHREADS) \
+    && (!defined(HAVE_TLS) \
+	|| !defined(__GLIBC__) \
+	|| !defined(USING_INITIAL_EXEC_TLS))
+  /* pthread_t of the thread containing this gomp_thread.
+     On Linux when using initial-exec TLS,
+     (typeof (pthread_t)) gomp_thread () - pthread_self ()
+     is constant in all threads, so we can optimize and not
+     store it.  */
+#define GOMP_NEEDS_THREAD_HANDLE 1
+  pthread_t handle;
+#endif
 };
 
 
@@ -711,6 +747,25 @@ extern bool gomp_affinity_finalize_place_list (bool);
 extern bool gomp_affinity_init_level (int, unsigned long, bool);
 extern void gomp_affinity_print_place (void *);
 extern void gomp_get_place_proc_ids_8 (int, int64_t *);
+extern void gomp_display_affinity_place (char *, size_t, size_t *, int);
+
+/* affinity-fmt.c */
+
+extern void gomp_print_string (const char *str, size_t len);
+extern void gomp_set_affinity_format (const char *, size_t);
+extern void gomp_display_string (char *, size_t, size_t *, const char *,
+				 size_t);
+#ifdef LIBGOMP_USE_PTHREADS
+typedef pthread_t gomp_thread_handle;
+#else
+typedef struct {} gomp_thread_handle;
+#endif
+extern size_t gomp_display_affinity (char *, size_t, const char *,
+				     gomp_thread_handle,
+				     struct gomp_team_state *, unsigned int);
+extern void gomp_display_affinity_thread (gomp_thread_handle,
+					  struct gomp_team_state *,
+					  unsigned int) __attribute__((cold));
 
 /* iter.c */
 
@@ -747,9 +802,9 @@ extern void gomp_ordered_next (void);
 extern void gomp_ordered_static_init (void);
 extern void gomp_ordered_static_next (void);
 extern void gomp_ordered_sync (void);
-extern void gomp_doacross_init (unsigned, long *, long);
+extern void gomp_doacross_init (unsigned, long *, long, size_t);
 extern void gomp_doacross_ull_init (unsigned, unsigned long long *,
-				    unsigned long long);
+				    unsigned long long, size_t);
 
 /* parallel.c */
 
@@ -772,6 +827,10 @@ extern bool gomp_create_target_task (struct gomp_device_descr *,
 				     size_t *, unsigned short *, unsigned int,
 				     void **, void **,
 				     enum gomp_target_task_state);
+extern struct gomp_taskgroup *gomp_parallel_reduction_register (uintptr_t *,
+								unsigned);
+extern void gomp_workshare_taskgroup_start (void);
+extern void gomp_workshare_task_reduction_register (uintptr_t *, uintptr_t *);
 
 static void inline
 gomp_finish_task (struct gomp_task *task)
@@ -784,9 +843,11 @@ gomp_finish_task (struct gomp_task *task)
 
 extern struct gomp_team *gomp_new_team (unsigned);
 extern void gomp_team_start (void (*) (void *), void *, unsigned,
-			     unsigned, struct gomp_team *);
+			     unsigned, struct gomp_team *,
+			     struct gomp_taskgroup *);
 extern void gomp_team_end (void);
 extern void gomp_free_thread (void *);
+extern int gomp_pause_host (void);
 
 /* target.c */
 
@@ -1009,9 +1070,9 @@ extern bool gomp_remove_var (struct gomp_device_descr *, splay_tree_key);
 
 /* work.c */
 
-extern void gomp_init_work_share (struct gomp_work_share *, bool, unsigned);
+extern void gomp_init_work_share (struct gomp_work_share *, size_t, unsigned);
 extern void gomp_fini_work_share (struct gomp_work_share *);
-extern bool gomp_work_share_start (bool);
+extern bool gomp_work_share_start (size_t);
 extern void gomp_work_share_end (void);
 extern bool gomp_work_share_end_cancel (void);
 extern void gomp_work_share_end_nowait (void);
@@ -1089,16 +1150,26 @@ extern int gomp_test_nest_lock_25 (omp_nest_lock_25_t *) __GOMP_NOTHROW;
 # define attribute_hidden
 #endif
 
+#if __GNUC__ >= 9
+#  define HAVE_ATTRIBUTE_COPY
+#endif
+
+#ifdef HAVE_ATTRIBUTE_COPY
+# define attribute_copy(arg) __attribute__ ((copy (arg)))
+#else
+# define attribute_copy(arg)
+#endif
+
 #ifdef HAVE_ATTRIBUTE_ALIAS
 # define strong_alias(fn, al) \
-  extern __typeof (fn) al __attribute__ ((alias (#fn)));
+  extern __typeof (fn) al __attribute__ ((alias (#fn))) attribute_copy (fn);
 
 # define ialias_ulp	ialias_str1(__USER_LABEL_PREFIX__)
 # define ialias_str1(x)	ialias_str2(x)
 # define ialias_str2(x)	#x
 # define ialias(fn) \
   extern __typeof (fn) gomp_ialias_##fn \
-    __attribute__ ((alias (#fn))) attribute_hidden;
+    __attribute__ ((alias (#fn))) attribute_hidden attribute_copy (fn);
 # define ialias_redirect(fn) \
   extern __typeof (fn) fn __asm__ (ialias_ulp "gomp_ialias_" #fn) attribute_hidden;
 # define ialias_call(fn) gomp_ialias_ ## fn
@@ -1138,4 +1209,42 @@ task_to_priority_node (enum priority_queue_type type,
   return (struct priority_node *) ((char *) task
 				   + priority_queue_offset (type));
 }
+
+#ifdef LIBGOMP_USE_PTHREADS
+static inline gomp_thread_handle
+gomp_thread_self (void)
+{
+  return pthread_self ();
+}
+
+static inline gomp_thread_handle
+gomp_thread_to_pthread_t (struct gomp_thread *thr)
+{
+  struct gomp_thread *this_thr = gomp_thread ();
+  if (thr == this_thr)
+    return pthread_self ();
+#ifdef GOMP_NEEDS_THREAD_HANDLE
+  return thr->handle;
+#else
+  /* On Linux with initial-exec TLS, the pthread_t of the thread containing
+     thr can be computed from thr, this_thr and pthread_self (),
+     as the distance between this_thr and pthread_self () is constant.  */
+  return pthread_self () + ((uintptr_t) thr - (uintptr_t) this_thr);
+#endif
+}
+#else
+static inline gomp_thread_handle
+gomp_thread_self (void)
+{
+  return (gomp_thread_handle) {};
+}
+
+static inline gomp_thread_handle
+gomp_thread_to_pthread_t (struct gomp_thread *thr)
+{
+  (void) thr;
+  return gomp_thread_self ();
+}
+#endif
+
 #endif /* LIBGOMP_H */

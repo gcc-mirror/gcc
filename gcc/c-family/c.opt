@@ -1,5 +1,5 @@
 ; Options for the C, ObjC, C++ and ObjC++ front ends.
-; Copyright (C) 2003-2018 Free Software Foundation, Inc.
+; Copyright (C) 2003-2019 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -366,6 +366,10 @@ Wbuiltin-macro-redefined
 C ObjC C++ ObjC++ CPP(warn_builtin_macro_redefined) CppReason(CPP_W_BUILTIN_MACRO_REDEFINED) Var(cpp_warn_builtin_macro_redefined) Init(1) Warning
 Warn when a built-in preprocessor macro is undefined or redefined.
 
+Wc11-c2x-compat
+C ObjC Var(warn_c11_c2x_compat) Init(-1) Warning
+Warn about features not present in ISO C11, but present in ISO C2X.
+
 Wc90-c99-compat
 C ObjC CPP(cpp_warn_c90_c99_compat) CppReason(CPP_W_C90_C99_COMPAT) Var(warn_c90_c99_compat) Init(-1) Warning
 Warn about features not present in ISO C90, but present in ISO C99.
@@ -473,11 +477,16 @@ C++ ObjC++ Var(warn_delnonvdtor) Warning LangEnabledBy(C++ ObjC++,Wall || Weffc+
 Warn about deleting polymorphic objects with non-virtual destructors.
 
 Wdeprecated
-C C++ ObjC ObjC++ CPP(cpp_warn_deprecated) CppReason(CPP_W_DEPRECATED) Var(warn_deprecated) Init(1) Warning
-Warn if a deprecated compiler feature, class, method, or field is used.
+C C++ ObjC ObjC++ CPP(cpp_warn_deprecated) CppReason(CPP_W_DEPRECATED)
+; Documented in common.opt
 
 Wdeprecated-copy
-C++ ObjC++ Var(warn_deprecated_copy) Warning LangEnabledBy(C++ ObjC++, Wall)
+C++ ObjC++ Var(warn_deprecated_copy) Warning LangEnabledBy(C++ ObjC++, Wextra)
+Mark implicitly-declared copy operations as deprecated if the class has a
+user-provided copy operation.
+
+Wdeprecated-copy-dtor
+C++ ObjC++ Var(warn_deprecated_copy, 2) Warning
 Mark implicitly-declared copy operations as deprecated if the class has a
 user-provided copy operation or destructor.
 
@@ -615,6 +624,10 @@ Warn whenever attributes are ignored.
 Wincompatible-pointer-types
 C ObjC Var(warn_incompatible_pointer_types) Init(1) Warning
 Warn when there is a conversion between pointers that have incompatible types.
+
+Waddress-of-packed-member
+C ObjC C++ ObjC++ Var(warn_address_of_packed_member) Init(1) Warning
+Warn when the address of packed member of struct or union is taken.
 
 Winit-self
 C ObjC C++ ObjC++ Var(warn_init_self) Warning LangEnabledBy(C++ ObjC++,Wall)
@@ -805,7 +818,7 @@ Warn on primary template declaration.
 Wmissing-attributes
 C ObjC C++ ObjC++ Var(warn_missing_attributes) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about declarations of entities that may be missing attributes
-that related entities have been declared with it.
+that related entities have been declared with.
 
 Wmissing-format-attribute
 C ObjC C++ ObjC++ Warning Alias(Wsuggest-attribute=format)
@@ -1286,6 +1299,11 @@ C ObjC C++ ObjC++ Joined
 fcanonical-system-headers
 C ObjC C++ ObjC++
 Where shorter, use canonicalized paths to systems headers.
+
+fchar8_t
+C++ ObjC++ Var(flag_char8_t) Init(-1)
+Enable the char8_t fundamental type and use it as the type for UTF-8 string
+and character literals.
 
 fcheck-pointer-bounds
 C ObjC C++ ObjC++ LTO Deprecated
@@ -1992,11 +2010,15 @@ Deprecated in favor of -std=c11.
 
 std=c17
 C ObjC
-Conform to the ISO 2017 C standard (expected to be published in 2018).
+Conform to the ISO 2017 C standard (published in 2018).
 
 std=c18
 C ObjC Alias(std=c17)
-Conform to the ISO 2017 C standard (expected to be published in 2018).
+Conform to the ISO 2017 C standard (published in 2018).
+
+std=c2x
+C ObjC
+Conform to the ISO 202X C standard draft (experimental and incomplete support).
 
 std=c89
 C ObjC Alias(std=c90)
@@ -2062,11 +2084,15 @@ Deprecated in favor of -std=gnu11.
 
 std=gnu17
 C ObjC
-Conform to the ISO 2017 C standard (expected to be published in 2018) with GNU extensions.
+Conform to the ISO 2017 C standard (published in 2018) with GNU extensions.
 
 std=gnu18
 C ObjC Alias(std=gnu17)
-Conform to the ISO 2017 C standard (expected to be published in 2018) with GNU extensions.
+Conform to the ISO 2017 C standard (published in 2018) with GNU extensions.
+
+std=gnu2x
+C ObjC
+Conform to the ISO 202X C standard draft with GNU extensions (experimental and incomplete support).
 
 std=gnu89
 C ObjC Alias(std=gnu90)
@@ -2106,11 +2132,11 @@ Conform to the ISO 2011 C standard.
 
 std=iso9899:2017
 C ObjC Alias(std=c17)
-Conform to the ISO 2017 C standard (expected to be published in 2018).
+Conform to the ISO 2017 C standard (published in 2018).
 
 std=iso9899:2018
 C ObjC Alias(std=c17)
-Conform to the ISO 2017 C standard (expected to be published in 2018).
+Conform to the ISO 2017 C standard (published in 2018).
 
 traditional
 Driver

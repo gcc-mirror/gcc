@@ -229,7 +229,8 @@ reflect_call (const struct __go_func_type *func_type, FuncVal *func_val,
 
   call_result = (unsigned char *) malloc (go_results_size (func_type));
 
-  ffi_call_go (&cif, func_val->fn, call_result, params, func_val);
+  ffi_call_go (&cif, (void (*)(void)) func_val->fn, call_result, params,
+	       func_val);
 
   /* Some day we may need to free result values if RESULTS is
      NULL.  */

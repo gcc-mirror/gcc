@@ -1,5 +1,5 @@
 /* String intrinsics helper functions.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
 
@@ -86,6 +86,14 @@ compare_string (gfc_charlen_type len1, const CHARTYPE *s1,
   const UCHARTYPE *s;
   gfc_charlen_type len;
   int res;
+
+  /* Placate the sanitizer.  */
+  if (!s1 && !s2)
+    return 0;
+  if (!s1)
+    return -1;
+  if (!s2)
+    return 1;
 
   res = MEMCMP (s1, s2, ((len1 < len2) ? len1 : len2));
   if (res != 0)

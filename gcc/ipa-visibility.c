@@ -1,5 +1,5 @@
 /* IPA visibility pass
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
       its calling convention.  We simply mark all static functions whose
       address is not taken as local.
 
-      externally_visible flag is set for symbols that can not be privatized.
+      externally_visible flag is set for symbols that cannot be privatized.
       For privatized symbols we clear TREE_PUBLIC flag and dismantle comdat
       group.
 
@@ -87,7 +87,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 
-/* Return true when NODE can not be local. Worker for cgraph_local_node_p.  */
+/* Return true when NODE cannot be local. Worker for cgraph_local_node_p.  */
 
 static bool
 non_local_p (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
@@ -147,7 +147,7 @@ comdat_can_be_unshared_p_1 (symtab_node *node)
           && !flag_whole_program))
     return false;
 
-  /* Non-readonly and volatile variables can not be duplicated.  */
+  /* Non-readonly and volatile variables cannot be duplicated.  */
   if (is_a <varpool_node *> (node)
       && (!TREE_READONLY (node->decl)
 	  || TREE_THIS_VOLATILE (node->decl)))
@@ -158,7 +158,7 @@ comdat_can_be_unshared_p_1 (symtab_node *node)
 /* COMDAT functions must be shared only if they have address taken,
    otherwise we can produce our own private implementation with
    -fwhole-program.  
-   Return true when turning COMDAT function static can not lead to wrong
+   Return true when turning COMDAT function static cannot lead to wrong
    code when the resulting object links with a library defining same COMDAT.
 
    Virtual functions do have their addresses taken from the vtables,
@@ -464,7 +464,7 @@ optimize_weakref (symtab_node *node)
 
   gcc_assert (node->weakref);
 
-  /* Weakrefs with no target defined can not be optimized.  */
+  /* Weakrefs with no target defined cannot be optimized.  */
   if (!node->analyzed)
     return;
   symtab_node *target = node->get_alias_target ();
@@ -539,7 +539,8 @@ localize_node (bool whole_program, symtab_node *node)
      symbols.  In this case we can privatize all hidden symbol but we need
      to keep non-hidden exported.  */
   if (node->same_comdat_group
-      && node->resolution == LDPR_PREVAILING_DEF_IRONLY)
+      && (node->resolution == LDPR_PREVAILING_DEF_IRONLY
+	  || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP))
     {
       symtab_node *next;
       for (next = node->same_comdat_group;
@@ -674,7 +675,7 @@ function_and_variable_visibility (bool whole_program)
 	}
 
       /* C++ FE on lack of COMDAT support create local COMDAT functions
-	 (that ought to be shared but can not due to object format
+	 (that ought to be shared but cannot due to object format
 	 limitations).  It is necessary to keep the flag to make rest of C++ FE
 	 happy.  Clear the flag here to avoid confusion in middle-end.  */
       if (DECL_COMDAT (node->decl) && !TREE_PUBLIC (node->decl))
@@ -720,7 +721,6 @@ function_and_variable_visibility (bool whole_program)
 	localize_node (whole_program, node);
 
       if (node->thunk.thunk_p
-	  && !node->thunk.add_pointer_bounds_args
 	  && TREE_PUBLIC (node->decl))
 	{
 	  struct cgraph_node *decl_node = node;
@@ -750,8 +750,8 @@ function_and_variable_visibility (bool whole_program)
       if (!node->local.local)
         node->local.local |= node->local_p ();
 
-      /* If we know that function can not be overwritten by a
-	 different semantics and moreover its section can not be
+      /* If we know that function cannot be overwritten by a
+	 different semantics and moreover its section cannot be
 	 discarded, replace all direct calls by calls to an
 	 noninterposable alias.  This make dynamic linking cheaper and
 	 enable more optimization.
@@ -787,7 +787,7 @@ function_and_variable_visibility (bool whole_program)
 		  || vnode->weakref
       		  || TREE_PUBLIC (vnode->decl)
 		  || DECL_EXTERNAL (vnode->decl));
-      /* In several cases declarations can not be common:
+      /* In several cases declarations cannot be common:
 
 	 - when declaration has initializer
 	 - when it is in weak
@@ -911,7 +911,7 @@ whole_program_function_and_variable_visibility (void)
 {
   function_and_variable_visibility (flag_whole_program);
   if (optimize || in_lto_p)
-    ipa_discover_readonly_nonaddressable_vars ();
+    ipa_discover_variable_flags ();
   return 0;
 }
 

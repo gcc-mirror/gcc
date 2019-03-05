@@ -1,5 +1,5 @@
 ;; GCC machine description for MMX and 3dNOW! instructions
-;; Copyright (C) 2005-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2019 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -208,16 +208,23 @@
 	   ]
 	   (const_string "DI")))
    (set (attr "preferred_for_speed")
-     (cond [(eq_attr "alternative" "10,15")
+     (cond [(eq_attr "alternative" "9,15")
 	      (symbol_ref "TARGET_INTER_UNIT_MOVES_FROM_VEC")
-	    (eq_attr "alternative" "11,16")
+	    (eq_attr "alternative" "10,16")
 	      (symbol_ref "TARGET_INTER_UNIT_MOVES_TO_VEC")
 	   ]
 	   (symbol_ref "true")))])
 
 (define_split
   [(set (match_operand:MMXMODE 0 "nonimmediate_gr_operand")
-        (match_operand:MMXMODE 1 "general_gr_operand"))]
+        (match_operand:MMXMODE 1 "nonimmediate_gr_operand"))]
+  "!TARGET_64BIT && reload_completed"
+  [(const_int 0)]
+  "ix86_split_long_move (operands); DONE;")
+
+(define_split
+  [(set (match_operand:MMXMODE 0 "nonimmediate_gr_operand")
+        (match_operand:MMXMODE 1 "const0_operand"))]
   "!TARGET_64BIT && reload_completed"
   [(const_int 0)]
   "ix86_split_long_move (operands); DONE;")
@@ -1347,13 +1354,14 @@
 	  (vec_select:SI
 	    (match_operand:V2SI 1 "memory_operand" "o,o,o")
 	    (parallel [(match_operand:SI 2 "const_0_to_1_operand")]))))]
-  "TARGET_64BIT && TARGET_MMX"
+  "TARGET_64BIT"
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (zero_extend:DI (match_dup 1)))]
 {
   operands[1] = adjust_address (operands[1], SImode, INTVAL (operands[2]) * 4);
-})
+}
+  [(set_attr "isa" "*,sse2,*")])
 
 (define_expand "vec_extractv2sisi"
   [(match_operand:SI 0 "register_operand")

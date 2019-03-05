@@ -1,5 +1,5 @@
 /* Chains of recurrences.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -328,10 +328,12 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 
 	default:
 	  {
-	    if (tree_contains_chrecs (op0, NULL)
-		|| tree_contains_chrecs (op1, NULL))
+	    int size = 0;
+	    if ((tree_contains_chrecs (op0, &size)
+		 || tree_contains_chrecs (op1, &size))
+		&& size < PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
 	      return build2 (code, type, op0, op1);
-	    else
+	    else if (size < PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
 	      {
 		if (code == POINTER_PLUS_EXPR)
 		  return fold_build_pointer_plus (fold_convert (type, op0),
@@ -341,6 +343,8 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 				      fold_convert (type, op0),
 				      fold_convert (type, op1));
 	      }
+	    else
+	      return chrec_dont_know;
 	  }
 	}
     }
@@ -930,8 +934,8 @@ is_multivariate_chrec (const_tree chrec)
 
 /* Determines whether the chrec contains symbolic names or not.  */
 
-bool
-chrec_contains_symbols (const_tree chrec)
+static bool
+chrec_contains_symbols (const_tree chrec, hash_set<const_tree> &visited)
 {
   int i, n;
 
@@ -950,15 +954,22 @@ chrec_contains_symbols (const_tree chrec)
 
   n = TREE_OPERAND_LENGTH (chrec);
   for (i = 0; i < n; i++)
-    if (chrec_contains_symbols (TREE_OPERAND (chrec, i)))
+    if (chrec_contains_symbols (TREE_OPERAND (chrec, i), visited))
       return true;
   return false;
 }
 
+bool
+chrec_contains_symbols (const_tree chrec)
+{
+  hash_set<const_tree> visited;
+  return chrec_contains_symbols (chrec, visited);
+}
+
 /* Determines whether the chrec contains undetermined coefficients.  */
 
-bool
-chrec_contains_undetermined (const_tree chrec)
+static bool
+chrec_contains_undetermined (const_tree chrec, hash_set<const_tree> &visited)
 {
   int i, n;
 
@@ -968,19 +979,29 @@ chrec_contains_undetermined (const_tree chrec)
   if (chrec == NULL_TREE)
     return false;
 
+  if (visited.add (chrec))
+    return false;
+
   n = TREE_OPERAND_LENGTH (chrec);
   for (i = 0; i < n; i++)
-    if (chrec_contains_undetermined (TREE_OPERAND (chrec, i)))
+    if (chrec_contains_undetermined (TREE_OPERAND (chrec, i), visited))
       return true;
   return false;
+}
+
+bool
+chrec_contains_undetermined (const_tree chrec)
+{
+  hash_set<const_tree> visited;
+  return chrec_contains_undetermined (chrec, visited);
 }
 
 /* Determines whether the tree EXPR contains chrecs, and increment
    SIZE if it is not a NULL pointer by an estimation of the depth of
    the tree.  */
 
-bool
-tree_contains_chrecs (const_tree expr, int *size)
+static bool
+tree_contains_chrecs (const_tree expr, int *size, hash_set<const_tree> &visited)
 {
   int i, n;
 
@@ -995,10 +1016,18 @@ tree_contains_chrecs (const_tree expr, int *size)
 
   n = TREE_OPERAND_LENGTH (expr);
   for (i = 0; i < n; i++)
-    if (tree_contains_chrecs (TREE_OPERAND (expr, i), size))
+    if (tree_contains_chrecs (TREE_OPERAND (expr, i), size, visited))
       return true;
   return false;
 }
+
+bool
+tree_contains_chrecs (const_tree expr, int *size)
+{
+  hash_set<const_tree> visited;
+  return tree_contains_chrecs (expr, size, visited);
+}
+
 
 /* Recursive helper function.  */
 

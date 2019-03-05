@@ -1,5 +1,5 @@
 /* SSA Jump Threading
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
    Contributed by Jeff Law  <law@redhat.com>
 
 This file is part of GCC.
@@ -140,7 +140,7 @@ record_temporary_equivalences_from_phis (edge e,
       tree dst = gimple_phi_result (phi);
 
       /* If the desired argument is not the same as this PHI's result
-	 and it is set by a PHI in E->dest, then we can not thread
+	 and it is set by a PHI in E->dest, then we cannot thread
 	 through E->dest.  */
       if (src != dst
 	  && TREE_CODE (src) == SSA_NAME
@@ -166,7 +166,7 @@ record_temporary_equivalences_from_phis (edge e,
 	     away in the VR stack.  */
 	  vr_values *vr_values = evrp_range_analyzer->get_vr_values ();
 	  value_range *new_vr = vr_values->allocate_value_range ();
-	  memset (new_vr, 0, sizeof (value_range));
+	  new (new_vr) value_range ();
 
 	  /* There are three cases to consider:
 
@@ -179,11 +179,11 @@ record_temporary_equivalences_from_phis (edge e,
 	       Otherwise set NEW_VR to varying.  This may be overly
 	       conservative.  */
 	  if (TREE_CODE (src) == SSA_NAME)
-	    copy_value_range (new_vr, vr_values->get_value_range (src));
+	    new_vr->deep_copy (vr_values->get_value_range (src));
 	  else if (TREE_CODE (src) == INTEGER_CST)
-	    set_value_range_to_value (new_vr, src,  NULL);
+	    new_vr->set (src);
 	  else
-	    set_value_range_to_varying (new_vr);
+	    new_vr->set_varying ();
 
 	  /* This is a temporary range for DST, so push it.  */
 	  evrp_range_analyzer->push_value_range (dst, new_vr);
@@ -253,13 +253,13 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 	continue;
 
       /* If the statement has volatile operands, then we assume we
-	 can not thread through this block.  This is overly
+	 cannot thread through this block.  This is overly
 	 conservative in some ways.  */
       if (gimple_code (stmt) == GIMPLE_ASM
 	  && gimple_asm_volatile_p (as_a <gasm *> (stmt)))
 	return NULL;
 
-      /* If the statement is a unique builtin, we can not thread
+      /* If the statement is a unique builtin, we cannot thread
 	 through here.  */
       if (gimple_code (stmt) == GIMPLE_CALL
 	  && gimple_call_internal_p (stmt)
@@ -906,7 +906,7 @@ thread_around_empty_blocks (edge taken_edge,
   tree cond;
 
   /* The key property of these blocks is that they need not be duplicated
-     when threading.  Thus they can not have visible side effects such
+     when threading.  Thus they cannot have visible side effects such
      as PHI nodes.  */
   if (!gsi_end_p (gsi_start_phis (bb)))
     return false;
@@ -981,7 +981,8 @@ thread_around_empty_blocks (edge taken_edge,
       else
 	taken_edge = find_taken_edge (bb, cond);
 
-      if ((taken_edge->flags & EDGE_DFS_BACK) != 0)
+      if (!taken_edge
+	  || (taken_edge->flags & EDGE_DFS_BACK) != 0)
 	return false;
 
       if (bitmap_bit_p (visited, taken_edge->dest->index))

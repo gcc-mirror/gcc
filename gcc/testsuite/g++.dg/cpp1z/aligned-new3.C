@@ -1,5 +1,4 @@
-// { dg-options -std=c++17 }
-// { dg-do run }
+// { dg-do run { target c++17 } }
 
 #include <new>
 

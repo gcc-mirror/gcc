@@ -1,5 +1,5 @@
 /* SSA name expresssons routines
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -67,14 +67,13 @@ struct GTY ((variable_size)) range_info_def {
     if (VAR)
 
 /* Sets the value range to SSA.  */
-extern void set_range_info (tree, enum value_range_type, const wide_int_ref &,
+extern void set_range_info (tree, enum value_range_kind, const wide_int_ref &,
 			    const wide_int_ref &);
-extern void set_range_info_raw (tree, enum value_range_type,
-				const wide_int_ref &,
-				const wide_int_ref &);
+extern void set_range_info (tree, const value_range_base &);
 /* Gets the value range from SSA.  */
-extern enum value_range_type get_range_info (const_tree, wide_int *,
+extern enum value_range_kind get_range_info (const_tree, wide_int *,
 					     wide_int *);
+extern enum value_range_kind get_range_info (const_tree, value_range_base &);
 extern void set_nonzero_bits (tree, const wide_int_ref &);
 extern wide_int get_nonzero_bits (const_tree);
 extern bool ssa_name_has_boolean_range (tree);
@@ -97,7 +96,7 @@ extern bool get_ptr_nonnull (const_tree);
 extern tree copy_ssa_name_fn (struct function *, tree, gimple *);
 extern void duplicate_ssa_name_ptr_info (tree, struct ptr_info_def *);
 extern tree duplicate_ssa_name_fn (struct function *, tree, gimple *);
-extern void duplicate_ssa_name_range_info (tree, enum value_range_type,
+extern void duplicate_ssa_name_range_info (tree, enum value_range_kind,
 					   struct range_info_def *);
 extern void reset_flow_sensitive_info (tree);
 extern void reset_flow_sensitive_info_in_bb (basic_block);

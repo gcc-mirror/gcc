@@ -1,6 +1,6 @@
 ## Makefile for the include subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2001-2018 Free Software Foundation, Inc.
+## Copyright (C) 2001-2019 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -106,6 +106,7 @@ bits_headers = \
 	${bits_srcdir}/cpp_type_traits.h \
 	${bits_srcdir}/deque.tcc \
 	${bits_srcdir}/enable_special_members.h \
+	${bits_srcdir}/erase_if.h \
 	${bits_srcdir}/forward_list.h \
 	${bits_srcdir}/forward_list.tcc \
 	${bits_srcdir}/fs_dir.h \
@@ -671,15 +672,21 @@ experimental_headers = \
 	${experimental_srcdir}/algorithm \
 	${experimental_srcdir}/any \
 	${experimental_srcdir}/array \
+	${experimental_srcdir}/buffer \
 	${experimental_srcdir}/chrono \
 	${experimental_srcdir}/deque \
+	${experimental_srcdir}/executor \
 	${experimental_srcdir}/forward_list \
 	${experimental_srcdir}/functional \
+	${experimental_srcdir}/internet \
+	${experimental_srcdir}/io_context \
 	${experimental_srcdir}/iterator \
 	${experimental_srcdir}/list \
 	${experimental_srcdir}/map \
 	${experimental_srcdir}/memory \
 	${experimental_srcdir}/memory_resource \
+	${experimental_srcdir}/net \
+	${experimental_srcdir}/netfwd \
 	${experimental_srcdir}/numeric \
 	${experimental_srcdir}/optional \
 	${experimental_srcdir}/propagate_const \
@@ -687,10 +694,12 @@ experimental_headers = \
 	${experimental_srcdir}/ratio \
 	${experimental_srcdir}/regex \
 	${experimental_srcdir}/set \
+	${experimental_srcdir}/socket \
 	${experimental_srcdir}/source_location \
 	${experimental_srcdir}/string \
 	${experimental_srcdir}/string_view \
 	${experimental_srcdir}/system_error \
+	${experimental_srcdir}/timer \
 	${experimental_srcdir}/tuple \
 	${experimental_srcdir}/type_traits \
 	${experimental_srcdir}/unordered_map \
@@ -702,8 +711,8 @@ experimental_headers = \
 experimental_bits_srcdir = ${glibcxx_srcdir}/include/experimental/bits
 experimental_bits_builddir = ./experimental/bits
 experimental_bits_headers = \
-	${experimental_bits_srcdir}/erase_if.h \
 	${experimental_bits_srcdir}/lfts_config.h \
+	${experimental_bits_srcdir}/net.h \
 	${experimental_bits_srcdir}/shared_ptr.h \
 	${experimental_bits_srcdir}/string_view.tcc \
 	${experimental_bits_filesystem_headers}

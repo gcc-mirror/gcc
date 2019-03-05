@@ -6,17 +6,17 @@
 
 // keywords: arrays, array bound, zero length
 
-typedef int array_type[0];		// { dg-error "zero-size array" }
+typedef int array_type[0];		// { dg-error "24:ISO C\\+\\+ forbids zero-size array" }
 
-int array_object_1[0];			// { dg-error "zero-size array" }
+int array_object_1[0];			// { dg-error "20:ISO C\\+\\+ forbids zero-size array" }
 
-void function_0 (int formal_array[0])	// { dg-error "zero-size array" }
+void function_0 (int formal_array[0])	// { dg-error "35:ISO C\\+\\+ forbids zero-size array" }
 {
 }
 
 void function_2 ()
 {
-  int local_object_array_0[0];		// { dg-error "zero-size array" }
+  int local_object_array_0[0];		// { dg-error "28:ISO C\\+\\+ forbids zero-size array" }
 }
 
 int main () { return 0; }

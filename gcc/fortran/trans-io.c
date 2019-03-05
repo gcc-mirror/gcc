@@ -1,5 +1,5 @@
 /* IO Code translation/library interface
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -2407,8 +2407,6 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
 
     case_bt_struct:
     case BT_CLASS:
-      if (ts->u.derived->components == NULL)
-	return;
       if (gfc_bt_struct (ts->type) || ts->type == BT_CLASS)
 	{
 	  gfc_symbol *derived;

@@ -20,7 +20,7 @@ foo (int *x)
     #pragma omp for
     for (i = 0; i < 1000; ++i)
       {
-	#pragma omp cancel for if (x[1])
+	#pragma omp cancel for if (cancel: x[1])
 	#pragma omp atomic
 	v++;
       }
@@ -34,7 +34,7 @@ foo (int *x)
     #pragma omp for
     for (i = 0; i < 1000; ++i)
       {
-	#pragma omp cancel for if (x[3])
+	#pragma omp cancel for if ( cancel : x[3])
 	#pragma omp atomic
 	v += 2;
       }
@@ -54,7 +54,7 @@ foo (int *x)
 	#pragma omp cancel for if (x[0])
 	abort ();
       }
-    #pragma omp cancel parallel if (omp_get_thread_num () == 2 && x[4])
+    #pragma omp cancel parallel if (cancel:omp_get_thread_num () == 2 && x[4])
     #pragma omp for
     for (i = 0; i < 1000; ++i)
       {

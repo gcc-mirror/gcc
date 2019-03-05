@@ -2,6 +2,7 @@
 ! parallel.
 
 ! { dg-additional-options "-O2" }
+! { dg-additional-options "-fopt-info-optimized-omp" }
 ! { dg-additional-options "-fdump-tree-ompexp" }
 ! { dg-additional-options "-fdump-tree-oaccdevlow" }
 
@@ -13,7 +14,7 @@ program main
 
   call setup(a, b)
 
-  !$acc parallel loop copyin (a(0:n-1), b(0:n-1)) copyout (c(0:n-1))
+  !$acc parallel loop copyin (a(0:n-1), b(0:n-1)) copyout (c(0:n-1)) ! { dg-message "optimized: assigned OpenACC gang vector loop parallelism" }
   do i = 0, n - 1
      c(i) = a(i) + b(i)
   end do

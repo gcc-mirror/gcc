@@ -1,5 +1,5 @@
 /* Interprocedural Identical Code Folding pass
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
 
    Contributed by Jan Hubicka <hubicka@ucw.cz> and Martin Liska <mliska@suse.cz>
 
@@ -305,57 +305,6 @@ sem_function::get_hash (void)
   return m_hash;
 }
 
-/* Return ture if A1 and A2 represent equivalent function attribute lists.
-   Based on comp_type_attributes.  */
-
-bool
-sem_item::compare_attributes (const_tree a1, const_tree a2)
-{
-  const_tree a;
-  if (a1 == a2)
-    return true;
-  for (a = a1; a != NULL_TREE; a = TREE_CHAIN (a))
-    {
-      const struct attribute_spec *as;
-      const_tree attr;
-
-      as = lookup_attribute_spec (get_attribute_name (a));
-      /* TODO: We can introduce as->affects_decl_identity
-	 and as->affects_decl_reference_identity if attribute mismatch
-	 gets a common reason to give up on merging.  It may not be worth
-	 the effort.
-	 For example returns_nonnull affects only references, while
-	 optimize attribute can be ignored because it is already lowered
-	 into flags representation and compared separately.  */
-      if (!as)
-        continue;
-
-      attr = lookup_attribute (as->name, CONST_CAST_TREE (a2));
-      if (!attr || !attribute_value_equal (a, attr))
-        break;
-    }
-  if (!a)
-    {
-      for (a = a2; a != NULL_TREE; a = TREE_CHAIN (a))
-	{
-	  const struct attribute_spec *as;
-
-	  as = lookup_attribute_spec (get_attribute_name (a));
-	  if (!as)
-	    continue;
-
-	  if (!lookup_attribute (as->name, CONST_CAST_TREE (a1)))
-	    break;
-	  /* We don't need to compare trees again, as we did this
-	     already in first loop.  */
-	}
-      if (!a)
-        return true;
-    }
-  /* TODO: As in comp_type_attributes we may want to introduce target hook.  */
-  return false;
-}
-
 /* Compare properties of symbols N1 and N2 that does not affect semantics of
    symbol itself but affects semantics of its references from USED_BY (which
    may be NULL if it is unknown).  If comparsion is false, symbols
@@ -419,7 +368,7 @@ sem_item::compare_referenced_symbol_properties (symtab_node *used_by,
 	  && (!used_by || !is_a <cgraph_node *> (used_by) || address
 	      || opt_for_fn (used_by->decl, flag_devirtualize)))
 	return return_false_with_msg
-		 ("references to virtual tables can not be merged");
+		 ("references to virtual tables cannot be merged");
 
       if (address && DECL_ALIGN (n1->decl) != DECL_ALIGN (n2->decl))
 	return return_false_with_msg ("alignment mismatch");
@@ -429,8 +378,8 @@ sem_item::compare_referenced_symbol_properties (symtab_node *used_by,
 	 variables just compare attributes for references - the codegen
 	 for constructors is affected only by those attributes that we lower
 	 to explicit representation (such as DECL_ALIGN or DECL_SECTION).  */
-      if (!compare_attributes (DECL_ATTRIBUTES (n1->decl),
-			       DECL_ATTRIBUTES (n2->decl)))
+      if (!attribute_list_equal (DECL_ATTRIBUTES (n1->decl),
+				 DECL_ATTRIBUTES (n2->decl)))
 	return return_false_with_msg ("different var decl attributes");
       if (comp_type_attributes (TREE_TYPE (n1->decl),
 				TREE_TYPE (n2->decl)) != 1)
@@ -599,9 +548,6 @@ sem_function::equals_wpa (sem_item *item,
         return return_false_with_msg ("thunk this_adjusting mismatch");
       if (cnode->thunk.virtual_offset_p != cnode2->thunk.virtual_offset_p)
         return return_false_with_msg ("thunk virtual_offset_p mismatch");
-      if (cnode->thunk.add_pointer_bounds_args
-	  != cnode2->thunk.add_pointer_bounds_args)
-        return return_false_with_msg ("thunk add_pointer_bounds_args mismatch");
     }
 
   /* Compare special function DECL attributes.  */
@@ -716,8 +662,8 @@ sem_function::equals_wpa (sem_item *item,
   if (comp_type_attributes (TREE_TYPE (decl),
 			    TREE_TYPE (item->decl)) != 1)
     return return_false_with_msg ("different type attributes");
-  if (!compare_attributes (DECL_ATTRIBUTES (decl),
-			   DECL_ATTRIBUTES (item->decl)))
+  if (!attribute_list_equal (DECL_ATTRIBUTES (decl),
+			     DECL_ATTRIBUTES (item->decl)))
     return return_false_with_msg ("different decl attributes");
 
   /* The type of THIS pointer type memory location for
@@ -1134,23 +1080,23 @@ sem_function::merge (sem_item *alias_item)
   if (original->can_be_discarded_p ())
     original_discardable = true;
   /* Also consider case where we have resolution info and we know that
-     original's definition is not going to be used.  In this case we can not
+     original's definition is not going to be used.  In this case we cannot
      create alias to original.  */
   if (node->resolution != LDPR_UNKNOWN
       && !decl_binds_to_current_def_p (node->decl))
     original_discardable = original_discarded = true;
 
   /* Creating a symtab alias is the optimal way to merge.
-     It however can not be used in the following cases:
+     It however cannot be used in the following cases:
 
      1) if ORIGINAL and ALIAS may be possibly compared for address equality.
      2) if ORIGINAL is in a section that may be discarded by linker or if
-	it is an external functions where we can not create an alias
+	it is an external functions where we cannot create an alias
 	(ORIGINAL_DISCARDABLE)
      3) if target do not support symbol aliases.
      4) original and alias lie in different comdat groups.
 
-     If we can not produce alias, we will turn ALIAS into WRAPPER of ORIGINAL
+     If we cannot produce alias, we will turn ALIAS into WRAPPER of ORIGINAL
      and/or redirect all callers from ALIAS to ORIGINAL.  */
   if ((original_address_matters && alias_address_matters)
       || (original_discardable
@@ -1200,7 +1146,7 @@ sem_function::merge (sem_item *alias_item)
 	{
 	  if (dump_file)
 	    fprintf (dump_file,
-		     "can not create wrapper of stdarg function.\n");
+		     "cannot create wrapper of stdarg function.\n");
 	}
       else if (ipa_fn_summaries
 	       && ipa_fn_summaries->get (alias) != NULL
@@ -1211,8 +1157,8 @@ sem_function::merge (sem_item *alias_item)
 		     "profitable (function is too small).\n");
 	}
       /* If user paid attention to mark function noinline, assume it is
-	 somewhat special and do not try to turn it into a wrapper that can
-	 not be undone by inliner.  */
+	 somewhat special and do not try to turn it into a wrapper that
+	 cannot be undone by inliner.  */
       else if (lookup_attribute ("noinline", DECL_ATTRIBUTES (alias->decl)))
 	{
 	  if (dump_file)
@@ -1235,7 +1181,7 @@ sem_function::merge (sem_item *alias_item)
       if (!redirect_callers && !create_wrapper)
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "Not unifying; can not redirect callers nor "
+	    fprintf (dump_file, "Not unifying; cannot redirect callers nor "
 		     "produce wrapper\n\n");
 	  return false;
 	}
@@ -1244,7 +1190,7 @@ sem_function::merge (sem_item *alias_item)
 	 If ORIGINAL is interposable, we need to call a local alias.
 	 Also produce local alias (if possible) as an optimization.
 
-	 Local aliases can not be created inside comdat groups because that
+	 Local aliases cannot be created inside comdat groups because that
 	 prevents inlining.  */
       if (!original_discardable && !original->get_comdat_group ())
 	{
@@ -1254,12 +1200,12 @@ sem_function::merge (sem_item *alias_item)
 	      && original->get_availability () > AVAIL_INTERPOSABLE)
 	    local_original = original;
 	}
-      /* If we can not use local alias, fallback to the original
+      /* If we cannot use local alias, fallback to the original
 	 when possible.  */
       else if (original->get_availability () > AVAIL_INTERPOSABLE)
 	local_original = original;
 
-      /* If original is COMDAT local, we can not really redirect calls outside
+      /* If original is COMDAT local, we cannot really redirect calls outside
 	 of its comdat group to it.  */
       if (original->comdat_local_p ())
         redirect_callers = false;
@@ -1267,7 +1213,7 @@ sem_function::merge (sem_item *alias_item)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "Not unifying; "
-		     "can not produce local alias.\n\n");
+		     "cannot produce local alias.\n\n");
 	  return false;
 	}
 
@@ -1275,7 +1221,7 @@ sem_function::merge (sem_item *alias_item)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "Not unifying; "
-		     "can not redirect callers nor produce a wrapper\n\n");
+		     "cannot redirect callers nor produce a wrapper\n\n");
 	  return false;
 	}
       if (!create_wrapper
@@ -1284,7 +1230,7 @@ sem_function::merge (sem_item *alias_item)
 	  && !alias->can_remove_if_no_direct_calls_p ())
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "Not unifying; can not make wrapper and "
+	    fprintf (dump_file, "Not unifying; cannot make wrapper and "
 		     "function has other uses than direct calls\n\n");
 	  return false;
 	}
@@ -1458,7 +1404,6 @@ sem_function::init (void)
       hstate.add_hwi (cnode->thunk.virtual_value);
       hstate.add_flag (cnode->thunk.this_adjusting);
       hstate.add_flag (cnode->thunk.virtual_offset_p);
-      hstate.add_flag (cnode->thunk.add_pointer_bounds_args);
       gcode_hash = hstate.end ();
     }
 }
@@ -2175,7 +2120,7 @@ sem_variable::merge (sem_item *alias_item)
   /* See if original is in a section that can be discarded if the main
      symbol is not used.
      Also consider case where we have resolution info and we know that
-     original's definition is not going to be used.  In this case we can not
+     original's definition is not going to be used.  In this case we cannot
      create alias to original.  */
   if (original->can_be_discarded_p ()
       || (node->resolution != LDPR_UNKNOWN
@@ -2211,7 +2156,7 @@ sem_variable::merge (sem_item *alias_item)
       return false;
     }
 
-  /* We can not merge if address comparsion metters.  */
+  /* We cannot merge if address comparsion metters.  */
   if (alias_address_matters && flag_merge_constants < 2)
     {
       if (dump_file)
@@ -2256,7 +2201,6 @@ sem_variable::merge (sem_item *alias_item)
       DECL_INITIAL (alias->decl) = NULL;
       ((symtab_node *)alias)->call_for_symbol_and_aliases (clear_decl_rtl,
 							   NULL, true);
-      alias->need_bounds_init = false;
       alias->remove_all_references ();
       if (TREE_ADDRESSABLE (alias->decl))
         original->call_for_symbol_and_aliases (set_addressable, NULL, true);
@@ -3168,6 +3112,22 @@ sem_item_optimizer::traverse_congruence_split (congruence_class * const &cls,
   return true;
 }
 
+/* Compare function for sorting pairs in do_congruence_step_f.  */
+
+int
+sem_item_optimizer::sort_congruence_split (const void *a_, const void *b_)
+{
+  const std::pair<congruence_class *, bitmap> *a
+    = (const std::pair<congruence_class *, bitmap> *)a_;
+  const std::pair<congruence_class *, bitmap> *b
+    = (const std::pair<congruence_class *, bitmap> *)b_;
+  if (a->first->id < b->first->id)
+    return -1;
+  else if (a->first->id > b->first->id)
+    return 1;
+  return 0;
+}
+
 /* Tests if a class CLS used as INDEXth splits any congruence classes.
    Bitmap stack BMSTACK is used for bitmap allocation.  */
 
@@ -3208,13 +3168,20 @@ sem_item_optimizer::do_congruence_step_for_index (congruence_class *cls,
 	}
     }
 
+  auto_vec<std::pair<congruence_class *, bitmap> > to_split;
+  to_split.reserve_exact (split_map.elements ());
+  for (hash_map <congruence_class *, bitmap>::iterator i = split_map.begin ();
+       i != split_map.end (); ++i)
+    to_split.safe_push (*i);
+  to_split.qsort (sort_congruence_split);
+
   traverse_split_pair pair;
   pair.optimizer = this;
   pair.cls = cls;
 
   splitter_class_removed = false;
-  split_map.traverse <traverse_split_pair *,
-		      sem_item_optimizer::traverse_congruence_split> (&pair);
+  for (unsigned i = 0; i < to_split.length (); ++i)
+    traverse_congruence_split (to_split[i].first, to_split[i].second, &pair);
 
   /* Bitmap clean-up.  */
   split_map.traverse <traverse_split_pair *,

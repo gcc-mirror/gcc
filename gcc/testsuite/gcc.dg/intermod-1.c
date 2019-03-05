@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-mlocal-symbol-id=" { target amdgcn-*-* } } */
 /* { dg-final { scan-assembler-not {foo[1-9]\.[0-9]} } } */
 
 /* Check that we don't get .0 suffixes on static variables when not using

@@ -1,5 +1,5 @@
 /* Branch prediction routines for the GNU compiler.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -93,6 +93,7 @@ static void predict_paths_leading_to_edge (edge, enum br_predictor,
 					   struct loop *in_loop = NULL);
 static bool can_predict_insn_p (const rtx_insn *);
 static HOST_WIDE_INT get_predictor_value (br_predictor, HOST_WIDE_INT);
+static void determine_unlikely_bbs ();
 
 /* Information we hold about each branch predictor.
    Filled using information from predict.def.  */
@@ -825,7 +826,7 @@ unlikely_executed_bb_p (basic_block bb)
   return false;
 }
 
-/* We can not predict the probabilities of outgoing edges of bb.  Set them
+/* We cannot predict the probabilities of outgoing edges of bb.  Set them
    evenly and hope for the best.  If UNLIKELY_EDGES is not null, distribute
    even probability for all edges not mentioned in the set.  These edges
    are given PROB_VERY_UNLIKELY probability.  Similarly for LIKELY_EDGES,
@@ -876,12 +877,21 @@ set_even_probabilities (basic_block bb,
 	    int p = prediction->ep_probability;
 	    profile_probability prob
 	      = profile_probability::from_reg_br_prob_base (p);
-	    profile_probability remainder = prob.invert ();
 
 	    if (prediction->ep_edge == e)
 	      e->probability = prob;
+	    else if (unlikely_edges != NULL && unlikely_edges->contains (e))
+	      e->probability = profile_probability::very_unlikely ();
 	    else
-	      e->probability = remainder.apply_scale (1, nedges - 1);
+	      {
+		profile_probability remainder = prob.invert ();
+		remainder -= profile_probability::very_unlikely ()
+		  .apply_scale (unlikely_count, 1);
+		int count = nedges - unlikely_count - 1;
+		gcc_assert (count >= 0);
+
+		e->probability = remainder.apply_scale (1, count);
+	      }
 	  }
 	else
 	  e->probability = profile_probability::never ();
@@ -1216,10 +1226,12 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
       if (preds)
 	for (pred = *preds; pred; pred = pred->ep_next)
 	  {
-	    if (pred->ep_probability <= PROB_VERY_UNLIKELY)
+	    if (pred->ep_probability <= PROB_VERY_UNLIKELY
+		|| pred->ep_predictor == PRED_COLD_LABEL)
 	      unlikely_edges.add (pred->ep_edge);
 	    if (pred->ep_probability >= PROB_VERY_LIKELY
-		|| pred->ep_predictor == PRED_BUILTIN_EXPECT)
+		|| pred->ep_predictor == PRED_BUILTIN_EXPECT
+		|| pred->ep_predictor == PRED_HOT_LABEL)
 	      likely_edges.add (pred);
 	  }
 
@@ -2467,6 +2479,13 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		  base = build_real_from_int_cst (t, base);
 		  tree r = fold_build2_initializer_loc (UNKNOWN_LOCATION,
 							MULT_EXPR, t, prob, base);
+		  if (TREE_CODE (r) != REAL_CST)
+		    {
+		      error_at (gimple_location (def),
+				"probability %qE must be "
+				"constant floating-point expression", prob);
+		      return NULL;
+		    }
 		  HOST_WIDE_INT probi
 		    = real_to_integer (TREE_REAL_CST_PTR (r));
 		  if (probi >= 0 && probi <= REG_BR_PROB_BASE)
@@ -2474,6 +2493,11 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		      *predictor = PRED_BUILTIN_EXPECT_WITH_PROBABILITY;
 		      *probability = probi;
 		    }
+		  else
+		    error_at (gimple_location (def),
+			      "probability %qE is outside "
+			      "the range [0.0, 1.0]", prob);
+
 		  return gimple_call_arg (def, 1);
 		}
 
@@ -3051,6 +3075,9 @@ tree_estimate_probability (bool dry_run)
      preheaders.  */
   create_preheaders (CP_SIMPLE_PREHEADERS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
+  /* Decide which edges are known to be unlikely.  This improves later
+     branch prediction. */
+  determine_unlikely_bbs ();
 
   bb_predictions = new hash_map<const_basic_block, edge_prediction *>;
   tree_bb_level_predictions ();
@@ -3756,17 +3783,40 @@ determine_unlikely_bbs ()
     }
   /* Finally all edges from non-0 regions to 0 are unlikely.  */
   FOR_ALL_BB_FN (bb, cfun)
-    if (!(bb->count == profile_count::zero ()))
+    {
+      if (!(bb->count == profile_count::zero ()))
+	FOR_EACH_EDGE (e, ei, bb->succs)
+	  if (!(e->probability == profile_probability::never ())
+	      && e->dest->count == profile_count::zero ())
+	     {
+	       if (dump_file && (dump_flags & TDF_DETAILS))
+		 fprintf (dump_file, "Edge %i->%i is unlikely because "
+			  "it enters unlikely block\n",
+			  bb->index, e->dest->index);
+	       e->probability = profile_probability::never ();
+	     }
+
+      edge other = NULL;
+
       FOR_EACH_EDGE (e, ei, bb->succs)
-	if (!(e->probability == profile_probability::never ())
-	    && e->dest->count == profile_count::zero ())
-	   {
-	     if (dump_file && (dump_flags & TDF_DETAILS))
-	       fprintf (dump_file, "Edge %i->%i is unlikely because "
-		 	"it enters unlikely block\n",
-			bb->index, e->dest->index);
-	     e->probability = profile_probability::never ();
-	   }
+	if (e->probability == profile_probability::never ())
+	  ;
+	else if (other)
+	  {
+	    other = NULL;
+	    break;
+	  }
+	else
+	  other = e;
+      if (other
+	  && !(other->probability == profile_probability::always ()))
+	{
+            if (dump_file && (dump_flags & TDF_DETAILS))
+	      fprintf (dump_file, "Edge %i->%i is locally likely\n",
+		       bb->index, other->dest->index);
+	  other->probability = profile_probability::always ();
+	}
+    }
   if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count == profile_count::zero ())
     cgraph_node::get (current_function_decl)->count = profile_count::zero ();
 }
@@ -4216,7 +4266,7 @@ report_predictor_hitrates (void)
    we are not 100% sure.
 
    This function locally updates profile without attempt to keep global
-   consistency which can not be reached in full generality without full profile
+   consistency which cannot be reached in full generality without full profile
    rebuild from probabilities alone.  Doing so is not necessarily a good idea
    because frequencies and counts may be more realistic then probabilities.
 
@@ -4294,7 +4344,7 @@ force_edge_cold (edge e, bool impossible)
 	{
 	  if (impossible)
 	    e->probability = profile_probability::never ();
-	  /* If BB has some edges out that are not impossible, we can not
+	  /* If BB has some edges out that are not impossible, we cannot
 	     assume that BB itself is.  */
 	  impossible = false;
 	}

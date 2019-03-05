@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *            Copyright (C) 2005-2018, Free Software Foundation, Inc.       *
+ *            Copyright (C) 2005-2019, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -50,9 +50,12 @@
 #include <stdlib.h>
 #endif
 
-#if defined (__APPLE__) && !(defined (__arm__) || defined (__arm64__))
+#if defined (__APPLE__) \
+   && !(defined (__arm__) \
+        || defined (__arm64__) \
+        || defined (__IOS_SIMULATOR__))
 /* On Darwin, _NSGetEnviron must be used for shared libraries; but it is not
-   available on iOS.  */
+   available on iOS (on device or on simulator).  */
 #include <crt_externs.h>
 #endif
 
@@ -211,7 +214,10 @@ __gnat_environ (void)
 #elif defined (__sun__)
   extern char **_environ;
   return _environ;
-#elif defined (__APPLE__) && !(defined (__arm__) || defined (__arm64__))
+#elif defined (__APPLE__) \
+     && !(defined (__arm__) \
+          || defined (__arm64__)                \
+          || defined (__IOS_SIMULATOR__))
   return *_NSGetEnviron ();
 #elif ! (defined (__vxworks))
   extern char **environ;

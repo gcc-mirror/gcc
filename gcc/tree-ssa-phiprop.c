@@ -1,5 +1,5 @@
 /* Backward propagation of indirect loads through PHIs.
-   Copyright (C) 2007-2018 Free Software Foundation, Inc.
+   Copyright (C) 2007-2019 Free Software Foundation, Inc.
    Contributed by Richard Guenther <rguenther@suse.de>
 
 This file is part of GCC.
@@ -159,7 +159,7 @@ phiprop_insert_phi (basic_block bb, gphi *phi, gimple *use_stmt,
     {
       tree old_arg, new_var;
       gassign *tmp;
-      source_location locus;
+      location_t locus;
 
       old_arg = PHI_ARG_DEF_FROM_EDGE (phi, e);
       locus = gimple_phi_arg_location_from_edge (phi, e);
@@ -339,7 +339,7 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
 		|| types_compatible_p
 		     (TREE_TYPE (gimple_assign_lhs (use_stmt)), type))
 	    /* We cannot replace a load that may throw or is volatile.  */
-	    && !stmt_can_throw_internal (use_stmt)))
+	    && !stmt_can_throw_internal (cfun, use_stmt)))
 	continue;
 
       /* Check if we can move the loads.  The def stmt of the virtual use
@@ -495,8 +495,14 @@ pass_phiprop::execute (function *fun)
   bbs = get_all_dominated_blocks (CDI_DOMINATORS,
 				  single_succ (ENTRY_BLOCK_PTR_FOR_FN (fun)));
   FOR_EACH_VEC_ELT (bbs, i, bb)
-    for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-      did_something |= propagate_with_phi (bb, gsi.phi (), phivn, n);
+    {
+      /* Since we're going to move dereferences across predecessor
+         edges avoid blocks with abnormal predecessors.  */
+      if (bb_has_abnormal_pred (bb))
+	continue;
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	did_something |= propagate_with_phi (bb, gsi.phi (), phivn, n);
+    }
 
   if (did_something)
     gsi_commit_edge_inserts ();

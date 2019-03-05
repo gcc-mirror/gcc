@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2019 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -149,11 +149,28 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 
   if (flags & GOMP_TASK_FLAG_NOGROUP)
     {
-      if (thr->task && thr->task->taskgroup && thr->task->taskgroup->cancelled)
-	return;
+      if (__builtin_expect (gomp_cancel_var, 0)
+	  && thr->task
+	  && thr->task->taskgroup)
+	{
+	  if (thr->task->taskgroup->cancelled)
+	    return;
+	  if (thr->task->taskgroup->workshare
+	      && thr->task->taskgroup->prev
+	      && thr->task->taskgroup->prev->cancelled)
+	    return;
+	}
     }
   else
-    ialias_call (GOMP_taskgroup_start) ();
+    {
+      ialias_call (GOMP_taskgroup_start) ();
+      if (flags & GOMP_TASK_FLAG_REDUCTION)
+	{
+	  struct gomp_data_head { TYPE t1, t2; uintptr_t *ptr; };
+	  uintptr_t *ptr = ((struct gomp_data_head *) data)->ptr;
+	  ialias_call (GOMP_taskgroup_reduction_register) (ptr);
+	}
+    }
 
   if (priority > gomp_max_task_priority_var)
     priority = gomp_max_task_priority_var;
@@ -284,19 +301,31 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
       gomp_mutex_lock (&team->task_lock);
       /* If parallel or taskgroup has been cancelled, don't start new
 	 tasks.  */
-      if (__builtin_expect ((gomp_team_barrier_cancelled (&team->barrier)
-			     || (taskgroup && taskgroup->cancelled))
-			    && cpyfn == NULL, 0))
+      if (__builtin_expect (gomp_cancel_var, 0)
+	  && cpyfn == NULL)
 	{
-	  gomp_mutex_unlock (&team->task_lock);
-	  for (i = 0; i < num_tasks; i++)
+	  if (gomp_team_barrier_cancelled (&team->barrier))
 	    {
-	      gomp_finish_task (tasks[i]);
-	      free (tasks[i]);
+	    do_cancel:
+	      gomp_mutex_unlock (&team->task_lock);
+	      for (i = 0; i < num_tasks; i++)
+		{
+		  gomp_finish_task (tasks[i]);
+		  free (tasks[i]);
+		}
+	      if ((flags & GOMP_TASK_FLAG_NOGROUP) == 0)
+		ialias_call (GOMP_taskgroup_end) ();
+	      return;
 	    }
-	  if ((flags & GOMP_TASK_FLAG_NOGROUP) == 0)
-	    ialias_call (GOMP_taskgroup_end) ();
-	  return;
+	  if (taskgroup)
+	    {
+	      if (taskgroup->cancelled)
+		goto do_cancel;
+	      if (taskgroup->workshare
+		  && taskgroup->prev
+		  && taskgroup->prev->cancelled)
+		goto do_cancel;
+	    }
 	}
       if (taskgroup)
 	taskgroup->num_children += num_tasks;

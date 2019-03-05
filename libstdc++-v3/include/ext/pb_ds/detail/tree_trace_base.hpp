@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -80,7 +80,7 @@ namespace __gnu_pbds
       void
       trace_node(node_const_iterator, size_type) const;
 
-      virtual bool
+      _GLIBCXX_NODISCARD virtual bool
       empty() const = 0;
 
       virtual node_const_iterator

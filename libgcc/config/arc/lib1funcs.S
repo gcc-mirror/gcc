@@ -1,6 +1,6 @@
 ; libgcc1 routines for Synopsys DesignWare ARC cpu.
 
-/* Copyright (C) 1995-2018 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2019 Free Software Foundation, Inc.
    Contributor: Joern Rennecke <joern.rennecke@embecosm.com>
 		on behalf of Synopsys Inc.
 
@@ -231,6 +231,60 @@ SYM(__umulsi3_highpart):
 	ENDFUNC(__umulsi3_highpart)
 #endif
 #endif /* L_umulsidi3 */
+
+#ifdef L_muldi3
+	.section .text
+	.align 4
+	.global SYM(__muldi3)
+SYM(__muldi3):
+#ifdef __LITTLE_ENDIAN__
+        push_s blink
+        mov_s r4,r3     ;4
+        mov_s r5,r2     ;4
+        mov_s r9,r0     ;4
+        mov_s r8,r1     ;4
+        bl.d @__umulsidi3
+        mov_s r1,r2     ;4
+        mov_s r6,r0     ;4
+        mov_s r7,r1     ;4
+        mov_s r0,r9     ;4
+        bl.d @__mulsi3
+        mov_s r1,r4     ;4
+        mov_s r4,r0     ;4
+        mov_s r1,r8     ;4
+        bl.d @__mulsi3
+        mov_s r0,r5     ;4
+        pop_s blink
+        add_s r0,r0,r4 ;2
+        add r1,r0,r7
+        j_s.d [blink]
+        mov_s r0,r6     ;4
+#else
+	push_s  blink
+	mov_s   r5,r3
+	mov_s   r9,r2
+	mov_s   r4,r1
+	mov_s   r8,r0
+	mov_s   r0,r1
+	bl.d 	@__umulsidi3
+	mov_s   r1,r3
+	mov_s   r7,r0
+	mov_s   r6,r1
+	mov_s   r0,r4
+	bl.d    @__mulsi3
+	mov_s   r1,r9
+	mov_s   r4,r0
+	mov_s   r1,r8
+	bl.d    @__mulsi3
+	mov_s   r0,r5
+	pop_s   blink
+	add_s   r0,r0,r4
+	add_s   r0,r0,r7
+	j_s.d   [blink]
+	mov_s   r1,r6
+#endif /* __LITTLE_ENDIAN__ */
+ENDFUNC(__muldi3)
+#endif /* L_muldi3 */
 
 #ifdef  L_umulsi3_highpart
 #include "ieee-754/arc-ieee-754.h"

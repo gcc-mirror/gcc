@@ -1,5 +1,5 @@
 # Configure script for libada.
-#   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+#   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@ sinclude(../config/picflag.m4)
 sinclude(../config/unwind_ipinfo.m4)
 
 AC_INIT
-AC_PREREQ([2.64])
 
 AC_CONFIG_SRCDIR([Makefile.in])
 
@@ -130,7 +129,7 @@ AC_PROG_LN_S
 if test ${enable_shared} = yes; then
   default_gnatlib_target="gnatlib-shared"
 else
-  default_gnatlib_target="gnatlib-plain"
+  default_gnatlib_target="gnatlib"
 fi
 AC_SUBST([default_gnatlib_target])
 

@@ -1,5 +1,5 @@
 /* Dwarf2 Call Frame Information helper routines.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -68,6 +68,9 @@ struct GTY(()) dw_cfi_row
 
   /* The expressions for any register column that is saved.  */
   cfi_vec reg_save;
+
+  /* True if the register window is saved.  */
+  bool window_save;
 };
 
 /* The caller's ORIG_REG is saved in SAVED_IN_REG.  */
@@ -147,6 +150,9 @@ struct dw_trace_info
 
   /* True if we've seen different values incoming to beg_true_args_size.  */
   bool args_size_undefined;
+
+  /* True if we've seen an insn with a REG_ARGS_SIZE note before EH_HEAD.  */
+  bool args_size_defined_for_eh;
 };
 
 
@@ -763,6 +769,9 @@ cfi_row_equal_p (dw_cfi_row *a, dw_cfi_row *b)
         return false;
     }
 
+  if (a->window_save != b->window_save)
+    return false;
+
   return true;
 }
 
@@ -941,6 +950,9 @@ notice_args_size (rtx_insn *insn)
   note = find_reg_note (insn, REG_ARGS_SIZE, NULL);
   if (note == NULL)
     return;
+
+  if (!cur_trace->eh_head)
+    cur_trace->args_size_defined_for_eh = true;
 
   args_size = get_args_size (note);
   delta = args_size - cur_trace->end_true_args_size;
@@ -1358,16 +1370,20 @@ dwarf2out_frame_debug_cfa_restore (rtx reg)
 }
 
 /* A subroutine of dwarf2out_frame_debug, process a REG_CFA_WINDOW_SAVE.
-   ??? Perhaps we should note in the CIE where windows are saved (instead of
-   assuming 0(cfa)) and what registers are in the window.  */
+   FAKE is true if this is not really a window save but something else.
+
+   ??? Perhaps we should note in the CIE where windows are saved (instead
+   of assuming 0(cfa)) and what registers are in the window.  */
 
 static void
-dwarf2out_frame_debug_cfa_window_save (void)
+dwarf2out_frame_debug_cfa_window_save (bool fake)
 {
   dw_cfi_ref cfi = new_cfi ();
 
   cfi->dw_cfi_opc = DW_CFA_GNU_window_save;
   add_cfi (cfi);
+  if (!fake)
+    cur_row->window_save = true;
 }
 
 /* Record call frame debugging information for an expression EXPR,
@@ -2127,9 +2143,13 @@ dwarf2out_frame_debug (rtx_insn *insn)
 	break;
 
       case REG_CFA_TOGGLE_RA_MANGLE:
+	/* This uses the same DWARF opcode as the next operation.  */
+	dwarf2out_frame_debug_cfa_window_save (true);
+	handled_one = true;
+	break;
+
       case REG_CFA_WINDOW_SAVE:
-	/* We overload both of these operations onto the same DWARF opcode.  */
-	dwarf2out_frame_debug_cfa_window_save ();
+	dwarf2out_frame_debug_cfa_window_save (false);
 	handled_one = true;
 	break;
 
@@ -2192,6 +2212,14 @@ change_cfi_row (dw_cfi_row *old_row, dw_cfi_row *new_row)
 	add_cfi_restore (i);
       else if (!cfi_equal_p (r_old, r_new))
         add_cfi (r_new);
+    }
+
+  if (!old_row->window_save && new_row->window_save)
+    {
+      dw_cfi_ref cfi = new_cfi ();
+
+      cfi->dw_cfi_opc = DW_CFA_GNU_window_save;
+      add_cfi (cfi);
     }
 }
 
@@ -2820,11 +2848,17 @@ connect_traces (void)
 
 	  if (ti->switch_sections)
 	    prev_args_size = 0;
+
 	  if (ti->eh_head == NULL)
 	    continue;
-	  gcc_assert (!ti->args_size_undefined);
 
-	  if (maybe_ne (ti->beg_delay_args_size, prev_args_size))
+	  /* We require either the incoming args_size values to match or the
+	     presence of an insn setting it before the first EH insn.  */
+	  gcc_assert (!ti->args_size_undefined || ti->args_size_defined_for_eh);
+
+	  /* In the latter case, we force the creation of a CFI note.  */
+	  if (ti->args_size_undefined
+	      || maybe_ne (ti->beg_delay_args_size, prev_args_size))
 	    {
 	      /* ??? Search back to previous CFI note.  */
 	      add_cfi_insn = PREV_INSN (ti->eh_head);

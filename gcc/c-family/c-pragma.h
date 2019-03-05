@@ -1,5 +1,5 @@
 /* Pragma related interfaces.
-   Copyright (C) 1995-2018 Free Software Foundation, Inc.
+   Copyright (C) 1995-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -47,6 +47,7 @@ enum pragma_kind {
   PRAGMA_OMP_CANCELLATION_POINT,
   PRAGMA_OMP_CRITICAL,
   PRAGMA_OMP_DECLARE,
+  PRAGMA_OMP_DEPOBJ,
   PRAGMA_OMP_DISTRIBUTE,
   PRAGMA_OMP_END_DECLARE_TARGET,
   PRAGMA_OMP_FLUSH,
@@ -54,6 +55,7 @@ enum pragma_kind {
   PRAGMA_OMP_MASTER,
   PRAGMA_OMP_ORDERED,
   PRAGMA_OMP_PARALLEL,
+  PRAGMA_OMP_REQUIRES,
   PRAGMA_OMP_SECTION,
   PRAGMA_OMP_SECTIONS,
   PRAGMA_OMP_SIMD,
@@ -75,8 +77,8 @@ enum pragma_kind {
 };
 
 
-/* All clauses defined by OpenACC 2.0, and OpenMP 2.5, 3.0, 3.1, 4.0 and 4.5.
-   Used internally by both C and C++ parsers.  */
+/* All clauses defined by OpenACC 2.0, and OpenMP 2.5, 3.0, 3.1, 4.0, 4.5
+   and 5.0.  Used internally by both C and C++ parsers.  */
 enum pragma_omp_clause {
   PRAGMA_OMP_CLAUSE_NONE = 0,
 
@@ -96,6 +98,7 @@ enum pragma_omp_clause {
   PRAGMA_OMP_CLAUSE_GRAINSIZE,
   PRAGMA_OMP_CLAUSE_HINT,
   PRAGMA_OMP_CLAUSE_IF,
+  PRAGMA_OMP_CLAUSE_IN_REDUCTION,
   PRAGMA_OMP_CLAUSE_INBRANCH,
   PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR,
   PRAGMA_OMP_CLAUSE_LASTPRIVATE,
@@ -104,6 +107,7 @@ enum pragma_omp_clause {
   PRAGMA_OMP_CLAUSE_MAP,
   PRAGMA_OMP_CLAUSE_MERGEABLE,
   PRAGMA_OMP_CLAUSE_NOGROUP,
+  PRAGMA_OMP_CLAUSE_NONTEMPORAL,
   PRAGMA_OMP_CLAUSE_NOTINBRANCH,
   PRAGMA_OMP_CLAUSE_NOWAIT,
   PRAGMA_OMP_CLAUSE_NUM_TASKS,
@@ -121,6 +125,7 @@ enum pragma_omp_clause {
   PRAGMA_OMP_CLAUSE_SHARED,
   PRAGMA_OMP_CLAUSE_SIMD,
   PRAGMA_OMP_CLAUSE_SIMDLEN,
+  PRAGMA_OMP_CLAUSE_TASK_REDUCTION,
   PRAGMA_OMP_CLAUSE_TASKGROUP,
   PRAGMA_OMP_CLAUSE_THREAD_LIMIT,
   PRAGMA_OMP_CLAUSE_THREADS,

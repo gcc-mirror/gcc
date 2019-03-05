@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -40,12 +40,10 @@
 
 #define OBJECT_XCOFF 1
 #define OBJECT_ELF 2
-#define OBJECT_PEF 3
 #define OBJECT_MACHO 4
 
 #define TARGET_ELF (TARGET_OBJECT_FORMAT == OBJECT_ELF)
 #define TARGET_XCOFF (TARGET_OBJECT_FORMAT == OBJECT_XCOFF)
-#define TARGET_MACOS (TARGET_OBJECT_FORMAT == OBJECT_PEF)
 #define TARGET_MACHO (TARGET_OBJECT_FORMAT == OBJECT_MACHO)
 
 #ifndef TARGET_AIX
@@ -78,68 +76,68 @@
    you make changes here, make them also there.  PR63177: Do not pass -mpower8
    to the assembler if -mpower9-vector was also used.  */
 #define ASM_CPU_SPEC \
-"%{!mcpu*: \
-  %{mpowerpc64*: -mppc64} \
-  %{!mpowerpc64*: %(asm_default)}} \
-%{mcpu=native: %(asm_cpu_native)} \
-%{mcpu=cell: -mcell} \
-%{mcpu=power3: -mppc64} \
-%{mcpu=power4: -mpower4} \
-%{mcpu=power5: -mpower5} \
-%{mcpu=power5+: -mpower5} \
-%{mcpu=power6: -mpower6 -maltivec} \
-%{mcpu=power6x: -mpower6 -maltivec} \
-%{mcpu=power7: -mpower7} \
-%{mcpu=power8: %{!mpower9-vector: -mpower8}} \
-%{mcpu=power9: -mpower9} \
-%{mcpu=a2: -ma2} \
-%{mcpu=powerpc: -mppc} \
-%{mcpu=powerpc64le: -mpower8} \
-%{mcpu=rs64a: -mppc64} \
-%{mcpu=401: -mppc} \
-%{mcpu=403: -m403} \
-%{mcpu=405: -m405} \
-%{mcpu=405fp: -m405} \
-%{mcpu=440: -m440} \
-%{mcpu=440fp: -m440} \
-%{mcpu=464: -m440} \
-%{mcpu=464fp: -m440} \
-%{mcpu=476: -m476} \
-%{mcpu=476fp: -m476} \
-%{mcpu=505: -mppc} \
-%{mcpu=601: -m601} \
-%{mcpu=602: -mppc} \
-%{mcpu=603: -mppc} \
-%{mcpu=603e: -mppc} \
-%{mcpu=ec603e: -mppc} \
-%{mcpu=604: -mppc} \
-%{mcpu=604e: -mppc} \
-%{mcpu=620: -mppc64} \
-%{mcpu=630: -mppc64} \
-%{mcpu=740: -mppc} \
-%{mcpu=750: -mppc} \
-%{mcpu=G3: -mppc} \
-%{mcpu=7400: -mppc -maltivec} \
-%{mcpu=7450: -mppc -maltivec} \
-%{mcpu=G4: -mppc -maltivec} \
-%{mcpu=801: -mppc} \
-%{mcpu=821: -mppc} \
-%{mcpu=823: -mppc} \
-%{mcpu=860: -mppc} \
-%{mcpu=970: -mpower4 -maltivec} \
-%{mcpu=G5: -mpower4 -maltivec} \
-%{mcpu=8540: -me500} \
-%{mcpu=8548: -me500} \
-%{mcpu=e300c2: -me300} \
-%{mcpu=e300c3: -me300} \
-%{mcpu=e500mc: -me500mc} \
-%{mcpu=e500mc64: -me500mc64} \
-%{mcpu=e5500: -me5500} \
-%{mcpu=e6500: -me6500} \
-%{maltivec: -maltivec} \
-%{mvsx: -mvsx %{!maltivec: -maltivec} %{!mcpu*: -mpower7}} \
-%{mpower8-vector|mcrypto|mdirect-move|mhtm: %{!mcpu*: -mpower8}} \
-%{mpower9-vector: %{!mcpu*|mcpu=power8: -mpower9}} \
+"%{mcpu=native: %(asm_cpu_native); \
+  mcpu=power9: -mpower9; \
+  mcpu=power8|mcpu=powerpc64le: %{mpower9-vector: -mpower9;: -mpower8}; \
+  mcpu=power7: -mpower7; \
+  mcpu=power6x: -mpower6 %{!mvsx:%{!maltivec:-maltivec}}; \
+  mcpu=power6: -mpower6 %{!mvsx:%{!maltivec:-maltivec}}; \
+  mcpu=power5+: -mpower5; \
+  mcpu=power5: -mpower5; \
+  mcpu=power4: -mpower4; \
+  mcpu=power3: -mppc64; \
+  mcpu=powerpc: -mppc; \
+  mcpu=powerpc64: -mppc64; \
+  mcpu=a2: -ma2; \
+  mcpu=cell: -mcell; \
+  mcpu=rs64: -mppc64; \
+  mcpu=401: -mppc; \
+  mcpu=403: -m403; \
+  mcpu=405: -m405; \
+  mcpu=405fp: -m405; \
+  mcpu=440: -m440; \
+  mcpu=440fp: -m440; \
+  mcpu=464: -m440; \
+  mcpu=464fp: -m440; \
+  mcpu=476: -m476; \
+  mcpu=476fp: -m476; \
+  mcpu=505: -mppc; \
+  mcpu=601: -m601; \
+  mcpu=602: -mppc; \
+  mcpu=603: -mppc; \
+  mcpu=603e: -mppc; \
+  mcpu=ec603e: -mppc; \
+  mcpu=604: -mppc; \
+  mcpu=604e: -mppc; \
+  mcpu=620: -mppc64; \
+  mcpu=630: -mppc64; \
+  mcpu=740: -mppc; \
+  mcpu=750: -mppc; \
+  mcpu=G3: -mppc; \
+  mcpu=7400: -mppc %{!mvsx:%{!maltivec:-maltivec}}; \
+  mcpu=7450: -mppc %{!mvsx:%{!maltivec:-maltivec}}; \
+  mcpu=G4: -mppc %{!mvsx:%{!maltivec:-maltivec}}; \
+  mcpu=801: -mppc; \
+  mcpu=821: -mppc; \
+  mcpu=823: -mppc; \
+  mcpu=860: -mppc; \
+  mcpu=970: -mpower4 %{!mvsx:%{!maltivec:-maltivec}}; \
+  mcpu=G5: -mpower4 %{!mvsx:%{!maltivec:-maltivec}}; \
+  mcpu=8540: -me500; \
+  mcpu=8548: -me500; \
+  mcpu=e300c2: -me300; \
+  mcpu=e300c3: -me300; \
+  mcpu=e500mc: -me500mc; \
+  mcpu=e500mc64: -me500mc64; \
+  mcpu=e5500: -me5500; \
+  mcpu=e6500: -me6500; \
+  mcpu=titan: -mtitan; \
+  !mcpu*: %{mpower9-vector: -mpower9; \
+	    mpower8-vector|mcrypto|mdirect-move|mhtm: -mpower8; \
+	    mvsx: -mpower7; \
+	    mpowerpc64: -mppc64;: %(asm_default)}; \
+  :%eMissing -mcpu option in ASM_CPU_SPEC?\n} \
+%{mvsx: -mvsx -maltivec; maltivec: -maltivec} \
 -many"
 
 #define CPP_DEFAULT_SPEC ""
@@ -224,6 +222,14 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define HAVE_AS_TLS 0
 #endif
 
+#ifndef HAVE_AS_PLTSEQ
+#define HAVE_AS_PLTSEQ 0
+#endif
+
+#ifndef TARGET_PLTSEQ
+#define TARGET_PLTSEQ 0
+#endif
+
 #ifndef TARGET_LINK_STACK
 #define TARGET_LINK_STACK 0
 #endif
@@ -238,7 +244,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 /* Return 1 for a symbol ref for a thread-local storage symbol.  */
 #define RS6000_SYMBOL_REF_TLS_P(RTX) \
-  (GET_CODE (RTX) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (RTX) != 0)
+  (SYMBOL_REF_P (RTX) && SYMBOL_REF_TLS_MODEL (RTX) != 0)
 
 #ifdef IN_LIBGCC2
 /* For libgcc2 we make sure this is a compile time constant */
@@ -613,6 +619,9 @@ extern unsigned char rs6000_recip_bits[];
 #define TARGET_CPU_CPP_BUILTINS() \
   rs6000_cpu_cpp_builtins (pfile)
 
+/* Target CPU versions for D.  */
+#define TARGET_D_CPU_VERSIONS rs6000_d_target_versions
+
 /* This is used by rs6000_cpu_cpp_builtins to indicate the byte order
    we're compiling for.  Some configurations may need to override it.  */
 #define RS6000_CPU_CPP_ENDIAN_BUILTINS()	\
@@ -952,7 +961,7 @@ enum data_align { align_abi, align_opt, align_both };
    33,								\
    63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51,		\
    50, 49, 48, 47, 46,						\
-   75, 73, 74, 69, 68, 72, 71, 70,				\
+   68, 75, 73, 74, 69, 72, 71, 70,				\
    MAYBE_R2_AVAILABLE						\
    9, 10, 8, 7, 6, 5, 4,					\
    3, EARLY_R12 11, 0,						\
@@ -1484,6 +1493,16 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 #define CALL_LONG		0x00000008	/* always call indirect */
 #define CALL_LIBCALL		0x00000010	/* libcall */
 
+#define IS_V4_FP_ARGS(OP) \
+  ((INTVAL (OP) & (CALL_V4_CLEAR_FP_ARGS | CALL_V4_SET_FP_ARGS)) != 0)
+
+/* Whether OP is an UNSPEC used in !TARGET_TLS_MARKER calls.  */
+#define IS_NOMARK_TLSGETADDR(OP)		\
+  (!TARGET_TLS_MARKERS				\
+   && GET_CODE (OP) == UNSPEC			\
+   && (XINT (OP, 1) == UNSPEC_TLSGD		\
+       || XINT (OP, 1) == UNSPEC_TLSLD))
+
 /* We don't have prologue and epilogue functions to save/restore
    everything for most ABIs.  */
 #define WORLD_SAVE_P(INFO) 0
@@ -1670,7 +1689,7 @@ typedef struct rs6000_args
    allocation.  */
 
 #define REGNO_OK_FOR_INDEX_P(REGNO)				\
-((REGNO) < FIRST_PSEUDO_REGISTER				\
+(HARD_REGISTER_NUM_P (REGNO)					\
  ? (REGNO) <= 31 || (REGNO) == 67				\
    || (REGNO) == FRAME_POINTER_REGNUM				\
  : (reg_renumber[REGNO] >= 0					\
@@ -1678,7 +1697,7 @@ typedef struct rs6000_args
 	|| reg_renumber[REGNO] == FRAME_POINTER_REGNUM)))
 
 #define REGNO_OK_FOR_BASE_P(REGNO)				\
-((REGNO) < FIRST_PSEUDO_REGISTER				\
+(HARD_REGISTER_NUM_P (REGNO)					\
  ? ((REGNO) > 0 && (REGNO) <= 31) || (REGNO) == 67		\
    || (REGNO) == FRAME_POINTER_REGNUM				\
  : (reg_renumber[REGNO] > 0					\
@@ -1688,13 +1707,13 @@ typedef struct rs6000_args
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg in the non-strict case.  */
 #define INT_REG_OK_FOR_INDEX_P(X, STRICT)			\
-  ((!(STRICT) && REGNO (X) >= FIRST_PSEUDO_REGISTER)		\
+  ((!(STRICT) && !HARD_REGISTER_P (X))				\
    || REGNO_OK_FOR_INDEX_P (REGNO (X)))
 
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg in the non-strict case.  */
 #define INT_REG_OK_FOR_BASE_P(X, STRICT)			\
-  ((!(STRICT) && REGNO (X) >= FIRST_PSEUDO_REGISTER)		\
+  ((!(STRICT) && !HARD_REGISTER_P (X))				\
    || REGNO_OK_FOR_BASE_P (REGNO (X)))
 
 
@@ -1705,8 +1724,8 @@ typedef struct rs6000_args
 /* Recognize any constant value that is a valid address.  */
 
 #define CONSTANT_ADDRESS_P(X)   \
-  (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
-   || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
+  (GET_CODE (X) == LABEL_REF || SYMBOL_REF_P (X)			\
+   || CONST_INT_P (X) || GET_CODE (X) == CONST				\
    || GET_CODE (X) == HIGH)
 
 #define EASY_VECTOR_15(n) ((n) >= -16 && (n) <= 15)

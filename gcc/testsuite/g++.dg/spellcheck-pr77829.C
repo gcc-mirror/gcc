@@ -18,12 +18,7 @@ namespace detail {
 
 void fn_1_explicit ()
 {
-  detail::some_type i; // { dg-error ".some_type. is not a member of .detail." }
-  // { dg-message "suggested alternative: .some_typedef." "" { target *-*-* } .-1 }
-  /* { dg-begin-multiline-output "" }
-   detail::some_type i;
-           ^~~~~~~~~
-     { dg-end-multiline-output "" } */
+  detail::some_type i; // { dg-error ".some_type. is not a member of .detail.; did you mean 'some_typedef'\\?" }
   /* { dg-begin-multiline-output "" }
    detail::some_type i;
            ^~~~~~~~~
@@ -35,12 +30,7 @@ namespace detail {
 
 void fn_1_implicit ()
 {
-  some_type i; // { dg-error ".some_type. was not declared in this scope" }
-  // { dg-message "suggested alternative: .some_typedef." "" { target *-*-* } .-1 }
-  /* { dg-begin-multiline-output "" }
-   some_type i;
-   ^~~~~~~~~
-     { dg-end-multiline-output "" } */
+  some_type i; // { dg-error ".some_type. was not declared in this scope; did you mean 'some_typedef'\\?" }
   /* { dg-begin-multiline-output "" }
    some_type i;
    ^~~~~~~~~
@@ -54,12 +44,7 @@ void fn_1_implicit ()
 /* Tests of lookup of a function.  */
 
 void fn_2_explicit (int i) {
-  detail::foo(i); // { dg-error ".foo. is not a member of .detail." }
-  // { dg-message "suggested alternative: ._foo." "" { target *-*-* } .-1 }
-  /* { dg-begin-multiline-output "" }
-   detail::foo(i);
-           ^~~
-     { dg-end-multiline-output "" } */
+  detail::foo(i); // { dg-error ".foo. is not a member of .detail.; did you mean '_foo'\\?" }
   /* { dg-begin-multiline-output "" }
    detail::foo(i);
            ^~~
@@ -70,12 +55,7 @@ void fn_2_explicit (int i) {
 namespace detail {
 
 void fn_2_implicit (int i) {
-  foo(i); // { dg-error ".foo. was not declared in this scope" }
-  // { dg-message "suggested alternative: ._foo." "" { target *-*-* } .-1 }
-  /* { dg-begin-multiline-output "" }
-   foo(i);
-   ^~~
-     { dg-end-multiline-output "" } */
+  foo(i); // { dg-error ".foo. was not declared in this scope; did you mean '_foo'\\?" }
   /* { dg-begin-multiline-output "" }
    foo(i);
    ^~~
@@ -89,13 +69,7 @@ void fn_2_implicit (int i) {
 /* Examples using a template.  */
 
 void fn_3_explicit (int i) {
-  detail::something_els(i); // { dg-error ".something_els. is not a member of .detail." }
-  // { dg-message "suggested alternative: .something_else." "" { target *-*-* } .-1 }
-  /* { dg-begin-multiline-output "" }
-   detail::something_els(i);
-           ^~~~~~~~~~~~~
-     { dg-end-multiline-output "" } */
-
+  detail::something_els(i); // { dg-error ".something_els. is not a member of .detail.; did you mean 'something_else'\\?" }
   /* { dg-begin-multiline-output "" }
    detail::something_els(i);
            ^~~~~~~~~~~~~
@@ -106,13 +80,7 @@ void fn_3_explicit (int i) {
 namespace detail {
 
 void fn_3_implicit (int i) {
-  something_els(i); // { dg-error ".something_els. was not declared in this scope" }
-  // { dg-message "suggested alternative: .something_else." "" { target *-*-* } .-1 }
-  /* { dg-begin-multiline-output "" }
-   something_els(i);
-   ^~~~~~~~~~~~~
-     { dg-end-multiline-output "" } */
-
+  something_els(i); // { dg-error ".something_els. was not declared in this scope; did you mean 'something_else'\\?" }
   /* { dg-begin-multiline-output "" }
    something_els(i);
    ^~~~~~~~~~~~~
@@ -153,12 +121,7 @@ typedef int another_typedef;
 
 void fn_5 ()
 {
-  ::another_type i; // { dg-error ".::another_type. has not been declared" }
-  // { dg-message "suggested alternative: .another_typedef." "" { target *-*-* } .-1 }
-  /* { dg-begin-multiline-output "" }
-   ::another_type i;
-     ^~~~~~~~~~~~
-     { dg-end-multiline-output "" } */
+  ::another_type i; // { dg-error ".::another_type. has not been declared; did you mean 'another_typedef'\\?" }
   /* { dg-begin-multiline-output "" }
    ::another_type i;
      ^~~~~~~~~~~~

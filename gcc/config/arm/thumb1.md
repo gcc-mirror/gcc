@@ -1,5 +1,5 @@
 ;; ARM Thumb-1 Machine Description
-;; Copyright (C) 2007-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2019 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -1961,5 +1961,18 @@
     DONE;
   }"
   [(set_attr "type" "mov_reg")]
+)
+
+(define_insn "thumb1_stack_protect_test_insn"
+  [(set (match_operand:SI 0 "register_operand" "=&l")
+	(unspec:SI [(match_operand:SI 1 "memory_operand" "m")
+		    (mem:SI (match_operand:SI 2 "register_operand" "+l"))]
+	 UNSPEC_SP_TEST))
+   (clobber (match_dup 2))]
+  "TARGET_THUMB1"
+  "ldr\t%0, [%2]\;ldr\t%2, %1\;eors\t%0, %2, %0"
+  [(set_attr "length" "8")
+   (set_attr "conds" "set")
+   (set_attr "type" "multiple")]
 )
 

@@ -1,5 +1,5 @@
 ;; Machine description for ARM processor synchronization primitives.
-;; Copyright (C) 2010-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2019 Free Software Foundation, Inc.
 ;; Written by Marcus Shawcroft (marcus.shawcroft@arm.com)
 ;; 64bit Atomics by Dave Gilbert (david.gilbert@linaro.org)
 ;;
@@ -186,7 +186,7 @@
 
 ;; Constraints of this pattern must be at least as strict as those of the
 ;; cbranchsi operations in thumb1.md and aim to be as permissive.
-(define_insn_and_split "atomic_compare_and_swap<CCSI:arch><NARROW:mode>_1"
+(define_insn_and_split "@atomic_compare_and_swap<CCSI:arch><NARROW:mode>_1"
   [(set (match_operand:CCSI 0 "cc_register_operand" "=&c,&l,&l,&l")	;; bool out
 	(unspec_volatile:CCSI [(const_int 0)] VUNSPEC_ATOMIC_CAS))
    (set (match_operand:SI 1 "s_register_operand" "=&r,&l,&0,&l*h")	;; val out
@@ -218,7 +218,7 @@
 
 ;; Constraints of this pattern must be at least as strict as those of the
 ;; cbranchsi operations in thumb1.md and aim to be as permissive.
-(define_insn_and_split "atomic_compare_and_swap<CCSI:arch><SIDI:mode>_1"
+(define_insn_and_split "@atomic_compare_and_swap<CCSI:arch><SIDI:mode>_1"
   [(set (match_operand:CCSI 0 "cc_register_operand" "=&c,&l,&l,&l")	;; bool out
 	(unspec_volatile:CCSI [(const_int 0)] VUNSPEC_ATOMIC_CAS))
    (set (match_operand:SIDI 1 "s_register_operand" "=&r,&l,&0,&l*h")	;; val out

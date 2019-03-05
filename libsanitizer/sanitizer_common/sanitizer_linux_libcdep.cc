@@ -12,7 +12,8 @@
 
 #include "sanitizer_platform.h"
 
-#if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD
+#if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD ||                \
+    SANITIZER_OPENBSD || SANITIZER_SOLARIS
 
 #include "sanitizer_allocator_internal.h"
 #include "sanitizer_atomic.h"
@@ -23,7 +24,6 @@
 #include "sanitizer_linux.h"
 #include "sanitizer_placement_new.h"
 #include "sanitizer_procmaps.h"
-#include "sanitizer_stacktrace.h"
 
 #include <dlfcn.h>  // for dlsym()
 #include <link.h>
@@ -35,19 +35,36 @@
 #if SANITIZER_FREEBSD
 #include <pthread_np.h>
 #include <osreldate.h>
+#include <sys/sysctl.h>
 #define pthread_getattr_np pthread_attr_get_np
 #endif
 
-#if SANITIZER_LINUX
-#include <sys/prctl.h>
+#if SANITIZER_OPENBSD
+#include <pthread_np.h>
+#include <sys/sysctl.h>
+#endif
+
+#if SANITIZER_NETBSD
+#include <sys/sysctl.h>
+#include <sys/tls.h>
+#endif
+
+#if SANITIZER_SOLARIS
+#include <thread.h>
 #endif
 
 #if SANITIZER_ANDROID
 #include <android/api-level.h>
+#if !defined(CPU_COUNT) && !defined(__aarch64__)
+#include <dirent.h>
+#include <fcntl.h>
+struct __sanitizer::linux_dirent {
+  long           d_ino;
+  off_t          d_off;
+  unsigned short d_reclen;
+  char           d_name[];
+};
 #endif
-
-#if SANITIZER_ANDROID && __ANDROID_API__ < 21
-#include <android/log.h>
 #endif
 
 #if !SANITIZER_ANDROID
@@ -101,13 +118,25 @@ void GetThreadStackTopAndBottom(bool at_initialization, uptr *stack_top,
     *stack_bottom = segment.end - stacksize;
     return;
   }
+  uptr stacksize = 0;
+  void *stackaddr = nullptr;
+#if SANITIZER_SOLARIS
+  stack_t ss;
+  CHECK_EQ(thr_stksegment(&ss), 0);
+  stacksize = ss.ss_size;
+  stackaddr = (char *)ss.ss_sp - stacksize;
+#elif SANITIZER_OPENBSD
+  stack_t sattr;
+  CHECK_EQ(pthread_stackseg_np(pthread_self(), &sattr), 0);
+  stackaddr = sattr.ss_sp;
+  stacksize = sattr.ss_size;
+#else  // !SANITIZER_SOLARIS
   pthread_attr_t attr;
   pthread_attr_init(&attr);
   CHECK_EQ(pthread_getattr_np(pthread_self(), &attr), 0);
-  uptr stacksize = 0;
-  void *stackaddr = nullptr;
   my_pthread_attr_getstack(&attr, &stackaddr, &stacksize);
   pthread_attr_destroy(&attr);
+#endif // SANITIZER_SOLARIS
 
   *stack_top = (uptr)stackaddr + stacksize;
   *stack_bottom = (uptr)stackaddr;
@@ -126,65 +155,98 @@ bool SetEnv(const char *name, const char *value) {
 }
 #endif
 
-bool SanitizerSetThreadName(const char *name) {
-#ifdef PR_SET_NAME
-  return 0 == prctl(PR_SET_NAME, (unsigned long)name, 0, 0, 0);  // NOLINT
-#else
-  return false;
-#endif
-}
-
-bool SanitizerGetThreadName(char *name, int max_len) {
-#ifdef PR_GET_NAME
-  char buff[17];
-  if (prctl(PR_GET_NAME, (unsigned long)buff, 0, 0, 0))  // NOLINT
+__attribute__((unused)) static bool GetLibcVersion(int *major, int *minor,
+                                                   int *patch) {
+#ifdef _CS_GNU_LIBC_VERSION
+  char buf[64];
+  uptr len = confstr(_CS_GNU_LIBC_VERSION, buf, sizeof(buf));
+  if (len >= sizeof(buf))
     return false;
-  internal_strncpy(name, buff, max_len);
-  name[max_len] = 0;
+  buf[len] = 0;
+  static const char kGLibC[] = "glibc ";
+  if (internal_strncmp(buf, kGLibC, sizeof(kGLibC) - 1) != 0)
+    return false;
+  const char *p = buf + sizeof(kGLibC) - 1;
+  *major = internal_simple_strtoll(p, &p, 10);
+  *minor = (*p == '.') ? internal_simple_strtoll(p + 1, &p, 10) : 0;
+  *patch = (*p == '.') ? internal_simple_strtoll(p + 1, &p, 10) : 0;
   return true;
 #else
   return false;
 #endif
 }
 
-#ifndef __GLIBC_PREREQ
-#define __GLIBC_PREREQ(x, y) 0
-#endif
-
-#if !SANITIZER_FREEBSD && !SANITIZER_ANDROID && !SANITIZER_GO && \
-    !SANITIZER_NETBSD
+#if !SANITIZER_FREEBSD && !SANITIZER_ANDROID && !SANITIZER_GO &&               \
+    !SANITIZER_NETBSD && !SANITIZER_OPENBSD && !SANITIZER_SOLARIS
 static uptr g_tls_size;
 
+#ifdef __i386__
+# ifndef __GLIBC_PREREQ
+#  define CHECK_GET_TLS_STATIC_INFO_VERSION 1
+# else
+#  define CHECK_GET_TLS_STATIC_INFO_VERSION (!__GLIBC_PREREQ(2, 27))
+# endif
+#else
+# define CHECK_GET_TLS_STATIC_INFO_VERSION 0
+#endif
+
+#if CHECK_GET_TLS_STATIC_INFO_VERSION
+# define DL_INTERNAL_FUNCTION __attribute__((regparm(3), stdcall))
+#else
+# define DL_INTERNAL_FUNCTION
+#endif
+
+namespace {
+struct GetTlsStaticInfoCall {
+  typedef void (*get_tls_func)(size_t*, size_t*);
+};
+struct GetTlsStaticInfoRegparmCall {
+  typedef void (*get_tls_func)(size_t*, size_t*) DL_INTERNAL_FUNCTION;
+};
+
+template <typename T>
+void CallGetTls(void* ptr, size_t* size, size_t* align) {
+  typename T::get_tls_func get_tls;
+  CHECK_EQ(sizeof(get_tls), sizeof(ptr));
+  internal_memcpy(&get_tls, &ptr, sizeof(ptr));
+  CHECK_NE(get_tls, 0);
+  get_tls(size, align);
+}
+
+bool CmpLibcVersion(int major, int minor, int patch) {
+  int ma;
+  int mi;
+  int pa;
+  if (!GetLibcVersion(&ma, &mi, &pa))
+    return false;
+  if (ma > major)
+    return true;
+  if (ma < major)
+    return false;
+  if (mi > minor)
+    return true;
+  if (mi < minor)
+    return false;
+  return pa >= patch;
+}
+
+}  // namespace
+
 void InitTlsSize() {
-// all current supported platforms have 16 bytes stack alignment
+  // all current supported platforms have 16 bytes stack alignment
   const size_t kStackAlign = 16;
+  void *get_tls_static_info_ptr = dlsym(RTLD_NEXT, "_dl_get_tls_static_info");
   size_t tls_size = 0;
   size_t tls_align = 0;
-  void *get_tls_static_info_ptr = dlsym(RTLD_NEXT, "_dl_get_tls_static_info");
-#if defined(__i386__) && !__GLIBC_PREREQ(2, 27)
-  /* On i?86, _dl_get_tls_static_info used to be internal_function, i.e.
-     __attribute__((regparm(3), stdcall)) before glibc 2.27 and is normal
-     function in 2.27 and later.  */
-  if (!dlvsym(RTLD_NEXT, "glob", "GLIBC_2.27")) {
-    typedef void (*get_tls_func)(size_t*, size_t*)
-      __attribute__((regparm(3), stdcall));
-    get_tls_func get_tls;
-    CHECK_EQ(sizeof(get_tls), sizeof(get_tls_static_info_ptr));
-    internal_memcpy(&get_tls, &get_tls_static_info_ptr,
-                    sizeof(get_tls_static_info_ptr));
-    CHECK_NE(get_tls, 0);
-    get_tls(&tls_size, &tls_align);
-  } else
-#endif
-  {
-    typedef void (*get_tls_func)(size_t*, size_t*);
-    get_tls_func get_tls;
-    CHECK_EQ(sizeof(get_tls), sizeof(get_tls_static_info_ptr));
-    internal_memcpy(&get_tls, &get_tls_static_info_ptr,
-                    sizeof(get_tls_static_info_ptr));
-    CHECK_NE(get_tls, 0);
-    get_tls(&tls_size, &tls_align);
-  }
+  // On i?86, _dl_get_tls_static_info used to be internal_function, i.e.
+  // __attribute__((regparm(3), stdcall)) before glibc 2.27 and is normal
+  // function in 2.27 and later.
+  if (CHECK_GET_TLS_STATIC_INFO_VERSION && !CmpLibcVersion(2, 27, 0))
+    CallGetTls<GetTlsStaticInfoRegparmCall>(get_tls_static_info_ptr,
+                                            &tls_size, &tls_align);
+  else
+    CallGetTls<GetTlsStaticInfoCall>(get_tls_static_info_ptr,
+                                     &tls_size, &tls_align);
   if (tls_align < kStackAlign)
     tls_align = kStackAlign;
   g_tls_size = RoundUpTo(tls_size, tls_align);
@@ -192,79 +254,61 @@ void InitTlsSize() {
 #else
 void InitTlsSize() { }
 #endif  // !SANITIZER_FREEBSD && !SANITIZER_ANDROID && !SANITIZER_GO &&
-        // !SANITIZER_NETBSD
+        // !SANITIZER_NETBSD && !SANITIZER_SOLARIS
 
-#if (defined(__x86_64__) || defined(__i386__) || defined(__mips__) \
-    || defined(__aarch64__) || defined(__powerpc64__) || defined(__s390__) \
-    || defined(__arm__)) && SANITIZER_LINUX && !SANITIZER_ANDROID
+#if (defined(__x86_64__) || defined(__i386__) || defined(__mips__) ||          \
+     defined(__aarch64__) || defined(__powerpc64__) || defined(__s390__) ||    \
+     defined(__arm__)) &&                                                      \
+    SANITIZER_LINUX && !SANITIZER_ANDROID
 // sizeof(struct pthread) from glibc.
-static atomic_uintptr_t kThreadDescriptorSize;
+static atomic_uintptr_t thread_descriptor_size;
 
 uptr ThreadDescriptorSize() {
-  uptr val = atomic_load(&kThreadDescriptorSize, memory_order_relaxed);
+  uptr val = atomic_load_relaxed(&thread_descriptor_size);
   if (val)
     return val;
 #if defined(__x86_64__) || defined(__i386__) || defined(__arm__)
-#ifdef _CS_GNU_LIBC_VERSION
-  char buf[64];
-  uptr len = confstr(_CS_GNU_LIBC_VERSION, buf, sizeof(buf));
-  if (len < sizeof(buf) && internal_strncmp(buf, "glibc 2.", 8) == 0) {
-    char *end;
-    int minor = internal_simple_strtoll(buf + 8, &end, 10);
-    if (end != buf + 8 && (*end == '\0' || *end == '.' || *end == '-')) {
-      int patch = 0;
-      if (*end == '.')
-        // strtoll will return 0 if no valid conversion could be performed
-        patch = internal_simple_strtoll(end + 1, nullptr, 10);
-
-      /* sizeof(struct pthread) values from various glibc versions.  */
-      if (SANITIZER_X32)
-        val = 1728;  // Assume only one particular version for x32.
-      // For ARM sizeof(struct pthread) changed in Glibc 2.23.
-      else if (SANITIZER_ARM)
-        val = minor <= 22 ? 1120 : 1216;
-      else if (minor <= 3)
-        val = FIRST_32_SECOND_64(1104, 1696);
-      else if (minor == 4)
-        val = FIRST_32_SECOND_64(1120, 1728);
-      else if (minor == 5)
-        val = FIRST_32_SECOND_64(1136, 1728);
-      else if (minor <= 9)
-        val = FIRST_32_SECOND_64(1136, 1712);
-      else if (minor == 10)
-        val = FIRST_32_SECOND_64(1168, 1776);
-      else if (minor == 11 || (minor == 12 && patch == 1))
-        val = FIRST_32_SECOND_64(1168, 2288);
-      else if (minor <= 14)
-        val = FIRST_32_SECOND_64(1168, 2304);
-      else
-        val = FIRST_32_SECOND_64(1216, 2304);
-    }
-    if (val)
-      atomic_store(&kThreadDescriptorSize, val, memory_order_relaxed);
-    return val;
+  int major;
+  int minor;
+  int patch;
+  if (GetLibcVersion(&major, &minor, &patch) && major == 2) {
+    /* sizeof(struct pthread) values from various glibc versions.  */
+    if (SANITIZER_X32)
+      val = 1728; // Assume only one particular version for x32.
+    // For ARM sizeof(struct pthread) changed in Glibc 2.23.
+    else if (SANITIZER_ARM)
+      val = minor <= 22 ? 1120 : 1216;
+    else if (minor <= 3)
+      val = FIRST_32_SECOND_64(1104, 1696);
+    else if (minor == 4)
+      val = FIRST_32_SECOND_64(1120, 1728);
+    else if (minor == 5)
+      val = FIRST_32_SECOND_64(1136, 1728);
+    else if (minor <= 9)
+      val = FIRST_32_SECOND_64(1136, 1712);
+    else if (minor == 10)
+      val = FIRST_32_SECOND_64(1168, 1776);
+    else if (minor == 11 || (minor == 12 && patch == 1))
+      val = FIRST_32_SECOND_64(1168, 2288);
+    else if (minor <= 14)
+      val = FIRST_32_SECOND_64(1168, 2304);
+    else
+      val = FIRST_32_SECOND_64(1216, 2304);
   }
-#endif
 #elif defined(__mips__)
   // TODO(sagarthakur): add more values as per different glibc versions.
   val = FIRST_32_SECOND_64(1152, 1776);
-  if (val)
-    atomic_store(&kThreadDescriptorSize, val, memory_order_relaxed);
-  return val;
 #elif defined(__aarch64__)
   // The sizeof (struct pthread) is the same from GLIBC 2.17 to 2.22.
   val = 1776;
-  atomic_store(&kThreadDescriptorSize, val, memory_order_relaxed);
-  return val;
 #elif defined(__powerpc64__)
   val = 1776; // from glibc.ppc64le 2.20-8.fc21
-  atomic_store(&kThreadDescriptorSize, val, memory_order_relaxed);
-  return val;
 #elif defined(__s390__)
   val = FIRST_32_SECOND_64(1152, 1776); // valid for glibc 2.22
-  atomic_store(&kThreadDescriptorSize, val, memory_order_relaxed);
 #endif
-  return 0;
+  if (val)
+    atomic_store_relaxed(&thread_descriptor_size, val);
+  return val;
 }
 
 // The offset at which pointer to self is located in the thread descriptor.
@@ -339,7 +383,7 @@ static void **ThreadSelfSegbase() {
   // sysarch(AMD64_GET_FSBASE, segbase);
   __asm __volatile("movq %%fs:0, %0" : "=r" (segbase));
 # else
-#  error "unsupported CPU arch for FreeBSD platform"
+#  error "unsupported CPU arch"
 # endif
   return segbase;
 }
@@ -347,8 +391,35 @@ static void **ThreadSelfSegbase() {
 uptr ThreadSelf() {
   return (uptr)ThreadSelfSegbase()[2];
 }
-#elif SANITIZER_NETBSD
-uptr ThreadSelf() { return (uptr)pthread_self(); }
+#endif  // SANITIZER_FREEBSD
+
+#if SANITIZER_NETBSD
+static struct tls_tcb * ThreadSelfTlsTcb() {
+  struct tls_tcb * tcb;
+# ifdef __HAVE___LWP_GETTCB_FAST
+  tcb = (struct tls_tcb *)__lwp_gettcb_fast();
+# elif defined(__HAVE___LWP_GETPRIVATE_FAST)
+  tcb = (struct tls_tcb *)__lwp_getprivate_fast();
+# endif
+  return tcb;
+}
+
+uptr ThreadSelf() {
+  return (uptr)ThreadSelfTlsTcb()->tcb_pthread;
+}
+
+int GetSizeFromHdr(struct dl_phdr_info *info, size_t size, void *data) {
+  const Elf_Phdr *hdr = info->dlpi_phdr;
+  const Elf_Phdr *last_hdr = hdr + info->dlpi_phnum;
+
+  for (; hdr != last_hdr; ++hdr) {
+    if (hdr->p_type == PT_TLS && info->dlpi_tls_modid == 1) {
+      *(uptr*)data = hdr->p_memsz;
+      break;
+    }
+  }
+  return 0;
+}
 #endif  // SANITIZER_NETBSD
 
 #if !SANITIZER_GO
@@ -380,7 +451,28 @@ static void GetTls(uptr *addr, uptr *size) {
     *addr = (uptr) dtv[2];
     *size = (*addr == 0) ? 0 : ((uptr) segbase[0] - (uptr) dtv[2]);
   }
-#elif SANITIZER_ANDROID || SANITIZER_NETBSD
+#elif SANITIZER_NETBSD
+  struct tls_tcb * const tcb = ThreadSelfTlsTcb();
+  *addr = 0;
+  *size = 0;
+  if (tcb != 0) {
+    // Find size (p_memsz) of dlpi_tls_modid 1 (TLS block of the main program).
+    // ld.elf_so hardcodes the index 1.
+    dl_iterate_phdr(GetSizeFromHdr, size);
+
+    if (*size != 0) {
+      // The block has been found and tcb_dtv[1] contains the base address
+      *addr = (uptr)tcb->tcb_dtv[1];
+    }
+  }
+#elif SANITIZER_OPENBSD
+  *addr = 0;
+  *size = 0;
+#elif SANITIZER_ANDROID
+  *addr = 0;
+  *size = 0;
+#elif SANITIZER_SOLARIS
+  // FIXME
   *addr = 0;
   *size = 0;
 #else
@@ -391,7 +483,8 @@ static void GetTls(uptr *addr, uptr *size) {
 
 #if !SANITIZER_GO
 uptr GetTlsSize() {
-#if SANITIZER_FREEBSD || SANITIZER_ANDROID || SANITIZER_NETBSD
+#if SANITIZER_FREEBSD || SANITIZER_ANDROID || SANITIZER_NETBSD ||              \
+    SANITIZER_OPENBSD || SANITIZER_SOLARIS
   uptr addr, size;
   GetTls(&addr, &size);
   return size;
@@ -428,13 +521,13 @@ void GetThreadStackAndTls(bool main, uptr *stk_addr, uptr *stk_size,
 #endif
 }
 
-# if !SANITIZER_FREEBSD
+#if !SANITIZER_FREEBSD && !SANITIZER_OPENBSD
 typedef ElfW(Phdr) Elf_Phdr;
-# elif SANITIZER_WORDSIZE == 32 && __FreeBSD_version <= 902001  // v9.2
-#  define Elf_Phdr XElf32_Phdr
-#  define dl_phdr_info xdl_phdr_info
-#  define dl_iterate_phdr(c, b) xdl_iterate_phdr((c), (b))
-# endif
+#elif SANITIZER_WORDSIZE == 32 && __FreeBSD_version <= 902001 // v9.2
+#define Elf_Phdr XElf32_Phdr
+#define dl_phdr_info xdl_phdr_info
+#define dl_iterate_phdr(c, b) xdl_iterate_phdr((c), (b))
+#endif // !SANITIZER_FREEBSD && !SANITIZER_OPENBSD
 
 struct DlIteratePhdrData {
   InternalMmapVectorNoCtor<LoadedModule> *modules;
@@ -455,7 +548,7 @@ static int dl_iterate_phdr_cb(dl_phdr_info *info, size_t size, void *arg) {
     return 0;
   LoadedModule cur_module;
   cur_module.set(module_name.data(), info->dlpi_addr);
-  for (int i = 0; i < info->dlpi_phnum; i++) {
+  for (int i = 0; i < (int)info->dlpi_phnum; i++) {
     const Elf_Phdr *phdr = &info->dlpi_phdr[i];
     if (phdr->p_type == PT_LOAD) {
       uptr cur_beg = info->dlpi_addr + phdr->p_vaddr;
@@ -551,12 +644,69 @@ uptr GetRSS() {
   return rss * GetPageSizeCached();
 }
 
-// 64-bit Android targets don't provide the deprecated __android_log_write.
-// Starting with the L release, syslog() works and is preferable to
-// __android_log_write.
+// sysconf(_SC_NPROCESSORS_{CONF,ONLN}) cannot be used on most platforms as
+// they allocate memory.
+u32 GetNumberOfCPUs() {
+#if SANITIZER_FREEBSD || SANITIZER_NETBSD || SANITIZER_OPENBSD
+  u32 ncpu;
+  int req[2];
+  uptr len = sizeof(ncpu);
+  req[0] = CTL_HW;
+  req[1] = HW_NCPU;
+  CHECK_EQ(internal_sysctl(req, 2, &ncpu, &len, NULL, 0), 0);
+  return ncpu;
+#elif SANITIZER_ANDROID && !defined(CPU_COUNT) && !defined(__aarch64__)
+  // Fall back to /sys/devices/system/cpu on Android when cpu_set_t doesn't
+  // exist in sched.h. That is the case for toolchains generated with older
+  // NDKs.
+  // This code doesn't work on AArch64 because internal_getdents makes use of
+  // the 64bit getdents syscall, but cpu_set_t seems to always exist on AArch64.
+  uptr fd = internal_open("/sys/devices/system/cpu", O_RDONLY | O_DIRECTORY);
+  if (internal_iserror(fd))
+    return 0;
+  InternalMmapVector<u8> buffer(4096);
+  uptr bytes_read = buffer.size();
+  uptr n_cpus = 0;
+  u8 *d_type;
+  struct linux_dirent *entry = (struct linux_dirent *)&buffer[bytes_read];
+  while (true) {
+    if ((u8 *)entry >= &buffer[bytes_read]) {
+      bytes_read = internal_getdents(fd, (struct linux_dirent *)buffer.data(),
+                                     buffer.size());
+      if (internal_iserror(bytes_read) || !bytes_read)
+        break;
+      entry = (struct linux_dirent *)buffer.data();
+    }
+    d_type = (u8 *)entry + entry->d_reclen - 1;
+    if (d_type >= &buffer[bytes_read] ||
+        (u8 *)&entry->d_name[3] >= &buffer[bytes_read])
+      break;
+    if (entry->d_ino != 0 && *d_type == DT_DIR) {
+      if (entry->d_name[0] == 'c' && entry->d_name[1] == 'p' &&
+          entry->d_name[2] == 'u' &&
+          entry->d_name[3] >= '0' && entry->d_name[3] <= '9')
+        n_cpus++;
+    }
+    entry = (struct linux_dirent *)(((u8 *)entry) + entry->d_reclen);
+  }
+  internal_close(fd);
+  return n_cpus;
+#elif SANITIZER_SOLARIS
+  return sysconf(_SC_NPROCESSORS_ONLN);
+#else
+#if defined(CPU_COUNT)
+  cpu_set_t CPUs;
+  CHECK_EQ(sched_getaffinity(0, sizeof(cpu_set_t), &CPUs), 0);
+  return CPU_COUNT(&CPUs);
+#else
+  return 1;
+#endif
+#endif
+}
+
 #if SANITIZER_LINUX
 
-#if SANITIZER_ANDROID
+# if SANITIZER_ANDROID
 static atomic_uint8_t android_log_initialized;
 
 void AndroidLogInit() {
@@ -567,36 +717,97 @@ void AndroidLogInit() {
 static bool ShouldLogAfterPrintf() {
   return atomic_load(&android_log_initialized, memory_order_acquire);
 }
-#else
+
+extern "C" SANITIZER_WEAK_ATTRIBUTE
+int async_safe_write_log(int pri, const char* tag, const char* msg);
+extern "C" SANITIZER_WEAK_ATTRIBUTE
+int __android_log_write(int prio, const char* tag, const char* msg);
+
+// ANDROID_LOG_INFO is 4, but can't be resolved at runtime.
+#define SANITIZER_ANDROID_LOG_INFO 4
+
+// async_safe_write_log is a new public version of __libc_write_log that is
+// used behind syslog. It is preferable to syslog as it will not do any dynamic
+// memory allocation or formatting.
+// If the function is not available, syslog is preferred for L+ (it was broken
+// pre-L) as __android_log_write triggers a racey behavior with the strncpy
+// interceptor. Fallback to __android_log_write pre-L.
+void WriteOneLineToSyslog(const char *s) {
+  if (&async_safe_write_log) {
+    async_safe_write_log(SANITIZER_ANDROID_LOG_INFO, GetProcessName(), s);
+  } else if (AndroidGetApiLevel() > ANDROID_KITKAT) {
+    syslog(LOG_INFO, "%s", s);
+  } else {
+    CHECK(&__android_log_write);
+    __android_log_write(SANITIZER_ANDROID_LOG_INFO, nullptr, s);
+  }
+}
+
+extern "C" SANITIZER_WEAK_ATTRIBUTE
+void android_set_abort_message(const char *);
+
+void SetAbortMessage(const char *str) {
+  if (&android_set_abort_message)
+    android_set_abort_message(str);
+}
+# else
 void AndroidLogInit() {}
 
 static bool ShouldLogAfterPrintf() { return true; }
-#endif  // SANITIZER_ANDROID
 
-void WriteOneLineToSyslog(const char *s) {
-#if SANITIZER_ANDROID &&__ANDROID_API__ < 21
-  __android_log_write(ANDROID_LOG_INFO, NULL, s);
-#else
-  syslog(LOG_INFO, "%s", s);
-#endif
-}
+void WriteOneLineToSyslog(const char *s) { syslog(LOG_INFO, "%s", s); }
+
+void SetAbortMessage(const char *str) {}
+# endif  // SANITIZER_ANDROID
 
 void LogMessageOnPrintf(const char *str) {
   if (common_flags()->log_to_syslog && ShouldLogAfterPrintf())
     WriteToSyslog(str);
 }
 
-#if SANITIZER_ANDROID
-extern "C" __attribute__((weak)) void android_set_abort_message(const char *);
-void SetAbortMessage(const char *str) {
-  if (&android_set_abort_message) android_set_abort_message(str);
+#endif  // SANITIZER_LINUX
+
+#if SANITIZER_LINUX && !SANITIZER_GO
+// glibc crashes when using clock_gettime from a preinit_array function as the
+// vDSO function pointers haven't been initialized yet. __progname is
+// initialized after the vDSO function pointers, so if it exists, is not null
+// and is not empty, we can use clock_gettime.
+extern "C" SANITIZER_WEAK_ATTRIBUTE char *__progname;
+INLINE bool CanUseVDSO() {
+  // Bionic is safe, it checks for the vDSO function pointers to be initialized.
+  if (SANITIZER_ANDROID)
+    return true;
+  if (&__progname && __progname && *__progname)
+    return true;
+  return false;
+}
+
+// MonotonicNanoTime is a timing function that can leverage the vDSO by calling
+// clock_gettime. real_clock_gettime only exists if clock_gettime is
+// intercepted, so define it weakly and use it if available.
+extern "C" SANITIZER_WEAK_ATTRIBUTE
+int real_clock_gettime(u32 clk_id, void *tp);
+u64 MonotonicNanoTime() {
+  timespec ts;
+  if (CanUseVDSO()) {
+    if (&real_clock_gettime)
+      real_clock_gettime(CLOCK_MONOTONIC, &ts);
+    else
+      clock_gettime(CLOCK_MONOTONIC, &ts);
+  } else {
+    internal_clock_gettime(CLOCK_MONOTONIC, &ts);
+  }
+  return (u64)ts.tv_sec * (1000ULL * 1000 * 1000) + ts.tv_nsec;
 }
 #else
-void SetAbortMessage(const char *str) {}
-#endif
-
-#endif // SANITIZER_LINUX
+// Non-Linux & Go always use the syscall.
+u64 MonotonicNanoTime() {
+  timespec ts;
+  internal_clock_gettime(CLOCK_MONOTONIC, &ts);
+  return (u64)ts.tv_sec * (1000ULL * 1000 * 1000) + ts.tv_nsec;
+}
+#endif  // SANITIZER_LINUX && !SANITIZER_GO
 
 } // namespace __sanitizer
 
-#endif // SANITIZER_FREEBSD || SANITIZER_LINUX
+#endif

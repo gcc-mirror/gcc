@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -610,6 +610,16 @@ package body Sem_Aggr is
       Set_First_Index    (Itype, First (Index_Constraints));
       Set_Is_Constrained (Itype, True);
       Set_Is_Internal    (Itype, True);
+
+      if Has_Predicates (Typ) then
+         Set_Has_Predicates (Itype);
+
+         if Present (Predicate_Function (Typ)) then
+            Set_Predicate_Function (Itype, Predicate_Function (Typ));
+         else
+            Set_Predicated_Parent (Itype, Predicated_Parent (Typ));
+         end if;
+      end if;
 
       --  A simple optimization: purely positional aggregates of static
       --  components should be passed to gigi unexpanded whenever possible, and
@@ -1627,7 +1637,7 @@ package body Sem_Aggr is
          --  component assignments. If the expression covers several components
          --  the analysis and the predicate check take place later.
 
-         if Present (Predicate_Function (Component_Typ))
+         if Has_Predicates (Component_Typ)
            and then Analyzed (Expr)
          then
             Apply_Predicate_Check (Expr, Component_Typ);
@@ -4194,7 +4204,7 @@ package body Sem_Aggr is
          --  because the aggegate might not be expanded into individual
          --  component assignments.
 
-         if Present (Predicate_Function (Expr_Type))
+         if Has_Predicates (Expr_Type)
            and then Analyzed (Expr)
          then
             Apply_Predicate_Check (Expr, Expr_Type);

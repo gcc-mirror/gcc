@@ -1,5 +1,5 @@
 /* Parse C expressions for cpplib.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994.
 
 This program is free software; you can redistribute it and/or modify it
@@ -30,7 +30,7 @@ struct op
 {
   const cpp_token *token;	/* The token forming op (for diagnostics).  */
   cpp_num value;		/* The value logically "right" of op.  */
-  source_location loc;          /* The location of this value.         */
+  location_t loc;          /* The location of this value.         */
   enum cpp_ttype op;
 };
 
@@ -52,13 +52,13 @@ static cpp_num num_equality_op (cpp_reader *, cpp_num, cpp_num,
 				enum cpp_ttype);
 static cpp_num num_mul (cpp_reader *, cpp_num, cpp_num);
 static cpp_num num_div_op (cpp_reader *, cpp_num, cpp_num, enum cpp_ttype,
-			   source_location);
+			   location_t);
 static cpp_num num_lshift (cpp_num, size_t, size_t);
 static cpp_num num_rshift (cpp_num, size_t, size_t);
 
 static cpp_num append_digit (cpp_num, int, int, size_t);
 static cpp_num parse_defined (cpp_reader *);
-static cpp_num eval_token (cpp_reader *, const cpp_token *, source_location);
+static cpp_num eval_token (cpp_reader *, const cpp_token *, location_t);
 static struct op *reduce (cpp_reader *, struct op *, enum cpp_ttype);
 static unsigned int interpret_float_suffix (cpp_reader *, const uchar *, size_t);
 static unsigned int interpret_int_suffix (cpp_reader *, const uchar *, size_t);
@@ -505,7 +505,7 @@ cpp_get_userdef_suffix (const cpp_token *tok)
    VIRTUAL_LOCATION is the virtual location for TOKEN.  */
 unsigned int
 cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
-		     const char **ud_suffix, source_location virtual_location)
+		     const char **ud_suffix, location_t virtual_location)
 {
   const uchar *str = token->val.str.text;
   const uchar *limit;
@@ -1091,7 +1091,7 @@ parse_defined (cpp_reader *pfile)
    operators).  */
 static cpp_num
 eval_token (cpp_reader *pfile, const cpp_token *token,
-	    source_location virtual_location)
+	    location_t virtual_location)
 {
   cpp_num result;
   unsigned int temp;
@@ -1288,7 +1288,7 @@ _cpp_parse_expr (cpp_reader *pfile, bool is_if)
   struct op *top = pfile->op_stack;
   unsigned int lex_count;
   bool saw_leading_not, want_value = true;
-  source_location virtual_location = 0;
+  location_t virtual_location = 0;
 
   pfile->state.skip_eval = 0;
 
@@ -2086,7 +2086,7 @@ num_mul (cpp_reader *pfile, cpp_num lhs, cpp_num rhs)
 
 static cpp_num
 num_div_op (cpp_reader *pfile, cpp_num lhs, cpp_num rhs, enum cpp_ttype op,
-	    source_location location)
+	    location_t location)
 {
   cpp_num result, sub;
   cpp_num_part mask;
@@ -2238,7 +2238,7 @@ parse_has_include (cpp_reader *pfile, enum include_type type)
       XDELETEVEC (fname);
     }
 
-  if (paren && cpp_get_token (pfile)->type != CPP_CLOSE_PAREN)
+  if (paren && !SEEN_EOL () && cpp_get_token (pfile)->type != CPP_CLOSE_PAREN)
     cpp_error (pfile, CPP_DL_ERROR,
 	       "missing ')' after \"__has_include__\"");
 

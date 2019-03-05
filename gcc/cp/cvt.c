@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU C++.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -582,15 +582,20 @@ force_rvalue (tree expr, tsubst_flags_t complain)
 static tree
 ignore_overflows (tree expr, tree orig)
 {
-  if (TREE_CODE (expr) == INTEGER_CST
-      && TREE_CODE (orig) == INTEGER_CST
-      && TREE_OVERFLOW (expr) != TREE_OVERFLOW (orig))
+  tree stripped_expr = tree_strip_any_location_wrapper (expr);
+  tree stripped_orig = tree_strip_any_location_wrapper (orig);
+
+  if (TREE_CODE (stripped_expr) == INTEGER_CST
+      && TREE_CODE (stripped_orig) == INTEGER_CST
+      && TREE_OVERFLOW (stripped_expr) != TREE_OVERFLOW (stripped_orig))
     {
-      gcc_assert (!TREE_OVERFLOW (orig));
+      gcc_assert (!TREE_OVERFLOW (stripped_orig));
       /* Ensure constant sharing.  */
-      expr = wide_int_to_tree (TREE_TYPE (expr), wi::to_wide (expr));
+      stripped_expr = wide_int_to_tree (TREE_TYPE (stripped_expr),
+					wi::to_wide (stripped_expr));
     }
-  return expr;
+
+  return preserve_any_location_wrapper (stripped_expr, expr);
 }
 
 /* Fold away simple conversions, but make sure TREE_OVERFLOW is set
@@ -725,7 +730,8 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
     /* We need a new temporary; don't take this shortcut.  */;
   else if (same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (e)))
     {
-      if (same_type_p (type, TREE_TYPE (e)))
+      tree etype = TREE_TYPE (e);
+      if (same_type_p (type, etype))
 	/* The call to fold will not always remove the NOP_EXPR as
 	   might be expected, since if one of the types is a typedef;
 	   the comparison in fold is just equality of pointers, not a
@@ -743,7 +749,14 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	{
 	  /* Don't build a NOP_EXPR of class type.  Instead, change the
 	     type of the temporary.  */
+	  gcc_assert (same_type_ignoring_top_level_qualifiers_p (type, etype));
 	  TREE_TYPE (e) = TREE_TYPE (TARGET_EXPR_SLOT (e)) = type;
+	  return e;
+	}
+      else if (TREE_CODE (e) == CONSTRUCTOR)
+	{
+	  gcc_assert (same_type_ignoring_top_level_qualifiers_p (type, etype));
+	  TREE_TYPE (e) = type;
 	  return e;
 	}
       else
@@ -792,10 +805,11 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	     the original value is within the range of the enumeration
 	     values. Otherwise, the resulting enumeration value is
 	     unspecified.  */
+	  tree val = fold_for_warn (e);
 	  if ((complain & tf_warning)
-	      && TREE_CODE (e) == INTEGER_CST
+	      && TREE_CODE (val) == INTEGER_CST
 	      && ENUM_UNDERLYING_TYPE (type)
-	      && !int_fits_type_p (e, ENUM_UNDERLYING_TYPE (type)))
+	      && !int_fits_type_p (val, ENUM_UNDERLYING_TYPE (type)))
 	    warning_at (loc, OPT_Wconversion, 
 			"the result of the conversion is unspecified because "
 			"%qE is outside the range of type %qT",
@@ -1161,6 +1175,16 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
       break;
 
     case CALL_EXPR:   /* We have a special meaning for volatile void fn().  */
+      /* cdtors may return this or void, depending on
+	 targetm.cxx.cdtor_returns_this, but this shouldn't affect our
+	 decisions here: neither nodiscard warnings (nodiscard cdtors
+	 are nonsensical), nor should any constexpr or template
+	 instantiations be affected by an ABI property that is, or at
+	 least ought to be transparent to the language.  */
+      if (tree fn = cp_get_callee_fndecl_nofold (expr))
+	if (DECL_CONSTRUCTOR_P (fn) || DECL_DESTRUCTOR_P (fn))
+	  return expr;
+
       maybe_warn_nodiscard (expr, implicit);
       break;
 
@@ -1679,7 +1703,7 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
       && (desires & WANT_INT)
       && !(desires & WANT_NULL))
     {
-      source_location loc =
+      location_t loc =
 	expansion_point_location_if_in_system_header (input_location);
 
       warning_at (loc, OPT_Wconversion_null,
@@ -1863,6 +1887,7 @@ type_promotes_to (tree type)
      wider.  Scoped enums don't promote, but pretend they do for backward
      ABI bug compatibility wrt varargs.  */
   else if (TREE_CODE (type) == ENUMERAL_TYPE
+	   || type == char8_type_node
 	   || type == char16_type_node
 	   || type == char32_type_node
 	   || type == wchar_type_node)

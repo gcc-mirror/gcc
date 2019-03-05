@@ -1,5 +1,5 @@
 /* Definitions for option handling for IA-32.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -117,6 +117,12 @@ enum indirect_branch {
   indirect_branch_thunk,
   indirect_branch_thunk_inline,
   indirect_branch_thunk_extern
+};
+
+enum instrument_return {
+  instrument_return_none = 0,
+  instrument_return_call,
+  instrument_return_nop5
 };
 
 #endif

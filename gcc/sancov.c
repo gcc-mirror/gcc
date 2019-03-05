@@ -1,5 +1,5 @@
 /* Code coverage instrumentation for fuzzing.
-   Copyright (C) 2015-2018 Free Software Foundation, Inc.
+   Copyright (C) 2015-2019 Free Software Foundation, Inc.
    Contributed by Dmitry Vyukov <dvyukov@google.com> and
    Wish Wu <wishwu007@gmail.com>
 

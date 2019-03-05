@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on TI MSP430 processors.
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -1946,6 +1946,13 @@ msp430_attr (tree * node,
 	  TREE_USED (* node) = 1;
 	  DECL_PRESERVE_P (* node) = 1;
 	}
+      if (is_critical_func (* node))
+	{
+	  warning (OPT_Wattributes,
+		   "critical attribute has no effect on interrupt functions");
+	  DECL_ATTRIBUTES (*node) = remove_attribute (ATTR_CRIT,
+						      DECL_ATTRIBUTES (* node));
+	}
     }
   else if (TREE_NAME_EQ (name, ATTR_REENT))
     {
@@ -1960,6 +1967,8 @@ msp430_attr (tree * node,
 	message = "naked functions cannot be critical";
       else if (is_reentrant_func (* node))
 	message = "reentrant functions cannot be critical";
+      else if (is_interrupt_func ( *node))
+	message = "critical attribute has no effect on interrupt functions";
     }
   else if (TREE_NAME_EQ (name, ATTR_NAKED))
     {
@@ -3468,6 +3477,11 @@ msp430_print_operand_raw (FILE * file, rtx op)
       break;
     }
 }
+
+#undef  TARGET_ASM_ALIGNED_PSI_OP
+#define TARGET_ASM_ALIGNED_PSI_OP "\t.long\t"
+#undef  TARGET_ASM_UNALIGNED_PSI_OP
+#define TARGET_ASM_UNALIGNED_PSI_OP TARGET_ASM_ALIGNED_PSI_OP
 
 #undef  TARGET_PRINT_OPERAND_ADDRESS
 #define TARGET_PRINT_OPERAND_ADDRESS	msp430_print_operand_addr

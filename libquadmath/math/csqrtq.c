@@ -1,5 +1,5 @@
-/* Complex square root of __float128 value.
-   Copyright (C) 1997-2012 Free Software Foundation, Inc.
+/* Complex square root of a float type.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Based on an algorithm by Stephen L. Moshier <moshier@world.std.com>.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
@@ -20,11 +20,6 @@
 
 #include "quadmath-imp.h"
 
-#ifdef HAVE_FENV_H
-# include <fenv.h>
-#endif
-
-
 __complex128
 csqrtq (__complex128 x)
 {
@@ -32,7 +27,7 @@ csqrtq (__complex128 x)
   int rcls = fpclassifyq (__real__ x);
   int icls = fpclassifyq (__imag__ x);
 
-  if (__builtin_expect (rcls <= QUADFP_INFINITE || icls <= QUADFP_INFINITE, 0))
+  if (__glibc_unlikely (rcls <= QUADFP_INFINITE || icls <= QUADFP_INFINITE))
     {
       if (icls == QUADFP_INFINITE)
 	{
@@ -41,7 +36,7 @@ csqrtq (__complex128 x)
 	}
       else if (rcls == QUADFP_INFINITE)
 	{
-	  if (__real__ x < 0.0Q)
+	  if (__real__ x < 0)
 	    {
 	      __real__ res = icls == QUADFP_NAN ? nanq ("") : 0;
 	      __imag__ res = copysignq (HUGE_VALQ, __imag__ x);
@@ -50,7 +45,7 @@ csqrtq (__complex128 x)
 	    {
 	      __real__ res = __real__ x;
 	      __imag__ res = (icls == QUADFP_NAN
-			      ? nanq ("") : copysignq (0.0Q, __imag__ x));
+			      ? nanq ("") : copysignq (0, __imag__ x));
 	    }
 	}
       else
@@ -61,27 +56,26 @@ csqrtq (__complex128 x)
     }
   else
     {
-      if (__builtin_expect (icls == QUADFP_ZERO, 0))
+      if (__glibc_unlikely (icls == QUADFP_ZERO))
 	{
-	  if (__real__ x < 0.0Q)
+	  if (__real__ x < 0)
 	    {
-	      __real__ res = 0.0Q;
-	      __imag__ res = copysignq (sqrtq (-__real__ x),
-					__imag__ x);
+	      __real__ res = 0;
+	      __imag__ res = copysignq (sqrtq (-__real__ x), __imag__ x);
 	    }
 	  else
 	    {
 	      __real__ res = fabsq (sqrtq (__real__ x));
-	      __imag__ res = copysignq (0.0Q, __imag__ x);
+	      __imag__ res = copysignq (0, __imag__ x);
 	    }
 	}
-      else if (__builtin_expect (rcls == QUADFP_ZERO, 0))
+      else if (__glibc_unlikely (rcls == QUADFP_ZERO))
 	{
 	  __float128 r;
-	  if (fabsq (__imag__ x) >= 2.0Q * FLT128_MIN)
+	  if (fabsq (__imag__ x) >= 2 * FLT128_MIN)
 	    r = sqrtq (0.5Q * fabsq (__imag__ x));
 	  else
-	    r = 0.5Q * sqrtq (2.0Q * fabsq (__imag__ x));
+	    r = 0.5Q * sqrtq (2 * fabsq (__imag__ x));
 
 	  __real__ res = r;
 	  __imag__ res = copysignq (r, __imag__ x);
@@ -91,25 +85,25 @@ csqrtq (__complex128 x)
 	  __float128 d, r, s;
 	  int scale = 0;
 
-	  if (fabsq (__real__ x) > FLT128_MAX / 4.0Q)
+	  if (fabsq (__real__ x) > FLT128_MAX / 4)
 	    {
 	      scale = 1;
 	      __real__ x = scalbnq (__real__ x, -2 * scale);
 	      __imag__ x = scalbnq (__imag__ x, -2 * scale);
 	    }
-	  else if (fabsq (__imag__ x) > FLT128_MAX / 4.0Q)
+	  else if (fabsq (__imag__ x) > FLT128_MAX / 4)
 	    {
 	      scale = 1;
-	      if (fabsq (__real__ x) >= 4.0Q * FLT128_MIN)
+	      if (fabsq (__real__ x) >= 4 * FLT128_MIN)
 		__real__ x = scalbnq (__real__ x, -2 * scale);
 	      else
-		__real__ x = 0.0Q;
+		__real__ x = 0;
 	      __imag__ x = scalbnq (__imag__ x, -2 * scale);
 	    }
-	  else if (fabsq (__real__ x) < FLT128_MIN
-		   && fabsq (__imag__ x) < FLT128_MIN)
+	  else if (fabsq (__real__ x) < 2 * FLT128_MIN
+		   && fabsq (__imag__ x) < 2 * FLT128_MIN)
 	    {
-	      scale = -(FLT128_MANT_DIG / 2);
+	      scale = -((FLT128_MANT_DIG + 1) / 2);
 	      __real__ x = scalbnq (__real__ x, -2 * scale);
 	      __imag__ x = scalbnq (__imag__ x, -2 * scale);
 	    }
@@ -120,12 +114,28 @@ csqrtq (__complex128 x)
 	  if (__real__ x > 0)
 	    {
 	      r = sqrtq (0.5Q * (d + __real__ x));
-	      s = 0.5Q * (__imag__ x / r);
+	      if (scale == 1 && fabsq (__imag__ x) < 1)
+		{
+		  /* Avoid possible intermediate underflow.  */
+		  s = __imag__ x / r;
+		  r = scalbnq (r, scale);
+		  scale = 0;
+		}
+	      else
+		s = 0.5Q * (__imag__ x / r);
 	    }
 	  else
 	    {
 	      s = sqrtq (0.5Q * (d - __real__ x));
-	      r = fabsq (0.5Q * (__imag__ x / s));
+	      if (scale == 1 && fabsq (__imag__ x) < 1)
+		{
+		  /* Avoid possible intermediate underflow.  */
+		  r = fabsq (__imag__ x / s);
+		  s = scalbnq (s, scale);
+		  scale = 0;
+		}
+	      else
+		r = fabsq (0.5Q * (__imag__ x / s));
 	    }
 
 	  if (scale)
@@ -133,6 +143,9 @@ csqrtq (__complex128 x)
 	      r = scalbnq (r, scale);
 	      s = scalbnq (s, scale);
 	    }
+
+	  math_check_force_underflow (r);
+	  math_check_force_underflow (s);
 
 	  __real__ res = r;
 	  __imag__ res = copysignq (s, __imag__ x);

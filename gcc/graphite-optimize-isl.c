@@ -1,5 +1,5 @@
 /* A scheduling optimizer for Graphite
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by Tobias Grosser <tobias@grosser.es>.
 
 This file is part of GCC.
@@ -160,16 +160,19 @@ optimize_isl (scop_p scop)
   if (!scop->transformed_schedule
       || isl_ctx_last_error (scop->isl_context) != isl_error_none)
     {
-      dump_user_location_t loc = find_loop_location
-	(scop->scop_info->region.entry->dest->loop_father);
-      if (isl_ctx_last_error (scop->isl_context) == isl_error_quota)
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
-			 "loop nest not optimized, optimization timed out "
-			 "after %d operations [--param max-isl-operations]\n",
-			 max_operations);
-      else
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
-			 "loop nest not optimized, ISL signalled an error\n");
+      if (dump_enabled_p ())
+	{
+	  dump_user_location_t loc = find_loop_location
+	    (scop->scop_info->region.entry->dest->loop_father);
+	  if (isl_ctx_last_error (scop->isl_context) == isl_error_quota)
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			     "loop nest not optimized, optimization timed out "
+			     "after %d operations [--param max-isl-operations]\n",
+			     max_operations);
+	  else
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			     "loop nest not optimized, ISL signalled an error\n");
+	}
       return false;
     }
 
@@ -182,11 +185,14 @@ optimize_isl (scop_p scop)
 
   if (same_schedule)
     {
-      dump_user_location_t loc = find_loop_location
-	(scop->scop_info->region.entry->dest->loop_father);
-      dump_printf_loc (MSG_NOTE, loc,
-		       "loop nest not optimized, optimized schedule is "
-		       "identical to original schedule\n");
+      if (dump_enabled_p ())
+	{
+	  dump_user_location_t loc = find_loop_location
+	    (scop->scop_info->region.entry->dest->loop_father);
+	  dump_printf_loc (MSG_NOTE, loc,
+			   "loop nest not optimized, optimized schedule is "
+			   "identical to original schedule\n");
+	}
       if (dump_file)
 	print_schedule_ast (dump_file, scop->original_schedule, scop);
       isl_schedule_free (scop->transformed_schedule);

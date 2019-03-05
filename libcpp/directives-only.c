@@ -1,5 +1,5 @@
 /* CPP Library - directive only preprocessing for distributed compilation.
-   Copyright (C) 2007-2018 Free Software Foundation, Inc.
+   Copyright (C) 2007-2019 Free Software Foundation, Inc.
    Contributed by Ollie Wild <aaw@google.com>.
 
 This program is free software; you can redistribute it and/or modify it
@@ -43,7 +43,7 @@ _cpp_preprocess_dir_only (cpp_reader *pfile,
   unsigned flags;
   linenum_type lines;
   int col;
-  source_location loc;
+  location_t loc;
 
  restart:
   /* Buffer initialization ala _cpp_clean_line(). */

@@ -1,5 +1,5 @@
 /* Parse and display command line options.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -32,6 +32,20 @@ along with GCC; see the file COPYING3.  If not see
 
 gfc_option_t gfc_option;
 
+#define SET_FLAG(flag, condition, on_value, off_value) \
+  do \
+    { \
+      if (condition) \
+	flag = (on_value); \
+      else \
+	flag = (off_value); \
+    } while (0)
+
+#define SET_BITFLAG2(m) m
+
+#define SET_BITFLAG(flag, condition, value) \
+  SET_BITFLAG2 (SET_FLAG (flag, condition, (flag | (value)), (flag & ~(value))))
+
 
 /* Set flags that control warnings and errors for different
    Fortran standards to their default values.  Keep in sync with
@@ -47,29 +61,55 @@ set_default_std_flags (void)
   gfc_option.warn_std = GFC_STD_F2018_DEL | GFC_STD_F95_DEL | GFC_STD_LEGACY;
 }
 
-
-/* Set all the DEC extension flags.  */
+/* Set (or unset) the DEC extension flags.  */
 
 static void
 set_dec_flags (int value)
 {
-  if (value)
-    {
-      /* Allow legacy code without warnings.  */
-      gfc_option.allow_std |= GFC_STD_F95_OBS | GFC_STD_F95_DEL
-        | GFC_STD_GNU | GFC_STD_LEGACY;
-      gfc_option.warn_std &= ~(GFC_STD_LEGACY | GFC_STD_F95_DEL);
-    }
-
-  /* Set other DEC compatibility extensions.  */
-  flag_dollar_ok |= value;
-  flag_cray_pointer |= value;
-  flag_dec_structure |= value;
-  flag_dec_intrinsic_ints |= value;
-  flag_dec_static |= value;
-  flag_dec_math |= value;
+  /* Set (or unset) other DEC compatibility extensions.  */
+  SET_BITFLAG (flag_dollar_ok, value, value);
+  SET_BITFLAG (flag_cray_pointer, value, value);
+  SET_BITFLAG (flag_dec_structure, value, value);
+  SET_BITFLAG (flag_dec_intrinsic_ints, value, value);
+  SET_BITFLAG (flag_dec_static, value, value);
+  SET_BITFLAG (flag_dec_math, value, value);
+  SET_BITFLAG (flag_dec_include, value, value);
 }
 
+/* Finalize DEC flags.  */
+
+static void
+post_dec_flags (int value)
+{
+  /* Don't warn for legacy code if -fdec is given; however, setting -fno-dec
+     does not force these warnings.  We make one final determination on this
+     at the end because -std= is always set first; thus, we can avoid
+     clobbering the user's desired standard settings in gfc_handle_option
+     e.g. when -fdec and -fno-dec are both given.  */
+  if (value)
+    {
+      gfc_option.allow_std |= GFC_STD_F95_OBS | GFC_STD_F95_DEL
+	| GFC_STD_GNU | GFC_STD_LEGACY;
+      gfc_option.warn_std &= ~(GFC_STD_LEGACY | GFC_STD_F95_DEL);
+    }
+}
+
+/* Enable (or disable) -finit-local-zero.  */
+
+static void
+set_init_local_zero (int value)
+{
+  gfc_option.flag_init_integer_value = 0;
+  gfc_option.flag_init_character_value = (char)0;
+
+  SET_FLAG (gfc_option.flag_init_integer, value, GFC_INIT_INTEGER_ON,
+	    GFC_INIT_INTEGER_OFF);
+  SET_FLAG (gfc_option.flag_init_logical, value, GFC_INIT_LOGICAL_FALSE,
+	    GFC_INIT_LOGICAL_OFF);
+  SET_FLAG (gfc_option.flag_init_character, value, GFC_INIT_CHARACTER_ON,
+	    GFC_INIT_CHARACTER_OFF);
+  SET_FLAG (flag_init_real, value, GFC_INIT_REAL_ZERO, GFC_INIT_REAL_OFF);
+}
 
 /* Return language mask for Fortran options.  */
 
@@ -107,11 +147,7 @@ gfc_init_options (unsigned int decoded_options_count,
 
   gfc_option.flag_preprocessed = 0;
   gfc_option.flag_d_lines = -1;
-  gfc_option.flag_init_integer = GFC_INIT_INTEGER_OFF;
-  gfc_option.flag_init_integer_value = 0;
-  gfc_option.flag_init_logical = GFC_INIT_LOGICAL_OFF;
-  gfc_option.flag_init_character = GFC_INIT_CHARACTER_OFF;
-  gfc_option.flag_init_character_value = (char)0;
+  set_init_local_zero (0);
   
   gfc_option.fpe = 0;
   /* All except GFC_FPE_INEXACT.  */
@@ -220,6 +256,9 @@ gfc_post_options (const char **pfilename)
   const char *filename = *pfilename, *canon_source_file = NULL;
   char *source_path;
   int i;
+
+  /* Finalize DEC flags.  */
+  post_dec_flags (flag_dec);
 
   /* Excess precision other than "fast" requires front-end
      support.  */
@@ -604,7 +643,7 @@ gfc_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fcheck_array_temporaries:
-      gfc_option.rtcheck |= GFC_RTCHECK_ARRAY_TEMPS;
+      SET_BITFLAG (gfc_option.rtcheck, value, GFC_RTCHECK_ARRAY_TEMPS);
       break;
       
     case OPT_fd_lines_as_code:
@@ -654,12 +693,7 @@ gfc_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_finit_local_zero:
-      gfc_option.flag_init_integer = GFC_INIT_INTEGER_ON;
-      gfc_option.flag_init_integer_value = 0;
-      flag_init_real = GFC_INIT_REAL_ZERO;
-      gfc_option.flag_init_logical = GFC_INIT_LOGICAL_FALSE;
-      gfc_option.flag_init_character = GFC_INIT_CHARACTER_ON;
-      gfc_option.flag_init_character_value = (char)0;
+      set_init_local_zero (value);
       break;
 
     case OPT_finit_logical_:
@@ -674,7 +708,7 @@ gfc_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_finit_integer_:
       gfc_option.flag_init_integer = GFC_INIT_INTEGER_ON;
-      gfc_option.flag_init_integer_value = atoi (arg);
+      gfc_option.flag_init_integer_value = strtol (arg, NULL, 10);
       break;
 
     case OPT_finit_character_:
@@ -758,12 +792,8 @@ gfc_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fdec:
-      /* Enable all DEC extensions.  */
-      set_dec_flags (1);
-      break;
-
-    case OPT_fdec_structure:
-      flag_dec_structure = 1;
+      /* Set (or unset) the DEC extension flags.  */
+      set_dec_flags (value);
       break;
     }
 
@@ -855,3 +885,7 @@ gfc_get_option_string (void)
   result[--pos] = '\0';
   return result;
 }
+
+#undef SET_BITFLAG
+#undef SET_BITFLAG2
+#undef SET_FLAG

@@ -1,5 +1,5 @@
 ;; Constraint definitions for Renesas H8/300.
-;; Copyright (C) 2011-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2019 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -157,6 +157,10 @@
   "@internal"
   (and (match_code "const_int")
        (match_test "!h8300_shift_needs_scratch_p (ival, QImode)")))
+
+(define_constraint "C"
+  "@internal"
+  (match_code "symbol_ref"))
 
 (define_constraint "S"
   "@internal"

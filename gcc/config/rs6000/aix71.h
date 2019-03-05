@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX V7.1.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@gnu.org).
 
    This file is part of GCC.
@@ -59,7 +59,7 @@ do {									\
 } while (0)
 
 #undef ASM_SPEC
-#define ASM_SPEC "-u %{maix64:-a64 %{!mcpu*:-mppc64}} %(asm_cpu)"
+#define ASM_SPEC "-u %{maix64:-a64} %(asm_cpu)"
 
 /* Common ASM definitions used by ASM_SPEC amongst the various targets for
    handling -mcpu=xxx switches.  There is a parallel list in driver-rs6000.c to
@@ -67,31 +67,28 @@ do {									\
    you make changes here, make them there also.  */
 #undef ASM_CPU_SPEC
 #define ASM_CPU_SPEC \
-"%{!mcpu*: %{!maix64: \
-  %{mpowerpc64: -mppc64} \
-  %{maltivec: -m970} \
-  %{!maltivec: %{!mpowerpc64: %(asm_default)}}}} \
-%{mcpu=native: %(asm_cpu_native)} \
-%{mcpu=power3: -m620} \
-%{mcpu=power4: -mpwr4} \
-%{mcpu=power5: -mpwr5} \
-%{mcpu=power5+: -mpwr5x} \
-%{mcpu=power6: -mpwr6} \
-%{mcpu=power6x: -mpwr6} \
-%{mcpu=power7: -mpwr7} \
-%{mcpu=power8: -mpwr8} \
-%{mcpu=power9: -mpwr9} \
-%{mcpu=powerpc: -mppc} \
-%{mcpu=rs64a: -mppc} \
-%{mcpu=603: -m603} \
-%{mcpu=603e: -m603} \
-%{mcpu=604: -m604} \
-%{mcpu=604e: -m604} \
-%{mcpu=620: -m620} \
-%{mcpu=630: -m620} \
-%{mcpu=970: -m970} \
-%{mcpu=G5: -m970} \
-%{mvsx: %{!mcpu*: -mpwr6}} \
+"%{mcpu=native: %(asm_cpu_native); \
+  mcpu=power9: -mpwr9; \
+  mcpu=power8: -mpwr8; \
+  mcpu=power7: -mpwr7; \
+  mcpu=power6x|mcpu=power6: -mpwr6; \
+  mcpu=power5+: -mpwr5x; \
+  mcpu=power5: -mpwr5; \
+  mcpu=power4: -mpwr4; \
+  mcpu=power3: -m620; \
+  mcpu=powerpc: -mppc; \
+  mcpu=rs64: -mppc; \
+  mcpu=603: -m603; \
+  mcpu=603e: -m603; \
+  mcpu=604: -m604; \
+  mcpu=604e: -m604; \
+  mcpu=620: -m620; \
+  mcpu=630: -m620; \
+  mcpu=970|mcpu=G5: -m970; \
+  !mcpu*: %{mvsx: -mpwr6; \
+	    maltivec: -m970; \
+	    maix64|mpowerpc64: -mppc64; \
+	    : %(asm_default)}} \
 -many"
 
 #undef	ASM_DEFAULT_SPEC

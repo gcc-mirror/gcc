@@ -1,5 +1,5 @@
 /* Profile counter container type.
-   Copyright (C) 2017-2018 Free Software Foundation, Inc.
+   Copyright (C) 2017-2019 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -30,7 +30,7 @@ enum profile_quality {
   /* Uninitialized value.  */
   profile_uninitialized,
   /* Profile is based on static branch prediction heuristics and may
-     or may not match reality.  It is local to function and can not be compared
+     or may not match reality.  It is local to function and cannot be compared
      inter-procedurally.  Never used by probabilities (they are always local).
    */
   profile_guessed_local,
@@ -447,8 +447,12 @@ public:
     {
       profile_probability ret = *this * cprob;
       /* The following is equivalent to:
-         *this = cprob.invert () * *this / ret.invert ();  */
-      *this = (*this - ret) / ret.invert ();
+         *this = cprob.invert () * *this / ret.invert ();
+	 Avoid scaling when overall outcome is supposed to be always.
+	 Without knowing that one is inverse of toher, the result would be
+	 conservative.  */
+      if (!(*this == profile_probability::always ()))
+        *this = (*this - ret) / ret.invert ();
       return ret;
     }
 
@@ -535,7 +539,7 @@ public:
     }
 
   /* Comparsions are three-state and conservative.  False is returned if
-     the inequality can not be decided.  */
+     the inequality cannot be decided.  */
   bool operator< (const profile_probability &other) const
     {
       return initialized_p () && other.initialized_p () && m_val < other.m_val;
@@ -592,7 +596,7 @@ public:
         was never run in train feedback) but they hold local static profile
         estimate.
 
-   Counters of type 1 and 3 can not be mixed with counters of different type
+   Counters of type 1 and 3 cannot be mixed with counters of different type
    within operation (because whole function should use one type of counter)
    with exception that global zero mix in most operations where outcome is
    well defined.
@@ -641,11 +645,21 @@ public:
      type to hold various extra stages.  */
 
   static const int n_bits = 61;
-private:
   static const uint64_t max_count = ((uint64_t) 1 << n_bits) - 2;
+private:
   static const uint64_t uninitialized_count = ((uint64_t) 1 << n_bits) - 1;
 
-  uint64_t m_val : n_bits;
+#if defined (__arm__) && (__GNUC__ >= 6 && __GNUC__ <= 8)
+  /* Work-around for PR88469.  A bug in the gcc-6/7/8 PCS layout code
+     incorrectly detects the alignment of a structure where the only
+     64-bit aligned object is a bit-field.  We force the alignment of
+     the entire field to mitigate this.  */
+#define UINT64_BIT_FIELD_ALIGN __attribute__ ((aligned(8)))
+#else
+#define UINT64_BIT_FIELD_ALIGN
+#endif
+  uint64_t UINT64_BIT_FIELD_ALIGN m_val : n_bits;
+#undef UINT64_BIT_FIELD_ALIGN
   enum profile_quality m_quality : 3;
 
   /* Return true if both values can meaningfully appear in single function
@@ -825,7 +839,7 @@ public:
     }
 
   /* Comparsions are three-state and conservative.  False is returned if
-     the inequality can not be decided.  */
+     the inequality cannot be decided.  */
   bool operator< (const profile_count &other) const
     {
       if (!initialized_p () || !other.initialized_p ())
@@ -879,7 +893,7 @@ public:
       if (other == profile_count::zero ())
 	return true;
       if (*this == profile_count::zero ())
-	return !(other == profile_count::zero ());
+	return (other == profile_count::zero ());
       gcc_checking_assert (compatible_p (other));
       return m_val >= other.m_val;
     }

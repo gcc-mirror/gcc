@@ -1,5 +1,5 @@
 /* Subroutines used by or related to instruction recognition.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1070,6 +1070,11 @@ general_operand (rtx op, machine_mode mode)
 int
 address_operand (rtx op, machine_mode mode)
 {
+  /* Wrong mode for an address expr.  */
+  if (GET_MODE (op) != VOIDmode
+      && ! SCALAR_INT_MODE_P (GET_MODE (op)))
+    return false;
+
   return memory_address_p (mode, op);
 }
 
@@ -2696,10 +2701,13 @@ constrain_operands (int strict, alternative_mask alternatives)
 		/* p is used for address_operands.  When we are called by
 		   gen_reload, no one will have checked that the address is
 		   strictly valid, i.e., that all pseudos requiring hard regs
-		   have gotten them.  */
-		if (strict <= 0
-		    || (strict_memory_address_p (recog_data.operand_mode[opno],
-						 op)))
+		   have gotten them.  We also want to make sure we have a
+		   valid mode.  */
+		if ((GET_MODE (op) == VOIDmode
+		     || SCALAR_INT_MODE_P (GET_MODE (op)))
+		    && (strict <= 0
+			|| (strict_memory_address_p
+			     (recog_data.operand_mode[opno], op))))
 		  win = 1;
 		break;
 
@@ -2967,7 +2975,7 @@ split_all_insns (void)
 
 	     If that happens and INSN was the last reference to the
 	     given EH region, then the EH region will become unreachable.
-	     We can not leave the unreachable blocks in the CFG as that
+	     We cannot leave the unreachable blocks in the CFG as that
 	     will trigger a checking failure.
 
 	     So track if INSN has a REG_EH_REGION note.  If so and we

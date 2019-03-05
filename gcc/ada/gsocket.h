@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *         Copyright (C) 2004-2018, Free Software Foundation, Inc.          *
+ *         Copyright (C) 2004-2019, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -63,9 +63,18 @@
 #include <vxWorks.h>
 #include <ioLib.h>
 #include <hostLib.h>
+
 #define SHUT_RD		0
 #define SHUT_WR		1
 #define SHUT_RDWR	2
+
+#ifndef IPV6_ADD_MEMBERSHIP
+#define IPV6_ADD_MEMBERSHIP IPV6_JOIN_GROUP
+#endif
+
+#ifndef IPV6_DROP_MEMBERSHIP
+#define IPV6_DROP_MEMBERSHIP IPV6_LEAVE_GROUP
+#endif
 
 #elif defined (WINNT)
 #define FD_SETSIZE 1024
@@ -250,8 +259,9 @@
 # define Has_Sockaddr_Len 0
 #endif
 
-#if !(defined (__vxworks) || defined (_WIN32) || defined (__hpux__) || defined (VMS))
+#if !(defined (_WIN32) || defined (__hpux__) || defined (VMS))
 # define HAVE_INET_PTON
+# define HAVE_INET_NTOP
 #endif
 
 #endif /* defined(VTHREADS) */

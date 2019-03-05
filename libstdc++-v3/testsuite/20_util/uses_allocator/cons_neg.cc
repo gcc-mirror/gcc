@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2011-2018 Free Software Foundation, Inc.
+// Copyright (C) 2011-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,4 +43,4 @@ void test01()
 
   tuple<Type> t(allocator_arg, a, 1);
 }
-// { dg-error "static assertion failed" "" { target *-*-* } 94 }
+// { dg-error "failed: .* uses_allocator is true" "" { target *-*-* } 0 }

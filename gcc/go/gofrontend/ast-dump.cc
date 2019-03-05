@@ -482,7 +482,7 @@ Ast_dump_context::write_string(const std::string& s)
   this->ostream() << s;
 }
 
-// Dump statment to stream.
+// Dump statement to stream.
 
 void
 Ast_dump_context::dump_to_stream(const Statement* stm, std::ostream* out)
@@ -498,4 +498,85 @@ Ast_dump_context::dump_to_stream(const Expression* expr, std::ostream* out)
 {
   Ast_dump_context adc(out, false);
   expr->dump_expression(&adc);
+}
+
+// Dump an expression to std::cerr. This is intended to be used
+// from within a debugging session.
+
+void
+debug_go_expression(const Expression* expr)
+{
+  if (expr == NULL)
+    std::cerr << "<null>";
+  else
+    {
+      Ast_dump_context::dump_to_stream(expr, &std::cerr);
+      std::string lstr = Linemap::location_to_string(expr->location());
+      std::cerr << " // loc " << lstr << std::endl;
+    }
+}
+
+// Shallow dump of stmt to std::cerr. This is intended to be used
+// from within a debugging session.
+
+void
+debug_go_statement(const Statement* stmt)
+{
+  if (stmt == NULL)
+    std::cerr << "<null>\n";
+  else
+    {
+      std::string lstr = Linemap::location_to_string(stmt->location());
+      Statement *ncstmt = const_cast<Statement*>(stmt);
+      Block_statement* bs = ncstmt->block_statement();
+      if (bs != NULL)
+        std::cerr << "Block " << bs->block()
+                  << " // location: " << lstr << std::endl;
+      else
+        Ast_dump_context::dump_to_stream(stmt, &std::cerr);
+    }
+}
+
+// Deep dump of statement to std::cerr. This is intended to be used
+// from within a debugging session.
+
+void
+debug_go_statement_deep(const Statement* statement)
+{
+  Ast_dump_context adc(&std::cerr, true);
+  statement->dump_statement(&adc);
+}
+
+// Shallow dump of a block to std::cerr. This is intended to be used
+// from within a debugging session.
+
+void
+debug_go_block(const Block* block)
+{
+  if (block == NULL)
+    std::cerr << "<null>";
+  else
+    {
+      std::cerr << "Block " << block
+                << " (enclosing " << block->enclosing() << "):\n";
+      const std::vector<Statement*>* stmts = block->statements();
+      if (stmts != NULL)
+        {
+          for (size_t i = 0; i < stmts->size(); ++i)
+            {
+              debug_go_statement(stmts->at(i));
+            }
+        }
+    }
+}
+
+// Deep dump of a block to std:cerr. This is intended to be used
+// from within a debugging session.
+
+void
+debug_go_block_deep(const Block* block)
+{
+  Ast_dump_context adc(&std::cerr, true);
+  Block* ncblock = const_cast<Block*>(block);
+  adc.dump_block(ncblock);
 }

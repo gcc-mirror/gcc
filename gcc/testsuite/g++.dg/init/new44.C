@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-options "-ftrack-macro-expansion=0" }
 
 // Test for PR c++/67927 - array new expression with excessive number
 // of elements not diagnosed.
@@ -36,13 +37,13 @@ void *p;
 static void __attribute__ ((used))
 test_one_dim_char_array ()
 {
-    p = new char [MAX];                 // { dg-error "size of array" }
-    p = new char [MAX - 1];             // { dg-error "size of array" }
-    p = new char [MAX - 2];             // { dg-error "size of array" }
-    p = new char [MAX - 99];            // { dg-error "size of array" }
-    p = new char [MAX / 2];             // { dg-error "size of array" }
-    p = new char [MAX / 2 - 1];         // { dg-error "size of array" }
-    p = new char [MAX / 2 - 2];         // { dg-error "size of array" }
+    p = new char [MAX];                 // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX - 1];             // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX - 2];             // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX - 99];            // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX / 2];             // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX / 2 - 1];         // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX / 2 - 2];         // { dg-error "size .\[0-9\]+. of array" }
 
     // Avoid testing the expressions below since whether or not they
     // are accepted depends on the precision of size_t (which also
@@ -62,20 +63,20 @@ test_one_dim_char_array ()
 static void __attribute__ ((used))
 test_one_dim_short_array ()
 {
-    p = new short [MAX];                // { dg-error "size of array" }
-    p = new short [MAX - 1];            // { dg-error "size of array" }
-    p = new short [MAX - 2];            // { dg-error "size of array" }
-    p = new short [MAX - 99];           // { dg-error "size of array" }
-    p = new short [MAX / 2];            // { dg-error "size of array" }
-    p = new short [MAX / 2 - 1];        // { dg-error "size of array" }
-    p = new short [MAX / 2 - 2];        // { dg-error "size of array" }
-    p = new short [MAX / 2 - 3];        // { dg-error "size of array" }
-    p = new short [MAX / 2 - 4];        // { dg-error "size of array" }
-    p = new short [MAX / 2 - 5];        // { dg-error "size of array" }
-    p = new short [MAX / 2 - 6];        // { dg-error "size of array" }
-    p = new short [MAX / 2 - 7];        // { dg-error "size of array" }
-    p = new short [MAX / 2 - 8];        // { dg-error "size of array" }
-    p = new short [MAX / 4];            // { dg-error "size of array" }
+    p = new short [MAX];                // { dg-error "size .\[0-9\]+. of array" }
+    p = new short [MAX - 1];            // { dg-error "size .\[0-9\]+. of array" }
+    p = new short [MAX - 2];            // { dg-error "size .\[0-9\]+. of array" }
+    p = new short [MAX - 99];           // { dg-error "size .\[0-9\]+. of array" }
+    p = new short [MAX / 2];            // { dg-error "size .\[0-9\]+. of array" }
+    p = new short [MAX / 2 - 1];        // { dg-error "size .\[0-9\]+. of array" }
+    p = new short [MAX / 2 - 2];        // { dg-error "size .\[0-9\]+. of array" }
+    p = new short [MAX / 2 - 3];        // { dg-error "size .\[0-9\]+. of array" }
+    p = new short [MAX / 2 - 4];        // { dg-error "size .\[0-9\]+. of array" }
+    p = new short [MAX / 2 - 5];        // { dg-error "size .\[0-9\]+. of array" }
+    p = new short [MAX / 2 - 6];        // { dg-error "size .\[0-9\]+. of array" }
+    p = new short [MAX / 2 - 7];        // { dg-error "size .\[0-9\]+. of array" }
+    p = new short [MAX / 2 - 8];        // { dg-error "size .\[0-9\]+. of array" }
+    p = new short [MAX / 4];            // { dg-error "size .\[0-9\]+. of array" }
 
     // Avoid exercising data model-dependent expressions.
     // p = new short [MAX / 4 - 1];
@@ -87,13 +88,13 @@ test_one_dim_short_array ()
 static void __attribute__ ((used))
 test_two_dim_char_array ()
 {
-    p = new char [1][MAX];              // { dg-error "size of (unnamed )?array" }
-    p = new char [1][MAX - 1];          // { dg-error "size of (unnamed )?array" }
-    p = new char [1][MAX - 2];          // { dg-error "size of (unnamed )?array" }
-    p = new char [1][MAX - 99];         // { dg-error "size of (unnamed )?array" }
-    p = new char [1][MAX / 2];          // { dg-error "size of array" }
-    p = new char [1][MAX / 2 - 1];      // { dg-error "size of array" }
-    p = new char [1][MAX / 2 - 2];      // { dg-error "size of array" }
+    p = new char [1][MAX];              // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][MAX - 1];          // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][MAX - 2];          // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][MAX - 99];         // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][MAX / 2];          // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [1][MAX / 2 - 1];      // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [1][MAX / 2 - 2];      // { dg-error "size .\[0-9\]+. of array" }
 
     // Avoid exercising data model-dependent expressions.
     // p = new char [1][MAX / 2 - 3];
@@ -104,28 +105,28 @@ test_two_dim_char_array ()
     p = new char [1][MAX / 2 - 7];      // okay
     p = new char [1][MAX / 2 - 8];      // okay
 
-    p = new char [2][MAX];              // { dg-error "size of (unnamed )?array" }
-    p = new char [2][MAX - 1];          // { dg-error "size of (unnamed )?array" }
-    p = new char [2][MAX - 2];          // { dg-error "size of (unnamed )?array" }
-    p = new char [2][MAX / 2];          // { dg-error "size of array" }
-    p = new char [2][MAX / 2 - 1];      // { dg-error "size of array" }
-    p = new char [2][MAX / 2 - 2];      // { dg-error "size of array" }
-    p = new char [2][MAX / 2 - 7];      // { dg-error "size of array" }
-    p = new char [2][MAX / 2 - 8];      // { dg-error "size of array" }
+    p = new char [2][MAX];              // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][MAX - 1];          // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][MAX - 2];          // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][MAX / 2];          // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [2][MAX / 2 - 1];      // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [2][MAX / 2 - 2];      // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [2][MAX / 2 - 7];      // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [2][MAX / 2 - 8];      // { dg-error "size .\[0-9\]+. of array" }
 
-    p = new char [MAX][MAX];            // { dg-error "size of (unnamed )?array" }
-    p = new char [MAX][MAX - 1];        // { dg-error "size of (unnamed )?array" }
-    p = new char [MAX][MAX - 2];        // { dg-error "size of (unnamed )?array" }
-    p = new char [MAX][MAX / 2];        // { dg-error "size of array" }
-    p = new char [MAX][MAX / 2 - 1];    // { dg-error "size of array" }
-    p = new char [MAX][MAX / 2 - 2];    // { dg-error "size of array" }
-    p = new char [MAX][MAX / 2 - 7];    // { dg-error "size of array" }
-    p = new char [MAX][MAX / 2 - 8];    // { dg-error "size of array" }
-    p = new char [MAX][2];              // { dg-error "size of array" }
-    p = new char [MAX][1];              // { dg-error "size of array" }
-    p = new char [MAX / 2][1];          // { dg-error "size of array" }
-    p = new char [MAX / 2 - 1][1];      // { dg-error "size of array" }
-    p = new char [MAX / 2 - 2][1];      // { dg-error "size of array" }
+    p = new char [MAX][MAX];            // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [MAX][MAX - 1];        // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [MAX][MAX - 2];        // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [MAX][MAX / 2];        // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX][MAX / 2 - 1];    // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX][MAX / 2 - 2];    // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX][MAX / 2 - 7];    // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX][MAX / 2 - 8];    // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX][2];              // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX][1];              // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX / 2][1];          // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX / 2 - 1][1];      // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX / 2 - 2][1];      // { dg-error "size .\[0-9\]+. of array" }
 
     // Avoid exercising data model-dependent expressions.
     // p = new char [MAX / 2 - 3][1];
@@ -142,13 +143,13 @@ test_two_dim_char_array ()
 static __attribute__ ((used)) void
 test_three_dim_char_array ()
 {
-    p = new char [1][1][MAX];           // { dg-error "size of (unnamed )?array" }
-    p = new char [1][1][MAX - 1];       // { dg-error "size of (unnamed )?array" }
-    p = new char [1][1][MAX - 2];       // { dg-error "size of (unnamed )?array" }
-    p = new char [1][1][MAX - 99];      // { dg-error "size of (unnamed )?array" }
-    p = new char [1][1][MAX / 2];       // { dg-error "size of array" }
-    p = new char [1][1][MAX / 2 - 1];   // { dg-error "size of array" }
-    p = new char [1][1][MAX / 2 - 2];   // { dg-error "size of array" }
+    p = new char [1][1][MAX];           // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][1][MAX - 1];       // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][1][MAX - 2];       // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][1][MAX - 99];      // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][1][MAX / 2];       // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [1][1][MAX / 2 - 1];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [1][1][MAX / 2 - 2];   // { dg-error "size .\[0-9\]+. of array" }
 
     // Avoid exercising data model-dependent expressions.
     // p = new char [1][1][MAX / 2 - 3];
@@ -159,20 +160,20 @@ test_three_dim_char_array ()
     p = new char [1][1][MAX / 2 - 7];   // okay
     p = new char [1][1][MAX / 2 - 8];   // okay
 
-    p = new char [1][2][MAX];           // { dg-error "size of (unnamed )?array" }
-    p = new char [1][2][MAX - 1];       // { dg-error "size of (unnamed )?array" }
-    p = new char [1][2][MAX - 2];       // { dg-error "size of (unnamed )?array" }
-    p = new char [1][2][MAX - 99];      // { dg-error "size of (unnamed )?array" }
-    p = new char [1][2][MAX / 2];       // { dg-error "size of (unnamed )?array" }
-    p = new char [1][2][MAX / 2 - 1];   // { dg-error "size of (unnamed )?array" }
-    p = new char [1][2][MAX / 2 - 2];   // { dg-error "size of (unnamed )?array" }
-    p = new char [1][2][MAX / 2 - 3];   // { dg-error "size of (unnamed )?array" }
-    p = new char [1][2][MAX / 2 - 4];   // { dg-error "size of (unnamed )?array" }
-    p = new char [1][2][MAX / 2 - 5];   // { dg-error "size of (unnamed )?array" }
-    p = new char [1][2][MAX / 2 - 6];   // { dg-error "size of (unnamed )?array" }
-    p = new char [1][2][MAX / 2 - 7];   // { dg-error "size of (unnamed )?array" }
-    p = new char [1][2][MAX / 2 - 8];   // { dg-error "size of (unnamed )?array" }
-    p = new char [1][2][MAX / 4];       // { dg-error "size of array" }
+    p = new char [1][2][MAX];           // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][2][MAX - 1];       // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][2][MAX - 2];       // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][2][MAX - 99];      // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][2][MAX / 2];       // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][2][MAX / 2 - 1];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][2][MAX / 2 - 2];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][2][MAX / 2 - 3];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][2][MAX / 2 - 4];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][2][MAX / 2 - 5];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][2][MAX / 2 - 6];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][2][MAX / 2 - 7];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][2][MAX / 2 - 8];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [1][2][MAX / 4];       // { dg-error "size .\[0-9\]+. of array" }
 
     // Avoid exercising data model-dependent expressions.
     // p = new char [1][2][MAX / 4 - 1];
@@ -181,20 +182,20 @@ test_three_dim_char_array ()
     p = new char [1][2][MAX / 4 - 3];   // okay
     p = new char [1][2][MAX / 4 - 4];   // okay
 
-    p = new char [2][1][MAX];           // { dg-error "size of (unnamed )?array" }
-    p = new char [2][1][MAX - 1];       // { dg-error "size of (unnamed )?array" }
-    p = new char [2][1][MAX - 2];       // { dg-error "size of (unnamed )?array" }
-    p = new char [2][1][MAX - 99];      // { dg-error "size of (unnamed )?array" }
-    p = new char [2][1][MAX / 2];       // { dg-error "size of array" }
-    p = new char [2][1][MAX / 2 - 1];   // { dg-error "size of array" }
-    p = new char [2][1][MAX / 2 - 2];   // { dg-error "size of array" }
-    p = new char [2][1][MAX / 2 - 3];   // { dg-error "size of array" }
-    p = new char [2][1][MAX / 2 - 4];   // { dg-error "size of array" }
-    p = new char [2][1][MAX / 2 - 5];   // { dg-error "size of array" }
-    p = new char [2][1][MAX / 2 - 6];   // { dg-error "size of array" }
-    p = new char [2][1][MAX / 2 - 7];   // { dg-error "size of array" }
-    p = new char [2][1][MAX / 2 - 8];   // { dg-error "size of array" }
-    p = new char [2][1][MAX / 4];       // { dg-error "size of array" }
+    p = new char [2][1][MAX];           // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][1][MAX - 1];       // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][1][MAX - 2];       // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][1][MAX - 99];      // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][1][MAX / 2];       // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [2][1][MAX / 2 - 1];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [2][1][MAX / 2 - 2];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [2][1][MAX / 2 - 3];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [2][1][MAX / 2 - 4];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [2][1][MAX / 2 - 5];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [2][1][MAX / 2 - 6];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [2][1][MAX / 2 - 7];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [2][1][MAX / 2 - 8];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [2][1][MAX / 4];       // { dg-error "size .\[0-9\]+. of array" }
 
     // Avoid exercising data model-dependent expressions.
     // p = new char [2][1][MAX / 4 - 1];
@@ -203,22 +204,22 @@ test_three_dim_char_array ()
     p = new char [2][1][MAX / 4 - 3];   // okay
     p = new char [2][1][MAX / 4 - 4];   // okay
 
-    p = new char [2][2][MAX];           // { dg-error "size of (unnamed )?array" }
-    p = new char [2][2][MAX - 1];       // { dg-error "size of (unnamed )?array" }
-    p = new char [2][2][MAX - 2];       // { dg-error "size of (unnamed )?array" }
-    p = new char [2][2][MAX - 99];      // { dg-error "size of (unnamed )?array" }
-    p = new char [2][2][MAX / 2];       // { dg-error "size of (unnamed )?array" }
-    p = new char [2][2][MAX / 2 - 1];   // { dg-error "size of (unnamed )?array" }
-    p = new char [2][2][MAX / 2 - 2];   // { dg-error "size of (unnamed )?array" }
-    p = new char [2][2][MAX / 2 - 3];   // { dg-error "size of (unnamed )?array" }
-    p = new char [2][2][MAX / 2 - 4];   // { dg-error "size of (unnamed )?array" }
-    p = new char [2][2][MAX / 2 - 5];   // { dg-error "size of (unnamed )?array" }
-    p = new char [2][2][MAX / 2 - 6];   // { dg-error "size of (unnamed )?array" }
-    p = new char [2][2][MAX / 2 - 7];   // { dg-error "size of (unnamed )?array" }
-    p = new char [2][2][MAX / 2 - 8];   // { dg-error "size of (unnamed )?array" }
-    p = new char [2][2][MAX / 4];       // { dg-error "size of array" }
-    p = new char [2][2][MAX / 4 - 1];   // { dg-error "size of array" }
-    p = new char [2][2][MAX / 4 - 2];   // { dg-error "size of array" }
+    p = new char [2][2][MAX];           // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][2][MAX - 1];       // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][2][MAX - 2];       // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][2][MAX - 99];      // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][2][MAX / 2];       // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][2][MAX / 2 - 1];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][2][MAX / 2 - 2];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][2][MAX / 2 - 3];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][2][MAX / 2 - 4];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][2][MAX / 2 - 5];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][2][MAX / 2 - 6];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][2][MAX / 2 - 7];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][2][MAX / 2 - 8];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][2][MAX / 4];       // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [2][2][MAX / 4 - 1];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [2][2][MAX / 4 - 2];   // { dg-error "size .\[0-9\]+. of array" }
 
     // Avoid exercising data model-dependent expressions.
     // p = new char [2][2][MAX / 8];
@@ -227,22 +228,22 @@ test_three_dim_char_array ()
     p = new char [2][2][MAX / 8 - 2];
     p = new char [2][2][MAX / 8 - 3];
 
-    p = new char [2][MAX][2];           // { dg-error "size of (unnamed )?array" }
-    p = new char [2][MAX - 1][2];       // { dg-error "size of (unnamed )?array" }
-    p = new char [2][MAX - 2][2];       // { dg-error "size of (unnamed )?array" }
-    p = new char [2][MAX - 99][2];      // { dg-error "size of (unnamed )?array" }
-    p = new char [2][MAX / 2][2];       // { dg-error "size of (unnamed )?array" }
-    p = new char [2][MAX / 2 - 1][2];   // { dg-error "size of (unnamed )?array" }
-    p = new char [2][MAX / 2 - 2][2];   // { dg-error "size of (unnamed )?array" }
-    p = new char [2][MAX / 2 - 3][2];   // { dg-error "size of (unnamed )?array" }
-    p = new char [2][MAX / 2 - 4][2];   // { dg-error "size of (unnamed )?array" }
-    p = new char [2][MAX / 2 - 5][2];   // { dg-error "size of (unnamed )?array" }
-    p = new char [2][MAX / 2 - 6][2];   // { dg-error "size of (unnamed )?array" }
-    p = new char [2][MAX / 2 - 7][2];   // { dg-error "size of (unnamed )?array" }
-    p = new char [2][MAX / 2 - 8][2];   // { dg-error "size of (unnamed )?array" }
-    p = new char [2][MAX / 4][2];       // { dg-error "size of array" }
-    p = new char [2][MAX / 4 - 1][2];   // { dg-error "size of array" }
-    p = new char [2][MAX / 4 - 2][2];   // { dg-error "size of array" }
+    p = new char [2][MAX][2];           // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][MAX - 1][2];       // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][MAX - 2][2];       // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][MAX - 99][2];      // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][MAX / 2][2];       // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][MAX / 2 - 1][2];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][MAX / 2 - 2][2];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][MAX / 2 - 3][2];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][MAX / 2 - 4][2];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][MAX / 2 - 5][2];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][MAX / 2 - 6][2];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][MAX / 2 - 7][2];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][MAX / 2 - 8][2];   // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [2][MAX / 4][2];       // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [2][MAX / 4 - 1][2];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [2][MAX / 4 - 2][2];   // { dg-error "size .\[0-9\]+. of array" }
 
     // Avoid exercising data model-dependent expressions.
     // p = new char [2][MAX / 8][2];
@@ -251,22 +252,22 @@ test_three_dim_char_array ()
     p = new char [2][MAX / 8 - 2][2];
     p = new char [2][MAX / 8 - 3][2];
 
-    p = new char [MAX][2][2];           // { dg-error "size of array" }
-    p = new char [MAX - 1][2][2];       // { dg-error "size of array" }
-    p = new char [MAX - 2][2][2];       // { dg-error "size of array" }
-    p = new char [MAX - 99][2][2];      // { dg-error "size of array" }
-    p = new char [MAX / 2][2][2];       // { dg-error "size of array" }
-    p = new char [MAX / 2 - 1][2][2];   // { dg-error "size of array" }
-    p = new char [MAX / 2 - 2][2][2];   // { dg-error "size of array" }
-    p = new char [MAX / 2 - 3][2][2];   // { dg-error "size of array" }
-    p = new char [MAX / 2 - 4][2][2];   // { dg-error "size of array" }
-    p = new char [MAX / 2 - 5][2][2];   // { dg-error "size of array" }
-    p = new char [MAX / 2 - 6][2][2];   // { dg-error "size of array" }
-    p = new char [MAX / 2 - 7][2][2];   // { dg-error "size of array" }
-    p = new char [MAX / 2 - 8][2][2];   // { dg-error "size of array" }
-    p = new char [MAX / 4][2][2];       // { dg-error "size of array" }
-    p = new char [MAX / 4 - 1][2][2];   // { dg-error "size of array" }
-    p = new char [MAX / 4 - 2][2][2];   // { dg-error "size of array" }
+    p = new char [MAX][2][2];           // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX - 1][2][2];       // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX - 2][2][2];       // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX - 99][2][2];      // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX / 2][2][2];       // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX / 2 - 1][2][2];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX / 2 - 2][2][2];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX / 2 - 3][2][2];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX / 2 - 4][2][2];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX / 2 - 5][2][2];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX / 2 - 6][2][2];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX / 2 - 7][2][2];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX / 2 - 8][2][2];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX / 4][2][2];       // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX / 4 - 1][2][2];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [MAX / 4 - 2][2][2];   // { dg-error "size .\[0-9\]+. of array" }
 
     // Avoid exercising data model-dependent expressions.
     // p = new char [MAX / 8][2][2];
@@ -275,9 +276,9 @@ test_three_dim_char_array ()
     p = new char [MAX / 8 - 2][2][2];
     p = new char [MAX / 8 - 3][2][2];
 
-    p = new char [MAX][MAX][MAX];         // { dg-error "size of (unnamed )?array" }
-    p = new char [MAX][MAX][MAX / 2];     // { dg-error "size of (unnamed )?array" }
-    p = new char [MAX][MAX / 2][MAX];     // { dg-error "size of (unnamed )?array" }
+    p = new char [MAX][MAX][MAX];         // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [MAX][MAX][MAX / 2];     // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new char [MAX][MAX / 2][MAX];     // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
     p = new char [MAX][MAX / 2][MAX / 2]; // { dg-error "size of (unnamed )?array" }
     p = new char [MAX / 2][MAX / 2][MAX / 2]; // { dg-error "size of (unnamed )?array" }
 }
@@ -296,9 +297,9 @@ test_N_dim_char_array ()
     p = new char        [N][N][N][N][N][N][N];
     p = new char [N / 2][2][N][N][N][N][N][N];
     p = new char [N - 1][N / 2][N][N][N][N][N][N];
-    p = new char [N / 2][N][N][N][N][N][N][N];  // { dg-error "size of array" }
-    p = new char [N - 1][N][N][N][N][N][N][N];  // { dg-error "size of array" }
-    p = new char [N]    [N][N][N][N][N][N][N];  // { dg-error "size of array" }
+    p = new char [N / 2][N][N][N][N][N][N][N];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [N - 1][N][N][N][N][N][N][N];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new char [N]    [N][N][N][N][N][N][N];  // { dg-error "size .\[0-9\]+. of array" }
 }
 
 typedef struct Byte {
@@ -315,17 +316,17 @@ void* operator new[] (size_t, B*);
 static void __attribute__ ((used))
 test_one_dim_byte_array (void *p)
 {
-    p = new (p) B [MAX];                // { dg-error "size of array" }
-    p = new (p) B [MAX - 1];            // { dg-error "size of array" }
-    p = new (p) B [MAX - 2];            // { dg-error "size of array" }
-    p = new (p) B [MAX - 99];           // { dg-error "size of array" }
-    p = new (p) B [MAX / 2];            // { dg-error "size of array" }
-    p = new (p) B [MAX / 2 - 1];        // { dg-error "size of array" }
-    p = new (p) B [MAX / 2 - 2];        // { dg-error "size of array" }
+    p = new (p) B [MAX];                // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX - 1];            // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX - 2];            // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX - 99];           // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX / 2];            // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX / 2 - 1];        // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX / 2 - 2];        // { dg-error "size .\[0-9\]+. of array" }
 
     // Avoid testing the expressions below since whether or not they
     // are accepted depends on the precision of size_t (which determines
-    // the size of the cookie).
+    // the size .\[0-9\]+. of the cookie).
     // p = new (p) B [MAX / 2 - 3];
     // p = new (p) B [MAX / 2 - 4];
     // p = new (p) B [MAX / 2 - 5];
@@ -342,13 +343,13 @@ test_one_dim_byte_array (void *p)
 static void __attribute__ ((used))
 test_placement_two_dim_byte_struct_array (void *p)
 {
-    p = new (p) B [1][MAX];             // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][MAX - 1];         // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][MAX - 2];         // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][MAX - 99];        // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][MAX / 2];         // { dg-error "size of array" }
-    p = new (p) B [1][MAX / 2 - 1];     // { dg-error "size of array" }
-    p = new (p) B [1][MAX / 2 - 2];     // { dg-error "size of array" }
+    p = new (p) B [1][MAX];             // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][MAX - 1];         // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][MAX - 2];         // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][MAX - 99];        // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][MAX / 2];         // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [1][MAX / 2 - 1];     // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [1][MAX / 2 - 2];     // { dg-error "size .\[0-9\]+. of array" }
 
     // Avoid exercising data model-dependent expressions.
     // p = new (p) B [1][MAX / 2 - 3];
@@ -359,28 +360,28 @@ test_placement_two_dim_byte_struct_array (void *p)
     p = new (p) B [1][MAX / 2 - 7];      // okay
     p = new (p) B [1][MAX / 2 - 8];      // okay
 
-    p = new (p) B [2][MAX];             // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][MAX - 1];         // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][MAX - 2];         // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][MAX / 2];         // { dg-error "size of array" }
-    p = new (p) B [2][MAX / 2 - 1];     // { dg-error "size of array" }
-    p = new (p) B [2][MAX / 2 - 2];     // { dg-error "size of array" }
-    p = new (p) B [2][MAX / 2 - 7];     // { dg-error "size of array" }
-    p = new (p) B [2][MAX / 2 - 8];     // { dg-error "size of array" }
+    p = new (p) B [2][MAX];             // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][MAX - 1];         // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][MAX - 2];         // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][MAX / 2];         // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [2][MAX / 2 - 1];     // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [2][MAX / 2 - 2];     // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [2][MAX / 2 - 7];     // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [2][MAX / 2 - 8];     // { dg-error "size .\[0-9\]+. of array" }
 
-    p = new (p) B [MAX][MAX];           // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [MAX][MAX - 1];       // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [MAX][MAX - 2];       // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [MAX][MAX / 2];       // { dg-error "size of array" }
-    p = new (p) B [MAX][MAX / 2 - 1];   // { dg-error "size of array" }
-    p = new (p) B [MAX][MAX / 2 - 2];   // { dg-error "size of array" }
-    p = new (p) B [MAX][MAX / 2 - 7];   // { dg-error "size of array" }
-    p = new (p) B [MAX][MAX / 2 - 8];   // { dg-error "size of array" }
-    p = new (p) B [MAX][2];             // { dg-error "size of array" }
-    p = new (p) B [MAX][1];             // { dg-error "size of array" }
-    p = new (p) B [MAX / 2][1];         // { dg-error "size of array" }
-    p = new (p) B [MAX / 2 - 1][1];     // { dg-error "size of array" }
-    p = new (p) B [MAX / 2 - 2][1];     // { dg-error "size of array" }
+    p = new (p) B [MAX][MAX];           // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [MAX][MAX - 1];       // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [MAX][MAX - 2];       // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [MAX][MAX / 2];       // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX][MAX / 2 - 1];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX][MAX / 2 - 2];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX][MAX / 2 - 7];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX][MAX / 2 - 8];   // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX][2];             // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX][1];             // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX / 2][1];         // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX / 2 - 1][1];     // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX / 2 - 2][1];     // { dg-error "size .\[0-9\]+. of array" }
 
     // Avoid exercising data model-dependent expressions.
     // p = new (p) B [MAX / 2 - 3][1];
@@ -397,13 +398,13 @@ test_placement_two_dim_byte_struct_array (void *p)
 static __attribute__ ((used)) void
 test_placement_three_dim_byte_struct_array (void *p)
 {
-    p = new (p) B [1][1][MAX];          // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][1][MAX - 1];      // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][1][MAX - 2];      // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][1][MAX - 99];     // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][1][MAX / 2];      // { dg-error "size of array" }
-    p = new (p) B [1][1][MAX / 2 - 1];  // { dg-error "size of array" }
-    p = new (p) B [1][1][MAX / 2 - 2];  // { dg-error "size of array" }
+    p = new (p) B [1][1][MAX];          // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][1][MAX - 1];      // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][1][MAX - 2];      // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][1][MAX - 99];     // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][1][MAX / 2];      // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [1][1][MAX / 2 - 1];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [1][1][MAX / 2 - 2];  // { dg-error "size .\[0-9\]+. of array" }
 
     // Avoid exercising data model-dependent expressions.
     // p = new (p) B [1][1][MAX / 2 - 3];
@@ -414,20 +415,20 @@ test_placement_three_dim_byte_struct_array (void *p)
     p = new (p) B [1][1][MAX / 2 - 7];   // okay
     p = new (p) B [1][1][MAX / 2 - 8];   // okay
 
-    p = new (p) B [1][2][MAX];          // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][2][MAX - 1];      // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][2][MAX - 2];      // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][2][MAX - 99];     // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][2][MAX / 2];      // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][2][MAX / 2 - 1];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][2][MAX / 2 - 2];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][2][MAX / 2 - 3];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][2][MAX / 2 - 4];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][2][MAX / 2 - 5];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][2][MAX / 2 - 6];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][2][MAX / 2 - 7];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][2][MAX / 2 - 8];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [1][2][MAX / 4];      // { dg-error "size of array" }
+    p = new (p) B [1][2][MAX];          // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][2][MAX - 1];      // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][2][MAX - 2];      // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][2][MAX - 99];     // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][2][MAX / 2];      // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][2][MAX / 2 - 1];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][2][MAX / 2 - 2];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][2][MAX / 2 - 3];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][2][MAX / 2 - 4];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][2][MAX / 2 - 5];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][2][MAX / 2 - 6];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][2][MAX / 2 - 7];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][2][MAX / 2 - 8];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [1][2][MAX / 4];      // { dg-error "size .\[0-9\]+. of array" }
 
     // Avoid exercising data model-dependent expressions.
     // p = new (p) B [1][2][MAX / 4 - 1];
@@ -436,20 +437,20 @@ test_placement_three_dim_byte_struct_array (void *p)
     p = new (p) B [1][2][MAX / 4 - 3];   // okay
     p = new (p) B [1][2][MAX / 4 - 4];   // okay
 
-    p = new (p) B [2][1][MAX];          // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][1][MAX - 1];      // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][1][MAX - 2];      // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][1][MAX - 99];     // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][1][MAX / 2];      // { dg-error "size of array" }
-    p = new (p) B [2][1][MAX / 2 - 1];  // { dg-error "size of array" }
-    p = new (p) B [2][1][MAX / 2 - 2];  // { dg-error "size of array" }
-    p = new (p) B [2][1][MAX / 2 - 3];  // { dg-error "size of array" }
-    p = new (p) B [2][1][MAX / 2 - 4];  // { dg-error "size of array" }
-    p = new (p) B [2][1][MAX / 2 - 5];  // { dg-error "size of array" }
-    p = new (p) B [2][1][MAX / 2 - 6];  // { dg-error "size of array" }
-    p = new (p) B [2][1][MAX / 2 - 7];  // { dg-error "size of array" }
-    p = new (p) B [2][1][MAX / 2 - 8];  // { dg-error "size of array" }
-    p = new (p) B [2][1][MAX / 4];      // { dg-error "size of array" }
+    p = new (p) B [2][1][MAX];          // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][1][MAX - 1];      // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][1][MAX - 2];      // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][1][MAX - 99];     // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][1][MAX / 2];      // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [2][1][MAX / 2 - 1];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [2][1][MAX / 2 - 2];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [2][1][MAX / 2 - 3];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [2][1][MAX / 2 - 4];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [2][1][MAX / 2 - 5];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [2][1][MAX / 2 - 6];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [2][1][MAX / 2 - 7];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [2][1][MAX / 2 - 8];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [2][1][MAX / 4];      // { dg-error "size .\[0-9\]+. of array" }
 
     // Avoid exercising data model-dependent expressions.
     // p = new (p) B [2][1][MAX / 4 - 1];
@@ -458,22 +459,22 @@ test_placement_three_dim_byte_struct_array (void *p)
     p = new (p) B [2][1][MAX / 4 - 3];   // okay
     p = new (p) B [2][1][MAX / 4 - 4];   // okay
 
-    p = new (p) B [2][2][MAX];          // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][2][MAX - 1];      // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][2][MAX - 2];      // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][2][MAX - 99];     // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][2][MAX / 2];      // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][2][MAX / 2 - 1];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][2][MAX / 2 - 2];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][2][MAX / 2 - 3];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][2][MAX / 2 - 4];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][2][MAX / 2 - 5];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][2][MAX / 2 - 6];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][2][MAX / 2 - 7];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][2][MAX / 2 - 8];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][2][MAX / 4];      // { dg-error "size of array" }
-    p = new (p) B [2][2][MAX / 4 - 1];  // { dg-error "size of array" }
-    p = new (p) B [2][2][MAX / 4 - 2];  // { dg-error "size of array" }
+    p = new (p) B [2][2][MAX];          // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][2][MAX - 1];      // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][2][MAX - 2];      // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][2][MAX - 99];     // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][2][MAX / 2];      // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][2][MAX / 2 - 1];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][2][MAX / 2 - 2];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][2][MAX / 2 - 3];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][2][MAX / 2 - 4];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][2][MAX / 2 - 5];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][2][MAX / 2 - 6];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][2][MAX / 2 - 7];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][2][MAX / 2 - 8];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][2][MAX / 4];      // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [2][2][MAX / 4 - 1];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [2][2][MAX / 4 - 2];  // { dg-error "size .\[0-9\]+. of array" }
 
     // Avoid exercising data model-dependent expressions.
     // p = new (p) B [2][2][MAX / 8];
@@ -482,22 +483,22 @@ test_placement_three_dim_byte_struct_array (void *p)
     p = new (p) B [2][2][MAX / 8 - 2];
     p = new (p) B [2][2][MAX / 8 - 3];
 
-    p = new (p) B [2][MAX][2];          // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][MAX - 1][2];      // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][MAX - 2][2];      // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][MAX - 99][2];     // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][MAX / 2][2];      // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][MAX / 2 - 1][2];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][MAX / 2 - 2][2];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][MAX / 2 - 3][2];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][MAX / 2 - 4][2];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][MAX / 2 - 5][2];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][MAX / 2 - 6][2];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][MAX / 2 - 7][2];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][MAX / 2 - 8][2];  // { dg-error "size of (unnamed )?array" }
-    p = new (p) B [2][MAX / 4][2];      // { dg-error "size of array" }
-    p = new (p) B [2][MAX / 4 - 1][2];  // { dg-error "size of array" }
-    p = new (p) B [2][MAX / 4 - 2][2];  // { dg-error "size of array" }
+    p = new (p) B [2][MAX][2];          // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][MAX - 1][2];      // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][MAX - 2][2];      // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][MAX - 99][2];     // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][MAX / 2][2];      // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][MAX / 2 - 1][2];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][MAX / 2 - 2][2];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][MAX / 2 - 3][2];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][MAX / 2 - 4][2];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][MAX / 2 - 5][2];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][MAX / 2 - 6][2];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][MAX / 2 - 7][2];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][MAX / 2 - 8][2];  // { dg-error "size .\[0-9\]+. of (unnamed )?array" }
+    p = new (p) B [2][MAX / 4][2];      // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [2][MAX / 4 - 1][2];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [2][MAX / 4 - 2][2];  // { dg-error "size .\[0-9\]+. of array" }
 
     // Avoid exercising data model-dependent expressions.
     // p = new (p) B [2][MAX / 8][2];
@@ -506,22 +507,22 @@ test_placement_three_dim_byte_struct_array (void *p)
     p = new (p) B [2][MAX / 8 - 2][2];
     p = new (p) B [2][MAX / 8 - 3][2];
 
-    p = new (p) B [MAX][2][2];          // { dg-error "size of array" }
-    p = new (p) B [MAX - 1][2][2];      // { dg-error "size of array" }
-    p = new (p) B [MAX - 2][2][2];      // { dg-error "size of array" }
-    p = new (p) B [MAX - 99][2][2];     // { dg-error "size of array" }
-    p = new (p) B [MAX / 2][2][2];      // { dg-error "size of array" }
-    p = new (p) B [MAX / 2 - 1][2][2];  // { dg-error "size of array" }
-    p = new (p) B [MAX / 2 - 2][2][2];  // { dg-error "size of array" }
-    p = new (p) B [MAX / 2 - 3][2][2];  // { dg-error "size of array" }
-    p = new (p) B [MAX / 2 - 4][2][2];  // { dg-error "size of array" }
-    p = new (p) B [MAX / 2 - 5][2][2];  // { dg-error "size of array" }
-    p = new (p) B [MAX / 2 - 6][2][2];  // { dg-error "size of array" }
-    p = new (p) B [MAX / 2 - 7][2][2];  // { dg-error "size of array" }
-    p = new (p) B [MAX / 2 - 8][2][2];  // { dg-error "size of array" }
-    p = new (p) B [MAX / 4][2][2];      // { dg-error "size of array" }
-    p = new (p) B [MAX / 4 - 1][2][2];  // { dg-error "size of array" }
-    p = new (p) B [MAX / 4 - 2][2][2];  // { dg-error "size of array" }
+    p = new (p) B [MAX][2][2];          // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX - 1][2][2];      // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX - 2][2][2];      // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX - 99][2][2];     // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX / 2][2][2];      // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX / 2 - 1][2][2];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX / 2 - 2][2][2];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX / 2 - 3][2][2];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX / 2 - 4][2][2];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX / 2 - 5][2][2];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX / 2 - 6][2][2];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX / 2 - 7][2][2];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX / 2 - 8][2][2];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX / 4][2][2];      // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX / 4 - 1][2][2];  // { dg-error "size .\[0-9\]+. of array" }
+    p = new (p) B [MAX / 4 - 2][2][2];  // { dg-error "size .\[0-9\]+. of array" }
 
     // Avoid exercising data model-dependent expressions.
     // p = new (p) B [MAX / 8][2][2];

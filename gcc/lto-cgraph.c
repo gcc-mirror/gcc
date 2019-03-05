@@ -1,7 +1,7 @@
 /* Write and read the cgraph to the memory mapped representation of a
    .o file.
 
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -421,7 +421,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   if (boundary_p && node->analyzed
       && node->get_partitioning_class () == SYMBOL_PARTITION)
     {
-      /* Inline clones can not be part of boundary.  
+      /* Inline clones cannot be part of boundary.  
          gcc_assert (!node->global.inlined_to);  
 
 	 FIXME: At the moment they can be, when partition contains an inline
@@ -547,13 +547,16 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   streamer_write_bitpack (&bp);
   streamer_write_data_stream (ob->main_stream, section, strlen (section) + 1);
 
-  if (node->thunk.thunk_p)
+  /* Stream thunk info always because we use it in
+     ipa_polymorphic_call_context::ipa_polymorphic_call_context
+     to properly interpret THIS pointers for thunks that has been converted
+     to Gimple.  */
+  if (node->definition)
     {
       streamer_write_uhwi_stream
 	 (ob->main_stream,
 	  1 + (node->thunk.this_adjusting != 0) * 2
-	  + (node->thunk.virtual_offset_p != 0) * 4
-	  + (node->thunk.add_pointer_bounds_args != 0) * 8);
+	  + (node->thunk.virtual_offset_p != 0) * 4);
       streamer_write_uhwi_stream (ob->main_stream, node->thunk.fixed_offset);
       streamer_write_uhwi_stream (ob->main_stream, node->thunk.virtual_value);
       streamer_write_uhwi_stream (ob->main_stream, node->thunk.indirect_offset);
@@ -627,7 +630,6 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
   bp_pack_value (&bp, node->tls_model, 3);
   bp_pack_value (&bp, node->used_by_single_function, 1);
   bp_pack_value (&bp, node->dynamically_initialized, 1);
-  bp_pack_value (&bp, node->need_bounds_init, 1);
   streamer_write_bitpack (&bp);
 
   group = node->get_comdat_group ();
@@ -1091,6 +1093,36 @@ output_offload_tables (void)
     }
 }
 
+/* Verify the partitioning of NODE.  */
+
+static inline void
+verify_node_partition (symtab_node *node)
+{
+  if (flag_ltrans)
+    return;
+
+#ifdef ACCEL_COMPILER
+  if (node->in_other_partition)
+    {
+      if (TREE_CODE (node->decl) == FUNCTION_DECL)
+	error_at (DECL_SOURCE_LOCATION (node->decl),
+		  "function %qs has been referenced in offloaded code but"
+		  " hasn%'t been marked to be included in the offloaded code",
+		  node->name ());
+      else if (VAR_P (node->decl))
+	error_at (DECL_SOURCE_LOCATION (node->decl),
+		  "variable %qs has been referenced in offloaded code but"
+		  " hasn%'t been marked to be included in the offloaded code",
+		  node->name ());
+      else
+	gcc_unreachable ();
+    }
+#else
+  gcc_assert (!node->in_other_partition
+	      && !node->used_from_other_partition);
+#endif
+}
+
 /* Overwrite the information in NODE based on FILE_DATA, TAG, FLAGS,
    STACK_SIZE, SELF_TIME and SELF_SIZE.  This is called either to initialize
    NODE or to replace the values in it, for instance because the first
@@ -1153,9 +1185,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->resolution = bp_unpack_enum (bp, ld_plugin_symbol_resolution,
 				     LDPR_NUM_KNOWN);
   node->split_part = bp_unpack_value (bp, 1);
-  gcc_assert (flag_ltrans
-	      || (!node->in_other_partition
-		  && !node->used_from_other_partition));
+  verify_node_partition (node);
 }
 
 /* Return string alias is alias of.  */
@@ -1267,7 +1297,7 @@ input_node (struct lto_file_decl_data *file_data,
   if (section)
     node->set_section_for_node (section);
 
-  if (node->thunk.thunk_p)
+  if (node->definition)
     {
       int type = streamer_read_uhwi (ib);
       HOST_WIDE_INT fixed_offset = streamer_read_uhwi (ib);
@@ -1279,7 +1309,6 @@ input_node (struct lto_file_decl_data *file_data,
       node->thunk.indirect_offset = indirect_offset;
       node->thunk.this_adjusting = (type & 2);
       node->thunk.virtual_offset_p = (type & 4);
-      node->thunk.add_pointer_bounds_args = (type & 8);
     }
   if (node->alias && !node->analyzed && node->weakref)
     node->alias_target = get_alias_symbol (node->decl);
@@ -1350,7 +1379,6 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   node->tls_model = (enum tls_model)bp_unpack_value (&bp, 3);
   node->used_by_single_function = (enum tls_model)bp_unpack_value (&bp, 1);
   node->dynamically_initialized = bp_unpack_value (&bp, 1);
-  node->need_bounds_init = bp_unpack_value (&bp, 1);
   group = read_identifier (ib);
   if (group)
     {
@@ -1366,10 +1394,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
     node->set_section_for_node (section);
   node->resolution = streamer_read_enum (ib, ld_plugin_symbol_resolution,
 					        LDPR_NUM_KNOWN);
-  gcc_assert (flag_ltrans
-	      || (!node->in_other_partition
-		  && !node->used_from_other_partition));
-
+  verify_node_partition (node);
   return node;
 }
 

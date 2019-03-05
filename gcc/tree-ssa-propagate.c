@@ -1,5 +1,5 @@
 /* Generic SSA value propagation engine.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
    This file is part of GCC.
@@ -339,7 +339,7 @@ ssa_propagation_engine::simulate_block (basic_block block)
       /* Note that we have simulated this block.  */
       block->flags |= BB_VISITED;
 
-      /* We can not predict when abnormal and EH edges will be executed, so
+      /* We cannot predict when abnormal and EH edges will be executed, so
 	 once a block is considered executable, we consider any
 	 outgoing abnormal edges as executable.
 
@@ -381,6 +381,8 @@ ssa_prop_init (void)
   /* Worklists of SSA edges.  */
   ssa_edge_worklist = BITMAP_ALLOC (NULL);
   ssa_edge_worklist_back = BITMAP_ALLOC (NULL);
+  bitmap_tree_view (ssa_edge_worklist);
+  bitmap_tree_view (ssa_edge_worklist_back);
 
   /* Worklist of basic-blocks.  */
   bb_to_cfg_order = XNEWVEC (int, last_basic_block_for_fn (cfun) + 1);
@@ -1038,7 +1040,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	  if (sprime
 	      && sprime != lhs
 	      && may_propagate_copy (lhs, sprime)
-	      && !stmt_could_throw_p (stmt)
+	      && !stmt_could_throw_p (cfun, stmt)
 	      && !gimple_has_side_effects (stmt)
 	      /* We have to leave ASSERT_EXPRs around for jump-threading.  */
 	      && (!is_gimple_assign (stmt)
@@ -1152,6 +1154,10 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 
 
 /* Perform final substitution and folding of propagated values.
+   Process the whole function if BLOCK is null, otherwise only
+   process the blocks that BLOCK dominates.  In the latter case,
+   it is the caller's responsibility to ensure that dominator
+   information is available and up-to-date.
 
    PROP_VALUE[I] contains the single value that should be substituted
    at every use of SSA name N_I.  If PROP_VALUE is NULL, no values are
@@ -1168,16 +1174,24 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
    Return TRUE when something changed.  */
 
 bool
-substitute_and_fold_engine::substitute_and_fold (void)
+substitute_and_fold_engine::substitute_and_fold (basic_block block)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\nSubstituting values and folding statements\n\n");
 
   memset (&prop_stats, 0, sizeof (prop_stats));
 
-  calculate_dominance_info (CDI_DOMINATORS);
+  /* Don't call calculate_dominance_info when iterating over a subgraph.
+     Callers that are using the interface this way are likely to want to
+     iterate over several disjoint subgraphs, and it would be expensive
+     in enable-checking builds to revalidate the whole dominance tree
+     each time.  */
+  if (block)
+    gcc_assert (dom_info_state (CDI_DOMINATORS));
+  else
+    calculate_dominance_info (CDI_DOMINATORS);
   substitute_and_fold_dom_walker walker (CDI_DOMINATORS, this);
-  walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  walker.walk (block ? block : ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
   /* We cannot remove stmts during the BB walk, especially not release
      SSA names there as that destroys the lattice of our callers.

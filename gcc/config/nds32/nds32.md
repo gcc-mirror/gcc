@@ -1,5 +1,5 @@
 ;; Machine description of Andes NDS32 cpu for GNU compiler
-;; Copyright (C) 2012-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2019 Free Software Foundation, Inc.
 ;; Contributed by Andes Technology Corporation.
 ;;
 ;; This file is part of GCC.
@@ -1523,7 +1523,7 @@
 )
 
 (define_insn "call_internal"
-  [(parallel [(call (mem (match_operand:SI 0 "nds32_call_address_operand" "r, S"))
+  [(parallel [(call (mem:SI (match_operand:SI 0 "nds32_call_address_operand" "r, S"))
 		    (match_operand 1))
 	      (clobber (reg:SI LP_REGNUM))
 	      (clobber (reg:SI TA_REGNUM))])]
@@ -1611,7 +1611,7 @@
 
 (define_insn "call_value_internal"
   [(parallel [(set (match_operand 0)
-		   (call (mem (match_operand:SI 1 "nds32_call_address_operand" "r, S"))
+		   (call (mem:SI (match_operand:SI 1 "nds32_call_address_operand" "r, S"))
 		         (match_operand 2)))
 	      (clobber (reg:SI LP_REGNUM))
 	      (clobber (reg:SI TA_REGNUM))])]
@@ -1714,7 +1714,7 @@
 })
 
 (define_insn "sibcall_internal"
-  [(parallel [(call (mem (match_operand:SI 0 "nds32_call_address_operand" "r, S"))
+  [(parallel [(call (mem:SI (match_operand:SI 0 "nds32_call_address_operand" "r, S"))
 		    (match_operand 1))
 	      (clobber (reg:SI TA_REGNUM))
 	      (return)])]
@@ -1778,7 +1778,7 @@
 
 (define_insn "sibcall_value_internal"
   [(parallel [(set (match_operand 0)
-		   (call (mem (match_operand:SI 1 "nds32_call_address_operand" "r, S"))
+		   (call (mem:SI (match_operand:SI 1 "nds32_call_address_operand" "r, S"))
 			 (match_operand 2)))
 	      (clobber (reg:SI TA_REGNUM))
 	      (return)])]
@@ -2313,6 +2313,14 @@
   emit_move_insn (place, operands[0]);
   DONE;
 })
+
+;; ----------------------------------------------------------------------------
+
+;; Patterns for __builtin_trap.
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 0))]
+  ""
+  "trap\t0")
 
 ;; ----------------------------------------------------------------------------
 

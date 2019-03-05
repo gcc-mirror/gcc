@@ -1,4 +1,5 @@
-// { dg-options "-std=c++17 -I${srcdir}/g++.dg/cpp1y -I${srcdir}/g++.dg/cpp1y/testinc" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-I${srcdir}/g++.dg/cpp1y -I${srcdir}/g++.dg/cpp1y/testinc" }
 
 //  C++98 features:
 
@@ -414,6 +415,18 @@
 #  error "__cpp_variadic_using"
 #elif __cpp_variadic_using != 201611
 #  error "__cpp_variadic_using != 201611"
+#endif
+
+#ifndef __cpp_guaranteed_copy_elision
+#  error "__cpp_guaranteed_copy_elision"
+#elif __cpp_guaranteed_copy_elision != 201606
+#  error "__cpp_guaranteed_copy_elision != 201606"
+#endif
+
+#ifndef __cpp_nontype_template_parameter_auto
+#  error "__cpp_nontype_template_parameter_auto"
+#elif __cpp_nontype_template_parameter_auto != 201606
+#  error "__cpp_nontype_template_parameter_auto != 201606"
 #endif
 
 #ifdef __has_cpp_attribute

@@ -28,9 +28,12 @@ type SysProcIDMap struct {
 }
 
 type SysProcAttr struct {
-	Chroot       string         // Chroot.
-	Credential   *Credential    // Credential.
-	Ptrace       bool           // Enable tracing.
+	Chroot     string      // Chroot.
+	Credential *Credential // Credential.
+	// Ptrace tells the child to call ptrace(PTRACE_TRACEME).
+	// Call runtime.LockOSThread before starting a process with this set,
+	// and don't call UnlockOSThread until done with PtraceSyscall calls.
+	Ptrace       bool
 	Setsid       bool           // Create session.
 	Setpgid      bool           // Set process group ID to Pgid, or, if Pgid == 0, to new pid.
 	Setctty      bool           // Set controlling terminal to fd Ctty (only meaningful if Setsid is set)
@@ -62,6 +65,7 @@ func runtime_AfterFork()
 func runtime_AfterForkInChild()
 
 // Implemented in clone_linux.c
+//go:noescape
 func rawClone(flags _C_ulong, child_stack *byte, ptid *Pid_t, ctid *Pid_t, regs unsafe.Pointer) _C_long
 
 // Fork, dup fd onto 0..len(fd), and exec(argv0, argvv, envv) in child.

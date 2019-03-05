@@ -1,6 +1,6 @@
 # -*- makefile -*-
 # Top level makefile fragment for GNU gfortran, the GNU Fortran 95 compiler.
-# Copyright (C) 2002-2018 Free Software Foundation, Inc.
+# Copyright (C) 2002-2019 Free Software Foundation, Inc.
 # Contributed by Paul Brook <paul@nowt.org
 # and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -169,6 +169,9 @@ lang_checks += check-gfortran
 lang_checks_parallelized += check-gfortran
 # For description see the check_$lang_parallelize comment in gcc/Makefile.in.
 check_gfortran_parallelize = 10000
+
+# No fortran-specific selftests
+selftest-fortran:
 
 # GFORTRAN documentation.
 GFORTRAN_TEXI = \

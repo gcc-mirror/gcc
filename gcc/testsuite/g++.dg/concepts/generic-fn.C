@@ -1,5 +1,5 @@
-// { dg-do run }
-// { dg-options "-std=c++17 -fconcepts" }
+// { dg-do run { target c++17 } }
+// { dg-options "-fconcepts" }
 
 #include <cassert>
 #include <type_traits>

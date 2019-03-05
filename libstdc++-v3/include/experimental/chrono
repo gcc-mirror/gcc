@@ -1,6 +1,6 @@
 // Variable Templates For chrono -*- C++ -*-
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,7 +49,7 @@ namespace experimental
 {
 inline namespace fundamentals_v1
 {
-// See C++14 §20.12.4, customization traits
+// See C++14 20.12.4, customization traits
 template <typename _Rep>
    constexpr bool treat_as_floating_point_v =
      treat_as_floating_point<_Rep>::value;

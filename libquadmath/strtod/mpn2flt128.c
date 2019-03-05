@@ -34,15 +34,17 @@ mpn_construct_float128 (mp_srcptr frac_ptr, int expt, int sign)
   u.ieee.negative = sign;
   u.ieee.exponent = expt + IEEE854_FLOAT128_BIAS;
 #if BITS_PER_MP_LIMB == 32
-  u.ieee.mant_low = (((uint64_t) frac_ptr[1]) << 32)
-		    | (frac_ptr[0] & 0xffffffff);
-  u.ieee.mant_high = (((uint64_t) frac_ptr[3]
-		       & (((mp_limb_t) 1 << (FLT128_MANT_DIG - 96)) - 1))
-		      << 32) | (frac_ptr[2] & 0xffffffff);
+  u.ieee.mantissa3 = frac_ptr[0];
+  u.ieee.mantissa2 = frac_ptr[1];
+  u.ieee.mantissa1 = frac_ptr[2];
+  u.ieee.mantissa0 = frac_ptr[3] & (((mp_limb_t) 1
+				     << (FLT128_MANT_DIG - 96)) - 1);
 #elif BITS_PER_MP_LIMB == 64
-  u.ieee.mant_low = frac_ptr[0];
-  u.ieee.mant_high = frac_ptr[1]
-		     & (((mp_limb_t) 1 << (FLT128_MANT_DIG - 64)) - 1);
+  u.ieee.mantissa3 = frac_ptr[0] & (((mp_limb_t) 1 << 32) - 1);
+  u.ieee.mantissa2 = frac_ptr[0] >> 32;
+  u.ieee.mantissa1 = frac_ptr[1] & (((mp_limb_t) 1 << 32) - 1);
+  u.ieee.mantissa0 = (frac_ptr[1] >> 32) & (((mp_limb_t) 1
+					     << (FLT128_MANT_DIG - 96)) - 1);
 #else
   #error "mp_limb size " BITS_PER_MP_LIMB "not accounted for"
 #endif

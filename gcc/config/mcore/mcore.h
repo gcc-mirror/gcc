@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for Motorola M*CORE Processor.
-   Copyright (C) 1993-2018 Free Software Foundation, Inc.
+   Copyright (C) 1993-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -533,7 +533,7 @@ extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define SLOW_BYTE_ACCESS TARGET_SLOW_BYTES
 
 /* Shift counts are truncated to 6-bits (0 to 63) instead of the expected
-   5-bits, so we can not define SHIFT_COUNT_TRUNCATED to true for this
+   5-bits, so we cannot define SHIFT_COUNT_TRUNCATED to true for this
    target.  */
 #define SHIFT_COUNT_TRUNCATED 0
 
@@ -551,8 +551,6 @@ extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 /* Compute extra cost of moving data between one register class
    and another.  All register moves are cheap.  */
 #define REGISTER_MOVE_COST(MODE, SRCCLASS, DSTCLASS) 2
-
-#define WORD_REGISTER_OPERATIONS 1
 
 /* Assembler output control.  */
 #define ASM_COMMENT_START "\t//"

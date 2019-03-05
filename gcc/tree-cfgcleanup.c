@@ -1,5 +1,5 @@
 /* CFG cleanup for trees.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -43,6 +43,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-match.h"
 #include "gimple-fold.h"
 #include "tree-ssa-loop-niter.h"
+#include "cgraph.h"
+#include "tree-into-ssa.h"
+#include "tree-cfgcleanup.h"
 
 
 /* The set of blocks in that at least one of the following changes happened:
@@ -529,7 +532,7 @@ remove_forwarder_block (basic_block bb)
 	       gsi_next (&psi))
 	    {
 	      gphi *phi = psi.phi ();
-	      source_location l = gimple_phi_arg_location_from_edge (phi, succ);
+	      location_t l = gimple_phi_arg_location_from_edge (phi, succ);
 	      tree def = gimple_phi_arg_def (phi, succ->dest_idx);
 	      add_phi_arg (phi, unshare_expr (def), s, l);
 	    }
@@ -723,6 +726,97 @@ cleanup_tree_cfg_bb (basic_block bb)
   return false;
 }
 
+/* Return true if E is an EDGE_ABNORMAL edge for returns_twice calls,
+   i.e. one going from .ABNORMAL_DISPATCHER to basic block which doesn't
+   start with a forced or nonlocal label.  Calls which return twice can return
+   the second time only if they are called normally the first time, so basic
+   blocks which can be only entered through these abnormal edges but not
+   normally are effectively unreachable as well.  Additionally ignore
+   __builtin_setjmp_receiver starting blocks, which have one FORCED_LABEL
+   and which are always only reachable through EDGE_ABNORMAL edge.  They are
+   handled in cleanup_control_flow_pre.  */
+
+static bool
+maybe_dead_abnormal_edge_p (edge e)
+{
+  if ((e->flags & (EDGE_ABNORMAL | EDGE_EH)) != EDGE_ABNORMAL)
+    return false;
+
+  gimple_stmt_iterator gsi = gsi_start_nondebug_after_labels_bb (e->src);
+  gimple *g = gsi_stmt (gsi);
+  if (!g || !gimple_call_internal_p (g, IFN_ABNORMAL_DISPATCHER))
+    return false;
+
+  tree target = NULL_TREE;
+  for (gsi = gsi_start_bb (e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
+    if (glabel *label_stmt = dyn_cast <glabel *> (gsi_stmt (gsi)))
+      {
+	tree this_target = gimple_label_label (label_stmt);
+	if (DECL_NONLOCAL (this_target))
+	  return false;
+	if (FORCED_LABEL (this_target))
+	  {
+	    if (target)
+	      return false;
+	    target = this_target;
+	  }
+      }
+    else
+      break;
+
+  if (target)
+    {
+      /* If there was a single FORCED_LABEL, check for
+	 __builtin_setjmp_receiver with address of that label.  */
+      if (!gsi_end_p (gsi) && is_gimple_debug (gsi_stmt (gsi)))
+	gsi_next_nondebug (&gsi);
+      if (gsi_end_p (gsi))
+	return false;
+      if (!gimple_call_builtin_p (gsi_stmt (gsi), BUILT_IN_SETJMP_RECEIVER))
+	return false;
+
+      tree arg = gimple_call_arg (gsi_stmt (gsi), 0);
+      if (TREE_CODE (arg) != ADDR_EXPR || TREE_OPERAND (arg, 0) != target)
+	return false;
+    }
+  return true;
+}
+
+/* If BB is a basic block ending with __builtin_setjmp_setup, return edge
+   from .ABNORMAL_DISPATCHER basic block to corresponding
+   __builtin_setjmp_receiver basic block, otherwise return NULL.  */
+static edge
+builtin_setjmp_setup_bb (basic_block bb)
+{
+  if (EDGE_COUNT (bb->succs) != 2
+      || ((EDGE_SUCC (bb, 0)->flags
+	   & (EDGE_ABNORMAL | EDGE_EH)) != EDGE_ABNORMAL
+	  && (EDGE_SUCC (bb, 1)->flags
+	      & (EDGE_ABNORMAL | EDGE_EH)) != EDGE_ABNORMAL))
+    return NULL;
+
+  gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb);
+  if (gsi_end_p (gsi)
+      || !gimple_call_builtin_p (gsi_stmt (gsi), BUILT_IN_SETJMP_SETUP))
+    return NULL;
+
+  tree arg = gimple_call_arg (gsi_stmt (gsi), 1);
+  if (TREE_CODE (arg) != ADDR_EXPR
+      || TREE_CODE (TREE_OPERAND (arg, 0)) != LABEL_DECL)
+    return NULL;
+
+  basic_block recv_bb = label_to_block (cfun, TREE_OPERAND (arg, 0));
+  if (EDGE_COUNT (recv_bb->preds) != 1
+      || (EDGE_PRED (recv_bb, 0)->flags
+	  & (EDGE_ABNORMAL | EDGE_EH)) != EDGE_ABNORMAL
+      || (EDGE_SUCC (bb, 0)->dest != EDGE_PRED (recv_bb, 0)->src
+	  && EDGE_SUCC (bb, 1)->dest != EDGE_PRED (recv_bb, 0)->src))
+    return NULL;
+
+  /* EDGE_PRED (recv_bb, 0)->src should be the .ABNORMAL_DISPATCHER bb.  */
+  return EDGE_PRED (recv_bb, 0);
+}
+
 /* Do cleanup_control_flow_bb in PRE order.  */
 
 static bool
@@ -736,9 +830,12 @@ cleanup_control_flow_pre ()
   dom_state saved_state = dom_info_state (CDI_DOMINATORS);
   set_dom_info_availability (CDI_DOMINATORS, DOM_NONE);
 
-  auto_vec<edge_iterator, 20> stack (n_basic_blocks_for_fn (cfun) + 1);
+  auto_vec<edge_iterator, 20> stack (n_basic_blocks_for_fn (cfun) + 2);
   auto_sbitmap visited (last_basic_block_for_fn (cfun));
   bitmap_clear (visited);
+
+  vec<edge, va_gc> *setjmp_vec = NULL;
+  auto_vec<basic_block, 4> abnormal_dispatchers;
 
   stack.quick_push (ei_start (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs));
 
@@ -749,12 +846,37 @@ cleanup_control_flow_pre ()
       basic_block dest = ei_edge (ei)->dest;
 
       if (dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
-	  && ! bitmap_bit_p (visited, dest->index))
+	  && !bitmap_bit_p (visited, dest->index)
+	  && (ei_container (ei) == setjmp_vec
+	      || !maybe_dead_abnormal_edge_p (ei_edge (ei))))
 	{
 	  bitmap_set_bit (visited, dest->index);
 	  /* We only possibly remove edges from DEST here, leaving
 	     possibly unreachable code in the IL.  */
 	  retval |= cleanup_control_flow_bb (dest);
+
+	  /* Check for __builtin_setjmp_setup.  Edges from .ABNORMAL_DISPATCH
+	     to __builtin_setjmp_receiver will be normally ignored by
+	     maybe_dead_abnormal_edge_p.  If DEST is a visited
+	     __builtin_setjmp_setup, queue edge from .ABNORMAL_DISPATCH
+	     to __builtin_setjmp_receiver, so that it will be visited too.  */
+	  if (edge e = builtin_setjmp_setup_bb (dest))
+	    {
+	      vec_safe_push (setjmp_vec, e);
+	      if (vec_safe_length (setjmp_vec) == 1)
+		stack.quick_push (ei_start (setjmp_vec));
+	    }
+
+	  if ((ei_edge (ei)->flags
+	       & (EDGE_ABNORMAL | EDGE_EH)) == EDGE_ABNORMAL)
+	    {
+	      gimple_stmt_iterator gsi
+		= gsi_start_nondebug_after_labels_bb (dest);
+	      gimple *g = gsi_stmt (gsi);
+	      if (g && gimple_call_internal_p (g, IFN_ABNORMAL_DISPATCHER))
+		abnormal_dispatchers.safe_push (dest);
+	    }
+
 	  if (EDGE_COUNT (dest->succs) > 0)
 	    stack.quick_push (ei_start (dest->succs));
 	}
@@ -763,8 +885,30 @@ cleanup_control_flow_pre ()
 	  if (!ei_one_before_end_p (ei))
 	    ei_next (&stack.last ());
 	  else
-	    stack.pop ();
+	    {
+	      if (ei_container (ei) == setjmp_vec)
+		vec_safe_truncate (setjmp_vec, 0);
+	      stack.pop ();
+	    }
 	}
+    }
+
+  vec_free (setjmp_vec);
+
+  /* If we've marked .ABNORMAL_DISPATCHER basic block(s) as visited
+     above, but haven't marked any of their successors as visited,
+     unmark them now, so that they can be removed as useless.  */
+  basic_block dispatcher_bb;
+  unsigned int k;
+  FOR_EACH_VEC_ELT (abnormal_dispatchers, k, dispatcher_bb)
+    {
+      edge e;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, dispatcher_bb->succs)
+	if (bitmap_bit_p (visited, e->dest->index))
+	  break;
+      if (e == NULL)
+	bitmap_clear_bit (visited, dispatcher_bb->index);
     }
 
   set_dom_info_availability (CDI_DOMINATORS, saved_state);
@@ -802,7 +946,7 @@ mfb_keep_latches (edge e)
    Return true if the flowgraph was modified, false otherwise.  */
 
 static bool
-cleanup_tree_cfg_noloop (void)
+cleanup_tree_cfg_noloop (unsigned ssa_update_flags)
 {
   timevar_push (TV_TREE_CLEANUP_CFG);
 
@@ -882,6 +1026,8 @@ cleanup_tree_cfg_noloop (void)
 
   /* After doing the above SSA form should be valid (or an update SSA
      should be required).  */
+  if (ssa_update_flags)
+    update_ssa (ssa_update_flags);
 
   /* Compute dominator info which we need for the iterative process below.  */
   if (!dom_info_available_p (CDI_DOMINATORS))
@@ -984,9 +1130,9 @@ repair_loop_structures (void)
 /* Cleanup cfg and repair loop structures.  */
 
 bool
-cleanup_tree_cfg (void)
+cleanup_tree_cfg (unsigned ssa_update_flags)
 {
-  bool changed = cleanup_tree_cfg_noloop ();
+  bool changed = cleanup_tree_cfg_noloop (ssa_update_flags);
 
   if (current_loops != NULL
       && loops_state_satisfies_p (LOOPS_NEED_FIXUP))
@@ -1082,7 +1228,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 	{
 	  gphi *phi = gsi.phi ();
 	  tree def = gimple_phi_arg_def (phi, succ->dest_idx);
-	  source_location locus = gimple_phi_arg_location_from_edge (phi, succ);
+	  location_t locus = gimple_phi_arg_location_from_edge (phi, succ);
 
 	  if (TREE_CODE (def) == SSA_NAME)
 	    {
@@ -1379,4 +1525,77 @@ make_pass_cleanup_cfg_post_optimizing (gcc::context *ctxt)
   return new pass_cleanup_cfg_post_optimizing (ctxt);
 }
 
+
+/* Delete all unreachable basic blocks and update callgraph.
+   Doing so is somewhat nontrivial because we need to update all clones and
+   remove inline function that become unreachable.  */
+
+bool
+delete_unreachable_blocks_update_callgraph (cgraph_node *dst_node,
+					    bool update_clones)
+{
+  bool changed = false;
+  basic_block b, next_bb;
+
+  find_unreachable_blocks ();
+
+  /* Delete all unreachable basic blocks.  */
+
+  for (b = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb; b
+       != EXIT_BLOCK_PTR_FOR_FN (cfun); b = next_bb)
+    {
+      next_bb = b->next_bb;
+
+      if (!(b->flags & BB_REACHABLE))
+	{
+          gimple_stmt_iterator bsi;
+
+          for (bsi = gsi_start_bb (b); !gsi_end_p (bsi); gsi_next (&bsi))
+	    {
+	      struct cgraph_edge *e;
+	      struct cgraph_node *node;
+
+	      dst_node->remove_stmt_references (gsi_stmt (bsi));
+
+	      if (gimple_code (gsi_stmt (bsi)) == GIMPLE_CALL
+		  &&(e = dst_node->get_edge (gsi_stmt (bsi))) != NULL)
+		{
+		  if (!e->inline_failed)
+		    e->callee->remove_symbol_and_inline_clones (dst_node);
+		  else
+		    e->remove ();
+		}
+	      if (update_clones && dst_node->clones)
+		for (node = dst_node->clones; node != dst_node;)
+		  {
+		    node->remove_stmt_references (gsi_stmt (bsi));
+		    if (gimple_code (gsi_stmt (bsi)) == GIMPLE_CALL
+			&& (e = node->get_edge (gsi_stmt (bsi))) != NULL)
+		      {
+			if (!e->inline_failed)
+			  e->callee->remove_symbol_and_inline_clones (dst_node);
+			else
+			  e->remove ();
+		      }
+
+		    if (node->clones)
+		      node = node->clones;
+		    else if (node->next_sibling_clone)
+		      node = node->next_sibling_clone;
+		    else
+		      {
+			while (node != dst_node && !node->next_sibling_clone)
+			  node = node->clone_of;
+			if (node != dst_node)
+			  node = node->next_sibling_clone;
+		      }
+		  }
+	    }
+	  delete_basic_block (b);
+	  changed = true;
+	}
+    }
+
+  return changed;
+}
 

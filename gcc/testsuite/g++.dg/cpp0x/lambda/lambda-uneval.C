@@ -3,7 +3,7 @@
 
 template <class T>
 struct A { };
-A<decltype([]{ return 1; }())> a; // { dg-error "lambda.*unevaluated context" }
+A<decltype([]{ return 1; }())> a; // { dg-error "lambda.*unevaluated context" "" { target c++17_down } }
 
 // { dg-prune-output "template argument" }
 // { dg-prune-output "invalid type" }

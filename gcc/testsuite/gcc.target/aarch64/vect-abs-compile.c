@@ -1,6 +1,7 @@
-
 /* { dg-do compile } */
 /* { dg-options "-O3 -fno-vect-cost-model" } */
+
+#pragma GCC target "+nosve"
 
 #define N 16
 

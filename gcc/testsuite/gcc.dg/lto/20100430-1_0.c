@@ -1,6 +1,7 @@
 /* { dg-lto-do link } */
 /* { dg-lto-options {{-O2 -fprofile-arcs -flto -r -nostdlib}} } */
 /* { dg-extra-ld-options "-flinker-output=nolto-rel" } */
+/* { dg-require-profiling "-fprofile-arcs" } */
 
 
 void

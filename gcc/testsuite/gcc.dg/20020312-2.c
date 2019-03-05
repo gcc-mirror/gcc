@@ -117,6 +117,10 @@ extern void abort (void);
 # if defined (__CK807__) || defined (__CK810__)
 #   define PIC_REG  "r28"
 # endif
+#elif defined (__or1k__)
+/* No pic register.  */
+#elif defined (__AMDGCN__)
+/* No pic register.  */
 #else
 # error "Modify the test for your target."
 #endif

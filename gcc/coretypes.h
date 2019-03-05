@@ -1,5 +1,5 @@
 /* GCC core type declarations.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -46,6 +46,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 typedef int64_t gcov_type;
 typedef uint64_t gcov_type_unsigned;
 
+struct bitmap_obstack;
 struct bitmap_head;
 typedef struct bitmap_head *bitmap;
 typedef const struct bitmap_head *const_bitmap;

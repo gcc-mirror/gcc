@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -507,6 +507,9 @@ package Osint is
    --  Read_Source_File, except those that come from the run-time library
    --  (i.e. Include_Dir_Default_Prefix). The text is sent to whatever Output
    --  is currently using (e.g. standard output or standard error).
+
+   procedure Dump_Command_Line_Source_File_Names;
+   --  Prints out the names of all source files on the command-line
 
    -------------------------------------------
    -- Representation of Library Information --

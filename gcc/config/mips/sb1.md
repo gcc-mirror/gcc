@@ -1,4 +1,4 @@
-;; Copyright (C) 2004-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2004-2019 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -127,7 +127,7 @@
 ;; register as destination.
 
 ;; ??? SB-1 can co-issue a load with a dependent arith insn if it executes on
-;; an EX unit.  Can not co-issue if the dependent insn executes on an LS unit.
+;; an EX unit.  Cannot co-issue if the dependent insn executes on an LS unit.
 ;; SB-1A can always co-issue here.
 
 ;; A load normally has a latency of zero cycles.  In some cases, dependent
@@ -144,7 +144,7 @@
        (eq_attr "type" "load,prefetch"))
   "sb1_ls0 | sb1_ls1")
 
-;; Can not co-issue fpload with fp exe when in 32-bit mode.
+;; Cannot co-issue fpload with fp exe when in 32-bit mode.
 
 (define_insn_reservation "ir_sb1_fpload" 0
   (and (eq_attr "cpu" "sb1,sb1a")
@@ -252,7 +252,7 @@
        (eq_attr "type" "const,arith,logical,move,signext"))
   "sb1_ls1 | sb1_ex1 | sb1_ex0")
 
-;; On SB-1A, simple alu instructions can not execute on the LS1 unit, and we
+;; On SB-1A, simple alu instructions cannot execute on the LS1 unit, and we
 ;; have none of the above problems.
 
 (define_insn_reservation "ir_sb1a_simple_alu" 1

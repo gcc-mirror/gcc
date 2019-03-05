@@ -1,6 +1,5 @@
 // PR c++/83644
-// { dg-do compile }
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 namespace std {
 template <typename> bool is_invocable_v;

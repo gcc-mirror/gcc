@@ -33,4 +33,4 @@ andrew (struct s *p)
   return i;
 }
 
-/* { dg-final { scan-tree-dump-times " & | goto " 0 "optimized" } } */
+/* { dg-final { scan-tree-dump-not "goto " "optimized" } } */

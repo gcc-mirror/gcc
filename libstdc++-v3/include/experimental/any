@@ -1,6 +1,6 @@
 // <experimental/any> -*- C++ -*-
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -266,7 +266,7 @@ inline namespace fundamentals_v1
     // observers
 
     /// Reports whether there is a contained object or not.
-    bool empty() const noexcept { return _M_manager == nullptr; }
+    _GLIBCXX_NODISCARD bool empty() const noexcept { return _M_manager == nullptr; }
 
 #if __cpp_rtti
     /// The @c typeid of the contained object, or @c typeid(void) if empty.

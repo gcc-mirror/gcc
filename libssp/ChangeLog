@@ -1,3 +1,16 @@
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* Makefile.am: Include multilib.am.
+	(AUTOMAKE_OPTIONS): Remove 1.9.5.
+	* configure.ac: Remove AC_PREREQ.  Quote argument to
+	AC_RUN_IFELSE.
+	* Makefile.in, aclocal.m4, configure: Regenerate.
+
 2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure: Regenerated.

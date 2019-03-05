@@ -1,5 +1,6 @@
 // PR c++/85706
-// { dg-additional-options "-std=c++17 -fconcepts" }
+// { dg-do compile { target c++17 } }
+// { dg-additional-options "-fconcepts" }
 
 template<class T> struct S {
   S(T);

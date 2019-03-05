@@ -1,6 +1,6 @@
 /* Build up a list of intrinsic subroutines and functions for the
    name-resolution stage.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -60,17 +60,22 @@ enum klass
 
 
 /* Return a letter based on the passed type.  Used to construct the
-   name of a type-dependent subroutine.  */
+   name of a type-dependent subroutine.  If logical_equals_int is
+   true, we can treat a logical like an int.  */
 
 char
-gfc_type_letter (bt type)
+gfc_type_letter (bt type, bool logical_equals_int)
 {
   char c;
 
   switch (type)
     {
     case BT_LOGICAL:
-      c = 'l';
+      if (logical_equals_int)
+	c = 'i';
+      else
+	c = 'l';
+
       break;
     case BT_CHARACTER:
       c = 's';
@@ -206,6 +211,7 @@ do_ts29113_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
 	       && specific->id != GFC_ISYM_SIZE
 	       && specific->id != GFC_ISYM_SIZEOF
 	       && specific->id != GFC_ISYM_UBOUND
+	       && specific->id != GFC_ISYM_IS_CONTIGUOUS
 	       && specific->id != GFC_ISYM_C_LOC)
 	{
 	  gfc_error ("Assumed-type argument at %L is not permitted as actual"
@@ -683,8 +689,8 @@ add_sym_3 (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt ty
 }
 
 
-/* MINLOC and MAXLOC get special treatment because their argument
-   might have to be reordered.  */
+/* MINLOC and MAXLOC get special treatment because their
+   argument might have to be reordered.  */
 
 static void
 add_sym_5ml (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type,
@@ -714,6 +720,42 @@ add_sym_5ml (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt 
 	   a3, type3, kind3, optional3, INTENT_IN,
 	   a4, type4, kind4, optional4, INTENT_IN,
 	   a5, type5, kind5, optional5, INTENT_IN,
+	   (void *) 0);
+}
+
+/* Similar for FINDLOC.  */
+
+static void
+add_sym_6fl (const char *name, gfc_isym_id id, enum klass cl, int actual_ok,
+	     bt type, int kind, int standard,
+	     bool (*check) (gfc_actual_arglist *),
+	     gfc_expr *(*simplify) (gfc_expr *, gfc_expr *, gfc_expr *,
+				    gfc_expr *, gfc_expr *, gfc_expr *),
+	     void (*resolve) (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
+			      gfc_expr *, gfc_expr *, gfc_expr *),
+	     const char *a1, bt type1, int kind1, int optional1,
+	     const char *a2, bt type2, int kind2, int optional2,
+	     const char *a3, bt type3, int kind3, int optional3,
+	     const char *a4, bt type4, int kind4, int optional4,
+	     const char *a5, bt type5, int kind5, int optional5,
+	     const char *a6, bt type6, int kind6, int optional6)
+
+{
+  gfc_check_f cf;
+  gfc_simplify_f sf;
+  gfc_resolve_f rf;
+
+  cf.f6fl = check;
+  sf.f6 = simplify;
+  rf.f6 = resolve;
+
+  add_sym (name, id, cl, actual_ok, type, kind, standard, cf, sf, rf,
+	   a1, type1, kind1, optional1, INTENT_IN,
+	   a2, type2, kind2, optional2, INTENT_IN,
+	   a3, type3, kind3, optional3, INTENT_IN,
+	   a4, type4, kind4, optional4, INTENT_IN,
+	   a5, type5, kind5, optional5, INTENT_IN,
+	   a6, type6, kind6, optional6, INTENT_IN,
 	   (void *) 0);
 }
 
@@ -1248,7 +1290,8 @@ add_functions (void)
     *sta = "string_a", *stb = "string_b", *stg = "string",
     *sub = "sub", *sz = "size", *tg = "target", *team = "team", *tm = "time",
     *ts = "tsource", *ut = "unit", *v = "vector", *va = "vector_a",
-    *vb = "vector_b", *vl = "values", *x = "x", *y = "y", *z = "z";
+    *vb = "vector_b", *vl = "values", *val = "value", *x = "x", *y = "y",
+    *z = "z";
 
   int di, dr, dd, dl, dc, dz, ii;
 
@@ -1983,8 +2026,9 @@ add_functions (void)
 
   make_generic ("iachar", GFC_ISYM_IACHAR, GFC_STD_F95);
 
-  add_sym_2 ("iand", GFC_ISYM_IAND, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
-	     gfc_check_iand, gfc_simplify_iand, gfc_resolve_iand,
+  add_sym_2 ("iand", GFC_ISYM_IAND, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di,
+	     GFC_STD_F95,
+	     gfc_check_iand_ieor_ior, gfc_simplify_iand, gfc_resolve_iand,
 	     i, BT_INTEGER, di, REQUIRED, j, BT_INTEGER, di, REQUIRED);
 
   if (flag_dec_intrinsic_ints)
@@ -2072,8 +2116,9 @@ add_functions (void)
 
   make_generic ("ichar", GFC_ISYM_ICHAR, GFC_STD_F77);
 
-  add_sym_2 ("ieor", GFC_ISYM_IEOR, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
-	     gfc_check_ieor, gfc_simplify_ieor, gfc_resolve_ieor,
+  add_sym_2 ("ieor", GFC_ISYM_IEOR, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di,
+	     GFC_STD_F95,
+	     gfc_check_iand_ieor_ior, gfc_simplify_ieor, gfc_resolve_ieor,
 	     i, BT_INTEGER, di, REQUIRED, j, BT_INTEGER, di, REQUIRED);
 
   if (flag_dec_intrinsic_ints)
@@ -2150,8 +2195,9 @@ add_functions (void)
 
   make_generic ("long", GFC_ISYM_LONG, GFC_STD_GNU);
 
-  add_sym_2 ("ior", GFC_ISYM_IOR, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
-	     gfc_check_ior, gfc_simplify_ior, gfc_resolve_ior,
+  add_sym_2 ("ior", GFC_ISYM_IOR, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di,
+	     GFC_STD_F95,
+	     gfc_check_iand_ieor_ior, gfc_simplify_ior, gfc_resolve_ior,
 	     i, BT_INTEGER, di, REQUIRED, j, BT_INTEGER, di, REQUIRED);
 
   if (flag_dec_intrinsic_ints)
@@ -2189,6 +2235,14 @@ add_functions (void)
 	     ut, BT_INTEGER, di, REQUIRED);
 
   make_generic ("isatty", GFC_ISYM_ISATTY, GFC_STD_GNU);
+
+  add_sym_1 ("is_contiguous", GFC_ISYM_IS_CONTIGUOUS, CLASS_INQUIRY, ACTUAL_NO,
+	     BT_LOGICAL, dl, GFC_STD_F2008,
+	     gfc_check_is_contiguous, gfc_simplify_is_contiguous,
+	     gfc_resolve_is_contiguous,
+	     ar, BT_REAL, dr, REQUIRED);
+
+  make_generic ("is_contiguous", GFC_ISYM_IS_CONTIGUOUS, GFC_STD_F2008);
 
   add_sym_1 ("is_iostat_end", GFC_ISYM_IS_IOSTAT_END,
 	     CLASS_ELEMENTAL, ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_F2003,
@@ -2475,6 +2529,15 @@ add_functions (void)
 	       bck, BT_LOGICAL, dl, OPTIONAL);
 
   make_generic ("maxloc", GFC_ISYM_MAXLOC, GFC_STD_F95);
+
+  add_sym_6fl ("findloc", GFC_ISYM_FINDLOC, CLASS_TRANSFORMATIONAL, ACTUAL_NO,
+	       BT_INTEGER, di, GFC_STD_F2008,
+	       gfc_check_findloc, gfc_simplify_findloc, gfc_resolve_findloc,
+	       ar, BT_REAL, dr, REQUIRED, val, BT_REAL, dr, REQUIRED,
+	       dm, BT_INTEGER, ii, OPTIONAL, msk, BT_LOGICAL, dl, OPTIONAL,
+	       kind, BT_INTEGER, di, OPTIONAL, bck, BT_LOGICAL, dl, OPTIONAL);
+
+  make_generic ("findloc", GFC_ISYM_FINDLOC, GFC_STD_F2008);
 
   add_sym_3red ("maxval", GFC_ISYM_MAXVAL, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
 		gfc_check_minval_maxval, gfc_simplify_maxval, gfc_resolve_maxval,
@@ -3316,7 +3379,7 @@ add_subroutines (void)
     *st = "status", *stat = "stat", *sz = "size", *t = "to",
     *tm = "time", *tp = "topos", *trim_name = "trim_name", *ut = "unit",
     *val = "value", *vl = "values", *whence = "whence", *zn = "zone";
- 
+
   int di, dr, dc, dl, ii;
 
   di = gfc_default_integer_kind;
@@ -4279,7 +4342,7 @@ check_arglist (gfc_actual_arglist **ap, gfc_intrinsic_sym *sym,
 static void
 resolve_intrinsic (gfc_intrinsic_sym *specific, gfc_expr *e)
 {
-  gfc_expr *a1, *a2, *a3, *a4, *a5;
+  gfc_expr *a1, *a2, *a3, *a4, *a5, *a6;
   gfc_actual_arglist *arg;
 
   if (specific->resolve.f1 == NULL)
@@ -4353,6 +4416,15 @@ resolve_intrinsic (gfc_intrinsic_sym *specific, gfc_expr *e)
       return;
     }
 
+  a6 = arg->expr;
+  arg = arg->next;
+
+  if (arg == NULL)
+    {
+      (*specific->resolve.f6) (e, a1, a2, a3, a4, a5, a6);
+      return;
+    }
+
   gfc_internal_error ("resolve_intrinsic(): Too many args for intrinsic");
 }
 
@@ -4366,7 +4438,7 @@ resolve_intrinsic (gfc_intrinsic_sym *specific, gfc_expr *e)
 static bool
 do_simplify (gfc_intrinsic_sym *specific, gfc_expr *e)
 {
-  gfc_expr *result, *a1, *a2, *a3, *a4, *a5;
+  gfc_expr *result, *a1, *a2, *a3, *a4, *a5, *a6;
   gfc_actual_arglist *arg;
 
   /* Max and min require special handling due to the variable number
@@ -4447,8 +4519,17 @@ do_simplify (gfc_intrinsic_sym *specific, gfc_expr *e)
 		  if (arg == NULL)
 		    result = (*specific->simplify.f5) (a1, a2, a3, a4, a5);
 		  else
-		    gfc_internal_error
-		      ("do_simplify(): Too many args for intrinsic");
+		    {
+		      a6 = arg->expr;
+		      arg = arg->next;
+
+		      if (arg == NULL)
+			result = (*specific->simplify.f6)
+		       			(a1, a2, a3, a4, a5, a6);
+		      else
+			gfc_internal_error
+			  ("do_simplify(): Too many args for intrinsic");
+		    }
 		}
 	    }
 	}
@@ -4528,6 +4609,8 @@ check_specific (gfc_intrinsic_sym *specific, gfc_expr *expr, int error_flag)
   if (specific->check.f5ml == gfc_check_minloc_maxloc)
     /* This is special because we might have to reorder the argument list.  */
     t = gfc_check_minloc_maxloc (*ap);
+  else if (specific->check.f6fl == gfc_check_findloc)
+    t = gfc_check_findloc (*ap);
   else if (specific->check.f3red == gfc_check_minval_maxval)
     /* This is also special because we also might have to reorder the
        argument list.  */
@@ -4945,6 +5028,8 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
   if (ts->type == BT_UNKNOWN)
     goto bad;
 
+  expr->do_not_warn = ! wflag;
+
   /* NULL and zero size arrays get their type here, unless they already have a
      typespec.  */
   if ((expr->expr_type == EXPR_NULL
@@ -4958,6 +5043,13 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 
   if (expr->ts.type == BT_UNKNOWN)
     goto bad;
+
+  /* In building an array constructor, gfortran can end up here when no
+     conversion is required for an intrinsic type.  We need to let derived
+     types drop through.  */
+  if (from_ts.type != BT_DERIVED
+      && (from_ts.type == ts->type && from_ts.kind == ts->kind))
+    return true;
 
   if (expr->ts.type == BT_DERIVED && ts->type == BT_DERIVED
       && gfc_compare_types (&expr->ts, ts))

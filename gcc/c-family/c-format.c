@@ -1,5 +1,5 @@
 /* Check calls to formatted I/O functions (-Wformat).
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -60,17 +60,20 @@ struct function_format_info
 /* Initialized in init_dynamic_diag_info.  */
 static GTY(()) tree local_tree_type_node;
 static GTY(()) tree local_gimple_ptr_node;
+static GTY(()) tree local_cgraph_node_ptr_node;
 static GTY(()) tree locus;
 
-static bool decode_format_attr (tree, function_format_info *, int);
+static bool decode_format_attr (const_tree, tree, tree, function_format_info *,
+				bool);
 static int decode_format_type (const char *);
 
-static bool check_format_string (tree argument,
+static bool check_format_string (const_tree argument,
 				 unsigned HOST_WIDE_INT format_num,
 				 int flags, bool *no_add_attrs,
 				 int expected_format_type);
-static bool get_constant (tree expr, unsigned HOST_WIDE_INT *value,
-			  int validated_p);
+static tree get_constant (const_tree fntype, const_tree atname, tree expr,
+			  int argno, unsigned HOST_WIDE_INT *value,
+			  int flags, bool validated_p);
 static const char *convert_format_name_to_system_name (const char *attr_name);
 
 static int first_target_format_type;
@@ -119,8 +122,8 @@ format_warning_at_char (location_t fmt_string_loc, tree format_string_cst,
    The function returns true if strref points to any string type valid for the 
    language dialect and target.  */
 
-static bool
-valid_stringptr_type_p (tree strref)
+bool
+valid_format_string_type_p (tree strref)
 {
   return (strref != NULL
 	  && TREE_CODE (strref) == POINTER_TYPE
@@ -132,16 +135,19 @@ valid_stringptr_type_p (tree strref)
 /* Handle a "format_arg" attribute; arguments as in
    struct attribute_spec.handler.  */
 tree
-handle_format_arg_attribute (tree *node, tree ARG_UNUSED (name),
+handle_format_arg_attribute (tree *node, tree atname,
 			     tree args, int flags, bool *no_add_attrs)
 {
   tree type = *node;
-  tree format_num_expr = TREE_VALUE (args);
+  /* Note that TREE_VALUE (args) is changed in place below.  */
+  tree *format_num_expr = &TREE_VALUE (args);
   unsigned HOST_WIDE_INT format_num = 0;
 
-  if (!get_constant (format_num_expr, &format_num, 0))
+  if (tree val = get_constant (type, atname, *format_num_expr, 0, &format_num,
+			       0, false))
+    *format_num_expr = val;
+  else
     {
-      error ("format string has invalid operand number");
       *no_add_attrs = true;
       return NULL_TREE;
     }
@@ -154,7 +160,7 @@ handle_format_arg_attribute (tree *node, tree ARG_UNUSED (name),
 	return NULL_TREE;
     }
 
-  if (!valid_stringptr_type_p (TREE_TYPE (type)))
+  if (!valid_format_string_type_p (TREE_TYPE (type)))
     {
       if (!(flags & (int) ATTR_FLAG_BUILT_IN))
 	error ("function does not return string type");
@@ -170,7 +176,7 @@ handle_format_arg_attribute (tree *node, tree ARG_UNUSED (name),
    error).  When we know the specific reference type expected, this is also 
    checked.  */
 static bool
-check_format_string (tree fntype, unsigned HOST_WIDE_INT format_num,
+check_format_string (const_tree fntype, unsigned HOST_WIDE_INT format_num,
 		     int flags, bool *no_add_attrs, int expected_format_type)
 {
   unsigned HOST_WIDE_INT i;
@@ -188,7 +194,7 @@ check_format_string (tree fntype, unsigned HOST_WIDE_INT format_num,
     }
 
   if (!ref
-      || !valid_stringptr_type_p (ref))
+      || !valid_format_string_type_p (ref))
     {
       if (!(flags & (int) ATTR_FLAG_BUILT_IN))
 	error ("format string argument is not a string type");
@@ -261,21 +267,30 @@ check_format_string (tree fntype, unsigned HOST_WIDE_INT format_num,
   gcc_unreachable ();
 }
 
-/* Verify EXPR is a constant, and store its value.
-   If validated_p is true there should be no errors.
-   Returns true on success, false otherwise.  */
-static bool
-get_constant (tree expr, unsigned HOST_WIDE_INT *value, int validated_p)
+/* Under the control of FLAGS, verify EXPR is a valid constant that
+   refers to a positional argument ARGNO having a string type (char*
+   or, for targets like Darwin, a pointer to struct CFString) to
+   a function type FNTYPE declared with attribute ATNAME.
+   If valid, store the constant's integer value in *VALUE and return
+   the value.
+   If VALIDATED_P is true assert the validation is successful.
+   Returns the converted constant value on success, null otherwise.  */
+
+static tree
+get_constant (const_tree fntype, const_tree atname, tree expr, int argno,
+	      unsigned HOST_WIDE_INT *value, int flags, bool validated_p)
 {
-  if (!tree_fits_uhwi_p (expr))
+  /* Require the referenced argument to have a string type.  For targets
+     like Darwin, also accept pointers to struct CFString.  */
+  if (tree val = positional_argument (fntype, atname, expr, STRING_CST,
+				      argno, flags))
     {
-      gcc_assert (!validated_p);
-      return false;
+      *value = TREE_INT_CST_LOW (val);
+      return val;
     }
 
-  *value = TREE_INT_CST_LOW (expr);
-
-  return true;
+  gcc_assert (!validated_p);
+  return NULL_TREE;
 }
 
 /* Decode the arguments to a "format" attribute into a
@@ -286,12 +301,14 @@ get_constant (tree expr, unsigned HOST_WIDE_INT *value, int validated_p)
    attributes are successfully decoded, false otherwise.  */
 
 static bool
-decode_format_attr (tree args, function_format_info *info, int validated_p)
+decode_format_attr (const_tree fntype, tree atname, tree args,
+		    function_format_info *info, bool validated_p)
 {
   tree format_type_id = TREE_VALUE (args);
-  tree format_num_expr = TREE_VALUE (TREE_CHAIN (args));
-  tree first_arg_num_expr
-    = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (args)));
+  /* Note that TREE_VALUE (args) is changed in place below.  Ditto
+     for the value of the next element on the list.  */
+  tree *format_num_expr = &TREE_VALUE (TREE_CHAIN (args));
+  tree *first_arg_num_expr = &TREE_VALUE (TREE_CHAIN (TREE_CHAIN (args)));
 
   if (TREE_CODE (format_type_id) != IDENTIFIER_NODE)
     {
@@ -326,17 +343,18 @@ decode_format_attr (tree args, function_format_info *info, int validated_p)
 	}
     }
 
-  if (!get_constant (format_num_expr, &info->format_num, validated_p))
-    {
-      error ("format string has invalid operand number");
-      return false;
-    }
+  if (tree val = get_constant (fntype, atname, *format_num_expr,
+			       2, &info->format_num, 0, validated_p))
+    *format_num_expr = val;
+  else
+    return false;
 
-  if (!get_constant (first_arg_num_expr, &info->first_arg_num, validated_p))
-    {
-      error ("%<...%> has invalid operand number");
-      return false;
-    }
+  if (tree val = get_constant (fntype, atname, *first_arg_num_expr,
+			       3, &info->first_arg_num,
+			       (POSARG_ZERO | POSARG_ELLIPSIS), validated_p))
+    *first_arg_num_expr = val;
+  else
+    return false;
 
   if (info->first_arg_num != 0 && info->first_arg_num <= info->format_num)
     {
@@ -803,8 +821,14 @@ static const format_char_info gcc_dump_printf_char_table[] =
   /* E and G require a "gimple *" argument at runtime.  */
   { "EG",   1, STD_C89, { T89_G,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
 
+  /* C requires a "cgraph_node *" argument at runtime.  */
+  { "C",   1, STD_C89, { T_CGRAPH_NODE,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
+
   /* T requires a "tree" at runtime.  */
   { "T",   1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
+
+  /* %f requires a "double"; it doesn't support modifiers.  */
+  { "f",   0, STD_C89, { T89_D,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
 
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
@@ -1076,10 +1100,12 @@ decode_format_type (const char *s)
    attribute themselves.  */
 
 void
-check_function_format (tree attrs, int nargs, tree *argarray,
-		       vec<location_t> *arglocs)
+check_function_format (const_tree fntype, tree attrs, int nargs,
+		       tree *argarray, vec<location_t> *arglocs)
 {
   tree a;
+
+  tree atname = get_identifier ("format");
 
   /* See if this function has any format attributes.  */
   for (a = attrs; a; a = TREE_CHAIN (a))
@@ -1088,7 +1114,8 @@ check_function_format (tree attrs, int nargs, tree *argarray,
 	{
 	  /* Yup; check it.  */
 	  function_format_info info;
-	  decode_format_attr (TREE_VALUE (a), &info, /*validated=*/true);
+	  decode_format_attr (fntype, atname, TREE_VALUE (a), &info,
+			      /*validated=*/true);
 	  if (warn_format)
 	    {
 	      /* FIXME: Rewrite all the internal functions in this file
@@ -1241,9 +1268,9 @@ maybe_read_dollar_number (const char **format,
   overflow_flag = 0;
   while (ISDIGIT (*fcp))
     {
-      int nargnum;
-      nargnum = 10 * argnum + (*fcp - '0');
-      if (nargnum < 0 || nargnum / 10 != argnum)
+      HOST_WIDE_INT nargnum
+	= HOST_WIDE_INT_UC (10) * argnum + (*fcp - '0');
+      if ((int) nargnum != nargnum)
 	overflow_flag = 1;
       argnum = nargnum;
       fcp++;
@@ -3123,8 +3150,11 @@ check_format_types (const substring_loc &fmt_loc,
 		warning (OPT_Wformat_, "writing through null pointer "
 			 "(argument %d)", arg_num);
 
-	      /* Check for reading through a NULL pointer.  */
-	      if (types->reading_from_flag
+	      /* Check for reading through a NULL pointer.  Ignore
+		 printf-family of functions as they are checked for
+		 null arguments by the middle-end.  */
+	      if (fki->conversion_specs != print_char_table
+		  && types->reading_from_flag
 		  && i == 0
 		  && cur_param != 0
 		  && integer_zerop (cur_param))
@@ -3879,6 +3909,33 @@ init_dynamic_gfc_info (void)
     }
 }
 
+/* Lookup the type named NAME and return a pointer-to-NAME type if found.
+   Otherwise, return void_type_node if NAME has not been used yet, or NULL_TREE if
+   NAME is not a type (issuing an error).  */
+
+static tree
+get_pointer_to_named_type (const char *name)
+{
+  tree result;
+  if ((result = maybe_get_identifier (name)))
+    {
+      result = identifier_global_value (result);
+      if (result)
+	{
+	  if (TREE_CODE (result) != TYPE_DECL)
+	    {
+	      error ("%qs is not defined as a type", name);
+	      result = NULL_TREE;
+	    }
+	  else
+	    result = TREE_TYPE (result);
+	}
+    }
+  else
+    result = void_type_node;
+  return result;
+}
+
 /* Determine the types of "tree" and "location_t" in the code being
    compiled for use in GCC's diagnostic custom format attributes.  You
    must have set dynamic_format_types before calling this function.  */
@@ -3932,25 +3989,12 @@ init_dynamic_diag_info (void)
   /* Similar to the above but for gimple*.  */
   if (!local_gimple_ptr_node
       || local_gimple_ptr_node == void_type_node)
-    {
-      if ((local_gimple_ptr_node = maybe_get_identifier ("gimple")))
-	{
-	  local_gimple_ptr_node
-	    = identifier_global_value (local_gimple_ptr_node);
-	  if (local_gimple_ptr_node)
-	    {
-	      if (TREE_CODE (local_gimple_ptr_node) != TYPE_DECL)
-		{
-		  error ("%<gimple%> is not defined as a type");
-		  local_gimple_ptr_node = 0;
-		}
-	      else
-		local_gimple_ptr_node = TREE_TYPE (local_gimple_ptr_node);
-	    }
-	}
-      else
-	local_gimple_ptr_node = void_type_node;
-    }
+    local_gimple_ptr_node = get_pointer_to_named_type ("gimple");
+
+  /* Similar to the above but for cgraph_node*.  */
+  if (!local_cgraph_node_ptr_node
+      || local_cgraph_node_ptr_node == void_type_node)
+    local_cgraph_node_ptr_node = get_pointer_to_named_type ("cgraph_node");
 
   static tree hwi;
 
@@ -4100,10 +4144,10 @@ convert_format_name_to_system_name (const char *attr_name)
 /* Handle a "format" attribute; arguments as in
    struct attribute_spec.handler.  */
 tree
-handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
+handle_format_attribute (tree *node, tree atname, tree args,
 			 int flags, bool *no_add_attrs)
 {
-  tree type = *node;
+  const_tree type = *node;
   function_format_info info;
 
 #ifdef TARGET_FORMAT_TYPES
@@ -4129,7 +4173,7 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
   if (TREE_CODE (TREE_VALUE (args)) == IDENTIFIER_NODE)
     TREE_VALUE (args) = canonicalize_attr_name (TREE_VALUE (args));
 
-  if (!decode_format_attr (args, &info, 0))
+  if (!decode_format_attr (type, atname, args, &info, /* validated_p = */false))
     {
       *no_add_attrs = true;
       return NULL_TREE;

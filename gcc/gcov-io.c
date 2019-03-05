@@ -1,5 +1,5 @@
 /* File format for coverage information
-   Copyright (C) 1996-2018 Free Software Foundation, Inc.
+   Copyright (C) 1996-2019 Free Software Foundation, Inc.
    Contributed by Bob Manson <manson@cygnus.com>.
    Completely remangled by Nathan Sidwell <nathan@codesourcery.com>.
 
@@ -547,7 +547,7 @@ mangle_path (char const *base)
   /* Convert '/' to '#', convert '..' to '^',
      convert ':' to '~' on DOS based file system.  */
   const char *probe;
-  char *buffer = (char *)xmalloc (strlen (base) + 10);
+  char *buffer = (char *)xmalloc (strlen (base) + 1);
   char *ptr = buffer;
 
 #if HAVE_DOS_BASED_FILE_SYSTEM

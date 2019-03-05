@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2018 Free Software Foundation, Inc.
+// Copyright (C) 2015-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++17 -lstdc++fs" }
+// { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
 // { dg-require-filesystem-ts "" }
 
@@ -36,6 +36,7 @@ test01()
   VERIFY( ec );
 
   create_directory(p);
+  __gnu_test::scoped_file l(p, __gnu_test::scoped_file::adopt_file);
   auto p2 = canonical( p, ec );
   compare_paths( p2, fs::current_path()/p );
   VERIFY( !ec );
@@ -51,28 +52,30 @@ test01()
   compare_paths( p2, p );
   VERIFY( !ec );
 
+  const auto root = fs::absolute("/");
+
   ec = bad_ec;
   p = "/";
   p = canonical( p, ec );
-  compare_paths( p, "/" );
+  compare_paths( p, root );
   VERIFY( !ec );
 
   ec = bad_ec;
   p = "/.";
   p = canonical( p, ec );
-  compare_paths( p, "/" );
+  compare_paths( p, root );
   VERIFY( !ec );
 
   ec = bad_ec;
   p = "/..";
   p = canonical( p, ec );
-  compare_paths( p, "/" );
+  compare_paths( p, root );
   VERIFY( !ec );
 
   ec = bad_ec;
   p = "/../.././.";
   p = canonical( p, ec );
-  compare_paths( p, "/" );
+  compare_paths( p, root );
   VERIFY( !ec );
 }
 
@@ -100,7 +103,6 @@ test02()
 #endif
 }
 
-
 void
 test03()
 {
@@ -110,22 +112,28 @@ test03()
   fs::path foo = dir/"foo", bar = dir/"bar";
   fs::create_directory(foo);
   fs::create_directory(bar);
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  // No symlink support
+  const fs::path baz = dir/"foo\\\\..\\bar///";
+#else
   fs::create_symlink("../bar", foo/"baz");
+  const fs::path baz = dir/"foo//./baz///";
+#endif
 
   auto dirc = canonical(dir);
   auto barc = canonical(bar);
 
   auto p1 = fs::canonical(dir/"foo//.///..//./");
   compare_paths( p1, dirc );
-  auto p2 = fs::canonical(dir/"foo//./baz///..//./");
+  auto p2 = fs::canonical(baz/"..//./");
   compare_paths( p2, dirc );
-  auto p3 = fs::canonical(dir/"foo//./baz////./");
+  auto p3 = fs::canonical(baz/"./");
   compare_paths( p3, barc );
-  auto p4 = fs::canonical(dir/"foo//./baz///..//./bar");
+  auto p4 = fs::canonical(baz/"..//./bar");
   compare_paths( p4, barc );
-  auto p5 = fs::canonical(dir/"foo//./baz///..//./bar/");
+  auto p5 = fs::canonical(baz/"..//./bar/");
   compare_paths( p5, p4 );
-  auto p6 = fs::canonical(dir/"foo//./baz///..//./bar/.");
+  auto p6 = fs::canonical(baz/"..//./bar/.");
   compare_paths( p6, p4 );
 
   remove_all(dir);

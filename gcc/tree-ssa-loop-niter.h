@@ -1,5 +1,5 @@
 /* Header file for loop interation estimates.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -53,6 +53,7 @@ extern bool scev_probably_wraps_p (tree, tree, tree, gimple *,
 				   struct loop *, bool);
 extern void free_numbers_of_iterations_estimates (struct loop *);
 extern void free_numbers_of_iterations_estimates (function *);
+extern tree simplify_replace_tree (tree, tree, tree, tree (*)(tree) = NULL);
 extern void substitute_in_loop_info (struct loop *, tree, tree);
 
 #endif /* GCC_TREE_SSA_LOOP_NITER_H */

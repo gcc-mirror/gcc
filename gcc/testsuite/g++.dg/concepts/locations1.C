@@ -1,4 +1,5 @@
-// { dg-additional-options "-std=c++17 -fconcepts" }
+// { dg-do compile { target c++17 } }
+// { dg-additional-options "-fconcepts" }
 
 struct S
 {

@@ -14,6 +14,5 @@ void g()
   foo(new X);            // ok -- DR 218 says that we find the global
 			 // foo variable first, and therefore do not
 			 // perform argument-dependent lookup.
-  bar(new X);            // { dg-error "3:'bar' was not declared" }
-  // { dg-message "suggested alternative" "suggested alternative" { target *-*-* } .-1 }
+  bar(new X);            // { dg-error "3:'bar' was not declared in this scope; did you mean 'A::bar'" }
 }

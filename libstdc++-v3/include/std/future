@@ -1,6 +1,6 @@
 // <future> -*- C++ -*-
 
-// Copyright (C) 2009-2018 Free Software Foundation, Inc.
+// Copyright (C) 2009-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1629,11 +1629,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     //
     // [futures.async]:
     //
-    // — a call to a waiting function on an asynchronous return object that
+    // - a call to a waiting function on an asynchronous return object that
     // shares the shared state created by this async call shall block until
     // the associated thread has completed, as if joined, or else time out.
     //
-    // — the associated thread completion synchronizes with the return from
+    // - the associated thread completion synchronizes with the return from
     // the first function that successfully detects the ready status of the
     // shared state or with the return from the last function that releases
     // the shared state, whichever happens first.
@@ -1703,7 +1703,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// async
   template<typename _Fn, typename... _Args>
-    future<__async_result_of<_Fn, _Args...>>
+    _GLIBCXX_NODISCARD future<__async_result_of<_Fn, _Args...>>
     async(launch __policy, _Fn&& __fn, _Args&&... __args)
     {
       std::shared_ptr<__future_base::_State_base> __state;
@@ -1736,7 +1736,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// async, potential overload
   template<typename _Fn, typename... _Args>
-    inline future<__async_result_of<_Fn, _Args...>>
+    _GLIBCXX_NODISCARD inline future<__async_result_of<_Fn, _Args...>>
     async(_Fn&& __fn, _Args&&... __args)
     {
       return std::async(launch::async|launch::deferred,

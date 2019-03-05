@@ -5,7 +5,7 @@
 
 struct FlexChar {
     int n;
-    char a[];       // { dg-warning "forbids flexible array member" }
+    char a[];       // { dg-warning "10:ISO C\\+\\+ forbids flexible array member" }
 };
 
 struct FlexChar ac =
@@ -18,7 +18,7 @@ typedef __WCHAR_TYPE__ wchar_t;
 
 struct FlexWchar {
     int n;
-    wchar_t a[];    // { dg-warning "forbids flexible array member" }
+    wchar_t a[];    // { dg-warning "13:ISO C\\+\\+ forbids flexible array member" }
 };
 
 struct FlexWchar awc =
@@ -27,7 +27,7 @@ struct FlexWchar awc =
 
 struct FlexInt {
     int n;
-    int a[];        // { dg-warning "forbids flexible array member" }
+    int a[];        // { dg-warning "9:ISO C\\+\\+ forbids flexible array member" }
 };
 
 // Verify that no warning is issued for the case when a flexible array
@@ -48,7 +48,7 @@ struct FlexInt ai2 =
 template <class T>
 struct FlexT {
     int n;
-    T a[];          // { dg-warning "forbids flexible array member" }
+    T a[];          // { dg-warning "7:ISO C\\+\\+ forbids flexible array member" }
 };
 
 struct FlexT<char> atc =

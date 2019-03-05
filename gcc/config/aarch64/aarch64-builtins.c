@@ -1,5 +1,5 @@
 /* Builtins' description for AArch64 SIMD architecture.
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -42,6 +42,7 @@
 #include "langhooks.h"
 #include "gimple-iterator.h"
 #include "case-cfn-macros.h"
+#include "emit-rtl.h"
 
 #define v8qi_UP  E_V8QImode
 #define v4hi_UP  E_V4HImode
@@ -102,7 +103,10 @@ enum aarch64_type_qualifiers
   /* Lane indices - must be in range, and flipped for bigendian.  */
   qualifier_lane_index = 0x200,
   /* Lane indices for single lane structure loads and stores.  */
-  qualifier_struct_load_store_lane_index = 0x400
+  qualifier_struct_load_store_lane_index = 0x400,
+  /* Lane indices selected in pairs. - must be in range, and flipped for
+     bigendian.  */
+  qualifier_lane_pair_index = 0x800,
 };
 
 typedef struct
@@ -171,6 +175,11 @@ aarch64_types_ternopu_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define TYPES_TERNOPUI (aarch64_types_ternopu_imm_qualifiers)
 
 
+static enum aarch64_type_qualifiers
+aarch64_types_quadop_lane_pair_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none,
+      qualifier_none, qualifier_lane_pair_index };
+#define TYPES_QUADOP_LANE_PAIR (aarch64_types_quadop_lane_pair_qualifiers)
 static enum aarch64_type_qualifiers
 aarch64_types_quadop_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none,
@@ -356,6 +365,18 @@ static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
   CRC32_BUILTIN (crc32cw, SI) \
   CRC32_BUILTIN (crc32cx, DI)
 
+/* The next 8 FCMLA instrinsics require some special handling compared the
+   normal simd intrinsics.  */
+#define AARCH64_SIMD_FCMLA_LANEQ_BUILTINS \
+  FCMLA_LANEQ_BUILTIN (0, v2sf, fcmla, V2SF, false) \
+  FCMLA_LANEQ_BUILTIN (90, v2sf, fcmla, V2SF, false) \
+  FCMLA_LANEQ_BUILTIN (180, v2sf, fcmla, V2SF, false) \
+  FCMLA_LANEQ_BUILTIN (270, v2sf, fcmla, V2SF, false) \
+  FCMLA_LANEQ_BUILTIN (0, v4hf, fcmla_laneq, V4HF, true) \
+  FCMLA_LANEQ_BUILTIN (90, v4hf, fcmla_laneq, V4HF, true) \
+  FCMLA_LANEQ_BUILTIN (180, v4hf, fcmla_laneq, V4HF, true) \
+  FCMLA_LANEQ_BUILTIN (270, v4hf, fcmla_laneq, V4HF, true) \
+
 typedef struct
 {
   const char *name;
@@ -364,8 +385,21 @@ typedef struct
   unsigned int fcode;
 } aarch64_crc_builtin_datum;
 
+/* Hold information about how to expand the FCMLA_LANEQ builtins.  */
+typedef struct
+{
+  const char *name;
+  machine_mode mode;
+  const enum insn_code icode;
+  unsigned int fcode;
+  bool lane;
+} aarch64_fcmla_laneq_builtin_datum;
+
 #define CRC32_BUILTIN(N, M) \
   AARCH64_BUILTIN_##N,
+
+#define FCMLA_LANEQ_BUILTIN(I, N, X, M, T) \
+  AARCH64_SIMD_BUILTIN_FCMLA_LANEQ##I##_##M,
 
 #undef VAR1
 #define VAR1(T, N, MAP, A) \
@@ -399,6 +433,9 @@ enum aarch64_builtins
   AARCH64_PAUTH_BUILTIN_AUTIA1716,
   AARCH64_PAUTH_BUILTIN_PACIA1716,
   AARCH64_PAUTH_BUILTIN_XPACLRI,
+  /* Special cased Armv8.3-A Complex FMA by Lane quad Builtins.  */
+  AARCH64_SIMD_FCMLA_LANEQ_BUILTIN_BASE,
+  AARCH64_SIMD_FCMLA_LANEQ_BUILTINS
   AARCH64_BUILTIN_MAX
 };
 
@@ -408,6 +445,18 @@ enum aarch64_builtins
 
 static aarch64_crc_builtin_datum aarch64_crc_builtin_data[] = {
   AARCH64_CRC32_BUILTINS
+};
+
+
+#undef FCMLA_LANEQ_BUILTIN
+#define FCMLA_LANEQ_BUILTIN(I, N, X, M, T) \
+  {"__builtin_aarch64_fcmla_laneq"#I#N, E_##M##mode, CODE_FOR_aarch64_##X##I##N, \
+   AARCH64_SIMD_BUILTIN_FCMLA_LANEQ##I##_##M, T},
+
+/* This structure contains how to manage the mapping form the builtin to the
+   instruction to generate in the backend and how to invoke the instruction.  */
+static aarch64_fcmla_laneq_builtin_datum aarch64_fcmla_lane_builtin_data[] = {
+  AARCH64_SIMD_FCMLA_LANEQ_BUILTINS
 };
 
 #undef CRC32_BUILTIN
@@ -746,6 +795,34 @@ aarch64_init_simd_builtin_scalar_types (void)
 
 static bool aarch64_simd_builtins_initialized_p = false;
 
+/* Due to the architecture not providing lane variant of the lane instructions
+   for fcmla we can't use the standard simd builtin expansion code, but we
+   still want the majority of the validation that would normally be done.  */
+
+void
+aarch64_init_fcmla_laneq_builtins (void)
+{
+  unsigned int i = 0;
+
+  for (i = 0; i < ARRAY_SIZE (aarch64_fcmla_lane_builtin_data); ++i)
+    {
+      aarch64_fcmla_laneq_builtin_datum* d
+	= &aarch64_fcmla_lane_builtin_data[i];
+      tree argtype = aarch64_lookup_simd_builtin_type (d->mode, qualifier_none);
+      machine_mode quadmode = GET_MODE_2XWIDER_MODE (d->mode).require ();
+      tree quadtype
+	= aarch64_lookup_simd_builtin_type (quadmode, qualifier_none);
+      tree lanetype
+	= aarch64_simd_builtin_std_type (SImode, qualifier_lane_pair_index);
+      tree ftype = build_function_type_list (argtype, argtype, argtype,
+					     quadtype, lanetype, NULL_TREE);
+      tree fndecl = add_builtin_function (d->name, ftype, d->fcode,
+					  BUILT_IN_MD, NULL, NULL_TREE);
+
+      aarch64_builtin_decls[d->fcode] = fndecl;
+    }
+}
+
 void
 aarch64_init_simd_builtins (void)
 {
@@ -874,6 +951,9 @@ aarch64_init_simd_builtins (void)
 				     NULL, NULL_TREE);
       aarch64_builtin_decls[fcode] = fndecl;
     }
+
+   /* Initialize the remaining fcmla_laneq intrinsics.  */
+   aarch64_init_fcmla_laneq_builtins ();
 }
 
 static void
@@ -1031,6 +1111,7 @@ typedef enum
   SIMD_ARG_CONSTANT,
   SIMD_ARG_LANE_INDEX,
   SIMD_ARG_STRUCT_LOAD_STORE_LANE_INDEX,
+  SIMD_ARG_LANE_PAIR_INDEX,
   SIMD_ARG_STOP
 } builtin_simd_arg;
 
@@ -1101,6 +1182,24 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 		  aarch64_simd_lane_bounds (op[opc], 0, nunits, exp);
 		  /* Keep to GCC-vector-extension lane indices in the RTL.  */
 		  op[opc] = aarch64_endian_lane_rtx (vmode, INTVAL (op[opc]));
+		}
+	      /* If the lane index isn't a constant then error out.  */
+	      goto constant_arg;
+
+	    case SIMD_ARG_LANE_PAIR_INDEX:
+	      /* Must be a previous operand into which this is an index and
+		 index is restricted to nunits / 2.  */
+	      gcc_assert (opc > 0);
+	      if (CONST_INT_P (op[opc]))
+		{
+		  machine_mode vmode = insn_data[icode].operand[opc - 1].mode;
+		  unsigned int nunits
+		    = GET_MODE_NUNITS (vmode).to_constant ();
+		  aarch64_simd_lane_bounds (op[opc], 0, nunits / 2, exp);
+		  /* Keep to GCC-vector-extension lane indices in the RTL.  */
+		  int lane = INTVAL (op[opc]);
+		  op[opc] = gen_int_mode (ENDIAN_LANE_N (nunits / 2, lane),
+					  SImode);
 		}
 	      /* Fall through - if the lane index isn't a constant then
 		 the next case will error.  */
@@ -1215,6 +1314,8 @@ aarch64_simd_expand_builtin (int fcode, tree exp, rtx target)
 
       if (d->qualifiers[qualifiers_k] & qualifier_lane_index)
 	args[k] = SIMD_ARG_LANE_INDEX;
+      else if (d->qualifiers[qualifiers_k] & qualifier_lane_pair_index)
+	args[k] = SIMD_ARG_LANE_PAIR_INDEX;
       else if (d->qualifiers[qualifiers_k] & qualifier_struct_load_store_lane_index)
 	args[k] = SIMD_ARG_STRUCT_LOAD_STORE_LANE_INDEX;
       else if (d->qualifiers[qualifiers_k] & qualifier_immediate)
@@ -1317,6 +1418,85 @@ aarch64_expand_builtin_rsqrt (int fcode, tree exp, rtx target)
   return target;
 }
 
+/* Expand a FCMLA lane expression EXP with code FCODE and
+   result going to TARGET if that is convenient.  */
+
+rtx
+aarch64_expand_fcmla_builtin (tree exp, rtx target, int fcode)
+{
+  int bcode = fcode - AARCH64_SIMD_FCMLA_LANEQ_BUILTIN_BASE - 1;
+  aarch64_fcmla_laneq_builtin_datum* d
+    = &aarch64_fcmla_lane_builtin_data[bcode];
+  machine_mode quadmode = GET_MODE_2XWIDER_MODE (d->mode).require ();
+  rtx op0 = force_reg (d->mode, expand_normal (CALL_EXPR_ARG (exp, 0)));
+  rtx op1 = force_reg (d->mode, expand_normal (CALL_EXPR_ARG (exp, 1)));
+  rtx op2 = force_reg (quadmode, expand_normal (CALL_EXPR_ARG (exp, 2)));
+  tree tmp = CALL_EXPR_ARG (exp, 3);
+  rtx lane_idx = expand_expr (tmp, NULL_RTX, VOIDmode, EXPAND_INITIALIZER);
+
+  /* Validate that the lane index is a constant.  */
+  if (!CONST_INT_P (lane_idx))
+    {
+      error ("%Kargument %d must be a constant immediate", exp, 4);
+      return const0_rtx;
+    }
+
+  /* Validate that the index is within the expected range.  */
+  int nunits = GET_MODE_NUNITS (quadmode).to_constant ();
+  aarch64_simd_lane_bounds (lane_idx, 0, nunits / 2, exp);
+
+  /* Generate the correct register and mode.  */
+  int lane = INTVAL (lane_idx);
+
+  if (lane < nunits / 4)
+    op2 = simplify_gen_subreg (d->mode, op2, quadmode,
+			       subreg_lowpart_offset (d->mode, quadmode));
+  else
+    {
+      /* Select the upper 64 bits, either a V2SF or V4HF, this however
+	 is quite messy, as the operation required even though simple
+	 doesn't have a simple RTL pattern, and seems it's quite hard to
+	 define using a single RTL pattern.  The target generic version
+	 gen_highpart_mode generates code that isn't optimal.  */
+      rtx temp1 = gen_reg_rtx (d->mode);
+      rtx temp2 = gen_reg_rtx (DImode);
+      temp1 = simplify_gen_subreg (d->mode, op2, quadmode,
+				   subreg_lowpart_offset (d->mode, quadmode));
+      temp1 = simplify_gen_subreg (V2DImode, temp1, d->mode, 0);
+      if (BYTES_BIG_ENDIAN)
+	emit_insn (gen_aarch64_get_lanev2di (temp2, temp1, const0_rtx));
+      else
+	emit_insn (gen_aarch64_get_lanev2di (temp2, temp1, const1_rtx));
+      op2 = simplify_gen_subreg (d->mode, temp2, GET_MODE (temp2), 0);
+
+      /* And recalculate the index.  */
+      lane -= nunits / 4;
+    }
+
+  /* Keep to GCC-vector-extension lane indices in the RTL, only nunits / 4
+     (max nunits in range check) are valid.  Which means only 0-1, so we
+     only need to know the order in a V2mode.  */
+  lane_idx = aarch64_endian_lane_rtx (V2DImode, lane);
+
+  if (!target)
+    target = gen_reg_rtx (d->mode);
+  else
+    target = force_reg (d->mode, target);
+
+  rtx pat = NULL_RTX;
+
+  if (d->lane)
+    pat = GEN_FCN (d->icode) (target, op0, op1, op2, lane_idx);
+  else
+    pat = GEN_FCN (d->icode) (target, op0, op1, op2);
+
+  if (!pat)
+    return NULL_RTX;
+
+  emit_insn (pat);
+  return target;
+}
+
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient.  */
 rtx
@@ -1395,6 +1575,16 @@ aarch64_expand_builtin (tree exp,
 	}
 
       return target;
+
+    case AARCH64_SIMD_BUILTIN_FCMLA_LANEQ0_V2SF:
+    case AARCH64_SIMD_BUILTIN_FCMLA_LANEQ90_V2SF:
+    case AARCH64_SIMD_BUILTIN_FCMLA_LANEQ180_V2SF:
+    case AARCH64_SIMD_BUILTIN_FCMLA_LANEQ270_V2SF:
+    case AARCH64_SIMD_BUILTIN_FCMLA_LANEQ0_V4HF:
+    case AARCH64_SIMD_BUILTIN_FCMLA_LANEQ90_V4HF:
+    case AARCH64_SIMD_BUILTIN_FCMLA_LANEQ180_V4HF:
+    case AARCH64_SIMD_BUILTIN_FCMLA_LANEQ270_V4HF:
+      return aarch64_expand_fcmla_builtin (exp, target, fcode);
     }
 
   if (fcode >= AARCH64_SIMD_BUILTIN_BASE && fcode <= AARCH64_SIMD_BUILTIN_MAX)

@@ -15,11 +15,11 @@ void test_static_assert_1 (void)
 
 void test_static_assert_2 (void)
 {
-  _Static_assert(sizeof(int) >= sizeof(char); /* { dg-error "expected ',' before ';' token" } */
+  _Static_assert(sizeof(int) >= sizeof(char); /* { dg-error "expected '\\)' before ';' token" } */
   /* { dg-begin-multiline-output "" }
    _Static_assert(sizeof(int) >= sizeof(char);
-                                             ^
-                                             ,
+                 ~                           ^
+                                             )
      { dg-end-multiline-output "" } */
 }
 

@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GCC.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -399,7 +399,7 @@ assign_stack_local_1 (machine_mode mode, poly_int64 size,
   if (alignment_in_bits > MAX_SUPPORTED_STACK_ALIGNMENT)
     {
       alignment_in_bits = MAX_SUPPORTED_STACK_ALIGNMENT;
-      alignment = alignment_in_bits / BITS_PER_UNIT;
+      alignment = MAX_SUPPORTED_STACK_ALIGNMENT / BITS_PER_UNIT;
     }
 
   if (SUPPORTS_STACK_ALIGNMENT)
@@ -2913,8 +2913,21 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
   if (stack_parm == 0)
     {
       SET_DECL_ALIGN (parm, MAX (DECL_ALIGN (parm), BITS_PER_WORD));
-      stack_parm = assign_stack_local (BLKmode, size_stored,
-				       DECL_ALIGN (parm));
+      if (DECL_ALIGN (parm) > MAX_SUPPORTED_STACK_ALIGNMENT)
+	{
+	  rtx allocsize = gen_int_mode (size_stored, Pmode);
+	  get_dynamic_stack_size (&allocsize, 0, DECL_ALIGN (parm), NULL);
+	  stack_parm = assign_stack_local (BLKmode, UINTVAL (allocsize),
+					   MAX_SUPPORTED_STACK_ALIGNMENT);
+	  rtx addr = align_dynamic_address (XEXP (stack_parm, 0),
+					    DECL_ALIGN (parm));
+	  mark_reg_pointer (addr, DECL_ALIGN (parm));
+	  stack_parm = gen_rtx_MEM (GET_MODE (stack_parm), addr);
+	  MEM_NOTRAP_P (stack_parm) = 1;
+	}
+      else
+	stack_parm = assign_stack_local (BLKmode, size_stored,
+					 DECL_ALIGN (parm));
       if (known_eq (GET_MODE_SIZE (GET_MODE (entry_parm)), size))
 	PUT_MODE (stack_parm, GET_MODE (entry_parm));
       set_mem_attributes (stack_parm, parm, 1);
@@ -4889,21 +4902,37 @@ init_function_start (tree subr)
 void
 stack_protect_epilogue (void)
 {
-  tree guard_decl = targetm.stack_protect_guard ();
+  tree guard_decl = crtl->stack_protect_guard_decl;
   rtx_code_label *label = gen_label_rtx ();
   rtx x, y;
-  rtx_insn *seq;
+  rtx_insn *seq = NULL;
 
   x = expand_normal (crtl->stack_protect_guard);
-  if (guard_decl)
-    y = expand_normal (guard_decl);
-  else
-    y = const0_rtx;
 
-  /* Allow the target to compare Y with X without leaking either into
-     a register.  */
-  if (targetm.have_stack_protect_test ()
-      && ((seq = targetm.gen_stack_protect_test (x, y, label)) != NULL_RTX))
+  if (targetm.have_stack_protect_combined_test () && guard_decl)
+    {
+      gcc_assert (DECL_P (guard_decl));
+      y = DECL_RTL (guard_decl);
+      /* Allow the target to compute address of Y and compare it with X without
+	 leaking Y into a register.  This combined address + compare pattern
+	 allows the target to prevent spilling of any intermediate results by
+	 splitting it after register allocator.  */
+      seq = targetm.gen_stack_protect_combined_test (x, y, label);
+    }
+  else
+    {
+      if (guard_decl)
+	y = expand_normal (guard_decl);
+      else
+	y = const0_rtx;
+
+      /* Allow the target to compare Y with X without leaking either into
+	 a register.  */
+      if (targetm.have_stack_protect_test ())
+	seq = targetm.gen_stack_protect_test (x, y, label);
+    }
+
+  if (seq)
     emit_insn (seq);
   else
     emit_cmp_and_jump_insns (x, y, EQ, NULL_RTX, ptr_mode, 1, label);
@@ -5295,14 +5324,6 @@ expand_function_end (void)
 	 the function context for sjlj exceptions.  */
       if (flag_exceptions)
 	sjlj_emit_function_exit_after (get_last_insn ());
-    }
-  else
-    {
-      /* We want to ensure that instructions that may trap are not
-	 moved into the epilogue by scheduling, because we don't
-	 always emit unwind information for the epilogue.  */
-      if (cfun->can_throw_non_call_exceptions)
-	emit_insn (gen_blockage ());
     }
 
   /* If this is an implementation of throw, do what's necessary to
@@ -6476,7 +6497,7 @@ match_asm_constraints_1 (rtx_insn *insn, rtx *p_sets, int noutputs)
       output_matched[match] = true;
 
       start_sequence ();
-      emit_move_insn (output, input);
+      emit_move_insn (output, copy_rtx (input));
       insns = get_insns ();
       end_sequence ();
       emit_insn_before (insns, insn);

@@ -1,5 +1,5 @@
 /* Intrinsic function resolution.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -1452,6 +1452,15 @@ gfc_resolve_isatty (gfc_expr *f, gfc_expr *u)
 
 
 void
+gfc_resolve_is_contiguous (gfc_expr *f, gfc_expr *array ATTRIBUTE_UNUSED)
+{
+  f->ts.type = BT_LOGICAL;
+  f->ts.kind = gfc_default_logical_kind;
+  f->value.function.name = gfc_get_string ("__is_contiguous");
+}
+
+
+void
 gfc_resolve_ishft (gfc_expr *f, gfc_expr *i, gfc_expr *shift)
 {
   f->ts = i->ts;
@@ -1782,6 +1791,115 @@ gfc_resolve_maxloc (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
     }
 }
 
+
+void
+gfc_resolve_findloc (gfc_expr *f, gfc_expr *array, gfc_expr *value,
+		     gfc_expr *dim, gfc_expr *mask, gfc_expr *kind,
+		     gfc_expr *back)
+{
+  const char *name;
+  int i, j, idim;
+  int fkind;
+  int d_num;
+
+  /* See at the end of the function for why this is necessary.  */
+
+  if (f->do_not_resolve_again)
+    return;
+
+  f->ts.type = BT_INTEGER;
+
+  /* We have a single library version, which uses index_type.  */
+
+  if (kind)
+    fkind = mpz_get_si (kind->value.integer);
+  else
+    fkind = gfc_default_integer_kind;
+
+  f->ts.kind = gfc_index_integer_kind;
+
+  /* Convert value.  If array is not LOGICAL and value is, we already
+     issued an error earlier.  */
+
+  if ((array->ts.type != value->ts.type && value->ts.type != BT_LOGICAL)
+      || array->ts.kind != value->ts.kind)
+    gfc_convert_type_warn (value, &array->ts, 2, 0);
+
+  if (dim == NULL)
+    {
+      f->rank = 1;
+      f->shape = gfc_get_shape (1);
+      mpz_init_set_si (f->shape[0], array->rank);
+    }
+  else
+    {
+      f->rank = array->rank - 1;
+      gfc_resolve_dim_arg (dim);
+      if (array->shape && dim->expr_type == EXPR_CONSTANT)
+	{
+	  idim = (int) mpz_get_si (dim->value.integer);
+	  f->shape = gfc_get_shape (f->rank);
+	  for (i = 0, j = 0; i < f->rank; i++, j++)
+	    {
+	      if (i == (idim - 1))
+		j++;
+	      mpz_init_set (f->shape[i], array->shape[j]);
+	    }
+	}
+    }
+
+  if (mask)
+    {
+      if (mask->rank == 0)
+	name = "sfindloc";
+      else
+	name = "mfindloc";
+
+      resolve_mask_arg (mask);
+    }
+  else
+    name = "findloc";
+
+  if (dim)
+    {
+      if (f->rank > 0)
+	d_num = 1;
+      else
+	d_num = 2;
+    }
+  else
+    d_num = 0;
+
+  if (back->ts.kind != gfc_logical_4_kind)
+    {
+      gfc_typespec ts;
+      gfc_clear_ts (&ts);
+      ts.type = BT_LOGICAL;
+      ts.kind = gfc_logical_4_kind;
+      gfc_convert_type_warn (back, &ts, 2, 0);
+    }
+
+  f->value.function.name
+    = gfc_get_string (PREFIX ("%s%d_%c%d"), name, d_num,
+		      gfc_type_letter (array->ts.type, true), array->ts.kind);
+
+  /* We only have a single library function, so we need to convert
+     here.  If the function is resolved from within a convert
+     function generated on a previous round of resolution, endless
+     recursion could occur.  Guard against that here.  */
+
+  if (f->ts.kind != fkind)
+    {
+      f->do_not_resolve_again = 1;
+      gfc_typespec ts;
+      gfc_clear_ts (&ts);
+
+      ts.type = BT_INTEGER;
+      ts.kind = fkind;
+      gfc_convert_type_warn (f, &ts, 2, 0);
+    }
+
+}
 
 void
 gfc_resolve_maxval (gfc_expr *f, gfc_expr *array, gfc_expr *dim,

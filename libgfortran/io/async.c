@@ -1,4 +1,4 @@
-/* Copyright (C) 2018 Free Software Foundation, Inc.
+/* Copyright (C) 2018-2019 Free Software Foundation, Inc.
    Contributed by Nicolas Koenig
 
    This file is part of the GNU Fortran runtime library (libgfortran).
@@ -224,7 +224,7 @@ init_adv_cond (struct adv_cond *ac)
 {
   ac->pending = 0;
   __GTHREAD_MUTEX_INIT_FUNCTION (&ac->lock);
-  __gthread_cond_init_function (&ac->signal);
+  __GTHREAD_COND_INIT_FUNCTION (&ac->signal);
 }
 
 /* Initialize an asyncronous unit, returning zero on success,

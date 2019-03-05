@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2018, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2019, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,7 +56,8 @@ package body System.Tasking.Utilities is
    -- Abort_One_Task --
    --------------------
 
-   --  Similar to Locked_Abort_To_Level (Self_ID, T, 0), but:
+   --  Similar to Locked_Abort_To_Level (Self_ID, T, Level_Completed_Task),
+   --  but:
    --    (1) caller should be holding no locks except RTS_Lock when Single_Lock
    --    (2) may be called for tasks that have not yet been activated
    --    (3) always aborts whole task
@@ -72,7 +73,8 @@ package body System.Tasking.Utilities is
          Cancel_Queued_Entry_Calls (T);
 
       elsif T.Common.State /= Terminated then
-         Initialization.Locked_Abort_To_Level (Self_ID, T, 0);
+         Initialization.Locked_Abort_To_Level
+           (Self_ID, T, Level_Completed_Task);
       end if;
 
       Unlock (T);
@@ -123,11 +125,11 @@ package body System.Tasking.Utilities is
       C := All_Tasks_List;
 
       while C /= null loop
-         if C.Pending_ATC_Level > 0 then
+         if C.Pending_ATC_Level > Level_Completed_Task then
             P := C.Common.Parent;
 
             while P /= null loop
-               if P.Pending_ATC_Level = 0 then
+               if P.Pending_ATC_Level = Level_Completed_Task then
                   Abort_One_Task (Self_Id, C);
                   exit;
                end if;
@@ -204,23 +206,24 @@ package body System.Tasking.Utilities is
 
    procedure Exit_One_ATC_Level (Self_ID : Task_Id) is
    begin
+      pragma Assert (Self_ID.ATC_Nesting_Level > Level_No_ATC_Occurring);
+
       Self_ID.ATC_Nesting_Level := Self_ID.ATC_Nesting_Level - 1;
 
       pragma Debug
         (Debug.Trace (Self_ID, "EOAL: exited to ATC level: " &
          ATC_Level'Image (Self_ID.ATC_Nesting_Level), 'A'));
 
-      pragma Assert (Self_ID.ATC_Nesting_Level >= 1);
+      if Self_ID.Pending_ATC_Level < Level_No_Pending_Abort then
 
-      if Self_ID.Pending_ATC_Level < ATC_Level_Infinity then
          if Self_ID.Pending_ATC_Level = Self_ID.ATC_Nesting_Level then
-            Self_ID.Pending_ATC_Level := ATC_Level_Infinity;
+            Self_ID.Pending_ATC_Level := Level_No_Pending_Abort;
             Self_ID.Aborting := False;
          else
             --  Force the next Undefer_Abort to re-raise Abort_Signal
 
             pragma Assert
-             (Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level);
+              (Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level);
 
             if Self_ID.Aborting then
                Self_ID.ATC_Hack := True;

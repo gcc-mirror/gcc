@@ -1,7 +1,7 @@
 // { dg-do assemble  }
 
-extern int a[][];   // { dg-error "" } invalid multidimensional array
-extern int b[7][];  // { dg-error "" } invalid multidimensional array
+extern int a[][];   // { dg-error "12:declaration of .a. as multidimensional array" } invalid multidimensional array
+extern int b[7][];  // { dg-error "12:declaration of .b. as multidimensional array" } invalid multidimensional array
 extern int c[][7];  // OK
 
 extern int (*i)[];  // { dg-message "" } previous declaration

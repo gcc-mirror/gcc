@@ -12,7 +12,7 @@ struct S {
   template<typename U>
     static decltype(*declval<U>()) get(...); // { dg-error "operator*" }
 
-  typedef decltype(get<T>(declval<T>())) type; // { dg-error "no match" }
+  typedef decltype(get<T>(declval<T>())) type; // { dg-error "" }
 };
 
 struct X { };

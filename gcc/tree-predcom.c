@@ -1,5 +1,5 @@
 /* Predictive commoning.
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2836,7 +2836,7 @@ try_combine_chains (struct loop *loop, vec<chain_p> *chains)
     return;
 
   /* Setup UID for all statements in dominance order.  */
-  basic_block *bbs = get_loop_body (loop);
+  basic_block *bbs = get_loop_body_in_dom_order (loop);
   renumber_gimple_stmt_uids_in_blocks (bbs, loop->num_nodes);
   free (bbs);
 

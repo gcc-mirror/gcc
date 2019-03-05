@@ -1,4 +1,4 @@
-# Copyright (C) 2001-2018 Free Software Foundation, Inc.
+# Copyright (C) 2001-2019 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -53,3 +53,43 @@ genrecog.c
 gensupport.c
 gensupport.h
 read-md.c
+
+#   These files are part of the front end to D, and have no i18n support.
+d/dmd/arrayop.c
+d/dmd/attrib.c
+d/dmd/canthrow.c
+d/dmd/cond.c
+d/dmd/constfold.c
+d/dmd/cppmangle.c
+d/dmd/ctfeexpr.c
+d/dmd/dcast.c
+d/dmd/dclass.c
+d/dmd/declaration.c
+d/dmd/denum.c
+d/dmd/dimport.c
+d/dmd/dinterpret.c
+d/dmd/dmangle.c
+d/dmd/dmodule.c
+d/dmd/doc.c
+d/dmd/dscope.c
+d/dmd/dstruct.c
+d/dmd/dsymbol.c
+d/dmd/dtemplate.c
+d/dmd/dversion.c
+d/dmd/expression.c
+d/dmd/func.c
+d/dmd/init.c
+d/dmd/inline.c
+d/dmd/lexer.c
+d/dmd/mtype.c
+d/dmd/nogc.c
+d/dmd/nspace.c
+d/dmd/objc.c
+d/dmd/opover.c
+d/dmd/optimize.c
+d/dmd/parse.c
+d/dmd/sideeffect.c
+d/dmd/statement.c
+d/dmd/statementsem.c
+d/dmd/staticassert.c
+d/dmd/traits.c

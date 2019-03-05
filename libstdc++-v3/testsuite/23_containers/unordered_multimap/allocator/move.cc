@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2018 Free Software Foundation, Inc.
+// Copyright (C) 2013-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,7 +39,7 @@ using __gnu_test::uneq_allocator;
 
 void test01()
 {
-  typedef uneq_allocator<T> alloc_type;
+  typedef uneq_allocator<std::pair<const T, T>> alloc_type;
   typedef std::unordered_multimap<T, T, hash, equal_to, alloc_type> test_type;
   test_type v1(alloc_type(1));
   v1.emplace(std::piecewise_construct,
@@ -53,7 +53,7 @@ void test01()
 
 void test02()
 {
-  typedef uneq_allocator<T> alloc_type;
+  typedef uneq_allocator<std::pair<const T, T>> alloc_type;
   typedef std::unordered_multimap<T, T, hash, equal_to, alloc_type> test_type;
   test_type v1(alloc_type(1));
   v1.emplace(std::piecewise_construct,

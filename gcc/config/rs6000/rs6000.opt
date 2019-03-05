@@ -1,6 +1,6 @@
 ; Options for the rs6000 port of the compiler
 ;
-; Copyright (C) 2005-2018 Free Software Foundation, Inc.
+; Copyright (C) 2005-2019 Free Software Foundation, Inc.
 ; Contributed by Aldy Hernandez <aldy@quesejoda.com>.
 ;
 ; This file is part of GCC.
@@ -326,7 +326,7 @@ Target Report Var(rs6000_block_move_inline_limit) Init(0) RejectNegative Joined 
 Max number of bytes to move inline.
 
 mblock-compare-inline-limit=
-Target Report Var(rs6000_block_compare_inline_limit) Init(31) RejectNegative Joined UInteger Save
+Target Report Var(rs6000_block_compare_inline_limit) Init(63) RejectNegative Joined UInteger Save
 Max number of bytes to compare without loops.
 
 mblock-compare-inline-loop-limit=
@@ -384,6 +384,13 @@ Target RejectNegative Joined Var(rs6000_cpu_index) Init(-1) Enum(rs6000_cpu_opt_
 mtune=
 Target RejectNegative Joined Var(rs6000_tune_index) Init(-1) Enum(rs6000_cpu_opt_value) Save
 -mtune=	Schedule code for given CPU.
+
+; Only for use in the testsuite.  This simply overrides -mcpu=.  With older
+; versions of Dejagnu the command line arguments you set in RUNTESTFLAGS
+; override those set in the testcases; with this option, the testcase will
+; always win.
+mdejagnu-cpu=
+Target Undocumented RejectNegative Joined Var(rs6000_dejagnu_cpu_index) Init(-1) Enum(rs6000_cpu_opt_value) Save
 
 mtraceback=
 Target RejectNegative Joined Enum(rs6000_traceback_type) Var(rs6000_traceback)
@@ -497,10 +504,6 @@ Generate aggregate parameter passing code with at most 64-bit alignment.
 moptimize-swaps
 Target Undocumented Var(rs6000_optimize_swaps) Init(1) Save
 Analyze and remove doubleword swaps from VSX computations.
-
-mpower9-fusion
-Target Undocumented Report Mask(P9_FUSION) Var(rs6000_isa_flags)
-Fuse certain operations together for better performance on power9.
 
 mpower9-misc
 Target Undocumented Report Mask(P9_MISC) Var(rs6000_isa_flags)

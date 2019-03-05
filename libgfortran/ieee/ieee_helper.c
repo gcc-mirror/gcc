@@ -1,5 +1,5 @@
 /* Helper functions in C for IEEE modules
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
    Contributed by Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -50,7 +50,8 @@ internal_proto(ieee_class_helper_16);
 enum { IEEE_OTHER_VALUE = 0, IEEE_SIGNALING_NAN, IEEE_QUIET_NAN,
   IEEE_NEGATIVE_INF, IEEE_NEGATIVE_NORMAL, IEEE_NEGATIVE_DENORMAL,
   IEEE_NEGATIVE_ZERO, IEEE_POSITIVE_ZERO, IEEE_POSITIVE_DENORMAL,
-  IEEE_POSITIVE_NORMAL, IEEE_POSITIVE_INF };
+  IEEE_POSITIVE_NORMAL, IEEE_POSITIVE_INF, IEEE_SUBNORMAL,
+  IEEE_NEGATIVE_SUBNORMAL, IEEE_POSITIVE_SUBNORMAL };
 
 #define CLASSMACRO(TYPE) \
   int ieee_class_helper_ ## TYPE (GFC_REAL_ ## TYPE *value) \

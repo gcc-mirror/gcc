@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    additional tree codes used in the GNU C++ compiler (see tree.def
    for the standard codes).
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -498,6 +498,11 @@ DEFTREECODE (BASES, "bases", tcc_type, 0)
    the pattern of the template for which access check is needed at template
    instantiation time.  */
 DEFTREECODE (TEMPLATE_INFO, "template_info", tcc_exceptional, 0)
+
+/* OpenMP - #pragma omp depobj
+   Operand 0: OMP_DEPOBJ_DEPOBJ: Depobj expression
+   Operand 1: OMP_DEPOBJ_CLAUSES: List of clauses.  */
+DEFTREECODE (OMP_DEPOBJ, "omp_depobj", tcc_statement, 2)
 
 /* Extensions for Concepts. */
 

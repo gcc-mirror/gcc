@@ -1,5 +1,5 @@
 ;; VSX patterns.
-;; Copyright (C) 2009-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2019 Free Software Foundation, Inc.
 ;; Contributed by Michael Meissner <meissner@linux.vnet.ibm.com>
 
 ;; This file is part of GCC.
@@ -182,6 +182,18 @@
 			 (KF	"??r")
 			 (TF	"??r")
 			 (TI	"r")])
+
+;; A mode attribute used for 128-bit constant values.
+(define_mode_attr nW	[(V16QI	"W")
+			 (V8HI	"W")
+			 (V4SI	"W")
+			 (V4SF	"W")
+			 (V2DI	"W")
+			 (V2DF	"W")
+			 (V1TI	"W")
+			 (KF	"W")
+			 (TF	"W")
+			 (TI	"n")])
 
 ;; Same size integer type for floating point data
 (define_mode_attr VSi [(V4SF  "v4si")
@@ -381,6 +393,7 @@
    UNSPEC_VSX_SIEXPDP
    UNSPEC_VSX_SIEXPQP
    UNSPEC_VSX_SCMPEXPDP
+   UNSPEC_VSX_SCMPEXPQP
    UNSPEC_VSX_STSTDC
    UNSPEC_VSX_VEXTRACT_FP_FROM_SHORTH
    UNSPEC_VSX_VEXTRACT_FP_FROM_SHORTL
@@ -446,7 +459,7 @@
      allocation and the hard register destination is not in the altivec
      range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((reg_or_subregno (operands[0]) >= FIRST_PSEUDO_REGISTER)
+      && (!HARD_REGISTER_NUM_P (reg_or_subregno (operands[0]))
 	  || ALTIVEC_REGNO_P (reg_or_subregno (operands[0]))))
     {
       rtx mem_address = XEXP (mem, 0);
@@ -496,7 +509,7 @@
      allocation and the hard register destination is not in the altivec
      range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((REGNO(operands[0]) >= FIRST_PSEUDO_REGISTER)
+      && (!HARD_REGISTER_P (operands[0])
 	  || ALTIVEC_REGNO_P (REGNO(operands[0]))))
     {
       rtx mem_address = XEXP (mem, 0);
@@ -550,7 +563,7 @@
      allocation and the hard register destination is not in the altivec
      range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((REGNO(operands[0]) >= FIRST_PSEUDO_REGISTER)
+      && (!HARD_REGISTER_P (operands[0])
 	  || ALTIVEC_REGNO_P (REGNO(operands[0]))))
     {
       rtx mem_address = XEXP (mem, 0);
@@ -612,7 +625,7 @@
      allocation and the hard register destination is not in the altivec
      range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((REGNO(operands[0]) >= FIRST_PSEUDO_REGISTER)
+      && (!HARD_REGISTER_P (operands[0])
 	  || ALTIVEC_REGNO_P (REGNO(operands[0]))))
     {
       rtx mem_address = XEXP (mem, 0);
@@ -665,8 +678,8 @@
   /* Don't apply the swap optimization if we've already performed register
      allocation and the hard register source is not in the altivec range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((reg_or_subregno (operands[1]) >= FIRST_PSEUDO_REGISTER)
-          || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
+      && (!HARD_REGISTER_NUM_P (reg_or_subregno (operands[1]))
+	  || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
     {
       rtx mem_address = XEXP (mem, 0);
       enum machine_mode mode = GET_MODE (mem);
@@ -737,8 +750,8 @@
   /* Don't apply the swap optimization if we've already performed register
      allocation and the hard register source is not in the altivec range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((reg_or_subregno (operands[1]) >= FIRST_PSEUDO_REGISTER)
-          || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
+      && (!HARD_REGISTER_NUM_P (reg_or_subregno (operands[1]))
+	  || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
     {
       rtx mem_address = XEXP (mem, 0);
       enum machine_mode mode = GET_MODE (mem);
@@ -816,8 +829,8 @@
   /* Don't apply the swap optimization if we've already performed register
      allocation and the hard register source is not in the altivec range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((reg_or_subregno (operands[1]) >= FIRST_PSEUDO_REGISTER)
-          || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
+      && (!HARD_REGISTER_NUM_P (reg_or_subregno (operands[1]))
+	  || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
     {
       rtx mem_address = XEXP (mem, 0);
       enum machine_mode mode = GET_MODE (mem);
@@ -909,8 +922,8 @@
   /* Don't apply the swap optimization if we've already performed register
      allocation and the hard register source is not in the altivec range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((reg_or_subregno (operands[1]) >= FIRST_PSEUDO_REGISTER)
-          || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
+      && (!HARD_REGISTER_NUM_P (reg_or_subregno (operands[1]))
+	  || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
     {
       rtx mem_address = XEXP (mem, 0);
       enum machine_mode mode = GET_MODE (mem);
@@ -1192,17 +1205,17 @@
 
 ;;              VSX store  VSX load   VSX move  VSX->GPR   GPR->VSX    LQ (GPR)
 ;;              STQ (GPR)  GPR load   GPR store GPR move   XXSPLTIB    VSPLTISW
-;;              VSX 0/-1   GPR 0/-1   VMX const GPR const  LVX (VMX)   STVX (VMX)
+;;              VSX 0/-1   VMX const  GPR const LVX (VMX)  STVX (VMX)
 (define_insn "vsx_mov<mode>_64bit"
   [(set (match_operand:VSX_M 0 "nonimmediate_operand"
                "=ZwO,      <VSa>,     <VSa>,     r,         we,        ?wQ,
                 ?&r,       ??r,       ??Y,       <??r>,     wo,        v,
-                ?<VSa>,    *r,        v,         ??r,       wZ,        v")
+                ?<VSa>,    v,         <??r>,     wZ,        v")
 
 	(match_operand:VSX_M 1 "input_operand" 
                "<VSa>,     ZwO,       <VSa>,     we,        r,         r,
                 wQ,        Y,         r,         r,         wE,        jwM,
-                ?jwM,      jwM,       W,         W,         v,         wZ"))]
+                ?jwM,      W,         <nW>,      v,         wZ"))]
 
   "TARGET_POWERPC64 && VECTOR_MEM_VSX_P (<MODE>mode)
    && (register_operand (operands[0], <MODE>mode) 
@@ -1213,25 +1226,25 @@
   [(set_attr "type"
                "vecstore,  vecload,   vecsimple, mffgpr,    mftgpr,    load,
                 store,     load,      store,     *,         vecsimple, vecsimple,
-                vecsimple, *,         *,         *,         vecstore,  vecload")
+                vecsimple, *,         *,         vecstore,  vecload")
 
    (set_attr "length"
                "4,         4,         4,         8,         4,         8,
                 8,         8,         8,         8,         4,         4,
-                4,         8,         20,        20,        4,         4")])
+                4,         20,        8,         4,         4")])
 
 ;;              VSX store  VSX load   VSX move   GPR load   GPR store  GPR move
-;;              XXSPLTIB   VSPLTISW   VSX 0/-1   GPR 0/-1   VMX const  GPR const
+;;              XXSPLTIB   VSPLTISW   VSX 0/-1   VMX const  GPR const
 ;;              LVX (VMX)  STVX (VMX)
 (define_insn "*vsx_mov<mode>_32bit"
   [(set (match_operand:VSX_M 0 "nonimmediate_operand"
                "=ZwO,      <VSa>,     <VSa>,     ??r,       ??Y,       <??r>,
-                wo,        v,         ?<VSa>,    *r,        v,         ??r,
+                wo,        v,         ?<VSa>,    v,         <??r>,
                 wZ,        v")
 
 	(match_operand:VSX_M 1 "input_operand" 
                "<VSa>,     ZwO,       <VSa>,     Y,         r,         r,
-                wE,        jwM,       ?jwM,      jwM,       W,         W,
+                wE,        jwM,       ?jwM,      W,         <nW>,
                 v,         wZ"))]
 
   "!TARGET_POWERPC64 && VECTOR_MEM_VSX_P (<MODE>mode)
@@ -1242,12 +1255,12 @@
 }
   [(set_attr "type"
                "vecstore,  vecload,   vecsimple, load,      store,    *,
-                vecsimple, vecsimple, vecsimple, *,         *,        *,
+                vecsimple, vecsimple, vecsimple, *,         *,
                 vecstore,  vecload")
 
    (set_attr "length"
                "4,         4,         4,         16,        16,        16,
-                4,         4,         4,         16,        20,        32,
+                4,         4,         4,         20,        16,
                 4,         4")])
 
 ;; Explicit  load/store expanders for the builtin functions
@@ -3244,7 +3257,7 @@
 	 (match_operand:VSX_D 1 "memory_operand" "m,m")
 	 (parallel [(match_operand:QI 2 "const_0_to_1_operand" "n,n")])))
    (clobber (match_scratch:P 3 "=&b,&b"))]
-  "VECTOR_MEM_VSX_P (<VSX_D:MODE>mode)"
+  "TARGET_POWERPC64 && VECTOR_MEM_VSX_P (<VSX_D:MODE>mode)"
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (match_dup 4))]
@@ -3623,7 +3636,7 @@
   if (MEM_P (operands[0]))
     {
       if (can_create_pseudo_p ())
-	dest = rs6000_address_for_fpconvert (dest);
+	dest = rs6000_force_indexed_or_indirect_mem (dest);
 
       if (TARGET_P8_VECTOR)
 	emit_move_insn (dest, gen_rtx_REG (SImode, REGNO (vec_tmp)));
@@ -4087,7 +4100,7 @@
 {
   rtx op1 = operands[1];
   if (MEM_P (op1))
-    operands[1] = rs6000_address_for_fpconvert (op1);
+    operands[1] = rs6000_force_indexed_or_indirect_mem (op1);
   else if (!REG_P (op1))
     op1 = force_reg (<VSX_D:VS_scalar>mode, op1);
 })
@@ -4338,7 +4351,7 @@
 	  (match_dup 1))
 	 (parallel [(const_int 1)])))
    (clobber (match_scratch:DF 2 "=0,0,&wd,&wa"))]
-  "VECTOR_UNIT_VSX_P (V2DFmode)"
+  "BYTES_BIG_ENDIAN && VECTOR_UNIT_VSX_P (V2DFmode)"
   "#"
   ""
   [(const_int 0)]
@@ -4365,7 +4378,7 @@
    (clobber (match_scratch:V4SF 2 "=&wf,&wa"))
    (clobber (match_scratch:V4SF 3 "=&wf,&wa"))
    (clobber (match_scratch:V4SF 4 "=0,0"))]
-  "VECTOR_UNIT_VSX_P (V4SFmode)"
+  "BYTES_BIG_ENDIAN && VECTOR_UNIT_VSX_P (V4SFmode)"
   "#"
   ""
   [(const_int 0)]
@@ -4558,6 +4571,34 @@
 	 (match_operand:SI 3 "zero_constant" "j")))]
   "TARGET_P9_VECTOR"
   "xscmpexpdp %0,%x1,%x2"
+  [(set_attr "type" "fpcompare")])
+
+;; VSX Scalar Compare Exponents Quad-Precision
+(define_expand "xscmpexpqp_<code>_<mode>"
+  [(set (match_dup 3)
+	(compare:CCFP
+	 (unspec:IEEE128
+	  [(match_operand:IEEE128 1 "vsx_register_operand" "v")
+	   (match_operand:IEEE128 2 "vsx_register_operand" "v")]
+	  UNSPEC_VSX_SCMPEXPQP)
+	 (const_int 0)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(CMP_TEST:SI (match_dup 3)
+		     (const_int 0)))]
+  "TARGET_P9_VECTOR"
+{
+  operands[3] = gen_reg_rtx (CCFPmode);
+})
+
+(define_insn "*xscmpexpqp"
+  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
+	(compare:CCFP
+	 (unspec:IEEE128 [(match_operand:IEEE128 1 "altivec_register_operand" "v")
+		          (match_operand:IEEE128 2 "altivec_register_operand" "v")]
+	  UNSPEC_VSX_SCMPEXPQP)
+	 (match_operand:SI 3 "zero_constant" "j")))]
+  "TARGET_P9_VECTOR"
+  "xscmpexpqp %0,%1,%2"
   [(set_attr "type" "fpcompare")])
 
 ;; VSX Scalar Test Data Class Quad-Precision

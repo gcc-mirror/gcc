@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -986,26 +986,27 @@ package Opt is
    --  the list of object dependencies (-M switch). Output depends if -a switch
    --  is used or not. This list can be used directly in a Makefile.
 
-   List_Representation_Info : Int range 0 .. 3 := 0;
+   List_Representation_Info : Int range 0 .. 4 := 0;
    --  GNAT
    --  Set non-zero by -gnatR switch to list representation information.
    --  The settings are as follows:
    --
    --    0 = no listing of representation information (default as above)
-   --    1 = list rep info for user defined record and array types
-   --    2 = list rep info for all user defined types and objects
+   --    1 = list rep info for user-defined record and array types
+   --    2 = list rep info for all user-defined types and objects
    --    3 = like 2, but variable fields are decoded symbolically
+   --    4 = like 3, but list rep info for relevant compiler-generated types
 
    List_Representation_Info_To_File : Boolean := False;
    --  GNAT
-   --  Set true by -gnatRs switch. Causes information from -gnatR/1/2/3/m to be
+   --  Set true by -gnatRs switch. Causes information from -gnatR[1-4]m to be
    --  written to file.rep (where file is the name of the source file) instead
    --  of stdout. For example, if file x.adb is compiled using -gnatR2s then
    --  representation info is written to x.adb.ref.
 
    List_Representation_Info_To_JSON : Boolean := False;
    --  GNAT
-   --  Set true by -gnatRj switch. Causes information from -gnatR/1/2/3/m to be
+   --  Set true by -gnatRj switch. Causes information from -gnatR[1-4]m to be
    --  output in the JSON data interchange format.
 
    List_Representation_Info_Mechanisms : Boolean := False;

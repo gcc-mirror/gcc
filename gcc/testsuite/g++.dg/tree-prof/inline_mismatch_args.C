@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-einline" } */
+/* { dg-options "-O2 -fdump-tree-einline-all" } */
 class DocId {
  public:
  DocId() { }

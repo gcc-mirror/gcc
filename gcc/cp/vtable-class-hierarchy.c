@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1190,8 +1190,6 @@ vtv_generate_init_routine (void)
 
       gimplify_function_tree (vtv_fndecl);
       cgraph_node::add_new_function (vtv_fndecl, false);
-
-      symtab->process_new_functions ();
 
       if (flag_vtable_verify == VTV_PREINIT_PRIORITY && !TARGET_PECOFF)
         assemble_vtv_preinit_initializer (vtv_fndecl);

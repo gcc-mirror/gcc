@@ -1,6 +1,6 @@
 /* Breadth-first and depth-first routines for
    searching multiple-inheritance lattice for GNU C++.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -623,6 +623,11 @@ protected_accessible_p (tree decl, tree derived, tree type, tree otype)
   if (!DERIVED_FROM_P (type, derived))
     return 0;
 
+  /* DECL_NONSTATIC_MEMBER_P won't work for USING_DECLs.  */
+  decl = strip_using_decl (decl);
+  /* We don't expect or support dependent decls.  */
+  gcc_assert (TREE_CODE (decl) != USING_DECL);
+
   /* [class.protected]
 
      When a friend or a member function of a derived class references
@@ -928,8 +933,13 @@ shared_member_p (tree t)
   if (is_overloaded_fn (t))
     {
       for (ovl_iterator iter (get_fns (t)); iter; ++iter)
-	if (DECL_NONSTATIC_MEMBER_FUNCTION_P (*iter))
-	  return 0;
+	{
+	  tree decl = strip_using_decl (*iter);
+	  /* We don't expect or support dependent decls.  */
+	  gcc_assert (TREE_CODE (decl) != USING_DECL);
+	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+	    return 0;
+	}
       return 1;
     }
   return 0;
@@ -1177,7 +1187,10 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
       && !really_overloaded_fn (rval))
     {
       tree decl = is_overloaded_fn (rval) ? get_first_fn (rval) : rval;
-      if (!DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
+      decl = strip_using_decl (decl);
+      /* A dependent USING_DECL will be checked after tsubsting.  */
+      if (TREE_CODE (decl) != USING_DECL
+	  && !DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
 	  && !perform_or_defer_access_check (basetype_path, decl, decl,
 					     complain, afi))
 	rval = error_mark_node;

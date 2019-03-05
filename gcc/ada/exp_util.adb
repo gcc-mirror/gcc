@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1933,7 +1933,7 @@ package body Exp_Util is
       --  is subject to Source Coverage Obligations.
 
       if Generate_SCO then
-         Set_Needs_Debug_Info (Proc_Id);
+         Set_Debug_Info_Needed (Proc_Id);
       end if;
 
       --  Obtain all views of the input type
@@ -3407,7 +3407,7 @@ package body Exp_Util is
       --  subject to Source Coverage Obligations.
 
       if Generate_SCO then
-         Set_Needs_Debug_Info (Proc_Id);
+         Set_Debug_Info_Needed (Proc_Id);
       end if;
 
       --  Obtain all views of the input type
@@ -4940,17 +4940,17 @@ package body Exp_Util is
       end if;
    end Evolve_Or_Else;
 
-   -----------------------------------
-   -- Exceptions_In_Finalization_OK --
-   -----------------------------------
+   -------------------
+   -- Exceptions_OK --
+   -------------------
 
-   function Exceptions_In_Finalization_OK return Boolean is
+   function Exceptions_OK return Boolean is
    begin
       return
         not (Restriction_Active (No_Exception_Handlers)    or else
              Restriction_Active (No_Exception_Propagation) or else
              Restriction_Active (No_Exceptions));
-   end Exceptions_In_Finalization_OK;
+   end Exceptions_OK;
 
    -----------------------------------------
    -- Expand_Static_Predicates_In_Choices --
@@ -6702,20 +6702,34 @@ package body Exp_Util is
    -- Insert_Action --
    -------------------
 
-   procedure Insert_Action (Assoc_Node : Node_Id; Ins_Action : Node_Id) is
+   procedure Insert_Action
+     (Assoc_Node   : Node_Id;
+      Ins_Action   : Node_Id;
+      Spec_Expr_OK : Boolean := False)
+   is
    begin
       if Present (Ins_Action) then
-         Insert_Actions (Assoc_Node, New_List (Ins_Action));
+         Insert_Actions
+           (Assoc_Node   => Assoc_Node,
+            Ins_Actions  => New_List (Ins_Action),
+            Spec_Expr_OK => Spec_Expr_OK);
       end if;
    end Insert_Action;
 
    --  Version with check(s) suppressed
 
    procedure Insert_Action
-     (Assoc_Node : Node_Id; Ins_Action : Node_Id; Suppress : Check_Id)
+     (Assoc_Node   : Node_Id;
+      Ins_Action   : Node_Id;
+      Suppress     : Check_Id;
+      Spec_Expr_OK : Boolean := False)
    is
    begin
-      Insert_Actions (Assoc_Node, New_List (Ins_Action), Suppress);
+      Insert_Actions
+        (Assoc_Node   => Assoc_Node,
+         Ins_Actions  => New_List (Ins_Action),
+         Suppress     => Suppress,
+         Spec_Expr_OK => Spec_Expr_OK);
    end Insert_Action;
 
    -------------------------
@@ -6734,7 +6748,11 @@ package body Exp_Util is
    -- Insert_Actions --
    --------------------
 
-   procedure Insert_Actions (Assoc_Node : Node_Id; Ins_Actions : List_Id) is
+   procedure Insert_Actions
+     (Assoc_Node   : Node_Id;
+      Ins_Actions  : List_Id;
+      Spec_Expr_OK : Boolean := False)
+   is
       N : Node_Id;
       P : Node_Id;
 
@@ -6745,14 +6763,20 @@ package body Exp_Util is
          return;
       end if;
 
+      --  Insert the action when the context is "Handling of Default and Per-
+      --  Object Expressions" only when requested by the caller.
+
+      if Spec_Expr_OK then
+         null;
+
       --  Ignore insert of actions from inside default expression (or other
       --  similar "spec expression") in the special spec-expression analyze
       --  mode. Any insertions at this point have no relevance, since we are
       --  only doing the analyze to freeze the types of any static expressions.
-      --  See section "Handling of Default Expressions" in the spec of package
-      --  Sem for further details.
+      --  See section "Handling of Default and Per-Object Expressions" in the
+      --  spec of package Sem for further details.
 
-      if In_Spec_Expression then
+      elsif In_Spec_Expression then
          return;
       end if;
 
@@ -7062,7 +7086,6 @@ package body Exp_Util is
                | N_Procedure_Instantiation
                | N_Protected_Body
                | N_Protected_Body_Stub
-               | N_Protected_Type_Declaration
                | N_Single_Task_Declaration
                | N_Subprogram_Body
                | N_Subprogram_Body_Stub
@@ -7071,7 +7094,6 @@ package body Exp_Util is
                | N_Subtype_Declaration
                | N_Task_Body
                | N_Task_Body_Stub
-               | N_Task_Type_Declaration
 
                --  Use clauses can appear in lists of declarations
 
@@ -7134,6 +7156,21 @@ package body Exp_Util is
                   Insert_List_Before_And_Analyze (P, Ins_Actions);
                   return;
                end if;
+
+            --  the expansion of Task and protected type declarations can
+            --  create declarations for temporaries which, like other actions
+            --  are inserted and analyzed before the current declaraation.
+            --  However, the current scope is the synchronized type, and
+            --  for unnesting it is critical that the proper scope for these
+            --  generated entities be the enclosing one.
+
+            when N_Task_Type_Declaration
+               | N_Protected_Type_Declaration =>
+
+               Push_Scope (Scope (Current_Scope));
+               Insert_List_Before_And_Analyze (P, Ins_Actions);
+               Pop_Scope;
+               return;
 
             --  A special case, N_Raise_xxx_Error can act either as a statement
             --  or a subexpression. We tell the difference by looking at the
@@ -7416,9 +7453,10 @@ package body Exp_Util is
    --  Version with check(s) suppressed
 
    procedure Insert_Actions
-     (Assoc_Node  : Node_Id;
-      Ins_Actions : List_Id;
-      Suppress    : Check_Id)
+     (Assoc_Node   : Node_Id;
+      Ins_Actions  : List_Id;
+      Suppress     : Check_Id;
+      Spec_Expr_OK : Boolean := False)
    is
    begin
       if Suppress = All_Checks then
@@ -7426,7 +7464,7 @@ package body Exp_Util is
             Sva : constant Suppress_Array := Scope_Suppress.Suppress;
          begin
             Scope_Suppress.Suppress := (others => True);
-            Insert_Actions (Assoc_Node, Ins_Actions);
+            Insert_Actions (Assoc_Node, Ins_Actions, Spec_Expr_OK);
             Scope_Suppress.Suppress := Sva;
          end;
 
@@ -7435,7 +7473,7 @@ package body Exp_Util is
             Svg : constant Boolean := Scope_Suppress.Suppress (Suppress);
          begin
             Scope_Suppress.Suppress (Suppress) := True;
-            Insert_Actions (Assoc_Node, Ins_Actions);
+            Insert_Actions (Assoc_Node, Ins_Actions, Spec_Expr_OK);
             Scope_Suppress.Suppress (Suppress) := Svg;
          end;
       end if;
@@ -9313,9 +9351,9 @@ package body Exp_Util is
 
       --  If the type is tagged, the expression may be class-wide, in which
       --  case it has to be converted to its root type, given that the
-      --  generated predicate function is not dispatching. The conversion
-      --  is type-safe and does not need validation, which matters when
-      --  private extensions are involved.
+      --  generated predicate function is not dispatching. The conversion is
+      --  type-safe and does not need validation, which matters when private
+      --  extensions are involved.
 
       if Is_Tagged_Type (Typ) then
          Call :=
@@ -13400,7 +13438,11 @@ package body Exp_Util is
    --  required for the case of False .. False, since False xor False = False.
    --  See also Silly_Boolean_Array_Not_Test
 
-   procedure Silly_Boolean_Array_Xor_Test (N : Node_Id; T : Entity_Id) is
+   procedure Silly_Boolean_Array_Xor_Test
+     (N : Node_Id;
+      R : Node_Id;
+      T : Entity_Id)
+   is
       Loc : constant Source_Ptr := Sloc (N);
       CT  : constant Entity_Id  := Component_Type (T);
 
@@ -13421,9 +13463,9 @@ package body Exp_Util is
         Make_Raise_Constraint_Error (Loc,
           Condition =>
             Make_And_Then (Loc,
-              Left_Opnd =>
+              Left_Opnd  =>
                 Make_And_Then (Loc,
-                  Left_Opnd =>
+                  Left_Opnd  =>
                     Convert_To (Standard_Boolean,
                       Make_Attribute_Reference (Loc,
                         Prefix         => New_Occurrence_Of (CT, Loc),
@@ -13435,8 +13477,8 @@ package body Exp_Util is
                         Prefix         => New_Occurrence_Of (CT, Loc),
                         Attribute_Name => Name_Last))),
 
-              Right_Opnd => Make_Non_Empty_Check (Loc, Right_Opnd (N))),
-          Reason => CE_Range_Check_Failed));
+              Right_Opnd => Make_Non_Empty_Check (Loc, R)),
+          Reason    => CE_Range_Check_Failed));
    end Silly_Boolean_Array_Xor_Test;
 
    --------------------------

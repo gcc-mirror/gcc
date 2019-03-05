@@ -1,5 +1,5 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -111,10 +111,6 @@ static class_stack_node_t current_class_stack;
 /* The size of the largest empty class seen in this translation unit.  */
 static GTY (()) tree sizeof_biggest_empty_class;
 
-/* An array of all local classes present in this translation unit, in
-   declaration order.  */
-vec<tree, va_gc> *local_classes;
-
 static tree get_vfield_name (tree);
 static void finish_struct_anon (tree);
 static tree get_vtable_name (tree);
@@ -210,6 +206,7 @@ static int empty_base_at_nonzero_offset_p (tree, tree, splay_tree);
 static tree end_of_base (tree);
 static tree get_vcall_index (tree, tree);
 static bool type_maybe_constexpr_default_constructor (tree);
+static bool field_poverlapping_p (tree);
 
 /* Return a COND_EXPR that executes TRUE_STMT if this execution of the
    'structor is in charge of 'structing virtual bases, or FALSE_STMT
@@ -1137,9 +1134,6 @@ add_method (tree type, tree method, bool via_using)
 	}
     }
 
-  /* A class should never have more than one destructor.  */
-  gcc_assert (!current_fns || !DECL_DESTRUCTOR_P (method));
-
   current_fns = ovl_insert (method, current_fns, via_using);
 
   if (!COMPLETE_TYPE_P (type) && !DECL_CONV_FN_P (method)
@@ -1955,6 +1949,7 @@ fixup_attribute_variants (tree t)
   unsigned align = TYPE_ALIGN (t);
   bool user_align = TYPE_USER_ALIGN (t);
   bool may_alias = lookup_attribute ("may_alias", attrs);
+  bool packed = TYPE_PACKED (t);
 
   if (may_alias)
     fixup_may_alias (t);
@@ -1972,6 +1967,7 @@ fixup_attribute_variants (tree t)
       else
 	TYPE_USER_ALIGN (variants) = user_align;
       SET_TYPE_ALIGN (variants, valign);
+      TYPE_PACKED (variants) = packed;
       if (may_alias)
 	fixup_may_alias (variants);
     }
@@ -3220,7 +3216,8 @@ check_bitfield_decl (tree field)
   /* Detect invalid bit-field type.  */
   if (!INTEGRAL_OR_ENUMERATION_TYPE_P (type))
     {
-      error ("bit-field %q+#D with non-integral type", field);
+      error_at (DECL_SOURCE_LOCATION (field),
+		"bit-field %q#D with non-integral type %qT", field, type);
       w = error_mark_node;
     }
   else
@@ -3557,6 +3554,11 @@ check_field_decls (tree t, tree *access_decls,
 	/* We don't treat zero-width bitfields as making a class
 	   non-empty.  */
 	;
+      else if (field_poverlapping_p (x) && is_empty_class (type))
+	{
+	  /* Empty data members also don't make a class non-empty.  */
+	  CLASSTYPE_CONTAINS_EMPTY_CLASS_P (t) = 1;
+	}
       else
 	{
 	  /* The class is non-empty.  */
@@ -3607,6 +3609,11 @@ check_field_decls (tree t, tree *access_decls,
       if (! layout_pod_type_p (type))
 	/* DR 148 now allows pointers to members (which are POD themselves),
 	   to be allowed in POD structs.  */
+	CLASSTYPE_NON_LAYOUT_POD_P (t) = 1;
+
+      if (field_poverlapping_p (x))
+	/* A potentially-overlapping non-static data member makes the class
+	   non-layout-POD.  */
 	CLASSTYPE_NON_LAYOUT_POD_P (t) = 1;
 
       if (!std_layout_type_p (type))
@@ -5235,7 +5242,7 @@ classtype_has_non_deleted_move_ctor (tree t)
    operator, or destructor, returns that function.  Otherwise, null.  */
 
 tree
-classtype_has_user_copy_or_dtor (tree t)
+classtype_has_depr_implicit_copy (tree t)
 {
   if (!CLASSTYPE_LAZY_COPY_CTOR (t))
     for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
@@ -5927,13 +5934,12 @@ end_of_base (tree binfo)
   return size_binop (PLUS_EXPR, BINFO_OFFSET (binfo), size);
 }
 
-/* Returns the offset of the byte just past the end of the base class
-   with the highest offset in T.  If INCLUDE_VIRTUALS_P is zero, then
-   only non-virtual bases are included.  If INCLUDE_FIELDS_P is true,
-   then also consider non-static data members.  */
+/* Returns the offset of the byte just past the end of the base class or empty
+   data member with the highest offset in T.  If INCLUDE_VIRTUALS_P is zero,
+   then only non-virtual bases are included.  */
 
 static tree
-end_of_class (tree t, bool include_virtuals_p, bool include_fields_p = false)
+end_of_class (tree t, bool include_virtuals_p)
 {
   tree result = size_zero_node;
   vec<tree, va_gc> *vbases;
@@ -5956,15 +5962,19 @@ end_of_class (tree t, bool include_virtuals_p, bool include_fields_p = false)
 	result = offset;
     }
 
-  if (include_fields_p)
-    for (tree field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
-      if (TREE_CODE (field) == FIELD_DECL)
-	{
-	  offset = size_binop (PLUS_EXPR, DECL_FIELD_OFFSET (field),
-			       DECL_SIZE_UNIT (field));
-	  if (tree_int_cst_lt (result, offset))
-	    result = offset;
-	}
+  /* Also consider empty data members.  */
+  for (tree field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
+    if (TREE_CODE (field) == FIELD_DECL
+	&& !DECL_ARTIFICIAL (field)
+	&& field_poverlapping_p (field)
+	&& is_empty_class (TREE_TYPE (field)))
+      {
+	/* Update sizeof(C) to max (sizeof(C), offset(D)+sizeof(D)) */
+	offset = size_binop (PLUS_EXPR, DECL_FIELD_OFFSET (field),
+			     TYPE_SIZE_UNIT (TREE_TYPE (field)));
+	if (tree_int_cst_lt (result, offset))
+	  result = offset;
+      }
 
   if (include_virtuals_p)
     for (vbases = CLASSTYPE_VBASECLASSES (t), i = 0;
@@ -6155,12 +6165,14 @@ layout_class_type (tree t, tree *virtuals_p)
       bool might_overlap = field_poverlapping_p (field);
 
       if (might_overlap && CLASS_TYPE_P (type)
-	  && CLASSTYPE_NON_LAYOUT_POD_P (type))
+	  && (CLASSTYPE_NON_LAYOUT_POD_P (type) || CLASSTYPE_EMPTY_P (type)))
 	{
 	  /* if D is a potentially-overlapping data member, update sizeof(C) to
 	     max (sizeof(C), offset(D)+max (nvsize(D), dsize(D))).  */
 	  tree nvsize = CLASSTYPE_SIZE_UNIT (type);
-	  tree dsize = end_of_class (type, /*vbases*/true, /*fields*/true);
+	  /* end_of_class doesn't always give dsize, but it does in the case of
+	     a class with virtual bases, which is when dsize > nvsize.  */
+	  tree dsize = end_of_class (type, /*vbases*/true);
 	  if (tree_int_cst_le (dsize, nvsize))
 	    {
 	      DECL_SIZE_UNIT (field) = nvsize;
@@ -7152,6 +7164,20 @@ finish_struct (tree t, tree attributes)
 	else if (DECL_DECLARES_FUNCTION_P (x))
 	  DECL_IN_AGGR_P (x) = false;
 
+      /* Also add a USING_DECL for operator=.  We know there'll be (at
+	 least) one, but we don't know the signature(s).  We want name
+	 lookup not to fail or recurse into bases.  This isn't added
+	 to the template decl list so we drop this at instantiation
+	 time.  */
+      tree ass_op = build_lang_decl (USING_DECL, assign_op_identifier,
+				     NULL_TREE);
+      DECL_CONTEXT (ass_op) = t;
+      USING_DECL_SCOPE (ass_op) = t;
+      DECL_DEPENDENT_P (ass_op) = true;
+      DECL_ARTIFICIAL (ass_op) = true;
+      DECL_CHAIN (ass_op) = TYPE_FIELDS (t);
+      TYPE_FIELDS (t) = ass_op;
+
       TYPE_SIZE (t) = bitsize_zero_node;
       TYPE_SIZE_UNIT (t) = size_zero_node;
       /* COMPLETE_TYPE_P is now true.  */
@@ -7375,6 +7401,14 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
 	}
       return NULL_TREE;
 
+    case VIEW_CONVERT_EXPR:
+      if (location_wrapper_p (instance))
+	return RECUR (TREE_OPERAND (instance, 0));
+      else
+	/* TODO: Recursion may be correct for some non-location-wrapper
+	   uses of VIEW_CONVERT_EXPR.  */
+	return NULL_TREE;
+
     default:
       return NULL_TREE;
     }
@@ -7431,7 +7465,6 @@ init_class_processing (void)
   current_class_stack_size = 10;
   current_class_stack
     = XNEWVEC (struct class_stack_node, current_class_stack_size);
-  vec_alloc (local_classes, 8);
   sizeof_biggest_empty_class = size_zero_node;
 
   ridpointers[(int) RID_PUBLIC] = access_public_node;
@@ -9340,7 +9373,6 @@ build_vtbl_initializer (tree binfo,
       tree vcall_index;
       tree fn, fn_original;
       tree init = NULL_TREE;
-      tree idx = size_int (jx++);
 
       fn = BV_FN (v);
       fn_original = fn;
@@ -9444,7 +9476,7 @@ build_vtbl_initializer (tree binfo,
 	  int i;
 	  if (init == size_zero_node)
 	    for (i = 0; i < TARGET_VTABLE_USES_DESCRIPTORS; ++i)
-	      CONSTRUCTOR_APPEND_ELT (*inits, idx, init);
+	      CONSTRUCTOR_APPEND_ELT (*inits, size_int (jx++), init);
 	  else
 	    for (i = 0; i < TARGET_VTABLE_USES_DESCRIPTORS; ++i)
 	      {
@@ -9452,11 +9484,11 @@ build_vtbl_initializer (tree binfo,
 				     fn, build_int_cst (NULL_TREE, i));
 		TREE_CONSTANT (fdesc) = 1;
 
-		CONSTRUCTOR_APPEND_ELT (*inits, idx, fdesc);
+		CONSTRUCTOR_APPEND_ELT (*inits, size_int (jx++), fdesc);
 	      }
 	}
       else
-	CONSTRUCTOR_APPEND_ELT (*inits, idx, init);
+	CONSTRUCTOR_APPEND_ELT (*inits, size_int (jx++), init);
     }
 }
 

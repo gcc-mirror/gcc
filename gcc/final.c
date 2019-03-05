@@ -1,5 +1,5 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -128,6 +128,7 @@ static int last_discriminator;
 /* Discriminator to be written to assembly for current instruction.
    Note: actual usage depends on loc_discriminator_kind setting.  */
 static int discriminator;
+static inline int compute_discriminator (location_t loc);
 
 /* Discriminator identifying current basic block among others sharing
    the same locus.  */
@@ -149,6 +150,7 @@ static const char *last_filename;
 static const char *override_filename;
 static int override_linenum;
 static int override_columnnum;
+static int override_discriminator;
 
 /* Whether to force emission of a line note before the next insn.  */
 static bool force_source_line = false;
@@ -604,7 +606,7 @@ insn_current_reference_address (rtx_insn *branch)
 
   rtx_insn *seq = NEXT_INSN (PREV_INSN (branch));
   seq_uid = INSN_UID (seq);
-  if (!JUMP_P (branch))
+  if (!jump_to_label_p (branch))
     /* This can happen for example on the PA; the objective is to know the
        offset to address something in front of the start of the function.
        Thus, we can treat it like a backward branch.
@@ -2342,6 +2344,7 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		  override_filename = LOCATION_FILE (*locus_ptr);
 		  override_linenum = LOCATION_LINE (*locus_ptr);
 		  override_columnnum = LOCATION_COLUMN (*locus_ptr);
+		  override_discriminator = compute_discriminator (*locus_ptr);
 		}
 	    }
 	  break;
@@ -2379,12 +2382,14 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		  override_filename = LOCATION_FILE (*locus_ptr);
 		  override_linenum = LOCATION_LINE (*locus_ptr);
 		  override_columnnum = LOCATION_COLUMN (*locus_ptr);
+		  override_discriminator = compute_discriminator (*locus_ptr);
 		}
 	      else
 		{
 		  override_filename = NULL;
 		  override_linenum = 0;
 		  override_columnnum = 0;
+		  override_discriminator = 0;
 		}
 	    }
 	  break;
@@ -2425,10 +2430,9 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 
 	case NOTE_INSN_INLINE_ENTRY:
 	  gcc_checking_assert (cfun->debug_nonbind_markers);
-	  if (!DECL_IGNORED_P (current_function_decl))
+	  if (!DECL_IGNORED_P (current_function_decl)
+	      && notice_source_line (insn, NULL))
 	    {
-	      if (!notice_source_line (insn, NULL))
-		break;
 	      (*debug_hooks->inline_entry) (LOCATION_BLOCK
 					    (NOTE_MARKER_LOCATION (insn)));
 	      goto output_source_line;
@@ -3185,9 +3189,11 @@ map_decl_to_instance (const_tree decl)
 
 /* Set DISCRIMINATOR to the appropriate value, possibly derived from LOC.  */
 
-static inline void
-maybe_set_discriminator (location_t loc)
+static inline int
+compute_discriminator (location_t loc)
 {
+  int discriminator;
+
   if (!decl_to_instance_map)
     discriminator = bb_discriminator;
   else
@@ -3209,6 +3215,8 @@ maybe_set_discriminator (location_t loc)
 
       discriminator = map_decl_to_instance (decl);
     }
+
+  return discriminator;
 }
 
 /* Return whether a source line note needs to be emitted before INSN.
@@ -3234,7 +3242,7 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
       filename = xloc.file;
       linenum = xloc.line;
       columnnum = xloc.column;
-      maybe_set_discriminator (loc);
+      discriminator = compute_discriminator (loc);
       force_source_line = true;
     }
   else if (override_filename)
@@ -3242,6 +3250,7 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
       filename = override_filename;
       linenum = override_linenum;
       columnnum = override_columnnum;
+      discriminator = override_discriminator;
     }
   else if (INSN_HAS_LOCATION (insn))
     {
@@ -3249,13 +3258,14 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
       filename = xloc.file;
       linenum = xloc.line;
       columnnum = xloc.column;
-      maybe_set_discriminator (INSN_LOCATION (insn));
+      discriminator = compute_discriminator (INSN_LOCATION (insn));
     }
   else
     {
       filename = NULL;
       linenum = 0;
       columnnum = 0;
+      discriminator = 0;
     }
 
   if (filename == NULL)
@@ -4648,7 +4658,11 @@ rest_of_handle_final (void)
   final_start_function_1 (&first, asm_out_file, &seen, optimize);
   final_1 (first, asm_out_file, seen, optimize);
   if (flag_ipa_ra
-      && !lookup_attribute ("noipa", DECL_ATTRIBUTES (current_function_decl)))
+      && !lookup_attribute ("noipa", DECL_ATTRIBUTES (current_function_decl))
+      /* Functions with naked attributes are supported only with basic asm
+	 statements in the body, thus for supported use cases the information
+	 on clobbered registers is not available.  */
+      && !lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl)))
     collect_fn_hard_reg_usage ();
   final_end_function ();
 
@@ -4890,7 +4904,8 @@ rest_of_clean_state (void)
   /* We can reduce stack alignment on call site only when we are sure that
      the function body just produced will be actually used in the final
      executable.  */
-  if (decl_binds_to_current_def_p (current_function_decl))
+  if (flag_ipa_stack_alignment
+      && decl_binds_to_current_def_p (current_function_decl))
     {
       unsigned int pref = crtl->preferred_stack_boundary;
       if (crtl->stack_alignment_needed > crtl->preferred_stack_boundary)
@@ -5080,7 +5095,7 @@ get_call_reg_set_usage (rtx_insn *insn, HARD_REG_SET *reg_set,
 	  return true;
 	}
     }
-
   COPY_HARD_REG_SET (*reg_set, default_set);
+  targetm.remove_extra_call_preserved_regs (insn, reg_set);
   return false;
 }

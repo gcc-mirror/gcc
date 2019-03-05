@@ -1,5 +1,5 @@
 /* Translation of isl AST to Gimple.
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
    Contributed by Roman Gareev <gareevroman@gmail.com>.
 
 This file is part of GCC.
@@ -411,7 +411,9 @@ ternary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
   if (codegen_error_p ())
     return NULL_TREE;
 
-  return fold_build3 (COND_EXPR, type, a, b, c);
+  return fold_build3 (COND_EXPR, type, a,
+		      rewrite_to_non_trapping_overflow (b),
+		      rewrite_to_non_trapping_overflow (c));
 }
 
 /* Converts a unary isl_ast_expr_op expression E to a GCC expression tree of
@@ -1090,7 +1092,8 @@ tree translate_isl_ast_to_gimple::
 get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
 		      vec<tree> iv_map)
 {
-  tree scev = scalar_evolution_in_region (region->region, loop, old_name);
+  tree scev = cached_scalar_evolution_in_region (region->region,
+						 loop, old_name);
 
   /* At this point we should know the exact scev for each
      scalar SSA_NAME used in the scop: all the other scalar
@@ -1409,17 +1412,20 @@ scop_to_isl_ast (scop_p scop)
   isl_ctx_set_max_operations (scop->isl_context, old_max_operations);
   if (isl_ctx_last_error (scop->isl_context) != isl_error_none)
     {
-      dump_user_location_t loc = find_loop_location
-	(scop->scop_info->region.entry->dest->loop_father);
-      if (isl_ctx_last_error (scop->isl_context) == isl_error_quota)
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
-			 "loop nest not optimized, AST generation timed out "
-			 "after %d operations [--param max-isl-operations]\n",
-			 max_operations);
-      else
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
-			 "loop nest not optimized, ISL AST generation "
-			 "signalled an error\n");
+      if (dump_enabled_p ())
+	{
+	  dump_user_location_t loc = find_loop_location
+	    (scop->scop_info->region.entry->dest->loop_father);
+	  if (isl_ctx_last_error (scop->isl_context) == isl_error_quota)
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			     "loop nest not optimized, AST generation timed out "
+			     "after %d operations [--param max-isl-operations]\n",
+			     max_operations);
+	  else
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			     "loop nest not optimized, ISL AST generation "
+			     "signalled an error\n");
+	}
       isl_ast_node_free (ast_isl);
       return NULL;
     }
@@ -1518,10 +1524,13 @@ graphite_regenerate_ast_isl (scop_p scop)
 
   if (t.codegen_error_p ())
     {
-      dump_user_location_t loc = find_loop_location
-	(scop->scop_info->region.entry->dest->loop_father);
-      dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
-		       "loop nest not optimized, code generation error\n");
+      if (dump_enabled_p ())
+	{
+	  dump_user_location_t loc = find_loop_location
+	    (scop->scop_info->region.entry->dest->loop_father);
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			   "loop nest not optimized, code generation error\n");
+	}
 
       /* Remove the unreachable region.  */
       remove_edge_and_dominated_blocks (if_region->true_region->region.entry);

@@ -68,6 +68,10 @@ int __attribute__ ((target("arch=icelake-server"))) foo () {
   return 18;
 }
 
+int __attribute__ ((target("arch=cascadelake"))) foo () {
+  return 19;
+}
+
 int main ()
 {
   int val = foo ();
@@ -94,6 +98,8 @@ int main ()
     assert (val == 17);
   else if (__builtin_cpu_is ("icelake-server"))
     assert (val == 18);
+  else if (__builtin_cpu_is ("cascadelake"))
+    assert (val == 19);
   else
     assert (val == 0);
 

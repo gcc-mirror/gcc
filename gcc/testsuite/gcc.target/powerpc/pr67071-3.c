@@ -1,7 +1,6 @@
 /* { dg-do compile { target powerpc*-*-* } } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power6" } } */
-/* { dg-options "-mcpu=power6 -maltivec" } */
+/* { dg-options "-mdejagnu-cpu=power6 -maltivec" } */
 
 
 vector unsigned char

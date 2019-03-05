@@ -11,7 +11,10 @@
 
 class Go_sha1_helper;
 class Gogo;
+class Named_object;
+class Export_function_body;
 class Import_init;
+class Named_object;
 class Bindings;
 class Type;
 class Package;
@@ -57,7 +60,8 @@ enum Export_data_version {
   EXPORT_FORMAT_UNKNOWN = 0,
   EXPORT_FORMAT_V1 = 1,
   EXPORT_FORMAT_V2 = 2,
-  EXPORT_FORMAT_CURRENT = EXPORT_FORMAT_V2
+  EXPORT_FORMAT_V3 = 3,
+  EXPORT_FORMAT_CURRENT = EXPORT_FORMAT_V3
 };
 
 // This class manages exporting Go declarations.  It handles the main
@@ -119,9 +123,10 @@ class Export : public String_dump
   // Size of export data magic string (which includes version number).
   static const int magic_len = 4;
 
-  // Magic strings (current version and older v1 version).
+  // Magic strings (current version and older versions).
   static const char cur_magic[magic_len];
   static const char v1_magic[magic_len];
+  static const char v2_magic[magic_len];
 
   // The length of the checksum string.
   static const int checksum_len = 20;
@@ -151,6 +156,10 @@ class Export : public String_dump
 		 const Import_init_set& imported_init_fns,
 		 const Bindings* bindings);
 
+  // Set the index of a type.
+  bool
+  set_type_index(Type*);
+
   // Write a string to the export stream.
   void
   write_string(const std::string& s)
@@ -175,6 +184,10 @@ class Export : public String_dump
   void
   write_type(const Type*);
 
+  // Write a type to an exported function body.
+  void
+  write_type_to(const Type*, Export_function_body*);
+
   // Write the escape note to the export stream.  If NOTE is NULL, write
   // nothing.
   void
@@ -192,6 +205,11 @@ class Export : public String_dump
   Export(const Export&);
   Export& operator=(const Export&);
 
+  // Prepare types for exporting.
+  int
+  prepare_types(const std::vector<Named_object*>* exports,
+		Unordered_set(const Package*)* imports);
+
   // Write out all known packages.
   void
   write_packages(const std::map<std::string, Package*>& packages);
@@ -208,31 +226,39 @@ class Export : public String_dump
 
   // Write out the imported packages.
   void
-  write_imports(const std::map<std::string, Package*>& imports);
+  write_imports(const std::map<std::string, Package*>& imports,
+		const Unordered_set(const Package*)& type_imports);
 
   // Write out the imported initialization functions and init graph.
   void
   write_imported_init_fns(const std::string& package_name,
 			  const std::string&, const Import_init_set&);
 
+  // Write out all types.
+  void
+  write_types(int unexported_type_index);
+
+  // Write out one type definition.
+  void
+  write_type_definition(const Type* type, int index);
+
   // Register one builtin type.
   void
   register_builtin_type(Gogo*, const char* name, Builtin_code);
 
-  // Mapping from Type objects to a constant index.
-  typedef Unordered_map(const Type*, int) Type_refs;
+  // Return the index of a type in the export data.
+  int
+  type_index(const Type*);
 
   // The stream to which we are writing data.
   Stream* stream_;
-  // Type mappings.
-  Type_refs type_refs_;
   // Index number of next type.
   int type_index_;
   // Packages we have written out.
   Unordered_set(const Package*) packages_;
 };
 
-// An export streamer which puts the export stream in a named section.
+// An export streamer that puts the export stream in a named section.
 
 class Stream_to_section : public Export::Stream
 {
@@ -245,6 +271,103 @@ class Stream_to_section : public Export::Stream
 
  private:
   Backend* backend_;
+};
+
+// An export streamer that puts the export stream in a string.
+
+class Stream_to_string : public Export::Stream
+{
+ public:
+  Stream_to_string()
+    : string_()
+  {}
+
+  const std::string&
+  string() const
+  { return this->string_; }
+
+ protected:
+  void
+  do_write(const char* s, size_t len)
+  { this->string_.append(s, len); }
+
+ private:
+  std::string string_;
+};
+
+// Class to manage exporting a function body.  This is passed around
+// to Statements and Expressions.  It builds up the export data for
+// the function.
+
+class Export_function_body : public String_dump
+{
+ public:
+  Export_function_body(Export* exp, int indent)
+    : exp_(exp), type_context_(NULL), indent_(indent)
+  { }
+
+  // Write a character to the body.
+  void
+  write_char(char c)
+  { this->body_.append(1, c); }
+
+  // Write a NUL terminated string to the body.
+  void
+  write_c_string(const char* str)
+  { this->body_.append(str); }
+
+  // Write a string to the body.
+  void
+  write_string(const std::string& str)
+  { this->body_.append(str); }
+
+  // Write a type reference to the body.
+  void
+  write_type(const Type* type)
+  { this->exp_->write_type_to(type, this); }
+
+  // Return the current type context.
+  Type*
+  type_context() const
+  { return this->type_context_; }
+
+  // Set the current type context.
+  void
+  set_type_context(Type* type)
+  { this->type_context_ = type; }
+
+  // Append as many spaces as the current indentation level.
+  void
+  indent()
+  {
+    for (int i = this->indent_; i > 0; i--)
+      this->write_char(' ');
+  }
+
+  // Increment the indentation level.
+  void
+  increment_indent()
+  { ++this->indent_; }
+
+  // Decrement the indentation level.
+  void
+  decrement_indent()
+  { --this->indent_; }
+
+  // Return a reference to the completed body.
+  const std::string&
+  body() const
+  { return this->body_; }
+
+ private:
+  // The overall export data.
+  Export* exp_;
+  // The body we are building.
+  std::string body_;
+  // Current type context.  Used to avoid duplicate type conversions.
+  Type* type_context_;
+  // Current indentation level: the number of spaces before each statement.
+  int indent_;
 };
 
 #endif // !defined(GO_EXPORT_H)

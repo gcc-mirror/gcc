@@ -1,6 +1,6 @@
 // Class filesystem::path -*- C++ -*-
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -82,8 +82,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     template<typename _CharT,
 	     typename _Ch = typename remove_const<_CharT>::type>
       using __is_encoded_char
-	= __or_<is_same<_Ch, char>, is_same<_Ch, wchar_t>,
-		is_same<_Ch, char16_t>, is_same<_Ch, char32_t>>;
+	= __or_<is_same<_Ch, char>,
+		is_same<_Ch, wchar_t>,
+#ifdef _GLIBCXX_USE_CHAR8_T
+		is_same<_Ch, char8_t>,
+#endif
+		is_same<_Ch, char16_t>,
+		is_same<_Ch, char32_t>>;
 
     template<typename _Iter,
 	     typename _Iter_traits = std::iterator_traits<_Iter>>
@@ -125,7 +130,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     template<typename _Tp1, typename _Tp2 = void>
       using _Path = typename
-	std::enable_if<__and_<__not_<is_same<_Tp1, path>>,
+	std::enable_if<__and_<__not_<is_same<typename remove_cv<_Tp1>::type,
+					     path>>,
+			      __not_<is_void<_Tp1>>,
 			      __constructible_from<_Tp1, _Tp2>>::value,
 		       path>::type;
 
@@ -323,7 +330,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if _GLIBCXX_USE_WCHAR_T
     std::wstring   wstring() const;
 #endif
+#ifdef _GLIBCXX_USE_CHAR8_T
+    __attribute__((__abi_tag__("__u8")))
+    std::u8string  u8string() const;
+#else
     std::string    u8string() const;
+#endif // _GLIBCXX_USE_CHAR8_T
     std::u16string u16string() const;
     std::u32string u32string() const;
 
@@ -337,7 +349,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if _GLIBCXX_USE_WCHAR_T
     std::wstring   generic_wstring() const;
 #endif
+#ifdef _GLIBCXX_USE_CHAR8_T
+    __attribute__((__abi_tag__("__u8")))
+    std::u8string  generic_u8string() const;
+#else
     std::string    generic_u8string() const;
+#endif // _GLIBCXX_USE_CHAR8_T
     std::u16string generic_u16string() const;
     std::u32string generic_u32string() const;
 
@@ -363,7 +380,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     // query
 
-    bool empty() const noexcept { return _M_pathname.empty(); }
+    _GLIBCXX_NODISCARD bool empty() const noexcept { return _M_pathname.empty(); }
     bool has_root_name() const;
     bool has_root_directory() const;
     bool has_root_path() const;
@@ -672,10 +689,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       static string_type
       _S_convert(const _CharT* __f, const _CharT* __l)
       {
-	std::codecvt_utf8<_CharT> __cvt;
-	std::string __str;
-	if (__str_codecvt_out(__f, __l, __str, __cvt))
-	  return __str;
+#ifdef _GLIBCXX_USE_CHAR8_T
+	if constexpr (is_same<_CharT, char8_t>::value)
+	  {
+	    string_type __str(__f, __l);
+	    return __str;
+	  }
+	else
+	  {
+#endif
+	    std::codecvt_utf8<_CharT> __cvt;
+	    std::string __str;
+	    if (__str_codecvt_out(__f, __l, __str, __cvt))
+	      return __str;
+#ifdef _GLIBCXX_USE_CHAR8_T
+	  }
+#endif
 	_GLIBCXX_THROW_OR_ABORT(filesystem_error(
 	      "Cannot convert character sequence",
 	      std::make_error_code(errc::illegal_byte_sequence)));
@@ -865,12 +894,24 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	    _WString*
 	    operator()(const _String& __from, _WString& __to, false_type)
 	    {
-	      // use codecvt_utf8<_CharT> to convert UTF-8 to wide string
-	      codecvt_utf8<_CharT> __cvt;
-	      const char* __f = __from.data();
-	      const char* __l = __f + __from.size();
-	      if (__str_codecvt_in(__f, __l, __to, __cvt))
-		return std::__addressof(__to);
+#ifdef _GLIBCXX_USE_CHAR8_T
+	      if constexpr (is_same<_CharT, char8_t>::value)
+	        {
+	          __to.assign(__from.begin(), __from.end());
+	          return std::__addressof(__to);
+	        }
+	      else
+	        {
+#endif
+	          // use codecvt_utf8<_CharT> to convert UTF-8 to wide string
+	          codecvt_utf8<_CharT> __cvt;
+	          const char* __f = __from.data();
+	          const char* __l = __f + __from.size();
+	          if (__str_codecvt_in(__f, __l, __to, __cvt))
+		    return std::__addressof(__to);
+#ifdef _GLIBCXX_USE_CHAR8_T
+	        }
+#endif
 	      return nullptr;
 	    }
 	  } __dispatch;
@@ -879,10 +920,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	    return *__p;
 	}
 #else
-      codecvt_utf8<_CharT> __cvt;
-      basic_string<_CharT, _Traits, _Allocator> __wstr{__a};
-      if (__str_codecvt_in(__first, __last, __wstr, __cvt))
-	return __wstr;
+#ifdef _GLIBCXX_USE_CHAR8_T
+      if constexpr (is_same<_CharT, char8_t>::value)
+        {
+          basic_string<_CharT, _Traits, _Allocator> __wstr{__first, __last, __a};
+          return __wstr;
+        }
+      else
+        {
+#endif
+          codecvt_utf8<_CharT> __cvt;
+          basic_string<_CharT, _Traits, _Allocator> __wstr{__a};
+          if (__str_codecvt_in(__first, __last, __wstr, __cvt))
+	    return __wstr;
+#ifdef _GLIBCXX_USE_CHAR8_T
+        }
+#endif
 #endif
       _GLIBCXX_THROW_OR_ABORT(filesystem_error(
 	    "Cannot convert character sequence",
@@ -897,6 +950,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   path::wstring() const { return string<wchar_t>(); }
 #endif
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+  inline std::u8string
+  path::u8string() const { return string<char8_t>(); }
+#else
   inline std::string
   path::u8string() const
   {
@@ -915,6 +972,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return _M_pathname;
 #endif
   }
+#endif // _GLIBCXX_USE_CHAR8_T
 
   inline std::u16string
   path::u16string() const { return string<char16_t>(); }
@@ -936,8 +994,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   path::generic_wstring() const { return wstring(); }
 #endif
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+  inline std::u8string
+  path::generic_u8string() const { return u8string(); }
+#else
   inline std::string
   path::generic_u8string() const { return u8string(); }
+#endif
 
   inline std::u16string
   path::generic_u16string() const { return u16string(); }

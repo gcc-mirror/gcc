@@ -64,16 +64,17 @@ static void InitializeFlags() {
   if (Verbosity()) ReportUnrecognizedFlags();
 
   if (common_flags()->help) parser.PrintFlagDescriptions();
+
+  __sanitizer_set_report_path(common_flags()->log_path);
 }
 
 static void OnStackUnwind(const SignalContext &sig, const void *,
                           BufferedStackTrace *stack) {
-  GetStackTraceWithPcBpAndContext(stack, kStackTraceMax, sig.pc, sig.bp,
-                                  sig.context,
-                                  common_flags()->fast_unwind_on_fatal);
+  GetStackTrace(stack, kStackTraceMax, sig.pc, sig.bp, sig.context,
+                common_flags()->fast_unwind_on_fatal);
 }
 
-void LsanOnDeadlySignal(int signo, void *siginfo, void *context) {
+static void LsanOnDeadlySignal(int signo, void *siginfo, void *context) {
   HandleDeadlySignal(siginfo, context, GetCurrentThread(), &OnStackUnwind,
                      nullptr);
 }

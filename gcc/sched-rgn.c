@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -927,7 +927,7 @@ haifa_find_rgns (void)
 	     The algorithm in the DFS traversal may not mark B & D as part
 	     of the loop (i.e. they will not have max_hdr set to A).
 
-	     We know they can not be loop latches (else they would have
+	     We know they cannot be loop latches (else they would have
 	     had max_hdr set since they'd have a backedge to a dominator
 	     block).  So we don't need them on the initial queue.
 
@@ -3507,8 +3507,7 @@ schedule_insns (void)
   haifa_sched_init ();
   sched_rgn_init (reload_completed);
 
-  bitmap_initialize (&not_in_df, 0);
-  bitmap_clear (&not_in_df);
+  bitmap_initialize (&not_in_df, &bitmap_default_obstack);
 
   /* Schedule every region in the subroutine.  */
   for (rgn = 0; rgn < nr_regions; rgn++)
@@ -3517,7 +3516,7 @@ schedule_insns (void)
 
   /* Clean up.  */
   sched_rgn_finish ();
-  bitmap_clear (&not_in_df);
+  bitmap_release (&not_in_df);
 
   haifa_sched_finish ();
 }

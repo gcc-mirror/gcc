@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2013-2018 Free Software Foundation, Inc.
+// Copyright (C) 2013-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -67,6 +67,6 @@ bool operator!=(alloc<T>, alloc<U>) { return false; }
 
 int main()
 {
-  std::map<int, int, std::less<int>, alloc<int> > m;
+  std::map<int, int, std::less<int>, alloc<std::pair<const int, int>>> m;
   m[1];
 }

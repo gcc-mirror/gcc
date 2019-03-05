@@ -1,5 +1,5 @@
 /* Alias analysis for trees.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -202,7 +202,7 @@ ptr_deref_may_alias_decl_p (tree ptr, tree decl)
 	return true;
     }
 
-  /* Non-aliased variables can not be pointed to.  */
+  /* Non-aliased variables cannot be pointed to.  */
   if (!may_be_aliased (decl))
     return false;
 
@@ -710,6 +710,7 @@ ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
     }
   else
     {
+      gcc_assert (POINTER_TYPE_P (TREE_TYPE (ptr)));
       ref->base = build2 (MEM_REF, char_type_node,
 			  ptr, null_pointer_node);
       ref->offset = 0;
@@ -2364,7 +2365,7 @@ same_addr_size_stores_p (tree base1, poly_int64 offset1, poly_int64 size1,
 
   /* Be conservative with non-call exceptions when the address might
      be NULL.  */
-  if (flag_non_call_exceptions && pi->pt.null)
+  if (cfun->can_throw_non_call_exceptions && pi->pt.null)
     return false;
 
   /* Check that ptr points relative to obj.  */
@@ -2396,7 +2397,7 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 	 ???  We only need to care about the RHS throwing.  For aggregate
 	 assignments or similar calls and non-call exceptions the LHS
 	 might throw as well.  */
-      && !stmt_can_throw_internal (stmt))
+      && !stmt_can_throw_internal (cfun, stmt))
     {
       tree lhs = gimple_get_lhs (stmt);
       /* If LHS is literally a base of the access we are done.  */

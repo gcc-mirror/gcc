@@ -1,5 +1,5 @@
 /* Deal with interfaces.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -690,6 +690,16 @@ gfc_compare_types (gfc_typespec *ts1, gfc_typespec *ts2)
      TODO: Possibly should narrow this to just the one typespec coming in
      that is for the formal arg, but oh well.  */
   if (ts1->type == BT_VOID || ts2->type == BT_VOID)
+    return true;
+
+  /* Special case for our C interop types.  FIXME: There should be a
+     better way of doing this.  When ISO C binding is cleared up,
+     this can probably be removed.  See PR 57048.  */
+
+  if (((ts1->type == BT_INTEGER && ts2->type == BT_DERIVED)
+       || (ts1->type == BT_DERIVED && ts2->type == BT_INTEGER))
+      && ts1->u.derived && ts2->u.derived
+      && ts1->u.derived == ts2->u.derived)
     return true;
 
   /* The _data component is not always present, therefore check for its

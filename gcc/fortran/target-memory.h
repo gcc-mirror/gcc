@@ -1,5 +1,5 @@
 /* Simulate storage of variables into target memory, header.
-   Copyright (C) 2007-2018 Free Software Foundation, Inc.
+   Copyright (C) 2007-2019 Free Software Foundation, Inc.
    Contributed by Paul Thomas and Brooks Moses
 
 This file is part of GCC.
@@ -24,8 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Convert a BOZ to REAL or COMPLEX.  */
 bool gfc_convert_boz (gfc_expr *, gfc_typespec *);
 
-size_t gfc_element_size (gfc_expr *);
-size_t gfc_target_expr_size (gfc_expr *);
+bool gfc_element_size (gfc_expr *, size_t *);
+bool gfc_target_expr_size (gfc_expr *, size_t *);
 
 /* Write a constant expression in binary form to a target buffer.  */
 size_t gfc_encode_character (int, size_t, const gfc_char_t *, unsigned char *,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -61,17 +61,19 @@ is
    --  the result will contain all elapsed leap seconds since the start of
    --  Ada time until now.
 
-   function Year    (Date : Time) return Year_Number;
-   function Month   (Date : Time) return Month_Number;
-   function Day     (Date : Time) return Day_Number;
-   function Seconds (Date : Time) return Day_Duration;
+   function Year    (Date : Time) return Year_Number  with Global => null;
+   function Month   (Date : Time) return Month_Number with Global => null;
+   function Day     (Date : Time) return Day_Number   with Global => null;
+   function Seconds (Date : Time) return Day_Duration with Global => null;
 
    procedure Split
      (Date    : Time;
       Year    : out Year_Number;
       Month   : out Month_Number;
       Day     : out Day_Number;
-      Seconds : out Day_Duration);
+      Seconds : out Day_Duration)
+   with
+     Global => null;
    --  Break down a time value into its date components set in the current
    --  time zone. If Split is called on a time value created using Ada 2005
    --  Time_Of in some arbitrary time zone, the input value will always be
@@ -81,7 +83,9 @@ is
      (Year    : Year_Number;
       Month   : Month_Number;
       Day     : Day_Number;
-      Seconds : Day_Duration := 0.0) return Time;
+      Seconds : Day_Duration := 0.0) return Time
+   with
+     Global => null;
    --  GNAT Note: Normally when procedure Split is called on a Time value
    --  result of a call to function Time_Of, the out parameters of procedure
    --  Split are identical to the in parameters of function Time_Of. However,
@@ -97,19 +101,27 @@ is
    --  Seconds may be 14340.0 (3:59:00) instead of 10740.0 (2:59:00 being
    --  a time that not exist).
 
-   function "+" (Left : Time;     Right : Duration) return Time;
-   function "+" (Left : Duration; Right : Time)     return Time;
-   function "-" (Left : Time;     Right : Duration) return Time;
-   function "-" (Left : Time;     Right : Time)     return Duration;
+   function "+" (Left : Time;     Right : Duration) return Time
+   with
+     Global => null;
+   function "+" (Left : Duration; Right : Time)     return Time
+   with
+     Global => null;
+   function "-" (Left : Time;     Right : Duration) return Time
+   with
+     Global => null;
+   function "-" (Left : Time;     Right : Time)     return Duration
+   with
+     Global => null;
    --  The first three functions will raise Time_Error if the resulting time
    --  value is less than the start of Ada time in UTC or greater than the
    --  end of Ada time in UTC. The last function will raise Time_Error if the
    --  resulting difference cannot fit into a duration value.
 
-   function "<"  (Left, Right : Time) return Boolean;
-   function "<=" (Left, Right : Time) return Boolean;
-   function ">"  (Left, Right : Time) return Boolean;
-   function ">=" (Left, Right : Time) return Boolean;
+   function "<"  (Left, Right : Time) return Boolean with Global => null;
+   function "<=" (Left, Right : Time) return Boolean with Global => null;
+   function ">"  (Left, Right : Time) return Boolean with Global => null;
+   function ">=" (Left, Right : Time) return Boolean with Global => null;
 
    Time_Error : exception;
 

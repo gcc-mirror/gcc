@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    Register Transfer Expressions (rtx's) that make up the
    Register Transfer Language (rtl) used in the Back End of the GNU compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -298,7 +298,7 @@ DEF_RTL_EXPR(SET, "set", "ee", RTX_EXTRA)
    For example, subroutine calls will use the register
    in which the static chain is passed.
 
-   USE can not appear as an operand of other rtx except for PARALLEL.
+   USE cannot appear as an operand of other rtx except for PARALLEL.
    USE is not deletable, as it indicates that the operand
    is used in some unknown way.  */
 DEF_RTL_EXPR(USE, "use", "e", RTX_EXTRA)
@@ -307,7 +307,7 @@ DEF_RTL_EXPR(USE, "use", "e", RTX_EXTRA)
    For example, subroutine calls will clobber some physical registers
    (the ones that are by convention not saved).
 
-   CLOBBER can not appear as an operand of other rtx except for PARALLEL.
+   CLOBBER cannot appear as an operand of other rtx except for PARALLEL.
    CLOBBER of a hard register appearing by itself (not within PARALLEL)
    is considered undeletable before reload.  */
 DEF_RTL_EXPR(CLOBBER, "clobber", "e", RTX_EXTRA)
@@ -683,7 +683,7 @@ DEF_RTL_EXPR(PARITY, "parity", "e", RTX_UNARY)
    operand 2 counts from the msb of the memory unit.
    Otherwise, the first bit is the lsb and operand 2 counts from
    the lsb of the memory unit.
-   This kind of expression can not appear as an lvalue in RTL.  */
+   This kind of expression cannot appear as an lvalue in RTL.  */
 DEF_RTL_EXPR(SIGN_EXTRACT, "sign_extract", "eee", RTX_BITFIELD_OPS)
 
 /* Similar for unsigned bit-field.
@@ -1079,7 +1079,7 @@ DEF_RTL_EXPR(DEFINE_CPU_UNIT, "define_cpu_unit", "sS", RTX_EXTRA)
 DEF_RTL_EXPR(DEFINE_QUERY_CPU_UNIT, "define_query_cpu_unit", "sS", RTX_EXTRA)
 
 /* (exclusion_set string string) means that each CPU functional unit
-   in the first string can not be reserved simultaneously with any
+   in the first string cannot be reserved simultaneously with any
    unit whose name is in the second string and vise versa.  CPU units
    in the string are separated by commas.  For example, it is useful
    for description CPU with fully pipelined floating point functional
@@ -1089,7 +1089,7 @@ DEF_RTL_EXPR(DEFINE_QUERY_CPU_UNIT, "define_query_cpu_unit", "sS", RTX_EXTRA)
 DEF_RTL_EXPR(EXCLUSION_SET, "exclusion_set", "ss", RTX_EXTRA)
 
 /* (presence_set string string) means that each CPU functional unit in
-   the first string can not be reserved unless at least one of pattern
+   the first string cannot be reserved unless at least one of pattern
    of units whose names are in the second string is reserved.  This is
    an asymmetric relation.  CPU units or unit patterns in the strings
    are separated by commas.  Pattern is one unit name or unit names
@@ -1139,13 +1139,13 @@ DEF_RTL_EXPR(FINAL_PRESENCE_SET, "final_presence_set", "ss", RTX_EXTRA)
    are separated by commas.  Pattern is one unit name or unit names
    separated by white-spaces.
 
-   For example, it is useful for description that slot0 can not be
+   For example, it is useful for description that slot0 cannot be
    reserved after slot1 or slot2 reservation for a VLIW processor.  We
    could describe it by the following construction
 
       (absence_set "slot2" "slot0, slot1")
 
-   Or slot2 can not be reserved if slot0 and unit b0 are reserved or
+   Or slot2 cannot be reserved if slot0 and unit b0 are reserved or
    slot1 and unit b1 are reserved .  In this case we could write
 
       (absence_set "slot2" "slot0 b0, slot1 b1")

@@ -1,5 +1,5 @@
 /* CPU mode switching
-   Copyright (C) 1998-2018 Free Software Foundation, Inc.
+   Copyright (C) 1998-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -248,8 +248,22 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 	gcc_assert (!pre_exit);
 	/* If this function returns a value at the end, we have to
 	   insert the final mode switch before the return value copy
-	   to its hard register.  */
-	if (EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds) == 1
+	   to its hard register.
+
+	   x86 targets use mode-switching infrastructure to
+	   conditionally insert vzeroupper instruction at the exit
+	   from the function where there is no need to switch the
+	   mode before the return value copy.  The vzeroupper insertion
+	   pass runs after reload, so use !reload_completed as a stand-in
+	   for x86 to skip the search for the return value copy insn.
+
+	   N.b.: the code below assumes that the return copy insn
+	   immediately precedes its corresponding use insn.  This
+	   assumption does not hold after reload, since sched1 pass
+	   can schedule the return copy insn away from its
+	   corresponding use insn.  */
+	if (!reload_completed
+	    && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds) == 1
 	    && NONJUMP_INSN_P ((last_insn = BB_END (src_bb)))
 	    && GET_CODE (PATTERN (last_insn)) == USE
 	    && GET_CODE ((ret_reg = XEXP (PATTERN (last_insn), 0))) == REG)
@@ -842,7 +856,10 @@ optimize_mode_switching (void)
     commit_edge_insertions ();
 
   if (targetm.mode_switching.entry && targetm.mode_switching.exit)
-    cleanup_cfg (CLEANUP_NO_INSN_DEL);
+    {
+      free_dominance_info (CDI_DOMINATORS);
+      cleanup_cfg (CLEANUP_NO_INSN_DEL);
+    }
   else if (!need_commit && !emitted)
     return 0;
 

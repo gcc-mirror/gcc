@@ -10,6 +10,6 @@ subroutine aa ! { dg-error "Procedure" }
    write(*,*) 'AA'
 end subroutine aa
 subroutine aa ! { dg-error "is already defined" }
-   write(*,*) 'BB'
-end subroutine aa
+   write(*,*) 'BB' ! { dg-error "Unexpected WRITE statement in CONTAINS section" }
+end subroutine aa ! { dg-error "Expecting END MODULE statement" }
 end module

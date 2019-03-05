@@ -1,7 +1,7 @@
 /* Configuration for an i386 running GNU with ELF as the target machine.  */
 
 /*
-Copyright (C) 1994-2018 Free Software Foundation, Inc.
+Copyright (C) 1994-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -37,11 +37,14 @@ along with GCC.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifdef TARGET_LIBC_PROVIDES_SSP
 
-/* Not supported yet.  */
-# undef TARGET_THREAD_SSP_OFFSET
+/* i386 glibc provides __stack_chk_guard in %gs:0x14.  */
+#define TARGET_THREAD_SSP_OFFSET        0x14
 
-/* Not supported yet.  */
-# undef TARGET_CAN_SPLIT_STACK
-# undef TARGET_THREAD_SPLIT_STACK_OFFSET
-
+/* We only build the -fsplit-stack support in libgcc if the
+   assembler has full support for the CFI directives.  */
+#if HAVE_GAS_CFI_PERSONALITY_DIRECTIVE
+#define TARGET_CAN_SPLIT_STACK
+#endif
+/* We steal the last transactional memory word.  */
+#define TARGET_THREAD_SPLIT_STACK_OFFSET 0x30
 #endif

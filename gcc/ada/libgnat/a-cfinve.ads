@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2014-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -38,8 +38,7 @@ with Ada.Containers.Functional_Vectors;
 generic
    type Index_Type is range <>;
    type Element_Type (<>) is private;
-   Max_Size_In_Storage_Elements : Natural :=
-                                    Element_Type'Max_Size_In_Storage_Elements;
+   Max_Size_In_Storage_Elements : Natural;
    --  Maximum size of Vector elements in bytes. This has the same meaning as
    --  in Ada.Containers.Bounded_Holders, with the same restrictions. Note that
    --  setting this too small can lead to erroneous execution; see comments in

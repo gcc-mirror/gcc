@@ -1,5 +1,5 @@
 /* Part of CPP library.  File handling.
-   Copyright (C) 1986-2018 Free Software Foundation, Inc.
+   Copyright (C) 1986-2019 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -144,7 +144,7 @@ struct cpp_file_hash_entry
 {
   struct cpp_file_hash_entry *next;
   cpp_dir *start_dir;
-  source_location location;
+  location_t location;
   union
   {
     _cpp_file *file;
@@ -171,18 +171,18 @@ static bool open_file (_cpp_file *file);
 static bool pch_open_file (cpp_reader *pfile, _cpp_file *file,
 			   bool *invalid_pch);
 static bool find_file_in_dir (cpp_reader *pfile, _cpp_file *file,
-			      bool *invalid_pch, source_location loc);
+			      bool *invalid_pch, location_t loc);
 static bool read_file_guts (cpp_reader *pfile, _cpp_file *file,
-			    source_location loc);
+			    location_t loc);
 static bool read_file (cpp_reader *pfile, _cpp_file *file,
-		       source_location loc);
+		       location_t loc);
 static bool should_stack_file (cpp_reader *, _cpp_file *file, bool import,
-			       source_location loc);
+			       location_t loc);
 static struct cpp_dir *search_path_head (cpp_reader *, const char *fname,
 				 int angle_brackets, enum include_type);
 static const char *dir_name_of_file (_cpp_file *file);
 static void open_file_failed (cpp_reader *pfile, _cpp_file *file, int,
-			      source_location);
+			      location_t);
 static struct cpp_file_hash_entry *search_cache (struct cpp_file_hash_entry *head,
 					     const cpp_dir *start_dir);
 static _cpp_file *make_cpp_file (cpp_reader *, cpp_dir *, const char *fname);
@@ -377,7 +377,7 @@ maybe_shorter_path (const char * file)
 
 static bool
 find_file_in_dir (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch,
-		  source_location loc)
+		  location_t loc)
 {
   char *path;
 
@@ -507,7 +507,7 @@ _cpp_find_failed (_cpp_file *file)
 _cpp_file *
 _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 		bool fake, int angle_brackets, bool implicit_preinclude,
-		source_location loc)
+		location_t loc)
 {
   struct cpp_file_hash_entry *entry;
   void **hash_slot;
@@ -671,7 +671,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 
    FIXME: Flush file cache and try again if we run out of memory.  */
 static bool
-read_file_guts (cpp_reader *pfile, _cpp_file *file, source_location loc)
+read_file_guts (cpp_reader *pfile, _cpp_file *file, location_t loc)
 {
   ssize_t size, total, count;
   uchar *buf;
@@ -755,7 +755,7 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file, source_location loc)
    have been passed through find_file() at some stage.  Use LOC for
    any diagnostics.  */
 static bool
-read_file (cpp_reader *pfile, _cpp_file *file, source_location loc)
+read_file (cpp_reader *pfile, _cpp_file *file, location_t loc)
 {
   /* If we already have its contents in memory, succeed immediately.  */
   if (file->buffer_valid)
@@ -783,7 +783,7 @@ read_file (cpp_reader *pfile, _cpp_file *file, source_location loc)
    Use LOC for any diagnostics.  */
 static bool
 should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
-		   source_location loc)
+		   location_t loc)
 {
   _cpp_file *f;
 
@@ -892,13 +892,13 @@ should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
    stacked.  Use LOC for any diagnostics.  */
 bool
 _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
-		 source_location loc)
+		 location_t loc)
 {
   cpp_buffer *buffer;
   int sysp;
 
   if (!should_stack_file (pfile, file, import, loc))
-      return false;
+    return false;
 
   if (pfile->buffer == NULL || file->dir == NULL)
     sysp = 0;
@@ -1007,11 +1007,12 @@ dir_name_of_file (_cpp_file *file)
    Returns true if a buffer was stacked.  */
 bool
 _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
-		    enum include_type type, source_location loc)
+		    enum include_type type, location_t loc)
 {
   struct cpp_dir *dir;
   _cpp_file *file;
   bool stacked;
+  bool decremented = false;
 
   /* For -include command-line flags we have type == IT_CMDLINE.
      When the first -include file is processed we have the case, where
@@ -1035,20 +1036,33 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
     return false;
 
   /* Compensate for the increment in linemap_add that occurs if
-      _cpp_stack_file actually stacks the file.  In the case of a
-     normal #include, we're currently at the start of the line
-     *following* the #include.  A separate source_location for this
-     location makes no sense (until we do the LC_LEAVE), and
-     complicates LAST_SOURCE_LINE_LOCATION.  This does not apply if we
-     found a PCH file (in which case linemap_add is not called) or we
-     were included from the command-line.  */
+     _cpp_stack_file actually stacks the file.  In the case of a normal
+     #include, we're currently at the start of the line *following* the
+     #include.  A separate location_t for this location makes no
+     sense (until we do the LC_LEAVE), and complicates
+     LAST_SOURCE_LINE_LOCATION.  This does not apply if we found a PCH
+     file (in which case linemap_add is not called) or we were included
+     from the command-line.  In the case that the #include is the last
+     line in the file, highest_location still points to the current
+     line, not the start of the next line, so we do not decrement in
+     this case.  See plugin/location-overflow-test-pr83173.h for an
+     example.  */
   if (file->pchname == NULL && file->err_no == 0
       && type != IT_CMDLINE && type != IT_DEFAULT)
-    pfile->line_table->highest_location--;
+    {
+      int highest_line = linemap_get_expansion_line (pfile->line_table,
+						     pfile->line_table->highest_location);
+      int source_line = linemap_get_expansion_line (pfile->line_table, loc);
+      if (highest_line > source_line)
+	{
+	  pfile->line_table->highest_location--;
+	  decremented = true;
+	}
+    }
 
   stacked = _cpp_stack_file (pfile, file, type == IT_IMPORT, loc);
 
-  if (!stacked)
+  if (decremented && !stacked)
     /* _cpp_stack_file didn't stack the file, so let's rollback the
        compensation dance we performed above.  */
     pfile->line_table->highest_location++;
@@ -1059,7 +1073,7 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
 /* Could not open FILE.  The complication is dependency output.  */
 static void
 open_file_failed (cpp_reader *pfile, _cpp_file *file, int angle_brackets,
-		  source_location loc)
+		  location_t loc)
 {
   int sysp = pfile->line_table->highest_line > 1 && pfile->buffer ? pfile->buffer->sysp : 0;
   bool print_dep = CPP_OPTION (pfile, deps.style) > (angle_brackets || !!sysp);
@@ -1247,7 +1261,7 @@ cpp_included (cpp_reader *pfile, const char *fname)
    filenames aliased by links or redundant . or .. traversals etc.  */
 bool
 cpp_included_before (cpp_reader *pfile, const char *fname,
-		     source_location location)
+		     location_t location)
 {
   struct cpp_file_hash_entry *entry
     = (struct cpp_file_hash_entry *)

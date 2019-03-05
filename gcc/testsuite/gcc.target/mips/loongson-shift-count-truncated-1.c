@@ -4,11 +4,11 @@
 /* loongson.h does not handle or check for MIPS16ness.  There doesn't
    seem any good reason for it to, given that the Loongson processors
    do not support MIPS16.  */
-/* { dg-options "isa=loongson -mhard-float -mno-mips16 (REQUIRES_STDLIB)" } */
+/* { dg-options "-mloongson-mmi -mhard-float -mno-mips16 (REQUIRES_STDLIB)" } */
 /* See PR 52155.  */
-/* { dg-options "isa=loongson -mhard-float -mno-mips16 -mlong64" { mips*-*-elf* && ilp32 } } */
+/* { dg-options "-mloongson-mmi -mhard-float -mno-mips16 -mlong64" { mips*-*-elf* && ilp32 } } */
 
-#include "loongson.h"
+#include "loongson-mmiintrin.h"
 #include <assert.h>
 
 typedef union { int32x2_t v; int32_t a[2]; } int32x2_encap_t;

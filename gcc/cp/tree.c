@@ -1,5 +1,5 @@
 /* Language-dependent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -280,6 +280,12 @@ lvalue_kind (const_tree ref)
     case PAREN_EXPR:
       return lvalue_kind (TREE_OPERAND (ref, 0));
 
+    case TEMPLATE_PARM_INDEX:
+      if (CLASS_TYPE_P (TREE_TYPE (ref)))
+	/* A template parameter object is an lvalue.  */
+	return clk_ordinary;
+      return clk_none;
+
     default:
     default_:
       if (!TREE_TYPE (ref))
@@ -371,6 +377,7 @@ bitfield_p (const_tree ref)
 tree
 cp_stabilize_reference (tree ref)
 {
+  STRIP_ANY_LOCATION_WRAPPER (ref);
   switch (TREE_CODE (ref))
     {
     case NON_DEPENDENT_EXPR:
@@ -415,6 +422,7 @@ cp_stabilize_reference (tree ref)
 bool
 builtin_valid_in_constant_expr_p (const_tree decl)
 {
+  STRIP_ANY_LOCATION_WRAPPER (decl);
   if (TREE_CODE (decl) != FUNCTION_DECL)
     /* Not a function.  */
     return false;
@@ -576,6 +584,8 @@ build_aggr_init_expr (tree type, tree init)
   tree rval;
   int is_ctor;
 
+  gcc_assert (!VOID_TYPE_P (type));
+
   /* Don't build AGGR_INIT_EXPR in a template.  */
   if (processing_template_decl)
     return init;
@@ -645,6 +655,9 @@ build_cplus_new (tree type, tree init, tsubst_flags_t complain)
 {
   tree rval = build_aggr_init_expr (type, init);
   tree slot;
+
+  if (init == error_mark_node)
+    return error_mark_node;
 
   if (!complete_type_or_maybe_complain (type, init, complain))
     return error_mark_node;
@@ -1704,6 +1717,8 @@ strip_typedefs_expr (tree t, bool *remove_attributes)
   if (t == NULL_TREE || t == error_mark_node)
     return t;
 
+  STRIP_ANY_LOCATION_WRAPPER (t);
+
   if (DECL_P (t) || CONSTANT_CLASS_P (t))
     return t;
 
@@ -1823,8 +1838,7 @@ strip_typedefs_expr (tree t, bool *remove_attributes)
       }
 
     case LAMBDA_EXPR:
-      error ("lambda-expression in a constant expression");
-      return error_mark_node;
+      return t;
 
     case STATEMENT_LIST:
       error ("statement-expression in a constant expression");
@@ -2150,78 +2164,52 @@ ovl_make (tree fn, tree next)
 
   TREE_TYPE (result) = (next || TREE_CODE (fn) == TEMPLATE_DECL
 			? unknown_type_node : TREE_TYPE (fn));
+  if (next && TREE_CODE (next) == OVERLOAD && OVL_DEDUP_P (next))
+    OVL_DEDUP_P (result) = true;
   OVL_FUNCTION (result) = fn;
   OVL_CHAIN (result) = next;
   return result;
 }
 
-static tree
-ovl_copy (tree ovl)
-{
-  tree result = make_node (OVERLOAD);
-
-  gcc_checking_assert (!OVL_NESTED_P (ovl) && OVL_USED_P (ovl));
-  TREE_TYPE (result) = TREE_TYPE (ovl);
-  OVL_FUNCTION (result) = OVL_FUNCTION (ovl);
-  OVL_CHAIN (result) = OVL_CHAIN (ovl);
-  OVL_HIDDEN_P (result) = OVL_HIDDEN_P (ovl);
-  OVL_USING_P (result) = OVL_USING_P (ovl);
-  OVL_LOOKUP_P (result) = OVL_LOOKUP_P (ovl);
-
-  return result;
-}
-
 /* Add FN to the (potentially NULL) overload set OVL.  USING_P is
    true, if FN is via a using declaration.  We also pay attention to
-   DECL_HIDDEN.  Overloads are ordered as hidden, using, regular.  */
+   DECL_HIDDEN.  We keep the hidden decls first, but remaining ones
+   are unordered.  */
 
 tree
 ovl_insert (tree fn, tree maybe_ovl, bool using_p)
 {
-  bool copying = false; /* Checking use only.  */
-  bool hidden_p = DECL_HIDDEN_P (fn);
-  int weight = (hidden_p << 1) | (using_p << 0);
-
-  tree result = NULL_TREE;
+  tree result = maybe_ovl;
   tree insert_after = NULL_TREE;
 
-  /* Find insertion point.  */
-  while (maybe_ovl && TREE_CODE (maybe_ovl) == OVERLOAD
-	 && (weight < ((OVL_HIDDEN_P (maybe_ovl) << 1)
-		       | (OVL_USING_P (maybe_ovl) << 0))))
+  /* Skip hidden.  */
+  for (; maybe_ovl && TREE_CODE (maybe_ovl) == OVERLOAD
+	 && OVL_HIDDEN_P (maybe_ovl);
+       maybe_ovl = OVL_CHAIN (maybe_ovl))
     {
-      gcc_checking_assert (!OVL_LOOKUP_P (maybe_ovl)
-			   && (!copying || OVL_USED_P (maybe_ovl)));
-      if (OVL_USED_P (maybe_ovl))
-	{
-	  copying = true;
-	  maybe_ovl = ovl_copy (maybe_ovl);
-	  if (insert_after)
-	    OVL_CHAIN (insert_after) = maybe_ovl;
-	}
-      if (!result)
-	result = maybe_ovl;
+      gcc_checking_assert (!OVL_LOOKUP_P (maybe_ovl));
       insert_after = maybe_ovl;
-      maybe_ovl = OVL_CHAIN (maybe_ovl);
     }
 
-  tree trail = fn;
+  bool hidden_p = DECL_HIDDEN_P (fn);
   if (maybe_ovl || using_p || hidden_p || TREE_CODE (fn) == TEMPLATE_DECL)
     {
-      trail = ovl_make (fn, maybe_ovl);
+      maybe_ovl = ovl_make (fn, maybe_ovl);
       if (hidden_p)
-	OVL_HIDDEN_P (trail) = true;
+	OVL_HIDDEN_P (maybe_ovl) = true;
       if (using_p)
-	OVL_USING_P (trail) = true;
+	OVL_DEDUP_P (maybe_ovl) = OVL_USING_P (maybe_ovl) = true;
     }
+  else
+    maybe_ovl = fn;
 
   if (insert_after)
     {
-      OVL_CHAIN (insert_after) = trail;
+      OVL_CHAIN (insert_after) = maybe_ovl;
       TREE_TYPE (insert_after) = unknown_type_node;
     }
   else
-    result = trail;
+    result = maybe_ovl;
 
   return result;
 }
@@ -2252,25 +2240,27 @@ ovl_skip_hidden (tree ovl)
 tree
 ovl_iterator::reveal_node (tree overload, tree node)
 {
-  /* We cannot have returned NODE as part of a lookup overload, so it
-     cannot be USED.  */
-  gcc_checking_assert (!OVL_USED_P (node));
+  /* We cannot have returned NODE as part of a lookup overload, so we
+     don't have to worry about preserving that.  */
 
   OVL_HIDDEN_P (node) = false;
   if (tree chain = OVL_CHAIN (node))
-    if (TREE_CODE (chain) == OVERLOAD
-	&& (OVL_USING_P (chain) || OVL_HIDDEN_P (chain)))
+    if (TREE_CODE (chain) == OVERLOAD)
       {
-	/* The node needs moving, and the simplest way is to remove it
-	   and reinsert.  */
-	overload = remove_node (overload, node);
-	overload = ovl_insert (OVL_FUNCTION (node), overload);
+	if (OVL_HIDDEN_P (chain))
+	  {
+	    /* The node needs moving, and the simplest way is to remove it
+	       and reinsert.  */
+	    overload = remove_node (overload, node);
+	    overload = ovl_insert (OVL_FUNCTION (node), overload);
+	  }
+	else if (OVL_DEDUP_P (chain))
+	  OVL_DEDUP_P (node) = true;
       }
   return overload;
 }
 
-/* NODE is on the overloads of OVL.  Remove it.  If a predecessor is
-   OVL_USED_P we must copy OVL nodes, because those are immutable.
+/* NODE is on the overloads of OVL.  Remove it.  
    The removed node is unaltered and may continue to be iterated
    from (i.e. it is safe to remove a node from an overload one is
    currently iterating over).  */
@@ -2278,20 +2268,11 @@ ovl_iterator::reveal_node (tree overload, tree node)
 tree
 ovl_iterator::remove_node (tree overload, tree node)
 {
-  bool copying = false; /* Checking use only.  */
-
   tree *slot = &overload;
   while (*slot != node)
     {
       tree probe = *slot;
-      gcc_checking_assert (!OVL_LOOKUP_P (probe)
-			   && (!copying || OVL_USED_P (probe)));
-      if (OVL_USED_P (probe))
-	{
-	  copying = true;
-	  probe = ovl_copy (probe);
-	  *slot = probe;
-	}
+      gcc_checking_assert (!OVL_LOOKUP_P (probe));
 
       slot = &OVL_CHAIN (probe);
     }
@@ -2364,7 +2345,8 @@ lookup_maybe_add (tree fns, tree lookup, bool deduping)
 	    for (; fns != probe; fns = OVL_CHAIN (fns))
 	      {
 		lookup = lookup_add (OVL_FUNCTION (fns), lookup);
-		/* Propagate OVL_USING, but OVL_HIDDEN doesn't matter.  */
+		/* Propagate OVL_USING, but OVL_HIDDEN &
+		   OVL_DEDUP_P don't matter.  */
 		if (OVL_USING_P (fns))
 		  OVL_USING_P (lookup) = true;
 	      }
@@ -2381,40 +2363,6 @@ lookup_maybe_add (tree fns, tree lookup, bool deduping)
   return lookup;
 }
 
-/* Regular overload OVL is part of a kept lookup.  Mark the nodes on
-   it as immutable.  */
-
-static void
-ovl_used (tree ovl)
-{
-  for (;
-       ovl && TREE_CODE (ovl) == OVERLOAD
-	 && !OVL_USED_P (ovl);
-       ovl = OVL_CHAIN (ovl))
-    {
-      gcc_checking_assert (!OVL_LOOKUP_P (ovl));
-      OVL_USED_P (ovl) = true;
-    }
-}
-
-/* Preserve the contents of a lookup so that it is available for a
-   later instantiation.  */
-
-void
-lookup_keep (tree lookup)
-{
-  for (;
-       lookup && TREE_CODE (lookup) == OVERLOAD
-	 && OVL_LOOKUP_P (lookup) && !OVL_USED_P (lookup);
-       lookup = OVL_CHAIN (lookup))
-    {
-      OVL_USED_P (lookup) = true;
-      ovl_used (OVL_FUNCTION (lookup));
-    }
-
-  ovl_used (lookup);
-}
-
 /* Returns nonzero if X is an expression for a (possibly overloaded)
    function.  If "f" is a function or function template, "f", "c->f",
    "c.f", "C::f", and "f<int>" will all be considered possibly
@@ -2425,6 +2373,8 @@ lookup_keep (tree lookup)
 int
 is_overloaded_fn (tree x)
 {
+  STRIP_ANY_LOCATION_WRAPPER (x);
+
   /* A baselink is also considered an overloaded function.  */
   if (TREE_CODE (x) == OFFSET_REF
       || TREE_CODE (x) == COMPONENT_REF)
@@ -2473,6 +2423,8 @@ really_overloaded_fn (tree x)
 tree
 maybe_get_fns (tree from)
 {
+  STRIP_ANY_LOCATION_WRAPPER (from);
+
   /* A baselink is also considered an overloaded function.  */
   if (TREE_CODE (from) == OFFSET_REF
       || TREE_CODE (from) == COMPONENT_REF)
@@ -2769,7 +2721,18 @@ no_linkage_check (tree t, bool relaxed_p)
 {
   tree r;
 
-  /* There's no point in checking linkage on template functions; we
+  /* Lambda types that don't have mangling scope have no linkage.  We
+     check CLASSTYPE_LAMBDA_EXPR for error_mark_node because
+     when we get here from pushtag none of the lambda information is
+     set up yet, so we want to assume that the lambda has linkage and
+     fix it up later if not.  We need to check this even in templates so
+     that we properly handle a lambda-expression in the signature.  */
+  if (LAMBDA_TYPE_P (t)
+      && CLASSTYPE_LAMBDA_EXPR (t) != error_mark_node
+      && LAMBDA_TYPE_EXTRA_SCOPE (t) == NULL_TREE)
+    return t;
+
+  /* Otherwise there's no point in checking linkage on template functions; we
      can't know their complete types.  */
   if (processing_template_decl)
     return NULL_TREE;
@@ -2779,15 +2742,6 @@ no_linkage_check (tree t, bool relaxed_p)
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (t))
 	goto ptrmem;
-      /* Lambda types that don't have mangling scope have no linkage.  We
-	 check CLASSTYPE_LAMBDA_EXPR for error_mark_node because
-	 when we get here from pushtag none of the lambda information is
-	 set up yet, so we want to assume that the lambda has linkage and
-	 fix it up later if not.  */
-      if (CLASSTYPE_LAMBDA_EXPR (t)
-	  && CLASSTYPE_LAMBDA_EXPR (t) != error_mark_node
-	  && LAMBDA_TYPE_EXTRA_SCOPE (t) == NULL_TREE)
-	return t;
       /* Fall through.  */
     case UNION_TYPE:
       if (!CLASS_TYPE_P (t))
@@ -3841,6 +3795,10 @@ cp_tree_equal (tree t1, tree t2)
 				  DECL_NAME (t2)));
       return false;
 
+    case LAMBDA_EXPR:
+      /* Two lambda-expressions are never considered equivalent.  */
+      return false;
+
     default:
       break;
     }
@@ -4414,8 +4372,9 @@ handle_nodiscard_attribute (tree *node, tree name, tree /*args*/,
   if (TREE_CODE (*node) == FUNCTION_DECL)
     {
       if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (*node))))
-	warning (OPT_Wattributes, "%qE attribute applied to %qD with void "
-		 "return type", name, *node);
+	warning_at (DECL_SOURCE_LOCATION (*node),
+		    OPT_Wattributes, "%qE attribute applied to %qD with void "
+		    "return type", name, *node);
     }
   else if (OVERLOAD_TYPE_P (*node))
     /* OK */;
@@ -4453,6 +4412,32 @@ handle_no_unique_addr_attribute (tree* node,
   return NULL_TREE;
 }
 
+/* The C++20 [[likely]] and [[unlikely]] attributes on labels map to the GNU
+   hot/cold attributes.  */
+
+static tree
+handle_likeliness_attribute (tree *node, tree name, tree args,
+			     int flags, bool *no_add_attrs)
+{
+  *no_add_attrs = true;
+  if (TREE_CODE (*node) == LABEL_DECL
+      || TREE_CODE (*node) == FUNCTION_DECL)
+    {
+      if (args)
+	warning (OPT_Wattributes, "%qE attribute takes no arguments", name);
+      tree bname = (is_attribute_p ("likely", name)
+		    ? get_identifier ("hot") : get_identifier ("cold"));
+      if (TREE_CODE (*node) == FUNCTION_DECL)
+	warning (OPT_Wattributes, "ISO C++ %qE attribute does not apply to "
+		 "functions; treating as %<[[gnu::%E]]%>", name, bname);
+      tree battr = build_tree_list (bname, NULL_TREE);
+      decl_attributes (node, battr, flags);
+      return NULL_TREE;
+    }
+  else
+    return error_mark_node;
+}
+
 /* Table of valid C++ attributes.  */
 const struct attribute_spec cxx_attribute_table[] =
 {
@@ -4476,6 +4461,10 @@ const struct attribute_spec std_attribute_table[] =
     handle_nodiscard_attribute, NULL },
   { "no_unique_address", 0, 0, true, false, false, false,
     handle_no_unique_addr_attribute, NULL },
+  { "likely", 0, 0, false, false, false, false,
+    handle_likeliness_attribute, attr_cold_hot_exclusions },
+  { "unlikely", 0, 0, false, false, false, false,
+    handle_likeliness_attribute, attr_cold_hot_exclusions },
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -4944,6 +4933,14 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
 	}
       break;
 
+    case LAMBDA_EXPR:
+      /* Don't walk into the body of the lambda, but the capture initializers
+	 are part of the enclosing context.  */
+      for (tree cap = LAMBDA_EXPR_CAPTURE_LIST (*tp); cap;
+	   cap = TREE_CHAIN (cap))
+	WALK_SUBTREE (TREE_VALUE (cap));
+      break;
+
     default:
       return NULL_TREE;
     }
@@ -5033,6 +5030,7 @@ char_type_p (tree type)
   return (same_type_p (type, char_type_node)
 	  || same_type_p (type, unsigned_char_type_node)
 	  || same_type_p (type, signed_char_type_node)
+	  || same_type_p (type, char8_type_node)
 	  || same_type_p (type, char16_type_node)
 	  || same_type_p (type, char32_type_node)
 	  || same_type_p (type, wchar_type_node));
@@ -5547,6 +5545,14 @@ test_lvalue_kind ()
   ASSERT_EQ (clk_rvalueref, lvalue_kind (rvalue_ref_of_parm));
   tree rvalue_ref_of_wrapped_parm = move (wrapped_parm);
   ASSERT_EQ (clk_rvalueref, lvalue_kind (rvalue_ref_of_wrapped_parm));
+
+  /* Verify lvalue_p.  */
+  ASSERT_FALSE (lvalue_p (int_cst));
+  ASSERT_FALSE (lvalue_p (wrapped_int_cst));
+  ASSERT_TRUE (lvalue_p (parm));
+  ASSERT_TRUE (lvalue_p (wrapped_parm));
+  ASSERT_FALSE (lvalue_p (rvalue_ref_of_parm));
+  ASSERT_FALSE (lvalue_p (rvalue_ref_of_wrapped_parm));
 }
 
 /* Run all of the selftests within this file.  */

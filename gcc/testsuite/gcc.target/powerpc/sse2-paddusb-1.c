@@ -1,6 +1,5 @@
 /* { dg-do run } */
 /* { dg-options "-O3 -mpower8-vector -Wno-psabi" } */
-/* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target p8vector_hw } */
 
 #ifndef CHECK_H
@@ -47,28 +46,27 @@ TEST (void)
     }
 
   if (check_union128i_b (u, e))
-#if DEBUG
     {
+#if DEBUG
       printf ("sse2_test_paddusb_1; check_union128i_b failed\n");
-      printf (
-	  "\tadds\t([%x,%x,%x,%x, %x,%x,%x,%x, %x,%x,%x,%x, %x,%x,%x,%x],\n",
+      printf ("\tadds\t([%x,%x,%x,%x, %x,%x,%x,%x,"
+	      " %x,%x,%x,%x, %x,%x,%x,%x],\n",
 	      s1.a[0], s1.a[1], s1.a[2], s1.a[3], s1.a[4], s1.a[5], s1.a[6],
-	      s1.a[7], s1.a[8], s1.a[9], s1.a[10], s1.a[11], s1.a[12], s1.a[13],
-	      s1.a[14], s1.a[15]);
+	      s1.a[7], s1.a[8], s1.a[9], s1.a[10], s1.a[11], s1.a[12],
+	      s1.a[13], s1.a[14], s1.a[15]);
       printf ("\t\t [%x,%x,%x,%x, %x,%x,%x,%x, %x,%x,%x,%x, %x,%x,%x,%x])\n",
 	      s2.a[0], s2.a[1], s2.a[2], s2.a[3], s2.a[4], s2.a[5], s2.a[6],
-	      s2.a[7], s2.a[8], s2.a[9], s2.a[10], s2.a[11], s2.a[12], s2.a[13],
-	      s2.a[14], s2.a[15]);
+	      s2.a[7], s2.a[8], s2.a[9], s2.a[10], s2.a[11], s2.a[12],
+	      s2.a[13], s2.a[14], s2.a[15]);
       printf ("\t ->\t [%x,%x,%x,%x, %x,%x,%x,%x, %x,%x,%x,%x, %x,%x,%x,%x]\n",
 	      u.a[0], u.a[1], u.a[2], u.a[3], u.a[4], u.a[5], u.a[6], u.a[7],
 	      u.a[8], u.a[9], u.a[10], u.a[11], u.a[12], u.a[13], u.a[14],
 	      u.a[15]);
-      printf (
-	  "\texpect\t [%x,%x,%x,%x, %x,%x,%x,%x, %x,%x,%x,%x, %x,%x,%x,%x]\n",
-	  e[0], e[1], e[2], e[3], e[4], e[5], e[6], e[7], e[8], e[9], e[10],
-	  e[11], e[12], e[13], e[14], e[15]);
-    }
-#else
-    abort ();
+      printf ("\texpect\t [%x,%x,%x,%x, %x,%x,%x,%x,"
+	      " %x,%x,%x,%x, %x,%x,%x,%x]\n",
+	      e[0], e[1], e[2], e[3], e[4], e[5], e[6], e[7], e[8], e[9],
+	      e[10], e[11], e[12], e[13], e[14], e[15]);
 #endif
+      abort ();
+    }
 }

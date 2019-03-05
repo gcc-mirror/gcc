@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -545,8 +545,8 @@ package System.OS_Lib is
    --  directory pointed to. This is slightly less efficient, since it
    --  requires system calls.
    --
-   --  If Name cannot be resolved, is invalid (for example if it is too big) or
-   --  is null on entry (for example if there is symbolic link circularity,
+   --  If Name is empty or the path contains symbolic links that can't be
+   --  resolved (for example there is a symbolic link circularity,
    --  e.g. A is a symbolic link for B, and B is a symbolic link for A), then
    --  Normalize_Pathname returns an empty string.
    --

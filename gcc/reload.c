@@ -1,5 +1,5 @@
 /* Search an insn for pseudo regs that must be in hard regs and are not.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -408,7 +408,7 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
 
      The convention is that secondary input reloads are valid only if the
      secondary_class is different from class.  If you have such a case, you
-     can not use secondary reloads, you must work around the problem some
+     cannot use secondary reloads, you must work around the problem some
      other way.
 
      Allow this when a reload_in/out pattern is being used.  I.e. assume
@@ -6528,7 +6528,7 @@ reg_overlap_mentioned_for_reload_p (rtx x, rtx in)
       || GET_RTX_CLASS (GET_CODE (x)) == RTX_AUTOINC)
     x = XEXP (x, 0);
 
-  /* If either argument is a constant, then modifying X can not affect IN.  */
+  /* If either argument is a constant, then modifying X cannot affect IN.  */
   if (CONSTANT_P (x) || CONSTANT_P (in))
     return 0;
   else if (GET_CODE (x) == SUBREG && MEM_P (SUBREG_REG (x)))
@@ -6912,13 +6912,14 @@ find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
 	  if (regno >= 0 && regno < FIRST_PSEUDO_REGISTER)
 	    for (i = 0; i < nregs; ++i)
 	      if (call_used_regs[regno + i]
-		  || targetm.hard_regno_call_part_clobbered (regno + i, mode))
+		  || targetm.hard_regno_call_part_clobbered (NULL, regno + i,
+							     mode))
 		return 0;
 
 	  if (valueno >= 0 && valueno < FIRST_PSEUDO_REGISTER)
 	    for (i = 0; i < valuenregs; ++i)
 	      if (call_used_regs[valueno + i]
-		  || targetm.hard_regno_call_part_clobbered (valueno + i,
+		  || targetm.hard_regno_call_part_clobbered (NULL, valueno + i,
 							     mode))
 		return 0;
 	}

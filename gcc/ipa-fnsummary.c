@@ -1,5 +1,5 @@
 /* Function summary pass.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -85,8 +85,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 
 /* Summaries.  */
-function_summary <ipa_fn_summary *> *ipa_fn_summaries;
-call_summary <ipa_call_summary *> *ipa_call_summaries;
+fast_function_summary <ipa_fn_summary *, va_gc> *ipa_fn_summaries;
+fast_call_summary <ipa_call_summary *, va_heap> *ipa_call_summaries;
 
 /* Edge predicates goes here.  */
 static object_allocator<predicate> edge_predicate_pool ("edge predicates");
@@ -307,7 +307,7 @@ set_hint_predicate (predicate **p, predicate new_predicate)
    copy when called in a given context.  It is a bitmask of conditions. Bit
    0 means that condition is known to be false, while bit 1 means that condition
    may or may not be true.  These differs - for example NOT_INLINED condition
-   is always false in the second and also builtin_constant_p tests can not use
+   is always false in the second and also builtin_constant_p tests cannot use
    the fact that parameter is indeed a constant.
 
    KNOWN_VALS is partial mapping of parameters of NODE to constant values.
@@ -532,7 +532,7 @@ ipa_fn_summary_alloc (void)
 {
   gcc_checking_assert (!ipa_fn_summaries);
   ipa_fn_summaries = ipa_fn_summary_t::create_ggc (symtab);
-  ipa_call_summaries = new ipa_call_summary_t (symtab, false);
+  ipa_call_summaries = new ipa_call_summary_t (symtab);
 }
 
 ipa_call_summary::~ipa_call_summary ()
@@ -941,7 +941,8 @@ mark_modified (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef ATTRIBUTE_UNUSED,
    PARM_DECL) will be stored to *SIZE_P in that case too.  */
 
 static tree
-unmodified_parm_1 (gimple *stmt, tree op, HOST_WIDE_INT *size_p)
+unmodified_parm_1 (ipa_func_body_info *fbi, gimple *stmt, tree op,
+		   HOST_WIDE_INT *size_p)
 {
   /* SSA_NAME referring to parm default def?  */
   if (TREE_CODE (op) == SSA_NAME
@@ -959,8 +960,14 @@ unmodified_parm_1 (gimple *stmt, tree op, HOST_WIDE_INT *size_p)
 
       ao_ref refd;
       ao_ref_init (&refd, op);
-      walk_aliased_vdefs (&refd, gimple_vuse (stmt), mark_modified, &modified,
-			  NULL);
+      int walked = walk_aliased_vdefs (&refd, gimple_vuse (stmt),
+				       mark_modified, &modified, NULL, NULL,
+				       fbi->aa_walk_budget + 1);
+      if (walked < 0)
+	{
+	  fbi->aa_walk_budget = 0;
+	  return NULL_TREE;
+	}
       if (!modified)
 	{
 	  if (size_p)
@@ -977,16 +984,17 @@ unmodified_parm_1 (gimple *stmt, tree op, HOST_WIDE_INT *size_p)
    stored to *SIZE_P in that case too.  */
 
 static tree
-unmodified_parm (gimple *stmt, tree op, HOST_WIDE_INT *size_p)
+unmodified_parm (ipa_func_body_info *fbi, gimple *stmt, tree op,
+		 HOST_WIDE_INT *size_p)
 {
-  tree res = unmodified_parm_1 (stmt, op, size_p);
+  tree res = unmodified_parm_1 (fbi, stmt, op, size_p);
   if (res)
     return res;
 
   if (TREE_CODE (op) == SSA_NAME
       && !SSA_NAME_IS_DEFAULT_DEF (op)
       && gimple_assign_single_p (SSA_NAME_DEF_STMT (op)))
-    return unmodified_parm (SSA_NAME_DEF_STMT (op),
+    return unmodified_parm (fbi, SSA_NAME_DEF_STMT (op),
 			    gimple_assign_rhs1 (SSA_NAME_DEF_STMT (op)),
 			    size_p);
   return NULL_TREE;
@@ -1005,7 +1013,7 @@ unmodified_parm_or_parm_agg_item (struct ipa_func_body_info *fbi,
 				  HOST_WIDE_INT *size_p,
 				  struct agg_position_info *aggpos)
 {
-  tree res = unmodified_parm_1 (stmt, op, size_p);
+  tree res = unmodified_parm_1 (fbi, stmt, op, size_p);
 
   gcc_checking_assert (aggpos);
   if (res)
@@ -1044,7 +1052,7 @@ unmodified_parm_or_parm_agg_item (struct ipa_func_body_info *fbi,
    penalty wrappers.  */
 
 static int
-eliminated_by_inlining_prob (gimple *stmt)
+eliminated_by_inlining_prob (ipa_func_body_info *fbi, gimple *stmt)
 {
   enum gimple_code code = gimple_code (stmt);
   enum tree_code rhs_code;
@@ -1084,7 +1092,7 @@ eliminated_by_inlining_prob (gimple *stmt)
 	    inner_lhs = lhs;
 
 	  /* Reads of parameter are expected to be free.  */
-	  if (unmodified_parm (stmt, inner_rhs, NULL))
+	  if (unmodified_parm (fbi, stmt, inner_rhs, NULL))
 	    rhs_free = true;
 	  /* Match expressions of form &this->field. Those will most likely
 	     combine with something upstream after inlining.  */
@@ -1094,7 +1102,8 @@ eliminated_by_inlining_prob (gimple *stmt)
 	      if (TREE_CODE (op) == PARM_DECL)
 		rhs_free = true;
 	      else if (TREE_CODE (op) == MEM_REF
-		       && unmodified_parm (stmt, TREE_OPERAND (op, 0), NULL))
+		       && unmodified_parm (fbi, stmt, TREE_OPERAND (op, 0),
+					   NULL))
 		rhs_free = true;
 	    }
 
@@ -1107,7 +1116,7 @@ eliminated_by_inlining_prob (gimple *stmt)
 	  /* Reads of parameters passed by reference
 	     expected to be free (i.e. optimized out after inlining).  */
 	  if (TREE_CODE (inner_rhs) == MEM_REF
-	      && unmodified_parm (stmt, TREE_OPERAND (inner_rhs, 0), NULL))
+	      && unmodified_parm (fbi, stmt, TREE_OPERAND (inner_rhs, 0), NULL))
 	    rhs_free = true;
 
 	  /* Copying parameter passed by reference into gimple register is
@@ -1148,7 +1157,8 @@ eliminated_by_inlining_prob (gimple *stmt)
 	  if (TREE_CODE (inner_lhs) == PARM_DECL
 	      || TREE_CODE (inner_lhs) == RESULT_DECL
 	      || (TREE_CODE (inner_lhs) == MEM_REF
-		  && (unmodified_parm (stmt, TREE_OPERAND (inner_lhs, 0), NULL)
+		  && (unmodified_parm (fbi, stmt, TREE_OPERAND (inner_lhs, 0),
+				       NULL)
 		      || (TREE_CODE (TREE_OPERAND (inner_lhs, 0)) == SSA_NAME
 			  && SSA_NAME_VAR (TREE_OPERAND (inner_lhs, 0))
 			  && TREE_CODE (SSA_NAME_VAR (TREE_OPERAND
@@ -1396,7 +1406,7 @@ compute_bb_predicates (struct ipa_func_body_info *fbi,
    a compile time constant.  */
 
 static predicate
-will_be_nonconstant_expr_predicate (struct ipa_node_params *info,
+will_be_nonconstant_expr_predicate (ipa_func_body_info *fbi,
 				    struct ipa_fn_summary *summary,
 				    tree expr,
 				    vec<predicate> nonconstant_names)
@@ -1408,8 +1418,8 @@ will_be_nonconstant_expr_predicate (struct ipa_node_params *info,
   while (UNARY_CLASS_P (expr))
     expr = TREE_OPERAND (expr, 0);
 
-  parm = unmodified_parm (NULL, expr, &size);
-  if (parm && (index = ipa_get_param_decl_index (info, parm)) >= 0)
+  parm = unmodified_parm (fbi, NULL, expr, &size);
+  if (parm && (index = ipa_get_param_decl_index (fbi->info, parm)) >= 0)
     return add_condition (summary, index, size, NULL, predicate::changed,
 			  NULL_TREE);
   if (is_gimple_min_invariant (expr))
@@ -1418,34 +1428,36 @@ will_be_nonconstant_expr_predicate (struct ipa_node_params *info,
     return nonconstant_names[SSA_NAME_VERSION (expr)];
   if (BINARY_CLASS_P (expr) || COMPARISON_CLASS_P (expr))
     {
-      predicate p1 = will_be_nonconstant_expr_predicate
-	(info, summary, TREE_OPERAND (expr, 0),
-	 nonconstant_names);
+      predicate p1
+	= will_be_nonconstant_expr_predicate (fbi, summary,
+					      TREE_OPERAND (expr, 0),
+					      nonconstant_names);
       if (p1 == true)
 	return p1;
 
-      predicate p2;
-      p2 = will_be_nonconstant_expr_predicate (info, summary,
-					       TREE_OPERAND (expr, 1),
-					       nonconstant_names);
+      predicate p2
+	= will_be_nonconstant_expr_predicate (fbi, summary,
+					      TREE_OPERAND (expr, 1),
+					      nonconstant_names);
       return p1.or_with (summary->conds, p2);
     }
   else if (TREE_CODE (expr) == COND_EXPR)
     {
-      predicate p1 = will_be_nonconstant_expr_predicate
-	(info, summary, TREE_OPERAND (expr, 0),
-	 nonconstant_names);
+      predicate p1
+	= will_be_nonconstant_expr_predicate (fbi, summary,
+					      TREE_OPERAND (expr, 0),
+					      nonconstant_names);
       if (p1 == true)
 	return p1;
 
-      predicate p2;
-      p2 = will_be_nonconstant_expr_predicate (info, summary,
-					       TREE_OPERAND (expr, 1),
-					       nonconstant_names);
+      predicate p2
+	= will_be_nonconstant_expr_predicate (fbi, summary,
+					      TREE_OPERAND (expr, 1),
+					      nonconstant_names);
       if (p2 == true)
 	return p2;
       p1 = p1.or_with (summary->conds, p2);
-      p2 = will_be_nonconstant_expr_predicate (info, summary,
+      p2 = will_be_nonconstant_expr_predicate (fbi, summary,
 					       TREE_OPERAND (expr, 2),
 					       nonconstant_names);
       return p2.or_with (summary->conds, p1);
@@ -1511,7 +1523,7 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
      adding conditionals.  */
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
-      tree parm = unmodified_parm (stmt, use, NULL);
+      tree parm = unmodified_parm (fbi, stmt, use, NULL);
       /* For arguments we can build a condition.  */
       if (parm && ipa_get_param_decl_index (fbi->info, parm) >= 0)
 	continue;
@@ -1533,7 +1545,7 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
       HOST_WIDE_INT size;
-      tree parm = unmodified_parm (stmt, use, &size);
+      tree parm = unmodified_parm (fbi, stmt, use, &size);
       int index;
 
       if (parm && (index = ipa_get_param_decl_index (fbi->info, parm)) >= 0)
@@ -1620,7 +1632,7 @@ record_modified (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
    ought to be REG_BR_PROB_BASE / estimated_iters.  */
 
 static int
-param_change_prob (gimple *stmt, int i)
+param_change_prob (ipa_func_body_info *fbi, gimple *stmt, int i)
 {
   tree op = gimple_call_arg (stmt, i);
   basic_block bb = gimple_bb (stmt);
@@ -1680,12 +1692,18 @@ param_change_prob (gimple *stmt, int i)
       info.op = op;
       info.stmt = stmt;
       info.bb_set = BITMAP_ALLOC (NULL);
-      walk_aliased_vdefs (&refd, gimple_vuse (stmt), record_modified, &info,
-			  NULL);
-      if (bitmap_bit_p (info.bb_set, bb->index))
+      int walked
+	= walk_aliased_vdefs (&refd, gimple_vuse (stmt), record_modified, &info,
+			      NULL, NULL, fbi->aa_walk_budget);
+      if (walked < 0 || bitmap_bit_p (info.bb_set, bb->index))
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "     Set in same BB as used.\n");
+	    {
+	      if (walked < 0)
+		fprintf (dump_file, "     Ran out of AA walking budget.\n");
+	      else
+		fprintf (dump_file, "     Set in same BB as used.\n");
+	    }
 	  BITMAP_FREE (info.bb_set);
 	  return REG_BR_PROB_BASE;
 	}
@@ -1719,7 +1737,7 @@ param_change_prob (gimple *stmt, int i)
    return true and store the pointer the predicate in *P.  */
 
 static bool
-phi_result_unknown_predicate (struct ipa_node_params *info,
+phi_result_unknown_predicate (ipa_func_body_info *fbi,
 			      ipa_fn_summary *summary, basic_block bb,
 			      predicate *p,
 			      vec<predicate> nonconstant_names)
@@ -1764,7 +1782,7 @@ phi_result_unknown_predicate (struct ipa_node_params *info,
       || !is_gimple_ip_invariant (gimple_cond_rhs (stmt)))
     return false;
 
-  *p = will_be_nonconstant_expr_predicate (info, summary,
+  *p = will_be_nonconstant_expr_predicate (fbi, summary,
 					   gimple_cond_lhs (stmt),
 					   nonconstant_names);
   if (*p == true)
@@ -1969,9 +1987,9 @@ fp_expression_p (gimple *stmt)
 static void
 analyze_function_body (struct cgraph_node *node, bool early)
 {
-  sreal time = 0;
+  sreal time = PARAM_VALUE (PARAM_UNINLINED_FUNCTION_TIME);
   /* Estimate static overhead for function prologue/epilogue and alignment. */
-  int size = 2;
+  int size = PARAM_VALUE (PARAM_UNINLINED_FUNCTION_INSNS);
   /* Benefits are scaled by probability of elimination that is in range
      <0,2>.  */
   basic_block bb;
@@ -1990,7 +2008,9 @@ analyze_function_body (struct cgraph_node *node, bool early)
   gcc_assert (cfun == my_function);
 
   memset(&fbi, 0, sizeof(fbi));
+  vec_free (info->conds);
   info->conds = NULL;
+  vec_free (info->size_time_table);
   info->size_time_table = NULL;
 
   /* When optimizing and analyzing for IPA inliner, initialize loop optimizer
@@ -2016,7 +2036,9 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	  fbi.info = IPA_NODE_REF (node);
 	  fbi.bb_infos = vNULL;
 	  fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun));
-	  fbi.param_count = count_formal_params(node->decl);
+	  fbi.param_count = count_formal_params (node->decl);
+	  fbi.aa_walk_budget = PARAM_VALUE (PARAM_IPA_MAX_AA_STEPS);
+
 	  nonconstant_names.safe_grow_cleared
 	    (SSANAMES (my_function)->length ());
 	}
@@ -2032,7 +2054,10 @@ analyze_function_body (struct cgraph_node *node, bool early)
   info->account_size_time (0, 0, bb_predicate, bb_predicate);
 
   bb_predicate = predicate::not_inlined ();
-  info->account_size_time (2 * ipa_fn_summary::size_scale, 0, bb_predicate,
+  info->account_size_time (PARAM_VALUE (PARAM_UNINLINED_FUNCTION_INSNS)
+			   * ipa_fn_summary::size_scale,
+			   PARAM_VALUE (PARAM_UNINLINED_FUNCTION_TIME),
+			   bb_predicate,
 		           bb_predicate);
 
   if (fbi.info)
@@ -2078,7 +2103,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	       gsi_next (&bsi))
 	    {
 	      if (first_phi
-		  && !phi_result_unknown_predicate (fbi.info, info, bb,
+		  && !phi_result_unknown_predicate (&fbi, info, bb,
 						    &phi_predicate,
 						    nonconstant_names))
 		break;
@@ -2168,7 +2193,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		    es->param.safe_grow_cleared (count);
 		  for (i = 0; i < count; i++)
 		    {
-		      int prob = param_change_prob (stmt, i);
+		      int prob = param_change_prob (&fbi, stmt, i);
 		      gcc_assert (prob >= 0 && prob <= REG_BR_PROB_BASE);
 		      es->param[i].change_prob = prob;
 		    }
@@ -2178,6 +2203,17 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	      es->call_stmt_time = this_time;
 	      es->loop_depth = bb_loop_depth (bb);
 	      edge_set_predicate (edge, &bb_predicate);
+	      if (edge->speculative)
+		{
+		  cgraph_edge *direct, *indirect;
+		  ipa_ref *ref;
+		  edge->speculative_call_info (direct, indirect, ref);
+		  gcc_assert (direct == edge);
+	          ipa_call_summary *es2
+			 = ipa_call_summaries->get_create (indirect);
+		  ipa_call_summaries->duplicate (edge, indirect,
+						 es, es2);
+		}
 	    }
 
 	  /* TODO: When conditional jump or swithc is known to be constant, but
@@ -2193,7 +2229,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	    {
 	      sreal final_time = (sreal)this_time * freq;
 
-	      prob = eliminated_by_inlining_prob (stmt);
+	      prob = eliminated_by_inlining_prob (&fbi, stmt);
 	      if (prob == 1 && dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file,
 			 "\t\t50%% will be eliminated by inlining\n");
@@ -2203,7 +2239,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	      struct predicate p = bb_predicate & will_be_nonconstant;
 
 	      /* We can ignore statement when we proved it is never going
-		 to happen, but we can not do that for call statements
+		 to happen, but we cannot do that for call statements
 		 because edges are accounted specially.  */
 
 	      if (*(is_gimple_call (stmt) ? &bb_predicate : &p) != false)
@@ -2221,12 +2257,12 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		    {
 		      predicate ip = bb_predicate & predicate::not_inlined ();
 		      info->account_size_time (this_size * prob,
-					       (this_time * prob) / 2, ip,
+					       (final_time * prob) / 2, ip,
 					       p);
 		    }
 		  if (prob != 2)
 		    info->account_size_time (this_size * (2 - prob),
-					     (this_time * (2 - prob) / 2),
+					     (final_time * (2 - prob) / 2),
 					     bb_predicate,
 					     p);
 		}
@@ -2270,7 +2306,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		&& !is_gimple_min_invariant (niter_desc.niter))
 	    {
 	      predicate will_be_nonconstant
-		= will_be_nonconstant_expr_predicate (fbi.info, info,
+		= will_be_nonconstant_expr_predicate (&fbi, info,
 						      niter_desc.niter,
 						      nonconstant_names);
 	      if (will_be_nonconstant != true)
@@ -2315,8 +2351,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		    continue;
 
 		  predicate will_be_nonconstant
-		    = will_be_nonconstant_expr_predicate (fbi.info, info,
-							  iv.step,
+		    = will_be_nonconstant_expr_predicate (&fbi, info, iv.step,
 							  nonconstant_names);
 		  if (will_be_nonconstant != true)
 		    will_be_nonconstant = bb_predicate & will_be_nonconstant;
@@ -2405,18 +2440,16 @@ compute_fn_summary (struct cgraph_node *node, bool early)
       node->local.can_change_signature = false;
       es->call_stmt_size = eni_size_weights.call_cost;
       es->call_stmt_time = eni_time_weights.call_cost;
-      info->account_size_time (ipa_fn_summary::size_scale * 2, 2, t, t);
+      info->account_size_time (ipa_fn_summary::size_scale
+			       * PARAM_VALUE
+				 (PARAM_UNINLINED_FUNCTION_THUNK_INSNS),
+			       PARAM_VALUE
+				 (PARAM_UNINLINED_FUNCTION_THUNK_TIME), t, t);
       t = predicate::not_inlined ();
       info->account_size_time (2 * ipa_fn_summary::size_scale, 0, t, t);
       ipa_update_overall_fn_summary (node);
       info->self_size = info->size;
-      /* We can not inline instrumentation clones.  */
-      if (node->thunk.add_pointer_bounds_args)
-	{
-          info->inlinable = false;
-          node->callees->inline_failed = CIF_CHKP;
-	}
-      else if (stdarg_p (TREE_TYPE (node->decl)))
+      if (stdarg_p (TREE_TYPE (node->decl)))
 	{
 	  info->inlinable = false;
 	  node->callees->inline_failed = CIF_VARIADIC_THUNK;
@@ -2451,7 +2484,7 @@ compute_fn_summary (struct cgraph_node *node, bool early)
 	     node->local.can_change_signature = true;
 	   else
 	     {
-	       /* Functions calling builtin_apply can not change signature.  */
+	       /* Functions calling builtin_apply cannot change signature.  */
 	       for (e = node->callees; e; e = e->next_callee)
 		 {
 		   tree cdecl = e->callee->decl;
@@ -2462,16 +2495,6 @@ compute_fn_summary (struct cgraph_node *node, bool early)
 	       node->local.can_change_signature = !e;
 	     }
 	 }
-       /* Functions called by instrumentation thunk can't change signature
-	  because instrumentation thunk modification is not supported.  */
-       if (node->local.can_change_signature)
-	 for (e = node->callers; e; e = e->next_caller)
-	   if (e->caller->thunk.thunk_p
-	       && e->caller->thunk.add_pointer_bounds_args)
-	     {
-	       node->local.can_change_signature = false;
-	       break;
-	     }
        analyze_function_body (node, early);
        pop_cfun ();
      }
@@ -2489,7 +2512,8 @@ compute_fn_summary (struct cgraph_node *node, bool early)
      ipa_update_overall_fn_summary but because computation happens in
      different order the roundoff errors result in slight changes.  */
   ipa_update_overall_fn_summary (node);
-  gcc_assert (info->size == info->self_size);
+  /* In LTO mode we may have speculative edges set.  */
+  gcc_assert (in_lto_p || info->size == info->self_size);
 }
 
 
@@ -2542,6 +2566,9 @@ estimate_edge_devirt_benefit (struct cgraph_edge *ie,
   if (avail < AVAIL_AVAILABLE)
     return false;
   isummary = ipa_fn_summaries->get (callee);
+  if (isummary == NULL)
+    return false;
+
   return isummary->inlinable;
 }
 
@@ -2858,6 +2885,9 @@ remap_edge_change_prob (struct cgraph_edge *inlined_edge,
       struct ipa_call_summary *es = ipa_call_summaries->get (edge);
       struct ipa_call_summary *inlined_es
 	= ipa_call_summaries->get (inlined_edge);
+
+      if (es->param.length () == 0)
+	return;
 
       for (i = 0; i < ipa_get_cs_argument_count (args); i++)
 	{
@@ -3193,27 +3223,45 @@ ipa_fn_summary_generate (void)
 /* Write inline summary for edge E to OB.  */
 
 static void
-read_ipa_call_summary (struct lto_input_block *ib, struct cgraph_edge *e)
+read_ipa_call_summary (struct lto_input_block *ib, struct cgraph_edge *e,
+		       bool prevails)
 {
-  struct ipa_call_summary *es = ipa_call_summaries->get_create (e);
+  struct ipa_call_summary *es = prevails
+				? ipa_call_summaries->get_create (e) : NULL;
   predicate p;
   int length, i;
 
-  es->call_stmt_size = streamer_read_uhwi (ib);
-  es->call_stmt_time = streamer_read_uhwi (ib);
-  es->loop_depth = streamer_read_uhwi (ib);
+  int size = streamer_read_uhwi (ib);
+  int time = streamer_read_uhwi (ib);
+  int depth = streamer_read_uhwi (ib);
+
+  if (es)
+    {
+      es->call_stmt_size = size;
+      es->call_stmt_time = time;
+      es->loop_depth = depth;
+    }
 
   bitpack_d bp = streamer_read_bitpack (ib);
-  es->is_return_callee_uncaptured = bp_unpack_value (&bp, 1);
+  if (es)
+    es->is_return_callee_uncaptured = bp_unpack_value (&bp, 1);	
+  else
+    bp_unpack_value (&bp, 1);	
 
   p.stream_in (ib);
-  edge_set_predicate (e, &p);
+  if (es)
+    edge_set_predicate (e, &p);
   length = streamer_read_uhwi (ib);
-  if (length)
+  if (length && es && e->possibly_call_in_translation_unit_p ())
     {
       es->param.safe_grow_cleared (length);
       for (i = 0; i < length; i++)
 	es->param[i].change_prob = streamer_read_uhwi (ib);
+    }
+  else
+    {
+      for (i = 0; i < length; i++)
+	streamer_read_uhwi (ib);
     }
 }
 
@@ -3254,19 +3302,34 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
       encoder = file_data->symtab_node_encoder;
       node = dyn_cast<cgraph_node *> (lto_symtab_encoder_deref (encoder,
 								index));
-      info = ipa_fn_summaries->get_create (node);
+      info = node->prevailing_p () ? ipa_fn_summaries->get_create (node) : NULL;
 
-      info->estimated_stack_size
-	= info->estimated_self_stack_size = streamer_read_uhwi (&ib);
-      info->size = info->self_size = streamer_read_uhwi (&ib);
-      info->time = sreal::stream_in (&ib);
+      int stack_size = streamer_read_uhwi (&ib);
+      int size = streamer_read_uhwi (&ib);
+      sreal time = sreal::stream_in (&ib);
+
+      if (info)
+	{
+	  info->estimated_stack_size
+	    = info->estimated_self_stack_size = stack_size;
+	  info->size = info->self_size = size;
+	  info->time = time;
+	}
 
       bp = streamer_read_bitpack (&ib);
-      info->inlinable = bp_unpack_value (&bp, 1);
-      info->fp_expressions = bp_unpack_value (&bp, 1);
+      if (info)
+	{
+          info->inlinable = bp_unpack_value (&bp, 1);
+          info->fp_expressions = bp_unpack_value (&bp, 1);
+	}
+      else
+	{
+          bp_unpack_value (&bp, 1);
+          bp_unpack_value (&bp, 1);
+	}
 
       count2 = streamer_read_uhwi (&ib);
-      gcc_assert (!info->conds);
+      gcc_assert (!info || !info->conds);
       for (j = 0; j < count2; j++)
 	{
 	  struct condition c;
@@ -3279,10 +3342,11 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	  c.by_ref = bp_unpack_value (&bp, 1);
 	  if (c.agg_contents)
 	    c.offset = streamer_read_uhwi (&ib);
-	  vec_safe_push (info->conds, c);
+	  if (info)
+	    vec_safe_push (info->conds, c);
 	}
       count2 = streamer_read_uhwi (&ib);
-      gcc_assert (!info->size_time_table);
+      gcc_assert (!info || !info->size_time_table);
       for (j = 0; j < count2; j++)
 	{
 	  struct size_time_entry e;
@@ -3292,19 +3356,23 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	  e.exec_predicate.stream_in (&ib);
 	  e.nonconst_predicate.stream_in (&ib);
 
-	  vec_safe_push (info->size_time_table, e);
+	  if (info)
+	    vec_safe_push (info->size_time_table, e);
 	}
 
       p.stream_in (&ib);
-      set_hint_predicate (&info->loop_iterations, p);
+      if (info)
+        set_hint_predicate (&info->loop_iterations, p);
       p.stream_in (&ib);
-      set_hint_predicate (&info->loop_stride, p);
+      if (info)
+        set_hint_predicate (&info->loop_stride, p);
       p.stream_in (&ib);
-      set_hint_predicate (&info->array_index, p);
+      if (info)
+        set_hint_predicate (&info->array_index, p);
       for (e = node->callees; e; e = e->next_callee)
-	read_ipa_call_summary (&ib, e);
+	read_ipa_call_summary (&ib, e, info != NULL);
       for (e = node->indirect_calls; e; e = e->next_callee)
-	read_ipa_call_summary (&ib, e);
+	read_ipa_call_summary (&ib, e, info != NULL);
     }
 
   lto_free_section_data (file_data, LTO_section_ipa_fn_summary, NULL, data,
@@ -3563,10 +3631,7 @@ public:
   virtual unsigned int execute (function *)
     {
       ipa_free_fn_summary ();
-      /* Early optimizations may make function unreachable.  We can not
-	 remove unreachable functions as part of the early opts pass because
-	 TODOs are run before subpasses.  Do it here.  */
-      return small_p ? TODO_remove_functions | TODO_dump_symtab : 0;
+      return 0;
     }
 
 private:

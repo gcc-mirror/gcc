@@ -1,4 +1,4 @@
-# Copyright (C) 2002-2018 Free Software Foundation, Inc.
+# Copyright (C) 2002-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ load_lib target-libpath.exp
 # 
 proc compat-use-alt-compiler { } {
     global GCC_UNDER_TEST ALT_CC_UNDER_TEST
-    global compat_same_alt compat_alt_caret compat_alt_color
+    global compat_same_alt compat_alt_caret compat_alt_color compat_no_line_no
     global TEST_ALWAYS_FLAGS
 
     # We don't need to do this if the alternate compiler is actually
@@ -47,6 +47,9 @@ proc compat-use-alt-compiler { } {
 	}
 	if { $compat_alt_color == 0 } then {
 	    regsub -- "-fdiagnostics-color=never" $TEST_ALWAYS_FLAGS "" TEST_ALWAYS_FLAGS
+	}
+	if { $compat_no_line_no == 0 } then {
+	    regsub -- "-fno-diagnostics-show-line-numbers" $TEST_ALWAYS_FLAGS "" TEST_ALWAYS_FLAGS
 	}
 	restore_gcc_exec_prefix_env_var
     }
@@ -77,10 +80,12 @@ proc compat_setup_dfp { } {
     global compat_have_dfp
     global compat_alt_caret
     global compat_alt_color
+    global compat_no_line_no
     global TEST_ALWAYS_FLAGS compat_save_TEST_ALWAYS_FLAGS
 
     set compat_alt_caret 0
     set compat_alt_color 0
+    set compat_no_line_no 0
     set compat_save_TEST_ALWAYS_FLAGS $TEST_ALWAYS_FLAGS
 
     verbose "compat_setup_dfp: $compat_use_alt $compat_same_alt" 2
@@ -100,6 +105,11 @@ proc compat_setup_dfp { } {
 		int dummy; } "-fdiagnostics-color=never"] != 0 } {
 	    set compat_alt_color 1
 	}
+	if { [check_no_compiler_messages_nocache compat_alt_has_no_line_no object {
+		int dummy; } "-fno-diagnostics-show-line-numbers"] != 0 } {
+	    set compat_no_line_no 1
+	}
+	
 	compat-use-tst-compiler
     }
 

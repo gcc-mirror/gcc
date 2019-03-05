@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2018 Free Software Foundation, Inc.
+// Copyright (C) 2017-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,3 +31,4 @@ test01()
 // { dg-error "hash function must be invocable" "" { target *-*-* } 0 }
 // { dg-error "key equality predicate must be invocable" "" { target *-*-* } 0 }
 // { dg-prune-output "use of deleted function" }
+// { dg-prune-output "must have the same value_type as its allocator" }

@@ -22,7 +22,7 @@
    hard-coded locations relative to the top of each function.
 
    The plugin uses a function "get_loc" below to map from line/column
-   numbers to source_location, and this relies on input_location being in
+   numbers to location_t, and this relies on input_location being in
    the same ordinary line_map as the locations in question.  The plugin
    runs after parsing, so input_location will be at the end of the file.
 
@@ -90,7 +90,7 @@ public:
 
 }; // class pass_test_show_locus
 
-/* Given LINE_NUM and COL_NUM, generate a source_location in the
+/* Given LINE_NUM and COL_NUM, generate a location_t in the
    current file, relative to input_location.  This relies on the
    location being expressible in the same ordinary line_map as
    input_location (which is typically at the end of the source file
@@ -100,7 +100,7 @@ public:
 
    COL_NUM uses the Emacs convention of 0-based column numbers.  */
 
-static source_location
+static location_t
 get_loc (unsigned int line_num, unsigned int col_num)
 {
   /* Use input_location to get the relevant line_map */
@@ -109,7 +109,7 @@ get_loc (unsigned int line_num, unsigned int col_num)
 						  input_location));
 
   /* Convert from 0-based column numbers to 1-based column numbers.  */
-  source_location loc
+  location_t loc
     = linemap_position_for_line_and_column (line_table,
 					    line_map,
 					    line_num, col_num + 1);
@@ -129,7 +129,8 @@ static bool force_show_locus_color = false;
 
 static void
 custom_diagnostic_finalizer (diagnostic_context *context,
-			     diagnostic_info *diagnostic)
+			     diagnostic_info *diagnostic,
+			     diagnostic_t)
 {
   bool old_show_color = pp_show_color (context->printer);
   if (force_show_locus_color)

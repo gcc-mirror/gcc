@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the pdp-11
-   Copyright (C) 1994-2018 Free Software Foundation, Inc.
+   Copyright (C) 1994-2019 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GCC.
@@ -32,6 +32,20 @@ along with GCC; see the file COPYING3.  If not see
   do						\
     {						\
       builtin_define_std ("pdp11");		\
+      if (TARGET_INT16) 					\
+	builtin_define_with_int_value ("__pdp11_int", 16);	\
+      else							\
+	builtin_define_with_int_value ("__pdp11_int", 32);	\
+      if (TARGET_40)						\
+	builtin_define_with_int_value ("__pdp11_model", 40);	\
+      else if (TARGET_45)					\
+	builtin_define_with_int_value ("__pdp11_model", 45);	\
+      else							\
+	builtin_define_with_int_value ("__pdp11_model", 10);	\
+      if (TARGET_FPU)						\
+	builtin_define ("__pdp11_fpu");				\
+      if (TARGET_AC0)						\
+	builtin_define ("__pdp11_ac0");				\
     }						\
   while (0)
 
@@ -129,6 +143,11 @@ extern const struct real_format pdp11_d_format;
 /* Define this if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 1
+
+/* "HW_DIVIDE" actually means 64 by 32 bit divide.  While some PDP11
+   models have hardware divide, it is for 32 by 16 bits only, so we
+   call this platform "no hardware divide".  */
+#define TARGET_HAS_NO_HW_DIVIDE 1
 
 /* Standard register usage.  */
 
@@ -153,7 +172,7 @@ extern const struct real_format pdp11_d_format;
 #define FIXED_REGISTERS  \
 {0, 0, 0, 0, 0, 0, 1, 1, \
  0, 0, 0, 0, 0, 0, 1, 1, \
- 1, 1 }
+ 1 }
 
 
 
@@ -168,7 +187,7 @@ extern const struct real_format pdp11_d_format;
 #define CALL_USED_REGISTERS  \
 {1, 1, 0, 0, 0, 0, 1, 1, \
  0, 0, 0, 0, 0, 0, 1, 1, \
- 1, 1 }
+ 1 }
 
 
 /* Specify the registers used for certain standard purposes.
@@ -211,6 +230,13 @@ CC_REGS is the condition codes (CPU and FPU)
 
 enum reg_class
   { NO_REGS,
+    NOTR0_REG,
+    NOTR1_REG,
+    NOTR2_REG,
+    NOTR3_REG,
+    NOTR4_REG,
+    NOTR5_REG,
+    NOTSP_REG,
     MUL_REGS,
     GENERAL_REGS,
     LOAD_FPU_REGS,
@@ -229,6 +255,13 @@ enum reg_class
 
 #define REG_CLASS_NAMES  \
   { "NO_REGS",		 \
+    "NOTR0_REG",	 \
+    "NOTR1_REG",	 \
+    "NOTR2_REG",	 \
+    "NOTR3_REG",	 \
+    "NOTR4_REG",	 \
+    "NOTR5_REG",	 \
+    "SP_REG",		 \
     "MUL_REGS", 	 \
     "GENERAL_REGS",	 \
     "LOAD_FPU_REGS",	 \
@@ -243,13 +276,20 @@ enum reg_class
 
 #define REG_CLASS_CONTENTS \
   { {0x00000},	/* NO_REGS */		\
-    {0x000aa},	/* MUL_REGS */		\
-    {0x0c0ff},	/* GENERAL_REGS */	\
+    {0x000fe},	/* NOTR0_REG */		\
+    {0x000fd},	/* NOTR1_REG */		\
+    {0x000fb},	/* NOTR2_REG */		\
+    {0x000f7},	/* NOTR3_REG */		\
+    {0x000ef},	/* NOTR4_REG */		\
+    {0x000df},	/* NOTR5_REG */		\
+    {0x000bf},	/* NOTSP_REG */		\
+    {0x0002a},	/* MUL_REGS */		\
+    {0x040ff},	/* GENERAL_REGS */	\
     {0x00f00},	/* LOAD_FPU_REGS */	\
     {0x03000},	/* NO_LOAD_FPU_REGS */ 	\
     {0x03f00},	/* FPU_REGS */		\
-    {0x30000},	/* CC_REGS */		\
-    {0x3ffff}}	/* ALL_REGS */
+    {0x18000},	/* CC_REGS */		\
+    {0x1ffff}}	/* ALL_REGS */
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -262,13 +302,17 @@ enum reg_class
 #define INDEX_REG_CLASS GENERAL_REGS
 #define BASE_REG_CLASS GENERAL_REGS
 
+/* Return TRUE if the class is a CPU register.  */
+#define CPU_REG_CLASS(CLASS) \
+  (CLASS >= NOTR0_REG && CLASS <= GENERAL_REGS)
+  
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)	\
-((CLASS == GENERAL_REGS || CLASS == MUL_REGS)?				\
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD):	\
-  1									\
-)
+  (CPU_REG_CLASS (CLASS) ?	\
+   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD):	\
+   1									\
+  )
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -328,15 +372,12 @@ extern int current_first_parm_offset;
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
-#define FUNCTION_PROFILER(FILE, LABELNO)  \
-   gcc_unreachable ();
+#define FUNCTION_PROFILER(FILE, LABELNO)
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
    functions that have frame pointers.
    No definition is equivalent to always zero.  */
-
-extern int may_call_alloca;
 
 #define EXIT_IGNORE_STACK	1
 
@@ -347,17 +388,14 @@ extern int may_call_alloca;
    followed by "to".  Eliminations of the same "from" register are listed
    in order of preference.
 
-   There are two registers that can always be eliminated on the pdp11.
-   The frame pointer and the arg pointer can be replaced by either the
-   hard frame pointer or to the stack pointer, depending upon the
-   circumstances.  The hard frame pointer is not used before reload and
-   so it is not eligible for elimination.  */
+   There are two registers that can be eliminated on the pdp11.  The
+   arg pointer can be replaced by the frame pointer; the frame pointer
+   can often be replaced by the stack pointer.  */
 
 #define ELIMINABLE_REGS					\
 {{ ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
- { ARG_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},	\
- { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
- { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}
+ { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},		\
+ { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}}
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
   ((OFFSET) = pdp11_initial_elimination_offset ((FROM), (TO)))
@@ -514,8 +552,8 @@ extern int may_call_alloca;
 
 #define REGISTER_NAMES \
 {"r0", "r1", "r2", "r3", "r4", "r5", "sp", "pc",     \
- "ac0", "ac1", "ac2", "ac3", "ac4", "ac5", "fp", "ap", \
- "cc", "fcc" }
+ "ac0", "ac1", "ac2", "ac3", "ac4", "ac5", "ap", "cc", \
+ "fcc" }
 
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.globl\t"
@@ -568,35 +606,28 @@ extern int may_call_alloca;
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
   pdp11_output_addr_vec_elt (FILE, VALUE)
 
-/* This is how to output an assembler line
-   that says to advance the location counter
-   to a multiple of 2**LOG bytes. 
+/* This is how to output an assembler line that says to advance the
+   location counter to a multiple of 2**LOG bytes.  Only values 0 and
+   1 should appear, but due to PR87795 larger values (which are not
+   supported) can also appear.  So we treat all alignment of LOG >= 1
+   as word (2 byte) alignment.
 */
 
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
-  switch (LOG)				\
-    {					\
-      case 0:				\
-	break;				\
-      case 1:				\
-	fprintf (FILE, "\t.even\n");	\
-	break;				\
-      default:				\
-	gcc_unreachable ();		\
-    }
+  if (LOG != 0)				\
+    fprintf (FILE, "\t.even\n")
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   if (TARGET_DEC_ASM) \
-    fprintf (FILE, "\t.blkb\t%ho\n", (SIZE) & 0xffff);	\
+    fprintf (FILE, "\t.blkb\t%o\n", (SIZE) & 0xffff);	\
   else							\
-    fprintf (FILE, "\t.=.+ %#ho\n", (SIZE) & 0xffff);
+    fprintf (FILE, "\t.=.+ %#o\n", (SIZE) & 0xffff);
 
 /* This says how to output an assembler line
    to define a global common symbol.  */
 
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)  \
   pdp11_asm_output_var (FILE, NAME, SIZE, ALIGN, true)
-
 
 /* This says how to output an assembler line
    to define a local common symbol.  */

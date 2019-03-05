@@ -1,5 +1,5 @@
 /* Optimize by combining instructions for GNU compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -99,6 +99,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "explow.h"
 #include "insn-attr.h"
 #include "rtlhooks-def.h"
+#include "expr.h"
 #include "params.h"
 #include "tree-pass.h"
 #include "valtrack.h"
@@ -529,7 +530,7 @@ target_canonicalize_comparison (enum rtx_code *code, rtx *op0, rtx *op1,
 }
 
 /* Try to split PATTERN found in INSN.  This returns NULL_RTX if
-   PATTERN can not be split.  Otherwise, it returns an insn sequence.
+   PATTERN cannot be split.  Otherwise, it returns an insn sequence.
    This is a wrapper around split_insns which ensures that the
    reg_stat vector is made larger if the splitter creates a new
    register.  */
@@ -982,13 +983,16 @@ combine_validate_cost (rtx_insn *i0, rtx_insn *i1, rtx_insn *i2, rtx_insn *i3,
 }
 
 
-/* Delete any insns that copy a register to itself.  */
+/* Delete any insns that copy a register to itself.
+   Return true if the CFG was changed.  */
 
-static void
+static bool
 delete_noop_moves (void)
 {
   rtx_insn *insn, *next;
   basic_block bb;
+
+  bool edges_deleted = false;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -1000,10 +1004,12 @@ delete_noop_moves (void)
 	      if (dump_file)
 		fprintf (dump_file, "deleting noop move %d\n", INSN_UID (insn));
 
-	      delete_insn_and_edges (insn);
+	      edges_deleted |= delete_insn_and_edges (insn);
 	    }
 	}
     }
+
+  return edges_deleted;
 }
 
 
@@ -1142,8 +1148,8 @@ insn_a_feeds_b (rtx_insn *a, rtx_insn *b)
 /* Main entry point for combiner.  F is the first insn of the function.
    NREGS is the first unused pseudo-reg number.
 
-   Return nonzero if the combiner has turned an indirect jump
-   instruction into a direct jump.  */
+   Return nonzero if the CFG was changed (e.g. if the combiner has
+   turned an indirect jump instruction into a direct jump).  */
 static int
 combine_instructions (rtx_insn *f, unsigned int nregs)
 {
@@ -1528,7 +1534,7 @@ retry:
   default_rtl_profile ();
   clear_bb_flags ();
   new_direct_jump_p |= purge_all_dead_edges ();
-  delete_noop_moves ();
+  new_direct_jump_p |= delete_noop_moves ();
 
   /* Clean up.  */
   obstack_free (&insn_link_obstack, NULL);
@@ -1697,9 +1703,13 @@ update_rsp_from_reg_equal (reg_stat_type *rsp, rtx_insn *insn, const_rtx set,
   /* Don't call nonzero_bits if it cannot change anything.  */
   if (rsp->nonzero_bits != HOST_WIDE_INT_M1U)
     {
-      bits = nonzero_bits (src, nonzero_bits_mode);
+      machine_mode mode = GET_MODE (x);
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && HWI_COMPUTABLE_MODE_P (mode))
+	mode = nonzero_bits_mode;
+      bits = nonzero_bits (src, mode);
       if (reg_equal && bits)
-	bits &= nonzero_bits (reg_equal, nonzero_bits_mode);
+	bits &= nonzero_bits (reg_equal, mode);
       rsp->nonzero_bits |= bits;
     }
 
@@ -2349,7 +2359,11 @@ cant_combine_insn_p (rtx_insn *insn)
   if (REG_P (src) && REG_P (dest)
       && ((HARD_REGISTER_P (src)
 	   && ! TEST_HARD_REG_BIT (fixed_reg_set, REGNO (src))
-	   && targetm.class_likely_spilled_p (REGNO_REG_CLASS (REGNO (src))))
+#ifdef LEAF_REGISTERS
+	   && ! LEAF_REGISTERS [REGNO (src)])
+#else
+	   )
+#endif
 	  || (HARD_REGISTER_P (dest)
 	      && ! TEST_HARD_REG_BIT (fixed_reg_set, REGNO (dest))
 	      && targetm.class_likely_spilled_p (REGNO_REG_CLASS (REGNO (dest))))))
@@ -3064,21 +3078,21 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
   /* Verify that I2 and maybe I1 and I0 can be combined into I3.  */
   if (!can_combine_p (i2, i3, i0, i1, NULL, NULL, &i2dest, &i2src))
     {
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Can't combine i2 into i3\n");
       undo_all ();
       return 0;
     }
   if (i1 && !can_combine_p (i1, i3, i0, NULL, i2, NULL, &i1dest, &i1src))
     {
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Can't combine i1 into i3\n");
       undo_all ();
       return 0;
     }
   if (i0 && !can_combine_p (i0, i3, NULL, NULL, i1, i2, &i0dest, &i0src))
     {
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Can't combine i0 into i3\n");
       undo_all ();
       return 0;
@@ -4945,7 +4959,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 	}
 
       /* If we have a PLUS whose second operand is a constant and the
-	 address is not valid, perhaps will can split it up using
+	 address is not valid, perhaps we can split it up using
 	 the machine-specific way to split large constants.  We use
 	 the first pseudo-reg (one of the virtual regs) as a placeholder;
 	 it will not remain in the result.  */
@@ -4960,7 +4974,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 
 	  /* This should have produced two insns, each of which sets our
 	     placeholder.  If the source of the second is a valid address,
-	     we can make put both sources together and make a split point
+	     we can put both sources together and make a split point
 	     in the middle.  */
 
 	  if (seq
@@ -5001,14 +5015,51 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 		}
 	    }
 
+	  /* If that didn't work and we have a nested plus, like:
+	     ((REG1 * CONST1) + REG2) + CONST2 and (REG1 + REG2) + CONST2
+	     is valid address, try to split (REG1 * CONST1).  */
+	  if (GET_CODE (XEXP (XEXP (x, 0), 0)) == PLUS
+	      && !OBJECT_P (XEXP (XEXP (XEXP (x, 0), 0), 0))
+	      && OBJECT_P (XEXP (XEXP (XEXP (x, 0), 0), 1))
+	      && ! (GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == SUBREG
+		    && OBJECT_P (SUBREG_REG (XEXP (XEXP (XEXP (x, 0),
+							 0), 0)))))
+	    {
+	      rtx tem = XEXP (XEXP (XEXP (x, 0), 0), 0);
+	      XEXP (XEXP (XEXP (x, 0), 0), 0) = reg;
+	      if (memory_address_addr_space_p (GET_MODE (x), XEXP (x, 0),
+					       MEM_ADDR_SPACE (x)))
+		{
+		  XEXP (XEXP (XEXP (x, 0), 0), 0) = tem;
+		  return &XEXP (XEXP (XEXP (x, 0), 0), 0);
+		}
+	      XEXP (XEXP (XEXP (x, 0), 0), 0) = tem;
+	    }
+	  else if (GET_CODE (XEXP (XEXP (x, 0), 0)) == PLUS
+		   && OBJECT_P (XEXP (XEXP (XEXP (x, 0), 0), 0))
+		   && !OBJECT_P (XEXP (XEXP (XEXP (x, 0), 0), 1))
+		   && ! (GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)) == SUBREG
+			 && OBJECT_P (SUBREG_REG (XEXP (XEXP (XEXP (x, 0),
+							      0), 1)))))
+	    {
+	      rtx tem = XEXP (XEXP (XEXP (x, 0), 0), 1);
+	      XEXP (XEXP (XEXP (x, 0), 0), 1) = reg;
+	      if (memory_address_addr_space_p (GET_MODE (x), XEXP (x, 0),
+					       MEM_ADDR_SPACE (x)))
+		{
+		  XEXP (XEXP (XEXP (x, 0), 0), 1) = tem;
+		  return &XEXP (XEXP (XEXP (x, 0), 0), 1);
+		}
+	      XEXP (XEXP (XEXP (x, 0), 0), 1) = tem;
+	    }
+
 	  /* If that didn't work, perhaps the first operand is complex and
 	     needs to be computed separately, so make a split point there.
 	     This will occur on machines that just support REG + CONST
 	     and have a constant moved through some previous computation.  */
-
-	  else if (!OBJECT_P (XEXP (XEXP (x, 0), 0))
-		   && ! (GET_CODE (XEXP (XEXP (x, 0), 0)) == SUBREG
-			 && OBJECT_P (SUBREG_REG (XEXP (XEXP (x, 0), 0)))))
+	  if (!OBJECT_P (XEXP (XEXP (x, 0), 0))
+	      && ! (GET_CODE (XEXP (XEXP (x, 0), 0)) == SUBREG
+		    && OBJECT_P (SUBREG_REG (XEXP (XEXP (x, 0), 0)))))
 	    return &XEXP (XEXP (x, 0), 0);
 	}
 
@@ -5941,8 +5992,9 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 	    && known_eq (subreg_lowpart_offset (int_mode, int_op0_mode),
 			 SUBREG_BYTE (x))
 	    && HWI_COMPUTABLE_MODE_P (int_op0_mode)
-	    && (nonzero_bits (SUBREG_REG (x), int_op0_mode)
-		& GET_MODE_MASK (int_mode)) == 0)
+	    && ((nonzero_bits (SUBREG_REG (x), int_op0_mode)
+		 & GET_MODE_MASK (int_mode)) == 0)
+	    && !side_effects_p (SUBREG_REG (x)))
 	  return CONST0_RTX (int_mode);
       }
 
@@ -7635,6 +7687,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	      /* We can't do this if we are widening INNER_MODE (it
 		 may not be aligned, for one thing).  */
 	      && !paradoxical_subreg_p (tmode, inner_mode)
+	      && known_le (pos + len, GET_MODE_PRECISION (is_mode))
 	      && (inner_mode == tmode
 		  || (! mode_dependent_address_p (XEXP (inner, 0),
 						  MEM_ADDR_SPACE (inner))
@@ -7776,6 +7829,10 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
   if (mode != VOIDmode
       && partial_subreg_p (extraction_mode, mode))
     extraction_mode = mode;
+
+  /* Punt if len is too large for extraction_mode.  */
+  if (maybe_gt (len, GET_MODE_PRECISION (extraction_mode)))
+    return NULL_RTX;
 
   if (!MEM_P (inner))
     wanted_inner_mode = wanted_inner_reg_mode;
@@ -10187,6 +10244,7 @@ simplify_and_const_int (rtx x, scalar_int_mode mode, rtx varop,
 
 /* Given a REG X of mode XMODE, compute which bits in X can be nonzero.
    We don't care about bits outside of those defined in MODE.
+   We DO care about all the bits in MODE, even if XMODE is smaller than MODE.
 
    For most X this is simply GET_MODE_MASK (GET_MODE (MODE)), but if X is
    a shift, AND, or zero_extract, we can do better.  */
@@ -13331,6 +13389,7 @@ record_dead_and_set_regs_1 (rtx dest, const_rtx setter, void *data)
 	       && subreg_lowpart_p (SET_DEST (setter)))
 	record_value_for_reg (dest, record_dead_insn,
 			      WORD_REGISTER_OPERATIONS
+			      && word_register_operation_p (SET_SRC (setter))
 			      && paradoxical_subreg_p (SET_DEST (setter))
 			      ? SET_SRC (setter)
 			      : gen_lowpart (GET_MODE (dest),
@@ -14935,11 +14994,52 @@ dump_combine_total_stats (FILE *file)
      total_attempts, total_merges, total_extras, total_successes);
 }
 
+/* Make pseudo-to-pseudo copies after every hard-reg-to-pseudo-copy, because
+   the reg-to-reg copy can usefully combine with later instructions, but we
+   do not want to combine the hard reg into later instructions, for that
+   restricts register allocation.  */
+static void
+make_more_copies (void)
+{
+  basic_block bb;
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      rtx_insn *insn;
+
+      FOR_BB_INSNS (bb, insn)
+        {
+          if (!NONDEBUG_INSN_P (insn))
+            continue;
+
+	  rtx set = single_set (insn);
+	  if (!set)
+	    continue;
+
+	  rtx dest = SET_DEST (set);
+	  if (!(REG_P (dest) && !HARD_REGISTER_P (dest)))
+	      continue;
+
+	  rtx src = SET_SRC (set);
+	  if (!(REG_P (src) && HARD_REGISTER_P (src)))
+	    continue;
+	  if (TEST_HARD_REG_BIT (fixed_reg_set, REGNO (src)))
+	    continue;
+
+	  rtx new_reg = gen_reg_rtx (GET_MODE (dest));
+	  rtx_insn *new_insn = gen_move_insn (new_reg, src);
+	  SET_SRC (set) = new_reg;
+	  emit_insn_before (new_insn, insn);
+	  df_insn_rescan (insn);
+	}
+    }
+}
+
 /* Try combining insns through substitution.  */
 static unsigned int
 rest_of_handle_combine (void)
 {
-  int rebuild_jump_labels_after_combine;
+  make_more_copies ();
 
   df_set_flags (DF_LR_RUN_DCE + DF_DEFER_INSN_RESCAN);
   df_note_add_problem ();
@@ -14948,7 +15048,7 @@ rest_of_handle_combine (void)
   regstat_init_n_sets_and_refs ();
   reg_n_sets_max = max_reg_num ();
 
-  rebuild_jump_labels_after_combine
+  int rebuild_jump_labels_after_combine
     = combine_instructions (get_insns (), max_reg_num ());
 
   /* Combining insns may have turned an indirect jump into a

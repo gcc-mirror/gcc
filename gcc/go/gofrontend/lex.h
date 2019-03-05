@@ -440,6 +440,10 @@ class Lex
   static bool
   is_unicode_space(unsigned int c);
 
+  // Convert the specified hex char into an unsigned integer value.
+  static unsigned
+  hex_val(char c);
+
  private:
   ssize_t
   get_line();
@@ -461,9 +465,6 @@ class Lex
   static unsigned char
   octal_value(char c)
   { return c - '0'; }
-
-  static unsigned
-  hex_val(char c);
 
   Token
   make_invalid_token()

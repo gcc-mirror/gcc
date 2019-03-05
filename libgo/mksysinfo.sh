@@ -55,8 +55,12 @@ grep '^type _mld_hdr_t ' gen-sysinfo.go | \
   sed -e 's/_in6_addr/[16]byte/' >> ${OUT}
 
 # The errno constants.  These get type Errno.
-  egrep '#define E[A-Z0-9_]+ ' errno.i | \
+egrep '#define E[A-Z0-9_]+ [0-9E]' errno.i | \
   sed -e 's/^#define \(E[A-Z0-9_]*\) .*$/const \1 = Errno(_\1)/' >> ${OUT}
+
+# Workaround for GNU/Hurd _EMIG_* errors having negative values
+egrep '#define E[A-Z0-9_]+ -[0-9]' errno.i | \
+  sed -e 's/^#define \(E[A-Z0-9_]*\) .*$/const \1 = Errno(-_\1)/' >> ${OUT}
 
 # The O_xxx flags.
 egrep '^const _(O|F|FD)_' gen-sysinfo.go | \
@@ -130,6 +134,11 @@ grep '^const _SYS_' gen-sysinfo.go | \
     echo "const $sup = _$sys" >> ${OUT}
   done
 
+# Special treatment of SYS_IOCTL for GNU/Hurd.
+if ! grep '^const SYS_IOCTL' ${OUT} > /dev/null 2>&1; then
+  echo "const SYS_IOCTL = 0" >> ${OUT}
+fi
+
 # The GNU/Linux support wants to use SYS_GETDENTS64 if available.
 if ! grep '^const SYS_GETDENTS ' ${OUT} >/dev/null 2>&1; then
   echo "const SYS_GETDENTS = 0" >> ${OUT}
@@ -173,6 +182,15 @@ if grep '^const ___WALL = ' gen-sysinfo.go >/dev/null 2>&1 \
    && ! grep '^const _WALL = ' gen-sysinfo.go >/dev/null 2>&1; then
   echo 'const WALL = ___WALL' >> ${OUT}
 fi
+# On GNU/Linux the os package requires WEXITED and WNOWAIT.
+if test "${GOOS}" = "linux"; then
+  if ! grep '^const WEXITED = ' ${OUT} >/dev/null 2>&1; then
+    echo 'const WEXITED = 4' >> ${OUT}
+  fi
+  if ! grep '^const WNOWAIT = ' ${OUT} >/dev/null 2>&1; then
+    echo 'const WNOWAIT = 0x01000000' >> ${OUT}
+  fi
+fi
 
 # Networking constants.
 egrep '^const _(AF|ARPHRD|ETH|IN|SOCK|SOL|SO|IPPROTO|TCP|IP|IPV6)_' gen-sysinfo.go |
@@ -200,6 +218,11 @@ if ! grep '^const AF_LOCAL ' ${OUT} >/dev/null 2>&1; then
   if grep '^const AF_UNIX ' ${OUT} >/dev/null 2>&1; then
     echo "const AF_LOCAL = AF_UNIX" >> ${OUT}
   fi
+fi
+
+# The syscall package requires _AT_FDCWD, but doesn't export it.
+if ! grep '^const _AT_FDCWD = ' ${OUT} >/dev/null 2>&1; then
+  echo "const _AT_FDCWD = -100" >> ${OUT}
 fi
 
 # sysconf constants.
@@ -461,6 +484,13 @@ grep '^type _st_timespec ' gen-sysinfo.go | \
       -e 's/tv_sec/Sec/' \
       -e 's/tv_nsec/Nsec/' >> ${OUT}
 
+# Special treatment of struct stat st_dev for GNU/Hurd
+# /usr/include/i386-gnu/bits/stat.h: #define st_dev st_fsid
+st_dev='-e s/st_dev/Dev/'
+if grep 'define st_dev st_fsid' gen-sysinfo.go > /dev/null 2>&1; then
+  st_dev='-e s/st_fsid/Dev/'
+fi
+
 # The stat type.
 # Prefer largefile variant if available.
 stat=`grep '^type _stat64 ' gen-sysinfo.go || true`
@@ -470,7 +500,7 @@ else
   grep '^type _stat ' gen-sysinfo.go
 fi | sed -e 's/type _stat64/type Stat_t/' \
          -e 's/type _stat/type Stat_t/' \
-         -e 's/st_dev/Dev/' \
+         ${st_dev} \
          -e 's/st_ino/Ino/g' \
          -e 's/st_nlink/Nlink/' \
          -e 's/st_mode/Mode/' \
@@ -668,6 +698,14 @@ grep '^type _ip6_mtuinfo ' gen-sysinfo.go | \
       -e 's/_sockaddr_in6/RawSockaddrInet6/' \
       -e 's/ip6m_mtu/Mtu/' \
     >> ${OUT}
+
+# We need IPv6MTUInfo to compile the syscall package.
+if ! grep 'type IPv6MTUInfo ' ${OUT} >/dev/null 2>&1; then
+  echo 'type IPv6MTUInfo struct { Addr RawSockaddrInet6; Mtu uint32; }' >> ${OUT}
+fi
+if ! grep 'const _sizeof_ip6_mtuinfo = ' ${OUT} >/dev/null 2>&1; then
+  echo 'const SizeofIPv6MTUInfo = 32' >> ${OUT}
+fi
 
 # Try to guess the type to use for fd_set.
 fd_set=`grep '^type _fd_set ' gen-sysinfo.go || true`
@@ -1152,10 +1190,17 @@ grep '^const _RLIMIT_' gen-sysinfo.go |
 grep '^const _RLIM_' gen-sysinfo.go |
     grep -v '^const _RLIM_INFINITY ' |
     sed -e 's/^\(const \)_\(RLIM_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+rliminf=""
 if test "${rlimit}" = "_rlimit64" && grep '^const _RLIM64_INFINITY ' gen-sysinfo.go > /dev/null 2>&1; then
-  echo 'const RLIM_INFINITY = _RLIM64_INFINITY' >> ${OUT}
-elif grep '^const _RLIM_INFINITY ' gen-sysinfo.go > /dev/null 2>&1; then
-  echo 'const RLIM_INFINITY = _RLIM_INFINITY' >> ${OUT}
+  rliminf=`grep '^const _RLIM64_INFINITY ' gen-sysinfo.go | sed -e 's/.* //'`
+else
+  rliminf=`grep '^const _RLIM_INFINITY ' gen-sysinfo.go | sed -e 's/.* //'`
+fi
+# For compatibility with the gc syscall package, treat 0xffffffffffffffff as -1.
+if test "$rliminf" = "0xffffffffffffffff"; then
+  echo "const RLIM_INFINITY = -1" >> ${OUT}
+elif test -n "$rliminf"; then
+  echo "const RLIM_INFINITY = $rliminf" >> ${OUT}
 fi
 
 # The sysinfo struct.

@@ -1,5 +1,5 @@
 // go-gcc.cc -- Go frontend to gcc IR.
-// Copyright (C) 2011-2018 Free Software Foundation, Inc.
+// Copyright (C) 2011-2019 Free Software Foundation, Inc.
 // Contributed by Ian Lance Taylor, Google.
 
 // This file is part of GCC.
@@ -25,6 +25,7 @@
 #include <gmp.h>
 
 #include "tree.h"
+#include "opts.h"
 #include "fold-const.h"
 #include "stringpool.h"
 #include "stor-layout.h"
@@ -482,9 +483,7 @@ class Gcc_backend : public Backend
 
   Bfunction*
   function(Btype* fntype, const std::string& name, const std::string& asm_name,
-           bool is_visible, bool is_declaration, bool is_inlinable,
-           bool disable_split_stack, bool does_not_return,
-	   bool in_unique_section, Location);
+	   unsigned int flags, Location);
 
   Bstatement*
   function_defer_statement(Bfunction* function, Bexpression* undefer,
@@ -736,8 +735,9 @@ Gcc_backend::Gcc_backend()
   this->define_builtin(BUILT_IN_RETURN_ADDRESS, "__builtin_return_address",
 		       NULL, t, false, false);
 
-  // The runtime calls __builtin_frame_address for runtime.getcallersp.
-  this->define_builtin(BUILT_IN_FRAME_ADDRESS, "__builtin_frame_address",
+  // The runtime calls __builtin_dwarf_cfa for runtime.getcallersp.
+  t = build_function_type_list(ptr_type_node, NULL_TREE);
+  this->define_builtin(BUILT_IN_DWARF_CFA, "__builtin_dwarf_cfa",
 		       NULL, t, false, false);
 
   // The runtime calls __builtin_extract_return_addr when recording
@@ -762,7 +762,7 @@ Gcc_backend::Gcc_backend()
 							NULL_TREE),
 		       false, false);
 
-  // The compiler uses __builtin_unreachable for cases that can not
+  // The compiler uses __builtin_unreachable for cases that cannot
   // occur.
   this->define_builtin(BUILT_IN_UNREACHABLE, "__builtin_unreachable", NULL,
 		       build_function_type(void_type_node, void_list_node),
@@ -911,7 +911,7 @@ Gcc_backend::function_type(const Btyped_identifier& receiver,
   if (result == error_mark_node)
     return this->error_type();
 
-  // The libffi library can not represent a zero-sized object.  To
+  // The libffi library cannot represent a zero-sized object.  To
   // avoid causing confusion on 32-bit SPARC, we treat a function that
   // returns a zero-sized value as returning void.  That should do no
   // harm since there is no actual value to be returned.  See
@@ -1051,6 +1051,7 @@ Gcc_backend::set_placeholder_pointer_type(Btype* placeholder,
     }
   gcc_assert(TREE_CODE(tt) == POINTER_TYPE);
   TREE_TYPE(pt) = TREE_TYPE(tt);
+  TYPE_CANONICAL(pt) = TYPE_CANONICAL(tt);
   if (TYPE_NAME(pt) != NULL_TREE)
     {
       // Build the data structure gcc wants to see for a typedef.
@@ -1082,6 +1083,12 @@ Gcc_backend::placeholder_struct_type(const std::string& name,
 			     get_identifier_from_string(name),
 			     ret);
       TYPE_NAME(ret) = decl;
+
+      // The struct type that eventually replaces this placeholder will require
+      // structural equality. The placeholder must too, so that the requirement
+      // for structural equality propagates to references that are constructed
+      // before the replacement occurs.
+      SET_TYPE_STRUCTURAL_EQUALITY(ret);
     }
   return this->make_type(ret);
 }
@@ -1100,9 +1107,13 @@ Gcc_backend::set_placeholder_struct_type(
   if (TYPE_NAME(t) != NULL_TREE)
     {
       // Build the data structure gcc wants to see for a typedef.
-      tree copy = build_variant_type_copy(t);
+      tree copy = build_distinct_type_copy(t);
       TYPE_NAME(copy) = NULL_TREE;
       DECL_ORIGINAL_TYPE(TYPE_NAME(t)) = copy;
+      TYPE_SIZE(copy) = NULL_TREE;
+      Btype* bc = this->make_type(copy);
+      this->fill_in_struct(bc, fields);
+      delete bc;
     }
 
   return r->get_tree() != error_mark_node;
@@ -2245,9 +2256,9 @@ Gcc_backend::switch_statement(
     {
       if (pc->empty())
 	{
-	  source_location loc = (*ps != NULL
-                                 ? EXPR_LOCATION((*ps)->get_tree())
-                                 : UNKNOWN_LOCATION);
+	  location_t loc = (*ps != NULL
+			    ? EXPR_LOCATION((*ps)->get_tree())
+			    : UNKNOWN_LOCATION);
 	  tree label = create_artificial_label(loc);
 	  tree c = build_case_label(NULL_TREE, NULL_TREE, label);
 	  append_to_statement_list(c, &stmt_list);
@@ -2261,7 +2272,7 @@ Gcc_backend::switch_statement(
 	      tree t = (*pcv)->get_tree();
 	      if (t == error_mark_node)
 		return this->error_statement();
-	      source_location loc = EXPR_LOCATION(t);
+	      location_t loc = EXPR_LOCATION(t);
 	      tree label = create_artificial_label(loc);
 	      tree c = build_case_label((*pcv)->get_tree(), NULL_TREE, label);
 	      append_to_statement_list(c, &stmt_list);
@@ -3047,10 +3058,8 @@ Gcc_backend::label_address(Blabel* label, Location location)
 
 Bfunction*
 Gcc_backend::function(Btype* fntype, const std::string& name,
-                      const std::string& asm_name, bool is_visible,
-                      bool is_declaration, bool is_inlinable,
-                      bool disable_split_stack, bool does_not_return,
-		      bool in_unique_section, Location location)
+                      const std::string& asm_name, unsigned int flags,
+		      Location location)
 {
   tree functype = fntype->get_tree();
   if (functype != error_mark_node)
@@ -3065,9 +3074,9 @@ Gcc_backend::function(Btype* fntype, const std::string& name,
   tree decl = build_decl(location.gcc_location(), FUNCTION_DECL, id, functype);
   if (! asm_name.empty())
     SET_DECL_ASSEMBLER_NAME(decl, get_identifier_from_string(asm_name));
-  if (is_visible)
+  if ((flags & function_is_visible) != 0)
     TREE_PUBLIC(decl) = 1;
-  if (is_declaration)
+  if ((flags & function_is_declaration) != 0)
     DECL_EXTERNAL(decl) = 1;
   else
     {
@@ -3079,17 +3088,57 @@ Gcc_backend::function(Btype* fntype, const std::string& name,
       DECL_CONTEXT(resdecl) = decl;
       DECL_RESULT(decl) = resdecl;
     }
-  if (!is_inlinable)
+  if ((flags & function_is_inlinable) == 0)
     DECL_UNINLINABLE(decl) = 1;
-  if (disable_split_stack)
+  if ((flags & function_no_split_stack) != 0)
     {
       tree attr = get_identifier ("no_split_stack");
       DECL_ATTRIBUTES(decl) = tree_cons(attr, NULL_TREE, NULL_TREE);
     }
-  if (does_not_return)
+  if ((flags & function_does_not_return) != 0)
     TREE_THIS_VOLATILE(decl) = 1;
-  if (in_unique_section)
+  if ((flags & function_in_unique_section) != 0)
     resolve_unique_section(decl, 0, 1);
+  if ((flags & function_only_inline) != 0)
+    {
+      DECL_EXTERNAL(decl) = 1;
+      DECL_DECLARED_INLINE_P(decl) = 1;
+    }
+
+  // Optimize thunk functions for size.  A thunk created for a defer
+  // statement that may call recover looks like:
+  //     if runtime.setdeferretaddr(L1) {
+  //         goto L1
+  //     }
+  //     realfn()
+  // L1:
+  // The idea is that L1 should be the address to which realfn
+  // returns.  This only works if this little function is not over
+  // optimized.  At some point GCC started duplicating the epilogue in
+  // the basic-block reordering pass, breaking this assumption.
+  // Optimizing the function for size avoids duplicating the epilogue.
+  // This optimization shouldn't matter for any thunk since all thunks
+  // are small.
+  size_t pos = name.find("..thunk");
+  if (pos != std::string::npos)
+    {
+      for (pos += 7; pos < name.length(); ++pos)
+	{
+	  if (name[pos] < '0' || name[pos] > '9')
+	    break;
+	}
+      if (pos == name.length())
+	{
+	  struct cl_optimization cur_opts;
+	  cl_optimization_save(&cur_opts, &global_options);
+	  global_options.x_optimize_size = 1;
+	  global_options.x_optimize_fast = 0;
+	  global_options.x_optimize_debug = 0;
+	  DECL_FUNCTION_SPECIFIC_OPTIMIZATION(decl) =
+	    build_optimization_node(&global_options);
+	  cl_optimization_restore(&global_options, &cur_opts);
+	}
+    }
 
   go_preserve_from_gc(decl);
   return new Bfunction(decl);
@@ -3250,7 +3299,8 @@ Gcc_backend::write_global_definitions(
       if (decl != error_mark_node)
         {
           go_preserve_from_gc(decl);
-          gimplify_function_tree(decl);
+	  if (DECL_STRUCT_FUNCTION(decl) == NULL)
+	    allocate_struct_function(decl, false);
           cgraph_node::finalize_function(decl, true);
 
           defs[i] = decl;

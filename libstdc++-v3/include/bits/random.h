@@ -1,6 +1,6 @@
 // random number generation -*- C++ -*-
 
-// Copyright (C) 2009-2018 Free Software Foundation, Inc.
+// Copyright (C) 2009-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1602,7 +1602,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // constructors, destructors and member functions
 
-#ifdef _GLIBCXX_USE_RANDOM_TR1
+#ifdef _GLIBCXX_USE_DEV_RANDOM
     random_device() { _M_init("default"); }
 
     explicit
@@ -1611,7 +1611,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     ~random_device()
     { _M_fini(); }
 #else
-    random_device() { _M_init("mt19937"); }
+    random_device() { _M_init_pretr1("mt19937"); }
 
     explicit
     random_device(const std::string& __token)
@@ -1629,7 +1629,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     double
     entropy() const noexcept
     {
-#ifdef _GLIBCXX_USE_RANDOM_TR1
+#ifdef _GLIBCXX_USE_DEV_RANDOM
       return this->_M_getentropy();
 #else
       return 0.0;
@@ -1639,7 +1639,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     result_type
     operator()()
     {
-#ifdef _GLIBCXX_USE_RANDOM_TR1
+#ifdef _GLIBCXX_USE_DEV_RANDOM
       return this->_M_getval();
 #else
       return this->_M_getval_pretr1();

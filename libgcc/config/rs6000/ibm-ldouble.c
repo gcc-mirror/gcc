@@ -1,5 +1,5 @@
 /* 128-bit long double support routines for Darwin.
-   Copyright (C) 1993-2018 Free Software Foundation, Inc.
+   Copyright (C) 1993-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -46,7 +46,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    the lower numbered register or lower addressed memory.  */
 
 #if (defined (__MACH__) || defined (__powerpc__) || defined (_AIX)) \
-    && !defined (__rtems__)
+  && !defined (__rtems__) \
+  && (defined (__LONG_DOUBLE_128__) || defined (__FLOAT128_TYPE__))
 
 #define fabs(x) __builtin_fabs(x)
 #define isless(x, y) __builtin_isless (x, y)

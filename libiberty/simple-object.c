@@ -1,5 +1,5 @@
 /* simple-object.c -- simple routines to read and write object files.
-   Copyright (C) 2010-2018 Free Software Foundation, Inc.
+   Copyright (C) 2010-2019 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 This program is free software; you can redistribute it and/or modify it
@@ -42,6 +42,10 @@ Boston, MA 02110-1301, USA.  */
 
 #ifndef SEEK_SET
 #define SEEK_SET 0
+#endif
+
+#ifndef O_BINARY
+#define O_BINARY 0
 #endif
 
 #include "simple-object-common.h"
@@ -349,7 +353,7 @@ simple_object_copy_lto_debug_sections (simple_object_read *sobj,
       return errmsg;
     }
 
-  outfd = creat (dest, 00777);
+  outfd = open (dest, O_CREAT|O_WRONLY|O_TRUNC|O_BINARY, 00777);
   if (outfd == -1)
     {
       *err = errno;

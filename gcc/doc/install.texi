@@ -44,7 +44,7 @@
 @settitle Installing GCC: GNU Free Documentation License
 @end ifset
 
-@c Copyright (C) 1988-2018 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2019 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
 @c IMPORTANT: whenever you modify this file, run `install.texi2html' to
@@ -69,7 +69,7 @@
 
 @c Part 2 Summary Description and Copyright
 @copying
-Copyright @copyright{} 1988-2018 Free Software Foundation, Inc.
+Copyright @copyright{} 1988-2019 Free Software Foundation, Inc.
 @sp 1
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -261,10 +261,10 @@ In order to build GCC, the C standard library and headers must be present
 for all target variants for which target libraries will be built (and not
 only the variant of the host C++ compiler).
 
-This affects the popular @samp{x86_64-unknown-linux-gnu} platform (among
+This affects the popular @samp{x86_64-pc-linux-gnu} platform (among
 other multilib targets), for which 64-bit (@samp{x86_64}) and 32-bit
 (@samp{i386}) libc headers are usually packaged separately. If you do a
-build of a native compiler on @samp{x86_64-unknown-linux-gnu}, make sure you
+build of a native compiler on @samp{x86_64-pc-linux-gnu}, make sure you
 either have the 32-bit libc developer package properly installed (the exact
 name of the package depends on your distro) or you must build GCC as a
 64-bit only compiler by configuring with the option
@@ -401,13 +401,13 @@ search path.
 
 @heading Tools/packages necessary for modifying GCC
 @table @asis
-@item autoconf version 2.64
+@item autoconf version 2.69
 @itemx GNU m4 version 1.4.6 (or later)
 
 Necessary when modifying @file{configure.ac}, @file{aclocal.m4}, etc.@:
 to regenerate @file{configure} and @file{config.in} files.
 
-@item automake version 1.11.6
+@item automake version 1.15.1
 
 Necessary when modifying a @file{Makefile.am} file to regenerate its
 associated @file{Makefile.in}.
@@ -418,12 +418,9 @@ file.  Specifically this applies to the @file{gcc}, @file{intl},
 as any of their subdirectories.
 
 For directories that use automake, GCC requires the latest release in
-the 1.11 series, which is currently 1.11.6.  When regenerating a directory
-to a newer version, please update all the directories using an older 1.11
+the 1.15 series, which is currently 1.15.1.  When regenerating a directory
+to a newer version, please update all the directories using an older 1.15
 to the latest released version.
-
-Note that @command{automake} 1.11.6 is incompatible with
-@command{perl} version 5.6.26.
 
 @item gettext version 0.14.5 (or later)
 
@@ -921,7 +918,7 @@ only for the listed packages.  For other packages, only static libraries
 will be built.  Package names currently recognized in the GCC tree are
 @samp{libgcc} (also known as @samp{gcc}), @samp{libstdc++} (not
 @samp{libstdc++-v3}), @samp{libffi}, @samp{zlib}, @samp{boehm-gc},
-@samp{ada}, @samp{libada}, @samp{libgo}, and @samp{libobjc}.
+@samp{ada}, @samp{libada}, @samp{libgo}, @samp{libobjc}, and @samp{libphobos}.
 Note @samp{libiberty} does not support shared libraries at all.
 
 Use @option{--disable-shared} to build only static libraries.  Note that
@@ -1076,23 +1073,55 @@ sysv, aix.
 @itemx --without-multilib-list
 Specify what multilibs to build.  @var{list} is a comma separated list of
 values, possibly consisting of a single value.  Currently only implemented
-for arm*-*-*, riscv*-*-*, sh*-*-* and x86-64-*-linux*.  The accepted
-values and meaning for each target is given below.
+for aarch64*-*-*, arm*-*-*, riscv*-*-*, sh*-*-* and x86-64-*-linux*.  The
+accepted values and meaning for each target is given below.
 
 @table @code
+@item aarch64*-*-*
+@var{list} is a comma separated list of @code{ilp32}, and @code{lp64}
+to enable ILP32 and LP64 run-time libraries, respectively.  If
+@var{list} is empty, then there will be no multilibs and only the
+default run-time library will be built.  If @var{list} is
+@code{default} or --with-multilib-list= is not specified, then the
+default set of libraries is selected based on the value of
+@option{--target}.
+
 @item arm*-*-*
-@var{list} is a comma separated list of @code{aprofile} and @code{rmprofile}
-to build multilibs for A or R and M architecture profiles respectively.  Note
-that, due to some limitation of the current multilib framework, using the
-combined @code{aprofile,rmprofile} multilibs selects in some cases a less
-optimal multilib than when using the multilib profile for the architecture
-targetted.  The special value @code{default} is also accepted and is equivalent
-to omitting the option, ie. only the default run-time library will be enabled.
+@var{list} is a comma separated list of @code{aprofile} and
+@code{rmprofile} to build multilibs for A or R and M architecture
+profiles respectively.  Note that, due to some limitation of the current
+multilib framework, using the combined @code{aprofile,rmprofile}
+multilibs selects in some cases a less optimal multilib than when using
+the multilib profile for the architecture targetted.  The special value
+@code{default} is also accepted and is equivalent to omitting the
+option, i.e., only the default run-time library will be enabled.
+
+@var{list} may instead contain @code{@@name}, to use the multilib
+configuration Makefile fragment @file{name} in @file{gcc/config/arm} in
+the source tree (it is part of the corresponding sources, after all).
+It is recommended, but not required, that files used for this purpose to
+be named starting with @file{t-ml-}, to make their intended purpose
+self-evident, in line with GCC conventions.  Such files enable custom,
+user-chosen multilib lists to be configured.  Whether multiple such
+files can be used together depends on the contents of the supplied
+files.  See @file{gcc/config/arm/t-multilib} and its supplementary
+@file{gcc/config/arm/t-*profile} files for an example of what such
+Makefile fragments might look like for this version of GCC.  The macros
+expected to be defined in these fragments are not stable across GCC
+releases, so make sure they define the @code{MULTILIB}-related macros
+expected by the version of GCC you are building.
+@ifnothtml
+@xref{Target Fragment,, Target Makefile Fragments, gccint, GNU Compiler
+Collection (GCC) Internals}.
+@end ifnothtml
+@ifhtml
+See ``Target Makefile Fragments'' in the internals manual.
+@end ifhtml
 
 The table below gives the combination of ISAs, architectures, FPUs and
-floating-point ABIs for which multilibs are built for each accepted value.
-The union of these options is considered when specifying both @code{aprofile}
-and @code{rmprofile}.
+floating-point ABIs for which multilibs are built for each predefined
+profile.  The union of these options is considered when specifying both
+@code{aprofile} and @code{rmprofile}.
 
 @multitable @columnfractions .15 .28 .30
 @item Option @tab aprofile @tab rmprofile
@@ -1622,12 +1651,12 @@ their runtime libraries should be built.  For a list of valid values for
 grep ^language= */config-lang.in
 @end smallexample
 Currently, you can use any of the following:
-@code{all}, @code{default}, @code{ada}, @code{c}, @code{c++}, @code{fortran},
-@code{go}, @code{jit}, @code{lto}, @code{objc}, @code{obj-c++}.
+@code{all}, @code{default}, @code{ada}, @code{c}, @code{c++}, @code{d},
+@code{fortran}, @code{go}, @code{jit}, @code{lto}, @code{objc}, @code{obj-c++}.
 Building the Ada compiler has special requirements, see below.
 If you do not pass this flag, or specify the option @code{default}, then the
 default languages available in the @file{gcc} sub-tree will be configured.
-Ada, Go, Jit, and Objective-C++ are not default languages.  LTO is not a
+Ada, D, Go, Jit, and Objective-C++ are not default languages.  LTO is not a
 default language, but is built by default because @option{--enable-lto} is
 enabled by default.  The other languages are default languages.  If
 @code{all} is specified, then all available languages are built.  An
@@ -1733,6 +1762,14 @@ Using the GNU Compiler Collection (GCC)},
 @ifhtml
 See ``i386 and x86-64 Options'' in the main manual
 @end ifhtml
+
+@item --enable-large-address-aware
+The @option{--enable-large-address-aware} option arranges for MinGW
+executables to be linked using the @option{--large-address-aware}
+option, that enables the use of more than 2GB of memory.  If GCC is
+configured with this option, its effects can be reversed by passing the
+@option{-Wl,--disable-large-address-aware} option to the so-configured
+compiler driver.
 
 @item --enable-win32-registry
 @itemx --enable-win32-registry=@var{key}
@@ -1899,7 +1936,7 @@ Specify whether @code{long double} uses the IBM extended double format
 or the IEEE 128-bit floating point format on PowerPC Linux systems.
 This configuration switch will only work on little endian PowerPC
 Linux systems and on big endian 64-bit systems where the default cpu
-is at least power7 (i.e. @option{--with-cpu=power7},
+is at least power7 (i.e.@: @option{--with-cpu=power7},
 @option{--with-cpu=power8}, or @option{--with-cpu=power9} is used).
 
 If you use the @option{--with-long-double-64} configuration option,
@@ -2042,14 +2079,14 @@ host system architecture.  For the case that the linker has a
 different (but run-time compatible) architecture, these flags can be
 specified to build plugins that are compatible to the linker.  For
 example, if you are building GCC for a 64-bit x86_64
-(@samp{x86_64-unknown-linux-gnu}) host system, but have a 32-bit x86
+(@samp{x86_64-pc-linux-gnu}) host system, but have a 32-bit x86
 GNU/Linux (@samp{i686-pc-linux-gnu}) linker executable (which is
 executable on the former system), you can configure GCC as follows for
 getting compatible linker plugins:
 
 @smallexample
 % @var{srcdir}/configure \
-    --host=x86_64-unknown-linux-gnu \
+    --host=x86_64-pc-linux-gnu \
     --enable-linker-plugin-configure-flags=--host=i686-pc-linux-gnu \
     --enable-linker-plugin-flags='CC=gcc\ -m32\ -Wl,-rpath,[...]/i686-pc-linux-gnu/lib'
 @end smallexample
@@ -2124,6 +2161,13 @@ is used, it is enabled on Linux/x86 if target binutils
 supports @code{Intel CET} instructions and disabled otherwise.
 In this case the target libraries are configured to get additional
 @option{-fcf-protection} option.
+
+@item --with-riscv-attribute=@samp{yes}, @samp{no} or @samp{default}
+Generate RISC-V attribute by default, in order to record extra build
+information in object.
+
+The option is disabled by default. It is enabled on RISC-V/ELF (bare-metal)
+target if target binutils supported.
 @end table
 
 @subheading Cross-Compiler-Specific Options
@@ -2286,7 +2330,7 @@ continues.
 Specify search directories for the garbage collector header files and
 libraries. @var{list} is a comma separated list of key value pairs of the
 form @samp{@var{multilibdir}=@var{path}}, where the default multilib key
-is named as @samp{.} (dot), or is omitted (e.g.
+is named as @samp{.} (dot), or is omitted (e.g.@:
 @samp{--with-target-bdw-gc=/opt/bdw-gc,32=/opt-bdw-gc32}).
 
 The options @option{--with-target-bdw-gc-include} and
@@ -2294,7 +2338,7 @@ The options @option{--with-target-bdw-gc-include} and
 for each multilib variant and they take precedence over
 @option{--with-target-bdw-gc}.  If @option{--with-target-bdw-gc-include}
 is missing values for a multilib, then the value for the default
-multilib is used (e.g. @samp{--with-target-bdw-gc-include=/opt/bdw-gc/include}
+multilib is used (e.g.@: @samp{--with-target-bdw-gc-include=/opt/bdw-gc/include}
 @samp{--with-target-bdw-gc-lib=/opt/bdw-gc/lib64,32=/opt-bdw-gc/lib32}).
 If none of these options are specified, the library is assumed in
 default locations.
@@ -2475,7 +2519,7 @@ Analogous to @code{bootstrap-O1}.
 Enables Link-Time Optimization for host tools during bootstrapping.
 @samp{BUILD_CONFIG=bootstrap-lto} is equivalent to adding
 @option{-flto} to @samp{BOOT_CFLAGS}.  This option assumes that the host
-supports the linker plugin (e.g. GNU ld version 2.21 or later or GNU gold
+supports the linker plugin (e.g.@: GNU ld version 2.21 or later or GNU gold
 version 2.21 or later).
 
 @item @samp{bootstrap-lto-noplugin}
@@ -2536,7 +2580,7 @@ must be used along with @code{bootstrap-debug-lean} and
 This option enables Intel CET for host tools during bootstrapping.
 @samp{BUILD_CONFIG=bootstrap-cet} is equivalent to adding
 @option{-fcf-protection} to @samp{BOOT_CFLAGS}.  This option
-assumes that the host supports Intel CET (e.g. GNU assembler version
+assumes that the host supports Intel CET (e.g.@: GNU assembler version
 2.30 or later).
 
 @item @samp{bootstrap-time}
@@ -2763,7 +2807,7 @@ on a simulator as described at @uref{http://gcc.gnu.org/simtest-howto.html}.
 
 In order to run sets of tests selectively, there are targets
 @samp{make check-gcc} and language specific @samp{make check-c},
-@samp{make check-c++}, @samp{make check-fortran},
+@samp{make check-c++}, @samp{make check-d} @samp{make check-fortran},
 @samp{make check-ada}, @samp{make check-objc}, @samp{make check-obj-c++},
 @samp{make check-lto}
 in the @file{gcc} subdirectory of the object directory.  You can also
@@ -3264,6 +3308,10 @@ information have to.
 @item
 @uref{#nvptx-x-none,,nvptx-*-none}
 @item
+@uref{#or1k-x-elf,,or1k-*-elf}
+@item
+@uref{#or1k-x-linux,,or1k-*-linux}
+@item
 @uref{#powerpc-x-x,,powerpc*-*-*}
 @item
 @uref{#powerpc-x-darwin,,powerpc-*-darwin*}
@@ -3381,6 +3429,16 @@ The workaround is disabled by default if neither of
 @option{--enable-fix-cortex-a53-843419} or
 @option{--disable-fix-cortex-a53-843419} is given at configure time.
 
+To enable Branch Target Identification Mechanism and Return Address Signing by
+default at configure time use the @option{--enable-standard-branch-protection}
+option.  This is equivalent to having @option{-mbranch-protection=standard}
+during compilation.  This can be explicitly disabled during compilation by
+passing the @option{-mbranch-protection=none} option which turns off all
+types of branch protections.  Conversely,
+@option{--disable-standard-branch-protection} will disable both the
+protections by default.  This mechanism is turned off by default if neither
+of the options are given at configure time.
+
 @html
 <hr />
 @end html
@@ -3401,6 +3459,27 @@ shared libraries.
 @anchor{amd64-x-solaris210}
 @heading amd64-*-solaris2.1[0-9]*
 This is a synonym for @samp{x86_64-*-solaris2.1[0-9]*}.
+
+@html
+<hr />
+@end html
+@anchor{amdgcn-unknown-amdhsa}
+@heading amdgcn-unknown-amdhsa
+AMD GCN GPU target.
+
+Instead of GNU Binutils, you will need to install LLVM 6, or later, and copy
+@file{bin/llvm-mc} to @file{amdgcn-unknown-amdhsa/bin/as},
+@file{bin/lld} to @file{amdgcn-unknown-amdhsa/bin/ld},
+@file{bin/llvm-nm} to @file{amdgcn-unknown-amdhsa/bin/nm}, and
+@file{bin/llvm-ar} to both @file{bin/amdgcn-unknown-amdhsa-ar} and
+@file{bin/amdgcn-unknown-amdhsa-ranlib}.
+
+Use Newlib (2019-01-16, or newer).
+
+To run the binaries, install the HSA Runtime from the
+@uref{https://rocm.github.io,,ROCm Platform}, and use
+@file{libexec/gcc/amdhsa-unknown-amdhsa/@var{version}/gcn-run} to launch them
+on the GPU.
 
 @html
 <hr />
@@ -4234,6 +4313,21 @@ Use the @option{--disable-sjlj-exceptions} and
 @html
 <hr />
 @end html
+@anchor{or1k-x-elf}
+@heading or1k-*-elf
+The OpenRISC 1000 32-bit processor with delay slots.
+This configuration is intended for embedded systems.
+
+@html
+<hr />
+@end html
+@anchor{or1k-x-linux}
+@heading or1k-*-linux
+The OpenRISC 1000 32-bit processor with delay slots.
+
+@html
+<hr />
+@end html
 @anchor{powerpc-x-x}
 @heading powerpc-*-*
 You can specify a default version for the @option{-mcpu=@var{cpu_type}}
@@ -4400,9 +4494,11 @@ supported as cross-compilation target only.
 @c alone is too unspecific and must be avoided.
 @anchor{x-x-solaris2}
 @heading *-*-solaris2*
-Support for Solaris 9 has been removed in GCC 5.  Support for Solaris
-8 has been removed in GCC 4.8.  Support for Solaris 7 has been removed
-in GCC 4.6.
+Support for Solaris 10 has been obsoleted in GCC 9, but can still be
+enabled by configuring with @option{--enable-obsolete}.  Support will be
+removed in GCC 10.  Support for Solaris 9 has been removed in GCC 5.
+Support for Solaris 8 has been removed in GCC 4.8.  Support for Solaris
+7 has been removed in GCC 4.6.
 
 Sun does not ship a C compiler with Solaris 2 before Solaris 10, though
 you can download the Sun Studio compilers for free.  In Solaris 10 and

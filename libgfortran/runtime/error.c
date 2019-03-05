@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -332,21 +332,50 @@ show_locus (st_parameter_common *cmp)
 
 /* recursion_check()-- It's possible for additional errors to occur
  * during fatal error processing.  We detect this condition here and
- * exit with code 4 immediately. */
+ * abort immediately. */
 
-#define MAGIC 0x20DE8101
+static __gthread_key_t recursion_key;
 
 static void
 recursion_check (void)
 {
-  static int magic = 0;
-
-  /* Don't even try to print something at this point */
-  if (magic == MAGIC)
-    sys_abort ();
-
-  magic = MAGIC;
+  if (__gthread_active_p ())
+    {
+      bool* p = __gthread_getspecific (recursion_key);
+      if (!p)
+        {
+          p = xcalloc (1, sizeof (bool));
+          __gthread_setspecific (recursion_key, p);
+        }
+      if (*p)
+	sys_abort ();
+      *p = true;
+    }
+  else
+    {
+      static bool recur;
+      if (recur)
+	sys_abort ();
+      recur = true;
+    }
 }
+
+#ifdef __GTHREADS
+static void __attribute__((constructor))
+constructor_recursion_check (void)
+{
+  if (__gthread_active_p ())
+    __gthread_key_create (&recursion_key, &free);
+}
+
+static void __attribute__((destructor))
+destructor_recursion_check (void)
+{
+  if (__gthread_active_p ())
+    __gthread_key_delete (recursion_key);
+}
+#endif
+
 
 
 #define STRERR_MAXSZ 256

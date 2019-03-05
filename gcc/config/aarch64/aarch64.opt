@@ -1,5 +1,5 @@
 ; Machine description for AArch64 architecture.
-; Copyright (C) 2009-2018 Free Software Foundation, Inc.
+; Copyright (C) 2009-2019 Free Software Foundation, Inc.
 ; Contributed by ARM Ltd.
 ;
 ; This file is part of GCC.
@@ -32,6 +32,9 @@ const char *x_aarch64_override_tune_string
 
 TargetVariable
 unsigned long aarch64_isa_flags = 0
+
+TargetVariable
+unsigned aarch64_enable_bti = 2
 
 ; The TLS dialect names to use with -mtls-dialect.
 
@@ -149,8 +152,12 @@ mpc-relative-literal-loads
 Target Report Save Var(pcrelative_literal_loads) Init(2) Save
 PC relative literal loads.
 
+mbranch-protection=
+Target RejectNegative Joined Var(aarch64_branch_protection_string) Save
+Use branch-protection features.
+
 msign-return-address=
-Target RejectNegative Report Joined Enum(aarch64_ra_sign_scope_t) Var(aarch64_ra_sign_scope) Init(AARCH64_FUNCTION_NONE) Save
+Target Deprecated RejectNegative Joined Enum(aarch64_ra_sign_scope_t) Var(aarch64_ra_sign_scope) Init(AARCH64_FUNCTION_NONE) Save
 Select return address signing scope.
 
 Enum
@@ -218,3 +225,33 @@ Enables verbose cost model dumping in the debug dump files.
 mtrack-speculation
 Target Var(aarch64_track_speculation)
 Generate code to track when the CPU might be speculating incorrectly.
+
+mstack-protector-guard=
+Target RejectNegative Joined Enum(stack_protector_guard) Var(aarch64_stack_protector_guard) Init(SSP_GLOBAL)
+Use given stack-protector guard.
+
+Enum
+Name(stack_protector_guard) Type(enum stack_protector_guard)
+Valid arguments to -mstack-protector-guard=:
+
+EnumValue
+Enum(stack_protector_guard) String(sysreg) Value(SSP_SYSREG)
+
+EnumValue
+Enum(stack_protector_guard) String(global) Value(SSP_GLOBAL)
+
+mstack-protector-guard-reg=
+Target Joined RejectNegative String Var(aarch64_stack_protector_guard_reg_str)
+Use the system register specified on the command line as the stack protector
+guard register. This option is for use with fstack-protector-strong and
+not for use in user-land code.
+
+mstack-protector-guard-offset=
+Target Joined RejectNegative String Var(aarch64_stack_protector_guard_offset_str)
+Use an immediate to offset from the stack protector guard register, sp_el0.
+This option is for use with fstack-protector-strong and not for use in
+user-land code.
+
+TargetVariable
+long aarch64_stack_protector_guard_offset = 0
+

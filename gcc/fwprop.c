@@ -1,5 +1,5 @@
 /* RTL-based forward propagation pass for GNU compiler.
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
    Contributed by Paolo Bonzini and Steven Bosscher.
 
 This file is part of GCC.
@@ -731,14 +731,15 @@ local_ref_killed_between_p (df_ref ref, rtx_insn *from, rtx_insn *to)
 }
 
 
-/* Check if the given DEF is available in INSN.  This would require full
-   computation of available expressions; we check only restricted conditions:
-   - if DEF is the sole definition of its register, go ahead;
-   - in the same basic block, we check for no definitions killing the
-     definition of DEF_INSN;
-   - if USE's basic block has DEF's basic block as the sole predecessor,
-     we check if the definition is killed after DEF_INSN or before
+/* Check if USE is killed between DEF_INSN and TARGET_INSN.  This would
+   require full computation of available expressions; we check only a few
+   restricted conditions:
+   - if the reg in USE has only one definition, go ahead;
+   - in the same basic block, we check for no definitions killing the use;
+   - if TARGET_INSN's basic block has DEF_INSN's basic block as its sole
+     predecessor, we check if the use is killed after DEF_INSN or before
      TARGET_INSN insn, in their respective basic blocks.  */
+
 static bool
 use_killed_between (df_ref use, rtx_insn *def_insn, rtx_insn *target_insn)
 {
@@ -762,12 +763,17 @@ use_killed_between (df_ref use, rtx_insn *def_insn, rtx_insn *target_insn)
      know that this definition reaches use, or we wouldn't be here.
      However, this is invalid for hard registers because if they are
      live at the beginning of the function it does not mean that we
-     have an uninitialized access.  */
+     have an uninitialized access.  And we have to check for the case
+     where a register may be used uninitialized in a loop as above.  */
   regno = DF_REF_REGNO (use);
   def = DF_REG_DEF_CHAIN (regno);
   if (def
       && DF_REF_NEXT_REG (def) == NULL
-      && regno >= FIRST_PSEUDO_REGISTER)
+      && regno >= FIRST_PSEUDO_REGISTER
+      && (BLOCK_FOR_INSN (DF_REF_INSN (def)) == def_bb
+	  ? DF_INSN_LUID (DF_REF_INSN (def)) < DF_INSN_LUID (def_insn)
+	  : dominated_by_p (CDI_DOMINATORS,
+			    def_bb, BLOCK_FOR_INSN (DF_REF_INSN (def)))))
     return false;
 
   /* Check locally if we are in the same basic block.  */

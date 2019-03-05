@@ -1,0 +1,185 @@
+2009-12-28  michaelp  <baseball.mjp@gmail.com>
+
+	Merge with DMD 1.043
+
+	* phobos/configure.in: Changed part of phobos configure.
+
+	* samples/README, samples/samples.sh: Uploading the start of the some
+	small tests to help in the testing of GDC/D components.
+
+	* Make-lang.in,	d-lang.cc, dmd/machobj.c, phobos/config/unix.x3,
+	phobos/std/file.d, phobos/std/moduleinit.d, phobos/std/socket.d: Fixed
+	problem when building on Mac OS X.
+
+2009-12-05  michaelp  <baseball.mjp@gmail.com>
+
+	Merge with DMD 1.042
+
+	* Make-lang.in: Added async.dmd.o
+
+	* d-asm-i386.h, d-codegen.h: Merge changes from	dmd/constfold.c.
+
+	* d-codegen.h, phobos2/aclocal.m4, phobos2/configure.in: Fixed
+	problems with D2.
+
+2009-11-22  michaelp  <baseball.mjp@gmail.com>
+
+	Merge with DMD 1.041
+
+	* Make-lang.in: Update for files added in DMD 1.041.
+
+	* d-backendfunctions.c: Added stubs for functions in the backend that
+	cannot be included in the front end source.
+
+	* dmd-script: Added Bitbucket page to display for gdmd wrapper script.
+
+2009-11-07  Vincenzo Ampolo  <vincenzo.ampolo@gmail.com>
+
+	Changes to GCC-4.4.x branch:
+
+	* tools/makewebstatistics.d: Added d tool to generate webstats about
+	dstress in D2.
+
+2009-10-25  michaelp  <baseball.mjp@gmail.com>
+
+	Merge with DMD 1.040
+
+	* dmd/..., phobos/...: Now working for D1 (Not on GCC 4.3.4?)
+
+	* asmstmt.cc: Merge from dmd/statement.c
+
+	* phobos/acinclude.m4, phobos/configure.in, phobos/phobos-ver-syms.in:
+	Posix is now defined.
+
+2009-10-24  Vincenzo Ampolo  <vincenzo.ampolo@gmail.com>
+
+	* dmd/attrib.c, dmd/cast.c, dmd/class.c, dmd/constfold.c,
+	dmd/declaration.c, dmd/dsymbol.c, dmd/expression.c, dmd/toobj.c: Fixes
+	some errors in the DMD v1 frontend. Trying to fix DMD 1.039, but still
+	no fix. The problem may be in phobos then.
+
+	Changes to GCC-4.4.x branch:
+
+	* d-lang.cc, d-lang.h setup-gcc.sh, patches/patch-gcc-4.4.x,
+	patches/patch-toplev-4.4.x: Applied Eldar patches for gcc 4.4.0
+
+2009-10-07  Vincenzo Ampolo  <vincenzo.ampolo@gmail.com>
+
+	* dmd2/attrib.c, dmd2/class.c, dmd2/declaration.c, dmd2/doc.c,
+	dmd2/dsymbol.h, dmd2/func.c, dmd2/parse.c, dmd2/statement.c,
+	dmd2/template.c, dmd2/toir.c: 2.015 WORKING ;)
+
+	* dmd2/parse.c: Fixed problem with static if.
+
+	* dmd2/template.c: Fixed problem with tuples.
+
+	* Makefile-lang.in: Update for files added in DMD 2.015.
+
+2009-10-01  Vincenzo Ampolo  <vincenzo.ampolo@gmail.com>
+
+	Changes to 2.032 branch:
+
+	* dmd2/..., phobos2/...: Force merge with 2.032 - NOT WORKING AT ALL.
+	- Adding new files.
+
+2009-10-04  michaelp  <baseball.mjp@gmail.com>
+
+	Merge with DMD 1.039
+
+	* d-decls.cc: Merge changes from dmd/mtype.h.
+
+	* phobos/internal/aaA.d, phobos/std/stdio.d: Small Phobos fix.
+
+2009-09-30  Vincenzo Ampolo  <vincenzo.ampolo@gmail.com>
+
+	* phobos2/internal/aaA.d, phobos2/linux.mak, phobos2/std/algorithm.d,
+	phobos2/std/functional.d, phobos2/std/math.d, phobos2/std/thread.d:
+	DMD 2.015 Phobos changes.
+
+	* Make-lang.in: Fixed a problem introduced by Michael modifying a
+	common file between D1 and D2.
+
+
+2009-09-29  michaelp  <baseball.mjp@gmail.com>
+
+	Merge with DMD 1.036
+
+2009-09-28  Vincenzo Ampolo  <vincenzo.ampolo@gmail.com>
+
+	Merge with DMD 2.015
+
+	* dmd2/mtype.h, dmd2/parse.c: Fixed parser in D2.
+
+	* dmd2/template.c, dmd2/toobj.c: Other fixes.
+
+2009-09-28  michaelp  <baseball.mjp@gmail.com>
+
+	Merge with DMD 1.035
+
+	* d-objfile.cc: Merge changes from dmd/attrib.c.
+
+	* phobos/Makefile.in, phobos/internal/arraydouble.d,
+	phobos/internal/arrayfloat.d: Included arraydouble, arrayfloat, and
+	arrayreal in libphobos Makefile.
+
+	* asmstmt.cc, dmd/statement.c, dmd/statement.h, phobos/std/math.d: Fixed
+	Phobos std.math bug.
+
+2009-09-25  michaelp  <baseball.mjp@gmail.com>
+
+	Merge with DMD 1.033
+
+2009-09-17  Vincenzo Ampolo  <vincenzo.ampolo@gmail.com>
+
+	* dmd2.032/...: Initial import of version 2.032.
+
+	* setup-gcc.sh, dmd/.svn/...: Removed .svn directory.
+
+2009-09-13  michaelp  <baseball.mjp@gmail.com>
+
+	* phobos/std/boxer.d phobos/std/dateparse.d: Fixed phobos build and
+	possible implicit conversion errors in boxer.d.
+
+	* d-objfile.cc: Removed assert(0) line 926.
+
+2009-09-13  Vincenzo Ampolo  <vincenzo.ampolo@gmail.com>
+
+	* History gdc-version: Changed version.
+
+	* phobos2/config/x3, setup-gcc.sh: Added support for DMD 2.
+
+	* phobos2/std/c/string.d, phobos2/std/contracts.d: Fixed a std.string
+	bug following these guidelines:
+	http://www.digitalmars.com/d/archives/D/gnu/strerror_r_3403.html
+
+	* phobos2/std/contracts.d, phobos2/std/date.d, phobos2/std/dateparse.d,
+	phobos2/std/file.d, phobos2/std/md5.d, phobos2/std/path.d,
+	phobos2/std/random.d, phobos2/std/stdio.d: Fix DMD 2 for GCC-4.3.4
+
+2009-09-11  Vincenzo Ampolo  <vincenzo.ampolo@gmail.com>
+
+	Switching to Mercurial branch system.
+
+	* d/...: Setting up default branch with GCC-4.3.x support.
+
+	* branches/gcc-4.1/...: Starting gcc-4.1.x stable branch.
+
+	* setup-gcc.sh, target-ver-syms.sh: Fixed permission problems in
+	bash scripts.
+
+2009-09-10  Vincenzo Ampolo  <vincenzo.ampolo@gmail.com>
+
+	* trunk/...: Import of gdc 0.24 stable into bitbucket.
+
+2009-01-31  Arthur Loiret  <arthur.loiret@u-psud.fr>
+
+	* d-glue.cc, d-objfile.cc, d-codegen.cc, d-lang.h, d-builtins2.cc,
+	d-convert.cc, d-codegen.h: Replace calls to build macro by appropriate
+	buildN function (build is removed in GCC > 4.1).
+
+
+Copyright (C) 2009 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

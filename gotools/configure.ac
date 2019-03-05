@@ -16,10 +16,7 @@
 # <http://www.gnu.org/licenses/>.
 
 AC_INIT(package-unused, version-unused,, gotools)
-AC_PREREQ(2.64)
 AC_CONFIG_SRCDIR(Makefile.am)
-
-m4_include([config/go.m4])
 
 # Determine the noncanonical names used for directories.
 ACX_NONCANONICAL_BUILD

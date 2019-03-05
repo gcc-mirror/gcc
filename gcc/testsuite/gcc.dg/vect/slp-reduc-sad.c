@@ -12,7 +12,7 @@ extern void abort (void);
 int __attribute__((noinline,noclone))
 foo (uint8_t *pix1, uint8_t *pix2, int i_stride_pix2)
 {
-  int i_sum = 0;
+  int i_sum = 5;
   for( int y = 0; y < 16; y++ )
     {
       i_sum += abs ( pix1[0] - pix2[0] );
@@ -52,12 +52,12 @@ main ()
       __asm__ volatile ("");
     }
 
-  if (foo (X, Y, 16) != 32512)
+  if (foo (X, Y, 16) != 32512 + 5)
     abort ();
 
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "vect_recog_sad_pattern: detected" "vect" } } */
+/* { dg-final { scan-tree-dump "sad pattern recognized" "vect" } } */
 /* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */

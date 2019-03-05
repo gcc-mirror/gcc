@@ -1,5 +1,5 @@
 /* Generic routines for manipulating SSA_NAME expressions
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -112,8 +112,10 @@ fini_ssanames (struct function *fn)
 void
 ssanames_print_statistics (void)
 {
-  fprintf (stderr, "SSA_NAME nodes allocated: %u\n", ssa_name_nodes_created);
-  fprintf (stderr, "SSA_NAME nodes reused: %u\n", ssa_name_nodes_reused);
+  fprintf (stderr, "%-32s" PRsa (11) "\n", "SSA_NAME nodes allocated:",
+	   SIZE_AMOUNT (ssa_name_nodes_created));
+  fprintf (stderr, "%-32s" PRsa (11) "\n", "SSA_NAME nodes reused:",
+	   SIZE_AMOUNT (ssa_name_nodes_reused));
 }
 
 /* Verify the state of the SSA_NAME lists.
@@ -331,7 +333,7 @@ make_ssa_name_fn (struct function *fn, tree var, gimple *stmt,
    NAME.  */
 
 void
-set_range_info_raw (tree name, enum value_range_type range_type,
+set_range_info_raw (tree name, enum value_range_kind range_type,
 		    const wide_int_ref &min, const wide_int_ref &max)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
@@ -372,7 +374,7 @@ set_range_info_raw (tree name, enum value_range_type range_type,
    NAME while making sure we don't store useless range info.  */
 
 void
-set_range_info (tree name, enum value_range_type range_type,
+set_range_info (tree name, enum value_range_kind range_type,
 		const wide_int_ref &min, const wide_int_ref &max)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
@@ -396,12 +398,21 @@ set_range_info (tree name, enum value_range_type range_type,
   set_range_info_raw (name, range_type, min, max);
 }
 
+/* Store range information for NAME from a value_range.  */
 
-/* Gets range information MIN, MAX and returns enum value_range_type
-   corresponding to tree ssa_name NAME.  enum value_range_type returned
+void
+set_range_info (tree name, const value_range_base &vr)
+{
+  wide_int min = wi::to_wide (vr.min ());
+  wide_int max = wi::to_wide (vr.max ());
+  set_range_info (name, vr.kind (), min, max);
+}
+
+/* Gets range information MIN, MAX and returns enum value_range_kind
+   corresponding to tree ssa_name NAME.  enum value_range_kind returned
    is used to determine if MIN and MAX are valid values.  */
 
-enum value_range_type
+enum value_range_kind
 get_range_info (const_tree name, wide_int *min, wide_int *max)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
@@ -417,6 +428,27 @@ get_range_info (const_tree name, wide_int *min, wide_int *max)
   *min = ri->get_min ();
   *max = ri->get_max ();
   return SSA_NAME_RANGE_TYPE (name);
+}
+
+/* Gets range information corresponding to ssa_name NAME and stores it
+   in a value_range VR.  Returns the value_range_kind.  */
+
+enum value_range_kind
+get_range_info (const_tree name, value_range_base &vr)
+{
+  tree min, max;
+  wide_int wmin, wmax;
+  enum value_range_kind kind = get_range_info (name, &wmin, &wmax);
+
+  if (kind == VR_VARYING || kind == VR_UNDEFINED)
+    min = max = NULL;
+  else
+    {
+      min = wide_int_to_tree (TREE_TYPE (name), wmin);
+      max = wide_int_to_tree (TREE_TYPE (name), wmax);
+    }
+  vr.set (kind, min, max);
+  return kind;
 }
 
 /* Set nonnull attribute to pointer NAME.  */
@@ -559,7 +591,7 @@ release_ssa_name_fn (struct function *fn, tree var)
      keep a status bit in the SSA_NAME node itself to indicate it has
      been put on the free list.
 
-     Note that once on the freelist you can not reference the SSA_NAME's
+     Note that once on the freelist you cannot reference the SSA_NAME's
      defining statement.  */
   if (! SSA_NAME_IN_FREE_LIST (var))
     {
@@ -727,7 +759,7 @@ duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)
 /* Creates a duplicate of the range_info_def at RANGE_INFO of type
    RANGE_TYPE for use by the SSA name NAME.  */
 void
-duplicate_ssa_name_range_info (tree name, enum value_range_type range_type,
+duplicate_ssa_name_range_info (tree name, enum value_range_kind range_type,
 			       struct range_info_def *range_info)
 {
   struct range_info_def *new_range_info;

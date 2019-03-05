@@ -1,5 +1,5 @@
 /* Dependency analysis
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of GCC.
@@ -187,6 +187,11 @@ are_identical_variables (gfc_expr *e1, gfc_expr *e2)
 	  if (gfc_dep_compare_expr (r1->u.ss.end, r2->u.ss.end) != 0)
 	    return false;
 
+	  break;
+
+	case REF_INQUIRY:
+	  if (r1->u.i != r2->u.i)
+	    return false;
 	  break;
 
 	default:
@@ -905,6 +910,7 @@ gfc_ref_needs_temporary_p (gfc_ref *ref)
 	return subarray_p;
 
       case REF_COMPONENT:
+      case REF_INQUIRY:
 	break;
       }
 

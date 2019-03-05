@@ -1,6 +1,6 @@
 // <extptr_allocator.h> -*- C++ -*-
 
-// Copyright (C) 2008-2018 Free Software Foundation, Inc.
+// Copyright (C) 2008-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -92,7 +92,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const_pointer address(const_reference __x) const _GLIBCXX_NOEXCEPT
       { return std::__addressof(__x); }
 
-      pointer allocate(size_type __n, void* __hint = 0)
+      _GLIBCXX_NODISCARD pointer allocate(size_type __n, void* __hint = 0)
       { return _M_real_alloc.allocate(__n,__hint); }
 
       void deallocate(pointer __p, size_type __n)

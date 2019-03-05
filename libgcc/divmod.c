@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,7 +21,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-long udivmodsi4 ();
+extern unsigned long __udivmodsi4(unsigned long num, unsigned long den,
+								  int modwanted);
 
 long
 __divsi3 (long a, long b)
@@ -41,7 +42,7 @@ __divsi3 (long a, long b)
       neg = !neg;
     }
 
-  res = udivmodsi4 (a, b, 0);
+  res = __udivmodsi4 (a, b, 0);
 
   if (neg)
     res = -res;
@@ -64,7 +65,7 @@ __modsi3 (long a, long b)
   if (b < 0)
     b = -b;
 
-  res = udivmodsi4 (a, b, 1);
+  res = __udivmodsi4 (a, b, 1);
 
   if (neg)
     res = -res;

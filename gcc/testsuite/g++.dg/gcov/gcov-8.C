@@ -1,5 +1,3 @@
-/* Verify that intermediate coverage format can be generated for simple code. */
-
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
 /* { dg-do run { target native } } */
 
@@ -32,4 +30,4 @@ int main()
   foo();
 }
 
-/* { dg-final { run-gcov intermediate { -i -b gcov-8.C } } } */
+/* { dg-final { run-gcov { -b gcov-8.C } } } */

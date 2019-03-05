@@ -1,5 +1,5 @@
 /* Diagnostic routines shared by all languages that are variants of C.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "c-family/c-indentation.h"
 #include "calls.h"
+#include "stor-layout.h"
 
 /* Print a warning if a constant expression had overflow in folding.
    Invoke this function on every expression that the language
@@ -208,19 +209,22 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
   if (!truth_value_p (code_left)
       && INTEGRAL_TYPE_P (TREE_TYPE (op_left))
       && !CONSTANT_CLASS_P (op_left)
-      && !TREE_NO_WARNING (op_left)
-      && TREE_CODE (op_right) == INTEGER_CST
-      && !integer_zerop (op_right)
-      && !integer_onep (op_right))
+      && !TREE_NO_WARNING (op_left))
     {
-      if (or_op)
-	warning_at (location, OPT_Wlogical_op, "logical %<or%>"
-		    " applied to non-boolean constant");
-      else
-	warning_at (location, OPT_Wlogical_op, "logical %<and%>"
-		    " applied to non-boolean constant");
-      TREE_NO_WARNING (op_left) = true;
-      return;
+      tree folded_op_right = fold_for_warn (op_right);
+      if (TREE_CODE (folded_op_right) == INTEGER_CST
+	  && !integer_zerop (folded_op_right)
+	  && !integer_onep (folded_op_right))
+	{
+	  if (or_op)
+	    warning_at (location, OPT_Wlogical_op, "logical %<or%>"
+			" applied to non-boolean constant");
+	  else
+	    warning_at (location, OPT_Wlogical_op, "logical %<and%>"
+			" applied to non-boolean constant");
+	  TREE_NO_WARNING (op_left) = true;
+	  return;
+	}
     }
 
   /* We do not warn for constants because they are typical of macro
@@ -319,7 +323,8 @@ find_array_ref_with_const_idx_r (tree *expr_p, int *, void *)
 
   if ((TREE_CODE (expr) == ARRAY_REF
        || TREE_CODE (expr) == ARRAY_RANGE_REF)
-      && TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST)
+      && (TREE_CODE (fold_for_warn (TREE_OPERAND (expr, 1)))
+	  == INTEGER_CST))
     return integer_type_node;
 
   return NULL_TREE;
@@ -331,7 +336,7 @@ find_array_ref_with_const_idx_r (tree *expr_p, int *, void *)
    of this comparison.  */
 
 static void
-warn_tautological_bitwise_comparison (location_t loc, tree_code code,
+warn_tautological_bitwise_comparison (const op_location_t &loc, tree_code code,
 				      tree lhs, tree rhs)
 {
   if (code != EQ_EXPR && code != NE_EXPR)
@@ -340,24 +345,30 @@ warn_tautological_bitwise_comparison (location_t loc, tree_code code,
   /* Extract the operands from e.g. (x & 8) == 4.  */
   tree bitop;
   tree cst;
+  tree stripped_lhs = tree_strip_any_location_wrapper (lhs);
+  tree stripped_rhs = tree_strip_any_location_wrapper (rhs);
   if ((TREE_CODE (lhs) == BIT_AND_EXPR
        || TREE_CODE (lhs) == BIT_IOR_EXPR)
-      && TREE_CODE (rhs) == INTEGER_CST)
-    bitop = lhs, cst = rhs;
+      && TREE_CODE (stripped_rhs) == INTEGER_CST)
+    bitop = lhs, cst = stripped_rhs;
   else if ((TREE_CODE (rhs) == BIT_AND_EXPR
 	    || TREE_CODE (rhs) == BIT_IOR_EXPR)
-	   && TREE_CODE (lhs) == INTEGER_CST)
-    bitop = rhs, cst = lhs;
+	   && TREE_CODE (stripped_lhs) == INTEGER_CST)
+    bitop = rhs, cst = stripped_lhs;
   else
     return;
 
   tree bitopcst;
-  if (TREE_CODE (TREE_OPERAND (bitop, 0)) == INTEGER_CST)
-    bitopcst = TREE_OPERAND (bitop, 0);
-  else if (TREE_CODE (TREE_OPERAND (bitop, 1)) == INTEGER_CST)
-    bitopcst = TREE_OPERAND (bitop, 1);
-  else
-    return;
+  tree bitop_op0 = fold_for_warn (TREE_OPERAND (bitop, 0));
+  if (TREE_CODE (bitop_op0) == INTEGER_CST)
+    bitopcst = bitop_op0;
+  else {
+    tree bitop_op1 = fold_for_warn (TREE_OPERAND (bitop, 1));
+    if (TREE_CODE (bitop_op1) == INTEGER_CST)
+      bitopcst = bitop_op1;
+    else
+      return;
+  }
 
   /* Note that the two operands are from before the usual integer
      conversions, so their types might not be the same.
@@ -380,12 +391,52 @@ warn_tautological_bitwise_comparison (location_t loc, tree_code code,
   if (res == cstw)
     return;
 
+  binary_op_rich_location richloc (loc, lhs, rhs, false);
   if (code == EQ_EXPR)
-    warning_at (loc, OPT_Wtautological_compare,
+    warning_at (&richloc, OPT_Wtautological_compare,
 		"bitwise comparison always evaluates to false");
   else
-    warning_at (loc, OPT_Wtautological_compare,
+    warning_at (&richloc, OPT_Wtautological_compare,
 		"bitwise comparison always evaluates to true");
+}
+
+/* Given LOC from a macro expansion, return the map for the outermost
+   macro in the nest of expansions.  */
+
+static const line_map_macro *
+get_outermost_macro_expansion (location_t loc)
+{
+  gcc_assert (from_macro_expansion_at (loc));
+
+  const line_map *map = linemap_lookup (line_table, loc);
+  const line_map_macro *macro_map;
+  do
+    {
+      macro_map = linemap_check_macro (map);
+      loc = linemap_unwind_toward_expansion (line_table, loc, &map);
+    } while (linemap_macro_expansion_map_p (map));
+
+  return macro_map;
+}
+
+/* Given LOC_A and LOC_B from macro expansions, return true if
+   they are "spelled the same" i.e. if they are both directly from
+   expansion of the same non-function-like macro.  */
+
+static bool
+spelled_the_same_p (location_t loc_a, location_t loc_b)
+{
+  gcc_assert (from_macro_expansion_at (loc_a));
+  gcc_assert (from_macro_expansion_at (loc_b));
+
+  const line_map_macro *map_a = get_outermost_macro_expansion (loc_a);
+  const line_map_macro *map_b = get_outermost_macro_expansion (loc_b);
+
+  if (map_a->macro == map_b->macro)
+    if (!cpp_fun_like_macro_p (map_a->macro))
+      return true;
+
+  return false;
 }
 
 /* Warn if a self-comparison always evaluates to true or false.  LOC
@@ -393,16 +444,27 @@ warn_tautological_bitwise_comparison (location_t loc, tree_code code,
    operands of the comparison.  */
 
 void
-warn_tautological_cmp (location_t loc, enum tree_code code, tree lhs, tree rhs)
+warn_tautological_cmp (const op_location_t &loc, enum tree_code code,
+		       tree lhs, tree rhs)
 {
   if (TREE_CODE_CLASS (code) != tcc_comparison)
     return;
 
   /* Don't warn for various macro expansions.  */
-  if (from_macro_expansion_at (loc)
-      || from_macro_expansion_at (EXPR_LOCATION (lhs))
-      || from_macro_expansion_at (EXPR_LOCATION (rhs)))
+  if (from_macro_expansion_at (loc))
     return;
+  bool lhs_in_macro = from_macro_expansion_at (EXPR_LOCATION (lhs));
+  bool rhs_in_macro = from_macro_expansion_at (EXPR_LOCATION (rhs));
+  if (lhs_in_macro || rhs_in_macro)
+    {
+      /* Don't warn if exactly one is from a macro.  */
+      if (!(lhs_in_macro && rhs_in_macro))
+	return;
+
+      /* If both are in a macro, only warn if they're spelled the same.  */
+      if (!spelled_the_same_p (EXPR_LOCATION (lhs), EXPR_LOCATION (rhs)))
+	return;
+    }
 
   warn_tautological_bitwise_comparison (loc, code, lhs, rhs);
 
@@ -437,11 +499,12 @@ warn_tautological_cmp (location_t loc, enum tree_code code, tree lhs, tree rhs)
       const bool always_true = (code == EQ_EXPR || code == LE_EXPR
 				|| code == GE_EXPR || code == UNLE_EXPR
 				|| code == UNGE_EXPR || code == UNEQ_EXPR);
+      binary_op_rich_location richloc (loc, lhs, rhs, false);
       if (always_true)
-	warning_at (loc, OPT_Wtautological_compare,
+	warning_at (&richloc, OPT_Wtautological_compare,
 		    "self-comparison always evaluates to true");
       else
-	warning_at (loc, OPT_Wtautological_compare,
+	warning_at (&richloc, OPT_Wtautological_compare,
 		    "self-comparison always evaluates to false");
     }
 }
@@ -784,7 +847,12 @@ sizeof_pointer_memaccess_warning (location_t *sizeof_arg_loc, tree callee,
   if (idx >= 3)
     return;
 
-  if (sizeof_arg[idx] == NULL || sizeof_arg[idx] == error_mark_node)
+  /* Use error_operand_p to detect non-error arguments with an error
+     type that the C++ front-end constructs.  */
+  if (error_operand_p (src)
+      || error_operand_p (dest)
+      || !sizeof_arg[idx]
+      || error_operand_p (sizeof_arg[idx]))
     return;
 
   type = TYPE_P (sizeof_arg[idx])
@@ -1524,6 +1592,7 @@ readonly_error (location_t loc, tree arg, enum lvalue_use use)
 {
   gcc_assert (use == lv_assign || use == lv_increment || use == lv_decrement
 	      || use == lv_asm);
+  STRIP_ANY_LOCATION_WRAPPER (arg);
   /* Using this macro rather than (for example) arrays of messages
      ensures that all the format strings are checked at compile
      time.  */
@@ -1664,15 +1733,22 @@ invalid_indirection_error (location_t loc, tree type, ref_operator errstring)
    warn for unsigned char since that type is safe.  Don't warn for
    signed char because anyone who uses that must have done so
    deliberately. Furthermore, we reduce the false positive load by
-   warning only for non-constant value of type char.  */
+   warning only for non-constant value of type char.
+   LOC is the location of the subscripting expression.  */
 
 void
 warn_array_subscript_with_type_char (location_t loc, tree index)
 {
-  if (TYPE_MAIN_VARIANT (TREE_TYPE (index)) == char_type_node
-      && TREE_CODE (index) != INTEGER_CST)
-    warning_at (loc, OPT_Wchar_subscripts,
-		"array subscript has type %<char%>");
+  if (TYPE_MAIN_VARIANT (TREE_TYPE (index)) == char_type_node)
+    {
+      /* If INDEX has a location, use it; otherwise use LOC (the location
+	 of the subscripting expression as a whole).  */
+      loc = EXPR_LOC_OR_LOC (index, loc);
+      STRIP_ANY_LOCATION_WRAPPER (index);
+      if (TREE_CODE (index) != INTEGER_CST)
+	warning_at (loc, OPT_Wchar_subscripts,
+		    "array subscript has type %<char%>");
+    }
 }
 
 /* Implement -Wparentheses for the unexpected C precedence rules, to
@@ -2286,6 +2362,8 @@ diagnose_mismatched_attributes (tree olddecl, tree newdecl)
 /* Warn if signed left shift overflows.  We don't warn
    about left-shifting 1 into the sign bit in C++14; cf.
    <http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3367.html#1457>
+   and don't warn for C++2a at all, as signed left shifts never
+   overflow.
    LOC is a location of the shift; OP0 and OP1 are the operands.
    Return true if an overflow is detected, false otherwise.  */
 
@@ -2300,7 +2378,7 @@ maybe_warn_shift_overflow (location_t loc, tree op0, tree op1)
   unsigned int prec0 = TYPE_PRECISION (type0);
 
   /* Left-hand operand must be signed.  */
-  if (TYPE_UNSIGNED (type0))
+  if (TYPE_UNSIGNED (type0) || cxx_dialect >= cxx2a)
     return false;
 
   unsigned int min_prec = (wi::min_precision (wi::to_wide (op0), SIGNED)
@@ -2309,7 +2387,7 @@ maybe_warn_shift_overflow (location_t loc, tree op0, tree op1)
    * However, shifting 1 _out_ of the sign bit, as in
    * INT_MIN << 1, is considered an overflow.
    */
-  if (!tree_int_cst_sign_bit(op0) && min_prec == prec0 + 1)
+  if (!tree_int_cst_sign_bit (op0) && min_prec == prec0 + 1)
     {
       /* Never warn for C++14 onwards.  */
       if (cxx_dialect >= cxx14)
@@ -2608,4 +2686,211 @@ warn_for_multistatement_macros (location_t body_loc, location_t next_loc,
 		  "macro expands to multiple statements"))
     inform (guard_loc, "some parts of macro expansion are not guarded by "
 	    "this %qs clause", guard_tinfo_to_string (keyword));
+}
+
+/* Return struct or union type if the alignment of data memeber, FIELD,
+   is less than the alignment of TYPE.  Otherwise, return NULL_TREE.
+   If RVALUE is true, only arrays evaluate to pointers.  */
+
+static tree
+check_alignment_of_packed_member (tree type, tree field, bool rvalue)
+{
+  /* Check alignment of the data member.  */
+  if (TREE_CODE (field) == FIELD_DECL
+      && (DECL_PACKED (field) || TYPE_PACKED (TREE_TYPE (field)))
+      && (!rvalue || TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE))
+    {
+      /* Check the expected alignment against the field alignment.  */
+      unsigned int type_align = min_align_of_type (type);
+      tree context = DECL_CONTEXT (field);
+      unsigned int record_align = min_align_of_type (context);
+      if (record_align < type_align)
+	return context;
+      tree field_off = byte_position (field);
+      if (!multiple_of_p (TREE_TYPE (field_off), field_off,
+			  size_int (type_align)))
+	return context;
+    }
+
+  return NULL_TREE;
+}
+
+/* Return struct or union type if the right hand value, RHS:
+   1. Is a pointer value which isn't aligned to a pointer type TYPE.
+   2. Is an address which takes the unaligned address of packed member
+      of struct or union when assigning to TYPE.
+   Otherwise, return NULL_TREE.  */
+
+static tree
+check_address_or_pointer_of_packed_member (tree type, tree rhs)
+{
+  bool rvalue = true;
+  bool indirect = false;
+
+  if (INDIRECT_REF_P (rhs))
+    {
+      rhs = TREE_OPERAND (rhs, 0);
+      STRIP_NOPS (rhs);
+      indirect = true;
+    }
+
+  if (TREE_CODE (rhs) == ADDR_EXPR)
+    {
+      rhs = TREE_OPERAND (rhs, 0);
+      rvalue = indirect;
+    }
+
+  if (!POINTER_TYPE_P (type))
+    return NULL_TREE;
+
+  type = TREE_TYPE (type);
+
+  if (TREE_CODE (rhs) == PARM_DECL
+      || VAR_P (rhs)
+      || TREE_CODE (rhs) == CALL_EXPR)
+    {
+      tree rhstype = TREE_TYPE (rhs);
+      if (TREE_CODE (rhs) == CALL_EXPR)
+	{
+	  rhs = CALL_EXPR_FN (rhs);	/* Pointer expression.  */
+	  if (rhs == NULL_TREE)
+	    return NULL_TREE;
+	  rhs = TREE_TYPE (rhs);	/* Pointer type.  */
+	  rhs = TREE_TYPE (rhs);	/* Function type.  */
+	  rhstype = TREE_TYPE (rhs);
+	  if (!POINTER_TYPE_P (rhstype))
+	    return NULL_TREE;
+	  rvalue = true;
+	}
+      if (rvalue && POINTER_TYPE_P (rhstype))
+	rhstype = TREE_TYPE (rhstype);
+      while (TREE_CODE (rhstype) == ARRAY_TYPE)
+	rhstype = TREE_TYPE (rhstype);
+      if (TYPE_PACKED (rhstype))
+	{
+	  unsigned int type_align = min_align_of_type (type);
+	  unsigned int rhs_align = min_align_of_type (rhstype);
+	  if (rhs_align < type_align)
+	    {
+	      location_t location = EXPR_LOC_OR_LOC (rhs, input_location);
+	      warning_at (location, OPT_Waddress_of_packed_member,
+			  "converting a packed %qT pointer (alignment %d) "
+			  "to a %qT pointer (alignment %d) may result in an "
+			  "unaligned pointer value",
+			  rhstype, rhs_align, type, type_align);
+	      tree decl = TYPE_STUB_DECL (rhstype);
+	      if (decl)
+		inform (DECL_SOURCE_LOCATION (decl), "defined here");
+	      decl = TYPE_STUB_DECL (type);
+	      if (decl)
+		inform (DECL_SOURCE_LOCATION (decl), "defined here");
+	    }
+	}
+      return NULL_TREE;
+    }
+
+  tree context = NULL_TREE;
+
+  /* Check alignment of the object.  */
+  while (handled_component_p (rhs))
+    {
+      if (TREE_CODE (rhs) == COMPONENT_REF)
+	{
+	  tree field = TREE_OPERAND (rhs, 1);
+	  context = check_alignment_of_packed_member (type, field, rvalue);
+	  if (context)
+	    break;
+	}
+      if (TREE_CODE (TREE_TYPE (rhs)) == ARRAY_TYPE)
+	rvalue = false;
+      if (rvalue)
+	return NULL_TREE;
+      rhs = TREE_OPERAND (rhs, 0);
+    }
+
+  return context;
+}
+
+/* Check and warn if the right hand value, RHS:
+   1. Is a pointer value which isn't aligned to a pointer type TYPE.
+   2. Is an address which takes the unaligned address of packed member
+      of struct or union when assigning to TYPE.
+ */
+
+static void
+check_and_warn_address_or_pointer_of_packed_member (tree type, tree rhs)
+{
+  bool nop_p = false;
+  tree orig_rhs;
+
+  do
+    {
+      while (TREE_CODE (rhs) == COMPOUND_EXPR)
+	rhs = TREE_OPERAND (rhs, 1);
+      orig_rhs = rhs;
+      STRIP_NOPS (rhs);
+      nop_p |= orig_rhs != rhs;
+    }
+  while (orig_rhs != rhs);
+
+  if (TREE_CODE (rhs) == COND_EXPR)
+    {
+      /* Check the THEN path.  */
+      check_and_warn_address_or_pointer_of_packed_member
+	(type, TREE_OPERAND (rhs, 1));
+
+      /* Check the ELSE path.  */
+      check_and_warn_address_or_pointer_of_packed_member
+	(type, TREE_OPERAND (rhs, 2));
+    }
+  else
+    {
+      if (nop_p)
+	{
+	  switch (TREE_CODE (rhs))
+	    {
+	    case ADDR_EXPR:
+	      /* Address is taken.   */
+	    case PARM_DECL:
+	    case VAR_DECL:
+	      /* Pointer conversion.  */
+	      break;
+	    case CALL_EXPR:
+	      /* Function call. */
+	      break;
+	    default:
+	      return;
+	    }
+	}
+
+      tree context
+	= check_address_or_pointer_of_packed_member (type, rhs);
+      if (context)
+	{
+	  location_t loc = EXPR_LOC_OR_LOC (rhs, input_location);
+	  warning_at (loc, OPT_Waddress_of_packed_member,
+		      "taking address of packed member of %qT may result "
+		      "in an unaligned pointer value",
+		      context);
+	}
+    }
+}
+
+/* Warn if the right hand value, RHS:
+   1. Is a pointer value which isn't aligned to a pointer type TYPE.
+   2. Is an address which takes the unaligned address of packed member
+      of struct or union when assigning to TYPE.
+*/
+
+void
+warn_for_address_or_pointer_of_packed_member (tree type, tree rhs)
+{
+  if (!warn_address_of_packed_member)
+    return;
+
+  /* Don't warn if we don't assign RHS to a pointer.  */
+  if (!POINTER_TYPE_P (type))
+    return;
+
+  check_and_warn_address_or_pointer_of_packed_member (type, rhs);
 }

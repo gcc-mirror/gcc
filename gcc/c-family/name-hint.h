@@ -1,5 +1,5 @@
 /* Support for offering suggestions for handling unrecognized names.
-   Copyright (C) 2016-2018 Free Software Foundation, Inc.
+   Copyright (C) 2016-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -99,7 +99,14 @@ public:
   }
 
   const char *suggestion () const { return m_suggestion; }
-  operator bool () const { return m_suggestion != NULL; }
+
+  /* Does this name_hint have a suggestion or a deferred diagnostic?  */
+  operator bool () const { return (m_suggestion != NULL
+				   || m_deferred != NULL); }
+
+  /* Take ownership of this name_hint's deferred_diagnostic, for use
+     in chaining up deferred diagnostics.  */
+  gnu::unique_ptr<deferred_diagnostic> take_deferred () { return move (m_deferred); }
 
   /* Call this on a name_hint if the corresponding warning was not emitted,
      in which case we should also not emit the deferred_diagnostic.  */

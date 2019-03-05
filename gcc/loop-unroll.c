@@ -1,5 +1,5 @@
 /* Loop unrolling.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -199,15 +199,16 @@ report_unroll (struct loop *loop, dump_location_t locus)
   if (!dump_enabled_p ())
     return;
 
-  dump_printf_loc (report_flags, locus,
+  dump_metadata_t metadata (report_flags, locus.get_impl_location ());
+  dump_printf_loc (metadata, locus.get_user_location (),
                    "loop unrolled %d times",
                    loop->lpt_decision.times);
   if (profile_info && loop->header->count.initialized_p ())
-    dump_printf (report_flags,
+    dump_printf (metadata,
                  " (header execution count %d)",
                  (int)loop->header->count.to_gcov_type ());
 
-  dump_printf (report_flags, "\n");
+  dump_printf (metadata, "\n");
 }
 
 /* Decide whether unroll loops and how much.  */
@@ -1406,7 +1407,7 @@ analyze_insn_to_expand_var (struct loop *loop, rtx_insn *insn)
     }
 
   /* Hmm, this is a bit paradoxical.  We know that INSN is a valid insn
-     in MD.  But if there is no optab to generate the insn, we can not
+     in MD.  But if there is no optab to generate the insn, we cannot
      perform the variable expansion.  This can happen if an MD provides
      an insn but not a named pattern to generate it, for example to avoid
      producing code that needs additional mode switches like for x87/mmx.

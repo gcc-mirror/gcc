@@ -1,5 +1,5 @@
 /* Interprocedural analyses.
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -160,7 +160,7 @@ struct GTY(()) ipa_vr
 {
   /* The data fields below are valid only if known is true.  */
   bool known;
-  enum value_range_type type;
+  enum value_range_kind type;
   wide_int min;
   wide_int max;
 };
@@ -182,7 +182,7 @@ struct GTY (()) ipa_jump_func
   /* Information about value range, containing valid data only when vr_known is
      true.  The pointed to structure is shared betweed different jump
      functions.  Use ipa_set_jfunc_vr to set this field.  */
-  struct value_range *m_vr;
+  struct value_range_base *m_vr;
 
   enum jump_func_type type;
   /* Represents a value of a jump function.  pass_through is used only in jump
@@ -428,8 +428,9 @@ struct ipa_func_body_info
   /* Number of parameters.  */
   int param_count;
 
-  /* Number of statements already walked by when analyzing this function.  */
-  unsigned int aa_walked;
+  /* Number of statements we are still allowed to walked by when analyzing this
+     function.  */
+  unsigned int aa_walk_budget;
 };
 
 /* ipa_node_params access functions.  Please use these to access fields that

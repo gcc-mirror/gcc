@@ -1,5 +1,5 @@
 // PR c++/85842
-// { dg-additional-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 template<class T>
 auto f = [](auto&& arg) -> T* {

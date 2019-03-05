@@ -1,6 +1,6 @@
 ; Options for the Synopsys DesignWare ARC port of the compiler
 ;
-; Copyright (C) 2005-2018 Free Software Foundation, Inc.
+; Copyright (C) 2005-2019 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -193,9 +193,9 @@ msdata
 Target Report InverseMask(NO_SDATA_SET)
 Generate sdata references.  This is the default, unless you compile for PIC.
 
-mno-millicode
-Target Report Mask(NO_MILLICODE_THUNK_SET)
-Do not generate millicode thunks (needed only with -Os).
+mmillicode
+Target Report Mask(MILLICODE_THUNK_SET)
+Generate millicode thunks.
 
 mspfp
 Target Report Mask(SPFP_COMPACT_SET)
@@ -263,6 +263,9 @@ EnumValue
 Enum(arc_tune_attr) String(arc601) Value(ARC_TUNE_ARC600)
 
 EnumValue
+Enum(arc_tune_attr) String(arc7xx) Value(ARC_TUNE_ARC7XX)
+
+EnumValue
 Enum(arc_tune_attr) String(arc700) Value(ARC_TUNE_ARC700_4_2_STD)
 
 EnumValue
@@ -328,7 +331,7 @@ Target Var(TARGET_CASE_VECTOR_PC_RELATIVE)
 Use pc-relative switch case tables - this enables case table shortening.
 
 mcompact-casesi
-Target Var(TARGET_COMPACT_CASESI)
+Target Warn(%qs is deprecated)
 Enable compact casesi pattern.
 
 mq-class
@@ -398,12 +401,9 @@ Target
 Pass -marclinux_prof option through to linker.
 
 ;; lra is still unproven for ARC, so allow to fall back to reload with -mno-lra.
-;Target InverseMask(NO_LRA)
-; lra still won't allow to configure libgcc; see PR rtl-optimization/55464.
-; so don't enable by default.
 mlra
-Target Mask(LRA)
-Enable lra.
+Target Report Var(arc_lra_flag) Init(1) Save
+Use LRA instead of reload.
 
 mlra-priority-none
 Target RejectNegative Var(arc_lra_priority_tag, ARC_LRA_PRIORITY_NONE)
@@ -531,3 +531,11 @@ Enum(arc_lpc) String(32) Value(32)
 mrf16
 Target Report Mask(RF16)
 Enable 16-entry register file.
+
+mbranch-index
+Target Report Var(TARGET_BRANCH_INDEX) Init(DEFAULT_BRANCH_INDEX)
+Enable use of BI/BIH instructions when available.
+
+mcode-density-frame
+Target Report Var(TARGET_CODE_DENSITY_FRAME)
+Enable ENTER_S and LEAVE_S opcodes for ARCv2.

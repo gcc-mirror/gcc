@@ -6,7 +6,7 @@
 
 subroutine probleme(p)
   real(kind=8), dimension(:) :: p
-  integer :: nx = size(p, 1)          ! { dg-error "Deferred array" }
+  integer :: nx = size(p, 1)          ! { dg-error "Assumed-shape array" }
   integer :: nix
 
   nix = nx

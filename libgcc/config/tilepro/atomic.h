@@ -1,5 +1,5 @@
 /* Macros for atomic functionality for tile.
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by Walter Lee (walt@tilera.com)
 
    This file is free software; you can redistribute it and/or modify it
@@ -59,7 +59,7 @@
    advantage of the kernel's existing atomic-integer support (managed
    by a distributed array of locks).  The kernel provides proper
    ordering among simultaneous atomic operations on different cores,
-   and guarantees a process can not be context-switched part way
+   and guarantees a process cannot be context-switched part way
    through an atomic operation.  By virtue of sharing the kernel
    atomic implementation, the userspace atomic operations
    are compatible with the atomic methods provided by the kernel's

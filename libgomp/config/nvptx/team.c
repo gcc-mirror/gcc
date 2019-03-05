@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2019 Free Software Foundation, Inc.
    Contributed by Alexander Monakov <amonakov@ispras.ru>
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -116,7 +116,8 @@ gomp_thread_start (struct gomp_thread_pool *pool)
 
 void
 gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
-		 unsigned flags, struct gomp_team *team)
+		 unsigned flags, struct gomp_team *team,
+		 struct gomp_taskgroup *taskgroup)
 {
   struct gomp_thread *thr, *nthr;
   struct gomp_task *task;
@@ -147,6 +148,7 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
   nthreads_var = icv->nthreads_var;
   gomp_init_task (thr->task, task, icv);
   team->implicit_task[0].icv.nthreads_var = nthreads_var;
+  team->implicit_task[0].taskgroup = taskgroup;
 
   if (nthreads == 1)
     return;
@@ -166,12 +168,19 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
       nthr->task = &team->implicit_task[i];
       gomp_init_task (nthr->task, task, icv);
       team->implicit_task[i].icv.nthreads_var = nthreads_var;
+      team->implicit_task[i].taskgroup = taskgroup;
       nthr->fn = fn;
       nthr->data = data;
       team->ordered_release[i] = &nthr->release;
     }
 
   gomp_simple_barrier_wait (&pool->threads_dock);
+}
+
+int
+gomp_pause_host (void)
+{
+  return -1;
 }
 
 #include "../../team.c"

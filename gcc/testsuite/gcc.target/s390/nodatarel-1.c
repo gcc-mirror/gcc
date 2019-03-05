@@ -29,7 +29,7 @@ bar (int b)
   a = b;
 }
 
-/* { dg-final { scan-assembler-times "a@GOTENT" 3 } } */
+/* { dg-final { scan-assembler-times "\\.LANCHOR\\d+@GOTENT" 3 } } */
 
 /* The exrl target is a label_ref which should not be affected at
    all.  */

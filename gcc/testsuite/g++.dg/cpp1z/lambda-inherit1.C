@@ -1,5 +1,5 @@
 // PR c++/80767
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 template <typename... Fs> 
 struct overloader : Fs...

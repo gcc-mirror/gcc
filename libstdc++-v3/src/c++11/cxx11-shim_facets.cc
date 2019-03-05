@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -223,6 +223,11 @@ namespace __facet_shims
   template<typename C>
     void
     __messages_close(other_abi, const facet*, messages_base::catalog);
+
+#pragma GCC diagnostic push
+// Suppress -Wabi=2 warnings due to empty struct argument passing changes.
+// TODO This should use -Wabi=12 but that currently fails (PR c++/87611).
+#pragma GCC diagnostic ignored "-Wabi"
 
   namespace // unnamed
   {
@@ -766,6 +771,8 @@ namespace __facet_shims
       else
 	return m->put(s, intl, io, fill, units);
     }
+
+#pragma GCC diagnostic pop
 
   template ostreambuf_iterator<char>
   __money_put(current_abi, const facet*, ostreambuf_iterator<char>,

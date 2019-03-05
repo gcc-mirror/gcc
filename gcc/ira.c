@@ -1,5 +1,5 @@
 /* Integrated Register Allocator (IRA) entry point.
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -233,7 +233,7 @@ along with GCC; see the file COPYING3.  If not see
 	 more profitable than memory usage.
 
        * Popping the allocnos from the stack and assigning them hard
-         registers.  If IRA can not assign a hard register to an
+         registers.  If IRA cannot assign a hard register to an
          allocno and the allocno is coalesced, IRA undoes the
          coalescing and puts the uncoalesced allocnos onto the stack in
          the hope that some such allocnos will get a hard register
@@ -937,7 +937,7 @@ setup_uniform_class_p (void)
       ira_uniform_class_p[cl] = false;
       if (ira_class_hard_regs_num[cl] == 0)
 	continue;
-      /* We can not use alloc_reg_class_subclasses here because move
+      /* We cannot use alloc_reg_class_subclasses here because move
 	 cost hooks does not take into account that some registers are
 	 unavailable for the subtarget.  E.g. for i686, INT_SSE_REGS
 	 is element of alloc_reg_class_subclasses for GENERAL_REGS
@@ -966,7 +966,7 @@ setup_uniform_class_p (void)
    IRA_IMPORTANT_CLASSES, and IRA_IMPORTANT_CLASSES_NUM.
 
    Target may have many subtargets and not all target hard registers can
-   be used for allocation, e.g. x86 port in 32-bit mode can not use
+   be used for allocation, e.g. x86 port in 32-bit mode cannot use
    hard registers introduced in x86-64 like r8-r15).  Some classes
    might have the same allocatable hard registers, e.g.  INDEX_REGS
    and GENERAL_REGS in x86 port in 32-bit mode.  To decrease different
@@ -1573,11 +1573,17 @@ ira_init_register_move_cost (machine_mode mode)
 {
   static unsigned short last_move_cost[N_REG_CLASSES][N_REG_CLASSES];
   bool all_match = true;
-  unsigned int cl1, cl2;
+  unsigned int i, cl1, cl2;
+  HARD_REG_SET ok_regs;
 
   ira_assert (ira_register_move_cost[mode] == NULL
 	      && ira_may_move_in_cost[mode] == NULL
 	      && ira_may_move_out_cost[mode] == NULL);
+  CLEAR_HARD_REG_SET (ok_regs);
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    if (targetm.hard_regno_mode_ok (i, mode))
+      SET_HARD_REG_BIT (ok_regs, i);
+
   /* Note that we might be asked about the move costs of modes that
      cannot be stored in any hard register, for example if an inline
      asm tries to create a register operand with an impossible mode.
@@ -1586,8 +1592,8 @@ ira_init_register_move_cost (machine_mode mode)
     for (cl2 = 0; cl2 < N_REG_CLASSES; cl2++)
       {
 	int cost;
-	if (!contains_reg_of_mode[cl1][mode]
-	    || !contains_reg_of_mode[cl2][mode])
+	if (!hard_reg_set_intersect_p (ok_regs, reg_class_contents[cl1])
+	    || !hard_reg_set_intersect_p (ok_regs, reg_class_contents[cl2]))
 	  {
 	    if ((ira_reg_class_max_nregs[cl1][mode]
 		 > ira_class_hard_regs_num[cl1])
@@ -3134,10 +3140,30 @@ equiv_init_movable_p (rtx x, int regno)
   return 1;
 }
 
-/* TRUE if X references a memory location that would be affected by a store
-   to MEMREF.  */
-static int
-memref_referenced_p (rtx memref, rtx x)
+static bool memref_referenced_p (rtx memref, rtx x, bool read_p);
+
+/* Auxiliary function for memref_referenced_p.  Process setting X for
+   MEMREF store.  */
+static bool
+process_set_for_memref_referenced_p (rtx memref, rtx x)
+{
+  /* If we are setting a MEM, it doesn't count (its address does), but any
+     other SET_DEST that has a MEM in it is referencing the MEM.  */
+  if (MEM_P (x))
+    {
+      if (memref_referenced_p (memref, XEXP (x, 0), true))
+	return true;
+    }
+  else if (memref_referenced_p (memref, x, false))
+    return true;
+  
+  return false;
+}
+
+/* TRUE if X references a memory location (as a read if READ_P) that
+   would be affected by a store to MEMREF.  */
+static bool
+memref_referenced_p (rtx memref, rtx x, bool read_p)
 {
   int i, j;
   const char *fmt;
@@ -3153,30 +3179,51 @@ memref_referenced_p (rtx memref, rtx x)
     case CC0:
     case HIGH:
     case LO_SUM:
-      return 0;
+      return false;
 
     case REG:
       return (reg_equiv[REGNO (x)].replacement
 	      && memref_referenced_p (memref,
-				      reg_equiv[REGNO (x)].replacement));
+				      reg_equiv[REGNO (x)].replacement, read_p));
 
     case MEM:
-      if (true_dependence (memref, VOIDmode, x))
-	return 1;
+      /* Memory X might have another effective type than MEMREF.  */
+      if (read_p || true_dependence (memref, VOIDmode, x))
+	return true;
       break;
 
     case SET:
-      /* If we are setting a MEM, it doesn't count (its address does), but any
-	 other SET_DEST that has a MEM in it is referencing the MEM.  */
-      if (MEM_P (SET_DEST (x)))
-	{
-	  if (memref_referenced_p (memref, XEXP (SET_DEST (x), 0)))
-	    return 1;
-	}
-      else if (memref_referenced_p (memref, SET_DEST (x)))
-	return 1;
+      if (process_set_for_memref_referenced_p (memref, SET_DEST (x)))
+	return true;
 
-      return memref_referenced_p (memref, SET_SRC (x));
+      return memref_referenced_p (memref, SET_SRC (x), true);
+
+    case CLOBBER:
+    case CLOBBER_HIGH:
+      if (process_set_for_memref_referenced_p (memref, XEXP (x, 0)))
+	return true;
+
+      return false;
+
+    case PRE_DEC:
+    case POST_DEC:
+    case PRE_INC:
+    case POST_INC:
+      if (process_set_for_memref_referenced_p (memref, XEXP (x, 0)))
+	return true;
+
+      return memref_referenced_p (memref, XEXP (x, 0), true);
+      
+    case POST_MODIFY:
+    case PRE_MODIFY:
+      /* op0 = op0 + op1 */
+      if (process_set_for_memref_referenced_p (memref, XEXP (x, 0)))
+	return true;
+
+      if (memref_referenced_p (memref, XEXP (x, 0), true))
+	return true;
+
+      return memref_referenced_p (memref, XEXP (x, 1), true);
 
     default:
       break;
@@ -3187,17 +3234,17 @@ memref_referenced_p (rtx memref, rtx x)
     switch (fmt[i])
       {
       case 'e':
-	if (memref_referenced_p (memref, XEXP (x, i)))
-	  return 1;
+	if (memref_referenced_p (memref, XEXP (x, i), read_p))
+	  return true;
 	break;
       case 'E':
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  if (memref_referenced_p (memref, XVECEXP (x, i, j)))
-	    return 1;
+	  if (memref_referenced_p (memref, XVECEXP (x, i, j), read_p))
+	    return true;
 	break;
       }
 
-  return 0;
+  return false;
 }
 
 /* TRUE if some insn in the range (START, END] references a memory location
@@ -3218,7 +3265,7 @@ memref_used_between_p (rtx memref, rtx_insn *start, rtx_insn *end)
       if (!NONDEBUG_INSN_P (insn))
 	continue;
 
-      if (memref_referenced_p (memref, PATTERN (insn)))
+      if (memref_referenced_p (memref, PATTERN (insn), false))
 	return 1;
 
       /* Nonconst functions may access memory.  */
@@ -3500,7 +3547,7 @@ update_equiv_regs (void)
 	      rtx_insn_list *list;
 
 	      /* If we have already processed this pseudo and determined it
-		 can not have an equivalence, then honor that decision.  */
+		 cannot have an equivalence, then honor that decision.  */
 	      if (reg_equiv[regno].no_equiv)
 		continue;
 
@@ -5384,7 +5431,7 @@ ira (FILE *f)
   if (ira_conflicts_p && ! ira_use_lra_p)
     /* Opposite to reload pass, LRA does not use any conflict info
        from IRA.  We don't rebuild conflict info for LRA (through
-       ira_flattening call) and can not use the check here.  We could
+       ira_flattening call) and cannot use the check here.  We could
        rebuild this info for LRA in the check mode but there is a risk
        that code generated with the check and without it will be a bit
        different.  Calling ira_flattening in any mode would be a
@@ -5417,7 +5464,7 @@ ira (FILE *f)
 	    = ((struct ira_spilled_reg_stack_slot *)
 	       ira_allocate (max_regno
 			     * sizeof (struct ira_spilled_reg_stack_slot)));
-	  memset (ira_spilled_reg_stack_slots, 0,
+	  memset ((void *)ira_spilled_reg_stack_slots, 0,
 		  max_regno * sizeof (struct ira_spilled_reg_stack_slot));
 	}
     }

@@ -1,5 +1,5 @@
 /* Handle initialization things in C++.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -569,8 +569,7 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 	}
       else
 	{
-	  int un = cp_unevaluated_operand;
-	  cp_unevaluated_operand = 0;
+	  cp_evaluated ev;
 
 	  location_t sloc = input_location;
 	  input_location = expr_loc;
@@ -616,7 +615,6 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 	    }
 
 	  input_location = sloc;
-	  cp_unevaluated_operand = un;
 	}
     }
   else
@@ -1758,7 +1756,8 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
 	{
 	  from_array = 1;
 	  init = mark_rvalue_use (init);
-	  if (init && DECL_P (init)
+	  if (init
+	      && DECL_P (tree_strip_any_location_wrapper (init))
 	      && !(flags & LOOKUP_ONLYCONVERTING))
 	    {
 	      /* Wrap the initializer in a CONSTRUCTOR so that build_vec_init
@@ -2606,6 +2605,7 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 	 Otherwise, use the size of the entire array as an optimistic
 	 estimate (this may lead to false negatives).  */
       tree adj = TREE_OPERAND (oper, 1);
+      adj = fold_for_warn (adj);
       if (CONSTANT_CLASS_P (adj))
 	adjust += wi::to_offset (convert (ssizetype, adj));
       else
@@ -2669,11 +2669,13 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 
       tree op0 = oper;
       while (TREE_CODE (op0 = TREE_OPERAND (op0, 0)) == COMPONENT_REF);
+      STRIP_ANY_LOCATION_WRAPPER (op0);
       if (VAR_P (op0))
 	var_decl = op0;
       oper = TREE_OPERAND (oper, 1);
     }
 
+  STRIP_ANY_LOCATION_WRAPPER (oper);
   tree opertype = TREE_TYPE (oper);
   if ((addr_expr || !INDIRECT_TYPE_P (opertype))
       && (VAR_P (oper)
@@ -2763,6 +2765,9 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 	 placement new invocation for some undersize buffers but not
 	 others.  */
       offset_int bytes_need;
+
+      if (nelts)
+	nelts = fold_for_warn (nelts);
 
       if (CONSTANT_CLASS_P (size))
 	bytes_need = wi::to_offset (size);
@@ -3081,7 +3086,21 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       if (overflow || wi::gtu_p (inner_size, max_size))
 	{
 	  if (complain & tf_error)
-	    error ("size of array is too large");
+	    {
+	      cst_size_error error;
+	      if (overflow)
+		error = cst_size_overflow;
+	      else
+		{
+		  error = cst_size_too_big;
+		  size = size_binop (MULT_EXPR, size,
+				     wide_int_to_tree (sizetype,
+						       inner_nelts_count));
+		  size = cp_fully_fold (size);
+		}
+	      invalid_array_size_error (input_location, error, size,
+					/*name=*/NULL_TREE);
+	    }
 	  return error_mark_node;
 	}
 
@@ -3100,7 +3119,11 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 		 isn't explicitly stated but it's enforced anyway -- see
 		 grokdeclarator in cp/decl.c).  */
 	      if (complain & tf_error)
-		error ("size of array is too large");
+		{
+		  size = cp_fully_fold (size);
+		  invalid_array_size_error (input_location, cst_size_too_big,
+					    size, NULL_TREE);
+		}
 	      return error_mark_node;
 	    }
 	}
@@ -3742,12 +3765,9 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
 	 less than zero. ... If the expression is a constant expression,
 	 the program is ill-fomed.  */
       if (TREE_CODE (cst_nelts) == INTEGER_CST
-	  && tree_int_cst_sgn (cst_nelts) == -1)
-	{
-	  if (complain & tf_error)
-	    error ("size of array is negative");
-	  return error_mark_node;
-	}
+	  && !valid_array_size_p (input_location, cst_nelts, NULL_TREE,
+				  complain & tf_error))
+	return error_mark_node;
 
       nelts = mark_rvalue_use (nelts);
       nelts = cp_save_expr (cp_convert (sizetype, nelts, complain));
@@ -4106,7 +4126,7 @@ build_vec_init (tree base, tree maxindex, tree init,
   tree compound_stmt;
   int destroy_temps;
   tree try_block = NULL_TREE;
-  int num_initialized_elts = 0;
+  HOST_WIDE_INT num_initialized_elts = 0;
   bool is_global;
   tree obase = base;
   bool xvalue = false;
@@ -4541,10 +4561,13 @@ build_vec_init (tree base, tree maxindex, tree init,
 
 	  if (e)
 	    {
-	      int max = tree_to_shwi (maxindex)+1;
-	      for (; num_initialized_elts < max; ++num_initialized_elts)
+	      HOST_WIDE_INT last = tree_to_shwi (maxindex);
+	      if (num_initialized_elts <= last)
 		{
 		  tree field = size_int (num_initialized_elts);
+		  if (num_initialized_elts != last)
+		    field = build2 (RANGE_EXPR, sizetype, field,
+				    size_int (last));
 		  CONSTRUCTOR_APPEND_ELT (const_vec, field, e);
 		}
 	    }
@@ -4784,6 +4807,7 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 
   tree head = NULL_TREE;
   tree do_delete = NULL_TREE;
+  bool destroying_delete = false;
 
   if (!deleting)
     {
@@ -4822,6 +4846,11 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 					complain);
       /* Call the complete object destructor.  */
       auto_delete = sfk_complete_destructor;
+      if (do_delete != error_mark_node)
+	{
+	  tree fn = get_callee_fndecl (do_delete);
+	  destroying_delete = destroying_delete_p (fn);
+	}
     }
   else if (TYPE_GETS_REG_DELETE (type))
     {
@@ -4834,7 +4863,7 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 			    complain);
     }
 
-  if (type_build_dtor_call (type))
+  if (!destroying_delete && type_build_dtor_call (type))
     expr = build_dtor_call (cp_build_fold_indirect_ref (addr),
 			    auto_delete, flags, complain);
   else

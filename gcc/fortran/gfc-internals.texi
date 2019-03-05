@@ -1,7 +1,7 @@
 \input texinfo  @c -*-texinfo-*-
 @c %**start of header
 @setfilename gfc-internals.info
-@set copyrights-gfortran 2007-2018
+@set copyrights-gfortran 2007-2019
 
 @include gcc-common.texi
 
@@ -715,7 +715,7 @@ array member @code{tb_op} indexed by the intrinsic operator's enum
 value.  Those need not be packed into @code{gfc_symtree} structures and are
 only @code{gfc_typebound_proc} instances.
 
-When an operator call or assignment is found that can not be handled in
+When an operator call or assignment is found that cannot be handled in
 another way (i.e. neither matches an intrinsic nor interface operator
 definition) but that contains a derived-type expression, all type-bound
 operators defined on that derived-type are checked for a match with

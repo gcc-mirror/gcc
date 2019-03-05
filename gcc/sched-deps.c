@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.  This file computes dependencies between
    instructions.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -461,11 +461,11 @@ static HARD_REG_SET implicit_reg_pending_uses;
    has enough entries to represent a dependency on any other insn in
    the insn chain.  All bitmap for true dependencies cache is
    allocated then the rest two ones are also allocated.  */
-static bitmap_head *true_dependency_cache = NULL;
-static bitmap_head *output_dependency_cache = NULL;
-static bitmap_head *anti_dependency_cache = NULL;
-static bitmap_head *control_dependency_cache = NULL;
-static bitmap_head *spec_dependency_cache = NULL;
+static bitmap true_dependency_cache = NULL;
+static bitmap output_dependency_cache = NULL;
+static bitmap anti_dependency_cache = NULL;
+static bitmap control_dependency_cache = NULL;
+static bitmap spec_dependency_cache = NULL;
 static int cache_size;
 
 /* True if we should mark added dependencies as a non-register deps.  */
@@ -2770,7 +2770,7 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	  reg_pending_barrier = TRUE_BARRIER;
 
 	/* For all ASM_OPERANDS, we must traverse the vector of input operands.
-	   We can not just fall through here since then we would be confused
+	   We cannot just fall through here since then we would be confused
 	   by the ASM_INPUT rtx inside ASM_OPERANDS, which do not indicate
 	   traditional asms unlike their normal usage.  */
 
@@ -3728,7 +3728,7 @@ deps_analyze_insn (struct deps_desc *deps, rtx_insn *insn)
              Since we only have a choice between 'might be clobbered'
              and 'definitely not clobbered', we must include all
              partly call-clobbered registers here.  */
-	    else if (targetm.hard_regno_call_part_clobbered (i,
+	    else if (targetm.hard_regno_call_part_clobbered (insn, i,
 							     reg_raw_mode[i])
                      || TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
               SET_REGNO_REG_SET (reg_pending_clobbers, i);
@@ -4602,7 +4602,7 @@ check_dep (dep_t dep, bool relaxed_p)
 		&& (ds & DEP_CONTROL)
 		&& !(ds & (DEP_OUTPUT | DEP_ANTI | DEP_TRUE)));
 
-  /* HARD_DEP can not appear in dep_status of a link.  */
+  /* HARD_DEP cannot appear in dep_status of a link.  */
   gcc_assert (!(ds & HARD_DEP));
 
   /* Check that dependence status is set correctly when speculation is not

@@ -16,6 +16,10 @@
 #define WCOREDUMP(status) (((status) & 0200) != 0)
 #endif
 
+#ifndef WIFCONTINUED
+#define WIFCONTINUED(x) 0
+#endif
+
 extern _Bool Exited (uint32_t *w)
   __asm__ (GOSYM_PREFIX "syscall.WaitStatus.Exited");
 
@@ -61,10 +65,10 @@ CoreDump (uint32_t *w)
   return WCOREDUMP (*w) != 0;
 }
 
-extern int ExitStatus (uint32_t *w)
+extern intgo ExitStatus (uint32_t *w)
   __asm__ (GOSYM_PREFIX "syscall.WaitStatus.ExitStatus");
 
-int
+intgo
 ExitStatus (uint32_t *w)
 {
   if (!WIFEXITED (*w))
@@ -72,10 +76,10 @@ ExitStatus (uint32_t *w)
   return WEXITSTATUS (*w);
 }
 
-extern int Signal (uint32_t *w)
+extern intgo Signal (uint32_t *w)
   __asm__ (GOSYM_PREFIX "syscall.WaitStatus.Signal");
 
-int
+intgo
 Signal (uint32_t *w)
 {
   if (!WIFSIGNALED (*w))
@@ -83,10 +87,10 @@ Signal (uint32_t *w)
   return WTERMSIG (*w);
 }
 
-extern int StopSignal (uint32_t *w)
+extern intgo StopSignal (uint32_t *w)
   __asm__ (GOSYM_PREFIX "syscall.WaitStatus.StopSignal");
 
-int
+intgo
 StopSignal (uint32_t *w)
 {
   if (!WIFSTOPPED (*w))
@@ -94,10 +98,10 @@ StopSignal (uint32_t *w)
   return WSTOPSIG (*w);
 }
 
-extern int TrapCause (uint32_t *w)
+extern intgo TrapCause (uint32_t *w)
   __asm__ (GOSYM_PREFIX "syscall.WaitStatus.TrapCause");
 
-int
+intgo
 TrapCause (uint32_t *w __attribute__ ((unused)))
 {
 #ifndef __linux__

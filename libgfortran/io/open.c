@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -530,6 +530,14 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
   if (u2 != NULL)
     unlock_unit (u2);
 
+  /* If the unit specified is preconnected with a file specified to be open,
+     then clear the format buffer.  */
+  if ((opp->common.unit == options.stdin_unit ||
+       opp->common.unit == options.stdout_unit ||
+       opp->common.unit == options.stderr_unit)
+      && (opp->common.flags & IOPARM_OPEN_HAS_FILE) != 0)
+    fbuf_destroy (u);
+
   /* Open file.  */
 
   s = open_external (opp, flags);
@@ -705,12 +713,12 @@ already_open (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
       if (u->filename && u->flags.status == STATUS_SCRATCH)
 	remove (u->filename);
 #endif
-     free (u->filename);
-     u->filename = NULL;
-
+      free (u->filename);
+      u->filename = NULL;
+      
       u = new_unit (opp, u, flags);
       if (u != NULL)
-	unlock_unit (u);
+      unlock_unit (u);
       return;
     }
 

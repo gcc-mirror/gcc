@@ -1,6 +1,6 @@
 /* Medium-level subroutines: convert bit-field store and extract
    and shifts, multiplies and divides to rtl instructions.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3876,7 +3876,7 @@ expmed_mult_highpart_optab (scalar_int_mode mode, rtx op0, rtx op1,
 
 /* Emit code to multiply OP0 and OP1 (where OP1 is an integer constant),
    putting the high half of the result in TARGET if that is convenient,
-   and return where the result is.  If the operation can not be performed,
+   and return where the result is.  If the operation cannot be performed,
    0 is returned.
 
    MODE is the mode of operation and result.

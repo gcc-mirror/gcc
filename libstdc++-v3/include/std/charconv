@@ -1,6 +1,6 @@
 // Primitive numeric conversions (to_chars and from_chars) -*- C++ -*-
 
-// Copyright (C) 2017-2018 Free Software Foundation, Inc.
+// Copyright (C) 2017-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -66,6 +66,9 @@ namespace __detail
 	  __not_<__is_one_of<_Tp, bool, char16_t, char32_t
 #if _GLIBCXX_USE_WCHAR_T
 	  , wchar_t
+#endif
+#if _GLIBCXX_USE_CHAR8_T
+	  , char8_t
 #endif
 	    >>>;
 

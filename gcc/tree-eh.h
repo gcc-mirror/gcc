@@ -1,5 +1,5 @@
 /* Header file for exception handling.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -38,10 +38,10 @@ extern bool operation_could_trap_helper_p (enum tree_code, bool, bool, bool,
 extern bool operation_could_trap_p (enum tree_code, bool, bool, tree);
 extern bool tree_could_trap_p (tree);
 extern tree rewrite_to_non_trapping_overflow (tree);
-extern bool stmt_could_throw_p (gimple *);
+extern bool stmt_could_throw_p (function *, gimple *);
 extern bool tree_could_throw_p (tree);
-extern bool stmt_can_throw_external (gimple *);
-extern bool stmt_can_throw_internal (gimple *);
+extern bool stmt_can_throw_external (function *, gimple *);
+extern bool stmt_can_throw_internal (function *, gimple *);
 extern bool maybe_clean_eh_stmt_fn (struct function *, gimple *);
 extern bool maybe_clean_eh_stmt (gimple *);
 extern bool maybe_clean_or_replace_eh_stmt (gimple *, gimple *);

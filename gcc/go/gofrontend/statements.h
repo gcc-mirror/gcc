@@ -15,6 +15,7 @@ class Statement_inserter;
 class Block;
 class Function;
 class Unnamed_label;
+class Export_function_body;
 class Assignment_statement;
 class Temporary_statement;
 class Variable_declaration_statement;
@@ -326,6 +327,23 @@ class Statement
   check_types(Gogo* gogo)
   { this->do_check_types(gogo); }
 
+  // Return the cost of this statement for inlining purposes.
+  int
+  inlining_cost()
+  { return this->do_inlining_cost(); }
+
+  // Export data for this statement to BODY.  INDENT is an indentation
+  // level used if the export data requires multiple lines.
+  void
+  export_statement(Export_function_body* efb)
+  { this->do_export_statement(efb); }
+
+  // Read a statement from export data.  The location should be used
+  // for the returned statement.  Errors should be reported using the
+  // Import_function_body's location method.
+  static Statement*
+  import_statement(Import_function_body*, Location);
+
   // Return whether this is a block statement.
   bool
   is_block_statement() const
@@ -488,6 +506,22 @@ class Statement
   do_check_types(Gogo*)
   { }
 
+  // Implemented by child class: return the cost of this statement for
+  // inlining.  The default cost is high, so we only need to define
+  // this method for statements that can be inlined.
+  virtual int
+  do_inlining_cost()
+  { return 0x100000; }
+
+  // Implemented by child class: write export data for this statement
+  // to the string.  The integer is an indentation level used if the
+  // export data requires multiple lines.  This need only be
+  // implemented by classes that implement do_inlining_cost with a
+  // reasonable value.
+  virtual void
+  do_export_statement(Export_function_body*)
+  { go_unreachable(); }
+
   // Implemented by child class: return true if this statement may
   // fall through.
   virtual bool
@@ -596,6 +630,13 @@ class Assignment_statement : public Statement
 
   void
   do_check_types(Gogo*);
+
+  int
+  do_inlining_cost()
+  { return 1; }
+
+  void
+  do_export_statement(Export_function_body*);
 
   Statement*
   do_flatten(Gogo*, Named_object*, Block*, Statement_inserter*);
@@ -758,6 +799,13 @@ class Return_statement : public Statement
   do_may_fall_through() const
   { return false; }
 
+  int
+  do_inlining_cost()
+  { return 1; }
+
+  void
+  do_export_statement(Export_function_body*);
+
   Bstatement*
   do_get_backend(Translate_context*);
 
@@ -819,6 +867,11 @@ class Block_statement : public Statement
       block_(block), is_lowered_for_statement_(false)
   { }
 
+  // Return the actual block.
+  Block*
+  block() const
+  { return this->block_; }
+
   void
   set_is_lowered_for_statement()
   { this->is_lowered_for_statement_ = true; }
@@ -835,6 +888,13 @@ class Block_statement : public Statement
   void
   do_determine_types()
   { this->block_->determine_types(); }
+
+  int
+  do_inlining_cost()
+  { return 0; }
+
+  void
+  do_export_statement(Export_function_body*);
 
   bool
   do_may_fall_through() const

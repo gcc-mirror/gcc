@@ -22,8 +22,8 @@ void
 f2 ()
 {
   using N::bar;
-  baz++;		// { dg-error "'baz' was not declared in this scope" }
-}			// { dg-message "note: suggested alternative: 'bar'" "" { target *-*-* } .-1 }
+  baz++;		// { dg-error "'baz' was not declared in this scope; did you mean 'bar'\\?" }
+}
 
 int
 bar ()
@@ -44,8 +44,8 @@ void
 f3 ()
 {
   using M::bar;
-  baz ();		// { dg-error "'baz' was not declared in this scope" }
-}			// { dg-message "note: suggested alternative: 'bar'" "" { target *-*-* } .-1 }
+  baz ();		// { dg-error "'baz' was not declared in this scope; did you mean 'bar'\\?" }
+}
 
 namespace O
 {
@@ -70,7 +70,6 @@ f4 ()
 {
   using O::foo;
   using P::bar;
-  fooo ();		// { dg-error "'fooo' was not declared in this scope" }
-			// { dg-message "note: suggested alternative: 'foo'" "" { target *-*-* } .-1 }
-  baz ();		// { dg-error "'baz' was not declared in this scope" }
-}			// { dg-message "note: suggested alternative: 'bar'" "" { target *-*-* } .-1 }
+  fooo ();		// { dg-error "'fooo' was not declared in this scope; did you mean 'foo'\\?" }
+  baz ();		// { dg-error "'baz' was not declared in this scope; did you mean 'bar'\\?" }
+}

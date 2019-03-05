@@ -2,6 +2,7 @@
 /* { dg-options "-O2 -fexceptions -fnon-call-exceptions -fpeel-loops" } */
 /* { dg-add-options c99_runtime } */
 /* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target exceptions } */
 
 #include <complex.h>
 

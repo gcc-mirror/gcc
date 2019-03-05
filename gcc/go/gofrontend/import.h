@@ -11,15 +11,75 @@
 #include "go-linemap.h"
 
 class Gogo;
+class Block;
 class Package;
 class Type;
 class Named_object;
 class Named_type;
 class Expression;
+class Import_function_body;
+
+// Expressions can be imported either directly from import data (for
+// simple constant expressions that can appear in a const declaration
+// or as an array length in a type definition) or from an exported
+// function body (for an inlinable function).  These two cases happen
+// at different points in the compilation and have different
+// requirements, so it's not easy to unify them.  Import_expression is
+// an abstract interface that permits the expression import code to
+// work at either point.  When importing expressions that only occur
+// for an inlinable function, the ifb method is available to get the
+// full Import_function_body.
+
+class Import_expression
+{
+ public:
+  // Return the import function body.  This should only be called for
+  // expressions that can not appear outside of an inlinable function
+  // body.
+  virtual Import_function_body*
+  ifb() = 0;
+
+  // The location to report in an error message.
+  virtual Location
+  location() const = 0;
+
+  // Peek at the next character in the input, returning a value from 0
+  // to 0xff.  Returns -1 at end of stream.
+  virtual int
+  peek_char() = 0;
+
+  // Return the next character and advance.
+  virtual int
+  get_char() = 0;
+
+  // Return true if the next bytes match STR.
+  virtual bool
+  match_c_string(const char* str) = 0;
+
+  // Require that the next bytes match STR.
+  virtual void
+  require_c_string(const char* str) = 0;
+
+  // Advance the stream SKIP bytes.
+  virtual void
+  advance(size_t skip) = 0;
+
+  // Read an identifier.
+  virtual std::string
+  read_identifier() = 0;
+
+  // Read a type.
+  virtual Type*
+  read_type() = 0;
+
+  // Return the version number of the export data we're reading.
+  virtual Export_data_version
+  version() const = 0;
+};
 
 // This class manages importing Go declarations.
 
-class Import
+class Import : public Import_expression
 {
  public:
   // The Stream class is an interface used to read the data.  The
@@ -29,6 +89,11 @@ class Import
    public:
     Stream();
     virtual ~Stream();
+
+    // Set the position, for error messages.
+    void
+    set_pos(int pos)
+    { this->pos_ = pos; }
 
     // Return whether we have seen an error.
     bool
@@ -132,6 +197,9 @@ class Import
   // Constructor.
   Import(Stream*, Location);
 
+  virtual ~Import()
+  {}
+
   // Register the builtin types.
   void
   register_builtin_types(Gogo*);
@@ -164,6 +232,11 @@ class Import
   get_char()
   { return this->stream_->get_char(); }
 
+  // Read LENGTH characters into a string and advance past them.  On
+  // EOF reports an error and returns an empty string.
+  std::string
+  read(size_t length);
+
   // Return true at the end of the stream.
   bool
   at_eof()
@@ -184,6 +257,19 @@ class Import
   advance(size_t skip)
   { this->stream_->advance(skip); }
 
+  // Return the version number of the export data we're reading.
+  Export_data_version
+  version() const { return this->version_; }
+
+  // Skip a semicolon if using an older version.
+  void
+  require_semicolon_if_old_version()
+  {
+    if (this->version_ == EXPORT_FORMAT_V1
+	|| this->version_ == EXPORT_FORMAT_V2)
+      this->require_c_string(";");
+  }
+
   // Read an identifier.
   std::string
   read_identifier();
@@ -197,9 +283,26 @@ class Import
   Type*
   read_type();
 
+  // Return the type for a type index.  INPUT_NAME and INPUT_OFFSET
+  // are only for error reporting.  PARSED is set to whether we parsed
+  // the type information for a new type.
+  Type*
+  type_for_index(int index, const std::string& input_name,
+		 size_t input_offset, bool* parsed);
+
   // Read an escape note.
   std::string
   read_escape();
+
+  // Clear the stream when it is no longer accessible.
+  void
+  clear_stream()
+  { this->stream_ = NULL; }
+
+  // Just so that Import implements Import_expression.
+  Import_function_body*
+  ifb()
+  { return NULL; }
 
  private:
   static Stream*
@@ -232,9 +335,17 @@ class Import
   void
   read_one_import();
 
+  // Read an indirectimport line.
+  void
+  read_one_indirect_import();
+
   // Read the import control functions and init graph.
   void
   read_import_init_fns(Gogo*);
+
+  // Read the types.
+  bool
+  read_types();
 
   // Import a constant.
   void
@@ -251,6 +362,14 @@ class Import
   // Import a function.
   Named_object*
   import_func(Package*);
+
+  // Parse a type definition.
+  bool
+  parse_type(int index);
+
+  // Read a named type and store it at this->type_[index].
+  Type*
+  read_named_type(int index);
 
   // Register a single builtin type.
   void
@@ -271,10 +390,6 @@ class Import
     return true;
   }
 
-  // Return the version number of the export data we're reading.
-  Export_data_version
-  version() const { return this->version_; }
-
   // The general IR.
   Gogo* gogo_;
   // The stream from which to read import data.
@@ -286,6 +401,12 @@ class Import
   // Whether to add new objects to the global scope, rather than to a
   // package scope.
   bool add_to_globals_;
+  // All type data.
+  std::string type_data_;
+  // Position of type data in the stream.
+  int type_pos_;
+  // Mapping from type code to offset/length in type_data_.
+  std::vector<std::pair<size_t, size_t> > type_offsets_;
   // Mapping from negated builtin type codes to Type structures.
   std::vector<Named_type*> builtin_types_;
   // Mapping from exported type codes to Type structures.
@@ -384,6 +505,192 @@ class Stream_from_file : public Import::Stream
   int fd_;
   // Data read from the file.
   std::string data_;
+};
+
+// Read import data from an offset into a std::string.  This uses a
+// reference to the string, to avoid copying, so the string must be
+// kept alive through some other mechanism.
+
+class Stream_from_string_ref : public Import::Stream
+{
+ public:
+  Stream_from_string_ref(const std::string& str, size_t offset, size_t length)
+    : str_(str), pos_(offset), end_(offset + length)
+  { }
+
+  ~Stream_from_string_ref()
+  {}
+
+ protected:
+  bool
+  do_peek(size_t length, const char** bytes)
+  {
+    if (this->pos_ + length > this->end_)
+      return false;
+    *bytes = &this->str_[this->pos_];
+    return true;
+  }
+
+  void
+  do_advance(size_t length)
+  { this->pos_ += length; }
+
+ private:
+  // A reference to the string we are reading from.
+  const std::string& str_;
+  // The current offset into the string.
+  size_t pos_;
+  // The index after the last byte we can read.
+  size_t end_;
+};
+
+// Class to manage importing a function body.  This is passed around
+// to Statements and Expressions.  It parses the function into the IR.
+
+class Import_function_body : public Import_expression
+{
+ public:
+  Import_function_body(Gogo* gogo, Import* imp, Named_object* named_object,
+		       const std::string& body, size_t off, Block* block,
+		       int indent)
+    : gogo_(gogo), imp_(imp), named_object_(named_object), body_(body),
+      off_(off), block_(block), indent_(indent), saw_error_(false)
+  { }
+
+  // The IR.
+  Gogo*
+  gogo()
+  { return this->gogo_; }
+
+  // The location to report in an error message.
+  Location
+  location() const
+  { return this->imp_->location(); }
+
+  // A reference to the body we are reading.
+  const std::string&
+  body() const
+  { return this->body_; }
+
+  // The current offset into the body.
+  size_t
+  off()
+  { return this->off_; }
+
+  // Update the offset into the body.
+  void
+  set_off(size_t off)
+  { this->off_ = off; }
+
+  // Advance the offset by SKIP bytes.
+  void
+  advance(size_t skip)
+  { this->off_ += skip; }
+
+  // The current block.
+  Block*
+  block()
+  { return this->block_; }
+
+  // The current indentation.
+  int
+  indent() const
+  { return this->indent_; }
+
+  // Increment the indentation level.
+  void
+  increment_indent()
+  { ++this->indent_; }
+
+  // Decrement the indentation level.
+  void
+  decrement_indent()
+  { --this->indent_; }
+
+  // The name of the function we are parsing.
+  const std::string&
+  name() const;
+
+  // Return the next character in the input stream, or -1 at the end.
+  int
+  peek_char()
+  {
+    if (this->body_.length() <= this->off_)
+      return -1;
+    return static_cast<unsigned char>(this->body_[this->off_]);
+  }
+
+  // Return the next character and advance.
+  int
+  get_char()
+  {
+    if (this->body_.length() <= this->off_)
+      return -1;
+    int c = static_cast<unsigned char>(this->body_[this->off_]);
+    this->off_++;
+    return c;
+  }
+
+  // Return whether the C string matches the current body position.
+  bool
+  match_c_string(const char* str)
+  {
+    size_t len = strlen(str);
+    return (this->body_.length() >= this->off_ + len
+	    && this->body_.compare(this->off_, len, str) == 0);
+  }
+
+  // Give an error if the next bytes do not match STR.  Advance the
+  // offset by the length of STR.
+  void
+  require_c_string(const char* str);
+
+  // Read an identifier.
+  std::string
+  read_identifier();
+
+  // Read a type.
+  Type*
+  read_type();
+
+  Export_data_version
+  version() const
+  { return this->imp_->version(); }
+
+  // Implement Import_expression.
+  Import_function_body*
+  ifb()
+  { return this; }
+
+  // Return whether we have seen an error.
+  bool
+  saw_error() const
+  { return this->saw_error_; }
+
+  // Record that we have seen an error.
+  void
+  set_saw_error()
+  { this->saw_error_ = true; }
+
+ private:
+  // The IR.
+  Gogo* gogo_;
+  // The importer.
+  Import* imp_;
+  // The function we are parsing.
+  Named_object* named_object_;
+  // The exported data we are parsing.  Note that this is a reference;
+  // the body string must laster longer than this object.
+  const std::string& body_;
+  // The current offset into body_.
+  size_t off_;
+  // Current block.
+  Block* block_;
+  // Current expected indentation level.
+  int indent_;
+  // Whether we've seen an error.  Used to avoid reporting excess
+  // errors.
+  bool saw_error_;
 };
 
 #endif // !defined(GO_IMPORT_H)

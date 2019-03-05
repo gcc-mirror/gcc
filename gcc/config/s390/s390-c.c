@@ -1,6 +1,6 @@
 /* Language specific subroutines used for code generation on IBM S/390
    and zSeries
-   Copyright (C) 2015-2018 Free Software Foundation, Inc.
+   Copyright (C) 2015-2019 Free Software Foundation, Inc.
 
    Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
 
@@ -470,16 +470,30 @@ s390_expand_overloaded_builtin (location_t loc,
     case S390_OVERLOADED_BUILTIN_s390_vec_xl:
     case S390_OVERLOADED_BUILTIN_s390_vec_xld2:
     case S390_OVERLOADED_BUILTIN_s390_vec_xlw4:
-      return build2 (MEM_REF, return_type,
-		     fold_build_pointer_plus ((*arglist)[1], (*arglist)[0]),
-		     build_int_cst (TREE_TYPE ((*arglist)[1]), 0));
+      {
+	/* Build a vector type with the alignment of the source
+	   location in order to enable correct alignment hints to be
+	   generated for vl.  */
+	tree mem_type = build_aligned_type (return_type,
+					    TYPE_ALIGN (TREE_TYPE (TREE_TYPE ((*arglist)[1]))));
+	return build2 (MEM_REF, mem_type,
+		       fold_build_pointer_plus ((*arglist)[1], (*arglist)[0]),
+		       build_int_cst (TREE_TYPE ((*arglist)[1]), 0));
+      }
     case S390_OVERLOADED_BUILTIN_s390_vec_xst:
     case S390_OVERLOADED_BUILTIN_s390_vec_xstd2:
     case S390_OVERLOADED_BUILTIN_s390_vec_xstw4:
-      return build2 (MODIFY_EXPR, TREE_TYPE((*arglist)[0]),
-		     build1 (INDIRECT_REF, TREE_TYPE((*arglist)[0]),
-			     fold_build_pointer_plus ((*arglist)[2], (*arglist)[1])),
-		     (*arglist)[0]);
+      {
+	/* Build a vector type with the alignment of the target
+	   location in order to enable correct alignment hints to be
+	   generated for vst.  */
+	tree mem_type = build_aligned_type (TREE_TYPE((*arglist)[0]),
+					    TYPE_ALIGN (TREE_TYPE (TREE_TYPE ((*arglist)[2]))));
+	return build2 (MODIFY_EXPR, mem_type,
+		       build1 (INDIRECT_REF, mem_type,
+			       fold_build_pointer_plus ((*arglist)[2], (*arglist)[1])),
+		       (*arglist)[0]);
+      }
     case S390_OVERLOADED_BUILTIN_s390_vec_load_pair:
       return build_constructor_va (return_type, 2,
 				   NULL_TREE, (*arglist)[0],

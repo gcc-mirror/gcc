@@ -1,6 +1,5 @@
 /* { dg-do run } */
 /* { dg-options "-O3 -mpower8-vector -Wno-psabi" } */
-/* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target p8vector_hw } */
 
 #ifndef CHECK_H
@@ -41,17 +40,17 @@ TEST (void)
       e = e | (1<<i);
 
   if (checkVi (&u, &e, 1))
-#if DEBUG
     {
+#if DEBUG
       printf ("sse2_test_pmovmskb_1; checkVi failed\n");
-      printf ("\t ([%x,%x,%x,%x, %x,%x,%x,%x, %x,%x,%x,%x, %x,%x,%x,%x], -> %x)\n",
+      printf ("\t ([%x,%x,%x,%x, %x,%x,%x,%x,"
+	      " %x,%x,%x,%x, %x,%x,%x,%x], -> %x)\n",
 	      s1.a[0], s1.a[1], s1.a[2], s1.a[3], s1.a[4], s1.a[5], s1.a[6],
-	      s1.a[7], s1.a[8], s1.a[9], s1.a[10], s1.a[11], s1.a[12], s1.a[13],
-	      s1.a[14], s1.a[15], u);
+	      s1.a[7], s1.a[8], s1.a[9], s1.a[10], s1.a[11], s1.a[12],
+	      s1.a[13], s1.a[14], s1.a[15], u);
       printf ("\t expect %x\n", e);
-    }
-#else
-    abort ();
 #endif
+      abort ();
+    }
 #endif
 }

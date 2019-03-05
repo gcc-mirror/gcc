@@ -1,4 +1,4 @@
-@c Copyright (C) 2002-2018 Free Software Foundation, Inc.
+@c Copyright (C) 2002-2019 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -362,7 +362,7 @@ referenced.  But the memory that the pointer points to is an array of
 find pointers to mark or relocate, which is why it is marked with the
 @code{atomic} option.
 
-Note that, currently, global variables can not be marked with
+Note that, currently, global variables cannot be marked with
 @code{atomic}; only fields of a struct can.  This is a known
 limitation.  It would be useful to be able to mark global pointers
 with @code{atomic} to make the PCH machinery aware of them so that

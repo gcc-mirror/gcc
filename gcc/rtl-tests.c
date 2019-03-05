@@ -1,5 +1,5 @@
 /* Unit tests for RTL-handling.
-   Copyright (C) 2015-2018 Free Software Foundation, Inc.
+   Copyright (C) 2015-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -284,6 +284,29 @@ const_poly_int_tests<N>::run ()
 	     gen_int_mode (poly_int64 (5, -1), QImode));
 }
 
+/* Check dumping of repeated RTL vectors.  */
+
+static void
+test_dumping_repeat ()
+{
+  rtx p = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (3));
+  XVECEXP (p, 0, 0) = const0_rtx;
+  XVECEXP (p, 0, 1) = const0_rtx;
+  XVECEXP (p, 0, 2) = const0_rtx;
+  ASSERT_RTL_DUMP_EQ ("(parallel [\n"
+		      "        (const_int 0) repeated x3\n"
+		      "    ])",
+		      p);
+
+  XVECEXP (p, 0, 1) = const1_rtx;
+  ASSERT_RTL_DUMP_EQ ("(parallel [\n"
+		      "        (const_int 0)\n"
+		      "        (const_int 1)\n"
+		      "        (const_int 0)\n"
+		      "    ])",
+		      p);
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -295,6 +318,7 @@ rtl_tests_c_tests ()
   test_single_set ();
   test_uncond_jump ();
   const_poly_int_tests<NUM_POLY_INT_COEFFS>::run ();
+  test_dumping_repeat ();
 
   /* Purge state.  */
   set_first_insn (NULL);

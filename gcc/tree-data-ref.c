@@ -1,5 +1,5 @@
 /* Data references and dependences detectors.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -95,10 +95,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-affine.h"
 #include "params.h"
 #include "builtins.h"
-#include "stringpool.h"
-#include "tree-vrp.h"
-#include "tree-ssanames.h"
 #include "tree-eh.h"
+#include "ssa.h"
 
 static struct datadep_stats
 {
@@ -393,7 +391,7 @@ print_lambda_vector (FILE * outfile, lambda_vector vector, int n)
   int i;
 
   for (i = 0; i < n; i++)
-    fprintf (outfile, "%3d ", vector[i]);
+    fprintf (outfile, "%3d ", (int)vector[i]);
   fprintf (outfile, "\n");
 }
 
@@ -584,6 +582,10 @@ debug_ddrs (vec<ddr_p> ddrs)
   dump_ddrs (stderr, ddrs);
 }
 
+static void
+split_constant_offset (tree exp, tree *var, tree *off,
+		       hash_map<tree, std::pair<tree, tree> > &cache);
+
 /* Helper function for split_constant_offset.  Expresses OP0 CODE OP1
    (the type of the result is TYPE) as VAR + OFF, where OFF is a nonzero
    constant of type ssizetype, and returns true.  If we cannot do this
@@ -592,7 +594,8 @@ debug_ddrs (vec<ddr_p> ddrs)
 
 static bool
 split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
-			 tree *var, tree *off)
+			 tree *var, tree *off,
+			 hash_map<tree, std::pair<tree, tree> > &cache)
 {
   tree var0, var1;
   tree off0, off1;
@@ -613,8 +616,8 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
       /* FALLTHROUGH */
     case PLUS_EXPR:
     case MINUS_EXPR:
-      split_constant_offset (op0, &var0, &off0);
-      split_constant_offset (op1, &var1, &off1);
+      split_constant_offset (op0, &var0, &off0, cache);
+      split_constant_offset (op1, &var1, &off1, cache);
       *var = fold_build2 (code, type, var0, var1);
       *off = size_binop (ocode, off0, off1);
       return true;
@@ -623,7 +626,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
       if (TREE_CODE (op1) != INTEGER_CST)
 	return false;
 
-      split_constant_offset (op0, &var0, &off0);
+      split_constant_offset (op0, &var0, &off0, cache);
       *var = fold_build2 (MULT_EXPR, type, var0, op1);
       *off = size_binop (MULT_EXPR, off0, fold_convert (ssizetype, op1));
       return true;
@@ -647,7 +650,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 
 	if (poffset)
 	  {
-	    split_constant_offset (poffset, &poffset, &off1);
+	    split_constant_offset (poffset, &poffset, &off1, cache);
 	    off0 = size_binop (PLUS_EXPR, off0, off1);
 	    if (POINTER_TYPE_P (TREE_TYPE (base)))
 	      base = fold_build_pointer_plus (base, poffset);
@@ -691,18 +694,48 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 	if (gimple_code (def_stmt) != GIMPLE_ASSIGN)
 	  return false;
 
-	var0 = gimple_assign_rhs1 (def_stmt);
 	subcode = gimple_assign_rhs_code (def_stmt);
+
+	/* We are using a cache to avoid un-CSEing large amounts of code.  */
+	bool use_cache = false;
+	if (!has_single_use (op0)
+	    && (subcode == POINTER_PLUS_EXPR
+		|| subcode == PLUS_EXPR
+		|| subcode == MINUS_EXPR
+		|| subcode == MULT_EXPR
+		|| subcode == ADDR_EXPR
+		|| CONVERT_EXPR_CODE_P (subcode)))
+	  {
+	    use_cache = true;
+	    bool existed;
+	    std::pair<tree, tree> &e = cache.get_or_insert (op0, &existed);
+	    if (existed)
+	      {
+		if (integer_zerop (e.second))
+		  return false;
+		*var = e.first;
+		*off = e.second;
+		return true;
+	      }
+	    e = std::make_pair (op0, ssize_int (0));
+	  }
+
+	var0 = gimple_assign_rhs1 (def_stmt);
 	var1 = gimple_assign_rhs2 (def_stmt);
 
-	return split_constant_offset_1 (type, var0, subcode, var1, var, off);
+	bool res = split_constant_offset_1 (type, var0, subcode, var1,
+					    var, off, cache);
+	if (res && use_cache)
+	  *cache.get (op0) = std::make_pair (*var, *off);
+	return res;
       }
     CASE_CONVERT:
       {
-	/* We must not introduce undefined overflow, and we must not change the value.
-	   Hence we're okay if the inner type doesn't overflow to start with
-	   (pointer or signed), the outer type also is an integer or pointer
-	   and the outer precision is at least as large as the inner.  */
+	/* We must not introduce undefined overflow, and we must not change
+	   the value.  Hence we're okay if the inner type doesn't overflow
+	   to start with (pointer or signed), the outer type also is an
+	   integer or pointer and the outer precision is at least as large
+	   as the inner.  */
 	tree itype = TREE_TYPE (op0);
 	if ((POINTER_TYPE_P (itype)
 	     || (INTEGRAL_TYPE_P (itype) && !TYPE_OVERFLOW_TRAPS (itype)))
@@ -714,14 +747,14 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 		/* Split the unconverted operand and try to prove that
 		   wrapping isn't a problem.  */
 		tree tmp_var, tmp_off;
-		split_constant_offset (op0, &tmp_var, &tmp_off);
+		split_constant_offset (op0, &tmp_var, &tmp_off, cache);
 
 		/* See whether we have an SSA_NAME whose range is known
 		   to be [A, B].  */
 		if (TREE_CODE (tmp_var) != SSA_NAME)
 		  return false;
 		wide_int var_min, var_max;
-		value_range_type vr_type = get_range_info (tmp_var, &var_min,
+		value_range_kind vr_type = get_range_info (tmp_var, &var_min,
 							   &var_max);
 		wide_int var_nonzero = get_nonzero_bits (tmp_var);
 		signop sgn = TYPE_SIGN (itype);
@@ -749,7 +782,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 		*off = wide_int_to_tree (ssizetype, diff);
 	      }
 	    else
-	      split_constant_offset (op0, &var0, off);
+	      split_constant_offset (op0, &var0, off, cache);
 	    *var = fold_convert (type, var0);
 	    return true;
 	  }
@@ -764,8 +797,9 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 /* Expresses EXP as VAR + OFF, where off is a constant.  The type of OFF
    will be ssizetype.  */
 
-void
-split_constant_offset (tree exp, tree *var, tree *off)
+static void
+split_constant_offset (tree exp, tree *var, tree *off,
+		       hash_map<tree, std::pair<tree, tree> > &cache)
 {
   tree type = TREE_TYPE (exp), op0, op1, e, o;
   enum tree_code code;
@@ -779,11 +813,21 @@ split_constant_offset (tree exp, tree *var, tree *off)
 
   code = TREE_CODE (exp);
   extract_ops_from_tree (exp, &code, &op0, &op1);
-  if (split_constant_offset_1 (type, op0, code, op1, &e, &o))
+  if (split_constant_offset_1 (type, op0, code, op1, &e, &o, cache))
     {
       *var = e;
       *off = o;
     }
+}
+
+void
+split_constant_offset (tree exp, tree *var, tree *off)
+{
+  static hash_map<tree, std::pair<tree, tree> > *cache;
+  if (!cache)
+    cache = new hash_map<tree, std::pair<tree, tree> > (37);
+  split_constant_offset (exp, var, off, *cache);
+  cache->empty ();
 }
 
 /* Returns the address ADDR of an object in a canonical shape (without nop
@@ -3147,6 +3191,8 @@ initialize_matrix_A (lambda_matrix A, tree chrec, unsigned index, int mult)
   switch (TREE_CODE (chrec))
     {
     case POLYNOMIAL_CHREC:
+      if (!cst_and_fits_in_hwi (CHREC_RIGHT (chrec)))
+	return chrec_dont_know;
       A[index][0] = mult * int_cst_value (CHREC_RIGHT (chrec));
       return initialize_matrix_A (A, CHREC_LEFT (chrec), index + 1, mult);
 
@@ -3398,8 +3444,9 @@ lambda_matrix_id (lambda_matrix mat, int size)
       mat[i][j] = (i == j) ? 1 : 0;
 }
 
-/* Return the first nonzero element of vector VEC1 between START and N.
-   We must have START <= N.   Returns N if VEC1 is the zero vector.  */
+/* Return the index of the first nonzero element of vector VEC1 between
+   START and N.  We must have START <= N.
+   Returns N if VEC1 is the zero vector.  */
 
 static int
 lambda_vector_first_nz (lambda_vector vec1, int n, int start)
@@ -3414,7 +3461,8 @@ lambda_vector_first_nz (lambda_vector vec1, int n, int start)
    R2 = R2 + CONST1 * R1.  */
 
 static void
-lambda_matrix_row_add (lambda_matrix mat, int n, int r1, int r2, int const1)
+lambda_matrix_row_add (lambda_matrix mat, int n, int r1, int r2,
+		       lambda_int const1)
 {
   int i;
 
@@ -3430,7 +3478,7 @@ lambda_matrix_row_add (lambda_matrix mat, int n, int r1, int r2, int const1)
 
 static void
 lambda_vector_mult_const (lambda_vector vec1, lambda_vector vec2,
-			  int size, int const1)
+			  int size, lambda_int const1)
 {
   int i;
 
@@ -3495,13 +3543,13 @@ lambda_matrix_right_hermite (lambda_matrix A, int m, int n,
 	    {
 	      while (S[i][j] != 0)
 		{
-		  int sigma, factor, a, b;
+		  lambda_int sigma, factor, a, b;
 
 		  a = S[i-1][j];
 		  b = S[i][j];
 		  sigma = (a * b < 0) ? -1: 1;
-		  a = abs (a);
-		  b = abs (b);
+		  a = abs_hwi (a);
+		  b = abs_hwi (b);
 		  factor = sigma * (a / b);
 
 		  lambda_matrix_row_add (S, n, i, i-1, -factor);
@@ -3528,7 +3576,7 @@ analyze_subscript_affine_affine (tree chrec_a,
 				 tree *last_conflicts)
 {
   unsigned nb_vars_a, nb_vars_b, dim;
-  HOST_WIDE_INT init_a, init_b, gamma, gcd_alpha_beta;
+  HOST_WIDE_INT gamma, gcd_alpha_beta;
   lambda_matrix A, U, S;
   struct obstack scratch_obstack;
 
@@ -3565,9 +3613,20 @@ analyze_subscript_affine_affine (tree chrec_a,
   A = lambda_matrix_new (dim, 1, &scratch_obstack);
   S = lambda_matrix_new (dim, 1, &scratch_obstack);
 
-  init_a = int_cst_value (initialize_matrix_A (A, chrec_a, 0, 1));
-  init_b = int_cst_value (initialize_matrix_A (A, chrec_b, nb_vars_a, -1));
-  gamma = init_b - init_a;
+  tree init_a = initialize_matrix_A (A, chrec_a, 0, 1);
+  tree init_b = initialize_matrix_A (A, chrec_b, nb_vars_a, -1);
+  if (init_a == chrec_dont_know
+      || init_b == chrec_dont_know)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "affine-affine test failed: "
+		 "representation issue.\n");
+      *overlaps_a = conflict_fn_not_known ();
+      *overlaps_b = conflict_fn_not_known ();
+      *last_conflicts = chrec_dont_know;
+      goto end_analyze_subs_aa;
+    }
+  gamma = int_cst_value (init_b) - int_cst_value (init_a);
 
   /* Don't do all the hard work of solving the Diophantine equation
      when we already know the solution: for example,
@@ -3715,10 +3774,6 @@ analyze_subscript_affine_affine (tree chrec_a,
 
 	      if (niter > 0)
 		{
-		  HOST_WIDE_INT tau2 = MIN (FLOOR_DIV (niter_a - i0, i1),
-					    FLOOR_DIV (niter_b - j0, j1));
-		  HOST_WIDE_INT last_conflict = tau2 - (x1 - i0)/i1;
-
 		  /* If the overlap occurs outside of the bounds of the
 		     loop, there is no dependence.  */
 		  if (x1 >= niter_a || y1 >= niter_b)
@@ -3728,8 +3783,20 @@ analyze_subscript_affine_affine (tree chrec_a,
 		      *last_conflicts = integer_zero_node;
 		      goto end_analyze_subs_aa;
 		    }
+
+		  /* max stmt executions can get quite large, avoid
+		     overflows by using wide ints here.  */
+		  widest_int tau2
+		    = wi::smin (wi::sdiv_floor (wi::sub (niter_a, i0), i1),
+				wi::sdiv_floor (wi::sub (niter_b, j0), j1));
+		  widest_int last_conflict = wi::sub (tau2, (x1 - i0)/i1);
+		  if (wi::min_precision (last_conflict, SIGNED)
+		      <= TYPE_PRECISION (integer_type_node))
+		    *last_conflicts
+		       = build_int_cst (integer_type_node,
+					last_conflict.to_shwi ());
 		  else
-		    *last_conflicts = build_int_cst (NULL_TREE, last_conflict);
+		    *last_conflicts = chrec_dont_know;
 		}
 	      else
 		*last_conflicts = chrec_dont_know;
@@ -3992,9 +4059,9 @@ analyze_miv_subscript (tree chrec_a,
       dependence_stats.num_miv_independent++;
     }
 
-  else if (evolution_function_is_affine_multivariate_p (chrec_a, loop_nest->num)
+  else if (evolution_function_is_affine_in_loop (chrec_a, loop_nest->num)
 	   && !chrec_contains_symbols (chrec_a)
-	   && evolution_function_is_affine_multivariate_p (chrec_b, loop_nest->num)
+	   && evolution_function_is_affine_in_loop (chrec_b, loop_nest->num)
 	   && !chrec_contains_symbols (chrec_b))
     {
       /* testsuite/.../ssa-chrec-35.c

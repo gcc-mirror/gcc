@@ -3,9 +3,9 @@
 /* { dg-require-effective-target lp64 } */
 /* { dg-options "-O -fdump-rtl-combine" } */
 
-/* The branch cost setting prevents the return value from being
+/* The param setting prevents the return value from being
    calculated with arithmetic instead of doing a compare.  */
-/* { dg-additional-options "-mbranch-cost=0" { target branch_cost } } */
+/* { dg-additional-options "--param logical-op-non-short-circuit=0" } */
 
 #include <stdint.h>
 

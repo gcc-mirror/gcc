@@ -1,3 +1,188 @@
+2019-02-26  Martin Liska  <mliska@suse.cz>
+
+	* symtab.c (ht_dump_statistics): Make
+	horizontal alignment for statistics.
+
+2019-02-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/89410
+	* include/line-map.h (linenum_arith_t): New typedef.
+	(compare): Use it.
+
+2019-02-18  Martin Liska  <mliska@suse.cz>
+
+	PR c++/89383
+	* line-map.c (linemap_line_start): Use 1UL in order
+	to not overflow.
+
+2019-02-11  Martin Liska  <mliska@suse.cz>
+
+	PR lto/88147
+	* line-map.c (linemap_line_start): Don't reuse the existing line
+	map if the line offset is sufficiently large to cause overflow
+	when computing location_t values.
+
+2019-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/88974
+	* directives.c (SEEN_EOL): Move macro to ...
+	* internal.h (SEEN_EOL): ... here.
+	* expr.c (parse_has_include): Don't cpp_get_token if SEEN_EOL ().
+
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-11-27  Mike Gulick  <mgulick@mathworks.com>
+
+	PR preprocessor/83173
+	* location-example.txt: Update example -fdump-internal-locations
+	output.
+
+2018-11-27  Mike Gulick  <mgulick@mathworks.com>
+
+	PR preprocessor/83173
+	* files.c (_cpp_stack_include): Check if
+	line_table->highest_location is past current line before
+	decrementing.
+
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* charset.c: Replace "source_location" with "location_t".
+	* directives-only.c: Likewise.
+	* directives.c: Likewise.
+	* errors.c: Likewise.
+	* expr.c: Likewise.
+	* files.c: Likewise.
+	* include/cpplib.h: Likewise.  Rename MAX_SOURCE_LOCATION to
+	MAX_LOCATION_T.
+	* include/line-map.h: Likewise.
+	* init.c: Likewise.
+	* internal.h: Likewise.
+	* lex.c: Likewise.
+	* line-map.c: Likewise.
+	* location-example.txt: Likewise.
+	* macro.c: Likewise.
+	* pch.c: Likewise.
+	* traditional.c: Likewise.
+
+2018-11-07  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+        * configure: Regenerated.
+
+2018-11-05  Martin Liska  <mliska@suse.cz>
+
+	* symtab.c (ht_dump_statistics): Replace %zu with %lu format.
+
+2018-11-05  Martin Liska  <mliska@suse.cz>
+
+	* symtab.c (ht_dump_statistics): Fix format and
+	pass missing argument.
+
+2018-11-05  Martin Liska  <mliska@suse.cz>
+
+	* symtab.c (ht_dump_statistics): Make dump conditional
+	based on alloc_subobject.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* configure.ac: Remove AC_PREREQ.  Use AC_LANG_SOURCE.
+	* aclocal.m4, config.in, configure: Regenerate.
+
+2018-10-31  Nathan Sidwell  <nathan@acm.org>
+
+	* internal.h (struct cpp_reader): Rename forced_token_location_p
+	to forced_token_location and drop its pointerness.
+	* include/cpplib.h (cpp_force_token_locations): Take location, not
+	pointer to one.
+	* init.c (cpp_create_reader): Adjust.
+	* lex.c (cpp_read_main_file): 
+
+	* directives.c (do_include_common): Commonize cleanup path.
+	(_cpp_pop_buffer): Fix leak.
+
+	* include/line-map.h (IS_ORDINARY_LOC, IS_MACRO_LOC): New
+	predicates.
+	(IS_ADHOC_LOC): Move earlier.
+	(MAP_ORDINARY_P): Use IS_ORDINARY_LOC.
+	* line-map.c (linemap_location_from_macro_expansion_p): Use
+	IS_MACRO_LOC.
+
+	* include/cpplib.h (cpp_macro_definition_location): Make inline.
+	* macro.c (warn_of_redefinition): Fix comments, examine macro
+	type, use C++ for.
+	(cpp_macro_definition_location): Don't define here.
+
+	* include/cpplib.h (HT_NODE): Don't cast NODE.
+	(NODE_LEN, NODE_NAME): Use HT_NODE.
+
+	* directives.c (DIRECTIVE_TABLE): Drop historical frequency
+	comments.
+	* files.c (_cpp_stack_file): Fix indentation.
+
+2018-10-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (enum c_lang): Add CLK_GNUC2X and CLK_STDC2X.
+	* init.c (lang_defaults): Add GNUC2X and STDC2X entries.
+	(cpp_init_builtins): Define __STDC_VERSION__ to 202000L for C2X.
+
+2018-10-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* macro.c (_cpp_arguments_ok): If the argument count is wrong, add
+	a note showing the definition of the macro.
+
+2018-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* include/line-map.h (LINEMAPS_MACRO_LOWEST_LOCATION): Fix
+	off-by-one error.
+	* line-map.c (linemap_enter_macro): Use RAII.  Clear all of the
+	macro_locations.
+
+2018-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* charset.c (noop_error_cb): Rename to...
+	(noop_diagnostic_cb): ...this, converting params to enums.
+	(cpp_interpret_string_ranges): Update for renaming and enums.
+	* directives.c (check_eol_1): Convert reason to enum.
+	(do_diagnostic): Convert code and reason to enum.
+	(do_error): Use CPP_W_NONE rather than 0.
+	(do_pragma_dependency): Likewise.
+	* errors.c (cpp_diagnostic_at): Convert level and reason to enums.
+	Update for renaming.
+	(cpp_diagnostic): Convert level and reason to enums.
+	(cpp_error): Convert level to enum.
+	(cpp_warning): Convert reason to enums.
+	(cpp_pedwarning): Likewise.
+	(cpp_warning_syshdr): Likewise.
+	(cpp_diagnostic_with_line): Convert level and reason to enums.
+	Update for renaming.
+	(cpp_error_with_line): Convert level to enum.
+	(cpp_warning_with_line): Convert reason to enums.
+	(cpp_pedwarning_with_line): Likewise.
+	(cpp_warning_with_line_syshdr): Likewise.
+	(cpp_error_at): Convert level to enum.
+	(cpp_errno): Likewise.
+	(cpp_errno_filename): Likewise.
+	* include/cpplib.h (enum cpp_diagnostic_level): Name this enum,
+	and move to before struct cpp_callbacks.
+	(enum cpp_warning_reason): Likewise.
+	(cpp_callbacks::diagnostic): Convert params from int to enums.
+	(cpp_error): Convert int param to enum cpp_diagnostic_level.
+	(cpp_warning): Convert int param to enum cpp_warning_reason.
+	(cpp_pedwarning): Likewise.
+	(cpp_warning_syshdr): Likewise.
+	(cpp_errno): Convert int param to enum cpp_diagnostic_level.
+	(cpp_errno_filename): Likewise.
+	(cpp_error_with_line): Likewise.
+	(cpp_warning_with_line): Convert int param to enum
+	cpp_warning_reason.
+	(cpp_pedwarning_with_line): Likewise.
+	(cpp_warning_with_line_syshdr): Likewise.
+	(cpp_error_at): Convert int param to enum cpp_diagnostic_level.
+	* macro.c (create_iso_definition): Convert int to enum.
+	(_cpp_create_definition): Likewise.
+
 2018-09-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (range_label::get_text): Add param
@@ -5567,7 +5752,7 @@
 	* include/symtab.h: Moved from gcc/hashtable.h.  Change header
 	guard name.
 
-Copyright (C) 2004-2018 Free Software Foundation, Inc.
+Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

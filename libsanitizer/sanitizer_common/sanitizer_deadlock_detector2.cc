@@ -109,7 +109,7 @@ struct DD : public DDetector {
 
   SpinMutex mtx;
   InternalMmapVector<u32> free_id;
-  int id_gen;
+  int id_gen = 0;
 };
 
 DDetector *DDetector::Create(const DDFlags *flags) {
@@ -118,11 +118,7 @@ DDetector *DDetector::Create(const DDFlags *flags) {
   return new(mem) DD(flags);
 }
 
-DD::DD(const DDFlags *flags)
-    : flags(*flags)
-    , free_id(1024) {
-  id_gen = 0;
-}
+DD::DD(const DDFlags *flags) : flags(*flags) { free_id.reserve(1024); }
 
 DDPhysicalThread* DD::CreatePhysicalThread() {
   DDPhysicalThread *pt = (DDPhysicalThread*)MmapOrDie(sizeof(DDPhysicalThread),

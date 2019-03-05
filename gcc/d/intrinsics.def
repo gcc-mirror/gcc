@@ -1,0 +1,154 @@
+/* intrinsics.def -- Definitions for D compiler intrinsics.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+/* DEF_D_INTRINSIC (CODE, ALIAS, NAME, MODULE, DECO, CTFE)
+   CODE	    The enum code used to refer to this intrinsic.
+   ALIAS    The enum code used to reference the function DECL_FUNCTION_CODE,
+	    if there are multiple modules or decos for a single intrinsic,
+	    they would all refer to this code.
+   NAME	    The name of this intrinsic as a string.
+   MODULE   The name of the module which the intrinsic belongs to as a string.
+   DECO	    The function signature decoration of the intrinsic.
+   CTFE	    True if the function is only handled as a built-in during CTFE,
+	    otherwise the runtime implementation is used.
+
+   Used for declaring internally recognized functions that either map to a
+   GCC builtin, or are specially handled by the compiler.  */
+
+/* A D built-in that has no runtime implementation.  */
+#define DEF_D_BUILTIN(C, A, N, M, D) \
+  DEF_D_INTRINSIC (C, A, N, M, D, false)
+
+/* A D built-in that is specially recognized only during CTFE.  */
+#define DEF_CTFE_BUILTIN(C, A, N, M, D) \
+  DEF_D_INTRINSIC (C, A, N, M, D, true)
+
+DEF_D_BUILTIN (NONE, NONE, 0, 0, 0)
+
+/* core.bitop intrinsics.  */
+
+DEF_D_BUILTIN (BSF, BSF, "bsf", "core.bitop", "FNaNbNiNfkZi")
+DEF_D_BUILTIN (BSR, BSR, "bsr", "core.bitop", "FNaNbNiNfkZi")
+DEF_D_BUILTIN (BT, BT, "bt", "core.bitop", "FNaNbNixPkkZi")
+DEF_D_BUILTIN (BTC, BTC, "btc", "core.bitop", "FNaNbNiPkkZi")
+DEF_D_BUILTIN (BTR, BTR, "btr", "core.bitop", "FNaNbNiPkkZi")
+DEF_D_BUILTIN (BTS, BTS, "bts", "core.bitop", "FNaNbNiPkkZi")
+DEF_D_BUILTIN (BSF64, BSF, "bsf", "core.bitop", "FNaNbNiNfmZi")
+DEF_D_BUILTIN (BSR64, BSR, "bsr", "core.bitop", "FNaNbNiNfmZi")
+DEF_D_BUILTIN (BT64, BT, "bt", "core.bitop", "FNaNbNixPmmZi")
+DEF_D_BUILTIN (BTC64, BTC, "btc", "core.bitop", "FNaNbNiPmmZi")
+DEF_D_BUILTIN (BTR64, BTR, "btr", "core.bitop", "FNaNbNiPmmZi")
+DEF_D_BUILTIN (BTS64, BTS, "bts", "core.bitop", "FNaNbNiPmmZi")
+DEF_D_BUILTIN (BSWAP, BSWAP, "bswap", "core.bitop", "FNaNbNiNfkZk")
+DEF_D_BUILTIN (BSWAP64, BSWAP, "bswap", "core.bitop", "FNaNbNiNfmZm")
+DEF_D_BUILTIN (POPCNT, POPCNT, "popcnt", "core.bitop", "FNaNbNiNfkZi")
+DEF_D_BUILTIN (POPCNT64, POPCNT, "popcnt", "core.bitop", "FNaNbNiNfmZi")
+DEF_D_BUILTIN (VLOAD, VLOAD, "volatileLoad", "core.bitop", "FNbNiNfPhZh")
+DEF_D_BUILTIN (VLOAD16, VLOAD, "volatileLoad", "core.bitop", "FNbNiNfPtZt")
+DEF_D_BUILTIN (VLOAD32, VLOAD, "volatileLoad", "core.bitop", "FNbNiNfPkZk")
+DEF_D_BUILTIN (VLOAD64, VLOAD, "volatileLoad", "core.bitop", "FNbNiNfPmZm")
+DEF_D_BUILTIN (VSTORE, VSTORE, "volatileStore", "core.bitop", "FNbNiNfPhhZv")
+DEF_D_BUILTIN (VSTORE16, VSTORE, "volatileStore", "core.bitop", "FNbNiNfPttZv")
+DEF_D_BUILTIN (VSTORE32, VSTORE, "volatileStore", "core.bitop", "FNbNiNfPkkZv")
+DEF_D_BUILTIN (VSTORE64, VSTORE, "volatileStore", "core.bitop", "FNbNiNfPmmZv")
+
+/* core.checkedint intrinsics.  */
+
+DEF_D_BUILTIN (ADDS, ADDS, "adds", "core.checkedint", "FNaNbNiNfiiKbZi")
+DEF_D_BUILTIN (ADDSL, ADDS, "adds", "core.checkedint", "FNaNbNiNfllKbZl")
+DEF_D_BUILTIN (ADDU, ADDS, "addu", "core.checkedint", "FNaNbNiNfkkKbZk")
+DEF_D_BUILTIN (ADDUL, ADDS, "addu", "core.checkedint", "FNaNbNiNfmmKbZm")
+DEF_D_BUILTIN (SUBS, SUBS, "subs", "core.checkedint", "FNaNbNiNfiiKbZi")
+DEF_D_BUILTIN (SUBSL, SUBS, "subs", "core.checkedint", "FNaNbNiNfllKbZl")
+DEF_D_BUILTIN (SUBU, SUBS, "subu", "core.checkedint", "FNaNbNiNfkkKbZk")
+DEF_D_BUILTIN (SUBUL, SUBS, "subu", "core.checkedint", "FNaNbNiNfmmKbZm")
+DEF_D_BUILTIN (MULS, MULS, "muls", "core.checkedint", "FNaNbNiNfiiKbZi")
+DEF_D_BUILTIN (MULSL, MULS, "muls", "core.checkedint", "FNaNbNiNfllKbZl")
+DEF_D_BUILTIN (MULU, MULS, "mulu", "core.checkedint", "FNaNbNiNfkkKbZk")
+DEF_D_BUILTIN (MULUI, MULS, "mulu", "core.checkedint", "FNaNbNiNfmkKbZm")
+DEF_D_BUILTIN (MULUL, MULS, "mulu", "core.checkedint", "FNaNbNiNfmmKbZm")
+DEF_D_BUILTIN (NEGS, NEGS, "negs", "core.checkedint", "FNaNbNiNfiKbZi")
+DEF_D_BUILTIN (NEGSL, NEGS, "negs", "core.checkedint", "FNaNbNiNflKbZl")
+
+/* core.math intrinsics.  */
+
+DEF_D_BUILTIN (COS, COS, "cos", "core.math", "FNaNbNiNfeZe")
+DEF_D_BUILTIN (FABS, FABS, "fabs", "core.math", "FNaNbNiNfeZe")
+DEF_D_BUILTIN (LDEXP, LDEXP, "ldexp", "core.math", "FNaNbNiNfeiZe")
+DEF_D_BUILTIN (RINT, RINT, "rint", "core.math", "FNaNbNiNfeZe")
+DEF_D_BUILTIN (RNDTOL, RNDTOL, "rndtol", "core.math", "FNaNbNiNfeZl")
+DEF_D_BUILTIN (SIN, SIN, "sin", "core.math", "FNaNbNiNfeZe")
+DEF_D_BUILTIN (SQRTF, SQRTF, "sqrt", "core.math", "FNaNbNiNffZf")
+DEF_D_BUILTIN (SQRT, SQRT, "sqrt", "core.math", "FNaNbNiNfdZd")
+DEF_D_BUILTIN (SQRTL, SQRTL, "sqrt", "core.math", "FNaNbNiNfeZe")
+
+/* std.math intrinsics.  */
+
+DEF_D_BUILTIN (STD_COS, COS, "cos", "std.math", "FNaNbNiNfeZe")
+DEF_D_BUILTIN (STD_FABS, FABS, "fabs", "std.math", "FNaNbNiNfeZe")
+DEF_D_BUILTIN (STD_LDEXP, LDEXP, "ldexp", "std.math", "FNaNbNiNfeiZe")
+DEF_D_BUILTIN (STD_RINT, RINT, "rint", "std.math", "FNaNbNiNfeZe")
+DEF_D_BUILTIN (STD_RNDTOL, RNDTOL, "rndtol", "std.math", "FNaNbNiNfeZl")
+DEF_D_BUILTIN (STD_SIN, SIN, "sin", "std.math", "FNaNbNiNfeZe")
+DEF_D_BUILTIN (STD_SQRTF, SQRTF, "sqrt", "std.math", "FNaNbNiNffZf")
+DEF_D_BUILTIN (STD_SQRT, SQRT, "sqrt", "std.math", "FNaNbNiNfdZd")
+DEF_D_BUILTIN (STD_SQRTL, SQRTL, "sqrt", "std.math", "FNaNbNiNfeZe")
+
+DEF_CTFE_BUILTIN (TAN, TAN, "tan", "std.math", "FNaNbNiNeeZe")
+DEF_CTFE_BUILTIN (ISNAN, ISNAN, "isNaN", "std.math", "FNaNbNiNeI1XZb")
+DEF_CTFE_BUILTIN (ISINFINITY, ISINFINITY, "isInfinity", "std.math",
+		  "FNaNbNiNeI1XZb")
+DEF_CTFE_BUILTIN (ISFINITE, ISFINITE, "isFinite", "std.math", "FNaNbNiNeI1XZb")
+
+DEF_CTFE_BUILTIN (EXP, EXP, "exp", "std.math", "FNaNbNiNeeZe")
+DEF_CTFE_BUILTIN (EXPM1, EXPM1, "expm1", "std.math", "FNaNbNiNeeZe")
+DEF_CTFE_BUILTIN (EXP2, EXP2, "exp2", "std.math", "FNaNbNiNeeZe")
+
+DEF_CTFE_BUILTIN (LOG, LOG, "log", "std.math", "FNaNbNiNfeZe")
+DEF_CTFE_BUILTIN (LOG2, LOG2, "log2", "std.math", "FNaNbNiNfeZe")
+DEF_CTFE_BUILTIN (LOG10, LOG10, "log10", "std.math", "FNaNbNiNfeZe")
+
+DEF_CTFE_BUILTIN (ROUND, ROUND, "round", "std.math", "FNbNiNeeZe")
+DEF_CTFE_BUILTIN (FLOORF, FLOORF, "floor", "std.math", "FNaNbNiNefZf")
+DEF_CTFE_BUILTIN (FLOOR, FLOOR, "floor", "std.math", "FNaNbNiNedZd")
+DEF_CTFE_BUILTIN (FLOORL, FLOORL, "floor", "std.math", "FNaNbNiNeeZe")
+DEF_CTFE_BUILTIN (CEILF, CEILF, "ceil", "std.math", "FNaNbNiNefZf")
+DEF_CTFE_BUILTIN (CEIL, CEIL, "ceil", "std.math", "FNaNbNiNedZd")
+DEF_CTFE_BUILTIN (CEILL, CEILL, "ceil", "std.math", "FNaNbNiNeeZe")
+
+DEF_CTFE_BUILTIN (TRUNC, TRUNC, "trunc", "std.math", "FNbNiNeeZe")
+DEF_CTFE_BUILTIN (FMIN, FMIN, "fmin", "std.math", "FNaNbNiNfeeZe")
+DEF_CTFE_BUILTIN (FMAX, FMAX, "fmax", "std.math", "FNaNbNiNfeeZe")
+DEF_CTFE_BUILTIN (COPYSIGN, COPYSIGN, "copysign", "std.math",
+		  "FNaNbNiNeI1RI1XZI1R")
+DEF_CTFE_BUILTIN (COPYSIGNI, COPYSIGN, "copysign", "std.math",
+		  "FNaNbNiNeI1XI1RZI1R")
+
+DEF_CTFE_BUILTIN (POW, POW, "pow", "std.math", "FNaNbNiNeI1FI1GZ@")
+DEF_CTFE_BUILTIN (FMA, FMA, "fma", "std.math", "FNaNbNiNfeeeZe")
+
+/* core.stdc.stdarg intrinsics.  */
+
+DEF_D_BUILTIN (VA_ARG, VA_ARG, "va_arg", "core.stdc.stdarg",
+	       "FKI7va_listKI1TZv")
+DEF_D_BUILTIN (C_VA_ARG, C_VA_ARG, "va_arg", "core.stdc.stdarg",
+	       "FKI7va_listZI1T")
+DEF_D_BUILTIN (VASTART, VASTART, "va_start", "core.stdc.stdarg",
+	       "FJI7va_listKI1TZv")
+
+#undef DEF_D_BUILTIN
+#undef DEF_CTFE_BUILTIN

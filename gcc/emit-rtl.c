@@ -1,5 +1,5 @@
 /* Emit RTL for the GCC expander.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1781,7 +1781,7 @@ operand_subword_force (rtx op, poly_uint64 offset, machine_mode mode)
 
   if (mode != BLKmode && mode != VOIDmode)
     {
-      /* If this is a register which can not be accessed by words, copy it
+      /* If this is a register which cannot be accessed by words, copy it
 	 to a pseudo register.  */
       if (REG_P (op))
 	op = copy_to_reg (op);

@@ -1,6 +1,6 @@
 // Allocator traits -*- C++ -*-
 
-// Copyright (C) 2011-2018 Free Software Foundation, Inc.
+// Copyright (C) 2011-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -240,6 +240,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Tp, typename... _Args>
 	static _Require<__has_construct<_Tp, _Args...>>
 	_S_construct(_Alloc& __a, _Tp* __p, _Args&&... __args)
+	noexcept(noexcept(__a.construct(__p, std::forward<_Args>(__args)...)))
 	{ __a.construct(__p, std::forward<_Args>(__args)...); }
 
       template<typename _Tp, typename... _Args>
@@ -247,17 +248,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Require<__and_<__not_<__has_construct<_Tp, _Args...>>,
 			       is_constructible<_Tp, _Args...>>>
 	_S_construct(_Alloc&, _Tp* __p, _Args&&... __args)
+	noexcept(noexcept(::new((void*)__p)
+			  _Tp(std::forward<_Args>(__args)...)))
 	{ ::new((void*)__p) _Tp(std::forward<_Args>(__args)...); }
 
       template<typename _Alloc2, typename _Tp>
 	static auto
 	_S_destroy(_Alloc2& __a, _Tp* __p, int)
+	noexcept(noexcept(__a.destroy(__p)))
 	-> decltype(__a.destroy(__p))
 	{ __a.destroy(__p); }
 
       template<typename _Alloc2, typename _Tp>
 	static void
 	_S_destroy(_Alloc2&, _Tp* __p, ...)
+	noexcept(noexcept(__p->~_Tp()))
 	{ __p->~_Tp(); }
 
       template<typename _Alloc2>
@@ -296,7 +301,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Calls @c a.allocate(n)
       */
-      static pointer
+      _GLIBCXX_NODISCARD static pointer
       allocate(_Alloc& __a, size_type __n)
       { return __a.allocate(__n); }
 
@@ -311,7 +316,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Returns <tt> a.allocate(n, hint) </tt> if that expression is
        *  well-formed, otherwise returns @c a.allocate(n)
       */
-      static pointer
+      _GLIBCXX_NODISCARD static pointer
       allocate(_Alloc& __a, size_type __n, const_void_pointer __hint)
       { return _S_allocate(__a, __n, __hint, 0); }
 
@@ -340,6 +345,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       template<typename _Tp, typename... _Args>
 	static auto construct(_Alloc& __a, _Tp* __p, _Args&&... __args)
+	noexcept(noexcept(_S_construct(__a, __p,
+				       std::forward<_Args>(__args)...)))
 	-> decltype(_S_construct(__a, __p, std::forward<_Args>(__args)...))
 	{ _S_construct(__a, __p, std::forward<_Args>(__args)...); }
 
@@ -353,6 +360,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       template<typename _Tp>
 	static void destroy(_Alloc& __a, _Tp* __p)
+	noexcept(noexcept(_S_destroy(__a, __p, 0)))
 	{ _S_destroy(__a, __p, 0); }
 
       /**
@@ -431,7 +439,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Calls @c a.allocate(n)
       */
-      static pointer
+      _GLIBCXX_NODISCARD static pointer
       allocate(allocator_type& __a, size_type __n)
       { return __a.allocate(__n); }
 
@@ -445,7 +453,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Returns <tt> a.allocate(n, hint) </tt>
       */
-      static pointer
+      _GLIBCXX_NODISCARD static pointer
       allocate(allocator_type& __a, size_type __n, const_void_pointer __hint)
       { return __a.allocate(__n, __hint); }
 
@@ -472,6 +480,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Up, typename... _Args>
 	static void
 	construct(allocator_type& __a, _Up* __p, _Args&&... __args)
+	noexcept(noexcept(__a.construct(__p, std::forward<_Args>(__args)...)))
 	{ __a.construct(__p, std::forward<_Args>(__args)...); }
 
       /**
@@ -484,6 +493,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Up>
 	static void
 	destroy(allocator_type& __a, _Up* __p)
+	noexcept(noexcept(__a.destroy(__p)))
 	{ __a.destroy(__p); }
 
       /**
@@ -566,36 +576,48 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __do_alloc_on_swap(__one, __two, __pocs());
     }
 
-  template<typename _Alloc>
-    class __is_copy_insertable_impl
-    {
-      typedef allocator_traits<_Alloc> _Traits;
+  template<typename _Alloc, typename _Tp,
+	   typename _ValueT = __remove_cvref_t<typename _Alloc::value_type>,
+	   typename = void>
+    struct __is_alloc_insertable_impl
+    : false_type
+    { };
 
-      template<typename _Up, typename
-	       = decltype(_Traits::construct(std::declval<_Alloc&>(),
-					     std::declval<_Up*>(),
-					     std::declval<const _Up&>()))>
-	static true_type
-	_M_select(int);
-
-      template<typename _Up>
-	static false_type
-	_M_select(...);
-
-    public:
-      typedef decltype(_M_select<typename _Alloc::value_type>(0)) type;
-    };
+  template<typename _Alloc, typename _Tp, typename _ValueT>
+    struct __is_alloc_insertable_impl<_Alloc, _Tp, _ValueT,
+      __void_t<decltype(allocator_traits<_Alloc>::construct(
+		   std::declval<_Alloc&>(), std::declval<_ValueT*>(),
+		   std::declval<_Tp>()))>>
+    : true_type
+    { };
 
   // true if _Alloc::value_type is CopyInsertable into containers using _Alloc
+  // (might be wrong if _Alloc::construct exists but is not constrained,
+  // i.e. actually trying to use it would still be invalid. Use with caution.)
   template<typename _Alloc>
     struct __is_copy_insertable
-    : __is_copy_insertable_impl<_Alloc>::type
+    : __is_alloc_insertable_impl<_Alloc,
+				 typename _Alloc::value_type const&>::type
     { };
 
   // std::allocator<_Tp> just requires CopyConstructible
   template<typename _Tp>
     struct __is_copy_insertable<allocator<_Tp>>
     : is_copy_constructible<_Tp>
+    { };
+
+  // true if _Alloc::value_type is MoveInsertable into containers using _Alloc
+  // (might be wrong if _Alloc::construct exists but is not constrained,
+  // i.e. actually trying to use it would still be invalid. Use with caution.)
+  template<typename _Alloc>
+    struct __is_move_insertable
+    : __is_alloc_insertable_impl<_Alloc, typename _Alloc::value_type>::type
+    { };
+
+  // std::allocator<_Tp> just requires MoveConstructible
+  template<typename _Tp>
+    struct __is_move_insertable<allocator<_Tp>>
+    : is_move_constructible<_Tp>
     { };
 
   // Trait to detect Allocator-like types.
@@ -611,6 +633,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Alloc>
     using _RequireAllocator
       = typename enable_if<__is_allocator<_Alloc>::value, _Alloc>::type;
+
+  template<typename _Alloc>
+    using _RequireNotAllocator
+      = typename enable_if<!__is_allocator<_Alloc>::value, _Alloc>::type;
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

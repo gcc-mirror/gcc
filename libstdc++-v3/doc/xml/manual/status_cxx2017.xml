@@ -91,6 +91,17 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
+      <entry> C++17 should refer to C11 instead of C99 </entry>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0063r3.html">
+	P0063R3
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry/>
+    </row>
+
+    <row>
       <entry> Variant: a type-safe union for C++17 </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0088r3.html">
@@ -147,14 +158,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Library Fundamentals V1 TS Components: <code>memory_resource</code> </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0220r1.html">
 	P0220R1
 	</link>
       </entry>
-      <entry align="center"> No </entry>
+      <entry align="center"> 9.1 </entry>
       <entry> <code>__has_include(&lt;memory_resource&gt;)</code>,
               <code>__cpp_lib_memory_resource >= 201603</code>
       </entry>
@@ -504,7 +514,7 @@ Feature-testing recommendations for C++</link>.
 	P0426R1
 	</link>
       </entry>
-      <entry align="center"> 8 </entry>
+      <entry align="center"> 8.1 </entry>
       <entry><code> __cpp_lib_constexpr_char_traits >= 201611 </code></entry>
     </row>
 
@@ -690,10 +700,10 @@ Feature-testing recommendations for C++</link>.
 	P0218R1
 	</link>
       </entry>
-      <entry align="center"> 8 </entry>
+      <entry align="center"> 8.1 </entry>
       <entry><code> __has_include(&lt;filesystem&gt;) </code>,
 	     <code> __cpp_lib_filesystem >= 201603 </code>
-	     (requires linking with <code>-lstdc++fs</code>)
+	     (GCC 8.x requires linking with <code>-lstdc++fs</code>)
       </entry>
     </row>
 
@@ -704,7 +714,7 @@ Feature-testing recommendations for C++</link>.
 	P0219R1
 	</link>
       </entry>
-      <entry align="center"> 8 </entry>
+      <entry align="center"> 8.1 </entry>
       <entry><code> __cpp_lib_filesystem >= 201606 </code></entry>
     </row>
 
@@ -715,7 +725,7 @@ Feature-testing recommendations for C++</link>.
 	P0392R0
 	</link>
       </entry>
-      <entry align="center"> 8 </entry>
+      <entry align="center"> 8.1 </entry>
       <entry><code> __cpp_lib_filesystem >= 201606 </code></entry>
     </row>
 
@@ -726,7 +736,7 @@ Feature-testing recommendations for C++</link>.
        P0317R1
        </link>
       </entry>
-      <entry align="center"> 8 </entry>
+      <entry align="center"> 8.1 </entry>
       <entry><code> __cpp_lib_filesystem >= 201703 </code></entry>
      </row>
 
@@ -783,11 +793,36 @@ Feature-testing recommendations for C++</link>.
 	P0067R5
 	</link>
       </entry>
-      <entry align="center"> 8 (only integral types supported) </entry>
+      <entry align="center"> 8.1 (only integral types supported) </entry>
       <entry><code> __has_include(&lt;charconv&gt;) </code>
              <code> __cpp_lib_to_chars >= 201611 </code></entry>
     </row>
 
+    <row>
+      <entry> Homogeneous interface for variant, any and optional </entry>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0032r3.pdf">
+	P0032R3
+	</link>
+      </entry>
+      <entry align="center"> 7.1  </entry>
+      <entry>
+             <code> __cpp_lib_any >= 201606 </code>,
+             <code> __cpp_lib_optional >= 201606 </code>,
+             <code> __cpp_lib_variant >= 201606 </code>
+      </entry>
+    </row>
+
+    <row>
+      <entry> Making Optional Greater Equal Again </entry>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0307r2.pdf">
+	P0307R2
+	</link>
+      </entry>
+      <entry align="center"> 7.1  </entry>
+      <entry> <code> __cpp_lib_optional >= 201606 </code> </entry>
+    </row>
 
   </tbody>
 </tgroup>
@@ -939,7 +974,10 @@ and test for <code>__STDCPP_MATH_SPEC_FUNCS__ >= 201003L</code>.
 	</link>
       </entry>
       <entry> Merge Fundamentals V1 into V2 </entry>
-      <entry>N</entry>
+      <entry>
+        N (components from V1 are still in namespace
+        <code>fundamentals_v1</code>)
+      </entry>
       <entry>Library Fundamentals 2 TS</entry>
     </row>
 
@@ -979,14 +1017,21 @@ and test for <code>__STDCPP_MATH_SPEC_FUNCS__ >= 201003L</code>.
    </para>
 
    <para>
+      <emphasis>20.5.1.2 [headers]</emphasis>
+      Whether names from Annex K are declared by C++ headers depends on
+      whether the underlying C library supports Annex K and declares the
+      names. For the GNU C library, there is no Annex K support and so
+      none of its names are declared by C++ headers.
+   </para>
+
+   <para>
       <emphasis>23.6.5 [optional.bad_optional_access]</emphasis>
       <code>what()</code> returns <literal>"bad optional access"</literal>.
    </para>
 
    <para>
       <emphasis>23.7.3 [variant.variant]</emphasis>
-      Whether <classname>variant</classname> supports over-aligned types
-      should be documented here.
+      <classname>variant</classname> supports over-aligned types.
    </para>
 
    <para>
@@ -996,15 +1041,21 @@ and test for <code>__STDCPP_MATH_SPEC_FUNCS__ >= 201003L</code>.
 
    <para>
       <emphasis>23.12.5.2 [memory.resource.pool.options]</emphasis>
-      The limits for maximum number of blocks and largest allocation size
-      supported by <classname>pool_options</classname> should be documented
-      here.
+      Let S equal <code>numeric_limits&lt;size_t&gt;::digits</code>.
+      The limit for maximum number of blocks in a chunk is given by
+      <inlineequation><mathphrase>2<superscript>N</superscript>-1</mathphrase></inlineequation>,
+      where N is <inlineequation><mathphrase>min(19, 3 + S/2)</mathphrase></inlineequation>.
+      The largest allocation size that will be allocated from a pool is
+      <inlineequation><mathphrase>2<superscript>22</superscript></mathphrase></inlineequation>
+      when <inlineequation><mathphrase>S > 20</mathphrase></inlineequation>,
+      otherwise 3072 when <inlineequation><mathphrase>S > 16</mathphrase></inlineequation>,
+      otherwise 768.
    </para>
 
    <para>
       <emphasis>23.12.6.1 [memory.resource.monotonic.buffer.ctor]</emphasis>
-      The default <code>next_buffer_size</code> and growth factor should
-      be documented here.
+      The default <code>next_buffer_size</code> is <code>128 * sizeof(void*)</code>.
+      The default growth factor is <code>1.5</code>.
    </para>
 
    <para>
@@ -1065,13 +1116,32 @@ and test for <code>__STDCPP_MATH_SPEC_FUNCS__ >= 201003L</code>.
 
    <para>
       <emphasis>30.10.5 [fs.filesystem.syn]</emphasis>
-      The clock used for file times is
-      <classname>std::chrono::system_clock</classname>.
+      The clock used for file times is an unspecified type
+      with a signed 64-bit representation, capable of representing
+      timestamps with nanosecond resolution. The clock's epoch is
+      unspecified, but is not the same as the system clock's epoch.
    </para>
 
    <para>
       <emphasis>30.10.7.1 [fs.path.generic]</emphasis>
       dot-dot in the root-directory refers to the root-directory itself.
+      On Windows, a drive specifier such as <code>"C:"</code> or
+      <code>"z:"</code> is treated as a root-name. On Cygwin, a path
+      that begins with two successive directory separators is a
+      root-name. Otherwise (for POSIX-like systems other than Cygwin),
+      the implementation-defined root-name is an unspecified string
+      which does not appear in any pathnames.
+   </para>
+
+   <para>
+      <emphasis>30.10.10.1 [fs.enum.path.format]</emphasis>
+      The character sequence is always interpreted in the native pathname
+      format.
+   </para>
+
+   <para>
+      <emphasis>30.10.15.4 [fs.op.file_size]</emphasis>
+      If <code>!is_regular_file(p)</code>, an error is reported.
    </para>
 
 

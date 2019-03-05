@@ -20,8 +20,8 @@
 package runtime
 
 import (
+	"internal/cpu"
 	"runtime/internal/atomic"
-	"runtime/internal/sys"
 	"unsafe"
 )
 
@@ -48,7 +48,7 @@ const semTabSize = 251
 
 var semtable [semTabSize]struct {
 	root semaRoot
-	pad  [sys.CacheLineSize - unsafe.Sizeof(semaRoot{})]byte
+	pad  [cpu.CacheLinePadSize - unsafe.Sizeof(semaRoot{})]byte
 }
 
 //go:linkname sync_runtime_Semacquire sync.runtime_Semacquire
@@ -56,7 +56,7 @@ func sync_runtime_Semacquire(addr *uint32) {
 	semacquire1(addr, false, semaBlockProfile)
 }
 
-//go:linkname poll_runtime_Semacquire internal_poll.runtime_Semacquire
+//go:linkname poll_runtime_Semacquire internal..z2fpoll.runtime_Semacquire
 func poll_runtime_Semacquire(addr *uint32) {
 	semacquire1(addr, false, semaBlockProfile)
 }
@@ -71,7 +71,7 @@ func sync_runtime_SemacquireMutex(addr *uint32, lifo bool) {
 	semacquire1(addr, lifo, semaBlockProfile|semaMutexProfile)
 }
 
-//go:linkname poll_runtime_Semrelease internal_poll.runtime_Semrelease
+//go:linkname poll_runtime_Semrelease internal..z2fpoll.runtime_Semrelease
 func poll_runtime_Semrelease(addr *uint32) {
 	semrelease(addr)
 }

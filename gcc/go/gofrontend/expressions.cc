@@ -82,7 +82,7 @@ Expression::do_discarding_value()
 // only be used by expressions which may be constant.
 
 void
-Expression::do_export(Export*) const
+Expression::do_export(Export_function_body*) const
 {
   go_unreachable();
 }
@@ -178,7 +178,10 @@ Expression::convert_for_assignment(Gogo*, Type* lhs_type,
       || rhs->is_error_expression())
     return Expression::make_error(location);
 
-  bool are_identical = Type::are_identical(lhs_type, rhs_type, false, NULL);
+  bool are_identical = Type::are_identical(lhs_type, rhs_type,
+					   (Type::COMPARE_ERRORS
+					    | Type::COMPARE_TAGS),
+					   NULL);
   if (!are_identical && lhs_type->interface_type() != NULL)
     {
       if (rhs_type->interface_type() == NULL)
@@ -341,7 +344,9 @@ Expression::convert_interface_to_interface(Type *lhs_type, Expression* rhs,
                                            bool for_type_guard,
                                            Location location)
 {
-  if (Type::are_identical(lhs_type, rhs->type(), false, NULL))
+  if (Type::are_identical(lhs_type, rhs->type(),
+			  Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
+			  NULL))
     return rhs;
 
   Interface_type* lhs_interface_type = lhs_type->interface_type();
@@ -668,7 +673,7 @@ Type_expression : public Expression
   { go_unreachable(); }
 
   void do_dump_expression(Ast_dump_context*) const;
- 
+
  private:
   // The type which we are representing as an expression.
   Type* type_;
@@ -779,6 +784,31 @@ Var_expression::do_address_taken(bool escapes)
       Node::make_node(this)->set_encoding(Node::ESCAPE_HEAP);
       Node::make_node(this->variable_)->set_encoding(Node::ESCAPE_HEAP);
     }
+}
+
+// The cost to inline a variable reference.  We currently only support
+// references to parameters.
+
+int
+Var_expression::do_inlining_cost() const
+{
+  if (this->variable_->is_variable())
+    {
+      if (this->variable_->var_value()->is_parameter())
+	return 1;
+    }
+  else if (this->variable_->is_result_variable())
+    return 1;
+
+  return 0x100000;
+}
+
+// Export a reference to a variable.
+
+void
+Var_expression::do_export(Export_function_body* efb) const
+{
+  efb->write_string(Gogo::unpack_hidden_name(this->variable_->name()));
 }
 
 // Get the backend representation for a reference to a variable.
@@ -1314,7 +1344,7 @@ Func_descriptor_expression::make_func_descriptor_type()
   if (Func_descriptor_expression::descriptor_type != NULL)
     return;
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
-  Type* struct_type = Type::make_builtin_struct_type(1, "code", uintptr_type);
+  Type* struct_type = Type::make_builtin_struct_type(1, "fn", uintptr_type);
   Func_descriptor_expression::descriptor_type =
     Type::make_builtin_named_type("functionDescriptor", struct_type);
 }
@@ -1578,7 +1608,7 @@ class Boolean_expression : public Expression
   { }
 
   static Expression*
-  do_import(Import*);
+  do_import(Import_expression*, Location);
 
  protected:
   bool
@@ -1603,9 +1633,13 @@ class Boolean_expression : public Expression
   do_get_backend(Translate_context* context)
   { return context->backend()->boolean_constant_expression(this->val_); }
 
+  int
+  do_inlining_cost() const
+  { return 1; }
+
   void
-  do_export(Export* exp) const
-  { exp->write_c_string(this->val_ ? "true" : "false"); }
+  do_export(Export_function_body* efb) const
+  { efb->write_c_string(this->val_ ? "$true" : "$false"); }
 
   void
   do_dump_expression(Ast_dump_context* ast_dump_context) const
@@ -1644,17 +1678,19 @@ Boolean_expression::do_determine_type(const Type_context* context)
 // Import a boolean constant.
 
 Expression*
-Boolean_expression::do_import(Import* imp)
+Boolean_expression::do_import(Import_expression* imp, Location loc)
 {
+  if (imp->version() >= EXPORT_FORMAT_V3)
+    imp->require_c_string("$");
   if (imp->peek_char() == 't')
     {
       imp->require_c_string("true");
-      return Expression::make_boolean(true, imp->location());
+      return Expression::make_boolean(true, loc);
     }
   else
     {
       imp->require_c_string("false");
-      return Expression::make_boolean(false, imp->location());
+      return Expression::make_boolean(false, loc);
     }
 }
 
@@ -1755,15 +1791,15 @@ String_expression::export_string(String_dump* exp,
 // Export a string expression.
 
 void
-String_expression::do_export(Export* exp) const
+String_expression::do_export(Export_function_body* efb) const
 {
-  String_expression::export_string(exp, this);
+  String_expression::export_string(efb, this);
 }
 
 // Import a string expression.
 
 Expression*
-String_expression::do_import(Import* imp)
+String_expression::do_import(Import_expression* imp, Location loc)
 {
   imp->require_c_string("\"");
   std::string val;
@@ -1795,11 +1831,11 @@ String_expression::do_import(Import* imp)
 	  else
 	    {
 	      go_error_at(imp->location(), "bad string constant");
-	      return Expression::make_error(imp->location());
+	      return Expression::make_error(loc);
 	    }
 	}
     }
-  return Expression::make_string(val, imp->location());
+  return Expression::make_string(val, loc);
 }
 
 // Ast dump for string expression.
@@ -1939,7 +1975,7 @@ class Integer_expression : public Expression
   { mpz_init_set(this->val_, *val); }
 
   static Expression*
-  do_import(Import*);
+  do_import(Import_expression*, Location);
 
   // Write VAL to string dump.
   static void
@@ -1990,8 +2026,12 @@ class Integer_expression : public Expression
 					this->location());
   }
 
+  int
+  do_inlining_cost() const
+  { return 1; }
+
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -2133,20 +2173,34 @@ Integer_expression::export_integer(String_dump* exp, const mpz_t val)
 // Export an integer in a constant expression.
 
 void
-Integer_expression::do_export(Export* exp) const
+Integer_expression::do_export(Export_function_body* efb) const
 {
-  Integer_expression::export_integer(exp, this->val_);
+  bool added_type = false;
+  if (this->type_ != NULL
+      && !this->type_->is_abstract()
+      && this->type_ != efb->type_context())
+    {
+      efb->write_c_string("$convert(");
+      efb->write_type(this->type_);
+      efb->write_c_string(", ");
+      added_type = true;
+    }
+
+  Integer_expression::export_integer(efb, this->val_);
   if (this->is_character_constant_)
-    exp->write_c_string("'");
+    efb->write_c_string("'");
   // A trailing space lets us reliably identify the end of the number.
-  exp->write_c_string(" ");
+  efb->write_c_string(" ");
+
+  if (added_type)
+    efb->write_c_string(")");
 }
 
 // Import an integer, floating point, or complex value.  This handles
 // all these types because they all start with digits.
 
 Expression*
-Integer_expression::do_import(Import* imp)
+Integer_expression::do_import(Import_expression* imp, Location loc)
 {
   std::string num = imp->read_identifier();
   imp->require_c_string(" ");
@@ -2164,7 +2218,7 @@ Integer_expression::do_import(Import* imp)
 	{
 	  go_error_at(imp->location(), "bad number in import data: %qs",
 		      num.c_str());
-	  return Expression::make_error(imp->location());
+	  return Expression::make_error(loc);
 	}
       if (pos == std::string::npos)
 	mpfr_set_ui(real, 0, GMP_RNDN);
@@ -2175,7 +2229,7 @@ Integer_expression::do_import(Import* imp)
 	    {
 	      go_error_at(imp->location(), "bad number in import data: %qs",
 			  real_str.c_str());
-	      return Expression::make_error(imp->location());
+	      return Expression::make_error(loc);
 	    }
 	}
 
@@ -2190,14 +2244,14 @@ Integer_expression::do_import(Import* imp)
 	{
 	  go_error_at(imp->location(), "bad number in import data: %qs",
 		      imag_str.c_str());
-	  return Expression::make_error(imp->location());
+	  return Expression::make_error(loc);
 	}
       mpc_t cval;
       mpc_init2(cval, mpc_precision);
       mpc_set_fr_fr(cval, real, imag, MPC_RNDNN);
       mpfr_clear(real);
       mpfr_clear(imag);
-      Expression* ret = Expression::make_complex(&cval, NULL, imp->location());
+      Expression* ret = Expression::make_complex(&cval, NULL, loc);
       mpc_clear(cval);
       return ret;
     }
@@ -2213,13 +2267,13 @@ Integer_expression::do_import(Import* imp)
 	{
 	  go_error_at(imp->location(), "bad number in import data: %qs",
 		      num.c_str());
-	  return Expression::make_error(imp->location());
+	  return Expression::make_error(loc);
 	}
       Expression* ret;
       if (is_character_constant)
-	ret = Expression::make_character(&val, NULL, imp->location());
+	ret = Expression::make_character(&val, NULL, loc);
       else
-	ret = Expression::make_integer_z(&val, NULL, imp->location());
+	ret = Expression::make_integer_z(&val, NULL, loc);
       mpz_clear(val);
       return ret;
     }
@@ -2230,9 +2284,9 @@ Integer_expression::do_import(Import* imp)
 	{
 	  go_error_at(imp->location(), "bad number in import data: %qs",
 		      num.c_str());
-	  return Expression::make_error(imp->location());
+	  return Expression::make_error(loc);
 	}
-      Expression* ret = Expression::make_float(&val, NULL, imp->location());
+      Expression* ret = Expression::make_float(&val, NULL, loc);
       mpfr_clear(val);
       return ret;
     }
@@ -2387,8 +2441,12 @@ class Float_expression : public Expression
   Bexpression*
   do_get_backend(Translate_context*);
 
+  int
+  do_inlining_cost() const
+  { return 1; }
+
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -2500,11 +2558,25 @@ Float_expression::export_float(String_dump *exp, const mpfr_t val)
 // Export a floating point number in a constant expression.
 
 void
-Float_expression::do_export(Export* exp) const
+Float_expression::do_export(Export_function_body* efb) const
 {
-  Float_expression::export_float(exp, this->val_);
+  bool added_type = false;
+  if (this->type_ != NULL
+      && !this->type_->is_abstract()
+      && this->type_ != efb->type_context())
+    {
+      efb->write_c_string("$convert(");
+      efb->write_type(this->type_);
+      efb->write_c_string(", ");
+      added_type = true;
+    }
+
+  Float_expression::export_float(efb, this->val_);
   // A trailing space lets us reliably identify the end of the number.
-  exp->write_c_string(" ");
+  efb->write_c_string(" ");
+
+  if (added_type)
+    efb->write_c_string(")");
 }
 
 // Dump a floating point number to the dump file.
@@ -2582,8 +2654,12 @@ class Complex_expression : public Expression
   Bexpression*
   do_get_backend(Translate_context*);
 
+  int
+  do_inlining_cost() const
+  { return 2; }
+
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -2690,11 +2766,25 @@ Complex_expression::export_complex(String_dump* exp, const mpc_t val)
 // Export a complex number in a constant expression.
 
 void
-Complex_expression::do_export(Export* exp) const
+Complex_expression::do_export(Export_function_body* efb) const
 {
-  Complex_expression::export_complex(exp, this->val_);
+  bool added_type = false;
+  if (this->type_ != NULL
+      && !this->type_->is_abstract()
+      && this->type_ != efb->type_context())
+    {
+      efb->write_c_string("$convert(");
+      efb->write_type(this->type_);
+      efb->write_c_string(", ");
+      added_type = true;
+    }
+
+  Complex_expression::export_complex(efb, this->val_);
   // A trailing space lets us reliably identify the end of the number.
-  exp->write_c_string(" ");
+  efb->write_c_string(" ");
+
+  if (added_type)
+    efb->write_c_string(")");
 }
 
 // Dump a complex expression to the dump file.
@@ -2799,8 +2889,8 @@ class Const_expression : public Expression
   // expression, we export the value.  We ignore the fact that it has
   // a name.
   void
-  do_export(Export* exp) const
-  { this->constant_->const_value()->expr()->export_expression(exp); }
+  do_export(Export_function_body* efb) const
+  { this->constant_->const_value()->expr()->export_expression(efb); }
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -2860,7 +2950,7 @@ Const_expression::do_numeric_constant_value(Numeric_constant* nc) const
     return false;
 
   Expression* e = this->constant_->const_value()->expr();
-  
+
   this->seen_ = true;
 
   bool r = e->numeric_constant_value(nc);
@@ -3128,7 +3218,7 @@ class Nil_expression : public Expression
   { }
 
   static Expression*
-  do_import(Import*);
+  do_import(Import_expression*, Location);
 
  protected:
   bool
@@ -3155,9 +3245,13 @@ class Nil_expression : public Expression
   do_get_backend(Translate_context* context)
   { return context->backend()->nil_pointer_expression(); }
 
+  int
+  do_inlining_cost() const
+  { return 1; }
+
   void
-  do_export(Export* exp) const
-  { exp->write_c_string("nil"); }
+  do_export(Export_function_body* efb) const
+  { efb->write_c_string("$nil"); }
 
   void
   do_dump_expression(Ast_dump_context* ast_dump_context) const
@@ -3167,10 +3261,12 @@ class Nil_expression : public Expression
 // Import a nil expression.
 
 Expression*
-Nil_expression::do_import(Import* imp)
+Nil_expression::do_import(Import_expression* imp, Location loc)
 {
+  if (imp->version() >= EXPORT_FORMAT_V3)
+    imp->require_c_string("$");
   imp->require_c_string("nil");
-  return Expression::make_nil(imp->location());
+  return Expression::make_nil(loc);
 }
 
 // Make a nil expression.
@@ -3202,10 +3298,10 @@ class Iota_expression : public Parser_expression
   Expression*
   do_copy()
   { go_unreachable(); }
-  
+
   void
   do_dump_expression(Ast_dump_context* ast_dump_context) const
-  { ast_dump_context->ostream() << "iota"; } 
+  { ast_dump_context->ostream() << "iota"; }
 };
 
 // Make an iota expression.  This is only called for one case: the
@@ -3389,7 +3485,9 @@ Type_conversion_expression::do_is_static_initializer() const
   if (!this->expr_->is_static_initializer())
     return false;
 
-  if (Type::are_identical(type, expr_type, false, NULL))
+  if (Type::are_identical(type, expr_type,
+			  Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
+			  NULL))
     return true;
 
   if (type->is_string_type() && expr_type->is_string_type())
@@ -3503,7 +3601,9 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
   Btype* btype = type->get_backend(gogo);
   Location loc = this->location();
 
-  if (Type::are_identical(type, expr_type, false, NULL))
+  if (Type::are_identical(type, expr_type,
+			  Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
+			  NULL))
     {
       Bexpression* bexpr = this->expr_->get_backend(context);
       return gogo->backend()->convert_expression(btype, bexpr, loc);
@@ -3599,29 +3699,55 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
     }
 }
 
+// Cost of inlining a type conversion.
+
+int
+Type_conversion_expression::do_inlining_cost() const
+{
+  Type* type = this->type_;
+  Type* expr_type = this->expr_->type();
+  if (type->interface_type() != NULL || expr_type->interface_type() != NULL)
+    return 10;
+  else if (type->is_string_type() && expr_type->integer_type() != NULL)
+    return 10;
+  else if (type->is_string_type() && expr_type->is_slice_type())
+    return 10;
+  else if (type->is_slice_type() && expr_type->is_string_type())
+    return 10;
+  else
+    return 1;
+}
+
 // Output a type conversion in a constant expression.
 
 void
-Type_conversion_expression::do_export(Export* exp) const
+Type_conversion_expression::do_export(Export_function_body* efb) const
 {
-  exp->write_c_string("convert(");
-  exp->write_type(this->type_);
-  exp->write_c_string(", ");
-  this->expr_->export_expression(exp);
-  exp->write_c_string(")");
+  efb->write_c_string("$convert(");
+  efb->write_type(this->type_);
+  efb->write_c_string(", ");
+
+  Type* old_context = efb->type_context();
+  efb->set_type_context(this->type_);
+
+  this->expr_->export_expression(efb);
+
+  efb->set_type_context(old_context);
+
+  efb->write_c_string(")");
 }
 
 // Import a type conversion or a struct construction.
 
 Expression*
-Type_conversion_expression::do_import(Import* imp)
+Type_conversion_expression::do_import(Import_expression* imp, Location loc)
 {
-  imp->require_c_string("convert(");
+  imp->require_c_string("$convert(");
   Type* type = imp->read_type();
   imp->require_c_string(", ");
-  Expression* val = Expression::import_expression(imp);
+  Expression* val = Expression::import_expression(imp, loc);
   imp->require_c_string(")");
-  return Expression::make_cast(type, val, imp->location());
+  return Expression::make_cast(type, val, loc);
 }
 
 // Dump ast representation for a type conversion expression.
@@ -3748,7 +3874,9 @@ Unsafe_type_conversion_expression::do_get_backend(Translate_context* context)
 	      || et->integer_type() != NULL
               || et->is_nil_type());
   else if (et->is_unsafe_pointer_type())
-    go_assert(t->points_to() != NULL);
+    go_assert(t->points_to() != NULL
+	      || (t->integer_type() != NULL
+		  && t->integer_type() == Type::lookup_integer_type("uintptr")->real_type()));
   else if (t->interface_type() != NULL)
     {
       bool empty_iface = t->interface_type()->is_empty();
@@ -3810,24 +3938,12 @@ Unary_expression::check_operand_address_taken(Gogo*)
   // If this->escapes_ is false at this point, then it was set to
   // false by an explicit call to set_does_not_escape, and the value
   // does not escape.  If this->escapes_ is true, we may be able to
-  // set it to false if taking the address of a variable that does not
-  // escape.
-  Node* n = Node::make_node(this);
-  if ((n->encoding() & ESCAPE_MASK) == int(Node::ESCAPE_NONE))
-    this->escapes_ = false;
-
-  Named_object* var = NULL;
-  if (this->expr_->var_expression() != NULL)
-    var = this->expr_->var_expression()->named_object();
-  else if (this->expr_->enclosed_var_expression() != NULL)
-    var = this->expr_->enclosed_var_expression()->variable();
-
-  if (this->escapes_ && var != NULL)
+  // set it to false based on the escape analysis pass.
+  if (this->escapes_)
     {
-      if (var->is_variable())
-	this->escapes_ = var->var_value()->escapes();
-      if (var->is_result_variable())
-	this->escapes_ = var->result_var_value()->escapes();
+      Node* n = Node::make_node(this);
+      if ((n->encoding() & ESCAPE_MASK) == int(Node::ESCAPE_NONE))
+	this->escapes_ = false;
     }
 
   this->expr_->address_taken(this->escapes_);
@@ -4060,7 +4176,7 @@ Unary_expression::base_is_static_initializer(Expression* expr)
 // know the address of this expression is being taken, we must always
 // check for nil.
 Unary_expression::Nil_check_classification
-Unary_expression::requires_nil_check(Gogo* gogo) 
+Unary_expression::requires_nil_check(Gogo* gogo)
 {
   go_assert(this->op_ == OPERATOR_MULT);
   go_assert(this->expr_->type()->points_to() != NULL);
@@ -4598,34 +4714,38 @@ Unary_expression::do_get_backend(Translate_context* context)
 // Export a unary expression.
 
 void
-Unary_expression::do_export(Export* exp) const
+Unary_expression::do_export(Export_function_body* efb) const
 {
   switch (this->op_)
     {
     case OPERATOR_PLUS:
-      exp->write_c_string("+ ");
+      efb->write_c_string("+");
       break;
     case OPERATOR_MINUS:
-      exp->write_c_string("- ");
+      efb->write_c_string("-");
       break;
     case OPERATOR_NOT:
-      exp->write_c_string("! ");
+      efb->write_c_string("!");
       break;
     case OPERATOR_XOR:
-      exp->write_c_string("^ ");
+      efb->write_c_string("^");
       break;
     case OPERATOR_AND:
+      efb->write_c_string("&");
+      break;
     case OPERATOR_MULT:
+      efb->write_c_string("*");
+      break;
     default:
       go_unreachable();
     }
-  this->expr_->export_expression(exp);
+  this->expr_->export_expression(efb);
 }
 
 // Import a unary expression.
 
 Expression*
-Unary_expression::do_import(Import* imp)
+Unary_expression::do_import(Import_expression* imp, Location loc)
 {
   Operator op;
   switch (imp->get_char())
@@ -4642,12 +4762,19 @@ Unary_expression::do_import(Import* imp)
     case '^':
       op = OPERATOR_XOR;
       break;
+    case '&':
+      op = OPERATOR_AND;
+      break;
+    case '*':
+      op = OPERATOR_MULT;
+      break;
     default:
       go_unreachable();
     }
-  imp->require_c_string(" ");
-  Expression* expr = Expression::import_expression(imp);
-  return Expression::make_unary(op, expr, imp->location());
+  if (imp->version() < EXPORT_FORMAT_V3)
+    imp->require_c_string(" ");
+  Expression* expr = Expression::import_expression(imp, loc);
+  return Expression::make_unary(op, expr, loc);
 }
 
 // Dump ast representation of an unary expression.
@@ -5433,7 +5560,10 @@ Binary_expression::lower_struct_comparison(Gogo* gogo,
   Struct_type* st2 = this->right_->type()->struct_type();
   if (st2 == NULL)
     return this;
-  if (st != st2 && !Type::are_identical(st, st2, false, NULL))
+  if (st != st2
+      && !Type::are_identical(st, st2,
+			      Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
+			      NULL))
     return this;
   if (!Type::are_compatible_for_comparison(true, this->left_->type(),
 					   this->right_->type(), NULL))
@@ -5512,7 +5642,10 @@ Binary_expression::lower_array_comparison(Gogo* gogo,
   Array_type* at2 = this->right_->type()->array_type();
   if (at2 == NULL)
     return this;
-  if (at != at2 && !Type::are_identical(at, at2, false, NULL))
+  if (at != at2
+      && !Type::are_identical(at, at2,
+			      Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
+			      NULL))
     return this;
   if (!Type::are_compatible_for_comparison(true, this->left_->type(),
 					   this->right_->type(), NULL))
@@ -6315,84 +6448,84 @@ Binary_expression::do_get_backend(Translate_context* context)
 // Export a binary expression.
 
 void
-Binary_expression::do_export(Export* exp) const
+Binary_expression::do_export(Export_function_body* efb) const
 {
-  exp->write_c_string("(");
-  this->left_->export_expression(exp);
+  efb->write_c_string("(");
+  this->left_->export_expression(efb);
   switch (this->op_)
     {
     case OPERATOR_OROR:
-      exp->write_c_string(" || ");
+      efb->write_c_string(" || ");
       break;
     case OPERATOR_ANDAND:
-      exp->write_c_string(" && ");
+      efb->write_c_string(" && ");
       break;
     case OPERATOR_EQEQ:
-      exp->write_c_string(" == ");
+      efb->write_c_string(" == ");
       break;
     case OPERATOR_NOTEQ:
-      exp->write_c_string(" != ");
+      efb->write_c_string(" != ");
       break;
     case OPERATOR_LT:
-      exp->write_c_string(" < ");
+      efb->write_c_string(" < ");
       break;
     case OPERATOR_LE:
-      exp->write_c_string(" <= ");
+      efb->write_c_string(" <= ");
       break;
     case OPERATOR_GT:
-      exp->write_c_string(" > ");
+      efb->write_c_string(" > ");
       break;
     case OPERATOR_GE:
-      exp->write_c_string(" >= ");
+      efb->write_c_string(" >= ");
       break;
     case OPERATOR_PLUS:
-      exp->write_c_string(" + ");
+      efb->write_c_string(" + ");
       break;
     case OPERATOR_MINUS:
-      exp->write_c_string(" - ");
+      efb->write_c_string(" - ");
       break;
     case OPERATOR_OR:
-      exp->write_c_string(" | ");
+      efb->write_c_string(" | ");
       break;
     case OPERATOR_XOR:
-      exp->write_c_string(" ^ ");
+      efb->write_c_string(" ^ ");
       break;
     case OPERATOR_MULT:
-      exp->write_c_string(" * ");
+      efb->write_c_string(" * ");
       break;
     case OPERATOR_DIV:
-      exp->write_c_string(" / ");
+      efb->write_c_string(" / ");
       break;
     case OPERATOR_MOD:
-      exp->write_c_string(" % ");
+      efb->write_c_string(" % ");
       break;
     case OPERATOR_LSHIFT:
-      exp->write_c_string(" << ");
+      efb->write_c_string(" << ");
       break;
     case OPERATOR_RSHIFT:
-      exp->write_c_string(" >> ");
+      efb->write_c_string(" >> ");
       break;
     case OPERATOR_AND:
-      exp->write_c_string(" & ");
+      efb->write_c_string(" & ");
       break;
     case OPERATOR_BITCLEAR:
-      exp->write_c_string(" &^ ");
+      efb->write_c_string(" &^ ");
       break;
     default:
       go_unreachable();
     }
-  this->right_->export_expression(exp);
-  exp->write_c_string(")");
+  this->right_->export_expression(efb);
+  efb->write_c_string(")");
 }
 
 // Import a binary expression.
 
 Expression*
-Binary_expression::do_import(Import* imp)
+Binary_expression::do_import(Import_expression* imp, Location loc)
 {
   imp->require_c_string("(");
 
-  Expression* left = Expression::import_expression(imp);
+  Expression* left = Expression::import_expression(imp, loc);
 
   Operator op;
   if (imp->match_c_string(" || "))
@@ -6493,14 +6626,14 @@ Binary_expression::do_import(Import* imp)
   else
     {
       go_error_at(imp->location(), "unrecognized binary operator");
-      return Expression::make_error(imp->location());
+      return Expression::make_error(loc);
     }
 
-  Expression* right = Expression::import_expression(imp);
+  Expression* right = Expression::import_expression(imp, loc);
 
   imp->require_c_string(")");
 
-  return Expression::make_binary(op, left, right, imp->location());
+  return Expression::make_binary(op, left, right, loc);
 }
 
 // Dump ast representation of a binary expression.
@@ -6902,7 +7035,7 @@ Bound_method_expression::do_check_types(Gogo*)
 		 ? this->expr_type_
 		 : this->expr_->type());
   etype = etype->deref();
-  if (!Type::are_identical(rtype, etype, true, NULL))
+  if (!Type::are_identical(rtype, etype, Type::COMPARE_TAGS, NULL))
     this->report_error(_("method type does not match object type"));
 }
 
@@ -7180,14 +7313,14 @@ Bound_method_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
 {
   if (this->expr_type_ != NULL)
     ast_dump_context->ostream() << "(";
-  ast_dump_context->dump_expression(this->expr_); 
-  if (this->expr_type_ != NULL) 
+  ast_dump_context->dump_expression(this->expr_);
+  if (this->expr_type_ != NULL)
     {
       ast_dump_context->ostream() << ":";
       ast_dump_context->dump_type(this->expr_type_);
       ast_dump_context->ostream() << ")";
     }
-    
+
   ast_dump_context->ostream() << "." << this->function_->name();
 }
 
@@ -7330,7 +7463,7 @@ Builtin_call_expression::do_lower(Gogo*, Named_object* function,
 	  farg = farg->expr()->field_reference_expression();
 	}
     }
- 
+
   if (this->is_constant())
     {
       Numeric_constant nc;
@@ -7656,21 +7789,29 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
   Expression* call;
   if (is_slice)
     {
+      Temporary_statement* len_temp = NULL;
+      if (!len_arg->is_constant())
+	{
+	  len_temp = Statement::make_temporary(NULL, len_arg, loc);
+	  inserter->insert(len_temp);
+	  len_arg = Expression::make_temporary_reference(len_temp, loc);
+	}
+
       if (cap_arg == NULL)
 	{
           cap_small = len_small;
-          if (len_arg->numeric_constant_value(&nclen)
-              && nclen.to_unsigned_long(&vlen) == Numeric_constant::NC_UL_VALID)
-            cap_arg = Expression::make_integer_ul(vlen, len_arg->type(), loc);
-          else
-            {
-              Temporary_statement* temp = Statement::make_temporary(NULL,
-                                                                    len_arg,
-                                                                    loc);
-              inserter->insert(temp);
-              len_arg = Expression::make_temporary_reference(temp, loc);
-              cap_arg = Expression::make_temporary_reference(temp, loc);
-            }
+	  if (len_temp == NULL)
+	    cap_arg = len_arg->copy();
+	  else
+	    cap_arg = Expression::make_temporary_reference(len_temp, loc);
+	}
+      else if (!cap_arg->is_constant())
+	{
+	  Temporary_statement* cap_temp = Statement::make_temporary(NULL,
+								    cap_arg,
+								    loc);
+	  inserter->insert(cap_temp);
+	  cap_arg = Expression::make_temporary_reference(cap_temp, loc);
 	}
 
       Type* et = type->array_type()->element_type();
@@ -7678,7 +7819,14 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
       Runtime::Function code = Runtime::MAKESLICE;
       if (!len_small || !cap_small)
 	code = Runtime::MAKESLICE64;
-      call = Runtime::make_call(code, loc, 3, type_arg, len_arg, cap_arg);
+      Expression* mem = Runtime::make_call(code, loc, 3, type_arg, len_arg,
+					   cap_arg);
+      mem = Expression::make_unsafe_cast(Type::make_pointer_type(et), mem,
+					 loc);
+      Type* int_type = Type::lookup_integer_type("int");
+      len_arg = Expression::make_cast(int_type, len_arg->copy(), loc);
+      cap_arg = Expression::make_cast(int_type, cap_arg->copy(), loc);
+      call = Expression::make_slice_value(type, mem, len_arg, cap_arg, loc);
     }
   else if (is_map)
     {
@@ -8279,7 +8427,7 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
       if (arg_type->is_error())
 	return false;
       if (arg_type->is_abstract())
-	return false;
+	arg_type = arg_type->make_non_abstract_type();
       if (this->seen_)
         return false;
 
@@ -8404,7 +8552,9 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
 	  && !rnc.type()->is_abstract()
 	  && inc.type() != NULL
 	  && !inc.type()->is_abstract()
-	  && !Type::are_identical(rnc.type(), inc.type(), false, NULL))
+	  && !Type::are_identical(rnc.type(), inc.type(),
+				  Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
+				  NULL))
 	return false;
 
       mpfr_t r;
@@ -8885,7 +9035,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 	if (arg2_type->is_slice_type())
 	  {
 	    Type* e2 = arg2_type->array_type()->element_type();
-	    if (!Type::are_identical(e1, e2, true, NULL))
+	    if (!Type::are_identical(e1, e2, Type::COMPARE_TAGS, NULL))
 	      this->report_error(_("element types must be the same"));
 	  }
 	else if (arg2_type->is_string_type())
@@ -9023,7 +9173,8 @@ Builtin_call_expression::do_check_types(Gogo*)
 		 || args->back()->type()->is_error())
 	  this->set_is_error();
 	else if (!Type::are_identical(args->front()->type(),
-				      args->back()->type(), true, NULL))
+				      args->back()->type(),
+				      Type::COMPARE_TAGS, NULL))
 	  this->report_error(_("complex arguments must have identical types"));
 	else if (args->front()->type()->float_type() == NULL)
 	  this->report_error(_("complex arguments must have "
@@ -9436,7 +9587,7 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
 // code can set a constant to the result of a builtin expression.
 
 void
-Builtin_call_expression::do_export(Export* exp) const
+Builtin_call_expression::do_export(Export_function_body* efb) const
 {
   Numeric_constant nc;
   if (!this->numeric_constant_value(&nc))
@@ -9449,28 +9600,28 @@ Builtin_call_expression::do_export(Export* exp) const
     {
       mpz_t val;
       nc.get_int(&val);
-      Integer_expression::export_integer(exp, val);
+      Integer_expression::export_integer(efb, val);
       mpz_clear(val);
     }
   else if (nc.is_float())
     {
       mpfr_t fval;
       nc.get_float(&fval);
-      Float_expression::export_float(exp, fval);
+      Float_expression::export_float(efb, fval);
       mpfr_clear(fval);
     }
   else if (nc.is_complex())
     {
       mpc_t cval;
       nc.get_complex(&cval);
-      Complex_expression::export_complex(exp, cval);
+      Complex_expression::export_complex(efb, cval);
       mpc_clear(cval);
     }
   else
     go_unreachable();
 
   // A trailing space lets us reliably identify the end of the number.
-  exp->write_c_string(" ");
+  efb->write_c_string(" ");
 }
 
 // Class Call_expression.
@@ -9752,20 +9903,30 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 	      && n == "getcallerpc")
 	    {
 	      static Named_object* builtin_return_address;
+              int arg = 0;
 	      return this->lower_to_builtin(&builtin_return_address,
 					    "__builtin_return_address",
-					    0);
+					    &arg);
 	    }
 	  else if ((this->args_ == NULL || this->args_->size() == 0)
 		   && n == "getcallersp")
 	    {
-	      static Named_object* builtin_frame_address;
-	      return this->lower_to_builtin(&builtin_frame_address,
-					    "__builtin_frame_address",
-					    1);
+	      static Named_object* builtin_dwarf_cfa;
+	      return this->lower_to_builtin(&builtin_dwarf_cfa,
+					    "__builtin_dwarf_cfa",
+					    NULL);
 	    }
 	}
     }
+
+  // If this is a call to an imported function for which we have an
+  // inlinable function body, add it to the list of functions to give
+  // to the backend as inlining opportunities.
+  Func_expression* fe = this->fn_->func_expression();
+  if (fe != NULL
+      && fe->named_object()->is_function_declaration()
+      && fe->named_object()->func_declaration_value()->has_imported_body())
+    gogo->add_imported_inlinable_function(fe->named_object());
 
   return this;
 }
@@ -9871,21 +10032,24 @@ Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
   this->varargs_are_lowered_ = true;
 }
 
-// Return a call to __builtin_return_address or __builtin_frame_address.
+// Return a call to __builtin_return_address or __builtin_dwarf_cfa.
 
 Expression*
 Call_expression::lower_to_builtin(Named_object** pno, const char* name,
-				  int arg)
+				  int* arg)
 {
   if (*pno == NULL)
-    *pno = Gogo::declare_builtin_rf_address(name);
+    *pno = Gogo::declare_builtin_rf_address(name, arg != NULL);
 
   Location loc = this->location();
 
   Expression* fn = Expression::make_func_reference(*pno, NULL, loc);
-  Expression* a = Expression::make_integer_ul(arg, NULL, loc);
   Expression_list *args = new Expression_list();
-  args->push_back(a);
+  if (arg != NULL)
+    {
+      Expression* a = Expression::make_integer_ul(*arg, NULL, loc);
+      args->push_back(a);
+    }
   Expression* call = Expression::make_call(fn, args, false, loc);
 
   // The builtin functions return void*, but the Go functions return uintptr.
@@ -9935,7 +10099,8 @@ Call_expression::do_flatten(Gogo* gogo, Named_object*,
       for (; pa != this->args_->end(); ++pa, ++pp)
 	{
 	  go_assert(pp != fntype->parameters()->end());
-	  if (Type::are_identical(pp->type(), (*pa)->type(), true, NULL))
+	  if (Type::are_identical(pp->type(), (*pa)->type(),
+				  Type::COMPARE_TAGS, NULL))
 	    args->push_back(*pa);
 	  else
 	    {
@@ -10089,7 +10254,7 @@ Call_expression::do_type()
   else if (results->size() == 1)
     ret = results->begin()->type();
   else
-    ret = Type::make_call_multiple_result_type();
+    ret = Type::make_call_multiple_result_type(this);
 
   this->type_ = ret;
 
@@ -10653,7 +10818,7 @@ void
 Call_result_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
-  // FIXME: Wouldn't it be better if the call is assigned to a temporary 
+  // FIXME: Wouldn't it be better if the call is assigned to a temporary
   // (struct) and the fields are referenced instead.
   ast_dump_context->ostream() << this->index_ << "@(";
   ast_dump_context->dump_expression(this->call_);
@@ -10771,8 +10936,8 @@ Index_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
 // (expr[expr:expr:expr], expr[expr:expr] or expr[expr]) to a dump context.
 
 void
-Index_expression::dump_index_expression(Ast_dump_context* ast_dump_context, 
-					const Expression* expr, 
+Index_expression::dump_index_expression(Ast_dump_context* ast_dump_context,
+					const Expression* expr,
 					const Expression* start,
 					const Expression* end,
 					const Expression* cap)
@@ -10796,10 +10961,10 @@ Index_expression::dump_index_expression(Ast_dump_context* ast_dump_context,
 // Dump ast representation for an index expression.
 
 void
-Index_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+Index_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
-  Index_expression::dump_index_expression(ast_dump_context, this->left_, 
+  Index_expression::dump_index_expression(ast_dump_context, this->left_,
                                           this->start_, this->end_, this->cap_);
 }
 
@@ -11312,10 +11477,10 @@ Array_index_expression::do_get_backend(Translate_context* context)
 // Dump ast representation for an array index expression.
 
 void
-Array_index_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+Array_index_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
-  Index_expression::dump_index_expression(ast_dump_context, this->array_, 
+  Index_expression::dump_index_expression(ast_dump_context, this->array_,
                                           this->start_, this->end_, this->cap_);
 }
 
@@ -11538,7 +11703,7 @@ String_index_expression::do_get_backend(Translate_context* context)
       Bexpression* ptr = bytes->get_backend(context);
       ptr = gogo->backend()->pointer_offset_expression(ptr, bstart, loc);
       Btype* ubtype = Type::lookup_integer_type("uint8")->get_backend(gogo);
-      Bexpression* index = 
+      Bexpression* index =
 	gogo->backend()->indirect_expression(ubtype, ptr, true, loc);
 
       Btype* byte_btype = bytes->type()->points_to()->get_backend(gogo);
@@ -11630,7 +11795,9 @@ Map_index_expression::do_flatten(Gogo* gogo, Named_object*,
       return Expression::make_error(loc);
     }
 
-  if (!Type::are_identical(mt->key_type(), this->index_->type(), false, NULL))
+  if (!Type::are_identical(mt->key_type(), this->index_->type(),
+			   Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
+			   NULL))
     {
       if (this->index_->type()->interface_type() != NULL
 	  && !this->index_->is_variable())
@@ -11784,7 +11951,7 @@ Map_index_expression::get_value_pointer(Gogo* gogo)
 // Dump ast representation for a map index expression
 
 void
-Map_index_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+Map_index_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
   Index_expression::dump_index_expression(ast_dump_context, this->map_,
@@ -12385,7 +12552,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 	imethod = it->find_method(name);
     }
 
-  if ((method == NULL && imethod == NULL) 
+  if ((method == NULL && imethod == NULL)
       || (left_type->named_type() != NULL && left_type->points_to() != NULL))
     {
       if (!is_ambiguous)
@@ -12460,7 +12627,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 	   ++p)
 	results->push_back(*p);
     }
-  
+
   Function_type* fntype = Type::make_function_type(NULL, parameters, results,
 						   location);
   if (method_type->is_varargs())
@@ -12547,14 +12714,14 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 // Dump the ast for a selector expression.
 
 void
-Selector_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+Selector_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
   ast_dump_context->dump_expression(this->left_);
   ast_dump_context->ostream() << ".";
   ast_dump_context->ostream() << this->name_;
 }
-                      
+
 // Make a selector expression.
 
 Expression*
@@ -12639,7 +12806,7 @@ Allocation_expression::do_get_backend(Translate_context* context)
 // Dump ast representation for an allocation expression.
 
 void
-Allocation_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+Allocation_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
   ast_dump_context->ostream() << "new(";
@@ -12921,25 +13088,31 @@ Struct_construction_expression::do_get_backend(Translate_context* context)
 	  ++pv;
 	}
     }
+  if (this->type_->struct_type()->has_padding())
+    {
+      // Feed an extra value if there is a padding field.
+      Btype *fbtype = Type::lookup_integer_type("uint8")->get_backend(gogo);
+      init.push_back(gogo->backend()->zero_expression(fbtype));
+    }
   return gogo->backend()->constructor_expression(btype, init, this->location());
 }
 
 // Export a struct construction.
 
 void
-Struct_construction_expression::do_export(Export* exp) const
+Struct_construction_expression::do_export(Export_function_body* efb) const
 {
-  exp->write_c_string("convert(");
-  exp->write_type(this->type_);
+  efb->write_c_string("$convert(");
+  efb->write_type(this->type_);
   for (Expression_list::const_iterator pv = this->vals()->begin();
        pv != this->vals()->end();
        ++pv)
     {
-      exp->write_c_string(", ");
+      efb->write_c_string(", ");
       if (*pv != NULL)
-	(*pv)->export_expression(exp);
+	(*pv)->export_expression(efb);
     }
-  exp->write_c_string(")");
+  efb->write_c_string(")");
 }
 
 // Dump ast representation of a struct construction expression.
@@ -13160,10 +13333,10 @@ Array_construction_expression::get_constructor(Translate_context* context,
 // Export an array construction.
 
 void
-Array_construction_expression::do_export(Export* exp) const
+Array_construction_expression::do_export(Export_function_body* efb) const
 {
-  exp->write_c_string("convert(");
-  exp->write_type(this->type_);
+  efb->write_c_string("$convert(");
+  efb->write_type(this->type_);
   if (this->vals() != NULL)
     {
       std::vector<unsigned long>::const_iterator pi;
@@ -13173,24 +13346,24 @@ Array_construction_expression::do_export(Export* exp) const
 	   pv != this->vals()->end();
 	   ++pv)
 	{
-	  exp->write_c_string(", ");
+	  efb->write_c_string(", ");
 
 	  if (this->indexes_ != NULL)
 	    {
 	      char buf[100];
 	      snprintf(buf, sizeof buf, "%lu", *pi);
-	      exp->write_c_string(buf);
-	      exp->write_c_string(":");
+	      efb->write_c_string(buf);
+	      efb->write_c_string(":");
 	    }
 
 	  if (*pv != NULL)
-	    (*pv)->export_expression(exp);
+	    (*pv)->export_expression(efb);
 
 	  if (this->indexes_ != NULL)
 	    ++pi;
 	}
     }
-  exp->write_c_string(")");
+  efb->write_c_string(")");
 }
 
 // Dump ast representation of an array construction expression.
@@ -13439,9 +13612,13 @@ Slice_construction_expression::do_get_backend(Translate_context* context)
       go_assert(this->storage_escapes_ || this->element_count() == 0);
       space = Expression::make_heap_expression(this->array_val_, loc);
     }
+  Array_type* at = this->valtype_->array_type();
+  Type* et = at->element_type();
+  space = Expression::make_unsafe_cast(Type::make_pointer_type(et),
+				       space, loc);
 
   // Build a constructor for the slice.
-  Expression* len = this->valtype_->array_type()->length();
+  Expression* len = at->length();
   Expression* slice_val =
     Expression::make_slice_value(this->type(), space, len, len, loc);
   return slice_val->get_backend(context);
@@ -13677,18 +13854,18 @@ Map_construction_expression::do_get_backend(Translate_context* context)
 // Export an array construction.
 
 void
-Map_construction_expression::do_export(Export* exp) const
+Map_construction_expression::do_export(Export_function_body* efb) const
 {
-  exp->write_c_string("convert(");
-  exp->write_type(this->type_);
+  efb->write_c_string("$convert(");
+  efb->write_type(this->type_);
   for (Expression_list::const_iterator pv = this->vals_->begin();
        pv != this->vals_->end();
        ++pv)
     {
-      exp->write_c_string(", ");
-      (*pv)->export_expression(exp);
+      efb->write_c_string(", ");
+      (*pv)->export_expression(efb);
     }
-  exp->write_c_string(")");
+  efb->write_c_string(")");
 }
 
 // Dump ast representation for a map construction expression.
@@ -14073,6 +14250,13 @@ Composite_literal_expression::lower_array(Type* type)
 
       if (index_expr == NULL)
 	{
+	  if (std::find(indexes->begin(), indexes->end(), index)
+	      != indexes->end())
+	    {
+	      go_error_at(val->location(),
+			  "duplicate value for index %lu", index);
+	      return Expression::make_error(location);
+	    }
 	  if (!indexes->empty())
 	    indexes->push_back(index);
 	}
@@ -14269,6 +14453,8 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
 					Type* type)
 {
   Location location = this->location();
+  Unordered_map(unsigned int, std::vector<Expression*>) st;
+  Unordered_map(unsigned int, std::vector<Expression*>) nt;
   if (this->vals_ != NULL)
     {
       if (!this->has_keys_)
@@ -14298,6 +14484,84 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
 	      gogo->lower_expression(function, inserter, &*p);
 	      go_assert((*p)->is_error_expression());
 	      return Expression::make_error(location);
+	    }
+	  // Check if there are duplicate constant keys.
+	  if (!(*p)->is_constant())
+	    continue;
+	  std::string sval;
+	  Numeric_constant nval;
+	  if ((*p)->string_constant_value(&sval)) // Check string keys.
+	    {
+	      unsigned int h = Gogo::hash_string(sval, 0);
+	      // Search the index h in the hash map.
+	      Unordered_map(unsigned int, std::vector<Expression*>)::iterator mit;
+	      mit = st.find(h);
+	      if (mit == st.end())
+		{
+		  // No duplicate since h is a new index.
+		  // Create a new vector indexed by h and add it to the hash map.
+		  std::vector<Expression*> l;
+		  l.push_back(*p);
+		  std::pair<unsigned int, std::vector<Expression*> > val(h, l);
+		  st.insert(val);
+		}
+	      else
+		{
+		  // Do further check since index h already exists.
+		  for (std::vector<Expression*>::iterator lit =
+			   mit->second.begin();
+		       lit != mit->second.end();
+		       lit++)
+		    {
+		      std::string s;
+		      bool ok = (*lit)->string_constant_value(&s);
+		      go_assert(ok);
+		      if (s == sval)
+			{
+			  go_error_at((*p)->location(), ("duplicate key "
+				      "in map literal"));
+			  return Expression::make_error(location);
+			}
+		    }
+		  // Add this new string key to the vector indexed by h.
+		  mit->second.push_back(*p);
+		}
+	    }
+	  else if ((*p)->numeric_constant_value(&nval)) // Check numeric keys.
+	    {
+	      unsigned int h = nval.hash(0);
+	      Unordered_map(unsigned int, std::vector<Expression*>)::iterator mit;
+	      mit = nt.find(h);
+	      if (mit == nt.end())
+		{
+		  // No duplicate since h is a new code.
+		  // Create a new vector indexed by h and add it to the hash map.
+		  std::vector<Expression*> l;
+		  l.push_back(*p);
+		  std::pair<unsigned int, std::vector<Expression*> > val(h, l);
+		  nt.insert(val);
+		}
+	      else
+		{
+		  // Do further check since h already exists.
+		  for (std::vector<Expression*>::iterator lit =
+			   mit->second.begin();
+		       lit != mit->second.end();
+		       lit++)
+		    {
+		      Numeric_constant rval;
+		      bool ok = (*lit)->numeric_constant_value(&rval);
+		      go_assert(ok);
+		      if (nval.equals(rval))
+			{
+			  go_error_at((*p)->location(),
+				      "duplicate key in map literal");
+			  return Expression::make_error(location);
+			}
+		    }
+		  // Add this new numeric key to the vector indexed by h.
+		  mit->second.push_back(*p);
+		}
 	    }
 	}
     }
@@ -15082,8 +15346,8 @@ Type_info_expression::do_dump_expression(
   ast_dump_context->ostream() << "typeinfo(";
   ast_dump_context->dump_type(this->type_);
   ast_dump_context->ostream() << ",";
-  ast_dump_context->ostream() << 
-    (this->type_info_ == TYPE_INFO_ALIGNMENT ? "alignment" 
+  ast_dump_context->ostream() <<
+    (this->type_info_ == TYPE_INFO_ALIGNMENT ? "alignment"
     : this->type_info_ == TYPE_INFO_FIELD_ALIGNMENT ? "field alignment"
     : this->type_info_ == TYPE_INFO_SIZE ? "size"
     : this->type_info_ == TYPE_INFO_BACKEND_PTRDATA ? "backend_ptrdata"
@@ -15191,8 +15455,8 @@ Slice_info_expression::do_dump_expression(
   ast_dump_context->ostream() << "sliceinfo(";
   this->slice_->dump_expression(ast_dump_context);
   ast_dump_context->ostream() << ",";
-  ast_dump_context->ostream() << 
-      (this->slice_info_ == SLICE_INFO_VALUE_POINTER ? "values" 
+  ast_dump_context->ostream() <<
+      (this->slice_info_ == SLICE_INFO_VALUE_POINTER ? "values"
     : this->slice_info_ == SLICE_INFO_LENGTH ? "length"
     : this->slice_info_ == SLICE_INFO_CAPACITY ? "capacity "
     : "unknown");
@@ -15208,72 +15472,33 @@ Expression::make_slice_info(Expression* slice, Slice_info slice_info,
   return new Slice_info_expression(slice, slice_info, location);
 }
 
-// An expression that represents a slice value: a struct with value pointer,
-// length, and capacity fields.
-
-class Slice_value_expression : public Expression
-{
- public:
-  Slice_value_expression(Type* type, Expression* valptr, Expression* len,
-                         Expression* cap, Location location)
-      : Expression(EXPRESSION_SLICE_VALUE, location),
-        type_(type), valptr_(valptr), len_(len), cap_(cap)
-  { }
-
- protected:
-  int
-  do_traverse(Traverse*);
-
-  Type*
-  do_type()
-  { return this->type_; }
-
-  void
-  do_determine_type(const Type_context*)
-  { go_unreachable(); }
-
-  Expression*
-  do_copy()
-  {
-    return new Slice_value_expression(this->type_->copy_expressions(),
-				      this->valptr_->copy(),
-                                      this->len_->copy(), this->cap_->copy(),
-                                      this->location());
-  }
-
-  Bexpression*
-  do_get_backend(Translate_context* context);
-
-  void
-  do_dump_expression(Ast_dump_context*) const;
-
- private:
-  // The type of the slice value.
-  Type* type_;
-  // The pointer to the values in the slice.
-  Expression* valptr_;
-  // The length of the slice.
-  Expression* len_;
-  // The capacity of the slice.
-  Expression* cap_;
-};
+// Class Slice_value_expression.
 
 int
 Slice_value_expression::do_traverse(Traverse* traverse)
 {
   if (Type::traverse(this->type_, traverse) == TRAVERSE_EXIT
-      || Expression::traverse(&this->valptr_, traverse) == TRAVERSE_EXIT
+      || Expression::traverse(&this->valmem_, traverse) == TRAVERSE_EXIT
       || Expression::traverse(&this->len_, traverse) == TRAVERSE_EXIT
       || Expression::traverse(&this->cap_, traverse) == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
   return TRAVERSE_CONTINUE;
 }
 
+Expression*
+Slice_value_expression::do_copy()
+{
+  return new Slice_value_expression(this->type_->copy_expressions(),
+				    this->valmem_->copy(),
+				    this->len_->copy(), this->cap_->copy(),
+				    this->location());
+}
+
 Bexpression*
 Slice_value_expression::do_get_backend(Translate_context* context)
 {
   std::vector<Bexpression*> vals(3);
-  vals[0] = this->valptr_->get_backend(context);
+  vals[0] = this->valmem_->get_backend(context);
   vals[1] = this->len_->get_backend(context);
   vals[2] = this->cap_->get_backend(context);
 
@@ -15288,7 +15513,7 @@ Slice_value_expression::do_dump_expression(
 {
   ast_dump_context->ostream() << "slicevalue(";
   ast_dump_context->ostream() << "values: ";
-  this->valptr_->dump_expression(ast_dump_context);
+  this->valmem_->dump_expression(ast_dump_context);
   ast_dump_context->ostream() << ", length: ";
   this->len_->dump_expression(ast_dump_context);
   ast_dump_context->ostream() << ", capacity: ";
@@ -15297,11 +15522,14 @@ Slice_value_expression::do_dump_expression(
 }
 
 Expression*
-Expression::make_slice_value(Type* at, Expression* valptr, Expression* len,
+Expression::make_slice_value(Type* at, Expression* valmem, Expression* len,
                              Expression* cap, Location location)
 {
   go_assert(at->is_slice_type());
-  return new Slice_value_expression(at, valptr, len, cap, location);
+  go_assert(valmem->is_nil_expression()
+	    || (at->array_type()->element_type()
+		== valmem->type()->points_to()));
+  return new Slice_value_expression(at, valmem, len, cap, location);
 }
 
 // An expression that evaluates to some characteristic of a non-empty interface.
@@ -15827,7 +16055,7 @@ class Struct_field_offset_expression : public Expression
 
   void
   do_dump_expression(Ast_dump_context*) const;
-  
+
  private:
   // The type of the struct.
   Struct_type* type_;
@@ -15914,7 +16142,7 @@ class Label_addr_expression : public Expression
   void
   do_dump_expression(Ast_dump_context* ast_dump_context) const
   { ast_dump_context->ostream() << this->label_->name(); }
-  
+
  private:
   // The label whose address we are taking.
   Label* label_;
@@ -15948,7 +16176,8 @@ Type*
 Conditional_expression::do_type()
 {
   Type* result_type = Type::make_void_type();
-  if (Type::are_identical(this->then_->type(), this->else_->type(), false,
+  if (Type::are_identical(this->then_->type(), this->else_->type(),
+			  Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
                           NULL))
     result_type = this->then_->type();
   else if (this->then_->is_nil_expression()
@@ -16107,34 +16336,63 @@ Expression::make_backend(Bexpression* bexpr, Type* type, Location location)
 // various class definitions.
 
 Expression*
-Expression::import_expression(Import* imp)
+Expression::import_expression(Import_expression* imp, Location loc)
 {
   int c = imp->peek_char();
-  if (imp->match_c_string("- ")
-      || imp->match_c_string("! ")
-      || imp->match_c_string("^ "))
-    return Unary_expression::do_import(imp);
+  if (c == '+' || c == '-' || c == '!' || c == '^' || c == '&' || c == '*')
+    return Unary_expression::do_import(imp, loc);
   else if (c == '(')
-    return Binary_expression::do_import(imp);
-  else if (imp->match_c_string("true")
-	   || imp->match_c_string("false"))
-    return Boolean_expression::do_import(imp);
+    return Binary_expression::do_import(imp, loc);
+  else if (imp->match_c_string("$true")
+	   || imp->match_c_string("$false")
+	   || (imp->version() < EXPORT_FORMAT_V3
+	       && (imp->match_c_string("true")
+		   || imp->match_c_string("false"))))
+    return Boolean_expression::do_import(imp, loc);
   else if (c == '"')
-    return String_expression::do_import(imp);
+    return String_expression::do_import(imp, loc);
   else if (c == '-' || (c >= '0' && c <= '9'))
     {
       // This handles integers, floats and complex constants.
-      return Integer_expression::do_import(imp);
+      return Integer_expression::do_import(imp, loc);
     }
-  else if (imp->match_c_string("nil"))
-    return Nil_expression::do_import(imp);
-  else if (imp->match_c_string("convert"))
-    return Type_conversion_expression::do_import(imp);
-  else
+  else if (imp->match_c_string("$nil")
+	   || (imp->version() < EXPORT_FORMAT_V3
+	       && imp->match_c_string("nil")))
+    return Nil_expression::do_import(imp, loc);
+  else if (imp->match_c_string("$convert")
+	   || (imp->version() < EXPORT_FORMAT_V3
+	       && imp->match_c_string("convert")))
+    return Type_conversion_expression::do_import(imp, loc);
+
+  Import_function_body* ifb = imp->ifb();
+  if (ifb == NULL)
     {
       go_error_at(imp->location(), "import error: expected expression");
-      return Expression::make_error(imp->location());
+      return Expression::make_error(loc);
     }
+  if (ifb->saw_error())
+    return Expression::make_error(loc);
+  std::string id = ifb->read_identifier();
+  if (id.empty())
+    {
+      if (!ifb->saw_error())
+	go_error_at(imp->location(),
+		    "import error: expected identifier at %lu",
+		    static_cast<unsigned long>(ifb->off()));
+      ifb->set_saw_error();
+      return Expression::make_error(loc);
+    }
+  Named_object* var = ifb->block()->bindings()->lookup(id);
+  if (var == NULL)
+    {
+      if (!ifb->saw_error())
+	go_error_at(imp->location(), "import error: lookup of %qs failed",
+		    id.c_str());
+      ifb->set_saw_error();
+      return Expression::make_error(loc);
+    }
+  return Expression::make_var_reference(var, loc);
 }
 
 // Class Expression_list.
@@ -16249,6 +16507,36 @@ Numeric_constant::operator=(const Numeric_constant& a)
       go_unreachable();
     }
   return *this;
+}
+
+// Check equality with another numeric constant.
+
+bool
+Numeric_constant::equals(const Numeric_constant& a) const
+{
+  if (this->classification_ != a.classification_)
+    return false;
+
+  if (this->type_ != NULL && a.type_ != NULL
+      && !Type::are_identical(this->type_, a.type_,
+			      Type::COMPARE_ALIASES, NULL))
+    return false;
+
+  switch (a.classification_)
+    {
+    case NC_INVALID:
+      break;
+    case NC_INT:
+    case NC_RUNE:
+      return mpz_cmp(this->u_.int_val, a.u_.int_val) == 0;
+    case NC_FLOAT:
+      return mpfr_cmp(this->u_.float_val, a.u_.float_val) == 0;
+    case NC_COMPLEX:
+      return mpc_cmp(this->u_.complex_val, a.u_.complex_val) == 0;
+    default:
+      go_unreachable();
+    }
+  return false;
 }
 
 // Clear the contents.
@@ -16856,7 +17144,7 @@ Numeric_constant::check_float_type(Float_type* type, bool issue_error,
     }
 
   return ret;
-} 
+}
 
 // Check whether the constant can be expressed in a complex type.
 
@@ -16977,3 +17265,40 @@ Numeric_constant::expression(Location loc) const
       go_unreachable();
     }
 }
+
+// Calculate a hash code with a given seed.
+
+unsigned int
+Numeric_constant::hash(unsigned int seed) const
+{
+  unsigned long val;
+  const unsigned int PRIME = 97;
+  long e = 0;
+  double f = 1.0;
+  mpfr_t m;
+
+  switch (this->classification_)
+    {
+    case NC_INVALID:
+      return PRIME;
+    case NC_INT:
+    case NC_RUNE:
+      val = mpz_get_ui(this->u_.int_val);
+      break;
+    case NC_COMPLEX:
+      mpfr_init(m);
+      mpc_abs(m, this->u_.complex_val, MPFR_RNDN);
+      val = mpfr_get_ui(m, MPFR_RNDN);
+      mpfr_clear(m);
+      break;
+    case NC_FLOAT:
+      f = mpfr_get_d_2exp(&e, this->u_.float_val, MPFR_RNDN) * 4294967295.0;
+      val = static_cast<unsigned long>(e + static_cast<long>(f));
+      break;
+    default:
+      go_unreachable();
+    }
+
+  return (static_cast<unsigned int>(val) + seed) * PRIME;
+}
+

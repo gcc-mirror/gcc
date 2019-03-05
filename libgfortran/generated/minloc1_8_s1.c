@@ -1,5 +1,5 @@
 /* Implementation of the MINLOC intrinsic
-   Copyright (C) 2017-2018 Free Software Foundation, Inc.
+   Copyright (C) 2017-2019 Free Software Foundation, Inc.
    Contributed by Thomas Koenig
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -26,7 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 
 
-#if defined (HAVE_GFC_INTEGER_1) && defined (HAVE_GFC_INTEGER_8)
+#if defined (HAVE_GFC_UINTEGER_1) && defined (HAVE_GFC_INTEGER_8)
 
 #define HAVE_BACK_ARG 1
 
@@ -34,9 +34,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <assert.h>
 
 static inline int
-compare_fcn (const GFC_INTEGER_1 *a, const GFC_INTEGER_1 *b, gfc_charlen_type n)
+compare_fcn (const GFC_UINTEGER_1 *a, const GFC_UINTEGER_1 *b, gfc_charlen_type n)
 {
-  if (sizeof (GFC_INTEGER_1) == 1)
+  if (sizeof (GFC_UINTEGER_1) == 1)
     return memcmp (a, b, n);
   else
     return memcmp_char4 (a, b, n);
@@ -57,7 +57,7 @@ minloc1_8_s1 (gfc_array_i8 * const restrict retarray,
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  const GFC_INTEGER_1 * restrict base;
+  const GFC_UINTEGER_1 * restrict base;
   GFC_INTEGER_8 * restrict dest;
   index_type rank;
   index_type n;
@@ -155,12 +155,12 @@ minloc1_8_s1 (gfc_array_i8 * const restrict retarray,
   continue_loop = 1;
   while (continue_loop)
     {
-      const GFC_INTEGER_1 * restrict src;
+      const GFC_UINTEGER_1 * restrict src;
       GFC_INTEGER_8 result;
       src = base;
       {
 
-	const GFC_INTEGER_1 *minval;
+	const GFC_UINTEGER_1 *minval;
 	minval = NULL;
 	result = 0;
 	if (len <= 0)
@@ -231,7 +231,7 @@ mminloc1_8_s1 (gfc_array_i8 * const restrict retarray,
   index_type dstride[GFC_MAX_DIMENSIONS];
   index_type mstride[GFC_MAX_DIMENSIONS];
   GFC_INTEGER_8 * restrict dest;
-  const GFC_INTEGER_1 * restrict base;
+  const GFC_UINTEGER_1 * restrict base;
   const GFC_LOGICAL_1 * restrict mbase;
   index_type rank;
   index_type dim;
@@ -240,6 +240,16 @@ mminloc1_8_s1 (gfc_array_i8 * const restrict retarray,
   index_type delta;
   index_type mdelta;
   int mask_kind;
+
+  if (mask == NULL)
+    {
+#ifdef HAVE_BACK_ARG
+      minloc1_8_s1 (retarray, array, pdim, back, string_len);
+#else
+      minloc1_8_s1 (retarray, array, pdim, string_len);
+#endif
+      return;
+    }
 
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
@@ -349,14 +359,14 @@ mminloc1_8_s1 (gfc_array_i8 * const restrict retarray,
 
   while (base)
     {
-      const GFC_INTEGER_1 * restrict src;
+      const GFC_UINTEGER_1 * restrict src;
       const GFC_LOGICAL_1 * restrict msrc;
       GFC_INTEGER_8 result;
       src = base;
       msrc = mbase;
       {
 
-	const GFC_INTEGER_1 *minval;
+	const GFC_UINTEGER_1 *minval;
 	minval = base;
 	result = 0;
 	for (n = 0; n < len; n++, src += delta, msrc += mdelta)
@@ -436,7 +446,7 @@ sminloc1_8_s1 (gfc_array_i8 * const restrict retarray,
   index_type dim;
 
 
-  if (*mask)
+  if (mask == NULL || *mask)
     {
 #ifdef HAVE_BACK_ARG
       minloc1_8_s1 (retarray, array, pdim, back, string_len);

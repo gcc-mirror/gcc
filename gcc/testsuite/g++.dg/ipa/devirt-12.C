@@ -1,5 +1,5 @@
 // { dg-do compile { target c++11 } }
-// { dg-options "-O -fdump-ipa-inline" }
+// { dg-options "-O -fdump-ipa-inline-all" }
 
 class Foo
 {

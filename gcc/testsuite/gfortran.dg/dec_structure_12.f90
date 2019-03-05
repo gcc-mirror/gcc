@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 ! { dg-options "-fdec-structure" }
 !
 ! Test a regression where multiple anonymous structures failed to

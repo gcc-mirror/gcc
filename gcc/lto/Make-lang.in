@@ -1,5 +1,5 @@
 # Top level -*- makefile -*- fragment for LTO
-#   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+#   Copyright (C) 2009-2019 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -86,3 +86,6 @@ lto1.fda: ../prev-gcc/lto1$(exeext) ../prev-gcc/$(PERF_DATA)
 
 # LTO testing is done as part of C/C++/Fortran etc. testing.
 check-lto:
+
+# No LTO-specific selftests
+selftest-lto:

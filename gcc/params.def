@@ -1,5 +1,5 @@
 /* params.def - Run-time parameters.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
 This file is part of GCC.
@@ -58,7 +58,6 @@ DEFPARAM (PARAM_INLINE_MIN_SPEEDUP,
    of a function counted in internal gcc instructions (not in
    real machine instructions) that is eligible for inlining
    by the tree inliner.
-   The default value is 400.
    Only functions marked inline (or methods defined in the class
    definition for C++) are affected by this.
    There are more restrictions to inlining: If inlined functions
@@ -69,7 +68,7 @@ DEFPARAM (PARAM_INLINE_MIN_SPEEDUP,
 DEFPARAM (PARAM_MAX_INLINE_INSNS_SINGLE,
 	  "max-inline-insns-single",
 	  "The maximum number of instructions in a single function eligible for inlining.",
-	  400, 0, 0)
+	  200, 0, 0)
 
 /* The single function inlining limit for functions that are
    inlined by virtue of -finline-functions (-O3).
@@ -82,6 +81,38 @@ DEFPARAM (PARAM_MAX_INLINE_INSNS_AUTO,
 	  "max-inline-insns-auto",
 	  "The maximum number of instructions when automatically inlining.",
 	  30, 0, 0)
+
+DEFPARAM (PARAM_MAX_INLINE_INSNS_SMALL,
+	  "max-inline-insns-small",
+	  "The maximum number of instructions when automatically inlining small functions.",
+	  0, 0, 0)
+
+DEFPARAM (PARAM_MAX_INLINE_INSNS_SIZE,
+	  "max-inline-insns-size",
+	  "The maximum number of instructions when inlining for size.",
+	  0, 0, 0)
+
+DEFPARAM (PARAM_UNINLINED_FUNCTION_INSNS,
+	  "uninlined-function-insns",
+	  "Instruction accounted for function prologue, epilogue and other"
+	  " overhead.",
+	  2, 0, 1000000)
+
+DEFPARAM (PARAM_UNINLINED_FUNCTION_TIME,
+	  "uninlined-function-time",
+	  "Time accounted for function prologue, epilogue and other"
+	  " overhead.",
+	  0, 0, 1000000)
+
+DEFPARAM (PARAM_UNINLINED_FUNCTION_THUNK_INSNS,
+	  "uninlined-thunk-insns",
+	  "Instruction accounted for function thunk overhead.",
+	  2, 0, 1000000)
+
+DEFPARAM (PARAM_UNINLINED_FUNCTION_THUNK_TIME,
+	  "uninlined-thunk-time",
+	  "Time accounted for function thunk overhead.",
+	  2, 0, 1000000)
 
 DEFPARAM (PARAM_MAX_INLINE_INSNS_RECURSIVE,
 	  "max-inline-insns-recursive",
@@ -195,7 +226,7 @@ DEFPARAM(PARAM_LARGE_UNIT_INSNS,
 DEFPARAM(PARAM_INLINE_UNIT_GROWTH,
 	 "inline-unit-growth",
 	 "How much can given compilation unit grow because of the inlining (in percent).",
-	 20, 0, 0)
+	 40, 0, 0)
 DEFPARAM(PARAM_IPCP_UNIT_GROWTH,
 	 "ipcp-unit-growth",
 	 "How much can given compilation unit grow because of the interprocedural constant propagation (in percent).",
@@ -397,13 +428,13 @@ DEFPARAM(PARAM_SMS_LOOP_AVERAGE_COUNT_THRESHOLD,
 DEFPARAM(HOT_BB_COUNT_FRACTION,
 	 "hot-bb-count-fraction",
 	 "Select fraction of the maximal count of repetitions of basic block in program given basic "
-	 "block needs to have to be considered hot (used in non-LTO mode)",
+	 "block needs to have to be considered hot (used in non-LTO mode).",
 	 10000, 0, 0)
 DEFPARAM(HOT_BB_COUNT_WS_PERMILLE,
 	 "hot-bb-count-ws-permille",
          "A basic block profile count is considered hot if it contributes to "
          "the given permillage of the entire profiled execution (used in LTO mode).",
-	 999, 0, 1000)
+	 990, 0, 1000)
 DEFPARAM(HOT_BB_FREQUENCY_FRACTION,
 	 "hot-bb-frequency-fraction",
 	 "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot.",
@@ -963,7 +994,7 @@ DEFPARAM (PARAM_PROFILE_FUNC_INTERNAL_ID,
 
 /* When the parameter is 1, track the most frequent N target
    addresses in indirect-call profile. This disables
-   indirect_call_profiler_v2 which tracks single target.  */
+   indirect_call_profiler_v3 which tracks single target.  */
 DEFPARAM (PARAM_INDIR_CALL_TOPN_PROFILE,
 	  "indir-call-topn-profile",
 	  "Track top N target addresses in indirect-call profile.",
@@ -1103,7 +1134,7 @@ DEFPARAM (PARAM_IPA_MAX_AA_STEPS,
 DEFPARAM (PARAM_LTO_PARTITIONS,
 	  "lto-partitions",
 	  "Number of partitions the program should be split to.",
-	  32, 1, 0)
+	  128, 1, 0)
 
 DEFPARAM (MIN_PARTITION_SIZE,
 	  "lto-min-partition",
@@ -1359,6 +1390,24 @@ DEFPARAM(PARAM_AVOID_FMA_MAX_BITS,
 	 "avoid-fma-max-bits",
 	 "Maximum number of bits for which we avoid creating FMAs.",
 	 0, 0, 512)
+
+DEFPARAM(PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT,
+	 "logical-op-non-short-circuit",
+	 "True if a non-short-circuit operation is optimal.",
+	 -1, -1, 1)
+
+DEFPARAM(PARAM_LOOP_VERSIONING_MAX_INNER_INSNS,
+	 "loop-versioning-max-inner-insns",
+	 "The maximum number of instructions in an inner loop that is being"
+	 " considered for versioning.",
+	 200, 0, 0)
+
+DEFPARAM(PARAM_LOOP_VERSIONING_MAX_OUTER_INSNS,
+	 "loop-versioning-max-outer-insns",
+	 "The maximum number of instructions in an outer loop that is being"
+	 " considered for versioning, on top of the instructions in inner"
+	 " loops.",
+	 100, 0, 0)
 
 /*
 

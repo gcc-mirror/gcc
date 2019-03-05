@@ -1,0 +1,38 @@
+# -*- shell-script -*-
+# Copyright (C) 2018-2019 Free Software Foundation, Inc.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This is the target specific configuration file.  This is invoked by the
+# autoconf generated configure script.  Putting it in a separate shell file
+# lets us skip running autoconf when modifying target specific information.
+
+# Disable the libphobos or libdruntime components on untested or known
+# broken systems.  More targets shall be added after testing.
+case "${target}" in
+  arm*-*-linux*)
+	;;
+  mips*-*-linux*)
+	;;
+  x86_64-*-kfreebsd*-gnu | i?86-*-kfreebsd*-gnu)
+	;;
+  x86_64-*-linux* | i?86-*-linux*)
+	;;
+  x86_64-*-netbsd* | i?86-*-netbsd*)
+	;;
+  *)
+	UNSUPPORTED=1
+	;;
+esac

@@ -1,5 +1,5 @@
 /* Help friends in C++.
-   Copyright (C) 1997-2018 Free Software Foundation, Inc.
+   Copyright (C) 1997-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -172,12 +172,6 @@ add_friend (tree type, tree decl, bool complain)
 
   if (decl == error_mark_node)
     return;
-
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      && DECL_TEMPLATE_INSTANTIATION (decl))
-    /* We'll have parsed this as a declaration, and therefore not
-       marked the lookup set for keeping.  Do that now.  */
-    lookup_keep (DECL_TI_TEMPLATE (decl));
 
   typedecl = TYPE_MAIN_DECL (type);
   list = DECL_FRIENDLIST (typedecl);

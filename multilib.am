@@ -1,0 +1,45 @@
+## automake - create Makefile.in from Makefile.am
+
+## Copyright (C) 1994-2017 Free Software Foundation, Inc.
+## This Makefile.in is free software; the Free Software Foundation
+## gives unlimited permission to copy and/or distribute it,
+## with or without modifications, as long as this notice is preserved.
+
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+
+MULTISRCTOP =
+MULTIBUILDTOP =
+MULTIDIRS =
+MULTISUBDIR =
+MULTIDO = true
+MULTICLEAN = true
+
+# GNU Make needs to see an explicit $(MAKE) variable in the command it
+# runs to enable its job server during parallel builds.  Hence the
+# comments below.
+all-multi:
+	$(MULTIDO) $(AM_MAKEFLAGS) DO=all multi-do # $(MAKE)
+install-multi:
+	$(MULTIDO) $(AM_MAKEFLAGS) DO=install multi-do # $(MAKE)
+mostlyclean-multi:
+	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=mostlyclean multi-clean # $(MAKE)
+clean-multi:
+	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=clean multi-clean # $(MAKE)
+distclean-multi:
+	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=distclean multi-clean # $(MAKE)
+maintainer-clean-multi:
+	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean # $(MAKE)
+
+.MAKE .PHONY: all-multi clean-multi distclean-multi install-am \
+	      install-multi maintainer-clean-multi mostlyclean-multi
+
+install-exec-local: install-multi
+
+all-local: all-multi
+mostlyclean-local: mostlyclean-multi
+clean-local: clean-multi
+distclean-local: distclean-multi
+maintainer-clean-local: maintainer-clean-multi

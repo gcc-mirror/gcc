@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Testing allocator for the C++ library testsuite.
 //
-// Copyright (C) 2002-2018 Free Software Foundation, Inc.
+// Copyright (C) 2002-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -245,7 +245,7 @@ namespace __gnu_test
       Alloc a;
       try
 	{
-	  a.allocate(a.max_size() + 1);
+	  (void) a.allocate(a.max_size() + 1);
 	}
       catch(std::bad_alloc&)
 	{
@@ -582,7 +582,7 @@ namespace __gnu_test
       typedef Ptr<void>		void_pointer;
       typedef Ptr<const void>	const_void_pointer;
 
-      pointer allocate(std::size_t n, pointer = {})
+      pointer allocate(std::size_t n, const_void_pointer = {})
       { return pointer(std::allocator<Tp>::allocate(n)); }
 
       void deallocate(pointer p, std::size_t n)
@@ -780,7 +780,11 @@ namespace __gnu_test
 		  throw bad_size();
 		if (alignment != a->alignment)
 		  throw bad_alignment();
+#if __cpp_sized_deallocation
 		::operator delete(p, bytes, std::align_val_t(alignment));
+#else
+		::operator delete(p, std::align_val_t(alignment));
+#endif
 		*aptr = a->next;
 		a->next = lists->freed;
 		lists->freed = a;

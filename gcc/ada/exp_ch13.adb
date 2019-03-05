@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -540,6 +540,8 @@ package body Exp_Ch13 is
          --      moved to the non-protected version of the subprogram.
          --    * Task bodies - The declarations and statements are moved to the
          --      task body procedure.
+         --    * Blocks that will be rewritten as subprograms when unnesting
+         --      is in effect.
 
          --  Visible declarations do not need to be installed in these three
          --  cases since it does not make semantic sense to do so. All entities
@@ -552,7 +554,8 @@ package body Exp_Ch13 is
              (Is_Entry (E_Scope)
                 or else (Is_Subprogram (E_Scope)
                           and then Is_Protected_Type (Scope (E_Scope)))
-                or else Is_Task_Type (E_Scope))
+                or else Is_Task_Type (E_Scope)
+                or else Ekind (E_Scope) = E_Block)
          then
             null;
          else

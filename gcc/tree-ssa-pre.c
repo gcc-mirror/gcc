@@ -1,5 +1,5 @@
 /* Full and partial redundancy elimination and code hoisting on SSA GIMPLE.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org> and Steven Bosscher
    <stevenb@suse.de>
 
@@ -1262,7 +1262,7 @@ get_representative_for (const pre_expr e, basic_block b = NULL)
   switch (e->kind)
     {
     case NAME:
-      return VN_INFO (PRE_EXPR_NAME (e))->valnum;
+      return PRE_EXPR_NAME (e);
     case CONSTANT:
       return PRE_EXPR_CONSTANT (e);
     case NARY:
@@ -2792,9 +2792,10 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 	      args.quick_push (arg);
 	    }
 	  gcall *call = gimple_build_call_vec (fn, args);
+	  gimple_call_set_fntype (call, currop->type);
 	  if (sc)
 	    gimple_call_set_chain (call, sc);
-	  tree forcedname = make_ssa_name (currop->type);
+	  tree forcedname = make_ssa_name (TREE_TYPE (currop->type));
 	  gimple_call_set_lhs (call, forcedname);
 	  /* There's no CCP pass after PRE which would re-compute alignment
 	     information so make sure we re-materialize this here.  */
@@ -3827,7 +3828,7 @@ compute_avail (void)
 	    BB_LIVE_VOP_ON_EXIT (block) = gimple_vdef (stmt);
 
 	  if (gimple_has_side_effects (stmt)
-	      || stmt_could_throw_p (stmt)
+	      || stmt_could_throw_p (cfun, stmt)
 	      || is_gimple_debug (stmt))
 	    continue;
 

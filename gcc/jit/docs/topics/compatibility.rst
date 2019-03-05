@@ -1,4 +1,4 @@
-.. Copyright (C) 2015-2018 Free Software Foundation, Inc.
+.. Copyright (C) 2015-2019 Free Software Foundation, Inc.
    Originally contributed by David Malcolm <dmalcolm@redhat.com>
 
    This is free software: you can redistribute it and/or modify it
@@ -168,6 +168,12 @@ entrypoints:
 
 ``LIBGCCJIT_ABI_10``
 --------------------
-
 ``LIBGCCJIT_ABI_10`` covers the addition of
 :func:`gcc_jit_context_new_rvalue_from_vector`
+
+.. _LIBGCCJIT_ABI_11:
+
+``LIBGCCJIT_ABI_11``
+--------------------
+``LIBGCCJIT_ABI_11`` covers the addition of
+:func:`gcc_jit_context_add_driver_option`

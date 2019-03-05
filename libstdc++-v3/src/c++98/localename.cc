@@ -1,4 +1,4 @@
-// Copyright (C) 1997-2018 Free Software Foundation, Inc.
+// Copyright (C) 1997-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -272,6 +272,12 @@ const int num_facets = _GLIBCXX_NUM_FACETS + _GLIBCXX_NUM_UNICODE_FACETS
 #if _GLIBCXX_NUM_UNICODE_FACETS != 0
         _M_init_facet(new codecvt<char16_t, char, mbstate_t>);
         _M_init_facet(new codecvt<char32_t, char, mbstate_t>);
+
+#ifdef _GLIBCXX_USE_CHAR8_T
+        _M_init_facet(new codecvt<char16_t, char8_t, mbstate_t>);
+        _M_init_facet(new codecvt<char32_t, char8_t, mbstate_t>);
+#endif
+
 #endif
 
 #if _GLIBCXX_USE_DUAL_ABI

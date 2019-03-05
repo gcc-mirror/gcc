@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fdump-tree-gimple" } */
+/* { dg-options "-fdump-tree-lower" } */
 
 #include <string.h>
 #include <stdlib.h>
@@ -25,4 +25,4 @@ int main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "strcmp \\(" 2 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "strcmp \\(" 2 "lower" } } */

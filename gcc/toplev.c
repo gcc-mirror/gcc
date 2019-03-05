@@ -1,5 +1,5 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "dumpfile.h"
 #include "ipa-fnsummary.h"
+#include "dump-context.h"
 #include "optinfo-emit-json.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
@@ -488,7 +489,7 @@ compile_file (void)
   if (lang_hooks.decls.post_compilation_parsing_cleanups)
     lang_hooks.decls.post_compilation_parsing_cleanups ();
 
-  optimization_records_finish ();
+  dump_context::get ().finish_any_json_writer ();
 
   if (seen_error ())
     return;
@@ -603,7 +604,7 @@ compile_file (void)
   invoke_plugin_callbacks (PLUGIN_FINISH_UNIT, NULL);
 
   /* This must be at the end.  Some target ports emit end of file directives
-     into the assembly file here, and hence we can not output anything to the
+     into the assembly file here, and hence we cannot output anything to the
      assembly file after this point.  */
   targetm.asm_out.file_end ();
 
@@ -989,7 +990,7 @@ output_stack_usage (void)
       stack_usage += current_function_dynamic_stack_size;
     }
 
-  if (flag_stack_usage)
+  if (stack_usage_file)
     {
       expanded_location loc
 	= expand_location (DECL_SOURCE_LOCATION (current_function_decl));
@@ -1120,6 +1121,8 @@ general_init (const char *argv0, bool init_signals)
     = global_options_init.x_flag_diagnostics_show_line_numbers;
   global_dc->show_option_requested
     = global_options_init.x_flag_diagnostics_show_option;
+  global_dc->min_margin_width
+    = global_options_init.x_diagnostics_minimum_margin_width;
   global_dc->show_column
     = global_options_init.x_flag_show_column;
   global_dc->internal_error = internal_error_function;
@@ -1727,7 +1730,7 @@ process_options (void)
       flag_stack_clash_protection = 0;
     }
 
-  /* We can not support -fstack-check= and -fstack-clash-protection at
+  /* We cannot support -fstack-check= and -fstack-clash-protection at
      the same time.  */
   if (flag_stack_check != NO_STACK_CHECK && flag_stack_clash_protection)
     {
@@ -1932,7 +1935,7 @@ lang_dependent_init (const char *name)
       init_asm_output (name);
 
       /* If stack usage information is desired, open the output file.  */
-      if (flag_stack_usage)
+      if (flag_stack_usage && !flag_generate_lto)
 	stack_usage_file = open_auxiliary_file ("su");
     }
 
@@ -2129,7 +2132,10 @@ do_compile ()
 
       timevar_start (TV_PHASE_SETUP);
 
-      optimization_records_start ();
+      if (flag_save_optimization_record)
+	{
+	  dump_context::get ().set_json_writer (new optrecord_json_writer ());
+	}
 
       /* This must be run always, because it is needed to compute the FP
 	 predefined macros, such as __LDBL_MAX__, for targets using non
@@ -2146,6 +2152,34 @@ do_compile ()
 	  int_n_enabled_p[i] = true;
 	else
 	  int_n_enabled_p[i] = false;
+
+      /* Initialize mpfrs exponent range.  This is important to get
+         underflow/overflow in a reasonable timeframe.  */
+      machine_mode mode;
+      int min_exp = -1;
+      int max_exp = 1;
+      FOR_EACH_MODE_IN_CLASS (mode, MODE_FLOAT)
+	if (SCALAR_FLOAT_MODE_P (mode))
+	  {
+	    const real_format *fmt = REAL_MODE_FORMAT (mode);
+	    if (fmt)
+	      {
+		/* fmt->emin - fmt->p + 1 should be enough but the
+		   back-and-forth dance in real_to_decimal_for_mode we
+		   do for checking fails due to rounding effects then.  */
+		if ((fmt->emin - fmt->p) < min_exp)
+		  min_exp = fmt->emin - fmt->p;
+		if (fmt->emax > max_exp)
+		  max_exp = fmt->emax;
+	      }
+	  }
+      /* E.g. mpc_norm assumes it can square a number without bothering with
+	 with range scaling, so until that is fixed, double the minimum
+	 and maximum exponents, plus add some buffer for arithmetics
+	 on the squared numbers.  */
+      if (mpfr_set_emin (2 * (min_exp - 1))
+	  || mpfr_set_emax (2 * (max_exp + 1)))
+	sorry ("mpfr not configured to handle all float modes");
 
       /* Set up the back-end if requested.  */
       if (!no_backend)

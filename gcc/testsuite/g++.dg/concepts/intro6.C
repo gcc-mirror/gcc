@@ -1,5 +1,6 @@
 // PR c++/67003
-// { dg-options "-std=c++17 -fconcepts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
 namespace X {
   template<class>

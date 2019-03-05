@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1203,8 +1203,6 @@ package body Sem_Ch10 is
             --  binder generated code of all the units involved in a partition
             --  when control-flow preservation is requested.
 
-            --  Case of units which do not require an elaboration entity
-
             if not Opt.Suppress_Control_Flow_Optimizations
               and then
               ( --  Pure units do not need checks
@@ -1232,16 +1230,16 @@ package body Sem_Ch10 is
                 or else Acts_As_Spec (N)
               )
             then
-               --  This is a case where we only need the entity for
-               --  checking to prevent multiple elaboration checks.
+               --  This is a case where we only need the entity for checking to
+               --  prevent multiple elaboration checks.
 
                Set_Elaboration_Entity_Required (Spec_Id, False);
 
-            --  Case of elaboration entity is required for access before
-            --  elaboration checking (so certainly we must build it).
+            --  Otherwise the unit requires an elaboration entity because it
+            --  carries a body.
 
             else
-               Set_Elaboration_Entity_Required (Spec_Id, True);
+               Set_Elaboration_Entity_Required (Spec_Id);
             end if;
 
             Build_Elaboration_Entity (N, Spec_Id);
@@ -2354,7 +2352,9 @@ package body Sem_Ch10 is
                Remove_Scope;
             end if;
 
-            if Nkind (Unit (Lib_Spec)) = N_Package_Body then
+            if Nkind_In (Unit (Lib_Spec), N_Package_Body,
+                                          N_Subprogram_Body)
+            then
                Remove_Context (Library_Unit (Lib_Spec));
             end if;
          end if;

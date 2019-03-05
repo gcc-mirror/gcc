@@ -1,7 +1,7 @@
 /* Detect paths through the CFG which can never be executed in a conforming
    program and isolate them.
 
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -270,7 +270,7 @@ stmt_uses_name_in_undefined_way (gimple *use_stmt, tree name, location_t loc)
      divisor.  */
   if (!POINTER_TYPE_P (TREE_TYPE (name)))
     {
-      if (!flag_non_call_exceptions)
+      if (!cfun->can_throw_non_call_exceptions)
 	return is_divmod_with_given_divisor (use_stmt, name);
       return false;
     }
@@ -309,7 +309,7 @@ stmt_uses_name_in_undefined_way (gimple *use_stmt, tree name, location_t loc)
 bool
 stmt_uses_0_or_null_in_undefined_way (gimple *stmt)
 {
-  if (!flag_non_call_exceptions
+  if (!cfun->can_throw_non_call_exceptions
       && is_divmod_with_given_divisor (stmt, integer_zero_node))
     return true;
 
@@ -431,7 +431,9 @@ find_implicit_erroneous_behavior (void)
 					"declared here");
 			  }
 
-			  if (gimple_bb (use_stmt) == bb)
+			  if ((flag_isolate_erroneous_paths_dereference
+			       || flag_isolate_erroneous_paths_attribute)
+			      && gimple_bb (use_stmt) == bb)
 			    {
 			      duplicate = isolate_path (bb, duplicate, e,
 							use_stmt, lhs, true);
@@ -553,9 +555,16 @@ find_explicit_erroneous_behavior (void)
 			  inform (DECL_SOURCE_LOCATION(valbase),
 				  "declared here");
 		      }
-		      tree zero = build_zero_cst (TREE_TYPE (val));
-		      gimple_return_set_retval (return_stmt, zero);
-		      update_stmt (stmt);
+
+		      /* Do not modify code if the user only asked for
+			 warnings.  */
+		      if (flag_isolate_erroneous_paths_dereference
+			  || flag_isolate_erroneous_paths_attribute)
+			{
+			  tree zero = build_zero_cst (TREE_TYPE (val));
+			  gimple_return_set_retval (return_stmt, zero);
+			  update_stmt (stmt);
+			}
 		    }
 		}
 	    }

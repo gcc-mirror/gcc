@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2018 Free Software Foundation, Inc.
+# Copyright (C) 2017-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -60,6 +60,16 @@ if {[multilib_config "aprofile"] } {
         {-mcpu=cortex-a7+nosimd -mfloat-abi=hard} "thumb/v7-a+fp/hard"
 	{-mcpu=cortex-a7+nofp -mfloat-abi=softfp} "thumb/v7-a/nofp"
 	{-mcpu=generic-armv7-a+vfpv4 -mfloat-abi=softfp} "thumb/v7-a+fp/softfp"
+	{-mcpu=generic-armv7-a+mp+vfpv4 -mfloat-abi=softfp} "thumb/v7-a+fp/softfp"
+	{-mcpu=generic-armv7-a+sec+vfpv4 -mfloat-abi=softfp} "thumb/v7-a+fp/softfp"
+	{-march=armv7-a+mp -mfloat-abi=softfp} "thumb/v7-a/nofp"
+	{-march=armv7-a+sec -mfloat-abi=softfp} "thumb/v7-a/nofp"
+	{-march=armv7-a+mp+sec -mfloat-abi=softfp} "thumb/v7-a/nofp"
+	{-march=armv7-a+sec+mp -mfloat-abi=softfp} "thumb/v7-a/nofp"
+	{-march=armv7-a+mp+vfpv4 -mfloat-abi=softfp} "thumb/v7-a+fp/softfp"
+	{-march=armv7-a+sec+fp -mfloat-abi=softfp} "thumb/v7-a+fp/softfp"
+	{-march=armv7-a+mp+sec+simd -mfloat-abi=softfp} "thumb/v7-a+simd/softfp"
+	{-march=armv7-a+sec+mp+vfpv3 -mfloat-abi=softfp} "thumb/v7-a+fp/softfp"
 	{-march=armv7ve+vfpv3 -mfloat-abi=hard} "thumb/v7-a+fp/hard"
 	{-march=armv7ve -mfloat-abi=softfp -mfpu=neon} "thumb/v7-a+simd/softfp"
 	{-march=armv7ve -mfloat-abi=softfp -mfpu=neon-vfpv4} "thumb/v7ve+simd/softfp"
@@ -108,6 +118,14 @@ if {[multilib_config "aprofile"] } {
 	{-march=armv8.4-a+simd+fp16 -mfloat-abi=softfp} "thumb/v8-a+simd/softfp"
 	{-march=armv8.4-a+simd+fp16+nofp -mfloat-abi=softfp} "thumb/v8-a/nofp"
 	{-march=armv8.4-a+simd+nofp+fp16 -mfloat-abi=softfp} "thumb/v8-a+simd/softfp"
+	{-march=armv8.5-a+crypto -mfloat-abi=soft} "thumb/v8-a/nofp"
+	{-march=armv8.5-a+simd+crypto -mfloat-abi=softfp} "thumb/v8-a+simd/softfp"
+	{-march=armv8.5-a+simd+crypto+nofp -mfloat-abi=softfp} "thumb/v8-a/nofp"
+	{-march=armv8.5-a+simd+nofp+crypto -mfloat-abi=softfp} "thumb/v8-a+simd/softfp"
+	{-march=armv8.5-a+fp16 -mfloat-abi=soft} "thumb/v8-a/nofp"
+	{-march=armv8.5-a+simd+fp16 -mfloat-abi=softfp} "thumb/v8-a+simd/softfp"
+	{-march=armv8.5-a+simd+fp16+nofp -mfloat-abi=softfp} "thumb/v8-a/nofp"
+	{-march=armv8.5-a+simd+nofp+fp16 -mfloat-abi=softfp} "thumb/v8-a+simd/softfp"
 	{-mcpu=cortex-a53+crypto -mfloat-abi=hard} "thumb/v8-a+simd/hard"
 	{-mcpu=cortex-a53+nofp -mfloat-abi=softfp} "thumb/v8-a/nofp"
 	{-march=armv8-a+crc -mfloat-abi=hard -mfpu=vfp} "thumb/v8-a+simd/hard"
@@ -369,6 +387,10 @@ if {[multilib_config "aprofile"] } {
 	{-mcpu=cortex-a15 -mfpu=neon-fp-armv8 -mfloat-abi=softfp -mthumb} "thumb/v7ve+simd/softfp"
 	{-mcpu=cortex-a53 -mfpu=neon-fp-armv8 -mfloat-abi=softfp -mthumb} "thumb/v8-a+simd/softfp"
 	{-march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard -mthumb} "thumb/v7-a+fp/hard"
+	{-march=armv7-a+mp -mfpu=vfpv3-d16 -mfloat-abi=hard -mthumb} "thumb/v7-a+fp/hard"
+	{-march=armv7-a+sec -mfpu=vfpv3-d16 -mfloat-abi=hard -mthumb} "thumb/v7-a+fp/hard"
+	{-march=armv7-a+mp+sec -mfpu=vfpv3-d16 -mfloat-abi=hard -mthumb} "thumb/v7-a+fp/hard"
+	{-march=armv7-a+sec+mp -mfpu=vfpv3-d16 -mfloat-abi=hard -mthumb} "thumb/v7-a+fp/hard"
 	{-march=armv8-a -mfpu=vfpv3-d16 -mfloat-abi=hard -mthumb} "thumb/v8-a+simd/hard"
 	{-march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=softfp -mthumb} "thumb/v7-a+fp/softfp"
 	{-march=armv8-a -mfpu=vfpv3-d16 -mfloat-abi=softfp -mthumb} "thumb/v8-a+simd/softfp"

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2282,6 +2282,12 @@ package body Sem_Prag is
                   SPARK_Msg_N
                     ("global item must denote object, state or current "
                      & "instance of concurrent type", Item);
+
+                  if Ekind (Item_Id) in Named_Kind then
+                     SPARK_Msg_NE
+                       ("\named number & is not an object", Item, Item);
+                  end if;
+
                   return;
                end if;
 
@@ -7545,6 +7551,7 @@ package body Sem_Prag is
          begin
             if Nkind (N) = N_Attribute_Reference
               and then Is_Entity_Name (Prefix (N))
+              and then not Is_Generic_Unit (Scope (Entity (Prefix (N))))
             then
                declare
                   Attr_Id : constant Attribute_Id :=
@@ -7570,6 +7577,17 @@ package body Sem_Prag is
       --  Start of processing for Process_Compile_Time_Warning_Or_Error
 
       begin
+         --  In GNATprove mode, pragmas Compile_Time_Error and
+         --  Compile_Time_Warning are ignored, as the analyzer may not have the
+         --  same information as the compiler (in particular regarding size of
+         --  objects decided in gigi) so it makes no sense to issue an error or
+         --  warning in GNATprove.
+
+         if GNATprove_Mode then
+            Rewrite (N, Make_Null_Statement (Loc));
+            return;
+         end if;
+
          Check_Arg_Count (2);
          Check_No_Identifiers;
          Check_Arg_Is_OK_Static_Expression (Arg2, Standard_String);
@@ -27732,8 +27750,9 @@ package body Sem_Prag is
                else
                   pragma Assert (Present (Global));
                   Error_Msg_Sloc := Sloc (Global);
-                  SPARK_Msg_NE ("extra global item & does not refine or " &
-                                "repeat any global item #", Item, Item_Id);
+                  SPARK_Msg_NE
+                    ("extra global item & does not refine or repeat any "
+                     & "global item #", Item, Item_Id);
                end if;
             end if;
          end Check_Refined_Global_Item;

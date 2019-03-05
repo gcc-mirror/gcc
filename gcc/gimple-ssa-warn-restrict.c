@@ -1,6 +1,6 @@
 /* Pass to detect and issue warnings for violations of the restrict
    qualifier.
-   Copyright (C) 2017-2018 Free Software Foundation, Inc.
+   Copyright (C) 2017-2019 Free Software Foundation, Inc.
    Contributed by Martin Sebor <msebor@redhat.com>.
 
    This file is part of GCC.
@@ -75,7 +75,7 @@ class pass_wrestrict : public gimple_opt_pass
 bool
 pass_wrestrict::gate (function *fun ATTRIBUTE_UNUSED)
 {
-  return warn_array_bounds != 0 || warn_restrict != 0;
+  return warn_array_bounds || warn_restrict || warn_stringop_overflow;
 }
 
 /* Class to walk the basic blocks of a function in dominator order.  */
@@ -256,7 +256,7 @@ builtin_memref::builtin_memref (tree expr, tree size)
       sizrange[1] = wi::to_offset (range[1]);
       /* get_size_range returns SIZE_MAX for the maximum size.
 	 Constrain it to the real maximum of PTRDIFF_MAX.  */
-      if (sizrange[1] > maxobjsize)
+      if (sizrange[0] <= maxobjsize && sizrange[1] > maxobjsize)
 	sizrange[1] = maxobjsize;
     }
   else
@@ -272,15 +272,16 @@ builtin_memref::builtin_memref (tree expr, tree size)
 
   offset_int maxoff = maxobjsize;
   tree basetype = TREE_TYPE (base);
-  if (TREE_CODE (basetype) == ARRAY_TYPE
-      && ref
-      && array_at_struct_end_p (ref))
-    ;   /* Use the maximum possible offset for last member arrays.  */
-  else if (tree basesize = TYPE_SIZE_UNIT (basetype))
-    if (TREE_CODE (basesize) == INTEGER_CST)
-      /* Size could be non-constant for a variable-length type such
-	 as a struct with a VLA member (a GCC extension).  */
-      maxoff = wi::to_offset (basesize);
+  if (TREE_CODE (basetype) == ARRAY_TYPE)
+    {
+      if (ref && array_at_struct_end_p (ref))
+	;   /* Use the maximum possible offset for last member arrays.  */
+      else if (tree basesize = TYPE_SIZE_UNIT (basetype))
+	if (TREE_CODE (basesize) == INTEGER_CST)
+	  /* Size could be non-constant for a variable-length type such
+	     as a struct with a VLA member (a GCC extension).  */
+	  maxoff = wi::to_offset (basesize);
+    }
 
   if (offrange[0] >= 0)
     {
@@ -312,19 +313,15 @@ builtin_memref::extend_offset_range (tree offset)
   if (TREE_CODE (offset) == SSA_NAME)
     {
       wide_int min, max;
-      value_range_type rng = get_range_info (offset, &min, &max);
+      value_range_kind rng = get_range_info (offset, &min, &max);
       if (rng == VR_RANGE)
 	{
 	  offrange[0] += offset_int::from (min, SIGNED);
 	  offrange[1] += offset_int::from (max, SIGNED);
 	}
-      else if (rng == VR_ANTI_RANGE)
-	{
-	  offrange[0] += offset_int::from (max + 1, SIGNED);
-	  offrange[1] += offset_int::from (min - 1, SIGNED);
-	}
       else
 	{
+	  /* Handle an anti-range the same as no range at all.  */
 	  gimple *stmt = SSA_NAME_DEF_STMT (offset);
 	  tree type;
 	  if (is_gimple_assign (stmt)
@@ -1328,6 +1325,9 @@ maybe_diag_overlap (location_t loc, gimple *call, builtin_access &acs)
   if (!acs.overlap ())
     return false;
 
+  if (gimple_no_warning_p (call))
+    return true;
+
   /* For convenience.  */
   const builtin_memref &dstref = *acs.dstref;
   const builtin_memref &srcref = *acs.srcref;
@@ -1567,28 +1567,75 @@ maybe_diag_overlap (location_t loc, gimple *call, builtin_access &acs)
   return true;
 }
 
-/* Validate REF offsets in an EXPRession passed as an argument to a CALL
-   to a built-in function FUNC to make sure they are within the bounds
-   of the referenced object if its size is known, or PTRDIFF_MAX otherwise.
-   Both initial values of the offsets and their final value computed by
-   the function by incrementing the initial value by the size are
+/* Validate REF size and offsets in an expression passed as an argument
+   to a CALL to a built-in function FUNC to make sure they are within
+   the bounds of the referenced object if its size is known, or
+   PTRDIFF_MAX otherwise.  DO_WARN is true when a diagnostic should
+   be issued, false otherwise.
+   Both initial values of the offsets and their final value computed
+   by the function by incrementing the initial value by the size are
    validated.  Return true if the offsets are not valid and a diagnostic
-   has been issued.  */
+   has been issued, or would have been issued if DO_WARN had been true.  */
 
 static bool
-maybe_diag_offset_bounds (location_t loc, gimple *call, tree func, int strict,
-			  tree expr, const builtin_memref &ref)
+maybe_diag_access_bounds (location_t loc, gimple *call, tree func, int strict,
+			  const builtin_memref &ref, bool do_warn)
 {
-  if (!warn_array_bounds)
-    return false;
+  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
 
+  /* Check for excessive size first and regardless of warning options
+     since the result is used to make codegen decisions.  */
+  if (ref.sizrange[0] > maxobjsize)
+    {
+      /* Return true without issuing a warning.  */
+      if (!do_warn)
+	return true;
+
+      if (ref.ref && TREE_NO_WARNING (ref.ref))
+	return false;
+
+      if (warn_stringop_overflow)
+	{
+	  if (EXPR_HAS_LOCATION (ref.ptr))
+	    loc = EXPR_LOCATION (ref.ptr);
+
+	  loc = expansion_point_location_if_in_system_header (loc);
+
+	  if (ref.sizrange[0] == ref.sizrange[1])
+	    return warning_at (loc, OPT_Wstringop_overflow_,
+			       "%G%qD specified bound %wu "
+			       "exceeds maximum object size %wu",
+			       call, func, ref.sizrange[0].to_uhwi (),
+			       maxobjsize.to_uhwi ());
+
+	  return warning_at (loc, OPT_Wstringop_overflow_,
+			     "%G%qD specified bound between %wu and %wu "
+			     "exceeds maximum object size %wu",
+			     call, func, ref.sizrange[0].to_uhwi (),
+			     ref.sizrange[1].to_uhwi (),
+			     maxobjsize.to_uhwi ());
+	}
+    }
+
+  /* Check for out-bounds pointers regardless of warning options since
+     the result is used to make codegen decisions.  */
   offset_int ooboff[] = { ref.offrange[0], ref.offrange[1] };
   tree oobref = ref.offset_out_of_bounds (strict, ooboff);
   if (!oobref)
     return false;
 
-  if (EXPR_HAS_LOCATION (expr))
-    loc = EXPR_LOCATION (expr);
+  /* Return true without issuing a warning.  */
+  if (!do_warn)
+    return true;
+
+  if (!warn_array_bounds)
+    return false;
+
+  if (ref.ref && TREE_NO_WARNING (ref.ref))
+    return false;
+
+  if (EXPR_HAS_LOCATION (ref.ptr))
+    loc = EXPR_LOCATION (ref.ptr);
 
   loc = expansion_point_location_if_in_system_header (loc);
 
@@ -1607,11 +1654,12 @@ maybe_diag_offset_bounds (location_t loc, gimple *call, tree func, int strict,
   if (oobref == error_mark_node)
     {
       if (ref.sizrange[0] == ref.sizrange[1])
-	sprintf (rangestr[1], "%lli", (long long) ref.sizrange[0].to_shwi ());
+	sprintf (rangestr[1], "%llu",
+		 (unsigned long long) ref.sizrange[0].to_shwi ());
       else
 	sprintf (rangestr[1], "[%lli, %lli]",
-		 (long long) ref.sizrange[0].to_shwi (),
-		 (long long) ref.sizrange[1].to_shwi ());
+		 (unsigned long long) ref.sizrange[0].to_uhwi (),
+		 (unsigned long long) ref.sizrange[1].to_uhwi ());
 
       tree type;
 
@@ -1807,7 +1855,7 @@ wrestrict_dom_walker::check_call (gimple *call)
       || (dstwr && !INTEGRAL_TYPE_P (TREE_TYPE (dstwr))))
     return;
 
-  if (check_bounds_or_overlap (call, dst, src, dstwr, NULL_TREE))
+  if (!check_bounds_or_overlap (call, dst, src, dstwr, NULL_TREE))
     return;
 
   /* Avoid diagnosing the call again.  */
@@ -1819,12 +1867,14 @@ wrestrict_dom_walker::check_call (gimple *call)
 /* Attempt to detect and diagnose invalid offset bounds and (except for
    memmove) overlapping copy in a call expression EXPR from SRC to DST
    and DSTSIZE and SRCSIZE bytes, respectively.  Both DSTSIZE and
-   SRCSIZE may be NULL.  Return false when one or the other has been
-   detected and diagnosed, true otherwise.  */
+   SRCSIZE may be NULL.  DO_WARN is false to detect either problem
+   without issue a warning.  Return the OPT_Wxxx constant corresponding
+   to the warning if one has been detected and zero otherwise.  */
 
-bool
+int
 check_bounds_or_overlap (gimple *call, tree dst, tree src, tree dstsize,
-			 tree srcsize, bool bounds_only /* = false */)
+			 tree srcsize, bool bounds_only /* = false */,
+			 bool do_warn /* = true */)
 {
   location_t loc = gimple_nonartificial_location (call);
   loc = expansion_point_location_if_in_system_header (loc);
@@ -1843,11 +1893,12 @@ check_bounds_or_overlap (gimple *call, tree dst, tree src, tree dstsize,
   /* Validate offsets first to make sure they are within the bounds
      of the destination object if its size is known, or PTRDIFF_MAX
      otherwise.  */
-  if (maybe_diag_offset_bounds (loc, call, func, strict, dst, dstref)
-      || maybe_diag_offset_bounds (loc, call, func, strict, src, srcref))
+  if (maybe_diag_access_bounds (loc, call, func, strict, dstref, do_warn)
+      || maybe_diag_access_bounds (loc, call, func, strict, srcref, do_warn))
     {
-      gimple_set_no_warning (call, true);
-      return false;
+      if (do_warn)
+	gimple_set_no_warning (call, true);
+      return OPT_Warray_bounds;
     }
 
   bool check_overlap
@@ -1857,7 +1908,7 @@ check_bounds_or_overlap (gimple *call, tree dst, tree src, tree dstsize,
 	       && DECL_FUNCTION_CODE (func) != BUILT_IN_MEMMOVE_CHK)));
 
   if (!check_overlap)
-    return true;
+    return 0;
 
   if (operand_equal_p (dst, src, 0))
     {
@@ -1871,20 +1922,20 @@ check_bounds_or_overlap (gimple *call, tree dst, tree src, tree dstsize,
 		      "%G%qD source argument is the same as destination",
 		      call, func);
 	  gimple_set_no_warning (call, true);
-	  return false;
+	  return OPT_Wrestrict;
 	}
 
-      return true;
+      return 0;
     }
 
   /* Return false when overlap has been detected.  */
   if (maybe_diag_overlap (loc, call, acs))
     {
       gimple_set_no_warning (call, true);
-      return false;
+      return OPT_Wrestrict;
     }
 
-  return true;
+  return 0;
 }
 
 gimple_opt_pass *

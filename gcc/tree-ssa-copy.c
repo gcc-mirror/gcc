@@ -1,5 +1,5 @@
 /* Copy propagation and SSA_NAME replacement support routines.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -155,7 +155,7 @@ set_copy_of_val (tree var, tree val)
   copy_of[ver].value = val;
 
   if (old != val
-      || (val && !operand_equal_p (old, val, 0)))
+      && (!old || !operand_equal_p (old, val, 0)))
     return true;
 
   return false;

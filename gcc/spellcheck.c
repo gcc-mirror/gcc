@@ -1,5 +1,5 @@
 /* Find near-matches for strings.
-   Copyright (C) 2015-2018 Free Software Foundation, Inc.
+   Copyright (C) 2015-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -378,6 +378,9 @@ test_suggestions ()
 
   ASSERT_NOT_SUGGESTED_FOR ("__DATE__", "__i386__");
   // dist == 4, max_length == min_length == 8
+
+  ASSERT_NOT_SUGGESTED_FOR ("start_input_device", "InputDevice");
+  // dist == 9, max_length == 18, min_length == 11
 }
 
 /* Verify that find_closest_string is sane.  */

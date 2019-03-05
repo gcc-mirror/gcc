@@ -1,6 +1,6 @@
 // C++11 <type_traits> -*- C++ -*-
 
-// Copyright (C) 2007-2018 Free Software Foundation, Inc.
+// Copyright (C) 2007-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -231,6 +231,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     struct __is_integral_helper<wchar_t>
+    : public true_type { };
+#endif
+
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<>
+    struct __is_integral_helper<char8_t>
     : public true_type { };
 #endif
 
@@ -1286,7 +1292,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// alignment_of
   template<typename _Tp>
     struct alignment_of
-    : public integral_constant<std::size_t, __alignof__(_Tp)> { };
+    : public integral_constant<std::size_t, alignof(_Tp)> { };
 
   /// rank
   template<typename>
@@ -1344,9 +1350,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_convertible_helper
     {
       typedef typename is_void<_To>::type type;
-#if __cplusplus > 201703L
-      typedef type __is_nothrow_type;
-#endif
     };
 
   template<typename _From, typename _To>
@@ -1364,23 +1367,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static false_type
 	__test(...);
 
-#if __cplusplus > 201703L
-      template<typename _From1, typename _To1,
-	       bool _NoEx = noexcept(__test_aux<_To1>(std::declval<_From1>()))>
-	static __bool_constant<_NoEx>
-	__test_nothrow(int);
-
-      template<typename, typename>
-	static false_type
-	__test_nothrow(...);
-#endif
-
     public:
       typedef decltype(__test<_From, _To>(0)) type;
-
-#if __cplusplus > 201703L
-      typedef decltype(__test_nothrow<_From, _To>(0)) __is_nothrow_type;
-#endif
     };
 
 
@@ -1391,10 +1379,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
 #if __cplusplus > 201703L
+    template<typename _From, typename _To,
+           bool = __or_<is_void<_From>, is_function<_To>,
+                        is_array<_To>>::value>
+    struct __is_nt_convertible_helper
+    : is_void<_To>
+    { };
+
+  template<typename _From, typename _To>
+    class __is_nt_convertible_helper<_From, _To, false>
+    {
+      template<typename _To1>
+	static void __test_aux(_To1) noexcept;
+
+      template<typename _From1, typename _To1>
+	static bool_constant<noexcept(__test_aux<_To1>(std::declval<_From1>()))>
+	__test(int);
+
+      template<typename, typename>
+	static false_type
+	__test(...);
+
+    public:
+      using type = decltype(__test<_From, _To>(0));
+    };
+
   /// is_nothrow_convertible
   template<typename _From, typename _To>
     struct is_nothrow_convertible
-    : public __is_convertible_helper<_From, _To>::__is_nothrow_type
+    : public __is_nt_convertible_helper<_From, _To>::type
     { };
 
   /// is_nothrow_convertible_v
@@ -1673,8 +1686,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	= typename __match_cv_qualifiers<_Tp, __unsigned_type>::__type;
     };
 
-  // wchar_t, char16_t and char32_t are integral types but are neither
-  // signed integer types nor unsigned integer types, so must be
+  // wchar_t, char8_t, char16_t and char32_t are integral types but are
+  // neither signed integer types nor unsigned integer types, so must be
   // transformed to the unsigned integer type with the smallest rank.
   // Use the partial specialization for enumeration types to do that.
 #if defined(_GLIBCXX_USE_WCHAR_T)
@@ -1683,6 +1696,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       using __type
 	= typename __make_unsigned_selector<wchar_t, false, true>::__type;
+    };
+#endif
+
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<>
+    struct __make_unsigned<char8_t>
+    {
+      using __type
+	= typename __make_unsigned_selector<char8_t, false, true>::__type;
     };
 #endif
 
@@ -1800,6 +1822,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       using __type
 	= typename __make_signed_selector<wchar_t, false, true>::__type;
+    };
+#endif
+
+#if defined(_GLIBCXX_USE_CHAR8_T)
+  template<>
+    struct __make_signed<char8_t>
+    {
+      using __type
+	= typename __make_signed_selector<char8_t, false, true>::__type;
     };
 #endif
 
@@ -2125,9 +2156,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __expanded_common_type_wrapper<__failure_type, _Args...>
     { typedef __failure_type type; };
 
+  template<>
+    struct common_type<>
+    { };
+
   template<typename _Tp>
     struct common_type<_Tp>
-    { typedef typename decay<_Tp>::type type; };
+    : common_type<_Tp, _Tp>
+    { };
 
   template<typename _Tp, typename _Up>
     struct common_type<_Tp, _Up>
@@ -2140,12 +2176,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                common_type<_Tp, _Up>>::type, _Vp...>::type
     { };
 
+  template<typename _Tp, bool = is_enum<_Tp>::value>
+    struct __underlying_type_impl
+    {
+      using type = __underlying_type(_Tp);
+    };
+
+  template<typename _Tp>
+    struct __underlying_type_impl<_Tp, false>
+    { };
+
   /// The underlying type of an enum.
   template<typename _Tp>
     struct underlying_type
-    {
-      typedef __underlying_type(_Tp) type;
-    };
+    : public __underlying_type_impl<_Tp>
+    { };
 
   template<typename _Tp>
     struct __declval_protector
@@ -3014,6 +3059,29 @@ template <typename _From, typename _To>
 
   template<typename _Tp>
     using type_identity_t = typename type_identity<_Tp>::type;
+
+  /// Unwrap a reference_wrapper
+  template<typename _Tp>
+    struct unwrap_reference { using type = _Tp; };
+
+  template<typename _Tp>
+    struct unwrap_reference<reference_wrapper<_Tp>> { using type = _Tp&; };
+
+  /// Decay type and if it's a reference_wrapper, unwrap it
+  template<typename _Tp>
+    struct unwrap_ref_decay : unwrap_reference<decay_t<_Tp>> { };
+
+  template<typename _Tp>
+    using unwrap_ref_decay_t = typename unwrap_ref_decay<_Tp>::type;
+
+#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+
+#define __cpp_lib_is_constant_evaluated 201811L
+
+  constexpr inline bool
+  is_constant_evaluated() noexcept
+  { return __builtin_is_constant_evaluated(); }
+#endif
 
 #endif // C++2a
 

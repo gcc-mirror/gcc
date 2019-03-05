@@ -1,6 +1,5 @@
 // Test for exception handling.
-// { dg-options -std=c++17 }
-// { dg-do run }
+// { dg-do run { target c++17 } }
 
 void f() {}
 void g() noexcept {}

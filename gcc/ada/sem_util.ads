@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1006,7 +1006,7 @@ package Sem_Util is
    function Get_Default_External_Name (E : Node_Or_Entity_Id) return Node_Id;
    --  This is used to construct the string literal node representing a
    --  default external name, i.e. one that is constructed from the name of an
-   --  entity, or (in the case of extended DEC import/export pragmas, an
+   --  entity, or (in the case of extended DEC import/export pragmas) an
    --  identifier provided as the external name. Letters in the name are
    --  according to the setting of Opt.External_Name_Default_Casing.
 
@@ -2001,8 +2001,8 @@ package Sem_Util is
 
    function Is_Subprogram_Stub_Without_Prior_Declaration
      (N : Node_Id) return Boolean;
-   --  Return True if N is a subprogram stub with no prior subprogram
-   --  declaration.
+   --  Given an N_Subprogram_Body_Stub node N, return True if N is a subprogram
+   --  stub with no prior subprogram declaration.
 
    function Is_Suitable_Primitive (Subp_Id : Entity_Id) return Boolean;
    --  Determine whether arbitrary subprogram Subp_Id may act as a primitive of
@@ -2809,6 +2809,10 @@ package Sem_Util is
    --  subcomponent. If Op is TSS_Null, a type that lacks either Read or Write
    --  prevents the construction of a composite stream operation. If Op is
    --  specified we check only for the given stream operation.
+
+   function Ultimate_Prefix (N : Node_Id) return Node_Id;
+   --  Obtain the "outermost" prefix of arbitrary node N. Return N if no such
+   --  prefix exists.
 
    function Unique_Defining_Entity (N : Node_Id) return Entity_Id;
    --  Return the entity that represents declaration N, so that different

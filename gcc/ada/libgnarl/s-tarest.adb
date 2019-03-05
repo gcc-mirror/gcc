@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1999-2018, Free Software Foundation, Inc.          --
+--         Copyright (C) 1999-2019, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -562,7 +562,16 @@ package body System.Tasking.Restricted.Stages is
          raise Program_Error;
       end if;
 
-      Created_Task.Entry_Calls (1).Self := Created_Task;
+      --  Only the first element of the Entry_Calls array is used when the
+      --  Ravenscar Profile is active, as no asynchronous transfer of control
+      --  is allowed.
+
+      Created_Task.Entry_Calls (Created_Task.Entry_Calls'First) :=
+        (Self   => Created_Task,
+         Level  => Created_Task.Entry_Calls'First,
+         others => <>);
+
+      --  Set task name
 
       Len :=
         Integer'Min (Created_Task.Common.Task_Image'Length, Task_Image'Length);

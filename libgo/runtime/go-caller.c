@@ -137,7 +137,9 @@ __go_file_line (uintptr pc, int index, String *fn, String *file, intgo *line)
 
   runtime_memclr (&c, sizeof c);
   c.index = index;
+  runtime_xadd (&__go_runtime_in_callers, 1);
   state = __go_get_backtrace_state ();
+  runtime_xadd (&__go_runtime_in_callers, -1);
   backtrace_pcinfo (state, pc, callback, error_callback, &c);
   *fn = c.fn;
   *file = c.file;
@@ -169,8 +171,13 @@ syminfo_callback (void *data, uintptr_t pc __attribute__ ((unused)),
 static _Bool
 __go_symbol_value (uintptr pc, uintptr *val)
 {
+  struct backtrace_state *state;
+
   *val = 0;
-  backtrace_syminfo (__go_get_backtrace_state (), pc, syminfo_callback,
+  runtime_xadd (&__go_runtime_in_callers, 1);
+  state = __go_get_backtrace_state ();
+  runtime_xadd (&__go_runtime_in_callers, -1);
+  backtrace_syminfo (state, pc, syminfo_callback,
 		     error_callback, val);
   return *val != 0;
 }
@@ -185,12 +192,12 @@ struct caller_ret
   _Bool ok;
 };
 
-struct caller_ret Caller (int n) __asm__ (GOSYM_PREFIX "runtime.Caller");
+struct caller_ret Caller (intgo n) __asm__ (GOSYM_PREFIX "runtime.Caller");
 
 /* Implement runtime.Caller.  */
 
 struct caller_ret
-Caller (int skip)
+Caller (intgo skip)
 {
   struct caller_ret ret;
   Location loc;

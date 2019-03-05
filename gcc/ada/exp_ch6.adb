@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1321,8 +1321,14 @@ package body Exp_Ch6 is
          --  bounds of the actual and build an uninitialized temporary of the
          --  right size.
 
+         --  If the formal is an out parameter with discriminants, the
+         --  discriminants must be captured even if the rest of the object
+         --  is in principle uninitialized, because the discriminants may
+         --  be read by the called subprogram.
+
          if Ekind (Formal) = E_In_Out_Parameter
            or else (Is_Array_Type (F_Typ) and then not Is_Constrained (F_Typ))
+           or else Has_Discriminants (F_Typ)
          then
             if Nkind (Actual) = N_Type_Conversion then
                if Conversion_OK (Actual) then
@@ -1442,6 +1448,7 @@ package body Exp_Ch6 is
 
             Kill_Current_Values (Temp);
             Set_Is_Known_Valid (Temp, False);
+            Set_Is_True_Constant (Temp, False);
 
             --  If type conversion, use reverse conversion on exit
 
@@ -1653,6 +1660,7 @@ package body Exp_Ch6 is
          if Ekind (Formal) /= E_In_Parameter then
             Lhs := Outcod;
             Rhs := New_Occurrence_Of (Temp, Loc);
+            Set_Is_True_Constant (Temp, False);
 
             --  Deal with conversion
 
@@ -3431,6 +3439,7 @@ package body Exp_Ch6 is
                   Kill_Current_Values (Ent);
                   Set_Last_Assignment (Ent, Sav);
                   Set_Is_Known_Valid (Ent, False);
+                  Set_Is_True_Constant (Ent, False);
 
                --  For all other cases, just kill the current values
 
@@ -5090,6 +5099,7 @@ package body Exp_Ch6 is
                      Alloc_Obj_Id   : Entity_Id;
                      Alloc_Obj_Decl : Node_Id;
                      Alloc_If_Stmt  : Node_Id;
+                     Guard_Except   : Node_Id;
                      Heap_Allocator : Node_Id;
                      Pool_Decl      : Node_Id;
                      Pool_Allocator : Node_Id;
@@ -5289,6 +5299,18 @@ package body Exp_Ch6 is
                        (Return_Statement_Entity (N));
                      Set_Enclosing_Sec_Stack_Return (N);
 
+                     --  Guard against poor expansion on the caller side by
+                     --  using a raise statement to catch out-of-range values
+                     --  of formal parameter BIP_Alloc_Form.
+
+                     if Exceptions_OK then
+                        Guard_Except :=
+                          Make_Raise_Program_Error (Loc,
+                            Reason => PE_Build_In_Place_Mismatch);
+                     else
+                        Guard_Except := Make_Null_Statement (Loc);
+                     end if;
+
                      --  Create an if statement to test the BIP_Alloc_Form
                      --  formal and initialize the access object to either the
                      --  BIP_Object_Access formal (BIP_Alloc_Form =
@@ -5391,9 +5413,7 @@ package body Exp_Ch6 is
                          --  Raise Program_Error if it's none of the above;
                          --  this is a compiler bug.
 
-                         Else_Statements => New_List (
-                           Make_Raise_Program_Error (Loc,
-                             Reason => PE_Build_In_Place_Mismatch)));
+                         Else_Statements => New_List (Guard_Except));
 
                      --  If a separate initialization assignment was created
                      --  earlier, append that following the assignment of the
@@ -5468,7 +5488,7 @@ package body Exp_Ch6 is
       Set_Comes_From_Extended_Return_Statement (Return_Stmt);
 
       Rewrite (N, Result);
-      Analyze (N);
+      Analyze (N, Suppress => All_Checks);
    end Expand_N_Extended_Return_Statement;
 
    ----------------------------

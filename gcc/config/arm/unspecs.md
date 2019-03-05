@@ -1,5 +1,5 @@
 ;; Unspec defintions.
-;; Copyright (C) 2012-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2019 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -86,6 +86,9 @@
   UNSPEC_PROBE_STACK    ; Probe stack memory reference
   UNSPEC_NONSECURE_MEM	; Represent non-secure memory in ARMv8-M with
 			; security extension
+  UNSPEC_SP_SET		; Represent the setting of stack protector's canary
+  UNSPEC_SP_TEST	; Represent the testing of stack protector's canary
+			; against the guard.
 ])
 
 (define_c_enum "unspec" [
@@ -415,4 +418,10 @@
   UNSPEC_DOT_U
   UNSPEC_VFML_LO
   UNSPEC_VFML_HI
+  UNSPEC_VCADD90
+  UNSPEC_VCADD270
+  UNSPEC_VCMLA
+  UNSPEC_VCMLA90
+  UNSPEC_VCMLA180
+  UNSPEC_VCMLA270
 ])

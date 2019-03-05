@@ -1,5 +1,5 @@
 /* Internal functions.
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2581,6 +2581,15 @@ expand_VA_ARG (internal_fn, gcall *)
   gcc_unreachable ();
 }
 
+/* IFN_VEC_CONVERT is supposed to be expanded at pass_lower_vector.  So this
+   dummy function should never be called.  */
+
+static void
+expand_VEC_CONVERT (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
 /* Expand the IFN_UNIQUE function according to its first argument.  */
 
 static void
@@ -2890,6 +2899,7 @@ expand_direct_optab_fn (internal_fn fn, gcall *stmt, direct_optab optab,
 
   tree_pair types = direct_internal_fn_types (fn, stmt);
   insn_code icode = direct_optab_handler (optab, TYPE_MODE (types.first));
+  gcc_assert (icode != CODE_FOR_nothing);
 
   tree lhs = gimple_call_lhs (stmt);
   rtx lhs_rtx = NULL_RTX;
@@ -3181,6 +3191,17 @@ direct_internal_fn_supported_p (internal_fn fn, tree type,
   const direct_internal_fn_info &info = direct_internal_fn (fn);
   gcc_checking_assert (info.type0 == info.type1);
   return direct_internal_fn_supported_p (fn, tree_pair (type, type), opt_type);
+}
+
+/* Return true if the STMT is supported when the optimization type is OPT_TYPE,
+   given that STMT is a call to a direct internal function.  */
+
+bool
+direct_internal_fn_supported_p (gcall *stmt, optimization_type opt_type)
+{
+  internal_fn fn = gimple_call_internal_fn (stmt);
+  tree_pair types = direct_internal_fn_types (fn, stmt);
+  return direct_internal_fn_supported_p (fn, types, opt_type);
 }
 
 /* If FN is commutative in two consecutive arguments, return the

@@ -3,5 +3,5 @@
 
 template<typename T> struct A
 {
-  void foo(decltype(T())::Y);	// { dg-error {decltype\(T\(\)\)::Y} }
+  void foo(decltype(T())::Y);	// { dg-error "decltype\\(T\\(\\)\\)::Y" "" { target c++17_down } }
 };

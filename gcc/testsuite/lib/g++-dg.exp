@@ -1,4 +1,4 @@
-#   Copyright (C) 1997-2018 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ proc g++-dg-runtest { testcases flags default-extra-flags } {
 	    if { [llength $gpp_std_list] > 0 } {
 		set std_list $gpp_std_list
 	    } else {
-		set std_list { 98 11 14 }
+		set std_list { 98 14 17 }
 	    }
 	    set option_list { }
 	    foreach x $std_list {

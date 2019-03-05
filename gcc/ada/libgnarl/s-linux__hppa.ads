@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 2008-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -113,9 +113,9 @@ package System.Linux is
    SIGXCPU    : constant := 33; --  CPU time limit exceeded
    SIGXFSZ    : constant := 34; --  filesize limit exceeded
    SIGSTKFLT  : constant := 36; --  coprocessor stack fault (Linux)
-   SIGLTHRRES : constant := 37; --  GNU/LinuxThreads restart signal
-   SIGLTHRCAN : constant := 38; --  GNU/LinuxThreads cancel signal
-   SIGLTHRDBG : constant := 39; --  GNU/LinuxThreads debugger signal
+   SIG32      : constant := 37; --  glibc internal signal
+   SIG33      : constant := 38; --  glibc internal signal
+   SIG34      : constant := 39; --  glibc internal signal
 
    --  struct_sigaction offsets
 

@@ -1,5 +1,5 @@
 /* A C++ API for libgccjit, purely as inline wrapper functions.
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -127,6 +127,7 @@ namespace gccjit
     void set_bool_use_external_driver (int bool_value);
 
     void add_command_line_option (const char *optname);
+    void add_driver_option (const char *optname);
 
     void set_timer (gccjit::timer t);
     gccjit::timer get_timer () const;
@@ -684,6 +685,12 @@ inline void
 context::add_command_line_option (const char *optname)
 {
   gcc_jit_context_add_command_line_option (m_inner_ctxt, optname);
+}
+
+inline void
+context::add_driver_option (const char *optname)
+{
+  gcc_jit_context_add_driver_option (m_inner_ctxt, optname);
 }
 
 inline void

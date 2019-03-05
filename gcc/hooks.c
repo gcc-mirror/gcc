@@ -1,5 +1,5 @@
 /* General-purpose hooks.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -142,7 +142,7 @@ hook_bool_puint64_puint64_true (poly_uint64, poly_uint64)
 
 /* Generic hook that takes (unsigned int, machine_mode) and returns false.  */
 bool
-hook_bool_uint_mode_false (unsigned int, machine_mode)
+hook_bool_insn_uint_mode_false (rtx_insn *, unsigned int, machine_mode)
 {
   return false;
 }
@@ -273,6 +273,11 @@ hook_hwi_void_0 (void)
 
 void
 hook_void_tree (tree)
+{
+}
+
+void
+hook_void_FILEptr_tree (FILE *, tree)
 {
 }
 

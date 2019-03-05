@@ -1,5 +1,5 @@
 /* Export function prototypes from explow.c.
-   Copyright (C) 2015-2018 Free Software Foundation, Inc.
+   Copyright (C) 2015-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -103,6 +103,9 @@ extern void get_dynamic_stack_size (rtx *, unsigned, unsigned, HOST_WIDE_INT *);
 
 /* Returns the address of the dynamic stack space without allocating it.  */
 extern rtx get_dynamic_stack_base (poly_int64, unsigned);
+
+/* Return an rtx doing runtime alignment to REQUIRED_ALIGN on TARGET.  */
+extern rtx align_dynamic_address (rtx, unsigned);
 
 /* Emit one stack probe at ADDRESS, an address within the stack.  */
 extern void emit_stack_probe (rtx);

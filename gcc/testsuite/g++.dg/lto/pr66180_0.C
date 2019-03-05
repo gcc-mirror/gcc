@@ -1,4 +1,5 @@
 // { dg-lto-do link }
+// { dg-require-effective-target lto_incremental }
 // { dg-lto-options { { -flto -std=c++14 -r -nostdlib } } }
 #include <memory>
 namespace {

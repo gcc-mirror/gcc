@@ -1,6 +1,6 @@
 // Allocator traits -*- C++ -*-
 
-// Copyright (C) 2011-2018 Free Software Foundation, Inc.
+// Copyright (C) 2011-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -80,6 +80,8 @@ template<typename _Alloc, typename = typename _Alloc::value_type>
     template<typename _Ptr, typename... _Args>
       static typename std::enable_if<__is_custom_pointer<_Ptr>::value>::type
       construct(_Alloc& __a, _Ptr __p, _Args&&... __args)
+      noexcept(noexcept(_Base_type::construct(__a, std::__to_address(__p),
+					      std::forward<_Args>(__args)...)))
       {
 	_Base_type::construct(__a, std::__to_address(__p),
 			      std::forward<_Args>(__args)...);
@@ -89,6 +91,7 @@ template<typename _Alloc, typename = typename _Alloc::value_type>
     template<typename _Ptr>
       static typename std::enable_if<__is_custom_pointer<_Ptr>::value>::type
       destroy(_Alloc& __a, _Ptr __p)
+      noexcept(noexcept(_Base_type::destroy(__a, std::__to_address(__p))))
       { _Base_type::destroy(__a, std::__to_address(__p)); }
 
     static _Alloc _S_select_on_copy(const _Alloc& __a)
@@ -125,7 +128,7 @@ template<typename _Alloc, typename = typename _Alloc::value_type>
     typedef typename _Alloc::size_type              size_type;
     typedef typename _Alloc::difference_type        difference_type;
 
-    static pointer
+    _GLIBCXX_NODISCARD static pointer
     allocate(_Alloc& __a, size_type __n)
     { return __a.allocate(__n); }
 

@@ -1,5 +1,5 @@
 /* Implementation of the MINLOC intrinsic
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -123,27 +123,27 @@ minloc0_16_r16 (gfc_array_i16 * const restrict retarray,
 	}
       else
 #endif
-    if (back)
-      do
-	{
-	  if (unlikely (*base <= minval))
-	    {
-	      minval = *base;
-	      for (n = 0; n < rank; n++)
-		dest[n * dstride] = count[n] + 1;
-	    }
-	  base += sstride[0];
-	}
-      while (++count[0] != extent[0]);
-    else
-      do
-        {
-	  if (unlikely (*base < minval))
-	    {
-	      minval = *base;
-	      for (n = 0; n < rank; n++)
-	        dest[n * dstride] = count[n] + 1;
-	    }
+      if (back)
+	do
+	  {
+	    if (unlikely (*base <= minval))
+	      {
+		minval = *base;
+		for (n = 0; n < rank; n++)
+		  dest[n * dstride] = count[n] + 1;
+	      }
+	    base += sstride[0];
+	  }
+	while (++count[0] != extent[0]);
+      else
+	do
+	  {
+	    if (unlikely (*base < minval))
+	      {
+		minval = *base;
+		for (n = 0; n < rank; n++)
+		  dest[n * dstride] = count[n] + 1;
+	      }
 	  /* Implementation end.  */
 	  /* Advance to the next element.  */
 	  base += sstride[0];
@@ -197,6 +197,13 @@ mminloc0_16_r16 (gfc_array_i16 * const restrict retarray,
   int rank;
   index_type n;
   int mask_kind;
+
+
+  if (mask == NULL)
+    {
+      minloc0_16_r16 (retarray, array, back);
+      return;
+    }
 
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
@@ -368,7 +375,7 @@ sminloc0_16_r16 (gfc_array_i16 * const restrict retarray,
   index_type n;
   GFC_INTEGER_16 *dest;
 
-  if (*mask)
+  if (mask == NULL || *mask)
     {
       minloc0_16_r16 (retarray, array, back);
       return;

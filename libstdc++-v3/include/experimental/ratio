@@ -1,6 +1,6 @@
 // Variable Templates For ratio -*- C++ -*-
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,7 +48,7 @@ namespace experimental
 {
 inline namespace fundamentals_v1
 {
-// See C++14 §20.11.5, ratio comparison
+// See C++14 20.11.5, ratio comparison
 template <typename _R1, typename _R2>
   constexpr bool ratio_equal_v = ratio_equal<_R1, _R2>::value;
 template <typename _R1, typename _R2>

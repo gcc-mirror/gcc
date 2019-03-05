@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -80,6 +80,8 @@
 	GNU_USER_TARGET_OS_CPP_BUILTINS();	\
     }						\
   while (0)
+
+#define GNU_USER_TARGET_D_CRITSEC_SIZE 48
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 

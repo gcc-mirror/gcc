@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for recording calls made to the JIT API.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -615,6 +615,8 @@ recording::context::~context ()
 
   char *optname;
   FOR_EACH_VEC_ELT (m_command_line_options, i, optname)
+    free (optname);
+  FOR_EACH_VEC_ELT (m_driver_options, i, optname)
     free (optname);
 
   if (m_builtins_manager)
@@ -1307,6 +1309,31 @@ recording::context::append_command_line_options (vec <char *> *argvec)
     argvec->safe_push (xstrdup (optname));
 }
 
+/* Add the given optname to this context's list of extra driver options.  */
+
+void
+recording::context::add_driver_option (const char *optname)
+{
+  m_driver_options.safe_push (xstrdup (optname));
+}
+
+/* Add any user-provided driver options, starting with any from
+   parent contexts.
+   Called by playback::context::invoke_driver.  */
+
+void
+recording::context::append_driver_options (auto_string_vec *argvec)
+{
+  if (m_parent_ctxt)
+    m_parent_ctxt->append_driver_options (argvec);
+
+  int i;
+  char *optname;
+
+  FOR_EACH_VEC_ELT (m_driver_options, i, optname)
+    argvec->safe_push (xstrdup (optname));
+}
+
 /* Add the given dumpname/out_ptr pair to this context's list of requested
    dumps.
 
@@ -1795,6 +1822,17 @@ recording::context::dump_reproducer_to_file (const char *path)
 	  r.write ("  /* User-provided command-line options.  */\n");
 	  FOR_EACH_VEC_ELT (m_command_line_options, i, optname)
 	    r.write ("  gcc_jit_context_add_command_line_option (%s, \"%s\");\n",
+		     r.get_identifier (contexts[ctxt_idx]),
+		     optname);
+	}
+
+      if (!m_driver_options.is_empty ())
+	{
+	  int i;
+	  char *optname;
+	  r.write ("  /* User-provided driver options.  */\n");
+	  FOR_EACH_VEC_ELT (m_driver_options, i, optname)
+	    r.write ("  gcc_jit_context_add_driver_option (%s, \"%s\");\n",
 		     r.get_identifier (contexts[ctxt_idx]),
 		     optname);
 	}

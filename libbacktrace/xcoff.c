@@ -1,5 +1,5 @@
 /* xcoff.c -- Get debug data from an XCOFF file for backtraces.
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Adapted from elf.c.
 
 Redistribution and use in source and binary forms, with or without
@@ -1315,7 +1315,9 @@ xcoff_add (struct backtrace_state *state, int descriptor, off_t offset,
 				dwsect[DWSECT_STR].data,
 				dwsect[DWSECT_STR].size,
 				1, /* big endian */
-				error_callback, data, fileline_fn))
+				NULL,
+				error_callback, data, fileline_fn,
+				NULL))
 	goto fail;
     }
 

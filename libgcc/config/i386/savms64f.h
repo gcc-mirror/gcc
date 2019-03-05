@@ -1,5 +1,5 @@
 /* Prologue stub for 64-bit ms/sysv clobbers: save (with hard frame pointer)
-   Copyright (C) 2016-2018 Free Software Foundation, Inc.
+   Copyright (C) 2016-2019 Free Software Foundation, Inc.
    Contributed by Daniel Santos <daniel.santos@pobox.com>
 
 This file is part of GCC.

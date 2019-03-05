@@ -1,5 +1,5 @@
 /* Subroutines for the gcc driver.
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -427,6 +427,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_waitpkg = 0;
   unsigned int has_cldemote = 0;
 
+  unsigned int has_ptwrite = 0;
+
   bool arch;
 
   unsigned int l2sizekb = 0;
@@ -542,6 +544,13 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_xsaves = eax & bit_XSAVES;
     }
 
+  if (max_level >= 0x14)
+    {
+      __cpuid_count (0x14, 0, eax, ebx, ecx, edx);
+
+      has_ptwrite = ebx & bit_PTWRITE;
+    }
+
   /* Check cpuid level of extended features.  */
   __cpuid (0x80000000, ext_level, ebx, ecx, edx);
 
@@ -649,6 +658,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	processor = PROCESSOR_GEODE;
       else if (has_movbe && family == 22)
 	processor = PROCESSOR_BTVER2;
+      else if (has_clwb)
+	processor = PROCESSOR_ZNVER2;
       else if (has_clzero)
 	processor = PROCESSOR_ZNVER1;
       else if (has_avx2)
@@ -821,8 +832,12 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  cpu = "skylake";
 	  break;
 	case 0x55:
-	  /* Skylake with AVX-512.  */
-	  cpu = "skylake-avx512";
+	  if (has_avx512vnni)
+	    /* Cascade Lake.  */
+	    cpu = "cascadelake";
+	  else
+	    /* Skylake with AVX-512.  */
+	    cpu = "skylake-avx512";
 	  break;
 	case 0x57:
 	  /* Knights Landing.  */
@@ -1012,6 +1027,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
     case PROCESSOR_ZNVER1:
       cpu = "znver1";
       break;
+    case PROCESSOR_ZNVER2:
+      cpu = "znver2";
+      break;
     case PROCESSOR_BTVER1:
       cpu = "btver1";
       break;
@@ -1124,6 +1142,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *movdir64b = has_movdir64b ? " -mmovdir64b" : " -mno-movdir64b";
       const char *waitpkg = has_waitpkg ? " -mwaitpkg" : " -mno-waitpkg";
       const char *cldemote = has_cldemote ? " -mcldemote" : " -mno-cldemote";
+      const char *ptwrite = has_ptwrite ? " -mptwrite" : " -mno-ptwrite";
+
       options = concat (options, mmx, mmx3dnow, sse, sse2, sse3, ssse3,
 			sse4a, cx16, sahf, movbe, aes, sha, pclmul,
 			popcnt, abm, lwp, fma, fma4, xop, bmi, sgx, bmi2,
@@ -1137,6 +1157,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 			clwb, mwaitx, clzero, pku, rdpid, gfni, shstk,
 			avx512vbmi2, avx512vnni, vaes, vpclmulqdq,
 			avx512bitalg, movdiri, movdir64b, waitpkg, cldemote,
+			ptwrite,
 			NULL);
     }
 

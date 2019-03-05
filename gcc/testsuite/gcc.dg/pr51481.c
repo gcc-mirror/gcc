@@ -1,6 +1,7 @@
 /* PR tree-optimization/51481 */
 /* { dg-do compile } */
 /* { dg-options "-O -fexceptions -fipa-cp -fipa-cp-clone" } */
+/* { dg-require-effective-target exceptions } */
 
 extern const unsigned short int **foo (void)
   __attribute__ ((__nothrow__, __const__));

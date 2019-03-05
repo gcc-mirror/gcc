@@ -1,5 +1,5 @@
 /* Build live ranges for pseudos.
-   Copyright (C) 2010-2018 Free Software Foundation, Inc.
+   Copyright (C) 2010-2019 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -83,7 +83,7 @@ static HARD_REG_SET hard_regs_live;
 
 /* Set of pseudos and hard registers start living/dying in the current
    insn.  These sets are used to update REG_DEAD and REG_UNUSED notes
-   in the insn.	 */
+   in the insn.  */
 static sparseset start_living, start_dying;
 
 /* Set of pseudos and hard regs dead and unused in the current
@@ -95,10 +95,6 @@ static bitmap_head temp_bitmap;
 
 /* Pool for pseudo live ranges.	 */
 static object_allocator<lra_live_range> lra_live_range_pool ("live ranges");
-
-/* If non-NULL, the source operand of a register to register copy for which
-   we should not add a conflict with the copy's destination operand.  */
-static rtx ignore_reg_for_conflicts;
 
 /* Free live range list LR.  */
 static void
@@ -224,6 +220,57 @@ lra_intersected_live_ranges_p (lra_live_range_t r1, lra_live_range_t r2)
   return false;
 }
 
+enum point_type {
+  DEF_POINT,
+  USE_POINT
+};
+
+/* Return TRUE if set A contains a pseudo register, otherwise, return FALSE.  */
+static bool
+sparseset_contains_pseudos_p (sparseset a)
+{
+  int regno;
+  EXECUTE_IF_SET_IN_SPARSESET (a, regno)
+    if (!HARD_REGISTER_NUM_P (regno))
+      return true;
+  return false;
+}
+
+/* Mark pseudo REGNO as living or dying at program point POINT, depending on
+   whether TYPE is a definition or a use.  If this is the first reference to
+   REGNO that we've encountered, then create a new live range for it.  */
+
+static void
+update_pseudo_point (int regno, int point, enum point_type type)
+{
+  lra_live_range_t p;
+
+  /* Don't compute points for hard registers.  */
+  if (HARD_REGISTER_NUM_P (regno))
+    return;
+
+  if (complete_info_p || lra_get_regno_hard_regno (regno) < 0)
+    {
+      if (type == DEF_POINT)
+	{
+	  if (sparseset_bit_p (pseudos_live, regno))
+	    {
+	      p = lra_reg_info[regno].live_ranges;
+	      lra_assert (p != NULL);
+	      p->finish = point;
+	    }
+	}
+      else /* USE_POINT */
+	{
+	  if (!sparseset_bit_p (pseudos_live, regno)
+	      && ((p = lra_reg_info[regno].live_ranges) == NULL
+		  || (p->finish != point && p->finish + 1 != point)))
+	    lra_reg_info[regno].live_ranges
+	      = create_live_range (regno, point, -1, p);
+	}
+    }
+}
+
 /* The corresponding bitmaps of BB currently being processed.  */
 static bitmap bb_killed_pseudos, bb_gen_pseudos;
 
@@ -232,7 +279,7 @@ static bitmap bb_killed_pseudos, bb_gen_pseudos;
 static void
 make_hard_regno_live (int regno)
 {
-  lra_assert (regno < FIRST_PSEUDO_REGISTER);
+  lra_assert (HARD_REGISTER_NUM_P (regno));
   if (TEST_HARD_REG_BIT (hard_regs_live, regno))
     return;
   SET_HARD_REG_BIT (hard_regs_live, regno);
@@ -247,19 +294,15 @@ make_hard_regno_live (int regno)
 static void
 make_hard_regno_dead (int regno)
 {
-  lra_assert (regno < FIRST_PSEUDO_REGISTER);
-  if (! TEST_HARD_REG_BIT (hard_regs_live, regno))
-    return;
-  sparseset_set_bit (start_dying, regno);
+  lra_assert (HARD_REGISTER_NUM_P (regno));
   unsigned int i;
   EXECUTE_IF_SET_IN_SPARSESET (pseudos_live, i)
-    {
-      if (ignore_reg_for_conflicts != NULL_RTX
-	  && REGNO (ignore_reg_for_conflicts) == i)
-	continue;
-      SET_HARD_REG_BIT (lra_reg_info[i].conflict_hard_regs, regno);
-    }
+    SET_HARD_REG_BIT (lra_reg_info[i].conflict_hard_regs, regno);
+
+  if (! TEST_HARD_REG_BIT (hard_regs_live, regno))
+    return;
   CLEAR_HARD_REG_BIT (hard_regs_live, regno);
+  sparseset_set_bit (start_dying, regno);
   if (fixed_regs[regno] || TEST_HARD_REG_BIT (hard_regs_spilled_into, regno))
     {
       bitmap_clear_bit (bb_gen_pseudos, regno);
@@ -267,130 +310,69 @@ make_hard_regno_dead (int regno)
     }
 }
 
-/* Mark pseudo REGNO as living at program point POINT, update START_LIVING
-   and start a new live range for the pseudo corresponding to REGNO if it
-   is necessary.  */
+/* Mark pseudo REGNO as now being live and update START_LIVING.  */
 static void
-mark_pseudo_live (int regno, int point)
+mark_pseudo_live (int regno)
 {
-  lra_live_range_t p;
+  lra_assert (!HARD_REGISTER_NUM_P (regno));
+  if (sparseset_bit_p (pseudos_live, regno))
+    return;
 
-  lra_assert (regno >= FIRST_PSEUDO_REGISTER);
-  lra_assert (! sparseset_bit_p (pseudos_live, regno));
   sparseset_set_bit (pseudos_live, regno);
-
-  if ((complete_info_p || lra_get_regno_hard_regno (regno) < 0)
-      && ((p = lra_reg_info[regno].live_ranges) == NULL
-	  || (p->finish != point && p->finish + 1 != point)))
-     lra_reg_info[regno].live_ranges
-       = create_live_range (regno, point, -1, p);
   sparseset_set_bit (start_living, regno);
 }
 
-/* Mark pseudo REGNO as not living at program point POINT and update
-   START_DYING.
-   This finishes the current live range for the pseudo corresponding
-   to REGNO.  */
+/* Mark pseudo REGNO as now being dead and update START_DYING.  */
 static void
-mark_pseudo_dead (int regno, int point)
+mark_pseudo_dead (int regno)
 {
-  lra_live_range_t p;
-  int ignore_regno = -1;
-  int end_regno = -1;
+  lra_assert (!HARD_REGISTER_NUM_P (regno));
+  IOR_HARD_REG_SET (lra_reg_info[regno].conflict_hard_regs, hard_regs_live);
+  if (!sparseset_bit_p (pseudos_live, regno))
+    return;
 
-  lra_assert (regno >= FIRST_PSEUDO_REGISTER);
-  lra_assert (sparseset_bit_p (pseudos_live, regno));
   sparseset_clear_bit (pseudos_live, regno);
   sparseset_set_bit (start_dying, regno);
-
-  /* Check whether any part of IGNORE_REG_FOR_CONFLICTS already conflicts
-     with REGNO.  */
-  if (ignore_reg_for_conflicts != NULL_RTX
-      && REGNO (ignore_reg_for_conflicts) < FIRST_PSEUDO_REGISTER)
-    {
-      end_regno = END_REGNO (ignore_reg_for_conflicts);
-      int src_regno = ignore_regno = REGNO (ignore_reg_for_conflicts);
-
-      while (src_regno < end_regno)
-	{
-	  if (TEST_HARD_REG_BIT (lra_reg_info[regno].conflict_hard_regs,
-				 src_regno))
-	    {
-	      ignore_regno = end_regno = -1;
-	      break;
-	    }
-	  src_regno++;
-	}
-    }
-
-  IOR_HARD_REG_SET (lra_reg_info[regno].conflict_hard_regs, hard_regs_live);
-
-  /* If IGNORE_REG_FOR_CONFLICTS did not already conflict with REGNO, make
-     sure it still doesn't.  */
-  for (; ignore_regno < end_regno; ignore_regno++)
-    CLEAR_HARD_REG_BIT (lra_reg_info[regno].conflict_hard_regs, ignore_regno);
-
-  if (complete_info_p || lra_get_regno_hard_regno (regno) < 0)
-    {
-      p = lra_reg_info[regno].live_ranges;
-      lra_assert (p != NULL);
-      p->finish = point;
-    }
 }
 
-/* Mark register REGNO (pseudo or hard register) in MODE as live at
-   program point POINT.  Update BB_GEN_PSEUDOS.
-   Return TRUE if the liveness tracking sets were modified, or FALSE
-   if nothing changed.  */
-static bool
-mark_regno_live (int regno, machine_mode mode, int point)
+/* Mark register REGNO (pseudo or hard register) in MODE as being live
+   and update BB_GEN_PSEUDOS.  */
+static void
+mark_regno_live (int regno, machine_mode mode)
 {
   int last;
-  bool changed = false;
 
-  if (regno < FIRST_PSEUDO_REGISTER)
+  if (HARD_REGISTER_NUM_P (regno))
     {
       for (last = end_hard_regno (mode, regno); regno < last; regno++)
 	make_hard_regno_live (regno);
     }
   else
     {
-      if (! sparseset_bit_p (pseudos_live, regno))
-	{
-	  mark_pseudo_live (regno, point);
-	  changed = true;
-	}
+      mark_pseudo_live (regno);
       bitmap_set_bit (bb_gen_pseudos, regno);
     }
-  return changed;
 }
 
 
-/* Mark register REGNO in MODE as dead at program point POINT.  Update
-   BB_GEN_PSEUDOS and BB_KILLED_PSEUDOS.  Return TRUE if the liveness
-   tracking sets were modified, or FALSE if nothing changed.  */
-static bool
-mark_regno_dead (int regno, machine_mode mode, int point)
+/* Mark register REGNO (pseudo or hard register) in MODE as being dead
+   and update BB_GEN_PSEUDOS and BB_KILLED_PSEUDOS.  */
+static void
+mark_regno_dead (int regno, machine_mode mode)
 {
   int last;
-  bool changed = false;
 
-  if (regno < FIRST_PSEUDO_REGISTER)
+  if (HARD_REGISTER_NUM_P (regno))
     {
       for (last = end_hard_regno (mode, regno); regno < last; regno++)
 	make_hard_regno_dead (regno);
     }
   else
     {
-      if (sparseset_bit_p (pseudos_live, regno))
-	{
-	  mark_pseudo_dead (regno, point);
-	  changed = true;
-	}
+      mark_pseudo_dead (regno);
       bitmap_clear_bit (bb_gen_pseudos, regno);
       bitmap_set_bit (bb_killed_pseudos, regno);
     }
-  return changed;
 }
 
 
@@ -594,25 +576,39 @@ lra_setup_reload_pseudo_preferenced_hard_reg (int regno,
 
 /* Check that REGNO living through calls and setjumps, set up conflict
    regs using LAST_CALL_USED_REG_SET, and clear corresponding bits in
-   PSEUDOS_LIVE_THROUGH_CALLS and PSEUDOS_LIVE_THROUGH_SETJUMPS.  */
+   PSEUDOS_LIVE_THROUGH_CALLS and PSEUDOS_LIVE_THROUGH_SETJUMPS.
+   CALL_INSN is a call that is representative of all calls in the region
+   described by the PSEUDOS_LIVE_THROUGH_* sets, in terms of the registers
+   that it preserves and clobbers.  */
+
 static inline void
 check_pseudos_live_through_calls (int regno,
-				  HARD_REG_SET last_call_used_reg_set)
+				  HARD_REG_SET last_call_used_reg_set,
+				  rtx_insn *call_insn)
 {
   int hr;
+  rtx_insn *old_call_insn;
 
   if (! sparseset_bit_p (pseudos_live_through_calls, regno))
     return;
+
+  gcc_assert (call_insn && CALL_P (call_insn));
+  old_call_insn = lra_reg_info[regno].call_insn;
+  if (!old_call_insn
+      || (targetm.return_call_with_max_clobbers
+	  && targetm.return_call_with_max_clobbers (old_call_insn, call_insn)
+	     == call_insn))
+    lra_reg_info[regno].call_insn = call_insn;
+
   sparseset_clear_bit (pseudos_live_through_calls, regno);
   IOR_HARD_REG_SET (lra_reg_info[regno].conflict_hard_regs,
 		    last_call_used_reg_set);
 
-  for (hr = 0; hr < FIRST_PSEUDO_REGISTER; hr++)
-    if (targetm.hard_regno_call_part_clobbered (hr,
+  for (hr = 0; HARD_REGISTER_NUM_P (hr); hr++)
+    if (targetm.hard_regno_call_part_clobbered (call_insn, hr,
 						PSEUDO_REGNO_MODE (regno)))
       add_to_hard_reg_set (&lra_reg_info[regno].conflict_hard_regs,
 			   PSEUDO_REGNO_MODE (regno), hr);
-  lra_reg_info[regno].call_p = true;
   if (! sparseset_bit_p (pseudos_live_through_setjumps, regno))
     return;
   sparseset_clear_bit (pseudos_live_through_setjumps, regno);
@@ -631,6 +627,19 @@ reg_early_clobber_p (const struct lra_insn_reg *reg, int n_alt)
 	  && (n_alt == LRA_UNKNOWN_ALT
 	      || (n_alt != LRA_NON_CLOBBERED_ALT
 		  && TEST_BIT (reg->early_clobber_alts, n_alt))));
+}
+
+/* Return true if call instructions CALL1 and CALL2 use ABIs that
+   preserve the same set of registers.  */
+
+static bool
+calls_have_same_clobbers_p (rtx_insn *call1, rtx_insn *call2)
+{
+  if (!targetm.return_call_with_max_clobbers)
+    return false;
+
+  return (targetm.return_call_with_max_clobbers (call1, call2) == call1
+          && targetm.return_call_with_max_clobbers (call2, call1) == call2);
 }
 
 /* Process insns of the basic block BB to update pseudo live ranges,
@@ -653,7 +662,9 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
   rtx link, *link_loc;
   bool need_curr_point_incr;
   HARD_REG_SET last_call_used_reg_set;
-  
+  rtx_insn *call_insn = NULL;
+  rtx_insn *last_call_insn = NULL;
+
   reg_live_out = df_get_live_out (bb);
   sparseset_clear (pseudos_live);
   sparseset_clear (pseudos_live_through_calls);
@@ -662,7 +673,10 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
   REG_SET_TO_HARD_REG_SET (hard_regs_live, reg_live_out);
   AND_COMPL_HARD_REG_SET (hard_regs_live, eliminable_regset);
   EXECUTE_IF_SET_IN_BITMAP (reg_live_out, FIRST_PSEUDO_REGISTER, j, bi)
-    mark_pseudo_live (j, curr_point);
+    {
+      update_pseudo_point (j, curr_point, USE_POINT);
+      mark_pseudo_live (j);
+    }
 
   bb_gen_pseudos = &get_bb_data (bb)->gen_pseudos;
   bb_killed_pseudos = &get_bb_data (bb)->killed_pseudos;
@@ -702,7 +716,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
       set = single_set (curr_insn);
 
       if (dead_insn_p && set != NULL_RTX
-	  && REG_P (SET_DEST (set)) && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
+	  && REG_P (SET_DEST (set)) && !HARD_REGISTER_P (SET_DEST (set))
 	  && find_reg_note (curr_insn, REG_EH_REGION, NULL_RTX) == NULL_RTX
 	  && ! may_trap_p (PATTERN (curr_insn))
 	  /* Don't do premature remove of pic offset pseudo as we can
@@ -759,7 +773,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	  if (partial_subreg_p (lra_reg_info[regno].biggest_mode,
 				reg->biggest_mode))
 	    lra_reg_info[regno].biggest_mode = reg->biggest_mode;
-	  if (regno < FIRST_PSEUDO_REGISTER)
+	  if (HARD_REGISTER_NUM_P (regno))
 	    {
 	      lra_hard_reg_usage[regno] += freq;
 	      /* A hard register explicitly can be used in small mode,
@@ -775,7 +789,26 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	}
 
       call_p = CALL_P (curr_insn);
-      ignore_reg_for_conflicts = non_conflicting_reg_copy_p (curr_insn);
+
+      /* If we have a simple register copy and the source reg is live after
+	 this instruction, then remove the source reg from the live set so
+	 that it will not conflict with the destination reg.  */
+      rtx ignore_reg = non_conflicting_reg_copy_p (curr_insn);
+      if (ignore_reg != NULL_RTX)
+	{
+	  int ignore_regno = REGNO (ignore_reg);
+	  if (HARD_REGISTER_NUM_P (ignore_regno)
+	      && TEST_HARD_REG_BIT (hard_regs_live, ignore_regno))
+	    CLEAR_HARD_REG_BIT (hard_regs_live, ignore_regno);
+	  else if (!HARD_REGISTER_NUM_P (ignore_regno)
+		   && sparseset_bit_p (pseudos_live, ignore_regno))
+	    sparseset_clear_bit (pseudos_live, ignore_regno);
+	  else
+	    /* We don't need any special handling of the source reg if
+	       it is dead after this instruction.  */
+	    ignore_reg = NULL_RTX;
+	}
+
       src_regno = (set != NULL_RTX && REG_P (SET_SRC (set))
 		   ? REGNO (SET_SRC (set)) : -1);
       dst_regno = (set != NULL_RTX && REG_P (SET_DEST (set))
@@ -785,13 +818,13 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	  /* Check that source regno does not conflict with
 	     destination regno to exclude most impossible
 	     preferences.  */
-	  && (((src_regno >= FIRST_PSEUDO_REGISTER
+	  && (((!HARD_REGISTER_NUM_P (src_regno)
 		&& (! sparseset_bit_p (pseudos_live, src_regno)
-		    || (dst_regno >= FIRST_PSEUDO_REGISTER
+		    || (!HARD_REGISTER_NUM_P (dst_regno)
 			&& lra_reg_val_equal_p (src_regno,
 						lra_reg_info[dst_regno].val,
 						lra_reg_info[dst_regno].offset))))
-	       || (src_regno < FIRST_PSEUDO_REGISTER
+	       || (HARD_REGISTER_NUM_P (src_regno)
 		   && ! TEST_HARD_REG_BIT (hard_regs_live, src_regno)))
 	      /* It might be 'inheritance pseudo <- reload pseudo'.  */
 	      || (src_regno >= lra_constraint_new_regno_start
@@ -816,13 +849,13 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	    }
 	  else if (dst_regno >= lra_constraint_new_regno_start)
 	    {
-	      if ((hard_regno = src_regno) >= FIRST_PSEUDO_REGISTER)
+	      if (!HARD_REGISTER_NUM_P (hard_regno = src_regno))
 		hard_regno = reg_renumber[src_regno];
 	      regno = dst_regno;
 	    }
 	  else if (src_regno >= lra_constraint_new_regno_start)
 	    {
-	      if ((hard_regno = dst_regno) >= FIRST_PSEUDO_REGISTER)
+	      if (!HARD_REGISTER_NUM_P (hard_regno = dst_regno))
 		hard_regno = reg_renumber[dst_regno];
 	      regno = src_regno;
 	    }
@@ -833,12 +866,6 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 
       sparseset_clear (start_living);
 
-      /* Try to avoid unnecessary program point increments, this saves
-	 a lot of time in remove_some_program_points_and_update_live_ranges.
-	 We only need an increment if something becomes live or dies at this
-	 program point.  */
-      need_curr_point_incr = false;
-
       /* Mark each defined value as live.  We need to do this for
 	 unused values because they still conflict with quantities
 	 that are live at the time of the definition.  */
@@ -846,14 +873,14 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	{
 	  if (reg->type != OP_IN)
 	    {
-	      need_curr_point_incr
-		|= mark_regno_live (reg->regno, reg->biggest_mode,
-				    curr_point);
+	      update_pseudo_point (reg->regno, curr_point, USE_POINT);
+	      mark_regno_live (reg->regno, reg->biggest_mode);
 	      check_pseudos_live_through_calls (reg->regno,
-						last_call_used_reg_set);
+						last_call_used_reg_set,
+						call_insn);
 	    }
 
-	  if (reg->regno >= FIRST_PSEUDO_REGISTER)
+	  if (!HARD_REGISTER_NUM_P (reg->regno))
 	    for (hr = curr_static_id->hard_regs; hr != NULL; hr = hr->next)
 	      if (hr->clobber_high
 		  && maybe_gt (GET_MODE_SIZE (PSEUDO_REGNO_MODE (reg->regno)),
@@ -868,7 +895,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 
       if (curr_id->arg_hard_regs != NULL)
 	for (i = 0; (regno = curr_id->arg_hard_regs[i]) >= 0; i++)
-	  if (regno >= FIRST_PSEUDO_REGISTER)
+	  if (!HARD_REGISTER_NUM_P (regno))
 	    /* It is a clobber.  */
 	    make_hard_regno_live (regno - FIRST_PSEUDO_REGISTER);
 
@@ -878,26 +905,29 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 
       /* See which defined values die here.  */
       for (reg = curr_id->regs; reg != NULL; reg = reg->next)
-	if (reg->type == OP_OUT
+	if (reg->type != OP_IN
 	    && ! reg_early_clobber_p (reg, n_alt) && ! reg->subreg_p)
-	  need_curr_point_incr
-	    |= mark_regno_dead (reg->regno, reg->biggest_mode,
-				curr_point);
+	  {
+	    if (reg->type == OP_OUT)
+	      update_pseudo_point (reg->regno, curr_point, DEF_POINT);
+	    mark_regno_dead (reg->regno, reg->biggest_mode);
+	  }
 
       for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
-	if (reg->type == OP_OUT
+	if (reg->type != OP_IN
 	    && ! reg_early_clobber_p (reg, n_alt) && ! reg->subreg_p)
 	  make_hard_regno_dead (reg->regno);
 
       if (curr_id->arg_hard_regs != NULL)
 	for (i = 0; (regno = curr_id->arg_hard_regs[i]) >= 0; i++)
-	  if (regno >= FIRST_PSEUDO_REGISTER)
+	  if (!HARD_REGISTER_NUM_P (regno))
 	    /* It is a clobber.  */
 	    make_hard_regno_dead (regno - FIRST_PSEUDO_REGISTER);
 
       if (call_p)
 	{
-	  if (! flag_ipa_ra)
+	  call_insn = curr_insn;
+	  if (! flag_ipa_ra && ! targetm.return_call_with_max_clobbers)
 	    COPY_HARD_REG_SET(last_call_used_reg_set, call_used_reg_set);
 	  else
 	    {
@@ -906,18 +936,24 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 				      call_used_reg_set);
 
 	      bool flush = (! hard_reg_set_empty_p (last_call_used_reg_set)
-			    && ! hard_reg_set_equal_p (last_call_used_reg_set,
-						       this_call_used_reg_set));
+			    && ( ! hard_reg_set_equal_p (last_call_used_reg_set,
+						       this_call_used_reg_set)))
+			   || (last_call_insn && ! calls_have_same_clobbers_p
+						     (call_insn,
+						      last_call_insn));
 
 	      EXECUTE_IF_SET_IN_SPARSESET (pseudos_live, j)
 		{
 		  IOR_HARD_REG_SET (lra_reg_info[j].actual_call_used_reg_set,
 				    this_call_used_reg_set);
+
 		  if (flush)
-		    check_pseudos_live_through_calls
-		      (j, last_call_used_reg_set);
+		    check_pseudos_live_through_calls (j,
+						      last_call_used_reg_set,
+						      last_call_insn);
 		}
 	      COPY_HARD_REG_SET(last_call_used_reg_set, this_call_used_reg_set);
+	      last_call_insn = call_insn;
 	    }
 
 	  sparseset_ior (pseudos_live_through_calls,
@@ -931,50 +967,71 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	}
 
       /* Increment the current program point if we must.  */
-      if (need_curr_point_incr)
+      if (sparseset_contains_pseudos_p (unused_set)
+	  || sparseset_contains_pseudos_p (start_dying))
 	next_program_point (curr_point, freq);
+
+      /* If we removed the source reg from a simple register copy from the
+	 live set above, then add it back now so we don't accidentally add
+	 it to the start_living set below.  */
+      if (ignore_reg != NULL_RTX)
+	{
+	  int ignore_regno = REGNO (ignore_reg);
+	  if (HARD_REGISTER_NUM_P (ignore_regno))
+	    SET_HARD_REG_BIT (hard_regs_live, ignore_regno);
+	  else
+	    sparseset_set_bit (pseudos_live, ignore_regno);
+	}
 
       sparseset_clear (start_living);
 
-      need_curr_point_incr = false;
-
       /* Mark each used value as live.	*/
       for (reg = curr_id->regs; reg != NULL; reg = reg->next)
-	if (reg->type == OP_IN)
+	if (reg->type != OP_OUT)
 	  {
-	    need_curr_point_incr
-	      |= mark_regno_live (reg->regno, reg->biggest_mode,
-				  curr_point);
+	    if (reg->type == OP_IN)
+	      update_pseudo_point (reg->regno, curr_point, USE_POINT);
+	    mark_regno_live (reg->regno, reg->biggest_mode);
 	    check_pseudos_live_through_calls (reg->regno,
-					      last_call_used_reg_set);
+					      last_call_used_reg_set,
+					      call_insn);
 	  }
 
       for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
-	if (reg->type == OP_IN)
+	if (reg->type != OP_OUT)
 	  make_hard_regno_live (reg->regno);
 
       if (curr_id->arg_hard_regs != NULL)
 	/* Make argument hard registers live.  */
 	for (i = 0; (regno = curr_id->arg_hard_regs[i]) >= 0; i++)
-	  if (regno < FIRST_PSEUDO_REGISTER)
+	  if (HARD_REGISTER_NUM_P (regno))
 	    make_hard_regno_live (regno);
 
       sparseset_and_compl (dead_set, start_living, start_dying);
 
+      sparseset_clear (start_dying);
+
       /* Mark early clobber outputs dead.  */
       for (reg = curr_id->regs; reg != NULL; reg = reg->next)
-	if (reg->type == OP_OUT
+	if (reg->type != OP_IN
 	    && reg_early_clobber_p (reg, n_alt) && ! reg->subreg_p)
-	  need_curr_point_incr
-	    |= mark_regno_dead (reg->regno, reg->biggest_mode,
-				curr_point);
+	  {
+	    if (reg->type == OP_OUT)
+	      update_pseudo_point (reg->regno, curr_point, DEF_POINT);
+	    mark_regno_dead (reg->regno, reg->biggest_mode);
+
+	    /* We're done processing inputs, so make sure early clobber
+	       operands that are both inputs and outputs are still live.  */
+	    if (reg->type == OP_INOUT)
+	      mark_regno_live (reg->regno, reg->biggest_mode);
+	  }
 
       for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
-	if (reg->type == OP_OUT
+	if (reg->type != OP_IN
 	    && reg_early_clobber_p (reg, n_alt) && ! reg->subreg_p)
 	  {
 	    struct lra_insn_reg *reg2;
-	    
+
 	    /* We can have early clobbered non-operand hard reg and
 	       the same hard reg as an insn input.  Don't make hard
 	       reg dead before the insns.  */
@@ -985,7 +1042,9 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	      make_hard_regno_dead (reg->regno);
 	  }
 
-      if (need_curr_point_incr)
+      /* Increment the current program point if we must.  */
+      if (sparseset_contains_pseudos_p (dead_set)
+	  || sparseset_contains_pseudos_p (start_dying))
 	next_program_point (curr_point, freq);
 
       /* Update notes.	*/
@@ -1017,7 +1076,6 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
       EXECUTE_IF_SET_IN_SPARSESET (unused_set, j)
 	add_reg_note (curr_insn, REG_UNUSED, regno_reg_rtx[j]);
     }
-  ignore_reg_for_conflicts = NULL_RTX;
 
   if (bb_has_eh_pred (bb))
     for (j = 0; ; ++j)
@@ -1047,17 +1105,17 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	 allocate such regs in this case.  */
       if (!cfun->has_nonlocal_label
 	  && has_abnormal_call_or_eh_pred_edge_p (bb))
-	for (px = 0; px < FIRST_PSEUDO_REGISTER; px++)
+	for (px = 0; HARD_REGISTER_NUM_P (px); px++)
 	  if (call_used_regs[px]
 #ifdef REAL_PIC_OFFSET_TABLE_REGNUM
 	      /* We should create a conflict of PIC pseudo with PIC
 		 hard reg as PIC hard reg can have a wrong value after
 		 jump described by the abnormal edge.  In this case we
-		 can not allocate PIC hard reg to PIC pseudo as PIC
+		 cannot allocate PIC hard reg to PIC pseudo as PIC
 		 pseudo will also have a wrong value.  */
 	      || (px == REAL_PIC_OFFSET_TABLE_REGNUM
 		  && pic_offset_table_rtx != NULL_RTX
-		  && REGNO (pic_offset_table_rtx) >= FIRST_PSEUDO_REGISTER)
+		  && !HARD_REGISTER_P (pic_offset_table_rtx))
 #endif
 	      )
 	    make_hard_regno_live (px);
@@ -1095,17 +1153,20 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
   need_curr_point_incr = (sparseset_cardinality (pseudos_live) > 0);
 
   EXECUTE_IF_SET_IN_SPARSESET (pseudos_live, i)
-    mark_pseudo_dead (i, curr_point);
+    {
+      update_pseudo_point (i, curr_point, DEF_POINT);
+      mark_pseudo_dead (i);
+    }
 
   EXECUTE_IF_SET_IN_BITMAP (df_get_live_in (bb), FIRST_PSEUDO_REGISTER, j, bi)
     {
       if (sparseset_cardinality (pseudos_live_through_calls) == 0)
 	break;
       if (sparseset_bit_p (pseudos_live_through_calls, j))
-	check_pseudos_live_through_calls (j, last_call_used_reg_set);
+	check_pseudos_live_through_calls (j, last_call_used_reg_set, call_insn);
     }
 
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
+  for (i = 0; HARD_REGISTER_NUM_P (i); ++i)
     {
       if (!TEST_HARD_REG_BIT (hard_regs_live, i))
 	continue;
@@ -1332,12 +1393,12 @@ lra_create_live_ranges_1 (bool all_p, bool dead_insn_p)
 	 conservative because of recent transformation.  Here in this
 	 file we recalculate it again as it costs practically
 	 nothing.  */
-      if (i >= FIRST_PSEUDO_REGISTER && regno_reg_rtx[i] != NULL_RTX)
+      if (!HARD_REGISTER_NUM_P (i) && regno_reg_rtx[i] != NULL_RTX)
 	lra_reg_info[i].biggest_mode = GET_MODE (regno_reg_rtx[i]);
       else
 	lra_reg_info[i].biggest_mode = VOIDmode;
-      lra_reg_info[i].call_p = false;
-      if (i >= FIRST_PSEUDO_REGISTER
+      lra_reg_info[i].call_insn = NULL;
+      if (!HARD_REGISTER_NUM_P (i)
 	  && lra_reg_info[i].nrefs != 0)
 	{
 	  if ((hard_regno = reg_renumber[i]) >= 0)
@@ -1394,7 +1455,7 @@ lra_create_live_ranges_1 (bool all_p, bool dead_insn_p)
 	}
       /* As we did not change CFG since LRA start we can use
 	 DF-infrastructure solver to solve live data flow problem.  */
-      for (int i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
+      for (int i = 0; HARD_REGISTER_NUM_P (i); ++i)
 	{
 	  if (TEST_HARD_REG_BIT (hard_regs_spilled_into, i))
 	    bitmap_clear_bit (&all_hard_regs_bitmap, i);

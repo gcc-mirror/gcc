@@ -111,6 +111,9 @@ do {							 \
    front-end.  */
 #define TYPE_EXTRA_SUBTYPE_P(NODE) TYPE_LANG_FLAG_2 (INTEGER_TYPE_CHECK (NODE))
 
+#define TYPE_IS_EXTRA_SUBTYPE_P(NODE) \
+  (TREE_CODE (NODE) == INTEGER_TYPE && TYPE_EXTRA_SUBTYPE_P (NODE))
+
 /* Nonzero for an aggregate type if this is a by-reference type.  We also
    set this on an ENUMERAL_TYPE that is dummy.  */
 #define TYPE_BY_REFERENCE_P(NODE)				       \

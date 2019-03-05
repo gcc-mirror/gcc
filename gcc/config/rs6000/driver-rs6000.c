@@ -1,5 +1,5 @@
 /* Subroutines for the gcc driver.
-   Copyright (C) 2007-2018 Free Software Foundation, Inc.
+   Copyright (C) 2007-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -449,7 +449,7 @@ static const struct asm_name asm_names[] = {
   { "power8",	"-mpwr8" },
   { "power9",	"-mpwr9" },
   { "powerpc",	"-mppc" },
-  { "rs64a",	"-mppc" },
+  { "rs64",	"-mppc" },
   { "603",	"-m603" },
   { "603e",	"-m603" },
   { "604",	"-m604" },
@@ -459,10 +459,10 @@ static const struct asm_name asm_names[] = {
   { "970",	"-m970" },
   { "G5",	"-m970" },
   { NULL,	"\
-%{!maix64: \
-%{mpowerpc64: -mppc64} \
-%{maltivec: -m970} \
-%{!maltivec: %{!mpowerpc64: %(asm_default)}}}" },
+  %{mvsx: -mpwr6; \
+    maltivec: -m970; \
+    maix64|mpowerpc64: -mppc64; \
+    : %(asm_default)}" },
 
 #else
   { "cell",	"-mcell" },
@@ -470,13 +470,16 @@ static const struct asm_name asm_names[] = {
   { "power4",	"-mpower4" },
   { "power5",	"-mpower5" },
   { "power5+",	"-mpower5" },
-  { "power6",	"-mpower6 -maltivec" },
-  { "power6x",	"-mpower6 -maltivec" },
+  { "power6",	"-mpower6 %{!mvsx:%{!maltivec:-maltivec}}" },
+  { "power6x",	"-mpower6 %{!mvsx:%{!maltivec:-maltivec}}" },
   { "power7",	"-mpower7" },
-  { "power8",	"-mpower8" },
+  { "power8",	"%{mpower9-vector:-mpower9;:-mpower8}" },
   { "power9",	"-mpower9" },
+  { "a2",	"-ma2" },
   { "powerpc",	"-mppc" },
-  { "rs64a",	"-mppc64" },
+  { "powerpc64", "-mppc64" },
+  { "powerpc64le", "%{mpower9-vector:-mpower9;:-mpower8}" },
+  { "rs64",	"-mppc64" },
   { "401",	"-mppc" },
   { "403",	"-m403" },
   { "405",	"-m405" },
@@ -485,6 +488,8 @@ static const struct asm_name asm_names[] = {
   { "440fp",	"-m440" },
   { "464",	"-m440" },
   { "464fp",	"-m440" },
+  { "476",	"-m476" },
+  { "476fp",	"-m476" },
   { "505",	"-mppc" },
   { "601",	"-m601" },
   { "602",	"-mppc" },
@@ -498,23 +503,30 @@ static const struct asm_name asm_names[] = {
   { "740",	"-mppc" },
   { "750",	"-mppc" },
   { "G3",	"-mppc" },
-  { "7400",	"-mppc -maltivec" },
-  { "7450",	"-mppc -maltivec" },
-  { "G4",	"-mppc -maltivec" },
+  { "7400",	"-mppc %{!mvsx:%{!maltivec:-maltivec}}" },
+  { "7450",	"-mppc %{!mvsx:%{!maltivec:-maltivec}}" },
+  { "G4",	"-mppc %{!mvsx:%{!maltivec:-maltivec}}" },
   { "801",	"-mppc" },
   { "821",	"-mppc" },
   { "823",	"-mppc" },
   { "860",	"-mppc" },
-  { "970",	"-mpower4 -maltivec" },
-  { "G5",	"-mpower4 -maltivec" },
+  { "970",	"-mpower4 %{!mvsx:%{!maltivec:-maltivec}}" },
+  { "G5",	"-mpower4 %{!mvsx:%{!maltivec:-maltivec}}" },
   { "8540",	"-me500" },
   { "8548",	"-me500" },
   { "e300c2",	"-me300" },
   { "e300c3",	"-me300" },
   { "e500mc",	"-me500mc" },
+  { "e500mc64",	"-me500mc64" },
+  { "e5500",	"-me5500" },
+  { "e6500",	"-me6500" },
+  { "titan",	"-mtitan" },
   { NULL,	"\
-%{mpowerpc64*: -mppc64} \
-%{!mpowerpc64*: %(asm_default)}" },
+%{mpower9-vector: -mpower9; \
+  mpower8-vector|mcrypto|mdirect-move|mhtm: -mpower8; \
+  mvsx: -mpower7; \
+  mpowerpc64: -mppc64; \
+  : %(asm_default)}" },
 #endif
 };
 

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
    Contributed by Hartmut Penner (hpenner@de.ibm.com)
 
@@ -165,6 +165,9 @@ extern void s390_register_target_pragmas (void);
 
 /* Routines for s390-c.c */
 extern bool s390_const_operand_ok (tree, int, int, tree);
+
+/* s390-d.c routines */
+extern void s390_d_target_versions (void);
 
 /* Pass management.  */
 namespace gcc { class context; }

@@ -1,5 +1,5 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -55,7 +55,7 @@ void debug_optab_libfuncs (void);
 
 /* Add a REG_EQUAL note to the last insn in INSNS.  TARGET is being set to
    the result of operation CODE applied to OP0 (and OP1 if it is a binary
-   operation).
+   operation).  OP0_MODE is OP0's mode.
 
    If the last insn does not set TARGET, don't do anything, but return 1.
 
@@ -64,7 +64,8 @@ void debug_optab_libfuncs (void);
    try again, ensuring that TARGET is not one of the operands.  */
 
 static int
-add_equal_note (rtx_insn *insns, rtx target, enum rtx_code code, rtx op0, rtx op1)
+add_equal_note (rtx_insn *insns, rtx target, enum rtx_code code, rtx op0,
+		rtx op1, machine_mode op0_mode)
 {
   rtx_insn *last_insn;
   rtx set;
@@ -136,16 +137,16 @@ add_equal_note (rtx_insn *insns, rtx target, enum rtx_code code, rtx op0, rtx op
       case POPCOUNT:
       case PARITY:
       case BSWAP:
-	if (GET_MODE (op0) != VOIDmode && GET_MODE (target) != GET_MODE (op0))
+	if (op0_mode != VOIDmode && GET_MODE (target) != op0_mode)
 	  {
-	    note = gen_rtx_fmt_e (code, GET_MODE (op0), copy_rtx (op0));
-	    if (GET_MODE_UNIT_SIZE (GET_MODE (op0))
+	    note = gen_rtx_fmt_e (code, op0_mode, copy_rtx (op0));
+	    if (GET_MODE_UNIT_SIZE (op0_mode)
 		> GET_MODE_UNIT_SIZE (GET_MODE (target)))
 	      note = simplify_gen_unary (TRUNCATE, GET_MODE (target),
-					 note, GET_MODE (op0));
+					 note, op0_mode);
 	    else
 	      note = simplify_gen_unary (ZERO_EXTEND, GET_MODE (target),
-					 note, GET_MODE (op0));
+					 note, op0_mode);
 	    break;
 	  }
 	/* FALLTHRU */
@@ -256,6 +257,7 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
   enum insn_code icode;
   int nops = TREE_CODE_LENGTH (ops->code);
   int op;
+  bool sbool = false;
 
   oprnd0 = ops->op0;
   tmode0 = TYPE_MODE (TREE_TYPE (oprnd0));
@@ -265,6 +267,22 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
        for these ops.  */
     widen_pattern_optab
       = optab_for_tree_code (ops->code, ops->type, optab_default);
+  else if ((ops->code == VEC_UNPACK_HI_EXPR
+	    || ops->code == VEC_UNPACK_LO_EXPR)
+	   && VECTOR_BOOLEAN_TYPE_P (ops->type)
+	   && VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (oprnd0))
+	   && TYPE_MODE (ops->type) == TYPE_MODE (TREE_TYPE (oprnd0))
+	   && SCALAR_INT_MODE_P (TYPE_MODE (ops->type)))
+    {
+      /* For VEC_UNPACK_{LO,HI}_EXPR if the mode of op0 and result is
+	 the same scalar mode for VECTOR_BOOLEAN_TYPE_P vectors, use
+	 vec_unpacks_sbool_{lo,hi}_optab, so that we can pass in
+	 the pattern number of elements in the wider vector.  */
+      widen_pattern_optab
+	= (ops->code == VEC_UNPACK_HI_EXPR
+	   ? vec_unpacks_sbool_hi_optab : vec_unpacks_sbool_lo_optab);
+      sbool = true;
+    }
   else
     widen_pattern_optab
       = optab_for_tree_code (ops->code, TREE_TYPE (oprnd0), optab_default);
@@ -281,6 +299,12 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
     {
       oprnd1 = ops->op1;
       tmode1 = TYPE_MODE (TREE_TYPE (oprnd1));
+    }
+  else if (sbool)
+    {
+      nops = 2;
+      op1 = GEN_INT (TYPE_VECTOR_SUBPARTS (TREE_TYPE (oprnd0)).to_constant ());
+      tmode1 = tmode0;
     }
 
   /* The last operand is of a wider mode than the rest of the operands.  */
@@ -1104,7 +1128,7 @@ expand_binop_directly (enum insn_code icode, machine_mode mode, optab binoptab,
       if (INSN_P (pat) && NEXT_INSN (pat) != NULL_RTX
 	  && ! add_equal_note (pat, ops[0].value,
 			       optab_to_code (binoptab),
-			       ops[1].value, ops[2].value))
+			       ops[1].value, ops[2].value, mode0))
 	{
 	  delete_insns_since (last);
 	  return expand_binop (mode, binoptab, op0, op1, NULL_RTX,
@@ -1377,12 +1401,18 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       start_sequence ();
 
       /* Do the actual arithmetic.  */
+      machine_mode op0_mode = GET_MODE (op0);
+      machine_mode op1_mode = GET_MODE (op1);
+      if (op0_mode == VOIDmode)
+	op0_mode = int_mode;
+      if (op1_mode == VOIDmode)
+	op1_mode = int_mode;
       for (i = 0; i < GET_MODE_BITSIZE (int_mode) / BITS_PER_WORD; i++)
 	{
 	  rtx target_piece = operand_subword (target, i, 1, int_mode);
 	  rtx x = expand_binop (word_mode, binoptab,
-				operand_subword_force (op0, i, int_mode),
-				operand_subword_force (op1, i, int_mode),
+				operand_subword_force (op0, i, op0_mode),
+				operand_subword_force (op1, i, op1_mode),
 				target_piece, unsignedp, next_methods);
 
 	  if (x == 0)
@@ -2269,7 +2299,7 @@ expand_doubleword_clz (scalar_int_mode mode, rtx op0, rtx target)
   seq = get_insns ();
   end_sequence ();
 
-  add_equal_note (seq, target, CLZ, xop0, 0);
+  add_equal_note (seq, target, CLZ, xop0, NULL_RTX, mode);
   emit_insn (seq);
   return target;
 
@@ -2311,7 +2341,7 @@ expand_doubleword_popcount (scalar_int_mode mode, rtx op0, rtx target)
   seq = get_insns ();
   end_sequence ();
 
-  add_equal_note (seq, t, POPCOUNT, op0, 0);
+  add_equal_note (seq, t, POPCOUNT, op0, NULL_RTX, mode);
   emit_insn (seq);
   return t;
 }
@@ -2482,7 +2512,7 @@ expand_ctz (scalar_int_mode mode, rtx op0, rtx target)
   seq = get_insns ();
   end_sequence ();
 
-  add_equal_note (seq, temp, CTZ, op0, 0);
+  add_equal_note (seq, temp, CTZ, op0, NULL_RTX, mode);
   emit_insn (seq);
   return temp;
 }
@@ -2560,7 +2590,7 @@ expand_ffs (scalar_int_mode mode, rtx op0, rtx target)
   seq = get_insns ();
   end_sequence ();
 
-  add_equal_note (seq, temp, FFS, op0, 0);
+  add_equal_note (seq, temp, FFS, op0, NULL_RTX, mode);
   emit_insn (seq);
   return temp;
 
@@ -2707,7 +2737,7 @@ expand_unop_direct (machine_mode mode, optab unoptab, rtx op0, rtx target,
 	  if (INSN_P (pat) && NEXT_INSN (pat) != NULL_RTX
 	      && ! add_equal_note (pat, ops[0].value,
 				   optab_to_code (unoptab),
-				   ops[1].value, NULL_RTX))
+				   ops[1].value, NULL_RTX, mode))
 	    {
 	      delete_insns_since (last);
 	      return expand_unop (mode, unoptab, op0, NULL_RTX, unsignedp);
@@ -3559,7 +3589,8 @@ maybe_emit_unop_insn (enum insn_code icode, rtx target, rtx op0,
 
   if (INSN_P (pat) && NEXT_INSN (pat) != NULL_RTX
       && code != UNKNOWN)
-    add_equal_note (pat, ops[0].value, code, ops[1].value, NULL_RTX);
+    add_equal_note (pat, ops[0].value, code, ops[1].value, NULL_RTX,
+		    GET_MODE (op0));
 
   emit_insn (pat);
 
@@ -3867,7 +3898,7 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
 
 	  /* Must make sure the size fits the insn's mode.  */
 	  if (CONST_INT_P (size)
-	      ? INTVAL (size) >= (1 << GET_MODE_BITSIZE (cmp_mode))
+	      ? UINTVAL (size) > GET_MODE_MASK (cmp_mode)
 	      : (GET_MODE_BITSIZE (as_a <scalar_int_mode> (GET_MODE (size)))
 		 > GET_MODE_BITSIZE (cmp_mode)))
 	    continue;
@@ -3886,7 +3917,7 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
 	goto fail;
 
       /* Otherwise call a library function.  */
-      result = emit_block_comp_via_libcall (XEXP (x, 0), XEXP (y, 0), size);
+      result = emit_block_comp_via_libcall (x, y, size);
 
       x = result;
       y = const0_rtx;

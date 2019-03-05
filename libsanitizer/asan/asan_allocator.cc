@@ -82,7 +82,10 @@ struct ChunkHeader {
   // This field is used for small sizes. For large sizes it is equal to
   // SizeClassMap::kMaxSize and the actual size is stored in the
   // SecondaryAllocator's metadata.
-  u32 user_requested_size;
+  u32 user_requested_size : 29;
+  // align < 8 -> 0
+  // else      -> log2(min(align, 512)) - 2
+  u32 user_requested_alignment_log : 3;
   u32 alloc_context_id;
 };
 
@@ -129,8 +132,9 @@ struct AsanChunk: ChunkBase {
 };
 
 struct QuarantineCallback {
-  explicit QuarantineCallback(AllocatorCache *cache)
-      : cache_(cache) {
+  QuarantineCallback(AllocatorCache *cache, BufferedStackTrace *stack)
+      : cache_(cache),
+        stack_(stack) {
   }
 
   void Recycle(AsanChunk *m) {
@@ -163,7 +167,7 @@ struct QuarantineCallback {
     void *res = get_allocator().Allocate(cache_, size, 1);
     // TODO(alekseys): Consider making quarantine OOM-friendly.
     if (UNLIKELY(!res))
-      return DieOnFailure::OnOOM();
+      ReportOutOfMemory(size, stack_);
     return res;
   }
 
@@ -171,7 +175,9 @@ struct QuarantineCallback {
     get_allocator().Deallocate(cache_, p);
   }
 
-  AllocatorCache *cache_;
+ private:
+  AllocatorCache* const cache_;
+  BufferedStackTrace* const stack_;
 };
 
 typedef Quarantine<QuarantineCallback, AsanChunk> AsanQuarantine;
@@ -269,9 +275,9 @@ struct Allocator {
     atomic_store(&max_redzone, options.max_redzone, memory_order_release);
   }
 
-  void Initialize(const AllocatorOptions &options) {
+  void InitLinkerInitialized(const AllocatorOptions &options) {
     SetAllocatorMayReturnNull(options.may_return_null);
-    allocator.Init(options.release_to_os_interval_ms);
+    allocator.InitLinkerInitialized(options.release_to_os_interval_ms);
     SharedInitCode(options);
   }
 
@@ -349,6 +355,20 @@ struct Allocator {
     return Min(Max(rz_log, RZSize2Log(min_rz)), RZSize2Log(max_rz));
   }
 
+  static uptr ComputeUserRequestedAlignmentLog(uptr user_requested_alignment) {
+    if (user_requested_alignment < 8)
+      return 0;
+    if (user_requested_alignment > 512)
+      user_requested_alignment = 512;
+    return Log2(user_requested_alignment) - 2;
+  }
+
+  static uptr ComputeUserAlignment(uptr user_requested_alignment_log) {
+    if (user_requested_alignment_log == 0)
+      return 0;
+    return 1LL << (user_requested_alignment_log + 2);
+  }
+
   // We have an address between two chunks, and we want to report just one.
   AsanChunk *ChooseChunk(uptr addr, AsanChunk *left_chunk,
                          AsanChunk *right_chunk) {
@@ -378,11 +398,16 @@ struct Allocator {
                  AllocType alloc_type, bool can_fill) {
     if (UNLIKELY(!asan_inited))
       AsanInitFromRtl();
-    if (RssLimitExceeded())
-      return AsanAllocator::FailureHandler::OnOOM();
+    if (RssLimitExceeded()) {
+      if (AllocatorMayReturnNull())
+        return nullptr;
+      ReportRssLimitExceeded(stack);
+    }
     Flags &fl = *flags();
     CHECK(stack);
     const uptr min_alignment = SHADOW_GRANULARITY;
+    const uptr user_requested_alignment_log =
+        ComputeUserRequestedAlignmentLog(alignment);
     if (alignment < min_alignment)
       alignment = min_alignment;
     if (size == 0) {
@@ -410,9 +435,13 @@ struct Allocator {
     }
     CHECK(IsAligned(needed_size, min_alignment));
     if (size > kMaxAllowedMallocSize || needed_size > kMaxAllowedMallocSize) {
-      Report("WARNING: AddressSanitizer failed to allocate 0x%zx bytes\n",
-             (void*)size);
-      return AsanAllocator::FailureHandler::OnBadRequest();
+      if (AllocatorMayReturnNull()) {
+        Report("WARNING: AddressSanitizer failed to allocate 0x%zx bytes\n",
+               (void*)size);
+        return nullptr;
+      }
+      ReportAllocationSizeTooBig(size, needed_size, kMaxAllowedMallocSize,
+                                 stack);
     }
 
     AsanThread *t = GetCurrentThread();
@@ -425,8 +454,12 @@ struct Allocator {
       AllocatorCache *cache = &fallback_allocator_cache;
       allocated = allocator.Allocate(cache, needed_size, 8);
     }
-    if (!allocated)
-      return nullptr;
+    if (UNLIKELY(!allocated)) {
+      SetAllocatorOutOfMemory();
+      if (AllocatorMayReturnNull())
+        return nullptr;
+      ReportOutOfMemory(size, stack);
+    }
 
     if (*(u8 *)MEM_TO_SHADOW((uptr)allocated) == 0 && CanPoisonMemory()) {
       // Heap poisoning is enabled, but the allocator provides an unpoisoned
@@ -470,6 +503,7 @@ struct Allocator {
       meta[0] = size;
       meta[1] = chunk_beg;
     }
+    m->user_requested_alignment_log = user_requested_alignment_log;
 
     m->alloc_context_id = StackDepotPut(*stack);
 
@@ -561,18 +595,18 @@ struct Allocator {
     if (t) {
       AsanThreadLocalMallocStorage *ms = &t->malloc_storage();
       AllocatorCache *ac = GetAllocatorCache(ms);
-      quarantine.Put(GetQuarantineCache(ms), QuarantineCallback(ac), m,
-                           m->UsedSize());
+      quarantine.Put(GetQuarantineCache(ms), QuarantineCallback(ac, stack), m,
+                     m->UsedSize());
     } else {
       SpinMutexLock l(&fallback_mutex);
       AllocatorCache *ac = &fallback_allocator_cache;
-      quarantine.Put(&fallback_quarantine_cache, QuarantineCallback(ac), m,
-                           m->UsedSize());
+      quarantine.Put(&fallback_quarantine_cache, QuarantineCallback(ac, stack),
+                     m, m->UsedSize());
     }
   }
 
-  void Deallocate(void *ptr, uptr delete_size, BufferedStackTrace *stack,
-                  AllocType alloc_type) {
+  void Deallocate(void *ptr, uptr delete_size, uptr delete_alignment,
+                  BufferedStackTrace *stack, AllocType alloc_type) {
     uptr p = reinterpret_cast<uptr>(ptr);
     if (p == 0) return;
 
@@ -599,11 +633,14 @@ struct Allocator {
         ReportAllocTypeMismatch((uptr)ptr, stack, (AllocType)m->alloc_type,
                                 (AllocType)alloc_type);
       }
-    }
-
-    if (delete_size && flags()->new_delete_type_mismatch &&
-        delete_size != m->UsedSize()) {
-      ReportNewDeleteSizeMismatch(p, delete_size, stack);
+    } else {
+      if (flags()->new_delete_type_mismatch &&
+          (alloc_type == FROM_NEW || alloc_type == FROM_NEW_BR) &&
+          ((delete_size && delete_size != m->UsedSize()) ||
+           ComputeUserRequestedAlignmentLog(delete_alignment) !=
+               m->user_requested_alignment_log)) {
+        ReportNewDeleteTypeMismatch(p, delete_size, delete_alignment, stack);
+      }
     }
 
     QuarantineChunk(m, ptr, stack);
@@ -629,14 +666,17 @@ struct Allocator {
       // If realloc() races with free(), we may start copying freed memory.
       // However, we will report racy double-free later anyway.
       REAL(memcpy)(new_ptr, old_ptr, memcpy_size);
-      Deallocate(old_ptr, 0, stack, FROM_MALLOC);
+      Deallocate(old_ptr, 0, 0, stack, FROM_MALLOC);
     }
     return new_ptr;
   }
 
   void *Calloc(uptr nmemb, uptr size, BufferedStackTrace *stack) {
-    if (CheckForCallocOverflow(size, nmemb))
-      return AsanAllocator::FailureHandler::OnBadRequest();
+    if (UNLIKELY(CheckForCallocOverflow(size, nmemb))) {
+      if (AllocatorMayReturnNull())
+        return nullptr;
+      ReportCallocOverflow(nmemb, size, stack);
+    }
     void *ptr = Allocate(nmemb * size, 8, stack, FROM_MALLOC, false);
     // If the memory comes from the secondary allocator no need to clear it
     // as it comes directly from mmap.
@@ -652,9 +692,9 @@ struct Allocator {
       ReportFreeNotMalloced((uptr)ptr, stack);
   }
 
-  void CommitBack(AsanThreadLocalMallocStorage *ms) {
+  void CommitBack(AsanThreadLocalMallocStorage *ms, BufferedStackTrace *stack) {
     AllocatorCache *ac = GetAllocatorCache(ms);
-    quarantine.Drain(GetQuarantineCache(ms), QuarantineCallback(ac));
+    quarantine.Drain(GetQuarantineCache(ms), QuarantineCallback(ac, stack));
     allocator.SwallowCache(ac);
   }
 
@@ -714,6 +754,24 @@ struct Allocator {
     return AsanChunkView(m1);
   }
 
+  void Purge(BufferedStackTrace *stack) {
+    AsanThread *t = GetCurrentThread();
+    if (t) {
+      AsanThreadLocalMallocStorage *ms = &t->malloc_storage();
+      quarantine.DrainAndRecycle(GetQuarantineCache(ms),
+                                 QuarantineCallback(GetAllocatorCache(ms),
+                                                    stack));
+    }
+    {
+      SpinMutexLock l(&fallback_mutex);
+      quarantine.DrainAndRecycle(&fallback_quarantine_cache,
+                                 QuarantineCallback(&fallback_allocator_cache,
+                                                    stack));
+    }
+
+    allocator.ForceReleaseToOS();
+  }
+
   void PrintStats() {
     allocator.PrintStats();
     quarantine.PrintStats();
@@ -748,6 +806,9 @@ bool AsanChunkView::IsQuarantined() const {
 uptr AsanChunkView::Beg() const { return chunk_->Beg(); }
 uptr AsanChunkView::End() const { return Beg() + UsedSize(); }
 uptr AsanChunkView::UsedSize() const { return chunk_->UsedSize(); }
+u32 AsanChunkView::UserRequestedAlignment() const {
+  return Allocator::ComputeUserAlignment(chunk_->user_requested_alignment_log);
+}
 uptr AsanChunkView::AllocTid() const { return chunk_->alloc_tid; }
 uptr AsanChunkView::FreeTid() const { return chunk_->free_tid; }
 AllocType AsanChunkView::GetAllocType() const {
@@ -773,7 +834,7 @@ StackTrace AsanChunkView::GetFreeStack() const {
 }
 
 void InitializeAllocator(const AllocatorOptions &options) {
-  instance.Initialize(options);
+  instance.InitLinkerInitialized(options);
 }
 
 void ReInitializeAllocator(const AllocatorOptions &options) {
@@ -792,7 +853,8 @@ AsanChunkView FindHeapChunkByAllocBeg(uptr addr) {
 }
 
 void AsanThreadLocalMallocStorage::CommitBack() {
-  instance.CommitBack(this);
+  GET_STACK_TRACE_MALLOC;
+  instance.CommitBack(this, &stack);
 }
 
 void PrintInternalAllocatorStats() {
@@ -800,12 +862,12 @@ void PrintInternalAllocatorStats() {
 }
 
 void asan_free(void *ptr, BufferedStackTrace *stack, AllocType alloc_type) {
-  instance.Deallocate(ptr, 0, stack, alloc_type);
+  instance.Deallocate(ptr, 0, 0, stack, alloc_type);
 }
 
-void asan_sized_free(void *ptr, uptr size, BufferedStackTrace *stack,
-                     AllocType alloc_type) {
-  instance.Deallocate(ptr, size, stack, alloc_type);
+void asan_delete(void *ptr, uptr size, uptr alignment,
+                 BufferedStackTrace *stack, AllocType alloc_type) {
+  instance.Deallocate(ptr, size, alignment, stack, alloc_type);
 }
 
 void *asan_malloc(uptr size, BufferedStackTrace *stack) {
@@ -821,7 +883,7 @@ void *asan_realloc(void *p, uptr size, BufferedStackTrace *stack) {
     return SetErrnoOnNull(instance.Allocate(size, 8, stack, FROM_MALLOC, true));
   if (size == 0) {
     if (flags()->allocator_frees_and_returns_null_on_realloc_zero) {
-      instance.Deallocate(p, 0, stack, FROM_MALLOC);
+      instance.Deallocate(p, 0, 0, stack, FROM_MALLOC);
       return nullptr;
     }
     // Allocate a size of 1 if we shouldn't free() on Realloc to 0
@@ -839,7 +901,9 @@ void *asan_pvalloc(uptr size, BufferedStackTrace *stack) {
   uptr PageSize = GetPageSizeCached();
   if (UNLIKELY(CheckForPvallocOverflow(size, PageSize))) {
     errno = errno_ENOMEM;
-    return AsanAllocator::FailureHandler::OnBadRequest();
+    if (AllocatorMayReturnNull())
+      return nullptr;
+    ReportPvallocOverflow(size, stack);
   }
   // pvalloc(0) should allocate one page.
   size = size ? RoundUpTo(size, PageSize) : PageSize;
@@ -851,20 +915,35 @@ void *asan_memalign(uptr alignment, uptr size, BufferedStackTrace *stack,
                     AllocType alloc_type) {
   if (UNLIKELY(!IsPowerOfTwo(alignment))) {
     errno = errno_EINVAL;
-    return AsanAllocator::FailureHandler::OnBadRequest();
+    if (AllocatorMayReturnNull())
+      return nullptr;
+    ReportInvalidAllocationAlignment(alignment, stack);
   }
   return SetErrnoOnNull(
       instance.Allocate(size, alignment, stack, alloc_type, true));
 }
 
+void *asan_aligned_alloc(uptr alignment, uptr size, BufferedStackTrace *stack) {
+  if (UNLIKELY(!CheckAlignedAllocAlignmentAndSize(alignment, size))) {
+    errno = errno_EINVAL;
+    if (AllocatorMayReturnNull())
+      return nullptr;
+    ReportInvalidAlignedAllocAlignment(size, alignment, stack);
+  }
+  return SetErrnoOnNull(
+      instance.Allocate(size, alignment, stack, FROM_MALLOC, true));
+}
+
 int asan_posix_memalign(void **memptr, uptr alignment, uptr size,
                         BufferedStackTrace *stack) {
   if (UNLIKELY(!CheckPosixMemalignAlignment(alignment))) {
-    AsanAllocator::FailureHandler::OnBadRequest();
-    return errno_EINVAL;
+    if (AllocatorMayReturnNull())
+      return errno_EINVAL;
+    ReportInvalidPosixMemalignAlignment(alignment, stack);
   }
   void *ptr = instance.Allocate(size, alignment, stack, FROM_MALLOC, true);
   if (UNLIKELY(!ptr))
+    // OOM error is already taken care of by Allocate.
     return errno_ENOMEM;
   CHECK(IsAligned((uptr)ptr, alignment));
   *memptr = ptr;
@@ -1007,6 +1086,11 @@ uptr __sanitizer_get_allocated_size(const void *p) {
     ReportSanitizerGetAllocatedSizeNotOwned(ptr, &stack);
   }
   return allocated_size;
+}
+
+void __sanitizer_purge_allocator() {
+  GET_STACK_TRACE_MALLOC;
+  instance.Purge(&stack);
 }
 
 #if !SANITIZER_SUPPORTS_WEAK_HOOKS

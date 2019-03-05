@@ -1,5 +1,5 @@
 ;; Predicate definitions for Renesas H8/300.
-;; Copyright (C) 2005-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2019 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -216,7 +216,7 @@
 
 ;; Return true if OP is a valid call operand.
 
-(define_predicate "call_insn_operand"
+(define_predicate "call_expander_operand"
   (match_code "mem")
 {
   if (GET_CODE (op) == MEM)
@@ -224,9 +224,19 @@
       rtx inside = XEXP (op, 0);
       if (register_operand (inside, Pmode))
 	return 1;
-      if (CONSTANT_ADDRESS_P (inside))
+      if (SYMBOL_REF_P (inside))
 	return 1;
     }
+  return 0;
+})
+
+(define_predicate "call_insn_operand"
+  (match_code "reg,symbol_ref")
+{
+  if (register_operand (op, Pmode))
+    return 1;
+  if (SYMBOL_REF_P (op))
+    return 1;
   return 0;
 })
 
@@ -234,21 +244,17 @@
 ;; operand for a small call (4 bytes instead of 6 bytes).
 
 (define_predicate "small_call_insn_operand"
-  (match_code "mem")
+  (match_code "reg,symbol_ref")
 {
-  if (GET_CODE (op) == MEM)
-    {
-      rtx inside = XEXP (op, 0);
+  /* Register indirect is a small call.  */
+  if (register_operand (op, Pmode))
+    return 1;
 
-      /* Register indirect is a small call.  */
-      if (register_operand (inside, Pmode))
-	return 1;
+  /* A call through the function vector is a small call too.  */
+  if (GET_CODE (op) == SYMBOL_REF
+      && (SYMBOL_REF_FLAGS (op) & SYMBOL_FLAG_FUNCVEC_FUNCTION))
+    return 1;
 
-      /* A call through the function vector is a small call too.  */
-      if (GET_CODE (inside) == SYMBOL_REF
-	  && (SYMBOL_REF_FLAGS (inside) & SYMBOL_FLAG_FUNCVEC_FUNCTION))
-	return 1;
-    }
   /* Otherwise it's a large call.  */
   return 0;
 })

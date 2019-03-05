@@ -1,5 +1,5 @@
 /* Hooks for cfg representation specific functions.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <s.pop@laposte.net>
 
 This file is part of GCC.
@@ -1066,7 +1066,7 @@ can_duplicate_block_p (const_basic_block bb)
    AFTER.  */
 
 basic_block
-duplicate_block (basic_block bb, edge e, basic_block after)
+duplicate_block (basic_block bb, edge e, basic_block after, copy_bb_data *id)
 {
   edge s, n;
   basic_block new_bb;
@@ -1082,7 +1082,7 @@ duplicate_block (basic_block bb, edge e, basic_block after)
 
   gcc_checking_assert (can_duplicate_block_p (bb));
 
-  new_bb = cfg_hooks->duplicate_block (bb);
+  new_bb = cfg_hooks->duplicate_block (bb, id);
   if (after)
     move_block_after (new_bb, after);
 
@@ -1337,6 +1337,7 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
   unsigned i, j;
   basic_block bb, new_bb, dom_bb;
   edge e;
+  copy_bb_data id;
 
   /* Mark the blocks to be copied.  This is used by edge creation hooks
      to decide whether to reallocate PHI nodes capacity to avoid reallocating
@@ -1349,7 +1350,7 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
     {
       /* Duplicate.  */
       bb = bbs[i];
-      new_bb = new_bbs[i] = duplicate_block (bb, NULL, after);
+      new_bb = new_bbs[i] = duplicate_block (bb, NULL, after, &id);
       after = new_bb;
       if (bb->loop_father)
 	{
@@ -1425,11 +1426,10 @@ split_block_before_cond_jump (basic_block bb)
 
 /* Work-horse for passes.c:check_profile_consistency.
    Do book-keeping of the CFG for the profile consistency checker.
-   If AFTER_PASS is 0, do pre-pass accounting, or if AFTER_PASS is 1
-   then do post-pass accounting.  Store the counting in RECORD.  */
+   Store the counting in RECORD.  */
 
 void
-account_profile_record (struct profile_record *record, int after_pass)
+profile_record_check_consistency (profile_record *record)
 {
   basic_block bb;
   edge_iterator ei;
@@ -1445,26 +1445,49 @@ account_profile_record (struct profile_record *record, int after_pass)
 	    sum += e->probability;
 	  if (EDGE_COUNT (bb->succs)
 	      && sum.differs_from_p (profile_probability::always ()))
-	    record->num_mismatched_freq_out[after_pass]++;
+	    record->num_mismatched_freq_out++;
 	  profile_count lsum = profile_count::zero ();
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    lsum += e->count ();
 	  if (EDGE_COUNT (bb->succs) && (lsum.differs_from_p (bb->count)))
-	    record->num_mismatched_count_out[after_pass]++;
+	    record->num_mismatched_count_out++;
 	}
       if (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun)
 	  && profile_status_for_fn (cfun) != PROFILE_ABSENT)
 	{
+	  profile_probability sum = profile_probability::never ();
 	  profile_count lsum = profile_count::zero ();
 	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    lsum += e->count ();
+	    {
+	      sum += e->probability;
+	      lsum += e->count ();
+	    }
+	  if (EDGE_COUNT (bb->preds)
+	      && sum.differs_from_p (profile_probability::always ()))
+	    record->num_mismatched_freq_in++;
 	  if (lsum.differs_from_p (bb->count))
-	    record->num_mismatched_count_in[after_pass]++;
+	    record->num_mismatched_count_in++;
 	}
       if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)
 	  || bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	continue;
       gcc_assert (cfg_hooks->account_profile_record);
-      cfg_hooks->account_profile_record (bb, after_pass, record);
+      cfg_hooks->account_profile_record (bb, record);
+   }
+}
+
+/* Work-horse for passes.c:acount_profile.
+   Do book-keeping of the CFG for the profile accounting.
+   Store the counting in RECORD.  */
+
+void
+profile_record_account_profile (profile_record *record)
+{
+  basic_block bb;
+
+  FOR_ALL_BB_FN (bb, cfun)
+   {
+      gcc_assert (cfg_hooks->account_profile_record);
+      cfg_hooks->account_profile_record (bb, record);
    }
 }

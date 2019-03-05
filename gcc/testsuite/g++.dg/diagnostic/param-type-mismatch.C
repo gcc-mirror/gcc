@@ -130,18 +130,16 @@ int test_7 (int one, T two, float three);
 
 int test_7 (int first, int second, float third)
 {
-  return test_7 <const char *> (first, second, third); // { dg-error "no matching function" }
-  /* { dg-begin-multiline-output "" }
-   return test_7 <const char *> (first, second, third);
-                                                     ^
-     { dg-end-multiline-output "" } */
+  return test_7 <const char *> (first, second, third); // { dg-error "invalid conversion from 'int' to 'const char\\*'" }
   /* { dg-begin-multiline-output "" }
    return test_7 <const char *> (first, second, third);
                                         ^~~~~~
+                                        |
+                                        int
      { dg-end-multiline-output "" } */
   /* { dg-begin-multiline-output "" }
  int test_7 (int one, T two, float three);
-     ^~~~~~
+                      ~~^~~
      { dg-end-multiline-output "" } */
 }
 
@@ -225,5 +223,46 @@ int test_11 (int first, int second, float third)
                                 ^~~~~~~~~~~~~~~~~
      { dg-end-multiline-output "" } */
 }
+
+/* Bad reference.  */
+
+struct s12;
+
+extern int callee_12 (int one, s12 &second, float three); // { dg-line callee_12 }
+
+int test_12 (int first, int second, float third)
+{
+  return callee_12 (first, second, third); // { dg-error "invalid initialization of reference of " }
+  /* { dg-begin-multiline-output "" }
+   return callee_12 (first, second, third);
+                            ^~~~~~
+     { dg-end-multiline-output "" } */
+  // { dg-message "in passing argument 2 of " "" { target *-*-* } callee_12 }
+  /* { dg-begin-multiline-output "" }
+ extern int callee_12 (int one, s12 &second, float three);
+                                ~~~~~^~~~~~
+     { dg-end-multiline-output "" } */
+}
+
+/* Incomplete type.  */
+
+struct s13;
+
+extern int callee_13 (int one, s13 second, float three); // { dg-line callee_13 }
+
+int test_13 (int first, int second, float third)
+{
+  return callee_13 (first, second, third); // { dg-error "has incomplete type" }
+  /* { dg-begin-multiline-output "" }
+   return callee_13 (first, second, third);
+                            ^~~~~~
+     { dg-end-multiline-output "" } */
+  // { dg-message "declared here" "" { target *-*-* } callee_13 }
+  /* { dg-begin-multiline-output "" }
+ extern int callee_13 (int one, s13 second, float three);
+                                ~~~~^~~~~~
+     { dg-end-multiline-output "" } */
+}
+
 
 // TODO: template callsite

@@ -2,7 +2,7 @@
    MMU, using ELF at the compiler level but possibly FLT for final
    linked executables and shared libraries in some no-MMU cases, and
    possibly with a choice of libc implementations.
-   Copyright (C) 1995-2018 Free Software Foundation, Inc.
+   Copyright (C) 1995-2019 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu (hjl@lucon.org).
 
@@ -51,6 +51,19 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	builtin_assert ("system=linux");			\
 	builtin_assert ("system=unix");				\
 	builtin_assert ("system=posix");			\
+    } while (0)
+
+#define GNU_USER_TARGET_D_OS_VERSIONS()				\
+    do {							\
+	builtin_version ("linux");				\
+	if (OPTION_GLIBC)					\
+	  builtin_version ("CRuntime_Glibc");			\
+	else if (OPTION_UCLIBC)					\
+	  builtin_version ("CRuntime_UClibc");			\
+	else if (OPTION_BIONIC)					\
+	  builtin_version ("CRuntime_Bionic");			\
+	else if (OPTION_MUSL)					\
+	  builtin_version ("CRuntime_Musl");			\
     } while (0)
 
 /* Determine which dynamic linker to use depending on whether GLIBC or

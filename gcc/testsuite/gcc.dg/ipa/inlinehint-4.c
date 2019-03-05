@@ -35,5 +35,5 @@ test (int i)
     lookup (9 * i);
 }
 /* { dg-final { scan-ipa-dump "Wrapper penalty"  "inline"  } } */
-/* { dg-final { scan-ipa-dump-not "Inlined lookup_slow into lookup"  "inline"  } } */
-/* { dg-final { scan-ipa-dump "Inlined lookup into test"  "inline"  } } */
+/* { dg-final { scan-ipa-dump-not "Inlined lookup_slow/\[0-9\]* into lookup/\[0-9\]*"  "inline"  } } */
+/* { dg-final { scan-ipa-dump "Inlined lookup/\[0-9\]* into test/\[0-9\]*"  "inline"  } } */

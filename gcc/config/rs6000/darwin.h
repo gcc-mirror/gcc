@@ -1,5 +1,5 @@
 /* Target definitions for PowerPC running Darwin (Mac OS X).
-   Copyright (C) 1997-2018 Free Software Foundation, Inc.
+   Copyright (C) 1997-2019 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
    This file is part of GCC.
@@ -159,17 +159,45 @@ extern int darwin_emit_branch_islands;
 #undef  RS6000_PIC_OFFSET_TABLE_REGNUM
 #define RS6000_PIC_OFFSET_TABLE_REGNUM 31
 
-/* Pad the outgoing args area to 16 bytes instead of the usual 8.  */
+/* Darwin's stack must remain 16-byte aligned for both 32 and 64 bit
+   ABIs.  */
+
+#undef  STACK_BOUNDARY
+#define STACK_BOUNDARY 128
+
+/* Offset within stack frame to start allocating local variables at.
+   For supported Darwin versions, FRAME_GROWS_DOWNWARD is true, therefore
+   this value is the offset to the END of the first local allocated.
+
+   On the RS/6000, the frame pointer is the same as the stack pointer,
+   except for dynamic allocations.  So we start after the fixed area and
+   outgoing parameter area.
+
+   If the function uses dynamic stack space (CALLS_ALLOCA is set), that
+   space needs to be aligned to STACK_BOUNDARY, i.e. the sum of the
+   sizes of the fixed area and the parameter area must be a multiple of
+   STACK_BOUNDARY.  */
 
 #undef RS6000_STARTING_FRAME_OFFSET
 #define RS6000_STARTING_FRAME_OFFSET					\
-  (RS6000_ALIGN (crtl->outgoing_args_size, 16)				\
-   + RS6000_SAVE_AREA)
+  (cfun->calls_alloca							\
+   ? RS6000_ALIGN (crtl->outgoing_args_size + RS6000_SAVE_AREA, 16)	\
+   : (RS6000_ALIGN (crtl->outgoing_args_size, 16) + RS6000_SAVE_AREA))
+
+/* Offset from the stack pointer register to an item dynamically
+   allocated on the stack, e.g., by `alloca'.
+
+   The default value for this macro is `STACK_POINTER_OFFSET' plus the
+   length of the outgoing arguments.  The default is correct for most
+   machines.  See `function.c' for details.
+
+   This value must be a multiple of STACK_BOUNDARY (hard coded in
+   `emit-rtl.c').  */
 
 #undef STACK_DYNAMIC_OFFSET
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
-  (RS6000_ALIGN (crtl->outgoing_args_size.to_constant (), 16)		\
-   + (STACK_POINTER_OFFSET))
+  RS6000_ALIGN (crtl->outgoing_args_size.to_constant()			\
+		+ STACK_POINTER_OFFSET, 16)
 
 /* Darwin uses a function call if everything needs to be saved/restored.  */
 
@@ -314,7 +342,7 @@ extern int darwin_emit_branch_islands;
   ((CONSTANT_P (X)						\
     && reg_classes_intersect_p ((CLASS), FLOAT_REGS))		\
    ? NO_REGS							\
-   : ((GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == HIGH)	\
+   : ((SYMBOL_REF_P (X) || GET_CODE (X) == HIGH)		\
       && reg_class_subset_p (BASE_REGS, (CLASS)))		\
    ? BASE_REGS							\
    : (GET_MODE_CLASS (GET_MODE (X)) == MODE_INT			\

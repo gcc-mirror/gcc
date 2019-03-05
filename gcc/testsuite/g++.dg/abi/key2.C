@@ -14,4 +14,4 @@ class f
 } c;
 inline void f::g() {}
 int sub(void)
-{}
+{return 0;}

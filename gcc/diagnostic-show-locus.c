@@ -1,5 +1,5 @@
 /* Diagnostic subroutines for printing source-code
-   Copyright (C) 1999-2018 Free Software Foundation, Inc.
+   Copyright (C) 1999-2019 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -777,11 +777,11 @@ compatible_locations_p (location_t loc_a, location_t loc_b)
 	  /* Expand each location towards the spelling location, and
 	     recurse.  */
 	  const line_map_macro *macro_map = linemap_check_macro (map_a);
-	  source_location loc_a_toward_spelling
+	  location_t loc_a_toward_spelling
 	    = linemap_macro_map_loc_unwind_toward_spelling (line_table,
 							    macro_map,
 							    loc_a);
-	  source_location loc_b_toward_spelling
+	  location_t loc_b_toward_spelling
 	    = linemap_macro_map_loc_unwind_toward_spelling (line_table,
 							    macro_map,
 							    loc_b);
@@ -818,56 +818,6 @@ fixit_cmp (const void *p_a, const void *p_b)
   const fixit_hint * hint_b = *static_cast<const fixit_hint * const *> (p_b);
   return hint_a->get_start_loc () - hint_b->get_start_loc ();
 }
-
-/* Get the number of digits in the decimal representation
-   of VALUE.  */
-
-static int
-num_digits (int value)
-{
-  /* Perhaps simpler to use log10 for this, but doing it this way avoids
-     using floating point.  */
-  gcc_assert (value >= 0);
-
-  if (value == 0)
-    return 1;
-
-  int digits = 0;
-  while (value > 0)
-    {
-      digits++;
-      value /= 10;
-    }
-  return digits;
-}
-
-
-#if CHECKING_P
-
-/* Selftest for num_digits.  */
-
-static void
-test_num_digits ()
-{
-  ASSERT_EQ (1, num_digits (0));
-  ASSERT_EQ (1, num_digits (9));
-  ASSERT_EQ (2, num_digits (10));
-  ASSERT_EQ (2, num_digits (99));
-  ASSERT_EQ (3, num_digits (100));
-  ASSERT_EQ (3, num_digits (999));
-  ASSERT_EQ (4, num_digits (1000));
-  ASSERT_EQ (4, num_digits (9999));
-  ASSERT_EQ (5, num_digits (10000));
-  ASSERT_EQ (5, num_digits (99999));
-  ASSERT_EQ (6, num_digits (100000));
-  ASSERT_EQ (6, num_digits (999999));
-  ASSERT_EQ (7, num_digits (1000000));
-  ASSERT_EQ (7, num_digits (9999999));
-  ASSERT_EQ (8, num_digits (10000000));
-  ASSERT_EQ (8, num_digits (99999999));
-}
-
-#endif /* #if CHECKING_P */
 
 /* Implementation of class layout.  */
 
@@ -930,6 +880,9 @@ layout::layout (diagnostic_context * context,
   /* If we're showing jumps in the line-numbering, allow at least 3 chars.  */
   if (m_line_spans.length () > 1)
     m_linenum_width = MAX (m_linenum_width, 3);
+  /* If there's a minimum margin width, apply it (subtracting 1 for the space
+     after the line number.  */
+  m_linenum_width = MAX (m_linenum_width, context->min_margin_width - 1);
 
   /* Adjust m_x_offset.
      Center the primary caret to fit in max_width; all columns
@@ -1258,7 +1211,8 @@ layout::calculate_line_spans ()
       const line_span *next = &tmp_spans[i];
       gcc_assert (next->m_first_line >= current->m_first_line);
       const int merger_distance = m_show_line_numbers_p ? 1 : 0;
-      if (next->m_first_line <= current->m_last_line + 1 + merger_distance)
+      if ((linenum_arith_t)next->m_first_line
+	  <= (linenum_arith_t)current->m_last_line + 1 + merger_distance)
 	{
 	  /* We can merge them. */
 	  if (next->m_last_line > current->m_last_line)
@@ -1386,7 +1340,12 @@ layout::start_annotation_line (char margin_char) const
 {
   if (m_show_line_numbers_p)
     {
-      for (int i = 0; i < m_linenum_width; i++)
+      /* Print the margin.  If MARGIN_CHAR != ' ', then print up to 3
+	 of it, right-aligned, padded with spaces.  */
+      int i;
+      for (i = 0; i < m_linenum_width - 3; i++)
+	pp_space (m_pp);
+      for (; i < m_linenum_width; i++)
 	pp_character (m_pp, margin_char);
       pp_string (m_pp, " |");
     }
@@ -2343,8 +2302,10 @@ diagnostic_show_locus (diagnostic_context * context,
 	      context->start_span (context, exploc);
 	    }
 	}
-      linenum_type last_line = line_span->get_last_line ();
-      for (linenum_type row = line_span->get_first_line ();
+      /* Iterate over the lines within this span (using linenum_arith_t to
+	 avoid overflow with 0xffffffff causing an infinite loop).  */
+      linenum_arith_t last_line = line_span->get_last_line ();
+      for (linenum_arith_t row = line_span->get_first_line ();
 	   row <= last_line; row++)
 	layout.print_line (row);
     }
@@ -3027,12 +2988,12 @@ test_diagnostic_show_locus_fixit_lines (const line_table_case &case_)
     dc.show_line_numbers_p = true;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ ("\n"
-		  "  3 |                        y\n"
-		  "    |                        .\n"
-		  "....\n"
-		  "  6 |                         : 0.0};\n"
-		  "    |                         ^\n"
-		  "    |                         =\n",
+		  "    3 |                        y\n"
+		  "      |                        .\n"
+		  "......\n"
+		  "    6 |                         : 0.0};\n"
+		  "      |                         ^\n"
+		  "      |                         =\n",
 		  pp_formatted_text (dc.printer));
   }
 }
@@ -3523,10 +3484,10 @@ test_fixit_insert_containing_newline (const line_table_case &case_)
       dc.show_line_numbers_p = true;
       diagnostic_show_locus (&dc, &richloc, DK_ERROR);
       ASSERT_STREQ ("\n"
-		    "2 |       x = a;\n"
-		    "+ |+      break;\n"
-		    "3 |     case 'b':\n"
-		    "  |     ^~~~~~~~~\n",
+		    "    2 |       x = a;\n"
+		    "  +++ |+      break;\n"
+		    "    3 |     case 'b':\n"
+		    "      |     ^~~~~~~~~\n",
 		    pp_formatted_text (dc.printer));
     }
   }
@@ -3605,11 +3566,11 @@ test_fixit_insert_containing_newline_2 (const line_table_case &case_)
     dc.show_line_numbers_p = true;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ ("\n"
-		  "+ |+#include <stdio.h>\n"
-		  "1 | test (int ch)\n"
-		  "2 | {\n"
-		  "3 |  putchar (ch);\n"
-		  "  |  ^~~~~~~\n",
+		  "  +++ |+#include <stdio.h>\n"
+		  "    1 | test (int ch)\n"
+		  "    2 | {\n"
+		  "    3 |  putchar (ch);\n"
+		  "      |  ^~~~~~~\n",
 		  pp_formatted_text (dc.printer));
   }
 }
@@ -3734,6 +3695,7 @@ test_line_numbers_multiline_range ()
 
   test_diagnostic_context dc;
   dc.show_line_numbers_p = true;
+  dc.min_margin_width = 0;
   gcc_rich_location richloc (loc);
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   ASSERT_STREQ ("\n"
@@ -3752,7 +3714,6 @@ void
 diagnostic_show_locus_c_tests ()
 {
   test_line_span ();
-  test_num_digits ();
 
   test_layout_range_for_single_point ();
   test_layout_range_for_single_line ();

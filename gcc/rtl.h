@@ -1,5 +1,5 @@
 /* Register Transfer Language (RTL) definitions for GCC
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1629,7 +1629,7 @@ extern const char * const reg_note_name[];
    are passed to the function.
      CLOBBER expressions document the registers explicitly clobbered
    by this CALL_INSN.
-     Pseudo registers can not be mentioned in this list.  */
+     Pseudo registers cannot be mentioned in this list.  */
 #define CALL_INSN_FUNCTION_USAGE(INSN)	XEXP(INSN, 7)
 
 /* The label-number of a code-label.  The assembler label
@@ -3385,6 +3385,7 @@ extern void set_insn_deleted (rtx_insn *);
 extern rtx single_set_2 (const rtx_insn *, const_rtx);
 extern bool contains_symbol_ref_p (const_rtx);
 extern bool contains_symbolic_reference_p (const_rtx);
+extern bool contains_constant_pool_address_p (const_rtx);
 
 /* Handle the cheap and common cases inline for performance.  */
 
@@ -4045,9 +4046,24 @@ extern void expand_null_return (void);
 extern void expand_naked_return (void);
 extern void emit_jump (rtx);
 
+/* Memory operation built-ins differ by return value.  Mapping
+   of the enum values is following:
+   - RETURN_BEGIN - return destination, e.g. memcpy
+   - RETURN_END - return destination + n, e.g. mempcpy
+   - RETURN_END_MINUS_ONE - return a pointer to the terminating
+    null byte of the string, e.g. strcpy
+*/
+
+enum memop_ret
+{
+  RETURN_BEGIN,
+  RETURN_END,
+  RETURN_END_MINUS_ONE
+};
+
 /* In expr.c */
 extern rtx move_by_pieces (rtx, rtx, unsigned HOST_WIDE_INT,
-			   unsigned int, int);
+			   unsigned int, memop_ret);
 extern poly_int64 find_args_size_adjust (rtx_insn *);
 extern poly_int64 fixup_args_size_notes (rtx_insn *, rtx_insn *, poly_int64);
 
@@ -4062,6 +4078,9 @@ extern void init_lower_subreg (void);
 /* In gcse.c */
 extern bool can_copy_p (machine_mode);
 extern bool can_assign_to_reg_without_clobbers_p (rtx, machine_mode);
+extern rtx_insn *prepare_copy_insn (rtx, rtx);
+
+/* In cprop.c */
 extern rtx fis_get_condition (rtx_insn *);
 
 /* In ira.c */
@@ -4374,6 +4393,25 @@ strip_offset_and_add (rtx x, poly_int64_pod *offset)
   return x;
 }
 
+/* Return true if X is an operation that always operates on the full
+   registers for WORD_REGISTER_OPERATIONS architectures.  */
+
+inline bool
+word_register_operation_p (const_rtx x)
+{
+  switch (GET_CODE (x))
+    {
+    case ROTATE:
+    case ROTATERT:
+    case SIGN_EXTRACT:
+    case ZERO_EXTRACT:
+      return false;
+    
+    default:
+      return true;
+    }
+}
+    
 /* gtype-desc.c.  */
 extern void gt_ggc_mx (rtx &);
 extern void gt_pch_nx (rtx &);

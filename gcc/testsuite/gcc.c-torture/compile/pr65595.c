@@ -1,4 +1,4 @@
-extern void *memcpy(void *, const void *, unsigned long);
+extern void *memcpy(void *, const void *, __SIZE_TYPE__);
 struct in6_addr {
   struct {
     int u6_addr32[4];

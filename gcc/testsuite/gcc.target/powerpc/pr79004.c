@@ -1,7 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
-/* { dg-options "-mcpu=power9 -O2 -mfloat128" } */
+/* { dg-options "-mdejagnu-cpu=power9 -O2 -mfloat128" } */
 
 #include <math.h>
 

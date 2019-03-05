@@ -22,21 +22,21 @@ PROGRAM test_omp
 
 
 !$OMP PARALLEL &		! { dg-error "Unclassifiable OpenMP" }
-!$    NUM_THREADS(2)		! { dg-error "Unclassifiable|Invalid character" }
+!$    NUM_THREADS(2)
 !$OMP END PARALLEL		! { dg-error "Unexpected" }
 
 !$OMP PARALLEL &		! { dg-error "Unclassifiable OpenMP" }
-!$    & NUM_THREADS(2)		! { dg-error "Unclassifiable|Invalid character" }
-!$OMP END PARALLEL		! { dg-error "Unexpected" }
-
-!$OMP PARALLEL &		! { dg-error "Unclassifiable OpenMP" }
-!
-!$    NUM_THREADS(2)		! { dg-error "Unclassifiable|Invalid character" }
+!$    & NUM_THREADS(2)		! { dg-error "Invalid character" }
 !$OMP END PARALLEL		! { dg-error "Unexpected" }
 
 !$OMP PARALLEL &		! { dg-error "Unclassifiable OpenMP" }
 !
-!$    & NUM_THREADS(2)		! { dg-error "Unclassifiable|Invalid character" }
+!$    NUM_THREADS(2)
+!$OMP END PARALLEL		! { dg-error "Unexpected" }
+
+!$OMP PARALLEL &		! { dg-error "Unclassifiable OpenMP" }
+!
+!$    & NUM_THREADS(2)		! { dg-error "Invalid character" }
 !$OMP END PARALLEL		! { dg-error "Unexpected" }
 
 END PROGRAM

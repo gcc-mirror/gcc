@@ -1,5 +1,5 @@
 /* Definitions of various defaults for tm.h macros.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com)
 
 This file is part of GCC.
@@ -582,6 +582,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    these guesses; getting the wrong type of a given width will not
    affect C++ name mangling because in C++ these are distinct types
    not typedefs.  */
+
+#ifndef CHAR8_TYPE
+#define CHAR8_TYPE "unsigned char"
+#endif
 
 #ifdef UINT_LEAST16_TYPE
 #define CHAR16_TYPE UINT_LEAST16_TYPE

@@ -1,5 +1,5 @@
 /* Rich optional information on why an optimization wasn't possible.
-   Copyright (C) 2018 Free Software Foundation, Inc.
+   Copyright (C) 2018-2019 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -54,7 +54,7 @@ opt_problem::opt_problem (const dump_location_t &loc,
 
   /* Print the location to the "immediate" dump destinations.  */
   dump_context &dc = dump_context::get ();
-  dc.dump_loc (MSG_MISSED_OPTIMIZATION, loc);
+  dc.dump_loc (MSG_MISSED_OPTIMIZATION, loc.get_user_location ());
 
   /* Print the formatted string to this opt_problem's optinfo, dumping
      the items to the "immediate" dump destinations, and storing items

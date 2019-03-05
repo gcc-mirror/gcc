@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -215,10 +215,10 @@ namespace detail
       typedef Typelist_Chain 			      		type;
     };
 
-  template<typename Typelist_Chain>
-    struct append_<Typelist_Chain, null_type>
+  template<typename Hd, typename Tl>
+    struct append_<chain<Hd, Tl>, null_type>
     {
-      typedef Typelist_Chain 					type;
+      typedef chain<Hd, Tl>  					type;
     };
 
   template<>

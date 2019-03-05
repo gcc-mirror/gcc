@@ -1,7 +1,7 @@
 /* Operating system specific defines to be used when targeting GCC for
    hosting on Windows 32/64 via mingw-w64 runtime, using GNU tools and
    the Windows API Library.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -81,6 +81,14 @@ along with GCC; see the file COPYING3.  If not see
 #define MULTILIB_DEFAULTS { "m32" }
 #endif
 
+#undef LINK_SPEC_LARGE_ADDR_AWARE
+#if MINGW_DEFAULT_LARGE_ADDR_AWARE
+# define LINK_SPEC_LARGE_ADDR_AWARE \
+  "%{!shared:%{!mdll:%{" SPEC_32 ":--large-address-aware}}}"
+#else
+# define LINK_SPEC_LARGE_ADDR_AWARE ""
+#endif
+
 #undef LINK_SPEC
 #define LINK_SPEC SUB_LINK_SPEC " %{mwindows:--subsystem windows} \
   %{mconsole:--subsystem console} \
@@ -88,4 +96,5 @@ along with GCC; see the file COPYING3.  If not see
   %{shared: --shared} %{mdll:--dll} \
   %{static:-Bstatic} %{!static:-Bdynamic} \
   %{shared|mdll: " SUB_LINK_ENTRY " --enable-auto-image-base} \
+  " LINK_SPEC_LARGE_ADDR_AWARE "\
   %(shared_libgcc_undefs)"

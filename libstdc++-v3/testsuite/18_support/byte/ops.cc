@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2018 Free Software Foundation, Inc.
+// Copyright (C) 2017-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -218,7 +218,15 @@ constexpr bool test_to_integer(unsigned char c)
 
 static_assert( test_to_integer<int>(0) );
 static_assert( test_to_integer<int>(255) );
+static_assert( test_to_integer<signed char>(0) );
 static_assert( test_to_integer<signed char>(255) );
 static_assert( test_to_integer<unsigned>(0) );
 static_assert( test_to_integer<unsigned>(255) );
-
+#ifdef _GLIBCXX_USE_CHAR8_T
+static_assert( test_to_integer<char8_t>(0) );
+static_assert( test_to_integer<char8_t>(255) );
+#endif
+static_assert( test_to_integer<char16_t>(0) );
+static_assert( test_to_integer<char16_t>(255) );
+static_assert( test_to_integer<char32_t>(0) );
+static_assert( test_to_integer<char32_t>(255) );

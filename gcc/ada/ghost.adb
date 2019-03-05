@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2014-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,7 @@ with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
+with Sem_Ch8;  use Sem_Ch8;
 with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
 with Sem_Prag; use Sem_Prag;
@@ -64,9 +65,10 @@ package body Ghost is
    -- Local subprograms --
    -----------------------
 
-   function Ghost_Entity (N : Node_Id) return Entity_Id;
-   --  Find the entity of a reference to a Ghost entity. Return Empty if there
-   --  is no such entity.
+   function Ghost_Entity (Ref : Node_Id) return Entity_Id;
+   pragma Inline (Ghost_Entity);
+   --  Obtain the entity of a Ghost entity from reference Ref. Return Empty if
+   --  no such entity exists.
 
    procedure Install_Ghost_Mode (Mode : Ghost_Mode_Type);
    pragma Inline (Install_Ghost_Mode);
@@ -829,24 +831,18 @@ package body Ghost is
    -- Ghost_Entity --
    ------------------
 
-   function Ghost_Entity (N : Node_Id) return Entity_Id is
-      Ref : Node_Id;
+   function Ghost_Entity (Ref : Node_Id) return Entity_Id is
+      Obj_Ref : constant Node_Id := Ultimate_Prefix (Ref);
 
    begin
-      --  When the reference denotes a subcomponent, recover the related
+      --  When the reference denotes a subcomponent, recover the related whole
       --  object (SPARK RM 6.9(1)).
 
-      Ref := N;
-      while Nkind_In (Ref, N_Explicit_Dereference,
-                           N_Indexed_Component,
-                           N_Selected_Component,
-                           N_Slice)
-      loop
-         Ref := Prefix (Ref);
-      end loop;
+      if Is_Entity_Name (Obj_Ref) then
+         return Entity (Obj_Ref);
 
-      if Is_Entity_Name (Ref) then
-         return Entity (Ref);
+      --  Otherwise the reference cannot possibly denote a Ghost entity
+
       else
          return Empty;
       end if;
@@ -1181,13 +1177,50 @@ package body Ghost is
    -----------------------------------
 
    procedure Mark_And_Set_Ghost_Assignment (N : Node_Id) is
-      Id : Entity_Id;
+      Orig_Lhs : constant Node_Id := Name (N);
+      Orig_Ref : constant Node_Id := Ultimate_Prefix (Orig_Lhs);
+
+      Id  : Entity_Id;
+      Ref : Node_Id;
 
    begin
+      --  A reference to a whole Ghost object (SPARK RM 6.9(1)) appears as an
+      --  identifier. If the reference has not been analyzed yet, preanalyze a
+      --  copy of the reference to discover the nature of its entity.
+
+      if Nkind (Orig_Ref) = N_Identifier and then not Analyzed (Orig_Ref) then
+         Ref := New_Copy_Tree (Orig_Ref);
+
+         --  Alter the assignment statement by setting its left-hand side to
+         --  the copy.
+
+         Set_Name   (N, Ref);
+         Set_Parent (Ref, N);
+
+         --  Preanalysis is carried out by looking for a Ghost entity while
+         --  suppressing all possible side effects.
+
+         Find_Direct_Name
+           (N            => Ref,
+            Errors_OK    => False,
+            Marker_OK    => False,
+            Reference_OK => False);
+
+         --  Restore the original state of the assignment statement
+
+         Set_Name (N, Orig_Lhs);
+
+      --  A potential reference to a Ghost entity is already properly resolved
+      --  when the left-hand side is analyzed.
+
+      else
+         Ref := Orig_Ref;
+      end if;
+
       --  An assignment statement becomes Ghost when its target denotes a Ghost
       --  object. Install the Ghost mode of the target.
 
-      Id := Ghost_Entity (Name (N));
+      Id := Ghost_Entity (Ref);
 
       if Present (Id) then
          if Is_Checked_Ghost_Entity (Id) then
@@ -1648,8 +1681,8 @@ package body Ghost is
         or else Nkind (N) in N_Push_Pop_xxx_Label
         or else Nkind (N) in N_Raise_xxx_Error
         or else Nkind (N) in N_Representation_Clause
-        or else Nkind_In (N, N_Assignment_Statement,
-                             N_Call_Marker,
+        or else Nkind (N) in N_Statement_Other_Than_Procedure_Call
+        or else Nkind_In (N, N_Call_Marker,
                              N_Freeze_Entity,
                              N_Freeze_Generic_Entity,
                              N_Itype_Reference,

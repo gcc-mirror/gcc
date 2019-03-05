@@ -1,5 +1,5 @@
 /* Dump infrastructure for optimizations and intermediate representation.
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -47,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static dump_flags_t pflags;		      /* current dump_flags */
 
-static void dump_loc (dump_flags_t, FILE *, source_location);
+static void dump_loc (dump_flags_t, FILE *, location_t);
 
 /* Current -fopt-info output stream, if any, and flags.  */
 static FILE *alt_dump_file = NULL;
@@ -466,7 +466,7 @@ kind_as_string (dump_flags_t dump_kind)
 /* Print source location on DFILE if enabled.  */
 
 static void
-dump_loc (dump_flags_t dump_kind, FILE *dfile, source_location loc)
+dump_loc (dump_flags_t dump_kind, FILE *dfile, location_t loc)
 {
   if (dump_kind)
     {
@@ -487,7 +487,7 @@ dump_loc (dump_flags_t dump_kind, FILE *dfile, source_location loc)
 /* Print source location to PP if enabled.  */
 
 static void
-dump_loc (dump_flags_t dump_kind, pretty_printer *pp, source_location loc)
+dump_loc (dump_flags_t dump_kind, pretty_printer *pp, location_t loc)
 {
   if (dump_kind)
     {
@@ -513,6 +513,28 @@ dump_loc (dump_flags_t dump_kind, pretty_printer *pp, source_location loc)
 dump_context::~dump_context ()
 {
   delete m_pending;
+}
+
+void
+dump_context::set_json_writer (optrecord_json_writer *writer)
+{
+  delete m_json_writer;
+  m_json_writer = writer;
+}
+
+/* Perform cleanup activity for -fsave-optimization-record.
+   Currently, the file is written out here in one go, before cleaning
+   up.  */
+
+void
+dump_context::finish_any_json_writer ()
+{
+  if (!m_json_writer)
+    return;
+
+  m_json_writer->write ();
+  delete m_json_writer;
+  m_json_writer = NULL;
 }
 
 /* Update the "dumps_are_enabled" global; to be called whenever dump_file
@@ -558,24 +580,22 @@ dump_context::apply_dump_filter_p (dump_flags_t dump_kind,
    If optinfos are enabled, begin a new optinfo.  */
 
 void
-dump_context::dump_loc (dump_flags_t dump_kind, const dump_location_t &loc)
+dump_context::dump_loc (const dump_metadata_t &metadata,
+			const dump_user_location_t &loc)
 {
   end_any_optinfo ();
 
-  dump_loc_immediate (dump_kind, loc);
+  dump_loc_immediate (metadata.get_dump_flags (), loc);
 
   if (optinfo_enabled_p ())
-    {
-      optinfo &info = begin_next_optinfo (loc);
-      info.handle_dump_file_kind (dump_kind);
-    }
+    begin_next_optinfo (metadata, loc);
 }
 
 /* As dump_loc above, but without starting a new optinfo. */
 
 void
 dump_context::dump_loc_immediate (dump_flags_t dump_kind,
-				  const dump_location_t &loc)
+				  const dump_user_location_t &loc)
 {
   location_t srcloc = loc.get_location_t ();
 
@@ -610,18 +630,17 @@ make_item_for_dump_gimple_stmt (gimple *stmt, int spc, dump_flags_t dump_flags)
    EXTRA_DUMP_FLAGS on the dump streams if DUMP_KIND is enabled.  */
 
 void
-dump_context::dump_gimple_stmt (dump_flags_t dump_kind,
+dump_context::dump_gimple_stmt (const dump_metadata_t &metadata,
 				dump_flags_t extra_dump_flags,
 				gimple *gs, int spc)
 {
   optinfo_item *item
     = make_item_for_dump_gimple_stmt (gs, spc, dump_flags | extra_dump_flags);
-  emit_item (item, dump_kind);
+  emit_item (item, metadata.get_dump_flags ());
 
   if (optinfo_enabled_p ())
     {
-      optinfo &info = ensure_pending_optinfo ();
-      info.handle_dump_file_kind (dump_kind);
+      optinfo &info = ensure_pending_optinfo (metadata);
       info.add_item (item);
     }
   else
@@ -631,13 +650,13 @@ dump_context::dump_gimple_stmt (dump_flags_t dump_kind,
 /* Similar to dump_gimple_stmt, except additionally print source location.  */
 
 void
-dump_context::dump_gimple_stmt_loc (dump_flags_t dump_kind,
-				    const dump_location_t &loc,
+dump_context::dump_gimple_stmt_loc (const dump_metadata_t &metadata,
+				    const dump_user_location_t &loc,
 				    dump_flags_t extra_dump_flags,
 				    gimple *gs, int spc)
 {
-  dump_loc (dump_kind, loc);
-  dump_gimple_stmt (dump_kind, extra_dump_flags, gs, spc);
+  dump_loc (metadata, loc);
+  dump_gimple_stmt (metadata, extra_dump_flags, gs, spc);
 }
 
 /* Make an item for the given dump call, equivalent to print_gimple_expr.  */
@@ -661,18 +680,17 @@ make_item_for_dump_gimple_expr (gimple *stmt, int spc, dump_flags_t dump_flags)
    Do not terminate with a newline or semicolon.  */
 
 void
-dump_context::dump_gimple_expr (dump_flags_t dump_kind,
+dump_context::dump_gimple_expr (const dump_metadata_t &metadata,
 				dump_flags_t extra_dump_flags,
 				gimple *gs, int spc)
 {
   optinfo_item *item
     = make_item_for_dump_gimple_expr (gs, spc, dump_flags | extra_dump_flags);
-  emit_item (item, dump_kind);
+  emit_item (item, metadata.get_dump_flags ());
 
   if (optinfo_enabled_p ())
     {
-      optinfo &info = ensure_pending_optinfo ();
-      info.handle_dump_file_kind (dump_kind);
+      optinfo &info = ensure_pending_optinfo (metadata);
       info.add_item (item);
     }
   else
@@ -682,14 +700,14 @@ dump_context::dump_gimple_expr (dump_flags_t dump_kind,
 /* Similar to dump_gimple_expr, except additionally print source location.  */
 
 void
-dump_context::dump_gimple_expr_loc (dump_flags_t dump_kind,
-				    const dump_location_t &loc,
+dump_context::dump_gimple_expr_loc (const dump_metadata_t &metadata,
+				    const dump_user_location_t &loc,
 				    dump_flags_t extra_dump_flags,
 				    gimple *gs,
 				    int spc)
 {
-  dump_loc (dump_kind, loc);
-  dump_gimple_expr (dump_kind, extra_dump_flags, gs, spc);
+  dump_loc (metadata, loc);
+  dump_gimple_expr (metadata, extra_dump_flags, gs, spc);
 }
 
 /* Make an item for the given dump call, equivalent to print_generic_expr.  */
@@ -716,18 +734,17 @@ make_item_for_dump_generic_expr (tree node, dump_flags_t dump_flags)
    DUMP_KIND is enabled.  */
 
 void
-dump_context::dump_generic_expr (dump_flags_t dump_kind,
+dump_context::dump_generic_expr (const dump_metadata_t &metadata,
 				 dump_flags_t extra_dump_flags,
 				 tree t)
 {
   optinfo_item *item
     = make_item_for_dump_generic_expr (t, dump_flags | extra_dump_flags);
-  emit_item (item, dump_kind);
+  emit_item (item, metadata.get_dump_flags ());
 
   if (optinfo_enabled_p ())
     {
-      optinfo &info = ensure_pending_optinfo ();
-      info.handle_dump_file_kind (dump_kind);
+      optinfo &info = ensure_pending_optinfo (metadata);
       info.add_item (item);
     }
   else
@@ -739,13 +756,25 @@ dump_context::dump_generic_expr (dump_flags_t dump_kind,
    location.  */
 
 void
-dump_context::dump_generic_expr_loc (dump_flags_t dump_kind,
-				     const dump_location_t &loc,
+dump_context::dump_generic_expr_loc (const dump_metadata_t &metadata,
+				     const dump_user_location_t &loc,
 				     dump_flags_t extra_dump_flags,
 				     tree t)
 {
-  dump_loc (dump_kind, loc);
-  dump_generic_expr (dump_kind, extra_dump_flags, t);
+  dump_loc (metadata, loc);
+  dump_generic_expr (metadata, extra_dump_flags, t);
+}
+
+/* Make an item for the given dump call.  */
+
+static optinfo_item *
+make_item_for_dump_symtab_node (symtab_node *node)
+{
+  location_t loc = DECL_SOURCE_LOCATION (node->decl);
+  optinfo_item *item
+    = new optinfo_item (OPTINFO_ITEM_KIND_SYMTAB_NODE, loc,
+			xstrdup (node->dump_name ()));
+  return item;
 }
 
 /* dump_pretty_printer's ctor.  */
@@ -881,6 +910,8 @@ dump_pretty_printer::format_decoder_cb (pretty_printer *pp, text_info *text,
    Supported format codes (in addition to the standard pretty_printer ones)
    are:
 
+   %C: cgraph_node *:
+       Equivalent to: dump_symtab_node (MSG_*, node)
    %E: gimple *:
        Equivalent to: dump_gimple_expr (MSG_*, TDF_SLIM, stmt, 0)
    %G: gimple *:
@@ -888,7 +919,9 @@ dump_pretty_printer::format_decoder_cb (pretty_printer *pp, text_info *text,
    %T: tree:
        Equivalent to: dump_generic_expr (MSG_*, arg, TDF_SLIM).
 
-   FIXME: add symtab_node?
+   TODO: add a format code that can handle (symtab_node*) *and* both
+   subclasses (presumably means teaching -Wformat about non-virtual
+   subclasses).
 
    These format codes build optinfo_item instances, thus capturing metadata
    about the arguments being dumped, as well as the textual output.  */
@@ -901,6 +934,16 @@ dump_pretty_printer::decode_format (text_info *text, const char *spec,
      for later use (to capture metadata, rather than plain text).  */
   switch (*spec)
     {
+    case 'C':
+      {
+	cgraph_node *node = va_arg (*text->args_ptr, cgraph_node *);
+
+	/* Make an item for the node, and stash it.  */
+	optinfo_item *item = make_item_for_dump_symtab_node (node);
+	stash_item (buffer_ptr, item);
+	return true;
+      }
+
     case 'E':
       {
 	gimple *stmt = va_arg (*text->args_ptr, gimple *);
@@ -939,10 +982,10 @@ dump_pretty_printer::decode_format (text_info *text, const char *spec,
 /* Output a formatted message using FORMAT on appropriate dump streams.  */
 
 void
-dump_context::dump_printf_va (dump_flags_t dump_kind, const char *format,
+dump_context::dump_printf_va (const dump_metadata_t &metadata, const char *format,
 			      va_list *ap)
 {
-  dump_pretty_printer pp (this, dump_kind);
+  dump_pretty_printer pp (this, metadata.get_dump_flags ());
 
   text_info text;
   text.err_no = errno;
@@ -955,8 +998,7 @@ dump_context::dump_printf_va (dump_flags_t dump_kind, const char *format,
   /* Phase 3.  */
   if (optinfo_enabled_p ())
     {
-      optinfo &info = ensure_pending_optinfo ();
-      info.handle_dump_file_kind (dump_kind);
+      optinfo &info = ensure_pending_optinfo (metadata);
       pp.emit_items (&info);
     }
   else
@@ -967,12 +1009,12 @@ dump_context::dump_printf_va (dump_flags_t dump_kind, const char *format,
    dump location captured.  */
 
 void
-dump_context::dump_printf_loc_va (dump_flags_t dump_kind,
-				  const dump_location_t &loc,
+dump_context::dump_printf_loc_va (const dump_metadata_t &metadata,
+				  const dump_user_location_t &loc,
 				  const char *format, va_list *ap)
 {
-  dump_loc (dump_kind, loc);
-  dump_printf_va (dump_kind, format, ap);
+  dump_loc (metadata, loc);
+  dump_printf_va (metadata, format, ap);
 }
 
 /* Make an item for the given dump call, equivalent to print_dec.  */
@@ -1008,45 +1050,31 @@ make_item_for_dump_dec (const poly_int<N, C> &value)
 
 template<unsigned int N, typename C>
 void
-dump_context::dump_dec (dump_flags_t dump_kind, const poly_int<N, C> &value)
+dump_context::dump_dec (const dump_metadata_t &metadata, const poly_int<N, C> &value)
 {
   optinfo_item *item = make_item_for_dump_dec (value);
-  emit_item (item, dump_kind);
+  emit_item (item, metadata.get_dump_flags ());
 
   if (optinfo_enabled_p ())
     {
-      optinfo &info = ensure_pending_optinfo ();
-      info.handle_dump_file_kind (dump_kind);
+      optinfo &info = ensure_pending_optinfo (metadata);
       info.add_item (item);
     }
   else
     delete item;
 }
 
-/* Make an item for the given dump call.  */
-
-static optinfo_item *
-make_item_for_dump_symtab_node (symtab_node *node)
-{
-  location_t loc = DECL_SOURCE_LOCATION (node->decl);
-  optinfo_item *item
-    = new optinfo_item (OPTINFO_ITEM_KIND_SYMTAB_NODE, loc,
-			xstrdup (node->dump_name ()));
-  return item;
-}
-
 /* Output the name of NODE on appropriate dump streams.  */
 
 void
-dump_context::dump_symtab_node (dump_flags_t dump_kind, symtab_node *node)
+dump_context::dump_symtab_node (const dump_metadata_t &metadata, symtab_node *node)
 {
   optinfo_item *item = make_item_for_dump_symtab_node (node);
-  emit_item (item, dump_kind);
+  emit_item (item, metadata.get_dump_flags ());
 
   if (optinfo_enabled_p ())
     {
-      optinfo &info = ensure_pending_optinfo ();
-      info.handle_dump_file_kind (dump_kind);
+      optinfo &info = ensure_pending_optinfo (metadata);
       info.add_item (item);
     }
   else
@@ -1069,19 +1097,23 @@ dump_context::get_scope_depth () const
    Emit a "scope" optinfo if optinfos are enabled.  */
 
 void
-dump_context::begin_scope (const char *name, const dump_location_t &loc)
+dump_context::begin_scope (const char *name,
+			   const dump_user_location_t &user_location,
+			   const dump_impl_location_t &impl_location)
 {
   m_scope_depth++;
 
+  location_t src_loc = user_location.get_location_t ();
+
   if (dump_file && apply_dump_filter_p (MSG_NOTE, pflags))
-    ::dump_loc (MSG_NOTE, dump_file, loc.get_location_t ());
+    ::dump_loc (MSG_NOTE, dump_file, src_loc);
 
   if (alt_dump_file && apply_dump_filter_p (MSG_NOTE, alt_flags))
-    ::dump_loc (MSG_NOTE, alt_dump_file, loc.get_location_t ());
+    ::dump_loc (MSG_NOTE, alt_dump_file, src_loc);
 
   /* Support for temp_dump_context in selftests.  */
   if (m_test_pp && apply_dump_filter_p (MSG_NOTE, m_test_pp_flags))
-    ::dump_loc (MSG_NOTE, m_test_pp, loc.get_location_t ());
+    ::dump_loc (MSG_NOTE, m_test_pp, src_loc);
 
   pretty_printer pp;
   pp_printf (&pp, "=== %s ===\n", name);
@@ -1092,9 +1124,12 @@ dump_context::begin_scope (const char *name, const dump_location_t &loc)
 
   if (optinfo_enabled_p ())
     {
-      optinfo &info = begin_next_optinfo (loc);
+      optinfo &info
+	= begin_next_optinfo (dump_metadata_t (MSG_NOTE, impl_location),
+			      user_location);
       info.m_kind = OPTINFO_KIND_SCOPE;
       info.add_item (item);
+      end_any_optinfo ();
     }
   else
     delete item;
@@ -1107,17 +1142,29 @@ dump_context::end_scope ()
 {
   end_any_optinfo ();
   m_scope_depth--;
-  optimization_records_maybe_pop_dump_scope ();
+
+  if (m_json_writer)
+    m_json_writer->pop_scope ();
+}
+
+/* Should optinfo instances be created?
+   All creation of optinfos should be guarded by this predicate.
+   Return true if any optinfo destinations are active.  */
+
+bool
+dump_context::optinfo_enabled_p () const
+{
+  return (optimization_records_enabled_p ());
 }
 
 /* Return the optinfo currently being accumulated, creating one if
    necessary.  */
 
 optinfo &
-dump_context::ensure_pending_optinfo ()
+dump_context::ensure_pending_optinfo (const dump_metadata_t &metadata)
 {
   if (!m_pending)
-    return begin_next_optinfo (dump_location_t (dump_user_location_t ()));
+    return begin_next_optinfo (metadata, dump_user_location_t ());
   return *m_pending;
 }
 
@@ -1125,11 +1172,14 @@ dump_context::ensure_pending_optinfo ()
    accumulated.  */
 
 optinfo &
-dump_context::begin_next_optinfo (const dump_location_t &loc)
+dump_context::begin_next_optinfo (const dump_metadata_t &metadata,
+				  const dump_user_location_t &user_loc)
 {
   end_any_optinfo ();
   gcc_assert (m_pending == NULL);
+  dump_location_t loc (user_loc, metadata.get_impl_location ());
   m_pending = new optinfo (loc, OPTINFO_KIND_NOTE, current_pass);
+  m_pending->handle_dump_file_kind (metadata.get_dump_flags ());
   return *m_pending;
 }
 
@@ -1140,9 +1190,21 @@ void
 dump_context::end_any_optinfo ()
 {
   if (m_pending)
-    m_pending->emit ();
+    emit_optinfo (m_pending);
   delete m_pending;
   m_pending = NULL;
+}
+
+/* Emit the optinfo to all of the "non-immediate" destinations
+   (emission to "immediate" destinations is done by
+   dump_context::emit_item).  */
+
+void
+dump_context::emit_optinfo (const optinfo *info)
+{
+  /* -fsave-optimization-record.  */
+  if (m_json_writer)
+    m_json_writer->add_record (info);
 }
 
 /* Emit ITEM to all item destinations (those that don't require
@@ -1170,23 +1232,39 @@ dump_context dump_context::s_default;
 /* Implementation of dump_* API calls, calling into dump_context
    member functions.  */
 
+/* Calls to the dump_* functions do non-trivial work, so they ought
+   to be guarded by:
+     if (dump_enabled_p ())
+   Assert that they are guarded, and, if assertions are disabled,
+   bail out if the calls weren't properly guarded.  */
+
+#define VERIFY_DUMP_ENABLED_P \
+  do {					\
+    gcc_assert (dump_enabled_p ());	\
+    if (!dump_enabled_p ())		\
+      return;				\
+  } while (0)
+
 /* Dump gimple statement GS with SPC indentation spaces and
    EXTRA_DUMP_FLAGS on the dump streams if DUMP_KIND is enabled.  */
 
 void
-dump_gimple_stmt (dump_flags_t dump_kind, dump_flags_t extra_dump_flags,
+dump_gimple_stmt (const dump_metadata_t &metadata, dump_flags_t extra_dump_flags,
 		  gimple *gs, int spc)
 {
-  dump_context::get ().dump_gimple_stmt (dump_kind, extra_dump_flags, gs, spc);
+  VERIFY_DUMP_ENABLED_P;
+  dump_context::get ().dump_gimple_stmt (metadata, extra_dump_flags, gs, spc);
 }
 
 /* Similar to dump_gimple_stmt, except additionally print source location.  */
 
 void
-dump_gimple_stmt_loc (dump_flags_t dump_kind, const dump_location_t &loc,
+dump_gimple_stmt_loc (const dump_metadata_t &metadata,
+		      const dump_user_location_t &loc,
 		      dump_flags_t extra_dump_flags, gimple *gs, int spc)
 {
-  dump_context::get ().dump_gimple_stmt_loc (dump_kind, loc, extra_dump_flags,
+  VERIFY_DUMP_ENABLED_P;
+  dump_context::get ().dump_gimple_stmt_loc (metadata, loc, extra_dump_flags,
 					     gs, spc);
 }
 
@@ -1195,19 +1273,23 @@ dump_gimple_stmt_loc (dump_flags_t dump_kind, const dump_location_t &loc,
    Do not terminate with a newline or semicolon.  */
 
 void
-dump_gimple_expr (dump_flags_t dump_kind, dump_flags_t extra_dump_flags,
+dump_gimple_expr (const dump_metadata_t &metadata,
+		  dump_flags_t extra_dump_flags,
 		  gimple *gs, int spc)
 {
-  dump_context::get ().dump_gimple_expr (dump_kind, extra_dump_flags, gs, spc);
+  VERIFY_DUMP_ENABLED_P;
+  dump_context::get ().dump_gimple_expr (metadata, extra_dump_flags, gs, spc);
 }
 
 /* Similar to dump_gimple_expr, except additionally print source location.  */
 
 void
-dump_gimple_expr_loc (dump_flags_t dump_kind, const dump_location_t &loc,
+dump_gimple_expr_loc (const dump_metadata_t &metadata,
+		      const dump_user_location_t &loc,
 		      dump_flags_t extra_dump_flags, gimple *gs, int spc)
 {
-  dump_context::get ().dump_gimple_expr_loc (dump_kind, loc, extra_dump_flags,
+  VERIFY_DUMP_ENABLED_P;
+  dump_context::get ().dump_gimple_expr_loc (metadata, loc, extra_dump_flags,
 					     gs, spc);
 }
 
@@ -1215,31 +1297,35 @@ dump_gimple_expr_loc (dump_flags_t dump_kind, const dump_location_t &loc,
    DUMP_KIND is enabled.  */
 
 void
-dump_generic_expr (dump_flags_t dump_kind, dump_flags_t extra_dump_flags,
+dump_generic_expr (const dump_metadata_t &metadata, dump_flags_t extra_dump_flags,
 		   tree t)
 {
-  dump_context::get ().dump_generic_expr (dump_kind, extra_dump_flags, t);
+  VERIFY_DUMP_ENABLED_P;
+  dump_context::get ().dump_generic_expr (metadata, extra_dump_flags, t);
 }
 
 /* Similar to dump_generic_expr, except additionally print the source
    location.  */
 
 void
-dump_generic_expr_loc (dump_flags_t dump_kind, const dump_location_t &loc,
+dump_generic_expr_loc (const dump_metadata_t &metadata,
+		       const dump_user_location_t &loc,
 		       dump_flags_t extra_dump_flags, tree t)
 {
-  dump_context::get ().dump_generic_expr_loc (dump_kind, loc, extra_dump_flags,
+  VERIFY_DUMP_ENABLED_P;
+  dump_context::get ().dump_generic_expr_loc (metadata, loc, extra_dump_flags,
 					      t);
 }
 
 /* Output a formatted message using FORMAT on appropriate dump streams.  */
 
 void
-dump_printf (dump_flags_t dump_kind, const char *format, ...)
+dump_printf (const dump_metadata_t &metadata, const char *format, ...)
 {
+  VERIFY_DUMP_ENABLED_P;
   va_list ap;
   va_start (ap, format);
-  dump_context::get ().dump_printf_va (dump_kind, format, &ap);
+  dump_context::get ().dump_printf_va (metadata, format, &ap);
   va_end (ap);
 }
 
@@ -1247,12 +1333,14 @@ dump_printf (dump_flags_t dump_kind, const char *format, ...)
    dump location captured.  */
 
 void
-dump_printf_loc (dump_flags_t dump_kind, const dump_location_t &loc,
+dump_printf_loc (const dump_metadata_t &metadata,
+		 const dump_user_location_t &loc,
 		 const char *format, ...)
 {
+  VERIFY_DUMP_ENABLED_P;
   va_list ap;
   va_start (ap, format);
-  dump_context::get ().dump_printf_loc_va (dump_kind, loc, format, &ap);
+  dump_context::get ().dump_printf_loc_va (metadata, loc, format, &ap);
   va_end (ap);
 }
 
@@ -1260,20 +1348,22 @@ dump_printf_loc (dump_flags_t dump_kind, const dump_location_t &loc,
 
 template<unsigned int N, typename C>
 void
-dump_dec (dump_flags_t dump_kind, const poly_int<N, C> &value)
+dump_dec (const dump_metadata_t &metadata, const poly_int<N, C> &value)
 {
-  dump_context::get ().dump_dec (dump_kind, value);
+  VERIFY_DUMP_ENABLED_P;
+  dump_context::get ().dump_dec (metadata, value);
 }
 
-template void dump_dec (dump_flags_t, const poly_uint16 &);
-template void dump_dec (dump_flags_t, const poly_int64 &);
-template void dump_dec (dump_flags_t, const poly_uint64 &);
-template void dump_dec (dump_flags_t, const poly_offset_int &);
-template void dump_dec (dump_flags_t, const poly_widest_int &);
+template void dump_dec (const dump_metadata_t &metadata, const poly_uint16 &);
+template void dump_dec (const dump_metadata_t &metadata, const poly_int64 &);
+template void dump_dec (const dump_metadata_t &metadata, const poly_uint64 &);
+template void dump_dec (const dump_metadata_t &metadata, const poly_offset_int &);
+template void dump_dec (const dump_metadata_t &metadata, const poly_widest_int &);
 
 void
 dump_dec (dump_flags_t dump_kind, const poly_wide_int &value, signop sgn)
 {
+  VERIFY_DUMP_ENABLED_P;
   if (dump_file
       && dump_context::get ().apply_dump_filter_p (dump_kind, pflags))
     print_dec (value, dump_file, sgn);
@@ -1288,6 +1378,7 @@ dump_dec (dump_flags_t dump_kind, const poly_wide_int &value, signop sgn)
 void
 dump_hex (dump_flags_t dump_kind, const poly_wide_int &value)
 {
+  VERIFY_DUMP_ENABLED_P;
   if (dump_file
       && dump_context::get ().apply_dump_filter_p (dump_kind, pflags))
     print_hex (value, dump_file);
@@ -1309,9 +1400,10 @@ dumpfile_ensure_any_optinfo_are_flushed ()
 /* Output the name of NODE on appropriate dump streams.  */
 
 void
-dump_symtab_node (dump_flags_t dump_kind, symtab_node *node)
+dump_symtab_node (const dump_metadata_t &metadata, symtab_node *node)
 {
-  dump_context::get ().dump_symtab_node (dump_kind, node);
+  VERIFY_DUMP_ENABLED_P;
+  dump_context::get ().dump_symtab_node (metadata, node);
 }
 
 /* Get the current dump scope-nesting depth.
@@ -1330,9 +1422,11 @@ get_dump_scope_depth ()
    Increment the scope depth.  */
 
 void
-dump_begin_scope (const char *name, const dump_location_t &loc)
+dump_begin_scope (const char *name,
+		  const dump_user_location_t &user_location,
+		  const dump_impl_location_t &impl_location)
 {
-  dump_context::get ().begin_scope (name, loc);
+  dump_context::get ().begin_scope (name, user_location, impl_location);
 }
 
 /* Pop a nested dump scope.  */
@@ -1821,10 +1915,9 @@ opt_info_switch_p_1 (const char *arg, dump_flags_t *flags,
       end_ptr = strchr (ptr, '-');
       eq_ptr = strchr (ptr, '=');
 
-      if (eq_ptr && !end_ptr)
+      if (eq_ptr && (!end_ptr || eq_ptr < end_ptr))
         end_ptr = eq_ptr;
-
-      if (!end_ptr)
+      else if (!end_ptr)
 	end_ptr = ptr + strlen (ptr);
       length = end_ptr - ptr;
 
@@ -1965,7 +2058,8 @@ temp_dump_context::temp_dump_context (bool forcibly_enable_optinfo,
   m_saved (&dump_context ().get ())
 {
   dump_context::s_current = &m_context;
-  m_context.m_forcibly_enable_optinfo = forcibly_enable_optinfo;
+  if (forcibly_enable_optinfo)
+    m_context.set_json_writer (new optrecord_json_writer ());
   /* Conditionally enable the test dump, so that we can verify both the
      dump_enabled_p and the !dump_enabled_p cases in selftests.  */
   if (forcibly_enable_dumping)
@@ -1981,6 +2075,8 @@ temp_dump_context::temp_dump_context (bool forcibly_enable_optinfo,
 
 temp_dump_context::~temp_dump_context ()
 {
+  m_context.set_json_writer (NULL);
+
   dump_context::s_current = m_saved;
 
   dump_context::get ().refresh_dumps_are_enabled ();
@@ -1994,6 +2090,36 @@ temp_dump_context::get_dumped_text ()
   return pp_formatted_text (&m_pp);
 }
 
+/* Verify that IMPL_LOC is within EXPECTED_FILE at EXPECTED_LINE,
+   from EXPECTED_FUNCTION, using LOC for the location of any failure,
+   provided that the build compiler is sufficiently recent.  */
+
+static void
+assert_impl_location_eq (const location &loc ATTRIBUTE_UNUSED,
+			 const dump_impl_location_t &impl_loc ATTRIBUTE_UNUSED,
+			 const char *expected_file ATTRIBUTE_UNUSED,
+			 int expected_line ATTRIBUTE_UNUSED,
+			 const char *expected_function ATTRIBUTE_UNUSED)
+{
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
+  ASSERT_STR_CONTAINS_AT (loc, impl_loc.m_file, expected_file);
+  ASSERT_EQ_AT (loc, impl_loc.m_line, expected_line);
+  ASSERT_STR_CONTAINS_AT (loc, impl_loc.m_function, expected_function);
+#endif
+}
+
+/* Verify that IMPL_LOC is within EXPECTED_FILE at EXPECTED_LINE,
+   from EXPECTED_FUNCTION, provided that the build compiler is
+   sufficiently recent.  */
+
+#define ASSERT_IMPL_LOCATION_EQ(IMPL_LOC, EXPECTED_FILE, EXPECTED_LINE, \
+				EXPECTED_FUNCTION)			\
+  SELFTEST_BEGIN_STMT							\
+    assert_impl_location_eq (SELFTEST_LOCATION, IMPL_LOC,		\
+			     EXPECTED_FILE, EXPECTED_LINE,		\
+			     EXPECTED_FUNCTION);			\
+  SELFTEST_END_STMT
+
 /* Verify that the dump_location_t constructors capture the source location
    at which they were called (provided that the build compiler is sufficiently
    recent).  */
@@ -2001,31 +2127,29 @@ temp_dump_context::get_dumped_text ()
 static void
 test_impl_location ()
 {
-#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
   /* Default ctor.  */
   {
     dump_location_t loc;
     const int expected_line = __LINE__ - 1;
-    ASSERT_STR_CONTAINS (loc.get_impl_location ().m_file, "dumpfile.c");
-    ASSERT_EQ (loc.get_impl_location ().m_line, expected_line);
+    ASSERT_IMPL_LOCATION_EQ (loc.get_impl_location (),
+			     "dumpfile.c", expected_line, "test_impl_location");
   }
 
   /* Constructing from a gimple.  */
   {
     dump_location_t loc ((gimple *)NULL);
     const int expected_line = __LINE__ - 1;
-    ASSERT_STR_CONTAINS (loc.get_impl_location ().m_file, "dumpfile.c");
-    ASSERT_EQ (loc.get_impl_location ().m_line, expected_line);
+    ASSERT_IMPL_LOCATION_EQ (loc.get_impl_location (),
+			     "dumpfile.c", expected_line, "test_impl_location");
   }
 
   /* Constructing from an rtx_insn.  */
   {
     dump_location_t loc ((rtx_insn *)NULL);
     const int expected_line = __LINE__ - 1;
-    ASSERT_STR_CONTAINS (loc.get_impl_location ().m_file, "dumpfile.c");
-    ASSERT_EQ (loc.get_impl_location ().m_line, expected_line);
+    ASSERT_IMPL_LOCATION_EQ (loc.get_impl_location (),
+			     "dumpfile.c", expected_line, "test_impl_location");
   }
-#endif
 }
 
 /* Verify that the text dumped so far in CONTEXT equals
@@ -2067,18 +2191,26 @@ test_capture_of_dump_calls (const line_table_case &case_)
   linemap_add (line_table, LC_ENTER, false, "test.txt", 0);
   linemap_line_start (line_table, 5, 100);
   linemap_add (line_table, LC_LEAVE, false, NULL, 0);
-  location_t where = linemap_position_for_column (line_table, 10);
-  if (where > LINE_MAP_MAX_LOCATION_WITH_COLS)
+  location_t decl_loc = linemap_position_for_column (line_table, 8);
+  location_t stmt_loc = linemap_position_for_column (line_table, 10);
+  if (stmt_loc > LINE_MAP_MAX_LOCATION_WITH_COLS)
     return;
 
-  dump_location_t loc = dump_location_t::from_location_t (where);
+  dump_user_location_t loc = dump_user_location_t::from_location_t (stmt_loc);
 
   gimple *stmt = gimple_build_return (NULL);
-  gimple_set_location (stmt, where);
+  gimple_set_location (stmt, stmt_loc);
 
-  tree test_decl = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+  tree test_decl = build_decl (decl_loc, FUNCTION_DECL,
 			       get_identifier ("test_decl"),
-			       integer_type_node);
+			       build_function_type_list (void_type_node,
+							 NULL_TREE));
+
+  symbol_table_test tmp_symtab;
+
+  cgraph_node *node = cgraph_node::get_create (test_decl);
+  gcc_assert (node);
+
   /* Run all tests twice, with and then without optinfo enabled, to ensure
      that immediate destinations vs optinfo-based destinations both
      work, independently of each other, with no leaks.  */
@@ -2091,6 +2223,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	temp_dump_context tmp (with_optinfo, true,
 			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_printf (MSG_NOTE, "int: %i str: %s", 42, "foo");
+	const int expected_impl_line = __LINE__ - 1;
 
 	ASSERT_DUMPED_TEXT_EQ (tmp, "int: 42 str: foo");
 	if (with_optinfo)
@@ -2100,6 +2233,9 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
 	    ASSERT_EQ (info->num_items (), 1);
 	    ASSERT_IS_TEXT (info->get_item (0), "int: 42 str: foo");
+	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
+				     "dumpfile.c", expected_impl_line,
+				     "test_capture_of_dump_calls");
 	  }
       }
 
@@ -2108,6 +2244,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	temp_dump_context tmp (with_optinfo, true,
 			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_printf (MSG_NOTE, "tree: %T", integer_zero_node);
+	const int expected_impl_line = __LINE__ - 1;
 
 	ASSERT_DUMPED_TEXT_EQ (tmp, "tree: 0");
 	if (with_optinfo)
@@ -2118,6 +2255,9 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_EQ (info->num_items (), 2);
 	    ASSERT_IS_TEXT (info->get_item (0), "tree: ");
 	    ASSERT_IS_TREE (info->get_item (1), UNKNOWN_LOCATION, "0");
+	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
+				     "dumpfile.c", expected_impl_line,
+				     "test_capture_of_dump_calls");
 	  }
       }
 
@@ -2126,6 +2266,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	temp_dump_context tmp (with_optinfo, true,
 			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_printf (MSG_NOTE, "gimple: %E", stmt);
+	const int expected_impl_line = __LINE__ - 1;
 
 	ASSERT_DUMPED_TEXT_EQ (tmp, "gimple: return;");
 	if (with_optinfo)
@@ -2135,7 +2276,10 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
 	    ASSERT_EQ (info->num_items (), 2);
 	    ASSERT_IS_TEXT (info->get_item (0), "gimple: ");
-	    ASSERT_IS_GIMPLE (info->get_item (1), where, "return;");
+	    ASSERT_IS_GIMPLE (info->get_item (1), stmt_loc, "return;");
+	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
+				     "dumpfile.c", expected_impl_line,
+				     "test_capture_of_dump_calls");
 	  }
       }
 
@@ -2144,6 +2288,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	temp_dump_context tmp (with_optinfo, true,
 			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_printf (MSG_NOTE, "gimple: %G", stmt);
+	const int expected_impl_line = __LINE__ - 1;
 
 	ASSERT_DUMPED_TEXT_EQ (tmp, "gimple: return;\n");
 	if (with_optinfo)
@@ -2153,7 +2298,32 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
 	    ASSERT_EQ (info->num_items (), 2);
 	    ASSERT_IS_TEXT (info->get_item (0), "gimple: ");
-	    ASSERT_IS_GIMPLE (info->get_item (1), where, "return;\n");
+	    ASSERT_IS_GIMPLE (info->get_item (1), stmt_loc, "return;\n");
+	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
+				     "dumpfile.c", expected_impl_line,
+				     "test_capture_of_dump_calls");
+	  }
+      }
+
+      /* Test of dump_printf with %C.  */
+      {
+	temp_dump_context tmp (with_optinfo, true,
+			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
+	dump_printf (MSG_NOTE, "node: %C", node);
+	const int expected_impl_line = __LINE__ - 1;
+
+	ASSERT_DUMPED_TEXT_EQ (tmp, "node: test_decl/0");
+	if (with_optinfo)
+	  {
+	    optinfo *info = tmp.get_pending_optinfo ();
+	    ASSERT_TRUE (info != NULL);
+	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->num_items (), 2);
+	    ASSERT_IS_TEXT (info->get_item (0), "node: ");
+	    ASSERT_IS_SYMTAB_NODE (info->get_item (1), decl_loc, "test_decl/0");
+	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
+				     "dumpfile.c", expected_impl_line,
+				     "test_capture_of_dump_calls");
 	  }
       }
 
@@ -2184,9 +2354,12 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_IS_TEXT (info->get_item (2), " and ");
 	    ASSERT_IS_TREE (info->get_item (3), UNKNOWN_LOCATION, "test_decl");
 	    ASSERT_IS_TEXT (info->get_item (4), " 42 consecutive ");
-	    ASSERT_IS_GIMPLE (info->get_item (5), where, "return;");
-	    ASSERT_IS_GIMPLE (info->get_item (6), where, "return;");
+	    ASSERT_IS_GIMPLE (info->get_item (5), stmt_loc, "return;");
+	    ASSERT_IS_GIMPLE (info->get_item (6), stmt_loc, "return;");
 	    ASSERT_IS_TEXT (info->get_item (7), " after\n");
+	    /* We don't ASSERT_IMPL_LOCATION_EQ here, to avoid having to
+	       enforce at which exact line the multiline dump_printf_loc
+	       occurred.  */
 	  }
       }
 
@@ -2195,6 +2368,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	temp_dump_context tmp (with_optinfo, true,
 			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_printf_loc (MSG_NOTE, loc, "test of tree: ");
+	const int expected_impl_line = __LINE__ - 1;
 	dump_generic_expr (MSG_NOTE, TDF_SLIM, integer_zero_node);
 
 	ASSERT_DUMPED_TEXT_EQ (tmp, "test.txt:5:10: note: test of tree: 0");
@@ -2202,11 +2376,14 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	  {
 	    optinfo *info = tmp.get_pending_optinfo ();
 	    ASSERT_TRUE (info != NULL);
-	    ASSERT_EQ (info->get_location_t (), where);
+	    ASSERT_EQ (info->get_location_t (), stmt_loc);
 	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
 	    ASSERT_EQ (info->num_items (), 2);
 	    ASSERT_IS_TEXT (info->get_item (0), "test of tree: ");
 	    ASSERT_IS_TREE (info->get_item (1), UNKNOWN_LOCATION, "0");
+	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
+				     "dumpfile.c", expected_impl_line,
+				     "test_capture_of_dump_calls");
 	  }
       }
 
@@ -2215,16 +2392,20 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	temp_dump_context tmp (with_optinfo, true,
 			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_generic_expr_loc (MSG_NOTE, loc, TDF_SLIM, integer_one_node);
+	const int expected_impl_line = __LINE__ - 1;
 
 	ASSERT_DUMPED_TEXT_EQ (tmp, "test.txt:5:10: note: 1");
 	if (with_optinfo)
 	  {
 	    optinfo *info = tmp.get_pending_optinfo ();
 	    ASSERT_TRUE (info != NULL);
-	    ASSERT_EQ (info->get_location_t (), where);
+	    ASSERT_EQ (info->get_location_t (), stmt_loc);
 	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
 	    ASSERT_EQ (info->num_items (), 1);
 	    ASSERT_IS_TREE (info->get_item (0), UNKNOWN_LOCATION, "1");
+	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
+				     "dumpfile.c", expected_impl_line,
+				     "test_capture_of_dump_calls");
 	  }
       }
 
@@ -2235,6 +2416,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	  temp_dump_context tmp (with_optinfo, true,
 				 MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	  dump_gimple_stmt_loc (MSG_NOTE, loc, TDF_SLIM, stmt, 2);
+	  const int expected_impl_line = __LINE__ - 1;
 
 	  ASSERT_DUMPED_TEXT_EQ (tmp, "test.txt:5:10: note: return;\n");
 	  if (with_optinfo)
@@ -2242,7 +2424,10 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	      optinfo *info = tmp.get_pending_optinfo ();
 	      ASSERT_TRUE (info != NULL);
 	      ASSERT_EQ (info->num_items (), 1);
-	      ASSERT_IS_GIMPLE (info->get_item (0), where, "return;\n");
+	      ASSERT_IS_GIMPLE (info->get_item (0), stmt_loc, "return;\n");
+	      ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
+				       "dumpfile.c", expected_impl_line,
+				       "test_capture_of_dump_calls");
 	    }
 	}
 
@@ -2251,6 +2436,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	  temp_dump_context tmp (with_optinfo, true,
 				 MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 2);
+	  const int expected_impl_line = __LINE__ - 1;
 
 	  ASSERT_DUMPED_TEXT_EQ (tmp, "return;\n");
 	  if (with_optinfo)
@@ -2258,7 +2444,10 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	      optinfo *info = tmp.get_pending_optinfo ();
 	      ASSERT_TRUE (info != NULL);
 	      ASSERT_EQ (info->num_items (), 1);
-	      ASSERT_IS_GIMPLE (info->get_item (0), where, "return;\n");
+	      ASSERT_IS_GIMPLE (info->get_item (0), stmt_loc, "return;\n");
+	      ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
+				       "dumpfile.c", expected_impl_line,
+				       "test_capture_of_dump_calls");
 	    }
 	}
 
@@ -2267,6 +2456,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	  temp_dump_context tmp (with_optinfo, true,
 				 MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	  dump_gimple_expr_loc (MSG_NOTE, loc, TDF_SLIM, stmt, 2);
+	  const int expected_impl_line = __LINE__ - 1;
 
 	  ASSERT_DUMPED_TEXT_EQ (tmp, "test.txt:5:10: note: return;");
 	  if (with_optinfo)
@@ -2274,7 +2464,10 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	      optinfo *info = tmp.get_pending_optinfo ();
 	      ASSERT_TRUE (info != NULL);
 	      ASSERT_EQ (info->num_items (), 1);
-	      ASSERT_IS_GIMPLE (info->get_item (0), where, "return;");
+	      ASSERT_IS_GIMPLE (info->get_item (0), stmt_loc, "return;");
+	      ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
+				       "dumpfile.c", expected_impl_line,
+				       "test_capture_of_dump_calls");
 	    }
 	}
 
@@ -2283,6 +2476,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	  temp_dump_context tmp (with_optinfo, true,
 				 MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	  dump_gimple_expr (MSG_NOTE, TDF_SLIM, stmt, 2);
+	  const int expected_impl_line = __LINE__ - 1;
 
 	  ASSERT_DUMPED_TEXT_EQ (tmp, "return;");
 	  if (with_optinfo)
@@ -2290,9 +2484,33 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	      optinfo *info = tmp.get_pending_optinfo ();
 	      ASSERT_TRUE (info != NULL);
 	      ASSERT_EQ (info->num_items (), 1);
-	      ASSERT_IS_GIMPLE (info->get_item (0), where, "return;");
+	      ASSERT_IS_GIMPLE (info->get_item (0), stmt_loc, "return;");
+	      ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
+				       "dumpfile.c", expected_impl_line,
+				       "test_capture_of_dump_calls");
 	    }
 	}
+      }
+
+      /* symtab_node.  */
+      {
+	temp_dump_context tmp (with_optinfo, true,
+			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
+	dump_symtab_node (MSG_NOTE, node);
+	const int expected_impl_line = __LINE__ - 1;
+
+	ASSERT_DUMPED_TEXT_EQ (tmp, "test_decl/0");
+	if (with_optinfo)
+	  {
+	    optinfo *info = tmp.get_pending_optinfo ();
+	    ASSERT_TRUE (info != NULL);
+	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->num_items (), 1);
+	    ASSERT_IS_SYMTAB_NODE (info->get_item (0), decl_loc, "test_decl/0");
+	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
+				     "dumpfile.c", expected_impl_line,
+				     "test_capture_of_dump_calls");
+	  }
       }
 
       /* poly_int.  */
@@ -2300,6 +2518,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	temp_dump_context tmp (with_optinfo, true,
 			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_dec (MSG_NOTE, poly_int64 (42));
+	const int expected_impl_line = __LINE__ - 1;
 
 	ASSERT_DUMPED_TEXT_EQ (tmp, "42");
 	if (with_optinfo)
@@ -2308,6 +2527,9 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_TRUE (info != NULL);
 	    ASSERT_EQ (info->num_items (), 1);
 	    ASSERT_IS_TEXT (info->get_item (0), "42");
+	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
+				     "dumpfile.c", expected_impl_line,
+				     "test_capture_of_dump_calls");
 	  }
       }
 
@@ -2344,6 +2566,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    dump_printf_loc (MSG_NOTE, stmt, "msg 6\n");
 	  }
 	  dump_printf_loc (MSG_NOTE, stmt, "msg 7\n");
+	  const int expected_impl_line = __LINE__ - 1;
 
 	  switch (dump_filter & MSG_ALL_PRIORITIES)
 	    {
@@ -2395,6 +2618,9 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	      ASSERT_TRUE (info != NULL);
 	      ASSERT_EQ (info->num_items (), 1);
 	      ASSERT_IS_TEXT (info->get_item (0), "msg 7\n");
+	      ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
+				       "dumpfile.c", expected_impl_line,
+				       "test_capture_of_dump_calls");
 	    }
 	}
     }
@@ -2444,6 +2670,20 @@ test_capture_of_dump_calls (const line_table_case &case_)
   }
 }
 
+static void
+test_pr87025 ()
+{
+  dump_user_location_t loc
+    = dump_user_location_t::from_location_t (UNKNOWN_LOCATION);
+
+  temp_dump_context tmp (true, true,
+			 MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
+  {
+    AUTO_DUMP_SCOPE ("outer scope", loc);
+    dump_printf (MSG_NOTE, "msg1\n");
+  }
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -2451,6 +2691,7 @@ dumpfile_c_tests ()
 {
   test_impl_location ();
   for_each_line_table_case (test_capture_of_dump_calls);
+  test_pr87025 ();
 }
 
 } // namespace selftest

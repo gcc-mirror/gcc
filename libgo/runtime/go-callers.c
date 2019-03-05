@@ -16,7 +16,7 @@
    older versions of glibc when a SIGPROF signal arrives while
    collecting a backtrace.  */
 
-static uint32 runtime_in_callers;
+uint32 __go_runtime_in_callers;
 
 /* Argument passed to callback function.  */
 
@@ -185,7 +185,7 @@ bool alreadyInCallers(void)
 bool
 alreadyInCallers()
 {
-  return runtime_atomicload(&runtime_in_callers) > 0;
+  return runtime_atomicload(&__go_runtime_in_callers) > 0;
 }
 
 /* Gather caller PC's.  */
@@ -202,10 +202,10 @@ runtime_callers (int32 skip, Location *locbuf, int32 m, bool keep_thunks)
   data.index = 0;
   data.max = m;
   data.keep_thunks = keep_thunks;
+  runtime_xadd (&__go_runtime_in_callers, 1);
   state = __go_get_backtrace_state ();
-  runtime_xadd (&runtime_in_callers, 1);
   backtrace_full (state, 0, callback, error_callback, &data);
-  runtime_xadd (&runtime_in_callers, -1);
+  runtime_xadd (&__go_runtime_in_callers, -1);
 
   /* For some reason GCC sometimes loses the name of a thunk function
      at the top of the stack.  If we are skipping thunks, skip that
@@ -236,11 +236,11 @@ runtime_callers (int32 skip, Location *locbuf, int32 m, bool keep_thunks)
   return data.index;
 }
 
-int Callers (int, struct __go_open_array)
+intgo Callers (intgo, struct __go_open_array)
   __asm__ (GOSYM_PREFIX "runtime.Callers");
 
-int
-Callers (int skip, struct __go_open_array pc)
+intgo
+Callers (intgo skip, struct __go_open_array pc)
 {
   Location *locbuf;
   int ret;

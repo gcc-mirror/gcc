@@ -1,6 +1,6 @@
 // class template array -*- C++ -*-
 
-// Copyright (C) 2004-2018 Free Software Foundation, Inc.
+// Copyright (C) 2004-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -119,7 +119,7 @@ namespace tr1
       size_type 
       max_size() const { return _Nm; }
 
-      bool 
+      _GLIBCXX_NODISCARD bool 
       empty() const { return size() == 0; }
 
       // Element access.

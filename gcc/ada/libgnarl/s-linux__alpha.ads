@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 2009-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -87,6 +87,7 @@ package System.Linux is
    SIGKILL    : constant := 9; --  kill (cannot be caught or ignored)
    SIGBUS     : constant := 10; --  bus error
    SIGSEGV    : constant := 11; --  segmentation violation
+   SIGSYS     : constant := 12; --  bad system call
    SIGPIPE    : constant := 13; --  write on a pipe with no one to read it
    SIGALRM    : constant := 14; --  alarm clock
    SIGTERM    : constant := 15; --  software termination signal from kill
@@ -109,9 +110,9 @@ package System.Linux is
    SIGUSR1    : constant := 30; --  user defined signal 1
    SIGUSR2    : constant := 31; --  user defined signal 2
 
-   SIGLTHRRES : constant := 32; --  GNU/LinuxThreads restart signal
-   SIGLTHRCAN : constant := 33; --  GNU/LinuxThreads cancel signal
-   SIGLTHRDBG : constant := 34; --  GNU/LinuxThreads debugger signal
+   SIG32      : constant := 32; --  glibc internal signal
+   SIG33      : constant := 33; --  glibc internal signal
+   SIG34      : constant := 34; --  glibc internal signal
 
    SIGADAABORT : constant := SIGABRT;
    --  Change this if you want to use another signal for task abort.

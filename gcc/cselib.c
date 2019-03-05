@@ -1,5 +1,5 @@
 /* Common subexpression elimination library for GNU compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2619,6 +2619,7 @@ cselib_record_sets (rtx_insn *insn)
 	  && cselib_record_sets_hook
 	  && REG_P (dest)
 	  && HARD_REGISTER_P (dest)
+	  && sets[i].src_elt
 	  && is_a <scalar_int_mode> (GET_MODE (dest), &mode)
 	  && n_sets + n_strict_low_parts < MAX_SETS)
 	{
@@ -2769,7 +2770,7 @@ cselib_process_insn (rtx_insn *insn)
 	if (call_used_regs[i]
 	    || (REG_VALUES (i) && REG_VALUES (i)->elt
 		&& (targetm.hard_regno_call_part_clobbered
-		    (i, GET_MODE (REG_VALUES (i)->elt->val_rtx)))))
+		    (insn, i, GET_MODE (REG_VALUES (i)->elt->val_rtx)))))
 	  cselib_invalidate_regno (i, reg_raw_mode[i]);
 
       /* Since it is not clear how cselib is going to be used, be

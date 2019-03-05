@@ -1,5 +1,5 @@
 /* Read and annotate call graph profile from the auto profile data file.
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
    Contributed by Dehao Chen (dehao@google.com)
 
 This file is part of GCC.
@@ -100,6 +100,23 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace autofdo
 {
+
+/* Intermediate edge info used when propagating AutoFDO profile information.
+   We can't edge->count() directly since it's computed from edge's probability
+   while probability is yet not decided during propagation.  */
+#define AFDO_EINFO(e)                     ((struct edge_info *) e->aux)
+class edge_info
+{
+public:
+  edge_info () : count_ (profile_count::zero ().afdo ()), annotated_ (false) {}
+  bool is_annotated () const { return annotated_; }
+  void set_annotated () { annotated_ = true; }
+  profile_count get_count () const { return count_; }
+  void set_count (profile_count count) { count_ = count; }
+private:
+  profile_count count_;
+  bool annotated_;
+};
 
 /* Represent a source location: (function_decl, lineno).  */
 typedef std::pair<tree, unsigned> decl_lineno;
@@ -470,7 +487,7 @@ string_table::get_index_by_decl (tree decl) const
   ret = get_index (lang_hooks.dwarf_name (decl, 0));
   if (ret != -1)
     return ret;
-  if (DECL_ABSTRACT_ORIGIN (decl) && DECL_ABSTRACT_ORIGIN (decl) != decl)
+  if (DECL_FROM_INLINE (decl))
     return get_index_by_decl (DECL_ABSTRACT_ORIGIN (decl));
 
   return -1;
@@ -537,7 +554,7 @@ function_instance::get_function_instance_by_decl (unsigned lineno,
       if (ret != callsites.end ())
         return ret->second;
     }
-  if (DECL_ABSTRACT_ORIGIN (decl))
+  if (DECL_FROM_INLINE (decl))
     return get_function_instance_by_decl (lineno, DECL_ABSTRACT_ORIGIN (decl));
 
   return NULL;
@@ -970,16 +987,10 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
   if (map.size () == 0)
     return;
   gcall *stmt = dyn_cast <gcall *> (gs);
-  if ((!stmt) || gimple_call_fndecl (stmt) != NULL_TREE)
+  if (!stmt
+      || gimple_call_internal_p (stmt)
+      || gimple_call_fndecl (stmt) != NULL_TREE)
     return;
-
-  callee = gimple_call_fn (stmt);
-
-  histogram_value hist = gimple_alloc_histogram_value (
-      cfun, HIST_TYPE_INDIR_CALL, stmt, callee);
-  hist->n_counters = 3;
-  hist->hvalue.counters = XNEWVEC (gcov_type, hist->n_counters);
-  gimple_add_histogram_value (cfun, stmt, hist);
 
   gcov_type total = 0;
   icall_target_map::const_iterator max_iter = map.end ();
@@ -991,9 +1002,20 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
       if (max_iter == map.end () || max_iter->second < iter->second)
         max_iter = iter;
     }
+  struct cgraph_node *direct_call = cgraph_node::get_for_asmname (
+      get_identifier (afdo_string_table->get_name (max_iter->first)));
+  if (direct_call == NULL || !direct_call->profile_id)
+    return;
 
-  hist->hvalue.counters[0]
-      = (unsigned long long)afdo_string_table->get_name (max_iter->first);
+  callee = gimple_call_fn (stmt);
+
+  histogram_value hist = gimple_alloc_histogram_value (
+      cfun, HIST_TYPE_INDIR_CALL, stmt, callee);
+  hist->n_counters = 3;
+  hist->hvalue.counters = XNEWVEC (gcov_type, hist->n_counters);
+  gimple_add_histogram_value (cfun, stmt, hist);
+
+  hist->hvalue.counters[0] = direct_call->profile_id;
   hist->hvalue.counters[1] = max_iter->second;
   hist->hvalue.counters[2] = total;
 
@@ -1002,8 +1024,6 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
 
   struct cgraph_edge *indirect_edge
       = cgraph_node::get (current_function_decl)->get_edge (stmt);
-  struct cgraph_node *direct_call = cgraph_node::get_for_asmname (
-      get_identifier ((const char *) hist->hvalue.counters[0]));
 
   if (dump_file)
     {
@@ -1065,18 +1085,6 @@ static void
 set_bb_annotated (basic_block bb, bb_set *annotated)
 {
   annotated->insert (bb);
-}
-
-static bool
-is_edge_annotated (const edge e, const edge_set &annotated)
-{
-  return annotated.find (e) != annotated.end ();
-}
-
-static void
-set_edge_annotated (edge e, edge_set *annotated)
-{
-  annotated->insert (e);
 }
 
 /* For a given BB, set its execution count. Attach value profile if a stmt
@@ -1188,12 +1196,11 @@ afdo_find_equiv_class (bb_set *annotated_bb)
    edges' counts are known, then the basic block's unknown count can also be
    calculated.
    IS_SUCC is true if out edges of a basic blocks are examined.
-   Update ANNOTATED_BB and ANNOTATED_EDGE accordingly.
+   Update ANNOTATED_BB accordingly.
    Return TRUE if any basic block/edge count is changed.  */
 
 static bool
-afdo_propagate_edge (bool is_succ, bb_set *annotated_bb,
-                     edge_set *annotated_edge)
+afdo_propagate_edge (bool is_succ, bb_set *annotated_bb)
 {
   basic_block bb;
   bool changed = false;
@@ -1206,30 +1213,30 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb,
     profile_count total_known_count = profile_count::zero ().afdo ();
 
     FOR_EACH_EDGE (e, ei, is_succ ? bb->succs : bb->preds)
-      if (!is_edge_annotated (e, *annotated_edge))
-	num_unknown_edge++, unknown_edge = e;
-      else
-	total_known_count += e->count ();
-
-    if (num_unknown_edge == 0)
       {
-        if (total_known_count > bb->count)
-          {
-            bb->count = total_known_count;
-            changed = true;
-          }
-        if (!is_bb_annotated (bb, *annotated_bb))
-          {
-            set_bb_annotated (bb, annotated_bb);
-            changed = true;
-          }
+	gcc_assert (AFDO_EINFO (e) != NULL);
+	if (! AFDO_EINFO (e)->is_annotated ())
+	  num_unknown_edge++, unknown_edge = e;
+	else
+	  total_known_count += AFDO_EINFO (e)->get_count ();
+      }
+
+    /* Be careful not to annotate block with no successor in special cases.  */
+    if (num_unknown_edge == 0 && total_known_count > bb->count)
+      {
+	bb->count = total_known_count;
+	if (!is_bb_annotated (bb, *annotated_bb))
+	  set_bb_annotated (bb, annotated_bb);
+	changed = true;
       }
     else if (num_unknown_edge == 1 && is_bb_annotated (bb, *annotated_bb))
       {
-        unknown_edge->probability
-	  = total_known_count.probability_in (bb->count);
-        set_edge_annotated (unknown_edge, annotated_edge);
-        changed = true;
+	if (bb->count > total_known_count)
+	  AFDO_EINFO (unknown_edge)->set_count (bb->count - total_known_count);
+	else
+	  AFDO_EINFO (unknown_edge)->set_count (profile_count::zero().afdo ());
+	AFDO_EINFO (unknown_edge)->set_annotated ();
+	changed = true;
       }
   }
   return changed;
@@ -1265,11 +1272,10 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb,
        goto BB3
 
    In this case, we need to propagate through PHI to determine the edge
-   count of BB1->BB.t1, BB.t1->BB.t2.
-   Update ANNOTATED_EDGE accordingly.  */
+   count of BB1->BB.t1, BB.t1->BB.t2.  */
 
 static void
-afdo_propagate_circuit (const bb_set &annotated_bb, edge_set *annotated_edge)
+afdo_propagate_circuit (const bb_set &annotated_bb)
 {
   basic_block bb;
   FOR_ALL_BB_FN (bb, cfun)
@@ -1308,7 +1314,7 @@ afdo_propagate_circuit (const bb_set &annotated_bb, edge_set *annotated_edge)
       bool check_value_one = (((integer_onep (cmp_rhs))
                                ^ (gimple_cond_code (cmp_stmt) == EQ_EXPR))
                               ^ ((e->flags & EDGE_TRUE_VALUE) != 0));
-      if (!is_edge_annotated (e, *annotated_edge))
+      if (! AFDO_EINFO (e)->is_annotated ())
         continue;
       for (i = 0; i < gimple_phi_num_args (phi_stmt); i++)
         {
@@ -1322,18 +1328,18 @@ afdo_propagate_circuit (const bb_set &annotated_bb, edge_set *annotated_edge)
             continue;
           total++;
           only_one = ep;
-          if (!e->probability.initialized_p ()
-	      && !is_edge_annotated (ep, *annotated_edge))
-            {
-              ep->probability = profile_probability::never ().afdo ();
-              set_edge_annotated (ep, annotated_edge);
-            }
-        }
-      if (total == 1 && !is_edge_annotated (only_one, *annotated_edge))
-        {
-          only_one->probability = e->probability;
-          set_edge_annotated (only_one, annotated_edge);
-        }
+          if (! (AFDO_EINFO (e)->get_count ()).nonzero_p ()
+	      && ! AFDO_EINFO (ep)->is_annotated ())
+	    {
+	      AFDO_EINFO (ep)->set_count (profile_count::zero ().afdo ());
+	      AFDO_EINFO (ep)->set_annotated ();
+	    }
+	}
+      if (total == 1 && ! AFDO_EINFO (only_one)->is_annotated ())
+	{
+	  AFDO_EINFO (only_one)->set_count (AFDO_EINFO (e)->get_count ());
+	  AFDO_EINFO (only_one)->set_annotated ();
+	}
     }
   }
 }
@@ -1342,7 +1348,7 @@ afdo_propagate_circuit (const bb_set &annotated_bb, edge_set *annotated_edge)
    graph. We do the propagation iteratively until stablize.  */
 
 static void
-afdo_propagate (bb_set *annotated_bb, edge_set *annotated_edge)
+afdo_propagate (bb_set *annotated_bb)
 {
   basic_block bb;
   bool changed = true;
@@ -1359,11 +1365,11 @@ afdo_propagate (bb_set *annotated_bb, edge_set *annotated_edge)
     {
       changed = false;
 
-      if (afdo_propagate_edge (true, annotated_bb, annotated_edge))
+      if (afdo_propagate_edge (true, annotated_bb))
         changed = true;
-      if (afdo_propagate_edge (false, annotated_bb, annotated_edge))
+      if (afdo_propagate_edge (false, annotated_bb))
         changed = true;
-      afdo_propagate_circuit (*annotated_bb, annotated_edge);
+      afdo_propagate_circuit (*annotated_bb);
     }
 }
 
@@ -1371,52 +1377,59 @@ afdo_propagate (bb_set *annotated_bb, edge_set *annotated_edge)
    probabilities.  */
 
 static void
-afdo_calculate_branch_prob (bb_set *annotated_bb, edge_set *annotated_edge)
+afdo_calculate_branch_prob (bb_set *annotated_bb)
 {
+  edge e;
+  edge_iterator ei;
   basic_block bb;
-  bool has_sample = false;
-
-  FOR_EACH_BB_FN (bb, cfun)
-  {
-    if (bb->count > profile_count::zero ())
-      {
-	has_sample = true;
-	break;
-      }
-  }
-
-  if (!has_sample)
-    return;
 
   calculate_dominance_info (CDI_POST_DOMINATORS);
   calculate_dominance_info (CDI_DOMINATORS);
   loop_optimizer_init (0);
 
+  FOR_ALL_BB_FN (bb, cfun)
+    {
+      gcc_assert (bb->aux == NULL);
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	{
+	  gcc_assert (e->aux == NULL);
+	  e->aux = new edge_info ();
+	}
+    }
+
   afdo_find_equiv_class (annotated_bb);
-  afdo_propagate (annotated_bb, annotated_edge);
+  afdo_propagate (annotated_bb);
 
   FOR_EACH_BB_FN (bb, cfun)
   {
-    edge e;
-    edge_iterator ei;
     int num_unknown_succ = 0;
-    profile_count total_count = profile_count::zero ();
+    profile_count total_count = profile_count::zero ().afdo ();
 
     FOR_EACH_EDGE (e, ei, bb->succs)
     {
-      if (!is_edge_annotated (e, *annotated_edge))
+      gcc_assert (AFDO_EINFO (e) != NULL);
+      if (! AFDO_EINFO (e)->is_annotated ())
         num_unknown_succ++;
       else
-        total_count += e->count ();
+        total_count += AFDO_EINFO (e)->get_count ();
     }
     if (num_unknown_succ == 0 && total_count > profile_count::zero ())
       {
-        FOR_EACH_EDGE (e, ei, bb->succs)
-          e->probability = e->count ().probability_in (total_count);
+	FOR_EACH_EDGE (e, ei, bb->succs)
+	  e->probability
+	    = AFDO_EINFO (e)->get_count ().probability_in (total_count);
       }
   }
   FOR_ALL_BB_FN (bb, cfun)
-    bb->aux = NULL;
+    {
+      bb->aux = NULL;
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (AFDO_EINFO (e) != NULL)
+	  {
+	    delete AFDO_EINFO (e);
+	    e->aux = NULL;
+	  }
+    }
 
   loop_optimizer_finalize ();
   free_dominance_info (CDI_DOMINATORS);
@@ -1496,7 +1509,6 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
 {
   basic_block bb;
   bb_set annotated_bb;
-  edge_set annotated_edge;
   const function_instance *s
       = afdo_source_profile->get_function_instance_by_decl (
           current_function_decl);
@@ -1507,24 +1519,19 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
      = profile_count::from_gcov_type (s->head_count ()).afdo ();
   ENTRY_BLOCK_PTR_FOR_FN (cfun)->count
      = profile_count::from_gcov_type (s->head_count ()).afdo ();
+  EXIT_BLOCK_PTR_FOR_FN (cfun)->count = profile_count::zero ().afdo ();
   profile_count max_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
 
   FOR_EACH_BB_FN (bb, cfun)
-  {
-    edge e;
-    edge_iterator ei;
-
-    /* As autoFDO uses sampling approach, we have to assume that all
-       counters are zero when not seen by autoFDO.  */
-    bb->count = profile_count::zero ().afdo ();
-    FOR_EACH_EDGE (e, ei, bb->succs)
-      e->probability = profile_probability::uninitialized ();
-
-    if (afdo_set_bb_count (bb, promoted_stmts))
-      set_bb_annotated (bb, &annotated_bb);
-    if (bb->count > max_count)
-      max_count = bb->count;
-  }
+    {
+      /* As autoFDO uses sampling approach, we have to assume that all
+	 counters are zero when not seen by autoFDO.  */
+      bb->count = profile_count::zero ().afdo ();
+      if (afdo_set_bb_count (bb, promoted_stmts))
+	set_bb_annotated (bb, &annotated_bb);
+      if (bb->count > max_count)
+	max_count = bb->count;
+    }
   if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count
       > ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->count)
     {
@@ -1545,10 +1552,11 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
   afdo_source_profile->mark_annotated (cfun->function_end_locus);
   if (max_count > profile_count::zero ())
     {
-      afdo_calculate_branch_prob (&annotated_bb, &annotated_edge);
-      update_max_bb_count ();
-      profile_status_for_fn (cfun) = PROFILE_READ;
+      /* Calculate, propagate count and probability information on CFG.  */
+      afdo_calculate_branch_prob (&annotated_bb);
     }
+  update_max_bb_count ();
+  profile_status_for_fn (cfun) = PROFILE_READ;
   if (flag_value_profile_transformations)
     {
       gimple_value_profile_transformations ();
@@ -1686,11 +1694,12 @@ afdo_callsite_hot_enough_for_early_inline (struct cgraph_edge *edge)
   if (count > 0)
     {
       bool is_hot;
+      profile_count pcount = profile_count::from_gcov_type (count).afdo ();
       gcov_summary *saved_profile_info = profile_info;
       /* At early inline stage, profile_info is not set yet. We need to
          temporarily set it to afdo_profile_info to calculate hotness.  */
       profile_info = autofdo::afdo_profile_info;
-      is_hot = maybe_hot_count_p (NULL, profile_count::from_gcov_type (count));
+      is_hot = maybe_hot_count_p (NULL, pcount);
       profile_info = saved_profile_info;
       return is_hot;
     }

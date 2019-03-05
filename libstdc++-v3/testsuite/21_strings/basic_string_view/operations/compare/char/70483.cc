@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2018 Free Software Foundation, Inc.
+// Copyright (C) 2017-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -57,6 +57,25 @@ string_view get()
 }
 
 static_assert( get() == get() );
+
+#ifdef _GLIBCXX_USE_CHAR8_T
+using std::u8string_view;
+#else
+using u8string_view = std::basic_string_view<char>;
+#endif
+
+constexpr
+u8string_view get8()
+{
+    u8string_view res = u8"x::";
+    u8string_view start_pattern = u8"x";
+    res = res.substr(res.find(start_pattern) + start_pattern.size());
+    res = res.substr(0, res.find_first_of(u8";]"));
+    res = res.substr(res.rfind(u8"::"));
+    return res;
+}
+
+static_assert( get8() == get8() );
 
 using std::u16string_view;
 

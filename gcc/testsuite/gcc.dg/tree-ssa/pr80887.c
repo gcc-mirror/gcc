@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fgimple -O" } */
+/* { dg-require-effective-target int32plus } */
 
 int pos;
 void __GIMPLE (startwith("fre"))

@@ -1,5 +1,5 @@
 /* Character scanner.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1924,6 +1924,7 @@ next_char:
   /* Pad lines to the selected line length in fixed form.  */
   if (gfc_current_form == FORM_FIXED
       && flag_fixed_line_length != 0
+      && flag_pad_source
       && !preprocessor_flag
       && c != EOF)
     {
@@ -2135,14 +2136,18 @@ static bool load_file (const char *, const char *, bool);
 /* include_line()-- Checks a line buffer to see if it is an include
    line.  If so, we call load_file() recursively to load the included
    file.  We never return a syntax error because a statement like
-   "include = 5" is perfectly legal.  We return false if no include was
-   processed or true if we matched an include.  */
+   "include = 5" is perfectly legal.  We return 0 if no include was
+   processed, 1 if we matched an include or -1 if include was
+   partially processed, but will need continuation lines.  */
 
-static bool
+static int
 include_line (gfc_char_t *line)
 {
   gfc_char_t quote, *c, *begin, *stop;
   char *filename;
+  const char *include = "include";
+  bool allow_continuation = flag_dec_include;
+  int i;
 
   c = line;
 
@@ -2158,42 +2163,133 @@ include_line (gfc_char_t *line)
       else
 	{
 	  if ((*c == '!' || *c == 'c' || *c == 'C' || *c == '*')
-	      && c[1] == '$' && (c[2] == ' ' || c[2] == '\t'))
+	      && c[1] == '$' && c[2] == ' ')
 	    c += 3;
+	}
+    }
+
+  if (gfc_current_form == FORM_FREE)
+    {
+      while (*c == ' ' || *c == '\t')
+	c++;
+      if (gfc_wide_strncasecmp (c, "include", 7))
+	{
+	  if (!allow_continuation)
+	    return 0;
+	  for (i = 0; i < 7; ++i)
+	    {
+	      gfc_char_t c1 = gfc_wide_tolower (*c);
+	      if (c1 != (unsigned char) include[i])
+		break;
+	      c++;
+	    }
+	  if (i == 0 || *c != '&')
+	    return 0;
+	  c++;
+	  while (*c == ' ' || *c == '\t')
+	    c++;
+	  if (*c == '\0' || *c == '!')
+	    return -1;
+	  return 0;
+	}
+
+      c += 7;
+    }
+  else
+    {
+      while (*c == ' ' || *c == '\t')
+	c++;
+      if (flag_dec_include && *c == '0' && c - line == 5)
+	{
+	  c++;
+	  while (*c == ' ' || *c == '\t')
+	    c++;
+	}
+      if (c - line < 6)
+	allow_continuation = false;
+      for (i = 0; i < 7; ++i)
+	{
+	  gfc_char_t c1 = gfc_wide_tolower (*c);
+	  if (c1 != (unsigned char) include[i])
+	    break;
+	  c++;
+	  while (*c == ' ' || *c == '\t')
+	    c++;
+	}
+      if (!allow_continuation)
+	{
+	  if (i != 7)
+	    return 0;
+	}
+      else if (i != 7)
+	{
+	  if (i == 0)
+	    return 0;
+
+	  /* At the end of line or comment this might be continued.  */
+	  if (*c == '\0' || *c == '!')
+	    return -1;
+
+	  return 0;
 	}
     }
 
   while (*c == ' ' || *c == '\t')
     c++;
 
-  if (gfc_wide_strncasecmp (c, "include", 7))
-    return false;
-
-  c += 7;
-  while (*c == ' ' || *c == '\t')
-    c++;
-
   /* Find filename between quotes.  */
-  
+
   quote = *c++;
   if (quote != '"' && quote != '\'')
-    return false;
+    {
+      if (allow_continuation)
+	{
+	  if (gfc_current_form == FORM_FREE)
+	    {
+	      if (quote == '&')
+		{
+		  while (*c == ' ' || *c == '\t')
+		    c++;
+		  if (*c == '\0' || *c == '!')
+		    return -1;
+		}
+	    }
+	  else if (quote == '\0' || quote == '!')
+	    return -1;
+	}
+      return 0;
+    }
 
   begin = c;
 
+  bool cont = false;
   while (*c != quote && *c != '\0')
-    c++;
+    {
+      if (allow_continuation && gfc_current_form == FORM_FREE)
+	{
+	  if (*c == '&')
+	    cont = true;
+	  else if (*c != ' ' && *c != '\t')
+	    cont = false;
+	}
+      c++;
+    }
 
   if (*c == '\0')
-    return false;
+    {
+      if (allow_continuation
+	  && (cont || gfc_current_form != FORM_FREE))
+	return -1;
+      return 0;
+    }
 
   stop = c++;
-  
+
   while (*c == ' ' || *c == '\t')
     c++;
 
   if (*c != '\0' && *c != '!')
-    return false;
+    return 0;
 
   /* We have an include line at this point.  */
 
@@ -2205,9 +2301,130 @@ include_line (gfc_char_t *line)
     exit (FATAL_EXIT_CODE);
 
   free (filename);
-  return true;
+  return 1;
 }
 
+/* Similarly, but try to parse an INCLUDE statement, using gfc_next_char etc.
+   APIs.  Return 1 if recognized as valid INCLUDE statement and load_file has
+   been called, 0 if it is not a valid INCLUDE statement and -1 if eof has
+   been encountered while parsing it.  */
+static int
+include_stmt (gfc_linebuf *b)
+{
+  int ret = 0, i, length;
+  const char *include = "include";
+  gfc_char_t c, quote = 0;
+  locus str_locus;
+  char *filename;
+
+  continue_flag = 0;
+  end_flag = 0;
+  gcc_attribute_flag = 0;
+  openmp_flag = 0;
+  openacc_flag = 0;
+  continue_count = 0;
+  continue_line = 0;
+  gfc_current_locus.lb = b;
+  gfc_current_locus.nextc = b->line;
+
+  gfc_skip_comments ();
+  gfc_gobble_whitespace ();
+
+  for (i = 0; i < 7; i++)
+    {
+      c = gfc_next_char ();
+      if (c != (unsigned char) include[i])
+	{
+	  if (gfc_current_form == FORM_FIXED
+	      && i == 0
+	      && c == '0'
+	      && gfc_current_locus.nextc == b->line + 6)
+	    {
+	      gfc_gobble_whitespace ();
+	      i--;
+	      continue;
+	    }
+	  gcc_assert (i != 0);
+	  if (c == '\n')
+	    {
+	      gfc_advance_line ();
+	      gfc_skip_comments ();
+	      if (gfc_at_eof ())
+		ret = -1;
+	    }
+	  goto do_ret;
+	}
+    }
+  gfc_gobble_whitespace ();
+
+  c = gfc_next_char ();
+  if (c == '\'' || c == '"')
+    quote = c;
+  else
+    {
+      if (c == '\n')
+	{
+	  gfc_advance_line ();
+	  gfc_skip_comments ();
+	  if (gfc_at_eof ())
+	    ret = -1;
+	}
+      goto do_ret;
+    }
+
+  str_locus = gfc_current_locus;
+  length = 0;
+  do
+    {
+      c = gfc_next_char_literal (INSTRING_NOWARN);
+      if (c == quote)
+	break;
+      if (c == '\n')
+	{
+	  gfc_advance_line ();
+	  gfc_skip_comments ();
+	  if (gfc_at_eof ())
+	    ret = -1;
+	  goto do_ret;
+	}
+      length++;
+    }
+  while (1);
+
+  gfc_gobble_whitespace ();
+  c = gfc_next_char ();
+  if (c != '\n')
+    goto do_ret;
+
+  gfc_current_locus = str_locus;
+  ret = 1;
+  filename = XNEWVEC (char, length + 1);
+  for (i = 0; i < length; i++)
+    {
+      c = gfc_next_char_literal (INSTRING_WARN);
+      gcc_assert (gfc_wide_fits_in_byte (c));
+      filename[i] = (unsigned char) c;
+    }
+  filename[length] = '\0';
+  if (!load_file (filename, NULL, false))
+    exit (FATAL_EXIT_CODE);
+
+  free (filename);
+
+do_ret:
+  continue_flag = 0;
+  end_flag = 0;
+  gcc_attribute_flag = 0;
+  openmp_flag = 0;
+  openacc_flag = 0;
+  continue_count = 0;
+  continue_line = 0;
+  memset (&gfc_current_locus, '\0', sizeof (locus));
+  memset (&openmp_locus, '\0', sizeof (locus));
+  memset (&openacc_locus, '\0', sizeof (locus));
+  memset (&gcc_attribute_locus, '\0', sizeof (locus));
+  return ret;
+}
 
 /* Load a file into memory by calling load_line until the file ends.  */
 
@@ -2215,7 +2432,7 @@ static bool
 load_file (const char *realfilename, const char *displayedname, bool initial)
 {
   gfc_char_t *line;
-  gfc_linebuf *b;
+  gfc_linebuf *b, *include_b = NULL;
   gfc_file *f;
   FILE *input;
   int len, line_len;
@@ -2261,8 +2478,14 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
       input = gfc_open_included_file (realfilename, false, false);
       if (input == NULL)
 	{
-	  fprintf (stderr, "%s:%d: Error: Can't open included file '%s'\n",
-		   current_file->filename, current_file->line, filename);
+	  /* For -fpre-include file, current_file is NULL.  */
+	  if (current_file)
+	    fprintf (stderr, "%s:%d: Error: Can't open included file '%s'\n",
+		     current_file->filename, current_file->line, filename);
+	  else
+	    fprintf (stderr, "Error: Can't open pre-included file '%s'\n",
+		     filename);
+
 	  return false;
 	}
       stat_result = stat (realfilename, &st);
@@ -2318,6 +2541,7 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
   for (;;)
     {
       int trunc = load_line (input, &line, &line_len, NULL);
+      int inc_line;
 
       len = gfc_wide_strlen (line);
       if (feof (input) && len == 0)
@@ -2366,11 +2590,12 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 	}
 
       /* Preprocessed files have preprocessor lines added before the byte
-         order mark, so first_line is not about the first line of the file
+	 order mark, so first_line is not about the first line of the file
 	 but the first line that's not a preprocessor line.  */
       first_line = false;
 
-      if (include_line (line))
+      inc_line = include_line (line);
+      if (inc_line > 0)
 	{
 	  current_file->line++;
 	  continue;
@@ -2403,6 +2628,36 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 
       while (file_changes_cur < file_changes_count)
 	file_changes[file_changes_cur++].lb = b;
+
+      if (flag_dec_include)
+	{
+	  if (include_b && b != include_b)
+	    {
+	      int inc_line2 = include_stmt (include_b);
+	      if (inc_line2 == 0)
+		include_b = NULL;
+	      else if (inc_line2 > 0)
+		{
+		  do
+		    {
+		      if (gfc_current_form == FORM_FIXED)
+			{
+			  for (gfc_char_t *p = include_b->line; *p; p++)
+			    *p = ' ';
+			}
+		      else
+			include_b->line[0] = '\0';
+                      if (include_b == b)
+			break;
+		      include_b = include_b->next;
+		    }
+		  while (1);
+		  include_b = NULL;
+		}
+	    }
+	  if (inc_line == -1 && !include_b)
+	    include_b = b;
+	}
     }
 
   /* Release the line buffer allocated in load_line.  */
@@ -2427,6 +2682,10 @@ bool
 gfc_new_file (void)
 {
   bool result;
+
+  if (flag_pre_include != NULL
+      && !load_file (flag_pre_include, NULL, false))
+    exit (FATAL_EXIT_CODE);
 
   if (gfc_cpp_enabled ())
     {

@@ -1,5 +1,5 @@
 /* Expand builtin functions.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -95,7 +95,6 @@ builtin_info_type builtin_info[(int)END_BUILTINS];
 /* Non-zero if __builtin_constant_p should be folded right away.  */
 bool force_folding_builtin_constant_p;
 
-static rtx c_readstr (const char *, scalar_int_mode);
 static int target_char_cast (tree, char *);
 static rtx get_memory_rtx (tree, tree);
 static int apply_args_size (void);
@@ -126,10 +125,11 @@ static rtx builtin_memcpy_read_str (void *, HOST_WIDE_INT, scalar_int_mode);
 static rtx expand_builtin_memchr (tree, rtx);
 static rtx expand_builtin_memcpy (tree, rtx);
 static rtx expand_builtin_memory_copy_args (tree dest, tree src, tree len,
-					    rtx target, tree exp, int endp);
+					    rtx target, tree exp,
+					    memop_ret retmode);
 static rtx expand_builtin_memmove (tree, rtx);
 static rtx expand_builtin_mempcpy (tree, rtx);
-static rtx expand_builtin_mempcpy_args (tree, tree, tree, rtx, tree, int);
+static rtx expand_builtin_mempcpy_args (tree, tree, tree, rtx, tree, memop_ret);
 static rtx expand_builtin_strcat (tree, rtx);
 static rtx expand_builtin_strcpy (tree, rtx);
 static rtx expand_builtin_strcpy_args (tree, tree, tree, rtx);
@@ -574,26 +574,25 @@ unterminated_array (tree exp, tree *size /* = NULL */, bool *exact /* = NULL */)
 {
   /* C_STRLEN will return NULL and set DECL in the info
      structure if EXP references a unterminated array.  */
-  c_strlen_data data;
-  memset (&data, 0, sizeof (c_strlen_data));
-  tree len = c_strlen (exp, 1, &data);
-  if (len == NULL_TREE && data.len && data.decl)
+  c_strlen_data lendata = { };
+  tree len = c_strlen (exp, 1, &lendata);
+  if (len == NULL_TREE && lendata.minlen && lendata.decl)
      {
        if (size)
 	{
-	  len = data.len;
-	  if (data.off)
+	  len = lendata.minlen;
+	  if (lendata.off)
 	    {
-	      /* Constant offsets are already accounted for in data.len, but
-		 not in a SSA_NAME + CST expression.  */
-	      if (TREE_CODE (data.off) == INTEGER_CST)
+	      /* Constant offsets are already accounted for in LENDATA.MINLEN,
+		 but not in a SSA_NAME + CST expression.  */
+	      if (TREE_CODE (lendata.off) == INTEGER_CST)
 		*exact = true;
-	      else if (TREE_CODE (data.off) == PLUS_EXPR
-		       && TREE_CODE (TREE_OPERAND (data.off, 1)) == INTEGER_CST)
+	      else if (TREE_CODE (lendata.off) == PLUS_EXPR
+		       && TREE_CODE (TREE_OPERAND (lendata.off, 1)) == INTEGER_CST)
 		{
 		  /* Subtract the offset from the size of the array.  */
 		  *exact = false;
-		  tree temp = TREE_OPERAND (data.off, 1);
+		  tree temp = TREE_OPERAND (lendata.off, 1);
 		  temp = fold_convert (ssizetype, temp);
 		  len = fold_build2 (MINUS_EXPR, ssizetype, len, temp);
 		}
@@ -605,7 +604,7 @@ unterminated_array (tree exp, tree *size /* = NULL */, bool *exact /* = NULL */)
 
 	  *size = len;
 	}
-       return data.decl;
+       return lendata.decl;
      }
 
   return NULL_TREE;
@@ -646,8 +645,7 @@ c_strlen (tree src, int only_value, c_strlen_data *data, unsigned eltsize)
   /* If we were not passed a DATA pointer, then get one to a local
      structure.  That avoids having to check DATA for NULL before
      each time we want to use it.  */
-  c_strlen_data local_strlen_data;
-  memset (&local_strlen_data, 0, sizeof (c_strlen_data));
+  c_strlen_data local_strlen_data = { };
   if (!data)
     data = &local_strlen_data;
 
@@ -721,7 +719,7 @@ c_strlen (tree src, int only_value, c_strlen_data *data, unsigned eltsize)
 	{
 	  data->decl = decl;
 	  data->off = byteoff;
-	  data->len = ssize_int (len);
+	  data->minlen = ssize_int (len);
 	  return NULL_TREE;
 	}
 
@@ -734,11 +732,14 @@ c_strlen (tree src, int only_value, c_strlen_data *data, unsigned eltsize)
 	 of the string subtract the offset from the length of the string,
 	 and return that.  Otherwise the length is zero.  Take care to
 	 use SAVE_EXPR in case the OFFSET has side-effects.  */
-      tree offsave = TREE_SIDE_EFFECTS (byteoff) ? save_expr (byteoff) : byteoff;
-      offsave = fold_convert (ssizetype, offsave);
+      tree offsave = TREE_SIDE_EFFECTS (byteoff) ? save_expr (byteoff)
+						 : byteoff;
+      offsave = fold_convert_loc (loc, sizetype, offsave);
       tree condexp = fold_build2_loc (loc, LE_EXPR, boolean_type_node, offsave,
-				      build_int_cst (ssizetype, len));
-      tree lenexp = size_diffop_loc (loc, ssize_int (len), offsave);
+				      size_int (len));
+      tree lenexp = fold_build2_loc (loc, MINUS_EXPR, sizetype, size_int (len),
+				     offsave);
+      lenexp = fold_convert_loc (loc, ssizetype, lenexp);
       return fold_build3_loc (loc, COND_EXPR, ssizetype, condexp, lenexp,
 			      build_zero_cst (ssizetype));
     }
@@ -792,7 +793,7 @@ c_strlen (tree src, int only_value, c_strlen_data *data, unsigned eltsize)
     {
       data->decl = decl;
       data->off = byteoff;
-      data->len = ssize_int (len);
+      data->minlen = ssize_int (len);
       return NULL_TREE;
     }
 
@@ -800,10 +801,14 @@ c_strlen (tree src, int only_value, c_strlen_data *data, unsigned eltsize)
 }
 
 /* Return a constant integer corresponding to target reading
-   GET_MODE_BITSIZE (MODE) bits from string constant STR.  */
+   GET_MODE_BITSIZE (MODE) bits from string constant STR.  If
+   NULL_TERMINATED_P, reading stops after '\0' character, all further ones
+   are assumed to be zero, otherwise it reads as many characters
+   as needed.  */
 
-static rtx
-c_readstr (const char *str, scalar_int_mode mode)
+rtx
+c_readstr (const char *str, scalar_int_mode mode,
+	   bool null_terminated_p/*=true*/)
 {
   HOST_WIDE_INT ch;
   unsigned int i, j;
@@ -828,7 +833,7 @@ c_readstr (const char *str, scalar_int_mode mode)
 	j = j + UNITS_PER_WORD - 2 * (j % UNITS_PER_WORD) - 1;
       j *= BITS_PER_UNIT;
 
-      if (ch)
+      if (ch || !null_terminated_p)
 	ch = (unsigned char) str[i];
       tmp[j / HOST_BITS_PER_WIDE_INT] |= ch << (j % HOST_BITS_PER_WIDE_INT);
     }
@@ -1139,8 +1144,11 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
 	  emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
 	  emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
 
-	  emit_move_insn (hard_frame_pointer_rtx, fp);
+	  /* Restore the frame pointer and stack pointer.  We must use a
+	     temporary since the setjmp buffer may be a local.  */
+	  fp = copy_to_reg (fp);
 	  emit_stack_restore (SAVE_NONLOCAL, stack);
+	  emit_move_insn (hard_frame_pointer_rtx, fp);
 
 	  emit_use (hard_frame_pointer_rtx);
 	  emit_use (stack_pointer_rtx);
@@ -1283,9 +1291,11 @@ expand_builtin_nonlocal_goto (tree exp)
       emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
       emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
 
-      /* Restore frame pointer for containing function.  */
-      emit_move_insn (hard_frame_pointer_rtx, r_fp);
+      /* Restore the frame pointer and stack pointer.  We must use a
+	 temporary since the setjmp buffer may be a local.  */
+      r_fp = copy_to_reg (r_fp);
       emit_stack_restore (SAVE_NONLOCAL, r_sp);
+      emit_move_insn (hard_frame_pointer_rtx, r_fp);
 
       /* USE of hard_frame_pointer_rtx added for consistency;
 	 not clear if really needed.  */
@@ -3076,9 +3086,8 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
 
   /* FIXME: Change c_strlen() to return sizetype instead of ssizetype
      so these conversions aren't necessary.  */
-  c_strlen_data data;
-  memset (&data, 0, sizeof (c_strlen_data));
-  tree len = c_strlen (src, 0, &data, 1);
+  c_strlen_data lendata = { };
+  tree len = c_strlen (src, 0, &lendata, 1);
   if (len)
     len = fold_convert_loc (loc, TREE_TYPE (bound), len);
 
@@ -3100,12 +3109,12 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
 	       strnlen (&a[i], sizeof a)
 	     where the value of i is unknown.  Unless i's value is
 	     zero, the call is unsafe because the bound is greater. */
-	  data.decl = unterminated_array (src, &len, &exact);
-	  if (!data.decl)
+	  lendata.decl = unterminated_array (src, &len, &exact);
+	  if (!lendata.decl)
 	    return NULL_RTX;
 	}
 
-      if (data.decl
+      if (lendata.decl
 	  && !TREE_NO_WARNING (exp)
 	  && ((tree_int_cst_lt (len, bound))
 	      || !exact))
@@ -3121,7 +3130,7 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
 			       "of at most %E of unterminated array"),
 			  exp, func, bound, len))
 	    {
-	      inform (DECL_SOURCE_LOCATION (data.decl),
+	      inform (DECL_SOURCE_LOCATION (lendata.decl),
 		      "referenced argument declared here");
 	      TREE_NO_WARNING (exp) = true;
 	      return NULL_RTX;
@@ -3139,7 +3148,7 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
     return NULL_RTX;
 
   wide_int min, max;
-  enum value_range_type rng = get_range_info (bound, &min, &max);
+  enum value_range_kind rng = get_range_info (bound, &min, &max);
   if (rng != VR_RANGE)
     return NULL_RTX;
 
@@ -3154,12 +3163,12 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
   bool exact = true;
   if (!len || TREE_CODE (len) != INTEGER_CST)
     {
-      data.decl = unterminated_array (src, &len, &exact);
-      if (!data.decl)
+      lendata.decl = unterminated_array (src, &len, &exact);
+      if (!lendata.decl)
 	return NULL_RTX;
     }
 
-  if (data.decl
+  if (lendata.decl
       && !TREE_NO_WARNING (exp)
       && (wi::ltu_p (wi::to_wide (len), min)
 	  || !exact))
@@ -3175,13 +3184,13 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
 			   "the size of at most %E of unterminated array"),
 		      exp, func, min.to_uhwi (), max.to_uhwi (), len))
 	{
-	  inform (DECL_SOURCE_LOCATION (data.decl),
+	  inform (DECL_SOURCE_LOCATION (lendata.decl),
 		  "referenced argument declared here");
 	  TREE_NO_WARNING (exp) = true;
 	}
     }
 
-  if (data.decl)
+  if (lendata.decl)
     return NULL_RTX;
 
   if (wi::gtu_p (min, wi::to_wide (len)))
@@ -3227,7 +3236,7 @@ determine_block_size (tree len, rtx len_rtx,
   else
     {
       wide_int min, max;
-      enum value_range_type range_type = VR_UNDEFINED;
+      enum value_range_kind range_type = VR_UNDEFINED;
 
       /* Determine bounds from the type.  */
       if (tree_fits_uhwi_p (TYPE_MIN_VALUE (TREE_TYPE (len))))
@@ -3335,7 +3344,10 @@ check_access (tree exp, tree, tree, tree dstwrite,
 	     the upper bound given by MAXREAD add one to it for
 	     the terminating nul.  Otherwise, set it to one for
 	     the same reason, or to MAXREAD as appropriate.  */
-	  get_range_strlen (srcstr, range);
+	  c_strlen_data lendata = { };
+	  get_range_strlen (srcstr, &lendata, /* eltsize = */ 1);
+	  range[0] = lendata.minlen;
+	  range[1] = lendata.maxbound;
 	  if (range[0] && (!maxread || TREE_CODE (maxread) == INTEGER_CST))
 	    {
 	      if (maxread && tree_int_cst_le (maxread, range[0]))
@@ -3629,7 +3641,7 @@ compute_objsize (tree dest, int ostype)
 	      && INTEGRAL_TYPE_P (TREE_TYPE (off)))
 	    {
 	      wide_int min, max;
-	      enum value_range_type rng = get_range_info (off, &min, &max);
+	      enum value_range_kind rng = get_range_info (off, &min, &max);
 
 	      if (rng == VR_RANGE)
 		{
@@ -3748,7 +3760,7 @@ expand_builtin_memcpy (tree exp, rtx target)
   check_memop_access (exp, dest, src, len);
 
   return expand_builtin_memory_copy_args (dest, src, len, target, exp,
-					  /*endp=*/ 0);
+					  /*retmode=*/ RETURN_BEGIN);
 }
 
 /* Check a call EXP to the memmove built-in for validity.
@@ -3773,10 +3785,7 @@ expand_builtin_memmove (tree exp, rtx)
 /* Expand a call EXP to the mempcpy builtin.
    Return NULL_RTX if we failed; the caller should emit a normal call,
    otherwise try to get the result in TARGET, if convenient (and in
-   mode MODE if that's convenient).  If ENDP is 0 return the
-   destination pointer, if ENDP is 1 return the end pointer ala
-   mempcpy, and if ENDP is 2 return the end pointer minus one ala
-   stpcpy.  */
+   mode MODE if that's convenient).  */
 
 static rtx
 expand_builtin_mempcpy (tree exp, rtx target)
@@ -3809,20 +3818,17 @@ expand_builtin_mempcpy (tree exp, rtx target)
     return NULL_RTX;
 
   return expand_builtin_mempcpy_args (dest, src, len,
-				      target, exp, /*endp=*/ 1);
+				      target, exp, /*retmode=*/ RETURN_END);
 }
 
 /* Helper function to do the actual work for expand of memory copy family
    functions (memcpy, mempcpy, stpcpy).  Expansing should assign LEN bytes
-   of memory from SRC to DEST and assign to TARGET if convenient.
-   If ENDP is 0 return the
-   destination pointer, if ENDP is 1 return the end pointer ala
-   mempcpy, and if ENDP is 2 return the end pointer minus one ala
-   stpcpy.  */
+   of memory from SRC to DEST and assign to TARGET if convenient.  Return
+   value is based on RETMODE argument.  */
 
 static rtx
 expand_builtin_memory_copy_args (tree dest, tree src, tree len,
-				 rtx target, tree exp, int endp)
+				 rtx target, tree exp, memop_ret retmode)
 {
   const char *src_str;
   unsigned int src_align = get_pointer_alignment (src);
@@ -3869,7 +3875,7 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
       dest_mem = store_by_pieces (dest_mem, INTVAL (len_rtx),
 				  builtin_memcpy_read_str,
 				  CONST_CAST (char *, src_str),
-				  dest_align, false, endp);
+				  dest_align, false, retmode);
       dest_mem = force_operand (XEXP (dest_mem, 0), target);
       dest_mem = convert_memory_address (ptr_mode, dest_mem);
       return dest_mem;
@@ -3880,9 +3886,10 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
 
   /* Copy word part most expediently.  */
   enum block_op_methods method = BLOCK_OP_NORMAL;
-  if (CALL_EXPR_TAILCALL (exp) && (endp == 0 || target == const0_rtx))
+  if (CALL_EXPR_TAILCALL (exp)
+      && (retmode == RETURN_BEGIN || target == const0_rtx))
     method = BLOCK_OP_TAILCALL;
-  if (endp == 1 && target != const0_rtx)
+  if (retmode == RETURN_END && target != const0_rtx)
     method = BLOCK_OP_NO_LIBCALL_RET;
   dest_addr = emit_block_move_hints (dest_mem, src_mem, len_rtx, method,
 				     expected_align, expected_size,
@@ -3896,11 +3903,11 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
       dest_addr = convert_memory_address (ptr_mode, dest_addr);
     }
 
-  if (endp && target != const0_rtx)
+  if (retmode != RETURN_BEGIN && target != const0_rtx)
     {
       dest_addr = gen_rtx_PLUS (ptr_mode, dest_addr, len_rtx);
       /* stpcpy pointer to last byte.  */
-      if (endp == 2)
+      if (retmode == RETURN_END_MINUS_ONE)
 	dest_addr = gen_rtx_MINUS (ptr_mode, dest_addr, const1_rtx);
     }
 
@@ -3909,21 +3916,19 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
 
 static rtx
 expand_builtin_mempcpy_args (tree dest, tree src, tree len,
-			     rtx target, tree orig_exp, int endp)
+			     rtx target, tree orig_exp, memop_ret retmode)
 {
   return expand_builtin_memory_copy_args (dest, src, len, target, orig_exp,
-					  endp);
+					  retmode);
 }
 
 /* Expand into a movstr instruction, if one is available.  Return NULL_RTX if
    we failed, the caller should emit a normal call, otherwise try to
-   get the result in TARGET, if convenient.  If ENDP is 0 return the
-   destination pointer, if ENDP is 1 return the end pointer ala
-   mempcpy, and if ENDP is 2 return the end pointer minus one ala
-   stpcpy.  */
+   get the result in TARGET, if convenient.
+   Return value is based on RETMODE argument.  */
 
 static rtx
-expand_movstr (tree dest, tree src, rtx target, int endp)
+expand_movstr (tree dest, tree src, rtx target, memop_ret retmode)
 {
   struct expand_operand ops[3];
   rtx dest_mem;
@@ -3934,25 +3939,26 @@ expand_movstr (tree dest, tree src, rtx target, int endp)
 
   dest_mem = get_memory_rtx (dest, NULL);
   src_mem = get_memory_rtx (src, NULL);
-  if (!endp)
+  if (retmode == RETURN_BEGIN)
     {
       target = force_reg (Pmode, XEXP (dest_mem, 0));
       dest_mem = replace_equiv_address (dest_mem, target);
     }
 
-  create_output_operand (&ops[0], endp ? target : NULL_RTX, Pmode);
+  create_output_operand (&ops[0],
+			 retmode != RETURN_BEGIN ? target : NULL_RTX, Pmode);
   create_fixed_operand (&ops[1], dest_mem);
   create_fixed_operand (&ops[2], src_mem);
   if (!maybe_expand_insn (targetm.code_for_movstr, 3, ops))
     return NULL_RTX;
 
-  if (endp && target != const0_rtx)
+  if (retmode != RETURN_BEGIN && target != const0_rtx)
     {
       target = ops[0].value;
       /* movstr is supposed to set end to the address of the NUL
 	 terminator.  If the caller requested a mempcpy-like return value,
 	 adjust it.  */
-      if (endp == 1)
+      if (retmode == RETURN_END)
 	{
 	  rtx tem = plus_constant (GET_MODE (target),
 				   gen_lowpart (GET_MODE (target), target), 1);
@@ -4041,7 +4047,7 @@ expand_builtin_strcpy_args (tree exp, tree dest, tree src, rtx target)
       return NULL_RTX;
     }
 
-  return expand_movstr (dest, src, target, /*endp=*/0);
+  return expand_movstr (dest, src, target, /*retmode=*/ RETURN_BEGIN);
 }
 
 /* Expand a call EXP to the stpcpy builtin.
@@ -4084,18 +4090,19 @@ expand_builtin_stpcpy_1 (tree exp, rtx target, machine_mode mode)
 	 compile-time, not an expression containing a string.  This is
 	 because the latter will potentially produce pessimized code
 	 when used to produce the return value.  */
-      c_strlen_data data;
-      memset (&data, 0, sizeof (c_strlen_data));
+      c_strlen_data lendata = { };
       if (!c_getstr (src, NULL)
-	  || !(len = c_strlen (src, 0, &data, 1)))
-	return expand_movstr (dst, src, target, /*endp=*/2);
+	  || !(len = c_strlen (src, 0, &lendata, 1)))
+	return expand_movstr (dst, src, target,
+			      /*retmode=*/ RETURN_END_MINUS_ONE);
 
-      if (data.decl && !TREE_NO_WARNING (exp))
-	warn_string_no_nul (EXPR_LOCATION (exp), "stpcpy", src, data.decl);
+      if (lendata.decl && !TREE_NO_WARNING (exp))
+	warn_string_no_nul (EXPR_LOCATION (exp), "stpcpy", src, lendata.decl);
 
       lenp1 = size_binop_loc (loc, PLUS_EXPR, len, ssize_int (1));
       ret = expand_builtin_mempcpy_args (dst, src, lenp1,
-					 target, exp, /*endp=*/2);
+					 target, exp,
+					 /*retmode=*/ RETURN_END_MINUS_ONE);
 
       if (ret)
 	return ret;
@@ -4129,7 +4136,8 @@ expand_builtin_stpcpy_1 (tree exp, rtx target, machine_mode mode)
 	    }
 	}
 
-      return expand_movstr (dst, src, target, /*endp=*/2);
+      return expand_movstr (dst, src, target,
+			    /*retmode=*/ RETURN_END_MINUS_ONE);
     }
 }
 
@@ -4207,8 +4215,8 @@ check_strncat_sizes (tree exp, tree objsize)
 
   /* Try to determine the range of lengths that the source expression
      refers to.  */
-  tree lenrange[2];
-  get_range_strlen (src, lenrange);
+  c_strlen_data lendata = { };
+  get_range_strlen (src, &lendata, /* eltsize = */ 1);
 
   /* Try to verify that the destination is big enough for the shortest
      string.  */
@@ -4222,8 +4230,8 @@ check_strncat_sizes (tree exp, tree objsize)
     }
 
   /* Add one for the terminating nul.  */
-  tree srclen = (lenrange[0]
-		 ? fold_build2 (PLUS_EXPR, size_type_node, lenrange[0],
+  tree srclen = (lendata.minlen
+		 ? fold_build2 (PLUS_EXPR, size_type_node, lendata.minlen,
 				size_one_node)
 		 : NULL_TREE);
 
@@ -4275,12 +4283,15 @@ expand_builtin_strncat (tree exp, rtx)
   tree slen = c_strlen (src, 1);
 
   /* Try to determine the range of lengths that the source expression
-     refers to.  */
-  tree lenrange[2];
-  if (slen)
-    lenrange[0] = lenrange[1] = slen;
-  else
-    get_range_strlen (src, lenrange);
+     refers to.  Since the lengths are only used for warning and not
+     for code generation disable strict mode below.  */
+  tree maxlen = slen;
+  if (!maxlen)
+    {
+      c_strlen_data lendata = { };
+      get_range_strlen (src, &lendata, /* eltsize = */ 1);
+      maxlen = lendata.maxbound;
+    }
 
   /* Try to verify that the destination is big enough for the shortest
      string.  First try to determine the size of the destination object
@@ -4288,8 +4299,8 @@ expand_builtin_strncat (tree exp, rtx)
   tree destsize = compute_objsize (dest, warn_stringop_overflow - 1);
 
   /* Add one for the terminating nul.  */
-  tree srclen = (lenrange[0]
-		 ? fold_build2 (PLUS_EXPR, size_type_node, lenrange[0],
+  tree srclen = (maxlen
+		 ? fold_build2 (PLUS_EXPR, size_type_node, maxlen,
 				size_one_node)
 		 : NULL_TREE);
 
@@ -4375,7 +4386,8 @@ expand_builtin_strncpy (tree exp, rtx target)
 	  dest_mem = get_memory_rtx (dest, len);
 	  store_by_pieces (dest_mem, tree_to_uhwi (len),
 			   builtin_strncpy_read_str,
-			   CONST_CAST (char *, p), dest_align, false, 0);
+			   CONST_CAST (char *, p), dest_align, false,
+			   RETURN_BEGIN);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), target);
 	  dest_mem = convert_memory_address (ptr_mode, dest_mem);
 	  return dest_mem;
@@ -4520,7 +4532,7 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
 	  val_rtx = force_reg (val_mode, val_rtx);
 	  store_by_pieces (dest_mem, tree_to_uhwi (len),
 			   builtin_memset_gen_str, val_rtx, dest_align,
-			   true, 0);
+			   true, RETURN_BEGIN);
 	}
       else if (!set_storage_via_setmem (dest_mem, len_rtx, val_rtx,
 					dest_align, expected_align,
@@ -4543,7 +4555,8 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
 				  builtin_memset_read_str, &c, dest_align,
 				  true))
 	store_by_pieces (dest_mem, tree_to_uhwi (len),
-			 builtin_memset_read_str, &c, dest_align, true, 0);
+			 builtin_memset_read_str, &c, dest_align, true,
+			 RETURN_BEGIN);
       else if (!set_storage_via_setmem (dest_mem, len_rtx,
 					gen_int_mode (c, val_mode),
 					dest_align, expected_align,
@@ -6148,7 +6161,7 @@ get_memmodel (tree exp)
 {
   rtx op;
   unsigned HOST_WIDE_INT val;
-  source_location loc
+  location_t loc
     = expansion_point_location_if_in_system_header (input_location);
 
   /* If the parameter is not a constant, it's a run time value so we'll just
@@ -6224,7 +6237,7 @@ expand_builtin_atomic_compare_exchange (machine_mode mode, tree exp,
   enum memmodel success, failure;
   tree weak;
   bool is_weak;
-  source_location loc
+  location_t loc
     = expansion_point_location_if_in_system_header (input_location);
 
   success = get_memmodel (CALL_EXPR_ARG (exp, 4));
@@ -6351,7 +6364,7 @@ expand_ifn_atomic_compare_exchange (gcall *call)
   enum memmodel success, failure;
   tree lhs;
   bool is_weak;
-  source_location loc
+  location_t loc
     = expansion_point_location_if_in_system_header (gimple_location (call));
 
   success = get_memmodel (gimple_call_arg (call, 4));
@@ -6423,7 +6436,7 @@ expand_builtin_atomic_load (machine_mode mode, tree exp, rtx target)
   model = get_memmodel (CALL_EXPR_ARG (exp, 1));
   if (is_mm_release (model) || is_mm_acq_rel (model))
     {
-      source_location loc
+      location_t loc
 	= expansion_point_location_if_in_system_header (input_location);
       warning_at (loc, OPT_Winvalid_memory_model,
 		  "invalid memory model for %<__atomic_load%>");
@@ -6455,7 +6468,7 @@ expand_builtin_atomic_store (machine_mode mode, tree exp)
   if (!(is_mm_relaxed (model) || is_mm_seq_cst (model)
 	|| is_mm_release (model)))
     {
-      source_location loc
+      location_t loc
 	= expansion_point_location_if_in_system_header (input_location);
       warning_at (loc, OPT_Winvalid_memory_model,
 		  "invalid memory model for %<__atomic_store%>");
@@ -6519,7 +6532,7 @@ expand_builtin_atomic_fetch_op (machine_mode mode, tree exp, rtx target,
   gcc_assert (TREE_OPERAND (addr, 0) == fndecl);
   TREE_OPERAND (addr, 0) = builtin_decl_explicit (ext_call);
 
-  /* If we will emit code after the call, the call can not be a tail call.
+  /* If we will emit code after the call, the call cannot be a tail call.
      If it is emitted as a tail call, a barrier is emitted after it, and
      then all trailing code is removed.  */
   if (!ignore)
@@ -6648,7 +6661,7 @@ expand_builtin_atomic_clear (tree exp)
 
   if (is_mm_consume (model) || is_mm_acquire (model) || is_mm_acq_rel (model))
     {
-      source_location loc
+      location_t loc
 	= expansion_point_location_if_in_system_header (input_location);
       warning_at (loc, OPT_Winvalid_memory_model,
 		  "invalid memory model for %<__atomic_store%>");
@@ -8564,23 +8577,22 @@ fold_builtin_strlen (location_t loc, tree type, tree arg)
     return NULL_TREE;
   else
     {
-      c_strlen_data data;
-      memset (&data, 0, sizeof (c_strlen_data));
-      tree len = c_strlen (arg, 0, &data);
+      c_strlen_data lendata = { };
+      tree len = c_strlen (arg, 0, &lendata);
 
       if (len)
 	return fold_convert_loc (loc, type, len);
 
-      if (!data.decl)
-	c_strlen (arg, 1, &data);
+      if (!lendata.decl)
+	c_strlen (arg, 1, &lendata);
 
-      if (data.decl)
+      if (lendata.decl)
 	{
 	  if (EXPR_HAS_LOCATION (arg))
 	    loc = EXPR_LOCATION (arg);
 	  else if (loc == UNKNOWN_LOCATION)
 	    loc = input_location;
-	  warn_string_no_nul (loc, "strlen", arg, data.decl);
+	  warn_string_no_nul (loc, "strlen", arg, lendata.decl);
 	}
 
       return NULL_TREE;
@@ -9290,8 +9302,7 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
 			     tree arg0, tree arg1, tree arg2)
 {
   enum internal_fn ifn = IFN_LAST;
-  /* The code of the expression corresponding to the type-generic
-     built-in, or ERROR_MARK for the type-specific ones.  */
+  /* The code of the expression corresponding to the built-in.  */
   enum tree_code opcode = ERROR_MARK;
   bool ovf_only = false;
 
@@ -9301,42 +9312,39 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
       ovf_only = true;
       /* FALLTHRU */
     case BUILT_IN_ADD_OVERFLOW:
-      opcode = PLUS_EXPR;
-      /* FALLTHRU */
     case BUILT_IN_SADD_OVERFLOW:
     case BUILT_IN_SADDL_OVERFLOW:
     case BUILT_IN_SADDLL_OVERFLOW:
     case BUILT_IN_UADD_OVERFLOW:
     case BUILT_IN_UADDL_OVERFLOW:
     case BUILT_IN_UADDLL_OVERFLOW:
+      opcode = PLUS_EXPR;
       ifn = IFN_ADD_OVERFLOW;
       break;
     case BUILT_IN_SUB_OVERFLOW_P:
       ovf_only = true;
       /* FALLTHRU */
     case BUILT_IN_SUB_OVERFLOW:
-      opcode = MINUS_EXPR;
-      /* FALLTHRU */
     case BUILT_IN_SSUB_OVERFLOW:
     case BUILT_IN_SSUBL_OVERFLOW:
     case BUILT_IN_SSUBLL_OVERFLOW:
     case BUILT_IN_USUB_OVERFLOW:
     case BUILT_IN_USUBL_OVERFLOW:
     case BUILT_IN_USUBLL_OVERFLOW:
+      opcode = MINUS_EXPR;
       ifn = IFN_SUB_OVERFLOW;
       break;
     case BUILT_IN_MUL_OVERFLOW_P:
       ovf_only = true;
       /* FALLTHRU */
     case BUILT_IN_MUL_OVERFLOW:
-      opcode = MULT_EXPR;
-      /* FALLTHRU */
     case BUILT_IN_SMUL_OVERFLOW:
     case BUILT_IN_SMULL_OVERFLOW:
     case BUILT_IN_SMULLL_OVERFLOW:
     case BUILT_IN_UMUL_OVERFLOW:
     case BUILT_IN_UMULL_OVERFLOW:
     case BUILT_IN_UMULLL_OVERFLOW:
+      opcode = MULT_EXPR;
       ifn = IFN_MUL_OVERFLOW;
       break;
     default:
@@ -9361,13 +9369,27 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
 				 ? boolean_true_node : boolean_false_node,
 				 arg2);
 
-  tree ctype = build_complex_type (type);
-  tree call = build_call_expr_internal_loc (loc, ifn, ctype,
-					    2, arg0, arg1);
-  tree tgt = save_expr (call);
-  tree intres = build1_loc (loc, REALPART_EXPR, type, tgt);
-  tree ovfres = build1_loc (loc, IMAGPART_EXPR, type, tgt);
-  ovfres = fold_convert_loc (loc, boolean_type_node, ovfres);
+  tree intres, ovfres;
+  if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
+    {
+      intres = fold_binary_loc (loc, opcode, type,
+				fold_convert_loc (loc, type, arg0),
+				fold_convert_loc (loc, type, arg1));
+      if (TREE_OVERFLOW (intres))
+	intres = drop_tree_overflow (intres);
+      ovfres = (arith_overflowed_p (opcode, type, arg0, arg1)
+		? boolean_true_node : boolean_false_node);
+    }
+  else
+    {
+      tree ctype = build_complex_type (type);
+      tree call = build_call_expr_internal_loc (loc, ifn, ctype, 2,
+						arg0, arg1);
+      tree tgt = save_expr (call);
+      intres = build1_loc (loc, REALPART_EXPR, type, tgt);
+      ovfres = build1_loc (loc, IMAGPART_EXPR, type, tgt);
+      ovfres = fold_convert_loc (loc, boolean_type_node, ovfres);
+    }
 
   if (ovf_only)
     return omit_one_operand_loc (loc, boolean_type_node, ovfres, arg2);
@@ -10197,7 +10219,7 @@ fold_builtin_next_arg (tree exp, bool va_start_p)
      definition of the va_start macro (perhaps on the token for
      builtin) in a system header, so warnings will not be emitted.
      Use the location in real source code.  */
-  source_location current_location =
+  location_t current_location =
     linemap_unwind_to_first_non_reserved_loc (line_table, input_location,
 					      NULL);
 
@@ -11200,13 +11222,4 @@ target_char_cst_p (tree t, char *p)
 
   *p = (char)tree_to_uhwi (t);
   return true;
-}
-
-/* Return the maximum object size.  */
-
-tree
-max_object_size (void)
-{
-  /* To do: Make this a configurable parameter.  */
-  return TYPE_MAX_VALUE (ptrdiff_type_node);
 }

@@ -3,6 +3,6 @@
 
 struct A {};
 
-template<A, typename T> int operator-(A, T); // { dg-error "not a valid type" }
+template<A, typename T> int operator-(A, T); // { dg-error "class type" "" { target c++17_down } }
 
 int i = A() - 0; // { dg-error "no match" }

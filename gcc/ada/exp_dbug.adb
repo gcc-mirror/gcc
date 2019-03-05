@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1053,7 +1053,7 @@ package body Exp_Dbug is
                Name                => New_Occurrence_Of (E, Loc));
 
             Append (Decl, Declarations (N));
-            Set_Needs_Debug_Info (Defining_Identifier (Decl));
+            Set_Debug_Info_Needed (Defining_Identifier (Decl));
          end if;
 
          Next_Entity (E);

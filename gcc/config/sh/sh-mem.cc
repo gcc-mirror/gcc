@@ -1,5 +1,5 @@
 /* Helper routines for memory move and comparison insns.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -91,7 +91,7 @@ expand_block_move (rtx *operands)
 	move_by_pieces (adjust_address (dest, BLKmode, copied),
 			adjust_automodify_address (src, BLKmode,
 						   src_addr, copied),
-			bytes - copied, align, 0);
+			bytes - copied, align, RETURN_BEGIN);
 
       return true;
     }

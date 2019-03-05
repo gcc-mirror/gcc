@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2017-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 2017-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -230,8 +230,8 @@ package body Sem_SPARK is
       --------------------
 
       procedure Perm_Mismatch
-        (Exp_Perm, Act_Perm  : Perm_Kind;
-         N                   : Node_Id);
+        (Exp_Perm, Act_Perm : Perm_Kind;
+         N                  : Node_Id);
       --  Issues a continuation error message about a mismatch between a
       --  desired permission Exp_Perm and a permission obtained Act_Perm. N
       --  is the node on which the error is reported.
@@ -863,7 +863,6 @@ package body Sem_SPARK is
    -----------------------
 
    procedure Check_Declaration (Decl : Node_Id) is
-
       Target_Ent : constant Entity_Id := Defining_Identifier (Decl);
       Target_Typ : Node_Id renames Etype (Target_Ent);
 
@@ -1052,22 +1051,6 @@ package body Sem_SPARK is
                      end if;
                   end if;
 
-               elsif Nkind_In (Expression (Decl),
-                               N_Attribute_Reference,
-                               N_Attribute_Reference,
-                               N_Expanded_Name,
-                               N_Explicit_Dereference,
-                               N_Indexed_Component,
-                               N_Reference,
-                               N_Selected_Component,
-                               N_Slice)
-               then
-                  if Is_Access_Type (Etype (Prefix (Expression (Decl))))
-                    or else Is_Deep (Etype (Prefix (Expression (Decl))))
-                  then
-                     Current_Checking_Mode := Observe;
-                     Check := True;
-                  end if;
                end if;
             end if;
 
@@ -1075,7 +1058,7 @@ package body Sem_SPARK is
                Check_Node (Expression (Decl));
             end if;
 
-            --  If lhs is not a pointer, we still give it the appropriate
+            --  If lhs is not a pointer, we still give it the unrestricted
             --  state which is useless but not harmful.
 
             declare
@@ -1215,7 +1198,7 @@ package body Sem_SPARK is
          when N_Attribute_Reference =>
             case Attribute_Name (Expr) is
                when Name_Access =>
-                  Error_Msg_N ("access attribute not allowed in SPARK", Expr);
+                  Error_Msg_N ("access attribute not allowed", Expr);
 
                when Name_Last
                   | Name_First
@@ -1669,7 +1652,7 @@ package body Sem_SPARK is
 
       if Present (Iteration_Scheme (Loop_N)) then
          declare
-            Exit_Env  : constant Perm_Env_Access := new Perm_Env;
+            Exit_Env : constant Perm_Env_Access := new Perm_Env;
 
          begin
             Copy_Env (From => Current_Perm_Env, To => Exit_Env.all);

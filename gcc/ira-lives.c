@@ -1,5 +1,5 @@
 /* IRA processing allocno lives to build allocno live ranges.
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -1064,6 +1064,11 @@ find_call_crossed_cheap_reg (rtx_insn *insn)
 rtx
 non_conflicting_reg_copy_p (rtx_insn *insn)
 {
+  /* Reload has issues with overlapping pseudos being assigned to the
+     same hard register, so don't allow it.  See PR87600 for details.  */
+  if (!targetm.lra_p ())
+    return NULL_RTX;
+
   rtx set = single_set (insn);
 
   /* Disallow anything other than a simple register to register copy
@@ -1078,11 +1083,17 @@ non_conflicting_reg_copy_p (rtx_insn *insn)
   int src_regno = REGNO (SET_SRC (set));
   machine_mode mode = GET_MODE (SET_DEST (set));
 
+  /* By definition, a register does not conflict with itself, therefore we
+     do not have to handle it specially.  Returning NULL_RTX now, helps
+     simplify the callers of this function.  */
+  if (dst_regno == src_regno)
+    return NULL_RTX;
+
   /* Computing conflicts for register pairs is difficult to get right, so
      for now, disallow it.  */
-  if ((dst_regno < FIRST_PSEUDO_REGISTER
+  if ((HARD_REGISTER_NUM_P (dst_regno)
        && hard_regno_nregs (dst_regno, mode) != 1)
-      || (src_regno < FIRST_PSEUDO_REGISTER
+      || (HARD_REGISTER_NUM_P (src_regno)
 	  && hard_regno_nregs (src_regno, mode) != 1))
     return NULL_RTX;
 
@@ -1370,7 +1381,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		  /* We should create a conflict of PIC pseudo with
 		     PIC hard reg as PIC hard reg can have a wrong
 		     value after jump described by the abnormal edge.
-		     In this case we can not allocate PIC hard reg to
+		     In this case we cannot allocate PIC hard reg to
 		     PIC pseudo as PIC pseudo will also have a wrong
 		     value.  This code is not critical as LRA can fix
 		     it but it is better to have the right allocation

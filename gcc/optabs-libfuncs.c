@@ -1,5 +1,5 @@
 /* Mapping from optabs to underlying library functions
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -719,10 +719,10 @@ struct libfunc_decl_hasher : ggc_ptr_hash<tree_node>
 /* A table of previously-created libfuncs, hashed by name.  */
 static GTY (()) hash_table<libfunc_decl_hasher> *libfunc_decls;
 
-/* Build a decl for a libfunc named NAME.  */
+/* Build a decl for a libfunc named NAME with visibility VIS.  */
 
 tree
-build_libfunc_function (const char *name)
+build_libfunc_function_visibility (const char *name, symbol_visibility vis)
 {
   /* ??? We don't have any type information; pretend this is "int foo ()".  */
   tree decl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL,
@@ -731,7 +731,7 @@ build_libfunc_function (const char *name)
   DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
-  DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
+  DECL_VISIBILITY (decl) = vis;
   DECL_VISIBILITY_SPECIFIED (decl) = 1;
   gcc_assert (DECL_ASSEMBLER_NAME (decl));
 
@@ -742,11 +742,19 @@ build_libfunc_function (const char *name)
   return decl;
 }
 
+/* Build a decl for a libfunc named NAME.  */
+
+tree
+build_libfunc_function (const char *name)
+{
+  return build_libfunc_function_visibility (name, VISIBILITY_DEFAULT);
+}
+
 /* Return a libfunc for NAME, creating one if we don't already have one.
-   The returned rtx is a SYMBOL_REF.  */
+   The decl is given visibility VIS.  The returned rtx is a SYMBOL_REF.  */
 
 rtx
-init_one_libfunc (const char *name)
+init_one_libfunc_visibility (const char *name, symbol_visibility vis)
 {
   tree id, decl;
   hashval_t hash;
@@ -763,10 +771,16 @@ init_one_libfunc (const char *name)
     {
       /* Create a new decl, so that it can be passed to
 	 targetm.encode_section_info.  */
-      decl = build_libfunc_function (name);
+      decl = build_libfunc_function_visibility (name, vis);
       *slot = decl;
     }
   return XEXP (DECL_RTL (decl), 0);
+}
+
+rtx
+init_one_libfunc (const char *name)
+{
+  return init_one_libfunc_visibility (name, VISIBILITY_DEFAULT);
 }
 
 /* Adjust the assembler name of libfunc NAME to ASMSPEC.  */

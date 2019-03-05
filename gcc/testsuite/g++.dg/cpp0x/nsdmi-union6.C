@@ -5,7 +5,7 @@ struct F;          // { dg-message "forward declaration" }
 
 union U            // { dg-message "not complete" }
 {
-  U u[1] = { 0 };  // { dg-error "incomplete type" }
+  U u[1] = { 0 };  // { dg-error "5:field .u. has incomplete type" }
 };
 
 template<typename T>
@@ -18,20 +18,20 @@ template union UT<int>;
 
 union UF
 {
-  F u[1] = { 0 };  // { dg-error "incomplete type" }
+  F u[1] = { 0 };  // { dg-error "5:field .u. has incomplete type" }
 };
 
 template<typename T>
 union UFT
 {
-  F u[1] = { 0 };  // { dg-error "incomplete type" }
+  F u[1] = { 0 };  // { dg-error "5:field .u. has incomplete type" }
 };
 
 template union UFT<int>;
 
 struct S           // { dg-message "not complete" }
 {
-  S s[1] = { 0 };  // { dg-error "incomplete type" }
+  S s[1] = { 0 };  // { dg-error "5:field .s. has incomplete type" }
 };
 
 template<typename T>
@@ -44,13 +44,13 @@ template class ST<int>;
 
 struct SF
 {
-  F s[1] = { 0 };  // { dg-error "incomplete type" }
+  F s[1] = { 0 };  // { dg-error "5:field .s. has incomplete type" }
 };
 
 template<typename T>
 struct SFT
 {
-  F s[1] = { 0 };  // { dg-error "incomplete type" }
+  F s[1] = { 0 };  // { dg-error "5:field .s. has incomplete type" }
 };
 
 template class SFT<int>;

@@ -1,3 +1,27 @@
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* include/coi/common/COIResult_common.h: Mechanically replace
+	"can not" with "cannot".
+	* include/coi/source/COIBuffer_source.h: Likewise.
+
+2018-12-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* runtime/offload.h (omp_target_is_present, omp_target_memcpy)
+	(omp_target_memcpy_rect, omp_target_associate_ptr)
+	(omp_target_disassociate_ptr): Adjust to libgomp changes.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* Makefile.am: Include multilib.am.
+	* configure.ac: Remove AC_PREREQ.
+	* plugin/Makefile.am: Include multilib.am.
+	* plugin/configure.ac: Remove AC_PREREQ.
+	* Makefile.in, aclocal.m4, configure, plugin/Makefile.in,
+	plugin/aclocal.m4, plugin/configure: Regenerate.
+
 2018-04-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/85384

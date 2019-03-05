@@ -1,5 +1,5 @@
 /* Vectorizer
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -130,6 +130,8 @@ struct _slp_tree {
      scalar elements in one scalar iteration (GROUP_SIZE) multiplied by VF
      divided by vector size.  */
   unsigned int vec_stmts_size;
+  /* Reference count in the SLP graph.  */
+  unsigned int refcnt;
   /* Whether the scalar computations use two different operators.  */
   bool two_operators;
   /* The DEF type of this node.  */
@@ -773,7 +775,7 @@ struct dr_vec_info {
   int misalignment;
   /* The byte alignment that we'd ideally like the reference to have,
      and the value that misalignment is measured against.  */
-  int target_alignment;
+  poly_uint64 target_alignment;
   /* If true the alignment of base_decl needs to be increased.  */
   bool base_misaligned;
   tree base_decl;
@@ -1085,38 +1087,6 @@ nested_in_vect_loop_p (struct loop *loop, stmt_vec_info stmt_info)
 	  && (loop->inner == (gimple_bb (stmt_info->stmt))->loop_father));
 }
 
-/* Return the earlier statement between STMT1_INFO and STMT2_INFO.  */
-
-static inline stmt_vec_info
-get_earlier_stmt (stmt_vec_info stmt1_info, stmt_vec_info stmt2_info)
-{
-  gcc_checking_assert ((STMT_VINFO_IN_PATTERN_P (stmt1_info)
-			|| !STMT_VINFO_RELATED_STMT (stmt1_info))
-		       && (STMT_VINFO_IN_PATTERN_P (stmt2_info)
-			   || !STMT_VINFO_RELATED_STMT (stmt2_info)));
-
-  if (gimple_uid (stmt1_info->stmt) < gimple_uid (stmt2_info->stmt))
-    return stmt1_info;
-  else
-    return stmt2_info;
-}
-
-/* Return the later statement between STMT1_INFO and STMT2_INFO.  */
-
-static inline stmt_vec_info
-get_later_stmt (stmt_vec_info stmt1_info, stmt_vec_info stmt2_info)
-{
-  gcc_checking_assert ((STMT_VINFO_IN_PATTERN_P (stmt1_info)
-			|| !STMT_VINFO_RELATED_STMT (stmt1_info))
-		       && (STMT_VINFO_IN_PATTERN_P (stmt2_info)
-			   || !STMT_VINFO_RELATED_STMT (stmt2_info)));
-
-  if (gimple_uid (stmt1_info->stmt) > gimple_uid (stmt2_info->stmt))
-    return stmt1_info;
-  else
-    return stmt2_info;
-}
-
 /* Return TRUE if a statement represented by STMT_INFO is a part of a
    pattern.  */
 
@@ -1135,6 +1105,18 @@ vect_orig_stmt (stmt_vec_info stmt_info)
   if (is_pattern_stmt_p (stmt_info))
     return STMT_VINFO_RELATED_STMT (stmt_info);
   return stmt_info;
+}
+
+/* Return the later statement between STMT1_INFO and STMT2_INFO.  */
+
+static inline stmt_vec_info
+get_later_stmt (stmt_vec_info stmt1_info, stmt_vec_info stmt2_info)
+{
+  if (gimple_uid (vect_orig_stmt (stmt1_info)->stmt)
+      > gimple_uid (vect_orig_stmt (stmt2_info)->stmt))
+    return stmt1_info;
+  else
+    return stmt2_info;
 }
 
 /* If STMT_INFO has been replaced by a pattern statement, return the
@@ -1299,7 +1281,7 @@ vect_known_alignment_in_bytes (dr_vec_info *dr_info)
   if (DR_MISALIGNMENT (dr_info) == DR_MISALIGNMENT_UNKNOWN)
     return TYPE_ALIGN_UNIT (TREE_TYPE (DR_REF (dr_info->dr)));
   if (DR_MISALIGNMENT (dr_info) == 0)
-    return DR_TARGET_ALIGNMENT (dr_info);
+    return known_alignment (DR_TARGET_ALIGNMENT (dr_info));
   return DR_MISALIGNMENT (dr_info) & -DR_MISALIGNMENT (dr_info);
 }
 
@@ -1438,6 +1420,24 @@ extern dump_user_location_t vect_location;
 #define DUMP_VECT_SCOPE(MSG) \
   AUTO_DUMP_SCOPE (MSG, vect_location)
 
+/* A sentinel class for ensuring that the "vect_location" global gets
+   reset at the end of a scope.
+
+   The "vect_location" global is used during dumping and contains a
+   location_t, which could contain references to a tree block via the
+   ad-hoc data.  This data is used for tracking inlining information,
+   but it's not a GC root; it's simply assumed that such locations never
+   get accessed if the blocks are optimized away.
+
+   Hence we need to ensure that such locations are purged at the end
+   of any operations using them (e.g. via this class).  */
+
+class auto_purge_vect_location
+{
+ public:
+  ~auto_purge_vect_location ();
+};
+
 /*-----------------------------------------------------------------*/
 /* Function prototypes.                                            */
 /*-----------------------------------------------------------------*/
@@ -1499,8 +1499,11 @@ extern void vect_remove_stores (stmt_vec_info);
 extern opt_result vect_analyze_stmt (stmt_vec_info, bool *, slp_tree,
 				     slp_instance, stmt_vector_for_cost *);
 extern bool vectorizable_condition (stmt_vec_info, gimple_stmt_iterator *,
-				    stmt_vec_info *, tree, int, slp_tree,
+				    stmt_vec_info *, bool, slp_tree,
 				    stmt_vector_for_cost *);
+extern bool vectorizable_shift (stmt_vec_info, gimple_stmt_iterator *,
+				stmt_vec_info *, slp_tree,
+				stmt_vector_for_cost *);
 extern void vect_get_load_cost (stmt_vec_info, int, bool,
 				unsigned int *, unsigned int *,
 				stmt_vector_for_cost *,
@@ -1518,7 +1521,7 @@ extern opt_result vect_get_vector_types_for_stmt (stmt_vec_info, tree *,
 extern opt_tree vect_get_mask_type_for_stmt (stmt_vec_info);
 
 /* In tree-vect-data-refs.c.  */
-extern bool vect_can_force_dr_alignment_p (const_tree, unsigned int);
+extern bool vect_can_force_dr_alignment_p (const_tree, poly_uint64);
 extern enum dr_alignment_support vect_supportable_dr_alignment
                                            (dr_vec_info *, bool);
 extern tree vect_get_smallest_scalar_type (stmt_vec_info, HOST_WIDE_INT *,

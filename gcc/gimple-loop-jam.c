@@ -1,5 +1,5 @@
 /* Loop unroll-and-jam.
-   Copyright (C) 2017-2018 Free Software Foundation, Inc.
+   Copyright (C) 2017-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -118,7 +118,7 @@ merge_loop_tree (struct loop *loop, struct loop *old)
   for (i = 0; i < n; i++)
     {
       /* If the block was direct child of OLD loop it's now part
-         of LOOP.  If it was outside OLD, then it moved into LOOP
+	 of LOOP.  If it was outside OLD, then it moved into LOOP
 	 as well.  This avoids changing the loop father for BBs
 	 in inner loops of OLD.  */
       if (bbs[i]->loop_father == old
@@ -167,7 +167,7 @@ bb_prevents_fusion_p (basic_block bb)
        * stores or unknown side-effects prevent fusion
        * loads don't
        * computations into SSA names: these aren't problematic.  Their
-         result will be unused on the exit edges of the first N-1 copies
+	 result will be unused on the exit edges of the first N-1 copies
 	 (those aren't taken after unrolling).  If they are used on the
 	 other edge (the one leading to the outer latch block) they are
 	 loop-carried (on the outer loop) and the Nth copy of BB will
@@ -282,12 +282,12 @@ unroll_jam_possible_p (struct loop *outer, struct loop *loop)
       if (!simple_iv (loop, loop, op, &iv, true))
 	return false;
       /* The inductions must be regular, loop invariant step and initial
-         value.  */
+	 value.  */
       if (!expr_invariant_in_loop_p (outer, iv.step)
 	  || !expr_invariant_in_loop_p (outer, iv.base))
 	return false;
       /* XXX With more effort we could also be able to deal with inductions
-         where the initial value is loop variant but a simple IV in the
+	 where the initial value is loop variant but a simple IV in the
 	 outer loop.  The initial value for the second body would be
 	 the original initial value plus iv.base.step.  The next value
 	 for the fused loop would be the original next value of the first
@@ -322,7 +322,7 @@ fuse_loops (struct loop *loop)
       gcc_assert (EDGE_COUNT (next->header->preds) == 1);
 
       /* The PHI nodes of the second body (single-argument now)
-         need adjustments to use the right values: either directly
+	 need adjustments to use the right values: either directly
 	 the value of the corresponding PHI in the first copy or
 	 the one leaving the first body which unrolling did for us.
 
@@ -449,13 +449,13 @@ tree_loop_unroll_and_jam (void)
       dependences.create (10);
       datarefs.create (10);
       if (!compute_data_dependences_for_loop (outer, true, &loop_nest,
-					       &datarefs, &dependences))
+					      &datarefs, &dependences))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "Cannot analyze data dependencies\n");
 	  free_data_refs (datarefs);
 	  free_dependence_relations (dependences);
-	  return false;
+	  continue;
 	}
       if (!datarefs.length ())
 	continue;
@@ -490,7 +490,7 @@ tree_loop_unroll_and_jam (void)
 				     &removed))
 	    {
 	      /* Couldn't get the distance vector.  For two reads that's
-	         harmless (we assume we should unroll).  For at least
+		 harmless (we assume we should unroll).  For at least
 		 one write this means we can't check the dependence direction
 		 and hence can't determine safety.  */
 
@@ -503,7 +503,7 @@ tree_loop_unroll_and_jam (void)
 	}
 
       /* We regard a user-specified minimum percentage of zero as a request
-         to ignore all profitability concerns and apply the transformation
+	 to ignore all profitability concerns and apply the transformation
 	 always.  */
       if (!PARAM_VALUE (PARAM_UNROLL_JAM_MIN_PERCENT))
 	profit_unroll = 2;

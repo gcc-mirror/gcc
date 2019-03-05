@@ -1,6 +1,6 @@
 /* Auxiliary functions for output asm template or expand rtl
    pattern of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -3163,16 +3163,30 @@ nds32_spilt_doubleword (rtx *operands, bool load_p)
       /* generate low_part and high_part memory format:
 	   low_part:  (post_modify ((reg) (plus (reg) (const 4)))
 	   high_part: (post_modify ((reg) (plus (reg) (const -12))) */
-      low_part[mem] = gen_frame_mem (SImode,
-				     gen_rtx_POST_MODIFY (Pmode, sub_mem,
-							  gen_rtx_PLUS (Pmode,
-							  sub_mem,
-							  GEN_INT (4))));
-      high_part[mem] = gen_frame_mem (SImode,
-				      gen_rtx_POST_MODIFY (Pmode, sub_mem,
-							   gen_rtx_PLUS (Pmode,
-							   sub_mem,
-							   GEN_INT (-12))));
+      low_part[mem] = gen_rtx_MEM (SImode,
+				   gen_rtx_POST_MODIFY (Pmode, sub_mem,
+							gen_rtx_PLUS (Pmode,
+							sub_mem,
+							GEN_INT (4))));
+      high_part[mem] = gen_rtx_MEM (SImode,
+				    gen_rtx_POST_MODIFY (Pmode, sub_mem,
+							 gen_rtx_PLUS (Pmode,
+							 sub_mem,
+							 GEN_INT (-12))));
+    }
+  else if (GET_CODE (sub_mem) == POST_INC)
+    {
+      /* memory format is (post_inc (reg)),
+	 so that extract (reg) from the (post_inc (reg)) pattern.  */
+      sub_mem = XEXP (sub_mem, 0);
+
+      /* generate low_part and high_part memory format:
+	   low_part:  (post_inc (reg))
+	   high_part: (post_inc (reg)) */
+      low_part[mem] = gen_rtx_MEM (SImode,
+				   gen_rtx_POST_INC (Pmode, sub_mem));
+      high_part[mem] = gen_rtx_MEM (SImode,
+				    gen_rtx_POST_INC (Pmode, sub_mem));
     }
   else if (GET_CODE (sub_mem) == POST_MODIFY)
     {
@@ -3189,14 +3203,14 @@ nds32_spilt_doubleword (rtx *operands, bool load_p)
       /* Generate low_part and high_part memory format:
 	   low_part:  (post_modify ((reg) (plus (reg) (const)))
 	   high_part: ((plus (reg) (const 4))) */
-      low_part[mem] = gen_frame_mem (SImode,
-				     gen_rtx_POST_MODIFY (Pmode, post_mem,
-							  gen_rtx_PLUS (Pmode,
-							  post_mem,
-							  post_val)));
-      high_part[mem] = gen_frame_mem (SImode, plus_constant (Pmode,
-							     post_mem,
-							     4));
+      low_part[mem] = gen_rtx_MEM (SImode,
+				   gen_rtx_POST_MODIFY (Pmode, post_mem,
+							gen_rtx_PLUS (Pmode,
+							post_mem,
+							post_val)));
+      high_part[mem] = gen_rtx_MEM (SImode, plus_constant (Pmode,
+							   post_mem,
+							   4));
     }
   else
     {

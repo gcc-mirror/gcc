@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2018 Free Software Foundation, Inc.
+// Copyright (C) 2011-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,8 +22,12 @@
 
 // { dg-do compile }
 
+using __gnu_test::ExplicitConsAlloc;
+
 // libstdc++/50118
 template class std::multimap<int, int, std::less<int>,
-			     __gnu_test::ExplicitConsAlloc<int> >;
+			     ExplicitConsAlloc<std::pair<const int, int> > >;
+#ifndef __STRICT_ANSI__
 template class std::multimap<int, int, std::less<int>,
-			     __gnu_test::ExplicitConsAlloc<char> >;
+			     ExplicitConsAlloc<char> >;
+#endif

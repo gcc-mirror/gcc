@@ -1,5 +1,5 @@
 /* Code for RTL register eliminations.
-   Copyright (C) 2010-2018 Free Software Foundation, Inc.
+   Copyright (C) 2010-2019 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -1109,7 +1109,7 @@ eliminate_regs_in_insn (rtx_insn *insn, bool replace_p, bool first_p,
 	    {
 	      /* If we are assigning to a hard register that can be
 		 eliminated, it must be as part of a PARALLEL, since
-		 the code above handles single SETs.  This reg can not
+		 the code above handles single SETs.  This reg cannot
 		 be longer eliminated -- it is forced by
 		 mark_not_eliminable.  */
 	      for (ep = reg_eliminate;
@@ -1236,7 +1236,7 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
 		     "	Elimination %d to %d is not possible anymore\n",
 		     ep->from, ep->to);
 	  /* If after processing RTL we decides that SP can be used as
-	     a result of elimination, it can not be changed.  */
+	     a result of elimination, it cannot be changed.  */
 	  gcc_assert ((ep->to_rtx != stack_pointer_rtx)
 		      || (ep->from < FIRST_PSEUDO_REGISTER
 			  && fixed_regs [ep->from]));
