@@ -1,3 +1,10 @@
+2019-03-05  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/89570
+	* match.pd (vec_cond into cond_op simplification): Don't use
+	get_conditional_internal_fn, use as_internal_fn (cond_op).
+
 2019-03-05  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR target/89222
