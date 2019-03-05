@@ -1,3 +1,11 @@
+2019-03-05  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-02-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89505
+	* gcc.dg/torture/pr89505.c: New testcase.
+
 2019-03-03  Harald Anlauf  <anlauf@gmx.de>
 
 	Backport from trunk

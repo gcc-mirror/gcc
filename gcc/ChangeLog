@@ -1,3 +1,13 @@
+2019-03-05  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-02-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89505
+	* tree-ssa-structalias.c (compute_dependence_clique): Make sure
+	to handle restrict pointed-to vars with multiple subvars
+	correctly.
+
 2019-03-01  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/89517
