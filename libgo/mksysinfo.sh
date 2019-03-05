@@ -1113,7 +1113,11 @@ grep '^const _FALLOC_' gen-sysinfo.go |
 
 # The statfs struct.
 # Prefer largefile variant if available.
+# CentOS 5 does not have f_flags, so pull from f_spare.
 statfs=`grep '^type _statfs64 ' gen-sysinfo.go || true`
+if ! echo "$statfs" | grep f_flags; then
+  statfs=`echo "$statfs" | sed -e 's/f_spare \[4+1\]\([^ ;]*\)/f_flags \1; f_spare [3+1]\1/'`
+fi
 if test "$statfs" != ""; then
   grep '^type _statfs64 ' gen-sysinfo.go
 else
