@@ -1106,9 +1106,9 @@ func scanstackblockwithmap(pc, b0, n0 uintptr, ptrmask *uint8, gcw *gcWork) {
 // Preemption must be disabled.
 //go:nowritebarrier
 func shade(b uintptr) {
-	if obj, span, objIndex := findObject(b, 0, 0, true); obj != 0 {
+	if obj, span, objIndex := findObject(b, 0, 0, !usestackmaps); obj != 0 {
 		gcw := &getg().m.p.ptr().gcw
-		greyobject(obj, 0, 0, span, gcw, objIndex, true)
+		greyobject(obj, 0, 0, span, gcw, objIndex, !usestackmaps)
 	}
 }
 
