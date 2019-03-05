@@ -12112,7 +12112,7 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
 {
   const tree_node **slot;
   enum tree_code code;
-  union tree_node buf;
+  union tree_node *buf;
   int i, len;
 
  recursive_label:
@@ -12127,11 +12127,13 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
       && HAS_DECL_ASSEMBLER_NAME_P (expr))
     {
       /* Allow DECL_ASSEMBLER_NAME and symtab_node to be modified.  */
-      memcpy ((char *) &buf, expr, tree_size (expr));
-      SET_DECL_ASSEMBLER_NAME ((tree)&buf, NULL);
-      buf.decl_with_vis.symtab_node = NULL;
-      buf.base.nowarning_flag = 0;
-      expr = (tree) &buf;
+      size_t sz = tree_size (expr);
+      buf = XALLOCAVAR (union tree_node, sz);
+      memcpy ((char *) buf, expr, sz);
+      SET_DECL_ASSEMBLER_NAME ((tree) buf, NULL);
+      buf->decl_with_vis.symtab_node = NULL;
+      buf->base.nowarning_flag = 0;
+      expr = (tree) buf;
     }
   else if (TREE_CODE_CLASS (code) == tcc_type
 	   && (TYPE_POINTER_TO (expr)
@@ -12143,8 +12145,10 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
     {
       /* Allow these fields to be modified.  */
       tree tmp;
-      memcpy ((char *) &buf, expr, tree_size (expr));
-      expr = tmp = (tree) &buf;
+      size_t sz = tree_size (expr);
+      buf = XALLOCAVAR (union tree_node, sz);
+      memcpy ((char *) buf, expr, sz);
+      expr = tmp = (tree) buf;
       TYPE_CONTAINS_PLACEHOLDER_INTERNAL (tmp) = 0;
       TYPE_POINTER_TO (tmp) = NULL;
       TYPE_REFERENCE_TO (tmp) = NULL;
@@ -12160,9 +12164,11 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
     {
       /* Allow TREE_NO_WARNING to be set.  Perhaps we shouldn't allow that
 	 and change builtins.c etc. instead - see PR89543.  */
-      memcpy ((char *) &buf, expr, tree_size (expr));
-      buf.base.nowarning_flag = 0;
-      expr = (tree) &buf;
+      size_t sz = tree_size (expr);
+      buf = XALLOCAVAR (union tree_node, sz);
+      memcpy ((char *) buf, expr, sz);
+      buf->base.nowarning_flag = 0;
+      expr = (tree) buf;
     }
   md5_process_bytes (expr, tree_size (expr), ctx);
   if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
