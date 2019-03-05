@@ -1,3 +1,19 @@
+2019-03-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_compatibility/math.h [C++20] (lerp): Add using
+	declaration.
+	* include/c_global/cmath [C++20] (__cpp_lib_interpolate): Define.
+	(__lerp): Define function template to implement lerp.
+	(lerp(float, float, float), lerp(double, double, double))
+	(lerp(long double, long double, long double)): Define for C++20.
+	* include/std/numeric [C++20] (__cpp_lib_interpolate): Define.
+	(midpoint(T, T), midpoint(T*, T*)): Define.
+	* include/std::version [C++20] (__cpp_lib_interpolate): Define.
+	* testsuite/26_numerics/lerp.cc: New test.
+	* testsuite/26_numerics/midpoint/floating.cc: New test.
+	* testsuite/26_numerics/midpoint/integral.cc: New test.
+	* testsuite/26_numerics/midpoint/pointer.cc: New test.
+
 2019-03-04  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR libstdc++/88996 Implement P0439R0
