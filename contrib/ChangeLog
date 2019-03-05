@@ -1,6 +1,12 @@
 2019-03-05  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	contrib/
+	* dg-extract-results.py: Handle case where a WARNING happens with
+	the first test of a harness.
+
+2019-03-05  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	contrib/
 	* dg-extract-results.sh: Fix order of WARNING and following test
 	result.
 
