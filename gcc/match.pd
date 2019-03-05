@@ -5176,24 +5176,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
    if the target can do it in one go.  This makes the operation conditional
    on c, so could drop potentially-trapping arithmetic, but that's a valid
-   simplification if the result of the operation isn't needed.  */
+   simplification if the result of the operation isn't needed.
+
+   Avoid speculatively generating a stand-alone vector comparison                                                                                
+   on targets that might not support them.  Any target implementing                                                                              
+   conditional internal functions must support the same comparisons                                                                              
+   inside and outside a VEC_COND_EXPR.  */                                                                                                       
+
 #if GIMPLE
 (for uncond_op (UNCOND_BINARY)
      cond_op (COND_BINARY)
  (simplify
   (vec_cond @0 (view_convert? (uncond_op@4 @1 @2)) @3)
-  (with { tree op_type = TREE_TYPE (@4); 
-	  internal_fn cond_fn = get_conditional_internal_fn (uncond_op); }
-   (if (cond_fn != IFN_LAST
-	&& vectorized_internal_fn_supported_p (cond_fn, op_type)
+  (with { tree op_type = TREE_TYPE (@4); }
+   (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
 	&& element_precision (type) == element_precision (op_type))
     (view_convert (cond_op @0 @1 @2 (view_convert:op_type @3))))))
  (simplify
   (vec_cond @0 @1 (view_convert? (uncond_op@4 @2 @3)))
-  (with { tree op_type = TREE_TYPE (@4);
-	  internal_fn cond_fn = get_conditional_internal_fn (uncond_op); }
-   (if (cond_fn != IFN_LAST
-	&& vectorized_internal_fn_supported_p (cond_fn, op_type)
+  (with { tree op_type = TREE_TYPE (@4); }
+   (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
 	&& element_precision (type) == element_precision (op_type))
     (view_convert (cond_op (bit_not @0) @2 @3 (view_convert:op_type @1)))))))
 
@@ -5202,20 +5204,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      cond_op (COND_TERNARY)
  (simplify
   (vec_cond @0 (view_convert? (uncond_op@5 @1 @2 @3)) @4)
-  (with { tree op_type = TREE_TYPE (@5);
-	  internal_fn cond_fn
-	    = get_conditional_internal_fn (as_internal_fn (uncond_op)); }
-   (if (cond_fn != IFN_LAST
-	&& vectorized_internal_fn_supported_p (cond_fn, op_type)
+  (with { tree op_type = TREE_TYPE (@5); }
+   (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
 	&& element_precision (type) == element_precision (op_type))
     (view_convert (cond_op @0 @1 @2 @3 (view_convert:op_type @4))))))
  (simplify
   (vec_cond @0 @1 (view_convert? (uncond_op@5 @2 @3 @4)))
-  (with { tree op_type = TREE_TYPE (@5);
-	  internal_fn cond_fn
-	    = get_conditional_internal_fn (as_internal_fn (uncond_op)); }
-   (if (cond_fn != IFN_LAST
-	&& vectorized_internal_fn_supported_p (cond_fn, op_type)
+  (with { tree op_type = TREE_TYPE (@5); }
+   (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
 	&& element_precision (type) == element_precision (op_type))
     (view_convert (cond_op (bit_not @0) @2 @3 @4
 		  (view_convert:op_type @1)))))))
