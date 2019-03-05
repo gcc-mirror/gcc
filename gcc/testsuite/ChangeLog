@@ -1,5 +1,11 @@
 2019-03-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/89487
+	* gcc.dg/tree-ssa/pr89487.c: Include ../pr87600.h.
+	(caml_interprete): Ifdef the whole body out if REG1 or REG2 macros
+	aren't defined.  Use REG1 instead of "%r15" and REG2 instead of
+	"%r14".
+
 	PR bootstrap/89560
 	* g++.dg/other/pr89560.C: New test.
 
