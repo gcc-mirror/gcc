@@ -342,8 +342,10 @@ func (s *mspan) sweep(preserve bool) bool {
 	// it is not otherwise a problem. So we disable the test for gccgo.
 	nfreedSigned := int(nfreed)
 	if nalloc > s.allocCount {
-		// print("runtime: nelems=", s.nelems, " nalloc=", nalloc, " previous allocCount=", s.allocCount, " nfreed=", nfreed, "\n")
-		// throw("sweep increased allocation count")
+		if usestackmaps {
+			print("runtime: nelems=", s.nelems, " nalloc=", nalloc, " previous allocCount=", s.allocCount, " nfreed=", nfreed, "\n")
+			throw("sweep increased allocation count")
+		}
 
 		// For gccgo, adjust the freed count as a signed number.
 		nfreedSigned = int(s.allocCount) - int(nalloc)
