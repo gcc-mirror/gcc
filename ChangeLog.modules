@@ -1,6 +1,14 @@
 2019-03-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::hash::add_binding): Ignore internal-linkage
+	entities.
+	(module_state::add_writables): Don't walk anonymous namespaces.
+	gcc/testsuite/
+	* g++.dg/modules/unnamed-1_a.C: Adjust scan.
+	* g++.dg/modules/unnamed-2.C: Adjust scan.
+
+	gcc/cp/
 	* module.cc (depset::add_dependency): Drop kind arg, return void.
 	(depset::hash::add_binding): Set current during addition.
 	(module_state::add_writables): Tweak.

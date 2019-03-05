@@ -15,7 +15,5 @@ export int hwm ()
   return counter;
 }
 
-// Ideally we wouldn't write this binding, because it's not reachable
-// from anywhere else
-// { dg-final { scan-lang-dump {Bindings '::counter' section:} module } }
+// { dg-final { scan-lang-dump-not {Bindings '::counter' section:} module } }
 // { dg-final { scan-lang-dump-not {Unnamed . '::counter'} module } }

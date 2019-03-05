@@ -7706,7 +7706,7 @@ depset::hash::add_binding (tree ns, tree name, tree value, tree maybe_type)
   depset *bind = new depset (binding_key (ns, name));
   current = bind;
 
-  gcc_checking_assert (!is_mergeable ());
+  gcc_checking_assert (!is_mergeable () && TREE_PUBLIC (ns));
   unsigned count = maybe_type ? 1 : 0;
   for (ovl_iterator iter (value); iter; ++iter)
     count++;
@@ -7718,9 +7718,16 @@ depset::hash::add_binding (tree ns, tree name, tree value, tree maybe_type)
       gcc_checking_assert (TREE_CODE (decl) != NAMESPACE_DECL
 			   || DECL_NAMESPACE_ALIAS (decl));
       gcc_assert (!iter.hidden_p ());
+      gcc_assert (!iter.using_p ()); // FIXME: add using decl support
 
       if (MAYBE_DECL_MODULE_OWNER (decl) == MODULE_NONE)
 	/* Ignore global module fragment entities.  */
+	continue;
+
+      if (!TREE_PUBLIC (STRIP_TEMPLATE (decl))
+	  && TREE_CODE (STRIP_TEMPLATE (decl)) != CONST_DECL
+	  && TREE_CODE (STRIP_TEMPLATE (decl)) != TYPE_DECL)
+	/* Ignore internal-linkage entitites.  */
 	continue;
 
       if ((TREE_CODE (decl) == VAR_DECL
@@ -12146,9 +12153,14 @@ module_state::add_writables (depset::hash &table, tree ns, bitmap partitions)
 	  if (TREE_CODE (value) == NAMESPACE_DECL)
 	    {
 	      gcc_checking_assert (!type);
-	      add_writables (table, value, partitions);
-	      if (DECL_MODULE_EXPORT_P (value))
-		table.add_dependency (value);
+	      if (TREE_PUBLIC (value))
+		{
+		  add_writables (table, value, partitions);
+		  // FIXME: What about opening and closing it in the
+		  // purview, shouldn't that add the namespace too?
+		  if (DECL_MODULE_EXPORT_P (value))
+		    table.add_dependency (value);
+		}
 	    }
 	  else
 	    table.add_binding (ns, name, value, type);
@@ -13261,7 +13273,7 @@ set_module_owner (tree decl)
   /* We should only be setting moduleness on things that are their own
      owners.  */
   gcc_checking_assert (STRIP_TEMPLATE (decl) == get_module_owner (decl));
-  
+
   if (!modules)
     /* We can be called when modules are not enabled.  */
     return;

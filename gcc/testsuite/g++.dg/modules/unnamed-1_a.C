@@ -3,7 +3,7 @@
 export module PiL;
 // { dg-module-bmi PiL }
 
-static int counter = 0;
+int counter = 0;
 
 export inline int get ()
 {
