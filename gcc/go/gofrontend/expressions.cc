@@ -17287,8 +17287,8 @@ Numeric_constant::hash(unsigned int seed) const
       break;
     case NC_COMPLEX:
       mpfr_init(m);
-      mpc_abs(m, this->u_.complex_val, MPFR_RNDN);
-      val = mpfr_get_ui(m, MPFR_RNDN);
+      mpc_abs(m, this->u_.complex_val, GMP_RNDN);
+      val = mpfr_get_ui(m, GMP_RNDN);
       mpfr_clear(m);
       break;
     case NC_FLOAT:
