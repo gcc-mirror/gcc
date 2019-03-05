@@ -4024,11 +4024,11 @@ gimplify_cond_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
       /* Build the new then clause, `tmp = then_;'.  But don't build the
 	 assignment if the value is void; in C++ it can be if it's a throw.  */
       if (!VOID_TYPE_P (TREE_TYPE (then_)))
-	TREE_OPERAND (expr, 1) = build2 (MODIFY_EXPR, type, tmp, then_);
+	TREE_OPERAND (expr, 1) = build2 (INIT_EXPR, type, tmp, then_);
 
       /* Similarly, build the new else clause, `tmp = else_;'.  */
       if (!VOID_TYPE_P (TREE_TYPE (else_)))
-	TREE_OPERAND (expr, 2) = build2 (MODIFY_EXPR, type, tmp, else_);
+	TREE_OPERAND (expr, 2) = build2 (INIT_EXPR, type, tmp, else_);
 
       TREE_TYPE (expr) = void_type_node;
       recalculate_side_effects (expr);
