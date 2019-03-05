@@ -1,3 +1,10 @@
+2019-03-05  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (depset): Add refs_internal field.  Replace decl_key
+	and defn_key with entity_key. Remove is_decl, add is_namespace.
+	Replace get_decl with get_entity.
+
 2019-03-04  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r269375.
