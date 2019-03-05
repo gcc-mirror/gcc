@@ -2714,7 +2714,7 @@ cxx_eval_component_reference (const constexpr_ctx *ctx, tree t,
 
   /* We only create a CONSTRUCTOR for a subobject when we modify it, so empty
      classes never get represented; throw together a value now.  */
-  if (is_really_empty_class (TREE_TYPE (t)))
+  if (is_really_empty_class (TREE_TYPE (t), /*ignore_vptr*/false))
     return build_constructor (TREE_TYPE (t), NULL);
 
   gcc_assert (DECL_CONTEXT (part) == TYPE_MAIN_VARIANT (TREE_TYPE (whole)));
@@ -4427,12 +4427,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	 CONST_DECL for aggregate constants.  */
       if (lval)
 	return t;
-      /* is_really_empty_class doesn't take into account _vptr, so initializing
-	 otherwise empty class with { } would overwrite the initializer that
-	 initialize_vtable created for us.  */
       if (COMPLETE_TYPE_P (TREE_TYPE (t))
-	  && !TYPE_POLYMORPHIC_P (TREE_TYPE (t))
-	  && is_really_empty_class (TREE_TYPE (t)))
+	  && is_really_empty_class (TREE_TYPE (t), /*ignore_vptr*/false))
 	{
 	  /* If the class is empty, we aren't actually loading anything.  */
 	  r = build_constructor (TREE_TYPE (t), NULL);
@@ -4480,7 +4476,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       else if (TYPE_REF_P (TREE_TYPE (t)))
 	/* Defer, there's no lvalue->rvalue conversion.  */;
       else if (COMPLETE_TYPE_P (TREE_TYPE (t))
-	       && is_really_empty_class (TREE_TYPE (t)))
+	       && is_really_empty_class (TREE_TYPE (t), /*ignore_vptr*/false))
 	{
 	  /* If the class is empty, we aren't actually loading anything.  */
 	  r = build_constructor (TREE_TYPE (t), NULL);
@@ -5956,7 +5952,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	      || (DECL_INITIAL (t)
 		  && !DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (t)))
 	  && COMPLETE_TYPE_P (TREE_TYPE (t))
-	  && !is_really_empty_class (TREE_TYPE (t)))
+	  && !is_really_empty_class (TREE_TYPE (t), /*ignore_vptr*/false))
         {
           if (flags & tf_error)
             non_const_var_error (t);

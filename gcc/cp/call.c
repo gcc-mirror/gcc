@@ -8566,7 +8566,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       tree arg = argarray[1];
       location_t loc = cp_expr_loc_or_loc (arg, input_location);
 
-      if (is_really_empty_class (type))
+      if (is_really_empty_class (type, /*ignore_vptr*/true))
 	{
 	  /* Avoid copying empty classes.  */
 	  val = build2 (COMPOUND_EXPR, type, arg, to);
