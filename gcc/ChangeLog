@@ -1,3 +1,8 @@
+2019-03-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86485 - -Wmaybe-unused with empty class ?:
+	* gimplify.c (gimplify_cond_expr): Use INIT_EXPR.
+
 2019-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/89587
