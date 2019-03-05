@@ -1,5 +1,8 @@
 2019-03-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/89560
+	* g++.dg/other/pr89560.C: New test.
+
 	PR tree-optimization/89570
 	* gcc.dg/pr89570.c: New test.
 

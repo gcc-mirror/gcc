@@ -1,5 +1,9 @@
 2019-03-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/89560
+	* fold-const.c (fold_checksum_tree): Don't use fixed size buffer,
+	instead alloca it only when needed with the needed size.
+
 	PR tree-optimization/89570
 	* match.pd (vec_cond into cond_op simplification): Guard with
 	vectorized_internal_fn_supported_p test and #if GIMPLE.
