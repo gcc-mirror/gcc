@@ -2340,7 +2340,7 @@ public:
 
   public:
     void add_mergeable (tree decl);
-    depset *add_dependency (tree decl, int kind);
+    void add_dependency (tree decl);
     void add_binding (tree ns, tree name, tree value, tree maybe_type);
     depset *get_work ()
     {
@@ -6238,7 +6238,7 @@ trees_out::tree_namespace (tree ns, walk_kind ref, tree inner_decl)
   else if (ref == WK_body)
     tree_ctx (CP_DECL_CONTEXT (ns), true, ns);
   else if (DECL_SOURCE_LOCATION (ns) != BUILTINS_LOCATION)
-    dep_hash->add_dependency (ns, true);
+    dep_hash->add_dependency (ns);
 
   int tag = insert (ns, ref);
   if (streaming_p ())
@@ -6376,7 +6376,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	      {
 		/* We've found a voldemort type.  Add it as a
 		   dependency.  */
-		dep_hash->add_dependency (decl, looking_inside);
+		dep_hash->add_dependency (decl);
 		kind = "unnamed";
 		goto insert;
 	      }
@@ -6400,7 +6400,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	if (TREE_CODE (ctx) != NAMESPACE_DECL)
 	  tree_ctx (ctx, true, decl);
 	else if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION)
-	  dep_hash->add_dependency (decl, looking_inside);
+	  dep_hash->add_dependency (decl);
       }
 
     tree name = DECL_NAME (decl);
@@ -7645,56 +7645,55 @@ depset::hash::find (const key_type &key)
    findable by name.  Note that depending on the resolution of ADL
    mechanism, we may need to revisit that.   */
 
-// kind < 0 - binding
-// kind > 0 - containing scope
-// kind = 0 regular
-
-depset *
-depset::hash::add_dependency (tree decl, int kind)
+void
+depset::hash::add_dependency (tree decl)
 {
   bool has_def = !is_mergeable () && has_definition (decl);
   key_type key = entity_key (decl, has_def);
 
   if (depset **slot = maybe_insert (key, !is_mergeable ()))
     {
+      bool binding_p = current && current->is_binding ();
+      bool ns_p = (TREE_CODE (decl) == NAMESPACE_DECL
+		   && !DECL_NAMESPACE_ALIAS (decl));
       depset *dep = *slot;
 
-      gcc_checking_assert (!is_mergeable () || kind >= 0);
+      gcc_checking_assert (!is_mergeable () || !binding_p);
       if (!dep)
 	{
 	  *slot = dep = new depset (key);
 	  worklist.safe_push (dep);
 
-	  if (kind >= 0
-	      && !(TREE_CODE (decl) == NAMESPACE_DECL
-		   && !DECL_NAMESPACE_ALIAS (decl)))
+	  if (!binding_p && !ns_p)
 	    /* Any not-for-binding depset is not found by name.  */
 	    dep->is_unnamed = true;
 	}
 
       dump (dumper::DEPEND)
-	&& dump ("%s on %s %C:%N added", kind < 0 ? "Binding" : "Dependency",
+	&& dump ("%s on %s %C:%N added", binding_p ? "Binding" : "Dependency",
 		 dep->is_defn () ? "definition" : "declaration",
 		 TREE_CODE (decl), decl);
 
-      if (kind >= 0)
+      if (!ns_p)
 	{
-	  if (dep->is_unnamed)
-	    current->refs_unnamed = true;
 	  current->deps.safe_push (dep);
-	  if (TREE_CODE (decl) == TYPE_DECL
-	      && UNSCOPED_ENUM_P (TREE_TYPE (decl))
-	      && CP_DECL_CONTEXT (current->get_entity ()) == TREE_TYPE (decl))
-	    /* Unscoped enum values are pushed into the containing
-	       scope.  Insert a dependency to the current binding, if it
-	       is one of the enum constants.  */
+	  if (current->is_binding ())
 	    dep->deps.safe_push (current);
+	  else
+	    {
+	      if (dep->is_unnamed)
+		current->refs_unnamed = true;
+	      if (TREE_CODE (decl) == TYPE_DECL
+		  && UNSCOPED_ENUM_P (TREE_TYPE (decl))
+		  && (CP_DECL_CONTEXT (current->get_entity ())
+		      == TREE_TYPE (decl)))
+		/* Unscoped enum values are pushed into the containing
+		   scope.  Insert a dependency to the current binding, if it
+		   is one of the enum constants.  */
+		dep->deps.safe_push (current);
+	    }
 	}
-
-      return dep;
     }
-  else
-    return NULL;
 }
 
 /* VALUE is an overload of decls that is bound in this module.  Create
@@ -7705,6 +7704,7 @@ void
 depset::hash::add_binding (tree ns, tree name, tree value, tree maybe_type)
 {
   depset *bind = new depset (binding_key (ns, name));
+  current = bind;
 
   gcc_checking_assert (!is_mergeable ());
   unsigned count = maybe_type ? 1 : 0;
@@ -7729,17 +7729,13 @@ depset::hash::add_binding (tree ns, tree name, tree value, tree maybe_type)
 	/* Ignore TINFO things.  */
 	continue;
 
-      depset *dep = add_dependency (decl, -1);
-      bind->deps.quick_push (dep);
-      dep->deps.safe_push (bind);
+      add_dependency (decl);
     }
 
   if (maybe_type)
-    {
-      depset *dep = add_dependency (maybe_type, -1);
-      bind->deps.quick_push (dep);
-      dep->deps.safe_push (bind);
-    }
+    add_dependency (maybe_type);
+
+  current = NULL;
 
   if (bind->deps.length ())
     insert (bind);
@@ -12150,9 +12146,9 @@ module_state::add_writables (depset::hash &table, tree ns, bitmap partitions)
 	  if (TREE_CODE (value) == NAMESPACE_DECL)
 	    {
 	      gcc_checking_assert (!type);
-	      if (DECL_MODULE_EXPORT_P (value))
-		table.add_dependency (value, -1);
 	      add_writables (table, value, partitions);
+	      if (DECL_MODULE_EXPORT_P (value))
+		table.add_dependency (value);
 	    }
 	  else
 	    table.add_binding (ns, name, value, type);

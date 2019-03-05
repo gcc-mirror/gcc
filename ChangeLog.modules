@@ -1,6 +1,11 @@
 2019-03-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::add_dependency): Drop kind arg, return void.
+	(depset::hash::add_binding): Set current during addition.
+	(module_state::add_writables): Tweak.
+
+	gcc/cp/
 	* module.cc (depset): Add refs_internal field.  Replace decl_key
 	and defn_key with entity_key. Remove is_decl, add is_namespace.
 	Replace get_decl with get_entity.
