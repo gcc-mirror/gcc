@@ -1,3 +1,8 @@
+2019-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89594
+	* gcc.dg/pr89594.c: New testcase.
+
 2019-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/89487
