@@ -3858,16 +3858,21 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
   if (!info.func)
     return false;
 
-  info.fncode = DECL_FUNCTION_CODE (info.func);
-
   /* Format string argument number (valid for all functions).  */
   unsigned idx_format = UINT_MAX;
-  if (!gimple_call_builtin_p (info.callstmt, BUILT_IN_NORMAL))
+  if (gimple_call_builtin_p (info.callstmt, BUILT_IN_NORMAL))
+    info.fncode = DECL_FUNCTION_CODE (info.func);
+  else
     {
       unsigned idx_args;
       idx_format = get_user_idx_format (info.func, &idx_args);
-      if (idx_format == UINT_MAX)
+      if (idx_format == UINT_MAX
+	  || idx_format >= gimple_call_num_args (info.callstmt)
+	  || idx_args > gimple_call_num_args (info.callstmt)
+	  || !POINTER_TYPE_P (TREE_TYPE (gimple_call_arg (info.callstmt,
+							  idx_format))))
 	return false;
+      info.fncode = BUILT_IN_NONE;
       info.argidx = idx_args;
     }
 

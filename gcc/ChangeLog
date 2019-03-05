@@ -1,3 +1,12 @@
+2019-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89566
+	* gimple-ssa-sprintf.c (sprintf_dom_walker::handle_gimple_call):
+	Set info.fncode to BUILT_IN_NONE if gimple_call_builtin_p failed.
+	Punt if get_user_idx_format succeeds, but idx_format argument is
+	not provided or doesn't have pointer type, or if idx_args is above
+	number of provided arguments.
+
 2019-03-04  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR tree-optimization/89437

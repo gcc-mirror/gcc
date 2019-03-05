@@ -1,3 +1,8 @@
+2019-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89566
+	* c-c++-common/pr89566.c: New test.
+
 2019-03-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84605
