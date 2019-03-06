@@ -1,3 +1,9 @@
+2019-03-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/72714
+	Backport from trunk
+	* resolve.c (resolve_allocate_expr): Add some tests for coarrays.
+
 2019-03-03  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
