@@ -1,3 +1,8 @@
+2019-03-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/71203
+	* expr.c (simplify_const_ref): Avoid null pointer dereference.
+
 2019-03-03  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
