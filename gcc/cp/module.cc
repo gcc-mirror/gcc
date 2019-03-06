@@ -2205,7 +2205,7 @@ public:
 public:
   unsigned cluster : 30; /* Strongly connected cluster.  */
   bool is_unnamed : 1;   /* This decl is not found by name.  */
-  bool : 1;
+  bool is_internal : 1;  /* This decl is internal.  */
   unsigned section : 30; /* Section written to.  */
   bool refs_unnamed : 1;  /* A dependency is not found by name.  */
   bool refs_internal : 1; /* Refs an internal entity (bad).  */
@@ -2306,12 +2306,16 @@ public:
     vec<depset *> worklist;  /* Worklist of decls to walk.  */
     depset *current;         /* Current depset being depended.  */
     bool mergeables;         /* Mergeables ordering only.  */
-    bool sneakoscope;        /* Detecting dark magic (of a voldemort type).  */
+    bool sneakoscope;        /* Detecting dark magic (of a voldemort
+				type).  */
+    bool gmfs;		     /* GMF entities are present.  */
+    bool internals;	     /* internal entities are referenced.  */
 
   public:
     hash (size_t size, bool mergeable = false)
       : parent (size), worklist (), current (NULL),
-	mergeables (mergeable), sneakoscope (false)
+	mergeables (mergeable), sneakoscope (false),
+	gmfs (false), internals (false)
     {
       worklist.reserve (size);
     }
@@ -2371,8 +2375,8 @@ public:
 };
 
 depset::depset (const key_type &key)
-  :key (key), deps (), cluster (0), is_unnamed (false),
-   section (0), refs_unnamed (false)
+  :key (key), deps (), cluster (0), is_unnamed (false), is_internal (false),
+   section (0), refs_unnamed (false), refs_internal (false)
 {
 }
 
@@ -7638,12 +7642,12 @@ depset::hash::find (const key_type &key)
   return slot ? *slot : NULL;
 }
 
-/* DECL is a newly discovered dependency of current.  Append it to
-   current's depset.  Push it into the worklist, if it's not there.
-   The decls discovered at this point are not export or module
-   linkage.  We don't add them to the binding depset -- they are not
-   findable by name.  Note that depending on the resolution of ADL
-   mechanism, we may need to revisit that.   */
+/* DECL is a newly discovered dependency of current.  Create the
+   depset, if it doesn't already exist.  Add it to the worklist if so.
+   Append it to current's depset.  The decls newly discovered at this
+   point are not export or module linkage.  The may be voldemort
+   types, internal-linkage entities of reachable global module
+   fragment entities.  */
 
 void
 depset::hash::add_dependency (tree decl)
@@ -7665,8 +7669,41 @@ depset::hash::add_dependency (tree decl)
 	  worklist.safe_push (dep);
 
 	  if (!binding_p && !ns_p)
-	    /* Any not-for-binding depset is not found by name.  */
-	    dep->is_unnamed = true;
+	    {
+	      /* A not-for-binding dependency.  Either:
+		 1) an ill-formed internal linkage entity, or
+		 2) a reachable global module fragment entity, or
+		 3) a voldemort type.  */
+	      // FIXME: It is unfortunate we'll already have cleared
+	      // TREE_PUBLIC for entities that are iternal by dint of
+	      // referring to internal types.  Hence the use of
+	      // DECL_THIS_STATIC. 
+	      tree ctx = CP_DECL_CONTEXT (decl);
+	      if (TREE_CODE (ctx) != NAMESPACE_DECL)
+		/* A voldemort type.  */
+		dep->is_unnamed = true;
+	      else if ((TREE_CODE (STRIP_TEMPLATE (decl)) == TYPE_DECL
+			|| TREE_CODE (STRIP_TEMPLATE (decl)) == CONST_DECL)
+		       ?  !TREE_PUBLIC (ctx) : DECL_THIS_STATIC (decl))
+		/* An internal decl.  */
+		dep->is_internal = true;
+	      else
+		{
+		  // FIXME: We have to walk the non-emitted entities
+		  // in the module's purview too.
+		  /* A reachable global module fragment entity.  Add
+		     it to its scope's binding depset.  */
+		  gcc_checking_assert (MAYBE_DECL_MODULE_OWNER (decl)
+				       == MODULE_NONE);
+		  key_type bkey = binding_key (ctx, DECL_NAME (decl));
+		  depset **bslot = maybe_insert (key, true);
+		  depset *bdep = *bslot;
+		  if (!bdep)
+		    *bslot = bdep = new depset (bkey);
+		  bdep->deps.safe_push (dep);
+		  dep->deps.safe_push (bdep);
+		}
+	    }
 	}
 
       dump (dumper::DEPEND)
@@ -7681,8 +7718,10 @@ depset::hash::add_dependency (tree decl)
 	    dep->deps.safe_push (current);
 	  else
 	    {
-	      if (dep->is_unnamed)
-		current->refs_unnamed = true;
+	      current->refs_unnamed |= dep->is_unnamed;
+	      current->refs_internal |= dep->is_internal;
+	      internals |= dep->is_internal;
+
 	      if (TREE_CODE (decl) == TYPE_DECL
 		  && UNSCOPED_ENUM_P (TREE_TYPE (decl))
 		  && (CP_DECL_CONTEXT (current->get_entity ())
@@ -7703,14 +7742,9 @@ depset::hash::add_dependency (tree decl)
 void
 depset::hash::add_binding (tree ns, tree name, tree value, tree maybe_type)
 {
-  depset *bind = new depset (binding_key (ns, name));
-  current = bind;
+  current = new depset (binding_key (ns, name));
 
   gcc_checking_assert (!is_mergeable () && TREE_PUBLIC (ns));
-  unsigned count = maybe_type ? 1 : 0;
-  for (ovl_iterator iter (value); iter; ++iter)
-    count++;
-  bind->deps.reserve_exact (count);
   for (ovl_iterator iter (value); iter; ++iter)
     {
       tree decl = *iter;
@@ -7721,12 +7755,15 @@ depset::hash::add_binding (tree ns, tree name, tree value, tree maybe_type)
       gcc_assert (!iter.using_p ()); // FIXME: add using decl support
 
       if (MAYBE_DECL_MODULE_OWNER (decl) == MODULE_NONE)
-	/* Ignore global module fragment entities.  */
-	continue;
+	{
+	  /* Ignore global module fragment entities.  */
+	  gmfs = true;
+	  continue;
+	}
 
-      if (!TREE_PUBLIC (STRIP_TEMPLATE (decl))
-	  && TREE_CODE (STRIP_TEMPLATE (decl)) != CONST_DECL
-	  && TREE_CODE (STRIP_TEMPLATE (decl)) != TYPE_DECL)
+      if (!(TREE_CODE (STRIP_TEMPLATE (decl)) == CONST_DECL
+	    || TREE_CODE (STRIP_TEMPLATE (decl)) == TYPE_DECL
+	    || !DECL_THIS_STATIC (STRIP_TEMPLATE (decl))))
 	/* Ignore internal-linkage entitites.  */
 	continue;
 
@@ -7742,12 +7779,11 @@ depset::hash::add_binding (tree ns, tree name, tree value, tree maybe_type)
   if (maybe_type)
     add_dependency (maybe_type);
 
-  current = NULL;
-
-  if (bind->deps.length ())
-    insert (bind);
+  if (current->deps.length ())
+    insert (current);
   else
-    delete bind;
+    delete current;
+  current = NULL;
 }
 
 /* Add a mergeable decl into the dependency hash.  */
@@ -10370,6 +10406,7 @@ module_state::read_cluster (unsigned snum)
 
 		if (DECL_MODULE_EXPORT_P (decl)
 		    || ((is_primary () || is_partition ())
+			// FIXME: !DECL_THIS_STATIC
 			&& (TREE_PUBLIC (decl)
 			    /* Template types don't get TREE_PUBLIC set.  */
 			    || (TREE_CODE (decl) == TEMPLATE_DECL
@@ -12754,6 +12791,42 @@ module_state::write (elf_out *to, cpp_reader *reader)
   depset::hash table (DECL_NAMESPACE_BINDINGS (global_namespace)->size () * 8);
   add_writables (table, global_namespace, partitions);
   find_dependencies (table);
+  // FIXME: Find reachable GMF entities from non-emitted pieces.  It'd
+  // be nice to have a flag telling us this walk's necessary
+
+  /* Check for referencing anything internal.  */
+  if (table.internals)
+    {
+      depset::hash::iterator end (table.end ());
+      for (depset::hash::iterator iter (table.begin ()); iter != end; ++iter)
+	{
+	  depset *dep = *iter;
+	  if (dep->refs_internal)
+	    {
+	      tree decl = dep->get_entity ();
+	      for (unsigned ix = dep->deps.length (); ix--;)
+		{
+		  depset *rdep = dep->deps[ix];
+		  if (rdep->is_internal)
+		    {
+		      // FIXME: Better location information?  We're
+		      // losing, so it doesn't matter about efficiency
+		      error_at (DECL_SOURCE_LOCATION (decl),
+				"%q#D references internal linkage entity %q#D",
+				decl, rdep->get_entity ());
+		      break;
+		    }
+		}
+	      }
+	}
+    }
+
+  if (table.gmfs)
+    {
+      // FIXME: Update bindings to account for reachable/discarded GMF entities
+    }
+
+  /* Determine Strongy Connected Components.  */
   auto_vec<depset *> sccs (table.size ());
   table.connect (sccs);
 

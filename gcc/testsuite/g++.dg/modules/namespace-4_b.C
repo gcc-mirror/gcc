@@ -4,13 +4,12 @@ module frob;
 
 namespace 
 {
-  // separate module idents
-  void *nope; // { dg-bogus "conflicting" "sees interface"  }
+void *nope; // ok, different nope
 }
 
-void *q ()
+void *q (int)
 {
-  f ();
-  g ();
-  return nope; // { dg-bogus "was not declared" "doesn't see interface" }
+  f (bool (nope));
+  g (static_cast <int *> (nope));
+  return nope; // Ok sees above nope
 }

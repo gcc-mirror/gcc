@@ -1,3 +1,18 @@
+2019-03-06  Nathan Sidwell  <nathan@acm.org>
+
+	Linkage promotion ban
+	GMF pruning, Part 1
+	gcc/cp/
+	* module.cc (depset::is_internal): New field.
+	(depset::hash): Add gmfs, & internals fields.
+	(depset::hash::add_dependency): Deal with gmf & internal.
+	(depset::hash::add_binding): Ignore GMF & internals here.
+	(module_state::write): Errors for referenced internals.
+	* name-lookup.c (get_binding_or_decl): Get globals.
+	gcc/testsuite/
+	* g++.dg/modules/internal-1.C: New.
+	* g++.dg/modules/namespace-[34]_[abc].C: Adjust.
+
 2019-03-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

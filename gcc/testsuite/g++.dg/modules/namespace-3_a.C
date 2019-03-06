@@ -1,5 +1,5 @@
-// Check namespace needed only by internal reference is found
-// { dg-additional-options "-fmodules-ts -fdump-lang-module" }
+// Check namespace needed only by internal reference is not made visible
+// { dg-additional-options "-fmodules-ts" }
 
 export module frob;
 // { dg-module-bmi frob }
@@ -15,4 +15,7 @@ namespace silent
   }
 }
 
-export int f (int = silent::inner::X ());
+export int f (int y)
+{
+  return y + silent::inner::X ();
+}

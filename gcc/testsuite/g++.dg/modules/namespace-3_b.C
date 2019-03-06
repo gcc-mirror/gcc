@@ -8,5 +8,5 @@ static int silent;
 
 int user ()
 {
-  return f () + silent;
+  return f (silent);
 }

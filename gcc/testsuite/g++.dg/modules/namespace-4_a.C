@@ -3,10 +3,14 @@
 export module frob;
 // { dg-module-bmi frob }
 
-namespace 
+namespace
 {
   int nope;
 }
 
-export int f (int = nope);
-int g (int *a = &nope);
+export int f (int)
+{
+  return nope;
+}
+
+int g (int *a);

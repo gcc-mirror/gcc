@@ -9,6 +9,6 @@ namespace
 
 float *q ()
 {
-  f ();
+  f (int (*nope));
   return nope;
 }

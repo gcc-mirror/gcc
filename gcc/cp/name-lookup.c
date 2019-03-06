@@ -114,7 +114,7 @@ find_namespace_value (tree ns, tree name)
 
 /* Look in *SLOT for a the binding of NAME in imported module IX.
    Returns pointer to binding's slot, or NULL if not found.  Does a
-   binary search, as this is mainly used for random access duing
+   binary search, as this is mainly used for random access during
    importing.  Do not use for the fixed slots.  */
 
 static mc_slot *
@@ -4090,7 +4090,7 @@ get_binding_or_decl (tree ctx, tree name, unsigned mod)
 	 untrustworthy data, so check for NULL.  */
       if (tree *slot = find_namespace_slot (ctx, name))
 	{
-	  if (mod == MODULE_PURVIEW)
+	  if (mod <= MODULE_PURVIEW)
 	    /* During stream out, we reference ourselves by name.  */
 	    binding = *get_fixed_binding_slot (slot, name,
 					       MODULE_SLOT_CURRENT, false);
