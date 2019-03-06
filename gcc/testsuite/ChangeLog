@@ -1,3 +1,8 @@
+2019-03-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/71203
+	* gfortran.dg/substr_8.f90: New test.
+
 2019-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87148
