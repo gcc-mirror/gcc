@@ -1,5 +1,12 @@
 2019-03-06  Nathan Sidwell  <nathan@acm.org>
 
+	Refactor.
+	gcc/cp/
+	* module.cc (module_state::{add_writables,find_dependencies}): Move
+	to ...
+	(depset::hash::{add_writables,find_dependencies}): ... here.
+	(depset::hash::get_work): Delete.
+
 	GMF pruning, Part 2
 	gcc/cp/
 	* module.cc (depset::hash): Rename flags fields.

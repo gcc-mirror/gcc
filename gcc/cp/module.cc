@@ -2345,13 +2345,10 @@ public:
     void add_mergeable (tree decl);
     void add_dependency (tree decl);
     void add_binding (tree ns, tree name, tree value, tree maybe_type);
-    depset *get_work ()
-    {
-      current = worklist.length () ? worklist.pop () : NULL;
-      return current;
-    }
-    void connect (auto_vec<depset *> &);
+    void add_writables (tree ns, bitmap partitions);
+    void find_dependencies (module_state *);
     bool finalize_dependencies ();
+    void connect (auto_vec<depset *> &);
   };
 
 public:
@@ -2968,12 +2965,13 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool is_matching_decl (tree existing, tree node);
   int is_skippable_defn (trees_in &in, tree node, bool have_defn);
 
- private:
+ public:
   /* Serialize various definitions. */
   static void mark_definition (trees_out &out, tree decl);
   static void write_definition (trees_out &out, tree decl);
   bool read_definition (trees_in &in, tree decl);
 
+ private:
   static void mark_function_def (trees_out &out, tree decl);
   static void write_function_def (trees_out &out, tree decl);
   bool read_function_def (trees_in &in, tree decl);
@@ -2995,9 +2993,6 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  private:
   /* Add writable bindings to hash table.  */
-  static void add_writables (depset::hash &table, tree ns, bitmap partitions);
-  /* Build dependency graph of hash table.  */
-  void find_dependencies (depset::hash &table);
   void sort_mergeables (auto_vec<tree> &mergeables);
 
   static void write_bindings (elf_out *to, depset::hash &table,
@@ -7794,6 +7789,91 @@ depset::hash::add_binding (tree ns, tree name, tree value, tree maybe_type)
   current = NULL;
 }
 
+/* Recursively find all the namespace bindings of NS.
+   Add a depset for every binding that contains an export or
+   module-linkage entity.  Add a defining depset for every such decl
+   that we need to write a definition.  Such defining depsets depend
+   on the binding depset.  Returns true if we contain something
+   explicitly exported.  */
+
+void
+depset::hash::add_writables (tree ns, bitmap partitions)
+{
+  auto_vec<tree> decls;
+
+  dump () && dump ("Finding writables in %N", ns);
+  dump.indent ();
+
+  hash_table<named_decl_hash>::iterator end
+    (DECL_NAMESPACE_BINDINGS (ns)->end ());
+  for (hash_table<named_decl_hash>::iterator iter
+	 (DECL_NAMESPACE_BINDINGS (ns)->begin ()); iter != end; ++iter)
+    {
+      tree &bind = *iter;
+
+      tree name = NULL_TREE;
+      tree type = NULL_TREE;
+      if (tree value = extract_module_binding (bind, name, type, ns, partitions))
+	{
+	  if (TREE_CODE (value) == NAMESPACE_DECL)
+	    {
+	      gcc_checking_assert (!type);
+	      if (TREE_PUBLIC (value))
+		{
+		  add_writables (value, partitions);
+		  // FIXME: What about opening and closing it in the
+		  // purview, shouldn't that add the namespace too?
+		  if (DECL_MODULE_EXPORT_P (value))
+		    add_dependency (value);
+		}
+	    }
+	  else
+	    add_binding (ns, name, value, type);
+	}
+    }
+  dump.outdent ();
+}
+
+/* Iteratively find dependencies.  During the walk we may find more
+   entries on the same binding that need walking.  */
+
+void
+depset::hash::find_dependencies (module_state *state)
+{
+  trees_out walker (NULL, state, *this);
+
+  while (worklist.length ())
+    {
+      current = worklist.pop ();
+
+      gcc_checking_assert (!current->is_binding ());
+      tree decl = current->get_entity ();
+      dump (dumper::DEPEND)
+	&& dump ("Dependencies of %s %C:%N",
+		 is_mergeable () ? "mergeable"
+		 : current->is_defn () ? "definition" : "declaration",
+		 TREE_CODE (decl), decl);
+      dump.indent ();
+      walker.begin ();
+      if (is_mergeable ())
+	walker.tree_mergeable (decl);
+      else
+	{
+	  walker.mark_node (decl);
+	  if (current->is_defn ())
+	    state->mark_definition (walker, decl);
+	  /* Turn the Sneakoscope on when depending the decl.  */
+	  sneakoscope = true;
+	  walker.tree_ctx (decl, false, NULL_TREE);
+	  sneakoscope = false;
+	  if (current->is_defn ())
+	    state->write_definition (walker, decl);
+	}
+      walker.end ();
+      dump.outdent ();
+    }
+}
+
 /* Add a mergeable decl into the dependency hash.  */
 void
 depset::hash::add_mergeable (tree decl)
@@ -7870,7 +7950,7 @@ depset::hash::finalize_dependencies ()
   return ok;
 }
 
-  /* Core of TARJAN's algorithm to find Strongly Connected Components
+/* Core of TARJAN's algorithm to find Strongly Connected Components
    within a graph.  See https://en.wikipedia.org/wiki/
    Tarjan%27s_strongly_connected_components_algorithm for details.
 
@@ -12235,89 +12315,6 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
   return def;
 }
 
-/* Recursively find all the namespace bindings of NS.
-   Add a depset for every binding that contains an export or
-   module-linkage entity.  Add a defining depset for every such decl
-   that we need to write a definition.  Such defining depsets depend
-   on the binding depset.  Returns true if we contain something
-   explicitly exported.  */
-
-void
-module_state::add_writables (depset::hash &table, tree ns, bitmap partitions)
-{
-  auto_vec<tree> decls;
-
-  dump () && dump ("Finding writables in %N", ns);
-  dump.indent ();
-
-  hash_table<named_decl_hash>::iterator end
-    (DECL_NAMESPACE_BINDINGS (ns)->end ());
-  for (hash_table<named_decl_hash>::iterator iter
-	 (DECL_NAMESPACE_BINDINGS (ns)->begin ()); iter != end; ++iter)
-    {
-      tree &bind = *iter;
-
-      tree name = NULL_TREE;
-      tree type = NULL_TREE;
-      if (tree value = extract_module_binding (bind, name, type, ns, partitions))
-	{
-	  if (TREE_CODE (value) == NAMESPACE_DECL)
-	    {
-	      gcc_checking_assert (!type);
-	      if (TREE_PUBLIC (value))
-		{
-		  add_writables (table, value, partitions);
-		  // FIXME: What about opening and closing it in the
-		  // purview, shouldn't that add the namespace too?
-		  if (DECL_MODULE_EXPORT_P (value))
-		    table.add_dependency (value);
-		}
-	    }
-	  else
-	    table.add_binding (ns, name, value, type);
-	}
-    }
-  dump.outdent ();
-}
-
-/* Iteratively find dependencies.  During the walk we may find more
-   entries on the same binding that need walking.  */
-
-void
-module_state::find_dependencies (depset::hash &table)
-{
-  trees_out walker (NULL, this, table);
-
-  while (depset *d = table.get_work ())
-    {
-      gcc_checking_assert (!d->is_binding ());
-      tree decl = d->get_entity ();
-      dump (dumper::DEPEND)
-	&& dump ("Dependencies of %s %C:%N",
-		 table.is_mergeable () ? "mergeable"
-		 : d->is_defn () ? "definition" : "declaration",
-		 TREE_CODE (decl), decl);
-      dump.indent ();
-      walker.begin ();
-      if (table.is_mergeable ())
-	walker.tree_mergeable (decl);
-      else
-	{
-	  walker.mark_node (decl);
-	  if (d->is_defn ())
-	    mark_definition (walker, decl);
-	  /* Turn the Sneakoscope on when depending the decl.  */
-	  table.sneakoscope = true;
-	  walker.tree_ctx (decl, false, NULL_TREE);
-	  table.sneakoscope = false;
-	  if (d->is_defn ())
-	    write_definition (walker, decl);
-	}
-      walker.end ();
-      dump.outdent ();
-    }
-}
-
 /* When there are multiple mergeable members of a cluster, we must
    order the dependent ones last.  Don't forget about a nested type
    appearing in the types of another member of this set.  Ugh!  */
@@ -12332,7 +12329,7 @@ module_state::sort_mergeables (auto_vec<tree> &mergeables)
 
   for (unsigned ix = mergeables.length (); ix--;)
     table.add_mergeable (mergeables[ix]);
-  find_dependencies (table);
+  table.find_dependencies (this);
 
   auto_vec<depset *> sccs;
   table.connect (sccs);
@@ -12863,8 +12860,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   /* Find the set of decls we must write out.  */
   depset::hash table (DECL_NAMESPACE_BINDINGS (global_namespace)->size () * 8);
-  add_writables (table, global_namespace, partitions);
-  find_dependencies (table);
+  table.add_writables (global_namespace, partitions);
+  table.find_dependencies (this);
   // FIXME: Find reachable GMF entities from non-emitted pieces.  It'd
   // be nice to have a flag telling us this walk's necessary.  Even
   // better to not do it (why are we making visible implementation details?)
