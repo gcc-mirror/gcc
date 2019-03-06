@@ -2461,6 +2461,18 @@ public:
   tree fn_parms ();
 
 public:
+  /* Serialize various definitions. */
+  bool read_definition (tree decl);
+  
+private:
+  int is_skippable_defn (tree node, bool have_defn);
+  bool read_function_def (tree decl);
+  bool read_var_def (tree decl);
+  bool read_class_def (tree decl);
+  bool read_enum_def (tree decl);
+  vec<tree, va_gc> *read_binfos (tree type, tree *main_binfo);
+
+public:
   /* Read a global module entity.  We expect very few mergeables per
      cluster, usually at most one.  */
   void tree_mergeable (bool mod_mergeable);
@@ -2981,18 +2993,6 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  public:
   bool is_matching_decl (tree existing, tree node);
-  int is_skippable_defn (trees_in &in, tree node, bool have_defn);
-
- public:
-  /* Serialize various definitions. */
-  bool read_definition (trees_in &in, tree decl);
-
- private:
-  bool read_function_def (trees_in &in, tree decl);
-  bool read_var_def (trees_in &in, tree decl);
-  bool read_class_def (trees_in &in, tree decl);
-  bool read_enum_def (trees_in &in, tree decl);
-  vec<tree, va_gc> *read_binfos (trees_in &in, tree type, tree *main_binfo);
 
  private:
   /* Add writable bindings to hash table.  */
@@ -9662,20 +9662,20 @@ topmost_decl (tree t)
    ignored and -1 if it should be checked for ODR.  */
 
 int
-module_state::is_skippable_defn (trees_in &in, tree defn, bool have_defn)
+trees_in::is_skippable_defn (tree defn, bool have_defn)
 {
-  if (in.get_overrun ())
+  if (get_overrun ())
     return +1;
 
   /* The most common case is to have nothing to skip.  Short circuit
      the complexity in that case. */
-  if (!in.any_skip_defns ())
+  if (!any_skip_defns ())
     return 0;
 
   /* If there are skip defns, we're merging entities.  Find the
      namespace-scope dominating decl. */
   tree top = topmost_decl (defn);
-  if (int skip = in.is_skip_defn (top))
+  if (int skip = is_skip_defn (top))
     {
       dump (dumper::MERGE)
 	&& dump ("Skipping definition %N%s",
@@ -9693,8 +9693,8 @@ module_state::is_skippable_defn (trees_in &in, tree defn, bool have_defn)
 
   if (defn)
     {
-      in.record_skip_defn (top, true, false);
-      error_at (loc, "unexpected definition of %q#D", defn);
+      record_skip_defn (top, true, false);
+      error_at (state->loc, "unexpected definition of %q#D", defn);
       inform (DECL_SOURCE_LOCATION (defn), "existing definition here");
     }
 
@@ -9731,26 +9731,26 @@ trees_out::mark_function_def (tree)
 }
 
 bool
-module_state::read_function_def (trees_in &in, tree decl)
+trees_in::read_function_def (tree decl)
 {
   dump () && dump ("Reading function definition %N", decl);
-  tree result = in.tree_node ();
-  tree initial = in.tree_node ();
-  tree saved = in.tree_node ();
+  tree result = tree_node ();
+  tree initial = tree_node ();
+  tree saved = tree_node ();
   constexpr_fundef cexpr;
 
-  cexpr.decl = in.tree_node ();
+  cexpr.decl = tree_node ();
   if (cexpr.decl)
     {
-      cexpr.body = in.tree_node ();
-      cexpr.parms = in.chained_decls ();
-      cexpr.result = in.tree_node ();
+      cexpr.body = tree_node ();
+      cexpr.parms = chained_decls ();
+      cexpr.result = tree_node ();
     }
 
-  if (in.get_overrun ())
+  if (get_overrun ())
     return NULL_TREE;
 
-  int odr = is_skippable_defn (in, decl, DECL_SAVED_TREE (decl) != NULL_TREE);
+  int odr = is_skippable_defn (decl, DECL_SAVED_TREE (decl) != NULL_TREE);
 
   if (!odr)
     {
@@ -9759,7 +9759,7 @@ module_state::read_function_def (trees_in &in, tree decl)
       DECL_SAVED_TREE (decl) = saved;
       if (cexpr.decl)
 	register_constexpr_fundef (cexpr);
-      in.post_process (decl);
+      post_process (decl);
     }
   else if (odr < 0)
     {
@@ -9781,14 +9781,14 @@ trees_out::mark_var_def (tree)
 }
 
 bool
-module_state::read_var_def (trees_in &in, tree decl)
+trees_in::read_var_def (tree decl)
 {
-  tree init = in.tree_node ();
+  tree init = tree_node ();
 
-  if (in.get_overrun ())
+  if (get_overrun ())
     return false;
 
-  int odr = is_skippable_defn (in, decl, DECL_INITIAL (decl) != NULL_TREE);
+  int odr = is_skippable_defn (decl, DECL_INITIAL (decl) != NULL_TREE);
 
   if (!odr)
     {
@@ -9863,26 +9863,26 @@ trees_out::write_binfos (tree type)
 /* Read a binfo heirarchy. Returns the main BINFO and sets vbases.  */
 
 vec<tree, va_gc> *
-module_state::read_binfos (trees_in &in, tree type, tree *main_binfo)
+trees_in::read_binfos (tree type, tree *main_binfo)
 {
   /* Stream in the types and sizes in DFS order.  */
   for (tree child, t, *binfo_p = main_binfo;
-       (t = in.tree_node ());
+       (t = tree_node ());
        binfo_p = &TREE_CHAIN (child))
     {
-      unsigned n_children = in.u ();
-      if (in.get_overrun ())
+      unsigned n_children = u ();
+      if (get_overrun ())
 	return NULL;
       child = make_tree_binfo (n_children);
       BINFO_TYPE (child) = t;
 
-      int tag = in.insert (child);
+      int tag = insert (child);
       dump (dumper::TREE)
 	&& dump ("Read binfo:%d child %N of %N", tag, child, type);
       *binfo_p = child;
     }
 
-  unsigned nvbases = in.u ();
+  unsigned nvbases = u ();
   vec<tree, va_gc> *vbase_vec = NULL;
   if (nvbases)
     {
@@ -9896,28 +9896,28 @@ module_state::read_binfos (trees_in &in, tree type, tree *main_binfo)
       dump (dumper::TREE)
 	&& dump ("Reading binfo:%N of %N contents", child, type);
 
-      in.core_bools (child);
-      in.bflush ();
-      child->binfo.offset = in.tree_node ();
-      child->binfo.inheritance = in.tree_node ();
-      child->binfo.vtable = in.tree_node ();
-      child->binfo.virtuals = in.tree_node ();
-      child->binfo.vptr_field = in.tree_node ();
-      child->binfo.vtt_subvtt = in.tree_node ();
-      child->binfo.vtt_vptr = in.tree_node ();
+      core_bools (child);
+      bflush ();
+      child->binfo.offset = tree_node ();
+      child->binfo.inheritance = tree_node ();
+      child->binfo.vtable = tree_node ();
+      child->binfo.virtuals = tree_node ();
+      child->binfo.vptr_field = tree_node ();
+      child->binfo.vtt_subvtt = tree_node ();
+      child->binfo.vtt_vptr = tree_node ();
 
-      BINFO_BASE_ACCESSES (child) = in.tree_vec ();
-      if (in.get_overrun ())
+      BINFO_BASE_ACCESSES (child) = tree_vec ();
+      if (get_overrun ())
 	return NULL;
       unsigned num = vec_safe_length (BINFO_BASE_ACCESSES (child));
       for (unsigned ix = 0; ix != num; ix++)
-	BINFO_BASE_APPEND (child, in.tree_node ());
+	BINFO_BASE_APPEND (child, tree_node ());
 
       if (BINFO_VIRTUAL_P (child))
 	{
 	  if (vec_safe_length (vbase_vec) == nvbases)
 	    {
-	      in.set_overrun ();
+	      set_overrun ();
 	      return NULL;
 	    }
 	  vbase_vec->quick_push (child);
@@ -9925,7 +9925,7 @@ module_state::read_binfos (trees_in &in, tree type, tree *main_binfo)
     }
 
   if (vec_safe_length (vbase_vec) != nvbases)
-    in.set_overrun ();
+    set_overrun ();
 
   return vbase_vec;
 }
@@ -10048,17 +10048,17 @@ nop (void *, void *)
 }
 
 bool
-module_state::read_class_def (trees_in &in, tree defn)
+trees_in::read_class_def (tree defn)
 {
   gcc_assert (DECL_P (defn));
   dump () && dump ("Reading class definition %N", defn);
   tree type = TREE_TYPE (defn);
-  tree size = in.tree_node ();
-  tree size_unit = in.tree_node ();
-  tree fields = in.chained_decls ();
-  tree vfield = in.tree_node ();
+  tree size = tree_node ();
+  tree size_unit = tree_node ();
+  tree fields = chained_decls ();
+  tree vfield = tree_node ();
   tree binfo = NULL_TREE;
-  vec<tree, va_gc> *vbases = read_binfos (in, type, &binfo);
+  vec<tree, va_gc> *vbases = read_binfos (type, &binfo);
 
   vec<tree, va_gc> *member_vec = NULL;
   vec<tree, va_gc> *pure_virts = NULL;
@@ -10068,23 +10068,23 @@ module_state::read_class_def (trees_in &in, tree defn)
   tree friends = NULL_TREE;
   if (TYPE_LANG_SPECIFIC (type))
     {
-      member_vec = in.tree_vec ();
-      friends = in.tree_node ();
-      lambda = in.tree_node ();
+      member_vec = tree_vec ();
+      friends = tree_node ();
+      lambda = tree_node ();
 
-      int has_vptr = in.i ();
+      int has_vptr = i ();
       if (has_vptr)
 	{
-	  pure_virts = in.tree_vec ();
-	  vcall_indices = in.tree_pair_vec ();
-	  key_method = in.tree_node ();
+	  pure_virts = tree_vec ();
+	  vcall_indices = tree_pair_vec ();
+	  key_method = tree_node ();
 	}
     }
 
   // FIXME: Read more stuff!
   // lang->nested_udts
 
-  int odr = is_skippable_defn (in, type, TYPE_SIZE (type) != NULL_TREE);
+  int odr = is_skippable_defn (type, TYPE_SIZE (type) != NULL_TREE);
   if (!odr)
     {
       TYPE_SIZE (type) = size;
@@ -10118,22 +10118,22 @@ module_state::read_class_def (trees_in &in, tree defn)
 
   if (TYPE_LANG_SPECIFIC (type))
     {
-      tree primary = in.tree_node ();
-      tree as_base = in.tree_node ();
+      tree primary = tree_node ();
+      tree as_base = tree_node ();
 
       if (as_base)
 	{
 	  if (as_base != defn)
-	    read_class_def (in, as_base);
+	    read_class_def (as_base);
 	  as_base = TREE_TYPE (as_base);
 	}
 
       /* Read the vtables.  */
-      tree vtables = in.chained_decls ();
+      tree vtables = chained_decls ();
       for (tree vt = vtables; vt; vt = TREE_CHAIN (vt))
-	read_var_def (in, vt);
+	read_var_def (vt);
 
-      tree decl_list = in.tree_node ();
+      tree decl_list = tree_node ();
 
       if (!odr)
 	{
@@ -10151,15 +10151,15 @@ module_state::read_class_def (trees_in &in, tree defn)
     fixup_type_variants (type);
 
   /* Now define all the members.  */
-  while (tree member = in.tree_node ())
+  while (tree member = tree_node ())
     {
-      if (in.get_overrun ())
+      if (get_overrun ())
 	break;
-      if (!read_definition (in, member))
+      if (!read_definition (member))
 	break;
     }
 
-  return !in.get_overrun ();
+  return !get_overrun ();
 }
 
 void
@@ -10185,14 +10185,14 @@ trees_out::mark_enum_def (tree decl)
 }
 
 bool
-module_state::read_enum_def (trees_in &in, tree decl)
+trees_in::read_enum_def (tree decl)
 {
   tree type = TREE_TYPE (decl);
-  tree values = in.tree_node ();
-  tree min = in.tree_node ();
-  tree max = in.tree_node ();
+  tree values = tree_node ();
+  tree min = tree_node ();
+  tree max = tree_node ();
 
-  if (in.get_overrun ())
+  if (get_overrun ())
     return false;
 
   TYPE_VALUES (type) = values;
@@ -10283,7 +10283,7 @@ trees_out::mark_definition (tree decl)
 /* Read in the body of DECL.  See above circularity note.  */
 
 bool
-module_state::read_definition (trees_in &in, tree decl)
+trees_in::read_definition (tree decl)
 {
   dump () && dump ("Reading definition %C %N", TREE_CODE (decl), decl);
 
@@ -10298,10 +10298,10 @@ module_state::read_definition (trees_in &in, tree decl)
       goto again;
 
     case FUNCTION_DECL:
-      return read_function_def (in, decl);
+      return read_function_def (decl);
 
     case VAR_DECL:
-      return read_var_def (in, decl);
+      return read_var_def (decl);
 
     case TYPE_DECL:
       {
@@ -10309,9 +10309,9 @@ module_state::read_definition (trees_in &in, tree decl)
 	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
 		    && TYPE_MAIN_VARIANT (type) == type);
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
-	  return read_enum_def (in, decl);
+	  return read_enum_def (decl);
 	else
-	  return read_class_def (in, decl);
+	  return read_class_def (decl);
       }
       break;
     }
@@ -10649,7 +10649,7 @@ module_state::read_cluster (unsigned snum)
 	      }
 	    if (ct == ct_defn && !sec.get_overrun ())
 	      /* A definition.  */
-	      read_definition (sec, decl);
+	      sec.read_definition (decl);
 	  }
 	  break;
 	}
