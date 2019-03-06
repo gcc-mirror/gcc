@@ -36,7 +36,8 @@ struct aarch64_arch_extension
   const char *feat_string;
 };
 
-#define AARCH64_OPT_EXTENSION(EXT_NAME, FLAG_CANONICAL, FLAGS_ON, FLAGS_OFF, FEATURE_STRING) \
+#define AARCH64_OPT_EXTENSION(EXT_NAME, FLAG_CANONICAL, FLAGS_ON, FLAGS_OFF, \
+			      SYNTHETIC, FEATURE_STRING) \
   { EXT_NAME, FLAG_CANONICAL, FEATURE_STRING },
 static struct aarch64_arch_extension aarch64_extensions[] =
 {
