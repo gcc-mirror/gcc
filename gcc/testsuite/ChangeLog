@@ -1,3 +1,8 @@
+2019-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87148
+	* g++.dg/ext/flexary34.C: New test.
+
 2019-03-06  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR rtl-optimization/88845
