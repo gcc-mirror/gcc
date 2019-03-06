@@ -1,3 +1,11 @@
+2019-03-06  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-c.def (__ARC_UNALIGNED__): Set it on
+	unaligned_access variable.
+	* config/arc/arc.c (arc_override_options): Set unaligned access
+	default on for HS CPUs.
+	* config/arc/arc.h (STRICT_ALIGNMENT): Fix logic.
+
 2019-03-06  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/89577
