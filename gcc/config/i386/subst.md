@@ -153,6 +153,7 @@
 (define_subst_attr "round_mask_op4" "round" "" "<round_mask_operand4>")
 (define_subst_attr "round_sd_mask_op4" "round" "" "<round_sd_mask_operand4>")
 (define_subst_attr "round_constraint" "round" "vm" "v")
+(define_subst_attr "round_qq2phsuff" "round" "<qq2phsuff>" "")
 (define_subst_attr "bcst_round_constraint" "round" "vmBr" "v")
 (define_subst_attr "round_constraint2" "round" "m" "v")
 (define_subst_attr "round_constraint3" "round" "rm" "r")
