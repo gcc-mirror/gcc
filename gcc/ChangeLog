@@ -1,3 +1,12 @@
+2019-03-06  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/88845
+	* config/rs6000/rs6000.c (rs6000_emit_move_si_sf_subreg): Enable during
+	LRA.
+	* lra.c (remove_scratches_1): New function.
+	(remove_scratches): Use it.
+	(lra_emit_move): Likewise.
+
 2019-03-06  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc-c.def (__ARC_UNALIGNED__): Set it on

@@ -9890,7 +9890,7 @@ valid_sf_si_move (rtx dest, rtx src, machine_mode mode)
 static bool
 rs6000_emit_move_si_sf_subreg (rtx dest, rtx source, machine_mode mode)
 {
-  if (TARGET_DIRECT_MOVE_64BIT && !lra_in_progress && !reload_completed
+  if (TARGET_DIRECT_MOVE_64BIT && !reload_completed
       && (!SUBREG_P (dest) || !sf_subreg_operand (dest, mode))
       && SUBREG_P (source) && sf_subreg_operand (source, mode))
     {
