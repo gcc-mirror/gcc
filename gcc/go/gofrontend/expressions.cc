@@ -17292,7 +17292,7 @@ Numeric_constant::hash(unsigned int seed) const
       mpfr_clear(m);
       break;
     case NC_FLOAT:
-      f = mpfr_get_d_2exp(&e, this->u_.float_val, MPFR_RNDN) * 4294967295.0;
+      f = mpfr_get_d_2exp(&e, this->u_.float_val, GMP_RNDN) * 4294967295.0;
       val = static_cast<unsigned long>(e + static_cast<long>(f));
       break;
     default:
