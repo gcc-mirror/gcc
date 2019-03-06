@@ -2346,7 +2346,7 @@ public:
     void add_dependency (tree decl);
     void add_binding (tree ns, tree name, tree value, tree maybe_type);
     void add_writables (tree ns, bitmap partitions);
-    void find_dependencies (module_state *);
+    void find_dependencies ();
     bool finalize_dependencies ();
     void connect (auto_vec<depset *> &);
   };
@@ -2604,6 +2604,24 @@ private:
 
 public:
   void tree_ctx (tree, bool need_contents, tree inner_decl);
+
+ public:
+  /* Serialize various definitions. */
+  void mark_definition (tree decl);
+  void write_definition (tree decl);
+
+ private:
+  void mark_function_def (tree decl);
+  void mark_var_def (tree decl);
+  void mark_class_def (tree decl);
+  void mark_enum_def (tree decl);
+
+private:
+  void write_var_def (tree decl);
+  void write_function_def (tree decl);
+  void write_class_def (tree decl);
+  void write_enum_def (tree decl);
+  void write_binfos (tree type);
 
 public:
   static void instrument ();
@@ -2967,28 +2985,13 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  public:
   /* Serialize various definitions. */
-  static void mark_definition (trees_out &out, tree decl);
-  static void write_definition (trees_out &out, tree decl);
   bool read_definition (trees_in &in, tree decl);
 
  private:
-  static void mark_function_def (trees_out &out, tree decl);
-  static void write_function_def (trees_out &out, tree decl);
   bool read_function_def (trees_in &in, tree decl);
-
-  static void mark_var_def (trees_out &out, tree decl);
-  static void write_var_def (trees_out &out, tree decl);
   bool read_var_def (trees_in &in, tree decl);
-
-  static void mark_class_def (trees_out &out, tree decl);
-  static void write_class_def (trees_out &out, tree decl);
   bool read_class_def (trees_in &in, tree decl);
-
-  static void mark_enum_def (trees_out &out, tree decl);
-  static void write_enum_def (trees_out &out, tree decl);
   bool read_enum_def (trees_in &in, tree decl);
-
-  static void write_binfos (trees_out &out, tree type);
   vec<tree, va_gc> *read_binfos (trees_in &in, tree type, tree *main_binfo);
 
  private:
@@ -7838,9 +7841,9 @@ depset::hash::add_writables (tree ns, bitmap partitions)
    entries on the same binding that need walking.  */
 
 void
-depset::hash::find_dependencies (module_state *state)
+depset::hash::find_dependencies ()
 {
-  trees_out walker (NULL, state, *this);
+  trees_out walker (NULL, NULL, *this);
 
   while (worklist.length ())
     {
@@ -7861,13 +7864,13 @@ depset::hash::find_dependencies (module_state *state)
 	{
 	  walker.mark_node (decl);
 	  if (current->is_defn ())
-	    state->mark_definition (walker, decl);
+	    walker.mark_definition (decl);
 	  /* Turn the Sneakoscope on when depending the decl.  */
 	  sneakoscope = true;
 	  walker.tree_ctx (decl, false, NULL_TREE);
 	  sneakoscope = false;
 	  if (current->is_defn ())
-	    state->write_definition (walker, decl);
+	    walker.write_definition (decl);
 	}
       walker.end ();
       dump.outdent ();
@@ -9706,24 +9709,24 @@ module_state::is_skippable_defn (trees_in &in, tree defn, bool have_defn)
    be in the same cluster, which is what we want.  */
 
 void
-module_state::write_function_def (trees_out &out, tree decl)
+trees_out::write_function_def (tree decl)
 {
-  out.tree_node (DECL_RESULT (decl));
-  out.tree_node (DECL_INITIAL (decl));
-  out.tree_node (DECL_SAVED_TREE (decl));
+  tree_node (DECL_RESULT (decl));
+  tree_node (DECL_INITIAL (decl));
+  tree_node (DECL_SAVED_TREE (decl));
   if (constexpr_fundef *cexpr = retrieve_constexpr_fundef (decl))
     {
-      out.tree_node (cexpr->decl);
-      out.tree_node (cexpr->body);
-      out.chained_decls (cexpr->parms);
-      out.tree_node (cexpr->result);
+      tree_node (cexpr->decl);
+      tree_node (cexpr->body);
+      chained_decls (cexpr->parms);
+      tree_node (cexpr->result);
     }
   else
-    out.tree_node (NULL_TREE);
+    tree_node (NULL_TREE);
 }
 
 void
-module_state::mark_function_def (trees_out &, tree)
+trees_out::mark_function_def (tree)
 {
 }
 
@@ -9767,13 +9770,13 @@ module_state::read_function_def (trees_in &in, tree decl)
 }
 
 void
-module_state::write_var_def (trees_out &out, tree decl)
+trees_out::write_var_def (tree decl)
 {
-  out.tree_node (DECL_INITIAL (decl));
+  tree_node (DECL_INITIAL (decl));
 }
 
 void
-module_state::mark_var_def (trees_out &, tree)
+trees_out::mark_var_def (tree)
 {
 }
 
@@ -9804,31 +9807,31 @@ module_state::read_var_def (trees_in &in, tree decl)
    passes.  */
 
 void
-module_state::write_binfos (trees_out &out, tree type)
+trees_out::write_binfos (tree type)
 {
   /* Stream out types and sizes in DFS order, placing each binfo
      into the map.  */
   for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
     {
-      out.tree_node (BINFO_TYPE (child));
-      int tag = out.insert (child);
-      if (out.streaming_p ())
+      tree_node (BINFO_TYPE (child));
+      int tag = insert (child);
+      if (streaming_p ())
 	{
-	  out.u (BINFO_N_BASE_BINFOS (child));
+	  u (BINFO_N_BASE_BINFOS (child));
 
 	  dump (dumper::TREE) && dump ("Wrote binfo:%d child %N of %N",
 				       tag, BINFO_TYPE (child), type);
 	}
     }
 
-  out.tree_node (NULL_TREE);
+  tree_node (NULL_TREE);
 
-  if (out.streaming_p ())
+  if (streaming_p ())
     {
       unsigned nvbases = 0;
       if (TYPE_LANG_SPECIFIC (type))
 	nvbases = vec_safe_length (CLASSTYPE_VBASECLASSES (type));
-      out.u (nvbases);
+      u (nvbases);
       if (nvbases)
 	dump (dumper::TREE) && dump ("Type %N has %u vbases", type, nvbases);
 
@@ -9838,21 +9841,21 @@ module_state::write_binfos (trees_out &out, tree type)
 	  dump (dumper::TREE)
 	    && dump ("Writing binfo:%N of %N contents", child, type);
 
-	  out.core_bools (child);
-	  out.bflush ();
-	  out.tree_node (child->binfo.offset);
-	  out.tree_node (child->binfo.inheritance);
-	  out.tree_node (child->binfo.vtable);
-	  out.tree_node (child->binfo.virtuals);
-	  out.tree_node (child->binfo.vptr_field);
-	  out.tree_node (child->binfo.vtt_subvtt);
-	  out.tree_node (child->binfo.vtt_vptr);
+	  core_bools (child);
+	  bflush ();
+	  tree_node (child->binfo.offset);
+	  tree_node (child->binfo.inheritance);
+	  tree_node (child->binfo.vtable);
+	  tree_node (child->binfo.virtuals);
+	  tree_node (child->binfo.vptr_field);
+	  tree_node (child->binfo.vtt_subvtt);
+	  tree_node (child->binfo.vtt_vptr);
 
-	  out.tree_vec (BINFO_BASE_ACCESSES (child));
+	  tree_vec (BINFO_BASE_ACCESSES (child));
 	  unsigned num = vec_safe_length (BINFO_BASE_ACCESSES (child));
 	  gcc_checking_assert (BINFO_N_BASE_BINFOS (child) == num);
 	  for (unsigned ix = 0; ix != num; ix++)
-	    out.tree_node (BINFO_BASE_BINFO (child, ix));
+	    tree_node (BINFO_BASE_BINFO (child, ix));
 	}
     }
 }
@@ -9928,56 +9931,56 @@ module_state::read_binfos (trees_in &in, tree type, tree *main_binfo)
 }
 
 void
-module_state::write_class_def (trees_out &out, tree defn)
+trees_out::write_class_def (tree defn)
 {
   gcc_assert (DECL_P (defn));
   dump () && dump ("Writing class definition %N", defn);
 
   tree type = TREE_TYPE (defn);
-  out.tree_node (TYPE_SIZE (type));
-  out.tree_node (TYPE_SIZE_UNIT (type));
-  out.chained_decls (TYPE_FIELDS (type));
-  out.tree_node (TYPE_VFIELD (type));
-  write_binfos (out, type);
+  tree_node (TYPE_SIZE (type));
+  tree_node (TYPE_SIZE_UNIT (type));
+  chained_decls (TYPE_FIELDS (type));
+  tree_node (TYPE_VFIELD (type));
+  write_binfos (type);
   
   if (TYPE_LANG_SPECIFIC (type))
     {
-      out.tree_vec (CLASSTYPE_MEMBER_VEC (type));
-      out.tree_node (CLASSTYPE_FRIEND_CLASSES (type));
-      out.tree_node (CLASSTYPE_LAMBDA_EXPR (type));
+      tree_vec (CLASSTYPE_MEMBER_VEC (type));
+      tree_node (CLASSTYPE_FRIEND_CLASSES (type));
+      tree_node (CLASSTYPE_LAMBDA_EXPR (type));
 
       /* TYPE_CONTAINS_VPTR_P looks at the vbase vector, which the
 	 reader won't know at this point.  */
       // FIXME: Think about better ordering
       int has_vptr = TYPE_CONTAINS_VPTR_P (type);
-      if (out.streaming_p ())
-	out.i (has_vptr);
+      if (streaming_p ())
+	i (has_vptr);
       if (has_vptr)
 	{
-	  out.tree_vec (CLASSTYPE_PURE_VIRTUALS (type));
-	  out.tree_pair_vec (CLASSTYPE_VCALL_INDICES (type));
-	  out.tree_node (CLASSTYPE_KEY_METHOD (type));
+	  tree_vec (CLASSTYPE_PURE_VIRTUALS (type));
+	  tree_pair_vec (CLASSTYPE_VCALL_INDICES (type));
+	  tree_node (CLASSTYPE_KEY_METHOD (type));
 	}
     }
 
   if (TYPE_LANG_SPECIFIC (type))
     {
-      out.tree_node (CLASSTYPE_PRIMARY_BINFO (type));
+      tree_node (CLASSTYPE_PRIMARY_BINFO (type));
 
       tree as_base = CLASSTYPE_AS_BASE (type);
       if (as_base)
 	as_base = TYPE_NAME (as_base);
-      out.tree_node (as_base);
+      tree_node (as_base);
       if (as_base && as_base != defn)
-	write_class_def (out, as_base);
+	write_class_def (as_base);
 
       tree vtables = CLASSTYPE_VTABLES (type);
-      out.chained_decls (vtables);
+      chained_decls (vtables);
       /* Write the vtable initializers.  */
       for (; vtables; vtables = TREE_CHAIN (vtables))
-	write_definition (out, vtables);
+	write_definition (vtables);
 
-      out.tree_node (CLASSTYPE_DECL_LIST (type));
+      tree_node (CLASSTYPE_DECL_LIST (type));
     }
 
   // lang->nested_udts
@@ -9986,24 +9989,24 @@ module_state::write_class_def (trees_out &out, tree defn)
   for (tree member = TYPE_FIELDS (type); member; member = TREE_CHAIN (member))
     if (has_definition (member))
       {
-	out.tree_node (member);
-	write_definition (out, member);
+	tree_node (member);
+	write_definition (member);
       }
 
   /* End of definitions.  */
-  out.tree_node (NULL_TREE);
+  tree_node (NULL_TREE);
 }
 
 void
-module_state::mark_class_def (trees_out &out, tree defn)
+trees_out::mark_class_def (tree defn)
 {
   gcc_assert (DECL_P (defn));
   tree type = TREE_TYPE (defn);
   for (tree member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
     {
-      out.mark_node (member);
+      mark_node (member);
       if (has_definition (member))
-	mark_definition (out, member);
+	mark_definition (member);
     }
   if (TYPE_LANG_SPECIFIC (type))
     {
@@ -10011,15 +10014,15 @@ module_state::mark_class_def (trees_out &out, tree defn)
 	if (as_base != type)
 	  {
 	    tree base_decl = TYPE_NAME (as_base);
-	    out.mark_node (base_decl);
-	    mark_class_def (out, base_decl);
+	    mark_node (base_decl);
+	    mark_class_def (base_decl);
 	  }
 
       for (tree vtables = CLASSTYPE_VTABLES (type);
 	   vtables; vtables = TREE_CHAIN (vtables))
 	{
-	  out.mark_node (vtables);
-	  mark_var_def (out, vtables);
+	  mark_node (vtables);
+	  mark_var_def (vtables);
 	}
 
       for (tree decls = CLASSTYPE_DECL_LIST (type);
@@ -10032,7 +10035,7 @@ module_state::mark_class_def (trees_out &out, tree defn)
 	    /* In spite of its name, non-decls appear :(.  */
 	    member = TYPE_NAME (member);
 	  gcc_assert (DECL_CONTEXT (member) == type);
-	  out.mark_node (member);
+	  mark_node (member);
 	}
     }
 }
@@ -10160,24 +10163,24 @@ module_state::read_class_def (trees_in &in, tree defn)
 }
 
 void
-module_state::write_enum_def (trees_out &out, tree decl)
+trees_out::write_enum_def (tree decl)
 {
   tree type = TREE_TYPE (decl);
-  out.tree_node (TYPE_VALUES (type));
-  out.tree_node (TYPE_MIN_VALUE (type));
-  out.tree_node (TYPE_MAX_VALUE (type));
+  tree_node (TYPE_VALUES (type));
+  tree_node (TYPE_MIN_VALUE (type));
+  tree_node (TYPE_MAX_VALUE (type));
 }
 
 void
-module_state::mark_enum_def (trees_out &out, tree decl)
+trees_out::mark_enum_def (tree decl)
 {
   tree type = TREE_TYPE (decl);
   if (SCOPED_ENUM_P (type))
     for (tree values = TYPE_VALUES (type); values; values = TREE_CHAIN (values))
       {
 	tree cst = TREE_VALUE (values);
-	out.mark_node (cst);
-	out.mark_node (DECL_INITIAL (cst));
+	mark_node (cst);
+	mark_node (DECL_INITIAL (cst));
       }
 }
 
@@ -10202,10 +10205,10 @@ module_state::read_enum_def (trees_in &in, tree decl)
 /* Write out the body of DECL.  See above circularity note.  */
 
 void
-module_state::write_definition (trees_out &out, tree decl)
+trees_out::write_definition (tree decl)
 {
   dump () && dump ("%s definition %C:%N",
-		   out.streaming_p () ? "Writing" : "Depending",
+		   streaming_p () ? "Writing" : "Depending",
 		   TREE_CODE (decl), decl);
 
  again:
@@ -10219,11 +10222,11 @@ module_state::write_definition (trees_out &out, tree decl)
       goto again;
 
     case FUNCTION_DECL:
-      write_function_def (out, decl);
+      write_function_def (decl);
       break;
 
     case VAR_DECL:
-      write_var_def (out, decl);
+      write_var_def (decl);
       break;
 
     case TYPE_DECL:
@@ -10232,9 +10235,9 @@ module_state::write_definition (trees_out &out, tree decl)
 	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
 		    && TYPE_MAIN_VARIANT (type) == type);
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
-	  write_enum_def (out, decl);
+	  write_enum_def (decl);
 	else
-	  write_class_def (out, decl);
+	  write_class_def (decl);
       }
       break;
     }
@@ -10243,7 +10246,7 @@ module_state::write_definition (trees_out &out, tree decl)
 /* Mark the body of DECL.  */
 
 void
-module_state::mark_definition (trees_out &out, tree decl)
+trees_out::mark_definition (tree decl)
 {
  again:
   switch (TREE_CODE (decl))
@@ -10256,11 +10259,11 @@ module_state::mark_definition (trees_out &out, tree decl)
       goto again;
 
     case FUNCTION_DECL:
-      mark_function_def (out, decl);
+      mark_function_def (decl);
       break;
 
     case VAR_DECL:
-      mark_var_def (out, decl);
+      mark_var_def (decl);
       break;
 
     case TYPE_DECL:
@@ -10269,9 +10272,9 @@ module_state::mark_definition (trees_out &out, tree decl)
 	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
 		    && TYPE_MAIN_VARIANT (type) == type);
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
-	  mark_enum_def (out, decl);
+	  mark_enum_def (decl);
 	else
-	  mark_class_def (out, decl);
+	  mark_class_def (decl);
       }
       break;
     }
@@ -10439,7 +10442,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
 	  sec.mark_node (decl);
 	  if (b->is_defn ())
-	    mark_definition (sec, decl);
+	    sec.mark_definition (decl);
 	}
     }
 
@@ -10476,7 +10479,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	    dump () && dump ("Voldemort:%u %N", b->cluster - 1, decl);
 	  sec.u (b->cluster);
 	  if (b->is_defn ()) 
-	    write_definition (sec, decl);
+	    sec.write_definition (decl);
 	}
     }
 
@@ -12329,7 +12332,7 @@ module_state::sort_mergeables (auto_vec<tree> &mergeables)
 
   for (unsigned ix = mergeables.length (); ix--;)
     table.add_mergeable (mergeables[ix]);
-  table.find_dependencies (this);
+  table.find_dependencies ();
 
   auto_vec<depset *> sccs;
   table.connect (sccs);
@@ -12861,7 +12864,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   /* Find the set of decls we must write out.  */
   depset::hash table (DECL_NAMESPACE_BINDINGS (global_namespace)->size () * 8);
   table.add_writables (global_namespace, partitions);
-  table.find_dependencies (this);
+  table.find_dependencies ();
   // FIXME: Find reachable GMF entities from non-emitted pieces.  It'd
   // be nice to have a flag telling us this walk's necessary.  Even
   // better to not do it (why are we making visible implementation details?)

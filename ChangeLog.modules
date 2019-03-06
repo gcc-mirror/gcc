@@ -2,6 +2,16 @@
 
 	Refactor.
 	gcc/cp/
+	* module.cc (module_state::{write,mark}_definition): Move to ...
+	(trees_out::{write,mark}_definition): ... here.
+	(module_state::{write,mark}_{function,var,class,enum}_def): Move to ...
+	(trees_out::{write,mark}_{function,var,class,enum}_def): ... here.
+	(module_state::write_binfos): Move to ...
+	(trees_out::write_binfos): ... here.
+	(depset::hash::find_dependencies): Drop module_state parm.
+
+	Refactor.
+	gcc/cp/
 	* module.cc (module_state::{add_writables,find_dependencies}): Move
 	to ...
 	(depset::hash::{add_writables,find_dependencies}): ... here.
