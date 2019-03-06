@@ -2,6 +2,12 @@
 
 	Refactor.
 	gcc/cp/
+	* module.cc (module_state::is_matching_decl): Moved to ...
+	(trees_in::is_matching_decl): ... here.
+	(trees_{in,out}::{mark,write,read}_*): Move earlier.
+
+	Refactor.
+	gcc/cp/
 	* module.cc (module_state::read_definition): Moved to ...
 	(trees_in::read_definition): ... here.
 	(module_state::is_skippable_defn): Move to ...
