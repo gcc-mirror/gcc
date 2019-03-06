@@ -1,3 +1,17 @@
+2019-03-06  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/86655 - std::assoc_legendre should not constrain
+	the value of m (or x).
+	* include/tr1/legendre_function.tcc (__assoc_legendre_p,
+	__sph_legendre): If degree > order Don't throw, return 0.
+	(__legendre_p, __assoc_legendre_p): Don't constrain x either.
+	* testsuite/special_functions/02_assoc_legendre/pr86655.cc: New test.
+	* testsuite/special_functions/20_sph_legendre/pr86655.cc: New test.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	02_assoc_legendre/pr86655.cc: New test.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	22_sph_legendre/pr86655.cc: New test.
+
 2019-03-06  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Rewrite variant.
