@@ -59,7 +59,8 @@ T
 fn4 (const T t)
 {
   // t is const: will decay into copy despite std::move, so it's redundant.
-  return std::move (t); // { dg-warning "redundant move in return statement" }
+  // We used to warn about this, but no longer since c++/87378.
+  return std::move (t);
 }
 
 int
