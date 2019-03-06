@@ -1,3 +1,11 @@
+2019-03-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89576 - if constexpr of lambda capture.
+	* semantics.c (maybe_convert_cond): Do convert a non-dependent
+	condition in a template.
+	* typeck.c (condition_conversion): Handle being called in a
+	template.
+
 2019-03-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87378 - bogus -Wredundant-move warning.
