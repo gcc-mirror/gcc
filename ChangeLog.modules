@@ -1,5 +1,13 @@
 2019-03-06  Nathan Sidwell  <nathan@acm.org>
 
+	Refactor all the things!
+	gcc/cp/
+	* module.cc: Tighten up access.
+
+	Refactor.
+	gcc/cp/
+	* module.cc (module_state): Reorder member fn definitions.
+
 	Refactor.
 	gcc/cp/
 	* module.cc (module_state::is_matching_decl): Moved to ...

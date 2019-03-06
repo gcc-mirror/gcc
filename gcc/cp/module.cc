@@ -2449,7 +2449,7 @@ private:
   bool tree_node_bools (tree, bool);
   bool tree_node_vals (tree, bool);
 
-public:
+private:
   tree chained_decls ();  /* Follow DECL_CHAIN.  */
   vec<tree, va_gc> *tree_vec (); /* vec of tree.  */
   vec<tree_pair_s, va_gc> *tree_pair_vec (); /* vec of tree_pair.  */
@@ -2491,8 +2491,12 @@ public:
 	return true;
     return false;
   }
+  tree post_process ()
+  {
+    return post_decls.length () ? post_decls.pop () : NULL_TREE;
+  }
 
-public:
+private:
   /* We expect very few bad decls, usually none!.  */
   void record_skip_defn (tree defn, bool informed, bool existing = false);
   int is_skip_defn (tree defn);
@@ -2500,15 +2504,9 @@ public:
   {
     return skip_defns.length () != 0;
   }
-
-public:
   void post_process (tree decl)
   {
     post_decls.safe_push (decl);
-  }
-  tree post_process ()
-  {
-    return post_decls.length () ? post_decls.pop () : NULL_TREE;
   }
 };
 
@@ -2535,7 +2533,7 @@ public:
   trees_out (allocator *, module_state *, depset::hash &deps);
   ~trees_out ();
 
-public:
+private:
   bool depending_p () const
   {
     return !streaming_p ();
@@ -2548,9 +2546,6 @@ private:
 public:
   void begin ();
   unsigned end (elf_out *sink, unsigned name, unsigned *crc_ptr);
-
-public:
-  void begin (depset::hash *);
   void end ();
 
 private:
@@ -2575,11 +2570,10 @@ public:
 
 private:
   void start (tree);
-
-public:
-  void core_bools (tree);
+  walk_kind ref_node (tree);
 
 private:
+  void core_bools (tree);
   void core_vals (tree);
   void lang_type_bools (tree);
   void lang_type_vals (tree);
@@ -2590,7 +2584,7 @@ private:
   void tree_node_bools (tree);
   void tree_node_vals (tree);
 
-public:
+private:
   void chained_decls (tree);
   void tree_vec (vec<tree, va_gc> *);
   void tree_pair_vec (vec<tree_pair_s, va_gc> *);
@@ -2599,7 +2593,6 @@ public:
   /* Mark a node for special walking.  */
   void mark_node (tree);
   void mark_mergeable (tree);
-  walk_kind ref_node (tree);
 
 public:
   void tree_node (tree);
@@ -2609,14 +2602,12 @@ public:
 public:
   void tree_mergeable (tree);
   void tree_value (tree, walk_kind ref);
+  void tree_ctx (tree, bool need_contents, tree inner_decl);
 
 private:
   bool tree_decl (tree, walk_kind ref, bool looking_inside);
   bool tree_type (tree, walk_kind ref, bool looking_inside);
   void tree_namespace (tree, walk_kind ref, tree inner_decl);
-
-public:
-  void tree_ctx (tree, bool need_contents, tree inner_decl);
 
  public:
   /* Serialize various definitions. */
@@ -2994,7 +2985,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  private:
   /* Add writable bindings to hash table.  */
-  void sort_mergeables (auto_vec<tree> &mergeables);
+  static void sort_mergeables (auto_vec<tree> &mergeables);
 
   static void write_bindings (elf_out *to, depset::hash &table,
 			      unsigned *crc_ptr);
