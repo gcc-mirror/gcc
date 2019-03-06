@@ -486,8 +486,8 @@ are @emph{exactly} 0% and 100% respectively.  Other values which would
 conventionally be rounded to 0% or 100% are instead printed as the
 nearest non-boundary value.
 
-When using @command{gcov}, you must first compile your program with two
-special GCC options: @samp{-fprofile-arcs -ftest-coverage}.
+When using @command{gcov}, you must first compile your program
+with a special GCC option @samp{--coverage}.
 This tells the compiler to generate additional information needed by
 gcov (basically a flow graph of the program) and also includes
 additional code in the object files for generating the extra profiling
@@ -504,7 +504,7 @@ for each line.  For example, if your program is called @file{tmp.cpp}, this
 is what you see when you use the basic @command{gcov} facility:
 
 @smallexample
-$ g++ -fprofile-arcs -ftest-coverage tmp.cpp
+$ g++ --coverage tmp.cpp
 $ a.out
 $ gcov tmp.cpp -m
 File 'tmp.cpp'
@@ -802,8 +802,8 @@ new execution counts and finally writes the data to the file.
 @section Using @command{gcov} with GCC Optimization
 
 If you plan to use @command{gcov} to help optimize your code, you must
-first compile your program with two special GCC options:
-@samp{-fprofile-arcs -ftest-coverage}.  Aside from that, you can use any
+first compile your program with a special GCC option
+@samp{--coverage}.  Aside from that, you can use any
 other GCC options; but if you want to prove that every single line
 in your program was executed, you should not compile with optimization
 at the same time.  On some machines the optimizer can eliminate some
