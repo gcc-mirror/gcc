@@ -1,3 +1,11 @@
+2019-03-06  Tamar Christina  <tamar.christina@arm.com>
+
+	Backport from trunk.
+	2019-02-28  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/88530
+	* gcc.target/aarch64/options_set_10.c: New test.
+
 2019-03-06  Xiong Hu Luo  <luoxhu@linux.ibm.com>
 
 	Backport of r268834 from mainline to gcc-8-branch.

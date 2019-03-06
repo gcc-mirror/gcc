@@ -1,3 +1,13 @@
+2019-03-06  Tamar Christina  <tamar.christina@arm.com>
+
+	Backport from trunk.
+	2019-02-28  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/88530
+	* config/aarch64/aarch64-option-extensions.def: Document it.
+	* config/aarch64/driver-aarch64.c (host_detect_local_cpu): Skip feature
+	if empty hwcaps.
+
 2019-03-06  Xiong Hu Luo  <luoxhu@linux.ibm.com>
 
 	Backport of r268834 from mainline to gcc-8-branch.
