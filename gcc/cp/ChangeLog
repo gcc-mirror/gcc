@@ -1,3 +1,8 @@
+2019-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87148
+	* init.c (build_value_init_noctor): Ignore flexible array members.
+
 2019-03-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/89576 - if constexpr of lambda capture.
