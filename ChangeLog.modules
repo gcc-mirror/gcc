@@ -1,5 +1,14 @@
 2019-03-06  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_out::trees_out): Add depset::hash parm.
+	(trees_out::depending_p): Invert streaming_p.
+	(module_state::write_cluster): Add depset::hash parm, adjust.
+	(trees_out::begin): Single ctor for both uses.
+	(trees_out::end): Don't clear dep_hash.
+	(module_state::find_dependencies): Adjust.
+	(module_state::write): Adjust.
+
 	Linkage promotion ban
 	GMF pruning, Part 1
 	gcc/cp/

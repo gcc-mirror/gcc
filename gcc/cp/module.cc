@@ -2522,13 +2522,13 @@ private:
   int ref_num;			/* Back reference number.  */
 
 public:
-  trees_out (allocator *, module_state *);
+  trees_out (allocator *, module_state *, depset::hash &deps);
   ~trees_out ();
 
 public:
   bool depending_p () const
   {
-    return dep_hash != NULL;
+    return !streaming_p ();
   }
 
 private:
@@ -2625,9 +2625,9 @@ unsigned trees_out::refs;
 unsigned trees_out::nulls;
 unsigned trees_out::records;
 
-trees_out::trees_out (allocator *mem, module_state *state)
+trees_out::trees_out (allocator *mem, module_state *state, depset::hash &deps)
   :parent (mem), state (state), tree_map (500),
-   dep_hash (NULL), ref_num (0)
+   dep_hash (&deps), ref_num (0)
 {
 }
 
@@ -3009,7 +3009,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool read_namespaces (auto_vec<tree> &spaces);
 
   void write_cluster (elf_out *to, depset *depsets[], unsigned size,
-		      unsigned &unnamed, unsigned *crc_ptr);
+		      depset::hash &, unsigned &unnamed, unsigned *crc_ptr);
   bool read_cluster (unsigned snum);
 
   void write_unnamed (elf_out *to, auto_vec<depset *> &depsets,
@@ -3854,15 +3854,16 @@ trees_out::instrument ()
     }
 }
 
-/* Setup and teardown for an outputting tree walk.  */
+/* Setup and teardown for a tree walk.  */
 
 void
 trees_out::begin ()
 {
-  gcc_assert (!depending_p () && !tree_map.elements ());
+  gcc_assert (!streaming_p () || !tree_map.elements ());
 
   mark_trees ();
-  parent::begin ();
+  if (streaming_p ())
+    parent::begin ();
 }
 
 unsigned
@@ -3874,25 +3875,12 @@ trees_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
   return parent::end (sink, name, crc_ptr);
 }
 
-/* Setup and teardown for a dependency walk.  */
-
-void
-trees_out::begin (depset::hash *hash)
-{
-  gcc_assert (!dep_hash && !streaming_p ());
-
-  dep_hash = hash;
-  mark_trees ();
-  /* Do not parent::begin -- we're not streaming.  */
-}
-
 void
 trees_out::end ()
 {
   gcc_assert (!streaming_p ());
 
   unmark_trees ();
-  dep_hash = NULL;
   /* Do not parent::end -- we weren't streaming.  */
 }
 
@@ -10178,6 +10166,7 @@ enum cluster_tag {
 
 void
 module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
+			     depset::hash &table,
 			     unsigned &unnamed, unsigned *crc_ptr)
 {
   dump () && dump ("Writing SCC:%u %u depsets", scc[0]->section, size);
@@ -10227,7 +10216,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   if (mergeables.length () > 1)
     sort_mergeables (mergeables);
 
-  trees_out sec (to, this);
+  trees_out sec (to, this, table);
   sec.begin ();
 
   if (refs_unnamed_p)
@@ -12212,7 +12201,7 @@ module_state::add_writables (depset::hash &table, tree ns, bitmap partitions)
 void
 module_state::find_dependencies (depset::hash &table)
 {
-  trees_out walker (NULL, this);
+  trees_out walker (NULL, this, table);
 
   while (depset *d = table.get_work ())
     {
@@ -12224,7 +12213,7 @@ module_state::find_dependencies (depset::hash &table)
 		 : d->is_defn () ? "definition" : "declaration",
 		 TREE_CODE (decl), decl);
       dump.indent ();
-      walker.begin (&table);
+      walker.begin ();
       if (table.is_mergeable ())
 	walker.tree_mergeable (decl);
       else
@@ -12905,7 +12894,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	  /* Cluster is now used to number unnamed decls.  */
 	  base[0]->cluster = 0;
 
-	  write_cluster (to, base, size, config.num_unnamed, &crc);
+	  write_cluster (to, base, size, table, config.num_unnamed, &crc);
 	}
     }
 
