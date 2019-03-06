@@ -1,3 +1,22 @@
+2019-03-06  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	Backport of r268834 from mainline to gcc-8-branch.
+	2019-02-13  Xiong Hu Luo  <luoxhu@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.h (vec_sbox_be, vec_cipher_be,
+	vec_cipherlast_be, vec_ncipher_be, vec_ncipherlast_be): New #defines.
+	* config/rs6000/crypto.md (CR_vqdi): New define_mode_iterator.
+	(crypto_vsbox_<mode>, crypto_<CR_insn>_<mode>): New define_insns.
+	* config/rs6000/rs6000-builtin.def (VSBOX_BE): New BU_CRYPTO_1.
+	(VCIPHER_BE, VCIPHERLAST_BE, VNCIPHER_BE, VNCIPHERLAST_BE):
+	New BU_CRYPTO_2.
+	* config/rs6000/rs6000.c (builtin_function_type)
+	<CRYPTO_BUILTIN_VSBOX_BE, CRYPTO_BUILTIN_VCIPHER_BE,
+	CRYPTO_BUILTIN_VCIPHERLAST_BE, CRYPTO_BUILTIN_VNCIPHER_BE,
+	CRYPTO_BUILTIN_VNCIPHERLAST_BE>: New switch options.
+	* doc/extend.texi (vec_sbox_be, vec_cipher_be, vec_cipherlast_be,
+	vec_ncipher_be, vec_ncipherlast_be): New builtin functions.
+
 2019-03-05  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

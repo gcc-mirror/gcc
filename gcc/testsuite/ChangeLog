@@ -1,3 +1,12 @@
+2019-03-06  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	Backport of r268834 from mainline to gcc-8-branch.
+	2019-01-23  Xiong Hu Luo  <luoxhu@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/crypto-builtin-1.c
+	(crypto1_be, crypto2_be, crypto3_be, crypto4_be, crypto5_be):
+	New testcases.
+
 2019-03-05  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

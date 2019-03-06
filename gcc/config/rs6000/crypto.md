@@ -48,6 +48,9 @@
 ;; Iterator for VSHASIGMAD/VSHASIGMAW
 (define_mode_iterator CR_hash [V4SI V2DI])
 
+;; Iterator for VSBOX/VCIPHER/VNCIPHER/VCIPHERLAST/VNCIPHERLAST
+(define_mode_iterator CR_vqdi [V16QI V2DI])
+
 ;; Iterator for the other crypto functions
 (define_int_iterator CR_code   [UNSPEC_VCIPHER
 				UNSPEC_VNCIPHER
@@ -60,10 +63,10 @@
 			  (UNSPEC_VNCIPHERLAST "vncipherlast")])
 
 ;; 2 operand crypto instructions
-(define_insn "crypto_<CR_insn>"
-  [(set (match_operand:V2DI 0 "register_operand" "=v")
-	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "v")
-		      (match_operand:V2DI 2 "register_operand" "v")]
+(define_insn "crypto_<CR_insn>_<mode>"
+  [(set (match_operand:CR_vqdi 0 "register_operand" "=v")
+	(unspec:CR_vqdi [(match_operand:CR_vqdi 1 "register_operand" "v")
+		      (match_operand:CR_vqdi 2 "register_operand" "v")]
 		     CR_code))]
   "TARGET_CRYPTO"
   "<CR_insn> %0,%1,%2"
@@ -90,9 +93,9 @@
   [(set_attr "type" "vecperm")])
 
 ;; 1 operand crypto instruction
-(define_insn "crypto_vsbox"
-  [(set (match_operand:V2DI 0 "register_operand" "=v")
-	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "v")]
+(define_insn "crypto_vsbox_<mode>"
+  [(set (match_operand:CR_vqdi 0 "register_operand" "=v")
+	(unspec:CR_vqdi [(match_operand:CR_vqdi 1 "register_operand" "v")]
 		     UNSPEC_VSBOX))]
   "TARGET_CRYPTO"
   "vsbox %0,%1"

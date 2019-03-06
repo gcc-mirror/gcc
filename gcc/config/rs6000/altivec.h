@@ -418,6 +418,11 @@
 #define vec_vupkhsw __builtin_vec_vupkhsw
 #define vec_vupklsw __builtin_vec_vupklsw
 #define vec_revb __builtin_vec_revb
+#define vec_sbox_be __builtin_crypto_vsbox_be
+#define vec_cipher_be __builtin_crypto_vcipher_be
+#define vec_cipherlast_be __builtin_crypto_vcipherlast_be
+#define vec_ncipher_be __builtin_crypto_vncipher_be
+#define vec_ncipherlast_be __builtin_crypto_vncipherlast_be
 #endif
 
 #ifdef __POWER9_VECTOR__
