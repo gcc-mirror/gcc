@@ -1,3 +1,9 @@
+2019-03-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87378 - bogus -Wredundant-move warning.
+	* g++.dg/cpp0x/Wredundant-move1.C (fn4): Drop dg-warning.
+	* g++.dg/cpp0x/Wredundant-move7.C: New test.
+
 2019-03-06  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/89551

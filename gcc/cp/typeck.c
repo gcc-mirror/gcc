@@ -9429,10 +9429,24 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
 	     do maybe-rvalue overload resolution even without std::move.  */
 	  else if (treat_lvalue_as_rvalue_p (arg, /*parm_ok*/true))
 	    {
-	      auto_diagnostic_group d;
-	      if (warning_at (loc, OPT_Wredundant_move,
-			      "redundant move in return statement"))
-		inform (loc, "remove %<std::move%> call");
+	      /* Make sure that the overload resolution would actually succeed
+		 if we removed the std::move call.  */
+	      tree t = convert_for_initialization (NULL_TREE, functype,
+						   move (arg),
+						   (LOOKUP_NORMAL
+						    | LOOKUP_ONLYCONVERTING
+						    | LOOKUP_PREFER_RVALUE),
+						   ICR_RETURN, NULL_TREE, 0,
+						   tf_none);
+	      /* If this worked, implicit rvalue would work, so the call to
+		 std::move is redundant.  */
+	      if (t != error_mark_node)
+		{
+		  auto_diagnostic_group d;
+		  if (warning_at (loc, OPT_Wredundant_move,
+				  "redundant move in return statement"))
+		    inform (loc, "remove %<std::move%> call");
+		}
 	    }
 	}
     }
