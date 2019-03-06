@@ -1,3 +1,10 @@
+2019-03-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__cpp_lib_bounded_array_traits): Define.
+	* include/std/version (__cpp_lib_bounded_array_traits): Likewise.
+	* testsuite/20_util/is_bounded_array/value.cc: Check for macro.
+	* testsuite/20_util/is_unbounded_array/value.cc: Likewise.
+
 2019-03-06  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR libstdc++/86655 - std::assoc_legendre should not constrain

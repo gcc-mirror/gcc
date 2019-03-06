@@ -21,6 +21,12 @@
 #include <type_traits>
 #include <testsuite_tr1.h>
 
+#ifndef __cpp_lib_bounded_array_traits
+# error "Feature test macro for is_bounded_array is missing"
+#elif __cpp_lib_bounded_array_traits < 201902L
+# error "Feature test macro for is_bounded_array has wrong value"
+#endif
+
 void test01()
 {
   using std::is_bounded_array;
