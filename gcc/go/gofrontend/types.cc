@@ -7581,10 +7581,17 @@ Array_type::do_export(Export* exp) const
   exp->write_c_string("[");
   if (this->length_ != NULL)
     {
-      Export_function_body efb(exp, 0);
-      efb.set_type_context(this->length_->type());
-      this->length_->export_expression(&efb);
-      exp->write_string(efb.body());
+      Numeric_constant nc;
+      mpz_t val;
+      if (!this->length_->numeric_constant_value(&nc) || !nc.to_int(&val))
+        {
+	  go_assert(saw_errors());
+          return;
+        }
+      char* s = mpz_get_str(NULL, 10, val);
+      exp->write_string(s);
+      exp->write_string(" ");
+      mpz_clear(val);
     }
   exp->write_c_string("] ");
   exp->write_type(this->element_type_);
