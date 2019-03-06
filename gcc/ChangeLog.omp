@@ -1,3 +1,12 @@
+2018-09-20  Cesar Philippidis  <cesar@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* omp-low.c (install_var_field): New base_pointer_restrict
+	argument.
+	(scan_sharing_clauses): Update call to install_var_field.
+	(omp_target_base_pointers_restrict_p): New function.
+	(scan_omp_target): Update call to install_var_field.
+
 2018-10-30  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* config/nvptx/nvptx.cc (nvptx_propagate_unified): New.
