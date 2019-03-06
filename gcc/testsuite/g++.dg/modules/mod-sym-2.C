@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-ts -Wno-pedantic" }
+// { dg-additional-options "-fmodules-ts -Wno-pedantic -fdump-lang-module-graph" }
 module;
 # 4 "header" 1
 inline void Foo () {}
@@ -18,7 +18,7 @@ namespace One {
   }
 }
 
-// These fail until namespace hack is removed
+// { dg-final { scan-lang-dump {Reachable GMF '::Foo' added} module } }
 // { dg-final { scan-assembler "_Z3Foov:" } }
 // { dg-final { scan-assembler "_ZW5okely6dokelyEN3One3Two5Three4Foo2Ev:" } }
 // { dg-final { scan-assembler "_ZN3One3Two5Three4Baz2Ev:" } }

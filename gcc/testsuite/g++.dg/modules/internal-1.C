@@ -17,3 +17,4 @@ static int frob ()
 
 export int f (int = frob ()); // { dg-error "references internal linkage" }
 int goof (X &); // { dg-error "references internal linkage" }
+// { dg-prune-output "failed to write" }

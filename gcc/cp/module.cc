@@ -2308,14 +2308,13 @@ public:
     bool mergeables;         /* Mergeables ordering only.  */
     bool sneakoscope;        /* Detecting dark magic (of a voldemort
 				type).  */
-    bool gmfs;		     /* GMF entities are present.  */
-    bool internals;	     /* internal entities are referenced.  */
+    bool bad_refs;	     /* bad references are present.  */
 
   public:
     hash (size_t size, bool mergeable = false)
       : parent (size), worklist (), current (NULL),
 	mergeables (mergeable), sneakoscope (false),
-	gmfs (false), internals (false)
+	bad_refs (false)
     {
       worklist.reserve (size);
     }
@@ -2352,6 +2351,7 @@ public:
       return current;
     }
     void connect (auto_vec<depset *> &);
+    bool finalize_dependencies ();
   };
 
 public:
@@ -6402,12 +6402,30 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	u (owner);
 	if (name != as_base_identifier)
 	  {
-
-	    int ident = get_lookup_ident (ctx, name, owner, look);
+	    int ident = -2;
+	    if (TREE_CODE (ctx) == NAMESPACE_DECL && owner < MODULE_IMPORT_BASE)
+	      {
+		/* Look directly into the binding depset, as that's
+		   what importers will observe.  */
+		depset *bind
+		  = dep_hash->find (depset::binding_key (ctx, DECL_NAME (look)));
+		if (bind)
+		  for (ident = bind->deps.length (); ident--;)
+		    if (bind->deps[ident]->get_entity () == look)
+		      break;
+		gcc_checking_assert (ident >= 0);
+		if (bind->deps.length () > 1
+		    && TREE_CODE (bind->deps[0]->get_entity ()) == TYPE_DECL)
+		  ident--;
+	      }
+	    else
+	      {
+		ident = get_lookup_ident (ctx, name, owner, look);
+		/* Make sure we can find it by name.  */
+		gcc_checking_assert
+		  (look == lookup_by_ident (ctx, name, owner, ident));
+	      }
 	    i (ident);
-	    /* Make sure we can find it by name.  */
-	    gcc_checking_assert (look
-				 == lookup_by_ident (ctx, name, owner, ident));
 	  }
       }
     kind = is_import ? "import" : "named decl";
@@ -7684,12 +7702,14 @@ depset::hash::add_dependency (tree decl)
 		  gcc_checking_assert (MAYBE_DECL_MODULE_OWNER (decl)
 				       == MODULE_NONE);
 		  key_type bkey = binding_key (ctx, DECL_NAME (decl));
-		  depset **bslot = maybe_insert (key, true);
+		  depset **bslot = maybe_insert (bkey, true);
 		  depset *bdep = *bslot;
 		  if (!bdep)
 		    *bslot = bdep = new depset (bkey);
 		  bdep->deps.safe_push (dep);
 		  dep->deps.safe_push (bdep);
+		  dump (dumper::DEPEND)
+		    && dump ("Reachable GMF %N added", decl);
 		}
 	    }
 	}
@@ -7708,7 +7728,7 @@ depset::hash::add_dependency (tree decl)
 	    {
 	      current->refs_unnamed |= dep->is_unnamed;
 	      current->refs_internal |= dep->is_internal;
-	      internals |= dep->is_internal;
+	      bad_refs |= dep->is_internal;
 
 	      if (TREE_CODE (decl) == TYPE_DECL
 		  && UNSCOPED_ENUM_P (TREE_TYPE (decl))
@@ -7743,11 +7763,8 @@ depset::hash::add_binding (tree ns, tree name, tree value, tree maybe_type)
       gcc_assert (!iter.using_p ()); // FIXME: add using decl support
 
       if (MAYBE_DECL_MODULE_OWNER (decl) == MODULE_NONE)
-	{
-	  /* Ignore global module fragment entities.  */
-	  gmfs = true;
-	  continue;
-	}
+	/* Ignore global module fragment entities.  */
+	continue;
 
       if (!(TREE_CODE (STRIP_TEMPLATE (decl)) == CONST_DECL
 	    || TREE_CODE (STRIP_TEMPLATE (decl)) == TYPE_DECL
@@ -7758,8 +7775,11 @@ depset::hash::add_binding (tree ns, tree name, tree value, tree maybe_type)
       if ((TREE_CODE (decl) == VAR_DECL
 	   || TREE_CODE (decl) == TYPE_DECL)
 	  && DECL_TINFO_P (decl))
-	/* Ignore TINFO things.  */
-	continue;
+	{
+	  /* Ignore TINFO things.  */
+	  gcc_checking_assert (decl == value);
+	  continue;
+	}
 
       add_dependency (decl);
     }
@@ -7785,7 +7805,72 @@ depset::hash::add_mergeable (tree decl)
   worklist.safe_push (dep);
 }
 
-/* Core of TARJAN's algorithm to find Strongly Connected Components
+/* Compare two bindings.  TYPE_DECL before non-exported before
+   exported.  */
+
+static int
+binding_cmp (const void *a_, const void *b_)
+{
+  depset *a = *(depset *const *)a_;
+  depset *b = *(depset *const *)b_;
+
+  gcc_checking_assert (!a->is_binding () && !b->is_binding ());
+  tree a_ent = a->get_entity ();
+  tree b_ent = b->get_entity ();
+
+  if (TREE_CODE (a_ent) == TYPE_DECL)
+    {
+      gcc_checking_assert (TREE_CODE (b_ent) != TYPE_DECL);
+      return -1;  /* A first.  */
+    }
+
+  if (TREE_CODE (b_ent) == TYPE_DECL)
+    return +1;  /* B first.  */
+
+  if (DECL_MODULE_EXPORT_P (a_ent) != DECL_MODULE_EXPORT_P (b_ent))
+    /* Non-export first.  */
+    return DECL_MODULE_EXPORT_P (a_ent) ? +1 : -1;
+
+  /* At this point we don't care, but want a stable sort.  */
+  return DECL_UID (a_ent) < DECL_UID (b_ent) ? -1 : +1;
+}
+
+/* Sort the bindings, issue errors about bad internal refs.  */
+
+bool
+depset::hash::finalize_dependencies ()
+{
+  bool ok = true;
+  depset::hash::iterator end (this->end ());
+  for (depset::hash::iterator iter (begin ()); iter != end; ++iter)
+    {
+      depset *dep = *iter;
+      if (dep->is_binding ())
+	dep->deps.qsort (binding_cmp);
+      else if (dep->refs_internal)
+	{
+	  ok = false;
+	  tree decl = dep->get_entity ();
+	  for (unsigned ix = dep->deps.length (); ix--;)
+	    {
+	      depset *rdep = dep->deps[ix];
+	      if (rdep->is_internal)
+		{
+		  // FIXME: Better location information?  We're
+		  // losing, so it doesn't matter about efficiency
+		  error_at (DECL_SOURCE_LOCATION (decl),
+			    "%q#D references internal linkage entity %q#D",
+			    decl, rdep->get_entity ());
+		  break;
+		}
+	    }
+	}
+    }
+
+  return ok;
+}
+
+  /* Core of TARJAN's algorithm to find Strongly Connected Components
    within a graph.  See https://en.wikipedia.org/wiki/
    Tarjan%27s_strongly_connected_components_algorithm for details.
 
@@ -12781,38 +12866,13 @@ module_state::write (elf_out *to, cpp_reader *reader)
   add_writables (table, global_namespace, partitions);
   find_dependencies (table);
   // FIXME: Find reachable GMF entities from non-emitted pieces.  It'd
-  // be nice to have a flag telling us this walk's necessary
+  // be nice to have a flag telling us this walk's necessary.  Even
+  // better to not do it (why are we making visible implementation details?)
 
-  /* Check for referencing anything internal.  */
-  if (table.internals)
+  if (!table.finalize_dependencies ())
     {
-      depset::hash::iterator end (table.end ());
-      for (depset::hash::iterator iter (table.begin ()); iter != end; ++iter)
-	{
-	  depset *dep = *iter;
-	  if (dep->refs_internal)
-	    {
-	      tree decl = dep->get_entity ();
-	      for (unsigned ix = dep->deps.length (); ix--;)
-		{
-		  depset *rdep = dep->deps[ix];
-		  if (rdep->is_internal)
-		    {
-		      // FIXME: Better location information?  We're
-		      // losing, so it doesn't matter about efficiency
-		      error_at (DECL_SOURCE_LOCATION (decl),
-				"%q#D references internal linkage entity %q#D",
-				decl, rdep->get_entity ());
-		      break;
-		    }
-		}
-	      }
-	}
-    }
-
-  if (table.gmfs)
-    {
-      // FIXME: Update bindings to account for reachable/discarded GMF entities
+      to->set_error ();
+      return;
     }
 
   /* Determine Strongy Connected Components.  */

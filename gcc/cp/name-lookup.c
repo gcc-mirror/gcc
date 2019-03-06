@@ -3956,9 +3956,6 @@ extract_module_binding (tree &binding, tree &name_r, tree &type_r,
   if (unsigned ix = ovls.length ())
     {
       /* Now dedup it all.  */
-      // FIXME: It is not clear what to do with internal-linkage
-      // entities from partitions.  p1394 touches on this.  For now we
-      // just merge them (except for anon namespaces).
 
       /* Dedup: Engage!  */
       lookup_mark (value, true);
@@ -3968,9 +3965,7 @@ extract_module_binding (tree &binding, tree &name_r, tree &type_r,
 	  tree btype = MAYBE_STAT_TYPE (bind);
 	  tree bval = MAYBE_STAT_DECL (bind);
 
-	  // FIXME: Not dealing with anonymous namespaces in
-	  // partitions.  These should probably be handled akin
-	  // to voldemort types.
+	  /* We should never see an anonymous namespace.  */
 	  gcc_assert (!(TREE_CODE (bval) == NAMESPACE_DECL
 			&& !DECL_NAME (bval)));
 
@@ -4003,6 +3998,8 @@ extract_module_binding (tree &binding, tree &name_r, tree &type_r,
       type = NULL_TREE;
     }
 
+  // FIXME: Probably don't need to sort
+  // FIXME: A lookup-set would suffice
   value = ovl_sort (value);
   /* We must not smack NULL into the hash table.  */
   if (value)
@@ -4011,7 +4008,7 @@ extract_module_binding (tree &binding, tree &name_r, tree &type_r,
     gcc_checking_assert (slot != &binding || anticipated_builtin_p (*slot));
   type_r = type;
 
-  // FIXME: Don't skip the hidden friends!
+  // FIXME: Don't skip the hidden friends?
   return ovl_skip_hidden (value);
 }
 
@@ -4090,11 +4087,9 @@ get_binding_or_decl (tree ctx, tree name, unsigned mod)
 	 untrustworthy data, so check for NULL.  */
       if (tree *slot = find_namespace_slot (ctx, name))
 	{
-	  if (mod <= MODULE_PURVIEW)
-	    /* During stream out, we reference ourselves by name.  */
-	    binding = *get_fixed_binding_slot (slot, name,
-					       MODULE_SLOT_CURRENT, false);
-	  else if (mc_slot *mslot = search_imported_binding_slot (slot, mod))
+	  /* We reference ourselves via the dependency table.  */
+	  gcc_assert (mod >= MODULE_IMPORT_BASE);
+	  if (mc_slot *mslot = search_imported_binding_slot (slot, mod))
 	    {
 	      /* During an import we reference a dependent import.  */
 	      if (mslot->is_lazy ())

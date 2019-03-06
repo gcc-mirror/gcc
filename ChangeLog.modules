@@ -1,5 +1,20 @@
 2019-03-06  Nathan Sidwell  <nathan@acm.org>
 
+	GMF pruning, Part 2
+	gcc/cp/
+	* module.cc (depset::hash): Rename flags fields.
+	(trees_out::tree_decl): Self references by dependency binding.
+	(depset::hash::add_dependency): Fix thinko.
+	(binding_cmp): New.
+	(depset::hash::finalize_dependencies): New.
+	(module_state::write): Adjust.
+	* name-lookup.c (extract_module_binding): The FIXMEs have become
+	irrelevant.
+	(get_binding_or_decl): Only imports for namespaces.
+	gcc/testsuite/
+	* g++.dg/modules/internal-1.C: Prune output.
+	* g++.dg/modules/mod-sym-2.C: Check GMF not discarded.
+
 	gcc/cp/
 	* module.cc (trees_out::trees_out): Add depset::hash parm.
 	(trees_out::depending_p): Invert streaming_p.
