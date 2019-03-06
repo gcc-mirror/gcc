@@ -1,3 +1,11 @@
+2019-03-06  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/88684
+	* sanitizer_common/sanitizer_platform.h (defined): Cherry pick.
+	(SANITIZER_NON_UNIQUE_TYPEINFO): Likewise.
+	* ubsan/ubsan_type_hash_itanium.cc (isDerivedFromAtOffset):
+	Likewise.
+
 2019-02-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR sanitizer/89409
