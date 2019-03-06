@@ -1313,6 +1313,10 @@ arc_override_options (void)
   if (TARGET_LONG_CALLS_SET)
     target_flags &= ~MASK_MILLICODE_THUNK_SET;
 
+  /* Set unaligned to all HS cpus.  */
+  if (!global_options_set.x_unaligned_access && TARGET_HS)
+    unaligned_access = 1;
+
   /* These need to be done at start up.  It's convenient to do them here.  */
   arc_init ();
 }
