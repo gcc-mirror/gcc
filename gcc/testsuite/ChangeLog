@@ -1,3 +1,9 @@
+2019-03-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/72714
+	Backport from trunk
+	* gfortran.dg/coarray_allocate_11.f90: New test.
+
 2019-03-06  Tamar Christina  <tamar.christina@arm.com>
 
 	Backport from trunk.
