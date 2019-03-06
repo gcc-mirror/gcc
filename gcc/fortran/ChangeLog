@@ -1,3 +1,9 @@
+2019-03-06  Harald Anlauf  <anlauf@gmx.de>
+
+	Backport from trunk
+	PR fortran/71203
+	* expr.c (simplify_const_ref): Avoid null pointer dereference.
+
 2019-03-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/72714
