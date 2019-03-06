@@ -1,3 +1,47 @@
+2019-03-06  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Rewrite variant.
+	Also PR libstdc++/85517
+	* include/std/variant (__do_visit): New.
+	(__variant_cast): Likewise.
+	(__variant_cookie): Likewise.
+	(__erased_*): Remove.
+	(_Variant_storage::_S_vtable): Likewise.
+	(_Variant_storage::__M_reset_impl): Adjust to use __do_visit.
+	(_Variant_storage::__M_reset): Adjust.
+	(__variant_construct): New.
+	(_Copy_ctor_base(const _Copy_ctor_base&)): Adjust to use
+	__variant_construct.
+	(_Move_ctor_base(_Move_ctor_base&&)): Likewise.
+	(_Move_ctor_base::__M_destructive_copy): New.
+	(_Move_ctor_base::__M_destructive_move): Adjust to use
+	__variant_construct.
+	(_Copy_assign_base::operator=): Adjust to use __do_visit.
+	(_Copy_assign_alias): Adjust to check both copy assignment
+	and copy construction for triviality.
+	(_Move_assign_base::operator=): Adjust to use __do_visit.
+	(_Multi_array): Add support for visitors that accept and return
+	a __variant_cookie.
+	(__gen_vtable_impl::_S_apply_all_alts): Likewise.
+	(__gen_vtable_impl::_S_apply_single_alt): Likewise.
+	(__gen_vtable_impl::__element_by_index_or_cookie): New. Generate
+	a __variant_cookie temporary for a variant that is valueless and..
+	(__gen_vtable_impl::__visit_invoke): ..adjust here.
+	(__gen_vtable::_Array_type): Conditionally make space for
+	the __variant_cookie visitor case.
+	(__variant_construct_by_index): New.
+	(get_if): Adjust to use std::addressof.
+	(relops): Adjust to use __do_visit.
+	(variant): Add __variant_cast and __variant_construct_by_index
+	as friends.
+	(variant::emplace): Use _M_reset() and __variant_construct_by_index
+	instead of self-destruction.
+	(variant::swap): Adjust to use __do_visit.
+	(visit): Reimplement in terms of __do_visit.
+	(__variant_hash_call_base_impl::operator()): Adjust to use __do_visit.
+	* testsuite/20_util/variant/compile.cc: Adjust.
+	* testsuite/20_util/variant/run.cc: Likewise.
+
 2019-03-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/c++config.h (_cpp_lib_char8_t): Add L suffix to
