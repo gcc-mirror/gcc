@@ -8785,165 +8785,6 @@ depset::hash::connect (auto_vec<depset *> &sccs)
     }
 }
 
-/* If this is an alias, return the aliased module after transferring
-   the exported flag.  Return the actual import in either case.  */
-
-module_state *
-module_state::resolve_alias ()
-{
-  module_state *result = this;
-  if (is_alias ())
-    {
-      result = u1.alias;
-      dump () && dump ("%M is an alias of %M", this, result);
-    }
-  return result;
-}
-
-/* If THIS is the current purview, issue an import error and return false.  */
-
-bool
-module_state::check_not_purview (location_t loc)
-{
-  module_state *imp = (*modules)[MODULE_PURVIEW];
-  if (imp && !imp->name)
-    imp = imp->parent;
-  if (imp == this)
-    {
-      /* Cannot import the current module.  */
-      error_at (loc, "cannot import module %qs in its own purview",
-		get_flatname ());
-      inform (from_loc, "module %qs declared here", get_flatname ());
-      return false;
-    }
-  return true;
-}
-
-/* Module name substitutions.  */
-static vec<module_state *,va_heap> substs;
-
-void
-module_state::mangle ()
-{
-  if (subst)
-    mangle_substitution ('W', subst - 1);
-  else
-    {
-      if (parent)
-	parent->mangle ();
-      if (!is_partition ())
-	{
-	  substs.safe_push (this);
-	  subst = substs.length ();
-	  mangle_identifier (name);
-	}
-    }
-}
-
-void
-mangle_module (int mod)
-{
-  module_state *imp = (*modules)[mod];
-
-  if (!imp->name)
-    /* Set when importing the primary module interface.  */
-    imp = imp->parent;
-
-  imp->mangle ();
-}
-
-/* Clean up substitutions.  */
-void
-mangle_module_fini ()
-{
-  while (substs.length ())
-    substs.pop ()->subst = 0;
-}
-
-static module_state **
-get_module_slot (tree name, module_state *parent, bool partition, bool insert)
-{
-  module_state_hash::compare_type ct (name, uintptr_t (parent) | partition);
-  hashval_t hv = module_state_hash::hash (ct);
-
-  return modules_hash->find_slot_with_hash (ct, hv, insert ? INSERT : NO_INSERT);
-}
-
-/* Find or create module NAME & PARENT in the hash table.  */
-
-module_state *
-get_module (tree name, module_state *parent, bool partition)
-{
-  if (partition)
-    {
-      if (!parent)
-	{
-	  parent = (*modules)[MODULE_PURVIEW];
-	  while (parent->is_partition ())
-	    parent = parent->parent;
-	}
-
-      if (!parent->is_partition () && !parent->flatname)
-	parent->set_flatname ();
-    }
-
-  module_state **slot = get_module_slot (name, parent, partition, true);
-  module_state *state = *slot;
-  if (!state)
-    {
-      state = (new (ggc_alloc<module_state> ())
-	       module_state (name, parent, partition));
-      *slot = state;
-    }
-  return state;
-}
-
-/* Process string name PTR into a module_state.  */
-
-static module_state *
-get_module (const char *ptr)
-{
-  if (ptr[0] == '"' || ptr[0] == '<')
-    {
-      /* A header name.  */
-      size_t len = strlen (ptr);
-      if (len < 3 || ptr[len-1] != (ptr[0] == '"' ? '"' : '>'))
-	return NULL;
-      return get_module (get_identifier_with_length (ptr, len));
-     }
-
-  module_state *parent = NULL;
-  bool partition = *ptr == ':';
-  for (const char *probe = ptr += partition;; probe++)
-    if (!*probe || *probe == '.')
-      {
-	size_t len = probe - ptr;
-	if (!len)
-	  {
-	    return NULL;
-	  }
-	parent = get_module (get_identifier_with_length (ptr, len),
-			     parent, partition);
-	ptr = probe;
-	if (!*ptr++)
-	  break;
-      }
-  return parent;
-}
-
-/* Announce WHAT about the module.  */
-
-void
-module_state::announce (const char *what) const
-{
-  if (noisy_p ())
-    {
-      fprintf (stderr, mod < MODULE_LIMIT ? " %s:%s:%u" : " %s:%s",
-	       what, get_flatname (), mod);
-      fflush (stderr);
-    }
-}
-
 /* Initialize location spans.  */
 
 void
@@ -9104,6 +8945,77 @@ ordinary_loc_of (line_maps *lmaps, location_t from)
 	}
     }
   return from;
+}
+
+static module_state **
+get_module_slot (tree name, module_state *parent, bool partition, bool insert)
+{
+  module_state_hash::compare_type ct (name, uintptr_t (parent) | partition);
+  hashval_t hv = module_state_hash::hash (ct);
+
+  return modules_hash->find_slot_with_hash (ct, hv, insert ? INSERT : NO_INSERT);
+}
+
+/* Find or create module NAME & PARENT in the hash table.  */
+
+module_state *
+get_module (tree name, module_state *parent, bool partition)
+{
+  if (partition)
+    {
+      if (!parent)
+	{
+	  parent = (*modules)[MODULE_PURVIEW];
+	  while (parent->is_partition ())
+	    parent = parent->parent;
+	}
+
+      if (!parent->is_partition () && !parent->flatname)
+	parent->set_flatname ();
+    }
+
+  module_state **slot = get_module_slot (name, parent, partition, true);
+  module_state *state = *slot;
+  if (!state)
+    {
+      state = (new (ggc_alloc<module_state> ())
+	       module_state (name, parent, partition));
+      *slot = state;
+    }
+  return state;
+}
+
+/* Process string name PTR into a module_state.  */
+
+static module_state *
+get_module (const char *ptr)
+{
+  if (ptr[0] == '"' || ptr[0] == '<')
+    {
+      /* A header name.  */
+      size_t len = strlen (ptr);
+      if (len < 3 || ptr[len-1] != (ptr[0] == '"' ? '"' : '>'))
+	return NULL;
+      return get_module (get_identifier_with_length (ptr, len));
+     }
+
+  module_state *parent = NULL;
+  bool partition = *ptr == ':';
+  for (const char *probe = ptr += partition;; probe++)
+    if (!*probe || *probe == '.')
+      {
+	size_t len = probe - ptr;
+	if (!len)
+	  {
+	    return NULL;
+	  }
+	parent = get_module (get_identifier_with_length (ptr, len),
+			     parent, partition);
+	ptr = probe;
+	if (!*ptr++)
+	  break;
+      }
+  return parent;
 }
 
 /* Create a mapper.  The mapper may be dead.  Yes, I'm embedding some
@@ -9996,6 +9908,94 @@ int module_mapper::translate_include (cpp_reader *reader, line_maps *lmaps,
 		       actual, false);
     }
   return +1;  /* cpplib will delete the buffer.  */
+}
+
+/* If this is an alias, return the aliased module after transferring
+   the exported flag.  Return the actual import in either case.  */
+
+module_state *
+module_state::resolve_alias ()
+{
+  module_state *result = this;
+  if (is_alias ())
+    {
+      result = u1.alias;
+      dump () && dump ("%M is an alias of %M", this, result);
+    }
+  return result;
+}
+
+/* If THIS is the current purview, issue an import error and return false.  */
+
+bool
+module_state::check_not_purview (location_t loc)
+{
+  module_state *imp = (*modules)[MODULE_PURVIEW];
+  if (imp && !imp->name)
+    imp = imp->parent;
+  if (imp == this)
+    {
+      /* Cannot import the current module.  */
+      error_at (loc, "cannot import module %qs in its own purview",
+		get_flatname ());
+      inform (from_loc, "module %qs declared here", get_flatname ());
+      return false;
+    }
+  return true;
+}
+
+/* Module name substitutions.  */
+static vec<module_state *,va_heap> substs;
+
+void
+module_state::mangle ()
+{
+  if (subst)
+    mangle_substitution ('W', subst - 1);
+  else
+    {
+      if (parent)
+	parent->mangle ();
+      if (!is_partition ())
+	{
+	  substs.safe_push (this);
+	  subst = substs.length ();
+	  mangle_identifier (name);
+	}
+    }
+}
+
+void
+mangle_module (int mod)
+{
+  module_state *imp = (*modules)[mod];
+
+  if (!imp->name)
+    /* Set when importing the primary module interface.  */
+    imp = imp->parent;
+
+  imp->mangle ();
+}
+
+/* Clean up substitutions.  */
+void
+mangle_module_fini ()
+{
+  while (substs.length ())
+    substs.pop ()->subst = 0;
+}
+
+/* Announce WHAT about the module.  */
+
+void
+module_state::announce (const char *what) const
+{
+  if (noisy_p ())
+    {
+      fprintf (stderr, mod < MODULE_LIMIT ? " %s:%s:%u" : " %s:%s",
+	       what, get_flatname (), mod);
+      fflush (stderr);
+    }
 }
 
 /* A human-readable README section.  It is a STRTAB that may be
