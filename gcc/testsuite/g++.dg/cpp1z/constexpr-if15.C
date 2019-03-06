@@ -7,5 +7,5 @@ constexpr int foo (int) { return 2; }
 template <typename>
 void a()
 {
-  if constexpr(foo) { };
+  if constexpr(foo) { };	// { dg-error "overloaded" }
 }
