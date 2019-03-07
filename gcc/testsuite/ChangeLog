@@ -1,3 +1,8 @@
+2019-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89618
+	* gcc.target/i386/pr89618.c: New testcase.
+
 2019-03-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89595
