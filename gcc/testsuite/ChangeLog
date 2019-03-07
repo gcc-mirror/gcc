@@ -1,5 +1,10 @@
 2019-03-07  Martin Jambor  <mjambor@suse.cz>
 
+	PR lto/87525
+	* gcc.dg/ipa/ipcp-5.c: New test.
+
+2019-03-07  Martin Jambor  <mjambor@suse.cz>
+
 	PR ipa/88235
 	* g++.dg/ipa/pr88235.C: New test.
 

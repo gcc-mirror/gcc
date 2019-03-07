@@ -2818,11 +2818,18 @@ perform_estimation_of_a_value (cgraph_node *node, vec<tree> known_csts,
   base_time -= time;
   if (base_time > 65535)
     base_time = 65535;
-  time_benefit = base_time.to_int ()
-    + devirtualization_time_bonus (node, known_csts, known_contexts,
-				   known_aggs_ptrs)
-    + hint_time_bonus (hints)
-    + removable_params_cost + est_move_cost;
+
+  /* Extern inline functions have no cloning local time benefits because they
+     will be inlined anyway.  The only reason to clone them is if it enables
+     optimization in any of the functions they call.  */
+  if (DECL_EXTERNAL (node->decl) && DECL_DECLARED_INLINE_P (node->decl))
+    time_benefit = 0;
+  else
+    time_benefit = base_time.to_int ()
+      + devirtualization_time_bonus (node, known_csts, known_contexts,
+				     known_aggs_ptrs)
+      + hint_time_bonus (hints)
+      + removable_params_cost + est_move_cost;
 
   gcc_checking_assert (size >=0);
   /* The inliner-heuristics based estimates may think that in certain
