@@ -1,5 +1,9 @@
 2019-03-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR translation/79999
+	* c-c++-common/gomp/doacross-1.c: Adjust expected diagnostics.
+	* c-c++-common/gomp/doacross-3.c: New test.
+
 	PR target/89602
 	* gcc.target/i386/avx512f-vmovss-1.c: New test.
 	* gcc.target/i386/avx512f-vmovss-2.c: New test.

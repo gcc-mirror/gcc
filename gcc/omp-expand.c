@@ -2147,8 +2147,8 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 	      forward = tree_int_cst_sgn (step) != -1;
 	    }
 	  if (forward ^ OMP_CLAUSE_DEPEND_SINK_NEGATIVE (deps))
-	    warning_at (loc, 0, "%<depend(sink)%> clause waiting for "
-				"lexically later iteration");
+	    warning_at (loc, 0, "%<depend%> clause with %<sink%> modifier "
+				"waiting for lexically later iteration");
 	  break;
 	}
       deps = TREE_CHAIN (deps);
@@ -2284,8 +2284,9 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 			       build_int_cst (itype, 0));
 	  if (integer_zerop (t) && !warned_step)
 	    {
-	      warning_at (loc, 0, "%<depend(sink)%> refers to iteration never "
-				  "in the iteration space");
+	      warning_at (loc, 0, "%<depend%> clause with %<sink%> modifier "
+				  "refers to iteration never in the iteration "
+				  "space");
 	      warned_step = true;
 	    }
 	  cond = fold_build2_loc (loc, BIT_AND_EXPR, boolean_type_node,
