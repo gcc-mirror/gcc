@@ -5800,8 +5800,8 @@ ix86_set_func_type (tree fndecl)
 
 	  /* Only dwarf2out.c can handle -WORD(AP) as a pointer argument.  */
 	  if (write_symbols != NO_DEBUG && write_symbols != DWARF2_DEBUG)
-	    sorry ("Only DWARF debug format is supported for interrupt "
-		   "service routine.");
+	    sorry ("only DWARF debug format is supported for interrupt "
+		   "service routine");
 	}
       else
 	{
@@ -9069,7 +9069,7 @@ ix86_function_arg_boundary (machine_mode mode, const_tree type)
 	{
 	  warned = true;
 	  inform (input_location,
-		  "The ABI for passing parameters with %d-byte"
+		  "the ABI for passing parameters with %d-byte"
 		  " alignment has changed in GCC 4.6",
 		  align / BITS_PER_UNIT);
 	}
@@ -32116,7 +32116,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
       if (predicate_list && arg_str == NULL)
 	{
 	  error_at (DECL_SOURCE_LOCATION (decl),
-	    	"No dispatcher found for the versioning attributes");
+		    "no dispatcher found for the versioning attributes");
 	  return 0;
 	}
     
@@ -32166,7 +32166,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
       if (predicate_list && i == NUM_FEATURES)
 	{
 	  error_at (DECL_SOURCE_LOCATION (decl),
-		    "No dispatcher found for %s", token);
+		    "no dispatcher found for %s", token);
 	  return 0;
 	}
       token = strtok (NULL, ",");
@@ -32176,7 +32176,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
   if (predicate_list && predicate_chain == NULL_TREE)
     {
       error_at (DECL_SOURCE_LOCATION (decl),
-	        "No dispatcher found for the versioning attributes : %s",
+	        "no dispatcher found for the versioning attributes: %s",
 	        attrs_str);
       return 0;
     }
@@ -32338,12 +32338,12 @@ ix86_mangle_function_version_assembler_name (tree decl, tree id)
       && lookup_attribute ("gnu_inline",
 			   DECL_ATTRIBUTES (decl)))
     error_at (DECL_SOURCE_LOCATION (decl),
-	      "Function versions cannot be marked as gnu_inline,"
+	      "function versions cannot be marked as gnu_inline,"
 	      " bodies have to be generated");
 
   if (DECL_VIRTUAL_P (decl)
       || DECL_VINDEX (decl))
-    sorry ("Virtual function multiversioning not supported");
+    sorry ("virtual function multiversioning not supported");
 
   version_attr = lookup_attribute ("target", DECL_ATTRIBUTES (decl));
 
@@ -32619,7 +32619,7 @@ ix86_generate_version_dispatcher_body (void *node_p)
 	 virtual methods in base classes but are not explicitly marked as
 	 virtual.  */
       if (DECL_VINDEX (versn->decl))
-	sorry ("Virtual function multiversioning not supported");
+	sorry ("virtual function multiversioning not supported");
 
       fn_ver_vec.safe_push (versn->decl);
     }
@@ -32898,7 +32898,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
 	 STRING_CST.   */
       if (!EXPR_P (param_string_cst))
  	{
-	  error ("Parameter to builtin must be a string constant or literal");
+	  error ("parameter to builtin must be a string constant or literal");
 	  return integer_zero_node;
 	}
       param_string_cst = TREE_OPERAND (EXPR_CHECK (param_string_cst), 0);
@@ -32923,7 +32923,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
 
       if (i == NUM_ARCH_NAMES)
 	{
-	  error ("Parameter to builtin not valid: %s",
+	  error ("parameter to builtin not valid: %s",
 	         TREE_STRING_POINTER (param_string_cst));
 	  return integer_zero_node;
 	}
@@ -32973,7 +32973,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
 
       if (i == NUM_ISA_NAMES)
 	{
-	  error ("Parameter to builtin not valid: %s",
+	  error ("parameter to builtin not valid: %s",
 	       	 TREE_STRING_POINTER (param_string_cst));
 	  return integer_zero_node;
 	}
@@ -41417,11 +41417,12 @@ ix86_handle_interrupt_attribute (tree *node, tree, tree, int, bool *)
 	{
 	  if (TREE_CODE (TREE_VALUE (current_arg_type)) != INTEGER_TYPE
 	      || TYPE_MODE (TREE_VALUE (current_arg_type)) != word_mode)
-	    error ("interrupt service routine should have unsigned %s"
-		   "int as the second argument",
+	    error ("interrupt service routine should have %qs "
+		   "as the second argument",
 		   TARGET_64BIT
-		   ? (TARGET_X32 ? "long long " : "long ")
-		   : "");
+		   ? (TARGET_X32 ? "unsigned long long int"
+				 : "unsigned long int")
+		   : "unsigned int");
 	}
       nargs++;
       current_arg_type = TREE_CHAIN (current_arg_type);
