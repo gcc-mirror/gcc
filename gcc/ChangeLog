@@ -1,3 +1,9 @@
+2019-01-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80916 - spurious "static but not defined" warning.
+	* gimple-fold.c (can_refer_decl_in_current_unit_p): Return false
+	for an internal symbol with DECL_EXTERNAL.
+
 2019-04-07  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/89618

@@ -121,9 +121,12 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
       || !VAR_OR_FUNCTION_DECL_P (decl))
     return true;
 
-  /* Static objects can be referred only if they was not optimized out yet.  */
-  if (!TREE_PUBLIC (decl) && !DECL_EXTERNAL (decl))
+  /* Static objects can be referred only if they are defined and not optimized
+     out yet.  */
+  if (!TREE_PUBLIC (decl))
     {
+      if (DECL_EXTERNAL (decl))
+	return false;
       /* Before we start optimizing unreachable code we can be sure all
 	 static objects are defined.  */
       if (symtab->function_flags_ready)
