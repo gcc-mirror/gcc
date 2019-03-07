@@ -1,3 +1,10 @@
+2019-03-07  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_node::verify_node): Verify with a neighbour
+	which is equivalent to searching for this in clones chain.
+	* symtab.c (symtab_node::verify_base): Similarly compare ASM
+	names with a neighbour and special case first node in a chain.
+
 2019-01-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80916 - spurious "static but not defined" warning.
