@@ -782,7 +782,7 @@ DFS::DFS_write_tree_body (struct output_block *ob,
       /* Drop names that were created for anonymous entities.  */
       if (DECL_NAME (expr)
 	  && TREE_CODE (DECL_NAME (expr)) == IDENTIFIER_NODE
-	  && anon_aggrname_p (DECL_NAME (expr)))
+	  && IDENTIFIER_ANON_P (DECL_NAME (expr)))
 	;
       else
 	DFS_follow_tree_edge (DECL_NAME (expr));
@@ -1211,7 +1211,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
       /* Drop names that were created for anonymous entities.  */
       if (DECL_NAME (t)
 	  && TREE_CODE (DECL_NAME (t)) == IDENTIFIER_NODE
-	  && anon_aggrname_p (DECL_NAME (t)))
+	  && IDENTIFIER_ANON_P (DECL_NAME (t)))
 	;
       else
 	visit (DECL_NAME (t));

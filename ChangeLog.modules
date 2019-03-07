@@ -1,3 +1,29 @@
+2019-03-07  Nathan Sidwell  <nathan@acm.org>
+
+	Commonize anonymous name generation.
+	gcc/
+	* tree.h (IDENTIFIER_ANON_P): New.
+	(anon_aggrname_p, anon_aggrname_format): Delete.
+	(make_anon_name): Declare.
+	* tree.c (anon_aggrname_p, anon_aggrname_format): Delete.
+	(make_anon_name): New.
+	* lto-streamer-out.c (DFS::DFS_write_tree_body): Use IDENTIFIER_ANON_P.
+	(hash_tree): Likewise.
+	* tree-streamer-out.c (write_ts_decl_minimal_tree_pointers): Likewise.
+	gcc/cp/
+	* cp-tree.h (TYPE_UNNAMED_P): Use IDENTIFIER_ANON_P.
+	(make_anon_name): Delete.
+	* class.c (find_flexarrays): Use IDENTIFIER_ANON_P.
+	* cp-lang.c (cxx_dwarf_name): Likewise.
+	* decl.c (name_unnamed_type, xref_tag_1): Likewise.
+	* error.c (dump_aggr_type): Likewise.
+	* name-lookup.c (anon_cnt, make_anon_name): Delete.
+	(consider_binding_level): Use IDENTIFIER_ANON_P.
+	* pt.c (push_template_decl_real): Likewise.
+	gcc/d/
+	* types.cc (fixup_anonymous_offset): Use IDENTIFIER_ANON_P.
+	(layout_aggregate_members): Use make_anon_name.
+
 2019-03-06  Nathan Sidwell  <nathan@acm.org>
 
 	Refactor all the things!
