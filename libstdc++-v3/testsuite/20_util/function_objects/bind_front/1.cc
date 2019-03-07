@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a } }
+// { dg-do run { target c++2a } }
 
 #include <functional>
 #include <testsuite_hooks.h>
@@ -87,7 +87,7 @@ test02()
   // constness and value category should be forwarded to the target object:
   q = g();
   VERIFY( ! q.as_const && q.as_lvalue );
-  std::move(g)();
+  q = std::move(g)();
   VERIFY( ! q.as_const && ! q.as_lvalue );
   q = cg();
   VERIFY( q.as_const && q.as_lvalue );
