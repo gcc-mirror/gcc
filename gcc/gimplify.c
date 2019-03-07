@@ -12145,8 +12145,8 @@ gimplify_omp_ordered (tree expr, gimple_seq body)
 	    if (!fail && i != gimplify_omp_ctxp->loop_iter_var.length () / 2)
 	      {
 		error_at (OMP_CLAUSE_LOCATION (c),
-			  "number of variables in %<depend(sink)%> "
-			  "clause does not match number of "
+			  "number of variables in %<depend%> clause with "
+			  "%<sink%> modifier does not match number of "
 			  "iteration variables");
 		failures++;
 	      }
@@ -12158,8 +12158,8 @@ gimplify_omp_ordered (tree expr, gimple_seq body)
 	    if (source_c)
 	      {
 		error_at (OMP_CLAUSE_LOCATION (c),
-			  "more than one %<depend(source)%> clause on an "
-			  "%<ordered%> construct");
+			  "more than one %<depend%> clause with %<source%> "
+			  "modifier on an %<ordered%> construct");
 		failures++;
 	      }
 	    else
@@ -12169,8 +12169,9 @@ gimplify_omp_ordered (tree expr, gimple_seq body)
   if (source_c && sink_c)
     {
       error_at (OMP_CLAUSE_LOCATION (source_c),
-		"%<depend(source)%> clause specified together with "
-		"%<depend(sink:)%> clauses on the same construct");
+		"%<depend%> clause with %<source%> modifier specified "
+		"together with %<depend%> clauses with %<sink%> modifier "
+		"on the same construct");
       failures++;
     }
 

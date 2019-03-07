@@ -1,5 +1,10 @@
 2019-03-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR translation/79999
+	* gimplify.c (gimplify_omp_ordered): Reword diagnostics to talk about
+	depend clause with source (or sink) modifier.
+	* omp-expand.c (expand_omp_ordered_sink): Likewise.
+
 	PR target/89602
 	* config/i386/sse.md (avx512f_mov<ssescalarmodelower>_mask,
 	*avx512f_load<mode>_mask, avx512f_store<mode>_mask): New define_insns.
