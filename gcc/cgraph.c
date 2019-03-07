@@ -3240,14 +3240,14 @@ cgraph_node::verify_node (void)
 
   if (clone_of)
     {
-      cgraph_node *n;
-      for (n = clone_of->clones; n; n = n->next_sibling_clone)
-	if (n == this)
-	  break;
-      if (!n)
+      cgraph_node *first_clone = clone_of->clones;
+      if (first_clone != this)
 	{
-	  error ("cgraph_node has wrong clone_of");
-	  error_found = true;
+	  if (prev_sibling_clone->clone_of != clone_of)
+	    {
+	      error ("cgraph_node has wrong clone_of");
+	      error_found = true;
+	    }
 	}
     }
   if (clones)
