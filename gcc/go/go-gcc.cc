@@ -3101,6 +3101,7 @@ Gcc_backend::function(Btype* fntype, const std::string& name,
     resolve_unique_section(decl, 0, 1);
   if ((flags & function_only_inline) != 0)
     {
+      TREE_PUBLIC (decl) = 1;
       DECL_EXTERNAL(decl) = 1;
       DECL_DECLARED_INLINE_P(decl) = 1;
     }
