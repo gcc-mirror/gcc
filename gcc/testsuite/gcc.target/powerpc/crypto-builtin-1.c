@@ -4,15 +4,21 @@
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
 /* { dg-options "-mcpu=power8 -O2 -ftree-vectorize -fvect-cost-model=dynamic -fno-unroll-loops -fno-unroll-all-loops" } */
 
+#include <altivec.h>
 typedef vector unsigned long long	crypto_t;
 typedef vector unsigned long long	v2di_t;
 typedef vector unsigned int		v4si_t;
 typedef vector unsigned short		v8hi_t;
 typedef vector unsigned char		v16qi_t;
 
-crypto_t crpyto1 (crypto_t a)
+crypto_t crypto1 (crypto_t a)
 {
   return __builtin_crypto_vsbox (a);
+}
+
+v16qi_t crypto1_be (v16qi_t a)
+{
+  return vec_sbox_be (a);
 }
 
 crypto_t crypto2 (crypto_t a, crypto_t b)
@@ -20,9 +26,19 @@ crypto_t crypto2 (crypto_t a, crypto_t b)
   return __builtin_crypto_vcipher (a, b);
 }
 
+v16qi_t crypto2_be (v16qi_t a, v16qi_t b)
+{
+  return vec_cipher_be (a, b);
+}
+
 crypto_t crypto3 (crypto_t a, crypto_t b)
 {
   return __builtin_crypto_vcipherlast (a, b);
+}
+
+v16qi_t crypto3_be (v16qi_t a, v16qi_t b)
+{
+  return vec_cipherlast_be (a, b);
 }
 
 crypto_t crypto4 (crypto_t a, crypto_t b)
@@ -30,9 +46,19 @@ crypto_t crypto4 (crypto_t a, crypto_t b)
   return __builtin_crypto_vncipher (a, b);
 }
 
+v16qi_t crypto4_be (v16qi_t a, v16qi_t b)
+{
+  return vec_ncipher_be (a, b);
+}
+
 crypto_t crypto5 (crypto_t a, crypto_t b)
 {
   return __builtin_crypto_vncipherlast (a, b);
+}
+
+v16qi_t crypto5_be (v16qi_t a, v16qi_t b)
+{
+  return vec_ncipherlast_be (a, b);
 }
 
 v16qi_t crypto6a (v16qi_t a, v16qi_t b, v16qi_t c)
@@ -117,15 +143,15 @@ v4si_t crypto8d (v4si_t a)
 
 /* Note space is used after the instruction so that vcipherlast does not match
    vcipher.  */
-/* { dg-final { scan-assembler-times "vcipher "      1 } } */
-/* { dg-final { scan-assembler-times "vcipherlast "  1 } } */
-/* { dg-final { scan-assembler-times "vncipher "     1 } } */
-/* { dg-final { scan-assembler-times "vncipherlast " 1 } } */
+/* { dg-final { scan-assembler-times "vcipher "      2 } } */
+/* { dg-final { scan-assembler-times "vcipherlast "  2 } } */
+/* { dg-final { scan-assembler-times "vncipher "     2 } } */
+/* { dg-final { scan-assembler-times "vncipherlast " 2 } } */
 /* { dg-final { scan-assembler-times "vpermxor "     4 } } */
 /* { dg-final { scan-assembler-times "vpmsumb "      2 } } */
 /* { dg-final { scan-assembler-times "vpmsumd "      2 } } */
 /* { dg-final { scan-assembler-times "vpmsumh "      2 } } */
 /* { dg-final { scan-assembler-times "vpmsumw "      2 } } */
-/* { dg-final { scan-assembler-times "vsbox "        1 } } */
+/* { dg-final { scan-assembler-times "vsbox "        2 } } */
 /* { dg-final { scan-assembler-times "vshasigmad "   2 } } */
 /* { dg-final { scan-assembler-times "vshasigmaw "   2 } } */
