@@ -1,3 +1,13 @@
+2019-03-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89595
+	* tree-ssa-dom.c (dom_opt_dom_walker::optimize_stmt): Take
+	stmt iterator as reference, take boolean output parameter to
+	indicate whether the stmt was removed and thus the iterator
+	already advanced.
+	(dom_opt_dom_walker::before_dom_children): Re-iterate over
+	stmts created by folding.
+
 2019-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89585
