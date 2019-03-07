@@ -125,14 +125,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Make <code>std::memory_order</code> a scoped enumeration </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0439r0.html">
 	P0439R0
 	</link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 9.1 </entry>
       <entry />
     </row>
 
@@ -170,14 +169,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  de-pessimize legacy algorithms with <code>std::move</code> </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0616r0.pdf">
 	P0616R0
 	</link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 9.1 </entry>
       <entry />
     </row>
 
@@ -624,15 +622,14 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Simplified partial function application </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0356r5.html">
 	P0356R5
 	</link>
       </entry>
-      <entry align="center"> </entry>
-      <entry />
+      <entry align="center"> 9.1 </entry>
+      <entry> <code>__cpp_lib_bind_front &gt;= 201811L</code> </entry>
     </row>
 
     <row>
@@ -647,15 +644,14 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  <code>char8_t</code>: A type for UTF-8 characters and strings </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0482r6.html">
 	P0482R6
 	</link>
       </entry>
-      <entry align="center"> </entry>
-      <entry />
+      <entry align="center"> 9.1 </entry>
+      <entry> <code>__cpp_lib_char8_t &gt;= 201811L</code> </entry>
     </row>
 
     <row>
@@ -671,14 +667,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Utility functions to implement uses-allocator construction </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0591r4.pdf">
 	P0591R4
 	</link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 9.1 </entry>
       <entry />
     </row>
 
@@ -786,26 +781,24 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Constexpr in <code>std::pointer_traits</code> </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1006r1.pdf">
 	P1006R1
 	</link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 9.1 </entry>
       <entry />
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  <code>std::assume_aligned</code> </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1007r3.pdf">
 	P1007R3
 	</link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 9.1 </entry>
       <entry />
     </row>
 
