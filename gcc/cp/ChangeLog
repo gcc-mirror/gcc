@@ -1,3 +1,8 @@
+2019-03-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88820 - ICE with CTAD and member template used in DMI.
+	* pt.c (do_class_deduction): Handle parm used as its own arg.
+
 2019-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89585
