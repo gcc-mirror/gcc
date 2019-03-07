@@ -1,3 +1,10 @@
+2019-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80003
+	* gcc.target/i386/pr68657.c: Adjust expected diagnostics wording.
+	* gcc.target/i386/interrupt-6.c: Likewise.
+	* g++.target/i386/pr57362.C: Adjust capitalization in dg-prune-output.
+
 2019-03-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84518

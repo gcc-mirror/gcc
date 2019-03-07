@@ -1,5 +1,17 @@
 2019-03-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/80003
+	* config/i386/i386.c (ix86_set_func_type): Make sure diagnostics
+	doesn't start with a capital letter and doesn't end with a dot.
+	(ix86_function_arg_boundary): Make sure diagnostics doesn't start
+	with a capital letter.
+	(ix86_mangle_function_version_assembler_name): Likewise.
+	(ix86_generate_version_dispatcher_body): Likewise.
+	(fold_builtin_cpu): Likewise.
+	(get_builtin_code_for_version): Likewise.  Remove extraneous space.
+	(ix86_handle_interrupt_attribute): Make the diagnostics easier for
+	translators, wrap full type name in %qs.
+
 	PR translation/79999
 	* gimplify.c (gimplify_omp_ordered): Reword diagnostics to talk about
 	depend clause with source (or sink) modifier.
