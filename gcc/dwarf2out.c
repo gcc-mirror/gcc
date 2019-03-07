@@ -3907,6 +3907,8 @@ static void prune_unused_types (void);
 static int maybe_emit_file (struct dwarf_file_data *fd);
 static inline const char *AT_vms_delta1 (dw_attr_node *);
 static inline const char *AT_vms_delta2 (dw_attr_node *);
+static inline void add_AT_vms_delta (dw_die_ref, enum dwarf_attribute,
+				     const char *, const char *);
 static void append_entry_to_tmpl_value_parm_die_table (dw_die_ref, tree);
 static void gen_remaining_tmpl_value_param_die_attribute (void);
 static bool generic_type_p (tree);
@@ -5140,6 +5142,22 @@ AT_file (dw_attr_node *a)
   gcc_assert (a && (AT_class (a) == dw_val_class_file
 		    || AT_class (a) == dw_val_class_file_implicit));
   return a->dw_attr_val.v.val_file;
+}
+
+/* Add a vms delta attribute value to a DIE.  */
+
+static inline void
+add_AT_vms_delta (dw_die_ref die, enum dwarf_attribute attr_kind,
+		  const char *lbl1, const char *lbl2)
+{
+  dw_attr_node attr;
+
+  attr.dw_attr = attr_kind;
+  attr.dw_attr_val.val_class = dw_val_class_vms_delta;
+  attr.dw_attr_val.val_entry = NULL;
+  attr.dw_attr_val.v.val_vms_delta.lbl1 = xstrdup (lbl1);
+  attr.dw_attr_val.v.val_vms_delta.lbl2 = xstrdup (lbl2);
+  add_dwarf_attr (die, &attr);
 }
 
 /* Add a symbolic view identifier attribute value to a DIE.  */

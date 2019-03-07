@@ -1,3 +1,7 @@
+2019-03-07  Martin Liska  <mliska@suse.cz>
+
+	* dwarf2out.c (add_AT_vms_delta): Revert function removal.
+
 2019-03-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89595
