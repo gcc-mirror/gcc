@@ -1,5 +1,8 @@
 2019-03-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/function_objects/bind_front/1.cc: Change from
+	compile test to run. Fix typo.
+
 	* doc/xml/manual/status_cxx2020.xml: Update C++20 status.
 	* doc/html/*: Regenerate.
 
