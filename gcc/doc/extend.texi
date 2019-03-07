@@ -9064,6 +9064,8 @@ outside of C functions, you must use basic @code{asm}.
 You can use this technique to emit assembler directives,
 define assembly language macros that can be invoked elsewhere in the file,
 or write entire functions in assembly language.
+Basic @code{asm} statements outside of functions may not use any
+qualifiers.
 
 @item
 Functions declared
