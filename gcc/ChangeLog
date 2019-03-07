@@ -1,3 +1,18 @@
+2019-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89602
+	* config/i386/sse.md (avx512f_mov<ssescalarmodelower>_mask,
+	*avx512f_load<mode>_mask, avx512f_store<mode>_mask): New define_insns.
+	(avx512f_load<mode>_mask): New define_expand.
+	* config/i386/i386-builtin.def (__builtin_ia32_loadsd_mask,
+	__builtin_ia32_loadss_mask, __builtin_ia32_storesd_mask,
+	__builtin_ia32_storess_mask, __builtin_ia32_movesd_mask,
+	__builtin_ia32_movess_mask): New builtins.
+	* config/i386/avx512fintrin.h (_mm_mask_load_ss, _mm_maskz_load_ss,
+	_mm_mask_load_sd, _mm_maskz_load_sd, _mm_mask_move_ss,
+	_mm_maskz_move_ss, _mm_mask_move_sd, _mm_maskz_move_sd,
+	_mm_mask_store_ss, _mm_mask_store_sd): New intrinsics.
+
 2019-03-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR lto/87525

@@ -1151,6 +1151,67 @@
    (set_attr "memory" "none,load")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_insn "avx512f_mov<ssescalarmodelower>_mask"
+  [(set (match_operand:VF_128 0 "register_operand" "=v")
+	(vec_merge:VF_128
+	  (vec_merge:VF_128
+	    (match_operand:VF_128 2 "register_operand" "v")
+	    (match_operand:VF_128 3 "nonimm_or_0_operand" "0C")
+	    (match_operand:QI 4 "register_operand" "Yk"))
+	  (match_operand:VF_128 1 "register_operand" "v")
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "vmov<ssescalarmodesuffix>\t{%2, %1, %0%{%4%}%N3|%0%{%4%}%N3, %1, %2}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<ssescalarmode>")])
+
+(define_expand "avx512f_load<mode>_mask"
+  [(set (match_operand:<ssevecmode> 0 "register_operand")
+	(vec_merge:<ssevecmode>
+	  (vec_merge:<ssevecmode>
+	    (vec_duplicate:<ssevecmode>
+	      (match_operand:MODEF 1 "memory_operand"))
+	    (match_operand:<ssevecmode> 2 "nonimm_or_0_operand")
+	    (match_operand:QI 3 "register_operand"))
+	  (match_dup 4)
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "operands[4] = CONST0_RTX (<ssevecmode>mode);")
+
+(define_insn "*avx512f_load<mode>_mask"
+  [(set (match_operand:<ssevecmode> 0 "register_operand" "=v")
+	(vec_merge:<ssevecmode>
+	  (vec_merge:<ssevecmode>
+	    (vec_duplicate:<ssevecmode>
+	      (match_operand:MODEF 1 "memory_operand" "m"))
+	    (match_operand:<ssevecmode> 2 "nonimm_or_0_operand" "0C")
+	    (match_operand:QI 3 "register_operand" "Yk"))
+	  (match_operand:<ssevecmode> 4 "const0_operand" "C")
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "vmov<ssescalarmodesuffix>\t{%1, %0%{%3%}%N2|%0%{3%}%N2, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "memory" "load")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "avx512f_store<mode>_mask"
+  [(set (match_operand:MODEF 0 "memory_operand" "=m")
+	(if_then_else:MODEF
+	  (and:QI (match_operand:QI 2 "register_operand" "Yk")
+		 (const_int 1))
+	  (vec_select:MODEF
+	    (match_operand:<ssevecmode> 1 "register_operand" "v")
+	    (parallel [(const_int 0)]))
+	  (match_dup 0)))]
+  "TARGET_AVX512F"
+  "vmov<ssescalarmodesuffix>\t{%1, %0%{%2%}|%0%{%2%}, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "memory" "store")
+   (set_attr "mode" "<MODE>")])
+
 (define_insn "<avx512>_blendm<mode>"
   [(set (match_operand:V48_AVX512VL 0 "register_operand" "=v")
 	(vec_merge:V48_AVX512VL
