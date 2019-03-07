@@ -1283,6 +1283,9 @@ public:
      Note that at WPA stage, the function body may not be present in memory.  */
   inline bool has_gimple_body_p (void);
 
+  /* Return true if this node represents a former, i.e. an expanded, thunk.  */
+  inline bool former_thunk_p (void);
+
   /* Return true if function should be optimized for size.  */
   bool optimize_for_size_p (void);
 
@@ -2919,6 +2922,17 @@ inline bool
 cgraph_node::has_gimple_body_p (void)
 {
   return definition && !thunk.thunk_p && !alias;
+}
+
+/* Return true if this node represents a former, i.e. an expanded, thunk.  */
+
+inline bool
+cgraph_node::former_thunk_p (void)
+{
+  return (!thunk.thunk_p
+	  && (thunk.fixed_offset
+	      || thunk.virtual_offset_p
+	      || thunk.indirect_offset));
 }
 
 /* Walk all functions with body defined.  */
