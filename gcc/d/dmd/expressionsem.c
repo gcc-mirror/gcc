@@ -74,6 +74,7 @@ Expression *binSemanticProp(BinExp *e, Scope *sc);
 Expression *semantic(Expression *e, Scope *sc);
 Expression *semanticY(DotIdExp *exp, Scope *sc, int flag);
 Expression *semanticY(DotTemplateInstanceExp *exp, Scope *sc, int flag);
+StringExp *semanticString(Scope *sc, Expression *exp, const char *s);
 
 /****************************************
  * Preprocess arguments to function.
@@ -2259,27 +2260,9 @@ public:
 
     void visit(CompileExp *exp)
     {
-        sc = sc->startCTFE();
-        exp->e1 = semantic(exp->e1, sc);
-        exp->e1 = resolveProperties(sc, exp->e1);
-        sc = sc->endCTFE();
-        if (exp->e1->op == TOKerror)
-        {
-            result = exp->e1;
-            return;
-        }
-        if (!exp->e1->type->isString())
-        {
-            exp->error("argument to mixin must be a string type, not %s", exp->e1->type->toChars());
-            return setError();
-        }
-        exp->e1 = exp->e1->ctfeInterpret();
-        StringExp *se = exp->e1->toStringExp();
+        StringExp *se = semanticString(sc, exp->e1, "argument to mixin");
         if (!se)
-        {
-            exp->error("argument to mixin must be a string, not (%s)", exp->e1->toChars());
             return setError();
-        }
         se = se->toUTF8(sc);
         unsigned errors = global.errors;
         Parser p(exp->loc, sc->_module, (utf8_t *)se->string, se->len, 0);
@@ -2301,27 +2284,16 @@ public:
 
     void visit(ImportExp *e)
     {
-        const char *name;
-        StringExp *se;
-
-        sc = sc->startCTFE();
-        e->e1 = semantic(e->e1, sc);
-        e->e1 = resolveProperties(sc, e->e1);
-        sc = sc->endCTFE();
-        e->e1 = e->e1->ctfeInterpret();
-        if (e->e1->op != TOKstring)
-        {
-            e->error("file name argument must be a string, not (%s)", e->e1->toChars());
-            goto Lerror;
-        }
-        se = (StringExp *)e->e1;
+        StringExp *se = semanticString(sc, e->e1, "file name argument");
+        if (!se)
+            return setError();
         se = se->toUTF8(sc);
-        name = (char *)se->string;
 
+        const char *name = (char *)se->string;
         if (!global.params.fileImppath)
         {
             e->error("need -Jpath switch to import text file %s", name);
-            goto Lerror;
+            return setError();
         }
 
         /* Be wary of CWE-22: Improper Limitation of a Pathname to a Restricted Directory
@@ -2333,7 +2305,7 @@ public:
         if (!name)
         {
             e->error("file %s cannot be found or not in a path specified with -J", se->toChars());
-            goto Lerror;
+            return setError();
         }
 
         if (global.params.verbose)
@@ -2363,7 +2335,7 @@ public:
             if (f.read())
             {
                 e->error("cannot read file %s", f.toChars());
-                goto Lerror;
+                return setError();
             }
             else
             {
@@ -2372,10 +2344,6 @@ public:
             }
         }
         result = semantic(se, sc);
-        return;
-
-    Lerror:
-        return setError();
     }
 
     void visit(AssertExp *exp)

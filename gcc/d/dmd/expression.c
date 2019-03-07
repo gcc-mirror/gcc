@@ -6850,6 +6850,43 @@ Expression *resolveOpDollar(Scope *sc, ArrayExp *ae, Expression **pe0)
     return ae;
 }
 
+/***********************************************************
+ * Resolve `exp` as a compile-time known string.
+ * Params:
+ *  sc  = scope
+ *  exp = Expression which expected as a string
+ *  s   = What the string is expected for, will be used in error diagnostic.
+ * Returns:
+ *  String literal, or `null` if error happens.
+ */
+StringExp *semanticString(Scope *sc, Expression *exp, const char *s)
+{
+    sc = sc->startCTFE();
+    exp = semantic(exp, sc);
+    exp = resolveProperties(sc, exp);
+    sc = sc->endCTFE();
+
+    if (exp->op == TOKerror)
+        return NULL;
+
+    Expression *e = exp;
+    if (exp->type->isString())
+    {
+        e = e->ctfeInterpret();
+        if (e->op == TOKerror)
+            return NULL;
+    }
+
+    StringExp *se = e->toStringExp();
+    if (!se)
+    {
+        exp->error("string expected for %s, not (%s) of type %s",
+            s, exp->toChars(), exp->type->toChars());
+        return NULL;
+    }
+    return se;
+}
+
 /**************************************
  * Runs semantic on se->lwr and se->upr. Declares a temporary variable
  * if '$' was used.
