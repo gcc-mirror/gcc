@@ -1,3 +1,13 @@
+2019-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89602
+	* gcc.target/i386/avx512f-vmovss-1.c: New test.
+	* gcc.target/i386/avx512f-vmovss-2.c: New test.
+	* gcc.target/i386/avx512f-vmovss-3.c: New test.
+	* gcc.target/i386/avx512f-vmovsd-1.c: New test.
+	* gcc.target/i386/avx512f-vmovsd-2.c: New test.
+	* gcc.target/i386/avx512f-vmovsd-3.c: New test.
+
 2019-03-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR lto/87525
