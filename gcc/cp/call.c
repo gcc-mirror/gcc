@@ -10928,7 +10928,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 
 tweak:
 
-  /* Extension: If the worst conversion for one candidate is worse than the
+  /* Extension: If the worst conversion for one candidate is better than the
      worst conversion for the other, take the first.  */
   if (!pedantic && (complain & tf_warning_or_error))
     {
