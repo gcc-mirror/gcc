@@ -23,6 +23,8 @@
 #include "attrib.h"
 #include "hdrgen.h"
 
+StringExp *semanticString(Scope *sc, Expression *exp, const char *s);
+
 /********************************* Import ****************************/
 
 Import::Import(Loc loc, Identifiers *packages, Identifier *id, Identifier *aliasId,
@@ -176,6 +178,8 @@ void Import::importAll(Scope *sc)
             if (mod->md && mod->md->isdeprecated)
             {
                 Expression *msg = mod->md->msg;
+                if (msg)
+                    msg = semanticString(sc, msg, "deprecation message");
                 if (StringExp *se = msg ? msg->toStringExp() : NULL)
                     mod->deprecation(loc, "is deprecated - %s", se->string);
                 else

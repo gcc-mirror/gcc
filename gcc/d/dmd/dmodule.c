@@ -35,6 +35,7 @@ Dsymbols Module::deferred3; // deferred Dsymbol's needing semantic3() run on the
 unsigned Module::dprogress;
 
 const char *lookForSourceFile(const char **path, const char *filename);
+StringExp *semanticString(Scope *sc, Expression *exp, const char *s);
 
 void Module::_init()
 {
@@ -727,20 +728,15 @@ void Module::importAll(Scope *)
         return;
     }
 
-    if (md && md->msg)
-    {
-        if (StringExp *se = md->msg->toStringExp())
-            md->msg = se;
-        else
-            md->msg->error("string expected, not '%s'", md->msg->toChars());
-    }
-
     /* Note that modules get their own scope, from scratch.
      * This is so regardless of where in the syntax a module
      * gets imported, it is unaffected by context.
      * Ignore prevsc.
      */
     Scope *sc = Scope::createGlobal(this);      // create root scope
+
+    if (md && md->msg)
+      md->msg = semanticString(sc, md->msg, "deprecation message");
 
     // Add import of "object", even for the "object" module.
     // If it isn't there, some compiler rewrites, like
