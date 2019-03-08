@@ -1,5 +1,14 @@
 2019-03-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/88123 - lambda and using-directive.
+	* name-lookup.c (op_unqualified_lookup)
+	(maybe_save_operator_binding, discard_operator_bindings)
+	(push_operator_bindings): New.
+	* typeck.c (build_x_binary_op, build_x_unary_op): Call
+	maybe_save_operator_binding.
+	* decl.c (start_preparsed_function): Call push_operator_bindings.
+	* tree.c (cp_free_lang_data): Call discard_operator_bindings.
+
 	PR c++/88820 - ICE with CTAD and member template used in DMI.
 	* pt.c (do_class_deduction): Handle parm used as its own arg.
 

@@ -15553,6 +15553,8 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 
   store_parm_decls (current_function_parms);
 
+  push_operator_bindings ();
+
   if (!processing_template_decl
       && (flag_lifetime_dse > 1)
       && DECL_CONSTRUCTOR_P (decl1)
