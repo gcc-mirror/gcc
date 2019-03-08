@@ -9071,12 +9071,11 @@ convert_for_assignment (tree type, tree rhs,
       && TREE_CODE (rhs) == MODIFY_EXPR
       && !TREE_NO_WARNING (rhs)
       && TREE_CODE (TREE_TYPE (rhs)) != BOOLEAN_TYPE
-      && (complain & tf_warning))
-    {
-      warning_at (rhs_loc, OPT_Wparentheses,
-		  "suggest parentheses around assignment used as truth value");
-      TREE_NO_WARNING (rhs) = 1;
-    }
+      && (complain & tf_warning)
+      && warning_at (rhs_loc, OPT_Wparentheses,
+		     "suggest parentheses around assignment used as "
+		     "truth value"))
+    TREE_NO_WARNING (rhs) = 1;
 
   if (complain & tf_warning)
     warn_for_address_or_pointer_of_packed_member (type, rhs);

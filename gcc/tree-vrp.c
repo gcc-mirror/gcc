@@ -4749,7 +4749,8 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
       if (warned && DECL_P (arg))
 	inform (DECL_SOURCE_LOCATION (arg), "while referencing %qD", arg);
 
-      TREE_NO_WARNING (ref) = 1;
+      if (warned)
+	TREE_NO_WARNING (ref) = 1;
       return;
     }
 
@@ -4762,11 +4763,10 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
     {
       HOST_WIDE_INT tmpidx = extrema[i].to_shwi () / eltsize.to_shwi ();
 
-      warning_at (location, OPT_Warray_bounds,
-		  "intermediate array offset %wi is outside array bounds "
-		  "of %qT",
-		  tmpidx,  reftype);
-      TREE_NO_WARNING (ref) = 1;
+      if (warning_at (location, OPT_Warray_bounds,
+		      "intermediate array offset %wi is outside array bounds "
+		      "of %qT", tmpidx, reftype))
+	TREE_NO_WARNING (ref) = 1;
     }
 }
 

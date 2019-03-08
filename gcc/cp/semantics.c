@@ -657,12 +657,11 @@ maybe_convert_cond (tree cond)
 
   if (TREE_CODE (cond) == MODIFY_EXPR
       && !TREE_NO_WARNING (cond)
-      && warn_parentheses)
-    {
-      warning_at (cp_expr_loc_or_loc (cond, input_location), OPT_Wparentheses,
-		  "suggest parentheses around assignment used as truth value");
-      TREE_NO_WARNING (cond) = 1;
-    }
+      && warn_parentheses
+      && warning_at (cp_expr_loc_or_loc (cond, input_location),
+		     OPT_Wparentheses, "suggest parentheses around "
+				       "assignment used as truth value"))
+    TREE_NO_WARNING (cond) = 1;
 
   return condition_conversion (cond);
 }

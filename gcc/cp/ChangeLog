@@ -1,5 +1,12 @@
 2019-03-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/89550
+	* semantics.c (maybe_convert_cond): Only set TREE_NO_WARNING if
+	warning_at returned true.
+	* decl2.c (c_parse_final_cleanups): Likewise.
+	* typeck.c (convert_for_assignment): Likewise.
+	* decl.c (finish_function): Likewise.
+
 	PR c++/89585
 	* parser.c (cp_parser_asm_definition): Just warn instead of error
 	on volatile qualifier outside of function body.

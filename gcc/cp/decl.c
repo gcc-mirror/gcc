@@ -16171,9 +16171,9 @@ finish_function (bool inline_p)
 					    global_dc->option_state))
 	    add_return_star_this_fixit (&richloc, fndecl);
 	}
-      warning_at (&richloc, OPT_Wreturn_type,
-		  "no return statement in function returning non-void");
-      TREE_NO_WARNING (fndecl) = 1;
+      if (warning_at (&richloc, OPT_Wreturn_type,
+	  "no return statement in function returning non-void"))
+	TREE_NO_WARNING (fndecl) = 1;
     }
 
   /* Store the end of the function, so that we get good line number

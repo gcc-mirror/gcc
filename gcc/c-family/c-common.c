@@ -3546,13 +3546,11 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 
     case MODIFY_EXPR:
       if (!TREE_NO_WARNING (expr)
-	  && warn_parentheses)
-	{
-	  warning_at (location, OPT_Wparentheses,
-		      "suggest parentheses around assignment used as "
-		      "truth value");
-	  TREE_NO_WARNING (expr) = 1;
-	}
+	  && warn_parentheses
+	  && warning_at (location, OPT_Wparentheses,
+			 "suggest parentheses around assignment used as "
+			 "truth value"))
+	TREE_NO_WARNING (expr) = 1;
       break;
 
     case CONST_DECL:
