@@ -1,3 +1,9 @@
+2019-03-08  Martin Liska  <mliska@suse.cz>
+
+	PR target/86952
+	* config/i386/i386.c (ix86_option_override_internal): Disable
+	jump tables when retpolines are used.
+
 2019-03-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR go/63560
