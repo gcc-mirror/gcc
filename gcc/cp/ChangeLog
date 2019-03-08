@@ -1,3 +1,8 @@
+2019-03-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88183 - ICE with .* fold-expression.
+	* pt.c (fold_expression) [DOTSTAR_EXPR]: Remove special handling.
+
 2019-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89585

@@ -11732,8 +11732,6 @@ fold_expression (tree t, tree left, tree right, tsubst_flags_t complain)
     {
     case COMPOUND_EXPR:
       return build_x_compound_expr (input_location, left, right, complain);
-    case DOTSTAR_EXPR:
-      return build_m_component_ref (left, right, complain);
     default:
       return build_x_binary_op (input_location, code,
                                 left, TREE_CODE (left),
