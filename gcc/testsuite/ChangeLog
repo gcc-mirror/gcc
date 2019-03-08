@@ -1,3 +1,9 @@
+2019-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/85870
+	* gcc.dg/lto/pr85870_0.c: New test.
+	* gcc.dg/lto/pr85870_1.c: New test.
+
 2019-03-08  Martin Liska  <mliska@suse.cz>
 
 	PR target/86952
