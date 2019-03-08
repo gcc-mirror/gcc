@@ -1,6 +1,7 @@
 /* PR c/85870 */
 /* { dg-lto-do link } */
 /* { dg-lto-options { { -flto -O2 } } } */
+/* { dg-extra-ld-options { -r -nostdlib -flinker-output=nolto-rel } } */
 
 typedef struct abc_s {
   char a1;
