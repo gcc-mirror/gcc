@@ -1,3 +1,9 @@
+2019-03-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR go/63560
+	* ipa-split.c (execute_split_functions): Do not split
+	'noinline' or 'section' function.
+
 2019-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/79846
