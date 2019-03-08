@@ -1,5 +1,14 @@
 2019-03-08  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (ovl_sort): Delete.
+	* name-lookup.h (extract_module_binding): Drop type_r parm.
+	* module.cc (depset::hash::add_binding): Drop type parm.
+	(depset::hash::add_writables): Adjust extract_module_binding API.
+	* name-lookup.c (extract_module_binding): Return name, valye by
+	reference.  Don't sort.
+	* tree.c (ovl_sort): Delete.
+
 	Base lambda names off anonymous names.
 	gcc/cp/
 	* cp-tree.h (IDENTIFIER_LAMBDA_P): New.

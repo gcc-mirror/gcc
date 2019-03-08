@@ -2344,7 +2344,7 @@ public:
   public:
     void add_mergeable (tree decl);
     void add_dependency (tree decl);
-    void add_binding (tree ns, tree name, tree value, tree maybe_type);
+    void add_binding (tree ns, tree name, tree value);
     void add_writables (tree ns, bitmap partitions);
     void find_dependencies ();
     bool finalize_dependencies ();
@@ -8441,12 +8441,12 @@ depset::hash::add_dependency (tree decl)
    is used for struct stat hack behaviour.  */
 
 void
-depset::hash::add_binding (tree ns, tree name, tree value, tree maybe_type)
+depset::hash::add_binding (tree ns, tree name, tree value)
 {
   current = new depset (binding_key (ns, name));
 
   gcc_checking_assert (!is_mergeable () && TREE_PUBLIC (ns));
-  for (ovl_iterator iter (value); iter; ++iter)
+  for (lkp_iterator iter (value); iter; ++iter)
     {
       tree decl = *iter;
 
@@ -8468,17 +8468,11 @@ depset::hash::add_binding (tree ns, tree name, tree value, tree maybe_type)
       if ((TREE_CODE (decl) == VAR_DECL
 	   || TREE_CODE (decl) == TYPE_DECL)
 	  && DECL_TINFO_P (decl))
-	{
-	  /* Ignore TINFO things.  */
-	  gcc_checking_assert (decl == value);
-	  continue;
-	}
+	/* Ignore TINFO things.  */
+	continue;
 
       add_dependency (decl);
     }
-
-  if (maybe_type)
-    add_dependency (maybe_type);
 
   if (current->deps.length ())
     insert (current);
@@ -8509,24 +8503,20 @@ depset::hash::add_writables (tree ns, bitmap partitions)
     {
       tree &bind = *iter;
 
-      tree name = NULL_TREE;
-      tree type = NULL_TREE;
-      if (tree value = extract_module_binding (bind, name, type, ns, partitions))
+      tree value = NULL_TREE;
+      if (tree name = extract_module_binding (bind, value, ns, partitions))
 	{
 	  if (TREE_CODE (value) == NAMESPACE_DECL)
 	    {
-	      gcc_checking_assert (!type);
-	      if (TREE_PUBLIC (value))
-		{
-		  add_writables (value, partitions);
-		  // FIXME: What about opening and closing it in the
-		  // purview, shouldn't that add the namespace too?
-		  if (DECL_MODULE_EXPORT_P (value))
-		    add_dependency (value);
-		}
+	      gcc_checking_assert (TREE_PUBLIC (value));
+	      add_writables (value, partitions);
+	      // FIXME: What about opening and closing it in the
+	      // purview, shouldn't that add the namespace too?
+	      if (DECL_MODULE_EXPORT_P (value))
+		add_dependency (value);
 	    }
 	  else
-	    add_binding (ns, name, value, type);
+	    add_binding (ns, name, value);
 	}
     }
   dump.outdent ();

@@ -3866,24 +3866,33 @@ match_mergeable_decl (tree decl, bool partition, tree tpl, tree ret, tree args)
   return NULL_TREE;
 }
 
-/* Given a namespace-level binding BINDING, extract & sort the current
+/* Given a namespace-level binding BINDING, extract the current
    module's VALUE and TYPE bindings.  If PARTITIONS is non-NULL, it
    is a bitmap of the partitions to merge.  */
 
 tree
-extract_module_binding (tree &binding, tree &name_r, tree &type_r,
+extract_module_binding (tree &binding, tree &value_r,
 			tree ns, bitmap partitions)
 {
   tree *slot = NULL;
-  tree value = NULL_TREE;
-  tree type = NULL_TREE;
+  tree name = NULL_TREE;
   auto_vec<tree> ovls (partitions ? bitmap_count_bits (partitions) : 0);
 
   if (TREE_CODE (binding) == MODULE_VECTOR)
+    name = MODULE_VECTOR_NAME (binding);
+  else
+    {
+      slot = &binding;
+      name = OVL_NAME (*slot);
+    }
+
+  if (!name || IDENTIFIER_ANON_P (name))
+    return NULL;
+
+  if (!slot)
     {
       module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (binding);
 
-      name_r = MODULE_VECTOR_NAME (binding);
       slot = reinterpret_cast <tree *> (&cluster->slots[MODULE_SLOT_CURRENT]);
       if (partitions)
 	{
@@ -3920,7 +3929,7 @@ extract_module_binding (tree &binding, tree &name_r, tree &type_r,
 		if (cluster->slots[jx].is_lazy ())
 		  {
 		    gcc_assert (cluster->indices[jx].span == 1);
-		    lazy_load_binding (cluster->indices[jx].base, ns, name_r,
+		    lazy_load_binding (cluster->indices[jx].base, ns, name,
 				       &cluster->slots[jx], true);
 		  }
 
@@ -3930,21 +3939,11 @@ extract_module_binding (tree &binding, tree &name_r, tree &type_r,
 	      }
 	}
     }
-  else
-    {
-      slot = &binding;
-      name_r = OVL_NAME (MAYBE_STAT_DECL (*slot));
-    }
 
   /* This TU's bindings.  */
-  type = MAYBE_STAT_TYPE (*slot);
+  tree type = MAYBE_STAT_TYPE (*slot);
   slot = &MAYBE_STAT_DECL (*slot);
-  value = *slot;
-
-  /* Remove hidden builtin -- but not hidden friend, we can only get
-     one of them.  */
-  if (value && anticipated_builtin_p (value))
-    value = OVL_CHAIN (value);
+  tree value = ovl_skip_hidden (*slot);
 
   /* Keep implicit typedef in type slot.  */
   if (value && DECL_IMPLICIT_TYPEDEF_P (value))
@@ -3992,24 +3991,13 @@ extract_module_binding (tree &binding, tree &name_r, tree &type_r,
       lookup_mark (value, false);
     }
 
-  if (!value)
-    {
-      value = type;
-      type = NULL_TREE;
-    }
+  if (type)
+    value = lookup_add (type, value);
+  
+  value_r = value;
 
-  // FIXME: Probably don't need to sort
-  // FIXME: A lookup-set would suffice
-  value = ovl_sort (value);
-  /* We must not smack NULL into the hash table.  */
-  if (value)
-    *slot = value;
-  else
-    gcc_checking_assert (slot != &binding || anticipated_builtin_p (*slot));
-  type_r = type;
-
-  // FIXME: Don't skip the hidden friends?
-  return ovl_skip_hidden (value);
+  /* Perhaps we only found hidden things.  */
+  return value ? name : NULL_TREE;
 }
 
 /* Imported module MOD has a binding to NS::NAME, stored in section

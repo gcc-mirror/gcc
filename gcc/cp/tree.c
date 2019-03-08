@@ -2247,51 +2247,6 @@ ovl_splice (tree part, tree ovl)
   return ovl;
 }
 
-/* Order OVL by hidden/internal/module/export.  This invalidates
-   OVL_DEDUP_P setting.  */
-
-tree
-ovl_sort (tree ovl)
-{
-  if (!ovl || TREE_CODE (ovl) != OVERLOAD)
-    return ovl;
-
-  /* Separate into intern/module/export sets */
-  tree hidden = NULL_TREE;
-  tree intern = NULL_TREE;
-  tree mod = NULL_TREE;
-  tree exp = NULL_TREE;
-  for (lkp_iterator iter (ovl); iter; ++iter)
-    {
-      tree decl = *iter;
-      if (iter.hidden_p () && DECL_HIDDEN_P (decl))
-	{
-	  hidden = ovl_make (decl, hidden);
-	  OVL_HIDDEN_P (hidden) = true;
-	}
-      if (iter.using_p ())
-	{
-	  intern = ovl_make (decl, intern);
-	  OVL_DEDUP_P (intern) = OVL_USING_P (intern) = true;
-	}
-      else if (DECL_MODULE_EXPORT_P (decl))
-	exp = ovl_make (decl, exp);
-      else if (TREE_PUBLIC (decl))
-	mod = ovl_make (decl, mod);
-      else
-	intern = ovl_make (decl, intern);
-    }
-
-  /* Splice the sets together.  */
-  tree first = NULL_TREE;
-  first = ovl_splice (exp, first);
-  first = ovl_splice (mod, first);
-  first = ovl_splice (intern, first);
-  first = ovl_splice (hidden, first);
-
-  return first;
-}
-
 /* Skip any hidden names at the beginning of OVL.   */
 
 tree
