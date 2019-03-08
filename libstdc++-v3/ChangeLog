@@ -1,5 +1,16 @@
 2019-03-08  François Dumont  <fdumont@gcc.gnu.org>
 
+	PR libstdc++/89477
+	* include/debug/map.h (map): Use _RequireNotAllocator to constrain
+	parameters in deduction guides.
+	* include/debug/multimap.h (multimap): Likewise.
+	* include/debug/set.h (multimap): Likewise.
+	* include/debug/multiset.h (multimap): Likewise.
+	* include/debug/unordered_map (unordered_map): Likewise.
+	(unordered_multimap): Likewise.
+	* include/debug/unordered_set (unordered_set): Likewise.
+	(unordered_multiset): Likewise.
+
 	PR libstdc++/89608
 	* include/debug/unordered_map (unordered_map<>::_M_check_rehashed):
 	Invalidate all iterators in case of rehash.
