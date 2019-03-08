@@ -1,5 +1,8 @@
 2019-03-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/89422 - ICE with -g and lambda in default arg in template.
+	* pt.c (tsubst_function_decl): SET_DECL_FRIEND_CONTEXT sooner.
+
 	PR c++/87513 - 'sorry' mangling PMF template-id.
 	* mangle.c (write_expression): Handle SCOPE_REF to BASELINK.
 
