@@ -1,5 +1,10 @@
 2019-03-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/63540
+	* g++.dg/cpp0x/implicit17.C: New.
+
+2019-03-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/22149
 	* g++.dg/template/access29.C: New.
 
