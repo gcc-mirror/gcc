@@ -1,5 +1,9 @@
 2019-03-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/88690 - C++17 ICE with empty base in aggregate.
+	* typeck2.c (process_init_constructor_record): Skip trivial
+	initialization of an empty base.
+
 	PR c++/87921 - wrong error with inline static data member.
 	* decl2.c (c_parse_final_cleanups): Don't force out uninstantiated
 	inline static data members.

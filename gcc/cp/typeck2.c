@@ -1538,6 +1538,13 @@ process_init_constructor_record (tree type, tree init, int nested,
 	    }
 	}
 
+      if (DECL_SIZE (field) && integer_zerop (DECL_SIZE (field))
+	  && !TREE_SIDE_EFFECTS (next))
+	/* Don't add trivial initialization of an empty base/field to the
+	   constructor, as they might not be ordered the way the back-end
+	   expects.  */
+	continue;
+
       /* If this is a bitfield, now convert to the lowered type.  */
       if (type != TREE_TYPE (field))
 	next = cp_convert_and_check (TREE_TYPE (field), next, complain);
