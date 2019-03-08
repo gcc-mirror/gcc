@@ -1,5 +1,9 @@
 2019-03-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/89381 - implicit copy and using-declaration.
+	* class.c (classtype_has_move_assign_or_move_ctor_p): Don't consider
+	op= brought in by a using-declaration.
+
 	PR c++/89576 - if constexpr of lambda capture.
 	* semantics.c (maybe_convert_cond): Do convert a non-dependent
 	condition in a template.

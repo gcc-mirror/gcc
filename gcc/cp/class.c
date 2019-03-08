@@ -5171,7 +5171,9 @@ classtype_has_move_assign_or_move_ctor_p (tree t, bool user_p)
     for (ovl_iterator iter (get_class_binding_direct
 			    (t, assign_op_identifier));
 	 iter; ++iter)
-      if ((!user_p || !DECL_ARTIFICIAL (*iter)) && move_fn_p (*iter))
+      if ((!user_p || !DECL_ARTIFICIAL (*iter))
+	  && DECL_CONTEXT (*iter) == t
+	  && move_fn_p (*iter))
 	return true;
   
   return false;
