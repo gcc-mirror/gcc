@@ -1,5 +1,9 @@
 2019-03-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/87921 - wrong error with inline static data member.
+	* decl2.c (c_parse_final_cleanups): Don't force out uninstantiated
+	inline static data members.
+
 	PR c++/89381 - implicit copy and using-declaration.
 	* class.c (classtype_has_move_assign_or_move_ctor_p): Don't consider
 	op= brought in by a using-declaration.

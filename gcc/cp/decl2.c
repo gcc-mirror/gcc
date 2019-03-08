@@ -4905,7 +4905,10 @@ c_parse_final_cleanups (void)
 	{
 	  if (var_finalized_p (decl) || DECL_REALLY_EXTERN (decl)
 	      /* Don't write it out if we haven't seen a definition.  */
-	      || (DECL_IN_AGGR_P (decl) && !DECL_INLINE_VAR_P (decl)))
+	      || (DECL_IN_AGGR_P (decl) && !DECL_INLINE_VAR_P (decl))
+	      /* Or haven't instantiated it.  */
+	      || (DECL_TEMPLATE_INSTANTIATION (decl)
+		  && !DECL_TEMPLATE_INSTANTIATED (decl)))
 	    continue;
 	  import_export_decl (decl);
 	  /* If this static data member is needed, provide it to the
