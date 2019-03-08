@@ -1,3 +1,15 @@
+2019-03-08  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2019-03-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/88235
+	* cgraph.h (cgraph_node): New inline method former_thunk_p.
+	* cgraph.c (cgraph_node::dump): Dump a note if node is a former thunk.
+	(clone_of_p): Treat expanded thunks like thunks, be optimistic if they
+	have multiple callees.  At the end check if declarations match as
+	opposed to cgraph_nodes.
+
 2019-03-06  Tamar Christina  <tamar.christina@arm.com>
 
 	Backport from trunk.

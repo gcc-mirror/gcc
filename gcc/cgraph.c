@@ -3007,7 +3007,9 @@ cgraph_node::collect_callers (void)
   return redirect_callers;
 }
 
-/* Return TRUE if NODE2 a clone of NODE or is equivalent to it.  */
+
+/* Return TRUE if NODE2 a clone of NODE or is equivalent to it.  Return
+   optimistically true if this cannot be determined.  */
 
 static bool
 clone_of_p (cgraph_node *node, cgraph_node *node2)
@@ -3019,12 +3021,17 @@ clone_of_p (cgraph_node *node, cgraph_node *node2)
   /* There are no virtual clones of thunks so check former_clone_of or if we
      might have skipped thunks because this adjustments are no longer
      necessary.  */
-  while (node->thunk.thunk_p)
+  while (node->thunk.thunk_p || node->former_thunk_p ())
     {
       if (node2->former_clone_of == node->decl)
 	return true;
       if (!node->thunk.this_adjusting)
 	return false;
+      /* In case of instrumented expanded thunks, which can have multiple calls
+	 in them, we do not know how to continue and just have to be
+	 optimistic.  */
+      if (node->callees->next_callee)
+	return true;
       node = node->callees->callee->ultimate_alias_target ();
       skipped_thunk = true;
     }
@@ -3040,7 +3047,7 @@ clone_of_p (cgraph_node *node, cgraph_node *node2)
 	return false;
     }
 
-  while (node != node2 && node2)
+  while (node2 && node->decl != node2->decl)
     node2 = node2->clone_of;
   return node2 != NULL;
 }
