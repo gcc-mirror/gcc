@@ -4857,22 +4857,6 @@ constructor_name_p (tree name, tree type)
   return false;
 }
 
-/* This code is practically identical to that for creating anonymous
-   names, but is just used for lambdas instead.  This isn't really
-   necessary, but it's convenient to avoid mistaking lambdas for other
-   unnamed types.  */
-
-static GTY(()) int lambda_cnt = 0;
-
-tree
-make_lambda_name (void)
-{
-  char buf[32];
-
-  sprintf (buf, LAMBDANAME_FORMAT, lambda_cnt++);
-  return get_identifier (buf);
-}
-
 /* Insert another USING_DECL into the current binding level, returning
    this declaration. If this is a redeclaration, do nothing, and
    return NULL_TREE if this not in namespace scope (in namespace

@@ -131,16 +131,16 @@ begin_lambda_type (tree lambda)
   tree type;
 
   {
-    /* Unique name.  This is just like an unnamed class, but we cannot use
-       make_anon_name because of certain checks against TYPE_UNNAMED_P.  */
-    tree name;
-    name = make_lambda_name ();
+    /* Lambda names are nearly but not quite anonymous.  */
+    tree name = make_anon_name ("lambda");
+
+    /* Turn into lambda identifier.  */
+    IDENTIFIER_ANON_P (name) = false;
+    IDENTIFIER_LAMBDA_P (name) = true;
 
     /* Create the new RECORD_TYPE for this lambda.  */
-    type = xref_tag (/*tag_code=*/record_type,
-                     name,
-                     /*scope=*/ts_lambda,
-                     /*template_header_p=*/false);
+    type = xref_tag (/*tag_code=*/record_type, name,
+                     /*scope=*/ts_lambda, /*template_header_p=*/false);
     if (type == error_mark_node)
       return error_mark_node;
   }
