@@ -1,5 +1,13 @@
 2019-03-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR ipa/80000
+	* ipa-devirt.c (compare_virtual_tables): Remove two trailing spaces
+	from diagnostics.  Formatting fixes.
+
+	PR target/85665
+	* ipa-devirt.c (odr_types_equivalent_p): Fix grammar in
+	warn_odr diagnostics.
+
 	PR other/80058
 	* lra-constraints.c (process_alt_operands): Avoid one space before
 	" at the end of line and another after " on another line in a string
