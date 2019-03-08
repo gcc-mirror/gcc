@@ -10954,12 +10954,14 @@ tweak:
 	  if (warn)
 	    {
 	      auto_diagnostic_group d;
-	      pedwarn (input_location, 0,
-	      "ISO C++ says that these are ambiguous, even "
-	      "though the worst conversion for the first is better than "
-	      "the worst conversion for the second:");
-	      print_z_candidate (input_location, _("candidate 1:"), w);
-	      print_z_candidate (input_location, _("candidate 2:"), l);
+	      if (pedwarn (input_location, 0,
+			   "ISO C++ says that these are ambiguous, even "
+			   "though the worst conversion for the first is "
+			   "better than the worst conversion for the second:"))
+		{
+		  print_z_candidate (input_location, _("candidate 1:"), w);
+		  print_z_candidate (input_location, _("candidate 2:"), l);
+		}
 	    }
 	  else
 	    add_warning (w, l);

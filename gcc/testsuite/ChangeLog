@@ -1,3 +1,8 @@
+2019-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89622
+	* g++.dg/warn/pr89622.C: New test.
+
 2019-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/80003
