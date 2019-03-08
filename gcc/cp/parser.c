@@ -19782,9 +19782,12 @@ cp_parser_asm_definition (cp_parser* parser)
 		inform (volatile_loc, "first seen here");
 	      }
 	    else
-	      volatile_loc = loc;
-	    if (!first_loc)
-	      first_loc = loc;
+	      {
+		if (!parser->in_function_body)
+		  warning_at (loc, 0, "asm qualifier %qT ignored outside of "
+				      "function body", token->u.value);
+		volatile_loc = loc;
+	      }
 	    cp_lexer_consume_token (parser->lexer);
 	    continue;
 
@@ -19830,10 +19833,10 @@ cp_parser_asm_definition (cp_parser* parser)
   bool inline_p = (inline_loc != UNKNOWN_LOCATION);
   bool goto_p = (goto_loc != UNKNOWN_LOCATION);
 
-  if (!parser->in_function_body && (volatile_p || inline_p || goto_p))
+  if (!parser->in_function_body && (inline_p || goto_p))
     {
       error_at (first_loc, "asm qualifier outside of function body");
-      volatile_p = inline_p = goto_p = false;
+      inline_p = goto_p = false;
     }
 
   /* Look for the opening `('.  */
