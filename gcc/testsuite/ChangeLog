@@ -1,3 +1,11 @@
+2019-03-08  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/68924
+	PR target/78782
+	PR target/87558
+	* gcc.target/i386/pr78782.c: New test.
+	* gcc.target/i386/pr87558.c: Ditto.
+
 2019-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/85870
