@@ -1,3 +1,7 @@
+2019-03-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path::format): Add fixed underlying type.
+
 2019-03-08  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/89477
