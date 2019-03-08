@@ -1,3 +1,10 @@
+2019-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/80058
+	* arith.c (gfc_complex2complex): Avoid two spaces in the middle of
+	diagnostics.
+	* resolve.c (resolve_allocate_expr): Likewise.
+
 2019-03-06  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/71203

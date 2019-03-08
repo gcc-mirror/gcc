@@ -1664,7 +1664,7 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
 	      && DECL_DECLARED_INLINE_P (node))
 	{
 	  warning (OPT_Wattributes, "inline function %q+D declared as "
-		  " dllimport: attribute ignored", node);
+		  "dllimport: attribute ignored", node);
 	  *no_add_attrs = true;
 	}
       /* Like MS, treat definition of dllimported variables and

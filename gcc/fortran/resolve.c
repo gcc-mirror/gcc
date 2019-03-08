@@ -7798,7 +7798,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
 		if (mpz_cmp_si (ar->start[i]->value.integer, 1) < 0)
 		  {
 		    gfc_error ("Upper cobound is less than lower cobound "
-			       " of 1 at %L", &ar->start[i]->where);
+			       "of 1 at %L", &ar->start[i]->where);
 		    goto failure;
 		  }
 	      }

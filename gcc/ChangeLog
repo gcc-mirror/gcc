@@ -1,5 +1,12 @@
 2019-03-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR other/80058
+	* lra-constraints.c (process_alt_operands): Avoid one space before
+	" at the end of line and another after " on another line in a string
+	literal.
+	* attribs.c (handle_dll_attribute): Likewise.
+	* config/avr/avr-devices.c (avr_texinfo): Likewise.
+
 	* gimple-ssa-warn-alloca.c (pass_walloca::execute): Don't wrap
 	warning_at or inform messages in G_() if there is no ?:.
 
