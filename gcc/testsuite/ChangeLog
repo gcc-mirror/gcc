@@ -1,3 +1,8 @@
+2019-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82075
+	* g++.dg/cpp1z/decomp49.C: New test.
+
 2019-03-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.target/arm/f16_f64_conv_no_dp.c: New test.
