@@ -4141,7 +4141,11 @@ build_x_binary_op (const op_location_t &loc, enum tree_code code, tree arg1,
     {
       if (type_dependent_expression_p (arg1)
 	  || type_dependent_expression_p (arg2))
-	return build_min_nt_loc (loc, code, arg1, arg2);
+	{
+	  expr = build_min_nt_loc (loc, code, arg1, arg2);
+	  maybe_save_operator_binding (expr);
+	  return expr;
+	}
       arg1 = build_non_dependent_expr (arg1);
       arg2 = build_non_dependent_expr (arg2);
     }
@@ -5725,7 +5729,11 @@ build_x_unary_op (location_t loc, enum tree_code code, cp_expr xarg,
   if (processing_template_decl)
     {
       if (type_dependent_expression_p (xarg))
-	return build_min_nt_loc (loc, code, xarg.get_value (), NULL_TREE);
+	{
+	  tree e = build_min_nt_loc (loc, code, xarg.get_value (), NULL_TREE);
+	  maybe_save_operator_binding (e);
+	  return e;
+	}
 
       xarg = build_non_dependent_expr (xarg);
     }
