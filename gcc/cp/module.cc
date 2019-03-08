@@ -2213,12 +2213,17 @@ public:
      removed from the stack.   */
 
 public:
-  /* A binding key -- NAMESPACE_DECL & IDENTIFIER.  */
-  inline static key_type binding_key (tree decl, tree name)
+  /* A binding key -- NAMESPACE_DECL & IDENTIFIER.  For late setting
+     the name, any random identifier will do to start.  */
+  inline static key_type binding_key (tree decl, tree name = global_identifier)
   {
-    gcc_checking_assert (TREE_CODE (decl) == NAMESPACE_DECL
-			 && TREE_CODE (name) == IDENTIFIER_NODE);
+    gcc_checking_assert (TREE_CODE (decl) == NAMESPACE_DECL);
     return key_type (decl, name);
+  }
+  inline void set_binding_name (tree name)
+  {
+    gcc_checking_assert (key.second == global_identifier);
+    key.second = name;
   }
   /* A declaration key -- namespace-scope DECL.  */
   inline static key_type entity_key (tree decl, bool defn = false)
@@ -2344,7 +2349,7 @@ public:
   public:
     void add_mergeable (tree decl);
     void add_dependency (tree decl);
-    void add_binding (tree ns, tree name, tree value);
+    void add_binding (tree ns, tree value);
     void add_writables (tree ns, bitmap partitions);
     void find_dependencies ();
     bool finalize_dependencies ();
@@ -8441,17 +8446,22 @@ depset::hash::add_dependency (tree decl)
    is used for struct stat hack behaviour.  */
 
 void
-depset::hash::add_binding (tree ns, tree name, tree value)
+depset::hash::add_binding (tree ns, tree value)
 {
-  current = new depset (binding_key (ns, name));
+  current = new depset (binding_key (ns));
 
+  tree name = NULL_TREE;
   gcc_checking_assert (!is_mergeable () && TREE_PUBLIC (ns));
   for (lkp_iterator iter (value); iter; ++iter)
     {
       tree decl = *iter;
+      name = DECL_NAME (decl);
 
-      gcc_checking_assert (TREE_CODE (decl) != NAMESPACE_DECL
-			   || DECL_NAMESPACE_ALIAS (decl));
+      if (IDENTIFIER_ANON_P (name))
+	continue;
+
+      gcc_checking_assert (!(TREE_CODE (decl) == NAMESPACE_DECL
+			     && !DECL_NAMESPACE_ALIAS (decl)));
       gcc_assert (!iter.hidden_p ());
       gcc_assert (!iter.using_p ()); // FIXME: add using decl support
 
@@ -8475,7 +8485,10 @@ depset::hash::add_binding (tree ns, tree name, tree value)
     }
 
   if (current->deps.length ())
-    insert (current);
+    {
+      current->set_binding_name (name);
+      insert (current);
+    }
   else
     delete current;
   current = NULL;
@@ -8496,6 +8509,7 @@ depset::hash::add_writables (tree ns, bitmap partitions)
   dump () && dump ("Finding writables in %N", ns);
   dump.indent ();
 
+  /* Nothing gets inserted into the binding table during this walk.  */
   hash_table<named_decl_hash>::iterator end
     (DECL_NAMESPACE_BINDINGS (ns)->end ());
   for (hash_table<named_decl_hash>::iterator iter
@@ -8503,10 +8517,11 @@ depset::hash::add_writables (tree ns, bitmap partitions)
     {
       tree &bind = *iter;
 
-      tree value = NULL_TREE;
-      if (tree name = extract_module_binding (bind, value, ns, partitions))
+      if (tree value = extract_module_binding (bind, ns, partitions))
 	{
-	  if (TREE_CODE (value) == NAMESPACE_DECL)
+	  if (TREE_CODE (value) != NAMESPACE_DECL)
+	    add_binding (ns, value);
+	  else if (DECL_NAME (value))
 	    {
 	      gcc_checking_assert (TREE_PUBLIC (value));
 	      add_writables (value, partitions);
@@ -8515,8 +8530,6 @@ depset::hash::add_writables (tree ns, bitmap partitions)
 	      if (DECL_MODULE_EXPORT_P (value))
 		add_dependency (value);
 	    }
-	  else
-	    add_binding (ns, name, value);
 	}
     }
   dump.outdent ();

@@ -3871,25 +3871,12 @@ match_mergeable_decl (tree decl, bool partition, tree tpl, tree ret, tree args)
    is a bitmap of the partitions to merge.  */
 
 tree
-extract_module_binding (tree &binding, tree &value_r,
-			tree ns, bitmap partitions)
+extract_module_binding (tree &binding, tree ns, bitmap partitions)
 {
-  tree *slot = NULL;
-  tree name = NULL_TREE;
   auto_vec<tree> ovls (partitions ? bitmap_count_bits (partitions) : 0);
+  tree *slot = NULL;
 
   if (TREE_CODE (binding) == MODULE_VECTOR)
-    name = MODULE_VECTOR_NAME (binding);
-  else
-    {
-      slot = &binding;
-      name = OVL_NAME (*slot);
-    }
-
-  if (!name || IDENTIFIER_ANON_P (name))
-    return NULL;
-
-  if (!slot)
     {
       module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (binding);
 
@@ -3929,7 +3916,8 @@ extract_module_binding (tree &binding, tree &value_r,
 		if (cluster->slots[jx].is_lazy ())
 		  {
 		    gcc_assert (cluster->indices[jx].span == 1);
-		    lazy_load_binding (cluster->indices[jx].base, ns, name,
+		    lazy_load_binding (cluster->indices[jx].base, ns,
+				       MODULE_VECTOR_NAME (binding),
 				       &cluster->slots[jx], true);
 		  }
 
@@ -3939,6 +3927,8 @@ extract_module_binding (tree &binding, tree &value_r,
 	      }
 	}
     }
+  else
+    slot = &binding;
 
   /* This TU's bindings.  */
   tree type = MAYBE_STAT_TYPE (*slot);
@@ -3993,11 +3983,8 @@ extract_module_binding (tree &binding, tree &value_r,
 
   if (type)
     value = lookup_add (type, value);
-  
-  value_r = value;
 
-  /* Perhaps we only found hidden things.  */
-  return value ? name : NULL_TREE;
+  return value;
 }
 
 /* Imported module MOD has a binding to NS::NAME, stored in section

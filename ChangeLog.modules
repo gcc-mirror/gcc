@@ -1,6 +1,14 @@
 2019-03-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.h (extract_module_binding): Return binding, not name.
+	* name-lookup.c (extract_module_binding): Return binding, not name.
+	* module.cc (depset::set_binding_name): New.
+	(depset::hash::add_binding): Drop name parm, check anon names
+	here.
+	(depset::hash::add_writables): Adjust extract_module_binding use.
+
+	gcc/cp/
 	* cp-tree.h (ovl_sort): Delete.
 	* name-lookup.h (extract_module_binding): Drop type_r parm.
 	* module.cc (depset::hash::add_binding): Drop type parm.
