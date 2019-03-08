@@ -1,3 +1,13 @@
+2019-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89550
+	* builtins.c (c_strlen): Only set TREE_NO_WARNING if warning_at
+	returned true.  Formatting fixes.
+	(expand_builtin_strnlen): Formatting fixes.
+	* tree-vrp.c (vrp_prop::check_mem_ref): Only set TREE_NO_WARNING
+	if warning_at returned true.
+	* tree-cfg.c (pass_warn_function_return::execute): Likewise.
+
 2019-03-08  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/89578

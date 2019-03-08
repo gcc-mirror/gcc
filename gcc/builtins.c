@@ -760,15 +760,13 @@ c_strlen (tree src, int only_value, c_strlen_data *data, unsigned eltsize)
      runtime.  */
   if (eltoff < 0 || eltoff >= maxelts)
     {
-     /* Suppress multiple warnings for propagated constant strings.  */
+      /* Suppress multiple warnings for propagated constant strings.  */
       if (only_value != 2
-	  && !TREE_NO_WARNING (src))
-        {
-	  warning_at (loc, OPT_Warray_bounds,
-		      "offset %qwi outside bounds of constant string",
-		      eltoff);
-          TREE_NO_WARNING (src) = 1;
-        }
+	  && !TREE_NO_WARNING (src)
+	  && warning_at (loc, OPT_Warray_bounds,
+			 "offset %qwi outside bounds of constant string",
+			 eltoff))
+	TREE_NO_WARNING (src) = 1;
       return NULL_TREE;
     }
 
@@ -3099,7 +3097,7 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
 			 "%K%qD specified bound %E "
 			 "exceeds maximum object size %E",
 			 exp, func, bound, maxobjsize))
-	  TREE_NO_WARNING (exp) = true;
+	TREE_NO_WARNING (exp) = true;
 
       bool exact = true;
       if (!len || TREE_CODE (len) != INTEGER_CST)
@@ -3158,7 +3156,7 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
 		     "%K%qD specified bound [%wu, %wu] "
 		     "exceeds maximum object size %E",
 		     exp, func, min.to_uhwi (), max.to_uhwi (), maxobjsize))
-      TREE_NO_WARNING (exp) = true;
+    TREE_NO_WARNING (exp) = true;
 
   bool exact = true;
   if (!len || TREE_CODE (len) != INTEGER_CST)

@@ -1,3 +1,10 @@
+2019-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89550
+	* c-common.c (c_common_truthvalue_conversion): Only set
+	TREE_NO_WARNING if warning_at returned true.
+	* c-warn.c (overflow_warning, warn_logical_operator): Likewise.
+
 2019-02-25  Sandra Loosemore  <sandra@codesourcery.com>
 	    Martin Sebor  <msebor@gmail.com>
 

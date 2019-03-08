@@ -143,12 +143,16 @@ overflow_warning (location_t loc, tree value, tree expr)
       return;
     }
 
+  bool warned;
   if (expr)
-    warning_at (loc, OPT_Woverflow, warnfmt, expr, TREE_TYPE (expr), value);
+    warned = warning_at (loc, OPT_Woverflow, warnfmt, expr, TREE_TYPE (expr),
+			 value);
   else
-    warning_at (loc, OPT_Woverflow, warnfmt, TREE_TYPE (value), value);
+    warned = warning_at (loc, OPT_Woverflow, warnfmt, TREE_TYPE (value),
+			 value);
 
-  TREE_NO_WARNING (value) = 1;
+  if (warned)
+    TREE_NO_WARNING (value) = 1;
 }
 
 /* Helper function for walk_tree.  Unwrap C_MAYBE_CONST_EXPRs in an expression
@@ -216,13 +220,17 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
 	  && !integer_zerop (folded_op_right)
 	  && !integer_onep (folded_op_right))
 	{
+	  bool warned;
 	  if (or_op)
-	    warning_at (location, OPT_Wlogical_op, "logical %<or%>"
-			" applied to non-boolean constant");
+	    warned
+	      = warning_at (location, OPT_Wlogical_op,
+			    "logical %<or%> applied to non-boolean constant");
 	  else
-	    warning_at (location, OPT_Wlogical_op, "logical %<and%>"
-			" applied to non-boolean constant");
-	  TREE_NO_WARNING (op_left) = true;
+	    warned
+	      = warning_at (location, OPT_Wlogical_op,
+			    "logical %<and%> applied to non-boolean constant");
+	  if (warned)
+	    TREE_NO_WARNING (op_left) = true;
 	  return;
 	}
     }

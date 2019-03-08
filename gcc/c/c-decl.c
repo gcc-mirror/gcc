@@ -9664,12 +9664,10 @@ finish_function (void)
       && !C_FUNCTION_IMPLICIT_INT (fndecl)
       /* Normally, with -Wreturn-type, flow will complain, but we might
          optimize out static functions.  */
-      && !TREE_PUBLIC (fndecl))
-    {
-      warning (OPT_Wreturn_type,
-	       "no return statement in function returning non-void");
-      TREE_NO_WARNING (fndecl) = 1;
-    }
+      && !TREE_PUBLIC (fndecl)
+      && warning (OPT_Wreturn_type,
+		  "no return statement in function returning non-void"))
+    TREE_NO_WARNING (fndecl) = 1;
 
   /* Complain about parameters that are only set, but never otherwise used.  */
   if (warn_unused_but_set_parameter)
@@ -11486,17 +11484,19 @@ c_write_global_declarations_1 (tree globals)
 	{
 	  if (C_DECL_USED (decl))
 	    {
-	      pedwarn (input_location, 0, "%q+F used but never defined", decl);
-	      TREE_NO_WARNING (decl) = 1;
+	      if (pedwarn (input_location, 0, "%q+F used but never defined",
+			   decl))
+		TREE_NO_WARNING (decl) = 1;
 	    }
 	  /* For -Wunused-function warn about unused static prototypes.  */
 	  else if (warn_unused_function
 		   && ! DECL_ARTIFICIAL (decl)
 		   && ! TREE_NO_WARNING (decl))
 	    {
-	      warning (OPT_Wunused_function,
-		       "%q+F declared %<static%> but never defined", decl);
-	      TREE_NO_WARNING (decl) = 1;
+	      if (warning (OPT_Wunused_function,
+			   "%q+F declared %<static%> but never defined",
+			   decl))
+		TREE_NO_WARNING (decl) = 1;
 	    }
 	}
 
