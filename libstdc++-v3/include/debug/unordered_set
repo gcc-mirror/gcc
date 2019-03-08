@@ -496,7 +496,7 @@ namespace __debug
       _M_check_rehashed(size_type __prev_count)
       {
 	if (__prev_count != this->bucket_count())
-	  this->_M_invalidate_locals();
+	  this->_M_invalidate_all();
       }
 
       void
@@ -1050,7 +1050,7 @@ namespace __debug
       _M_check_rehashed(size_type __prev_count)
       {
 	if (__prev_count != this->bucket_count())
-	  this->_M_invalidate_locals();
+	  this->_M_invalidate_all();
       }
 
       void
