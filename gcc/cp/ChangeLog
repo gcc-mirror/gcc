@@ -1,5 +1,8 @@
 2019-03-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/88820 - ICE with CTAD and member template used in DMI.
+	* pt.c (do_class_deduction): Handle parm used as its own arg.
+
 	PR c++/88869 - C++17 ICE with CTAD and explicit specialization.
 	* pt.c (do_class_deduction): Don't include explicit specialization
 	args in outer_args.
