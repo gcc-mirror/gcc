@@ -1,3 +1,11 @@
+2019-03-08  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/68924
+	PR target/78782
+	PR target/87558
+	* config/i386/emmintrin.h (_mm_loadu_si64): New intrinsic.
+	(_mm_storeu_si64): Ditto.
+
 2019-03-08  Martin Liska  <mliska@suse.cz>
 
 	PR target/86952
