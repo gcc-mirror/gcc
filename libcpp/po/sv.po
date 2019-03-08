@@ -1,17 +1,17 @@
 # Swedish messages for cpplib.
-# Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013, 2014, 2015, 2016, 2017, 2018 Free Software Foundation, Inc.
+# Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
-# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013, 2014, 2015, 2016, 2017, 2018.
+# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019.
 #
 # Remember: GCC team does not want RCS keywords in the header!
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 8.1-b20180128\n"
+"Project-Id-Version: cpplib 9.1-b20190203\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2019-02-01 23:01+0000\n"
-"PO-Revision-Date: 2018-01-30 09:39+0100\n"
+"PO-Revision-Date: 2019-03-07 22:17+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -860,26 +860,24 @@ msgstr "dubblerad makroparameter ”%s”"
 #: macro.c:3141
 #, c-format
 msgid "expected parameter name, found \"%s\""
-msgstr ""
+msgstr "parameternamn förväntades, ”%s” hittades"
 
 #: macro.c:3142
 #, c-format
 msgid "expected ',' or ')', found \"%s\""
-msgstr ""
+msgstr "”,” eller ”)” förväntades, ”%s” hittades"
 
 #: macro.c:3143
 msgid "expected parameter name before end of line"
-msgstr ""
+msgstr "parameternamn förväntades före slutet på raden"
 
 #: macro.c:3144
-#, fuzzy
-#| msgid "unexpected end of file after #line"
 msgid "expected ')' before end of line"
-msgstr "oväntat filslut efter #line"
+msgstr "”)” förväntades före slutet på raden"
 
 #: macro.c:3145
 msgid "expected ')' after \"...\""
-msgstr ""
+msgstr "”)” förväntades efter ”...”"
 
 #: macro.c:3202
 msgid "anonymous variadic macros were introduced in C++11"
@@ -972,18 +970,3 @@ msgstr "upptäckte rekursion vid under expansion av makrot ”%s”"
 #: traditional.c:1119
 msgid "syntax error in macro parameter list"
 msgstr "syntaxfel i makroparameterlista"
-
-#~ msgid "\"%s\" may not appear in macro parameter list"
-#~ msgstr "”%s” får inte förekomma i en makroparameterlista"
-
-#~ msgid "macro parameters must be comma-separated"
-#~ msgstr "makroparametrar måste avdelas av komman"
-
-#~ msgid "parameter name missing"
-#~ msgstr "parameternamn saknas"
-
-#~ msgid "missing ')' in macro parameter list"
-#~ msgstr "saknad ”)” i makroparameterlista"
-
-#~ msgid "invalid hash type %d in cpp_macro_definition"
-#~ msgstr "ogiltig hash-typ %d i cpp_macro_definition"
