@@ -1,5 +1,10 @@
 2019-03-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/79846
+	* config/s390/s390.c (s390_const_operand_ok): Use %wu instead of
+	HOST_WIDE_INT_PRINT_UNSIGNED and %wd instead of
+	HOST_WIDE_INT_PRINT_DEC.  Formatting fixes.
+
 	PR ipa/80000
 	* ipa-devirt.c (compare_virtual_tables): Remove two trailing spaces
 	from diagnostics.  Formatting fixes.

@@ -734,10 +734,9 @@ s390_const_operand_ok (tree arg, int argnum, int op_flags, tree decl)
       if (!tree_fits_uhwi_p (arg)
 	  || tree_to_uhwi (arg) > (HOST_WIDE_INT_1U << bitwidth) - 1)
 	{
-	  error("constant argument %d for builtin %qF is out of range (0.."
-		HOST_WIDE_INT_PRINT_UNSIGNED ")",
-		argnum, decl,
-		(HOST_WIDE_INT_1U << bitwidth) - 1);
+	  error ("constant argument %d for builtin %qF is out of range "
+		 "(0..%wu)", argnum, decl,
+		 (HOST_WIDE_INT_1U << bitwidth) - 1);
 	  return false;
 	}
     }
@@ -751,12 +750,10 @@ s390_const_operand_ok (tree arg, int argnum, int op_flags, tree decl)
 	  || tree_to_shwi (arg) < -(HOST_WIDE_INT_1 << (bitwidth - 1))
 	  || tree_to_shwi (arg) > ((HOST_WIDE_INT_1 << (bitwidth - 1)) - 1))
 	{
-	  error("constant argument %d for builtin %qF is out of range ("
-		HOST_WIDE_INT_PRINT_DEC ".."
-		HOST_WIDE_INT_PRINT_DEC ")",
-		argnum, decl,
-		-(HOST_WIDE_INT_1 << (bitwidth - 1)),
-		(HOST_WIDE_INT_1 << (bitwidth - 1)) - 1);
+	  error ("constant argument %d for builtin %qF is out of range "
+		 "(%wd..%wd)", argnum, decl,
+		 -(HOST_WIDE_INT_1 << (bitwidth - 1)),
+		 (HOST_WIDE_INT_1 << (bitwidth - 1)) - 1);
 	  return false;
 	}
     }
