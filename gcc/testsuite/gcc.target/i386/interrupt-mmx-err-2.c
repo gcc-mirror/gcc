@@ -4,5 +4,5 @@
 void
 __attribute__((no_caller_saved_registers))
 fn1 (void)
-{ /* { dg-message "MMX/3Dnow instructions aren't allowed in function with no_caller_saved_registers attribute" } */
+{ /* { dg-message "MMX/3Dnow instructions aren't allowed in a function with the 'no_caller_saved_registers' attribute" } */
 }

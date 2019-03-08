@@ -1,3 +1,9 @@
+2019-03-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR target/79926
+	* config/i386/i386.c (ix86_set_current_function): Make "sorry"
+	messages more amenable to translation, and improve wording.
+
 2019-03-08  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* config/rs6000/rs6000-p8swap.c (rs6000_analyze_swaps): Rebuild
