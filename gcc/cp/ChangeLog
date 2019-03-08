@@ -1,5 +1,9 @@
 2019-03-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/89585
+	* parser.c (cp_parser_asm_definition): Just warn instead of error
+	on volatile qualifier outside of function body.
+
 	PR c++/89599
 	* constexpr.c (potential_constant_expression_1): Reject
 	REINTERPRET_CAST_P NOP_EXPRs.

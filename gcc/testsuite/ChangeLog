@@ -1,5 +1,9 @@
 2019-03-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/89585
+	* g++.dg/asm-qual-3.C: Adjust expected diagnostics for toplevel
+	asm volatile.
+
 	PR c++/89599
 	* g++.dg/ubsan/vptr-4.C: Adjust expected diagnostics.
 	* g++.dg/parse/array-size2.C: Likewise.
