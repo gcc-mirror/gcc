@@ -1,5 +1,8 @@
 2019-03-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* gimple-ssa-warn-alloca.c (pass_walloca::execute): Don't wrap
+	warning_at or inform messages in G_() if there is no ?:.
+
 	PR tree-optimization/89550
 	* builtins.c (c_strlen): Only set TREE_NO_WARNING if warning_at
 	returned true.  Formatting fixes.
