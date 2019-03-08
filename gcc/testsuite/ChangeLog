@@ -1,3 +1,7 @@
+2019-03-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/f16_f64_conv_no_dp.c: New test.
+
 2019-03-08  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/68924
