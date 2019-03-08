@@ -1,3 +1,14 @@
+2019-03-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/89608
+	* include/debug/unordered_map (unordered_map<>::_M_check_rehashed):
+	Invalidate all iterators in case of rehash.
+	(unordered_multimap<>::_M_check_rehashed): Likewise.
+	* include/debug/unordered_set
+	(unordered_set<>::_M_check_rehashed): Likewise.
+	(unordered_multiset<>::_M_check_rehashed): Likewise.
+	* testsuite/23_containers/unordered_set/debug/89608_neg.cc: New.
+
 2019-03-07  Andreas Schwab  <schwab@suse.de>
 
 	* config/abi/post/riscv64-linux-gnu: New directory.
