@@ -5747,18 +5747,17 @@ cp_truthvalue_conversion (tree expr)
     return c_common_truthvalue_conversion (input_location, expr);
 }
 
-/* Just like cp_truthvalue_conversion, but we want a CLEANUP_POINT_EXPR.  */
+/* Just like cp_truthvalue_conversion, but we want a CLEANUP_POINT_EXPR.  This
+   is a low-level function; most callers should use maybe_convert_cond.  */
 
 tree
 condition_conversion (tree expr)
 {
   tree t;
-  /* Anything that might happen in a template should go through
-     maybe_convert_cond.  */
-  gcc_assert (!processing_template_decl);
   t = perform_implicit_conversion_flags (boolean_type_node, expr,
 					 tf_warning_or_error, LOOKUP_NORMAL);
-  t = fold_build_cleanup_point_expr (boolean_type_node, t);
+  if (!processing_template_decl)
+    t = fold_build_cleanup_point_expr (boolean_type_node, t);
   return t;
 }
 

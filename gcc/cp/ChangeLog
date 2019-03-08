@@ -1,5 +1,11 @@
 2019-03-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/89576 - if constexpr of lambda capture.
+	* semantics.c (maybe_convert_cond): Do convert a non-dependent
+	condition in a template.
+	* typeck.c (condition_conversion): Handle being called in a
+	template.
+
 	PR c++/89422 - ICE with -g and lambda in default arg in template.
 	* pt.c (tsubst_function_decl): SET_DECL_FRIEND_CONTEXT sooner.
 

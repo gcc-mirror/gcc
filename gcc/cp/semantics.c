@@ -645,10 +645,13 @@ maybe_convert_cond (tree cond)
     return NULL_TREE;
 
   /* Wait until we instantiate templates before doing conversion.  */
-  if (processing_template_decl)
+  if (processing_template_decl
+      && (type_dependent_expression_p (cond)
+	  /* For GCC 8 only convert non-dependent condition in a lambda.  */
+	  || !current_lambda_expr ()))
     return cond;
 
-  if (warn_sequence_point)
+  if (warn_sequence_point && !processing_template_decl)
     verify_sequence_points (cond);
 
   /* Do the conversion.  */
