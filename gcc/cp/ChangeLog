@@ -1,5 +1,9 @@
 2019-03-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/89599
+	* constexpr.c (potential_constant_expression_1): Reject
+	REINTERPRET_CAST_P NOP_EXPRs.
+
 	PR c++/89622
 	* call.c (joust): Call print_z_candidate only if pedwarn returned
 	true.

@@ -19,7 +19,7 @@ struct T : S {
 };
 
 constexpr T t;
-constexpr const T *p = t.foo ();	// { dg-message "expansion of" }
+constexpr const T *p = t.foo ();	// { dg-error "called in a constant expression" }
 
 template <typename U>
 struct V {
@@ -39,17 +39,16 @@ struct W : V<U> {
 };
 
 constexpr W<int> w;
-constexpr const W<int> *s = w.foo ();	// { dg-error "is not a constant expression" }
-// { dg-message "expansion of" "" { target *-*-* } .-1 }
+constexpr const W<int> *s = w.foo ();	// { dg-error "called in a constant expression" }
 
 template <typename U>
 int foo (void)
 {
   static constexpr T t;
-  static constexpr const T *p = t.foo ();	// { dg-message "expansion of" }
+  static constexpr const T *p = t.foo ();	// { dg-error "called in a constant expression" }
   static constexpr W<U> w;
-  static constexpr const W<U> *s = w.foo ();	// { dg-error "is not a constant expression" }
-  return t.b + w.b;				// { dg-message "expansion of" "" { target *-*-* } .-1 }
+  static constexpr const W<U> *s = w.foo ();	// { dg-error "called in a constant expression" }
+  return t.b + w.b;
 }
 
 int x = foo <char> ();

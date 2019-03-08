@@ -1,5 +1,10 @@
 2019-03-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/89599
+	* g++.dg/ubsan/vptr-4.C: Adjust expected diagnostics.
+	* g++.dg/parse/array-size2.C: Likewise.
+	* g++.dg/cpp0x/constexpr-89599.C: New test.
+
 	PR c++/89622
 	* g++.dg/warn/pr89622.C: New test.
 
