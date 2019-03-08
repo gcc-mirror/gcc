@@ -1,5 +1,8 @@
 2019-03-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/using.xml: Use link element instead of xref.
+	* doc/html/*: Regenerate.
+
 	* include/bits/fs_path.h (path::format): Add fixed underlying type.
 
 2019-03-08  François Dumont  <fdumont@gcc.gnu.org>
