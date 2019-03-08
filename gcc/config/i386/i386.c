@@ -5999,12 +5999,15 @@ ix86_set_current_function (tree fndecl)
       if (isa != NULL)
 	{
 	  if (cfun->machine->func_type != TYPE_NORMAL)
-	    sorry ("%s instructions aren't allowed in %s service routine",
-		   isa, (cfun->machine->func_type == TYPE_EXCEPTION
-			 ? "exception" : "interrupt"));
+	    sorry (cfun->machine->func_type == TYPE_EXCEPTION
+		   ? G_("%s instructions aren%'t allowed in an"
+			" exception service routine")
+		   : G_("%s instructions aren%'t allowed in an"
+			" interrupt service routine"),
+		   isa);
 	  else
-	    sorry ("%s instructions aren't allowed in function with "
-		   "no_caller_saved_registers attribute", isa);
+	    sorry ("%s instructions aren%'t allowed in a function with "
+		   "the %<no_caller_saved_registers%> attribute", isa);
 	  /* Don't issue the same error twice.  */
 	  cfun->machine->func_type = TYPE_NORMAL;
 	  cfun->machine->no_caller_saved_registers = false;

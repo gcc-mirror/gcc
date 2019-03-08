@@ -1,3 +1,11 @@
+2019-03-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR target/79926
+	* gcc.target/i386/interrupt-387-err-1.c: Update expected message.
+	* gcc.target/i386/interrupt-387-err-2.c: Likewise.
+	* gcc.target/i386/interrupt-mmx-err-1.c: Likewise.
+	* gcc.target/i386/interrupt-mmx-err-2.c: Likewise.
+
 2019-03-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/63540
