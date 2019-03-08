@@ -1,5 +1,10 @@
 2019-03-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR other/80058
+	* parser.c (cp_parser_template_declaration_after_parameters): Avoid
+	one space before " at the end of line and another after " on another
+	line in a string literal.
+
 	PR tree-optimization/89550
 	* semantics.c (maybe_convert_cond): Only set TREE_NO_WARNING if
 	warning_at returned true.
