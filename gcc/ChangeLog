@@ -1,3 +1,10 @@
+2019-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80190
+	* config/darwin.c: Include intl.h.
+	(darwin_build_constant_cfstring): Improve i18n of diagnostics by not
+	composing the message out of two separate parts.
+
 2019-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/80003
