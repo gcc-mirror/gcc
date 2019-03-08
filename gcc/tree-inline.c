@@ -2670,6 +2670,11 @@ copy_loops (copy_body_data *id,
 	    cfun->has_unroll = true;
 	  if (dest_loop->force_vectorize)
 	    cfun->has_force_vectorize_loops = true;
+	  if (id->src_cfun->last_clique != 0)
+	    dest_loop->owned_clique
+	      = remap_dependence_clique (id,
+					 src_loop->owned_clique
+					 ? src_loop->owned_clique : 1);
 
 	  /* Finally place it into the loop array and the loop tree.  */
 	  place_new_loop (cfun, dest_loop);

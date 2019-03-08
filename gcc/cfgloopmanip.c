@@ -1024,6 +1024,7 @@ copy_loop_info (struct loop *loop, struct loop *target)
   target->force_vectorize = loop->force_vectorize;
   target->in_oacc_kernels_region = loop->in_oacc_kernels_region;
   target->unroll = loop->unroll;
+  target->owned_clique = loop->owned_clique;
 }
 
 /* Copies copy of LOOP as subloop of TARGET loop, placing newly

@@ -1,3 +1,14 @@
+2019-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89578
+	* cfgloop.h (struct loop): Add owned_clique field.
+	* cfgloopmanip.c (copy_loop_info): Copy it.
+	* tree-cfg.c (gimple_duplicate_bb): Do not remap owned_clique
+	cliques.
+	* tree-inline.c (copy_loops): Remap owned_clique.
+	* lto-streamer-in.c (input_cfg): Stream owned_clique.
+	* lto-streamer-out.c (output_cfg): Likewise.
+
 2019-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/80190
