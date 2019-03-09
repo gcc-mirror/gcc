@@ -1,5 +1,9 @@
 2019-03-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/88568
+	* attribs.c (handle_dll_attribute): Don't clear TREE_STATIC for
+	dllimport on VAR_DECLs with RECORD_TYPE or UNION_TYPE DECL_CONTEXT.
+
 	PR target/79645
 	* common.opt (fdiagnostics-show-labels,
 	fdiagnostics-show-line-numbers, fdiagnostics-format=,
