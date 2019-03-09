@@ -13,11 +13,8 @@ import (
 //extern unlinkat
 func unlinkat(int32, *byte, int32) int32
 
-//extern openat
+//extern __go_openat
 func openat(int32, *byte, int32, syscall.Mode_t) int32
-
-//extern fstatat
-func fstatat(int32, *byte, *syscall.Stat_t, int32) int32
 
 func Unlinkat(dirfd int, path string, flags int) error {
 	var p *byte
