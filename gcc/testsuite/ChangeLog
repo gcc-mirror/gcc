@@ -1,3 +1,8 @@
+2019-03-09  John David Anglin  <dave.anglin@bell.net>
+
+	PR testsuite/89472
+	* gcc.dg/debug/dwarf2/inline5.c: XFAIL one scan-assembler-times check.
+
 2019-03-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/87750
