@@ -1,4 +1,6 @@
-2019-03-09  John David Anglin  <dave.anglin@bell.net>
+2018-03-09  John David Anglin  <dave.anglin@bell.net>
+
+	* g++.dg/tls/pr77285-2.C: Require tls_native support.
 
 	* g++.dg/ext/visibility/lambda1.C: Require visibility.
 
