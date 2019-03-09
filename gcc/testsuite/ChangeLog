@@ -1,5 +1,8 @@
 2019-03-09  John David Anglin  <dave.anglin@bell.net>
 
+	PR inline-asm/87010
+	* gcc.dg/torture/20180712-1.c: Skip on hppa*-*-*.
+
 	* gfortran.dg/coarray_data_1.f90: Link against libatomic if target
 	libatomic_available.
 
