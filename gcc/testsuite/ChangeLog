@@ -1,3 +1,8 @@
+2019-03-09  John David Anglin  <dave.anglin@bell.net>
+
+	PR fortran/89639
+	* gfortran.dg/ieee/ieee_9.f90: Skip on hppa*-*-linux*.
+
 2019-03-09  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR fortran/71203
