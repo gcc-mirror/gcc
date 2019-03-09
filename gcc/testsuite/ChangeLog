@@ -1,3 +1,8 @@
+2019-03-09  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/71203
+	* gfortran.dg/array_simplify_3.f90: New test case.
+
 2019-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/88568

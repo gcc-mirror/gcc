@@ -1983,8 +1983,14 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	      return false;
 	    }
 
-	  /* Shape should be present, we get an initialization expression.  */
-	  gcc_assert (init->shape);
+	  /* The shape may be NULL for EXPR_ARRAY, set it.  */
+	  if (init->shape == NULL)
+	    {
+	      gcc_assert (init->expr_type == EXPR_ARRAY);
+	      init->shape = gfc_get_shape (1);
+	      if (!gfc_array_size (init, &init->shape[0]))
+		  gfc_internal_error ("gfc_array_size failed");
+	    }
 
 	  for (dim = 0; dim < sym->as->rank; ++dim)
 	    {

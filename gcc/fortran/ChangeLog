@@ -1,3 +1,9 @@
+2019-03-09  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/71203
+	* decl.c (add_init_expr_to_sym):  Add shape if init has none.  Add
+	asserts that it has to be an EXPR_ARRAY in this case.
+
 2019-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/80058
