@@ -1,5 +1,8 @@
 2019-03-09  John David Anglin  <dave.anglin@bell.net>
 
+	PR middle-end/68733
+	* c-c++-common/gomp/clauses-2.c: Skip on 32-bit hppa*-*-hpux*.
+
 	PR testsuite/89472
 	* gcc.dg/debug/dwarf2/inline5.c: XFAIL one scan-assembler-times check.
 
