@@ -1,3 +1,9 @@
+2019-03-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/89041
+	* d-codegen.cc (get_frame_for_symbol): Delegate literals defined in
+	global scope don't have a frame pointer.
+
 2019-03-01  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-builtins.cc (d_init_versions): Add CppRuntime_Gcc as predefined
