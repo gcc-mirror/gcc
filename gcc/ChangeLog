@@ -1,3 +1,9 @@
+2019-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/89634
+	* cfgcleanup.c (thread_jump): Punt if registers mentioned in cond1
+	are modified in BB_END (e->src) instruction.
+
 2019-03-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR target/79926
