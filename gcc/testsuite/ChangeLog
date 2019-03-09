@@ -1,5 +1,9 @@
 2019-03-09  John David Anglin  <dave.anglin@bell.net>
 
+	* gfortran.dg/ieee/ieee_9.f90: Fix typo.
+
+2019-03-09  John David Anglin  <dave.anglin@bell.net>
+
 	PR fortran/89639
 	* gfortran.dg/ieee/ieee_9.f90: Skip on hppa*-*-linux*.
 
