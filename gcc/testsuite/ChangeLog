@@ -1,5 +1,8 @@
 2019-03-09  John David Anglin  <dave.anglin@bell.net>
 
+	PR c++/70349
+	* g++.dg/abi/abi-tag18a.C: Skip on 32-bit hppa*-*-hpux*.
+
 	PR middle-end/68733
 	* c-c++-common/gomp/clauses-2.c: Skip on 32-bit hppa*-*-hpux*.
 
