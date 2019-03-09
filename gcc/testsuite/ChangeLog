@@ -1,5 +1,7 @@
 2019-03-09  John David Anglin  <dave.anglin@bell.net>
 
+	* g++.dg/ext/visibility/lambda1.C: Require visibility.
+
 	PR inline-asm/87010
 	* gcc.dg/torture/20180712-1.c: Skip on hppa*-*-*.
 
