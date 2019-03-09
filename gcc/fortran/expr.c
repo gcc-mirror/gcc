@@ -4321,7 +4321,7 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_component *comp, gfc_expr *rvalue)
   if (!r)
     return r;
 
-  if (pointer && rvalue->expr_type != EXPR_NULL)
+  if (pointer && rvalue->expr_type != EXPR_NULL && !proc_pointer)
     {
       /* F08:C461. Additional checks for pointer initialization.  */
       symbol_attribute attr;

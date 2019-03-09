@@ -1,3 +1,9 @@
+2019-03-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/84504
+	* expr.c (gfc_check_assign_symbol): Deal with procedure pointers to
+	pointer-valued functions.
+
 2019-03-09  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR fortran/71203
