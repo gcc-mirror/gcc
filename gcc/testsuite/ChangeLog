@@ -1,4 +1,9 @@
-2018-03-09  John David Anglin  <dave.anglin@bell.net>
+2019-03-09  John David Anglin  <dave.anglin@bell.net>
+
+	* c-c++-common/ident-0b.c: Also skip on 32-bit hppa*-*-hpux*.
+	* c-c++-common/ident-1a.c: Likewise.
+	* c-c++-common/ident-1b.c: Likewise.
+	* c-c++-common/ident-2b.c: Likewise.
 
 	* g++.dg/tls/pr77285-2.C: Require tls_native support.
 
