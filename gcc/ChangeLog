@@ -1,5 +1,29 @@
 2019-03-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/79645
+	* common.opt (fdiagnostics-show-labels,
+	fdiagnostics-show-line-numbers, fdiagnostics-format=,
+	fdiagnostics-minimum-margin-width=, fgnat-encodings=, gas-loc-support,
+	gas-locview-support, ginline-points, ginternal-reset-location-views):
+	Terminate description text with a dot.
+	* config/microblaze/microblaze.opt (mxl-prefetch): Likewise.
+	* config/mcore/mcore.opt (m210, m340): Likewise.
+	* config/epiphany/epiphany.opt (mprefer-short-insn-regs, mcmove,
+	mnops=): Start description text with a capital letter.
+	* config/arc/arc.opt (msize-level=): Likewise.
+	* config/sh/sh.opt (minline-ic_invalidate): Likewise.
+	* config/rs6000/sysv4.opt (mno-toc, mtoc, mno-traceback, mshlib,
+	mnewlib): Likewise.
+	* config/ft32/ft32.opt (msim): Likewise.
+	(mft32b, mcompress): Likewise.  Terminate description text with a dot.
+	(mnodiv, mnopm): Terminate description text with a dot.
+	* config/c6x/c6x.opt (c6x_sdata): Terminate Enum description with
+	a colon.
+	* config/i386/i386.opt (prefer_vector_width, instrument_return):
+	Likewise.
+	* config/rx/rx.opt (nofpu): Remove trailing spaces from description
+	text.
+
 	PR rtl-optimization/89634
 	* cfgcleanup.c (thread_jump): Punt if registers mentioned in cond1
 	are modified in BB_END (e->src) instruction.

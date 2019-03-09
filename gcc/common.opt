@@ -1251,11 +1251,11 @@ Show the source line with a caret indicating the column.
 
 fdiagnostics-show-labels
 Common Var(flag_diagnostics_show_labels) Init(1)
-Show labels annotating ranges of source code when showing source
+Show labels annotating ranges of source code when showing source.
 
 fdiagnostics-show-line-numbers
 Common Var(flag_diagnostics_show_line_numbers) Init(1)
-Show line numbers in the left margin when showing source
+Show line numbers in the left margin when showing source.
 
 fdiagnostics-color
 Common Alias(fdiagnostics-color=,always,never)
@@ -1283,7 +1283,7 @@ Enum(diagnostic_color_rule) String(auto) Value(DIAGNOSTICS_COLOR_AUTO)
 
 fdiagnostics-format=
 Common Joined RejectNegative Enum(diagnostics_output_format)
--fdiagnostics-format=[text|json] Select output format
+-fdiagnostics-format=[text|json] Select output format.
 
 ; Required for these enum values.
 SourceInclude
@@ -1312,7 +1312,7 @@ Amend appropriate diagnostic messages with the command line option that controls
 
 fdiagnostics-minimum-margin-width=
 Common Joined UInteger Var(diagnostics_minimum_margin_width) Init(6)
-Set minimum width of left margin of source code when showing source
+Set minimum width of left margin of source code when showing source.
 
 fdisable-
 Common Joined RejectNegative Var(common_deferred_options) Defer
@@ -1521,7 +1521,7 @@ Enum(dwarf_gnat_encodings) String(minimal) Value(DWARF_GNAT_ENCODINGS_MINIMAL)
 
 fgnat-encodings=
 Common Enum(dwarf_gnat_encodings) Joined RejectNegative Report Undocumented Var(gnat_encodings)
--fgnat-encodings=[all|gdb|minimal]	Select the balance between GNAT encodings and standard DWARF emitted in the debug information
+-fgnat-encodings=[all|gdb|minimal]	Select the balance between GNAT encodings and standard DWARF emitted in the debug information.
 
 ; This option is not documented yet as its semantics will change.
 fgraphite
@@ -2969,11 +2969,11 @@ Generate debug information in default format.
 
 gas-loc-support
 Common Driver Var(dwarf2out_as_loc_support) Init(2)
-Assume assembler support for (DWARF2+) .loc directives
+Assume assembler support for (DWARF2+) .loc directives.
 
 gas-locview-support
 Common Driver Var(dwarf2out_as_locview_support) Init(2)
-Assume assembler support for view in (DWARF2+) .loc directives
+Assume assembler support for view in (DWARF2+) .loc directives.
 
 gcoff
 Common Driver Deprecated
@@ -3009,11 +3009,11 @@ Generate debug information in default extended format.
 
 ginline-points
 Common Driver Var(debug_inline_points) Init(2)
-Generate extended entry point information for inlined functions
+Generate extended entry point information for inlined functions.
 
 ginternal-reset-location-views
 Common Driver Var(debug_internal_reset_location_views) Init(2)
-Compute locview reset points based on insn length estimates
+Compute locview reset points based on insn length estimates.
 
 gno-
 RejectNegative Joined Undocumented
