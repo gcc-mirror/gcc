@@ -1,4 +1,5 @@
 --  { dg-do compile }
+--  { dg-skip-if "No Dwarf" { { hppa*-*-hpux* } && { ! lp64 } } }
 --  { dg-options "-cargs -O0 -g -dA -fgnat-encodings=minimal -margs" }
 --
 --  This testcase checks that in the DWARF description of the variant type

@@ -1,5 +1,8 @@
 2019-03-09  John David Anglin  <dave.anglin@bell.net>
 
+	* gnat.dg/debug11.adb: Skip on 32-bit hppa*-*-hpux*.
+	* gnat.dg/debug12.adb: Likewise.
+
 	* lib/target-supports.exp (check_effective_target_weak_undefined):
 	Return 0 on hppa*-*-hpux*.
 	(check_ascii_locale_available): Likewise.
