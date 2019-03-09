@@ -1,3 +1,8 @@
+2019-03-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/71544
+	* gfortran.dg/c_ptr_tests_19.f90: New test.
+
 2019-03-09  John David Anglin  <dave.anglin@bell.net>
 
 	* gnat.dg/debug11.adb: Skip on 32-bit hppa*-*-hpux*.
