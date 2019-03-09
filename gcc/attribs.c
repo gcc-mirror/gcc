@@ -1691,8 +1691,11 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
 	     a function global scope, unless declared static.  */
 	  if (current_function_decl != NULL_TREE && !TREE_STATIC (node))
 	    TREE_PUBLIC (node) = 1;
-	  /* Clear TREE_STATIC because DECL_EXTERNAL is set.  */
-	  TREE_STATIC (node) = 0;
+	  /* Clear TREE_STATIC because DECL_EXTERNAL is set, unless
+	     it is a C++ static data member.  */
+	  if (DECL_CONTEXT (node) == NULL_TREE
+	      || !RECORD_OR_UNION_TYPE_P (DECL_CONTEXT (node)))
+	    TREE_STATIC (node) = 0;
 	}
 
       if (*no_add_attrs == false)
