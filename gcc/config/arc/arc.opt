@@ -239,7 +239,7 @@ Target RejectNegative Joined Var(arc_cpu) Enum(processor_type) Init(PROCESSOR_NO
 
 msize-level=
 Target RejectNegative Joined UInteger Var(arc_size_opt_level) Init(-1)
-size optimization level: 0:none 1:opportunistic 2: regalloc 3:drop align, -Os.
+Size optimization level: 0:none 1:opportunistic 2: regalloc 3:drop align, -Os.
 
 misize
 Target Report PchIgnore Var(TARGET_DUMPISIZE)

@@ -83,11 +83,11 @@ Produce big endian code.
 ;; FIXME: This does nothing.  What should be done?
 mno-toc
 Target RejectNegative
-no description yet.
+No description yet.
 
 mtoc
 Target RejectNegative
-no description yet.
+No description yet.
 
 mprototype
 Target Var(target_prototype) Save
@@ -96,7 +96,7 @@ Assume all variable arg functions are prototyped.
 ;; FIXME: Does nothing.
 mno-traceback
 Target RejectNegative
-no description yet.
+No description yet.
 
 meabi
 Target Report Mask(EABI) Var(rs6000_isa_flags)
@@ -138,7 +138,7 @@ Set the PPC_EMB bit in the ELF flags header.
 
 mshlib
 Target RejectNegative
-no description yet.
+No description yet.
 
 m64
 Target Report RejectNegative Negative(m32) Mask(64BIT) Var(rs6000_isa_flags)
@@ -150,7 +150,7 @@ Generate 32-bit code.
 
 mnewlib
 Target RejectNegative
-no description yet.
+No description yet.
 
 msecure-plt
 Target Report RejectNegative Var(secure_plt, 1) Save

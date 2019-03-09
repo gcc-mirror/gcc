@@ -601,7 +601,7 @@ Use given register vector width instructions instead of maximum register width i
 
 Enum
 Name(prefer_vector_width) Type(enum prefer_vector_width)
-Known preferred register vector length (to use with the -mprefer-vector-width= option)
+Known preferred register vector length (to use with the -mprefer-vector-width= option):
 
 EnumValue
 Enum(prefer_vector_width) String(none) Value(PVW_NONE)
@@ -1087,7 +1087,7 @@ Instrument function exit in instrumented functions with __fentry__.
 
 Enum
 Name(instrument_return) Type(enum instrument_return)
-Known choices for return instrumentation with -minstrument-return=
+Known choices for return instrumentation with -minstrument-return=:
 
 EnumValue
 Enum(instrument_return) String(none) Value(instrument_return_none)
