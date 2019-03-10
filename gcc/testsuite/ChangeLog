@@ -1,5 +1,11 @@
 2019-03-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/71544
+	Backport from trunk
+	* gfortran.dg/c_ptr_tests_19.f90: New test.
+
+2019-03-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/87734
 	Backport from trunk
 	* gfortran.dg/public_private_module_10.f90: New test.
