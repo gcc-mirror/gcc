@@ -1,5 +1,9 @@
 2019-03-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* gdc.dg/pr89041.d: Mark as compile test.
+
+2019-03-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* gcc.target/i386/indirect-thunk-extern-7.c: Add -fjump-tables to
 	dg-options.
 
