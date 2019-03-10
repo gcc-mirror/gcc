@@ -1,3 +1,11 @@
+2019-03-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/85762
+	PR tree-optimization/87008
+	PR tree-optimization/85459
+	* g++.dg/tree-ssa/pr87008.C: New test.
+	* gcc.dg/guality/pr54970.c: Xfail tests querying a[0] everywhere.
+
 2019-03-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/66089
