@@ -5331,9 +5331,16 @@ int Type::covariant(Type *t, StorageClass *pstc, bool fix17349)
     }
     else if (t1n->ty == t2n->ty && t1n->implicitConvTo(t2n))
         goto Lcovariant;
-    else if (t1n->ty == Tnull && t1n->implicitConvTo(t2n) &&
-             t1n->size() == t2n->size())
-        goto Lcovariant;
+    else if (t1n->ty == Tnull)
+    {
+        // NULL is covariant with any pointer type, but not with any
+        // dynamic arrays, associative arrays or delegates.
+        // https://issues.dlang.org/show_bug.cgi?id=8589
+        // https://issues.dlang.org/show_bug.cgi?id=19618
+        Type *t2bn = t2n->toBasetype();
+        if (t2bn->ty == Tnull || t2bn->ty == Tpointer || t2bn->ty == Tclass)
+            goto Lcovariant;
+    }
   }
     goto Lnotcovariant;
 
