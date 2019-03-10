@@ -1,3 +1,8 @@
+2019-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89648
+	* g++.dg/cpp0x/lambda/lambda-89648.C: New test.
+
 2019-03-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/66089
