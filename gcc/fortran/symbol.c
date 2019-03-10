@@ -1805,7 +1805,8 @@ gfc_add_procedure (symbol_attribute *attr, procedure_type t,
   if (where == NULL)
     where = &gfc_current_locus;
 
-  if (attr->proc != PROC_UNKNOWN && !attr->module_procedure)
+  if (attr->proc != PROC_UNKNOWN && !attr->module_procedure
+      && attr->access == ACCESS_UNKNOWN)
     {
       if (attr->proc == PROC_ST_FUNCTION && t == PROC_INTERNAL
 	  && !gfc_notification_std (GFC_STD_F2008))
