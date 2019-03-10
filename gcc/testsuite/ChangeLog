@@ -1,3 +1,9 @@
+2019-03-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/66089
+	* gfortran.dg/assumed_type_2.f90: Adapted tree dumps.
+	* gfortran.dg/no_arg_check_2.f90: Likewise.
+
 2019-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89648
