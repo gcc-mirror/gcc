@@ -1,5 +1,12 @@
 2019-03-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/66089
+	* trans-array.c (gfc_scalar_elemental_arg_saved_as_reference):
+	Return false if a scalar tempoary is needed.
+	(gfc_walk_variable_expr): Fix up class refs.
+
+2019-03-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/87734
 	* symbol.c (gfc_add_procedure): Only throw an error if the
 	procedure has not been declared either PUBLIC or PRIVATE.
