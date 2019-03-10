@@ -1681,8 +1681,6 @@ is_illegal_recursion (gfc_symbol* sym, gfc_namespace* context)
       || gfc_fl_struct (sym->attr.flavor))
     return false;
 
-  gcc_assert (sym->attr.flavor == FL_PROCEDURE);
-
   /* If we've got an ENTRY, find real procedure.  */
   if (sym->attr.entry && sym->ns->entries)
     proc_sym = sym->ns->entries->sym;

@@ -1,3 +1,12 @@
+2019-03-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/87734
+	Backort from trunk
+	* symbol.c (gfc_add_procedure): Only throw an error if the
+	procedure has not been declared either PUBLIC or PRIVATE.
+	* resolve.c (is_illegal_recursion): Remove an assert().
+
 2019-03-06  Harald Anlauf  <anlauf@gmx.de>
 
 	Backport from trunk
