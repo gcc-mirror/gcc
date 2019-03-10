@@ -1,3 +1,9 @@
+2019-03-10  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/68924
+	* config/i386/sse.md (*vec_extractv2di_0_sse):
+	Add (=r,x) alternative and corresponding splitter.
+
 2019-03-10  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/85762
