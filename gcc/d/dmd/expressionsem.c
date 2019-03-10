@@ -102,6 +102,12 @@ static bool preFunctionParameters(Scope *sc, Expressions *exps)
                 arg = new ErrorExp();
                 err = true;
             }
+            else if (arg->type->toBasetype()->ty == Tfunction)
+            {
+                arg->error("cannot pass type %s as a function argument", arg->toChars());
+                arg = new ErrorExp();
+                err = true;
+            }
             else if (checkNonAssignmentArrayOp(arg))
             {
                 arg = new ErrorExp();
