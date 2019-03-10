@@ -14308,13 +14308,37 @@
 	   (symbol_ref "true")))])
 
 (define_insn "*vec_extractv2di_0_sse"
-  [(set (match_operand:DI 0 "nonimmediate_operand"     "=v,m")
+  [(set (match_operand:DI 0 "nonimmediate_operand"     "=r,x ,m")
 	(vec_select:DI
-	  (match_operand:V2DI 1 "nonimmediate_operand" "vm,v")
+	  (match_operand:V2DI 1 "nonimmediate_operand" " x,xm,x")
 	  (parallel [(const_int 0)])))]
   "TARGET_SSE && !TARGET_64BIT
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
-  "#")
+  "#"
+  [(set_attr "isa" "sse4,*,*")
+   (set (attr "preferred_for_speed")
+     (cond [(eq_attr "alternative" "0")
+	      (symbol_ref "TARGET_INTER_UNIT_MOVES_FROM_VEC")
+	   ]
+	   (symbol_ref "true")))])
+
+(define_split
+  [(set (match_operand:DI 0 "general_reg_operand")
+	(vec_select:DI
+	  (match_operand:V2DI 1 "register_operand")
+	  (parallel [(const_int 0)])))]
+  "TARGET_SSE4_1 && !TARGET_64BIT
+   && reload_completed"
+  [(set (match_dup 2) (match_dup 4))
+   (set (match_dup 3)
+	(vec_select:SI
+	  (match_dup 5)
+	  (parallel [(const_int 1)])))]
+{
+  operands[4] = gen_lowpart (SImode, operands[1]);
+  operands[5] = gen_lowpart (V4SImode, operands[1]);
+  split_double_mode (DImode, &operands[0], 1, &operands[2], &operands[3]);
+})
 
 (define_split
   [(set (match_operand:SWI48x 0 "nonimmediate_operand")
