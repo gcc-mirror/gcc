@@ -1,3 +1,8 @@
+2019-03-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87734
+	* gfortran.dg/public_private_module_10.f90: New test.
+
 2019-03-09  John David Anglin  <dave.anglin@bell.net>
 
 	PR c++/70349
