@@ -25,8 +25,8 @@
 
 #include <atomic>
 
-#define ACQ memory_order_acquire | __memory_order_hle_acquire
-#define REL memory_order_release | __memory_order_hle_release
+const auto ACQ = std::memory_order_acquire | std::__memory_order_hle_acquire;
+const auto REL = std::memory_order_release | std::__memory_order_hle_release;
 
 int main()
 {
