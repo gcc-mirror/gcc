@@ -2638,7 +2638,7 @@ finish_this_expr (void)
       tree type = TREE_TYPE (current_class_ref);
 
       /* In a lambda expression, 'this' refers to the captured 'this'.  */
-      if (LAMBDA_TYPE_P (type))
+      if (TYPE_LAMBDA_P (type))
         result = lambda_expr_this_capture (CLASSTYPE_LAMBDA_EXPR (type), true);
       else
         result = current_class_ptr;
@@ -3122,7 +3122,7 @@ finish_member_declaration (tree decl)
   gcc_assert (TYPE_BEING_DEFINED (current_class_type)
 	      /* We can add lambda types when late parsing default
 		 arguments.  */
-	      || LAMBDA_TYPE_P (TREE_TYPE (decl)));
+	      || TYPE_LAMBDA_P (TREE_TYPE (decl)));
 
   /* Set up access control for DECL.  */
   TREE_PRIVATE (decl)

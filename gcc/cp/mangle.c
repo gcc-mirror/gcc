@@ -917,7 +917,7 @@ decl_mangling_context (tree decl)
     decl = DECL_TEMPLATE_RESULT (decl);
 
   if (TREE_CODE (decl) == TYPE_DECL
-      && LAMBDA_TYPE_P (TREE_TYPE (decl)))
+      && TYPE_LAMBDA_P (TREE_TYPE (decl)))
     {
       tree extra = LAMBDA_TYPE_EXTRA_SCOPE (TREE_TYPE (decl));
       if (extra)
@@ -1458,8 +1458,7 @@ write_unqualified_name (tree decl)
       if (TREE_CODE (decl) == TYPE_DECL
           && TYPE_UNNAMED_P (type))
         write_unnamed_type_name (type);
-      else if (TREE_CODE (decl) == TYPE_DECL
-               && LAMBDA_TYPE_P (type))
+      else if (TREE_CODE (decl) == TYPE_DECL && TYPE_LAMBDA_P (type))
         write_closure_type_name (type);
       else
         write_source_name (DECL_NAME (decl));
@@ -2060,8 +2059,7 @@ write_local_name (tree function, const tree local_entity,
       write_name (entity, /*ignore_local_scope=*/1);
       if (DECL_DISCRIMINATOR_P (local_entity)
 	  && !(TREE_CODE (local_entity) == TYPE_DECL
-	       && (LAMBDA_TYPE_P (TREE_TYPE (local_entity))
-		   || TYPE_UNNAMED_P (TREE_TYPE (local_entity)))))
+	       && TYPE_ANON_P (TREE_TYPE (local_entity))))
 	write_discriminator (discriminator_for_local_entity (local_entity));
     }
 }

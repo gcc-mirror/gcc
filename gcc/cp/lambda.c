@@ -132,10 +132,7 @@ begin_lambda_type (tree lambda)
 
   {
     /* Lambda names are nearly but not quite anonymous.  */
-    tree name = make_anon_name ("lambda");
-
-    /* Turn into lambda identifier.  */
-    IDENTIFIER_ANON_P (name) = false;
+    tree name = make_anon_name ();
     IDENTIFIER_LAMBDA_P (name) = true;
 
     /* Create the new RECORD_TYPE for this lambda.  */
@@ -195,7 +192,7 @@ lambda_function (tree lambda)
     type = LAMBDA_EXPR_CLOSURE (lambda);
   else
     type = lambda;
-  gcc_assert (LAMBDA_TYPE_P (type));
+  gcc_assert (TYPE_LAMBDA_P (type));
   /* Don't let debug_tree cause instantiation.  */
   if (CLASSTYPE_TEMPLATE_INSTANTIATION (type)
       && !COMPLETE_OR_OPEN_TYPE_P (type))
@@ -862,7 +859,7 @@ tree
 current_lambda_expr (void)
 {
   tree type = current_class_type;
-  while (type && !LAMBDA_TYPE_P (type))
+  while (type && !TYPE_LAMBDA_P (type))
     type = decl_type_context (TYPE_NAME (type));
   if (type)
     return CLASSTYPE_LAMBDA_EXPR (type);
@@ -884,7 +881,7 @@ resolvable_dummy_lambda (tree object)
 
   if (type != current_class_type
       && current_class_type
-      && LAMBDA_TYPE_P (current_class_type)
+      && TYPE_LAMBDA_P (current_class_type)
       && lambda_function (current_class_type)
       && DERIVED_FROM_P (type, nonlambda_method_basetype()))
     return CLASSTYPE_LAMBDA_EXPR (current_class_type);
@@ -962,7 +959,7 @@ nonlambda_method_basetype (void)
     return NULL_TREE;
 
   tree type = current_class_type;
-  if (!type || !LAMBDA_TYPE_P (type))
+  if (!type || !TYPE_LAMBDA_P (type))
     return type;
 
   while (true)

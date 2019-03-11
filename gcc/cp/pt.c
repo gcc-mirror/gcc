@@ -391,7 +391,7 @@ template_class_depth (tree type)
 
       if (DECL_P (type))
 	type = CP_DECL_CONTEXT (type);
-      else if (LAMBDA_TYPE_P (type))
+      else if (TYPE_LAMBDA_P (type))
 	type = LAMBDA_TYPE_EXTRA_SCOPE (type);
       else
 	type = CP_TYPE_CONTEXT (type);
@@ -4028,7 +4028,7 @@ check_for_bare_parameter_packs (tree t, location_t loc /* = UNKNOWN_LOCATION */)
     return false;
 
   /* A lambda might use a parameter pack from the containing context.  */
-  if (current_class_type && LAMBDA_TYPE_P (current_class_type)
+  if (current_class_type && TYPE_LAMBDA_P (current_class_type)
       && CLASSTYPE_TEMPLATE_INFO (current_class_type))
     return false;
 
@@ -5461,8 +5461,7 @@ push_template_decl_real (tree decl, bool is_friend)
          template <typename T> friend void A<T>::f();
        is not primary.  */
     is_primary = false;
-  else if (TREE_CODE (decl) == TYPE_DECL
-	   && LAMBDA_TYPE_P (TREE_TYPE (decl)))
+  else if (TREE_CODE (decl) == TYPE_DECL && LAMBDA_TYPE_P (TREE_TYPE (decl)))
     is_primary = false;
   else
     is_primary = template_parm_scope_p ();
@@ -5599,8 +5598,7 @@ push_template_decl_real (tree decl, bool is_friend)
   if (!ctx
       || TREE_CODE (ctx) == FUNCTION_DECL
       || (CLASS_TYPE_P (ctx) && TYPE_BEING_DEFINED (ctx))
-      || (TREE_CODE (decl) == TYPE_DECL
-	  && LAMBDA_TYPE_P (TREE_TYPE (decl)))
+      || (TREE_CODE (decl) == TYPE_DECL && TYPE_LAMBDA_P (TREE_TYPE (decl)))
       || (is_friend && !DECL_TEMPLATE_INFO (decl)))
     {
       if (DECL_LANG_SPECIFIC (decl)
@@ -9422,7 +9420,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 
       if (!is_dependent_type
 	  && !PRIMARY_TEMPLATE_P (gen_tmpl)
-	  && !LAMBDA_TYPE_P (TREE_TYPE (gen_tmpl))
+	  && !TYPE_LAMBDA_P (TREE_TYPE (gen_tmpl))
 	  && TREE_CODE (CP_DECL_CONTEXT (gen_tmpl)) == NAMESPACE_DECL)
 	{
 	  found = xref_tag_from_type (TREE_TYPE (gen_tmpl),
@@ -9503,7 +9501,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	{
 	  /* Lambda closures are regenerated in tsubst_lambda_expr, not
 	     instantiated here.  */
-	  gcc_assert (!LAMBDA_TYPE_P (template_type));
+	  gcc_assert (!TYPE_LAMBDA_P (template_type));
 
 	  t = make_class_type (TREE_CODE (template_type));
 	  CLASSTYPE_DECLARED_CLASS (t)
@@ -10975,7 +10973,7 @@ instantiate_class_template_1 (tree type)
 
   fn_context = decl_function_context (TYPE_MAIN_DECL (type));
   /* Also avoid push_to_top_level for a lambda in an NSDMI.  */
-  if (!fn_context && LAMBDA_TYPE_P (type) && TYPE_CLASS_SCOPE_P (type))
+  if (!fn_context && TYPE_LAMBDA_P (type) && TYPE_CLASS_SCOPE_P (type))
     fn_context = error_mark_node;
   if (!fn_context)
     push_to_top_level ();
@@ -11104,7 +11102,7 @@ instantiate_class_template_1 (tree type)
 	{
 	  if (TYPE_P (t))
 	    {
-	      if (LAMBDA_TYPE_P (t))
+	      if (TYPE_LAMBDA_P (t))
 		/* A closure type for a lambda in an NSDMI or default argument.
 		   Ignore it; it will be regenerated when needed.  */
 		continue;
@@ -11177,7 +11175,7 @@ instantiate_class_template_1 (tree type)
 		cp_check_omp_declare_reduction (r);
 	    }
 	  else if ((DECL_CLASS_TEMPLATE_P (t) || DECL_IMPLICIT_TYPEDEF_P (t))
-		   && LAMBDA_TYPE_P (TREE_TYPE (t)))
+		   && TYPE_LAMBDA_P (TREE_TYPE (t)))
 	    /* A closure type for a lambda in an NSDMI or default argument.
 	       Ignore it; it will be regenerated when needed.  */;
 	  else
@@ -17038,7 +17036,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 				  DECL_NAME (decl),
 				  true/*DECL_PRETTY_FUNCTION_P (decl)*/);
 	else if (DECL_IMPLICIT_TYPEDEF_P (decl)
-		 && LAMBDA_TYPE_P (TREE_TYPE (decl)))
+		 && TYPE_LAMBDA_P (TREE_TYPE (decl)))
 	  /* Don't copy the old closure; we'll create a new one in
 	     tsubst_lambda_expr.  */
 	  break;
@@ -17407,7 +17405,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	     way we don't have to deal with pushing out of one local class
 	     to instantiate a member of another local class.  */
 	  /* Closures are handled by the LAMBDA_EXPR.  */
-	  gcc_assert (!LAMBDA_TYPE_P (TREE_TYPE (t)));
+	  gcc_assert (!TYPE_LAMBDA_P (TREE_TYPE (t)));
 	  complete_type (tmp);
 	  for (tree fld = TYPE_FIELDS (tmp); fld; fld = DECL_CHAIN (fld))
 	    if ((VAR_P (fld)
@@ -18879,7 +18877,7 @@ tsubst_copy_and_build (tree t,
 		       be using lambdas anyway, so it's ok to be
 		       stricter.  */
 		    bool in_lambda = (current_class_type
-				      && LAMBDA_TYPE_P (current_class_type));
+				      && TYPE_LAMBDA_P (current_class_type));
 		    char const *const msg
 		      = G_("%qD was not declared in this scope, "
 			   "and no declarations were found by "

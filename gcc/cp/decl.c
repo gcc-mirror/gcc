@@ -7862,7 +7862,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
       error_at (loc, "cannot decompose non-array non-class type %qT", type);
       goto error_out;
     }
-  else if (LAMBDA_TYPE_P (type))
+  else if (TYPE_LAMBDA_P (type))
     {
       error_at (loc, "cannot decompose lambda closure type %qT", type);
       goto error_out;
@@ -11355,7 +11355,7 @@ grokdeclarator (const cp_declarator *declarator,
 		    if (!late_return_type)
 		      {
 			if (current_class_type
-			    && LAMBDA_TYPE_P (current_class_type))
+			    && TYPE_LAMBDA_P (current_class_type))
 			  /* OK for C++11 lambdas.  */;
 			else if (cxx_dialect < cxx14)
 			  {

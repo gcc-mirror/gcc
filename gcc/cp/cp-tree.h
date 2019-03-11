@@ -1381,10 +1381,13 @@ struct GTY (()) tree_trait_expr {
   (IDENTIFIER_NODE_CHECK(NODE)->base.protected_flag)
 
 /* Based off of TYPE_UNNAMED_P.  */
-#define LAMBDA_TYPE_P(NODE)					\
-  (TREE_CODE(NODE) == RECORD_TYPE				\
-   && TYPE_LINKAGE_IDENTIFIER (NODE)				\
+#define TYPE_LAMBDA_P(NODE)					\
+  (TYPE_LINKAGE_IDENTIFIER (NODE)				\
    && IDENTIFIER_LAMBDA_P (TYPE_LINKAGE_IDENTIFIER (NODE)))
+
+#define LAMBDA_TYPE_P(NODE)			\
+  (TREE_CODE (NODE) == RECORD_TYPE		\
+   && TYPE_LAMBDA_P (NODE))
 
 /* Test if FUNCTION_DECL is a lambda function.  */
 #define LAMBDA_FUNCTION_P(FNDECL)				\
@@ -2063,10 +2066,15 @@ enum languages { lang_c, lang_cplusplus };
 #define TYPE_NAME_STRING(NODE) (IDENTIFIER_POINTER (TYPE_IDENTIFIER (NODE)))
 #define TYPE_NAME_LENGTH(NODE) (IDENTIFIER_LENGTH (TYPE_IDENTIFIER (NODE)))
 
-/* Nonzero if NODE, a TYPE, has no name for linkage purposes.  */
-#define TYPE_UNNAMED_P(NODE)				\
-  (TYPE_LINKAGE_IDENTIFIER (NODE)			\
+/* Any kind of anonymous type.  */
+#define TYPE_ANON_P(NODE)					\
+  (TYPE_LINKAGE_IDENTIFIER (NODE)				\
    && IDENTIFIER_ANON_P (TYPE_LINKAGE_IDENTIFIER (NODE)))
+
+/* Nonzero if NODE, a TYPE, has no name for linkage purposes.  */
+#define TYPE_UNNAMED_P(NODE)					\
+  (TYPE_ANON_P (NODE)						\
+   && !IDENTIFIER_LAMBDA_P (TYPE_LINKAGE_IDENTIFIER (NODE)))
 
 /* The _DECL for this _TYPE.  */
 #define TYPE_MAIN_DECL(NODE) (TYPE_STUB_DECL (TYPE_MAIN_VARIANT (NODE)))

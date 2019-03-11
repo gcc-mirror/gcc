@@ -9718,7 +9718,7 @@ static GTY(()) unsigned anon_cnt = 0; /* Saved for PCH.  */
    valid assembly label.  */
 
 tree
-make_anon_name (const char *extra)
+make_anon_name ()
 {
   const char *fmt = 
 #if !defined (NO_DOT_IN_LABEL)
@@ -9728,10 +9728,10 @@ make_anon_name (const char *extra)
 #else
     "__anon"
 #endif
-    "%s_%d";
+    "_%#x";
 
-  char buf[24];
-  int len = snprintf (buf, sizeof (buf), fmt, extra ? extra : "", anon_cnt++);
+  char buf[16];
+  int len = snprintf (buf, sizeof (buf), fmt, anon_cnt++);
   gcc_checking_assert (len < int (sizeof (buf)));
 
   tree id = get_identifier_with_length (buf, len);

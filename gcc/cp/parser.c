@@ -18094,7 +18094,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	  else
 	    type = error_mark_node;
 
-	  if (current_class_type && LAMBDA_TYPE_P (current_class_type))
+	  if (current_class_type && TYPE_LAMBDA_P (current_class_type))
 	    {
 	      if (cxx_dialect < cxx14)
 		error_at (token->location,
@@ -22461,7 +22461,7 @@ cp_parser_parameter_declaration_clause (cp_parser* parser,
          actual function or a random abstract declarator.  */
       && parser->default_arg_ok_p)
     if (!current_function_decl
-	|| (current_class_type && LAMBDA_TYPE_P (current_class_type)))
+	|| (current_class_type && TYPE_LAMBDA_P (current_class_type)))
       parser->auto_is_implicit_function_template_parm_p = true;
 
   /* Peek at the next token.  */
@@ -22885,7 +22885,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	 default argument must be saved and processed later.  */
       if (!template_parm_p && at_class_scope_p ()
 	  && TYPE_BEING_DEFINED (current_class_type)
-	  && !LAMBDA_TYPE_P (current_class_type))
+	  && !TYPE_LAMBDA_P (current_class_type))
 	default_argument = cp_parser_cache_defarg (parser, /*nsdmi=*/false);
 
       // A constrained-type-specifier may declare a type template-parameter.
@@ -41638,7 +41638,7 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
 	  parent_scope = scope;
 	  scope = scope->level_chain;
 	}
-      if (current_class_type && !LAMBDA_TYPE_P (current_class_type))
+      if (current_class_type && !TYPE_LAMBDA_P (current_class_type))
 	{
 	  /* If not defining a class, then any class scope is a scope level in
 	     an out-of-line member definition.  In this case simply wind back

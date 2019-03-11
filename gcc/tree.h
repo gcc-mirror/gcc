@@ -5431,7 +5431,7 @@ target_opts_for_fn (const_tree fndecl)
    hold on to.  In practice, this should not appear, but it should
    not be harmful if it does.  Identifiers returned will be
    IDENTIFIER_ANON_P.  */
-extern tree make_anon_name (const char *extra = NULL);
+extern tree make_anon_name ();
 
 /* The tree and const_tree overload templates.   */
 namespace wi

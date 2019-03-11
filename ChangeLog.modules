@@ -1,3 +1,41 @@
+2019-03-11  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/
+	* tree.h (make_anon_name): Drop optional parm.
+	* tree.c (make_anon_name): Drop 'extra' parm.
+	gcc/cp/
+	* cp-tree.h (TYPE_LAMBDA_P): New, require a type.
+	(LAMBDA_TYPE_P): Refactor.
+	(TYPE_ANON_P): New.
+	(TYPE_UNNAMED_P): Use it, reject lambdas.
+	* class.c (add_implicitly_declared_members): Replace LAMDBA_TYPE_P
+	with TYPE_LAMBDA_P.
+	(finalize_literal_type_property, explain_non_literal_class)
+	(check_bases_and_members, finish_struct)
+	(current_nonlambda_class_type, maybe_note_name_used_in_class): Likewise.
+	* constexpr.c (check_constexpr_bind_expr_vars): Likewise.
+	* decl.c (cp_finith_decomp, grokdeclarator): Likewise.
+	* lambda.c (begin_lambda_type): Don't clear IDENTIFIER_ANON_P.
+	(lambda_function): Replace LAMBDA_TYPE_P with TYPE_LAMBDA_P.
+	(current_lambda_expr, resolvable_dummy_lambda)
+	(nonlambda_method_basetype): Likewise.
+	* mangle.c (decl_mandling_context, write_unqualified_name): Likewise.
+	(write_local_name): Simplify anon check.
+	* method.c (synthesized_method_walk): Replace LAMBDA_TYPE_P with
+	TYPE_LAMBDA_P.
+	(maybe_explain_explicit_delete): Likewise.
+	* parser.c (cp_parser_simple_type_specifier)
+	(cp_parser_parameter_declaration_clause)
+	(cp_parser_parameter_declaration)
+	(synthesize_immplicit_template_parm): Likewise.
+	* pt.c (template_class_depth, check_for_bare_parameter_packes)
+	(push_templated_decl_real, lookup_template_class_1)
+	(instantiate_class_template_1, tsubst_expr)
+	(tsubst_copy_and_build): Likewise.
+	* semantics.c (finish_this_expr, finish_member_declaration): Likewise.
+	* error.c (dump_aggr_type): Check for lambda before anonymous.
+	* cp-lang.c (cxx_dwarf_name): Treat all anonymous names anonymously.
+
 2019-03-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
