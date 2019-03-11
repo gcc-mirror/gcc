@@ -1,5 +1,17 @@
 2019-03-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/89460
+	* configure.ac: Check for sockatmark.
+	* crossconfig.m4: Check for sockatmark.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/experimental/internet (address_v4::_S_hton): Rename
+	overloaded functions to _S_hton_16 and _S_ntoh_16.
+	(address_v4::_S_ntoh): Rename to _S_ntoh_16 and _S_ntoh_32.
+	(basic_endpoint): Adjust calls to _S_hton and _S_ntoh.
+	* include/experimental/socket (basic_socket::at_mark): Check
+	_GLIBCXX_HAVE_SOCKATMARK.
+
 	* testsuite/29_atomics/atomic_flag/test_and_set/explicit-hle.cc: Use
 	const variables instead of macros.
 
