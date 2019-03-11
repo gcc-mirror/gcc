@@ -276,6 +276,7 @@ Each @var{line} has the following form:
   "count": @var{count},
   "line_number": @var{line_number},
   "unexecuted_block": @var{unexecuted_block}
+  "function_name": @var{function_name},
 @}
 @end smallexample
 
@@ -293,6 +294,10 @@ Fields of the @var{line} element have following semantics:
 @var{unexecuted_block}: flag whether the line contains an unexecuted block
 (not all statements on the line are executed)
 @end itemize
+
+@item
+@var{function_name}: a name of a function this @var{line} belongs to
+(for a line with an inlined statements can be not set)
 
 Each @var{branch} has the following form:
 
