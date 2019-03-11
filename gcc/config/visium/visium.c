@@ -419,9 +419,9 @@ static void
 visium_option_override (void)
 {
   if (flag_pic == 1)
-    warning (OPT_fpic, "-fpic is not supported");
+    warning (OPT_fpic, "%<-fpic%> is not supported");
   if (flag_pic == 2)
-    warning (OPT_fPIC, "-fPIC is not supported");
+    warning (OPT_fPIC, "%<-fPIC%> is not supported");
 
   /* MCM is the default in the GR5/GR6 era.  */
   target_flags |= MASK_MCM;
@@ -728,7 +728,7 @@ visium_handle_interrupt_attr (tree *node, tree name,
     }
   else if (!TARGET_SV_MODE)
     {
-      error ("an interrupt handler cannot be compiled with -muser-mode");
+      error ("an interrupt handler cannot be compiled with %<-muser-mode%>");
       *no_add_attrs = true;
     }
 

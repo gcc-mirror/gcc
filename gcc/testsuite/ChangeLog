@@ -1,3 +1,42 @@
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/conversion/simd3.C (foo): Wrap option names
+	with apostrophe character.
+	* g++.dg/cpp1z/decomp3.C (test): Likewise.
+	(test3): Likewise.
+	* g++.dg/cpp1z/decomp4.C (test): Likewise.
+	* g++.dg/cpp1z/decomp44.C (foo): Likewise.
+	* g++.dg/cpp1z/decomp45.C (f): Likewise.
+	* g++.dg/opt/pr34036.C: Likewise.
+	* g++.dg/spellcheck-c++-11-keyword.C: Likewise.
+	* gcc.dg/c90-fordecl-1.c (foo): Likewise.
+	* gcc.dg/cpp/dir-only-4.c: Likewise.
+	* gcc.dg/cpp/dir-only-5.c: Likewise.
+	* gcc.dg/cpp/pr71591.c: Likewise.
+	* gcc.dg/format/opt-1.c: Likewise.
+	* gcc.dg/format/opt-2.c: Likewise.
+	* gcc.dg/format/opt-3.c: Likewise.
+	* gcc.dg/format/opt-4.c: Likewise.
+	* gcc.dg/format/opt-5.c: Likewise.
+	* gcc.dg/format/opt-6.c: Likewise.
+	* gcc.dg/pr22231.c: Likewise.
+	* gcc.dg/pr33007.c: Likewise.
+	* gcc.dg/simd-1.c (hanneke): Likewise.
+	* gcc.dg/simd-5.c: Likewise.
+	* gcc.dg/simd-6.c: Likewise.
+	* gcc.dg/spellcheck-options-14.c: Likewise.
+	* gcc.dg/spellcheck-options-15.c: Likewise.
+	* gcc.dg/spellcheck-options-16.c: Likewise.
+	* gcc.dg/spellcheck-options-17.c: Likewise.
+	* gcc.dg/tree-ssa/pr23109.c: Likewise.
+	* gcc.dg/tree-ssa/recip-5.c: Likewise.
+	* gcc.target/i386/cet-notrack-1a.c (func): Likewise.
+	(__attribute__): Likewise.
+	* gcc.target/i386/cet-notrack-icf-1.c (fn3): Likewise.
+	* gcc.target/i386/cet-notrack-icf-3.c (__attribute__): Likewise.
+	* gcc.target/powerpc/warn-1.c: Likewise.
+	* gcc.target/powerpc/warn-2.c: Likewise.
+
 2019-03-11  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* gcc.target/s390/zvector/vec-addc-u128.c: New test.

@@ -11151,7 +11151,7 @@ aarch64_parse_one_option_token (const char *token,
 	return flag->flag;
     }
 
-  error ("unknown flag passed in -moverride=%s (%s)", option_name, token);
+  error ("unknown flag passed in %<-moverride=%s%> (%s)", option_name, token);
   return 0;
 }
 
@@ -11454,8 +11454,8 @@ aarch64_override_options_internal (struct gcc_options *opts)
   if (aarch64_stack_protector_guard == SSP_GLOBAL
       && opts->x_aarch64_stack_protector_guard_offset_str)
     {
-      error ("incompatible options -mstack-protector-guard=global and"
-	     "-mstack-protector-guard-offset=%qs",
+      error ("incompatible options %<-mstack-protector-guard=global%> and"
+	     "%<-mstack-protector-guard-offset=%qs%>",
 	     aarch64_stack_protector_guard_offset_str);
     }
 
@@ -11463,9 +11463,9 @@ aarch64_override_options_internal (struct gcc_options *opts)
       && !(opts->x_aarch64_stack_protector_guard_offset_str
 	   && opts->x_aarch64_stack_protector_guard_reg_str))
     {
-      error ("both -mstack-protector-guard-offset and "
-	     "-mstack-protector-guard-reg must be used "
-	     "with -mstack-protector-guard=sysreg");
+      error ("both %<-mstack-protector-guard-offset%> and "
+	     "%<-mstack-protector-guard-reg%> must be used "
+	     "with %<-mstack-protector-guard=sysreg%>");
     }
 
   if (opts->x_aarch64_stack_protector_guard_reg_str)
@@ -11482,7 +11482,7 @@ aarch64_override_options_internal (struct gcc_options *opts)
       long offs = strtol (aarch64_stack_protector_guard_offset_str, &end, 0);
       if (!*str || *end || errno)
 	error ("%qs is not a valid offset in %qs", str,
-	       "-mstack-protector-guard-offset=");
+	       "%<-mstack-protector-guard-offset=%>");
       aarch64_stack_protector_guard_offset = offs;
     }
 
@@ -11687,7 +11687,7 @@ aarch64_validate_mcpu (const char *str, const struct processor **res,
 	error ("missing cpu name in %<-mcpu=%s%>", str);
 	break;
       case AARCH64_PARSE_INVALID_ARG:
-	error ("unknown value %qs for -mcpu", str);
+	error ("unknown value %qs for %<-mcpu%>", str);
 	aarch64_print_hint_for_core (str);
 	break;
       case AARCH64_PARSE_INVALID_FEATURE:
@@ -11828,7 +11828,7 @@ aarch64_validate_march (const char *str, const struct processor **res,
 	error ("missing arch name in %<-march=%s%>", str);
 	break;
       case AARCH64_PARSE_INVALID_ARG:
-	error ("unknown value %qs for -march", str);
+	error ("unknown value %qs for %<-march%>", str);
 	aarch64_print_hint_for_arch (str);
 	break;
       case AARCH64_PARSE_INVALID_FEATURE:
@@ -11863,7 +11863,7 @@ aarch64_validate_mtune (const char *str, const struct processor **res)
 	error ("missing cpu name in %<-mtune=%s%>", str);
 	break;
       case AARCH64_PARSE_INVALID_ARG:
-	error ("unknown value %qs for -mtune", str);
+	error ("unknown value %qs for %<-mtune%>", str);
 	aarch64_print_hint_for_core (str);
 	break;
       default:
@@ -11988,7 +11988,7 @@ aarch64_override_options (void)
     {
       if (selected_arch->arch != selected_cpu->arch)
 	{
-	  warning (0, "switch -mcpu=%s conflicts with -march=%s switch",
+	  warning (0, "switch %<-mcpu=%s%> conflicts with %<-march=%s%> switch",
 		       all_architectures[selected_cpu->arch].name,
 		       selected_arch->name);
 	}
@@ -12044,14 +12044,14 @@ aarch64_override_options (void)
   /* The compiler may have been configured with 2.23.* binutils, which does
      not have support for ILP32.  */
   if (TARGET_ILP32)
-    error ("assembler does not support -mabi=ilp32");
+    error ("assembler does not support %<-mabi=ilp32%>");
 #endif
 
   /* Convert -msve-vector-bits to a VG count.  */
   aarch64_sve_vg = aarch64_convert_sve_vector_bits (aarch64_sve_vector_bits);
 
   if (aarch64_ra_sign_scope != AARCH64_FUNCTION_NONE && TARGET_ILP32)
-    sorry ("return address signing is only supported for -mabi=lp64");
+    sorry ("return address signing is only supported for %<-mabi=lp64%>");
 
   /* Make sure we properly set up the explicit options.  */
   if ((aarch64_cpu_string && valid_cpu)
@@ -12119,7 +12119,7 @@ initialize_aarch64_code_model (struct gcc_options *opts)
 #endif
 	   break;
 	 case AARCH64_CMODEL_LARGE:
-	   sorry ("code model %qs with -f%s", "large",
+	   sorry ("code model %qs with %<-f%s%>", "large",
 		  opts->x_flag_pic > 1 ? "PIC" : "pic");
 	   break;
 	 default:

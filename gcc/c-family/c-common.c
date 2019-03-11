@@ -976,7 +976,7 @@ vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note)
   if (emit_lax_note && !emitted_lax_note)
     {
       emitted_lax_note = true;
-      inform (input_location, "use -flax-vector-conversions to permit "
+      inform (input_location, "use %<-flax-vector-conversions%> to permit "
               "conversions between vectors with differing "
               "element types or numbers of subparts");
     }
@@ -1016,7 +1016,7 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
   if (!VECTOR_INTEGER_TYPE_P (TREE_TYPE (mask)))
     {
       if (complain)
-	error_at (loc, "__builtin_shuffle last argument must "
+	error_at (loc, "%<__builtin_shuffle%> last argument must "
 		       "be an integer vector");
       return error_mark_node;
     }
@@ -1025,14 +1025,14 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
       || !VECTOR_TYPE_P (TREE_TYPE (v1)))
     {
       if (complain)
-	error_at (loc, "__builtin_shuffle arguments must be vectors");
+	error_at (loc, "%<__builtin_shuffle%> arguments must be vectors");
       return error_mark_node;
     }
 
   if (TYPE_MAIN_VARIANT (TREE_TYPE (v0)) != TYPE_MAIN_VARIANT (TREE_TYPE (v1)))
     {
       if (complain)
-	error_at (loc, "__builtin_shuffle argument vectors must be of "
+	error_at (loc, "%<__builtin_shuffle%> argument vectors must be of "
 		       "the same type");
       return error_mark_node;
     }
@@ -1043,7 +1043,7 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
 		   TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask))))
     {
       if (complain)
-	error_at (loc, "__builtin_shuffle number of elements of the "
+	error_at (loc, "%<__builtin_shuffle%> number of elements of the "
 		       "argument vector(s) and the mask vector should "
 		       "be the same");
       return error_mark_node;
@@ -1053,7 +1053,7 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
       != GET_MODE_BITSIZE (SCALAR_TYPE_MODE (TREE_TYPE (TREE_TYPE (mask)))))
     {
       if (complain)
-	error_at (loc, "__builtin_shuffle argument vector(s) inner type "
+	error_at (loc, "%<__builtin_shuffle%> argument vector(s) inner type "
 		       "must have the same size as inner type of the mask");
       return error_mark_node;
     }

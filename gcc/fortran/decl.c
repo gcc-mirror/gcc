@@ -3440,7 +3440,7 @@ match_record_decl (char *name)
             {
                 gfc_current_locus = old_loc;
                 gfc_error ("RECORD at %C is an extension, enable it with "
-                           "-fdec-structure");
+			   "%<-fdec-structure%>");
                 return MATCH_ERROR;
             }
           m = gfc_match (" %n/", name);
@@ -8651,8 +8651,8 @@ gfc_match_pointer (void)
     {
       if (!flag_cray_pointer)
 	{
-	  gfc_error ("Cray pointer declaration at %C requires -fcray-pointer "
-		     "flag");
+	  gfc_error ("Cray pointer declaration at %C requires "
+		     "%<-fcray-pointer%> flag");
 	  return MATCH_ERROR;
 	}
       return cray_pointer_decl ();

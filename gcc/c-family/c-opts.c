@@ -327,7 +327,8 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 	    error ("-I- specified twice");
 	  quote_chain_split = true;
 	  split_quote_chain ();
-	  inform (input_location, "obsolete option -I- used, please use -iquote instead");
+	  inform (input_location, "obsolete option %<-I-%> used, "
+		  "please use %<-iquote%> instead");
 	}
       break;
 
@@ -796,7 +797,7 @@ c_common_post_options (const char **pfilename)
   if (c_dialect_cxx ())
     {
       if (flag_excess_precision_cmdline == EXCESS_PRECISION_STANDARD)
-	sorry ("-fexcess-precision=standard for C++");
+	sorry ("%<-fexcess-precision=standard%> for C++");
       flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;
     }
   else if (flag_excess_precision_cmdline == EXCESS_PRECISION_DEFAULT)
@@ -831,7 +832,7 @@ c_common_post_options (const char **pfilename)
   if (flag_gnu89_inline == -1)
     flag_gnu89_inline = !flag_isoc99;
   else if (!flag_gnu89_inline && !flag_isoc99)
-    error ("-fno-gnu89-inline is only supported in GNU99 or C99 mode");
+    error ("%<-fno-gnu89-inline%> is only supported in GNU99 or C99 mode");
 
   /* Default to ObjC sjlj exception handling if NeXT runtime.  */
   if (flag_objc_sjlj_exceptions < 0)
@@ -877,17 +878,17 @@ c_common_post_options (const char **pfilename)
   if (!warn_format)
     {
       warning (OPT_Wformat_y2k,
-	       "-Wformat-y2k ignored without -Wformat");
+	       "%<-Wformat-y2k%> ignored without %<-Wformat%>");
       warning (OPT_Wformat_extra_args,
-	       "-Wformat-extra-args ignored without -Wformat");
+	       "%<-Wformat-extra-args%> ignored without %<-Wformat%>");
       warning (OPT_Wformat_zero_length,
-	       "-Wformat-zero-length ignored without -Wformat");
+	       "%<-Wformat-zero-length%> ignored without %<-Wformat%>");
       warning (OPT_Wformat_nonliteral,
-	       "-Wformat-nonliteral ignored without -Wformat");
+	       "%<-Wformat-nonliteral%> ignored without %<-Wformat%>");
       warning (OPT_Wformat_contains_nul,
-	       "-Wformat-contains-nul ignored without -Wformat");
+	       "%<-Wformat-contains-nul%> ignored without %<-Wformat%>");
       warning (OPT_Wformat_security,
-	       "-Wformat-security ignored without -Wformat");
+	       "%<-Wformat-security%> ignored without %<-Wformat%>");
     }
 
   /* -Wimplicit-function-declaration is enabled by default for C99.  */
@@ -944,12 +945,12 @@ c_common_post_options (const char **pfilename)
       if (flag_abi_version == latest_abi_version)
 	{
 	  auto_diagnostic_group d;
-	  if (warning (OPT_Wabi, "-Wabi won't warn about anything"))
+	  if (warning (OPT_Wabi, "%<-Wabi%> won't warn about anything"))
 	    {
-	      inform (input_location, "-Wabi warns about differences "
+	      inform (input_location, "%<-Wabi%> warns about differences "
 		      "from the most up-to-date ABI, which is also used "
 		      "by default");
-	      inform (input_location, "use e.g. -Wabi=11 to warn about "
+	      inform (input_location, "use e.g. %<-Wabi=11%> to warn about "
 		      "changes from GCC 7");
 	    }
 	  flag_abi_compat_version = abi_compat_default;
@@ -1304,7 +1305,8 @@ sanitize_cpp_opts (void)
   /* If we don't know what style of dependencies to output, complain
      if any other dependency switches have been given.  */
   if (deps_seen && cpp_opts->deps.style == DEPS_NONE)
-    error ("to generate dependencies you must specify either -M or -MM");
+    error ("to generate dependencies you must specify either %<-M%> "
+	   "or %<-MM%>");
 
   /* -dM and dependencies suppress normal output; do it here so that
      the last -d[MDN] switch overrides earlier ones.  */
@@ -1327,7 +1329,7 @@ sanitize_cpp_opts (void)
       flag_no_line_commands = 1;
     }
   else if (cpp_opts->deps.missing_files)
-    error ("-MG may only be used with -M or -MM");
+    error ("%<-MG%> may only be used with %<-M%> or %<-MM%>");
 
   cpp_opts->unsigned_char = !flag_signed_char;
   cpp_opts->stdc_0_in_system_headers = STDC_0_IN_SYSTEM_HEADERS;
@@ -1360,9 +1362,10 @@ sanitize_cpp_opts (void)
   if (cpp_opts->directives_only)
     {
       if (cpp_warn_unused_macros)
-	error ("-fdirectives-only is incompatible with -Wunused_macros");
+	error ("%<-fdirectives-only%> is incompatible "
+	       "with %<-Wunused-macros%>");
       if (cpp_opts->traditional)
-	error ("-fdirectives-only is incompatible with -traditional");
+	error ("%<-fdirectives-only%> is incompatible with %<-traditional%>");
     }
 }
 

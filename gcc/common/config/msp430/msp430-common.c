@@ -54,7 +54,7 @@ msp430_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
 	}
       else
 	{
-	  error ("unrecognized argument of -mcpu: %s", decoded->arg);
+	  error ("unrecognized argument of %<-mcpu%>: %s", decoded->arg);
 	  return false;
 	}
       break;

@@ -4141,7 +4141,7 @@ nds32_option_override (void)
       target_flags &= ~MASK_EXT_STRING;
 
       if (flag_pic)
-	error ("not support -fpic option for v3m toolchain");
+	error ("not support %<-fpic%> option for v3m toolchain");
     }
 
   /* See if we are using reduced-set registers:

@@ -372,7 +372,7 @@ rl78_option_override (void)
       /* Compiling with -flto results in a language of GNU GIMPLE being used... */
       && strcmp (lang_hooks.name, "GNU GIMPLE"))
     /* Address spaces are currently only supported by C.  */
-    error ("-mes0 can only be used with C");
+    error ("%<-mes0%> can only be used with C");
 
   if (TARGET_SAVE_MDUC_REGISTERS && !(TARGET_G13 || RL78_MUL_G13))
     warning (0, "mduc registers only saved for G13 target");
@@ -390,8 +390,10 @@ rl78_option_override (void)
 	{
 	case MUL_UNINIT: rl78_mul_type = MUL_NONE; break;
 	case MUL_NONE:   break;
-	case MUL_G13:  	 error ("-mmul=g13 cannot be used with -mcpu=g10"); break;
-	case MUL_G14:  	 error ("-mmul=g14 cannot be used with -mcpu=g10"); break;
+	case MUL_G13:  	 error ("%<-mmul=g13%> cannot be used with "
+				"%<-mcpu=g10%>"); break;
+	case MUL_G14:  	 error ("%<-mmul=g14%> cannot be used with "
+				"%<-mcpu=g10%>"); break;
 	}
       break;
 
@@ -402,7 +404,8 @@ rl78_option_override (void)
 	case MUL_NONE:   break;
 	case MUL_G13:  	break;
 	  /* The S2 core does not have mul/div instructions.  */
-	case MUL_G14: 	error ("-mmul=g14 cannot be used with -mcpu=g13"); break;
+	case MUL_G14: 	error ("%<-mmul=g14%> cannot be used with "
+			       "%<-mcpu=g13%>"); break;
 	}
       break;
 
@@ -414,7 +417,8 @@ rl78_option_override (void)
 	case MUL_G14:  	break;
 	/* The G14 core does not have the hardware multiply peripheral used by the
 	   G13 core, hence you cannot use G13 multipliy routines on G14 hardware.  */
-	case MUL_G13: 	error ("-mmul=g13 cannot be used with -mcpu=g14"); break;
+	case MUL_G13: 	error ("%<-mmul=g13%> cannot be used with "
+			       "%<-mcpu=g14%>"); break;
 	}
       break;
     }

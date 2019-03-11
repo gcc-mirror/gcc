@@ -2884,14 +2884,15 @@ arm_option_check_internal (struct gcc_options *opts)
       && write_symbols != NO_DEBUG
       && !TARGET_APCS_FRAME
       && (TARGET_DEFAULT & MASK_APCS_FRAME))
-    warning (0, "-g with -mno-apcs-frame may not give sensible debugging");
+    warning (0, "%<-g%> with %<-mno-apcs-frame%> may not give sensible "
+	     "debugging");
 
   /* iWMMXt unsupported under Thumb mode.  */
   if (TARGET_THUMB_P (flags) && TARGET_IWMMXT)
     error ("iWMMXt unsupported under Thumb mode");
 
   if (TARGET_HARD_TP && TARGET_THUMB1_P (flags))
-    error ("cannot use -mtp=cp15 with 16-bit Thumb");
+    error ("cannot use %<-mtp=cp15%> with 16-bit Thumb");
 
   if (TARGET_THUMB_P (flags) && TARGET_VXWORKS_RTP && flag_pic)
     {
@@ -2913,7 +2914,7 @@ arm_option_check_internal (struct gcc_options *opts)
       /* Cannot load addresses: -mslow-flash-data forbids literal pool and
 	 -mword-relocations forbids relocation of MOVT/MOVW.  */
       if (target_word_relocations)
-	error ("%s incompatible with -mword-relocations", flag);
+	error ("%s incompatible with %<-mword-relocations%>", flag);
     }
 }
 
@@ -3181,7 +3182,8 @@ arm_configure_build_target (struct arm_build_target *target,
 	  if (!bitmap_empty_p (isa_delta))
 	    {
 	      if (warn_compatible)
-		warning (0, "switch -mcpu=%s conflicts with -march=%s switch",
+		warning (0, "switch %<-mcpu=%s%> conflicts "
+			 "with %<-march=%s%> switch",
 			 arm_selected_cpu->common.name,
 			 arm_selected_arch->common.name);
 	      /* -march wins for code generation.
@@ -3406,7 +3408,8 @@ arm_option_override (void)
 
   if (TARGET_APCS_STACK && !TARGET_APCS_FRAME)
     {
-      warning (0, "-mapcs-stack-check incompatible with -mno-apcs-frame");
+      warning (0, "%<-mapcs-stack-check%> incompatible with "
+	       "%<-mno-apcs-frame%>");
       target_flags |= MASK_APCS_FRAME;
     }
 
@@ -3414,7 +3417,7 @@ arm_option_override (void)
     target_flags |= MASK_APCS_FRAME;
 
   if (TARGET_APCS_REENT && flag_pic)
-    error ("-fpic and -mapcs-reent are incompatible");
+    error ("%<-fpic%> and %<-mapcs-reent%> are incompatible");
 
   if (TARGET_APCS_REENT)
     warning (0, "APCS reentrant code not supported.  Ignored");
@@ -3475,7 +3478,7 @@ arm_option_override (void)
   if (flag_pic && TARGET_SINGLE_PIC_BASE)
     {
       if (TARGET_VXWORKS_RTP)
-	warning (0, "RTP PIC is incompatible with -msingle-pic-base");
+	warning (0, "RTP PIC is incompatible with %<-msingle-pic-base%>");
       arm_pic_register = (TARGET_APCS_STACK || TARGET_AAPCS_BASED) ? 9 : 10;
     }
 
@@ -3487,7 +3490,7 @@ arm_option_override (void)
       int pic_register = decode_reg_name (arm_pic_register_string);
 
       if (!flag_pic)
-	warning (0, "-mpic-register= is useless without -fpic");
+	warning (0, "%<-mpic-register=%> is useless without %<-fpic%>");
 
       /* Prevent the user from choosing an obviously stupid PIC register.  */
       else if (pic_register < 0 || call_used_regs[pic_register]
@@ -3518,7 +3521,8 @@ arm_option_override (void)
   if (flag_reorder_blocks_and_partition)
     {
       inform (input_location,
-	      "-freorder-blocks-and-partition not supported on this architecture");
+	      "%<-freorder-blocks-and-partition%> not supported "
+	      "on this architecture");
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }
@@ -3733,10 +3737,10 @@ arm_options_perform_arch_sanity_checks (void)
   if (TARGET_AAPCS_BASED)
     {
       if (TARGET_CALLER_INTERWORKING)
-	error ("AAPCS does not support -mcaller-super-interworking");
+	error ("AAPCS does not support %<-mcaller-super-interworking%>");
       else
 	if (TARGET_CALLEE_INTERWORKING)
-	  error ("AAPCS does not support -mcallee-super-interworking");
+	  error ("AAPCS does not support %<-mcallee-super-interworking%>");
     }
 
   /* __fp16 support currently assumes the core has ldrh.  */
@@ -3760,7 +3764,7 @@ arm_options_perform_arch_sanity_checks (void)
 	{
 	  arm_pcs_default = ARM_PCS_AAPCS_VFP;
 	  if (!bitmap_bit_p (arm_active_target.isa, isa_bit_vfpv2))
-	    error ("-mfloat-abi=hard: selected processor lacks an FPU");
+	    error ("%<-mfloat-abi=hard%>: selected processor lacks an FPU");
 	}
       else
 	arm_pcs_default = ARM_PCS_AAPCS;
@@ -3768,7 +3772,7 @@ arm_options_perform_arch_sanity_checks (void)
   else
     {
       if (arm_float_abi == ARM_FLOAT_ABI_HARD)
-	sorry ("-mfloat-abi=hard and VFP");
+	sorry ("%<-mfloat-abi=hard%> and VFP");
 
       if (arm_abi == ARM_ABI_APCS)
 	arm_pcs_default = ARM_PCS_APCS;
@@ -7039,8 +7043,8 @@ arm_handle_cmse_nonsecure_entry (tree *node, tree name,
   if (!use_cmse)
     {
       *no_add_attrs = true;
-      warning (OPT_Wattributes, "%qE attribute ignored without -mcmse option.",
-	       name);
+      warning (OPT_Wattributes, "%qE attribute ignored without %<-mcmse%> "
+	       "option.", name);
       return NULL_TREE;
     }
 
@@ -7091,8 +7095,8 @@ arm_handle_cmse_nonsecure_call (tree *node, tree name,
   if (!use_cmse)
     {
       *no_add_attrs = true;
-      warning (OPT_Wattributes, "%qE attribute ignored without -mcmse option.",
-	       name);
+      warning (OPT_Wattributes, "%qE attribute ignored without %<-mcmse%> "
+	       "option.", name);
       return NULL_TREE;
     }
 
@@ -8882,7 +8886,7 @@ arm_tls_referenced_p (rtx x)
 	     currently implement these if a literal pool is disabled.  */
 	  if (arm_disable_literal_pool)
 	    sorry ("accessing thread-local storage is not currently supported "
-		   "with -mpure-code or -mslow-flash-data");
+		   "with %<-mpure-code%> or %<-mslow-flash-data%>");
 
 	  return true;
 	}
@@ -25414,7 +25418,7 @@ thumb1_expand_prologue (void)
   if ((flag_stack_check == STATIC_BUILTIN_STACK_CHECK
        || flag_stack_clash_protection)
       && size)
-    sorry ("-fstack-check=specific for Thumb-1");
+    sorry ("%<-fstack-check=specific%> for Thumb-1");
 
   amount = offsets->outgoing_args - offsets->saved_regs;
   amount -= 4 * thumb1_extra_regs_pushed (offsets, true);

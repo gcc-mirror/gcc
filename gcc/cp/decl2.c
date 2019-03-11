@@ -4608,7 +4608,7 @@ record_mangling (tree decl, bool need_warning)
       inform (DECL_SOURCE_LOCATION (*slot),
 	      "previous mangling %q#D", *slot);
       inform (DECL_SOURCE_LOCATION (decl),
-	      "a later -fabi-version= (or =0)"
+	      "a later %<-fabi-version=%> (or =0)"
 	      " avoids this error with a change in mangling");
       *slot = decl;
     }

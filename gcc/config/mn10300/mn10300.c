@@ -104,7 +104,7 @@ mn10300_option_override (void)
       else if (strcasecmp (mn10300_tune_string, "am34") == 0)
 	mn10300_tune_cpu = PROCESSOR_AM34;
       else
-	error ("-mtune= expects mn10300, am33, am33-2, or am34");
+	error ("%<-mtune=%> expects mn10300, am33, am33-2, or am34");
     }
 }
 

@@ -1125,8 +1125,8 @@ gfc_is_intrinsic (gfc_symbol* sym, int subroutine_flag, locus loc)
 	gfc_warning_now (OPT_Wintrinsics_std, "The intrinsic %qs at %L is not "
 			 "included in the selected standard but %s and %qs will"
 			 " be treated as if declared EXTERNAL.  Use an"
-			 " appropriate -std=* option or define"
-			 " -fall-intrinsics to allow this intrinsic.",
+			 " appropriate %<-std=%>* option or define"
+			 " %<-fall-intrinsics%> to allow this intrinsic.",
 			 sym->name, &loc, symstd, sym->name);
 
       return false;

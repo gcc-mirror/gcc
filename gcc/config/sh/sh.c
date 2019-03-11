@@ -933,7 +933,7 @@ sh_option_override (void)
       else if (flag_exceptions)
 	{
 	  if (flag_schedule_insns && global_options_set.x_flag_schedule_insns)
-	    warning (0, "ignoring -fschedule-insns because of exception "
+	    warning (0, "ignoring %<-fschedule-insns%> because of exception "
 			"handling bug");
 	  flag_schedule_insns = 0;
 	}
@@ -951,7 +951,7 @@ sh_option_override (void)
       && flag_omit_frame_pointer && !TARGET_ACCUMULATE_OUTGOING_ARGS)
     {
       warning (0, "unwind tables currently require either a frame pointer "
-	       "or -maccumulate-outgoing-args for correctness");
+	       "or %<-maccumulate-outgoing-args%> for correctness");
       TARGET_ACCUMULATE_OUTGOING_ARGS = 1;
     }
 
@@ -7413,7 +7413,7 @@ sh_builtin_saveregs (void)
 
   if (!TARGET_FPU_ANY)
     {
-      error ("__builtin_saveregs not supported by this subtarget");
+      error ("%<__builtin_saveregs%> not supported by this subtarget");
       return const0_rtx;
     }
 
@@ -8279,7 +8279,7 @@ sh_fix_range (const char *const_str)
       char* dash = strchr (str, '-');
       if (!dash)
 	{
-	  warning (0, "value of -mfixed-range must have form REG1-REG2");
+	  warning (0, "value of %<-mfixed-range%> must have form REG1-REG2");
 	  return;
 	}
       *dash = '\0';

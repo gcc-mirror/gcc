@@ -3992,7 +3992,7 @@ rs6000_option_override_internal (bool global_init_p)
       if (!TARGET_HARD_FLOAT)
 	{
 	  if (rs6000_isa_flags_explicit & OPTION_MASK_VSX)
-	    msg = N_("-mvsx requires hardware floating point");
+	    msg = N_("%<-mvsx%> requires hardware floating point");
 	  else
 	    {
 	      rs6000_isa_flags &= ~ OPTION_MASK_VSX;
@@ -4000,14 +4000,14 @@ rs6000_option_override_internal (bool global_init_p)
 	    }
 	}
       else if (TARGET_AVOID_XFORM > 0)
-	msg = N_("-mvsx needs indexed addressing");
+	msg = N_("%<-mvsx%> needs indexed addressing");
       else if (!TARGET_ALTIVEC && (rs6000_isa_flags_explicit
 				   & OPTION_MASK_ALTIVEC))
         {
 	  if (rs6000_isa_flags_explicit & OPTION_MASK_VSX)
-	    msg = N_("-mvsx and -mno-altivec are incompatible");
+	    msg = N_("%<-mvsx%> and %<-mno-altivec%> are incompatible");
 	  else
-	    msg = N_("-mno-altivec disables vsx");
+	    msg = N_("%<-mno-altivec%> disables vsx");
         }
 
       if (msg)
@@ -4133,10 +4133,10 @@ rs6000_option_override_internal (bool global_init_p)
   if ((TARGET_QUAD_MEMORY || TARGET_QUAD_MEMORY_ATOMIC) && !TARGET_POWERPC64)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_QUAD_MEMORY) != 0)
-	warning (0, N_("-mquad-memory requires 64-bit mode"));
+	warning (0, N_("%<-mquad-memory%> requires 64-bit mode"));
 
       if ((rs6000_isa_flags_explicit & OPTION_MASK_QUAD_MEMORY_ATOMIC) != 0)
-	warning (0, N_("-mquad-memory-atomic requires 64-bit mode"));
+	warning (0, N_("%<-mquad-memory-atomic%> requires 64-bit mode"));
 
       rs6000_isa_flags &= ~(OPTION_MASK_QUAD_MEMORY
 			    | OPTION_MASK_QUAD_MEMORY_ATOMIC);
@@ -4148,7 +4148,7 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_QUAD_MEMORY && !WORDS_BIG_ENDIAN)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_QUAD_MEMORY) != 0)
-	warning (0, N_("-mquad-memory is not available in little endian "
+	warning (0, N_("%<-mquad-memory%> is not available in little endian "
 		       "mode"));
 
       rs6000_isa_flags &= ~OPTION_MASK_QUAD_MEMORY;
@@ -4338,7 +4338,7 @@ rs6000_option_override_internal (bool global_init_p)
       if (!TARGET_VSX)
 	{
 	  if ((rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_KEYWORD) != 0)
-	    error ("%qs requires VSX support", "-mfloat128");
+	    error ("%qs requires VSX support", "%<-mfloat128%>");
 
 	  TARGET_FLOAT128_TYPE = 0;
 	  rs6000_isa_flags &= ~(OPTION_MASK_FLOAT128_KEYWORD
@@ -4347,7 +4347,7 @@ rs6000_option_override_internal (bool global_init_p)
       else if (!TARGET_FLOAT128_TYPE)
 	{
 	  TARGET_FLOAT128_TYPE = 1;
-	  warning (0, "The -mfloat128 option may not be fully supported");
+	  warning (0, "The %<-mfloat128%> option may not be fully supported");
 	}
     }
 
@@ -4370,7 +4370,7 @@ rs6000_option_override_internal (bool global_init_p)
       && (rs6000_isa_flags & ISA_3_0_MASKS_IEEE) != ISA_3_0_MASKS_IEEE)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_HW) != 0)
-	error ("%qs requires full ISA 3.0 support", "-mfloat128-hardware");
+	error ("%qs requires full ISA 3.0 support", "%<-mfloat128-hardware%>");
 
       rs6000_isa_flags &= ~OPTION_MASK_FLOAT128_HW;
     }
@@ -4378,7 +4378,7 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_FLOAT128_HW && !TARGET_64BIT)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_HW) != 0)
-	error ("%qs requires %qs", "-mfloat128-hardware", "-m64");
+	error ("%qs requires %qs", "%<-mfloat128-hardware%>", "-m64");
 
       rs6000_isa_flags &= ~OPTION_MASK_FLOAT128_HW;
     }
@@ -13346,7 +13346,7 @@ rs6000_expand_zeroop_builtin (enum insn_code icode, rtx target)
   if (icode == CODE_FOR_rs6000_mffsl
       && rs6000_isa_flags & OPTION_MASK_SOFT_FLOAT)
     {
-      error ("__builtin_mffsl() not supported with -msoft-float");
+      error ("%<__builtin_mffsl%> not supported with %<-msoft-float%>");
       return const0_rtx;
     }
 
@@ -13418,7 +13418,8 @@ rs6000_expand_mtfsb_builtin (enum insn_code icode, tree exp)
 
   if (rs6000_isa_flags & OPTION_MASK_SOFT_FLOAT)
     {
-      error ("__builtin_mtfsb0 and __builtin_mtfsb1 not supported with -msoft-float");
+      error ("%<__builtin_mtfsb0%> and %<__builtin_mtfsb1%> not supported with "
+	     "%<-msoft-float%>");
       return const0_rtx;
     }
 
@@ -13455,7 +13456,7 @@ rs6000_expand_set_fpscr_rn_builtin (enum insn_code icode, tree exp)
 
   if (rs6000_isa_flags & OPTION_MASK_SOFT_FLOAT)
     {
-      error ("__builtin_set_fpscr_rn not supported with -msoft-float");
+      error ("%<__builtin_set_fpscr_rn%> not supported with %<-msoft-float%>");
       return const0_rtx;
     }
 
@@ -13495,11 +13496,12 @@ rs6000_expand_set_fpscr_drn_builtin (enum insn_code icode, tree exp)
   if (TARGET_32BIT)
     /* Builtin not supported in 32-bit mode.  */
     fatal_error (input_location,
-		 "__builtin_set_fpscr_drn is not supported in 32-bit mode.");
+		 "%<__builtin_set_fpscr_drn%> is not supported "
+		 "in 32-bit mode.");
 
   if (rs6000_isa_flags & OPTION_MASK_SOFT_FLOAT)
     {
-      error ("__builtin_set_fpscr_drn not supported with -msoft-float");
+      error ("%<__builtin_set_fpscr_drn%> not supported with %<-msoft-float%>");
       return const0_rtx;
     }
 
@@ -15236,7 +15238,8 @@ rs6000_invalid_builtin (enum rs6000_builtins fncode)
     error ("builtin function %qs requires ISA 3.0 IEEE 128-bit floating point",
 	   name);
   else if ((fnmask & RS6000_BTM_FLOAT128) != 0)
-    error ("builtin function %qs requires the %qs option", name, "-mfloat128");
+    error ("builtin function %qs requires the %qs option", name,
+	   "%<-mfloat128%>");
   else if ((fnmask & (RS6000_BTM_POPCNTD | RS6000_BTM_POWERPC64))
 	   == (RS6000_BTM_POPCNTD | RS6000_BTM_POWERPC64))
     error ("builtin function %qs requires the %qs (or newer), and "
@@ -29320,7 +29323,7 @@ rs6000_expand_split_stack_prologue (void)
 
   if (global_regs[29])
     {
-      error ("%qs uses register r29", "-fsplit-stack");
+      error ("%qs uses register r29", "%<-fsplit-stack%>");
       inform (DECL_SOURCE_LOCATION (global_regs_decl[29]),
 	      "conflicts with %qD", global_regs_decl[29]);
     }
@@ -29328,7 +29331,8 @@ rs6000_expand_split_stack_prologue (void)
   allocate = info->total_size;
   if (allocate > (unsigned HOST_WIDE_INT) 1 << 31)
     {
-      sorry ("Stack frame larger than 2G is not supported for -fsplit-stack");
+      sorry ("Stack frame larger than 2G is not supported for "
+	     "%<-fsplit-stack%>");
       return;
     }
   if (morestack_ref == NULL_RTX)

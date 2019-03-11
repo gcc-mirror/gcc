@@ -2880,7 +2880,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	  break;
 	case RID_GIMPLE:
 	  if (! flag_gimple)
-	    error_at (loc, "%<__GIMPLE%> only valid with -fgimple");
+	    error_at (loc, "%<__GIMPLE%> only valid with %<-fgimple%>");
 	  c_parser_consume_token (parser);
 	  specs->gimple_p = true;
 	  specs->locations[cdw_gimple] = loc;

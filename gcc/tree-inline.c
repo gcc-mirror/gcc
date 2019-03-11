@@ -3674,7 +3674,7 @@ inline_forbidden_p_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	       return from the function the inline has been inlined into.  */
 	    inline_forbidden_reason
 	      = G_("function %q+F can never be inlined because "
-		   "it uses __builtin_return or __builtin_apply_args");
+		   "it uses %<__builtin_return%> or %<__builtin_apply_args%>");
 	    *handled_ops_p = true;
 	    return t;
 
@@ -3794,8 +3794,8 @@ tree_inlinable_function_p (tree fn)
       && always_inline == NULL)
     {
       if (do_warning)
-        warning (OPT_Winline, "function %q+F can never be inlined because it "
-                 "is suppressed using -fno-inline", fn);
+	warning (OPT_Winline, "function %q+F can never be inlined because it "
+		 "is suppressed using %<-fno-inline%>", fn);
       inlinable = false;
     }
 

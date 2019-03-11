@@ -1927,14 +1927,14 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 
 	  if (hint)
 	    error_at (loc,
-		      "unrecognized argument to -f%ssanitize%s= option: %q.*s;"
-		      " did you mean %qs?",
+		      "unrecognized argument to %<-f%ssanitize%s=%> "
+		      "option: %q.*s; did you mean %qs?",
 		      value ? "" : "no-",
 		      suffix, (int) len, p, hint);
 	  else
 	    error_at (loc,
-		      "unrecognized argument to -f%ssanitize%s= option: %q.*s",
-		      value ? "" : "no-",
+		      "unrecognized argument to %<-f%ssanitize%s=%> option: "
+		      "%q.*s", value ? "" : "no-",
 		      suffix, (int) len, p);
 	}
 
@@ -2677,9 +2677,9 @@ common_handle_option (struct gcc_options *opts,
     case OPT_gdwarf:
       if (arg && strlen (arg) != 0)
         {
-          error_at (loc, "%<-gdwarf%s%> is ambiguous; "
-                    "use %<-gdwarf-%s%> for DWARF version "
-                    "or %<-gdwarf -g%s%> for debug level", arg, arg, arg);
+	  error_at (loc, "%<-gdwarf%s%> is ambiguous; "
+		    "use %<-gdwarf-%s%> for DWARF version "
+		    "or %<-gdwarf%> %<-g%s%> for debug level", arg, arg, arg);
           break;
         }
       else
@@ -3079,10 +3079,10 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
   strcpy (new_option + 1, arg);
   option_index = find_opt (new_option, lang_mask);
   if (option_index == OPT_SPECIAL_unknown)
-    error_at (loc, "-Werror=%s: no option -%s", arg, new_option);
+    error_at (loc, "%<-Werror=%s%>: no option -%s", arg, new_option);
   else if (!(cl_options[option_index].flags & CL_WARNING))
-    error_at (loc, "-Werror=%s: -%s is not an option that controls warnings",
-	      arg, new_option);
+    error_at (loc, "%<-Werror=%s%>: -%s is not an option that controls "
+	      "warnings", arg, new_option);
   else
     {
       const diagnostic_t kind = value ? DK_ERROR : DK_WARNING;
