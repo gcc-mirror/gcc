@@ -1,5 +1,10 @@
 2019-03-11  Martin Liska  <mliska@suse.cz>
 
+	* config/aarch64/aarch64.c (aarch64_override_options_internal):
+	Fix double string quoting.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
 	* collect-utils.c (collect_wait): Wrap apostrophes
 	in gcc internal format with %'.
 	* collect2.c (main): Likewise.
