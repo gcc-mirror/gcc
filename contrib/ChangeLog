@@ -1,5 +1,10 @@
 2019-03-11  Martin Liska  <mliska@suse.cz>
 
+	* check-internal-format-escaping.py: Uncomment apostrophes
+	check.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
 	* check-internal-format-escaping.py: New file.
 
 2019-03-10  Tommy Nguyen  <remyabel@gmail.com>

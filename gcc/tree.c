@@ -13815,9 +13815,9 @@ verify_type_variant (const_tree t, tree tv)
 					TYPE_SIZE_UNIT (tv), 0));
 	  error ("type variant has different TYPE_SIZE_UNIT");
 	  debug_tree (tv);
-	  error ("type variant's TYPE_SIZE_UNIT");
+	  error ("type variant%'s TYPE_SIZE_UNIT");
 	  debug_tree (TYPE_SIZE_UNIT (tv));
-	  error ("type's TYPE_SIZE_UNIT");
+	  error ("type%'s TYPE_SIZE_UNIT");
 	  debug_tree (TYPE_SIZE_UNIT (t));
 	  return false;
 	}
@@ -13888,9 +13888,9 @@ verify_type_variant (const_tree t, tree tv)
     {
       error ("type variant has different TYPE_BINFO");
       debug_tree (tv);
-      error ("type variant's TYPE_BINFO");
+      error ("type variant%'s TYPE_BINFO");
       debug_tree (TYPE_BINFO (tv));
-      error ("type's TYPE_BINFO");
+      error ("type%'s TYPE_BINFO");
       debug_tree (TYPE_BINFO (t));
       return false;
     }
@@ -13952,9 +13952,9 @@ verify_type_variant (const_tree t, tree tv)
     {
       error ("type variant has different TREE_TYPE");
       debug_tree (tv);
-      error ("type variant's TREE_TYPE");
+      error ("type variant%'s TREE_TYPE");
       debug_tree (TREE_TYPE (tv));
-      error ("type's TREE_TYPE");
+      error ("type%'s TREE_TYPE");
       debug_tree (TREE_TYPE (t));
       return false;
     }
@@ -13963,9 +13963,9 @@ verify_type_variant (const_tree t, tree tv)
     {
       error ("type is not compatible with its variant");
       debug_tree (tv);
-      error ("type variant's TREE_TYPE");
+      error ("type variant%'s TREE_TYPE");
       debug_tree (TREE_TYPE (tv));
-      error ("type's TREE_TYPE");
+      error ("type%'s TREE_TYPE");
       debug_tree (TREE_TYPE (t));
       return false;
     }

@@ -1396,7 +1396,7 @@ main (int argc, char **argv)
 
 		  stream = fopen (list_filename, "r");
 		  if (stream == NULL)
-		    fatal_error (input_location, "can't open %s: %m",
+		    fatal_error (input_location, "can%'t open %s: %m",
 				 list_filename);
 
 		  while (fgets (buf, sizeof buf, stream) != NULL)
@@ -2470,7 +2470,7 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 
   inf = pex_read_output (pex, 0);
   if (inf == NULL)
-    fatal_error (input_location, "can't open nm output: %m");
+    fatal_error (input_location, "can%'t open nm output: %m");
 
   if (debug)
     fprintf (stderr, "\nnm output with constructors/destructors.\n");
@@ -2639,7 +2639,7 @@ scan_libraries (const char *prog_name)
 
   inf = pex_read_output (pex, 0);
   if (inf == NULL)
-    fatal_error (input_location, "can't open ldd output: %m");
+    fatal_error (input_location, "can%'t open ldd output: %m");
 
   if (debug)
     notice ("\nldd output with constructors/destructors.\n");

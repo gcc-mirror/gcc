@@ -864,7 +864,7 @@ rl78_handle_saddr_attribute (tree * node,
 
   if (TREE_CODE (* node) == FUNCTION_DECL)
     {
-      warning (OPT_Wattributes, "%qE attribute doesn't apply to functions",
+      warning (OPT_Wattributes, "%qE attribute doesn%'t apply to functions",
 	       name);
       * no_add_attrs = true;
     }

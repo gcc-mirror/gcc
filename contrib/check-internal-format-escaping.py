@@ -56,8 +56,8 @@ for i, l in enumerate(lines):
                             print('%s: %s' % (origin, text))
                     elif p.startswith('__builtin_'):
                         print('%s: %s' % (origin, text))
-#                    if re.search("[a-zA-Z]'[a-zA-Z]", p):
-#                        print('%s: %s' % (origin, text))
+                    if re.search("[a-zA-Z]'[a-zA-Z]", p):
+                        print('%s: %s' % (origin, text))
             j += 1
 
         origin = None

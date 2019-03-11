@@ -945,7 +945,7 @@ c_common_post_options (const char **pfilename)
       if (flag_abi_version == latest_abi_version)
 	{
 	  auto_diagnostic_group d;
-	  if (warning (OPT_Wabi, "%<-Wabi%> won't warn about anything"))
+	  if (warning (OPT_Wabi, "%<-Wabi%> won%'t warn about anything"))
 	    {
 	      inform (input_location, "%<-Wabi%> warns about differences "
 		      "from the most up-to-date ABI, which is also used "

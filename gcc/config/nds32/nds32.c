@@ -3944,7 +3944,7 @@ nds32_insert_attributes (tree decl, tree *attributes)
 	new_attrs = tree_cons (get_identifier ("noclone"), NULL, new_attrs);
 
       if (!TREE_PUBLIC (decl))
-	error("indirect_call attribute can't apply for static function");
+	error ("indirect_call attribute can%'t apply for static function");
 
       *attributes = new_attrs;
     }

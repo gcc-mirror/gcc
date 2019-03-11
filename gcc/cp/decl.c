@@ -1305,7 +1305,7 @@ check_no_redeclaration_friend_default_args (tree olddecl, tree newdecl,
 	auto_diagnostic_group d;
 	if (permerror (DECL_SOURCE_LOCATION (newdecl),
 		       "friend declaration of %q#D specifies default "
-		       "arguments and isn't the only declaration", newdecl))
+		       "arguments and isn%'t the only declaration", newdecl))
 	  inform (DECL_SOURCE_LOCATION (olddecl),
 		  "previous declaration of %q#D", olddecl);
 	return;
@@ -8913,7 +8913,7 @@ grokfndecl (tree ctype,
 	  {
 	    permerror (DECL_SOURCE_LOCATION (decl),
 		       "friend declaration of %qD specifies default "
-		       "arguments and isn't a definition", decl);
+		       "arguments and isn%'t a definition", decl);
 	    break;
 	  }
     }

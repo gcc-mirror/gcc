@@ -28399,7 +28399,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       if (fndecl
 	  && (lookup_attribute ("interrupt",
 				TYPE_ATTRIBUTES (TREE_TYPE (fndecl)))))
-	error ("interrupt service routine can't be called directly");
+	error ("interrupt service routine can%'t be called directly");
     }
   else
     fndecl = NULL_TREE;
@@ -38375,7 +38375,7 @@ rdseed_step:
       mode0 = insn_data[icode].operand[0].mode;
       if (!insn_data[icode].operand[0].predicate (op0, mode0))
 	{
-	  error ("the xabort's argument must be an 8-bit immediate");
+	  error ("xabort argument must be an 8-bit immediate");
 	  return const0_rtx;
 	}
       emit_insn (gen_xabort (op0));
@@ -41440,7 +41440,7 @@ ix86_handle_interrupt_attribute (tree *node, tree, tree, int, bool *)
     error ("interrupt service routine can only have a pointer argument "
 	   "and an optional integer argument");
   if (! VOID_TYPE_P (return_type))
-    error ("interrupt service routine can't have non-void return value");
+    error ("interrupt service routine can%'t have non-void return value");
 
   return NULL_TREE;
 }
