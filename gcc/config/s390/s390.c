@@ -799,14 +799,14 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       bflags = bflags_for_builtin (fcode);
       if ((bflags & B_HTM) && !TARGET_HTM)
 	{
-	  error ("builtin %qF is not supported without -mhtm "
-		 "(default with -march=zEC12 and higher).", fndecl);
+	  error ("builtin %qF is not supported without %<-mhtm%> "
+		 "(default with %<-march=zEC12%> and higher).", fndecl);
 	  return const0_rtx;
 	}
       if (((bflags & B_VX) || (bflags & B_VXE)) && !TARGET_VX)
 	{
-	  error ("builtin %qF requires -mvx "
-		 "(default with -march=z13 and higher).", fndecl);
+	  error ("builtin %qF requires %<-mvx%> "
+		 "(default with %<-march=z13%> and higher).", fndecl);
 	  return const0_rtx;
 	}
 
@@ -12656,7 +12656,7 @@ s390_function_profiler (FILE *file, int labelno)
 	output_asm_nops ("-mnop-mcount", /* brasl */ 3);
       else if (cfun->static_chain_decl)
 	warning (OPT_Wcannot_profile, "nested functions cannot be profiled "
-		 "with -mfentry on s390");
+		 "with %<-mfentry%> on s390");
       else
 	output_asm_insn ("brasl\t0,%4", op);
     }
@@ -14829,7 +14829,7 @@ s390_option_override_internal (struct gcc_options *opts,
       || opts->x_s390_function_return == indirect_branch_thunk_inline
       || opts->x_s390_function_return_reg == indirect_branch_thunk_inline
       || opts->x_s390_function_return_mem == indirect_branch_thunk_inline)
-    error ("thunk-inline is only supported with -mindirect-branch-jump");
+    error ("thunk-inline is only supported with %<-mindirect-branch-jump%>");
 
   if (opts->x_s390_indirect_branch != indirect_branch_keep)
     {
@@ -14867,7 +14867,8 @@ s390_option_override_internal (struct gcc_options *opts,
 	    error ("hardware vector support not available on %s",
 		   processor_table[(int)opts->x_s390_arch].name);
 	  if (TARGET_SOFT_FLOAT_P (opts->x_target_flags))
-	    error ("hardware vector support not available with -msoft-float");
+	    error ("hardware vector support not available with "
+		   "%<-msoft-float%>");
 	}
     }
   else
@@ -14911,7 +14912,8 @@ s390_option_override_internal (struct gcc_options *opts,
     {
       if (TARGET_HARD_DFP_P (opts_set->x_target_flags)
 	  && TARGET_HARD_DFP_P (opts->x_target_flags))
-	error ("-mhard-dfp can%'t be used in conjunction with -msoft-float");
+	error ("%<-mhard-dfp%> can%'t be used in conjunction with "
+	       "%<-msoft-float%>");
 
       opts->x_target_flags &= ~MASK_HARD_DFP;
     }
@@ -14919,8 +14921,8 @@ s390_option_override_internal (struct gcc_options *opts,
   if (TARGET_BACKCHAIN_P (opts->x_target_flags)
       && TARGET_PACKED_STACK_P (opts->x_target_flags)
       && TARGET_HARD_FLOAT_P (opts->x_target_flags))
-    error ("-mbackchain -mpacked-stack -mhard-float are not supported "
-	   "in combination");
+    error ("%<-mbackchain%> %<-mpacked-stack%> %<-mhard-float%> are not "
+	   "supported in combination");
 
   if (opts->x_s390_stack_size)
     {
@@ -14930,7 +14932,7 @@ s390_option_override_internal (struct gcc_options *opts,
 	error ("stack size must not be greater than 64k");
     }
   else if (opts->x_s390_stack_guard)
-    error ("-mstack-guard implies use of -mstack-size");
+    error ("%<-mstack-guard%> implies use of %<-mstack-size%>");
 
   /* Our implementation of the stack probe requires the probe interval
      to be used as displacement in an address operand.  The maximum
@@ -15007,7 +15009,7 @@ s390_option_override_internal (struct gcc_options *opts,
      because 31-bit PLT stubs assume that %r12 contains GOT address, which is
      not the case when the code runs before the prolog. */
   if (opts->x_flag_fentry && !TARGET_64BIT)
-    error ("-mfentry is supported only for 64-bit CPUs");
+    error ("%<-mfentry%> is supported only for 64-bit CPUs");
 }
 
 static void
@@ -15080,7 +15082,8 @@ s390_option_override (void)
     flag_prefetch_loop_arrays = 1;
 
   if (!s390_pic_data_is_text_relative && !flag_pic)
-    error ("-mno-pic-data-is-text-relative cannot be used without -fpic/-fPIC");
+    error ("%<-mno-pic-data-is-text-relative%> cannot be used without "
+	   "%<-fpic%>/%<-fPIC%>");
 
   if (TARGET_TPF)
     {

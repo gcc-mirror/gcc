@@ -889,7 +889,7 @@ s390_resolve_overloaded_builtin (location_t loc,
 
   if (!TARGET_VX && (ob_flags & B_VX))
     {
-      error_at (loc, "%qF requires -mvx", ob_fndecl);
+      error_at (loc, "%qF requires %<-mvx%>", ob_fndecl);
       return error_mark_node;
     }
 

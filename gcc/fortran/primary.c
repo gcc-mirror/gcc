@@ -237,7 +237,7 @@ match_integer_constant (gfc_expr **result, int signflag)
   if (gfc_range_check (e) != ARITH_OK)
     {
       gfc_error ("Integer too big for its kind at %C. This check can be "
-		 "disabled with the option -fno-range-check");
+		 "disabled with the option %<-fno-range-check%>");
 
       gfc_free_expr (e);
       return MATCH_ERROR;

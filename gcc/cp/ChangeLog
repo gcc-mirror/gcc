@@ -1,3 +1,53 @@
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* call.c (convert_arg_to_ellipsis): Wrap an option name
+	in a string format message and fix GNU coding style.
+	(build_over_call): Likewise.
+	* class.c (check_field_decl): Likewise.
+	(layout_nonempty_base_or_field): Likewise.
+	* constexpr.c (cxx_eval_loop_expr): Likewise.
+	* cvt.c (type_promotes_to): Likewise.
+	* decl.c (cxx_init_decl_processing): Likewise.
+	(mark_inline_variable): Likewise.
+	(grokdeclarator): Likewise.
+	* decl2.c (record_mangling): Likewise.
+	* error.c (maybe_warn_cpp0x): Likewise.
+	* except.c (doing_eh): Likewise.
+	* mangle.c (maybe_check_abi_tags): Likewise.
+	* parser.c (cp_parser_diagnose_invalid_type_name): Likewise.
+	(cp_parser_userdef_numeric_literal): Likewise.
+	(cp_parser_primary_expression): Likewise.
+	(cp_parser_unqualified_id): Likewise.
+	(cp_parser_pseudo_destructor_name): Likewise.
+	(cp_parser_builtin_offsetof): Likewise.
+	(cp_parser_lambda_expression): Likewise.
+	(cp_parser_lambda_introducer): Likewise.
+	(cp_parser_lambda_declarator_opt): Likewise.
+	(cp_parser_selection_statement): Likewise.
+	(cp_parser_init_statement): Likewise.
+	(cp_parser_decomposition_declaration): Likewise.
+	(cp_parser_function_specifier_opt): Likewise.
+	(cp_parser_static_assert): Likewise.
+	(cp_parser_simple_type_specifier): Likewise.
+	(cp_parser_namespace_definition): Likewise.
+	(cp_parser_using_declaration): Likewise.
+	(cp_parser_ctor_initializer_opt_and_function_body): Likewise.
+	(cp_parser_initializer_list): Likewise.
+	(cp_parser_type_parameter_key): Likewise.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_try_block): Likewise.
+	(cp_parser_std_attribute_spec): Likewise.
+	(cp_parser_requires_clause_opt): Likewise.
+	* pt.c (check_template_variable): Likewise.
+	(check_default_tmpl_args): Likewise.
+	(push_tinst_level_loc): Likewise.
+	(instantiate_pending_templates): Likewise.
+	(invalid_nontype_parm_type_p): Likewise.
+	* repo.c (get_base_filename): Likewise.
+	* rtti.c (typeid_ok_p): Likewise.
+	(build_dynamic_cast_1): Likewise.
+	* tree.c (maybe_warn_parm_abi): Likewise.
+
 2019-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/80058

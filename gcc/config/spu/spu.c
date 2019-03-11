@@ -259,7 +259,7 @@ spu_option_override (void)
       else if (strcmp (&spu_arch_string[0], "celledp") == 0)
         spu_arch = PROCESSOR_CELLEDP;
       else
-        error ("bad value (%s) for -march= switch", spu_arch_string);
+	error ("bad value (%s) for %<-march=%> switch", spu_arch_string);
     }
 
   /* Determine processor to tune for.  */
@@ -270,7 +270,7 @@ spu_option_override (void)
       else if (strcmp (&spu_tune_string[0], "celledp") == 0)
         spu_tune = PROCESSOR_CELLEDP;
       else
-        error ("bad value (%s) for -mtune= switch", spu_tune_string);
+	error ("bad value (%s) for %<-mtune=%> switch", spu_tune_string);
     }
 
   /* Change defaults according to the processor architecture.  */
@@ -4917,7 +4917,7 @@ fix_range (const char *const_str)
       dash = strchr (str, '-');
       if (!dash)
 	{
-	  warning (0, "value of -mfixed-range must have form REG1-REG2");
+	  warning (0, "value of %<-mfixed-range%> must have form REG1-REG2");
 	  return;
 	}
       *dash = '\0';

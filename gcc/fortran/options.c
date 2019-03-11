@@ -263,7 +263,7 @@ gfc_post_options (const char **pfilename)
   /* Excess precision other than "fast" requires front-end
      support.  */
   if (flag_excess_precision_cmdline == EXCESS_PRECISION_STANDARD)
-    sorry ("-fexcess-precision=standard for Fortran");
+    sorry ("%<-fexcess-precision=standard%> for Fortran");
   flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;
 
   /* Fortran allows associative math - but we cannot reassociate if

@@ -3553,8 +3553,8 @@ parse_mtune_ctrl_str (bool dump)
             }
         }
       if (i == X86_TUNE_LAST)
-        error ("unknown parameter to option -mtune-ctrl: %s",
-               clear ? curr_feature_string - 1 : curr_feature_string);
+	error ("unknown parameter to option %<-mtune-ctrl%>: %s",
+	       clear ? curr_feature_string - 1 : curr_feature_string);
       curr_feature_string = next_feature_string;
     }
   while (curr_feature_string);
@@ -3750,7 +3750,7 @@ ix86_option_override_internal (bool main_args_p,
       && !TARGET_64BIT_P (opts->x_ix86_isa_flags))
     {
       /* rep; movq isn't available in 32-bit code.  */
-      error ("-mstringop-strategy=rep_8byte not supported for 32-bit code");
+      error ("%<-mstringop-strategy=rep_8byte%> not supported for 32-bit code");
       opts->x_ix86_stringop_alg = no_stringop;
     }
 
@@ -3779,7 +3779,7 @@ ix86_option_override_internal (bool main_args_p,
     opts->x_ix86_abi = DEFAULT_ABI;
 
   if (opts->x_ix86_abi == MS_ABI && TARGET_X32_P (opts->x_ix86_isa_flags))
-    error ("-mabi=ms not supported with X32 ABI");
+    error ("%<-mabi=ms%> not supported with X32 ABI");
   gcc_assert (opts->x_ix86_abi == SYSV_ABI || opts->x_ix86_abi == MS_ABI);
 
   if ((opts->x_flag_sanitize & SANITIZE_USER_ADDRESS) && opts->x_ix86_abi == MS_ABI)
@@ -3871,7 +3871,7 @@ ix86_option_override_internal (bool main_args_p,
     }
   if (TARGET_MACHO && opts->x_ix86_asm_dialect == ASM_INTEL)
     {
-      error ("-masm=intel not supported in this configuration");
+      error ("%<-masm=intel%> not supported in this configuration");
       opts->x_ix86_asm_dialect = ASM_ATT;
     }
   if ((TARGET_64BIT_P (opts->x_ix86_isa_flags) != 0)
@@ -4326,12 +4326,12 @@ ix86_option_override_internal (bool main_args_p,
   if (opts_set->x_ix86_regparm)
     {
       if (TARGET_64BIT_P (opts->x_ix86_isa_flags))
-	warning (0, "-mregparm is ignored in 64-bit mode");
+	warning (0, "%<-mregparm%> is ignored in 64-bit mode");
       else if (TARGET_IAMCU_P (opts->x_target_flags))
-	warning (0, "-mregparm is ignored for Intel MCU psABI");
+	warning (0, "%<-mregparm%> is ignored for Intel MCU psABI");
       if (opts->x_ix86_regparm > REGPARM_MAX)
 	{
-	  error ("-mregparm=%d is not between 0 and %d",
+	  error ("%<-mregparm=%d%> is not between 0 and %d",
 		 opts->x_ix86_regparm, REGPARM_MAX);
 	  opts->x_ix86_regparm = 0;
 	}
@@ -4439,10 +4439,10 @@ ix86_option_override_internal (bool main_args_p,
 	  || opts->x_ix86_preferred_stack_boundary_arg > max)
 	{
 	  if (min == max)
-	    error ("-mpreferred-stack-boundary is not supported "
+	    error ("%<-mpreferred-stack-boundary%> is not supported "
 		   "for this target");
 	  else
-	    error ("-mpreferred-stack-boundary=%d is not between %d and %d",
+	    error ("%<-mpreferred-stack-boundary=%d%> is not between %d and %d",
 		   opts->x_ix86_preferred_stack_boundary_arg, min, max);
 	}
       else
@@ -4465,7 +4465,7 @@ ix86_option_override_internal (bool main_args_p,
 
       if (opts->x_ix86_incoming_stack_boundary_arg < min
 	  || opts->x_ix86_incoming_stack_boundary_arg > 12)
-	error ("-mincoming-stack-boundary=%d is not between %d and 12",
+	error ("%<-mincoming-stack-boundary=%d%> is not between %d and 12",
 	       opts->x_ix86_incoming_stack_boundary_arg, min);
       else
 	{
@@ -4478,10 +4478,10 @@ ix86_option_override_internal (bool main_args_p,
 
 #ifndef NO_PROFILE_COUNTERS
   if (flag_nop_mcount)
-    error ("-mnop-mcount is not compatible with this target");
+    error ("%<-mnop-mcount%> is not compatible with this target");
 #endif
   if (flag_nop_mcount && flag_pic)
-    error ("-mnop-mcount is not implemented for -fPIC");
+    error ("%<-mnop-mcount%> is not implemented for %<-fPIC%>");
 
   /* Accept -msseregparm only if at least SSE support is enabled.  */
   if (TARGET_SSEREGPARM_P (opts->x_target_flags)
@@ -4683,14 +4683,14 @@ ix86_option_override_internal (bool main_args_p,
     {
       if (!TARGET_64BIT_P (opts->x_ix86_isa_flags) && opts->x_flag_pic
 	  && opts->x_flag_fentry)
-	sorry ("-mfentry isn%'t supported for 32-bit in combination "
-	       "with -fpic");
+	sorry ("%<-mfentry%> isn%'t supported for 32-bit in combination "
+	       "with %<-fpic%>");
       else if (TARGET_SEH && !opts->x_flag_fentry)
-	sorry ("-mno-fentry isn%'t compatible with SEH");
+	sorry ("%<-mno-fentry%> isn%'t compatible with SEH");
     }
 
   if (TARGET_SEH && TARGET_CALL_MS2SYSV_XLOGUES)
-    sorry ("-mcall-ms2sysv-xlogues isn%'t currently supported with SEH");
+    sorry ("%<-mcall-ms2sysv-xlogues%> isn%'t currently supported with SEH");
 
   if (!(opts_set->x_target_flags & MASK_VZEROUPPER)
       && TARGET_EMIT_VZEROUPPER)
@@ -4755,7 +4755,7 @@ ix86_option_override_internal (bool main_args_p,
 
 	      if (i == ARRAY_SIZE (recip_options))
 		{
-		  error ("unknown option for -mrecip=%s", q);
+		  error ("unknown option for %<-mrecip=%s%>", q);
 		  invert = false;
 		  mask = RECIP_MASK_NONE;
 		}
@@ -4815,12 +4815,12 @@ ix86_option_override_internal (bool main_args_p,
 
       if (!*str || *endp || errno)
 	error ("%qs is not a valid number "
-	       "in -mstack-protector-guard-offset=", str);
+	       "in %<-mstack-protector-guard-offset=%>", str);
 
       if (!IN_RANGE (offset, HOST_WIDE_INT_C (-0x80000000),
 		     HOST_WIDE_INT_C (0x7fffffff)))
 	error ("%qs is not a valid offset "
-	       "in -mstack-protector-guard-offset=", str);
+	       "in %<-mstack-protector-guard-offset=%>", str);
 
       opts->x_ix86_stack_protector_guard_offset = offset;
     }
@@ -4848,7 +4848,7 @@ ix86_option_override_internal (bool main_args_p,
 
       if (seg == ADDR_SPACE_GENERIC)
 	error ("%qs is not a valid base register "
-	       "in -mstack-protector-guard-reg=",
+	       "in %<-mstack-protector-guard-reg=%>",
 	       opts->x_ix86_stack_protector_guard_reg_str);
 
       opts->x_ix86_stack_protector_guard_reg = seg;
@@ -11336,7 +11336,7 @@ static void warn_once_call_ms2sysv_xlogues (const char *feature)
   static bool warned_once = false;
   if (!warned_once)
     {
-      warning (0, "-mcall-ms2sysv-xlogues is not compatible with %s",
+      warning (0, "%<-mcall-ms2sysv-xlogues%> is not compatible with %s",
 	       feature);
       warned_once = true;
     }
@@ -13336,7 +13336,7 @@ ix86_expand_prologue (void)
          prologue variant. If so sorry.  */
       if (crtl->profile && flag_fentry != 0)
         sorry ("ms_hook_prologue attribute isn%'t compatible "
-	       "with -mfentry for 32-bit");
+	       "with %<-mfentry%> for 32-bit");
 
       /* In ix86_asm_output_function_label we emitted:
 	 8b ff     movl.s %edi,%edi
@@ -14715,7 +14715,7 @@ split_stack_prologue_scratch_regno (void)
 	{
 	  if (DECL_STATIC_CHAIN (cfun->decl))
 	    {
-	      sorry ("-fsplit-stack does not support fastcall with "
+	      sorry ("%<-fsplit-stack%> does not support fastcall with "
 		     "nested function");
 	      return INVALID_REGNUM;
 	    }
@@ -14735,7 +14735,7 @@ split_stack_prologue_scratch_regno (void)
 	    {
 	      if (regparm >= 2)
 		{
-		  sorry ("-fsplit-stack does not support 2 register "
+		  sorry ("%<-fsplit-stack%> does not support 2 register "
 			 "parameters for a nested function");
 		  return INVALID_REGNUM;
 		}
@@ -14746,7 +14746,7 @@ split_stack_prologue_scratch_regno (void)
 	{
 	  /* FIXME: We could make this work by pushing a register
 	     around the addition and comparison.  */
-	  sorry ("-fsplit-stack does not support 3 register parameters");
+	  sorry ("%<-fsplit-stack%> does not support 3 register parameters");
 	  return INVALID_REGNUM;
 	}
     }
@@ -29779,7 +29779,7 @@ ix86_warn_parameter_passing_abi (cumulative_args_t cum_v, tree type)
     return;
 
   warning (OPT_Wabi, "empty class %qT parameter passing ABI "
-	   "changes in -fabi-version=12 (GCC 8)", type);
+	   "changes in %<-fabi-version=12%> (GCC 8)", type);
 
   /* Only warn once.  */
   cum->warn_empty = false;

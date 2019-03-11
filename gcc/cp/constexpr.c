@@ -4243,7 +4243,7 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
 	  if (!ctx->quiet)
 	    error_at (cp_expr_loc_or_loc (t, input_location),
 		      "%<constexpr%> loop iteration count exceeds limit of %d "
-		      "(use -fconstexpr-loop-limit= to increase the limit)",
+		      "(use %<-fconstexpr-loop-limit=%> to increase the limit)",
 		      constexpr_loop_limit);
 	  *non_constant_p = true;
 	  break;

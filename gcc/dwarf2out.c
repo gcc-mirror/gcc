@@ -10982,8 +10982,8 @@ output_dwarf_version ()
       static bool once;
       if (!once)
 	{
-	  warning (0,
-		   "-gdwarf-6 is output as version 5 with incompatibilities");
+	  warning (0, "%<-gdwarf-6%> is output as version 5 with "
+		   "incompatibilities");
 	  once = true;
 	}
       dw2_asm_output_data (2, 5, "DWARF version number");

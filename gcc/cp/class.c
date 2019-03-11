@@ -3330,7 +3330,7 @@ check_field_decl (tree field,
 	  if (!warned && errorcount > oldcount)
 	    {
 	      inform (DECL_SOURCE_LOCATION (field), "unrestricted unions "
-		      "only available with -std=c++11 or -std=gnu++11");
+		      "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	      warned = true;
 	    }
 	}
@@ -4143,11 +4143,12 @@ layout_nonempty_base_or_field (record_layout_info rli,
 	    {
 	      if (abi_version_at_least (9))
 		warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wabi,
-			    "alignment of %qD increased in -fabi-version=9 "
+			    "alignment of %qD increased in %<-fabi-version=9%> "
 			    "(GCC 5.2)", decl);
 	      else
 		warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wabi, "alignment "
-			    "of %qD will increase in -fabi-version=9", decl);
+			    "of %qD will increase in %<-fabi-version=9%>",
+			    decl);
 	    }
 	  break;
 	}

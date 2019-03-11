@@ -2256,7 +2256,7 @@ xtensa_option_override (void)
   /* Check PIC settings.  PIC is only supported when using L32R
      instructions, and some targets need to always use PIC.  */
   if (flag_pic && TARGET_CONST16)
-    error ("-f%s is not supported with CONST16 instructions",
+    error ("%<-f%s%> is not supported with CONST16 instructions",
 	   (flag_pic > 1 ? "PIC" : "pic"));
   else if (TARGET_FORCE_NO_PIC)
     flag_pic = 0;

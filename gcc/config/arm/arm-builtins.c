@@ -2514,7 +2514,7 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
     {
       fatal_error (input_location,
 		   "You must enable NEON instructions"
-		   " (e.g. -mfloat-abi=softfp -mfpu=neon)"
+		   " (e.g. %<-mfloat-abi=softfp%> %<-mfpu=neon%>)"
 		   " to use these intrinsics.");
       return const0_rtx;
     }
@@ -2612,7 +2612,8 @@ arm_expand_builtin (tree exp,
     {
       fatal_error (input_location,
 		   "You must enable crypto instructions"
-		   " (e.g. include -mfloat-abi=softfp -mfpu=crypto-neon...)"
+		   " (e.g. include %<-mfloat-abi=softfp%> "
+		   "%<-mfpu=crypto-neon%>)"
 		   " to use these intrinsics.");
       return const0_rtx;
     }

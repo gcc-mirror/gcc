@@ -1,3 +1,9 @@
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* lto-lang.c (lto_post_options): Wrap an option name
+	in a string format message and fix GNU coding style.
+	* lto-symtab.c (lto_symtab_merge_decls_2): Likewise.
+
 2019-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/79645

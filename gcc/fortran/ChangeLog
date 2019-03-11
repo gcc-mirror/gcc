@@ -1,3 +1,14 @@
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* decl.c (match_record_decl): Wrap an option name
+	in a string format message and fix GNU coding style.
+	(gfc_match_pointer): Likewise.
+	* expr.c (find_array_section): Likewise.
+	* intrinsic.c (gfc_is_intrinsic): Likewise.
+	* options.c (gfc_post_options): Likewise.
+	* primary.c (match_integer_constant): Likewise.
+	* trans-common.c (translate_common): Likewise.
+
 2019-03-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/66089

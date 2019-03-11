@@ -458,7 +458,7 @@ arm_parse_fpu_option (const char *opt)
 	return all_fpus + i;
     }
 
-  error_at (input_location, "unrecognized -mfpu target: %s", opt);
+  error_at (input_location, "unrecognized %<-mfpu%> target: %s", opt);
   arm_print_hint_for_fpu_option (opt);
   return NULL;
 }

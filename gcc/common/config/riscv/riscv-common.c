@@ -250,7 +250,7 @@ riscv_subset_list::parsing_subset_version (const char *p,
 		}
 	      else
 		{
-		  error_at (m_loc, "-march=%s: Expect number after `%dp'.",
+		  error_at (m_loc, "%<-march=%s%>: Expect number after `%dp'.",
 			    m_arch, version);
 		  return NULL;
 		}
@@ -326,8 +326,8 @@ riscv_subset_list::parse_std_ext (const char *p)
 
       if (m_xlen > 32)
 	{
-	  error_at (m_loc, "-march=%s: rv%de is not a valid base ISA", m_arch,
-		    m_xlen);
+	  error_at (m_loc, "%<-march=%s%>: rv%de is not a valid base ISA",
+		    m_arch, m_xlen);
 	  return NULL;
 	}
       break;
@@ -348,8 +348,8 @@ riscv_subset_list::parse_std_ext (const char *p)
       break;
 
     default:
-      error_at (m_loc, "-march=%s: first ISA subset must be `e', `i' or `g'",
-		m_arch);
+      error_at (m_loc, "%<-march=%s%>: first ISA subset must be `e', "
+		"`i' or `g'", m_arch);
       return NULL;
     }
 
@@ -375,12 +375,12 @@ riscv_subset_list::parse_std_ext (const char *p)
       if (std_ext != *std_exts)
 	{
 	  if (strchr (all_std_exts, std_ext) == NULL)
-	    error_at (m_loc, "-march=%s: unsupported ISA subset `%c'",
+	    error_at (m_loc, "%<-march=%s%>: unsupported ISA subset `%c'",
 		      m_arch, *p);
 	  else
 	    error_at (m_loc,
-		      "-march=%s: ISA string is not in canonical order. `%c'",
-		      m_arch, *p);
+		      "%<-march=%s%>: ISA string is not in canonical order. "
+		      "`%c'", m_arch, *p);
 	  return NULL;
 	}
 
@@ -455,7 +455,7 @@ riscv_subset_list::parse_sv_or_non_std_ext (const char *p,
 
       if (*p != '\0' && *p != '_')
 	{
-	  error_at (m_loc, "-march=%s: %s must separate with _",
+	  error_at (m_loc, "%<-march=%s%>: %s must separate with _",
 		    m_arch, ext_type_str);
 	  return NULL;
 	}
@@ -483,7 +483,7 @@ riscv_subset_list::parse (const char *arch, location_t loc)
     }
   else
     {
-      error_at (loc, "-march=%s: ISA string must begin with rv32 or rv64",
+      error_at (loc, "%<-march=%s%>: ISA string must begin with rv32 or rv64",
 		arch);
       goto fail;
     }

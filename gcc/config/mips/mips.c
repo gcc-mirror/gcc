@@ -11951,7 +11951,7 @@ static void
 mips_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
 {
   if (TARGET_MIPS16)
-    sorry ("-fstack-check=specific not implemented for MIPS16");
+    sorry ("%<-fstack-check=specific%> not implemented for MIPS16");
 
   /* See if we have a constant small number of probes to generate.  If so,
      that's the easy case.  */
@@ -19598,7 +19598,7 @@ mips_set_compression_mode (unsigned int compression_mode)
 	sorry ("MIPS16 PIC for ABIs other than o32 and o64");
 
       if (TARGET_XGOT)
-	sorry ("MIPS16 -mxgot code");
+	sorry ("MIPS16 %<-mxgot%> code");
 
       if (TARGET_HARD_FLOAT_ABI && !TARGET_OLDABI)
 	sorry ("hard-float MIPS16 code for ABIs other than o32 and o64");

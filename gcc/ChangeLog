@@ -1,3 +1,140 @@
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* builtins.c (expand_builtin_thread_pointer): Wrap an option name
+	in a string format message and fix GNU coding style.
+	(expand_builtin_set_thread_pointer): Likewise.
+	* common/config/aarch64/aarch64-common.c (aarch64_rewrite_selected_cpu): Likewise.
+	* common/config/alpha/alpha-common.c (alpha_handle_option): Likewise.
+	* common/config/arc/arc-common.c (arc_handle_option): Likewise.
+	* common/config/arm/arm-common.c (arm_parse_fpu_option): Likewise.
+	* common/config/bfin/bfin-common.c (bfin_handle_option): Likewise.
+	* common/config/i386/i386-common.c (ix86_handle_option): Likewise.
+	* common/config/ia64/ia64-common.c (ia64_handle_option): Likewise.
+	* common/config/m68k/m68k-common.c (m68k_handle_option): Likewise.
+	* common/config/msp430/msp430-common.c (msp430_handle_option): Likewise.
+	* common/config/nds32/nds32-common.c (nds32_handle_option): Likewise.
+	* common/config/powerpcspe/powerpcspe-common.c (rs6000_handle_option): Likewise.
+	* common/config/riscv/riscv-common.c (riscv_subset_list::parsing_subset_version): Likewise.
+	(riscv_subset_list::parse_std_ext): Likewise.
+	(riscv_subset_list::parse_sv_or_non_std_ext): Likewise.
+	(riscv_subset_list::parse): Likewise.
+	* common/config/rs6000/rs6000-common.c (rs6000_handle_option): Likewise.
+	* config/aarch64/aarch64.c (aarch64_parse_one_option_token): Likewise.
+	(aarch64_override_options_internal): Likewise.
+	(aarch64_validate_mcpu): Likewise.
+	(aarch64_validate_march): Likewise.
+	(aarch64_validate_mtune): Likewise.
+	(aarch64_override_options): Likewise.
+	* config/alpha/alpha.c (alpha_option_override): Likewise.
+	* config/arc/arc.c (arc_init): Likewise.
+	(parse_mrgf_banked_regs_option): Likewise.
+	(arc_override_options): Likewise.
+	(arc_expand_builtin_aligned): Likewise.
+	* config/arm/arm-builtins.c (arm_expand_neon_builtin): Likewise.
+	(arm_expand_builtin): Likewise.
+	* config/arm/arm.c (arm_option_check_internal): Likewise.
+	(arm_configure_build_target): Likewise.
+	(arm_option_override): Likewise.
+	(arm_options_perform_arch_sanity_checks): Likewise.
+	(arm_handle_cmse_nonsecure_entry): Likewise.
+	(arm_handle_cmse_nonsecure_call): Likewise.
+	(arm_tls_referenced_p): Likewise.
+	(thumb1_expand_prologue): Likewise.
+	* config/avr/avr.c (avr_option_override): Likewise.
+	* config/bfin/bfin.c (bfin_option_override): Likewise.
+	* config/c6x/c6x.c (c6x_option_override): Likewise.
+	* config/cr16/cr16.c (cr16_override_options): Likewise.
+	* config/cris/cris.c (cris_option_override): Likewise.
+	* config/csky/csky.c (csky_handle_isr_attribute): Likewise.
+	* config/darwin-c.c (macosx_version_as_macro): Likewise.
+	* config/darwin.c (darwin_override_options): Likewise.
+	* config/frv/frv.c (frv_expand_builtin): Likewise.
+	* config/h8300/h8300.c (h8300_option_override): Likewise.
+	* config/i386/i386.c (parse_mtune_ctrl_str): Likewise.
+	(ix86_option_override_internal): Likewise.
+	(warn_once_call_ms2sysv_xlogues): Likewise.
+	(ix86_expand_prologue): Likewise.
+	(split_stack_prologue_scratch_regno): Likewise.
+	(ix86_warn_parameter_passing_abi): Likewise.
+	* config/ia64/ia64.c (fix_range): Likewise.
+	* config/m68k/m68k.c (m68k_option_override): Likewise.
+	* config/microblaze/microblaze.c (microblaze_option_override): Likewise.
+	* config/mips/mips.c (mips_emit_probe_stack_range): Likewise.
+	(mips_set_compression_mode): Likewise.
+	* config/mmix/mmix.c (mmix_option_override): Likewise.
+	* config/mn10300/mn10300.c (mn10300_option_override): Likewise.
+	* config/msp430/msp430.c (msp430_option_override): Likewise.
+	* config/nds32/nds32.c (nds32_option_override): Likewise.
+	* config/nios2/nios2.c (nios2_custom_check_insns): Likewise.
+	(nios2_option_override): Likewise.
+	(nios2_expand_custom_builtin): Likewise.
+	* config/nvptx/mkoffload.c (main): Likewise.
+	* config/nvptx/nvptx.c (diagnose_openacc_conflict): Likewise.
+	* config/pa/pa.c (fix_range): Likewise.
+	(pa_option_override): Likewise.
+	* config/riscv/riscv.c (riscv_parse_cpu): Likewise.
+	(riscv_option_override): Likewise.
+	* config/rl78/rl78.c (rl78_option_override): Likewise.
+	* config/rs6000/aix61.h: Likewise.
+	* config/rs6000/aix71.h: Likewise.
+	* config/rs6000/aix72.h: Likewise.
+	* config/rs6000/driver-rs6000.c (elf_platform): Likewise.
+	* config/rs6000/freebsd64.h: Likewise.
+	* config/rs6000/linux64.h: Likewise.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Likewise.
+	(rs6000_expand_zeroop_builtin): Likewise.
+	(rs6000_expand_mtfsb_builtin): Likewise.
+	(rs6000_expand_set_fpscr_rn_builtin): Likewise.
+	(rs6000_expand_set_fpscr_drn_builtin): Likewise.
+	(rs6000_invalid_builtin): Likewise.
+	(rs6000_expand_split_stack_prologue): Likewise.
+	* config/rs6000/rtems.h: Likewise.
+	* config/rx/rx.c (valid_psw_flag): Likewise.
+	(rx_expand_builtin): Likewise.
+	* config/s390/s390-c.c (s390_resolve_overloaded_builtin): Likewise.
+	* config/s390/s390.c (s390_expand_builtin): Likewise.
+	(s390_function_profiler): Likewise.
+	(s390_option_override_internal): Likewise.
+	(s390_option_override): Likewise.
+	* config/sh/sh.c (sh_option_override): Likewise.
+	(sh_builtin_saveregs): Likewise.
+	(sh_fix_range): Likewise.
+	* config/sh/vxworks.h: Likewise.
+	* config/sparc/sparc.c (sparc_option_override): Likewise.
+	* config/spu/spu.c (spu_option_override): Likewise.
+	(fix_range): Likewise.
+	* config/visium/visium.c (visium_option_override): Likewise.
+	(visium_handle_interrupt_attr): Likewise.
+	* config/xtensa/xtensa.c (xtensa_option_override): Likewise.
+	* dbgcnt.c (dbg_cnt_set_limit_by_name): Likewise.
+	(dbg_cnt_process_opt): Likewise.
+	* dwarf2out.c (output_dwarf_version): Likewise.
+	* except.c (expand_eh_return): Likewise.
+	* gcc.c (defined): Likewise.
+	(driver_handle_option): Likewise.
+	(process_command): Likewise.
+	(compare_files): Likewise.
+	(driver::prepare_infiles): Likewise.
+	(driver::do_spec_on_infiles): Likewise.
+	(driver::maybe_run_linker): Likewise.
+	* omp-offload.c (oacc_parse_default_dims): Likewise.
+	* opts-global.c (handle_common_deferred_options): Likewise.
+	* opts.c (parse_sanitizer_options): Likewise.
+	(common_handle_option): Likewise.
+	(enable_warning_as_error): Likewise.
+	* passes.c (enable_disable_pass): Likewise.
+	* plugin.c (parse_plugin_arg_opt): Likewise.
+	(default_plugin_dir_name): Likewise.
+	* targhooks.c (default_expand_builtin_saveregs): Likewise.
+	(default_pch_valid_p): Likewise.
+	* toplev.c (init_asm_output): Likewise.
+	(process_options): Likewise.
+	(toplev::run_self_tests): Likewise.
+	* tree-cfg.c (verify_gimple_call): Likewise.
+	* tree-inline.c (inline_forbidden_p_stmt): Likewise.
+	(tree_inlinable_function_p): Likewise.
+	* var-tracking.c (vt_find_locations): Likewise.
+
 2019-03-11  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/s390.c (s390_expand_builtin): Do the copy_to_reg not

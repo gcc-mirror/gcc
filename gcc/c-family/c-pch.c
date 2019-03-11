@@ -406,7 +406,8 @@ c_common_pch_pragma (cpp_reader *pfile, const char *name)
 
   if (!cpp_get_options (pfile)->preprocessed)
     {
-      error ("pch_preprocess pragma should only be used with -fpreprocessed");
+      error ("pch_preprocess pragma should only be used "
+	     "with %<-fpreprocessed%>");
       inform (input_location, "use #include instead");
       return;
     }
@@ -418,7 +419,7 @@ c_common_pch_pragma (cpp_reader *pfile, const char *name)
   if (c_common_valid_pch (pfile, name, fd) != 1)
     {
       if (!cpp_get_options (pfile)->warn_invalid_pch)
-	inform (input_location, "use -Winvalid-pch for more information");
+	inform (input_location, "use %<-Winvalid-pch%> for more information");
       fatal_error (input_location, "%s: PCH file was invalid", name);
     }
 

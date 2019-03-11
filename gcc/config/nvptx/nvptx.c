@@ -194,7 +194,7 @@ static void
 diagnose_openacc_conflict (bool optval, const char *optname)
 {
   if (flag_openacc && optval)
-    error ("option %s is not supported together with -fopenacc", optname);
+    error ("option %s is not supported together with %<-fopenacc%>", optname);
 }
 
 /* Implement TARGET_OPTION_OVERRIDE.  */

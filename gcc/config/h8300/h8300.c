@@ -326,7 +326,7 @@ h8300_option_override (void)
 #ifndef OBJECT_FORMAT_ELF
   if (TARGET_H8300SX)
     {
-      error ("-msx is not supported in coff");
+      error ("%<-msx%> is not supported in coff");
       target_flags |= MASK_H8300S;
     }
 #endif
@@ -348,44 +348,44 @@ h8300_option_override (void)
 
   if (!TARGET_H8300S && TARGET_MAC)
     {
-      error ("-ms2600 is used without -ms");
+      error ("%<-ms2600%> is used without %<-ms%>");
       target_flags |= MASK_H8300S_1;
     }
 
   if (TARGET_H8300 && TARGET_NORMAL_MODE)
     {
-      error ("-mn is used without -mh or -ms or -msx");
+      error ("%<-mn%> is used without %<-mh%> or %<-ms%> or %<-msx%>");
       target_flags ^= MASK_NORMAL_MODE;
     }
 
   if (! TARGET_H8300S &&  TARGET_EXR)
     {
-      error ("-mexr is used without -ms");
+      error ("%<-mexr%> is used without %<-ms%>");
       target_flags |= MASK_H8300S_1;
     }
 
   if (TARGET_H8300 && TARGET_INT32)
    {
-      error ("-mint32 is not supported for H8300 and H8300L targets");
+      error ("%<-mint32%> is not supported for H8300 and H8300L targets");
       target_flags ^= MASK_INT32;
    }
 
  if ((!TARGET_H8300S  &&  TARGET_EXR) && (!TARGET_H8300SX && TARGET_EXR))
    {
-      error ("-mexr is used without -ms or -msx");
+      error ("%<-mexr%> is used without %<-ms%> or %<-msx%>");
       target_flags |= MASK_H8300S_1;
    }
 
  if ((!TARGET_H8300S  &&  TARGET_NEXR) && (!TARGET_H8300SX && TARGET_NEXR))
    {
-      warning (OPT_mno_exr, "-mno-exr valid only with -ms or -msx    \
-               - Option ignored!");
+      warning (OPT_mno_exr, "%<-mno-exr%> valid only with %<-ms%> or "
+	       "%<-msx%> - Option ignored!");
    }
 
 #ifdef H8300_LINUX 
  if ((TARGET_NORMAL_MODE))
    {
-      error ("-mn is not supported for linux targets");
+      error ("%<-mn%> is not supported for linux targets");
       target_flags ^= MASK_NORMAL_MODE;
    }
 #endif

@@ -1923,7 +1923,7 @@ type_promotes_to (tree type)
 	  if (abi_version_crosses (6)
 	      && TYPE_MODE (prom) != TYPE_MODE (type))
 	    warning (OPT_Wabi, "scoped enum %qT passed through ... as "
-		     "%qT before -fabi-version=6, %qT after",
+		     "%qT before %<-fabi-version=6%>, %qT after",
 		     type, prom, ENUM_UNDERLYING_TYPE (type));
 	  if (!abi_version_at_least (6))
 	    type = prom;

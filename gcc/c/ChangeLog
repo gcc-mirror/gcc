@@ -1,3 +1,9 @@
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* c-decl.c (check_for_loop_decls): Wrap an option name
+	in a string format message and fix GNU coding style.
+	* c-parser.c (c_parser_declspecs): Likewise.
+
 2019-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/89550

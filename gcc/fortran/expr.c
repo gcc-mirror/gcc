@@ -1642,7 +1642,7 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
         {
 	  gfc_error ("The number of elements in the array constructor "
 		     "at %L requires an increase of the allowed %d "
-		     "upper limit.   See -fmax-array-constructor "
+		     "upper limit.  See %<-fmax-array-constructor%> "
 		     "option", &expr->where, flag_max_array_constructor);
 	  return false;
 	}
