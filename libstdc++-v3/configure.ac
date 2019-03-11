@@ -268,6 +268,9 @@ if $GLIBCXX_IS_NATIVE; then
   # C11 functions for C++17 library
   AC_CHECK_FUNCS(timespec_get)
 
+  # For Networking TS.
+  AC_CHECK_FUNCS(sockatmark)
+
   # For iconv support.
   AM_ICONV
 

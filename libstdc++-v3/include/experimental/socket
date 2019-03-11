@@ -794,7 +794,7 @@ inline namespace v1
       bool
       at_mark(error_code& __ec) const
       {
-#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
+#ifdef _GLIBCXX_HAVE_SOCKATMARK
 	const int __result = ::sockatmark(native_handle());
 	if (__result == -1)
 	  {
