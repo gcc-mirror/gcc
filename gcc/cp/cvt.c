@@ -1822,7 +1822,7 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 	  if (TREE_CODE (cand) == TEMPLATE_DECL)
 	    {
 	      if (complain)
-		error ("default type conversion can't deduce template"
+		error ("default type conversion can%'t deduce template"
 		       " argument for %qD", cand);
 	      return error_mark_node;
 	    }

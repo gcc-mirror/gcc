@@ -1,5 +1,10 @@
 2019-03-11  Martin Liska  <mliska@suse.cz>
 
+	* c-opts.c (c_common_post_options): Wrap apostrophes
+	in gcc internal format with %'.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
 	* c-attribs.c (handle_nocf_check_attribute): Wrap an option name
 	in a string format message and fix GNU coding style.
 	* c-common.c (vector_types_convertible_p): Likewise.

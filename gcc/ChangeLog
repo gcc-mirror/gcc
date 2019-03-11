@@ -1,5 +1,22 @@
 2019-03-11  Martin Liska  <mliska@suse.cz>
 
+	* collect-utils.c (collect_wait): Wrap apostrophes
+	in gcc internal format with %'.
+	* collect2.c (main): Likewise.
+	(scan_prog_file): Likewise.
+	(scan_libraries): Likewise.
+	* config/i386/i386.c (ix86_expand_call): Likewise.
+	(ix86_handle_interrupt_attribute): Likewise.
+	* config/nds32/nds32-intrinsic.c (nds32_expand_builtin_impl): Likewise.
+	* config/nds32/nds32.c (nds32_insert_attributes): Likewise.
+	* config/rl78/rl78.c (rl78_handle_saddr_attribute): Likewise.
+	* lto-wrapper.c (find_crtoffloadtable): Likewise.
+	* symtab.c (symtab_node::verify_base): Likewise.
+	* tree-cfg.c (verify_gimple_label): Likewise.
+	* tree.c (verify_type_variant): Likewise.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
 	* builtins.c (expand_builtin_thread_pointer): Wrap an option name
 	in a string format message and fix GNU coding style.
 	(expand_builtin_set_thread_pointer): Likewise.

@@ -6364,7 +6364,7 @@ unify_parameter_deduction_failure (bool explain_p, tree parm)
 {
   if (explain_p)
     inform (input_location,
-	    "  couldn't deduce template parameter %qD", parm);
+	    "  couldn%'t deduce template parameter %qD", parm);
   return unify_invalid (explain_p);
 }
 
@@ -6540,7 +6540,7 @@ unify_template_deduction_failure (bool explain_p, tree parm, tree arg)
 {
   if (explain_p)
     inform (input_location,
-	    "  can't deduce a template for %qT from non-template type %qT",
+	    "  can%'t deduce a template for %qT from non-template type %qT",
 	    parm, arg);
   return unify_invalid (explain_p);
 }

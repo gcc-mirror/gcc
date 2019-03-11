@@ -1,5 +1,15 @@
 2019-03-11  Martin Liska  <mliska@suse.cz>
 
+	* cvt.c (build_expr_type_conversion): Wrap apostrophes
+	in gcc internal format with %'.
+	* decl.c (check_no_redeclaration_friend_default_args): Likewise.
+	(grokfndecl): Likewise.
+	* name-lookup.c (do_pushtag): Likewise.
+	* pt.c (unify_parameter_deduction_failure): Likewise.
+	(unify_template_deduction_failure): Likewise.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
 	* call.c (convert_arg_to_ellipsis): Wrap an option name
 	in a string format message and fix GNU coding style.
 	(build_over_call): Likewise.

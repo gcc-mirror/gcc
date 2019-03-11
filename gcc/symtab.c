@@ -1155,7 +1155,7 @@ symtab_node::verify_base (void)
     }
   if (implicit_section && !get_section ())
     {
-      error ("implicit_section flag is set but section isn't");
+      error ("implicit_section flag is set but section isn%'t");
       error_found = true;
     }
   if (get_section () && get_comdat_group ()
@@ -1174,14 +1174,14 @@ symtab_node::verify_base (void)
 	  || strcmp (get_section(),
 		     get_alias_target ()->get_section ())))
     {
-      error ("Alias and target's section differs");
+      error ("Alias and target%'s section differs");
       get_alias_target ()->dump (stderr);
       error_found = true;
     }
   if (alias && definition
       && get_comdat_group () != get_alias_target ()->get_comdat_group ())
     {
-      error ("Alias and target's comdat groups differs");
+      error ("Alias and target%'s comdat groups differs");
       get_alias_target ()->dump (stderr);
       error_found = true;
     }
@@ -1196,7 +1196,7 @@ symtab_node::verify_base (void)
 	    ultimate_transparent_alias_target (DECL_ASSEMBLER_NAME (to->decl)));
       if (!symbol_table::assembler_names_equal_p (name1, name2))
 	{
-	  error ("Transparent alias and target's assembler names differs");
+	  error ("Transparent alias and target%'s assembler names differs");
 	  get_alias_target ()->dump (stderr);
 	  error_found = true;
 	}
