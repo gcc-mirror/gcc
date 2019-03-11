@@ -6073,8 +6073,10 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 
       if (!side_effects_p (op2))
 	{
-	  rtx top0 = simplify_merge_mask (op0, op2, 0);
-	  rtx top1 = simplify_merge_mask (op1, op2, 1);
+	  rtx top0
+	    = may_trap_p (op0) ? NULL_RTX : simplify_merge_mask (op0, op2, 0);
+	  rtx top1
+	    = may_trap_p (op1) ? NULL_RTX : simplify_merge_mask (op1, op2, 1);
 	  if (top0 || top1)
 	    return simplify_gen_ternary (code, mode, mode,
 					 top0 ? top0 : op0,

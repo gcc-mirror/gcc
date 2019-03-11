@@ -842,17 +842,16 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 	    {
 	      class_type->odr_violated = true;
 	      auto_diagnostic_group d;
-	      if (warning_at (DECL_SOURCE_LOCATION
-				(TYPE_NAME (DECL_CONTEXT (vtable->decl))),
-			      OPT_Wodr,
+	      tree ctx = TYPE_NAME (DECL_CONTEXT (vtable->decl));
+	      if (warning_at (DECL_SOURCE_LOCATION (ctx), OPT_Wodr,
 			      "virtual table of type %qD violates "
-			      "one definition rule  ",
+			      "one definition rule",
 			      DECL_CONTEXT (vtable->decl)))
 		{
-		  inform (DECL_SOURCE_LOCATION
-			    (TYPE_NAME (DECL_CONTEXT (prevailing->decl))),
-			  "the conflicting type defined in another translation "
-			  "unit has virtual table of different size");
+		  ctx = TYPE_NAME (DECL_CONTEXT (prevailing->decl));
+		  inform (DECL_SOURCE_LOCATION (ctx),
+			  "the conflicting type defined in another translation"
+			  " unit has virtual table of different size");
 		}
 	    }
 	  return;
@@ -1607,7 +1606,8 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 		if (DECL_BIT_FIELD (f1) != DECL_BIT_FIELD (f2))
 		  {
 		    warn_odr (t1, t2, f1, f2, warn, warned,
-			      G_("one field is bitfield while other is not"));
+			      G_("one field is a bitfield while the other "
+				 "is not"));
 		    return false;
 		  }
 		else

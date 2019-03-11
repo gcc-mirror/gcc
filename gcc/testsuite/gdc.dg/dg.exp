@@ -24,12 +24,12 @@ load_lib gdc-dg.exp
 
 if ![info exists TORTURE_OPTIONS] {
     set TORTURE_OPTIONS [list \
-        { -O0 } { -O1 } { -O2 } { -O3 } { -Os } \
-        { -O0 -frelease } { -O0 -g } { -O0 -frelease -g } \
-        { -O1 -frelease } { -O1 -g } { -O1 -frelease -g } \
-        { -O2 -frelease } { -O2 -g } { -O2 -frelease -g } \
-        { -O3 -frelease } { -O3 -g } { -O3 -frelease -g } \
-        { -Os -frelease } { -Os -g } { -Os -frelease -g }]
+	{ -O0 } { -O1 } { -O2 } { -O3 } { -Os } \
+	{ -O0 -frelease } { -O0 -g } { -O0 -frelease -g } \
+	{ -O1 -frelease } { -O1 -g } { -O1 -frelease -g } \
+	{ -O2 -frelease } { -O2 -g } { -O2 -frelease -g } \
+	{ -O3 -frelease } { -O3 -g } { -O3 -frelease -g } \
+	{ -Os -frelease } { -Os -g } { -Os -frelease -g }]
 }
 
 # Initialize `dg'.

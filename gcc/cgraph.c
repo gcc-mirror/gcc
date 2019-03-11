@@ -852,7 +852,10 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
       free_edges = NEXT_FREE_EDGE (edge);
     }
   else
-    edge = ggc_alloc<cgraph_edge> ();
+    {
+      edge = ggc_alloc<cgraph_edge> ();
+      edge->m_summary_id = -1;
+    }
 
   edges_count++;
 
@@ -1014,7 +1017,9 @@ symbol_table::free_edge (cgraph_edge *e)
     ggc_free (e->indirect_info);
 
   /* Clear out the edge so we do not dangle pointers.  */
+  int summary_id = e->m_summary_id;
   memset (e, 0, sizeof (*e));
+  e->m_summary_id = summary_id;
   NEXT_FREE_EDGE (e) = free_edges;
   free_edges = e;
   edges_count--;
@@ -2104,6 +2109,8 @@ cgraph_node::dump (FILE *f)
 	       (int)thunk.indirect_offset,
 	       (int)thunk.virtual_offset_p);
     }
+  else if (former_thunk_p ())
+    fprintf (f, "  Former thunk");
   if (alias && thunk.alias
       && DECL_P (thunk.alias))
     {
@@ -2958,7 +2965,9 @@ cgraph_node::collect_callers (void)
   return redirect_callers;
 }
 
-/* Return TRUE if NODE2 a clone of NODE or is equivalent to it.  */
+
+/* Return TRUE if NODE2 a clone of NODE or is equivalent to it.  Return
+   optimistically true if this cannot be determined.  */
 
 static bool
 clone_of_p (cgraph_node *node, cgraph_node *node2)
@@ -2970,12 +2979,17 @@ clone_of_p (cgraph_node *node, cgraph_node *node2)
   /* There are no virtual clones of thunks so check former_clone_of or if we
      might have skipped thunks because this adjustments are no longer
      necessary.  */
-  while (node->thunk.thunk_p)
+  while (node->thunk.thunk_p || node->former_thunk_p ())
     {
       if (node2->former_clone_of == node->decl)
 	return true;
       if (!node->thunk.this_adjusting)
 	return false;
+      /* In case of instrumented expanded thunks, which can have multiple calls
+	 in them, we do not know how to continue and just have to be
+	 optimistic.  */
+      if (node->callees->next_callee)
+	return true;
       node = node->callees->callee->ultimate_alias_target ();
       skipped_thunk = true;
     }
@@ -2991,7 +3005,7 @@ clone_of_p (cgraph_node *node, cgraph_node *node2)
 	return false;
     }
 
-  while (node != node2 && node2)
+  while (node2 && node->decl != node2->decl)
     node2 = node2->clone_of;
   return node2 != NULL;
 }
@@ -3235,14 +3249,14 @@ cgraph_node::verify_node (void)
 
   if (clone_of)
     {
-      cgraph_node *n;
-      for (n = clone_of->clones; n; n = n->next_sibling_clone)
-	if (n == this)
-	  break;
-      if (!n)
+      cgraph_node *first_clone = clone_of->clones;
+      if (first_clone != this)
 	{
-	  error ("cgraph_node has wrong clone_of");
-	  error_found = true;
+	  if (prev_sibling_clone->clone_of != clone_of)
+	    {
+	      error ("cgraph_node has wrong clone_of");
+	      error_found = true;
+	    }
 	}
     }
   if (clones)

@@ -1,5 +1,6 @@
-! { dg-do compile { target { i?86-*-linux* x86_64-*-linux* } } }
-! { dg-additional-options "-msse2 -mno-avx -nostdinc -Ofast -fdump-tree-optimized" }
+! { dg-do compile { target { i?86-*-linux* x86_64-*-linux* aarch64*-*-linux* } } }
+! { dg-additional-options "-nostdinc -Ofast -fdump-tree-optimized" }
+! { dg-additional-options "-msse2 -mno-avx" { target i?86-*-linux* x86_64-*-linux* } }
 
 !GCC$ builtin (sin) attributes simd (inbranch)
 !GCC$ builtin (sinf) attributes simd (notinbranch)
@@ -21,4 +22,5 @@ end
 
 ! { dg-final { scan-tree-dump "sinf.simdclone" "optimized" } } */
 ! { dg-final { scan-tree-dump "__builtin_sin" "optimized" } } */
-! { dg-final { scan-assembler "call.*_ZGVbN4v_sinf" } }
+! { dg-final { scan-assembler "call.*_ZGVbN4v_sinf" { target i?86-*-linux* x86_64-*-* } } }
+! { dg-final { scan-assembler "bl.*_ZGVnN4v_sinf" { target aarch64*-*-* } } }

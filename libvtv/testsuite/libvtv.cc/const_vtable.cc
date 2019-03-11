@@ -28,7 +28,7 @@ struct D : B, C {
   ~D(); 
 }; 
 extern "C" int printf(const char *,...); 
-main() 
+int main(int argc, char**argv) 
 {
   try {
     D *d = new D; 

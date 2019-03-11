@@ -19,7 +19,8 @@
 class Nspace : public ScopeDsymbol
 {
   public:
-    Nspace(Loc loc, Identifier *ident, Dsymbols *members);
+    bool mangleOnly;
+    Nspace(Loc loc, Identifier *ident, Dsymbols *members, bool mangleOnly);
 
     Dsymbol *syntaxCopy(Dsymbol *s);
     void addMember(Scope *sc, ScopeDsymbol *sds);

@@ -397,6 +397,7 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+FUNCTION_DESCRIPTORS = @FUNCTION_DESCRIPTORS@
 GOARCH = @GOARCH@
 GOC = @GOC@
 GOFLAGS = @GOFLAGS@
@@ -528,6 +529,8 @@ top_srcdir = @top_srcdir@
 # Go support.
 SUFFIXES = .c .go .gox .o .obj .lo .a
 @LIBGO_IS_RTEMS_TRUE@subdirs = testsuite
+@LIBGO_IS_DARWIN_FALSE@GO_EXPORT_SECTION_NAME = .go_export
+@LIBGO_IS_DARWIN_TRUE@GO_EXPORT_SECTION_NAME = __GNU_GO.__go_export
 SUBDIRS = ${subdirs}
 gcc_version := $(shell $(GOC) -dumpversion)
 MAINT_CHARSET = latin1
@@ -1000,7 +1003,7 @@ BUILDGOX = \
 	if test ! -f $$f; then \
 	  f="$(basename $(<D)/.libs/$(<F)).o"; \
 	fi; \
-	$(OBJCOPY) -j .go_export $$f $@.tmp; \
+	$(OBJCOPY) -j $(GO_EXPORT_SECTION_NAME) $$f $@.tmp; \
 	$(SHELL) $(srcdir)/mvifdiff.sh $@.tmp `echo $@ | sed -e 's/s-gox/gox/'`
 
 GOTESTFLAGS = 
@@ -2635,6 +2638,7 @@ s-cpu: Makefile
 	rm -f cpugen.go.tmp
 	echo "package cpu" > cpugen.go.tmp
 	echo "const CacheLinePadSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) cachelinesize`" >> cpugen.go.tmp
+	echo "const FunctionDescriptors = $(FUNCTION_DESCRIPTORS)" >> cpugen.go.tmp
 	$(SHELL) $(srcdir)/mvifdiff.sh cpugen.go.tmp cpugen.go
 	$(STAMP) $@
 

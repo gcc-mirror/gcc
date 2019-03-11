@@ -2793,6 +2793,193 @@ make_pass_insert_endbranch (gcc::context *ctxt)
   return new pass_insert_endbranch (ctxt);
 }
 
+/* At entry of the nearest common dominator for basic blocks with
+   conversions, generate a single
+	vxorps %xmmN, %xmmN, %xmmN
+   for all
+	vcvtss2sd  op, %xmmN, %xmmX
+	vcvtsd2ss  op, %xmmN, %xmmX
+	vcvtsi2ss  op, %xmmN, %xmmX
+	vcvtsi2sd  op, %xmmN, %xmmX
+
+   NB: We want to generate only a single vxorps to cover the whole
+   function.  The LCM algorithm isn't appropriate here since it may
+   place a vxorps inside the loop.  */
+
+static unsigned int
+remove_partial_avx_dependency (void)
+{
+  timevar_push (TV_MACH_DEP);
+
+  bitmap_obstack_initialize (NULL);
+  bitmap convert_bbs = BITMAP_ALLOC (NULL);
+
+  basic_block bb;
+  rtx_insn *insn, *set_insn;
+  rtx set;
+  rtx v4sf_const0 = NULL_RTX;
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      FOR_BB_INSNS (bb, insn)
+	{
+	  if (!NONDEBUG_INSN_P (insn))
+	    continue;
+
+	  set = single_set (insn);
+	  if (!set)
+	    continue;
+
+	  if (get_attr_avx_partial_xmm_update (insn)
+	      != AVX_PARTIAL_XMM_UPDATE_TRUE)
+	    continue;
+
+	  if (!v4sf_const0)
+	    {
+	      calculate_dominance_info (CDI_DOMINATORS);
+	      df_set_flags (DF_DEFER_INSN_RESCAN);
+	      df_chain_add_problem (DF_DU_CHAIN | DF_UD_CHAIN);
+	      df_md_add_problem ();
+	      df_analyze ();
+	      v4sf_const0 = gen_reg_rtx (V4SFmode);
+	    }
+
+	  /* Convert PARTIAL_XMM_UPDATE_TRUE insns, DF -> SF, SF -> DF,
+	     SI -> SF, SI -> DF, DI -> SF, DI -> DF, to vec_dup and
+	     vec_merge with subreg.  */
+	  rtx src = SET_SRC (set);
+	  rtx dest = SET_DEST (set);
+	  machine_mode dest_mode = GET_MODE (dest);
+
+	  rtx zero;
+	  machine_mode dest_vecmode;
+	  if (dest_mode == E_SFmode)
+	    {
+	      dest_vecmode = V4SFmode;
+	      zero = v4sf_const0;
+	    }
+	  else
+	    {
+	      dest_vecmode = V2DFmode;
+	      zero = gen_rtx_SUBREG (V2DFmode, v4sf_const0, 0);
+	    }
+
+	  /* Change source to vector mode.  */
+	  src = gen_rtx_VEC_DUPLICATE (dest_vecmode, src);
+	  src = gen_rtx_VEC_MERGE (dest_vecmode, src, zero,
+				   GEN_INT (HOST_WIDE_INT_1U));
+	  /* Change destination to vector mode.  */
+	  rtx vec = gen_reg_rtx (dest_vecmode);
+	  /* Generate an XMM vector SET.  */
+	  set = gen_rtx_SET (vec, src);
+	  set_insn = emit_insn_before (set, insn);
+	  df_insn_rescan (set_insn);
+
+	  src = gen_rtx_SUBREG (dest_mode, vec, 0);
+	  set = gen_rtx_SET (dest, src);
+
+	  /* Drop possible dead definitions.  */
+	  PATTERN (insn) = set;
+
+	  INSN_CODE (insn) = -1;
+	  recog_memoized (insn);
+	  df_insn_rescan (insn);
+	  bitmap_set_bit (convert_bbs, bb->index);
+	}
+    }
+
+  if (v4sf_const0)
+    {
+      /* (Re-)discover loops so that bb->loop_father can be used in the
+	 analysis below.  */
+      loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+
+      /* Generate a vxorps at entry of the nearest dominator for basic
+	 blocks with conversions, which is in the the fake loop that
+	 contains the whole function, so that there is only a single
+	 vxorps in the whole function.   */
+      bb = nearest_common_dominator_for_set (CDI_DOMINATORS,
+					     convert_bbs);
+      while (bb->loop_father->latch
+	     != EXIT_BLOCK_PTR_FOR_FN (cfun))
+	bb = get_immediate_dominator (CDI_DOMINATORS,
+				      bb->loop_father->header);
+
+      set = gen_rtx_SET (v4sf_const0, CONST0_RTX (V4SFmode));
+
+      insn = BB_HEAD (bb);
+      while (insn && !NONDEBUG_INSN_P (insn))
+	{
+	  if (insn == BB_END (bb))
+	    {
+	      insn = NULL;
+	      break;
+	    }
+	  insn = NEXT_INSN (insn);
+	}
+      if (insn == BB_HEAD (bb))
+        set_insn = emit_insn_before (set, insn);
+      else
+	set_insn = emit_insn_after (set,
+				    insn ? PREV_INSN (insn) : BB_END (bb));
+      df_insn_rescan (set_insn);
+      df_process_deferred_rescans ();
+      loop_optimizer_finalize ();
+    }
+
+  bitmap_obstack_release (NULL);
+  BITMAP_FREE (convert_bbs);
+
+  timevar_pop (TV_MACH_DEP);
+  return 0;
+}
+
+namespace {
+
+const pass_data pass_data_remove_partial_avx_dependency =
+{
+  RTL_PASS, /* type */
+  "rpad", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_MACH_DEP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_df_finish, /* todo_flags_finish */
+};
+
+class pass_remove_partial_avx_dependency : public rtl_opt_pass
+{
+public:
+  pass_remove_partial_avx_dependency (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_remove_partial_avx_dependency, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *)
+    {
+      return (TARGET_AVX
+	      && TARGET_SSE_PARTIAL_REG_DEPENDENCY
+	      && TARGET_SSE_MATH
+	      && optimize
+	      && optimize_function_for_speed_p (cfun));
+    }
+
+  virtual unsigned int execute (function *)
+    {
+      return remove_partial_avx_dependency ();
+    }
+}; // class pass_rpad
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_remove_partial_avx_dependency (gcc::context *ctxt)
+{
+  return new pass_remove_partial_avx_dependency (ctxt);
+}
+
 /* Return true if a red-zone is in use.  We can't use red-zone when
    there are local indirect jumps, like "indirect_jump" or "tablejump",
    which jumps to another place in the function, since "call" in the
@@ -4165,14 +4352,9 @@ ix86_option_override_internal (bool main_args_p,
       opts->x_target_flags
 	|= TARGET_SUBTARGET64_DEFAULT & ~opts_set->x_target_flags;
 
-      /* Enable by default the SSE and MMX builtins.  Do allow the user to
-	 explicitly disable any of these.  In particular, disabling SSE and
-	 MMX for kernel code is extremely useful.  */
       if (!ix86_arch_specified)
-      opts->x_ix86_isa_flags
-	|= ((OPTION_MASK_ISA_SSE2 | OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_MMX
-	     | TARGET_SUBTARGET64_ISA_DEFAULT)
-            & ~opts->x_ix86_isa_flags_explicit);
+	opts->x_ix86_isa_flags
+	  |= TARGET_SUBTARGET64_ISA_DEFAULT & ~opts->x_ix86_isa_flags_explicit;
 
       if (TARGET_RTD_P (opts->x_target_flags))
 	warning (0,
@@ -4711,6 +4893,12 @@ ix86_option_override_internal (bool main_args_p,
     maybe_set_param_value (PARAM_AVOID_FMA_MAX_BITS, 128,
 			   opts->x_param_values,
 			   opts_set->x_param_values);
+
+  /* PR86952: jump table usage with retpolines is slow.
+     The PR provides some numbers about the slowness.  */
+  if (ix86_indirect_branch != indirect_branch_keep
+      && !opts_set->x_flag_jump_tables)
+    opts->x_flag_jump_tables = 0;
 
   return true;
 }
@@ -5618,8 +5806,8 @@ ix86_set_func_type (tree fndecl)
 
 	  /* Only dwarf2out.c can handle -WORD(AP) as a pointer argument.  */
 	  if (write_symbols != NO_DEBUG && write_symbols != DWARF2_DEBUG)
-	    sorry ("Only DWARF debug format is supported for interrupt "
-		   "service routine.");
+	    sorry ("only DWARF debug format is supported for interrupt "
+		   "service routine");
 	}
       else
 	{
@@ -5672,6 +5860,11 @@ ix86_set_indirect_branch_type (tree fndecl)
 	       ((cfun->machine->indirect_branch_type
 		 == indirect_branch_thunk_extern)
 		? "thunk-extern" : "thunk"));
+
+      if (cfun->machine->indirect_branch_type != indirect_branch_keep
+	  && (flag_cf_protection & CF_RETURN))
+	error ("%<-mindirect-branch%> and %<-fcf-protection%> are not "
+	       "compatible");
     }
 
   if (cfun->machine->function_return_type == indirect_branch_unset)
@@ -5710,6 +5903,11 @@ ix86_set_indirect_branch_type (tree fndecl)
 	       ((cfun->machine->function_return_type
 		 == indirect_branch_thunk_extern)
 		? "thunk-extern" : "thunk"));
+
+      if (cfun->machine->function_return_type != indirect_branch_keep
+	  && (flag_cf_protection & CF_RETURN))
+	error ("%<-mfunction-return%> and %<-fcf-protection%> are not "
+	       "compatible");
     }
 }
 
@@ -5801,12 +5999,15 @@ ix86_set_current_function (tree fndecl)
       if (isa != NULL)
 	{
 	  if (cfun->machine->func_type != TYPE_NORMAL)
-	    sorry ("%s instructions aren't allowed in %s service routine",
-		   isa, (cfun->machine->func_type == TYPE_EXCEPTION
-			 ? "exception" : "interrupt"));
+	    sorry (cfun->machine->func_type == TYPE_EXCEPTION
+		   ? G_("%s instructions aren%'t allowed in an"
+			" exception service routine")
+		   : G_("%s instructions aren%'t allowed in an"
+			" interrupt service routine"),
+		   isa);
 	  else
-	    sorry ("%s instructions aren't allowed in function with "
-		   "no_caller_saved_registers attribute", isa);
+	    sorry ("%s instructions aren%'t allowed in a function with "
+		   "the %<no_caller_saved_registers%> attribute", isa);
 	  /* Don't issue the same error twice.  */
 	  cfun->machine->func_type = TYPE_NORMAL;
 	  cfun->machine->no_caller_saved_registers = false;
@@ -8877,7 +9078,7 @@ ix86_function_arg_boundary (machine_mode mode, const_tree type)
 	{
 	  warned = true;
 	  inform (input_location,
-		  "The ABI for passing parameters with %d-byte"
+		  "the ABI for passing parameters with %d-byte"
 		  " alignment has changed in GCC 4.6",
 		  align / BITS_PER_UNIT);
 	}
@@ -29584,6 +29785,19 @@ ix86_warn_parameter_passing_abi (cumulative_args_t cum_v, tree type)
   cum->warn_empty = false;
 }
 
+/* This hook returns name of multilib ABI.  */
+
+static const char *
+ix86_get_multilib_abi_name (void)
+{
+  if (!(TARGET_64BIT_P (ix86_isa_flags)))
+    return "i386";
+  else if (TARGET_X32_P (ix86_isa_flags))
+    return "x32";
+  else
+    return "x86_64";
+}
+
 /* Compute the alignment for a variable for Intel MCU psABI.  TYPE is
    the data type, and ALIGN is the alignment that the object would
    ordinarily have.  */
@@ -31787,10 +32001,10 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      priority = P_PROC_SSSE3;
 	      break;
 	    case PROCESSOR_NEHALEM:
-	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_AES)
+	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_PCLMUL)
 		{
 		  arg_str = "westmere";
-		  priority = P_AES;
+		  priority = P_PCLMUL;
 		}
 	      else
 		{
@@ -31911,7 +32125,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
       if (predicate_list && arg_str == NULL)
 	{
 	  error_at (DECL_SOURCE_LOCATION (decl),
-	    	"No dispatcher found for the versioning attributes");
+		    "no dispatcher found for the versioning attributes");
 	  return 0;
 	}
     
@@ -31961,7 +32175,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
       if (predicate_list && i == NUM_FEATURES)
 	{
 	  error_at (DECL_SOURCE_LOCATION (decl),
-		    "No dispatcher found for %s", token);
+		    "no dispatcher found for %s", token);
 	  return 0;
 	}
       token = strtok (NULL, ",");
@@ -31971,7 +32185,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
   if (predicate_list && predicate_chain == NULL_TREE)
     {
       error_at (DECL_SOURCE_LOCATION (decl),
-	        "No dispatcher found for the versioning attributes : %s",
+	        "no dispatcher found for the versioning attributes: %s",
 	        attrs_str);
       return 0;
     }
@@ -32133,12 +32347,12 @@ ix86_mangle_function_version_assembler_name (tree decl, tree id)
       && lookup_attribute ("gnu_inline",
 			   DECL_ATTRIBUTES (decl)))
     error_at (DECL_SOURCE_LOCATION (decl),
-	      "Function versions cannot be marked as gnu_inline,"
+	      "function versions cannot be marked as gnu_inline,"
 	      " bodies have to be generated");
 
   if (DECL_VIRTUAL_P (decl)
       || DECL_VINDEX (decl))
-    sorry ("Virtual function multiversioning not supported");
+    sorry ("virtual function multiversioning not supported");
 
   version_attr = lookup_attribute ("target", DECL_ATTRIBUTES (decl));
 
@@ -32414,7 +32628,7 @@ ix86_generate_version_dispatcher_body (void *node_p)
 	 virtual methods in base classes but are not explicitly marked as
 	 virtual.  */
       if (DECL_VINDEX (versn->decl))
-	sorry ("Virtual function multiversioning not supported");
+	sorry ("virtual function multiversioning not supported");
 
       fn_ver_vec.safe_push (versn->decl);
     }
@@ -32693,7 +32907,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
 	 STRING_CST.   */
       if (!EXPR_P (param_string_cst))
  	{
-	  error ("Parameter to builtin must be a string constant or literal");
+	  error ("parameter to builtin must be a string constant or literal");
 	  return integer_zero_node;
 	}
       param_string_cst = TREE_OPERAND (EXPR_CHECK (param_string_cst), 0);
@@ -32718,7 +32932,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
 
       if (i == NUM_ARCH_NAMES)
 	{
-	  error ("Parameter to builtin not valid: %s",
+	  error ("parameter to builtin not valid: %s",
 	         TREE_STRING_POINTER (param_string_cst));
 	  return integer_zero_node;
 	}
@@ -32768,7 +32982,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
 
       if (i == NUM_ISA_NAMES)
 	{
-	  error ("Parameter to builtin not valid: %s",
+	  error ("parameter to builtin not valid: %s",
 	       	 TREE_STRING_POINTER (param_string_cst));
 	  return integer_zero_node;
 	}
@@ -39207,7 +39421,7 @@ ix86_vectorize_builtin_scatter (const_tree vectype,
 static bool
 use_rsqrt_p ()
 {
-  return (TARGET_SSE_MATH
+  return (TARGET_SSE && TARGET_SSE_MATH
 	  && flag_finite_math_only
 	  && !flag_trapping_math
 	  && flag_unsafe_math_optimizations);
@@ -41212,11 +41426,12 @@ ix86_handle_interrupt_attribute (tree *node, tree, tree, int, bool *)
 	{
 	  if (TREE_CODE (TREE_VALUE (current_arg_type)) != INTEGER_TYPE
 	      || TYPE_MODE (TREE_VALUE (current_arg_type)) != word_mode)
-	    error ("interrupt service routine should have unsigned %s"
-		   "int as the second argument",
+	    error ("interrupt service routine should have %qs "
+		   "as the second argument",
 		   TARGET_64BIT
-		   ? (TARGET_X32 ? "long long " : "long ")
-		   : "");
+		   ? (TARGET_X32 ? "unsigned long long int"
+				 : "unsigned long int")
+		   : "unsigned int");
 	}
       nargs++;
       current_arg_type = TREE_CHAIN (current_arg_type);
@@ -50673,7 +50888,7 @@ ix86_float_exceptions_rounding_supported_p (void)
      there is no adddf3 pattern (since x87 floating point only has
      XFmode operations) so the default hook implementation gets this
      wrong.  */
-  return TARGET_80387 || TARGET_SSE_MATH;
+  return TARGET_80387 || (TARGET_SSE && TARGET_SSE_MATH);
 }
 
 /* Implement TARGET_ATOMIC_ASSIGN_EXPAND_FENV.  */
@@ -50681,7 +50896,7 @@ ix86_float_exceptions_rounding_supported_p (void)
 static void
 ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 {
-  if (!TARGET_80387 && !TARGET_SSE_MATH)
+  if (!TARGET_80387 && !(TARGET_SSE && TARGET_SSE_MATH))
     return;
   tree exceptions_var = create_tmp_var_raw (integer_type_node);
   if (TARGET_80387)
@@ -50716,7 +50931,7 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
       tree update_fldenv = build_call_expr (fldenv, 1, fenv_addr);
       *update = build2 (COMPOUND_EXPR, void_type_node, *update, update_fldenv);
     }
-  if (TARGET_SSE_MATH)
+  if (TARGET_SSE && TARGET_SSE_MATH)
     {
       tree mxcsr_orig_var = create_tmp_var_raw (unsigned_type_node);
       tree mxcsr_mod_var = create_tmp_var_raw (unsigned_type_node);
@@ -51006,7 +51221,7 @@ ix86_excess_precision (enum excess_precision_type type)
 	  return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
 	else if (!TARGET_MIX_SSE_I387)
 	  {
-	    if (!TARGET_SSE_MATH)
+	    if (!(TARGET_SSE && TARGET_SSE_MATH))
 	      return FLT_EVAL_METHOD_PROMOTE_TO_LONG_DOUBLE;
 	    else if (TARGET_SSE2)
 	      return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
@@ -51810,6 +52025,10 @@ ix86_run_selftests (void)
 
 #undef TARGET_WARN_PARAMETER_PASSING_ABI
 #define TARGET_WARN_PARAMETER_PASSING_ABI ix86_warn_parameter_passing_abi
+
+#undef TARGET_GET_MULTILIB_ABI_NAME
+#define TARGET_GET_MULTILIB_ABI_NAME \
+  ix86_get_multilib_abi_name
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

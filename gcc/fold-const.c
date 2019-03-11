@@ -4280,7 +4280,7 @@ decode_field_reference (location_t loc, tree *exp_, HOST_WIDE_INT *pbitsize,
      There are problems with FP fields since the type_for_size call
      below can fail for, e.g., XFmode.  */
   if (! INTEGRAL_TYPE_P (TREE_TYPE (exp)))
-    return 0;
+    return NULL_TREE;
 
   /* We are interested in the bare arrangement of bits, so strip everything
      that doesn't affect the machine mode.  However, record the type of the
@@ -4296,7 +4296,7 @@ decode_field_reference (location_t loc, tree *exp_, HOST_WIDE_INT *pbitsize,
       exp = TREE_OPERAND (exp, 0);
       STRIP_NOPS (exp); STRIP_NOPS (and_mask);
       if (TREE_CODE (and_mask) != INTEGER_CST)
-	return 0;
+	return NULL_TREE;
     }
 
   poly_int64 poly_bitsize, poly_bitpos;
@@ -4312,7 +4312,11 @@ decode_field_reference (location_t loc, tree *exp_, HOST_WIDE_INT *pbitsize,
       || (! AGGREGATE_TYPE_P (TREE_TYPE (inner))
 	  && compare_tree_int (TYPE_SIZE (TREE_TYPE (inner)),
 			       *pbitpos + *pbitsize) < 0))
-    return 0;
+    return NULL_TREE;
+
+  unsigned_type = lang_hooks.types.type_for_size (*pbitsize, 1);
+  if (unsigned_type == NULL_TREE)
+    return NULL_TREE;
 
   *exp_ = exp;
 
@@ -4323,7 +4327,6 @@ decode_field_reference (location_t loc, tree *exp_, HOST_WIDE_INT *pbitsize,
     *punsignedp = TYPE_UNSIGNED (outer_type);
 
   /* Compute the mask to access the bitfield.  */
-  unsigned_type = lang_hooks.types.type_for_size (*pbitsize, 1);
   precision = TYPE_PRECISION (unsigned_type);
 
   mask = build_int_cst_type (unsigned_type, -1);
@@ -10740,20 +10743,24 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 		strlen(ptr) != 0   =>  *ptr != 0
 	 Other cases should reduce to one of these two (or a constant)
 	 due to the return value of strlen being unsigned.  */
-      if (TREE_CODE (arg0) == CALL_EXPR
-	  && integer_zerop (arg1))
+      if (TREE_CODE (arg0) == CALL_EXPR && integer_zerop (arg1))
 	{
 	  tree fndecl = get_callee_fndecl (arg0);
 
 	  if (fndecl
 	      && fndecl_built_in_p (fndecl, BUILT_IN_STRLEN)
 	      && call_expr_nargs (arg0) == 1
-	      && TREE_CODE (TREE_TYPE (CALL_EXPR_ARG (arg0, 0))) == POINTER_TYPE)
+	      && (TREE_CODE (TREE_TYPE (CALL_EXPR_ARG (arg0, 0)))
+		  == POINTER_TYPE))
 	    {
-	      tree iref = build_fold_indirect_ref_loc (loc,
-						   CALL_EXPR_ARG (arg0, 0));
+	      tree ptrtype
+		= build_pointer_type (build_qualified_type (char_type_node,
+							    TYPE_QUAL_CONST));
+	      tree ptr = fold_convert_loc (loc, ptrtype,
+					   CALL_EXPR_ARG (arg0, 0));
+	      tree iref = build_fold_indirect_ref_loc (loc, ptr);
 	      return fold_build2_loc (loc, code, type, iref,
-				  build_int_cst (TREE_TYPE (iref), 0));
+				      build_int_cst (TREE_TYPE (iref), 0));
 	    }
 	}
 
@@ -12105,7 +12112,7 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
 {
   const tree_node **slot;
   enum tree_code code;
-  union tree_node buf;
+  union tree_node *buf;
   int i, len;
 
  recursive_label:
@@ -12120,10 +12127,13 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
       && HAS_DECL_ASSEMBLER_NAME_P (expr))
     {
       /* Allow DECL_ASSEMBLER_NAME and symtab_node to be modified.  */
-      memcpy ((char *) &buf, expr, tree_size (expr));
-      SET_DECL_ASSEMBLER_NAME ((tree)&buf, NULL);
-      buf.decl_with_vis.symtab_node = NULL;
-      expr = (tree) &buf;
+      size_t sz = tree_size (expr);
+      buf = XALLOCAVAR (union tree_node, sz);
+      memcpy ((char *) buf, expr, sz);
+      SET_DECL_ASSEMBLER_NAME ((tree) buf, NULL);
+      buf->decl_with_vis.symtab_node = NULL;
+      buf->base.nowarning_flag = 0;
+      expr = (tree) buf;
     }
   else if (TREE_CODE_CLASS (code) == tcc_type
 	   && (TYPE_POINTER_TO (expr)
@@ -12135,8 +12145,10 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
     {
       /* Allow these fields to be modified.  */
       tree tmp;
-      memcpy ((char *) &buf, expr, tree_size (expr));
-      expr = tmp = (tree) &buf;
+      size_t sz = tree_size (expr);
+      buf = XALLOCAVAR (union tree_node, sz);
+      memcpy ((char *) buf, expr, sz);
+      expr = tmp = (tree) buf;
       TYPE_CONTAINS_PLACEHOLDER_INTERNAL (tmp) = 0;
       TYPE_POINTER_TO (tmp) = NULL;
       TYPE_REFERENCE_TO (tmp) = NULL;
@@ -12147,6 +12159,16 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
 	  TYPE_CACHED_VALUES_P (tmp) = 0;
 	  TYPE_CACHED_VALUES (tmp) = NULL;
 	}
+    }
+  else if (TREE_NO_WARNING (expr) && (DECL_P (expr) || EXPR_P (expr)))
+    {
+      /* Allow TREE_NO_WARNING to be set.  Perhaps we shouldn't allow that
+	 and change builtins.c etc. instead - see PR89543.  */
+      size_t sz = tree_size (expr);
+      buf = XALLOCAVAR (union tree_node, sz);
+      memcpy ((char *) buf, expr, sz);
+      buf->base.nowarning_flag = 0;
+      expr = (tree) buf;
     }
   md5_process_bytes (expr, tree_size (expr), ctx);
   if (CODE_CONTAINS_STRUCT (code, TS_TYPED))

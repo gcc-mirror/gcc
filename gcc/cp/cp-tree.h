@@ -471,6 +471,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       TYPE_MARKED_P (in _TYPE)
       RANGE_FOR_IVDEP (in RANGE_FOR_STMT)
       CALL_EXPR_OPERATOR_SYNTAX (in CALL_EXPR, AGGR_INIT_EXPR)
+      CONSTRUCTOR_IS_DESIGNATED_INIT (in CONSTRUCTOR)
 
    Usage of TYPE_LANG_FLAG_?:
    0: TYPE_DEPENDENT_P
@@ -2973,8 +2974,8 @@ struct GTY(()) lang_decl {
 /* Nonzero for _DECL means that this decl appears in (or will appear
    in) as a member in a RECORD_TYPE or UNION_TYPE node.  It is also for
    detecting circularity in case members are multiply defined.  In the
-   case of a VAR_DECL, it is also used to determine how program storage
-   should be allocated.  */
+   case of a VAR_DECL, it means that no definition has been seen, even
+   if an initializer has been.  */
 #define DECL_IN_AGGR_P(NODE) (DECL_LANG_FLAG_3 (NODE))
 
 /* Nonzero for a VAR_DECL means that the variable's initialization (if
@@ -4251,6 +4252,12 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
 #define DIRECT_LIST_INIT_P(NODE) \
    (BRACE_ENCLOSED_INITIALIZER_P (NODE) && CONSTRUCTOR_IS_DIRECT_INIT (NODE))
+
+/* True if this is a designated initializer (when we allow initializer-clauses
+   mixed with designated-initializer-clauses set whenever there is at least
+   one designated-initializer-clause), or a C99 designator.  */
+#define CONSTRUCTOR_IS_DESIGNATED_INIT(NODE) \
+  (TREE_LANG_FLAG_6 (CONSTRUCTOR_CHECK (NODE)))
 
 /* True if NODE represents a conversion for direct-initialization in a
    template.  Set by perform_implicit_conversion_flags.  */
@@ -6302,7 +6309,7 @@ extern void finish_struct_1			(tree);
 extern int resolves_to_fixed_type_p		(tree, int *);
 extern void init_class_processing		(void);
 extern int is_empty_class			(tree);
-extern bool is_really_empty_class		(tree);
+extern bool is_really_empty_class		(tree, bool);
 extern void pushclass				(tree);
 extern void popclass				(void);
 extern void push_nested_class			(tree);
@@ -7193,7 +7200,7 @@ extern bool is_capture_proxy			(tree);
 extern bool is_normal_capture_proxy             (tree);
 extern bool is_constant_capture_proxy           (tree);
 extern void register_capture_members		(tree);
-extern tree lambda_expr_this_capture            (tree, bool);
+extern tree lambda_expr_this_capture            (tree, int);
 extern void maybe_generic_this_capture		(tree, tree);
 extern tree maybe_resolve_dummy			(tree, bool);
 extern tree current_nonlambda_function		(void);
@@ -7618,7 +7625,7 @@ extern tree cp_fully_fold			(tree);
 extern tree cp_fully_fold_init			(tree);
 extern void clear_fold_cache			(void);
 extern tree lookup_hotness_attribute		(tree);
-extern tree process_stmt_hotness_attribute	(tree);
+extern tree process_stmt_hotness_attribute	(tree, location_t);
 
 /* in name-lookup.c */
 extern tree strip_using_decl                    (tree);
@@ -7752,6 +7759,7 @@ extern void explain_invalid_constexpr_fn        (tree);
 extern vec<tree> cx_error_context               (void);
 extern tree fold_sizeof_expr			(tree);
 extern void clear_cv_and_fold_caches		(void);
+extern tree unshare_constructor			(tree);
 
 /* In cp-ubsan.c */
 extern void cp_ubsan_maybe_instrument_member_call (tree);

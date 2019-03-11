@@ -2247,6 +2247,10 @@ may_be_nonaddressable_p (tree expr)
 {
   switch (TREE_CODE (expr))
     {
+    case VAR_DECL:
+      /* Check if it's a register variable.  */
+      return DECL_HARD_REGISTER (expr);
+
     case TARGET_MEM_REF:
       /* TARGET_MEM_REFs are translated directly to valid MEMs on the
 	 target, thus they are always addressable.  */

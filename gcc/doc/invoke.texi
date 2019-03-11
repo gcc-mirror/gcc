@@ -288,7 +288,7 @@ Objective-C and Objective-C++ Dialects}.
 -Walloc-zero  -Walloc-size-larger-than=@var{byte-size} @gol
 -Walloca  -Walloca-larger-than=@var{byte-size} @gol
 -Wno-aggressive-loop-optimizations  -Warray-bounds  -Warray-bounds=@var{n} @gol
--Wno-attributes  -Wno-attribute-alias @gol
+-Wno-attributes  -Wattribute-alias=@var{n}  @gol
 -Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
@@ -322,7 +322,7 @@ Objective-C and Objective-C++ Dialects}.
 -Winvalid-pch  -Wlarger-than=@var{byte-size} @gol
 -Wlogical-op  -Wlogical-not-parentheses  -Wlong-long @gol
 -Wmain  -Wmaybe-uninitialized  -Wmemset-elt-size  -Wmemset-transposed-args @gol
--Wmisleading-indentation  -Wno-missing-attributes  -Wmissing-braces @gol
+-Wmisleading-indentation  -Wmissing-attributes  -Wmissing-braces @gol
 -Wmissing-field-initializers  -Wmissing-format-attribute @gol
 -Wmissing-include-dirs  -Wmissing-noreturn  -Wmissing-profile @gol
 -Wno-multichar  -Wmultistatement-macros  -Wnonnull  -Wnonnull-compare @gol
@@ -1057,7 +1057,8 @@ See RS/6000 and PowerPC Options.
 -mstrict-align  -mno-strict-align @gol
 -mcmodel=medlow  -mcmodel=medany @gol
 -mexplicit-relocs  -mno-explicit-relocs @gol
--mrelax  -mno-relax}
+-mrelax  -mno-relax @gol
+-mriscv-attribute  -mmo-riscv-attribute}
 
 @emph{RL78 Options}
 @gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs @gol
@@ -5060,7 +5061,7 @@ about the layout of the file that the directive references.
 
 This warning is enabled by @option{-Wall} in C and C++.
 
-@item -Wno-missing-attributes
+@item -Wmissing-attributes
 @opindex Wmissing-attributes
 @opindex Wno-missing-attributes
 Warn when a declaration of a function is missing one or more attributes
@@ -5068,10 +5069,10 @@ that a related function is declared with and whose absence may adversely
 affect the correctness or efficiency of generated code.  For example,
 the warning is issued for declarations of aliases that use attributes
 to specify less restrictive requirements than those of their targets.
-This typically represents a potential optimization oportunity rather
-than a hidden bug.  The @option{-Wattribute-alias} option controls warnings
-issued for mismatches between declarations of aliases and their targets
-that might be indicative of code generation bugs.
+This typically represents a potential optimization opportunity.
+By contrast, the @option{-Wattribute-alias=2} option controls warnings
+issued when the alias is more restrictive than the target, which could
+lead to incorrect code generation.
 Attributes considered include @code{alloc_align}, @code{alloc_size},
 @code{cold}, @code{const}, @code{hot}, @code{leaf}, @code{malloc},
 @code{nonnull}, @code{noreturn}, @code{nothrow}, @code{pure},
@@ -5083,6 +5084,13 @@ template declared with attribute @code{alloc_align}, @code{alloc_size},
 or @code{nonnull} is declared without it.  Attributes @code{deprecated},
 @code{error}, and @code{warning} suppress the warning.
 (@pxref{Function Attributes}).
+
+You can use the @code{copy} attribute to apply the same
+set of attributes to a declaration as that on another declaration without
+explicitly enumerating the attributes. This attribute can be applied
+to declarations of functions (@pxref{Common Function Attributes}),
+variables (@pxref{Common Variable Attributes}), or types
+(@pxref{Common Type Attributes}).
 
 @option{-Wmissing-attributes} is enabled by @option{-Wall}.
 
@@ -5266,13 +5274,16 @@ without a value).
 For C only, warn about a @code{return} statement with an expression in a
 function whose return type is @code{void}, unless the expression type is
 also @code{void}.  As a GNU extension, the latter case is accepted
-without a warning unless @option{-Wpedantic} is used.
+without a warning unless @option{-Wpedantic} is used.  Attempting
+to use the return value of a non-@code{void} function other than @code{main}
+that flows off the end by reaching the closing curly brace that terminates
+the function is undefined.
 
-For C++, a function without return type always produces a diagnostic
-message, even when @option{-Wno-return-type} is specified.  The only
-exceptions are @code{main} and functions defined in system headers.
+Unlike in C, in C++, flowing off the end of a non-@code{void} function other
+than @code{main} results in undefined behavior even when the value of
+the function is not used.
 
-This warning is enabled by default for C++ and is enabled by @option{-Wall}.
+This warning is enabled by default in C++ and by @option{-Wall} otherwise.
 
 @item -Wshift-count-negative
 @opindex Wshift-count-negative
@@ -6108,7 +6119,6 @@ false positives and is deactivated by default.
 Warn about declarations using the @code{alias} and similar attributes whose
 target is incompatible with the type of the alias.
 @xref{Function Attributes,,Declaring Attributes of Functions}.
-The @option{-Wattribute-alias=1} is  enabled by @option{-Wall}.
 
 @table @gcctabopt
 @item -Wattribute-alias=1
@@ -6117,12 +6127,25 @@ incompatibilities between the type of the alias declaration and that of its
 target.  Such incompatibilities are typically indicative of bugs.
 
 @item -Wattribute-alias=2
-At this level @option{-Wattribute-alias} also diagnoses mismatches between
-the set of attributes of the alias declaration and the attributes applied
-to its target.  Although in some cases such mismatches may indicate bugs,
-in other cases they may be benign and could be resolved simply by adding
-the missing attribute to the target.
+
+At this level @option{-Wattribute-alias} also diagnoses cases where
+the attributes of the alias declaration are more restrictive than the
+attributes applied to its target.  These mismatches can potentially
+result in incorrect code generation.  In other cases they may be
+benign and could be resolved simply by adding the missing attribute to
+the target.  For comparison, see the @option{-Wmissing-attributes}
+option, which controls diagnostics when the alias declaration is less
+restrictive than the target, rather than more restrictive.
+
+Attributes considered include @code{alloc_align}, @code{alloc_size},
+@code{cold}, @code{const}, @code{hot}, @code{leaf}, @code{malloc},
+@code{nonnull}, @code{noreturn}, @code{nothrow}, @code{pure},
+@code{returns_nonnull}, and @code{returns_twice}.
 @end table
+
+@option{-Wattribute-alias} is equivalent to @option{-Wattribute-alias=1}.
+This is the default.  You can disable these warnings with either
+@option{-Wno-attribute-alias} or @option{-Wattribute-alias=0}.
 
 @item -Wbool-compare
 @opindex Wno-bool-compare
@@ -6638,9 +6661,13 @@ example, warn if an unsigned variable is compared against zero with
 @item -Wabsolute-value @r{(C and Objective-C only)}
 @opindex Wabsolute-value
 @opindex Wno-absolute-value
-Warn when a wrong absolute value function seems to be used or when it
-does not have any effect because its argument is an unsigned type.
-This warning be suppressed with an explicit type cast and it is also
+Warn for calls to standard functions that compute the absolute value
+of an argument when a more appropriate standard function is available.
+For example, calling @code{abs(3.14)} triggers the warning because the
+appropriate function to call to compute the absolute value of a double
+argument is @code{fabs}.  The option also triggers warnings when the
+argument in a call to such a function has an unsigned type.  This
+warning can be suppressed with an explicit type cast and it is also
 enabled by @option{-Wextra}.
 
 @include cppwarnopts.texi
@@ -15776,10 +15803,11 @@ performance of the code.  Permissible values for this option are:
 @samp{generic}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a55},
 @samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
 @samp{cortex-a76}, @samp{ares}, @samp{exynos-m1}, @samp{emag}, @samp{falkor},
-@samp{qdf24xx}, @samp{saphira}, @samp{phecda}, @samp{xgene1}, @samp{vulcan},
-@samp{octeontx}, @samp{octeontx81},  @samp{octeontx83},
-@samp{thunderx}, @samp{thunderxt88}, @samp{thunderxt88p1}, @samp{thunderxt81},
-@samp{tsv110}, @samp{thunderxt83}, @samp{thunderx2t99},
+@samp{neoverse-e1},@samp{neoverse-n1},@samp{qdf24xx}, @samp{saphira},
+@samp{phecda}, @samp{xgene1}, @samp{vulcan}, @samp{octeontx},
+@samp{octeontx81},  @samp{octeontx83}, @samp{thunderx}, @samp{thunderxt88},
+@samp{thunderxt88p1}, @samp{thunderxt81}, @samp{tsv110},
+@samp{thunderxt83}, @samp{thunderx2t99},
 @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
 @samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55}
@@ -17475,9 +17503,9 @@ Permissible names are: @samp{arm7tdmi}, @samp{arm7tdmi-s}, @samp{arm710t},
 @samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m23}, @samp{cortex-m33},
 @samp{cortex-m1.small-multiply}, @samp{cortex-m0.small-multiply},
 @samp{cortex-m0plus.small-multiply}, @samp{exynos-m1}, @samp{marvell-pj4},
-@samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312}, @samp{fa526},
-@samp{fa626}, @samp{fa606te}, @samp{fa626te}, @samp{fmp626}, @samp{fa726te},
-@samp{xgene1}.
+@samp{neoverse-n1}, @samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2},
+@samp{ep9312}, @samp{fa526}, @samp{fa626}, @samp{fa606te}, @samp{fa626te},
+@samp{fmp626}, @samp{fa726te}, @samp{xgene1}.
 
 Additionally, this option can specify that GCC should tune the performance
 of the code for a big.LITTLE system.  Permissible names are:
@@ -23802,6 +23830,10 @@ Take advantage of linker relaxations to reduce the number of instructions
 required to materialize symbol addresses. The default is to take advantage of
 linker relaxations.
 
+@item -memit-attribute
+@itemx -mno-emit-attribute
+Emit (do not emit) RISC-V attribute to record extra information into ELF
+objects.  This feature requires at least binutils 2.32.
 @end table
 
 @node RL78 Options

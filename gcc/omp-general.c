@@ -56,18 +56,47 @@ omp_is_reference (tree decl)
   return lang_hooks.decls.omp_privatize_by_reference (decl);
 }
 
-/* Adjust *COND_CODE and *N2 so that the former is either LT_EXPR or
-   GT_EXPR.  */
+/* Adjust *COND_CODE and *N2 so that the former is either LT_EXPR or GT_EXPR,
+   given that V is the loop index variable and STEP is loop step. */
 
 void
-omp_adjust_for_condition (location_t loc, enum tree_code *cond_code, tree *n2)
+omp_adjust_for_condition (location_t loc, enum tree_code *cond_code, tree *n2,
+			  tree v, tree step)
 {
   switch (*cond_code)
     {
     case LT_EXPR:
     case GT_EXPR:
-    case NE_EXPR:
       break;
+
+    case NE_EXPR:
+      gcc_assert (TREE_CODE (step) == INTEGER_CST);
+      if (TREE_CODE (TREE_TYPE (v)) == INTEGER_TYPE)
+	{
+	  if (integer_onep (step))
+	    *cond_code = LT_EXPR;
+	  else
+	    {
+	      gcc_assert (integer_minus_onep (step));
+	      *cond_code = GT_EXPR;
+	    }
+	}
+      else
+	{
+	  tree unit = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (v)));
+	  gcc_assert (TREE_CODE (unit) == INTEGER_CST);
+	  if (tree_int_cst_equal (unit, step))
+	    *cond_code = LT_EXPR;
+	  else
+	    {
+	      gcc_assert (wi::neg (wi::to_widest (unit))
+			  == wi::to_widest (step));
+	      *cond_code = GT_EXPR;
+	    }
+	}
+
+      break;
+
     case LE_EXPR:
       if (POINTER_TYPE_P (TREE_TYPE (*n2)))
 	*n2 = fold_build_pointer_plus_hwi_loc (loc, *n2, 1);
@@ -258,41 +287,13 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
       gcc_assert (loop->cond_code != NE_EXPR
 		  || (gimple_omp_for_kind (for_stmt)
 		      != GF_OMP_FOR_KIND_OACC_LOOP));
-      omp_adjust_for_condition (loc, &loop->cond_code, &loop->n2);
 
       t = gimple_omp_for_incr (for_stmt, i);
       gcc_assert (TREE_OPERAND (t, 0) == var);
       loop->step = omp_get_for_step_from_incr (loc, t);
 
-      if (loop->cond_code == NE_EXPR)
-	{
-	  gcc_assert (TREE_CODE (loop->step) == INTEGER_CST);
-	  if (TREE_CODE (TREE_TYPE (loop->v)) == INTEGER_TYPE)
-	    {
-	      if (integer_onep (loop->step))
-		loop->cond_code = LT_EXPR;
-	      else
-		{
-		  gcc_assert (integer_minus_onep (loop->step));
-		  loop->cond_code = GT_EXPR;
-		}
-	    }
-	  else
-	    {
-	      tree unit = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (loop->v)));
-	      gcc_assert (TREE_CODE (unit) == INTEGER_CST);
-	      if (tree_int_cst_equal (unit, loop->step))
-		loop->cond_code = LT_EXPR;
-	      else
-		{
-		  gcc_assert (wi::neg (wi::to_widest (unit))
-			      == wi::to_widest (loop->step));
-		  loop->cond_code = GT_EXPR;
-		}
-	    }
-	}
-
-      omp_adjust_for_condition (loc, &loop->cond_code, &loop->n2);
+      omp_adjust_for_condition (loc, &loop->cond_code, &loop->n2, loop->v,
+				loop->step);
 
       if (simd
 	  || (fd->sched_kind == OMP_CLAUSE_SCHEDULE_STATIC
@@ -539,16 +540,26 @@ oacc_launch_pack (unsigned code, tree device, unsigned op)
 
 /* Replace any existing oacc fn attribute with updated dimensions.  */
 
-void
-oacc_replace_fn_attrib (tree fn, tree dims)
+/* Variant working on a list of attributes.  */
+
+tree
+oacc_replace_fn_attrib_attr (tree attribs, tree dims)
 {
   tree ident = get_identifier (OACC_FN_ATTRIB);
-  tree attribs = DECL_ATTRIBUTES (fn);
 
   /* If we happen to be present as the first attrib, drop it.  */
   if (attribs && TREE_PURPOSE (attribs) == ident)
     attribs = TREE_CHAIN (attribs);
-  DECL_ATTRIBUTES (fn) = tree_cons (ident, dims, attribs);
+  return tree_cons (ident, dims, attribs);
+}
+
+/* Variant working on a function decl.  */
+
+void
+oacc_replace_fn_attrib (tree fn, tree dims)
+{
+  DECL_ATTRIBUTES (fn)
+    = oacc_replace_fn_attrib_attr (DECL_ATTRIBUTES (fn), dims);
 }
 
 /* Scan CLAUSES for launch dimensions and attach them to the oacc

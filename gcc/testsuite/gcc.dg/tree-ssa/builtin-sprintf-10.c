@@ -5,6 +5,7 @@
 
 typedef __SIZE_TYPE__  size_t;
 typedef __WCHAR_TYPE__ wchar_t;
+typedef __WINT_TYPE__  wint_t;
 
 extern int snprintf (char*, size_t, const char*, ...);
 
@@ -47,26 +48,26 @@ const wchar_t ws3[] = L"12\xff";
 
 void elim_wide_char_call (void)
 {
-  ELIM (snprintf (0, 0, "%lc", L'\0'));
-  ELIM (snprintf (0, 0, "%lc", L'1'));
-  ELIM (snprintf (0, 0, "%lc", L'a'));
-  ELIM (snprintf (0, 0, "%lc", ws3[0]));
-  ELIM (snprintf (0, 0, "%lc", ws3[1]));
-  ELIM (snprintf (0, 0, "%lc", ws3[3]));
+  ELIM (snprintf (0, 0, "%lc", (wint_t)L'\0'));
+  ELIM (snprintf (0, 0, "%lc", (wint_t)L'1'));
+  ELIM (snprintf (0, 0, "%lc", (wint_t)L'a'));
+  ELIM (snprintf (0, 0, "%lc", (wint_t)ws3[0]));
+  ELIM (snprintf (0, 0, "%lc", (wint_t)ws3[1]));
+  ELIM (snprintf (0, 0, "%lc", (wint_t)ws3[3]));
 
-  ELIM (snprintf (0, 0, "%C", L'\0'));
-  ELIM (snprintf (0, 0, "%C", L'9'));
-  ELIM (snprintf (0, 0, "%C", L'z'));
-  ELIM (snprintf (0, 0, "%C", ws3[0]));
-  ELIM (snprintf (0, 0, "%C", ws3[1]));
-  ELIM (snprintf (0, 0, "%C", ws3[3]));
+  ELIM (snprintf (0, 0, "%C", (wint_t)L'\0'));
+  ELIM (snprintf (0, 0, "%C", (wint_t)L'9'));
+  ELIM (snprintf (0, 0, "%C", (wint_t)L'z'));
+  ELIM (snprintf (0, 0, "%C", (wint_t)ws3[0]));
+  ELIM (snprintf (0, 0, "%C", (wint_t)ws3[1]));
+  ELIM (snprintf (0, 0, "%C", (wint_t)ws3[3]));
 
   /* Verify an unknown character value within the ASCII range.  */
   if (wc < 1 || 127 < wc)
     wc = 0;
 
-  ELIM (snprintf (0, 0, "%C", wc));
-  ELIM (snprintf (0, 0, "%C", wc));
+  ELIM (snprintf (0, 0, "%C", (wint_t)wc));
+  ELIM (snprintf (0, 0, "%C", (wint_t)wc));
 }
 
 void elim_wide_string_call (void)
@@ -81,23 +82,23 @@ void elim_wide_string_call (void)
 
 void keep_wide_char_call (void)
 {
-  KEEP (snprintf (0, 0, "%lc", L'\xff'));
-  KEEP (snprintf (0, 0, "%lc", L'\xffff'));
-  KEEP (snprintf (0, 0, "%lc", wc));
-  KEEP (snprintf (0, 0, "%lc", ws3[2]));
+  KEEP (snprintf (0, 0, "%lc", (wint_t)L'\xff'));
+  KEEP (snprintf (0, 0, "%lc", (wint_t)L'\xffff'));
+  KEEP (snprintf (0, 0, "%lc", (wint_t)wc));
+  KEEP (snprintf (0, 0, "%lc", (wint_t)ws3[2]));
 
-  KEEP (snprintf (0, 0, "%C", L'\xff'));
-  KEEP (snprintf (0, 0, "%C", L'\xffff'));
-  KEEP (snprintf (0, 0, "%C", wc));
-  KEEP (snprintf (0, 0, "%C", ws3[2]));
+  KEEP (snprintf (0, 0, "%C", (wint_t)L'\xff'));
+  KEEP (snprintf (0, 0, "%C", (wint_t)L'\xffff'));
+  KEEP (snprintf (0, 0, "%C", (wint_t)wc));
+  KEEP (snprintf (0, 0, "%C", (wint_t)ws3[2]));
 
   /* Verify an unknown character value outside the ASCII range
      (with 128 being the only one).  */
   if (wc < 32 || 128 < wc)
     wc = 32;
 
-  KEEP (snprintf (0, 0, "%lc", wc));
-  KEEP (snprintf (0, 0, "%C", wc));
+  KEEP (snprintf (0, 0, "%lc", (wint_t)wc));
+  KEEP (snprintf (0, 0, "%C", (wint_t)wc));
 }
 
 void keep_wide_string_call (void)

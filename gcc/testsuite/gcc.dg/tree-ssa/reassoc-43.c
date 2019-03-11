@@ -50,4 +50,4 @@ c_parser_translation_unit (c_parser * parser)
 	}
     }
 }
-/* { dg-final { scan-tree-dump-not "0 != 0" "reassoc2"} } */
+/* { dg-final { scan-tree-dump-not "\[ (\]0 != 0" "reassoc2"} } */

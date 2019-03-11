@@ -1885,7 +1885,19 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		  break;
 		}
 	      else if (m == MATCH_NO)
-		needs_space = true;
+		{
+		  gfc_expr *expr
+		    = gfc_get_constant_expr (BT_INTEGER,
+					     gfc_default_integer_kind,
+					     &gfc_current_locus);
+		  mpz_set_si (expr->value.integer, GOMP_ASYNC_NOVAL);
+		  gfc_expr_list **expr_list = &c->wait_list;
+		  while (*expr_list)
+		    expr_list = &(*expr_list)->next;
+		  *expr_list = gfc_get_expr_list ();
+		  (*expr_list)->expr = expr;
+		  needs_space = true;
+		}
 	      continue;
 	    }
 	  if ((mask & OMP_CLAUSE_WORKER)
@@ -2063,13 +2075,6 @@ gfc_match_oacc_declare (void)
 	  module_var = true;
 	}
 
-      if (ns->proc_name->attr.oacc_function)
-	{
-	  gfc_error ("Invalid declare in routine with $!ACC DECLARE at %L",
-		     &where);
-	  return MATCH_ERROR;
-	}
-
       if (s->attr.use_assoc)
 	{
 	  gfc_error ("Variable is USE-associated with !$ACC DECLARE at %L",
@@ -2227,44 +2232,55 @@ gfc_match_oacc_cache (void)
   return MATCH_YES;
 }
 
-/* Determine the loop level for a routine.   */
+/* Determine the OpenACC 'routine' directive's level of parallelism.  */
 
-static int
-gfc_oacc_routine_dims (gfc_omp_clauses *clauses)
+static oacc_routine_lop
+gfc_oacc_routine_lop (gfc_omp_clauses *clauses)
 {
-  int level = -1;
+  oacc_routine_lop ret = OACC_ROUTINE_LOP_SEQ;
 
   if (clauses)
     {
-      unsigned mask = 0;
+      unsigned n_lop_clauses = 0;
 
       if (clauses->gang)
-	level = GOMP_DIM_GANG, mask |= GOMP_DIM_MASK (level);
+	{
+	  ++n_lop_clauses;
+	  ret = OACC_ROUTINE_LOP_GANG;
+	}
       if (clauses->worker)
-	level = GOMP_DIM_WORKER, mask |= GOMP_DIM_MASK (level);
+	{
+	  ++n_lop_clauses;
+	  ret = OACC_ROUTINE_LOP_WORKER;
+	}
       if (clauses->vector)
-	level = GOMP_DIM_VECTOR, mask |= GOMP_DIM_MASK (level);
+	{
+	  ++n_lop_clauses;
+	  ret = OACC_ROUTINE_LOP_VECTOR;
+	}
       if (clauses->seq)
-	level = GOMP_DIM_MAX, mask |= GOMP_DIM_MASK (level);
+	{
+	  ++n_lop_clauses;
+	  ret = OACC_ROUTINE_LOP_SEQ;
+	}
 
-      if (mask != (mask & -mask))
-	gfc_error ("Multiple loop axes specified for routine");
+      if (n_lop_clauses > 1)
+	ret = OACC_ROUTINE_LOP_ERROR;
     }
 
-  if (level < 0)
-    level = GOMP_DIM_MAX;
-
-  return level;
+  return ret;
 }
 
 match
 gfc_match_oacc_routine (void)
 {
   locus old_loc;
-  gfc_symbol *sym = NULL;
   match m;
+  gfc_intrinsic_sym *isym = NULL;
+  gfc_symbol *sym = NULL;
   gfc_omp_clauses *c = NULL;
   gfc_oacc_routine_name *n = NULL;
+  oacc_routine_lop lop = OACC_ROUTINE_LOP_NONE;
 
   old_loc = gfc_current_locus;
 
@@ -2282,12 +2298,19 @@ gfc_match_oacc_routine (void)
   if (m == MATCH_YES)
     {
       char buffer[GFC_MAX_SYMBOL_LEN + 1];
-      gfc_symtree *st;
 
       m = gfc_match_name (buffer);
       if (m == MATCH_YES)
 	{
-	  st = gfc_find_symtree (gfc_current_ns->sym_root, buffer);
+	  gfc_symtree *st = NULL;
+
+	  /* First look for an intrinsic symbol.  */
+	  isym = gfc_find_function (buffer);
+	  if (!isym)
+	    isym = gfc_find_subroutine (buffer);
+	  /* If no intrinsic symbol found, search the current namespace.  */
+	  if (!isym)
+	    st = gfc_find_symtree (gfc_current_ns->sym_root, buffer);
 	  if (st)
 	    {
 	      sym = st->n.sym;
@@ -2296,7 +2319,7 @@ gfc_match_oacc_routine (void)
 	        sym = NULL;
 	    }
 
-	  if (st == NULL
+	  if ((isym == NULL && st == NULL)
 	      || (sym
 		  && !sym->attr.external
 		  && !sym->attr.function
@@ -2330,26 +2353,74 @@ gfc_match_oacc_routine (void)
 	  != MATCH_YES))
     return MATCH_ERROR;
 
-  if (sym != NULL)
+  lop = gfc_oacc_routine_lop (c);
+  if (lop == OACC_ROUTINE_LOP_ERROR)
     {
-      n = gfc_get_oacc_routine_name ();
-      n->sym = sym;
-      n->clauses = NULL;
-      n->next = NULL;
-      if (gfc_current_ns->oacc_routine_names != NULL)
-	n->next = gfc_current_ns->oacc_routine_names;
+      gfc_error ("Multiple loop axes specified for routine at %C");
+      goto cleanup;
+    }
 
-      gfc_current_ns->oacc_routine_names = n;
+  if (isym != NULL)
+    {
+      /* Diagnose any OpenACC 'routine' directive that doesn't match the
+	 (implicit) one with a 'seq' clause.  */
+      if (c && (c->gang || c->worker || c->vector))
+	{
+	  gfc_error ("Intrinsic symbol specified in !$ACC ROUTINE ( NAME )"
+		     " at %C marked with incompatible GANG, WORKER, or VECTOR"
+		     " clause");
+	  goto cleanup;
+	}
+    }
+  else if (sym != NULL)
+    {
+      bool add = true;
+
+      /* For a repeated OpenACC 'routine' directive, diagnose if it doesn't
+	 match the first one.  */
+      for (gfc_oacc_routine_name *n_p = gfc_current_ns->oacc_routine_names;
+	   n_p;
+	   n_p = n_p->next)
+	if (n_p->sym == sym)
+	  {
+	    add = false;
+	    if (lop != gfc_oacc_routine_lop (n_p->clauses))
+	      {
+		gfc_error ("!$ACC ROUTINE already applied at %C");
+		goto cleanup;
+	      }
+	  }
+
+      if (add)
+	{
+	  n = gfc_get_oacc_routine_name ();
+	  n->sym = sym;
+	  n->clauses = c;
+	  n->next = gfc_current_ns->oacc_routine_names;
+	  gfc_current_ns->oacc_routine_names = n;
+	}
     }
   else if (gfc_current_ns->proc_name)
     {
+      /* For a repeated OpenACC 'routine' directive, diagnose if it doesn't
+	 match the first one.  */
+      oacc_routine_lop lop_p = gfc_current_ns->proc_name->attr.oacc_routine_lop;
+      if (lop_p != OACC_ROUTINE_LOP_NONE
+	  && lop != lop_p)
+	{
+	  gfc_error ("!$ACC ROUTINE already applied at %C");
+	  goto cleanup;
+	}
+
       if (!gfc_add_omp_declare_target (&gfc_current_ns->proc_name->attr,
 				       gfc_current_ns->proc_name->name,
 				       &old_loc))
 	goto cleanup;
-      gfc_current_ns->proc_name->attr.oacc_function
-	= gfc_oacc_routine_dims (c) + 1;
+      gfc_current_ns->proc_name->attr.oacc_routine_lop = lop;
     }
+  else
+    /* Something has gone wrong, possibly a syntax error.  */
+    goto cleanup;
 
   if (n)
     n->clauses = c;
@@ -5760,7 +5831,13 @@ resolve_oacc_nested_loops (gfc_code *code, gfc_code* do_code, int collapse,
 		     "at %L", &do_code->loc);
 	  break;
 	}
-      gcc_assert (do_code->op == EXEC_DO || do_code->op == EXEC_DO_CONCURRENT);
+      if (do_code->op == EXEC_DO_CONCURRENT)
+	{
+	  gfc_error ("!$ACC LOOP cannot be a DO CONCURRENT loop at %L",
+		     &do_code->loc);
+	  break;
+	}
+      gcc_assert (do_code->op == EXEC_DO);
       if (do_code->ext.iterator->var->ts.type != BT_INTEGER)
 	gfc_error ("!$ACC LOOP iteration variable must be of type integer at %L",
 		   &do_code->loc);

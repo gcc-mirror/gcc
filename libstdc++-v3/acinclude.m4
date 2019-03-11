@@ -634,34 +634,43 @@ dnl  XSL_STYLE_DIR
 dnl
 AC_DEFUN([GLIBCXX_CONFIGURE_DOCBOOK], [
 
-AC_MSG_CHECKING([for docbook stylesheets for documentation creation])
-glibcxx_stylesheets=no
-if test x${XSLTPROC} = xyes && echo '<title/>' | xsltproc --noout --nonet --xinclude http://docbook.sourceforge.net/release/xsl-ns/current/xhtml-1_1/docbook.xsl - 2>/dev/null; then
-  glibcxx_stylesheets=yes
-fi
-AC_MSG_RESULT($glibcxx_stylesheets)
+glibcxx_docbook_url=http://docbook.sourceforge.net/release/xsl-ns/current/
 
 AC_MSG_CHECKING([for local stylesheet directory])
 glibcxx_local_stylesheets=no
-if test x"$glibcxx_stylesheets" = x"yes"; then
-  if test -d /usr/share/sgml/docbook/xsl-ns-stylesheets; then
-    glibcxx_local_stylesheets=yes
-    XSL_STYLE_DIR=/usr/share/sgml/docbook/xsl-ns-stylesheets
-  fi
-  if test -d /usr/share/xml/docbook/stylesheet/docbook-xsl-ns; then
-    glibcxx_local_stylesheets=yes
-    XSL_STYLE_DIR=/usr/share/xml/docbook/stylesheet/docbook-xsl-ns
-  fi
-  if test -d /usr/share/xml/docbook/stylesheet/nwalsh5/current; then
-    glibcxx_local_stylesheets=yes
-    XSL_STYLE_DIR=/usr/share/xml/docbook/stylesheet/nwalsh5/current
-  fi
+if test x${XMLCATALOG} = xyes && xsl_style_dir=`xmlcatalog "" $glibcxx_docbook_url 2>/dev/null`
+then
+  XSL_STYLE_DIR=`echo $xsl_style_dir | sed -n 's;^file://;;p'`
+  glibcxx_local_stylesheets=yes
+else
+  for dir in \
+    /usr/share/sgml/docbook/xsl-ns-stylesheets \
+    /usr/share/xml/docbook/stylesheet/docbook-xsl-ns \
+    /usr/share/xml/docbook/stylesheet/nwalsh5/current \
+    /usr/share/xml/docbook/stylesheet/nwalsh/current
+  do
+    if test -d $dir; then
+      glibcxx_local_stylesheets=yes
+      XSL_STYLE_DIR=$dir
+      break
+    fi
+  done
 fi
 AC_MSG_RESULT($glibcxx_local_stylesheets)
 
 if test x"$glibcxx_local_stylesheets" = x"yes"; then
   AC_SUBST(XSL_STYLE_DIR)
   AC_MSG_NOTICE($XSL_STYLE_DIR)
+
+  AC_MSG_CHECKING([for docbook stylesheets for documentation creation])
+  glibcxx_stylesheets=no
+  if test x${XMLCATALOG} = xno || xmlcatalog "" $glibcxx_docbook_url/xhtml/docbook.xsl >/dev/null 2>&1; then
+    if test x${XSLTPROC} = xyes && echo '<title/>' | xsltproc --noout --nonet --xinclude $glibcxx_docbook_url/xhtml/docbook.xsl - 2>/dev/null; then
+      glibcxx_stylesheets=yes
+    fi
+  fi
+  AC_MSG_RESULT($glibcxx_stylesheets)
+
 else
   glibcxx_stylesheets=no
 fi

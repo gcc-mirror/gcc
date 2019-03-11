@@ -20,6 +20,12 @@
 #include <experimental/string_view>
 #include <type_traits>
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+using std::experimental::u8string_view;
+#else
+using u8string_view = std::experimental::string_view;
+#endif
+
 void
 test01()
 {
@@ -28,7 +34,7 @@ test01()
   static_assert(std::is_same<decltype("Hello"sv), std::experimental::string_view>::value,
 		"\"Hello\"s is std::string_view");
 
-  static_assert(std::is_same<decltype(u8"Hello"sv), std::experimental::string_view>::value,
+  static_assert(std::is_same<decltype(u8"Hello"sv), u8string_view>::value,
 		"u8\"Hello\"s is std::string_view");
 
 #ifdef _GLIBCXX_USE_WCHAR_T

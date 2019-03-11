@@ -307,8 +307,8 @@ class Prog:
                       has_warning = 0
                   key = (name, len (harness.results))
                   harness.results.append ((key, line))
-                if not first_key and sort_logs:
-                    first_key = key
+                  if not first_key and sort_logs:
+                      first_key = key
                 if line.startswith ('ERROR: (DejaGnu)'):
                     for i in range (len (self.count_names)):
                         if 'DejaGnu errors' in self.count_names[i]:

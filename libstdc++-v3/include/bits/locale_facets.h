@@ -59,7 +59,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # define  _GLIBCXX_NUM_FACETS 14
 # define  _GLIBCXX_NUM_CXX11_FACETS 8
 #endif
-#define _GLIBCXX_NUM_UNICODE_FACETS 2
+#ifdef _GLIBCXX_USE_CHAR8_T
+# define _GLIBCXX_NUM_UNICODE_FACETS 4
+#else
+# define _GLIBCXX_NUM_UNICODE_FACETS 2
+#endif
 
   // Convert string to numeric value of type _Tp and store results.
   // NB: This is specialized for all required types, there is no

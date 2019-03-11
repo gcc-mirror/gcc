@@ -8904,6 +8904,10 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 
   loc = DECL_SOURCE_LOCATION (decl1);
 
+  /* A nested function is not global.  */
+  if (current_function_decl != NULL_TREE)
+    TREE_PUBLIC (decl1) = 0;
+
   c_decl_attributes (&decl1, attributes, 0);
 
   if (DECL_DECLARED_INLINE_P (decl1)
@@ -8944,10 +8948,6 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   /* Make the init_value nonzero so pushdecl knows this is not tentative.
      error_mark_node is replaced below (in pop_scope) with the BLOCK.  */
   DECL_INITIAL (decl1) = error_mark_node;
-
-  /* A nested function is not global.  */
-  if (current_function_decl != NULL_TREE)
-    TREE_PUBLIC (decl1) = 0;
 
   /* If this definition isn't a prototype and we had a prototype declaration
      before, copy the arg type info from that prototype.  */
@@ -9664,12 +9664,10 @@ finish_function (void)
       && !C_FUNCTION_IMPLICIT_INT (fndecl)
       /* Normally, with -Wreturn-type, flow will complain, but we might
          optimize out static functions.  */
-      && !TREE_PUBLIC (fndecl))
-    {
-      warning (OPT_Wreturn_type,
-	       "no return statement in function returning non-void");
-      TREE_NO_WARNING (fndecl) = 1;
-    }
+      && !TREE_PUBLIC (fndecl)
+      && warning (OPT_Wreturn_type,
+		  "no return statement in function returning non-void"))
+    TREE_NO_WARNING (fndecl) = 1;
 
   /* Complain about parameters that are only set, but never otherwise used.  */
   if (warn_unused_but_set_parameter)
@@ -11486,17 +11484,19 @@ c_write_global_declarations_1 (tree globals)
 	{
 	  if (C_DECL_USED (decl))
 	    {
-	      pedwarn (input_location, 0, "%q+F used but never defined", decl);
-	      TREE_NO_WARNING (decl) = 1;
+	      if (pedwarn (input_location, 0, "%q+F used but never defined",
+			   decl))
+		TREE_NO_WARNING (decl) = 1;
 	    }
 	  /* For -Wunused-function warn about unused static prototypes.  */
 	  else if (warn_unused_function
 		   && ! DECL_ARTIFICIAL (decl)
 		   && ! TREE_NO_WARNING (decl))
 	    {
-	      warning (OPT_Wunused_function,
-		       "%q+F declared %<static%> but never defined", decl);
-	      TREE_NO_WARNING (decl) = 1;
+	      if (warning (OPT_Wunused_function,
+			   "%q+F declared %<static%> but never defined",
+			   decl))
+		TREE_NO_WARNING (decl) = 1;
 	    }
 	}
 

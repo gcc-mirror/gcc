@@ -27,7 +27,25 @@ else version (TVOS)
 else version (WatchOS)
     version = Darwin;
 
+// qsort_r was added in glibc in 2.8. https://gcc.gnu.org/bugzilla/show_bug.cgi?id=88127
 version (CRuntime_Glibc)
+{
+    version (GNU)
+    {
+        import gcc.config : Have_Qsort_R;
+        enum Glibc_Qsort_R = Have_Qsort_R;
+    }
+    else
+    {
+        enum Glibc_Qsort_R = true;
+    }
+}
+else
+{
+    enum Glibc_Qsort_R = false;
+}
+
+static if (Glibc_Qsort_R)
 {
     alias extern (C) int function(scope const void *, scope const void *, scope void *) Cmp;
     extern (C) void qsort_r(scope void *base, size_t nmemb, size_t size, Cmp cmp, scope void *arg);

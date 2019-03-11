@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-stmt.h"
 #include "gomp-constants.h"
 #include "gimplify.h"
+#include "omp-general.h"
 
 #define MAX_LABEL_VALUE 99999
 
@@ -1406,18 +1407,32 @@ add_attributes_to_decl (symbol_attribute sym_attr, tree list)
     list = tree_cons (get_identifier ("omp declare target"),
 		      NULL_TREE, list);
 
-  if (sym_attr.oacc_function)
+  if (sym_attr.oacc_routine_lop != OACC_ROUTINE_LOP_NONE)
     {
-      tree dims = NULL_TREE;
-      int ix;
-      int level = sym_attr.oacc_function - 1;
+      omp_clause_code code;
+      switch (sym_attr.oacc_routine_lop)
+	{
+	case OACC_ROUTINE_LOP_GANG:
+	  code = OMP_CLAUSE_GANG;
+	  break;
+	case OACC_ROUTINE_LOP_WORKER:
+	  code = OMP_CLAUSE_WORKER;
+	  break;
+	case OACC_ROUTINE_LOP_VECTOR:
+	  code = OMP_CLAUSE_VECTOR;
+	  break;
+	case OACC_ROUTINE_LOP_SEQ:
+	  code = OMP_CLAUSE_SEQ;
+	  break;
+	case OACC_ROUTINE_LOP_NONE:
+	case OACC_ROUTINE_LOP_ERROR:
+	default:
+	  gcc_unreachable ();
+	}
+      tree c = build_omp_clause (UNKNOWN_LOCATION, code);
 
-      for (ix = GOMP_DIM_MAX; ix--;)
-	dims = tree_cons (build_int_cst (boolean_type_node, ix >= level),
-			  integer_zero_node, dims);
-
-      list = tree_cons (get_identifier ("oacc function"),
-			dims, list);
+      tree dims = oacc_build_routine_dims (c);
+      list = oacc_replace_fn_attrib_attr (list, dims);
     }
 
   return list;
@@ -1962,7 +1977,7 @@ get_proc_pointer_decl (gfc_symbol *sym)
 /* Get a basic decl for an external function.  */
 
 tree
-gfc_get_extern_function_decl (gfc_symbol * sym)
+gfc_get_extern_function_decl (gfc_symbol * sym, gfc_actual_arglist *actual_args)
 {
   tree type;
   tree fndecl;
@@ -2135,7 +2150,7 @@ module_sym:
       mangled_name = gfc_sym_mangled_function_id (sym);
     }
 
-  type = gfc_get_function_type (sym);
+  type = gfc_get_function_type (sym, actual_args);
   fndecl = build_decl (input_location,
 		       FUNCTION_DECL, name, type);
 
@@ -5399,6 +5414,33 @@ generate_coarray_sym_init (gfc_symbol *sym)
   /* Handle "static" initializer.  */
   if (sym->value)
     {
+      if (sym->value->expr_type == EXPR_ARRAY)
+	{
+	  gfc_constructor *c, *cnext;
+
+	  /* Test if the array has more than one element.  */
+	  c = gfc_constructor_first (sym->value->value.constructor);
+	  gcc_assert (c);  /* Empty constructor should not happen here.  */
+	  cnext = gfc_constructor_next (c);
+
+	  if (cnext)
+	    {
+	      /* An EXPR_ARRAY with a rank > 1 here has to come from a
+		 DATA statement.  Set its rank here as not to confuse
+		 the following steps.   */
+	      sym->value->rank = 1;
+	    }
+	  else
+	    {
+	      /* There is only a single value in the constructor, use
+		 it directly for the assignment.  */
+	      gfc_expr *new_expr;
+	      new_expr = gfc_copy_expr (c->expr);
+	      gfc_free_expr (sym->value);
+	      sym->value = new_expr;
+	    }
+	}
+
       sym->attr.pointer = 1;
       tmp = gfc_trans_assignment (gfc_lval_expr_from_sym (sym), sym->value,
 				  true, false);

@@ -676,7 +676,8 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
                 Loc linkLoc = token.loc;
                 Identifiers *idents = NULL;
                 CPPMANGLE cppmangle = CPPMANGLEdefault;
-                LINK link = parseLinkage(&idents, &cppmangle);
+                bool cppMangleOnly = false;
+                LINK link = parseLinkage(&idents, &cppmangle, &cppMangleOnly);
                 if (pAttrs->link != LINKdefault)
                 {
                     if (pAttrs->link != link)
@@ -709,7 +710,7 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
                             a = new Dsymbols();
                             a->push(s);
                         }
-                        s = new Nspace(linkLoc, id, a);
+                        s = new Nspace(linkLoc, id, a, cppMangleOnly);
                     }
                     delete idents;
                     pAttrs->link = LINKdefault;
@@ -1271,13 +1272,15 @@ Type *Parser::parseVector()
  * Parse:
  *      extern (linkage)
  *      extern (C++, namespaces)
+ *      extern (C++, "namespace", "namespaces", ...)
  * The parser is on the 'extern' token.
  */
 
-LINK Parser::parseLinkage(Identifiers **pidents, CPPMANGLE *pcppmangle)
+LINK Parser::parseLinkage(Identifiers **pidents, CPPMANGLE *pcppmangle, bool *pcppMangleOnly)
 {
     Identifiers *idents = NULL;
     CPPMANGLE cppmangle = CPPMANGLEdefault;
+    bool cppMangleOnly = false;
     LINK link = LINKdefault;
     nextToken();
     assert(token.value == TOKlparen);
@@ -1306,6 +1309,42 @@ LINK Parser::parseLinkage(Identifiers **pidents, CPPMANGLE *pcppmangle)
                     {
                         cppmangle = token.value == TOKclass ? CPPMANGLEclass : CPPMANGLEstruct;
                         nextToken();
+                    }
+                    else if (token.value == TOKstring)  // extern(C++, "namespace", "namespaces")
+                    {
+                        cppMangleOnly = true;
+                        idents = new Identifiers();
+
+                        while (1)
+                        {
+                            StringExp *stringExp = (StringExp *)parsePrimaryExp();
+                            const char *name = stringExp->toPtr();
+                            if (stringExp->len == 0)
+                            {
+                                error("invalid zero length C++ namespace");
+                                idents = NULL;
+                                break;
+                            }
+                            else if (!Identifier::isValidIdentifier(name))
+                            {
+                                error("expected valid identifer for C++ namespace but got `%s`", name);
+                                idents = NULL;
+                                break;
+                            }
+                            idents->push(Identifier::idPool(name));
+                            if (token.value == TOKcomma)
+                            {
+                                nextToken();
+                                if (token.value != TOKstring)
+                                {
+                                    error("string expected following `,` for C++ namespace, not `%s`", token.toChars());
+                                    idents = NULL;
+                                    break;
+                                }
+                            }
+                            else
+                                break;
+                        }
                     }
                     else
                     {
@@ -1368,6 +1407,7 @@ LINK Parser::parseLinkage(Identifiers **pidents, CPPMANGLE *pcppmangle)
     check(TOKrparen);
     *pidents = idents;
     *pcppmangle = cppmangle;
+    *pcppMangleOnly = cppMangleOnly;
     return link;
 }
 
@@ -3604,7 +3644,8 @@ void Parser::parseStorageClasses(StorageClass &storage_class, LINK &link,
                 sawLinkage = true;
                 Identifiers *idents = NULL;
                 CPPMANGLE cppmangle = CPPMANGLEdefault;
-                link = parseLinkage(&idents, &cppmangle);
+                bool cppMangleOnly = false;
+                link = parseLinkage(&idents, &cppmangle, &cppMangleOnly);
                 if (idents)
                 {
                     error("C++ name spaces not allowed here");

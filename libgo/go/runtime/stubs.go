@@ -231,6 +231,10 @@ func getcallerpc() uintptr
 //go:noescape
 func getcallersp() uintptr // implemented as an intrinsic on all platforms
 
+// getsp returns the stack pointer (SP) of the caller of getsp.
+//go:noinline
+func getsp() uintptr { return getcallersp() }
+
 func asmcgocall(fn, arg unsafe.Pointer) int32 {
 	throw("asmcgocall")
 	return 0
@@ -283,8 +287,7 @@ func eqstring(x, y string) bool {
 // For gccgo this is in the C code.
 func osyield()
 
-// For gccgo this can be called directly.
-//extern syscall
+//extern __go_syscall6
 func syscall(trap uintptr, a1, a2, a3, a4, a5, a6 uintptr) uintptr
 
 // For gccgo, to communicate from the C code to the Go code.

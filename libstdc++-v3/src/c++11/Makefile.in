@@ -320,6 +320,7 @@ VTV_CXXFLAGS = @VTV_CXXFLAGS@
 VTV_CXXLINKFLAGS = @VTV_CXXLINKFLAGS@
 VTV_PCH_CXXFLAGS = @VTV_PCH_CXXFLAGS@
 WARN_FLAGS = @WARN_FLAGS@
+XMLCATALOG = @XMLCATALOG@
 XMLLINT = @XMLLINT@
 XSLTPROC = @XSLTPROC@
 XSL_STYLE_DIR = @XSL_STYLE_DIR@
@@ -833,6 +834,16 @@ hashtable_c++0x.lo: hashtable_c++0x.cc
 	$(LTCXXCOMPILE) -fimplicit-templates -c $<
 hashtable_c++0x.o: hashtable_c++0x.cc
 	$(CXXCOMPILE) -fimplicit-templates -c $<
+
+# Use special rules for source files that require -fchar8_t.
+codecvt.lo: codecvt.cc
+	$(LTCXXCOMPILE) -fchar8_t -c $<
+codecvt.o: codecvt.cc
+	$(CXXCOMPILE) -fchar8_t -c $<
+limits.lo: limits.cc
+	$(LTCXXCOMPILE) -fchar8_t -c $<
+limits.o: limits.cc
+	$(CXXCOMPILE) -fchar8_t -c $<
 
 @ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure-lt.s: cxx11-ios_failure.cc
 @ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) -S $< -o tmp-cxx11-ios_failure-lt.s

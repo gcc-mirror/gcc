@@ -374,6 +374,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Now there follow 16 explicit specializations.  Yes, 16.  Make sure
   // you get the count right. (18 in C++11 mode, with char16_t and char32_t.)
+  // (+1 if char8_t is enabled.)
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 184. numeric_limits<bool> wording problems
@@ -724,6 +725,71 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
        = round_toward_zero;
     };
+
+#if _GLIBCXX_USE_CHAR8_T
+  /// numeric_limits<char8_t> specialization.
+  template<>
+    struct numeric_limits<char8_t>
+    {
+      static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
+
+      static _GLIBCXX_CONSTEXPR char8_t
+      min() _GLIBCXX_USE_NOEXCEPT { return __glibcxx_min (char8_t); }
+
+      static _GLIBCXX_CONSTEXPR char8_t
+      max() _GLIBCXX_USE_NOEXCEPT { return __glibcxx_max (char8_t); }
+
+      static _GLIBCXX_CONSTEXPR char8_t
+      lowest() _GLIBCXX_USE_NOEXCEPT { return min(); }
+
+      static _GLIBCXX_USE_CONSTEXPR int digits = __glibcxx_digits (char8_t);
+      static _GLIBCXX_USE_CONSTEXPR int digits10 = __glibcxx_digits10 (char8_t);
+      static _GLIBCXX_USE_CONSTEXPR int max_digits10 = 0;
+      static _GLIBCXX_USE_CONSTEXPR bool is_signed = __glibcxx_signed (char8_t);
+      static _GLIBCXX_USE_CONSTEXPR bool is_integer = true;
+      static _GLIBCXX_USE_CONSTEXPR bool is_exact = true;
+      static _GLIBCXX_USE_CONSTEXPR int radix = 2;
+
+      static _GLIBCXX_CONSTEXPR char8_t
+      epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
+
+      static _GLIBCXX_CONSTEXPR char8_t
+      round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
+
+      static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
+      static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = 0;
+      static _GLIBCXX_USE_CONSTEXPR int max_exponent = 0;
+      static _GLIBCXX_USE_CONSTEXPR int max_exponent10 = 0;
+
+      static _GLIBCXX_USE_CONSTEXPR bool has_infinity = false;
+      static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = false;
+      static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = false;
+      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
+	= denorm_absent;
+      static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
+
+      static _GLIBCXX_CONSTEXPR char8_t
+      infinity() _GLIBCXX_USE_NOEXCEPT { return char8_t(); }
+
+      static _GLIBCXX_CONSTEXPR char8_t
+      quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return char8_t(); }
+
+      static _GLIBCXX_CONSTEXPR char8_t
+      signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return char8_t(); }
+
+      static _GLIBCXX_CONSTEXPR char8_t
+      denorm_min() _GLIBCXX_USE_NOEXCEPT { return char8_t(); }
+
+      static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
+      static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
+      static _GLIBCXX_USE_CONSTEXPR bool is_modulo = !is_signed;
+
+      static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
+      static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
+      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
+	= round_toward_zero;
+    };
+#endif
 
 #if __cplusplus >= 201103L
   /// numeric_limits<char16_t> specialization.

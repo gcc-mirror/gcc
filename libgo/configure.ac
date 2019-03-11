@@ -353,6 +353,20 @@ AC_SUBST(GOARCH)
 AC_SUBST(ALLGOARCH)
 AC_SUBST(ALLGOARCHFAMILY)
 
+FUNCTION_DESCRIPTORS=false
+case ${host} in
+  rs6000*-*-* | powerpc*-*-*)
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+#if _CALL_ELF == 1
+#error descriptors
+#endif
+])],
+	[FUNCTION_DESCRIPTORS=false],
+	[FUNCTION_DESCRIPTORS=true])
+    ;;
+esac
+AC_SUBST(FUNCTION_DESCRIPTORS)
+
 dnl Some files are only present when needed for specific architectures.
 GO_LIBCALL_OS_FILE=
 GO_LIBCALL_OS_ARCH_FILE=

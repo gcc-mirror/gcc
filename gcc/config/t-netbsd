@@ -19,3 +19,7 @@
 netbsd.o: $(srcdir)/config/netbsd.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
+
+netbsd-d.o: $(srcdir)/config/netbsd-d.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)

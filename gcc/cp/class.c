@@ -5137,7 +5137,8 @@ trivial_default_constructor_is_constexpr (tree t)
   /* A defaulted trivial default constructor is constexpr
      if there is nothing to initialize.  */
   gcc_assert (!TYPE_HAS_COMPLEX_DFLT (t));
-  return is_really_empty_class (t);
+  /* A class with a vptr doesn't have a trivial default ctor.  */
+  return is_really_empty_class (t, /*ignore_vptr*/true);
 }
 
 /* Returns true iff class T has a constexpr default constructor.  */
@@ -5219,7 +5220,9 @@ classtype_has_move_assign_or_move_ctor_p (tree t, bool user_p)
     for (ovl_iterator iter (get_class_binding_direct
 			    (t, assign_op_identifier));
 	 iter; ++iter)
-      if ((!user_p || !DECL_ARTIFICIAL (*iter)) && move_fn_p (*iter))
+      if ((!user_p || !DECL_ARTIFICIAL (*iter))
+	  && DECL_CONTEXT (*iter) == t
+	  && move_fn_p (*iter))
 	return true;
   
   return false;
@@ -8310,10 +8313,12 @@ is_empty_class (tree type)
 }
 
 /* Returns true if TYPE contains no actual data, just various
-   possible combinations of empty classes and possibly a vptr.  */
+   possible combinations of empty classes.  If IGNORE_VPTR is true,
+   a vptr doesn't prevent the class from being considered empty.  Typically
+   we want to ignore the vptr on assignment, and not on initialization.  */
 
 bool
-is_really_empty_class (tree type)
+is_really_empty_class (tree type, bool ignore_vptr)
 {
   if (CLASS_TYPE_P (type))
     {
@@ -8327,22 +8332,25 @@ is_really_empty_class (tree type)
       if (COMPLETE_TYPE_P (type) && is_empty_class (type))
 	return true;
 
+      if (!ignore_vptr && TYPE_CONTAINS_VPTR_P (type))
+	return false;
+
       for (binfo = TYPE_BINFO (type), i = 0;
 	   BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
-	if (!is_really_empty_class (BINFO_TYPE (base_binfo)))
+	if (!is_really_empty_class (BINFO_TYPE (base_binfo), ignore_vptr))
 	  return false;
       for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL
 	    && !DECL_ARTIFICIAL (field)
 	    /* An unnamed bit-field is not a data member.  */
 	    && !DECL_UNNAMED_BIT_FIELD (field)
-	    && !is_really_empty_class (TREE_TYPE (field)))
+	    && !is_really_empty_class (TREE_TYPE (field), ignore_vptr))
 	  return false;
       return true;
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     return (integer_zerop (array_type_nelts_top (type))
-	    || is_really_empty_class (TREE_TYPE (type)));
+	    || is_really_empty_class (TREE_TYPE (type), ignore_vptr));
   return false;
 }
 

@@ -31,9 +31,18 @@
 # error "ATOMIC_CHAR_LOCK_FREE must be 1 or 2"
 #endif
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+# ifndef ATOMIC_CHAR8_T_LOCK_FREE
+#  error "ATOMIC_CHAR8_T_LOCK_FREE must be a macro"
+# elif ATOMIC_CHAR8_T_LOCK_FREE != 1 && ATOMIC_CHAR8_T_LOCK_FREE != 2
+#  error "ATOMIC_CHAR8_T_LOCK_FREE must be 1 or 2"
+# endif
+#endif
+
 #ifndef ATOMIC_CHAR16_T_LOCK_FREE 
 # error "ATOMIC_CHAR16_T_LOCK_FREE must be a macro"
 #elif ATOMIC_CHAR16_T_LOCK_FREE != 1 && ATOMIC_CHAR16_T_LOCK_FREE != 2
+# error "ATOMIC_CHAR16_T_LOCK_FREE must be 1 or 2"
 #endif
 
 #ifndef ATOMIC_CHAR32_T_LOCK_FREE 

@@ -180,8 +180,10 @@ public:
     Module *getModule();
     Module *getAccessModule();
     Dsymbol *pastMixin();
+    Dsymbol *pastMixinAndNspace();
     Dsymbol *toParent();
     Dsymbol *toParent2();
+    Dsymbol *toParent3();
     TemplateInstance *isInstantiated();
     TemplateInstance *isSpeculative();
     Ungag ungagSpeculative();

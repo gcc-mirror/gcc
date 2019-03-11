@@ -734,10 +734,9 @@ s390_const_operand_ok (tree arg, int argnum, int op_flags, tree decl)
       if (!tree_fits_uhwi_p (arg)
 	  || tree_to_uhwi (arg) > (HOST_WIDE_INT_1U << bitwidth) - 1)
 	{
-	  error("constant argument %d for builtin %qF is out of range (0.."
-		HOST_WIDE_INT_PRINT_UNSIGNED ")",
-		argnum, decl,
-		(HOST_WIDE_INT_1U << bitwidth) - 1);
+	  error ("constant argument %d for builtin %qF is out of range "
+		 "(0..%wu)", argnum, decl,
+		 (HOST_WIDE_INT_1U << bitwidth) - 1);
 	  return false;
 	}
     }
@@ -751,12 +750,10 @@ s390_const_operand_ok (tree arg, int argnum, int op_flags, tree decl)
 	  || tree_to_shwi (arg) < -(HOST_WIDE_INT_1 << (bitwidth - 1))
 	  || tree_to_shwi (arg) > ((HOST_WIDE_INT_1 << (bitwidth - 1)) - 1))
 	{
-	  error("constant argument %d for builtin %qF is out of range ("
-		HOST_WIDE_INT_PRINT_DEC ".."
-		HOST_WIDE_INT_PRINT_DEC ")",
-		argnum, decl,
-		-(HOST_WIDE_INT_1 << (bitwidth - 1)),
-		(HOST_WIDE_INT_1 << (bitwidth - 1)) - 1);
+	  error ("constant argument %d for builtin %qF is out of range "
+		 "(%wd..%wd)", argnum, decl,
+		 -(HOST_WIDE_INT_1 << (bitwidth - 1)),
+		 (HOST_WIDE_INT_1 << (bitwidth - 1)) - 1);
 	  return false;
 	}
     }
@@ -15462,6 +15459,7 @@ s390_can_inline_p (tree caller, tree callee)
 
   return ret;
 }
+#endif
 
 /* Set VAL to correct enum value according to the indirect-branch or
    function-return attribute in ATTR.  */
@@ -15535,6 +15533,7 @@ s390_indirect_branch_settings (tree fndecl)
     s390_indirect_branch_attrvalue (attr, &cfun->machine->function_return_mem);
 }
 
+#if S390_USE_TARGET_ATTRIBUTE
 /* Restore targets globals from NEW_TREE and invalidate s390_previous_fndecl
    cache.  */
 
@@ -15550,6 +15549,7 @@ s390_activate_target_options (tree new_tree)
     TREE_TARGET_GLOBALS (new_tree) = save_target_globals_default_opts ();
   s390_previous_fndecl = NULL_TREE;
 }
+#endif
 
 /* Establish appropriate back-end context for processing the function
    FNDECL.  The argument might be NULL to indicate processing at top
@@ -15557,6 +15557,7 @@ s390_activate_target_options (tree new_tree)
 static void
 s390_set_current_function (tree fndecl)
 {
+#if S390_USE_TARGET_ATTRIBUTE
   /* Only change the context if the function changes.  This hook is called
      several times in the course of compiling a function, and we don't want to
      slow things down too much or call target_reinit when it isn't safe.  */
@@ -15588,10 +15589,9 @@ s390_set_current_function (tree fndecl)
   if (old_tree != new_tree)
     s390_activate_target_options (new_tree);
   s390_previous_fndecl = fndecl;
-
+#endif
   s390_indirect_branch_settings (fndecl);
 }
-#endif
 
 /* Implement TARGET_USE_BY_PIECES_INFRASTRUCTURE_P.  */
 
@@ -16331,10 +16331,10 @@ s390_case_values_threshold (void)
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END s390_asm_file_end
 
-#if S390_USE_TARGET_ATTRIBUTE
 #undef TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION s390_set_current_function
 
+#if S390_USE_TARGET_ATTRIBUTE
 #undef TARGET_OPTION_VALID_ATTRIBUTE_P
 #define TARGET_OPTION_VALID_ATTRIBUTE_P s390_valid_target_attribute_p
 

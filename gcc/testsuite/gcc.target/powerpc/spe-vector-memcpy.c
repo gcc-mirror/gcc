@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -mcpu=8540 -mspe -mabi=spe -mfloat-gprs=single" } */
+/* { dg-options "-O -mdejagnu-cpu=8540 -mspe -mabi=spe -mfloat-gprs=single" } */
 /* { dg-skip-if "not an SPE target" { ! powerpc_spe_nocache } } */
 /* { dg-final { scan-assembler "evstdd" } } */
 

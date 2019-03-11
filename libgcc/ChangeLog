@@ -1,3 +1,23 @@
+2019-02-21  Martin Sebor  <msebor@redhat.com>
+
+	* libgcc2.h (__clear_cache): Correct signature.
+	* libgcc2.c (__clear_cache): Same.
+
+2019-02-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/linux-unwind.h (alpha_fallback_frame_state):
+	Cast 'mcontext_t *' &rt_->uc.uc_mcontext to 'struct sigcontext *'.
+
+2019-02-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* unwind-dw2.c (_Unwind_GetGR) [DWARF_ZERO_REG]: Compare
+	regno instead of index to DWARF_ZERO_REG.
+
+2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/visium/lib2funcs.c (__set_trampoline_parity): Replace
+	TRAMPOLINE_SIZE with __LIBGCC_TRAMPOLINE_SIZE__.
+
 2019-01-31  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/t-linux: Add -mfp-rounding-mode=d

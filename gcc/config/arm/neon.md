@@ -2473,8 +2473,8 @@
 })
 
 ;; Used to implement the intrinsics:
-;; float32x4_t vfmlalq_lane_low_u32 (float32x4_t r, float16x8_t a, float16x4_t b, const int lane)
-;; float32x2_t vfmlal_laneq_low_u32 (float32x2_t r, float16x4_t a, float16x8_t b, const int lane)
+;; float32x4_t vfmlalq_lane_low_f16 (float32x4_t r, float16x8_t a, float16x4_t b, const int lane)
+;; float32x2_t vfmlal_laneq_low_f16 (float32x2_t r, float16x4_t a, float16x8_t b, const int lane)
 ;; Needs a bit of care to get the modes of the different sub-expressions right
 ;; due to 'a' and 'b' having different sizes and make sure we use the right
 ;; S or D subregister to select the appropriate lane from.
@@ -2510,8 +2510,8 @@
 )
 
 ;; Used to implement the intrinsics:
-;; float32x4_t vfmlalq_lane_high_u32 (float32x4_t r, float16x8_t a, float16x4_t b, const int lane)
-;; float32x2_t vfmlal_laneq_high_u32 (float32x2_t r, float16x4_t a, float16x8_t b, const int lane)
+;; float32x4_t vfmlalq_lane_high_f16 (float32x4_t r, float16x8_t a, float16x4_t b, const int lane)
+;; float32x2_t vfmlal_laneq_high_f16 (float32x2_t r, float16x4_t a, float16x8_t b, const int lane)
 ;; Needs a bit of care to get the modes of the different sub-expressions right
 ;; due to 'a' and 'b' having different sizes and make sure we use the right
 ;; S or D subregister to select the appropriate lane from.
@@ -2607,8 +2607,8 @@
 )
 
 ;; Used to implement the intrinsics:
-;; float32x4_t vfmlslq_lane_low_u32 (float32x4_t r, float16x8_t a, float16x4_t b, const int lane)
-;; float32x2_t vfmlsl_laneq_low_u32 (float32x2_t r, float16x4_t a, float16x8_t b, const int lane)
+;; float32x4_t vfmlslq_lane_low_f16 (float32x4_t r, float16x8_t a, float16x4_t b, const int lane)
+;; float32x2_t vfmlsl_laneq_low_f16 (float32x2_t r, float16x4_t a, float16x8_t b, const int lane)
 ;; Needs a bit of care to get the modes of the different sub-expressions right
 ;; due to 'a' and 'b' having different sizes and make sure we use the right
 ;; S or D subregister to select the appropriate lane from.
@@ -2645,8 +2645,8 @@
 )
 
 ;; Used to implement the intrinsics:
-;; float32x4_t vfmlslq_lane_high_u32 (float32x4_t r, float16x8_t a, float16x4_t b, const int lane)
-;; float32x2_t vfmlsl_laneq_high_u32 (float32x2_t r, float16x4_t a, float16x8_t b, const int lane)
+;; float32x4_t vfmlslq_lane_high_f16 (float32x4_t r, float16x8_t a, float16x4_t b, const int lane)
+;; float32x2_t vfmlsl_laneq_high_f16 (float32x2_t r, float16x4_t a, float16x8_t b, const int lane)
 ;; Needs a bit of care to get the modes of the different sub-expressions right
 ;; due to 'a' and 'b' having different sizes and make sure we use the right
 ;; S or D subregister to select the appropriate lane from.
@@ -3610,7 +3610,7 @@
   "{
      rtx v_bitmask_cast;
      rtx v_bitmask = gen_reg_rtx (<VCVTF:V_cmp_result>mode);
-     rtx c = GEN_INT (0x80000000);
+     rtx c = gen_int_mode (0x80000000, SImode);
 
      emit_move_insn (v_bitmask,
 		     gen_const_vec_duplicate (<VCVTF:V_cmp_result>mode, c));

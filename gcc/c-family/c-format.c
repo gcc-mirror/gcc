@@ -1268,9 +1268,9 @@ maybe_read_dollar_number (const char **format,
   overflow_flag = 0;
   while (ISDIGIT (*fcp))
     {
-      int nargnum;
-      nargnum = 10 * argnum + (*fcp - '0');
-      if (nargnum < 0 || nargnum / 10 != argnum)
+      HOST_WIDE_INT nargnum
+	= HOST_WIDE_INT_UC (10) * argnum + (*fcp - '0');
+      if ((int) nargnum != nargnum)
 	overflow_flag = 1;
       argnum = nargnum;
       fcp++;

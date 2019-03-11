@@ -913,7 +913,8 @@
         /* Emit subs\\t%0, %1, %2\;it\\tne\;mvnne\\t%0, #0 */
         if (CONST_INT_P (operands[2]))
           emit_insn (gen_cmpsi2_addneg (operands[0], operands[1], operands[2],
-                                        GEN_INT (- INTVAL (operands[2]))));
+                                        gen_int_mode (-INTVAL (operands[2]),
+						      SImode)));
         else
           emit_insn (gen_subsi3_compare (operands[0], operands[1], operands[2]));
 
@@ -1079,17 +1080,37 @@
    (set_attr "neg_pool_range" "*,250")]
 )
 
-(define_insn "thumb2_casesi_internal"
+(define_expand "thumb2_casesi_internal"
+  [(parallel [(set (pc)
+	       (if_then_else
+		(leu (match_operand:SI 0 "s_register_operand")
+		     (match_operand:SI 1 "arm_rhs_operand"))
+		(match_dup 4)
+		(label_ref:SI (match_operand 3 ""))))
+	      (clobber (reg:CC CC_REGNUM))
+	      (clobber (match_scratch:SI 5))
+	      (use (label_ref:SI (match_operand 2 "")))])]
+  "TARGET_THUMB2 && !flag_pic"
+{
+  operands[4] = gen_rtx_MULT (SImode, operands[0], GEN_INT (4));
+  operands[4] = gen_rtx_PLUS (SImode, operands[4],
+			      gen_rtx_LABEL_REF (SImode, operands[2]));
+  operands[4] = gen_rtx_MEM (SImode, operands[4]);
+  MEM_READONLY_P (operands[4]) = 1;
+  MEM_NOTRAP_P (operands[4]) = 1;
+})
+
+(define_insn "*thumb2_casesi_internal"
   [(parallel [(set (pc)
 	       (if_then_else
 		(leu (match_operand:SI 0 "s_register_operand" "r")
 		     (match_operand:SI 1 "arm_rhs_operand" "rI"))
 		(mem:SI (plus:SI (mult:SI (match_dup 0) (const_int 4))
-				 (label_ref (match_operand 2 "" ""))))
-		(label_ref (match_operand 3 "" ""))))
+				 (label_ref:SI (match_operand 2 "" ""))))
+		(label_ref:SI (match_operand 3 "" ""))))
 	      (clobber (reg:CC CC_REGNUM))
 	      (clobber (match_scratch:SI 4 "=&r"))
-	      (use (label_ref (match_dup 2)))])]
+	      (use (label_ref:SI (match_dup 2)))])]
   "TARGET_THUMB2 && !flag_pic"
   "* return thumb2_output_casesi(operands);"
   [(set_attr "conds" "clob")
@@ -1097,18 +1118,39 @@
    (set_attr "type" "multiple")]
 )
 
-(define_insn "thumb2_casesi_internal_pic"
+(define_expand "thumb2_casesi_internal_pic"
+  [(parallel [(set (pc)
+	       (if_then_else
+		(leu (match_operand:SI 0 "s_register_operand")
+		     (match_operand:SI 1 "arm_rhs_operand"))
+		(match_dup 4)
+		(label_ref:SI (match_operand 3 ""))))
+	      (clobber (reg:CC CC_REGNUM))
+	      (clobber (match_scratch:SI 5))
+	      (clobber (match_scratch:SI 6))
+	      (use (label_ref:SI (match_operand 2 "")))])]
+  "TARGET_THUMB2 && flag_pic"
+{
+  operands[4] = gen_rtx_MULT (SImode, operands[0], GEN_INT (4));
+  operands[4] = gen_rtx_PLUS (SImode, operands[4],
+			      gen_rtx_LABEL_REF (SImode, operands[2]));
+  operands[4] = gen_rtx_MEM (SImode, operands[4]);
+  MEM_READONLY_P (operands[4]) = 1;
+  MEM_NOTRAP_P (operands[4]) = 1;
+})
+
+(define_insn "*thumb2_casesi_internal_pic"
   [(parallel [(set (pc)
 	       (if_then_else
 		(leu (match_operand:SI 0 "s_register_operand" "r")
 		     (match_operand:SI 1 "arm_rhs_operand" "rI"))
 		(mem:SI (plus:SI (mult:SI (match_dup 0) (const_int 4))
-				 (label_ref (match_operand 2 "" ""))))
-		(label_ref (match_operand 3 "" ""))))
+				 (label_ref:SI (match_operand 2 "" ""))))
+		(label_ref:SI (match_operand 3 "" ""))))
 	      (clobber (reg:CC CC_REGNUM))
 	      (clobber (match_scratch:SI 4 "=&r"))
 	      (clobber (match_scratch:SI 5 "=r"))
-	      (use (label_ref (match_dup 2)))])]
+	      (use (label_ref:SI (match_dup 2)))])]
   "TARGET_THUMB2 && flag_pic"
   "* return thumb2_output_casesi(operands);"
   [(set_attr "conds" "clob")

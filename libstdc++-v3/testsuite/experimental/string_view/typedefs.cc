@@ -24,12 +24,16 @@ template<typename C, typename T>
 
 using check2_t = std::experimental::fundamentals_v1::string_view;
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+using check3_t = std::experimental::fundamentals_v1::u8string_view;
+#endif
+
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
-using check3_t = std::experimental::fundamentals_v1::u16string_view;
-using check4_t = std::experimental::fundamentals_v1::u32string_view;
+using check4_t = std::experimental::fundamentals_v1::u16string_view;
+using check5_t = std::experimental::fundamentals_v1::u32string_view;
 #endif
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-using check5_t = std::experimental::fundamentals_v1::wstring_view;
+using check6_t = std::experimental::fundamentals_v1::wstring_view;
 #endif
 

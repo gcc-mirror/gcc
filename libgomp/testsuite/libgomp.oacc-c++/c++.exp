@@ -77,18 +77,24 @@ if { $lang_test_file_found } {
 	set libstdcxx_includes ""
     }
 
-    # Test OpenACC with available accelerators.
-    foreach offload_target_openacc $offload_targets_s_openacc {
-	set tagopt "-DACC_DEVICE_TYPE_$offload_target_openacc=1"
+    # Test with all available offload targets, and with offloading disabled.
+    foreach offload_target [concat [split $offload_targets ","] "disable"] {
+	global openacc_device_type
+	set openacc_device_type [offload_target_to_openacc_device_type $offload_target]
+	set tagopt "-DACC_DEVICE_TYPE_$openacc_device_type=1"
 
-	switch $offload_target_openacc {
+	switch $openacc_device_type {
+	    "" {
+		unsupported "$subdir $offload_target offloading"
+		continue
+	    }
 	    host {
 		set acc_mem_shared 1
 	    }
 	    nvidia {
 		if { ![check_effective_target_openacc_nvidia_accel_present] } {
 		    # Don't bother; execution testing is going to FAIL.
-		    untested "$subdir $offload_target_openacc offloading"
+		    untested "$subdir $offload_target offloading: supported, but hardware not accessible"
 		    continue
 		}
 
@@ -101,12 +107,17 @@ if { $lang_test_file_found } {
 		set acc_mem_shared 0
 	    }
 	    default {
-		set acc_mem_shared 0
+		error "Unknown OpenACC device type: $openacc_device_type (offload target: $offload_target)"
 	    }
 	}
 	set tagopt "$tagopt -DACC_MEM_SHARED=$acc_mem_shared"
 
-	setenv ACC_DEVICE_TYPE $offload_target_openacc
+	# To avoid compilation overhead, and to keep simple '-foffload=[...]'
+	# handling in test cases, by default only build for the offload target
+	# that we're actually going to test.
+	set tagopt "$tagopt -foffload=$offload_target"
+	# Force usage of the corresponding OpenACC device type.
+	setenv ACC_DEVICE_TYPE $openacc_device_type
 
 	# To get better test coverage for device-specific code that is only
 	# ever used in offloading configurations, we'd like more thorough
@@ -115,8 +126,8 @@ if { $lang_test_file_found } {
 	# -O0 and -O2 only, to avoid testing times exploding too much, under
 	# the assumption that between -O0 and -O[something] there is the
 	# biggest difference in the overall structure of the generated code.
-	switch $offload_target_openacc {
-	    host {
+	switch -glob $offload_target {
+	    disable {
 		set-torture-options [list \
 					 { -O2 } ]
 	    }

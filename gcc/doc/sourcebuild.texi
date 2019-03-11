@@ -2967,7 +2967,7 @@ in @file{lib/gcc-dg.exp} to compile and run the test program.  A typical
 @command{gcov} test contains the following DejaGnu commands within comments:
 
 @smallexample
-@{ dg-options "-fprofile-arcs -ftest-coverage" @}
+@{ dg-options "--coverage" @}
 @{ dg-do run @{ target native @} @}
 @{ dg-final @{ run-gcov sourcefile @} @}
 @end smallexample

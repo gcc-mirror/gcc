@@ -208,8 +208,7 @@ namespace std
 #endif // _GLIBCXX_HAVE_BUILTIN_LAUNDER
 #endif // C++17
 
-#if __cpp_impl_destroying_delete
-#define __cpp_lib_destroying_delete 201806L
+#if __cplusplus > 201703L
 namespace std
 {
   struct destroying_delete_t
@@ -218,7 +217,11 @@ namespace std
   };
   inline constexpr destroying_delete_t destroying_delete{};
 }
-#endif // destroying delete
+// Only define the feature test macro if the compiler supports the feature:
+#if __cpp_impl_destroying_delete
+# define __cpp_lib_destroying_delete 201806L
+#endif
+#endif // C++20
 
 #pragma GCC visibility pop
 

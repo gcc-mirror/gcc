@@ -1161,10 +1161,6 @@ class Type
   append_mangled_name(const Type* type, Gogo* gogo, std::string* ret) const
   { type->do_mangled_name(gogo, ret); }
 
-  // Incorporate a string into a hash code.
-  static unsigned int
-  hash_string(const std::string&, unsigned int);
-
   // Return the backend representation for the underlying type of a
   // named type.
   static Btype*
@@ -3090,7 +3086,7 @@ class Interface_type : public Type
     return this->all_methods_ == NULL;
   }
 
-  // Return the list of locally defined methos.  This will return NULL
+  // Return the list of locally defined methods.  This will return NULL
   // for an empty interface.  Embedded interfaces will appear in this
   // list as an entry with no name.
   const Typed_identifier_list*

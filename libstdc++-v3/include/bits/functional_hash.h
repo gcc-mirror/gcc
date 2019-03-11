@@ -135,6 +135,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Explicit specialization for wchar_t.
   _Cxx_hashtable_define_trivial_hash(wchar_t)
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+  /// Explicit specialization for char8_t.
+  _Cxx_hashtable_define_trivial_hash(char8_t)
+#endif
+
   /// Explicit specialization for char16_t.
   _Cxx_hashtable_define_trivial_hash(char16_t)
 

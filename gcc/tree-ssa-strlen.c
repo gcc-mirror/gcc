@@ -156,7 +156,8 @@ struct decl_stridxlist_map
    mappings.  */
 static hash_map<tree_decl_hash, stridxlist> *decl_to_stridxlist_htab;
 
-/* Hash table mapping strlen calls to stridx instances describing
+/* Hash table mapping strlen (or strnlen with constant bound and return
+   smaller than bound) calls to stridx instances describing
    the calls' arguments.  Non-null only when warn_stringop_truncation
    is non-zero.  */
 typedef std::pair<int, location_t> stridx_strlenloc;
@@ -1269,19 +1270,33 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
   tree bound = (DECL_FUNCTION_CODE (callee) == BUILT_IN_STRNLEN
 		? gimple_call_arg (stmt, 1) : NULL_TREE);
   int idx = get_stridx (src);
-  if (idx)
+  if (idx || (bound && integer_zerop (bound)))
     {
       strinfo *si = NULL;
       tree rhs;
 
       if (idx < 0)
 	rhs = build_int_cst (TREE_TYPE (lhs), ~idx);
+      else if (idx == 0)
+	rhs = bound;
       else
 	{
 	  rhs = NULL_TREE;
 	  si = get_strinfo (idx);
 	  if (si != NULL)
-	    rhs = get_string_length (si);
+	    {
+	      rhs = get_string_length (si);
+	      /* For strnlen, if bound is constant, even if si is not known
+		 to be zero terminated, if we know at least bound bytes are
+		 not zero, the return value will be bound.  */
+	      if (rhs == NULL_TREE
+		  && bound != NULL_TREE
+		  && TREE_CODE (bound) == INTEGER_CST
+		  && si->nonzero_chars != NULL_TREE
+		  && TREE_CODE (si->nonzero_chars) == INTEGER_CST
+		  && tree_int_cst_le (bound, si->nonzero_chars))
+		rhs = bound;
+	    }
 	}
       if (rhs != NULL_TREE)
 	{
@@ -1294,18 +1309,8 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
 	  if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
 	    rhs = fold_convert_loc (loc, TREE_TYPE (lhs), rhs);
 
-	  /* Set for strnlen() calls with a non-constant bound.  */
-	  bool noncst_bound = false;
 	  if (bound)
-	    {
-	      tree new_rhs
-		= fold_build2_loc (loc, MIN_EXPR, TREE_TYPE (rhs), rhs, bound);
-
-	      noncst_bound = (TREE_CODE (new_rhs) != INTEGER_CST
-			      || tree_int_cst_lt (new_rhs, rhs));
-
-	      rhs = new_rhs;
-	    }
+	    rhs = fold_build2_loc (loc, MIN_EXPR, TREE_TYPE (rhs), rhs, bound);
 
 	  if (!update_call_from_tree (gsi, rhs))
 	    gimplify_and_update_call_from_tree (gsi, rhs);
@@ -1317,12 +1322,9 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
 	      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 	    }
 
-	  /* Avoid storing the length for calls to strnlen() with
-	     a non-constant bound.  */
-	  if (noncst_bound)
-	    return;
-
 	  if (si != NULL
+	      /* Don't update anything for strnlen.  */
+	      && bound == NULL_TREE
 	      && TREE_CODE (si->nonzero_chars) != SSA_NAME
 	      && TREE_CODE (si->nonzero_chars) != INTEGER_CST
 	      && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
@@ -1332,7 +1334,13 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
 	      gcc_assert (si->full_string_p);
 	    }
 
-	  if (strlen_to_stridx)
+	  if (strlen_to_stridx
+	      && (bound == NULL_TREE
+		  /* For strnlen record this only if the call is proven
+		     to return the same value as strlen would.  */
+		  || (TREE_CODE (bound) == INTEGER_CST
+		      && TREE_CODE (rhs) == INTEGER_CST
+		      && tree_int_cst_lt (rhs, bound))))
 	    strlen_to_stridx->put (lhs, stridx_strlenloc (idx, loc));
 
 	  return;

@@ -363,7 +363,11 @@ use_object_blocks_p (void)
 
 /* Return the object_block structure for section SECT.  Create a new
    structure if we haven't created one already.  Return null if SECT
-   itself is null.  */
+   itself is null.  Return also null for mergeable sections since
+   section anchors can't be used in mergeable sections anyway,
+   because the linker might move objects around, and using the
+   object blocks infrastructure in that case is both a waste and a
+   maintenance burden.  */
 
 static struct object_block *
 get_block_for_section (section *sect)
@@ -371,6 +375,9 @@ get_block_for_section (section *sect)
   struct object_block *block;
 
   if (sect == NULL)
+    return NULL;
+
+  if (sect->common.flags & SECTION_MERGE)
     return NULL;
 
   object_block **slot
@@ -2961,7 +2968,9 @@ decode_addr_const (tree exp, struct addr_const *value)
     case COMPLEX_CST:
     case CONSTRUCTOR:
     case INTEGER_CST:
-      x = output_constant_def (target, 1);
+      x = lookup_constant_def (target);
+      /* Should have been added by output_addressed_constants.  */
+      gcc_assert (x);
       break;
 
     case INDIRECT_REF:
@@ -3424,6 +3433,43 @@ build_constant_desc (tree exp)
   return desc;
 }
 
+/* Subroutine of output_constant_def and tree_output_constant_def:
+   Add a constant to the hash table that tracks which constants
+   already have labels.  */
+
+static constant_descriptor_tree *
+add_constant_to_table (tree exp)
+{
+  /* The hash table methods may call output_constant_def for addressed
+     constants, so handle them first.  */
+  output_addressed_constants (exp);
+
+  /* Sanity check to catch recursive insertion.  */
+  static bool inserting;
+  gcc_assert (!inserting);
+  inserting = true;
+
+  /* Look up EXP in the table of constant descriptors.  If we didn't
+     find it, create a new one.  */
+  struct constant_descriptor_tree key;
+  key.value = exp;
+  key.hash = const_hash_1 (exp);
+  constant_descriptor_tree **loc
+    = const_desc_htab->find_slot_with_hash (&key, key.hash, INSERT);
+
+  inserting = false;
+
+  struct constant_descriptor_tree *desc = *loc;
+  if (!desc)
+    {
+      desc = build_constant_desc (exp);
+      desc->hash = key.hash;
+      *loc = desc;
+    }
+
+  return desc;
+}
+
 /* Return an rtx representing a reference to constant data in memory
    for the constant expression EXP.
 
@@ -3440,24 +3486,7 @@ build_constant_desc (tree exp)
 rtx
 output_constant_def (tree exp, int defer)
 {
-  struct constant_descriptor_tree *desc;
-  struct constant_descriptor_tree key;
-
-  /* Look up EXP in the table of constant descriptors.  If we didn't find
-     it, create a new one.  */
-  key.value = exp;
-  key.hash = const_hash_1 (exp);
-  constant_descriptor_tree **loc
-    = const_desc_htab->find_slot_with_hash (&key, key.hash, INSERT);
-
-  desc = *loc;
-  if (desc == 0)
-    {
-      desc = build_constant_desc (exp);
-      desc->hash = key.hash;
-      *loc = desc;
-    }
-
+  struct constant_descriptor_tree *desc = add_constant_to_table (exp);
   maybe_output_constant_def_contents (desc, defer);
   return desc->rtl;
 }
@@ -3591,25 +3620,8 @@ lookup_constant_def (tree exp)
 tree
 tree_output_constant_def (tree exp)
 {
-  struct constant_descriptor_tree *desc, key;
-  tree decl;
-
-  /* Look up EXP in the table of constant descriptors.  If we didn't find
-     it, create a new one.  */
-  key.value = exp;
-  key.hash = const_hash_1 (exp);
-  constant_descriptor_tree **loc
-    = const_desc_htab->find_slot_with_hash (&key, key.hash, INSERT);
-
-  desc = *loc;
-  if (desc == 0)
-    {
-      desc = build_constant_desc (exp);
-      desc->hash = key.hash;
-      *loc = desc;
-    }
-
-  decl = SYMBOL_REF_DECL (XEXP (desc->rtl, 0));
+  struct constant_descriptor_tree *desc = add_constant_to_table (exp);
+  tree decl = SYMBOL_REF_DECL (XEXP (desc->rtl, 0));
   varpool_node::finalize_decl (decl);
   return decl;
 }
@@ -7009,14 +7021,13 @@ default_asm_output_anchor (rtx symbol)
 bool
 default_use_anchors_for_symbol_p (const_rtx symbol)
 {
-  section *sect;
   tree decl;
+  section *sect = SYMBOL_REF_BLOCK (symbol)->sect;
 
-  /* Don't use anchors for mergeable sections.  The linker might move
-     the objects around.  */
-  sect = SYMBOL_REF_BLOCK (symbol)->sect;
-  if (sect->common.flags & SECTION_MERGE)
-    return false;
+  /* This function should only be called with non-zero SYMBOL_REF_BLOCK,
+     furthermore get_block_for_section should not create object blocks
+     for mergeable sections.  */
+  gcc_checking_assert (sect && !(sect->common.flags & SECTION_MERGE));
 
   /* Don't use anchors for small data sections.  The small data register
      acts as an anchor for such sections.  */
@@ -7625,6 +7636,7 @@ output_object_block (struct object_block *block)
   else
     switch_to_section (block->sect);
 
+  gcc_checking_assert (!(block->sect->common.flags & SECTION_MERGE));
   assemble_align (block->alignment);
 
   /* Define the values of all anchors relative to the current section

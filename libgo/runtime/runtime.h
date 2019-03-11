@@ -94,7 +94,7 @@ struct String
 
 struct FuncVal
 {
-	void	(*fn)(void);
+	uintptr_t fn;
 	// variable-size, fn-specific data here
 };
 
@@ -268,7 +268,7 @@ void*	runtime_sysAlloc(uintptr, uint64*)
 void	runtime_sysFree(void*, uintptr, uint64*)
   __asm__ (GOSYM_PREFIX "runtime.sysFree");
 void	runtime_mprofinit(void);
-#define runtime_getcallersp() __builtin_frame_address(0)
+#define runtime_getcallersp() __builtin_dwarf_cfa()
 void	runtime_mcall(FuncVal*)
   __asm__ (GOSYM_PREFIX "runtime.mcall");
 int32	runtime_timediv(int64, int32, int32*)
@@ -295,7 +295,7 @@ void	runtime_entersyscall()
   __asm__ (GOSYM_PREFIX "runtime.entersyscall");
 void	runtime_entersyscallblock()
   __asm__ (GOSYM_PREFIX "runtime.entersyscallblock");
-G*	__go_go(void (*pfn)(void*), void*);
+G*	__go_go(uintptr, void*);
 int32	runtime_callers(int32, Location*, int32, bool keep_callers);
 int64	runtime_nanotime(void)	// monotonic time
   __asm__(GOSYM_PREFIX "runtime.nanotime");
@@ -389,7 +389,7 @@ void runtime_panic(Eface)
 /*
  * runtime c-called (but written in Go)
  */
-void	runtime_newErrorCString(const char*, Eface*)
+void	runtime_newErrorCString(uintptr, Eface*)
      __asm__ (GOSYM_PREFIX "runtime.NewErrorCString");
 
 /*

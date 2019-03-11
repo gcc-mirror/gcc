@@ -820,12 +820,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _InputIterator,
 	   typename _Hash =
-	   hash<typename iterator_traits<_InputIterator>::value_type>,
+	     hash<typename iterator_traits<_InputIterator>::value_type>,
 	   typename _Pred =
-	   equal_to<typename iterator_traits<_InputIterator>::value_type>,
+	     equal_to<typename iterator_traits<_InputIterator>::value_type>,
 	   typename _Allocator =
-	   allocator<typename iterator_traits<_InputIterator>::value_type>,
+	     allocator<typename iterator_traits<_InputIterator>::value_type>,
 	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireNotAllocatorOrIntegral<_Hash>,
+	   typename = _RequireNotAllocator<_Pred>,
 	   typename = _RequireAllocator<_Allocator>>
     unordered_set(_InputIterator, _InputIterator,
 		  unordered_set<int>::size_type = {},
@@ -836,6 +838,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp, typename _Hash = hash<_Tp>,
 	   typename _Pred = equal_to<_Tp>,
 	   typename _Allocator = allocator<_Tp>,
+	   typename = _RequireNotAllocatorOrIntegral<_Hash>,
+	   typename = _RequireNotAllocator<_Pred>,
 	   typename = _RequireAllocator<_Allocator>>
     unordered_set(initializer_list<_Tp>,
 		  unordered_set<int>::size_type = {},
@@ -856,6 +860,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _InputIterator, typename _Hash, typename _Allocator,
 	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireNotAllocatorOrIntegral<_Hash>,
 	   typename = _RequireAllocator<_Allocator>>
     unordered_set(_InputIterator, _InputIterator,
 		  unordered_set<int>::size_type,
@@ -873,6 +878,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     -> unordered_set<_Tp, hash<_Tp>, equal_to<_Tp>, _Allocator>;
 
   template<typename _Tp, typename _Hash, typename _Allocator,
+	   typename = _RequireNotAllocatorOrIntegral<_Hash>,
 	   typename = _RequireAllocator<_Allocator>>
     unordered_set(initializer_list<_Tp>,
 		  unordered_set<int>::size_type, _Hash, _Allocator)
@@ -1608,12 +1614,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _InputIterator,
 	   typename _Hash =
-	   hash<typename iterator_traits<_InputIterator>::value_type>,
+	     hash<typename iterator_traits<_InputIterator>::value_type>,
 	   typename _Pred =
-	   equal_to<typename iterator_traits<_InputIterator>::value_type>,
+	     equal_to<typename iterator_traits<_InputIterator>::value_type>,
 	   typename _Allocator =
-	   allocator<typename iterator_traits<_InputIterator>::value_type>,
+	     allocator<typename iterator_traits<_InputIterator>::value_type>,
 	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireNotAllocatorOrIntegral<_Hash>,
+	   typename = _RequireNotAllocator<_Pred>,
 	   typename = _RequireAllocator<_Allocator>>
     unordered_multiset(_InputIterator, _InputIterator,
 		       unordered_multiset<int>::size_type = {},
@@ -1625,6 +1633,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp, typename _Hash = hash<_Tp>,
 	   typename _Pred = equal_to<_Tp>,
 	   typename _Allocator = allocator<_Tp>,
+	   typename = _RequireNotAllocatorOrIntegral<_Hash>,
+	   typename = _RequireNotAllocator<_Pred>,
 	   typename = _RequireAllocator<_Allocator>>
     unordered_multiset(initializer_list<_Tp>,
 		       unordered_multiset<int>::size_type = {},
@@ -1646,6 +1656,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _InputIterator, typename _Hash, typename _Allocator,
 	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireNotAllocatorOrIntegral<_Hash>,
 	   typename = _RequireAllocator<_Allocator>>
     unordered_multiset(_InputIterator, _InputIterator,
 		       unordered_multiset<int>::size_type,
@@ -1665,6 +1676,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     -> unordered_multiset<_Tp, hash<_Tp>, equal_to<_Tp>, _Allocator>;
 
   template<typename _Tp, typename _Hash, typename _Allocator,
+	   typename = _RequireNotAllocatorOrIntegral<_Hash>,
 	   typename = _RequireAllocator<_Allocator>>
     unordered_multiset(initializer_list<_Tp>,
 		       unordered_multiset<int>::size_type, _Hash, _Allocator)

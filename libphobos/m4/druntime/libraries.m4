@@ -42,6 +42,40 @@ AC_DEFUN([DRUNTIME_LIBRARIES_DLOPEN],
 ])
 
 
+# DRUNTIME_LIBRARIES_NET
+# -----------------------
+# Autodetect and add networking library to LIBS if necessary.
+AC_DEFUN([DRUNTIME_LIBRARIES_NET],
+[
+  dnl Test for -lsocket and -lnsl.  Copied from libjava/configure.ac.
+  AC_CACHE_CHECK([for socket libraries], druntime_cv_lib_sockets,
+    [druntime_cv_lib_sockets=
+     druntime_check_both=no
+     AC_CHECK_FUNC(connect, druntime_check_socket=no, druntime_check_socket=yes)
+     if test "$druntime_check_socket" = "yes"; then
+       unset ac_cv_func_connect
+       AC_CHECK_LIB(socket, main, druntime_cv_lib_sockets="-lsocket",
+		    druntime_check_both=yes)
+     fi
+     if test "$druntime_check_both" = "yes"; then
+       druntime_old_libs=$LIBS
+       LIBS="$LIBS -lsocket -lnsl"
+       unset ac_cv_func_accept
+       AC_CHECK_FUNC(accept,
+		     [druntime_check_nsl=no
+		      druntime_cv_lib_sockets="-lsocket -lnsl"])
+       unset ac_cv_func_accept
+       LIBS=$druntime_old_libs
+     fi
+     unset ac_cv_func_gethostbyname
+     druntime_old_libs="$LIBS"
+     AC_CHECK_FUNC(gethostbyname, ,
+		   [AC_CHECK_LIB(nsl, main,
+		    [druntime_cv_lib_sockets="$druntime_cv_lib_sockets -lnsl"])])
+  ])
+  LIBS="$LIBS $druntime_cv_lib_sockets"
+])
+
 # DRUNTIME_LIBRARIES_ZLIB
 # -----------------------
 # Allow specifying whether to use the system zlib or
@@ -159,5 +193,17 @@ AC_DEFUN([DRUNTIME_LIBRARIES_BACKTRACE],
   AC_SUBST(BACKTRACE_SUPPORTED)
   AC_SUBST(BACKTRACE_USES_MALLOC)
   AC_SUBST(BACKTRACE_SUPPORTS_THREADS)
+  AC_LANG_POP([C])
+])
+
+# DRUNTIME_LIBRARIES_CLIB
+# -----------------------
+# Perform various feature checks on the C library.
+AC_DEFUN([DRUNTIME_LIBRARIES_CLIB],
+[
+  AC_LANG_PUSH([C])
+  DCFG_HAVE_QSORT_R=false
+  AC_CHECK_FUNC(qsort_r, [DCFG_HAVE_QSORT_R=true])
+  AC_SUBST(DCFG_HAVE_QSORT_R)
   AC_LANG_POP([C])
 ])

@@ -1,5 +1,5 @@
 /* { dg-do compile { target powerpc*-*-* } }*/
-/* { dg-options "-mcpu=power8 -O3 -fstack-protector-strong -fpic" } */
+/* { dg-options "-mdejagnu-cpu=power8 -O3 -fstack-protector-strong -fpic" } */
 
 char *b;
 int c, d, e, f;

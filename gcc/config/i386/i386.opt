@@ -253,7 +253,7 @@ EnumValue
 Enum(ix86_align_data) String(cacheline) Value(ix86_align_data_type_cacheline)
 
 march=
-Target RejectNegative Joined Var(ix86_arch_string)
+Target RejectNegative Negative(march=) Joined Var(ix86_arch_string)
 Generate code for given CPU.
 
 masm=
@@ -510,7 +510,7 @@ Target Report Mask(TLS_DIRECT_SEG_REFS)
 Use direct references against %gs when accessing tls data.
 
 mtune=
-Target RejectNegative Joined Var(ix86_tune_string)
+Target RejectNegative Negative(mtune=) Joined Var(ix86_tune_string)
 Schedule code for given CPU.
 
 mtune-ctrl=
@@ -601,7 +601,7 @@ Use given register vector width instructions instead of maximum register width i
 
 Enum
 Name(prefer_vector_width) Type(enum prefer_vector_width)
-Known preferred register vector length (to use with the -mprefer-vector-width= option)
+Known preferred register vector length (to use with the -mprefer-vector-width= option):
 
 EnumValue
 Enum(prefer_vector_width) String(none) Value(PVW_NONE)
@@ -1087,7 +1087,7 @@ Instrument function exit in instrumented functions with __fentry__.
 
 Enum
 Name(instrument_return) Type(enum instrument_return)
-Known choices for return instrumentation with -minstrument-return=
+Known choices for return instrumentation with -minstrument-return=:
 
 EnumValue
 Enum(instrument_return) String(none) Value(instrument_return_none)

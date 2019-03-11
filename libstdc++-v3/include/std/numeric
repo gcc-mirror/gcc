@@ -119,7 +119,7 @@ namespace __detail
     }
 } // namespace __detail
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 
 #define __cpp_lib_gcd_lcm 201606
 // These were used in drafts of SD-6:
@@ -155,6 +155,50 @@ namespace __detail
     }
 
 #endif // C++17
+
+#if __cplusplus > 201703L
+  // midpoint
+# define __cpp_lib_interpolate 201902L
+
+template<typename _Tp>
+    constexpr
+    enable_if_t<__and_<is_arithmetic<_Tp>, is_same<remove_cv_t<_Tp>, _Tp>,
+		       __not_<is_same<_Tp, bool>>>::value,
+		_Tp>
+    midpoint(_Tp __a, _Tp __b) noexcept
+    {
+      if constexpr (is_integral_v<_Tp>)
+	{
+	  using _Up = make_unsigned_t<_Tp>;
+
+	  int __k = 1;
+	  _Up __m = __a;
+	  _Up __M = __b;
+	  if (__a > __b)
+	    {
+	      __k = -1;
+	      __m = __b;
+	      __M = __a;
+	    }
+	  return __a + __k * _Tp(_Up(__M - __m) / 2);
+	}
+      else
+	{
+	  return __builtin_isnormal(__a) && __builtin_isnormal(__b)
+	    ? __a / 2 + __b / 2
+	    : (__a + __b) / 2;
+	}
+    }
+
+  template<typename _Tp>
+    constexpr
+    enable_if_t<__and_<is_object<_Tp>, bool_constant<sizeof(_Tp) != 0>>::value,
+		_Tp*>
+    midpoint(_Tp* __a, _Tp* __b) noexcept
+    {
+      return __a > __b ? __b + (__a - __b) / 2 : __a + (__b - __a) / 2;
+    }
+#endif // C++20
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

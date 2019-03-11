@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "match.h"
 #include "parse.h"
 #include "constructor.h"
+#include "target.h"
 
 /* Macros to access allocate memory for gfc_data_variable,
    gfc_data_value and gfc_data.  */
@@ -1498,12 +1499,13 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 	      if (!cl || !cl->length || cl->length->expr_type != EXPR_CONSTANT
                   || mpz_cmp_si (cl->length->value.integer, 1) != 0)
 		{
-		  gfc_error ("Character argument %qs at %L "
-			     "must be length 1 because "
-                             "procedure %qs is BIND(C)",
-			     sym->name, &sym->declared_at,
-                             sym->ns->proc_name->name);
-		  retval = false;
+		  if (!gfc_notify_std (GFC_STD_F2018,
+				       "Character argument %qs at %L "
+				       "must be length 1 because "
+				       "procedure %qs is BIND(C)",
+				       sym->name, &sym->declared_at,
+				       sym->ns->proc_name->name))
+		    retval = false;
 		}
 	    }
 
@@ -1754,6 +1756,14 @@ gfc_set_constant_character_len (gfc_charlen_t len, gfc_expr *expr,
       free (expr->value.character.string);
       expr->value.character.string = s;
       expr->value.character.length = len;
+      /* If explicit representation was given, clear it
+	 as it is no longer needed after padding.  */
+      if (expr->representation.length)
+	{
+	  expr->representation.length = 0;
+	  free (expr->representation.string);
+	  expr->representation.string = NULL;
+	}
     }
 }
 
@@ -1973,8 +1983,14 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	      return false;
 	    }
 
-	  /* Shape should be present, we get an initialization expression.  */
-	  gcc_assert (init->shape);
+	  /* The shape may be NULL for EXPR_ARRAY, set it.  */
+	  if (init->shape == NULL)
+	    {
+	      gcc_assert (init->expr_type == EXPR_ARRAY);
+	      init->shape = gfc_get_shape (1);
+	      if (!gfc_array_size (init, &init->shape[0]))
+		  gfc_internal_error ("gfc_array_size failed");
+	    }
 
 	  for (dim = 0; dim < sym->as->rank; ++dim)
 	    {
@@ -11352,19 +11368,22 @@ gfc_match_gcc_unroll (void)
   return MATCH_ERROR;
 }
 
-/* Match a !GCC$ builtin (b) attributes simd flags form:
+/* Match a !GCC$ builtin (b) attributes simd flags if('target') form:
 
    The parameter b is name of a middle-end built-in.
-   Flags are one of:
-     - (empty)
-     - inbranch
-     - notinbranch
+   FLAGS is optional and must be one of:
+     - (inbranch)
+     - (notinbranch)
+
+   IF('target') is optional and TARGET is a name of a multilib ABI.
 
    When we come here, we have already matched the !GCC$ builtin string.  */
+
 match
 gfc_match_gcc_builtin (void)
 {
   char builtin[GFC_MAX_SYMBOL_LEN + 1];
+  char target[GFC_MAX_SYMBOL_LEN + 1];
 
   if (gfc_match (" ( %n ) attributes simd", builtin) != MATCH_YES)
     return MATCH_ERROR;
@@ -11374,6 +11393,13 @@ gfc_match_gcc_builtin (void)
     clause = SIMD_NOTINBRANCH;
   else if (gfc_match (" ( inbranch ) ") == MATCH_YES)
     clause = SIMD_INBRANCH;
+
+  if (gfc_match (" if ( '%n' ) ", target) == MATCH_YES)
+    {
+      const char *abi = targetm.get_multilib_abi_name ();
+      if (abi == NULL || strcmp (abi, target) != 0)
+	return MATCH_YES;
+    }
 
   if (gfc_vectorized_builtins == NULL)
     gfc_vectorized_builtins = new hash_map<nofree_string_hash, int> ();

@@ -3509,12 +3509,10 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 
       if (builtin_type == void_type_node)
 	{
-	  warning_at (loc, OPT_Wbuiltin_declaration_mismatch,
-		      "too many arguments to built-in function %qE "
-		      "expecting %d",
-		      function, parmnum);
-
-	  inform_declaration (fundecl);
+	  if (warning_at (loc, OPT_Wbuiltin_declaration_mismatch,
+			  "too many arguments to built-in function %qE "
+			  "expecting %d", function, parmnum))
+	    inform_declaration (fundecl);
 	  builtin_typetail = NULL_TREE;
 	}
 
@@ -3651,10 +3649,10 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
       for (tree t = builtin_typetail; t; t = TREE_CHAIN (t))
 	++nargs;
 
-      warning_at (loc, OPT_Wbuiltin_declaration_mismatch,
-		  "too few arguments to built-in function %qE expecting %u",
-		  function, nargs - 1);
-      inform_declaration (fundecl);
+      if (warning_at (loc, OPT_Wbuiltin_declaration_mismatch,
+		      "too few arguments to built-in function %qE "
+		      "expecting %u", function, nargs - 1))
+	inform_declaration (fundecl);
     }
 
   return error_args ? -1 : (int) parmnum;

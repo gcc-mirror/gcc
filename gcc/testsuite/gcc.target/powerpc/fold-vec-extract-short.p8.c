@@ -3,8 +3,7 @@
 
 /* { dg-do compile { target { powerpc*-*-linux* } } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8 -O2" } */
+/* { dg-options "-mdejagnu-cpu=power8 -O2" } */
 
 // six tests total. Targeting P8, both LE and BE.
 // p8 (le) variable offset: rldicl, subfic, sldi, mtvsrd, xxpermdi, vslo, mfvsrd, sradi, *extsh

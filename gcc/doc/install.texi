@@ -2161,6 +2161,13 @@ is used, it is enabled on Linux/x86 if target binutils
 supports @code{Intel CET} instructions and disabled otherwise.
 In this case the target libraries are configured to get additional
 @option{-fcf-protection} option.
+
+@item --with-riscv-attribute=@samp{yes}, @samp{no} or @samp{default}
+Generate RISC-V attribute by default, in order to record extra build
+information in object.
+
+The option is disabled by default. It is enabled on RISC-V/ELF (bare-metal)
+target if target binutils supported.
 @end table
 
 @subheading Cross-Compiler-Specific Options

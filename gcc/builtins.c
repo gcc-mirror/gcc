@@ -95,7 +95,6 @@ builtin_info_type builtin_info[(int)END_BUILTINS];
 /* Non-zero if __builtin_constant_p should be folded right away.  */
 bool force_folding_builtin_constant_p;
 
-static rtx c_readstr (const char *, scalar_int_mode);
 static int target_char_cast (tree, char *);
 static rtx get_memory_rtx (tree, tree);
 static int apply_args_size (void);
@@ -761,15 +760,13 @@ c_strlen (tree src, int only_value, c_strlen_data *data, unsigned eltsize)
      runtime.  */
   if (eltoff < 0 || eltoff >= maxelts)
     {
-     /* Suppress multiple warnings for propagated constant strings.  */
+      /* Suppress multiple warnings for propagated constant strings.  */
       if (only_value != 2
-	  && !TREE_NO_WARNING (src))
-        {
-	  warning_at (loc, OPT_Warray_bounds,
-		      "offset %qwi outside bounds of constant string",
-		      eltoff);
-          TREE_NO_WARNING (src) = 1;
-        }
+	  && !TREE_NO_WARNING (src)
+	  && warning_at (loc, OPT_Warray_bounds,
+			 "offset %qwi outside bounds of constant string",
+			 eltoff))
+	TREE_NO_WARNING (src) = 1;
       return NULL_TREE;
     }
 
@@ -802,10 +799,14 @@ c_strlen (tree src, int only_value, c_strlen_data *data, unsigned eltsize)
 }
 
 /* Return a constant integer corresponding to target reading
-   GET_MODE_BITSIZE (MODE) bits from string constant STR.  */
+   GET_MODE_BITSIZE (MODE) bits from string constant STR.  If
+   NULL_TERMINATED_P, reading stops after '\0' character, all further ones
+   are assumed to be zero, otherwise it reads as many characters
+   as needed.  */
 
-static rtx
-c_readstr (const char *str, scalar_int_mode mode)
+rtx
+c_readstr (const char *str, scalar_int_mode mode,
+	   bool null_terminated_p/*=true*/)
 {
   HOST_WIDE_INT ch;
   unsigned int i, j;
@@ -830,7 +831,7 @@ c_readstr (const char *str, scalar_int_mode mode)
 	j = j + UNITS_PER_WORD - 2 * (j % UNITS_PER_WORD) - 1;
       j *= BITS_PER_UNIT;
 
-      if (ch)
+      if (ch || !null_terminated_p)
 	ch = (unsigned char) str[i];
       tmp[j / HOST_BITS_PER_WIDE_INT] |= ch << (j % HOST_BITS_PER_WIDE_INT);
     }
@@ -3096,7 +3097,7 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
 			 "%K%qD specified bound %E "
 			 "exceeds maximum object size %E",
 			 exp, func, bound, maxobjsize))
-	  TREE_NO_WARNING (exp) = true;
+	TREE_NO_WARNING (exp) = true;
 
       bool exact = true;
       if (!len || TREE_CODE (len) != INTEGER_CST)
@@ -3155,7 +3156,7 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
 		     "%K%qD specified bound [%wu, %wu] "
 		     "exceeds maximum object size %E",
 		     exp, func, min.to_uhwi (), max.to_uhwi (), maxobjsize))
-      TREE_NO_WARNING (exp) = true;
+    TREE_NO_WARNING (exp) = true;
 
   bool exact = true;
   if (!len || TREE_CODE (len) != INTEGER_CST)
@@ -9299,8 +9300,7 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
 			     tree arg0, tree arg1, tree arg2)
 {
   enum internal_fn ifn = IFN_LAST;
-  /* The code of the expression corresponding to the type-generic
-     built-in, or ERROR_MARK for the type-specific ones.  */
+  /* The code of the expression corresponding to the built-in.  */
   enum tree_code opcode = ERROR_MARK;
   bool ovf_only = false;
 
@@ -9310,42 +9310,39 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
       ovf_only = true;
       /* FALLTHRU */
     case BUILT_IN_ADD_OVERFLOW:
-      opcode = PLUS_EXPR;
-      /* FALLTHRU */
     case BUILT_IN_SADD_OVERFLOW:
     case BUILT_IN_SADDL_OVERFLOW:
     case BUILT_IN_SADDLL_OVERFLOW:
     case BUILT_IN_UADD_OVERFLOW:
     case BUILT_IN_UADDL_OVERFLOW:
     case BUILT_IN_UADDLL_OVERFLOW:
+      opcode = PLUS_EXPR;
       ifn = IFN_ADD_OVERFLOW;
       break;
     case BUILT_IN_SUB_OVERFLOW_P:
       ovf_only = true;
       /* FALLTHRU */
     case BUILT_IN_SUB_OVERFLOW:
-      opcode = MINUS_EXPR;
-      /* FALLTHRU */
     case BUILT_IN_SSUB_OVERFLOW:
     case BUILT_IN_SSUBL_OVERFLOW:
     case BUILT_IN_SSUBLL_OVERFLOW:
     case BUILT_IN_USUB_OVERFLOW:
     case BUILT_IN_USUBL_OVERFLOW:
     case BUILT_IN_USUBLL_OVERFLOW:
+      opcode = MINUS_EXPR;
       ifn = IFN_SUB_OVERFLOW;
       break;
     case BUILT_IN_MUL_OVERFLOW_P:
       ovf_only = true;
       /* FALLTHRU */
     case BUILT_IN_MUL_OVERFLOW:
-      opcode = MULT_EXPR;
-      /* FALLTHRU */
     case BUILT_IN_SMUL_OVERFLOW:
     case BUILT_IN_SMULL_OVERFLOW:
     case BUILT_IN_SMULLL_OVERFLOW:
     case BUILT_IN_UMUL_OVERFLOW:
     case BUILT_IN_UMULL_OVERFLOW:
     case BUILT_IN_UMULLL_OVERFLOW:
+      opcode = MULT_EXPR;
       ifn = IFN_MUL_OVERFLOW;
       break;
     default:
@@ -9370,13 +9367,27 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
 				 ? boolean_true_node : boolean_false_node,
 				 arg2);
 
-  tree ctype = build_complex_type (type);
-  tree call = build_call_expr_internal_loc (loc, ifn, ctype,
-					    2, arg0, arg1);
-  tree tgt = save_expr (call);
-  tree intres = build1_loc (loc, REALPART_EXPR, type, tgt);
-  tree ovfres = build1_loc (loc, IMAGPART_EXPR, type, tgt);
-  ovfres = fold_convert_loc (loc, boolean_type_node, ovfres);
+  tree intres, ovfres;
+  if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
+    {
+      intres = fold_binary_loc (loc, opcode, type,
+				fold_convert_loc (loc, type, arg0),
+				fold_convert_loc (loc, type, arg1));
+      if (TREE_OVERFLOW (intres))
+	intres = drop_tree_overflow (intres);
+      ovfres = (arith_overflowed_p (opcode, type, arg0, arg1)
+		? boolean_true_node : boolean_false_node);
+    }
+  else
+    {
+      tree ctype = build_complex_type (type);
+      tree call = build_call_expr_internal_loc (loc, ifn, ctype, 2,
+						arg0, arg1);
+      tree tgt = save_expr (call);
+      intres = build1_loc (loc, REALPART_EXPR, type, tgt);
+      ovfres = build1_loc (loc, IMAGPART_EXPR, type, tgt);
+      ovfres = fold_convert_loc (loc, boolean_type_node, ovfres);
+    }
 
   if (ovf_only)
     return omit_one_operand_loc (loc, boolean_type_node, ovfres, arg2);
@@ -10591,6 +10602,9 @@ maybe_emit_sprintf_chk_warning (tree exp, enum built_in_function fcode)
 static void
 maybe_emit_free_warning (tree exp)
 {
+  if (call_expr_nargs (exp) != 1)
+    return;
+
   tree arg = CALL_EXPR_ARG (exp, 0);
 
   STRIP_NOPS (arg);

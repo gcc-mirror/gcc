@@ -910,7 +910,7 @@ get_loop_exit_condition (const struct loop *loop)
       gimple *stmt;
 
       stmt = last_stmt (exit_edge->src);
-      if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
+      if (gcond *cond_stmt = safe_dyn_cast <gcond *> (stmt))
 	res = cond_stmt;
     }
 

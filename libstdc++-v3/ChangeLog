@@ -1,3 +1,644 @@
+2019-03-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/using.xml: Use link element instead of xref.
+	* doc/html/*: Regenerate.
+
+	* include/bits/fs_path.h (path::format): Add fixed underlying type.
+
+2019-03-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/89477
+	* include/debug/map.h (map): Use _RequireNotAllocator to constrain
+	parameters in deduction guides.
+	* include/debug/multimap.h (multimap): Likewise.
+	* include/debug/set.h (multimap): Likewise.
+	* include/debug/multiset.h (multimap): Likewise.
+	* include/debug/unordered_map (unordered_map): Likewise.
+	(unordered_multimap): Likewise.
+	* include/debug/unordered_set (unordered_set): Likewise.
+	(unordered_multiset): Likewise.
+
+	PR libstdc++/89608
+	* include/debug/unordered_map (unordered_map<>::_M_check_rehashed):
+	Invalidate all iterators in case of rehash.
+	(unordered_multimap<>::_M_check_rehashed): Likewise.
+	* include/debug/unordered_set
+	(unordered_set<>::_M_check_rehashed): Likewise.
+	(unordered_multiset<>::_M_check_rehashed): Likewise.
+	* testsuite/23_containers/unordered_set/debug/89608_neg.cc: New.
+
+2019-03-07  Andreas Schwab  <schwab@suse.de>
+
+	* config/abi/post/riscv64-linux-gnu: New directory.
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt: New file.
+
+2019-03-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/function_objects/bind_front/1.cc: Change from
+	compile test to run. Fix typo.
+
+	* doc/xml/manual/status_cxx2020.xml: Update C++20 status.
+	* doc/html/*: Regenerate.
+
+	P0356R5 Simplified partial function application
+	* include/std/functional [C++20] (_Bind_front, _Bind_front_t): Define
+	helpers for bind_front.
+	(bind_front, __cpp_lib_bind_front): Define.
+	* testsuite/20_util/function_objects/bind_front/1.cc: New test.
+
+2019-03-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__cpp_lib_bounded_array_traits): Define.
+	* include/std/version (__cpp_lib_bounded_array_traits): Likewise.
+	* testsuite/20_util/is_bounded_array/value.cc: Check for macro.
+	* testsuite/20_util/is_unbounded_array/value.cc: Likewise.
+
+2019-03-06  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/86655 - std::assoc_legendre should not constrain
+	the value of m (or x).
+	* include/tr1/legendre_function.tcc (__assoc_legendre_p,
+	__sph_legendre): If degree > order Don't throw, return 0.
+	(__legendre_p, __assoc_legendre_p): Don't constrain x either.
+	* testsuite/special_functions/02_assoc_legendre/pr86655.cc: New test.
+	* testsuite/special_functions/20_sph_legendre/pr86655.cc: New test.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	02_assoc_legendre/pr86655.cc: New test.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	22_sph_legendre/pr86655.cc: New test.
+
+2019-03-06  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Rewrite variant.
+	Also PR libstdc++/85517
+	* include/std/variant (__do_visit): New.
+	(__variant_cast): Likewise.
+	(__variant_cookie): Likewise.
+	(__erased_*): Remove.
+	(_Variant_storage::_S_vtable): Likewise.
+	(_Variant_storage::__M_reset_impl): Adjust to use __do_visit.
+	(_Variant_storage::__M_reset): Adjust.
+	(__variant_construct): New.
+	(_Copy_ctor_base(const _Copy_ctor_base&)): Adjust to use
+	__variant_construct.
+	(_Move_ctor_base(_Move_ctor_base&&)): Likewise.
+	(_Move_ctor_base::__M_destructive_copy): New.
+	(_Move_ctor_base::__M_destructive_move): Adjust to use
+	__variant_construct.
+	(_Copy_assign_base::operator=): Adjust to use __do_visit.
+	(_Copy_assign_alias): Adjust to check both copy assignment
+	and copy construction for triviality.
+	(_Move_assign_base::operator=): Adjust to use __do_visit.
+	(_Multi_array): Add support for visitors that accept and return
+	a __variant_cookie.
+	(__gen_vtable_impl::_S_apply_all_alts): Likewise.
+	(__gen_vtable_impl::_S_apply_single_alt): Likewise.
+	(__gen_vtable_impl::__element_by_index_or_cookie): New. Generate
+	a __variant_cookie temporary for a variant that is valueless and..
+	(__gen_vtable_impl::__visit_invoke): ..adjust here.
+	(__gen_vtable::_Array_type): Conditionally make space for
+	the __variant_cookie visitor case.
+	(__variant_construct_by_index): New.
+	(get_if): Adjust to use std::addressof.
+	(relops): Adjust to use __do_visit.
+	(variant): Add __variant_cast and __variant_construct_by_index
+	as friends.
+	(variant::emplace): Use _M_reset() and __variant_construct_by_index
+	instead of self-destruction.
+	(variant::swap): Adjust to use __do_visit.
+	(visit): Reimplement in terms of __do_visit.
+	(__variant_hash_call_base_impl::operator()): Adjust to use __do_visit.
+	* testsuite/20_util/variant/compile.cc: Adjust.
+	* testsuite/20_util/variant/run.cc: Likewise.
+
+2019-03-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config.h (_cpp_lib_char8_t): Add L suffix to
+	constant.
+	* testsuite/experimental/feat-char8_t.cc: Likewise.
+
+	 * include/std/type_traits [C++20] (is_bounded_array)
+	 (is_unbounded_array, is_bounded_array_v, is_unbounded_array_v):
+	 Define.
+	 * testsuite/20_util/is_bounded_array/requirements/
+	 explicit_instantiation.cc: New test.
+	 * testsuite/20_util/is_bounded_array/requirements/typedefs.cc: New
+	 test.
+	 * testsuite/20_util/is_bounded_array/value.cc: New test.
+	 * testsuite/20_util/is_unbounded_array/requirements/
+	 explicit_instantiation.cc: New test.
+	 * testsuite/20_util/is_unbounded_array/requirements/typedefs.cc: New
+	 * test.
+	 * testsuite/20_util/is_unbounded_array/value.cc: New test.
+
+	* include/bits/ptr_traits.h [C++20] (pointer_traits<T*>::pointer_to):
+	Add constexpr.
+	* testsuite/20_util/pointer_traits/pointer_to_constexpr.cc: New test.
+
+2019-03-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_compatibility/math.h [C++20] (lerp): Add using
+	declaration.
+	* include/c_global/cmath [C++20] (__cpp_lib_interpolate): Define.
+	(__lerp): Define function template to implement lerp.
+	(lerp(float, float, float), lerp(double, double, double))
+	(lerp(long double, long double, long double)): Define for C++20.
+	* include/std/numeric [C++20] (__cpp_lib_interpolate): Define.
+	(midpoint(T, T), midpoint(T*, T*)): Define.
+	* include/std::version [C++20] (__cpp_lib_interpolate): Define.
+	* testsuite/26_numerics/lerp.cc: New test.
+	* testsuite/26_numerics/midpoint/floating.cc: New test.
+	* testsuite/26_numerics/midpoint/integral.cc: New test.
+	* testsuite/26_numerics/midpoint/pointer.cc: New test.
+
+2019-03-04  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/88996 Implement P0439R0
+	Make std::memory_order a scoped enumeration.
+	* include/bits/atomic_base.h: For C++20 make memory_order a scoped enum,
+	add variables for the old enumerators.  Adjust calls.
+	* testsuite/29_atomics/headers/atomic/types_std_c++2a.cc: New test.
+	* testsuite/29_atomics/headers/atomic/types_std_c++2a_neg.cc: New test.
+
+2019-03-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/bit/bitops.rot/rotl.cc: Remove bogus dg-do
+	directive.
+
+	* include/std/memory_resource (polymorphic_allocator): Add default
+	template argument for C++20.
+	(polymorphic_allocator::allocate_bytes)
+	(polymorphic_allocator::deallocate_bytes)
+	(polymorphic_allocator::allocate_object)
+	(polymorphic_allocator::deallocate_object)
+	(polymorphic_allocator::new_object)
+	(polymorphic_allocator::delete_object): New member functions for
+	C++20.
+	* testsuite/20_util/polymorphic_allocator/allocate_object.cc: New
+	test.
+
+2019-03-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89562
+	* src/filesystem/ops-common.h (do_copy_file): Open files in binary
+	mode for mingw.
+
+2019-03-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_allocator.h (__gnu_test::memory_resource)
+	[!__cpp_sized_deallocation]: Do not pass size to operator delete.
+
+	* include/std/memory (uses_allocator_construction_args): New set of
+	overloaded functions.
+	(make_obj_using_allocator, uninitialized_construct_using_allocator):
+	New functions.
+	* include/std/memory_resource (polymorphic_allocator::construct)
+	[__cplusplus > 201703l]: Replace all overloads with a single function
+	using uses_allocator_construction_args.
+	* testsuite/20_util/polymorphic_allocator/construct_c++2a.cc: New
+	test.
+	* testsuite/20_util/uses_allocator/make_obj.cc: New test.
+
+2019-02-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89466
+	* acinclude.m4 (GLIBCXX_CONFIGURE_DOCBOOK): Reorder check for local
+	stylesheet directories before check for xsltproc. Try to use
+	xmlcatalog to find local stylesheet directory before trying hardcoded
+	paths. Add path used by suse to hardcoded paths. Adjust xsltproc
+	check to look for the same stylesheet as doc/Makefile.am uses. Don't
+	use xsltproc if xmlcatalog fails to find a local stylesheet.
+	* configure.ac: Check for xmlcatalog.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* doc/Makefile.in: Likewise.
+	* include/Makefile.in: Likewise.
+	* libsupc++/Makefile.in: Likewise.
+	* po/Makefile.in: Likewise.
+	* python/Makefile.in: Likewise.
+	* src/Makefile.in: Likewise.
+	* src/c++11/Makefile.in: Likewise.
+	* src/c++17/Makefile.in: Likewise.
+	* src/c++98/Makefile.in: Likewise.
+	* src/filesystem/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2019-02-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89477
+	* include/bits/alloc_traits.h (_RequireNotAllocator): New helper for
+	container deduction guides.
+	* include/bits/hashtable.h (_RequireNotAllocatorOrIntegral): Likewise.
+	* include/bits/stl_map.h (map): Use _RequireNotAllocator to constrain
+	parameters in deduction guides.
+	* include/bits/stl_multimap.h (multimap): Likewise.
+	* include/bits/stl_multiset.h (multiset): Likewise.
+	* include/bits/stl_queue.h (queue, priority_queue): Likewise.
+	* include/bits/stl_set.h (set): Likewise.
+	* include/bits/stl_stack.h (stack): Likewise.
+	* include/bits/unordered_map.h (unordered_map, unordered_multimap):
+	use _RequireNotAllocator and _RequireNotAllocatorOrIntegral to
+	constrain parameters in deduction guides.
+	* include/bits/unordered_set.h (unordered_set, unordered_multiset):
+	Likewise.
+	* testsuite/23_containers/map/cons/deduction.cc: Test additional
+	deduction cases.
+	* testsuite/23_containers/multiset/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/set/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/unordered_map/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/cons/deduction.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/cons/deduction.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/cons/deduction.cc: Likewise.
+
+	PR libstdc++/89416
+	* include/bits/alloc_traits.h (__is_alloc_insertable_impl): Change
+	to class template and partial specialization using void_t.
+	(__is_copy_insertable, __is_move_insertable): Adjust base class.
+
+2019-02-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89416
+	* include/bits/alloc_traits.h (__is_alloc_insertable_impl): Make
+	copy and move members public.
+
+2019-02-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__underlying_type_impl): New helper to
+	make underlying_type SFINAE-friendly.
+	(underlying_type): Derive from __underlying_type_impl.
+	* testsuite/20_util/underlying_type/requirements/typedefs-3.cc: New
+	test.
+
+	PR libstdc++/89446
+	* include/bits/char_traits.h (__constant_char_array): Check index is
+	in range before dereferencing.
+	(char_traits<char>::compare, char_traits<char>::find)
+	(char_traits<char8_t>::compare, char_traits<char8_t>::find): Return
+	immediately if n is zero.
+	(char_traits<wchar_t>::compare, char_traits<wchar_t>::find): Likewise.
+	Remove workarounds for PR 67026.
+	* testsuite/21_strings/basic_string_view/operators/char/89446.cc:
+	New test.
+	* testsuite/21_strings/basic_string_view/operators/wchar_t/89446.cc:
+	New test.
+
+2019-02-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/abi/post/sparc64-linux-gnu/baseline_symbols.txt: Adjust.
+	* config/abi/post/sparc64-linux-gnu/32/baseline_symbols.txt: Likewise.
+
+2019-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/89402
+	* src/c++98/compatibility-ldbl.cc (_ZNKSt4hashIeEclEe): Change return
+	type to std::size_t and argument to type to long double.
+
+2019-02-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.host (abi_baseline_pair): Adjust for SPARC64/Linux.
+	* config/abi/post/sparc64-linux-gnu: New directory.
+	* config/abi/post/sparc64-linux-gnu/baseline_symbols.txt: New file.
+	* config/abi/post/sparc64-linux-gnu/32: New directory.
+	* config/abi/post/sparc64-linux-gnu/32/baseline_symbols.txt: New file.
+
+2019-02-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/29_atomics/headers/atomic/types_std_c++20.cc: New test.
+	* testsuite/29_atomics/headers/atomic/types_std_c++20_neg.cc: New
+	test.
+
+2019-02-22  Tom Honermann  <tom@honermann.net>
+
+	* python/libstdcxx/v6/printers.py (register_type_printers): Add type
+	printers for u8string and u8string_view.
+
+2019-02-22  Tom Honermann  <tom@honermann.net>
+
+	* testsuite/18_support/byte/ops.cc: Validate
+	std::to_integer<char8_t>, std::to_integer<char16_t>, and
+	std::to_integer<char32_t>.
+	* testsuite/18_support/numeric_limits/dr559.cc: Validate
+	std::numeric_limits<char8_t>.
+	* testsuite/18_support/numeric_limits/lowest.cc: Validate
+	std::numeric_limits<char8_t>::lowest().
+	* testsuite/18_support/numeric_limits/max_digits10.cc: Validate
+	std::numeric_limits<char8_t>::max_digits10.
+	* testsuite/18_support/type_info/fundamental.cc: Validate
+	typeinfo for char8_t.
+	* testsuite/20_util/from_chars/1_c++20_neg.cc: New test, validating
+	std::from_chars with char8_t.
+	* testsuite/20_util/hash/requirements/explicit_instantiation.cc:
+	Validate explicit instantiation of std::hash<char8_t>.
+	* testsuite/20_util/is_integral/value.cc: Validate
+	std::is_integral<char8_t>.
+	* testsuite/20_util/make_signed/requirements/typedefs-4.cc:
+	Validate std::make_signed<char8_t>.
+	* testsuite/21_strings/basic_string/cons/char/deduction.cc:
+	Validate u8string construction from char8_t sources.
+	* testsuite/21_strings/basic_string/types/pmr_typedefs.cc: Validate
+	std::pmr::u8string.
+	* testsuite/21_strings/basic_string_view/operations/compare/
+	char/70483.cc: Validate substr operations on u8string_view.
+	* testsuite/21_strings/basic_string_view/typedefs.cc: Validate that
+	the u8string_view typedef is defined.
+	* testsuite/21_strings/char_traits/requirements/
+	constexpr_functions.cc: Validate char_traits<char8_t> constexpr
+	member functions.
+	* testsuite/21_strings/char_traits/requirements/
+	constexpr_functions_c++17.cc: Validate char_traits<char8_t> C++17
+	constexpr member functions.
+	* testsuite/21_strings/headers/string/types_std_c++0x.cc: Validate
+	that the u8string typedef is defined.
+	* testsuite/22_locale/locale/cons/unicode.cc: Validate the presence
+	of the std::codecvt<char16_t, char8_t, std::mbstate_t> and
+	std::codecvt<char32_t, char8_t, std::mbstate_t> facets.
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Update line
+	numbers.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/assign_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/copy_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/is_always_lock_free.cc:
+	Validate std::atomic<char8_t>::is_always_lock_free
+	* testsuite/29_atomics/atomic_integral/operators/bitwise_neg.cc:
+	Update line numbers.
+	* testsuite/29_atomics/atomic_integral/operators/decrement_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/increment_neg.cc:
+	Likewise.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_string.cc:
+	Validate std::experimental::pmr::u8string.
+	* testsuite/experimental/string_view/typedefs.cc: Validate that the
+	u8string_view typedef is defined.
+	* testsuite/util/testsuite_common_types.h: Add char8_t, char16_t and
+	char32_t to the typelists.
+
+2019-02-22  Tom Honermann  <tom@honermann.net>
+
+	* include/ext/typelist.h: Constrain a partial specialization of
+	typelist::detail::append_ to only match chain<T1,T2>.
+
+2019-02-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89416
+	* include/bits/alloc_traits.h (__is_alloc_insertable_impl): Replace
+	class template with class. Replace move and copy member types with
+	member alias templates, so they are only instantiated when needed.
+	(__is_copy_insertable, __is_move_insertable): Adjust base class.
+	* testsuite/23_containers/vector/modifiers/push_back/89130.cc: Enable
+	test for C++11/14/17 as well.
+	* testsuite/23_containers/vector/modifiers/push_back/89416.cc: New
+	test.
+
+2019-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/89402
+	* src/c++98/compatibility-ldbl.cc (_ZNKSt4hashIeEclEe): Add
+	_GLIBCXX_PURE to the alias declaration.
+
+2019-02-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/literals/types.cc
+	[_GLIBCXX_USE_CHAR8_T]: Adjust expected string type for u8 literal.
+	* testsuite/21_strings/basic_string/literals/values.cc
+	[_GLIBCXX_USE_CHAR8_T]: Likewise.
+	* testsuite/22_locale/codecvt/char16_t.cc: Adjust for u8 literals
+	potentially having different type.
+	* testsuite/22_locale/codecvt/char32_t.cc: Likewise.
+	* testsuite/22_locale/codecvt/codecvt_utf8/79980.cc: Cast u8 literal
+	to char.
+	* testsuite/22_locale/codecvt/codecvt_utf8/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/utf8.cc: Likewise.
+	* testsuite/22_locale/conversions/string/2.cc: Remove u8 prefix from
+	string literals only using basic character set.
+	* testsuite/22_locale/conversions/string/3.cc: Likewise. Cast other
+	u8 literals to char.
+	* testsuite/29_atomics/headers/atomic/macros.cc [_GLIBCXX_USE_CHAR8_T]:
+	Test ATOMIC_CHAR8_T_LOCK_FREE.
+	Add missing #error to ATOMIC_CHAR16_T_LOCK_FREE test.
+	* testsuite/29_atomics/headers/atomic/types_std_c++0x.cc
+	[_GLIBCXX_USE_CHAR8_T]: Check for std::atomic_char8_t.
+	* testsuite/experimental/string_view/literals/types.cc
+	[_GLIBCXX_USE_CHAR8_T]: Adjust expected string_view type for u8
+	literal.
+	* testsuite/experimental/string_view/literals/values.cc
+	[_GLIBCXX_USE_CHAR8_T]: Likewise.
+
+2019-02-19  Tom Honermann  <tom@honermann.net>
+
+	* testsuite/18_support/numeric_limits/char8_t.cc: New test cloned
+	from char16_32_t.cc; validates numeric_limits<char8_t>.
+	* testsuite/21_strings/basic_string/literals/types-char8_t.cc: New
+	test cloned from types.cc; validates operator""s for char8_t
+	returns u8string.
+	* testsuite/21_strings/basic_string/literals/values-char8_t.cc: New
+	test cloned from values.cc; validates construction and comparison
+	of u8string values.
+	* testsuite/21_strings/basic_string/requirements/
+	/explicit_instantiation/char8_t/1.cc: New test cloned from
+	char16_t/1.cc; validates explicit instantiation of
+	basic_string<char8_t>.
+	* testsuite/21_strings/basic_string_view/literals/types-char8_t.cc:
+	New test cloned from types.cc; validates operator""sv for char8_t
+	returns u8string_view.
+	* testsuite/21_strings/basic_string_view/literals/
+	values-char8_t.cc: New test cloned from values.cc; validates
+	construction and comparison of u8string_view values.
+	* testsuite/21_strings/basic_string_view/requirements/
+	explicit_instantiation/char8_t/1.cc: New test cloned from
+	char16_t/1.cc; validates explicit instantiation of
+	basic_string_view<char8_t>.
+	* testsuite/21_strings/char_traits/requirements/char8_t/65049.cc:
+	New test cloned from char16_t/65049.cc; validates that
+	char_traits<char8_t> is not vulnerable to the concerns in PR65049.
+	* testsuite/21_strings/char_traits/requirements/char8_t/
+	typedefs.cc: New test cloned from char16_t/typedefs.cc; validates
+	that char_traits<char8_t> member typedefs are present and correct.
+	* testsuite/21_strings/char_traits/requirements/
+	explicit_instantiation/char8_t/1.cc: New test cloned from
+	char16_t/1.cc; validates explicit instantiation of
+	char_traits<char8_t>.
+	* testsuite/22_locale/codecvt/char16_t-char8_t.cc: New test cloned
+	from char16_t.cc: validates
+	codecvt<char16_t, char8_t, mbstate_t>.
+	* testsuite/22_locale/codecvt/char32_t-char8_t.cc: New test cloned
+	from char32_t.cc: validates
+	codecvt<char32_t, char8_t, mbstate_t>.
+	* testsuite/22_locale/codecvt/utf8-char8_t.cc: New test cloned from
+	utf8.cc; validates codecvt<char16_t, char8_t, std::mbstate_t> and
+	codecvt<char32_t, char8_t, std::mbstate_t>.
+	* testsuite/27_io/filesystem/path/native/string-char8_t.cc: New
+	test cloned from string.cc; validates filesystem::path construction
+	from char8_t input.
+	* testsuite/experimental/feat-char8_t.cc: New test; validates that
+	the __cpp_lib_char8_t feature test macro is defined with the
+	correct value.
+	* testsuite/experimental/filesystem/path/native/string-char8_t.cc:
+	New test cloned from string.cc; validates filesystem::path
+	construction from char8_t input.
+	* testsuite/experimental/string_view/literals/types-char8_t.cc: New
+	test cloned from types.cc; validates operator""sv for char8_t
+	returns u8string_view.
+	* testsuite/experimental/string_view/literals/values-char8_t.cc:
+	New test cloned from values.cc; validates construction and
+	comparison of u8string_view values.
+	* testsuite/experimental/string_view/requirements/
+	explicit_instantiation/char8_t/1.cc: New test cloned from
+	char16_t/1.cc; validates explicit instantiation of
+	basic_string_view<char8_t>.
+	* testsuite/ext/char8_t/atomic-1.cc: New test; validates that
+	ATOMIC_CHAR8_T_LOCK_FREE is not defined if char8_t support is not
+	enabled.
+
+2019-02-19  Tom Honermann  <tom@honermann.net>
+
+	P0482R5 char8_t: Standard library support
+	* config/abi/pre/gnu-versioned-namespace.ver (CXXABI_2.0): Add
+	typeinfo symbols for char8_t.
+	* config/abi/pre/gnu.ver: Add CXXABI_1.3.12.
+	(GLIBCXX_3.4.26): Add symbols for specializations of
+	numeric_limits and codecvt that involve char8_t.
+	(CXXABI_1.3.12): Add typeinfo symbols for char8_t.
+	* include/bits/atomic_base.h: Add atomic_char8_t.
+	* include/bits/basic_string.h: Add std::hash<u8string> and
+	operator""s(const char8_t*, size_t).
+	* include/bits/c++config: Define _GLIBCXX_USE_CHAR8_T and
+	__cpp_lib_char8_t.
+	* include/bits/char_traits.h: Add char_traits<char8_t>.
+	* include/bits/codecvt.h: Add
+	codecvt<char16_t, char8_t, mbstate_t>,
+	codecvt<char32_t, char8_t, mbstate_t>,
+	codecvt_byname<char16_t, char8_t, mbstate_t>, and
+	codecvt_byname<char32_t, char8_t, mbstate_t>.
+	* include/bits/cpp_type_traits.h: Add __is_integer<char8_t> to
+	recognize char8_t as an integral type.
+	* include/bits/fs_path.h: (path::__is_encoded_char): Recognize
+	char8_t.
+	(path::u8string): Return std::u8string when char8_t support is
+	enabled.
+	(path::generic_u8string): Likewise.
+	(path::_S_convert): Handle conversion from char8_t input.
+	(path::_S_str_convert): Likewise.
+	* include/bits/functional_hash.h: Add hash<char8_t>.
+	* include/bits/locale_conv.h (__str_codecvt_out): Add overloads for
+	char8_t.
+	* include/bits/locale_facets.h (_GLIBCXX_NUM_UNICODE_FACETS): Bump
+	for new char8_t specializations.
+	* include/bits/localefwd.h: Add missing declarations of
+	codecvt<char16_t, char, mbstate_t> and
+	codecvt<char32_t, char, mbstate_t>.  Add char8_t declarations
+	codecvt<char16_t, char8_t, mbstate_t> and
+	codecvt<char32_t, char8_t, mbstate_t>.
+	* include/bits/postypes.h: Add u8streampos
+	* include/bits/stringfwd.h: Add declarations of
+	char_traits<char8_t> and u8string.
+	* include/c_global/cstddef: Add __byte_operand<char8_t>.
+	* include/experimental/bits/fs_path.h (path::__is_encoded_char):
+	Recognize char8_t.
+	(path::u8string): Return std::u8string when char8_t support is
+	enabled.
+	(path::generic_u8string): Likewise.
+	(path::_S_convert): Handle conversion from char8_t input.
+	(path::_S_str_convert): Likewise.
+	* include/experimental/string: Add u8string.
+	* include/experimental/string_view: Add u8string_view,
+	hash<experimental::u8string_view>, and
+	operator""sv(const char8_t*, size_t).
+	* include/std/atomic: Add atomic<char8_t> and atomic_char8_t.
+	* include/std/charconv (__is_int_to_chars_type): Recognize char8_t
+	as a character type.
+	* include/std/limits: Add numeric_limits<char8_t>.
+	* include/std/string_view: Add u8string_view,
+	hash<experimental::u8string_view>, and
+	operator""sv(const char8_t*, size_t).
+	* include/std/type_traits: Add __is_integral_helper<char8_t>,
+	__make_unsigned<char8_t>, and __make_signed<char8_t>.
+	* libsupc++/atomic_lockfree_defines.h: Define
+	ATOMIC_CHAR8_T_LOCK_FREE.
+	* src/c++11/Makefile.am: Compile with -fchar8_t when compiling
+	codecvt.cc and limits.cc so that char8_t specializations of
+	numeric_limits and codecvt and emitted.
+	* src/c++11/Makefile.in: Likewise.
+	* src/c++11/codecvt.cc: Define members of
+	codecvt<char16_t, char8_t, mbstate_t>,
+	codecvt<char32_t, char8_t, mbstate_t>,
+	codecvt_byname<char16_t, char8_t, mbstate_t>, and
+	codecvt_byname<char32_t, char8_t, mbstate_t>.
+	* src/c++11/limits.cc: Define members of
+	numeric_limits<char8_t>.
+	* src/c++98/Makefile.am: Compile with -fchar8_t when compiling
+	locale_init.cc and localename.cc.
+	* src/c++98/Makefile.in: Likewise.
+	* src/c++98/locale_init.cc: Add initialization for the
+	codecvt<char16_t, char8_t, mbstate_t> and
+	codecvt<char32_t, char8_t, mbstate_t> facets.
+	* src/c++98/localename.cc: Likewise.
+	* testsuite/util/testsuite_abi.cc: Validate ABI bump.
+
+2019-02-18  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* 27_io/filesystem/operations/all.cc: Add dg-require-filesystem-ts.
+	* 27_io/filesystem/operations/resize_file.cc: Likewise.
+	* 27_io/filesystem/path/generation/normal2.cc: Likewise.
+
+2019-02-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Update P0887R1 status.
+	* doc/html/*: Regenerate.
+
+	* doc/xml/manual/status_cxx2017.xml: Add P0063R3 to status table.
+	* doc/html/*: Regenerate.
+
+	* doc/xml/manual/intro.xml: Document LWG 2586 status.
+	* include/bits/uses_allocator.h (__uses_alloc): Use const lvalue
+	allocator type in is_constructible checks.
+	* testsuite/20_util/scoped_allocator/69293_neg.cc: Adjust dg-error.
+	* testsuite/20_util/scoped_allocator/dr2586.cc: New test.
+	* testsuite/20_util/tuple/cons/allocators.cc: Add test using
+	problematic type from LWG 2586 discussion.
+	* testsuite/20_util/uses_allocator/69293_neg.cc: Adjust dg-error.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Likewise.
+
+	* configure.ac: Check for C11 timespec_get function.
+	* crossconfig.m4 (freebsd, linux, gnu, cygwin, solaris, netbsd)
+	(openbsd): Likewise
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/c_global/ctime (timespec, timespec_get): Add to namespace
+	std for C++17 and up.
+
+	* doc/xml/manual/intro.xml: Document LWG 2537 status.
+	* include/bits/stl_queue.h
+	(priority_queue(const Compare&, const Container&, const Alloc&))
+	(priority_queue(const Compare&, Container&&, const Alloc&)): Call
+	make_heap.
+	* testsuite/23_containers/priority_queue/dr2537.cc: New test.
+
+	* doc/xml/manual/intro.xml: Document LWG 2566 status.
+	* include/bits/stl_queue.h (queue, priority_queue): Add static
+	assertions to enforce LWG 2566 requirement on value_type.
+	* include/bits/stl_stack.h (stack): Likewise.
+
+	PR middle-end/89303
+	* testsuite/20_util/enable_shared_from_this/89303.cc: New test.
+
+	* doc/xml/manual/intro.xml: Document LWG 2735 status.
+	* include/bits/std_abs.h: Add comment about LWG 2735.
+	* testsuite/26_numerics/headers/cstdlib/dr2735.cc: New test.
+
+2019-02-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89345
+	* include/std/version [__cpp_impl_destroying_delete]
+	(__cpp_lib_destroying_delete): Only define for C++2a and later.
+	* libsupc++/new [__cpp_impl_destroying_delete]
+	(__cpp_lib_destroying_delete): Likewise.
+	(destroying_delete_t, destroying_delete): Likewise, but define even
+	when __cpp_impl_destroying_delete is not defined.
+	* testsuite/18_support/destroying_delete.cc: New test.
+
 2019-02-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89023

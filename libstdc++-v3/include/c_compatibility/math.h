@@ -177,5 +177,9 @@ using std::sph_neumannl;
 using std::sph_neumann;
 #endif // _GLIBCXX_USE_STD_SPEC_FUNCS
 
+#if __cplusplus > 201703L
+using std::lerp;
+#endif // C++20
+
 #endif // _GLIBCXX_MATH_H
 #endif // __cplusplus

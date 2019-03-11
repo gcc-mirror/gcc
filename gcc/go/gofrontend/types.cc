@@ -951,21 +951,6 @@ Type::do_hash_for_method(Gogo*, int) const
   return 0;
 }
 
-// Return a hash code for a string, given a starting hash.
-
-unsigned int
-Type::hash_string(const std::string& s, unsigned int h)
-{
-  const char* p = s.data();
-  size_t len = s.length();
-  for (; len > 0; --len)
-    {
-      h ^= *p++;
-      h*= 16777619;
-    }
-  return h;
-}
-
 // A hash table mapping unnamed types to the backend representation of
 // those types.
 
@@ -1017,6 +1002,16 @@ Type::get_backend(Gogo* gogo)
 	  this->finish_backend(gogo, ins.first->second.btype);
 	  ins.first->second.is_placeholder = false;
 	}
+
+      // We set the has_padding field of a Struct_type when we convert
+      // to the backend type, so if we have multiple Struct_type's
+      // mapping to the same backend type we need to copy the
+      // has_padding field.  FIXME: This is awkward.  We shouldn't
+      // really change the type when setting the backend type, but
+      // there isn't any other good time to add the padding field.
+      if (ins.first->first->struct_type() != NULL
+	  && ins.first->first->struct_type()->has_padding())
+	this->struct_type()->set_has_padding();
 
       return ins.first->second.btype;
     }
@@ -4668,7 +4663,7 @@ Function_type::Results_hash::operator()(const Typed_identifier_list* t) const
        ++p)
     {
       hash <<= 2;
-      hash = Type::hash_string(p->name(), hash);
+      hash = Gogo::hash_string(p->name(), hash);
       hash += p->type()->hash_for_method(NULL, Type::COMPARE_TAGS);
     }
   return hash;
@@ -7586,10 +7581,17 @@ Array_type::do_export(Export* exp) const
   exp->write_c_string("[");
   if (this->length_ != NULL)
     {
-      Export_function_body efb(exp, 0);
-      efb.set_type_context(this->length_->type());
-      this->length_->export_expression(&efb);
-      exp->write_string(efb.body());
+      Numeric_constant nc;
+      mpz_t val;
+      if (!this->length_->numeric_constant_value(&nc) || !nc.to_int(&val))
+        {
+	  go_assert(saw_errors());
+          return;
+        }
+      char* s = mpz_get_str(NULL, 10, val);
+      exp->write_string(s);
+      exp->write_string(" ");
+      mpz_clear(val);
     }
   exp->write_c_string("] ");
   exp->write_type(this->element_type_);
@@ -8924,7 +8926,7 @@ Interface_type::do_hash_for_method(Gogo*, int) const
 	   p != this->all_methods_->end();
 	   ++p)
 	{
-	  ret = Type::hash_string(p->name(), ret);
+	  ret = Gogo::hash_string(p->name(), ret);
 	  // We don't use the method type in the hash, to avoid
 	  // infinite recursion if an interface method uses a type
 	  // which is an interface which inherits from the interface
@@ -10334,6 +10336,23 @@ Find_alias::type(Type* type)
 	return TRAVERSE_SKIP_COMPONENTS;
     }
 
+  // Check if there are recursive inherited interface aliases.
+  Interface_type* ift = type->interface_type();
+  if (ift != NULL)
+    {
+      const Typed_identifier_list* methods = ift->local_methods();
+      if (methods == NULL)
+	return TRAVERSE_CONTINUE;
+      for (Typed_identifier_list::const_iterator p = methods->begin();
+	   p != methods->end();
+	   ++p)
+	if (p->name().empty() && p->type()->named_type() == this->find_type_)
+	  {
+	    this->found_ = true;
+	    return TRAVERSE_EXIT;
+	  }
+    }
+
   return TRAVERSE_CONTINUE;
 }
 
@@ -10469,7 +10488,7 @@ Named_type::do_hash_for_method(Gogo* gogo, int) const
   go_assert(!this->is_alias_);
 
   const std::string& name(this->named_object()->name());
-  unsigned int ret = Type::hash_string(name, 0);
+  unsigned int ret = Gogo::hash_string(name, 0);
 
   // GOGO will be NULL here when called from Type_hash_identical.
   // That is OK because that is only used for internal hash tables
@@ -10481,9 +10500,9 @@ Named_type::do_hash_for_method(Gogo* gogo, int) const
     {
       const Package* package = this->named_object()->package();
       if (package == NULL)
-	ret = Type::hash_string(gogo->pkgpath(), ret);
+	ret = Gogo::hash_string(gogo->pkgpath(), ret);
       else
-	ret = Type::hash_string(package->pkgpath(), ret);
+	ret = Gogo::hash_string(package->pkgpath(), ret);
     }
 
   return ret;

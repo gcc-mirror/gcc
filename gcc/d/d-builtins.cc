@@ -452,6 +452,8 @@ d_init_versions (void)
   /* Emit all target-specific version identifiers.  */
   targetdm.d_cpu_versions ();
   targetdm.d_os_versions ();
+
+  VersionCondition::addPredefinedGlobalIdent ("CppRuntime_Gcc");
 }
 
 /* A helper for d_build_builtins_module.  Return a new ALIAS for TYPE.

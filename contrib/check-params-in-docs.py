@@ -39,6 +39,7 @@ parser.add_argument('params_output')
 
 args = parser.parse_args()
 
+ignored = set(['logical-op-non-short-circuit'])
 params = {}
 
 for line in open(args.params_output).readlines():
@@ -56,8 +57,8 @@ token = '@item '
 texi = [x[len(token):] for x in texi if x.startswith(token)]
 sorted_texi = sorted(texi)
 
-texi_set = set(texi)
-params_set = set(params.keys())
+texi_set = set(texi) - ignored
+params_set = set(params.keys()) - ignored
 
 extra = texi_set - params_set
 if len(extra):

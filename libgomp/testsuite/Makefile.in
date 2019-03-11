@@ -271,6 +271,7 @@ mkdir_p = @mkdir_p@
 multi_basedir = @multi_basedir@
 offload_additional_lib_paths = @offload_additional_lib_paths@
 offload_additional_options = @offload_additional_options@
+offload_plugins = @offload_plugins@
 offload_targets = @offload_targets@
 oldincludedir = @oldincludedir@
 pdfdir = @pdfdir@

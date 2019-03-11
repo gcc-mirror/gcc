@@ -153,7 +153,7 @@ var runtimeInitTime int64
 var initSigmask sigset
 
 // The main goroutine.
-func main() {
+func main(unsafe.Pointer) {
 	g := getg()
 
 	// Max stack size is 1 GB on 64-bit, 250 MB on 32-bit.
@@ -446,7 +446,14 @@ func releaseSudog(s *sudog) {
 //go:nosplit
 func funcPC(f interface{}) uintptr {
 	i := (*iface)(unsafe.Pointer(&f))
-	return **(**uintptr)(i.data)
+	r := **(**uintptr)(i.data)
+	if cpu.FunctionDescriptors {
+		// With PPC64 ELF ABI v1 function descriptors the
+		// function address is a pointer to a struct whose
+		// first field is the actual PC.
+		r = *(*uintptr)(unsafe.Pointer(r))
+	}
+	return r
 }
 
 func lockedOSThread() bool {
@@ -1191,6 +1198,9 @@ func kickoff() {
 		gp.entry = nil
 		gp.param = nil
 	}
+
+	// Record the entry SP to help stack scan.
+	gp.entrysp = getsp()
 
 	fv(param)
 	goexit1()

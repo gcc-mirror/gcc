@@ -2472,7 +2472,7 @@ gfc_complex2complex (gfc_expr *src, int kind)
       int w = warn_conversion ? OPT_Wconversion : OPT_Wconversion_extra;
 
       gfc_warning_now (w, "Change of value in conversion from "
-		       " %qs to %qs at %L",
+		       "%qs to %qs at %L",
 		       gfc_typename (&src->ts), gfc_typename (&result->ts),
 		       &src->where);
       did_warn = true;
@@ -2548,10 +2548,10 @@ gfc_character2character (gfc_expr *src, int kind)
 static void
 hollerith2representation (gfc_expr *result, gfc_expr *src)
 {
-  int src_len, result_len;
+  size_t src_len, result_len;
 
   src_len = src->representation.length - src->ts.u.pad;
-  result_len = gfc_target_expr_size (result);
+  gfc_target_expr_size (result, &result_len);
 
   if (src_len > result_len)
     {

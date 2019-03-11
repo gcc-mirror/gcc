@@ -2849,7 +2849,7 @@ check_explicit_specialization (tree declarator,
 	  /* This case handles bogus declarations like template <>
 	     template <class T> void f<int>(); */
 
-	  if (!uses_template_parms (declarator))
+	  if (!uses_template_parms (TREE_OPERAND (declarator, 1)))
 	    error ("template-id %qD in declaration of primary template",
 		   declarator);
 	  else if (variable_template_p (TREE_OPERAND (declarator, 0)))
@@ -11784,8 +11784,6 @@ fold_expression (tree t, tree left, tree right, tsubst_flags_t complain)
     {
     case COMPOUND_EXPR:
       return build_x_compound_expr (input_location, left, right, complain);
-    case DOTSTAR_EXPR:
-      return build_m_component_ref (left, right, complain);
     default:
       return build_x_binary_op (input_location, code,
                                 left, TREE_CODE (left),
@@ -13088,6 +13086,11 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 	set_constraints (r, ci);
       }
 
+  if (DECL_FRIEND_P (t) && DECL_FRIEND_CONTEXT (t))
+    SET_DECL_FRIEND_CONTEXT (r,
+			     tsubst (DECL_FRIEND_CONTEXT (t),
+				     args, complain, in_decl));
+
   /* Set up the DECL_TEMPLATE_INFO for R.  There's no need to do
      this in the special friend case mentioned above where
      GEN_TMPL is NULL.  */
@@ -13148,11 +13151,6 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 	   && IDENTIFIER_ANY_OP_P (DECL_NAME (r))
 	   && !grok_op_properties (r, /*complain=*/true))
     return error_mark_node;
-
-  if (DECL_FRIEND_P (t) && DECL_FRIEND_CONTEXT (t))
-    SET_DECL_FRIEND_CONTEXT (r,
-			     tsubst (DECL_FRIEND_CONTEXT (t),
-				     args, complain, in_decl));
 
   /* Possibly limit visibility based on template args.  */
   DECL_VISIBILITY (r) = VISIBILITY_DEFAULT;
@@ -15422,21 +15420,35 @@ tsubst_init (tree init, tree decl, tree args,
 
   init = tsubst_expr (init, args, complain, in_decl, false);
 
-  if (!init && TREE_TYPE (decl) != error_mark_node)
+  tree type = TREE_TYPE (decl);
+
+  if (!init && type != error_mark_node)
     {
-      /* If we had an initializer but it
-	 instantiated to nothing,
-	 value-initialize the object.  This will
-	 only occur when the initializer was a
-	 pack expansion where the parameter packs
-	 used in that expansion were of length
-	 zero.  */
-      init = build_value_init (TREE_TYPE (decl),
-			       complain);
-      if (TREE_CODE (init) == AGGR_INIT_EXPR)
-	init = get_target_expr_sfinae (init, complain);
-      if (TREE_CODE (init) == TARGET_EXPR)
-	TARGET_EXPR_DIRECT_INIT_P (init) = true;
+      if (tree auto_node = type_uses_auto (type))
+	{
+	  if (!CLASS_PLACEHOLDER_TEMPLATE (auto_node))
+	    {
+	      if (complain & tf_error)
+		error ("initializer for %q#D expands to an empty list "
+		       "of expressions", decl);
+	      return error_mark_node;
+	    }
+	}
+      else if (!dependent_type_p (type))
+	{
+	  /* If we had an initializer but it
+	     instantiated to nothing,
+	     value-initialize the object.  This will
+	     only occur when the initializer was a
+	     pack expansion where the parameter packs
+	     used in that expansion were of length
+	     zero.  */
+	  init = build_value_init (type, complain);
+	  if (TREE_CODE (init) == AGGR_INIT_EXPR)
+	    init = get_target_expr_sfinae (init, complain);
+	  if (TREE_CODE (init) == TARGET_EXPR)
+	    TARGET_EXPR_DIRECT_INIT_P (init) = true;
+	}
     }
 
   return init;
@@ -19347,6 +19359,8 @@ tsubst_copy_and_build (tree t,
 
 	r = build_constructor (init_list_type_node, n);
 	CONSTRUCTOR_IS_DIRECT_INIT (r) = CONSTRUCTOR_IS_DIRECT_INIT (t);
+	CONSTRUCTOR_IS_DESIGNATED_INIT (r)
+	  = CONSTRUCTOR_IS_DESIGNATED_INIT (t);
 
 	if (TREE_HAS_CONSTRUCTOR (t))
 	  {
@@ -24053,9 +24067,8 @@ regenerate_decl_from_template (tree decl, tree tmpl, tree args)
     {
       start_lambda_scope (decl);
       DECL_INITIAL (decl) =
-	tsubst_expr (DECL_INITIAL (code_pattern), args,
-		     tf_error, DECL_TI_TEMPLATE (decl),
-		     /*integral_constant_expression_p=*/false);
+	tsubst_init (DECL_INITIAL (code_pattern), decl, args,
+		     tf_error, DECL_TI_TEMPLATE (decl));
       finish_lambda_scope ();
       if (VAR_HAD_UNKNOWN_BOUND (decl))
 	TREE_TYPE (decl) = tsubst (TREE_TYPE (code_pattern), args,
@@ -24190,17 +24203,42 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 	  push_access_scope (fn);
 	  push_deferring_access_checks (dk_no_deferred);
 	  input_location = DECL_SOURCE_LOCATION (fn);
-	  noex = tsubst_copy_and_build (DEFERRED_NOEXCEPT_PATTERN (noex),
-					DEFERRED_NOEXCEPT_ARGS (noex),
-					tf_warning_or_error, fn,
-					/*function_p=*/false,
-					/*integral_constant_expression_p=*/true);
-	  spec = build_noexcept_spec (noex, tf_warning_or_error);
+
+	  /* A new stack interferes with pop_access_scope.  */
+	  {
+	    /* Set up the list of local specializations.  */
+	    local_specialization_stack lss (lss_copy);
+
+	    tree save_ccp = current_class_ptr;
+	    tree save_ccr = current_class_ref;
+	    /* If needed, set current_class_ptr for the benefit of
+	       tsubst_copy/PARM_DECL.  */
+	    tree tdecl = DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (fn));
+	    if (DECL_NONSTATIC_MEMBER_FUNCTION_P (tdecl))
+	      {
+		tree this_parm = DECL_ARGUMENTS (tdecl);
+		current_class_ptr = NULL_TREE;
+		current_class_ref = cp_build_fold_indirect_ref (this_parm);
+		current_class_ptr = this_parm;
+	      }
+
+	    /* Create substitution entries for the parameters.  */
+	    register_parameter_specializations (tdecl, fn);
+
+	    /* Do deferred instantiation of the noexcept-specifier.  */
+	    noex = tsubst_copy_and_build (DEFERRED_NOEXCEPT_PATTERN (noex),
+					  DEFERRED_NOEXCEPT_ARGS (noex),
+					  tf_warning_or_error, fn,
+					  /*function_p=*/false,
+					  /*i_c_e_p=*/true);
+	    current_class_ptr = save_ccp;
+	    current_class_ref = save_ccr;
+	    spec = build_noexcept_spec (noex, tf_warning_or_error);
+	  }
+
 	  pop_deferring_access_checks ();
 	  pop_access_scope (fn);
 	  pop_tinst_level ();
-	  if (spec == error_mark_node)
-	    spec = noexcept_false_spec;
 	}
       else
 	spec = noexcept_false_spec;
@@ -24384,8 +24422,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
     {
       deleted_p = false;
       if (DECL_CLASS_SCOPE_P (code_pattern))
-	pattern_defined = (! DECL_IN_AGGR_P (code_pattern)
-			   || DECL_INLINE_VAR_P (code_pattern));
+	pattern_defined = ! DECL_IN_AGGR_P (code_pattern);
       else
 	pattern_defined = ! DECL_EXTERNAL (code_pattern);
     }
@@ -26609,8 +26646,10 @@ make_auto (void)
 tree
 make_template_placeholder (tree tmpl)
 {
-  tree t = make_auto_1 (auto_identifier, true);
+  tree t = make_auto_1 (auto_identifier, false);
   CLASS_PLACEHOLDER_TEMPLATE (t) = tmpl;
+  /* Our canonical type depends on the placeholder.  */
+  TYPE_CANONICAL (t) = canonical_type_parameter (t);
   return t;
 }
 
@@ -27145,6 +27184,9 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	error ("non-class template %qT used without template arguments", tmpl);
       return error_mark_node;
     }
+  if (init && TREE_TYPE (init) == ptype)
+    /* Using the template parm as its own argument.  */
+    return ptype;
 
   tree type = TREE_TYPE (tmpl);
 
@@ -27212,7 +27254,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 
   tree outer_args = NULL_TREE;
   if (DECL_CLASS_SCOPE_P (tmpl)
-      && CLASSTYPE_TEMPLATE_INFO (DECL_CONTEXT (tmpl)))
+      && CLASSTYPE_TEMPLATE_INSTANTIATION (DECL_CONTEXT (tmpl)))
     {
       outer_args = CLASSTYPE_TI_ARGS (DECL_CONTEXT (tmpl));
       type = TREE_TYPE (most_general_template (tmpl));

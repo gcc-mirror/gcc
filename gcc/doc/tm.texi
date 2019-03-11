@@ -1931,6 +1931,10 @@ superset of all other ABIs.  @var{call_1} must always be a call insn,
 call_2 may be NULL or a call insn.
 @end deftypefn
 
+@deftypefn {Target Hook} {const char *} TARGET_GET_MULTILIB_ABI_NAME (void)
+This hook returns name of multilib ABI name.
+@end deftypefn
+
 @findex fixed_regs
 @findex call_used_regs
 @findex global_regs

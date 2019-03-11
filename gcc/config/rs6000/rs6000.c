@@ -3869,6 +3869,9 @@ rs6000_option_override_internal (bool global_init_p)
   /* Don't override by the processor default if given explicitly.  */
   set_masks &= ~rs6000_isa_flags_explicit;
 
+  if (global_init_p && rs6000_dejagnu_cpu_index >= 0)
+    rs6000_cpu_index = rs6000_dejagnu_cpu_index;
+
   /* Process the -mcpu=<xxx> and -mtune=<xxx> argument.  If the user changed
      the cpu in a target attribute or pragma, but did not specify a tuning
      option, use the cpu for the tuning option rather than the option specified
@@ -9887,7 +9890,7 @@ valid_sf_si_move (rtx dest, rtx src, machine_mode mode)
 static bool
 rs6000_emit_move_si_sf_subreg (rtx dest, rtx source, machine_mode mode)
 {
-  if (TARGET_DIRECT_MOVE_64BIT && !lra_in_progress && !reload_completed
+  if (TARGET_DIRECT_MOVE_64BIT && !reload_completed
       && (!SUBREG_P (dest) || !sf_subreg_operand (dest, mode))
       && SUBREG_P (source) && sf_subreg_operand (source, mode))
     {
@@ -16105,22 +16108,13 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case ALTIVEC_BUILTIN_VSPLTISH:
     case ALTIVEC_BUILTIN_VSPLTISW:
       {
-	int size;
-	if (fn_code == ALTIVEC_BUILTIN_VSPLTISB)
-	  size = 8;
-	else if (fn_code == ALTIVEC_BUILTIN_VSPLTISH)
-	  size = 16;
-	else
-	  size = 32;
-
 	arg0 = gimple_call_arg (stmt, 0);
 	lhs = gimple_call_lhs (stmt);
 
 	/* Only fold the vec_splat_*() if the lower bits of arg 0 is a
 	   5-bit signed constant in range -16 to +15.  */
 	if (TREE_CODE (arg0) != INTEGER_CST
-	    || !IN_RANGE (sext_hwi (TREE_INT_CST_LOW (arg0), size),
-			  -16, 15))
+	    || !IN_RANGE (TREE_INT_CST_LOW (arg0), -16, 15))
 	  return false;
 	gimple_seq stmts = NULL;
 	location_t loc = gimple_location (stmt);

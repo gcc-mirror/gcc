@@ -412,7 +412,7 @@ tree gfc_class_data_get (tree);
 tree gfc_class_vptr_get (tree);
 tree gfc_class_len_get (tree);
 tree gfc_class_len_or_zero_get (tree);
-gfc_expr * gfc_find_and_cut_at_last_class_ref (gfc_expr *);
+gfc_expr * gfc_find_and_cut_at_last_class_ref (gfc_expr *, bool is_mold = false);
 /* Get an accessor to the class' vtab's * field, when a class handle is
    available.  */
 tree gfc_class_vtab_hash_get (tree);
@@ -580,7 +580,8 @@ void gfc_merge_block_scope (stmtblock_t * block);
 tree gfc_get_label_decl (gfc_st_label *);
 
 /* Return the decl for an external function.  */
-tree gfc_get_extern_function_decl (gfc_symbol *);
+tree gfc_get_extern_function_decl (gfc_symbol *,
+				   gfc_actual_arglist *args = NULL);
 
 /* Return the decl for a function.  */
 tree gfc_get_function_decl (gfc_symbol *);

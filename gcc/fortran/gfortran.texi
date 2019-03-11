@@ -425,9 +425,9 @@ compiler.  See @ref{Top,,Overview,cpp,The C Preprocessor} for details.
 GNU Fortran supports a number of @code{INTEGER} and @code{REAL} kind types
 in additional to the kind types required by the Fortran standard.
 The availability of any given kind type is architecture dependent.  The
-following pre-defined preprocessor macros can be used to conditional
-include code for these additional kind types: @code{__GFC_INTEGER_1__},
-@code{__GFC_INTEGER_2__}, @code{__GFC_INTEGER_8__}, @code{__GFC_INTEGER_16__},
+following pre-defined preprocessor macros can be used to conditionally
+include code for these additional kind types: @code{__GFC_INT_1__},
+@code{__GFC_INT_2__}, @code{__GFC_INT_8__}, @code{__GFC_INT_16__},
 @code{__GFC_REAL_10__}, and @code{__GFC_REAL_16__}.
 
 While CPP is the de-facto standard for preprocessing Fortran code,
@@ -3505,6 +3505,7 @@ as this requires the new array descriptor.
 @menu
 * ATTRIBUTES directive::
 * UNROLL directive::
+* BUILTIN directive::
 @end menu
 
 @node ATTRIBUTES directive
@@ -3596,6 +3597,25 @@ loop that follows.  N is an integer constant specifying the unrolling factor.
 The values of 0 and 1 block any unrolling of the loop.
 
 
+@node BUILTIN directive
+@subsection BUILTIN directive
+
+The syntax of the directive is
+
+@code{!GCC$ BUILTIN (B) attributes simd FLAGS IF('target')}
+
+You can use this directive to define which middle-end built-ins provide vector
+implementations.  @code{B} is name of the middle-end built-in.  @code{FLAGS}
+are optional and must be either "(inbranch)" or "(notinbranch)".
+@code{IF} statement is optional and is used to filter multilib ABIs
+for the built-in that should be vectorized.  Example usage:
+
+@smallexample
+!GCC$ builtin (sinf) attributes simd (notinbranch) if('x86_64')
+@end smallexample
+
+The purpose of the directive is to provide an API among the GCC compiler and
+the GNU C Library which would define vector implementations of math routines.
 
 @node Non-Fortran Main Program
 @section Non-Fortran Main Program

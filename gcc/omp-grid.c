@@ -1303,7 +1303,8 @@ grid_attempt_target_gridification (gomp_target *target,
   push_gimplify_context ();
   for (size_t i = 0; i < grid.collapse; i++)
     {
-      tree itype, type = TREE_TYPE (gimple_omp_for_index (inner_loop, i));
+      tree index_var = gimple_omp_for_index (inner_loop, i);
+      tree itype, type = TREE_TYPE (index_var);
       if (POINTER_TYPE_P (type))
 	itype = signed_type_for (type);
       else
@@ -1314,13 +1315,13 @@ grid_attempt_target_gridification (gomp_target *target,
       walk_tree (&n1, grid_remap_prebody_decls, &wi, NULL);
       tree n2 = unshare_expr (gimple_omp_for_final (inner_loop, i));
       walk_tree (&n2, grid_remap_prebody_decls, &wi, NULL);
-      omp_adjust_for_condition (loc, &cond_code, &n2);
+      tree step
+	= omp_get_for_step_from_incr (loc, gimple_omp_for_incr (inner_loop, i));
+      omp_adjust_for_condition (loc, &cond_code, &n2, index_var, step);
       n1 = fold_convert (itype, n1);
       n2 = fold_convert (itype, n2);
 
       tree cond = fold_build2 (cond_code, boolean_type_node, n1, n2);
-      tree step
-	= omp_get_for_step_from_incr (loc, gimple_omp_for_incr (inner_loop, i));
 
       tree t = build_int_cst (itype, (cond_code == LT_EXPR ? -1 : 1));
       t = fold_build2 (PLUS_EXPR, itype, step, t);

@@ -344,6 +344,9 @@ case "${host}" in
       s390x)
         abi_baseline_pair=s390x-linux-gnu
         ;;
+      sparc64)
+        abi_baseline_pair=sparc64-linux-gnu
+        ;;
       x86_64)
         abi_baseline_pair=x86_64-linux-gnu
         ;;

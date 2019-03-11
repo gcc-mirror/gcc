@@ -1085,7 +1085,7 @@ static const struct tune_params thunderx2t99_tunings =
   &thunderx2t99_prefetch_tune
 };
 
-static const struct tune_params ares_tunings =
+static const struct tune_params neoversen1_tunings =
 {
   &cortexa57_extra_costs,
   &generic_addrcost_table,
@@ -1180,7 +1180,7 @@ static const struct attribute_spec aarch64_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
-  { "aarch64_vector_pcs", 0, 0, false, true,  true,  false, NULL, NULL },
+  { "aarch64_vector_pcs", 0, 0, false, true,  true,  true,  NULL, NULL },
   { NULL,                 0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -5979,6 +5979,9 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   int this_regno = R0_REGNUM;
   rtx this_rtx, temp0, temp1, addr, funexp;
   rtx_insn *insn;
+
+  if (aarch64_bti_enabled ())
+    emit_insn (gen_bti_c());
 
   reload_completed = 1;
   emit_note (NOTE_INSN_PROLOGUE_END);
@@ -12032,7 +12035,6 @@ aarch64_override_options (void)
     {
 #ifdef TARGET_ENABLE_PAC_RET
       aarch64_ra_sign_scope = AARCH64_FUNCTION_NON_LEAF;
-      aarch64_ra_sign_key = AARCH64_KEY_A;
 #else
       aarch64_ra_sign_scope = AARCH64_FUNCTION_NONE;
 #endif
@@ -18709,6 +18711,27 @@ aarch64_simd_clone_usable (struct cgraph_node *node)
     }
 }
 
+/* Implement TARGET_COMP_TYPE_ATTRIBUTES */
+
+static int
+aarch64_comp_type_attributes (const_tree type1, const_tree type2)
+{
+  if (lookup_attribute ("aarch64_vector_pcs", TYPE_ATTRIBUTES (type1))
+      != lookup_attribute ("aarch64_vector_pcs", TYPE_ATTRIBUTES (type2)))
+    return 0;
+  return 1;
+}
+
+/* Implement TARGET_GET_MULTILIB_ABI_NAME */
+
+static const char *
+aarch64_get_multilib_abi_name (void)
+{
+  if (TARGET_BIG_END)
+    return TARGET_ILP32 ? "aarch64_be_ilp32" : "aarch64_be";
+  return TARGET_ILP32 ? "aarch64_ilp32" : "aarch64";
+}
+
 /* Implement TARGET_STACK_PROTECT_GUARD. In case of a
    global variable based guard use the default else
    return a null tree.  */
@@ -19227,6 +19250,12 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_SIMD_CLONE_USABLE
 #define TARGET_SIMD_CLONE_USABLE aarch64_simd_clone_usable
+
+#undef TARGET_COMP_TYPE_ATTRIBUTES
+#define TARGET_COMP_TYPE_ATTRIBUTES aarch64_comp_type_attributes
+
+#undef TARGET_GET_MULTILIB_ABI_NAME
+#define TARGET_GET_MULTILIB_ABI_NAME aarch64_get_multilib_abi_name
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

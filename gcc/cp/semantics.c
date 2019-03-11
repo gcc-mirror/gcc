@@ -646,10 +646,10 @@ maybe_convert_cond (tree cond)
     return NULL_TREE;
 
   /* Wait until we instantiate templates before doing conversion.  */
-  if (processing_template_decl)
+  if (type_dependent_expression_p (cond))
     return cond;
 
-  if (warn_sequence_point)
+  if (warn_sequence_point && !processing_template_decl)
     verify_sequence_points (cond);
 
   /* Do the conversion.  */
@@ -657,12 +657,11 @@ maybe_convert_cond (tree cond)
 
   if (TREE_CODE (cond) == MODIFY_EXPR
       && !TREE_NO_WARNING (cond)
-      && warn_parentheses)
-    {
-      warning_at (cp_expr_loc_or_loc (cond, input_location), OPT_Wparentheses,
-		  "suggest parentheses around assignment used as truth value");
-      TREE_NO_WARNING (cond) = 1;
-    }
+      && warn_parentheses
+      && warning_at (cp_expr_loc_or_loc (cond, input_location),
+		     OPT_Wparentheses, "suggest parentheses around "
+				       "assignment used as truth value"))
+    TREE_NO_WARNING (cond) = 1;
 
   return condition_conversion (cond);
 }
@@ -2796,17 +2795,31 @@ finish_compound_literal (tree type, tree compound_literal,
 	  return error_mark_node;
       }
 
-  if (instantiation_dependent_expression_p (compound_literal)
-      || dependent_type_p (type))
+  /* Used to hold a copy of the compound literal in a template.  */
+  tree orig_cl = NULL_TREE;
+
+  if (processing_template_decl)
     {
-      TREE_TYPE (compound_literal) = type;
+      const bool dependent_p
+	= (instantiation_dependent_expression_p (compound_literal)
+	   || dependent_type_p (type));
+      if (dependent_p)
+	/* We're about to return, no need to copy.  */
+	orig_cl = compound_literal;
+      else
+	/* We're going to need a copy.  */
+	orig_cl = unshare_constructor (compound_literal);
+      TREE_TYPE (orig_cl) = type;
       /* Mark the expression as a compound literal.  */
-      TREE_HAS_CONSTRUCTOR (compound_literal) = 1;
+      TREE_HAS_CONSTRUCTOR (orig_cl) = 1;
       /* And as instantiation-dependent.  */
-      CONSTRUCTOR_IS_DEPENDENT (compound_literal) = true;
+      CONSTRUCTOR_IS_DEPENDENT (orig_cl) = dependent_p;
       if (fcl_context == fcl_c99)
-	CONSTRUCTOR_C99_COMPOUND_LITERAL (compound_literal) = 1;
-      return compound_literal;
+	CONSTRUCTOR_C99_COMPOUND_LITERAL (orig_cl) = 1;
+      /* If the compound literal is dependent, we're done for now.  */
+      if (dependent_p)
+	return orig_cl;
+      /* Otherwise, do go on to e.g. check narrowing.  */
     }
 
   type = complete_type (type);
@@ -2827,9 +2840,13 @@ finish_compound_literal (tree type, tree compound_literal,
     return error_mark_node;
   compound_literal = reshape_init (type, compound_literal, complain);
   if (SCALAR_TYPE_P (type)
-      && !BRACE_ENCLOSED_INITIALIZER_P (compound_literal)
-      && !check_narrowing (type, compound_literal, complain))
-    return error_mark_node;
+      && !BRACE_ENCLOSED_INITIALIZER_P (compound_literal))
+    {
+      tree t = instantiate_non_dependent_expr_sfinae (compound_literal,
+						      complain);
+      if (!check_narrowing (type, t, complain))
+	return error_mark_node;
+    }
   if (TREE_CODE (type) == ARRAY_TYPE
       && TYPE_DOMAIN (type) == NULL_TREE)
     {
@@ -2838,8 +2855,21 @@ finish_compound_literal (tree type, tree compound_literal,
       if (type == error_mark_node)
 	return error_mark_node;
     }
-  compound_literal = digest_init_flags (type, compound_literal, LOOKUP_NORMAL,
+  compound_literal = digest_init_flags (type, compound_literal,
+					LOOKUP_NORMAL | LOOKUP_NO_NARROWING,
 					complain);
+  if (compound_literal == error_mark_node)
+    return error_mark_node;
+
+  /* If we're in a template, return the original compound literal.  */
+  if (orig_cl)
+    {
+      if (!VECTOR_TYPE_P (type))
+	return get_target_expr_sfinae (orig_cl, complain);
+      else
+	return orig_cl;
+    }
+
   if (TREE_CODE (compound_literal) == CONSTRUCTOR)
     {
       TREE_HAS_CONSTRUCTOR (compound_literal) = true;
@@ -3441,10 +3471,12 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
 	= decl_function_context (containing_function);
     }
 
-  /* In a lambda within a template, wait until instantiation
-     time to implicitly capture a dependent type.  */
+  /* In a lambda within a template, wait until instantiation time to implicitly
+     capture a parameter pack.  We want to wait because we don't know if we're
+     capturing the whole pack or a single element, and it's OK to wait because
+     find_parameter_packs_r walks into the lambda body.  */
   if (context == containing_function
-      && dependent_type_p (TREE_TYPE (decl)))
+      && DECL_PACK_P (decl))
     return decl;
 
   if (lambda_expr && VAR_P (decl)
@@ -4324,7 +4356,12 @@ expand_or_defer_fn_1 (tree fn)
   /* There's no reason to do any of the work here if we're only doing
      semantic analysis; this code just generates RTL.  */
   if (flag_syntax_only)
-    return false;
+    {
+      /* Pretend that this function has been written out so that we don't try
+	 to expand it again.  */
+      TREE_ASM_WRITTEN (fn) = 1;
+      return false;
+    }
 
   return true;
 }

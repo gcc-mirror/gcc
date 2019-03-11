@@ -350,6 +350,7 @@ BEGIN {
         if (timeout_cnt != 0) {
           printf "%s %08d|%s program timed out.\n", testname, timeout_cnt, timeout_msg >> curfile
           timeout_cnt = 0
+          cnt = cnt + 1
         }
         printf "%s %08d|", testname, cnt >> curfile
         cnt = cnt + 1

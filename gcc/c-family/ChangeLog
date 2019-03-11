@@ -1,3 +1,40 @@
+2019-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89550
+	* c-common.c (c_common_truthvalue_conversion): Only set
+	TREE_NO_WARNING if warning_at returned true.
+	* c-warn.c (overflow_warning, warn_logical_operator): Likewise.
+
+2019-02-25  Sandra Loosemore  <sandra@codesourcery.com>
+	    Martin Sebor  <msebor@gmail.com>
+
+	* c.opt (Wmissing-attributes): Clean up doc string.
+
+2019-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89495
+	* c-format.c (maybe_read_dollar_number): Compute nargnum in
+	HOST_WIDE_INT type to avoid overflows and change overflow_flag
+	checking.
+
+2019-02-22  Richard Biener  <rguenther@suse.de>
+
+	* c-pch.c (no_checksum): Remove.
+	(pch_init): Remove assertion that executable_checksum is not
+	all zero.
+	(c_common_valid_pch): Likewise.
+
+2019-02-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/89294
+	* c-common.c (invalid_array_size_error): Handle cst_size_not_constant.
+
+2019-02-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/88680
+	* c-common.c (shorten_compare): Call fold_for_warn on op0 when
+	implementing -Wtype-limits.
+
 2019-02-11  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/87996

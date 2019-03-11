@@ -1,7 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power5" } } */
-/* { dg-options "-O2 -mcpu=power5" } */
+/* { dg-options "-O2 -mdejagnu-cpu=power5" } */
 /* { dg-final { scan-assembler-times "nop" 3 } } */
 
 /* Test generation of nops in load hit store situation.  Make sure enough nop

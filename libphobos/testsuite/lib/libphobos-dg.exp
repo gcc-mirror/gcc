@@ -42,11 +42,11 @@ if { [info procs libphobos_load] != [list] \
     rename libphobos_load prev_libphobos_load
 
     proc libphobos_load { program args } {
-        global libphobos_run_args
-        if { $libphobos_run_args != "" } {
-            set args [concat "{$libphobos_run_args}"]
-        }
-        set result [eval [list prev_libphobos_load $program] $args ]
-        return $result
+	global libphobos_run_args
+	if { $libphobos_run_args != "" } {
+	    set args [concat "{$libphobos_run_args}"]
+	}
+	set result [eval [list prev_libphobos_load $program] $args ]
+	return $result
     }
 }

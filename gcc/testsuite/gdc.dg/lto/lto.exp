@@ -51,7 +51,7 @@ set sid "d_lto"
 foreach src [lsort [find $srcdir/$subdir *_0.d]] {
     # If we're only testing specific files and this isn't one of them, skip it.
     if ![runtest_file_p $runtests $src] then {
-        continue
+	continue
     }
 
     lto-execute $src $sid

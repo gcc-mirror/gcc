@@ -2356,7 +2356,7 @@ class Call_expression : public Expression
   check_argument_type(int, const Type*, const Type*, Location, bool);
 
   Expression*
-  lower_to_builtin(Named_object**, const char*, int);
+  lower_to_builtin(Named_object**, const char*, int*);
 
   Expression*
   interface_method_function(Interface_field_reference_expression*,
@@ -4163,6 +4163,10 @@ class Numeric_constant
 
   Numeric_constant& operator=(const Numeric_constant&);
 
+  // Check equality with another numeric constant.
+  bool
+  equals(const Numeric_constant&) const;
+
   // Set to an unsigned long value.
   void
   set_unsigned_long(Type*, unsigned long);
@@ -4281,6 +4285,10 @@ class Numeric_constant
   // Return an Expression for this value.
   Expression*
   expression(Location) const;
+
+  // Calculate a hash code with a given seed.
+  unsigned int
+  hash(unsigned int seed) const;
 
  private:
   void

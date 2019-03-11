@@ -3,8 +3,7 @@
 
 /* { dg-do compile { target { powerpc*-*-linux* && le } } } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
-/* { dg-options "-mcpu=power9 -O2" } */
+/* { dg-options "-mdejagnu-cpu=power9 -O2" } */
 
 // six tests total. Targeting P9 LE.
 // p9 (le) variable offset: slwi, vextuhlx, extsh

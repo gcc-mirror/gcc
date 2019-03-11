@@ -120,7 +120,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Alloc>
 	using _Uses = typename
 	  enable_if<uses_allocator<_Sequence, _Alloc>::value>::type;
-#endif
+
+#if __cplusplus >= 201703L
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2566. Requirements on the first template parameter of container
+      // adaptors
+      static_assert(is_same<_Tp, typename _Sequence::value_type>::value,
+	  "value_type must be the same as the underlying container");
+#endif // C++17
+#endif // C++11
 
     public:
       typedef typename _Sequence::value_type		value_type;
@@ -278,12 +286,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cpp_deduction_guides >= 201606
   template<typename _Container,
-	   typename = enable_if_t<!__is_allocator<_Container>::value>>
+	   typename = _RequireNotAllocator<_Container>>
     stack(_Container) -> stack<typename _Container::value_type, _Container>;
 
   template<typename _Container, typename _Allocator,
-	   typename = enable_if_t<!__is_allocator<_Container>::value>,
-	   typename = enable_if_t<__is_allocator<_Allocator>::value>>
+	   typename = _RequireNotAllocator<_Container>,
+	   typename = _RequireAllocator<_Allocator>>
     stack(_Container, _Allocator)
     -> stack<typename _Container::value_type, _Container>;
 #endif

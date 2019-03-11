@@ -313,6 +313,7 @@ type dbgVar struct {
 var debug struct {
 	allocfreetrace     int32
 	cgocheck           int32
+	clobberfree        int32
 	efence             int32
 	gccheckmark        int32
 	gcpacertrace       int32
@@ -330,6 +331,7 @@ var debug struct {
 
 var dbgvars = []dbgVar{
 	{"allocfreetrace", &debug.allocfreetrace},
+	{"clobberfree", &debug.clobberfree},
 	{"cgocheck", &debug.cgocheck},
 	{"efence", &debug.efence},
 	{"gccheckmark", &debug.gccheckmark},
@@ -360,7 +362,9 @@ func parsedebugvars() {
 	// At that point, if debug.invalidptr is set, we crash.
 	// This is not a problem, assuming that M1 really is dead and
 	// the pointer we discovered to it will not be used.
-	// debug.invalidptr = 1
+	if usestackmaps {
+		debug.invalidptr = 1
+	}
 
 	for p := gogetenv("GODEBUG"); p != ""; {
 		field := ""

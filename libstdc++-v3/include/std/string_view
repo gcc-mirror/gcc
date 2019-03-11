@@ -583,7 +583,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_USE_WCHAR_T
   using wstring_view = basic_string_view<wchar_t>;
 #endif
-
+#ifdef _GLIBCXX_USE_CHAR8_T
+  using u8string_view = basic_string_view<char8_t>;
+#endif
   using u16string_view = basic_string_view<char16_t>;
   using u32string_view = basic_string_view<char32_t>;
 
@@ -618,6 +620,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<>
     struct __is_fast_hash<hash<wstring_view>> : std::false_type
+    { };
+#endif
+
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<>
+    struct hash<u8string_view>
+    : public __hash_base<size_t, u8string_view>
+    {
+      size_t
+      operator()(const u8string_view& __str) const noexcept
+      { return std::_Hash_impl::hash(__str.data(), __str.length()); }
+    };
+
+  template<>
+    struct __is_fast_hash<hash<u8string_view>> : std::false_type
     { };
 #endif
 
@@ -663,6 +680,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline constexpr basic_string_view<wchar_t>
     operator""sv(const wchar_t* __str, size_t __len) noexcept
     { return basic_string_view<wchar_t>{__str, __len}; }
+#endif
+
+#ifdef _GLIBCXX_USE_CHAR8_T
+    inline constexpr basic_string_view<char8_t>
+    operator""sv(const char8_t* __str, size_t __len) noexcept
+    { return basic_string_view<char8_t>{__str, __len}; }
 #endif
 
     inline constexpr basic_string_view<char16_t>

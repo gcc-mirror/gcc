@@ -98,13 +98,13 @@ func (s *facilityList) Has(fs ...facility) bool {
 
 // The following feature detection functions are defined in cpu_s390x.s.
 // They are likely to be expensive to call so the results should be cached.
-func stfle() facilityList     { panic("not implemented for gccgo") }
-func kmQuery() queryResult    { panic("not implemented for gccgo") }
-func kmcQuery() queryResult   { panic("not implemented for gccgo") }
-func kmctrQuery() queryResult { panic("not implemented for gccgo") }
-func kmaQuery() queryResult   { panic("not implemented for gccgo") }
-func kimdQuery() queryResult  { panic("not implemented for gccgo") }
-func klmdQuery() queryResult  { panic("not implemented for gccgo") }
+func stfle() facilityList
+func kmQuery() queryResult
+func kmcQuery() queryResult
+func kmctrQuery() queryResult
+func kmaQuery() queryResult
+func kimdQuery() queryResult
+func klmdQuery() queryResult
 
 func doinit() {
 	options = []option{
@@ -121,14 +121,6 @@ func doinit() {
 
 	aes := []function{aes128, aes192, aes256}
 	facilities := stfle()
-
-	S390X.HasZArch = facilities.Has(zarch)
-	S390X.HasSTFLE = facilities.Has(stflef)
-	S390X.HasLDisp = facilities.Has(ldisp)
-	S390X.HasEImm = facilities.Has(eimm)
-	S390X.HasDFP = facilities.Has(dfp)
-	S390X.HasETF3Enhanced = facilities.Has(etf3eh)
-	S390X.HasMSA = facilities.Has(msa)
 
 	if S390X.HasMSA {
 		// cipher message

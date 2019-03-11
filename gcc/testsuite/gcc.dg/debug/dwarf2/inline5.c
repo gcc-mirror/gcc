@@ -5,7 +5,7 @@
 /* { dg-do compile } */
 /* { dg-final { scan-assembler-times "DW_TAG_inlined_subroutine" 2 } } */
 /* { dg-final { scan-assembler-times "DW_TAG_lexical_block\\)\[^#/!@;\\|\]*\[#/!@;\\|\]+ +DW_AT_abstract_origin" 2 } } */
-/* { dg-final { scan-assembler-times "DW_TAG_lexical_block\\)\[^#/!@;\\|\]*\[#/!@;\\|\]+ +\[^#/!@\\|\]*\\(DIE \\(0x\[0-9a-f\]*\\) DW_TAG_variable" 1 } } */
+/* { dg-final { scan-assembler-times "DW_TAG_lexical_block\\)\[^#/!@;\\|\]*\[#/!@;\\|\]+ +\[^#/!@\\|\]*\\(DIE \\(0x\[0-9a-f\]*\\) DW_TAG_variable" 1 { xfail hppa*-*-* } } } */
 /* We do not know which is output first so look for both invalid abstract
    origins on the lexical blocks (knowing that the abstract instance has
    no attribute following the DW_TAG_lexical_block.  */

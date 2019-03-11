@@ -6273,6 +6273,83 @@ _mm512_mask_storeu_ps (void *__P, __mmask16 __U, __m512 __A)
 				   (__mmask16) __U);
 }
 
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_load_ss (__m128 __W, __mmask8 __U, const float *__P)
+{
+  return (__m128) __builtin_ia32_loadss_mask (__P, (__v4sf) __W, __U);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_load_ss (__mmask8 __U, const float *__P)
+{
+  return (__m128) __builtin_ia32_loadss_mask (__P, (__v4sf) _mm_setzero_ps (),
+					      __U);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_load_sd (__m128d __W, __mmask8 __U, const double *__P)
+{
+  return (__m128d) __builtin_ia32_loadsd_mask (__P, (__v2df) __W, __U);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_load_sd (__mmask8 __U, const double *__P)
+{
+  return (__m128d) __builtin_ia32_loadsd_mask (__P, (__v2df) _mm_setzero_pd (),
+					       __U);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_move_ss (__m128 __W, __mmask8 __U, __m128 __A, __m128 __B)
+{
+  return (__m128) __builtin_ia32_movess_mask ((__v4sf) __A, (__v4sf) __B,
+					      (__v4sf) __W, __U);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_move_ss (__mmask8 __U, __m128 __A, __m128 __B)
+{
+  return (__m128) __builtin_ia32_movess_mask ((__v4sf) __A, (__v4sf) __B,
+					      (__v4sf) _mm_setzero_ps (), __U);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_move_sd (__m128d __W, __mmask8 __U, __m128d __A, __m128d __B)
+{
+  return (__m128d) __builtin_ia32_movesd_mask ((__v2df) __A, (__v2df) __B,
+					       (__v2df) __W, __U);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_move_sd (__mmask8 __U, __m128d __A, __m128d __B)
+{
+  return (__m128d) __builtin_ia32_movesd_mask ((__v2df) __A, (__v2df) __B,
+					       (__v2df) _mm_setzero_pd (),
+					       __U);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_store_ss (float *__P, __mmask8 __U, __m128 __A)
+{
+  __builtin_ia32_storess_mask (__P, (__v4sf) __A, (__mmask8) __U);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_store_sd (double *__P, __mmask8 __U, __m128d __A)
+{
+  __builtin_ia32_storesd_mask (__P, (__v2df) __A, (__mmask8) __U);
+}
+
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_loadu_epi64 (__m512i __W, __mmask8 __U, void const *__P)

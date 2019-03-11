@@ -3,8 +3,7 @@
 
 /* { dg-do compile { target { powerpc*-*-linux* } } } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
-/* { dg-options "-O2 -mcpu=power9" } */
+/* { dg-options "-O2 -mdejagnu-cpu=power9" } */
 
 /* The below contains vec_insert () calls with both variable and constant
  values.  Only the constant value calls are early-gimple folded, but all

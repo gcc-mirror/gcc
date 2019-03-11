@@ -1,7 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target vsx_hw } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
-/* { dg-options "-O3 -mcpu=power7" } */
+/* { dg-options "-O3 -mdejagnu-cpu=power7" } */
 
 /* PR85698: Incorrect code generated on LE due to use of stxvw4x. */
 

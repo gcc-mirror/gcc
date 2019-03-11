@@ -35,6 +35,9 @@ void test01()
 #ifdef _GLIBCXX_USE_WCHAR_T
   static_assert(test_category<is_integral, wchar_t>(true), "");
 #endif
+#ifdef _GLIBCXX_USE_CHAR8_T
+  static_assert(test_category<is_integral, char8_t>(true), "");
+#endif
   static_assert(test_category<is_integral, char16_t>(true), "");
   static_assert(test_category<is_integral, char32_t>(true), "");
   static_assert(test_category<is_integral, short>(true), "");
