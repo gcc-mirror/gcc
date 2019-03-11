@@ -1,3 +1,13 @@
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-03-08  Martin Liska  <mliska@suse.cz>
+
+	PR target/86952
+	* gcc.target/i386/indirect-thunk-7.c: Use jump tables to match
+	scanned pattern.
+	* gcc.target/i386/indirect-thunk-inline-7.c: Likewise.
+
 2019-03-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/71544
