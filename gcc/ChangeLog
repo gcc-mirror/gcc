@@ -1,3 +1,13 @@
+2019-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89649
+	* tree-vectorizer.h (vect_loop_versioning): Adjust prototype.
+	* tree-vect-loop-manip.c (vect_do_peeling): Unset force_vectorize
+	on the prolog and epilog loops.
+	(vect_loop_versioning): Return copy of loop.
+	* tree-vect-loop.c (vect_transform_loop): Unset force_vectorize
+	on the non-vectorized version of the loop.
+
 2019-03-10  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/68924
