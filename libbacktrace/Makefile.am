@@ -272,6 +272,8 @@ stest_alloc_LDADD = libbacktrace_alloc.la
 
 BUILDTESTS += stest_alloc
 
+if HAVE_ELF
+
 ztest_SOURCES = ztest.c testlib.c
 ztest_CFLAGS = -DSRCDIR=\"$(srcdir)\"
 ztest_LDADD = libbacktrace.la
@@ -290,6 +292,8 @@ ztest_alloc_SOURCES = $(ztest_SOURCES)
 ztest_alloc_CFLAGS = $(ztest_CFLAGS)
 
 BUILDTESTS += ztest_alloc
+
+endif HAVE_ELF
 
 edtest_SOURCES = edtest.c edtest2_build.c testlib.c
 edtest_LDADD = libbacktrace.la
