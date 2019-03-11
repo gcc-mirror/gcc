@@ -3480,6 +3480,34 @@ for_each_line_table_case (void (*testcase) (const line_table_case &))
   ASSERT_EQ (num_cases_tested, 2 * 12);
 }
 
+/* Verify that when presented with a consecutive pair of locations with
+   a very large line offset, we don't attempt to consolidate them into
+   a single ordinary linemap where the line offsets within the line map
+   would lead to overflow (PR lto/88147).  */
+
+static void
+test_line_offset_overflow ()
+{
+  line_table_test ltt (line_table_case (5, 0));
+
+  linemap_add (line_table, LC_ENTER, false, "foo.c", 0);
+  linemap_line_start (line_table, 1, 100);
+  location_t loc_a = linemap_line_start (line_table, 2578, 255);
+  assert_loceq ("foo.c", 2578, 0, loc_a);
+
+  const line_map_ordinary *ordmap_a = LINEMAPS_LAST_ORDINARY_MAP (line_table);
+  ASSERT_EQ (ordmap_a->m_column_and_range_bits, 13);
+  ASSERT_EQ (ordmap_a->m_range_bits, 5);
+
+  location_t loc_b = linemap_line_start (line_table, 404198, 512);
+  assert_loceq ("foo.c", 404198, 0, loc_b);
+
+  /* We should have started a new linemap, rather than attempting to store
+     a very large line offset.  */
+  const line_map_ordinary *ordmap_b = LINEMAPS_LAST_ORDINARY_MAP (line_table);
+  ASSERT_NE (ordmap_a, ordmap_b);
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -3518,6 +3546,8 @@ input_c_tests ()
   for_each_line_table_case (test_lexer_char_constants);
 
   test_reading_source_line ();
+
+  test_line_offset_overflow ();
 }
 
 } // namespace selftest
