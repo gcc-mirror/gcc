@@ -1,6 +1,13 @@
 2019-03-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (co_await_expander): Use a temporary expression for
+	the coroutine handle passed to await_suspend(), rather than a frame
+	entry.
+
+2019-03-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (co_await_expander): Use TARGET_EXPR in INIT_EXPR.
 	(build_actor_fn): Likewise.
 	(morph_fn_to_coro): Likewise.
