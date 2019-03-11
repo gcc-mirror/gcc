@@ -1,3 +1,17 @@
+2019-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/89641
+	* include/std/atomic (atomic<T>::store, atomic<T>::load,
+	atomic<T>::exchange, atomic<T>::compare_exchange_weak,
+	atomic<T>::compare_exchange_strong): Cast __m or __s and __f to int.
+	* include/bits/atomic_base.h (__atomic_base<T>::operator++,
+	__atomic_base<T>::operator--, __atomic_base<T>::operator+=,
+	__atomic_base<T>::operator-=, __atomic_base<T>::operator&=,
+	__atomic_base<T>::operator|=, __atomic_base<T>::operator^=,
+	__atomic_base<T*>::operator++, __atomic_base<T*>::operator--,
+	__atomic_base<T*>::operator+=, __atomic_base<T*>::operator-=): Cast
+	memory_order_seq_cst to int.
+
 2019-03-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/using.xml: Use link element instead of xref.
