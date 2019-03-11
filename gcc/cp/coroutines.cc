@@ -845,7 +845,7 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
 
   tree stmt_list = NULL;
   /* Initialise the var from the provided 'o' expression.  */
-  tree r = build2 (INIT_EXPR, await_type, var, TREE_OPERAND (expr, 1));
+  tree r = build2 (INIT_EXPR, await_type, var, expr);
   r = build1 (CONVERT_EXPR, void_type_node, r);
   r = build_stmt (loc, EXPR_STMT, r);
   r = maybe_cleanup_point_expr_void (r);
@@ -1268,7 +1268,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   vec<tree, va_gc>* args = make_tree_vector_single (r);
   tree hfa = build_new_method_call (ap, hfa_m, &args, NULL_TREE, LOOKUP_NORMAL,
 				    NULL, tf_warning_or_error);
-  r = build2 (INIT_EXPR, handle_type, ash, TREE_OPERAND (hfa, 1));
+  r = build2 (INIT_EXPR, handle_type, ash, hfa);
   r = build1 (CONVERT_EXPR, void_type_node, r);
   r = build_stmt (loc, EXPR_STMT, r);
   r = maybe_cleanup_point_expr_void (r);
@@ -1943,7 +1943,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree gro_bind_vars = gro;
 
   // init our actual var.
-  r = build2 (INIT_EXPR, TREE_TYPE (gro), gro, TREE_OPERAND (get_ro, 1));
+  r = build2 (INIT_EXPR, TREE_TYPE (gro), gro, get_ro);
   r = build1 (CONVERT_EXPR, void_type_node, r);
   r = build_stmt (fn_start, EXPR_STMT, r);
   r = maybe_cleanup_point_expr_void (r);

@@ -1,7 +1,14 @@
 2019-03-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
-	* coroutines.cc )struct __coro_ret_data): Remove blank line.
+	* coroutines.cc (co_await_expander): Use TARGET_EXPR in INIT_EXPR.
+	(build_actor_fn): Likewise.
+	(morph_fn_to_coro): Likewise.
+
+2019-03-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (struct __coro_ret_data): Remove blank line.
 
 2019-02-22  Iain Sandoe  <iain@sandoe.co.uk>
 
