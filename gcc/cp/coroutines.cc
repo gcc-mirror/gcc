@@ -659,7 +659,6 @@ struct __coro_ret_data {
   tree promise_proxy;
   tree real_promise;
   tree fs_label;
-
 };
 
 /* Callback that rewrites co_return as per 9.6.3.1
