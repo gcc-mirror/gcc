@@ -1449,8 +1449,8 @@ extern void vect_set_loop_condition (struct loop *, loop_vec_info,
 extern bool slpeel_can_duplicate_loop_p (const struct loop *, const_edge);
 struct loop *slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *,
 						     struct loop *, edge);
-extern void vect_loop_versioning (loop_vec_info, unsigned int, bool,
-				  poly_uint64);
+struct loop *vect_loop_versioning (loop_vec_info, unsigned int, bool,
+				   poly_uint64);
 extern struct loop *vect_do_peeling (loop_vec_info, tree, tree,
 				     tree *, tree *, tree *, int, bool, bool);
 extern void vect_prepare_for_masked_peels (loop_vec_info);

@@ -8201,8 +8201,10 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 					      versioning_threshold);
 	  check_profitability = false;
 	}
-      vect_loop_versioning (loop_vinfo, th, check_profitability,
-			    versioning_threshold);
+      struct loop *sloop
+	= vect_loop_versioning (loop_vinfo, th, check_profitability,
+				versioning_threshold);
+      sloop->force_vectorize = false;
       check_profitability = false;
     }
 
