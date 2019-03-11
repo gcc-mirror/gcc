@@ -1,5 +1,8 @@
 2019-03-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/89651
+	* gfortran.dg/gomp/pr89651.f90: New test.
+
 	PR middle-end/89655
 	PR bootstrap/89656
 	* gcc.c-torture/compile/pr89655.c: New test.
