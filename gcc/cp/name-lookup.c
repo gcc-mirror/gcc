@@ -2448,7 +2448,7 @@ pop_local_binding (tree id, tree decl)
 {
   cxx_binding *binding;
 
-  if (id == NULL_TREE)
+  if (!id || IDENTIFIER_ANON_P (id))
     /* It's easiest to write the loops that call this function without
        checking whether or not the entities involved have names.  We
        get here for such an entity.  */
@@ -3656,7 +3656,7 @@ do_pushdecl (tree decl, bool is_friend)
   /* An anonymous namespace has a NULL DECL_NAME, but we still want to
      insert it.  Other NULL-named decls, not so much.  */
   tree name = DECL_NAME (decl);
-  if (name || TREE_CODE (decl) == NAMESPACE_DECL)
+  if (name ? !IDENTIFIER_ANON_P (name) : TREE_CODE (decl) == NAMESPACE_DECL)
     {
       cxx_binding *binding = NULL; /* Local scope binding.  */
       tree ns = NULL_TREE; /* Searched namespace.  */

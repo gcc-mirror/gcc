@@ -8457,9 +8457,7 @@ depset::hash::add_binding (tree ns, tree value)
       tree decl = *iter;
       name = DECL_NAME (decl);
 
-      if (IDENTIFIER_ANON_P (name))
-	continue;
-
+      gcc_checking_assert (!IDENTIFIER_ANON_P (name));
       gcc_checking_assert (!(TREE_CODE (decl) == NAMESPACE_DECL
 			     && !DECL_NAMESPACE_ALIAS (decl)));
       gcc_assert (!iter.hidden_p ());

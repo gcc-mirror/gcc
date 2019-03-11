@@ -1,5 +1,13 @@
 2019-03-11  Nathan Sidwell  <nathan@acm.org>
 
+	Anon entities never placed in symbol tables.
+	gcc/cp/
+	* module.cc (depset::hash::add_binding): Assert not anonymous.
+	* name-lookup.c (pop_local_binding): Popping anonymous is a NOP.
+	(do_pushdecl): Pushing anonymous doesn't push to symbol table.
+	gcc/testsuite/
+	* g++.dg/other/pr28114.C: Adjust errors.
+
 	gcc/
 	* tree.h (make_anon_name): Drop optional parm.
 	* tree.c (make_anon_name): Drop 'extra' parm.
