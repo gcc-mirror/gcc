@@ -1,3 +1,8 @@
+2019-03-11  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (s390_expand_builtin): Do the copy_to_reg not
+	only on the else branch.
+
 2019-03-11  Martin Liska  <mliska@suse.cz>
 
 	* gcov.c (output_intermediate_json_line): Print function
