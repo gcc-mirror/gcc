@@ -1,6 +1,14 @@
 2019-03-11  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2019-03-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/indirect-thunk-extern-7.c: Add -fjump-tables to
+	dg-options.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2019-03-08  Martin Liska  <mliska@suse.cz>
 
 	PR target/86952
