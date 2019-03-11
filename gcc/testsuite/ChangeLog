@@ -1,3 +1,8 @@
+2019-03-11  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/f16_f64_conv_no_dp.c: Add arm_fp16_ok effective
+	target.
+
 2019-03-11  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/conversion/simd3.C (foo): Wrap option names
