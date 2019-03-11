@@ -1,3 +1,10 @@
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* gcov.c (output_intermediate_json_line): Print function
+	name of each line.
+	(output_json_intermediate_file): Add new argument.
+	* doc/gcov.texi: Document the change.
+
 2019-03-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/89588
