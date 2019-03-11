@@ -1,3 +1,7 @@
+2019-03-11  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/zvector/vec-addc-u128.c: New test.
+
 2019-03-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-c++-common/unroll-6.c: New test.
