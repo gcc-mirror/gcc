@@ -3529,6 +3529,164 @@ _mm512_maskz_cvt_roundepu16_ph (__mmask32 __A, __m512i __B, int __C)
 
 #endif /* __OPTIMIZE__ */
 
+/* Intrinsics vcvtsh2si, vcvtsh2us.  */
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtsh_i32 (__m128h __A)
+{
+  return (int) __builtin_ia32_vcvtsh2si32_round (__A, _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline unsigned
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtsh_u32 (__m128h __A)
+{
+  return (int) __builtin_ia32_vcvtsh2usi32_round (__A,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvt_roundsh_i32 (__m128h __A, const int __R)
+{
+  return (int) __builtin_ia32_vcvtsh2si32_round (__A, __R);
+}
+
+extern __inline unsigned
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvt_roundsh_u32 (__m128h __A, const int __R)
+{
+  return (int) __builtin_ia32_vcvtsh2usi32_round (__A, __R);
+}
+
+#else
+#define _mm_cvt_roundsh_i32(A, B)		\
+  ((int)__builtin_ia32_vcvtsh2si32_round ((A), (B)))
+#define _mm_cvt_roundsh_u32(A, B)		\
+  ((int)__builtin_ia32_vcvtsh2usi32_round ((A), (B)))
+
+#endif /* __OPTIMIZE__ */
+
+#ifdef __x86_64__
+extern __inline long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtsh_i64 (__m128h __A)
+{
+  return (long long)
+    __builtin_ia32_vcvtsh2si64_round (__A, _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline unsigned long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtsh_u64 (__m128h __A)
+{
+  return (long long)
+    __builtin_ia32_vcvtsh2usi64_round (__A, _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvt_roundsh_i64 (__m128h __A, const int __R)
+{
+  return (long long) __builtin_ia32_vcvtsh2si64_round (__A, __R);
+}
+
+extern __inline unsigned long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvt_roundsh_u64 (__m128h __A, const int __R)
+{
+  return (long long) __builtin_ia32_vcvtsh2usi64_round (__A, __R);
+}
+
+#else
+#define _mm_cvt_roundsh_i64(A, B)			\
+  ((long long)__builtin_ia32_vcvtsh2si64_round ((A), (B)))
+#define _mm_cvt_roundsh_u64(A, B)			\
+  ((long long)__builtin_ia32_vcvtsh2usi64_round ((A), (B)))
+
+#endif /* __OPTIMIZE__ */
+#endif /* __x86_64__ */
+
+/* Intrinsics vcvtsi2sh, vcvtusi2sh.  */
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvti32_sh (__m128h __A, int __B)
+{
+  return __builtin_ia32_vcvtsi2sh32_round (__A, __B, _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtu32_sh (__m128h __A, unsigned int __B)
+{
+  return __builtin_ia32_vcvtusi2sh32_round (__A, __B, _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvt_roundi32_sh (__m128h __A, int __B, const int __R)
+{
+  return __builtin_ia32_vcvtsi2sh32_round (__A, __B, __R);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvt_roundu32_sh (__m128h __A, unsigned int __B, const int __R)
+{
+  return __builtin_ia32_vcvtusi2sh32_round (__A, __B, __R);
+}
+
+#else
+#define _mm_cvt_roundi32_sh(A, B, C)		\
+  (__builtin_ia32_vcvtsi2sh32_round ((A), (B), (C)))
+#define _mm_cvt_roundu32_sh(A, B, C)		\
+  (__builtin_ia32_vcvtusi2sh32_round ((A), (B), (C)))
+
+#endif /* __OPTIMIZE__ */
+
+#ifdef __x86_64__
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvti64_sh (__m128h __A, long long __B)
+{
+  return __builtin_ia32_vcvtsi2sh64_round (__A, __B, _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtu64_sh (__m128h __A, unsigned long long __B)
+{
+  return __builtin_ia32_vcvtusi2sh64_round (__A, __B, _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvt_roundi64_sh (__m128h __A, long long __B, const int __R)
+{
+  return __builtin_ia32_vcvtsi2sh64_round (__A, __B, __R);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvt_roundu64_sh (__m128h __A, unsigned long long __B, const int __R)
+{
+  return __builtin_ia32_vcvtusi2sh64_round (__A, __B, __R);
+}
+
+#else
+#define _mm_cvt_roundi64_sh(A, B, C)		\
+  (__builtin_ia32_vcvtsi2sh64_round ((A), (B), (C)))
+#define _mm_cvt_roundu64_sh(A, B, C)		\
+  (__builtin_ia32_vcvtusi2sh64_round ((A), (B), (C)))
+
+#endif /* __OPTIMIZE__ */
+#endif /* __x86_64__ */
+
+
 #ifdef __DISABLE_AVX512FP16__
 #undef __DISABLE_AVX512FP16__
 #pragma GCC pop_options

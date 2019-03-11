@@ -10667,16 +10667,24 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     {
     case UINT64_FTYPE_V2DF_INT:
     case UINT64_FTYPE_V4SF_INT:
+    case UINT64_FTYPE_V8HF_INT:
     case UINT_FTYPE_V2DF_INT:
     case UINT_FTYPE_V4SF_INT:
+    case UINT_FTYPE_V8HF_INT:
     case INT64_FTYPE_V2DF_INT:
     case INT64_FTYPE_V4SF_INT:
+    case INT64_FTYPE_V8HF_INT:
     case INT_FTYPE_V2DF_INT:
     case INT_FTYPE_V4SF_INT:
+    case INT_FTYPE_V8HF_INT:
       nargs = 2;
       break;
     case V32HF_FTYPE_V32HF_V32HF_INT:
     case V8HF_FTYPE_V8HF_V8HF_INT:
+    case V8HF_FTYPE_V8HF_INT_INT:
+    case V8HF_FTYPE_V8HF_UINT_INT:
+    case V8HF_FTYPE_V8HF_INT64_INT:
+    case V8HF_FTYPE_V8HF_UINT64_INT:
     case V4SF_FTYPE_V4SF_UINT_INT:
     case V4SF_FTYPE_V4SF_UINT64_INT:
     case V2DF_FTYPE_V2DF_UINT64_INT:

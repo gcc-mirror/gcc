@@ -5894,6 +5894,45 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "TI")])
 
+(define_insn "avx512fp16_vcvtsh2<sseintconvertsignprefix>si<rex64namesuffix><round_name>"
+  [(set (match_operand:SWI48 0 "register_operand" "=r")
+	(unspec:SWI48
+	  [(vec_select:HF
+	     (match_operand:V8HF 1 "register_operand" "v")
+	     (parallel [(const_int 0)]))]
+	  UNSPEC_US_FIX_NOTRUNC))]
+  "TARGET_AVX512FP16"
+  "vcvtsh2<sseintconvertsignprefix>si\t{<round_op2>%1, %0|%0, %1<round_op2>}"
+  [(set_attr "type" "sseicvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "avx512fp16_vcvtsh2<sseintconvertsignprefix>si<rex64namesuffix>_2"
+  [(set (match_operand:SWI48 0 "register_operand" "=r,r")
+	(unspec:SWI48
+	  [(match_operand:HF 1 "nonimmediate_operand" "v,m")]
+	  UNSPEC_US_FIX_NOTRUNC))]
+  "TARGET_AVX512FP16"
+  "vcvtsh2<sseintconvertsignprefix>si\t{%1, %0|%0, %1}"
+  [(set_attr "type" "sseicvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<MODE>")])
+
+(define_mode_attr sseicvtsuffix
+  [(SI "l") (DI "q")])
+(define_insn "avx512fp16_vcvt<floatsuffix>si2sh<rex64namesuffix><round_name>"
+  [(set (match_operand:V8HF 0 "register_operand" "=v")
+	(vec_merge:V8HF
+	  (vec_duplicate:V8HF
+	    (any_float:HF
+	      (match_operand:SWI48 2 "<round_nimm_scalar_predicate>" "<round_constraint3>")))
+	  (match_operand:V8HF 1 "register_operand" "v")
+	  (const_int 1)))]
+  "TARGET_AVX512FP16"
+  "vcvt<floatsuffix>si2sh{<sseicvtsuffix>}\t{%2, <round_op3>%1, %0|%0, %1<round_op3>, %2}"
+  [(set_attr "type" "sseicvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "HF")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
