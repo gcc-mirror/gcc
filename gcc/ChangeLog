@@ -1,3 +1,10 @@
+2019-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89663
+	* builtins.c (expand_builtin_int_roundingfn,
+	expand_builtin_int_roundingfn_2): Return NULL_RTX instead of
+	gcc_unreachable if validate_arglist fails.
+
 2019-03-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89664
