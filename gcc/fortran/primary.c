@@ -2979,7 +2979,7 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 
   if (!parent && sym->attr.abstract)
     {
-      gfc_error ("Can't construct ABSTRACT type %qs at %L",
+      gfc_error ("Cannot construct ABSTRACT type %qs at %L",
 		 sym->name, &expr->where);
       goto cleanup;
     }

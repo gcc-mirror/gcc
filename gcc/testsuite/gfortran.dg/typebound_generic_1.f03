@@ -55,10 +55,10 @@ MODULE m
   CONTAINS
     GENERIC :: gen2 => p1a ! { dg-error "are ambiguous" }
     GENERIC :: gen2 => p3
-    GENERIC :: p1 => p2 ! { dg-error "can't overwrite specific" }
+    GENERIC :: p1 => p2 ! { dg-error "cannot overwrite specific" }
     GENERIC :: gensub => p2 ! { dg-error "mixed FUNCTION/SUBROUTINE" }
 
-    PROCEDURE, NOPASS :: gen1 => intf1 ! { dg-error "Can't overwrite GENERIC" }
+    PROCEDURE, NOPASS :: gen1 => intf1 ! { dg-error "Cannot overwrite GENERIC" }
   END TYPE t
 
 CONTAINS

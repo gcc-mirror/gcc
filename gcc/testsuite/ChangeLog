@@ -1,3 +1,27 @@
+2019-03-12  Martin Liska  <mliska@suse.cz>
+
+	* gfortran.dg/abstract_type_3.f03: Amend test-case scan
+	patterns.
+	* gfortran.dg/binding_label_tests_4.f03: Likewise.
+	* gfortran.dg/c_f_pointer_tests_6.f90: Likewise.
+	* gfortran.dg/c_funloc_tests_6.f90: Likewise.
+	* gfortran.dg/c_loc_tests_17.f90: Likewise.
+	* gfortran.dg/constructor_9.f90: Likewise.
+	* gfortran.dg/dec_structure_8.f90: Likewise.
+	* gfortran.dg/entry_4.f90: Likewise.
+	* gfortran.dg/init_char_with_nonchar_ctr.f90: Likewise.
+	* gfortran.dg/initialization_23.f90: Likewise.
+	* gfortran.dg/logical_assignment_1.f90: Likewise.
+	* gfortran.dg/pr80752.f90: Likewise.
+	* gfortran.dg/pr88116_1.f90: Likewise.
+	* gfortran.dg/pr88467.f90: Likewise.
+	* gfortran.dg/typebound_call_7.f03: Likewise.
+	* gfortran.dg/typebound_generic_1.f03: Likewise.
+	* gfortran.dg/typebound_operator_2.f03: Likewise.
+	* gfortran.dg/typebound_operator_4.f03: Likewise.
+	* gfortran.dg/typebound_proc_9.f03: Likewise.
+	* gfortran.dg/unlimited_polymorphic_2.f03: Likewise.
+
 2019-03-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/89363

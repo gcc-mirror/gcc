@@ -1978,7 +1978,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 
 	  if (init->rank == 0)
 	    {
-	      gfc_error ("Can't initialize implied-shape array at %L"
+	      gfc_error ("Cannot initialize implied-shape array at %L"
 			 " with scalar", &sym->declared_at);
 	      return false;
 	    }
@@ -2490,7 +2490,7 @@ variable_decl (int elem)
       if (as->type == AS_IMPLIED_SHAPE && current_attr.flavor != FL_PARAMETER)
 	{
 	  m = MATCH_ERROR;
-	  gfc_error ("Non-PARAMETER symbol %qs at %L can't be implied-shape",
+	  gfc_error ("Non-PARAMETER symbol %qs at %L cannot be implied-shape",
 		     name, &var_locus);
 	  goto cleanup;
 	}
@@ -2668,7 +2668,7 @@ variable_decl (int elem)
 	      else
 		{
 		  if (!gfc_set_array_spec (sym, cp_as, &var_locus))
-		    gfc_internal_error ("Couldn't set pointee array spec.");
+		    gfc_internal_error ("Cannot set pointee array spec.");
 
 		  /* Fix the array spec.  */
 		  m = gfc_mod_pointee_as (sym->as);
@@ -8538,7 +8538,7 @@ cray_pointer_decl (void)
       if (cpte->as == NULL)
 	{
 	  if (!gfc_set_array_spec (cpte, as, &var_locus))
-	    gfc_internal_error ("Couldn't set Cray pointee array spec.");
+	    gfc_internal_error ("Cannot set Cray pointee array spec.");
 	}
       else if (as != NULL)
 	{
@@ -10706,7 +10706,7 @@ match_binding_attributes (gfc_typebound_proc* ba, bool generic, bool ppc)
   /* NON_OVERRIDABLE and DEFERRED exclude themselves.  */
   if (ba->non_overridable && ba->deferred)
     {
-      gfc_error ("NON_OVERRIDABLE and DEFERRED can't both appear at %C");
+      gfc_error ("NON_OVERRIDABLE and DEFERRED cannot both appear at %C");
       goto error;
     }
 

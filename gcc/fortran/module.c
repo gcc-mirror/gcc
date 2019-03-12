@@ -6170,7 +6170,7 @@ dump_module (const char *name, int dump_flag)
   /* Write the module to the temporary file.  */
   module_fp = gzopen (filename_tmp, "w");
   if (module_fp == NULL)
-    gfc_fatal_error ("Can't open module file %qs for writing at %C: %s",
+    gfc_fatal_error ("Cannot open module file %qs for writing at %C: %s",
 		     filename_tmp, xstrerror (errno));
 
   /* Use lbasename to ensure module files are reproducible regardless
@@ -6202,16 +6202,16 @@ dump_module (const char *name, int dump_flag)
     {
       /* Module file have changed, replace the old one.  */
       if (remove (filename) && errno != ENOENT)
-	gfc_fatal_error ("Can't delete module file %qs: %s", filename,
+	gfc_fatal_error ("Cannot delete module file %qs: %s", filename,
 			 xstrerror (errno));
       if (rename (filename_tmp, filename))
-	gfc_fatal_error ("Can't rename module file %qs to %qs: %s",
+	gfc_fatal_error ("Cannot rename module file %qs to %qs: %s",
 			 filename_tmp, filename, xstrerror (errno));
     }
   else
     {
       if (remove (filename_tmp))
-	gfc_fatal_error ("Can't delete temporary module file %qs: %s",
+	gfc_fatal_error ("Cannot delete temporary module file %qs: %s",
 			 filename_tmp, xstrerror (errno));
     }
 }
@@ -7000,7 +7000,7 @@ gfc_use_module (gfc_use_list *module)
       module_fp = gzopen_intrinsic_module (filename);
 
       if (module_fp == NULL && module->intrinsic)
-	gfc_fatal_error ("Can't find an intrinsic module named %qs at %C",
+	gfc_fatal_error ("Cannot find an intrinsic module named %qs at %C",
 			 module_name);
 
       /* Check for the IEEE modules, so we can mark their symbols
@@ -7028,7 +7028,7 @@ gfc_use_module (gfc_use_list *module)
     {
       if (gfc_state_stack->state != COMP_SUBMODULE
 	  && module->submodule_name == NULL)
-	gfc_fatal_error ("Can't open module file %qs for reading at %C: %s",
+	gfc_fatal_error ("Cannot open module file %qs for reading at %C: %s",
 			 filename, xstrerror (errno));
       else
 	gfc_fatal_error ("Module file %qs has not been generated, either "
@@ -7088,7 +7088,7 @@ gfc_use_module (gfc_use_list *module)
   for (p = gfc_state_stack; p; p = p->previous)
     if ((p->state == COMP_MODULE || p->state == COMP_SUBMODULE)
 	 && strcmp (p->sym->name, module_name) == 0)
-      gfc_fatal_error ("Can't USE the same %smodule we're building",
+      gfc_fatal_error ("Cannot USE the same %smodule we're building",
 		       p->state == COMP_SUBMODULE ? "sub" : "");
 
   init_pi_tree ();

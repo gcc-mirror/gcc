@@ -2469,7 +2469,7 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 
       if (input == NULL)
 	{
-	  gfc_error_now ("Can't open file %qs", filename);
+	  gfc_error_now ("Cannot open file %qs", filename);
 	  return false;
 	}
     }

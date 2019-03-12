@@ -926,8 +926,8 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
 		}
 	      else
 		{
-		  gfc_error ("Can't compute the length of the char array at %L.",
-			     &e->where);
+		  gfc_error ("Cannot compute the length of the char array "
+			     "at %L.", &e->where);
 		}
 	    }
 	}

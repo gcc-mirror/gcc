@@ -1157,7 +1157,7 @@ make_generic (const char *name, gfc_isym_id id, int standard ATTRIBUTE_UNUSED)
 
   g = gfc_find_function (name);
   if (g == NULL)
-    gfc_internal_error ("make_generic(): Can't find generic symbol %qs",
+    gfc_internal_error ("make_generic(): Cannot find generic symbol %qs",
 			name);
 
   gcc_assert (g->id == id);
@@ -4217,7 +4217,7 @@ keywords:
 	    gfc_error ("The argument list functions %%VAL, %%LOC or %%REF "
 		       "are not allowed in this context at %L", where);
 	  else
-	    gfc_error ("Can't find keyword named %qs in call to %qs at %L",
+	    gfc_error ("Cannot find keyword named %qs in call to %qs at %L",
 		       a->name, name, where);
 	  return false;
 	}
@@ -5179,12 +5179,12 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 bad:
   if (eflag == 1)
     {
-      gfc_error ("Can't convert %s to %s at %L",
+      gfc_error ("Cannot convert %s to %s at %L",
 		 gfc_typename (&from_ts), gfc_typename (ts), &expr->where);
       return false;
     }
 
-  gfc_internal_error ("Can't convert %qs to %qs at %L",
+  gfc_internal_error ("Cannot convert %qs to %qs at %L",
 		      gfc_typename (&from_ts), gfc_typename (ts),
 		      &expr->where);
   /* Not reached */
