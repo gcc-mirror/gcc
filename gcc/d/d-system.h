@@ -31,6 +31,10 @@
 #undef assert
 #define assert(EXPR) gcc_assert(EXPR)
 
+/* Use libiberty's lrealpath to avoid portability problems.  */
+#undef realpath
+#define realpath(a, b) lrealpath((a))
+
 /* Forward ctype.h macros used by the dmd front-end to safe-ctype.h.  */
 #undef isalpha
 #define isalpha(c) ISALPHA(c)
