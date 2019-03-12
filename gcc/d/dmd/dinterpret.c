@@ -2920,7 +2920,6 @@ public:
             case TOKneg:    *pue = Neg(e->type, e1);  break;
             case TOKtilde:  *pue = Com(e->type, e1);  break;
             case TOKnot:    *pue = Not(e->type, e1);  break;
-            case TOKvector: result = e;             return; // do nothing
             default:        assert(0);
         }
         result = (*pue).exp();
@@ -3839,8 +3838,6 @@ public:
         Expression *aggregate;
         dinteger_t firstIndex;
 
-        if (e1->op == TOKvector)
-            e1 = ((VectorExp *)e1)->e1;
         if (e1->op == TOKslice)
         {
             // ------------------------------
@@ -4893,6 +4890,87 @@ public:
         result = pue->exp();
     }
 
+    /**
+     * Interpret the vector expression as an array literal.
+     * Params:
+     *    pue = non-null pointer to temporary storage that can be used to store the return value
+     *    e = Expression to interpret
+     * Returns:
+     *    resulting array literal or 'e' if unable to interpret
+     */
+    static Expression *interpretVectorToArray(UnionExp *pue, VectorExp *e)
+    {
+        if (e->e1->op == TOKarrayliteral)
+            return (ArrayLiteralExp *)e->e1;
+        if (e->e1->op == TOKint64 || e->e1->op == TOKfloat64)
+        {
+            // Convert literal __vector(int) -> __vector([array])
+            Expressions *elements = new Expressions();
+            elements->setDim(e->dim);
+            for (size_t i = 0; i < elements->dim; i++)
+                (*elements)[i] = copyLiteral(e->e1).copy();
+            TypeSArray *type = NULL;
+            if (e->type->ty == Tvector)
+            {
+                TypeVector *tv = (TypeVector *)e->type;
+                if (tv->basetype->ty == Tsarray)
+                    type = (TypeSArray *)tv->basetype;
+            }
+            else if (e->type->ty == Tsarray)
+                type = (TypeSArray *)e->type;
+            assert(type);
+            new(pue) ArrayLiteralExp(e->loc, type, elements);
+            ArrayLiteralExp *ale = (ArrayLiteralExp *)pue->exp();
+            ale->ownedByCtfe = OWNEDctfe;
+            return ale;
+        }
+        return e;
+    }
+
+    void visit(VectorExp *e)
+    {
+        if (e->ownedByCtfe >= OWNEDctfe) // We've already interpreted all the elements
+        {
+            result = e;
+            return;
+        }
+        Expression *e1 = interpret(pue, e->e1, istate);
+        assert(e1);
+        if (exceptionOrCant(e1))
+            return;
+        if (e1->op != TOKarrayliteral && e1->op != TOKint64 && e1->op != TOKfloat64)
+        {
+            e->error("`%s` cannot be evaluated at compile time", e->toChars());
+            result = CTFEExp::cantexp;
+            return;
+        }
+        if (e1 == pue->exp())
+            e1 = pue->copy();
+        new(pue) VectorExp(e->loc, e1, e->to);
+        VectorExp *ve = (VectorExp *)pue->exp();
+        ve->type = e->type;
+        ve->dim = e->dim;
+        ve->ownedByCtfe = OWNEDctfe;
+        result = ve;
+    }
+
+    void visit(VectorArrayExp *e)
+    {
+        Expression *e1 = interpret(pue, e->e1, istate);
+        assert(e1);
+        if (exceptionOrCant(e1))
+            return;
+        if (e1->op == TOKvector)
+        {
+            VectorExp *ve = (VectorExp *)e1;
+            result = interpretVectorToArray(pue, ve);
+            if (result->op != TOKvector)
+                return;
+        }
+        e->error("`%s` cannot be evaluated at compile time", e->toChars());
+        result = CTFEExp::cantexp;
+    }
+
     void visit(DelegatePtrExp *e)
     {
         Expression *e1 = interpret(pue, e->e1, istate);
@@ -4984,12 +5062,17 @@ public:
             return false;
         }
         if (e1->op == TOKvector)
-            e1 = ((VectorExp *)e1)->e1;
+        {
+            UnionExp ue;
+            e1 = interpretVectorToArray(&ue, (VectorExp *)e1);
+            e1 = (e1 == ue.exp()) ? ue.copy() : e1;
+        }
 
         // Set the $ variable, and find the array literal to modify
         if (e1->op != TOKarrayliteral &&
             e1->op != TOKstring &&
-            e1->op != TOKslice)
+            e1->op != TOKslice &&
+            e1->op != TOKvector)
         {
             e->error("cannot determine length of %s at compile time",
                 e->e1->toChars());
@@ -5239,9 +5322,15 @@ public:
             return;
         }
 
+        if (e1->op == TOKvector)
+        {
+            e1 = interpretVectorToArray(pue, (VectorExp *)e1);
+            e1 = (e1 == pue->exp()) ? pue->copy() : e1;
+        }
+
         /* Set the $ variable
          */
-        if (e1->op != TOKarrayliteral && e1->op != TOKstring && e1->op != TOKnull && e1->op != TOKslice)
+        if (e1->op != TOKarrayliteral && e1->op != TOKstring && e1->op != TOKnull && e1->op != TOKslice && e1->op != TOKvector)
         {
             e->error("cannot determine length of %s at compile time", e1->toChars());
             result = CTFEExp::cantexp;
@@ -5715,7 +5804,7 @@ public:
             if (exceptionOrCant(e1))
                 return;
             assert(e1->op == TOKvector);
-            e1 = ((VectorExp *)e1)->e1;
+            e1 = interpretVectorToArray(pue, (VectorExp *)e1);
         }
         if (e->to->ty == Tarray && e1->op == TOKslice)
         {
@@ -6165,6 +6254,18 @@ Expression *scrubReturnValue(Loc loc, Expression *e)
             return ex;
         aae->type = toBuiltinAAType(aae->type);
     }
+    else if (e->op == TOKvector)
+    {
+        VectorExp *ve = (VectorExp *)e;
+        ve->ownedByCtfe = OWNEDcode;
+        if (ve->e1->op == TOKarrayliteral)
+        {
+            ArrayLiteralExp *ale = (ArrayLiteralExp *)ve->e1;
+            ale->ownedByCtfe = OWNEDcode;
+            if (Expression *ex = scrubArray(loc, ale->elements))
+                return ex;
+        }
+    }
     return e;
 }
 
@@ -6281,6 +6382,18 @@ Expression *scrubCacheValue(Expression *e)
             return ex;
         if (Expression *ex = scrubArrayCache(aae->values))
             return ex;
+    }
+    else if (e->op == TOKvector)
+    {
+        VectorExp *ve = (VectorExp *)e;
+        ve->ownedByCtfe = OWNEDcache;
+        if (ve->e1->op == TOKarrayliteral)
+        {
+            ArrayLiteralExp *ale = (ArrayLiteralExp *)ve->e1;
+            ale->ownedByCtfe = OWNEDcache;
+            if (Expression *ex = scrubArrayCache(ale->elements))
+                return ex;
+        }
     }
     return e;
 }

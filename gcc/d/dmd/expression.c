@@ -5744,6 +5744,7 @@ VectorExp::VectorExp(Loc loc, Expression *e, Type *t)
     assert(t->ty == Tvector);
     to = (TypeVector *)t;
     dim = ~0;
+    ownedByCtfe = OWNEDcode;
 }
 
 VectorExp *VectorExp::create(Loc loc, Expression *e, Type *t)
@@ -5754,6 +5755,24 @@ VectorExp *VectorExp::create(Loc loc, Expression *e, Type *t)
 Expression *VectorExp::syntaxCopy()
 {
     return new VectorExp(loc, e1->syntaxCopy(), to->syntaxCopy());
+}
+
+/************************************************************/
+
+VectorArrayExp::VectorArrayExp(Loc loc, Expression *e1)
+        : UnaExp(loc, TOKvectorarray, sizeof(VectorExp), e1)
+{
+}
+
+bool VectorArrayExp::isLvalue()
+{
+    return e1->isLvalue();
+}
+
+Expression *VectorArrayExp::toLvalue(Scope *sc, Expression *e)
+{
+    e1 = e1->toLvalue(sc, e);
+    return this;
 }
 
 /************************************************************/

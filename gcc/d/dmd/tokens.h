@@ -179,6 +179,8 @@ enum TOK
         TOKvoidexp,
         TOKcantexp,
 
+        TOKvectorarray,
+
         TOKMAX
 };
 

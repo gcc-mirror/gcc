@@ -4299,6 +4299,25 @@ public:
         result = e;
     }
 
+    void visit(VectorArrayExp *e)
+    {
+        if (!e->type)
+        {
+            unaSemantic(e, sc);
+            e->e1 = resolveProperties(sc, e->e1);
+
+            if (e->e1->op == TOKerror)
+            {
+                result = e->e1;
+                return;
+            }
+            assert(e->e1->type->ty == Tvector);
+            TypeVector *tv = (TypeVector *)e->e1->type;
+            e->type = tv->basetype;
+        }
+        result = e;
+    }
+
     void visit(SliceExp *exp)
     {
         if (exp->type)
