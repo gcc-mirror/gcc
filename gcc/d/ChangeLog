@@ -1,3 +1,8 @@
+2019-03-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/88957
+	* expr.cc (ExprVisitor::visit(VectorArrayExp)): New override.
+
 2019-03-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/87866

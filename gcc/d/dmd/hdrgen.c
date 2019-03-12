@@ -2833,6 +2833,12 @@ public:
         expToBuffer(e->e1, precedence[e->op]);
     }
 
+    void visit(VectorArrayExp *e)
+    {
+        expToBuffer(e->e1, PREC_primary);
+        buf->writestring(".array");
+    }
+
     void visit(SliceExp *e)
     {
         expToBuffer(e->e1, precedence[e->op]);
