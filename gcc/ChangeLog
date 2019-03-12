@@ -1,5 +1,13 @@
 2019-03-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/52726
+	* config/s390/s390.md (tabort): Use %wd instead of
+	HOST_WIDE_INT_PRINT_DEC in error message, reword to avoid two capital
+	letters and periods.
+	* config/tilepro/tilepro.c (tilepro_print_operand): Use %wd in
+	output_operand_lossage instead of HOST_WIDE_INT_PRINT_DEC, replace
+	's with %< and %>.
+
 	PR middle-end/89663
 	* builtins.c (expand_builtin_int_roundingfn,
 	expand_builtin_int_roundingfn_2): Return NULL_RTX instead of
