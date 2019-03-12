@@ -2231,22 +2231,6 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p)
   return result;
 }
 
-/* Splice PART into OVL.  */
-
-static tree
-ovl_splice (tree part, tree ovl)
-{
-  for (tree next; part && TREE_CODE (part) == OVERLOAD; part = next)
-    {
-      next = OVL_CHAIN (part);
-      OVL_CHAIN (part) = ovl;
-      ovl = part;
-    }
-  if (part)
-    ovl = ovl_insert (part, ovl);
-  return ovl;
-}
-
 /* Skip any hidden names at the beginning of OVL.   */
 
 tree
@@ -2268,7 +2252,7 @@ ovl_skip_hidden (tree ovl)
   return ovl;
 }
 
-/* NODE is an OVL_HIDDEN_P node which is now revealed.  */
+/* NODE is an OVL_HIDDEN_P node that is now revealed.  */
 
 tree
 ovl_iterator::reveal_node (tree overload, tree node)

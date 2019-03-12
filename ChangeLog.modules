@@ -1,5 +1,8 @@
 2019-03-12  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* tree.c (ovl_splice): Delete.
+
 	Kill DECL_SAVED_FUNCTION_DATA part 1
 	gcc/cp/
 	* cp-tree.h (lang_decl_fn): Replace saved_language_function with
