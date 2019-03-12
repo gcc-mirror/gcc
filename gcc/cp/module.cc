@@ -2393,6 +2393,8 @@ enum tree_tag {
   tt_node,		/* New node.  */
   tt_id,  		/* Identifier node.  */
   tt_conv_id,		/* Conversion operator name.  */
+  tt_anon_id,		/* Anonymous name.  */
+  tt_lambda_id,		/* Lambda name.  */
   tt_tinfo_var,		/* Typeinfo object. */
   tt_tinfo_typedef,	/* Typeinfo typedef.  */
   tt_primary_type,	/* TYPE_DECL for an implicit typedef.  */
@@ -6587,22 +6589,30 @@ trees_out::tree_node (tree t)
   if (TREE_CODE (t) == IDENTIFIER_NODE)
     {
       gcc_assert (ref == WK_normal);
-
-      /* An identifier node -> tt_id or, tt_conv_id.  */
-      bool conv_op = IDENTIFIER_CONV_OP_P (t);
+      /* An identifier node -> tt_id, tt_conv_id, tt_anon_id, tt_lambda_id.  */
+      int code = tt_id;
+      if (IDENTIFIER_ANON_P (t))
+	code = IDENTIFIER_LAMBDA_P (t) ? tt_lambda_id : tt_anon_id;
+      else if (IDENTIFIER_CONV_OP_P (t))
+	code = tt_conv_id;
 
       if (streaming_p ())
-	i (conv_op ? tt_conv_id : tt_id);
-      if (conv_op)
+	i (code);
+
+      if (code == tt_conv_id)
 	tree_node (TREE_TYPE (t));
-      else if (streaming_p ())
+      else if (code == tt_id && streaming_p ())
 	str (IDENTIFIER_POINTER (t), IDENTIFIER_LENGTH (t));
 
       int tag = insert (t);
       if (streaming_p ())
 	dump (dumper::TREE)
-	  && dump ("Written:%d %sidentifier:%N", tag, conv_op ? "conv_op_" : "",
-		   conv_op ? TREE_TYPE (t) : t);
+	  && dump ("Written:%d %sidentifier:%N", tag,
+		   code == tt_conv_id ? "conv_op "
+		   : code == tt_anon_id ? "anon "
+		   : code == tt_lambda_id ? "lambda "
+		   : "",
+		   code == tt_conv_id ? TREE_TYPE (t) : t);
       goto done;
     }
 
@@ -6850,6 +6860,20 @@ trees_in::tree_node ()
 	int tag = insert (res);
 	dump (dumper::TREE)
 	  && dump ("Created tinfo_typedef:%d %u %N", tag, ix, res);
+      }
+      break;
+
+    case tt_anon_id:
+    case tt_lambda_id:
+      {
+	/* An anonymous or lambda id.  */
+	res = make_anon_name ();
+	if (tag == tt_lambda_id)
+	  IDENTIFIER_LAMBDA_P (res) = true;
+	int tag = insert (res);
+	dump (dumper::TREE)
+	  && dump ("Read %s identifier:%d %N",
+		   IDENTIFIER_LAMBDA_P (res) ? "lambda" : "anon", tag, res);
       }
       break;
 
@@ -8349,8 +8373,8 @@ depset::hash::find (const key_type &key)
 /* DECL is a newly discovered dependency of current.  Create the
    depset, if it doesn't already exist.  Add it to the worklist if so.
    Append it to current's depset.  The decls newly discovered at this
-   point are not export or module linkage.  The may be voldemort
-   types, internal-linkage entities of reachable global module
+   point are not export or module linkage.  They may be voldemort
+   types, internal-linkage entities or reachable global module
    fragment entities.  */
 
 void

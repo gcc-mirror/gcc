@@ -1,3 +1,12 @@
+2019-03-12  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* decl.c (fndecl_declared_return_type): Extend BMI hack.
+	* module.cc (tt_anon_id, tt_lambda_id): New.
+	(trees_{in,out}::tree_node): Stream them.
+	gcc/
+	* tree.c (make_anon_name): Drop format #.
+
 2019-03-11  Nathan Sidwell  <nathan@acm.org>
 
 	Anon entities never placed in symbol tables.

@@ -16695,7 +16695,9 @@ fndecl_declared_return_type (tree fn)
       if (f == NULL)
 	f = DECL_SAVED_FUNCTION_DATA (fn);
       // FIXME: Preserve auto_return pattern in BMI
-      if (!f)
+      // It looks to me that this is the only thing we use
+      // DECL_SAVED_FUNCTION_DATA for.  So simplify it?
+      if (!f->x_auto_return_pattern)
 	return make_auto ();
       return f->x_auto_return_pattern;
     }

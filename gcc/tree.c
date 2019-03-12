@@ -9728,7 +9728,7 @@ make_anon_name ()
 #else
     "__anon"
 #endif
-    "_%#x";
+    "_%x";
 
   char buf[16];
   int len = snprintf (buf, sizeof (buf), fmt, anon_cnt++);
