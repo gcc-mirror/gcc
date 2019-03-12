@@ -2483,9 +2483,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    }
 	  else if (DECL_PENDING_INLINE_P (newdecl))
 	    ;
-	  else if (DECL_SAVED_FUNCTION_DATA (newdecl) == NULL)
-	    DECL_SAVED_FUNCTION_DATA (newdecl)
-	      = DECL_SAVED_FUNCTION_DATA (olddecl);
+	  else if (DECL_SAVED_AUTO_RETURN_TYPE (newdecl) == NULL)
+	    DECL_SAVED_AUTO_RETURN_TYPE (newdecl)
+	      = DECL_SAVED_AUTO_RETURN_TYPE (olddecl);
 
 	  DECL_DECLARED_INLINE_P (newdecl) |= DECL_DECLARED_INLINE_P (olddecl);
 
@@ -15458,7 +15458,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   /* If we are (erroneously) defining a function that we have already
      defined before, wipe out what we knew before.  */
   if (!DECL_PENDING_INLINE_P (decl1))
-    DECL_SAVED_FUNCTION_DATA (decl1) = NULL;
+    DECL_SAVED_AUTO_RETURN_TYPE (decl1) = NULL;
 
   if (ctype && !doing_friend && !DECL_STATIC_FUNCTION_P (decl1))
     {
@@ -15755,21 +15755,11 @@ store_parm_decls (tree current_function_parms)
 static void
 save_function_data (tree decl)
 {
-  struct language_function *f;
-
   /* Save the language-specific per-function data so that we can
      get it back when we really expand this function.  */
   gcc_assert (!DECL_PENDING_INLINE_P (decl));
 
-  /* Make a copy.  */
-  f = ggc_alloc<language_function> ();
-  memcpy (f, cp_function_chain, sizeof (struct language_function));
-  DECL_SAVED_FUNCTION_DATA (decl) = f;
-
-  /* Clear out the bits we don't need.  */
-  f->base.x_stmt_tree.x_cur_stmt_list = NULL;
-  f->bindings = NULL;
-  f->base.local_typedefs = NULL;
+  DECL_SAVED_AUTO_RETURN_TYPE (decl) = current_function_auto_return_pattern;
 }
 
 
@@ -16260,20 +16250,7 @@ finish_function (bool inline_p)
 
   /* Genericize before inlining.  */
   if (!processing_template_decl)
-    {
-      struct language_function *f = DECL_SAVED_FUNCTION_DATA (fndecl);
-      cp_genericize (fndecl);
-      /* Clear out the bits we don't need.  */
-      f->x_current_class_ptr = NULL;
-      f->x_current_class_ref = NULL;
-      f->x_eh_spec_block = NULL;
-      f->x_in_charge_parm = NULL;
-      f->x_vtt_parm = NULL;
-      f->x_return_value = NULL;
-      f->bindings = NULL;
-      f->extern_decl_map = NULL;
-      f->infinite_loops = NULL;
-    }
+    cp_genericize (fndecl);
 
   /* We're leaving the context of this function, so zap cfun.  It's still in
      DECL_STRUCT_FUNCTION, and we'll restore it in tree_rest_of_compilation.  */
@@ -16689,18 +16666,17 @@ fndecl_declared_return_type (tree fn)
   fn = STRIP_TEMPLATE (fn);
   if (FNDECL_USED_AUTO (fn))
     {
-      struct language_function *f = NULL;
       if (DECL_STRUCT_FUNCTION (fn))
-	f = DECL_STRUCT_FUNCTION (fn)->language;
-      if (f == NULL)
-	f = DECL_SAVED_FUNCTION_DATA (fn);
+	if (struct language_function *f = DECL_STRUCT_FUNCTION (fn)->language)
+	  return f->x_auto_return_pattern;
+      if (DECL_SAVED_AUTO_RETURN_TYPE (fn))
+	return DECL_SAVED_AUTO_RETURN_TYPE (fn);
       // FIXME: Preserve auto_return pattern in BMI
       // It looks to me that this is the only thing we use
       // DECL_SAVED_FUNCTION_DATA for.  So simplify it?
-      if (!f->x_auto_return_pattern)
-	return make_auto ();
-      return f->x_auto_return_pattern;
+      return make_auto ();
     }
+
   return TREE_TYPE (TREE_TYPE (fn));
 }
 

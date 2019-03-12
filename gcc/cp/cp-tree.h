@@ -2796,8 +2796,7 @@ struct GTY(()) lang_decl_fn {
   union lang_decl_u3
   {
     struct cp_token_cache * GTY ((tag ("1"))) pending_inline_info;
-    struct language_function * GTY ((tag ("0")))
-      saved_language_function;
+    tree GTY ((tag ("0"))) saved_auto_return_type;
   } GTY ((desc ("%1.pending_inline_p"))) u;
 
 };
@@ -3829,10 +3828,10 @@ struct GTY(()) lang_decl {
 #define FOLD_EXPR_INIT(NODE) \
   TREE_OPERAND (BINARY_FOLD_EXPR_CHECK (NODE), 2)
 
-/* In a FUNCTION_DECL, the saved language-specific per-function data.  */
-#define DECL_SAVED_FUNCTION_DATA(NODE)			\
+/* In a FUNCTION_DECL, the saved auto-return pattern.  */
+#define DECL_SAVED_AUTO_RETURN_TYPE(NODE)		\
   (LANG_DECL_FN_CHECK (FUNCTION_DECL_CHECK (NODE))	\
-   ->u.saved_language_function)
+   ->u.saved_auto_return_type)
 
 /* True if NODE is an implicit INDIRECT_REF from convert_from_reference.  */
 #define REFERENCE_REF_P(NODE)				\

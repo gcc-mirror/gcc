@@ -1,5 +1,17 @@
 2019-03-12  Nathan Sidwell  <nathan@acm.org>
 
+	Kill DECL_SAVED_FUNCTION_DATA part 1
+	gcc/cp/
+	* cp-tree.h (lang_decl_fn): Replace saved_language_function with
+	saved_auto_return type.
+	(DECL_SAVED_FUNCTION_DATA): Delete.
+	(DECL_SAVED_AUTO_RETURN_TYPE): New.
+	* decl.c (duplicate_decls, start_preparsed_function): Adjust.
+	(save_function_data): Only save auto return type.
+	(finish_function): Drop DECL_SAVED_FUNCTION_DATA member zapping.
+	(fndecl_declared_return_type): Adjust.
+	* method.c (make_thunk, make_alias_for): Adjust.
+
 	gcc/cp/
 	* module.cc (writable_cmp): New.
 	(depset::hash::add_writables): Sort the hash before inserting.
