@@ -344,20 +344,17 @@ extern int reload_completed;
 
 /* Kept up to date using the SCHED_VARIABLE_ISSUE hook.  */
 static rtx_insn *last_scheduled_insn;
-#define MAX_SCHED_UNITS 3
+#define MAX_SCHED_UNITS 4
 static int last_scheduled_unit_distance[MAX_SCHED_UNITS];
 
 #define NUM_SIDES 2
 static int current_side = 1;
-#define LONGRUNNING_THRESHOLD 5
+#define LONGRUNNING_THRESHOLD 20
 
 /* Estimate of number of cycles a long-running insn occupies an
    execution unit.  */
-static unsigned fxu_longrunning[NUM_SIDES];
-static unsigned vfu_longrunning[NUM_SIDES];
-
-/* Factor to scale latencies by, determined by measurements.  */
-#define LATENCY_FACTOR 4
+static unsigned fxd_longrunning[NUM_SIDES];
+static unsigned fpd_longrunning[NUM_SIDES];
 
 /* The maximum score added for an instruction whose unit hasn't been
    in use for MAX_SCHED_MIX_DISTANCE steps.  Increase this value to
@@ -14328,13 +14325,15 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
     {
     case PROCESSOR_2964_Z13:
     case PROCESSOR_3906_Z14:
-      *units = 3;
+      *units = 4;
       if (get_attr_z13_unit_lsu (insn))
 	mask |= 1 << 0;
-      if (get_attr_z13_unit_fxu (insn))
+      if (get_attr_z13_unit_fxa (insn))
 	mask |= 1 << 1;
-      if (get_attr_z13_unit_vfu (insn))
+      if (get_attr_z13_unit_fxb (insn))
 	mask |= 1 << 2;
+      if (get_attr_z13_unit_vfu (insn))
+	mask |= 1 << 3;
       break;
     default:
       gcc_unreachable ();
@@ -14424,12 +14423,12 @@ s390_sched_score (rtx_insn *insn)
       /* Try to delay long-running insns when side is busy.  */
       if (latency > LONGRUNNING_THRESHOLD)
 	{
-	  if (get_attr_z13_unit_fxu (insn) && fxu_longrunning[current_side]
-	      && fxu_longrunning[other_side] <= fxu_longrunning[current_side])
+	  if (get_attr_z13_unit_fxu (insn) && fxd_longrunning[current_side]
+	      && fxd_longrunning[other_side] <= fxd_longrunning[current_side])
 	    score = MAX (0, score - 10);
 
-	  if (get_attr_z13_unit_vfu (insn) && vfu_longrunning[current_side]
-	      && vfu_longrunning[other_side] <= vfu_longrunning[current_side])
+	  if (get_attr_z13_unit_vfu (insn) && fpd_longrunning[current_side]
+	      && fpd_longrunning[other_side] <= fpd_longrunning[current_side])
 	    score = MAX (0, score - 10);
 	}
     }
@@ -14614,19 +14613,19 @@ s390_sched_variable_issue (FILE *file, int verbose, rtx_insn *insn, int more)
 
       for (int i = 0; i < 2; i++)
 	{
-	  if (fxu_longrunning[i] >= 1)
-	    fxu_longrunning[i] -= 1;
-	  if (vfu_longrunning[i] >= 1)
-	    vfu_longrunning[i] -= 1;
+	  if (fxd_longrunning[i] >= 1)
+	    fxd_longrunning[i] -= 1;
+	  if (fpd_longrunning[i] >= 1)
+	    fpd_longrunning[i] -= 1;
 	}
 
       unsigned latency = insn_default_latency (insn);
       if (latency > LONGRUNNING_THRESHOLD)
 	{
 	  if (get_attr_z13_unit_fxu (insn))
-	    fxu_longrunning[current_side] = latency * LATENCY_FACTOR;
+	    fxd_longrunning[current_side] = latency;
 	  else
-	    vfu_longrunning[current_side] = latency * LATENCY_FACTOR;
+	    fpd_longrunning[current_side] = latency;
 	}
 
       if (verbose > 5)
