@@ -1,3 +1,11 @@
+2019-03-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89363
+	* gfortran.dg/assumed_rank_16.f90: New test.
+
+	PR fortran/89364
+	* gfortran.dg/assumed_rank_17.f90: New test.
+
 2019-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/89663
@@ -731,7 +739,7 @@
 2019-02-25  Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
 	PR fortran/89282
-	* gfortran.dg/overload_3.f90: New test. 
+	* gfortran.dg/overload_3.f90: New test.
 
 2019-02-25  Jakub Jelinek  <jakub@redhat.com>
 
@@ -741,7 +749,7 @@
 2019-02-25  Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
 	PR libfortran/89274
-	* gfortran.dg/list_directed_large.f90: New test. 
+	* gfortran.dg/list_directed_large.f90: New test.
 
 2019-02-25  Jakub Jelinek  <jakub@redhat.com>
 
