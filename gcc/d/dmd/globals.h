@@ -55,6 +55,14 @@ enum CPU
     native              // the machine the compiler is being run on
 };
 
+enum CppStdRevision
+{
+    CppStdRevisionCpp98 = 199711,
+    CppStdRevisionCpp11 = 201103,
+    CppStdRevisionCpp14 = 201402,
+    CppStdRevisionCpp17 = 201703
+};
+
 // Put command line switches in here
 struct Param
 {
@@ -114,6 +122,7 @@ struct Param
     bool check10378;    // check for issues transitioning to 10738
     bool bug10378;      // use pre-bugzilla 10378 search strategy
     bool vsafe;         // use enhanced @safe checking
+    unsigned cplusplus;     // version of C++ name mangling to support
     bool showGaggedErrors;  // print gagged errors anyway
 
     CPU cpu;                // CPU instruction set to target
