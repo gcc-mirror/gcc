@@ -1,3 +1,7 @@
+2019-03-12  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/memset-1.c: Adapt test case for new scheduling.
+
 2019-03-12  Martin Liska  <mliska@suse.cz>
 
 	* gfortran.dg/abstract_type_3.f03: Amend test-case scan

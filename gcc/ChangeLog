@@ -1,5 +1,29 @@
 2019-03-12  Robin Dapp  <rdapp@linux.ibm.com>
 
+	* config/s390/3906.md: New file.
+	* config/s390/s390.c (MAX_SCHED_UNITS): Increase.
+	(LONGRUNNING_THRESHOLD): Remove.
+	(MAX_SCHED_MIX_SCORE): Decrease.
+	(MAX_SCHED_MIX_DISTANCE): Decrease.
+	(s390_bb_fallthru_entry_likely): Assume fallthru for less than likely.
+	(struct s390_sched_state): New struct to hold scheduling state.
+	(S390_SCHED_STATE_NORMAL): Remove.
+	(S390_SCHED_STATE_CRACKED): Remove.
+	(S390_SCHED_ATTR_MASK_GROUPOFTWO): Add.
+	(s390_get_sched_attrmask): Use new attribute.
+	(s390_get_unit_mask): Use new units.
+	(s390_is_fpd): New function.
+	(s390_is_fxd): New function.
+	(s390_is_longrunning): New function.
+	(s390_sched_score): Use new functions.
+	(s390_sched_reorder): Likewise.
+	(s390_sched_variable_issue): Rework and use new functions.
+	(s390_sched_init): Use new functions.
+	* config/s390/s390.h (s390_tune_attr):  Add z14.
+	* config/s390/s390.md: Add z14.
+
+2019-03-12  Robin Dapp  <rdapp@linux.ibm.com>
+
 	* config/s390/2964.md: Update pipeline description.
 	* config/s390/s390.c (MAX_SCHED_UNITS): Increase.
 	(LONGRUNNING_THRESHOLD): Remove.
