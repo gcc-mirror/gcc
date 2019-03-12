@@ -1,5 +1,9 @@
 2019-03-12  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_out::tree_node): Refactor.
+	(module_state::write_cluster): Prefer non-anonymous name.
+
 	typedef struct {} foo;
 	gcc/cp/
 	* module.cc (trees_out::tree_value): Cope with name-for-linkage.

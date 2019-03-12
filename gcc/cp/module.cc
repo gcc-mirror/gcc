@@ -6596,9 +6596,11 @@ trees_out::tree_node (tree t)
   if (ref == WK_none)
     goto done;
 
+  if (ref != WK_normal)
+    goto skip_normal;
+
   if (TREE_CODE (t) == IDENTIFIER_NODE)
     {
-      gcc_assert (ref == WK_normal);
       /* An identifier node -> tt_id, tt_conv_id, tt_anon_id, tt_lambda_id.  */
       int code = tt_id;
       if (IDENTIFIER_ANON_P (t))
@@ -6628,7 +6630,6 @@ trees_out::tree_node (tree t)
 
   if (TREE_CODE (t) == TREE_BINFO)
     {
-      gcc_assert (ref == WK_normal);
       /* A BINFO -> tt_binfo.
 	 We must do this by reference.  We stream the binfo tree
 	 itself when streaming its owning RECORD_TYPE.  */
@@ -6653,7 +6654,6 @@ trees_out::tree_node (tree t)
       /* A typeinfo object -> tt_tinfo_var.  These need recreating by
 	 the loader.  The type it is for is stashed on the name's
 	 TREE_TYPE.  */
-      gcc_assert (ref == WK_normal);
       tree type = TREE_TYPE (DECL_NAME (t));
       if (streaming_p ())
 	i (tt_tinfo_var);
@@ -6668,7 +6668,6 @@ trees_out::tree_node (tree t)
   if (TREE_CODE (t) == TYPE_DECL && DECL_TINFO_P (t))
     {
       /* A typeinfo pseudo type -> tt_tinfo_typedef.  */
-      gcc_assert (ref == WK_normal);
       unsigned ix = get_pseudo_tinfo_index (TREE_TYPE (t));
 
       if (streaming_p ())
@@ -6683,7 +6682,7 @@ trees_out::tree_node (tree t)
       goto done;
     }
 
-  if (TREE_CODE (t) == VAR_DECL && ref == WK_normal && DECL_ARTIFICIAL (t))
+  if (TREE_CODE (t) == VAR_DECL && DECL_ARTIFICIAL (t))
     {
       tree ctx = CP_DECL_CONTEXT (t);
       if (TREE_CODE (ctx) == RECORD_TYPE && TYPE_LANG_SPECIFIC (ctx))
@@ -6707,7 +6706,7 @@ trees_out::tree_node (tree t)
 	}
     }
 
-  if (ref == WK_normal && TREE_CODE (t) == INTEGER_CST
+  if (TREE_CODE (t) == INTEGER_CST
       && !TREE_OVERFLOW (t) && SCOPED_ENUM_P (TREE_TYPE (t)))
     {
       unsigned ix = 0;
@@ -6726,6 +6725,7 @@ trees_out::tree_node (tree t)
 	  }
     }
 
+ skip_normal:
   if (TYPE_P (t) && !tree_type (t, ref, false))
     goto done;
 
@@ -10543,8 +10543,12 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
     }
 
   /* We don't find the section by name.  Use depset's decl's name for
-     human friendliness.  Prefer a defn over a decl.  */
+     human friendliness.  */
   tree naming_decl = scc[0]->get_entity ();
+  if (DECL_IMPLICIT_TYPEDEF_P (naming_decl))
+    /* Lose any anonymousness.  */
+    naming_decl = TYPE_NAME (TREE_TYPE (naming_decl));
+
   unsigned name = to->qualified_name (naming_decl, scc[0]->is_defn ());
   unsigned snum = sec.end (to, name, crc_ptr);
 
