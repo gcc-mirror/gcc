@@ -4039,6 +4039,14 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 						       rettype, totype,
 						       EXPR_LOCATION (expr));
 	    }
+	  else if (TYPE_REF_P (totype) && !ics->rvaluedness_matches_p
+		   && TREE_CODE (TREE_TYPE (totype)) != FUNCTION_TYPE)
+	    {
+	      /* If we are called to convert to a reference type, we are trying
+		 to find a direct binding per [over.match.ref], so rvaluedness
+		 must match for non-functions.  */
+	      cand->viable = 0;
+	    }
 	  else if (DECL_NONCONVERTING_P (cand->fn)
 		   && ics->rank > cr_exact)
 	    {
