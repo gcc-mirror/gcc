@@ -1,3 +1,8 @@
+2019-03-12  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.c (cgraph_node::dump): Dump more info for former thunks,
+	terminate with newline.
+
 2019-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/52726
