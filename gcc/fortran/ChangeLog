@@ -1,3 +1,9 @@
+2019-03-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87673
+	* match.c (gfc_match_type_spec): Remove call to
+	gfc_resolve_expr for character length.
+
 2019-03-12  Martin Liska  <mliska@suse.cz>
 
 	* decl.c (add_init_expr_to_sym): Replace usage of 'can't'

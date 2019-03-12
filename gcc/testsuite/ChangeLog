@@ -1,3 +1,8 @@
+2019-03-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87673
+	* gfortran.dg/charlen_17.f90: New test.
+
 2019-03-12  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* gcc.target/s390/memset-1.c: Adapt test case for new scheduling.
