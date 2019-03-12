@@ -15072,6 +15072,18 @@ s390_option_override_internal (struct gcc_options *opts,
 			 opts->x_param_values,
 			 opts_set->x_param_values);
 
+  /* Use aggressive inlining parameters.  */
+  if (opts->x_s390_tune >= PROCESSOR_2964_Z13)
+    {
+      maybe_set_param_value (PARAM_INLINE_MIN_SPEEDUP, 2,
+			     opts->x_param_values,
+			     opts_set->x_param_values);
+
+      maybe_set_param_value (PARAM_MAX_INLINE_INSNS_AUTO, 80,
+			     opts->x_param_values,
+			     opts_set->x_param_values);
+    }
+
   /* Set the default alignment.  */
   s390_default_align (opts);
 

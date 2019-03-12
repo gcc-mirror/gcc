@@ -1,5 +1,10 @@
 2019-03-12  Robin Dapp  <rdapp@linux.ibm.com>
 
+	* config/s390/s390.c (s390_option_override_internal): Use more
+	aggressive inlining parameters.
+
+2019-03-12  Robin Dapp  <rdapp@linux.ibm.com>
+
 	* config/s390/3906.md: New file.
 	* config/s390/s390.c (MAX_SCHED_UNITS): Increase.
 	(LONGRUNNING_THRESHOLD): Remove.
