@@ -324,7 +324,7 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       else
 	{
 	  if (quote_chain_split)
-	    error ("-I- specified twice");
+	    error ("%<-I-%> specified twice");
 	  quote_chain_split = true;
 	  split_quote_chain ();
 	  inform (input_location, "obsolete option %<-I-%> used, "

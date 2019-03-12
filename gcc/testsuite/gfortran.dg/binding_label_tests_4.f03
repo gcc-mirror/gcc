@@ -18,6 +18,6 @@ end module B
 
 module C
 use A
-use B ! { dg-error "Can't open module file" }
+use B ! { dg-error "Cannot open module file" }
 end module C
 ! { dg-excess-errors "compilation terminated" }

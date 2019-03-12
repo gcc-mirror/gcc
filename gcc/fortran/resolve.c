@@ -838,22 +838,22 @@ resolve_entries (gfc_namespace *ns)
 	      if (sym->attr.dimension)
 		{
 		  if (el == ns->entries)
-		    gfc_error ("FUNCTION result %s can't be an array in "
+		    gfc_error ("FUNCTION result %s cannot be an array in "
 			       "FUNCTION %s at %L", sym->name,
 			       ns->entries->sym->name, &sym->declared_at);
 		  else
-		    gfc_error ("ENTRY result %s can't be an array in "
+		    gfc_error ("ENTRY result %s cannot be an array in "
 			       "FUNCTION %s at %L", sym->name,
 			       ns->entries->sym->name, &sym->declared_at);
 		}
 	      else if (sym->attr.pointer)
 		{
 		  if (el == ns->entries)
-		    gfc_error ("FUNCTION result %s can't be a POINTER in "
+		    gfc_error ("FUNCTION result %s cannot be a POINTER in "
 			       "FUNCTION %s at %L", sym->name,
 			       ns->entries->sym->name, &sym->declared_at);
 		  else
-		    gfc_error ("ENTRY result %s can't be a POINTER in "
+		    gfc_error ("ENTRY result %s cannot be a POINTER in "
 			       "FUNCTION %s at %L", sym->name,
 			       ns->entries->sym->name, &sym->declared_at);
 		}
@@ -891,12 +891,12 @@ resolve_entries (gfc_namespace *ns)
 		  if (sym)
 		    {
 		      if (el == ns->entries)
-			gfc_error ("FUNCTION result %s can't be of type %s "
+			gfc_error ("FUNCTION result %s cannot be of type %s "
 				   "in FUNCTION %s at %L", sym->name,
 				   gfc_typename (ts), ns->entries->sym->name,
 				   &sym->declared_at);
 		      else
-			gfc_error ("ENTRY result %s can't be of type %s "
+			gfc_error ("ENTRY result %s cannot be of type %s "
 				   "in FUNCTION %s at %L", sym->name,
 				   gfc_typename (ts), ns->entries->sym->name,
 				   &sym->declared_at);
@@ -13115,7 +13115,7 @@ check_generic_tbp_ambiguity (gfc_tbp_generic* t1, gfc_tbp_generic* t2,
   if (sym1->attr.subroutine != sym2->attr.subroutine
       || sym1->attr.function != sym2->attr.function)
     {
-      gfc_error ("%qs and %qs can't be mixed FUNCTION/SUBROUTINE for"
+      gfc_error ("%qs and %qs cannot be mixed FUNCTION/SUBROUTINE for"
 		 " GENERIC %qs at %L",
 		 sym1->name, sym2->name, generic_name, &where);
       return false;
@@ -13250,7 +13250,7 @@ specific_found:
   /* If we attempt to "overwrite" a specific binding, this is an error.  */
   if (p->overridden && !p->overridden->is_generic)
     {
-      gfc_error ("GENERIC %qs at %L can't overwrite specific binding with"
+      gfc_error ("GENERIC %qs at %L cannot overwrite specific binding with"
 		 " the same name", name, &p->where);
       return false;
     }
@@ -13306,7 +13306,7 @@ get_checked_tb_operator_target (gfc_tbp_generic* target, locus where)
   /* F08:C468. All operator bindings must have a passed-object dummy argument.  */
   if (target->specific->nopass)
     {
-      gfc_error ("Type-bound operator at %L can't be NOPASS", &where);
+      gfc_error ("Type-bound operator at %L cannot be NOPASS", &where);
       return NULL;
     }
 

@@ -38375,7 +38375,8 @@ rdseed_step:
       mode0 = insn_data[icode].operand[0].mode;
       if (!insn_data[icode].operand[0].predicate (op0, mode0))
 	{
-	  error ("xabort argument must be an 8-bit immediate");
+	  error ("the argument to %<xabort%> intrinsic must "
+		 "be an 8-bit immediate");
 	  return const0_rtx;
 	}
       emit_insn (gen_xabort (op0));
