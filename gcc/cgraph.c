@@ -2110,7 +2110,12 @@ cgraph_node::dump (FILE *f)
 	       (int)thunk.virtual_offset_p);
     }
   else if (former_thunk_p ())
-    fprintf (f, "  Former thunk");
+    fprintf (f, "  Former thunk fixed offset %i virtual value %i "
+	     "indirect_offset %i has virtual offset %i\n",
+	     (int)thunk.fixed_offset,
+	     (int)thunk.virtual_value,
+	     (int)thunk.indirect_offset,
+	     (int)thunk.virtual_offset_p);
   if (alias && thunk.alias
       && DECL_P (thunk.alias))
     {
