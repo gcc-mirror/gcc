@@ -257,6 +257,15 @@ proc add_options_for_net_ts { flags } {
     return $flags
 }
 
+# Add to FLAGS all the target-specific flags to link to libatomic, if required.
+
+proc add_options_for_libatomic { flags } {
+    if { [istarget hppa*-*-hpux*] || [istarget riscv*-*-*] } {
+	return "$flags -L../../libatomic/.libs -latomic"
+    }
+    return $flags
+}
+
 # Like dg-options, but adds to the default options rather than replacing them.
 
 proc dg-additional-options { args } {

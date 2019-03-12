@@ -1,3 +1,15 @@
+2019-03-12  John David Anglin  <dave.anglin@bell.net>
+
+	PR libstdc++/89461
+	* testsuite/lib/libstdc++.exp: Locate libatomic.
+	* testsuite/lib/dg-options.exp (add_options_for_libatomic): New.
+	* testsuite/20_util/shared_ptr/thread/default_weaktoshared.cc: Add
+	libatomic options.
+	* testsuite/20_util/shared_ptr/thread/mutex_weaktoshared.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/cons.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/dest.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/ops.cc: Likewise.
+
 2019-03-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89460
