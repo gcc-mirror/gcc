@@ -1,5 +1,13 @@
 2019-03-12  Nathan Sidwell  <nathan@acm.org>
 
+	typedef struct {} foo;
+	gcc/cp/
+	* module.cc (trees_out::tree_value): Cope with name-for-linkage.
+	(trees_out::write_class_def): Likewise.
+	(depset::hash::add_dependency): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/tdef-3_[ab].C: New.
+
 	gcc/cp/
 	* decl.c (fndecl_declared_return_type): Remove BMI FIXME.
 	* module.cc (trees_{in,out}::lang_decl_vals): Stream

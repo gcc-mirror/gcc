@@ -6560,7 +6560,8 @@ trees_out::tree_value (tree t, walk_kind walk)
   if (DECL_IMPLICIT_TYPEDEF_P (t))
     {
       tree type = TREE_TYPE (t);
-      gcc_assert (TYPE_NAME (type) == t);
+
+      gcc_checking_assert (TYPE_STUB_DECL (type) == t);
       walk_kind type_walk = ref_node (type);
       gcc_assert (type_walk == WK_normal);
       if (streaming_p ())
@@ -8010,7 +8011,7 @@ trees_out::write_class_def (tree defn)
 
       tree as_base = CLASSTYPE_AS_BASE (type);
       if (as_base)
-	as_base = TYPE_NAME (as_base);
+	as_base = TYPE_STUB_DECL (as_base);
       tree_node (as_base);
       if (as_base && as_base != defn)
 	write_class_def (as_base);
@@ -8024,7 +8025,7 @@ trees_out::write_class_def (tree defn)
       tree_node (CLASSTYPE_DECL_LIST (type));
     }
 
-  // lang->nested_udts
+  // FIXME: lang->nested_udts
 
   /* Now define all the members.  */
   for (tree member = TYPE_FIELDS (type); member; member = TREE_CHAIN (member))
@@ -8424,10 +8425,28 @@ depset::hash::add_dependency (tree decl)
 		       ?  !TREE_PUBLIC (ctx) : DECL_THIS_STATIC (decl))
 		/* An internal decl.  */
 		dep->is_internal = true;
+	      else if (DECL_IMPLICIT_TYPEDEF_P (decl)
+		       && IDENTIFIER_ANON_P (DECL_NAME (decl)))
+		{
+		  tree linkage_name = TYPE_LINKAGE_IDENTIFIER (TREE_TYPE (decl));
+		  if (linkage_name == DECL_NAME (decl))
+		    dep->is_internal = true;
+		  else
+		    {
+		      /* It has a name for linkage purposes.  */
+		      tree naming_decl = TYPE_NAME (TREE_TYPE (decl));
+		      gcc_checking_assert (linkage_name
+					   == DECL_NAME (naming_decl));
+		      dump (dumper::DEPEND)
+			&& dump ("Anon %N named by typedef %N added",
+				 decl, naming_decl);
+		    }
+		}
 	      else
 		{
 		  // FIXME: We have to walk the non-emitted entities
-		  // in the module's purview too.
+		  // in the module's purview too.  Discussing this in
+		  // CWG, it is weird.
 		  /* A reachable global module fragment entity.  Add
 		     it to its scope's binding depset.  */
 		  gcc_checking_assert (MAYBE_DECL_MODULE_OWNER (decl)
