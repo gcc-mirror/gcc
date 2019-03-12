@@ -1,3 +1,10 @@
+2019-03-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR d/87824
+	* lib/gdc.exp (gdc_include_flags): Find C++ headers by calling
+	libstdc++v3/scripts/testsuite_flags.  Filter out unsupported
+	-nostdinc++ flag.
+
 2019-03-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/87673
@@ -9,8 +16,7 @@
 
 2019-03-12  Martin Liska  <mliska@suse.cz>
 
-	* gfortran.dg/abstract_type_3.f03: Amend test-case scan
-	patterns.
+	* gfortran.dg/abstract_type_3.f03: Amend test-case scan patterns.
 	* gfortran.dg/binding_label_tests_4.f03: Likewise.
 	* gfortran.dg/c_f_pointer_tests_6.f90: Likewise.
 	* gfortran.dg/c_funloc_tests_6.f90: Likewise.
