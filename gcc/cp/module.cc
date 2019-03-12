@@ -5745,13 +5745,19 @@ trees_out::lang_decl_vals (tree t)
 	{
 	  if (DECL_NAME (t) && IDENTIFIER_OVL_OP_P (DECL_NAME (t)))
 	    WU (lang->u.fn.ovl_op_code);
-
-	  if (lang->u.fn.thunk_p)
-	    wi (lang->u.fn.u5.fixed_offset);
 	}
 
-      if (!lang->u.fn.thunk_p)
+      if (lang->u.fn.thunk_p)
+	{
+	  if (streaming_p ())
+	    wi (lang->u.fn.u5.fixed_offset);
+	}
+      else
 	WT (lang->u.fn.u5.cloned_function);
+
+      if (FNDECL_USED_AUTO (t))
+	WT (lang->u.fn.u.saved_auto_return_type);
+
       /* FALLTHROUGH.  */
 
     case lds_min:  /* lang_decl_min.  */
@@ -5806,6 +5812,9 @@ trees_in::lang_decl_vals (tree t)
 	  lang->u.fn.u5.fixed_offset = wi ();
 	else
 	  RT (lang->u.fn.u5.cloned_function);
+
+	if (FNDECL_USED_AUTO (t))
+	  RT (lang->u.fn.u.saved_auto_return_type);
       }
       /* FALLTHROUGH.  */
 
