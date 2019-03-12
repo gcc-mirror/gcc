@@ -1,3 +1,9 @@
+2019-03-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86521 - wrong overload resolution with ref-qualifiers.
+	* call.c (build_user_type_conversion_1): Don't use a conversion to a
+	reference of the wrong rvalueness for direct binding.
+
 2019-03-11  Martin Liska  <mliska@suse.cz>
 
 	* cvt.c (build_expr_type_conversion): Wrap apostrophes
