@@ -8516,6 +8516,22 @@ depset::hash::add_binding (tree ns, tree value)
   current = NULL;
 }
 
+/* Compare two writable bindings.  We don't particularly care on the
+   ordering, just so long as it reproduces across builds.  */
+
+static int
+writable_cmp (const void *a_, const void *b_)
+{
+  tree a = *(const tree *)a_;
+  tree b = *(const tree *)b_;
+
+  tree first_a = OVL_FIRST (a);
+  tree first_b = OVL_FIRST (b);
+
+  gcc_checking_assert (first_a != first_b);
+  return DECL_UID (first_a) < DECL_UID (first_b) ? -1 : +1;
+}
+
 /* Recursively find all the namespace bindings of NS.
    Add a depset for every binding that contains an export or
    module-linkage entity.  Add a defining depset for every such decl
@@ -8526,34 +8542,35 @@ depset::hash::add_binding (tree ns, tree value)
 void
 depset::hash::add_writables (tree ns, bitmap partitions)
 {
-  auto_vec<tree> decls;
-
   dump () && dump ("Finding writables in %N", ns);
   dump.indent ();
 
-  /* Nothing gets inserted into the binding table during this walk.  */
+  auto_vec<tree> bindings (DECL_NAMESPACE_BINDINGS (ns)->size ());
   hash_table<named_decl_hash>::iterator end
     (DECL_NAMESPACE_BINDINGS (ns)->end ());
   for (hash_table<named_decl_hash>::iterator iter
 	 (DECL_NAMESPACE_BINDINGS (ns)->begin ()); iter != end; ++iter)
-    {
-      tree &bind = *iter;
+    if (tree value = extract_module_binding (*iter, ns, partitions))
+      bindings.quick_push (value);
 
-      if (tree value = extract_module_binding (bind, ns, partitions))
+  /* Sort for reproducibility.  */
+  bindings.qsort (writable_cmp);
+  while (bindings.length ())
+    {
+      tree value = bindings.pop ();
+      if (TREE_CODE (value) != NAMESPACE_DECL)
+	add_binding (ns, value);
+      else if (DECL_NAME (value))
 	{
-	  if (TREE_CODE (value) != NAMESPACE_DECL)
-	    add_binding (ns, value);
-	  else if (DECL_NAME (value))
-	    {
-	      gcc_checking_assert (TREE_PUBLIC (value));
-	      add_writables (value, partitions);
-	      // FIXME: What about opening and closing it in the
-	      // purview, shouldn't that add the namespace too?
-	      if (DECL_MODULE_EXPORT_P (value))
-		add_dependency (value);
-	    }
+	  gcc_checking_assert (TREE_PUBLIC (value));
+	  add_writables (value, partitions);
+	  // FIXME: What about opening and closing it in the
+	  // purview, shouldn't that add the namespace too?
+	  if (DECL_MODULE_EXPORT_P (value))
+	    add_dependency (value);
 	}
     }
+
   dump.outdent ();
 }
 

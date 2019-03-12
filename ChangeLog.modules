@@ -1,6 +1,10 @@
 2019-03-12  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (writable_cmp): New.
+	(depset::hash::add_writables): Sort the hash before inserting.
+
+	gcc/cp/
 	* decl.c (fndecl_declared_return_type): Extend BMI hack.
 	* module.cc (tt_anon_id, tt_lambda_id): New.
 	(trees_{in,out}::tree_node): Stream them.
