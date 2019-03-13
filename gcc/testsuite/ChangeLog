@@ -3,6 +3,10 @@
 	PR c++/89686 - mixing init-capture and simple-capture in lambda.
 	* g++.dg/cpp2a/lambda-pack-init2.C: New test.
 
+	PR c++/89660 - bogus error with -Wredundant-move.
+	* g++.dg/cpp0x/Wredundant-move8.C: New test.
+	* g++.dg/cpp0x/Wredundant-move9.C: New test.
+
 2019-03-13  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/89601

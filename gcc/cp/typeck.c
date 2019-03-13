@@ -9409,7 +9409,7 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
   if (!CLASS_TYPE_P (functype))
     return;
 
-  /* We're looking for *std::move<T&> (&arg).  */
+  /* We're looking for *std::move<T&> ((T &) &arg).  */
   if (REFERENCE_REF_P (retval)
       && TREE_CODE (TREE_OPERAND (retval, 0)) == CALL_EXPR)
     {
@@ -9417,7 +9417,9 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
       if (is_std_move_p (fn))
 	{
 	  tree arg = CALL_EXPR_ARG (fn, 0);
-	  STRIP_NOPS (arg);
+	  if (TREE_CODE (arg) != NOP_EXPR)
+	    return;
+	  arg = TREE_OPERAND (arg, 0);
 	  if (TREE_CODE (arg) != ADDR_EXPR)
 	    return;
 	  arg = TREE_OPERAND (arg, 0);
@@ -9433,7 +9435,8 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
 	    }
 	  /* Warn if the move is redundant.  It is redundant when we would
 	     do maybe-rvalue overload resolution even without std::move.  */
-	  else if (treat_lvalue_as_rvalue_p (arg, /*parm_ok*/true))
+	  else if (warn_redundant_move
+		   && treat_lvalue_as_rvalue_p (arg, /*parm_ok*/true))
 	    {
 	      /* Make sure that the overload resolution would actually succeed
 		 if we removed the std::move call.  */
