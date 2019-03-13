@@ -6378,60 +6378,66 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	  }
       }
 
-    tree look = decl;
-    if (TREE_CODE (decl) == TEMPLATE_DECL
-	&& RECORD_OR_UNION_CODE_P (TREE_CODE (DECL_CONTEXT (decl)))
-	&& !DECL_MEMBER_TEMPLATE_P (decl))
-      look = DECL_TEMPLATE_RESULT (decl);
-
     /* A named decl -> tt_named_decl.  */
+    tree name = DECL_NAME (decl);
     if (streaming_p ())
       {
-	i (look == decl ? tt_named_decl : tt_implicit_template);
+	tree proxy = decl;
+	unsigned code = tt_named_decl;
+	int ident = -2;
+
+	if (TREE_CODE (decl) == TEMPLATE_DECL
+	    && RECORD_OR_UNION_CODE_P (TREE_CODE (ctx))
+	    && !DECL_MEMBER_TEMPLATE_P (decl))
+	  {
+	    proxy = DECL_TEMPLATE_RESULT (decl);
+	    code = tt_implicit_template;
+	  }
+
+	gcc_checking_assert (name == DECL_NAME (proxy));
+
+	if (TREE_CODE (ctx) == NAMESPACE_DECL && owner < MODULE_IMPORT_BASE)
+	  {
+	    /* Look directly into the binding depset, as that's
+	       what importers will observe.  */
+	    depset *bind
+	      = dep_hash->find (depset::binding_key (ctx, name));
+	    if (bind)
+	      for (ident = bind->deps.length (); ident--;)
+		if (bind->deps[ident]->get_entity () == proxy)
+		  break;
+	    gcc_checking_assert (ident >= 0);
+	    if (bind->deps.length () > 1
+		&& TREE_CODE (bind->deps[0]->get_entity ()) == TYPE_DECL)
+	      ident--;
+	    kind = "named decl";
+	  }
+	else
+	  {
+	    ident = get_lookup_ident (ctx, name, owner, proxy);
+	    /* Make sure we can find it by name.  */
+	    gcc_checking_assert
+	      (proxy == lookup_by_ident (ctx, name, owner, ident));
+	    kind = is_import ? "import" : "member";
+	  }
+
+	i (code);
 	tree_ctx (ctx, true, decl);
+	tree_node (name);
+	u (owner);
+	i (ident);
       }
-    else if (!is_import)
+    else
       {
-	if (TREE_CODE (ctx) != NAMESPACE_DECL)
+	if (is_import)
+	  ;
+	else if (TREE_CODE (ctx) != NAMESPACE_DECL)
 	  tree_ctx (ctx, true, decl);
 	else if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION)
 	  dep_hash->add_dependency (decl);
-      }
 
-    tree name = DECL_NAME (decl);
-    tree_node (name);
-    if (streaming_p ())
-      {
-	u (owner);
-	if (name != as_base_identifier)
-	  {
-	    int ident = -2;
-	    if (TREE_CODE (ctx) == NAMESPACE_DECL && owner < MODULE_IMPORT_BASE)
-	      {
-		/* Look directly into the binding depset, as that's
-		   what importers will observe.  */
-		depset *bind
-		  = dep_hash->find (depset::binding_key (ctx, DECL_NAME (look)));
-		if (bind)
-		  for (ident = bind->deps.length (); ident--;)
-		    if (bind->deps[ident]->get_entity () == look)
-		      break;
-		gcc_checking_assert (ident >= 0);
-		if (bind->deps.length () > 1
-		    && TREE_CODE (bind->deps[0]->get_entity ()) == TYPE_DECL)
-		  ident--;
-	      }
-	    else
-	      {
-		ident = get_lookup_ident (ctx, name, owner, look);
-		/* Make sure we can find it by name.  */
-		gcc_checking_assert
-		  (look == lookup_by_ident (ctx, name, owner, ident));
-	      }
-	    i (ident);
-	  }
+	tree_node (name);
       }
-    kind = is_import ? "import" : "named decl";
   }
 
  insert:
@@ -6957,20 +6963,15 @@ trees_in::tree_node ()
 	tree name = tree_node ();
 	owner = u ();
 	owner = state->slurp ()->remap_module (owner);
-	if (name == as_base_identifier)
-	  res = TYPE_NAME (CLASSTYPE_AS_BASE (ctx));
-	else
+	int ident = i ();
+	if (owner != MODULE_NONE && !get_overrun ())
 	  {
-	    int ident = i ();
-	    if (owner != MODULE_NONE && !get_overrun ())
+	    res = lookup_by_ident (ctx, name, owner, ident);
+	    if (res && tag == tt_implicit_template)
 	      {
-		res = lookup_by_ident (ctx, name, owner, ident);
-		if (tag == tt_implicit_template)
-		  {
-		    int use_tpl = -1;
-		    tree ti = node_template_info (res, use_tpl);
-		    res = TI_TEMPLATE (ti);
-		  }
+		int use_tpl = -1;
+		tree ti = node_template_info (res, use_tpl);
+		res = TI_TEMPLATE (ti);
 	      }
 	  }
 

@@ -1,3 +1,11 @@
+2019-03-13  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (trees_out::tree_decl): Refactor named decl streaming.
+	(trees_in::tree_node): Remove as_base special casing.
+	* name-lookup.c (lookup_by_ident, get_lookup_ident): Handle
+	as_base here.
+
 2019-03-12  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

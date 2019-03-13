@@ -4120,6 +4120,9 @@ get_binding_or_decl (tree ctx, tree name, unsigned mod)
 tree
 lookup_by_ident (tree ctx, tree name, unsigned mod, int ident)
 {
+  if (ident == -2)
+    return CLASS_TYPE_P (ctx) ? TYPE_NAME (CLASSTYPE_AS_BASE (ctx)) : NULL;
+
   tree binding = get_binding_or_decl (ctx, name, mod);
 
   if (!binding)
@@ -4142,6 +4145,9 @@ lookup_by_ident (tree ctx, tree name, unsigned mod, int ident)
 int
 get_lookup_ident (tree ctx, tree name, unsigned mod, tree decl)
 {
+  if (name == as_base_identifier)
+    return -2;
+
   tree binding = get_binding_or_decl (ctx, name, mod);
 
   gcc_checking_assert (binding);
