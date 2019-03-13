@@ -46,13 +46,35 @@ along with GCC; see the file COPYING3.  If not see
 #include "case-cfn-macros.h"
 #include "alloc-pool.h"
 #include "attribs.h"
+#include "range.h"
 #include "vr-values.h"
 #include "cfghooks.h"
+#include "range-op.h"
+#include "wide-int-range.h"
 
-value_range *
-simplify_with_vranges::get_value_range (tree op)
+/* Convert the value_range in this object to an irange and return it.  */
+
+irange
+vr_values::get_value_irange (tree op)
 {
-  return m_vr_values->get_value_range (op);
+  if (TREE_CODE (op) == INTEGER_CST)
+    return irange (TREE_TYPE (op), op, op);
+
+  value_range *vr = get_value_range (op);
+  if (vr->symbolic_p ())
+    return irange (TREE_TYPE (op));
+
+  irange r;
+  value_range_to_irange (r, TREE_TYPE (op), *vr);
+  return r;
+}
+
+/* vr_values interface to simplify_with_ranges.  */
+
+irange
+simplify_with_vranges::get_value_irange (tree op)
+{
+  return m_vr_values->get_value_irange (op);
 }
 
 /* Set value range VR to a non-negative range of type TYPE.  */
@@ -388,10 +410,8 @@ vr_values::op_with_constant_singleton_value_range (tree op)
 /* Return true if op is in a boolean [0, 1] value-range.  */
 
 bool
-simplify_with_ranges::op_with_boolean_value_range_p (tree op)
+simplify_with_ranges::op_has_boolean_range_p (tree op)
 {
-  value_range *vr;
-
   if (TYPE_PRECISION (TREE_TYPE (op)) == 1)
     return true;
 
@@ -402,10 +422,10 @@ simplify_with_ranges::op_with_boolean_value_range_p (tree op)
   if (TREE_CODE (op) != SSA_NAME)
     return false;
 
-  vr = get_value_range (op);
-  return (vr->kind () == VR_RANGE
-	  && integer_zerop (vr->min ())
-	  && integer_onep (vr->max ()));
+  irange zero_one (TREE_TYPE (op),
+		   wi::zero (TYPE_PRECISION (TREE_TYPE (op))),
+		   wi::one (TYPE_PRECISION (TREE_TYPE (op))));
+  return get_value_irange (op) == zero_one;
 }
 
 /* Extract value range information for VAR when (OP COND_CODE LIMIT) is
@@ -953,42 +973,16 @@ vr_values::extract_range_from_comparison (value_range *vr, enum tree_code code,
    always overflow.  Set *OVF to true if it is known to always
    overflow.  */
 
-bool
-simplify_with_ranges::check_for_binary_op_overflow (enum tree_code subcode,
-						    tree type, tree op0,
-						    tree op1, bool *ovf)
+static bool
+check_for_binary_op_overflow (enum tree_code subcode, tree type,
+			      tree op0, irange &ir0,
+			      tree op1, irange &ir1,
+			      bool *ovf)
 {
-  value_range_base vr0, vr1;
-  if (TREE_CODE (op0) == SSA_NAME)
-    vr0 = *get_value_range (op0);
-  else if (TREE_CODE (op0) == INTEGER_CST)
-    vr0.set (op0);
-  else
-    vr0.set_varying ();
-
-  if (TREE_CODE (op1) == SSA_NAME)
-    vr1 = *get_value_range (op1);
-  else if (TREE_CODE (op1) == INTEGER_CST)
-    vr1.set (op1);
-  else
-    vr1.set_varying ();
-
-  tree vr0min = vr0.min (), vr0max = vr0.max ();
-  tree vr1min = vr1.min (), vr1max = vr1.max ();
-  if (!range_int_cst_p (&vr0)
-      || TREE_OVERFLOW (vr0min)
-      || TREE_OVERFLOW (vr0max))
-    {
-      vr0min = vrp_val_min (TREE_TYPE (op0));
-      vr0max = vrp_val_max (TREE_TYPE (op0));
-    }
-  if (!range_int_cst_p (&vr1)
-      || TREE_OVERFLOW (vr1min)
-      || TREE_OVERFLOW (vr1max))
-    {
-      vr1min = vrp_val_min (TREE_TYPE (op1));
-      vr1max = vrp_val_max (TREE_TYPE (op1));
-    }
+  tree vr0min = wide_int_to_tree (TREE_TYPE (op0), ir0.lower_bound ());
+  tree vr0max = wide_int_to_tree (TREE_TYPE (op0), ir0.upper_bound ());
+  tree vr1min = wide_int_to_tree (TREE_TYPE (op1), ir1.lower_bound ());
+  tree vr1max = wide_int_to_tree (TREE_TYPE (op1), ir1.upper_bound ());
   *ovf = arith_overflowed_p (subcode, type, vr0min,
 			     subcode == MINUS_EXPR ? vr1max : vr1min);
   if (arith_overflowed_p (subcode, type, vr0max,
@@ -1349,8 +1343,11 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
 		  if (code == IMAGPART_EXPR)
 		    {
 		      bool ovf = false;
-		      if (simplify.check_for_binary_op_overflow
-			    (subcode, type, op0, op1, &ovf))
+
+		      irange ir0 = get_value_irange (op0);
+		      irange ir1 = get_value_irange (op1);
+		      if (check_for_binary_op_overflow
+			  (subcode, type, op0, ir0, op1, ir1, &ovf))
 			vr->set (build_int_cst (type, ovf));
 		      else if (TYPE_PRECISION (type) == 1
 			       && !TYPE_UNSIGNED (type))
@@ -1902,8 +1899,7 @@ vr_values::dump_all_value_ranges (FILE *file)
 
 /* Initialize VRP lattice.  */
 
-vr_values::vr_values () : vrp_value_range_pool ("Tree VRP value ranges"),
-			  simplify (this)
+vr_values::vr_values () : vrp_value_range_pool ("Tree VRP value ranges")
 {
   values_propagated = false;
   num_vr_values = num_ssa_names;
@@ -2276,7 +2272,7 @@ vr_values::compare_names (enum tree_code comp, tree n1, tree n2,
    optimizers.  */
 
 tree
-simplify_with_ranges::vrp_evaluate_conditional_warnv_with_ops_using_ranges
+vr_values::vrp_evaluate_conditional_warnv_with_ops_using_ranges
     (enum tree_code code, tree op0, tree op1, bool * strict_overflow_p)
 {
   value_range *vr0, *vr1;
@@ -2379,7 +2375,7 @@ vr_values::vrp_evaluate_conditional_warnv_with_ops (enum tree_code code,
 	}
     }
 
-  if ((ret = simplify.vrp_evaluate_conditional_warnv_with_ops_using_ranges
+  if ((ret = vrp_evaluate_conditional_warnv_with_ops_using_ranges
 	       (code, op0, op1, strict_overflow_p)))
     return ret;
   if (only_ranges)
@@ -3006,11 +3002,11 @@ simplify_with_ranges::simplify_truth_ops_using_ranges ()
   gcc_assert (rhs_code == EQ_EXPR || rhs_code == NE_EXPR);
 
   op0 = gimple_assign_rhs1 (stmt);
-  if (!op_with_boolean_value_range_p (op0))
+  if (!op_has_boolean_range_p (op0))
     return false;
 
   op1 = gimple_assign_rhs2 (stmt);
-  if (!op_with_boolean_value_range_p (op1))
+  if (!op_has_boolean_range_p (op1))
     return false;
 
   /* Reduce number of cases to handle to NE_EXPR.  As there is no
@@ -3075,34 +3071,24 @@ bool
 simplify_with_ranges::simplify_div_or_mod_using_ranges ()
 {
   enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
-  tree val = NULL;
   tree op0 = gimple_assign_rhs1 (stmt);
   tree op1 = gimple_assign_rhs2 (stmt);
   tree op0min = NULL_TREE, op0max = NULL_TREE;
   tree op1min = op1;
-  value_range *vr = NULL;
+  irange ir = get_value_irange (op0);
 
-  if (TREE_CODE (op0) == INTEGER_CST)
+  if (!ir.varying_p () && !ir.undefined_p ())
     {
-      op0min = op0;
-      op0max = op0;
-    }
-  else
-    {
-      vr = get_value_range (op0);
-      if (range_int_cst_p (vr))
-	{
-	  op0min = vr->min ();
-	  op0max = vr->max ();
-	}
+      op0min = wide_int_to_tree (TREE_TYPE (op0), ir.lower_bound ());
+      op0max = wide_int_to_tree (TREE_TYPE (op0), ir.upper_bound ());
     }
 
   if (rhs_code == TRUNC_MOD_EXPR
       && TREE_CODE (op1) == SSA_NAME)
     {
-      value_range *vr1 = get_value_range (op1);
-      if (range_int_cst_p (vr1))
-	op1min = vr1->min ();
+      irange vr1 = get_value_irange (op1);
+      if (!vr1.varying_p () && !vr1.undefined_p ())
+	op1min = wide_int_to_tree (TREE_TYPE (op1), vr1.lower_bound ());
     }
   if (rhs_code == TRUNC_MOD_EXPR
       && TREE_CODE (op1min) == INTEGER_CST
@@ -3137,32 +3123,10 @@ simplify_with_ranges::simplify_div_or_mod_using_ranges ()
       return false;
     }
 
-  if (TYPE_UNSIGNED (TREE_TYPE (op0)))
-    val = integer_one_node;
-  else
-    {
-      bool sop = false;
-
-      val = compare_range_with_value (GE_EXPR, vr, integer_zero_node, &sop);
-
-      if (val
-	  && sop
-	  && integer_onep (val)
-	  && issue_strict_overflow_warning (WARN_STRICT_OVERFLOW_MISC))
-	{
-	  location_t location;
-
-	  if (!gimple_has_location (stmt))
-	    location = input_location;
-	  else
-	    location = gimple_location (stmt);
-	  warning_at (location, OPT_Wstrict_overflow,
-		      "assuming signed overflow does not occur when "
-		      "simplifying %</%> or %<%%%> to %<>>%> or %<&%>");
-	}
-    }
-
-  if (val && integer_onep (val))
+  irange positives;
+  range_positives (&positives, TREE_TYPE (op0));
+  if (TYPE_UNSIGNED (TREE_TYPE (op0))
+      || positives.intersect (ir) == ir)
     {
       tree t;
 
@@ -3200,42 +3164,26 @@ simplify_with_ranges::simplify_min_or_max_using_ranges ()
 {
   tree op0 = gimple_assign_rhs1 (stmt);
   tree op1 = gimple_assign_rhs2 (stmt);
-  bool sop = false;
-  tree val;
+  irange ir0 = get_value_irange (op0);
+  irange ir1 = get_value_irange (op1);
+  if (ir0.varying_p () || ir1.varying_p ())
+    return false;
+  if (!range_intersect (ir0, ir1).undefined_p ())
+    return false;
 
-  val = (vrp_evaluate_conditional_warnv_with_ops_using_ranges
-	 (LE_EXPR, op0, op1, &sop));
-  if (!val)
-    {
-      sop = false;
-      val = (vrp_evaluate_conditional_warnv_with_ops_using_ranges
-	     (LT_EXPR, op0, op1, &sop));
-    }
+  tree t;
+  irange res;
+  enum tree_code code = gimple_assign_rhs_code (stmt);
+  range_op_handler (code)->fold_range (res, ir0, ir1);
+  if (res == ir0)
+    t = op0;
+  else if (res == ir1)
+    t = op1;
+  else
+    return false;
 
-  if (val)
-    {
-      if (sop && issue_strict_overflow_warning (WARN_STRICT_OVERFLOW_MISC))
-	{
-	  location_t location;
-
-	  if (!gimple_has_location (stmt))
-	    location = input_location;
-	  else
-	    location = gimple_location (stmt);
-	  warning_at (location, OPT_Wstrict_overflow,
-		      "assuming signed overflow does not occur when "
-		      "simplifying %<min/max (X,Y)%> to %<X%> or %<Y%>");
-	}
-
-      /* VAL == TRUE -> OP0 < or <= op1
-	 VAL == FALSE -> OP0 > or >= op1.  */
-      tree res = ((gimple_assign_rhs_code (stmt) == MAX_EXPR)
-		  == integer_zerop (val)) ? op0 : op1;
-      gimple_assign_set_rhs_from_tree (gsi, res);
-      return true;
-    }
-
-  return false;
+  gimple_assign_set_rhs_from_tree (gsi, t);
+  return true;
 }
 
 /* If the operand to an ABS_EXPR is >= 0, then eliminate the
@@ -3246,50 +3194,59 @@ bool
 simplify_with_ranges::simplify_abs_using_ranges ()
 {
   tree op = gimple_assign_rhs1 (stmt);
-  value_range *vr = get_value_range (op);
 
-  if (vr)
+  bool updated = false;
+  irange ir0 = get_value_irange (op);
+  irange tmp;
+  range_positives (&tmp, TREE_TYPE (op));
+  /* If range is >= 0, eliminate the ABS.  */
+  if (tmp.intersect (ir0) == ir0)
     {
-      tree val = NULL;
-      bool sop = false;
-
-      val = compare_range_with_value (LE_EXPR, vr, integer_zero_node, &sop);
-      if (!val)
+      gimple_assign_set_rhs_code (stmt, SSA_NAME);
+      updated = true;
+    }
+  /* If range is <= 0, replace the ABS with NEGATE.  */
+  else
+    {
+      irange izero;
+      range_zero (&izero, TREE_TYPE (op));
+      range_negatives (&tmp, TREE_TYPE (op));
+      tmp.union_ (izero);
+      if (tmp.intersect (ir0) == ir0)
 	{
-	  /* The range is neither <= 0 nor > 0.  Now see if it is
-	     either < 0 or >= 0.  */
-	  sop = false;
-	  val = compare_range_with_value (LT_EXPR, vr, integer_zero_node,
-					  &sop);
-	}
-
-      if (val)
-	{
-	  if (sop && issue_strict_overflow_warning (WARN_STRICT_OVERFLOW_MISC))
-	    {
-	      location_t location;
-
-	      if (!gimple_has_location (stmt))
-		location = input_location;
-	      else
-		location = gimple_location (stmt);
-	      warning_at (location, OPT_Wstrict_overflow,
-			  "assuming signed overflow does not occur when "
-			  "simplifying %<abs (X)%> to %<X%> or %<-X%>");
-	    }
-
-	  gimple_assign_set_rhs1 (stmt, op);
-	  if (integer_zerop (val))
-	    gimple_assign_set_rhs_code (stmt, SSA_NAME);
-	  else
-	    gimple_assign_set_rhs_code (stmt, NEGATE_EXPR);
-	  update_stmt (stmt);
-	  fold_stmt (gsi, follow_single_use_edges);
-	  return true;
+	  gimple_assign_set_rhs_code (stmt, NEGATE_EXPR);
+	  updated = true;
 	}
     }
+  if (updated)
+    {
+      update_stmt (stmt);
+      fold_stmt (gsi, follow_single_use_edges);
+    }
+  return updated;
+}
 
-  return false;
+/* irange wrapper for wide_int_range_set_zero_nonzero_bits.  */
+
+void
+irange_set_zero_nonzero_bits (irange &r,
+			      wide_int *may_be_nonzero,
+			      wide_int *must_be_nonzero)
+{
+  tree type = r.type ();
+  *may_be_nonzero = wi::zero (TYPE_PRECISION (type));
+  *must_be_nonzero = wi::minus_one (TYPE_PRECISION (type));
+  gcc_assert (!r.undefined_p ());
+  for (unsigned p = 0; p < r.num_pairs (); p++)
+    {
+      wide_int maybe, mustbe;
+      wide_int_range_set_zero_nonzero_bits (TYPE_SIGN (type),
+					    r.lower_bound (p),
+					    r.upper_bound (p),
+					    maybe, mustbe);
+      *may_be_nonzero |= maybe;
+      *must_be_nonzero &= mustbe;
+    }
 }
 
 /* Optimize away redundant BIT_AND_EXPR and BIT_IOR_EXPR.
@@ -3304,31 +3261,18 @@ simplify_with_ranges::simplify_bit_ops_using_ranges ()
   tree op0 = gimple_assign_rhs1 (stmt);
   tree op1 = gimple_assign_rhs2 (stmt);
   tree op = NULL_TREE;
-  value_range_base vr0, vr1;
   wide_int may_be_nonzero0, may_be_nonzero1;
   wide_int must_be_nonzero0, must_be_nonzero1;
   wide_int mask;
+  irange ir0, ir1;
 
-  if (TREE_CODE (op0) == SSA_NAME)
-    vr0 = *(get_value_range (op0));
-  else if (is_gimple_min_invariant (op0))
-    vr0.set (op0);
-  else
-    return false;
-
-  if (TREE_CODE (op1) == SSA_NAME)
-    vr1 = *(get_value_range (op1));
-  else if (is_gimple_min_invariant (op1))
-    vr1.set (op1);
-  else
+  ir0 = get_value_irange (op0);
+  ir1 = get_value_irange (op1);
+  if (ir0.varying_p () || ir1.varying_p ())
     return false;
 
-  if (!vrp_set_zero_nonzero_bits (TREE_TYPE (op0), &vr0, &may_be_nonzero0,
-				  &must_be_nonzero0))
-    return false;
-  if (!vrp_set_zero_nonzero_bits (TREE_TYPE (op1), &vr1, &may_be_nonzero1,
-				  &must_be_nonzero1))
-    return false;
+  irange_set_zero_nonzero_bits (ir0, &may_be_nonzero0, &must_be_nonzero0);
+  irange_set_zero_nonzero_bits (ir1, &may_be_nonzero1, &must_be_nonzero1);
 
   switch (gimple_assign_rhs_code (stmt))
     {
@@ -3376,14 +3320,11 @@ simplify_with_ranges::simplify_bit_ops_using_ranges ()
    a known value range VR.
 
    If there is one and only one value which will satisfy the
-   conditional, then return that value.  Else return NULL.
-
-   If signed overflow must be undefined for the value to satisfy
-   the conditional, then set *STRICT_OVERFLOW_P to true.  */
+   conditional, then return that value.  Else return NULL.  */
 
 static tree
 test_for_singularity (enum tree_code cond_code, tree op0,
-		      tree op1, value_range *vr)
+		      tree op1, irange &ir)
 {
   tree min = NULL;
   tree max = NULL;
@@ -3423,10 +3364,12 @@ test_for_singularity (enum tree_code cond_code, tree op0,
      value range information we have for op0.  */
   if (min && max)
     {
-      if (compare_values (vr->min (), min) == 1)
-	min = vr->min ();
-      if (compare_values (vr->max (), max) == -1)
-	max = vr->max ();
+      if (wi::gt_p (ir.lower_bound (), wi::to_wide (min),
+		    TYPE_SIGN (TREE_TYPE (min))))
+	min = wide_int_to_tree (TREE_TYPE (min), ir.lower_bound ());
+      if (wi::lt_p (ir.upper_bound (), wi::to_wide (max),
+		    TYPE_SIGN (TREE_TYPE (max))))
+	max = wide_int_to_tree (TREE_TYPE (max), ir.upper_bound ());
 
       /* If the new min/max values have converged to a single value,
 	 then there is only one value which can satisfy the condition,
@@ -3441,7 +3384,7 @@ test_for_singularity (enum tree_code cond_code, tree op0,
    by PRECISION and UNSIGNED_P.  */
 
 static bool
-range_fits_type_p (value_range *vr, unsigned dest_precision, signop dest_sgn)
+range_fits_type_p (irange &ir, unsigned dest_precision, signop dest_sgn)
 {
   tree src_type;
   unsigned src_precision;
@@ -3449,40 +3392,38 @@ range_fits_type_p (value_range *vr, unsigned dest_precision, signop dest_sgn)
   signop src_sgn;
 
   /* We can only handle integral and pointer types.  */
-  src_type = vr->type ();
+  src_type = ir.type ();
   if (!INTEGRAL_TYPE_P (src_type)
       && !POINTER_TYPE_P (src_type))
     return false;
 
   /* An extension is fine unless VR is SIGNED and dest_sgn is UNSIGNED,
      and so is an identity transform.  */
-  src_precision = TYPE_PRECISION (vr->type ());
+  src_precision = TYPE_PRECISION (ir.type ());
   src_sgn = TYPE_SIGN (src_type);
   if ((src_precision < dest_precision
        && !(dest_sgn == UNSIGNED && src_sgn == SIGNED))
       || (src_precision == dest_precision && src_sgn == dest_sgn))
     return true;
 
-  /* Now we can only handle ranges with constant bounds.  */
-  if (!range_int_cst_p (vr))
-    return false;
-
   /* For sign changes, the MSB of the wide_int has to be clear.
      An unsigned value with its MSB set cannot be represented by
      a signed wide_int, while a negative value cannot be represented
      by an unsigned wide_int.  */
+  tree min = wide_int_to_tree (ir.type (), ir.lower_bound ());
+  tree max = wide_int_to_tree (ir.type (), ir.upper_bound ());
   if (src_sgn != dest_sgn
-      && (wi::lts_p (wi::to_wide (vr->min ()), 0)
-	  || wi::lts_p (wi::to_wide (vr->max ()), 0)))
+      && (wi::lts_p (wi::to_wide (min), 0)
+	  || wi::lts_p (wi::to_wide (max), 0)))
     return false;
 
   /* Then we can perform the conversion on both ends and compare
      the result for equality.  */
-  tem = wi::ext (wi::to_widest (vr->min ()), dest_precision, dest_sgn);
-  if (tem != wi::to_widest (vr->min ()))
+  tem = wi::ext (wi::to_widest (min), dest_precision, dest_sgn);
+  if (tem != wi::to_widest (min))
     return false;
-  tem = wi::ext (wi::to_widest (vr->max ()), dest_precision, dest_sgn);
-  if (tem != wi::to_widest (vr->max ()))
+  tem = wi::ext (wi::to_widest (max), dest_precision, dest_sgn);
+  if (tem != wi::to_widest (max))
     return false;
 
   return true;
@@ -3506,13 +3447,13 @@ simplify_with_ranges::simplify_cond_using_ranges_1 ()
       && INTEGRAL_TYPE_P (TREE_TYPE (op0))
       && is_gimple_min_invariant (op1))
     {
-      value_range *vr = get_value_range (op0);
+      irange ir = get_value_irange (op0);
 
       /* If we have range information for OP0, then we might be
 	 able to simplify this conditional. */
-      if (vr->kind () == VR_RANGE)
+      if (!ir.varying_p ())
 	{
-	  tree new_tree = test_for_singularity (cond_code, op0, op1, vr);
+	  tree new_tree = test_for_singularity (cond_code, op0, op1, ir);
 	  if (new_tree)
 	    {
 	      if (dump_file)
@@ -3542,7 +3483,7 @@ simplify_with_ranges::simplify_cond_using_ranges_1 ()
 	     issues with inverting FP comparisons.  */
 	  new_tree = test_for_singularity
 		       (invert_tree_comparison (cond_code, false),
-			op0, op1, vr);
+			op0, op1, ir);
 	  if (new_tree)
 	    {
 	      if (dump_file)
@@ -3610,9 +3551,13 @@ vr_values::simplify_cond_using_ranges_2 (gcond *stmt)
 	  && desired_pro_or_demotion_p (TREE_TYPE (innerop), TREE_TYPE (op0)))
 	{
 	  value_range *vr = get_value_range (innerop);
+	  irange ir;
 
-	  if (range_int_cst_p (vr)
-	      && range_fits_type_p (vr,
+	  if (range_int_cst_p (vr))
+	    value_range_to_irange (ir, TREE_TYPE (innerop), *vr);
+
+	  if (!ir.undefined_p ()
+	      && range_fits_type_p (ir,
 				    TYPE_PRECISION (TREE_TYPE (op0)),
 				    TYPE_SIGN (TREE_TYPE (op0)))
 	      && int_fits_type_p (op1, TREE_TYPE (innerop)))
@@ -3640,6 +3585,7 @@ simplify_with_vranges::simplify_switch_using_ranges ()
 {
   gswitch *stmt = as_a <gswitch *> (simplify_with_ranges::stmt);
   tree op = gimple_switch_index (stmt);
+  value_range vr_obj;
   value_range *vr = NULL;
   bool take_default;
   edge e;
@@ -3651,7 +3597,10 @@ simplify_with_vranges::simplify_switch_using_ranges ()
 
   if (TREE_CODE (op) == SSA_NAME)
     {
-      vr = get_value_range (op);
+      // FIXME: Temporary hack.  We should convert entire function to iranges.
+      irange ir = get_value_irange (op);
+      irange_to_value_range (vr_obj, ir);
+      vr = &vr_obj;
 
       /* We can only handle integer ranges.  */
       if (vr->varying_p ()
@@ -3939,22 +3888,18 @@ bool
 simplify_with_ranges::simplify_float_conversion_using_ranges ()
 {
   tree rhs1 = gimple_assign_rhs1 (stmt);
-  value_range *vr = get_value_range (rhs1);
+  irange ir = get_value_irange (rhs1);
   scalar_float_mode fltmode
     = SCALAR_FLOAT_TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt)));
   scalar_int_mode mode;
   tree tem;
   gassign *conv;
 
-  /* We can only handle constant ranges.  */
-  if (!range_int_cst_p (vr))
-    return false;
-
   /* First check if we can use a signed type in place of an unsigned.  */
   scalar_int_mode rhs_mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (rhs1));
   if (TYPE_UNSIGNED (TREE_TYPE (rhs1))
       && can_float_p (fltmode, rhs_mode, 0) != CODE_FOR_nothing
-      && range_fits_type_p (vr, TYPE_PRECISION (TREE_TYPE (rhs1)), SIGNED))
+      && range_fits_type_p (ir, TYPE_PRECISION (TREE_TYPE (rhs1)), SIGNED))
     mode = rhs_mode;
   /* If we can do the conversion in the current input mode do nothing.  */
   else if (can_float_p (fltmode, rhs_mode,
@@ -3971,7 +3916,7 @@ simplify_with_ranges::simplify_float_conversion_using_ranges ()
 	     or if the value-range does not fit in the signed type
 	     try with a wider mode.  */
 	  if (can_float_p (fltmode, mode, 0) != CODE_FOR_nothing
-	      && range_fits_type_p (vr, GET_MODE_PRECISION (mode), SIGNED))
+	      && range_fits_type_p (ir, GET_MODE_PRECISION (mode), SIGNED))
 	    break;
 
 	  /* But do not widen the input.  Instead leave that to the
@@ -4042,7 +3987,9 @@ simplify_with_ranges::simplify_internal_call_using_ranges ()
     return false;
   else
     type = TREE_TYPE (TREE_TYPE (gimple_call_lhs (stmt)));
-  if (!check_for_binary_op_overflow (subcode, type, op0, op1, &ovf)
+  irange ir0 = get_value_irange (op0);
+  irange ir1 = get_value_irange (op1);
+  if (!check_for_binary_op_overflow (subcode, type, op0, ir0, op1, ir1, &ovf)
       || (is_ubsan && ovf))
     return false;
 
@@ -4101,33 +4048,19 @@ simplify_with_ranges::simplify_internal_call_using_ranges ()
 bool
 simplify_with_ranges::two_valued_val_range_p (tree var, tree *a, tree *b)
 {
-  value_range *vr = get_value_range (var);
-  if (vr->varying_p ()
-      || vr->undefined_p ()
-      || TREE_CODE (vr->min ()) != INTEGER_CST
-      || TREE_CODE (vr->max ()) != INTEGER_CST)
+  irange ir = get_value_irange (var);
+  if (ir.varying_p () || ir.undefined_p ())
     return false;
 
-  if (vr->kind () == VR_RANGE
-      && wi::to_wide (vr->max ()) - wi::to_wide (vr->min ()) == 1)
+  if ((ir.num_pairs () == 1 && ir.upper_bound () - ir.lower_bound () == 1)
+      || (ir.num_pairs () == 2
+	  && ir.lower_bound (0) == ir.upper_bound (0)
+	  && ir.lower_bound (1) == ir.upper_bound (1)))
     {
-      *a = vr->min ();
-      *b = vr->max ();
+      *a = wide_int_to_tree (TREE_TYPE (var), ir.lower_bound ());
+      *b = wide_int_to_tree (TREE_TYPE (var), ir.upper_bound ());
       return true;
     }
-
-  /* ~[TYPE_MIN + 1, TYPE_MAX - 1] */
-  if (vr->kind () == VR_ANTI_RANGE
-      && (wi::to_wide (vr->min ())
-	  - wi::to_wide (vrp_val_min (TREE_TYPE (var)))) == 1
-      && (wi::to_wide (vrp_val_max (TREE_TYPE (var)))
-	  - wi::to_wide (vr->max ())) == 1)
-    {
-      *a = vrp_val_min (TREE_TYPE (var));
-      *b = vrp_val_max (TREE_TYPE (var));
-      return true;
-    }
-
   return false;
 }
 
@@ -4259,7 +4192,9 @@ simplify_with_ranges::simplify ()
 
 	case MIN_EXPR:
 	case MAX_EXPR:
-	  return simplify_min_or_max_using_ranges ();
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
+	    return simplify_min_or_max_using_ranges ();
+	  break;
 
 	default:
 	  break;

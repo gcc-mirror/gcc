@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-ssa-loop.h"
 #include "alloc-pool.h"
+#include "range.h"
 #include "vr-values.h"
 #include "tree-ssa-propagate.h"
 
@@ -59,21 +60,20 @@ class simplify_with_iranges : public simplify_with_ranges
 public:
   simplify_with_iranges (gimple_stmt_iterator *gsi, global_ranger *ranger)
     : simplify_with_ranges (gsi), m_ranger (ranger) { }
-  value_range *get_value_range (tree);
+  irange get_value_irange (tree);
 private:
   global_ranger *m_ranger;
 };
 
-value_range *
-simplify_with_iranges::get_value_range (tree op)
+irange
+simplify_with_iranges::get_value_irange (tree op)
 {
-  static value_range vr; // ?? Safe to pass back?
+  if (TREE_CODE (op) == INTEGER_CST)
+    return irange (TREE_TYPE (op), op, op);
+
   irange r;
-  if (!m_ranger->range_of_expr (r, op, stmt))
-    vr.set_undefined ();
-  else
-    irange_to_value_range (vr, r);
-  return &vr;
+  m_ranger->range_of_expr (r, op, stmt);
+  return r;
 }
 
 // Return TRUE if NAME can be propagated.,

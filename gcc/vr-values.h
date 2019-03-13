@@ -25,8 +25,6 @@ class vr_values;
 // Class to simplify a statement taking into account range info.
 class simplify_with_ranges
 {
-  friend class vr_values;
-
 public:
   // Default constructor has no statement context.
   simplify_with_ranges () : gsi (NULL), stmt (NULL) { }
@@ -35,14 +33,14 @@ public:
   bool simplify ();
 
 private:
-  virtual value_range *get_value_range (tree) = 0;
+  virtual irange get_value_irange (tree) = 0;
 
   // Default to nothing, as simplifying switches involves cleaning up
   // edges and switches by the caller.  Perhaps come up with a generic
   // solution if needed.
   virtual bool simplify_switch_using_ranges () { return false; }
 
-  bool op_with_boolean_value_range_p (tree);
+  bool op_has_boolean_range_p (tree);
   bool simplify_truth_ops_using_ranges ();
   bool simplify_div_or_mod_using_ranges ();
   bool simplify_min_or_max_using_ranges ();
@@ -55,12 +53,6 @@ private:
   bool two_valued_val_range_p (tree, tree *, tree *);
 
 protected:
-  // These are exported for vr_values use.
-  tree vrp_evaluate_conditional_warnv_with_ops_using_ranges
-  (enum tree_code, tree op0, tree op1, bool *ovf);
-  bool check_for_binary_op_overflow
-    (enum tree_code, tree type, tree op0, tree op1, bool *ovf);
-
   // Do not use m_ prefix to avoid heavy changes throughout existing code.
   gimple_stmt_iterator *gsi;
   gimple *stmt;
@@ -72,7 +64,7 @@ public:
   simplify_with_vranges (gimple_stmt_iterator *gsi, vr_values *vr_values)
     : simplify_with_ranges (gsi), m_vr_values (vr_values) { }
   simplify_with_vranges (vr_values *vr_values) : m_vr_values (vr_values) { }
-  value_range *get_value_range (tree);
+  irange get_value_irange (tree);
   bool simplify_switch_using_ranges ();
 private:
     vr_values *m_vr_values;
@@ -132,6 +124,7 @@ class vr_values
   void cleanup_edges_and_switches (void);
 
  private:
+  irange get_value_irange (tree);
   bool vrp_stmt_computes_nonzero (gimple *);
   bool op_with_boolean_value_range_p (tree);
   value_range *get_vr_for_comparison (int, value_range *);
@@ -152,6 +145,8 @@ class vr_values
 				      tree, tree, tree);
   void vrp_visit_assignment_or_call (gimple*, tree *, value_range *);
   void vrp_visit_switch_stmt (gswitch *, edge *);
+  tree vrp_evaluate_conditional_warnv_with_ops_using_ranges
+    (enum tree_code, tree, tree, bool *);
 
   /* Allocation pools for value_range objects.  */
   object_allocator<value_range> vrp_value_range_pool;
@@ -181,8 +176,6 @@ class vr_values
     gswitch *stmt;
     tree vec;
   };
-
-  simplify_with_vranges simplify;
 
   vec<edge> to_remove_edges;
   vec<switch_update> to_update_switch_stmts;

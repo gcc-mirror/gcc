@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "range.h"
 #include "vr-values.h"
 #include "builtins.h"
 #include "wide-int-range.h"
@@ -6313,6 +6314,14 @@ intersect_ranges (enum value_range_kind *vr0type,
       else
 	gcc_unreachable ();
     }
+
+  /* If we know the intersection is empty, there's no need to
+     conservatively add anything else to the set.
+
+     ?? We don't need this, but I found it while fixing other things.
+     Perhaps we should commit it upstream.  */
+  if (*vr0type == VR_UNDEFINED)
+    return;
 
   /* As a fallback simply use { *VRTYPE, *VR0MIN, *VR0MAX } as
      result for the intersection.  That's always a conservative
