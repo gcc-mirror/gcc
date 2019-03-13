@@ -1,5 +1,12 @@
 2019-03-13  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	* gdc.dg/pr88957.d: Move to gdc.dg/ubsan.
+	* gdc.dg/ubsan/ubsan.exp: New file.
+	* lib/gdc.exp (gdc_include_flags): Remove unused target variable.
+	Explicitly return flags from procedure.
+
+2019-03-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	PR d/88957
 	* gdc.dg/pr88957.d: New test.
 	* gdc.dg/simd.d: Add new vector tests.
