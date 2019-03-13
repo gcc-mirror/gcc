@@ -1,5 +1,8 @@
 2019-03-13  Jakub Jelinek  <jakub@redhat.com>
 
+	* ipa-param-manipulation.h (struct ipa_parm_adjustment): Remove
+	nonlocal_value member.
+
 	PR middle-end/88588
 	* omp-simd-clone.c (ipa_simd_modify_stmt_ops): Handle PHI args.
 	(ipa_simd_modify_function_body): Handle PHIs.
