@@ -1,6 +1,18 @@
 2019-03-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR sanitizer/80953
+	Merge from LLVM revision 355980
+	* asan/asan_allocator.h (kAllocatorSpace): Define for SPARC.
+	(kAllocatorSize): Likewise.
+	(DefaultSizeClassMap): Likewise.
+	* asan/asan_mapping.h (kSPARC64_ShadowOffset64): Define.
+	(SHADOW_OFFSET): Define for SPARC.
+	Include asan_mapping_sparc64.h for SPARC 64-bit.
+	* asan/asan_mapping_sparc64.h: New file.
+
+2019-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR sanitizer/80953
 	Merge from LLVM revision 355979
 	* asan/asan_globals.c (GetGlobalsForAddress): Use internal_memcpy to
 	copy Global objects for SPARC with GCC.
