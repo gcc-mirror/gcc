@@ -1,3 +1,9 @@
+2019-03-13  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/89601
+	* gfortran.dg/pdt_16.f03: Modified to avoid follow-up errors.
+	* gfortran.dg/pdt_30.f90: New test case.
+
 2019-03-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88979 - further P0634 fix for constructors.

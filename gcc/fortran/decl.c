@@ -6275,7 +6275,16 @@ gfc_match_formal_arglist (gfc_symbol *progname, int st_flag,
     }
 
   if (gfc_match_char (')') == MATCH_YES)
-    goto ok;
+  {        
+    if (typeparam)
+      {
+	gfc_error_now ("A type parameter list is required at %C");
+	m = MATCH_ERROR;
+	goto cleanup;
+      }
+    else
+      goto ok;
+  }
 
   for (;;)
     {
@@ -10217,13 +10226,14 @@ gfc_match_derived_decl (void)
       m = gfc_match_formal_arglist (sym, 0, 0, true);
       if (m != MATCH_YES)
 	gfc_error_recovery ();
+      else
+	sym->attr.pdt_template = 1;
       m = gfc_match_eos ();
       if (m != MATCH_YES)
 	{
 	  gfc_error_recovery ();
 	  gfc_error_now ("Garbage after PARAMETERIZED TYPE declaration at %C");
 	}
-      sym->attr.pdt_template = 1;
     }
 
   if (extended && !sym->components)
