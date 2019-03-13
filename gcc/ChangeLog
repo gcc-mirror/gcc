@@ -1,3 +1,11 @@
+2019-03-13  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline
+	2019-03-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm.h (TARGET_FP16_TO_DOUBLE): Add TARGET_VFP_DOUBLE
+	requirement.
+
 2019-03-11  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
