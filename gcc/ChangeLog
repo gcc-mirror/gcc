@@ -1,3 +1,31 @@
+2019-03-14  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-03-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89677
+	* tree-scalar-evolution.c (simplify_peeled_chrec): Do not
+	throw FP expressions at tree-affine.
+
+	2019-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89497
+	* tree-cfgcleanup.h (cleanup_tree_cfg): Add SSA update flags
+	argument, defaulted to zero.
+	* passes.c (execute_function_todo): Pass down SSA update flags
+	to cleanup_tree_cfg.
+	* tree-cfgcleanup.c: Include tree-into-ssa.h and tree-cfgcleanup.h.
+	(cleanup_tree_cfg_1): After cleanup_control_flow_pre update SSA
+	form if requested.
+	(cleanup_tree_cfg_noloop): Pass down SSA update flags.
+	(cleanup_tree_cfg): Get and pass down SSA update flags.
+
+	2019-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89296
+	* tree-ssa-loop-ch.c (ch_base::copy_headers): Restrict setting
+	of no-warning flag to cases that might emit the bogus warning.
+
 2019-03-13  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backport from mainline

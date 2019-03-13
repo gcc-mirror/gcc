@@ -1,3 +1,24 @@
+2019-03-14  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-03-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89677
+	* gcc.dg/torture/pr89677.c: New testcase.
+
+	2019-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89497
+	* gcc.dg/tree-ssa/reassoc-43.c: Avoid false match in regex.
+	* g++.dg/tree-prof/devirt.C: Scan tracer dump for foldings
+	that happen now earlier.
+
+	2019-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89296
+	* tree-ssa-loop-ch.c (ch_base::copy_headers): Restrict setting
+	of no-warning flag to cases that might emit the bogus warning.
+
 2019-03-13  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backport from mainline
