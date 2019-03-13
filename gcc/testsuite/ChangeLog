@@ -1,3 +1,8 @@
+2019-03-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/85860
+	* gcc.target/i386/pr85860.c: New.
+
 2019-03-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89686 - mixing init-capture and simple-capture in lambda.
