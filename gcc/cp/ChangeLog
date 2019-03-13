@@ -1,3 +1,13 @@
+2019-03-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88979 - further P0634 fix for constructors.
+	* parser.c (cp_parser_decl_specifier_seq): Pass flags to
+	cp_parser_constructor_declarator_p.
+	(cp_parser_direct_declarator): Allow missing typename for constructor
+	parameters.
+	(cp_parser_constructor_declarator_p): Add FLAGS parameter.  Pass it to
+	cp_parser_type_specifier.
+
 2019-03-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86521 - wrong overload resolution with ref-qualifiers.

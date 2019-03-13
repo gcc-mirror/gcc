@@ -2506,7 +2506,7 @@ static cp_expr cp_parser_simple_cast_expression
 static tree cp_parser_global_scope_opt
   (cp_parser *, bool);
 static bool cp_parser_constructor_declarator_p
-  (cp_parser *, bool);
+  (cp_parser *, cp_parser_flags, bool);
 static tree cp_parser_function_definition_from_specifiers_and_declarator
   (cp_parser *, cp_decl_specifier_seq *, tree, const cp_declarator *);
 static tree cp_parser_function_definition_after_declarator
@@ -14052,7 +14052,8 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	= (!found_decl_spec
 	   && constructor_possible_p
 	   && (cp_parser_constructor_declarator_p
-	       (parser, decl_spec_seq_has_spec_p (decl_specs, ds_friend))));
+	       (parser, flags, decl_spec_seq_has_spec_p (decl_specs,
+							 ds_friend))));
 
       /* If we don't have a DECL_SPEC yet, then we must be looking at
 	 a type-specifier.  */
@@ -21160,7 +21161,13 @@ cp_parser_direct_declarator (cp_parser* parser,
 		    tree decl
 		      = cp_parser_lookup_name_simple (parser, unqualified_name,
 						      token->location);
-		    if (!is_overloaded_fn (decl))
+		    if (!is_overloaded_fn (decl)
+			/* Allow
+			   template<typename T>
+			   A<T>::A(T::type) { }  */
+			&& !(MAYBE_CLASS_TYPE_P (qualifying_scope)
+			     && constructor_name_p (unqualified_name,
+						    qualifying_scope)))
 		      flags &= ~CP_PARSER_FLAGS_TYPENAME_OPTIONAL;
 		  }
 	      }
@@ -27380,10 +27387,12 @@ cp_parser_global_scope_opt (cp_parser* parser, bool current_scope_valid_p)
 
 /* Returns TRUE if the upcoming token sequence is the start of a
    constructor declarator or C++17 deduction guide.  If FRIEND_P is true, the
-   declarator is preceded by the `friend' specifier.  */
+   declarator is preceded by the `friend' specifier.  The parser flags FLAGS
+   is used to control type-specifier parsing.  */
 
 static bool
-cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
+cp_parser_constructor_declarator_p (cp_parser *parser, cp_parser_flags flags,
+				    bool friend_p)
 {
   bool constructor_p;
   bool outside_class_specifier_p;
@@ -27562,9 +27571,10 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 	    = parser->num_template_parameter_lists;
 	  parser->num_template_parameter_lists = 0;
 
-	  /* Look for the type-specifier.  */
+	  /* Look for the type-specifier.  It's not optional, but its typename
+	     might be.  */
 	  cp_parser_type_specifier (parser,
-				    CP_PARSER_FLAGS_NONE,
+				    (flags & ~CP_PARSER_FLAGS_OPTIONAL),
 				    /*decl_specs=*/NULL,
 				    /*is_declarator=*/true,
 				    /*declares_class_or_enum=*/NULL,
