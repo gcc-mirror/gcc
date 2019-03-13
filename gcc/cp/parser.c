@@ -10609,12 +10609,13 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	}
 
       bool init_pack_expansion = false;
+      location_t ellipsis_loc = UNKNOWN_LOCATION;
       if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
 	{
-	  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+	  ellipsis_loc = cp_lexer_peek_token (parser->lexer)->location;
 	  if (cxx_dialect < cxx2a)
-	    pedwarn (loc, 0, "pack init-capture only available with "
-			     "%<-std=c++2a%> or %<-std=gnu++2a%>");
+	    pedwarn (ellipsis_loc, 0, "pack init-capture only available with "
+		     "%<-std=c++2a%> or %<-std=gnu++2a%>");
 	  cp_lexer_consume_token (parser->lexer);
 	  init_pack_expansion = true;
 	}
@@ -10719,8 +10720,21 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
 	    {
+	      location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 	      cp_lexer_consume_token (parser->lexer);
 	      capture_init_expr = make_pack_expansion (capture_init_expr);
+	      if (init_pack_expansion)
+		{
+		  /* If what follows is an initializer, the second '...' is
+		     invalid.  But for cases like [...xs...], the first one
+		     is invalid.  */
+		  if (cp_lexer_next_token_is (parser->lexer, CPP_EQ)
+		      || cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN)
+		      || cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+		    ellipsis_loc = loc;
+		  error_at (ellipsis_loc, "too many %<...%> in lambda capture");
+		  continue;
+		}
 	    }
 	}
 
