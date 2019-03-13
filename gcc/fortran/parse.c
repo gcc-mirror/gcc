@@ -5839,7 +5839,7 @@ parse_block_data (void)
     }
   else
     {
-      s = gfc_get_gsymbol (gfc_new_block->name);
+      s = gfc_get_gsymbol (gfc_new_block->name, false);
       if (s->defined
 	  || (s->type != GSYM_UNKNOWN && s->type != GSYM_BLOCK_DATA))
        gfc_global_used (s, &gfc_new_block->declared_at);
@@ -5921,7 +5921,7 @@ parse_module (void)
   gfc_gsymbol *s;
   bool error;
 
-  s = gfc_get_gsymbol (gfc_new_block->name);
+  s = gfc_get_gsymbol (gfc_new_block->name, false);
   if (s->defined || (s->type != GSYM_UNKNOWN && s->type != GSYM_MODULE))
     gfc_global_used (s, &gfc_new_block->declared_at);
   else
@@ -5985,7 +5985,7 @@ add_global_procedure (bool sub)
      name is a global identifier.  */
   if (!gfc_new_block->binding_label || gfc_notification_std (GFC_STD_F2008))
     {
-      s = gfc_get_gsymbol (gfc_new_block->name);
+      s = gfc_get_gsymbol (gfc_new_block->name, false);
 
       if (s->defined
 	  || (s->type != GSYM_UNKNOWN
@@ -6010,7 +6010,7 @@ add_global_procedure (bool sub)
       && (!gfc_notification_std (GFC_STD_F2008)
           || strcmp (gfc_new_block->name, gfc_new_block->binding_label) != 0))
     {
-      s = gfc_get_gsymbol (gfc_new_block->binding_label);
+      s = gfc_get_gsymbol (gfc_new_block->binding_label, true);
 
       if (s->defined
 	  || (s->type != GSYM_UNKNOWN
@@ -6042,7 +6042,7 @@ add_global_program (void)
 
   if (gfc_new_block == NULL)
     return;
-  s = gfc_get_gsymbol (gfc_new_block->name);
+  s = gfc_get_gsymbol (gfc_new_block->name, false);
 
   if (s->defined || (s->type != GSYM_UNKNOWN && s->type != GSYM_PROGRAM))
     gfc_global_used (s, &gfc_new_block->declared_at);
