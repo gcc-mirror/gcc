@@ -1,3 +1,18 @@
+2019-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR sanitizer/80953
+	Merge from LLVM revision 355965
+	* sanitizer_common/sanitizer_linux.cc (GetWriteFlag): Implement for
+	SPARC/Linux.
+	(GetPcSpBp): Likewise.
+	* sanitizer_common/sanitizer_stacktrace.cc (GetNextInstructionPc):
+	Adjust for SPARC.
+	* sanitizer_common/sanitizer_stacktrace.h (SANITIZER_CAN_FAST_UNWIND):
+	Define to 1 for SPARC.
+	* sanitizer_common/sanitizer_stacktrace_sparc.cc: Rewrite.
+	* sanitizer_common/sanitizer_unwind_linux_libcdep.cc (SlowUnwindStack):
+	Adjust the PC address for SPARC with GCC.
+
 2019-03-06  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/88684
