@@ -1,3 +1,8 @@
+2019-03-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88979 - further P0634 fix for constructors.
+	* g++.dg/cpp2a/typename15.C: New test.
+
 2019-03-13  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/89662
