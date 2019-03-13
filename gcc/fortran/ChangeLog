@@ -1,3 +1,10 @@
+2019-03-13  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/89601
+	* decl.c (gfc_match_formal_arglist): Reject empty type parameter lists.
+	(gfc_match_derived_decl): Mark as PDT only if type parameter list was
+	matched successfully.
+
 2019-03-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/66695
