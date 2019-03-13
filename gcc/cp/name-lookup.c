@@ -4930,8 +4930,8 @@ pushdecl_outermost_localscope (tree x)
   return ret;
 }
 
-/* Check a non-member using-declaration. Return the name and scope
-   being used, and the USING_DECL, or NULL_TREE on failure.  */
+/* Check a non-member using-declaration. Return a USING_DECL, or
+   NULL_TREE on failure.  */
 
 static tree
 validate_nonmember_using_decl (tree decl, tree scope, tree name)

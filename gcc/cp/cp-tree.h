@@ -775,6 +775,11 @@ class ovl_iterator  {
 
     return fn;
   }
+  tree get_using () const
+  {
+    gcc_checking_assert (using_p ());
+    return ovl;
+  }
 
  public:
   /* Whether this overload was introduced by a using decl.  */

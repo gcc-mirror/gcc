@@ -2245,6 +2245,10 @@ public:
     gcc_checking_assert (!is_binding ());
     return key.second != NULL_TREE;
   }
+  bool is_using () const
+  {
+    return TREE_CODE (key.first) == OVERLOAD;
+  }
   bool is_namespace () const
   {
     return (!key.second
@@ -2348,7 +2352,7 @@ public:
 
   public:
     void add_mergeable (tree decl);
-    void add_dependency (tree decl);
+    void add_dependency (tree decl, tree maybe_decl = NULL_TREE);
     void add_binding (tree ns, tree value);
     void add_writables (tree ns, bitmap partitions);
     void find_dependencies ();
@@ -8410,10 +8414,10 @@ depset::hash::find (const key_type &key)
    fragment entities.  */
 
 void
-depset::hash::add_dependency (tree decl)
+depset::hash::add_dependency (tree decl, tree maybe_using)
 {
-  bool has_def = !is_mergeable () && has_definition (decl);
-  key_type key = entity_key (decl, has_def);
+  bool has_def = !is_mergeable () && !maybe_using && has_definition (decl);
+  key_type key = entity_key (maybe_using ? maybe_using : decl, has_def);
 
   if (depset **slot = maybe_insert (key, !is_mergeable ()))
     {
@@ -8488,8 +8492,8 @@ depset::hash::add_dependency (tree decl)
 
       dump (dumper::DEPEND)
 	&& dump ("%s on %s %C:%N added", binding_p ? "Binding" : "Dependency",
-		 dep->is_defn () ? "definition" : "declaration",
-		 TREE_CODE (decl), decl);
+		 dep->is_using () ? "using" : dep->is_defn () ? "definition"
+		 : "declaration", TREE_CODE (decl), decl);
 
       if (!ns_p)
 	{
@@ -8535,15 +8539,15 @@ depset::hash::add_binding (tree ns, tree value)
       gcc_checking_assert (!(TREE_CODE (decl) == NAMESPACE_DECL
 			     && !DECL_NAMESPACE_ALIAS (decl)));
       gcc_assert (!iter.hidden_p ());
-      gcc_assert (!iter.using_p ()); // FIXME: add using decl support
+      // FIXME:Distinguish GMF usings from purview usings.
 
       if (MAYBE_DECL_MODULE_OWNER (decl) == MODULE_NONE)
 	/* Ignore global module fragment entities.  */
 	continue;
 
-      if (!(TREE_CODE (STRIP_TEMPLATE (decl)) == CONST_DECL
-	    || TREE_CODE (STRIP_TEMPLATE (decl)) == TYPE_DECL
-	    || !DECL_THIS_STATIC (STRIP_TEMPLATE (decl))))
+      if (TREE_CODE (STRIP_TEMPLATE (decl)) != CONST_DECL
+	  && TREE_CODE (STRIP_TEMPLATE (decl)) != TYPE_DECL
+	  && DECL_THIS_STATIC (STRIP_TEMPLATE (decl)))
 	/* Ignore internal-linkage entitites.  */
 	continue;
 
@@ -8553,7 +8557,7 @@ depset::hash::add_binding (tree ns, tree value)
 	/* Ignore TINFO things.  */
 	continue;
 
-      add_dependency (decl);
+      add_dependency (decl, iter.using_p () ? iter.get_using () : NULL_TREE);
     }
 
   if (current->deps.length ())
@@ -8638,15 +8642,19 @@ depset::hash::find_dependencies ()
 
       gcc_checking_assert (!current->is_binding ());
       tree decl = current->get_entity ();
+      if (current->is_using ())
+	decl = OVL_FUNCTION (decl);
       dump (dumper::DEPEND)
 	&& dump ("Dependencies of %s %C:%N",
-		 is_mergeable () ? "mergeable"
+		 is_mergeable () ? "mergeable" : current->is_using () ? "using"
 		 : current->is_defn () ? "definition" : "declaration",
 		 TREE_CODE (decl), decl);
       dump.indent ();
       walker.begin ();
       if (is_mergeable ())
 	walker.tree_mergeable (decl);
+      else if (current->is_using ())
+	walker.tree_ctx (decl, false, NULL_TREE);
       else
 	{
 	  walker.mark_node (decl);
@@ -8814,11 +8822,27 @@ cluster_cmp (const void *a_, const void *b_)
       if (is_defn != b->is_defn ())
 	/* Exactly one is a defn.  It comes first.  */
 	return is_defn ? -1 : +1;
+
+      if (!is_defn)
+	{
+	  /* Neither is a defn, try order-by-using.  */
+	  bool is_using = a->is_using ();
+	  if (is_using != b->is_using ())
+	    /* Exactly one is a using.  It comes last.  */
+	    return is_using ? +1 : -1;
+	}
     }
 
   /* They are both the same kind.  Order for qsort stability.  */
   tree a_decl = a->get_entity ();
   tree b_decl = b->get_entity ();
+
+  if (a->is_using ())
+    {
+      /* If one is a using, the other must be too.  */
+      a_decl = OVL_FUNCTION (a_decl);
+      b_decl = OVL_FUNCTION (b_decl);
+    }
 
   if (a_decl != b_decl)
     /* Different entities, order by their UID.  */
@@ -10442,7 +10466,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  dump () && dump ("Unnamed %u %N", unnamed, decl);
 	  b->cluster = ++unnamed;
 	}
-      else if (!b->is_binding ())
+      else if (!b->is_binding () && !b->is_using ())
 	{
 	  // FIXME: What about non-mergeable decls in this SCC that
 	  // are nevertheless referenced in locating the mergeable
@@ -10517,8 +10541,12 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
       if (b->is_binding ())
 	for (unsigned jx = b->deps.length (); jx--;)
-	  gcc_checking_assert (TREE_VISITED (b->deps[jx]->get_entity ()));
-      else
+	  {
+	    depset *dep = b->deps[jx];
+	    gcc_checking_assert (dep->is_using ()
+				 || TREE_VISITED (dep->get_entity ()));
+	  }
+      else if (!b->is_using ())
 	{
 	  tree decl = b->get_entity ();
 
@@ -10532,12 +10560,17 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
-      dump () && dump (b->is_binding () ? "Depset:%u binding %C:%P"
-		       : b->is_defn () ? "Depset:%u definition %C:%N"
-		       : "Depset:%u declaration %C:%N", ix,
-		       TREE_CODE (b->get_entity ()), b->get_entity (),
-		       b->is_binding () ? b->get_name () : NULL_TREE);
       tree decl = b->get_entity ();
+      if (b->is_using ())
+	decl = OVL_FUNCTION (decl);
+
+      if (b->is_binding ())
+	dump () && dump ("Depset:%u binding %C:%P", ix, TREE_CODE (decl),
+			 decl, b->get_name ());
+      else
+	dump () && dump ("Depset:%u %s %C:%N", ix, b->is_using () ? "using"
+			 : b->is_defn () ? "definition" : "declaration",
+			 TREE_CODE (decl), decl);
 
       if (b->is_binding ())
 	{
@@ -10549,14 +10582,29 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	     exports first, thus building the overload chain will be
 	     optimized.  */
 	  for (unsigned jx = b->deps.length (); jx--;)
-	    sec.tree_node (b->deps[jx]->get_entity ());
+	    {
+	      depset *dep = b->deps[jx];
+	      tree decl = dep->get_entity ();
+	      unsigned code = 1;
+	      if (dep->is_using ())
+		{
+		  decl = OVL_FUNCTION (decl);
+		  code = 2;
+		  /* FIXME: Exportedness of the using decl itself.  */
+		}
+	      gcc_checking_assert (DECL_P (decl));
+	      sec.u (code);
+	      sec.tree_node (decl);
+	    }
+
 	  /* Terminate the list.  */
-	  sec.tree_node (NULL);
+	  sec.u (0);
 	}
-      else
+      else if (!b->is_using ())
 	{
 	  sec.u (b->is_defn () ? ct_defn: ct_decl);
 	  sec.tree_ctx (decl, false, NULL_TREE);
+
 	  if (b->cluster)
 	    dump () && dump ("Voldemort:%u %N", b->cluster - 1, decl);
 	  sec.u (b->cluster);
@@ -10568,6 +10616,10 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   /* We don't find the section by name.  Use depset's decl's name for
      human friendliness.  */
   tree naming_decl = scc[0]->get_entity ();
+  if (scc[0]->is_using ())
+    /* This unfortunately names the section from the target of the
+       using decl.  But the name is only a guide, so Do Not Care.  */
+    naming_decl = OVL_FUNCTION (naming_decl);
   if (DECL_IMPLICIT_TYPEDEF_P (naming_decl))
     /* Lose any anonymousness.  */
     naming_decl = TYPE_NAME (TREE_TYPE (naming_decl));
@@ -10616,11 +10668,18 @@ module_state::read_cluster (unsigned snum)
 			      || is_partition ()
 			      || is_header ()));
 
-	    while (tree decl = sec.tree_node ())
+	    while (unsigned code = sec.u ())
 	      {
+		tree decl = sec.tree_node ();
 		if (sec.get_overrun ())
 		  break;
-		if (TREE_CODE (decl) == TYPE_DECL)
+		if (code != 1)
+		  {
+		    /* A using declaration.  */
+		    decls = ovl_make (decl, decls);
+		    OVL_DEDUP_P (decls) = OVL_USING_P (decls) = true;
+		  }
+		else if (TREE_CODE (decl) == TYPE_DECL)
 		  {
 		    if (type || decls)
 		      sec.set_overrun ();
@@ -11228,6 +11287,8 @@ module_state::prepare_locations ()
 
 /* Write the location maps.  This also determines the shifts for the
    location spans.  */
+// FIXME: I do not prune the unreachable locations out of the GMF.
+// Modules with GMFs could well cause us to run out of locations.
 
 void
 module_state::write_locations (elf_out *to, unsigned max_rager,

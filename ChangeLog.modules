@@ -1,5 +1,17 @@
 2019-03-13  Nathan Sidwell  <nathan@acm.org>
 
+	Start doing something with using decls
+	gcc/cp/
+	* cp-tree.h (ovl_iterator): Add get_using accessor.
+	* module.cc (depset::is_using): New.
+	(depset::hash::add_dependency): Add maybe_using parm.  Use it.
+	(depset::hash::add_binding): Deal with using decls.
+	(depset::hash::find_dependencies): Likewise.
+	(cluster_cmp): Likewise.
+	(module_state::{read,write}_cluster): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/using-1_[abc].C: New.
+
 	stdio.h can be a legacy unit!
 	gcc/testsuite/
 	* g++.dg/modules/stdio-1_[ab].[CH]: New.
