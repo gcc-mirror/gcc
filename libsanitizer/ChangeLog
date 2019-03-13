@@ -1,6 +1,13 @@
 2019-03-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR sanitizer/80953
+	Merge from LLVM revision 355979
+	* asan/asan_globals.c (GetGlobalsForAddress): Use internal_memcpy to
+	copy Global objects for SPARC with GCC.
+
+2019-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR sanitizer/80953
 	Merge from LLVM revision 355978
 	* sanitizer_common/sanitizer_allocator_primary32.h
 	(class SizeClassAllocator32): Assert that kSpaceSize is power of 2 if
