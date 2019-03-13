@@ -1,6 +1,21 @@
 2019-03-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR sanitizer/80953
+	Merge from LLVM revision 355978
+	* sanitizer_common/sanitizer_allocator_primary32.h
+	(class SizeClassAllocator32): Assert that kSpaceSize is power of 2 if
+	SANITIZER_SIGN_EXTENDED_ADDRESSES is set.
+	(PointerIsMine): Deal with SANITIZER_SIGN_EXTENDED_ADDRESSES.
+	(ComputeRegionId): Likewise.
+	* sanitizer_common/sanitizer_linux.cc (GetMaxVirtualAddress): Return
+	appropriate value for SPARC 64-bit.
+	* sanitizer_common/sanitizer_platform.h (SANITIZER_MMAP_RANGE_SIZE):
+	Define for SPARC.
+	(SANITIZER_SIGN_EXTENDED_ADDRESSES): Define to 1 for SPARC 64-bit.
+
+2019-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR sanitizer/80953
 	Merge from LLVM revision 355965
 	* sanitizer_common/sanitizer_linux.cc (GetWriteFlag): Implement for
 	SPARC/Linux.
