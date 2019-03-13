@@ -577,6 +577,11 @@ class Type
   // Compare aliases: treat an alias to T as distinct from T.
   static const int COMPARE_ALIASES = 4;
 
+  // When comparing interface types compare the interface embedding heirarchy,
+  // if any, rather than only comparing method sets. Useful primarily when
+  // exporting types.
+  static const int COMPARE_EMBEDDED_INTERFACES = 8;
+
   // Return true if two types are identical.  If this returns false,
   // and REASON is not NULL, it may set *REASON.
   static bool
@@ -3164,6 +3169,15 @@ class Interface_type : public Type
   bool
   methods_are_finalized() const
   { return this->methods_are_finalized_; }
+
+  // Sort embedded interfaces by name. Needed when we are preparing
+  // to emit types into the export data.
+  void
+  sort_embedded()
+  {
+    if (parse_methods_ != NULL)
+      parse_methods_->sort_by_name();
+  }
 
  protected:
   int
