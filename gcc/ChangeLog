@@ -1,3 +1,16 @@
+2019-03-13  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backport from mainline
+	2019-02-07  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390-builtin-types.def: Add new types.
+	* config/s390/s390-builtins.def: (s390_vec_xl, s390_vec_xld2)
+	(s390_vec_xlw4): Make the memory operand into a const pointer.
+	(s390_vec_xld2, s390_vec_xlw4): Add a variant for single precision
+	float.
+	* config/s390/s390-c.c (s390_expand_overloaded_builtin): Generate
+	a new vector type with the alignment of the scalar memory operand.
+
 2019-03-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89664
