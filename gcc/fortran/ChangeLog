@@ -1,3 +1,10 @@
+2019-03-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/87045
+	* trans-expr.c (gfc_trans_pointer_assignment): Move check for same
+	string length so that we do not get false errors for deferred
+	length.
+
 2019-03-13  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/89601
