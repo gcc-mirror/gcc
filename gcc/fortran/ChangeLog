@@ -1,3 +1,27 @@
+2019-03-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/66695
+	PR fortran/77746
+	PR fortran/79485
+	* gfortran.h (gfc_symbol): Add bind_c component.
+	(gfc_get_gsymbol): Add argument bind_c.
+	* decl.c (add_global_entry): Add bind_c argument to
+	gfc_get_symbol.
+	* parse.c (parse_block_data): Likewise.
+	(parse_module): Likewise.
+	(add_global_procedure): Likewise.
+	(add_global_program): Likewise.
+	* resolve.c (resolve_common_blocks): Likewise.
+	(resolve_global_procedure): Likewise.
+	(gfc_verify_binding_labels): Likewise.
+	* symbol.c (gfc_get_gsymbol): Add argument bind_c. Set bind_c
+	in gsym.
+	* trans-decl.c (gfc_get_module_backend_decl): Add bind_c argument
+	to gfc_get_symbol.
+	(gfc_get_extern_function_decl): If the sym has a binding label
+	and it cannot be found in the global symbol tabel, it is the wrong
+	one and vice versa.
+
 2019-03-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/87673
