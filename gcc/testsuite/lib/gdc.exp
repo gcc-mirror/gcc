@@ -78,7 +78,6 @@ proc gdc_include_flags { paths } {
     }
 
     set gccpath ${paths}
-    set target [file tail [file normalize ${paths}]]
 
     if { $gccpath != "" } {
 	if [file exists "${gccpath}/libphobos/libdruntime"] {
@@ -95,6 +94,8 @@ proc gdc_include_flags { paths } {
 	set idx [lsearch $cxxflags "-nostdinc++"]
 	append flags [lreplace $cxxflags $idx $idx]
     }
+
+    return "$flags"
 }
 
 #
