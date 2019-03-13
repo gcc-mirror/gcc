@@ -2706,7 +2706,7 @@ class Array_type : public Type
   // length can not be determined.  This will assert if called for a
   // slice.
   bool
-  int_length(int64_t* plen);
+  int_length(int64_t* plen) const;
 
   // Whether this type is identical with T.
   bool
@@ -3159,6 +3159,11 @@ class Interface_type : public Type
 
   static Type*
   make_interface_type_descriptor_type();
+
+  // Return whether methods are finalized for this interface.
+  bool
+  methods_are_finalized() const
+  { return this->methods_are_finalized_; }
 
  protected:
   int

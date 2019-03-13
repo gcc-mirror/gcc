@@ -6951,7 +6951,7 @@ Type::make_struct_type(Struct_field_list* fields,
 // called for a slice.
 
 bool
-Array_type::int_length(int64_t* plen)
+Array_type::int_length(int64_t* plen) const
 {
   go_assert(this->length_ != NULL);
   Numeric_constant nc;
