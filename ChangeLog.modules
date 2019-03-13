@@ -1,5 +1,10 @@
 2019-03-13  Nathan Sidwell  <nathan@acm.org>
 
+	stdio.h can be a legacy unit!
+	gcc/testsuite/
+	* g++.dg/modules/stdio-1_[ab].[CH]: New.
+	* g++.dg/modules/global-2_[ab].C: New.
+
 	typedef struct {} foo; part 2
 	gcc/cp/
 	* module.cc (tt_anon_decl): New.
