@@ -1456,6 +1456,11 @@ simplify_peeled_chrec (struct loop *loop, tree arg, tree init_cond)
       return build_polynomial_chrec (loop->num, init_cond, right);
     }
 
+  /* The affine code only deals with pointer and integer types.  */
+  if (!POINTER_TYPE_P (type)
+      && !INTEGRAL_TYPE_P (type))
+    return chrec_dont_know;
+
   /* Try harder to check if they are equal.  */
   tree_to_aff_combination_expand (left, type, &aff1, &peeled_chrec_map);
   tree_to_aff_combination_expand (step_val, type, &aff2, &peeled_chrec_map);
