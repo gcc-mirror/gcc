@@ -1,5 +1,16 @@
 2019-03-13  Nathan Sidwell  <nathan@acm.org>
 
+	typedef struct {} foo; part 2
+	gcc/cp/
+	* module.cc (tt_anon_decl): New.
+	(trees_out::tree_decl): Deal with anonymous decls.
+	(trees_out::tree_type): Use TYPE_STUB_DECL.
+	(trees_in::tree_node): Deal with tt_anon_decl.
+	* name-lookup.c (get_lookup_ident): Assert not anonymous.
+	gcc/testsuite/
+	* g++.dg/modules/tdef-3_[ab].C: Extend.
+	* g++.dg/modules/tdef-3_c.C: New.
+
 	gcc/cp/
 	* module.cc (trees_out::tree_decl): Refactor named decl streaming.
 	(trees_in::tree_node): Remove as_base special casing.
@@ -12,7 +23,7 @@
 	* module.cc (trees_out::tree_node): Refactor.
 	(module_state::write_cluster): Prefer non-anonymous name.
 
-	typedef struct {} foo;
+	typedef struct {} foo; part 1
 	gcc/cp/
 	* module.cc (trees_out::tree_value): Cope with name-for-linkage.
 	(trees_out::write_class_def): Likewise.

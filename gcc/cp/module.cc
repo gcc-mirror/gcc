@@ -2402,6 +2402,7 @@ enum tree_tag {
   tt_ptrmem_type,	/* Pointer to member type.  */
   tt_enum_int,		/* An enum const.  */
   tt_named_decl,  	/* Named decl. */
+  tt_anon_decl,		/* Anonymous decl.  */
   tt_namespace,		/* Namespace reference.  */
   tt_inst,		/* A template instantiation.  */
   tt_binfo,		/* A BINFO.  */
@@ -6396,6 +6397,21 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 
 	gcc_checking_assert (name == DECL_NAME (proxy));
 
+	if (IDENTIFIER_ANON_P (name))
+	  {
+	    if (TREE_CODE (ctx) == NAMESPACE_DECL)
+	      {
+		gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl));
+		proxy = TYPE_NAME (TREE_TYPE (decl));
+		name = DECL_NAME (proxy);
+		gcc_checking_assert (MAYBE_DECL_MODULE_OWNER (proxy) == owner);
+		gcc_checking_assert (TYPE_STUB_DECL (TREE_TYPE (proxy)) == decl);
+		code = tt_anon_decl;
+	      }
+	    else
+	      name = NULL_TREE;
+	  }
+
 	if (TREE_CODE (ctx) == NAMESPACE_DECL && owner < MODULE_IMPORT_BASE)
 	  {
 	    /* Look directly into the binding depset, as that's
@@ -6484,7 +6500,7 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
 	dump (dumper::TREE) && dump ("Writen:%d ptrmem type", tag);
       return false;
     }
-  else if (tree name = TYPE_NAME (type))
+  else if (tree name = TYPE_STUB_DECL (type))
     if (DECL_IMPLICIT_TYPEDEF_P (name))
       {
 	/* A new named type -> tt_named_type.  */
@@ -6957,6 +6973,7 @@ trees_in::tree_node ()
 
     case tt_named_decl:
     case tt_implicit_template:
+    case tt_anon_decl:
       {
 	/* A named decl.  */
 	tree ctx = tree_node ();
@@ -6967,12 +6984,16 @@ trees_in::tree_node ()
 	if (owner != MODULE_NONE && !get_overrun ())
 	  {
 	    res = lookup_by_ident (ctx, name, owner, ident);
-	    if (res && tag == tt_implicit_template)
+	    if (!res)
+	      ;
+	    else if (tag == tt_implicit_template)
 	      {
 		int use_tpl = -1;
 		tree ti = node_template_info (res, use_tpl);
 		res = TI_TEMPLATE (ti);
 	      }
+	    else if (tag == tt_anon_decl)
+	      res = TYPE_STUB_DECL (TREE_TYPE (res));
 	  }
 
 	if (!res)
@@ -8654,8 +8675,9 @@ depset::hash::add_mergeable (tree decl)
   worklist.safe_push (dep);
 }
 
-/* Compare two bindings.  TYPE_DECL before non-exported before
+/* Compare two binding entries.  TYPE_DECL before non-exported before
    exported.  */
+// FIXME: Reachable globals are not found by name
 
 static int
 binding_cmp (const void *a_, const void *b_)

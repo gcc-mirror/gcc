@@ -4148,6 +4148,9 @@ get_lookup_ident (tree ctx, tree name, unsigned mod, tree decl)
   if (name == as_base_identifier)
     return -2;
 
+  // FIXME: Deal with anon members
+  gcc_checking_assert (name && !IDENTIFIER_ANON_P (name));
+
   tree binding = get_binding_or_decl (ctx, name, mod);
 
   gcc_checking_assert (binding);
