@@ -4718,13 +4718,16 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
 	{
 	  /* Extract the element type out of MEM_REF and use its size
 	     to compute the index to print in the diagnostic; arrays
-	     in MEM_REF don't mean anything.   */
+	     in MEM_REF don't mean anything.  A type with no size like
+	     void is as good as having a size of 1.  */
 	  tree type = TREE_TYPE (ref);
 	  while (TREE_CODE (type) == ARRAY_TYPE)
 	    type = TREE_TYPE (type);
-	  tree size = TYPE_SIZE_UNIT (type);
-	  offrange[0] = offrange[0] / wi::to_offset (size);
-	  offrange[1] = offrange[1] / wi::to_offset (size);
+	  if (tree size = TYPE_SIZE_UNIT (type))
+	    {
+	      offrange[0] = offrange[0] / wi::to_offset (size);
+	      offrange[1] = offrange[1] / wi::to_offset (size);
+	    }
 	}
       else
 	{
