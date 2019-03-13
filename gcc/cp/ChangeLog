@@ -12,6 +12,11 @@
 	* parser.c (cp_parser_lambda_introducer): Give error when combining
 	init-capture and simple-capture.
 
+	PR c++/89660 - bogus error with -Wredundant-move.
+	* typeck.c (maybe_warn_pessimizing_move): Only accept (T &) &arg
+	as the std::move's argument.  Don't call convert_for_initialization
+	when warn_redundant_move isn't on.
+
 2019-03-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86521 - wrong overload resolution with ref-qualifiers.
