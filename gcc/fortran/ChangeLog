@@ -1,3 +1,10 @@
+2019-03-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87673
+	Backport from trunk
+	* match.c (gfc_match_type_spec): Remove call to
+	gfc_resolve_expr for character length.
+
 2019-03-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/71544
