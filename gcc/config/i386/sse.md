@@ -5934,6 +5934,60 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "HF")])
 
+(define_insn "avx512fp16_fix<fixunssuffix>_trunc<mode>2<mask_name><round_saeonly_name>"
+  [(set (match_operand:VI2H_AVX512VL 0 "register_operand" "=v")
+	(any_fix:VI2H_AVX512VL
+	  (match_operand:<ssePHmode> 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")))]
+  "TARGET_AVX512FP16"
+  "vcvttph2<fixsuffix><sseintconvert>\t{<round_saeonly_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_saeonly_mask_op2>}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "avx512fp16_fix<fixunssuffix>_trunc<mode>2<mask_name>"
+  [(set (match_operand:VI4_128_8_256 0 "register_operand" "=v")
+	(any_fix:VI4_128_8_256
+	  (vec_select:V4HF
+	    (match_operand:V8HF 1 "register_operand" "v")
+	    (parallel [(const_int 0) (const_int 1) (const_int 2) (const_int 3)]))))]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+  "vcvttph2<fixsuffix><sseintconvert>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "*avx512fp16_fix<fixunssuffix>_trunc<mode>2_load<mask_name>"
+  [(set (match_operand:VI4_128_8_256 0 "register_operand" "=v")
+	(any_fix:VI4_128_8_256
+	  (match_operand:V4HF 1 "memory_operand" "m")))]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+  "vcvttph2<fixsuffix><sseintconvert>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %q1}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "avx512fp16_fix<fixunssuffix>_truncv2di2<mask_name>"
+  [(set (match_operand:V2DI 0 "register_operand" "=v")
+	(any_fix:V2DI
+	  (vec_select:V2HF
+	    (match_operand:V8HF 1 "nonimmediate_operand" "v")
+	    (parallel [(const_int 0) (const_int 1)]))))]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+  "vcvttph2<fixsuffix>qq\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "*avx512fp16_fix<fixunssuffix>_truncv2di2_load<mask_name>"
+  [(set (match_operand:V2DI 0 "register_operand" "=v")
+	(any_fix:V2DI
+	  (match_operand:V2HF 1 "memory_operand" "m")))]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+  "vcvttph2<fixsuffix>qq\t{%1, %0<mask_operand2>|%0<mask_operand2>, %k1}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel single-precision floating point conversion operations
