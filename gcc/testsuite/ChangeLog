@@ -1,6 +1,13 @@
 2019-03-13  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backport from mainline
+	2019-03-11  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/zvector/vec-addc-u128.c: New test.
+
+2019-03-13  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backport from mainline
 	2019-02-07  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* gcc.target/s390/zvector/xl-xst-align-1.c: New test.

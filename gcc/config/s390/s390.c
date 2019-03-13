@@ -937,6 +937,8 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	  continue;
 	}
 
+      /* A memory operand is rejected by the memory_operand predicate.
+	 Try making the address legal by copying it into a register.  */
       if (MEM_P (op[arity])
 	  && insn_op->predicate == memory_operand
 	  && (GET_MODE (XEXP (op[arity], 0)) == Pmode
@@ -960,10 +962,14 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	{
 	  op[arity] = tmp_rtx;
 	}
-      else if (GET_MODE (op[arity]) == insn_op->mode
-	       || GET_MODE (op[arity]) == VOIDmode
-	       || (insn_op->predicate == address_operand
-		   && GET_MODE (op[arity]) == Pmode))
+
+      /* The predicate rejects the operand although the mode is fine.
+	 Copy the operand to register.  */
+      if (!insn_op->predicate (op[arity], insn_op->mode)
+	  && (GET_MODE (op[arity]) == insn_op->mode
+	      || GET_MODE (op[arity]) == VOIDmode
+	      || (insn_op->predicate == address_operand
+		  && GET_MODE (op[arity]) == Pmode)))
 	{
 	  /* An address_operand usually has VOIDmode in the expander
 	     so we cannot use this.  */

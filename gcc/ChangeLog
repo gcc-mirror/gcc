@@ -1,6 +1,14 @@
 2019-03-13  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backport from mainline
+	2019-03-11  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (s390_expand_builtin): Do the copy_to_reg not
+	only on the else branch.
+
+2019-03-13  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backport from mainline
 	2019-02-07  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/s390-builtin-types.def: Add new types.
