@@ -9278,16 +9278,6 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	    }
 	}
 
-      /* Check string lengths if applicable.  The check is only really added
-	 to the output code if -fbounds-check is enabled.  */
-      if (expr1->ts.type == BT_CHARACTER && expr2->expr_type != EXPR_NULL)
-	{
-	  gcc_assert (expr2->ts.type == BT_CHARACTER);
-	  gcc_assert (strlen_lhs && strlen_rhs);
-	  gfc_trans_same_strlen_check ("pointer assignment", &expr1->where,
-				       strlen_lhs, strlen_rhs, &block);
-	}
-
       /* If rank remapping was done, check with -fcheck=bounds that
 	 the target is at least as large as the pointer.  */
       if (rank_remap && (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS))
@@ -9320,6 +9310,16 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 			    fold_convert (TREE_TYPE (tmp), strlen_rhs));
 	  else
 	    gfc_add_modify (&block, tmp, build_zero_cst (TREE_TYPE (tmp)));
+	}
+
+      /* Check string lengths if applicable.  The check is only really added
+	 to the output code if -fbounds-check is enabled.  */
+      if (expr1->ts.type == BT_CHARACTER && expr2->expr_type != EXPR_NULL)
+	{
+	  gcc_assert (expr2->ts.type == BT_CHARACTER);
+	  gcc_assert (strlen_lhs && strlen_rhs);
+	  gfc_trans_same_strlen_check ("pointer assignment", &expr1->where,
+				       strlen_lhs, strlen_rhs, &block);
 	}
 
       gfc_add_block_to_block (&block, &lse.post);
