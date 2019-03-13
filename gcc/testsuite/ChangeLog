@@ -1,3 +1,8 @@
+2019-03-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89686 - mixing init-capture and simple-capture in lambda.
+	* g++.dg/cpp2a/lambda-pack-init2.C: New test.
+
 2019-03-13  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/89601

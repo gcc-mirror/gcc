@@ -8,6 +8,10 @@
 	(cp_parser_constructor_declarator_p): Add FLAGS parameter.  Pass it to
 	cp_parser_type_specifier.
 
+	PR c++/89686 - mixing init-capture and simple-capture in lambda.
+	* parser.c (cp_parser_lambda_introducer): Give error when combining
+	init-capture and simple-capture.
+
 2019-03-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86521 - wrong overload resolution with ref-qualifiers.
