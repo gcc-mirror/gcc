@@ -123,9 +123,7 @@ range_from_ssa (tree ssa)
     return irange (type);
   wide_int min, max;
   enum value_range_kind kind = get_range_info (ssa, &min, &max);
-  irange tmp;
-  value_range_to_irange (tmp, type, kind, min, max);
-  return tmp;
+  return value_range_to_irange (type, kind, min, max);
 }
 
 irange::irange (tree type)
@@ -291,7 +289,7 @@ irange::cast (tree new_type)
 	  *this = nz;
 	}
       else if (zero_p ())
-	range_zero (this, new_type);
+	*this = range_zero (new_type);
       else
 	set_varying (new_type);
       return;
@@ -865,37 +863,39 @@ irange_storage::set_irange (const irange &ir)
     set_empty_pair (i, i + 1, ir.type ());
 }
 
-void
-range_zero (irange *r, tree type)
+irange
+range_zero (tree type)
 {
   unsigned prec = TYPE_PRECISION (type);
-  *r = irange (type, wi::zero (prec), wi::zero (prec));
+  return irange (type, wi::zero (prec), wi::zero (prec));
 }
 
-void
-range_non_zero (irange *r, tree type)
+irange
+range_non_zero (tree type)
 {
-  unsigned prec = TYPE_PRECISION (type);
-  *r = irange (type, wi::zero (prec), wi::zero (prec), irange::INVERSE);
+  wide_int zero = wi::zero (TYPE_PRECISION (type));
+  return irange (type, zero, zero, irange::INVERSE);
 }
 
-void
-range_positives (irange *r, tree type)
+irange
+range_positives (tree type)
 {
   unsigned prec = TYPE_PRECISION (type);
   signop sign = TYPE_SIGN (type);
-  *r = irange (type, wi::zero (prec), wi::max_value (prec, sign));
+  return irange (type, wi::zero (prec), wi::max_value (prec, sign));
 }
 
-void
-range_negatives (irange *r, tree type)
+irange
+range_negatives (tree type)
 {
   unsigned prec = TYPE_PRECISION (type);
   signop sign = TYPE_SIGN (type);
+  irange r;
   if (sign == UNSIGNED)
-    r->set_undefined ();
+    r.set_undefined (type);
   else
-    *r = irange (type, wi::min_value (prec, sign), wi::minus_one (prec));
+    r = irange (type, wi::min_value (prec, sign), wi::minus_one (prec));
+  return r;
 }
 
 // Return TRUE if range contains exactly one element.
@@ -922,18 +922,19 @@ irange::singleton_p (wide_int &elem) const
 
 // Convert irange  to a value_range_kind.
 
-void
-irange_to_value_range (value_range_base &vr, const irange &r)
+value_range_base
+irange_to_value_range (const irange &r)
 {
+  value_range_base vr;
   if (r.varying_p ())
     {
       vr.set_varying ();
-      return;
+      return vr;
     }
   if (r.undefined_p ())
     {
       vr.set_undefined ();
-      return;
+      return vr;
     }
   tree type = r.type ();
   unsigned int precision = TYPE_PRECISION (type);
@@ -975,34 +976,38 @@ irange_to_value_range (value_range_base &vr, const irange &r)
     vr = value_range (VR_RANGE,
 		      wide_int_to_tree (type, r.lower_bound ()),
 		      wide_int_to_tree (type, r.upper_bound ()));
+  return vr;
 }
 
 // Convert a value_range to an irange and store it in R.
 
-void
-value_range_to_irange (irange &r,
-		       tree type, enum value_range_kind kind,
+irange
+value_range_to_irange (tree type, enum value_range_kind kind,
 		       const wide_int &min, const wide_int &max)
 {
   gcc_assert (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type));
+  irange r;
   if (kind == VR_VARYING || kind == VR_UNDEFINED)
     r.set_varying (type);
   else
     r = irange (type, min, max,
 		kind == VR_ANTI_RANGE ? irange::INVERSE : irange::PLAIN);
+  return r;
 }
 
 // Same as above, but takes an entire value_range instead of piecemeal.
 
-void
-value_range_to_irange (irange &r, tree type, const value_range_base &vr)
+irange
+value_range_to_irange (tree type, const value_range_base &vr)
 {
+  irange r;
   if (vr.varying_p () || vr.undefined_p ())
     r.set_varying (type);
   else
-    value_range_to_irange (r, TREE_TYPE (vr.min ()), vr.kind (),
-			   wi::to_wide (vr.min ()),
-			   wi::to_wide (vr.max ()));
+    r = value_range_to_irange (TREE_TYPE (vr.min ()), vr.kind (),
+			       wi::to_wide (vr.min ()),
+			       wi::to_wide (vr.max ()));
+  return r;
 }
 
 #ifdef CHECKING_P
@@ -1047,8 +1052,7 @@ irange_tests ()
 				  UCHAR (0), UCHAR (254)));
 
   // Test that NOT(0) is [1..255] in 8-bit land.
-  irange not_zero;
-  range_non_zero (&not_zero, unsigned_char_type_node);
+  irange not_zero = range_non_zero (unsigned_char_type_node);
   ASSERT_TRUE (not_zero == irange (unsigned_char_type_node, UCHAR (1), UCHAR (255)));
 
   // Check that [0,127][0x..ffffff80,0x..ffffff]
@@ -1248,7 +1252,7 @@ irange_tests ()
   ASSERT_TRUE (r0 == r1);
 
   // Test that booleans and their inverse work as expected.
-  range_zero (&r0, boolean_type_node);
+  r0 = range_zero (boolean_type_node);
   ASSERT_TRUE (r0 == irange (boolean_type_node,
 			     wi::zero (1), wi::zero (1)));
   r0.invert();
@@ -1260,7 +1264,7 @@ irange_tests ()
   // "NOT 0 at signed 32-bits" ==> [-MIN_32,-1][1, +MAX_32].  This is
   // is outside of the range of a smaller range, return the full
   // smaller range.
-  range_non_zero (&r0, integer_type_node);
+  r0 = range_non_zero (integer_type_node);
   r0.cast (short_integer_type_node);
   r1 = irange (short_integer_type_node,
 	       TYPE_MIN_VALUE (short_integer_type_node),
@@ -1271,7 +1275,7 @@ irange_tests ()
   //
   // NONZERO signed 16-bits is [-MIN_16,-1][1, +MAX_16].
   // Converting this to 32-bits signed is [-MIN_16,-1][1, +MAX_16].
-  range_non_zero (&r0, short_integer_type_node);
+  r0 = range_non_zero (short_integer_type_node);
   r0.cast (integer_type_node);
   r1 = irange (integer_type_node, INT (-32768), INT (-1));
   r2 = irange (integer_type_node, INT (1), INT (32767));
@@ -1320,7 +1324,7 @@ irange_tests ()
   // Make sure NULL and non-NULL of pointer types work, and that
   // inverses of them are consistent.
   tree voidp = build_pointer_type (void_type_node);
-  range_zero (&r0, voidp);
+  r0 = range_zero (voidp);
   r1 = r0;
   r0.invert ();
   r0.invert ();
@@ -1518,12 +1522,11 @@ irange_tests ()
 
   // Test irange / value_range conversion functions.
   r0 = irange (integer_type_node, INT (10), INT (20), irange::INVERSE);
-  value_range vr;
-  irange_to_value_range (vr, r0);
+  value_range_base vr = irange_to_value_range (r0);
   ASSERT_TRUE (vr.kind () == VR_ANTI_RANGE);
   ASSERT_TRUE (wi::eq_p (10, wi::to_wide (vr.min ()))
 	       && wi::eq_p (20, wi::to_wide (vr.max ())));
-  value_range_to_irange (r1, integer_type_node, vr);
+  r1 = value_range_to_irange (integer_type_node, vr);
   ASSERT_TRUE (r0 == r1);
 }
 

@@ -923,17 +923,9 @@ irange_pointer_optimization (enum tree_code code, signop s, irange &r,
   if (n == WIDE_INT_RANGE_UNKNOWN)
     r.set_varying (type);
   else if (n == WIDE_INT_RANGE_NULL)
-    {
-      irange zero;
-      range_zero (&zero, type);
-      r.union_ (zero);
-    }
+    r.union_ (range_zero (type));
   else if (n == WIDE_INT_RANGE_NONNULL)
-    {
-      irange nzero;
-      range_non_zero (&nzero, type);
-      r.union_ (nzero);
-    }
+    r.union_ (range_non_zero (type));
   else
     gcc_unreachable ();
 }
@@ -956,8 +948,7 @@ irange_adjust_bit_and_mask (irange &r, signop s,
   wide_int mask, lower_bound, upper_bound;
   int tz;
   tree type = r.type ();
-  irange zero;
-  range_zero (&zero, type);
+  irange zero = range_zero (type);
   bool range_contains_zero = !range_intersect (r, zero).undefined_p ();
   if (range_contains_zero
       && wide_int_range_get_mask_and_bounds (mask,
@@ -972,8 +963,8 @@ irange_adjust_bit_and_mask (irange &r, signop s,
       wide_int lb, ub;
       if (s == SIGNED)
 	{
-	  range_positives (&positives, type);
-	  range_negatives (&negatives, type);
+	  positives = range_positives (type);
+	  negatives = range_negatives (type);
 	  positives.intersect (r);
 	  negatives.intersect (r);
 	}
@@ -2065,8 +2056,7 @@ operator_abs::op1_range (irange& r,
       return true;
     }
   // Start with the positives because negatives are an impossible result.
-  irange positives;
-  range_positives (&positives, type);
+  irange positives = range_positives (type);
   positives.intersect (lhs);
   r = positives;
   // Then add the negative of each pair:
@@ -2107,9 +2097,7 @@ operator_negate::fold_range (irange &r,
   if (empty_range_check (r, lh, rh, type))
     return true;
   // -X is simply 0 - X.
-  irange zero;
-  range_zero (&zero, type);
-  return op_rr (MINUS_EXPR, r, zero, lh);
+  return op_rr (MINUS_EXPR, r, range_zero (type), lh);
 }
 
 class operator_min_max : public range_operator
@@ -2239,10 +2227,10 @@ operator_addr_expr::fold_range (irange& r, const irange& lh,
 
   // Return a non-null pointer of the LHS type (passed in op2)
   if (lh.zero_p ())
-    range_zero (&r, rh.type ());
+    r = range_zero (rh.type ());
   else
     if (!lh.contains_p (wi::zero (TYPE_PRECISION (lh.type ()))))
-      range_non_zero (&r, rh.type ());
+      r = range_non_zero (rh.type ());
     else
       return false;
   return true;

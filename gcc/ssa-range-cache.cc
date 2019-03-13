@@ -582,7 +582,7 @@ gori_cache::edge_range (irange &r, edge e, tree name)
   // so just punt for now on those.
   if (r.varying_p () && m_non_null.non_null_deref_p (name, src) &&
       !cfun->can_throw_non_call_exceptions)
-    range_non_zero (&r, TREE_TYPE (name));
+    r = range_non_zero (TREE_TYPE (name));
 
   if (outgoing_edge_range_p (er, e, name, &r))
     r = er;

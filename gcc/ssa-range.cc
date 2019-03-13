@@ -164,7 +164,7 @@ get_tree_range (irange &r, tree expr)
 	  if (ssa_ranger::supports_type_p (type))
 	    {
 	      if (tree_single_nonzero_warnv_p (expr, &ov))
-		range_non_zero (&r, type);
+		r = range_non_zero (type);
 	      else
 		r.set_varying (type);
 	      return true;
@@ -567,7 +567,7 @@ ssa_ranger::range_of_call (irange &r, gcall *call, tree name ATTRIBUTE_UNUSED,
 
   if (gimple_call_nonnull_result_p (call))
     {
-      range_non_zero (&r, type);
+      r = range_non_zero (type);
       return true;
     }
   r.set_varying (type);
@@ -770,7 +770,7 @@ global_ranger::range_of_expr (irange&r, tree op, gimple *s)
       // there is a deref.   Punt for now.
       if (!cfun->can_throw_non_call_exceptions && r.varying_p () &&
 	  m_gori.non_null_deref_p (op, bb))
-	range_non_zero (&r, TREE_TYPE (op));
+	r = range_non_zero (TREE_TYPE (op));
       return true;
     }
 
@@ -827,7 +827,6 @@ global_ranger::export_global_ranges ()
 	  valid_ssa_p (name) && m_globals.get_global_range (r, name) &&
 	  !r.varying_p())
 	{
-	  value_range vr;
 	  // Make sure that the new range is a subet of the old range.
 	  irange old_range = range_from_ssa (name);
 	  gcc_checking_assert (old_range.intersect (r) == r);
@@ -846,9 +845,7 @@ global_ranger::export_global_ranges ()
 	  if (r.undefined_p ())
 	    continue;
 
-	  irange_to_value_range (vr, r);
-	  set_range_info (name, vr.kind (), wi::to_wide (vr.min ()),
-			  wi::to_wide (vr.max ()));
+	  set_range_info (name, irange_to_value_range (r));
 	}
     }
 }

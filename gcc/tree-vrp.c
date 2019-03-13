@@ -1668,10 +1668,10 @@ normalize_value_range_to_irange (irange &ir, const value_range_base *vr,
   tree vr_type = TREE_TYPE (vr->min ());
   if (TREE_CODE (vr->min ()) == INTEGER_CST
       && TREE_CODE (vr->max ()) == INTEGER_CST)
-    value_range_to_irange (ir, vr_type, *vr);
+    ir = value_range_to_irange (vr_type, *vr);
   /* This will return ~[0,0] for [&var, &var].  */
   else if (POINTER_TYPE_P (expr_type) && !range_includes_zero_p (vr))
-    range_non_zero (&ir, expr_type);
+    ir = range_non_zero (expr_type);
   else
     ir.set_varying (vr_type);
 }
@@ -1703,7 +1703,7 @@ ranger_fold (value_range_base *vr, enum tree_code code,
       vr->set_undefined ();
       return;
     }
-  irange_to_value_range (*vr, res);
+  *vr = irange_to_value_range (res);
 }
 
 /* ranger_fold wrapper for binary operators.  */

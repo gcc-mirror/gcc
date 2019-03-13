@@ -108,18 +108,18 @@ private:
   wide_int m_bounds[m_max_pairs * 2];
 }; // class irange
 
-void range_zero (irange *r, tree type);
-void range_non_zero (irange *r, tree type);
+irange range_zero (tree type);
+irange range_non_zero (tree type);
 irange range_intersect (const irange &, const irange &);
 irange range_union (const irange &, const irange &);
 irange range_invert (const irange &);
 irange range_from_ssa (tree ssa);
-void range_positives (irange *r, tree type);
-void range_negatives (irange *r, tree type);
-void value_range_to_irange (irange &, tree type, const value_range_base &);
-void value_range_to_irange (irange &, tree type, enum value_range_kind kind,
-			    const wide_int &, const wide_int &);
-void irange_to_value_range (value_range_base &, const irange &);
+irange range_positives (tree type);
+irange range_negatives (tree type);
+irange value_range_to_irange (tree type, const value_range_base &);
+irange value_range_to_irange (tree type, enum value_range_kind kind,
+			      const wide_int &, const wide_int &);
+value_range_base irange_to_value_range (const irange &);
 
 inline
 irange::irange () : m_type (NULL), m_nitems (0)

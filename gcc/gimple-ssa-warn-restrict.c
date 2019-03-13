@@ -294,8 +294,7 @@ ranger_get_range_info (gimple *stmt, tree ssa, wide_int *min, wide_int *max)
   if (!on_demand_get_range_on_stmt (r, ssa, stmt))
     return VR_VARYING;
 
-  value_range vr;
-  irange_to_value_range (vr, r);
+  value_range_base vr = irange_to_value_range (r);
   *min = wi::to_wide (vr.min ());
   *max = wi::to_wide (vr.max ());
   return vr.kind ();

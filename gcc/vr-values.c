@@ -64,9 +64,7 @@ vr_values::get_value_irange (tree op)
   if (vr->symbolic_p ())
     return irange (TREE_TYPE (op));
 
-  irange r;
-  value_range_to_irange (r, TREE_TYPE (op), *vr);
-  return r;
+  return value_range_to_irange (TREE_TYPE (op), *vr);
 }
 
 /* vr_values interface to simplify_with_ranges.  */
@@ -1693,7 +1691,7 @@ compare_range_with_value (enum tree_code comp, value_range *vr, tree val,
    for VAR.  If so, update VR with the new limits.  */
 
 void
-vr_values::adjust_range_with_scev (value_range *vr, struct loop *loop,
+vr_values::adjust_range_with_scev (value_range_base *vr, struct loop *loop,
 				   gimple *stmt, tree var)
 {
   tree init, step, chrec, tmin, tmax, min, max, type, tem;
@@ -1873,7 +1871,7 @@ vr_values::adjust_range_with_scev (value_range *vr, struct loop *loop,
   if (TREE_OVERFLOW_P (max))
     max = drop_tree_overflow (max);
 
-  vr->update (VR_RANGE, min, max);
+  vr->set (VR_RANGE, min, max);
 }
 
 /* Dump value ranges of all SSA_NAMEs to FILE.  */
@@ -2587,7 +2585,7 @@ vr_values::vrp_visit_cond_stmt (gcond *stmt, edge *taken_edge_p)
    Returns true if the default label is not needed.  */
 
 static bool
-find_case_label_ranges (gswitch *stmt, value_range *vr, size_t *min_idx1,
+find_case_label_ranges (gswitch *stmt, value_range_base *vr, size_t *min_idx1,
 			size_t *max_idx1, size_t *min_idx2,
 			size_t *max_idx2)
 {
@@ -3123,8 +3121,7 @@ simplify_with_ranges::simplify_div_or_mod_using_ranges ()
       return false;
     }
 
-  irange positives;
-  range_positives (&positives, TREE_TYPE (op0));
+  irange positives = range_positives (TREE_TYPE (op0));
   if (TYPE_UNSIGNED (TREE_TYPE (op0))
       || positives.intersect (ir) == ir)
     {
@@ -3197,8 +3194,7 @@ simplify_with_ranges::simplify_abs_using_ranges ()
 
   bool updated = false;
   irange ir0 = get_value_irange (op);
-  irange tmp;
-  range_positives (&tmp, TREE_TYPE (op));
+  irange tmp = range_positives (TREE_TYPE (op));
   /* If range is >= 0, eliminate the ABS.  */
   if (tmp.intersect (ir0) == ir0)
     {
@@ -3208,9 +3204,8 @@ simplify_with_ranges::simplify_abs_using_ranges ()
   /* If range is <= 0, replace the ABS with NEGATE.  */
   else
     {
-      irange izero;
-      range_zero (&izero, TREE_TYPE (op));
-      range_negatives (&tmp, TREE_TYPE (op));
+      irange izero = range_zero (TREE_TYPE (op));
+      tmp = range_negatives (TREE_TYPE (op));
       tmp.union_ (izero);
       if (tmp.intersect (ir0) == ir0)
 	{
@@ -3554,7 +3549,7 @@ vr_values::simplify_cond_using_ranges_2 (gcond *stmt)
 	  irange ir;
 
 	  if (range_int_cst_p (vr))
-	    value_range_to_irange (ir, TREE_TYPE (innerop), *vr);
+	    ir = value_range_to_irange (TREE_TYPE (innerop), *vr);
 
 	  if (!ir.undefined_p ()
 	      && range_fits_type_p (ir,
@@ -3585,8 +3580,8 @@ simplify_with_vranges::simplify_switch_using_ranges ()
 {
   gswitch *stmt = as_a <gswitch *> (simplify_with_ranges::stmt);
   tree op = gimple_switch_index (stmt);
-  value_range vr_obj;
-  value_range *vr = NULL;
+  value_range_base vr_obj;
+  value_range_base *vr = NULL;
   bool take_default;
   edge e;
   edge_iterator ei;
@@ -3599,7 +3594,7 @@ simplify_with_vranges::simplify_switch_using_ranges ()
     {
       // FIXME: Temporary hack.  We should convert entire function to iranges.
       irange ir = get_value_irange (op);
-      irange_to_value_range (vr_obj, ir);
+      vr_obj = irange_to_value_range (ir);
       vr = &vr_obj;
 
       /* We can only handle integer ranges.  */

@@ -1269,7 +1269,7 @@ get_size_range (tree exp, tree range[2], bool allow_zero /* = false */,
     {
       wide_int min, max;
       enum value_range_kind kind = get_range_info (exp, &min, &max);
-      value_range_to_irange (r, exptype, kind, min, max);
+      r = value_range_to_irange (exptype, kind, min, max);
     }
   else if (!call || TREE_CODE (exp) != SSA_NAME || !integral
 	   || !ranger.range_of_expr (r, exp, call))
@@ -1298,7 +1298,7 @@ get_size_range (tree exp, tree range[2], bool allow_zero /* = false */,
       && r.upper_bound (0) == wi::zero (TYPE_PRECISION (exptype)))
     {
       if (allow_zero)
-	range_zero (&r, exptype);
+	r = range_zero (exptype);
       else
 	r.intersect (irange (exptype,
 			     r.lower_bound (0),
@@ -1316,9 +1316,8 @@ get_size_range (tree exp, tree range[2], bool allow_zero /* = false */,
     {
       if (r.lower_bound (0) == wi::to_wide (TYPE_MIN_VALUE (exptype)))
 	{
-	  irange positives, orig = r;
-	  range_positives (&positives, exptype);
-	  r.intersect (positives);
+	  irange orig = r;
+	  r.intersect (range_positives (exptype));
 	  if (r.undefined_p ())
 	    r = orig;
 	}

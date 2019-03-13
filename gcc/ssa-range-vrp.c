@@ -271,12 +271,11 @@ phi_loop_range::adjust_range_with_loop_info (global_ranger &ranger,
   if (l && l->header == gimple_bb (phi))
     {
       tree phi_result = PHI_RESULT (phi);
-      value_range vr;
-      irange_to_value_range (vr, r);
+      value_range vr = irange_to_value_range (r);
       m_vr_values.adjust_range_with_scev (&vr, l, phi, phi_result);
       if (vr.constant_p ())
 	{
-	  value_range_to_irange (r, TREE_TYPE (phi_result), vr);
+	  r = value_range_to_irange (TREE_TYPE (phi_result), vr);
 	  ranger.m_globals.set_global_range (PHI_RESULT (phi), r);
 	  return true;
 	}

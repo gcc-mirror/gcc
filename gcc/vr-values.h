@@ -98,7 +98,8 @@ class vr_values
   void set_defs_to_varying (gimple *);
   bool update_value_range (const_tree, value_range *);
   tree op_with_constant_singleton_value_range (tree);
-  void adjust_range_with_scev (value_range *, struct loop *, gimple *, tree);
+  void adjust_range_with_scev (value_range_base *, struct loop *, gimple *,
+			       tree);
   tree vrp_evaluate_conditional (tree_code, tree, tree, gimple *);
   void dump_all_value_ranges (FILE *);
 
