@@ -1,3 +1,9 @@
+2019-03-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86521 - C++17 copy elision in initialization by constructor.
+	* call.c (joust_maybe_elide_copy): New.
+	(joust): Call it.
+
 2019-03-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88979 - further P0634 fix for constructors.

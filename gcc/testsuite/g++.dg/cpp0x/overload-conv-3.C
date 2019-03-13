@@ -17,5 +17,5 @@ struct Source {
 
 int main() {
   Source x;
-  Dest d(move(x));		// { dg-error "ambiguous" }
+  Dest d(move(x));	   // { dg-error "ambiguous" "" { target c++14_down } }
 }

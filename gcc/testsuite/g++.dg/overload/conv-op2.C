@@ -1,5 +1,5 @@
 // PR c++/81311
-// { dg-do link }
+// { dg-do compile { target c++11 } }
 
 struct function
 {
@@ -8,12 +8,12 @@ struct function
 
 struct ref
 {
-  operator function&() const;
+  operator function&() const = delete;
 } r;
 
 struct val
 {
-  operator function() const;
+  operator function() const = delete;
 } v;
 
 int main()
