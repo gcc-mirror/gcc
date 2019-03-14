@@ -100,7 +100,7 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
       return false;
     }
 
-  gcond *last = dyn_cast <gcond *> (last_stmt (header));
+  gcond *last = safe_dyn_cast <gcond *> (last_stmt (header));
   if (!last)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
