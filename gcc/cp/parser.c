@@ -13964,6 +13964,15 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
         case RID_CONCEPT:
           ds = ds_concept;
           cp_lexer_consume_token (parser->lexer);
+	  /* In C++20 a concept definition is just 'concept name = expr;'
+	     Support that syntax by pretending we've seen 'bool'.  */
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+	      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_EQ))
+	    {
+	      cp_parser_set_decl_spec_type (decl_specs, boolean_type_node,
+					    token, /*type_definition*/false);
+	      decl_specs->any_type_specifiers_p = true;
+	    }
           break;
 
 	  /* function-specifier:
