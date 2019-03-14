@@ -283,6 +283,9 @@ struct function_info
   /* Last line number.  */
   unsigned end_line;
 
+  /* Last line column.  */
+  unsigned end_column;
+
   /* Index of source file where the function is defined.  */
   unsigned src;
 
@@ -631,7 +634,8 @@ function_info::function_info (): m_name (NULL), m_demangled_name (NULL),
   ident (0), lineno_checksum (0), cfg_checksum (0), has_catch (0),
   artificial (0), is_group (0),
   blocks (), blocks_executed (0), counts (),
-  start_line (0), start_column (), end_line (0), src (0), lines (), next (NULL)
+  start_line (0), start_column (0), end_line (0), end_column (0),
+  src (0), lines (), next (NULL)
 {
 }
 
@@ -1131,7 +1135,9 @@ output_json_intermediate_file (json::array *json_files, source_info *src)
       function->set ("demangled_name",
 		     new json::string ((*it)->get_demangled_name ()));
       function->set ("start_line", new json::number ((*it)->start_line));
+      function->set ("start_column", new json::number ((*it)->start_column));
       function->set ("end_line", new json::number ((*it)->end_line));
+      function->set ("end_column", new json::number ((*it)->end_column));
       function->set ("blocks",
 		     new json::number ((*it)->get_block_count ()));
       function->set ("blocks_executed",
@@ -1726,6 +1732,7 @@ read_graph_file (void)
 	  unsigned start_line = gcov_read_unsigned ();
 	  unsigned start_column = gcov_read_unsigned ();
 	  unsigned end_line = gcov_read_unsigned ();
+	  unsigned end_column = gcov_read_unsigned ();
 
 	  fn = new function_info ();
 	  functions.push_back (fn);
@@ -1739,6 +1746,7 @@ read_graph_file (void)
 	  fn->start_line = start_line;
 	  fn->start_column = start_column;
 	  fn->end_line = end_line;
+	  fn->end_column = end_column;
 	  fn->artificial = artificial;
 
 	  current_tag = tag;

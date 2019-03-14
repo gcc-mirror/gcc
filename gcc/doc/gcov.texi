@@ -236,9 +236,11 @@ Each @var{function} has the following form:
   "blocks": @var{blocks},
   "blocks_executed": @var{blocks_executed},
   "demangled_name": "@var{demangled_name},
+  "end_column": @var{end_column},
   "end_line": @var{end_line},
   "execution_count": @var{execution_count},
   "name": @var{name},
+  "start_column": @var{start_column}
   "start_line": @var{start_line}
 @}
 @end smallexample
@@ -256,6 +258,9 @@ Fields of the @var{function} element have following semantics:
 @var{demangled_name}: demangled name of the function
 
 @item
+@var{end_column}: column in the source file where the function ends
+
+@item
 @var{end_line}: line in the source file where the function ends
 
 @item
@@ -265,8 +270,16 @@ Fields of the @var{function} element have following semantics:
 @var{name}: name of the function
 
 @item
+@var{start_column}: column in the source file where the function begins
+
+@item
 @var{start_line}: line in the source file where the function begins
 @end itemize
+
+Note that line numbers and column numbers number from 1.  In the current
+implementation, @var{start_line} and @var{start_column} do not include
+any template parameters and the leading return type but that
+this is likely to be fixed in the future.
 
 Each @var{line} has the following form:
 
@@ -293,11 +306,11 @@ Fields of the @var{line} element have following semantics:
 @item
 @var{unexecuted_block}: flag whether the line contains an unexecuted block
 (not all statements on the line are executed)
-@end itemize
 
 @item
 @var{function_name}: a name of a function this @var{line} belongs to
 (for a line with an inlined statements can be not set)
+@end itemize
 
 Each @var{branch} has the following form:
 
