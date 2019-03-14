@@ -1,3 +1,9 @@
+2019-03-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89710
+	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p): Use
+	safe_dyn_cast.
+
 2019-03-14  Martin Liska  <mliska@suse.cz>
 
 	* coverage.c (coverage_begin_function): Stream also
