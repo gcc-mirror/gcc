@@ -845,6 +845,151 @@ gomp_map_val (struct target_mem_desc *tgt, void **hostaddrs, size_t i)
     }
 }
 
+/* Definitions for data structures describing dynamic, non-contiguous arrays
+   (Note: interfaces with compiler)
+
+   The compiler generates a descriptor for each such array, places the
+   descriptor on stack, and passes the address of the descriptor to the libgomp
+   runtime as a normal map argument. The runtime then processes the array
+   data structure setup, and replaces the argument with the new actual
+   array address for the child function.
+
+   Care must be taken such that the struct field and layout assumptions
+   of struct gomp_array_dim, gomp_array_descr_type inside the compiler
+   be consistant with the below declarations.  */
+
+struct gomp_array_dim {
+  size_t base;
+  size_t length;
+  size_t elem_size;
+  size_t is_array;
+};
+
+struct gomp_array_descr_type {
+  void *ptr;
+  size_t ndims;
+  struct gomp_array_dim dims[];
+};
+
+/* Internal dynamic array info struct, used only here inside the runtime. */
+
+struct da_info
+{
+  struct gomp_array_descr_type *descr;
+  size_t map_index;
+  size_t ptrblock_size;
+  size_t data_row_num;
+  size_t data_row_size;
+};
+
+static size_t
+gomp_dynamic_array_count_rows (struct gomp_array_descr_type *descr)
+{
+  size_t nrows = 1;
+  for (size_t d = 0; d < descr->ndims - 1; d++)
+    nrows *= descr->dims[d].length / sizeof (void *);
+  return nrows;
+}
+
+static void
+gomp_dynamic_array_compute_info (struct da_info *da)
+{
+  size_t d, n = 1;
+  struct gomp_array_descr_type *descr = da->descr;
+
+  da->ptrblock_size = 0;
+  for (d = 0; d < descr->ndims - 1; d++)
+    {
+      size_t dim_count = descr->dims[d].length / descr->dims[d].elem_size;
+      size_t dim_ptrblock_size = (descr->dims[d + 1].is_array
+				  ? 0 : descr->dims[d].length * n);
+      da->ptrblock_size += dim_ptrblock_size;
+      n *= dim_count;
+    }
+  da->data_row_num = n;
+  da->data_row_size = descr->dims[d].length;
+}
+
+static void
+gomp_dynamic_array_fill_rows_1 (struct gomp_array_descr_type *descr, void *da,
+				size_t d, void ***row_ptr, size_t *count)
+{
+  if (d < descr->ndims - 1)
+    {
+      size_t elsize = descr->dims[d].elem_size;
+      size_t n = descr->dims[d].length / elsize;
+      void *p = da + descr->dims[d].base;
+      for (size_t i = 0; i < n; i++)
+	{
+	  void *ptr = p + i * elsize;
+	  /* Deref if next dimension is not array.  */
+	  if (!descr->dims[d + 1].is_array)
+	    ptr = *((void **) ptr);
+	  gomp_dynamic_array_fill_rows_1 (descr, ptr, d + 1, row_ptr, count);
+	}
+    }
+  else
+    {
+      **row_ptr = da + descr->dims[d].base;
+      *row_ptr += 1;
+      *count += 1;
+    }
+}
+
+static size_t
+gomp_dynamic_array_fill_rows (struct gomp_array_descr_type *descr, void *rows[])
+{
+  size_t count = 0;
+  void **p = rows;
+  gomp_dynamic_array_fill_rows_1 (descr, descr->ptr, 0, &p, &count);
+  return count;
+}
+
+static void *
+gomp_dynamic_array_create_ptrblock (struct da_info *da,
+				    void *tgt_addr, void *tgt_data_rows[])
+{
+  struct gomp_array_descr_type *descr = da->descr;
+  void *ptrblock = gomp_malloc (da->ptrblock_size);
+  void **curr_dim_ptrblock = (void **) ptrblock;
+  size_t n = 1;
+
+  for (size_t d = 0; d < descr->ndims - 1; d++)
+    {
+      int curr_dim_len = descr->dims[d].length;
+      int next_dim_len = descr->dims[d + 1].length;
+      int curr_dim_num = curr_dim_len / sizeof (void *);
+
+      void *next_dim_ptrblock
+	= (void *)(curr_dim_ptrblock + n * curr_dim_num);
+
+      for (int b = 0; b < n; b++)
+        for (int i = 0; i < curr_dim_num; i++)
+	  {
+	    if (d < descr->ndims - 2)
+	      {
+		void *ptr = (next_dim_ptrblock
+			     + b * curr_dim_num * next_dim_len
+			     + i * next_dim_len);
+		void *tgt_ptr = tgt_addr + (ptr - ptrblock);
+		curr_dim_ptrblock[b * curr_dim_num + i] = tgt_ptr;
+	      }
+	    else
+	      {
+		curr_dim_ptrblock[b * curr_dim_num + i]
+		  = tgt_data_rows[b * curr_dim_num + i];
+	      }
+	    void *addr = &curr_dim_ptrblock[b * curr_dim_num + i];
+	    assert (ptrblock <= addr && addr < ptrblock + da->ptrblock_size);
+	  }
+
+      n *= curr_dim_num;
+      curr_dim_ptrblock = next_dim_ptrblock;
+    }
+  assert (n == da->data_row_num);
+  return ptrblock;
+}
+
 static inline __attribute__((always_inline)) struct target_mem_desc *
 gomp_map_vars_internal (struct gomp_device_descr *devicep,
 			struct goacc_asyncqueue *aq, size_t mapnum,
@@ -858,9 +1003,37 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
   const int typemask = short_mapkind ? 0xff : 0x7;
   struct splay_tree_s *mem_map = &devicep->mem_map;
   struct splay_tree_key_s cur_node;
-  struct target_mem_desc *tgt
-    = gomp_malloc (sizeof (*tgt) + sizeof (tgt->list[0]) * mapnum);
-  tgt->list_count = mapnum;
+  struct target_mem_desc *tgt;
+
+  bool process_dynarrays = false;
+  size_t da_data_row_num = 0, row_start = 0;
+  size_t da_info_num = 0, da_index;
+  struct da_info *da_info = NULL;
+  struct target_var_desc *row_desc;
+  uintptr_t target_row_addr;
+  void **host_data_rows = NULL, **target_data_rows = NULL;
+  void *row;
+
+  if (mapnum > 0)
+    {
+      int kind = get_kind (short_mapkind, kinds, 0);
+      process_dynarrays = GOMP_MAP_DYNAMIC_ARRAY_P (kind & typemask);
+    }
+
+  if (process_dynarrays)
+    for (i = 0; i < mapnum; i++)
+      {
+	int kind = get_kind (short_mapkind, kinds, i);
+	if (GOMP_MAP_DYNAMIC_ARRAY_P (kind & typemask))
+	  {
+	    da_data_row_num += gomp_dynamic_array_count_rows (hostaddrs[i]);
+	    da_info_num += 1;
+	  }
+      }
+
+  tgt = gomp_malloc (sizeof (*tgt)
+		     + sizeof (tgt->list[0]) * (mapnum + da_data_row_num));
+  tgt->list_count = mapnum + da_data_row_num;
   tgt->refcount = (pragma_kind == GOMP_MAP_VARS_ENTER_DATA
 		   || pragma_kind == GOMP_MAP_VARS_OPENACC_ENTER_DATA) ? 0 : 1;
   tgt->device_descr = devicep;
@@ -871,6 +1044,14 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
       tgt->tgt_start = 0;
       tgt->tgt_end = 0;
       return tgt;
+    }
+
+  if (da_info_num)
+    da_info = gomp_alloca (sizeof (struct da_info) * da_info_num);
+  if (da_data_row_num)
+    {
+      host_data_rows = gomp_malloc (sizeof (void *) * da_data_row_num);
+      target_data_rows = gomp_malloc (sizeof (void *) * da_data_row_num);
     }
 
   tgt_align = sizeof (void *);
@@ -904,7 +1085,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
       return NULL;
     }
 
-  for (i = 0; i < mapnum; i++)
+  for (i = 0, da_index = 0; i < mapnum; i++)
     {
       int kind = get_kind (short_mapkind, kinds, i);
       if (hostaddrs[i] == NULL
@@ -975,6 +1156,19 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	  tgt->list[i].key = NULL;
 	  tgt->list[i].offset = OFFSET_POINTER;
 	  has_firstprivate = true;
+	  continue;
+	}
+      else if (GOMP_MAP_DYNAMIC_ARRAY_P (kind & typemask))
+	{
+	  /* Ignore dynamic arrays for now, we process them together
+	     later.  */
+	  tgt->list[i].key = NULL;
+	  tgt->list[i].offset = 0;
+	  not_found_cnt++;
+
+	  struct da_info *da = &da_info[da_index++];
+	  da->descr = (struct gomp_array_descr_type *) hostaddrs[i];
+	  da->map_index = i;
 	  continue;
 	}
       else if ((kind & typemask) == GOMP_MAP_ATTACH)
@@ -1049,6 +1243,59 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		    i++;
 		  }
 	    }
+	}
+    }
+
+  /* For dynamic arrays. Each data row is one target item, separated from
+     the normal map clause items, hence we order them after mapnum.  */
+  if (process_dynarrays)
+    {
+      for (i = 0, da_index = 0, row_start = 0; i < mapnum; i++)
+	{
+	  int kind = get_kind (short_mapkind, kinds, i);
+	  if (!GOMP_MAP_DYNAMIC_ARRAY_P (kind & typemask))
+	    continue;
+
+	  struct da_info *da = &da_info[da_index++];
+	  struct gomp_array_descr_type *descr = da->descr;
+	  size_t nr;
+
+	  gomp_dynamic_array_compute_info (da);
+
+	  /* We have allocated space in host/target_data_rows to place all the
+	     row data block pointers, now we can start filling them in.  */
+	  nr = gomp_dynamic_array_fill_rows (descr, &host_data_rows[row_start]);
+	  assert (nr == da->data_row_num);
+
+	  size_t align = (size_t) 1 << (kind >> rshift);
+	  if (tgt_align < align)
+	    tgt_align = align;
+	  tgt_size = (tgt_size + align - 1) & ~(align - 1);
+	  tgt_size += da->ptrblock_size;
+
+	  for (size_t j = 0; j < da->data_row_num; j++)
+	    {
+	      row = host_data_rows[row_start + j];
+	      row_desc = &tgt->list[mapnum + row_start + j];
+
+	      cur_node.host_start = (uintptr_t) row;
+	      cur_node.host_end = cur_node.host_start + da->data_row_size;
+	      splay_tree_key n = splay_tree_lookup (mem_map, &cur_node);
+	      if (n)
+		{
+		  assert (n->refcount != REFCOUNT_LINK);
+		  gomp_map_vars_existing (devicep, aq, n, &cur_node, row_desc,
+					  kind & typemask,
+					  /* TODO: cbuf? */ NULL);
+		}
+	      else
+		{
+		  tgt_size = (tgt_size + align - 1) & ~(align - 1);
+		  tgt_size += da->data_row_size;
+		  not_found_cnt++;
+		}
+	    }
+	  row_start += da->data_row_num;
 	}
     }
 
@@ -1221,6 +1468,15 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	      default:
 		break;
 	      }
+
+	    if (GOMP_MAP_DYNAMIC_ARRAY_P (kind & typemask))
+	      {
+		tgt->list[i].key = &array->key;
+		tgt->list[i].key->tgt = tgt;
+		array++;
+		continue;
+	      }
+
 	    splay_tree_key k = &array->key;
 	    k->host_start = (uintptr_t) hostaddrs[i];
 	    if (!GOMP_MAP_POINTER_P (kind & typemask))
@@ -1377,6 +1633,116 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		array++;
 	      }
 	  }
+
+      /* Processing of dynamic array rows.  */
+      if (process_dynarrays)
+        {
+	  for (i = 0, da_index = 0, row_start = 0; i < mapnum; i++)
+	    {
+	      int kind = get_kind (short_mapkind, kinds, i);
+	      if (!GOMP_MAP_DYNAMIC_ARRAY_P (kind & typemask))
+		continue;
+
+	      struct da_info *da = &da_info[da_index++];
+	      assert (da->descr == hostaddrs[i]);
+
+	      /* The map for the dynamic array itself is never copied from
+		 during unmapping, its the data rows that count. Set copy from
+		 flags are set to false here.  */
+	      tgt->list[i].copy_from = false;
+	      tgt->list[i].always_copy_from = false;
+	      tgt->list[i].do_detach = false;
+
+	      size_t align = (size_t) 1 << (kind >> rshift);
+	      tgt_size = (tgt_size + align - 1) & ~(align - 1);
+
+	      /* For the map of the dynamic array itself, adjust so that the
+		 passed device address points to the beginning of the
+		 ptrblock.  */
+	      tgt->list[i].key->tgt_offset = tgt_size;
+
+	      void *target_ptrblock = (void*) tgt->tgt_start + tgt_size;
+	      tgt_size += da->ptrblock_size;
+
+	      /* Add splay key for each data row in current DA.  */
+	      for (size_t j = 0; j < da->data_row_num; j++)
+		{
+		  row = host_data_rows[row_start + j];
+		  row_desc = &tgt->list[mapnum + row_start + j];
+
+		  cur_node.host_start = (uintptr_t) row;
+		  cur_node.host_end = cur_node.host_start + da->data_row_size;
+		  splay_tree_key n = splay_tree_lookup (mem_map, &cur_node);
+		  if (n)
+		    {
+		      assert (n->refcount != REFCOUNT_LINK);
+		      gomp_map_vars_existing (devicep, aq, n, &cur_node,
+					      row_desc, kind & typemask, cbufp);
+		      target_row_addr = n->tgt->tgt_start + n->tgt_offset;
+		    }
+		  else
+		    {
+		      tgt->refcount++;
+
+		      splay_tree_key k = &array->key;
+		      k->host_start = (uintptr_t) row;
+		      k->host_end = k->host_start + da->data_row_size;
+
+		      k->tgt = tgt;
+		      k->refcount = 1;
+		      k->virtual_refcount = 0;
+		      k->u.attach_count = NULL;
+		      tgt_size = (tgt_size + align - 1) & ~(align - 1);
+		      target_row_addr = tgt->tgt_start + tgt_size;
+		      k->tgt_offset = tgt_size;
+		      tgt_size += da->data_row_size;
+
+		      row_desc->key = k;
+		      row_desc->copy_from
+			= GOMP_MAP_COPY_FROM_P (kind & typemask);
+		      row_desc->always_copy_from
+			= GOMP_MAP_COPY_FROM_P (kind & typemask);
+		      row_desc->do_detach = false;
+		      row_desc->offset = 0;
+		      row_desc->length = da->data_row_size;
+
+		      array->left = NULL;
+		      array->right = NULL;
+		      splay_tree_insert (mem_map, array);
+
+		      if (GOMP_MAP_COPY_TO_P (kind & typemask))
+			gomp_copy_host2dev (devicep, aq,
+					    (void *) tgt->tgt_start
+						     + k->tgt_offset,
+					    (void *) k->host_start,
+					    da->data_row_size, cbufp);
+		      array++;
+		    }
+		  target_data_rows[row_start + j] = (void *) target_row_addr;
+		}
+
+	      /* Now we have the target memory allocated, and target offsets of
+		 all row blocks assigned and calculated, we can construct the
+		 accelerator side ptrblock and copy it in.  */
+	      if (da->ptrblock_size)
+		{
+		  void *ptrblock = gomp_dynamic_array_create_ptrblock
+		    (da, target_ptrblock, target_data_rows + row_start);
+		  gomp_copy_host2dev (devicep, aq, target_ptrblock, ptrblock,
+				      da->ptrblock_size, cbufp);
+		  free (ptrblock);
+		}
+
+	      row_start += da->data_row_num;
+	    }
+	  assert (row_start == da_data_row_num && da_index == da_info_num);
+        }
+    }
+
+  if (da_data_row_num)
+    {
+      free (host_data_rows);
+      free (target_data_rows);
     }
 
   if (pragma_kind == GOMP_MAP_VARS_TARGET)

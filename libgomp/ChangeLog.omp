@@ -1,3 +1,15 @@
+2018-10-16  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* target.c (struct da_dim): New struct declaration.
+	(struct da_descr_type): Likewise.
+	(struct da_info): Likewise.
+	(gomp_dynamic_array_count_rows): New function.
+	(gomp_dynamic_array_compute_info): Likewise.
+	(gomp_dynamic_array_fill_rows_1): Likewise.
+	(gomp_dynamic_array_fill_rows): Likewise.
+	(gomp_dynamic_array_create_ptrblock): Likewise.
+	(gomp_map_vars): Add code to handle dynamic array map kinds.
+
 2019-01-31  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c++/deep-copy-12.C: New test.
