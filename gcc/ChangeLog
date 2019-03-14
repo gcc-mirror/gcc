@@ -1,3 +1,12 @@
+2019-03-14  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2019-03-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/87525
+	* ipa-cp.c (perform_estimation_of_a_value): Account zero time benefit
+	for extern inline functions.
+
 2019-03-14  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/89572
