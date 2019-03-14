@@ -2324,19 +2324,9 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       DECL_STRUCT_FUNCTION (current_function_decl)->function_start_locus
 	= c_parser_peek_token (parser)->location;
 
-      /* If the definition was marked with __GIMPLE then parse the
-         function body as GIMPLE.  */
-      if (specs->gimple_p)
-	{
-	  cfun->pass_startwith = specs->gimple_or_rtl_pass;
-	  bool saved = in_late_binary_op;
-	  in_late_binary_op = true;
-	  c_parser_parse_gimple_body (parser);
-	  in_late_binary_op = saved;
-	}
-      /* Similarly, if it was marked with __RTL, use the RTL parser now,
+      /* If the definition was marked with __RTL, use the RTL parser now,
 	 consuming the function body.  */
-      else if (specs->rtl_p)
+      if (specs->declspec_il == cdil_rtl)
 	{
 	  c_parser_parse_rtl_body (parser, specs->gimple_or_rtl_pass);
 
@@ -2349,6 +2339,16 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 
 	  finish_function ();
 	  return;
+	}
+      /* If the definition was marked with __GIMPLE then parse the
+         function body as GIMPLE.  */
+      else if (specs->declspec_il != cdil_none)
+	{
+	  bool saved = in_late_binary_op;
+	  in_late_binary_op = true;
+	  c_parser_parse_gimple_body (parser, specs->gimple_or_rtl_pass,
+				      specs->declspec_il);
+	  in_late_binary_op = saved;
 	}
       else
 	fnbody = c_parser_compound_statement (parser);
@@ -2372,8 +2372,8 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	    add_stmt (fnbody);
 	  finish_function ();
 	}
-      /* Get rid of the empty stmt list for GIMPLE.  */
-      if (specs->gimple_p)
+      /* Get rid of the empty stmt list for GIMPLE/RTL.  */
+      if (specs->declspec_il != cdil_none)
 	DECL_SAVED_TREE (fndecl) = NULL_TREE;
 
       break;
@@ -2882,15 +2882,15 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	  if (! flag_gimple)
 	    error_at (loc, "%<__GIMPLE%> only valid with %<-fgimple%>");
 	  c_parser_consume_token (parser);
-	  specs->gimple_p = true;
+	  specs->declspec_il = cdil_gimple;
 	  specs->locations[cdw_gimple] = loc;
-	  specs->gimple_or_rtl_pass = c_parser_gimple_or_rtl_pass_list (parser);
+	  c_parser_gimple_or_rtl_pass_list (parser, specs);
 	  break;
 	case RID_RTL:
 	  c_parser_consume_token (parser);
-	  specs->rtl_p = true;
+	  specs->declspec_il = cdil_rtl;
 	  specs->locations[cdw_rtl] = loc;
-	  specs->gimple_or_rtl_pass = c_parser_gimple_or_rtl_pass_list (parser);
+	  c_parser_gimple_or_rtl_pass_list (parser, specs);
 	  break;
 	default:
 	  goto out;

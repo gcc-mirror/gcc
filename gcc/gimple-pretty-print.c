@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
+#include "cfgloop.h"
 
 #define INDENT(SPACE)							\
   do { int i; for (i = 0; i < SPACE; i++) pp_space (buffer); } while (0)
@@ -2221,18 +2222,11 @@ dump_gimple_phi (pretty_printer *buffer, gphi *phi, int spc, bool comment,
     {
       if ((flags & TDF_LINENO) && gimple_phi_arg_has_location (phi, i))
 	dump_location (buffer, gimple_phi_arg_location (phi, i));
+      basic_block src = gimple_phi_arg_edge (phi, i)->src;
       if (flags & TDF_GIMPLE)
 	{
-	  basic_block src = gimple_phi_arg_edge (phi, i)->src;
-	  gimple *stmt = first_stmt (src);
-	  if (!stmt || gimple_code (stmt) != GIMPLE_LABEL)
-	    {
-	      pp_string (buffer, "bb_");
-	      pp_decimal_int (buffer, src->index);
-	    }
-	  else
-	    dump_generic_node (buffer, gimple_label_label (as_a <glabel *> (stmt)), 0, flags,
-			       false);
+	  pp_string (buffer, "__BB");
+	  pp_decimal_int (buffer, src->index);
 	  pp_string (buffer, ": ");
 	}
       dump_generic_node (buffer, gimple_phi_arg_def (phi, i), spc, flags,
@@ -2240,7 +2234,7 @@ dump_gimple_phi (pretty_printer *buffer, gphi *phi, int spc, bool comment,
       if (! (flags & TDF_GIMPLE))
 	{
 	  pp_left_paren (buffer);
-	  pp_decimal_int (buffer, gimple_phi_arg_edge (phi, i)->src->index);
+	  pp_decimal_int (buffer, src->index);
 	  pp_right_paren (buffer);
 	}
       if (i < gimple_phi_num_args (phi) - 1)
@@ -2706,7 +2700,12 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent,
   else
     {
       if (flags & TDF_GIMPLE)
-	fprintf (outf, "%*sbb_%d:\n", indent, "", bb->index);
+	{
+	  fprintf (outf, "%*s__BB(%d", indent, "", bb->index);
+	  if (bb->loop_father->header == bb)
+	    fprintf (outf, ",loop_header(%d)", bb->loop_father->num);
+	  fprintf (outf, "):\n");
+	}
       else
 	fprintf (outf, "%*s<bb %d> %s:\n",
 		 indent, "", bb->index, dump_profile (bb->count));
@@ -2759,7 +2758,7 @@ pp_cfg_jump (pretty_printer *buffer, edge e, dump_flags_t flags)
 {
   if (flags & TDF_GIMPLE)
     {
-      pp_string (buffer, "goto bb_");
+      pp_string (buffer, "goto __BB");
       pp_decimal_int (buffer, e->dest->index);
       pp_semicolon (buffer);
     }
@@ -2812,7 +2811,7 @@ dump_implicit_edges (pretty_printer *buffer, basic_block bb, int indent,
      goto to the dump.  */
   e = find_fallthru_edge (bb->succs);
 
-  if (e && e->dest != bb->next_bb)
+  if (e && (e->dest != bb->next_bb || (flags & TDF_GIMPLE)))
     {
       INDENT (indent);
 
