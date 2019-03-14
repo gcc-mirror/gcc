@@ -1436,20 +1436,12 @@ rewrite_add_phi_arguments (basic_block bb)
       for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
-	  tree currdef, res, argvar;
+	  tree currdef, res;
 	  location_t loc;
 
 	  phi = gsi.phi ();
 	  res = gimple_phi_result (phi);
-	  /* If we have pre-existing PHI (via the GIMPLE FE) its args may
-	     be different vars than existing vars and they may be constants
-	     as well.  Note the following supports partial SSA for PHI args.  */
-	  argvar = gimple_phi_arg_def (phi, e->dest_idx);
-	  if (argvar && ! DECL_P (argvar))
-	    continue;
-	  if (!argvar)
-	    argvar = SSA_NAME_VAR (res);
-	  currdef = get_reaching_def (argvar);
+	  currdef = get_reaching_def (SSA_NAME_VAR (res));
 	  /* Virtual operand PHI args do not need a location.  */
 	  if (virtual_operand_p (res))
 	    loc = UNKNOWN_LOCATION;

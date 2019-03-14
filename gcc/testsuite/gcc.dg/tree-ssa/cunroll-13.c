@@ -9,7 +9,7 @@ typedef int i32;
 
 struct a {i32 a[8];i32 b;};
 
-void __GIMPLE (startwith("fix_loops"))
+void __GIMPLE (ssa,startwith("fix_loops"))
 t (struct a * a)
 {
   i32 i;
@@ -18,37 +18,37 @@ t (struct a * a)
   i32 _9;
   i32 _11;
 
-bb_2:
+__BB(2):
   _11 = a_6(D)->a[0];
   if (_11 != _Literal (i32) 0)
-    goto bb_6;
+    goto __BB6;
   else
-    goto bb_3;
+    goto __BB3;
 
-bb_3:
+__BB(3):
   return;
 
-bb_4:
+__BB(4):
   _1 = _2 + _Literal (i32) 1;
   a_6(D)->a[i_19] = _1;
   i_8 = i_19 + _Literal (i32) 1;
   if (i_8 <= _Literal (i32) 123455)
-    goto bb_5;
+    goto __BB5;
   else
-    goto bb_3;
+    goto __BB3;
 
-bb_5:
-  i_19 = __PHI (bb_6: _Literal (i32) 1, bb_4: i_8);
+__BB(5):
+  i_19 = __PHI (__BB6: _Literal (i32) 1, __BB4: i_8);
   _2 = a_6(D)->a[i_19];
   if (_2 != _Literal (i32) 0)
-    goto bb_4;
+    goto __BB4;
   else
-    goto bb_3;
+    goto __BB3;
 
-bb_6:
+__BB(6):
   _9 = _11 + _Literal (i32) 1;
   a_6(D)->a[0] = _9;
-  goto bb_5;
+  goto __BB5;
 }
 
 /* This testcase relies on the fact that we do not eliminate the redundant test

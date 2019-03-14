@@ -1,3 +1,17 @@
+2019-03-14  Richard Biener  <rguenther@suse.de>
+
+	* gimple-pretty-print.c: Include cfgloop.h.
+	(dump_gimple_phi): Adjust.
+	(dump_gimple_bb_header): Dump loop header for GIMPLE.
+	(pp_cfg_jump): Adjust.
+	(dump_implicit_edges): Dump fallthru to next block for GIMPLE as well.
+	* tree-cfg.c (build_gimple_cfg): Remove lower_phi_internal_fn call.
+	(lower_phi_internal_fn): Remove.
+	(verify_gimple_call): Remove IFN_PHI special-casing.
+	(dump_function_to_file): Dump IL state.
+	* tree-into-ssa.c (rewrite_add_phi_arguments): Revert changes
+	done to deal with PHI nodes being present in non-SSA state.
+
 2019-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/89684

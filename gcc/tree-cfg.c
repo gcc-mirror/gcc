@@ -171,7 +171,6 @@ static bool gimple_can_merge_blocks_p (basic_block, basic_block);
 static void remove_bb (basic_block);
 static edge find_taken_edge_computed_goto (basic_block, tree);
 static edge find_taken_edge_cond_expr (const gcond *, tree);
-static void lower_phi_internal_fn ();
 
 void
 init_empty_tree_cfg_for_function (struct function *fn)
@@ -246,7 +245,6 @@ build_gimple_cfg (gimple_seq seq)
   discriminator_per_locus = new hash_table<locus_discrim_hasher> (13);
   make_edges ();
   assign_discriminators ();
-  lower_phi_internal_fn ();
   cleanup_dead_labels ();
   delete discriminator_per_locus;
   discriminator_per_locus = NULL;
@@ -355,47 +353,6 @@ replace_loop_annotate (void)
 	  stmt = gimple_build_assign (gimple_call_lhs (stmt),
 				      gimple_call_arg (stmt, 0));
 	  gsi_replace (&gsi, stmt, true);
-	}
-    }
-}
-
-/* Lower internal PHI function from GIMPLE FE.  */
-
-static void
-lower_phi_internal_fn ()
-{
-  basic_block bb, pred = NULL;
-  gimple_stmt_iterator gsi;
-  tree lhs;
-  gphi *phi_node;
-  gimple *stmt;
-
-  /* After edge creation, handle __PHI function from GIMPLE FE.  */
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi);)
-	{
-	  stmt = gsi_stmt (gsi);
-	  if (! gimple_call_internal_p (stmt, IFN_PHI))
-	    break;
-
-	  lhs = gimple_call_lhs (stmt);
-	  phi_node = create_phi_node (lhs, bb);
-
-	  /* Add arguments to the PHI node.  */
-	  for (unsigned i = 0; i < gimple_call_num_args (stmt); ++i)
-	    {
-	      tree arg = gimple_call_arg (stmt, i);
-	      if (TREE_CODE (arg) == LABEL_DECL)
-		pred = label_to_block (cfun, arg);
-	      else
-		{
-		  edge e = find_edge (pred, bb);
-		  add_phi_arg (phi_node, arg, e, UNKNOWN_LOCATION);
-		}
-	    }
-
-	  gsi_remove (&gsi, true);
 	}
     }
 }
@@ -3336,11 +3293,6 @@ verify_gimple_call (gcall *stmt)
 	  error ("gimple call has two targets");
 	  debug_generic_stmt (fn);
 	  return true;
-	}
-      /* FIXME : for passing label as arg in internal fn PHI from GIMPLE FE*/
-      else if (gimple_call_internal_fn (stmt) == IFN_PHI)
-	{
-	  return false;
 	}
     }
   else
@@ -7922,7 +7874,11 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
     {
       print_generic_expr (file, TREE_TYPE (TREE_TYPE (fndecl)),
 			  dump_flags | TDF_SLIM);
-      fprintf (file, " __GIMPLE ()\n%s (", function_name (fun));
+      fprintf (file, " __GIMPLE (%s)\n%s (",
+	       (fun->curr_properties & PROP_ssa) ? "ssa"
+	       : (fun->curr_properties & PROP_cfg) ? "cfg"
+	       : "",
+	       function_name (fun));
     }
   else
     fprintf (file, "%s %s(", function_name (fun), tmclone ? "[tm-clone] " : "");

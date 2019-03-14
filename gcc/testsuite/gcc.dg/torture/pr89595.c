@@ -2,33 +2,35 @@
 /* { dg-additional-options "-fgimple" } */
 
 int __attribute__((noipa))
-__GIMPLE(startwith("dom")) bar(int cond, int val)
+__GIMPLE(ssa,startwith("dom")) bar(int cond, int val)
 {
   int i;
 
+__BB(3):
   if (0 != 0)
-    goto bb_6;
+    goto __BB6;
   else
-    goto bb_2;
+    goto __BB2;
 
-bb_2:
+__BB(2):
   if (cond_5(D) != 0)
-    goto bb_4;
+    goto __BB4;
   else
-    goto bb_5;
+    goto __BB5;
 
-bb_4:
+__BB(4):
   i_6 = val_2(D);
   i_1 = val_2(D) > 0 ? i_6 : 0;
+  goto __BB5;
 
-bb_5:
-  i_3 = __PHI (bb_4: i_1, bb_2: 0);
+__BB(5):
+  i_3 = __PHI (__BB4: i_1, __BB2: 0);
   return i_3;
 
-bb_6:
+__BB(6):
   i_4 = 1;
   i_9 = 2;
-  goto bb_2;
+  goto __BB2;
 }
 
 int main()
