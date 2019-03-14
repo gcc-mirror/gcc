@@ -1,3 +1,11 @@
+2019-03-14  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-02-16  Jakub Jelinek  <jakub@redhat.com>
+ 
+	PR target/84272
+	* g++.dg/opt/pr84272.C: New test.
+
 2019-03-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/87673

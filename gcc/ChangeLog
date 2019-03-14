@@ -1,3 +1,15 @@
+2019-03-14  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-02-16  Jakub Jelinek  <jakub@redhat.com>
+ 
+	PR target/84272
+	* config/aarch64/cortex-a57-fma-steering.c (fma_forest::merge_forest):
+	Use ++iter rather than iter++ for std::list iterators.
+	(func_fma_steering::dfs): Likewise.  Don't delete nodes right away,
+	defer deleting them until all nodes in the forest are processed.  Do
+	free even leaf nodes.  Change to_process into auto_vec.
+
 2019-03-13  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backport from mainline
