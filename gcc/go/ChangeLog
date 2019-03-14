@@ -1,3 +1,9 @@
+2019-03-06  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/89227
+	* go-gcc.cc (Gcc_backend::function): Set TREE_PUBLIC for an
+	only-inline function.
+
 2019-02-15  Cherry Zhang  <cherryyz@google.com>
 
 	* go-gcc.cc (Gcc_backend::Gcc_backend): Define __builtin_dwarf_cfa

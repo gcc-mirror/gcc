@@ -1,3 +1,197 @@
+2019-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89512
+	* semantics.c (finish_qualified_id_expr): Reject variable templates.
+
+	PR c++/89652
+	* constexpr.c (struct constexpr_ctx): Change save_exprs type from
+	hash_set<tree> to vec<tree>.
+	(cxx_eval_call_expression): Adjust for save_exprs being a vec instead
+	of hash_set.
+	(cxx_eval_loop_expr): Likewise.  Truncate the vector after each
+	removal of SAVE_EXPRs from values.
+	(cxx_eval_constant_expression) <case SAVE_EXPR>: Call safe_push
+	method on save_exprs instead of add.
+
+2019-03-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86521 - C++17 copy elision in initialization by constructor.
+	* call.c (joust_maybe_elide_copy): New.
+	(joust): Call it.
+
+2019-03-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88979 - further P0634 fix for constructors.
+	* parser.c (cp_parser_decl_specifier_seq): Pass flags to
+	cp_parser_constructor_declarator_p.
+	(cp_parser_direct_declarator): Allow missing typename for constructor
+	parameters.
+	(cp_parser_constructor_declarator_p): Add FLAGS parameter.  Pass it to
+	cp_parser_type_specifier.
+
+	PR c++/89686 - mixing init-capture and simple-capture in lambda.
+	* parser.c (cp_parser_lambda_introducer): Give error when combining
+	init-capture and simple-capture.
+
+	PR c++/89660 - bogus error with -Wredundant-move.
+	* typeck.c (maybe_warn_pessimizing_move): Only accept (T &) &arg
+	as the std::move's argument.  Don't call convert_for_initialization
+	when warn_redundant_move isn't on.
+
+2019-03-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86521 - wrong overload resolution with ref-qualifiers.
+	* call.c (build_user_type_conversion_1): Don't use a conversion to a
+	reference of the wrong rvalueness for direct binding.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* cvt.c (build_expr_type_conversion): Wrap apostrophes
+	in gcc internal format with %'.
+	* decl.c (check_no_redeclaration_friend_default_args): Likewise.
+	(grokfndecl): Likewise.
+	* name-lookup.c (do_pushtag): Likewise.
+	* pt.c (unify_parameter_deduction_failure): Likewise.
+	(unify_template_deduction_failure): Likewise.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* call.c (convert_arg_to_ellipsis): Wrap an option name
+	in a string format message and fix GNU coding style.
+	(build_over_call): Likewise.
+	* class.c (check_field_decl): Likewise.
+	(layout_nonempty_base_or_field): Likewise.
+	* constexpr.c (cxx_eval_loop_expr): Likewise.
+	* cvt.c (type_promotes_to): Likewise.
+	* decl.c (cxx_init_decl_processing): Likewise.
+	(mark_inline_variable): Likewise.
+	(grokdeclarator): Likewise.
+	* decl2.c (record_mangling): Likewise.
+	* error.c (maybe_warn_cpp0x): Likewise.
+	* except.c (doing_eh): Likewise.
+	* mangle.c (maybe_check_abi_tags): Likewise.
+	* parser.c (cp_parser_diagnose_invalid_type_name): Likewise.
+	(cp_parser_userdef_numeric_literal): Likewise.
+	(cp_parser_primary_expression): Likewise.
+	(cp_parser_unqualified_id): Likewise.
+	(cp_parser_pseudo_destructor_name): Likewise.
+	(cp_parser_builtin_offsetof): Likewise.
+	(cp_parser_lambda_expression): Likewise.
+	(cp_parser_lambda_introducer): Likewise.
+	(cp_parser_lambda_declarator_opt): Likewise.
+	(cp_parser_selection_statement): Likewise.
+	(cp_parser_init_statement): Likewise.
+	(cp_parser_decomposition_declaration): Likewise.
+	(cp_parser_function_specifier_opt): Likewise.
+	(cp_parser_static_assert): Likewise.
+	(cp_parser_simple_type_specifier): Likewise.
+	(cp_parser_namespace_definition): Likewise.
+	(cp_parser_using_declaration): Likewise.
+	(cp_parser_ctor_initializer_opt_and_function_body): Likewise.
+	(cp_parser_initializer_list): Likewise.
+	(cp_parser_type_parameter_key): Likewise.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_try_block): Likewise.
+	(cp_parser_std_attribute_spec): Likewise.
+	(cp_parser_requires_clause_opt): Likewise.
+	* pt.c (check_template_variable): Likewise.
+	(check_default_tmpl_args): Likewise.
+	(push_tinst_level_loc): Likewise.
+	(instantiate_pending_templates): Likewise.
+	(invalid_nontype_parm_type_p): Likewise.
+	* repo.c (get_base_filename): Likewise.
+	* rtti.c (typeid_ok_p): Likewise.
+	(build_dynamic_cast_1): Likewise.
+	* tree.c (maybe_warn_parm_abi): Likewise.
+
+2019-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/80058
+	* parser.c (cp_parser_template_declaration_after_parameters): Avoid
+	one space before " at the end of line and another after " on another
+	line in a string literal.
+
+	PR tree-optimization/89550
+	* semantics.c (maybe_convert_cond): Only set TREE_NO_WARNING if
+	warning_at returned true.
+	* decl2.c (c_parse_final_cleanups): Likewise.
+	* typeck.c (convert_for_assignment): Likewise.
+	* decl.c (finish_function): Likewise.
+
+	PR c++/89585
+	* parser.c (cp_parser_asm_definition): Just warn instead of error
+	on volatile qualifier outside of function body.
+
+	PR c++/89599
+	* constexpr.c (potential_constant_expression_1): Reject
+	REINTERPRET_CAST_P NOP_EXPRs.
+
+	PR c++/89622
+	* call.c (joust): Call print_z_candidate only if pedwarn returned
+	true.
+
+2019-03-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88123 - lambda and using-directive.
+	* name-lookup.c (op_unqualified_lookup)
+	(maybe_save_operator_binding, discard_operator_bindings)
+	(push_operator_bindings): New.
+	* typeck.c (build_x_binary_op, build_x_unary_op): Call
+	maybe_save_operator_binding.
+	* decl.c (start_preparsed_function): Call push_operator_bindings.
+	* tree.c (cp_free_lang_data): Call discard_operator_bindings.
+
+	PR c++/88820 - ICE with CTAD and member template used in DMI.
+	* pt.c (do_class_deduction): Handle parm used as its own arg.
+
+2019-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89585
+	* parser.c (cp_parser_asm_definition): Parse asm qualifiers even
+	at toplevel, but diagnose them.
+
+2019-03-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89381 - implicit copy and using-declaration.
+	* class.c (classtype_has_move_assign_or_move_ctor_p): Don't consider
+	op= brought in by a using-declaration.
+
+2019-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87148
+	* init.c (build_value_init_noctor): Ignore flexible array members.
+
+2019-03-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89576 - if constexpr of lambda capture.
+	* semantics.c (maybe_convert_cond): Do convert a non-dependent
+	condition in a template.
+	* typeck.c (condition_conversion): Handle being called in a
+	template.
+
+2019-03-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87378 - bogus -Wredundant-move warning.
+	* typeck.c (maybe_warn_pessimizing_move): See if the maybe-rvalue
+	overload resolution would actually succeed.
+
+2019-03-05  Jason Merrill  <jason@redhat.com>
+
+	* class.c (is_really_empty_class): Add ignore_vptr parm.
+	(trivial_default_constructor_is_constexpr): Pass it.
+	* call.c (build_over_call): Pass it.
+	* constexpr.c (cxx_eval_constant_expression): Pass it instead of
+	checking TYPE_POLYMORPHIC_P.
+	(cxx_eval_component_reference, potential_constant_expression_1):
+	Pass it.
+	* cp-gimplify.c (simple_empty_class_p): Pass it.
+	* init.c (expand_aggr_init_1): Pass it.
+
+2019-03-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84605
+	* parser.c (cp_parser_class_head): Reject TYPE_BEING_DEFINED too.
+
 2019-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71446

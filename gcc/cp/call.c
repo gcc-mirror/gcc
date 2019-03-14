@@ -4039,6 +4039,14 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 						       rettype, totype,
 						       EXPR_LOCATION (expr));
 	    }
+	  else if (TYPE_REF_P (totype) && !ics->rvaluedness_matches_p
+		   && TREE_CODE (TREE_TYPE (totype)) != FUNCTION_TYPE)
+	    {
+	      /* If we are called to convert to a reference type, we are trying
+		 to find a direct binding per [over.match.ref], so rvaluedness
+		 must match for non-functions.  */
+	      cand->viable = 0;
+	    }
 	  else if (DECL_NONCONVERTING_P (cand->fn)
 		   && ics->rank > cr_exact)
 	    {
@@ -7499,7 +7507,7 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 	      && TYPE_MODE (TREE_TYPE (prom)) != TYPE_MODE (arg_type)
 	      && (complain & tf_warning))
 	    warning_at (loc, OPT_Wabi, "scoped enum %qT passed through ... as "
-			"%qT before -fabi-version=6, %qT after", arg_type,
+			"%qT before %<-fabi-version=6%>, %qT after", arg_type,
 			TREE_TYPE (prom), ENUM_UNDERLYING_TYPE (arg_type));
 	  if (!abi_version_at_least (6))
 	    arg = prom;
@@ -8335,7 +8343,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	      pedwarn (DECL_SOURCE_LOCATION (cand->fn), 0,
 		       "  in call to %qD", cand->fn);
 	      pedwarn (input_location, 0,
-		       "  (you can disable this with -fno-deduce-init-list)");
+		       "  (you can disable this with "
+		       "%<-fno-deduce-init-list%>)");
 	    }
 	}
 
@@ -8566,7 +8575,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       tree arg = argarray[1];
       location_t loc = cp_expr_loc_or_loc (arg, input_location);
 
-      if (is_really_empty_class (type))
+      if (is_really_empty_class (type, /*ignore_vptr*/true))
 	{
 	  /* Avoid copying empty classes.  */
 	  val = build2 (COMPOUND_EXPR, type, arg, to);
@@ -10499,6 +10508,33 @@ add_warning (struct z_candidate *winner, struct z_candidate *loser)
   winner->warnings = cw;
 }
 
+/* CAND is a constructor candidate in joust in C++17 and up.  If it copies a
+   prvalue returned from a conversion function, replace CAND with the candidate
+   for the conversion and return true.  Otherwise, return false.  */
+
+static bool
+joust_maybe_elide_copy (z_candidate *&cand)
+{
+  tree fn = cand->fn;
+  if (!DECL_COPY_CONSTRUCTOR_P (fn) && !DECL_MOVE_CONSTRUCTOR_P (fn))
+    return false;
+  conversion *conv = cand->convs[0];
+  gcc_checking_assert (conv->kind == ck_ref_bind);
+  conv = next_conversion (conv);
+  if (conv->kind == ck_user && !TYPE_REF_P (conv->type))
+    {
+      gcc_checking_assert (same_type_ignoring_top_level_qualifiers_p
+			   (conv->type, DECL_CONTEXT (fn)));
+      z_candidate *uc = conv->cand;
+      if (DECL_CONV_FN_P (uc->fn))
+	{
+	  cand = uc;
+	  return true;
+	}
+    }
+  return false;
+}
+
 /* Compare two candidates for overloading as described in
    [over.match.best].  Return values:
 
@@ -10577,6 +10613,27 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 	  off1 = 1;
 	  --len;
 	}
+    }
+
+  /* Handle C++17 copy elision in [over.match.ctor] (direct-init) context.  The
+     standard currently says that only constructors are candidates, but if one
+     copies a prvalue returned by a conversion function we want to treat the
+     conversion as the candidate instead.
+
+     Clang does something similar, as discussed at
+     http://lists.isocpp.org/core/2017/10/3166.php
+     http://lists.isocpp.org/core/2019/03/5721.php  */
+  int elided_tiebreaker = 0;
+  if (len == 1 && cxx_dialect >= cxx17
+      && DECL_P (cand1->fn)
+      && DECL_COMPLETE_CONSTRUCTOR_P (cand1->fn)
+      && !(cand1->flags & LOOKUP_ONLYCONVERTING))
+    {
+      bool elided1 = joust_maybe_elide_copy (cand1);
+      bool elided2 = joust_maybe_elide_copy (cand2);
+      /* As a tiebreaker below we will prefer a constructor to a conversion
+	 operator exposed this way.  */
+      elided_tiebreaker = elided2 - elided1;
     }
 
   for (i = 0; i < len; ++i)
@@ -10687,6 +10744,11 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 
   if (winner)
     return winner;
+
+  /* Put this tiebreaker first, so that we don't try to look at second_conv of
+     a constructor candidate that doesn't have one.  */
+  if (elided_tiebreaker)
+    return elided_tiebreaker;
 
   /* DR 495 moved this tiebreaker above the template ones.  */
   /* or, if not that,
@@ -10928,7 +10990,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 
 tweak:
 
-  /* Extension: If the worst conversion for one candidate is worse than the
+  /* Extension: If the worst conversion for one candidate is better than the
      worst conversion for the other, take the first.  */
   if (!pedantic && (complain & tf_warning_or_error))
     {
@@ -10954,12 +11016,14 @@ tweak:
 	  if (warn)
 	    {
 	      auto_diagnostic_group d;
-	      pedwarn (input_location, 0,
-	      "ISO C++ says that these are ambiguous, even "
-	      "though the worst conversion for the first is better than "
-	      "the worst conversion for the second:");
-	      print_z_candidate (input_location, _("candidate 1:"), w);
-	      print_z_candidate (input_location, _("candidate 2:"), l);
+	      if (pedwarn (input_location, 0,
+			   "ISO C++ says that these are ambiguous, even "
+			   "though the worst conversion for the first is "
+			   "better than the worst conversion for the second:"))
+		{
+		  print_z_candidate (input_location, _("candidate 1:"), w);
+		  print_z_candidate (input_location, _("candidate 2:"), l);
+		}
 	    }
 	  else
 	    add_warning (w, l);

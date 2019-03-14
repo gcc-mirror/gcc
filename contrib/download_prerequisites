@@ -51,7 +51,7 @@ case $OS in
     chksum='shasum -a 512 --check'
   ;;
   *)
-    chksum='sha512sum --check'
+    chksum='sha512sum -c'
   ;;
 esac
 

@@ -1822,7 +1822,7 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 	  if (TREE_CODE (cand) == TEMPLATE_DECL)
 	    {
 	      if (complain)
-		error ("default type conversion can't deduce template"
+		error ("default type conversion can%'t deduce template"
 		       " argument for %qD", cand);
 	      return error_mark_node;
 	    }
@@ -1923,7 +1923,7 @@ type_promotes_to (tree type)
 	  if (abi_version_crosses (6)
 	      && TYPE_MODE (prom) != TYPE_MODE (type))
 	    warning (OPT_Wabi, "scoped enum %qT passed through ... as "
-		     "%qT before -fabi-version=6, %qT after",
+		     "%qT before %<-fabi-version=6%>, %qT after",
 		     type, prom, ENUM_UNDERLYING_TYPE (type));
 	  if (!abi_version_at_least (6))
 	    type = prom;

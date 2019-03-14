@@ -6404,7 +6404,7 @@ extern void finish_struct_1			(tree);
 extern int resolves_to_fixed_type_p		(tree, int *);
 extern void init_class_processing		(void);
 extern int is_empty_class			(tree);
-extern bool is_really_empty_class		(tree);
+extern bool is_really_empty_class		(tree, bool);
 extern void pushclass				(tree);
 extern void popclass				(void);
 extern void push_nested_class			(tree);

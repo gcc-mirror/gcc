@@ -2472,7 +2472,7 @@ gfc_complex2complex (gfc_expr *src, int kind)
       int w = warn_conversion ? OPT_Wconversion : OPT_Wconversion_extra;
 
       gfc_warning_now (w, "Change of value in conversion from "
-		       " %qs to %qs at %L",
+		       "%qs to %qs at %L",
 		       gfc_typename (&src->ts), gfc_typename (&result->ts),
 		       &src->where);
       did_warn = true;

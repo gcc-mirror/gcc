@@ -1,3 +1,204 @@
+2019-03-12  John David Anglin  <dave.anglin@bell.net>
+
+	PR libstdc++/89461
+	* testsuite/lib/libstdc++.exp: Locate libatomic.
+	* testsuite/lib/dg-options.exp (add_options_for_libatomic): New.
+	* testsuite/20_util/shared_ptr/thread/default_weaktoshared.cc: Add
+	libatomic options.
+	* testsuite/20_util/shared_ptr/thread/mutex_weaktoshared.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/cons.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/dest.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/ops.cc: Likewise.
+
+2019-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89460
+	* configure.ac: Check for sockatmark.
+	* crossconfig.m4: Check for sockatmark.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/experimental/internet (address_v4::_S_hton): Rename
+	overloaded functions to _S_hton_16 and _S_ntoh_16.
+	(address_v4::_S_ntoh): Rename to _S_ntoh_16 and _S_ntoh_32.
+	(basic_endpoint): Adjust calls to _S_hton and _S_ntoh.
+	* include/experimental/socket (basic_socket::at_mark): Check
+	_GLIBCXX_HAVE_SOCKATMARK.
+
+	* testsuite/29_atomics/atomic_flag/test_and_set/explicit-hle.cc: Use
+	const variables instead of macros.
+
+	PR libstdc++/89629
+	* libsupc++/hash_bytes.cc [__SIZEOF_SIZE_T__ == 8] (_Hash_bytes):
+	Use correct type for len_aligned.
+	* testsuite/20_util/hash/89629.cc: New test.
+
+2019-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/89641
+	* include/std/atomic (atomic<T>::store, atomic<T>::load,
+	atomic<T>::exchange, atomic<T>::compare_exchange_weak,
+	atomic<T>::compare_exchange_strong): Cast __m or __s and __f to int.
+	* include/bits/atomic_base.h (__atomic_base<T>::operator++,
+	__atomic_base<T>::operator--, __atomic_base<T>::operator+=,
+	__atomic_base<T>::operator-=, __atomic_base<T>::operator&=,
+	__atomic_base<T>::operator|=, __atomic_base<T>::operator^=,
+	__atomic_base<T*>::operator++, __atomic_base<T*>::operator--,
+	__atomic_base<T*>::operator+=, __atomic_base<T*>::operator-=): Cast
+	memory_order_seq_cst to int.
+
+2019-03-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/using.xml: Use link element instead of xref.
+	* doc/html/*: Regenerate.
+
+	* include/bits/fs_path.h (path::format): Add fixed underlying type.
+
+2019-03-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/89477
+	* include/debug/map.h (map): Use _RequireNotAllocator to constrain
+	parameters in deduction guides.
+	* include/debug/multimap.h (multimap): Likewise.
+	* include/debug/set.h (multimap): Likewise.
+	* include/debug/multiset.h (multimap): Likewise.
+	* include/debug/unordered_map (unordered_map): Likewise.
+	(unordered_multimap): Likewise.
+	* include/debug/unordered_set (unordered_set): Likewise.
+	(unordered_multiset): Likewise.
+
+	PR libstdc++/89608
+	* include/debug/unordered_map (unordered_map<>::_M_check_rehashed):
+	Invalidate all iterators in case of rehash.
+	(unordered_multimap<>::_M_check_rehashed): Likewise.
+	* include/debug/unordered_set
+	(unordered_set<>::_M_check_rehashed): Likewise.
+	(unordered_multiset<>::_M_check_rehashed): Likewise.
+	* testsuite/23_containers/unordered_set/debug/89608_neg.cc: New.
+
+2019-03-07  Andreas Schwab  <schwab@suse.de>
+
+	* config/abi/post/riscv64-linux-gnu: New directory.
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt: New file.
+
+2019-03-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/function_objects/bind_front/1.cc: Change from
+	compile test to run. Fix typo.
+
+	* doc/xml/manual/status_cxx2020.xml: Update C++20 status.
+	* doc/html/*: Regenerate.
+
+	P0356R5 Simplified partial function application
+	* include/std/functional [C++20] (_Bind_front, _Bind_front_t): Define
+	helpers for bind_front.
+	(bind_front, __cpp_lib_bind_front): Define.
+	* testsuite/20_util/function_objects/bind_front/1.cc: New test.
+
+2019-03-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__cpp_lib_bounded_array_traits): Define.
+	* include/std/version (__cpp_lib_bounded_array_traits): Likewise.
+	* testsuite/20_util/is_bounded_array/value.cc: Check for macro.
+	* testsuite/20_util/is_unbounded_array/value.cc: Likewise.
+
+2019-03-06  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/86655 - std::assoc_legendre should not constrain
+	the value of m (or x).
+	* include/tr1/legendre_function.tcc (__assoc_legendre_p,
+	__sph_legendre): If degree > order Don't throw, return 0.
+	(__legendre_p, __assoc_legendre_p): Don't constrain x either.
+	* testsuite/special_functions/02_assoc_legendre/pr86655.cc: New test.
+	* testsuite/special_functions/20_sph_legendre/pr86655.cc: New test.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	02_assoc_legendre/pr86655.cc: New test.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	22_sph_legendre/pr86655.cc: New test.
+
+2019-03-06  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Rewrite variant.
+	Also PR libstdc++/85517
+	* include/std/variant (__do_visit): New.
+	(__variant_cast): Likewise.
+	(__variant_cookie): Likewise.
+	(__erased_*): Remove.
+	(_Variant_storage::_S_vtable): Likewise.
+	(_Variant_storage::__M_reset_impl): Adjust to use __do_visit.
+	(_Variant_storage::__M_reset): Adjust.
+	(__variant_construct): New.
+	(_Copy_ctor_base(const _Copy_ctor_base&)): Adjust to use
+	__variant_construct.
+	(_Move_ctor_base(_Move_ctor_base&&)): Likewise.
+	(_Move_ctor_base::__M_destructive_copy): New.
+	(_Move_ctor_base::__M_destructive_move): Adjust to use
+	__variant_construct.
+	(_Copy_assign_base::operator=): Adjust to use __do_visit.
+	(_Copy_assign_alias): Adjust to check both copy assignment
+	and copy construction for triviality.
+	(_Move_assign_base::operator=): Adjust to use __do_visit.
+	(_Multi_array): Add support for visitors that accept and return
+	a __variant_cookie.
+	(__gen_vtable_impl::_S_apply_all_alts): Likewise.
+	(__gen_vtable_impl::_S_apply_single_alt): Likewise.
+	(__gen_vtable_impl::__element_by_index_or_cookie): New. Generate
+	a __variant_cookie temporary for a variant that is valueless and..
+	(__gen_vtable_impl::__visit_invoke): ..adjust here.
+	(__gen_vtable::_Array_type): Conditionally make space for
+	the __variant_cookie visitor case.
+	(__variant_construct_by_index): New.
+	(get_if): Adjust to use std::addressof.
+	(relops): Adjust to use __do_visit.
+	(variant): Add __variant_cast and __variant_construct_by_index
+	as friends.
+	(variant::emplace): Use _M_reset() and __variant_construct_by_index
+	instead of self-destruction.
+	(variant::swap): Adjust to use __do_visit.
+	(visit): Reimplement in terms of __do_visit.
+	(__variant_hash_call_base_impl::operator()): Adjust to use __do_visit.
+	* testsuite/20_util/variant/compile.cc: Adjust.
+	* testsuite/20_util/variant/run.cc: Likewise.
+
+2019-03-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config.h (_cpp_lib_char8_t): Add L suffix to
+	constant.
+	* testsuite/experimental/feat-char8_t.cc: Likewise.
+
+	 * include/std/type_traits [C++20] (is_bounded_array)
+	 (is_unbounded_array, is_bounded_array_v, is_unbounded_array_v):
+	 Define.
+	 * testsuite/20_util/is_bounded_array/requirements/
+	 explicit_instantiation.cc: New test.
+	 * testsuite/20_util/is_bounded_array/requirements/typedefs.cc: New
+	 test.
+	 * testsuite/20_util/is_bounded_array/value.cc: New test.
+	 * testsuite/20_util/is_unbounded_array/requirements/
+	 explicit_instantiation.cc: New test.
+	 * testsuite/20_util/is_unbounded_array/requirements/typedefs.cc: New
+	 * test.
+	 * testsuite/20_util/is_unbounded_array/value.cc: New test.
+
+	* include/bits/ptr_traits.h [C++20] (pointer_traits<T*>::pointer_to):
+	Add constexpr.
+	* testsuite/20_util/pointer_traits/pointer_to_constexpr.cc: New test.
+
+2019-03-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_compatibility/math.h [C++20] (lerp): Add using
+	declaration.
+	* include/c_global/cmath [C++20] (__cpp_lib_interpolate): Define.
+	(__lerp): Define function template to implement lerp.
+	(lerp(float, float, float), lerp(double, double, double))
+	(lerp(long double, long double, long double)): Define for C++20.
+	* include/std/numeric [C++20] (__cpp_lib_interpolate): Define.
+	(midpoint(T, T), midpoint(T*, T*)): Define.
+	* include/std::version [C++20] (__cpp_lib_interpolate): Define.
+	* testsuite/26_numerics/lerp.cc: New test.
+	* testsuite/26_numerics/midpoint/floating.cc: New test.
+	* testsuite/26_numerics/midpoint/integral.cc: New test.
+	* testsuite/26_numerics/midpoint/pointer.cc: New test.
+
 2019-03-04  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR libstdc++/88996 Implement P0439R0

@@ -750,7 +750,7 @@ lto_symtab_merge_decls_2 (symtab_node *first, bool diagnosed_p)
   if (tbaa_p)
     inform (DECL_SOURCE_LOCATION (prevailing->decl),
 	    "code may be misoptimized unless "
-	    "-fno-strict-aliasing is used");
+	    "%<-fno-strict-aliasing is used%>");
 
   mismatches.release ();
 }

@@ -4009,11 +4009,11 @@ maybe_warn_parm_abi (tree t, location_t loc)
       bool w;
       auto_diagnostic_group d;
       if (flag_abi_version > 12)
-	w = warning_at (loc, OPT_Wabi, "-fabi-version=13 (GCC 8.2) fixes the "
-			"calling convention for %qT, which was accidentally "
-			"changed in 8.1", t);
+	w = warning_at (loc, OPT_Wabi, "%<-fabi-version=13%> (GCC 8.2) fixes "
+			"the calling convention for %qT, which was "
+			"accidentally changed in 8.1", t);
       else
-	w = warning_at (loc, OPT_Wabi, "-fabi-version=12 (GCC 8.1) accident"
+	w = warning_at (loc, OPT_Wabi, "%<-fabi-version=12%> (GCC 8.1) accident"
 			"ally changes the calling convention for %qT", t);
       if (w)
 	inform (location_of (t), " declared here");
@@ -4022,7 +4022,7 @@ maybe_warn_parm_abi (tree t, location_t loc)
 
   auto_diagnostic_group d;
   if (warning_at (loc, OPT_Wabi, "the calling convention for %qT changes in "
-		  "-fabi-version=13 (GCC 8.2)", t))
+		  "%<-fabi-version=13%> (GCC 8.2)", t))
     inform (location_of (t), " because all of its copy and move "
 	    "constructors are deleted");
 }
@@ -5417,6 +5417,8 @@ cp_free_lang_data (tree t)
       DECL_EXTERNAL (t) = 1;
       TREE_STATIC (t) = 0;
     }
+  if (TREE_CODE (t) == FUNCTION_DECL)
+    discard_operator_bindings (t);
   if (TREE_CODE (t) == NAMESPACE_DECL)
     /* We do not need the leftover chaining of namespaces from the
        binding level.  */

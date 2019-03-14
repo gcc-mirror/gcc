@@ -2,6 +2,6 @@
 
 /* { dg-do compile } */
 /* { dg-options "-MG -MD -c" } */
-/* { dg-error "may only be used with -M" "-MG incompatible with -c" { target *-*-* } 0 } */
+/* { dg-error "may only be used with .-M." ".-MG. incompatible with .-c." { target *-*-* } 0 } */
 
 int anything;

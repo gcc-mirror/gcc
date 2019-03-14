@@ -2122,8 +2122,6 @@ gfc_match_type_spec (gfc_typespec *ts)
       ts->type = BT_CHARACTER;
 
       m = gfc_match_char_spec (ts);
-      if (ts->u.cl && ts->u.cl->length)
-	gfc_resolve_expr (ts->u.cl->length);
 
       if (m == MATCH_NO)
 	m = MATCH_YES;

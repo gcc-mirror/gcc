@@ -4,4 +4,4 @@
 /* { dg-do compile } */
 /* { dg-options "-Wformat-extra-args" } */
 
-/* { dg-warning "-Wformat-extra-args ignored without -Wformat" "ignored" { target *-*-* } 0 } */
+/* { dg-warning "'-Wformat-extra-args' ignored without '-Wformat'" "ignored" { target *-*-* } 0 } */

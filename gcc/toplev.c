@@ -905,7 +905,7 @@ init_asm_output (const char *name)
 	    }
 	  else
 	    inform (UNKNOWN_LOCATION,
-		    "-frecord-gcc-switches is not supported by "
+		    "%<-frecord-gcc-switches%> is not supported by "
 		    "the current target");
 	}
 
@@ -1371,8 +1371,8 @@ process_options (void)
       || flag_graphite_identity
       || flag_loop_parallelize_all)
     sorry ("Graphite loop optimizations cannot be used (isl is not available) "
-	   "(-fgraphite, -fgraphite-identity, -floop-nest-optimize, "
-	   "-floop-parallelize-all)");
+	   "(%<-fgraphite%>, %<-fgraphite-identity%>, "
+	   "%<-floop-nest-optimize%>, %<-floop-parallelize-all%>)");
 #endif
 
   if (flag_cf_protection != CF_NONE
@@ -1456,7 +1456,7 @@ process_options (void)
 	}
       else
 	warning_at (UNKNOWN_LOCATION, 0,
-		    "-f%sleading-underscore not supported on this "
+		    "%<-f%sleading-underscore%> not supported on this "
 		    "target machine", flag_leading_underscore ? "" : "no-");
     }
 
@@ -1623,8 +1623,9 @@ process_options (void)
   else if (debug_variable_location_views == -1 && dwarf_version != 5)
     {
       warning_at (UNKNOWN_LOCATION, 0,
-		  "without -gdwarf-5, -gvariable-location-views=incompat5 "
-		  "is equivalent to -gvariable-location-views");
+		  "without %<-gdwarf-5%>, "
+		  "%<-gvariable-location-views=incompat5%> "
+		  "is equivalent to %<-gvariable-location-views%>");
       debug_variable_location_views = 1;
     }
 
@@ -1638,8 +1639,8 @@ process_options (void)
 	   && !debug_variable_location_views)
     {
       warning_at (UNKNOWN_LOCATION, 0,
-		  "-ginternal-reset-location-views is forced disabled "
-		  "without -gvariable-location-views");
+		  "%<-ginternal-reset-location-views%> is forced disabled "
+		  "without %<-gvariable-location-views%>");
       debug_internal_reset_location_views = 0;
     }
 
@@ -1648,8 +1649,8 @@ process_options (void)
   else if (debug_inline_points && !debug_nonbind_markers_p)
     {
       warning_at (UNKNOWN_LOCATION, 0,
-		  "-ginline-points is forced disabled without "
-		  "-gstatement-frontiers");
+		  "%<-ginline-points%> is forced disabled without "
+		  "%<-gstatement-frontiers%>");
       debug_inline_points = 0;
     }
 
@@ -1677,13 +1678,13 @@ process_options (void)
       if (flag_function_sections)
 	{
 	  warning_at (UNKNOWN_LOCATION, 0,
-		      "-ffunction-sections not supported for this target");
+		      "%<-ffunction-sections%> not supported for this target");
 	  flag_function_sections = 0;
 	}
       if (flag_data_sections)
 	{
 	  warning_at (UNKNOWN_LOCATION, 0,
-		      "-fdata-sections not supported for this target");
+		      "%<-fdata-sections%> not supported for this target");
 	  flag_data_sections = 0;
 	}
     }
@@ -1691,14 +1692,14 @@ process_options (void)
   if (flag_prefetch_loop_arrays > 0 && !targetm.code_for_prefetch)
     {
       warning_at (UNKNOWN_LOCATION, 0,
-		  "-fprefetch-loop-arrays not supported for this target");
+		  "%<-fprefetch-loop-arrays%> not supported for this target");
       flag_prefetch_loop_arrays = 0;
     }
   else if (flag_prefetch_loop_arrays > 0 && !targetm.have_prefetch ())
     {
       warning_at (UNKNOWN_LOCATION, 0,
-		  "-fprefetch-loop-arrays not supported for this target "
-		  "(try -march switches)");
+		  "%<-fprefetch-loop-arrays%> not supported for this target "
+		  "(try %<-march%> switches)");
       flag_prefetch_loop_arrays = 0;
     }
 
@@ -1707,7 +1708,7 @@ process_options (void)
   if (flag_prefetch_loop_arrays > 0 && optimize_size)
     {
       warning_at (UNKNOWN_LOCATION, 0,
-		  "-fprefetch-loop-arrays is not supported with -Os");
+		  "%<-fprefetch-loop-arrays%> is not supported with %<-Os%>");
       flag_prefetch_loop_arrays = 0;
     }
 
@@ -1719,7 +1720,7 @@ process_options (void)
   if (flag_associative_math && (flag_trapping_math || flag_signed_zeros))
     {
       warning_at (UNKNOWN_LOCATION, 0,
-		  "-fassociative-math disabled; other options take "
+		  "%<-fassociative-math%> disabled; other options take "
 		  "precedence");
       flag_associative_math = 0;
     }
@@ -1757,7 +1758,7 @@ process_options (void)
   if (!FRAME_GROWS_DOWNWARD && flag_stack_protect)
     {
       warning_at (UNKNOWN_LOCATION, 0,
-		  "-fstack-protector not supported for this target");
+		  "%<-fstack-protector%> not supported for this target");
       flag_stack_protect = 0;
     }
   if (!flag_stack_protect)
@@ -1769,7 +1770,7 @@ process_options (void)
       && !FRAME_GROWS_DOWNWARD)
     {
       warning_at (UNKNOWN_LOCATION, 0,
-		  "-fsanitize=address and -fsanitize=kernel-address "
+		  "%<-fsanitize=address%> and %<-fsanitize=kernel-address%> "
 		  "are not supported for this target");
       flag_sanitize &= ~SANITIZE_ADDRESS;
     }
@@ -1778,7 +1779,7 @@ process_options (void)
       && targetm.asan_shadow_offset == NULL)
     {
       warning_at (UNKNOWN_LOCATION, 0,
-		  "-fsanitize=address not supported for this target");
+		  "%<-fsanitize=address%> not supported for this target");
       flag_sanitize &= ~SANITIZE_ADDRESS;
     }
 
@@ -2259,7 +2260,7 @@ toplev::run_self_tests ()
 {
   if (no_backend)
     {
-      error_at (UNKNOWN_LOCATION, "self-tests incompatible with -E");
+      error_at (UNKNOWN_LOCATION, "self-tests incompatible with %<-E%>");
       return;
     }
 #if CHECKING_P

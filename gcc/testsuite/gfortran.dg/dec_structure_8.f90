@@ -11,7 +11,7 @@ structure /t1/              ! { dg-error "Type definition.*T1" }
   integer   b //            ! { dg-error "Empty old style initializer list" }
   integer   c /2*3/         ! { dg-error "Repeat spec invalid in scalar" }
   integer   d /1,2,3/       ! { dg-error "End of scalar initializer expected" }
-  integer   e /"HI"/        ! { dg-error "Can't convert" }
+  integer   e /"HI"/        ! { dg-error "Cannot convert" }
   integer   f(as) /4*9/     ! { dg-error "Too many elements" }
   integer   g(3) /1,3/      ! { dg-error "Not enough elements" }
   integer   h(3) /1,3,5,7/  ! { dg-error "Too many elements" }

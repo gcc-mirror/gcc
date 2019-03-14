@@ -3,7 +3,7 @@
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O -mdejagnu-cpu=power7 -mno-altivec" } */
 
-/* { dg-warning "-mno-altivec disables vsx" "" { target *-*-* } 0 } */
+/* { dg-warning "'-mno-altivec' disables vsx" "" { target *-*-* } 0 } */
 
 double
 foo (double *x, double *y)

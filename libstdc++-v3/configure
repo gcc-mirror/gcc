@@ -28446,6 +28446,19 @@ fi
 done
 
 
+  # For Networking TS.
+  for ac_func in sockatmark
+do :
+  ac_fn_c_check_func "$LINENO" "sockatmark" "ac_cv_func_sockatmark"
+if test "x$ac_cv_func_sockatmark" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SOCKATMARK 1
+_ACEOF
+
+fi
+done
+
+
   # For iconv support.
 
       if test "X$prefix" = "XNONE"; then
@@ -53641,6 +53654,17 @@ _ACEOF
 fi
 done
 
+    for ac_func in sockatmark
+do :
+  ac_fn_c_check_func "$LINENO" "sockatmark" "ac_cv_func_sockatmark"
+if test "x$ac_cv_func_sockatmark" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SOCKATMARK 1
+_ACEOF
+
+fi
+done
+
     ;;
 
   *-fuchsia*)
@@ -60268,6 +60292,17 @@ _ACEOF
 fi
 done
 
+    for ac_func in sockatmark
+do :
+  ac_fn_c_check_func "$LINENO" "sockatmark" "ac_cv_func_sockatmark"
+if test "x$ac_cv_func_sockatmark" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SOCKATMARK 1
+_ACEOF
+
+fi
+done
+
 
 
 
@@ -66587,6 +66622,17 @@ do :
 if test "x$ac_cv_func_timespec_get" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_TIMESPEC_GET 1
+_ACEOF
+
+fi
+done
+
+    for ac_func in sockatmark
+do :
+  ac_fn_c_check_func "$LINENO" "sockatmark" "ac_cv_func_sockatmark"
+if test "x$ac_cv_func_sockatmark" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SOCKATMARK 1
 _ACEOF
 
 fi

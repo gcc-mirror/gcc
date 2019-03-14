@@ -226,6 +226,7 @@ class NotExp;
 class DeleteExp;
 class CastExp;
 class VectorExp;
+class VectorArrayExp;
 class SliceExp;
 class ArrayLengthExp;
 class IntervalExp;
@@ -517,6 +518,7 @@ public:
     virtual void visit(DeleteExp *e) { visit((UnaExp *)e); }
     virtual void visit(CastExp *e) { visit((UnaExp *)e); }
     virtual void visit(VectorExp *e) { visit((UnaExp *)e); }
+    virtual void visit(VectorArrayExp *e) { visit((UnaExp *)e); }
     virtual void visit(SliceExp *e) { visit((UnaExp *)e); }
     virtual void visit(ArrayLengthExp *e) { visit((UnaExp *)e); }
     virtual void visit(IntervalExp *e) { visit((Expression *)e); }

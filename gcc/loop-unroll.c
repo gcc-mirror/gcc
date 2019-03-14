@@ -400,7 +400,7 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
     {
       /* However we cannot unroll completely at the RTL level a loop with
 	 constant number of iterations; it should have been peeled instead.  */
-      if ((unsigned) loop->unroll - 1 > desc->niter - 2)
+      if ((unsigned) loop->unroll > desc->niter - 1)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, ";; Loop should have been peeled\n");

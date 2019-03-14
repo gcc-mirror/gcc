@@ -1,7 +1,10 @@
+2019-03-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* encoding.c (DFmode): #undef before #define.
+
 2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/16615
-
 	* objc/runtime.h: Change "can not" to "cannot".
 
 2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
@@ -343,7 +346,7 @@
 2011-08-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* class.c (class_getSuperclass): Fixed typo in comment.
-	
+
 2011-08-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR libobjc/49882
@@ -369,7 +372,7 @@
 
 	* objc/README: Updated.
 	* objc-private/selector.h: Updated comments.
-	
+
 2011-06-07  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* sendmsg.c (class_get_instance_method): Removed.
@@ -431,7 +434,7 @@
 	* objc/deprecated/struct_objc_protocol_list.h: Removed.
 	* objc/deprecated/struct_objc_category.h: Removed.
 	* objc/deprecated/MetaClass.h: Removed.
-	* objc/deprecated/objc_msg_sendv.h: Removed.  
+	* objc/deprecated/objc_msg_sendv.h: Removed.
 	* objc/deprecated/README: Removed.
 	* objc/deprecated/struct_objc_class.h: Removed.
 	* objc/deprecated/struct_objc_protocol.h: Removed.
@@ -477,16 +480,16 @@
 	(arglist_t, retval_t): New.  (class_get_class_method): Take a
 	'Class', not 'MetaClass', argument.
 	* thr.c: Include module-abi-8.h.
-	
+
 2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* Makefile.in (OBJC_DEPRECATED_H): Removed struct_objc_static_instances.h
 	and objc_get_uninstalled_dtable.h.
 	* objc/deprecated/struct_objc_static_instances.h: Removed.
-	* objc/deprecated/objc_get_uninstalled_dtable.h: Removed.	
+	* objc/deprecated/objc_get_uninstalled_dtable.h: Removed.
 	* objc/objc-api.h: Do not include deprecated/objc_static_instances.h
 	and deprecated/objc_get_uninstalled_dtable.h.
-	
+
 2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* Makefile.in (OBJC_DEPRECATED_H): Removed objc_object_alloc.h.
@@ -496,13 +499,13 @@
 	_objc_object_copy): Removed.
 	* libobjc.def (__objc_object_alloc, __objc_object_copy,
 	__objc_object_dispose): Removed.
-	
+
 2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* Makefile.in (OBJC_DEPRECATED_H): Removed METHOD_NULL.h.
 	* objc/objc-api.h: Do not include deprecated/METHOD_NULL.h.
 	* objc/deprecated/METHOD_NULL.h: Removed.
-	
+
 2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* Makefile.in (OBJC_DEPRECATED_H): Removed objc_valloc.h,
@@ -519,15 +522,15 @@
 	(objc_exception_throw): Do not check for
 	_objc_unexpected_exception.
 	* memory.c (objc_valloc, _objc_malloc, _objc_atomic_malloc,
-	_objc_valloc, _objc_realloc, _objc_calloc, _objc_free): Removed.	
+	_objc_valloc, _objc_realloc, _objc_calloc, _objc_free): Removed.
 	* libobjc.def (_objc_unexpected_exception, objc_valloc): Removed.
-	
+
 2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/objc.h: Do not include deprecated/STR.h.
 	* objc/deprecated/STR.h: Removed.
 	* Makefile.in (OBJC_DEPRECATED_H): removed STR.h.
-	
+
 2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* Makefile.in (OBJC_H): Removed hash.h and sarray.h.
@@ -553,7 +556,7 @@
 	* Object.m ([-forward::]): Removed.
 	* objc/deprecated/Object.h ([-forward::]): Removed.
 	* sendmsg.c (__objc_forward): Updated comments.
-	
+
 2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* Makefile.in (OBJC_H): Removed objc-list.h.
@@ -594,7 +597,7 @@
 	objc_write_types, objc_write_unsigned_char,
 	objc_write_unsigned_int, objc_write_unsigned_long,
 	objc_write_unsigned_short): Removed.
-	
+
 2011-06-02  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* Makefile.in (OBJC_DEPRECATED_H): Removed objc_error.h.
@@ -610,7 +613,7 @@
 	* objc/deprecated/Object.h: Removed the same methods.
 	* sendmsg.c (__objc_forward): Do not try to invoke the "error:"
 	method after trying to invoke the "doesNotRecognize:" method.
-	
+
 2011-05-26  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* sendmsg.c: Reindented part of the file.  No non-trivial changes
@@ -642,11 +645,11 @@
 	new +initialize dispatch table logic.
 	(__objc_forward): Call get_implementation instead of get_imp.
 	(prepared_dtable_table): New.
-	(__objc_prepare_dtable_for_class): New.	
+	(__objc_prepare_dtable_for_class): New.
 	(__objc_prepared_dtable_for_class): New.
 	(__objc_get_prepared_imp): New.
 	(__objc_install_prepared_dtable_for_class): New.
-	
+
 2011-05-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR libobjc/48177
@@ -663,11 +666,11 @@
 	* configure: Regenerate.
 
 2011-02-28  Nicola Pero  <nicola.pero@meta-innovation.com>
-	
+
 	* selector.c (sel_getTypedSelector): Return NULL if there are
 	multiple selectors with conflicting types.
 	* objc/runtime.h (sel_getTypedSelector): Updated documentation.
-	
+
 2011-02-28  Richard Frith-Macdonald <rfm@gnu.org>
 
 	PR libobjc/47922
@@ -688,7 +691,7 @@
 	(objc_tree_insert_class): Tidied up loop; return immediately upon
 	inserting a class.
 	(__objc_exec_class): Do not set __objc_class_tree_list.
-	
+
 2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* selector.c (sel_getTypedSelector): Return NULL if given a NULL
@@ -696,14 +699,14 @@
 	(sel_registerTypedName): Same.
 	(sel_registerName): Same.
 	* objc/runtime.h: Updated documentation.
-	
+
 2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/runtime.h (class_addIvar): Updated documentation.  The
 	alignment is actually the log_2 of the alignment in bytes.
 	* ivars.c (class_addIvar): Corresponding change to the
 	implementation.
-	
+
 2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/runtime.h (sel_getType): Renamed to sel_getTypeEncoding to
@@ -713,7 +716,7 @@
 	* selector.c (sel_getType): Renamed to sel_getTypeEncoding.
 	(sel_copyTypedSelectorList, sel_getTypedSelector): New.
 	(sel_get_type): Updated call to sel_getType.
-	
+
 2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/runtime.h (class_conformsToProtocol,
@@ -733,7 +736,7 @@
 	(__objc_update_dispatch_table_for_class): Added DEBUG_PRINTFs for
 	tracking updates of dispatch tables.
 	(__objc_install_dispatch_table_for_class): Same.
-	
+
 2010-12-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.in (libobjc$(libsuffix).la): Link with -Wc,-shared-libgcc.
@@ -783,14 +786,14 @@
 	* objc-private/runtime.h (__objc_add_class_to_hash): Updated
 	declaration.
 
-2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>	
+2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* init.c (_objc_load_callback): Initialize with 0.
 	(__objc_call_callback): Renamed to __objc_call_load_callback.
 	Check _objc_load_callback only once, and if it is not set, return
 	immediately.
 	(objc_send_load): Updated call to __objc_call_callback.
-	
+
 2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR libobjc/16110
@@ -802,14 +805,14 @@
 	(__objc_create_classes_tree): Add the class of any claimed
 	category that was loaded in the module to the list of classes for
 	which we try to execute +load.
-	
+
 2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-private/common.h: When DEBUG is defined, include <stdio.h>.
 	Updated comments.
 	* init.c (__objc_tree_insert_class): Use %p, not %x, when printing
 	a pointer using DEBUG_PRINTF.
-	
+
 2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR libobjc/45953
@@ -830,17 +833,17 @@
 	__sel_register_typed_name.
 	* selector.c (__objc_register_selectors_from_module): New.
 	(__sel_register_typed_name): Made static.
-	
+
 2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* linking.m: Do not include objc/NXConstStr.h.
 
 2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
-	
+
 	* objc-private/runtime.h (DEBUG_PRINTF): Moved from here ...
 	* objc-private/common.h (DEBUG_PRINTF): To here.
 	* hash.c: Do not include objc-private/runtime.h and objc/thr.h.
-	
+
 2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* hash.c: Tidied up comments and indentation.  No code changes.
@@ -865,7 +868,7 @@
 	(__objc_print_dtable_stats): Removed.
 	(__sel_register_typed_name): Removed.
 	* sendmsg.c (__objc_print_dtable_stats): Use 'void' as argument.
-	
+
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* init.c (__objc_exec_class): Call __objc_resolve_class_links (),
@@ -879,7 +882,7 @@
 
 	* objc/message.h: Updated comments.
 	* objc/runtime.h: Updated comments.
-	
+
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* class.c (objc_lookupClass): Renamed to objc_lookUpClass.
@@ -895,7 +898,7 @@
 	* objc/runtime.h (class_ivar_set_gcinvisible): Declare.
 	* sendmsg.c (_CLS_IN_CONSTRUCTION, CLS_IS_IN_CONSTRUCTION): Do not
 	define.  Updated comments.
-	
+
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/encoding.h: Updated comments.
@@ -914,13 +917,13 @@
 	(objc_layout_structure_next_member): Same.
 	(objc_layout_finish_structure): Same.
 	(objc_layout_structure_get_info): Same.
-	
+
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* init.c: Updated comments.
 	* objc/objc-api.h: Updated comments.
 	* objc/runtime.h (_objc_load_callback): Declare.
-	
+
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/Object.h: Include deprecated/typedstream.h and
@@ -937,7 +940,7 @@
 	objc/deprecated/objc_msg_sendv.h instead.  Tidied up comments.
 	* sendmsg.c: Include objc/message.h.
 	* thr.c: Include objc/message.h.
-	
+
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/objc-exception.h: Include objc-decls.h.  Mark all
@@ -952,14 +955,14 @@
 	objc/deprecated/Protocol.h.  Include objc/deprecated/Protocol.h.
 	* objc/deprecated/Protocol.h: New.
 	* Makefile.in (OBJC_DEPRECATED_H): Added Protocol.h.
-	
+
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* init.c: Include objc-private/selector.h.  Do not declare
 	__sel_register_typed_name.
 	* objc-private/selector.h (__sel_register_typed_name): Declare.
 	* selector.c: Include objc-private/selector.h.
-	
+
 2010-12-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* class.c: Tidied up comments and indentation.  No code changes.
@@ -1007,7 +1010,7 @@
 	instead of 'Module_t'.  Use 'struct objc_symtab *' instead of
 	'Symtab_t'.  Use objc_getClass() instead of objc_lookup_class().
 	Use 'struct objc_category *' instead of 'Category_t'.
-	
+
 2010-12-16  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* sendmsg.c: Include objc/runtime.h instead of objc/objc-api.h.
@@ -1029,7 +1032,7 @@
 
 	* objc/message.h (objc_super): When using the modern API, do not
 	define Super and Super_t, and always use 'super_class' for the
-	super class field.	
+	super class field.
 	(objc_msg_lookup_super): Updated prototype to use 'struct
 	objc_super *' instead of 'Super_t'.
 	* sendmsg.c (objc_msg_lookup_super): Updated prototype to use
@@ -1046,12 +1049,12 @@
 	* ivars.c (class_addIvar): Use the 'size' argument instead of
 	trying to calculate it using objc_sizeof_type().
 	* objc/runtime.h (class_addIvar): Updated comments.
-	
+
 2010-12-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* sendmsg.c: Reindented some code and tidied up comments.  No
 	actual code changes.
-	
+
 2010-12-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/Object.h: Moved all the methods, with the exception of
@@ -1075,7 +1078,7 @@
 	(__objc_register_instance_methods_to_class): Use struct
 	objc_method_list * instead of MethodList_t and Method instead of
 	Method_t.
-	
+
 2010-12-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* selector.c: Reindented some code and tidied up comments.  No
@@ -1095,19 +1098,19 @@
 	(get_imp): Call __objc_resolve_class_method or
 	__objc_resolve_instance_method at the appropriate time.
 	(objc_msg_lookup): Same.
-	(class_getClassMethod): Same.	
+	(class_getClassMethod): Same.
 	(class_getInstanceMethod): Same.
 	(__objc_init_dispatch_tables): Initialize
 	selector_resolveClassMethod and selector_resolveInstanceMethod.
 	* objc/runtime.h: Updated documentation of class_getClassMethod,
 	class_getInstanceMethod and class_getMethodImplementation.
-	
+
 2010-12-11  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-private/module-abi-8.h (struct objc_symtab): Updated
 	description of sel_ref_cnt and refs.
 	* objc/deprecated/struct_objc_symtab.h (objc_symtab): Same change.
-	
+
 2010-12-06  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR target/40125
@@ -1117,7 +1120,7 @@
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
 
-2010-12-03  Matthias Klose  <doko@ubuntu.com> 
+2010-12-03  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac (VERSION): Bump the version to 3:0:0.
 	* configure: Regenerate.
@@ -1127,7 +1130,7 @@
 	* sendmsg.c (get_imp): Fixed call to __objc_get_forward_imp to
 	pass nil as the receiver since we don't know the receiver at this
 	point.
-	
+
 2010-11-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* ivars.c: Include stdlib.h.
@@ -1189,7 +1192,7 @@
 	* class.c (class_getSuperclass): Call __objc_resolve_class_links
 	if the class is not resolved yet.
 	* ivars.c (class_getInstanceVariable): Use class_getSuperclass.
-	
+
 2010-10-16  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/runtime.h (class_getIvarLayout): New.
@@ -1199,10 +1202,10 @@
 	* ivars.c (class_getIvarLayout): New.
 	(class_getWeakIvarLayout): New.
 	(class_setIvarLayout): New.
-	(class_setWeakIvarLayout): New.	
+	(class_setWeakIvarLayout): New.
 
 2010-10-15  Nicola Pero  <nicola.pero@meta-innovation.com>
-	
+
 	* objc/runtime.h (class_copyPropertyList): New.
 	(class_getProperty): New.
 	(property_getAttributes): New.
@@ -1211,7 +1214,7 @@
 	(class_getProperty): New.
 	(property_getAttributes): New.
 	(property_getName): New.
-	
+
 2010-10-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-private/runtime.h (__objc_update_classes_with_methods): New.
@@ -1221,7 +1224,7 @@
 	(method_setImplementation): New.
 	* objc/runtime.h (method_setImplementation): New.
 	(method_exchangeImplementations): New.
-	
+
 2010-10-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* Protocol.m: Include objc/runtime.h and
@@ -1237,7 +1240,7 @@
 	to compare selectors directly instead of getting names and then
 	using strcmp.
 	* objc/Protocol.h: Updated comments.
-	
+
 2010-10-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* init.c (__objc_init_protocol): New function which fixes up a
@@ -1258,7 +1261,7 @@
 	* protocols.c (protocol_getMethodDescription): Same change.
 	* objc/runtime.h: Updated comments.
 	(sel_registerTypedName): Fixed typo in function name.
-	
+
 2010-10-13  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR libobjc/23214
@@ -1285,7 +1288,7 @@
 	(method_getReturnType): New.
 	(method_getArgumentType): New.
 	(method_getDescription): New.
-	
+
 2010-10-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* encoding.c: Tidied up comments.
@@ -1302,8 +1305,8 @@
 	there is no offset: check that the first offset digit is actually
 	a digit before skipping it.
 	(objc_skip_type_qualifiers): Mark as inline.
-	(objc_skip_typespec): Mark as inline.	
-	
+	(objc_skip_typespec): Mark as inline.
+
 2010-10-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* Makefile.in (C_SOURCE_FILES): Added methods.c.
@@ -1334,7 +1337,7 @@
 	(method_getTypeEncoding): New.
 	(class_copyMethodList): New.
 	(method_getNumberOfArguments): New.
-	
+
 2010-10-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* class.c: Include objc/runtime.h and objc-private/module-abi-8.h
@@ -1398,7 +1401,7 @@
 	* sarray.c: Include objc/runtime.h instead of objc/objc-api.h.  Do
 	not include objc/objc.h.
 	* selector.c: Do not include objc/objc.h.
-	* sendmsg.c: Do not include objc/objc.h.	
+	* sendmsg.c: Do not include objc/objc.h.
 	* thr.c: Include objc/runtime.h instead of objc/objc-api.h.
 	Do not include objc/objc.h.
 	* objc/objc-decls.h: Reindented code.
@@ -1409,7 +1412,7 @@
 	(objc_realloc): New.
 	(objc_free): New.
 	* objc-private/runtime.h: Updated comments.
-	
+
 2010-10-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* Makefile.in (C_SOURCE_FILES): Added protocols.c.
@@ -1442,7 +1445,7 @@
 	(protocol_copyProtocolList): New.
 	* class.c (class_getName): New.
 	* selector.c (sel_isEqual): New.
-	
+
 2010-10-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* selector.c (sel_getName): Return "<null selector>" for a NULL
@@ -1454,7 +1457,7 @@
 	removed.
 	(module_hash_table): Same.
 	* objc/deprecated/hash.h: Same changes.
-	
+
 2010-10-11  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* class.c (objc_getClassList): New.
@@ -1478,7 +1481,7 @@
 	* objc-private/runtime.h: Use __objc_private_runtime_INCLUDE_GNU
 	instead of __objc_runtime_INCLUDE_GNU as include guard.
 	* objc-private/error.h (_objc_abort): Mark as noreturn.
-	
+
 2010-10-11  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* Makefile.in (C_SOURCE_FILES): Added ivars.c.
@@ -1492,14 +1495,14 @@
 	(object_getInstanceVariable): New.
 	(object_setInstanceVariable): New.
 	(object_getIvar): New.
-	(object_setIvar): New.	
+	(object_setIvar): New.
 	(ivar_getName): New.
 	(ivar_getOffset): New.
 	(ivar_getTypeEncoding): New.
 	* objc-private/module-abi-8.h (struct objc_class): Added.
 	* objects.c (object_getClassName): New.
 	(object_setClass): New.
-	
+
 2010-10-11  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/objc.h: Updated comments.
@@ -1544,7 +1547,7 @@
 	(sel_register_typed_name): Call sel_registerTypedName.
 	(sel_getUid): New.
 	(sel_get_uid): Call sel_getUid.
-	
+
 2010-10-10  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/objc-api.h: Define Method, Method_t, Category and
@@ -1568,7 +1571,7 @@
 	objc_layout_structure_next_member, objc_layout_finish_structure,
 	objc_layout_structure_get_info.  Prevent including this file at
 	the same time as objc/objc-api.h.
-	
+
 2010-10-10  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* Makefile.in (OBJC_DEPRECATED_H): Added struct_objc_category.h,
@@ -1632,7 +1635,7 @@
 	(OBJC_H): Added runtime.h
 	* objc-foreach.c: New file.
 	* objc/runtime.h: New file.
-	
+
 2010-09-30  Kai Tietz  <kai.tietz@onevision.com>
 
 	* objc/deprecated/struct_objc_class.h: Add padding
@@ -1641,13 +1644,13 @@
 2010-09-26  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* encoding.c (objc_sizeof_type): Added support for vector type and
-	for double long types.	
+	for double long types.
 	(objc_alignof_type): Same change.
 	(objc_skip_typespec): Same change.
 	* objc/encoding.h (_C_GCINVISIBLE): Use '|' for _C_GCINVISIBLE
 	instead of '!' since '!' is already used for _C_VECTOR.
 	* objc/objc-api.h (_C_LNG_DBL): Added.
-	
+
 2010-09-26  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* libobjc_entry.c: File removed.
@@ -1691,14 +1694,14 @@
 	objc/sarray.h.
 	* sendmsg.c: Include <assert.h>.  Include objc-private/sarray.h
 	instead of objc/sarray.h.
-	* Makefile.in (OBJC_DEPRECATED_H): Added sarray.h.	
+	* Makefile.in (OBJC_DEPRECATED_H): Added sarray.h.
 
 2010-09-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-private/objc-list.h (list_remove_elem): Unused function
 	removed.  (list_nth): Unused function removed.  (list_find):
 	Unused function removed.  (list_lenght): Unused function removed.
-	
+
 2010-09-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/hash.h: Moved into objc/deprecated/hash.h; objc/hash.h
@@ -1736,7 +1739,7 @@
 	* acinclude.m4: Include ../config/enable.m4 and ../config/tls.m4.
 	* configure: Regenerated.
 	* config.h.in: Regenerated.
-	
+
 2010-09-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* Makefile.in (%_gc.lo): New pattern rules to build the
@@ -1748,16 +1751,16 @@
 	(INCLUDES): Removed the unused include -I$(srcdir)/objc.
 
 2010-09-12  Nicola Pero  <nicola.pero@meta-innovation.com>
-	
+
 	* memory.c (objc_calloc): Fixed call to GC_malloc when building
 	with Garbage Colletion.
-	
+
 2010-09-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* memory.c: Do not include objc-private/runtime.h.
 
 2010-09-12  Nicola Pero  <nicola.pero@meta-innovation.com>
-	
+
 	* objc/deprecated/objc_malloc.h: New file.
 	* objc/deprecated/objc_valloc.h: New file.
 	* objc/objc-api.h: Include the files instead of defining
@@ -1768,8 +1771,8 @@
 	and similar.
 	(objc_calloc): Use GC_malloc in the garbage-collected
 	implementation as GC_malloc returns memory that is already freed.
-	(objc_valloc): Deprecated.	
-	
+	(objc_valloc): Deprecated.
+
 2010-09-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/deprecated/objc_error.h: New file.
@@ -1796,7 +1799,7 @@
 	(misc_gc.lo): Rule removed.
 	(error_gc.lo): Rule added.
 	(memory_gc.lo): Rule added.
-	
+
 2010-09-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/objc.h (__GNU_LIBOBJC__): New #define providing an easy way
@@ -1856,7 +1859,7 @@
 	* selector.c: Same change.
 	* sendmsg.c: Same change.
 	* thr.c: Same change.
-	
+
 2010-09-11  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/deprecated/struct_objc_selector.h: New file.  Definition of
@@ -1867,7 +1870,7 @@
 	'struct objc_class' moved here.
 	* objc/deprecated/MetaClass.h: New file.  Definition of MetClass
 	moved here.
-	* objc/deprecated/STR.h: New file.  Definition of STR moved here.	
+	* objc/deprecated/STR.h: New file.  Definition of STR moved here.
 	* objc/message.h: New file.  Definitions for relval_t, apply_t,
 	arglist, arglist_t and objc_msg_lookup were moved here.
 	* objc/objc.h: Include the above files instead of defining the
@@ -1884,7 +1887,7 @@
 	* objc/objc-exception.h: Updated comments.
 	* Makefile.in (OBJC_H, OBJC_DEPRECATED_H): Added the new header
 	files.  Reindented list of files.
-	
+
 2010-09-10  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/objc-api.h (objc_trace): Unused variable removed.
@@ -1898,7 +1901,7 @@
 	objc/typedstream.h replaced with a placeholder including the file
 	from the deprecated/ directory.
 	* objc/deprecated/objc-unexpected-exception.h: New file with the
-	definition of _objc_unexpected_exception.	
+	definition of _objc_unexpected_exception.
 	* objc/objc-api.h: Include deprecated/objc-unexcepted-exception.h
 	instead of defining _objc_unexpected_exception.
 	* objc/deprecated/Object.h: New file with the deprecated Object
@@ -1915,7 +1918,7 @@
 2010-09-10  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/objc-exception.h: Fixed include of objc.h.
-	
+
 2010-09-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/objc-exception.h: New file.
@@ -1980,7 +1983,7 @@
 2010-09-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* makefile.dos: Obsolete file removed.
-	
+
 2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* aclocal.m4: Regenerate.
@@ -2100,7 +2103,7 @@
 	copyright dates.
 	* libobjc.def (_objc_unexpected_exception): Export hook.
 	Update copyright dates.
-	
+
 2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
@@ -2127,13 +2130,13 @@
 	* configure: Regenerate for new libtool.
 	* config.h.in: Regenerate for new libtool.
 
-2008-07-18  Matthias Klose  <doko@ubuntu.com> 
+2008-07-18  Matthias Klose  <doko@ubuntu.com>
 
-	* Makefile.in: Ignore missing ../boehm-gc/threads.mk. 
+	* Makefile.in: Ignore missing ../boehm-gc/threads.mk.
 
-2008-07-18  Matthias Klose  <doko@ubuntu.com> 
+2008-07-18  Matthias Klose  <doko@ubuntu.com>
 
-	* Makefile.in: Include ../boehm-gc/threads.mk. 
+	* Makefile.in: Include ../boehm-gc/threads.mk.
 	(OBJC_BOEHM_GC_LIBS): Define, (libobjc_gc$(libsuffix).la): Use it.
 
 2008-07-06  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
@@ -2261,7 +2264,7 @@
 
 	* objc/objc-list.h (list_free): Add keyword 'inline' to avoid
 	unused warning.
-	
+
 2006-10-31  Geoffrey Keating  <geoffk@apple.com>
 
 	* encoding.c (darwin_rs6000_special_round_type_align): New.
@@ -2320,7 +2323,7 @@
 	PR libobjc/14382
 	* README (+load,+initialize): Fix documentation to reflect
 	intended and implemented semantics for +load and +initialize.
-	
+
 2005-12-12  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* encoding.c (TYPE_FIELDS): Fix to skip over just _C_STRUCT_B and
@@ -2405,7 +2408,7 @@
 
 	* objc/NXConstStr.h, objc/Object.h, objc/Protocol.h,
 	objc/encoding.h, objc/hash.h, objc/objc-api.h,
-	objc/runtime.h, objc/sarray.h, objc/thr.h, 
+	objc/runtime.h, objc/sarray.h, objc/thr.h,
 	objc/typedstream.h: Do not include Objective-C headers as
 	system headers.
 

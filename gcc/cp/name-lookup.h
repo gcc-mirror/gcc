@@ -330,6 +330,9 @@ extern void push_nested_namespace (tree);
 extern void pop_nested_namespace (tree);
 extern void push_to_top_level (void);
 extern void pop_from_top_level (void);
+extern void maybe_save_operator_binding (tree);
+extern void push_operator_bindings (void);
+extern void discard_operator_bindings (tree);
 
 // FIXME: class symbol handling.  In transition
 extern tree lookup_class_member (tree, tree, bool);

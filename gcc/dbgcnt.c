@@ -91,22 +91,22 @@ dbg_cnt_set_limit_by_name (const char *name, int low, int high)
 {
   if (high < low)
     {
-      error ("-fdbg-cnt=%s:%d:%d has smaller upper limit than the lower",
+      error ("%<-fdbg-cnt=%s:%d:%d%> has smaller upper limit than the lower",
 	     name, low, high);
       return false;
     }
 
   if (low < 0)
     {
-      error ("Lower limit %d of -fdbg-cnt=%s must be a non-negative number", low,
-	     name);
+      error ("Lower limit %d of %<-fdbg-cnt=%s%> must be a non-negative "
+	     "number", low, name);
       return false;
     }
 
   if (high < 0)
     {
-      error ("Upper limit %d of -fdbg-cnt=%s must be a non-negative number", high,
-	     name);
+      error ("Upper limit %d of %<-fdbg-cnt=%s%> must be a non-negative "
+	     "number", high, name);
       return false;
     }
 
@@ -173,7 +173,7 @@ dbg_cnt_process_opt (const char *arg)
        char *buffer = XALLOCAVEC (char, start + 2);
        sprintf (buffer, "%*c", start + 1, '^');
        error ("cannot find a valid counter:value pair:");
-       error ("-fdbg-cnt=%s", next);
+       error ("%<-fdbg-cnt=%s%>", next);
        error ("          %s", buffer);
      }
 }

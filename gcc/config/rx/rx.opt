@@ -34,7 +34,7 @@ Stores doubles in 32 bits.  This is the default.
 
 nofpu
 Target RejectNegative Alias(mnofpu)
-Disable the use of RX FPU instructions.  
+Disable the use of RX FPU instructions.
 
 mnofpu
 Target RejectNegative Mask(NO_USE_FPU) Report Undocumented

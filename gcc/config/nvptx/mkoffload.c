@@ -488,7 +488,8 @@ main (int argc, char **argv)
 	verbose = true;
     }
   if (!(fopenacc ^ fopenmp))
-    fatal_error (input_location, "either -fopenacc or -fopenmp must be set");
+    fatal_error (input_location, "either %<-fopenacc%> or %<-fopenmp%> "
+		 "must be set");
 
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);

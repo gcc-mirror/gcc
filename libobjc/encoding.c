@@ -81,6 +81,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DECL_MODE(TYPE) *(TYPE)
 #define TYPE_MODE(TYPE) *(TYPE)
 
+#undef  DFmode
 #define DFmode          _C_DBL
 
 #define strip_array_types(TYPE)      ({const char *_field = (TYPE); \

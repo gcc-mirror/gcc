@@ -40,7 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 	 appear in shared libraries, so relaxation is OK	\
 	 for RTP PIC.  */					\
       if (TARGET_RELAX && !(TARGET_VXWORKS_RTP && flag_pic))	\
-	error ("-mrelax is only supported for RTP PIC");	\
+	error ("%<-mrelax%> is only supported for RTP PIC");	\
     }								\
   while (0)
 

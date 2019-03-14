@@ -1740,7 +1740,7 @@ sparc_option_override (void)
 	  else if (! strcmp (q, "options"))
 	    mask = MASK_DEBUG_OPTIONS;
 	  else
-	    error ("unknown -mdebug-%s switch", q);
+	    error ("unknown %<-mdebug-%s%> switch", q);
 
 	  if (invert)
 	    sparc_debug &= ~mask;
@@ -1774,7 +1774,7 @@ sparc_option_override (void)
   /* We force all 64bit archs to use 128 bit long double */
   if (TARGET_ARCH64 && !TARGET_LONG_DOUBLE_128)
     {
-      error ("-mlong-double-64 not allowed with -m64");
+      error ("%<-mlong-double-64%> not allowed with %<-m64%>");
       target_flags |= MASK_LONG_DOUBLE_128;
     }
 
@@ -1782,7 +1782,7 @@ sparc_option_override (void)
   for (i = 8; i < 16; i++)
     if (!call_used_regs [i])
       {
-	error ("-fcall-saved-REG is not supported for out registers");
+	error ("%<-fcall-saved-REG%> is not supported for out registers");
         call_used_regs [i] = 1;
       }
 
@@ -1906,7 +1906,7 @@ sparc_option_override (void)
   if (global_options_set.x_sparc_code_model)
     {
       if (TARGET_ARCH32)
-	error ("-mcmodel= is not supported in 32-bit mode");
+	error ("%<-mcmodel=%> is not supported in 32-bit mode");
     }
   else
     {

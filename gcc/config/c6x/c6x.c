@@ -239,7 +239,8 @@ c6x_option_override (void)
 
   if (flag_pic && !TARGET_DSBT)
     {
-      error ("-fpic and -fPIC not supported without -mdsbt on this target");
+      error ("%<-fpic%> and %<-fPIC%> not supported without %<-mdsbt%> "
+	     "on this target");
       flag_pic = 0;
     }
   c6x_initial_flag_pic = flag_pic;

@@ -111,14 +111,14 @@
 	  if ((rs6000_isa_flags & OPTION_MASK_POWERPC64) == 0)	\
 	    {							\
 	      rs6000_isa_flags |= OPTION_MASK_POWERPC64;	\
-	      error ("-m64 requires a PowerPC64 cpu");		\
+	      error ("%<-m64%> requires a PowerPC64 cpu");		\
 	    }							\
 	  if ((rs6000_isa_flags_explicit			\
 		& OPTION_MASK_MINIMAL_TOC) != 0)		\
 	    {							\
 	      if (global_options_set.x_rs6000_current_cmodel	\
 		  && rs6000_current_cmodel != CMODEL_SMALL)	\
-		error ("-mcmodel incompatible with other toc options"); \
+		error ("%<-mcmodel%> incompatible with other toc options"); \
 	      SET_CMODEL (CMODEL_SMALL);			\
 	    }							\
 	  else							\

@@ -4605,7 +4605,7 @@ record_mangling (tree decl, bool need_warning)
       inform (DECL_SOURCE_LOCATION (*slot),
 	      "previous mangling %q#D", *slot);
       inform (DECL_SOURCE_LOCATION (decl),
-	      "a later -fabi-version= (or =0)"
+	      "a later %<-fabi-version=%> (or =0)"
 	      " avoids this error with a change in mangling");
       *slot = decl;
     }
@@ -5023,13 +5023,11 @@ c_parse_final_cleanups (void)
 	  /* Don't complain if the template was defined.  */
 	  && !(DECL_TEMPLATE_INSTANTIATION (decl)
 	       && DECL_INITIAL (DECL_TEMPLATE_RESULT
-				(template_for_substitution (decl)))))
-	{
-	  warning_at (DECL_SOURCE_LOCATION (decl), 0,
-		      "inline function %qD used but never defined", decl);
-	  /* Avoid a duplicate warning from check_global_declaration.  */
-	  TREE_NO_WARNING (decl) = 1;
-	}
+				(template_for_substitution (decl))))
+	  && warning_at (DECL_SOURCE_LOCATION (decl), 0,
+			 "inline function %qD used but never defined", decl))
+	/* Avoid a duplicate warning from check_global_declaration.  */
+	TREE_NO_WARNING (decl) = 1;
     }
 
   /* So must decls that use a type with no linkage.  */

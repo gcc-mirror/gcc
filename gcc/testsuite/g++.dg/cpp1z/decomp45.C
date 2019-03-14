@@ -8,7 +8,7 @@ template<int>
 void f()
 {
   auto [x] = a;  // { dg-warning "incomplete" }
-}  // { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-1 }
+}  // { dg-warning "structured bindings only available with '-std=c..17' or '-std=gnu..17'" "" { target c++14_down } .-1 }
 
 struct A { int i; };
 

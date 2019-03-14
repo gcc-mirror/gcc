@@ -417,7 +417,8 @@ alpha_option_override (void)
       else if (! strcmp (alpha_tp_string, "i"))
 	alpha_tp = ALPHA_TP_INSN;
       else
-	error ("bad value %qs for -mtrap-precision switch", alpha_tp_string);
+	error ("bad value %qs for %<-mtrap-precision%> switch",
+	       alpha_tp_string);
     }
 
   if (alpha_fprm_string)
@@ -431,7 +432,7 @@ alpha_option_override (void)
       else if (! strcmp (alpha_fprm_string,"d"))
 	alpha_fprm = ALPHA_FPRM_DYN;
       else
-	error ("bad value %qs for -mfp-rounding-mode switch",
+	error ("bad value %qs for %<-mfp-rounding-mode%> switch",
 	       alpha_fprm_string);
     }
 
@@ -446,7 +447,8 @@ alpha_option_override (void)
       else if (strcmp (alpha_fptm_string, "sui") == 0)
 	alpha_fptm = ALPHA_FPTM_SUI;
       else
-	error ("bad value %qs for -mfp-trap-mode switch", alpha_fptm_string);
+	error ("bad value %qs for %<-mfp-trap-mode%> switch",
+	       alpha_fptm_string);
     }
 
   if (alpha_cpu_string)
@@ -463,7 +465,7 @@ alpha_option_override (void)
 	    break;
 	  }
       if (i == ct_size)
-	error ("bad value %qs for -mcpu switch", alpha_cpu_string);
+	error ("bad value %qs for %<-mcpu%> switch", alpha_cpu_string);
     }
 
   if (alpha_tune_string)
@@ -478,7 +480,7 @@ alpha_option_override (void)
 	    break;
 	  }
       if (i == ct_size)
-	error ("bad value %qs for -mtune switch", alpha_tune_string);
+	error ("bad value %qs for %<-mtune%> switch", alpha_tune_string);
     }
 
   if (line_size)
@@ -499,7 +501,7 @@ alpha_option_override (void)
   if ((alpha_fptm == ALPHA_FPTM_SU || alpha_fptm == ALPHA_FPTM_SUI)
       && alpha_tp != ALPHA_TP_INSN && alpha_cpu != PROCESSOR_EV6)
     {
-      warning (0, "fp software completion requires -mtrap-precision=i");
+      warning (0, "fp software completion requires %<-mtrap-precision=i%>");
       alpha_tp = ALPHA_TP_INSN;
     }
 
@@ -567,7 +569,8 @@ alpha_option_override (void)
       }
     else
       {
-	warning (0, "bad value %qs for -mmemory-latency", alpha_mlat_string);
+	warning (0, "bad value %qs for %<-mmemory-latency%>",
+		 alpha_mlat_string);
 	lat = 3;
       }
 

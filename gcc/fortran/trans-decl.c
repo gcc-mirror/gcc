@@ -843,7 +843,7 @@ gfc_get_module_backend_decl (gfc_symbol *sym)
 	{
 	  if (!gsym)
 	    {
-	      gsym = gfc_get_gsymbol (sym->module);
+	      gsym = gfc_get_gsymbol (sym->module, false);
 	      gsym->type = GSYM_MODULE;
 	      gsym->ns = gfc_get_namespace (NULL, 0);
 	    }
@@ -2002,9 +2002,22 @@ gfc_get_extern_function_decl (gfc_symbol * sym, gfc_actual_arglist *actual_args)
     return get_proc_pointer_decl (sym);
 
   /* See if this is an external procedure from the same file.  If so,
-     return the backend_decl.  */
-  gsym =  gfc_find_gsymbol (gfc_gsym_root, sym->binding_label
-					   ? sym->binding_label : sym->name);
+     return the backend_decl.  If we are looking at a BIND(C)
+     procedure and the symbol is not BIND(C), or vice versa, we
+     haven't found the right procedure.  */
+
+  if (sym->binding_label)
+    {
+      gsym = gfc_find_gsymbol (gfc_gsym_root, sym->binding_label);
+      if (gsym && !gsym->bind_c)
+	gsym = NULL;
+    }
+  else
+    {
+      gsym = gfc_find_gsymbol (gfc_gsym_root, sym->name);
+      if (gsym && gsym->bind_c)
+	gsym = NULL;
+    }
 
   if (gsym && !gsym->defined)
     gsym = NULL;

@@ -2172,7 +2172,16 @@ get_frame_for_symbol (Dsymbol *sym)
       fdparent = (FuncDeclaration *) sym;
     }
 
-  gcc_assert (fdparent != NULL);
+  /* Not a nested function, there is no frame pointer to pass.  */
+  if (fdparent == NULL)
+    {
+      /* Only delegate literals report as being nested, even if they are in
+	 global scope.  */
+      gcc_assert (fd && fd->isFuncLiteralDeclaration ());
+      return null_pointer_node;
+    }
+
+  gcc_assert (thisfd != NULL);
 
   if (thisfd != fdparent)
     {
@@ -2180,8 +2189,8 @@ get_frame_for_symbol (Dsymbol *sym)
       if (!thisfd->vthis)
 	{
 	  error_at (make_location_t (sym->loc),
-		    "is a nested function and cannot be accessed from %qs",
-		    thisfd->toChars ());
+		    "%qs is a nested function and cannot be accessed from %qs",
+		    fd->toPrettyChars (), thisfd->toPrettyChars ());
 	  return null_pointer_node;
 	}
 

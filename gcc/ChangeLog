@@ -1,3 +1,695 @@
+2019-03-14  Richard Biener  <rguenther@suse.de>
+
+	* gimple-pretty-print.c: Include cfgloop.h.
+	(dump_gimple_phi): Adjust.
+	(dump_gimple_bb_header): Dump loop header for GIMPLE.
+	(pp_cfg_jump): Adjust.
+	(dump_implicit_edges): Dump fallthru to next block for GIMPLE as well.
+	* tree-cfg.c (build_gimple_cfg): Remove lower_phi_internal_fn call.
+	(lower_phi_internal_fn): Remove.
+	(verify_gimple_call): Remove IFN_PHI special-casing.
+	(dump_function_to_file): Dump IL state.
+	* tree-into-ssa.c (rewrite_add_phi_arguments): Revert changes
+	done to deal with PHI nodes being present in non-SSA state.
+
+2019-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/89684
+	* multiple_target.c (create_dispatcher_calls): Change
+	references_to_redirect from vector of ipa_ref * to vector of ipa_ref.
+	In the node->iterate_referring loop, push *ref rather than ref, call
+	ref->remove_reference () and always pass 0 to iterate_referring.
+
+	PR rtl-optimization/89679
+	* expmed.c (expand_mult_const): Don't add a REG_EQUAL note if it
+	would contain a paradoxical SUBREG.
+
+2019-03-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89710
+	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p): Use
+	safe_dyn_cast.
+
+2019-03-14  Martin Liska  <mliska@suse.cz>
+
+	* coverage.c (coverage_begin_function): Stream also
+	end_column.
+	* doc/gcov.texi: Document 2 new fields in JSON file.  Improve
+	documentation about function declaration location.
+	* gcov-dump.c (tag_function): Print whole range
+	of function declaration.
+	* gcov.c (struct function_info): Add end_column field.
+	(function_info::function_info): Initialize it.
+	(output_json_intermediate_file): Output {start,end}_column
+	fields.
+	(read_graph_file): Read end_column.
+
+2019-03-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89698
+	* fold-const.c (operand_equal_p): For INDIRECT_REF check
+	that the access types are similar.
+
+2019-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89703
+	* tree-ssa-strlen.c (valid_builtin_call): Punt if stmt call types
+	aren't compatible also with builtin_decl_explicit.  Check pure
+	or non-pure status of BUILT_IN_STR{{,N}CMP,N{LEN,{CAT,CPY}{,_CHK}}}
+	and BUILT_IN_STPNCPY{,_CHK}.
+
+2019-03-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89523
+	* config/i386/i386.c (ix86_print_operand): Handle 'M' to add
+	addr32 prefix to VSIB address for X32.
+	* config/i386/sse.md (*avx512pf_gatherpf<mode>sf_mask): Prepend
+	"%M2" to opcode.
+	(*avx512pf_gatherpf<mode>df_mask): Likewise.
+	(*avx512pf_scatterpf<mode>sf_mask): Likewise.
+	(*avx512pf_scatterpf<mode>df_mask): Likewise.
+	(*avx2_gathersi<mode>): Prepend "%M3" to opcode.
+	(*avx2_gathersi<mode>_2): Prepend "%M2" to opcode.
+	(*avx2_gatherdi<mode>): Prepend "%M3" to opcode.
+	(*avx2_gatherdi<mode>_2): Prepend "%M2" to opcode.
+	(*avx2_gatherdi<mode>_3): Prepend "%M3" to opcode.
+	(*avx2_gatherdi<mode>_4): Prepend "%M2" to opcode.`
+	(*avx512f_gathersi<mode>): Prepend "%M4" to opcode.
+	(*avx512f_gathersi<mode>_2): Prepend "%M3" to opcode.
+	(*avx512f_gatherdi<mode>): Prepend "%M4" to opcode.
+	(*avx512f_gatherdi<mode>_2): Prepend "%M3" to opcode.
+	(*avx512f_scattersi<mode>): Prepend "%M0" to opcode.
+	(*avx512f_scatterdi<mode>): Likewise.
+
+2019-03-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/85860
+	* lra-constraints.c (inherit_in_ebb): Update
+	potential_reload_hard_regs along with live_hard_regs.
+
+2019-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/89498
+	* dwarf2out.c (size_of_die): For dw_val_class_view_list always use
+	DWARF_OFFSET_SIZE.
+	(value_format): For dw_val_class_view_list never use DW_FORM_loclistx.
+
+2019-03-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/89662
+	* tree-vrp.c (vrp_prop::check_mem_ref): Avoid assuming every type
+	has a size.
+
+2019-03-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89677
+	* tree-scalar-evolution.c (simplify_peeled_chrec): Do not
+	throw FP expressions at tree-affine.
+
+2019-03-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-pretty-print.c (dump_generic_node): For -gimple properly
+	dump negative integer constants using _Literal (type) -num.
+
+2019-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-param-manipulation.h (struct ipa_parm_adjustment): Remove
+	nonlocal_value member.
+
+	PR middle-end/88588
+	* omp-simd-clone.c (ipa_simd_modify_stmt_ops): Handle PHI args.
+	(ipa_simd_modify_function_body): Handle PHIs.
+
+2019-03-12  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/s390.c (s390_option_override_internal): Use more
+	aggressive inlining parameters.
+
+2019-03-12  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/3906.md: New file.
+	* config/s390/s390.c (MAX_SCHED_UNITS): Increase.
+	(LONGRUNNING_THRESHOLD): Remove.
+	(MAX_SCHED_MIX_SCORE): Decrease.
+	(MAX_SCHED_MIX_DISTANCE): Decrease.
+	(s390_bb_fallthru_entry_likely): Assume fallthru for less than likely.
+	(struct s390_sched_state): New struct to hold scheduling state.
+	(S390_SCHED_STATE_NORMAL): Remove.
+	(S390_SCHED_STATE_CRACKED): Remove.
+	(S390_SCHED_ATTR_MASK_GROUPOFTWO): Add.
+	(s390_get_sched_attrmask): Use new attribute.
+	(s390_get_unit_mask): Use new units.
+	(s390_is_fpd): New function.
+	(s390_is_fxd): New function.
+	(s390_is_longrunning): New function.
+	(s390_sched_score): Use new functions.
+	(s390_sched_reorder): Likewise.
+	(s390_sched_variable_issue): Rework and use new functions.
+	(s390_sched_init): Use new functions.
+	* config/s390/s390.h (s390_tune_attr):  Add z14.
+	* config/s390/s390.md: Add z14.
+
+2019-03-12  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/2964.md: Update pipeline description.
+	* config/s390/s390.c (MAX_SCHED_UNITS): Increase.
+	(LONGRUNNING_THRESHOLD): Remove.
+	(LATENCY_FACTOR): Remove.
+	(s390_get_unit_mask): Add unit.
+	(s390_sched_score): Use fxd/fpd.
+	(s390_sched_variable_issue): Use fxd/fpd.
+
+2019-03-12  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386.c: Reword an error message.
+
+2019-03-12  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.c (cgraph_node::dump): Dump more info for former thunks,
+	terminate with newline.
+
+2019-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/52726
+	* config/s390/s390.md (tabort): Use %wd instead of
+	HOST_WIDE_INT_PRINT_DEC in error message, reword to avoid two capital
+	letters and periods.
+	* config/tilepro/tilepro.c (tilepro_print_operand): Use %wd in
+	output_operand_lossage instead of HOST_WIDE_INT_PRINT_DEC, replace
+	's with %< and %>.
+
+	PR middle-end/89663
+	* builtins.c (expand_builtin_int_roundingfn,
+	expand_builtin_int_roundingfn_2): Return NULL_RTX instead of
+	gcc_unreachable if validate_arglist fails.
+
+2019-03-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89664
+	* tree-ssa-math-opts.c (execute_cse_reciprocals_1): Properly
+	free the occurance tree after the early out.
+
+2019-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89655
+	PR bootstrap/89656
+	* vr-values.c (vr_values::update_value_range): If
+	old_vr->varying_p (), don't update it, make new_vr also VARYING
+	and return false.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* config/aarch64/aarch64.c (aarch64_override_options_internal):
+	Fix double string quoting.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* collect-utils.c (collect_wait): Wrap apostrophes
+	in gcc internal format with %'.
+	* collect2.c (main): Likewise.
+	(scan_prog_file): Likewise.
+	(scan_libraries): Likewise.
+	* config/i386/i386.c (ix86_expand_call): Likewise.
+	(ix86_handle_interrupt_attribute): Likewise.
+	* config/nds32/nds32-intrinsic.c (nds32_expand_builtin_impl): Likewise.
+	* config/nds32/nds32.c (nds32_insert_attributes): Likewise.
+	* config/rl78/rl78.c (rl78_handle_saddr_attribute): Likewise.
+	* lto-wrapper.c (find_crtoffloadtable): Likewise.
+	* symtab.c (symtab_node::verify_base): Likewise.
+	* tree-cfg.c (verify_gimple_label): Likewise.
+	* tree.c (verify_type_variant): Likewise.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* builtins.c (expand_builtin_thread_pointer): Wrap an option name
+	in a string format message and fix GNU coding style.
+	(expand_builtin_set_thread_pointer): Likewise.
+	* common/config/aarch64/aarch64-common.c (aarch64_rewrite_selected_cpu): Likewise.
+	* common/config/alpha/alpha-common.c (alpha_handle_option): Likewise.
+	* common/config/arc/arc-common.c (arc_handle_option): Likewise.
+	* common/config/arm/arm-common.c (arm_parse_fpu_option): Likewise.
+	* common/config/bfin/bfin-common.c (bfin_handle_option): Likewise.
+	* common/config/i386/i386-common.c (ix86_handle_option): Likewise.
+	* common/config/ia64/ia64-common.c (ia64_handle_option): Likewise.
+	* common/config/m68k/m68k-common.c (m68k_handle_option): Likewise.
+	* common/config/msp430/msp430-common.c (msp430_handle_option): Likewise.
+	* common/config/nds32/nds32-common.c (nds32_handle_option): Likewise.
+	* common/config/powerpcspe/powerpcspe-common.c (rs6000_handle_option): Likewise.
+	* common/config/riscv/riscv-common.c (riscv_subset_list::parsing_subset_version): Likewise.
+	(riscv_subset_list::parse_std_ext): Likewise.
+	(riscv_subset_list::parse_sv_or_non_std_ext): Likewise.
+	(riscv_subset_list::parse): Likewise.
+	* common/config/rs6000/rs6000-common.c (rs6000_handle_option): Likewise.
+	* config/aarch64/aarch64.c (aarch64_parse_one_option_token): Likewise.
+	(aarch64_override_options_internal): Likewise.
+	(aarch64_validate_mcpu): Likewise.
+	(aarch64_validate_march): Likewise.
+	(aarch64_validate_mtune): Likewise.
+	(aarch64_override_options): Likewise.
+	* config/alpha/alpha.c (alpha_option_override): Likewise.
+	* config/arc/arc.c (arc_init): Likewise.
+	(parse_mrgf_banked_regs_option): Likewise.
+	(arc_override_options): Likewise.
+	(arc_expand_builtin_aligned): Likewise.
+	* config/arm/arm-builtins.c (arm_expand_neon_builtin): Likewise.
+	(arm_expand_builtin): Likewise.
+	* config/arm/arm.c (arm_option_check_internal): Likewise.
+	(arm_configure_build_target): Likewise.
+	(arm_option_override): Likewise.
+	(arm_options_perform_arch_sanity_checks): Likewise.
+	(arm_handle_cmse_nonsecure_entry): Likewise.
+	(arm_handle_cmse_nonsecure_call): Likewise.
+	(arm_tls_referenced_p): Likewise.
+	(thumb1_expand_prologue): Likewise.
+	* config/avr/avr.c (avr_option_override): Likewise.
+	* config/bfin/bfin.c (bfin_option_override): Likewise.
+	* config/c6x/c6x.c (c6x_option_override): Likewise.
+	* config/cr16/cr16.c (cr16_override_options): Likewise.
+	* config/cris/cris.c (cris_option_override): Likewise.
+	* config/csky/csky.c (csky_handle_isr_attribute): Likewise.
+	* config/darwin-c.c (macosx_version_as_macro): Likewise.
+	* config/darwin.c (darwin_override_options): Likewise.
+	* config/frv/frv.c (frv_expand_builtin): Likewise.
+	* config/h8300/h8300.c (h8300_option_override): Likewise.
+	* config/i386/i386.c (parse_mtune_ctrl_str): Likewise.
+	(ix86_option_override_internal): Likewise.
+	(warn_once_call_ms2sysv_xlogues): Likewise.
+	(ix86_expand_prologue): Likewise.
+	(split_stack_prologue_scratch_regno): Likewise.
+	(ix86_warn_parameter_passing_abi): Likewise.
+	* config/ia64/ia64.c (fix_range): Likewise.
+	* config/m68k/m68k.c (m68k_option_override): Likewise.
+	* config/microblaze/microblaze.c (microblaze_option_override): Likewise.
+	* config/mips/mips.c (mips_emit_probe_stack_range): Likewise.
+	(mips_set_compression_mode): Likewise.
+	* config/mmix/mmix.c (mmix_option_override): Likewise.
+	* config/mn10300/mn10300.c (mn10300_option_override): Likewise.
+	* config/msp430/msp430.c (msp430_option_override): Likewise.
+	* config/nds32/nds32.c (nds32_option_override): Likewise.
+	* config/nios2/nios2.c (nios2_custom_check_insns): Likewise.
+	(nios2_option_override): Likewise.
+	(nios2_expand_custom_builtin): Likewise.
+	* config/nvptx/mkoffload.c (main): Likewise.
+	* config/nvptx/nvptx.c (diagnose_openacc_conflict): Likewise.
+	* config/pa/pa.c (fix_range): Likewise.
+	(pa_option_override): Likewise.
+	* config/riscv/riscv.c (riscv_parse_cpu): Likewise.
+	(riscv_option_override): Likewise.
+	* config/rl78/rl78.c (rl78_option_override): Likewise.
+	* config/rs6000/aix61.h: Likewise.
+	* config/rs6000/aix71.h: Likewise.
+	* config/rs6000/aix72.h: Likewise.
+	* config/rs6000/driver-rs6000.c (elf_platform): Likewise.
+	* config/rs6000/freebsd64.h: Likewise.
+	* config/rs6000/linux64.h: Likewise.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Likewise.
+	(rs6000_expand_zeroop_builtin): Likewise.
+	(rs6000_expand_mtfsb_builtin): Likewise.
+	(rs6000_expand_set_fpscr_rn_builtin): Likewise.
+	(rs6000_expand_set_fpscr_drn_builtin): Likewise.
+	(rs6000_invalid_builtin): Likewise.
+	(rs6000_expand_split_stack_prologue): Likewise.
+	* config/rs6000/rtems.h: Likewise.
+	* config/rx/rx.c (valid_psw_flag): Likewise.
+	(rx_expand_builtin): Likewise.
+	* config/s390/s390-c.c (s390_resolve_overloaded_builtin): Likewise.
+	* config/s390/s390.c (s390_expand_builtin): Likewise.
+	(s390_function_profiler): Likewise.
+	(s390_option_override_internal): Likewise.
+	(s390_option_override): Likewise.
+	* config/sh/sh.c (sh_option_override): Likewise.
+	(sh_builtin_saveregs): Likewise.
+	(sh_fix_range): Likewise.
+	* config/sh/vxworks.h: Likewise.
+	* config/sparc/sparc.c (sparc_option_override): Likewise.
+	* config/spu/spu.c (spu_option_override): Likewise.
+	(fix_range): Likewise.
+	* config/visium/visium.c (visium_option_override): Likewise.
+	(visium_handle_interrupt_attr): Likewise.
+	* config/xtensa/xtensa.c (xtensa_option_override): Likewise.
+	* dbgcnt.c (dbg_cnt_set_limit_by_name): Likewise.
+	(dbg_cnt_process_opt): Likewise.
+	* dwarf2out.c (output_dwarf_version): Likewise.
+	* except.c (expand_eh_return): Likewise.
+	* gcc.c (defined): Likewise.
+	(driver_handle_option): Likewise.
+	(process_command): Likewise.
+	(compare_files): Likewise.
+	(driver::prepare_infiles): Likewise.
+	(driver::do_spec_on_infiles): Likewise.
+	(driver::maybe_run_linker): Likewise.
+	* omp-offload.c (oacc_parse_default_dims): Likewise.
+	* opts-global.c (handle_common_deferred_options): Likewise.
+	* opts.c (parse_sanitizer_options): Likewise.
+	(common_handle_option): Likewise.
+	(enable_warning_as_error): Likewise.
+	* passes.c (enable_disable_pass): Likewise.
+	* plugin.c (parse_plugin_arg_opt): Likewise.
+	(default_plugin_dir_name): Likewise.
+	* targhooks.c (default_expand_builtin_saveregs): Likewise.
+	(default_pch_valid_p): Likewise.
+	* toplev.c (init_asm_output): Likewise.
+	(process_options): Likewise.
+	(toplev::run_self_tests): Likewise.
+	* tree-cfg.c (verify_gimple_call): Likewise.
+	* tree-inline.c (inline_forbidden_p_stmt): Likewise.
+	(tree_inlinable_function_p): Likewise.
+	* var-tracking.c (vt_find_locations): Likewise.
+
+2019-03-11  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (s390_expand_builtin): Do the copy_to_reg not
+	only on the else branch.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* gcov.c (output_intermediate_json_line): Print function
+	name of each line.
+	(output_json_intermediate_file): Add new argument.
+	* doc/gcov.texi: Document the change.
+
+2019-03-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/89588
+	* loop-unroll.c (decide_unroll_constant_iterations): Make guard for
+	explicit unrolling factor more robust.
+
+2019-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89649
+	* tree-vectorizer.h (vect_loop_versioning): Adjust prototype.
+	* tree-vect-loop-manip.c (vect_do_peeling): Unset force_vectorize
+	on the prolog and epilog loops.
+	(vect_loop_versioning): Return copy of loop.
+	* tree-vect-loop.c (vect_transform_loop): Unset force_vectorize
+	on the non-vectorized version of the loop.
+
+2019-03-10  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/68924
+	* config/i386/sse.md (*vec_extractv2di_0_sse):
+	Add (=r,x) alternative and corresponding splitter.
+
+2019-03-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/85762
+	PR tree-optimization/87008
+	PR tree-optimization/85459
+	* tree-sra.c (contains_vce_or_bfcref_p): New parameter, set the bool
+	it points to if there is a type changing MEM_REF.  Adjust all callers.
+	(build_accesses_from_assign): Disable total scalarization if
+	contains_vce_or_bfcref_p returns true through the new parameter, for
+	both rhs and lhs.
+
+2019-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/88568
+	* attribs.c (handle_dll_attribute): Don't clear TREE_STATIC for
+	dllimport on VAR_DECLs with RECORD_TYPE or UNION_TYPE DECL_CONTEXT.
+
+	PR target/79645
+	* common.opt (fdiagnostics-show-labels,
+	fdiagnostics-show-line-numbers, fdiagnostics-format=,
+	fdiagnostics-minimum-margin-width=, fgnat-encodings=, gas-loc-support,
+	gas-locview-support, ginline-points, ginternal-reset-location-views):
+	Terminate description text with a dot.
+	* config/microblaze/microblaze.opt (mxl-prefetch): Likewise.
+	* config/mcore/mcore.opt (m210, m340): Likewise.
+	* config/epiphany/epiphany.opt (mprefer-short-insn-regs, mcmove,
+	mnops=): Start description text with a capital letter.
+	* config/arc/arc.opt (msize-level=): Likewise.
+	* config/sh/sh.opt (minline-ic_invalidate): Likewise.
+	* config/rs6000/sysv4.opt (mno-toc, mtoc, mno-traceback, mshlib,
+	mnewlib): Likewise.
+	* config/ft32/ft32.opt (msim): Likewise.
+	(mft32b, mcompress): Likewise.  Terminate description text with a dot.
+	(mnodiv, mnopm): Terminate description text with a dot.
+	* config/c6x/c6x.opt (c6x_sdata): Terminate Enum description with
+	a colon.
+	* config/i386/i386.opt (prefer_vector_width, instrument_return):
+	Likewise.
+	* config/rx/rx.opt (nofpu): Remove trailing spaces from description
+	text.
+
+	PR rtl-optimization/89634
+	* cfgcleanup.c (thread_jump): Punt if registers mentioned in cond1
+	are modified in BB_END (e->src) instruction.
+
+2019-03-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR target/79926
+	* config/i386/i386.c (ix86_set_current_function): Make "sorry"
+	messages more amenable to translation, and improve wording.
+
+2019-03-08  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-p8swap.c (rs6000_analyze_swaps): Rebuild
+	ud- and du-chains between phases.
+
+2019-03-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR debug/89631
+	* dwarf2cfi.c (dwarf2out_frame_debug_expr): Use CONST_POLY_INT
+	instead of POLY_INT_CST.
+
+2019-03-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm.h (TARGET_FP16_TO_DOUBLE): Add TARGET_VFP_DOUBLE
+	requirement.
+
+2019-03-08  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/68924
+	PR target/78782
+	PR target/87558
+	* config/i386/emmintrin.h (_mm_loadu_si64): New intrinsic.
+	(_mm_storeu_si64): Ditto.
+
+2019-03-08  Martin Liska  <mliska@suse.cz>
+
+	PR target/86952
+	* config/i386/i386.c (ix86_option_override_internal): Disable
+	jump tables when retpolines are used.
+
+2019-03-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR go/63560
+	* ipa-split.c (execute_split_functions): Do not split
+	'noinline' or 'section' function.
+
+2019-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79846
+	* config/s390/s390.c (s390_const_operand_ok): Use %wu instead of
+	HOST_WIDE_INT_PRINT_UNSIGNED and %wd instead of
+	HOST_WIDE_INT_PRINT_DEC.  Formatting fixes.
+
+	PR ipa/80000
+	* ipa-devirt.c (compare_virtual_tables): Remove two trailing spaces
+	from diagnostics.  Formatting fixes.
+
+	PR target/85665
+	* ipa-devirt.c (odr_types_equivalent_p): Fix grammar in
+	warn_odr diagnostics.
+
+	PR other/80058
+	* lra-constraints.c (process_alt_operands): Avoid one space before
+	" at the end of line and another after " on another line in a string
+	literal.
+	* attribs.c (handle_dll_attribute): Likewise.
+	* config/avr/avr-devices.c (avr_texinfo): Likewise.
+
+	* gimple-ssa-warn-alloca.c (pass_walloca::execute): Don't wrap
+	warning_at or inform messages in G_() if there is no ?:.
+
+	PR tree-optimization/89550
+	* builtins.c (c_strlen): Only set TREE_NO_WARNING if warning_at
+	returned true.  Formatting fixes.
+	(expand_builtin_strnlen): Formatting fixes.
+	* tree-vrp.c (vrp_prop::check_mem_ref): Only set TREE_NO_WARNING
+	if warning_at returned true.
+	* tree-cfg.c (pass_warn_function_return::execute): Likewise.
+
+2019-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89578
+	* cfgloop.h (struct loop): Add owned_clique field.
+	* cfgloopmanip.c (copy_loop_info): Copy it.
+	* tree-cfg.c (gimple_duplicate_bb): Do not remap owned_clique
+	cliques.
+	* tree-inline.c (copy_loops): Remap owned_clique.
+	* lto-streamer-in.c (input_cfg): Stream owned_clique.
+	* lto-streamer-out.c (output_cfg): Likewise.
+
+2019-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80190
+	* config/darwin.c: Include intl.h.
+	(darwin_build_constant_cfstring): Improve i18n of diagnostics by not
+	composing the message out of two separate parts.
+
+2019-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80003
+	* config/i386/i386.c (ix86_set_func_type): Make sure diagnostics
+	doesn't start with a capital letter and doesn't end with a dot.
+	(ix86_function_arg_boundary): Make sure diagnostics doesn't start
+	with a capital letter.
+	(ix86_mangle_function_version_assembler_name): Likewise.
+	(ix86_generate_version_dispatcher_body): Likewise.
+	(fold_builtin_cpu): Likewise.
+	(get_builtin_code_for_version): Likewise.  Remove extraneous space.
+	(ix86_handle_interrupt_attribute): Make the diagnostics easier for
+	translators, wrap full type name in %qs.
+
+	PR translation/79999
+	* gimplify.c (gimplify_omp_ordered): Reword diagnostics to talk about
+	depend clause with source (or sink) modifier.
+	* omp-expand.c (expand_omp_ordered_sink): Likewise.
+
+	PR target/89602
+	* config/i386/sse.md (avx512f_mov<ssescalarmodelower>_mask,
+	*avx512f_load<mode>_mask, avx512f_store<mode>_mask): New define_insns.
+	(avx512f_load<mode>_mask): New define_expand.
+	* config/i386/i386-builtin.def (__builtin_ia32_loadsd_mask,
+	__builtin_ia32_loadss_mask, __builtin_ia32_storesd_mask,
+	__builtin_ia32_storess_mask, __builtin_ia32_movesd_mask,
+	__builtin_ia32_movess_mask): New builtins.
+	* config/i386/avx512fintrin.h (_mm_mask_load_ss, _mm_maskz_load_ss,
+	_mm_mask_load_sd, _mm_maskz_load_sd, _mm_mask_move_ss,
+	_mm_maskz_move_ss, _mm_mask_move_sd, _mm_maskz_move_sd,
+	_mm_mask_store_ss, _mm_mask_store_sd): New intrinsics.
+
+2019-03-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/87525
+	* ipa-cp.c (perform_estimation_of_a_value): Account zero time benefit
+	for extern inline functions.
+
+2019-03-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/88235
+	* cgraph.h (cgraph_node): New inline method former_thunk_p.
+	* cgraph.c (cgraph_node::dump): Dump a note if node is a former thunk.
+	(clone_of_p): Treat expanded thunks like thunks, be optimistic if they
+	have multiple callees.  At the end check if declarations match as
+	opposed to cgraph_nodes.
+
+2019-03-07  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_node::verify_node): Verify with a neighbour
+	which is equivalent to searching for this in clones chain.
+	* symtab.c (symtab_node::verify_base): Similarly compare ASM
+	names with a neighbour and special case first node in a chain.
+
+2019-01-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80916 - spurious "static but not defined" warning.
+	* gimple-fold.c (can_refer_decl_in_current_unit_p): Return false
+	for an internal symbol with DECL_EXTERNAL.
+
+2019-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89618
+	* cfgloopmanip.c (copy_loop_info): Copy forgotten fields.
+	* tree-inline.c (copy_loops): Simplify.
+
+2019-03-07  Martin Liska  <mliska@suse.cz>
+
+	* dwarf2out.c (add_AT_vms_delta): Revert function removal.
+
+2019-03-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89595
+	* tree-ssa-dom.c (dom_opt_dom_walker::optimize_stmt): Take
+	stmt iterator as reference, take boolean output parameter to
+	indicate whether the stmt was removed and thus the iterator
+	already advanced.
+	(dom_opt_dom_walker::before_dom_children): Re-iterate over
+	stmts created by folding.
+
+2019-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89585
+	* doc/extend.texi (Basic Asm): Document qualifiers are not allowed
+	at toplevel.
+
+2019-03-06  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/88845
+	* config/rs6000/rs6000.c (rs6000_emit_move_si_sf_subreg): Enable during
+	LRA.
+	* lra.c (remove_scratches_1): New function.
+	(remove_scratches): Use it.
+	(lra_emit_move): Likewise.
+
+2019-03-06  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-c.def (__ARC_UNALIGNED__): Set it on
+	unaligned_access variable.
+	* config/arc/arc.c (arc_override_options): Set unaligned access
+	default on for HS CPUs.
+	* config/arc/arc.h (STRICT_ALIGNMENT): Fix logic.
+
+2019-03-06  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/89577
+	* doc/gcov.texi: Prefer to use --coverage.
+	* doc/sourcebuild.texi: Likewise.
+
+2019-03-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86485 - -Wmaybe-unused with empty class ?:
+	* gimplify.c (gimplify_cond_expr): Use INIT_EXPR.
+
+2019-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89587
+	* config/rs6000/t-linux (MULTIARCH_DIRNAME): Set to non-empty only
+	if_multiarch.
+
+	PR middle-end/89590
+	* builtins.c (maybe_emit_free_warning): Punt if free doesn't have
+	exactly one argument.
+
+2019-03-05  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/89570
+	* match.pd (vec_cond into cond_op simplification): Don't use
+	get_conditional_internal_fn, use as_internal_fn (cond_op).
+
+2019-03-05  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/89222
+	* config/arm/arm.md (movsi): Use targetm.cannot_force_const_mem
+	to decide when to split off a non-zero offset from a symbol.
+	* config/arm/arm.c (arm_cannot_force_const_mem): Disallow offsets
+	in function symbols.
+
+2019-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89594
+	* tree-if-conv.c (pass_if_conversion::execute): Handle
+	case where .LOOP_VECTORIZED_FUNCTION was removed.
+
+2019-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/89560
+	* fold-const.c (fold_checksum_tree): Don't use fixed size buffer,
+	instead alloca it only when needed with the needed size.
+
+	PR tree-optimization/89570
+	* match.pd (vec_cond into cond_op simplification): Guard with
+	vectorized_internal_fn_supported_p test and #if GIMPLE.
+
+	PR tree-optimization/89566
+	* gimple-ssa-sprintf.c (sprintf_dom_walker::handle_gimple_call):
+	Set info.fncode to BUILT_IN_NONE if gimple_call_builtin_p failed.
+	Punt if get_user_idx_format succeeds, but idx_format argument is
+	not provided or doesn't have pointer type, or if idx_args is above
+	number of provided arguments.
+
 2019-03-04  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR tree-optimization/89437

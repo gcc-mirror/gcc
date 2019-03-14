@@ -1,3 +1,8 @@
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* gcc-interface/misc.c (gnat_post_options): Wrap option name in string
+	format message and fix GNU coding style.
+
 2019-02-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (gnat_to_gnu) <N_Aggregate>: Minor tweak.

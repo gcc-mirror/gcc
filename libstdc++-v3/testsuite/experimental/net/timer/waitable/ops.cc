@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++14 } }
+// { dg-add-options libatomic }
 
 #include <experimental/timer>
 #include <testsuite_hooks.h>

@@ -189,8 +189,13 @@ vr_values::update_value_range (const_tree var, value_range *new_vr)
 	 because VR_RANGE and VR_ANTI_RANGE need to be considered
 	 the same.  We may not have is_new when transitioning to
 	 UNDEFINED.  If old_vr->type is VARYING, we shouldn't be
-	 called.  */
-      if (new_vr->undefined_p ())
+	 called, if we are anyway, keep it VARYING.  */
+      if (old_vr->varying_p ())
+	{
+	  new_vr->set_varying ();
+	  is_new = false;
+	}
+      else if (new_vr->undefined_p ())
 	{
 	  old_vr->set_varying ();
 	  new_vr->set_varying ();

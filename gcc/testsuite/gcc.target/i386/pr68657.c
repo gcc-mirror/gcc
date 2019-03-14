@@ -4,7 +4,7 @@
 typedef int V __attribute__((vector_size (64)));
 
 void foo (V x, V *y) {	/* { dg-error "AVX512F vector argument without AVX512F enabled" } */
-  /* { dg-message "The ABI for passing parameters with 64-byte alignment has changed" "" { target *-*-* } .-1 } */
+  /* { dg-message "the ABI for passing parameters with 64-byte alignment has changed" "" { target *-*-* } .-1 } */
   *y = x;
 }
 

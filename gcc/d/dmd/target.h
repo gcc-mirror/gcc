@@ -71,5 +71,6 @@ struct Target
     static const char *cppTypeInfoMangle(ClassDeclaration *cd);
     static const char *cppTypeMangle(Type *t);
     static Type *cppParameterType(Parameter *p);
+    static bool cppFundamentalType(const Type *t, bool& isFundamental);
     static LINK systemLinkage();
 };

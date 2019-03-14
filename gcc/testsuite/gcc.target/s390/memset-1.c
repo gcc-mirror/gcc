@@ -74,7 +74,7 @@ void
   return __builtin_memset (s, c, 1029);
 }
 
-/* 2 stc 1 stcy 3 mvc - displacement overflow after the first */
+/* 3 stc 3 mvc - displacement overflow after the first */
 void
 *memset10(void *s, int c)
 {
@@ -172,6 +172,6 @@ void
 /* { dg-final { scan-assembler-times "mvi\\s" 1 } } */
 /* { dg-final { scan-assembler-times "mvc\\s" 20 } } */
 /* { dg-final { scan-assembler-times "xc\\s" 28 } } */
-/* { dg-final { scan-assembler-times "stc\\s" 21 } } */
-/* { dg-final { scan-assembler-times "stcy\\s" 1 } } */
+/* { dg-final { scan-assembler-times "stc\\s" 22 } } */
+/* { dg-final { scan-assembler-times "stcy\\s" 0 } } */
 /* { dg-final { scan-assembler-times "pfd\\s" 2 } } */

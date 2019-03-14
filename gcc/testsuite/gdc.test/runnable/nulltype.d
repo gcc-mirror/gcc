@@ -127,7 +127,7 @@ void test8589()
     {
         void f(T function() dg) { assert(!dg()); }
 
-        static assert((T.sizeof == typeof(null).sizeof) == result);
+        static assert((is(typeof(null) function() : T function())) == result);
         static assert(is(typeof( f(&retnull) )) == result);
         static assert(is(typeof( f(()=>null) )) == result);
         static if (result)
@@ -138,7 +138,7 @@ void test8589()
     }
     test!(true,  int*)();
     test!(true,  Object)();
-    test!(true,  int[int])();
+    test!(false, int[int])();
     test!(false, int[])();
     test!(false, void delegate())();
 }

@@ -1,3 +1,7 @@
+2019-03-14  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk r269682.
+
 2019-03-13  Nathan Sidwell  <nathan@acm.org>
 
 	Start doing something with using decls

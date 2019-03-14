@@ -646,10 +646,10 @@ maybe_convert_cond (tree cond)
     return NULL_TREE;
 
   /* Wait until we instantiate templates before doing conversion.  */
-  if (processing_template_decl)
+  if (type_dependent_expression_p (cond))
     return cond;
 
-  if (warn_sequence_point)
+  if (warn_sequence_point && !processing_template_decl)
     verify_sequence_points (cond);
 
   /* Do the conversion.  */
@@ -657,12 +657,11 @@ maybe_convert_cond (tree cond)
 
   if (TREE_CODE (cond) == MODIFY_EXPR
       && !TREE_NO_WARNING (cond)
-      && warn_parentheses)
-    {
-      warning_at (cp_expr_loc_or_loc (cond, input_location), OPT_Wparentheses,
-		  "suggest parentheses around assignment used as truth value");
-      TREE_NO_WARNING (cond) = 1;
-    }
+      && warn_parentheses
+      && warning_at (cp_expr_loc_or_loc (cond, input_location),
+		     OPT_Wparentheses, "suggest parentheses around "
+				       "assignment used as truth value"))
+    TREE_NO_WARNING (cond) = 1;
 
   return condition_conversion (cond);
 }
@@ -2112,6 +2111,14 @@ finish_qualified_id_expr (tree qualifying_class,
 	   being taken.  */
 	expr = build_offset_ref (qualifying_class, expr, /*address_p=*/false,
 				 complain);
+    }
+  else if (!template_p
+	   && TREE_CODE (expr) == TEMPLATE_DECL
+	   && !DECL_FUNCTION_TEMPLATE_P (expr))
+    {
+      if (complain & tf_error)
+	error ("%qE missing template arguments", expr);
+      return error_mark_node;
     }
   else
     {

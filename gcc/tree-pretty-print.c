@@ -1830,7 +1830,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	  && (POINTER_TYPE_P (TREE_TYPE (node))
 	      || (TYPE_PRECISION (TREE_TYPE (node))
 		  < TYPE_PRECISION (integer_type_node))
-	      || exact_log2 (TYPE_PRECISION (TREE_TYPE (node))) == -1))
+	      || exact_log2 (TYPE_PRECISION (TREE_TYPE (node))) == -1
+	      || tree_int_cst_sgn (node) < 0))
 	{
 	  pp_string (pp, "_Literal (");
 	  dump_generic_node (pp, TREE_TYPE (node), spc, flags, false);

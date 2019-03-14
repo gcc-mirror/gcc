@@ -799,7 +799,7 @@ execute_cse_reciprocals_1 (gimple_stmt_iterator *def_gsi, tree def)
 
   /* If it is more profitable to optimize 1 / x, don't optimize 1 / (x * x).  */
   if (sqrt_recip_count > square_recip_count)
-    return;
+    goto out;
 
   /* Do the expensive part only if we can hope to optimize something.  */
   if (count + square_recip_count >= threshold && count >= 1)
@@ -842,6 +842,7 @@ execute_cse_reciprocals_1 (gimple_stmt_iterator *def_gsi, tree def)
 	}
     }
 
+out:
   for (occ = occ_head; occ; )
     occ = free_bb (occ);
 

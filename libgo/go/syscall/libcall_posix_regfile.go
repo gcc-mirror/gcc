@@ -13,6 +13,9 @@
 
 package syscall
 
+//sys	Creat(path string, mode uint32) (fd int, err error)
+//creat(path *byte, mode Mode_t) _C_int
+
 //sys	Fstat(fd int, stat *Stat_t) (err error)
 //fstat(fd _C_int, stat *Stat_t) _C_int
 

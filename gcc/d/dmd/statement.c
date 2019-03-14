@@ -31,6 +31,7 @@ StorageClass mergeFuncAttrs(StorageClass s1, FuncDeclaration *f);
 bool checkEscapeRef(Scope *sc, Expression *e, bool gag);
 VarDeclaration *copyToTemp(StorageClass stc, const char *name, Expression *e);
 Expression *semantic(Expression *e, Scope *sc);
+StringExp *semanticString(Scope *sc, Expression *exp, const char *s);
 
 Identifier *fixupLabelName(Scope *sc, Identifier *ident)
 {
@@ -487,45 +488,36 @@ Statement *CompileStatement::syntaxCopy()
     return new CompileStatement(loc, exp->syntaxCopy());
 }
 
+static Statements *errorStatements()
+{
+    Statements *a = new Statements();
+    a->push(new ErrorStatement());
+    return a;
+}
+
 Statements *CompileStatement::flatten(Scope *sc)
 {
     //printf("CompileStatement::flatten() %s\n", exp->toChars());
-    sc = sc->startCTFE();
-    exp = semantic(exp, sc);
-    exp = resolveProperties(sc, exp);
-    sc = sc->endCTFE();
+    StringExp *se = semanticString(sc, exp, "argument to mixin");
+    if (!se)
+        return errorStatements();
+    se = se->toUTF8(sc);
+
+    unsigned errors = global.errors;
+    Parser p(loc, sc->_module, (utf8_t *)se->string, se->len, 0);
+    p.nextToken();
 
     Statements *a = new Statements();
-    if (exp->op != TOKerror)
+    while (p.token.value != TOKeof)
     {
-        Expression *e = exp->ctfeInterpret();
-        if (e->op == TOKerror) // Bugzilla 15974
-            goto Lerror;
-        StringExp *se = e->toStringExp();
-        if (!se)
-           error("argument to mixin must be a string, not (%s) of type %s", exp->toChars(), exp->type->toChars());
-        else
+        Statement *s = p.parseStatement(PSsemi | PScurlyscope);
+        if (!s || p.errors)
         {
-            se = se->toUTF8(sc);
-            unsigned errors = global.errors;
-            Parser p(loc, sc->_module, (utf8_t *)se->string, se->len, 0);
-            p.nextToken();
-
-            while (p.token.value != TOKeof)
-            {
-                Statement *s = p.parseStatement(PSsemi | PScurlyscope);
-                if (!s || p.errors)
-                {
-                    assert(!p.errors || global.errors != errors); // make sure we caught all the cases
-                    goto Lerror;
-                }
-                a->push(s);
-            }
-            return a;
+            assert(!p.errors || global.errors != errors); // make sure we caught all the cases
+            return errorStatements();
         }
+        a->push(s);
     }
-Lerror:
-    a->push(new ErrorStatement());
     return a;
 }
 

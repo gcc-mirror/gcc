@@ -517,7 +517,7 @@ Expression *resolveSlice(Expression *e, UnionExp *pue)
 uinteger_t resolveArrayLength(Expression *e)
 {
     if (e->op == TOKvector)
-        e = ((VectorExp *)e)->e1;
+        return ((VectorExp *)e)->dim;
 
     if (e->op == TOKnull)
         return 0;

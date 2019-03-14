@@ -166,7 +166,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
     typedef std::basic_string<value_type>	string_type;
 
-    enum format { native_format, generic_format, auto_format };
+    enum format : unsigned char { native_format, generic_format, auto_format };
 
     // constructors and destructor
 

@@ -536,7 +536,7 @@ aarch64_rewrite_selected_cpu (const char *name)
      found does not map to an architecture we understand.  */
   if (p_to_a->arch == aarch64_no_arch
       || a_to_an->arch == aarch64_no_arch)
-    fatal_error (input_location, "unknown value %qs for -mcpu", name);
+    fatal_error (input_location, "unknown value %qs for %<-mcpu%>", name);
 
   unsigned long extensions = p_to_a->flags;
   aarch64_parse_extension (extension_str.c_str (), &extensions, NULL);

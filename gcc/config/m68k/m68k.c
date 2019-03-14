@@ -524,7 +524,7 @@ m68k_option_override (void)
       if (m68k_arch_entry
 	  && (m68k_arch_entry->microarch != m68k_cpu_entry->microarch
 	      || (m68k_arch_entry->flags & ~m68k_cpu_entry->flags) != 0))
-	warning (0, "-mcpu=%s conflicts with -march=%s",
+	warning (0, "%<-mcpu=%s%> conflicts with %<-march=%s%>",
 		 m68k_cpu_entry->name, m68k_arch_entry->name);
 
       entry = m68k_cpu_entry;
@@ -583,7 +583,7 @@ m68k_option_override (void)
    * both specified together.  Doing so simply doesn't make sense.
    */
   if (TARGET_SEP_DATA && TARGET_ID_SHARED_LIBRARY)
-    error ("cannot specify both -msep-data and -mid-shared-library");
+    error ("cannot specify both %<-msep-data%> and %<-mid-shared-library%>");
 
   /* If we're generating code for a separate A5 relative data segment,
    * we've got to enable -fPIC as well.  This might be relaxable to
@@ -595,7 +595,7 @@ m68k_option_override (void)
   /* -mpcrel -fPIC uses 32-bit pc-relative displacements.  Raise an
      error if the target does not support them.  */
   if (TARGET_PCREL && !TARGET_68020 && flag_pic == 2)
-    error ("-mpcrel -fPIC is not currently supported on selected cpu");
+    error ("%<-mpcrel%> %<-fPIC%> is not currently supported on selected cpu");
 
   /* ??? A historic way of turning on pic, or is this intended to
      be an embedded thing that doesn't have the same name binding
@@ -659,14 +659,14 @@ m68k_option_override (void)
   int label_alignment = align_labels.levels[0].get_value ();
   if (label_alignment > 2)
     {
-      warning (0, "-falign-labels=%d is not supported", label_alignment);
+      warning (0, "%<-falign-labels=%d%> is not supported", label_alignment);
       str_align_labels = "1";
     }
 
   int loop_alignment = align_loops.levels[0].get_value ();
   if (loop_alignment > 2)
     {
-      warning (0, "-falign-loops=%d is not supported", loop_alignment);
+      warning (0, "%<-falign-loops=%d%> is not supported", loop_alignment);
       str_align_loops = "1";
     }
 #endif
@@ -674,7 +674,7 @@ m68k_option_override (void)
   if ((opt_fstack_limit_symbol_arg != NULL || opt_fstack_limit_register_no >= 0)
       && !TARGET_68020)
     {
-      warning (0, "-fstack-limit- options are not supported on this cpu");
+      warning (0, "%<-fstack-limit-%> options are not supported on this cpu");
       opt_fstack_limit_symbol_arg = NULL;
       opt_fstack_limit_register_no = -1;
     }

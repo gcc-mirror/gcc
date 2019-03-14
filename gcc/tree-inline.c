@@ -2666,23 +2666,20 @@ copy_loops (copy_body_data *id,
 
 	  /* Copy loop meta-data.  */
 	  copy_loop_info (src_loop, dest_loop);
+	  if (dest_loop->unroll)
+	    cfun->has_unroll = true;
+	  if (dest_loop->force_vectorize)
+	    cfun->has_force_vectorize_loops = true;
+	  if (id->src_cfun->last_clique != 0)
+	    dest_loop->owned_clique
+	      = remap_dependence_clique (id,
+					 src_loop->owned_clique
+					 ? src_loop->owned_clique : 1);
 
 	  /* Finally place it into the loop array and the loop tree.  */
 	  place_new_loop (cfun, dest_loop);
 	  flow_loop_tree_node_add (dest_parent, dest_loop);
 
-	  dest_loop->safelen = src_loop->safelen;
-	  if (src_loop->unroll)
-	    {
-	      dest_loop->unroll = src_loop->unroll;
-	      cfun->has_unroll = true;
-	    }
-	  dest_loop->dont_vectorize = src_loop->dont_vectorize;
-	  if (src_loop->force_vectorize)
-	    {
-	      dest_loop->force_vectorize = true;
-	      cfun->has_force_vectorize_loops = true;
-	    }
 	  if (src_loop->simduid)
 	    {
 	      dest_loop->simduid = remap_decl (src_loop->simduid, id);
@@ -3677,7 +3674,7 @@ inline_forbidden_p_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	       return from the function the inline has been inlined into.  */
 	    inline_forbidden_reason
 	      = G_("function %q+F can never be inlined because "
-		   "it uses __builtin_return or __builtin_apply_args");
+		   "it uses %<__builtin_return%> or %<__builtin_apply_args%>");
 	    *handled_ops_p = true;
 	    return t;
 
@@ -3797,8 +3794,8 @@ tree_inlinable_function_p (tree fn)
       && always_inline == NULL)
     {
       if (do_warning)
-        warning (OPT_Winline, "function %q+F can never be inlined because it "
-                 "is suppressed using -fno-inline", fn);
+	warning (OPT_Winline, "function %q+F can never be inlined because it "
+		 "is suppressed using %<-fno-inline%>", fn);
       inlinable = false;
     }
 

@@ -240,18 +240,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       void
       store(_Tp __i, memory_order __m = memory_order_seq_cst) noexcept
-      { __atomic_store(std::__addressof(_M_i), std::__addressof(__i), __m); }
+      { __atomic_store(std::__addressof(_M_i), std::__addressof(__i), int(__m)); }
 
       void
       store(_Tp __i, memory_order __m = memory_order_seq_cst) volatile noexcept
-      { __atomic_store(std::__addressof(_M_i), std::__addressof(__i), __m); }
+      { __atomic_store(std::__addressof(_M_i), std::__addressof(__i), int(__m)); }
 
       _Tp
       load(memory_order __m = memory_order_seq_cst) const noexcept
       {
 	alignas(_Tp) unsigned char __buf[sizeof(_Tp)];
 	_Tp* __ptr = reinterpret_cast<_Tp*>(__buf);
-	__atomic_load(std::__addressof(_M_i), __ptr, __m);
+	__atomic_load(std::__addressof(_M_i), __ptr, int(__m));
 	return *__ptr;
       }
 
@@ -260,7 +260,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
         alignas(_Tp) unsigned char __buf[sizeof(_Tp)];
 	_Tp* __ptr = reinterpret_cast<_Tp*>(__buf);
-	__atomic_load(std::__addressof(_M_i), __ptr, __m);
+	__atomic_load(std::__addressof(_M_i), __ptr, int(__m));
 	return *__ptr;
       }
 
@@ -270,7 +270,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         alignas(_Tp) unsigned char __buf[sizeof(_Tp)];
 	_Tp* __ptr = reinterpret_cast<_Tp*>(__buf);
 	__atomic_exchange(std::__addressof(_M_i), std::__addressof(__i),
-			  __ptr, __m);
+			  __ptr, int(__m));
 	return *__ptr;
       }
 
@@ -281,7 +281,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         alignas(_Tp) unsigned char __buf[sizeof(_Tp)];
 	_Tp* __ptr = reinterpret_cast<_Tp*>(__buf);
 	__atomic_exchange(std::__addressof(_M_i), std::__addressof(__i),
-			  __ptr, __m);
+			  __ptr, int(__m));
 	return *__ptr;
       }
 
@@ -292,7 +292,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __atomic_compare_exchange(std::__addressof(_M_i),
 					 std::__addressof(__e),
 					 std::__addressof(__i),
-					 true, __s, __f);
+					 true, int(__s), int(__f));
       }
 
       bool
@@ -302,7 +302,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __atomic_compare_exchange(std::__addressof(_M_i),
 					 std::__addressof(__e),
 					 std::__addressof(__i),
-					 true, __s, __f);
+					 true, int(__s), int(__f));
       }
 
       bool
@@ -324,7 +324,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __atomic_compare_exchange(std::__addressof(_M_i),
 					 std::__addressof(__e),
 					 std::__addressof(__i),
-					 false, __s, __f);
+					 false, int(__s), int(__f));
       }
 
       bool
@@ -334,7 +334,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __atomic_compare_exchange(std::__addressof(_M_i),
 					 std::__addressof(__e),
 					 std::__addressof(__i),
-					 false, __s, __f);
+					 false, int(__s), int(__f));
       }
 
       bool

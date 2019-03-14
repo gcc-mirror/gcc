@@ -2681,7 +2681,7 @@ process_alt_operands (int only_alternative)
 		  if (lra_dump_file != NULL)
 		    fprintf (lra_dump_file,
 			     "            alt=%d: reload pseudo for op %d "
-			     " cannot hold the mode value -- refuse\n",
+			     "cannot hold the mode value -- refuse\n",
 			     nalt, nop);
 		  goto fail;
 		}
@@ -6365,6 +6365,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 			add_to_hard_reg_set (&s, PSEUDO_REGNO_MODE (dst_regno),
 					     reg_renumber[dst_regno]);
 		      AND_COMPL_HARD_REG_SET (live_hard_regs, s);
+		      AND_COMPL_HARD_REG_SET (potential_reload_hard_regs, s);
 		    }
 		  /* We should invalidate potential inheritance or
 		     splitting for the current insn usages to the next

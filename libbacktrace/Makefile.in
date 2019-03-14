@@ -121,10 +121,10 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3) \
-	$(am__EXEEXT_9)
+	$(am__EXEEXT_11)
 TESTS = $(am__append_4) $(am__append_6) $(am__append_8) \
-	$(am__append_11) $(am__append_12) $(am__append_16) \
-	$(am__EXEEXT_9)
+	$(am__append_11) $(am__append_12) $(am__append_18) \
+	$(am__EXEEXT_11)
 @HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_1 = libbacktrace_elf_for_test.la
 @NATIVE_TRUE@am__append_2 = test_elf test_xcoff_32 test_xcoff_64 \
 @NATIVE_TRUE@	test_pecoff test_unknown unittest unittest_alloc \
@@ -136,15 +136,16 @@ TESTS = $(am__append_4) $(am__append_6) $(am__append_8) \
 @HAVE_DWZ_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_7 = b3test
 @HAVE_DWZ_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_8 = b3test_dwz_buildid
 @HAVE_ELF_TRUE@@NATIVE_TRUE@am__append_9 = btest_lto
-@NATIVE_TRUE@am__append_10 = btest_alloc stest stest_alloc ztest \
-@NATIVE_TRUE@	ztest_alloc edtest edtest_alloc
+@NATIVE_TRUE@am__append_10 = btest_alloc stest stest_alloc
 @HAVE_DWZ_TRUE@@NATIVE_TRUE@am__append_11 = btest_dwz
 @HAVE_DWZ_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_12 = btest_dwz_gnudebuglink
-@HAVE_ZLIB_TRUE@@NATIVE_TRUE@am__append_13 = -lz
-@HAVE_ZLIB_TRUE@@NATIVE_TRUE@am__append_14 = -lz
-@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__append_15 = ttest ttest_alloc
-@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_16 = btest_gnudebuglink
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__append_17 = ctestg ctesta \
+@HAVE_ELF_TRUE@@HAVE_ZLIB_TRUE@@NATIVE_TRUE@am__append_13 = -lz
+@HAVE_ELF_TRUE@@HAVE_ZLIB_TRUE@@NATIVE_TRUE@am__append_14 = -lz
+@HAVE_ELF_TRUE@@NATIVE_TRUE@am__append_15 = ztest ztest_alloc
+@NATIVE_TRUE@am__append_16 = edtest edtest_alloc
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__append_17 = ttest ttest_alloc
+@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_18 = btest_gnudebuglink
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__append_19 = ctestg ctesta \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg_alloc \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta_alloc
 subdir = .
@@ -211,18 +212,20 @@ libbacktrace_noformat_la_OBJECTS =  \
 @NATIVE_TRUE@	unittest_alloc$(EXEEXT) btest$(EXEEXT)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@am__EXEEXT_5 = btest_lto$(EXEEXT)
 @NATIVE_TRUE@am__EXEEXT_6 = btest_alloc$(EXEEXT) stest$(EXEEXT) \
-@NATIVE_TRUE@	stest_alloc$(EXEEXT) ztest$(EXEEXT) \
-@NATIVE_TRUE@	ztest_alloc$(EXEEXT) edtest$(EXEEXT) \
-@NATIVE_TRUE@	edtest_alloc$(EXEEXT)
-@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__EXEEXT_7 = ttest$(EXEEXT) \
+@NATIVE_TRUE@	stest_alloc$(EXEEXT)
+@HAVE_ELF_TRUE@@NATIVE_TRUE@am__EXEEXT_7 = ztest$(EXEEXT) \
+@HAVE_ELF_TRUE@@NATIVE_TRUE@	ztest_alloc$(EXEEXT)
+@NATIVE_TRUE@am__EXEEXT_8 = edtest$(EXEEXT) edtest_alloc$(EXEEXT)
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__EXEEXT_9 = ttest$(EXEEXT) \
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	ttest_alloc$(EXEEXT)
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__EXEEXT_8 =  \
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__EXEEXT_10 =  \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg$(EXEEXT) \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta$(EXEEXT) \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg_alloc$(EXEEXT) \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta_alloc$(EXEEXT)
-am__EXEEXT_9 = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6) \
-	$(am__EXEEXT_7) $(am__EXEEXT_8)
+am__EXEEXT_11 = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6) \
+	$(am__EXEEXT_7) $(am__EXEEXT_8) $(am__EXEEXT_9) \
+	$(am__EXEEXT_10)
 @NATIVE_TRUE@am_allocfail_OBJECTS = allocfail.$(OBJEXT) \
 @NATIVE_TRUE@	testlib.$(OBJEXT)
 allocfail_OBJECTS = $(am_allocfail_OBJECTS)
@@ -368,20 +371,25 @@ unittest_OBJECTS = $(am_unittest_OBJECTS)
 @NATIVE_TRUE@am_unittest_alloc_OBJECTS = $(am__objects_10)
 unittest_alloc_OBJECTS = $(am_unittest_alloc_OBJECTS)
 @NATIVE_TRUE@unittest_alloc_DEPENDENCIES = libbacktrace_alloc.la
-@NATIVE_TRUE@am_ztest_OBJECTS = ztest-ztest.$(OBJEXT) \
-@NATIVE_TRUE@	ztest-testlib.$(OBJEXT)
+@HAVE_ELF_TRUE@@NATIVE_TRUE@am_ztest_OBJECTS = ztest-ztest.$(OBJEXT) \
+@HAVE_ELF_TRUE@@NATIVE_TRUE@	ztest-testlib.$(OBJEXT)
 ztest_OBJECTS = $(am_ztest_OBJECTS)
-@NATIVE_TRUE@ztest_DEPENDENCIES = libbacktrace.la \
-@NATIVE_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+@HAVE_ELF_TRUE@@NATIVE_TRUE@ztest_DEPENDENCIES = libbacktrace.la \
+@HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__DEPENDENCIES_1) \
+@HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__DEPENDENCIES_1)
 ztest_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ztest_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-@NATIVE_TRUE@am__objects_11 = ztest_alloc-ztest.$(OBJEXT) \
-@NATIVE_TRUE@	ztest_alloc-testlib.$(OBJEXT)
-@NATIVE_TRUE@am_ztest_alloc_OBJECTS = $(am__objects_11)
+@HAVE_ELF_TRUE@@NATIVE_TRUE@am__objects_11 =  \
+@HAVE_ELF_TRUE@@NATIVE_TRUE@	ztest_alloc-ztest.$(OBJEXT) \
+@HAVE_ELF_TRUE@@NATIVE_TRUE@	ztest_alloc-testlib.$(OBJEXT)
+@HAVE_ELF_TRUE@@NATIVE_TRUE@am_ztest_alloc_OBJECTS =  \
+@HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__objects_11)
 ztest_alloc_OBJECTS = $(am_ztest_alloc_OBJECTS)
-@NATIVE_TRUE@ztest_alloc_DEPENDENCIES = libbacktrace_alloc.la \
-@NATIVE_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+@HAVE_ELF_TRUE@@NATIVE_TRUE@ztest_alloc_DEPENDENCIES =  \
+@HAVE_ELF_TRUE@@NATIVE_TRUE@	libbacktrace_alloc.la \
+@HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__DEPENDENCIES_1) \
+@HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__DEPENDENCIES_1)
 ztest_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ztest_alloc_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -846,7 +854,8 @@ libbacktrace_la_DEPENDENCIES = $(libbacktrace_la_LIBADD)
 
 # Add test to this variable, if you want it to be build and run.
 BUILDTESTS = $(am__append_2) $(am__append_9) $(am__append_10) \
-	$(am__append_15) $(am__append_17)
+	$(am__append_15) $(am__append_16) $(am__append_17) \
+	$(am__append_19)
 @NATIVE_TRUE@check_LTLIBRARIES = libbacktrace_alloc.la \
 @NATIVE_TRUE@	libbacktrace_noformat.la $(am__append_1) \
 @NATIVE_TRUE@	libbacktrace_instrumented_alloc.la
@@ -905,14 +914,16 @@ BUILDTESTS = $(am__append_2) $(am__append_9) $(am__append_10) \
 @NATIVE_TRUE@stest_LDADD = libbacktrace.la
 @NATIVE_TRUE@stest_alloc_SOURCES = $(stest_SOURCES)
 @NATIVE_TRUE@stest_alloc_LDADD = libbacktrace_alloc.la
-@NATIVE_TRUE@ztest_SOURCES = ztest.c testlib.c
-@NATIVE_TRUE@ztest_CFLAGS = -DSRCDIR=\"$(srcdir)\"
-@NATIVE_TRUE@ztest_LDADD = libbacktrace.la $(am__append_13) \
-@NATIVE_TRUE@	$(CLOCK_GETTIME_LINK)
-@NATIVE_TRUE@ztest_alloc_LDADD = libbacktrace_alloc.la \
-@NATIVE_TRUE@	$(am__append_14) $(CLOCK_GETTIME_LINK)
-@NATIVE_TRUE@ztest_alloc_SOURCES = $(ztest_SOURCES)
-@NATIVE_TRUE@ztest_alloc_CFLAGS = $(ztest_CFLAGS)
+@HAVE_ELF_TRUE@@NATIVE_TRUE@ztest_SOURCES = ztest.c testlib.c
+@HAVE_ELF_TRUE@@NATIVE_TRUE@ztest_CFLAGS = -DSRCDIR=\"$(srcdir)\"
+@HAVE_ELF_TRUE@@NATIVE_TRUE@ztest_LDADD = libbacktrace.la \
+@HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__append_13) \
+@HAVE_ELF_TRUE@@NATIVE_TRUE@	$(CLOCK_GETTIME_LINK)
+@HAVE_ELF_TRUE@@NATIVE_TRUE@ztest_alloc_LDADD = libbacktrace_alloc.la \
+@HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__append_14) \
+@HAVE_ELF_TRUE@@NATIVE_TRUE@	$(CLOCK_GETTIME_LINK)
+@HAVE_ELF_TRUE@@NATIVE_TRUE@ztest_alloc_SOURCES = $(ztest_SOURCES)
+@HAVE_ELF_TRUE@@NATIVE_TRUE@ztest_alloc_CFLAGS = $(ztest_CFLAGS)
 @NATIVE_TRUE@edtest_SOURCES = edtest.c edtest2_build.c testlib.c
 @NATIVE_TRUE@edtest_LDADD = libbacktrace.la
 @NATIVE_TRUE@edtest_alloc_SOURCES = $(edtest_SOURCES)
