@@ -1,3 +1,9 @@
+2019-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/89679
+	* expmed.c (expand_mult_const): Don't add a REG_EQUAL note if it
+	would contain a paradoxical SUBREG.
+
 2019-03-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89710
