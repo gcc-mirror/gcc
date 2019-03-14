@@ -1,3 +1,8 @@
+2019-03-14  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_decl_specifier_seq): Support C++20
+	concept-definition syntax without 'bool'.
+
 2019-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89512
