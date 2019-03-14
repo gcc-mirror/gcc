@@ -1,5 +1,11 @@
 2019-03-14  Nathan Sidwell  <nathan@acm.org>
 
+	Drop cp_binding_level::usings
+	gcc/cp/
+	* name-lookup.h (cp_binding_level): Remove usings field.
+	* name-lookup.c (push_using_decl, push_using_decl_1): Delete.
+	(validate_nonmember_using_decl): Make using decl here.
+
 	gcc/cp/
 	* name-lookup.c (validate_nonmember_using_decl): Drop DR 36 case.
 	gcc/testsuite/
