@@ -1,5 +1,8 @@
 2019-03-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/89512
+	* semantics.c (finish_qualified_id_expr): Reject variable templates.
+
 	PR c++/89652
 	* constexpr.c (struct constexpr_ctx): Change save_exprs type from
 	hash_set<tree> to vec<tree>.
