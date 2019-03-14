@@ -1,3 +1,15 @@
+2019-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89652
+	* constexpr.c (struct constexpr_ctx): Change save_exprs type from
+	hash_set<tree> to vec<tree>.
+	(cxx_eval_call_expression): Adjust for save_exprs being a vec instead
+	of hash_set.
+	(cxx_eval_loop_expr): Likewise.  Truncate the vector after each
+	removal of SAVE_EXPRs from values.
+	(cxx_eval_constant_expression) <case SAVE_EXPR>: Call safe_push
+	method on save_exprs instead of add.
+
 2019-03-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86521 - C++17 copy elision in initialization by constructor.

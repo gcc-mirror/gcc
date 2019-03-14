@@ -1024,7 +1024,7 @@ struct constexpr_ctx {
   hash_map<tree,tree> *values;
   /* SAVE_EXPRs that we've seen within the current LOOP_EXPR.  NULL if we
      aren't inside a loop.  */
-  hash_set<tree> *save_exprs;
+  vec<tree> *save_exprs;
   /* The CONSTRUCTOR we're currently building up for an aggregate
      initializer.  */
   tree ctor;
@@ -1831,7 +1831,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  /* Track the callee's evaluated SAVE_EXPRs so that we can forget
 	     their values after the call.  */
 	  constexpr_ctx ctx_with_save_exprs = *ctx;
-	  hash_set<tree> save_exprs;
+	  auto_vec<tree, 10> save_exprs;
 	  ctx_with_save_exprs.save_exprs = &save_exprs;
 	  ctx_with_save_exprs.call = &new_call;
 
@@ -1862,9 +1862,10 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	    }
 
 	  /* Forget the saved values of the callee's SAVE_EXPRs.  */
-	  for (hash_set<tree>::iterator iter = save_exprs.begin();
-	       iter != save_exprs.end(); ++iter)
-	    ctx_with_save_exprs.values->remove (*iter);
+	  unsigned int i;
+	  tree save_expr;
+	  FOR_EACH_VEC_ELT (save_exprs, i, save_expr)
+	    ctx_with_save_exprs.values->remove (save_expr);
 
 	  /* Remove the parms/result from the values map.  Is it worth
 	     bothering to do this when the map itself is only live for
@@ -4190,7 +4191,7 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
     default:
       gcc_unreachable ();
     }
-  hash_set<tree> save_exprs;
+  auto_vec<tree, 10> save_exprs;
   new_ctx.save_exprs = &save_exprs;
   do
     {
@@ -4234,9 +4235,11 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
 	}
 
       /* Forget saved values of SAVE_EXPRs.  */
-      for (hash_set<tree>::iterator iter = save_exprs.begin();
-	   iter != save_exprs.end(); ++iter)
-	new_ctx.values->remove (*iter);
+      unsigned int i;
+      tree save_expr;
+      FOR_EACH_VEC_ELT (save_exprs, i, save_expr)
+	new_ctx.values->remove (save_expr);
+      save_exprs.truncate (0);
 
       if (++count >= constexpr_loop_limit)
 	{
@@ -4256,9 +4259,10 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
 	 && !*non_constant_p);
 
   /* Forget saved values of SAVE_EXPRs.  */
-  for (hash_set<tree>::iterator iter = save_exprs.begin();
-       iter != save_exprs.end(); ++iter)
-    new_ctx.values->remove (*iter);
+  unsigned int i;
+  tree save_expr;
+  FOR_EACH_VEC_ELT (save_exprs, i, save_expr)
+    new_ctx.values->remove (save_expr);
 
   return NULL_TREE;
 }
@@ -4616,7 +4620,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 					    non_constant_p, overflow_p);
 	  ctx->values->put (t, r);
 	  if (ctx->save_exprs)
-	    ctx->save_exprs->add (t);
+	    ctx->save_exprs->safe_push (t);
 	}
       break;
 
