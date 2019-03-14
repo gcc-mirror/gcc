@@ -1,5 +1,8 @@
 2019-03-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/89512
+	* g++.dg/cpp1y/var-templ61.C: New test.
+
 	PR c++/89652
 	* g++.dg/cpp1y/constexpr-89652.C: New test.
 
