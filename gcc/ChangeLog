@@ -1,5 +1,12 @@
 2019-03-14  Richard Biener  <rguenther@suse.de>
 
+	PR target/89711
+	* config/i386/i386.c (make_resolver_func): Properly set
+	DECL_CONTEXT on the RESULT_DECL.
+	* config/rs6000/rs6000.c (make_resolver_func): Likewise.
+
+2019-03-14  Richard Biener  <rguenther@suse.de>
+
 	* gimple-pretty-print.c: Include cfgloop.h.
 	(dump_gimple_phi): Adjust.
 	(dump_gimple_bb_header): Dump loop header for GIMPLE.
