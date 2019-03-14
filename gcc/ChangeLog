@@ -1,3 +1,13 @@
+2019-03-14  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* hash-table.h (remove_elt_with_hash): Return if slot is NULL rather
+	than if is_empty (*slot).
+	* hash-set-tests.c (test_set_of_strings): Add tests for addition of
+	existing elt and for elt removal.
+	* hash-map-tests.c (test_map_of_strings_to_int): Add test for removal
+	of already removed elt.
+
 2019-03-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89650

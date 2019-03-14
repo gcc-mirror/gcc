@@ -940,7 +940,7 @@ hash_table<Descriptor, Allocator>
 ::remove_elt_with_hash (const compare_type &comparable, hashval_t hash)
 {
   value_type *slot = find_slot_with_hash (comparable, hash, NO_INSERT);
-  if (is_empty (*slot))
+  if (slot == NULL)
     return;
 
   Descriptor::remove (*slot);
