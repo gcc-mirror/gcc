@@ -6089,88 +6089,90 @@ pushdecl_namespace_level (tree x, bool is_friend)
   return t;
 }
 
-/* Process a using-declaration appearing in namespace scope.  */
+/* Process a using declaration in non-class scope.  */
 
 void
-finish_namespace_using_decl (tree decl, tree scope, tree name)
+finish_nonmember_using_decl (tree scope, tree name, tree lookup)
 {
-  tree orig_decl = decl;
-
-  gcc_checking_assert (current_binding_level->kind == sk_namespace
-		       && !processing_template_decl);
-  decl = validate_nonmember_using_decl (decl, scope, name);
+  tree decl = validate_nonmember_using_decl (lookup, scope, name);
   if (decl == NULL_TREE)
     return;
 
-  tree *slot = find_namespace_slot (current_namespace, name, true);
-  // FIXME: Write more code
-  gcc_assert (!*slot || TREE_CODE (*slot) != MODULE_VECTOR);
+  gcc_checking_assert (current_binding_level->kind != sk_class);
 
-  tree val = slot ? MAYBE_STAT_DECL (*slot) : NULL_TREE;
-  tree type = slot ? MAYBE_STAT_TYPE (*slot) : NULL_TREE;
-  do_nonmember_using_decl (scope, name, &val, &type);
-  if (STAT_HACK_P (*slot))
+  cxx_binding *binding = NULL;
+  tree *slot = NULL;
+  tree value = NULL;
+  tree type = NULL;
+
+  if (current_binding_level->kind == sk_namespace)
     {
-      STAT_DECL (*slot) = val;
-      STAT_TYPE (*slot) = type;
+      slot = find_namespace_slot (current_namespace, name, true);
+      // FIXME: Write more code
+      gcc_assert (!*slot || TREE_CODE (*slot) != MODULE_VECTOR);
+
+      if (slot)
+	{
+	  value = MAYBE_STAT_DECL (*slot);
+	  type = MAYBE_STAT_TYPE (*slot);
+	}
     }
-  else if (type)
-    *slot = stat_hack (val, type);
   else
-    *slot = val;
+    {
+      add_decl_expr (decl);
 
-  /* Emit debug info.  */
-  cp_emit_debug_info_for_using (orig_decl, current_namespace);
-}
-
-/* Process a using-declaration at function scope.  */
-
-void
-finish_local_using_decl (tree decl, tree scope, tree name)
-{
-  tree orig_decl = decl;
-
-  gcc_checking_assert (current_binding_level->kind != sk_class
-		       && current_binding_level->kind != sk_namespace);
-  decl = validate_nonmember_using_decl (decl, scope, name);
-  if (decl == NULL_TREE)
-    return;
-
-  add_decl_expr (decl);
-
-  cxx_binding *binding = find_local_binding (current_binding_level, name);
-  tree value = binding ? binding->value : NULL_TREE;
-  tree type = binding ? binding->type : NULL_TREE;
+      binding = find_local_binding (current_binding_level, name);
+      if (binding)
+	{
+	  value = binding->value;
+	  type = binding->type;
+	}
+    }
 
   do_nonmember_using_decl (scope, name, &value, &type);
 
-  if (!value)
-    ;
-  else if (binding && value == binding->value)
-    ;
-  else if (binding && binding->value && TREE_CODE (value) == OVERLOAD)
+  if (current_binding_level->kind == sk_namespace)
     {
-      update_local_overload (IDENTIFIER_BINDING (name), value);
-      IDENTIFIER_BINDING (name)->value = value;
+      if (STAT_HACK_P (*slot))
+	{
+	  STAT_DECL (*slot) = value;
+	  STAT_TYPE (*slot) = type;
+	}
+      else if (type)
+	*slot = stat_hack (value, type);
+      else
+	*slot = value;
     }
   else
-    /* Install the new binding.  */
-    // FIXME: Short circuit P_L_B
-    push_local_binding (name, value, true);
-
-  if (!type)
-    ;
-  else if (binding && type == binding->type)
-    ;
-  else
     {
-      push_local_binding (name, type, true);
-      set_identifier_type_value (name, type);
+      if (!value)
+	;
+      else if (binding && value == binding->value)
+	;
+      else if (binding && binding->value && TREE_CODE (value) == OVERLOAD)
+	{
+	  update_local_overload (IDENTIFIER_BINDING (name), value);
+	  IDENTIFIER_BINDING (name)->value = value;
+	}
+      else
+	/* Install the new binding.  */
+	// FIXME: Short circuit P_L_B
+	push_local_binding (name, value, true);
+
+      if (!type)
+	;
+      else if (binding && type == binding->type)
+	;
+      else
+	{
+	  push_local_binding (name, type, true);
+	  set_identifier_type_value (name, type);
+	}
     }
 
   /* Emit debug info.  */
   if (!processing_template_decl)
-    cp_emit_debug_info_for_using (orig_decl, current_scope ());
+    cp_emit_debug_info_for_using (lookup, current_binding_level->this_entity);
 }
 
 /* Return the declarations that are members of the namespace NS.  */

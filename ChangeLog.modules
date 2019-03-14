@@ -1,5 +1,17 @@
 2019-03-14  Nathan Sidwell  <nathan@acm.org>
 
+	Merge finish using decl fns
+	gcc/cp/
+	* name-lookup.c (finish_nonmember_using_decl): New, merged from ...
+	(finish_namespace_using_decl, finish_local_using_decl): ... here.
+	Delete.
+	* name-lookup.h (finish_nonmember_using_decl): Declare
+	(finish_namespace_using_decl, finish_local_using_decl): Delete.
+	* parser.c (cp_parser_using_declaration): Adjust.
+	* pt.c (tsubst_expr): Likewise.
+	libcc1/
+	* libcp1plugin.cc (plugin_add_using_decl): Likewise.
+
 	Drop cp_binding_level::usings
 	gcc/cp/
 	* name-lookup.h (cp_binding_level): Remove usings field.

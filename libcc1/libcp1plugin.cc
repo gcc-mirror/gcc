@@ -1019,7 +1019,7 @@ plugin_add_using_decl (cc1_plugin::connection *,
     {
       /* We can't be at local scope.  */
       gcc_assert (at_namespace_scope_p ());
-      finish_namespace_using_decl (target, tcontext, identifier);
+      finish_nonmember_using_decl (tcontext, identifier, target);
     }
 
   return 1;

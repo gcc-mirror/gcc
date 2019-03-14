@@ -19826,10 +19826,6 @@ cp_parser_using_declaration (cp_parser* parser,
 {
   cp_token *token;
   bool typename_p = false;
-  bool global_scope_p;
-  tree decl;
-  tree identifier;
-  tree qscope;
   int oldcount = errorcount;
   cp_token *diag_token = NULL;
 
@@ -19842,8 +19838,9 @@ cp_parser_using_declaration (cp_parser* parser,
     {
       /* Look for the `using' keyword.  */
       cp_parser_require_keyword (parser, RID_USING, RT_USING);
-      
- again:
+
+    again:
+      typename_p = false;
       /* Peek at the next token.  */
       token = cp_lexer_peek_token (parser->lexer);
       /* See if it's `typename'.  */
@@ -19857,14 +19854,14 @@ cp_parser_using_declaration (cp_parser* parser,
     }
 
   /* Look for the optional global scope qualification.  */
-  global_scope_p
-    = (cp_parser_global_scope_opt (parser,
-				   /*current_scope_valid_p=*/false)
+  bool global_scope_p
+    = (cp_parser_global_scope_opt (parser, /*current_scope_valid_p=*/false)
        != NULL_TREE);
+  tree qscope;
 
   /* If we saw `typename', or didn't see `::', then there must be a
      nested-name-specifier present.  */
-  if (typename_p || !global_scope_p)
+  if (!global_scope_p || typename_p)
     {
       qscope = cp_parser_nested_name_specifier (parser, typename_p,
 						/*check_dependency_p=*/true,
@@ -19898,11 +19895,11 @@ cp_parser_using_declaration (cp_parser* parser,
 
   token = cp_lexer_peek_token (parser->lexer);
   /* Parse the unqualified-id.  */
-  identifier = cp_parser_unqualified_id (parser,
-					 /*template_keyword_p=*/false,
-					 /*check_dependency_p=*/true,
-					 /*declarator_p=*/true,
-					 /*optional_p=*/false);
+  tree identifier = cp_parser_unqualified_id (parser,
+					      /*template_keyword_p=*/false,
+					      /*check_dependency_p=*/true,
+					      /*declarator_p=*/true,
+					      /*optional_p=*/false);
 
   if (access_declaration_p)
     {
@@ -19935,11 +19932,15 @@ cp_parser_using_declaration (cp_parser* parser,
 	      "a template-id may not appear in a using-declaration");
   else
     {
+      /* There must be a correspondence between current_scope and
+	 qscope being both or neither class scope.  Treat the using
+	 decl according to the currrent scope and issue errors
+	 pertaining to that.  */
+
       if (at_class_scope_p ())
 	{
 	  /* Create the USING_DECL.  */
-	  decl = do_class_using_decl (qscope, identifier);
-
+	  tree decl = do_class_using_decl (qscope, identifier);
 	  if (decl && typename_p)
 	    USING_DECL_TYPENAME_P (decl) = 1;
 
@@ -19948,28 +19949,20 @@ cp_parser_using_declaration (cp_parser* parser,
 	      cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
 	      return false;
 	    }
-	  else
-	    /* Add it to the list of members in this class.  */
-	    finish_member_declaration (decl);
+
+	  /* Add it to the list of members in this class.  */
+	  finish_member_declaration (decl);
 	}
       else
 	{
-	  decl = cp_parser_lookup_name_simple (parser,
-					       identifier,
-					       token->location);
-	  if (decl == error_mark_node)
+	  tree lookup = cp_parser_lookup_name_simple (parser, identifier,
+						      token->location);
+	  if (lookup == error_mark_node)
 	    cp_parser_name_lookup_error (parser, identifier,
-					 decl, NLE_NULL,
+					 lookup, NLE_NULL,
 					 token->location);
-	  else if (check_for_bare_parameter_packs (decl))
-	    {
-	      cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
-	      return false;
-	    }
-	  else if (!at_namespace_scope_p ())
-	    finish_local_using_decl (decl, qscope, identifier);
 	  else
-	    finish_namespace_using_decl (decl, qscope, identifier);
+	    finish_nonmember_using_decl (qscope, identifier, lookup);
 	}
     }
 

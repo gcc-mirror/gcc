@@ -16998,13 +16998,13 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	    tree name = DECL_NAME (decl);
 
 	    scope = tsubst (scope, args, complain, in_decl);
-	    decl = lookup_qualified_name (scope, name,
-					  /*is_type_p=*/false,
-					  /*complain=*/false);
-	    if (decl == error_mark_node || TREE_CODE (decl) == TREE_LIST)
-	      qualified_name_lookup_error (scope, name, decl, input_location);
+	    tree lookup = lookup_qualified_name (scope, name,
+						 /*is_type_p=*/false,
+						 /*complain=*/false);
+	    if (lookup == error_mark_node)
+	      qualified_name_lookup_error (scope, name, lookup, input_location);
 	    else
-	      finish_local_using_decl (decl, scope, name);
+	      finish_nonmember_using_decl (scope, name, lookup);
 	  }
 	else if (is_capture_proxy (decl)
 		 && !DECL_TEMPLATE_INSTANTIATION (current_function_decl))

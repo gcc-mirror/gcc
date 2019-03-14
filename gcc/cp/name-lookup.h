@@ -312,8 +312,7 @@ extern tree innermost_non_namespace_value (tree);
 extern cxx_binding *outer_binding (tree, cxx_binding *, bool);
 extern void cp_emit_debug_info_for_using (tree, tree);
 
-extern void finish_namespace_using_decl (tree, tree, tree);
-extern void finish_local_using_decl (tree, tree, tree);
+extern void finish_nonmember_using_decl (tree scope, tree name, tree lookup);
 extern void finish_namespace_using_directive (tree, tree);
 extern void finish_local_using_directive (tree, tree);
 extern tree pushdecl (tree, bool is_friend = false);
