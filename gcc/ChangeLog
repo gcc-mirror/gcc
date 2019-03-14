@@ -1,3 +1,11 @@
+2019-03-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89572
+	* tree-scalar-evolution.c (get_loop_exit_condition): Use
+	safe_dyn_cast.
+	* tree-ssa-loop-ivcanon.c (canonicalize_loop_induction_variables):
+	Use gimple_location_safe.
+
 2019-03-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/85860
