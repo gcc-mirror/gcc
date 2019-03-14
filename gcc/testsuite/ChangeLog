@@ -1,3 +1,17 @@
+2019-03-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89523
+	* gcc.target/i386/pr89523-1a.c: New test.
+	* gcc.target/i386/pr89523-1b.c: Likewise.
+	* gcc.target/i386/pr89523-2.c: Likewise.
+	* gcc.target/i386/pr89523-3.c: Likewise.
+	* gcc.target/i386/pr89523-4.c: Likewise.
+	* gcc.target/i386/pr89523-5.c: Likewise.
+	* gcc.target/i386/pr89523-6.c: Likewise.
+	* gcc.target/i386/pr89523-7.c: Likewise.
+	* gcc.target/i386/pr89523-8.c: Likewise.
+	* gcc.target/i386/pr89523-9.c: Likewise.
+
 2019-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89512
