@@ -1,3 +1,9 @@
+2019-03-14  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* hashtab.c (htab_remove_elt_with_hash): Return if slot is NULL rather
+	than if *slot is HTAB_EMPTY_ENTRY.
+
 2019-02-11  Philippe Waroquiers  <philippe.waroquiers@skynet.be>
 
 	* splay-tree.c (splay_tree_insert): Also release old KEY in case

@@ -48,11 +48,26 @@ test_set_of_strings ()
   ASSERT_EQ (false, s.add (red));
   ASSERT_EQ (false, s.add (green));
   ASSERT_EQ (false, s.add (blue));
+  ASSERT_EQ (true, s.add (green));
 
   /* Verify that the values are now within the set.  */
   ASSERT_EQ (true, s.contains (red));
   ASSERT_EQ (true, s.contains (green));
   ASSERT_EQ (true, s.contains (blue));
+  ASSERT_EQ (3, s.elements ());
+
+  /* Test removal.  */
+  s.remove (red);
+  ASSERT_EQ (false, s.contains (red));
+  ASSERT_EQ (true, s.contains (green));
+  ASSERT_EQ (true, s.contains (blue));
+  ASSERT_EQ (2, s.elements ());
+
+  s.remove (red);
+  ASSERT_EQ (false, s.contains (red));
+  ASSERT_EQ (true, s.contains (green));
+  ASSERT_EQ (true, s.contains (blue));
+  ASSERT_EQ (2, s.elements ());
 }
 
 /* Run all of the selftests within this file.  */
