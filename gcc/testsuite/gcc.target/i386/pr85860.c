@@ -1,4 +1,4 @@
-/* { dg-do compile { target lp64 } } */
+/* { dg-do compile { target int128 } } */
 /* { dg-options "-O2 -fno-guess-branch-probability -flive-range-shrinkage -mbmi2" } */
 
 int a, b, c, d, e;
