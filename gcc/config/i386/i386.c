@@ -2819,6 +2819,8 @@ remove_partial_avx_dependency (void)
   rtx set;
   rtx v4sf_const0 = NULL_RTX;
 
+  auto_vec<rtx_insn *> control_flow_insns;
+
   FOR_EACH_BB_FN (bb, cfun)
     {
       FOR_BB_INSNS (bb, insn)
@@ -2875,6 +2877,17 @@ remove_partial_avx_dependency (void)
 	  set_insn = emit_insn_before (set, insn);
 	  df_insn_rescan (set_insn);
 
+	  if (cfun->can_throw_non_call_exceptions)
+	    {
+	      /* Handle REG_EH_REGION note.  */
+	      rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
+	      if (note)
+		{
+		  control_flow_insns.safe_push (set_insn);
+		  add_reg_note (set_insn, REG_EH_REGION, XEXP (note, 0));
+		}
+	    }
+
 	  src = gen_rtx_SUBREG (dest_mode, vec, 0);
 	  set = gen_rtx_SET (dest, src);
 
@@ -2925,6 +2938,23 @@ remove_partial_avx_dependency (void)
       df_insn_rescan (set_insn);
       df_process_deferred_rescans ();
       loop_optimizer_finalize ();
+
+      if (!control_flow_insns.is_empty ())
+	{
+	  free_dominance_info (CDI_DOMINATORS);
+
+	  unsigned int i;
+	  FOR_EACH_VEC_ELT (control_flow_insns, i, insn)
+	    if (control_flow_insn_p (insn))
+	      {
+		/* Split the block after insn.  There will be a fallthru
+		   edge, which is OK so we keep it.  We have to create
+		   the exception edges ourselves.  */
+		bb = BLOCK_FOR_INSN (insn);
+		split_block (bb, insn);
+		rtl_make_eh_edge (NULL, bb, BB_END (bb));
+	      }
+	}
     }
 
   bitmap_obstack_release (NULL);
