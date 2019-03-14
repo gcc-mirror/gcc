@@ -583,7 +583,6 @@ Objective-C and Objective-C++ Dialects}.
 -fdisable-tree-@var{pass-name}=@var{range-list} @gol
 -fdump-debug  -fdump-earlydebug @gol
 -fdump-noaddr  -fdump-unnumbered  -fdump-unnumbered-links @gol
--fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
 -fdump-final-insns@r{[}=@var{file}@r{]} @gol
 -fdump-ipa-all  -fdump-ipa-cgraph  -fdump-ipa-inline @gol
 -fdump-lang-all @gol
