@@ -1,5 +1,10 @@
 2019-03-14  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* name-lookup.c (validate_nonmember_using_decl): Drop DR 36 case.
+	gcc/testsuite/
+	* g++.dg/lookup/using53.C: Permit DR 36 case.
+
 	Merge trunk r269682.
 
 2019-03-13  Nathan Sidwell  <nathan@acm.org>

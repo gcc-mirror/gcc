@@ -4975,12 +4975,6 @@ validate_nonmember_using_decl (tree decl, tree scope, tree name)
   /* Make a USING_DECL.  */
   tree using_decl = push_using_decl (scope, name);
 
-  if (using_decl == NULL_TREE
-      && at_function_scope_p ()
-      && VAR_P (decl))
-    /* C++11 7.3.3/10.  */
-    error ("%qD is already declared in this scope", name);
-  
   return using_decl;
 }
 
