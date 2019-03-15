@@ -1,3 +1,18 @@
+2019-03-15  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/87532
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	When handling vec_extract, use modular arithmetic to allow
+	constant selectors greater than vector length.
+	* config/rs6000/rs6000.c (rs6000_expand_vector_extract): Allow
+	V1TImode vectors to have constant selector values greater than 0.
+	Use modular arithmetic to compute vector index.
+	(rs6000_split_vec_extract_var): Use modular arithmetic to compute
+	index for in-memory vectors.  Correct code generation for
+	in-register vectors.
+	(altivec_expand_vec_ext_builtin): Use modular arithmetic to
+	compute index.
+
 2019-03-15  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/88534
