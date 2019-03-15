@@ -1,3 +1,8 @@
+2019-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/89704
+	* gcc.dg/debug/pr89704.c: New test.
+
 2019-03-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89650
