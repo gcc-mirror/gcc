@@ -293,6 +293,7 @@ register allocation	Kenneth Zadeck		<zadeck@naturalbridge.com>
 register allocation	Seongbae Park		<seongbae.park@gmail.com>
 RTL optimizers		Steven Bosscher		<steven@gcc.gnu.org>
 selective scheduling	Andrey Belevantsev	<abel@ispras.ru>
+selective scheduling	Alexander Monakov	<amonakov@ispras.ru>
 wide-int		Kenneth Zadeck		<zadeck@naturalbridge.com>
 wide-int		Mike Stump		<mikestump@comcast.net>
 wide-int		Richard Sandiford	<rdsandiford@googlemail.com>
@@ -508,7 +509,6 @@ Jim Meyering					<jim@meyering.net>
 Martin Michlmayr				<tbm@cyrius.com>
 Lee Millward					<lee.millward@gmail.com>
 Alan Modra					<amodra@gmail.com>
-Alexander Monakov				<amonakov@ispras.ru>
 Catherine Moore					<clm@codesourcery.com>
 James A. Morrison				<phython@gcc.gnu.org>
 Brooks Moses					<bmoses@google.com>
