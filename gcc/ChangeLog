@@ -1,3 +1,8 @@
+2019-03-15  Martin Liska  <mliska@suse.cz>
+
+	PR other/89712
+	* doc/invoke.texi: Remove -fdump-class-hierarchy option.
+
 2019-03-14  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
