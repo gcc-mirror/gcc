@@ -1,3 +1,10 @@
+2019-03-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/89719
+	* gcc.target/aarch64/spellcheck_4.c: Adjust dg-error string.
+	* gcc.target/aarch64/spellcheck_5.c: Likewise.
+	* gcc.target/aarch64/spellcheck_6.c: Likewise.
+
 2019-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89709
