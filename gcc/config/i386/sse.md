@@ -5988,6 +5988,28 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "TI")])
 
+(define_insn "avx512fp16_fix<fixunssuffix>_trunc<mode>2<round_saeonly_name>"
+  [(set (match_operand:SWI48 0 "register_operand" "=r")
+	(any_fix:SWI48
+	  (vec_select:HF
+	    (match_operand:V8HF 1 "register_operand" "v")
+	    (parallel [(const_int 0)]))))]
+  "TARGET_AVX512FP16"
+  "%vcvttsh2<fixsuffix>si\t{<round_saeonly_op2>%1, %0|%0, %k1<round_saeonly_op2>}"
+  [(set_attr "type" "sseicvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "avx512fp16_fix<fixunssuffix>_trunc<mode>2_mem"
+  [(set (match_operand:SWI48 0 "register_operand" "=r")
+	(any_fix:SWI48
+	  (match_operand:HF 1 "memory_operand" "vm")))]
+  "TARGET_AVX512FP16"
+  "%vcvttsh2<fixsuffix>si\t{%1, %0|%0, %1}"
+  [(set_attr "type" "sseicvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<MODE>")])
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel single-precision floating point conversion operations

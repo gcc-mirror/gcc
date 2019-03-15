@@ -803,9 +803,13 @@ test_1 (_mm512_cvt_roundepi64_ph, __m128h, __m512i, 8)
 test_1 (_mm512_cvt_roundepu64_ph, __m128h, __m512i, 8)
 test_1 (_mm_cvt_roundsh_i32, int, __m128h, 8)
 test_1 (_mm_cvt_roundsh_u32, unsigned, __m128h, 8)
+test_1 (_mm_cvtt_roundsh_i32, int, __m128h, 8)
+test_1 (_mm_cvtt_roundsh_u32, unsigned, __m128h, 8)
 #ifdef __x86_64__
 test_1 (_mm_cvt_roundsh_i64, long long, __m128h, 8)
 test_1 (_mm_cvt_roundsh_u64, unsigned long long, __m128h, 8)
+test_1 (_mm_cvtt_roundsh_i64, long long, __m128h, 8)
+test_1 (_mm_cvtt_roundsh_u64, unsigned long long, __m128h, 8)
 test_2 (_mm_cvt_roundi64_sh, __m128h, __m128h, long long, 8)
 test_2 (_mm_cvt_roundu64_sh, __m128h, __m128h, unsigned long long, 8)
 #endif
