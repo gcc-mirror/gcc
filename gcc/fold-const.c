@@ -2942,9 +2942,6 @@ combine_comparisons (location_t loc,
 int
 operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 {
-  STRIP_ANY_LOCATION_WRAPPER (arg0);
-  STRIP_ANY_LOCATION_WRAPPER (arg1);
-
   /* When checking, verify at the outermost operand_equal_p call that
      if operand_equal_p returns non-zero then ARG0 and ARG1 has the same
      hash value.  */
@@ -2966,6 +2963,9 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       else
 	return 0;
     }
+
+  STRIP_ANY_LOCATION_WRAPPER (arg0);
+  STRIP_ANY_LOCATION_WRAPPER (arg1);
 
   /* If either is ERROR_MARK, they aren't equal.  */
   if (TREE_CODE (arg0) == ERROR_MARK || TREE_CODE (arg1) == ERROR_MARK

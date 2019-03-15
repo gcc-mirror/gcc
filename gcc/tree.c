@@ -7743,6 +7743,8 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
       return;
     }
 
+  STRIP_ANY_LOCATION_WRAPPER (t);
+
   if (!(flags & OEP_ADDRESS_OF))
     STRIP_NOPS (t);
 
