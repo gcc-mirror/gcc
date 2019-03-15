@@ -1,3 +1,8 @@
+2019-03-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/89721
+	* lra-constraints (invariant_p): Return false if side_effects_p holds.
+
 2019-03-15  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR target/87532
