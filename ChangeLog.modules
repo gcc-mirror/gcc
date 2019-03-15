@@ -1,3 +1,26 @@
+2019-03-15  Nathan Sidwell  <nathan@acm.org>
+
+	Merge using directive fields & fns.
+	gcc/cp/
+	* cp-tree.h (lang_decl_ns): Drop usings field.
+	(DECL_NAMESPACE_USING): Delete.
+	* name-lookup.h (finish_using_directive): Declare.
+	(finish_namespace_using_directive)
+	(finish_local_using_directive): Delete.
+	* name-lookup.c (name_lookup::search_usings)
+	(name_lookup::queue_namespace): Adjust.
+	(has_using_namespace_std_directive_p): No need to search
+	namespaces separately.
+	(finish_using_directive): New.  Merged from ...
+	(finish_namespace_using_directive, finish_local_using_directive): ...
+	here.  Delete.
+	(push_namespace): Adjust.
+	* parser.c (cp_parser_using_directive): Call finish_using_directive.
+	* pt.c (tsubst_expr): Likewise,
+	libcc1/
+	* libcp1plugin.cc (plugin_add_using_namespace): Call
+	finish_using_directive.
+
 2019-03-14  Nathan Sidwell  <nathan@acm.org>
 
 	Merge finish using decl fns

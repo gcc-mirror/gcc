@@ -868,7 +868,7 @@ name_lookup::search_usings (tree scope)
     return true;
 
   bool found = false;
-  if (vec<tree, va_gc> *usings = DECL_NAMESPACE_USING (scope))
+  if (vec<tree, va_gc> *usings = NAMESPACE_LEVEL (scope)->using_directives)
     for (unsigned ix = usings->length (); ix--;)
       found |= search_qualified ((*usings)[ix], true);
 
@@ -930,7 +930,7 @@ name_lookup::queue_namespace (using_queue *queue, int depth, tree scope)
       queue = queue_namespace (queue, depth, (*inlinees)[ix]);
 
   /* Queue its using targets.  */
-  queue = queue_usings (queue, depth, DECL_NAMESPACE_USING (scope));
+  queue = queue_usings (queue, depth, NAMESPACE_LEVEL (scope)->using_directives);
 
   return queue;
 }
@@ -6245,22 +6245,10 @@ using_directives_contain_std_p (vec<tree, va_gc> *usings)
 static bool
 has_using_namespace_std_directive_p ()
 {
-  /* Look at local using-directives.  */
   for (cp_binding_level *level = current_binding_level;
-       level->kind != sk_namespace;
-       level = level->level_chain)
+       level; level = level->level_chain)
     if (using_directives_contain_std_p (level->using_directives))
       return true;
-
-  /* Look at this namespace and its ancestors.  */
-  for (tree scope = current_namespace; scope; scope = CP_DECL_CONTEXT (scope))
-    {
-      if (using_directives_contain_std_p (DECL_NAMESPACE_USING (scope)))
-	return true;
-
-      if (scope == global_namespace)
-	break;
-    }
 
   return false;
 }
@@ -8196,10 +8184,10 @@ do_pop_nested_namespace (tree ns)
   do_pop_from_top_level ();
 }
 
-/* Add TARGET to USINGS, if it does not already exist there.
-   We used to build the complete graph of usings at this point, from
-   the POV of the source namespaces.  Now we build that as we perform
-   the unqualified search.  */
+/* Add TARGET to USINGS, if it does not already exist there.  We used
+   to build the complete graph of usings at this point, from the POV
+   of the source namespaces.  Now we build that as we perform the
+   unqualified search.  */
 
 static void
 add_using_namespace (vec<tree, va_gc> *&usings, tree target)
@@ -8223,54 +8211,38 @@ emit_debug_info_using_namespace (tree from, tree target, bool implicit)
 					implicit);
 }
 
-/* Process a namespace-scope using directive.  */
+/* Process a using directive.  */
 
 void
-finish_namespace_using_directive (tree target, tree attribs)
+finish_using_directive (tree target, tree attribs)
 {
-  gcc_checking_assert (namespace_bindings_p ());
   if (target == error_mark_node)
     return;
 
-  add_using_namespace (DECL_NAMESPACE_USING (current_namespace),
-		       ORIGINAL_NAMESPACE (target));
-  emit_debug_info_using_namespace (current_namespace,
-				   ORIGINAL_NAMESPACE (target), false);
-
-  if (attribs == error_mark_node)
-    return;
-
-  for (tree a = attribs; a; a = TREE_CHAIN (a))
-    {
-      tree name = get_attribute_name (a);
-      if (is_attribute_p ("strong", name))
-	{
-	  warning (0, "strong using directive no longer supported");
-	  if (CP_DECL_CONTEXT (target) == current_namespace)
-	    inform (DECL_SOURCE_LOCATION (target),
-		    "you may use an inline namespace instead");
-	}
-      else
-	warning (OPT_Wattributes, "%qD attribute directive ignored", name);
-    }
-}
-
-/* Process a function-scope using-directive.  */
-
-void
-finish_local_using_directive (tree target, tree attribs)
-{
-  gcc_checking_assert (local_bindings_p ());
-  if (target == error_mark_node)
-    return;
-
-  if (attribs)
-    warning (OPT_Wattributes, "attributes ignored on local using directive");
-
-  add_stmt (build_stmt (input_location, USING_STMT, target));
+  if (current_binding_level->kind != sk_namespace)
+    add_stmt (build_stmt (input_location, USING_STMT, target));
+  else
+    emit_debug_info_using_namespace (current_binding_level->this_entity,
+				     ORIGINAL_NAMESPACE (target), false);
 
   add_using_namespace (current_binding_level->using_directives,
 		       ORIGINAL_NAMESPACE (target));
+
+  if (attribs != error_mark_node)
+    for (tree a = attribs; a; a = TREE_CHAIN (a))
+      {
+	tree name = get_attribute_name (a);
+	if (current_binding_level->kind == sk_namespace
+	    && is_attribute_p ("strong", name))
+	  {
+	    warning (0, "strong using directive no longer supported");
+	    if (CP_DECL_CONTEXT (target) == current_namespace)
+	      inform (DECL_SOURCE_LOCATION (target),
+		      "you may use an inline namespace instead");
+	  }
+	else
+	  warning (OPT_Wattributes, "%qD attribute directive ignored", name);
+      }
 }
 
 /* Pushes X into the global namespace.  */
@@ -8497,7 +8469,7 @@ push_namespace (tree name, bool make_inline)
 	  /* Add the anon using-directive here, we don't do it in
 	     make_namespace_finish.  */
 	  if (!DECL_NAMESPACE_INLINE_P (ns) && !name)
-	    add_using_namespace (DECL_NAMESPACE_USING (current_namespace), ns);
+	    add_using_namespace (current_binding_level->using_directives, ns);
 	}
     }
 
