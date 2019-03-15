@@ -1,5 +1,10 @@
 2019-03-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/89709
+	* tree.c (inchash::add_expr): Strip any location wrappers.
+	* fold-const.c (operand_equal_p): Move stripping of location wrapper
+	after hash verification.
+
 	PR debug/89704
 	* dwarf2out.c (add_const_value_attribute): Return false for MINUS,
 	SIGN_EXTEND and ZERO_EXTEND.
