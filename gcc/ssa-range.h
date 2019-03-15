@@ -21,8 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SSA_RANGE_H
 #define GCC_SSA_RANGE_H
 
-#include "range.h"
-#include "range-op.h"
+#include "grange.h"
 #include "ssa-range-gori.h"
 #include "ssa-range-cache.h"
 

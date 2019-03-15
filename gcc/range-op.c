@@ -1,5 +1,5 @@
 /* Code for range operators.
-   Copyright (C) 2017 Free Software Foundation, Inc.
+   Copyright (C) 2017-2019 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -48,17 +48,111 @@ along with GCC; see the file COPYING3.  If not see
 #include "range-op.h"
 #include "wide-int-range.h"
 
+
+/* Defaults for all operations are to return NULL. This means no
+   additional range info is available beyond that of the type.  */
+
+bool
+range_operator::fold_range (irange& r ATTRIBUTE_UNUSED,
+			   const irange& op1 ATTRIBUTE_UNUSED,
+			   const irange& op2 ATTRIBUTE_UNUSED) const
+{
+  return false;
+}
+
+bool
+range_operator::op1_range (irange& r ATTRIBUTE_UNUSED,
+			   const irange& lhs ATTRIBUTE_UNUSED,
+			   const irange& op2 ATTRIBUTE_UNUSED) const
+{
+  return false;
+}
+
+bool
+range_operator::op2_range (irange& r ATTRIBUTE_UNUSED,
+			   const irange& lhs ATTRIBUTE_UNUSED,
+			   const irange& op1 ATTRIBUTE_UNUSED) const
+{
+  return false;
+}
+
+// This class is used to create a range_operator for a tree code
+// and automatically register it with the operator table.
+// Simply inherit from this class and overload whatever routines are required.
+// This provides registration as well as default debug dumping for the 
+// tree code and calling op_rr() to resolve fold_range.
+
+class trange_operator : public range_operator
+{
+public:
+  trange_operator (enum tree_code c);
+  virtual void dump (FILE *f) const;
+  virtual bool fold_range (irange& r, const irange& op1,
+			   const irange& op2) const;
+protected:
+  tree_code code;
+};
+
+
+// This implements the range operator table as a local object in this file.
+
+class range_op_table
+{
+public:
+  inline range_operator *operator[] (enum tree_code code);
+  void register_operator (enum tree_code code, range_operator *);
+private:
+  range_operator *m_range_tree[MAX_TREE_CODES];
+} range_tree;
+
+// Return a pointer tto the range_operator instance, if there is one, 
+// associated with tree_code CODE.
+
+range_operator *
+range_op_table::operator[] (enum tree_code code)
+{
+  gcc_assert (code > 0 && code < MAX_TREE_CODES);
+  return m_range_tree[code];
+}
+
+// Add OP to the handler table for CODE.
+
+void
+range_op_table::register_operator (enum tree_code code, range_operator *op)
+{
+  gcc_checking_assert (m_range_tree[code] == NULL && op != NULL);
+  m_range_tree[code] = op;
+}
+
+/* The table is hidden and accessed via a simple extern function.  */
+
+range_operator *
+range_op_handler (enum tree_code code)
+{
+  return range_tree[code];
+}
+// -------------------------------------------------------------------------
+
+// Auxillary routine to return the upper limit for a type.
+
 inline wide_int
 max_limit (const_tree type)
 {
   return wi::max_value (TYPE_PRECISION (type) , TYPE_SIGN (type));
 }
 
+// Auxillary routine to return the lower limit for a type.
+
 inline wide_int
 min_limit (const_tree type)
 {
   return wi::min_value (TYPE_PRECISION (type) , TYPE_SIGN (type));
 }
+
+// If the range of either operand is undefined, set the result to undefined and
+// return true.   THis is a common routine to most functions as
+// undefined is a viral condition, so if either operand it undefined,
+// so is the result.
 
 inline bool
 empty_range_check (irange& r, const irange& op1, const irange & op2, tree type)
@@ -177,625 +271,6 @@ accumulate_range_and_canonicalize (signop s,
 
   accumulate_range (r, new_lb, wi::OVF_NONE, new_ub, overflow, overflow_wraps);
 }
-
-/*  ------------------------------------------------------------------------  */
-
-/* Defaults for all remaining operations are to return NULL. This means no
-   additional range info is available beyond that of the type.  */
-
-
-bool
-range_operator::fold_range (irange& r ATTRIBUTE_UNUSED,
-			     const irange& op1 ATTRIBUTE_UNUSED,
-			     const irange& op2 ATTRIBUTE_UNUSED) const
-{
-  return false;
-}
-
-
-bool
-range_operator::op1_range (irange& r ATTRIBUTE_UNUSED,
-			     const irange& lhs ATTRIBUTE_UNUSED,
-			     const irange& op2 ATTRIBUTE_UNUSED) const
-{
-  return false;
-}
-
-bool
-range_operator::op2_range (irange& r ATTRIBUTE_UNUSED,
-			     const irange& lhs ATTRIBUTE_UNUSED,
-			     const irange& op1 ATTRIBUTE_UNUSED) const
-{
-  return false;
-}
-
-/*  -----------------------------------------------------------------------  */
-
-enum bool_range_state { BRS_FALSE, BRS_TRUE, BRS_EMPTY, BRS_FULL };
-
-/* Return the summary information about boolean range LHS.
-   Return an "interesting" range in R.  
-   for EMPTY or FULL, return the equivilent range for TYPE,
-   for BRS_TRUE and BRS false, return the negatiuon of the bool range.  */
-static bool_range_state
-get_bool_state (irange& r, const irange& lhs, tree val_type)
-{
-  /* If there is no result, then this is unexectuable, so no range. */
-  if (lhs.undefined_p ())
-    {
-      r.set_undefined (val_type);
-      return BRS_EMPTY;
-    }
-
-  // if the bounds arent the same, then its not a constant.  */
-  if (!wi::eq_p (lhs.upper_bound (), lhs.lower_bound ()))
-    {
-      r.set_varying (val_type);
-      return BRS_FULL;
-    }
-
-  if (lhs.zero_p ())
-    return BRS_FALSE;
-
-  return BRS_TRUE;
-}
-
-
-class operator_equal : public range_operator
-{
-public:
-  virtual void dump (FILE *f) const;
-
-  virtual bool fold_range (irange& r, const irange& op1,
-			   const irange& op2) const;
-  virtual bool op1_range (irange& r, const irange& lhs,
-			       const irange& val) const;
-  virtual bool op2_range (irange& r, const irange& lhs,
-			       const irange& val) const;
-} op_equal;
-
-void 
-operator_equal::dump (FILE *f) const
-{
-  fprintf (f, " == ");
-}
-
-static irange
-range_true ()
-{
-  unsigned prec = TYPE_PRECISION (boolean_type_node);
-  return irange (boolean_type_node, wi::one (prec), wi::one (prec));
-}
-
-static irange
-range_false ()
-{
-  unsigned prec = TYPE_PRECISION (boolean_type_node);
-  return irange (boolean_type_node, wi::zero (prec), wi::zero (prec));
-}
-
-/* Fold comparison of the 2 ranges.  */
-bool
-operator_equal::fold_range (irange& r, const irange& op1,
-			    const irange& op2) const
-{
-  if (empty_range_check (r, op1, op2, boolean_type_node))
-    return true;
-
-  /* We can be sure the values are always equal or not if both ranges
-     consist of a single value, and then compare them.  */
-  if (wi::eq_p (op1.lower_bound (), op1.upper_bound ())
-      && wi::eq_p (op2.lower_bound (), op2.upper_bound ()))
-    {
-      if (wi::eq_p (op1.lower_bound (), op2.upper_bound()))
-	r = range_true ();
-      else
-	r = range_false ();
-    }
-  else
-    {
-      /* If ranges do not intersect, we know the range is not equal, otherwise
-         we don;t really know anything for sure.  */
-      r = range_intersect (op1, op2);
-      if (r.undefined_p ())
-	r = range_false ();
-      else
-	r.set_varying (boolean_type_node);
-    }
-
-  return true;
-}
-
-bool
-operator_equal::op1_range (irange& r, const irange& lhs,
-			    const irange& op2) const
-{
-  switch (get_bool_state (r, lhs, op2.type ()))
-    {
-      case BRS_FALSE:
-        /* If the result is false, the only time we know anything is if OP2 is
-	   a constant.  */
-	if (wi::eq_p (op2.lower_bound(), op2.upper_bound()))
-	  r = range_invert (op2);
-	else
-	  r.set_varying (op2.type ());
-	break;
-
-      case BRS_TRUE:
-        /* If its true, the result is the same as OP2.  */
-        r = op2;
-	break;
-
-      default:
-        break;
-    }
-  return true;
-}
-
-
-bool
-operator_equal::op2_range (irange& r, const irange& lhs,
-			    const irange& op1) const
-{
-  return operator_equal::op1_range (r, lhs, op1);
-}
-
-
-/*  -----------------------------------------------------------------------  */
-
-/* Range operator for def = op1 != op2. */
-
-class operator_not_equal : public range_operator
-{
-public:
-  virtual void dump (FILE *f) const;
-
-  virtual bool fold_range (irange& r, const irange& op1,
-			   const irange& op2) const;
-  virtual bool op1_range (irange& r, const irange& lhs,
-			   const irange& op2) const;
-  virtual bool op2_range (irange& r, const irange& lhs,
-			   const irange& op1) const;
-} op_not_equal;
-
-void 
-operator_not_equal::dump (FILE *f) const
-{
-  fprintf (f, " != ");
-}
-
-/* Fold comparison of the 2 ranges.  */
-bool
-operator_not_equal::fold_range (irange& r, const irange& op1,
-				const irange& op2) const
-{
-  if (empty_range_check (r, op1, op2, boolean_type_node))
-    return true;
-
-  /* We can be sure the values are always equal or not if both ranges
-     consist of a single value, and then compare them.  */
-  if (wi::eq_p (op1.lower_bound (), op1.upper_bound ())
-      && wi::eq_p (op2.lower_bound (), op2.upper_bound ()))
-    {
-      if (wi::ne_p (op1.lower_bound (), op2.upper_bound()))
-	r = range_true ();
-      else
-	r = range_false ();
-    }
-  else
-    {
-      /* If ranges do not intersect, we know the range is not equal, otherwise
-         we don;t really know anything for sure.  */
-      r = range_intersect (op1, op2);
-      if (r.undefined_p ())
-	r = range_true ();
-      else
-	r.set_varying (boolean_type_node);
-    }
-
-  return true;
-}
-
-/* Calculate the range of op1 being == to VAL based on LHS.  */
-bool
-operator_not_equal::op1_range (irange& r, const irange& lhs,
-				const irange& op2) const
-{
-  switch (get_bool_state (r, lhs, op2.type ()))
-    {
-      case BRS_TRUE:
-        /* If the result is true, the only time we know anything is if OP2 is
-	   a constant.  */
-	if (wi::eq_p (op2.lower_bound(), op2.upper_bound()))
-	  r = range_invert (op2);
-	else
-	  r.set_varying (op2.type ());
-	break;
-
-      case BRS_FALSE:
-        /* If its true, the result is the same as OP2.  */
-        r = op2;
-	break;
-
-      default:
-        break;
-    }
-  return true;
-}
-
-
-bool
-operator_not_equal::op2_range (irange& r, const irange& lhs,
-				const irange& op1) const
-{
-  return operator_not_equal::op1_range (r, lhs, op1);
-}
-
-
-/*  -----------------------------------------------------------------------  */
-
-
-/* (X < VAL) produces the a range of [MIN, VAL - 1]  */
-static void
-build_lt (irange& r, tree type, const wide_int& val)
-{
-  wi::overflow_type ov;
-  wide_int lim = wi::sub (val, 1, TYPE_SIGN (type), &ov);
-
-  /* If val - 1 underflows, check is X < MIN, which is an empty range.  */
-  if (ov)
-    r.set_undefined (type);
-  else
-    r = irange (type, min_limit (type), lim);
-}
-
-/* (X <= VAL) produces the a range of [MIN, VAL]  */
-static void
-build_le (irange& r, tree type, const wide_int& val)
-{
-  r = irange (type, min_limit (type), val);
-}
-
-/* (X > VAL) produces the a range of [VAL + 1, MAX]  */
-static void
-build_gt (irange& r, tree type, const wide_int& val)
-{
-  wi::overflow_type ov;
-  wide_int lim = wi::add (val, 1, TYPE_SIGN (type), &ov);
-  /* If val + 1 overflows, check is for X > MAX , which is an empty range.  */
-  if (ov)
-    r.set_undefined (type);
-  else
-    r = irange (type, lim, max_limit (type));
-}
-
-/* (X >= val) produces the a range of [VAL, MAX]  */
-static void
-build_ge (irange& r, tree type, const wide_int& val)
-{
-  r = irange (type, val, max_limit (type));
-}
-
-
-
-class operator_lt :  public range_operator
-{
-public:
-  virtual bool fold_range (irange& r, const irange& op1,
-			   const irange& op2) const;
-  virtual bool op1_range (irange& r, const irange& lhs,
-			   const irange& op2) const;
-  virtual bool op2_range (irange& r, const irange& lhs,
-			   const irange& op1) const;
-
-  virtual void dump (FILE *f) const;
-} op_lt;
-
-void 
-operator_lt::dump (FILE *f) const
-{
-  fprintf (f, " < ");
-}
-
-bool
-operator_lt::fold_range (irange& r, const irange& op1, const irange& op2) const
-{
-  if (empty_range_check (r, op1, op2, boolean_type_node))
-    return true;
-
-  signop sign = TYPE_SIGN (op1.type ());
-  gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
-
-  if (wi::lt_p (op1.upper_bound (), op2.lower_bound (), sign))
-    r = range_true ();
-  else
-    if (!wi::lt_p (op1.lower_bound (), op2.upper_bound (), sign))
-      r = range_false ();
-    else 
-      r.set_varying (boolean_type_node);
-  return true;
-}
-
-
-bool
-operator_lt::op1_range (irange& r, const irange& lhs, const irange& op2) const
-{
-  switch (get_bool_state (r, lhs, op2.type ()))
-    {
-      case BRS_TRUE:
-	build_lt (r, op2.type (), op2.upper_bound ());
-	break;
-
-      case BRS_FALSE:
-	build_ge (r, op2.type (), op2.lower_bound ());
-	break;
-
-      default:
-        break;
-    }
-  return true;
-}
-
-
-bool
-operator_lt::op2_range (irange& r, const irange& lhs, const irange& op1) const
-{
-  switch (get_bool_state (r, lhs, op1.type ()))
-    {
-      case BRS_FALSE:
-	build_le (r, op1.type (), op1.upper_bound ());
-	break;
-
-      case BRS_TRUE:
-	build_gt (r, op1.type (), op1.lower_bound ());
-	break;
-
-      default:
-        break;
-    }
-  return true;
-
-}
-
-class operator_le :  public range_operator
-{
-public:
-  virtual bool fold_range (irange& r, const irange& op1,
-			   const irange& op2) const;
-  virtual bool op1_range (irange& r, const irange& lhs,
-			   const irange& op2) const;
-  virtual bool op2_range (irange& r, const irange& lhs,
-			   const irange& op1) const;
-
-  virtual void dump (FILE *f) const;
-} op_le;
-
-void 
-operator_le::dump (FILE *f) const
-{
-  fprintf (f, " <= ");
-}
-
-bool
-operator_le::fold_range (irange& r, const irange& op1, const irange& op2) const
-{
-  if (empty_range_check (r, op1, op2, boolean_type_node))
-    return true;
-
-  signop sign = TYPE_SIGN (op1.type ());
-  gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
-
-  if (wi::le_p (op1.upper_bound (), op2.lower_bound (), sign))
-    r = range_true ();
-  else
-    if (!wi::le_p (op1.lower_bound (), op2.upper_bound (), sign))
-      r = range_false ();
-    else 
-      r.set_varying (boolean_type_node);
-  return true;
-}
-
-bool
-operator_le::op1_range (irange& r, const irange& lhs, const irange& op2) const
-{
-  switch (get_bool_state (r, lhs, op2.type ()))
-    {
-      case BRS_TRUE:
-	build_le (r, op2.type (), op2.upper_bound ());
-	break;
-
-      case BRS_FALSE:
-	build_gt (r, op2.type (), op2.lower_bound ());
-	break;
-
-      default:
-        break;
-    }
-  return true;
-}
-
-
-bool
-operator_le::op2_range (irange& r, const irange& lhs, const irange& op1) const
-{
-  switch (get_bool_state (r, lhs, op1.type ()))
-    {
-      case BRS_FALSE:
-	build_lt (r, op1.type (), op1.upper_bound ());
-	break;
-
-      case BRS_TRUE:
-	build_ge (r, op1.type (), op1.lower_bound ());
-	break;
-
-      default:
-        break;
-    }
-  return true;
-
-}
-
-
-class operator_gt :  public range_operator
-{
-public:
-  virtual bool fold_range (irange& r, const irange& op1,
-			   const irange& op2) const;
-  virtual bool op1_range (irange& r, const irange& lhs,
-			   const irange& op2) const;
-  virtual bool op2_range (irange& r, const irange& lhs,
-			   const irange& op1) const;
-
-  virtual void dump (FILE *f) const;
-} op_gt;
-
-void 
-operator_gt::dump (FILE *f) const
-{
-  fprintf (f, " > ");
-}
-
-bool
-operator_gt::fold_range (irange& r, const irange& op1, const irange& op2) const
-{
-  if (empty_range_check (r, op1, op2, boolean_type_node))
-    return true;
-
-  signop sign = TYPE_SIGN (op1.type ());
-  gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
-
-  if (wi::gt_p (op1.lower_bound (), op2.upper_bound (), sign))
-    r = range_true ();
-  else
-    if (!wi::gt_p (op1.upper_bound (), op2.lower_bound (), sign))
-      r = range_false ();
-    else 
-      r.set_varying (boolean_type_node);
-
-  return true;
-}
-
-bool
-operator_gt::op1_range (irange& r, const irange& lhs, const irange& op2) const
-{
-  switch (get_bool_state (r, lhs, op2.type ()))
-    {
-      case BRS_TRUE:
-	build_gt (r, op2.type (), op2.lower_bound ());
-	break;
-
-      case BRS_FALSE:
-	build_le (r, op2.type (), op2.upper_bound ());
-	break;
-
-      default:
-        break;
-    }
-  return true;
-}
-
-
-bool
-operator_gt::op2_range (irange& r, const irange& lhs, const irange& op1) const
-{
-  switch (get_bool_state (r, lhs, op1.type ()))
-    {
-      case BRS_FALSE:
-	build_ge (r, op1.type (), op1.lower_bound ());
-	break;
-
-      case BRS_TRUE:
-	build_lt (r, op1.type (), op1.upper_bound ());
-	break;
-
-      default:
-        break;
-    }
-  return true;
-
-}
-
-
-class operator_ge :  public range_operator
-{
-public:
-  virtual bool fold_range (irange& r, const irange& op1,
-			   const irange& op2) const;
-  virtual bool op1_range (irange& r, const irange& lhs,
-			   const irange& op2) const;
-  virtual bool op2_range (irange& r, const irange& lhs,
-			   const irange& op1) const;
-
-  virtual void dump (FILE *f) const;
-} op_ge;
-
-void 
-operator_ge::dump (FILE *f) const
-{
-  fprintf (f, " >= ");
-}
-
-bool
-operator_ge::fold_range (irange& r, const irange& op1, const irange& op2) const
-{
-  if (empty_range_check (r, op1, op2, boolean_type_node))
-    return true;
-
-  signop sign = TYPE_SIGN (op1.type ());
-  gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
-
-  if (wi::ge_p (op1.lower_bound (), op2.upper_bound (), sign))
-    r = range_true ();
-  else
-    if (!wi::ge_p (op1.upper_bound (), op2.lower_bound (), sign))
-      r = range_false ();
-    else 
-      r.set_varying (boolean_type_node);
-
-  return true;
-} 
-
-bool
-operator_ge::op1_range (irange& r, const irange& lhs, const irange& op2) const
-{
-  switch (get_bool_state (r, lhs, op2.type ()))
-    {
-      case BRS_TRUE:
-	build_ge (r, op2.type (), op2.lower_bound ());
-	break;
-
-      case BRS_FALSE:
-	build_lt (r, op2.type (), op2.upper_bound ());
-	break;
-
-      default:
-        break;
-    }
-  return true;
-}
-
-
-bool
-operator_ge::op2_range (irange& r, const irange& lhs, const irange& op1) const
-{
-  switch (get_bool_state (r, lhs, op1.type ()))
-    {
-      case BRS_FALSE:
-	build_gt (r, op1.type (), op1.lower_bound ());
-	break;
-
-      case BRS_TRUE:
-	build_le (r, op1.type (), op1.upper_bound ());
-	break;
-
-      default:
-        break;
-    }
-  return true;
-
-}
-
-
 
 /*  -----------------------------------------------------------------------  */
 
@@ -1289,30 +764,29 @@ op_rr_unary (enum tree_code code, irange &r, const irange &lh)
   return res && !r.varying_p ();
 }
 
-class basic_operator : public range_operator
-{
-private:
-  enum tree_code code;
-public:
-  basic_operator (enum tree_code c);
-  virtual void dump (FILE *f) const;
-  virtual bool fold_range (irange& r, const irange& op1,
-			   const irange& op2) const;
-};
+/*  -----------------------------------------------------------------------  */
 
-basic_operator::basic_operator (enum tree_code c)
+// Construct and register the range_op handler for treee code C.
+
+trange_operator::trange_operator (enum tree_code c)
 {
   code = c;
+  range_tree.register_operator (c, this);
 }
 
+// Dump the name of this operation.
+
 void 
-basic_operator::dump (FILE *f) const
+trange_operator::dump (FILE *f) const
 {
   fprintf (f," %s ", get_tree_code_name (code));
 }
 
+// Perform the default fold operation of LH OP RH, and return it in R.
+
 bool
-basic_operator::fold_range (irange& r, const irange& lh, const irange& rh) const
+trange_operator::fold_range (irange& r, const irange& lh,
+			     const irange& rh) const
 {
   if (empty_range_check (r, lh, rh, lh.type ()))
     return true;
@@ -1320,18 +794,566 @@ basic_operator::fold_range (irange& r, const irange& lh, const irange& rh) const
   return op_rr (code, r, lh, rh);
 }
 
+/*  -----------------------------------------------------------------------  */
 
-class operator_plus : public basic_operator
+// Return an irange instance that is a boolean TRUE.
+
+static irange
+range_true ()
+{
+  unsigned prec = TYPE_PRECISION (boolean_type_node);
+  return irange (boolean_type_node, wi::one (prec), wi::one (prec));
+}
+
+// Return an irange instance that is a boolean FALSE.
+
+static irange
+range_false ()
+{
+  unsigned prec = TYPE_PRECISION (boolean_type_node);
+  return irange (boolean_type_node, wi::zero (prec), wi::zero (prec));
+}
+
+
+enum bool_range_state { BRS_FALSE, BRS_TRUE, BRS_EMPTY, BRS_FULL };
+
+/* Return the summary information about boolean range LHS.
+   Return an "interesting" range in R.  
+   for EMPTY or FULL, return the equivilent range for TYPE,
+   for BRS_TRUE and BRS false, return the negatiuon of the bool range.  */
+static bool_range_state
+get_bool_state (irange& r, const irange& lhs, tree val_type)
+{
+  /* If there is no result, then this is unexectuable, so no range. */
+  if (lhs.undefined_p ())
+    {
+      r.set_undefined (val_type);
+      return BRS_EMPTY;
+    }
+
+  // if the bounds arent the same, then its not a constant.  */
+  if (!wi::eq_p (lhs.upper_bound (), lhs.lower_bound ()))
+    {
+      r.set_varying (val_type);
+      return BRS_FULL;
+    }
+
+  if (lhs.zero_p ())
+    return BRS_FALSE;
+
+  return BRS_TRUE;
+}
+
+
+class operator_equal : public trange_operator
 {
 public:
-  operator_plus (): basic_operator (PLUS_EXPR) { }
+  operator_equal () : trange_operator (EQ_EXPR) { }
+  virtual bool fold_range (irange& r, const irange& op1,
+			   const irange& op2) const;
+  virtual bool op1_range (irange& r, const irange& lhs,
+			       const irange& val) const;
+  virtual bool op2_range (irange& r, const irange& lhs,
+			       const irange& val) const;
+} op_equal;
+
+/* Fold comparison of the 2 ranges.  */
+bool
+operator_equal::fold_range (irange& r, const irange& op1,
+			    const irange& op2) const
+{
+  if (empty_range_check (r, op1, op2, boolean_type_node))
+    return true;
+
+  /* We can be sure the values are always equal or not if both ranges
+     consist of a single value, and then compare them.  */
+  if (wi::eq_p (op1.lower_bound (), op1.upper_bound ())
+      && wi::eq_p (op2.lower_bound (), op2.upper_bound ()))
+    {
+      if (wi::eq_p (op1.lower_bound (), op2.upper_bound()))
+	r = range_true ();
+      else
+	r = range_false ();
+    }
+  else
+    {
+      /* If ranges do not intersect, we know the range is not equal, otherwise
+         we don;t really know anything for sure.  */
+      r = range_intersect (op1, op2);
+      if (r.undefined_p ())
+	r = range_false ();
+      else
+	r.set_varying (boolean_type_node);
+    }
+
+  return true;
+}
+
+bool
+operator_equal::op1_range (irange& r, const irange& lhs,
+			    const irange& op2) const
+{
+  switch (get_bool_state (r, lhs, op2.type ()))
+    {
+      case BRS_FALSE:
+        /* If the result is false, the only time we know anything is if OP2 is
+	   a constant.  */
+	if (wi::eq_p (op2.lower_bound(), op2.upper_bound()))
+	  r = range_invert (op2);
+	else
+	  r.set_varying (op2.type ());
+	break;
+
+      case BRS_TRUE:
+        /* If its true, the result is the same as OP2.  */
+        r = op2;
+	break;
+
+      default:
+        break;
+    }
+  return true;
+}
+
+
+bool
+operator_equal::op2_range (irange& r, const irange& lhs,
+			    const irange& op1) const
+{
+  return operator_equal::op1_range (r, lhs, op1);
+}
+
+
+/*  -----------------------------------------------------------------------  */
+
+/* Range operator for def = op1 != op2. */
+
+class operator_not_equal : public trange_operator
+{
+public:
+  operator_not_equal () : trange_operator (NE_EXPR) { }
+  virtual bool fold_range (irange& r, const irange& op1,
+			   const irange& op2) const;
+  virtual bool op1_range (irange& r, const irange& lhs,
+			   const irange& op2) const;
+  virtual bool op2_range (irange& r, const irange& lhs,
+			   const irange& op1) const;
+} op_not_equal;
+
+/* Fold comparison of the 2 ranges.  */
+bool
+operator_not_equal::fold_range (irange& r, const irange& op1,
+				const irange& op2) const
+{
+  if (empty_range_check (r, op1, op2, boolean_type_node))
+    return true;
+
+  /* We can be sure the values are always equal or not if both ranges
+     consist of a single value, and then compare them.  */
+  if (wi::eq_p (op1.lower_bound (), op1.upper_bound ())
+      && wi::eq_p (op2.lower_bound (), op2.upper_bound ()))
+    {
+      if (wi::ne_p (op1.lower_bound (), op2.upper_bound()))
+	r = range_true ();
+      else
+	r = range_false ();
+    }
+  else
+    {
+      /* If ranges do not intersect, we know the range is not equal, otherwise
+         we don;t really know anything for sure.  */
+      r = range_intersect (op1, op2);
+      if (r.undefined_p ())
+	r = range_true ();
+      else
+	r.set_varying (boolean_type_node);
+    }
+
+  return true;
+}
+
+/* Calculate the range of op1 being == to VAL based on LHS.  */
+bool
+operator_not_equal::op1_range (irange& r, const irange& lhs,
+				const irange& op2) const
+{
+  switch (get_bool_state (r, lhs, op2.type ()))
+    {
+      case BRS_TRUE:
+        /* If the result is true, the only time we know anything is if OP2 is
+	   a constant.  */
+	if (wi::eq_p (op2.lower_bound(), op2.upper_bound()))
+	  r = range_invert (op2);
+	else
+	  r.set_varying (op2.type ());
+	break;
+
+      case BRS_FALSE:
+        /* If its true, the result is the same as OP2.  */
+        r = op2;
+	break;
+
+      default:
+        break;
+    }
+  return true;
+}
+
+
+bool
+operator_not_equal::op2_range (irange& r, const irange& lhs,
+				const irange& op1) const
+{
+  return operator_not_equal::op1_range (r, lhs, op1);
+}
+
+
+/*  -----------------------------------------------------------------------  */
+
+
+/* (X < VAL) produces the a range of [MIN, VAL - 1]  */
+static void
+build_lt (irange& r, tree type, const wide_int& val)
+{
+  wi::overflow_type ov;
+  wide_int lim = wi::sub (val, 1, TYPE_SIGN (type), &ov);
+
+  /* If val - 1 underflows, check is X < MIN, which is an empty range.  */
+  if (ov)
+    r.set_undefined (type);
+  else
+    r = irange (type, min_limit (type), lim);
+}
+
+/* (X <= VAL) produces the a range of [MIN, VAL]  */
+static void
+build_le (irange& r, tree type, const wide_int& val)
+{
+  r = irange (type, min_limit (type), val);
+}
+
+/* (X > VAL) produces the a range of [VAL + 1, MAX]  */
+static void
+build_gt (irange& r, tree type, const wide_int& val)
+{
+  wi::overflow_type ov;
+  wide_int lim = wi::add (val, 1, TYPE_SIGN (type), &ov);
+  /* If val + 1 overflows, check is for X > MAX , which is an empty range.  */
+  if (ov)
+    r.set_undefined (type);
+  else
+    r = irange (type, lim, max_limit (type));
+}
+
+/* (X >= val) produces the a range of [VAL, MAX]  */
+static void
+build_ge (irange& r, tree type, const wide_int& val)
+{
+  r = irange (type, val, max_limit (type));
+}
+
+
+
+class operator_lt :  public trange_operator
+{
+public:
+  operator_lt () : trange_operator (LT_EXPR) { }
+  virtual bool fold_range (irange& r, const irange& op1,
+			   const irange& op2) const;
+  virtual bool op1_range (irange& r, const irange& lhs,
+			   const irange& op2) const;
+  virtual bool op2_range (irange& r, const irange& lhs,
+			   const irange& op1) const;
+} op_lt;
+
+bool
+operator_lt::fold_range (irange& r, const irange& op1, const irange& op2) const
+{
+  if (empty_range_check (r, op1, op2, boolean_type_node))
+    return true;
+
+  signop sign = TYPE_SIGN (op1.type ());
+  gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
+
+  if (wi::lt_p (op1.upper_bound (), op2.lower_bound (), sign))
+    r = range_true ();
+  else
+    if (!wi::lt_p (op1.lower_bound (), op2.upper_bound (), sign))
+      r = range_false ();
+    else 
+      r.set_varying (boolean_type_node);
+  return true;
+}
+
+
+bool
+operator_lt::op1_range (irange& r, const irange& lhs, const irange& op2) const
+{
+  switch (get_bool_state (r, lhs, op2.type ()))
+    {
+      case BRS_TRUE:
+	build_lt (r, op2.type (), op2.upper_bound ());
+	break;
+
+      case BRS_FALSE:
+	build_ge (r, op2.type (), op2.lower_bound ());
+	break;
+
+      default:
+        break;
+    }
+  return true;
+}
+
+
+bool
+operator_lt::op2_range (irange& r, const irange& lhs, const irange& op1) const
+{
+  switch (get_bool_state (r, lhs, op1.type ()))
+    {
+      case BRS_FALSE:
+	build_le (r, op1.type (), op1.upper_bound ());
+	break;
+
+      case BRS_TRUE:
+	build_gt (r, op1.type (), op1.lower_bound ());
+	break;
+
+      default:
+        break;
+    }
+  return true;
+
+}
+
+class operator_le :  public trange_operator
+{
+public:
+  operator_le () : trange_operator (LE_EXPR) { }
+  virtual bool fold_range (irange& r, const irange& op1,
+			   const irange& op2) const;
+  virtual bool op1_range (irange& r, const irange& lhs,
+			   const irange& op2) const;
+  virtual bool op2_range (irange& r, const irange& lhs,
+			   const irange& op1) const;
+} op_le;
+
+bool
+operator_le::fold_range (irange& r, const irange& op1, const irange& op2) const
+{
+  if (empty_range_check (r, op1, op2, boolean_type_node))
+    return true;
+
+  signop sign = TYPE_SIGN (op1.type ());
+  gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
+
+  if (wi::le_p (op1.upper_bound (), op2.lower_bound (), sign))
+    r = range_true ();
+  else
+    if (!wi::le_p (op1.lower_bound (), op2.upper_bound (), sign))
+      r = range_false ();
+    else 
+      r.set_varying (boolean_type_node);
+  return true;
+}
+
+bool
+operator_le::op1_range (irange& r, const irange& lhs, const irange& op2) const
+{
+  switch (get_bool_state (r, lhs, op2.type ()))
+    {
+      case BRS_TRUE:
+	build_le (r, op2.type (), op2.upper_bound ());
+	break;
+
+      case BRS_FALSE:
+	build_gt (r, op2.type (), op2.lower_bound ());
+	break;
+
+      default:
+        break;
+    }
+  return true;
+}
+
+
+bool
+operator_le::op2_range (irange& r, const irange& lhs, const irange& op1) const
+{
+  switch (get_bool_state (r, lhs, op1.type ()))
+    {
+      case BRS_FALSE:
+	build_lt (r, op1.type (), op1.upper_bound ());
+	break;
+
+      case BRS_TRUE:
+	build_ge (r, op1.type (), op1.lower_bound ());
+	break;
+
+      default:
+        break;
+    }
+  return true;
+
+}
+
+
+class operator_gt :  public trange_operator
+{
+public:
+  operator_gt () : trange_operator (GT_EXPR) { }
+  virtual bool fold_range (irange& r, const irange& op1,
+			   const irange& op2) const;
+  virtual bool op1_range (irange& r, const irange& lhs,
+			   const irange& op2) const;
+  virtual bool op2_range (irange& r, const irange& lhs,
+			   const irange& op1) const;
+} op_gt;
+
+bool
+operator_gt::fold_range (irange& r, const irange& op1, const irange& op2) const
+{
+  if (empty_range_check (r, op1, op2, boolean_type_node))
+    return true;
+
+  signop sign = TYPE_SIGN (op1.type ());
+  gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
+
+  if (wi::gt_p (op1.lower_bound (), op2.upper_bound (), sign))
+    r = range_true ();
+  else
+    if (!wi::gt_p (op1.upper_bound (), op2.lower_bound (), sign))
+      r = range_false ();
+    else 
+      r.set_varying (boolean_type_node);
+
+  return true;
+}
+
+bool
+operator_gt::op1_range (irange& r, const irange& lhs, const irange& op2) const
+{
+  switch (get_bool_state (r, lhs, op2.type ()))
+    {
+      case BRS_TRUE:
+	build_gt (r, op2.type (), op2.lower_bound ());
+	break;
+
+      case BRS_FALSE:
+	build_le (r, op2.type (), op2.upper_bound ());
+	break;
+
+      default:
+        break;
+    }
+  return true;
+}
+
+
+bool
+operator_gt::op2_range (irange& r, const irange& lhs, const irange& op1) const
+{
+  switch (get_bool_state (r, lhs, op1.type ()))
+    {
+      case BRS_FALSE:
+	build_ge (r, op1.type (), op1.lower_bound ());
+	break;
+
+      case BRS_TRUE:
+	build_lt (r, op1.type (), op1.upper_bound ());
+	break;
+
+      default:
+        break;
+    }
+  return true;
+
+}
+
+
+class operator_ge :  public trange_operator
+{
+public:
+  operator_ge () : trange_operator (GE_EXPR) { }
+  virtual bool fold_range (irange& r, const irange& op1,
+			   const irange& op2) const;
+  virtual bool op1_range (irange& r, const irange& lhs,
+			   const irange& op2) const;
+  virtual bool op2_range (irange& r, const irange& lhs,
+			   const irange& op1) const;
+} op_ge;
+
+bool
+operator_ge::fold_range (irange& r, const irange& op1, const irange& op2) const
+{
+  if (empty_range_check (r, op1, op2, boolean_type_node))
+    return true;
+
+  signop sign = TYPE_SIGN (op1.type ());
+  gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
+
+  if (wi::ge_p (op1.lower_bound (), op2.upper_bound (), sign))
+    r = range_true ();
+  else
+    if (!wi::ge_p (op1.upper_bound (), op2.lower_bound (), sign))
+      r = range_false ();
+    else 
+      r.set_varying (boolean_type_node);
+
+  return true;
+} 
+
+bool
+operator_ge::op1_range (irange& r, const irange& lhs, const irange& op2) const
+{
+  switch (get_bool_state (r, lhs, op2.type ()))
+    {
+      case BRS_TRUE:
+	build_ge (r, op2.type (), op2.lower_bound ());
+	break;
+
+      case BRS_FALSE:
+	build_lt (r, op2.type (), op2.upper_bound ());
+	break;
+
+      default:
+        break;
+    }
+  return true;
+}
+
+
+bool
+operator_ge::op2_range (irange& r, const irange& lhs, const irange& op1) const
+{
+  switch (get_bool_state (r, lhs, op1.type ()))
+    {
+      case BRS_FALSE:
+	build_gt (r, op1.type (), op1.lower_bound ());
+	break;
+
+      case BRS_TRUE:
+	build_le (r, op1.type (), op1.upper_bound ());
+	break;
+
+      default:
+        break;
+    }
+  return true;
+
+}
+
+
+class operator_plus : public trange_operator
+{
+public:
+  operator_plus () : trange_operator (PLUS_EXPR) { }
   virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
   virtual bool op2_range (irange& r, const irange& lhs,
 			   const irange& op1) const;
 
 } op_plus;
-
 
 /* Adjust irange to be in terms of op1. 
    Given [range] = op1 + val,  op1 = [range] - val.  */
@@ -1350,10 +1372,10 @@ operator_plus::op2_range (irange& r, const irange& lhs,
 }
 
 
-class operator_minus : public basic_operator
+class operator_minus : public trange_operator
 {
 public:
-  operator_minus () : basic_operator (MINUS_EXPR) { }
+  operator_minus () : trange_operator (MINUS_EXPR) { }
   virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
   virtual bool op2_range (irange& r, const irange& lhs,
@@ -1379,16 +1401,17 @@ operator_minus::op2_range (irange& r, const irange& lhs,
 }
 
 
-basic_operator op_mult (MULT_EXPR);
-basic_operator op_trunc_div (TRUNC_DIV_EXPR);
-basic_operator op_floor_div(FLOOR_DIV_EXPR);
-basic_operator op_round_div (ROUND_DIV_EXPR);
-basic_operator op_ceil_div (CEIL_DIV_EXPR);
+trange_operator op_mult (MULT_EXPR);
+trange_operator op_trunc_div (TRUNC_DIV_EXPR);
+trange_operator op_floor_div(FLOOR_DIV_EXPR);
+trange_operator op_round_div (ROUND_DIV_EXPR);
+trange_operator op_ceil_div (CEIL_DIV_EXPR);
+trange_operator op_pointer_plus (POINTER_PLUS_EXPR);
 
-class operator_exact_divide : public basic_operator
+class operator_exact_divide : public trange_operator
 {
 public:
-  operator_exact_divide () : basic_operator (EXACT_DIV_EXPR) { }
+  operator_exact_divide () : trange_operator (EXACT_DIV_EXPR) { }
   virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
 
@@ -1415,10 +1438,10 @@ operator_exact_divide::op1_range (irange& r,
 }
 
 
-class operator_shift : public basic_operator
+class operator_shift : public trange_operator
 {
 public:
-  operator_shift (enum tree_code c) : basic_operator (c) { }
+  operator_shift (enum tree_code c) : trange_operator (c) { }
   virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
 };
@@ -1473,27 +1496,22 @@ operator_shift::op1_range (irange& r, const irange& lhs,
 
 /*  ----------------------------------------------------------------------  */
 
-class operator_cast: public range_operator
+class operator_cast: public trange_operator
 {
 public:
-  virtual void dump (FILE *f) const;
+  operator_cast (enum tree_code code) : trange_operator (code) { }
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
   virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
 
-} op_cast;
+};
 
-/* Unary operators put the range for the type of the expression as op2.  */
+operator_cast op_nop (NOP_EXPR);
+operator_cast op_convert (CONVERT_EXPR);
 
-void
-operator_cast::dump (FILE *f) const
-{
-  fprintf (f, "(cast)");
-}
 
 /* Return the range of lh converted to the type of rh:
-
    r = (type_of(rh)) lh.  */
 
 bool
@@ -1596,22 +1614,16 @@ operator_cast::op1_range (irange& r, const irange& lhs,
 
 // Bitwise and logical ops. 
 
-class operator_logical_and : public range_operator
+class operator_logical_and : public trange_operator
 {
 public:
-  void dump (FILE *f) const;
+  operator_logical_and () : trange_operator (TRUTH_AND_EXPR) { }
   virtual bool fold_range (irange& r, const irange& lh, const irange& rh) const;
   virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
   virtual bool op2_range (irange& r, const irange& lhs,
 			   const irange& op1) const;
 } op_logical_and;
-
-void 
-operator_logical_and::dump (FILE *f) const
-{
-  fprintf (f, " && ");
-}
 
 
 bool
@@ -1670,11 +1682,10 @@ operator_logical_and::op2_range (irange& r, const irange& lhs,
   return operator_logical_and::op1_range (r, lhs, op1);
 }
 
-class operator_bitwise_and : public basic_operator
+class operator_bitwise_and : public trange_operator
 {
 public:
-  operator_bitwise_and () : basic_operator (BIT_AND_EXPR) { }
-  virtual void dump (FILE *f) const { fprintf (f, " & "); }
+  operator_bitwise_and () : trange_operator (BIT_AND_EXPR) { }
   virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
   virtual bool op2_range (irange& r, const irange& lhs,
@@ -1702,22 +1713,16 @@ operator_bitwise_and::op2_range (irange& r, const irange& lhs,
 }
 
 
-class operator_logical_or : public range_operator
+class operator_logical_or : public trange_operator
 {
 public:
-  void dump (FILE *f) const;
+  operator_logical_or () : trange_operator (TRUTH_OR_EXPR) { }
   virtual bool fold_range (irange& r, const irange& lh, const irange& rh) const;
   virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
   virtual bool op2_range (irange& r, const irange& lhs,
 			   const irange& op1) const;
 } op_logical_or;
-
-void 
-operator_logical_or::dump (FILE *f) const
-{
-  fprintf (f, " || ");
-}
 
 
 bool
@@ -1758,11 +1763,10 @@ operator_logical_or::op2_range (irange& r, const irange& lhs,
   return operator_logical_or::op1_range (r, lhs, op1);
 }
 
-class operator_bitwise_or : public basic_operator
+class operator_bitwise_or : public trange_operator
 {
 public:
-  operator_bitwise_or () : basic_operator (BIT_IOR_EXPR) { }
-  virtual void dump (FILE *f) const { fprintf (f, " | "); }
+  operator_bitwise_or () : trange_operator (BIT_IOR_EXPR) { }
   virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
   virtual bool op2_range (irange& r, const irange& lhs,
@@ -1789,36 +1793,31 @@ operator_bitwise_or::op2_range (irange& r, const irange& lhs,
   return operator_bitwise_or::op1_range (r, lhs, op1);
 }
 
-class operator_bitwise_xor : public basic_operator
+class operator_bitwise_xor : public trange_operator
 {
 public:
-  operator_bitwise_xor (): basic_operator (BIT_XOR_EXPR) { }
+  operator_bitwise_xor (): trange_operator (BIT_XOR_EXPR) { }
   /* FIXME: Andrew can implement the op1_range and op2_range variants
      when he returns from leave :-P.  */
 } op_bitwise_xor;
 
-class operator_trunc_mod : public basic_operator
+class operator_trunc_mod : public trange_operator
 {
 public:
-  operator_trunc_mod (): basic_operator (TRUNC_MOD_EXPR) { }
+  operator_trunc_mod (): trange_operator (TRUNC_MOD_EXPR) { }
   /* FIXME: Andrew can implement the op1_range and op2_range variants
      when he returns from leave :-P.  */
 } op_trunc_mod;
 
-class operator_logical_not : public range_operator
+class operator_logical_not : public trange_operator
 {
 public:
-  void dump (FILE *f) const;
+  operator_logical_not () : trange_operator (TRUTH_NOT_EXPR) { }
   virtual bool fold_range (irange& r, const irange& lh, const irange& rh) const;
   virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
 } op_logical_not;
 
-void 
-operator_logical_not::dump (FILE *f) const
-{
-  fprintf (f, " ! ");
-}
 
 /* Folding a logical NOT, oddly enough, invlves doing nothing on the
    forward pass thru.  During the initial walk backwards, the logical NOT
@@ -1859,20 +1858,14 @@ operator_logical_not::op1_range (irange& r, const irange& lhs,
 }
 
 
-class operator_bitwise_not : public range_operator
+class operator_bitwise_not : public trange_operator
 {
 public:
-  void dump (FILE *f) const;
+  operator_bitwise_not () : trange_operator (BIT_NOT_EXPR) { }
   virtual bool fold_range (irange& r, const irange& lh, const irange& rh) const;
   virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
 } op_bitwise_not;
-
-void 
-operator_bitwise_not::dump (FILE *f) const
-{
-  fprintf (f, " ~ ");
-}
 
 bool
 operator_bitwise_not::fold_range (irange& r, const irange& lh,
@@ -1913,20 +1906,14 @@ operator_bitwise_not::op1_range (irange& r, const irange& lhs,
 /*  ----------------------------------------------------------------------  */
 
 
-class operator_cst : public range_operator
+class operator_cst : public trange_operator
 {
 public:
-  virtual void dump (FILE *f) const;
-
+  operator_cst () : trange_operator (INTEGER_CST) { }
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
 } op_integer_cst;
 
-void 
-operator_cst::dump (FILE *f) const
-{
-  fprintf (f, " const ");
-}
 
 bool
 operator_cst::fold_range (irange& r, const irange& lh,
@@ -1937,23 +1924,15 @@ operator_cst::fold_range (irange& r, const irange& lh,
 }
 
 
-
-class operator_ssa_name : public range_operator
+class operator_ssa_name : public trange_operator
 {
 public:
-  virtual void dump (FILE *f) const;
-
+  operator_ssa_name () : trange_operator (SSA_NAME) { }
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
   virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
 } op_ssa_name;
-
-void 
-operator_ssa_name::dump (FILE *f) const
-{
-  fprintf (f, " SSA_NAME ");
-}
 
 bool
 operator_ssa_name::fold_range (irange& r, const irange& lh,
@@ -1972,60 +1951,23 @@ operator_ssa_name::op1_range (irange& r, const irange& lhs,
 }
 
 
-class operator_pointer_plus : public range_operator
-{
-public:
-  virtual void dump (FILE *f) const;
-
-  virtual bool fold_range (irange& r, const irange& op1,
-			   const irange& op2) const;
-} op_pointer_plus;
-
-void 
-operator_pointer_plus::dump (FILE *f) const
-{
-  fprintf (f, " POINTER_PLUS ");
-}
-
-bool
-operator_pointer_plus::fold_range (irange& r, const irange& lh,
-				   const irange& rh) const
-{
-  if (empty_range_check (r, lh, rh, lh.type ()))
-    return true;
-
-  return op_rr (POINTER_PLUS_EXPR, r, lh, rh);
-}
-
 // Unary identity function.
-class operator_identity : public range_operator
+class operator_identity : public trange_operator
 {
-  tree_code code;
  public:
-  virtual void dump (FILE *f) const;
+  operator_identity (enum tree_code c) : trange_operator (c) { }
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange &op2 ATTRIBUTE_UNUSED) const
   { r = op1; return false; }
   virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange &op2 ATTRIBUTE_UNUSED) const
   { r = lhs; return false; }
-} op_identity;
+} op_paren (PAREN_EXPR), op_obj_type_ref (OBJ_TYPE_REF);
 
-void
-operator_identity::dump (FILE *f) const
-{
-  if (code == PAREN_EXPR)
-    fprintf (f, " PAREN ");
-  else if (code == OBJ_TYPE_REF)
-    fprintf (f, " OBJ_TYPE ");
-  else
-    gcc_unreachable ();
-}
-
-class operator_abs : public range_operator
+class operator_abs : public trange_operator
 {
  public:
-  virtual void dump (FILE *f) const { fprintf (f, " ABS_EXPR "); }
+  operator_abs () : trange_operator (ABS_EXPR) { }
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
   virtual bool op1_range (irange& r,
@@ -2068,24 +2010,16 @@ operator_abs::op1_range (irange& r,
   return true;
 }
 
-class operator_negate : public range_operator
+class operator_negate : public trange_operator
 {
-  tree_code code;
  public:
-  virtual void dump (FILE *f) const;
-
+  operator_negate () : trange_operator (NEGATE_EXPR) { }
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
   virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const
     { return fold_range (r, lhs, op2); } // NEGATE is involutory :-P.
 } op_negate;
-
-void
-operator_negate::dump (FILE *f) const
-{
-  fprintf (f, " - ");
-}
 
 /* Return the negated range of lh with the type of rh.  */
 
@@ -2100,13 +2034,10 @@ operator_negate::fold_range (irange &r,
   return op_rr (MINUS_EXPR, r, range_zero (type), lh);
 }
 
-class operator_min_max : public range_operator
+class operator_min_max : public trange_operator
 {
-  tree_code code;
 public:
-  operator_min_max (tree_code c);
-  virtual void dump (FILE *f) const;
-
+  operator_min_max (tree_code c) : trange_operator (c) { }
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
   virtual bool op1_range (irange& r, const irange& lhs,
@@ -2115,17 +2046,6 @@ public:
 			   const irange& op1) const;
 } op_min (MIN_EXPR), op_max (MAX_EXPR);
 
-operator_min_max::operator_min_max (tree_code c)
-{
-  gcc_assert (c == MIN_EXPR || c == MAX_EXPR);
-  code = c;
-}
-
-void 
-operator_min_max::dump (FILE *f) const
-{
-  fprintf (f," %s ", get_tree_code_name (code));
-}
 
 bool
 operator_min_max::fold_range (irange& r, const irange& lh,
@@ -2199,24 +2119,15 @@ operator_min_max::op2_range (irange& r, const irange& lhs,
 }
 
 
-
-
-class operator_addr_expr : public range_operator
+class operator_addr_expr : public trange_operator
 {
 public:
-  virtual void dump (FILE *f) const;
-
+  operator_addr_expr () : trange_operator (ADDR_EXPR) { }
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
   virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
 } op_addr;
-
-void 
-operator_addr_expr::dump (FILE *f) const
-{
-  fprintf (f, " ADDR_EXPR ");
-}
 
 bool
 operator_addr_expr::fold_range (irange& r, const irange& lh,
@@ -2244,205 +2155,4 @@ operator_addr_expr::op1_range (irange& r, const irange& lhs,
 {
   return operator_addr_expr::fold_range (r, lhs, op2);
 }
-/*  ----------------------------------------------------------------------  */
-
-/* Create the range operator table as a local object in this file, and the
-   constructor should be automatically called before it is used.  */
-
-class range_op_table
-{
-public:
-  range_op_table ();
-  inline range_operator *operator[] (enum tree_code code);
-private:
-  range_operator *m_range_tree[MAX_TREE_CODES];
-} range_tree;
-
-range_operator *range_op_table::operator[] (enum tree_code code)
-{
-  gcc_assert (code > 0 && code < MAX_TREE_CODES);
-  return m_range_tree[code];
-}
-
-range_op_table::range_op_table ()
-{
-  m_range_tree[LT_EXPR] = &op_lt;
-  m_range_tree[LE_EXPR] = &op_le;
-  m_range_tree[GT_EXPR] = &op_gt;
-  m_range_tree[GE_EXPR] = &op_ge;
-  m_range_tree[NE_EXPR] = &op_not_equal;
-  m_range_tree[EQ_EXPR] = &op_equal;
-
-  m_range_tree[PLUS_EXPR] = &op_plus;
-  m_range_tree[MINUS_EXPR] = &op_minus;
-  m_range_tree[MULT_EXPR] = &op_mult;
-  m_range_tree[TRUNC_DIV_EXPR] = &op_trunc_div;
-  m_range_tree[FLOOR_DIV_EXPR] = &op_floor_div;
-  m_range_tree[ROUND_DIV_EXPR] = &op_round_div;
-  m_range_tree[CEIL_DIV_EXPR] = &op_ceil_div;
-  m_range_tree[EXACT_DIV_EXPR] = &op_exact_div;
-  
-  m_range_tree[NOP_EXPR] = &op_cast;
-  m_range_tree[CONVERT_EXPR] = &op_cast;
-
-  m_range_tree[TRUTH_AND_EXPR] = &op_logical_and;
-  m_range_tree[TRUTH_OR_EXPR] = &op_logical_or;
-  m_range_tree[TRUTH_NOT_EXPR] = &op_logical_not;
-
-  m_range_tree[BIT_AND_EXPR] = &op_bitwise_and;
-  m_range_tree[BIT_IOR_EXPR] = &op_bitwise_or;
-  m_range_tree[BIT_XOR_EXPR] = &op_bitwise_xor;
-  m_range_tree[BIT_NOT_EXPR] = &op_bitwise_not;
-
-  m_range_tree[INTEGER_CST] = &op_integer_cst;
-  m_range_tree[SSA_NAME] = &op_ssa_name;
-
-  m_range_tree[ABS_EXPR] = &op_abs;
-  m_range_tree[MIN_EXPR] = &op_min;
-  m_range_tree[MAX_EXPR] = &op_max;
-  m_range_tree[NEGATE_EXPR] = &op_negate;
-  m_range_tree[PAREN_EXPR] = &op_identity;
-  m_range_tree[OBJ_TYPE_REF] = &op_identity;
-  m_range_tree[POINTER_PLUS_EXPR] = &op_pointer_plus;
-  m_range_tree[TRUNC_MOD_EXPR] = &op_trunc_mod;
-
-  m_range_tree[LSHIFT_EXPR] = &op_lshift;
-  m_range_tree[RSHIFT_EXPR] = &op_rshift;
-
-  m_range_tree[ADDR_EXPR] = &op_addr;
-}
-
-/* The table is hidden and accessed via a simple extern function.  */
-
-range_operator *
-range_op_handler (enum tree_code code)
-{
-  return range_tree[code];
-}
-
-//   GIMPLE extensions
-
-// Return the First operand of this statement if it is a valid operand 
-// supported by ranges, otherwise return NULL_TREE. 
-
-tree
-grange_op::operand1 () const
-{
-  switch (gimple_code (this))
-    {
-      case GIMPLE_COND:
-        return gimple_cond_lhs (this);
-      case GIMPLE_ASSIGN:
-        {
-	  tree expr = gimple_assign_rhs1 (this);
-	  if (gimple_assign_rhs_code (this) == ADDR_EXPR)
-	    {
-	      // If the base address is an SSA_NAME, we return it here.
-	      // This allows processing of the range of that name, while the
-	      // rest of the expression is simply ignored.  The code in
-	      // range_ops will see the ADDR_EXPR and do the right thing.
-	      tree base = get_base_address (TREE_OPERAND (expr, 0));
-	      if (base != NULL_TREE && TREE_CODE (base) == MEM_REF)
-	        {
-		  // If the base address is an SSA_NAME, return it. 
-		  tree b = TREE_OPERAND (base, 0);
-		  if (TREE_CODE (b) == SSA_NAME)
-		    return b;
-		}
-	    }
-	  return expr;
-	}
-      default:
-        break;
-    }
-  return NULL;
-}
-
-
-// Fold this unary statement uusing R1 as operand1's range, returning the
-// result in RES.  Return false if the operation fails.
-
-bool
-grange_op::fold (irange &res, const irange &r1) const
-{
-  irange r2;
-  // Single ssa operations require the LHS type as the second range.
-  if (lhs ())
-    r2.set_varying (TREE_TYPE (lhs ()));
-  else
-    r2.set_undefined (r1.type ());
-
-  return handler()->fold_range (res, r1, r2);
-}
-
-
-// Fold this binary statement using R1 and R2 as the operands ranges,
-// returning the result in RES.  Return false if the operation fails.
-
-bool
-grange_op::fold (irange &res, const irange &r1, const irange &r2) const
-{
-  // Make sure this isnt a unary operation being passed a second range.
-  return handler()->fold_range (res, r1, r2);
-}
-
-// Calculate what we can determine of the range of this unary statement's
-// operand if the lhs of the expression has the range LHS_RANGE.  Return false
-// if nothing can be determined.
-
-bool
-grange_op::calc_op1_irange (irange &r, const irange &lhs_range) const
-{  
-  irange type_range;
-  gcc_checking_assert (gimple_num_ops (this) < 3);
-  // An empty range is viral, so return an empty range.
-  if (lhs_range.undefined_p ())
-    {
-      r.set_undefined (TREE_TYPE (operand1 ()));
-      return true;
-    }
-  // Unary operations require the type of the first operand in the second range
-  // position.
-  type_range.set_varying (TREE_TYPE (operand1 ()));
-  return handler ()->op1_range (r, lhs_range, type_range);
-}
-
-// Calculate what we can determine of the range of this statement's first 
-// operand if the lhs of the expression has the range LHS_RANGE and the second
-// operand has the range OP2_RANGE.  Return false if nothing can be determined.
-
-bool
-grange_op::calc_op1_irange (irange &r, const irange &lhs_range,
-			    const irange &op2_range) const
-{  
-  // Unary operation are allowed to pass a range in for second operand
-  // as there are often additional restrictions beyond the type which can
-  // be imposed.  See operator_cast::op1_irange.()
-  
-  // An empty range is viral, so return an empty range.
-  if (op2_range.undefined_p () || lhs_range.undefined_p ())
-    {
-      r.set_undefined (op2_range.type ());
-      return true;
-    }
-  return handler ()->op1_range (r, lhs_range, op2_range);
-}
-
-// Calculate what we can determine of the range of this statement's second
-// operand if the lhs of the expression has the range LHS_RANGE and the first
-// operand has the range OP1_RANGE.  Return false if nothing can be determined.
-
-bool
-grange_op::calc_op2_irange (irange &r, const irange &lhs_range,
-			    const irange &op1_range) const
-{  
-  // An empty range is viral, so return an empty range.
-  if (op1_range.undefined_p () || lhs_range.undefined_p ())
-    {
-      r.set_undefined (op1_range.type ());
-      return true;
-    }
-  return handler ()->op2_range (r, lhs_range, op1_range);
-}
-
 

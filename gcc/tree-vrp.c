@@ -69,8 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vr-values.h"
 #include "builtins.h"
 #include "wide-int-range.h"
-#include "range.h"
-#include "range-op.h"
+#include "grange.h"
 
 /* Set of SSA names found live during the RPO traversal of the function
    for still active basic-blocks.  */

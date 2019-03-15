@@ -1349,6 +1349,7 @@ OBJS = \
 	graphite-poly.o \
 	graphite-scop-detection.o \
 	graphite-sese-to-poly.o \
+	grange.o \
 	gtype-desc.o \
 	haifa-sched.o \
 	hash-map-tests.o \
