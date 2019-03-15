@@ -13603,6 +13603,13 @@ generic_parameter_die (tree parm, tree arg,
   dw_die_ref tmpl_die = NULL;
   const char *name = NULL;
 
+  /* C++2a accepts class literals as template parameters, and var
+     decls with initializers represent them.  The VAR_DECLs would be
+     rejected, but we can take the DECL_INITIAL constructor and
+     attempt to expand it.  */
+  if (arg && VAR_P (arg))
+    arg = DECL_INITIAL (arg);
+
   if (!parm || !DECL_NAME (parm) || !arg)
     return NULL;
 

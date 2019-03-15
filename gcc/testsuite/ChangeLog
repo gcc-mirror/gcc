@@ -1,3 +1,10 @@
+2019-03-15  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/88534
+	PR c++/88537
+	* g++.dg/cpp2a/pr88534.C: New.
+	* g++.dg/cpp2a/pr88537.C: New.
+
 2019-03-15  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* gcc.target/s390/target-attribute/tattr-1.c (htm0): -mhtm -> '-mhtm'.
