@@ -20,7 +20,7 @@ void p0(void)
 #ifdef __HTM__
 #error __HTM__ is defined
 #endif
-  __builtin_tend (); /* { dg-error "is not supported without -mhtm" } */
+  __builtin_tend (); /* { dg-error "is not supported without '-mhtm'" } */
 }
 #pragma GCC reset_options
 
@@ -39,7 +39,7 @@ void a0(void)
 #ifdef __HTM__
 #error __HTM__ is defined
 #endif
-  __builtin_tend (); /* { dg-error "is not supported without -mhtm" } */
+  __builtin_tend (); /* { dg-error "is not supported without '-mhtm'" } */
 }
 
 void htmd(void)
@@ -47,5 +47,5 @@ void htmd(void)
 #ifdef __HTM__
 #error __HTM__ is defined
 #endif
-  __builtin_tend (); /* { dg-error "is not supported without -mhtm" } */
+  __builtin_tend (); /* { dg-error "is not supported without '-mhtm'" } */
 }
