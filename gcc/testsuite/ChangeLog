@@ -1,3 +1,9 @@
+2019-03-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/60091
+	* gfortran.dg/pointer_remapping_3.f08: Adjust error messages.
+	* gfortran.dg/pointer_remapping_7.f90: Adjust error message.
+
 2019-03-15  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR target/87532
