@@ -1,3 +1,10 @@
+2019-03-15  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/target-attribute/tattr-1.c (htm0): -mhtm -> '-mhtm'.
+	* gcc.target/s390/target-attribute/tattr-2.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-3.c (vx0): -mvx -> '-mvx'.
+	* gcc.target/s390/target-attribute/tattr-4.c: Likewise.
+
 2019-03-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/89719
