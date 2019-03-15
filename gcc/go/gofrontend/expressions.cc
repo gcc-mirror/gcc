@@ -8008,8 +8008,8 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
   ref = Expression::make_temporary_reference(s1tmp, loc);
   Expression* zero = Expression::make_integer_ul(0, int_type, loc);
   Expression* ref2 = Expression::make_temporary_reference(ntmp, loc);
-  // FIXME: Mark this index as not requiring bounds checks.
-  ref = Expression::make_index(ref, zero, ref2, NULL, loc);
+  ref = Expression::make_array_index(ref, zero, ref2, NULL, loc);
+  ref->array_index_expression()->set_needs_bounds_check(false);
 
   if (assign_lhs == NULL)
     {
@@ -8058,8 +8058,8 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
       a1 = Expression::make_temporary_reference(s1tmp, loc);
       ref = Expression::make_temporary_reference(l1tmp, loc);
       Expression* nil = Expression::make_nil(loc);
-      // FIXME: Mark this index as not requiring bounds checks.
-      a1 = Expression::make_index(a1, ref, nil, NULL, loc);
+      a1 = Expression::make_array_index(a1, ref, nil, NULL, loc);
+      a1->array_index_expression()->set_needs_bounds_check(false);
 
       a2 = Expression::make_temporary_reference(s2tmp, loc);
 
@@ -8086,9 +8086,9 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
 	  ref2 = Expression::make_temporary_reference(l1tmp, loc);
 	  Expression* off = Expression::make_integer_ul(i, int_type, loc);
 	  ref2 = Expression::make_binary(OPERATOR_PLUS, ref2, off, loc);
-	  // FIXME: Mark this index as not requiring bounds checks.
-	  Expression* lhs = Expression::make_index(ref, ref2, NULL, NULL,
-						   loc);
+	  Expression* lhs = Expression::make_array_index(ref, ref2, NULL,
+                                                         NULL, loc);
+          lhs->array_index_expression()->set_needs_bounds_check(false);
 	  gogo->lower_expression(function, inserter, &lhs);
 	  gogo->flatten_expression(function, inserter, &lhs);
 	  // The flatten pass runs after the write barrier pass, so we
@@ -11328,15 +11328,6 @@ Array_index_expression::do_get_backend(Translate_context* context)
   if (length == NULL)
     length = cap_arg;
 
-  int code = (array_type->length() != NULL
-	      ? (this->end_ == NULL
-		 ? RUNTIME_ERROR_ARRAY_INDEX_OUT_OF_BOUNDS
-		 : RUNTIME_ERROR_ARRAY_SLICE_OUT_OF_BOUNDS)
-	      : (this->end_ == NULL
-		 ? RUNTIME_ERROR_SLICE_INDEX_OUT_OF_BOUNDS
-		 : RUNTIME_ERROR_SLICE_SLICE_OUT_OF_BOUNDS));
-  Bexpression* crash = gogo->runtime_error(code, loc)->get_backend(context);
-
   if (this->start_->type()->integer_type() == NULL
       && !Type::are_convertible(int_type, this->start_->type(), NULL))
     {
@@ -11344,31 +11335,46 @@ Array_index_expression::do_get_backend(Translate_context* context)
       return context->backend()->error_expression();
     }
 
-  Bexpression* bad_index =
-    Expression::check_bounds(this->start_, loc)->get_backend(context);
-
   Bexpression* start = this->start_->get_backend(context);
   start = gogo->backend()->convert_expression(int_btype, start, loc);
-  Bexpression* start_too_large =
-    gogo->backend()->binary_expression((this->end_ == NULL
-					? OPERATOR_GE
-					: OPERATOR_GT),
-                                       start,
-				       (this->end_ == NULL
-					? length
-					: capacity),
-                                       loc);
-  bad_index = gogo->backend()->binary_expression(OPERATOR_OROR, start_too_large,
-						 bad_index, loc);
+
+  Bexpression* crash = NULL;
+  Bexpression* bad_index = NULL;
+  if (this->needs_bounds_check_)
+    {
+      int code = (array_type->length() != NULL
+                  ? (this->end_ == NULL
+                     ? RUNTIME_ERROR_ARRAY_INDEX_OUT_OF_BOUNDS
+                     : RUNTIME_ERROR_ARRAY_SLICE_OUT_OF_BOUNDS)
+                  : (this->end_ == NULL
+                     ? RUNTIME_ERROR_SLICE_INDEX_OUT_OF_BOUNDS
+                     : RUNTIME_ERROR_SLICE_SLICE_OUT_OF_BOUNDS));
+      crash = gogo->runtime_error(code, loc)->get_backend(context);
+      bad_index = Expression::check_bounds(this->start_, loc)->get_backend(context);
+      Bexpression* start_too_large =
+        gogo->backend()->binary_expression((this->end_ == NULL
+                                            ? OPERATOR_GE
+                                            : OPERATOR_GT),
+                                           start,
+                                           (this->end_ == NULL
+                                            ? length
+                                            : capacity),
+                                           loc);
+      bad_index = gogo->backend()->binary_expression(OPERATOR_OROR,
+                                                     start_too_large,
+                                                     bad_index, loc);
+    }
+
 
   Bfunction* bfn = context->function()->func_value()->get_decl();
   if (this->end_ == NULL)
     {
       // Simple array indexing.  This has to return an l-value, so
       // wrap the index check into START.
-      start =
-        gogo->backend()->conditional_expression(bfn, int_btype, bad_index,
-						crash, start, loc);
+      if (this->needs_bounds_check_)
+        start =
+          gogo->backend()->conditional_expression(bfn, int_btype, bad_index,
+                                                  crash, start, loc);
 
       Bexpression* ret;
       if (array_type->length() != NULL)
@@ -11396,22 +11402,26 @@ Array_index_expression::do_get_backend(Translate_context* context)
 
   if (this->cap_ != NULL)
     {
-      Bexpression* bounds_bcheck =
-	Expression::check_bounds(this->cap_, loc)->get_backend(context);
-      bad_index =
-	gogo->backend()->binary_expression(OPERATOR_OROR, bounds_bcheck,
-					   bad_index, loc);
       cap_arg = gogo->backend()->convert_expression(int_btype, cap_arg, loc);
 
-      Bexpression* cap_too_small =
-	gogo->backend()->binary_expression(OPERATOR_LT, cap_arg, start, loc);
-      Bexpression* cap_too_large =
-	gogo->backend()->binary_expression(OPERATOR_GT, cap_arg, capacity, loc);
-      Bexpression* bad_cap =
-	gogo->backend()->binary_expression(OPERATOR_OROR, cap_too_small,
-					   cap_too_large, loc);
-      bad_index = gogo->backend()->binary_expression(OPERATOR_OROR, bad_cap,
-						     bad_index, loc);
+      if (this->needs_bounds_check_)
+        {
+          Bexpression* bounds_bcheck =
+            Expression::check_bounds(this->cap_, loc)->get_backend(context);
+          bad_index =
+            gogo->backend()->binary_expression(OPERATOR_OROR, bounds_bcheck,
+                                               bad_index, loc);
+
+          Bexpression* cap_too_small =
+            gogo->backend()->binary_expression(OPERATOR_LT, cap_arg, start, loc);
+          Bexpression* cap_too_large =
+            gogo->backend()->binary_expression(OPERATOR_GT, cap_arg, capacity, loc);
+          Bexpression* bad_cap =
+            gogo->backend()->binary_expression(OPERATOR_OROR, cap_too_small,
+                                               cap_too_large, loc);
+          bad_index = gogo->backend()->binary_expression(OPERATOR_OROR, bad_cap,
+                                                         bad_index, loc);
+        }
     }
 
   Bexpression* end;
@@ -11419,24 +11429,26 @@ Array_index_expression::do_get_backend(Translate_context* context)
     end = length;
   else
     {
-      Bexpression* bounds_bcheck =
-	Expression::check_bounds(this->end_, loc)->get_backend(context);
-
-      bad_index =
-	gogo->backend()->binary_expression(OPERATOR_OROR, bounds_bcheck,
-					   bad_index, loc);
-
       end = this->end_->get_backend(context);
       end = gogo->backend()->convert_expression(int_btype, end, loc);
-      Bexpression* end_too_small =
-	gogo->backend()->binary_expression(OPERATOR_LT, end, start, loc);
-      Bexpression* end_too_large =
-	gogo->backend()->binary_expression(OPERATOR_GT, end, cap_arg, loc);
-      Bexpression* bad_end =
-	gogo->backend()->binary_expression(OPERATOR_OROR, end_too_small,
-					   end_too_large, loc);
-      bad_index = gogo->backend()->binary_expression(OPERATOR_OROR, bad_end,
-						     bad_index, loc);
+      if (this->needs_bounds_check_)
+        {
+          Bexpression* bounds_bcheck =
+            Expression::check_bounds(this->end_, loc)->get_backend(context);
+          bad_index =
+            gogo->backend()->binary_expression(OPERATOR_OROR, bounds_bcheck,
+                                               bad_index, loc);
+
+          Bexpression* end_too_small =
+            gogo->backend()->binary_expression(OPERATOR_LT, end, start, loc);
+          Bexpression* end_too_large =
+            gogo->backend()->binary_expression(OPERATOR_GT, end, cap_arg, loc);
+          Bexpression* bad_end =
+            gogo->backend()->binary_expression(OPERATOR_OROR, end_too_small,
+                                               end_too_large, loc);
+          bad_index = gogo->backend()->binary_expression(OPERATOR_OROR, bad_end,
+                                                         bad_index, loc);
+        }
     }
 
   Bexpression* result_length =
@@ -11468,10 +11480,12 @@ Array_index_expression::do_get_backend(Translate_context* context)
   init.push_back(result_length);
   init.push_back(result_capacity);
 
-  Bexpression* ctor =
+  Bexpression* ret =
     gogo->backend()->constructor_expression(struct_btype, init, loc);
-  return gogo->backend()->conditional_expression(bfn, struct_btype, bad_index,
-						 crash, ctor, loc);
+  if (this->needs_bounds_check_)
+    ret = gogo->backend()->conditional_expression(bfn, struct_btype, bad_index,
+                                                  crash, ret, loc);
+  return ret;
 }
 
 // Dump ast representation for an array index expression.
