@@ -1331,6 +1331,11 @@ DEFPARAM(PARAM_AVOID_FMA_MAX_BITS,
 	 "Maximum number of bits for which we avoid creating FMAs.",
 	 0, 0, 512)
 
+DEFPARAM(PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT,
+	 "logical-op-non-short-circuit",
+	 "True if a non-short-circuit operation is optimal.",
+	 -1, -1, 1)
+
 /*
 
 Local variables:
