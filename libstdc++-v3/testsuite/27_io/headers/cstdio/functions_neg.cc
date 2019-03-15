@@ -21,5 +21,5 @@
 
 namespace gnu
 {
-  using std::gets; // { dg-error "is not a member of" }
+  using std::gets; // { dg-error "not found in" }
 }

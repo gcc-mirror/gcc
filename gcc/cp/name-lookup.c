@@ -4903,82 +4903,14 @@ pushdecl_outermost_localscope (tree x)
   return ret;
 }
 
-/* Check a non-member using-declaration. Return a USING_DECL, or
-   NULL_TREE on failure.  */
-
-static tree
-validate_nonmember_using_decl (tree decl, tree scope, tree name)
-{
-  /* [namespace.udecl]
-       A using-declaration for a class member shall be a
-       member-declaration.  */
-  if (TYPE_P (scope))
-    {
-      error ("%qT is not a namespace or unscoped enum", scope);
-      return NULL_TREE;
-    }
-  else if (scope == error_mark_node)
-    return NULL_TREE;
-
-  if (TREE_CODE (decl) == TEMPLATE_ID_EXPR)
-    {
-      /* 7.3.3/5
-	   A using-declaration shall not name a template-id.  */
-      error ("a using-declaration cannot specify a template-id.  "
-	     "Try %<using %D%>", name);
-      return NULL_TREE;
-    }
-
-  if (TREE_CODE (decl) == NAMESPACE_DECL)
-    {
-      error ("namespace %qD not allowed in using-declaration", decl);
-      return NULL_TREE;
-    }
-
-  if (TREE_CODE (decl) == SCOPE_REF)
-    {
-      /* It's a nested name with template parameter dependent scope.
-	 This can only be using-declaration for class member.  */
-      error ("%qT is not a namespace", TREE_OPERAND (decl, 0));
-      return NULL_TREE;
-    }
-
-  /* Make a USING_DECL.  */
-  tree using_decl = build_lang_decl (USING_DECL, name, NULL_TREE);
-  USING_DECL_SCOPE (using_decl) = scope;
-
-  return using_decl;
-}
-
 /* Process a local-scope or namespace-scope using declaration.  SCOPE
    is the nominated scope to search for NAME.  VALUE_P and TYPE_P
    point to the binding for NAME in the current scope and are
    updated.  */
 
 static void
-do_nonmember_using_decl (tree scope, tree name, tree *value_p, tree *type_p)
+do_nonmember_using_decl (name_lookup &lookup, tree *value_p, tree *type_p)
 {
-  name_lookup lookup (name, 0);
-
-  if (!qualified_namespace_lookup (scope, &lookup))
-    {
-      error ("%qD not declared", name);
-      return;
-    }
-  else if (TREE_CODE (lookup.value) == TREE_LIST)
-    {
-      error ("reference to %qD is ambiguous", name);
-      print_candidates (lookup.value);
-      lookup.value = NULL_TREE;
-    }
-
-  if (lookup.type && TREE_CODE (lookup.type) == TREE_LIST)
-    {
-      error ("reference to %qD is ambiguous", name);
-      print_candidates (lookup.type);
-      lookup.type = NULL_TREE;
-    }
-
   tree value = *value_p;
   tree type = *type_p;
 
@@ -6103,33 +6035,58 @@ pushdecl_namespace_level (tree x, bool is_friend)
 void
 finish_nonmember_using_decl (tree scope, tree name)
 {
-  tree lookup;
+  gcc_checking_assert (current_binding_level->kind != sk_class);
 
-  if (UNSCOPED_ENUM_P (scope))
-    lookup = lookup_enum_member (scope, name);
-  else
+  name_lookup lookup (name, 0);
+  bool is_enum = UNSCOPED_ENUM_P (scope);
+
+  if (is_enum)
     {
-      if (TREE_CODE (scope) != NAMESPACE_DECL)
-	{
-	  error ("%qE is not a namespace or unscoped enum", scope);
-	  return;
-	}
-
-      gcc_checking_assert (identifier_p (name));
-      lookup = lookup_qualified_name (scope, name, false, false);
+      lookup.value = lookup_enum_member (scope, name);
+      scope = CP_DECL_CONTEXT (TYPE_NAME (scope));
     }
 
-  if (!lookup || lookup == error_mark_node)
+  if (TREE_CODE (scope) != NAMESPACE_DECL)
     {
-      qualified_name_lookup_error (scope, name, lookup, input_location);
+      error ("%qE is not a namespace", scope);
       return;
     }
 
-  tree decl = validate_nonmember_using_decl (lookup, scope, name);
-  if (decl == NULL_TREE)
-    return;
+  gcc_checking_assert (identifier_p (name));
 
-  gcc_checking_assert (current_binding_level->kind != sk_class);
+  if (!is_enum)
+    qualified_namespace_lookup (scope, &lookup);
+
+  if (!lookup.value)
+    {
+      error ("%qD not found in %qE", name, scope);
+      return;
+    }
+
+  if (TREE_CODE (lookup.value) == TREE_LIST)
+    {
+      error ("reference to %qD is ambiguous", name);
+      print_candidates (lookup.value);
+      return;
+    }
+
+  if (lookup.type && TREE_CODE (lookup.type) == TREE_LIST)
+    {
+      error ("reference to %qD is ambiguous", name);
+      print_candidates (lookup.type);
+      return;
+    }
+
+  if (TREE_CODE (lookup.value) == NAMESPACE_DECL)
+    {
+      error ("using-declaration may not name namespace %qD", lookup.value);
+      return;
+    }
+
+  /* Emit debug info.  */
+  if (!processing_template_decl)
+    cp_emit_debug_info_for_using (lookup.value,
+				  current_binding_level->this_entity);
 
   cxx_binding *binding = NULL;
   tree *slot = NULL;
@@ -6150,7 +6107,9 @@ finish_nonmember_using_decl (tree scope, tree name)
     }
   else
     {
-      add_decl_expr (decl);
+      tree using_decl = build_lang_decl (USING_DECL, name, NULL_TREE);
+      USING_DECL_SCOPE (using_decl) = scope;
+      add_decl_expr (using_decl);
 
       binding = find_local_binding (current_binding_level, name);
       if (binding)
@@ -6160,7 +6119,7 @@ finish_nonmember_using_decl (tree scope, tree name)
 	}
     }
 
-  do_nonmember_using_decl (scope, name, &value, &type);
+  do_nonmember_using_decl (lookup, &value, &type);
 
   if (current_binding_level->kind == sk_namespace)
     {
@@ -6201,9 +6160,6 @@ finish_nonmember_using_decl (tree scope, tree name)
 	}
     }
 
-  /* Emit debug info.  */
-  if (!processing_template_decl)
-    cp_emit_debug_info_for_using (lookup, current_binding_level->this_entity);
 }
 
 /* Return the declarations that are members of the namespace NS.  */

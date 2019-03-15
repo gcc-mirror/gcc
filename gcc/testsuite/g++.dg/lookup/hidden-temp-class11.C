@@ -8,4 +8,4 @@ namespace N {
   };
 }
 
-using N::B;	// { dg-error "is not a member" }
+using N::B;	// { dg-error "not found in" }

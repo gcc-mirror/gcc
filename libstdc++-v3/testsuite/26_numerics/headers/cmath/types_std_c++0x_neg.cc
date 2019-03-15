@@ -22,27 +22,27 @@
 namespace gnu
 {
   // C++11 changes from TR1.
-  using std::assoc_laguerre;	// { dg-error "is not a member of" }
-  using std::assoc_legendre;	// { dg-error "is not a member of" }
-  using std::beta;		// { dg-error "is not a member of" }
-  using std::comp_ellint_1;	// { dg-error "is not a member of" }
-  using std::comp_ellint_2;	// { dg-error "is not a member of" }
-  using std::comp_ellint_3;	// { dg-error "is not a member of" }
-  using std::conf_hyperg;	// { dg-error "is not a member of" }
-  using std::cyl_bessel_i;	// { dg-error "is not a member of" }
-  using std::cyl_bessel_j;	// { dg-error "is not a member of" }
-  using std::cyl_bessel_k;	// { dg-error "is not a member of" }
-  using std::cyl_neumann;	// { dg-error "is not a member of" }
-  using std::ellint_1;		// { dg-error "is not a member of" }
-  using std::ellint_2;		// { dg-error "is not a member of" }
-  using std::ellint_3;		// { dg-error "is not a member of" }
-  using std::expint;		// { dg-error "is not a member of" }
-  using std::hermite;		// { dg-error "is not a member of" }
-  using std::hyperg;		// { dg-error "is not a member of" }
-  using std::laguerre;		// { dg-error "is not a member of" }
-  using std::legendre;		// { dg-error "is not a member of" }
-  using std::riemann_zeta;	// { dg-error "is not a member of" }
-  using std::sph_bessel;	// { dg-error "is not a member of" }
-  using std::sph_legendre;	// { dg-error "is not a member of" }
-  using std::sph_neumann;	// { dg-error "is not a member of" }
+  using std::assoc_laguerre;	// { dg-error "not found in" }
+  using std::assoc_legendre;	// { dg-error "not found in" }
+  using std::beta;		// { dg-error "not found in" }
+  using std::comp_ellint_1;	// { dg-error "not found in" }
+  using std::comp_ellint_2;	// { dg-error "not found in" }
+  using std::comp_ellint_3;	// { dg-error "not found in" }
+  using std::conf_hyperg;	// { dg-error "not found in" }
+  using std::cyl_bessel_i;	// { dg-error "not found in" }
+  using std::cyl_bessel_j;	// { dg-error "not found in" }
+  using std::cyl_bessel_k;	// { dg-error "not found in" }
+  using std::cyl_neumann;	// { dg-error "not found in" }
+  using std::ellint_1;		// { dg-error "not found in" }
+  using std::ellint_2;		// { dg-error "not found in" }
+  using std::ellint_3;		// { dg-error "not found in" }
+  using std::expint;		// { dg-error "not found in" }
+  using std::hermite;		// { dg-error "not found in" }
+  using std::hyperg;		// { dg-error "not found in" }
+  using std::laguerre;		// { dg-error "not found in" }
+  using std::legendre;		// { dg-error "not found in" }
+  using std::riemann_zeta;	// { dg-error "not found in" }
+  using std::sph_bessel;	// { dg-error "not found in" }
+  using std::sph_legendre;	// { dg-error "not found in" }
+  using std::sph_neumann;	// { dg-error "not found in" }
 }
