@@ -1,3 +1,9 @@
+2019-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/89704
+	* dwarf2out.c (add_const_value_attribute): Return false for MINUS,
+	SIGN_EXTEND and ZERO_EXTEND.
+
 2019-03-14  Jason Merrill  <jason@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
