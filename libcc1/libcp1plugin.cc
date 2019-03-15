@@ -1004,9 +1004,6 @@ plugin_add_using_decl (cc1_plugin::connection *,
   tree identifier = DECL_NAME (target);
   tree tcontext = DECL_CONTEXT (target);
 
-  if (UNSCOPED_ENUM_P (tcontext))
-    tcontext = CP_TYPE_CONTEXT (tcontext);
-
   if (class_member_p)
     {
       tree decl = do_class_using_decl (tcontext, identifier);
@@ -1019,7 +1016,7 @@ plugin_add_using_decl (cc1_plugin::connection *,
     {
       /* We can't be at local scope.  */
       gcc_assert (at_namespace_scope_p ());
-      finish_nonmember_using_decl (tcontext, identifier, target);
+      finish_nonmember_using_decl (tcontext, identifier);
     }
 
   return 1;

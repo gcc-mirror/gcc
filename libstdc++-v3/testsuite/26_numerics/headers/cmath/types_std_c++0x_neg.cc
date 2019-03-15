@@ -22,27 +22,27 @@
 namespace gnu
 {
   // C++11 changes from TR1.
-  using std::assoc_laguerre;	// { dg-error "has not been declared" }
-  using std::assoc_legendre;	// { dg-error "has not been declared" }
-  using std::beta;		// { dg-error "has not been declared" }
-  using std::comp_ellint_1;	// { dg-error "has not been declared" }
-  using std::comp_ellint_2;	// { dg-error "has not been declared" }
-  using std::comp_ellint_3;	// { dg-error "has not been declared" }
-  using std::conf_hyperg;	// { dg-error "has not been declared" }
-  using std::cyl_bessel_i;	// { dg-error "has not been declared" }
-  using std::cyl_bessel_j;	// { dg-error "has not been declared" }
-  using std::cyl_bessel_k;	// { dg-error "has not been declared" }
-  using std::cyl_neumann;	// { dg-error "has not been declared" }
-  using std::ellint_1;		// { dg-error "has not been declared" }
-  using std::ellint_2;		// { dg-error "has not been declared" }
-  using std::ellint_3;		// { dg-error "has not been declared" }
-  using std::expint;		// { dg-error "has not been declared" }
-  using std::hermite;		// { dg-error "has not been declared" }
-  using std::hyperg;		// { dg-error "has not been declared" }
-  using std::laguerre;		// { dg-error "has not been declared" }
-  using std::legendre;		// { dg-error "has not been declared" }
-  using std::riemann_zeta;	// { dg-error "has not been declared" }
-  using std::sph_bessel;	// { dg-error "has not been declared" }
-  using std::sph_legendre;	// { dg-error "has not been declared" }
-  using std::sph_neumann;	// { dg-error "has not been declared" }
+  using std::assoc_laguerre;	// { dg-error "is not a member of" }
+  using std::assoc_legendre;	// { dg-error "is not a member of" }
+  using std::beta;		// { dg-error "is not a member of" }
+  using std::comp_ellint_1;	// { dg-error "is not a member of" }
+  using std::comp_ellint_2;	// { dg-error "is not a member of" }
+  using std::comp_ellint_3;	// { dg-error "is not a member of" }
+  using std::conf_hyperg;	// { dg-error "is not a member of" }
+  using std::cyl_bessel_i;	// { dg-error "is not a member of" }
+  using std::cyl_bessel_j;	// { dg-error "is not a member of" }
+  using std::cyl_bessel_k;	// { dg-error "is not a member of" }
+  using std::cyl_neumann;	// { dg-error "is not a member of" }
+  using std::ellint_1;		// { dg-error "is not a member of" }
+  using std::ellint_2;		// { dg-error "is not a member of" }
+  using std::ellint_3;		// { dg-error "is not a member of" }
+  using std::expint;		// { dg-error "is not a member of" }
+  using std::hermite;		// { dg-error "is not a member of" }
+  using std::hyperg;		// { dg-error "is not a member of" }
+  using std::laguerre;		// { dg-error "is not a member of" }
+  using std::legendre;		// { dg-error "is not a member of" }
+  using std::riemann_zeta;	// { dg-error "is not a member of" }
+  using std::sph_bessel;	// { dg-error "is not a member of" }
+  using std::sph_legendre;	// { dg-error "is not a member of" }
+  using std::sph_neumann;	// { dg-error "is not a member of" }
 }

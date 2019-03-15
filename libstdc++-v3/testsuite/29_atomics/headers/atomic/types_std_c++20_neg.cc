@@ -79,5 +79,5 @@ void test01()
 
   using atomic_address;		// { dg-error "expected nested-name-specifier" }
   // Present in C++0x drafts but not final C++11 standard:
-  using std::atomic_address;	// { dg-error "has not been declared" }
+  using std::atomic_address;	// { dg-error "is not a member of" }
 }

@@ -21,4 +21,4 @@
 #include <stddef.h>
 
 byte b;			// { dg-error "does not name a type" }
-using std::byte;	// { dg-error "has not been declared" }
+using std::byte;	// { dg-error "is not a member of" }

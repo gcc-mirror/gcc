@@ -19919,52 +19919,34 @@ cp_parser_using_declaration (cp_parser* parser,
       qscope = make_pack_expansion (qscope);
     }
 
-  /* The function we call to handle a using-declaration is different
-     depending on what scope we are in.  */
+  cp_lexer_set_source_position_from_token (token);
+
   if (qscope == error_mark_node || identifier == error_mark_node)
-    ;
-  else if (!identifier_p (identifier)
+    /* Nothing.  */;
+  else if (TREE_CODE (identifier) != IDENTIFIER_NODE
 	   && TREE_CODE (identifier) != BIT_NOT_EXPR)
     /* [namespace.udecl]
 
        A using declaration shall not name a template-id.  */
-    error_at (token->location,
-	      "a template-id may not appear in a using-declaration");
-  else
+    error ("template-id %qE may not appear in a using-declaration", identifier);
+  else if (at_class_scope_p ())
     {
-      /* There must be a correspondence between current_scope and
-	 qscope being both or neither class scope.  Treat the using
-	 decl according to the currrent scope and issue errors
-	 pertaining to that.  */
+      /* Create the USING_DECL.  */
+      tree decl = do_class_using_decl (qscope, identifier);
+      if (decl && typename_p)
+	USING_DECL_TYPENAME_P (decl) = 1;
 
-      if (at_class_scope_p ())
+      if (check_for_bare_parameter_packs (decl))
 	{
-	  /* Create the USING_DECL.  */
-	  tree decl = do_class_using_decl (qscope, identifier);
-	  if (decl && typename_p)
-	    USING_DECL_TYPENAME_P (decl) = 1;
-
-	  if (check_for_bare_parameter_packs (decl))
-	    {
-	      cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
-	      return false;
-	    }
-
-	  /* Add it to the list of members in this class.  */
-	  finish_member_declaration (decl);
+	  cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
+	  return false;
 	}
-      else
-	{
-	  tree lookup = cp_parser_lookup_name_simple (parser, identifier,
-						      token->location);
-	  if (lookup == error_mark_node)
-	    cp_parser_name_lookup_error (parser, identifier,
-					 lookup, NLE_NULL,
-					 token->location);
-	  else
-	    finish_nonmember_using_decl (qscope, identifier, lookup);
-	}
+
+      /* Add it to the list of members in this class.  */
+      finish_member_declaration (decl);
     }
+  else
+    finish_nonmember_using_decl (qscope, identifier);
 
   if (!access_declaration_p
       && cp_lexer_next_token_is (parser->lexer, CPP_COMMA))

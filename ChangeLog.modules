@@ -1,5 +1,26 @@
 2019-03-15  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* name-lookup.h	(finish_nonmember_using_decl): Drop LOOKUP parm.
+	* name-lookup.c (lookup_enum_member): New.  Broken out of ...
+	(get_binding_or_decl): ... here.  Call it.
+	(finish_nonmember_using_decl): Drop LOOKUP parm. Do lookup here.
+	* parser.c (cp_parser_using_declaration): Adjust.
+	* pt.c (tsubst_expr): Likewise.
+	gcc/testsuite/
+	* g++.dg/lookup/hidden-class9.C: Adjust diagnostics.
+	* g++.dg/lookup/hidden-temp-class11.C: Likewise.
+	libcc1/
+	* libcp1plugin.cc (plugin_add_using_decl): Adjust
+	finish_nonmember_using_decl call.
+	libstdc++-v3/
+	* testsuite/18_support/byte/global_neg.cc: Adjust diagnostics.
+	* testsuite/20_util/headers/type_traits/types_std_c++0x_neg.cc: Likewise.
+	* testsuite/26_numerics/headers/cmath/types_std_c++0x_neg.cc: Likewise.
+	* testsuite/27_io/headers/cstdio/functions_neg.cc: Likewise.
+	* testsuite/29_atomics/headers/atomic/types_std_c++0x_neg.cc: Likewise.
+	* testsuite/29_atomics/headers/atomic/types_std_c++20_neg.cc: Likewise.
+
 	Merge using directive fields & fns.
 	gcc/cp/
 	* cp-tree.h (lang_decl_ns): Drop usings field.

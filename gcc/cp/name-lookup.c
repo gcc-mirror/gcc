@@ -3842,6 +3842,23 @@ pushdecl (tree x, bool is_friend)
   return ret;
 }
 
+/* Lookup NAME in ENUMERAL_TYPE ETYPE.  */
+
+static tree
+lookup_enum_member (tree etype, tree name)
+{
+  if (COMPLETE_TYPE_P (etype))
+    for (tree values = TYPE_VALUES (etype);
+	 values; values = TREE_CHAIN (values))
+      {
+	tree decl = TREE_VALUE (values);
+	if (name == DECL_NAME (decl))
+	  return decl;
+      }
+
+  return NULL_TREE;
+}
+
 /* DECL is a yet-to-be-loaded mergeable entity.  PARTITION is true if
    it is from a module partition (otherwise it is a global module
    entity), TPL, RET and ARGS are its distinguishing features (some of
@@ -4096,15 +4113,7 @@ get_binding_or_decl (tree ctx, tree name, unsigned mod)
       break;
 
     case ENUMERAL_TYPE:
-      if (COMPLETE_TYPE_P (ctx))
-	for (tree values = TYPE_VALUES (ctx);
-	     values; values = TREE_CHAIN (values))
-	  {
-	    tree decl = TREE_VALUE (values);
-	    if (name == DECL_NAME (decl))
-	      return decl;
-	  }
-      break;
+      return lookup_enum_member (ctx, name);
 
     default:
       break;
@@ -6092,8 +6101,30 @@ pushdecl_namespace_level (tree x, bool is_friend)
 /* Process a using declaration in non-class scope.  */
 
 void
-finish_nonmember_using_decl (tree scope, tree name, tree lookup)
+finish_nonmember_using_decl (tree scope, tree name)
 {
+  tree lookup;
+
+  if (UNSCOPED_ENUM_P (scope))
+    lookup = lookup_enum_member (scope, name);
+  else
+    {
+      if (TREE_CODE (scope) != NAMESPACE_DECL)
+	{
+	  error ("%qE is not a namespace or unscoped enum", scope);
+	  return;
+	}
+
+      gcc_checking_assert (identifier_p (name));
+      lookup = lookup_qualified_name (scope, name, false, false);
+    }
+
+  if (!lookup || lookup == error_mark_node)
+    {
+      qualified_name_lookup_error (scope, name, lookup, input_location);
+      return;
+    }
+
   tree decl = validate_nonmember_using_decl (lookup, scope, name);
   if (decl == NULL_TREE)
     return;
