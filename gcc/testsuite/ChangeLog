@@ -1,5 +1,8 @@
 2019-03-16  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR testsuite/83453
+	* c-c++-common/Wattributes.c: Skip a warning check on hppa*64*-*-*.
+
 	* lib/target-supports.exp (check_ascii_locale_available): Remove
 	hppa*-*-hpux*.
 
