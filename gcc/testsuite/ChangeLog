@@ -1,3 +1,14 @@
+2019-03-16 Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/66695
+	PR fortran/77746
+	PR fortran/79485
+	Backport from trunk
+	* gfortran.dg/binding_label_tests_30.f90: New test.
+	* gfortran.dg/binding_label_tests_31.f90: New test.
+	* gfortran.dg/binding_label_tests_32.f90: New test.
+	* gfortran.dg/binding_label_tests_33.f90: New test.
+
 2019-03-15  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

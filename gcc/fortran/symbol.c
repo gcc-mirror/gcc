@@ -4353,7 +4353,7 @@ gsym_compare (void *_s1, void *_s2)
 /* Get a global symbol, creating it if it doesn't exist.  */
 
 gfc_gsymbol *
-gfc_get_gsymbol (const char *name)
+gfc_get_gsymbol (const char *name, bool bind_c)
 {
   gfc_gsymbol *s;
 
@@ -4364,6 +4364,7 @@ gfc_get_gsymbol (const char *name)
   s = XCNEW (gfc_gsymbol);
   s->type = GSYM_UNKNOWN;
   s->name = gfc_get_string ("%s", name);
+  s->bind_c = bind_c;
 
   gfc_insert_bbt (&gfc_gsym_root, s, gsym_compare);
 

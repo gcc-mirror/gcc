@@ -1045,7 +1045,7 @@ resolve_common_blocks (gfc_symtree *common_root)
 	}
       if (!gsym)
 	{
-	  gsym = gfc_get_gsymbol (common_root->n.common->name);
+	  gsym = gfc_get_gsymbol (common_root->n.common->name, false);
 	  gsym->type = GSYM_COMMON;
 	  gsym->where = common_root->n.common->where;
 	  gsym->defined = 1;
@@ -1067,7 +1067,7 @@ resolve_common_blocks (gfc_symtree *common_root)
 	}
       if (!gsym)
 	{
-	  gsym = gfc_get_gsymbol (common_root->n.common->binding_label);
+	  gsym = gfc_get_gsymbol (common_root->n.common->binding_label, true);
 	  gsym->type = GSYM_COMMON;
 	  gsym->where = common_root->n.common->where;
 	  gsym->defined = 1;
@@ -2482,7 +2482,8 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 
   type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
 
-  gsym = gfc_get_gsymbol (sym->binding_label ? sym->binding_label : sym->name);
+  gsym = gfc_get_gsymbol (sym->binding_label ? sym->binding_label : sym->name,
+			  sym->binding_label != NULL);
 
   if ((gsym->type != GSYM_UNKNOWN && gsym->type != type))
     gfc_global_used (gsym, where);
@@ -11704,7 +11705,7 @@ gfc_verify_binding_labels (gfc_symbol *sym)
 	  && (gsym->type == GSYM_FUNCTION || gsym->type == GSYM_SUBROUTINE)))
     {
       if (!gsym)
-	gsym = gfc_get_gsymbol (sym->binding_label);
+	gsym = gfc_get_gsymbol (sym->binding_label, true);
       gsym->where = sym->declared_at;
       gsym->sym_name = sym->name;
       gsym->binding_label = sym->binding_label;
