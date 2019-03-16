@@ -1,6 +1,10 @@
-2019-03-16 John David Anglin  <danglin@gcc.gnu.org>
+2019-03-16  John David Anglin  <danglin@gcc.gnu.org>
 
-	PR testsuite/84941
+	* c-c++-common/builtin-has-attribute-4.c: Skip on 32-bit hppa*-*-hpux*.
+	* gcc.dg/attr-copy-6.c: Likewise.
+	* gcc.dg/pr87793.c: Likewise.
+
+	PR testsuite/89471
 	* gcc.dg/pr84941.c: Skip on hppa*-*-*.
 
 	* gcc.dg/Wattributes-10.c: Add -fno-common option on hppa*-*-hpux*.

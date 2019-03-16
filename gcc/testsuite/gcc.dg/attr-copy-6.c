@@ -1,5 +1,6 @@
 /* PR middle-end/88546 - Copy attribute unusable for weakrefs
    { dg-do compile }
+   { dg-skip-if "Attributes not supported" { { hppa*-*-hpux* } && { ! lp64 } } }
    { dg-options "-O2 -Wall" }
    { dg-require-weak "" } */
 
