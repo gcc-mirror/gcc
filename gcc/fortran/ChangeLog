@@ -1,5 +1,13 @@
 2019-03-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/66089
+	Backport from trunk
+	* trans-array.c (gfc_scalar_elemental_arg_saved_as_reference):
+	Return false if a scalar tempoary is needed.
+	(gfc_walk_variable_expr): Fix up class refs.
+
+2019-03-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/66695
 	PR fortran/77746
 	PR fortran/79485
