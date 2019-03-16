@@ -1,5 +1,9 @@
 2019-03-16  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR testsuite/84174
+	* gcc.dg/Wattributes-6.c: Skip warning check at line 404 on
+	hppa*64*-*-*.
+
 	PR testsuite/83453
 	* c-c++-common/Wattributes.c: Skip a warning check on hppa*64*-*-*.
 
