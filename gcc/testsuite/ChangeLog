@@ -1,5 +1,10 @@
 2019-03-16  John David Anglin  <danglin@gcc.gnu.org>
 
+	* gcc.dg/Wattributes-10.c: Add -fno-common option on hppa*-*-hpux*.
+	* gcc.dg/gimplefe-34.c: Likewise.
+	* gcc.dg/compat/pr83487-2_x.c: Use -fno-common option on hppa*-*-hpux*.
+	* gcc.dg/compat/pr83487-2_y.c: Likewise.
+
 	PR testsuite/84174
 	* gcc.dg/Wattributes-6.c: Skip warning check at line 404 on
 	hppa*64*-*-*.
