@@ -1430,9 +1430,6 @@ proc check_effective_target_libatomic_available { } {
 # Return 1 if an ASCII locale is supported on this host, 0 otherwise.
 
 proc check_ascii_locale_available { } {
-    if { [istarget hppa*-*-hpux*] } {
-	return 0
-    }
     return 1
 }
 

@@ -1,3 +1,8 @@
+2019-03-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	* lib/target-supports.exp (check_ascii_locale_available): Remove
+	hppa*-*-hpux*.
+
 2019-03-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/84394
