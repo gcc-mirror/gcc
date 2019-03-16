@@ -1,5 +1,9 @@
 2019-03-16  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR testsuite/89393
+	* g++.dg/abi/ref-temp1.C: Skip on 32-bit hppa*-*-hpux*.
+	* g++.dg/cpp0x/pr84497.C: Likewise.
+
 	* c-c++-common/builtin-has-attribute-4.c: Skip on 32-bit hppa*-*-hpux*.
 	* gcc.dg/attr-copy-6.c: Likewise.
 	* gcc.dg/pr87793.c: Likewise.
