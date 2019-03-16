@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "No section attribute" { { hppa*-*-hpux* } && { ! lp64 } } } */
 /* { dg-options "-fpic -Os -g" } */
 /* { dg-require-effective-target fpic } */
 
