@@ -1,3 +1,14 @@
+2019-03-16 Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/66695
+	PR fortran/77746
+	PR fortran/79485
+	Backport from trunk
+	* gfortran.dg/binding_label_tests_30.f90: New test.
+	* gfortran.dg/binding_label_tests_31.f90: New test.
+	* gfortran.dg/binding_label_tests_32.f90: New test.
+	* gfortran.dg/binding_label_tests_33.f90: New test.
+
 2019-03-14  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
@@ -10,7 +21,7 @@
 
 	Backport from mainline
 	2018-02-16  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	PR target/84272
 	* g++.dg/opt/pr84272.C: New test.
 
