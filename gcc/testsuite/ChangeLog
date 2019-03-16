@@ -1,5 +1,7 @@
 2019-03-16  John David Anglin  <danglin@gcc.gnu.org>
 
+	* g++.dg/cpp0x/pr84497.C: Restore dg-require-weak.
+
 	PR testsuite/89393
 	* g++.dg/abi/ref-temp1.C: Skip on 32-bit hppa*-*-hpux*.
 	* g++.dg/cpp0x/pr84497.C: Likewise.
