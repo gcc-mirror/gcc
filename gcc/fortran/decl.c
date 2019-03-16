@@ -6280,7 +6280,7 @@ add_global_entry (const char *name, const char *binding_label, bool sub,
      name is a global identifier.  */
   if (!binding_label || gfc_notification_std (GFC_STD_F2008))
     {
-      s = gfc_get_gsymbol (name);
+      s = gfc_get_gsymbol (name, false);
 
       if (s->defined || (s->type != GSYM_UNKNOWN && s->type != type))
 	{
@@ -6302,7 +6302,7 @@ add_global_entry (const char *name, const char *binding_label, bool sub,
       && (!gfc_notification_std (GFC_STD_F2008)
 	  || strcmp (name, binding_label) != 0))
     {
-      s = gfc_get_gsymbol (binding_label);
+      s = gfc_get_gsymbol (binding_label, true);
 
       if (s->defined || (s->type != GSYM_UNKNOWN && s->type != type))
 	{
