@@ -1,3 +1,10 @@
+2019-03-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/84394
+	* symbol.c (gfc_add_subroutine): If we are encountering a
+	subrtoutine within a BLOCK DATA and the name starts with an
+	underscore, do not check.
+
 2019-03-15  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/60091
@@ -7,7 +14,7 @@
 2019-03-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.texi: Document Q edit descriptor under
-	" Extensions not implemented in GNU Fortran".
+	"Extensions not implemented in GNU Fortran".
 
 2019-03-13  Harald Anlauf  <anlauf@gmx.de>
 
