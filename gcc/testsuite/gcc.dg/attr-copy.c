@@ -1,6 +1,7 @@
 /* PR middle-end/81824 - Warn for missing attributes with function aliases
    Exercise error handling for attribute copy.
    { dg-do compile }
+   { dg-require-alias "" }
    { dg-options "-O2 -Wall" } */
 
 #define ATTR(list)   __attribute__ (list)
