@@ -1,5 +1,9 @@
 2019-03-17  John David Anglin  <danglin@gcc.gnu.org>
 
+	* gcc.dg/pr88074.c: Require c99_runtime.
+	* gcc.dg/warn-abs-1.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_1.f90: Likewise.
+
 	PR testsuite/89666
 	* c-c++-common/builtin-has-attribute-3.c: Define SKIP_ALIAS on
 	hppa*-*-hpux*.

@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target c99_runtime } } */
 /* { dg-options "-Wabsolute-value" } */
 
 #include <stdlib.h>
