@@ -23991,12 +23991,18 @@ regenerate_decl_from_template (tree decl, tree tmpl, tree args)
       if (args_depth > parms_depth)
 	args = get_innermost_template_args (args, parms_depth);
 
-      specs = tsubst_exception_specification (TREE_TYPE (code_pattern),
-					      args, tf_error, NULL_TREE,
-					      /*defer_ok*/false);
-      if (specs && specs != error_mark_node)
-	TREE_TYPE (decl) = build_exception_variant (TREE_TYPE (decl),
-						    specs);
+      /* Instantiate a dynamic exception-specification.  noexcept will be
+	 handled below.  */
+      if (tree raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (code_pattern)))
+	if (TREE_VALUE (raises))
+	  {
+	    specs = tsubst_exception_specification (TREE_TYPE (code_pattern),
+						    args, tf_error, NULL_TREE,
+						    /*defer_ok*/false);
+	    if (specs && specs != error_mark_node)
+	      TREE_TYPE (decl) = build_exception_variant (TREE_TYPE (decl),
+							  specs);
+	  }
 
       /* Merge parameter declarations.  */
       decl_parm = skip_artificial_parms_for (decl,
@@ -24062,6 +24068,8 @@ regenerate_decl_from_template (tree decl, tree tmpl, tree args)
       if (DECL_DECLARED_INLINE_P (code_pattern)
 	  && !DECL_DECLARED_INLINE_P (decl))
 	DECL_DECLARED_INLINE_P (decl) = 1;
+
+      maybe_instantiate_noexcept (decl, tf_error);
     }
   else if (VAR_P (decl))
     {
@@ -24187,7 +24195,13 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
       static hash_set<tree>* fns = new hash_set<tree>;
       bool added = false;
       if (DEFERRED_NOEXCEPT_PATTERN (noex) == NULL_TREE)
-	spec = get_defaulted_eh_spec (fn, complain);
+	{
+	  spec = get_defaulted_eh_spec (fn, complain);
+	  if (spec == error_mark_node)
+	    /* This might have failed because of an unparsed DMI, so
+	       let's try again later.  */
+	    return false;
+	}
       else if (!(added = !fns->add (fn)))
 	{
 	  /* If hash_set::add returns true, the element was already there.  */
@@ -24247,7 +24261,11 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 	fns->remove (fn);
 
       if (spec == error_mark_node)
-	return false;
+	{
+	  /* This failed with a hard error, so let's go with false.  */
+	  gcc_assert (seen_error ());
+	  spec = noexcept_false_spec;
+	}
 
       TREE_TYPE (fn) = build_exception_variant (fntype, spec);
     }
