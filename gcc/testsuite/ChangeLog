@@ -1,4 +1,7 @@
-2013-03-17  John David Anglin  <danglin@gcc.gnu.org>
+2019-03-03-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/compat/pr83487-1_x.c: Use -fno-common option on hppa*-*-hpux*.
+	* gcc.dg/compat/pr83487-1_y.c: Likewise.
 
 	* gfortran.dg/pointer_init_10.f90: Require visibility support.
 	* gfortran.dg/temporary_3.f90: Likewise.
