@@ -1,3 +1,4 @@
+/* { dg-options "-fno-common" { target { hppa*-*-hpux* } } } */
 #include "pr83487-1.h"
 
 struct A a;
