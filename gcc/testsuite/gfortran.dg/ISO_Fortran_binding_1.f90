@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target c99_runtime } }
 ! { dg-additional-sources ISO_Fortran_binding_1.c }
 !
 ! Test F2008 18.5: ISO_Fortran_binding.h functions.
