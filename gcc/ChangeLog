@@ -1,3 +1,29 @@
+2019-03-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2019-03-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89523
+	* config/i386/i386.c (ix86_print_operand): Handle 'M' to add
+	addr32 prefix to VSIB address for X32.
+	* config/i386/sse.md (*avx512pf_gatherpf<mode>sf_mask): Prepend
+	"%M2" to opcode.
+	(*avx512pf_gatherpf<mode>df_mask): Likewise.
+	(*avx512pf_scatterpf<mode>sf_mask): Likewise.
+	(*avx512pf_scatterpf<mode>df_mask): Likewise.
+	(*avx2_gathersi<mode>): Prepend "%M3" to opcode.
+	(*avx2_gathersi<mode>_2): Prepend "%M2" to opcode.
+	(*avx2_gatherdi<mode>): Prepend "%M3" to opcode.
+	(*avx2_gatherdi<mode>_2): Prepend "%M2" to opcode.
+	(*avx2_gatherdi<mode>_3): Prepend "%M3" to opcode.
+	(*avx2_gatherdi<mode>_4): Prepend "%M2" to opcode.`
+	(*avx512f_gathersi<mode>): Prepend "%M4" to opcode.
+	(*avx512f_gathersi<mode>_2): Prepend "%M3" to opcode.
+	(*avx512f_gatherdi<mode>): Prepend "%M4" to opcode.
+	(*avx512f_gatherdi<mode>_2): Prepend "%M3" to opcode.
+	(*avx512f_scattersi<mode>): Prepend "%M0" to opcode.
+	(*avx512f_scatterdi<mode>): Likewise.
+
 2019-03-15  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
