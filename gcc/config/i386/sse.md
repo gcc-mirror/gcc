@@ -16027,9 +16027,9 @@
   switch (INTVAL (operands[4]))
     {
     case 3:
-      return "vgatherpf0<ssemodesuffix>ps\t{%5%{%0%}|%5%{%0%}}";
+      return "%M2vgatherpf0<ssemodesuffix>ps\t{%5%{%0%}|%5%{%0%}}";
     case 2:
-      return "vgatherpf1<ssemodesuffix>ps\t{%5%{%0%}|%5%{%0%}}";
+      return "%M2vgatherpf1<ssemodesuffix>ps\t{%5%{%0%}|%5%{%0%}}";
     default:
       gcc_unreachable ();
     }
@@ -16072,9 +16072,9 @@
   switch (INTVAL (operands[4]))
     {
     case 3:
-      return "vgatherpf0<ssemodesuffix>pd\t{%5%{%0%}|%5%{%0%}}";
+      return "%M2vgatherpf0<ssemodesuffix>pd\t{%5%{%0%}|%5%{%0%}}";
     case 2:
-      return "vgatherpf1<ssemodesuffix>pd\t{%5%{%0%}|%5%{%0%}}";
+      return "%M2vgatherpf1<ssemodesuffix>pd\t{%5%{%0%}|%5%{%0%}}";
     default:
       gcc_unreachable ();
     }
@@ -16118,10 +16118,10 @@
     {
     case 3:
     case 7:
-      return "vscatterpf0<ssemodesuffix>ps\t{%5%{%0%}|%5%{%0%}}";
+      return "%M2vscatterpf0<ssemodesuffix>ps\t{%5%{%0%}|%5%{%0%}}";
     case 2:
     case 6:
-      return "vscatterpf1<ssemodesuffix>ps\t{%5%{%0%}|%5%{%0%}}";
+      return "%M2vscatterpf1<ssemodesuffix>ps\t{%5%{%0%}|%5%{%0%}}";
     default:
       gcc_unreachable ();
     }
@@ -16165,10 +16165,10 @@
     {
     case 3:
     case 7:
-      return "vscatterpf0<ssemodesuffix>pd\t{%5%{%0%}|%5%{%0%}}";
+      return "%M2vscatterpf0<ssemodesuffix>pd\t{%5%{%0%}|%5%{%0%}}";
     case 2:
     case 6:
-      return "vscatterpf1<ssemodesuffix>pd\t{%5%{%0%}|%5%{%0%}}";
+      return "%M2vscatterpf1<ssemodesuffix>pd\t{%5%{%0%}|%5%{%0%}}";
     default:
       gcc_unreachable ();
     }
@@ -19032,7 +19032,7 @@
 	  UNSPEC_GATHER))
    (clobber (match_scratch:VEC_GATHER_MODE 1 "=&x"))]
   "TARGET_AVX2"
-  "v<sseintprefix>gatherd<ssemodesuffix>\t{%1, %7, %0|%0, %7, %1}"
+  "%M3v<sseintprefix>gatherd<ssemodesuffix>\t{%1, %7, %0|%0, %7, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -19052,7 +19052,7 @@
 	  UNSPEC_GATHER))
    (clobber (match_scratch:VEC_GATHER_MODE 1 "=&x"))]
   "TARGET_AVX2"
-  "v<sseintprefix>gatherd<ssemodesuffix>\t{%1, %6, %0|%0, %6, %1}"
+  "%M2v<sseintprefix>gatherd<ssemodesuffix>\t{%1, %6, %0|%0, %6, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -19093,7 +19093,7 @@
 	  UNSPEC_GATHER))
    (clobber (match_scratch:VEC_GATHER_MODE 1 "=&x"))]
   "TARGET_AVX2"
-  "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %7, %2|%2, %7, %5}"
+  "%M3v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %7, %2|%2, %7, %5}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -19115,8 +19115,8 @@
   "TARGET_AVX2"
 {
   if (<MODE>mode != <VEC_GATHER_SRCDI>mode)
-    return "v<sseintprefix>gatherq<ssemodesuffix>\t{%4, %6, %x0|%x0, %6, %4}";
-  return "v<sseintprefix>gatherq<ssemodesuffix>\t{%4, %6, %0|%0, %6, %4}";
+    return "%M2v<sseintprefix>gatherq<ssemodesuffix>\t{%4, %6, %x0|%x0, %6, %4}";
+  return "%M2v<sseintprefix>gatherq<ssemodesuffix>\t{%4, %6, %0|%0, %6, %4}";
 }
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
@@ -19140,7 +19140,7 @@
 		     (const_int 2) (const_int 3)])))
    (clobber (match_scratch:VI4F_256 1 "=&x"))]
   "TARGET_AVX2"
-  "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %7, %0|%0, %7, %5}"
+  "%M3v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %7, %0|%0, %7, %5}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -19163,7 +19163,7 @@
 		     (const_int 2) (const_int 3)])))
    (clobber (match_scratch:VI4F_256 1 "=&x"))]
   "TARGET_AVX2"
-  "v<sseintprefix>gatherq<ssemodesuffix>\t{%4, %6, %0|%0, %6, %4}"
+  "%M2v<sseintprefix>gatherq<ssemodesuffix>\t{%4, %6, %0|%0, %6, %4}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -19207,7 +19207,7 @@
 	  UNSPEC_GATHER))
    (clobber (match_scratch:<avx512fmaskmode> 2 "=&Yk"))]
   "TARGET_AVX512F"
-  "v<sseintprefix>gatherd<ssemodesuffix>\t{%6, %0%{%2%}|%0%{%2%}, %<xtg_mode>6}"
+  "%M4v<sseintprefix>gatherd<ssemodesuffix>\t{%6, %0%{%2%}|%0%{%2%}, %<xtg_mode>6}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -19226,7 +19226,7 @@
 	  UNSPEC_GATHER))
    (clobber (match_scratch:<avx512fmaskmode> 1 "=&Yk"))]
   "TARGET_AVX512F"
-  "v<sseintprefix>gatherd<ssemodesuffix>\t{%5, %0%{%1%}|%0%{%1%}, %<xtg_mode>5}"
+  "%M3v<sseintprefix>gatherd<ssemodesuffix>\t{%5, %0%{%1%}|%0%{%1%}, %<xtg_mode>5}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -19266,7 +19266,7 @@
    (clobber (match_scratch:QI 2 "=&Yk"))]
   "TARGET_AVX512F"
 {
-  return "v<sseintprefix>gatherq<ssemodesuffix>\t{%6, %1%{%2%}|%1%{%2%}, %<gatherq_mode>6}";
+  return "%M4v<sseintprefix>gatherq<ssemodesuffix>\t{%6, %1%{%2%}|%1%{%2%}, %<gatherq_mode>6}";
 }
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
@@ -19290,11 +19290,11 @@
   if (<MODE>mode != <VEC_GATHER_SRCDI>mode)
     {
       if (<MODE_SIZE> != 64)
-	return "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %x0%{%1%}|%x0%{%1%}, %<gatherq_mode>5}";
+	return "%M3v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %x0%{%1%}|%x0%{%1%}, %<gatherq_mode>5}";
       else
-	return "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %t0%{%1%}|%t0%{%1%}, %t5}";
+	return "%M3v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %t0%{%1%}|%t0%{%1%}, %t5}";
     }
-  return "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %0%{%1%}|%0%{%1%}, %<gatherq_mode>5}";
+  return "%M3v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %0%{%1%}|%0%{%1%}, %<gatherq_mode>5}";
 }
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
@@ -19331,7 +19331,7 @@
 	  UNSPEC_SCATTER))
    (clobber (match_scratch:<avx512fmaskmode> 1 "=&Yk"))]
   "TARGET_AVX512F"
-  "v<sseintprefix>scatterd<ssemodesuffix>\t{%3, %5%{%1%}|%5%{%1%}, %3}"
+  "%M0v<sseintprefix>scatterd<ssemodesuffix>\t{%3, %5%{%1%}|%5%{%1%}, %3}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -19369,8 +19369,8 @@
   "TARGET_AVX512F"
 {
   if (GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) == 8)
-    return "v<sseintprefix>scatterq<ssemodesuffix>\t{%3, %5%{%1%}|%5%{%1%}, %3}";
-  return "v<sseintprefix>scatterq<ssemodesuffix>\t{%3, %5%{%1%}|%t5%{%1%}, %3}";
+    return "%M0v<sseintprefix>scatterq<ssemodesuffix>\t{%3, %5%{%1%}|%5%{%1%}, %3}";
+  return "%M0v<sseintprefix>scatterq<ssemodesuffix>\t{%3, %5%{%1%}|%t5%{%1%}, %3}";
 }
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")

@@ -18173,6 +18173,7 @@ print_reg (rtx x, int code, FILE *file)
    ~ -- print "i" if TARGET_AVX2, "f" otherwise.
    @ -- print a segment register of thread base pointer load
    ^ -- print addr32 prefix if TARGET_64BIT and Pmode != word_mode
+   M -- print addr32 prefix for TARGET_X32 with VSIB address.
    ! -- print MPX prefix for jxx/call/ret instructions if required.
  */
 
@@ -18730,6 +18731,26 @@ ix86_print_operand (FILE *file, rtx x, int code)
 
 	case '~':
 	  putc (TARGET_AVX2 ? 'i' : 'f', file);
+	  return;
+
+	case 'M':
+	  if (TARGET_X32)
+	    {
+	      /* NB: 32-bit indices in VSIB address are sign-extended
+		 to 64 bits. In x32, if 32-bit address 0xf7fa3010 is
+		 sign-extended to 0xfffffffff7fa3010 which is invalid
+		 address.  Add addr32 prefix if there is no base
+		 register nor symbol.  */
+	      bool ok;
+	      struct ix86_address parts;
+	      ok = ix86_decompose_address (x, &parts);
+	      gcc_assert (ok && parts.index == NULL_RTX);
+	      if (parts.base == NULL_RTX
+		  && (parts.disp == NULL_RTX
+		      || !symbolic_operand (parts.disp,
+					    GET_MODE (parts.disp))))
+		fputs ("addr32 ", file);
+	    }
 	  return;
 
 	case '^':
