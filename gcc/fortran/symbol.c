@@ -1595,7 +1595,15 @@ gfc_add_subroutine (symbol_attribute *attr, const char *name, locus *where)
     return false;
 
   attr->subroutine = 1;
-  return check_conflict (attr, name, where);
+
+  /* If we are looking at a BLOCK DATA statement and we encounter a
+     name with a leading underscore (which must be
+     compiler-generated), do not check. See PR 84394.  */
+
+  if (name && *name != '_' && gfc_current_state () != COMP_BLOCK_DATA)
+    return check_conflict (attr, name, where);
+  else
+    return true;
 }
 
 
