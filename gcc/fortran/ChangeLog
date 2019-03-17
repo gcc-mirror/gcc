@@ -1,3 +1,11 @@
+2019-03-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/84394
+	Backport from trunk
+	* symbol.c (gfc_add_subroutine): If we are encountering a
+	subrtoutine within a BLOCK DATA and the name starts with an
+	underscore, do not check.
+
 2019-03-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/66089
