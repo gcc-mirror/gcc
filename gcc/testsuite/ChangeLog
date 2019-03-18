@@ -1,3 +1,8 @@
+2019-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85014
+	* g++.dg/cpp0x/pr85014.C: New.
+
 2019-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/86979
@@ -6,11 +11,12 @@
 2019-03-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/88008
-	 * gfortran.dg/typebound_call_31.f90: New test.
+	* gfortran.dg/typebound_call_31.f90: New test.
 
 2019-03-03-17  John David Anglin  <danglin@gcc.gnu.org>
 
-	* gcc.dg/compat/pr83487-1_x.c: Use -fno-common option on hppa*-*-hpux*.
+	* gcc.dg/compat/pr83487-1_x.c: Use -fno-common option on
+	hppa*-*-hpux*.
 	* gcc.dg/compat/pr83487-1_y.c: Likewise.
 
 	* gfortran.dg/pointer_init_10.f90: Require visibility support.
