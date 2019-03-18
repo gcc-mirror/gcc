@@ -1,3 +1,8 @@
+2019-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/86979
+	* gcc.dg/pr86979.c: New test.
+
 2019-03-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/88008

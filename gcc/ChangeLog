@@ -1,6 +1,6 @@
 2019-03-18  Andrey Belevantsev  <abel@ispras.ru>
 
-	PR middle-end/89676
+	PR middle-end/86979
 	* sel-sched.c (compute_av_set_at_bb_end): When we have an ineligible
 	successor, use NULL as its av set.
 
