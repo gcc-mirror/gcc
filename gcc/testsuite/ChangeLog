@@ -1,5 +1,11 @@
 2019-03-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* gcc.target/powerpc/bswap16.c: Use a pointer instead of a global for
+	the "store" test as well.
+	* gcc.target/powerpc/bswap32.c: Ditto.
+
+2019-03-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* gcc.target/powerpc/pr18096-1.c: Allow an error message that says
 	"exceeds" instead of just one that talks about "too large".
 
