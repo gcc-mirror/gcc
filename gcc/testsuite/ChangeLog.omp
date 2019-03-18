@@ -1,3 +1,10 @@
+2018-10-02  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gfortran.dg/goacc/pr72741.f90: Update test for current diagnostics.
+	* gfortran.dg/goacc/pr72741-2.f: New test.
+	* gfortran.dg/goacc/pr72741-intrinsic-1.f: New test.
+	* gfortran.dg/goacc/pr72741-intrinsic-2.f: New test.
+
 2018-09-05  Cesar Philippidis  <cesar@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 
