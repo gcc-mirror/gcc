@@ -1,3 +1,8 @@
+2019-03-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/pr18096-1.c: Allow an error message that says
+	"exceeds" instead of just one that talks about "too large".
+
 2019-03-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/cost_model_1.c: New test.
