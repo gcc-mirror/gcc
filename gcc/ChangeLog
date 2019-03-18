@@ -1,6 +1,12 @@
 2019-03-18  Richard Biener  <rguenther@suse.de>
 
 	PR target/87561
+	* config/i386/i386.c (ix86_add_stmt_cost): Pessimize strided
+	loads and stores a bit more.
+
+2019-03-18  Richard Biener  <rguenther@suse.de>
+
+	PR target/87561
 	* config/i386/i386.c (ix86_add_stmt_cost): Apply strided
 	load pessimization to stores as well.
 
