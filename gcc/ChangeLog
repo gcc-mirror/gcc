@@ -1,3 +1,15 @@
+2019-03-18  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (arc_adjust_reg_alloc_order): Declare.
+	* config/arc/arc.c (arc_conditional_register_usage): Remove all
+	reg_alloc_order references.
+	(size_alloc_order): Define.
+	(arc_adjust_reg_alloc_order): New function.
+	* config/arc/arc.h (REG_ALLOC_ORDER): Proper define the register
+	order.
+	(ADJUST_REG_ALLOC_ORDER): Define.
+	(HONOR_REG_ALLOC_ORDER): Likewise.
+
 2019-03-18  Richard Biener  <rguenther@suse.de>
 
 	PR target/87561

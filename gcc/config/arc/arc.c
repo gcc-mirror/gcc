@@ -1806,54 +1806,6 @@ arc_conditional_register_usage (void)
 	warning (0, "multiply option implies r%d is fixed", regno);
       fixed_regs [regno] = call_used_regs[regno] = 1;
     }
-  if (TARGET_Q_CLASS)
-    {
-      if (optimize_size)
-	{
-	  reg_alloc_order[0] = 0;
-	  reg_alloc_order[1] = 1;
-	  reg_alloc_order[2] = 2;
-	  reg_alloc_order[3] = 3;
-	  reg_alloc_order[4] = 12;
-	  reg_alloc_order[5] = 13;
-	  reg_alloc_order[6] = 14;
-	  reg_alloc_order[7] = 15;
-	  reg_alloc_order[8] = 4;
-	  reg_alloc_order[9] = 5;
-	  reg_alloc_order[10] = 6;
-	  reg_alloc_order[11] = 7;
-	  reg_alloc_order[12] = 8;
-	  reg_alloc_order[13] = 9;
-	  reg_alloc_order[14] = 10;
-	  reg_alloc_order[15] = 11;
-	}
-      else
-	{
-	  reg_alloc_order[2] = 12;
-	  reg_alloc_order[3] = 13;
-	  reg_alloc_order[4] = 14;
-	  reg_alloc_order[5] = 15;
-	  reg_alloc_order[6] = 1;
-	  reg_alloc_order[7] = 0;
-	  reg_alloc_order[8] = 4;
-	  reg_alloc_order[9] = 5;
-	  reg_alloc_order[10] = 6;
-	  reg_alloc_order[11] = 7;
-	  reg_alloc_order[12] = 8;
-	  reg_alloc_order[13] = 9;
-	  reg_alloc_order[14] = 10;
-	  reg_alloc_order[15] = 11;
-	}
-    }
-  if (TARGET_SIMD_SET)
-    {
-      int i;
-      for (i = ARC_FIRST_SIMD_VR_REG; i <= ARC_LAST_SIMD_VR_REG; i++)
-	reg_alloc_order [i] = i;
-      for (i = ARC_FIRST_SIMD_DMA_CONFIG_REG;
-	   i <= ARC_LAST_SIMD_DMA_CONFIG_REG; i++)
-	reg_alloc_order [i] = i;
-    }
 
   /* Reduced configuration: don't use r4-r9, r16-r25.  */
   if (TARGET_RF16)
@@ -11402,6 +11354,25 @@ gen_operands_ldd_std (rtx *operands, bool load, bool commute)
     }
 
   return false;
+}
+
+/* This order of allocation is used when we compile for size.  It
+   allocates first the registers which are most probably to end up in
+   a short instruction.  */
+static const int size_alloc_order[] =
+{
+ 0, 1, 2, 3, 12, 13, 14, 15,
+ 4, 5, 6, 7, 8, 9, 10, 11
+};
+
+/* Adjust register allocation order when compiling for size.  */
+void
+arc_adjust_reg_alloc_order (void)
+{
+  const int arc_default_alloc_order[] = REG_ALLOC_ORDER;
+  memcpy (reg_alloc_order, arc_default_alloc_order, sizeof (reg_alloc_order));
+  if (optimize_size)
+    memcpy (reg_alloc_order, size_alloc_order, sizeof (size_alloc_order));
 }
 
 #undef TARGET_USE_ANCHORS_FOR_SYMBOL_P
