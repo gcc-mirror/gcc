@@ -50564,9 +50564,10 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
      latency and execution resources for the many scalar loads
      (AGU and load ports).  Try to account for this by scaling the
      construction cost by the number of elements involved.  */
-  if (kind == vec_construct
+  if ((kind == vec_construct || kind == vec_to_scalar)
       && stmt_info
-      && STMT_VINFO_TYPE (stmt_info) == load_vec_info_type
+      && (STMT_VINFO_TYPE (stmt_info) == load_vec_info_type
+	  || STMT_VINFO_TYPE (stmt_info) == store_vec_info_type)
       && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_ELEMENTWISE
       && TREE_CODE (DR_STEP (STMT_VINFO_DATA_REF (stmt_info))) != INTEGER_CST)
     {
