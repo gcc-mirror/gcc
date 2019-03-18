@@ -4536,6 +4536,7 @@ gfc_apply_interface_mapping_to_expr (gfc_interface_mapping * mapping,
 
     case EXPR_COMPCALL:
     case EXPR_PPC:
+    case EXPR_UNKNOWN:
       gcc_unreachable ();
       break;
     }

@@ -1,3 +1,16 @@
+2019-03-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/88008
+	* gfortran.h (expr_t): Add EXPR_UNKNOWN.
+	* expr.c (gfc_copy_expr): Add EXPR_UNKNOWN to switch statement.
+	(gfc_simplify_expr): Likewise.
+	* module.c (mio_expr): Likewise.
+	* resovle.c (extract_compcall_passed_object): Issue error on
+	unknown type.
+	(check_typebound_baseobject): Issue error on wrong type.
+	* trans-expr.c (gfc_apply_interface_mapping_to_expr): Add
+	EXPR_UNKNOWN to switch statement.
+
 2019-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/89724
