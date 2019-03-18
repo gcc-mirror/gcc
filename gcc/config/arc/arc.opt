@@ -537,5 +537,5 @@ Target Report Var(TARGET_BRANCH_INDEX) Init(DEFAULT_BRANCH_INDEX)
 Enable use of BI/BIH instructions when available.
 
 mcode-density-frame
-Target Report Var(TARGET_CODE_DENSITY_FRAME)
+Target Report Var(TARGET_CODE_DENSITY_FRAME) Init(TARGET_CODE_DENSITY_FRAME_DEFAULT)
 Enable ENTER_S and LEAVE_S opcodes for ARCv2.

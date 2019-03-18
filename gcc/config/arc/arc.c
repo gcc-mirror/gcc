@@ -1294,6 +1294,9 @@ arc_override_options (void)
   if (arc_size_opt_level == 3)
     optimize_size = 1;
 
+  if (TARGET_V2 && optimize_size && (ATTRIBUTE_PCS == 2))
+    TARGET_CODE_DENSITY_FRAME = 1;
+
   if (flag_pic)
     target_flags |= MASK_NO_SDATA_SET;
 
@@ -3140,7 +3143,7 @@ arc_save_callee_enter (unsigned int gmask,
   reg = gen_rtx_SET (stack_pointer_rtx,
 		     plus_constant (Pmode,
 				    stack_pointer_rtx,
-				    nregs * UNITS_PER_WORD));
+				    -nregs * UNITS_PER_WORD));
   RTX_FRAME_RELATED_P (reg) = 1;
   XVECEXP (insn, 0, indx++) = reg;
   off = nregs * UNITS_PER_WORD;

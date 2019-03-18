@@ -6458,7 +6458,8 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 			 (plus:SI (reg:SI SP_REG)
 				  (match_operand 1 "immediate_operand" "")))
 		    (set (mem:SI (plus:SI (reg:SI SP_REG)
-					  (match_dup 1)))
+					  (match_operand 2 "immediate_operand"
+							 "")))
 			 (reg:SI 13))])]
   "TARGET_CODE_DENSITY"
   {
@@ -6466,14 +6467,14 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    rtx tmp = XVECEXP (operands[0], 0, len - 1);
    if (MEM_P (XEXP (tmp, 0)))
      {
-      operands[2] = XEXP (tmp, 1);
-      return "enter_s\\t{r13-%2} ; sp=sp-%1";
+      operands[3] = XEXP (tmp, 1);
+      return "enter_s\\t{r13-%3} ; sp=sp+(%1)";
      }
    else
      {
       tmp = XVECEXP (operands[0], 0, len - 3);
-      operands[2] = XEXP (tmp, 1);
-      return "enter_s\\t{r13-%2, fp} ; sp=sp-%1";
+      operands[3] = XEXP (tmp, 1);
+      return "enter_s\\t{r13-%3, fp} ; sp=sp+(%1)";
      }
   }
   [(set_attr "type" "call_no_delay_slot")
@@ -6485,7 +6486,8 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 			 (plus:SI (reg:SI SP_REG)
 				  (match_operand 1 "immediate_operand" "")))
 		    (set (mem:SI (plus:SI (reg:SI SP_REG)
-					  (match_dup 1)))
+					  (match_operand 2 "immediate_operand"
+							 "")))
 			 (reg:SI RETURN_ADDR_REGNUM))])]
   "TARGET_CODE_DENSITY"
   {
@@ -6493,14 +6495,14 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    rtx tmp = XVECEXP (operands[0], 0, len - 1);
    if (MEM_P (XEXP (tmp, 0)))
      {
-      operands[2] = XEXP (tmp, 1);
-      return "enter_s\\t{r13-%2, blink} ; sp=sp-%1";
+      operands[3] = XEXP (tmp, 1);
+      return "enter_s\\t{r13-%3, blink} ; sp=sp+(%1)";
      }
    else
      {
       tmp = XVECEXP (operands[0], 0, len - 3);
-      operands[2] = XEXP (tmp, 1);
-      return "enter_s\\t{r13-%2, fp, blink} ; sp=sp-%1";
+      operands[3] = XEXP (tmp, 1);
+      return "enter_s\\t{r13-%3, fp, blink} ; sp=sp+(%1)";
      }
   }
   [(set_attr "type" "call_no_delay_slot")
