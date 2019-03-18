@@ -1,3 +1,11 @@
+2019-03-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/88945
+	* tree-ssanames.c (release_ssa_name_fn): For released SSA names
+	use a TREE_TYPE of error_mark_node to avoid ICEs when dumping
+	basic-blocks that are removed.  Remove restoring SSA_NAME_VAR.
+	* tree-outof-ssa.c (eliminate_useless_phis): Remove redundant checking.
+
 2019-03-18  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-run.c (struct output): Make next_output unsigned.
