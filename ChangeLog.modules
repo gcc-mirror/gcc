@@ -1,5 +1,12 @@
 2019-03-18  Nathan Sidwell  <nathan@acm.org>
 
+	Using decls part 1.
+	gcc/cp/
+	* name-lookup.c (do_nonmember_using_decl): Unnest if.
+	(finish_nonmember_using_decl): Deal with module vector.
+	gcc/testsuite/
+	* g++.dg/modules/global-3_[ab].C: New.
+
 	gcc/cp/
 	* module.cc (module_state::{read,write}_locations): Cope with
 	trailing empty expansions.

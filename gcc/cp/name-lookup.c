@@ -4930,65 +4930,63 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
       lookup.value = NULL_TREE;
     }
 
-  if (lookup.value)
+  if (!lookup.value)
+    /* Nothing.  */;
+  else if (OVL_P (lookup.value) && (!value || OVL_P (value)))
     {
-      /* Check for using functions.  */
-      if (OVL_P (lookup.value) && (!value || OVL_P (value)))
+      for (lkp_iterator usings (lookup.value); usings; ++usings)
 	{
-	  for (lkp_iterator usings (lookup.value); usings; ++usings)
+	  tree new_fn = *usings;
+
+	  /* [namespace.udecl]
+
+	     If a function declaration in namespace scope or block
+	     scope has the same name and the same parameter types as a
+	     function introduced by a using declaration the program is
+	     ill-formed.  */
+	  bool found = false;
+	  for (ovl_iterator old (value); !found && old; ++old)
 	    {
-	      tree new_fn = *usings;
+	      tree old_fn = *old;
 
-	      /* [namespace.udecl]
-
-		 If a function declaration in namespace scope or block
-		 scope has the same name and the same parameter types as a
-		 function introduced by a using declaration the program is
-		 ill-formed.  */
-	      bool found = false;
-	      for (ovl_iterator old (value); !found && old; ++old)
+	      if (new_fn == old_fn)
+		/* The function already exists in the current
+		   namespace.  */
+		found = true;
+	      else if (old.using_p ())
+		continue; /* This is a using decl. */
+	      else if (old.hidden_p () && !DECL_HIDDEN_FRIEND_P (old_fn))
+		continue; /* This is an anticipated builtin.  */
+	      else if (!matching_fn_p (new_fn, old_fn))
+		continue; /* Parameters do not match.  */
+	      else if (decls_match (new_fn, old_fn))
+		found = true;
+	      else
 		{
-		  tree old_fn = *old;
-
-		  if (new_fn == old_fn)
-		    /* The function already exists in the current
-		       namespace.  */
-		    found = true;
-		  else if (old.using_p ())
-		    continue; /* This is a using decl. */
-		  else if (old.hidden_p () && !DECL_HIDDEN_FRIEND_P (old_fn))
-		    continue; /* This is an anticipated builtin.  */
-		  else if (!matching_fn_p (new_fn, old_fn))
-		    continue; /* Parameters do not match.  */
-		  else if (decls_match (new_fn, old_fn))
-		    found = true;
-		  else
-		    {
-		      diagnose_name_conflict (new_fn, old_fn);
-		      failed = true;
-		      found = true;
-		    }
+		  diagnose_name_conflict (new_fn, old_fn);
+		  failed = true;
+		  found = true;
 		}
-
-	      if (!found && insert_p)
-		/* Unlike the overload case we don't drop anticipated
-		   builtins here.  They don't cause a problem, and
-		   we'd like to match them with a future
-		   declaration.  */
-		value = ovl_insert (new_fn, value, true);
 	    }
+
+	  if (!found && insert_p)
+	    /* Unlike the overload case we don't drop anticipated
+	       builtins here.  They don't cause a problem, and
+	       we'd like to match them with a future
+	       declaration.  */
+	    value = ovl_insert (new_fn, value, true);
 	}
-      else if (value
-	       /* Ignore anticipated builtins.  */
-	       && !anticipated_builtin_p (value)
-	       && (fn_scope_p || !decls_match (lookup.value, value)))
-	{
-	  diagnose_name_conflict (lookup.value, value);
-	  failed = true;
-	}
-      else if (insert_p)
-	value = lookup.value;
     }
+  else if (value
+	   /* Ignore anticipated builtins.  */
+	   && !anticipated_builtin_p (value)
+	   && (fn_scope_p || !decls_match (lookup.value, value)))
+    {
+      diagnose_name_conflict (lookup.value, value);
+      failed = true;
+    }
+  else if (insert_p)
+    value = lookup.value;
 
   if (lookup.type && lookup.type != type)
     {
@@ -6104,30 +6102,91 @@ finish_nonmember_using_decl (tree scope, tree name)
   if (current_binding_level->kind == sk_namespace)
     {
       tree *slot = find_namespace_slot (current_namespace, name, true);
-      // FIXME: Write more code
-      gcc_assert (!*slot || TREE_CODE (*slot) != MODULE_VECTOR);
+      tree *mslot = get_fixed_binding_slot (slot, name,
+					    MODULE_SLOT_CURRENT, true);
+      bool failed = false;
 
-      tree value = NULL;
-      tree type = NULL;
-      if (slot)
+      if (mslot != slot)
 	{
-	  value = MAYBE_STAT_DECL (*slot);
-	  type = MAYBE_STAT_TYPE (*slot);
+	  /* A module vector.  I presume the binding list is going to
+	     be sparser than the import bitmap.  Hence iterate over
+	     the former checking for bits set in the bitmap.  */
+	  bitmap imports = module_import_bitmap (MODULE_NONE);
+	  module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (*slot);
+
+	  /* Scan the imported bindings.  */
+	  unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (*slot);
+	  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_IMPORT_BASE)
+	    {
+	      ix--;
+	      cluster++;
+	    }
+
+	  /* Do this in forward order, so we load modules in an order
+	     the user expects.  */
+	  for (; ix--; cluster++)
+	    for (unsigned jx = 0; jx != MODULE_VECTOR_SLOTS_PER_CLUSTER; jx++)
+	      {
+		/* Are we importing this module?  */
+		if (unsigned base = cluster->indices[jx].base)
+		  if (unsigned span = cluster->indices[jx].span)
+		    do
+		      if (bitmap_bit_p (imports, base))
+			goto found;
+		    while (++base, --span);
+		continue;
+
+	      found:;
+		/* Is it loaded?  */
+		if (cluster->slots[jx].is_lazy ())
+		  {
+		    gcc_assert (cluster->indices[jx].span == 1);
+		    lazy_load_binding (cluster->indices[jx].base,
+				       scope, name, &cluster->slots[jx], true);
+		  }
+
+		tree value = cluster->slots[jx];
+		if (!value)
+		  /* Load errors could mean there's nothing here.  */
+		  continue;
+
+		/* Extract what we can see from here.  If there's no
+		   stat_hack, then everything was exported.  */
+		tree type = NULL_TREE;
+
+		// FIXME: Isn't STAT_HACK_P always true?  Or does its
+		// lack imply everything is visible?
+		if (STAT_HACK_P (value))
+		  {
+		    if (STAT_TYPE_VISIBLE_P (value))
+		      type = STAT_TYPE (value);
+		    value = STAT_VISIBLE (value);
+		  }
+
+		if (do_nonmember_using_decl (lookup, false, false,
+					     &value, &type))
+		  failed = true;
+	      }
 	}
 
-      bool failed = do_nonmember_using_decl (lookup, false, true, &value, &type);
+      /* Now do the current slot.  */
+      tree value = MAYBE_STAT_DECL (*mslot);
+      tree type = MAYBE_STAT_TYPE (*mslot);
+      if (do_nonmember_using_decl (lookup, false, !failed, &value, &type))
+	failed = true;
 
+      // FIXME: Partition mergeableness?
       if (failed)
 	/* Nothing  */;
-      else if (STAT_HACK_P (*slot))
+      else if (STAT_HACK_P (*mslot))
 	{
-	  STAT_DECL (*slot) = value;
-	  STAT_TYPE (*slot) = type;
+	  STAT_DECL (*mslot) = value;
+	  STAT_TYPE (*mslot) = type;
 	}
       else if (type)
-	*slot = stat_hack (value, type);
+	*mslot = stat_hack (value, type);
       else
-	*slot = value;
+	*mslot = value;
     }
   else
     {
