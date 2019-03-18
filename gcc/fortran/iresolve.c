@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intrinsic.h"
 #include "constructor.h"
 #include "arith.h"
+#include "trans.h"
 
 /* Given printf-like arguments, return a stable version of the result string.
 
@@ -2495,6 +2496,10 @@ gfc_resolve_fe_runtime_error (gfc_code *c)
     a->name = "%VAL";
 
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+  /* We set the backend_decl here because runtime_error is a
+     variadic function and we would use the wrong calling
+     convention otherwise.  */
+  c->resolved_sym->backend_decl = gfor_fndecl_runtime_error;
 }
 
 void
