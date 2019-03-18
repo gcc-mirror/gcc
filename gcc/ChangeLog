@@ -1,3 +1,12 @@
+2019-03-18  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2019-03-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/89546
+	* tree-sra.c (propagate_subaccesses_across_link): Requeue new_acc if
+	any propagation to its children took place.
+
 2019-03-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
