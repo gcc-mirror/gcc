@@ -1,3 +1,7 @@
+2019-03-18  Kito Cheng  <kito.cheng@gmail.com>
+
+	* gcc.target/riscv/arch-1.c: Add quotes around march in dg-error.
+
 2019-03-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/bswap16.c: Use a pointer instead of a global for
