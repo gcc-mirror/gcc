@@ -1,6 +1,10 @@
 2019-03-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::{read,write}_locations): Cope with
+	trailing empty expansions.
+
+	gcc/cp/
 	* module.cc (module_state::{read,write}_locations): Macro maps can
 	have embedded zeroes.
 

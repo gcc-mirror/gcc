@@ -11312,7 +11312,7 @@ module_state::write_locations (elf_out *to, unsigned max_rager,
 	  if (span.macro.second != MAX_LOCATION_T + 1)
 	    count -= linemap_lookup_macro_index (line_table,
 						 span.macro.second - 1);
-	  dump () && dump ("Span:%u %u macro maps", ix, count);
+	  dump (dumper::LOCATION) && dump ("Span:%u %u macro maps", ix, count);
 	  num_maps.second += count;
 	}
 
@@ -11364,7 +11364,7 @@ module_state::write_locations (elf_out *to, unsigned max_rager,
   for (unsigned ix = 0; ix != len; ix++)
     {
       const char *fname = filenames[ix];
-      dump () && dump ("Source file[%u]=%s", ix, fname);
+      dump (dumper::LOCATION) && dump ("Source file[%u]=%s", ix, fname);
       sec.str (fname);
     }
 
@@ -11399,8 +11399,9 @@ module_state::write_locations (elf_out *to, unsigned max_rager,
 	    location_t start_loc = MAP_START_LOCATION (omap);
 	    unsigned to = start_loc + span.ordinary_delta;
 
-	    dump () && dump ("Span:%u ordinary [%u,%u)->%u", ix, start_loc,
-			     MAP_START_LOCATION (omap + 1), to);
+	    dump (dumper::LOCATION)
+	      && dump ("Span:%u ordinary [%u,%u)->%u", ix, start_loc,
+		       MAP_START_LOCATION (omap + 1), to);
 
 	    /* There should be no change in the low order bits.  */
 	    gcc_checking_assert (((start_loc ^ to) & range_mask) == 0);
@@ -11452,6 +11453,7 @@ module_state::write_locations (elf_out *to, unsigned max_rager,
     location_t offset = spans[loc_spans::SPAN_MAIN].macro.second;
     sec.u (offset);
 
+    unsigned macro_num = 0;
     for (unsigned ix = loc_spans::SPAN_MAIN; ix != spans.length (); ix++)
       {
 	loc_spans::span &span = spans[ix];
@@ -11468,11 +11470,17 @@ module_state::write_locations (elf_out *to, unsigned max_rager,
 	    location_t start_loc = MAP_START_LOCATION (mmap);
 	    if (start_loc < span.macro.first)
 	      break;
-	    dump () && dump ("Span:%u macro %I [%u,%u)->%u",
-			     ix, identifier (mmap->macro),
-			     start_loc, start_loc + mmap->n_tokens,
-			     start_loc + span.macro_delta);
-
+	    if (macro_num == num_maps.second)
+	      {
+		/* We're ending on an empty macro expansion.  */
+		// FIXME: This goes to show we should be eliding all
+		// macro expansions that are not covering any location
+		// we need to output (just like non-macro locations,
+		// mentioned above).
+		gcc_checking_assert (!mmap->n_tokens);
+		continue;
+	      }
+	    
 	    sec.u (offset);
 	    sec.u (mmap->n_tokens);
 	    sec.cpp_node (mmap->macro);
@@ -11481,6 +11489,7 @@ module_state::write_locations (elf_out *to, unsigned max_rager,
 	    /* There are lots of identical runs.  */
 	    location_t prev = 0;
 	    unsigned count = 0;
+	    unsigned runs = 0;
 	    for (unsigned jx = mmap->n_tokens * 2; jx--;)
 	      {
 		location_t tok_loc = locs[jx];
@@ -11489,18 +11498,27 @@ module_state::write_locations (elf_out *to, unsigned max_rager,
 		    count++;
 		    continue;
 		  }
+		runs++;
 		sec.u (count);
 		count = 1;
 		prev = tok_loc;
 		write_location (sec, tok_loc);
 	      }
 	    sec.u (count);
+	    dump (dumper::LOCATION)
+	      && dump ("Span:%u macro:%u %I %u/%u*2 locations [%u,%u)->%u",
+		       ix, macro_num, identifier (mmap->macro),
+		       runs, mmap->n_tokens,
+		       start_loc, start_loc + mmap->n_tokens,
+		       start_loc + span.macro_delta);
+	    macro_num++;
 	    offset -= mmap->n_tokens;
 	    gcc_checking_assert (offset == start_loc + span.macro_delta);
 	  }
       }
     dump () && dump ("Macro location lwm:%u", offset);
     sec.u (offset);
+    gcc_assert (macro_num == num_maps.second);
   }
 
   sec.end (to, to->name (MOD_SNAME_PFX ".loc"), crc_p);
@@ -11527,7 +11545,7 @@ module_state::read_locations ()
       const char *buf = sec.str (&l);
       char *fname = XNEWVEC (char, l + 1);
       memcpy (fname, buf, l + 1);
-      dump () && dump ("Source file[%u]=%s", ix, fname);
+      dump (dumper::LOCATION) && dump ("Source file[%u]=%s", ix, fname);
       /* We leak these names into the line-map table.  But it
 	 doesn't own them.  */
       filenames.quick_push (fname);
@@ -11585,7 +11603,7 @@ module_state::read_locations ()
 	if (map->start_location < lwm)
 	  sec.set_overrun ();
 	lwm = map->start_location;
-	dump () && dump ("Map:%u %u->%u", ix, hwm, lwm);
+	dump (dumper::LOCATION) && dump ("Map:%u %u->%u", ix, hwm, lwm);
 	map->reason = lc_reason (sec.u ());
 	map->sysp = sec.u ();
 	map->m_range_bits = sec.u ();
@@ -11640,10 +11658,12 @@ module_state::read_locations ()
 	location_t *locs = macro->macro_locations;
 	location_t tok_loc = loc;
 	unsigned count = sec.u ();
+	unsigned runs = 0;
 	for (unsigned jx = macro->n_tokens * 2; jx--;)
 	  {
 	    while (!count--)
 	      {
+		runs++;
 		tok_loc = read_location (sec);
 		count = sec.u ();
 	      }
@@ -11651,10 +11671,11 @@ module_state::read_locations ()
 	  }
 	if (count)
 	  sec.set_overrun ();
-	dump () && dump ("Macro %I %u locations [%u,%u)",
-			 identifier (node), n_tokens, 
-			 MAP_START_LOCATION (macro),
-			 MAP_START_LOCATION (macro) + n_tokens);
+	dump (dumper::LOCATION)
+	  && dump ("Macro:%u %I %u/%u*2 locations [%u,%u)",
+		   ix, identifier (node), runs, n_tokens,
+		   MAP_START_LOCATION (macro),
+		   MAP_START_LOCATION (macro) + n_tokens);
       }
     location_t lwm = sec.u ();
     slurp ()->macro_locs.first = lwm;
