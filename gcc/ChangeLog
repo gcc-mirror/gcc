@@ -1,5 +1,19 @@
 2019-03-18  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.opt (mcode-density-frame): Get the inital value
+	from TARGET_CODE_DENSITY_FRAME_DEFAULT.
+	* config/arc/elf.h (TARGET_CODE_DENSITY_FRAME_DEFAULT): Define.
+	* config/arc/linux.h (TARGET_CODE_DENSITY_FRAME_DEFAULT): Define.
+	* config/arc/arc.md (pop_multi_fp_blink): Adjust constraints to
+	match what the ops is doing.
+	(push_multi_fp_blink): Likewise.
+	* config/arc/arc.c (arc_override_options): Enable enter/leave when
+	compiling for size and elf target.
+	(arc_save_callee_enter): Adjust note to match what enter/leave
+	operation does.
+
+2019-03-18  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.md (tst_movb): Fix constraint.
 
 2019-03-18  Claudiu Zissulescu  <claziss@synopsys.com>
