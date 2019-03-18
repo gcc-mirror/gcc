@@ -1,3 +1,9 @@
+2019-03-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/88273
+	* gimple-ssa-warn-restrict.c (builtin_memref::extend_offset_range):
+	Handle anti-ranges the same as no range at all.
+
 2019-03-18  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline

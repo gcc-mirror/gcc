@@ -1,3 +1,8 @@
+2019-03-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/88273
+	* gcc.dg/Warray-bounds-38.c: New test.
+
 2019-03-18  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
