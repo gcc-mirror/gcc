@@ -50572,7 +50572,7 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
       && TREE_CODE (DR_STEP (STMT_VINFO_DATA_REF (stmt_info))) != INTEGER_CST)
     {
       stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
-      stmt_cost *= TYPE_VECTOR_SUBPARTS (vectype);
+      stmt_cost *= (TYPE_VECTOR_SUBPARTS (vectype) + 1);
     }
   if (stmt_cost == -1)
     stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
