@@ -4552,7 +4552,7 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
   /* If the overwritten procedure is GENERIC, this is an error.  */
   if (old->n.tb->is_generic)
     {
-      gfc_error ("Can't overwrite GENERIC %qs at %L",
+      gfc_error ("Cannot overwrite GENERIC %qs at %L",
 		 old->name, &proc->n.tb->where);
       return false;
     }

@@ -1,3 +1,32 @@
+2019-03-12  Martin Liska  <mliska@suse.cz>
+
+	* c-opts.c (c_common_handle_option): Wrap option with %< and %>.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* c-opts.c (c_common_post_options): Wrap apostrophes
+	in gcc internal format with %'.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* c-attribs.c (handle_nocf_check_attribute): Wrap an option name
+	in a string format message and fix GNU coding style.
+	* c-common.c (vector_types_convertible_p): Likewise.
+	(c_build_vec_perm_expr): Likewise.
+	* c-indentation.c (get_visual_column): Likewise.
+	* c-opts.c (c_common_handle_option): Likewise.
+	(c_common_post_options): Likewise.
+	(sanitize_cpp_opts): Likewise.
+	* c-pch.c (c_common_pch_pragma): Likewise.
+	* c-pragma.c (handle_pragma_pack): Likewise.
+
+2019-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89550
+	* c-common.c (c_common_truthvalue_conversion): Only set
+	TREE_NO_WARNING if warning_at returned true.
+	* c-warn.c (overflow_warning, warn_logical_operator): Likewise.
+
 2019-02-25  Sandra Loosemore  <sandra@codesourcery.com>
 	    Martin Sebor  <msebor@gmail.com>
 

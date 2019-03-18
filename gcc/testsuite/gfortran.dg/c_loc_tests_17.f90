@@ -10,5 +10,5 @@ program aaaa
   use iso_c_binding, only : c_loc
   integer, target :: i
   type(C_PTR) :: f_ptr ! { dg-error "being used before it is defined" }
-  f_ptr=c_loc(i)  ! { dg-error "Can't convert" }
+  f_ptr=c_loc(i)  ! { dg-error "Cannot convert" }
 end program aaaa

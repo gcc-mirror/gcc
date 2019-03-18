@@ -159,6 +159,7 @@ static void invalidate_insn_recog_data (int);
 static int get_insn_freq (rtx_insn *);
 static void invalidate_insn_data_regno_info (lra_insn_recog_data_t,
 					     rtx_insn *, int);
+static void remove_scratches_1 (rtx_insn *);
 
 /* Expand all regno related info needed for LRA.  */
 static void
@@ -494,7 +495,11 @@ lra_emit_move (rtx x, rtx y)
       if (rtx_equal_p (x, y))
 	return;
       old = max_reg_num ();
-      emit_move_insn (x, y);
+      rtx_insn *insn = emit_move_insn (x, y);
+      /* The move pattern may require scratch registers, so convert them
+	 into real registers now.  */
+      if (insn != NULL_RTX)
+	remove_scratches_1 (insn);
       if (REG_P (x))
 	lra_reg_info[ORIGINAL_REGNO (x)].last_reload = ++lra_curr_reload_num;
       /* Function emit_move can create pseudos -- so expand the pseudo
@@ -2077,17 +2082,45 @@ lra_register_new_scratch_op (rtx_insn *insn, int nop, int icode)
   add_reg_note (insn, REG_UNUSED, op);
 }
 
-/* Change scratches onto pseudos and save their location.  */
+/* Change INSN's scratches into pseudos and save their location.  */
 static void
-remove_scratches (void)
+remove_scratches_1 (rtx_insn *insn)
 {
   int i;
   bool insn_changed_p;
-  basic_block bb;
-  rtx_insn *insn;
   rtx reg;
   lra_insn_recog_data_t id;
   struct lra_static_insn_data *static_id;
+
+  id = lra_get_insn_recog_data (insn);
+  static_id = id->insn_static_data;
+  insn_changed_p = false;
+  for (i = 0; i < static_id->n_operands; i++)
+    if (GET_CODE (*id->operand_loc[i]) == SCRATCH
+	&& GET_MODE (*id->operand_loc[i]) != VOIDmode)
+      {
+	insn_changed_p = true;
+	*id->operand_loc[i] = reg
+	  = lra_create_new_reg (static_id->operand[i].mode,
+				*id->operand_loc[i], ALL_REGS, NULL);
+	lra_register_new_scratch_op (insn, i, id->icode);
+	if (lra_dump_file != NULL)
+	  fprintf (lra_dump_file,
+		   "Removing SCRATCH in insn #%u (nop %d)\n",
+		   INSN_UID (insn), i);
+      }
+  if (insn_changed_p)
+    /* Because we might use DF right after caller-saves sub-pass
+       we need to keep DF info up to date.  */
+    df_insn_rescan (insn);
+}
+
+/* Change scratches into pseudos and save their location.  */
+static void
+remove_scratches (void)
+{
+  basic_block bb;
+  rtx_insn *insn;
 
   scratches.create (get_max_uid ());
   bitmap_initialize (&scratch_bitmap, &reg_obstack);
@@ -2095,29 +2128,7 @@ remove_scratches (void)
   FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
     if (INSN_P (insn))
-      {
-	id = lra_get_insn_recog_data (insn);
-	static_id = id->insn_static_data;
-	insn_changed_p = false;
-	for (i = 0; i < static_id->n_operands; i++)
-	  if (GET_CODE (*id->operand_loc[i]) == SCRATCH
-	      && GET_MODE (*id->operand_loc[i]) != VOIDmode)
-	    {
-	      insn_changed_p = true;
-	      *id->operand_loc[i] = reg
-		= lra_create_new_reg (static_id->operand[i].mode,
-				      *id->operand_loc[i], ALL_REGS, NULL);
-	      lra_register_new_scratch_op (insn, i, id->icode);
-	      if (lra_dump_file != NULL)
-		fprintf (lra_dump_file,
-			 "Removing SCRATCH in insn #%u (nop %d)\n",
-			 INSN_UID (insn), i);
-	    }
-	if (insn_changed_p)
-	  /* Because we might use DF right after caller-saves sub-pass
-	     we need to keep DF info up to date.  */
-	  df_insn_rescan (insn);
-      }
+      remove_scratches_1 (insn);
 }
 
 /* Changes pseudos created by function remove_scratches onto scratches.	 */

@@ -1,3 +1,190 @@
+2019-03-18  Thomas Koenig  <tkoeng@gcc.gnu.org>
+
+	PR fortran/68009
+	* iresolve.c: Include trans.h.
+	(gfc_resolve_fe_runtine_error): Set backend_decl on
+	resolved_sym.
+
+2019-03-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/88008
+	* gfortran.h (expr_t): Add EXPR_UNKNOWN.
+	* expr.c (gfc_copy_expr): Add EXPR_UNKNOWN to switch statement.
+	(gfc_simplify_expr): Likewise.
+	* module.c (mio_expr): Likewise.
+	* resovle.c (extract_compcall_passed_object): Issue error on
+	unknown type.
+	(check_typebound_baseobject): Issue error on wrong type.
+	* trans-expr.c (gfc_apply_interface_mapping_to_expr): Add
+	EXPR_UNKNOWN to switch statement.
+
+2019-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/89724
+	* scanner.c (load_line): Remove linenum and current_line static
+	variables, add warned_tabs automatic variable.  Use current_file->line
+	instead of current_line and warned_tabs boolean to avoid diagnosing
+	tabs multiple times on the same line.
+
+2019-03-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/84394
+	* symbol.c (gfc_add_subroutine): If we are encountering a
+	subrtoutine within a BLOCK DATA and the name starts with an
+	underscore, do not check.
+
+2019-03-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/60091
+	* expr.c (gfc_check_pointer_assign): Correct and improve error
+	messages for invalid pointer assignments.
+
+2019-03-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.texi: Document Q edit descriptor under
+	"Extensions not implemented in GNU Fortran".
+
+2019-03-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/87045
+	* trans-expr.c (gfc_trans_pointer_assignment): Move check for same
+	string length so that we do not get false errors for deferred
+	length.
+
+2019-03-13  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/89601
+	* decl.c (gfc_match_formal_arglist): Reject empty type parameter lists.
+	(gfc_match_derived_decl): Mark as PDT only if type parameter list was
+	matched successfully.
+
+2019-03-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/66695
+	PR fortran/77746
+	PR fortran/79485
+	* gfortran.h (gfc_symbol): Add bind_c component.
+	(gfc_get_gsymbol): Add argument bind_c.
+	* decl.c (add_global_entry): Add bind_c argument to
+	gfc_get_symbol.
+	* parse.c (parse_block_data): Likewise.
+	(parse_module): Likewise.
+	(add_global_procedure): Likewise.
+	(add_global_program): Likewise.
+	* resolve.c (resolve_common_blocks): Likewise.
+	(resolve_global_procedure): Likewise.
+	(gfc_verify_binding_labels): Likewise.
+	* symbol.c (gfc_get_gsymbol): Add argument bind_c. Set bind_c
+	in gsym.
+	* trans-decl.c (gfc_get_module_backend_decl): Add bind_c argument
+	to gfc_get_symbol.
+	(gfc_get_extern_function_decl): If the sym has a binding label
+	and it cannot be found in the global symbol tabel, it is the wrong
+	one and vice versa.
+
+2019-03-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87673
+	* match.c (gfc_match_type_spec): Remove call to
+	gfc_resolve_expr for character length.
+
+2019-03-12  Martin Liska  <mliska@suse.cz>
+
+	* decl.c (add_init_expr_to_sym): Replace usage of 'can't'
+	with 'cannot'.
+	(variable_decl): Likewise.
+	(cray_pointer_decl): Likewise.
+	(match_binding_attributes): Likewise.
+	* f95-lang.c (gfc_init): Likewise.
+	* interface.c (gfc_check_typebound_override): Likewise.
+	* intrinsic.c (make_generic): Likewise.
+	* module.c (dump_module): Likewise.
+	(gfc_use_module): Likewise.
+	* primary.c (gfc_convert_to_structure_constructor): Likewise.
+	* resolve.c (resolve_entries): Likewise.
+	(check_generic_tbp_ambiguity): Likewise.
+	(get_checked_tb_operator_target): Likewise.
+	* scanner.c (load_file): Likewise.
+	* trans-expr.c (gfc_conv_intrinsic_to_class): Likewise.
+
+2019-03-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89363
+	PR fortran/89364
+	* trans-expr.c (set_dtype_for_unallocated): New function.
+	(gfc_conv_gfc_desc_to_cfi_desc): Call it for allocatable and
+	pointer arguments.
+	(gfc_conv_procedure_call): Likewise. Also, set the ubound of
+	the final dimension to -1 for assumed rank formal args that are
+	associated with assumed size arrays.
+	* trans-intrinsic.c (gfc_conv_intrinsic_bound): Return -1 for
+	the final dimension of assumed rank entities that are argument
+	associated with assumed size arrays.
+	(gfc_conv_intrinsic_shape): Likewise return -1 for the final
+	dimension of the shape intrinsic.
+
+2019-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/89651
+	* trans-openmp.c (gfc_omp_clause_default_ctor): Set TREE_NO_WARNING
+	on decl if adding COND_EXPR for allocatable.
+	(gfc_omp_clause_copy_ctor): Set TREE_NO_WARNING on dest.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* decl.c (match_record_decl): Wrap an option name
+	in a string format message and fix GNU coding style.
+	(gfc_match_pointer): Likewise.
+	* expr.c (find_array_section): Likewise.
+	* intrinsic.c (gfc_is_intrinsic): Likewise.
+	* options.c (gfc_post_options): Likewise.
+	* primary.c (match_integer_constant): Likewise.
+	* trans-common.c (translate_common): Likewise.
+
+2019-03-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/66089
+	* trans-array.c (gfc_scalar_elemental_arg_saved_as_reference):
+	Return false if a scalar tempoary is needed.
+	(gfc_walk_variable_expr): Fix up class refs.
+
+2019-03-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87734
+	* symbol.c (gfc_add_procedure): Only throw an error if the
+	procedure has not been declared either PUBLIC or PRIVATE.
+
+2019-03-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/71544
+	* trans-types.c (gfc_typenode_for_spec) Set ts->is_c_interop of
+	C_PTR and C_FUNPTR.
+	(create_fn_spec): Mark argument as escaping if ts->is_c_interop is set.
+
+2019-03-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/84504
+	* expr.c (gfc_check_assign_symbol): Deal with procedure pointers to
+	pointer-valued functions.
+
+2019-03-09  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/71203
+	* decl.c (add_init_expr_to_sym):  Add shape if init has none.  Add
+	asserts that it has to be an EXPR_ARRAY in this case.
+
+2019-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/80058
+	* arith.c (gfc_complex2complex): Avoid two spaces in the middle of
+	diagnostics.
+	* resolve.c (resolve_allocate_expr): Likewise.
+
+2019-03-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/71203
+	* expr.c (simplify_const_ref): Avoid null pointer dereference.
+
 2019-03-03  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 #include "gogo.h"
 #include "expressions.h"
@@ -579,4 +580,383 @@ debug_go_block_deep(const Block* block)
   Ast_dump_context adc(&std::cerr, true);
   Block* ncblock = const_cast<Block*>(block);
   adc.dump_block(ncblock);
+}
+
+class Type_dumper
+{
+  typedef Unordered_map(const Type*, unsigned) idx_map;
+ public:
+  Type_dumper(const Type* type)
+      : top_(type), ntypes_(0)
+  {
+    this->worklist_.push_back(type);
+  }
+
+  void visit();
+
+  std::string stringResult() { return ss_.str(); }
+
+ private:
+  void emitpre(unsigned tag, const Type* addr);
+  void typeref(const char*, const Type*, const char *);
+  void visit_forward_declaration_type(const Forward_declaration_type* fdt);
+  void visit_function_type(const Function_type* ft);
+  void visit_struct_type(const Struct_type* st);
+  void visit_array_type(const Array_type* at);
+  void visit_map_type(const Map_type* mt);
+  void visit_channel_type(const Channel_type* mt);
+  void visit_interface_type(const Interface_type* mt);
+  void visit_methods(const Typed_identifier_list* methods,
+                     const char *tag);
+  std::pair<bool, unsigned> lookup(const Type*);
+
+  static const unsigned notag = 0xffffffff;
+
+ private:
+  const Type* top_;
+  idx_map types_;
+  unsigned ntypes_;
+  std::list<const Type*> worklist_;
+  std::ostringstream ss_;
+};
+
+// Look up a type, installing it in 'types_'. Return is <found, N>
+// where 'found' is true if type had been previously recorded, and N
+// is the index/tag assigned to N.  The input argument is appended to
+// the work list if this is the first time we've seen it.
+
+std::pair<bool, unsigned> Type_dumper::lookup(const Type* t)
+{
+  std::pair<const Type*, unsigned> entry = std::make_pair(t, this->ntypes_);
+  std::pair<idx_map::iterator, bool> ins = this->types_.insert(entry);
+  if (ins.second)
+    {
+      this->ntypes_++;
+      if (t != this->top_)
+        this->worklist_.push_back(t);
+    }
+  return std::make_pair(ins.second, ins.first->second);
+}
+
+// Emit preamble prior to dumping a type, including the type
+// pointer itself and the tag we've assigned it.  If no
+// tag is specified (via special "notag" value) and/or the
+// pointer is null, then just emit an equivalent amount
+// of spaces.
+
+void Type_dumper::emitpre(unsigned tag, const Type* ptr)
+{
+  char tbuf[50], pbuf[50], buf[200];
+
+  tbuf[0] = '\0';
+  if (tag != notag)
+    snprintf(tbuf, sizeof tbuf, "T%u", tag);
+
+  pbuf[0] = '\0';
+  if (ptr != NULL)
+    snprintf(pbuf, sizeof pbuf, "%p", (const void*) ptr);
+
+  snprintf(buf, sizeof buf, "%8s %16s  ", tbuf, pbuf);
+  this->ss_ << buf;
+}
+
+// Emit a reference to a type into the dump buffer. In most cases this means
+// just the type tag, but for named types we also emit the name, and for
+// simple/primitive types (ex: int64) we emit the type itself. If "pref" is
+// non-NULL, emit the string prior to the reference, and if "suf" is non-NULL,
+// emit it following the reference.
+
+void Type_dumper::typeref(const char* pref, const Type* t, const char* suf)
+{
+  if (pref != NULL)
+    this->ss_ << pref;
+  std::pair<bool, unsigned> p = this->lookup(t);
+  unsigned tag = p.second;
+  switch (t->classification())
+    {
+      case Type::TYPE_NAMED:
+        {
+          const Named_type* nt = t->named_type();
+          const Named_object* no = nt->named_object();
+          this->ss_ << "'" << no->message_name() << "' -> ";
+          const Type* underlying = nt->real_type();
+          this->typeref(NULL, underlying, NULL);
+          break;
+        }
+      case Type::TYPE_POINTER:
+        this->typeref("*", t->points_to(), NULL);
+        break;
+      case Type::TYPE_ERROR:
+        this->ss_ << "error_type";
+        break;
+      case Type::TYPE_INTEGER:
+        {
+          const Integer_type* it = t->integer_type();
+          if (it->is_abstract())
+            this->ss_ << "abstract_int";
+          else
+            this->ss_ << (it->is_unsigned() ? "u" : "") << "int" << it->bits();
+          break;
+        }
+      case Type::TYPE_FLOAT:
+        {
+          const Float_type* ft = t->float_type();
+          if (ft->is_abstract())
+            this->ss_ << "abstract_float";
+          else
+            this->ss_ << "float" << ft->bits();
+          break;
+        }
+      case Type::TYPE_COMPLEX:
+        {
+          const Complex_type* ct = t->complex_type();
+          if (ct->is_abstract())
+            this->ss_ << "abstract_complex";
+          else
+            this->ss_ << "complex" << ct->bits();
+          break;
+        }
+      case Type::TYPE_BOOLEAN:
+        this->ss_ << "bool";
+        break;
+      case Type::TYPE_STRING:
+        this->ss_ << "string";
+        break;
+      case Type::TYPE_NIL:
+        this->ss_ << "nil_type";
+        break;
+    case Type::TYPE_VOID:
+        this->ss_ << "void_type";
+        break;
+    case Type::TYPE_FUNCTION:
+    case Type::TYPE_STRUCT:
+    case Type::TYPE_ARRAY:
+    case Type::TYPE_MAP:
+    case Type::TYPE_CHANNEL:
+    case Type::TYPE_FORWARD:
+    case Type::TYPE_INTERFACE:
+      this->ss_ << "T" << tag;
+      break;
+
+    default:
+      // This is a debugging routine, so instead of a go_unreachable()
+      // issue a warning/error, to allow for the possibility that the
+      // compiler we're debugging is in a bad state.
+      this->ss_ << "<??? " << ((unsigned)t->classification()) << "> "
+                << "T" << tag;
+    }
+  if (suf != NULL)
+    this->ss_ << suf;
+}
+
+void Type_dumper::visit_forward_declaration_type(const Forward_declaration_type* fdt)
+{
+  this->ss_ << "forward_declaration_type ";
+  if (fdt->is_defined())
+    this->typeref("-> ", fdt->real_type(), NULL);
+  else
+    this->ss_ << "'" << fdt->name() << "'";
+  this->ss_ << "\n";
+}
+
+void Type_dumper::visit_function_type(const Function_type* ft)
+{
+  this->ss_ << "function\n";
+  const Typed_identifier* rec = ft->receiver();
+  if (rec != NULL)
+    {
+      this->emitpre(notag, NULL);
+      this->typeref("receiver ", rec->type(), NULL);
+    }
+  const Typed_identifier_list* parameters = ft->parameters();
+  if (parameters != NULL)
+    {
+      for (Typed_identifier_list::const_iterator p = parameters->begin();
+	   p != parameters->end();
+	   ++p)
+        {
+          this->emitpre(notag, NULL);
+          this->typeref(" param ", p->type(), "\n");
+        }
+    }
+  const Typed_identifier_list* results = ft->results();
+  if (results != NULL)
+    {
+      for (Typed_identifier_list::const_iterator p = results->begin();
+	   p != results->end();
+	   ++p)
+        {
+          this->emitpre(notag, NULL);
+          this->typeref(" result ", p->type(), "\n");
+        }
+    }
+}
+
+void Type_dumper::visit_struct_type(const Struct_type* st)
+{
+  this->ss_ << "struct\n";
+  const Struct_field_list* fields = st->fields();
+  if (fields != NULL)
+    {
+      for (Struct_field_list::const_iterator p = fields->begin();
+           p != fields->end();
+           ++p)
+        {
+          this->emitpre(notag, NULL);
+          this->typeref(" field ", p->type(), "\n");
+        }
+    }
+}
+
+void Type_dumper::visit_array_type(const Array_type* at)
+{
+  this->ss_ << "array [";
+  if (at->length() != NULL)
+    {
+      int64_t len = 0;
+      if (at->int_length(&len))
+        this->ss_ << len;
+    }
+  this->typeref("] ", at->element_type(), "\n");
+}
+
+void Type_dumper::visit_map_type(const Map_type* mt)
+{
+  this->ss_ << "map [";
+  this->typeref(NULL, mt->key_type(), NULL);
+  this->typeref("] ", mt->val_type(), "\n");
+}
+
+void Type_dumper::visit_methods(const Typed_identifier_list* methods,
+                                const char *tag)
+{
+  if (tag != NULL)
+    {
+      this->emitpre(notag, NULL);
+      this->ss_ << tag << "\n";
+    }
+  for (Typed_identifier_list::const_iterator p = methods->begin();
+       p != methods->end();
+       ++p)
+    {
+      this->emitpre(notag, NULL);
+      if (p->name().empty())
+        this->typeref("  embedded method ", p->type(), "\n");
+      else
+        {
+          this->ss_ << "  method '" << p->name() << "' ";
+          this->typeref(NULL, p->type(), "\n");
+        }
+    }
+}
+
+void Type_dumper::visit_interface_type(const Interface_type* it)
+{
+  const Typed_identifier_list* methods =
+      (it->methods_are_finalized() ? it->methods() : it->local_methods());
+  if (methods == NULL)
+    {
+      this->ss_ << "empty_interface\n";
+      return;
+    }
+  this->ss_ << "interface";
+  if (! it->methods_are_finalized())
+    {
+      this->ss_ << " [unfinalized]\n";
+      visit_methods(it->local_methods(), NULL);
+    }
+  else
+    {
+      this->ss_ << "\n";
+      visit_methods(it->local_methods(), "[parse_methods]");
+      visit_methods(it->methods(), "[all_methods]");
+    }
+}
+
+void Type_dumper::visit_channel_type(const Channel_type* ct)
+{
+  this->ss_ << "channel {";
+  if (ct->may_send())
+    this->ss_ << " send";
+  if (ct->may_receive())
+    this->ss_ << " receive";
+  this->typeref(" } ", ct->element_type(), "\n");
+}
+
+void Type_dumper::visit()
+{
+  while (! this->worklist_.empty()) {
+    const Type* t = this->worklist_.front();
+    this->worklist_.pop_front();
+
+    std::pair<bool, unsigned> p = this->lookup(t);
+    unsigned tag = p.second;
+    this->emitpre(tag, t);
+
+    switch(t->classification())
+      {
+        case Type::TYPE_ERROR:
+        case Type::TYPE_INTEGER:
+        case Type::TYPE_FLOAT:
+        case Type::TYPE_COMPLEX:
+        case Type::TYPE_BOOLEAN:
+        case Type::TYPE_STRING:
+        case Type::TYPE_VOID:
+        case Type::TYPE_POINTER:
+        case Type::TYPE_NIL:
+        case Type::TYPE_NAMED:
+          this->typeref(NULL, t, "\n");
+          break;
+        case Type::TYPE_FORWARD:
+          this->visit_forward_declaration_type(t->forward_declaration_type());
+          break;
+
+        case Type::TYPE_FUNCTION:
+          this->visit_function_type(t->function_type());
+          break;
+        case Type::TYPE_STRUCT:
+          this->visit_struct_type(t->struct_type());
+          break;
+        case Type::TYPE_ARRAY:
+          this->visit_array_type(t->array_type());
+          break;
+        case Type::TYPE_MAP:
+          this->visit_map_type(t->map_type());
+          break;
+        case Type::TYPE_CHANNEL:
+          this->visit_channel_type(t->channel_type());
+          break;
+        case Type::TYPE_INTERFACE:
+          this->visit_interface_type(t->interface_type());
+          break;
+        default:
+          // This is a debugging routine, so instead of a go_unreachable()
+          // issue a warning/error, to allow for the possibility that the
+          // compiler we're debugging is in a bad state.
+          this->ss_ << "<unknown/unrecognized classification "
+                    << ((unsigned)t->classification()) << ">\n";
+      }
+  }
+}
+
+// Dump a Go type for debugging purposes. This is a deep as opposed
+// to shallow dump; all of the types reachable from the specified
+// type will be dumped in addition to the type itself.
+
+void debug_go_type(const Type* type)
+{
+  if (type == NULL)
+    {
+      std::cerr << "<NULL type>\n";
+      return;
+    }
+  Type_dumper dumper(type);
+  dumper.visit();
+  std::cerr << dumper.stringResult();
+}
+
+void debug_go_type(Type* type)
+{
+  const Type* ctype = type;
+  debug_go_type(ctype);
 }

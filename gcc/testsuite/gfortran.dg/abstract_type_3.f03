@@ -41,7 +41,7 @@ CONTAINS
   SUBROUTINE sub (arg) ! { dg-error "is of the ABSTRACT type 'again_abst_t'" }
     IMPLICIT NONE
     TYPE(again_abst_t) :: arg
-    arg = again_abst_t () ! { dg-error "Can't construct ABSTRACT type 'again_abst_t'" }
+    arg = again_abst_t () ! { dg-error "Cannot construct ABSTRACT type 'again_abst_t'" }
   END SUBROUTINE sub
 
   SUBROUTINE impl ()

@@ -7929,6 +7929,7 @@ PrecedenceInitializer::PrecedenceInitializer()
     precedence[TOKdefault] = PREC_primary;
     precedence[TOKoverloadset] = PREC_primary;
     precedence[TOKvoid] = PREC_primary;
+    precedence[TOKvectorarray] = PREC_primary;
 
     // post
     precedence[TOKdotti] = PREC_primary;

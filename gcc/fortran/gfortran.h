@@ -142,7 +142,7 @@ enum gfc_source_form
 
 /* Expression node types.  */
 enum expr_t
-{ EXPR_OP = 1, EXPR_FUNCTION, EXPR_CONSTANT, EXPR_VARIABLE,
+  { EXPR_UNKNOWN = 0, EXPR_OP = 1, EXPR_FUNCTION, EXPR_CONSTANT, EXPR_VARIABLE,
   EXPR_SUBSTRING, EXPR_STRUCTURE, EXPR_ARRAY, EXPR_NULL, EXPR_COMPCALL, EXPR_PPC
 };
 
@@ -1891,6 +1891,7 @@ typedef struct gfc_gsymbol
   enum gfc_symbol_type type;
 
   int defined, used;
+  bool bind_c;
   locus where;
   gfc_namespace *ns;
 }
@@ -3114,7 +3115,7 @@ void gfc_enforce_clean_symbol_state (void);
 void gfc_free_dt_list (void);
 
 
-gfc_gsymbol *gfc_get_gsymbol (const char *);
+gfc_gsymbol *gfc_get_gsymbol (const char *, bool bind_c);
 gfc_gsymbol *gfc_find_gsymbol (gfc_gsymbol *, const char *);
 gfc_gsymbol *gfc_find_case_gsymbol (gfc_gsymbol *, const char *);
 

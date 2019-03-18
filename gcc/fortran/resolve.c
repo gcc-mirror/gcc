@@ -838,22 +838,22 @@ resolve_entries (gfc_namespace *ns)
 	      if (sym->attr.dimension)
 		{
 		  if (el == ns->entries)
-		    gfc_error ("FUNCTION result %s can't be an array in "
+		    gfc_error ("FUNCTION result %s cannot be an array in "
 			       "FUNCTION %s at %L", sym->name,
 			       ns->entries->sym->name, &sym->declared_at);
 		  else
-		    gfc_error ("ENTRY result %s can't be an array in "
+		    gfc_error ("ENTRY result %s cannot be an array in "
 			       "FUNCTION %s at %L", sym->name,
 			       ns->entries->sym->name, &sym->declared_at);
 		}
 	      else if (sym->attr.pointer)
 		{
 		  if (el == ns->entries)
-		    gfc_error ("FUNCTION result %s can't be a POINTER in "
+		    gfc_error ("FUNCTION result %s cannot be a POINTER in "
 			       "FUNCTION %s at %L", sym->name,
 			       ns->entries->sym->name, &sym->declared_at);
 		  else
-		    gfc_error ("ENTRY result %s can't be a POINTER in "
+		    gfc_error ("ENTRY result %s cannot be a POINTER in "
 			       "FUNCTION %s at %L", sym->name,
 			       ns->entries->sym->name, &sym->declared_at);
 		}
@@ -891,12 +891,12 @@ resolve_entries (gfc_namespace *ns)
 		  if (sym)
 		    {
 		      if (el == ns->entries)
-			gfc_error ("FUNCTION result %s can't be of type %s "
+			gfc_error ("FUNCTION result %s cannot be of type %s "
 				   "in FUNCTION %s at %L", sym->name,
 				   gfc_typename (ts), ns->entries->sym->name,
 				   &sym->declared_at);
 		      else
-			gfc_error ("ENTRY result %s can't be of type %s "
+			gfc_error ("ENTRY result %s cannot be of type %s "
 				   "in FUNCTION %s at %L", sym->name,
 				   gfc_typename (ts), ns->entries->sym->name,
 				   &sym->declared_at);
@@ -1050,7 +1050,7 @@ resolve_common_blocks (gfc_symtree *common_root)
 	}
       if (!gsym)
 	{
-	  gsym = gfc_get_gsymbol (common_root->n.common->name);
+	  gsym = gfc_get_gsymbol (common_root->n.common->name, false);
 	  gsym->type = GSYM_COMMON;
 	  gsym->where = common_root->n.common->where;
 	  gsym->defined = 1;
@@ -1072,7 +1072,7 @@ resolve_common_blocks (gfc_symtree *common_root)
 	}
       if (!gsym)
 	{
-	  gsym = gfc_get_gsymbol (common_root->n.common->binding_label);
+	  gsym = gfc_get_gsymbol (common_root->n.common->binding_label, true);
 	  gsym->type = GSYM_COMMON;
 	  gsym->where = common_root->n.common->where;
 	  gsym->defined = 1;
@@ -2487,7 +2487,8 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 
   type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
 
-  gsym = gfc_get_gsymbol (sym->binding_label ? sym->binding_label : sym->name);
+  gsym = gfc_get_gsymbol (sym->binding_label ? sym->binding_label : sym->name,
+			  sym->binding_label != NULL);
 
   if ((gsym->type != GSYM_UNKNOWN && gsym->type != type))
     gfc_global_used (gsym, where);
@@ -5944,6 +5945,13 @@ extract_compcall_passed_object (gfc_expr* e)
 {
   gfc_expr* po;
 
+  if (e->expr_type == EXPR_UNKNOWN)
+    {
+      gfc_error ("Error in typebound call at %L",
+		 &e->where);
+      return NULL;
+    }
+
   gcc_assert (e->expr_type == EXPR_COMPCALL);
 
   if (e->value.compcall.base_object)
@@ -6089,7 +6097,11 @@ check_typebound_baseobject (gfc_expr* e)
   if (!base)
     return false;
 
-  gcc_assert (base->ts.type == BT_DERIVED || base->ts.type == BT_CLASS);
+  if (base->ts.type != BT_DERIVED && base->ts.type != BT_CLASS)
+    {
+      gfc_error ("Error in typebound call at %L", &e->where);
+      goto cleanup;
+    }
 
   if (base->ts.type == BT_CLASS && !gfc_expr_attr (base).class_ok)
     return false;
@@ -7798,7 +7810,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
 		if (mpz_cmp_si (ar->start[i]->value.integer, 1) < 0)
 		  {
 		    gfc_error ("Upper cobound is less than lower cobound "
-			       " of 1 at %L", &ar->start[i]->where);
+			       "of 1 at %L", &ar->start[i]->where);
 		    goto failure;
 		  }
 	      }
@@ -11847,7 +11859,7 @@ gfc_verify_binding_labels (gfc_symbol *sym)
 	  && (gsym->type == GSYM_FUNCTION || gsym->type == GSYM_SUBROUTINE)))
     {
       if (!gsym)
-	gsym = gfc_get_gsymbol (sym->binding_label);
+	gsym = gfc_get_gsymbol (sym->binding_label, true);
       gsym->where = sym->declared_at;
       gsym->sym_name = sym->name;
       gsym->binding_label = sym->binding_label;
@@ -13115,7 +13127,7 @@ check_generic_tbp_ambiguity (gfc_tbp_generic* t1, gfc_tbp_generic* t2,
   if (sym1->attr.subroutine != sym2->attr.subroutine
       || sym1->attr.function != sym2->attr.function)
     {
-      gfc_error ("%qs and %qs can't be mixed FUNCTION/SUBROUTINE for"
+      gfc_error ("%qs and %qs cannot be mixed FUNCTION/SUBROUTINE for"
 		 " GENERIC %qs at %L",
 		 sym1->name, sym2->name, generic_name, &where);
       return false;
@@ -13250,7 +13262,7 @@ specific_found:
   /* If we attempt to "overwrite" a specific binding, this is an error.  */
   if (p->overridden && !p->overridden->is_generic)
     {
-      gfc_error ("GENERIC %qs at %L can't overwrite specific binding with"
+      gfc_error ("GENERIC %qs at %L cannot overwrite specific binding with"
 		 " the same name", name, &p->where);
       return false;
     }
@@ -13306,7 +13318,7 @@ get_checked_tb_operator_target (gfc_tbp_generic* target, locus where)
   /* F08:C468. All operator bindings must have a passed-object dummy argument.  */
   if (target->specific->nopass)
     {
-      gfc_error ("Type-bound operator at %L can't be NOPASS", &where);
+      gfc_error ("Type-bound operator at %L cannot be NOPASS", &where);
       return NULL;
     }
 

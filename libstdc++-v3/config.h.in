@@ -390,6 +390,9 @@
 /* Defined if sleep exists. */
 #undef HAVE_SLEEP
 
+/* Define to 1 if you have the `sockatmark' function. */
+#undef HAVE_SOCKATMARK
+
 /* Define to 1 if you have the `sqrtf' function. */
 #undef HAVE_SQRTF
 

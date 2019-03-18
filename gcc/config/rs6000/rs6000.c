@@ -3992,7 +3992,7 @@ rs6000_option_override_internal (bool global_init_p)
       if (!TARGET_HARD_FLOAT)
 	{
 	  if (rs6000_isa_flags_explicit & OPTION_MASK_VSX)
-	    msg = N_("-mvsx requires hardware floating point");
+	    msg = N_("%<-mvsx%> requires hardware floating point");
 	  else
 	    {
 	      rs6000_isa_flags &= ~ OPTION_MASK_VSX;
@@ -4000,14 +4000,14 @@ rs6000_option_override_internal (bool global_init_p)
 	    }
 	}
       else if (TARGET_AVOID_XFORM > 0)
-	msg = N_("-mvsx needs indexed addressing");
+	msg = N_("%<-mvsx%> needs indexed addressing");
       else if (!TARGET_ALTIVEC && (rs6000_isa_flags_explicit
 				   & OPTION_MASK_ALTIVEC))
         {
 	  if (rs6000_isa_flags_explicit & OPTION_MASK_VSX)
-	    msg = N_("-mvsx and -mno-altivec are incompatible");
+	    msg = N_("%<-mvsx%> and %<-mno-altivec%> are incompatible");
 	  else
-	    msg = N_("-mno-altivec disables vsx");
+	    msg = N_("%<-mno-altivec%> disables vsx");
         }
 
       if (msg)
@@ -4133,10 +4133,10 @@ rs6000_option_override_internal (bool global_init_p)
   if ((TARGET_QUAD_MEMORY || TARGET_QUAD_MEMORY_ATOMIC) && !TARGET_POWERPC64)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_QUAD_MEMORY) != 0)
-	warning (0, N_("-mquad-memory requires 64-bit mode"));
+	warning (0, N_("%<-mquad-memory%> requires 64-bit mode"));
 
       if ((rs6000_isa_flags_explicit & OPTION_MASK_QUAD_MEMORY_ATOMIC) != 0)
-	warning (0, N_("-mquad-memory-atomic requires 64-bit mode"));
+	warning (0, N_("%<-mquad-memory-atomic%> requires 64-bit mode"));
 
       rs6000_isa_flags &= ~(OPTION_MASK_QUAD_MEMORY
 			    | OPTION_MASK_QUAD_MEMORY_ATOMIC);
@@ -4148,7 +4148,7 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_QUAD_MEMORY && !WORDS_BIG_ENDIAN)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_QUAD_MEMORY) != 0)
-	warning (0, N_("-mquad-memory is not available in little endian "
+	warning (0, N_("%<-mquad-memory%> is not available in little endian "
 		       "mode"));
 
       rs6000_isa_flags &= ~OPTION_MASK_QUAD_MEMORY;
@@ -4338,7 +4338,7 @@ rs6000_option_override_internal (bool global_init_p)
       if (!TARGET_VSX)
 	{
 	  if ((rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_KEYWORD) != 0)
-	    error ("%qs requires VSX support", "-mfloat128");
+	    error ("%qs requires VSX support", "%<-mfloat128%>");
 
 	  TARGET_FLOAT128_TYPE = 0;
 	  rs6000_isa_flags &= ~(OPTION_MASK_FLOAT128_KEYWORD
@@ -4347,7 +4347,7 @@ rs6000_option_override_internal (bool global_init_p)
       else if (!TARGET_FLOAT128_TYPE)
 	{
 	  TARGET_FLOAT128_TYPE = 1;
-	  warning (0, "The -mfloat128 option may not be fully supported");
+	  warning (0, "The %<-mfloat128%> option may not be fully supported");
 	}
     }
 
@@ -4370,7 +4370,7 @@ rs6000_option_override_internal (bool global_init_p)
       && (rs6000_isa_flags & ISA_3_0_MASKS_IEEE) != ISA_3_0_MASKS_IEEE)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_HW) != 0)
-	error ("%qs requires full ISA 3.0 support", "-mfloat128-hardware");
+	error ("%qs requires full ISA 3.0 support", "%<-mfloat128-hardware%>");
 
       rs6000_isa_flags &= ~OPTION_MASK_FLOAT128_HW;
     }
@@ -4378,7 +4378,7 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_FLOAT128_HW && !TARGET_64BIT)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_HW) != 0)
-	error ("%qs requires %qs", "-mfloat128-hardware", "-m64");
+	error ("%qs requires %qs", "%<-mfloat128-hardware%>", "-m64");
 
       rs6000_isa_flags &= ~OPTION_MASK_FLOAT128_HW;
     }
@@ -6894,7 +6894,6 @@ rs6000_expand_vector_extract (rtx target, rtx vec, rtx elt)
 	default:
 	  break;
 	case E_V1TImode:
-	  gcc_assert (INTVAL (elt) == 0 && inner_mode == TImode);
 	  emit_move_insn (target, gen_lowpart (TImode, vec));
 	  break;
 	case E_V2DFmode:
@@ -6974,18 +6973,32 @@ rs6000_expand_vector_extract (rtx target, rtx vec, rtx elt)
 	}
     }
 
-  gcc_assert (CONST_INT_P (elt));
-
   /* Allocate mode-sized buffer.  */
   mem = assign_stack_temp (mode, GET_MODE_SIZE (mode));
 
   emit_move_insn (mem, vec);
+  if (CONST_INT_P (elt))
+    {
+      int modulo_elt = INTVAL (elt) % GET_MODE_NUNITS (mode);
 
-  /* Add offset to field within buffer matching vector element.  */
-  mem = adjust_address_nv (mem, inner_mode,
-			   INTVAL (elt) * GET_MODE_SIZE (inner_mode));
+      /* Add offset to field within buffer matching vector element.  */
+      mem = adjust_address_nv (mem, inner_mode,
+			       modulo_elt * GET_MODE_SIZE (inner_mode));
+      emit_move_insn (target, adjust_address_nv (mem, inner_mode, 0));
+    }
+  else
+    {
+      unsigned int ele_size = GET_MODE_SIZE (inner_mode);
+      rtx num_ele_m1 = GEN_INT (GET_MODE_NUNITS (mode) - 1);
+      rtx new_addr = gen_reg_rtx (Pmode);
 
-  emit_move_insn (target, adjust_address_nv (mem, inner_mode, 0));
+      elt = gen_rtx_AND (Pmode, elt, num_ele_m1);
+      if (ele_size > 1)
+	elt = gen_rtx_MULT (Pmode, elt, GEN_INT (ele_size));
+      new_addr = gen_rtx_PLUS (Pmode, XEXP (mem, 0), elt);
+      new_addr = change_address (mem, inner_mode, new_addr);
+      emit_move_insn (target, new_addr);
+    }
 }
 
 /* Adjust a memory address (MEM) of a vector type to point to a scalar field
@@ -7165,6 +7178,10 @@ rs6000_split_vec_extract_var (rtx dest, rtx src, rtx element, rtx tmp_gpr,
      systems.  */
   if (MEM_P (src))
     {
+      int num_elements = GET_MODE_NUNITS (mode);
+      rtx num_ele_m1 = GEN_INT (num_elements - 1);
+
+      emit_insn (gen_anddi3 (element, element, num_ele_m1));
       gcc_assert (REG_P (tmp_gpr));
       emit_move_insn (dest, rs6000_adjust_vec_address (dest, src, element,
 						       tmp_gpr, scalar_mode));
@@ -7173,7 +7190,9 @@ rs6000_split_vec_extract_var (rtx dest, rtx src, rtx element, rtx tmp_gpr,
 
   else if (REG_P (src) || SUBREG_P (src))
     {
-      int bit_shift = byte_shift + 3;
+      int num_elements = GET_MODE_NUNITS (mode);
+      int bits_in_element = mode_to_bits (GET_MODE_INNER (mode));
+      int bit_shift = 7 - exact_log2 (num_elements);
       rtx element2;
       unsigned int dest_regno = reg_or_subregno (dest);
       unsigned int src_regno = reg_or_subregno (src);
@@ -7249,7 +7268,7 @@ rs6000_split_vec_extract_var (rtx dest, rtx src, rtx element, rtx tmp_gpr,
 	{
 	  if (!BYTES_BIG_ENDIAN)
 	    {
-	      rtx num_ele_m1 = GEN_INT (GET_MODE_NUNITS (mode) - 1);
+	      rtx num_ele_m1 = GEN_INT (num_elements - 1);
 
 	      emit_insn (gen_anddi3 (tmp_gpr, element, num_ele_m1));
 	      emit_insn (gen_subdi3 (tmp_gpr, num_ele_m1, tmp_gpr));
@@ -7307,8 +7326,8 @@ rs6000_split_vec_extract_var (rtx dest, rtx src, rtx element, rtx tmp_gpr,
 	    emit_insn (gen_vsx_vslo_v2di (tmp_altivec_di, src_v2di,
 					  tmp_altivec));
 	    emit_move_insn (tmp_gpr_di, tmp_altivec_di);
-	    emit_insn (gen_ashrdi3 (tmp_gpr_di, tmp_gpr_di,
-				    GEN_INT (64 - (8 * scalar_size))));
+	    emit_insn (gen_lshrdi3 (tmp_gpr_di, tmp_gpr_di,
+				    GEN_INT (64 - bits_in_element)));
 	    return;
 	  }
 
@@ -9890,7 +9909,7 @@ valid_sf_si_move (rtx dest, rtx src, machine_mode mode)
 static bool
 rs6000_emit_move_si_sf_subreg (rtx dest, rtx source, machine_mode mode)
 {
-  if (TARGET_DIRECT_MOVE_64BIT && !lra_in_progress && !reload_completed
+  if (TARGET_DIRECT_MOVE_64BIT && !reload_completed
       && (!SUBREG_P (dest) || !sf_subreg_operand (dest, mode))
       && SUBREG_P (source) && sf_subreg_operand (source, mode))
     {
@@ -13346,7 +13365,7 @@ rs6000_expand_zeroop_builtin (enum insn_code icode, rtx target)
   if (icode == CODE_FOR_rs6000_mffsl
       && rs6000_isa_flags & OPTION_MASK_SOFT_FLOAT)
     {
-      error ("__builtin_mffsl() not supported with -msoft-float");
+      error ("%<__builtin_mffsl%> not supported with %<-msoft-float%>");
       return const0_rtx;
     }
 
@@ -13418,7 +13437,8 @@ rs6000_expand_mtfsb_builtin (enum insn_code icode, tree exp)
 
   if (rs6000_isa_flags & OPTION_MASK_SOFT_FLOAT)
     {
-      error ("__builtin_mtfsb0 and __builtin_mtfsb1 not supported with -msoft-float");
+      error ("%<__builtin_mtfsb0%> and %<__builtin_mtfsb1%> not supported with "
+	     "%<-msoft-float%>");
       return const0_rtx;
     }
 
@@ -13455,7 +13475,7 @@ rs6000_expand_set_fpscr_rn_builtin (enum insn_code icode, tree exp)
 
   if (rs6000_isa_flags & OPTION_MASK_SOFT_FLOAT)
     {
-      error ("__builtin_set_fpscr_rn not supported with -msoft-float");
+      error ("%<__builtin_set_fpscr_rn%> not supported with %<-msoft-float%>");
       return const0_rtx;
     }
 
@@ -13495,11 +13515,12 @@ rs6000_expand_set_fpscr_drn_builtin (enum insn_code icode, tree exp)
   if (TARGET_32BIT)
     /* Builtin not supported in 32-bit mode.  */
     fatal_error (input_location,
-		 "__builtin_set_fpscr_drn is not supported in 32-bit mode.");
+		 "%<__builtin_set_fpscr_drn%> is not supported "
+		 "in 32-bit mode.");
 
   if (rs6000_isa_flags & OPTION_MASK_SOFT_FLOAT)
     {
-      error ("__builtin_set_fpscr_drn not supported with -msoft-float");
+      error ("%<__builtin_set_fpscr_drn%> not supported with %<-msoft-float%>");
       return const0_rtx;
     }
 
@@ -14723,9 +14744,17 @@ altivec_expand_vec_ext_builtin (tree exp, rtx target)
   op0 = expand_normal (arg0);
   op1 = expand_normal (arg1);
 
-  /* Call get_element_number to validate arg1 if it is a constant.  */
   if (TREE_CODE (arg1) == INTEGER_CST)
-    (void) get_element_number (TREE_TYPE (arg0), arg1);
+    {
+      unsigned HOST_WIDE_INT elt;
+      unsigned HOST_WIDE_INT size = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+      unsigned int truncated_selector;
+      /* Even if !tree_fits_uhwi_p (arg1)), TREE_INT_CST_LOW (arg0)
+	 returns low-order bits of INTEGER_CST for modulo indexing.  */
+      elt = TREE_INT_CST_LOW (arg1);
+      truncated_selector = elt % size;
+      op1 = GEN_INT (truncated_selector);
+    }
 
   tmode = TYPE_MODE (TREE_TYPE (TREE_TYPE (arg0)));
   mode0 = TYPE_MODE (TREE_TYPE (arg0));
@@ -15236,7 +15265,8 @@ rs6000_invalid_builtin (enum rs6000_builtins fncode)
     error ("builtin function %qs requires ISA 3.0 IEEE 128-bit floating point",
 	   name);
   else if ((fnmask & RS6000_BTM_FLOAT128) != 0)
-    error ("builtin function %qs requires the %qs option", name, "-mfloat128");
+    error ("builtin function %qs requires the %qs option", name,
+	   "%<-mfloat128%>");
   else if ((fnmask & (RS6000_BTM_POPCNTD | RS6000_BTM_POWERPC64))
 	   == (RS6000_BTM_POPCNTD | RS6000_BTM_POWERPC64))
     error ("builtin function %qs requires the %qs (or newer), and "
@@ -29320,7 +29350,7 @@ rs6000_expand_split_stack_prologue (void)
 
   if (global_regs[29])
     {
-      error ("%qs uses register r29", "-fsplit-stack");
+      error ("%qs uses register r29", "%<-fsplit-stack%>");
       inform (DECL_SOURCE_LOCATION (global_regs_decl[29]),
 	      "conflicts with %qD", global_regs_decl[29]);
     }
@@ -29328,7 +29358,8 @@ rs6000_expand_split_stack_prologue (void)
   allocate = info->total_size;
   if (allocate > (unsigned HOST_WIDE_INT) 1 << 31)
     {
-      sorry ("Stack frame larger than 2G is not supported for -fsplit-stack");
+      sorry ("Stack frame larger than 2G is not supported for "
+	     "%<-fsplit-stack%>");
       return;
     }
   if (morestack_ref == NULL_RTX)
@@ -37463,6 +37494,7 @@ make_resolver_func (const tree default_decl,
 
   /* Build result decl and add to function_decl.  */
   tree t = build_decl (UNKNOWN_LOCATION, RESULT_DECL, NULL_TREE, ptr_type_node);
+  DECL_CONTEXT (t) = decl;
   DECL_ARTIFICIAL (t) = 1;
   DECL_IGNORED_P (t) = 1;
   DECL_RESULT (decl) = t;

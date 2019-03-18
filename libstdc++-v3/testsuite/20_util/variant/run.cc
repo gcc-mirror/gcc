@@ -88,6 +88,21 @@ void arbitrary_ctor()
   VERIFY(get<1>(v) == "a");
 }
 
+struct ThrowingMoveCtorThrowsCopyCtor
+{
+  ThrowingMoveCtorThrowsCopyCtor() noexcept = default;
+  ThrowingMoveCtorThrowsCopyCtor(ThrowingMoveCtorThrowsCopyCtor&&) {}
+  ThrowingMoveCtorThrowsCopyCtor(ThrowingMoveCtorThrowsCopyCtor const&)
+  {
+    throw 0;
+  }
+
+  ThrowingMoveCtorThrowsCopyCtor& operator=(ThrowingMoveCtorThrowsCopyCtor&&) noexcept
+    = default;
+  ThrowingMoveCtorThrowsCopyCtor& operator=(ThrowingMoveCtorThrowsCopyCtor const&) noexcept
+    = default;
+};
+
 void copy_assign()
 {
   variant<monostate, string> v("a");
@@ -96,6 +111,20 @@ void copy_assign()
   u = v;
   VERIFY(holds_alternative<string>(u));
   VERIFY(get<string>(u) == "a");
+  {
+    std::variant<int, ThrowingMoveCtorThrowsCopyCtor> v1,
+      v2 = ThrowingMoveCtorThrowsCopyCtor();
+    bool should_throw = false;
+    try
+      {
+	v1 = v2;
+      }
+    catch(int)
+      {
+	should_throw = true;
+      }
+    VERIFY(should_throw);
+  }
 }
 
 void move_assign()
@@ -183,11 +212,15 @@ void emplace()
     AlwaysThrow a;
     try { v.emplace<1>(a); } catch (nullptr_t) { }
     VERIFY(v.valueless_by_exception());
+    v.emplace<0>(42);
+    VERIFY(!v.valueless_by_exception());
   }
   {
     variant<int, AlwaysThrow> v;
     try { v.emplace<1>(AlwaysThrow{}); } catch (nullptr_t) { }
     VERIFY(v.valueless_by_exception());
+    v.emplace<0>(42);
+    VERIFY(!v.valueless_by_exception());
   }
   VERIFY(&v.emplace<0>(1) == &std::get<0>(v));
   VERIFY(&v.emplace<int>(1) == &std::get<int>(v));
@@ -258,6 +291,7 @@ void test_relational()
     VERIFY(v < w);
     VERIFY(v <= w);
     VERIFY(!(v == w));
+    VERIFY(v == v);
     VERIFY(v != w);
     VERIFY(w > v);
     VERIFY(w >= v);

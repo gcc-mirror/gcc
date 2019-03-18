@@ -30,6 +30,7 @@
 
 bool definitelyValueParameter(Expression *e);
 Expression *semantic(Expression *e, Scope *sc);
+StringExp *semanticString(Scope *sc, Expression *exp, const char *s);
 
 /********************************* AttribDeclaration ****************************/
 
@@ -977,41 +978,29 @@ void PragmaDeclaration::semantic(Scope *sc)
             error("string expected for library name");
         else
         {
-            Expression *e = (*args)[0];
-
-            sc = sc->startCTFE();
-            e = ::semantic(e, sc);
-            e = resolveProperties(sc, e);
-            sc = sc->endCTFE();
-
-            e = e->ctfeInterpret();
-            (*args)[0] = e;
-            if (e->op == TOKerror)
-                goto Lnodecl;
-            StringExp *se = e->toStringExp();
+            StringExp *se = semanticString(sc, (*args)[0], "library name");
             if (!se)
-                error("string expected for library name, not '%s'", e->toChars());
-            else
+                goto Lnodecl;
+            (*args)[0] = se;
+
+            char *name = (char *)mem.xmalloc(se->len + 1);
+            memcpy(name, se->string, se->len);
+            name[se->len] = 0;
+            if (global.params.verbose)
+                message("library   %s", name);
+            if (global.params.moduleDeps && !global.params.moduleDepsFile)
             {
-                char *name = (char *)mem.xmalloc(se->len + 1);
-                memcpy(name, se->string, se->len);
-                name[se->len] = 0;
-                if (global.params.verbose)
-                    message("library   %s", name);
-                if (global.params.moduleDeps && !global.params.moduleDepsFile)
-                {
-                    OutBuffer *ob = global.params.moduleDeps;
-                    Module *imod = sc->instantiatingModule();
-                    ob->writestring("depsLib ");
-                    ob->writestring(imod->toPrettyChars());
-                    ob->writestring(" (");
-                    escapePath(ob, imod->srcfile->toChars());
-                    ob->writestring(") : ");
-                    ob->writestring((char *) name);
-                    ob->writenl();
-                }
-                mem.xfree(name);
+                OutBuffer *ob = global.params.moduleDeps;
+                Module *imod = sc->instantiatingModule();
+                ob->writestring("depsLib ");
+                ob->writestring(imod->toPrettyChars());
+                ob->writestring(" (");
+                escapePath(ob, imod->srcfile->toChars());
+                ob->writestring(") : ");
+                ob->writestring((char *) name);
+                ob->writenl();
             }
+            mem.xfree(name);
         }
         goto Lnodecl;
     }
@@ -1053,19 +1042,11 @@ void PragmaDeclaration::semantic(Scope *sc)
             goto Ldecl;
         }
 
-        Expression *e = (*args)[0];
-        e = ::semantic(e, sc);
-        e = e->ctfeInterpret();
-        (*args)[0] = e;
-        if (e->op == TOKerror)
-            goto Ldecl;
-
-        StringExp *se = e->toStringExp();
+        StringExp *se = semanticString(sc, (*args)[0], "mangled name");
         if (!se)
-        {
-            error("string expected for mangled name, not '%s'", e->toChars());
             goto Ldecl;
-        }
+        (*args)[0] = se; // Will be used for later
+
         if (!se->len)
         {
             error("zero-length string not allowed for mangled name");
@@ -1418,35 +1399,22 @@ void CompileDeclaration::setScope(Scope *sc)
 void CompileDeclaration::compileIt(Scope *sc)
 {
     //printf("CompileDeclaration::compileIt(loc = %d) %s\n", loc.linnum, exp->toChars());
-    sc = sc->startCTFE();
-    exp = ::semantic(exp, sc);
-    exp = resolveProperties(sc, exp);
-    sc = sc->endCTFE();
+    StringExp *se = semanticString(sc, exp, "argument to mixin");
+    if (!se)
+        return;
+    se = se->toUTF8(sc);
 
-    if (exp->op != TOKerror)
+    unsigned errors = global.errors;
+    Parser p(loc, sc->_module, (utf8_t *)se->string, se->len, 0);
+    p.nextToken();
+
+    decl = p.parseDeclDefs(0);
+    if (p.token.value != TOKeof)
+        exp->error("incomplete mixin declaration (%s)", se->toChars());
+    if (p.errors)
     {
-        Expression *e = exp->ctfeInterpret();
-        if (e->op == TOKerror) // Bugzilla 15974
-            return;
-        StringExp *se = e->toStringExp();
-        if (!se)
-            exp->error("argument to mixin must be a string, not (%s) of type %s", exp->toChars(), exp->type->toChars());
-        else
-        {
-            se = se->toUTF8(sc);
-            unsigned errors = global.errors;
-            Parser p(loc, sc->_module, (utf8_t *)se->string, se->len, 0);
-            p.nextToken();
-
-            decl = p.parseDeclDefs(0);
-            if (p.token.value != TOKeof)
-                exp->error("incomplete mixin declaration (%s)", se->toChars());
-            if (p.errors)
-            {
-                assert(global.errors != errors);
-                decl = NULL;
-            }
-        }
+        assert(global.errors != errors);
+        decl = NULL;
     }
 }
 

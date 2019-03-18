@@ -558,6 +558,9 @@ gfc_omp_clause_default_ctor (tree clause, tree decl, tree outer)
 			     build3_loc (input_location, COND_EXPR,
 					 void_type_node, cond, then_b,
 					 else_b));
+      /* Avoid -W*uninitialized warnings.  */
+      if (DECL_P (decl))
+	TREE_NO_WARNING (decl) = 1;
     }
   else
     gfc_add_expr_to_block (&block, then_b);
@@ -664,6 +667,9 @@ gfc_omp_clause_copy_ctor (tree clause, tree dest, tree src)
   gfc_add_expr_to_block (&block,
 			 build3_loc (input_location, COND_EXPR,
 				     void_type_node, cond, then_b, else_b));
+  /* Avoid -W*uninitialized warnings.  */
+  if (DECL_P (dest))
+    TREE_NO_WARNING (dest) = 1;
 
   return gfc_finish_block (&block);
 }

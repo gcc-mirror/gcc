@@ -18,7 +18,7 @@
 /* { dg-final { scan-assembler-times {\mxxpermdi\M} 3 { target lp64 } } } */
 /* { dg-final { scan-assembler-times {\mvslo\M} 3 { target lp64 } } } */
 /* { dg-final { scan-assembler-times {\mmfvsrd\M} 6 { target lp64 } } } */
-/* { dg-final { scan-assembler-times {\msradi\M} 3 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\msrdi\M} 3 { target lp64 } } } */
 /* { dg-final { scan-assembler-times "extsb" 2 } } */
 /* { dg-final { scan-assembler-times {\mvspltb\M} 3 { target lp64 } } } */
 /* { dg-final { scan-assembler-times {\mrlwinm\M} 2 { target lp64} } } */

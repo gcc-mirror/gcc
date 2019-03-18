@@ -15,6 +15,6 @@ module cf
 contains
   subroutine cfi()
     type(cfmde), pointer :: cfd
-    cfd=cfmde()                  ! { dg-error "Can't convert" }
+    cfd=cfmde()                  ! { dg-error "Cannot convert" }
   end subroutine
 end module

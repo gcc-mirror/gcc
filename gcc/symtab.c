@@ -1040,23 +1040,30 @@ symtab_node::verify_base (void)
   if (symtab->assembler_name_hash)
     {
       hashed_node = symtab_node::get_for_asmname (DECL_ASSEMBLER_NAME (decl));
-      if (hashed_node && hashed_node->previous_sharing_asm_name)
+      if (hashed_node)
 	{
-          error ("assembler name hash list corrupted");
-          error_found = true;
-	}
-      while (hashed_node)
-	{
-	  if (hashed_node == this)
-	    break;
-	  hashed_node = hashed_node->next_sharing_asm_name;
-	}
-      if (!hashed_node
-	  && !(is_a <varpool_node *> (this)
-	       && DECL_HARD_REGISTER (decl)))
-	{
-          error ("node not found in symtab assembler name hash");
-          error_found = true;
+	  if (hashed_node->previous_sharing_asm_name)
+	    {
+	      error ("assembler name hash list corrupted");
+	      error_found = true;
+	    }
+	  else if (previous_sharing_asm_name == NULL)
+	    {
+	      if (hashed_node != this)
+		{
+		  error ("assembler name hash list corrupted");
+		  error_found = true;
+		}
+	    }
+	  else if (!(is_a <varpool_node *> (this) && DECL_HARD_REGISTER (decl)))
+	    {
+	      if (!asmname_hasher::equal (previous_sharing_asm_name,
+					  DECL_ASSEMBLER_NAME (decl)))
+		{
+		  error ("node not found in symtab assembler name hash");
+		  error_found = true;
+		}
+	    }
 	}
     }
   if (previous_sharing_asm_name
@@ -1148,7 +1155,7 @@ symtab_node::verify_base (void)
     }
   if (implicit_section && !get_section ())
     {
-      error ("implicit_section flag is set but section isn't");
+      error ("implicit_section flag is set but section isn%'t");
       error_found = true;
     }
   if (get_section () && get_comdat_group ()
@@ -1167,14 +1174,14 @@ symtab_node::verify_base (void)
 	  || strcmp (get_section(),
 		     get_alias_target ()->get_section ())))
     {
-      error ("Alias and target's section differs");
+      error ("Alias and target%'s section differs");
       get_alias_target ()->dump (stderr);
       error_found = true;
     }
   if (alias && definition
       && get_comdat_group () != get_alias_target ()->get_comdat_group ())
     {
-      error ("Alias and target's comdat groups differs");
+      error ("Alias and target%'s comdat groups differs");
       get_alias_target ()->dump (stderr);
       error_found = true;
     }
@@ -1189,7 +1196,7 @@ symtab_node::verify_base (void)
 	    ultimate_transparent_alias_target (DECL_ASSEMBLER_NAME (to->decl)));
       if (!symbol_table::assembler_names_equal_p (name1, name2))
 	{
-	  error ("Transparent alias and target's assembler names differs");
+	  error ("Transparent alias and target%'s assembler names differs");
 	  get_alias_target ()->dump (stderr);
 	  error_found = true;
 	}

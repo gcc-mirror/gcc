@@ -448,8 +448,8 @@ handle_common_deferred_options (void)
 
 	case OPT_fasan_shadow_offset_:
 	  if (!(flag_sanitize & SANITIZE_KERNEL_ADDRESS))
-	    error ("-fasan-shadow-offset should only be used "
-		   "with -fsanitize=kernel-address");
+	    error ("%<-fasan-shadow-offset%> should only be used "
+		   "with %<-fsanitize=kernel-address%>");
 	  if (!set_asan_shadow_offset (opt->arg))
 	     error ("unrecognized shadow offset %qs", opt->arg);
 	  break;

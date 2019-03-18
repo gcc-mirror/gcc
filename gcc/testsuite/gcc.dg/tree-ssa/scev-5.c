@@ -4,39 +4,39 @@
 int *a_p;
 int a[1000];
 
-void __GIMPLE (startwith ("loop"))
+void __GIMPLE (ssa,startwith ("loop"))
 f (int k)
 {
   long long int i;
   int * _1;
 
-bb_2:
+__BB(2):
   i_5 = (long long int) k_4(D);
   if (i_5 <= 999ll)
-    goto bb_4;
+    goto __BB4;
   else
-    goto bb_3;
+    goto __BB3;
 
-bb_3:
+__BB(3):
   return;
 
-bb_4:
-  ;
+__BB(4):
+  goto __BB5;
 
-bb_5:
-  i_12 = __PHI (bb_6: i_9, bb_4: i_5);
+__BB(5):
+  i_12 = __PHI (__BB6: i_9, __BB4: i_5);
   _1 = &a[i_12];
   a_p = _1;
   __MEM <int[1000]> ((int *)&a)[i_12] = 100;
   i_9 = i_5 + i_12;
   if (i_9 <= 999ll)
-    goto bb_6;
+    goto __BB6;
   else
-    goto bb_3;
+    goto __BB3;
 
-bb_6:
+__BB(6):
   ;
-  goto bb_5;
+  goto __BB5;
 
 }
 

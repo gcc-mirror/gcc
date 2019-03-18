@@ -3907,6 +3907,8 @@ static void prune_unused_types (void);
 static int maybe_emit_file (struct dwarf_file_data *fd);
 static inline const char *AT_vms_delta1 (dw_attr_node *);
 static inline const char *AT_vms_delta2 (dw_attr_node *);
+static inline void add_AT_vms_delta (dw_die_ref, enum dwarf_attribute,
+				     const char *, const char *);
 static void append_entry_to_tmpl_value_parm_die_table (dw_die_ref, tree);
 static void gen_remaining_tmpl_value_param_die_attribute (void);
 static bool generic_type_p (tree);
@@ -5140,6 +5142,22 @@ AT_file (dw_attr_node *a)
   gcc_assert (a && (AT_class (a) == dw_val_class_file
 		    || AT_class (a) == dw_val_class_file_implicit));
   return a->dw_attr_val.v.val_file;
+}
+
+/* Add a vms delta attribute value to a DIE.  */
+
+static inline void
+add_AT_vms_delta (dw_die_ref die, enum dwarf_attribute attr_kind,
+		  const char *lbl1, const char *lbl2)
+{
+  dw_attr_node attr;
+
+  attr.dw_attr = attr_kind;
+  attr.dw_attr_val.val_class = dw_val_class_vms_delta;
+  attr.dw_attr_val.val_entry = NULL;
+  attr.dw_attr_val.v.val_vms_delta.lbl1 = xstrdup (lbl1);
+  attr.dw_attr_val.v.val_vms_delta.lbl2 = xstrdup (lbl2);
+  add_dwarf_attr (die, &attr);
 }
 
 /* Add a symbolic view identifier attribute value to a DIE.  */
@@ -9351,7 +9369,6 @@ size_of_die (dw_die_ref die)
 	  }
 	  break;
 	case dw_val_class_loc_list:
-	case dw_val_class_view_list:
 	  if (dwarf_split_debug_info && dwarf_version >= 5)
 	    {
 	      gcc_assert (AT_loc_list (a)->num_assigned);
@@ -9359,6 +9376,9 @@ size_of_die (dw_die_ref die)
 	    }
           else
             size += DWARF_OFFSET_SIZE;
+	  break;
+	case dw_val_class_view_list:
+	  size += DWARF_OFFSET_SIZE;
 	  break;
 	case dw_val_class_range_list:
 	  if (value_format (a) == DW_FORM_rnglistx)
@@ -9733,12 +9753,12 @@ value_format (dw_attr_node *a)
 	  gcc_unreachable ();
 	}
     case dw_val_class_loc_list:
-    case dw_val_class_view_list:
       if (dwarf_split_debug_info
 	  && dwarf_version >= 5
 	  && AT_loc_list (a)->num_assigned)
 	return DW_FORM_loclistx;
       /* FALLTHRU */
+    case dw_val_class_view_list:
     case dw_val_class_range_list:
       /* For range lists in DWARF 5, use DW_FORM_rnglistx from .debug_info.dwo
 	 but in .debug_info use DW_FORM_sec_offset, which is shorter if we
@@ -10964,8 +10984,8 @@ output_dwarf_version ()
       static bool once;
       if (!once)
 	{
-	  warning (0,
-		   "-gdwarf-6 is output as version 5 with incompatibilities");
+	  warning (0, "%<-gdwarf-6%> is output as version 5 with "
+		   "incompatibilities");
 	  once = true;
 	}
       dw2_asm_output_data (2, 5, "DWARF version number");
@@ -13582,6 +13602,13 @@ generic_parameter_die (tree parm, tree arg,
 {
   dw_die_ref tmpl_die = NULL;
   const char *name = NULL;
+
+  /* C++2a accepts class literals as template parameters, and var
+     decls with initializers represent them.  The VAR_DECLs would be
+     rejected, but we can take the DECL_INITIAL constructor and
+     attempt to expand it.  */
+  if (arg && VAR_P (arg))
+    arg = DECL_INITIAL (arg);
 
   if (!parm || !DECL_NAME (parm) || !arg)
     return NULL;
@@ -19650,6 +19677,9 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 
     case HIGH:
     case CONST_FIXED:
+    case MINUS:
+    case SIGN_EXTEND:
+    case ZERO_EXTEND:
       return false;
 
     case MEM:

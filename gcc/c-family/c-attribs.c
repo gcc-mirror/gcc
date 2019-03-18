@@ -1072,7 +1072,8 @@ handle_nocf_check_attribute (tree *node, tree name,
   else if (!(flag_cf_protection & CF_BRANCH))
     {
       warning (OPT_Wattributes, "%qE attribute ignored. Use "
-				"-fcf-protection option to enable it", name);
+				"%<-fcf-protection%> option to enable it",
+				name);
       *no_add_attrs = true;
     }
 

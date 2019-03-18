@@ -652,8 +652,10 @@ coverage_begin_function (unsigned lineno_checksum, unsigned cfg_checksum)
 
   /* Function can start in a single file and end in another one.  */
   int end_line = endloc.file == xloc.file ? endloc.line : xloc.line;
+  int end_column = endloc.file == xloc.file ? endloc.column: xloc.column;
   gcc_assert (xloc.line <= end_line);
   gcov_write_unsigned (end_line);
+  gcov_write_unsigned (end_column);
   gcov_write_length (offset);
 
   return !gcov_is_error ();

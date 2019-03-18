@@ -3,6 +3,7 @@
 
 ! PR fortran/29785
 ! PR fortran/45016
+! PR fortran/60091
 ! Check for pointer remapping compile-time errors.
 
 ! Contributed by Daniel Kraft, d@domob.eu.
@@ -13,13 +14,13 @@ PROGRAM main
   INTEGER, POINTER :: vec(:), mat(:, :)
 
   ! Existence of reference elements.
-  vec(:) => arr ! { dg-error "Lower bound has to be present" }
-  vec(5:7:1) => arr ! { dg-error "Stride must not be present" }
-  mat(1:, 2:5) => arr ! { dg-error "Either all or none of the upper bounds" }
-  mat(2, 6) => arr ! { dg-error "Expected bounds specification" }
+  vec(:) => arr ! { dg-error "or list of 'lower-bound : upper-bound'" }
+  vec(5:7:1)  => arr ! { dg-error "Stride must not be present" }
+  mat(1:,2:5) => arr ! { dg-error "Rank remapping requires a list of " }
+  mat(1:3,4:) => arr ! { dg-error "Rank remapping requires a list of " }
+  mat(2, 6)   => arr ! { dg-error "Expected bounds specification" }
 
-  ! This is bound remapping not rank remapping!
-  mat(1:, 3:) => arr ! { dg-error "Different ranks" }
+  mat(1:,3:)  => arr ! { dg-error "Rank remapping requires a list of " }
 
   ! Invalid remapping target; for non-rank one we already check the F2008
   ! error elsewhere.  Here, test that not-contiguous target is disallowed

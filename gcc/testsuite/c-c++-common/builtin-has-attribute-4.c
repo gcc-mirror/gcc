@@ -1,5 +1,6 @@
 /* Verify __builtin_has_attribute return value for variables.
    { dg-do compile }
+   { dg-skip-if "No section attribute" { { hppa*-*-hpux* } && { ! lp64 } } }
    { dg-options "-Wall -ftrack-macro-expansion=0" }
    { dg-options "-Wall -Wno-narrowing -Wno-unused -ftrack-macro-expansion=0" { target c++ } }
    { dg-additional-options "-DSKIP_ALIAS" { target *-*-darwin* } } 

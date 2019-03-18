@@ -2820,10 +2820,12 @@ compute_av_set_at_bb_end (insn_t insn, ilist_t p, int ws)
     FOR_EACH_VEC_ELT (sinfo->succs_ok, is, succ)
       {
         basic_block succ_bb = BLOCK_FOR_INSN (succ);
+	av_set_t av_succ = (is_ineligible_successor (succ, p)
+			    ? NULL
+			    : BB_AV_SET (succ_bb));
 
         gcc_assert (BB_LV_SET_VALID_P (succ_bb));
-        mark_unavailable_targets (av1, BB_AV_SET (succ_bb),
-                                  BB_LV_SET (succ_bb));
+	mark_unavailable_targets (av1, av_succ, BB_LV_SET (succ_bb));
       }
 
   /* Finally, check liveness restrictions on paths leaving the region.  */

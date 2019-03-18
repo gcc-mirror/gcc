@@ -2889,13 +2889,13 @@ code that uses them running with the GNU Fortran compiler.
 @menu
 * ENCODE and DECODE statements::
 * Variable FORMAT expressions::
-@c * Q edit descriptor::
 @c * TYPE and ACCEPT I/O Statements::
 @c * DEFAULTFILE, DISPOSE and RECORDTYPE I/O specifiers::
 @c * Omitted arguments in procedure call::
 * Alternate complex function syntax::
 * Volatile COMMON blocks::
 * OPEN( ... NAME=)::
+* Q edit descriptor::
 @end menu
 
 @node ENCODE and DECODE statements
@@ -3018,7 +3018,7 @@ invalid standard Fortran syntax and is not supported by
 
 @node OPEN( ... NAME=)
 @subsection @code{OPEN( ... NAME=)}
-@cindex @code{NAM}
+@cindex @code{NAME}
 
 Some Fortran compilers, including @command{g77}, let the user declare
 @code{OPEN( ... NAME=)}. This is
@@ -3026,6 +3026,26 @@ invalid standard Fortran syntax and is not supported by
 @command{gfortran}.  @code{OPEN( ... NAME=)} should be replaced
 with @code{OPEN( ... FILE=)}.
 
+@node Q edit descriptor
+@subsection @code{Q} edit descriptor
+@cindex @code{Q} edit descriptor
+
+Some Fortran compilers provide the @code{Q} edit descriptor, which
+transfers the number of characters left within an input record into an
+integer variable.
+
+A direct replacement of the @code{Q} edit descriptor is not available
+in @command{gfortran}.  How to replicate its functionality using
+standard-conforming code depends on what the intent of the original
+code is.
+
+Options to replace @code{Q} may be to read the whole line into a
+character variable and then counting the number of non-blank
+characters left using @code{LEN_TRIM}.  Another method may be to use
+formatted stream, read the data up to the position where the @code{Q}
+descriptor occurred, use @code{INQUIRE} to get the file position,
+count the characters up to the next @code{NEW_LINE} and then start
+reading from the position marked previously.
 
 
 @c ---------------------------------------------------------------------

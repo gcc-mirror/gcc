@@ -161,6 +161,17 @@ proc libstdc++_init { testfile } {
     }
     v3track gccdir 3
 
+    # Locate libatomic.
+    set v3-libatomic 0
+    set libatomicdir [lookfor_file $blddir/../libatomic .libs/libatomic.$shlib_ext]
+    if {$libatomicdir != ""} {
+	set v3-libatomic 1
+	set libatomicdir [file dirname $libatomicdir]
+	append ld_library_path_tmp ":${libatomicdir}"
+	verbose -log "libatomic support detected"
+    }
+    v3track libatomicdir 3
+
     # Locate libgomp. This is only required for parallel mode.
     set v3-libgomp 0
     set libgompdir [lookfor_file $blddir/../libgomp .libs/libgomp.$shlib_ext]

@@ -960,7 +960,7 @@ find_crtoffloadtable (void)
       }
   if (i == n_paths)
     fatal_error (input_location,
-		 "installation error, can't find crtoffloadtable.o");
+		 "installation error, can%'t find crtoffloadtable.o");
 
   free_array_of_ptrs ((void **) paths, n_paths);
 }

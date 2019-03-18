@@ -8,7 +8,7 @@
 
 int (*foo)(int);
 
-typedef int (*type1_t) (int) __attribute__ ((nocf_check)); /* { dg-warning "'nocf_check' attribute ignored. Use -fcf-protection option to enable it" } */
+typedef int (*type1_t) (int) __attribute__ ((nocf_check)); /* { dg-warning "'nocf_check' attribute ignored. Use '-fcf-protection' option to enable it" } */
 typedef int (*type2_t) (int);
 
 static __attribute__((noinline)) int

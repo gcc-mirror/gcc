@@ -5744,6 +5744,7 @@ VectorExp::VectorExp(Loc loc, Expression *e, Type *t)
     assert(t->ty == Tvector);
     to = (TypeVector *)t;
     dim = ~0;
+    ownedByCtfe = OWNEDcode;
 }
 
 VectorExp *VectorExp::create(Loc loc, Expression *e, Type *t)
@@ -5754,6 +5755,24 @@ VectorExp *VectorExp::create(Loc loc, Expression *e, Type *t)
 Expression *VectorExp::syntaxCopy()
 {
     return new VectorExp(loc, e1->syntaxCopy(), to->syntaxCopy());
+}
+
+/************************************************************/
+
+VectorArrayExp::VectorArrayExp(Loc loc, Expression *e1)
+        : UnaExp(loc, TOKvectorarray, sizeof(VectorExp), e1)
+{
+}
+
+bool VectorArrayExp::isLvalue()
+{
+    return e1->isLvalue();
+}
+
+Expression *VectorArrayExp::toLvalue(Scope *sc, Expression *e)
+{
+    e1 = e1->toLvalue(sc, e);
+    return this;
 }
 
 /************************************************************/
@@ -6848,6 +6867,43 @@ Expression *resolveOpDollar(Scope *sc, ArrayExp *ae, Expression **pe0)
     }
 
     return ae;
+}
+
+/***********************************************************
+ * Resolve `exp` as a compile-time known string.
+ * Params:
+ *  sc  = scope
+ *  exp = Expression which expected as a string
+ *  s   = What the string is expected for, will be used in error diagnostic.
+ * Returns:
+ *  String literal, or `null` if error happens.
+ */
+StringExp *semanticString(Scope *sc, Expression *exp, const char *s)
+{
+    sc = sc->startCTFE();
+    exp = semantic(exp, sc);
+    exp = resolveProperties(sc, exp);
+    sc = sc->endCTFE();
+
+    if (exp->op == TOKerror)
+        return NULL;
+
+    Expression *e = exp;
+    if (exp->type->isString())
+    {
+        e = e->ctfeInterpret();
+        if (e->op == TOKerror)
+            return NULL;
+    }
+
+    StringExp *se = e->toStringExp();
+    if (!se)
+    {
+        exp->error("string expected for %s, not (%s) of type %s",
+            s, exp->toChars(), exp->type->toChars());
+        return NULL;
+    }
+    return se;
 }
 
 /**************************************

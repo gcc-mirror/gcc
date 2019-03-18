@@ -316,59 +316,59 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       __int_type
       operator++() noexcept
-      { return __atomic_add_fetch(&_M_i, 1, memory_order_seq_cst); }
+      { return __atomic_add_fetch(&_M_i, 1, int(memory_order_seq_cst)); }
 
       __int_type
       operator++() volatile noexcept
-      { return __atomic_add_fetch(&_M_i, 1, memory_order_seq_cst); }
+      { return __atomic_add_fetch(&_M_i, 1, int(memory_order_seq_cst)); }
 
       __int_type
       operator--() noexcept
-      { return __atomic_sub_fetch(&_M_i, 1, memory_order_seq_cst); }
+      { return __atomic_sub_fetch(&_M_i, 1, int(memory_order_seq_cst)); }
 
       __int_type
       operator--() volatile noexcept
-      { return __atomic_sub_fetch(&_M_i, 1, memory_order_seq_cst); }
+      { return __atomic_sub_fetch(&_M_i, 1, int(memory_order_seq_cst)); }
 
       __int_type
       operator+=(__int_type __i) noexcept
-      { return __atomic_add_fetch(&_M_i, __i, memory_order_seq_cst); }
+      { return __atomic_add_fetch(&_M_i, __i, int(memory_order_seq_cst)); }
 
       __int_type
       operator+=(__int_type __i) volatile noexcept
-      { return __atomic_add_fetch(&_M_i, __i, memory_order_seq_cst); }
+      { return __atomic_add_fetch(&_M_i, __i, int(memory_order_seq_cst)); }
 
       __int_type
       operator-=(__int_type __i) noexcept
-      { return __atomic_sub_fetch(&_M_i, __i, memory_order_seq_cst); }
+      { return __atomic_sub_fetch(&_M_i, __i, int(memory_order_seq_cst)); }
 
       __int_type
       operator-=(__int_type __i) volatile noexcept
-      { return __atomic_sub_fetch(&_M_i, __i, memory_order_seq_cst); }
+      { return __atomic_sub_fetch(&_M_i, __i, int(memory_order_seq_cst)); }
 
       __int_type
       operator&=(__int_type __i) noexcept
-      { return __atomic_and_fetch(&_M_i, __i, memory_order_seq_cst); }
+      { return __atomic_and_fetch(&_M_i, __i, int(memory_order_seq_cst)); }
 
       __int_type
       operator&=(__int_type __i) volatile noexcept
-      { return __atomic_and_fetch(&_M_i, __i, memory_order_seq_cst); }
+      { return __atomic_and_fetch(&_M_i, __i, int(memory_order_seq_cst)); }
 
       __int_type
       operator|=(__int_type __i) noexcept
-      { return __atomic_or_fetch(&_M_i, __i, memory_order_seq_cst); }
+      { return __atomic_or_fetch(&_M_i, __i, int(memory_order_seq_cst)); }
 
       __int_type
       operator|=(__int_type __i) volatile noexcept
-      { return __atomic_or_fetch(&_M_i, __i, memory_order_seq_cst); }
+      { return __atomic_or_fetch(&_M_i, __i, int(memory_order_seq_cst)); }
 
       __int_type
       operator^=(__int_type __i) noexcept
-      { return __atomic_xor_fetch(&_M_i, __i, memory_order_seq_cst); }
+      { return __atomic_xor_fetch(&_M_i, __i, int(memory_order_seq_cst)); }
 
       __int_type
       operator^=(__int_type __i) volatile noexcept
-      { return __atomic_xor_fetch(&_M_i, __i, memory_order_seq_cst); }
+      { return __atomic_xor_fetch(&_M_i, __i, int(memory_order_seq_cst)); }
 
       bool
       is_lock_free() const noexcept
@@ -652,42 +652,42 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __pointer_type
       operator++() noexcept
       { return __atomic_add_fetch(&_M_p, _M_type_size(1),
-				  memory_order_seq_cst); }
+				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator++() volatile noexcept
       { return __atomic_add_fetch(&_M_p, _M_type_size(1),
-				  memory_order_seq_cst); }
+				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator--() noexcept
       { return __atomic_sub_fetch(&_M_p, _M_type_size(1),
-				  memory_order_seq_cst); }
+				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator--() volatile noexcept
       { return __atomic_sub_fetch(&_M_p, _M_type_size(1),
-				  memory_order_seq_cst); }
+				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator+=(ptrdiff_t __d) noexcept
       { return __atomic_add_fetch(&_M_p, _M_type_size(__d),
-				  memory_order_seq_cst); }
+				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator+=(ptrdiff_t __d) volatile noexcept
       { return __atomic_add_fetch(&_M_p, _M_type_size(__d),
-				  memory_order_seq_cst); }
+				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator-=(ptrdiff_t __d) noexcept
       { return __atomic_sub_fetch(&_M_p, _M_type_size(__d),
-				  memory_order_seq_cst); }
+				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator-=(ptrdiff_t __d) volatile noexcept
       { return __atomic_sub_fetch(&_M_p, _M_type_size(__d),
-				  memory_order_seq_cst); }
+				  int(memory_order_seq_cst)); }
 
       bool
       is_lock_free() const noexcept

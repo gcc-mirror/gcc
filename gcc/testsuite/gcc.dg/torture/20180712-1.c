@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-skip-if "asm operand has impossible constraints" { hppa*-*-* } } */
 /* { dg-additional-options "-fstack-protector" { target fstack_protector } } */
 /* { dg-additional-options "-fPIC" { target fpic } } */
 

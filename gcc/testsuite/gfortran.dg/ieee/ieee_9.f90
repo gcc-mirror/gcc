@@ -1,4 +1,5 @@
 ! { dg-do run { xfail arm*-*-gnueabi arm*-*-gnueabihf } }
+! { dg-skip-if "PR89639" { hppa*-*-linux* } }
 program foo
    use ieee_arithmetic
    use iso_fortran_env

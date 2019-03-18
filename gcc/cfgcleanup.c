@@ -308,6 +308,11 @@ thread_jump (edge e, basic_block b)
       || !rtx_equal_p (XEXP (cond1, 1), XEXP (cond2, 1)))
     return NULL;
 
+  /* Punt if BB_END (e->src) is doloop-like conditional jump that modifies
+     the registers used in cond1.  */
+  if (modified_in_p (cond1, BB_END (e->src)))
+    return NULL;
+
   /* Short circuit cases where block B contains some side effects, as we can't
      safely bypass it.  */
   for (insn = NEXT_INSN (BB_HEAD (b)); insn != NEXT_INSN (BB_END (b));

@@ -137,7 +137,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __r  A reference to an object of type @c element_type
        *  @return @c addressof(__r)
       */
-      static pointer
+      static _GLIBCXX20_CONSTEXPR pointer
       pointer_to(__make_not_void<element_type>& __r) noexcept
       { return std::addressof(__r); }
     };

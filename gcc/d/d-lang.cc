@@ -282,6 +282,9 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   global.params.betterC = false;
   global.params.allInst = false;
 
+  /* Default extern(C++) mangling to C++14.  */
+  global.params.cplusplus = CppStdRevisionCpp14;
+
   global.params.linkswitches = new Strings ();
   global.params.libfiles = new Strings ();
   global.params.objfiles = new Strings ();

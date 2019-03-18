@@ -1156,13 +1156,13 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
 		    gfc_warning (OPT_Walign_commons,
 				 "Padding of %d bytes required before %qs in "
 				 "COMMON %qs at %L; reorder elements or use "
-				 "-fno-align-commons", (int)offset,
+				 "%<-fno-align-commons%>", (int)offset,
 				 s->sym->name, common->name, &common->where);
 		  else
 		    gfc_warning (OPT_Walign_commons,
 				 "Padding of %d bytes required before %qs in "
 				 "COMMON at %L; reorder elements or use "
-				 "-fno-align-commons", (int)offset,
+				 "%<-fno-align-commons%>", (int)offset,
 				 s->sym->name, &common->where);
 		}
 	    }

@@ -2616,8 +2616,8 @@ check_template_variable (tree decl)
     {
       if (cxx_dialect < cxx14)
         pedwarn (DECL_SOURCE_LOCATION (decl), 0,
-                 "variable templates only available with "
-                 "-std=c++14 or -std=gnu++14");
+		 "variable templates only available with "
+		 "%<-std=c++14%> or %<-std=gnu++14%>");
 
       // Namespace-scope variable templates should have a template header.
       ++wanted;
@@ -5292,7 +5292,7 @@ check_default_tmpl_args (tree decl, tree parms, bool is_primary,
 	     "friend declarations");
   else if (TREE_CODE (decl) == FUNCTION_DECL && (cxx_dialect == cxx98))
     msg = G_("default template arguments may not be used in function templates "
-	     "without -std=c++11 or -std=gnu++11");
+	     "without %<-std=c++11%> or %<-std=gnu++11%>");
   else if (is_partial)
     msg = G_("default template arguments may not be used in "
 	     "partial specializations");
@@ -6364,7 +6364,7 @@ unify_parameter_deduction_failure (bool explain_p, tree parm)
 {
   if (explain_p)
     inform (input_location,
-	    "  couldn't deduce template parameter %qD", parm);
+	    "  couldn%'t deduce template parameter %qD", parm);
   return unify_invalid (explain_p);
 }
 
@@ -6540,7 +6540,7 @@ unify_template_deduction_failure (bool explain_p, tree parm, tree arg)
 {
   if (explain_p)
     inform (input_location,
-	    "  can't deduce a template for %qT from non-template type %qT",
+	    "  can%'t deduce a template for %qT from non-template type %qT",
 	    parm, arg);
   return unify_invalid (explain_p);
 }
@@ -10191,7 +10191,7 @@ push_tinst_level_loc (tree tldcl, tree targs, location_t loc)
       at_eof = 2;
       fatal_error (input_location,
 		   "template instantiation depth exceeds maximum of %d"
-                   " (use -ftemplate-depth= to increase the maximum)",
+		   " (use %<-ftemplate-depth=%> to increase the maximum)",
                    max_tinst_depth);
       return false;
     }
@@ -11544,6 +11544,9 @@ make_fnparm_pack (tree spec_parm)
 static int
 argument_pack_element_is_expansion_p (tree arg_pack, int i)
 {
+  if (TREE_CODE (arg_pack) == ARGUMENT_PACK_SELECT)
+    /* We're being called before this happens in tsubst_pack_expansion.  */
+    arg_pack = ARGUMENT_PACK_SELECT_FROM_PACK (arg_pack);
   tree vec = ARGUMENT_PACK_ARGS (arg_pack);
   if (i >= TREE_VEC_LENGTH (vec))
     return 0;
@@ -12776,6 +12779,7 @@ tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
      rather than in the current class.  */
   push_to_top_level ();
   push_access_scope (fn);
+  push_deferring_access_checks (dk_no_deferred);
   start_lambda_scope (parm);
 
   /* The default argument expression may cause implicitly defined
@@ -12799,6 +12803,7 @@ tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
     inform (input_location,
 	    "  when instantiating default argument for call to %qD", fn);
 
+  pop_deferring_access_checks ();
   pop_access_scope (fn);
   pop_from_top_level ();
 
@@ -23991,12 +23996,18 @@ regenerate_decl_from_template (tree decl, tree tmpl, tree args)
       if (args_depth > parms_depth)
 	args = get_innermost_template_args (args, parms_depth);
 
-      specs = tsubst_exception_specification (TREE_TYPE (code_pattern),
-					      args, tf_error, NULL_TREE,
-					      /*defer_ok*/false);
-      if (specs && specs != error_mark_node)
-	TREE_TYPE (decl) = build_exception_variant (TREE_TYPE (decl),
-						    specs);
+      /* Instantiate a dynamic exception-specification.  noexcept will be
+	 handled below.  */
+      if (tree raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (code_pattern)))
+	if (TREE_VALUE (raises))
+	  {
+	    specs = tsubst_exception_specification (TREE_TYPE (code_pattern),
+						    args, tf_error, NULL_TREE,
+						    /*defer_ok*/false);
+	    if (specs && specs != error_mark_node)
+	      TREE_TYPE (decl) = build_exception_variant (TREE_TYPE (decl),
+							  specs);
+	  }
 
       /* Merge parameter declarations.  */
       decl_parm = skip_artificial_parms_for (decl,
@@ -24062,6 +24073,8 @@ regenerate_decl_from_template (tree decl, tree tmpl, tree args)
       if (DECL_DECLARED_INLINE_P (code_pattern)
 	  && !DECL_DECLARED_INLINE_P (decl))
 	DECL_DECLARED_INLINE_P (decl) = 1;
+
+      maybe_instantiate_noexcept (decl, tf_error);
     }
   else if (VAR_P (decl))
     {
@@ -24187,7 +24200,13 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
       static hash_set<tree>* fns = new hash_set<tree>;
       bool added = false;
       if (DEFERRED_NOEXCEPT_PATTERN (noex) == NULL_TREE)
-	spec = get_defaulted_eh_spec (fn, complain);
+	{
+	  spec = get_defaulted_eh_spec (fn, complain);
+	  if (spec == error_mark_node)
+	    /* This might have failed because of an unparsed DMI, so
+	       let's try again later.  */
+	    return false;
+	}
       else if (!(added = !fns->add (fn)))
 	{
 	  /* If hash_set::add returns true, the element was already there.  */
@@ -24247,7 +24266,11 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 	fns->remove (fn);
 
       if (spec == error_mark_node)
-	return false;
+	{
+	  /* This failed with a hard error, so let's go with false.  */
+	  gcc_assert (seen_error ());
+	  spec = noexcept_false_spec;
+	}
 
       TREE_TYPE (fn) = build_exception_variant (fntype, spec);
     }
@@ -24727,9 +24750,9 @@ instantiate_pending_templates (int retries)
 
       fatal_error (input_location,
 		   "template instantiation depth exceeds maximum of %d"
-                   " instantiating %q+D, possibly from virtual table generation"
-                   " (use -ftemplate-depth= to increase the maximum)",
-                   max_tinst_depth, decl);
+		   " instantiating %q+D, possibly from virtual table generation"
+		   " (use %<-ftemplate-depth=%> to increase the maximum)",
+		   max_tinst_depth, decl);
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	/* Pretend that we defined it.  */
 	DECL_INITIAL (decl) = error_mark_node;
@@ -25102,7 +25125,7 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
       if (cxx_dialect < cxx2a)
 	{
 	  error ("non-type template parameters of class type only available "
-		 "with -std=c++2a or -std=gnu++2a");
+		 "with %<-std=c++2a%> or %<-std=gnu++2a%>");
 	  return true;
 	}
       if (!complete_type_or_else (type, NULL_TREE))
@@ -27184,6 +27207,9 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	error ("non-class template %qT used without template arguments", tmpl);
       return error_mark_node;
     }
+  if (init && TREE_TYPE (init) == ptype)
+    /* Using the template parm as its own argument.  */
+    return ptype;
 
   tree type = TREE_TYPE (tmpl);
 

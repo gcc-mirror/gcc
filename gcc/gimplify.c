@@ -4024,11 +4024,11 @@ gimplify_cond_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
       /* Build the new then clause, `tmp = then_;'.  But don't build the
 	 assignment if the value is void; in C++ it can be if it's a throw.  */
       if (!VOID_TYPE_P (TREE_TYPE (then_)))
-	TREE_OPERAND (expr, 1) = build2 (MODIFY_EXPR, type, tmp, then_);
+	TREE_OPERAND (expr, 1) = build2 (INIT_EXPR, type, tmp, then_);
 
       /* Similarly, build the new else clause, `tmp = else_;'.  */
       if (!VOID_TYPE_P (TREE_TYPE (else_)))
-	TREE_OPERAND (expr, 2) = build2 (MODIFY_EXPR, type, tmp, else_);
+	TREE_OPERAND (expr, 2) = build2 (INIT_EXPR, type, tmp, else_);
 
       TREE_TYPE (expr) = void_type_node;
       recalculate_side_effects (expr);
@@ -12145,8 +12145,8 @@ gimplify_omp_ordered (tree expr, gimple_seq body)
 	    if (!fail && i != gimplify_omp_ctxp->loop_iter_var.length () / 2)
 	      {
 		error_at (OMP_CLAUSE_LOCATION (c),
-			  "number of variables in %<depend(sink)%> "
-			  "clause does not match number of "
+			  "number of variables in %<depend%> clause with "
+			  "%<sink%> modifier does not match number of "
 			  "iteration variables");
 		failures++;
 	      }
@@ -12158,8 +12158,8 @@ gimplify_omp_ordered (tree expr, gimple_seq body)
 	    if (source_c)
 	      {
 		error_at (OMP_CLAUSE_LOCATION (c),
-			  "more than one %<depend(source)%> clause on an "
-			  "%<ordered%> construct");
+			  "more than one %<depend%> clause with %<source%> "
+			  "modifier on an %<ordered%> construct");
 		failures++;
 	      }
 	    else
@@ -12169,8 +12169,9 @@ gimplify_omp_ordered (tree expr, gimple_seq body)
   if (source_c && sink_c)
     {
       error_at (OMP_CLAUSE_LOCATION (source_c),
-		"%<depend(source)%> clause specified together with "
-		"%<depend(sink:)%> clauses on the same construct");
+		"%<depend%> clause with %<source%> modifier specified "
+		"together with %<depend%> clauses with %<sink%> modifier "
+		"on the same construct");
       failures++;
     }
 

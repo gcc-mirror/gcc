@@ -760,15 +760,13 @@ c_strlen (tree src, int only_value, c_strlen_data *data, unsigned eltsize)
      runtime.  */
   if (eltoff < 0 || eltoff >= maxelts)
     {
-     /* Suppress multiple warnings for propagated constant strings.  */
+      /* Suppress multiple warnings for propagated constant strings.  */
       if (only_value != 2
-	  && !TREE_NO_WARNING (src))
-        {
-	  warning_at (loc, OPT_Warray_bounds,
-		      "offset %qwi outside bounds of constant string",
-		      eltoff);
-          TREE_NO_WARNING (src) = 1;
-        }
+	  && !TREE_NO_WARNING (src)
+	  && warning_at (loc, OPT_Warray_bounds,
+			 "offset %qwi outside bounds of constant string",
+			 eltoff))
+	TREE_NO_WARNING (src) = 1;
       return NULL_TREE;
     }
 
@@ -2694,7 +2692,7 @@ expand_builtin_int_roundingfn (tree exp, rtx target)
   tree arg;
 
   if (!validate_arglist (exp, REAL_TYPE, VOID_TYPE))
-    gcc_unreachable ();
+    return NULL_RTX;
 
   arg = CALL_EXPR_ARG (exp, 0);
 
@@ -2830,7 +2828,7 @@ expand_builtin_int_roundingfn_2 (tree exp, rtx target)
   enum built_in_function fallback_fn = BUILT_IN_NONE;
 
   if (!validate_arglist (exp, REAL_TYPE, VOID_TYPE))
-     gcc_unreachable ();
+    return NULL_RTX;
 
   arg = CALL_EXPR_ARG (exp, 0);
 
@@ -3099,7 +3097,7 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
 			 "%K%qD specified bound %E "
 			 "exceeds maximum object size %E",
 			 exp, func, bound, maxobjsize))
-	  TREE_NO_WARNING (exp) = true;
+	TREE_NO_WARNING (exp) = true;
 
       bool exact = true;
       if (!len || TREE_CODE (len) != INTEGER_CST)
@@ -3158,7 +3156,7 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
 		     "%K%qD specified bound [%wu, %wu] "
 		     "exceeds maximum object size %E",
 		     exp, func, min.to_uhwi (), max.to_uhwi (), maxobjsize))
-      TREE_NO_WARNING (exp) = true;
+    TREE_NO_WARNING (exp) = true;
 
   bool exact = true;
   if (!len || TREE_CODE (len) != INTEGER_CST)
@@ -6891,7 +6889,7 @@ expand_builtin_thread_pointer (tree exp, rtx target)
       expand_insn (icode, 1, &op);
       return target;
     }
-  error ("__builtin_thread_pointer is not supported on this target");
+  error ("%<__builtin_thread_pointer%> is not supported on this target");
   return const0_rtx;
 }
 
@@ -6911,7 +6909,7 @@ expand_builtin_set_thread_pointer (tree exp)
       expand_insn (icode, 1, &op);
       return;
     }
-  error ("__builtin_set_thread_pointer is not supported on this target");
+  error ("%<__builtin_set_thread_pointer%> is not supported on this target");
 }
 
 
@@ -10604,6 +10602,9 @@ maybe_emit_sprintf_chk_warning (tree exp, enum built_in_function fcode)
 static void
 maybe_emit_free_warning (tree exp)
 {
+  if (call_expr_nargs (exp) != 1)
+    return;
+
   tree arg = CALL_EXPR_ARG (exp, 0);
 
   STRIP_NOPS (arg);

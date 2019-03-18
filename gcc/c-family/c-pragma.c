@@ -196,7 +196,7 @@ handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
     warning (OPT_Wpragmas, "junk at end of %<#pragma pack%>");
 
   if (flag_pack_struct)
-    GCC_BAD ("#pragma pack has no effect with -fpack-struct - ignored");
+    GCC_BAD ("#pragma pack has no effect with %<-fpack-struct%> - ignored");
 
   if (action != pop)
     switch (align)

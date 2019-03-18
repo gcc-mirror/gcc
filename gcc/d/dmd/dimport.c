@@ -173,6 +173,8 @@ void Import::importAll(Scope *sc)
         load(sc);
         if (mod)                // if successfully loaded module
         {
+            mod->importAll(NULL);
+
             if (mod->md && mod->md->isdeprecated)
             {
                 Expression *msg = mod->md->msg;
@@ -181,8 +183,6 @@ void Import::importAll(Scope *sc)
                 else
                     mod->deprecation(loc, "is deprecated");
             }
-
-            mod->importAll(NULL);
 
             if (sc->explicitProtection)
                 protection = sc->protection;

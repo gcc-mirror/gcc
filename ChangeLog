@@ -1,3 +1,8 @@
+2019-03-15  Alexander Monakov  <amonakov@ispras.ru>
+
+	* MAINTAINERS (Reviewers): Add myself as selective scheduling reviewer.
+	(Write After Approval): Remove myself.
+
 2019-02-27  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

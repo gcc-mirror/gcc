@@ -72,7 +72,7 @@ alpha_handle_option (struct gcc_options *opts,
 
     case OPT_mtls_size_:
       if (value != 16 && value != 32 && value != 64)
-	error_at (loc, "bad value %qs for -mtls-size switch", arg);
+	error_at (loc, "bad value %qs for %<-mtls-size%> switch", arg);
       break;
     }
 

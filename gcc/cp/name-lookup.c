@@ -6897,7 +6897,7 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	      && !CLASSTYPE_TEMPLATE_INFO (type))
 	    {
 	      error ("declaration of %<std::initializer_list%> does not match "
-		     "%<#include <initializer_list>%>, isn't a template");
+		     "%<#include <initializer_list>%>, isn%'t a template");
 	      return error_mark_node;
 	    }
 	}
@@ -7554,6 +7554,105 @@ cp_emit_debug_info_for_using (tree t, tree context)
 						  false, false);
 	}
     }
+}
+
+/* Return the result of unqualified lookup for the overloaded operator
+   designated by CODE, if we are in a template and the binding we find is
+   not.  */
+
+static tree
+op_unqualified_lookup (tree fnname)
+{
+  if (cxx_binding *binding = IDENTIFIER_BINDING (fnname))
+    {
+      cp_binding_level *l = binding->scope;
+      while (l && !l->this_entity)
+	l = l->level_chain;
+      if (l && uses_template_parms (l->this_entity))
+	/* Don't preserve decls from an uninstantiated template,
+	   wait until that template is instantiated.  */
+	return NULL_TREE;
+    }
+  tree fns = lookup_name (fnname);
+  if (fns && fns == get_global_binding (fnname))
+    /* The instantiation can find these.  */
+    return NULL_TREE;
+  return fns;
+}
+
+/* E is an expression representing an operation with dependent type, so we
+   don't know yet whether it will use the built-in meaning of the operator or a
+   function.  Remember declarations of that operator in scope.  */
+
+const char *const op_bind_attrname = "operator bindings";
+
+void
+maybe_save_operator_binding (tree e)
+{
+  /* This is only useful in a generic lambda.  */
+  if (!processing_template_decl)
+    return;
+  tree cfn = current_function_decl;
+  if (!cfn)
+    return;
+
+  /* Let's only do this for generic lambdas for now, we could do it for all
+     function templates if we wanted to.  */
+  if (!current_lambda_expr())
+    return;
+
+  tree fnname = ovl_op_identifier (false, TREE_CODE (e));
+  if (!fnname)
+    return;
+
+  tree attributes = DECL_ATTRIBUTES (cfn);
+  tree attr = lookup_attribute (op_bind_attrname, attributes);
+  tree bindings = NULL_TREE;
+  tree fns = NULL_TREE;
+  if (attr)
+    {
+      bindings = TREE_VALUE (attr);
+      if (tree elt = purpose_member (fnname, bindings))
+	fns = TREE_VALUE (elt);
+    }
+
+  if (!fns && (fns = op_unqualified_lookup (fnname)))
+    {
+      bindings = tree_cons (fnname, fns, bindings);
+      if (attr)
+	TREE_VALUE (attr) = bindings;
+      else
+	DECL_ATTRIBUTES (cfn)
+	  = tree_cons (get_identifier (op_bind_attrname),
+		       bindings,
+		       attributes);
+    }
+}
+
+/* Called from cp_free_lang_data so we don't put this into LTO.  */
+
+void
+discard_operator_bindings (tree decl)
+{
+  DECL_ATTRIBUTES (decl) = remove_attribute (op_bind_attrname,
+					     DECL_ATTRIBUTES (decl));
+}
+
+/* Subroutine of start_preparsed_function: push the bindings we saved away in
+   maybe_save_op_lookup into the function parameter binding level.  */
+
+void
+push_operator_bindings ()
+{
+  tree decl1 = current_function_decl;
+  if (tree attr = lookup_attribute (op_bind_attrname,
+				    DECL_ATTRIBUTES (decl1)))
+    for (tree binds = TREE_VALUE (attr); binds; binds = TREE_CHAIN (binds))
+      {
+	tree name = TREE_PURPOSE (binds);
+	tree val = TREE_VALUE (binds);
+	push_local_binding (name, val, /*using*/true);
+      }
 }
 
 #include "gt-cp-name-lookup.h"

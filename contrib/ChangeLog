@@ -1,3 +1,33 @@
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* check-internal-format-escaping.py: Uncomment apostrophes
+	check.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* check-internal-format-escaping.py: New file.
+
+2019-03-10  Tommy Nguyen  <remyabel@gmail.com>
+
+	PR contrib/82704
+	* download_prerequisites: Use -c instead of --check for sha512sum.
+
+2019-03-06  Martin Liska  <mliska@suse.cz>
+
+	* check-params-in-docs.py: Ignore a param.
+
+2019-03-05  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	contrib/
+	* dg-extract-results.py: Handle case where a WARNING happens with
+	the first test of a harness.
+
+2019-03-05  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	contrib/
+	* dg-extract-results.sh: Fix order of WARNING and following test
+	result.
+
 2019-02-04  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	contrib/

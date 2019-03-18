@@ -104,6 +104,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "ipa-fnsummary.h"
 #include "cfgloop.h"
+#include "attribs.h"
 
 /* Per basic block info.  */
 
@@ -1748,6 +1749,20 @@ execute_split_functions (void)
       if (dump_file)
 	fprintf (dump_file, "Not splitting: not autoinlining and function"
 		 " is not inline.\n");
+      return 0;
+    }
+
+  if (lookup_attribute ("noinline", DECL_ATTRIBUTES (current_function_decl)))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not splitting: function is noinline.\n");
+      return 0;
+    }
+  if (lookup_attribute ("section", DECL_ATTRIBUTES (current_function_decl)))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not splitting: function is in user defined "
+		 "section.\n");
       return 0;
     }
 

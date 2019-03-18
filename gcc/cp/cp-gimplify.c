@@ -584,7 +584,7 @@ simple_empty_class_p (tree type, tree op)
 	 && !TREE_CLOBBER_P (op))
      || (TREE_CODE (op) == CALL_EXPR
 	 && !CALL_EXPR_RETURN_SLOT_OPT (op)))
-    && is_really_empty_class (type);
+    && is_really_empty_class (type, /*ignore_vptr*/true);
 }
 
 /* Returns true if evaluating E as an lvalue has side-effects;

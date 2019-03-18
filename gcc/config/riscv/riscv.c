@@ -329,7 +329,7 @@ riscv_parse_cpu (const char *cpu_string)
     if (strcmp (riscv_cpu_info_table[i].name, cpu_string) == 0)
       return riscv_cpu_info_table + i;
 
-  error ("unknown cpu %qs for -mtune", cpu_string);
+  error ("unknown cpu %qs for %<-mtune%>", cpu_string);
   return riscv_cpu_info_table;
 }
 
@@ -2449,13 +2449,14 @@ riscv_pass_aggregate_in_fpr_and_gpr_p (const_tree type,
 
 static rtx
 riscv_pass_fpr_single (machine_mode type_mode, unsigned regno,
-		       machine_mode value_mode)
+		       machine_mode value_mode,
+		       HOST_WIDE_INT offset)
 {
   rtx x = gen_rtx_REG (value_mode, regno);
 
   if (type_mode != value_mode)
     {
-      x = gen_rtx_EXPR_LIST (VOIDmode, x, const0_rtx);
+      x = gen_rtx_EXPR_LIST (VOIDmode, x, GEN_INT (offset));
       x = gen_rtx_PARALLEL (type_mode, gen_rtvec (1, x));
     }
   return x;
@@ -2517,7 +2518,8 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
 	  {
 	  case 1:
 	    return riscv_pass_fpr_single (mode, fregno,
-					  TYPE_MODE (fields[0].type));
+					  TYPE_MODE (fields[0].type),
+					  fields[0].offset);
 
 	  case 2:
 	    return riscv_pass_fpr_pair (mode, fregno,
@@ -4316,7 +4318,7 @@ riscv_option_override (void)
   if (TARGET_MUL && (target_flags_explicit & MASK_DIV) == 0)
     target_flags |= MASK_DIV;
   else if (!TARGET_MUL && TARGET_DIV)
-    error ("-mdiv requires -march to subsume the %<M%> extension");
+    error ("%<-mdiv%> requires %<-march%> to subsume the %<M%> extension");
 
   /* Likewise floating-point division and square root.  */
   if (TARGET_HARD_FLOAT && (target_flags_explicit & MASK_FDIV) == 0)
@@ -4356,7 +4358,7 @@ riscv_option_override (void)
 
   /* Require that the ISA supports the requested floating-point ABI.  */
   if (UNITS_PER_FP_ARG > (TARGET_HARD_FLOAT ? UNITS_PER_FP_REG : 0))
-    error ("requested ABI requires -march to subsume the %qc extension",
+    error ("requested ABI requires %<-march%> to subsume the %qc extension",
 	   UNITS_PER_FP_ARG > 8 ? 'Q' : (UNITS_PER_FP_ARG > 4 ? 'D' : 'F'));
 
   if (TARGET_RVE && riscv_abi != ABI_ILP32E)
@@ -4364,7 +4366,7 @@ riscv_option_override (void)
 
   /* We do not yet support ILP32 on RV64.  */
   if (BITS_PER_WORD != POINTER_SIZE)
-    error ("ABI requires -march=rv%d", POINTER_SIZE);
+    error ("ABI requires %<-march=rv%d%>", POINTER_SIZE);
 
   /* Validate -mpreferred-stack-boundary= value.  */
   riscv_stack_boundary = ABI_STACK_BOUNDARY;
@@ -4374,7 +4376,7 @@ riscv_option_override (void)
       int max = 8;
 
       if (!IN_RANGE (riscv_preferred_stack_boundary_arg, min, max))
-	error ("-mpreferred-stack-boundary=%d must be between %d and %d",
+	error ("%<-mpreferred-stack-boundary=%d%> must be between %d and %d",
 	       riscv_preferred_stack_boundary_arg, min, max);
 
       riscv_stack_boundary = 8 << riscv_preferred_stack_boundary_arg;
@@ -4387,8 +4389,8 @@ riscv_option_override (void)
     riscv_emit_attribute_p = 0;
 
   if (riscv_emit_attribute_p)
-    error ("-mriscv-attribute RISC-V ELF attribute requires GNU as 2.32"
-	   " [-mriscv-attribute]");
+    error ("%<-mriscv-attribute%> RISC-V ELF attribute requires GNU as 2.32"
+	   " [%<-mriscv-attribute%>]");
 #endif
 }
 

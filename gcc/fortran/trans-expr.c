@@ -926,8 +926,8 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
 		}
 	      else
 		{
-		  gfc_error ("Can't compute the length of the char array at %L.",
-			     &e->where);
+		  gfc_error ("Cannot compute the length of the char array "
+			     "at %L.", &e->where);
 		}
 	    }
 	}
@@ -4536,6 +4536,7 @@ gfc_apply_interface_mapping_to_expr (gfc_interface_mapping * mapping,
 
     case EXPR_COMPCALL:
     case EXPR_PPC:
+    case EXPR_UNKNOWN:
       gcc_unreachable ();
       break;
     }
@@ -4919,6 +4920,52 @@ expr_may_alias_variables (gfc_expr *e, bool array_may_alias)
 }
 
 
+/* A helper function to set the dtype for unallocated or unassociated
+   entities.  */
+
+static void
+set_dtype_for_unallocated (gfc_se *parmse, gfc_expr *e)
+{
+  tree tmp;
+  tree desc;
+  tree cond;
+  tree type;
+  stmtblock_t block;
+
+  /* TODO Figure out how to handle optional dummies.  */
+  if (e && e->expr_type == EXPR_VARIABLE
+      && e->symtree->n.sym->attr.optional)
+    return;
+
+  desc = parmse->expr;
+  if (desc == NULL_TREE)
+    return;
+
+  if (POINTER_TYPE_P (TREE_TYPE (desc)))
+    desc = build_fold_indirect_ref_loc (input_location, desc);
+
+  if (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)))
+    return;
+
+  gfc_init_block (&block);
+  tmp = gfc_conv_descriptor_data_get (desc);
+  cond = fold_build2_loc (input_location, EQ_EXPR,
+			  logical_type_node, tmp,
+			  build_int_cst (TREE_TYPE (tmp), 0));
+  tmp = gfc_conv_descriptor_dtype (desc);
+  type = gfc_get_element_type (TREE_TYPE (desc));
+  tmp = fold_build2_loc (input_location, MODIFY_EXPR,
+			 TREE_TYPE (tmp), tmp,
+			 gfc_get_dtype_rank_type (e->rank, type));
+  gfc_add_expr_to_block (&block, tmp);
+  cond = build3_v (COND_EXPR, cond,
+		   gfc_finish_block (&block),
+		   build_empty_stmt (input_location));
+  gfc_add_expr_to_block (&parmse->pre, cond);
+}
+
+
+
 /* Provide an interface between gfortran array descriptors and the F2018:18.4
    ISO_Fortran_binding array descriptors. */
 
@@ -4957,6 +5004,15 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
       if (POINTER_TYPE_P (TREE_TYPE (parmse->expr)))
 	parmse->expr = build_fold_indirect_ref_loc (input_location,
 						    parmse->expr);
+
+      /* Unallocated allocatable arrays and unassociated pointer arrays
+	 need their dtype setting if they are argument associated with
+	 assumed rank dummies.  */
+      if (fsym && fsym->as
+	  && fsym->as->type == AS_ASSUMED_RANK
+	  && (gfc_expr_attr (e).pointer
+	      || gfc_expr_attr (e).allocatable))
+	set_dtype_for_unallocated (parmse, e);
 
       /* All the temporary descriptors are marked as DECL_ARTIFICIAL. If
 	 the expression type is different from the descriptor type, then
@@ -5952,6 +6008,30 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      else
 		gfc_conv_array_parameter (&parmse, e, nodesc_arg, fsym,
 					  sym->name, NULL);
+
+	      /* Unallocated allocatable arrays and unassociated pointer arrays
+		 need their dtype setting if they are argument associated with
+		 assumed rank dummies.  */
+	      if (!sym->attr.is_bind_c && e && fsym && fsym->as
+		  && fsym->as->type == AS_ASSUMED_RANK)
+		{
+		  if (gfc_expr_attr (e).pointer
+		      || gfc_expr_attr (e).allocatable)
+		    set_dtype_for_unallocated (&parmse, e);
+		  else if (e->expr_type == EXPR_VARIABLE
+			   && e->symtree->n.sym->attr.dummy
+			   && e->symtree->n.sym->as
+			   && e->symtree->n.sym->as->type == AS_ASSUMED_SIZE)
+		    {
+		      tree minus_one;
+		      tmp = build_fold_indirect_ref_loc (input_location,
+							 parmse.expr);
+		      minus_one = build_int_cst (gfc_array_index_type, -1);
+		      gfc_conv_descriptor_ubound_set (&parmse.pre, tmp,
+						      gfc_rank_cst[e->rank - 1],
+						      minus_one);
+ 		    }
+		}
 
 	      /* If an ALLOCATABLE dummy argument has INTENT(OUT) and is
 		 allocated on entry, it must be deallocated.  */
@@ -9199,16 +9279,6 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	    }
 	}
 
-      /* Check string lengths if applicable.  The check is only really added
-	 to the output code if -fbounds-check is enabled.  */
-      if (expr1->ts.type == BT_CHARACTER && expr2->expr_type != EXPR_NULL)
-	{
-	  gcc_assert (expr2->ts.type == BT_CHARACTER);
-	  gcc_assert (strlen_lhs && strlen_rhs);
-	  gfc_trans_same_strlen_check ("pointer assignment", &expr1->where,
-				       strlen_lhs, strlen_rhs, &block);
-	}
-
       /* If rank remapping was done, check with -fcheck=bounds that
 	 the target is at least as large as the pointer.  */
       if (rank_remap && (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS))
@@ -9241,6 +9311,16 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 			    fold_convert (TREE_TYPE (tmp), strlen_rhs));
 	  else
 	    gfc_add_modify (&block, tmp, build_zero_cst (TREE_TYPE (tmp)));
+	}
+
+      /* Check string lengths if applicable.  The check is only really added
+	 to the output code if -fbounds-check is enabled.  */
+      if (expr1->ts.type == BT_CHARACTER && expr2->expr_type != EXPR_NULL)
+	{
+	  gcc_assert (expr2->ts.type == BT_CHARACTER);
+	  gcc_assert (strlen_lhs && strlen_rhs);
+	  gfc_trans_same_strlen_check ("pointer assignment", &expr1->where,
+				       strlen_lhs, strlen_rhs, &block);
 	}
 
       gfc_add_block_to_block (&block, &lse.post);

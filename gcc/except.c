@@ -2288,7 +2288,7 @@ expand_eh_return (void)
       if (rtx handler = EH_RETURN_HANDLER_RTX)
 	emit_move_insn (handler, crtl->eh.ehr_handler);
       else
-	error ("__builtin_eh_return not supported on this target");
+	error ("%<__builtin_eh_return%> not supported on this target");
     }
 
   emit_label (around_label);

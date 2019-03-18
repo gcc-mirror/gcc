@@ -184,9 +184,6 @@ func FDZero(set *FdSet) {
 //sys	Close(fd int) (err error)
 //close(fd _C_int) _C_int
 
-//sys	Creat(path string, mode uint32) (fd int, err error)
-//creat(path *byte, mode Mode_t) _C_int
-
 //sysnb	Dup(oldfd int) (fd int, err error)
 //dup(oldfd _C_int) _C_int
 

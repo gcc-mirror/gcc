@@ -2316,7 +2316,14 @@ rs6000_analyze_swaps (function *fun)
 
   /* Pre-pass to recombine lvx and stvx patterns so we don't lose info.  */
   recombine_lvx_stvx_patterns (fun);
+
+  /* Rebuild ud- and du-chains.  */
+  df_remove_problem (df_chain);
   df_process_deferred_rescans ();
+  df_set_flags (DF_RD_PRUNE_DEAD_DEFS);
+  df_chain_add_problem (DF_DU_CHAIN | DF_UD_CHAIN);
+  df_analyze ();
+  df_set_flags (DF_DEFER_INSN_RESCAN);
 
   /* Allocate structure to represent webs of insns.  */
   insn_entry = XCNEWVEC (swap_web_entry, get_max_uid ());

@@ -362,7 +362,9 @@ func parsedebugvars() {
 	// At that point, if debug.invalidptr is set, we crash.
 	// This is not a problem, assuming that M1 really is dead and
 	// the pointer we discovered to it will not be used.
-	// debug.invalidptr = 1
+	if usestackmaps {
+		debug.invalidptr = 1
+	}
 
 	for p := gogetenv("GODEBUG"); p != ""; {
 		field := ""

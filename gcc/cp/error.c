@@ -4148,75 +4148,77 @@ maybe_warn_cpp0x (cpp0x_warn_str str)
       case CPP0X_INITIALIZER_LISTS:
 	pedwarn (input_location, 0, 
 		 "extended initializer lists "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	break;
       case CPP0X_EXPLICIT_CONVERSION:
 	pedwarn (input_location, 0,
 		 "explicit conversion operators "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	break;
       case CPP0X_VARIADIC_TEMPLATES:
 	pedwarn (input_location, 0,
 		 "variadic templates "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	break;
       case CPP0X_LAMBDA_EXPR:
 	pedwarn (input_location, 0,
 		 "lambda expressions "
-		  "only available with -std=c++11 or -std=gnu++11");
+		  "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	break;
       case CPP0X_AUTO:
 	pedwarn (input_location, 0,
-		 "C++11 auto only available with -std=c++11 or -std=gnu++11");
+		 "C++11 auto only available with %<-std=c++11%> or "
+		 "%<-std=gnu++11%>");
 	break;
       case CPP0X_SCOPED_ENUMS:
 	pedwarn (input_location, 0,
-		 "scoped enums only available with -std=c++11 or -std=gnu++11");
+		 "scoped enums only available with %<-std=c++11%> or "
+		 "%<-std=gnu++11%>");
 	break;
       case CPP0X_DEFAULTED_DELETED:
 	pedwarn (input_location, 0,
 		 "defaulted and deleted functions "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	break;
       case CPP0X_INLINE_NAMESPACES:
 	pedwarn (input_location, OPT_Wpedantic,
 		 "inline namespaces "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	break;
       case CPP0X_OVERRIDE_CONTROLS:
 	pedwarn (input_location, 0,
 		 "override controls (override/final) "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
         break;
       case CPP0X_NSDMI:
 	pedwarn (input_location, 0,
 		 "non-static data member initializers "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
         break;
       case CPP0X_USER_DEFINED_LITERALS:
 	pedwarn (input_location, 0,
 		 "user-defined literals "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	break;
       case CPP0X_DELEGATING_CTORS:
 	pedwarn (input_location, 0,
 		 "delegating constructors "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
         break;
       case CPP0X_INHERITING_CTORS:
 	pedwarn (input_location, 0,
 		 "inheriting constructors "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
         break;
       case CPP0X_ATTRIBUTES:
 	pedwarn (input_location, 0,
 		 "c++11 attributes "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	break;
       case CPP0X_REF_QUALIFIER:
 	pedwarn (input_location, 0,
 		 "ref-qualifiers "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	break;
       default:
 	gcc_unreachable ();

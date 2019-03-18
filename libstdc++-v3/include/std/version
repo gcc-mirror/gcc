@@ -148,10 +148,12 @@
 
 #if __cplusplus > 201703L
 // c++2a
+#define __cpp_lib_bounded_array_traits 201902L
 #if __cpp_impl_destroying_delete
 # define __cpp_lib_destroying_delete 201806L
 #endif
 #define __cpp_lib_erase_if 201900L
+#define __cpp_lib_interpolate 201902L
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
 # define __cpp_lib_is_constant_evaluated 201811L
 #endif

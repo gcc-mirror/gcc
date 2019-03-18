@@ -4155,18 +4155,18 @@ maybe_check_abi_tags (tree t, tree for_decl, int ver)
       if (for_decl && DECL_THUNK_P (for_decl))
 	warning_at (DECL_SOURCE_LOCATION (t), OPT_Wabi,
 		    "the mangled name of a thunk for %qD changes between "
-		    "-fabi-version=%d and -fabi-version=%d",
+		    "%<-fabi-version=%d%> and %<-fabi-version=%d%>",
 		    t, flag_abi_version, warn_abi_version);
       else if (for_decl)
 	warning_at (DECL_SOURCE_LOCATION (for_decl), OPT_Wabi,
 		    "the mangled name of %qD changes between "
-		    "-fabi-version=%d and -fabi-version=%d",
+		    "%<-fabi-version=%d%> and %<-fabi-version=%d%>",
 		    for_decl, flag_abi_version, warn_abi_version);
       else
 	warning_at (DECL_SOURCE_LOCATION (t), OPT_Wabi,
 		    "the mangled name of the initialization guard variable "
-		    "for %qD changes between -fabi-version=%d and "
-		    "-fabi-version=%d",
+		    "for %qD changes between %<-fabi-version=%d%> and "
+		    "%<-fabi-version=%d%>",
 		    t, flag_abi_version, warn_abi_version);
     }
 }

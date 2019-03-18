@@ -1738,12 +1738,12 @@ gfc_gobble_whitespace (void)
 static int
 load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 {
-  static int linenum = 0, current_line = 1;
   int c, maxlen, i, preprocessor_flag, buflen = *pbuflen;
   int trunc_flag = 0, seen_comment = 0;
   int seen_printable = 0, seen_ampersand = 0, quoted = ' ';
   gfc_char_t *buffer;
   bool found_tab = false;
+  bool warned_tabs = false;
 
   /* Determine the maximum allowed line length.  */
   if (gfc_current_form == FORM_FREE)
@@ -1793,10 +1793,10 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 	    {
 	      if (pedantic)
 		gfc_error_now ("%<&%> not allowed by itself in line %d",
-			       current_line);
+			       current_file->line);
 	      else
 		gfc_warning_now (0, "%<&%> not allowed by itself in line %d",
-				 current_line);
+				 current_file->line);
 	    }
 	  break;
 	}
@@ -1850,12 +1850,12 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 	{
 	  found_tab = true;
 
-	  if (warn_tabs && seen_comment == 0 && current_line != linenum)
+	  if (warn_tabs && seen_comment == 0 && !warned_tabs)
 	    {
-	      linenum = current_line;
+	      warned_tabs = true;
 	      gfc_warning_now (OPT_Wtabs,
 			       "Nonconforming tab character in column %d "
-			       "of line %d", i+1, linenum);
+			       "of line %d", i + 1, current_file->line);
 	    }
 
 	  while (i < 6)
@@ -1934,7 +1934,6 @@ next_char:
 
   *buffer = '\0';
   *pbuflen = buflen;
-  current_line++;
 
   return trunc_flag;
 }
@@ -2469,7 +2468,7 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 
       if (input == NULL)
 	{
-	  gfc_error_now ("Can't open file %qs", filename);
+	  gfc_error_now ("Cannot open file %qs", filename);
 	  return false;
 	}
     }

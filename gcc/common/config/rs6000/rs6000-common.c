@@ -178,7 +178,7 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
 	  else if (! strcmp (q, "builtin"))
 	    mask = MASK_DEBUG_BUILTIN;
 	  else
-	    error_at (loc, "unknown -mdebug-%s switch", q);
+	    error_at (loc, "unknown %<-mdebug-%s%> switch", q);
 
 	  if (invert)
 	    opts->x_rs6000_debug &= ~mask;
@@ -217,7 +217,7 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
     case OPT_mlong_double_:
       if (value != 64 && value != 128)
 	{
-	  error_at (loc, "unknown switch -mlong-double-%s", arg);
+	  error_at (loc, "unknown switch %<-mlong-double-%s%>", arg);
 	  opts->x_rs6000_long_double_type_size
 	    = RS6000_DEFAULT_LONG_DOUBLE_SIZE;
 	  return false;

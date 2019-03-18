@@ -6035,7 +6035,7 @@ csky_handle_isr_attribute (tree *node, tree name, tree args, int flags,
 
   if (!TARGET_ISTACK)
     {
-      warning (OPT_Wattributes, "%qE attribute ignored without -mistack",
+      warning (OPT_Wattributes, "%qE attribute ignored without %<-mistack%>",
 	       name);
       *no_add_attrs = true;
       return NULL_TREE;

@@ -1337,18 +1337,20 @@ ix86_handle_option (struct gcc_options *opts,
 
 
     case OPT_malign_loops_:
-      warning_at (loc, 0, "-malign-loops is obsolete, use -falign-loops");
+      warning_at (loc, 0, "%<-malign-loops%> is obsolete, "
+		  "use %<-falign-loops%>");
       if (value > MAX_CODE_ALIGN)
-	error_at (loc, "-malign-loops=%d is not between 0 and %d",
+	error_at (loc, "%<-malign-loops=%d%> is not between 0 and %d",
 		  value, MAX_CODE_ALIGN);
       else
 	set_malign_value (&opts->x_str_align_loops, value);
       return true;
 
     case OPT_malign_jumps_:
-      warning_at (loc, 0, "-malign-jumps is obsolete, use -falign-jumps");
+      warning_at (loc, 0, "%<-malign-jumps%> is obsolete, "
+		  "use %<-falign-jumps%>");
       if (value > MAX_CODE_ALIGN)
-	error_at (loc, "-malign-jumps=%d is not between 0 and %d",
+	error_at (loc, "%<-malign-jumps=%d%> is not between 0 and %d",
 		  value, MAX_CODE_ALIGN);
       else
 	set_malign_value (&opts->x_str_align_jumps, value);
@@ -1356,9 +1358,10 @@ ix86_handle_option (struct gcc_options *opts,
 
     case OPT_malign_functions_:
       warning_at (loc, 0,
-		  "-malign-functions is obsolete, use -falign-functions");
+		  "%<-malign-functions%> is obsolete, "
+		  "use %<-falign-functions%>");
       if (value > MAX_CODE_ALIGN)
-	error_at (loc, "-malign-functions=%d is not between 0 and %d",
+	error_at (loc, "%<-malign-functions=%d%> is not between 0 and %d",
 		  value, MAX_CODE_ALIGN);
       else
 	set_malign_value (&opts->x_str_align_functions, value);
@@ -1367,7 +1370,7 @@ ix86_handle_option (struct gcc_options *opts,
     case OPT_mbranch_cost_:
       if (value > 5)
 	{
-	  error_at (loc, "-mbranch-cost=%d is not between 0 and 5", value);
+	  error_at (loc, "%<-mbranch-cost=%d%> is not between 0 and 5", value);
 	  opts->x_ix86_branch_cost = 5;
 	}
       return true;
