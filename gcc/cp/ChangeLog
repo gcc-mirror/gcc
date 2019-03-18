@@ -1,5 +1,9 @@
 2019-03-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/89761 - ICE with sizeof... in pack expansion.
+	* pt.c (argument_pack_element_is_expansion_p): Handle
+	ARGUMENT_PACK_SELECT.
+
 	PR c++/89640 - GNU attributes on lambda.
 	* parser.c (cp_parser_lambda_declarator_opt): Allow GNU attributes.
 
