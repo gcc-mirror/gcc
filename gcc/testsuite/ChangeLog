@@ -1,3 +1,7 @@
+2019-03-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cost_model_1.c: New test.
+
 2019-03-18  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/89546

@@ -3600,35 +3600,16 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   /* Calculate number of iterations required to make the vector version
      profitable, relative to the loop bodies only.  The following condition
      must hold true:
-     SIC * niters + SOC > VIC * ((niters-PL_ITERS-EP_ITERS)/VF) + VOC
+     SIC * niters + SOC > VIC * ((niters - NPEEL) / VF) + VOC
      where
      SIC = scalar iteration cost, VIC = vector iteration cost,
      VOC = vector outside cost, VF = vectorization factor,
-     PL_ITERS = prologue iterations, EP_ITERS= epilogue iterations
+     NPEEL = prologue iterations + epilogue iterations,
      SOC = scalar outside cost for run time cost model check.  */
 
-  if ((scalar_single_iter_cost * assumed_vf) > (int) vec_inside_cost)
-    {
-      min_profitable_iters = ((vec_outside_cost - scalar_outside_cost)
-			      * assumed_vf
-			      - vec_inside_cost * peel_iters_prologue
-			      - vec_inside_cost * peel_iters_epilogue);
-      if (min_profitable_iters <= 0)
-        min_profitable_iters = 0;
-      else
-	{
-	  min_profitable_iters /= ((scalar_single_iter_cost * assumed_vf)
-				   - vec_inside_cost);
-
-	  if ((scalar_single_iter_cost * assumed_vf * min_profitable_iters)
-	      <= (((int) vec_inside_cost * min_profitable_iters)
-		  + (((int) vec_outside_cost - scalar_outside_cost)
-		     * assumed_vf)))
-	    min_profitable_iters++;
-	}
-    }
-  /* vector version will never be profitable.  */
-  else
+  int saving_per_viter = (scalar_single_iter_cost * assumed_vf
+			  - vec_inside_cost);
+  if (saving_per_viter <= 0)
     {
       if (LOOP_VINFO_LOOP (loop_vinfo)->force_vectorize)
 	warning_at (vect_location.get_location_t (), OPT_Wopenmp_simd,
@@ -3644,6 +3625,81 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
       *ret_min_profitable_niters = -1;
       *ret_min_profitable_estimate = -1;
       return;
+    }
+
+  /* ??? The "if" arm is written to handle all cases; see below for what
+     we would do for !LOOP_VINFO_FULLY_MASKED_P.  */
+  if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+    {
+      /* Rewriting the condition above in terms of the number of
+	 vector iterations (vniters) rather than the number of
+	 scalar iterations (niters) gives:
+
+	 SIC * (vniters * VF + NPEEL) + SOC > VIC * vniters + VOC
+
+	 <==> vniters * (SIC * VF - VIC) > VOC - SIC * NPEEL - SOC
+
+	 For integer N, X and Y when X > 0:
+
+	 N * X > Y <==> N >= (Y /[floor] X) + 1.  */
+      int outside_overhead = (vec_outside_cost
+			      - scalar_single_iter_cost * peel_iters_prologue
+			      - scalar_single_iter_cost * peel_iters_epilogue
+			      - scalar_outside_cost);
+      /* We're only interested in cases that require at least one
+	 vector iteration.  */
+      int min_vec_niters = 1;
+      if (outside_overhead > 0)
+	min_vec_niters = outside_overhead / saving_per_viter + 1;
+
+      if (dump_enabled_p ())
+	dump_printf (MSG_NOTE, "  Minimum number of vector iterations: %d\n",
+		     min_vec_niters);
+
+      if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+	{
+	  /* Now that we know the minimum number of vector iterations,
+	     find the minimum niters for which the scalar cost is larger:
+
+	     SIC * niters > VIC * vniters + VOC - SOC
+
+	     We know that the minimum niters is no more than
+	     vniters * VF + NPEEL, but it might be (and often is) less
+	     than that if a partial vector iteration is cheaper than the
+	     equivalent scalar code.  */
+	  int threshold = (vec_inside_cost * min_vec_niters
+			   + vec_outside_cost
+			   - scalar_outside_cost);
+	  if (threshold <= 0)
+	    min_profitable_iters = 1;
+	  else
+	    min_profitable_iters = threshold / scalar_single_iter_cost + 1;
+	}
+      else
+	/* Convert the number of vector iterations into a number of
+	   scalar iterations.  */
+	min_profitable_iters = (min_vec_niters * assumed_vf
+				+ peel_iters_prologue
+				+ peel_iters_epilogue);
+    }
+  else
+    {
+      min_profitable_iters = ((vec_outside_cost - scalar_outside_cost)
+			      * assumed_vf
+			      - vec_inside_cost * peel_iters_prologue
+			      - vec_inside_cost * peel_iters_epilogue);
+      if (min_profitable_iters <= 0)
+        min_profitable_iters = 0;
+      else
+	{
+	  min_profitable_iters /= saving_per_viter;
+
+	  if ((scalar_single_iter_cost * assumed_vf * min_profitable_iters)
+	      <= (((int) vec_inside_cost * min_profitable_iters)
+		  + (((int) vec_outside_cost - scalar_outside_cost)
+		     * assumed_vf)))
+	    min_profitable_iters++;
+	}
     }
 
   if (dump_enabled_p ())
@@ -3668,10 +3724,34 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 
      Non-vectorized variant is SIC * niters and it must win over vector
      variant on the expected loop trip count.  The following condition must hold true:
-     SIC * niters > VIC * ((niters-PL_ITERS-EP_ITERS)/VF) + VOC + SOC  */
+     SIC * niters > VIC * ((niters - NPEEL) / VF) + VOC + SOC  */
 
   if (vec_outside_cost <= 0)
     min_profitable_estimate = 0;
+  else if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+    {
+      /* This is a repeat of the code above, but with + SOC rather
+	 than - SOC.  */
+      int outside_overhead = (vec_outside_cost
+			      - scalar_single_iter_cost * peel_iters_prologue
+			      - scalar_single_iter_cost * peel_iters_epilogue
+			      + scalar_outside_cost);
+      int min_vec_niters = 1;
+      if (outside_overhead > 0)
+	min_vec_niters = outside_overhead / saving_per_viter + 1;
+
+      if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+	{
+	  int threshold = (vec_inside_cost * min_vec_niters
+			   + vec_outside_cost
+			   + scalar_outside_cost);
+	  min_profitable_estimate = threshold / scalar_single_iter_cost + 1;
+	}
+      else
+	min_profitable_estimate = (min_vec_niters * assumed_vf
+				   + peel_iters_prologue
+				   + peel_iters_epilogue);
+    }
   else
     {
       min_profitable_estimate = ((vec_outside_cost + scalar_outside_cost)
