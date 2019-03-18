@@ -390,6 +390,9 @@ gfc_copy_expr (gfc_expr *p)
     case EXPR_VARIABLE:
     case EXPR_NULL:
       break;
+
+    case EXPR_UNKNOWN:
+      gcc_unreachable ();
     }
 
   q->shape = gfc_copy_shape (p->shape, p->rank);
@@ -2206,6 +2209,9 @@ gfc_simplify_expr (gfc_expr *p, int type)
     case EXPR_COMPCALL:
     case EXPR_PPC:
       break;
+
+    case EXPR_UNKNOWN:
+      gcc_unreachable ();
     }
 
   return true;
