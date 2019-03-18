@@ -1,3 +1,8 @@
+2019-03-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89682 - wrong access error in default argument.
+	* pt.c (tsubst_default_argument): Don't defer access checks.
+
 2019-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/85014
