@@ -11478,28 +11478,23 @@ module_state::write_locations (elf_out *to, unsigned max_rager,
 	    sec.cpp_node (mmap->macro);
 	    write_location (sec, mmap->expansion);
 	    const location_t *locs = mmap->macro_locations;
+	    /* There are lots of identical runs.  */
 	    location_t prev = 0;
-	    /* There are lots of trailing zeroes, and identical runs.
-	       Compress them.  */
+	    unsigned count = 0;
 	    for (unsigned jx = mmap->n_tokens * 2; jx--;)
 	      {
 		location_t tok_loc = locs[jx];
-		if (!prev)
+		if (tok_loc == prev)
 		  {
-		    if (tok_loc)
-		      sec.u (jx + 1);
-		    else
-		      continue;
+		    count++;
+		    continue;
 		  }
-		gcc_checking_assert (tok_loc);
-		if (prev == tok_loc)
-		  tok_loc = 0;
-		else
-		  prev = tok_loc;
+		sec.u (count);
+		count = 1;
+		prev = tok_loc;
 		write_location (sec, tok_loc);
 	      }
-	    if (!prev)
-	      sec.u (0);
+	    sec.u (count);
 	    offset -= mmap->n_tokens;
 	    gcc_checking_assert (offset == start_loc + span.macro_delta);
 	  }
@@ -11642,20 +11637,22 @@ module_state::read_locations ()
 	     due to unread data.  */
 	  break;
 
-	unsigned num_exps = sec.u ();
 	location_t *locs = macro->macro_locations;
-	location_t prev = 0;
-	for (unsigned jx = num_exps; jx--;)
+	location_t tok_loc = loc;
+	unsigned count = sec.u ();
+	for (unsigned jx = macro->n_tokens * 2; jx--;)
 	  {
-	    location_t tok_loc = read_location (sec);
-	    if (tok_loc == loc)
-	      tok_loc = prev;
-	    else
-	      prev = tok_loc;
+	    while (!count--)
+	      {
+		tok_loc = read_location (sec);
+		count = sec.u ();
+	      }
 	    locs[jx] = tok_loc;
 	  }
-	dump () && dump ("Macro %I %u locations (%u non-empty) [%u,%u)",
-			 identifier (node), n_tokens, num_exps,
+	if (count)
+	  sec.set_overrun ();
+	dump () && dump ("Macro %I %u locations [%u,%u)",
+			 identifier (node), n_tokens, 
 			 MAP_START_LOCATION (macro),
 			 MAP_START_LOCATION (macro) + n_tokens);
       }

@@ -1,6 +1,10 @@
 2019-03-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::{read,write}_locations): Macro maps can
+	have embedded zeroes.
+
+	gcc/cp/
 	* name-lookup.c (do_nonmember_using_decl): Add install & fn_scope
 	args.
 	(finish_nonmember_using_decl): Adjust, prep for modules.
