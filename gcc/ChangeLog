@@ -1,3 +1,9 @@
+2019-03-18  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/89720
+	* tree-vrp.c (vrp_prop::check_mem_ref): Treat range with max < min
+	more conservatively, the same as anti-range.
+
 2019-03-18  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/88945
