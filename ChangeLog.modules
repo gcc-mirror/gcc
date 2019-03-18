@@ -1,3 +1,12 @@
+2019-03-18  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* name-lookup.c (do_nonmember_using_decl): Add install & fn_scope
+	args.
+	(finish_nonmember_using_decl): Adjust, prep for modules.
+	gcc/testsuite/
+	* g++.dg/lookup/using53.C: Restore & extend DR36 errors.
+
 2019-03-15  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

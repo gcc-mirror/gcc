@@ -4908,11 +4908,13 @@ pushdecl_outermost_localscope (tree x)
    point to the binding for NAME in the current scope and are
    updated.  */
 
-static void
-do_nonmember_using_decl (name_lookup &lookup, tree *value_p, tree *type_p)
+static bool
+do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
+			 bool insert_p, tree *value_p, tree *type_p)
 {
   tree value = *value_p;
   tree type = *type_p;
+  bool failed = false;
 
   /* Shift the old and new bindings around so we're comparing class and
      enumeration names to each other.  */
@@ -4928,7 +4930,7 @@ do_nonmember_using_decl (name_lookup &lookup, tree *value_p, tree *type_p)
       lookup.value = NULL_TREE;
     }
 
-  if (lookup.value && lookup.value != value)
+  if (lookup.value)
     {
       /* Check for using functions.  */
       if (OVL_P (lookup.value) && (!value || OVL_P (value)))
@@ -4963,11 +4965,12 @@ do_nonmember_using_decl (name_lookup &lookup, tree *value_p, tree *type_p)
 		  else
 		    {
 		      diagnose_name_conflict (new_fn, old_fn);
+		      failed = true;
 		      found = true;
 		    }
 		}
 
-	      if (!found)
+	      if (!found && insert_p)
 		/* Unlike the overload case we don't drop anticipated
 		   builtins here.  They don't cause a problem, and
 		   we'd like to match them with a future
@@ -4978,29 +4981,39 @@ do_nonmember_using_decl (name_lookup &lookup, tree *value_p, tree *type_p)
       else if (value
 	       /* Ignore anticipated builtins.  */
 	       && !anticipated_builtin_p (value)
-	       && !decls_match (lookup.value, value))
-	diagnose_name_conflict (lookup.value, value);
-      else
+	       && (fn_scope_p || !decls_match (lookup.value, value)))
+	{
+	  diagnose_name_conflict (lookup.value, value);
+	  failed = true;
+	}
+      else if (insert_p)
 	value = lookup.value;
     }
 
   if (lookup.type && lookup.type != type)
     {
       if (type && !decls_match (lookup.type, type))
-	diagnose_name_conflict (lookup.type, type);
-      else
+	{
+	  diagnose_name_conflict (lookup.type, type);
+	  failed = true;
+	}
+      else if (insert_p)
 	type = lookup.type;
     }
 
-  /* If bind->value is empty, shift any class or enumeration name back.  */
-  if (!value)
+  if (!failed && insert_p)
     {
-      value = type;
-      type = NULL_TREE;
+      /* If bind->value is empty, shift any class or enumeration name back.  */
+      if (!value)
+	{
+	  value = type;
+	  type = NULL_TREE;
+	}
+      *value_p = value;
+      *type_p = type;
     }
 
-  *value_p = value;
-  *type_p = type;
+  return failed;
 }
 
 /* Returns true if ANCESTOR encloses DESCENDANT, including matching.
@@ -6088,42 +6101,25 @@ finish_nonmember_using_decl (tree scope, tree name)
     cp_emit_debug_info_for_using (lookup.value,
 				  current_binding_level->this_entity);
 
-  cxx_binding *binding = NULL;
-  tree *slot = NULL;
-  tree value = NULL;
-  tree type = NULL;
-
   if (current_binding_level->kind == sk_namespace)
     {
-      slot = find_namespace_slot (current_namespace, name, true);
+      tree *slot = find_namespace_slot (current_namespace, name, true);
       // FIXME: Write more code
       gcc_assert (!*slot || TREE_CODE (*slot) != MODULE_VECTOR);
 
+      tree value = NULL;
+      tree type = NULL;
       if (slot)
 	{
 	  value = MAYBE_STAT_DECL (*slot);
 	  type = MAYBE_STAT_TYPE (*slot);
 	}
-    }
-  else
-    {
-      tree using_decl = build_lang_decl (USING_DECL, name, NULL_TREE);
-      USING_DECL_SCOPE (using_decl) = scope;
-      add_decl_expr (using_decl);
 
-      binding = find_local_binding (current_binding_level, name);
-      if (binding)
-	{
-	  value = binding->value;
-	  type = binding->type;
-	}
-    }
+      bool failed = do_nonmember_using_decl (lookup, false, true, &value, &type);
 
-  do_nonmember_using_decl (lookup, &value, &type);
-
-  if (current_binding_level->kind == sk_namespace)
-    {
-      if (STAT_HACK_P (*slot))
+      if (failed)
+	/* Nothing  */;
+      else if (STAT_HACK_P (*slot))
 	{
 	  STAT_DECL (*slot) = value;
 	  STAT_TYPE (*slot) = type;
@@ -6135,7 +6131,27 @@ finish_nonmember_using_decl (tree scope, tree name)
     }
   else
     {
-      if (!value)
+      tree using_decl = build_lang_decl (USING_DECL, name, NULL_TREE);
+      USING_DECL_SCOPE (using_decl) = scope;
+      add_decl_expr (using_decl);
+
+      cxx_binding *binding = find_local_binding (current_binding_level, name);
+      tree value = NULL;
+      tree type = NULL;
+      if (binding)
+	{
+	  value = binding->value;
+	  type = binding->type;
+	}
+
+      /* DR 36 questions why using-decls at function scope may not be
+	 duplicates.  Disallow it, as C++11 claimed and PR 20420
+	 implemented.  */
+      bool failed = do_nonmember_using_decl (lookup, true, true, &value, &type);
+
+      if (failed)
+	/* Nothing.  */;
+      else if (!value)
 	;
       else if (binding && value == binding->value)
 	;
@@ -6149,7 +6165,9 @@ finish_nonmember_using_decl (tree scope, tree name)
 	// FIXME: Short circuit P_L_B
 	push_local_binding (name, value, true);
 
-      if (!type)
+      if (failed)
+	;
+      else if (!type)
 	;
       else if (binding && type == binding->type)
 	;
