@@ -3661,6 +3661,7 @@ cp_tree_equal (tree t1, tree t2)
     case TEMPLATE_DECL:
     case IDENTIFIER_NODE:
     case SSA_NAME:
+    case USING_DECL:
       return false;
 
     case BASELINK:
@@ -3786,14 +3787,6 @@ cp_tree_equal (tree t1, tree t2)
 	      && comp_template_args (DEFERRED_NOEXCEPT_ARGS (t1),
 				     DEFERRED_NOEXCEPT_ARGS (t2)));
       break;
-
-    case USING_DECL:
-      if (DECL_DEPENDENT_P (t1) && DECL_DEPENDENT_P (t2))
-	return (cp_tree_equal (USING_DECL_SCOPE (t1),
-			       USING_DECL_SCOPE (t2))
-		&& cp_tree_equal (DECL_NAME (t1),
-				  DECL_NAME (t2)));
-      return false;
 
     case LAMBDA_EXPR:
       /* Two lambda-expressions are never considered equivalent.  */

@@ -1,5 +1,8 @@
 2019-03-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/89630 - ICE with dependent using-decl as template arg.
+	* tree.c (cp_tree_equal): Always return false for USING_DECL.
+
 	PR c++/89761 - ICE with sizeof... in pack expansion.
 	* pt.c (argument_pack_element_is_expansion_p): Handle
 	ARGUMENT_PACK_SELECT.
