@@ -1,3 +1,8 @@
+2019-03-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/89630
+	* g++.target/i386/pr89630.C: New test.
+
 2019-03-18  Kito Cheng  <kito.cheng@gmail.com>
 
 	* gcc.target/riscv/arch-1.c: Add quotes around march in dg-error.
