@@ -1,3 +1,7 @@
+2019-03-02  Johannes Pfau  <johannespfau@gmail.com>
+
+	* mh-mingw: Also set __USE_MINGW_ACCESS flag for C++ code.
+
 2018-10-31  Joseph Myers  <joseph@codesourcery.com>
 
 	PR bootstrap/82856
