@@ -1,3 +1,11 @@
+2019-03-18  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	PR target/89627
+	* g++.target/riscv/call-with-empty-struct-float.C: New file.
+	* g++.target/riscv/call-with-empty-struct-int.C: New file.
+	* g++.target/riscv/call-with-empty-struct.H: New file.
+	* g++.target/riscv/riscv.exp: New file.
+
 2019-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/85014

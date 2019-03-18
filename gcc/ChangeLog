@@ -1,3 +1,10 @@
+2019-03-18  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	PR target/89627
+	* config/riscv/riscv.c (riscv_pass_fpr_single): Add offset
+	parameter, and make use of it.
+	(riscv_get_arg_info): Pass offset to riscv_pass_fpr_single.
+
 2019-03-18  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.opt (mcode-density-frame): Get the inital value

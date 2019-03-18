@@ -2449,13 +2449,14 @@ riscv_pass_aggregate_in_fpr_and_gpr_p (const_tree type,
 
 static rtx
 riscv_pass_fpr_single (machine_mode type_mode, unsigned regno,
-		       machine_mode value_mode)
+		       machine_mode value_mode,
+		       HOST_WIDE_INT offset)
 {
   rtx x = gen_rtx_REG (value_mode, regno);
 
   if (type_mode != value_mode)
     {
-      x = gen_rtx_EXPR_LIST (VOIDmode, x, const0_rtx);
+      x = gen_rtx_EXPR_LIST (VOIDmode, x, GEN_INT (offset));
       x = gen_rtx_PARALLEL (type_mode, gen_rtvec (1, x));
     }
   return x;
@@ -2517,7 +2518,8 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
 	  {
 	  case 1:
 	    return riscv_pass_fpr_single (mode, fregno,
-					  TYPE_MODE (fields[0].type));
+					  TYPE_MODE (fields[0].type),
+					  fields[0].offset);
 
 	  case 2:
 	    return riscv_pass_fpr_pair (mode, fregno,
