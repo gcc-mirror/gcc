@@ -1,3 +1,17 @@
+2019-03-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-run.c (struct output): Make next_output unsigned.
+	Extend queue to 1024 entries.
+	Add "consumed" field.
+	(gomp_print_output): Remove print_index parameter.
+	Add final parameter.
+	Change limit to unsigned.
+	Use consumed field to implement circular buffer.
+	Detect interrupted print in final pass.
+	Flush output at the end.
+	(run): Update gomp_print_output usage.
+	(main): Initialize kernargs->output_data.consumed.
+
 2019-03-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Fix the
