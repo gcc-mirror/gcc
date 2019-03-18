@@ -1,3 +1,9 @@
+2019-03-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/89546
+	* tree-sra.c (propagate_subaccesses_across_link): Requeue new_acc if
+	any propagation to its children took place.
+
 2019-03-18  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	PR target/89627
