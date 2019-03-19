@@ -7986,23 +7986,33 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
   // Using uint here means that if the computation of ntmp overflowed,
   // we will call growslice which will panic.
 
-  Expression* left = Expression::make_temporary_reference(ntmp, loc);
-  left = Expression::make_cast(uint_type, left, loc);
-
   Named_object* capfn = gogo->lookup_global("cap");
   Expression* capref = Expression::make_func_reference(capfn, NULL, loc);
   call_args = new Expression_list();
   call_args->push_back(Expression::make_temporary_reference(s1tmp, loc));
-  Expression* right = Expression::make_call(capref, call_args, false, loc);
+  Expression* cap = Expression::make_call(capref, call_args, false, loc);
+  gogo->lower_expression(function, inserter, &cap);
+  gogo->flatten_expression(function, inserter, &cap);
+  Temporary_statement* c1tmp = Statement::make_temporary(int_type, cap, loc);
+  inserter->insert(c1tmp);
+
+  Expression* left = Expression::make_temporary_reference(ntmp, loc);
+  left = Expression::make_cast(uint_type, left, loc);
+  Expression* right = Expression::make_temporary_reference(c1tmp, loc);
   right = Expression::make_cast(uint_type, right, loc);
 
   Expression* cond = Expression::make_binary(OPERATOR_GT, left, right, loc);
 
+  Type* unsafe_ptr_type = Type::make_pointer_type(Type::make_void_type());
   Expression* a1 = Expression::make_type_descriptor(element_type, loc);
   Expression* a2 = Expression::make_temporary_reference(s1tmp, loc);
-  Expression* a3 = Expression::make_temporary_reference(ntmp, loc);
-  Expression* call = Runtime::make_call(Runtime::GROWSLICE, loc, 3,
-					a1, a2, a3);
+  a2 = slice_type->array_type()->get_value_pointer(gogo, a2, false);
+  a2 = Expression::make_cast(unsafe_ptr_type, a2, loc);
+  Expression* a3 = Expression::make_temporary_reference(l1tmp, loc);
+  Expression* a4 = Expression::make_temporary_reference(c1tmp, loc);
+  Expression* a5 = Expression::make_temporary_reference(ntmp, loc);
+  Expression* call = Runtime::make_call(Runtime::GROWSLICE, loc, 5,
+					a1, a2, a3, a4, a5);
   call = Expression::make_unsafe_cast(slice_type, call, loc);
 
   ref = Expression::make_temporary_reference(s1tmp, loc);
