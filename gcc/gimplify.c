@@ -6155,6 +6155,19 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  is_inout = false;
 	}
 
+      /* If we can't make copies, we can only accept memory.  */
+      if (TREE_ADDRESSABLE (TREE_TYPE (TREE_VALUE (link))))
+	{
+	  if (allows_mem)
+	    allows_reg = 0;
+	  else
+	    {
+	      error ("impossible constraint in %<asm%>");
+	      error ("non-memory output %d must stay in memory", i);
+	      return GS_ERROR;
+	    }
+	}
+
       if (!allows_reg && allows_mem)
 	mark_addressable (TREE_VALUE (link));
 

@@ -1,3 +1,10 @@
+2019-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89752
+	* g++.dg/ext/asm15.C: Check for particular diagnostic wording.
+	* g++.dg/ext/asm16.C: Likewise.
+	* g++.dg/ext/asm17.C: New test.
+
 2019-03-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-c++-common/unroll-7.c: New test.
