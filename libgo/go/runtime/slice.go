@@ -77,31 +77,31 @@ func makeslice64(et *_type, len64, cap64 int64) unsafe.Pointer {
 // and it returns a new slice with at least that capacity, with the old data
 // copied into it.
 // The new slice's length is set to the requested capacity.
-func growslice(et *_type, old slice, cap int) slice {
+func growslice(et *_type, oldarray unsafe.Pointer, oldlen, oldcap, cap int) slice {
 	if raceenabled {
 		callerpc := getcallerpc()
-		racereadrangepc(old.array, uintptr(old.len*int(et.size)), callerpc, funcPC(growslice))
+		racereadrangepc(oldarray, uintptr(oldlen*int(et.size)), callerpc, funcPC(growslice))
 	}
 	if msanenabled {
-		msanread(old.array, uintptr(old.len*int(et.size)))
+		msanread(oldarray, uintptr(oldlen*int(et.size)))
 	}
 
-	if cap < old.cap {
+	if cap < oldcap {
 		panic(errorString("growslice: cap out of range"))
 	}
 
 	if et.size == 0 {
 		// append should not create a slice with nil pointer but non-zero len.
-		// We assume that append doesn't need to preserve old.array in this case.
+		// We assume that append doesn't need to preserve oldarray in this case.
 		return slice{unsafe.Pointer(&zerobase), cap, cap}
 	}
 
-	newcap := old.cap
+	newcap := oldcap
 	doublecap := newcap + newcap
 	if cap > doublecap {
 		newcap = cap
 	} else {
-		if old.len < 1024 {
+		if oldlen < 1024 {
 			newcap = doublecap
 		} else {
 			// Check 0 < newcap to detect overflow
@@ -125,13 +125,13 @@ func growslice(et *_type, old slice, cap int) slice {
 	// For powers of 2, use a variable shift.
 	switch {
 	case et.size == 1:
-		lenmem = uintptr(old.len)
+		lenmem = uintptr(oldlen)
 		newlenmem = uintptr(cap)
 		capmem = roundupsize(uintptr(newcap))
 		overflow = uintptr(newcap) > maxAlloc
 		newcap = int(capmem)
 	case et.size == sys.PtrSize:
-		lenmem = uintptr(old.len) * sys.PtrSize
+		lenmem = uintptr(oldlen) * sys.PtrSize
 		newlenmem = uintptr(cap) * sys.PtrSize
 		capmem = roundupsize(uintptr(newcap) * sys.PtrSize)
 		overflow = uintptr(newcap) > maxAlloc/sys.PtrSize
@@ -144,13 +144,13 @@ func growslice(et *_type, old slice, cap int) slice {
 		} else {
 			shift = uintptr(sys.Ctz32(uint32(et.size))) & 31
 		}
-		lenmem = uintptr(old.len) << shift
+		lenmem = uintptr(oldlen) << shift
 		newlenmem = uintptr(cap) << shift
 		capmem = roundupsize(uintptr(newcap) << shift)
 		overflow = uintptr(newcap) > (maxAlloc >> shift)
 		newcap = int(capmem >> shift)
 	default:
-		lenmem = uintptr(old.len) * et.size
+		lenmem = uintptr(oldlen) * et.size
 		newlenmem = uintptr(cap) * et.size
 		capmem, overflow = math.MulUintptr(et.size, uintptr(newcap))
 		capmem = roundupsize(capmem)
@@ -177,19 +177,19 @@ func growslice(et *_type, old slice, cap int) slice {
 	var p unsafe.Pointer
 	if et.kind&kindNoPointers != 0 {
 		p = mallocgc(capmem, nil, false)
-		// The append() that calls growslice is going to overwrite from old.len to cap (which will be the new length).
+		// The append() that calls growslice is going to overwrite from oldlen to cap (which will be the new length).
 		// Only clear the part that will not be overwritten.
 		memclrNoHeapPointers(add(p, newlenmem), capmem-newlenmem)
 	} else {
 		// Note: can't use rawmem (which avoids zeroing of memory), because then GC can scan uninitialized memory.
 		p = mallocgc(capmem, et, true)
 		if writeBarrier.enabled {
-			// Only shade the pointers in old.array since we know the destination slice p
+			// Only shade the pointers in oldarray since we know the destination slice p
 			// only contains nil pointers because it has been cleared during alloc.
-			bulkBarrierPreWriteSrcOnly(uintptr(p), uintptr(old.array), lenmem)
+			bulkBarrierPreWriteSrcOnly(uintptr(p), uintptr(oldarray), lenmem)
 		}
 	}
-	memmove(p, old.array, lenmem)
+	memmove(p, oldarray, lenmem)
 
 	return slice{p, cap, newcap}
 }
