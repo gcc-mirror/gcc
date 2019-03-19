@@ -1,3 +1,8 @@
+2019-03-19  Jim Wilson  <jimw@sifive.com>
+
+	PR target/89411
+	* gcc.target/riscv/losum-overflow.c: New test.
+
 2019-03-19  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/89644

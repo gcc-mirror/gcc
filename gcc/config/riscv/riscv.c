@@ -708,11 +708,15 @@ riscv_split_symbol_type (enum riscv_symbol_type symbol_type)
 }
 
 /* Return true if a LO_SUM can address a value of mode MODE when the
-   LO_SUM symbol has type SYM_TYPE.  */
+   LO_SUM symbol has type SYM_TYPE.  X is the LO_SUM second operand, which
+   is used when the mode is BLKmode.  */
 
 static bool
-riscv_valid_lo_sum_p (enum riscv_symbol_type sym_type, machine_mode mode)
+riscv_valid_lo_sum_p (enum riscv_symbol_type sym_type, machine_mode mode,
+		      rtx x)
 {
+  int align, size;
+
   /* Check that symbols of type SYMBOL_TYPE can be used to access values
      of mode MODE.  */
   if (riscv_symbol_insns (sym_type) == 0)
@@ -722,11 +726,38 @@ riscv_valid_lo_sum_p (enum riscv_symbol_type sym_type, machine_mode mode)
   if (!riscv_split_symbol_type (sym_type))
     return false;
 
+  /* We can't tell size or alignment when we have BLKmode, so try extracing a
+     decl from the symbol if possible.  */
+  if (mode == BLKmode)
+    {
+      rtx offset;
+
+      /* Extract the symbol from the LO_SUM operand, if any.  */
+      split_const (x, &x, &offset);
+
+      /* Might be a CODE_LABEL.  We can compute align but not size for that,
+	 so don't bother trying to handle it.  */
+      if (!SYMBOL_REF_P (x))
+	return false;
+
+      /* Use worst case assumptions if we don't have a SYMBOL_REF_DECL.  */
+      align = (SYMBOL_REF_DECL (x)
+	       ? DECL_ALIGN (SYMBOL_REF_DECL (x))
+	       : 1);
+      size = (SYMBOL_REF_DECL (x) && DECL_SIZE (SYMBOL_REF_DECL (x))
+	      ? tree_to_uhwi (DECL_SIZE (SYMBOL_REF_DECL (x)))
+	      : 2*BITS_PER_WORD);
+    }
+  else
+    {
+      align = GET_MODE_ALIGNMENT (mode);
+      size = GET_MODE_BITSIZE (mode);
+    }
+
   /* We may need to split multiword moves, so make sure that each word
      can be accessed without inducing a carry.  */
-  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD
-      && (!TARGET_STRICT_ALIGN
-	  || GET_MODE_BITSIZE (mode) > GET_MODE_ALIGNMENT (mode)))
+  if (size > BITS_PER_WORD
+      && (!TARGET_STRICT_ALIGN || size > align))
     return false;
 
   return true;
@@ -772,7 +803,7 @@ riscv_classify_address (struct riscv_address_info *info, rtx x,
       info->symbol_type
 	= riscv_classify_symbolic_expression (info->offset);
       return (riscv_valid_base_register_p (info->reg, mode, strict_p)
-	      && riscv_valid_lo_sum_p (info->symbol_type, mode));
+	      && riscv_valid_lo_sum_p (info->symbol_type, mode, info->offset));
 
     case CONST_INT:
       /* Small-integer addresses don't occur very often, but they
