@@ -4950,9 +4950,12 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 	      tree old_fn = *old;
 
 	      if (new_fn == old_fn)
-		/* The function already exists in the current
-		   namespace.  */
-		found = true;
+		{
+		  /* The function already exists in the current
+		     namespace.  */
+		  found = true;
+		  break;
+		}
 	      else if (old.using_p ())
 		continue; /* This is a using decl. */
 	      else if (old.hidden_p () && !DECL_HIDDEN_FRIEND_P (old_fn))
@@ -4960,12 +4963,17 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 	      else if (!matching_fn_p (new_fn, old_fn))
 		continue; /* Parameters do not match.  */
 	      else if (decls_match (new_fn, old_fn))
-		found = true;
+		{
+		  /* extern "C" in different namespaces.  */
+		  found = true;
+		  break;
+		}
 	      else
 		{
 		  diagnose_name_conflict (new_fn, old_fn);
 		  failed = true;
 		  found = true;
+		  break;
 		}
 	    }
 
@@ -4999,9 +5007,9 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 	type = lookup.type;
     }
 
-  if (!failed && insert_p)
+  if (insert_p)
     {
-      /* If bind->value is empty, shift any class or enumeration name back.  */
+      /* If value is empty, shift any class or enumeration name back.  */
       if (!value)
 	{
 	  value = type;
@@ -6165,28 +6173,32 @@ finish_nonmember_using_decl (tree scope, tree name)
 
 		if (do_nonmember_using_decl (lookup, false, false,
 					     &value, &type))
-		  failed = true;
+		  {
+		    failed = true;
+		    break;
+		  }
 	      }
 	}
 
-      /* Now do the current slot.  */
-      tree value = MAYBE_STAT_DECL (*mslot);
-      tree type = MAYBE_STAT_TYPE (*mslot);
-      if (do_nonmember_using_decl (lookup, false, !failed, &value, &type))
-	failed = true;
-
-      // FIXME: Partition mergeableness?
-      if (failed)
-	/* Nothing  */;
-      else if (STAT_HACK_P (*mslot))
+      if (!failed)
 	{
-	  STAT_DECL (*mslot) = value;
-	  STAT_TYPE (*mslot) = type;
+	  /* Now do the current slot.  */
+	  tree value = MAYBE_STAT_DECL (*mslot);
+	  tree type = MAYBE_STAT_TYPE (*mslot);
+
+	  do_nonmember_using_decl (lookup, false, true, &value, &type);
+
+	  // FIXME: Partition mergeableness?
+	  if (STAT_HACK_P (*mslot))
+	    {
+	      STAT_DECL (*mslot) = value;
+	      STAT_TYPE (*mslot) = type;
+	    }
+	  else if (type)
+	    *mslot = stat_hack (value, type);
+	  else
+	    *mslot = value;
 	}
-      else if (type)
-	*mslot = stat_hack (value, type);
-      else
-	*mslot = value;
     }
   else
     {
@@ -6206,11 +6218,9 @@ finish_nonmember_using_decl (tree scope, tree name)
       /* DR 36 questions why using-decls at function scope may not be
 	 duplicates.  Disallow it, as C++11 claimed and PR 20420
 	 implemented.  */
-      bool failed = do_nonmember_using_decl (lookup, true, true, &value, &type);
+      do_nonmember_using_decl (lookup, true, true, &value, &type);
 
-      if (failed)
-	/* Nothing.  */;
-      else if (!value)
+      if (!value)
 	;
       else if (binding && value == binding->value)
 	;
@@ -6224,9 +6234,7 @@ finish_nonmember_using_decl (tree scope, tree name)
 	// FIXME: Short circuit P_L_B
 	push_local_binding (name, value, true);
 
-      if (failed)
-	;
-      else if (!type)
+      if (!type)
 	;
       else if (binding && type == binding->type)
 	;

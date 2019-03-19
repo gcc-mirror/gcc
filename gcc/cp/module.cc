@@ -11473,7 +11473,9 @@ module_state::write_locations (elf_out *to, unsigned max_rager,
 	    if (macro_num == num_maps.second)
 	      {
 		/* We're ending on an empty macro expansion.  */
-		// FIXME: This goes to show we should be eliding all
+		// FIXME: Why is the preprocessor emitting empty macro
+		// expansion locations?  That's suboptimal.
+		// This goes to show we should be eliding all
 		// macro expansions that are not covering any location
 		// we need to output (just like non-macro locations,
 		// mentioned above).
