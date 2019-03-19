@@ -1,5 +1,12 @@
 2019-03-19  Nathan Sidwell  <nathan@acm.org>
 
+	Using decls part 3.
+	gcc/cp/
+	* cp-tree.h (ovl_iterator::exporting_p): Simplify.
+	* name-lookup.c (do_nonmember_using_decl): Upgrade export in place.
+	gcc/testsuite/
+	* g++.dg/modules/using-4_[ab].C: New.
+
 	gcc/testsuite/
 	* g++.dg/modules/using-3.C: New.
 

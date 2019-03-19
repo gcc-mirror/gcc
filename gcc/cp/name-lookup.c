@@ -4942,6 +4942,18 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
       for (lkp_iterator usings (lookup.value); usings; ++usings)
 	{
 	  tree new_fn = *usings;
+	  bool exporting = revealing_p && module_exporting_p ();
+	  if (exporting
+	      && !DECL_MODULE_EXPORT_P (new_fn)
+	      && (MAYBE_DECL_MODULE_OWNER (new_fn)
+		  || !TREE_PUBLIC (CP_DECL_CONTEXT (new_fn))
+		  || DECL_THIS_STATIC (new_fn)))
+	    {
+	      error ("%q#D does not have external linkage", new_fn);
+	      inform (DECL_SOURCE_LOCATION (new_fn),
+		      "%q#D declared here", new_fn);
+	      exporting = false;
+	    }
 
 	  /* [namespace.udecl]
 
@@ -4959,10 +4971,15 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 		  /* The function already exists in the current
 		     namespace.  We will still want to insert it if
 		     it is revealing a not-revealed thing.  */
-		  if (!revealing_p ||
-		      (old.using_p ()
-		       && old.exporting_p () >= module_exporting_p ()))
+		  if (!revealing_p)
 		    found = true;
+		  else if (old.using_p ())
+		    {
+		      if (exporting)
+			/* Update in place.  'tis ok.  */
+			OVL_EXPORT_P (old.get_using ()) = true;
+		      found = true;
+		    }
 		  // FIXME: This can cause the same decl to appear
 		  // twice on a single overload.  That very likely
 		  // breaks a dedup invariant.
@@ -4990,27 +5007,10 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 	    }
 
 	  if (!found && insert_p)
-	    {
-	      /* Unlike the overload case we don't drop anticipated
-		 builtins here.  They don't cause a problem, and we'd
-		 like to match them with a future declaration.  */
-	      int usingness = 1;
-	      if (revealing_p && module_exporting_p ())
-		{
-		  if (!DECL_MODULE_EXPORT_P (new_fn)
-		      && (MAYBE_DECL_MODULE_OWNER (new_fn)
-			  || !TREE_PUBLIC (CP_DECL_CONTEXT (new_fn))
-			  || DECL_THIS_STATIC (new_fn)))
-		    {
-		      error ("%q#D does not have external linkage", new_fn);
-		      inform (DECL_SOURCE_LOCATION (new_fn),
-			      "%q#D declared here", new_fn);
-		    }
-		  else
-		    usingness = -1;
-		}
-	      value = ovl_insert (new_fn, value, usingness);
-	    }
+	    /* Unlike the decl-pushing case we don't drop anticipated
+	       builtins here.  They don't cause a problem, and we'd
+	       like to match them with a future declaration.  */
+	    value = ovl_insert (new_fn, value, exporting ? -1 : +1);
 	}
     }
   else if (value
@@ -5022,6 +5022,7 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
       failed = true;
     }
   else if (insert_p)
+    // FIXME:exporting non fn?
     value = lookup.value;
 
   if (lookup.type && lookup.type != type)

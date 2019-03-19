@@ -793,8 +793,7 @@ class ovl_iterator  {
   /* Whether this using is being exported.  */
   bool exporting_p () const
   {
-    gcc_checking_assert (using_p ());
-    return OVL_EXPORT_P (ovl);
+    return OVL_EXPORT_P (get_using ());
   }
   
   bool hidden_p () const
