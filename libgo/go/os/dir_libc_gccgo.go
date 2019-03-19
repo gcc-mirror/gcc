@@ -10,3 +10,6 @@ import "syscall"
 
 //extern closedir
 func libc_closedir(*syscall.DIR) int
+
+//extern fdopendir
+func libc_fdopendir(int32) *syscall.DIR

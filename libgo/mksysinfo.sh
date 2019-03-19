@@ -1024,6 +1024,18 @@ grep '^type _ifinfomsg ' gen-sysinfo.go | \
       -e 's/ifi_change/Change/' \
     >> ${OUT}
 
+# The if_msghdr struct.
+grep '^type _if_msghdr ' gen-sysinfo.go | \
+    sed -e 's/_if_msghdr/IfMsgHdr/' \
+		-e 's/ifm_msglen/Msglen/' \
+		-e 's/ifm_version/Version/' \
+		-e 's/ifm_type/Type/' \
+		-e 's/ifm_addrs/Addrs/' \
+		-e 's/ifm_flags/Flags/' \
+		-e 's/ifm_index/Index/' \
+		-e 's/ifm_addrlen/Addrlen/' \
+		>> ${OUT}
+
 # The interface information types and flags.
 grep '^const _IFA' gen-sysinfo.go | \
     sed -e 's/^\(const \)_\(IFA[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
