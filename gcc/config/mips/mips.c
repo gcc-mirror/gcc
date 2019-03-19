@@ -22265,7 +22265,7 @@ mips_expand_vec_cond_expr (machine_mode mode, machine_mode vimode,
 	  if (mode != vimode)
 	    {
 	      xop1 = gen_reg_rtx (vimode);
-	      emit_move_insn (xop1, gen_rtx_SUBREG (vimode, operands[1], 0));
+	      emit_move_insn (xop1, gen_lowpart (vimode, operands[1]));
 	    }
 	  emit_move_insn (src1, xop1);
 	}
@@ -22282,7 +22282,7 @@ mips_expand_vec_cond_expr (machine_mode mode, machine_mode vimode,
 	  if (mode != vimode)
 	    {
 	      xop2 = gen_reg_rtx (vimode);
-	      emit_move_insn (xop2, gen_rtx_SUBREG (vimode, operands[2], 0));
+	      emit_move_insn (xop2, gen_lowpart (vimode, operands[2]));
 	    }
 	  emit_move_insn (src2, xop2);
 	}
