@@ -857,27 +857,27 @@
    (set_attr "type" "alus_sreg")]
 )
 
-;; This is the canonicalization of addsi3_compare0_for_combiner when the
+;; This is the canonicalization of subsi3_compare when the
 ;; addend is a constant.
 (define_insn "cmpsi2_addneg"
   [(set (reg:CC CC_REGNUM)
 	(compare:CC
 	 (match_operand:SI 1 "s_register_operand" "r,r")
-	 (match_operand:SI 2 "arm_addimm_operand" "L,I")))
+	 (match_operand:SI 2 "arm_addimm_operand" "I,L")))
    (set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(plus:SI (match_dup 1)
-		 (match_operand:SI 3 "arm_addimm_operand" "I,L")))]
+		 (match_operand:SI 3 "arm_addimm_operand" "L,I")))]
   "TARGET_32BIT
    && (INTVAL (operands[2])
        == trunc_int_for_mode (-INTVAL (operands[3]), SImode))"
 {
-  /* For 0 and INT_MIN it is essential that we use subs, as adds
-     will result in different condition codes (like cmn rather than
-     like cmp).  For other immediates, we should choose whatever
-     will have smaller encoding.  */
-  if (operands[2] == const0_rtx
-      || INTVAL (operands[2]) == -HOST_WIDE_INT_C (0x80000000)
-      || which_alternative == 1)
+  /* For 0 and INT_MIN it is essential that we use subs, as adds will result
+     in different condition codes (like cmn rather than like cmp), so that
+     alternative comes first.  Both alternatives can match for any 0x??000000
+     where except for 0 and INT_MIN it doesn't matter what we choose, and also
+     for -1 and 1 with TARGET_THUMB2, in that case prefer instruction with #1
+     as it is shorter.  */
+  if (which_alternative == 0 && operands[3] != const1_rtx)
     return "subs%?\\t%0, %1, #%n3";
   else
     return "adds%?\\t%0, %1, %3";
