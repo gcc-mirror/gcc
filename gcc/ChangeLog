@@ -1,3 +1,10 @@
+2019-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89378
+	* config/mips/mips.c (mips_expand_vec_cond_expr): Use gen_lowpart
+	instead of gen_rtx_SUBREG.
+	* config/mips/mips-msa.md (vec_extract<mode><unitmode>): Likewise.
+
 2019-03-19  Richard Biener  <rguenther@suse.de>
 
 	PR debug/88389
