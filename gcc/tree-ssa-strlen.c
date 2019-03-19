@@ -2206,13 +2206,21 @@ handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *gsi)
   int didx = get_stridx (dst);
   if (strinfo *sidst = didx > 0 ? get_strinfo (didx) : NULL)
     {
-      /* Compute the size of the destination string including the NUL.  */
+      /* Compute the size of the destination string including the nul
+	 if it is known to be nul-terminated.  */
       if (sidst->nonzero_chars)
 	{
-	  tree type = TREE_TYPE (sidst->nonzero_chars);
-	  dstsize = fold_build2 (PLUS_EXPR, type, sidst->nonzero_chars,
-				 build_int_cst (type, 1));
+	  if (sidst->endptr)
+	    {
+	      /* String is known to be nul-terminated.  */
+	      tree type = TREE_TYPE (sidst->nonzero_chars);
+	      dstsize = fold_build2 (PLUS_EXPR, type, sidst->nonzero_chars,
+				     build_int_cst (type, 1));
+	    }
+	  else
+	    dstsize = sidst->nonzero_chars;
 	}
+
       dst = sidst->ptr;
     }
 
@@ -2224,12 +2232,18 @@ handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *gsi)
 	 over the terminating nul so SISRC->DONT_INVALIDATE must be left
 	 clear.  */
 
-      /* Compute the size of the source string including the NUL.  */
+      /* Compute the size of the source string including the terminating
+	 nul if its known to be nul-terminated.  */
       if (sisrc->nonzero_chars)
 	{
-	  tree type = TREE_TYPE (sisrc->nonzero_chars);
-	  srcsize = fold_build2 (PLUS_EXPR, type, sisrc->nonzero_chars,
-				 build_int_cst (type, 1));
+	  if (sisrc->endptr)
+	    {
+	      tree type = TREE_TYPE (sisrc->nonzero_chars);
+	      srcsize = fold_build2 (PLUS_EXPR, type, sisrc->nonzero_chars,
+				     build_int_cst (type, 1));
+	    }
+	  else
+	    srcsize = sisrc->nonzero_chars;
 	}
 
 	src = sisrc->ptr;
