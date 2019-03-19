@@ -8651,7 +8651,9 @@ depset::hash::find_dependencies ()
 		 TREE_CODE (decl), decl);
       dump.indent ();
       walker.begin ();
-      if (is_mergeable ())
+      if (TREE_VISITED (decl))
+	/* Depending a fixed decl.  */;
+      else if (is_mergeable ())
 	walker.tree_mergeable (decl);
       else if (current->is_using ())
 	walker.tree_ctx (decl, false, NULL_TREE);

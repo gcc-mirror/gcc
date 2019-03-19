@@ -1,5 +1,11 @@
 2019-03-19  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (depset::hash::find_dependencies): It might be a fixed
+	tree.
+	gcc/testsuite/
+	* g++.dg/modules/stdns_[ab].C: New.
+
 	Using decls part 3.
 	gcc/cp/
 	* cp-tree.h (ovl_iterator::exporting_p): Simplify.
