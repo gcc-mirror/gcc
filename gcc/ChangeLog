@@ -1,3 +1,9 @@
+2019-03-19  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/89737
+	* predict.c (combine_predictions_for_bb): Empty likely_edges and
+	unlikely_edges if there's an edge that belongs to both these sets.
+
 2018-03-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/89746
