@@ -1,6 +1,10 @@
 2019-03-19  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/89644
+	* tree-ssa-strlen.c (handle_builtin_stxncpy): Use full_string_p
+	rather than endptr as an indicator of nul-termination.
+
+	PR tree-optimization/89644
 	* tree-ssa-strlen.c (handle_builtin_stxncpy): Consider unterminated
 	arrays in determining sequence sizes in strncpy and stpncpy.
 
