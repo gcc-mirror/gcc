@@ -1077,6 +1077,14 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 		      "linker plugin");
 	  opts->x_flag_fat_lto_objects = 1;
 	}
+
+      /* -gsplit-dwarf isn't compatible with LTO, see PR88389.  */
+      if (opts->x_dwarf_split_debug_info)
+	{
+	  inform (loc, "%<-gsplit-dwarf%> is not supported with LTO,"
+		  " disabling");
+	  opts->x_dwarf_split_debug_info = 0;
+	}
     }
 
   /* We initialize opts->x_flag_split_stack to -1 so that targets can set a
