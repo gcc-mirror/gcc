@@ -1,3 +1,11 @@
+2019-03-19  Jim Wilson  <jimw@sifive.com>
+
+	PR target/89411
+	* config/riscv/riscv.c (riscv_valid_lo_sum_p): New arg x.  New locals
+	align, size, offset.  Use them to handle a BLKmode reference.  Update
+	comment.
+	(riscv_classify_address): Pass info->offset to riscv_valid_lo_sum_p.
+
 2019-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/89768
