@@ -1,5 +1,8 @@
 2019-03-19  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/using-3.C: New.
+
 	Using decls part 2.
 	gcc/cp/
 	* cp-tree.h (OVL_EXPORT_P): New.
