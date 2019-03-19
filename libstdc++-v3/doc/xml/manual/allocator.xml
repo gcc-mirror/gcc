@@ -138,7 +138,6 @@
 
 
   <section xml:id="allocator.interface"><info><title>Interface Design</title></info>
-    
 
    <para>
      The only allocator interface that
@@ -162,7 +161,6 @@
   </section>
 
   <section xml:id="allocator.default"><info><title>Selecting Default Allocation Policy</title></info>
-    
 
    <para>
      It's difficult to pick an allocation strategy that will provide
@@ -228,7 +226,6 @@
   </section>
 
   <section xml:id="allocator.caching"><info><title>Disabling Memory Caching</title></info>
-    
 
     <para>
       In use, <classname>allocator</classname> may allocate and
@@ -328,8 +325,8 @@
     names have changed, but in all cases, functionality is
     equivalent. Starting with gcc-3.4, all extension allocators are
     standard style. Before this point, SGI style was the norm. Because of
-    this, the number of template arguments also changed. Here's a simple
-    chart to track the changes.
+    this, the number of template arguments also changed.
+    <xref linkend="table.extension_allocators"/> tracks the changes.
   </para>
 
   <para>
@@ -468,7 +465,7 @@
        <para>
 	 A high-performance fixed-size allocator with
 	 exponentially-increasing allocations. It has its own
-	 <link linkend="manual.ext.allocator.mt">chapter</link> 
+	 <link linkend="manual.ext.allocator.mt">chapter</link>
          in the documentation.
        </para>
      </listitem>

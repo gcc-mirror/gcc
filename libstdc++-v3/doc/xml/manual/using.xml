@@ -1192,7 +1192,7 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
         enabled for
         <classname>std::vector&lt;T, std::allocator&lt;T&gt;&gt;</classname>
         and only when <classname>std::allocator</classname> is derived from
-        <link linkend="allocator.impl"><classname>new_allocator</classname>
+        <link linkend="allocator.ext"><classname>new_allocator</classname>
         or <classname>malloc_allocator</classname></link>. The annotations
         must be present on all vector operations or none, so this macro must
         be defined to the same value for all translation units that create,
