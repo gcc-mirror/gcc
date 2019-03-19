@@ -1,3 +1,9 @@
+2019-03-19  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/89644
+	* tree-ssa-strlen.c (handle_builtin_stxncpy): Consider unterminated
+	arrays in determining sequence sizes in strncpy and stpncpy.
+
 2019-03-19  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/89737
