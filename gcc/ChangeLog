@@ -1,3 +1,8 @@
+2019-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR debug/88389
+	* opts.c (finish_options): Disable -gsplit-dwarf when doing LTO.
+
 2019-03-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/89753
