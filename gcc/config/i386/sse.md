@@ -809,6 +809,10 @@
   [V16SI V16SF V8DI V8DF V32HI V64QI])
 (define_mode_iterator VF48H_AVX512VL
   [V8DF V16SF (V8SF "TARGET_AVX512VL")])
+
+(define_mode_iterator VF48_128
+  [V2DF V4SF])
+
 (define_mode_iterator VI48F
   [V16SI V16SF V8DI V8DF
    (V8SI "TARGET_AVX512VL") (V8SF "TARGET_AVX512VL")
@@ -6218,6 +6222,66 @@
 	  (match_operand:V6HF 4 "const0_operand" "C")))]
   "TARGET_AVX512FP16 && TARGET_AVX512VL"
   "vcvtpd2ph{x}\t{%1, %0%{%2%}%{z%}|%0%{%2%}%{z%}, %1}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "avx512fp16_vcvtsh2<ssescalarmodesuffix><mask_scalar_name><round_saeonly_scalar_name>"
+  [(set (match_operand:VF48_128 0 "register_operand" "=v")
+	(vec_merge:VF48_128
+	  (vec_duplicate:VF48_128
+	    (float_extend:<ssescalarmode>
+	      (vec_select:HF
+		(match_operand:V8HF 1 "register_operand" "v")
+		(parallel [(const_int 0)]))))
+	  (match_operand:VF48_128 2 "register_operand" "v")
+	  (const_int 1)))]
+  "TARGET_AVX512FP16"
+  "vcvtsh2<ssescalarmodesuffix>\t{<round_saeonly_scalar_mask_op3>%1, %2, %0<mask_scalar_operand3>|%0<mask_scalar_operand3>, %2, %1<round_saeonly_scalar_mask_op3>}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "avx512fp16_vcvtsh2<ssescalarmodesuffix><mask_scalar_name>_mem"
+  [(set (match_operand:VF48_128 0 "register_operand" "=v")
+	(vec_merge:VF48_128
+	  (vec_duplicate:VF48_128
+	    (float_extend:<ssescalarmode>
+	      (match_operand:HF 1 "memory_operand" "m")))
+	  (match_operand:VF48_128 2 "register_operand" "v")
+	  (const_int 1)))]
+  "TARGET_AVX512FP16"
+  "vcvtsh2<ssescalarmodesuffix>\t{%1, %2, %0<mask_scalar_operand3>|%0<mask_scalar_operand3>, %2, %1}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "avx512fp16_vcvt<ssescalarmodesuffix>2sh<mask_scalar_name><round_scalar_name>"
+  [(set (match_operand:V8HF 0 "register_operand" "=v")
+	(vec_merge:V8HF
+	  (vec_duplicate:V8HF
+	    (float_truncate:HF
+	      (vec_select:<ssescalarmode>
+		(match_operand:VF48_128 1 "register_operand" "v")
+		(parallel [(const_int 0)]))))
+	  (match_operand:V8HF 2 "register_operand" "v")
+	  (const_int 1)))]
+  "TARGET_AVX512FP16"
+  "vcvt<ssescalarmodesuffix>2sh\t{<round_scalar_mask_op3>%1, %2, %0<mask_scalar_operand3>|%0<mask_scalar_operand3>, %2, %1<round_scalar_mask_op3>}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "avx512fp16_vcvt<ssescalarmodesuffix>2sh<mask_scalar_name>_mem"
+  [(set (match_operand:V8HF 0 "register_operand" "=v")
+	(vec_merge:V8HF
+	  (vec_duplicate:V8HF
+	    (float_truncate:HF
+	      (match_operand:MODEF 1 "memory_operand" "m")))
+	  (match_operand:V8HF 2 "register_operand" "v")
+	  (const_int 1)))]
+  "TARGET_AVX512FP16"
+  "vcvt<ssescalarmodesuffix>2sh\t{%1, %2, %0<mask_scalar_operand3>|%0<mask_scalar_operand3>, %2, %1}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
    (set_attr "mode" "TI")])
