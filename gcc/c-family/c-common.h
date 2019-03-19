@@ -1372,7 +1372,8 @@ extern void maybe_add_include_fixit (rich_location *, const char *, bool);
 extern void maybe_suggest_missing_token_insertion (rich_location *richloc,
 						   enum cpp_ttype token_type,
 						   location_t prev_token_loc);
-extern tree braced_list_to_string (tree, tree);
+extern tree braced_lists_to_strings (tree, tree);
+
 extern bool has_attribute (location_t, tree, tree, tree (*)(tree));
 
 #if CHECKING_P

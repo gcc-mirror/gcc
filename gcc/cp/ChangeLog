@@ -1,3 +1,9 @@
+2019-03-19  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/89688
+	* typeck2.c (store_init_value): Call braced_lists_to_string for more
+	kinds of initializers.
+
 2019-03-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/89630 - ICE with dependent using-decl as template arg.
