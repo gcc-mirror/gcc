@@ -12,21 +12,21 @@ are added. These files are placed into
 the <code class="filename">include/backward</code> directory and a deprecated warning
 is added that notifies on inclusion (<code class="literal">-Wno-deprecated</code>
 deactivates the warning.)
-</p><p>Deprecated include <code class="filename">backward/strstream</code> added.</p><p>Removal of include <code class="filename">builtinbuf.h</code>, <code class="filename">indstream.h</code>, <code class="filename">parsestream.h</code>, <code class="filename">PlotFile.h</code>, <code class="filename">SFile.h</code>, <code class="filename">stdiostream.h</code>, and <code class="filename">stream.h</code>.
+</p><p>Deprecated include <code class="filename">&lt;backward/strstream&gt;</code> added.</p><p>Removal of include <code class="filename">&lt;builtinbuf.h&gt;</code>, <code class="filename">&lt;indstream.h&gt;</code>, <code class="filename">&lt;parsestream.h&gt;</code>, <code class="filename">&lt;PlotFile.h&gt;</code>, <code class="filename">&lt;SFile.h&gt;</code>, <code class="filename">&lt;stdiostream.h&gt;</code>, and <code class="filename">&lt;stream.h&gt;</code>.
 </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_310"></a><code class="constant">3.1</code></h3></div></div></div><p>
   </p><p>
 Extensions from SGI/HP moved from <code class="code">namespace std</code>
 to <code class="code">namespace __gnu_cxx</code>. As part of this, the following
 new includes are
-added: <code class="filename">ext/algorithm</code>, <code class="filename">ext/functional</code>, <code class="filename">ext/iterator</code>, <code class="filename">ext/memory</code>, and <code class="filename">ext/numeric</code>.
+added: <code class="filename">&lt;ext/algorithm&gt;</code>, <code class="filename">&lt;ext/functional&gt;</code>, <code class="filename">&lt;ext/iterator&gt;</code>, <code class="filename">&lt;ext/memory&gt;</code>, and <code class="filename">&lt;ext/numeric&gt;</code>.
 </p><p>
 Extensions to <code class="code">basic_filebuf</code> introduced: <code class="code">__gnu_cxx::enc_filebuf</code>, and <code class="code">__gnu_cxx::stdio_filebuf</code>.
 </p><p>
-Extensions to tree data structures added in <code class="filename">ext/rb_tree</code>.
+Extensions to tree data structures added in <code class="filename">&lt;ext/rb_tree&gt;</code>.
 </p><p>
-Removal of <code class="filename">ext/tree</code>, moved to <code class="filename">backward/tree.h</code>.
+Removal of <code class="filename">&lt;ext/tree&gt;</code>, moved to <code class="filename">&lt;backward/tree.h&gt;</code>.
 </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_320"></a><code class="constant">3.2</code></h3></div></div></div><p>
-  </p><p>Symbol versioning introduced for shared library.</p><p>Removal of include <code class="filename">backward/strstream.h</code>.</p><p>Allocator changes. Change <code class="code">__malloc_alloc</code> to <code class="code">malloc_allocator</code> and <code class="code">__new_alloc</code> to <code class="code">new_allocator</code>. </p><p> For GCC releases from 2.95 through the 3.1 series, defining
+  </p><p>Symbol versioning introduced for shared library.</p><p>Removal of include <code class="filename">&lt;backward/strstream.h&gt;</code>.</p><p>Allocator changes. Change <code class="code">__malloc_alloc</code> to <code class="code">malloc_allocator</code> and <code class="code">__new_alloc</code> to <code class="code">new_allocator</code>. </p><p> For GCC releases from 2.95 through the 3.1 series, defining
    <code class="literal">__USE_MALLOC</code> on the gcc command line would change the
    default allocation strategy to instead use <code class="code"> malloc</code> and
    <code class="function">free</code>. For the 3.2 and 3.3 release series the same
@@ -39,7 +39,7 @@ Removal of <code class="filename">ext/tree</code>, moved to <code class="filenam
   </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_340"></a><code class="constant">3.4</code></h3></div></div></div><p>
   </p><p>
 Large file support.
-</p><p> Extensions for generic characters and <code class="code">char_traits</code> added in <code class="filename">ext/pod_char_traits.h</code>.
+</p><p> Extensions for generic characters and <code class="code">char_traits</code> added in <code class="filename">&lt;ext/pod_char_traits.h&gt;</code>.
 </p><p>
 Support for <code class="code">wchar_t</code> specializations of <code class="code">basic_filebuf</code> enhanced to support <code class="code">UTF-8</code> and <code class="code">Unicode</code>, depending on host. More hosts support basic <code class="code">wchar_t</code> functionality.
 </p><p>
@@ -47,7 +47,7 @@ Support for <code class="code">char_traits</code> beyond builtin types.
 </p><p>
 Conformant <code class="code">allocator</code> class and usage in containers. As
 part of this, the following extensions are
-added: <code class="filename">ext/bitmap_allocator.h</code>, <code class="filename">ext/debug_allocator.h</code>, <code class="filename">ext/mt_allocator.h</code>, <code class="filename">ext/malloc_allocator.h</code>,<code class="filename">ext/new_allocator.h</code>, <code class="filename">ext/pool_allocator.h</code>.
+added: <code class="filename">&lt;ext/bitmap_allocator.h&gt;</code>, <code class="filename">&lt;ext/debug_allocator.h&gt;</code>, <code class="filename">&lt;ext/mt_allocator.h&gt;</code>, <code class="filename">&lt;ext/malloc_allocator.h&gt;</code>,<code class="filename">&lt;ext/new_allocator.h&gt;</code>, <code class="filename">&lt;ext/pool_allocator.h&gt;</code>.
 </p><p>
 This is a change from all previous versions, and may require
 source-level changes due to allocator-related changes to structures
@@ -77,75 +77,75 @@ _Alloc_traits</code> have been removed.
    <span class="type">__alloc</span> to select an underlying allocator that
    satisfied memory allocation requests. The selection of this
    underlying allocator was not user-configurable.
-   </p><div class="table"><a id="table.extension_allocators"></a><p class="title"><strong>Table B.6. Extension Allocators</strong></p><div class="table-contents"><table class="table" summary="Extension Allocators" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /></colgroup><thead><tr><th align="left">Allocator (3.4)</th><th align="left">Header (3.4)</th><th align="left">Allocator (3.[0-3])</th><th align="left">Header (3.[0-3])</th></tr></thead><tbody><tr><td align="left"><code class="classname">__gnu_cxx::new_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">ext/new_allocator.h</code></td><td align="left"><code class="classname">std::__new_alloc</code></td><td align="left"><code class="filename">memory</code></td></tr><tr><td align="left"><code class="classname">__gnu_cxx::malloc_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">ext/malloc_allocator.h</code></td><td align="left"><code class="classname">std::__malloc_alloc_template&lt;int&gt;</code></td><td align="left"><code class="filename">memory</code></td></tr><tr><td align="left"><code class="classname">__gnu_cxx::debug_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">ext/debug_allocator.h</code></td><td align="left"><code class="classname">std::debug_alloc&lt;T&gt;</code></td><td align="left"><code class="filename">memory</code></td></tr><tr><td align="left"><code class="classname">__gnu_cxx::__pool_alloc&lt;T&gt;</code></td><td align="left"><code class="filename">ext/pool_allocator.h</code></td><td align="left"><code class="classname">std::__default_alloc_template&lt;bool,int&gt;</code></td><td align="left"><code class="filename">memory</code></td></tr><tr><td align="left"><code class="classname">__gnu_cxx::__mt_alloc&lt;T&gt;</code></td><td align="left"><code class="filename">ext/mt_allocator.h</code></td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left"><code class="classname">__gnu_cxx::bitmap_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">ext/bitmap_allocator.h</code></td><td align="left"> </td><td align="left"> </td></tr></tbody></table></div></div><br class="table-break" /><p> Releases after gcc-3.4 have continued to add to the collection
+   </p><div class="table"><a id="table.extension_allocators"></a><p class="title"><strong>Table B.6. Extension Allocators</strong></p><div class="table-contents"><table class="table" summary="Extension Allocators" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /></colgroup><thead><tr><th align="left">Allocator (3.4)</th><th align="left">Header (3.4)</th><th align="left">Allocator (3.[0-3])</th><th align="left">Header (3.[0-3])</th></tr></thead><tbody><tr><td align="left"><code class="classname">__gnu_cxx::new_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">&lt;ext/new_allocator.h&gt;</code></td><td align="left"><code class="classname">std::__new_alloc</code></td><td align="left"><code class="filename">&lt;memory&gt;</code></td></tr><tr><td align="left"><code class="classname">__gnu_cxx::malloc_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">&lt;ext/malloc_allocator.h&gt;</code></td><td align="left"><code class="classname">std::__malloc_alloc_template&lt;int&gt;</code></td><td align="left"><code class="filename">&lt;memory&gt;</code></td></tr><tr><td align="left"><code class="classname">__gnu_cxx::debug_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">&lt;ext/debug_allocator.h&gt;</code></td><td align="left"><code class="classname">std::debug_alloc&lt;T&gt;</code></td><td align="left"><code class="filename">&lt;memory&gt;</code></td></tr><tr><td align="left"><code class="classname">__gnu_cxx::__pool_alloc&lt;T&gt;</code></td><td align="left"><code class="filename">&lt;ext/pool_allocator.h&gt;</code></td><td align="left"><code class="classname">std::__default_alloc_template&lt;bool,int&gt;</code></td><td align="left"><code class="filename">&lt;memory&gt;</code></td></tr><tr><td align="left"><code class="classname">__gnu_cxx::__mt_alloc&lt;T&gt;</code></td><td align="left"><code class="filename">&lt;ext/mt_allocator.h&gt;</code></td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left"><code class="classname">__gnu_cxx::bitmap_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">&lt;ext/bitmap_allocator.h&gt;</code></td><td align="left"> </td><td align="left"> </td></tr></tbody></table></div></div><br class="table-break" /><p> Releases after gcc-3.4 have continued to add to the collection
    of available allocators. All of these new allocators are
    standard-style. The following table includes details, along with
    the first released version of GCC that included the extension allocator.
-   </p><div class="table"><a id="table.extension_allocators2"></a><p class="title"><strong>Table B.7. Extension Allocators Continued</strong></p><div class="table-contents"><table class="table" summary="Extension Allocators Continued" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left">Allocator</th><th align="left">Include</th><th align="left">Version</th></tr></thead><tbody><tr><td align="left"><code class="classname">__gnu_cxx::array_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">ext/array_allocator.h</code></td><td align="left">4.0.0</td></tr><tr><td align="left"><code class="classname">__gnu_cxx::throw_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">ext/throw_allocator.h</code></td><td align="left">4.2.0</td></tr></tbody></table></div></div><br class="table-break" /><p>
+   </p><div class="table"><a id="table.extension_allocators2"></a><p class="title"><strong>Table B.7. Extension Allocators Continued</strong></p><div class="table-contents"><table class="table" summary="Extension Allocators Continued" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left">Allocator</th><th align="left">Include</th><th align="left">Version</th></tr></thead><tbody><tr><td align="left"><code class="classname">__gnu_cxx::array_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">&lt;ext/array_allocator.h&gt;</code></td><td align="left">4.0.0</td></tr><tr><td align="left"><code class="classname">__gnu_cxx::throw_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">&lt;ext/throw_allocator.h&gt;</code></td><td align="left">4.2.0</td></tr></tbody></table></div></div><br class="table-break" /><p>
 Debug mode first appears.
 </p><p>
 Precompiled header support <acronym class="acronym">PCH</acronym> support.
 </p><p>
 Macro guard for changed, from <code class="literal">_GLIBCPP_</code> to <code class="literal">_GLIBCXX_</code>.
 </p><p>
-Extension <code class="filename">ext/stdio_sync_filebuf.h</code> added.
+Extension <code class="filename">&lt;ext/stdio_sync_filebuf.h&gt;</code> added.
 </p><p>
-Extension <code class="filename">ext/demangle.h</code> added.
+Extension <code class="filename">&lt;ext/demangle.h&gt;</code> added.
 </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_400"></a><code class="constant">4.0</code></h3></div></div></div><p>
   </p><p>
 TR1 features first appear.
 </p><p>
-Extension allocator <code class="filename">ext/array_allocator.h</code> added.
+Extension allocator <code class="filename">&lt;ext/array_allocator.h&gt;</code> added.
 </p><p>
-Extension <code class="code">codecvt</code> specializations moved to <code class="filename">ext/codecvt_specializations.h</code>.
+Extension <code class="code">codecvt</code> specializations moved to <code class="filename">&lt;ext/codecvt_specializations.h&gt;</code>.
 </p><p>
-Removal of <code class="filename">ext/demangle.h</code>.
+Removal of <code class="filename">&lt;ext/demangle.h&gt;</code>.
 </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_410"></a><code class="constant">4.1</code></h3></div></div></div><p>
   </p><p>
-Removal of <code class="filename">cassert</code> from all standard headers: now has to be explicitly included for <code class="code">std::assert</code> calls.
+Removal of <code class="filename">&lt;cassert&gt;</code> from all standard headers: now has to be explicitly included for <code class="code">std::assert</code> calls.
 </p><p> Extensions for policy-based data structures first added. New includes,
 types, namespace <code class="code">pb_assoc</code>.
-</p><p> Extensions for typelists added in <code class="filename">ext/typelist.h</code>.
-</p><p> Extension for policy-based <code class="code">basic_string</code> first added: <code class="code">__gnu_cxx::__versa_string</code> in <code class="filename">ext/vstring.h</code>.
+</p><p> Extensions for typelists added in <code class="filename">&lt;ext/typelist.h&gt;</code>.
+</p><p> Extension for policy-based <code class="code">basic_string</code> first added: <code class="code">__gnu_cxx::__versa_string</code> in <code class="filename">&lt;ext/vstring.h&gt;</code>.
 </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_420"></a><code class="constant">4.2</code></h3></div></div></div><p>
   </p><p> Default visibility attributes applied to <code class="code">namespace std</code>. Support for <code class="code">-fvisibility</code>.
-</p><p>TR1 <code class="filename">random</code>, <code class="filename">complex</code>, and C compatibility headers added.</p><p> Extensions for concurrent programming consolidated
-into <code class="filename">ext/concurrence.h</code> and <code class="filename">ext/atomicity.h</code>,
+</p><p>TR1 <code class="filename">&lt;random&gt;</code>, <code class="filename">&lt;complex&gt;</code>, and C compatibility headers added.</p><p> Extensions for concurrent programming consolidated
+into <code class="filename">&lt;ext/concurrence.h&gt;</code> and <code class="filename">&lt;ext/atomicity.h&gt;</code>,
 including change of namespace to <code class="code">__gnu_cxx</code> in some
 cases. Added types
 include <code class="code">_Lock_policy</code>, <code class="code">__concurrence_lock_error</code>, <code class="code">__concurrence_unlock_error</code>, <code class="code">__mutex</code>, <code class="code">__scoped_lock</code>.</p><p> Extensions for type traits consolidated
-into <code class="filename">ext/type_traits.h</code>. Additional traits are added
+into <code class="filename">&lt;ext/type_traits.h&gt;</code>. Additional traits are added
 (<code class="code">__conditional_type</code>, <code class="code">__enable_if</code>, others.)
 </p><p> Extensions for policy-based data structures revised. New includes,
 types, namespace moved to <code class="code">__pb_ds</code>.
 </p><p> Extensions for debug mode modified: now nested in <code class="code">namespace
 std::__debug</code> and extensions in <code class="code">namespace
-__gnu_cxx::__debug</code>.</p><p> Extensions added: <code class="filename">ext/typelist.h</code>
-and <code class="filename">ext/throw_allocator.h</code>.
+__gnu_cxx::__debug</code>.</p><p> Extensions added: <code class="filename">&lt;ext/typelist.h&gt;</code>
+and <code class="filename">&lt;ext/throw_allocator.h&gt;</code>.
 </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_430"></a><code class="constant">4.3</code></h3></div></div></div><p>
   </p><p>
 C++0X features first appear.
-</p><p>TR1 <code class="filename">regex</code> and <code class="filename">cmath</code>'s mathematical special function added.
+</p><p>TR1 <code class="filename">&lt;regex&gt;</code> and <code class="filename">&lt;cmath&gt;</code>'s mathematical special function added.
 </p><p>
 Backward include edit.
 </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>Removed</p><p>
-<code class="filename">algobase.h</code> <code class="filename">algo.h</code> <code class="filename">alloc.h</code> <code class="filename">bvector.h</code> <code class="filename">complex.h</code>
-<code class="filename">defalloc.h</code> <code class="filename">deque.h</code> <code class="filename">fstream.h</code> <code class="filename">function.h</code> <code class="filename">hash_map.h</code> <code class="filename">hash_set.h</code>
-<code class="filename">hashtable.h</code> <code class="filename">heap.h</code> <code class="filename">iomanip.h</code> <code class="filename">iostream.h</code> <code class="filename">istream.h</code> <code class="filename">iterator.h</code>
-<code class="filename">list.h</code> <code class="filename">map.h</code> <code class="filename">multimap.h</code> <code class="filename">multiset.h</code> <code class="filename">new.h</code> <code class="filename">ostream.h</code> <code class="filename">pair.h</code> <code class="filename">queue.h</code> <code class="filename">rope.h</code> <code class="filename">set.h</code> <code class="filename">slist.h</code> <code class="filename">stack.h</code> <code class="filename">streambuf.h</code> <code class="filename">stream.h</code> <code class="filename">tempbuf.h</code>
-<code class="filename">tree.h</code> <code class="filename">vector.h</code>
+<code class="filename">&lt;algobase.h&gt;</code> <code class="filename">&lt;algo.h&gt;</code> <code class="filename">&lt;alloc.h&gt;</code> <code class="filename">&lt;bvector.h&gt;</code> <code class="filename">&lt;complex.h&gt;</code>
+<code class="filename">&lt;defalloc.h&gt;</code> <code class="filename">&lt;deque.h&gt;</code> <code class="filename">&lt;fstream.h&gt;</code> <code class="filename">&lt;function.h&gt;</code> <code class="filename">&lt;hash_map.h&gt;</code> <code class="filename">&lt;hash_set.h&gt;</code>
+<code class="filename">&lt;hashtable.h&gt;</code> <code class="filename">&lt;heap.h&gt;</code> <code class="filename">&lt;iomanip.h&gt;</code> <code class="filename">&lt;iostream.h&gt;</code> <code class="filename">&lt;istream.h&gt;</code> <code class="filename">&lt;iterator.h&gt;</code>
+<code class="filename">&lt;list.h&gt;</code> <code class="filename">&lt;map.h&gt;</code> <code class="filename">&lt;multimap.h&gt;</code> <code class="filename">&lt;multiset.h&gt;</code> <code class="filename">&lt;new.h&gt;</code> <code class="filename">&lt;ostream.h&gt;</code> <code class="filename">&lt;pair.h&gt;</code> <code class="filename">&lt;queue.h&gt;</code> <code class="filename">&lt;rope.h&gt;</code> <code class="filename">&lt;set.h&gt;</code> <code class="filename">&lt;slist.h&gt;</code> <code class="filename">&lt;stack.h&gt;</code> <code class="filename">&lt;streambuf.h&gt;</code> <code class="filename">&lt;stream.h&gt;</code> <code class="filename">&lt;tempbuf.h&gt;</code>
+<code class="filename">&lt;tree.h&gt;</code> <code class="filename">&lt;vector.h&gt;</code>
   </p></li><li class="listitem"><p>Added</p><p>
-  <code class="filename">hash_map</code> and <code class="filename">hash_set</code>
+  <code class="filename">&lt;hash_map&gt;</code> and <code class="filename">&lt;hash_set&gt;</code>
   </p></li><li class="listitem"><p>Added in C++11</p><p>
-    <code class="filename">auto_ptr.h</code> and <code class="filename">binders.h</code>
+    <code class="filename">&lt;auto_ptr.h&gt;</code> and <code class="filename">&lt;binders.h&gt;</code>
   </p></li></ul></div><p>
 Header dependency streamlining.
-</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><code class="filename">algorithm</code> no longer includes <code class="filename">climits</code>, <code class="filename">cstring</code>, or <code class="filename">iosfwd</code> </p></li><li class="listitem"><p><code class="filename">bitset</code> no longer includes <code class="filename">istream</code> or <code class="filename">ostream</code>, adds <code class="filename">iosfwd</code> </p></li><li class="listitem"><p><code class="filename">functional</code> no longer includes <code class="filename">cstddef</code></p></li><li class="listitem"><p><code class="filename">iomanip</code> no longer includes <code class="filename">istream</code>, <code class="filename">istream</code>, or <code class="filename">functional</code>, adds <code class="filename">ioswd</code> </p></li><li class="listitem"><p><code class="filename">numeric</code> no longer includes <code class="filename">iterator</code></p></li><li class="listitem"><p><code class="filename">string</code> no longer includes <code class="filename">algorithm</code> or <code class="filename">memory</code></p></li><li class="listitem"><p><code class="filename">valarray</code> no longer includes <code class="filename">numeric</code> or <code class="filename">cstdlib</code></p></li><li class="listitem"><p><code class="filename">tr1/hashtable</code> no longer includes <code class="filename">memory</code> or <code class="filename">functional</code></p></li><li class="listitem"><p><code class="filename">tr1/memory</code> no longer includes <code class="filename">algorithm</code></p></li><li class="listitem"><p><code class="filename">tr1/random</code> no longer includes <code class="filename">algorithm</code> or <code class="filename">fstream</code></p></li></ul></div><p>
-Debug mode for <code class="filename">unordered_map</code> and <code class="filename">unordered_set</code>.
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><code class="filename">&lt;algorithm&gt;</code> no longer includes <code class="filename">&lt;climits&gt;</code>, <code class="filename">&lt;cstring&gt;</code>, or <code class="filename">&lt;iosfwd&gt;</code> </p></li><li class="listitem"><p><code class="filename">&lt;bitset&gt;</code> no longer includes <code class="filename">&lt;istream&gt;</code> or <code class="filename">&lt;ostream&gt;</code>, adds <code class="filename">&lt;iosfwd&gt;</code> </p></li><li class="listitem"><p><code class="filename">&lt;functional&gt;</code> no longer includes <code class="filename">&lt;cstddef&gt;</code></p></li><li class="listitem"><p><code class="filename">&lt;iomanip&gt;</code> no longer includes <code class="filename">&lt;istream&gt;</code>, <code class="filename">&lt;istream&gt;</code>, or <code class="filename">&lt;functional&gt;</code>, adds <code class="filename">&lt;ioswd&gt;</code> </p></li><li class="listitem"><p><code class="filename">&lt;numeric&gt;</code> no longer includes <code class="filename">&lt;iterator&gt;</code></p></li><li class="listitem"><p><code class="filename">&lt;string&gt;</code> no longer includes <code class="filename">&lt;algorithm&gt;</code> or <code class="filename">&lt;memory&gt;</code></p></li><li class="listitem"><p><code class="filename">&lt;valarray&gt;</code> no longer includes <code class="filename">&lt;numeric&gt;</code> or <code class="filename">&lt;cstdlib&gt;</code></p></li><li class="listitem"><p><code class="filename">&lt;tr1/hashtable&gt;</code> no longer includes <code class="filename">&lt;memory&gt;</code> or <code class="filename">&lt;functional&gt;</code></p></li><li class="listitem"><p><code class="filename">&lt;tr1/memory&gt;</code> no longer includes <code class="filename">&lt;algorithm&gt;</code></p></li><li class="listitem"><p><code class="filename">&lt;tr1/random&gt;</code> no longer includes <code class="filename">&lt;algorithm&gt;</code> or <code class="filename">&lt;fstream&gt;</code></p></li></ul></div><p>
+Debug mode for <code class="filename">&lt;unordered_map&gt;</code> and <code class="filename">&lt;unordered_set&gt;</code>.
 </p><p>
 Parallel mode first appears.
-</p><p>Variadic template implementations of items in <code class="filename">tuple</code> and
-    <code class="filename">functional</code>.
+</p><p>Variadic template implementations of items in <code class="filename">&lt;tuple&gt;</code> and
+    <code class="filename">&lt;functional&gt;</code>.
 </p><p>Default <code class="code">what</code> implementations give more elaborate
     exception strings for <code class="code">bad_cast</code>,
     <code class="code">bad_typeid</code>, <code class="code">bad_exception</code>, and
@@ -160,20 +160,20 @@ C++0X features.
 </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
     Added.
   </p><p>
-    <code class="filename">atomic</code>,
-    <code class="filename">chrono</code>,
-    <code class="filename">condition_variable</code>,
-    <code class="filename">forward_list</code>,
-    <code class="filename">initializer_list</code>,
-    <code class="filename">mutex</code>,
-    <code class="filename">ratio</code>,
-    <code class="filename">thread</code>
+    <code class="filename">&lt;atomic&gt;</code>,
+    <code class="filename">&lt;chrono&gt;</code>,
+    <code class="filename">&lt;condition_variable&gt;</code>,
+    <code class="filename">&lt;forward_list&gt;</code>,
+    <code class="filename">&lt;initializer_list&gt;</code>,
+    <code class="filename">&lt;mutex&gt;</code>,
+    <code class="filename">&lt;ratio&gt;</code>,
+    <code class="filename">&lt;thread&gt;</code>
   </p></li><li class="listitem"><p>
     Updated and improved.
   </p><p>
-    <code class="filename">algorithm</code>,
-    <code class="filename">system_error</code>,
-    <code class="filename">type_traits</code>
+    <code class="filename">&lt;algorithm&gt;</code>,
+    <code class="filename">&lt;system_error&gt;</code>,
+    <code class="filename">&lt;type_traits&gt;</code>
   </p></li><li class="listitem"><p>
     Use of the GNU extension namespace association converted to inline namespaces.
   </p></li><li class="listitem"><p>
@@ -204,8 +204,8 @@ and <code class="literal">catch</code> to <code class="literal">__catch</code>.
 Audit of internal mutex usage, conversion to functions returning static
 local mutex.
   </p><p> Extensions
-added: <code class="filename">ext/pointer.h</code>
-and <code class="filename">ext/extptr_allocator.h</code>. Support
+added: <code class="filename">&lt;ext/pointer.h&gt;</code>
+and <code class="filename">&lt;ext/extptr_allocator.h&gt;</code>. Support
 for non-standard pointer types has been added
 to <code class="classname">vector</code>
 and <code class="classname">forward_list</code>.
@@ -215,15 +215,15 @@ C++0X features.
 </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
     Added.
   </p><p>
-    <code class="filename">functional</code>,
-    <code class="filename">future</code>,
-    <code class="filename">random</code>
+    <code class="filename">&lt;functional&gt;</code>,
+    <code class="filename">&lt;future&gt;</code>,
+    <code class="filename">&lt;random&gt;</code>
   </p></li><li class="listitem"><p>
     Updated and improved.
   </p><p>
-    <code class="filename">atomic</code>,
-    <code class="filename">system_error</code>,
-    <code class="filename">type_traits</code>
+    <code class="filename">&lt;atomic&gt;</code>,
+    <code class="filename">&lt;system_error&gt;</code>,
+    <code class="filename">&lt;type_traits&gt;</code>
   </p></li><li class="listitem"><p>
     Add support for explicit operators and standard layout types.
   </p></li></ul></div><p>
@@ -236,14 +236,14 @@ Python pretty-printers are added for use with appropriately-advanced versions of
 Audit for application of function attributes nothrow, const, pure, and noreturn.
 </p><p>
 The default behavior for comparing typeinfo names changed, so
-in <code class="filename">typeinfo</code>, <code class="literal">__GXX_MERGED_TYPEINFO_NAMES</code>
+in <code class="filename">&lt;typeinfo&gt;</code>, <code class="literal">__GXX_MERGED_TYPEINFO_NAMES</code>
 now defaults to zero.
-</p><p> Extensions modified: <code class="filename">ext/throw_allocator.h</code>.
+</p><p> Extensions modified: <code class="filename">&lt;ext/throw_allocator.h&gt;</code>.
 </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_460"></a><code class="constant">4.6</code></h3></div></div></div><p>
   Use constexpr and nullptr where appropriate throughout the library.
 </p><p>
   The library was updated to avoid including
-  <code class="filename">stddef.h</code> in order
+  <code class="filename">&lt;stddef.h&gt;</code> in order
   to reduce namespace pollution.
 </p><p>Reference-count annotations to assist data race detectors.
 </p><p>
@@ -255,7 +255,7 @@ now defaults to zero.
   standard.
 </p><p>A new clocale model for newlib is available.</p><p>
   The library was updated to avoid including
-  <code class="filename">unistd.h</code> in order
+  <code class="filename">&lt;unistd.h&gt;</code> in order
   to reduce namespace pollution.
 </p><p>Debug Mode was improved for unordered containers. </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_480"></a><code class="constant">4.8</code></h3></div></div></div><p>
   New random number engines and distributions.
@@ -314,7 +314,11 @@ now defaults to zero.
   <code class="classname">has_trivial_default_constructor</code>,
   <code class="classname">has_trivial_copy_constructor</code> and
   <code class="classname">has_trivial_copy_assign</code> removed.
-</p><p> Profile Mode was deprecated. </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="api.rel_73"></a><code class="constant">7.3</code></h4></div></div></div><p>
+</p><p> Profile Mode was deprecated. </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="api.rel_72"></a><code class="constant">7.2</code></h4></div></div></div><p>
+  Library Fundamentals TS header
+  <code class="filename">&lt;experimental/source_location&gt;</code>
+  added.
+</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="api.rel_73"></a><code class="constant">7.3</code></h4></div></div></div><p>
   Including new C++14 or C++17 headers without a suitable <code class="option">-std</code>
   no longer causes compilation to fail via <code class="literal">#error</code>.
   Instead the header is simply empty and doesn't define anything.
@@ -322,7 +326,13 @@ now defaults to zero.
   The exceptions thrown by iostreams can now be caught by handlers for either
   version of <code class="classname">std::ios_base::failure</code>.
 </p><p>
+  Improved experimental C++17 support. Headers
+  <code class="filename">&lt;charconv&gt;</code> and
+  <code class="filename">&lt;filesystem&gt;</code>.
   Experimental implementation of the C++17 Filesystem library added.
+</p><p>
+  Experimental C++2a support
+  (<code class="function">to_address</code> and <code class="classname">endian</code>).
 </p><p>
   AddressSanitizer annotations added to <code class="classname">std::vector</code>
   to detect out-of-range accesses to the unused capacity of a vector.
@@ -356,4 +366,28 @@ now defaults to zero.
   For the non-default <code class="option">--enable-symvers=gnu-versioned-namespace</code>
   configuration, the shared library SONAME has been changed to
   <code class="filename">libstdc++.so.8</code>.
+</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_91"></a><code class="constant">9</code></h3></div></div></div><p>
+  C++17 header
+  <code class="filename">&lt;memory_resource&gt;</code>
+  added.
+</p><p>
+  Experimental C++2a support improved, with new headers
+  <code class="filename">&lt;bit&gt;</code> and
+  <code class="filename">&lt;version&gt;</code> added.
+  Support for new character type <span class="type">char8_t</span> added
+  to <code class="classname">char_traits</code>, <code class="classname">basic_string</code>,
+  <code class="classname">numeric_limits</code>,
+  and relevant locale facets and type traits.
+</p><p>
+  Experimental implementation of the Networking TS library added,
+  with new headers
+  <code class="filename">&lt;experimental/buffer&gt;</code>,
+  <code class="filename">&lt;experimental/executor&gt;</code>,
+  <code class="filename">&lt;experimental/internet&gt;</code>,
+  <code class="filename">&lt;experimental/io_context&gt;</code>,
+  <code class="filename">&lt;experimental/net&gt;</code>,
+  <code class="filename">&lt;experimental/netfwd&gt;</code>,
+  <code class="filename">&lt;experimental/socket&gt;</code>,
+  and
+  <code class="filename">&lt;experimental/timer&gt;</code>.
 </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="abi.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_porting.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="backwards.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">ABI Policy and Guidelines </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Backwards Compatibility</td></tr></table></div></body></html>

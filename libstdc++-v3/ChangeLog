@@ -1,3 +1,12 @@
+2019-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/allocator.xml: Link to table documenting evolution
+	of extension allocators.
+	* doc/xml/manual/evolution.xml: Use angle brackets for header names.
+	Document new headers in 7.2, 8.1 and 9.1 releases.
+	* doc/xml/manual/using.xml: Adjust link target for new_allocator.
+	* doc/html/*: Regenerate.
+
 2019-03-12  John David Anglin  <dave.anglin@bell.net>
 
 	PR libstdc++/89461
