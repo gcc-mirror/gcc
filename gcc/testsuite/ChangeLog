@@ -1,3 +1,11 @@
+2019-03-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/87809
+	PR lto/89335
+	* g++.dg/lto/pr87089_0.C: New testcase.
+	* g++.dg/lto/pr87089_1.C: New testcase.
+	* g++.dg/lto/pr89335_0.C: New testcase.
+
 2019-03-19  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR target/89736
