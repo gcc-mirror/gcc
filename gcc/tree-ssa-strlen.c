@@ -2210,7 +2210,7 @@ handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *gsi)
 	 if it is known to be nul-terminated.  */
       if (sidst->nonzero_chars)
 	{
-	  if (sidst->endptr)
+	  if (sidst->full_string_p)
 	    {
 	      /* String is known to be nul-terminated.  */
 	      tree type = TREE_TYPE (sidst->nonzero_chars);
@@ -2236,7 +2236,7 @@ handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *gsi)
 	 nul if its known to be nul-terminated.  */
       if (sisrc->nonzero_chars)
 	{
-	  if (sisrc->endptr)
+	  if (sisrc->full_string_p)
 	    {
 	      tree type = TREE_TYPE (sisrc->nonzero_chars);
 	      srcsize = fold_build2 (PLUS_EXPR, type, sisrc->nonzero_chars,
