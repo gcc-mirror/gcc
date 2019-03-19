@@ -16,9 +16,6 @@ import (
 //extern pathconf
 func libc_pathconf(*byte, int) int
 
-//extern fdopendir
-func libc_fdopendir(int32) *syscall.DIR
-
 func clen(n []byte) int {
 	for i := 0; i < len(n); i++ {
 		if n[i] == 0 {

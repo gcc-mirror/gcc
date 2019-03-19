@@ -35,7 +35,9 @@ const (
 	writeLock lockType = syscall.F_WRLCK
 )
 
-type inode = uint64 // type of syscall.Stat_t.Ino
+// type of syscall.Stat_t.Ino for 64 bits architectures.
+// For 32 bits architecture, it's easier to cast it instead.
+type inode = uint64
 
 type inodeLock struct {
 	owner File
@@ -59,7 +61,7 @@ func lock(f File, lt lockType) (err error) {
 	if err != nil {
 		return err
 	}
-	ino := fi.Sys().(*syscall.Stat_t).Ino
+	ino := uint64(fi.Sys().(*syscall.Stat_t).Ino)
 
 	mu.Lock()
 	if i, dup := inodes[f]; dup && i != ino {
