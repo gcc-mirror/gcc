@@ -824,10 +824,9 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
       value = digest_init_flags (type, init, flags, tf_warning_or_error);
     }
 
-  if (TREE_CODE (type) == ARRAY_TYPE
-      && TYPE_STRING_FLAG (TREE_TYPE (type))
-      && TREE_CODE (value) == CONSTRUCTOR)
-    value = braced_list_to_string (type, value);
+  /* Look for braced array initializers for character arrays and
+     recursively convert them into STRING_CSTs.  */
+  value = braced_lists_to_strings (type, value);
 
   current_ref_temp_count = 0;
   value = extend_ref_init_temps (decl, value, cleanups);

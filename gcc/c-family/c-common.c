@@ -8814,7 +8814,7 @@ maybe_add_include_fixit (rich_location *richloc, const char *header,
    TYPE into a STRING_CST for convenience and efficiency.  Return
    the converted string on success or the original ctor on failure.  */
 
-tree
+static tree
 braced_list_to_string (tree type, tree ctor)
 {
   if (!tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
@@ -8893,6 +8893,54 @@ braced_list_to_string (tree type, tree ctor)
   tree res = build_string (str.length (), str.begin ());
   TREE_TYPE (res) = type;
   return res;
+}
+
+/* Attempt to convert a CTOR containing braced array initializer lists
+   for array TYPE into one containing STRING_CSTs, for convenience and
+   efficiency.  Recurse for arrays of arrays and member initializers.
+   Return the converted CTOR or STRING_CST on success or the original
+   CTOR otherwise.  */
+
+tree
+braced_lists_to_strings (tree type, tree ctor)
+{
+  if (TREE_CODE (ctor) != CONSTRUCTOR)
+    return ctor;
+
+  tree_code code = TREE_CODE (type);
+
+  tree ttp;
+  if (code == ARRAY_TYPE)
+    ttp = TREE_TYPE (type);
+  else if (code == RECORD_TYPE)
+    {
+      ttp = TREE_TYPE (ctor);
+      if (TREE_CODE (ttp) == ARRAY_TYPE)
+	{
+	  type = ttp;
+	  ttp = TREE_TYPE (ttp);
+	}
+    }
+  else
+    return ctor;
+
+  if (TYPE_STRING_FLAG (ttp))
+    return braced_list_to_string (type, ctor);
+
+  code = TREE_CODE (ttp);
+  if (code == ARRAY_TYPE || code == RECORD_TYPE)
+    {
+      /* Handle array of arrays or struct member initializers.  */
+      tree val;
+      unsigned HOST_WIDE_INT idx;
+      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), idx, val)
+	{
+	  val = braced_lists_to_strings (ttp, val);
+	  CONSTRUCTOR_ELT (ctor, idx)->value = val;
+	}
+    }
+
+  return ctor;
 }
 
 #include "gt-c-family-c-common.h"

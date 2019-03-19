@@ -5165,11 +5165,10 @@ finish_decl (tree decl, location_t init_loc, tree init,
       relayout_decl (decl);
     }
 
-  if (TREE_CODE (type) == ARRAY_TYPE
-      && TYPE_STRING_FLAG (TREE_TYPE (type))
-      && DECL_INITIAL (decl)
-      && TREE_CODE (DECL_INITIAL (decl)) == CONSTRUCTOR)
-    DECL_INITIAL (decl) = braced_list_to_string (type, DECL_INITIAL (decl));
+  /* Look for braced array initializers for character arrays and
+     recursively convert them into STRING_CSTs.  */
+  if (tree init = DECL_INITIAL (decl))
+    DECL_INITIAL (decl) = braced_lists_to_strings (type, init);
 
   if (VAR_P (decl))
     {
