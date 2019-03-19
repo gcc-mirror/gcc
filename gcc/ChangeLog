@@ -1,3 +1,10 @@
+2018-03-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/89746
+	* config/rs6000/rs6000.md (fix_trunc<mode>si2_stfiwx): If we have a
+	non-TARGET_MFCRF target, and the dest is memory but not 32-bit aligned,
+	go via a stack temporary.
+
 2019-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/89378
