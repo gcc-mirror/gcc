@@ -468,6 +468,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       CONSTRUCTOR_PLACEHOLDER_BOUNDARY (in CONSTRUCTOR)
+      OVL_EXPORT_P (in OVERLOAD)
    6: IDENTIFIER_REPO_CHOSEN (in IDENTIFIER_NODE)
       TYPE_MARKED_P (in _TYPE)
       DECL_NONTRIVIALLY_INITIALIZED_P (in VAR_DECL)
@@ -716,6 +717,8 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_NESTED_P(NODE)	TREE_LANG_FLAG_3 (OVERLOAD_CHECK (NODE))
 /* If set, this overload was constructed during lookup.  */
 #define OVL_LOOKUP_P(NODE)	TREE_LANG_FLAG_4 (OVERLOAD_CHECK (NODE))
+/* If set, this OVL_USING_P overload is exported.  */
+#define OVL_EXPORT_P(NODE)	TREE_LANG_FLAG_5 (OVERLOAD_CHECK (NODE))
 
 /* The first decl of an overload.  */
 #define OVL_FIRST(NODE)	ovl_first (NODE)
@@ -787,6 +790,13 @@ class ovl_iterator  {
   {
     return TREE_CODE (ovl) == OVERLOAD && OVL_USING_P (ovl);
   }
+  /* Whether this using is being exported.  */
+  bool exporting_p () const
+  {
+    gcc_checking_assert (using_p ());
+    return OVL_EXPORT_P (ovl);
+  }
+  
   bool hidden_p () const
   {
     return TREE_CODE (ovl) == OVERLOAD && OVL_HIDDEN_P (ovl);
@@ -7446,7 +7456,7 @@ inline tree ovl_first				(tree) ATTRIBUTE_PURE;
 extern tree ovl_make				(tree fn,
 						 tree next = NULL_TREE);
 extern tree ovl_insert				(tree fn, tree maybe_ovl,
-						 bool using_p = false);
+						 int usingness = 0);
 extern tree ovl_skip_hidden			(tree) ATTRIBUTE_PURE;
 extern void lookup_mark				(tree lookup, bool val);
 extern tree lookup_add				(tree fns, tree lookup);

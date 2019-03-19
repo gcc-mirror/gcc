@@ -59,6 +59,8 @@ static name_hint suggest_alternatives_for_1 (location_t location, tree name,
 #define STAT_VISIBLE(N) OVL_CHAIN (N)
 #define MAYBE_STAT_DECL(N) (STAT_HACK_P (N) ? STAT_DECL (N) : N)
 #define MAYBE_STAT_TYPE(N) (STAT_HACK_P (N) ? STAT_TYPE (N) : NULL_TREE)
+/* When a STAT_HACK_P is true, OVL_USING_P and OVL_EXPORT_P are valid
+   and apply to the hacked type.  */
 
 /* Create a STAT_HACK node with DECL as the value binding and TYPE as
    the type binding.  */
@@ -4930,6 +4932,9 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
       lookup.value = NULL_TREE;
     }
 
+  /* Only process exporting if we're going to be inserting.  */
+  bool revealing_p = insert_p && !fn_scope_p && module_has_bmi_p ();
+
   if (!lookup.value)
     /* Nothing.  */;
   else if (OVL_P (lookup.value) && (!value || OVL_P (value)))
@@ -4952,8 +4957,15 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 	      if (new_fn == old_fn)
 		{
 		  /* The function already exists in the current
-		     namespace.  */
-		  found = true;
+		     namespace.  We will still want to insert it if
+		     it is revealing a not-revealed thing.  */
+		  if (!revealing_p ||
+		      (old.using_p ()
+		       && old.exporting_p () >= module_exporting_p ()))
+		    found = true;
+		  // FIXME: This can cause the same decl to appear
+		  // twice on a single overload.  That very likely
+		  // breaks a dedup invariant.
 		  break;
 		}
 	      else if (old.using_p ())
@@ -4964,7 +4976,7 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 		continue; /* Parameters do not match.  */
 	      else if (decls_match (new_fn, old_fn))
 		{
-		  /* extern "C" in different namespaces.  */
+		  /* Extern "C" in different namespaces.  */
 		  found = true;
 		  break;
 		}
@@ -4978,11 +4990,27 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 	    }
 
 	  if (!found && insert_p)
-	    /* Unlike the overload case we don't drop anticipated
-	       builtins here.  They don't cause a problem, and
-	       we'd like to match them with a future
-	       declaration.  */
-	    value = ovl_insert (new_fn, value, true);
+	    {
+	      /* Unlike the overload case we don't drop anticipated
+		 builtins here.  They don't cause a problem, and we'd
+		 like to match them with a future declaration.  */
+	      int usingness = 1;
+	      if (revealing_p && module_exporting_p ())
+		{
+		  if (!DECL_MODULE_EXPORT_P (new_fn)
+		      && (MAYBE_DECL_MODULE_OWNER (new_fn)
+			  || !TREE_PUBLIC (CP_DECL_CONTEXT (new_fn))
+			  || DECL_THIS_STATIC (new_fn)))
+		    {
+		      error ("%q#D does not have external linkage", new_fn);
+		      inform (DECL_SOURCE_LOCATION (new_fn),
+			      "%q#D declared here", new_fn);
+		    }
+		  else
+		    usingness = -1;
+		}
+	      value = ovl_insert (new_fn, value, usingness);
+	    }
 	}
     }
   else if (value
@@ -4998,6 +5026,7 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 
   if (lookup.type && lookup.type != type)
     {
+      // FIXME: Exporting etc?
       if (type && !decls_match (lookup.type, type))
 	{
 	  diagnose_name_conflict (lookup.type, type);

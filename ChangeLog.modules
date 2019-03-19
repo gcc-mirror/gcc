@@ -1,5 +1,17 @@
 2019-03-19  Nathan Sidwell  <nathan@acm.org>
 
+	Using decls part 2.
+	gcc/cp/
+	* cp-tree.h (OVL_EXPORT_P): New.
+	(ovl_iterator::exporting_p): New.
+	(ovl_insert): Change using_p arg type.
+	* tree.c (ovl_insert): USINGNESS parm conveys exporting too.
+	* name-lookup.c (do_nonmember_using_decl): Deal with exports.
+	* module.cc (binding_cmp): Sort usings too.
+	(module_state::{read,write}_cluster): Using decls too.
+	gcc/testsuite/
+	* g++.dg/modules/using-2_[abc].C: New.
+
 	gcc/cp/
 	* name-lookup.c (do_nonmember_using_decl): Cleanups.
 	(finish_nonmember_using_decl): Likewise.

@@ -8685,7 +8685,7 @@ depset::hash::add_mergeable (tree decl)
 
 /* Compare two binding entries.  TYPE_DECL before non-exported before
    exported.  */
-// FIXME: Reachable globals are not found by name
+// FIXME: Reachable globals are not findable by name
 
 static int
 binding_cmp (const void *a_, const void *b_)
@@ -8706,11 +8706,35 @@ binding_cmp (const void *a_, const void *b_)
   if (TREE_CODE (b_ent) == TYPE_DECL)
     return +1;  /* B first.  */
 
-  if (DECL_MODULE_EXPORT_P (a_ent) != DECL_MODULE_EXPORT_P (b_ent))
+  bool a_using = a->is_using ();
+  bool a_export;
+  if (a_using)
+    {
+      a_export = OVL_EXPORT_P (a_ent);
+      a_ent = OVL_FUNCTION (a_ent);
+    }
+  else
+    a_export = DECL_MODULE_EXPORT_P (a_ent);
+  
+  bool b_using = b->is_using ();
+  bool b_export;
+  if (b_using)
+    {
+      b_export = OVL_EXPORT_P (b_ent);
+      b_ent = OVL_FUNCTION (b_ent);
+    }
+  else
+    b_export = DECL_MODULE_EXPORT_P (b_ent);
+
+  if (a_export != b_export)
     /* Non-export first.  */
-    return DECL_MODULE_EXPORT_P (a_ent) ? +1 : -1;
+    return a_export ? +1 : -1;
 
   /* At this point we don't care, but want a stable sort.  */
+  if (a_using != b_using)
+    /* using first.  */
+    return a_using? -1 : +1;
+
   return DECL_UID (a_ent) < DECL_UID (b_ent) ? -1 : +1;
 }
 
@@ -10581,21 +10605,35 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  /* Write in reverse order, so reading will see the
 	     exports first, thus building the overload chain will be
 	     optimized.  */
+	  bool exporting = true;
 	  for (unsigned jx = b->deps.length (); jx--;)
 	    {
 	      depset *dep = b->deps[jx];
 	      tree decl = dep->get_entity ();
+	      bool exp = false;
 	      unsigned code = 1;
 	      if (dep->is_using ())
 		{
+		  exp = OVL_EXPORT_P (decl);
+		  code = 2 + exp;
 		  decl = OVL_FUNCTION (decl);
-		  code = 2;
-		  /* FIXME: Exportedness of the using decl itself.  */
 		}
+	      else if (TREE_CODE (decl) != TYPE_DECL)
+		exp = DECL_MODULE_EXPORT_P (decl);
+
 	      gcc_checking_assert (DECL_P (decl));
-	      sec.u (code);
+
+	      if (exporting && !exp)
+		{
+		  exporting = false;
+		  sec.i (-1);
+		}
+
+	      sec.i (code);
 	      sec.tree_node (decl);
 	    }
+	  if (exporting)
+	    sec.u (-1);
 
 	  /* Terminate the list.  */
 	  sec.u (0);
@@ -10668,8 +10706,14 @@ module_state::read_cluster (unsigned snum)
 			      || is_partition ()
 			      || is_header ()));
 
-	    while (unsigned code = sec.u ())
+	    while (int code = sec.i ())
 	      {
+		if (code < 0)
+		  {
+		    visible = decls;
+		    continue;
+		  }
+
 		tree decl = sec.tree_node ();
 		if (sec.get_overrun ())
 		  break;
@@ -10678,6 +10722,8 @@ module_state::read_cluster (unsigned snum)
 		    /* A using declaration.  */
 		    decls = ovl_make (decl, decls);
 		    OVL_DEDUP_P (decls) = OVL_USING_P (decls) = true;
+		    if (code > 1)
+		      OVL_EXPORT_P (decls) = true;
 		  }
 		else if (TREE_CODE (decl) == TYPE_DECL)
 		  {
@@ -10687,35 +10733,21 @@ module_state::read_cluster (unsigned snum)
 		    continue;
 		  }
 		else if (decls
+			 || (dedup && TREE_CODE (decl) == FUNCTION_DECL)
 			 || (TREE_CODE (decl) == TEMPLATE_DECL
 			     && (TREE_CODE (DECL_TEMPLATE_RESULT (decl))
-				 == FUNCTION_DECL))
-			 // FIXME: I think the below applies to non fns too?
-			 || (TREE_CODE (decl) == FUNCTION_DECL
-			     && dedup))
+				 == FUNCTION_DECL)))
 		  {
-		    if (!DECL_DECLARES_FUNCTION_P (decl)
-			|| (decls
-			    && TREE_CODE (decls) != OVERLOAD
-			    && TREE_CODE (decls) != FUNCTION_DECL))
-		      sec.set_overrun ();
 		    decls = ovl_make (decl, decls);
 		    if (dedup)
 		      OVL_DEDUP_P (decls) = true;
 		  }
 		else
 		  decls = decl;
-
-		if (DECL_MODULE_EXPORT_P (decl)
-		    || ((is_primary () || is_partition ())
-			// FIXME: !DECL_THIS_STATIC
-			&& (TREE_PUBLIC (decl)
-			    /* Template types don't get TREE_PUBLIC set.  */
-			    || (TREE_CODE (decl) == TEMPLATE_DECL
-				&& (TREE_CODE (DECL_TEMPLATE_RESULT (decl))
-				    == TYPE_DECL)))))
-		  visible = decls;
 	      }
+
+	    if (is_primary () || is_partition ())
+	      visible = decls;
 
 	    if (!decls)
 	      {
@@ -10736,11 +10768,12 @@ module_state::read_cluster (unsigned snum)
 	    if (type && !sec.is_existing_mergeable (type))
 	      add_module_decl (ns, name, type);
 	    for (ovl_iterator iter (decls); iter; ++iter)
-	      {
-		tree decl = *iter;
-		if (!sec.is_existing_mergeable (decl))
-		  add_module_decl (ns, name, decl);
-	      }
+	      if (!iter.using_p ())
+		{
+		  tree decl = *iter;
+		  if (!sec.is_existing_mergeable (decl))
+		    add_module_decl (ns, name, decl);
+		}
 	  }
 	  break;
 
@@ -13034,7 +13067,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
   table.find_dependencies ();
   // FIXME: Find reachable GMF entities from non-emitted pieces.  It'd
   // be nice to have a flag telling us this walk's necessary.  Even
-  // better to not do it (why are we making visible implementation details?)
+  // better to not do it (why are we making visible implementation
+  // details?) Fight the spec!
 
   if (!table.finalize_dependencies ())
     {
