@@ -1,3 +1,7 @@
+2019-03-19  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/lib-93.c: Adjust target selector.
+
 2018-09-05  Cesar Philippidis  <cesar@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 
