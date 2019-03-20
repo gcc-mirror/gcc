@@ -1,5 +1,11 @@
 2019-03-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/89775
+	* gcc.target/s390/pr89775-1.c: New test.
+	* gcc.target/s390/pr89775-2.c: New test.
+
+2019-03-20  Jakub Jelinek  <jakub@redhat.com>
+
 	PR target/89752
 	* g++.target/aarch64/aarch64.exp: New file.
 	* g++.target/aarch64/pr89752.C: New test.

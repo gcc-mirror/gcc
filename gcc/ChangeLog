@@ -1,3 +1,11 @@
+2019-03-20  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/89775
+	* config/s390/s390.c (global_not_special_regno_p): Move to make it
+	available to ...
+	(s390_optimize_register_info): Use global_not_special_regno_p to
+	check for global regs.
+
 2019-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/89752
