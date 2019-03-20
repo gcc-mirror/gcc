@@ -255,6 +255,40 @@ public:
       }
   }
 
+  /* Templates are D's approach to generic programming.  They have no members
+     that can be emitted, however if the template is nested and used as a
+     voldemort type, then it's members must be compiled before the parent
+     function finishes.  */
+
+  void visit (TemplateDeclaration *d)
+  {
+    /* Type cannot be directly named outside of the scope it's declared in, so
+       the only way it can be escaped is if the function has auto return.  */
+    FuncDeclaration *fd = d_function_chain ? d_function_chain->function : NULL;
+
+    if (!fd || !fd->isAuto ())
+      return;
+
+    /* Check if the function returns an instantiated type that may contain
+       nested members.  Only applies to classes or structs.  */
+    Type *tb = fd->type->nextOf ()->baseElemOf ();
+
+    while (tb->ty == Tarray || tb->ty == Tpointer)
+      tb = tb->nextOf ()->baseElemOf ();
+
+    TemplateInstance *ti = NULL;
+
+    if (tb->ty == Tstruct)
+      ti = ((TypeStruct *) tb)->sym->isInstantiated ();
+    else if (tb->ty == Tclass)
+      ti = ((TypeClass *) tb)->sym->isInstantiated ();
+
+    /* Return type is instantiated from this template declaration, walk over
+       all members of the instance.  */
+    if (ti && ti->tempdecl == d)
+      ti->accept (this);
+  }
+
   /* Walk over all members in the instantiated template.  */
 
   void visit (TemplateInstance *d)
@@ -2228,8 +2262,13 @@ build_type_decl (tree type, Dsymbol *dsym)
 
   gcc_assert (!POINTER_TYPE_P (type));
 
+  /* If a templated type, use the template instance name, as that includes all
+     template parameters.  */
+  const char *name = dsym->parent->isTemplateInstance ()
+    ? ((TemplateInstance *) dsym->parent)->toChars () : dsym->ident->toChars ();
+
   tree decl = build_decl (make_location_t (dsym->loc), TYPE_DECL,
-			  get_identifier (dsym->ident->toChars ()), type);
+			  get_identifier (name), type);
   SET_DECL_ASSEMBLER_NAME (decl, get_identifier (mangle_decl (dsym)));
   TREE_PUBLIC (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;

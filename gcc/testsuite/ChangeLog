@@ -1,3 +1,8 @@
+2019-03-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/89017
+	* gdc.dg/pr89017.d: New test.
+
 2019-03-20  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/71861

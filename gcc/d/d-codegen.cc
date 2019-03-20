@@ -67,7 +67,7 @@ d_decl_context (Dsymbol *dsym)
   Dsymbol *parent = dsym;
   Declaration *decl = dsym->isDeclaration ();
 
-  while ((parent = parent->toParent ()))
+  while ((parent = parent->toParent2 ()))
     {
       /* We've reached the top-level module namespace.
 	 Set DECL_CONTEXT as the NAMESPACE_DECL of the enclosing module,
@@ -101,11 +101,6 @@ d_decl_context (Dsymbol *dsym)
 
 	  return context;
 	}
-
-      /* Instantiated types are given the context of their template.  */
-      TemplateInstance *ti = parent->isTemplateInstance ();
-      if (ti != NULL && decl == NULL)
-	parent = ti->tempdecl;
     }
 
   return NULL_TREE;

@@ -1,3 +1,11 @@
+2019-03-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/89017
+	* d-codegen.cc (d_decl_context): Skip over template instances when
+	finding the context.
+	* decl.cc (DeclVisitor::visit(TemplateDeclaration)): New override.
+	(build_type_decl): Include parameters in name of template types.
+
 2019-03-13  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/88957
