@@ -1,6 +1,9 @@
 2019-03-20  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::mark_class_def): Skip friends in decl_list.
+
+	gcc/cp/
 	* module.cc (module_state::read_namespaces): Module-linkage
 	namespaces are visible in the module itself.
 	* name-lookup.h (add_imported_namespace): Rename parm.

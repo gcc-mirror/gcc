@@ -6315,7 +6315,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
     {
       if (use_tpl & 1)
 	{
-	  /* Some kind of instantiation. */
+	  /* Implicit or explicit instantiation. */
 	  tree tpl = TI_TEMPLATE (ti);
 	  enum tree_code c = TREE_CODE (DECL_CONTEXT (tpl));
 	  if ((RECORD_OR_UNION_CODE_P (c) || c == ENUMERAL_TYPE)
@@ -6323,6 +6323,9 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	    ; /* Implicit member template.  */
 	  else
 	    {
+	      // FIXME: this should be a dependency and serialized as
+	      // a mergeable decl.  We cannot rely on instantiating it
+	      // on read back
 	      if (streaming_p ())
 		i (tt_inst);
 	      tree_ctx (tpl, false, NULL_TREE);
@@ -6331,8 +6334,11 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	      goto insert;
 	    }
 	}
-      else
-	gcc_assert (!use_tpl);
+      else if (use_tpl == 2)
+	{
+	  // FIXME: partial/explicit specialization?
+	  gcc_unreachable ();
+	}
     }
 
   {
@@ -8111,16 +8117,19 @@ trees_out::mark_class_def (tree defn)
 
       for (tree decls = CLASSTYPE_DECL_LIST (type);
 	   decls; decls = TREE_CHAIN (decls))
-	{
-	  /* There may be decls here, that are not on the member vector.
-	     for instance forward declarations of member tagged types.  */
-	  tree member = TREE_VALUE (decls);
-	  if (TYPE_P (member))
-	    /* In spite of its name, non-decls appear :(.  */
-	    member = TYPE_NAME (member);
-	  gcc_assert (DECL_CONTEXT (member) == type);
-	  mark_node (member);
-	}
+	/* Friends have NULL purpose.  (That's not true, friends are
+	   needed for a healthy life!)  */
+	if (TREE_PURPOSE (decls))
+	  {
+	    /* There may be decls here, that are not on the member vector.
+	       for instance forward declarations of member tagged types.  */
+	    tree member = TREE_VALUE (decls);
+	    if (TYPE_P (member))
+	      /* In spite of its name, non-decls appear :(.  */
+	      member = TYPE_NAME (member);
+	    gcc_assert (DECL_CONTEXT (member) == type);
+	    mark_node (member);
+	  }
     }
 }
 
