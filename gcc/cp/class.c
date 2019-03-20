@@ -2969,8 +2969,8 @@ finish_struct_anon (tree t)
 void
 maybe_add_class_template_decl_list (tree type, tree t, int friend_p)
 {
-  /* Save some memory by not creating TREE_LIST if TYPE is not template.  */
-  if (CLASSTYPE_TEMPLATE_INFO (type))
+  if (CLASSTYPE_TEMPLATE_INFO (type)
+      && TREE_CODE (t) != CONST_DECL)
     CLASSTYPE_DECL_LIST (type)
       = tree_cons (friend_p ? NULL_TREE : type,
 		   t, CLASSTYPE_DECL_LIST (type));

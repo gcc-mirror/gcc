@@ -1,3 +1,23 @@
+2019-03-20  Nathan Sidwell  <nathan@acm.org>
+
+	Enum members of templates.
+	gcc/cp/
+	* class.c (maybe_add_class_template_decl): No need to add
+	CONST_DECLs.
+	* pt.c (instantiate_class_template_1): CONST_DECLs are not on the
+	template decl list no more.
+	* module.cc (node_template_info): Cope with enum members of
+	templates.
+	(trees_in::insert): Allow null when failing.
+	(trees_{in,out}::core_vals): Uninstantiated enums have no
+	underlying type.
+	(trees_out::tree_decl): Enums can be members too.
+	(trees_out::write_class_def): Only announce when streaming.
+	(trees_out::mark_class_def): Don't mark const_decl fields.
+	(trees_out::mark_enum_def): Always mark the enum here.
+	gcc/testsuite.
+	* g++.dg/modules/enum-2_[ab].C: New.
+
 2019-03-19  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

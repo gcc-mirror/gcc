@@ -11197,12 +11197,13 @@ instantiate_class_template_1 (tree type)
                                         STATIC_ASSERT_SOURCE_LOCATION (t),
                                         /*member_p=*/true);
                 }
-	      else if (TREE_CODE (t) != CONST_DECL)
+	      else
 		{
 		  tree r;
 		  tree vec = NULL_TREE;
 		  int len = 1;
 
+		  gcc_checking_assert (TREE_CODE (t) != CONST_DECL);
 		  /* The file and line for this declaration, to
 		     assist in error message reporting.  Since we
 		     called push_tinst_level above, we don't need to

@@ -150,6 +150,9 @@ Classes used:
    I have a confession: tri-valued bools are not the worst thing in
    this file.  */
 
+// FIXME: I'm probably using TYPE_NAME in places TYPE_STUB_DECL is
+// correct.  They are usually the same, except when 'typedef struct {} foo'
+
 /* In expermental (trunk) sources, MODULE_VERSION is a #define passed
    in from the Makefile.  It records the modification date of the our
    source directory -- that's the only way to stay sane.  In release
@@ -3931,9 +3934,14 @@ node_template_info (tree decl, int &use)
   if (DECL_IMPLICIT_TYPEDEF_P (decl))
     {
       tree type = TREE_TYPE (decl);
-      if (TYPE_LANG_SPECIFIC (type))
+      ti = TYPE_TEMPLATE_INFO (type);
+
+      if (ti)
 	{
-	  ti = TYPE_TEMPLATE_INFO (type);
+	  if (!TYPE_LANG_SPECIFIC (type))
+	    /* Take it from the type's context, which must itself be a
+	       template.  */
+	    type = DECL_CONTEXT (decl);
 	  use_tpl = CLASSTYPE_USE_TEMPLATE (type);
 	}
     }
@@ -4035,7 +4043,7 @@ trees_out::maybe_insert_typeof (tree decl)
 int
 trees_in::insert (tree t)
 {
-  gcc_checking_assert (t);
+  gcc_checking_assert (t || get_overrun ());
   back_refs.safe_push (t);
   return -(int)back_refs.length ();
 }
@@ -4943,16 +4951,19 @@ trees_out::core_vals (tree t)
 	  // known integer types.
 
 	  tree type = t->typed.type;
-	  int precision = TYPE_PRECISION (type);
-	  unsigned itk;
-	  tree name = DECL_NAME (TYPE_NAME (type));
-	  for (itk = itk_none; itk--;)
-	    if (integer_types[itk]
-		&& DECL_NAME (TYPE_NAME (integer_types[itk])) == name)
-	      break;
-	  gcc_assert (itk != itk_none);
+	  unsigned itk = itk_none;
+	  if (type)
+	    {
+	      tree name = DECL_NAME (TYPE_NAME (type));
+	      for (itk = itk_none; itk--;)
+		if (integer_types[itk]
+		    && DECL_NAME (TYPE_NAME (integer_types[itk])) == name)
+		  break;
+	      gcc_assert (itk != itk_none);
+	    }
 	  WU (itk);
-	  WU (precision);
+	  if (type)
+	    WU (TYPE_PRECISION (type));
 	}
     }
 
@@ -5386,14 +5397,14 @@ trees_in::core_vals (tree t)
 	RT (t->typed.type);
       else
 	{
-	  unsigned itk, precision;
+	  tree type = NULL;
+	  unsigned itk;
 	  RU (itk);
-	  RU (precision);
-	  if (itk >= itk_none)
-	    set_overrun ();
-	  else
+	  if (itk < itk_none)
 	    {
-	      tree type = integer_types[itk];
+	      unsigned precision;
+	      RU (precision);
+	      type = integer_types[itk];
 	      if (!type || precision > TYPE_PRECISION (type))
 		set_overrun ();
 	      else if (precision != TYPE_PRECISION (type))
@@ -5403,8 +5414,8 @@ trees_in::core_vals (tree t)
 		  set_min_and_max_values_for_integral_type (type, precision,
 							    TYPE_SIGN (type));
 		}
-	      t->typed.type = type;
 	    }
+	  t->typed.type = type;
 	}
     }
 
@@ -6306,7 +6317,8 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	{
 	  /* Some kind of instantiation. */
 	  tree tpl = TI_TEMPLATE (ti);
-	  if (RECORD_OR_UNION_CODE_P (TREE_CODE (DECL_CONTEXT (tpl)))
+	  enum tree_code c = TREE_CODE (DECL_CONTEXT (tpl));
+	  if ((RECORD_OR_UNION_CODE_P (c) || c == ENUMERAL_TYPE)
 	      && !DECL_MEMBER_TEMPLATE_P (tpl))
 	    ; /* Implicit member template.  */
 	  else
@@ -8002,7 +8014,8 @@ void
 trees_out::write_class_def (tree defn)
 {
   gcc_assert (DECL_P (defn));
-  dump () && dump ("Writing class definition %N", defn);
+  if (streaming_p ())
+    dump () && dump ("Writing class definition %N", defn);
 
   tree type = TREE_TYPE (defn);
   tree_node (TYPE_SIZE (type));
@@ -8071,11 +8084,14 @@ trees_out::mark_class_def (tree defn)
   gcc_assert (DECL_P (defn));
   tree type = TREE_TYPE (defn);
   for (tree member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
-    {
-      mark_node (member);
-      if (has_definition (member))
-	mark_definition (member);
-    }
+    /* Do not mark enum consts here.  */
+    if (TREE_CODE (member) != CONST_DECL)
+      {
+	mark_node (member);
+	if (has_definition (member))
+	  mark_definition (member);
+      }
+
   if (TYPE_LANG_SPECIFIC (type))
     {
       if (tree as_base = CLASSTYPE_AS_BASE (type))
@@ -8243,13 +8259,12 @@ void
 trees_out::mark_enum_def (tree decl)
 {
   tree type = TREE_TYPE (decl);
-  if (SCOPED_ENUM_P (type))
-    for (tree values = TYPE_VALUES (type); values; values = TREE_CHAIN (values))
-      {
-	tree cst = TREE_VALUE (values);
-	mark_node (cst);
-	mark_node (DECL_INITIAL (cst));
-      }
+  for (tree values = TYPE_VALUES (type); values; values = TREE_CHAIN (values))
+    {
+      tree cst = TREE_VALUE (values);
+      mark_node (cst);
+      mark_node (DECL_INITIAL (cst));
+    }
 }
 
 bool
