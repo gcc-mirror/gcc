@@ -8615,8 +8615,7 @@ pop_namespace (void)
 
 tree
 add_imported_namespace (tree ctx, tree name, unsigned mod, location_t loc,
-			bool export_p, bool inline_p,
-			tree anon_name)
+			bool visible_p, bool inline_p, tree anon_name)
 {
   tree *slot = find_namespace_slot (ctx, name, true);
   tree decl = reuse_namespace (slot, ctx, name);
@@ -8649,7 +8648,7 @@ add_imported_namespace (tree ctx, tree name, unsigned mod, location_t loc,
 	    if (last->indices[jx].span)
 	      break;
 	  tree final = last->slots[jx];
-	  if (export_p == !STAT_HACK_P (final)
+	  if (visible_p == !STAT_HACK_P (final)
 	      && MAYBE_STAT_DECL (final) == decl
 	      && last->indices[jx].base + last->indices[jx].span == mod
 	      && (MODULE_VECTOR_NUM_CLUSTERS (*slot) > 1
@@ -8663,8 +8662,8 @@ add_imported_namespace (tree ctx, tree name, unsigned mod, location_t loc,
       mslot = &(tree &)*append_imported_binding_slot (slot, name, mod);
     }
 
-  gcc_assert (!*mslot || (export_p && *mslot == decl));
-  *mslot = export_p ? decl : stat_hack (decl, NULL_TREE);
+  gcc_assert (!*mslot || (visible_p && *mslot == decl));
+  *mslot = visible_p ? decl : stat_hack (decl, NULL_TREE);
 
   return decl;
 }

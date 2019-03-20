@@ -10993,9 +10993,14 @@ module_state::read_namespaces (auto_vec<tree> &spaces)
 		       spaces[parent], id, export_p ? ", export" : "",
 		       public_p ? ", public" : "",
 		       inline_p ? ", inline" : "", spaces.length ());
+      bool visible_p = (export_p
+			|| (public_p && (is_partition () || is_primary ())));
       tree inner = add_imported_namespace (spaces[parent], id, mod,
-					   src_loc, export_p, inline_p,
+					   src_loc, visible_p, inline_p,
 					   anon_id);
+      if (export_p && is_partition ())
+	DECL_MODULE_EXPORT_P (inner) = true;
+
       spaces.safe_push (inner);
     }
   dump.outdent ();

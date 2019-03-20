@@ -1,5 +1,13 @@
 2019-03-20  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (module_state::read_namespaces): Module-linkage
+	namespaces are visible in the module itself.
+	* name-lookup.h (add_imported_namespace): Rename parm.
+	* name-lookup.c (add_imported_namespace): Export_p becomes visible_p.
+	gcc/testsuite/
+	* g++.dg/modules/enum-3_[ab].C: New.
+
 	Enum members of templates part 2.
 	gcc/cp/
 	* module.cc (trees_out::tree_node): Any enum can be tt_enum_int.
