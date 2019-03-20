@@ -1,3 +1,18 @@
+2019-03-20  Florian Weimer  <fweimer@redhat.com>
+
+	PR libgcc/60790
+	x86: Do not assume ELF constructors run before IFUNC resolvers.
+	* config/x86/host-config.h (libat_feat1_ecx, libat_feat1_edx):
+	Remove declarations.
+	(__libat_feat1, __libat_feat1_init): Declare.
+	(FEAT1_REGISTER): Define.
+	(load_feat1): New function.
+	(IFUNC_COND_1): Adjust.
+	* config/x86/init.c (libat_feat1_ecx, libat_feat1_edx)
+	(init_cpuid): Remove definitions.
+	(__libat_feat1): New variable.
+	(__libat_feat1_init): New function.
+
 2019-02-22  Release Manager
 
 	* GCC 8.3.0 released.
