@@ -9588,6 +9588,21 @@ s390_register_info ()
   s390_register_info_stdarg_gpr ();
 }
 
+/* Return true if REGNO is a global register, but not one
+   of the special ones that need to be saved/restored in anyway.  */
+
+static inline bool
+global_not_special_regno_p (int regno)
+{
+  return (global_regs[regno]
+	  /* These registers are special and need to be
+	     restored in any case.  */
+	  && !(regno == STACK_POINTER_REGNUM
+	       || regno == RETURN_REGNUM
+	       || regno == BASE_REGNUM
+	       || (flag_pic && regno == (int)PIC_OFFSET_TABLE_REGNUM)));
+}
+
 /* This function is called by s390_optimize_prologue in order to get
    rid of unnecessary GPR save/restore instructions.  The register info
    for the GPRs is re-computed and the ranges are re-calculated.  */
@@ -9602,8 +9617,10 @@ s390_optimize_register_info ()
 
   s390_regs_ever_clobbered (clobbered_regs);
 
+  /* Global registers do not need to be saved and restored unless it
+     is one of our special regs.  (r12, r13, r14, or r15).  */
   for (i = 0; i < 32; i++)
-    clobbered_regs[i] = clobbered_regs[i] && !global_regs[i];
+    clobbered_regs[i] = clobbered_regs[i] && !global_not_special_regno_p (i);
 
   /* There is still special treatment needed for cases invisible to
      s390_regs_ever_clobbered.  */
@@ -10343,21 +10360,6 @@ restore_fpr (rtx base, int offset, int regnum)
   set_mem_alias_set (addr, get_frame_alias_set ());
 
   return emit_move_insn (gen_rtx_REG (DFmode, regnum), addr);
-}
-
-/* Return true if REGNO is a global register, but not one
-   of the special ones that need to be saved/restored in anyway.  */
-
-static inline bool
-global_not_special_regno_p (int regno)
-{
-  return (global_regs[regno]
-	  /* These registers are special and need to be
-	     restored in any case.  */
-	  && !(regno == STACK_POINTER_REGNUM
-	       || regno == RETURN_REGNUM
-	       || regno == BASE_REGNUM
-	       || (flag_pic && regno == (int)PIC_OFFSET_TABLE_REGNUM)));
 }
 
 /* Generate insn to save registers FIRST to LAST into
