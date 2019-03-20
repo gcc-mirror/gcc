@@ -1,3 +1,9 @@
+2019-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89752
+	* g++.target/aarch64/aarch64.exp: New file.
+	* g++.target/aarch64/pr89752.C: New test.
+
 2019-03-19  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/89688
