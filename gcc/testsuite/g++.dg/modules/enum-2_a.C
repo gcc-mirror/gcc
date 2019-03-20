@@ -15,6 +15,7 @@ export template <int I> struct TPL
 {
   enum p
   {
+    u,
     v = I
   };
 };

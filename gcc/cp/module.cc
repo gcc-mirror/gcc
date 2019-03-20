@@ -6745,7 +6745,7 @@ trees_out::tree_node (tree t)
     }
 
   if (TREE_CODE (t) == INTEGER_CST
-      && !TREE_OVERFLOW (t) && SCOPED_ENUM_P (TREE_TYPE (t)))
+      && !TREE_OVERFLOW (t) && TREE_CODE (TREE_TYPE (t)) == ENUMERAL_TYPE)
     {
       unsigned ix = 0;
       for (tree values = TYPE_VALUES (TREE_TYPE (t));
@@ -8250,6 +8250,7 @@ void
 trees_out::write_enum_def (tree decl)
 {
   tree type = TREE_TYPE (decl);
+
   tree_node (TYPE_VALUES (type));
   tree_node (TYPE_MIN_VALUE (type));
   tree_node (TYPE_MAX_VALUE (type));
@@ -8259,11 +8260,15 @@ void
 trees_out::mark_enum_def (tree decl)
 {
   tree type = TREE_TYPE (decl);
+
   for (tree values = TYPE_VALUES (type); values; values = TREE_CHAIN (values))
     {
       tree cst = TREE_VALUE (values);
       mark_node (cst);
-      mark_node (DECL_INITIAL (cst));
+      /* We must mark the init to avoid circularity in tt_enum_int.  */
+      if (tree init = DECL_INITIAL (cst))
+	if (TREE_CODE (init) == INTEGER_CST)
+	  mark_node (init);
     }
 }
 

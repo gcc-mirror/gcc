@@ -1,6 +1,13 @@
 2019-03-20  Nathan Sidwell  <nathan@acm.org>
 
-	Enum members of templates.
+	Enum members of templates part 2.
+	gcc/cp/
+	* module.cc (trees_out::tree_node): Any enum can be tt_enum_int.
+	(trees_out::mark_enum_def): Only mark integer_cst inits.
+	gcc/testsuite/
+	* g++.dg/modues/enum-2_[ab].C: Add.
+
+	Enum members of templates part 1.
 	gcc/cp/
 	* class.c (maybe_add_class_template_decl): No need to add
 	CONST_DECLs.
