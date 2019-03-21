@@ -1,3 +1,15 @@
+2019-03-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88066
+	* include/backward/hash_map: Use <> for includes not "".
+	* include/backward/hash_set: Likewise.
+	* include/backward/strstream: Likewise.
+	* include/tr1/bessel_function.tcc: Likewise.
+	* include/tr1/exp_integral.tcc: Likewise.
+	* include/tr1/legendre_function.tcc: Likewise.
+	* include/tr1/modified_bessel_func.tcc: Likewise.
+	* include/tr1/riemann_zeta.tcc: Likewise.
+
 2019-03-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/allocator.xml: Link to table documenting evolution
