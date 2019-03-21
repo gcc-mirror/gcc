@@ -1,5 +1,7 @@
 2019-03-21  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* gfortran.dg/goacc/goacc.exp (dg-compile-aux-modules): New proc.
+
 	PR fortran/56408
 	* gcc.target/powerpc/ppc-fortran/ppc-fortran.exp
 	(dg-compile-aux-modules): Fix diagnostic.
