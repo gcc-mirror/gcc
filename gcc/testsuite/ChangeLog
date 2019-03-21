@@ -1,6 +1,12 @@
 2019-03-21  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR fortran/56408
+	* gcc.target/powerpc/ppc-fortran/ppc-fortran.exp
+	(dg-compile-aux-modules): Fix diagnostic.
+	* gfortran.dg/coarray/caf.exp (dg-compile-aux-modules): Likewise.
+	* gfortran.dg/dg.exp (dg-compile-aux-modules): Likewise.
+
+	PR fortran/56408
 	* gfortran.dg/coarray/caf.exp (dg-compile-aux-modules): Workaround
 	missing nexted dg-test call support in dejaGNU 1.4.4.
 
