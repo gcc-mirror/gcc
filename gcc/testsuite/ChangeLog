@@ -1,5 +1,10 @@
 2019-03-21  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR fortran/72741
+	* gfortran.dg/goacc/routine-module-1.f90: New file.
+	* gfortran.dg/goacc/routine-module-2.f90: Likewise.
+	* gfortran.dg/goacc/routine-module-mod-1.f90: Likewise.
+
 	* gfortran.dg/goacc/goacc.exp (dg-compile-aux-modules): New proc.
 
 	PR fortran/56408
