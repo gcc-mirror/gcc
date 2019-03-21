@@ -1,3 +1,11 @@
+2019-03-21  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+        Backport from mainline
+        2019-03-08  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+        * config/rs6000/rs6000-p8swap.c (rs6000_analyze_swaps): Rebuild
+        ud- and du-chains between phases.
+
 2019-03-19  Richard Biener  <rguenther@suse.de>
 
 	PR debug/88389
