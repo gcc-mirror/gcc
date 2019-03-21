@@ -1,5 +1,9 @@
 2019-03-21  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR fortran/56408
+	* gfortran.dg/coarray/caf.exp (dg-compile-aux-modules): Workaround
+	missing nexted dg-test call support in dejaGNU 1.4.4.
+
 	PR fortran/29383
 	* gfortran.dg/ieee/ieee.exp (DEFAULT_FFLAGS): Set the same as in
 	other '*.exp' files.
