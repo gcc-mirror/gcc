@@ -1,6 +1,9 @@
 2019-03-21  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR fortran/72741
+	* openmp.c (gfc_match_oacc_routine): Clarify.
+
+	PR fortran/72741
 	* module.c (verify_OACC_ROUTINE_LOP_NONE): New function.
 	(enum ab_attribute): Add AB_OACC_ROUTINE_LOP_GANG,
 	AB_OACC_ROUTINE_LOP_WORKER, AB_OACC_ROUTINE_LOP_VECTOR,
