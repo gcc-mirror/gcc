@@ -205,5 +205,19 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #endif // C++14
 
+#if __cplusplus > 201402L
+// Parallel STL algorithms
+# if __PSTL_EXECUTION_POLICIES_DEFINED
+// If <execution> has already been included, pull in implementations
+#  include <pstl/glue_numeric_impl.h>
+# else
+// Otherwise just pull in forward declarations
+#  include <pstl/glue_numeric_defs.h>
+#  define __PSTL_NUMERIC_FORWARD_DECLARED 1
+# endif
+
+// Feature test macro for parallel algorithms
+# define __cpp_lib_parallel_algorithm 201703L
+#endif // C++17
 
 #endif /* _GLIBCXX_NUMERIC */

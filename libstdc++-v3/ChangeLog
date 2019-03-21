@@ -1,3 +1,147 @@
+2019-03-21  Thomas Rodgers  <trodgers@redhat.com>
+	
+	* include/Makefile.am (std_header): Add ${std_srcdir}/execution.
+	(pstl_srcdir, pstl_builddir, pstl_headers): New variables.
+	(allstamped): Add stamp-pstl.
+	(install-headers): Add ptsl_builddir.
+	* include/Makefile.in: Regenerate.
+	* include/bits/c++config: Add pstl configuration.
+	* include/pstl/LICENSE.txt: New file.
+	* include/pstl/algorithm_fwd.h: New file.
+	* include/pstl/algorithm_impl.h: New file.
+	* include/pstl/execution_defs.h: New file.
+	* include/pstl/execution_impl.h: New file.
+	* include/pstl/glue_algorithm_defs.h: New file.
+	* include/pstl/glue_algorithm_impl.h: New file.
+	* include/pstl/glue_execution_defs.h: New file.
+	* include/pstl/glue_memory_defs.h: New file.
+	* include/pstl/glue_memory_impl.h: New file.
+	* include/pstl/glue_numeric_defs.h: New file.
+	* include/pstl/glue_numeric_impl.h: New file.
+	* include/pstl/memory_impl.h: New file.
+	* include/pstl/numeric_fwd.h: New file.
+	* include/pstl/numeric_impl.h: New file.
+	* include/pstl/parallel_backend.h: New file.
+	* include/pstl/parallel_backend_tbb.h: New file.
+	* include/pstl/parallel_backend_utils.h: New file.
+	* include/pstl/parallel_impl.h: New file.
+	* include/pstl/pstl_config.h: New file.
+	* include/pstl/unseq_backend_simd.h: New file.
+	* include/pstl/utils.h: New file.
+	* include/std/algorithm: Include parallel algorithm implementations.
+	* include/std/execution: New file.
+	* include/std/memory: Include parallel algorithm implementations.
+	* include/std/numeric: Include parallel algorithm implementations.
+	* include/std/version: Add parallel algorithms feature test macro.
+	* testsuite/util/pstl/pstl_test_config.h: New file.
+	* testsuite/util/pstl/test_utils.h: New file.
+	* testsuite/20_util/specialized_algorithms/pstl/uninitialized_construct.cc: New file.
+	* testsuite/20_util/specialized_algorithms/pstl/uninitialized_copy_move.cc: New file.
+	* testsuite/20_util/specialized_algorithms/pstl/uninitialized_fill_destroy.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_merge/inplace_merge.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_merge/merge.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/copy_if.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/copy_move.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/fill.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/generate.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/is_partitioned.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/partition.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/partition_copy.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/remove.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/remove_copy.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/replace.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/replace_copy.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/rotate.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/rotate_copy.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/swap_ranges.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/transform_binary.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/transform_unary.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/unique.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/unique_copy_equal.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/adjacent_find.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/all_of.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/any_of.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/count.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/equal.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find_end.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find_first_of.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find_if.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/for_each.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/mismatch.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/none_of.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/nth_element.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/reverse.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/reverse_copy.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/search_n.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_sorting/includes.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_sorting/is_heap.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_sorting/is_sorted.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_sorting/lexicographical_compare.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_sorting/minmax_element.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_sorting/partial_sort.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_sorting/partial_sort_copy.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_sorting/set.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_sorting/sort.cc: New file.
+	* testsuite/26_numerics/pstl/numeric_ops/adjacent_difference.cc: New file.
+	* testsuite/26_numerics/pstl/numeric_ops/reduce.cc: New file.
+	* testsuite/26_numerics/pstl/numeric_ops/scan.cc: New file.
+	* testsuite/26_numerics/pstl/numeric_ops/transform_reduce.cc: New file.
+	* testsuite/26_numerics/pstl/numeric_ops/transform_scan.cc: New file.
+	* testsuite/testsuite/20_util/specialized_algorithms/pstl/uninitialized_construct.cc: New file.
+	* testsuite/testsuite/20_util/specialized_algorithms/pstl/uninitialized_copy_move.cc: New file.
+	* testsuite/testsuite/20_util/specialized_algorithms/pstl/uninitialized_fill_destroy.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_merge/inplace_merge.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_merge/merge.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/copy_if.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/copy_move.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/fill.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/generate.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/is_partitioned.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/partition.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/partition_copy.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/remove.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/remove_copy.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/replace.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/replace_copy.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/rotate.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/rotate_copy.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/swap_ranges.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/transform_binary.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/transform_unary.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/unique.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/unique_copy_equal.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/adjacent_find.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/all_of.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/any_of.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/count.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/equal.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/find.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/find_end.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/find_first_of.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/find_if.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/for_each.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/mismatch.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/none_of.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/nth_element.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/reverse.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/reverse_copy.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/search_n.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_sorting/includes.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_sorting/is_heap.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_sorting/is_sorted.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_sorting/lexicographical_compare.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_sorting/minmax_element.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_sorting/partial_sort.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_sorting/partial_sort_copy.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_sorting/set.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_sorting/sort.cc: New file.
+	* testsuite/testsuite/26_numerics/pstl/numeric_ops/adjacent_difference.cc: New file.
+	* testsuite/testsuite/26_numerics/pstl/numeric_ops/reduce.cc: New file.
+	* testsuite/testsuite/26_numerics/pstl/numeric_ops/scan.cc: New file.
+	* testsuite/testsuite/26_numerics/pstl/numeric_ops/transform_reduce.cc: New file.
+	* testsuite/testsuite/26_numerics/pstl/numeric_ops/transform_scan.cc: New file.
+
 2019-03-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/c_compatibility/math.h [!__STDCPP_WANT_MATH_SPEC_FUNCS__]
