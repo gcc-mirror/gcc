@@ -2314,6 +2314,9 @@ gfc_match_oacc_routine (void)
 	  if (st)
 	    {
 	      sym = st->n.sym;
+	      /* If the name in a 'routine' directive refers to the containing
+		 subroutine or function, then make sure that we'll later handle
+		 this accordingly.  */
 	      if (gfc_current_ns->proc_name != NULL
 		  && strcmp (sym->name, gfc_current_ns->proc_name->name) == 0)
 	        sym = NULL;

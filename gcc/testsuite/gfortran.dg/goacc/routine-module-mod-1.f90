@@ -18,7 +18,7 @@ contains
 
   subroutine s_2
     implicit none
-    !$acc routine seq
+    !$acc routine (s_2) seq
 
     integer :: i
 
@@ -41,7 +41,7 @@ contains
 
   subroutine w_1
     implicit none
-    !$acc routine worker
+    !$acc routine (w_1) worker
 
     integer :: i
 
