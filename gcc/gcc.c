@@ -3213,7 +3213,7 @@ execute (void)
 	     preserve the directory component so the command can
 	     determine where it is, but not what it was called.
 	     Thus its otherwise unlocated errors specify something
-	     like 'g++(cc1plus)' rather than plan 'cc1plus'.  */
+	     like 'g++.cc1plus' rather than plan 'cc1plus'.  */
 	  size_t slen = strlen (string);
 	  size_t plen = strlen (progname);
 	  size_t tlen = strlen (commands[i].prog);
@@ -3227,10 +3227,9 @@ execute (void)
 	  off += slen;
 	  memcpy (ren + off, progname, plen);
 	  off += plen;
-	  ren[off++] = '(';
+	  ren[off++] = '.';
 	  memcpy (ren + off, commands[i].prog, tlen);
 	  off += tlen;
-	  ren[off++] = ')';
 	  ren[off++] = 0;
 
 	  commands[i].argv[0] = ren;

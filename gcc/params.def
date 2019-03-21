@@ -1411,7 +1411,7 @@ DEFPARAM(PARAM_LOOP_VERSIONING_MAX_OUTER_INSNS,
 
 DEFPARAM(PARAM_LAZY_MODULES,
 	 "lazy-modules",
-	 "Maximum number of concurrently open module files when lazy loading",
+	 "Maximum number of concurrently open module files when lazy loading.",
 	 0, 0, 32768)
 
 /*

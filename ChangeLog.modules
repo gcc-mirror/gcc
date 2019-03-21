@@ -1,6 +1,12 @@
 2019-03-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/
+	* gcc.c (execute): Use . not (.).
+	* params.def (PARAM_LAZY_MODULES): Add trailing .
+	gcc/testsuite/
+	* lib/prune.exp (prune_gcc_output): Adjust collect regexp.
+
+	gcc/
 	* gcc.c (execute): Frob argv[0] to show spawning from driver.
 	(process_command): Don't check input file exists here.
 
