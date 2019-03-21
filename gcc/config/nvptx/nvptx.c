@@ -74,6 +74,7 @@
 #include "cfgloop.h"
 #include "fold-const.h"
 #include "intl.h"
+#include "tree-hash-traits.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -166,6 +167,12 @@ static unsigned vector_red_align;
 static unsigned vector_red_partition;
 static GTY(()) rtx vector_red_sym;
 
+/* Shared memory block for gang-private variables.  */
+static unsigned gangprivate_shared_size;
+static unsigned gangprivate_shared_align;
+static GTY(()) rtx gangprivate_shared_sym;
+static hash_map<tree_decl_hash, unsigned int> gangprivate_shared_hmap;
+
 /* Global lock variable, needed for 128bit worker & gang reductions.  */
 static GTY(()) tree global_lock_var;
 
@@ -246,6 +253,10 @@ nvptx_option_override (void)
   SET_SYMBOL_DATA_AREA (vector_red_sym, DATA_AREA_SHARED);
   vector_red_align = GET_MODE_ALIGNMENT (SImode) / BITS_PER_UNIT;
   vector_red_partition = 0;
+
+  gangprivate_shared_sym = gen_rtx_SYMBOL_REF (Pmode, "__gangprivate_shared");
+  SET_SYMBOL_DATA_AREA (gangprivate_shared_sym, DATA_AREA_SHARED);
+  gangprivate_shared_align = GET_MODE_ALIGNMENT (SImode) / BITS_PER_UNIT;
 
   diagnose_openacc_conflict (TARGET_GOMP, "-mgomp");
   diagnose_openacc_conflict (TARGET_SOFT_STACK, "-msoft-stack");
@@ -5280,6 +5291,10 @@ nvptx_file_end (void)
     write_shared_buffer (asm_out_file, vector_red_sym,
 			 vector_red_align, vector_red_size);
 
+  if (gangprivate_shared_size)
+    write_shared_buffer (asm_out_file, gangprivate_shared_sym,
+			 gangprivate_shared_align, gangprivate_shared_size);
+
   if (need_softstack_decl)
     {
       write_var_marker (asm_out_file, false, true, "__nvptx_stacks");
@@ -6638,6 +6653,38 @@ nvptx_can_change_mode_class (machine_mode, machine_mode, reg_class_t)
   return false;
 }
 
+/* Implement TARGET_GOACC_EXPAND_ACCEL_VAR.  Place "oacc gangprivate"
+   variables in shared memory.  */
+
+static rtx
+nvptx_goacc_expand_accel_var (tree var)
+{
+  if (VAR_P (var)
+      && lookup_attribute ("oacc gangprivate", DECL_ATTRIBUTES (var)))
+    {
+      unsigned int offset, *poffset;
+      poffset = gangprivate_shared_hmap.get (var);
+      if (poffset)
+	offset = *poffset;
+      else
+	{
+	  unsigned HOST_WIDE_INT align = DECL_ALIGN (var);
+	  gangprivate_shared_size
+	    = (gangprivate_shared_size + align - 1) & ~(align - 1);
+	  if (gangprivate_shared_align < align)
+	    gangprivate_shared_align = align;
+
+	  offset = gangprivate_shared_size;
+	  bool existed = gangprivate_shared_hmap.put (var, offset);
+	  gcc_assert (!existed);
+	  gangprivate_shared_size += tree_to_uhwi (DECL_SIZE_UNIT (var));
+	}
+      rtx addr = plus_constant (Pmode, gangprivate_shared_sym, offset);
+      return gen_rtx_MEM (TYPE_MODE (TREE_TYPE (var)), addr);
+    }
+  return NULL_RTX;
+}
+
 static GTY(()) tree nvptx_previous_fndecl;
 
 static void
@@ -6646,6 +6693,7 @@ nvptx_set_current_function (tree fndecl)
   if (!fndecl || fndecl == nvptx_previous_fndecl)
     return;
 
+  gangprivate_shared_hmap.empty ();
   nvptx_previous_fndecl = fndecl;
   vector_red_partition = 0;
   oacc_bcast_partition = 0;
@@ -6789,6 +6837,9 @@ nvptx_set_current_function (tree fndecl)
 
 #undef TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
+#undef TARGET_GOACC_EXPAND_ACCEL_VAR
+#define TARGET_GOACC_EXPAND_ACCEL_VAR nvptx_goacc_expand_accel_var
 
 #undef TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION nvptx_set_current_function

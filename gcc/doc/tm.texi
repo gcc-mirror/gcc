@@ -6206,6 +6206,14 @@ like @code{cond_add@var{m}}.  The default implementation returns a zero
 constant of type @var{type}.
 @end deftypefn
 
+@deftypefn {Target Hook} rtx TARGET_GOACC_EXPAND_ACCEL_VAR (tree @var{var})
+This hook, if defined, is used by accelerator target back-ends to expand
+specially handled kinds of VAR_DECL expressions.  A particular use is to
+place variables with specific attributes inside special accelarator
+memories.  A return value of NULL indicates that the target does not
+handle this VAR_DECL, and normal RTL expanding is resumed.
+@end deftypefn
+
 @node Anchored Addresses
 @section Anchored Addresses
 @cindex anchored addresses

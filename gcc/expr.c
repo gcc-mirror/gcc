@@ -10074,8 +10074,19 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
       exp = SSA_NAME_VAR (ssa_name);
       goto expand_decl_rtl;
 
-    case PARM_DECL:
     case VAR_DECL:
+      /* Allow accel compiler to handle specific cases of variables,
+	 specifically those tagged with the "oacc gangprivate" attribute,
+	 which may be intended to be placed in special memory in GPUs.  */
+      if (flag_openacc && targetm.goacc.expand_accel_var)
+	{
+	  temp = targetm.goacc.expand_accel_var (exp);
+	  if (temp)
+	    return temp;
+	}
+      /* ... fall through ...  */
+
+    case PARM_DECL:
       /* If a static var's type was incomplete when the decl was written,
 	 but the type is complete now, lay out the decl now.  */
       if (DECL_SIZE (exp) == 0

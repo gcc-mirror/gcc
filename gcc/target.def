@@ -1734,6 +1734,16 @@ for allocating any storage for reductions when necessary.",
 void, (gcall *call),
 default_goacc_reduction)
 
+DEFHOOK
+(expand_accel_var,
+"This hook, if defined, is used by accelerator target back-ends to expand\n\
+specially handled kinds of VAR_DECL expressions.  A particular use is to\n\
+place variables with specific attributes inside special accelarator\n\
+memories.  A return value of NULL indicates that the target does not\n\
+handle this VAR_DECL, and normal RTL expanding is resumed.",
+rtx, (tree var),
+NULL)
+
 HOOK_VECTOR_END (goacc)
 
 /* Functions relating to vectorization.  */
