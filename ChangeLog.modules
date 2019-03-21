@@ -1,5 +1,12 @@
 2019-03-21  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* files.c (struct _cpp_file): Make bools bitfields, add
+	header_unit flag.
+	(_cpp_find_file): Don't write for (; !fake;) to mean if (!fake)
+	for (;;).
+	(_cpp_stack_file): Refactor.
+
 	Merge trunk r269839.
 
 	gcc/

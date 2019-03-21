@@ -98,19 +98,22 @@ struct _cpp_file
   unsigned short stack_count;
 
   /* If opened with #import or contains #pragma once.  */
-  bool once_only;
+  bool once_only : 1;
 
   /* If read() failed before.  */
-  bool dont_read;
+  bool dont_read : 1;
 
   /* If this file is the main file.  */
-  bool main_file;
+  bool main_file : 1;
 
   /* If BUFFER above contains the true contents of the file.  */
-  bool buffer_valid;
+  bool buffer_valid : 1;
 
   /* If this file is implicitly preincluded.  */
-  bool implicit_preinclude;
+  bool implicit_preinclude : 1;
+
+  /* Is a C++ Module header unit.  */
+  bool header_unit : 1;
 };
 
 /* A singly-linked list for all searches for a given file name, with
@@ -536,79 +539,86 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
        || (pfile->buffer
 	   && pfile->buffer->file->implicit_preinclude));
 
-  /* Try each path in the include chain.  */
-  for (; !fake ;)
-    {
-      if (find_file_in_dir (pfile, file, &invalid_pch, loc))
-	break;
+  if (!fake)
+    /* Try each path in the include chain.  */
+    for (;;)
+      {
+	if (find_file_in_dir (pfile, file, &invalid_pch, loc))
+	  break;
 
-      file->dir = file->dir->next;
-      if (file->dir == NULL)
-	{
-	  if (search_path_exhausted (pfile, fname, file))
-	    {
-	      /* Although this file must not go in the cache, because
-		 the file found might depend on things (like the current file)
-		 that aren't represented in the cache, it still has to go in
-		 the list of all files so that #import works.  */
-	      file->next_file = pfile->all_files;
-	      pfile->all_files = file;
-	      if (*hash_slot == NULL)
-		{
-		  /* If *hash_slot is NULL, the above htab_find_slot_with_hash
-		     call just created the slot, but we aren't going to store
-		     there anything, so need to remove the newly created entry.
-		     htab_clear_slot requires that it is non-NULL, so store
-		     there some non-NULL pointer, htab_clear_slot will
-		     overwrite it immediately.  */
-		  *hash_slot = file;
-		  htab_clear_slot (pfile->file_hash, hash_slot);
-		}
-	      return file;
-	    }
+	file->dir = file->dir->next;
+	if (file->dir == NULL)
+	  {
+	    if (search_path_exhausted (pfile, fname, file))
+	      {
+		/* Although this file must not go in the cache,
+		   because the file found might depend on things (like
+		   the current file) that aren't represented in the
+		   cache, it still has to go in the list of all files
+		   so that #import works.  */
+		file->next_file = pfile->all_files;
+		pfile->all_files = file;
+		if (*hash_slot == NULL)
+		  {
+		    /* If *hash_slot is NULL, the above
+		       htab_find_slot_with_hash call just created the
+		       slot, but we aren't going to store there
+		       anything, so need to remove the newly created
+		       entry.  htab_clear_slot requires that it is
+		       non-NULL, so store there some non-NULL pointer,
+		       htab_clear_slot will overwrite it
+		       immediately.  */
+		    *hash_slot = file;
+		    htab_clear_slot (pfile->file_hash, hash_slot);
+		  }
+		return file;
+	      }
 
-	  if (invalid_pch)
-	    {
-	      cpp_error (pfile, CPP_DL_ERROR,
-	       "one or more PCH files were found, but they were invalid");
-	      if (!cpp_get_options (pfile)->warn_invalid_pch)
+	    if (invalid_pch)
+	      {
 		cpp_error (pfile, CPP_DL_ERROR,
-			   "use -Winvalid-pch for more information");
-	    }
-	  if (implicit_preinclude)
-	    {
-	      free ((char *) file->name);
-	      free (file);
-	      if (*hash_slot == NULL)
-		{
-		  /* See comment on the above htab_clear_slot call.  */
-		  *hash_slot = file;
-		  htab_clear_slot (pfile->file_hash, hash_slot);
-		}
-	      return NULL;
-	    }
-	  else
+			   "one or more PCH files were found,"
+			   " but they were invalid");
+		if (!cpp_get_options (pfile)->warn_invalid_pch)
+		  cpp_error (pfile, CPP_DL_ERROR,
+			     "use -Winvalid-pch for more information");
+	      }
+
+	    if (implicit_preinclude)
+	      {
+		free ((char *) file->name);
+		free (file);
+		if (*hash_slot == NULL)
+		  {
+		    /* See comment on the above htab_clear_slot call.  */
+		    *hash_slot = file;
+		    htab_clear_slot (pfile->file_hash, hash_slot);
+		  }
+		return NULL;
+	      }
+
 	    open_file_failed (pfile, file, angle_brackets, loc);
-	  break;
-	}
+	    break;
+	  }
 
-      /* Only check the cache for the starting location (done above)
-	 and the quote and bracket chain heads because there are no
-	 other possible starting points for searches.  */
-      if (file->dir == pfile->bracket_include)
-	saw_bracket_include = true;
-      else if (file->dir == pfile->quote_include)
-	saw_quote_include = true;
-      else
-	continue;
+	/* Only check the cache for the starting location (done above)
+	   and the quote and bracket chain heads because there are no
+	   other possible starting points for searches.  */
+	if (file->dir == pfile->bracket_include)
+	  saw_bracket_include = true;
+	else if (file->dir == pfile->quote_include)
+	  saw_quote_include = true;
+	else
+	  continue;
 
-      entry = search_cache ((struct cpp_file_hash_entry *) *hash_slot, file->dir);
-      if (entry)
-	{
-	  found_in_cache = file->dir;
-	  break;
-	}
-    }
+	entry
+	  = search_cache ((struct cpp_file_hash_entry *) *hash_slot, file->dir);
+	if (entry)
+	  {
+	    found_in_cache = file->dir;
+	    break;
+	  }
+      }
 
   if (entry)
     {
@@ -628,7 +638,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
   entry = new_file_hash_entry (pfile);
   entry->next = (struct cpp_file_hash_entry *) *hash_slot;
   entry->start_dir = start_dir;
-  entry->location = pfile->line_table->highest_location;
+  entry->location = loc;
   entry->u.file = file;
   *hash_slot = (void *) entry;
 
@@ -641,7 +651,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
       entry = new_file_hash_entry (pfile);
       entry->next = (struct cpp_file_hash_entry *) *hash_slot;
       entry->start_dir = pfile->bracket_include;
-      entry->location = pfile->line_table->highest_location;
+      entry->location = loc;
       entry->u.file = file;
       *hash_slot = (void *) entry;
     }
@@ -652,7 +662,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
       entry = new_file_hash_entry (pfile);
       entry->next = (struct cpp_file_hash_entry *) *hash_slot;
       entry->start_dir = pfile->quote_include;
-      entry->location = pfile->line_table->highest_location;
+      entry->location = loc;
       entry->u.file = file;
       *hash_slot = (void *) entry;
     }
@@ -894,32 +904,29 @@ bool
 _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
 		 location_t loc, bool line_one_p)
 {
-  cpp_buffer *buffer;
-  int sysp;
-
   if (!should_stack_file (pfile, file, import, loc))
     return false;
 
-  if (pfile->buffer == NULL || file->dir == NULL)
-    sysp = 0;
-  else
-    sysp = MAX (pfile->buffer->sysp,  file->dir->sysp);
+  // FIXME: include translation now!
+
+  int sysp = 0;
+  if (pfile->buffer && file->dir)
+    sysp = MAX (pfile->buffer->sysp, file->dir->sysp);
 
   /* Add the file to the dependencies on its first inclusion.  */
-  if (CPP_OPTION (pfile, deps.style) > !!sysp && !file->stack_count)
-    {
-      if (!file->main_file || !CPP_OPTION (pfile, deps.ignore_main_file))
-	deps_add_dep (pfile->deps, file->path);
-    }
+  if (CPP_OPTION (pfile, deps.style) > (sysp != 0)
+      && !file->stack_count
+      && !(file->main_file && CPP_OPTION (pfile, deps.ignore_main_file)))
+    deps_add_dep (pfile->deps, file->path);
 
   /* Clear buffer_valid since _cpp_clean_line messes it up.  */
   file->buffer_valid = false;
   file->stack_count++;
 
   /* Stack the buffer.  */
-  buffer = cpp_push_buffer (pfile, file->buffer, file->st.st_size,
-			    CPP_OPTION (pfile, preprocessed)
-			    && !CPP_OPTION (pfile, directives_only));
+  cpp_buffer *buffer = cpp_push_buffer (pfile, file->buffer, file->st.st_size,
+					CPP_OPTION (pfile, preprocessed)
+					&& !CPP_OPTION (pfile, directives_only));
   buffer->file = file;
   buffer->sysp = sysp;
   buffer->to_free = file->buffer_start;
