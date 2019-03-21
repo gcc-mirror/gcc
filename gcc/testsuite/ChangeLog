@@ -1,5 +1,10 @@
 2019-03-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/78645
+	* g++.dg/cpp0x/constexpr-ice20.C: New.
+
+2019-03-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/89571
 	* g++.dg/cpp0x/noexcept37.C: New.
 
