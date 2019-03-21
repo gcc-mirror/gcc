@@ -1,5 +1,27 @@
 2019-03-21  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/c_compatibility/math.h [!__STDCPP_WANT_MATH_SPEC_FUNCS__]
+	(assoc_laguerre, assoc_laguerref, assoc_laguerrel, assoc_legendre)
+	(assoc_legendref, assoc_legendrel, beta, betaf, betal, comp_ellint_1)
+	(comp_ellint_1f, comp_ellint_1l, comp_ellint_2, comp_ellint_2f)
+	(comp_ellint_2l, comp_ellint_3, comp_ellint_3f, comp_ellint_3l)
+	(cyl_bessel_i, cyl_bessel_if, cyl_bessel_il, cyl_bessel_j)
+	(cyl_bessel_jf, cyl_bessel_jl, cyl_bessel_k, cyl_bessel_kf)
+	(cyl_bessel_kl, cyl_neumann, cyl_neumannf, cyl_neumannl, ellint_1)
+	(ellint_1f, ellint_1l, ellint_2, ellint_2f, ellint_2l, ellint_3)
+	(ellint_3f, ellint_3l, expint, expintf, expintl, hermite, hermitef)
+	(hermitel, laguerre, laguerref, laguerrel, legendre, legendref)
+	(legendrel, riemann_zeta, riemann_zetaf, riemann_zetal, sph_bessel)
+	(sph_besself, sph_bessell, sph_legendre, sph_legendref, sph_legendrel)
+	(sph_neumann, sph_neumannf, sph_neumannl): Only add using-declarations
+	when the special functions IS is enabled, not for C++17.
+	* testsuite/26_numerics/headers/cmath/functions_global_c++17.cc:
+	Replace with ...
+	* testsuite/26_numerics/headers/cmath/functions_global.cc: New test,
+	without checks for special functions in C++17.
+	* testsuite/26_numerics/headers/cmath/special_functions_global.cc:
+	New test.
+
 	PR libstdc++/88066
 	* include/backward/hash_map: Use <> for includes not "".
 	* include/backward/hash_set: Likewise.
