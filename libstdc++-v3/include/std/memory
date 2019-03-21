@@ -363,4 +363,18 @@ _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 #endif // C++11
 
+#if __cplusplus > 201402L
+// Parallel STL algorithms
+# if __PSTL_EXECUTION_POLICIES_DEFINED
+// If <execution> has already been included, pull in implementations
+#  include <pstl/glue_memory_impl.h>
+# else
+// Otherwise just pull in forward declarations
+#  include <pstl/glue_memory_defs.h>
+# endif
+
+// Feature test macro for parallel algorithms
+# define __cpp_lib_parallel_algorithm 201703L
+#endif // C++17
+
 #endif /* _GLIBCXX_MEMORY */
