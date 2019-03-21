@@ -21,7 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef hash_set_h
 #define hash_set_h
 
-template<typename KeyId, typename Traits = default_hash_traits<KeyId> >
+template<typename KeyId, bool Lazy = false,
+	 typename Traits = default_hash_traits<KeyId> >
 class hash_set
 {
 public:
@@ -32,12 +33,12 @@ public:
   /* Create a hash_set in gc memory with space for at least n elements.  */
 
   static hash_set *
-    create_ggc (size_t n)
-      {
-	hash_set *set = ggc_alloc<hash_set> ();
-	new (set) hash_set (n, true);
-	return set;
-      }
+  create_ggc (size_t n)
+    {
+      hash_set *set = ggc_alloc<hash_set> ();
+      new (set) hash_set (n, true);
+      return set;
+    }
 
   /* If key k isn't already in the map add it to the map, and
      return false.  Otherwise return true.  */
@@ -56,6 +57,9 @@ public:
 
   bool contains (const Key &k)
     {
+      if (Lazy)
+	return (m_table.find_slot_with_hash (k, Traits::hash (k), NO_INSERT)
+		!= NULL);
       Key &e = m_table.find_with_hash (k, Traits::hash (k));
       return !Traits::is_empty (e);
     }
@@ -71,7 +75,7 @@ public:
   template<typename Arg, bool (*f)(const typename Traits::value_type &, Arg)>
   void traverse (Arg a) const
     {
-      for (typename hash_table<Traits>::iterator iter = m_table.begin ();
+      for (typename hash_table<Traits, Lazy>::iterator iter = m_table.begin ();
 	   iter != m_table.end (); ++iter)
 	f (*iter, a);
     }
@@ -87,7 +91,8 @@ public:
   class iterator
   {
   public:
-    explicit iterator (const typename hash_table<Traits>::iterator &iter) :
+    explicit iterator (const typename hash_table<Traits,
+						 Lazy>::iterator &iter) :
       m_iter (iter) {}
 
     iterator &operator++ ()
@@ -109,7 +114,7 @@ public:
       }
 
   private:
-    typename hash_table<Traits>::iterator m_iter;
+    typename hash_table<Traits, Lazy>::iterator m_iter;
   };
 
   /* Standard iterator retrieval methods.  */
@@ -120,11 +125,14 @@ public:
 
 private:
 
-  template<typename T, typename U> friend void gt_ggc_mx (hash_set<T, U> *);
-  template<typename T, typename U> friend void gt_pch_nx (hash_set<T, U> *);
-      template<typename T, typename U> friend void gt_pch_nx (hash_set<T, U> *, gt_pointer_operator, void *);
+  template<typename T, typename U>
+  friend void gt_ggc_mx (hash_set<T, false, U> *);
+  template<typename T, typename U>
+  friend void gt_pch_nx (hash_set<T, false, U> *);
+  template<typename T, typename U>
+  friend void gt_pch_nx (hash_set<T, false, U> *, gt_pointer_operator, void *);
 
-  hash_table<Traits> m_table;
+  hash_table<Traits, Lazy> m_table;
 };
 
 /* Generic hash_set<TYPE> debug helper.
@@ -169,21 +177,21 @@ debug_helper (hash_set<T> &ref)
 
 template<typename K, typename H>
 static inline void
-gt_ggc_mx (hash_set<K, H> *h)
+gt_ggc_mx (hash_set<K, false, H> *h)
 {
   gt_ggc_mx (&h->m_table);
 }
 
 template<typename K, typename H>
 static inline void
-gt_pch_nx (hash_set<K, H> *h)
+gt_pch_nx (hash_set<K, false, H> *h)
 {
   gt_pch_nx (&h->m_table);
 }
 
 template<typename K, typename H>
 static inline void
-gt_pch_nx (hash_set<K, H> *h, gt_pointer_operator op, void *cookie)
+gt_pch_nx (hash_set<K, false, H> *h, gt_pointer_operator op, void *cookie)
 {
   op (&h->m_table.m_entries, cookie);
 }

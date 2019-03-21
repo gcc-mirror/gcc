@@ -2075,7 +2075,7 @@ test_attribute_exclusions ()
   const size_t ntables = ARRAY_SIZE (attribute_tables);
 
   /* Set of pairs of mutually exclusive attributes.  */
-  typedef hash_set<excl_pair, excl_hash_traits> exclusion_set;
+  typedef hash_set<excl_pair, false, excl_hash_traits> exclusion_set;
   exclusion_set excl_set;
 
   for (size_t ti0 = 0; ti0 != ntables; ++ti0)
