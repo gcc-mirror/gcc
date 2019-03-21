@@ -47,7 +47,7 @@
 #ifndef _BACKWARD_STRSTREAM
 #define _BACKWARD_STRSTREAM
 
-#include "backward_warning.h"
+#include <backward/backward_warning.h>
 #include <iosfwd>
 #include <ios>
 #include <istream>
