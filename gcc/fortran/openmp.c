@@ -2391,6 +2391,8 @@ gfc_match_oacc_routine (void)
 
       if (add)
 	{
+	  sym->attr.oacc_routine_lop = lop;
+
 	  n = gfc_get_oacc_routine_name ();
 	  n->sym = sym;
 	  n->clauses = c;
@@ -6082,6 +6084,12 @@ gfc_resolve_oacc_routines (gfc_namespace *ns)
 	  && !sym->attr.subroutine)
 	{
 	  gfc_error ("NAME %qs does not refer to a subroutine or function"
+		     " in !$ACC ROUTINE ( NAME ) at %L", sym->name, &orn->loc);
+	  continue;
+	}
+      if (!gfc_add_omp_declare_target (&sym->attr, sym->name, &orn->loc))
+	{
+	  gfc_error ("NAME %qs invalid"
 		     " in !$ACC ROUTINE ( NAME ) at %L", sym->name, &orn->loc);
 	  continue;
 	}

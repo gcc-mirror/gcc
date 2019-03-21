@@ -1,4 +1,20 @@
 2019-03-21  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR fortran/72741
+	* gfortran.dg/goacc/routine-external-level-of-parallelism-1.f: New
+	file.
+	* gfortran.dg/goacc/routine-external-level-of-parallelism-2.f:
+	Likewise.
+
+2019-03-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/72741
+	* c-c++-common/goacc/routine-3-extern.c: New file.
+	* c-c++-common/goacc/routine-3.c: Adjust.
+	* c-c++-common/goacc/routine-4-extern.c: New file.
+	* c-c++-common/goacc/routine-4.c: Adjust.
+	* gfortran.dg/goacc/routine-module-3.f90: New file.
 
 	PR fortran/89773
 	* gfortran.dg/goacc/pr89773.f90: New file.

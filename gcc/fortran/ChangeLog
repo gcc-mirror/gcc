@@ -1,5 +1,10 @@
 2019-03-21  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR fortran/72741
+	* openmp.c (gfc_match_oacc_routine): Set the level of parallelism
+	for all variants.
+	(gfc_resolve_oacc_routines): Call gfc_add_omp_declare_target.
+
 	PR fortran/89773
 	* gfortran.h (gfc_oacc_routine_name): Add loc member.
 	(gfc_resolve_oacc_routines): Declare.

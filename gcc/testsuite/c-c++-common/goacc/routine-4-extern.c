@@ -1,5 +1,14 @@
 /* Test invalid intra-routine parallelism.  */
-/* See also variant 'routine-4-extern.c', moving the callees 'extern'.  */
+/* Variant of 'routine-4.c', moving the callees 'extern'.  */
+
+extern void extern_gang (void);
+#pragma acc routine (extern_gang) gang
+extern void extern_worker (void);
+#pragma acc routine (extern_worker) worker
+extern void extern_vector (void);
+#pragma acc routine (extern_vector) vector
+extern void extern_seq (void);
+#pragma acc routine (extern_seq) seq
 
 void gang (void);
 void worker (void);
@@ -12,10 +21,10 @@ void vector (void);
 #pragma acc routine seq
 void seq (void)
 {
-  gang ();  /* { dg-error "routine call uses" } */
-  worker ();  /* { dg-error "routine call uses" } */
-  vector ();  /* { dg-error "routine call uses" } */
-  seq ();
+  extern_gang ();  /* { dg-error "routine call uses" } */
+  extern_worker ();  /* { dg-error "routine call uses" } */
+  extern_vector ();  /* { dg-error "routine call uses" } */
+  extern_seq ();
 
   int red;
 
@@ -36,12 +45,12 @@ void seq (void)
     red ++;
 }
 
-void vector (void) /* { dg-message "declared here" "1" } */
+void vector (void)
 {
-  gang ();  /* { dg-error "routine call uses" } */
-  worker ();  /* { dg-error "routine call uses" } */
-  vector ();
-  seq ();
+  extern_gang ();  /* { dg-error "routine call uses" } */
+  extern_worker ();  /* { dg-error "routine call uses" } */
+  extern_vector ();
+  extern_seq ();
 
   int red;
 
@@ -62,12 +71,12 @@ void vector (void) /* { dg-message "declared here" "1" } */
     red ++;
 }
 
-void worker (void) /* { dg-message "declared here" "2" } */
+void worker (void)
 {
-  gang ();  /* { dg-error "routine call uses" } */
-  worker ();
-  vector ();
-  seq ();
+  extern_gang ();  /* { dg-error "routine call uses" } */
+  extern_worker ();
+  extern_vector ();
+  extern_seq ();
 
   int red;
 
@@ -88,12 +97,12 @@ void worker (void) /* { dg-message "declared here" "2" } */
     red ++;
 }
 
-void gang (void) /* { dg-message "declared here" "3" } */
+void gang (void)
 {
-  gang ();
-  worker ();
-  vector ();
-  seq ();
+  extern_gang ();
+  extern_worker ();
+  extern_vector ();
+  extern_seq ();
 
   int red;
 
