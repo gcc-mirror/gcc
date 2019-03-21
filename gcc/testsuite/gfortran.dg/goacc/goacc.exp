@@ -28,6 +28,31 @@ if ![check_effective_target_fopenacc] {
 # Initialize `dg'.
 dg-init
 
+global gfortran_test_path
+global gfortran_aux_module_flags
+set gfortran_test_path $srcdir/$subdir
+set gfortran_aux_module_flags "-fopenacc"
+proc dg-compile-aux-modules { args } {
+    global gfortran_test_path
+    global gfortran_aux_module_flags
+    if { [llength $args] != 2 } {
+	error "dg-compile-aux-modules: needs one argument"
+	return
+    }
+
+    set level [info level]
+    if { [info procs dg-save-unknown] != [list] } {
+	rename dg-save-unknown dg-save-unknown-level-$level
+    }
+
+    dg-test $gfortran_test_path/[lindex $args 1] "" $gfortran_aux_module_flags
+    # cleanup-modules is intentionally not invoked here.
+
+    if { [info procs dg-save-unknown-level-$level] != [list] } {
+	rename dg-save-unknown-level-$level dg-save-unknown
+    }
+}
+
 # Main loop.
 gfortran-dg-runtest [lsort \
        [find $srcdir/$subdir *.\[fF\]{,90,95,03,08} ] ] "" "-fopenacc"
