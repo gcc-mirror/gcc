@@ -1,3 +1,11 @@
+2019-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89779
+	* tree.c (tree_nop_conversion): Consolidate and fix defensive
+	checks with respect to released SSA names now having error_mark_node
+	type.
+	* fold-const.c (operand_equal_p): Likewise.
+
 2019-03-20  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	PR target/89775
