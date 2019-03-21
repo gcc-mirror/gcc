@@ -1,3 +1,9 @@
+2019-03-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/29383
+	* gfortran.dg/ieee/ieee.exp (DEFAULT_FFLAGS): Set the same as in
+	other '*.exp' files.
+
 2019-03-21  Matthias Klose  <doko@ubuntu.com>
 
 	Backport from mainline

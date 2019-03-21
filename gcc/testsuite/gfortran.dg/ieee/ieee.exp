@@ -22,14 +22,14 @@
 load_lib gfortran-dg.exp
 load_lib target-supports.exp
 
-# Initialize `dg'.
-dg-init
-
-# Flags specified in each test
+# If a testcase doesn't have special options, use these.
 global DEFAULT_FFLAGS
 if ![info exists DEFAULT_FFLAGS] then {
-    set DEFAULT_FFLAGS ""
+    set DEFAULT_FFLAGS " -pedantic-errors"
 }
+
+# Initialize `dg'.
+dg-init
 
 # Flags for finding the IEEE modules
 if [info exists TOOL_OPTIONS] {
