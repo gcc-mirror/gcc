@@ -16,7 +16,7 @@ void vx1(void)
 __attribute__ ((target("arch=z10")))
 void vx0(void)
 {
-  __builtin_s390_vll ((unsigned int)0, (const void *)8); /* { dg-error "requires -mvx" } */
+  __builtin_s390_vll ((unsigned int)0, (const void *)8); /* { dg-error "requires '-mvx'" } */
 }
 
 void vxd(void)

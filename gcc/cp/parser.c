@@ -11048,7 +11048,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
      This means an empty parameter list, no attributes, and no exception
      specification.  */
   tree param_list = void_list_node;
-  tree attributes = NULL_TREE;
+  tree std_attrs = NULL_TREE;
+  tree gnu_attrs = NULL_TREE;
   tree exception_spec = NULL_TREE;
   tree template_param_list = NULL_TREE;
   tree tx_qual = NULL_TREE;
@@ -11107,7 +11108,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       /* In the decl-specifier-seq of the lambda-declarator, each
 	 decl-specifier shall either be mutable or constexpr.  */
       int declares_class_or_enum;
-      if (cp_lexer_next_token_is_decl_specifier_keyword (parser->lexer))
+      if (cp_lexer_next_token_is_decl_specifier_keyword (parser->lexer)
+	  && !cp_next_tokens_can_be_gnu_attribute_p (parser))
 	cp_parser_decl_specifier_seq (parser,
 				      CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR,
 				      &lambda_specs, &declares_class_or_enum);
@@ -11124,7 +11126,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       /* Parse optional exception specification.  */
       exception_spec = cp_parser_exception_specification_opt (parser);
 
-      attributes = cp_parser_std_attribute_spec_seq (parser);
+      std_attrs = cp_parser_std_attribute_spec_seq (parser);
 
       /* Parse optional trailing return type.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_DEREF))
@@ -11132,6 +11134,9 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
           cp_lexer_consume_token (parser->lexer);
           return_type = cp_parser_trailing_type_id (parser);
         }
+
+      if (cp_next_tokens_can_be_gnu_attribute_p (parser))
+	gnu_attrs = cp_parser_gnu_attributes_opt (parser);
 
       /* The function parameters must be in scope all the way until after the
          trailing-return-type in case of decltype.  */
@@ -11180,11 +11185,11 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 				       exception_spec,
                                        return_type,
                                        /*requires_clause*/NULL_TREE);
-    declarator->std_attributes = attributes;
+    declarator->std_attributes = std_attrs;
 
     fco = grokmethod (&return_type_specs,
 		      declarator,
-		      NULL_TREE);
+		      gnu_attrs);
     if (fco != error_mark_node)
       {
 	DECL_INITIALIZED_IN_CLASS_P (fco) = 1;
@@ -14420,6 +14425,15 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
         case RID_CONCEPT:
           ds = ds_concept;
           cp_lexer_consume_token (parser->lexer);
+	  /* In C++20 a concept definition is just 'concept name = expr;'
+	     Support that syntax by pretending we've seen 'bool'.  */
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+	      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_EQ))
+	    {
+	      cp_parser_set_decl_spec_type (decl_specs, boolean_type_node,
+					    token, /*type_definition*/false);
+	      decl_specs->any_type_specifiers_p = true;
+	    }
           break;
 
 	  /* function-specifier:

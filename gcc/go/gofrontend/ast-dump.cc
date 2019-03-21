@@ -610,7 +610,7 @@ class Type_dumper
                      const char *tag);
   std::pair<bool, unsigned> lookup(const Type*);
 
-  static constexpr unsigned notag = 0xffffffff;
+  static const unsigned notag = 0xffffffff;
 
  private:
   const Type* top_;

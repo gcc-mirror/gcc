@@ -5782,10 +5782,16 @@ free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
      not do well with TREE_CHAIN pointers linking them.
 
      Also do not drop containing types for virtual methods and tables because
-     these are needed by devirtualization.  */
+     these are needed by devirtualization.
+     C++ destructors are special because C++ frontends sometimes produces
+     virtual destructor as an alias of non-virtual destructor.  In
+     devirutalization code we always walk through aliases and we need
+     context to be preserved too.  See PR89335  */
   if (TREE_CODE (decl) != FIELD_DECL
       && ((TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL)
-          || !DECL_VIRTUAL_P (decl)))
+          || (!DECL_VIRTUAL_P (decl)
+	      && (TREE_CODE (decl) != FUNCTION_DECL
+		  || !DECL_CXX_DESTRUCTOR_P (decl)))))
     DECL_CONTEXT (decl) = fld_decl_context (DECL_CONTEXT (decl));
 }
 
@@ -7752,6 +7758,8 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
       hstate.merge_hash (0);
       return;
     }
+
+  STRIP_ANY_LOCATION_WRAPPER (t);
 
   if (!(flags & OEP_ADDRESS_OF))
     STRIP_NOPS (t);
@@ -12806,13 +12814,10 @@ tree_nop_conversion (const_tree exp)
   if (!CONVERT_EXPR_P (exp)
       && TREE_CODE (exp) != NON_LVALUE_EXPR)
     return false;
-  if (TREE_OPERAND (exp, 0) == error_mark_node)
-    return false;
 
   outer_type = TREE_TYPE (exp);
   inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
-
-  if (!inner_type)
+  if (!inner_type || inner_type == error_mark_node)
     return false;
 
   return tree_nop_conversion_p (outer_type, inner_type);

@@ -1,5 +1,7 @@
 2019-03-21  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r269839.
+
 	gcc/
 	* gcc.c (execute): Use . not (.).
 	* params.def (PARAM_LAZY_MODULES): Add trailing .

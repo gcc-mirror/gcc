@@ -1828,7 +1828,15 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
     {
       tree scope = qualifying_scope;
       if (scope == NULL_TREE)
-	scope = context_for_name_lookup (decl);
+	{
+	  scope = context_for_name_lookup (decl);
+	  if (!TYPE_P (scope))
+	    {
+	      /* Can happen during error recovery (c++/85014).  */
+	      gcc_assert (seen_error ());
+	      return error_mark_node;
+	    }
+	}
       object = maybe_dummy_object (scope, NULL);
     }
 

@@ -37,7 +37,6 @@ const _POLLIN = 0x0001
 const _POLLOUT = 0x0002
 const _POLLHUP = 0x2000
 const _POLLERR = 0x4000
-const _O_NONBLOCK = 0x4
 
 var (
 	pfds           []pollfd

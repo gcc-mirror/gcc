@@ -595,7 +595,6 @@ release_ssa_name_fn (struct function *fn, tree var)
      defining statement.  */
   if (! SSA_NAME_IN_FREE_LIST (var))
     {
-      tree saved_ssa_name_var = SSA_NAME_VAR (var);
       int saved_ssa_name_version = SSA_NAME_VERSION (var);
       use_operand_p imm = &(SSA_NAME_IMM_USE_NODE (var));
 
@@ -621,12 +620,13 @@ release_ssa_name_fn (struct function *fn, tree var)
       /* Restore the version number.  */
       SSA_NAME_VERSION (var) = saved_ssa_name_version;
 
-      /* Hopefully this can go away once we have the new incremental
-         SSA updating code installed.  */
-      SET_SSA_NAME_VAR_OR_IDENTIFIER (var, saved_ssa_name_var);
-
       /* Note this SSA_NAME is now in the first list.  */
       SSA_NAME_IN_FREE_LIST (var) = 1;
+
+      /* Put in a non-NULL TREE_TYPE so dumping code will not ICE
+         if it happens to come along a released SSA name and tries
+	 to inspect its type.  */
+      TREE_TYPE (var) = error_mark_node;
 
       /* And finally queue it so that it will be put on the free list.  */
       vec_safe_push (FREE_SSANAMES_QUEUE (fn), var);

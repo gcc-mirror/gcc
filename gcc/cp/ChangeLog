@@ -1,3 +1,54 @@
+2019-03-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/89571
+	* method.c (after_nsdmi_defaulted_late_checks): Avoid passing
+	error_mark_node to comp_except_specs.
+
+2019-03-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87480 - decltype of member access in default template arg
+	* pt.c (type_unification_real): Accept a dependent result in
+	template context.
+
+2019-03-19  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/89688
+	* typeck2.c (store_init_value): Call braced_lists_to_string for more
+	kinds of initializers.
+
+2019-03-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89630 - ICE with dependent using-decl as template arg.
+	* tree.c (cp_tree_equal): Always return false for USING_DECL.
+
+	PR c++/89761 - ICE with sizeof... in pack expansion.
+	* pt.c (argument_pack_element_is_expansion_p): Handle
+	ARGUMENT_PACK_SELECT.
+
+	PR c++/89640 - GNU attributes on lambda.
+	* parser.c (cp_parser_lambda_declarator_opt): Allow GNU attributes.
+
+	PR c++/89682 - wrong access error in default argument.
+	* pt.c (tsubst_default_argument): Don't defer access checks.
+
+2019-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85014
+	* semantics.c (finish_non_static_data_member): Check return value
+	of context_for_name_lookup and immediately return error_mark_node
+	if isn't a type.
+
+2019-03-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89571 - ICE with ill-formed noexcept on constructor.
+	* pt.c (maybe_instantiate_noexcept): Only return false if defaulted.
+	(regenerate_decl_from_template): Use it for noexcept-specs.
+
+2019-03-14  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_decl_specifier_seq): Support C++20
+	concept-definition syntax without 'bool'.
+
 2019-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89512

@@ -390,6 +390,9 @@ gfc_copy_expr (gfc_expr *p)
     case EXPR_VARIABLE:
     case EXPR_NULL:
       break;
+
+    case EXPR_UNKNOWN:
+      gcc_unreachable ();
     }
 
   q->shape = gfc_copy_shape (p->shape, p->rank);
@@ -2206,6 +2209,9 @@ gfc_simplify_expr (gfc_expr *p, int type)
     case EXPR_COMPCALL:
     case EXPR_PPC:
       break;
+
+    case EXPR_UNKNOWN:
+      gcc_unreachable ();
     }
 
   return true;
@@ -3703,6 +3709,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
   gfc_ref *ref;
   bool is_pure, is_implicit_pure, rank_remap;
   int proc_pointer;
+  bool same_rank;
 
   lhs_attr = gfc_expr_attr (lvalue);
   if (lvalue->ts.type == BT_UNKNOWN && !lhs_attr.proc_pointer)
@@ -3724,6 +3731,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
   proc_pointer = lvalue->symtree->n.sym->attr.proc_pointer;
 
   rank_remap = false;
+  same_rank = lvalue->rank == rvalue->rank;
   for (ref = lvalue->ref; ref; ref = ref->next)
     {
       if (ref->type == REF_COMPONENT)
@@ -3748,22 +3756,47 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
 			       lvalue->symtree->n.sym->name, &lvalue->where))
 	    return false;
 
-	  /* When bounds are given, all lbounds are necessary and either all
-	     or none of the upper bounds; no strides are allowed.  If the
-	     upper bounds are present, we may do rank remapping.  */
+	  /* Fortran standard (e.g. F2018, 10.2.2 Pointer assignment):
+	   *
+	   * (C1017) If bounds-spec-list is specified, the number of
+	   * bounds-specs shall equal the rank of data-pointer-object.
+	   *
+	   * If bounds-spec-list appears, it specifies the lower bounds.
+	   *
+	   * (C1018) If bounds-remapping-list is specified, the number of
+	   * bounds-remappings shall equal the rank of data-pointer-object.
+	   *
+	   * If bounds-remapping-list appears, it specifies the upper and
+	   * lower bounds of each dimension of the pointer; the pointer target
+	   * shall be simply contiguous or of rank one.
+	   *
+	   * (C1019) If bounds-remapping-list is not specified, the ranks of
+	   * data-pointer-object and data-target shall be the same.
+	   *
+	   * Thus when bounds are given, all lbounds are necessary and either
+	   * all or none of the upper bounds; no strides are allowed.  If the
+	   * upper bounds are present, we may do rank remapping.  */
 	  for (dim = 0; dim < ref->u.ar.dimen; ++dim)
 	    {
-	      if (!ref->u.ar.start[dim]
-		  || ref->u.ar.dimen_type[dim] != DIMEN_RANGE)
-		{
-		  gfc_error ("Lower bound has to be present at %L",
-			     &lvalue->where);
-		  return false;
-		}
 	      if (ref->u.ar.stride[dim])
 		{
 		  gfc_error ("Stride must not be present at %L",
 			     &lvalue->where);
+		  return false;
+		}
+	      if (!same_rank && (!ref->u.ar.start[dim] ||!ref->u.ar.end[dim]))
+		{
+		  gfc_error ("Rank remapping requires a "
+			     "list of %<lower-bound : upper-bound%> "
+			     "specifications at %L", &lvalue->where);
+		  return false;
+		}
+	      if (!ref->u.ar.start[dim]
+		  || ref->u.ar.dimen_type[dim] != DIMEN_RANGE)
+		{
+		  gfc_error ("Expected list of %<lower-bound :%> or "
+			     "list of %<lower-bound : upper-bound%> "
+			     "specifications at %L", &lvalue->where);
 		  return false;
 		}
 
@@ -3771,11 +3804,18 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
 		rank_remap = (ref->u.ar.end[dim] != NULL);
 	      else
 		{
-		  if ((rank_remap && !ref->u.ar.end[dim])
-		      || (!rank_remap && ref->u.ar.end[dim]))
+		  if ((rank_remap && !ref->u.ar.end[dim]))
 		    {
-		      gfc_error ("Either all or none of the upper bounds"
-				 " must be specified at %L", &lvalue->where);
+		      gfc_error ("Rank remapping requires a "
+				 "list of %<lower-bound : upper-bound%> "
+				 "specifications at %L", &lvalue->where);
+		      return false;
+		    }
+		  if (!rank_remap && ref->u.ar.end[dim])
+		    {
+		      gfc_error ("Expected list of %<lower-bound :%> or "
+				 "list of %<lower-bound : upper-bound%> "
+				 "specifications at %L", &lvalue->where);
 		      return false;
 		    }
 		}

@@ -601,7 +601,7 @@ struct kernargs
   struct output
   {
     int return_value;
-    int next_output;
+    unsigned int next_output;
     struct printf_data
     {
       int written;
@@ -613,7 +613,8 @@ struct kernargs
 	double dvalue;
 	char text[128];
       };
-    } queue[1000];
+    } queue[1024];
+    unsigned int consumed;
   } output_data;
 
   struct heap
@@ -624,21 +625,34 @@ struct kernargs
 };
 
 /* Print any console output from the kernel.
-   We print all entries from print_index to the next entry without a "written"
-   flag.  Subsequent calls should use the returned print_index value to resume
-   from the same point.  */
+   We print all entries from "consumed" to the next entry without a "written"
+   flag, or "next_output" is reached.  The buffer is circular, but the
+   indices are absolute.  It is assumed the kernel will stop writing data
+   if "next_output" wraps (becomes smaller than "consumed").  */
 void
-gomp_print_output (struct kernargs *kernargs, int *print_index)
+gomp_print_output (struct kernargs *kernargs, bool final)
 {
-  int limit = (sizeof (kernargs->output_data.queue)
-	       / sizeof (kernargs->output_data.queue[0]));
+  unsigned int limit = (sizeof (kernargs->output_data.queue)
+			/ sizeof (kernargs->output_data.queue[0]));
 
-  int i;
-  for (i = *print_index; i < limit; i++)
+  unsigned int from = __atomic_load_n (&kernargs->output_data.consumed,
+				       __ATOMIC_ACQUIRE);
+  unsigned int to = kernargs->output_data.next_output;
+
+  if (from > to)
     {
-      struct printf_data *data = &kernargs->output_data.queue[i];
+      /* Overflow.  */
+      if (final)
+	printf ("GCN print buffer overflowed.\n");
+      return;
+    }
 
-      if (!data->written)
+  unsigned int i;
+  for (i = from; i < to; i++)
+    {
+      struct printf_data *data = &kernargs->output_data.queue[i%limit];
+
+      if (!data->written && !final)
 	break;
 
       switch (data->type)
@@ -655,16 +669,16 @@ gomp_print_output (struct kernargs *kernargs, int *print_index)
 	case 3:
 	  printf ("%.128s%.128s", data->msg, data->text);
 	  break;
+	default:
+	  printf ("GCN print buffer error!\n");
+	  break;
 	}
 
       data->written = 0;
+      __atomic_store_n (&kernargs->output_data.consumed, i+1,
+			__ATOMIC_RELEASE);
     }
-
-  if (*print_index < limit && i == limit
-      && kernargs->output_data.next_output > limit)
-    printf ("WARNING: GCN print buffer exhausted.\n");
-
-  *print_index = i;
+  fflush (stdout);
 }
 
 /* Execute an already-loaded kernel on the device.  */
@@ -711,16 +725,15 @@ run (void *kernargs)
   hsa_fns.hsa_queue_store_write_index_relaxed_fn (queue, index + 1);
   hsa_fns.hsa_signal_store_relaxed_fn (queue->doorbell_signal, index);
   /* Kernel running ......  */
-  int print_index = 0;
   while (hsa_fns.hsa_signal_wait_relaxed_fn (signal, HSA_SIGNAL_CONDITION_LT,
 					     1, 1000000,
 					     HSA_WAIT_STATE_ACTIVE) != 0)
     {
       usleep (10000);
-      gomp_print_output (kernargs, &print_index);
+      gomp_print_output (kernargs, false);
     }
 
-  gomp_print_output (kernargs, &print_index);
+  gomp_print_output (kernargs, true);
 
   if (debug)
     fprintf (stderr, "Kernel exited\n");
@@ -797,6 +810,7 @@ main (int argc, char *argv[])
   for (unsigned i = 0; i < (sizeof (kernargs->output_data.queue)
 			    / sizeof (kernargs->output_data.queue[0])); i++)
     kernargs->output_data.queue[i].written = 0;
+  kernargs->output_data.consumed = 0;
   int offset = 0;
   for (int i = 0; i < kernel_argc; i++)
     {

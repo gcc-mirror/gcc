@@ -2942,9 +2942,6 @@ combine_comparisons (location_t loc,
 int
 operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 {
-  STRIP_ANY_LOCATION_WRAPPER (arg0);
-  STRIP_ANY_LOCATION_WRAPPER (arg1);
-
   /* When checking, verify at the outermost operand_equal_p call that
      if operand_equal_p returns non-zero then ARG0 and ARG1 has the same
      hash value.  */
@@ -2967,15 +2964,13 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	return 0;
     }
 
+  STRIP_ANY_LOCATION_WRAPPER (arg0);
+  STRIP_ANY_LOCATION_WRAPPER (arg1);
+
   /* If either is ERROR_MARK, they aren't equal.  */
   if (TREE_CODE (arg0) == ERROR_MARK || TREE_CODE (arg1) == ERROR_MARK
       || TREE_TYPE (arg0) == error_mark_node
       || TREE_TYPE (arg1) == error_mark_node)
-    return 0;
-
-  /* Similar, if either does not have a type (like a released SSA name), 
-     they aren't equal.  */
-  if (!TREE_TYPE (arg0) || !TREE_TYPE (arg1))
     return 0;
 
   /* We cannot consider pointers to different address space equal.  */

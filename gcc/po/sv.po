@@ -1,8 +1,8 @@
 # Swedish messages for GCC.
-# Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018 Free Software Foundation, Inc.
+# Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
-# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018
+# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019.
 #
 # Reminder to translator: GCC team does not want RCS keywords in the header!
 #
@@ -17,14 +17,15 @@
 # rank			ordning
 # scope			räckvidd
 # store			lagra
+# stride		steg
 # tile			bricka
 # thunk			snutt
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 8.2.0\n"
+"Project-Id-Version: gcc 9.1-b20190203\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2019-02-01 23:01+0000\n"
-"PO-Revision-Date: 2018-07-29 13:05+0200\n"
+"PO-Revision-Date: 2019-03-17 13:54+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -154,7 +155,7 @@ msgstr "kompilering avslutad.\n"
 
 #: diagnostic.c:618
 msgid "In file included from"
-msgstr ""
+msgstr "I filen inkluderad ifrån"
 
 #: diagnostic.c:619
 #, fuzzy
@@ -847,7 +848,7 @@ msgstr "  -h, --help                      Visa denna hjälp, avsluta sedan\n"
 #: gcov.c:889
 #, c-format
 msgid "  -i, --json-format\t\t    Output JSON intermediate format into .gcov.json.gz file\n"
-msgstr ""
+msgstr "  -i, --json-format\t\t    Skriv ut JSON mellanformat i en .gcov.json.gz-fil\n"
 
 #: gcov.c:890
 #, c-format
@@ -1582,7 +1583,7 @@ msgstr "funktionsattributen stämmer inte"
 
 #: cif-code.def:138
 msgid "function has external linkage when the user requests only inlining static for live patching"
-msgstr ""
+msgstr "funktionen har extern länkning när användaren begär endast inline:ade static för uppdatering i drift"
 
 #: cif-code.def:143
 msgid "unreachable"
@@ -1660,38 +1661,34 @@ msgid "The maximum number of instructions when automatically inlining."
 msgstr "Det maximala antalet instruktioner vid automatisk inline:ing."
 
 #: params.def:87
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions when automatically inlining."
+#, no-c-format
 msgid "The maximum number of instructions when automatically inlining small functions."
-msgstr "Det maximala antalet instruktioner vid automatisk inline:ing."
+msgstr "Det maximala antalet instruktioner vid automatisk inline:ing av små funktioner."
 
 #: params.def:92
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions when automatically inlining."
+#, no-c-format
 msgid "The maximum number of instructions when inlining for size."
-msgstr "Det maximala antalet instruktioner vid automatisk inline:ing."
+msgstr "Det maximala antalet instruktioner vid inline:ing för storlek."
 
 #: params.def:97
-#, fuzzy, no-c-format
-#| msgid "Use subroutines for function prologues and epilogues."
+#, no-c-format
 msgid "Instruction accounted for function prologue, epilogue and other overhead."
-msgstr "Använd subrutiner för funktionprologer och -epiloger."
+msgstr "Instruktion inräknad för funktionprolog, -epilog och andra omkostnader."
 
 #: params.def:103
-#, fuzzy, no-c-format
-#| msgid "Use subroutines for function prologues and epilogues."
+#, no-c-format
 msgid "Time accounted for function prologue, epilogue and other overhead."
-msgstr "Använd subrutiner för funktionprologer och -epiloger."
+msgstr "Tid inräknad för funktionprolog, -epilog och andra omkostnader."
 
 #: params.def:109
 #, no-c-format
 msgid "Instruction accounted for function thunk overhead."
-msgstr ""
+msgstr "Instruktion inräknad för funktionssnuttsomkostnader."
 
 #: params.def:114
 #, no-c-format
 msgid "Time accounted for function thunk overhead."
-msgstr ""
+msgstr "Tid inräknad för funktionssnuttsomkostnader."
 
 #: params.def:119
 #, no-c-format
@@ -1998,7 +1995,7 @@ msgstr "Ange den uppskattade sannolikheten i procent för den inbyggda expect.  
 #: params.def:488
 #, no-c-format
 msgid "The maximum length of a constant string for a builtin string cmp call eligible for inlining. The default value is 3."
-msgstr ""
+msgstr "Den maximala längden på en konstant sträng för att ett inbyggt strängjämförelseanrop skall vara tänkbar för inline:ing.  Standardvärdet är 3."
 
 #: params.def:492
 #, no-c-format
@@ -2284,12 +2281,12 @@ msgstr "Storleken på L2-cachen."
 #: params.def:844
 #, no-c-format
 msgid "Whether software prefetch hints should be issued for non-constant strides."
-msgstr ""
+msgstr "Huruvida mjukvaruförhandshämtningstips skall matas ut för icke-konstanta steg."
 
 #: params.def:853
 #, no-c-format
 msgid "The minimum constant stride beyond which we should use prefetch hints for."
-msgstr ""
+msgstr "Det minsta konstanta steget bortom vilket vi skall använda förhandshämtningstips."
 
 #: params.def:861
 #, no-c-format
@@ -2742,7 +2739,7 @@ msgstr "Maximalt antal bitar för vilka vi undviker att skapa FMA:er."
 #: params.def:1396
 #, no-c-format
 msgid "True if a non-short-circuit operation is optimal."
-msgstr ""
+msgstr "Sant om en icke kortsluten operation är optimal."
 
 #: params.def:1401
 #, fuzzy, no-c-format
@@ -3621,7 +3618,7 @@ msgstr "felaktig operand till output_condmove_single"
 #: config/gcn/gcn.c:5637 config/gcn/gcn.c:5648 config/gcn/gcn.c:5651
 #, c-format
 msgid "bad ADDR_SPACE_GLOBAL address"
-msgstr ""
+msgstr "felaktig ADDR_SPACE_GLOBAL-adress"
 
 #: config/gcn/gcn.c:5423 config/gcn/gcn.c:5446 config/gcn/gcn.c:5475
 #: config/gcn/gcn.c:5491 config/gcn/gcn.c:5510 config/gcn/gcn.c:5586
@@ -5051,11 +5048,11 @@ msgstr "vektortilldelning"
 #. Macros for unified error messages.
 #: fortran/frontend-passes.c:3746
 msgid "Incorrect extent in argument B in MATMUL intrinsic in dimension "
-msgstr ""
+msgstr "Felaktig utsträckning i argument B i inbyggd MATMUL i dimension "
 
 #: fortran/frontend-passes.c:3749
 msgid "Array bound mismatch for dimension "
-msgstr ""
+msgstr "Vektorbindning stämmer inte för dimension "
 
 #: fortran/gfortranspec.c:427
 #, c-format
@@ -5810,7 +5807,7 @@ msgstr "överväg att använda ”-pg” istället för ”-p” med gprof(1)"
 
 #: config/rs6000/rs6000.h:139
 msgid "Missing -mcpu option in ASM_CPU_SPEC?"
-msgstr ""
+msgstr "Saknas flaggan -mcpu i ASM_CPU_SPEC?"
 
 #: config/rx/rx.h:80
 msgid "-mas100-syntax is incompatible with -gdwarf"
@@ -6065,7 +6062,7 @@ msgstr "Aktivera språkutvidgningar från DEC."
 
 #: fortran/lang.opt:445
 msgid "Enable legacy parsing of INCLUDE as statement."
-msgstr ""
+msgstr "Aktivera gammaldags tolkning av INCLUDE som en sats."
 
 #: fortran/lang.opt:449
 msgid "Enable kind-specific variants of integer intrinsic functions."
@@ -6160,7 +6157,7 @@ msgstr "-ffixed-line-length-<n>\tAnvänd radlängd med n tecken i fast läge."
 
 #: fortran/lang.opt:541
 msgid "Pad shorter fixed form lines to line width with spaces."
-msgstr ""
+msgstr "Fyll ut kortare rader av fast form till radbredden med blanktecken."
 
 #: fortran/lang.opt:545
 msgid "-ffpe-trap=[...]\tStop on following floating point exceptions."
@@ -6261,7 +6258,7 @@ msgstr "Skydda parenteser i uttryck."
 
 #: fortran/lang.opt:675
 msgid "Path to header file that should be pre-included before each compilation unit."
-msgstr ""
+msgstr "Sökväg till huvudfil som skall för-inkluderas före varje kompileringsenhet."
 
 #: fortran/lang.opt:679
 msgid "Enable range checking during compilation."
@@ -6499,7 +6496,7 @@ msgstr "Varna om ett underobjekt har ett abi_tag-attribut som det fullständiga 
 
 #: c-family/c.opt:276
 msgid "Warn on suspicious calls of standard functions computing absolute values."
-msgstr ""
+msgstr "Varna för misstänkta anrop av standardfunktioner som beräknar absoluta värden."
 
 #: c-family/c.opt:280
 msgid "Warn about suspicious uses of memory addresses."
@@ -6531,7 +6528,7 @@ msgstr "-Walloc-size-larger-than=<byte> Varna för anrop till allokeringsfunktio
 
 #: c-family/c.opt:317
 msgid "-Wno-alloc-size-larger-than Disable Walloc-size-larger-than= warning.  Equivalent to Walloc-size-larger-than=<SIZE_MAX> or larger."
-msgstr ""
+msgstr "-Wno-alloc-size-larger-than Avaktivera varningen Walloc-size-larger-than=.  Eqvivalent med Walloc-size-larger-than=<SIZE_MAX> eller större."
 
 #: c-family/c.opt:321
 msgid "-Walloc-zero Warn for calls to allocation functions that specify zero bytes."
@@ -6543,7 +6540,7 @@ msgstr "-Walloca-larger-than=<antal>\tVarna vid obegränsade användningar av al
 
 #: c-family/c.opt:331
 msgid "-Wno-alloca-larger-than Disable Walloca-larger-than= warning.  Equivalent to Walloca-larger-than=<SIZE_MAX> or larger."
-msgstr ""
+msgstr "-Wno-alloca-larger-than Avaktivera varningen Walloca-larger-than=.  Ekvivalent med Walloca-larger-than=<SIZE_MAX> eller större."
 
 #: c-family/c.opt:343
 msgid "Warn whenever an Objective-C assignment is being intercepted by the garbage collector."
@@ -6682,11 +6679,11 @@ msgstr "Varna för radering av polymorfa objekt med ickevirtuella destruerare."
 
 #: c-family/c.opt:485
 msgid "Mark implicitly-declared copy operations as deprecated if the class has a user-provided copy operation."
-msgstr ""
+msgstr "Markera att implicit deklarerade kopieringsoperationer bör undvikas om klassen har en kopieringsoperator tillhandahållen av användaren."
 
 #: c-family/c.opt:490
 msgid "Mark implicitly-declared copy operations as deprecated if the class has a user-provided copy operation or destructor."
-msgstr ""
+msgstr "Markera att implicit deklarerade kopieringsoperationer bör undvikas om klassen har en kopieringsoperator eller destruerare tillhandahållen av användaren."
 
 #: c-family/c.opt:495
 msgid "Warn about positional initialization of structs requiring designated initializers."
@@ -6810,7 +6807,7 @@ msgstr "Varna när det är en konvertering mellan pekare som har ofullständiga 
 
 #: c-family/c.opt:630
 msgid "Warn when the address of packed member of struct or union is taken."
-msgstr ""
+msgstr "Varna när adressen till en packad medlem i en post eller union tas."
 
 #: c-family/c.opt:634
 msgid "Warn about variables which are initialized to themselves."
@@ -6818,7 +6815,7 @@ msgstr "Varna för variabler som initieras till sig själva."
 
 #: c-family/c.opt:638
 msgid "Warn about uses of std::initializer_list that can result in dangling pointers."
-msgstr ""
+msgstr "Varna för användningar av std::initializer_list som kan resultera i hängande pekare."
 
 #: c-family/c.opt:642
 msgid "Warn about implicit declarations."
@@ -7092,7 +7089,7 @@ msgstr "Varna för eventuellt saknade parenteser."
 
 #: c-family/c.opt:963
 msgid "Warn about calling std::move on a local object in a return statement preventing copy elision."
-msgstr ""
+msgstr "Varna för att anrop av std::move på ett lokalt objekt i en retursats förhindrar att kopiering undviks."
 
 #: c-family/c.opt:967
 msgid "Warn when converting the type of pointers to member functions."
@@ -7120,7 +7117,7 @@ msgstr "Varna för missbruk av pragman."
 
 #: c-family/c.opt:991
 msgid "Warn if constructor or destructors with priorities from 0 to 100 are used."
-msgstr ""
+msgstr "Varna om konstruerare eller destruerare med prioriteter från 0 till 100 används."
 
 #: c-family/c.opt:995
 msgid "Warn if a property for an Objective-C object has no assign semantics specified."
@@ -7140,7 +7137,7 @@ msgstr "Varna för multipla deklarationer av samma objekt."
 
 #: c-family/c.opt:1015
 msgid "Warn about redundant calls to std::move."
-msgstr ""
+msgstr "Varna för överflödiga anrop av std::move."
 
 #: c-family/c.opt:1019
 msgid "Warn about uses of register storage specifier."
@@ -7290,7 +7287,7 @@ msgstr "-Wvla-larger-than=<antal>\tVarna för obegränsade användningar av vekt
 
 #: c-family/c.opt:1206
 msgid "-Wno-vla-larger-than Disable Wvla-larger-than= warning.  Equivalent to Wvla-larger-than=<SIZE_MAX> or larger."
-msgstr ""
+msgstr "-Wno-vla-larger-than Avaktivera varningen Wvla-larger-than=.  Ekvivalent med Wvla-larger-than=<SIZE_MAX> eller större."
 
 #: c-family/c.opt:1210
 msgid "Warn when a register variable is declared volatile."
@@ -7375,7 +7372,7 @@ msgstr "När de är kortare, använd kanoniska sökvägar till systemhuvuden."
 
 #: c-family/c.opt:1305
 msgid "Enable the char8_t fundamental type and use it as the type for UTF-8 string and character literals."
-msgstr ""
+msgstr "Aktivera den fundamentala typen char8_t och använd den som typen för UTF-8-sträng- och -teckenliteraler."
 
 #: c-family/c.opt:1393
 msgid "Deprecated in GCC 8.  This switch has no effect."
@@ -7963,7 +7960,7 @@ msgstr "Fördefiniera inte systemspecifika och GCC-specifika makron."
 
 #: brig/lang.opt:36
 msgid "Assume we are finalizing for phsa and its libhsail-rt.  Enables additional phsa-specific optimizations (default)."
-msgstr ""
+msgstr "Anta att vi avslutar för phsa och dess libhsail-rt.  Aktiverar ytterligare phsa-specifika optimeringar (standard)."
 
 #: ada/gcc-interface/lang.opt:61
 msgid "Synonym of -gnatk8."
@@ -7995,7 +7992,7 @@ msgstr "Ignorerad."
 
 #: d/lang.opt:51
 msgid "-Hd <dir>\tWrite D interface files to directory <dir>."
-msgstr ""
+msgstr "-Hd <kat>\tSkriv D-gränssnittsfiler till katalogen <kat>."
 
 #: d/lang.opt:55
 #, fuzzy
@@ -8011,7 +8008,7 @@ msgstr "Varna för typkonvertering som slänger kvalificerare."
 
 #: d/lang.opt:139
 msgid "Warn from speculative compiles such as __traits(compiles)."
-msgstr ""
+msgstr "Varna för spekulativa kompileringar såsom __traits(compiles)."
 
 #: d/lang.opt:151
 #, fuzzy
@@ -8027,11 +8024,11 @@ msgstr "-MF <fil>\tSkriv beroendeutdata till den angivna filen."
 
 #: d/lang.opt:159
 msgid "Debug library to use instead of phobos."
-msgstr ""
+msgstr "Felsökningsbibliotek att använda istället för phobos."
 
 #: d/lang.opt:163
 msgid "Default library to use instead of phobos."
-msgstr ""
+msgstr "Standardbibliotek att använda istället för phobos."
 
 #: d/lang.opt:170
 #, fuzzy
@@ -8047,7 +8044,7 @@ msgstr "Generera kod för GNU-assembler (gas)."
 
 #: d/lang.opt:182
 msgid "-fbounds-check=[on|safeonly|off]\tTurn array bounds checks on, in @safe code only, or off."
-msgstr ""
+msgstr "-fbounds-check=[on|safeonly|off]\tLåt gränskontroller för vektorer vara på, endast i @safe-kod eller av."
 
 #: d/lang.opt:185
 #, fuzzy, c-format
@@ -8063,7 +8060,7 @@ msgstr "Kompilera kod för rak byteordning."
 
 #: d/lang.opt:206
 msgid "-fdebug=<level|ident>\tCompile in debug code, code <= <level>, or code identified by <ident>."
-msgstr ""
+msgstr "-fdebug=<nivå|ident>\tKompilera in felsökningskod, kod ≤ <nivå>, eller kod identifierad av <ident>."
 
 #: d/lang.opt:210
 #, fuzzy
@@ -8073,7 +8070,7 @@ msgstr "Generera norm-instruktion."
 
 #: d/lang.opt:214
 msgid "-fdoc-dir=<dir>\tWrite documentation file to directory <dir>."
-msgstr ""
+msgstr "-fdoc-dir=<kat>\tSkriv dokumentationsfilen till katalogen <kat>."
 
 #: d/lang.opt:218
 #, fuzzy
@@ -8083,7 +8080,7 @@ msgstr "-o <fil>\tSkriv utdata i <fil>."
 
 #: d/lang.opt:222
 msgid "-fdoc-inc=<file>\tInclude a Ddoc macro <file>."
-msgstr ""
+msgstr "-fdoc-inc=<fil>\t\tInkludera ett Ddoc-makro <fil>."
 
 #: d/lang.opt:226
 #, fuzzy
@@ -8093,7 +8090,7 @@ msgstr "Visa kodträdet efter tolkning, flaggan bör undvikas."
 
 #: d/lang.opt:230
 msgid "Ignore unsupported pragmas."
-msgstr ""
+msgstr "Ignorera pragma som inte stödjs."
 
 #: d/lang.opt:234
 #, fuzzy
@@ -8103,11 +8100,11 @@ msgstr "Generera kod för arkitekturen CR16C."
 
 #: d/lang.opt:238
 msgid "Generate a default D main() function when compiling."
-msgstr ""
+msgstr "Generera en standard D-funktion main() vid kompilering."
 
 #: d/lang.opt:242
 msgid "-fmodule-file=<package.module>=<filespec>\tuse <filespec> as source file for <package.module>."
-msgstr ""
+msgstr "-fmodule-file=<paket.modul>=<filspec>\tanvänd <filspec> som källfil för <paket.modul>."
 
 #: d/lang.opt:246
 #, fuzzy
@@ -8117,7 +8114,7 @@ msgstr "Generera kod för användarläget."
 
 #: d/lang.opt:250
 msgid "Process all modules specified on the command line, but only generate code for the module specified by the argument."
-msgstr ""
+msgstr "Bearbeta alla moduler angivna på kommandoraden, men generera endast kod för den modul som anges av argumentet."
 
 #: d/lang.opt:254
 #, fuzzy
@@ -8145,35 +8142,35 @@ msgstr "Generera kod för övervakarläget (standard)."
 
 #: d/lang.opt:270
 msgid "List information on all language changes."
-msgstr ""
+msgstr "Lista information om alla språkändringar."
 
 #: d/lang.opt:274
 msgid "Give deprecation messages about -ftransition=import anomalies."
-msgstr ""
+msgstr "Ge meddelanden om undvikande av -ftransition=import-anomalier."
 
 #: d/lang.opt:278
 msgid "List all usages of complex or imaginary types."
-msgstr ""
+msgstr "Lista alla användningar av komplexa eller imaginära typer."
 
 #: d/lang.opt:282
 msgid "Implement DIP1000: Scoped pointers (experimental)."
-msgstr ""
+msgstr "Implementera DIP1000: pekare med räckvidd (experimentellt)."
 
 #: d/lang.opt:286
 msgid "Implement DIP25: Sealed references (experimental)."
-msgstr ""
+msgstr "Implementera DIP25: förseglade referenser (expermimentellt)."
 
 #: d/lang.opt:290
 msgid "List all non-mutable fields which occupy an object instance."
-msgstr ""
+msgstr "Lista alla icke förändringsbara fält som tar upp en objektinstans."
 
 #: d/lang.opt:294
 msgid "Revert to single phase name lookup."
-msgstr ""
+msgstr "Återgå till enfas namnuppslagning."
 
 #: d/lang.opt:298
 msgid "List all hidden GC allocations."
-msgstr ""
+msgstr "Lista alla dolda GC-allokeringar."
 
 #: d/lang.opt:302
 #, fuzzy
@@ -8183,11 +8180,11 @@ msgstr "Använd angiven trådlokal lagringsdialekt."
 
 #: d/lang.opt:306
 msgid "Compile in unittest code."
-msgstr ""
+msgstr "Kompilera in enhetsstestkod."
 
 #: d/lang.opt:310
 msgid "-fversion=<level|ident>\tCompile in version code >= <level> or identified by <ident>."
-msgstr ""
+msgstr "-fversion=<nivå|ident>\tKompilera in versionskod ≥ <nivå> eller identifierad av <ident>."
 
 #: d/lang.opt:334
 #, fuzzy
@@ -8197,11 +8194,11 @@ msgstr "Anta inte att standard C-bibliotek och ”main” finns."
 
 #: d/lang.opt:342
 msgid "Link the standard D library statically in the compilation."
-msgstr ""
+msgstr "Länka standard D-biblioteket statiskt i kompileringen."
 
 #: d/lang.opt:346
 msgid "Link the standard D library dynamically in the compilation."
-msgstr ""
+msgstr "Länka standard D-biblioteket dynamiskt i kompileringen."
 
 #: go/lang.opt:42
 msgid "-fgo-c-header=<file>\tWrite Go struct definitions to file as C code."
@@ -8961,7 +8958,7 @@ msgstr "Aktiverar utförlig dump av kostnadsmodellen i dumpfilerna för felsökn
 
 #: config/aarch64/aarch64.opt:227
 msgid "Generate code to track when the CPU might be speculating incorrectly."
-msgstr ""
+msgstr "Generera kod för att spåra när CPU:n kan spekulera felaktigt."
 
 #: config/aarch64/aarch64.opt:231 config/i386/i386.opt:983
 #: config/rs6000/rs6000.opt:535
@@ -8974,11 +8971,11 @@ msgstr "Giltiga argument till -mstack-protector-guard=:"
 
 #: config/aarch64/aarch64.opt:245
 msgid "Use the system register specified on the command line as the stack protector guard register. This option is for use with fstack-protector-strong and not for use in user-land code."
-msgstr ""
+msgstr "Använd systemregistret som anges på kommandoraden som registret för stackskyddsvakt.  Denna flagga skall användas med fstack-protector-strong och är inte till för kod i användarmarken."
 
 #: config/aarch64/aarch64.opt:251
 msgid "Use an immediate to offset from the stack protector guard register, sp_el0. This option is for use with fstack-protector-strong and not for use in user-land code."
-msgstr ""
+msgstr "Använd en omedelbar för att få avstånd från stackskyddsvaktregistret, sp_el0.  Denna flagga skall användas med fstack-protector-strong och är inte till för kod i användarmarken."
 
 #: config/linux.opt:24
 msgid "Use Bionic C library."
@@ -10107,11 +10104,11 @@ msgstr "Generera mcount-/__fentry__-anrop som nop:ar.  För att aktiveras behöv
 
 #: config/i386/i386.opt:939
 msgid "Set name of __fentry__ symbol called at function entry."
-msgstr ""
+msgstr "Ange namnet på __fentry__-symbolen som anropas vid funktionsingång."
 
 #: config/i386/i386.opt:943
 msgid "Set name of section to record mrecord-mcount calls."
-msgstr ""
+msgstr "Ange namnet på sektionen för att räkna anrop av mrecord-mcount."
 
 #: config/i386/i386.opt:947
 msgid "Skip setting up RAX register when passing variable arguments."
@@ -10171,7 +10168,7 @@ msgstr "Slå på CET-instrumentering för switch-satser som använder en hopptab
 
 #: config/i386/i386.opt:1033
 msgid "Insert ENDBR instruction at function entry only via cf_check attribute for CET instrumentation."
-msgstr ""
+msgstr "Infoga ENDBR-instruktioner vid funktionsingång endast via attributet cf_check för CET-instrumentation."
 
 #: config/i386/i386.opt:1038
 msgid "Make all function calls indirect."
@@ -10221,7 +10218,7 @@ msgstr "Instrumentera endast funktioner markerade med attributet bnd_instrument.
 
 #: config/i386/i386.opt:1090
 msgid "Known choices for return instrumentation with -minstrument-return="
-msgstr ""
+msgstr "Kända val för returintstrumentering med -minstrument-return="
 
 #: config/i386/i386.opt:1103
 #, fuzzy
@@ -11778,11 +11775,11 @@ msgstr "Använd användardefinierade instruktioner."
 
 #: config/or1k/elf.opt:28
 msgid "Configure board specific runtime."
-msgstr ""
+msgstr "Konfigurera kortspecifik körtid."
 
 #: config/or1k/elf.opt:32
 msgid "For compatibility, it's always newlib for elf now."
-msgstr ""
+msgstr "För kompatibilitet är det alltid newlib för elf nu."
 
 #: config/or1k/or1k.opt:28
 #, fuzzy
@@ -11798,7 +11795,7 @@ msgstr "Använd instruktioner i hårdvara för heltalsdivision."
 
 #: config/or1k/or1k.opt:36
 msgid "Allows generation of binaries which use the l.cmov instruction.  If your target does not support this the compiler will generate the equivalent using set and branch."
-msgstr ""
+msgstr "Tillåt generering av binärer som använder instruktionen l.cmov.  Om ditt mål inte stödjer detta kommer kompilatorn generera motsvarigheten med set och branch."
 
 #: config/or1k/or1k.opt:42
 #, fuzzy
@@ -11808,15 +11805,15 @@ msgstr "Tillåt grenar att packas med andra instruktioner."
 
 #: config/or1k/or1k.opt:46
 msgid "Allows generation of binaries which use sign-extension instructions.  If your target does not support this the compiler will use memory loads to perform sign extension."
-msgstr ""
+msgstr "Tillåt generering av binärer som använder instruktionen för teckenutökning.  Om ditt mål inte stödjer detta kommer kompilatorn generera minnesinläsning för att utföra teckenutökning."
 
 #: config/or1k/or1k.opt:52
 msgid "Allows generation of binaries which use l.sf*i instructions.  If your target does not support this the compiler will generate instructions to store the immediate to a register first."
-msgstr ""
+msgstr "Tillåt generering av binärer som använder instruktionenerna l.sf*i.  Om ditt mål inte stödjer detta kommer kompilatorn generera instruktioner för att lagra den omedelbara i ett register först."
 
 #: config/or1k/or1k.opt:58
 msgid "Allows generation of binaries which support shifts and rotate instructions supporting immediate arguments, for example l.rori."
-msgstr ""
+msgstr "Tillåt generering av binärer som stödjer instruktionen för att skifta och rotera som stödjer omedelbara argument, till exempel l.rori."
 
 #: config/or1k/or1k.opt:63
 #, fuzzy
@@ -12582,26 +12579,18 @@ msgstr "Använd flyttalskonverteringsinstruktioner i hårdvara."
 msgid "Use hardware floating point square root instruction."
 msgstr "Använd flyttalsinstruktion för kvadratrot i hårdvara."
 
-# Den ofärdiga beskrivningen är felrapporterad:
-# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=47105
 #: config/microblaze/microblaze.opt:112
 msgid "Description for mxl-mode-executable."
 msgstr "Beskrivning för mxl-mode-executable."
 
-# Den ofärdiga beskrivningen är felrapporterad:
-# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=47105
 #: config/microblaze/microblaze.opt:116
 msgid "Description for mxl-mode-xmdstub."
 msgstr "Beskrivning för mxl-mode-xmdstub."
 
-# Den ofärdiga beskrivningen är felrapporterad:
-# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=47105
 #: config/microblaze/microblaze.opt:120
 msgid "Description for mxl-mode-bootstrap."
 msgstr "Beskrivning för mxl-mode-bootstrap."
 
-# Den ofärdiga beskrivningen är felrapporterad:
-# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=47105
 #: config/microblaze/microblaze.opt:124
 msgid "Description for mxl-mode-novectors."
 msgstr "Beskrivning för mxl-mode-novectors."
@@ -12612,7 +12601,7 @@ msgstr "Använd instruktioner för förhandshämtning (prefetch) i hårdvara"
 
 #: config/microblaze/microblaze.opt:132
 msgid "Data referenced by offset from start of text instead of GOT (with -fPIC/-fPIE)."
-msgstr ""
+msgstr "Data refererad med avstånd från början på texten istället för GOT (med -fPIC/-fPIE)."
 
 #: config/vax/vax.opt:23 config/vax/vax.opt:27
 msgid "Target DFLOAT double precision code."
@@ -12872,11 +12861,11 @@ msgstr "Justera funktionsingångar till 4 byte."
 
 #: config/nds32/nds32.opt:97
 msgid "Prevent $fp being allocated during register allocation so that compiler is able to force performing fp-as-gp optimization."
-msgstr ""
+msgstr "Förhindra att $fp allokeras under registerallokeringen så att kompilatorn kan framtvinga att fp-as-gp-optimeringar utförs."
 
 #: config/nds32/nds32.opt:101
 msgid "Forbid using $fp to access static and global variables.  This option strictly forbids fp-as-gp optimization regardless of '-mforce-fp-as-gp'."
-msgstr ""
+msgstr "Förbud användning av $fp för att komma åt statiska och globala variabler.  Denna flagga förbjuder strikt fp-as-gp-optimeringar oavsett ”-mforce-fp-as-gp”."
 
 #: config/nds32/nds32.opt:105
 #, fuzzy
@@ -12998,7 +12987,7 @@ msgstr "Generera flyttalsinstruktioner med dubbel precision."
 
 #: config/nds32/nds32.opt:445
 msgid "Force disable hardware loop, even use -mext-dsp."
-msgstr ""
+msgstr "Tvinga avaktivering av hårdvaruslingor, även med användning av -mext-dsp."
 
 #: config/nds32/nds32.opt:449
 #, fuzzy
@@ -13018,7 +13007,7 @@ msgstr "Spara alltid $lp på stacken."
 
 #: config/nds32/nds32.opt:465
 msgid "Allow use r15 for inline ASM."
-msgstr ""
+msgstr "Tillåt användning av r15 för inline-ASM."
 
 #: config/iq2000/iq2000.opt:31
 msgid "Specify CPU for code generation purposes."
@@ -13160,7 +13149,7 @@ msgstr "Generera kod för en 5206e."
 
 #: config/csky/csky.opt:138
 msgid "Enable use of R16-R31 (default)."
-msgstr ""
+msgstr "Aktivera användning av R16-R31 (standard)."
 
 #: config/csky/csky.opt:142
 #, fuzzy
@@ -13182,7 +13171,7 @@ msgstr "Generera isel-instruktioner."
 
 #: config/csky/csky.opt:157
 msgid "Generate constant pools in the compiler instead of assembler."
-msgstr ""
+msgstr "Generera konstantpooler i kompilatorn istället för assemblern."
 
 #: config/csky/csky.opt:161
 #, fuzzy
@@ -13576,7 +13565,7 @@ msgstr "Använd LRA istället för reload (tillfällig)."
 
 #: config/gcn/gcn.opt:26
 msgid "GCN GPU type to use:"
-msgstr ""
+msgstr "GCN GPU-typ att använda:"
 
 #: config/gcn/gcn.opt:39 config/gcn/gcn.opt:43
 #, fuzzy
@@ -13586,11 +13575,11 @@ msgstr "Ange namnet på målprocessorn."
 
 #: config/gcn/gcn.opt:55
 msgid "Enable OpenMP GPU offloading."
-msgstr ""
+msgstr "Aktivera OpenMP GPU-avlastning."
 
 #: config/gcn/gcn.opt:71
 msgid "-mstack-size=<number>\tSet the private segment size per wave-front, in bytes."
-msgstr ""
+msgstr "-mstack-size=<antal>\tAnge det privata segmentets storlek per vågfront, i byte."
 
 #: config/gcn/gcn.opt:78
 #, fuzzy
@@ -13966,7 +13955,7 @@ msgstr "Policyer tillgängliga att användas med -mcompact-branches=:"
 
 #: config/mips/mips.opt:469
 msgid "Use Loongson MultiMedia extensions Instructions (MMI) instructions."
-msgstr ""
+msgstr "Använd instruktionerna Loongson Multimedia extensions Instructions (MMI)."
 
 #: config/mips/mips.opt:473
 #, fuzzy
@@ -14334,7 +14323,7 @@ msgstr "Möjliggör användning av RX FPU-instruktionerna.  Detta är standard."
 
 #: config/arc/arc.opt:541
 msgid "Enable ENTER_S and LEAVE_S opcodes for ARCv2."
-msgstr ""
+msgstr "Aktivera operationskoderna ENTER_S och LEAVE_S för ARCv2."
 
 #: lto/lang.opt:28
 #, c-format
@@ -14367,7 +14356,7 @@ msgstr "Upplösningsfilen."
 
 #: common.opt:243
 msgid "Provide bash completion for options starting with provided string."
-msgstr ""
+msgstr "Tillhandahåll bash-kompletteringar för flaggor som startar med leverantörssträngen."
 
 #: common.opt:292
 msgid "Display this information."
@@ -14429,7 +14418,7 @@ msgstr "Varna för typsäkerhet och liknande fel i attributalias och relaterade.
 
 #: common.opt:563
 msgid "Warn when profiling instrumentation was requested, but could not be applied to a certain function."
-msgstr ""
+msgstr "Varna när profileringsinstrumentering begärdes, men inte kunde tillämpas på vissa funktioner."
 
 #: common.opt:568 common.opt:572
 msgid "Warn about pointer casts which increase alignment."
@@ -14917,11 +14906,11 @@ msgstr "Visa källkodsrader med en cirkumflex som indikerar kolumnen."
 
 #: common.opt:1254
 msgid "Show labels annotating ranges of source code when showing source"
-msgstr ""
+msgstr "Visa etiketter som markerar avsnitt av källkod när källan visas"
 
 #: common.opt:1258
 msgid "Show line numbers in the left margin when showing source"
-msgstr ""
+msgstr "Visa radnummer i vänstermarginalen när källan visas"
 
 #: common.opt:1266
 msgid "-fdiagnostics-color=[never|always|auto]\tColorize diagnostics."
@@ -14929,7 +14918,7 @@ msgstr "-fdiagnostics-color=[never|always|auto]\tFärglägg felmeddelanden."
 
 #: common.opt:1286
 msgid "-fdiagnostics-format=[text|json] Select output format"
-msgstr ""
+msgstr "-fdiagnostics-format=[text|json] Välj utmatningsformat"
 
 #: common.opt:1303
 msgid "Print fix-it hints in machine-readable form."

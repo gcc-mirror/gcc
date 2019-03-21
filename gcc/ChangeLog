@@ -1,3 +1,271 @@
+2019-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89779
+	* tree.c (tree_nop_conversion): Consolidate and fix defensive
+	checks with respect to released SSA names now having error_mark_node
+	type.
+	* fold-const.c (operand_equal_p): Likewise.
+
+2019-03-20  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/89775
+	* config/s390/s390.c (global_not_special_regno_p): Move to make it
+	available to ...
+	(s390_optimize_register_info): Use global_not_special_regno_p to
+	check for global regs.
+
+2019-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89752
+	* lra-constraints.c (process_alt_operands) <reg>: For BLKmode, don't
+	update this_alternative nor this_alternative_set.
+
+2019-03-19  Jim Wilson  <jimw@sifive.com>
+
+	PR target/89411
+	* config/riscv/riscv.c (riscv_valid_lo_sum_p): New arg x.  New locals
+	align, size, offset.  Use them to handle a BLKmode reference.  Update
+	comment.
+	(riscv_classify_address): Pass info->offset to riscv_valid_lo_sum_p.
+
+2019-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/89768
+	* loop-unroll.c (unroll_loop_constant_iterations): Use gen_int_mode
+	instead of GEN_INT.
+	(unroll_loop_runtime_iterations): Likewise.
+
+2019-03-19  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/89644
+	* tree-ssa-strlen.c (handle_builtin_stxncpy): Use full_string_p
+	rather than endptr as an indicator of nul-termination.
+
+	PR tree-optimization/89644
+	* tree-ssa-strlen.c (handle_builtin_stxncpy): Consider unterminated
+	arrays in determining sequence sizes in strncpy and stpncpy.
+
+2019-03-19  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/89737
+	* predict.c (combine_predictions_for_bb): Empty likely_edges and
+	unlikely_edges if there's an edge that belongs to both these sets.
+
+2018-03-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/89746
+	* config/rs6000/rs6000.md (fix_trunc<mode>si2_stfiwx): If we have a
+	non-TARGET_MFCRF target, and the dest is memory but not 32-bit aligned,
+	go via a stack temporary.
+
+2019-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89378
+	* config/mips/mips.c (mips_expand_vec_cond_expr): Use gen_lowpart
+	instead of gen_rtx_SUBREG.
+	* config/mips/mips-msa.md (vec_extract<mode><unitmode>): Likewise.
+
+2019-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR debug/88389
+	* opts.c (finish_options): Disable -gsplit-dwarf when doing LTO.
+
+2019-03-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/87809
+	PR lto/89335
+	* tree.c (free_lang_data_in_decl): Do not free context of C++
+	destrutors.
+
+2019-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89506
+	* config/arm/arm.md (cmpsi2_addneg): Swap the alternatives and use
+	subs for the first alternative except when operands[3] is 1.
+
+	PR target/89752
+	* gimplify.c (gimplify_asm_expr): For output argument with
+	TREE_ADDRESSABLE type, clear allows_reg if it allows memory, otherwise
+	diagnose error.
+
+2019-03-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/89753
+	* loop-unroll.c (decide_unroll_constant_iterations): Make guard for
+	explicit unrolling factor even more robust.
+
+2019-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89726
+	* config/i386/i386.c (ix86_expand_floorceildf_32): In ceil
+	compensation use x2 += 1 instead of x2 -= -1 and when honoring
+	signed zeros, do another copysign after the compensation.
+
+2019-03-18  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/89720
+	* tree-vrp.c (vrp_prop::check_mem_ref): Treat range with max < min
+	more conservatively, the same as anti-range.
+
+2019-03-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/88945
+	* tree-ssanames.c (release_ssa_name_fn): For released SSA names
+	use a TREE_TYPE of error_mark_node to avoid ICEs when dumping
+	basic-blocks that are removed.  Remove restoring SSA_NAME_VAR.
+	* tree-outof-ssa.c (eliminate_useless_phis): Remove redundant checking.
+
+2019-03-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-run.c (struct output): Make next_output unsigned.
+	Extend queue to 1024 entries.
+	Add "consumed" field.
+	(gomp_print_output): Remove print_index parameter.
+	Add final parameter.
+	Change limit to unsigned.
+	Use consumed field to implement circular buffer.
+	Detect interrupted print in final pass.
+	Flush output at the end.
+	(run): Update gomp_print_output usage.
+	(main): Initialize kernargs->output_data.consumed.
+
+2019-03-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Fix the
+	calculation of the minimum number of scalar iterations for
+	fully-predicated loops.
+
+2019-03-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/89546
+	* tree-sra.c (propagate_subaccesses_across_link): Requeue new_acc if
+	any propagation to its children took place.
+
+2019-03-18  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	PR target/89627
+	* config/riscv/riscv.c (riscv_pass_fpr_single): Add offset
+	parameter, and make use of it.
+	(riscv_get_arg_info): Pass offset to riscv_pass_fpr_single.
+
+2019-03-18  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.opt (mcode-density-frame): Get the inital value
+	from TARGET_CODE_DENSITY_FRAME_DEFAULT.
+	* config/arc/elf.h (TARGET_CODE_DENSITY_FRAME_DEFAULT): Define.
+	* config/arc/linux.h (TARGET_CODE_DENSITY_FRAME_DEFAULT): Define.
+	* config/arc/arc.md (pop_multi_fp_blink): Adjust constraints to
+	match what the ops is doing.
+	(push_multi_fp_blink): Likewise.
+	* config/arc/arc.c (arc_override_options): Enable enter/leave when
+	compiling for size and elf target.
+	(arc_save_callee_enter): Adjust note to match what enter/leave
+	operation does.
+
+2019-03-18  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (tst_movb): Fix constraint.
+
+2019-03-18  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (TARGET_HAVE_SPECULATION_SAFE_VALUE): Define.
+
+2019-03-18  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (arc_adjust_reg_alloc_order): Declare.
+	* config/arc/arc.c (arc_conditional_register_usage): Remove all
+	reg_alloc_order references.
+	(size_alloc_order): Define.
+	(arc_adjust_reg_alloc_order): New function.
+	* config/arc/arc.h (REG_ALLOC_ORDER): Proper define the register
+	order.
+	(ADJUST_REG_ALLOC_ORDER): Define.
+	(HONOR_REG_ALLOC_ORDER): Likewise.
+
+2019-03-18  Richard Biener  <rguenther@suse.de>
+
+	PR target/87561
+	* config/i386/i386.c (ix86_add_stmt_cost): Pessimize strided
+	loads and stores a bit more.
+
+2019-03-18  Richard Biener  <rguenther@suse.de>
+
+	PR target/87561
+	* config/i386/i386.c (ix86_add_stmt_cost): Apply strided
+	load pessimization to stores as well.
+
+2019-03-18  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR middle-end/86979
+	* sel-sched.c (compute_av_set_at_bb_end): When we have an ineligible
+	successor, use NULL as its av set.
+
+2019-03-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/89721
+	* lra-constraints (invariant_p): Return false if side_effects_p holds.
+
+2019-03-15  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/87532
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	When handling vec_extract, use modular arithmetic to allow
+	constant selectors greater than vector length.
+	* config/rs6000/rs6000.c (rs6000_expand_vector_extract): Allow
+	V1TImode vectors to have constant selector values greater than 0.
+	Use modular arithmetic to compute vector index.
+	(rs6000_split_vec_extract_var): Use modular arithmetic to compute
+	index for in-memory vectors.  Correct code generation for
+	in-register vectors.
+	(altivec_expand_vec_ext_builtin): Use modular arithmetic to
+	compute index.
+
+2019-03-15  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/88534
+	PR c++/88537
+	* dwarf2out.c (generic_parameter_die): Follow DECL_INITIAL of
+	VAR_DECL args.
+
+2019-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89709
+	* tree.c (inchash::add_expr): Strip any location wrappers.
+	* fold-const.c (operand_equal_p): Move stripping of location wrapper
+	after hash verification.
+
+	PR debug/89704
+	* dwarf2out.c (add_const_value_attribute): Return false for MINUS,
+	SIGN_EXTEND and ZERO_EXTEND.
+
+2019-03-14  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* hash-table.h (remove_elt_with_hash): Return if slot is NULL rather
+	than if is_empty (*slot).
+	* hash-set-tests.c (test_set_of_strings): Add tests for addition of
+	existing elt and for elt removal.
+	* hash-map-tests.c (test_map_of_strings_to_int): Add test for removal
+	of already removed elt.
+
+2019-03-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89650
+	* config/i386/i386.c (remove_partial_avx_dependency): Handle
+	REG_EH_REGION note.
+
+2019-03-14  Martin Liska  <mliska@suse.cz>
+
+	PR other/89712
+	* doc/invoke.texi: Remove -fdump-class-hierarchy option.
+
+2019-03-14  Richard Biener  <rguenther@suse.de>
+
+	PR target/89711
+	* config/i386/i386.c (make_resolver_func): Properly set
+	DECL_CONTEXT on the RESULT_DECL.
+	* config/rs6000/rs6000.c (make_resolver_func): Likewise.
+
 2019-03-14  Richard Biener  <rguenther@suse.de>
 
 	* gimple-pretty-print.c: Include cfgloop.h.

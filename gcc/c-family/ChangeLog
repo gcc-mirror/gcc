@@ -1,3 +1,11 @@
+2019-03-19  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/89688
+	* c-common.c (braced_list_to_string): Make static.
+	(braced_lists_to_strings): Define new function.
+	* c-common.h (braced_list_to_string): Remove.
+	(braced_lists_to_strings): Declare.
+
 2019-03-12  Martin Liska  <mliska@suse.cz>
 
 	* c-opts.c (c_common_handle_option): Wrap option with %< and %>.

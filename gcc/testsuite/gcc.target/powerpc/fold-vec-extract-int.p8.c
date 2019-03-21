@@ -21,7 +21,7 @@
 /* { dg-final { scan-assembler-times {\mxxpermdi\M} 3 { target lp64 } } } */
 /* { dg-final { scan-assembler-times {\mvslo\M} 3 { target lp64 } } } */
 /* { dg-final { scan-assembler-times {\mmfvsrd\M} 3 { target lp64 } } } */
-/* { dg-final { scan-assembler-times {\msradi\M} 3 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\msrdi\M} 3 { target lp64 } } } */
 /* { dg-final { scan-assembler-times {\mextsw\M} 2 { target lp64 } } } */
 
 
