@@ -1,3 +1,8 @@
+2019-03-21  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+        * config/rs6000/rs6000.c (rs6000_analyze_swaps): Rebuild
+        ud- and du-chains between phases.
+
 2019-03-21  Matthias Klose  <doko@ubuntu.com>
 
 	Backport from mainline
