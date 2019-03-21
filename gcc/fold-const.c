@@ -2973,11 +2973,6 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       || TREE_TYPE (arg1) == error_mark_node)
     return 0;
 
-  /* Similar, if either does not have a type (like a released SSA name), 
-     they aren't equal.  */
-  if (!TREE_TYPE (arg0) || !TREE_TYPE (arg1))
-    return 0;
-
   /* We cannot consider pointers to different address space equal.  */
   if (POINTER_TYPE_P (TREE_TYPE (arg0))
       && POINTER_TYPE_P (TREE_TYPE (arg1))

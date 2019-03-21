@@ -12812,13 +12812,10 @@ tree_nop_conversion (const_tree exp)
   if (!CONVERT_EXPR_P (exp)
       && TREE_CODE (exp) != NON_LVALUE_EXPR)
     return false;
-  if (TREE_OPERAND (exp, 0) == error_mark_node)
-    return false;
 
   outer_type = TREE_TYPE (exp);
   inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
-
-  if (!inner_type)
+  if (!inner_type || inner_type == error_mark_node)
     return false;
 
   return tree_nop_conversion_p (outer_type, inner_type);
