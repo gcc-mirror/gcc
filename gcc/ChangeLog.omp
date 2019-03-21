@@ -1,3 +1,39 @@
+2018-12-11  Julian Brown  <julian@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/nvptx/nvptx.c (tree-hash-traits.h): Include.
+	(gangprivate_shared_size): New global variable.
+	(gangprivate_shared_align): Likewise.
+	(gangprivate_shared_sym): Likewise.
+	(gangprivate_shared_hmap): Likewise.
+	(nvptx_option_override): Initialize gangprivate_shared_sym,
+	gangprivate_shared_align.
+	(nvptx_file_end): Output gangprivate_shared_sym.
+	(nvptx_goacc_expand_accel_var): New function.
+	(nvptx_set_current_function): New function.
+	(TARGET_SET_CURRENT_FUNCTION): Define hook.
+	(TARGET_GOACC_EXPAND_ACCEL): Likewise.
+	* doc/tm.texi (TARGET_GOACC_EXPAND_ACCEL_VAR): Document new hook.
+	* doc/tm.texi.in (TARGET_GOACC_EXPAND_ACCEL_VAR): Likewise.
+	* expr.c (expand_expr_real_1): Remap decls marked with the
+	"oacc gangprivate" attribute.
+	* omp-low.c (omp_context): Add oacc_partitioning_level and
+	oacc_addressable_var_decls fields.
+	(new_omp_context): Initialize oacc_addressable_var_decls in new
+	omp_context.
+	(delete_omp_context): Delete oacc_addressable_var_decls in old
+	omp_context.
+	(lower_oacc_head_tail): Record partitioning-level count in omp context.
+	(oacc_record_private_var_clauses, oacc_record_vars_in_bind)
+	(mark_oacc_gangprivate): New functions.
+	(lower_omp_for): Call oacc_record_private_var_clauses with "for"
+	clauses.  Call mark_oacc_gangprivate for gang-partitioned loops.
+	(lower_omp_target): Call oacc_record_private_var_clauses with "target"
+	clauses.
+	Call mark_oacc_gangprivate for offloaded target regions.
+	(lower_omp_1): Call vars_in_bind for GIMPLE_BIND within OMP regions.
+	* target.def (expand_accel_var): New hook.
+
 2018-09-05  Cesar Philippidis  <cesar@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 

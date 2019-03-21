@@ -137,6 +137,12 @@ struct omp_context
 
   /* Hash map of dynamic arrays in this context.  */
   hash_map<tree_operand_hash, tree> *dynamic_arrays;
+
+  /* The number of levels of OpenACC partitioning invoked in this context.  */
+  unsigned oacc_partitioning_levels;
+
+  /* Addressable variable decls in this context.  */
+  vec<tree> *oacc_addressable_var_decls;
 };
 
 static splay_tree all_contexts;
@@ -1015,6 +1021,7 @@ new_omp_context (gimple *stmt, omp_context *outer_ctx)
   ctx->cb.decl_map = new hash_map<tree, tree>;
 
   ctx->dynamic_arrays = new hash_map<tree_operand_hash, tree>;
+  ctx->oacc_addressable_var_decls = new vec<tree> ();
 
   return ctx;
 }
@@ -1097,6 +1104,7 @@ delete_omp_context (splay_tree_value value)
     }
 
   delete ctx->dynamic_arrays;
+  delete ctx->oacc_addressable_var_decls;
 
   XDELETE (ctx);
 }
@@ -6823,6 +6831,9 @@ lower_oacc_head_tail (location_t loc, tree clauses,
   tree join_kind = build_int_cst (unsigned_type_node, IFN_UNIQUE_OACC_JOIN);
 
   gcc_assert (count);
+
+  ctx->oacc_partitioning_levels = count;
+
   for (unsigned done = 1; count; count--, done++)
     {
       gimple_seq fork_seq = NULL;
@@ -8507,6 +8518,68 @@ lower_omp_for_lastprivate (struct omp_for_data *fd, gimple_seq *body_p,
     }
 }
 
+/* Record vars listed in private clauses in CLAUSES in CTX.  This information
+   is used to mark up variables that should be made private per-gang.  */
+
+static void
+oacc_record_private_var_clauses (omp_context *ctx, tree clauses)
+{
+  tree c;
+
+  if (!ctx)
+    return;
+
+  for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE)
+      {
+	tree decl = OMP_CLAUSE_DECL (c);
+	if (VAR_P (decl) && TREE_ADDRESSABLE (decl))
+	  ctx->oacc_addressable_var_decls->safe_push (decl);
+      }
+}
+
+/* Record addressable vars declared in BINDVARS in CTX.  This information is
+   used to mark up variables that should be made private per-gang.  */
+
+static void
+oacc_record_vars_in_bind (omp_context *ctx, tree bindvars)
+{
+  if (!ctx)
+    return;
+
+  for (tree v = bindvars; v; v = DECL_CHAIN (v))
+    if (VAR_P (v) && TREE_ADDRESSABLE (v))
+      ctx->oacc_addressable_var_decls->safe_push (v);
+}
+
+/* Mark addressable variables which are declared implicitly or explicitly as
+   gang private with a special attribute.  These may need to have their
+   declarations altered later on in compilation (e.g. in
+   execute_oacc_device_lower or the backend, depending on how the OpenACC
+   execution model is implemented on a given target) to ensure that sharing
+   semantics are correct.  */
+
+static void
+mark_oacc_gangprivate (vec<tree> *decls)
+{
+  int i;
+  tree decl;
+
+  FOR_EACH_VEC_ELT (*decls, i, decl)
+    if (!lookup_attribute ("oacc gangprivate", DECL_ATTRIBUTES (decl)))
+      {
+	if (dump_file && (dump_flags & TDF_DETAILS))
+	  {
+	    fprintf (dump_file,
+		     "Setting 'oacc gangprivate' attribute for decl:");
+	    print_generic_decl (dump_file, decl, TDF_SLIM);
+	    fputc ('\n', dump_file);
+	  }
+	DECL_ATTRIBUTES (decl)
+	  = tree_cons (get_identifier ("oacc gangprivate"),
+		       NULL, DECL_ATTRIBUTES (decl));
+      }
+}
 
 /* Lower code for an OMP loop directive.  */
 
@@ -8523,6 +8596,8 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   size_t i;
 
   push_gimplify_context ();
+
+  oacc_record_private_var_clauses (ctx, gimple_omp_for_clauses (stmt));
 
   lower_omp (gimple_omp_for_pre_body_ptr (stmt), ctx);
 
@@ -8679,7 +8754,20 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   /* Add OpenACC partitioning and reduction markers just before the loop.  */
   if (oacc_head)
-    gimple_seq_add_seq (&body, oacc_head);
+    {
+      gimple_seq_add_seq (&body, oacc_head);
+
+      unsigned level_total = 0;
+      omp_context *thisctx;
+
+      for (thisctx = ctx; thisctx; thisctx = thisctx->outer)
+        level_total += thisctx->oacc_partitioning_levels;
+
+      /* If the current context and parent contexts are distributed over a
+	 total of one parallelism level, we have gang partitioning.  */
+      if (level_total == 1)
+        mark_oacc_gangprivate (ctx->oacc_addressable_var_decls);
+    }
 
   lower_omp_for_lastprivate (&fd, &body, &dlist, ctx);
 
@@ -9540,6 +9628,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   clauses = gimple_omp_target_clauses (stmt);
 
+  oacc_record_private_var_clauses (ctx, clauses);
+
   gimple_seq dep_ilist = NULL;
   gimple_seq dep_olist = NULL;
   if (omp_find_clause (clauses, OMP_CLAUSE_DEPEND))
@@ -9833,6 +9923,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   if (offloaded)
     {
+      mark_oacc_gangprivate (ctx->oacc_addressable_var_decls);
+
       /* Declare all the variables created by mapping and the variables
 	 declared in the scope of the target body.  */
       record_vars_into (ctx->block_vars, child_fn);
@@ -11075,6 +11167,7 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		 ctx);
       break;
     case GIMPLE_BIND:
+      oacc_record_vars_in_bind (ctx, gimple_bind_vars (as_a <gbind *> (stmt)));
       lower_omp (gimple_bind_body_ptr (as_a <gbind *> (stmt)), ctx);
       maybe_remove_omp_member_access_dummy_vars (as_a <gbind *> (stmt));
       break;

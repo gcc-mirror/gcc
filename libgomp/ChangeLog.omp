@@ -1,3 +1,11 @@
+2018-12-11  Julian Brown  <julian@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/gang-private-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/loop-gwv-2.c: New test.
+	* testsuite/libgomp.oacc-c/pr85465.c: New test.
+	* testsuite/libgomp.oacc-fortran/gangprivate-attrib-1.f90: New test.kk
+
 2019-03-19  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/lib-93.c: Adjust target selector.
