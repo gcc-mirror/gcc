@@ -1,3 +1,14 @@
+2019-03-21  Jan Hubicka  <hubicka@ucw.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/89692
+	* tree.c (fld_type_variant, fld_incomplete_type_of,
+	fld_process_array_type): Call fld->pset.add and don't call
+	add_tree_to_fld_list if it returns true.
+	(free_lang_data_in_type): Similarly with self-recursive call.  Purge
+	non-marked types from TYPE_NEXT_VARIANT list.
+	(find_decls_types_r): Call fld_worklist_push for TYPE_CANONICAL (t).
+
 2019-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* hash-table.h (hash_table): Add Lazy template parameter defaulted
