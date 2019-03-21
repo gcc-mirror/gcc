@@ -1,5 +1,10 @@
 2019-03-21  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR fortran/89773
+	* gfortran.dg/goacc/pr89773.f90: New file.
+	* gfortran.dg/goacc/pr77765.f90: Adjust.
+	* gfortran.dg/goacc/routine-6.f90: Adjust, and extend.
+
 	PR fortran/72741
 	* gfortran.dg/goacc/routine-module-mod-1.f90: Update.
 

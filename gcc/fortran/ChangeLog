@@ -1,5 +1,13 @@
 2019-03-21  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR fortran/89773
+	* gfortran.h (gfc_oacc_routine_name): Add loc member.
+	(gfc_resolve_oacc_routines): Declare.
+	* openmp.c (gfc_match_oacc_routine): Move some error checking
+	into...
+	(gfc_resolve_oacc_routines): ... this new function.
+	* resolve.c (resolve_codes): Call it.
+
 	PR fortran/72741
 	* openmp.c (gfc_match_oacc_routine): Clarify.
 
