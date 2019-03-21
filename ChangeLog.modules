@@ -1,3 +1,9 @@
+2019-03-21  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/
+	* gcc.c (execute): Frob argv[0] to show spawning from driver.
+	(process_command): Don't check input file exists here.
+
 2019-03-20  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

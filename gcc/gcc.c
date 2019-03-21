@@ -3068,7 +3068,8 @@ execute (void)
   if (!wrapper_string)
     {
       string = find_a_file (&exec_prefixes, commands[0].prog, X_OK, false);
-      commands[0].argv[0] = (string) ? string : commands[0].argv[0];
+      if (string)
+	commands[0].argv[0] = string;
     }
 
   for (n_commands = 1, i = 0; argbuf.iterate (i, &arg); i++)
@@ -3077,8 +3078,7 @@ execute (void)
 #if defined (__MSDOS__) || defined (OS2) || defined (VMS)
 	fatal_error (input_location, "%<-pipe%> not supported");
 #endif
-	argbuf[i] = 0; /* Termination of
-						     command args.  */
+	argbuf[i] = 0; /* Termination of command args.  */
 	commands[n_commands].prog = argbuf[i + 1];
 	commands[n_commands].argv
 	  = &(argbuf.address ())[i + 1];
@@ -3206,6 +3206,36 @@ execute (void)
       int err;
       const char *string = commands[i].argv[0];
 
+      if (commands[i].argv == argbuf.address ())
+	{
+	  /* Munge argv[0], the one given to the exec'd command, to
+	     include information about from whence it was spawned.  We
+	     preserve the directory component so the command can
+	     determine where it is, but not what it was called.
+	     Thus its otherwise unlocated errors specify something
+	     like 'g++(cc1plus)' rather than plan 'cc1plus'.  */
+	  size_t slen = strlen (string);
+	  size_t plen = strlen (progname);
+	  size_t tlen = strlen (commands[i].prog);
+
+	  while (slen && !IS_DIR_SEPARATOR (string[slen-1]))
+	    slen--;
+	  char *ren = XNEWVEC (char, slen + plen + tlen + 3);
+	  size_t off = 0;
+
+	  memcpy (ren + off, string, slen);
+	  off += slen;
+	  memcpy (ren + off, progname, plen);
+	  off += plen;
+	  ren[off++] = '(';
+	  memcpy (ren + off, commands[i].prog, tlen);
+	  off += tlen;
+	  ren[off++] = ')';
+	  ren[off++] = 0;
+
+	  commands[i].argv[0] = ren;
+	}
+
       errmsg = pex_run (pex,
 			((i + 1 == n_commands ? PEX_LAST : 0)
 			 | (string == commands[i].prog ? PEX_SEARCH : 0)),
@@ -3218,6 +3248,12 @@ execute (void)
 		       err ? G_("cannot execute %qs: %s: %m")
 		       : G_("cannot execute %qs: %s"),
 		       string, errmsg);
+	}
+
+      if (commands[i].argv[0] != string)
+	{
+	  free (const_cast <char *> (commands[i].argv[0]));
+	  commands[i].argv[0] = string;
 	}
 
       if (i && string != commands[i].prog)
@@ -4561,44 +4597,11 @@ process_command (unsigned int decoded_options_count,
       if (decoded_options[j].opt_index == OPT_SPECIAL_input_file)
 	{
 	  const char *arg = decoded_options[j].arg;
-          const char *p = strrchr (arg, '@');
-          char *fname;
-	  long offset;
-	  int consumed;
 #ifdef HAVE_TARGET_OBJECT_SUFFIX
 	  arg = convert_filename (arg, 0, access (arg, F_OK));
 #endif
-	  /* For LTO static archive support we handle input file
-	     specifications that are composed of a filename and
-	     an offset like FNAME@OFFSET.  */
-	  if (p
-	      && p != arg
-	      && sscanf (p, "@%li%n", &offset, &consumed) >= 1
-	      && strlen (p) == (unsigned int)consumed)
-	    {
-              fname = (char *)xmalloc (p - arg + 1);
-              memcpy (fname, arg, p - arg);
-              fname[p - arg] = '\0';
-	      /* Only accept non-stdin and existing FNAME parts, otherwise
-		 try with the full name.  */
-	      if (strcmp (fname, "-") == 0 || access (fname, F_OK) < 0)
-		{
-		  free (fname);
-		  fname = xstrdup (arg);
-		}
-	    }
-	  else
-	    fname = xstrdup (arg);
+	  add_infile (arg, spec_lang);
 
-          if (strcmp (fname, "-") != 0 && access (fname, F_OK) < 0)
-	    {
-	      bool resp = fname[0] == '@' && access (fname + 1, F_OK) < 0;
-	      error ("%s: %m", fname + resp);
-	    }
-          else
-	    add_infile (arg, spec_lang);
-
-          free (fname);
 	  continue;
 	}
 
@@ -6927,8 +6930,8 @@ run_attempt (const char **new_argv, const char *out_temp,
     fatal_error (input_location, "pex_init failed: %m");
 
   errmsg = pex_run (pex, pex_flags, new_argv[0],
-		    CONST_CAST2 (char *const *, const char **, &new_argv[1]), out_temp,
-		    err_temp, &err);
+		    CONST_CAST2 (char *const *, const char **, &new_argv[1]),
+		    out_temp, err_temp, &err);
   if (errmsg != NULL)
     {
       errno = err;
