@@ -8731,7 +8731,7 @@ try_to_locate_new_include_insertion_point (const char *file, location_t loc)
    no guarantee that two different diagnostics that are recommending
    adding e.g. "<stdio.h>" are using the same buffer.  */
 
-typedef hash_set <const char *, nofree_string_hash> per_file_includes_t;
+typedef hash_set <const char *, false, nofree_string_hash> per_file_includes_t;
 
 /* The map itself.  We don't need string comparison for the filename keys,
    as they come from libcpp.  */

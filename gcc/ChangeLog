@@ -1,3 +1,24 @@
+2019-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* hash-table.h (hash_table): Add Lazy template parameter defaulted
+	to false, if true, don't alloc_entries during construction, but defer
+	it to the first method that needs m_entries allocated.
+	(hash_table::hash_table, hash_table::~hash_table,
+	hash_table::alloc_entries, hash_table::find_empty_slot_for_expand,
+	hash_table::too_empty_p, hash_table::expand, hash_table::empty_slow,
+	hash_table::clear_slot, hash_table::traverse_noresize,
+	hash_table::traverse, hash_table::iterator::slide): Adjust all methods.
+	* hash-set.h (hash_set): Add Lazy template parameter defaulted to
+	false.
+	(hash_set::contains): If Lazy is true, use find_slot_with_hash with
+	NO_INSERT instead of find_with_hash.
+	(hash_set::traverse, hash_set::iterator, hash_set::iterator::m_iter,
+	hash_set::m_table): Add Lazy to template params of hash_table.
+	(gt_ggc_mx, gt_pch_nx): Use false as Lazy in hash_set template param.
+	* attribs.c (test_attribute_exclusions): Likewise.
+	* hash-set-tests.c (test_set_of_strings): Add iterator tests for
+	hash_set.  Add tests for hash_set with Lazy = true.
+
 2019-03-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89779
