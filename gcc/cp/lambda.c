@@ -601,19 +601,6 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 	  IDENTIFIER_LENGTH (id) + 1);
   name = get_identifier (buf);
 
-  /* If TREE_TYPE isn't set, we're still in the introducer, so check
-     for duplicates.  */
-  if (!LAMBDA_EXPR_CLOSURE (lambda))
-    {
-      if (IDENTIFIER_MARKED (name))
-	{
-	  pedwarn (input_location, 0,
-		   "already captured %qD in lambda expression", id);
-	  return NULL_TREE;
-	}
-      IDENTIFIER_MARKED (name) = true;
-    }
-
   if (variadic)
     type = make_pack_expansion (type);
 
@@ -674,8 +661,6 @@ register_capture_members (tree captures)
   if (PACK_EXPANSION_P (field))
     field = PACK_EXPANSION_PATTERN (field);
 
-  /* We set this in add_capture to avoid duplicates.  */
-  IDENTIFIER_MARKED (DECL_NAME (field)) = false;
   finish_member_declaration (field);
 }
 

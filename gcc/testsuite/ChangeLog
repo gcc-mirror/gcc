@@ -1,3 +1,10 @@
+2019-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89767
+	* g++.dg/cpp1y/lambda-init18.C: New test.
+	* g++.dg/cpp1y/lambda-init19.C: New test.
+	* g++.dg/cpp1y/pr89767.C: New test.
+
 2019-03-21  Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
