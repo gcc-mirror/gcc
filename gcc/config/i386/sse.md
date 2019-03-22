@@ -3973,7 +3973,7 @@
   [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v")
 	(vec_merge:VF_AVX512VL
 	  (fma:VF_AVX512VL
-	    (match_operand:VF_AVX512VL 1 "register_operand" "v")
+	    (match_operand:VF_AVX512VL 1 "<round_nimm_predicate>" "%v")
 	    (match_operand:VF_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>")
 	    (match_operand:VF_AVX512VL 3 "register_operand" "0"))
 	  (match_dup 3)
@@ -4094,7 +4094,7 @@
   [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v")
 	(vec_merge:VF_AVX512VL
 	  (fma:VF_AVX512VL
-	    (match_operand:VF_AVX512VL 1 "register_operand" "v")
+	    (match_operand:VF_AVX512VL 1 "<round_nimm_predicate>" "%v")
 	    (match_operand:VF_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>")
 	    (neg:VF_AVX512VL
 	      (match_operand:VF_AVX512VL 3 "register_operand" "0")))
@@ -4217,7 +4217,7 @@
 	(vec_merge:VF_AVX512VL
 	  (fma:VF_AVX512VL
 	    (neg:VF_AVX512VL
-	      (match_operand:VF_AVX512VL 1 "register_operand" "v"))
+	      (match_operand:VF_AVX512VL 1 "<round_nimm_predicate>" "%v"))
 	    (match_operand:VF_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>")
 	    (match_operand:VF_AVX512VL 3 "register_operand" "0"))
 	  (match_dup 3)
@@ -4345,7 +4345,7 @@
 	(vec_merge:VF_AVX512VL
 	  (fma:VF_AVX512VL
 	    (neg:VF_AVX512VL
-	      (match_operand:VF_AVX512VL 1 "register_operand" "v"))
+	      (match_operand:VF_AVX512VL 1 "<round_nimm_predicate>" "%v"))
 	    (match_operand:VF_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>")
 	    (neg:VF_AVX512VL
 	      (match_operand:VF_AVX512VL 3 "register_operand" "0")))
@@ -4667,7 +4667,7 @@
 	(vec_merge:VF_128
 	  (vec_merge:VF_128
 	    (fma:VF_128
-	      (match_operand:VF_128 1 "register_operand" "v")
+	      (match_operand:VF_128 1 "<round_nimm_predicate>" "%v")
 	      (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>")
 	      (match_operand:VF_128 3 "register_operand" "0"))
 	    (match_dup 3)
@@ -4737,7 +4737,7 @@
 	(vec_merge:VF_128
 	  (vec_merge:VF_128
 	    (fma:VF_128
-	      (match_operand:VF_128 1 "register_operand" "v")
+	      (match_operand:VF_128 1 "<round_nimm_predicate>" "%v")
 	      (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>")
 	      (neg:VF_128
 		(match_operand:VF_128 3 "register_operand" "0")))
@@ -4797,7 +4797,7 @@
 	    (fma:VF_128
 	      (neg:VF_128
 		(match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>"))
-	      (match_operand:VF_128 1 "register_operand" "v")
+	      (match_operand:VF_128 1 "<round_nimm_predicate>" "%v")
 	      (match_operand:VF_128 3 "register_operand" "0"))
 	    (match_dup 3)
 	    (match_operand:QI 4 "register_operand" "Yk"))
@@ -4849,14 +4849,14 @@
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "avx512f_vmfnmsub_<mode>_mask3<round_name>"
+(define_insn "*avx512f_vmfnmsub_<mode>_mask3<round_name>"
   [(set (match_operand:VF_128 0 "register_operand" "=v")
 	(vec_merge:VF_128
 	  (vec_merge:VF_128
 	    (fma:VF_128
 	      (neg:VF_128
 		(match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>"))
-	      (match_operand:VF_128 1 "register_operand" "v")
+	      (match_operand:VF_128 1 "<round_nimm_predicate>" "%v")
 	      (neg:VF_128
 		(match_operand:VF_128 3 "register_operand" "0")))
 	    (match_dup 3)
