@@ -6513,7 +6513,7 @@ extern tree cp_build_parm_decl			(tree, tree, tree);
 extern tree get_guard				(tree);
 extern tree get_guard_cond			(tree, bool);
 extern tree set_guard				(tree);
-extern tree get_tls_wrapper_fn			(tree);
+extern tree maybe_get_tls_wrapper_call		(tree);
 extern void mark_needed				(tree);
 extern bool decl_needed_p			(tree);
 extern void note_vague_linkage_fn		(tree);
