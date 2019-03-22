@@ -1,3 +1,12 @@
+2019-02-26  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/87761
+	* config/mips/mips-protos.h (mips_split_move): Add new argument.
+	(mips_emit_move_or_split): Pass NULL for INSN into mips_split_move.
+	(mips_split_move): Accept new INSN argument.  Try to forward SRC
+	into the next instruction.
+	(mips_split_move_insn): Pass INSN through to mips_split_move.
+
 2019-03-22  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/89676
