@@ -1032,6 +1032,11 @@ struct constexpr_ctx {
   tree object;
   /* If inside SWITCH_EXPR.  */
   constexpr_switch_state *css_state;
+  /* Number of cxx_eval_constant_expression calls (except skipped ones,
+     on simple constants or location wrappers) encountered during current
+     cxx_eval_outermost_constant_expr call.  */
+  HOST_WIDE_INT *constexpr_ops_count;
+
   /* Whether we should error on a non-constant expression or fail quietly.  */
   bool quiet;
   /* Whether we are strictly conforming to constant expression rules or
@@ -4402,6 +4407,20 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       return t;
     }
 
+  /* Avoid excessively long constexpr evaluations.  */
+  if (!location_wrapper_p (t)
+      && ++*ctx->constexpr_ops_count >= constexpr_ops_limit)
+    {
+      if (!ctx->quiet)
+	error_at (cp_expr_loc_or_loc (t, input_location),
+		  "%<constexpr%> evaluation operation count exceeds limit of "
+		  "%wd (use -fconstexpr-ops-limit= to increase the limit)",
+		  constexpr_ops_limit);
+      *ctx->constexpr_ops_count = INTTYPE_MINIMUM (HOST_WIDE_INT);
+      *non_constant_p = true;
+      return t;
+    }
+
   tree_code tcode = TREE_CODE (t);
   switch (tcode)
     {
@@ -5238,9 +5257,10 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   bool non_constant_p = false;
   bool overflow_p = false;
   hash_map<tree,tree> map;
+  HOST_WIDE_INT constexpr_ctx_count = 0;
 
   constexpr_ctx ctx = { NULL, &map, NULL, NULL, NULL, NULL,
-			allow_non_constant, strict,
+			&constexpr_ctx_count, allow_non_constant, strict,
 			manifestly_const_eval || !allow_non_constant };
 
   tree type = initialized_type (t);
@@ -5382,9 +5402,11 @@ is_sub_constant_expr (tree t)
   bool non_constant_p = false;
   bool overflow_p = false;
   hash_map <tree, tree> map;
+  HOST_WIDE_INT constexpr_ops_count = 0;
 
   constexpr_ctx ctx
-    = { NULL, &map, NULL, NULL, NULL, NULL, true, true, false };
+    = { NULL, &map, NULL, NULL, NULL, NULL, &constexpr_ops_count,
+	true, true, false };
 
   instantiate_constexpr_fns (t);
   cxx_eval_constant_expression (&ctx, t, false, &non_constant_p,

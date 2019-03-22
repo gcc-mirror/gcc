@@ -1,3 +1,8 @@
+2019-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87481
+	* g++.dg/cpp1y/constexpr-87481.C: New test.
+
 2019-03-22  Simon Wright  <simon@pushface.org>
 
 	PR ada/89583

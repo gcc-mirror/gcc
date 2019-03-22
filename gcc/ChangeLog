@@ -1,3 +1,8 @@
+2019-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87481
+	* doc/invoke.texi (-fconstexpr-ops-limit=): Document.
+
 2019-03-22  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* config/rs6000/mmintrin.h (_mm_sub_pi32): Fix typo.

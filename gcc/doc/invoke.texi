@@ -210,7 +210,7 @@ in the following sections.
 @gccoptlist{-fabi-version=@var{n}  -fno-access-control @gol
 -faligned-new=@var{n}  -fargs-in-order=@var{n}  -fchar8_t  -fcheck-new @gol
 -fconstexpr-depth=@var{n}  -fconstexpr-loop-limit=@var{n} @gol
--fno-elide-constructors @gol
+-fconstexpr-ops-limit=@var{n} -fno-elide-constructors @gol
 -fno-enforce-eh-specs @gol
 -fno-gnu-keywords @gol
 -fno-implicit-templates @gol
@@ -2524,6 +2524,16 @@ is 512.
 Set the maximum number of iterations for a loop in C++14 constexpr functions
 to @var{n}.  A limit is needed to detect infinite loops during
 constant expression evaluation.  The default is 262144 (1<<18).
+
+@item -fconstexpr-ops-limit=@var{n}
+@opindex fconstexpr-ops-limit
+Set the maximum number of operations during a single constexpr evaluation.
+Even when number of iterations of a single loop is limited with the above limit,
+if there are several nested loops and each of them has many iterations but still
+smaller than the above limit, or if in a body of some loop or even outside
+of a loop too many expressions need to be evaluated, the resulting constexpr
+evaluation might take too long.
+The default is 33554432 (1<<25).
 
 @item -fdeduce-init-list
 @opindex fdeduce-init-list
