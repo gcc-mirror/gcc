@@ -1,5 +1,26 @@
 2019-03-22  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (<avx512>_fmadd_<mode>_mask<round_name>,
+	<avx512>_fmadd_<mode>_mask3<round_name>,
+	<avx512>_fmsub_<mode>_mask<round_name>,
+	<avx512>_fmsub_<mode>_mask3<round_name>,
+	<avx512>_fnmadd_<mode>_mask<round_name>,
+	<avx512>_fnmadd_<mode>_mask3<round_name>,
+	<avx512>_fnmsub_<mode>_mask<round_name>,
+	<avx512>_fnmsub_<mode>_mask3<round_name>,
+	<avx512>_fmaddsub_<mode>_mask<round_name>,
+	<avx512>_fmaddsub_<mode>_mask3<round_name>,
+	<avx512>_fmsubadd_<mode>_mask<round_name>,
+	<avx512>_fmsubadd_<mode>_mask3<round_name>): Use
+	<round_nimm_predicate> instead of nonimmediate_operand.
+	(fmai_vmfmadd_<mode><round_name>, fmai_vmfmsub_<mode><round_name>,
+	fmai_vmfnmadd_<mode><round_name>, fmai_vmfnmsub_<mode><round_name>):
+	Use register_operand instead of <round_nimm_predicate> for the
+	operand that needs to match output.
+	(*fmai_fmadd_<mode>, *fmai_fmsub_<mode>,
+	*fmai_fnmadd_<mode><round_name>, *fmai_fnmsub_<mode><round_name>):
+	Likewise.  Formatting fixes.
+
 	PR target/89784
 	* config/i386/i386.c (enum ix86_builtins): Remove
 	IX86_BUILTIN_VFMSUBSD3_MASK3 and IX86_BUILTIN_VFMSUBSS3_MASK3.
