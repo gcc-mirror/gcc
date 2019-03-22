@@ -42,7 +42,7 @@ void test_memmove (void)
 
 void test_memset (void)
 {
-  memset (d, 0, SIZE_MAX - 2);    /* { dg-warning ".memset. pointer overflow between offset 0 and size \[0-9\]+ \\\[-Warray-bounds" "bug" { xfail *-*-* } } */
+  memset (d, 0, SIZE_MAX - 2);    /* { dg-warning ".memset. pointer overflow between offset 0 and size \[0-9\]+ \\\[-Warray-bounds" } */
 }
 
 

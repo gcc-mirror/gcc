@@ -1,3 +1,24 @@
+2019-03-21  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/89350
+	* builtins.c (compute_objsize): Also ignore offsets whose upper
+	bound is negative.
+	* gimple-ssa-warn-restrict.c (builtin_memref): Add new member.
+	(builtin_memref::builtin_memref): Initialize new member.
+	Allow EXPR to be null.
+	(builtin_memref::extend_offset_range): Replace local with a member.
+	Avoid assuming pointer offsets are unsigned.
+	(builtin_memref::set_base_and_offset): Determine base object
+	before computing offset range.
+	(builtin_access::builtin_access): Handle memset.
+	(builtin_access::generic_overlap): Replace local with a member.
+	(builtin_access::strcat_overlap): Same.
+	(builtin_access::overlap): Same.
+	(maybe_diag_overlap): Same.
+	(maybe_diag_access_bounds): Same.
+	(wrestrict_dom_walker::check_call): Handle memset.
+	(check_bounds_or_overlap): Same.
+
 2019-03-21  Jan Hubicka  <hubicka@ucw.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
