@@ -1,3 +1,14 @@
+2019-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87481
+	* constexpr.c (struct constexpr_ctx): Add constexpr_ops_count member.
+	(cxx_eval_constant_expression): When not skipping, not constant class
+	or location wrapper, increment *ctx->constexpr_ops_count and if it is
+	above constexpr_loop_nest_limit, diagnose failure.
+	(cxx_eval_outermost_constant_expr): Add constexpr_ops_count and
+	initialize ctx.constexpr_ops_count to its address.
+	(is_sub_constant_expr): Likewise.
+
 2019-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71446
