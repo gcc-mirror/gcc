@@ -1,5 +1,16 @@
 2019-03-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/60702
+	* cp-tree.h (get_tls_wrapper_fn): Remove declaration.
+	(maybe_get_tls_wrapper_call): Declare.
+	* decl2.c (get_tls_wrapper_fn): Make static.
+	(maybe_get_tls_wrapper_call): New function.
+	* typeck.c (build_class_member_access_expr): Handle accesses to TLS
+	variables.
+	* semantics.c (finish_qualified_id_expr): Likewise.
+	(finish_id_expression_1): Use maybe_get_tls_wrapper_call.
+	* pt.c (tsubst_copy_and_build): Likewise.
+
 	PR c++/87481
 	* constexpr.c (struct constexpr_ctx): Add constexpr_ops_count member.
 	(cxx_eval_constant_expression): When not skipping, not constant class

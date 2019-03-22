@@ -2443,6 +2443,12 @@ build_class_member_access_expr (cp_expr object, tree member,
       /* A static data member.  */
       result = member;
       mark_exp_read (object);
+
+      if (tree wrap = maybe_get_tls_wrapper_call (result))
+	/* Replace an evaluated use of the thread_local variable with
+	   a call to its wrapper.  */
+	result = wrap;
+
       /* If OBJECT has side-effects, they are supposed to occur.  */
       if (TREE_SIDE_EFFECTS (object))
 	result = build2 (COMPOUND_EXPR, TREE_TYPE (result), object, result);

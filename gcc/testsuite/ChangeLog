@@ -1,5 +1,21 @@
 2019-03-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/60702
+	* g++.dg/tls/thread_local11.C: New test.
+	* g++.dg/tls/thread_local11.h: New test.
+	* g++.dg/tls/thread_local12a.C: New test.
+	* g++.dg/tls/thread_local12b.C: New test.
+	* g++.dg/tls/thread_local12c.C: New test.
+	* g++.dg/tls/thread_local12d.C: New test.
+	* g++.dg/tls/thread_local12e.C: New test.
+	* g++.dg/tls/thread_local12f.C: New test.
+	* g++.dg/tls/thread_local12g.C: New test.
+	* g++.dg/tls/thread_local12h.C: New test.
+	* g++.dg/tls/thread_local12i.C: New test.
+	* g++.dg/tls/thread_local12j.C: New test.
+	* g++.dg/tls/thread_local12k.C: New test.
+	* g++.dg/tls/thread_local12l.C: New test.
+
 	PR c++/87481
 	* g++.dg/cpp1y/constexpr-87481.C: New test.
 

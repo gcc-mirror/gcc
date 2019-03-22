@@ -3442,7 +3442,7 @@ get_tls_init_fn (tree var)
    VAR and then returns a reference to VAR.  The wrapper function is used
    in place of VAR everywhere VAR is mentioned.  */
 
-tree
+static tree
 get_tls_wrapper_fn (tree var)
 {
   /* Only C++11 TLS vars need this wrapper fn.  */
@@ -3494,6 +3494,22 @@ get_tls_wrapper_fn (tree var)
       set_global_binding (fn);
     }
   return fn;
+}
+
+/* If EXPR is a thread_local variable that should be wrapped by init
+   wrapper function, return a call to that function, otherwise return
+   NULL.  */
+
+tree
+maybe_get_tls_wrapper_call (tree expr)
+{
+  if (VAR_P (expr)
+      && !processing_template_decl
+      && !cp_unevaluated_operand
+      && CP_DECL_THREAD_LOCAL_P (expr))
+    if (tree wrap = get_tls_wrapper_fn (expr))
+      return build_cxx_call (wrap, 0, NULL, tf_warning_or_error);
+  return NULL;
 }
 
 /* At EOF, generate the definition for the TLS wrapper function FN:
