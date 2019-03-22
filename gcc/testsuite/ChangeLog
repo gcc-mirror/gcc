@@ -1,3 +1,46 @@
+2019-03-22  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/89784
+	* gcc.target/i386/avx512f-vfmaddXXXsd-1.c (avx512f_test): Add tests
+	for _mm_mask{,3,z}_*.
+	* gcc.target/i386/avx512f-vfmaddXXXss-1.c (avx512f_test): Likewise.
+	* gcc.target/i386/avx512f-vfmsubXXXsd-1.c (avx512f_test): Likewise.
+	* gcc.target/i386/avx512f-vfmsubXXXss-1.c (avx512f_test): Likewise.
+	* gcc.target/i386/avx512f-vfnmaddXXXsd-1.c (avx512f_test): Likewise.
+	* gcc.target/i386/avx512f-vfnmaddXXXss-1.c (avx512f_test): Likewise.
+	* gcc.target/i386/avx512f-vfnmsubXXXsd-1.c (avx512f_test): Likewise.
+	* gcc.target/i386/avx512f-vfnmsubXXXss-1.c (avx512f_test): Likewise.
+	* gcc.target/i386/avx512f-vfmaddXXXsd-2.c: New test.
+	* gcc.target/i386/avx512f-vfmaddXXXss-2.c: New test.
+	* gcc.target/i386/avx512f-vfmsubXXXsd-2.c: New test.
+	* gcc.target/i386/avx512f-vfmsubXXXss-2.c: New test.
+	* gcc.target/i386/avx512f-vfnmaddXXXsd-2.c: New test.
+	* gcc.target/i386/avx512f-vfnmaddXXXss-2.c: New test.
+	* gcc.target/i386/avx512f-vfnmsubXXXsd-2.c: New test.
+	* gcc.target/i386/avx512f-vfnmsubXXXss-2.c: New test.
+
+2019-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89784
+	* gcc.target/i386/sse-13.c (__builtin_ia32_vfmaddsd3_mask,
+	__builtin_ia32_vfmaddsd3_mask3, __builtin_ia32_vfmaddsd3_maskz,
+	__builtin_ia32_vfmsubsd3_mask3, __builtin_ia32_vfmaddss3_mask,
+	__builtin_ia32_vfmaddss3_mask3, __builtin_ia32_vfmaddss3_maskz,
+	__builtin_ia32_vfmsubss3_mask3): Define.
+	* gcc.target/i386/sse-23.c (__builtin_ia32_vfmaddsd3_mask,
+	__builtin_ia32_vfmaddsd3_mask3, __builtin_ia32_vfmaddsd3_maskz,
+	__builtin_ia32_vfmsubsd3_mask3, __builtin_ia32_vfmaddss3_mask,
+	__builtin_ia32_vfmaddss3_mask3, __builtin_ia32_vfmaddss3_maskz,
+	__builtin_ia32_vfmsubss3_mask3): Define.
+	* gcc.target/i386/avx-1.c (__builtin_ia32_vfmaddsd3_mask,
+	__builtin_ia32_vfmaddsd3_mask3, __builtin_ia32_vfmaddsd3_maskz,
+	__builtin_ia32_vfmsubsd3_mask3, __builtin_ia32_vfmaddss3_mask,
+	__builtin_ia32_vfmaddss3_mask3, __builtin_ia32_vfmaddss3_maskz,
+	__builtin_ia32_vfmsubss3_mask3): Define.
+	* gcc.target/i386/sse-14.c: Add tests for
+	_mm_mask{,3,z}_f{,n}m{add,sub}_round_s{s,d} builtins.
+	* gcc.target/i386/sse-22.c: Likewise.
+
 2019-03-21  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/89350

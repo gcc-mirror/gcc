@@ -1,3 +1,47 @@
+2019-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89784
+	* config/i386/i386.c (enum ix86_builtins): Remove
+	IX86_BUILTIN_VFMSUBSD3_MASK3 and IX86_BUILTIN_VFMSUBSS3_MASK3.
+	* config/i386/i386-builtin.def (__builtin_ia32_vfmaddsd3_mask,
+	__builtin_ia32_vfmaddsd3_mask3, __builtin_ia32_vfmaddsd3_maskz,
+	__builtin_ia32_vfmsubsd3_mask3, __builtin_ia32_vfmaddss3_mask,
+	__builtin_ia32_vfmaddss3_mask3, __builtin_ia32_vfmaddss3_maskz,
+	__builtin_ia32_vfmsubss3_mask3): New builtins.
+	* config/i386/sse.md (avx512f_vmfmadd_<mode>_mask<round_name>,
+	avx512f_vmfmadd_<mode>_mask3<round_name>,
+	avx512f_vmfmadd_<mode>_maskz_1<round_name>,
+	*avx512f_vmfmsub_<mode>_mask<round_name>,
+	avx512f_vmfmsub_<mode>_mask3<round_name>,
+	*avx512f_vmfmasub_<mode>_maskz_1<round_name>,
+	*avx512f_vmfnmadd_<mode>_mask<round_name>,
+	*avx512f_vmfnmadd_<mode>_mask3<round_name>,
+	*avx512f_vmfnmadd_<mode>_maskz_1<round_name>,
+	*avx512f_vmfnmsub_<mode>_mask<round_name>,
+	*avx512f_vmfnmsub_<mode>_mask3<round_name>,
+	*avx512f_vmfnmasub_<mode>_maskz_1<round_name>): New define_insns.
+	(avx512f_vmfmadd_<mode>_maskz<round_expand_name>): New define_expand.
+	* config/i386/avx512fintrin.h (_mm_mask_fmadd_sd, _mm_mask_fmadd_ss,
+	_mm_mask3_fmadd_sd, _mm_mask3_fmadd_ss, _mm_maskz_fmadd_sd,
+	_mm_maskz_fmadd_ss, _mm_mask_fmsub_sd, _mm_mask_fmsub_ss,
+	_mm_mask3_fmsub_sd, _mm_mask3_fmsub_ss, _mm_maskz_fmsub_sd,
+	_mm_maskz_fmsub_ss, _mm_mask_fnmadd_sd, _mm_mask_fnmadd_ss,
+	_mm_mask3_fnmadd_sd, _mm_mask3_fnmadd_ss, _mm_maskz_fnmadd_sd,
+	_mm_maskz_fnmadd_ss, _mm_mask_fnmsub_sd, _mm_mask_fnmsub_ss,
+	_mm_mask3_fnmsub_sd, _mm_mask3_fnmsub_ss, _mm_maskz_fnmsub_sd,
+	_mm_maskz_fnmsub_ss, _mm_mask_fmadd_round_sd, _mm_mask_fmadd_round_ss,
+	_mm_mask3_fmadd_round_sd, _mm_mask3_fmadd_round_ss,
+	_mm_maskz_fmadd_round_sd, _mm_maskz_fmadd_round_ss,
+	_mm_mask_fmsub_round_sd, _mm_mask_fmsub_round_ss,
+	_mm_mask3_fmsub_round_sd, _mm_mask3_fmsub_round_ss,
+	_mm_maskz_fmsub_round_sd, _mm_maskz_fmsub_round_ss,
+	_mm_mask_fnmadd_round_sd, _mm_mask_fnmadd_round_ss,
+	_mm_mask3_fnmadd_round_sd, _mm_mask3_fnmadd_round_ss,
+	_mm_maskz_fnmadd_round_sd, _mm_maskz_fnmadd_round_ss,
+	_mm_mask_fnmsub_round_sd, _mm_mask_fnmsub_round_ss,
+	_mm_mask3_fnmsub_round_sd, _mm_mask3_fnmsub_round_ss,
+	_mm_maskz_fnmsub_round_sd, _mm_maskz_fnmsub_round_ss): New intrinsics.
+
 2019-03-21  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/89350
