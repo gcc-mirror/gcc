@@ -1,3 +1,16 @@
+2019-03-21  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/89350
+	* gcc.dg/Warray-bounds-40.c: Remove an xfail.
+	* gcc.dg/Wstringop-overflow.c: Xfail overly ambitious tests.
+	* gcc.dg/Wstringop-overflow-11.c: New test.
+	* gcc.dg/Wstringop-overflow-12.c: New test.
+	* gcc.dg/pr89350.c: New test.
+	* gcc.dg/pr40340-1.c: Adjust expected warning.
+	* gcc.dg/pr40340-2.c: Same.
+	* gcc.dg/pr40340-4.c: Same.
+	* gcc.dg/pr40340-5.c: Same.
+
 2019-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/89692
