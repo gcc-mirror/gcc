@@ -725,8 +725,8 @@ i. e. it is a singleton. It can be read and written by calling
 <code>__gnu_parallel::_Settings::set</code>, respectively.
 Please note that the first call return a const object, so direct manipulation
 is forbidden.
-See <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01005.html">
-  <filename class="headerfile">settings.h</filename></link>
+See <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/index.html">
+  <filename class="headerfile">&lt;parallel/settings.h&gt;</filename></link>
 for complete details.
 </para>
 
