@@ -1,3 +1,8 @@
+2019-03-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/89676
+	* gcc.target/i386/pr89676.c: New.
+
 2019-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/60702
