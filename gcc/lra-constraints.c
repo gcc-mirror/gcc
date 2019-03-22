@@ -4256,6 +4256,20 @@ curr_insn_transform (bool check_only_p)
 			   || MEM_P (SET_DEST (curr_insn_set))
 			   || GET_CODE (SET_DEST (curr_insn_set)) == SUBREG))))
 	    optional_p = true;
+	  else if (goal_alt_matched[i][0] != -1
+		   && curr_static_id->operand[i].type == OP_OUT
+		   && (curr_static_id->operand_alternative
+		       [goal_alt_number * n_operands + i].earlyclobber))
+	    {
+	      /* Generate reloads for output and matched inputs.  This
+		 is the easiest way to avoid creation of non-existing
+		 conflicts in lra-lives.c.  */
+	      match_reload (i, goal_alt_matched[i], outputs, goal_alt[i], &before,
+			    &after, TRUE);
+	      outputs[n_outputs++] = i;
+	      outputs[n_outputs] = -1;
+	      continue;
+	    }
 	  else
 	    continue;
 	}

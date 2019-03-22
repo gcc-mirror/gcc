@@ -1,3 +1,9 @@
+2019-03-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/89676
+	* lra-constraints.c (curr_insn_transform): Do match reload for
+	early clobbers even if the match was successful.
+
 2019-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87481
