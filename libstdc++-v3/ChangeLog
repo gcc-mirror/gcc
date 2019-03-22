@@ -1,5 +1,12 @@
 2019-03-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/backwards_compatibility.xml: Remove link to
+	Doxygen-generated pages with unstable URL.
+	* doc/xml/manual/concurrency_extensions.xml: Likewise.
+	* doc/xml/manual/extensions.xml: Likewise.
+	* doc/xml/manual/parallel_mode.xml: Likewise.
+	* doc/xml/manual/support.xml: Likewise.
+
 	* include/bits/stl_algobase.h (__lg): Do arithmetic on type int to
 	avoid -Wconversion warnings.
 
