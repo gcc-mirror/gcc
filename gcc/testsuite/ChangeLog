@@ -1,3 +1,7 @@
+2019-03-22  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/mmx-psubd-2.c: Test _m_psubd.
+
 2019-03-22  Hongtao Liu  <hongtao.liu@intel.com>
 
 	PR target/89784

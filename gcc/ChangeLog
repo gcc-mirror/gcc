@@ -1,3 +1,7 @@
+2019-03-22  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/mmintrin.h (_mm_sub_pi32): Fix typo.
+
 2019-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (<avx512>_fmadd_<mode>_mask3<round_name>,
