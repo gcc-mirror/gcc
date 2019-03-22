@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-evrp-details" } */
+/* { dg-options "-O2 -fdisable-tree-rvrp -fdump-tree-evrp-details" } */
 
 extern void g (void);
 extern void bar (int);

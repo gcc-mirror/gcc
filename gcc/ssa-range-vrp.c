@@ -247,6 +247,7 @@ class phi_loop_range
 
 phi_loop_range::phi_loop_range ()
 {
+  calculate_dominance_info (CDI_DOMINATORS);
   loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
   scev_initialize ();
 }
@@ -255,6 +256,7 @@ phi_loop_range::~phi_loop_range ()
 {
   scev_finalize ();
   loop_optimizer_finalize ();
+  free_dominance_info (CDI_DOMINATORS);
 }
 
 // Adjust a PHI result's range with loop information.  R is the known
@@ -275,8 +277,11 @@ phi_loop_range::adjust_range_with_loop_info (global_ranger &ranger,
       m_vr_values.adjust_range_with_scev (&vr, l, phi, phi_result);
       if (vr.constant_p ())
 	{
+	  irange prev_range = r;
 	  r = value_range_to_irange (TREE_TYPE (phi_result), vr);
-	  ranger.m_globals.set_global_range (PHI_RESULT (phi), r);
+	  if (r == prev_range)
+	    return false;
+	  ranger.m_globals.set_global_range (phi_result, r);
 	  return true;
 	}
     }
@@ -308,65 +313,175 @@ rvrp_final_propagate (global_ranger &ranger, bitmap touched)
   ranger.export_global_ranges ();
 }
 
-static unsigned int
-execute_ranger_vrp ()
+// Perform a domwalk and accumulate all blocks into a vector.
+class dom_accumulator : public dom_walker
+{
+public:
+  dom_accumulator (cdi_direction dir, vec<basic_block> &blocks);
+  virtual ~dom_accumulator () { }
+  virtual edge before_dom_children (basic_block);
+private:
+  vec<basic_block> &m_bbs;
+};
+
+dom_accumulator::dom_accumulator (cdi_direction dir, vec<basic_block> &blocks)
+    : dom_walker (dir), m_bbs (blocks)
+{
+  if (dir == CDI_DOMINATORS)
+    walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  else
+    walk (EXIT_BLOCK_PTR_FOR_FN (cfun));
+}
+
+edge
+dom_accumulator::before_dom_children (basic_block bb)
+{
+  m_bbs.quick_push (bb);
+  return NULL;
+}
+
+// Main rvrp engine that can run in a variety of different orders:
+// Dominator, post-dominator, forward block order, and backwards block
+// order.
+class rvrp_engine
+{
+public:
+  enum kind { WALK_DOM, WALK_POSTDOM, WALK_FORWARD, WALK_BACKWARDS };
+
+  rvrp_engine (enum kind);
+  ~rvrp_engine ();
+
+private:
+  void run ();
+  void visit (basic_block);
+
+  dom_accumulator *m_dom_accumulator;
+  auto_vec<basic_block> m_bbs;
+  phi_loop_range m_loop_range;
+  trace_ranger m_ranger;
+  auto_bitmap m_touched;
+  propagate_cleanups m_cleanups;
+};
+
+rvrp_engine::rvrp_engine (enum kind k)
+{
+  basic_block bb;
+  m_bbs.reserve (n_basic_blocks_for_fn (cfun));
+  switch (k)
+    {
+    case WALK_DOM:
+      m_dom_accumulator = new dom_accumulator (CDI_DOMINATORS, m_bbs);
+      break;
+    case WALK_POSTDOM:
+      m_dom_accumulator = new dom_accumulator (CDI_POST_DOMINATORS, m_bbs);
+      break;
+    case WALK_FORWARD:
+      FOR_EACH_BB_FN (bb, cfun)
+	m_bbs.quick_push (bb);
+      m_dom_accumulator = NULL;
+      break;
+    case WALK_BACKWARDS:
+      FOR_EACH_BB_REVERSE_FN (bb, cfun)
+	m_bbs.quick_push (bb);
+      m_dom_accumulator = NULL;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  run ();
+}
+
+rvrp_engine::~rvrp_engine ()
+{
+  if (m_dom_accumulator)
+    delete m_dom_accumulator;
+
+  rvrp_final_propagate (m_ranger, m_touched);
+}
+
+void
+rvrp_engine::visit (basic_block bb)
+{
+  irange r;
+  for (gphi_iterator gpi = gsi_start_phis (bb); !gsi_end_p (gpi);
+       gsi_next (&gpi))
+    {
+      gphi *phi = gpi.phi ();
+      tree phi_def = gimple_phi_result (phi);
+      if (m_ranger.valid_ssa_p (phi_def) && m_ranger.range_of_stmt (r, phi))
+	{
+	  // Adjust range with loop info and store into the cache.
+	  m_loop_range.adjust_range_with_loop_info (m_ranger, phi, r);
+	}
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "RVRP: Considering BB %d.\n", bb->index);
+
+  for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+       gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      gimple *old_stmt = gimple_copy (stmt);
+      tree lhs = gimple_get_lhs (stmt);
+      if (gimple_code (stmt) == GIMPLE_COND || m_ranger.valid_ssa_p (lhs))
+	{
+	  bool changed = false;
+	  if (m_ranger.range_of_stmt (r, stmt))
+	    changed = rvrp_fold (m_ranger, stmt, m_touched);
+	  if (!changed)
+	    changed = rvrp_simplify (m_ranger, &gsi);
+	  if (changed)
+	    m_cleanups.record_change (old_stmt, stmt);
+	}
+    }
+}
+
+void
+rvrp_engine::run ()
 {
   bool details = dump_file && (dump_flags & TDF_DETAILS);
+  basic_block bb;
+
   // Create a temp ranger and exercise it before running in order to get a
   // listing in the dump file, and to fully exercise the code.
   if (details)
-    { 
+    {
+      fprintf (dump_file, "RVRP: BEFORE rvrp ranger dump.\n");
       global_ranger e;
       e.calculate_and_dump (dump_file);
     }
 
-  // ?? Must be declared before the global_ranger, because of some
-  // lameness with the way loop_optimizer_init behaves.
-  phi_loop_range loop_range;
+  for (unsigned i = 0; m_bbs.iterate (i, &bb); ++i)
+    visit (bb);
+}
 
-  trace_ranger ranger;
-  basic_block bb;
-  irange r;
-  auto_bitmap touched;
-  propagate_cleanups cleanups;
-
-  FOR_EACH_BB_FN (bb, cfun)
+static unsigned int
+execute_ranger_vrp ()
+{
+  rvrp_engine::kind kind = rvrp_engine::WALK_DOM;
+  if (char *str = getenv ("DIRECTION"))
     {
-      for (gphi_iterator gpi = gsi_start_phis (bb); !gsi_end_p (gpi);
-	   gsi_next (&gpi))
+      if (!strcmp (str, "forward"))
+	kind = rvrp_engine::WALK_FORWARD;
+      else if (!strcmp (str, "backwards"))
+	kind = rvrp_engine::WALK_BACKWARDS;
+      else if (!strcmp (str, "dom"))
+	kind = rvrp_engine::WALK_DOM;
+      else if (!strcmp (str, "postdom"))
 	{
-	  gphi *phi = gpi.phi ();
-	  tree phi_def = gimple_phi_result (phi);
-	  if (ranger.valid_ssa_p (phi_def) && ranger.range_of_stmt (r, phi))
-	    {
-	      // Adjust range with loop info and store into the cache.
-	      loop_range.adjust_range_with_loop_info (ranger, phi, r);
-	    }
+	  kind = rvrp_engine::WALK_POSTDOM;
+	  calculate_dominance_info (CDI_POST_DOMINATORS);
 	}
-
-      if (dump_file)
-	fprintf (dump_file, "RVRP: Considering BB %d.\n", bb->index);
-
-      for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
-	   gsi_next (&gsi))
+      else
 	{
-	  gimple *stmt = gsi_stmt (gsi);
-	  gimple *old_stmt = gimple_copy (stmt);
-	  tree lhs = gimple_get_lhs (stmt);
-	  if (gimple_code (stmt) == GIMPLE_COND || ranger.valid_ssa_p (lhs))
-	    {
-	      bool changed = false;
-	      if (ranger.range_of_stmt (r, stmt))
-		changed = rvrp_fold (ranger, stmt, touched);
-	      if (!changed)
-		changed = rvrp_simplify (ranger, &gsi);
-	      if (changed)
-		cleanups.record_change (old_stmt, stmt);
-	    }
+	  fprintf (stderr, "Unknown DIR variable of '%s'\n", str);
+	  gcc_unreachable ();
 	}
     }
-
-  rvrp_final_propagate (ranger, touched);
+  rvrp_engine w (kind);
+  if (dom_info_available_p (cfun, CDI_POST_DOMINATORS))
+    free_dominance_info (CDI_POST_DOMINATORS);
   return 0;
 }
 
