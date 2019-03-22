@@ -1,3 +1,11 @@
+2019-03-22  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	PR ada/89583
+	* libgnat/g-socket.adb (Bind_Socket, Connect_Socket,
+	Send_Socket): Fix the computation of structure lengths passed to
+	low level routines.
+	(Is_IPv6_Address): Fix the number of expected colons.
+
 2019-03-11  Martin Liska  <mliska@suse.cz>
 
 	* gcc-interface/misc.c (gnat_post_options): Wrap option name in string

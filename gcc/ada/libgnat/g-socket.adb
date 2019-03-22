@@ -461,12 +461,12 @@ package body GNAT.Sockets is
    is
       Res : C.int;
       Sin : aliased Sockaddr;
-      Len : constant C.int := Sin'Size / 8;
 
    begin
       Set_Address (Sin'Unchecked_Access, Address);
 
-      Res := C_Bind (C.int (Socket), Sin'Address, Len);
+      Res := C_Bind
+        (C.int (Socket), Sin'Address, C.int (Lengths (Address.Family)));
 
       if Res = Failure then
          Raise_Socket_Error (Socket_Errno);
@@ -666,12 +666,11 @@ package body GNAT.Sockets is
       Server : Sock_Addr_Type) return C.int
    is
       Sin : aliased Sockaddr;
-      Len : constant C.int := Sin'Size / 8;
-
    begin
       Set_Address (Sin'Unchecked_Access, Server);
 
-      return C_Connect (C.int (Socket), Sin'Address, Len);
+      return C_Connect
+        (C.int (Socket), Sin'Address, C.int (Lengths (Server.Family)));
    end Connect_Socket;
 
    procedure Connect_Socket
@@ -1794,7 +1793,7 @@ package body GNAT.Sockets is
          end if;
       end loop;
 
-      return Colons <= 7;
+      return Colons <= 8;
    end Is_IPv6_Address;
 
    ---------------------
@@ -2403,7 +2402,7 @@ package body GNAT.Sockets is
       if To /= null then
          Set_Address (Sin'Unchecked_Access, To.all);
          C_To := Sin'Address;
-         Len := Sin'Size / 8;
+         Len := C.int (Thin_Common.Lengths (To.Family));
 
       else
          C_To := System.Null_Address;
