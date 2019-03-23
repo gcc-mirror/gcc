@@ -1,3 +1,8 @@
+2019-03-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/xmmintrin.h (_mm_movemask_pi8): Implement for 32-bit
+	big endian.
+
 2019-03-22  Andrew Pinski  <apinski@marvell.com>
 
 	* config/aarch64/aarch64.md (zero_extendsidi2_aarch64): Fix type
