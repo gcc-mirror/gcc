@@ -9913,6 +9913,9 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case HI_FTYPE_V16SF_INT_UHI:
     case QI_FTYPE_V8SF_INT_UQI:
     case QI_FTYPE_V4SF_INT_UQI:
+    case QI_FTYPE_V8HF_INT_UQI:
+    case HI_FTYPE_V16HF_INT_UHI:
+    case SI_FTYPE_V32HF_INT_USI:
     case V4SI_FTYPE_V4SI_V4SI_UHI:
     case V8SI_FTYPE_V8SI_V8SI_UHI:
       nargs = 3;
@@ -10234,8 +10237,10 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	      case CODE_FOR_avx_vpermilv4df_mask:
 	      case CODE_FOR_avx512f_getmantv8df_mask:
 	      case CODE_FOR_avx512f_getmantv16sf_mask:
+	      case CODE_FOR_avx512vl_getmantv16hf_mask:
 	      case CODE_FOR_avx512vl_getmantv8sf_mask:
 	      case CODE_FOR_avx512vl_getmantv4df_mask:
+	      case CODE_FOR_avx512fp16_getmantv8hf_mask:
 	      case CODE_FOR_avx512vl_getmantv4sf_mask:
 	      case CODE_FOR_avx512vl_getmantv2df_mask:
 	      case CODE_FOR_avx512dq_rangepv8df_mask_round:
@@ -10771,10 +10776,12 @@ ix86_expand_round_builtin (const struct builtin_description *d,
 		{
 		case CODE_FOR_avx512f_getmantv8df_mask_round:
 		case CODE_FOR_avx512f_getmantv16sf_mask_round:
+		case CODE_FOR_avx512bw_getmantv32hf_mask_round:
 		case CODE_FOR_avx512f_vgetmantv2df_round:
 		case CODE_FOR_avx512f_vgetmantv2df_mask_round:
 		case CODE_FOR_avx512f_vgetmantv4sf_round:
 		case CODE_FOR_avx512f_vgetmantv4sf_mask_round:
+		case CODE_FOR_avx512f_vgetmantv8hf_mask_round:
 		  error ("the immediate argument must be a 4-bit immediate");
 		  return const0_rtx;
 		case CODE_FOR_avx512f_cmpv8df3_mask_round:

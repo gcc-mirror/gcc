@@ -717,7 +717,8 @@
   [(V16SF "V4SF") (V8DF "V2DF") (V16SI "TI") (V8DI "TI")])
 
 (define_mode_attr vecmemsuffix
-  [(V16SF "{z}") (V8SF "{y}") (V4SF "{x}")
+  [(V32HF "{z}") (V16HF "{y}") (V8HF "{x}")
+   (V16SF "{z}") (V8SF "{y}") (V4SF "{x}")
    (V8DF "{z}") (V4DF "{y}") (V2DF "{x}")])
 
 (define_mode_attr ssedoublemodelower
@@ -10615,8 +10616,8 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<avx512>_getexp<mode><mask_name><round_saeonly_name>"
-  [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v")
-        (unspec:VF_AVX512VL [(match_operand:VF_AVX512VL 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")]
+  [(set (match_operand:VFH_AVX512VL 0 "register_operand" "=v")
+        (unspec:VFH_AVX512VL [(match_operand:VFH_AVX512VL 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")]
                         UNSPEC_GETEXP))]
    "TARGET_AVX512F"
    "vgetexp<ssemodesuffix>\t{<round_saeonly_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_saeonly_mask_op2>}";
@@ -10624,11 +10625,11 @@
      (set_attr "mode" "<MODE>")])
 
 (define_insn "avx512f_sgetexp<mode><mask_scalar_name><round_saeonly_scalar_name>"
-  [(set (match_operand:VF_128 0 "register_operand" "=v")
-	(vec_merge:VF_128
-	  (unspec:VF_128
-	    [(match_operand:VF_128 1 "register_operand" "v")
-	     (match_operand:VF_128 2 "<round_saeonly_scalar_nimm_predicate>" "<round_saeonly_scalar_constraint>")]
+  [(set (match_operand:VFH_128 0 "register_operand" "=v")
+	(vec_merge:VFH_128
+	  (unspec:VFH_128
+	    [(match_operand:VFH_128 1 "register_operand" "v")
+	     (match_operand:VFH_128 2 "<round_saeonly_scalar_nimm_predicate>" "<round_saeonly_scalar_constraint>")]
 	    UNSPEC_GETEXP)
 	  (match_dup 1)
 	  (const_int 1)))]
@@ -24771,10 +24772,10 @@
 (define_insn "avx512dq_fpclass<mode><mask_scalar_merge_name>"
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k")
           (unspec:<avx512fmaskmode>
-            [(match_operand:VF_AVX512VL 1 "vector_operand" "vm")
+            [(match_operand:VFH_AVX512VL 1 "vector_operand" "vm")
              (match_operand 2 "const_0_to_255_operand" "n")]
              UNSPEC_FPCLASS))]
-   "TARGET_AVX512DQ"
+   "TARGET_AVX512DQ || VALID_AVX512FP16_REG_MODE(<MODE>mode)"
    "vfpclass<ssemodesuffix><vecmemsuffix>\t{%2, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %2}";
   [(set_attr "type" "sse")
    (set_attr "length_immediate" "1")
@@ -24785,11 +24786,11 @@
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k")
 	(and:<avx512fmaskmode>
 	  (unspec:<avx512fmaskmode>
-	    [(match_operand:VF_128 1 "nonimmediate_operand" "vm")
+	    [(match_operand:VFH_128 1 "nonimmediate_operand" "vm")
              (match_operand 2 "const_0_to_255_operand" "n")]
 	    UNSPEC_FPCLASS)
 	  (const_int 1)))]
-   "TARGET_AVX512DQ"
+   "TARGET_AVX512DQ || VALID_AVX512FP16_REG_MODE(<MODE>mode)"
    "vfpclass<ssescalarmodesuffix>\t{%2, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %2}";
   [(set_attr "type" "sse")
    (set_attr "length_immediate" "1")
@@ -24797,9 +24798,9 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<avx512>_getmant<mode><mask_name><round_saeonly_name>"
-  [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v")
-	(unspec:VF_AVX512VL
-	  [(match_operand:VF_AVX512VL 1 "nonimmediate_operand" "<round_saeonly_constraint>")
+  [(set (match_operand:VFH_AVX512VL 0 "register_operand" "=v")
+	(unspec:VFH_AVX512VL
+	  [(match_operand:VFH_AVX512VL 1 "nonimmediate_operand" "<round_saeonly_constraint>")
 	   (match_operand:SI 2 "const_0_to_15_operand")]
 	  UNSPEC_GETMANT))]
   "TARGET_AVX512F"
@@ -24808,11 +24809,11 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "avx512f_vgetmant<mode><mask_scalar_name><round_saeonly_scalar_name>"
-  [(set (match_operand:VF_128 0 "register_operand" "=v")
-	(vec_merge:VF_128
-	  (unspec:VF_128
-	    [(match_operand:VF_128 1 "register_operand" "v")
-	     (match_operand:VF_128 2 "<round_saeonly_scalar_nimm_predicate>" "<round_saeonly_scalar_constraint>")
+  [(set (match_operand:VFH_128 0 "register_operand" "=v")
+	(vec_merge:VFH_128
+	  (unspec:VFH_128
+	    [(match_operand:VFH_128 1 "register_operand" "v")
+	     (match_operand:VFH_128 2 "<round_saeonly_scalar_nimm_predicate>" "<round_saeonly_scalar_constraint>")
 	     (match_operand:SI 3 "const_0_to_15_operand")]
 	    UNSPEC_GETMANT)
 	  (match_dup 1)

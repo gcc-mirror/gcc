@@ -701,6 +701,235 @@ _mm256_maskz_roundscale_ph (__mmask16 __A, __m256h __B, int __C)
 
 #endif /* __OPTIMIZE__ */
 
+/* Intrinsics vfpclassph.  */
+#ifdef __OPTIMIZE__
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fpclass_ph_mask (__mmask8 __U, __m128h __A, const int __imm)
+{
+  return (__mmask8) __builtin_ia32_fpclassph128_mask ((__v8hf) __A,
+						      __imm, __U);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_fpclass_ph_mask (__m128h __A, const int __imm)
+{
+  return (__mmask8) __builtin_ia32_fpclassph128_mask ((__v8hf) __A,
+						      __imm,
+						      (__mmask8) -1);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_fpclass_ph_mask (__mmask16 __U, __m256h __A, const int __imm)
+{
+  return (__mmask16) __builtin_ia32_fpclassph256_mask ((__v16hf) __A,
+						      __imm, __U);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_fpclass_ph_mask (__m256h __A, const int __imm)
+{
+  return (__mmask16) __builtin_ia32_fpclassph256_mask ((__v16hf) __A,
+						      __imm,
+						      (__mmask16) -1);
+}
+
+#else
+#define _mm_fpclass_ph_mask(X, C)                                       \
+  ((__mmask8) __builtin_ia32_fpclassph128_mask ((__v8hf) (__m128h) (X),  \
+						(int) (C),(__mmask8)-1))
+
+#define _mm_mask_fpclass_ph_mask(u, X, C)                               \
+  ((__mmask8) __builtin_ia32_fpclassph128_mask ((__v8hf) (__m128h) (X),  \
+						(int) (C),(__mmask8)(u)))
+
+#define _mm256_fpclass_ph_mask(X, C)                                    \
+  ((__mmask16) __builtin_ia32_fpclassph256_mask ((__v16hf) (__m256h) (X),  \
+						(int) (C),(__mmask16)-1))
+
+#define _mm256_mask_fpclass_ph_mask(u, X, C)				\
+  ((__mmask16) __builtin_ia32_fpclassph256_mask ((__v16hf) (__m256h) (X),  \
+						(int) (C),(__mmask16)(u)))
+#endif /* __OPTIMIZE__ */
+
+/* Intrinsics vgetexpph, vgetexpsh.  */
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_getexp_ph (__m256h __A)
+{
+  return (__m256h) __builtin_ia32_getexpph256_mask ((__v16hf) __A,
+						   (__v16hf)
+						   _mm256_setzero_ph (),
+						   (__mmask16) -1);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_getexp_ph (__m256h __W, __mmask16 __U, __m256h __A)
+{
+  return (__m256h) __builtin_ia32_getexpph256_mask ((__v16hf) __A,
+						   (__v16hf) __W,
+						   (__mmask16) __U);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_getexp_ph (__mmask16 __U, __m256h __A)
+{
+  return (__m256h) __builtin_ia32_getexpph256_mask ((__v16hf) __A,
+						   (__v16hf)
+						   _mm256_setzero_ph (),
+						   (__mmask16) __U);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_getexp_ph (__m128h __A)
+{
+  return (__m128h) __builtin_ia32_getexpph128_mask ((__v8hf) __A,
+						   (__v8hf)
+						   _mm_setzero_ph (),
+						   (__mmask8) -1);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_getexp_ph (__m128h __W, __mmask8 __U, __m128h __A)
+{
+  return (__m128h) __builtin_ia32_getexpph128_mask ((__v8hf) __A,
+						   (__v8hf) __W,
+						   (__mmask8) __U);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_getexp_ph (__mmask8 __U, __m128h __A)
+{
+  return (__m128h) __builtin_ia32_getexpph128_mask ((__v8hf) __A,
+						   (__v8hf)
+						   _mm_setzero_ph (),
+						   (__mmask8) __U);
+}
+
+
+/* Intrinsics vgetmantph, vgetmantsh.  */
+#ifdef __OPTIMIZE__
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_getmant_ph (__m256h __A, _MM_MANTISSA_NORM_ENUM __B,
+		   _MM_MANTISSA_SIGN_ENUM __C)
+{
+  return (__m256h) __builtin_ia32_getmantph256_mask ((__v16hf) __A,
+						     (__C << 2) | __B,
+						     (__v16hf)
+						     _mm256_setzero_ph (),
+						     (__mmask16) -1);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_getmant_ph (__m256h __W, __mmask16 __U, __m256h __A,
+			_MM_MANTISSA_NORM_ENUM __B,
+			_MM_MANTISSA_SIGN_ENUM __C)
+{
+  return (__m256h) __builtin_ia32_getmantph256_mask ((__v16hf) __A,
+						     (__C << 2) | __B,
+						     (__v16hf) __W,
+						     (__mmask16) __U);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_getmant_ph (__mmask16 __U, __m256h __A,
+			 _MM_MANTISSA_NORM_ENUM __B,
+			 _MM_MANTISSA_SIGN_ENUM __C)
+{
+  return (__m256h) __builtin_ia32_getmantph256_mask ((__v16hf) __A,
+						     (__C << 2) | __B,
+						     (__v16hf)
+						     _mm256_setzero_ph (),
+						     (__mmask16) __U);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_getmant_ph (__m128h __A, _MM_MANTISSA_NORM_ENUM __B,
+		_MM_MANTISSA_SIGN_ENUM __C)
+{
+  return (__m128h) __builtin_ia32_getmantph128_mask ((__v8hf) __A,
+						     (__C << 2) | __B,
+						     (__v8hf)
+						     _mm_setzero_ph (),
+						     (__mmask8) -1);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_getmant_ph (__m128h __W, __mmask8 __U, __m128h __A,
+		     _MM_MANTISSA_NORM_ENUM __B,
+		     _MM_MANTISSA_SIGN_ENUM __C)
+{
+  return (__m128h) __builtin_ia32_getmantph128_mask ((__v8hf) __A,
+						     (__C << 2) | __B,
+						     (__v8hf) __W,
+						     (__mmask8) __U);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_getmant_ph (__mmask8 __U, __m128h __A,
+		      _MM_MANTISSA_NORM_ENUM __B,
+		      _MM_MANTISSA_SIGN_ENUM __C)
+{
+  return (__m128h) __builtin_ia32_getmantph128_mask ((__v8hf) __A,
+						     (__C << 2) | __B,
+						     (__v8hf)
+						     _mm_setzero_ph (),
+						     (__mmask8) __U);
+}
+
+#else
+#define _mm256_getmant_ph(X, B, C)                                              \
+  ((__m256h) __builtin_ia32_getmantph256_mask ((__v16hf)(__m256h) (X),           \
+					 (int)(((C)<<2) | (B)),                 \
+					  (__v16hf)(__m256h)_mm256_setzero_ph (),\
+					  (__mmask16)-1))
+
+#define _mm256_mask_getmant_ph(W, U, X, B, C)                                   \
+  ((__m256h) __builtin_ia32_getmantph256_mask ((__v16hf)(__m256h) (X),           \
+					 (int)(((C)<<2) | (B)),                 \
+					  (__v16hf)(__m256h)(W),                 \
+					  (__mmask16)(U)))
+
+#define _mm256_maskz_getmant_ph(U, X, B, C)                                     \
+  ((__m256h) __builtin_ia32_getmantph256_mask ((__v16hf)(__m256h) (X),           \
+					 (int)(((C)<<2) | (B)),                 \
+					  (__v16hf)(__m256h)_mm256_setzero_ph (),\
+					  (__mmask16)(U)))
+
+#define _mm_getmant_ph(X, B, C)                                                 \
+  ((__m128h) __builtin_ia32_getmantph128_mask ((__v8hf)(__m128h) (X),           \
+					 (int)(((C)<<2) | (B)),                 \
+					  (__v8hf)(__m128h)_mm_setzero_ph (),   \
+					  (__mmask8)-1))
+
+#define _mm_mask_getmant_ph(W, U, X, B, C)                                      \
+  ((__m128h) __builtin_ia32_getmantph128_mask ((__v8hf)(__m128h) (X),           \
+					 (int)(((C)<<2) | (B)),                 \
+					  (__v8hf)(__m128h)(W),                 \
+					  (__mmask8)(U)))
+
+#define _mm_maskz_getmant_ph(U, X, B, C)                                        \
+  ((__m128h) __builtin_ia32_getmantph128_mask ((__v8hf)(__m128h) (X),           \
+					 (int)(((C)<<2) | (B)),                 \
+					  (__v8hf)(__m128h)_mm_setzero_ph (),   \
+					  (__mmask8)(U)))
+
+#endif /* __OPTIMIZE__ */
+
 #ifdef __DISABLE_AVX512FP16VL__
 #undef __DISABLE_AVX512FP16VL__
 #pragma GCC pop_options
