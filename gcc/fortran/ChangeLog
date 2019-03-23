@@ -1,3 +1,11 @@
+2019-03-23  Thomas Koenig  <tkoeng@gcc.gnu.org>
+
+	PR fortran/68009
+	Backport from trunk
+	* iresolve.c: Include trans.h.
+	(gfc_resolve_fe_runtine_error): Set backend_decl on
+	resolved_sym.
+
 2019-03-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/84394
