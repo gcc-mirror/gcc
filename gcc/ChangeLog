@@ -1,5 +1,7 @@
 2019-03-26  Jeff Law  <law@redhat.com>
 
+	* config/bfin/bfin.md (movpdi): Fix length for alternative 1.
+
 	PR rtl-optimization/87761
 	* regcprop.c (copyprop_hardreg_forward_1): Check may_trap_p on SET,
 	not INSN.  Also check RTX_FRAME_RELATED_P.  Queue insns for DF rescan
