@@ -1,3 +1,10 @@
+2019-03-24  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr82281.c: Compile only for ia32 effective target.
+	(dg-options): Remove -m32. Add -msse2 -mtune=znver1.
+	* gcc.target/i386/pr89676.c: Compile only for ia32 effective target.
+	(dg-options): Remove -m32 and -march=i686. Add -mno-stv.
+
 2019-03-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/78865
