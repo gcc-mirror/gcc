@@ -1,3 +1,14 @@
+2019-03-26  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/87761
+	* regcprop.c (copyprop_hardreg_forward_1): Check may_trap_p on SET,
+	not INSN.  Also check RTX_FRAME_RELATED_P.  Queue insns for DF rescan
+	as needed.
+	(pass_cprop_hardreg::execute): Add df note problem and defer insn
+	rescans.  Reprocess blocks as needed, calling df_analyze before
+	reprocessing.  Always call df_analyze before fixing up debug bind
+	insns.
+	
 2019-03-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/xmmintrin.h (_mm_movemask_pi8): Implement for 32-bit
@@ -8,7 +19,7 @@
 	* config/aarch64/aarch64.md (zero_extendsidi2_aarch64): Fix type
 	attrribute for uxtw.
 
-2019-02-26  Jeff Law  <law@redhat.com>
+2019-03-26  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/87761
 	* config/mips/mips-protos.h (mips_split_move): Add new argument.
