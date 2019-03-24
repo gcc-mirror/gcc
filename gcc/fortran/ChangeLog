@@ -1,3 +1,10 @@
+2019-03-24  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/71861
+	Backport from trunk
+	* symbol.c (check_conflict): ABSTRACT attribute conflicts with
+	INTRINSIC attribute.
+
 2019-03-23  Thomas Koenig  <tkoeng@gcc.gnu.org>
 
 	PR fortran/68009

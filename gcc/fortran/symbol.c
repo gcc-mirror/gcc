@@ -554,6 +554,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 
   conf (external, intrinsic);
   conf (entry, intrinsic);
+  conf (abstract, intrinsic);
 
   if ((attr->if_source == IFSRC_DECL && !attr->procedure) || attr->contained)
     conf (external, subroutine);
