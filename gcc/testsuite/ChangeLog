@@ -8,12 +8,8 @@
 2019-03-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/78865
-	* interface.c (compare_actual_formal): Change errors about
-	missing or extra to gfc_error_now to make sure they are issued.
-	Change "spec" to "specifier" in message.
-	* resolve.c (resolve_global_procedure): Also check for mismatching
-	interface with global symbols if the namespace has already been
-	resolved.
+	* gfortran.dg/altreturn_10.f90: New test.
+	* gfortran.dg/whole_file_3.f90: Change dg-warning to dg-error.
 
 2019-03-22  Vladimir Makarov  <vmakarov@redhat.com>
 
