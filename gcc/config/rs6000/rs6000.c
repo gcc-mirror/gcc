@@ -8785,6 +8785,11 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	  else
 	    emit_library_call_value (tga, dest, LCT_CONST, Pmode);
 	  global_tlsarg = NULL_RTX;
+
+	  /* Make a note so that the result of this call can be CSEd.  */
+	  rtvec vec = gen_rtvec (1, copy_rtx (arg));
+	  rtx uns = gen_rtx_UNSPEC (Pmode, vec, UNSPEC_TLS_GET_ADDR);
+	  set_unique_reg_note (get_last_insn (), REG_EQUAL, uns);
 	}
       else if (model == TLS_MODEL_LOCAL_DYNAMIC)
 	{
@@ -8802,6 +8807,11 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	  else
 	    emit_library_call_value (tga, tmp1, LCT_CONST, Pmode);
 	  global_tlsarg = NULL_RTX;
+
+	  /* Make a note so that the result of this call can be CSEd.  */
+	  rtvec vec = gen_rtvec (1, copy_rtx (arg));
+	  rtx uns = gen_rtx_UNSPEC (Pmode, vec, UNSPEC_TLS_GET_ADDR);
+	  set_unique_reg_note (get_last_insn (), REG_EQUAL, uns);
 
 	  if (rs6000_tls_size == 16)
 	    {

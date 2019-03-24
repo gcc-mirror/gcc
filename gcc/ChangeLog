@@ -1,4 +1,10 @@
-2019-03-26  Jeff Law  <law@redhat.com>
+2019-03-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Add REG_EQUAL
+	notes for the result of the __tls_get_addr calls.
+	* config/rs6000/rs6000.md (unspec UNSPEC_TLS_GET_ADDR): New.
+
+2019-03-24  Jeff Law  <law@redhat.com>
 
 	* config/bfin/bfin.md (movpdi): Fix length for alternative 1.
 
