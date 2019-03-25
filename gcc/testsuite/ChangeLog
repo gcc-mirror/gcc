@@ -1,3 +1,8 @@
+2019-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89789
+	* gcc.dg/torture/pr89789.c: New testcase.
+
 2019-03-25  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/abi/lambda-static-1.C: New.
