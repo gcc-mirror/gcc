@@ -1,3 +1,10 @@
+2019-03-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/89676
+	* lra-constraints.c (curr_insn_transform): Do match reload for
+	early clobbers when the match was successful only for different
+	registers.
+
 2019-03-25  Martin Sebor  <msebor@redhat.com>
 
 	* doc/extend.texi (Common Type Attributes): Document vector_size.
