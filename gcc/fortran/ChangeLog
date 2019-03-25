@@ -1,3 +1,8 @@
+2019-03-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* intrinsic.texi (MINLOC): Fix typo in BACK argument documentation.
+	(MAXLOC): Likewise.
+
 2019-03-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/78865
