@@ -1,3 +1,8 @@
+2019-03-25  Martin Sebor  <msebor@redhat.com>
+
+	PR c/89812
+	* gcc.dg/attr-aligned-3.c: New test.
+
 2019-03-25  Johan Karlsson <johan.karlsson@enea.com>
 
 	PR debug/86964

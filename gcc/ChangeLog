@@ -1,3 +1,10 @@
+2019-03-25  Martin Sebor  <msebor@redhat.com>
+
+	PR c/89812
+	* c-common.c (check_user_alignment): Rename local.  Correct maximum
+	alignment in diagnostic.  Avoid assuming argument fits in SHWI,
+	convert it to UHWI when it fits.
+
 2019-03-25  Johan Karlsson <johan.karlsson@enea.com>
 
 	PR debug/86964
