@@ -1,3 +1,8 @@
+2019-03-25  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390-c.c (s390_fn_types_compatible): Print the
+	expected and found types with -mdebug during builtin matching.
+
 2019-03-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/89790
