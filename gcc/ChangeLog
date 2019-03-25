@@ -1,5 +1,10 @@
 2019-03-25  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* config/s390/s390-builtin-types.def: Remove few unused types and
+	fix sort order for others.
+
+2019-03-25  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* config/s390/s390-c.c (s390_fn_types_compatible): Print the
 	expected and found types with -mdebug during builtin matching.
 
