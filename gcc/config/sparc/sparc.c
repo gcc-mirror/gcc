@@ -270,6 +270,31 @@ struct processor_costs leon3_costs = {
 };
 
 static const
+struct processor_costs leon5_costs = {
+  COSTS_N_INSNS (1), /* int load */
+  COSTS_N_INSNS (1), /* int signed load */
+  COSTS_N_INSNS (1), /* int zeroed load */
+  COSTS_N_INSNS (1), /* float load */
+  COSTS_N_INSNS (1), /* fmov, fneg, fabs */
+  COSTS_N_INSNS (1), /* fadd, fsub */
+  COSTS_N_INSNS (1), /* fcmp */
+  COSTS_N_INSNS (1), /* fmov, fmovr */
+  COSTS_N_INSNS (1), /* fmul */
+  COSTS_N_INSNS (17), /* fdivs */
+  COSTS_N_INSNS (18), /* fdivd */
+  COSTS_N_INSNS (25), /* fsqrts */
+  COSTS_N_INSNS (26), /* fsqrtd */
+  COSTS_N_INSNS (4), /* imul */
+  COSTS_N_INSNS (4), /* imulX */
+  0, /* imul bit factor */
+  COSTS_N_INSNS (35), /* idiv */
+  COSTS_N_INSNS (35), /* idivX */
+  COSTS_N_INSNS (1), /* movcc/movr */
+  0, /* shift penalty */
+  3 /* branch cost */
+};
+
+static const
 struct processor_costs sparclet_costs = {
   COSTS_N_INSNS (3), /* int load */
   COSTS_N_INSNS (3), /* int signed load */
@@ -575,6 +600,7 @@ static int function_arg_slotno (const CUMULATIVE_ARGS *, machine_mode,
 
 static int supersparc_adjust_cost (rtx_insn *, int, rtx_insn *, int);
 static int hypersparc_adjust_cost (rtx_insn *, int, rtx_insn *, int);
+static int leon5_adjust_cost (rtx_insn *, int, rtx_insn *, int);
 
 static void sparc_emit_set_const32 (rtx, rtx);
 static void sparc_emit_set_const64 (rtx, rtx);
@@ -1687,6 +1713,7 @@ sparc_option_override (void)
     { TARGET_CPU_hypersparc, PROCESSOR_HYPERSPARC },
     { TARGET_CPU_leon, PROCESSOR_LEON },
     { TARGET_CPU_leon3, PROCESSOR_LEON3 },
+    { TARGET_CPU_leon5, PROCESSOR_LEON5 },
     { TARGET_CPU_leon3v7, PROCESSOR_LEON3V7 },
     { TARGET_CPU_sparclite, PROCESSOR_F930 },
     { TARGET_CPU_sparclite86x, PROCESSOR_SPARCLITE86X },
@@ -1718,6 +1745,7 @@ sparc_option_override (void)
     { "hypersparc",	MASK_ISA, MASK_V8 },
     { "leon",		MASK_ISA|MASK_FSMULD, MASK_V8|MASK_LEON },
     { "leon3",		MASK_ISA, MASK_V8|MASK_LEON3 },
+    { "leon5",		MASK_ISA, MASK_V8|MASK_LEON3 },
     { "leon3v7",	MASK_ISA, MASK_LEON3 },
     { "sparclite",	MASK_ISA, MASK_SPARCLITE },
     /* The Fujitsu MB86930 is the original sparclite chip, with no FPU.  */
@@ -2027,6 +2055,9 @@ sparc_option_override (void)
     case PROCESSOR_LEON3:
     case PROCESSOR_LEON3V7:
       sparc_costs = &leon3_costs;
+      break;
+    case PROCESSOR_LEON5:
+      sparc_costs = &leon5_costs;
       break;
     case PROCESSOR_SPARCLET:
     case PROCESSOR_TSC701:
@@ -10175,11 +10206,64 @@ hypersparc_adjust_cost (rtx_insn *insn, int dtype, rtx_insn *dep_insn,
 }
 
 static int
+leon5_adjust_cost (rtx_insn *insn, int dtype, rtx_insn *dep_insn,
+		   int cost)
+{
+  enum attr_type insn_type, dep_type;
+  rtx pat = PATTERN (insn);
+  rtx dep_pat = PATTERN (dep_insn);
+
+  if (recog_memoized (insn) < 0 || recog_memoized (dep_insn) < 0)
+    return cost;
+
+  insn_type = get_attr_type (insn);
+  dep_type = get_attr_type (dep_insn);
+
+  switch (dtype)
+    {
+    case REG_DEP_TRUE:
+      /* Data dependency; DEP_INSN writes a register that INSN reads some
+	 cycles later.  */
+
+      switch (insn_type)
+	{
+	case TYPE_STORE:
+	  /* Try to schedule three instructions between the store and
+	     the ALU instruction that generated the data.  */
+	  if (dep_type == TYPE_IALU || dep_type == TYPE_SHIFT)
+	    {
+	      if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET)
+		break;
+
+	      if (rtx_equal_p (SET_DEST (dep_pat), SET_SRC (pat)))
+		return 4;
+	    }
+	  break;
+	default:
+	  break;
+	}
+      break;
+    case REG_DEP_ANTI:
+      /* Penalize anti-dependencies for FPU instructions.  */
+      if (fpop_insn_p (insn) || insn_type == TYPE_FPLOAD)
+	return 4;
+      break;
+    default:
+      break;
+    }
+
+  return cost;
+}
+
+static int
 sparc_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep, int cost,
 		   unsigned int)
 {
   switch (sparc_cpu)
     {
+    case PROCESSOR_LEON5:
+      cost = leon5_adjust_cost (insn, dep_type, dep, cost);
+      break;
     case PROCESSOR_SUPERSPARC:
       cost = supersparc_adjust_cost (insn, dep_type, dep, cost);
       break;
