@@ -1,3 +1,10 @@
+2019-03-25  Thomas Otto  <thomas.otto@pdv-fs.de>
+
+	* dwarf2out.c (comp_dir_string): cached_wd could be set to both a
+	heap string and a gc string, but since this variable is unknown to
+	ggc the gc string might get reused and corrupted. Fixed by always
+	using a heap string.
+
 2019-03-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89779
