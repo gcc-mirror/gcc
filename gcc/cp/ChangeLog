@@ -1,3 +1,9 @@
+2019-03-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87748 - substitution failure error with decltype.
+	* pt.c (most_specialized_partial_spec): Clear
+	processing_template_decl.
+
 2019-03-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89214 - ICE when initializing aggregates with bases.
