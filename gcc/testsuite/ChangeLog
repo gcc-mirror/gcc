@@ -1,3 +1,10 @@
+2019-03-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR rtl-optimization/88347
+	PR rtl-optimization/88423
+	* gcc.c-torture/compile/pr88347.c: New test.
+	* gcc.c-torture/compile/pr88423.c: New test.
+
 2019-03-25  Martin Sebor  <msebor@redhat.com>
 
 	PR c/89812

@@ -1,3 +1,10 @@
+2019-03-25  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/88347
+	PR rtl-optimization/88423
+	* sched-deps.c (sched_analyze_insn): Take into account that for
+	tablejumps the barrier appears after a label and a jump_table_data.
+
 2019-03-25  Martin Sebor  <msebor@redhat.com>
 
 	PR c/89812
