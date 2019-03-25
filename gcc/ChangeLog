@@ -1,3 +1,9 @@
+2019-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89802
+	* tree-ssa-math-opts.c (convert_mult_to_fma_1): Properly
+	move EH data to folded stmt.
+
 2019-03-25  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/s390-builtin-types.def: Remove few unused types and

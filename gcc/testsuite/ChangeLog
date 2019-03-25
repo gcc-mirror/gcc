@@ -1,3 +1,8 @@
+2019-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89802
+	* g++.dg/tree-ssa/pr89802.C: New testcase.
+
 2019-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/60702
