@@ -119,21 +119,22 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_CPU_leon		4
 #define TARGET_CPU_leon3	5
 #define TARGET_CPU_leon3v7	6
-#define TARGET_CPU_sparclite	7
-#define TARGET_CPU_f930		7       /* alias */
-#define TARGET_CPU_f934		7       /* alias */
-#define TARGET_CPU_sparclite86x	8
-#define TARGET_CPU_sparclet	9
-#define TARGET_CPU_tsc701	9       /* alias */
-#define TARGET_CPU_v9		10	/* generic v9 implementation */
-#define TARGET_CPU_sparcv9	10	/* alias */
-#define TARGET_CPU_sparc64	10	/* alias */
-#define TARGET_CPU_ultrasparc	11
-#define TARGET_CPU_ultrasparc3	12
-#define TARGET_CPU_niagara	13
-#define TARGET_CPU_niagara2	14
-#define TARGET_CPU_niagara3	15
-#define TARGET_CPU_niagara4	16
+#define TARGET_CPU_leon5	7
+#define TARGET_CPU_sparclite	8
+#define TARGET_CPU_f930		8       /* alias */
+#define TARGET_CPU_f934		8       /* alias */
+#define TARGET_CPU_sparclite86x	9
+#define TARGET_CPU_sparclet	10
+#define TARGET_CPU_tsc701	10       /* alias */
+#define TARGET_CPU_v9		11	/* generic v9 implementation */
+#define TARGET_CPU_sparcv9	11	/* alias */
+#define TARGET_CPU_sparc64	11	/* alias */
+#define TARGET_CPU_ultrasparc	12
+#define TARGET_CPU_ultrasparc3	13
+#define TARGET_CPU_niagara	14
+#define TARGET_CPU_niagara2	15
+#define TARGET_CPU_niagara3	16
+#define TARGET_CPU_niagara4	17
 #define TARGET_CPU_niagara7	19
 #define TARGET_CPU_m8		20
 
@@ -228,7 +229,8 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_leon \
- || TARGET_CPU_DEFAULT == TARGET_CPU_leon3
+ || TARGET_CPU_DEFAULT == TARGET_CPU_leon3 \
+ || TARGET_CPU_DEFAULT == TARGET_CPU_leon5
 #define CPP_CPU32_DEFAULT_SPEC "-D__leon__ -D__sparc_v8__"
 #define ASM_CPU32_DEFAULT_SPEC AS_LEON_FLAG
 #endif
@@ -284,6 +286,7 @@ along with GCC; see the file COPYING3.  If not see
 %{mcpu=hypersparc:-D__hypersparc__ -D__sparc_v8__} \
 %{mcpu=leon:-D__leon__ -D__sparc_v8__} \
 %{mcpu=leon3:-D__leon__ -D__sparc_v8__} \
+%{mcpu=leon5:-D__leon__ -D__sparc_v8__} \
 %{mcpu=leon3v7:-D__leon__} \
 %{mcpu=v9:-D__sparc_v9__} \
 %{mcpu=ultrasparc:-D__sparc_v9__} \
@@ -336,6 +339,7 @@ along with GCC; see the file COPYING3.  If not see
 %{mcpu=hypersparc:-Av8} \
 %{mcpu=leon:" AS_LEON_FLAG "} \
 %{mcpu=leon3:" AS_LEON_FLAG "} \
+%{mcpu=leon5:" AS_LEON_FLAG "} \
 %{mcpu=leon3v7:" AS_LEONV7_FLAG "} \
 %{mv8plus:-Av8plus} \
 %{mcpu=v9:-Av9} \
