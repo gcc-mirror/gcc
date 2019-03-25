@@ -233,6 +233,7 @@
    hypersparc,
    leon,
    leon3,
+   leon5,
    leon3v7,
    sparclite,
    f930,
@@ -638,6 +639,7 @@
 (include "supersparc.md")
 (include "hypersparc.md")
 (include "leon.md")
+(include "leon5.md")
 (include "sparclet.md")
 (include "ultra1_2.md")
 (include "ultra3.md")
