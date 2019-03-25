@@ -1252,12 +1252,6 @@ maybe_add_lambda_conv_op (tree type)
 
   start_preparsed_function (statfn, NULL_TREE,
 			    SF_PRE_PARSED | SF_INCLASS_INLINE);
-  if (DECL_ONE_ONLY (statfn))
-    {
-      /* Put the thunk in the same comdat group as the call op.  */
-      cgraph_node::get_create (statfn)->add_to_same_comdat_group
-	(cgraph_node::get_create (callop));
-    }
   tree body = begin_function_body ();
   tree compound_stmt = begin_compound_stmt (0);
   if (!generic_lambda_p)

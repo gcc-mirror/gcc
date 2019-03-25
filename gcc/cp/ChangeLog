@@ -1,3 +1,7 @@
+2019-03-25  Nathan Sidwell  <nathan@acm.org>
+
+	* lambda.c (maybe_add_lambda_conv_op): Don't add to comdat group.
+
 2019-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/60702
