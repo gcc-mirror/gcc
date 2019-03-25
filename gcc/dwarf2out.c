@@ -22732,6 +22732,21 @@ premark_types_used_by_global_vars (void)
       ->traverse<void *, premark_types_used_by_global_vars_helper> (NULL);
 }
 
+/* Mark all variables used by the symtab as perennial.  */
+
+static void
+premark_used_variables (void)
+{
+  /* Mark DIEs in the symtab as used.  */
+  varpool_node *var;
+  FOR_EACH_VARIABLE (var)
+    {
+      dw_die_ref die = lookup_decl_die (var->decl);
+      if (die)
+	die->die_perennial_p = 1;
+    }
+}
+
 /* Generate a DW_TAG_call_site DIE in function DECL under SUBR_DIE
    for CA_LOC call arg loc node.  */
 
@@ -29394,6 +29409,19 @@ prune_unused_types_walk (dw_die_ref die)
 
       return;
 
+    case DW_TAG_variable:
+      if (flag_debug_only_used_symbols)
+	{
+	  if (die->die_perennial_p)
+	    break;
+
+	  /* premark_used_variables marks external variables --- don't mark
+	     them here.  */
+	  if (get_AT (die, DW_AT_external))
+	    return;
+	}
+      /* FALLTHROUGH */
+
     default:
       /* Mark everything else.  */
       break;
@@ -29519,6 +29547,10 @@ prune_unused_types (void)
 
   /* Mark types that are used in global variables.  */
   premark_types_used_by_global_vars ();
+
+  /* Mark variables used in the symtab.  */
+  if (flag_debug_only_used_symbols)
+    premark_used_variables ();
 
   /* Set the mark on nodes that are actually used.  */
   prune_unused_types_walk (comp_unit_die ());

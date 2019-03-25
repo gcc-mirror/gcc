@@ -1,3 +1,11 @@
+2019-03-25  Johan Karlsson <johan.karlsson@enea.com>
+
+	PR debug/86964
+	* dwarf2out.c (premark_used_variables): New function.
+	(prune_unused_types_walk): Do not mark not premarked external
+	variables.
+	(prune_unused_types): Call premark_used_variables.
+
 2019-03-25  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/89676
