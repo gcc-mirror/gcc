@@ -1,5 +1,9 @@
 2019-03-25  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/89214 - ICE when initializing aggregates with bases.
+	* g++.dg/cpp1z/aggr-base8.C: New test.
+	* g++.dg/cpp1z/aggr-base9.C: New test.
+
 	PR c++/89705 - ICE with reference binding with conversion function.
 	* g++.dg/cpp0x/rv-conv2.C: New test.
 
