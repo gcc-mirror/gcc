@@ -1,3 +1,9 @@
+2019-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89705 - ICE with reference binding with conversion function.
+	* call.c (reference_binding): If the result of the conversion function
+	is a prvalue of non-class type, use the cv-unqualified type.
+
 2019-03-25  Nathan Sidwell  <nathan@acm.org>
 
 	* lambda.c (maybe_add_lambda_conv_op): Don't add to comdat group.
