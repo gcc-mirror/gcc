@@ -4259,15 +4259,27 @@ curr_insn_transform (bool check_only_p)
 	  else if (goal_alt_matched[i][0] != -1
 		   && curr_static_id->operand[i].type == OP_OUT
 		   && (curr_static_id->operand_alternative
-		       [goal_alt_number * n_operands + i].earlyclobber))
+		       [goal_alt_number * n_operands + i].earlyclobber)
+		   && REG_P (op))
 	    {
-	      /* Generate reloads for output and matched inputs.  This
-		 is the easiest way to avoid creation of non-existing
-		 conflicts in lra-lives.c.  */
-	      match_reload (i, goal_alt_matched[i], outputs, goal_alt[i], &before,
-			    &after, TRUE);
-	      outputs[n_outputs++] = i;
-	      outputs[n_outputs] = -1;
+	      for (j = 0; goal_alt_matched[i][j] != -1; j++)
+		{
+		  rtx op2 = *curr_id->operand_loc[goal_alt_matched[i][j]];
+		  
+		  if (REG_P (op2) && REGNO (op) != REGNO (op2))
+		    break;
+		}
+	      if (goal_alt_matched[i][j] != -1)
+		{
+		  /* Generate reloads for different output and matched
+		     input registers.  This is the easiest way to avoid
+		     creation of non-existing register conflicts in
+		     lra-lives.c.  */
+		  match_reload (i, goal_alt_matched[i], outputs, goal_alt[i], &before,
+				&after, TRUE);
+		  outputs[n_outputs++] = i;
+		  outputs[n_outputs] = -1;
+		}
 	      continue;
 	    }
 	  else
