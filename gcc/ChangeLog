@@ -1,3 +1,11 @@
+2019-03-25  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (Common Type Attributes): Document vector_size.
+	(Common Variable Attributes): Mention size constraint.  Correct
+	quoting and typos.
+	(Vector Extensions): Use @dfn when defining bas type.  Clarify
+	base type and size constraints.
+
 2019-03-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89789
@@ -60,7 +68,7 @@
 	rescans.  Reprocess blocks as needed, calling df_analyze before
 	reprocessing.  Always call df_analyze before fixing up debug bind
 	insns.
-	
+
 2019-03-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/xmmintrin.h (_mm_movemask_pi8): Implement for 32-bit
@@ -5203,7 +5211,7 @@
 	PR tree-opt/86020
 	Revert:
 	2017-05-22  Jan Hubicka  <hubicka@ucw.cz>
-	
+
         * ipa-inline.c (edge_badness): Use inlined_time instead of
         inline_summaries->get.
 

@@ -7041,8 +7041,10 @@ class itself is instantiated.
 
 @item vector_size (@var{bytes})
 @cindex @code{vector_size} variable attribute
-This attribute specifies the vector size for the variable, measured in
-bytes.  For example, the declaration:
+This attribute specifies the vector size for the type of the declared
+variable, measured in bytes.  The type to which it applies is known as
+the @dfn{base type}.  The @var{bytes} argument must be a positive
+power-of-two multiple of the base type size.  For example, the declaration:
 
 @smallexample
 int foo __attribute__ ((vector_size (16)));
@@ -7050,10 +7052,12 @@ int foo __attribute__ ((vector_size (16)));
 
 @noindent
 causes the compiler to set the mode for @code{foo}, to be 16 bytes,
-divided into @code{int} sized units.  Assuming a 32-bit int (a vector of
-4 units of 4 bytes), the corresponding mode of @code{foo} is V4SI@.
+divided into @code{int} sized units.  Assuming a 32-bit @code{int},
+@code{foo}'s type is a vector of four units of four bytes each, and
+the corresponding mode of @code{foo} is @code{V4SI}.
+@xref{Vector Extensions} for details of manipulating vector variables.
 
-This attribute is only applicable to integral and float scalars,
+This attribute is only applicable to integral and floating scalars,
 although arrays, pointers, and function return values are allowed in
 conjunction with this construct.
 
@@ -8115,6 +8119,39 @@ that type, even if the variable appears to do nothing.  This is often
 the case with lock or thread classes, which are usually defined and then
 not referenced, but contain constructors and destructors that have
 nontrivial bookkeeping functions.
+
+@item vector_size (@var{bytes})
+@cindex @code{vector_size} type attribute
+This attribute specifies the vector size for the type, measured in bytes.
+The type to which it applies is known as the @dfn{base type}.  The @var{bytes}
+argument must be a positive power-of-two multiple of the base type size.  For
+example, the following declarations:
+
+@smallexample
+typedef __attribute__ ((vector_size (32))) int int_vec32_t ;
+typedef __attribute__ ((vector_size (32))) int* int_vec32_ptr_t;
+typedef __attribute__ ((vector_size (32))) int int_vec32_arr3_t[3];
+@end smallexample
+
+@noindent
+define @code{int_vec32_t} to be a 32-byte vector type composed of @code{int}
+sized units.  With @code{int} having a size of 4 bytes, the type defines
+a vector of eight units, four bytes each.  The mode of variables of type
+@code{int_vec32_t} is @code{V8SI}.  @code{int_vec32_ptr_t} is then defined
+to be a pointer to such a vector type, and @code{int_vec32_arr3_t} to be
+an array of three such vectors.  @xref{Vector Extensions} for details of
+manipulating objects of vector types.
+
+This attribute is only applicable to integral and floating scalar types.
+In function declarations the attribute applies to the function return
+type.
+
+For example, the following:
+@smallexample
+__attribute__ ((vector_size (16))) float get_flt_vec16 (void);
+@end smallexample
+declares @code{get_flt_vec16} to be a function returning a 16-byte vector
+with the base type @code{float}.
 
 @item visibility
 @cindex @code{visibility} type attribute
@@ -10883,7 +10920,7 @@ typedef int v4si __attribute__ ((vector_size (16)));
 @end smallexample
 
 @noindent
-The @code{int} type specifies the base type, while the attribute specifies
+The @code{int} type specifies the @dfn{base type}, while the attribute specifies
 the vector size for the variable, measured in bytes.  For example, the
 declaration above causes the compiler to set the mode for the @code{v4si}
 type to be 16 bytes wide and divided into @code{int} sized units.  For
@@ -10891,9 +10928,9 @@ a 32-bit @code{int} this means a vector of 4 units of 4 bytes, and the
 corresponding mode of @code{foo} is @acronym{V4SI}.
 
 The @code{vector_size} attribute is only applicable to integral and
-float scalars, although arrays, pointers, and function return values
+floating scalars, although arrays, pointers, and function return values
 are allowed in conjunction with this construct. Only sizes that are
-a power of two are currently allowed.
+positive power-of-two multiples of the base type size are currently allowed.
 
 All the basic integer types can be used as base types, both as signed
 and as unsigned: @code{char}, @code{short}, @code{int}, @code{long},
