@@ -1,3 +1,9 @@
+2019-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89789
+	* tree-ssa-sccvn.c (set_ssa_val_to): Do not allow lattice
+	changes from non-undefined back to undefined.
+
 2019-03-25  Thomas Otto  <thomas.otto@pdv-fs.de>
 
 	* dwarf2out.c (comp_dir_string): cached_wd could be set to both a
