@@ -1,3 +1,10 @@
+2019-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84661
+	PR c++/85013
+	* g++.dg/concepts/pr84661.C: New.
+	* g++.dg/torture/pr85013.C: Likewise.
+
 2019-03-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89214 - ICE when initializing aggregates with bases.

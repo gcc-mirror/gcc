@@ -9443,6 +9443,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 {
   cp_parser_expression_stack stack;
   cp_parser_expression_stack_entry *sp = &stack[0];
+  cp_parser_expression_stack_entry *disable_warnings_sp = NULL;
   cp_parser_expression_stack_entry current;
   cp_expr rhs;
   cp_token *token;
@@ -9506,12 +9507,14 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 
       /* For "false && x" or "true || x", x will never be executed;
 	 disable warnings while evaluating it.  */
-      if (current.tree_type == TRUTH_ANDIF_EXPR)
-	c_inhibit_evaluation_warnings +=
-	  cp_fully_fold (current.lhs) == truthvalue_false_node;
-      else if (current.tree_type == TRUTH_ORIF_EXPR)
-	c_inhibit_evaluation_warnings +=
-	  cp_fully_fold (current.lhs) == truthvalue_true_node;
+      if ((current.tree_type == TRUTH_ANDIF_EXPR
+	   && cp_fully_fold (current.lhs) == truthvalue_false_node)
+	  || (current.tree_type == TRUTH_ORIF_EXPR
+	      && cp_fully_fold (current.lhs) == truthvalue_true_node))
+	{
+	  disable_warnings_sp = sp;
+	  ++c_inhibit_evaluation_warnings;
+	}
 
       /* Extract another operand.  It may be the RHS of this expression
 	 or the LHS of a new, higher priority expression.  */
@@ -9557,12 +9560,11 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	}
 
       /* Undo the disabling of warnings done above.  */
-      if (current.tree_type == TRUTH_ANDIF_EXPR)
-	c_inhibit_evaluation_warnings -=
-	  cp_fully_fold (current.lhs) == truthvalue_false_node;
-      else if (current.tree_type == TRUTH_ORIF_EXPR)
-	c_inhibit_evaluation_warnings -=
-	  cp_fully_fold (current.lhs) == truthvalue_true_node;
+      if (sp == disable_warnings_sp)
+	{
+	  disable_warnings_sp = NULL;
+	  --c_inhibit_evaluation_warnings;
+	}
 
       if (warn_logical_not_paren
 	  && TREE_CODE_CLASS (current.tree_type) == tcc_comparison

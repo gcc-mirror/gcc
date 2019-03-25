@@ -1,3 +1,10 @@
+2019-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84661
+	PR c++/85013
+	* parser.c (cp_parser_binary_expression): Don't call cp_fully_fold
+	to undo the disabling of warnings.
+
 2019-03-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/87748 - substitution failure error with decltype.
