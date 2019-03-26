@@ -191,7 +191,7 @@ unittest
 
 unittest
 {
-    alias RC = common.RC;
+    alias RC = common.RC!();
     Array!RC ary;
 
     size_t cnt;

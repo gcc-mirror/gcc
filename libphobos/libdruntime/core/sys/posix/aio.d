@@ -72,6 +72,27 @@ version (CRuntime_Glibc)
         }
     }
 }
+else version (CRuntime_Musl)
+{
+    // https://git.musl-libc.org/cgit/musl/tree/include/aio.h
+    struct aiocb
+    {
+        int aio_fildes;
+        int aio_lio_opcode;
+        int aio_reqprio;
+        void* aio_buf;   //volatile
+        size_t aio_nbytes;
+        sigevent aio_sigevent;
+        void* __td;
+        int[2] __lock;
+        int __err;   //volatile
+        ssize_t __ret;
+        off_t aio_offset;
+        void* __next;
+        void* __prev;
+        ubyte[32-2*(void*).sizeof] __dummy4;
+    }
+}
 else version (Darwin)
 {
     struct aiocb
@@ -180,6 +201,15 @@ version (CRuntime_Glibc)
         AIO_ALLDONE
     }
 }
+else version (CRuntime_Musl)
+{
+    enum
+    {
+        AIO_CANCELED,
+        AIO_NOTCANCELED,
+        AIO_ALLDONE
+    }
+}
 else version (Darwin)
 {
     enum
@@ -218,6 +248,15 @@ version (CRuntime_Glibc)
         LIO_NOP
     }
 }
+else version (CRuntime_Musl)
+{
+    enum
+    {
+        LIO_READ,
+        LIO_WRITE,
+        LIO_NOP
+    }
+}
 else version (Darwin)
 {
     enum
@@ -248,6 +287,14 @@ else version (BSD_Posix)
 
 /* Synchronization options for `lio_listio' function.  */
 version (CRuntime_Glibc)
+{
+    enum
+    {
+        LIO_WAIT,
+        LIO_NOWAIT
+    }
+}
+else version (CRuntime_Musl)
 {
     enum
     {

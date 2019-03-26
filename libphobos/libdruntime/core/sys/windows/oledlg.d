@@ -11,8 +11,7 @@ version (Windows):
 
 version (ANSI) {} else version = Unicode;
 
-import core.sys.windows.commdlg, core.sys.windows.dlgs, core.sys.windows.ole2, core.sys.windows.prsht, core.sys.windows.shellapi,
-  core.sys.windows.windows;
+import core.sys.windows.commdlg, core.sys.windows.dlgs, core.sys.windows.ole2, core.sys.windows.prsht, core.sys.windows.shellapi;
 private import core.sys.windows.winbase, core.sys.windows.objidl, core.sys.windows.objfwd, core.sys.windows.winnt;
 
 // FIXME: remove inherited methods from interface definitions
@@ -546,7 +545,7 @@ struct OLEUICHANGEICONW {
     HRSRC hResource;
     HGLOBAL hMetaPict;
     CLSID clsid;
-    WCHAR[MAX_PATH] szIconExe;
+    WCHAR[MAX_PATH] szIconExe = 0;
     int cchIconExe;
 }
 alias OLEUICHANGEICONW* POLEUICHANGEICONW, LPOLEUICHANGEICONW;
@@ -563,7 +562,7 @@ struct OLEUICHANGEICONA {
     HRSRC hResource;
     HGLOBAL hMetaPict;
     CLSID clsid;
-    CHAR[MAX_PATH] szIconExe;
+    CHAR[MAX_PATH] szIconExe = 0;
     int cchIconExe;
 }
 alias OLEUICHANGEICONA* POLEUICHANGEICONA, LPOLEUICHANGEICONA;

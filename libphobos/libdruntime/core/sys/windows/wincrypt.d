@@ -795,7 +795,7 @@ struct PROV_ENUMALGS {
     ALG_ID   aiAlgid;
     DWORD    dwBitLen;
     DWORD    dwNameLen;
-    CHAR[20] szName;
+    CHAR[20] szName = 0;
 }
 
 struct PUBLICKEYSTRUC {

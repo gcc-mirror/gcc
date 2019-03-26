@@ -42,7 +42,7 @@ enum EI_NIDENT = 16;
 
 struct Elf32_Ehdr
 {
-    char[EI_NIDENT] e_ident;
+    char[EI_NIDENT] e_ident = 0;
     Elf32_Half    e_type;
     Elf32_Half    e_machine;
     Elf32_Word    e_version;
@@ -60,7 +60,7 @@ struct Elf32_Ehdr
 
 struct Elf64_Ehdr
 {
-    char[EI_NIDENT] e_ident;
+    char[EI_NIDENT] e_ident = 0;
     Elf64_Half    e_type;
     Elf64_Half    e_machine;
     Elf64_Word    e_version;

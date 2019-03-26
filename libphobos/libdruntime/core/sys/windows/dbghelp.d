@@ -12,7 +12,8 @@
 module core.sys.windows.dbghelp;
 version (Windows):
 
-import core.sys.windows.windows;
+import core.sys.windows.winbase /+: FreeLibrary, GetProcAddress, LoadLibraryA+/;
+import core.sys.windows.windef;
 
 public import core.sys.windows.dbghelp_types;
 

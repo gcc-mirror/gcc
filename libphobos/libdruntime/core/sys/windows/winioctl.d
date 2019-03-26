@@ -563,7 +563,7 @@ struct PARTITION_INFORMATION_GPT {
     GUID      PartitionType;
     GUID      PartitionId;
     DWORD64   Attributes;
-    WCHAR[36] Name;
+    WCHAR[36] Name = 0;
 }
 
 struct PARTITION_INFORMATION_EX {

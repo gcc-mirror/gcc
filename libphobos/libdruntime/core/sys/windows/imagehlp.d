@@ -230,7 +230,7 @@ struct IMAGEHLP_SYMBOL {
     DWORD   Size;
     DWORD   Flags;
     DWORD   MaxNameLength;
-    CHAR[1] Name;
+    CHAR[1] Name = 0;
 }
 alias IMAGEHLP_SYMBOL* PIMAGEHLP_SYMBOL;
 
@@ -242,9 +242,9 @@ struct IMAGEHLP_MODULE {
     DWORD     CheckSum;
     DWORD     NumSyms;
     SYM_TYPE  SymType;
-    CHAR[32]  ModuleName;
-    CHAR[256] ImageName;
-    CHAR[256] LoadedImageName;
+    CHAR[32]  ModuleName = 0;
+    CHAR[256] ImageName = 0;
+    CHAR[256] LoadedImageName = 0;
 }
 alias IMAGEHLP_MODULE* PIMAGEHLP_MODULE;
 
@@ -262,7 +262,7 @@ struct IMAGEHLP_DEFERRED_SYMBOL_LOAD {
     DWORD          BaseOfImage;
     DWORD          CheckSum;
     DWORD          TimeDateStamp;
-    CHAR[MAX_PATH] FileName;
+    CHAR[MAX_PATH] FileName = 0;
     BOOLEAN        Reparse;
 }
 alias IMAGEHLP_DEFERRED_SYMBOL_LOAD* PIMAGEHLP_DEFERRED_SYMBOL_LOAD;

@@ -144,7 +144,7 @@ version (CoreDdoc)
         uint cmdsize;
 
         /// The name of this segment.
-        char[16] segname;
+        char[16] segname = 0;
 
         /// Memory address of this segment.
         uint vmaddr;
@@ -181,7 +181,7 @@ version (CoreDdoc)
         uint cmdsize;
 
         /// The name of this segment.
-        char[16] segname;
+        char[16] segname = 0;
 
         /// Memory address of this segment.
         long vmaddr;
@@ -212,10 +212,10 @@ version (CoreDdoc)
     struct section
     {
         /// The name of this this section.
-        char[16] sectname;
+        char[16] sectname = 0;
 
         /// The name of the segment this section belongs to.
-        char[16] segname;
+        char[16] segname = 0;
 
         /// The memory address of this section.
         uint addr;
@@ -249,10 +249,10 @@ version (CoreDdoc)
     struct section_64
     {
         /// The name of this this section.
-        char[16] sectname;
+        char[16] sectname = 0;
 
         /// The name of the segment this section belongs to.
-        char[16] segname;
+        char[16] segname = 0;
 
         /// The memory address of this section.
         ulong addr;
@@ -351,7 +351,7 @@ struct segment_command
 {
     uint cmd;
     uint cmdsize;
-    char[16] segname;
+    char[16] segname = 0;
     uint vmaddr;
     uint vmsize;
     uint fileoff;
@@ -366,7 +366,7 @@ struct segment_command_64
 {
     uint cmd;
     uint cmdsize;
-    char[16] segname;
+    char[16] segname = 0;
     long vmaddr;
     long vmsize;
     long fileoff;
@@ -379,8 +379,8 @@ struct segment_command_64
 
 struct section
 {
-    char[16] sectname;
-    char[16] segname;
+    char[16] sectname = 0;
+    char[16] segname = 0;
     uint     addr;
     uint     size;
     uint     offset;
@@ -394,8 +394,8 @@ struct section
 
 struct section_64
 {
-    char[16] sectname;
-    char[16] segname;
+    char[16] sectname = 0;
+    char[16] segname = 0;
     ulong    addr;
     ulong    size;
     uint     offset;

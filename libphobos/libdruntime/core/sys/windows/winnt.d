@@ -2364,7 +2364,7 @@ struct SID_AND_ATTRIBUTES {
 alias SID_AND_ATTRIBUTES* PSID_AND_ATTRIBUTES;
 
 struct TOKEN_SOURCE {
-    CHAR[TOKEN_SOURCE_LENGTH] SourceName;
+    CHAR[TOKEN_SOURCE_LENGTH] SourceName = 0;
     LUID SourceIdentifier;
 }
 alias TOKEN_SOURCE* PTOKEN_SOURCE;
@@ -2505,8 +2505,8 @@ alias IO_COUNTERS* PIO_COUNTERS;
 struct FILE_NOTIFY_INFORMATION {
     DWORD NextEntryOffset;
     DWORD Action;
-    DWORD FileNameLength;
-    WCHAR _FileName;
+    DWORD FileNameLength = 0;
+    WCHAR _FileName = 0;
 
     WCHAR* FileName() return { return &_FileName; }
 }
@@ -2708,7 +2708,7 @@ struct OSVERSIONINFOA {
     DWORD     dwMinorVersion;
     DWORD     dwBuildNumber;
     DWORD     dwPlatformId;
-    CHAR[128] szCSDVersion;
+    CHAR[128] szCSDVersion = 0;
 }
 alias OSVERSIONINFOA* POSVERSIONINFOA, LPOSVERSIONINFOA;
 
@@ -2718,7 +2718,7 @@ struct OSVERSIONINFOW {
     DWORD      dwMinorVersion;
     DWORD      dwBuildNumber;
     DWORD      dwPlatformId;
-    WCHAR[128] szCSDVersion;
+    WCHAR[128] szCSDVersion = 0;
 }
 alias OSVERSIONINFOW* POSVERSIONINFOW, LPOSVERSIONINFOW;
 
@@ -2728,7 +2728,7 @@ struct OSVERSIONINFOEXA {
     DWORD     dwMinorVersion;
     DWORD     dwBuildNumber;
     DWORD     dwPlatformId;
-    CHAR[128] szCSDVersion;
+    CHAR[128] szCSDVersion = 0;
     WORD      wServicePackMajor;
     WORD      wServicePackMinor;
     WORD      wSuiteMask;
@@ -2743,7 +2743,7 @@ struct OSVERSIONINFOEXW {
     DWORD      dwMinorVersion;
     DWORD      dwBuildNumber;
     DWORD      dwPlatformId;
-    WCHAR[128] szCSDVersion;
+    WCHAR[128] szCSDVersion = 0;
     WORD       wServicePackMajor;
     WORD       wServicePackMinor;
     WORD       wSuiteMask;
@@ -2938,8 +2938,8 @@ alias IMAGE_DOS_HEADER* PIMAGE_DOS_HEADER;
 
 struct IMAGE_OS2_HEADER {
     WORD ne_magic;
-    CHAR ne_ver;
-    CHAR ne_rev;
+    CHAR ne_ver = 0;
+    CHAR ne_rev = 0;
     WORD ne_enttab;
     WORD ne_cbenttab;
     LONG ne_crc;
@@ -3263,7 +3263,7 @@ alias IMAGE_RESOURCE_DIRECTORY_ENTRY* PIMAGE_RESOURCE_DIRECTORY_ENTRY;
 
 struct IMAGE_RESOURCE_DIRECTORY_STRING {
     WORD Length;
-    CHAR _NameString;
+    CHAR _NameString = 0;
 
     CHAR* NameString() return { return &_NameString; }
 }
@@ -3271,7 +3271,7 @@ alias IMAGE_RESOURCE_DIRECTORY_STRING* PIMAGE_RESOURCE_DIRECTORY_STRING;
 
 struct IMAGE_RESOURCE_DIR_STRING_U {
     WORD  Length;
-    WCHAR _NameString;
+    WCHAR _NameString = 0;
 
     WCHAR* NameString() return { return &_NameString; }
 }
@@ -3527,7 +3527,7 @@ struct REPARSE_DATA_BUFFER {
             WORD  PrintNameLength;
             // ??? This is in MinGW, but absent in MSDN docs
             ULONG Flags;
-            WCHAR _PathBuffer;
+            WCHAR _PathBuffer = 0;
 
             WCHAR* PathBuffer() return { return &_PathBuffer; }
         }
@@ -3537,7 +3537,7 @@ struct REPARSE_DATA_BUFFER {
             WORD  SubstituteNameLength;
             WORD  PrintNameOffset;
             WORD  PrintNameLength;
-            WCHAR _PathBuffer;
+            WCHAR _PathBuffer = 0;
 
             WCHAR* PathBuffer() return { return &_PathBuffer; }
         }
