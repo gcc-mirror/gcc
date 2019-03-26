@@ -8997,6 +8997,11 @@ finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
       OMP_ATOMIC_MEMORY_ORDER (stmt) = mo;
       SET_EXPR_LOCATION (stmt, loc);
     }
+
+  /* Avoid -Wunused-value warnings here, the whole construct has side-effects
+     and even if it might be wrapped from fold-const.c or c-omp.c wrapped
+     in some tree that appears to be unused, the value is not unused.  */
+  warning_sentinel w (warn_unused_value);
   finish_expr_stmt (stmt);
 }
 
