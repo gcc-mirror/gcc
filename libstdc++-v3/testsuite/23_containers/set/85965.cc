@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2019 Free Software Foundation, Inc.
+// Copyright (C) 2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,18 +15,15 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile }
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
-#include <map>
+#include <set>
 
-void
-test01()
+struct Base { };
+struct Derived; // derives from Base, but incomplete at this point
+
+struct Foo
 {
-  std::map<int, int, std::less<int*>> c;
-  std::map<int, int, std::allocator<int>> c2;
-}
-
-// { dg-error "_Compare = std::less<int.>" "" { target *-*-* } 0 }
-// { dg-error "_Compare = std::allocator<int>" "" { target *-*-* } 0 }
-// { dg-error "comparison object must be invocable" "" { target *-*-* } 0 }
+  // PR libstdc++/85965
+  std::set<Derived*, std::less<Base*>> s;
+};

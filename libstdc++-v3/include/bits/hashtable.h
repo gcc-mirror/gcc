@@ -192,11 +192,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(is_same<typename _Alloc::value_type, _Value>{},
 	  "unordered container must have the same value_type as its allocator");
 #endif
-      static_assert(__is_invocable<const _H1&, const _Key&>{},
-	  "hash function must be invocable with an argument of key type");
-      static_assert(__is_invocable<const _Equal&, const _Key&, const _Key&>{},
-	  "key equality predicate must be invocable with two arguments of "
-	  "key type");
 
       using __traits_type = _Traits;
       using __hash_cached = typename __traits_type::__hash_cached;
@@ -1356,6 +1351,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       clear();
       _M_deallocate_buckets();
+
+      static_assert(__is_invocable<const _H1&, const _Key&>{},
+	  "hash function must be invocable with an argument of key type");
+      static_assert(__is_invocable<const _Equal&, const _Key&, const _Key&>{},
+	  "key equality predicate must be invocable with two arguments of "
+	  "key type");
     }
 
   template<typename _Key, typename _Value,
