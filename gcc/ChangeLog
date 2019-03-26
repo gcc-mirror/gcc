@@ -1,3 +1,26 @@
+2019-03-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86554
+	* tree-ssa-sccvn.c (visit_nary_op): When value-numbering to
+	expressions with different overflow behavior make sure there's an
+	available expression on the path.
+
+	2018-11-20  Richard Biener  <rguenther@suse.de>
+ 
+	PR tree-optimization/88105
+	* tree-ssa-dom.c (pass_dominator::execute): Do not walk
+	backedges.
+
+	2018-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/84552
+	* tree-scalar-evolution.c: Include tree-into-ssa.h.
+	(follow_copies_to_constant): Do not follow SSA names registered
+	for update.
+
 2019-03-21  Bill Schmidt  <wschmidt@linux.ibm.com>
 
         * config/rs6000/rs6000.c (rs6000_analyze_swaps): Rebuild
