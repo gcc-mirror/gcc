@@ -149,7 +149,7 @@ struct COMMPROP {
     DWORD dwCurrentRxQueue;
     DWORD dwProvSpec1;
     DWORD dwProvSpec2;
-    WCHAR _wcProvChar;
+    WCHAR _wcProvChar = 0;
 
     WCHAR* wcProvChar() return { return &_wcProvChar; }
 }
@@ -968,11 +968,11 @@ struct DCB {
     BYTE ByteSize;
     BYTE Parity;
     BYTE StopBits;
-    char XonChar;
-    char XoffChar;
-    char ErrorChar;
-    char EofChar;
-    char EvtChar;
+    char XonChar = 0;
+    char XoffChar = 0;
+    char ErrorChar = 0;
+    char EofChar = 0;
+    char EvtChar = 0;
     WORD wReserved1;
 }
 alias DCB* LPDCB;
@@ -985,7 +985,7 @@ struct COMMCONFIG {
     DWORD dwProviderSubType;
     DWORD dwProviderOffset;
     DWORD dwProviderSize;
-    WCHAR _wcProviderData;
+    WCHAR _wcProviderData = 0;
 
     WCHAR* wcProviderData() return { return &_wcProviderData; }
 }
@@ -1247,9 +1247,9 @@ struct WIN32_FIND_DATAA {
     DWORD          dwReserved0;
     DWORD          dwReserved1;
 // #endif
-    CHAR[MAX_PATH] cFileName;
+    CHAR[MAX_PATH] cFileName = 0;
 // #ifndef _WIN32_WCE
-    CHAR[14]       cAlternateFileName;
+    CHAR[14]       cAlternateFileName = 0;
 // #endif
 }
 alias WIN32_FIND_DATAA* PWIN32_FIND_DATAA, LPWIN32_FIND_DATAA;
@@ -1267,9 +1267,9 @@ struct WIN32_FIND_DATAW {
     DWORD           dwReserved0;
     DWORD           dwReserved1;
 // #endif
-    WCHAR[MAX_PATH] cFileName;
+    WCHAR[MAX_PATH] cFileName = 0;
 // #ifndef _WIN32_WCE
-    WCHAR[14]       cAlternateFileName;
+    WCHAR[14]       cAlternateFileName = 0;
 // #endif
 }
 alias WIN32_FIND_DATAW* PWIN32_FIND_DATAW, LPWIN32_FIND_DATAW;
@@ -1279,7 +1279,7 @@ struct WIN32_STREAM_ID {
     DWORD         dwStreamAttributes;
     LARGE_INTEGER Size;
     DWORD         dwStreamNameSize;
-    WCHAR         _cStreamName;
+    WCHAR         _cStreamName = 0;
 
     WCHAR* cStreamName() return { return &_cStreamName; }
 }
@@ -1304,15 +1304,15 @@ enum ACL_INFORMATION_CLASS {
 
 struct HW_PROFILE_INFOA {
     DWORD dwDockInfo;
-    CHAR[HW_PROFILE_GUIDLEN] szHwProfileGuid;
-    CHAR[MAX_PROFILE_LEN]    szHwProfileName;
+    CHAR[HW_PROFILE_GUIDLEN] szHwProfileGuid = 0;
+    CHAR[MAX_PROFILE_LEN]    szHwProfileName = 0;
 }
 alias HW_PROFILE_INFOA* LPHW_PROFILE_INFOA;
 
 struct HW_PROFILE_INFOW {
     DWORD dwDockInfo;
-    WCHAR[HW_PROFILE_GUIDLEN] szHwProfileGuid;
-    WCHAR[MAX_PROFILE_LEN]    szHwProfileName;
+    WCHAR[HW_PROFILE_GUIDLEN] szHwProfileGuid = 0;
+    WCHAR[MAX_PROFILE_LEN]    szHwProfileName = 0;
 }
 alias HW_PROFILE_INFOW* LPHW_PROFILE_INFOW;
 
@@ -1358,10 +1358,10 @@ static if (_WIN32_WINNT >= 0x500) {
 
 struct TIME_ZONE_INFORMATION {
     LONG       Bias;
-    WCHAR[32]  StandardName;
+    WCHAR[32]  StandardName = 0;
     SYSTEMTIME StandardDate;
     LONG       StandardBias;
-    WCHAR[32]  DaylightName;
+    WCHAR[32]  DaylightName = 0;
     SYSTEMTIME DaylightDate;
     LONG       DaylightBias;
 }
@@ -1492,7 +1492,7 @@ struct OFSTRUCT {
     WORD      nErrCode;
     WORD      Reserved1;
     WORD      Reserved2;
-    CHAR[128] szPathName; // const OFS_MAXPATHNAME = 128;
+    CHAR[128] szPathName = 0; // const OFS_MAXPATHNAME = 128;
 }
 alias OFSTRUCT* LPOFSTRUCT, POFSTRUCT;
 

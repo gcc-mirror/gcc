@@ -39,7 +39,7 @@ enum : UINT {
 }
 
 struct IP_ADDRESS_STRING {
-    char[16] String;
+    char[16] String = 0;
 }
 alias IP_ADDRESS_STRING IP_MASK_STRING;
 alias IP_ADDRESS_STRING* PIP_ADDRESS_STRING, PIP_MASK_STRING;
@@ -55,10 +55,10 @@ alias IP_ADDR_STRING* PIP_ADDR_STRING;
 struct IP_ADAPTER_INFO {
     IP_ADAPTER_INFO* Next;
     DWORD ComboIndex;
-    char[MAX_ADAPTER_NAME_LENGTH+4]        AdapterName;
-    char[MAX_ADAPTER_DESCRIPTION_LENGTH+4] Description;
+    char[MAX_ADAPTER_NAME_LENGTH+4]        AdapterName = 0;
+    char[MAX_ADAPTER_DESCRIPTION_LENGTH+4] Description = 0;
     UINT             AddressLength;
-    BYTE[MAX_ADAPTER_ADDRESS_LENGTH]       Address;
+    BYTE[MAX_ADAPTER_ADDRESS_LENGTH]       Address = 0;
     DWORD            Index;
     UINT             Type;
     UINT             DhcpEnabled;
@@ -83,12 +83,12 @@ struct IP_PER_ADAPTER_INFO {
 alias IP_PER_ADAPTER_INFO* PIP_PER_ADAPTER_INFO;
 
 struct FIXED_INFO {
-    char[MAX_HOSTNAME_LEN+4]    HostName;
-    char[MAX_DOMAIN_NAME_LEN+4] DomainName;
+    char[MAX_HOSTNAME_LEN+4]    HostName = 0;
+    char[MAX_DOMAIN_NAME_LEN+4] DomainName = 0;
     PIP_ADDR_STRING             CurrentDnsServer;
     IP_ADDR_STRING              DnsServerList;
     UINT                        NodeType;
-    char[MAX_SCOPE_ID_LEN+4]    ScopeId;
+    char[MAX_SCOPE_ID_LEN+4]    ScopeId = 0;
     UINT                        EnableRouting;
     UINT                        EnableProxy;
     UINT                        EnableDns;

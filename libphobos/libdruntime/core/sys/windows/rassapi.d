@@ -90,7 +90,7 @@ union RAS_PARAMS_VALUE {
 }
 
 struct RAS_PARAMETERS {
-    CHAR[RASSAPI_MAX_PARAM_KEY_SIZE] P_Key;
+    CHAR[RASSAPI_MAX_PARAM_KEY_SIZE] P_Key = 0;
     RAS_PARAMS_FORMAT                P_Type;
     BYTE                             P_Attributes;
     RAS_PARAMS_VALUE                 P_Value;
@@ -98,21 +98,21 @@ struct RAS_PARAMETERS {
 
 struct RAS_USER_0 {
     BYTE                                    bfPrivilege;
-    WCHAR[RASSAPI_MAX_PHONENUMBER_SIZE + 1] szPhoneNumber;
+    WCHAR[RASSAPI_MAX_PHONENUMBER_SIZE + 1] szPhoneNumber = 0;
 }
 alias RAS_USER_0* PRAS_USER_0;
 
 struct RAS_PORT_0 {
-    WCHAR[RASSAPI_MAX_PORT_NAME]       wszPortName;
-    WCHAR[RASSAPI_MAX_DEVICETYPE_NAME] wszDeviceType;
-    WCHAR[RASSAPI_MAX_DEVICE_NAME]     wszDeviceName;
-    WCHAR[RASSAPI_MAX_MEDIA_NAME]      wszMediaName;
+    WCHAR[RASSAPI_MAX_PORT_NAME]       wszPortName = 0;
+    WCHAR[RASSAPI_MAX_DEVICETYPE_NAME] wszDeviceType = 0;
+    WCHAR[RASSAPI_MAX_DEVICE_NAME]     wszDeviceName = 0;
+    WCHAR[RASSAPI_MAX_MEDIA_NAME]      wszMediaName = 0;
     DWORD                              reserved;
     DWORD                              Flags;
-    WCHAR[UNLEN + 1]                   wszUserName;
-    WCHAR[NETBIOS_NAME_LEN]            wszComputer;
+    WCHAR[UNLEN + 1]                   wszUserName = 0;
+    WCHAR[NETBIOS_NAME_LEN]            wszComputer = 0;
     DWORD                              dwStartSessionTime; // seconds from 1/1/1970
-    WCHAR[DNLEN + 1]                   wszLogonDomain;
+    WCHAR[DNLEN + 1]                   wszLogonDomain = 0;
     BOOL                               fAdvancedServer;
 }
 alias RAS_PORT_0* PRAS_PORT_0;
@@ -120,23 +120,23 @@ alias RAS_PORT_0* PRAS_PORT_0;
 struct RAS_PPP_NBFCP_RESULT {
     DWORD dwError;
     DWORD dwNetBiosError;
-    CHAR[NETBIOS_NAME_LEN + 1]  szName;
-    WCHAR[NETBIOS_NAME_LEN + 1] wszWksta;
+    CHAR[NETBIOS_NAME_LEN + 1]  szName = 0;
+    WCHAR[NETBIOS_NAME_LEN + 1] wszWksta = 0;
 }
 
 struct RAS_PPP_IPCP_RESULT {
     DWORD dwError;
-    WCHAR[RAS_IPADDRESSLEN + 1] wszAddress;
+    WCHAR[RAS_IPADDRESSLEN + 1] wszAddress = 0;
 }
 
 struct RAS_PPP_IPXCP_RESULT {
     DWORD dwError;
-    WCHAR[RAS_IPXADDRESSLEN + 1] wszAddress;
+    WCHAR[RAS_IPXADDRESSLEN + 1] wszAddress = 0;
 }
 
 struct RAS_PPP_ATCP_RESULT {
     DWORD dwError;
-    WCHAR[RAS_ATADDRESSLEN + 1] wszAddress;
+    WCHAR[RAS_ATADDRESSLEN + 1] wszAddress = 0;
 }
 
 struct RAS_PPP_PROJECTION_RESULT {

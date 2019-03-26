@@ -330,6 +330,24 @@ else version (CRuntime_Bionic)
 
         alias uint fexcept_t;
     }
+    else version (X86_64)
+    {
+        struct fenv_t
+        {
+            struct _x87
+            {
+                uint    __control;
+                uint    __status;
+                uint    __tag;
+                uint[4] __others;
+            }
+            _x87 __x87;
+
+            uint __mxcsr;
+        }
+
+        alias uint fexcept_t;
+    }
     else
     {
         static assert(false, "Architecture not supported.");

@@ -1430,7 +1430,7 @@ else version (Solaris)
     struct sockaddr
     {
         sa_family_t sa_family;
-        char[14] sa_data;
+        char[14] sa_data = 0;
     }
 
     alias double sockaddr_maxalign_t;
@@ -1446,9 +1446,9 @@ else version (Solaris)
     struct sockaddr_storage
     {
          sa_family_t ss_family;
-         char[_SS_PAD1SIZE] _ss_pad1;
+         char[_SS_PAD1SIZE] _ss_pad1 = void;
          sockaddr_maxalign_t _ss_align;
-         char[_SS_PAD2SIZE] _ss_pad2;
+         char[_SS_PAD2SIZE] _ss_pad2 = void;
     }
 
     struct msghdr
@@ -1644,117 +1644,38 @@ else version (CRuntime_Bionic)
         int             cmsg_type;
     }
 
-    version (X86)
+    alias size_t __kernel_size_t;
+
+    enum
     {
-        alias uint __kernel_size_t;
-
-        enum
-        {
-            SOCK_DGRAM      = 2,
-            SOCK_SEQPACKET  = 5,
-            SOCK_STREAM     = 1
-        }
-
-        enum
-        {
-            SOL_SOCKET      = 1
-        }
-
-        enum
-        {
-            SO_ACCEPTCONN   = 30,
-            SO_BROADCAST    = 6,
-            SO_DEBUG        = 1,
-            SO_DONTROUTE    = 5,
-            SO_ERROR        = 4,
-            SO_KEEPALIVE    = 9,
-            SO_LINGER       = 13,
-            SO_OOBINLINE    = 10,
-            SO_RCVBUF       = 8,
-            SO_RCVLOWAT     = 18,
-            SO_RCVTIMEO     = 20,
-            SO_REUSEADDR    = 2,
-            SO_SNDBUF       = 7,
-            SO_SNDLOWAT     = 19,
-            SO_SNDTIMEO     = 21,
-            SO_TYPE         = 3
-        }
+        SOCK_DGRAM      = 2,
+        SOCK_SEQPACKET  = 5,
+        SOCK_STREAM     = 1
     }
-    else version (ARM)
+
+    enum
     {
-        alias uint __kernel_size_t;
-
-        enum
-        {
-            SOCK_DGRAM      = 2,
-            SOCK_SEQPACKET  = 5,
-            SOCK_STREAM     = 1
-        }
-
-        enum
-        {
-            SOL_SOCKET      = 1
-        }
-
-        enum
-        {
-            SO_ACCEPTCONN   = 30,
-            SO_BROADCAST    = 6,
-            SO_DEBUG        = 1,
-            SO_DONTROUTE    = 5,
-            SO_ERROR        = 4,
-            SO_KEEPALIVE    = 9,
-            SO_LINGER       = 13,
-            SO_OOBINLINE    = 10,
-            SO_RCVBUF       = 8,
-            SO_RCVLOWAT     = 18,
-            SO_RCVTIMEO     = 20,
-            SO_REUSEADDR    = 2,
-            SO_SNDBUF       = 7,
-            SO_SNDLOWAT     = 19,
-            SO_SNDTIMEO     = 21,
-            SO_TYPE         = 3
-        }
+        SOL_SOCKET      = 1
     }
-    else version (AArch64)
+
+    enum
     {
-        alias ulong __kernel_size_t;
-
-        enum
-        {
-            SOCK_DGRAM      = 2,
-            SOCK_SEQPACKET  = 5,
-            SOCK_STREAM     = 1
-        }
-
-        enum
-        {
-            SOL_SOCKET      = 1
-        }
-
-        enum
-        {
-            SO_ACCEPTCONN   = 30,
-            SO_BROADCAST    = 6,
-            SO_DEBUG        = 1,
-            SO_DONTROUTE    = 5,
-            SO_ERROR        = 4,
-            SO_KEEPALIVE    = 9,
-            SO_LINGER       = 13,
-            SO_OOBINLINE    = 10,
-            SO_RCVBUF       = 8,
-            SO_RCVLOWAT     = 18,
-            SO_RCVTIMEO     = 20,
-            SO_REUSEADDR    = 2,
-            SO_SNDBUF       = 7,
-            SO_SNDLOWAT     = 19,
-            SO_SNDTIMEO     = 21,
-            SO_TYPE         = 3
-        }
-    }
-    else
-    {
-        static assert(false, "Architecture not supported.");
+        SO_ACCEPTCONN   = 30,
+        SO_BROADCAST    = 6,
+        SO_DEBUG        = 1,
+        SO_DONTROUTE    = 5,
+        SO_ERROR        = 4,
+        SO_KEEPALIVE    = 9,
+        SO_LINGER       = 13,
+        SO_OOBINLINE    = 10,
+        SO_RCVBUF       = 8,
+        SO_RCVLOWAT     = 18,
+        SO_RCVTIMEO     = 20,
+        SO_REUSEADDR    = 2,
+        SO_SNDBUF       = 7,
+        SO_SNDLOWAT     = 19,
+        SO_SNDTIMEO     = 21,
+        SO_TYPE         = 3
     }
 
     enum
