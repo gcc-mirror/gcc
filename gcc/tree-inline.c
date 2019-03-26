@@ -1776,10 +1776,10 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
     }
 
   /* If STMT has a block defined, map it to the newly constructed block.  */
-  if (gimple_block (copy))
+  if (tree block = gimple_block (copy))
     {
       tree *n;
-      n = id->decl_map->get (gimple_block (copy));
+      n = id->decl_map->get (block);
       gcc_assert (n);
       gimple_set_block (copy, *n);
     }
@@ -1951,8 +1951,8 @@ copy_bb (copy_body_data *id, basic_block bb,
 		 GF_CALL_VA_ARG_PACK.  */
 	      gimple_call_copy_flags (new_call, call_stmt);
 	      gimple_call_set_va_arg_pack (new_call, false);
+	      /* location includes block.  */
 	      gimple_set_location (new_call, gimple_location (stmt));
-	      gimple_set_block (new_call, gimple_block (stmt));
 	      gimple_call_set_lhs (new_call, gimple_call_lhs (call_stmt));
 
 	      gsi_replace (&copy_gsi, new_call, false);
@@ -2891,9 +2891,9 @@ copy_debug_stmt (gdebug *stmt, copy_body_data *id)
   tree t, *n;
   struct walk_stmt_info wi;
 
-  if (gimple_block (stmt))
+  if (tree block = gimple_block (stmt))
     {
-      n = id->decl_map->get (gimple_block (stmt));
+      n = id->decl_map->get (block);
       gimple_set_block (stmt, n ? *n : id->block);
     }
 
@@ -4589,7 +4589,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
      artificial decls inserted by the compiler itself.  We need to
      either link the inlined blocks into the caller block tree or
      not refer to them in any way to not break GC for locations.  */
-  if (gimple_block (stmt))
+  if (tree block = gimple_block (stmt))
     {
       /* We do want to assign a not UNKNOWN_LOCATION BLOCK_SOURCE_LOCATION
          to make inlined_function_outer_scope_p return true on this BLOCK.  */
@@ -4601,7 +4601,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
       id->block = make_node (BLOCK);
       BLOCK_ABSTRACT_ORIGIN (id->block) = DECL_ORIGIN (fn);
       BLOCK_SOURCE_LOCATION (id->block) = loc;
-      prepend_lexical_block (gimple_block (stmt), id->block);
+      prepend_lexical_block (block, id->block);
     }
 
   /* Local declarations will be replaced by their equivalents in this map.  */
