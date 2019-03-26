@@ -562,7 +562,11 @@ private:
   bool m_ggc;
 
   /* If we should gather memory statistics for the table.  */
+#if GATHER_STATISTICS
   bool m_gather_mem_stats;
+#else
+  static const bool m_gather_mem_stats = false;
+#endif
 };
 
 /* As mem-stats.h heavily utilizes hash maps (hash tables), we have to include
@@ -579,11 +583,15 @@ extern void dump_hash_table_loc_statistics (void);
 template<typename Descriptor, bool Lazy,
 	 template<typename Type> class Allocator>
 hash_table<Descriptor, Lazy, Allocator>::hash_table (size_t size, bool ggc,
-						     bool gather_mem_stats,
+						     bool gather_mem_stats
+						     ATTRIBUTE_UNUSED,
 						     mem_alloc_origin origin
 						     MEM_STAT_DECL) :
   m_n_elements (0), m_n_deleted (0), m_searches (0), m_collisions (0),
-  m_ggc (ggc), m_gather_mem_stats (gather_mem_stats)
+  m_ggc (ggc)
+#if GATHER_STATISTICS
+  , m_gather_mem_stats (gather_mem_stats)
+#endif
 {
   unsigned int size_prime_index;
 
@@ -606,12 +614,15 @@ template<typename Descriptor, bool Lazy,
 	 template<typename Type> class Allocator>
 hash_table<Descriptor, Lazy, Allocator>::hash_table (const hash_table &h,
 						     bool ggc,
-						     bool gather_mem_stats,
+						     bool gather_mem_stats
+						     ATTRIBUTE_UNUSED,
 						     mem_alloc_origin origin
 						     MEM_STAT_DECL) :
   m_n_elements (h.m_n_elements), m_n_deleted (h.m_n_deleted),
-  m_searches (0), m_collisions (0), m_ggc (ggc),
-  m_gather_mem_stats (gather_mem_stats)
+  m_searches (0), m_collisions (0), m_ggc (ggc)
+#if GATHER_STATISTICS
+  , m_gather_mem_stats (gather_mem_stats)
+#endif
 {
   size_t size = h.m_size;
 
