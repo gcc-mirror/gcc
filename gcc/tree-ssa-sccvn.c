@@ -2029,6 +2029,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
 				       &offset2, &size2, &maxsize2,
 				       &reverse);
+      tree def_rhs = gimple_assign_rhs1 (def_stmt);
       if (!reverse
 	  && maxsize2 != -1
 	  && maxsize2 == size2
@@ -2041,11 +2042,14 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	     according to endianness.  */
 	  && (! INTEGRAL_TYPE_P (vr->type)
 	      || ref->size == TYPE_PRECISION (vr->type))
-	  && ref->size % BITS_PER_UNIT == 0)
+	  && ref->size % BITS_PER_UNIT == 0
+	  && (! INTEGRAL_TYPE_P (TREE_TYPE (def_rhs))
+	      || (TYPE_PRECISION (TREE_TYPE (def_rhs))
+		  == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (def_rhs))))))
 	{
 	  code_helper rcode = BIT_FIELD_REF;
 	  tree ops[3];
-	  ops[0] = SSA_VAL (gimple_assign_rhs1 (def_stmt));
+	  ops[0] = SSA_VAL (def_rhs);
 	  ops[1] = bitsize_int (ref->size);
 	  ops[2] = bitsize_int (offset - offset2);
 	  tree val = vn_nary_build_or_lookup (rcode, vr->type, ops);
