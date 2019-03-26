@@ -1,3 +1,10 @@
+2019-03-26  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/81740
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence):
+	In case of outer loop vectorization, check for backward dependence
+	at the inner loop if outer loop dependence is reversed.
+
 2019-03-26  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Correct
