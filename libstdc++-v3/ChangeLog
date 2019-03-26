@@ -1,5 +1,15 @@
 2019-03-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
+	PR libstdc++/89825
+	Fix based on a suggestion by Antony Polukhin.
+	* include/std/variant (__never_valueless): New.
+	(_M_valid): Use it.
+	(_Extra_visit_slot_needed): New.
+	(_Multi_array): Use it.
+	(_S_apply_all_alts): Likewise.
+
+2019-03-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
 	PR libstdc++/89824
 	Fix based on a suggestion by Antony Polukhin.
 	* include/std/variant (__gen_vtable): Don't reserve an
