@@ -649,7 +649,8 @@ tree_ssa_split_loops (void)
 					false, true)
 	  && niter.cmp != ERROR_MARK
 	  /* We can't yet handle loops controlled by a != predicate.  */
-	  && niter.cmp != NE_EXPR)
+	  && niter.cmp != NE_EXPR
+	  && can_duplicate_loop_p (loop))
 	{
 	  if (split_loop (loop, &niter))
 	    {

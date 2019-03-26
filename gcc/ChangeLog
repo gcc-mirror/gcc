@@ -1,3 +1,26 @@
+2019-02-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89253
+	* tree-ssa-loop-split.c (tree_ssa_split_loops): Check we can
+	duplicate the loop.
+
+	2019-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89223
+	* tree-data-ref.c (initialize_matrix_A): Fail if constant
+	doesn't fit in HWI.
+	(analyze_subscript_affine_affine): Handle failure from
+	initialize_matrix_A.
+
+	2019-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88739
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Avoid generating
+	BIT_FIELD_REFs of non-mode-precision integral operands.
+
 2019-03-26  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
