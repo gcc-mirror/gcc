@@ -1,3 +1,12 @@
+2019-03-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-inline.c (remap_gimple_stmt): Cache gimple_block.
+	(copy_debug_stmt): Likewise.
+	(expand_call_inline): Likewise.
+	(copy_bb): Avoid redundant lookup & set of gimple_block.
+	* gimple-low.c (lower_gimple_return): Likewise.
+	(lower_builtin_setjmp): Likewise.
+
 2019-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* hash-table.h (hash_table::m_gather_mem_stats): If GATHER_STATISTICS
