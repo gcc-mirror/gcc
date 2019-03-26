@@ -979,7 +979,7 @@ extern const char *cpp_find_header_unit (cpp_reader *, const char *file,
    input file, except for preprocessed input.  This will generate at
    least one file change callback, and possibly a line change callback
    too.  If there was an error opening the file, it returns NULL.  */
-extern const char *cpp_read_main_file (cpp_reader *, const char *, bool = true);
+extern const char *cpp_read_main_file (cpp_reader *, const char *, bool = false);
 
 /* Set up built-ins with special behavior.  Use cpp_init_builtins()
    instead unless your know what you are doing.  */

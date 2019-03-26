@@ -117,7 +117,22 @@ extern unsigned char *_cpp_unaligned_alloc (cpp_reader *, size_t);
 #define BUFF_LIMIT(BUFF) ((BUFF)->limit)
 
 /* #include types.  */
-enum include_type {IT_INCLUDE, IT_INCLUDE_NEXT, IT_IMPORT, IT_CMDLINE, IT_DEFAULT};
+enum include_type
+  {
+   /* Directive-based including mechanisms.  */
+   IT_INCLUDE,  /* #include */
+   IT_INCLUDE_NEXT,  /* #include_next */
+   IT_IMPORT,   /* #import  */
+
+   /* Non-directive including mechanisms.  */
+   IT_CMDLINE,  /* -include */
+   IT_DEFAULT,  /* forced header  */
+   IT_MAIN_REAL,  /* main, start line 1  */
+   IT_MAIN_ZERO,  /* main, start line zero  */
+
+   IT_DIRECTIVE_HWM = IT_IMPORT + 1,
+   IT_HEADER_HWM = IT_DEFAULT + 1,
+  };
 
 union utoken
 {
@@ -668,8 +683,7 @@ extern _cpp_file *_cpp_find_file (cpp_reader *, const char *, cpp_dir *,
 extern bool _cpp_find_failed (_cpp_file *);
 extern void _cpp_mark_file_once_only (cpp_reader *, struct _cpp_file *);
 extern void _cpp_fake_include (cpp_reader *, const char *);
-extern bool _cpp_stack_file (cpp_reader *, _cpp_file*, bool,
-			     location_t, bool = true);
+extern bool _cpp_stack_file (cpp_reader *, _cpp_file*, include_type, location_t);
 extern bool _cpp_stack_include (cpp_reader *, const char *, int,
 				enum include_type, location_t);
 extern int _cpp_compare_file_date (cpp_reader *, const char *, int);

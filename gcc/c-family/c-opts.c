@@ -1077,7 +1077,7 @@ c_common_post_options (const char **pfilename)
   input_location = UNKNOWN_LOCATION;
 
   *pfilename = this_input_filename
-    = cpp_read_main_file (parse_in, in_fnames[0], cpp_opts->preprocessed);
+    = cpp_read_main_file (parse_in, in_fnames[0], !cpp_opts->preprocessed);
   /* Don't do any compilation or preprocessing if there is no input file.  */
   if (this_input_filename == NULL)
     {

@@ -4888,6 +4888,13 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 		preamble = MP_NOTHING;
 	      if (exporting)
 		cp_lexer_consume_token (parser->lexer);
+	      if (module_not_header_p ()
+		  && IDENTIFIER_POINTER (next->u.value)[0] == '_')
+		{
+		  error_at (next->location, "include-translated header unit"
+			    " not permitted in module purview");
+		  exporting = false;
+		}
 	      if (cp_parser_import_declaration (parser, preamble, exporting)
 		  && more_tokens)
 		goto more_tokens;

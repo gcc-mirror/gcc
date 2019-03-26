@@ -1,5 +1,23 @@
 2019-03-26  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/c-family/
+	* c-opts.c (c_common_post_options): Invert sense of
+	cpp_read_main_file arg.
+	* parser.c (cp_parser_translation_unit): Reject include
+	translation in module purview.
+	libcpp/
+	* files.c (_cpp_stack_file): Take include type parm.  Drop line
+	parm. Do line-table adjusting here ...
+	(_cpp_stack_include): ... not here.
+	* include/cpplib.h (cpp_read_main_file): Invert final parm.
+	* init.c (cpp_read_main_file): Adjust.
+	* internal.h (include_type): Add more enumerations, and document.
+	(_cpp_stack_file): Adjust prototype.
+	gcc/testsuite/
+	* g++.dg/modules/alias-2_[ab].[CH]: New.
+	* g++.dg/modules/exp-xlate-1_[ab].[CH]: New.
+	* g++.dg/modules/legacy-3_c.H: Robustify testing.
+
 	Header units disambiguated by originating header path
 	libcpp/
 	gcc/

@@ -852,10 +852,10 @@ has_unique_contents (cpp_reader *pfile, _cpp_file *file, bool import,
 
   /* We may have read the file under a different name.  Look
      for likely candidates and compare file contents to be sure.  */
- for (   _cpp_file *f = pfile->all_files; f; f = f->next_file)
+  for (_cpp_file *f = pfile->all_files; f; f = f->next_file)
     {
       if (f == file)
-	continue; /* Its'a me!  */
+	continue; /* It'sa me!  */
 
       if ((import || f->once_only)
 	  && f->err_no == 0
@@ -901,75 +901,103 @@ has_unique_contents (cpp_reader *pfile, _cpp_file *file, bool import,
    because of a #import directive.  Returns true if a buffer is
    stacked.  Use LOC for any diagnostics.  */
 bool
-_cpp_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
-		 location_t loc, bool line_one_p)
+_cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
+		 location_t loc)
 {
-  if (is_known_idempotent_file (pfile, file, import))
+  if (is_known_idempotent_file (pfile, file, type == IT_IMPORT))
     return false;
+
+  int sysp = 0;
 
   /* Check C++ module include translation.  */
   if (!file->header_unit
+      && type < IT_HEADER_HWM
       && pfile->cb.translate_include
       && pfile->cb.translate_include (pfile, pfile->line_table, loc, file->path))
     {
+      // FIXME: should we have just returned the buffer to stack?
       /* The hook has stacked a buffer containing replacement text
-	 ending in two \n's.  */
+	 ending in two \n's.  The last \n in the new buffer doesn't
+	 cause a line increment, which is why we wanted 2 of them.
+	 That's much simpler than trying to slide an obstack allocate
+	 fixed buffer under TOS.  */
       cpp_buffer *buffer = CPP_BUFFER (pfile);
       gcc_assert (buffer->rlimit[-1] == '\n' && buffer->rlimit[-2] == '\n');
       buffer->to_free = buffer->buf;
 
-      /* Adjust the line back one to cover the #include itself.  */
-      line_maps *lmaps = pfile->line_table;
-      const line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (lmaps);
-      linenum_type line = SOURCE_LINE (map, lmaps->highest_line);
-      linemap_line_start (lmaps, line - 1, 0);
-
-      /* The last \n in the new buffer doesn't cause a line
-	 increment, which is why we wanted 2 of them.  That's
-	 much simpler than trying to slide an obstack allocate
-	 fixed buffer under TOS.  */
       file->header_unit = +1;
       _cpp_mark_file_once_only (pfile, file);
-      return false;
     }
   else
-    /* Not a header unit, don't ask again.  */
-    file->header_unit = -1;
+    {
+      /* Not a header unit, and we know it.  */
+      file->header_unit = -1;
 
-  if (!read_file (pfile, file, loc))
-    return false;
+      if (!read_file (pfile, file, loc))
+	return false;
 
-  if (!has_unique_contents (pfile, file, import, loc))
-    return false;
+      if (!has_unique_contents (pfile, file, type == IT_IMPORT, loc))
+	return false;
 
-  int sysp = 0;
-  if (pfile->buffer && file->dir)
-    sysp = MAX (pfile->buffer->sysp, file->dir->sysp);
+      if (pfile->buffer && file->dir)
+	sysp = MAX (pfile->buffer->sysp, file->dir->sysp);
 
-  /* Add the file to the dependencies on its first inclusion.  */
-  if (CPP_OPTION (pfile, deps.style) > (sysp != 0)
-      && !file->stack_count
-      && !(file->main_file && CPP_OPTION (pfile, deps.ignore_main_file)))
-    deps_add_dep (pfile->deps, file->path);
+      /* Add the file to the dependencies on its first inclusion.  */
+      if (CPP_OPTION (pfile, deps.style) > (sysp != 0)
+	  && !file->stack_count
+	  && !(file->main_file && CPP_OPTION (pfile, deps.ignore_main_file)))
+	deps_add_dep (pfile->deps, file->path);
 
-  /* Clear buffer_valid since _cpp_clean_line messes it up.  */
-  file->buffer_valid = false;
-  file->stack_count++;
+      /* Clear buffer_valid since _cpp_clean_line messes it up.  */
+      file->buffer_valid = false;
+      file->stack_count++;
 
-  /* Stack the buffer.  */
-  cpp_buffer *buffer = cpp_push_buffer (pfile, file->buffer, file->st.st_size,
-					CPP_OPTION (pfile, preprocessed)
-					&& !CPP_OPTION (pfile, directives_only));
-  buffer->file = file;
-  buffer->sysp = sysp;
-  buffer->to_free = file->buffer_start;
+      /* Stack the buffer.  */
+      cpp_buffer *buffer
+	= cpp_push_buffer (pfile, file->buffer, file->st.st_size,
+			   CPP_OPTION (pfile, preprocessed)
+			   && !CPP_OPTION (pfile, directives_only));
+      buffer->file = file;
+      buffer->sysp = sysp;
+      buffer->to_free = file->buffer_start;
 
-  /* Initialize controlling macro state.  */
-  pfile->mi_valid = true;
-  pfile->mi_cmacro = 0;
+      /* Initialize controlling macro state.  */
+      pfile->mi_valid = true;
+      pfile->mi_cmacro = 0;
+    }
 
-  /* Generate the call back.  */
-  _cpp_do_file_change (pfile, LC_ENTER, file->path, line_one_p ? 1 : 0, sysp);
+  /* Compensate for the increment in linemap_add that occurs when in
+     do_file_change.   In the case of a normal #include, we're
+     currently at the start of the line *following* the #include.  A
+     separate location_t for this location makes no sense (until we do
+     the LC_LEAVE), and complicates LAST_SOURCE_LINE_LOCATION.  This
+     does not apply if we found a PCH file (in which case linemap_add
+     is not called) or we were included from the command-line.  In the
+     case that the #include is the last line in the file,
+     highest_location still points to the current line, not the start
+     of the next line, so we do not decrement in this case.  See
+     plugin/location-overflow-test-pr83173.h for an example.  */
+  bool decremented = false;
+  if (file->pchname == NULL && file->err_no == 0 && type < IT_DIRECTIVE_HWM)
+    {
+      decremented = (pfile->line_table->highest_line
+		     == pfile->line_table->highest_location);
+      if (decremented)
+	pfile->line_table->highest_location--;
+    }
+
+  if (file->header_unit <= 0)
+    /* Add line map and do callbacks.  */
+    _cpp_do_file_change (pfile, LC_ENTER, file->path,
+			 type != IT_MAIN_ZERO ? 1 : 0, sysp);
+  else if (decremented)
+    {
+      /* Adjust the line back one so we appear on the #include line itself.  */
+      const line_map_ordinary *map
+	= LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table);
+      linenum_type line = SOURCE_LINE (map, pfile->line_table->highest_line);
+      linemap_line_start (pfile->line_table, line - 1, 0);
+    }
 
   return true;
 }
@@ -1049,11 +1077,6 @@ bool
 _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
 		    enum include_type type, location_t loc)
 {
-  struct cpp_dir *dir;
-  _cpp_file *file;
-  bool stacked;
-  bool decremented = false;
-
   /* For -include command-line flags we have type == IT_CMDLINE.
      When the first -include file is processed we have the case, where
      pfile->cur_token == pfile->cur_run->base, we are directly called up
@@ -1066,48 +1089,16 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
   if (type == IT_CMDLINE && pfile->cur_token != pfile->cur_run->base)
     pfile->cur_token[-1].src_loc = 0;
 
-  dir = search_path_head (pfile, fname, angle_brackets, type);
+  cpp_dir *dir = search_path_head (pfile, fname, angle_brackets, type);
   if (!dir)
     return false;
 
-  file = _cpp_find_file (pfile, fname, dir, false, angle_brackets,
-			 type == IT_DEFAULT, loc);
+  _cpp_file *file = _cpp_find_file (pfile, fname, dir, false, angle_brackets,
+				    type == IT_DEFAULT, loc);
   if (type == IT_DEFAULT && file == NULL)
     return false;
 
-  /* Compensate for the increment in linemap_add that occurs if
-     _cpp_stack_file actually stacks the file.  In the case of a normal
-     #include, we're currently at the start of the line *following* the
-     #include.  A separate location_t for this location makes no
-     sense (until we do the LC_LEAVE), and complicates
-     LAST_SOURCE_LINE_LOCATION.  This does not apply if we found a PCH
-     file (in which case linemap_add is not called) or we were included
-     from the command-line.  In the case that the #include is the last
-     line in the file, highest_location still points to the current
-     line, not the start of the next line, so we do not decrement in
-     this case.  See plugin/location-overflow-test-pr83173.h for an
-     example.  */
-  if (file->pchname == NULL && file->err_no == 0
-      && type != IT_CMDLINE && type != IT_DEFAULT)
-    {
-      int highest_line = linemap_get_expansion_line (pfile->line_table,
-						     pfile->line_table->highest_location);
-      int source_line = linemap_get_expansion_line (pfile->line_table, loc);
-      if (highest_line > source_line)
-	{
-	  pfile->line_table->highest_location--;
-	  decremented = true;
-	}
-    }
-
-  stacked = _cpp_stack_file (pfile, file, type == IT_IMPORT, loc);
-
-  if (decremented && !stacked)
-    /* _cpp_stack_file didn't stack the file, so let's rollback the
-       compensation dance we performed above.  */
-    pfile->line_table->highest_location++;
-
-  return stacked;
+  return _cpp_stack_file (pfile, file, type, loc);
 }
 
 const char *
