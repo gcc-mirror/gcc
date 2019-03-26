@@ -393,7 +393,7 @@ proc gdc-do-test { } {
 	if { $dir == "runnable" } {
 	    append PERMUTE_ARGS " $SHARED_OPTION"
 	}
-	set options [gdc-permute-options $PERMUTE_ARGS]
+	set options [gdc-permute-options [lsort -unique $PERMUTE_ARGS]]
 
 	switch $dir {
 	    runnable {

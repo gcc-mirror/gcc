@@ -1,3 +1,8 @@
+2019-03-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.test/gdc-test.exp (gdc-do-test): Sort and remove duplicate
+	options in permute args tests.
+
 2019-03-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84598
