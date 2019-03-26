@@ -652,12 +652,13 @@ hash_table<Descriptor, Lazy, Allocator>::~hash_table ()
 	Allocator <value_type> ::data_free (m_entries);
       else
 	ggc_free (m_entries);
+      if (m_gather_mem_stats)
+	hash_table_usage ().release_instance_overhead (this,
+						       sizeof (value_type)
+						       * m_size, true);
     }
-
-  if (m_gather_mem_stats)
-    hash_table_usage ().release_instance_overhead (this,
-						   sizeof (value_type)
-						   * m_size, true);
+  else if (m_gather_mem_stats)
+    hash_table_usage ().unregister_descriptor (this);
 }
 
 /* This function returns an array of empty hash table elements.  */
