@@ -1,3 +1,10 @@
+2019-03-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/89816
+	Fix based on a suggestion by Antony Polukhin.
+	* include/std/variant (__variant_construct): Capture a pointer
+	to the storage and visit just one variant.
+
 2019-03-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/backwards_compatibility.xml: Remove link to
