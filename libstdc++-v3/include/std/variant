@@ -904,9 +904,7 @@ namespace __variant
       using _Func_ptr = _Result_type (*)(_Visitor&&, _Variants...);
       using _Array_type =
 	  _Multi_array<_Func_ptr,
-		       (variant_size_v<remove_reference_t<_Variants>>
-			+ (is_same_v<_Result_type, __variant_cookie> ? 1 : 0))
-	               ...>;
+		       variant_size_v<remove_reference_t<_Variants>>...>;
 
       static constexpr _Array_type
       _S_apply()

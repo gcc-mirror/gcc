@@ -1,5 +1,12 @@
 2019-03-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
+	PR libstdc++/89824
+	Fix based on a suggestion by Antony Polukhin.
+	* include/std/variant (__gen_vtable): Don't reserve an
+	additional table slot, _Multi_array already does that.
+
+2019-03-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
 	PR libstdc++/89816
 	Fix based on a suggestion by Antony Polukhin.
 	* include/std/variant (__variant_construct): Capture a pointer
