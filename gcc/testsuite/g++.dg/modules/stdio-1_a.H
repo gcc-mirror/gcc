@@ -1,9 +1,9 @@
 // { dg-module-do run }
-// { dg-additional-options "-fmodule-header=<stdio.h>" }
+// { dg-additional-options "-fmodule-header -fdump-lang-module" }
+// { dg-module-bmi {} }
 
 /* Proxy stdio.h, because command line in flux.  */
 #include <stdio.h>
-// { dg-module-bmi <stdio.h> }
 
 // There should be *lots* of depsets (209 for glibc today)
 // { dg-final { scan-lang-dump {Writing SCC:60 } module } }

@@ -1,3 +1,42 @@
+2019-03-26  Nathan Sidwell  <nathan@acm.org>
+
+	Header units disambiguated by originating header path
+	libcpp/
+	gcc/
+	* doc/invoke.texi (-fmodule-header): Adjust.
+	* langhooks.h (struct lang_hooks): Adjust preprocess hook.
+	gcc/cp/
+	* cp-tree.h (module_preprocess_token): Adjust.
+	(module_map_header): Declare.
+	(module_translate_include): Adjust.
+	* cxx-mapper.cc (module2bmi): Header units map to relative path.
+	(client::action): Look for header bmi.
+	* lex.c (module_map_header): New.
+	(module_preprocess_token): Remap header unit names.
+	* module.cc (create_dirs): Fix.
+	(module_mapper::translate_include): Adjust.
+	(module_translate_include): Likewise.
+	(finish_module_parse): Fix directory creation.
+	(handle_module_option): Remove fmodule-header=FOO handling.
+	* parser.c (cp_lexer_tokenize): Remap header unit names.
+	gcc/c-family/
+	* c-lex.c (c_lex_with_flags): Build a string for header names.
+	* c-ppoutput.c (scan_translation_unit): Allow preprocess hook to
+	nadger token.
+	* c.opt (fmodule-header=): Deprecate.
+	libcpp/
+	* directives.c (do_include_common): Move include translation to ...
+	* files.c (_cpp_file): Add header_unit field.
+	(should_stack_file): Break into ...
+	(is_known_idempotent_file): ... this, and ...
+	(has_unique_contents): ... this.
+	(_cpp_stack_file): ... do include translation.
+	(cpp_find_header_unit): New.
+	* include/cpplib.h (cpp_callbacks): Adjust translate_include hook.
+	(cpp_find_header_unit): Declare.
+	gcc/testsuite/
+	* g++.dg/modules/: Many changes.
+
 2019-03-21  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/

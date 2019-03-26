@@ -3287,8 +3287,8 @@ public:
   {
     return get_response (state->from_loc) > 0 ? bmi_response (state) : NULL;
   }
-  int translate_include (cpp_reader *, line_maps *, location_t,
-			 const char *, bool);
+  bool translate_include (cpp_reader *, line_maps *, location_t,
+			 const char *);
 
 public:
   /* After a response that may be corked, eat blank lines until it is
@@ -3784,16 +3784,13 @@ create_dirs (const char *path)
     maybe_add_bmi_prefix (path, true);
 
   /* Try and create the missing directories.  */
-  char *base = bmi_path;
-  char *end = base + strlen (base);
-
-  for (char *next; (next = (char *)memchr (base, DIR_SEPARATOR, end - base));
-       base = next + 1)
-    if (next != base + 1)
+  for (  char *base = bmi_path; *base; base++)
+    if (IS_DIR_SEPARATOR (*base))
       {
-	*next = 0;
+	char sep = *base;
+	*base = 0;
 	int failed = mkdir (bmi_path, S_IRWXU | S_IRWXG | S_IRWXO);
-	*next = DIR_SEPARATOR;
+	*base = sep;
 	if (failed
 	    /* Maybe racing with another creator (of a *different*
 	       submodule).  */
@@ -9979,35 +9976,29 @@ module_mapper::export_done (const module_state *state)
   return ok;
 }
 
-/* Include translation.  Query if include FILE should be turned into
-   an import of a header.  Return 0 if it should remain a
-   #include.  If READER is non-NULL, do the translation by pushing a
-   buffer containing the translation text (ending in two \n's).
-   Return non-zero indicator of who owns the pushed buffer.  */
+/* Include translation.  Query if PATH should be turned into a header
+   import.  Return false if it should remain a #include, true
+   otherwise.  If READER is non-NULL, do the translation by pushing a
+   buffer containing the translation text (ending in two \n's).  */
 
-int module_mapper::translate_include (cpp_reader *reader, line_maps *lmaps,
-				      location_t loc,
-				      const char *file, bool angle)
+bool
+module_mapper::translate_include (cpp_reader *reader, line_maps *lmaps,
+				  location_t loc, const char *path)
 {
-  int action = 0;
-  const char *diversion = NULL;
+  bool xlate = false;
 
   if (mapper->is_server ())
     {
-      send_command (loc, "INCLUDE %c%s%c",
-		    angle ? '<' : '"', file, angle ? '>' : '"');
+      send_command (loc, "INCLUDE \"%s\"", path);
       if (get_response (loc) <= 0)
-	return 0;
+	return false;
 
-      // FIXME: Search response?
-      switch (response_word (loc, "IMPORT", "INCLUDE", NULL))
+      switch (response_word (loc, "IMPORT", "TEXT", NULL))
 	{
 	default:
 	  break;
 	case 0:  /* Divert to import.  */
-	  action = 1;
-	  if (!eol_p ())
-	    diversion = response_token (loc);
+	  xlate = true;
 	  break;
 	case 1:  /* Treat as include.  */
 	  break;
@@ -10016,25 +10007,17 @@ int module_mapper::translate_include (cpp_reader *reader, line_maps *lmaps,
     }
   else if (mapper->is_live ())
     {
-      size_t len = strlen (file);
-      char *buf = XNEWVEC (char, len + 3);
-
-      buf[0] = angle ? '<' : '"';
-      buf[len + 1] = angle ? '>' : '"';
-      buf[len + 2] = 0;
-      memcpy (buf + 1, file, len);
       /* Sadly we intern ever include name.  Adjusting to not do this
 	 will pessimize modul lookup from the parser.  */
-      tree name = get_identifier_with_length (buf, len + 2);
-      XDELETEVEC (buf);
+      tree name = get_identifier (path);
 
-      if (get_module_slot (name, NULL, false, false))
-	action = 1;
+      xlate = get_module_slot (name, NULL, false, false) != NULL;
     }
 
-  if (!action)
-    return 0;
+  if (!xlate)
+    return false;
 
+  // FIXME: Move to caller
   if (reader)
     {
       loc = ordinary_loc_of (lmaps, loc);
@@ -10043,11 +10026,7 @@ int module_mapper::translate_include (cpp_reader *reader, line_maps *lmaps,
       unsigned col = SOURCE_COLUMN (map, loc);
       col -= (col != 0); /* Columns are 1-based.  */
 
-      if (diversion)
-	file = diversion;
-
-      /* Divert.   */
-      size_t len = strlen (file);
+      size_t len = strlen (path);
       char *res = XNEWVEC (char, len + 60 + col);
 
       /* Internal keyword to permit use inside extern "C" {...}.
@@ -10059,18 +10038,17 @@ int module_mapper::translate_include (cpp_reader *reader, line_maps *lmaps,
 	  memset (res + actual, ' ', col - actual);
 	  actual = col;
 	}
-      if (!diversion)
-	res[actual++] = angle ? '<' : '"';
-      memcpy (res + actual, file, len);
+      // FIXME: We should encode characters
+      res[actual++] = '"';
+      memcpy (res + actual, path, len);
       actual += len;
-      if (!diversion)
-	res[actual++] = angle ? '>' : '"';
+      res[actual++] = '"';
       strcpy (res + actual, ";\n\n");
       actual += 3;
       cpp_push_buffer (reader, reinterpret_cast<unsigned char *> (res),
 		       actual, false);
     }
-  return +1;  /* cpplib will delete the buffer.  */
+  return true;  /* cpplib will delete the buffer.  */
 }
 
 /* If this is an alias, return the aliased module after transferring
@@ -14079,30 +14057,28 @@ module_cpp_deferred_macro (cpp_reader *reader, location_t loc,
 /* Figure out whether to treat HEADER as an include or an import.  */
 // FIXME: Cache results
 
-int
+bool
 module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
-			  const char *header, bool angle)
+			  const char *path)
 {
   if (!modules_p ())
     {
       /* Turn off.  */
       cpp_get_callbacks (reader)->translate_include = NULL;
-      return 0;
+      return false;
     }
 
   if (!spans.init_p ())
     /* Before the main file, don't divert.  */
-    return 0;
+    return false;
 
   dump.push (NULL);
 
-  dump () && dump ("Checking %sinclude translation %c%s%c",
-		   reader ? "" : "post-preamble ",
-		   angle ? '<' : '"', header, angle ? '>' : '"');
-  int res = 0;
+  dump () && dump ("Checking include translation '%s'", path);
+  bool res = false;
   module_mapper *mapper = module_mapper::get (loc);
   if (mapper->is_live ())
-    res = mapper->translate_include (reader, lmaps, loc, header, angle);
+    res = mapper->translate_include (reader, lmaps, loc, path);
 
   dump () && dump (res ? "Translating include to import"
 		   : "Keeping include as include");
@@ -14555,17 +14531,17 @@ finish_module_parse (cpp_reader *reader)
 			     state->get_flatname (true), path,
 			     state->is_header ());
 
-	  bool first = true;
-	  do
+	  for (unsigned again = 2; ; again--)
 	    {
+	      // FIXME: write a temporary and then rename it, to avoid
+	      // race conditions
 	      fd = open (path, O_RDWR | O_CREAT | O_TRUNC | O_CLOEXEC,
 			 S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
 	      e = errno;
-	      if (!first)
+	      if (fd >= 0 || !again || e != ENOENT)
 		break;
-	      first = true;
+	      create_dirs (path);
 	    }
-	  while (fd < 0 && errno == ENOENT && create_dirs (path));
 	}
       unsigned n = dump.push (state);
       state->announce ("creating");
@@ -14627,33 +14603,6 @@ handle_module_option (unsigned code, const char *str, int)
     case OPT_fmodule_mapper_:
       module_mapper_name = str;
       return true;
-
-    case OPT_fmodule_header_:
-      {
-	size_t len = strlen (str);
-	const char *cookie = (const char *)memchr (str, '?', len);
-
-	if (cookie && cookie[1])
-	  {
-	    module_header_macro = cookie + 1;
-	    len = cookie - str;
-	  }
-
-	if (len)
-	  {
-	    char other = str[0] == '"' ? '"' : str[0] == '<' ? '>' : 0;
-
-	    if (other && (len < 3 || str[len-1] != other
-			  || str[1] == '"' || str[1] == '<'))
-	      error ("header name %qs is badly quoted", str);
-
-	    if (cookie || !other)
-	      set_module_header_name (str, len, !other);
-	    else
-	      module_header_name = str;
-	  }
-      }
-      /* FALLTHROUGH  */
 
     case OPT_fmodule_header:
       if (!module_header_name)

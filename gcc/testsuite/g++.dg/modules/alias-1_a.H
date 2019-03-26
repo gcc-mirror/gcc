@@ -1,5 +1,5 @@
-// { dg-additional-options "-fmodule-header -fmodule-mapper=|cxx-mapper\\ -f\\ $srcdir/g++.dg/modules/alias-1.map" }
-// { dg-module-bmi {=alias-1.h} }
+// { dg-additional-options "-fmodule-header -isystem [srcdir]" }
+// { dg-module-bmi {} }
 
 #ifndef ALIAS_1_A
 #define ALIAS_1_A

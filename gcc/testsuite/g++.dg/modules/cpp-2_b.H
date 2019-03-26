@@ -1,5 +1,5 @@
-// { dg-additional-options "-fmodule-header=<stdio.h>" }
-// { dg-module-bmi {<stdio.h>} }
+// { dg-additional-options "-fmodule-header" }
+// { dg-module-bmi {} }
 
 #define STDIO_H
 #define think THIS IS STDIO

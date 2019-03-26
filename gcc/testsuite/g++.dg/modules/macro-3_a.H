@@ -1,6 +1,6 @@
 // { dg-module-do run }
 // { dg-additional-options "-fmodule-header -fdump-lang-module" }
-// { dg-module-bmi "\"macro-3_a.H\"" }
+// { dg-module-bmi {} }
 
 #ifndef MACRO_3a_H
 #define MACRO_3a_H

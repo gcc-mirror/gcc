@@ -1,5 +1,5 @@
 // { dg-additional-options "-fmodule-header" }
-// { dg-module-bmi {"leg-merge-6_b.H"} }
+// { dg-module-bmi {} }
 
 struct X 
 {

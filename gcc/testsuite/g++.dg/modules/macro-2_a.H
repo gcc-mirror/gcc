@@ -1,5 +1,5 @@
 // { dg-additional-options "-fmodule-header" }
-// { dg-module-bmi {"macro-2_a.H"} }
+// { dg-module-bmi {} }
 
 #ifndef MACRO_2a_H
 #define MACRO_2a_H

@@ -1,5 +1,5 @@
 // { dg-additional-options "-fmodule-header" }
-// { dg-module-bmi {"macro-2_b.H"} }
+// { dg-module-bmi {} }
 
 
 

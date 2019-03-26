@@ -1,7 +1,7 @@
-// { dg-additional-options "-fmodules-ts -fmodule-mapper=|cxx-mapper\\ -f\\ $srcdir/g++.dg/modules/inc-xlate-1.map" }
+// { dg-additional-options -fmodules-ts }
 
 extern "C" {
-  __import <stdarg.h>;
+  #include "inc-xlate-1_a.H"
 }
 
 int main ()

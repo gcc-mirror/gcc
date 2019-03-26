@@ -374,11 +374,49 @@ interface_strcmp (const char* s)
   return 1;
 }
 
+// FIXME: This is somewhay ugly because I keep equivocating about
+// whether header unit names include " or not.  I should go fix that
+// so header unit names are STRING_CSTs not IDENTIFIERS
+
+tree
+module_map_header (cpp_reader *reader, bool do_search,
+		   tree string, location_t loc)
+{
+  bool angle = TREE_STRING_POINTER (string)[0] == '<';
+  char *buf = const_cast<char *> (TREE_STRING_POINTER (string));
+  size_t len = TREE_STRING_LENGTH (string);
+  bool free_buf = false;
+
+  if (do_search)
+    {
+      tree cut_str = build_string (len - 2, buf + 1);
+      if (const char *unit = cpp_find_header_unit (reader,
+						   TREE_STRING_POINTER (cut_str),
+						   angle, loc))
+	{
+	  len = strlen (unit);
+	  buf = XNEWVEC (char, len + 3);
+	  buf[0] = '"';
+	  memcpy (buf + 1, unit, len);
+	  buf[len+1] = '"';
+	  buf[len+2] = 0;
+	  len += 2;
+	  free_buf = true;
+	}
+    }
+
+  string = get_identifier_with_length (buf, len);
+  if (free_buf)
+    XDELETEVEC (buf);
+
+  return string;
+}
+
 /* We've just read a cpp-token, figure out our next state.  Hey, this
    is a hand-coded co-routine!  */
 
 void *
-module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
+module_preprocess_token (cpp_reader *pfile, cpp_token *tok, void *data_)
 {
   enum mode_sm
   {
@@ -394,6 +432,7 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
     mode_sm mode : 8;
     bool is_import : 1;
     bool is_header : 1;
+    bool is_translated : 1;
     bool got_colon : 1;
     bool want_dot : 1;
     bool want_semi : 1;
@@ -404,7 +443,7 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
 
     state (mrules *deps)
       : depth (0), extern_c (0), mode (msm_start_decl),
-      is_import (false), is_header (false),
+      is_import (false), is_header (false), is_translated (false),
       got_colon (false), want_dot (false), want_semi (false),
       got_export (false), header_loc (UNKNOWN_LOCATION),
       deps (deps), module (NULL)
@@ -429,6 +468,7 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
     /* Unchanged state.  */
     return data;
 
+  tree ident = NULL_TREE;
   switch (data->mode)
     {
     case msm_start_decl:
@@ -453,11 +493,15 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
 	    case RID_MODULE:
 	      /* We allow __import inside extern C blocks, because
 		 that's how many C headers work.  Unfortunately.  */
-	      if (data->extern_c && IDENTIFIER_POINTER (ident)[0] != '_')
+	      data->is_translated = IDENTIFIER_POINTER (ident)[0] == '_';
+	      if (!data->is_translated && data->extern_c)
 		goto maybe_end;
 	      if (keyword == RID_IMPORT)
 		{
-		  cpp_enable_filename_token (pfile, true);
+		  // FIXME: when preprocessed we'll have done
+		  // conversion already.
+		  if (!data->is_translated)
+		    cpp_enable_filename_token (pfile, true);
 		  data->is_import = true;
 		}
 	      data->mode = msm_module_decl;
@@ -531,13 +575,32 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
     case msm_module_decl:
       if (data->is_import && !data->want_dot && !data->got_colon)
 	{
-	  cpp_enable_filename_token (pfile, false);
+	  if (!data->is_translated)
+	    cpp_enable_filename_token (pfile, false);
 	  if (tok->type == CPP_HEADER_NAME || tok->type == CPP_STRING)
 	    {
+	      // FIXME: This is dumb, the C++ parser should keep the
+	      // cpp_strings around.
+	      tree string = build_string (tok->val.str.len,
+					  (const char *)tok->val.str.text);
+	      string = module_map_header (pfile, !data->is_translated,
+					  string, tok->src_loc);
+#if 0
+	      tok->val.str.len = TREE_STRING_LENGTH (string);
+	      tok->val.str.text
+		= (const unsigned char *)TREE_STRING_POINTER (string);
+#else
+	      ident = string;
+	      tok->val.str.len = IDENTIFIER_LENGTH (string);
+	      tok->val.str.text
+		= (const unsigned char *)IDENTIFIER_POINTER (string);
+#endif
+	      tok->type = CPP_HEADER_NAME;
 	      data->is_header = true;
 	      data->header_loc = tok->src_loc;
 	      goto header_unit;
 	    }
+
 	  if (data->extern_c)
 	    /* Inside an extern C it must be a header unit.  */
 	    goto square_one;
@@ -629,11 +692,7 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
 
 	header_unit:
 	  data->want_dot = true;
-	  tree ident;
-	  if (data->is_header)
-	    ident = get_identifier_with_length
-	      ((const char *) tok->val.str.text, tok->val.str.len);
-	  else
+	  if (!data->is_header)
 	    ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node.node));
 	  data->module = get_module (ident, data->module, data->got_colon);
 	  break;

@@ -1,6 +1,6 @@
 // { dg-module-do run }
 // { dg-additional-options -fmodule-header }
-// { dg-module-bmi {"printf-1_a.H"} }
+// { dg-module-bmi {} }
 
 extern "C" 
 {

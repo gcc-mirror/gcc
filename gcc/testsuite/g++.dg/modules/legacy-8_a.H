@@ -1,5 +1,5 @@
 // { dg-module-do run }
 // { dg-additional-options "-fmodule-header" }
-// { dg-module-bmi {"legacy-8_a.H"} }
+// { dg-module-bmi {} }
 
 int sqr (int);

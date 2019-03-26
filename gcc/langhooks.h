@@ -335,8 +335,8 @@ struct lang_hooks
 				const line_map_ordinary *);
 
   /* Translate include hook hook.  */
-  int (*preprocess_translate_include)
-    (cpp_reader *, line_maps *, location_t, const char *fname, bool);
+  bool (*preprocess_translate_include)
+    (cpp_reader *, line_maps *, location_t, const char *path);
 
   /* Undefining a macro.  */
   void (*preprocess_undef) (cpp_reader *, location_t, cpp_hashnode *);
@@ -346,7 +346,7 @@ struct lang_hooks
 						  cpp_hashnode *);
 
   /* Observer for preprocessing stream.  */
-  void *(*preprocess_token) (cpp_reader *, const cpp_token *, void *);
+  void *(*preprocess_token) (cpp_reader *, cpp_token *, void *);
 
   /* Register language-specific dumps.  */
   void (*register_dumps) (gcc::dump_manager *);

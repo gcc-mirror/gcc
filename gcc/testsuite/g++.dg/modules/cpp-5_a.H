@@ -1,5 +1,5 @@
 // { dg-additional-options "-fmodule-header" }
-// { dg-module-bmi {"cpp-5_a.H"} }
+// { dg-module-bmi {} }
 
 #ifndef AA
 #define AA

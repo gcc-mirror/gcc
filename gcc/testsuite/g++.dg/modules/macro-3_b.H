@@ -1,6 +1,6 @@
 // { dg-module-do run }
 // { dg-additional-options "-fmodule-header -fdump-lang-module" }
-// { dg-module-bmi "\"macro-3_b.H\"" }
+// { dg-module-bmi {} }
 
 import "macro-3_a.H";
 

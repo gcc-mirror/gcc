@@ -70,7 +70,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include <getopt.h>
 
-
 #ifndef HAVE_MEMRCHR
 /* Some unfortunate souls do not have memrchr.
    Everyone is fighting a struggle you know nothing about.  */
@@ -295,11 +294,36 @@ module2bmi (const char *module)
 	  workspace = XRESIZEVEC (char, workspace, alloc);
 	}
 
+      // FIXME:Revisit once header-lookup transitioned
       int kind = module[0] == '<' ? 's' : module[0] == '"' ? 'u' : 0;
+      bool rel = false;
       if (kind)
-	module += 1, l -= 2;
-      memcpy (workspace, module, l);
+	{
+	  l--;
+	  rel = !IS_DIR_SEPARATOR (module[1]);
+	  if (rel)
+	    module++, l--;
+	}
+      memcpy (workspace + rel * 2, module, l);
+      l += rel *2;
       workspace[l] = 0;
+      if (kind)
+	{
+	  workspace[0] = rel ? '!' : '.';
+	  if (rel)
+	    workspace[1] = DIR_SEPARATOR;
+
+	  /* Map .. to !!.  */
+	  for (unsigned ix = 0; ix != l; ix++)
+	    if (IS_DIR_SEPARATOR (workspace[ix])
+		&& workspace[ix + 1] == '.'
+		&& workspace[ix + 2] == '.')
+	      {
+		workspace[ix + 1] = '!';
+		workspace[ix + 2] = '!';
+	      }
+	}
+
       strcpy (workspace + l, ".gcm");
       l += 4;
       if (kind)
@@ -1080,23 +1104,26 @@ client::action ()
 
 		    case 3:
 		      {
-			/* We may want to tell the compiler go look on
-			   the search path.  */
 			bool do_imp = false;
-			const char *alias = NULL;
 			if (module_map)
 			  {
 			    module_map_t::iterator iter
 			      = module_map->find (module);
 			    if (iter != module_map->end ())
-			      {
-				do_imp = true;
-				if (iter->second && iter->second[0] == '=')
-				  alias = iter->second + 1;
-			      }
+			      do_imp = true;
 			  }
-			write.send_response (id, do_imp ? "IMPORT %s"
-					     : "INCLUDE", alias ? alias : "");
+			if (!do_imp)
+			  /* See if the BMI exists.  */
+			  if (const char *bmi = module2bmi (module))
+			    {
+			      int fd = ::open (bmi, O_RDONLY);
+			      if (fd >= 0)
+				{
+				  ::close (fd);
+				  do_imp = true;
+				}
+			    }
+			write.send_response (id, do_imp ? "IMPORT" : "TEXT");
 		      }
 		      break;
 

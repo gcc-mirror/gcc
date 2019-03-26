@@ -1,5 +1,5 @@
-// { dg-additional-options -fmodule-header=<stdarg.h> }
-// { dg-module-bmi <stdarg.h> }
+// { dg-additional-options -fmodule-header }
+// { dg-module-bmi {} }
 
 #ifndef _STDARG_H
 #define _STDARG_H

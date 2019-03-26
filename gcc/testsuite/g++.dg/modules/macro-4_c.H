@@ -1,5 +1,5 @@
 // { dg-additional-options "-fmodule-header -fforce-module-macros" }
-// { dg-module-bmi {"macro-4_c.H"} }
+// { dg-module-bmi {} }
 
 #ifndef MACRO_4_c
 #define MACRO_4_c

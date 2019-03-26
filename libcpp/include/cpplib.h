@@ -689,11 +689,10 @@ struct cpp_callbacks
   const char *(*remap_filename) (const char*);
 
   /* Maybe translate a #include into something else.  Push a
-     cpp_buffer containing the translation and return non-zero if
-     translating.  +ve buffer will be freed, -ve, caller owns
-     buffer.  */
-  int (*translate_include) (cpp_reader *, line_maps *,
-			    location_t, const char *, bool);
+     cpp_buffer containing the translation and return true if
+     translating.  */
+  bool (*translate_include) (cpp_reader *, line_maps *, location_t,
+			     const char *path);
 };
 
 #ifdef VMS
@@ -971,6 +970,9 @@ extern cpp_options *cpp_get_options (cpp_reader *);
 extern cpp_callbacks *cpp_get_callbacks (cpp_reader *);
 extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
 extern struct mrules *cpp_get_deps (cpp_reader *);
+
+extern const char *cpp_find_header_unit (cpp_reader *, const char *file,
+					 bool angle_p,  location_t);
 
 /* This function reads the file, but does not start preprocessing.  It
    returns the name of the original file; this is the same as the

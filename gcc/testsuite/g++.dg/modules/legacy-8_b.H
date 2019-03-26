@@ -1,4 +1,4 @@
 // { dg-additional-options "-fmodule-header" }
-// { dg-module-bmi {"legacy-8_b.H"} }
+// { dg-module-bmi {} }
 
 float sqr (float);

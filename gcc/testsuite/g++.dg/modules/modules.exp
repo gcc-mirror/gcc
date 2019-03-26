@@ -42,48 +42,52 @@ dg-init
 global module_do
 global module_bmis
 
-proc decode_mod_spec { spec } {
-    set not 0
-    if { [ string index $spec 0 ] == "!" } {
-	set spec [string range $spec 1 end]
-	set not 1
-    }
-    if { [ string index $spec 0 ] == "=" } {
-	set file [string range $spec 1 end]
-    } else {
-	set pfx {gcm}
-	if { [ string index $spec 0 ] == "\"" } {
-	    set pfx "${pfx}u"
-	    set spec [string range $spec 1 end-1]
-	} elseif { [ string index $spec 0 ] == "<" } {
-	    set pfx "${pfx}s"
-	    set spec [string range $spec 1 end-1]
-	}
-	set file "$spec.$pfx"
-    }
-    return [list $not $file]
-}
-
-# Register a module interface leading '!' to expect it to NOT be present
-# dg-module-bmi SPEC WHEN
+# Register the module name this produces.
+# dg-module-bmi !?=?NAME WHEN?
+# dg-module-bmi !?{} - header unit
 proc dg-module-bmi { args } {
     if { [llength $args] > 3 } {
 	error "[lindex $args 0]: too many arguments"
 	return
     }
-
     set spec [lindex $args 1]
-    set decode [decode_mod_spec $spec]
-    # delete file, so we don't get confused by a stale one.
-    file_on_host delete [lindex $decode 1]
-
-    set res [list $spec]
     if { [llength $args] > 2 } {
-	lappend res [lindex $args 2]
+	set when [lindex $args 2]
+    } else {
+	set when {}
     }
 
+    if { [string index $spec 0] == "!" } {
+	set name [string range $spec 1 end]
+	set not 1
+    } else {
+	set name $spec
+	set not 0
+    }
+
+    if { $name == "" } {
+	# get the source file name.  ick!
+	upvar prog srcname
+	if { [lindex [file split $srcname] 0] == "/" } {
+	    set bmi ".$srcname.gcmu"
+	} else {
+	    set bmi "!/$srcname.gcmu"
+	}
+	# subst /../ -> /!!/
+	set path [file split $bmi]
+	set rplac [lmap elt $path {expr {$elt == ".." ? "!!" : $elt}}]
+	set bmi [file join {*}$rplac]
+    } elseif { [string index $name 0] == "=" } {
+	set bmi [string range $name 1 end]
+    } else {
+	set bmi "$name.gcm"
+    }
+
+    # delete file, so we don't get confused by a stale one.
+    file_on_host delete "$bmi"
+
     global module_bmis
-    lappend module_bmis $res
+    lappend module_bmis [list $spec $when $not $bmi]
 }
 
 # check the expected module files exist (or not)
@@ -92,24 +96,25 @@ proc module_bmi_p { src ifs } {
     set res {}
     foreach if_arg $ifs {
 	set spec [lindex $if_arg 0]
-	if { [llength $if_arg] > 1 } {
-	    switch [dg-process-target [lindex $if_arg 1]] {
+	set when [lindex $if_arg 1]
+	if { $when != "" } {
+	    switch [dg-process-target $when] {
 		"S" { }
 		"N" { continue }
 		"F" { setup_xfail "*-*-*" }
 		"P" { }
 	    }
 	}
-	set decode [decode_mod_spec $spec]
-	set absent [lindex $decode 0]
-	if { $absent != [file_on_host exists [lindex $decode 1]] } {
-	    pass "$src module-bmi $spec ([lindex $decode 1])"
+	set not [lindex $if_arg 2]
+	set bmi [lindex $if_arg 3]
+	if { $not != [file_on_host exists $bmi] } {
+	    pass "$src module-bmi $spec ($bmi)"
 	} else {
-	    fail "$src module-bmi $spec ([lindex $decode 1])"
-	    set absent [expr ! $absent ]
+	    fail "$src module-bmi $spec ($bmi)"
+	    set not [expr ! $not ]
 	}
-	if { ! $absent } {
-	    lappend res [lindex $decode 1]
+	if { ! $not } {
+	    lappend res $bmi
 	}
     }
     return $res
@@ -205,6 +210,13 @@ proc cleanup_module_files { files } {
     }
 }
 
+global testdir
+set testdir $srcdir/$subdir
+proc srcdir {} {
+    global testdir
+    return $testdir
+}
+
 # not grouped tests, sadly tcl doesn't have negated glob
 foreach test [prune [lsort [find $srcdir/$subdir {*.[CH]}]] \
 		  "$srcdir/$subdir/*_?.\[CH\]"] {
@@ -217,6 +229,12 @@ foreach test [prune [lsort [find $srcdir/$subdir {*.[CH]}]] \
 	set testcase [string range $test [string length "$srcdir/"] end]
 	cleanup_module_files [module_bmi_p $testcase $module_bmis]
     }
+}
+
+# special prerequisites
+foreach test {sys/alias-2_a.H sys/alias-3_a.H} {
+    verbose "Prebuilding $test" 1
+    dg-test -keep-output $srcdir/$subdir/$test "" $DEFAULT_MODFLAGS
 }
 
 # grouped tests
@@ -235,8 +253,6 @@ foreach src [lsort [find $srcdir/$subdir {*_a.[CH}]] {
 	    verbose "Testing $nshort" 1
 	    if { [file extension $test] == ".C" } {
 		lappend asm_list [file rootname [file tail $test]].s
-	    } else {
-		set test [file dirname $test]/./[file tail $test]
 	    }
 	    dg-test -keep-output $test "" $DEFAULT_MODFLAGS
 	    set testcase [string range $test [string length "$srcdir/"] end]

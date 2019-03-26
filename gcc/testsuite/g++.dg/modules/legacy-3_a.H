@@ -1,5 +1,5 @@
 // { dg-additional-options "-fmodule-header" }
-// { dg-module-bmi {"legacy-3_a.H"} }
+// { dg-module-bmi {} }
 
 // this is a legacy header
 

@@ -1,5 +1,5 @@
 // { dg-additional-options "-fmodule-header" }
-// { dg-module-bmi {"leg-merge-7_b.H"} }
+// { dg-module-bmi {} }
 
 template<int I> int foo (int i) 
 {

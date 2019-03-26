@@ -1,5 +1,5 @@
 // { dg-do preprocess }
-// { dg-additional-options "-fmodule-header=<stdio.h> -fmodule-mapper=|cxx-mapper\\ -f\\ $srcdir/g++.dg/modules/inc-xlate-1.map" }
+// { dg-additional-options -fmodule-header }
 
 #ifndef _STDIO_H
 #define _STDIO_H
@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
   // Yes, inside extern "C" block :(
-  #include <stdarg.h>
+  #include "inc-xlate-1_a.H"
   #ifndef _STDARG_H
   #error barf
   #endif
@@ -18,4 +18,4 @@ extern "C" {
 #endif
 #endif
 
-// { dg-final { scan-file inc-xlate-1_b.i "__import <stdarg.h>;\n" } }
+// { dg-final { scan-file inc-xlate-1_b.i {__import "[^\n]*inc-xlate-1_a.H";\n} } }

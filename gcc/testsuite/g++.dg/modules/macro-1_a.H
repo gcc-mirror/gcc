@@ -1,6 +1,6 @@
 // { dg-module-do run }
 // { dg-additional-options "-fmodule-header" }
-// { dg-module-bmi {"macro-1_a.H"} }
+// { dg-module-bmi {} }
 
 #ifndef MACRO_1_H
 #define MACRO_1_H

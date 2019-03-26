@@ -186,9 +186,12 @@ scan_translation_unit (cpp_reader *pfile)
     {
       location_t loc = UNKNOWN_LOCATION;
       const cpp_token *token = cpp_get_token_with_location (pfile, &loc);
+      cpp_token tmp;
       if (filter)
 	{
-	  filter = lang_hooks.preprocess_token (pfile, token, filter);
+	  tmp = *token;
+	  token = &tmp;
+	  filter = lang_hooks.preprocess_token (pfile, &tmp, filter);
 	  if (!filter)
 	    {
 	      /* We're bailing out, possibly in the middle of a #if

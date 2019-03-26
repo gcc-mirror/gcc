@@ -839,32 +839,7 @@ do_include_common (cpp_reader *pfile, enum include_type type)
       /* Get out of macro context, if we are.  */
       skip_rest_of_line (pfile);
 
-      if (type == IT_INCLUDE && pfile->cb.translate_include)
-	if (int tran = pfile->cb.translate_include
-	    (pfile, pfile->line_table, location, fname, angle_brackets))
-	  {
-	    /* We've been translated to a pushed buffer ending in two
-	       \n's.  */
-	    cpp_buffer *buffer = CPP_BUFFER (pfile);
-	    gcc_assert (buffer->rlimit[-1] == '\n'
-			&& buffer->rlimit[-2] == '\n');
-	    if (tran > 0)
-	      buffer->to_free = buffer->buf;
-
-	    /* Adjust the line back one to cover the #include itself.  */
-	    line_maps *lmaps = pfile->line_table;
-	    const line_map_ordinary *map
-	      = LINEMAPS_LAST_ORDINARY_MAP (lmaps);
-	    linenum_type line = SOURCE_LINE (map, lmaps->highest_line);
-	    linemap_line_start (lmaps, line - 1, 0);
-
-	    /* The last \n in the new buffer doesn't cause a line
-	       increment, which is why we wanted 2 of them.  That's
-	       much simpler than trying to slide an obstack allocate
-	       fixed buffer under TOS.  */
-	    goto done;
-	  }
-
+      // FIXME: why here, not when we do the stacking?
       if (pfile->cb.include)
 	pfile->cb.include (pfile, pfile->directive_line,
 			   pfile->directive->name, fname, angle_brackets,

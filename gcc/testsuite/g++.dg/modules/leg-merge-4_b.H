@@ -1,5 +1,5 @@
 // { dg-additional-options "-fmodule-header" }
-// { dg-module-bmi {"leg-merge-4_b.H"} }
+// { dg-module-bmi {} }
 
 extern float bob;
 int frob ();

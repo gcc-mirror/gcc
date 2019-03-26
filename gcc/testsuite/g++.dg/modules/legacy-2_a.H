@@ -1,6 +1,6 @@
 // { dg-module-do run }
 // { dg-additional-options "-fmodule-header" }
-// { dg-module-bmi {"legacy-2_a.H"} }
+// { dg-module-bmi {} }
 
 // this is a legacy header
 

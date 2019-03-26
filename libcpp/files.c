@@ -113,7 +113,7 @@ struct _cpp_file
   bool implicit_preinclude : 1;
 
   /* Is a C++ Module header unit.  */
-  bool header_unit : 1;
+  int header_unit : 2;
 };
 
 /* A singly-linked list for all searches for a given file name, with
@@ -179,8 +179,6 @@ static bool read_file_guts (cpp_reader *pfile, _cpp_file *file,
 			    location_t loc);
 static bool read_file (cpp_reader *pfile, _cpp_file *file,
 		       location_t loc);
-static bool should_stack_file (cpp_reader *, _cpp_file *file, bool import,
-			       location_t loc);
 static struct cpp_dir *search_path_head (cpp_reader *, const char *fname,
 				 int angle_brackets, enum include_type);
 static const char *dir_name_of_file (_cpp_file *file);
@@ -788,18 +786,14 @@ read_file (cpp_reader *pfile, _cpp_file *file, location_t loc)
   return !file->dont_read;
 }
 
-/* Returns TRUE if FILE's contents have been successfully placed in
-   FILE->buffer and the file should be stacked, otherwise false.
-   Use LOC for any diagnostics.  */
+/* Returns TRUE if FILE is already known to be idempotent, and should
+   therefore not be read again.  */
 static bool
-should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
-		   location_t loc)
+is_known_idempotent_file (cpp_reader *pfile, _cpp_file *file, bool import)
 {
-  _cpp_file *f;
-
   /* Skip once-only files.  */
   if (file->once_only)
-    return false;
+    return true;
 
   /* We must mark the file once-only if #import now, before header
      guard checks.  Otherwise, undefining the header guard might
@@ -810,13 +804,13 @@ should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
 
       /* Don't stack files that have been stacked before.  */
       if (file->stack_count)
-	return false;
+	return true;
     }
 
   /* Skip if the file had a header guard and the macro is defined.
      PCH relies on this appearing before the PCH handler below.  */
   if (file->cmacro && cpp_macro_p (file->cmacro))
-    return false;
+    return true;
 
   /* Handle PCH files immediately; don't stack them.  */
   if (file->pchname)
@@ -825,12 +819,19 @@ should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
       file->fd = -1;
       free ((void *) file->pchname);
       file->pchname = NULL;
-      return false;
+      return true;
     }
 
-  if (!read_file (pfile, file, loc))
-    return false;
+  return false;
+}
 
+/* Return TRUE if file has unique contents, so we should read process
+   it.  The file's contents must already have been read.  */
+
+static bool
+has_unique_contents (cpp_reader *pfile, _cpp_file *file, bool import,
+		     location_t loc)
+{
   /* Check the file against the PCH file.  This is done before
      checking against files we've already seen, since it may save on
      I/O.  */
@@ -851,10 +852,10 @@ should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
 
   /* We may have read the file under a different name.  Look
      for likely candidates and compare file contents to be sure.  */
-  for (f = pfile->all_files; f; f = f->next_file)
+ for (   _cpp_file *f = pfile->all_files; f; f = f->next_file)
     {
       if (f == file)
-	continue;
+	continue; /* Its'a me!  */
 
       if ((import || f->once_only)
 	  && f->err_no == 0
@@ -862,7 +863,6 @@ should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
 	  && f->st.st_size == file->st.st_size)
 	{
 	  _cpp_file *ref_file;
-	  bool same_file_p = false;
 
 	  if (f->buffer && !f->buffer_valid)
 	    {
@@ -875,12 +875,11 @@ should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
 	    /* The file is not stacked anymore.  We can reuse it.  */
 	    ref_file = f;
 
-	  same_file_p = read_file (pfile, ref_file, loc)
-			/* Size might have changed in read_file().  */
-			&& ref_file->st.st_size == file->st.st_size
-			&& !memcmp (ref_file->buffer,
-				    file->buffer,
-				    file->st.st_size);
+	  bool same_file_p = (read_file (pfile, ref_file, loc)
+			      /* Size might have changed in read_file().  */
+			      && ref_file->st.st_size == file->st.st_size
+			      && !memcmp (ref_file->buffer, file->buffer,
+					  file->st.st_size));
 
 	  if (f->buffer && !f->buffer_valid)
 	    {
@@ -889,11 +888,12 @@ should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
 	    }
 
 	  if (same_file_p)
-	    break;
+	    /* Already seen under a different name.  */
+	    return false;
 	}
     }
 
-  return f == NULL;
+  return true;
 }
 
 /* Place the file referenced by FILE into a new buffer on the buffer
@@ -904,10 +904,43 @@ bool
 _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
 		 location_t loc, bool line_one_p)
 {
-  if (!should_stack_file (pfile, file, import, loc))
+  if (is_known_idempotent_file (pfile, file, import))
     return false;
 
-  // FIXME: include translation now!
+  /* Check C++ module include translation.  */
+  if (!file->header_unit
+      && pfile->cb.translate_include
+      && pfile->cb.translate_include (pfile, pfile->line_table, loc, file->path))
+    {
+      /* The hook has stacked a buffer containing replacement text
+	 ending in two \n's.  */
+      cpp_buffer *buffer = CPP_BUFFER (pfile);
+      gcc_assert (buffer->rlimit[-1] == '\n' && buffer->rlimit[-2] == '\n');
+      buffer->to_free = buffer->buf;
+
+      /* Adjust the line back one to cover the #include itself.  */
+      line_maps *lmaps = pfile->line_table;
+      const line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (lmaps);
+      linenum_type line = SOURCE_LINE (map, lmaps->highest_line);
+      linemap_line_start (lmaps, line - 1, 0);
+
+      /* The last \n in the new buffer doesn't cause a line
+	 increment, which is why we wanted 2 of them.  That's
+	 much simpler than trying to slide an obstack allocate
+	 fixed buffer under TOS.  */
+      file->header_unit = +1;
+      _cpp_mark_file_once_only (pfile, file);
+      return false;
+    }
+  else
+    /* Not a header unit, don't ask again.  */
+    file->header_unit = -1;
+
+  if (!read_file (pfile, file, loc))
+    return false;
+
+  if (!has_unique_contents (pfile, file, import, loc))
+    return false;
 
   int sysp = 0;
   if (pfile->buffer && file->dir)
@@ -1075,6 +1108,23 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
     pfile->line_table->highest_location++;
 
   return stacked;
+}
+
+const char *
+cpp_find_header_unit (cpp_reader *pfile, const char *name, bool angle,
+		      location_t loc)
+{
+  cpp_dir *dir = search_path_head (pfile, name, angle, IT_INCLUDE);
+  if (!dir)
+    return NULL;
+
+  _cpp_file *file = _cpp_find_file (pfile, name, dir, false, angle, false, loc);
+  if (!file)
+    return NULL;
+
+  file->header_unit = +1;
+  _cpp_mark_file_once_only (pfile, file);
+  return file->path;
 }
 
 /* Could not open FILE.  The complication is dependency output.  */

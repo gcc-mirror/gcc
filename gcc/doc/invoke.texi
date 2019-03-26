@@ -2642,18 +2642,8 @@ implicitly enabled by selecting that standard version.
 Disable lazy module importing and module mapper creation.
 
 @item -fmodule-header
-@itemx -fmodule-header=@r{[}@var{name}@r{][}?@var{macro}@r{[}=@var{value}@r{]]}
 @opindex fmodule-header
-Compile as a header unit.  The @var{name} may use @samp{"..."} or
-@samp{<...>} to indicate a user or system header, and defaults to
-user.  If a name is omitted, the source filename is used.  The source
-filename may be partitioned by a @samp{/./} component, in which case
-the fragment following is used as the name.  A @samp{?}  character
-separates the header name from a controlling macro.  If this is not
-specified, the first macro defined in the header unit is used to
-determine uniqueness.  The format of the macro is the same as the
-@option{-D} option, except that an existing definition will be chosen
-if one is available.
+Compile as a header unit.
 
 @item -fmodule-only
 @opindex fmodule-only

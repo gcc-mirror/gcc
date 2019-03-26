@@ -1,5 +1,4 @@
-// { dg-additional-options "-fmodule-header=\"string.h\"" }
-// { dg-module-bmi {"string.h"} }
-
+// { dg-additional-options "-fmodule-header" }
+// { dg-module-bmi {} }
 #define STRING_H
 #define NOPE

@@ -6789,7 +6789,8 @@ extern void set_identifier_kind			(tree, cp_identifier_kind);
 extern bool cxx_init				(void);
 extern void cxx_finish				(void);
 extern bool in_main_input_context		(void);
-extern void *module_preprocess_token (cpp_reader *, const cpp_token *, void *);
+extern void *module_preprocess_token (cpp_reader *, cpp_token *, void *);
+extern tree module_map_header (cpp_reader *, bool, tree, location_t);
 
 /* in method.c */
 extern void init_method				(void);
@@ -6879,8 +6880,8 @@ extern bitmap module_import_bitmap (unsigned module);
 extern bitmap module_visible_instantiation_path (bitmap *);
 extern void module_begin_main_file (cpp_reader *, line_maps *,
 				    const line_map_ordinary *);
-extern int module_translate_include (cpp_reader *, line_maps *,
-				     location_t, const char *, bool);
+extern bool module_translate_include (cpp_reader *, line_maps *,
+				      location_t, const char *);
 extern bool handle_module_option (unsigned opt, const char *arg, int value);
 
 /* In optimize.c */

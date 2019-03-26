@@ -1,6 +1,6 @@
 // { dg-module-do run }
 // { dg-additional-options "-fmodule-header" }
-// { dg-module-bmi {"leg-merge-8_a.H"} }
+// { dg-module-bmi {} }
 
 template<int I> struct Tpl
 {

@@ -929,15 +929,23 @@ cp_lexer_tokenize (cp_lexer *lexer, int extern_c_depth)
 		       && (!extern_c_depth
 			   || IDENTIFIER_POINTER (tok->u.value)[0] == '_'))
 		{
-		  cpp_enable_filename_token (parse_in, true);
+		  bool search = IDENTIFIER_POINTER (tok->u.value)[0] != '_';
+		  if (search)
+		    cpp_enable_filename_token (parse_in, true);
 		  tok = vec_safe_push (lexer->buffer, cp_token ());
-		  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN
-						   | C_LEX_STRING_IS_HEADER,
-						   tok);
+		  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
 		  cpp_enable_filename_token (parse_in, false);
-		  if (tok->type == CPP_HEADER_NAME)
-		    /* A stoppable decl.  */
-		    mode = decl_header;
+		  if (tok->type == CPP_HEADER_NAME
+		      || tok->type == CPP_STRING)
+		    {
+		      /* A stoppable decl.  */
+		      // FIXME: This is somewhat ugly because
+		      // representation is not the best.
+		      tok->u.value = module_map_header
+			(parse_in, search, tok->u.value, tok->location);
+		      tok->type = CPP_HEADER_NAME;
+		      mode = decl_header;
+		    }
 		  else
 		    /* Process the token as usual.  */
 		    goto first;
