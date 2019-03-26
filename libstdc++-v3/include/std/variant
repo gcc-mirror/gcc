@@ -426,18 +426,18 @@ namespace __variant
     void __variant_construct(_Tp&& __lhs, _Up&& __rhs)
     {
       __lhs._M_index = __rhs._M_index;
-      __do_visit([](auto&& __this_mem, auto&& __rhs_mem) mutable
+      void* __storage = std::addressof(__lhs._M_u);
+      __do_visit([__storage](auto&& __rhs_mem) mutable
 		 -> __detail::__variant::__variant_cookie
         {
-	  using _Type = remove_reference_t<decltype(__this_mem)>;
+	  using _Type = remove_reference_t<decltype(__rhs_mem)>;
 	  if constexpr (is_same_v<__remove_cvref_t<decltype(__rhs_mem)>,
 			          remove_cv_t<_Type>>
 			&& !is_same_v<_Type, __variant_cookie>)
-	    ::new ((void*)std::addressof(__this_mem))
+	    ::new (__storage)
 	      _Type(std::forward<decltype(__rhs_mem)>(__rhs_mem));
 	  return {};
-	}, __variant_cast<_Types...>(__lhs),
-	   __variant_cast<_Types...>(std::forward<decltype(__rhs)>(__rhs)));
+	}, __variant_cast<_Types...>(std::forward<decltype(__rhs)>(__rhs)));
     }
 
   // The following are (Copy|Move) (ctor|assign) layers for forwarding
