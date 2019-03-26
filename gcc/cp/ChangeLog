@@ -1,3 +1,11 @@
+2019-03-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86429 - constexpr variable in lambda.
+	PR c++/82643
+	PR c++/87327
+	* constexpr.c (cxx_eval_constant_expression): In a lambda function,
+	try evaluating the captured variable directly.
+
 2019-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89796
