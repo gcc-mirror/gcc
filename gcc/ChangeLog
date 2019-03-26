@@ -1,3 +1,10 @@
+2019-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* hash-table.h (hash_table::m_gather_mem_stats): If GATHER_STATISTICS
+	is constant 0, turn into static const data member initialized to false.
+	(hash_table::hash_table): Only initialize m_gather_mem_stats #if
+	GATHER_STATISTICS.  Add ATTRIBUTE_UNUSED to gather_mem_stats param.
+
 2019-03-26  Jason Merrill  <jason@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
