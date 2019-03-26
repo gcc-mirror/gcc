@@ -1,7 +1,7 @@
 2019-03-26  Martin Liska  <mliska@suse.cz>
 
 	* lto-symtab.c (lto_symtab_merge_decls_2): Fix option name
-	wrapping
+	wrapping.
 
 2019-03-11  Martin Liska  <mliska@suse.cz>
 
