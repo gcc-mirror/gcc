@@ -1,3 +1,22 @@
+2019-03-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86554
+	* gcc.dg/torture/pr86554-1.c: New testcase.
+	* gcc.dg/torture/pr86554-2.c: Likewise.
+
+	2018-11-20  Richard Biener  <rguenther@suse.de>
+ 
+	PR tree-optimization/88105
+	* gcc.dg/gomp/pr88105.c: New testcase.
+
+	2018-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/84552
+	* gcc.dg/graphite/pr84552.c: New testcase.
+
 2019-03-25  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/71861

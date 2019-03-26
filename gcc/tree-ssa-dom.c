@@ -531,7 +531,8 @@ pass_dominator::execute (function *fun)
 	  if (bb == NULL)
 	    continue;
 	  while (single_succ_p (bb)
-		 && (single_succ_edge (bb)->flags & EDGE_EH) == 0)
+		 && (single_succ_edge (bb)->flags
+		     & (EDGE_EH|EDGE_DFS_BACK)) == 0)
 	    bb = single_succ (bb);
 	  if (bb == EXIT_BLOCK_PTR_FOR_FN (fun))
 	    continue;

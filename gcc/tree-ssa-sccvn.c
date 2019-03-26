@@ -3572,7 +3572,17 @@ visit_nary_op (tree lhs, gassign *stmt)
 		  ops[0] = vn_nary_op_lookup_pieces
 		      (2, gimple_assign_rhs_code (def), type, ops, NULL);
 		  /* We have wider operation available.  */
-		  if (ops[0])
+		  if (ops[0]
+		      /* If the leader is a wrapping operation we can
+			 insert it for code hoisting w/o introducing
+			 undefined overflow.  If it is not it has to
+			 be available.  See PR86554.  */
+		      && (TYPE_OVERFLOW_WRAPS (TREE_TYPE (ops[0]))
+			  || TREE_CODE (ops[0]) != SSA_NAME
+			  || SSA_NAME_IS_DEFAULT_DEF (ops[0])
+			  || dominated_by_p_w_unex
+			       (gimple_bb (stmt),
+				gimple_bb (SSA_NAME_DEF_STMT (ops[0])))))
 		    {
 		      unsigned lhs_prec = TYPE_PRECISION (type);
 		      unsigned rhs_prec = TYPE_PRECISION (TREE_TYPE (rhs1));
