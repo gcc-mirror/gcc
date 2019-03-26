@@ -3076,7 +3076,23 @@ Type *Parser::parseBasicType(bool dontLookDotIdents)
         case TOKuns16:   t = Type::tuns16; goto LabelX;
         case TOKint32:   t = Type::tint32; goto LabelX;
         case TOKuns32:   t = Type::tuns32; goto LabelX;
-        case TOKint64:   t = Type::tint64; goto LabelX;
+        case TOKint64:
+            t = Type::tint64;
+            nextToken();
+            if (token.value == TOKint64)    // if `long long`
+            {
+                error("use `long` for a 64 bit integer instead of `long long`");
+                nextToken();
+            }
+            else if (token.value == TOKfloat64) // if `long double`
+            {
+                error("use `real` instead of `long double`");
+                t = Type::tfloat80;
+                nextToken();
+
+            }
+            break;
+
         case TOKuns64:   t = Type::tuns64; goto LabelX;
         case TOKint128:  t = Type::tint128; goto LabelX;
         case TOKuns128:  t = Type::tuns128; goto LabelX;
