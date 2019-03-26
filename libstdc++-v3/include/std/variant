@@ -323,6 +323,12 @@ namespace __variant
       _Variadic_union<_Rest...> _M_rest;
     };
 
+  template <typename... _Types>
+  constexpr bool __never_valueless()
+  {
+    return (is_trivially_copyable_v<_Types> && ...);
+  }
+
   // Defines index and the dtor, possibly trivial.
   template<bool __trivially_destructible, typename... _Types>
     struct _Variant_storage;
@@ -408,7 +414,7 @@ namespace __variant
       constexpr bool
       _M_valid() const noexcept
       {
-	if constexpr ((is_trivially_copyable_v<_Types> && ...))
+	if constexpr (__never_valueless<_Types...>())
 	  return true;
 	return this->_M_index != __index_type(variant_npos);
       }
@@ -747,6 +753,20 @@ namespace __variant
     void* __get_storage(_Variant&& __v)
     { return __v._M_storage(); }
 
+  template <typename _Maybe_variant_cookie, typename _Variant>
+  struct _Extra_visit_slot_needed
+  {
+    template <typename> struct _Variant_never_valueless;
+
+    template <typename... _Types>
+    struct _Variant_never_valueless<variant<_Types...>>
+      : bool_constant<__never_valueless<_Types...>()> {};
+
+    static constexpr bool value =
+      is_same_v<_Maybe_variant_cookie, __variant_cookie>
+      && !_Variant_never_valueless<__remove_cvref_t<_Variant>>::value;
+  };
+
   // Used for storing multi-dimensional vtable.
   template<typename _Tp, size_t... _Dimensions>
     struct _Multi_array
@@ -764,8 +784,11 @@ namespace __variant
 	   size_t __first, size_t... __rest>
     struct _Multi_array<_Ret(*)(_Visitor, _Variants...), __first, __rest...>
     {
+      static constexpr size_t __index =
+	sizeof...(_Variants) - sizeof...(__rest) - 1;
+      using _Variant = typename _Nth_type<__index, _Variants...>::type;
       static constexpr int __do_cookie =
-	is_same_v<_Ret, __variant_cookie> ? 1 : 0;
+	_Extra_visit_slot_needed<_Ret, _Variant>::value ? 1 : 0;
       using _Tp = _Ret(*)(_Visitor, _Variants...);
       template<typename... _Args>
 	constexpr const _Tp&
@@ -832,7 +855,7 @@ namespace __variant
 	_S_apply_all_alts(_Array_type& __vtable,
 			  std::index_sequence<__var_indices...>)
 	{
-	  if constexpr (is_same_v<_Result_type, __variant_cookie>)
+	  if constexpr (_Extra_visit_slot_needed<_Result_type, _Next>::value)
 	    (_S_apply_single_alt<true, __var_indices>(
 	      __vtable._M_arr[__var_indices + 1],
 	      &(__vtable._M_arr[0])), ...);
