@@ -901,16 +901,25 @@ void Lexer::scan(Token *t)
                 p++;
                 Token n;
                 scan(&n);
-                if (n.value == TOKidentifier && n.ident == Id::line)
+                if (n.value == TOKidentifier)
                 {
-                    poundLine();
-                    continue;
+                   if (n.ident == Id::line)
+                   {
+                       poundLine();
+                       continue;
+                   }
+                   else
+                   {
+                       const Loc locx = loc();
+                       warning(locx, "C preprocessor directive `#%s` is not supported", n.ident->toChars());
+                   }
                 }
-                else
+                else if (n.value == TOKif)
                 {
-                    t->value = TOKpound;
-                    return;
+                    error("C preprocessor directive `#if` is not supported, use `version` or `static if`");
                 }
+                t->value = TOKpound;
+                return;
             }
 
             default:
