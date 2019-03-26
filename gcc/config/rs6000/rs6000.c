@@ -3050,7 +3050,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
      below.  */
   gcc_assert ((int)VECTOR_NONE == 0);
   memset ((void *) &rs6000_vector_unit[0], '\0', sizeof (rs6000_vector_unit));
-  memset ((void *) &rs6000_vector_mem[0], '\0', sizeof (rs6000_vector_unit));
+  memset ((void *) &rs6000_vector_mem[0], '\0', sizeof (rs6000_vector_mem));
 
   gcc_assert ((int)CODE_FOR_nothing == 0);
   memset ((void *) &reg_addr[0], '\0', sizeof (reg_addr));
@@ -3204,8 +3204,8 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	wy - Register class to do ISA 2.07 SF operations.
 	wz - Float register if we can do 32-bit unsigned int loads.
 	wH - Altivec register if SImode is allowed in VSX registers.
-	wI - VSX register if SImode is allowed in VSX registers.
-	wJ - VSX register if QImode/HImode are allowed in VSX registers.
+	wI - Float register if SImode is allowed in VSX registers.
+	wJ - Float register if QImode/HImode are allowed in VSX registers.
 	wK - Altivec register if QImode/HImode are allowed in VSX registers.  */
 
   if (TARGET_HARD_FLOAT)
