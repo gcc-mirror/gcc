@@ -23779,7 +23779,16 @@ lower-case.  Examples include @samp{rv64i}, @samp{rv32g}, @samp{rv32e}, and
 @item -mtune=@var{processor-string}
 @opindex mtune
 Optimize the output for the given processor, specified by microarchitecture
-name.
+name.  Permissible values for this option are: @samp{rocket},
+@samp{sifive-3-series}, @samp{sifive-5-series}, @samp{sifive-7-series},
+and @samp{size}.
+
+When @option{-mtune=} is not specified, the default is @samp{rocket}.
+
+The @samp{size} choice is not intended for use by end-users.  This is used
+when @option{-Os} is specified.  It overrides the instruction cost info
+provided by @option{-mtune=}, but does not override the pipeline info.  This
+helps reduce code size while still giving good performance.
 
 @item -mpreferred-stack-boundary=@var{num}
 @opindex mpreferred-stack-boundary

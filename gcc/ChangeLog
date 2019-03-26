@@ -1,3 +1,32 @@
+2019-03-26  Andrew Waterman  <andrew@sifive.com>
+	    Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/generic.md (generic_alu, generic_load, generic_store)
+	(generic_xfer, generic_branch, generic_imul, generic_idivsi)
+	(generic_idivdi, generic_fmul_single, generic_fmul_double)
+	(generic_fdiv, generic_fsqrt): Add check for generic tune.
+	(generic_alu): Add auipc to type list.
+	* config/riscv/riscv-opts.h (enum riscv_microarchitecture_type): New.
+	(riscv_microarchitecture): Declare.
+	* config/riscv/riscv-protos.h (riscv_store_data_bypass_p): Declare.
+	* config/riscv/riscv.c (struct riscv_cpu_info): Add microarchitecture
+	field.
+	(riscv_microarchitecture): New.
+	(sifive_7_tune_info): New.
+	(riscv_cpu_info_table): Add microarchitecture value for rocket and
+	size.  Add sifive-3-series, sifive-5-series, and sifive-7-series
+	entries.
+	(riscv_store_data_bypass_p): New.
+	(riscv_option_override): Set riscv_microarchitecture from
+	cpu->microarchitecture.
+	* config/riscv/riscv.md: Include sifive-7.md.
+	(type): Add auipc.
+	(tune): New.
+	(auipc<mode>): Change type to auipc.
+	(restore_stack_nonlocal): New.
+	* config/riscv/sifive-7.md: New.
+	* doc/invoke.texi (RISC-V Options): Update mtune docs.
+
 2019-03-26  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/89827
