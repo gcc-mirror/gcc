@@ -2040,6 +2040,7 @@ dimode_scalar_chain::convert_reg (unsigned regno)
 
 		emit_insn_before (seq, insn);
 
+		XEXP (src, 0) = replace_with_subreg (XEXP (src, 0), reg, reg);
 		XEXP (src, 1) = gen_rtx_SUBREG (DImode, tmp2, 0);
 	      }
 	    else if (!MEM_P (dst) || !REG_P (src))
