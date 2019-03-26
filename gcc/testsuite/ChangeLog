@@ -1,3 +1,8 @@
+2019-03-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/abi/lambda-static-1.C: Handle Solaris as comdat group
+	syntax.
+
 2019-03-26  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/81740
