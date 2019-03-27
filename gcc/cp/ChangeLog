@@ -1,6 +1,6 @@
 2019-03-27  Jason Merrill  <jason@redhat.com>
 
-	PR c++/89241 - ICE with lambda in template parameter list.
+	PR c++/89421 - ICE with lambda in template parameter list.
 	* parser.c (cp_parser_lambda_expression): Also reject a lambda in a
 	template parameter list before C++20.
 	* pt.c (type_dependent_expression_p): True for LAMBDA_EXPR.
