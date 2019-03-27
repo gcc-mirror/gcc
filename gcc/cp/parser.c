@@ -934,16 +934,17 @@ cp_lexer_tokenize (cp_lexer *lexer, int extern_c_depth)
 		    cpp_enable_filename_token (parse_in, true);
 		  tok = vec_safe_push (lexer->buffer, cp_token ());
 		  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
-		  cpp_enable_filename_token (parse_in, false);
+		  if (search)
+		    cpp_enable_filename_token (parse_in, false);
 		  if (tok->type == CPP_HEADER_NAME
 		      || tok->type == CPP_STRING)
 		    {
 		      /* A stoppable decl.  */
-		      // FIXME: This is somewhat ugly because
-		      // representation is not the best.
-		      // FIXME: do not do when reading preprocessed
 		      tok->u.value = module_map_header
-			(parse_in, search, tok->u.value, tok->location);
+			(parse_in, tok->location,
+			 search && !cpp_get_options (parse_in)->preprocessed,
+			 TREE_STRING_POINTER (tok->u.value),
+			 TREE_STRING_LENGTH (tok->u.value));
 		      tok->type = CPP_HEADER_NAME;
 		      mode = decl_header;
 		    }

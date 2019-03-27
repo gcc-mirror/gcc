@@ -12,4 +12,4 @@ int main ()
 }
 
 // { dg-final { scan-lang-dump {Controlling macro is ALIAS_3_A} module } }
-// { dg-final { scan-lang-dump {[^\n]sys/alias-3_a.H" is an alias of "[^\n]*alias-3_a.H"} module } }
+// { dg-final { scan-lang-dump {[^\n]sys/alias-3_a.H is an alias of [^\n]*alias-3_a.H} module } }

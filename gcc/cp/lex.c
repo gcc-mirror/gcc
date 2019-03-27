@@ -374,44 +374,6 @@ interface_strcmp (const char* s)
   return 1;
 }
 
-// FIXME: This is somewhay ugly because I keep equivocating about
-// whether header unit names include " or not.  I should go fix that
-// so header unit names are STRING_CSTs not IDENTIFIERS
-
-tree
-module_map_header (cpp_reader *reader, bool do_search,
-		   tree string, location_t loc)
-{
-  bool angle = TREE_STRING_POINTER (string)[0] == '<';
-  char *buf = const_cast<char *> (TREE_STRING_POINTER (string));
-  size_t len = TREE_STRING_LENGTH (string);
-  bool free_buf = false;
-
-  if (do_search)
-    {
-      tree cut_str = build_string (len - 2, buf + 1);
-      if (const char *unit = cpp_find_header_unit (reader,
-						   TREE_STRING_POINTER (cut_str),
-						   angle, loc))
-	{
-	  len = strlen (unit);
-	  buf = XNEWVEC (char, len + 3);
-	  buf[0] = '"';
-	  memcpy (buf + 1, unit, len);
-	  buf[len+1] = '"';
-	  buf[len+2] = 0;
-	  len += 2;
-	  free_buf = true;
-	}
-    }
-
-  string = build_string (len, buf);
-  if (free_buf)
-    XDELETEVEC (buf);
-
-  return string;
-}
-
 /* We've just read a cpp-token, figure out our next state.  Hey, this
    is a hand-coded co-routine!  */
 
@@ -498,8 +460,8 @@ module_preprocess_token (cpp_reader *pfile, cpp_token *tok, void *data_)
 		goto maybe_end;
 	      if (keyword == RID_IMPORT)
 		{
-		  // FIXME: when preprocessed we'll have done
-		  // conversion already.
+		  if (cpp_get_options (pfile)->preprocessed)
+		    data->is_translated = true;
 		  if (!data->is_translated)
 		    cpp_enable_filename_token (pfile, true);
 		  data->is_import = true;
@@ -579,12 +541,13 @@ module_preprocess_token (cpp_reader *pfile, cpp_token *tok, void *data_)
 	    cpp_enable_filename_token (pfile, false);
 	  if (tok->type == CPP_HEADER_NAME || tok->type == CPP_STRING)
 	    {
-	      // FIXME: This is dumb, the C++ parser should keep the
-	      // cpp_strings around.
 	      tree string = build_string (tok->val.str.len,
 					  (const char *)tok->val.str.text);
-	      string = module_map_header (pfile, !data->is_translated,
-					  string, tok->src_loc);
+	      string = module_map_header (pfile, tok->src_loc,
+					  !data->is_translated,
+					  (const char *)tok->val.str.text,
+					  tok->val.str.len);
+	      /* Rewrite the token we were given.  */
 	      tok->val.str.len = TREE_STRING_LENGTH (string);
 	      tok->val.str.text
 		= (const unsigned char *)TREE_STRING_POINTER (string);
@@ -684,10 +647,10 @@ module_preprocess_token (cpp_reader *pfile, cpp_token *tok, void *data_)
 	  if (data->want_dot)
 	    goto square_one;
 
+	  ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node.node));
+
 	header_unit:
 	  data->want_dot = true;
-	  if (!data->is_header)
-	    ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node.node));
 	  data->module = get_module (ident, data->module, data->got_colon);
 	  break;
 	}

@@ -1,5 +1,34 @@
 2019-03-27  Nathan Sidwell  <nathan@acm.org>
 
+	Header unit names lack quotes
+	gcc/c-family/
+	* c.opt (fmodule-header): Set a var.
+	* cp-tree.h (module_map_header): Pass string as ptr/len tuple.
+	* lex.c (module_map_header): Move to module.cc.
+	(module_process_token): Remove gratuitous representation frobbing.
+	* module.cc (module_state::module_state): Assert no quotes.
+	(module_header_name): Delete.
+	(get_module): Detect header via pathism.
+	(module_mapper::imex_query): Add quotes.
+	(module_mapper::translate_include): Drop reader parms, don't push
+	buffer here.
+	(canonicalize_header_name): New, from lex.c.
+	(module_map_header): Wrapper for canonicalize_header_name.
+	(module_translate_include): Do buffer pushing here.  Canonicalize
+	name.
+	(set_module_header_name): Delete.
+	(module_begin_main_file): Simplify header name setting.
+	(handle_module_option): Adjust header name flag setting.
+	* parser.c (cp_lexer_tokenize): Adjust header name mapping.
+	libcpp/
+	* lex.c (cpp_output_token): Add quotes back onto CPP_HEADER_NAME.
+	gcc/testsuite/
+	* g++.dg/modules/alias-3_[bc].C: Adjust.
+	* g++.dg/modules/leg-merge-4_c.C: Adjust.
+	* g++.dg/modules/macro-[2456]_[bcde].C: Adjust.
+	* g++.dg/modules/stdio-1_b.C: : Adjust.
+	* g++.dg/modules/sys: Add.
+
 	Header unit names are strings
 	gcc/cp/
 	* lex.c (module_map_header): Build string_cst.

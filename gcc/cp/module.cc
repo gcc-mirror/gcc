@@ -3093,8 +3093,10 @@ module_state::module_state (tree name, module_state *parent, bool partition)
     = imported_p = alias_p = from_partition_p = false;
   if (name && TREE_CODE (name) == STRING_CST)
     header_p = true;
-  gcc_checking_assert (header_p || !name
-		       || ISALPHA (IDENTIFIER_POINTER (name)[0]));
+  gcc_checking_assert (header_p
+		       ? (IS_ABSOLUTE_PATH (TREE_STRING_POINTER (name))
+			  || TREE_STRING_POINTER (name)[0] == '.')
+		       : !name || ISALPHA (IDENTIFIER_POINTER (name)[0]));
   gcc_checking_assert (!(parent && header_p));
 }
 
@@ -3169,7 +3171,7 @@ module_state_hash::equal (const value_type existing,
 static const char *module_mapper_name;
 
 /* Header mode.  */
-static const char *module_header_name;
+// FIXME:Integrate better into preprocessor stuff
 static const char *module_header_macro;
 
 /* Our controlling macro.  */
@@ -3318,8 +3320,7 @@ public:
   {
     return get_response (state->from_loc) > 0 ? bmi_response (state) : NULL;
   }
-  bool translate_include (cpp_reader *, line_maps *, location_t,
-			 const char *);
+  bool translate_include (location_t, const char *);
 
 public:
   /* After a response that may be corked, eat blank lines until it is
@@ -9183,14 +9184,9 @@ get_module (tree name, module_state *parent, bool partition)
 static module_state *
 get_module (const char *ptr)
 {
-  if (ptr[0] == '"' || ptr[0] == '<')
-    {
-      /* A header name.  */
-      size_t len = strlen (ptr);
-      if (len < 3 || ptr[len-1] != (ptr[0] == '"' ? '"' : '>'))
-	return NULL;
-      return get_module (build_string (len, ptr));
-     }
+  if (IS_ABSOLUTE_PATH (ptr) || ptr[0] == '.')
+    /* A header name.  */
+    return get_module (build_string (strlen (ptr), ptr));
 
   module_state *parent = NULL;
   bool partition = *ptr == ':';
@@ -9208,6 +9204,7 @@ get_module (const char *ptr)
 	if (!*ptr++)
 	  break;
       }
+
   return parent;
 }
 
@@ -9941,7 +9938,9 @@ module_mapper::handshake (location_t loc, const char *cookie)
 void
 module_mapper::imex_query (const module_state *state, bool exporting)
 {
-  send_command (state->from_loc, "%sPORT %s%s",
+  // FIXME: Push removal of "" through to mapper
+  send_command (state->from_loc,
+		state->is_header () ? "%sPORT \"%s%s\"" : "%sPORT %s%s",
 		exporting ? "EX" : "IM",
 		state->get_flatname (true), state->get_flatname ());
 }
@@ -10015,8 +10014,7 @@ module_mapper::export_done (const module_state *state)
    buffer containing the translation text (ending in two \n's).  */
 
 bool
-module_mapper::translate_include (cpp_reader *reader, line_maps *lmaps,
-				  location_t loc, const char *path)
+module_mapper::translate_include (location_t loc, const char *path)
 {
   bool xlate = false;
 
@@ -10047,41 +10045,7 @@ module_mapper::translate_include (cpp_reader *reader, line_maps *lmaps,
       xlate = get_module_slot (name, NULL, false, false) != NULL;
     }
 
-  if (!xlate)
-    return false;
-
-  // FIXME: Move to caller
-  if (reader)
-    {
-      loc = ordinary_loc_of (lmaps, loc);
-      const line_map_ordinary *map
-	= linemap_check_ordinary (linemap_lookup (lmaps, loc));
-      unsigned col = SOURCE_COLUMN (map, loc);
-      col -= (col != 0); /* Columns are 1-based.  */
-
-      size_t len = strlen (path);
-      char *res = XNEWVEC (char, len + 60 + col);
-
-      /* Internal keyword to permit use inside extern "C" {...}.
-	 Bad glibc! No biscuit!  */
-      strcpy (res, "__import");
-      size_t actual = 8;
-      if (col > actual)
-	{
-	  memset (res + actual, ' ', col - actual);
-	  actual = col;
-	}
-      // FIXME: We should encode characters
-      res[actual++] = '"';
-      memcpy (res + actual, path, len);
-      actual += len;
-      res[actual++] = '"';
-      strcpy (res + actual, ";\n\n");
-      actual += 3;
-      cpp_push_buffer (reader, reinterpret_cast<unsigned char *> (res),
-		       actual, false);
-    }
-  return true;  /* cpplib will delete the buffer.  */
+  return xlate;
 }
 
 /* If this is an alias, return the aliased module after transferring
@@ -12707,7 +12671,6 @@ module_state_config::get_opts ()
 
       /* Drop module-related options we don't need to preserve.  */
       if (opt->opt_index == OPT_fmodule_lazy
-	  || opt->opt_index == OPT_fmodule_header_
 	  || opt->opt_index == OPT_fmodule_header
 	  || opt->opt_index == OPT_fforce_module_macros
 	  || opt->opt_index == OPT_fmodule_mapper_
@@ -14089,8 +14052,81 @@ module_cpp_deferred_macro (cpp_reader *reader, location_t loc,
   return module_state::deferred_macro (reader, loc, node);
 }
 
+/* NAME & LEN are a preprocessed header name, including the
+   surrounding "" or <> characters.  Return the raw string name of the
+   module to which it refers.  This will be an absolute path, or begin
+   with ., so it is immediately distinguishable from a (non-header
+   unit) module name.  If SEARCH is true, ask the preprocessor to
+   locate the header to which it refers using the appropriate include
+   path.  Note that we do never do \ processing of the string, as that
+   matches the preprocessor's behaviour.  */
+
+static const char *
+canonicalize_header_name (cpp_reader *reader, location_t loc, bool unquoted,
+			  const char *str, size_t &len_r)
+{
+  size_t len = len_r;
+  gcc_checking_assert (unquoted
+		       || (len >= 2
+			   && (reader || str[0] == '"')
+			   && ((str[0] == '<' && str[len-1] == '>')
+			       || (str[0] == '"' && str[len-1] == '"'))));
+  static char *buf = 0;
+  static size_t alloc = 0;
+
+  if (reader)
+    {
+      if (len >= alloc)
+	{
+	  alloc = len * 2;
+	  buf = XRESIZEVEC (char, buf, alloc);
+	}
+      len -= 2;
+      memcpy (buf, str + 1, len);
+      buf[len] = 0;
+      if (const char *hdr
+	  = cpp_find_header_unit (reader, buf, str[0] == '<', loc))
+	{
+	  len = strlen (hdr);
+	  str = hdr;
+	}
+    }
+  else if (!unquoted)
+    {
+      str += 1;
+      len -= 2;
+    }
+
+  /* Non-searched paths, should have already gone through this check,
+     but perhaps the user did something strange with preprocessed source?  */
+  if (!IS_ABSOLUTE_PATH (str)
+      && !(str[0] == '.' && IS_DIR_SEPARATOR (str[1])))
+    {
+      if (len >= alloc)
+	{
+	  alloc = len * 2;
+	  buf = XRESIZEVEC (char, buf, alloc);
+	}
+      buf[0] = '.';
+      buf[1] = DIR_SEPARATOR;
+      memcpy (buf + 2, str, len);
+      len += 2;
+      buf[len] = 0;
+    }
+
+  len_r = len;
+  return str;
+}
+
+tree
+module_map_header (cpp_reader *reader, location_t loc, bool search,
+		   const char *str, size_t len)
+{
+  str = canonicalize_header_name (search ? reader : NULL, loc, false, str, len);
+  return build_string (len, str);
+}
+
 /* Figure out whether to treat HEADER as an include or an import.  */
-// FIXME: Cache results
 
 bool
 module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
@@ -14113,27 +14149,51 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
   bool res = false;
   module_mapper *mapper = module_mapper::get (loc);
   if (mapper->is_live ())
-    res = mapper->translate_include (reader, lmaps, loc, path);
+    {
+      size_t len = strlen (path);
+      path = canonicalize_header_name (NULL, loc, true, path, len);
+      res = mapper->translate_include (loc, path);
+    }
 
   dump () && dump (res ? "Translating include to import"
 		   : "Keeping include as include");
+
+  if (res)
+    {
+      /* Push the translation text.  */
+      loc = ordinary_loc_of (lmaps, loc);
+      const line_map_ordinary *map
+	= linemap_check_ordinary (linemap_lookup (lmaps, loc));
+      unsigned col = SOURCE_COLUMN (map, loc);
+      col -= (col != 0); /* Columns are 1-based.  */
+
+      size_t len = strlen (path);
+      char *res = XNEWVEC (char, len + 60 + col);
+
+      /* Internal keyword to permit use inside extern "C" {...}.
+	 Bad glibc! No biscuit!  */
+      strcpy (res, "__import");
+      size_t actual = 8;
+      if (col > actual)
+	{
+	  memset (res + actual, ' ', col - actual);
+	  actual = col;
+	}
+      /* No need to encode characters, that's not how header names are
+	 handled.  */
+      res[actual++] = '"';
+      memcpy (res + actual, path, len);
+      actual += len;
+      res[actual++] = '"';
+      strcpy (res + actual, ";\n\n");
+      actual += 3;
+      /* cpplib will delete the buffer.  */
+      cpp_push_buffer (reader, reinterpret_cast<unsigned char *> (res),
+		       actual, false);
+    }
   dump.pop (0);
 
   return res;
-}
-
-static void
-set_module_header_name (const char *src, unsigned len, bool quote = true)
-{
-  char *name = XNEWVEC (char, len + 3);
-  module_header_name = name;
-  if (quote)
-    *name++ = '"';
-  memcpy (name, src, len);
-  name += len;
-  if (quote)
-    *name++ = '"';
-  *name = 0;
 }
 
 void
@@ -14171,30 +14231,13 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
       unsigned n = dump.push (NULL);
       spans.init (map);
       dump.pop (n);
-      if (module_header_name)
+      if (flag_header_unit)
 	{
-	  if (!module_header_name[0])
-	    {
-	      /* Set the module header name from the main_input_filename.  */
-	      const char *main = main_input_filename;
-	      size_t len = strlen (main);
-	      size_t pos;
-
-	      for (pos = len; --pos; )
-		if (main[pos] == '.'
-		    && IS_DIR_SEPARATOR (main[pos-1])
-		    && IS_DIR_SEPARATOR (main[pos+1]))
-		  {
-		    pos += 2;
-		    break;
-		  }
-
-	      set_module_header_name (main + pos, len - pos);
-	    }
-
-	  tree name = build_string (strlen (module_header_name),
-				    module_header_name);
-	  module_state *state = get_module (name);
+	  /* Set the module header name from the main_input_filename.  */
+	  const char *main = main_input_filename;
+	  size_t len = strlen (main);
+	  main = canonicalize_header_name (NULL, 0, true, main, len);
+	  module_state *state = get_module (build_string (len, main));
 	  if (!flag_preprocess_only)
 	    {
 	      declare_module (state, spans.main_start (), true, NULL, reader);
@@ -14641,8 +14684,7 @@ handle_module_option (unsigned code, const char *str, int)
       return true;
 
     case OPT_fmodule_header:
-      if (!module_header_name)
-	module_header_name = "";
+      flag_header_unit = 1;
       flag_modules = 1;
       return true;
 

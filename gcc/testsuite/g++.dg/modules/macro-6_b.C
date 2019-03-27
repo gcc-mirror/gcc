@@ -8,4 +8,4 @@ import "macro-6_a.H";
 #error bad
 #endif
 
-// { dg-final { scan-lang-dump "Reading macro table \"\[^\n]*macro-6_a.H\"" module } }
+// { dg-final { scan-lang-dump {Reading macro table [^\n]*macro-6_a.H} module } }

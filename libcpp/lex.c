@@ -3393,7 +3393,11 @@ cpp_output_token (const cpp_token *token, FILE *fp)
       break;
 
     case SPELL_LITERAL:
+      if (token->type == CPP_HEADER_NAME)
+	fputc ('"', fp);
       fwrite (token->val.str.text, 1, token->val.str.len, fp);
+      if (token->type == CPP_HEADER_NAME)
+	fputc ('"', fp);
       break;
 
     case SPELL_NONE:
