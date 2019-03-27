@@ -8436,6 +8436,7 @@ coerce_template_parms (tree parms,
 	arg = NULL_TREE;
 
       if (template_parameter_pack_p (TREE_VALUE (parm))
+	  && (arg || !(complain & tf_partial))
 	  && !(arg && ARGUMENT_PACK_P (arg)))
         {
 	  /* Some arguments will be placed in the
@@ -20077,7 +20078,7 @@ fn_type_unification (tree fn,
 	 substitution context.  */
       explicit_targs
 	= (coerce_template_parms (tparms, explicit_targs, NULL_TREE,
-				  complain,
+				  complain|tf_partial,
 				  /*require_all_args=*/false,
 				  /*use_default_args=*/false));
       if (explicit_targs == error_mark_node)
