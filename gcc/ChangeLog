@@ -1,3 +1,9 @@
+2019-03-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89827
+	* config/i386/i386.c (dimode_scalar_chain::convert_reg):
+	Also process XEXP (src, 0) of a shift insn.
+
 2019-03-25  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backport from mainline
@@ -951,7 +957,7 @@
 
 	Backport from mainline
 	2018-11-20  Richard Biener  <rguenther@suse.de>
- 
+
 	PR tree-optimization/88105
 	* tree-ssa-dom.c (pass_dominator::execute): Do not walk
 	backedges.
