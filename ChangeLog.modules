@@ -1,5 +1,8 @@
 2019-03-27  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* doc/invoke.texi (C++ Modules): Update.
+
 	Header unit compilations retrofit includeness.
 	gcc/cp/
 	* cxx-mapper.c (module2bmi): Don't use PCH suffix.
