@@ -3463,13 +3463,13 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
   for (r = 0; HARD_REGISTER_NUM_P (r); ++r)
     for (m = 0; m < NUM_MACHINE_MODES; ++m)
       rs6000_hard_regno_nregs[m][r]
-	= rs6000_hard_regno_nregs_internal (r, (machine_mode)m);
+	= rs6000_hard_regno_nregs_internal (r, (machine_mode) m);
 
   /* Precalculate TARGET_HARD_REGNO_MODE_OK.  */
   for (r = 0; HARD_REGISTER_NUM_P (r); ++r)
     for (m = 0; m < NUM_MACHINE_MODES; ++m)
-      if (rs6000_hard_regno_mode_ok_uncached (r, (machine_mode)m))
-	rs6000_hard_regno_mode_ok_p[m][r] = true;
+      rs6000_hard_regno_mode_ok_p[m][r]
+	= rs6000_hard_regno_mode_ok_uncached (r, (machine_mode) m);
 
   /* Precalculate CLASS_MAX_NREGS sizes.  */
   for (c = 0; c < LIM_REG_CLASSES; ++c)
