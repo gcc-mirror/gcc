@@ -318,7 +318,7 @@ module2bmi (const char *module)
 	      }
 	}
 
-      strcpy (workspace + l, is_header ? ".gch" : ".gcm");
+      strcpy (workspace + l, is_header ? ".gchm" : ".gcm");
       res = workspace;
     }
   return res;

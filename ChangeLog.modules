@@ -1,5 +1,29 @@
 2019-03-27  Nathan Sidwell  <nathan@acm.org>
 
+	Header unit compilations retrofit includeness.
+	gcc/cp/
+	* cxx-mapper.c (module2bmi): Don't use PCH suffix.
+	* module.cc (module_header_macro, controlling_node): Delete.
+	(module_state::write_macros): Rely on cpp to determine controlling
+	macro.
+	(module_state::{write,read}): Likewise.
+	(module_begin_main_file): Retrofit as a header.
+	(finish_module_parse): Delete header_macro stuff.
+	libcpp/
+	* files.c (_cpp_stack_file): Set main_file.
+	(_cpp_find_header_unit): Close the file.
+	(cpp_retrofit_as_include): New.
+	(cpp_main_controlling_macro): New.
+	* include/cpplib.h (cpp_retrofit_as_include): Declare.
+	(cpp_main_controlling_macro): Declare.
+	* internal.h (struct cpp_buffer): Add main_file flag.
+	(cpp_in_primary_file): Use it.
+	gcc/testsuite/
+	* g++.dg/modules/{,sys/}inext-1.H: New.
+	* g++.dg/modules/macro-[23]_[abc].[CH]: Adjust.
+	* g++.dg/modules/modules.exp (dg-module-bmi): Adjust.
+	* g++.dg/modules/stdio-1_a.H: Asjust.
+
 	Expunge header name quoting in mapper
 	gcc/cp/
 	* cxx-mapper.cc (IS_HEADER_NAME): New.

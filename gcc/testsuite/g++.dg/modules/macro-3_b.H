@@ -4,6 +4,7 @@
 
 import "macro-3_a.H";
 
+// Not the controlling macro, because of above tokens
 #ifndef MACRO_3b_H
 #define MACRO_3b_H
 
@@ -19,7 +20,7 @@ import "macro-3_a.H";
 // { dg-final { scan-lang-dump {Read new macro #define bar at} module } }
 // { dg-final { scan-lang-dump-not {Read [^ ]* macro #define bob at} module } }
 
-// { dg-final { scan-lang-dump {Selecting MACRO_3b_H as controlling} module } }
+// { dg-final { scan-lang-dump-not {Controlling macro=MACRO_3b_H} module } }
 // { dg-final { scan-lang-dump {Writing macro #define bob at} module } }
 // { dg-final { scan-lang-dump {Writing macro #undef & #define bar at} module } }
 // { dg-final { scan-lang-dump {Writing macro #undef foo at} module } }

@@ -959,6 +959,7 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
 			   && !CPP_OPTION (pfile, directives_only));
       buffer->file = file;
       buffer->sysp = sysp;
+      buffer->main_file = type >= IT_HEADER_HWM;
       buffer->to_free = file->buffer_start;
 
       /* Initialize controlling macro state.  */
@@ -1101,6 +1102,8 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
   return _cpp_stack_file (pfile, file, type, loc);
 }
 
+/* NAME is a header file name, find the path we'll use to open it.  */
+
 const char *
 cpp_find_header_unit (cpp_reader *pfile, const char *name, bool angle,
 		      location_t loc)
@@ -1113,9 +1116,56 @@ cpp_find_header_unit (cpp_reader *pfile, const char *name, bool angle,
   if (!file)
     return NULL;
 
+  if (file->fd > 0)
+    {
+      /* Don't leave it open.  */
+      close (file->fd);
+      file->fd = 0;
+    }
+
   file->header_unit = +1;
   _cpp_mark_file_once_only (pfile, file);
   return file->path;
+}
+
+/* Retrofit the just-entered main file asif it was an include.  This
+   will permit correct include_next use, and mark it as a system
+   header if that's where it resides.  We use filesystem-appropriate
+   prefix matching of the include path to locate the main file.  */
+void
+cpp_retrofit_as_include (cpp_reader *pfile)
+{
+  /* We should be the outermost.  */
+  gcc_assert (!pfile->buffer->prev);
+
+  if (const char *name = pfile->main_file->name)
+    {
+      /* Locate name on the include dir path, using a prefix match.  */
+      size_t name_len = strlen (name);
+      for (cpp_dir *dir = pfile->quote_include; dir; dir = dir->next)
+	if (dir->len < name_len
+	    && IS_DIR_SEPARATOR (name[dir->len])
+	    && !filename_ncmp (name, dir->name, dir->len))
+	  {
+	    pfile->main_file->dir = dir;
+	    pfile->buffer->main_file = false;
+	    if (dir->sysp)
+	      cpp_make_system_header (pfile, 1, 0);
+	    break;
+	  }
+    }
+
+  /* Initialize controlling macro state.  */
+  pfile->mi_valid = true;
+  pfile->mi_cmacro = 0;
+}
+
+/* Return the controlling macro for the (retrofitted_as_include) main
+   file.  */
+const cpp_hashnode *
+cpp_main_controlling_macro (cpp_reader *pfile)
+{
+  return pfile->main_file->cmacro;
 }
 
 /* Could not open FILE.  The complication is dependency output.  */

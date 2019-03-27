@@ -21,6 +21,5 @@ int main ()
 // { dg-final { scan-lang-dump {Read new macro #define bar at} module } }
 
 // { dg-final { scan-lang-dump {Read add macro #undef foo} module } }
-// { dg-final { scan-lang-dump {Controlling macro is MACRO_3b_H} module } }
 // { dg-final { scan-lang-dump {Read new macro #define bob} module } }
 // { dg-final { scan-lang-dump {Read add macro #undef & #define bar} module } }

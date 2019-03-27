@@ -259,6 +259,10 @@ static inline tree identifier (cpp_hashnode *node)
 {
   return HT_IDENT_TO_GCC_IDENT (HT_NODE (node));
 }
+static inline const_tree identifier (const cpp_hashnode *node)
+{
+  return identifier (const_cast <cpp_hashnode *> (node));
+}
 
 /* Id for dumping module information.  */
 int module_dump_id;
@@ -2981,7 +2985,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  private:
   /* The README, for human consumption.  */
-  void write_readme (elf_out *to, const char *opts, cpp_hashnode *node);
+  void write_readme (elf_out *to, const char *opts, const cpp_hashnode *node);
 
  private:
   /* Import tables. */
@@ -3073,7 +3077,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
    simplification.  */
 
 struct module_state_hash : ggc_ptr_hash<module_state> {
-  typedef std::pair<tree,uintptr_t> compare_type; /* identifer/parent */
+  typedef std::pair<tree,uintptr_t> compare_type; /* {name,parent} */
 
   static inline hashval_t hash (const value_type m);
   static inline hashval_t hash (const compare_type &n);
@@ -3169,13 +3173,6 @@ module_state_hash::equal (const value_type existing,
 
 /* Mapper name.  */
 static const char *module_mapper_name;
-
-/* Header mode.  */
-// FIXME:Integrate better into preprocessor stuff
-static const char *module_header_macro;
-
-/* Our controlling macro.  */
-static cpp_hashnode *controlling_node;
 
 /* Deferred imports.  */
 static vec<module_state *, va_heap, vl_embed> *pending_imports;
@@ -10139,7 +10136,8 @@ module_state::announce (const char *what) const
      readelf -pgnu.c++.README $(module).gcm */
 
 void
-module_state::write_readme (elf_out *to, const char *options, cpp_hashnode *node)
+module_state::write_readme (elf_out *to, const char *options,
+			    const cpp_hashnode *node)
 {
   bytes_out readme (to);
 
@@ -12214,6 +12212,7 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
   auto_vec<cpp_hashnode *> macros;
   cpp_forall_identifiers (reader, maybe_add_macro, &macros);
 
+  const cpp_hashnode *controlling_node = cpp_main_controlling_macro (reader);
   unsigned count = 0;
   if (macros.length ())
     {
@@ -12243,16 +12242,6 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
 			  identifier (node));
 	      slot.offset = 0;
 	      continue;
-	    }
-
-	  if (mac.def && !controlling_node
-	      && mac.def->line >= spans.main_start ())
-	    {
-	      /* The user did not specify a controlling macro.  Pick
-		 the first define.  We rashly presume the #ifndef idiom.  */
-	      controlling_node = node;
-	      dump () && dump ("Selecting %I as controlling macro",
-			       identifier (node));
 	    }
 
 	  if (node == controlling_node)
@@ -12610,7 +12599,7 @@ struct module_state_config {
   unsigned imports;
   unsigned partitions;
   bool any_macros;
-  cpp_hashnode *controlling_node;
+  const cpp_hashnode *controlling_node;
   module_state *alias;
 
 public:
@@ -13194,7 +13183,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   write_locations (to, range_bits, config.partitions, &crc);
 
   config.any_macros = module_header_p () && write_macros (to, reader, &crc);
-  config.controlling_node = controlling_node;
+  config.controlling_node = cpp_main_controlling_macro (reader);
 
   /* And finish up.  */
   write_config (to, config, crc);
@@ -13261,16 +13250,14 @@ module_state::read (int fd, int e, cpp_reader *reader)
   (*slurp ()->remap)[MODULE_PURVIEW] = mod;
   dump () && dump ("Assigning %M module number %u", this, mod);
 
-  if (config.controlling_node)
+  /* Finish registering the controlling macro.  */
+  if (config.controlling_node
+      && !config.controlling_node->deferred
+      && config.controlling_node->value.macro)
     {
-      /* Finish registering the controlling macro.  */
-      if (!config.controlling_node->deferred
-	  && config.controlling_node->value.macro)
-	{
-	  get_macro_imports (config.controlling_node).append (mod);
-	  dump () && dump ("Registering controlling macro %I",
-			   identifier (config.controlling_node));
-	}
+      cpp_hashnode *node = const_cast <cpp_hashnode *> (config.controlling_node);
+      get_macro_imports (node).append (mod);
+      dump () && dump ("Registering controlling macro %I", identifier (node));
     }
 
   /* We should not have been frozen during the importing done by
@@ -14231,6 +14218,8 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
       dump.pop (n);
       if (flag_header_unit)
 	{
+	  /* Tell the preprocessor this is an include file.  */
+	  cpp_retrofit_as_include (reader);
 	  /* Set the module header name from the main_input_filename.  */
 	  const char *main = main_input_filename;
 	  size_t len = strlen (main);
@@ -14558,41 +14547,6 @@ finish_module_parse (cpp_reader *reader)
     {
       int fd = -1;
       int e = ENOENT;
-
-      if (module_header_macro)
-	{
-	  /* There's a specified controlling macro.  Find it.  */
-	  const char *name = module_header_macro;
-	  if (const char *eq = strchr (name, '='))
-	    {
-	      char *tmp = XNEWVEC (char, eq - name + 1);
-	      memcpy (tmp, name, eq - name);
-	      tmp[eq - name] = 0;
-	      name = tmp;
-	    }
-	  controlling_node = cpp_node (get_identifier (name));
-	  if (name != module_header_macro)
-	    XDELETEVEC (const_cast<char *> (name));
-
-	  if (cpp_user_macro_p (controlling_node))
-	    {
-	      if (cpp_macro *macro = cpp_get_deferred_macro
-		  (reader, controlling_node, state->loc))
-		if (macro->imported)
-		  error_at (state->from_loc,
-			    "module %qs controlling macro %qE is imported",
-			    state->get_flatname (),
-			    identifier (controlling_node));
-	    }
-
-	  if (!cpp_user_macro_p (controlling_node)
-	      || name != module_header_macro)
-	    {
-	      cpp_force_token_locations (reader, state->loc);
-	      cpp_define (reader, module_header_macro);
-	      cpp_stop_forcing_token_locations (reader);
-	    }
-	}
 
       spans.close ();
       /* Force a valid but empty line map at the end.  This simplifies

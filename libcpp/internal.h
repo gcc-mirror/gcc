@@ -346,23 +346,26 @@ struct cpp_buffer
   struct if_stack *if_stack;
 
   /* True if we need to get the next clean line.  */
-  bool need_line;
+  bool need_line : 1;
 
   /* True if we have already warned about C++ comments in this file.
      The warning happens only for C89 extended mode with -pedantic on,
      or for -Wtraditional, and only once per file (otherwise it would
      be far too noisy).  */
-  unsigned int warned_cplusplus_comments : 1;
+  bool warned_cplusplus_comments : 1;
 
   /* True if we don't process trigraphs and escaped newlines.  True
      for preprocessed input, command line directives, and _Pragma
      buffers.  */
-  unsigned int from_stage3 : 1;
+  bool from_stage3 : 1;
 
   /* At EOF, a buffer is automatically popped.  If RETURN_AT_EOF is
      true, a CPP_EOF token is then returned.  Otherwise, the next
      token from the enclosing buffer is returned.  */
-  unsigned int return_at_eof : 1;
+  bool return_at_eof : 1;
+
+  /* Is from main file.  */
+  bool main_file : 1;
 
   /* One for a system header, two for a C system header file that therefore
      needs to be extern "C" protected in C++, and zero otherwise.  */
@@ -640,7 +643,7 @@ static inline int cpp_in_primary_file (cpp_reader *);
 static inline int
 cpp_in_primary_file (cpp_reader *pfile)
 {
-  return pfile->line_table->depth == 1;
+  return pfile->buffer->main_file;
 }
 
 /* In macro.c */

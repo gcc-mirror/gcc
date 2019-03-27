@@ -9,4 +9,4 @@ import "macro-2_a.H";
 
 // { dg-final { scan-lang-dump {Controlling macro is MACRO_2a_H} module } }
 // { dg-final { scan-lang-dump-not {Read new macro #define MACRO_2a_H at} module } }
-// { dg-final { scan-lang-dump {Selecting MACRO_2c_H as controlling macro} module } }
+// { dg-final { scan-lang-dump {Controlling macro=MACRO_2c_H} module } }

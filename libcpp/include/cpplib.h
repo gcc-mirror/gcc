@@ -981,6 +981,10 @@ extern const char *cpp_find_header_unit (cpp_reader *, const char *file,
    too.  If there was an error opening the file, it returns NULL.  */
 extern const char *cpp_read_main_file (cpp_reader *, const char *, bool = false);
 
+/* Adjust for the main file to be an include.  */
+extern void cpp_retrofit_as_include (cpp_reader *);
+extern const cpp_hashnode *cpp_main_controlling_macro (cpp_reader *);
+
 /* Set up built-ins with special behavior.  Use cpp_init_builtins()
    instead unless your know what you are doing.  */
 extern void cpp_init_special_builtins (cpp_reader *);
