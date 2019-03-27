@@ -800,9 +800,9 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
       /* Detect obviously dead sets (via REG_UNUSED notes) and remove them.  */
       if (set
-	  && !may_trap_p (set)
 	  && !RTX_FRAME_RELATED_P (insn)
 	  && INSN_P (insn)
+	  && !may_trap_p (set)
 	  && find_reg_note (insn, REG_UNUSED, SET_DEST (set))
 	  && !side_effects_p (SET_SRC (set))
 	  && !side_effects_p (SET_DEST (set)))
@@ -1293,7 +1293,10 @@ pass_cprop_hardreg::execute (function *fun)
   auto_sbitmap visited (last_basic_block_for_fn (fun));
   bitmap_clear (visited);
 
+  /* We need accurate notes.  Earlier passes such as if-conversion may
+     leave notes in an inconsistent state.  */
   df_note_add_problem ();
+  df_analyze ();
 
   /* It is tempting to set DF_LR_RUN_DCE, but DCE may choose to delete
      an insn and this pass would not have visibility into the removal.
