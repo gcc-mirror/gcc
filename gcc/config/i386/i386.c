@@ -9273,6 +9273,25 @@ function_value_64 (machine_mode orig_mode, machine_mode mode,
 }
 
 static rtx
+function_value_ms_32 (machine_mode orig_mode, machine_mode mode,
+		      const_tree fntype, const_tree fn, const_tree valtype)
+{
+  unsigned int regno;
+
+  /* Floating point return values in %st(0)
+     (unless -mno-fp-ret-in-387 or aggregate type of up to 8 bytes).  */
+  if (X87_FLOAT_MODE_P (mode) && TARGET_FLOAT_RETURNS_IN_80387
+	   && (GET_MODE_SIZE (mode) > 8
+	       || valtype == NULL_TREE || !AGGREGATE_TYPE_P (valtype)))
+  {
+    regno = FIRST_FLOAT_REG;
+    return gen_rtx_REG (orig_mode, regno);
+  }
+  else
+    return function_value_32(orig_mode, mode, fntype,fn);
+}
+
+static rtx
 function_value_ms_64 (machine_mode orig_mode, machine_mode mode,
 		      const_tree valtype)
 {
@@ -9317,9 +9336,14 @@ ix86_function_value_1 (const_tree valtype, const_tree fntype_or_decl,
   if (fntype_or_decl && DECL_P (fntype_or_decl))
     fn = fntype_or_decl;
   fntype = fn ? TREE_TYPE (fn) : fntype_or_decl;
-
-  if (TARGET_64BIT && ix86_function_type_abi (fntype) == MS_ABI)
-    return function_value_ms_64 (orig_mode, mode, valtype);
+  
+  if (ix86_function_type_abi (fntype) == MS_ABI)
+    {
+      if (TARGET_64BIT)
+	return function_value_ms_64 (orig_mode, mode, valtype);
+      else
+	return function_value_ms_32 (orig_mode, mode, fntype, fn, valtype);
+    }
   else if (TARGET_64BIT)
     return function_value_64 (orig_mode, mode, valtype);
   else

@@ -1,3 +1,9 @@
+2019-03-27  Mateusz B  <mateuszb@poczta.onet.pl>
+
+	PR target/85667
+	* gcc.target/i386/pr85667-5.c: New testcase.
+	* gcc.target/i386/pr85667-6.c: New testcase.
+
 2019-03-27  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR testsuite/89834

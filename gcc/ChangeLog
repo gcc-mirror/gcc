@@ -1,3 +1,10 @@
+2019-03-27  Mateusz B  <mateuszb@poczta.onet.pl>
+
+	PR target/85667
+	* config/i386/i386.c (ix86_function_value_1): Call the newly added
+	function for 32-bit MS_ABI.
+	(function_value_ms_32): New function.
+
 2019-03-27  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn.md (CC_SAVE_REG): New constant.
