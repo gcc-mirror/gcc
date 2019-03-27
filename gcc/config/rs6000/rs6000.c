@@ -20236,7 +20236,7 @@ rs6000_preferred_reload_class (rtx x, enum reg_class rclass)
       return NO_REGS;
     }
 
-  if (GET_MODE_CLASS (mode) == MODE_INT && rclass == NON_SPECIAL_REGS)
+  if (GET_MODE_CLASS (mode) == MODE_INT && rclass == GEN_OR_FLOAT_REGS)
     return GENERAL_REGS;
 
   return rclass;
@@ -20384,7 +20384,7 @@ rs6000_secondary_reload_class (enum reg_class rclass, machine_mode mode,
 
   /* Constants, memory, and FP registers can go into FP registers.  */
   if ((regno == -1 || FP_REGNO_P (regno))
-      && (rclass == FLOAT_REGS || rclass == NON_SPECIAL_REGS))
+      && (rclass == FLOAT_REGS || rclass == GEN_OR_FLOAT_REGS))
     return (mode != SDmode || lra_in_progress) ? NO_REGS : GENERAL_REGS;
 
   /* Memory, and AltiVec registers can go into AltiVec registers.  */
@@ -36154,7 +36154,7 @@ rs6000_libcall_value (machine_mode mode)
 }
 
 /* Compute register pressure classes.  We implement the target hook to avoid
-   IRA picking something like NON_SPECIAL_REGS as a pressure class, which can
+   IRA picking something like GEN_OR_FLOAT_REGS as a pressure class, which can
    lead to incorrect estimates of number of available registers and therefor
    increased register pressure/spill.   */
 static int

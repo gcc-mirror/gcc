@@ -346,7 +346,7 @@ extern int darwin_emit_branch_islands;
       && reg_class_subset_p (BASE_REGS, (CLASS)))		\
    ? BASE_REGS							\
    : (GET_MODE_CLASS (GET_MODE (X)) == MODE_INT			\
-      && (CLASS) == NON_SPECIAL_REGS)				\
+      && (CLASS) == GEN_OR_FLOAT_REGS)				\
    ? GENERAL_REGS						\
    : (CLASS))
 
