@@ -1,3 +1,8 @@
+2019-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89463
+	* gcc.dg/guality/pr89463.c: New testcase.
+
 2019-03-26  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/89827
