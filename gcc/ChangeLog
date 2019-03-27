@@ -1,3 +1,9 @@
+2019-03-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.md (CC_SAVE_REG): New constant.
+	(movdi): Call gen_movdi_symbol_save_scc.
+	(gen_movdi_symbol_save_scc): New insn and split.
+
 2019-03-27  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR rtl-optimization/89313
