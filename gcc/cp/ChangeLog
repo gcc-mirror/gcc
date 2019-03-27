@@ -1,5 +1,9 @@
 2019-03-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/89831 - error with qualified-id in const member function.
+	* semantics.c (finish_non_static_data_member): Use object cv-quals
+	in scoped case, too.
+
 	PR c++/89421 - ICE with lambda in template parameter list.
 	* parser.c (cp_parser_lambda_expression): Also reject a lambda in a
 	template parameter list before C++20.
