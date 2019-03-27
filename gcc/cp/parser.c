@@ -10397,7 +10397,7 @@ cp_parser_lambda_expression (cp_parser* parser)
 	}
       ok = false;
     }
-  else if (parser->in_template_argument_list_p)
+  else if (parser->in_template_argument_list_p || processing_template_parmlist)
     {
       if (!token->error_reported)
 	{
