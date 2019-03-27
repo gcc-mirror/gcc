@@ -1,5 +1,14 @@
 2019-03-27  Nathan Sidwell  <nathan@acm.org>
 
+	Expunge header name quoting in mapper
+	gcc/cp/
+	* cxx-mapper.cc (IS_HEADER_NAME): New.
+	(module2bmi): Adjust.
+	* module.cc (module_mapper::imex_query): Drop quotes.
+	(module_mapper::translate_include): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/modules.exp (dg-module-bmi): Adjust mapping.
+
 	Header unit names lack quotes
 	gcc/c-family/
 	* c.opt (fmodule-header): Set a var.

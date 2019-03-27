@@ -9938,9 +9938,7 @@ module_mapper::handshake (location_t loc, const char *cookie)
 void
 module_mapper::imex_query (const module_state *state, bool exporting)
 {
-  // FIXME: Push removal of "" through to mapper
-  send_command (state->from_loc,
-		state->is_header () ? "%sPORT \"%s%s\"" : "%sPORT %s%s",
+  send_command (state->from_loc, "%sPORT %s%s",
 		exporting ? "EX" : "IM",
 		state->get_flatname (true), state->get_flatname ());
 }
@@ -10020,7 +10018,7 @@ module_mapper::translate_include (location_t loc, const char *path)
 
   if (mapper->is_server ())
     {
-      send_command (loc, "INCLUDE \"%s\"", path);
+      send_command (loc, "INCLUDE %s", path);
       if (get_response (loc) <= 0)
 	return false;
 

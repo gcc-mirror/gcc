@@ -87,6 +87,10 @@ memrchr (void *s_, int c, size_t n)
 typedef void (*sighandler_t) (int);
 #endif
 
+/* Header names are obvious pathnames -- absolute, or ./  */
+#define IS_HEADER_NAME(STR) \
+  (IS_ABSOLUTE_PATH (STR) || ((STR)[0] == '.' && IS_DIR_SEPARATOR ((STR)[1])))
+
 /* Mapper Protocol version.  Very new.  */
 #define MAPPER_VERSION 0
 
@@ -294,24 +298,14 @@ module2bmi (const char *module)
 	  workspace = XRESIZEVEC (char, workspace, alloc);
 	}
 
-      // FIXME:Revisit once header-lookup transitioned
-      int kind = module[0] == '<' ? 's' : module[0] == '"' ? 'u' : 0;
-      bool rel = false;
-      if (kind)
-	{
-	  l--;
-	  rel = !IS_DIR_SEPARATOR (module[1]);
-	  if (rel)
-	    module++, l--;
-	}
-      memcpy (workspace + rel * 2, module, l);
-      l += rel *2;
+      bool is_header = IS_HEADER_NAME (module);
+      bool is_abs = is_header && module[0] != '.';
+      memcpy (workspace + is_abs, module, l);
+      l += is_abs;
       workspace[l] = 0;
-      if (kind)
+      if (is_header)
 	{
-	  workspace[0] = rel ? '!' : '.';
-	  if (rel)
-	    workspace[1] = DIR_SEPARATOR;
+	  workspace[0] = is_abs ? '.' : '!';
 
 	  /* Map .. to !!.  */
 	  for (unsigned ix = 0; ix != l; ix++)
@@ -324,13 +318,7 @@ module2bmi (const char *module)
 	      }
 	}
 
-      strcpy (workspace + l, ".gcm");
-      l += 4;
-      if (kind)
-	{
-	  workspace[l++] = kind;
-	  workspace[l++] = 0;
-	}
+      strcpy (workspace + l, is_header ? ".gch" : ".gcm");
       res = workspace;
     }
   return res;
