@@ -1,3 +1,13 @@
+2019-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89463
+	* tree-ssa-dce.c (remove_dead_stmt): Take output vector to
+	queue edges to remove.
+	(eliminate_unnecessary_stmts): Remove dead PHIs alongside
+	dead stmts.  Delay edge removal until PHIs are removed to
+	make debug-stmt creation not confused by seemingly degenerate
+	PHIs.
+
 2019-03-27  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.h: Rename NON_SPECIAL_REGS to GEN_OR_FLOAT_REGS
