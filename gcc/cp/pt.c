@@ -25692,6 +25692,12 @@ type_dependent_expression_p (tree expression)
       || TREE_CODE (expression) == WILDCARD_DECL)
     return true;
 
+  /* A lambda-expression in template context is dependent.  dependent_type_p is
+     true for a lambda in the scope of a class or function template, but that
+     doesn't cover all template contexts, like a default template argument.  */
+  if (TREE_CODE (expression) == LAMBDA_EXPR)
+    return true;
+
   /* A fold expression is type-dependent. */
   if (TREE_CODE (expression) == UNARY_LEFT_FOLD_EXPR
       || TREE_CODE (expression) == UNARY_RIGHT_FOLD_EXPR

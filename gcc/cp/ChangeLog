@@ -1,3 +1,12 @@
+2019-03-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89241 - ICE with lambda in template parameter list.
+	* parser.c (cp_parser_lambda_expression): Also reject a lambda in a
+	template parameter list before C++20.
+	* pt.c (type_dependent_expression_p): True for LAMBDA_EXPR.
+	* semantics.c (begin_class_definition): Restore error about defining
+	non-lambda class in template parm list.
+
 2019-03-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86932 - missed SFINAE with empty pack.
