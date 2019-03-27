@@ -1,3 +1,8 @@
+2019-03-27  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Always
+	assign rs6000_hard_regno_mode_ok_p[m][r].  Formatting.
+
 2019-03-26  Andrew Waterman  <andrew@sifive.com>
 	    Jim Wilson  <jimw@sifive.com>
 
