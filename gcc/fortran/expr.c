@@ -4407,6 +4407,20 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_component *comp, gfc_expr *rvalue)
 		     "may not be a procedure pointer", &rvalue->where);
 	  return false;
 	}
+      if (attr.proc == PROC_INTERNAL)
+	{
+	  gfc_error ("Internal procedure %qs is invalid in "
+		     "procedure pointer initialization at %L",
+		     rvalue->symtree->name, &rvalue->where);
+	  return false;
+	}
+      if (attr.dummy)
+	{
+	  gfc_error ("Dummy procedure %qs is invalid in "
+		     "procedure pointer initialization at %L",
+		     rvalue->symtree->name, &rvalue->where);
+	  return false;
+	}
     }
 
   return true;

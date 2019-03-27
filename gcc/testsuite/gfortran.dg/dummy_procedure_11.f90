@@ -5,16 +5,18 @@
 ! Contributed by Vladimir Fuka <vladimir.fuka@gmail.com>
 
 type :: t
-  procedure(g), pointer, nopass :: ppc => g
+  procedure(g), pointer, nopass :: ppc
 end type
 
-procedure(g), pointer :: pp => g
+procedure(g), pointer :: pp
 type(t)::x
 
 print *, f(g)
 print *, f(g())      ! { dg-error "Expected a procedure for argument" }
+pp => g
 print *, f(pp)
 print *, f(pp())     ! { dg-error "Expected a procedure for argument" }
+x%ppc => g
 print *, f(x%ppc)
 print *, f(x%ppc())  ! { dg-error "Expected a procedure for argument" }
 

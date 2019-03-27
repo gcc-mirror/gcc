@@ -1,3 +1,9 @@
+2019-03-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/85537
+	* expr.c (gfc_check_assign_symbol): Reject internal and dummy procedures
+	in procedure pointer initialization.
+
 2019-03-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/88247
