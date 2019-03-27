@@ -1,3 +1,8 @@
+2019-03-27  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/89313
+	* gcc.dg/pr89313.c: New test.
+
 2019-03-26  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/87761
