@@ -3091,9 +3091,10 @@ module_state::module_state (tree name, module_state *parent, bool partition)
   u1.slurp = NULL;
   header_p = direct_p = primary_p = interface_p = exported_p
     = imported_p = alias_p = from_partition_p = false;
-  if (name && (IDENTIFIER_POINTER (name)[0] == '"'
-	       || IDENTIFIER_POINTER (name)[0] == '<'))
+  if (name && TREE_CODE (name) == STRING_CST)
     header_p = true;
+  gcc_checking_assert (header_p || !name
+		       || ISALPHA (IDENTIFIER_POINTER (name)[0]));
   gcc_checking_assert (!(parent && header_p));
 }
 
@@ -3103,33 +3104,63 @@ module_state::~module_state ()
 }
 
 /* Hash module state.  */
+static hashval_t
+module_name_hash (const_tree name)
+{
+  if (TREE_CODE (name) == STRING_CST)
+    return htab_hash_string (TREE_STRING_POINTER (name));
+  else
+    return IDENTIFIER_HASH_VALUE (name);
+}
 
 hashval_t
 module_state_hash::hash (const value_type m)
 {
-  hashval_t h = pointer_hash<void>::hash
+  hashval_t ph = pointer_hash<void>::hash
     (reinterpret_cast<void *> (reinterpret_cast<uintptr_t> (m->parent)
 			       | m->is_partition ()));
-
-  return iterative_hash_hashval_t (h, IDENTIFIER_HASH_VALUE (m->name));
+  hashval_t nh = module_name_hash (m->name);
+  return iterative_hash_hashval_t (ph, nh);
 }
 
 /* Hash a name.  */
 hashval_t
 module_state_hash::hash (const compare_type &c)
 {
-  hashval_t h = pointer_hash<void>::hash (reinterpret_cast<void *> (c.second));
+  hashval_t ph = pointer_hash<void>::hash (reinterpret_cast<void *> (c.second));
+  hashval_t nh = module_name_hash (c.first);
 
-  return iterative_hash_hashval_t (h, IDENTIFIER_HASH_VALUE (c.first));
+  return iterative_hash_hashval_t (ph, nh);
 }
 
 bool
 module_state_hash::equal (const value_type existing,
 			  const compare_type &candidate)
 {
-  return (existing->name == candidate.first
-	  && ((reinterpret_cast<uintptr_t> (existing->parent)
-	       | existing->is_partition ()) == candidate.second));
+  uintptr_t ep = (reinterpret_cast<uintptr_t> (existing->parent)
+		  | existing->is_partition ());
+  if (ep != candidate.second)
+    return false;
+
+  /* Identifier comparison is by pointer.  If the string_csts happen
+     to be the same object, then they're equal too.  */
+  if (existing->name == candidate.first)
+    return true;
+
+  /* If neither are string csts, they can't be equal.  */
+  if (TREE_CODE (candidate.first) != STRING_CST
+      || TREE_CODE (existing->name) != STRING_CST)
+    return false;
+
+  /* String equality.  */
+  if (TREE_STRING_LENGTH (existing->name)
+      == TREE_STRING_LENGTH (candidate.first)
+      && !memcmp (TREE_STRING_POINTER (existing->name),
+		  TREE_STRING_POINTER (candidate.first),
+		  TREE_STRING_LENGTH (existing->name)))
+    return true;
+
+  return false;
 }
 
 /* Some flag values: */
@@ -3492,7 +3523,9 @@ dumper::impl::nested_name (tree t)
 	return true;
 
       case STRING_CST:
-	fwrite (TREE_STRING_POINTER (t), 1, TREE_STRING_LENGTH (t) - 1, stream);
+	/* If TREE_TYPE is NULL, this is a raw string.  */
+	fwrite (TREE_STRING_POINTER (t), 1,
+		TREE_STRING_LENGTH (t) - (TREE_TYPE (t) != NULL_TREE), stream);
 	return true;
 
       case INTEGER_CST:
@@ -9156,7 +9189,7 @@ get_module (const char *ptr)
       size_t len = strlen (ptr);
       if (len < 3 || ptr[len-1] != (ptr[0] == '"' ? '"' : '>'))
 	return NULL;
-      return get_module (get_identifier_with_length (ptr, len));
+      return get_module (build_string (len, ptr));
      }
 
   module_state *parent = NULL;
@@ -13696,9 +13729,7 @@ void
 module_state::set_flatname ()
 {
   gcc_checking_assert (!flatname);
-  if (!parent)
-    flatname = IDENTIFIER_POINTER (name);
-  else
+  if (parent)
     {
       auto_vec<tree,5> ids;
       size_t len = 0;
@@ -13725,6 +13756,10 @@ module_state::set_flatname ()
 	  len += l;
 	}
     }
+  else if (is_header ())
+    flatname = TREE_STRING_POINTER (name);
+  else
+    flatname = IDENTIFIER_POINTER (name);
 }
 
 /* Read the BMI file for a module.  FNAME, if not NULL, is the name we
@@ -14157,7 +14192,8 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
 	      set_module_header_name (main + pos, len - pos);
 	    }
 
-	  tree name = get_identifier (module_header_name);
+	  tree name = build_string (strlen (module_header_name),
+				    module_header_name);
 	  module_state *state = get_module (name);
 	  if (!flag_preprocess_only)
 	    {

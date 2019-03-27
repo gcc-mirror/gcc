@@ -941,6 +941,7 @@ cp_lexer_tokenize (cp_lexer *lexer, int extern_c_depth)
 		      /* A stoppable decl.  */
 		      // FIXME: This is somewhat ugly because
 		      // representation is not the best.
+		      // FIXME: do not do when reading preprocessed
 		      tok->u.value = module_map_header
 			(parse_in, search, tok->u.value, tok->location);
 		      tok->type = CPP_HEADER_NAME;

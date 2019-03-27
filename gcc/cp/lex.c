@@ -405,7 +405,7 @@ module_map_header (cpp_reader *reader, bool do_search,
 	}
     }
 
-  string = get_identifier_with_length (buf, len);
+  string = build_string (len, buf);
   if (free_buf)
     XDELETEVEC (buf);
 
@@ -585,16 +585,10 @@ module_preprocess_token (cpp_reader *pfile, cpp_token *tok, void *data_)
 					  (const char *)tok->val.str.text);
 	      string = module_map_header (pfile, !data->is_translated,
 					  string, tok->src_loc);
-#if 0
 	      tok->val.str.len = TREE_STRING_LENGTH (string);
 	      tok->val.str.text
 		= (const unsigned char *)TREE_STRING_POINTER (string);
-#else
 	      ident = string;
-	      tok->val.str.len = IDENTIFIER_LENGTH (string);
-	      tok->val.str.text
-		= (const unsigned char *)IDENTIFIER_POINTER (string);
-#endif
 	      tok->type = CPP_HEADER_NAME;
 	      data->is_header = true;
 	      data->header_loc = tok->src_loc;

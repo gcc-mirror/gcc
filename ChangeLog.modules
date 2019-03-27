@@ -1,3 +1,18 @@
+2019-03-27  Nathan Sidwell  <nathan@acm.org>
+
+	Header unit names are strings
+	gcc/cp/
+	* lex.c (module_map_header): Build string_cst.
+	(module_preprocess_token): Adjust.
+	* module.cc (module_state::module_state): Header names are
+	strings.
+	(module_name_hash): New.
+	(module_state_hash::{hash,equal}): Adjust.
+	(dumper::impl::nested_name): Fix string_cst.
+	(get_module): Tweak.
+	(module_state::set_flatname): Tweak.
+	(module_begin_main_file): Build string.
+
 2019-03-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/c-family/
