@@ -1,3 +1,8 @@
+2019-03-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/88247
+	* gfortran.dg/associate_47.f90: New test.
+
 2019-03-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89463
