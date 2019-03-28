@@ -16700,7 +16700,7 @@ build_explicit_specifier (tree expr, tsubst_flags_t complain)
   expr = instantiate_non_dependent_expr_sfinae (expr, complain);
   /* Don't let convert_like_real create more template codes.  */
   processing_template_decl_sentinel s;
-  expr = build_converted_constant_expr (boolean_type_node, expr, complain);
+  expr = build_converted_constant_bool_expr (expr, complain);
   expr = cxx_constant_value (expr);
   return expr;
 }

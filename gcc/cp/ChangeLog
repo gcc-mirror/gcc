@@ -1,3 +1,14 @@
+2019-03-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89836 - bool constant expression and explicit conversions.
+	* call.c (build_converted_constant_expr_internal): New function,
+	renamed from...
+	(build_converted_constant_expr): ...this.  New.
+	(build_converted_constant_bool_expr): New.
+	* cp-tree.h (build_converted_constant_bool_expr): Declare.
+	* decl.c (build_explicit_specifier): Call
+	build_converted_constant_bool_expr.
+
 2019-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89785
