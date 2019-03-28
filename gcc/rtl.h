@@ -840,7 +840,7 @@ struct GTY(()) rtvec_def {
 #define DEBUG_INSN_P(X) (GET_CODE (X) == DEBUG_INSN)
 
 /* Predicate yielding nonzero iff X is an insn that is not a debug insn.  */
-#define NONDEBUG_INSN_P(X) (INSN_P (X) && !DEBUG_INSN_P (X))
+#define NONDEBUG_INSN_P(X) (NONJUMP_INSN_P (X) || JUMP_P (X) || CALL_P (X))
 
 /* Nonzero if DEBUG_MARKER_INSN_P may possibly hold.  */
 #define MAY_HAVE_DEBUG_MARKER_INSNS debug_nonbind_markers_p
@@ -851,8 +851,7 @@ struct GTY(()) rtvec_def {
   (MAY_HAVE_DEBUG_MARKER_INSNS || MAY_HAVE_DEBUG_BIND_INSNS)
 
 /* Predicate yielding nonzero iff X is a real insn.  */
-#define INSN_P(X) \
-  (NONJUMP_INSN_P (X) || DEBUG_INSN_P (X) || JUMP_P (X) || CALL_P (X))
+#define INSN_P(X) (NONDEBUG_INSN_P (X) || DEBUG_INSN_P (X))
 
 /* Predicate yielding nonzero iff X is a note insn.  */
 #define NOTE_P(X) (GET_CODE (X) == NOTE)
