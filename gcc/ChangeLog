@@ -1,3 +1,15 @@
+2019-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89621
+	* tree-inline.h (struct copy_body_data): Add
+	dont_remap_vla_if_no_change flag.
+	* tree-inline.c (remap_type_3, remap_type_2): New functions.
+	(remap_type): Don't remap vla types if id->dont_remap_vla_if_no_change
+	and remap_type_2 returns false.
+	* omp-low.c (new_omp_context): Set ctx->cb.dont_remap_vla_if_no_change.
+	Move ctx->cb.adjust_array_error_bounds setting to the outermost ctx
+	only from where it is copied to nested contexts.
+
 2019-03-28  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/89865

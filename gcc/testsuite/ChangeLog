@@ -1,3 +1,8 @@
+2019-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89621
+	* gfortran.dg/gomp/pr89621.f90: New test.
+
 2019-03-28  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/66548
