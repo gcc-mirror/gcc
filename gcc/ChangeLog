@@ -1,3 +1,12 @@
+2019-03-28  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2018-11-05  Martin Liska  <mliska@suse.cz>
+
+	PR web/87829
+	* doc/invoke.texi: Remove options that are
+	not disabled with -Os.
+
 2019-02-26  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

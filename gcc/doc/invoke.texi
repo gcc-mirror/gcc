@@ -7140,8 +7140,7 @@ do not typically increase code size.
 
 @option{-Os} disables the following optimization flags:
 @gccoptlist{-falign-functions  -falign-jumps  -falign-loops @gol
--falign-labels  -freorder-blocks  -freorder-blocks-algorithm=stc @gol
--freorder-blocks-and-partition  -fprefetch-loop-arrays}
+-falign-labels  -fprefetch-loop-arrays}
 
 It also enables @option{-finline-functions}, causes the compiler to tune for
 code size rather than execution speed, and performs further optimizations
