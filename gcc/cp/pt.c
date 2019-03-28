@@ -22,7 +22,9 @@ along with GCC; see the file COPYING3.  If not see
 /* Known bugs or deficiencies include:
 
      all methods must be provided in header files; can't use a source
-     file that contains only the method templates and "just win".  */
+     file that contains only the method templates and "just win".
+
+     Fixed by: C++20 modules.  */
 
 #include "config.h"
 #include "system.h"
@@ -47,9 +49,9 @@ along with GCC; see the file COPYING3.  If not see
    returning an int.  */
 typedef int (*tree_fn_t) (tree, void*);
 
-/* The PENDING_TEMPLATES is a TREE_LIST of templates whose
-   instantiations have been deferred, either because their definitions
-   were not yet available, or because we were putting off doing the work.  */
+/* The PENDING_TEMPLATES is a list of templates whose instantiations
+   have been deferred, either because their definitions were not yet
+   available, or because we were putting off doing the work.  */
 struct GTY ((chain_next ("%h.next"))) pending_template
 {
   struct pending_template *next;
@@ -99,9 +101,9 @@ static bool excessive_deduction_depth;
 
 struct GTY((for_user)) spec_entry
 {
-  tree tmpl;
-  tree args;
-  tree spec;
+  tree tmpl;  /* The general template this is a specialization of.  */
+  tree args;  /* The args for this (maybe-partial) specialization.  */
+  tree spec;  /* The specialization itself.  */
 };
 
 struct spec_hasher : ggc_ptr_hash<spec_entry>
@@ -110,8 +112,9 @@ struct spec_hasher : ggc_ptr_hash<spec_entry>
   static bool equal (spec_entry *, spec_entry *);
 };
 
+/* The general template is not in these tables.  (why do we have two
+   tables?) */
 static GTY (()) hash_table<spec_hasher> *decl_specializations;
-
 static GTY (()) hash_table<spec_hasher> *type_specializations;
 
 /* Contains canonical template parameter types. The vector is indexed by

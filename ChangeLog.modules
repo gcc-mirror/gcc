@@ -1,5 +1,8 @@
 2019-03-28  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* pt.c: Comment some structures.
+
 	gcc/
 	* doc/invoke.texi (C++ Modules): Update.
 
