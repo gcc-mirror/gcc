@@ -1,3 +1,14 @@
+2019-03-28  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Don't revisit a variant we are already visiting.
+	* include/std/variant (__variant_construct_single): New.
+	(__variant_construct): Use it.
+	(_M_destructive_move): Likewise.
+	(_M_destructive_copy): Likewise.
+	(_Copy_assign_base::operator=): Adjust.
+	(_Move_assign_base::operator=): Likewise.
+	(swap): Likewise.
+
 2019-03-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/85965
