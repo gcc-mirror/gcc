@@ -1,3 +1,9 @@
+2019-03-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR middle-end/89725
+	* optinfo-emit-json.cc (optrecord_json_writer::optinfo_to_json):
+	Use DECL_ASSEMBLER_NAME rather than get_fnname_from_decl.
+
 2019-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* regcprop.c (copyprop_hardreg_forward_1): Remove redundant INSN_P
