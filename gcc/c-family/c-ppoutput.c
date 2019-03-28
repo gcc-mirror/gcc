@@ -189,6 +189,8 @@ scan_translation_unit (cpp_reader *pfile)
       cpp_token tmp;
       if (filter)
 	{
+	  /* The hook is permitted to rewrite the token.  So copy it.
+	     It'd be nice to do this neaterally.  */
 	  tmp = *token;
 	  token = &tmp;
 	  filter = lang_hooks.preprocess_token (pfile, &tmp, filter);

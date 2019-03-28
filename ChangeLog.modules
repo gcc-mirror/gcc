@@ -1,11 +1,11 @@
 2019-03-28  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* doc/invoke.texi (C++ Modules): Update.
+
 	Merge trunk r269975.
 
 2019-03-27  Nathan Sidwell  <nathan@acm.org>
-
-	gcc/
-	* doc/invoke.texi (C++ Modules): Update.
 
 	Header unit compilations retrofit includeness.
 	gcc/cp/

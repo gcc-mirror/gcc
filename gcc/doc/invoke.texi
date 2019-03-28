@@ -29980,8 +29980,8 @@ particular namespace-scope name.
 
 The @option{-fmodule-only} option disables generation of the associated
 object file for compiling a module interface.  Only the binary module
-interface is generated.  This option is implied when using one of the
-@option{-fmodule-header} options.
+interface is generated.  This option is implied when using the
+@option{-fmodule-header} option.
 
 The @option{--param lazy-modules=@var{n}} parameter controls the limit
 on the number of concurrently open module files during lazy loading.
@@ -30093,10 +30093,8 @@ terminate.
 @item INCLUDE @var{header}
 A @code{#include} directive for @var{header} is about to be processed.
 The response informs the compiler how to treat the inclusion.  A
-response of @samp{INCLUDE} causes textual inclusion.  A response of
-@samp{IMPORT [@var{module}]} causes importation as a legacy unit.  If
-the import response includes a module name, that will be the imported
-module.  Otherwise the import shall be @var{header}.  A subsequent
+response of @samp{TEXT} causes textual inclusion.  A response of
+@samp{IMPORT} causes importation as a header unit.  A subsequent
 @samp{IMPORT} query will be forthcoming.
 
 @end table
@@ -30128,8 +30126,9 @@ Pathname of a BMI file.
 The source path of the file containing the import or include.
 
 @item @var{module}
-A module name.  Legacy module names are quoted with
-@samp{'...'} or @samp{<...>}
+A module name.  Header unit names are absolute pathnames, or
+pathnames prefixed with @samp{./}.  Header units are resolved using
+the include path.
 
 @item @var{msg}
 A human readable message.  This may contain whitespace.
@@ -30163,8 +30162,7 @@ system.
 
 The default mapper generates BMI files in the current directory,
 appending a @samp{.gcm} suffix to the module name.  Header unit names
-append a further @samp{u} or @samp{s} after the @samp{.gcm} suffix.
-They may also contain directory separators.
+append @samp{.gcmu}.  They may also contain directory separators.
 
 The mapper protocol was published as ``A Module Mapper''
 @uref{http//wg21.link/p1184}.  It is intended that build systems will
@@ -30186,9 +30184,11 @@ no just preprocessing, an error is emitted).  Detecting such imports
 requires preprocessor tokenization of the input stream to phase 4
 (macro expansion).
 
-Include translation converts @code{#include} directives to
-@code{import} declarations.  Whether a particular directive is
-translated is controlled by the module mapper.
+Include translation converts @code{#include}, @code{include_next} and
+@code{import} directives to internal @code{import} declarations.
+Whether a particular directive is translated is controlled by the
+module mapper.  Header unit names are canonicalized during
+preprocessing.
 
 Dependency information can be emitted for macro import, extending the
 functionality of @option{-MD} and @option{-MMD} options.  Detection of
