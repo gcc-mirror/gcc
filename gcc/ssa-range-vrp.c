@@ -373,6 +373,9 @@ rvrp_engine::rvrp_engine (enum kind k)
       m_dom_accumulator = new dom_accumulator (CDI_DOMINATORS, m_bbs);
       break;
     case WALK_POSTDOM:
+      // ?? CDI_DOMINATORS is also being built by phi_loop_range
+      // constructor.  Do we need it?
+      calculate_dominance_info (CDI_POST_DOMINATORS);
       m_dom_accumulator = new dom_accumulator (CDI_POST_DOMINATORS, m_bbs);
       break;
     case WALK_FORWARD:
@@ -395,6 +398,9 @@ rvrp_engine::~rvrp_engine ()
 {
   if (m_dom_accumulator)
     delete m_dom_accumulator;
+
+  if (dom_info_available_p (cfun, CDI_POST_DOMINATORS))
+    free_dominance_info (CDI_POST_DOMINATORS);
 
   rvrp_final_propagate (m_ranger, m_touched);
 }
@@ -469,10 +475,7 @@ execute_ranger_vrp ()
       else if (!strcmp (str, "dom"))
 	kind = rvrp_engine::WALK_DOM;
       else if (!strcmp (str, "postdom"))
-	{
-	  kind = rvrp_engine::WALK_POSTDOM;
-	  calculate_dominance_info (CDI_POST_DOMINATORS);
-	}
+	kind = rvrp_engine::WALK_POSTDOM;
       else
 	{
 	  fprintf (stderr, "Unknown DIR variable of '%s'\n", str);
@@ -480,8 +483,6 @@ execute_ranger_vrp ()
 	}
     }
   rvrp_engine w (kind);
-  if (dom_info_available_p (cfun, CDI_POST_DOMINATORS))
-    free_dominance_info (CDI_POST_DOMINATORS);
   return 0;
 }
 
