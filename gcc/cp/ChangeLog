@@ -1,3 +1,12 @@
+2019-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89785
+	* constexpr.c (struct check_for_return_continue_data): New type.
+	(check_for_return_continue): New function.
+	(potential_constant_expression_1) <case SWITCH_STMT>: Walk
+	SWITCH_STMT_BODY to find RETURN_EXPRs or CONTINUE_STMTs not nested
+	in loop bodies and set *jump_target to that if found.
+
 2019-03-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/89831 - error with qualified-id in const member function.

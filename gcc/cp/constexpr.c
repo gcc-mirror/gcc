@@ -5731,6 +5731,86 @@ check_automatic_or_tls (tree ref)
 }
 #endif
 
+/* Data structure for passing data from potential_constant_expression_1
+   to check_for_return_continue via cp_walk_tree.  */
+struct check_for_return_continue_data {
+  hash_set<tree> *pset;
+  tree continue_stmt;
+};
+
+/* Helper function for potential_constant_expression_1 SWITCH_STMT handling,
+   called through cp_walk_tree.  Return the first RETURN_EXPR found, or note
+   the first CONTINUE_STMT if RETURN_EXPR is not found.  */
+static tree
+check_for_return_continue (tree *tp, int *walk_subtrees, void *data)
+{
+  tree t = *tp, s;
+  check_for_return_continue_data *d = (check_for_return_continue_data *) data;
+  switch (TREE_CODE (t))
+    {
+    case RETURN_EXPR:
+      return t;
+
+    case CONTINUE_STMT:
+      if (d->continue_stmt == NULL_TREE)
+	d->continue_stmt = t;
+      break;
+
+#define RECUR(x) \
+      if (tree r = cp_walk_tree (&x, check_for_return_continue, data,	\
+				 d->pset))				\
+	return r
+
+      /* For loops, walk subtrees manually, so that continue stmts found
+	 inside of the bodies of the loops are ignored.  */
+    case DO_STMT:
+      *walk_subtrees = 0;
+      RECUR (DO_COND (t));
+      s = d->continue_stmt;
+      RECUR (DO_BODY (t));
+      d->continue_stmt = s;
+      break;
+
+    case WHILE_STMT:
+      *walk_subtrees = 0;
+      RECUR (WHILE_COND (t));
+      s = d->continue_stmt;
+      RECUR (WHILE_BODY (t));
+      d->continue_stmt = s;
+      break;
+
+    case FOR_STMT:
+      *walk_subtrees = 0;
+      RECUR (FOR_INIT_STMT (t));
+      RECUR (FOR_COND (t));
+      RECUR (FOR_EXPR (t));
+      s = d->continue_stmt;
+      RECUR (FOR_BODY (t));
+      d->continue_stmt = s;
+      break;
+
+    case RANGE_FOR_STMT:
+      *walk_subtrees = 0;
+      RECUR (RANGE_FOR_EXPR (t));
+      s = d->continue_stmt;
+      RECUR (RANGE_FOR_BODY (t));
+      d->continue_stmt = s;
+      break;
+#undef RECUR
+
+    case STATEMENT_LIST:
+    case CONSTRUCTOR:
+      break;
+
+    default:
+      if (!EXPR_P (t))
+	*walk_subtrees = 0;
+      break;
+    }
+
+  return NULL_TREE;
+}
+
 /* Return true if T denotes a potentially constant expression.  Issue
    diagnostic as appropriate under control of FLAGS.  If WANT_RVAL is true,
    an lvalue-rvalue conversion is implied.  If NOW is true, we want to
@@ -6196,7 +6276,24 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       if (!RECUR (SWITCH_STMT_COND (t), rval))
 	return false;
       /* FIXME we don't check SWITCH_STMT_BODY currently, because even
-	 unreachable labels would be checked.  */
+	 unreachable labels would be checked and it is enough if there is
+	 a single switch cond value for which it is a valid constant
+	 expression.  We need to check if there are any RETURN_EXPRs
+	 or CONTINUE_STMTs inside of the body though, as in that case
+	 we need to set *jump_target.  */
+      else
+	{
+	  hash_set<tree> pset;
+	  check_for_return_continue_data data = { &pset, NULL_TREE };
+	  if (tree ret_expr
+	      = cp_walk_tree (&SWITCH_STMT_BODY (t), check_for_return_continue,
+			      &data, &pset))
+	    /* The switch might return.  */
+	    *jump_target = ret_expr;
+	  else if (data.continue_stmt)
+	    /* The switch can't return, but might continue.  */
+	    *jump_target = data.continue_stmt;
+	}
       return true;
 
     case STMT_EXPR:
