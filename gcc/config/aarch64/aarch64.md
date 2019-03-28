@@ -1621,7 +1621,7 @@
    ldr\t%s0, %1
    fmov\t%w0, %s1
    fmov\t%s0, %s1"
-  [(set_attr "type" "extend,load_4,f_mcr,f_loads,f_mrc,fmov")
+  [(set_attr "type" "mov_reg,load_4,f_mcr,f_loads,f_mrc,fmov")
    (set_attr "arch" "*,*,fp,fp,fp,fp")]
 )
 

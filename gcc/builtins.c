@@ -3650,7 +3650,8 @@ compute_objsize (tree dest, int ostype)
 		      /* Ignore negative offsets for now.  For others,
 			 use the lower bound as the most optimistic
 			 estimate of the (remaining)size.  */
-		      if (wi::sign_mask (min))
+		      if (wi::sign_mask (min)
+			  || wi::sign_mask (max))
 			;
 		      else if (wi::ltu_p (min, wisiz))
 			return wide_int_to_tree (TREE_TYPE (size),

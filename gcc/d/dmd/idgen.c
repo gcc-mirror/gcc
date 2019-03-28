@@ -374,10 +374,11 @@ Msgtable msgtable[] =
     { "udaSelector", "selector" },
 
     // C names, for undefined identifier error messages
-    { "_NULL", "NULL" },
-    { "_TRUE", "TRUE" },
-    { "_FALSE", "FALSE" },
-    { "_unsigned", "unsigned" },
+    { "C_NULL", "NULL" },
+    { "C_TRUE", "TRUE" },
+    { "C_FALSE", "FALSE" },
+    { "C_unsigned", "unsigned" },
+    { "C_wchar_t", "wchar_t" },
 };
 
 

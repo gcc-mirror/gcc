@@ -1106,7 +1106,7 @@ struct WAVEOUTCAPSA {
     WORD wMid;
     WORD wPid;
     MMVERSION vDriverVersion;
-    CHAR[MAXPNAMELEN] szPname;
+    CHAR[MAXPNAMELEN] szPname = 0;
     DWORD dwFormats;
     WORD wChannels;
     WORD wReserved1;
@@ -1118,7 +1118,7 @@ struct WAVEOUTCAPSW {
     WORD wMid;
     WORD wPid;
     MMVERSION vDriverVersion;
-    WCHAR[MAXPNAMELEN] szPname;
+    WCHAR[MAXPNAMELEN] szPname = 0;
     DWORD dwFormats;
     WORD wChannels;
     WORD wReserved1;
@@ -1130,7 +1130,7 @@ struct WAVEINCAPSA {
     WORD wMid;
     WORD wPid;
     MMVERSION vDriverVersion;
-    CHAR[MAXPNAMELEN] szPname;
+    CHAR[MAXPNAMELEN] szPname = 0;
     DWORD dwFormats;
     WORD wChannels;
     WORD wReserved1;
@@ -1141,7 +1141,7 @@ struct WAVEINCAPSW {
     WORD wMid;
     WORD wPid;
     MMVERSION vDriverVersion;
-    WCHAR[MAXPNAMELEN] szPname;
+    WCHAR[MAXPNAMELEN] szPname = 0;
     DWORD dwFormats;
     WORD wChannels;
     WORD wReserved1;
@@ -1194,7 +1194,7 @@ struct MIDIOUTCAPSA {
     WORD wMid;
     WORD wPid;
     MMVERSION vDriverVersion;
-    CHAR[MAXPNAMELEN] szPname;
+    CHAR[MAXPNAMELEN] szPname = 0;
     WORD wTechnology;
     WORD wVoices;
     WORD wNotes;
@@ -1207,7 +1207,7 @@ struct MIDIOUTCAPSW {
     WORD wMid;
     WORD wPid;
     MMVERSION vDriverVersion;
-    WCHAR[MAXPNAMELEN] szPname;
+    WCHAR[MAXPNAMELEN] szPname = 0;
     WORD wTechnology;
     WORD wVoices;
     WORD wNotes;
@@ -1220,7 +1220,7 @@ struct MIDIINCAPSA {
     WORD wMid;
     WORD wPid;
     MMVERSION vDriverVersion;
-    CHAR[MAXPNAMELEN] szPname;
+    CHAR[MAXPNAMELEN] szPname = 0;
     DWORD dwSupport;
 }
 alias MIDIINCAPSA* PMIDIINCAPSA, LPMIDIINCAPSA;
@@ -1229,7 +1229,7 @@ struct MIDIINCAPSW {
     WORD wMid;
     WORD wPid;
     MMVERSION vDriverVersion;
-    WCHAR[MAXPNAMELEN] szPname;
+    WCHAR[MAXPNAMELEN] szPname = 0;
     DWORD dwSupport;
 }
 alias MIDIINCAPSW* PMIDIINCAPSW, LPMIDIINCAPSW;
@@ -1277,7 +1277,7 @@ struct AUXCAPSA {
     WORD wMid;
     WORD wPid;
     MMVERSION vDriverVersion;
-    CHAR[MAXPNAMELEN] szPname;
+    CHAR[MAXPNAMELEN] szPname = 0;
     WORD wTechnology;
     WORD wReserved1;
     DWORD dwSupport;
@@ -1288,7 +1288,7 @@ struct AUXCAPSW {
     WORD wMid;
     WORD wPid;
     MMVERSION vDriverVersion;
-    WCHAR[MAXPNAMELEN] szPname;
+    WCHAR[MAXPNAMELEN] szPname = 0;
     WORD wTechnology;
     WORD wReserved1;
     DWORD dwSupport;
@@ -1305,7 +1305,7 @@ struct MIXERCAPSA {
     WORD wMid;
     WORD wPid;
     MMVERSION vDriverVersion;
-    CHAR[MAXPNAMELEN] szPname;
+    CHAR[MAXPNAMELEN] szPname = 0;
     DWORD fdwSupport;
     DWORD cDestinations;
 }
@@ -1315,7 +1315,7 @@ struct MIXERCAPSW {
     WORD wMid;
     WORD wPid;
     MMVERSION vDriverVersion;
-    WCHAR[MAXPNAMELEN] szPname;
+    WCHAR[MAXPNAMELEN] szPname = 0;
     DWORD fdwSupport;
     DWORD cDestinations;
 }
@@ -1333,15 +1333,15 @@ align(1):
     DWORD cChannels;
     DWORD cConnections;
     DWORD cControls;
-    CHAR[MIXER_SHORT_NAME_CHARS] szShortName;
-    CHAR[MIXER_LONG_NAME_CHARS] szName;
+    CHAR[MIXER_SHORT_NAME_CHARS] szShortName = 0;
+    CHAR[MIXER_LONG_NAME_CHARS] szName = 0;
     struct _Target {
         DWORD dwType;
         DWORD dwDeviceID;
         WORD wMid;
         WORD wPid;
         MMVERSION vDriverVersion;
-        CHAR[MAXPNAMELEN] szPname;
+        CHAR[MAXPNAMELEN] szPname = 0;
     }
     _Target Target;
 }
@@ -1359,15 +1359,15 @@ align(1):
     DWORD cChannels;
     DWORD cConnections;
     DWORD cControls;
-    WCHAR[MIXER_SHORT_NAME_CHARS] szShortName;
-    WCHAR[MIXER_LONG_NAME_CHARS] szName;
+    WCHAR[MIXER_SHORT_NAME_CHARS] szShortName = 0;
+    WCHAR[MIXER_LONG_NAME_CHARS] szName = 0;
     struct _Target {
         DWORD dwType;
         DWORD dwDeviceID;
         WORD wMid;
         WORD wPid;
         MMVERSION vDriverVersion;
-        WCHAR[MAXPNAMELEN] szPname;
+        WCHAR[MAXPNAMELEN] szPname = 0;
     }
     _Target Target;
 }
@@ -1379,8 +1379,8 @@ struct MIXERCONTROLA {
     DWORD dwControlType;
     DWORD fdwControl;
     DWORD cMultipleItems;
-    CHAR[MIXER_SHORT_NAME_CHARS] szShortName;
-    CHAR[MIXER_LONG_NAME_CHARS] szName;
+    CHAR[MIXER_SHORT_NAME_CHARS] szShortName = 0;
+    CHAR[MIXER_LONG_NAME_CHARS] szName = 0;
     union _Bounds {
         struct {
             LONG lMinimum;
@@ -1408,8 +1408,8 @@ struct MIXERCONTROLW {
     DWORD dwControlType;
     DWORD fdwControl;
     DWORD cMultipleItems;
-    WCHAR[MIXER_SHORT_NAME_CHARS] szShortName;
-    WCHAR[MIXER_LONG_NAME_CHARS] szName;
+    WCHAR[MIXER_SHORT_NAME_CHARS] szShortName = 0;
+    WCHAR[MIXER_LONG_NAME_CHARS] szName = 0;
     union _Bounds {
         struct {
             LONG lMinimum;
@@ -1477,14 +1477,14 @@ alias MIXERCONTROLDETAILS* PMIXERCONTROLDETAILS, LPMIXERCONTROLDETAILS;
 struct MIXERCONTROLDETAILS_LISTTEXTA {
     DWORD dwParam1;
     DWORD dwParam2;
-    CHAR[MIXER_LONG_NAME_CHARS] szName;
+    CHAR[MIXER_LONG_NAME_CHARS] szName = 0;
 }
 alias MIXERCONTROLDETAILS_LISTTEXTA* PMIXERCONTROLDETAILS_LISTTEXTA, LPMIXERCONTROLDETAILS_LISTTEXTA;
 
 struct MIXERCONTROLDETAILS_LISTTEXTW {
     DWORD dwParam1;
     DWORD dwParam2;
-    WCHAR[MIXER_LONG_NAME_CHARS] szName;
+    WCHAR[MIXER_LONG_NAME_CHARS] szName = 0;
 }
 alias MIXERCONTROLDETAILS_LISTTEXTW* PMIXERCONTROLDETAILS_LISTTEXTW, LPMIXERCONTROLDETAILS_LISTTEXTW;
 
@@ -1514,7 +1514,7 @@ alias TIMECAPS* PTIMECAPS, LPTIMECAPS;
 struct JOYCAPSA {
     WORD wMid;
     WORD wPid;
-    CHAR[MAXPNAMELEN] szPname;
+    CHAR[MAXPNAMELEN] szPname = 0;
     UINT wXmin;
     UINT wXmax;
     UINT wYmin;
@@ -1534,15 +1534,15 @@ struct JOYCAPSA {
     UINT wMaxAxes;
     UINT wNumAxes;
     UINT wMaxButtons;
-    CHAR[MAXPNAMELEN] szRegKey;
-    CHAR[MAX_JOYSTICKOEMVXDNAME] szOEMVxD;
+    CHAR[MAXPNAMELEN] szRegKey = 0;
+    CHAR[MAX_JOYSTICKOEMVXDNAME] szOEMVxD = 0;
 }
 alias JOYCAPSA* PJOYCAPSA, LPJOYCAPSA;
 
 struct JOYCAPSW {
     WORD wMid;
     WORD wPid;
-    WCHAR[MAXPNAMELEN] szPname;
+    WCHAR[MAXPNAMELEN] szPname = 0;
     UINT wXmin;
     UINT wXmax;
     UINT wYmin;
@@ -1562,8 +1562,8 @@ struct JOYCAPSW {
     UINT wMaxAxes;
     UINT wNumAxes;
     UINT wMaxButtons;
-    WCHAR[MAXPNAMELEN] szRegKey;
-    WCHAR[MAX_JOYSTICKOEMVXDNAME] szOEMVxD;
+    WCHAR[MAXPNAMELEN] szRegKey = 0;
+    WCHAR[MAX_JOYSTICKOEMVXDNAME] szOEMVxD = 0;
 }
 alias JOYCAPSW* PJOYCAPSW, LPJOYCAPSW;
 

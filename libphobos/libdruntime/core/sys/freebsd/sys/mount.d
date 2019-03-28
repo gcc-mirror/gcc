@@ -28,7 +28,7 @@ struct fid
 {
     ushort         fid_len;
     ushort         fid_data0;
-    char[MAXFIDSZ] fid_data;
+    char[MAXFIDSZ] fid_data = 0;
 }
 
 enum MFSNAMELEN = 16;
@@ -55,10 +55,10 @@ struct statfs_t
     uint f_namemax;
     uid_t f_owner;
     fsid_t f_fsid;
-    char[80] f_charspare;
-    char[MFSNAMELEN] f_fstypename;
-    char[MNAMELEN] f_mntfromname;
-    char[MNAMELEN] f_mntonname;
+    char[80] f_charspare = 0;
+    char[MFSNAMELEN] f_fstypename = 0;
+    char[MNAMELEN] f_mntfromname = 0;
+    char[MNAMELEN] f_mntonname = 0;
 }
 
 
@@ -207,7 +207,7 @@ struct nfs_public
 struct vfsconf
 {
     uint vfc_version;
-    char[MFSNAMELEN] vfc_name;
+    char[MFSNAMELEN] vfc_name = 0;
     vfsops* vfc_vfsops;
     int vfc_typenum;
     int vfc_refcount;
@@ -219,7 +219,7 @@ struct vfsconf
 struct xvfsconf
 {
     vfsops* vfc_vfsops;
-    char[MFSNAMELEN] vfc_name;
+    char[MFSNAMELEN] vfc_name = 0;
     int vfc_typenum;
     int vfc_refcount;
     int vfc_flags;
@@ -230,7 +230,7 @@ struct xvfsconf
 struct ovfsconf
 {
     void* vfc_vfsops;
-    char[32] vfc_name;
+    char[32] vfc_name = 0;
     int vfc_index;
     int vfc_refcount;
     int vfc_flags;
@@ -252,7 +252,7 @@ struct vfsidctl
 {
     int vc_vers;
     fsid_t vc_fsid;
-    char[MFSNAMELEN] vc_fstypename;
+    char[MFSNAMELEN] vc_fstypename = 0;
     fsctlop_t vc_op;
     void* vc_ptr;
     size_t vc_len;

@@ -1,3 +1,13 @@
+2019-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87481
+	* c.opt (-fconstexpr-ops-limit=): New option.
+
+2019-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (per_file_includes_t): Use false as Lazy in hash_set
+	template param.
+
 2019-03-19  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/89688

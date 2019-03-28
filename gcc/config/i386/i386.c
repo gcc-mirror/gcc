@@ -2040,6 +2040,7 @@ dimode_scalar_chain::convert_reg (unsigned regno)
 
 		emit_insn_before (seq, insn);
 
+		XEXP (src, 0) = replace_with_subreg (XEXP (src, 0), reg, reg);
 		XEXP (src, 1) = gen_rtx_SUBREG (DImode, tmp2, 0);
 	      }
 	    else if (!MEM_P (dst) || !REG_P (src))
@@ -30524,8 +30525,6 @@ enum ix86_builtins
   IX86_BUILTIN_GATHERSIV8SI,
   IX86_BUILTIN_GATHERDIV4SI,
   IX86_BUILTIN_GATHERDIV8SI,
-  IX86_BUILTIN_VFMSUBSD3_MASK3,
-  IX86_BUILTIN_VFMSUBSS3_MASK3,
   IX86_BUILTIN_GATHER3SIV8SF,
   IX86_BUILTIN_GATHER3SIV4SF,
   IX86_BUILTIN_GATHER3SIV4DF,

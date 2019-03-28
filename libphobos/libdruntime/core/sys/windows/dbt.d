@@ -112,7 +112,7 @@ struct DEV_BROADCAST_PORT_A {
     DWORD dbcp_size = DEV_BROADCAST_PORT_A.sizeof;
     DWORD dbcp_devicetype;
     DWORD dbcp_reserved;
-    char  _dbcp_name;
+    char  _dbcp_name = 0;
     char* dbcp_name() return { return &_dbcp_name; }
 }
 alias DEV_BROADCAST_PORT_A* PDEV_BROADCAST_PORT_A;
@@ -121,14 +121,14 @@ struct DEV_BROADCAST_PORT_W {
     DWORD  dbcp_size = DEV_BROADCAST_PORT_W.sizeof;
     DWORD  dbcp_devicetype;
     DWORD  dbcp_reserved;
-    WCHAR  _dbcp_name;
+    WCHAR  _dbcp_name = 0;
     WCHAR* dbcp_name() return { return &_dbcp_name; }
 }
 alias DEV_BROADCAST_PORT_W* PDEV_BROADCAST_PORT_W;
 
 struct DEV_BROADCAST_USERDEFINED {
     DEV_BROADCAST_HDR dbud_dbh;
-    char  _dbud_szName;
+    char  _dbud_szName = 0;
     char* dbud_szName() return { return &_dbud_szName; }
 }
 
@@ -164,7 +164,7 @@ alias DEV_BROADCAST_PORT* PDEV_BROADCAST_PORT;
         DWORD  dbcc_devicetype;
         DWORD  dbcc_reserved;
         GUID   dbcc_classguid;
-        WCHAR  _dbcc_name;
+        WCHAR  _dbcc_name = 0;
         WCHAR* dbcc_name() return { return &_dbcc_name; }
     }
     alias DEV_BROADCAST_DEVICEINTERFACE_W* PDEV_BROADCAST_DEVICEINTERFACE_W;

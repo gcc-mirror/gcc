@@ -3,7 +3,7 @@
  *
  * Authors:   Martin Nowak
  */
-module core.sys.freebsd.pthread;
+module core.sys.freebsd.pthread_np;
 
 version (FreeBSD):
 extern (C) nothrow @nogc:

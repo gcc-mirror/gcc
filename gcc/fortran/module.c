@@ -2011,7 +2011,9 @@ enum ab_attribute
   AB_OACC_DECLARE_COPYIN, AB_OACC_DECLARE_DEVICEPTR,
   AB_OACC_DECLARE_DEVICE_RESIDENT, AB_OACC_DECLARE_LINK,
   AB_OMP_DECLARE_TARGET_LINK, AB_PDT_KIND, AB_PDT_LEN, AB_PDT_TYPE,
-  AB_PDT_TEMPLATE, AB_PDT_ARRAY, AB_PDT_STRING
+  AB_PDT_TEMPLATE, AB_PDT_ARRAY, AB_PDT_STRING,
+  AB_OACC_ROUTINE_LOP_GANG, AB_OACC_ROUTINE_LOP_WORKER,
+  AB_OACC_ROUTINE_LOP_VECTOR, AB_OACC_ROUTINE_LOP_SEQ
 };
 
 static const mstring attr_bits[] =
@@ -2081,6 +2083,10 @@ static const mstring attr_bits[] =
     minit ("PDT_TEMPLATE", AB_PDT_TEMPLATE),
     minit ("PDT_ARRAY", AB_PDT_ARRAY),
     minit ("PDT_STRING", AB_PDT_STRING),
+    minit ("OACC_ROUTINE_LOP_GANG", AB_OACC_ROUTINE_LOP_GANG),
+    minit ("OACC_ROUTINE_LOP_WORKER", AB_OACC_ROUTINE_LOP_WORKER),
+    minit ("OACC_ROUTINE_LOP_VECTOR", AB_OACC_ROUTINE_LOP_VECTOR),
+    minit ("OACC_ROUTINE_LOP_SEQ", AB_OACC_ROUTINE_LOP_SEQ),
     minit (NULL, -1)
 };
 
@@ -2127,6 +2133,15 @@ DECL_MIO_NAME (sym_flavor)
 DECL_MIO_NAME (sym_intent)
 DECL_MIO_NAME (inquiry_type)
 #undef DECL_MIO_NAME
+
+/* Verify OACC_ROUTINE_LOP_NONE.  */
+
+static void
+verify_OACC_ROUTINE_LOP_NONE (enum oacc_routine_lop lop)
+{
+  if (lop != OACC_ROUTINE_LOP_NONE)
+    bad_module ("Unsupported: multiple OpenACC 'routine' levels of parallelism");
+}
 
 /* Symbol attributes are stored in list with the first three elements
    being the enumerated fields, while the remaining elements (if any)
@@ -2292,6 +2307,30 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_PDT_ARRAY, attr_bits);
       if (attr->pdt_string)
 	MIO_NAME (ab_attribute) (AB_PDT_STRING, attr_bits);
+      switch (attr->oacc_routine_lop)
+	{
+	case OACC_ROUTINE_LOP_NONE:
+	  /* This is the default anyway, and for maintaining compatibility with
+	     the current MOD_VERSION, we're not emitting anything in that
+	     case.  */
+	  break;
+	case OACC_ROUTINE_LOP_GANG:
+	  MIO_NAME (ab_attribute) (AB_OACC_ROUTINE_LOP_GANG, attr_bits);
+	  break;
+	case OACC_ROUTINE_LOP_WORKER:
+	  MIO_NAME (ab_attribute) (AB_OACC_ROUTINE_LOP_WORKER, attr_bits);
+	  break;
+	case OACC_ROUTINE_LOP_VECTOR:
+	  MIO_NAME (ab_attribute) (AB_OACC_ROUTINE_LOP_VECTOR, attr_bits);
+	  break;
+	case OACC_ROUTINE_LOP_SEQ:
+	  MIO_NAME (ab_attribute) (AB_OACC_ROUTINE_LOP_SEQ, attr_bits);
+	  break;
+	case OACC_ROUTINE_LOP_ERROR:
+	  /* ... intentionally omitted here; it's only unsed internally.  */
+	default:
+	  gcc_unreachable ();
+	}
 
       mio_rparen ();
 
@@ -2502,6 +2541,22 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      break;
 	    case AB_PDT_STRING:
 	      attr->pdt_string = 1;
+	      break;
+	    case AB_OACC_ROUTINE_LOP_GANG:
+	      verify_OACC_ROUTINE_LOP_NONE (attr->oacc_routine_lop);
+	      attr->oacc_routine_lop = OACC_ROUTINE_LOP_GANG;
+	      break;
+	    case AB_OACC_ROUTINE_LOP_WORKER:
+	      verify_OACC_ROUTINE_LOP_NONE (attr->oacc_routine_lop);
+	      attr->oacc_routine_lop = OACC_ROUTINE_LOP_WORKER;
+	      break;
+	    case AB_OACC_ROUTINE_LOP_VECTOR:
+	      verify_OACC_ROUTINE_LOP_NONE (attr->oacc_routine_lop);
+	      attr->oacc_routine_lop = OACC_ROUTINE_LOP_VECTOR;
+	      break;
+	    case AB_OACC_ROUTINE_LOP_SEQ:
+	      verify_OACC_ROUTINE_LOP_NONE (attr->oacc_routine_lop);
+	      attr->oacc_routine_lop = OACC_ROUTINE_LOP_SEQ;
 	      break;
 	    }
 	}

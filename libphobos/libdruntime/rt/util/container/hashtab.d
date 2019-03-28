@@ -290,7 +290,7 @@ unittest
 
 unittest
 {
-    alias RC = common.RC;
+    alias RC = common.RC!();
     HashTab!(size_t, RC) tab;
 
     size_t cnt;

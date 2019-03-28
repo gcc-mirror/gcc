@@ -1,3 +1,96 @@
+2019-03-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89241 - ICE with lambda in template parameter list.
+	* parser.c (cp_parser_lambda_expression): Also reject a lambda in a
+	template parameter list before C++20.
+	* pt.c (type_dependent_expression_p): True for LAMBDA_EXPR.
+	* semantics.c (begin_class_definition): Restore error about defining
+	non-lambda class in template parm list.
+
+2019-03-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86932 - missed SFINAE with empty pack.
+	* pt.c (coerce_template_parms): Don't add an empty pack if
+	tf_partial.
+	(fn_type_unification): Pass tf_partial to coerce_template_parms.
+
+	PR c++/86429 - constexpr variable in lambda.
+	PR c++/82643
+	PR c++/87327
+	* constexpr.c (cxx_eval_constant_expression): In a lambda function,
+	try evaluating the captured variable directly.
+
+2019-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89796
+	* semantics.c (finish_omp_atomic): Add warning_sentinel for
+	-Wunused-value around finish_expr_stmt call.
+
+2019-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84661
+	PR c++/85013
+	* parser.c (cp_parser_binary_expression): Don't call cp_fully_fold
+	to undo the disabling of warnings.
+
+2019-03-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87748 - substitution failure error with decltype.
+	* pt.c (most_specialized_partial_spec): Clear
+	processing_template_decl.
+
+2019-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89214 - ICE when initializing aggregates with bases.
+	* typeck2.c (digest_init_r): Warn about object slicing instead of
+	crashing.
+
+	PR c++/89705 - ICE with reference binding with conversion function.
+	* call.c (reference_binding): If the result of the conversion function
+	is a prvalue of non-class type, use the cv-unqualified type.
+
+2019-03-25  Nathan Sidwell  <nathan@acm.org>
+
+	* lambda.c (maybe_add_lambda_conv_op): Don't add to comdat group.
+
+2019-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60702
+	* cp-tree.h (get_tls_wrapper_fn): Remove declaration.
+	(maybe_get_tls_wrapper_call): Declare.
+	* decl2.c (get_tls_wrapper_fn): Make static.
+	(maybe_get_tls_wrapper_call): New function.
+	* typeck.c (build_class_member_access_expr): Handle accesses to TLS
+	variables.
+	* semantics.c (finish_qualified_id_expr): Likewise.
+	(finish_id_expression_1): Use maybe_get_tls_wrapper_call.
+	* pt.c (tsubst_copy_and_build): Likewise.
+
+	PR c++/87481
+	* constexpr.c (struct constexpr_ctx): Add constexpr_ops_count member.
+	(cxx_eval_constant_expression): When not skipping, not constant class
+	or location wrapper, increment *ctx->constexpr_ops_count and if it is
+	above constexpr_loop_nest_limit, diagnose failure.
+	(cxx_eval_outermost_constant_expr): Add constexpr_ops_count and
+	initialize ctx.constexpr_ops_count to its address.
+	(is_sub_constant_expr): Likewise.
+
+2019-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71446
+	* call.c (filed_in_pset): Change pset from hash_set<tree> * to
+	hash_set<tree, true> &, adjust uses accordingly.
+	(build_aggr_conv): Change pset from hash_set<tree> *
+	to hash_set<tree, true>.  Replace goto fail; with return NULL;,
+	adjust pset uses.
+
+	PR c++/89767
+	* parser.c (cp_parser_lambda_introducer): Add ids and first_capture_id
+	variables, check for duplicates in this function.
+	* lambda.c (add_capture): Don't check for duplicates nor use
+	IDENTIFIER_MARKED.
+	(register_capture_members): Don't clear IDENTIFIER_MARKED here.
+
 2019-03-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/89571

@@ -302,7 +302,7 @@ bool Module::read(Loc loc)
         {
             ::error(loc, "cannot find source code for runtime library file 'object.d'");
             errorSupplemental(loc, "dmd might not be correctly installed. Run 'dmd -man' for installation instructions.");
-            const char *dmdConfFile = FileName::canonicalName(global.inifilename);
+            const char *dmdConfFile = global.inifilename ? FileName::canonicalName(global.inifilename) : NULL;
             errorSupplemental(loc, "config file: %s", dmdConfFile ? dmdConfFile : "not found");
         }
         else

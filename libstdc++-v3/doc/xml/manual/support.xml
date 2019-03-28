@@ -97,8 +97,8 @@
     The header <filename class="headerfile">limits</filename> defines
     traits classes to give access to various implementation
     defined-aspects of the fundamental types. The traits classes --
-    fourteen in total -- are all specializations of the template class
-    <classname>numeric_limits</classname>, documented <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00593.html">here</link>
+    fourteen in total -- are all specializations of the class template
+    <classname>numeric_limits</classname>
     and defined as follows:
     </para>
 

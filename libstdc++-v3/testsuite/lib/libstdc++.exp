@@ -1605,6 +1605,29 @@ proc check_effective_target_random_device { } {
     return 0
 }
 
+# Return 1 if tbb parallel backend is available
+proc check_effective_target_tbb-backend { } {
+		global cxxflags
+
+		# Set up and preprocess a C++ test program that depends
+		# on tbb
+		set src tbb_backend[pid].cc
+
+		set f [open $src "w"]
+		puts $f "#include <tbb/tbb.h>"
+		close $f
+		set lines [v3_target_compile $src /dev/null preprocess ""]
+		file delete $src
+
+		if [string match "" $lines] {
+				# No error message, preprocessing succeeded.
+				verbose "check_v3_tbb-backend: `1'" 2
+				return 1
+		}
+		verbose "check_v3_tbb-backend: `0'" 2
+		return 0
+}
+
 set additional_prunes ""
 
 if { [info exists env(GCC_RUNTEST_PARALLELIZE_DIR)] \

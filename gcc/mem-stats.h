@@ -342,8 +342,14 @@ public:
   T *release_instance_overhead (void *ptr, size_t size,
 				bool remove_from_map = false);
 
-  /* Release intance object identified by PTR pointer.  */
+  /* Release instance object identified by PTR pointer.  */
   void release_object_overhead (void *ptr);
+
+  /* Unregister a memory allocation descriptor registered with
+     register_descriptor (remove from reverse map), unless it is
+     unregistered through release_instance_overhead with
+     REMOVE_FROM_MAP = true.  */
+  void unregister_descriptor (void *ptr);
 
   /* Get sum value for ORIGIN type of allocation for the descriptor.  */
   T get_sum (mem_alloc_origin origin);
@@ -522,7 +528,7 @@ mem_alloc_description<T>::release_instance_overhead (void *ptr, size_t size,
   return usage;
 }
 
-/* Release intance object identified by PTR pointer.  */
+/* Release instance object identified by PTR pointer.  */
 
 template <class T>
 inline void
@@ -534,6 +540,17 @@ mem_alloc_description<T>::release_object_overhead (void *ptr)
       entry->first->release_overhead (entry->second);
       m_reverse_object_map->remove (ptr);
     }
+}
+
+/* Unregister a memory allocation descriptor registered with
+   register_descriptor (remove from reverse map), unless it is
+   unregistered through release_instance_overhead with
+   REMOVE_FROM_MAP = true.  */
+template <class T>
+inline void
+mem_alloc_description<T>::unregister_descriptor (void *ptr)
+{
+  m_reverse_map->remove (ptr);
 }
 
 /* Default contructor.  */

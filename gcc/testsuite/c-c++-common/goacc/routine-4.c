@@ -1,4 +1,5 @@
 /* Test invalid intra-routine parallelism.  */
+/* See also variant 'routine-4-extern.c', moving the callees 'extern'.  */
 
 void gang (void);
 void worker (void);

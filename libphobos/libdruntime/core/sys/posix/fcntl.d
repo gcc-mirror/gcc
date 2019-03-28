@@ -734,42 +734,21 @@ else version (CRuntime_Bionic)
     enum F_WRLCK        = 1;
     enum F_UNLCK        = 2;
 
-    version (X86)
-    {
-        enum O_CREAT        = 0x40;     // octal     0100
-        enum O_EXCL         = 0x80;     // octal     0200
-        enum O_NOCTTY       = 0x100;    // octal     0400
-        enum O_TRUNC        = 0x200;    // octal    01000
+    enum O_CREAT        = 0x40;     // octal     0100
+    enum O_EXCL         = 0x80;     // octal     0200
+    enum O_NOCTTY       = 0x100;    // octal     0400
+    enum O_TRUNC        = 0x200;    // octal    01000
 
-        enum O_APPEND       = 0x400;    // octal    02000
-        enum O_NONBLOCK     = 0x800;    // octal    04000
-        enum O_SYNC         = 0x1000;   // octal   010000
-    }
-    else version (ARM)
-    {
-        enum O_CREAT        = 0x40;     // octal     0100
-        enum O_EXCL         = 0x80;     // octal     0200
-        enum O_NOCTTY       = 0x100;    // octal     0400
-        enum O_TRUNC        = 0x200;    // octal    01000
+    enum O_APPEND       = 0x400;    // octal    02000
+    enum O_NONBLOCK     = 0x800;    // octal    04000
 
-        enum O_APPEND       = 0x400;    // octal    02000
-        enum O_NONBLOCK     = 0x800;    // octal    04000
-        enum O_SYNC         = 0x1000;   // octal   010000
-    }
-    else version (AArch64)
+    version (D_LP64)
     {
-        enum O_CREAT        = 0x40;     // octal     0100
-        enum O_EXCL         = 0x80;     // octal     0200
-        enum O_NOCTTY       = 0x100;    // octal     0400
-        enum O_TRUNC        = 0x200;    // octal    01000
-
-        enum O_APPEND       = 0x400;    // octal    02000
-        enum O_NONBLOCK     = 0x800;    // octal    04000
-        enum O_SYNC         = 0x101000; // octal 04010000
+        enum O_SYNC     = 0x101000; // octal 04010000
     }
     else
     {
-        static assert(false, "Architecture not supported.");
+        enum O_SYNC     = 0x1000;   // octal   010000
     }
 
     enum O_ACCMODE      = 0x3;

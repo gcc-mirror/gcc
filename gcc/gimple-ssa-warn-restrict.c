@@ -147,6 +147,9 @@ struct builtin_memref
   /* The size range of the access to this reference.  */
   offset_int sizrange[2];
 
+  /* Cached result of get_max_objsize().  */
+  const offset_int maxobjsize;
+
   /* True for "bounded" string functions like strncat, and strncpy
      and their variants that specify either an exact or upper bound
      on the size of the accesses they perform.  For strncat both
@@ -233,6 +236,7 @@ builtin_memref::builtin_memref (tree expr, tree size)
   refoff (HOST_WIDE_INT_MIN),
   offrange (),
   sizrange (),
+  maxobjsize (tree_to_shwi (max_object_size ())),
   strbounded_p ()
 {
   /* Unfortunately, wide_int default ctor is a no-op so array members
@@ -240,7 +244,8 @@ builtin_memref::builtin_memref (tree expr, tree size)
   offrange[0] = offrange[1] = 0;
   sizrange[0] = sizrange[1] = 0;
 
-  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
+  if (!expr)
+    return;
 
   /* Find the BASE object or pointer referenced by EXPR and set
      the offset range OFFRANGE in the process.  */
@@ -292,13 +297,13 @@ builtin_memref::builtin_memref (tree expr, tree size)
     }
 }
 
-/* Ctor helper to set or extend OFFRANGE based on the OFFSET argument.  */
+/* Ctor helper to set or extend OFFRANGE based on the OFFSET argument.
+   Pointer offsets are represented as unsigned sizetype but must be
+   treated as signed.  */
 
 void
 builtin_memref::extend_offset_range (tree offset)
 {
-  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
-
   if (TREE_CODE (offset) == INTEGER_CST)
     {
       offset_int off = int_cst_value (offset);
@@ -312,36 +317,57 @@ builtin_memref::extend_offset_range (tree offset)
 
   if (TREE_CODE (offset) == SSA_NAME)
     {
+      /* A pointer offset is represented as sizetype but treated
+	 as signed.  */
       wide_int min, max;
       value_range_kind rng = get_range_info (offset, &min, &max);
-      if (rng == VR_RANGE)
+      if (rng == VR_ANTI_RANGE && wi::lts_p (max, min))
 	{
+	  /* Convert an anti-range whose upper bound is less than
+	     its lower bound to a signed range.  */
+	  offrange[0] += offset_int::from (max + 1, SIGNED);
+	  offrange[1] += offset_int::from (min - 1, SIGNED);
+	  return;
+	}
+
+      if (rng == VR_RANGE
+	  && (DECL_P (base) || wi::lts_p (min, max)))
+	{
+	  /* Preserve the bounds of the range for an offset into
+	     a known object (it may be adjusted later relative to
+	     a constant offset from its beginning).  Otherwise use
+	     the bounds only when they are ascending when treated
+	     as signed.  */
 	  offrange[0] += offset_int::from (min, SIGNED);
 	  offrange[1] += offset_int::from (max, SIGNED);
+	  return;
 	}
-      else
+
+      /* Handle an anti-range the same as no range at all.  */
+      gimple *stmt = SSA_NAME_DEF_STMT (offset);
+      tree type;
+      if (is_gimple_assign (stmt)
+	  && (type = TREE_TYPE (gimple_assign_rhs1 (stmt)))
+	  && INTEGRAL_TYPE_P (type))
 	{
-	  /* Handle an anti-range the same as no range at all.  */
-	  gimple *stmt = SSA_NAME_DEF_STMT (offset);
-	  tree type;
-	  if (is_gimple_assign (stmt)
-	      && gimple_assign_rhs_code (stmt) == NOP_EXPR
-	      && (type = TREE_TYPE (gimple_assign_rhs1 (stmt)))
-	      && INTEGRAL_TYPE_P (type))
+	  tree_code code = gimple_assign_rhs_code (stmt);
+	  if (code == NOP_EXPR)
 	    {
 	      /* Use the bounds of the type of the NOP_EXPR operand
 		 even if it's signed.  The result doesn't trigger
 		 warnings but makes their output more readable.  */
 	      offrange[0] += wi::to_offset (TYPE_MIN_VALUE (type));
 	      offrange[1] += wi::to_offset (TYPE_MAX_VALUE (type));
+	      return;
 	    }
-	  else
-	    offrange[1] += maxobjsize;
 	}
-      return;
     }
 
-  offrange[1] += maxobjsize;
+  const offset_int maxoff = tree_to_shwi (max_object_size ()) >> 1;
+  const offset_int minoff = -maxoff - 1;
+
+  offrange[0] += minoff;
+  offrange[1] += maxoff;
 }
 
 /* Determines the base object or pointer of the reference EXPR
@@ -350,7 +376,7 @@ builtin_memref::extend_offset_range (tree offset)
 void
 builtin_memref::set_base_and_offset (tree expr)
 {
-  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
+  tree offset = NULL_TREE;
 
   if (TREE_CODE (expr) == SSA_NAME)
     {
@@ -377,9 +403,7 @@ builtin_memref::set_base_and_offset (tree expr)
 	  else if (code == POINTER_PLUS_EXPR)
 	    {
 	      expr = gimple_assign_rhs1 (stmt);
-
-	      tree offset = gimple_assign_rhs2 (stmt);
-	      extend_offset_range (offset);
+	      offset = gimple_assign_rhs2 (stmt);
 	    }
 	  else
 	    {
@@ -389,6 +413,12 @@ builtin_memref::set_base_and_offset (tree expr)
 	}
       else
 	{
+	  /* FIXME: Handle PHI nodes in case like:
+	     _12 = &MEM[(void *)&a + 2B] + _10;
+
+	     <bb> [local count: 1073741824]:
+	     # prephitmp_13 = PHI <_12, &MEM[(void *)&a + 2B]>
+	     memcpy (prephitmp_13, p_7(D), 6);  */
 	  base = expr;
 	  return;
 	}
@@ -415,6 +445,9 @@ builtin_memref::set_base_and_offset (tree expr)
 
   /* get_inner_reference is not expected to return null.  */
   gcc_assert (base != NULL);
+
+  if (offset)
+    extend_offset_range (offset);
 
   poly_int64 bytepos = exact_div (bitpos, BITS_PER_UNIT);
 
@@ -471,7 +504,8 @@ builtin_memref::set_base_and_offset (tree expr)
 tree
 builtin_memref::offset_out_of_bounds (int strict, offset_int ooboff[2]) const
 {
-  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
+  if (!ptr)
+    return NULL_TREE;
 
   /* A temporary, possibly adjusted, copy of the offset range.  */
   offset_int offrng[2] = { offrange[0], offrange[1] };
@@ -606,6 +640,14 @@ builtin_access::builtin_access (gimple *call, builtin_memref &dst,
       detect_overlap = &builtin_access::no_overlap;
       break;
 
+    case BUILT_IN_MEMSET:
+    case BUILT_IN_MEMSET_CHK:
+      /* For memset there is never any overlap to check for.  */
+      ostype = 0;
+      depends_p = false;
+      detect_overlap = &builtin_access::no_overlap;
+      break;
+
     case BUILT_IN_STPNCPY:
     case BUILT_IN_STPNCPY_CHK:
     case BUILT_IN_STRNCPY:
@@ -640,7 +682,7 @@ builtin_access::builtin_access (gimple *call, builtin_memref &dst,
       return;
     }
 
-  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
+  const offset_int maxobjsize = dst.maxobjsize;
 
   /* Try to determine the size of the base object.  compute_objsize
      expects a pointer so create one if BASE is a non-pointer object.  */
@@ -659,7 +701,7 @@ builtin_access::builtin_access (gimple *call, builtin_memref &dst,
 	dst.basesize = maxobjsize;
     }
 
-  if (src.basesize < 0)
+  if (src.base && src.basesize < 0)
     {
       addr = src.base;
       if (!POINTER_TYPE_P (TREE_TYPE (addr)))
@@ -845,7 +887,7 @@ builtin_access::generic_overlap ()
 
   gcc_assert (dstref->base == srcref->base);
 
-  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
+  const offset_int maxobjsize = acs.dstref->maxobjsize;
 
   offset_int maxsize = dstref->basesize < 0 ? maxobjsize : dstref->basesize;
   gcc_assert (maxsize <= maxobjsize);
@@ -1054,7 +1096,7 @@ builtin_access::strcat_overlap ()
 
   gcc_assert (dstref->base == srcref->base);
 
-  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
+  const offset_int maxobjsize = acs.dstref->maxobjsize;
 
   gcc_assert (dstref->base && dstref->base == srcref->base);
 
@@ -1191,7 +1233,7 @@ builtin_access::overlap ()
 {
   builtin_access &acs = *this;
 
-  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
+  const offset_int maxobjsize = dstref->maxobjsize;
 
   acs.sizrange[0] = wi::smax (dstref->sizrange[0],
 			      srcref->sizrange[0]).to_shwi ();
@@ -1372,7 +1414,7 @@ maybe_diag_overlap (location_t loc, gimple *call, builtin_access &acs)
 	     "[" HOST_WIDE_INT_PRINT_DEC ", " HOST_WIDE_INT_PRINT_DEC "]",
 	     ovloff[0], ovloff[1]);
 
-  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
+  const offset_int maxobjsize = dstref.maxobjsize;
   bool must_overlap = ovlsiz[0] > 0;
 
   if (ovlsiz[1] == 0)
@@ -1581,7 +1623,7 @@ static bool
 maybe_diag_access_bounds (location_t loc, gimple *call, tree func, int strict,
 			  const builtin_memref &ref, bool do_warn)
 {
-  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
+  const offset_int maxobjsize = ref.maxobjsize;
 
   /* Check for excessive size first and regardless of warning options
      since the result is used to make codegen decisions.  */
@@ -1690,8 +1732,6 @@ maybe_diag_access_bounds (location_t loc, gimple *call, tree func, int strict,
     }
   else if (oobref == ref.base)
     {
-      const offset_int maxobjsize = tree_to_shwi (max_object_size ());
-
       /* True when the offset formed by an access to the reference
 	 is out of bounds, rather than the initial offset wich is
 	 in bounds.  This implies access past the end.  */
@@ -1814,6 +1854,12 @@ wrestrict_dom_walker::check_call (gimple *call)
       bnd_idx = 2;
       break;
 
+    case BUILT_IN_MEMSET:
+    case BUILT_IN_MEMSET_CHK:
+      dst_idx = 0;
+      bnd_idx = 2;
+      break;
+
     case BUILT_IN_STPCPY:
     case BUILT_IN_STPCPY_CHK:
     case BUILT_IN_STRCPY:
@@ -1844,14 +1890,14 @@ wrestrict_dom_walker::check_call (gimple *call)
 
   /* DST and SRC can be null for a call with an insufficient number
      of arguments to a built-in function declared without a protype.  */
-  if (!dst || !src)
+  if (!dst || (src_idx < nargs && !src))
     return;
 
   /* DST, SRC, or DSTWR can also have the wrong type in a call to
      a function declared without a prototype.  Avoid checking such
      invalid calls.  */
   if (TREE_CODE (TREE_TYPE (dst)) != POINTER_TYPE
-      || TREE_CODE (TREE_TYPE (src)) != POINTER_TYPE
+      || (src && TREE_CODE (TREE_TYPE (src)) != POINTER_TYPE)
       || (dstwr && !INTEGRAL_TYPE_P (TREE_TYPE (dstwr))))
     return;
 
@@ -1901,14 +1947,22 @@ check_bounds_or_overlap (gimple *call, tree dst, tree src, tree dstsize,
       return OPT_Warray_bounds;
     }
 
-  bool check_overlap
-    = (warn_restrict
-       && (bounds_only
-	   || (DECL_FUNCTION_CODE (func) != BUILT_IN_MEMMOVE
-	       && DECL_FUNCTION_CODE (func) != BUILT_IN_MEMMOVE_CHK)));
-
-  if (!check_overlap)
+  if (!warn_restrict || bounds_only || !src)
     return 0;
+
+  if (!bounds_only)
+    {
+      switch (DECL_FUNCTION_CODE (func))
+	{
+	case BUILT_IN_MEMMOVE:
+	case BUILT_IN_MEMMOVE_CHK:
+	case BUILT_IN_MEMSET:
+	case BUILT_IN_MEMSET_CHK:
+	  return 0;
+	default:
+	  break;
+	}
+    }
 
   if (operand_equal_p (dst, src, 0))
     {

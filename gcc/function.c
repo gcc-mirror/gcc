@@ -6395,6 +6395,21 @@ make_pass_thread_prologue_and_epilogue (gcc::context *ctxt)
 }
 
 
+/* If CONSTRAINT is a matching constraint, then return its number.
+   Otherwise, return -1.  */
+
+static int
+matching_constraint_num (const char *constraint)
+{
+  if (*constraint == '%')
+    constraint++;
+
+  if (IN_RANGE (*constraint, '0', '9'))
+    return strtoul (constraint, NULL, 10);
+
+  return -1;
+}
+
 /* This mini-pass fixes fall-out from SSA in asm statements that have
    in-out constraints.  Say you start with
 
@@ -6453,14 +6468,10 @@ match_asm_constraints_1 (rtx_insn *insn, rtx *p_sets, int noutputs)
       rtx input, output;
       rtx_insn *insns;
       const char *constraint = ASM_OPERANDS_INPUT_CONSTRAINT (op, i);
-      char *end;
       int match, j;
 
-      if (*constraint == '%')
-	constraint++;
-
-      match = strtoul (constraint, &end, 10);
-      if (end == constraint)
+      match = matching_constraint_num (constraint);
+      if (match < 0)
 	continue;
 
       gcc_assert (match < noutputs);
@@ -6477,14 +6488,14 @@ match_asm_constraints_1 (rtx_insn *insn, rtx *p_sets, int noutputs)
       /* We can't do anything if the output is also used as input,
 	 as we're going to overwrite it.  */
       for (j = 0; j < ninputs; j++)
-        if (reg_overlap_mentioned_p (output, RTVEC_ELT (inputs, j)))
+	if (reg_overlap_mentioned_p (output, RTVEC_ELT (inputs, j)))
 	  break;
       if (j != ninputs)
 	continue;
 
       /* Avoid changing the same input several times.  For
 	 asm ("" : "=mr" (out1), "=mr" (out2) : "0" (in), "1" (in));
-	 only change in once (to out1), rather than changing it
+	 only change it once (to out1), rather than changing it
 	 first to out1 and afterwards to out2.  */
       if (i > 0)
 	{
@@ -6501,6 +6512,9 @@ match_asm_constraints_1 (rtx_insn *insn, rtx *p_sets, int noutputs)
       insns = get_insns ();
       end_sequence ();
       emit_insn_before (insns, insn);
+
+      constraint = ASM_OPERANDS_OUTPUT_CONSTRAINT(SET_SRC(p_sets[match]));
+      bool early_clobber_p = strchr (constraint, '&') != NULL;
 
       /* Now replace all mentions of the input with output.  We can't
 	 just replace the occurrence in inputs[i], as the register might
@@ -6523,7 +6537,14 @@ match_asm_constraints_1 (rtx_insn *insn, rtx *p_sets, int noutputs)
 	 value, but different pseudos) where we formerly had only one.
 	 With more complicated asms this might lead to reload failures
 	 which wouldn't have happen without this pass.  So, iterate over
-	 all operands and replace all occurrences of the register used.  */
+	 all operands and replace all occurrences of the register used.
+
+	 However, if one or more of the 'input' uses have a non-matching
+	 constraint and the matched output operand is an early clobber
+	 operand, then do not replace the input operand, since by definition
+	 it conflicts with the output operand and cannot share the same
+	 register.  See PR89313 for details.  */
+
       for (j = 0; j < noutputs; j++)
 	if (!rtx_equal_p (SET_DEST (p_sets[j]), input)
 	    && reg_overlap_mentioned_p (input, SET_DEST (p_sets[j])))
@@ -6531,8 +6552,13 @@ match_asm_constraints_1 (rtx_insn *insn, rtx *p_sets, int noutputs)
 					      input, output);
       for (j = 0; j < ninputs; j++)
 	if (reg_overlap_mentioned_p (input, RTVEC_ELT (inputs, j)))
-	  RTVEC_ELT (inputs, j) = replace_rtx (RTVEC_ELT (inputs, j),
-					       input, output);
+	  {
+	    if (!early_clobber_p
+		|| match == matching_constraint_num
+			      (ASM_OPERANDS_INPUT_CONSTRAINT (op, j)))
+	      RTVEC_ELT (inputs, j) = replace_rtx (RTVEC_ELT (inputs, j),
+						   input, output);
+	  }
 
       changed = true;
     }

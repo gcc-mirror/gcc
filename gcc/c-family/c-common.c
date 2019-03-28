@@ -5299,9 +5299,10 @@ check_user_alignment (const_tree align, bool objfile, bool warn_zero)
       return -1;
     }
 
-  int log2bitalign;
+  /* Log2 of the byte alignment ALIGN.  */
+  int log2align;
   if (tree_int_cst_sgn (align) == -1
-      || (log2bitalign = tree_log2 (align)) == -1)
+      || (log2align = tree_log2 (align)) == -1)
     {
       error ("requested alignment %qE is not a positive power of 2",
 	     align);
@@ -5311,7 +5312,7 @@ check_user_alignment (const_tree align, bool objfile, bool warn_zero)
   if (objfile)
     {
       unsigned maxalign = MAX_OFILE_ALIGNMENT / BITS_PER_UNIT;
-      if (tree_to_shwi (align) > maxalign)
+      if (!tree_fits_uhwi_p (align) || tree_to_uhwi (align) > maxalign)
 	{
 	  error ("requested alignment %qE exceeds object file maximum %u",
 		 align, maxalign);
@@ -5319,14 +5320,14 @@ check_user_alignment (const_tree align, bool objfile, bool warn_zero)
 	}
     }
 
-  if (log2bitalign >= HOST_BITS_PER_INT - LOG2_BITS_PER_UNIT)
+  if (log2align >= HOST_BITS_PER_INT - LOG2_BITS_PER_UNIT)
     {
       error ("requested alignment %qE exceeds maximum %u",
-	     align, 1U << (HOST_BITS_PER_INT - 1));
+	     align, 1U << (HOST_BITS_PER_INT - LOG2_BITS_PER_UNIT - 1));
       return -1;
     }
 
-  return log2bitalign;
+  return log2align;
 }
 
 /* Determine the ELF symbol visibility for DECL, which is either a
@@ -8744,7 +8745,7 @@ try_to_locate_new_include_insertion_point (const char *file, location_t loc)
    no guarantee that two different diagnostics that are recommending
    adding e.g. "<stdio.h>" are using the same buffer.  */
 
-typedef hash_set <const char *, nofree_string_hash> per_file_includes_t;
+typedef hash_set <const char *, false, nofree_string_hash> per_file_includes_t;
 
 /* The map itself.  We don't need string comparison for the filename keys,
    as they come from libcpp.  */

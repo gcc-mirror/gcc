@@ -1,3 +1,387 @@
+2019-03-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.md (CC_SAVE_REG): New constant.
+	(movdi): Call gen_movdi_symbol_save_scc.
+	(gen_movdi_symbol_save_scc): New insn and split.
+
+2019-03-27  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/89313
+	* function.c (matching_constraint_num): New static function.
+	(match_asm_constraints_1): Use it.  Fixup white space and comment.
+	Don't replace inputs with non-matching constraints which conflict
+	with early clobber outputs.
+
+2019-03-27  Jeff Law  <law@redhat.com>
+
+
+	PR rtl-optimization/87761
+	PR rtl-optimization/89826
+	* regcprop.c (copyprop_hardreg_forward_1): Move may_trap_p test
+	slightly later.
+	(pass_cprop_hardreg::execute): Call df_analyze after adding the
+	note problem to get REG_DEAD/REG_UNUSED notes updated.
+
+2019-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89463
+	* tree-ssa-dce.c (remove_dead_stmt): Take output vector to
+	queue edges to remove.
+	(eliminate_unnecessary_stmts): Remove dead PHIs alongside
+	dead stmts.  Delay edge removal until PHIs are removed to
+	make debug-stmt creation not confused by seemingly degenerate
+	PHIs.
+
+2019-03-27  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.h: Rename NON_SPECIAL_REGS to GEN_OR_FLOAT_REGS
+	throughout file.
+	* config/rs6000/darwin.h: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+
+2019-03-27  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Always
+	assign rs6000_hard_regno_mode_ok_p[m][r].  Formatting.
+
+2019-03-26  Andrew Waterman  <andrew@sifive.com>
+	    Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/generic.md (generic_alu, generic_load, generic_store)
+	(generic_xfer, generic_branch, generic_imul, generic_idivsi)
+	(generic_idivdi, generic_fmul_single, generic_fmul_double)
+	(generic_fdiv, generic_fsqrt): Add check for generic tune.
+	(generic_alu): Add auipc to type list.
+	* config/riscv/riscv-opts.h (enum riscv_microarchitecture_type): New.
+	(riscv_microarchitecture): Declare.
+	* config/riscv/riscv-protos.h (riscv_store_data_bypass_p): Declare.
+	* config/riscv/riscv.c (struct riscv_cpu_info): Add microarchitecture
+	field.
+	(riscv_microarchitecture): New.
+	(sifive_7_tune_info): New.
+	(riscv_cpu_info_table): Add microarchitecture value for rocket and
+	size.  Add sifive-3-series, sifive-5-series, and sifive-7-series
+	entries.
+	(riscv_store_data_bypass_p): New.
+	(riscv_option_override): Set riscv_microarchitecture from
+	cpu->microarchitecture.
+	* config/riscv/riscv.md: Include sifive-7.md.
+	(type): Add auipc.
+	(tune): New.
+	(auipc<mode>): Change type to auipc.
+	(restore_stack_nonlocal): New.
+	* config/riscv/sifive-7.md: New.
+	* doc/invoke.texi (RISC-V Options): Update mtune docs.
+
+2019-03-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89827
+	* config/i386/i386.c (dimode_scalar_chain::convert_reg):
+	Also process XEXP (src, 0) of a shift insn.
+
+2019-03-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-inline.c (remap_gimple_stmt): Cache gimple_block.
+	(copy_debug_stmt): Likewise.
+	(expand_call_inline): Likewise.
+	(copy_bb): Avoid redundant lookup & set of gimple_block.
+	* gimple-low.c (lower_gimple_return): Likewise.
+	(lower_builtin_setjmp): Likewise.
+
+2019-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* hash-table.h (hash_table::m_gather_mem_stats): If GATHER_STATISTICS
+	is constant 0, turn into static const data member initialized to false.
+	(hash_table::hash_table): Only initialize m_gather_mem_stats #if
+	GATHER_STATISTICS.  Add ATTRIBUTE_UNUSED to gather_mem_stats param.
+
+2019-03-26  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* mem-stats.h (mem_alloc_description::unregister_descriptor): New
+	method.
+	(mem_alloc_description::release_object_overhead): Fix comment typos.
+	* hash-table.h (hash_table::~hash_table): Call
+	release_instance_overhead only if m_entries is non-NULL, otherwise
+	call unregister_descriptor.
+
+2019-03-26  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/81740
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence):
+	In case of outer loop vectorization, check for backward dependence
+	at the inner loop if outer loop dependence is reversed.
+
+2019-03-26  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Correct
+	rs6000_vector_mem init.  Correct wI and wJ comment.
+
+2019-03-25  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/88347
+	PR rtl-optimization/88423
+	* sched-deps.c (sched_analyze_insn): Take into account that for
+	tablejumps the barrier appears after a label and a jump_table_data.
+
+2019-03-25  Martin Sebor  <msebor@redhat.com>
+
+	PR c/89812
+	* c-common.c (check_user_alignment): Rename local.  Correct maximum
+	alignment in diagnostic.  Avoid assuming argument fits in SHWI,
+	convert it to UHWI when it fits.
+
+2019-03-25  Johan Karlsson <johan.karlsson@enea.com>
+
+	PR debug/86964
+	* dwarf2out.c (premark_used_variables): New function.
+	(prune_unused_types_walk): Do not mark not premarked external
+	variables.
+	(prune_unused_types): Call premark_used_variables.
+
+2019-03-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/89676
+	* lra-constraints.c (curr_insn_transform): Do match reload for
+	early clobbers when the match was successful only for different
+	registers.
+
+2019-03-25  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (Common Type Attributes): Document vector_size.
+	(Common Variable Attributes): Mention size constraint.  Correct
+	quoting and typos.
+	(Vector Extensions): Use @dfn when defining bas type.  Clarify
+	base type and size constraints.
+
+2019-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89789
+	* tree-ssa-sccvn.c (set_ssa_val_to): Do not allow lattice
+	changes from non-undefined back to undefined.
+
+2019-03-25  Thomas Otto  <thomas.otto@pdv-fs.de>
+
+	* dwarf2out.c (comp_dir_string): cached_wd could be set to both a
+	heap string and a gc string, but since this variable is unknown to
+	ggc the gc string might get reused and corrupted. Fixed by always
+	using a heap string.
+
+2019-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89779
+	* tree-ssa-loop-ivopts.c (remove_unused_ivs): Return
+	to remove IV defs, delay actual removal.
+	(tree_ssa_iv_optimize_loop): Likewise.  Avoid SCEV reset.
+	(tree_ssa_iv_optimize): Remove eliminated IV defs at the
+	very end, properly also reset loop control IV information.
+
+2019-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89802
+	* tree-ssa-math-opts.c (convert_mult_to_fma_1): Properly
+	move EH data to folded stmt.
+
+2019-03-25  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390-builtin-types.def: Remove few unused types and
+	fix sort order for others.
+
+2019-03-25  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390-c.c (s390_fn_types_compatible): Print the
+	expected and found types with -mdebug during builtin matching.
+
+2019-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89790
+	* fold-const.c (operand_equal_p): Revert last change with
+	updated comment.
+
+2019-03-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Add REG_EQUAL
+	notes for the result of the __tls_get_addr calls.
+	* config/rs6000/rs6000.md (unspec UNSPEC_TLS_GET_ADDR): New.
+
+2019-03-24  Jeff Law  <law@redhat.com>
+
+	* config/bfin/bfin.md (movpdi): Fix length for alternative 1.
+
+	PR rtl-optimization/87761
+	* regcprop.c (copyprop_hardreg_forward_1): Check may_trap_p on SET,
+	not INSN.  Also check RTX_FRAME_RELATED_P.  Queue insns for DF rescan
+	as needed.
+	(pass_cprop_hardreg::execute): Add df note problem and defer insn
+	rescans.  Reprocess blocks as needed, calling df_analyze before
+	reprocessing.  Always call df_analyze before fixing up debug bind
+	insns.
+
+2019-03-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/xmmintrin.h (_mm_movemask_pi8): Implement for 32-bit
+	big endian.
+
+2019-03-22  Andrew Pinski  <apinski@marvell.com>
+
+	* config/aarch64/aarch64.md (zero_extendsidi2_aarch64): Fix type
+	attrribute for uxtw.
+
+2019-03-26  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/87761
+	* config/mips/mips-protos.h (mips_split_move): Add new argument.
+	(mips_emit_move_or_split): Pass NULL for INSN into mips_split_move.
+	(mips_split_move): Accept new INSN argument.  Try to forward SRC
+	into the next instruction.
+	(mips_split_move_insn): Pass INSN through to mips_split_move.
+
+2019-03-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/89676
+	* lra-constraints.c (curr_insn_transform): Do match reload for
+	early clobbers even if the match was successful.
+
+2019-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87481
+	* doc/invoke.texi (-fconstexpr-ops-limit=): Document.
+
+2019-03-22  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/mmintrin.h (_mm_sub_pi32): Fix typo.
+
+2019-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (<avx512>_fmadd_<mode>_mask3<round_name>,
+	<avx512>_fmsub_<mode>_mask3<round_name>,
+	<avx512>_fnmadd_<mode>_mask3<round_name>,
+	<avx512>_fnmsub_<mode>_mask3<round_name>,
+	avx512f_vmfmadd_<mode>_mask3<round_name>,
+	avx512f_vmfmsub_<mode>_mask3<round_name>,
+	*avx512f_vmfnmadd_<mode>_mask3<round_name>): Use <round_nimm_predicate>
+	instead of register_operand and %v instead of v for match_operand 1.
+	(avx512f_vmfnmsub_<mode>_mask3<round_name>): Rename to ...
+	(*avx512f_vmfnmsub_<mode>_mask3<round_name>): ... this.  Use
+	<round_nimm_predicate> instead of register_operand and %v instead of v
+	for match_operand 1.
+
+	* config/i386/sse.md (<avx512>_fmadd_<mode>_mask<round_name>,
+	<avx512>_fmadd_<mode>_mask3<round_name>,
+	<avx512>_fmsub_<mode>_mask<round_name>,
+	<avx512>_fmsub_<mode>_mask3<round_name>,
+	<avx512>_fnmadd_<mode>_mask<round_name>,
+	<avx512>_fnmadd_<mode>_mask3<round_name>,
+	<avx512>_fnmsub_<mode>_mask<round_name>,
+	<avx512>_fnmsub_<mode>_mask3<round_name>,
+	<avx512>_fmaddsub_<mode>_mask<round_name>,
+	<avx512>_fmaddsub_<mode>_mask3<round_name>,
+	<avx512>_fmsubadd_<mode>_mask<round_name>,
+	<avx512>_fmsubadd_<mode>_mask3<round_name>): Use
+	<round_nimm_predicate> instead of nonimmediate_operand.
+	(fmai_vmfmadd_<mode><round_name>, fmai_vmfmsub_<mode><round_name>,
+	fmai_vmfnmadd_<mode><round_name>, fmai_vmfnmsub_<mode><round_name>):
+	Use register_operand instead of <round_nimm_predicate> for the
+	operand that needs to match output.
+	(*fmai_fmadd_<mode>, *fmai_fmsub_<mode>,
+	*fmai_fnmadd_<mode><round_name>, *fmai_fnmsub_<mode><round_name>):
+	Likewise.  Formatting fixes.
+
+	PR target/89784
+	* config/i386/i386.c (enum ix86_builtins): Remove
+	IX86_BUILTIN_VFMSUBSD3_MASK3 and IX86_BUILTIN_VFMSUBSS3_MASK3.
+	* config/i386/i386-builtin.def (__builtin_ia32_vfmaddsd3_mask,
+	__builtin_ia32_vfmaddsd3_mask3, __builtin_ia32_vfmaddsd3_maskz,
+	__builtin_ia32_vfmsubsd3_mask3, __builtin_ia32_vfmaddss3_mask,
+	__builtin_ia32_vfmaddss3_mask3, __builtin_ia32_vfmaddss3_maskz,
+	__builtin_ia32_vfmsubss3_mask3): New builtins.
+	* config/i386/sse.md (avx512f_vmfmadd_<mode>_mask<round_name>,
+	avx512f_vmfmadd_<mode>_mask3<round_name>,
+	avx512f_vmfmadd_<mode>_maskz_1<round_name>,
+	*avx512f_vmfmsub_<mode>_mask<round_name>,
+	avx512f_vmfmsub_<mode>_mask3<round_name>,
+	*avx512f_vmfmasub_<mode>_maskz_1<round_name>,
+	*avx512f_vmfnmadd_<mode>_mask<round_name>,
+	*avx512f_vmfnmadd_<mode>_mask3<round_name>,
+	*avx512f_vmfnmadd_<mode>_maskz_1<round_name>,
+	*avx512f_vmfnmsub_<mode>_mask<round_name>,
+	avx512f_vmfnmsub_<mode>_mask3<round_name>,
+	*avx512f_vmfnmsub_<mode>_maskz_1<round_name>): New define_insns.
+	(avx512f_vmfmadd_<mode>_maskz<round_expand_name>): New define_expand.
+	* config/i386/avx512fintrin.h (_mm_mask_fmadd_sd, _mm_mask_fmadd_ss,
+	_mm_mask3_fmadd_sd, _mm_mask3_fmadd_ss, _mm_maskz_fmadd_sd,
+	_mm_maskz_fmadd_ss, _mm_mask_fmsub_sd, _mm_mask_fmsub_ss,
+	_mm_mask3_fmsub_sd, _mm_mask3_fmsub_ss, _mm_maskz_fmsub_sd,
+	_mm_maskz_fmsub_ss, _mm_mask_fnmadd_sd, _mm_mask_fnmadd_ss,
+	_mm_mask3_fnmadd_sd, _mm_mask3_fnmadd_ss, _mm_maskz_fnmadd_sd,
+	_mm_maskz_fnmadd_ss, _mm_mask_fnmsub_sd, _mm_mask_fnmsub_ss,
+	_mm_mask3_fnmsub_sd, _mm_mask3_fnmsub_ss, _mm_maskz_fnmsub_sd,
+	_mm_maskz_fnmsub_ss, _mm_mask_fmadd_round_sd, _mm_mask_fmadd_round_ss,
+	_mm_mask3_fmadd_round_sd, _mm_mask3_fmadd_round_ss,
+	_mm_maskz_fmadd_round_sd, _mm_maskz_fmadd_round_ss,
+	_mm_mask_fmsub_round_sd, _mm_mask_fmsub_round_ss,
+	_mm_mask3_fmsub_round_sd, _mm_mask3_fmsub_round_ss,
+	_mm_maskz_fmsub_round_sd, _mm_maskz_fmsub_round_ss,
+	_mm_mask_fnmadd_round_sd, _mm_mask_fnmadd_round_ss,
+	_mm_mask3_fnmadd_round_sd, _mm_mask3_fnmadd_round_ss,
+	_mm_maskz_fnmadd_round_sd, _mm_maskz_fnmadd_round_ss,
+	_mm_mask_fnmsub_round_sd, _mm_mask_fnmsub_round_ss,
+	_mm_mask3_fnmsub_round_sd, _mm_mask3_fnmsub_round_ss,
+	_mm_maskz_fnmsub_round_sd, _mm_maskz_fnmsub_round_ss): New intrinsics.
+
+2019-03-21  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/89350
+	* builtins.c (compute_objsize): Also ignore offsets whose upper
+	bound is negative.
+	* gimple-ssa-warn-restrict.c (builtin_memref): Add new member.
+	(builtin_memref::builtin_memref): Initialize new member.
+	Allow EXPR to be null.
+	(builtin_memref::extend_offset_range): Replace local with a member.
+	Avoid assuming pointer offsets are unsigned.
+	(builtin_memref::set_base_and_offset): Determine base object
+	before computing offset range.
+	(builtin_access::builtin_access): Handle memset.
+	(builtin_access::generic_overlap): Replace local with a member.
+	(builtin_access::strcat_overlap): Same.
+	(builtin_access::overlap): Same.
+	(maybe_diag_overlap): Same.
+	(maybe_diag_access_bounds): Same.
+	(wrestrict_dom_walker::check_call): Handle memset.
+	(check_bounds_or_overlap): Same.
+
+2019-03-21  Jan Hubicka  <hubicka@ucw.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/89692
+	* tree.c (fld_type_variant, fld_incomplete_type_of,
+	fld_process_array_type): Call fld->pset.add and don't call
+	add_tree_to_fld_list if it returns true.
+	(free_lang_data_in_type): Similarly with self-recursive call.  Purge
+	non-marked types from TYPE_NEXT_VARIANT list.
+	(find_decls_types_r): Call fld_worklist_push for TYPE_CANONICAL (t).
+
+2019-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* hash-table.h (hash_table): Add Lazy template parameter defaulted
+	to false, if true, don't alloc_entries during construction, but defer
+	it to the first method that needs m_entries allocated.
+	(hash_table::hash_table, hash_table::~hash_table,
+	hash_table::alloc_entries, hash_table::find_empty_slot_for_expand,
+	hash_table::too_empty_p, hash_table::expand, hash_table::empty_slow,
+	hash_table::clear_slot, hash_table::traverse_noresize,
+	hash_table::traverse, hash_table::iterator::slide): Adjust all methods.
+	* hash-set.h (hash_set): Add Lazy template parameter defaulted to
+	false.
+	(hash_set::contains): If Lazy is true, use find_slot_with_hash with
+	NO_INSERT instead of find_with_hash.
+	(hash_set::traverse, hash_set::iterator, hash_set::iterator::m_iter,
+	hash_set::m_table): Add Lazy to template params of hash_table.
+	(gt_ggc_mx, gt_pch_nx): Use false as Lazy in hash_set template param.
+	* attribs.c (test_attribute_exclusions): Likewise.
+	* hash-set-tests.c (test_set_of_strings): Add iterator tests for
+	hash_set.  Add tests for hash_set with Lazy = true.
+
 2019-03-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89779
@@ -4975,7 +5359,7 @@
 	PR tree-opt/86020
 	Revert:
 	2017-05-22  Jan Hubicka  <hubicka@ucw.cz>
-	
+
         * ipa-inline.c (edge_badness): Use inlined_time instead of
         inline_summaries->get.
 

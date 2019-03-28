@@ -1018,27 +1018,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   //  Precondition: __n > 0.
   inline _GLIBCXX_CONSTEXPR int
   __lg(int __n)
-  { return sizeof(int) * __CHAR_BIT__  - 1 - __builtin_clz(__n); }
+  { return (int)sizeof(int) * __CHAR_BIT__  - 1 - __builtin_clz(__n); }
 
   inline _GLIBCXX_CONSTEXPR unsigned
   __lg(unsigned __n)
-  { return sizeof(int) * __CHAR_BIT__  - 1 - __builtin_clz(__n); }
+  { return (int)sizeof(int) * __CHAR_BIT__  - 1 - __builtin_clz(__n); }
 
   inline _GLIBCXX_CONSTEXPR long
   __lg(long __n)
-  { return sizeof(long) * __CHAR_BIT__ - 1 - __builtin_clzl(__n); }
+  { return (int)sizeof(long) * __CHAR_BIT__ - 1 - __builtin_clzl(__n); }
 
   inline _GLIBCXX_CONSTEXPR unsigned long
   __lg(unsigned long __n)
-  { return sizeof(long) * __CHAR_BIT__ - 1 - __builtin_clzl(__n); }
+  { return (int)sizeof(long) * __CHAR_BIT__ - 1 - __builtin_clzl(__n); }
 
   inline _GLIBCXX_CONSTEXPR long long
   __lg(long long __n)
-  { return sizeof(long long) * __CHAR_BIT__ - 1 - __builtin_clzll(__n); }
+  { return (int)sizeof(long long) * __CHAR_BIT__ - 1 - __builtin_clzll(__n); }
 
   inline _GLIBCXX_CONSTEXPR unsigned long long
   __lg(unsigned long long __n)
-  { return sizeof(long long) * __CHAR_BIT__ - 1 - __builtin_clzll(__n); }
+  { return (int)sizeof(long long) * __CHAR_BIT__ - 1 - __builtin_clzll(__n); }
 
 _GLIBCXX_BEGIN_NAMESPACE_ALGO
 

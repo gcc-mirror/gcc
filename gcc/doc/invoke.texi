@@ -211,7 +211,7 @@ in the following sections.
 @gccoptlist{-fabi-version=@var{n}  -fno-access-control @gol
 -faligned-new=@var{n}  -fargs-in-order=@var{n}  -fchar8_t  -fcheck-new @gol
 -fconstexpr-depth=@var{n}  -fconstexpr-loop-limit=@var{n} @gol
--fno-elide-constructors @gol
+-fconstexpr-ops-limit=@var{n} -fno-elide-constructors @gol
 -fno-enforce-eh-specs @gol
 -fno-gnu-keywords @gol
 -fno-implicit-templates @gol
@@ -2525,6 +2525,16 @@ is 512.
 Set the maximum number of iterations for a loop in C++14 constexpr functions
 to @var{n}.  A limit is needed to detect infinite loops during
 constant expression evaluation.  The default is 262144 (1<<18).
+
+@item -fconstexpr-ops-limit=@var{n}
+@opindex fconstexpr-ops-limit
+Set the maximum number of operations during a single constexpr evaluation.
+Even when number of iterations of a single loop is limited with the above limit,
+if there are several nested loops and each of them has many iterations but still
+smaller than the above limit, or if in a body of some loop or even outside
+of a loop too many expressions need to be evaluated, the resulting constexpr
+evaluation might take too long.
+The default is 33554432 (1<<25).
 
 @item -fdeduce-init-list
 @opindex fdeduce-init-list
@@ -23819,7 +23829,16 @@ lower-case.  Examples include @samp{rv64i}, @samp{rv32g}, @samp{rv32e}, and
 @item -mtune=@var{processor-string}
 @opindex mtune
 Optimize the output for the given processor, specified by microarchitecture
-name.
+name.  Permissible values for this option are: @samp{rocket},
+@samp{sifive-3-series}, @samp{sifive-5-series}, @samp{sifive-7-series},
+and @samp{size}.
+
+When @option{-mtune=} is not specified, the default is @samp{rocket}.
+
+The @samp{size} choice is not intended for use by end-users.  This is used
+when @option{-Os} is specified.  It overrides the instruction cost info
+provided by @option{-mtune=}, but does not override the pipeline info.  This
+helps reduce code size while still giving good performance.
 
 @item -mpreferred-stack-boundary=@var{num}
 @opindex mpreferred-stack-boundary

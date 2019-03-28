@@ -312,7 +312,7 @@ version (linux_libc)
         struct ip_opts
         {
             in_addr ip_dst;
-            char[40] ip_opts;
+            char[40] ip_opts = 0;
         };
 
         struct ip_mreqn
