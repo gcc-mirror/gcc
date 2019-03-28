@@ -1,5 +1,11 @@
 2019-03-28  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/89612 - ICE with member friend template with noexcept.
+	* pt.c (maybe_instantiate_noexcept): For function templates, use their
+	template result (function decl).  Don't set up local specializations.
+	Temporarily turn on processing_template_decl.  Update the template type
+	too.
+
 	PR c++/89836 - bool constant expression and explicit conversions.
 	* call.c (build_converted_constant_expr_internal): New function,
 	renamed from...

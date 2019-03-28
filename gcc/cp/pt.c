@@ -24193,6 +24193,17 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 
   if (DECL_CLONED_FUNCTION_P (fn))
     fn = DECL_CLONED_FUNCTION (fn);
+
+  tree orig_fn = NULL_TREE;
+  /* For a member friend template we can get a TEMPLATE_DECL.  Let's use
+     its FUNCTION_DECL for the rest of this function -- push_access_scope
+     doesn't accept TEMPLATE_DECLs.  */
+  if (DECL_FUNCTION_TEMPLATE_P (fn))
+    {
+      orig_fn = fn;
+      fn = DECL_TEMPLATE_RESULT (fn);
+    }
+
   fntype = TREE_TYPE (fn);
   spec = TYPE_RAISES_EXCEPTIONS (fntype);
 
@@ -24229,37 +24240,41 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 	  push_deferring_access_checks (dk_no_deferred);
 	  input_location = DECL_SOURCE_LOCATION (fn);
 
-	  /* A new stack interferes with pop_access_scope.  */
-	  {
-	    /* Set up the list of local specializations.  */
-	    local_specialization_stack lss (lss_copy);
+	  tree save_ccp = current_class_ptr;
+	  tree save_ccr = current_class_ref;
+	  /* If needed, set current_class_ptr for the benefit of
+	     tsubst_copy/PARM_DECL.  */
+	  tree tdecl = DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (fn));
+	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (tdecl))
+	    {
+	      tree this_parm = DECL_ARGUMENTS (tdecl);
+	      current_class_ptr = NULL_TREE;
+	      current_class_ref = cp_build_fold_indirect_ref (this_parm);
+	      current_class_ptr = this_parm;
+	    }
 
-	    tree save_ccp = current_class_ptr;
-	    tree save_ccr = current_class_ref;
-	    /* If needed, set current_class_ptr for the benefit of
-	       tsubst_copy/PARM_DECL.  */
-	    tree tdecl = DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (fn));
-	    if (DECL_NONSTATIC_MEMBER_FUNCTION_P (tdecl))
-	      {
-		tree this_parm = DECL_ARGUMENTS (tdecl);
-		current_class_ptr = NULL_TREE;
-		current_class_ref = cp_build_fold_indirect_ref (this_parm);
-		current_class_ptr = this_parm;
-	      }
+	  /* If this function is represented by a TEMPLATE_DECL, then
+	     the deferred noexcept-specification might still contain
+	     dependent types, even after substitution.  And we need the
+	     dependency check functions to work in build_noexcept_spec.  */
+	  if (orig_fn)
+	    ++processing_template_decl;
 
-	    /* Create substitution entries for the parameters.  */
-	    register_parameter_specializations (tdecl, fn);
+	  /* Do deferred instantiation of the noexcept-specifier.  */
+	  noex = tsubst_copy_and_build (DEFERRED_NOEXCEPT_PATTERN (noex),
+					DEFERRED_NOEXCEPT_ARGS (noex),
+					tf_warning_or_error, fn,
+					/*function_p=*/false,
+					/*i_c_e_p=*/true);
 
-	    /* Do deferred instantiation of the noexcept-specifier.  */
-	    noex = tsubst_copy_and_build (DEFERRED_NOEXCEPT_PATTERN (noex),
-					  DEFERRED_NOEXCEPT_ARGS (noex),
-					  tf_warning_or_error, fn,
-					  /*function_p=*/false,
-					  /*i_c_e_p=*/true);
-	    current_class_ptr = save_ccp;
-	    current_class_ref = save_ccr;
-	    spec = build_noexcept_spec (noex, tf_warning_or_error);
-	  }
+	  current_class_ptr = save_ccp;
+	  current_class_ref = save_ccr;
+
+	  /* Build up the noexcept-specification.  */
+	  spec = build_noexcept_spec (noex, tf_warning_or_error);
+
+	  if (orig_fn)
+	    --processing_template_decl;
 
 	  pop_deferring_access_checks ();
 	  pop_access_scope (fn);
@@ -24279,6 +24294,8 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 	}
 
       TREE_TYPE (fn) = build_exception_variant (fntype, spec);
+      if (orig_fn)
+	TREE_TYPE (orig_fn) = TREE_TYPE (fn);
     }
 
   FOR_EACH_CLONE (clone, fn)
