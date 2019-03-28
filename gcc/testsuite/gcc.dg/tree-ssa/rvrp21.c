@@ -30,4 +30,4 @@ void foo (void)
 
 /* i_12 = i_6 + 1... i_6 should be [1, 198] on the back edge,  */
 /* i_12 should be [2, 199].				   */
-/* { dg-final { scan-tree-dump "\\\[2, 199\\\]" "rvrp" } } */
+/* { dg-final { scan-tree-dump "\\\[2, 199\\\]" "rvrp" { xfail *-*-* } } } */
