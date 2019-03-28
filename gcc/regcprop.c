@@ -801,7 +801,6 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       /* Detect obviously dead sets (via REG_UNUSED notes) and remove them.  */
       if (set
 	  && !RTX_FRAME_RELATED_P (insn)
-	  && INSN_P (insn)
 	  && !may_trap_p (set)
 	  && find_reg_note (insn, REG_UNUSED, SET_DEST (set))
 	  && !side_effects_p (SET_SRC (set))
@@ -1282,6 +1281,76 @@ public:
 
 }; // class pass_cprop_hardreg
 
+static bool
+cprop_hardreg_bb (basic_block bb, struct value_data *all_vd, sbitmap visited)
+{
+  bitmap_set_bit (visited, bb->index);
+
+  /* If a block has a single predecessor, that we've already
+     processed, begin with the value data that was live at
+     the end of the predecessor block.  */
+  /* ??? Ought to use more intelligent queuing of blocks.  */
+  if (single_pred_p (bb)
+      && bitmap_bit_p (visited, single_pred (bb)->index)
+      && ! (single_pred_edge (bb)->flags & (EDGE_ABNORMAL_CALL | EDGE_EH)))
+    {
+      all_vd[bb->index] = all_vd[single_pred (bb)->index];
+      if (all_vd[bb->index].n_debug_insn_changes)
+	{
+	  unsigned int regno;
+
+	  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	    {
+	      if (all_vd[bb->index].e[regno].debug_insn_changes)
+		{
+		  struct queued_debug_insn_change *cur;
+		  for (cur = all_vd[bb->index].e[regno].debug_insn_changes;
+		       cur; cur = cur->next)
+		    --all_vd[bb->index].n_debug_insn_changes;
+		  all_vd[bb->index].e[regno].debug_insn_changes = NULL;
+		  if (all_vd[bb->index].n_debug_insn_changes == 0)
+		    break;
+		}
+	    }
+	}
+    }
+  else
+    init_value_data (all_vd + bb->index);
+
+  return copyprop_hardreg_forward_1 (bb, all_vd + bb->index);
+}
+
+static void
+cprop_hardreg_debug (function *fun, struct value_data *all_vd)
+{
+  basic_block bb;
+
+  FOR_EACH_BB_FN (bb, fun)
+    if (all_vd[bb->index].n_debug_insn_changes)
+      {
+	unsigned int regno;
+	bitmap live;
+
+	live = df_get_live_out (bb);
+	for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	  if (all_vd[bb->index].e[regno].debug_insn_changes)
+	    {
+	      if (REGNO_REG_SET_P (live, regno))
+		apply_debug_insn_changes (all_vd + bb->index, regno);
+
+	      struct queued_debug_insn_change *cur;
+	      for (cur = all_vd[bb->index].e[regno].debug_insn_changes;
+		   cur; cur = cur->next)
+		--all_vd[bb->index].n_debug_insn_changes;
+	      all_vd[bb->index].e[regno].debug_insn_changes = NULL;
+	      if (all_vd[bb->index].n_debug_insn_changes == 0)
+		break;
+	    }
+      }
+
+  queued_debug_insn_change_pool.release ();
+}
+
 unsigned int
 pass_cprop_hardreg::execute (function *fun)
 {
@@ -1292,6 +1361,9 @@ pass_cprop_hardreg::execute (function *fun)
 
   auto_sbitmap visited (last_basic_block_for_fn (fun));
   bitmap_clear (visited);
+
+  auto_vec<int> worklist;
+  bool any_debug_changes = false;
 
   /* We need accurate notes.  Earlier passes such as if-conversion may
      leave notes in an inconsistent state.  */
@@ -1310,69 +1382,39 @@ pass_cprop_hardreg::execute (function *fun)
 
   FOR_EACH_BB_FN (bb, fun)
     {
-      bitmap_set_bit (visited, bb->index);
-
-      for (int pass = 0; pass < 2; pass++)
-	{
-	  /* If a block has a single predecessor, that we've already
-	     processed, begin with the value data that was live at
-	    the end of the predecessor block.  */
-	  /* ??? Ought to use more intelligent queuing of blocks.  */
-	  if (single_pred_p (bb)
-	      && bitmap_bit_p (visited, single_pred (bb)->index)
-	      && ! (single_pred_edge (bb)->flags & (EDGE_ABNORMAL_CALL | EDGE_EH)))
-	    {
-	      all_vd[bb->index] = all_vd[single_pred (bb)->index];
-	      if (all_vd[bb->index].n_debug_insn_changes)
-		{
-		  unsigned int regno;
-
-		  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		    {
-		      if (all_vd[bb->index].e[regno].debug_insn_changes)
-			{
-			  all_vd[bb->index].e[regno].debug_insn_changes = NULL;
-			  if (--all_vd[bb->index].n_debug_insn_changes == 0)
-			    break;
-			}
-		    }
-		}
-	    }
-	  else
-	    init_value_data (all_vd + bb->index);
-
-	  /* If we were unable to propagate, then break the loop.  */
-	  if (!copyprop_hardreg_forward_1 (bb, all_vd + bb->index))
-	    break;
-	  df_analyze ();
-	}
+      if (cprop_hardreg_bb (bb, all_vd, visited))
+	worklist.safe_push (bb->index);
+      if (all_vd[bb->index].n_debug_insn_changes)
+	any_debug_changes = true;
     }
 
   /* We must call df_analyze here unconditionally to ensure that the
      REG_UNUSED and REG_DEAD notes are consistent with and without -g.  */
   df_analyze ();
 
-  if (MAY_HAVE_DEBUG_BIND_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS && any_debug_changes)
+    cprop_hardreg_debug (fun, all_vd);
+
+  /* Second pass if we've changed anything, only for the bbs where we have
+     changed anything though.  */
+  if (!worklist.is_empty ())
     {
-      FOR_EACH_BB_FN (bb, fun)
-	if (bitmap_bit_p (visited, bb->index)
-	    && all_vd[bb->index].n_debug_insn_changes)
-	  {
-	    unsigned int regno;
-	    bitmap live;
+      unsigned int i;
+      int index;
 
-	    live = df_get_live_out (bb);
-	    for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	      if (all_vd[bb->index].e[regno].debug_insn_changes)
-		{
-		  if (REGNO_REG_SET_P (live, regno))
-		    apply_debug_insn_changes (all_vd + bb->index, regno);
-		  if (all_vd[bb->index].n_debug_insn_changes == 0)
-		    break;
-		}
-	  }
+      any_debug_changes = false;
+      bitmap_clear (visited);
+      FOR_EACH_VEC_ELT (worklist, i, index)
+	{
+	  bb = BASIC_BLOCK_FOR_FN (fun, index);
+	  cprop_hardreg_bb (bb, all_vd, visited);
+	  if (all_vd[bb->index].n_debug_insn_changes)
+	    any_debug_changes = true;
+	}
 
-      queued_debug_insn_change_pool.release ();
+      df_analyze ();
+      if (MAY_HAVE_DEBUG_BIND_INSNS && any_debug_changes)
+	cprop_hardreg_debug (fun, all_vd);
     }
 
   free (all_vd);

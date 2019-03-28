@@ -1,5 +1,15 @@
 2019-03-28  Jakub Jelinek  <jakub@redhat.com>
 
+	* regcprop.c (copyprop_hardreg_forward_1): Remove redundant INSN_P
+	test.
+	(cprop_hardreg_bb, cprop_hardreg_debug): New functions.
+	(pass_cprop_hardreg::execute): Use those.  Don't repeat bb processing
+	immediately after first one with df_analyze in between, but rather
+	process all bbs, queueing ones that need second pass in a worklist,
+	df_analyze, process queued debug insn changes and if second pass is
+	needed, process bbs from worklist, df_analyze, process queued debug
+	insns again.
+
 	* rtl.h (NONDEBUG_INSN_P): Define as NONJUMP_INSN_P or JUMP_P
 	or CALL_P instead of INSN_P && !DEBUG_INSN_P.
 	(INSN_P): Define using NONDEBUG_INSN_P or DEBUG_INSN_P.
