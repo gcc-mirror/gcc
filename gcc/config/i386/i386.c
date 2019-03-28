@@ -1867,7 +1867,10 @@ dimode_scalar_chain::make_vector_copies (unsigned regno)
 		 || GET_CODE (src) == LSHIFTRT)
 		&& !CONST_INT_P (XEXP (src, 1))
 		&& reg_or_subregno (XEXP (src, 1)) == regno)
-	      XEXP (src, 1) = vreg;
+	      {
+		XEXP (src, 0) = replace_with_subreg (XEXP (src, 0), reg, reg);
+		XEXP (src, 1) = vreg;
+	      }
 	  }
 	else
 	  replace_with_subreg_in_insn (insn, reg, vreg);
