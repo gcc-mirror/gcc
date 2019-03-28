@@ -598,6 +598,92 @@ remap_type_1 (tree type, copy_body_data *id)
   return new_tree;
 }
 
+/* Helper function for remap_type_2, called through walk_tree.  */
+
+static tree
+remap_type_3 (tree *tp, int *walk_subtrees, void *data)
+{
+  copy_body_data *id = (copy_body_data *) data;
+
+  if (TYPE_P (*tp))
+    *walk_subtrees = 0;
+
+  else if (DECL_P (*tp) && remap_decl (*tp, id) != *tp)
+    return *tp;
+
+  return NULL_TREE;
+}
+
+/* Return true if TYPE needs to be remapped because remap_decl on any
+   needed embedded decl returns something other than that decl.  */
+
+static bool
+remap_type_2 (tree type, copy_body_data *id)
+{
+  tree t;
+
+#define RETURN_TRUE_IF_VAR(T) \
+  do								\
+    {								\
+      tree _t = (T);						\
+      if (_t)							\
+	{							\
+	  if (DECL_P (_t) && remap_decl (_t, id) != _t)		\
+	    return true;					\
+	  if (!TYPE_SIZES_GIMPLIFIED (type)			\
+	      && walk_tree (&_t, remap_type_3, id, NULL))	\
+	    return true;					\
+	}							\
+    }								\
+  while (0)
+
+  switch (TREE_CODE (type))
+    {
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+    case FUNCTION_TYPE:
+    case METHOD_TYPE:
+      return remap_type_2 (TREE_TYPE (type), id);
+
+    case INTEGER_TYPE:
+    case REAL_TYPE:
+    case FIXED_POINT_TYPE:
+    case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
+      RETURN_TRUE_IF_VAR (TYPE_MIN_VALUE (type));
+      RETURN_TRUE_IF_VAR (TYPE_MAX_VALUE (type));
+      return false;
+
+    case ARRAY_TYPE:
+      if (remap_type_2 (TREE_TYPE (type), id)
+	  || (TYPE_DOMAIN (type) && remap_type_2 (TYPE_DOMAIN (type), id)))
+	return true;
+      break;
+
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case QUAL_UNION_TYPE:
+      for (t = TYPE_FIELDS (type); t; t = DECL_CHAIN (t))
+	if (TREE_CODE (t) == FIELD_DECL)
+	  {
+	    RETURN_TRUE_IF_VAR (DECL_FIELD_OFFSET (t));
+	    RETURN_TRUE_IF_VAR (DECL_SIZE (t));
+	    RETURN_TRUE_IF_VAR (DECL_SIZE_UNIT (t));
+	    if (TREE_CODE (type) == QUAL_UNION_TYPE)
+	      RETURN_TRUE_IF_VAR (DECL_QUALIFIER (t));
+	  }
+      break;
+
+    default:
+      return false;
+    }
+
+  RETURN_TRUE_IF_VAR (TYPE_SIZE (type));
+  RETURN_TRUE_IF_VAR (TYPE_SIZE_UNIT (type));
+  return false;
+#undef RETURN_TRUE_IF_VAR
+}
+
 tree
 remap_type (tree type, copy_body_data *id)
 {
@@ -613,7 +699,10 @@ remap_type (tree type, copy_body_data *id)
     return *node;
 
   /* The type only needs remapping if it's variably modified.  */
-  if (! variably_modified_type_p (type, id->src_fn))
+  if (! variably_modified_type_p (type, id->src_fn)
+      /* Don't remap if copy_decl method doesn't always return a new
+	 decl and for all embedded decls returns the passed in decl.  */
+      || (id->dont_remap_vla_if_no_change && !remap_type_2 (type, id)))
     {
       insert_decl_map (id, type, type);
       return type;
