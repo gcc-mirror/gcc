@@ -3446,7 +3446,7 @@ simplify_with_ranges::simplify_cond_using_ranges_1 ()
 
       /* If we have range information for OP0, then we might be
 	 able to simplify this conditional. */
-      if (!ir.varying_p ())
+      if (!ir.varying_p () && !ir.undefined_p ())
 	{
 	  tree new_tree = test_for_singularity (cond_code, op0, op1, ir);
 	  if (new_tree)

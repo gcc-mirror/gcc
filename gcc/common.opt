@@ -1769,8 +1769,29 @@ ftree-rvrp
 Common Report Var(flag_tree_rvrp) Init(1) Optimization
 Perform Ranger Value Range Propagation on trees.
 
+; Temporary testing construct.
+frvrp-order=
+Common Joined RejectNegative Enum(rvrp_order) Var(flag_rvrp_order) Init(RVRP_ORDER_UNSPECIFIED)
+-frvrp-order=[dom|postdom|forward|backwards]	Set the ranger VRP traversal order.
+
+Enum
+Name(rvrp_order) Type(enum rvrp_order) UnknownError(unknown rvrp order %qs)
+
+EnumValue
+Enum(rvrp_order) String(dom) Value(RVRP_ORDER_DOMINATOR)
+
+EnumValue
+Enum(rvrp_order) String(postdom) Value(RVRP_ORDER_POSTDOM)
+
+EnumValue
+Enum(rvrp_order) String(forward) Value(RVRP_ORDER_FORWARD)
+
+EnumValue
+Enum(rvrp_order) String(backwards) Value(RVRP_ORDER_BACKWARDS)
+
+; Temporary testing construct.
 franges=
-Common Joined RejectNegative Enum(ranges_mode) Var(flag_ranges_mode) Init(RANGES_CHECKING) Undocumented
+Common Joined RejectNegative Enum(ranges_mode) Var(flag_ranges_mode) Init(RANGES_CHECKING)
 -franges=[checking|vrp|ranger]	Set the mode for calculating ranges.
 
 Enum

@@ -346,9 +346,7 @@ dom_accumulator::before_dom_children (basic_block bb)
 class rvrp_engine
 {
 public:
-  enum kind { WALK_DOM, WALK_POSTDOM, WALK_FORWARD, WALK_BACKWARDS };
-
-  rvrp_engine (enum kind);
+  rvrp_engine (enum rvrp_order);
   ~rvrp_engine ();
 
 private:
@@ -363,27 +361,27 @@ private:
   propagate_cleanups m_cleanups;
 };
 
-rvrp_engine::rvrp_engine (enum kind k)
+rvrp_engine::rvrp_engine (enum rvrp_order order)
 {
   basic_block bb;
   m_bbs.reserve (n_basic_blocks_for_fn (cfun));
-  switch (k)
+  switch (order)
     {
-    case WALK_DOM:
+    case RVRP_ORDER_DOMINATOR:
       m_dom_accumulator = new dom_accumulator (CDI_DOMINATORS, m_bbs);
       break;
-    case WALK_POSTDOM:
+    case RVRP_ORDER_POSTDOM:
       // ?? CDI_DOMINATORS is also being built by phi_loop_range
       // constructor.  Do we need it?
       calculate_dominance_info (CDI_POST_DOMINATORS);
       m_dom_accumulator = new dom_accumulator (CDI_POST_DOMINATORS, m_bbs);
       break;
-    case WALK_FORWARD:
+    case RVRP_ORDER_FORWARD:
       FOR_EACH_BB_FN (bb, cfun)
 	m_bbs.quick_push (bb);
       m_dom_accumulator = NULL;
       break;
-    case WALK_BACKWARDS:
+    case RVRP_ORDER_BACKWARDS:
       FOR_EACH_BB_REVERSE_FN (bb, cfun)
 	m_bbs.quick_push (bb);
       m_dom_accumulator = NULL;
@@ -465,24 +463,9 @@ rvrp_engine::run ()
 static unsigned int
 execute_ranger_vrp ()
 {
-  rvrp_engine::kind kind = rvrp_engine::WALK_DOM;
-  if (char *str = getenv ("DIRECTION"))
-    {
-      if (!strcmp (str, "forward"))
-	kind = rvrp_engine::WALK_FORWARD;
-      else if (!strcmp (str, "backwards"))
-	kind = rvrp_engine::WALK_BACKWARDS;
-      else if (!strcmp (str, "dom"))
-	kind = rvrp_engine::WALK_DOM;
-      else if (!strcmp (str, "postdom"))
-	kind = rvrp_engine::WALK_POSTDOM;
-      else
-	{
-	  fprintf (stderr, "Unknown DIR variable of '%s'\n", str);
-	  gcc_unreachable ();
-	}
-    }
-  rvrp_engine w (kind);
+  enum rvrp_order order
+    = flag_rvrp_order ? flag_rvrp_order : RVRP_ORDER_DOMINATOR;
+  rvrp_engine w (order);
   return 0;
 }
 

@@ -145,6 +145,16 @@ enum ira_algorithm
   IRA_ALGORITHM_PRIORITY
 };
 
+/* Basic block traversal order for RVRP.  */
+enum rvrp_order
+{
+  RVRP_ORDER_UNSPECIFIED,
+  RVRP_ORDER_DOMINATOR,
+  RVRP_ORDER_POSTDOM,
+  RVRP_ORDER_FORWARD,
+  RVRP_ORDER_BACKWARDS
+};
+
 /* Which method to use for operations on ranges.  */
 enum ranges_mode
 {
