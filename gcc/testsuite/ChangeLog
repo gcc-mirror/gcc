@@ -1,5 +1,8 @@
 2019-03-28  Martin Sebor  <msebor@redhat.com>
 
+	PR c++/66548
+	* g++.dg/cpp0x/decltype-pr66548.C: New test.
+
 	PR c++/81506
 	* g++.dg/cpp0x/decltype-pr81506.C: New test.
 
