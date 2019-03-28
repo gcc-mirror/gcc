@@ -1,5 +1,9 @@
 2019-03-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/89812
+	* gcc.dg/attr-aligned-3.c: Limit the test to known ELF targets
+	other than AVR.  Add dg-options "".
+
 	PR c++/89785
 	* g++.dg/cpp1y/constexpr-89785-1.C: New test.
 	* g++.dg/cpp1y/constexpr-89785-2.C: New test.
