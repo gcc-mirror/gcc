@@ -141,7 +141,7 @@ rvrp_fold (ssa_ranger &ranger, gimple *stmt, bitmap touched)
       // If it folds to a constant and it's OK to propagate the args.
       if (r.singleton_p ())
 	{
-	  if (dump_file)
+	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 	      fprintf (dump_file, "      Expression evaluates to singleton: ");
