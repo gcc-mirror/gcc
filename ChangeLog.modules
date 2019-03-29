@@ -1,3 +1,16 @@
+2019-03-29  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (saved_scope): Remove this_module field.
+	(current_module): Delete.
+	(module_import_bitmap): Rename to ...
+	(get_import_bitmap): ... here.  Lose arg.
+	* module.cc (module_import_bitmap): Rename to ...
+	(get_import_bitmap): ... here.  Lose arg.
+	* name-lookup.c (name_lookup::search_namespace_only): Adjust.
+	(check_module_override, finish_nonmember_using_decl): Likewise.
+	(do_push_to_top_level): Drop this_module field init.
+
 2019-03-28  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

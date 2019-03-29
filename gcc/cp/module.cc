@@ -13424,13 +13424,13 @@ module_name (unsigned ix, const char **maybe_primary)
   return imp->get_flatname ();
 }
 
-/* Return the bitmap describing what modules are imported into
-   MODULE.  Remember, we always import ourselves.  */
+/* Return the bitmap describing what modules are imported.  Remember,
+   we always import ourselves.  */
 
 bitmap
-module_import_bitmap (unsigned ix)
+get_import_bitmap ()
 {
-  return (*modules)[ix]->imports;
+  return (*modules)[0]->imports;
 }
 
 /* Return the bitmap describing what modules are visible along the
@@ -14003,7 +14003,6 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
       gmf->parent = state; /* So mangler knows module identity.  */
     }
 
-  current_module = MODULE_PURVIEW;
   (*modules)[MODULE_PURVIEW] = gmf;
 
   vec_safe_push (pending_imports, state);

@@ -752,8 +752,6 @@ bool
 name_lookup::search_namespace_only (tree scope)
 {
   bool found = false;
-  gcc_checking_assert (current_module <= MODULE_IMPORT_BASE);
-
   if (tree *binding = find_namespace_slot (scope, name))
     {
       tree val = *binding;
@@ -762,7 +760,7 @@ name_lookup::search_namespace_only (tree scope)
 	  /* I presume the binding list is going to be sparser than
 	     the import bitmap.  Hence iterate over the former
 	     checking for bits set in the bitmap.  */
-	  bitmap imports = module_import_bitmap (MODULE_NONE);
+	  bitmap imports = get_import_bitmap ();
 	  module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (val);
 	  int marker = 0;
 
@@ -3527,7 +3525,7 @@ static tree
 check_module_override (tree decl, tree mvec, bool is_friend,
 		       tree scope, tree name)
 {
-  bitmap imports = module_import_bitmap (current_module);
+  bitmap imports = get_import_bitmap ();
   module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (mvec);
   unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (mvec);
 
@@ -3678,7 +3676,6 @@ do_pushdecl (tree decl, bool is_friend)
 	  slot = find_namespace_slot (ns, name, ns == current_namespace);
 	  if (slot)
 	    {
-	      gcc_assert (current_module <= MODULE_IMPORT_BASE);
 	      mslot = get_fixed_binding_slot (slot, name, MODULE_SLOT_CURRENT,
 					      ns == current_namespace);
 	      old = MAYBE_STAT_DECL (*mslot);
@@ -6149,7 +6146,7 @@ finish_nonmember_using_decl (tree scope, tree name)
 	  /* A module vector.  I presume the binding list is going to
 	     be sparser than the import bitmap.  Hence iterate over
 	     the former checking for bits set in the bitmap.  */
-	  bitmap imports = module_import_bitmap (MODULE_NONE);
+	  bitmap imports = get_import_bitmap ();
 	  module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (*slot);
 
 	  /* Scan the imported bindings.  */
@@ -8190,8 +8187,6 @@ do_push_to_top_level (void)
 
   FOR_EACH_VEC_SAFE_ELT (s->old_bindings, i, sb)
     IDENTIFIER_MARKED (sb->identifier) = 0;
-
-  s->this_module = 0;
 
   s->prev = scope_chain;
   s->bindings = b;
