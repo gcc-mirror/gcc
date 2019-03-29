@@ -4500,12 +4500,6 @@ of error, as programmers often forget that this type is signed on some
 machines.
 This warning is enabled by @option{-Wall}.
 
-@item -Wchkp
-@opindex Wchkp
-@opindex Wno-chkp
-Warn about an invalid memory access that is found by Pointer Bounds Checker
-(@option{-fcheck-pointer-bounds}).
-
 @item -Wno-coverage-mismatch
 @opindex Wno-coverage-mismatch
 @opindex Wcoverage-mismatch
