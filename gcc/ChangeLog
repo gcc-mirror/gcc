@@ -1,3 +1,9 @@
+2019-03-29  Martin Liska  <mliska@suse.cz>
+
+	* dbgcnt.c (dbg_cnt_process_single_pair): Fix GNU coding style.
+	(dbg_cnt_process_opt): Parse first tokens aas
+	dbg_cnt_process_single_pair is also using strtok.
+
 2019-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/87485
