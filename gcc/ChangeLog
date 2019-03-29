@@ -1,3 +1,8 @@
+2019-03-29  Jim Wilson  <jimw@sifive.com>
+
+	* common/config/riscv/riscv-common.c (riscv_parse_arch_string):
+	Clear MASK_RVC and then set if C subset supported.
+
 2019-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/89872

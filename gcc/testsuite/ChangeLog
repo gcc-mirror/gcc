@@ -1,3 +1,14 @@
+2019-03-29  Jim Wilson  <jimw@sifive.com>
+
+	* gcc.target/riscv/predef-1.c: New.
+	* gcc.target/riscv/predef-2.c: New.
+	* gcc.target/riscv/predef-3.c: New.
+	* gcc.target/riscv/predef-4.c: New.
+	* gcc.target/riscv/predef-5.c: New.
+	* gcc.target/riscv/predef-6.c: New.
+	* gcc.target/riscv/predef-7.c: New.
+	* gcc.target/riscv/predef-8.c: New.
+
 2019-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/89865
