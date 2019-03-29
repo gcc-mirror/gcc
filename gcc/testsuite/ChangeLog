@@ -1,5 +1,10 @@
 2019-03-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/89865
+	* gcc.target/i386/pr49095.c: Include in scan-assembler-times patterns
+	the first argument register, so that occassional spills/fills are
+	ignored.
+
 	PR sanitizer/89869
 	* g++.dg/ubsan/vptr-14.C: New test.
 
