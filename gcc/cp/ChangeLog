@@ -1,3 +1,10 @@
+2019-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/89869
+	* typeck.c: Include gimplify.h.
+	(cp_build_modify_expr) <case COND_EXPR>: Unshare rhs before using it
+	for second time.  Formatting fixes.
+
 2019-03-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89876 - ICE with deprecated conversion.
