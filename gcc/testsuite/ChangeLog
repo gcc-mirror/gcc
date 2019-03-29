@@ -3,6 +3,9 @@
 	PR c++/89871
 	* g++.dg/cpp2a/desig14.C: New test.
 
+	PR c++/89876 - ICE with deprecated conversion.
+	* g++.dg/warn/conv5.C: New test.
+
 2019-03-29  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/ipa/ipa-icf-39.c: Prine '***dbgcnt' output.
