@@ -5330,6 +5330,12 @@ expand_function_end (void)
      communicate between __builtin_eh_return and the epilogue.  */
   expand_eh_return ();
 
+  /* If stack protection is enabled for this function, check the guard.  */
+  if (crtl->stack_protect_guard
+      && targetm.stack_protect_runtime_enabled_p ()
+      && naked_return_label == NULL_RTX)
+    stack_protect_epilogue ();
+
   /* If scalar return value was computed in a pseudo-reg, or was a named
      return value that got dumped to the stack, copy that to the hard
      return register.  */
@@ -5476,7 +5482,9 @@ expand_function_end (void)
     emit_insn (gen_blockage ());
 
   /* If stack protection is enabled for this function, check the guard.  */
-  if (crtl->stack_protect_guard && targetm.stack_protect_runtime_enabled_p ())
+  if (crtl->stack_protect_guard
+      && targetm.stack_protect_runtime_enabled_p ()
+      && naked_return_label)
     stack_protect_epilogue ();
 
   /* If we had calls to alloca, and this machine needs
