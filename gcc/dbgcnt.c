@@ -151,30 +151,35 @@ dbg_cnt_process_single_pair (const char *arg)
       high = strtol (value2, NULL, 10);
     }
 
-   return dbg_cnt_set_limit_by_name (name, low, high);
+  return dbg_cnt_set_limit_by_name (name, low, high);
 }
 
 void
 dbg_cnt_process_opt (const char *arg)
 {
   char *str = xstrdup (arg);
-  const char *next = strtok (str, ",");
   unsigned int start = 0;
 
-   do {
-     if (!dbg_cnt_process_single_pair (arg))
-       break;
-     start += strlen (arg) + 1;
-     next = strtok (NULL, ",");
-   } while (next != NULL);
+  auto_vec<const char *> tokens;
+  for (const char *next = strtok (str, ","); next != NULL;
+       next = strtok (NULL, ","))
+    tokens.safe_push (next);
 
-   if (next != NULL)
+  unsigned i;
+  for (i = 0; i < tokens.length (); i++)
+    {
+     if (!dbg_cnt_process_single_pair (tokens[i]))
+       break;
+     start += strlen (tokens[i]) + 1;
+    }
+
+   if (i != tokens.length ())
      {
        char *buffer = XALLOCAVEC (char, start + 2);
        sprintf (buffer, "%*c", start + 1, '^');
        error ("cannot find a valid counter:value pair:");
-       error ("%<-fdbg-cnt=%s%>", next);
-       error ("          %s", buffer);
+       error ("%<-fdbg-cnt=%s%>", arg);
+       error ("           %s", buffer);
      }
 }
 
