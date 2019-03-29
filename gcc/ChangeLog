@@ -1,3 +1,7 @@
+2019-03-29  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* opts-common.c (integral_argument): Set errno properly in one case.
+
 2019-03-29  Martin Liska  <mliska@suse.cz>
 
 	* doc/invoke.texi: Remove -Wchkp from documentation.

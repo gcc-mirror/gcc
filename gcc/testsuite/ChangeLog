@@ -1,3 +1,7 @@
+2019-03-29  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* gcc.dg/diag-sanity.c: New test.
+
 2019-03-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89871
