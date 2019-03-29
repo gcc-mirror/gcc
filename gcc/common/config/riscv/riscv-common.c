@@ -564,6 +564,10 @@ riscv_parse_arch_string (const char *isa, int *flags, location_t loc)
   if (subset_list->lookup ("d"))
     *flags |= MASK_DOUBLE_FLOAT;
 
+  *flags &= ~MASK_RVC;
+  if (subset_list->lookup ("c"))
+    *flags |= MASK_RVC;
+
   if (current_subset_list)
     delete current_subset_list;
 
