@@ -109,3 +109,16 @@
    (and (match_code "const_int,const_double,subreg,reg,mem")
 	(and (match_operand:DI 0 "general_operand" "")
 	     (not (match_operand:DI 0 "illegal_addsub_di_memory_operand")))))
+
+;; Return 1 if the operand is in volatile memory.  Note that during the
+;; RTL generation phase, memory_operand does not return TRUE for volatile
+;; memory references.  So this function allows us to recognize volatile
+;; references where it's safe.
+(define_predicate "volatile_mem_operand"
+  (and (and (match_code "mem")
+	    (match_test "MEM_VOLATILE_P (op)"))
+       (if_then_else (match_test "reload_completed")
+         (match_operand 0 "memory_operand")
+         (if_then_else (match_test "reload_in_progress")
+	   (match_test "strict_memory_address_p (mode, XEXP (op, 0))")
+	   (match_test "memory_address_p (mode, XEXP (op, 0))")))))

@@ -43,25 +43,17 @@ along with GCC; see the file COPYING3.  If not see
 #define NETBSD_ENTRY_POINT "__start"
 
 #undef LINK_SPEC
-#if 0
-/* FIXME: We must link all executables statically until PIC support
-   is added to the compiler.  */
-#define LINK_SPEC \
-  "%{assert*} %{R*} %{rpath*} \
-   %{shared:%ethe -shared option is not currently supported for VAX ELF} \
-   %{!shared: \
-     -dc -dp \
-     %{!nostdlib: \
-       %{!r: \
-	 %{!e*:-e %(netbsd_entry_point)}}} \
-     %{!static:-static} \
-     %{static:-static}}"
-#else
 #define LINK_SPEC NETBSD_LINK_SPEC_ELF
-#endif
 
-#define EXTRA_SPECS				\
-  { "netbsd_entry_point", NETBSD_ENTRY_POINT },
+#undef EXTRA_SPECS
+#define EXTRA_SPECS NETBSD_SUBTARGET_EXTRA_SPECS
+#undef SUBTARGET_EXTRA_SPECS
+
+#undef INTPTR_TYPE
+#define INTPTR_TYPE "long int"
+
+#undef UINTPTR_TYPE
+#define UINTPTR_TYPE "long unsigned int"
 
 /* We use gas, not the UNIX assembler.  */
 #undef TARGET_DEFAULT
