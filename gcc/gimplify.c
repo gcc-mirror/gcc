@@ -4665,6 +4665,7 @@ gimplify_compound_literal_expr (tree *expr_p, gimple_seq *pre_p,
      otherwise we'd generate a new temporary, and we can as well just
      use the decl we already have.  */
   else if (!TREE_ADDRESSABLE (decl)
+	   && !TREE_THIS_VOLATILE (decl)
 	   && init
 	   && (fallback & fb_lvalue) == 0
 	   && gimple_test_f (init))
