@@ -58,21 +58,27 @@ dbg_cnt_is_enabled (enum debug_counter index)
   return v > limit_low[index] && v <= limit_high[index];
 }
 
+static void
+print_limit_reach (const char *counter, int limit, bool upper_p)
+{
+  char buffer[128];
+  sprintf (buffer, "***dbgcnt: %s limit %d reached for %s.***\n",
+	   upper_p ? "upper" : "lower", limit, counter);
+  fputs (buffer, stderr);
+  if (dump_file)
+    fputs (buffer, dump_file);
+}
+
 bool
 dbg_cnt (enum debug_counter index)
 {
   count[index]++;
 
-  if (dump_file)
-    {
-      /* Do not print the info for default lower limit.  */
-      if (count[index] == limit_low[index] && limit_low[index] > 0)
-	fprintf (dump_file, "***dbgcnt: lower limit %d reached for %s.***\n",
-		 limit_low[index], map[index].name);
-      else if (count[index] == limit_high[index])
-	fprintf (dump_file, "***dbgcnt: upper limit %d reached for %s.***\n",
-		 limit_high[index], map[index].name);
-    }
+  /* Do not print the info for default lower limit.  */
+  if (count[index] == limit_low[index] && limit_low[index] > 0)
+    print_limit_reach (map[index].name, limit_low[index], false);
+  else if (count[index] == limit_high[index])
+    print_limit_reach (map[index].name, limit_high[index], true);
 
   return dbg_cnt_is_enabled (index);
 }
