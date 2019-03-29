@@ -1,5 +1,9 @@
 2019-03-29  Martin Liska  <mliska@suse.cz>
 
+	* doc/invoke.texi: Remove -Wchkp from documentation.
+
+2019-03-29  Martin Liska  <mliska@suse.cz>
+
 	* dbgcnt.c (print_limit_reach): New function.
 	(dbg_cnt): Use it.
 
