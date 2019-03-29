@@ -1,3 +1,9 @@
+2019-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89872
+	* gimplify.c (gimplify_compound_literal_expr): Don't optimize a
+	non-addressable complit into its initializer if it is volatile.
+
 2019-03-29  Roman Zhuykov  <zhroma@ispras.ru>
 
 	* opts-common.c (integral_argument): Set errno properly in one case.
