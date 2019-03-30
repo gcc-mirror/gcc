@@ -153,6 +153,10 @@ proc gdc-copy-extra { base extra } {
     close $fdin
     close $fdout
 
+    # Remove file once test is finished.
+    upvar 2 cleanup_extra_files cleanups
+    lappend cleanups $extra
+
     return $extra
 }
 
@@ -183,6 +187,9 @@ proc dmd2dg { base test } {
 
     set PERMUTE_ARGS $DEFAULT_DFLAGS
     set GDC_EXECUTE_ARGS ""
+
+    set extra_sources ""
+    set extra_files ""
 
     # Split base, folder/file.
     set type [file dirname $test]
@@ -230,43 +237,54 @@ proc dmd2dg { base test } {
 	    regsub -- {REQUIRED_ARGS.*$} $copy_line $new_option out_line
 
 	} elseif [regexp -- {EXTRA_SOURCES\s*:\s*(.*)} $copy_line match sources] {
-	    # Copy all sources to the testsuite build directory.
-	    foreach import $sources {
-		# print "Import: $base $type/$import"
-		gdc-copy-extra $base "$type/$import"
+	    # EXTRA_SOURCES are appended to extra_sources list
+	    foreach srcfile $sources {
+		lappend extra_sources $srcfile
 	    }
-	    set new_option "{ dg-additional-sources \"$sources\" }"
-	    regsub -- {EXTRA_SOURCES.*$} $copy_line $new_option out_line
+	    regsub -- {EXTRA_SOURCES.*$} $copy_line "" out_line
 
 	} elseif [regexp -- {EXTRA_CPP_SOURCES\s*:\s*(.*)} $copy_line match sources] {
-	    # Copy all sources to the testsuite build directory.
-	    foreach import $sources {
-		# print "Import: $base $type/$import"
-		gdc-copy-extra $base "$type/$import"
+	    # EXTRA_CPP_SOURCES are appended to extra_sources list
+	    foreach srcfile $sources {
+		# C++ sources are found in the extra-files directory.
+		lappend extra_sources "extra-files/$srcfile"
 	    }
-	    set new_option "{ dg-additional-sources \"$sources\" }"
-	    regsub -- {EXTRA_CPP_SOURCES.*$} $copy_line $new_option out_line
+	    regsub -- {EXTRA_CPP_SOURCES.*$} $copy_line "" out_line
 
 	} elseif [regexp -- {EXTRA_FILES\s*:\s*(.*)} $copy_line match files] {
-	    # Copy all files to the testsuite build directory.
-	    foreach import $files {
-		# print "Import: $base $type/$import"
-		gdc-copy-extra $base "$type/$import"
+	    # EXTRA_FILES are appended to extra_files list
+	    foreach file $files {
+		lappend extra_files $file
 	    }
-	    set new_option "{ dg-additional-files \"$files\" }"
-	    regsub -- {EXTRA_FILES.*$} $copy_line $new_option out_line
+	    regsub -- {EXTRA_FILES.*$} $copy_line "" out_line
 
 	} elseif [regexp -- {COMPILED_IMPORTS\s*:\s*(.*)} $copy_line match sources] {
-	    # Copy all sources to the testsuite build directory.
+	    # COMPILED_IMPORTS are appended to extra_sources list
 	    foreach import $sources {
-		# print "Import: $base $type/$import"
-		gdc-copy-extra $base "$type/$import"
+		lappend extra_sources $import
 	    }
-	    set new_option "{ dg-additional-sources \"$sources\" }"
-	    regsub -- {COMPILED_IMPORTS.*$} $copy_line $new_option out_line
+	    regsub -- {COMPILED_IMPORTS.*$} $copy_line "" out_line
 
 	}
 
+	puts $fdout $out_line
+    }
+
+    # Now that all extra sources and files have been collected, copy them all
+    # to the testsuite build directory.
+    if { [llength $extra_sources] > 0 } {
+	foreach srcfile $extra_sources {
+	    gdc-copy-extra $base "$type/$srcfile"
+	}
+	set out_line "// { dg-additional-sources \"$extra_sources\" }"
+	puts $fdout $out_line
+    }
+
+    if { [llength $extra_files] > 0 } {
+	foreach file $extra_files {
+	    gdc-copy-extra $base "$type/$file"
+	}
+	set out_line "// { dg-additional-files \"$extra_files\" }"
 	puts $fdout $out_line
     }
 
@@ -387,6 +405,7 @@ proc gdc-do-test { } {
 
 	# Convert to DG test.
 	set imports [format "-I%s/%s" $base $dir]
+	set cleanup_extra_files ""
 	# Include $subdir prefix so test names follow DejaGnu conventions.
 	set filename "$subdir/[dmd2dg $base $dir/$name.$ext]"
 
@@ -430,7 +449,10 @@ proc gdc-do-test { } {
 	    }
 	}
 
-	# Cleanup
+	# Cleanup test directory.
+	foreach srcfile $cleanup_extra_files {
+	    file delete $subdir/$srcfile
+	}
 	file delete $filename
     }
 
