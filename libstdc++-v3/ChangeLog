@@ -1,3 +1,7 @@
+2019-03-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* src/c++17/fs_ops.cc (fs::permissions): Use std::errc::not_supported.
+
 2019-03-28  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Don't revisit a variant we are already visiting.
