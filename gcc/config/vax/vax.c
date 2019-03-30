@@ -17,6 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -24,36 +26,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
-#include "gimple-expr.h"
 #include "df.h"
 #include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "attribs.h"
-#include "expmed.h"
 #include "optabs.h"
 #include "regs.h"
 #include "emit-rtl.h"
-#include "recog.h"
-#include "diagnostic-core.h"
-#include "alias.h"
-#include "flags.h"
-#include "fold-const.h"
-#include "stor-layout.h"
 #include "calls.h"
 #include "varasm.h"
 #include "conditions.h"
 #include "output.h"
-#include "insn-attr.h"
-#include "explow.h"
 #include "expr.h"
-#include "gimplify.h"
-#include "langhooks.h"
 #include "reload.h"
-#include "tm-constrs.h"
-#include "params.h"
-#include "tree-pass.h"
-#include "context.h"
 #include "builtins.h"
 
 /* This file should be included last.  */
