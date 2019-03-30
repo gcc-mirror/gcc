@@ -1,3 +1,11 @@
+2019-03-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89744 - ICE with specialization of member class template.
+	* pt.c (lookup_template_class_1): If the partial instantiation is
+	explicitly specialized, adjust.
+	(maybe_process_partial_specialization): Also adjust
+	CLASSTYPE_TI_ARGS.
+
 2019-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/89869

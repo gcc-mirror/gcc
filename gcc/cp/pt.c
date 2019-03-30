@@ -1090,7 +1090,8 @@ maybe_process_partial_specialization (tree type)
 		  type_specializations->remove_elt (&elt);
 
 		  elt.tmpl = tmpl;
-		  elt.args = INNERMOST_TEMPLATE_ARGS (elt.args);
+		  CLASSTYPE_TI_ARGS (inst)
+		    = elt.args = INNERMOST_TEMPLATE_ARGS (elt.args);
 
 		  spec_entry **slot
 		    = type_specializations->find_slot (&elt, INSERT);
@@ -9662,6 +9663,16 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 		   : (TREE_CODE (found) == TYPE_DECL
 		      ? DECL_TI_TEMPLATE (found)
 		      : CLASSTYPE_TI_TEMPLATE (found)));
+
+	  if (DECL_CLASS_TEMPLATE_P (found)
+	      && CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (found)))
+	    {
+	      /* If this partial instantiation is specialized, we want to
+		 use it for hash table lookup.  */
+	      elt.tmpl = found;
+	      elt.args = arglist = INNERMOST_TEMPLATE_ARGS (arglist);
+	      hash = spec_hasher::hash (&elt);
+	    }
 	}
 
       // Build template info for the new specialization.
@@ -9669,6 +9680,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 
       elt.spec = t;
       slot = type_specializations->find_slot_with_hash (&elt, hash, INSERT);
+      gcc_checking_assert (*slot == NULL);
       entry = ggc_alloc<spec_entry> ();
       *entry = elt;
       *slot = entry;
