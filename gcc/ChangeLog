@@ -1,3 +1,14 @@
+2019-03-29  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	Backport from mainline
+	2019-03-29  Kugan Vivekanandarajah  <kuganv@linaro.org>
+		    Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/89862
+	* rtl.h (word_register_operation_p): Exclude CONST_INT from operations
+	that operates on the full registers for WORD_REGISTER_OPERATIONS
+	architectures.
+
 2019-03-28  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/89848

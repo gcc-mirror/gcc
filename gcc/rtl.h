@@ -4355,6 +4355,7 @@ word_register_operation_p (const_rtx x)
 {
   switch (GET_CODE (x))
     {
+    case CONST_INT:
     case ROTATE:
     case ROTATERT:
     case SIGN_EXTRACT:
