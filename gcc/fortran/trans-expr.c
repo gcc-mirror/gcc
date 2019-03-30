@@ -4998,9 +4998,9 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
   attribute = 2;
   if (!e->rank || gfc_get_full_arrayspec_from_expr (e))
     {
-      if (attr.pointer)
+      if (fsym->attr.pointer)
 	attribute = 0;
-      else if (attr.allocatable)
+      else if (fsym->attr.allocatable)
 	attribute = 1;
     }
 
@@ -5021,7 +5021,6 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 	 need their dtype setting if they are argument associated with
 	 assumed rank dummies.  */
       if (fsym && fsym->as
-	  && fsym->as->type == AS_ASSUMED_RANK
 	  && (gfc_expr_attr (e).pointer
 	      || gfc_expr_attr (e).allocatable))
 	set_dtype_for_unallocated (parmse, e);
