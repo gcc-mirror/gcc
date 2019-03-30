@@ -1,5 +1,11 @@
 2019-03-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/89866
+	Backport from trunk
+	* gfortran.dg/pointer_intent_8.f90: New test.
+
+2019-03-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/78865
 	Backport from trunk
 	* gfortran.dg/altreturn_10.f90: New test.
