@@ -1,4 +1,5 @@
-// EXTRA_SOURCES: imports/ice4481a.d imports/ice4481b.d
+// EXTRA_SOURCES: imports/ice4481a.d
+// EXTRA_SOURCES: imports/ice4481b.d
 
 import imports.ice4481a;
 import imports.ice4481b;

@@ -1,4 +1,3 @@
-module imports.std12010container;
 struct Array(T)
 {
     private struct Payload

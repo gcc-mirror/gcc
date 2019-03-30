@@ -1,3 +1,10 @@
+2019-03-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.test/gdc-test.exp (gdc-copy-extra): Append copied files to
+	cleanup_extra_files.
+	(dmd2dg): Copy additional files after test is translated.
+	(gdc-do-test): Remove all copied files after test.
+
 2019-03-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/89841
