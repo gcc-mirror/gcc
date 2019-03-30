@@ -1,3 +1,16 @@
+2019-03-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89841
+	* gfortran.dg/ISO_Fortran_binding_1.f90: Change the interfaces
+	for c_deallocate, c_allocate and c_assumed_size so that the
+	attributes of the array arguments are correct and are typed.
+	* gfortran.dg/ISO_Fortran_binding_7.f90: New test.
+	* gfortran.dg/ISO_Fortran_binding_7.c: Additional source.
+
+	PR fortran/89842
+	* gfortran.dg/ISO_Fortran_binding_8.f90: New test.
+	* gfortran.dg/ISO_Fortran_binding_8.c: Additional source.
+
 2019-03-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/89866

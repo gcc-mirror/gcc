@@ -1,3 +1,13 @@
+2019-03-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89841
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Use the formal
+	argument attributes rather than those of the actual argument.
+
+	PR fortran/89842
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Call
+	'set_dtype_for_unallocated' for any type of arrayspec.
+
 2019-03-27  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/85537
