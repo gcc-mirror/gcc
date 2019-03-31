@@ -2,7 +2,7 @@
    exceeds maximum 2147483648
    Limit to ELF targets that are known to use MAX_OFILE_ALIGNMENT
    (1 << 28) * BITS_PER_UNIT.
-   { dg-do compile { target { { *-*-elf* *-*-gnu* } && { ! avr*-*-* } } } }
+   { dg-do compile { target { { *-*-elf* *-*-gnu* *-*-solaris2.* } && { ! avr*-*-* } } } }
    { dg-require-effective-target size32plus }
    { dg-options "" } */
 
