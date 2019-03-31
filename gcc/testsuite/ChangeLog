@@ -1,3 +1,9 @@
+2019-03-31  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/83515
+	PR fortran/85797
+	* gfortran.dg/pr85797.f90: New test.
+
 2019-03-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/attr-aligned-3.c: Enable on *-*-solaris2.*.

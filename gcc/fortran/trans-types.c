@@ -1194,6 +1194,9 @@ gfc_typenode_for_spec (gfc_typespec * spec, int codim)
 	    basetype = pfunc_type_node;
 	}
        break;
+    case BT_PROCEDURE:
+      basetype = pfunc_type_node;
+      break;
     default:
       gcc_unreachable ();
     }
