@@ -1,3 +1,7 @@
+2019-03-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/attr-aligned-3.c: Enable on *-*-solaris2.*.
+
 2019-03-30  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* gdc.test/gdc-test.exp (gdc-copy-extra): Append copied files to
