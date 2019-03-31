@@ -1,3 +1,8 @@
+2019-03-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89852 - ICE with C++11 functional cast with { }.
+	* g++.dg/cpp0x/initlist115.C: New test.
+
 2019-03-31  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/83515
