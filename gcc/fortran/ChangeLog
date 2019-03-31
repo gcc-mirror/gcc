@@ -1,3 +1,12 @@
+2019-03-31  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/83515
+	PR fortran/85797
+	* trans-types.c (gfc_typenode_for_spec): Handle conversion for
+	procedure pointers.
+	* target-memory.c (gfc_element_size): Handle size determination
+	for procedure pointers.
+
 2019-03-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/78865
