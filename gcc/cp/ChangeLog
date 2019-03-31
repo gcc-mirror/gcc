@@ -1,3 +1,14 @@
+2019-03-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89852 - ICE with C++11 functional cast with { }.
+	* constexpr.c (fold_non_dependent_expr_template): New static function
+	broken out of...
+	(fold_non_dependent_expr): ...here.
+	(fold_non_dependent_init): New function.
+	* cp-tree.h (fold_non_dependent_init): Declare.
+	* typeck2.c (massage_init_elt): Call fold_non_dependent_init instead
+	of fold_non_dependent_expr.  Don't call maybe_constant_init.
+
 2019-03-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/89744 - ICE with specialization of member class template.

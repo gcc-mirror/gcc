@@ -7716,6 +7716,9 @@ extern tree maybe_constant_init			(tree, tree = NULL_TREE, bool = false);
 extern tree fold_non_dependent_expr		(tree,
 						 tsubst_flags_t = tf_warning_or_error,
 						 bool = false);
+extern tree fold_non_dependent_init		(tree,
+						 tsubst_flags_t = tf_warning_or_error,
+						 bool = false);
 extern tree fold_simple				(tree);
 extern bool is_sub_constant_expr                (tree);
 extern bool reduced_constant_expression_p       (tree);
