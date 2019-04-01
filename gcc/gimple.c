@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
+#include "langhooks.h"
 
 
 /* All the tuples have their operand vector (if present) at the very bottom
@@ -2585,6 +2586,16 @@ gimple_get_alias_set (tree t)
       /* t1 == t can happen for boolean nodes which are always unsigned.  */
       if (t1 != t)
 	return get_alias_set (t1);
+    }
+
+  /* Allow aliasing between enumeral types and the underlying
+     integer type.  This is required for C since those are
+     compatible types.  */
+  else if (TREE_CODE (t) == ENUMERAL_TYPE)
+    {
+      tree t1 = lang_hooks.types.type_for_size (tree_to_uhwi (TYPE_SIZE (t)),
+						false /* short-cut above */);
+      return get_alias_set (t1);
     }
 
   return -1;

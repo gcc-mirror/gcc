@@ -1,3 +1,10 @@
+2019-04-01  Richard Biener  <rguenther@suse.de>
+
+	PR c/71598
+	* gcc.dg/torture/pr71598-1.c: New testcase.
+	* gcc.dg/torture/pr71598-2.c: Likewise.
+	* gcc.dg/torture/pr71598-3.c: Likewise.
+
 2019-03-31  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89852 - ICE with C++11 functional cast with { }.
