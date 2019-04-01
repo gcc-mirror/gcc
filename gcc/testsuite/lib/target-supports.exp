@@ -7403,7 +7403,7 @@ proc check_avx_available { } {
 # Return true if we are compiling for AVX2 target.
 
 proc check_avx2_available { } {
-  if { [check_no_compiler_messages avx_available assembly {
+  if { [check_no_compiler_messages avx2_available assembly {
     #ifndef __AVX2__
     #error unsupported
     #endif
