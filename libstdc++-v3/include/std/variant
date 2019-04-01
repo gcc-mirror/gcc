@@ -138,7 +138,7 @@ namespace __variant
     constexpr variant_alternative_t<_Np, variant<_Types...>> const&&
     get(const variant<_Types...>&&);
 
-  template<typename _Visitor, typename... _Variants>
+  template<bool __use_index=false, typename _Visitor, typename... _Variants>
     constexpr decltype(auto)
     __do_visit(_Visitor&& __visitor, _Variants&&... __variants);
 
@@ -175,6 +175,10 @@ namespace __variant
 
   // used for raw visitation
   struct __variant_cookie {};
+  // used for raw visitation with indices passed in
+  struct __variant_idx_cookie {};
+  // a more explanatory name than 'true'
+  inline constexpr auto __visit_with_index = bool_constant<true>{};
 
   // _Uninitialized<T> is guaranteed to be a literal type, even if T is not.
   // We have to do this, because [basic.types]p10.5.3 (n4606) is not implemented
@@ -570,45 +574,44 @@ namespace __variant
       operator=(const _Copy_assign_base& __rhs)
 	  noexcept(_Traits<_Types...>::_S_nothrow_copy_assign)
       {
-	__do_visit([this, &__rhs](auto&& __this_mem, auto&& __rhs_mem) mutable
-		   -> __detail::__variant::__variant_cookie
+	__do_visit<__visit_with_index>([this](auto&& __rhs_mem,
+					      auto __rhs_index) mutable
+	    -> __detail::__variant::__variant_idx_cookie
 	  {
-	    if constexpr (is_same_v<
-			    remove_reference_t<decltype(__this_mem)>,
-			    remove_reference_t<decltype(__rhs_mem)>>)
+	    if constexpr (__rhs_index != variant_npos)
 	      {
-		if constexpr (!is_same_v<
-			        remove_reference_t<decltype(__rhs_mem)>,
-			        __variant_cookie>)
-		  __this_mem = __rhs_mem;
-	      }
-	    else
-	      {
-		if constexpr (!is_same_v<
-			        remove_reference_t<decltype(__rhs_mem)>,
-			        __variant_cookie>)
+		if (this->_M_index == __rhs_index)
 		  {
-		    using __rhs_type =
-		      remove_reference_t<decltype(__rhs_mem)>;
-		    if constexpr (is_nothrow_copy_constructible_v<__rhs_type>
-		      || !is_nothrow_move_constructible_v<__rhs_type>)
+		    if constexpr (__rhs_index != variant_npos)
 		      {
-			this->_M_destructive_copy(__rhs._M_index, __rhs_mem);
-		      }
-		    else
-		      {
-			auto __tmp(__rhs_mem);
-			this->_M_destructive_move(__rhs._M_index,
-						  std::move(__tmp));
+			auto& __this_mem =
+			  __variant::__get<__rhs_index>(*this);
+			if constexpr (is_same_v<
+				      remove_reference_t<decltype(__this_mem)>,
+				      remove_reference_t<decltype(__rhs_mem)>>)
+			  __this_mem = __rhs_mem;
 		      }
 		  }
 		else
 		  {
-		    this->_M_reset();
+		    using __rhs_type =
+		      remove_reference_t<decltype(__rhs_mem)>;
+		    if constexpr
+		      (is_nothrow_copy_constructible_v<__rhs_type>
+		       || !is_nothrow_move_constructible_v<__rhs_type>)
+			this->_M_destructive_copy(__rhs_index, __rhs_mem);
+		    else
+		      {
+			auto __tmp(__rhs_mem);
+			this->_M_destructive_move(__rhs_index,
+						  std::move(__tmp));
+		      }
 		  }
 	      }
-	  return {};
-	}, __variant_cast<_Types...>(*this), __variant_cast<_Types...>(__rhs));
+	    else
+	      this->_M_reset();
+	    return {};
+	  }, __variant_cast<_Types...>(__rhs));
 	__glibcxx_assert(this->_M_index == __rhs._M_index);
 	return *this;
       }
@@ -641,25 +644,32 @@ namespace __variant
       operator=(_Move_assign_base&& __rhs)
 	  noexcept(_Traits<_Types...>::_S_nothrow_move_assign)
       {
-	__do_visit([this, &__rhs](auto&& __this_mem, auto&& __rhs_mem) mutable
-		   -> __detail::__variant::__variant_cookie
+	__do_visit<__visit_with_index>([this](auto&& __rhs_mem,
+					      auto __rhs_index) mutable
+	    -> __detail::__variant::__variant_idx_cookie
 	  {
-	    if constexpr (is_same_v<
-			    remove_reference_t<decltype(__this_mem)>,
-			    remove_reference_t<decltype(__rhs_mem)>>)
+	    if constexpr (__rhs_index != variant_npos)
 	      {
-		if constexpr (!is_same_v<
-			        remove_reference_t<decltype(__rhs_mem)>,
-			        __variant_cookie>)
-		  __this_mem = std::move(__rhs_mem);
+		if (this->_M_index == __rhs_index)
+		  {
+		    if constexpr (__rhs_index != variant_npos)
+		      {
+			auto& __this_mem =
+			  __variant::__get<__rhs_index>(*this);
+			if constexpr (is_same_v<
+				      remove_reference_t<decltype(__this_mem)>,
+				      remove_reference_t<decltype(__rhs_mem)>>)
+			  __this_mem = std::move(__rhs_mem);
+		      }
+		  }
+		else
+		  this->_M_destructive_move(__rhs_index,
+					    std::move(__rhs_mem));
 	      }
 	    else
-	      {
-		auto __tmp(std::move(__rhs_mem));
-		this->_M_destructive_move(__rhs._M_index, std::move(__tmp));
-	      }
-	  return {};
-	}, __variant_cast<_Types...>(*this), __variant_cast<_Types...>(__rhs));
+	      this->_M_reset();
+	    return {};
+	  }, __variant_cast<_Types...>(__rhs));
 	__glibcxx_assert(this->_M_index == __rhs._M_index);
 	return *this;
       }
@@ -777,7 +787,8 @@ namespace __variant
       : bool_constant<__never_valueless<_Types...>()> {};
 
     static constexpr bool value =
-      is_same_v<_Maybe_variant_cookie, __variant_cookie>
+      (is_same_v<_Maybe_variant_cookie, __variant_cookie>
+       || is_same_v<_Maybe_variant_cookie, __variant_idx_cookie>)
       && !_Variant_never_valueless<__remove_cvref_t<_Variant>>::value;
   };
 
@@ -925,7 +936,13 @@ namespace __variant
       static constexpr decltype(auto)
       __visit_invoke(_Visitor&& __visitor, _Variants... __vars)
       {
-	return std::__invoke(std::forward<_Visitor>(__visitor),
+	if constexpr (is_same_v<_Result_type, __variant_idx_cookie>)
+	  return std::__invoke(std::forward<_Visitor>(__visitor),
+	    __element_by_index_or_cookie<__indices>(
+	      std::forward<_Variants>(__vars))...,
+	      integral_constant<size_t, __indices>()...);
+	else
+	  return std::__invoke(std::forward<_Visitor>(__visitor),
 	    __element_by_index_or_cookie<__indices>(
 	      std::forward<_Variants>(__vars))...);
       }
@@ -1082,25 +1099,25 @@ namespace __variant
 				 const variant<_Types...>& __rhs) \
     { \
       bool __ret = true; \
-      __do_visit([&__ret, &__lhs, __rhs] \
-		 (auto&& __this_mem, auto&& __rhs_mem) mutable	\
-		   -> __detail::__variant::__variant_cookie \
+      __do_visit<__detail::__variant::__visit_with_index>( \
+        [&__ret, &__lhs, __rhs] \
+		 (auto&& __rhs_mem, auto __rhs_index) mutable \
+		   -> __detail::__variant::__variant_idx_cookie \
         { \
-	  if constexpr (!is_same_v< \
-			  remove_reference_t<decltype(__this_mem)>, \
-			  remove_reference_t<decltype(__rhs_mem)>> \
-			|| is_same_v<decltype(__this_mem), \
-			             __detail::__variant::__variant_cookie>) \
-	    __ret = (__lhs.index() + 1) __OP (__rhs.index() + 1); \
-	  else if constexpr (is_same_v< \
-			       remove_reference_t<decltype(__this_mem)>, \
-			       remove_reference_t<decltype(__rhs_mem)>> \
-                             && !is_same_v< \
-	                          remove_reference_t<decltype(__this_mem)>, \
-				  __detail::__variant::__variant_cookie>) \
-	    __ret = __this_mem __OP __rhs_mem; \
+	  if constexpr (__rhs_index != variant_npos) \
+	    { \
+	      if (__lhs.index() == __rhs_index) \
+	        { \
+		  auto& __this_mem = std::get<__rhs_index>(__lhs);	\
+                  __ret = __this_mem __OP __rhs_mem; \
+                } \
+	      else \
+		__ret = (__lhs.index() + 1) __OP (__rhs_index + 1); \
+            } \
+          else \
+            __ret = (__lhs.index() + 1) __OP (__rhs_index + 1); \
 	  return {}; \
-	}, __lhs, __rhs); \
+	}, __rhs); \
       return __ret; \
     } \
 \
@@ -1402,51 +1419,47 @@ namespace __variant
       noexcept((__is_nothrow_swappable<_Types>::value && ...)
 	       && is_nothrow_move_constructible_v<variant>)
       {
-	__do_visit([this, &__rhs](auto&& __this_mem, auto&& __rhs_mem) mutable
-		   -> __detail::__variant::__variant_cookie
+	__do_visit<__detail::__variant::__visit_with_index>(
+	  [this, &__rhs](auto&& __rhs_mem,
+			 auto __rhs_index) mutable
+	    -> __detail::__variant::__variant_idx_cookie
 	  {
-	    if constexpr (is_same_v<
-			    remove_reference_t<decltype(__this_mem)>,
-			    remove_reference_t<decltype(__rhs_mem)>>)
+	    if constexpr (__rhs_index != variant_npos)
 	      {
-		if constexpr (!is_same_v<
-			        remove_reference_t<decltype(__rhs_mem)>,
-			        __detail::__variant::__variant_cookie>)
+		if (this->index() == __rhs_index)
 		  {
+		    auto& __this_mem =
+		      std::get<__rhs_index>(*this);
 		    using std::swap;
 		    swap(__this_mem, __rhs_mem);
+		  }
+		else
+		  {
+		    if (this->index() != variant_npos)
+		      {
+			auto __tmp(std::move(__rhs_mem));
+			__rhs = std::move(*this);
+			this->_M_destructive_move(__rhs_index,
+						  std::move(__tmp));
+		      }
+		    else
+		      {
+			this->_M_destructive_move(__rhs_index,
+						  std::move(__rhs_mem));
+			__rhs._M_reset();
+		      }
 		  }
 	      }
 	    else
 	      {
-		if constexpr (is_same_v<
-			        remove_reference_t<decltype(__this_mem)>,
-			        __detail::__variant::__variant_cookie>)
+		if (this->index() != variant_npos)
 		  {
-		    this->_M_destructive_move(__rhs.index(),
-					      std::move(__rhs_mem));
-		    __rhs._M_reset();
-		  }
-		else if constexpr (is_same_v<
-			             remove_reference_t<decltype(__rhs_mem)>,
-			             __detail::__variant::__variant_cookie>)
-		  {
-		    __rhs._M_destructive_move(this->index(),
-					      std::move(__this_mem));
+		    __rhs = std::move(*this);
 		    this->_M_reset();
 		  }
-		else
-		  {
-		    auto __tmp(std::move(__rhs_mem));
-		    auto __idx = __rhs.index();
-		    __rhs._M_destructive_move(this->index(),
-					      std::move(__this_mem));
-		    this->_M_destructive_move(__idx,
-					      std::move(__tmp));
-		  }
 	      }
-	  return {};
-	}, *this, __rhs);
+	    return {};
+	  }, __rhs);
       }
 
     private:
@@ -1523,13 +1536,25 @@ namespace __variant
       return __detail::__variant::__get<_Np>(std::move(__v));
     }
 
-  template<typename _Visitor, typename... _Variants>
+  template<bool __use_index, typename _Visitor, typename... _Variants>
+    decltype(auto)
+    __visitor_result_type(_Visitor&& __visitor, _Variants&&... __variants)
+    {
+      if constexpr(__use_index)
+        return __detail::__variant::__variant_idx_cookie{};
+      else
+	return std::forward<_Visitor>(__visitor)(
+	  std::get<0>(std::forward<_Variants>(__variants))...);
+    }
+
+  template<bool __use_index, typename _Visitor, typename... _Variants>
     constexpr decltype(auto)
     __do_visit(_Visitor&& __visitor, _Variants&&... __variants)
     {
       using _Result_type =
-	decltype(std::forward<_Visitor>(__visitor)(
-	    std::get<0>(std::forward<_Variants>(__variants))...));
+	decltype(__visitor_result_type<__use_index>(
+	           std::forward<_Visitor>(__visitor),
+	           std::forward<_Variants>(__variants)...));
 
       constexpr auto& __vtable = __detail::__variant::__gen_vtable<
 	_Result_type, _Visitor&&, _Variants&&...>::_S_vtable;

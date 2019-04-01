@@ -1,3 +1,22 @@
+2019-04-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Use single-visitation in variant assignment and swap and relops.
+	Also use indices instead of types when checking whether
+	variants hold the same thing.
+	* include/std/variant (__do_visit): Add a template parameter
+	for index visitation, invoke with indices if index visitation
+	is used.
+	(__variant_idx_cookie): New.
+	(__visit_with_index): Likewise.
+	(_Copy_assign_base::operator=): Do single-visitation with
+	an index visitor.
+	(_Move_assign_base::operator=): Likewise.
+	(_Extra_visit_slot_needed): Adjust.
+	(__visit_invoke): Call with indices if it's an index visitor.
+	(relops): Do single-visitation with an index visitor.
+	(swap): Likewise.
+	(__visitor_result_type): New.
+
 2019-03-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* src/c++17/fs_ops.cc (fs::permissions): Use std::errc::not_supported.
