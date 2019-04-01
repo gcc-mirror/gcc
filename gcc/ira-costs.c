@@ -2107,6 +2107,13 @@ process_bb_node_for_hard_reg_moves (ira_loop_tree_node_t loop_tree_node)
 	}
       else
 	continue;
+      if (reg_class_size[(int) REGNO_REG_CLASS (hard_regno)]
+	  == (ira_reg_class_max_nregs
+	      [REGNO_REG_CLASS (hard_regno)][(int) ALLOCNO_MODE(a)]))
+	/* If the class can provide only one hard reg to the allocno,
+	   we processed the insn record_operand_costs already and we
+	   actually updated the hard reg cost there.  */
+	continue;
       rclass = ALLOCNO_CLASS (a);
       if (! TEST_HARD_REG_BIT (reg_class_contents[rclass], hard_regno))
 	continue;
