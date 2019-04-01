@@ -7650,11 +7650,11 @@ sel_sched_region (int rgn)
       /* Schedule always selecting the next insn to make the correct data
 	 for bundling or other later passes.  */
       pipelining_p = false;
+      reset_sched_cycles_p = false;
       force_next_insn = 1;
       sel_sched_region_1 ();
       force_next_insn = 0;
     }
-  reset_sched_cycles_p = pipelining_p;
   sel_region_finish (reset_sched_cycles_p);
 }
 
