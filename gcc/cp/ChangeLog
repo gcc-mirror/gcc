@@ -1,3 +1,8 @@
+2019-04-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62207
+	* pt.c (tsubst_copy): Deal with lookup_name not returing a variable.
+
 2019-03-31  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89852 - ICE with C++11 functional cast with { }.

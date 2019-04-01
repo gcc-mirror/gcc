@@ -15591,12 +15591,23 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    {
 	      /* First try name lookup to find the instantiation.  */
 	      r = lookup_name (DECL_NAME (t));
-	      if (r && !is_capture_proxy (r))
+	      if (r)
 		{
-		  /* Make sure that the one we found is the one we want.  */
-		  tree ctx = enclosing_instantiation_of (DECL_CONTEXT (t));
-		  if (ctx != DECL_CONTEXT (r))
-		    r = NULL_TREE;
+		  if (!VAR_P (r))
+		    {
+		      /* During error-recovery we may find a non-variable,
+			 even an OVERLOAD: just bail out and avoid ICEs and
+			 duplicate diagnostics (c++/62207).  */
+		      gcc_assert (seen_error ());
+		      return error_mark_node;
+		    }
+		  if (!is_capture_proxy (r))
+		    {
+		      /* Make sure the one we found is the one we want.  */
+		      tree ctx = enclosing_instantiation_of (DECL_CONTEXT (t));
+		      if (ctx != DECL_CONTEXT (r))
+			r = NULL_TREE;
+		    }
 		}
 
 	      if (r)
@@ -15632,7 +15643,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		    }
 		  gcc_assert (cp_unevaluated_operand || TREE_STATIC (r)
 			      || decl_constant_var_p (r)
-			      || errorcount || sorrycount);
+			      || seen_error ());
 		  if (!processing_template_decl
 		      && !TREE_STATIC (r))
 		    r = process_outer_var_ref (r, complain);
