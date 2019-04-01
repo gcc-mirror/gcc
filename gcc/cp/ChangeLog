@@ -1,3 +1,10 @@
+2019-04-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86946 - ICE with function call in template argument.
+	DR 1321
+	* pt.c (iterative_hash_template_arg) [CALL_EXPR]: Use
+	dependent_name.
+
 2019-04-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/62207
