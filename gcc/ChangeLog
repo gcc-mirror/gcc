@@ -1,3 +1,15 @@
+2019-04-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/46590
+	* domwalk.h (dom_walker::dom_walker): Consolidate constructors.
+	(dom_walker::m_reachability): Add in place of...
+	(dom_walker::m_skip_unreachable_blocks): ...this.
+	* domwalk.c (dom_walker::dom_walker): Consoliate constructors.
+	Move complex initialization ...
+	(dom_walker::walk): Here.  Especially compute m_bb_to_rpo
+	lazily and initialize edge flags on each invocation.
+	(dom_walker::bb_reachable): Use m_reachability.
+
 2019-04-01  Martin Liska  <mliska@suse.cz>
 
 	PR driver/89861
