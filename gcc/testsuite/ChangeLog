@@ -1,3 +1,12 @@
+2019-04-01  Martin Liska  <mliska@suse.cz>
+
+	PR driver/89861
+	* gcc.dg/spellcheck-options-18.c: New test.
+	* gcc.dg/spellcheck-options-19.c: New test.
+	* gcc.dg/spellcheck-options-20.c: New test.
+	* gcc.dg/spellcheck-options-13.c: Adjust expected output.
+	* gcc.dg/completion-2.c: Add one variant with no argument.
+
 2019-04-01  Richard Biener  <rguenther@suse.de>
 
 	PR c/71598
