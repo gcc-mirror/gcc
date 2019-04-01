@@ -78,6 +78,10 @@ test_map_of_strings_to_int ()
   ASSERT_EQ (5, m.elements ());
   ASSERT_EQ (NULL, m.get (eric));
 
+  m.remove (eric);
+  ASSERT_EQ (5, m.elements ());
+  ASSERT_EQ (NULL, m.get (eric));
+
   /* A plain char * key is hashed based on its value (address), rather
      than the string it points to.  */
   char *another_ant = static_cast <char *> (xcalloc (4, 1));

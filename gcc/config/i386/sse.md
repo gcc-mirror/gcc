@@ -3958,8 +3958,8 @@
 	(vec_merge:VF_AVX512VL
 	  (fma:VF_AVX512VL
 	    (match_operand:VF_AVX512VL 1 "register_operand" "0,0")
-	    (match_operand:VF_AVX512VL 2 "nonimmediate_operand" "<round_constraint>,v")
-	    (match_operand:VF_AVX512VL 3 "nonimmediate_operand" "v,<round_constraint>"))
+	    (match_operand:VF_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>,v")
+	    (match_operand:VF_AVX512VL 3 "<round_nimm_predicate>" "v,<round_constraint>"))
 	  (match_dup 1)
 	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk,Yk")))]
   "TARGET_AVX512F && <round_mode512bit_condition>"
@@ -3973,8 +3973,8 @@
   [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v")
 	(vec_merge:VF_AVX512VL
 	  (fma:VF_AVX512VL
-	    (match_operand:VF_AVX512VL 1 "register_operand" "v")
-	    (match_operand:VF_AVX512VL 2 "nonimmediate_operand" "<round_constraint>")
+	    (match_operand:VF_AVX512VL 1 "<round_nimm_predicate>" "%v")
+	    (match_operand:VF_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>")
 	    (match_operand:VF_AVX512VL 3 "register_operand" "0"))
 	  (match_dup 3)
 	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")))]
@@ -4078,9 +4078,9 @@
 	(vec_merge:VF_AVX512VL
 	  (fma:VF_AVX512VL
 	    (match_operand:VF_AVX512VL 1 "register_operand" "0,0")
-	    (match_operand:VF_AVX512VL 2 "nonimmediate_operand" "<round_constraint>,v")
+	    (match_operand:VF_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>,v")
 	    (neg:VF_AVX512VL
-	      (match_operand:VF_AVX512VL 3 "nonimmediate_operand" "v,<round_constraint>")))
+	      (match_operand:VF_AVX512VL 3 "<round_nimm_predicate>" "v,<round_constraint>")))
 	  (match_dup 1)
 	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk,Yk")))]
   "TARGET_AVX512F"
@@ -4094,8 +4094,8 @@
   [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v")
 	(vec_merge:VF_AVX512VL
 	  (fma:VF_AVX512VL
-	    (match_operand:VF_AVX512VL 1 "register_operand" "v")
-	    (match_operand:VF_AVX512VL 2 "nonimmediate_operand" "<round_constraint>")
+	    (match_operand:VF_AVX512VL 1 "<round_nimm_predicate>" "%v")
+	    (match_operand:VF_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>")
 	    (neg:VF_AVX512VL
 	      (match_operand:VF_AVX512VL 3 "register_operand" "0")))
 	  (match_dup 3)
@@ -4201,8 +4201,8 @@
 	  (fma:VF_AVX512VL
 	    (neg:VF_AVX512VL
 	      (match_operand:VF_AVX512VL 1 "register_operand" "0,0"))
-	    (match_operand:VF_AVX512VL 2 "nonimmediate_operand" "<round_constraint>,v")
-	    (match_operand:VF_AVX512VL 3 "nonimmediate_operand" "v,<round_constraint>"))
+	    (match_operand:VF_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>,v")
+	    (match_operand:VF_AVX512VL 3 "<round_nimm_predicate>" "v,<round_constraint>"))
 	  (match_dup 1)
 	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk,Yk")))]
   "TARGET_AVX512F && <round_mode512bit_condition>"
@@ -4217,8 +4217,8 @@
 	(vec_merge:VF_AVX512VL
 	  (fma:VF_AVX512VL
 	    (neg:VF_AVX512VL
-	      (match_operand:VF_AVX512VL 1 "register_operand" "v"))
-	    (match_operand:VF_AVX512VL 2 "nonimmediate_operand" "<round_constraint>")
+	      (match_operand:VF_AVX512VL 1 "<round_nimm_predicate>" "%v"))
+	    (match_operand:VF_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>")
 	    (match_operand:VF_AVX512VL 3 "register_operand" "0"))
 	  (match_dup 3)
 	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")))]
@@ -4328,9 +4328,9 @@
 	  (fma:VF_AVX512VL
 	    (neg:VF_AVX512VL
 	      (match_operand:VF_AVX512VL 1 "register_operand" "0,0"))
-	    (match_operand:VF_AVX512VL 2 "nonimmediate_operand" "<round_constraint>,v")
+	    (match_operand:VF_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>,v")
 	    (neg:VF_AVX512VL
-	      (match_operand:VF_AVX512VL 3 "nonimmediate_operand" "v,<round_constraint>")))
+	      (match_operand:VF_AVX512VL 3 "<round_nimm_predicate>" "v,<round_constraint>")))
 	  (match_dup 1)
 	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk,Yk")))]
   "TARGET_AVX512F && <round_mode512bit_condition>"
@@ -4345,8 +4345,8 @@
 	(vec_merge:VF_AVX512VL
 	  (fma:VF_AVX512VL
 	    (neg:VF_AVX512VL
-	      (match_operand:VF_AVX512VL 1 "register_operand" "v"))
-	    (match_operand:VF_AVX512VL 2 "nonimmediate_operand" "<round_constraint>")
+	      (match_operand:VF_AVX512VL 1 "<round_nimm_predicate>" "%v"))
+	    (match_operand:VF_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>")
 	    (neg:VF_AVX512VL
 	      (match_operand:VF_AVX512VL 3 "register_operand" "0")))
 	  (match_dup 3)
@@ -4428,8 +4428,8 @@
 	(vec_merge:VF_AVX512VL
 	  (unspec:VF_AVX512VL
 	    [(match_operand:VF_AVX512VL 1 "register_operand" "0,0")
-	     (match_operand:VF_AVX512VL 2 "nonimmediate_operand" "<round_constraint>,v")
-	     (match_operand:VF_AVX512VL 3 "nonimmediate_operand" "v,<round_constraint>")]
+	     (match_operand:VF_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>,v")
+	     (match_operand:VF_AVX512VL 3 "<round_nimm_predicate>" "v,<round_constraint>")]
 	    UNSPEC_FMADDSUB)
 	  (match_dup 1)
 	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk,Yk")))]
@@ -4445,7 +4445,7 @@
 	(vec_merge:VF_AVX512VL
 	  (unspec:VF_AVX512VL
 	    [(match_operand:VF_AVX512VL 1 "register_operand" "v")
-	     (match_operand:VF_AVX512VL 2 "nonimmediate_operand" "<round_constraint>")
+	     (match_operand:VF_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>")
 	     (match_operand:VF_AVX512VL 3 "register_operand" "0")]
 	    UNSPEC_FMADDSUB)
 	  (match_dup 3)
@@ -4495,9 +4495,9 @@
 	(vec_merge:VF_AVX512VL
 	  (unspec:VF_AVX512VL
 	    [(match_operand:VF_AVX512VL 1 "register_operand" "0,0")
-	     (match_operand:VF_AVX512VL 2 "nonimmediate_operand" "<round_constraint>,v")
+	     (match_operand:VF_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>,v")
 	     (neg:VF_AVX512VL
-	       (match_operand:VF_AVX512VL 3 "nonimmediate_operand" "v,<round_constraint>"))]
+	       (match_operand:VF_AVX512VL 3 "<round_nimm_predicate>" "v,<round_constraint>"))]
 	    UNSPEC_FMADDSUB)
 	  (match_dup 1)
 	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk,Yk")))]
@@ -4513,7 +4513,7 @@
 	(vec_merge:VF_AVX512VL
 	  (unspec:VF_AVX512VL
 	    [(match_operand:VF_AVX512VL 1 "register_operand" "v")
-	     (match_operand:VF_AVX512VL 2 "nonimmediate_operand" "<round_constraint>")
+	     (match_operand:VF_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>")
 	     (neg:VF_AVX512VL
 	       (match_operand:VF_AVX512VL 3 "register_operand" "0"))]
 	    UNSPEC_FMADDSUB)
@@ -4531,7 +4531,7 @@
   [(set (match_operand:VF_128 0 "register_operand")
 	(vec_merge:VF_128
 	  (fma:VF_128
-	    (match_operand:VF_128 1 "<round_nimm_predicate>")
+	    (match_operand:VF_128 1 "register_operand")
 	    (match_operand:VF_128 2 "<round_nimm_predicate>")
 	    (match_operand:VF_128 3 "<round_nimm_predicate>"))
 	  (match_dup 1)
@@ -4542,7 +4542,7 @@
   [(set (match_operand:VF_128 0 "register_operand")
 	(vec_merge:VF_128
 	  (fma:VF_128
-	    (match_operand:VF_128 1 "<round_nimm_predicate>")
+	    (match_operand:VF_128 1 "register_operand")
 	    (match_operand:VF_128 2 "<round_nimm_predicate>")
 	    (neg:VF_128
 	      (match_operand:VF_128 3 "<round_nimm_predicate>")))
@@ -4556,7 +4556,7 @@
 	  (fma:VF_128
 	    (neg:VF_128
 	      (match_operand:VF_128 2 "<round_nimm_predicate>"))
-	    (match_operand:VF_128 1 "<round_nimm_predicate>")
+	    (match_operand:VF_128 1 "register_operand")
 	    (match_operand:VF_128 3 "<round_nimm_predicate>"))
 	  (match_dup 1)
 	  (const_int 1)))]
@@ -4568,7 +4568,7 @@
 	  (fma:VF_128
 	    (neg:VF_128
 	      (match_operand:VF_128 2 "<round_nimm_predicate>"))
-	    (match_operand:VF_128 1 "<round_nimm_predicate>")
+	    (match_operand:VF_128 1 "register_operand")
 	    (neg:VF_128
 	      (match_operand:VF_128 3 "<round_nimm_predicate>")))
 	  (match_dup 1)
@@ -4579,9 +4579,9 @@
   [(set (match_operand:VF_128 0 "register_operand" "=v,v")
         (vec_merge:VF_128
 	  (fma:VF_128
-	    (match_operand:VF_128 1 "<round_nimm_predicate>" " 0, 0")
+	    (match_operand:VF_128 1 "register_operand" "0,0")
 	    (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>, v")
-	    (match_operand:VF_128 3 "<round_nimm_predicate>" " v,<round_constraint>"))
+	    (match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>"))
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_FMA || TARGET_AVX512F"
@@ -4595,10 +4595,10 @@
   [(set (match_operand:VF_128 0 "register_operand" "=v,v")
         (vec_merge:VF_128
 	  (fma:VF_128
-	    (match_operand:VF_128   1 "<round_nimm_predicate>" "0,0")
+	    (match_operand:VF_128   1 "register_operand" "0,0")
 	    (match_operand:VF_128   2 "<round_nimm_predicate>" "<round_constraint>,v")
 	    (neg:VF_128
-	      (match_operand:VF_128 3 "<round_nimm_predicate>" " v,<round_constraint>")))
+	      (match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>")))
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_FMA || TARGET_AVX512F"
@@ -4614,7 +4614,7 @@
 	  (fma:VF_128
 	    (neg:VF_128
 	      (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>,v"))
-	    (match_operand:VF_128   1 "<round_nimm_predicate>" "0,0")
+	    (match_operand:VF_128   1 "register_operand" "0,0")
 	    (match_operand:VF_128   3 "<round_nimm_predicate>" "v,<round_constraint>"))
 	  (match_dup 1)
 	  (const_int 1)))]
@@ -4630,16 +4630,262 @@
         (vec_merge:VF_128
 	  (fma:VF_128
 	    (neg:VF_128
-	      (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>, v"))
-	    (match_operand:VF_128   1 "<round_nimm_predicate>" " 0, 0")
+	      (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>,v"))
+	    (match_operand:VF_128   1 "register_operand" "0,0")
 	    (neg:VF_128
-	      (match_operand:VF_128 3 "<round_nimm_predicate>" " v,<round_constraint>")))
+	      (match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>")))
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_FMA || TARGET_AVX512F"
   "@
    vfnmsub132<ssescalarmodesuffix>\t{<round_op4>%2, %3, %0|%0, %<iptr>3, %<iptr>2<round_op4>}
    vfnmsub213<ssescalarmodesuffix>\t{<round_op4>%3, %2, %0|%0, %<iptr>2, %<iptr>3<round_op4>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "avx512f_vmfmadd_<mode>_mask<round_name>"
+  [(set (match_operand:VF_128 0 "register_operand" "=v,v")
+	(vec_merge:VF_128
+	  (vec_merge:VF_128
+	    (fma:VF_128
+	      (match_operand:VF_128 1 "register_operand" "0,0")
+	      (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>,v")
+	      (match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>"))
+	    (match_dup 1)
+	    (match_operand:QI 4 "register_operand" "Yk,Yk"))
+	  (match_dup 1)
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "@
+   vfmadd132<ssescalarmodesuffix>\t{<round_op5>%2, %3, %0%{%4%}|%0%{%4%}, %<iptr>3, %<iptr>2<round_op5>}
+   vfmadd213<ssescalarmodesuffix>\t{<round_op5>%3, %2, %0%{%4%}|%0%{%4%}, %<iptr>2, %<iptr>3<round_op5>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "avx512f_vmfmadd_<mode>_mask3<round_name>"
+  [(set (match_operand:VF_128 0 "register_operand" "=v")
+	(vec_merge:VF_128
+	  (vec_merge:VF_128
+	    (fma:VF_128
+	      (match_operand:VF_128 1 "<round_nimm_predicate>" "%v")
+	      (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>")
+	      (match_operand:VF_128 3 "register_operand" "0"))
+	    (match_dup 3)
+	    (match_operand:QI 4 "register_operand" "Yk"))
+	  (match_dup 3)
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "vfmadd231<ssescalarmodesuffix>\t{<round_op5>%2, %1, %0%{%4%}|%0%{%4%}, %<iptr>3, %<iptr>2<round_op5>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_expand "avx512f_vmfmadd_<mode>_maskz<round_expand_name>"
+  [(match_operand:VF_128 0 "register_operand")
+   (match_operand:VF_128 1 "<round_expand_nimm_predicate>")
+   (match_operand:VF_128 2 "<round_expand_nimm_predicate>")
+   (match_operand:VF_128 3 "<round_expand_nimm_predicate>")
+   (match_operand:QI 4 "register_operand")]
+  "TARGET_AVX512F"
+{
+  emit_insn (gen_avx512f_vmfmadd_<mode>_maskz_1<round_expand_name> (
+    operands[0], operands[1], operands[2], operands[3],
+    CONST0_RTX (<MODE>mode), operands[4]<round_expand_operand>));
+  DONE;
+})
+
+(define_insn "avx512f_vmfmadd_<mode>_maskz_1<round_name>"
+  [(set (match_operand:VF_128 0 "register_operand" "=v,v")
+	(vec_merge:VF_128
+	  (vec_merge:VF_128
+	    (fma:VF_128
+	      (match_operand:VF_128 1 "register_operand" "0,0")
+	      (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>,v")
+	      (match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>"))
+	    (match_operand:VF_128 4 "const0_operand" "C,C")
+	    (match_operand:QI 5 "register_operand" "Yk,Yk"))
+	  (match_dup 1)
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "@
+   vfmadd132<ssescalarmodesuffix>\t{<round_op6>%2, %3, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %<iptr>3, %<iptr>2<round_op6>}
+   vfmadd213<ssescalarmodesuffix>\t{<round_op6>%3, %2, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %<iptr>2, %<iptr>3<round_op6>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*avx512f_vmfmsub_<mode>_mask<round_name>"
+  [(set (match_operand:VF_128 0 "register_operand" "=v,v")
+	(vec_merge:VF_128
+	  (vec_merge:VF_128
+	    (fma:VF_128
+	      (match_operand:VF_128 1 "register_operand" "0,0")
+	      (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>,v")
+	      (neg:VF_128
+		(match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>")))
+	    (match_dup 1)
+	    (match_operand:QI 4 "register_operand" "Yk,Yk"))
+	  (match_dup 1)
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "@
+   vfmsub132<ssescalarmodesuffix>\t{<round_op5>%2, %3, %0%{%4%}|%0%{%4%}, %<iptr>3, %<iptr>2<round_op5>}
+   vfmsub213<ssescalarmodesuffix>\t{<round_op5>%3, %2, %0%{%4%}|%0%{%4%}, %<iptr>2, %<iptr>3<round_op5>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "avx512f_vmfmsub_<mode>_mask3<round_name>"
+  [(set (match_operand:VF_128 0 "register_operand" "=v")
+	(vec_merge:VF_128
+	  (vec_merge:VF_128
+	    (fma:VF_128
+	      (match_operand:VF_128 1 "<round_nimm_predicate>" "%v")
+	      (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>")
+	      (neg:VF_128
+		(match_operand:VF_128 3 "register_operand" "0")))
+	    (match_dup 3)
+	    (match_operand:QI 4 "register_operand" "Yk"))
+	  (match_dup 3)
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "vfmsub231<ssescalarmodesuffix>\t{<round_op5>%2, %1, %0%{%4%}|%0%{%4%}, %<iptr>3, %<iptr>2<round_op5>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*avx512f_vmfmsub_<mode>_maskz_1<round_name>"
+  [(set (match_operand:VF_128 0 "register_operand" "=v,v")
+	(vec_merge:VF_128
+	  (vec_merge:VF_128
+	    (fma:VF_128
+	      (match_operand:VF_128 1 "register_operand" "0,0")
+	      (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>,v")
+	      (neg:VF_128
+		(match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>")))
+	    (match_operand:VF_128 4 "const0_operand" "C,C")
+	    (match_operand:QI 5 "register_operand" "Yk,Yk"))
+	  (match_dup 1)
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "@
+   vfmsub132<ssescalarmodesuffix>\t{<round_op6>%2, %3, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %<iptr>3, %<iptr>2<round_op6>}
+   vfmsub213<ssescalarmodesuffix>\t{<round_op6>%3, %2, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %<iptr>2, %<iptr>3<round_op6>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*avx512f_vmfnmadd_<mode>_mask<round_name>"
+  [(set (match_operand:VF_128 0 "register_operand" "=v,v")
+	(vec_merge:VF_128
+	  (vec_merge:VF_128
+	    (fma:VF_128
+	      (neg:VF_128
+		(match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>,v"))
+	      (match_operand:VF_128 1 "register_operand" "0,0")
+	      (match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>"))
+	    (match_dup 1)
+	    (match_operand:QI 4 "register_operand" "Yk,Yk"))
+	  (match_dup 1)
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "@
+   vfnmadd132<ssescalarmodesuffix>\t{<round_op5>%2, %3, %0%{%4%}|%0%{%4%}, %<iptr>3, %<iptr>2<round_op5>}
+   vfnmadd213<ssescalarmodesuffix>\t{<round_op5>%3, %2, %0%{%4%}|%0%{%4%}, %<iptr>2, %<iptr>3<round_op5>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*avx512f_vmfnmadd_<mode>_mask3<round_name>"
+  [(set (match_operand:VF_128 0 "register_operand" "=v")
+	(vec_merge:VF_128
+	  (vec_merge:VF_128
+	    (fma:VF_128
+	      (neg:VF_128
+		(match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>"))
+	      (match_operand:VF_128 1 "<round_nimm_predicate>" "%v")
+	      (match_operand:VF_128 3 "register_operand" "0"))
+	    (match_dup 3)
+	    (match_operand:QI 4 "register_operand" "Yk"))
+	  (match_dup 3)
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "vfnmadd231<ssescalarmodesuffix>\t{<round_op5>%2, %1, %0%{%4%}|%0%{%4%}, %<iptr>3, %<iptr>2<round_op5>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*avx512f_vmfnmadd_<mode>_maskz_1<round_name>"
+  [(set (match_operand:VF_128 0 "register_operand" "=v,v")
+	(vec_merge:VF_128
+	  (vec_merge:VF_128
+	    (fma:VF_128
+	      (neg:VF_128
+		(match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>,v"))
+	      (match_operand:VF_128 1 "register_operand" "0,0")
+	      (match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>"))
+	    (match_operand:VF_128 4 "const0_operand" "C,C")
+	    (match_operand:QI 5 "register_operand" "Yk,Yk"))
+	  (match_dup 1)
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "@
+   vfnmadd132<ssescalarmodesuffix>\t{<round_op6>%2, %3, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %<iptr>3, %<iptr>2<round_op6>}
+   vfnmadd213<ssescalarmodesuffix>\t{<round_op6>%3, %2, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %<iptr>2, %<iptr>3<round_op6>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*avx512f_vmfnmsub_<mode>_mask<round_name>"
+  [(set (match_operand:VF_128 0 "register_operand" "=v,v")
+	(vec_merge:VF_128
+	  (vec_merge:VF_128
+	    (fma:VF_128
+	      (neg:VF_128
+		(match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>,v"))
+	      (match_operand:VF_128 1 "register_operand" "0,0")
+	      (neg:VF_128
+		(match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>")))
+	    (match_dup 1)
+	    (match_operand:QI 4 "register_operand" "Yk,Yk"))
+	  (match_dup 1)
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "@
+   vfnmsub132<ssescalarmodesuffix>\t{<round_op5>%2, %3, %0%{%4%}|%0%{%4%}, %<iptr>3, %<iptr>2<round_op5>}
+   vfnmsub213<ssescalarmodesuffix>\t{<round_op5>%3, %2, %0%{%4%}|%0%{%4%}, %<iptr>2, %<iptr>3<round_op5>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*avx512f_vmfnmsub_<mode>_mask3<round_name>"
+  [(set (match_operand:VF_128 0 "register_operand" "=v")
+	(vec_merge:VF_128
+	  (vec_merge:VF_128
+	    (fma:VF_128
+	      (neg:VF_128
+		(match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>"))
+	      (match_operand:VF_128 1 "<round_nimm_predicate>" "%v")
+	      (neg:VF_128
+		(match_operand:VF_128 3 "register_operand" "0")))
+	    (match_dup 3)
+	    (match_operand:QI 4 "register_operand" "Yk"))
+	  (match_dup 3)
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "vfnmsub231<ssescalarmodesuffix>\t{<round_op5>%2, %1, %0%{%4%}|%0%{%4%}, %<iptr>3, %<iptr>2<round_op5>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*avx512f_vmfnmsub_<mode>_maskz_1<round_name>"
+  [(set (match_operand:VF_128 0 "register_operand" "=v,v")
+	(vec_merge:VF_128
+	  (vec_merge:VF_128
+	    (fma:VF_128
+	      (neg:VF_128
+		(match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>,v"))
+	      (match_operand:VF_128 1 "register_operand" "0,0")
+	      (neg:VF_128
+		(match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>")))
+	    (match_operand:VF_128 4 "const0_operand" "C,C")
+	    (match_operand:QI 5 "register_operand" "Yk,Yk"))
+	  (match_dup 1)
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "@
+   vfnmsub132<ssescalarmodesuffix>\t{<round_op6>%2, %3, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %<iptr>3, %<iptr>2<round_op6>}
+   vfnmsub213<ssescalarmodesuffix>\t{<round_op6>%3, %2, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %<iptr>2, %<iptr>3<round_op6>}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
 
@@ -17486,9 +17732,9 @@
     case 3:
       /* %X5 so that we don't emit any *WORD PTR for -masm=intel, as
 	 gas changed what it requires incompatibly.  */
-      return "vgatherpf0<ssemodesuffix>ps\t{%5%{%0%}|%X5%{%0%}}";
+      return "%M2vgatherpf0<ssemodesuffix>ps\t{%5%{%0%}|%X5%{%0%}}";
     case 2:
-      return "vgatherpf1<ssemodesuffix>ps\t{%5%{%0%}|%X5%{%0%}}";
+      return "%M2vgatherpf1<ssemodesuffix>ps\t{%5%{%0%}|%X5%{%0%}}";
     default:
       gcc_unreachable ();
     }
@@ -17533,9 +17779,9 @@
     case 3:
       /* %X5 so that we don't emit any *WORD PTR for -masm=intel, as
 	 gas changed what it requires incompatibly.  */
-      return "vgatherpf0<ssemodesuffix>pd\t{%5%{%0%}|%X5%{%0%}}";
+      return "%M2vgatherpf0<ssemodesuffix>pd\t{%5%{%0%}|%X5%{%0%}}";
     case 2:
-      return "vgatherpf1<ssemodesuffix>pd\t{%5%{%0%}|%X5%{%0%}}";
+      return "%M2vgatherpf1<ssemodesuffix>pd\t{%5%{%0%}|%X5%{%0%}}";
     default:
       gcc_unreachable ();
     }
@@ -17581,10 +17827,10 @@
     case 7:
       /* %X5 so that we don't emit any *WORD PTR for -masm=intel, as
 	 gas changed what it requires incompatibly.  */
-      return "vscatterpf0<ssemodesuffix>ps\t{%5%{%0%}|%X5%{%0%}}";
+      return "%M2vscatterpf0<ssemodesuffix>ps\t{%5%{%0%}|%X5%{%0%}}";
     case 2:
     case 6:
-      return "vscatterpf1<ssemodesuffix>ps\t{%5%{%0%}|%X5%{%0%}}";
+      return "%M2vscatterpf1<ssemodesuffix>ps\t{%5%{%0%}|%X5%{%0%}}";
     default:
       gcc_unreachable ();
     }
@@ -17630,10 +17876,10 @@
     case 7:
       /* %X5 so that we don't emit any *WORD PTR for -masm=intel, as
 	 gas changed what it requires incompatibly.  */
-      return "vscatterpf0<ssemodesuffix>pd\t{%5%{%0%}|%X5%{%0%}}";
+      return "%M2vscatterpf0<ssemodesuffix>pd\t{%5%{%0%}|%X5%{%0%}}";
     case 2:
     case 6:
-      return "vscatterpf1<ssemodesuffix>pd\t{%5%{%0%}|%X5%{%0%}}";
+      return "%M2vscatterpf1<ssemodesuffix>pd\t{%5%{%0%}|%X5%{%0%}}";
     default:
       gcc_unreachable ();
     }
@@ -20377,7 +20623,7 @@
 	  UNSPEC_GATHER))
    (clobber (match_scratch:VEC_GATHER_MODE 1 "=&x"))]
   "TARGET_AVX2"
-  "v<sseintprefix>gatherd<ssemodesuffix>\t{%1, %7, %0|%0, %7, %1}"
+  "%M3v<sseintprefix>gatherd<ssemodesuffix>\t{%1, %7, %0|%0, %7, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -20397,7 +20643,7 @@
 	  UNSPEC_GATHER))
    (clobber (match_scratch:VEC_GATHER_MODE 1 "=&x"))]
   "TARGET_AVX2"
-  "v<sseintprefix>gatherd<ssemodesuffix>\t{%1, %6, %0|%0, %6, %1}"
+  "%M2v<sseintprefix>gatherd<ssemodesuffix>\t{%1, %6, %0|%0, %6, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -20438,7 +20684,7 @@
 	  UNSPEC_GATHER))
    (clobber (match_scratch:VEC_GATHER_MODE 1 "=&x"))]
   "TARGET_AVX2"
-  "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %7, %2|%2, %7, %5}"
+  "%M3v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %7, %2|%2, %7, %5}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -20460,8 +20706,8 @@
   "TARGET_AVX2"
 {
   if (<MODE>mode != <VEC_GATHER_SRCDI>mode)
-    return "v<sseintprefix>gatherq<ssemodesuffix>\t{%4, %6, %x0|%x0, %6, %4}";
-  return "v<sseintprefix>gatherq<ssemodesuffix>\t{%4, %6, %0|%0, %6, %4}";
+    return "%M2v<sseintprefix>gatherq<ssemodesuffix>\t{%4, %6, %x0|%x0, %6, %4}";
+  return "%M2v<sseintprefix>gatherq<ssemodesuffix>\t{%4, %6, %0|%0, %6, %4}";
 }
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
@@ -20485,7 +20731,7 @@
 		     (const_int 2) (const_int 3)])))
    (clobber (match_scratch:VI4F_256 1 "=&x"))]
   "TARGET_AVX2"
-  "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %7, %0|%0, %7, %5}"
+  "%M3v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %7, %0|%0, %7, %5}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -20508,7 +20754,7 @@
 		     (const_int 2) (const_int 3)])))
    (clobber (match_scratch:VI4F_256 1 "=&x"))]
   "TARGET_AVX2"
-  "v<sseintprefix>gatherq<ssemodesuffix>\t{%4, %6, %0|%0, %6, %4}"
+  "%M2v<sseintprefix>gatherq<ssemodesuffix>\t{%4, %6, %0|%0, %6, %4}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -20548,7 +20794,7 @@
   "TARGET_AVX512F"
 ;; %X6 so that we don't emit any *WORD PTR for -masm=intel, as
 ;; gas changed what it requires incompatibly.
-  "v<sseintprefix>gatherd<ssemodesuffix>\t{%6, %0%{%2%}|%0%{%2%}, %X6}"
+  "%M4v<sseintprefix>gatherd<ssemodesuffix>\t{%6, %0%{%2%}|%0%{%2%}, %X6}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -20569,7 +20815,7 @@
   "TARGET_AVX512F"
 ;; %X5 so that we don't emit any *WORD PTR for -masm=intel, as
 ;; gas changed what it requires incompatibly.
-  "v<sseintprefix>gatherd<ssemodesuffix>\t{%5, %0%{%1%}|%0%{%1%}, %X5}"
+  "%M3v<sseintprefix>gatherd<ssemodesuffix>\t{%5, %0%{%1%}|%0%{%1%}, %X5}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -20610,7 +20856,7 @@
   "TARGET_AVX512F"
 ;; %X6 so that we don't emit any *WORD PTR for -masm=intel, as
 ;; gas changed what it requires incompatibly.
-  "v<sseintprefix>gatherq<ssemodesuffix>\t{%6, %1%{%2%}|%1%{%2%}, %X6}"
+  "%M4v<sseintprefix>gatherq<ssemodesuffix>\t{%6, %1%{%2%}|%1%{%2%}, %X6}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -20635,11 +20881,11 @@
   if (<MODE>mode != <VEC_GATHER_SRCDI>mode)
     {
       if (<MODE_SIZE> != 64)
-	return "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %x0%{%1%}|%x0%{%1%}, %X5}";
+	return "%M3v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %x0%{%1%}|%x0%{%1%}, %X5}";
       else
-	return "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %t0%{%1%}|%t0%{%1%}, %X5}";
+	return "%M3v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %t0%{%1%}|%t0%{%1%}, %X5}";
     }
-  return "v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %0%{%1%}|%0%{%1%}, %X5}";
+  return "%M3v<sseintprefix>gatherq<ssemodesuffix>\t{%5, %0%{%1%}|%0%{%1%}, %X5}";
 }
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
@@ -20678,7 +20924,7 @@
   "TARGET_AVX512F"
 ;; %X5 so that we don't emit any *WORD PTR for -masm=intel, as
 ;; gas changed what it requires incompatibly.
-  "v<sseintprefix>scatterd<ssemodesuffix>\t{%3, %5%{%1%}|%X5%{%1%}, %3}"
+  "%M0v<sseintprefix>scatterd<ssemodesuffix>\t{%3, %5%{%1%}|%X5%{%1%}, %3}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -20716,7 +20962,7 @@
   "TARGET_AVX512F"
 ;; %X5 so that we don't emit any *WORD PTR for -masm=intel, as
 ;; gas changed what it requires incompatibly.
-  "v<sseintprefix>scatterq<ssemodesuffix>\t{%3, %5%{%1%}|%X5%{%1%}, %3}"
+  "%M0v<sseintprefix>scatterq<ssemodesuffix>\t{%3, %5%{%1%}|%X5%{%1%}, %3}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])

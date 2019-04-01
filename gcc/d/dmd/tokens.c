@@ -472,4 +472,5 @@ TokenInitializer::TokenInitializer()
     Token::tochars[TOKon_scope_success] = "scope(success)";
     Token::tochars[TOKon_scope_failure] = "scope(failure)";
     Token::tochars[TOKdelegateptr]      = "delegateptr";
+    Token::tochars[TOKvectorarray]      = "vectorarray";
 }

@@ -4546,9 +4546,9 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
   const value_range *vr = NULL;
 
   /* Determine the offsets and increment OFFRANGE for the bounds of each.
-     The loop computes the the range of the final offset for expressions
-     such as (A + i0 + ... + iN)[CSTOFF] where i0 through iN are SSA_NAMEs
-     in some range.  */
+     The loop computes the range of the final offset for expressions such
+     as (A + i0 + ... + iN)[CSTOFF] where i0 through iN are SSA_NAMEs in
+     some range.  */
   while (TREE_CODE (arg) == SSA_NAME)
     {
       gimple *def = SSA_NAME_DEF_STMT (arg);
@@ -4583,26 +4583,21 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
 
       if (vr->kind () == VR_RANGE)
 	{
-	  if (tree_int_cst_lt (vr->min (), vr->max ()))
+	  offset_int min
+	    = wi::to_offset (fold_convert (ptrdiff_type_node, vr->min ()));
+	  offset_int max
+	    = wi::to_offset (fold_convert (ptrdiff_type_node, vr->max ()));
+	  if (min < max)
 	    {
-	      offset_int min
-		= wi::to_offset (fold_convert (ptrdiff_type_node, vr->min ()));
-	      offset_int max
-		= wi::to_offset (fold_convert (ptrdiff_type_node, vr->max ()));
-	      if (min < max)
-		{
-		  offrange[0] += min;
-		  offrange[1] += max;
-		}
-	      else
-		{
-		  offrange[0] += max;
-		  offrange[1] += min;
-		}
+	      offrange[0] += min;
+	      offrange[1] += max;
 	    }
 	  else
 	    {
-	      /* Conservatively add [-MAXOBJSIZE -1, MAXOBJSIZE]
+	      /* When MIN >= MAX, the offset is effectively in a union
+		 of two ranges: [-MAXOBJSIZE -1, MAX] and [MIN, MAXOBJSIZE].
+		 Since there is no way to represent such a range across
+		 additions, conservatively add [-MAXOBJSIZE -1, MAXOBJSIZE]
 		 to OFFRANGE.  */
 	      offrange[0] += arrbounds[0];
 	      offrange[1] += arrbounds[1];
@@ -4718,13 +4713,16 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
 	{
 	  /* Extract the element type out of MEM_REF and use its size
 	     to compute the index to print in the diagnostic; arrays
-	     in MEM_REF don't mean anything.   */
+	     in MEM_REF don't mean anything.  A type with no size like
+	     void is as good as having a size of 1.  */
 	  tree type = TREE_TYPE (ref);
 	  while (TREE_CODE (type) == ARRAY_TYPE)
 	    type = TREE_TYPE (type);
-	  tree size = TYPE_SIZE_UNIT (type);
-	  offrange[0] = offrange[0] / wi::to_offset (size);
-	  offrange[1] = offrange[1] / wi::to_offset (size);
+	  if (tree size = TYPE_SIZE_UNIT (type))
+	    {
+	      offrange[0] = offrange[0] / wi::to_offset (size);
+	      offrange[1] = offrange[1] / wi::to_offset (size);
+	    }
 	}
       else
 	{

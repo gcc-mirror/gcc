@@ -1978,7 +1978,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 
 	  if (init->rank == 0)
 	    {
-	      gfc_error ("Can't initialize implied-shape array at %L"
+	      gfc_error ("Cannot initialize implied-shape array at %L"
 			 " with scalar", &sym->declared_at);
 	      return false;
 	    }
@@ -2490,7 +2490,7 @@ variable_decl (int elem)
       if (as->type == AS_IMPLIED_SHAPE && current_attr.flavor != FL_PARAMETER)
 	{
 	  m = MATCH_ERROR;
-	  gfc_error ("Non-PARAMETER symbol %qs at %L can't be implied-shape",
+	  gfc_error ("Non-PARAMETER symbol %qs at %L cannot be implied-shape",
 		     name, &var_locus);
 	  goto cleanup;
 	}
@@ -2668,7 +2668,7 @@ variable_decl (int elem)
 	      else
 		{
 		  if (!gfc_set_array_spec (sym, cp_as, &var_locus))
-		    gfc_internal_error ("Couldn't set pointee array spec.");
+		    gfc_internal_error ("Cannot set pointee array spec.");
 
 		  /* Fix the array spec.  */
 		  m = gfc_mod_pointee_as (sym->as);
@@ -3440,7 +3440,7 @@ match_record_decl (char *name)
             {
                 gfc_current_locus = old_loc;
                 gfc_error ("RECORD at %C is an extension, enable it with "
-                           "-fdec-structure");
+			   "%<-fdec-structure%>");
                 return MATCH_ERROR;
             }
           m = gfc_match (" %n/", name);
@@ -6275,7 +6275,16 @@ gfc_match_formal_arglist (gfc_symbol *progname, int st_flag,
     }
 
   if (gfc_match_char (')') == MATCH_YES)
-    goto ok;
+  {        
+    if (typeparam)
+      {
+	gfc_error_now ("A type parameter list is required at %C");
+	m = MATCH_ERROR;
+	goto cleanup;
+      }
+    else
+      goto ok;
+  }
 
   for (;;)
     {
@@ -7248,7 +7257,7 @@ add_global_entry (const char *name, const char *binding_label, bool sub,
      name is a global identifier.  */
   if (!binding_label || gfc_notification_std (GFC_STD_F2008))
     {
-      s = gfc_get_gsymbol (name);
+      s = gfc_get_gsymbol (name, false);
 
       if (s->defined || (s->type != GSYM_UNKNOWN && s->type != type))
 	{
@@ -7270,7 +7279,7 @@ add_global_entry (const char *name, const char *binding_label, bool sub,
       && (!gfc_notification_std (GFC_STD_F2008)
 	  || strcmp (name, binding_label) != 0))
     {
-      s = gfc_get_gsymbol (binding_label);
+      s = gfc_get_gsymbol (binding_label, true);
 
       if (s->defined || (s->type != GSYM_UNKNOWN && s->type != type))
 	{
@@ -8538,7 +8547,7 @@ cray_pointer_decl (void)
       if (cpte->as == NULL)
 	{
 	  if (!gfc_set_array_spec (cpte, as, &var_locus))
-	    gfc_internal_error ("Couldn't set Cray pointee array spec.");
+	    gfc_internal_error ("Cannot set Cray pointee array spec.");
 	}
       else if (as != NULL)
 	{
@@ -8651,8 +8660,8 @@ gfc_match_pointer (void)
     {
       if (!flag_cray_pointer)
 	{
-	  gfc_error ("Cray pointer declaration at %C requires -fcray-pointer "
-		     "flag");
+	  gfc_error ("Cray pointer declaration at %C requires "
+		     "%<-fcray-pointer%> flag");
 	  return MATCH_ERROR;
 	}
       return cray_pointer_decl ();
@@ -10217,13 +10226,14 @@ gfc_match_derived_decl (void)
       m = gfc_match_formal_arglist (sym, 0, 0, true);
       if (m != MATCH_YES)
 	gfc_error_recovery ();
+      else
+	sym->attr.pdt_template = 1;
       m = gfc_match_eos ();
       if (m != MATCH_YES)
 	{
 	  gfc_error_recovery ();
 	  gfc_error_now ("Garbage after PARAMETERIZED TYPE declaration at %C");
 	}
-      sym->attr.pdt_template = 1;
     }
 
   if (extended && !sym->components)
@@ -10706,7 +10716,7 @@ match_binding_attributes (gfc_typebound_proc* ba, bool generic, bool ppc)
   /* NON_OVERRIDABLE and DEFERRED exclude themselves.  */
   if (ba->non_overridable && ba->deferred)
     {
-      gfc_error ("NON_OVERRIDABLE and DEFERRED can't both appear at %C");
+      gfc_error ("NON_OVERRIDABLE and DEFERRED cannot both appear at %C");
       goto error;
     }
 

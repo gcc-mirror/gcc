@@ -1024,7 +1024,7 @@ struct constexpr_ctx {
   hash_map<tree,tree> *values;
   /* SAVE_EXPRs that we've seen within the current LOOP_EXPR.  NULL if we
      aren't inside a loop.  */
-  hash_set<tree> *save_exprs;
+  vec<tree> *save_exprs;
   /* The CONSTRUCTOR we're currently building up for an aggregate
      initializer.  */
   tree ctor;
@@ -1032,6 +1032,11 @@ struct constexpr_ctx {
   tree object;
   /* If inside SWITCH_EXPR.  */
   constexpr_switch_state *css_state;
+  /* Number of cxx_eval_constant_expression calls (except skipped ones,
+     on simple constants or location wrappers) encountered during current
+     cxx_eval_outermost_constant_expr call.  */
+  HOST_WIDE_INT *constexpr_ops_count;
+
   /* Whether we should error on a non-constant expression or fail quietly.  */
   bool quiet;
   /* Whether we are strictly conforming to constant expression rules or
@@ -1831,7 +1836,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  /* Track the callee's evaluated SAVE_EXPRs so that we can forget
 	     their values after the call.  */
 	  constexpr_ctx ctx_with_save_exprs = *ctx;
-	  hash_set<tree> save_exprs;
+	  auto_vec<tree, 10> save_exprs;
 	  ctx_with_save_exprs.save_exprs = &save_exprs;
 	  ctx_with_save_exprs.call = &new_call;
 
@@ -1862,9 +1867,10 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	    }
 
 	  /* Forget the saved values of the callee's SAVE_EXPRs.  */
-	  for (hash_set<tree>::iterator iter = save_exprs.begin();
-	       iter != save_exprs.end(); ++iter)
-	    ctx_with_save_exprs.values->remove (*iter);
+	  unsigned int i;
+	  tree save_expr;
+	  FOR_EACH_VEC_ELT (save_exprs, i, save_expr)
+	    ctx_with_save_exprs.values->remove (save_expr);
 
 	  /* Remove the parms/result from the values map.  Is it worth
 	     bothering to do this when the map itself is only live for
@@ -4190,7 +4196,7 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
     default:
       gcc_unreachable ();
     }
-  hash_set<tree> save_exprs;
+  auto_vec<tree, 10> save_exprs;
   new_ctx.save_exprs = &save_exprs;
   do
     {
@@ -4234,16 +4240,18 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
 	}
 
       /* Forget saved values of SAVE_EXPRs.  */
-      for (hash_set<tree>::iterator iter = save_exprs.begin();
-	   iter != save_exprs.end(); ++iter)
-	new_ctx.values->remove (*iter);
+      unsigned int i;
+      tree save_expr;
+      FOR_EACH_VEC_ELT (save_exprs, i, save_expr)
+	new_ctx.values->remove (save_expr);
+      save_exprs.truncate (0);
 
       if (++count >= constexpr_loop_limit)
 	{
 	  if (!ctx->quiet)
 	    error_at (cp_expr_loc_or_loc (t, input_location),
 		      "%<constexpr%> loop iteration count exceeds limit of %d "
-		      "(use -fconstexpr-loop-limit= to increase the limit)",
+		      "(use %<-fconstexpr-loop-limit=%> to increase the limit)",
 		      constexpr_loop_limit);
 	  *non_constant_p = true;
 	  break;
@@ -4256,9 +4264,10 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
 	 && !*non_constant_p);
 
   /* Forget saved values of SAVE_EXPRs.  */
-  for (hash_set<tree>::iterator iter = save_exprs.begin();
-       iter != save_exprs.end(); ++iter)
-    new_ctx.values->remove (*iter);
+  unsigned int i;
+  tree save_expr;
+  FOR_EACH_VEC_ELT (save_exprs, i, save_expr)
+    new_ctx.values->remove (save_expr);
 
   return NULL_TREE;
 }
@@ -4398,6 +4407,20 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       return t;
     }
 
+  /* Avoid excessively long constexpr evaluations.  */
+  if (!location_wrapper_p (t)
+      && ++*ctx->constexpr_ops_count >= constexpr_ops_limit)
+    {
+      if (!ctx->quiet)
+	error_at (cp_expr_loc_or_loc (t, input_location),
+		  "%<constexpr%> evaluation operation count exceeds limit of "
+		  "%wd (use -fconstexpr-ops-limit= to increase the limit)",
+		  constexpr_ops_limit);
+      *ctx->constexpr_ops_count = INTTYPE_MINIMUM (HOST_WIDE_INT);
+      *non_constant_p = true;
+      return t;
+    }
+
   tree_code tcode = TREE_CODE (t);
   switch (tcode)
     {
@@ -4419,8 +4442,29 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 
     case VAR_DECL:
       if (DECL_HAS_VALUE_EXPR_P (t))
-	return cxx_eval_constant_expression (ctx, DECL_VALUE_EXPR (t),
-					     lval, non_constant_p, overflow_p);
+	{
+	  if (is_normal_capture_proxy (t)
+	      && current_function_decl == DECL_CONTEXT (t))
+	    {
+	      /* Function parms aren't constexpr within the function
+		 definition, so don't try to look at the closure.  But if the
+		 captured variable is constant, try to evaluate it directly. */
+	      r = DECL_CAPTURED_VARIABLE (t);
+	      tree type = TREE_TYPE (t);
+	      if (TYPE_REF_P (type) != TYPE_REF_P (TREE_TYPE (r)))
+		{
+		  /* Adjust r to match the reference-ness of t.  */
+		  if (TYPE_REF_P (type))
+		    r = build_address (r);
+		  else
+		    r = convert_from_reference (r);
+		}
+	    }
+	  else
+	    r = DECL_VALUE_EXPR (t);
+	  return cxx_eval_constant_expression (ctx, r, lval, non_constant_p,
+					       overflow_p);
+	}
       /* fall through */
     case CONST_DECL:
       /* We used to not check lval for CONST_DECL, but darwin.c uses
@@ -4616,7 +4660,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 					    non_constant_p, overflow_p);
 	  ctx->values->put (t, r);
 	  if (ctx->save_exprs)
-	    ctx->save_exprs->add (t);
+	    ctx->save_exprs->safe_push (t);
 	}
       break;
 
@@ -5234,9 +5278,10 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   bool non_constant_p = false;
   bool overflow_p = false;
   hash_map<tree,tree> map;
+  HOST_WIDE_INT constexpr_ctx_count = 0;
 
   constexpr_ctx ctx = { NULL, &map, NULL, NULL, NULL, NULL,
-			allow_non_constant, strict,
+			&constexpr_ctx_count, allow_non_constant, strict,
 			manifestly_const_eval || !allow_non_constant };
 
   tree type = initialized_type (t);
@@ -5378,9 +5423,11 @@ is_sub_constant_expr (tree t)
   bool non_constant_p = false;
   bool overflow_p = false;
   hash_map <tree, tree> map;
+  HOST_WIDE_INT constexpr_ops_count = 0;
 
   constexpr_ctx ctx
-    = { NULL, &map, NULL, NULL, NULL, NULL, true, true, false };
+    = { NULL, &map, NULL, NULL, NULL, NULL, &constexpr_ops_count,
+	true, true, false };
 
   instantiate_constexpr_fns (t);
   cxx_eval_constant_expression (&ctx, t, false, &non_constant_p,
@@ -5534,6 +5581,58 @@ clear_cv_and_fold_caches (void)
   clear_fold_cache ();
 }
 
+/* Internal function handling expressions in templates for
+   fold_non_dependent_expr and fold_non_dependent_init.
+
+   If we're in a template, but T isn't value dependent, simplify
+   it.  We're supposed to treat:
+
+     template <typename T> void f(T[1 + 1]);
+     template <typename T> void f(T[2]);
+
+   as two declarations of the same function, for example.  */
+
+static tree
+fold_non_dependent_expr_template (tree t, tsubst_flags_t complain,
+				  bool manifestly_const_eval)
+{
+  gcc_assert (processing_template_decl);
+
+  if (is_nondependent_constant_expression (t))
+    {
+      processing_template_decl_sentinel s;
+      t = instantiate_non_dependent_expr_internal (t, complain);
+
+      if (type_unknown_p (t) || BRACE_ENCLOSED_INITIALIZER_P (t))
+	{
+	  if (TREE_OVERFLOW_P (t))
+	    {
+	      t = build_nop (TREE_TYPE (t), t);
+	      TREE_CONSTANT (t) = false;
+	    }
+	  return t;
+	}
+
+      tree r = cxx_eval_outermost_constant_expr (t, true, true,
+						 manifestly_const_eval,
+						 NULL_TREE);
+      /* cp_tree_equal looks through NOPs, so allow them.  */
+      gcc_checking_assert (r == t
+			   || CONVERT_EXPR_P (t)
+			   || TREE_CODE (t) == VIEW_CONVERT_EXPR
+			   || (TREE_CONSTANT (t) && !TREE_CONSTANT (r))
+			   || !cp_tree_equal (r, t));
+      return r;
+    }
+  else if (TREE_OVERFLOW_P (t))
+    {
+      t = build_nop (TREE_TYPE (t), t);
+      TREE_CONSTANT (t) = false;
+    }
+
+  return t;
+}
+
 /* Like maybe_constant_value but first fully instantiate the argument.
 
    Note: this is equivalent to instantiate_non_dependent_expr_sfinae
@@ -5557,51 +5656,39 @@ fold_non_dependent_expr (tree t,
   if (t == NULL_TREE)
     return NULL_TREE;
 
-  /* If we're in a template, but T isn't value dependent, simplify
-     it.  We're supposed to treat:
+  if (processing_template_decl)
+    return fold_non_dependent_expr_template (t, complain,
+					     manifestly_const_eval);
 
-       template <typename T> void f(T[1 + 1]);
-       template <typename T> void f(T[2]);
+  return maybe_constant_value (t, NULL_TREE, manifestly_const_eval);
+}
 
-     as two declarations of the same function, for example.  */
+
+/* Like maybe_constant_init but first fully instantiate the argument.  */
+
+tree
+fold_non_dependent_init (tree t,
+			 tsubst_flags_t complain /*=tf_warning_or_error*/,
+			 bool manifestly_const_eval /*=false*/)
+{
+  if (t == NULL_TREE)
+    return NULL_TREE;
+
   if (processing_template_decl)
     {
-      if (is_nondependent_constant_expression (t))
+      t = fold_non_dependent_expr_template (t, complain,
+					    manifestly_const_eval);
+      /* maybe_constant_init does this stripping, so do it here too.  */
+      if (TREE_CODE (t) == TARGET_EXPR)
 	{
-	  processing_template_decl_sentinel s;
-	  t = instantiate_non_dependent_expr_internal (t, complain);
-
-	  if (type_unknown_p (t)
-	      || BRACE_ENCLOSED_INITIALIZER_P (t))
-	    {
-	      if (TREE_OVERFLOW_P (t))
-		{
-		  t = build_nop (TREE_TYPE (t), t);
-		  TREE_CONSTANT (t) = false;
-		}
-	      return t;
-	    }
-
-	  tree r = cxx_eval_outermost_constant_expr (t, true, true,
-						     manifestly_const_eval,
-						     NULL_TREE);
-	  /* cp_tree_equal looks through NOPs, so allow them.  */
-	  gcc_checking_assert (r == t
-			       || CONVERT_EXPR_P (t)
-			       || TREE_CODE (t) == VIEW_CONVERT_EXPR
-			       || (TREE_CONSTANT (t) && !TREE_CONSTANT (r))
-			       || !cp_tree_equal (r, t));
-	  return r;
-	}
-      else if (TREE_OVERFLOW_P (t))
-	{
-	  t = build_nop (TREE_TYPE (t), t);
-	  TREE_CONSTANT (t) = false;
+	  tree init = TARGET_EXPR_INITIAL (t);
+	  if (TREE_CODE (init) == CONSTRUCTOR)
+	    t = init;
 	}
       return t;
     }
 
-  return maybe_constant_value (t, NULL_TREE, manifestly_const_eval);
+  return maybe_constant_init (t, NULL_TREE, manifestly_const_eval);
 }
 
 /* Like maybe_constant_value, but returns a CONSTRUCTOR directly, rather
@@ -5683,6 +5770,86 @@ check_automatic_or_tls (tree ref)
   return (dk == dk_auto || dk == dk_thread) ? ck_bad : ck_ok;
 }
 #endif
+
+/* Data structure for passing data from potential_constant_expression_1
+   to check_for_return_continue via cp_walk_tree.  */
+struct check_for_return_continue_data {
+  hash_set<tree> *pset;
+  tree continue_stmt;
+};
+
+/* Helper function for potential_constant_expression_1 SWITCH_STMT handling,
+   called through cp_walk_tree.  Return the first RETURN_EXPR found, or note
+   the first CONTINUE_STMT if RETURN_EXPR is not found.  */
+static tree
+check_for_return_continue (tree *tp, int *walk_subtrees, void *data)
+{
+  tree t = *tp, s;
+  check_for_return_continue_data *d = (check_for_return_continue_data *) data;
+  switch (TREE_CODE (t))
+    {
+    case RETURN_EXPR:
+      return t;
+
+    case CONTINUE_STMT:
+      if (d->continue_stmt == NULL_TREE)
+	d->continue_stmt = t;
+      break;
+
+#define RECUR(x) \
+      if (tree r = cp_walk_tree (&x, check_for_return_continue, data,	\
+				 d->pset))				\
+	return r
+
+      /* For loops, walk subtrees manually, so that continue stmts found
+	 inside of the bodies of the loops are ignored.  */
+    case DO_STMT:
+      *walk_subtrees = 0;
+      RECUR (DO_COND (t));
+      s = d->continue_stmt;
+      RECUR (DO_BODY (t));
+      d->continue_stmt = s;
+      break;
+
+    case WHILE_STMT:
+      *walk_subtrees = 0;
+      RECUR (WHILE_COND (t));
+      s = d->continue_stmt;
+      RECUR (WHILE_BODY (t));
+      d->continue_stmt = s;
+      break;
+
+    case FOR_STMT:
+      *walk_subtrees = 0;
+      RECUR (FOR_INIT_STMT (t));
+      RECUR (FOR_COND (t));
+      RECUR (FOR_EXPR (t));
+      s = d->continue_stmt;
+      RECUR (FOR_BODY (t));
+      d->continue_stmt = s;
+      break;
+
+    case RANGE_FOR_STMT:
+      *walk_subtrees = 0;
+      RECUR (RANGE_FOR_EXPR (t));
+      s = d->continue_stmt;
+      RECUR (RANGE_FOR_BODY (t));
+      d->continue_stmt = s;
+      break;
+#undef RECUR
+
+    case STATEMENT_LIST:
+    case CONSTRUCTOR:
+      break;
+
+    default:
+      if (!EXPR_P (t))
+	*walk_subtrees = 0;
+      break;
+    }
+
+  return NULL_TREE;
+}
 
 /* Return true if T denotes a potentially constant expression.  Issue
    diagnostic as appropriate under control of FLAGS.  If WANT_RVAL is true,
@@ -6149,7 +6316,24 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       if (!RECUR (SWITCH_STMT_COND (t), rval))
 	return false;
       /* FIXME we don't check SWITCH_STMT_BODY currently, because even
-	 unreachable labels would be checked.  */
+	 unreachable labels would be checked and it is enough if there is
+	 a single switch cond value for which it is a valid constant
+	 expression.  We need to check if there are any RETURN_EXPRs
+	 or CONTINUE_STMTs inside of the body though, as in that case
+	 we need to set *jump_target.  */
+      else
+	{
+	  hash_set<tree> pset;
+	  check_for_return_continue_data data = { &pset, NULL_TREE };
+	  if (tree ret_expr
+	      = cp_walk_tree (&SWITCH_STMT_BODY (t), check_for_return_continue,
+			      &data, &pset))
+	    /* The switch might return.  */
+	    *jump_target = ret_expr;
+	  else if (data.continue_stmt)
+	    /* The switch can't return, but might continue.  */
+	    *jump_target = data.continue_stmt;
+	}
       return true;
 
     case STMT_EXPR:

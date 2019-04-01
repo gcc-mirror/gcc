@@ -320,7 +320,7 @@ version (CoreDdoc)
      * Params:
      *  mhp = the mach header to get the section from
      *  segname = the name of the segment
-     *  sectname = the name of the section
+     *  section = the name of the section
      *  fSwap = ?
      *
      * Returns: a pointer to the section structure or `null` if it doesn't exist

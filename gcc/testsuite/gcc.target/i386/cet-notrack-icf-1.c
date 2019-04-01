@@ -20,7 +20,7 @@ fn2 (int x)
 
 static __attribute__((noinline, nocf_check)) int
 fn3 (int x)
-{ /* { dg-warning "'nocf_check' attribute ignored. Use -fcf-protection option to enable it" } */
+{ /* { dg-warning "'nocf_check' attribute ignored. Use '-fcf-protection' option to enable it" } */
   return x + 12;
 }
 

@@ -4,4 +4,4 @@
 /* { dg-do compile } */
 /* { dg-options "-Wformat-nonliteral" } */
 
-/* { dg-warning "-Wformat-nonliteral ignored without -Wformat" "ignored" { target *-*-* } 0 } */
+/* { dg-warning "'-Wformat-nonliteral' ignored without '-Wformat'" "ignored" { target *-*-* } 0 } */

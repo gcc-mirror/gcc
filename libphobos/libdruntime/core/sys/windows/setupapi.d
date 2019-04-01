@@ -904,15 +904,15 @@ alias SP_ALTPLATFORM_INFO* PSP_ALTPLATFORM_INFO;
 
 struct SP_ORIGINAL_FILE_INFO_A {
     DWORD cbSize = SP_ORIGINAL_FILE_INFO_A.sizeof;
-    CHAR[MAX_PATH] OriginalInfName;
-    CHAR[MAX_PATH] OriginalCatalogName;
+    CHAR[MAX_PATH] OriginalInfName = 0;
+    CHAR[MAX_PATH] OriginalCatalogName = 0;
 }
 alias SP_ORIGINAL_FILE_INFO_A* PSP_ORIGINAL_FILE_INFO_A;
 
 struct SP_ORIGINAL_FILE_INFO_W {
     DWORD cbSize = SP_ORIGINAL_FILE_INFO_W.sizeof;
-    WCHAR[MAX_PATH] OriginalInfName;
-    WCHAR[MAX_PATH] OriginalCatalogName;
+    WCHAR[MAX_PATH] OriginalInfName = 0;
+    WCHAR[MAX_PATH] OriginalCatalogName = 0;
 }
 alias SP_ORIGINAL_FILE_INFO_W* PSP_ORIGINAL_FILE_INFO_W;
 
@@ -977,7 +977,7 @@ mixin AlignedStr!(_alignVal, "FILE_IN_CABINET_INFO_A", q{
     WORD  DosDate;
     WORD  DosTime;
     WORD  DosAttribs;
-    CHAR[MAX_PATH] FullTargetName;
+    CHAR[MAX_PATH] FullTargetName = 0;
 });
 alias FILE_IN_CABINET_INFO_A* PFILE_IN_CABINET_INFO_A;
 
@@ -988,7 +988,7 @@ mixin AlignedStr!(_alignVal, "FILE_IN_CABINET_INFO_W", q{
     WORD   DosDate;
     WORD   DosTime;
     WORD   DosAttribs;
-    WCHAR[MAX_PATH] FullTargetName;
+    WCHAR[MAX_PATH] FullTargetName = 0;
 });
 alias FILE_IN_CABINET_INFO_W* PFILE_IN_CABINET_INFO_W;
 
@@ -1044,14 +1044,14 @@ deprecated alias SP_DEVICE_INTERFACE_DATA* PSP_INTERFACE_DEVICE_DATA;
 
 mixin AlignedStr!(_alignVal, "SP_DEVICE_INTERFACE_DETAIL_DATA_A", q{
     DWORD cbSize = SP_DEVICE_INTERFACE_DETAIL_DATA_A.sizeof;
-    CHAR[1] _DevicePath;
+    CHAR[1] _DevicePath = 0;
     CHAR* DevicePath() return { return _DevicePath.ptr; }
 });
 alias SP_DEVICE_INTERFACE_DETAIL_DATA_A* PSP_DEVICE_INTERFACE_DETAIL_DATA_A;
 
 mixin AlignedStr!(_alignVal, "SP_DEVICE_INTERFACE_DETAIL_DATA_W", q{
     DWORD  cbSize = SP_DEVICE_INTERFACE_DETAIL_DATA_W.sizeof;
-    WCHAR[1] _DevicePath;
+    WCHAR[1] _DevicePath = 0;
     WCHAR* DevicePath() return { return _DevicePath.ptr; }
 });
 alias SP_DEVICE_INTERFACE_DETAIL_DATA_W* PSP_DEVICE_INTERFACE_DETAIL_DATA_W;
@@ -1065,7 +1065,7 @@ mixin AlignedStr!(_alignVal, "SP_DEVINFO_LIST_DETAIL_DATA_A", q{
     DWORD  cbSize = SP_DEVINFO_LIST_DETAIL_DATA_A.sizeof;
     GUID   ClassGuid;
     HANDLE RemoteMachineHandle;
-    CHAR[SP_MAX_MACHINENAME_LENGTH] RemoteMachineName;
+    CHAR[SP_MAX_MACHINENAME_LENGTH] RemoteMachineName = 0;
 });
 alias SP_DEVINFO_LIST_DETAIL_DATA_A* PSP_DEVINFO_LIST_DETAIL_DATA_A;
 
@@ -1073,7 +1073,7 @@ mixin AlignedStr!(_alignVal, "SP_DEVINFO_LIST_DETAIL_DATA_W", q{
     DWORD  cbSize = SP_DEVINFO_LIST_DETAIL_DATA_W.sizeof;
     GUID   ClassGuid;
     HANDLE RemoteMachineHandle;
-    WCHAR[SP_MAX_MACHINENAME_LENGTH] RemoteMachineName;
+    WCHAR[SP_MAX_MACHINENAME_LENGTH] RemoteMachineName = 0;
 });
 alias SP_DEVINFO_LIST_DETAIL_DATA_W* PSP_DEVINFO_LIST_DETAIL_DATA_W;
 
@@ -1090,7 +1090,7 @@ struct SP_DEVINSTALL_PARAMS_A {
     HSPFILEQ            FileQueue;
     ULONG_PTR           ClassInstallReserved;
     DWORD               Reserved;
-    CHAR[MAX_PATH]      DriverPath;
+    CHAR[MAX_PATH]      DriverPath = 0;
 }
 alias SP_DEVINSTALL_PARAMS_A* PSP_DEVINSTALL_PARAMS_A;
 
@@ -1104,7 +1104,7 @@ struct SP_DEVINSTALL_PARAMS_W {
     HSPFILEQ            FileQueue;
     ULONG_PTR           ClassInstallReserved;
     DWORD               Reserved;
-    WCHAR[MAX_PATH]     DriverPath;
+    WCHAR[MAX_PATH]     DriverPath = 0;
 }
 alias SP_DEVINSTALL_PARAMS_W* PSP_DEVINSTALL_PARAMS_W;
 
@@ -1151,20 +1151,20 @@ alias SP_UNREMOVEDEVICE_PARAMS* PSP_UNREMOVEDEVICE_PARAMS;
 
 struct SP_SELECTDEVICE_PARAMS_A {
     SP_CLASSINSTALL_HEADER    ClassInstallHeader;
-    CHAR[MAX_TITLE_LEN]       Title;
-    CHAR[MAX_INSTRUCTION_LEN] Instructions;
-    CHAR[MAX_LABEL_LEN]       ListLabel;
-    CHAR[MAX_SUBTITLE_LEN]    SubTitle;
+    CHAR[MAX_TITLE_LEN]       Title = 0;
+    CHAR[MAX_INSTRUCTION_LEN] Instructions = 0;
+    CHAR[MAX_LABEL_LEN]       ListLabel = 0;
+    CHAR[MAX_SUBTITLE_LEN]    SubTitle = 0;
     BYTE[2]                   Reserved;
 }
 alias SP_SELECTDEVICE_PARAMS_A* PSP_SELECTDEVICE_PARAMS_A;
 
 struct SP_SELECTDEVICE_PARAMS_W {
     SP_CLASSINSTALL_HEADER     ClassInstallHeader;
-    WCHAR[MAX_TITLE_LEN]       Title;
-    WCHAR[MAX_INSTRUCTION_LEN] Instructions;
-    WCHAR[MAX_LABEL_LEN]       ListLabel;
-    WCHAR[MAX_SUBTITLE_LEN]    SubTitle;
+    WCHAR[MAX_TITLE_LEN]       Title = 0;
+    WCHAR[MAX_INSTRUCTION_LEN] Instructions = 0;
+    WCHAR[MAX_LABEL_LEN]       ListLabel = 0;
+    WCHAR[MAX_SUBTITLE_LEN]    SubTitle = 0;
 }
 alias SP_SELECTDEVICE_PARAMS_W* PSP_SELECTDEVICE_PARAMS_W;
 
@@ -1202,27 +1202,27 @@ alias SP_NEWDEVICEWIZARD_DATA* PSP_ADDPROPERTYPAGE_DATA;
 
 struct SP_TROUBLESHOOTER_PARAMS_A {
     SP_CLASSINSTALL_HEADER ClassInstallHeader;
-    CHAR[MAX_PATH]         ChmFile;
-    CHAR[MAX_PATH]         HtmlTroubleShooter;
+    CHAR[MAX_PATH]         ChmFile = 0;
+    CHAR[MAX_PATH]         HtmlTroubleShooter = 0;
 }
 alias SP_TROUBLESHOOTER_PARAMS_A* PSP_TROUBLESHOOTER_PARAMS_A;
 
 struct SP_TROUBLESHOOTER_PARAMS_W {
     SP_CLASSINSTALL_HEADER ClassInstallHeader;
-    WCHAR[MAX_PATH]        ChmFile;
-    WCHAR[MAX_PATH]        HtmlTroubleShooter;
+    WCHAR[MAX_PATH]        ChmFile = 0;
+    WCHAR[MAX_PATH]        HtmlTroubleShooter = 0;
 }
 alias SP_TROUBLESHOOTER_PARAMS_W* PSP_TROUBLESHOOTER_PARAMS_W;
 
 struct SP_POWERMESSAGEWAKE_PARAMS_A {
     SP_CLASSINSTALL_HEADER ClassInstallHeader;
-    CHAR[LINE_LEN*2]       PowerMessageWake;
+    CHAR[LINE_LEN*2]       PowerMessageWake = 0;
 }
 alias SP_POWERMESSAGEWAKE_PARAMS_A* PSP_POWERMESSAGEWAKE_PARAMS_A;
 
 struct SP_POWERMESSAGEWAKE_PARAMS_W {
     SP_CLASSINSTALL_HEADER ClassInstallHeader;
-    WCHAR[LINE_LEN*2]      PowerMessageWake;
+    WCHAR[LINE_LEN*2]      PowerMessageWake = 0;
 }
 alias SP_POWERMESSAGEWAKE_PARAMS_W* PSP_POWERMESSAGEWAKE_PARAMS_W;
 
@@ -1230,9 +1230,9 @@ mixin AlignedStr!(_alignVal, "SP_DRVINFO_DATA_V2_A", q{
     DWORD          cbSize = SP_DRVINFO_DATA_V2_A.sizeof;
     DWORD          DriverType;
     ULONG_PTR      Reserved;
-    CHAR[LINE_LEN] Description;
-    CHAR[LINE_LEN] MfgName;
-    CHAR[LINE_LEN] ProviderName;
+    CHAR[LINE_LEN] Description = 0;
+    CHAR[LINE_LEN] MfgName = 0;
+    CHAR[LINE_LEN] ProviderName = 0;
     FILETIME       DriverDate;
     DWORDLONG      DriverVersion;
 });
@@ -1242,9 +1242,9 @@ mixin AlignedStr!(_alignVal, "SP_DRVINFO_DATA_V2_W", q{
     DWORD           cbSize = SP_DRVINFO_DATA_V2_A.sizeof;
     DWORD           DriverType;
     ULONG_PTR       Reserved;
-    WCHAR[LINE_LEN] Description;
-    WCHAR[LINE_LEN] MfgName;
-    WCHAR[LINE_LEN] ProviderName;
+    WCHAR[LINE_LEN] Description = 0;
+    WCHAR[LINE_LEN] MfgName = 0;
+    WCHAR[LINE_LEN] ProviderName = 0;
     FILETIME        DriverDate;
     DWORDLONG       DriverVersion;
 });
@@ -1254,9 +1254,9 @@ struct SP_DRVINFO_DATA_V1_A {
     DWORD          cbSize = SP_DRVINFO_DATA_V1_A.sizeof;
     DWORD          DriverType;
     ULONG_PTR      Reserved;
-    CHAR[LINE_LEN] Description;
-    CHAR[LINE_LEN] MfgName;
-    CHAR[LINE_LEN] ProviderName;
+    CHAR[LINE_LEN] Description = 0;
+    CHAR[LINE_LEN] MfgName = 0;
+    CHAR[LINE_LEN] ProviderName = 0;
 }
 alias SP_DRVINFO_DATA_V1_A* PSP_DRVINFO_DATA_V1_A;
 
@@ -1264,9 +1264,9 @@ struct SP_DRVINFO_DATA_V1_W {
     DWORD           cbSize = SP_DRVINFO_DATA_V1_W.sizeof;
     DWORD           DriverType;
     ULONG_PTR       Reserved;
-    WCHAR[LINE_LEN] Description;
-    WCHAR[LINE_LEN] MfgName;
-    WCHAR[LINE_LEN] ProviderName;
+    WCHAR[LINE_LEN] Description = 0;
+    WCHAR[LINE_LEN] MfgName = 0;
+    WCHAR[LINE_LEN] ProviderName = 0;
 }
 alias SP_DRVINFO_DATA_V1_W* PSP_DRVINFO_DATA_V1_W;
 
@@ -1304,10 +1304,10 @@ mixin AlignedStr!(_alignVal, "SP_DRVINFO_DETAIL_DATA_A", q{
     DWORD          CompatIDsOffset;
     DWORD          CompatIDsLength;
     ULONG_PTR      Reserved;
-    CHAR[LINE_LEN] SectionName;
-    CHAR[MAX_PATH] InfFileName;
-    CHAR[LINE_LEN] DrvDescription;
-    CHAR[1]        _HardwareID;
+    CHAR[LINE_LEN] SectionName = 0;
+    CHAR[MAX_PATH] InfFileName = 0;
+    CHAR[LINE_LEN] DrvDescription = 0;
+    CHAR[1]        _HardwareID = 0;
     CHAR*          HardwareID() return { return _HardwareID.ptr; }
 });
 alias SP_DRVINFO_DETAIL_DATA_A* PSP_DRVINFO_DETAIL_DATA_A;
@@ -1318,10 +1318,10 @@ mixin AlignedStr!(_alignVal, "SP_DRVINFO_DETAIL_DATA_W", q{
     DWORD           CompatIDsOffset;
     DWORD           CompatIDsLength;
     ULONG_PTR       Reserved;
-    WCHAR[LINE_LEN] SectionName;
-    WCHAR[MAX_PATH] InfFileName;
-    WCHAR[LINE_LEN] DrvDescription;
-    WCHAR[1]        _HardwareID;
+    WCHAR[LINE_LEN] SectionName = 0;
+    WCHAR[MAX_PATH] InfFileName = 0;
+    WCHAR[LINE_LEN] DrvDescription = 0;
+    WCHAR[1]        _HardwareID = 0;
     WCHAR*          HardwareID() return { return _HardwareID.ptr; }
 });
 alias SP_DRVINFO_DETAIL_DATA_W* PSP_DRVINFO_DETAIL_DATA_W;
@@ -1359,14 +1359,14 @@ alias SP_PROPSHEETPAGE_REQUEST* PSP_PROPSHEETPAGE_REQUEST;
 
 struct SP_BACKUP_QUEUE_PARAMS_A {
     DWORD cbSize = SP_BACKUP_QUEUE_PARAMS_A.sizeof;
-    CHAR[MAX_PATH] FullInfPath;
+    CHAR[MAX_PATH] FullInfPath = 0;
     INT FilenameOffset;
 }
 alias SP_BACKUP_QUEUE_PARAMS_A* PSP_BACKUP_QUEUE_PARAMS_A;
 
 struct SP_BACKUP_QUEUE_PARAMS_W {
     DWORD cbSize = SP_BACKUP_QUEUE_PARAMS_W.sizeof;
-    WCHAR[MAX_PATH] FullInfPath;
+    WCHAR[MAX_PATH] FullInfPath = 0;
     INT FilenameOffset;
 }
 alias SP_BACKUP_QUEUE_PARAMS_W* PSP_BACKUP_QUEUE_PARAMS_W;

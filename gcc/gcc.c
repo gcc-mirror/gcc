@@ -3075,7 +3075,7 @@ execute (void)
     if (arg && strcmp (arg, "|") == 0)
       {				/* each command.  */
 #if defined (__MSDOS__) || defined (OS2) || defined (VMS)
-	fatal_error (input_location, "-pipe not supported");
+	fatal_error (input_location, "%<-pipe%> not supported");
 #endif
 	argbuf[i] = 0; /* Termination of
 						     command args.  */
@@ -4148,7 +4148,7 @@ driver_handle_option (struct gcc_options *opts,
 	       || strcmp (arg, "object") == 0)
 	save_temps_flag = SAVE_TEMPS_OBJ;
       else
-	fatal_error (input_location, "%qs is an unknown -save-temps option",
+	fatal_error (input_location, "%qs is an unknown %<-save-temps%> option",
 		     decoded->orig_option_with_args_text);
       break;
 
@@ -4651,7 +4651,7 @@ process_command (unsigned int decoded_options_count,
     {
       /* -save-temps overrides -pipe, so that temp files are produced */
       if (save_temps_flag)
-	warning (0, "-pipe ignored because -save-temps specified");
+	warning (0, "%<-pipe%> ignored because %<-save-temps%> specified");
       use_pipes = 0;
     }
 
@@ -7243,7 +7243,7 @@ compare_files (char *cmpfile[])
 
     if (!ret && length[0] != length[1])
       {
-	error ("%s: -fcompare-debug failure (length)", gcc_input_filename);
+	error ("%s: %<-fcompare-debug%> failure (length)", gcc_input_filename);
 	ret = 1;
       }
 
@@ -7273,7 +7273,7 @@ compare_files (char *cmpfile[])
       {
 	if (memcmp (map[0], map[1], length[0]) != 0)
 	  {
-	    error ("%s: -fcompare-debug failure", gcc_input_filename);
+	    error ("%s: %<-fcompare-debug%> failure", gcc_input_filename);
 	    ret = 1;
 	  }
       }
@@ -7310,7 +7310,7 @@ compare_files (char *cmpfile[])
 
 	if (c0 != c1)
 	  {
-	    error ("%s: -fcompare-debug failure",
+	    error ("%s: %<-fcompare-debug%> failure",
 		   gcc_input_filename);
 	    ret = 1;
 	    break;
@@ -8086,7 +8086,8 @@ driver::prepare_infiles ()
 
   if (!combine_inputs && have_c && have_o && lang_n_infiles > 1)
     fatal_error (input_location,
-		 "cannot specify -o with -c, -S or -E with multiple files");
+		 "cannot specify %<-o%> with %<-c%>, %<-S%> or %<-E%> "
+		 "with multiple files");
 
   /* No early exit needed from main; we can continue.  */
   return false;
@@ -8152,7 +8153,7 @@ driver::do_spec_on_infiles () const
 		{
 		  if (verbose_flag)
 		    inform (UNKNOWN_LOCATION,
-			    "recompiling with -fcompare-debug");
+			    "recompiling with %<-fcompare-debug%>");
 
 		  compare_debug = -compare_debug;
 		  n_switches = n_switches_debug_check[1];
@@ -8168,7 +8169,7 @@ driver::do_spec_on_infiles () const
 
 		  if (value < 0)
 		    {
-		      error ("during -fcompare-debug recompilation");
+		      error ("during %<-fcompare-debug%> recompilation");
 		      this_file_error = 1;
 		    }
 
@@ -8294,7 +8295,7 @@ driver::maybe_run_linker (const char *argv0) const
 					     false);
 	      if (!temp_spec)
 		fatal_error (input_location,
-			     "-fuse-linker-plugin, but %s not found",
+			     "%<-fuse-linker-plugin%>, but %s not found",
 			     LTOPLUGINSONAME);
 	      linker_plugin_file_spec = convert_white_space (temp_spec);
 	    }

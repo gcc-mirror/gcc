@@ -1021,9 +1021,9 @@ enable_disable_pass (const char *arg, bool is_enable)
   if (!*phase_name)
     {
       if (is_enable)
-        error ("unrecognized option -fenable");
+	error ("unrecognized option %<-fenable%>");
       else
-        error ("unrecognized option -fdisable");
+	error ("unrecognized option %<-fdisable%>");
       free (argstr);
       return;
     }
@@ -1031,9 +1031,9 @@ enable_disable_pass (const char *arg, bool is_enable)
   if (!pass || pass->static_pass_number == -1)
     {
       if (is_enable)
-        error ("unknown pass %s specified in -fenable", phase_name);
+	error ("unknown pass %s specified in %<-fenable%>", phase_name);
       else
-        error ("unknown pass %s specified in -fdisable", phase_name);
+	error ("unknown pass %s specified in %<-fdisable%>", phase_name);
       free (argstr);
       return;
     }

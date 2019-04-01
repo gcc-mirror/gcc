@@ -214,7 +214,7 @@ extern bool mips_legitimize_move (machine_mode, rtx, rtx);
 
 extern rtx mips_subword (rtx, bool);
 extern bool mips_split_move_p (rtx, rtx, enum mips_split_type);
-extern void mips_split_move (rtx, rtx, enum mips_split_type);
+extern void mips_split_move (rtx, rtx, enum mips_split_type, rtx);
 extern bool mips_split_move_insn_p (rtx, rtx, rtx);
 extern void mips_split_move_insn (rtx, rtx, rtx);
 extern void mips_split_128bit_move (rtx, rtx);

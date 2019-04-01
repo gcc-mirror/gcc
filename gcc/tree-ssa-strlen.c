@@ -971,12 +971,21 @@ valid_builtin_call (gimple *stmt)
     return false;
 
   tree callee = gimple_call_fndecl (stmt);
+  tree decl = builtin_decl_explicit (DECL_FUNCTION_CODE (callee));
+  if (decl
+      && decl != callee
+      && !gimple_builtin_call_types_compatible_p (stmt, decl))
+    return false;
+
   switch (DECL_FUNCTION_CODE (callee))
     {
     case BUILT_IN_MEMCMP:
     case BUILT_IN_MEMCMP_EQ:
+    case BUILT_IN_STRCMP:
+    case BUILT_IN_STRNCMP:
     case BUILT_IN_STRCHR:
     case BUILT_IN_STRLEN:
+    case BUILT_IN_STRNLEN:
       /* The above functions should be pure.  Punt if they aren't.  */
       if (gimple_vdef (stmt) || gimple_vuse (stmt) == NULL_TREE)
 	return false;
@@ -991,10 +1000,16 @@ valid_builtin_call (gimple *stmt)
     case BUILT_IN_MEMSET:
     case BUILT_IN_STPCPY:
     case BUILT_IN_STPCPY_CHK:
+    case BUILT_IN_STPNCPY:
+    case BUILT_IN_STPNCPY_CHK:
     case BUILT_IN_STRCAT:
     case BUILT_IN_STRCAT_CHK:
     case BUILT_IN_STRCPY:
     case BUILT_IN_STRCPY_CHK:
+    case BUILT_IN_STRNCAT:
+    case BUILT_IN_STRNCAT_CHK:
+    case BUILT_IN_STRNCPY:
+    case BUILT_IN_STRNCPY_CHK:
       /* The above functions should be neither const nor pure.  Punt if they
 	 aren't.  */
       if (gimple_vdef (stmt) == NULL_TREE || gimple_vuse (stmt) == NULL_TREE)
@@ -2191,13 +2206,21 @@ handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *gsi)
   int didx = get_stridx (dst);
   if (strinfo *sidst = didx > 0 ? get_strinfo (didx) : NULL)
     {
-      /* Compute the size of the destination string including the NUL.  */
+      /* Compute the size of the destination string including the nul
+	 if it is known to be nul-terminated.  */
       if (sidst->nonzero_chars)
 	{
-	  tree type = TREE_TYPE (sidst->nonzero_chars);
-	  dstsize = fold_build2 (PLUS_EXPR, type, sidst->nonzero_chars,
-				 build_int_cst (type, 1));
+	  if (sidst->full_string_p)
+	    {
+	      /* String is known to be nul-terminated.  */
+	      tree type = TREE_TYPE (sidst->nonzero_chars);
+	      dstsize = fold_build2 (PLUS_EXPR, type, sidst->nonzero_chars,
+				     build_int_cst (type, 1));
+	    }
+	  else
+	    dstsize = sidst->nonzero_chars;
 	}
+
       dst = sidst->ptr;
     }
 
@@ -2209,12 +2232,18 @@ handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *gsi)
 	 over the terminating nul so SISRC->DONT_INVALIDATE must be left
 	 clear.  */
 
-      /* Compute the size of the source string including the NUL.  */
+      /* Compute the size of the source string including the terminating
+	 nul if its known to be nul-terminated.  */
       if (sisrc->nonzero_chars)
 	{
-	  tree type = TREE_TYPE (sisrc->nonzero_chars);
-	  srcsize = fold_build2 (PLUS_EXPR, type, sisrc->nonzero_chars,
-				 build_int_cst (type, 1));
+	  if (sisrc->full_string_p)
+	    {
+	      tree type = TREE_TYPE (sisrc->nonzero_chars);
+	      srcsize = fold_build2 (PLUS_EXPR, type, sisrc->nonzero_chars,
+				     build_int_cst (type, 1));
+	    }
+	  else
+	    srcsize = sisrc->nonzero_chars;
 	}
 
 	src = sisrc->ptr;

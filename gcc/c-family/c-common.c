@@ -981,7 +981,7 @@ vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note)
   if (emit_lax_note && !emitted_lax_note)
     {
       emitted_lax_note = true;
-      inform (input_location, "use -flax-vector-conversions to permit "
+      inform (input_location, "use %<-flax-vector-conversions%> to permit "
               "conversions between vectors with differing "
               "element types or numbers of subparts");
     }
@@ -1021,7 +1021,7 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
   if (!VECTOR_INTEGER_TYPE_P (TREE_TYPE (mask)))
     {
       if (complain)
-	error_at (loc, "__builtin_shuffle last argument must "
+	error_at (loc, "%<__builtin_shuffle%> last argument must "
 		       "be an integer vector");
       return error_mark_node;
     }
@@ -1030,14 +1030,14 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
       || !VECTOR_TYPE_P (TREE_TYPE (v1)))
     {
       if (complain)
-	error_at (loc, "__builtin_shuffle arguments must be vectors");
+	error_at (loc, "%<__builtin_shuffle%> arguments must be vectors");
       return error_mark_node;
     }
 
   if (TYPE_MAIN_VARIANT (TREE_TYPE (v0)) != TYPE_MAIN_VARIANT (TREE_TYPE (v1)))
     {
       if (complain)
-	error_at (loc, "__builtin_shuffle argument vectors must be of "
+	error_at (loc, "%<__builtin_shuffle%> argument vectors must be of "
 		       "the same type");
       return error_mark_node;
     }
@@ -1048,7 +1048,7 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
 		   TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask))))
     {
       if (complain)
-	error_at (loc, "__builtin_shuffle number of elements of the "
+	error_at (loc, "%<__builtin_shuffle%> number of elements of the "
 		       "argument vector(s) and the mask vector should "
 		       "be the same");
       return error_mark_node;
@@ -1058,7 +1058,7 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
       != GET_MODE_BITSIZE (SCALAR_TYPE_MODE (TREE_TYPE (TREE_TYPE (mask)))))
     {
       if (complain)
-	error_at (loc, "__builtin_shuffle argument vector(s) inner type "
+	error_at (loc, "%<__builtin_shuffle%> argument vector(s) inner type "
 		       "must have the same size as inner type of the mask");
       return error_mark_node;
     }
@@ -5292,9 +5292,10 @@ check_user_alignment (const_tree align, bool objfile, bool warn_zero)
       return -1;
     }
 
-  int log2bitalign;
+  /* Log2 of the byte alignment ALIGN.  */
+  int log2align;
   if (tree_int_cst_sgn (align) == -1
-      || (log2bitalign = tree_log2 (align)) == -1)
+      || (log2align = tree_log2 (align)) == -1)
     {
       error ("requested alignment %qE is not a positive power of 2",
 	     align);
@@ -5304,7 +5305,7 @@ check_user_alignment (const_tree align, bool objfile, bool warn_zero)
   if (objfile)
     {
       unsigned maxalign = MAX_OFILE_ALIGNMENT / BITS_PER_UNIT;
-      if (tree_to_shwi (align) > maxalign)
+      if (!tree_fits_uhwi_p (align) || tree_to_uhwi (align) > maxalign)
 	{
 	  error ("requested alignment %qE exceeds object file maximum %u",
 		 align, maxalign);
@@ -5312,14 +5313,14 @@ check_user_alignment (const_tree align, bool objfile, bool warn_zero)
 	}
     }
 
-  if (log2bitalign >= HOST_BITS_PER_INT - LOG2_BITS_PER_UNIT)
+  if (log2align >= HOST_BITS_PER_INT - LOG2_BITS_PER_UNIT)
     {
       error ("requested alignment %qE exceeds maximum %u",
-	     align, 1U << (HOST_BITS_PER_INT - 1));
+	     align, 1U << (HOST_BITS_PER_INT - LOG2_BITS_PER_UNIT - 1));
       return -1;
     }
 
-  return log2bitalign;
+  return log2align;
 }
 
 /* Determine the ELF symbol visibility for DECL, which is either a
@@ -8736,7 +8737,7 @@ try_to_locate_new_include_insertion_point (const char *file, location_t loc)
    no guarantee that two different diagnostics that are recommending
    adding e.g. "<stdio.h>" are using the same buffer.  */
 
-typedef hash_set <const char *, nofree_string_hash> per_file_includes_t;
+typedef hash_set <const char *, false, nofree_string_hash> per_file_includes_t;
 
 /* The map itself.  We don't need string comparison for the filename keys,
    as they come from libcpp.  */
@@ -8819,7 +8820,7 @@ maybe_add_include_fixit (rich_location *richloc, const char *header,
    TYPE into a STRING_CST for convenience and efficiency.  Return
    the converted string on success or the original ctor on failure.  */
 
-tree
+static tree
 braced_list_to_string (tree type, tree ctor)
 {
   if (!tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
@@ -8898,6 +8899,54 @@ braced_list_to_string (tree type, tree ctor)
   tree res = build_string (str.length (), str.begin ());
   TREE_TYPE (res) = type;
   return res;
+}
+
+/* Attempt to convert a CTOR containing braced array initializer lists
+   for array TYPE into one containing STRING_CSTs, for convenience and
+   efficiency.  Recurse for arrays of arrays and member initializers.
+   Return the converted CTOR or STRING_CST on success or the original
+   CTOR otherwise.  */
+
+tree
+braced_lists_to_strings (tree type, tree ctor)
+{
+  if (TREE_CODE (ctor) != CONSTRUCTOR)
+    return ctor;
+
+  tree_code code = TREE_CODE (type);
+
+  tree ttp;
+  if (code == ARRAY_TYPE)
+    ttp = TREE_TYPE (type);
+  else if (code == RECORD_TYPE)
+    {
+      ttp = TREE_TYPE (ctor);
+      if (TREE_CODE (ttp) == ARRAY_TYPE)
+	{
+	  type = ttp;
+	  ttp = TREE_TYPE (ttp);
+	}
+    }
+  else
+    return ctor;
+
+  if (TYPE_STRING_FLAG (ttp))
+    return braced_list_to_string (type, ctor);
+
+  code = TREE_CODE (ttp);
+  if (code == ARRAY_TYPE || code == RECORD_TYPE)
+    {
+      /* Handle array of arrays or struct member initializers.  */
+      tree val;
+      unsigned HOST_WIDE_INT idx;
+      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), idx, val)
+	{
+	  val = braced_lists_to_strings (ttp, val);
+	  CONSTRUCTOR_ELT (ctor, idx)->value = val;
+	}
+    }
+
+  return ctor;
 }
 
 #include "gt-c-family-c-common.h"

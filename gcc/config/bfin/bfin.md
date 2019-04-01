@@ -557,6 +557,7 @@
    %0 = %x1; %0 = %w1;
    %w0 = %1; %x0 = %1;"
   [(set_attr "type" "move,mcst,mcld")
+   (set_attr "length" "4,*,*")
    (set_attr "seq_insns" "*,multi,multi")])
 
 (define_insn "load_accumulator"

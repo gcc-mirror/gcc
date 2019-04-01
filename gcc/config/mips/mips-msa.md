@@ -346,12 +346,12 @@
 	 operands[2] accordingly.  */
       rtx wd = gen_reg_rtx (V16QImode);
       rtx ws = gen_reg_rtx (V16QImode);
-      emit_move_insn (ws, gen_rtx_SUBREG (V16QImode, operands[1], 0));
+      emit_move_insn (ws, gen_lowpart (V16QImode, operands[1]));
       rtx n = GEN_INT (val * GET_MODE_SIZE (<UNITMODE>mode));
       gcc_assert (INTVAL (n) < GET_MODE_NUNITS (V16QImode));
       emit_insn (gen_msa_sldi_b (wd, ws, ws, n));
       temp = gen_reg_rtx (<MODE>mode);
-      emit_move_insn (temp, gen_rtx_SUBREG (<MODE>mode, wd, 0));
+      emit_move_insn (temp, gen_lowpart (<MODE>mode, wd));
     }
   emit_insn (gen_msa_vec_extract_<msafmt_f> (operands[0], temp));
   DONE;

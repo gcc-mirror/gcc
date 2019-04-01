@@ -46,8 +46,7 @@ nds32_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
       /* Check the valid vector size: 4 or 16.  */
       if (value != 4 && value != 16)
 	{
-	  error_at (loc, "for the option -misr-vector-size=X, the valid X "
-			 "must be: 4 or 16");
+	  error_at (loc, "%<-misr-vector-size=%d%> argument must be 4 or 16", value);
 	  return false;
 	}
 
@@ -57,8 +56,8 @@ nds32_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
       /* Check the valid security level: 0 1 2 3.  */
       if (value < 0 || value > 3)
 	{
-	  error_at (loc, "for the option -misr-secure=X, the valid X "
-			 "must be: 0, 1, 2, or 3");
+	  error_at (loc, "%<-misr-secure=%d%> argument not in between 0 and 3",
+		    value);
 	  return false;
 	}
       return true;
@@ -67,7 +66,7 @@ nds32_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
       /* Check valid value: 4 8 16 32 64 128 256 512.  */
       if (exact_log2 (value) < 2 || exact_log2 (value) > 9)
 	{
-	  error_at (loc, "for the option -mcache-block-size=X, the valid X "
+	  error_at (loc, "for the option %<-mcache-block-size=X%>, the valid X "
 			 "must be: 4, 8, 16, 32, 64, 128, 256, or 512");
 	  return false;
 	}

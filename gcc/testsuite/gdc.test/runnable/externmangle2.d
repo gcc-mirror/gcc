@@ -1,4 +1,4 @@
-// EXTRA_CPP_SOURCES: extra-files/externmangle2.cpp
+// EXTRA_CPP_SOURCES: externmangle2.cpp
 
 version(Windows)
 {

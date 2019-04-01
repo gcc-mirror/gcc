@@ -306,8 +306,9 @@ public:
         buf2.reserve(32);
         Mangler v(&buf2);
         v.paramsToDecoBuffer(t->arguments);
+        const char *s = buf2.peekString();
         int len = (int)buf2.offset;
-        buf->printf("%d%.*s", len, len, buf2.extractData());
+        buf->printf("%d%.*s", len, len, s);
     }
 
     void visit(TypeNull *t)

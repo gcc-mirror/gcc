@@ -1,4 +1,5 @@
 /* Test invalid calls to routines.  */
+/* See also variant 'routine-3-extern.c', moving the callees 'extern'.  */
 
 #pragma acc routine gang
 int

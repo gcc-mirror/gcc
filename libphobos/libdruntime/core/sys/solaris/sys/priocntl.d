@@ -59,7 +59,7 @@ enum PC_SETPRIO      = 1;
 struct pcinfo_t
 {
     id_t                pc_cid;     // class id
-    char[PC_CLNMSZ]     pc_clname;  // class name
+    char[PC_CLNMSZ]     pc_clname=0;// class name
     int[PC_CLINFOSZ]    pc_clinfo;  // class information
 }
 

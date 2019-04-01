@@ -297,6 +297,10 @@ else version (CRuntime_Bionic)
     {
         enum _JBLEN = 32;
     }
+    else version (X86_64)
+    {
+        enum _JBLEN = 11;
+    }
     else
     {
         static assert(false, "Architecture not supported.");

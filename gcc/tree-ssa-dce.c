@@ -985,7 +985,8 @@ remove_dead_phis (basic_block bb)
    containing I so that we don't have to look it up.  */
 
 static void
-remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb)
+remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb,
+		  vec<edge> &to_remove_edges)
 {
   gimple *stmt = gsi_stmt (*i);
 
@@ -1045,20 +1046,17 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb)
       e->flags |= EDGE_FALLTHRU;
 
       /* Remove the remaining outgoing edges.  */
-      for (ei = ei_start (bb->succs); (e2 = ei_safe_edge (ei)); )
+      FOR_EACH_EDGE (e2, ei, bb->succs)
 	if (e != e2)
 	  {
-	    cfg_altered = true;
 	    /* If we made a BB unconditionally exit a loop or removed
 	       an entry into an irreducible region, then this transform
 	       alters the set of BBs in the loop.  Schedule a fixup.  */
 	    if (loop_exit_edge_p (bb->loop_father, e)
 		|| (e2->dest->flags & BB_IRREDUCIBLE_LOOP))
 	      loops_state_set (LOOPS_NEED_FIXUP);
-	    remove_edge (e2);
+	    to_remove_edges.safe_push (e2);
 	  }
-	else
-	  ei_next (&ei);
     }
 
   /* If this is a store into a variable that is being optimized away,
@@ -1201,6 +1199,7 @@ eliminate_unnecessary_stmts (void)
   gimple *stmt;
   tree call;
   vec<basic_block> h;
+  auto_vec<edge> to_remove_edges;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\nEliminating unnecessary statements:\n");
@@ -1287,7 +1286,7 @@ eliminate_unnecessary_stmts (void)
 		}
 	      if (!is_gimple_debug (stmt))
 		something_changed = true;
-	      remove_dead_stmt (&gsi, bb);
+	      remove_dead_stmt (&gsi, bb, to_remove_edges);
 	    }
 	  else if (is_gimple_call (stmt))
 	    {
@@ -1331,7 +1330,7 @@ eliminate_unnecessary_stmts (void)
 		      {
 		      case IFN_GOMP_SIMD_LANE:
 		      case IFN_ASAN_POISON:
-			remove_dead_stmt (&gsi, bb);
+			remove_dead_stmt (&gsi, bb, to_remove_edges);
 			break;
 		      default:
 			break;
@@ -1354,6 +1353,9 @@ eliminate_unnecessary_stmts (void)
 		  }
 	    }
 	}
+
+      /* Remove dead PHI nodes.  */
+      something_changed |= remove_dead_phis (bb);
     }
 
   h.release ();
@@ -1361,9 +1363,15 @@ eliminate_unnecessary_stmts (void)
   /* Since we don't track liveness of virtual PHI nodes, it is possible that we
      rendered some PHI nodes unreachable while they are still in use.
      Mark them for renaming.  */
-  if (cfg_altered)
+  if (!to_remove_edges.is_empty ())
     {
       basic_block prev_bb;
+
+      /* Remove edges.  We've delayed this to not get bogus debug stmts
+         during PHI node removal.  */
+      for (unsigned i = 0; i < to_remove_edges.length (); ++i)
+	remove_edge (to_remove_edges[i]);
+      cfg_altered = true;
 
       find_unreachable_blocks ();
 
@@ -1429,11 +1437,6 @@ eliminate_unnecessary_stmts (void)
 		}
 	    }
 	}
-    }
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      /* Remove dead PHI nodes.  */
-      something_changed |= remove_dead_phis (bb);
     }
 
   if (bb_postorder)

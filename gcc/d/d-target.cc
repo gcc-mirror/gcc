@@ -385,6 +385,15 @@ Target::cppParameterType (Parameter *arg)
   return t;
 }
 
+/* Checks whether TYPE is a vendor-specific fundamental type.  Stores the result
+   in IS_FUNDAMENTAL and returns true if the parameter was set.  */
+
+bool
+Target::cppFundamentalType (const Type *, bool &)
+{
+  return false;
+}
+
 /* Return the default system linkage for the target.  */
 
 LINK

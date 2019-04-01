@@ -2992,6 +2992,14 @@ public:
       }
   }
 
+  /* Build a static array representation of a vector expression.  */
+
+  void visit (VectorArrayExp *e)
+  {
+    this->result_ = convert_expr (build_expr (e->e1, this->constp_),
+				  e->e1->type, e->type);
+  }
+
   /* Build a static class literal, return its reference.  */
 
   void visit (ClassReferenceExp *e)

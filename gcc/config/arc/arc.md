@@ -960,10 +960,10 @@ core_3, archs4x, archs4xd, archs4xd_slow"
      (match_operand 0 "cc_register" "")
      (match_operator 4 "zn_compare_operator"
        [(and:SI
-	  (match_operand:SI 1 "register_operand"  "%Rcq,Rcq, c,  c,  c,  c,Rrq,  3,  c")
+	  (match_operand:SI 1 "register_operand"  "%Rcq,Rcq, c,  c,  c,  c,Rrq,Rrq,  c")
 	  (match_operand:SI 2 "nonmemory_operand"  "Rcq,C0p,cI,C1p,Ccp,Chs,Cbf,Cbf,???Cal"))
 	(const_int 0)]))
-   (clobber (match_scratch:SI 3 "=X,X,X,X,X,X,Rrq,Rrq,c"))]
+   (clobber (match_scratch:SI 3 "=X,X,X,X,X,X,Rrq,1,c"))]
   "TARGET_NPS_BITOPS"
   "movb.f.cl %3,%1,%p2,%p2,%s2"
   "TARGET_NPS_BITOPS && reload_completed
@@ -6458,7 +6458,8 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 			 (plus:SI (reg:SI SP_REG)
 				  (match_operand 1 "immediate_operand" "")))
 		    (set (mem:SI (plus:SI (reg:SI SP_REG)
-					  (match_dup 1)))
+					  (match_operand 2 "immediate_operand"
+							 "")))
 			 (reg:SI 13))])]
   "TARGET_CODE_DENSITY"
   {
@@ -6466,14 +6467,14 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    rtx tmp = XVECEXP (operands[0], 0, len - 1);
    if (MEM_P (XEXP (tmp, 0)))
      {
-      operands[2] = XEXP (tmp, 1);
-      return "enter_s\\t{r13-%2} ; sp=sp-%1";
+      operands[3] = XEXP (tmp, 1);
+      return "enter_s\\t{r13-%3} ; sp=sp+(%1)";
      }
    else
      {
       tmp = XVECEXP (operands[0], 0, len - 3);
-      operands[2] = XEXP (tmp, 1);
-      return "enter_s\\t{r13-%2, fp} ; sp=sp-%1";
+      operands[3] = XEXP (tmp, 1);
+      return "enter_s\\t{r13-%3, fp} ; sp=sp+(%1)";
      }
   }
   [(set_attr "type" "call_no_delay_slot")
@@ -6485,7 +6486,8 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 			 (plus:SI (reg:SI SP_REG)
 				  (match_operand 1 "immediate_operand" "")))
 		    (set (mem:SI (plus:SI (reg:SI SP_REG)
-					  (match_dup 1)))
+					  (match_operand 2 "immediate_operand"
+							 "")))
 			 (reg:SI RETURN_ADDR_REGNUM))])]
   "TARGET_CODE_DENSITY"
   {
@@ -6493,14 +6495,14 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    rtx tmp = XVECEXP (operands[0], 0, len - 1);
    if (MEM_P (XEXP (tmp, 0)))
      {
-      operands[2] = XEXP (tmp, 1);
-      return "enter_s\\t{r13-%2, blink} ; sp=sp-%1";
+      operands[3] = XEXP (tmp, 1);
+      return "enter_s\\t{r13-%3, blink} ; sp=sp+(%1)";
      }
    else
      {
       tmp = XVECEXP (operands[0], 0, len - 3);
-      operands[2] = XEXP (tmp, 1);
-      return "enter_s\\t{r13-%2, fp, blink} ; sp=sp-%1";
+      operands[3] = XEXP (tmp, 1);
+      return "enter_s\\t{r13-%3, fp, blink} ; sp=sp+(%1)";
      }
   }
   [(set_attr "type" "call_no_delay_slot")

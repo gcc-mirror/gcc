@@ -1108,7 +1108,6 @@ float bug8060(float x) {
 }
 
 /*****************************************/
-/+
 // https://issues.dlang.org/show_bug.cgi?id=9200
 
 void bar9200(double[2] a)
@@ -1130,7 +1129,6 @@ void test9200()
 
     bar9200(a.array);
 }
-+/
 
 /*****************************************/
 // https://issues.dlang.org/show_bug.cgi?id=9304
@@ -1686,13 +1684,223 @@ void test17720()
 }
 
 /*****************************************/
-
 // https://issues.dlang.org/show_bug.cgi?id=17695
 
 void test17695(__vector(ubyte[16]) a)
 {
     auto b = -a;
 }
+
+/*****************************************/
+// https://issues.dlang.org/show_bug.cgi?id=19223
+
+int test19223a(const int[4] x)
+{
+    int sum = 0;
+    foreach (i; x) sum += i;
+    return sum;
+}
+
+void test19223()
+{
+    int4 v1 = int4.init;
+    assert(test19223a(v1.array) == 0);
+    assert(test19223a(int4.init.array) == 0);
+}
+
+/*****************************************/
+// https://issues.dlang.org/show_bug.cgi?id=19224
+
+float test19224(const float[4] val)
+{
+    float sum = 0;
+    foreach (x; val) sum += x;
+    return sum;
+}
+
+enum x19224 = test19224(float4.init.array);
+static assert(x19224 is float.nan);
+
+enum y19224 = test19224(float4(1).array);
+static assert(y19224 == 4);
+
+/*****************************************/
+// https://issues.dlang.org/show_bug.cgi?id=19607
+
+int test19607a(const int[4] x)
+{
+    int sum = 0;
+    foreach (i; x) sum += i;
+    return sum;
+}
+
+void test19607()
+{
+    int4 v1 = 1;
+    assert(test19607a(v1.array) == 4);
+    assert(test19607a(int4(2).array) == 8);
+}
+
+/*****************************************/
+// https://issues.dlang.org/show_bug.cgi?id=19627
+
+enum int[4] fail19627 = cast(int[4])int4(0);
+
+/*****************************************/
+// https://issues.dlang.org/show_bug.cgi?id=19628
+
+enum ice19628a = int4.init[0];
+enum ice19628b = int4.init.array[0];
+enum ice19628c = (cast(int[4])int4.init.array)[0];
+enum ice19628d = (cast(int[4])int4.init)[0];
+
+enum int4 v19628a = int4.init;
+enum idx19628a = v19628a[0];
+static assert(idx19628a == 0);
+
+enum int[4] v19628b = int4.init.array;
+enum idx19628b = v19628b[0];
+static assert(idx19628b == 0);
+
+enum int[4] v19628c = cast(int[4])int4.init.array;
+enum idx19628c = v19628c[0];
+static assert(idx19628c == 0);
+
+enum int[4] v19628d = cast(int[4])int4.init;
+enum idx19628d = v19628d[0];
+static assert(idx19628d == 0);
+
+immutable int4 v19628e = int4.init;
+immutable idx19628e = v19628e[0];
+static assert(idx19628e == 0);
+
+immutable int[4] v19628f = int4.init.array;
+immutable idx19628f = v19628f[0];
+static assert(idx19628f == 0);
+
+immutable int[4] v19628g = cast(int[4])int4.init.array;
+immutable idx19628g = v19628g[0];
+static assert(idx19628g == 0);
+
+immutable idx19628h = v19628h[0];
+immutable int[4] v19628h = cast(int[4])int4.init;
+static assert(idx19628h == 0);
+
+/*****************************************/
+// https://issues.dlang.org/show_bug.cgi?id=19629
+
+enum fail19629a = int4(0)[0];
+enum fail19629b = int4(0).array[0];
+enum fail19629c = (cast(int[4])int4(0).array)[0];
+enum fail19628d = (cast(int[4])int4(0))[0];
+
+enum int4 v19629a = int4(0);
+enum idx19629a = v19629a[0];
+static assert(idx19629a == 0);
+
+enum int[4] v19629b = int4(0).array;
+enum idx19629b = v19629b[0];
+static assert(idx19629b == 0);
+
+enum int[4] v19629c = cast(int[4])int4(0).array;
+enum idx19629c = v19629c[0];
+static assert(idx19629c == 0);
+
+enum int[4] v19629d = cast(int[4])int4(0);
+enum idx19629d = v19629d[0];
+static assert(idx19629d == 0);
+
+immutable int4 v19629e = int4(0);
+immutable idx19629e = v19629e[0];
+static assert(idx19629e == 0);
+
+immutable int[4] v19629f = int4(0).array;
+immutable idx19629f = v19629f[0];
+static assert(idx19629f == 0);
+
+immutable int[4] v19629g = cast(int[4])int4(0).array;
+immutable idx19629g = v19629g[0];
+static assert(idx19629g == 0);
+
+immutable int[4] v19629h = cast(int[4])int4(0);
+immutable idx19629h = v19629h[0];
+static assert(idx19629h == 0);
+
+/*****************************************/
+// https://issues.dlang.org/show_bug.cgi?id=19630
+
+enum fail19630a = int4.init[1..2];
+enum fail19630b = int4.init.array[1..2];
+enum fail19630c = (cast(int[4])int4.init.array)[1..2];
+enum fail19630d = (cast(int[4])int4.init)[1..2];
+enum fail19630e = int4(0)[1..2];
+enum fail19630f = int4(0).array[1..2];
+enum fail19630g = (cast(int[4])int4(0).array)[1..2];
+enum fail19630h = (cast(int[4])int4(0))[1..2];
+
+enum int4 v19630a = int4.init;
+enum slice19630a = v19630a[1..2];
+static assert(slice19630a == [0]);
+
+enum int[4] v19630b = int4.init.array;
+enum slice19630b = v19630b[1..2];
+static assert(slice19630b == [0]);
+
+enum int[4] v19630c = cast(int[4])int4.init.array;
+enum slice19630c = v19630c[1..2];
+static assert(slice19630c == [0]);
+
+enum int[4] v19630d = cast(int[4])int4.init;
+enum slice19630d = v19630d[1..2];
+static assert(slice19630d == [0]);
+
+enum int4 v19630e = int4(0);
+enum slice19630e = v19630e[1..2];
+static assert(slice19630e == [0]);
+
+enum int[4] v19630f = int4(0).array;
+enum slice19630f = v19630f[1..2];
+static assert(slice19630f == [0]);
+
+enum int[4] v19630g = cast(int[4])int4(0).array;
+enum slice19630g = v19630g[1..2];
+static assert(slice19630g == [0]);
+
+enum int[4] v19630h = cast(int[4])int4(0);
+enum slice19630h = v19630h[1..2];
+static assert(slice19630h == [0]);
+
+immutable int4 v19630i = int4.init;
+immutable slice19630i = v19630i[1..2];
+static assert(slice19630i == [0]);
+
+immutable int[4] v19630j = int4.init.array;
+immutable slice19630j = v19630j[1..2];
+static assert(slice19630j == [0]);
+
+immutable int[4] v19630k = cast(int[4])int4.init.array;
+immutable slice19630k = v19630k[1..2];
+static assert(slice19630k == [0]);
+
+immutable int[4] v19630l = cast(int[4])int4.init;
+immutable slice19630l = v19630l[1..2];
+static assert(slice19630l == [0]);
+
+immutable int4 v19630m = int4(0);
+immutable slice19630m = v19630m[1..2];
+static assert(slice19630m == [0]);
+
+immutable int[4] v19630n = int4(0).array;
+immutable slice19630n = v19630n[1..2];
+static assert(slice19630n == [0]);
+
+immutable int[4] v19630o = cast(int[4])int4(0).array;
+immutable slice19630o = v19630o[1..2];
+static assert(slice19630o == [0]);
+
+immutable int[4] v19630p = cast(int[4])int4(0);
+immutable slice19630p = v19630p[1..2];
+static assert(slice19630p == [0]);
 
 /*****************************************/
 
@@ -1718,7 +1926,7 @@ int main()
     test7414();
     test7413();
     test7413_2();
-//    test9200();
+    test9200();
     test9304();
     test9910();
     test12852();
@@ -1730,6 +1938,9 @@ int main()
     test16703();
     testOPvecunsto();
     test10447();
+
+    test19223();
+    test19607();
 
     return 0;
 }

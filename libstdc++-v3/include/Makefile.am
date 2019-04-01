@@ -38,6 +38,7 @@ std_headers = \
 	${std_srcdir}/complex \
 	${std_srcdir}/condition_variable \
 	${std_srcdir}/deque \
+	${std_srcdir}/execution \
 	${std_srcdir}/filesystem \
 	${std_srcdir}/forward_list \
 	${std_srcdir}/fstream \
@@ -224,6 +225,32 @@ bits_sup_headers = \
 	${bits_sup_srcdir}/exception_ptr.h \
 	${bits_sup_srcdir}/hash_bytes.h \
 	${bits_sup_srcdir}/nested_exception.h
+
+# C++17 Parallel Algorithm Includes.
+pstl_srcdir = ${glibcxx_srcdir}/include/pstl
+pstl_builddir = ./pstl
+pstl_headers = \
+	${pstl_srcdir}/algorithm_fwd.h \
+	${pstl_srcdir}/algorithm_impl.h \
+	${pstl_srcdir}/execution_defs.h \
+	${pstl_srcdir}/execution_impl.h \
+	${pstl_srcdir}/glue_algorithm_defs.h \
+	${pstl_srcdir}/glue_algorithm_impl.h \
+	${pstl_srcdir}/glue_execution_defs.h \
+	${pstl_srcdir}/glue_memory_defs.h \
+	${pstl_srcdir}/glue_memory_impl.h \
+	${pstl_srcdir}/glue_numeric_defs.h \
+	${pstl_srcdir}/glue_numeric_impl.h \
+	${pstl_srcdir}/memory_impl.h \
+	${pstl_srcdir}/numeric_fwd.h \
+	${pstl_srcdir}/numeric_impl.h \
+	${pstl_srcdir}/parallel_backend.h \
+	${pstl_srcdir}/parallel_backend_tbb.h \
+	${pstl_srcdir}/parallel_backend_utils.h \
+	${pstl_srcdir}/parallel_impl.h \
+	${pstl_srcdir}/pstl_config.h \
+	${pstl_srcdir}/unseq_backend_simd.h \
+	${pstl_srcdir}/utils.h
 
 backward_srcdir = ${glibcxx_srcdir}/include/backward
 backward_builddir = ./backward
@@ -1014,7 +1041,7 @@ endif
 # List of all timestamp files.  By keeping only one copy of this list, both
 # CLEANFILES and all-local are kept up-to-date.
 allstamped = \
-	stamp-std stamp-bits stamp-bits-sup stamp-c_base stamp-c_compatibility \
+	stamp-std stamp-bits stamp-bits-sup stamp-pstl stamp-c_base stamp-c_compatibility \
 	stamp-backward stamp-ext stamp-pb stamp-tr1 stamp-tr2 stamp-decimal \
 	stamp-experimental stamp-experimental-bits stamp-debug stamp-parallel \
 	stamp-profile stamp-profile-impl stamp-host
@@ -1046,6 +1073,11 @@ stamp-bits: ${bits_headers}
 stamp-bits-sup: stamp-bits ${bits_sup_headers}
 	@-cd ${bits_builddir} && $(LN_S) ${bits_sup_headers} . 2>/dev/null
 	@$(STAMP) stamp-bits-sup
+
+stamp-pstl: ${pstl_headers}
+	@-mkdir -p ${pstl_builddir}
+	@-cd ${pstl_builddir} && $(LN_S) $? . 2>/dev/null
+	@$(STAMP) stamp-pstl
 
 stamp-c_base: ${c_base_headers}
 	@-mkdir -p ${c_base_builddir}
@@ -1480,7 +1512,9 @@ install-headers:
 	$(mkinstalldirs) $(DESTDIR)${host_installdir}/../ext
 	for file in ${ext_host_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${host_installdir}/../ext; done
-
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${pstl_builddir}
+	for file in ${pstl_headers}; do \
+	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${pstl_builddir}; done
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = ${pch_output} ${pch_output_anchors} stamp-host
 

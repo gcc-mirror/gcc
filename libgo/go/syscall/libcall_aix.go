@@ -10,6 +10,9 @@ import (
 	"unsafe"
 )
 
+// For exec_unix.go.
+const SYS_EXECVE = 0
+
 //sys	Openat(dirfd int, path string, flags int, mode uint32) (fd int, err error)
 //open64at(dirfd _C_int, path *byte, flags _C_int, mode Mode_t) _C_int
 
@@ -139,3 +142,6 @@ func ReadDirent(fd int, buf []byte) (n int, err error) {
 func Unlinkat(dirfd int, path string) (err error) {
 	return unlinkat(dirfd, path, 0)
 }
+
+//sys	Getkerninfo(op int32, where uintptr, size uintptr, arg int64) (i int32, err error)
+//getkerninfo(op _C_int, where *byte, size *byte, arg _C_long) _C_int

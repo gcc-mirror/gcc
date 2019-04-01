@@ -2542,6 +2542,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 			   "slpeel_tree_duplicate_loop_to_edge_cfg failed.\n");
 	  gcc_unreachable ();
 	}
+      prolog->force_vectorize = false;
       slpeel_update_phi_nodes_for_loops (loop_vinfo, prolog, loop, true);
       first_loop = prolog;
       reset_original_copy_tables ();
@@ -2612,6 +2613,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 			   "slpeel_tree_duplicate_loop_to_edge_cfg failed.\n");
 	  gcc_unreachable ();
 	}
+      epilog->force_vectorize = false;
       slpeel_update_phi_nodes_for_loops (loop_vinfo, loop, epilog, false);
 
       /* Scalar version loop may be preferred.  In this case, add guard
@@ -2984,7 +2986,7 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo, tree * cond_expr)
    The versioning precondition(s) are placed in *COND_EXPR and
    *COND_EXPR_STMT_LIST.  */
 
-void
+struct loop *
 vect_loop_versioning (loop_vec_info loop_vinfo,
 		      unsigned int th, bool check_profitability,
 		      poly_uint64 versioning_threshold)
@@ -3154,4 +3156,6 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 			     GSI_SAME_STMT);
     }
   update_ssa (TODO_update_ssa);
+
+  return nloop;
 }

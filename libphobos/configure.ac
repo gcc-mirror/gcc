@@ -18,12 +18,12 @@
 # This requires that you have your environment set-up to use explicit
 # versions of automake and autoconf.
 #
-#    export ACLOCAL=/usr/bin/aclocal-1.11
-#    export AUTOMAKE=/usr/bin/automake-1.11
-#    export AUTOM4TE=/usr/bin/autom4te2.64
-#    export AUTOCONF=/usr/bin/autoconf2.64
+#    export ACLOCAL=/usr/bin/aclocal-1.15
+#    export AUTOMAKE=/usr/bin/automake-1.15
+#    export AUTOM4TE=/usr/bin/autom4te2.69
+#    export AUTOCONF=/usr/bin/autoconf2.69
 #
-#    autoreconf2.64
+#    autoreconf2.69
 #
 
 AC_INIT(package-unused, version-unused,, libphobos)

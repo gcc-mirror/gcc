@@ -2274,6 +2274,9 @@ after_nsdmi_defaulted_late_checks (tree t)
 	  continue;
 
 	tree eh_spec = get_defaulted_eh_spec (fn);
+	if (eh_spec == error_mark_node)
+	  continue;
+
 	if (!comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)),
 				eh_spec, ce_normal))
 	  DECL_DELETED_FN (fn) = true;

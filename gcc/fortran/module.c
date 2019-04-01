@@ -2011,7 +2011,9 @@ enum ab_attribute
   AB_OACC_DECLARE_COPYIN, AB_OACC_DECLARE_DEVICEPTR,
   AB_OACC_DECLARE_DEVICE_RESIDENT, AB_OACC_DECLARE_LINK,
   AB_OMP_DECLARE_TARGET_LINK, AB_PDT_KIND, AB_PDT_LEN, AB_PDT_TYPE,
-  AB_PDT_TEMPLATE, AB_PDT_ARRAY, AB_PDT_STRING
+  AB_PDT_TEMPLATE, AB_PDT_ARRAY, AB_PDT_STRING,
+  AB_OACC_ROUTINE_LOP_GANG, AB_OACC_ROUTINE_LOP_WORKER,
+  AB_OACC_ROUTINE_LOP_VECTOR, AB_OACC_ROUTINE_LOP_SEQ
 };
 
 static const mstring attr_bits[] =
@@ -2081,6 +2083,10 @@ static const mstring attr_bits[] =
     minit ("PDT_TEMPLATE", AB_PDT_TEMPLATE),
     minit ("PDT_ARRAY", AB_PDT_ARRAY),
     minit ("PDT_STRING", AB_PDT_STRING),
+    minit ("OACC_ROUTINE_LOP_GANG", AB_OACC_ROUTINE_LOP_GANG),
+    minit ("OACC_ROUTINE_LOP_WORKER", AB_OACC_ROUTINE_LOP_WORKER),
+    minit ("OACC_ROUTINE_LOP_VECTOR", AB_OACC_ROUTINE_LOP_VECTOR),
+    minit ("OACC_ROUTINE_LOP_SEQ", AB_OACC_ROUTINE_LOP_SEQ),
     minit (NULL, -1)
 };
 
@@ -2127,6 +2133,15 @@ DECL_MIO_NAME (sym_flavor)
 DECL_MIO_NAME (sym_intent)
 DECL_MIO_NAME (inquiry_type)
 #undef DECL_MIO_NAME
+
+/* Verify OACC_ROUTINE_LOP_NONE.  */
+
+static void
+verify_OACC_ROUTINE_LOP_NONE (enum oacc_routine_lop lop)
+{
+  if (lop != OACC_ROUTINE_LOP_NONE)
+    bad_module ("Unsupported: multiple OpenACC 'routine' levels of parallelism");
+}
 
 /* Symbol attributes are stored in list with the first three elements
    being the enumerated fields, while the remaining elements (if any)
@@ -2292,6 +2307,30 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_PDT_ARRAY, attr_bits);
       if (attr->pdt_string)
 	MIO_NAME (ab_attribute) (AB_PDT_STRING, attr_bits);
+      switch (attr->oacc_routine_lop)
+	{
+	case OACC_ROUTINE_LOP_NONE:
+	  /* This is the default anyway, and for maintaining compatibility with
+	     the current MOD_VERSION, we're not emitting anything in that
+	     case.  */
+	  break;
+	case OACC_ROUTINE_LOP_GANG:
+	  MIO_NAME (ab_attribute) (AB_OACC_ROUTINE_LOP_GANG, attr_bits);
+	  break;
+	case OACC_ROUTINE_LOP_WORKER:
+	  MIO_NAME (ab_attribute) (AB_OACC_ROUTINE_LOP_WORKER, attr_bits);
+	  break;
+	case OACC_ROUTINE_LOP_VECTOR:
+	  MIO_NAME (ab_attribute) (AB_OACC_ROUTINE_LOP_VECTOR, attr_bits);
+	  break;
+	case OACC_ROUTINE_LOP_SEQ:
+	  MIO_NAME (ab_attribute) (AB_OACC_ROUTINE_LOP_SEQ, attr_bits);
+	  break;
+	case OACC_ROUTINE_LOP_ERROR:
+	  /* ... intentionally omitted here; it's only unsed internally.  */
+	default:
+	  gcc_unreachable ();
+	}
 
       mio_rparen ();
 
@@ -2502,6 +2541,22 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      break;
 	    case AB_PDT_STRING:
 	      attr->pdt_string = 1;
+	      break;
+	    case AB_OACC_ROUTINE_LOP_GANG:
+	      verify_OACC_ROUTINE_LOP_NONE (attr->oacc_routine_lop);
+	      attr->oacc_routine_lop = OACC_ROUTINE_LOP_GANG;
+	      break;
+	    case AB_OACC_ROUTINE_LOP_WORKER:
+	      verify_OACC_ROUTINE_LOP_NONE (attr->oacc_routine_lop);
+	      attr->oacc_routine_lop = OACC_ROUTINE_LOP_WORKER;
+	      break;
+	    case AB_OACC_ROUTINE_LOP_VECTOR:
+	      verify_OACC_ROUTINE_LOP_NONE (attr->oacc_routine_lop);
+	      attr->oacc_routine_lop = OACC_ROUTINE_LOP_VECTOR;
+	      break;
+	    case AB_OACC_ROUTINE_LOP_SEQ:
+	      verify_OACC_ROUTINE_LOP_NONE (attr->oacc_routine_lop);
+	      attr->oacc_routine_lop = OACC_ROUTINE_LOP_SEQ;
 	      break;
 	    }
 	}
@@ -3694,6 +3749,7 @@ mio_expr (gfc_expr **ep)
 
     case EXPR_COMPCALL:
     case EXPR_PPC:
+    case EXPR_UNKNOWN:
       gcc_unreachable ();
       break;
     }
@@ -6170,7 +6226,7 @@ dump_module (const char *name, int dump_flag)
   /* Write the module to the temporary file.  */
   module_fp = gzopen (filename_tmp, "w");
   if (module_fp == NULL)
-    gfc_fatal_error ("Can't open module file %qs for writing at %C: %s",
+    gfc_fatal_error ("Cannot open module file %qs for writing at %C: %s",
 		     filename_tmp, xstrerror (errno));
 
   /* Use lbasename to ensure module files are reproducible regardless
@@ -6202,16 +6258,16 @@ dump_module (const char *name, int dump_flag)
     {
       /* Module file have changed, replace the old one.  */
       if (remove (filename) && errno != ENOENT)
-	gfc_fatal_error ("Can't delete module file %qs: %s", filename,
+	gfc_fatal_error ("Cannot delete module file %qs: %s", filename,
 			 xstrerror (errno));
       if (rename (filename_tmp, filename))
-	gfc_fatal_error ("Can't rename module file %qs to %qs: %s",
+	gfc_fatal_error ("Cannot rename module file %qs to %qs: %s",
 			 filename_tmp, filename, xstrerror (errno));
     }
   else
     {
       if (remove (filename_tmp))
-	gfc_fatal_error ("Can't delete temporary module file %qs: %s",
+	gfc_fatal_error ("Cannot delete temporary module file %qs: %s",
 			 filename_tmp, xstrerror (errno));
     }
 }
@@ -7000,7 +7056,7 @@ gfc_use_module (gfc_use_list *module)
       module_fp = gzopen_intrinsic_module (filename);
 
       if (module_fp == NULL && module->intrinsic)
-	gfc_fatal_error ("Can't find an intrinsic module named %qs at %C",
+	gfc_fatal_error ("Cannot find an intrinsic module named %qs at %C",
 			 module_name);
 
       /* Check for the IEEE modules, so we can mark their symbols
@@ -7028,7 +7084,7 @@ gfc_use_module (gfc_use_list *module)
     {
       if (gfc_state_stack->state != COMP_SUBMODULE
 	  && module->submodule_name == NULL)
-	gfc_fatal_error ("Can't open module file %qs for reading at %C: %s",
+	gfc_fatal_error ("Cannot open module file %qs for reading at %C: %s",
 			 filename, xstrerror (errno));
       else
 	gfc_fatal_error ("Module file %qs has not been generated, either "
@@ -7088,7 +7144,7 @@ gfc_use_module (gfc_use_list *module)
   for (p = gfc_state_stack; p; p = p->previous)
     if ((p->state == COMP_MODULE || p->state == COMP_SUBMODULE)
 	 && strcmp (p->sym->name, module_name) == 0)
-      gfc_fatal_error ("Can't USE the same %smodule we're building",
+      gfc_fatal_error ("Cannot USE the same %smodule we're building",
 		       p->state == COMP_SUBMODULE ? "sub" : "");
 
   init_pi_tree ();

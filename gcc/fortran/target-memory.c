@@ -120,6 +120,7 @@ gfc_element_size (gfc_expr *e, size_t *siz)
     case BT_CLASS:
     case BT_VOID:
     case BT_ASSUMED:
+    case BT_PROCEDURE:
       {
 	/* Determine type size without clobbering the typespec for ISO C
 	   binding types.  */

@@ -439,6 +439,12 @@ long double testld(long double ld)
     return ld + 1;
 }
 
+long double testldld(long double ld1, long double ld2)
+{
+    assert(ld1 == 5);
+    return ld2 + 1;
+}
+
 long testl(long lng)
 {
     assert(lng == 5);

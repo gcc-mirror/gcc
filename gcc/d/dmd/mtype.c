@@ -3766,8 +3766,8 @@ Expression *TypeVector::dotExp(Scope *sc, Expression *e, Identifier *ident, int 
     {
         //e = e->castTo(sc, basetype);
         // Keep lvalue-ness
-        e = e->copy();
-        e->type = basetype;
+        e = new VectorArrayExp(e->loc, e);
+        e = ::semantic(e, sc);
         return e;
     }
     if (ident == Id::_init || ident == Id::offsetof || ident == Id::stringof || ident == Id::__xalignof)

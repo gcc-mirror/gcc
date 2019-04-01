@@ -1,3 +1,307 @@
+2019-03-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* src/c++17/fs_ops.cc (fs::permissions): Use std::errc::not_supported.
+
+2019-03-28  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Don't revisit a variant we are already visiting.
+	* include/std/variant (__variant_construct_single): New.
+	(__variant_construct): Use it.
+	(_M_destructive_move): Likewise.
+	(_M_destructive_copy): Likewise.
+	(_Copy_assign_base::operator=): Adjust.
+	(_Move_assign_base::operator=): Likewise.
+	(swap): Likewise.
+
+2019-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85965
+	* include/bits/hashtable.h (_Hashtable): Move static assertions to
+	destructor so they are not evaluated until the _Key type is complete.
+	* include/bits/stl_tree.h (_Rb_tree): Likewise.
+	* testsuite/23_containers/set/85965.cc: New test.
+	* testsuite/23_containers/unordered_set/85965.cc: New test.
+	* testsuite/23_containers/map/48101_neg.cc: Replace "here" errors
+	with regexp matching the corresponding _Rb_tree specialization.
+	* testsuite/23_containers/multimap/48101_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/48101_neg.cc: Remove "here" error.
+	* testsuite/23_containers/set/48101_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/48101_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/48101_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/48101_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/48101_neg.cc: Likewise.
+
+2019-03-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/89825
+	Fix based on a suggestion by Antony Polukhin.
+	* include/std/variant (__never_valueless): New.
+	(_M_valid): Use it.
+	(_Extra_visit_slot_needed): New.
+	(_Multi_array): Use it.
+	(_S_apply_all_alts): Likewise.
+
+2019-03-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/89824
+	Fix based on a suggestion by Antony Polukhin.
+	* include/std/variant (__gen_vtable): Don't reserve an
+	additional table slot, _Multi_array already does that.
+
+2019-03-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/89816
+	Fix based on a suggestion by Antony Polukhin.
+	* include/std/variant (__variant_construct): Capture a pointer
+	to the storage and visit just one variant.
+
+2019-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/backwards_compatibility.xml: Remove link to
+	Doxygen-generated pages with unstable URL.
+	* doc/xml/manual/concurrency_extensions.xml: Likewise.
+	* doc/xml/manual/extensions.xml: Likewise.
+	* doc/xml/manual/parallel_mode.xml: Likewise.
+	* doc/xml/manual/support.xml: Likewise.
+
+	* include/bits/stl_algobase.h (__lg): Do arithmetic on type int to
+	avoid -Wconversion warnings.
+
+2019-03-21  Thomas Rodgers  <trodgers@redhat.com>
+	
+	* include/Makefile.am (std_header): Add ${std_srcdir}/execution.
+	(pstl_srcdir, pstl_builddir, pstl_headers): New variables.
+	(allstamped): Add stamp-pstl.
+	(install-headers): Add ptsl_builddir.
+	* include/Makefile.in: Regenerate.
+	* include/bits/c++config: Add pstl configuration.
+	* include/pstl/LICENSE.txt: New file.
+	* include/pstl/algorithm_fwd.h: New file.
+	* include/pstl/algorithm_impl.h: New file.
+	* include/pstl/execution_defs.h: New file.
+	* include/pstl/execution_impl.h: New file.
+	* include/pstl/glue_algorithm_defs.h: New file.
+	* include/pstl/glue_algorithm_impl.h: New file.
+	* include/pstl/glue_execution_defs.h: New file.
+	* include/pstl/glue_memory_defs.h: New file.
+	* include/pstl/glue_memory_impl.h: New file.
+	* include/pstl/glue_numeric_defs.h: New file.
+	* include/pstl/glue_numeric_impl.h: New file.
+	* include/pstl/memory_impl.h: New file.
+	* include/pstl/numeric_fwd.h: New file.
+	* include/pstl/numeric_impl.h: New file.
+	* include/pstl/parallel_backend.h: New file.
+	* include/pstl/parallel_backend_tbb.h: New file.
+	* include/pstl/parallel_backend_utils.h: New file.
+	* include/pstl/parallel_impl.h: New file.
+	* include/pstl/pstl_config.h: New file.
+	* include/pstl/unseq_backend_simd.h: New file.
+	* include/pstl/utils.h: New file.
+	* include/std/algorithm: Include parallel algorithm implementations.
+	* include/std/execution: New file.
+	* include/std/memory: Include parallel algorithm implementations.
+	* include/std/numeric: Include parallel algorithm implementations.
+	* include/std/version: Add parallel algorithms feature test macro.
+	* testsuite/util/pstl/pstl_test_config.h: New file.
+	* testsuite/util/pstl/test_utils.h: New file.
+	* testsuite/20_util/specialized_algorithms/pstl/uninitialized_construct.cc: New file.
+	* testsuite/20_util/specialized_algorithms/pstl/uninitialized_copy_move.cc: New file.
+	* testsuite/20_util/specialized_algorithms/pstl/uninitialized_fill_destroy.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_merge/inplace_merge.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_merge/merge.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/copy_if.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/copy_move.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/fill.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/generate.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/is_partitioned.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/partition.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/partition_copy.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/remove.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/remove_copy.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/replace.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/replace_copy.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/rotate.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/rotate_copy.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/swap_ranges.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/transform_binary.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/transform_unary.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/unique.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/unique_copy_equal.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/adjacent_find.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/all_of.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/any_of.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/count.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/equal.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find_end.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find_first_of.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find_if.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/for_each.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/mismatch.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/none_of.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/nth_element.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/reverse.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/reverse_copy.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/search_n.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_sorting/includes.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_sorting/is_heap.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_sorting/is_sorted.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_sorting/lexicographical_compare.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_sorting/minmax_element.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_sorting/partial_sort.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_sorting/partial_sort_copy.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_sorting/set.cc: New file.
+	* testsuite/25_algorithms/pstl/alg_sorting/sort.cc: New file.
+	* testsuite/26_numerics/pstl/numeric_ops/adjacent_difference.cc: New file.
+	* testsuite/26_numerics/pstl/numeric_ops/reduce.cc: New file.
+	* testsuite/26_numerics/pstl/numeric_ops/scan.cc: New file.
+	* testsuite/26_numerics/pstl/numeric_ops/transform_reduce.cc: New file.
+	* testsuite/26_numerics/pstl/numeric_ops/transform_scan.cc: New file.
+	* testsuite/testsuite/20_util/specialized_algorithms/pstl/uninitialized_construct.cc: New file.
+	* testsuite/testsuite/20_util/specialized_algorithms/pstl/uninitialized_copy_move.cc: New file.
+	* testsuite/testsuite/20_util/specialized_algorithms/pstl/uninitialized_fill_destroy.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_merge/inplace_merge.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_merge/merge.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/copy_if.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/copy_move.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/fill.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/generate.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/is_partitioned.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/partition.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/partition_copy.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/remove.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/remove_copy.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/replace.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/replace_copy.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/rotate.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/rotate_copy.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/swap_ranges.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/transform_binary.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/transform_unary.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/unique.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_modifying_operations/unique_copy_equal.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/adjacent_find.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/all_of.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/any_of.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/count.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/equal.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/find.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/find_end.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/find_first_of.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/find_if.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/for_each.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/mismatch.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/none_of.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/nth_element.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/reverse.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/reverse_copy.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_nonmodifying/search_n.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_sorting/includes.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_sorting/is_heap.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_sorting/is_sorted.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_sorting/lexicographical_compare.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_sorting/minmax_element.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_sorting/partial_sort.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_sorting/partial_sort_copy.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_sorting/set.cc: New file.
+	* testsuite/testsuite/25_algorithms/pstl/alg_sorting/sort.cc: New file.
+	* testsuite/testsuite/26_numerics/pstl/numeric_ops/adjacent_difference.cc: New file.
+	* testsuite/testsuite/26_numerics/pstl/numeric_ops/reduce.cc: New file.
+	* testsuite/testsuite/26_numerics/pstl/numeric_ops/scan.cc: New file.
+	* testsuite/testsuite/26_numerics/pstl/numeric_ops/transform_reduce.cc: New file.
+	* testsuite/testsuite/26_numerics/pstl/numeric_ops/transform_scan.cc: New file.
+
+2019-03-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_compatibility/math.h [!__STDCPP_WANT_MATH_SPEC_FUNCS__]
+	(assoc_laguerre, assoc_laguerref, assoc_laguerrel, assoc_legendre)
+	(assoc_legendref, assoc_legendrel, beta, betaf, betal, comp_ellint_1)
+	(comp_ellint_1f, comp_ellint_1l, comp_ellint_2, comp_ellint_2f)
+	(comp_ellint_2l, comp_ellint_3, comp_ellint_3f, comp_ellint_3l)
+	(cyl_bessel_i, cyl_bessel_if, cyl_bessel_il, cyl_bessel_j)
+	(cyl_bessel_jf, cyl_bessel_jl, cyl_bessel_k, cyl_bessel_kf)
+	(cyl_bessel_kl, cyl_neumann, cyl_neumannf, cyl_neumannl, ellint_1)
+	(ellint_1f, ellint_1l, ellint_2, ellint_2f, ellint_2l, ellint_3)
+	(ellint_3f, ellint_3l, expint, expintf, expintl, hermite, hermitef)
+	(hermitel, laguerre, laguerref, laguerrel, legendre, legendref)
+	(legendrel, riemann_zeta, riemann_zetaf, riemann_zetal, sph_bessel)
+	(sph_besself, sph_bessell, sph_legendre, sph_legendref, sph_legendrel)
+	(sph_neumann, sph_neumannf, sph_neumannl): Only add using-declarations
+	when the special functions IS is enabled, not for C++17.
+	* testsuite/26_numerics/headers/cmath/functions_global_c++17.cc:
+	Replace with ...
+	* testsuite/26_numerics/headers/cmath/functions_global.cc: New test,
+	without checks for special functions in C++17.
+	* testsuite/26_numerics/headers/cmath/special_functions_global.cc:
+	New test.
+
+	PR libstdc++/88066
+	* include/backward/hash_map: Use <> for includes not "".
+	* include/backward/hash_set: Likewise.
+	* include/backward/strstream: Likewise.
+	* include/tr1/bessel_function.tcc: Likewise.
+	* include/tr1/exp_integral.tcc: Likewise.
+	* include/tr1/legendre_function.tcc: Likewise.
+	* include/tr1/modified_bessel_func.tcc: Likewise.
+	* include/tr1/riemann_zeta.tcc: Likewise.
+
+2019-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/allocator.xml: Link to table documenting evolution
+	of extension allocators.
+	* doc/xml/manual/evolution.xml: Use angle brackets for header names.
+	Document new headers in 7.2, 8.1 and 9.1 releases.
+	* doc/xml/manual/using.xml: Adjust link target for new_allocator.
+	* doc/html/*: Regenerate.
+
+2019-03-12  John David Anglin  <dave.anglin@bell.net>
+
+	PR libstdc++/89461
+	* testsuite/lib/libstdc++.exp: Locate libatomic.
+	* testsuite/lib/dg-options.exp (add_options_for_libatomic): New.
+	* testsuite/20_util/shared_ptr/thread/default_weaktoshared.cc: Add
+	libatomic options.
+	* testsuite/20_util/shared_ptr/thread/mutex_weaktoshared.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/cons.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/dest.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/ops.cc: Likewise.
+
+2019-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89460
+	* configure.ac: Check for sockatmark.
+	* crossconfig.m4: Check for sockatmark.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/experimental/internet (address_v4::_S_hton): Rename
+	overloaded functions to _S_hton_16 and _S_ntoh_16.
+	(address_v4::_S_ntoh): Rename to _S_ntoh_16 and _S_ntoh_32.
+	(basic_endpoint): Adjust calls to _S_hton and _S_ntoh.
+	* include/experimental/socket (basic_socket::at_mark): Check
+	_GLIBCXX_HAVE_SOCKATMARK.
+
+	* testsuite/29_atomics/atomic_flag/test_and_set/explicit-hle.cc: Use
+	const variables instead of macros.
+
+	PR libstdc++/89629
+	* libsupc++/hash_bytes.cc [__SIZEOF_SIZE_T__ == 8] (_Hash_bytes):
+	Use correct type for len_aligned.
+	* testsuite/20_util/hash/89629.cc: New test.
+
+2019-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/89641
+	* include/std/atomic (atomic<T>::store, atomic<T>::load,
+	atomic<T>::exchange, atomic<T>::compare_exchange_weak,
+	atomic<T>::compare_exchange_strong): Cast __m or __s and __f to int.
+	* include/bits/atomic_base.h (__atomic_base<T>::operator++,
+	__atomic_base<T>::operator--, __atomic_base<T>::operator+=,
+	__atomic_base<T>::operator-=, __atomic_base<T>::operator&=,
+	__atomic_base<T>::operator|=, __atomic_base<T>::operator^=,
+	__atomic_base<T*>::operator++, __atomic_base<T*>::operator--,
+	__atomic_base<T*>::operator+=, __atomic_base<T*>::operator-=): Cast
+	memory_order_seq_cst to int.
+
 2019-03-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/using.xml: Use link element instead of xref.

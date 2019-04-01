@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_fp16_ok } */
 /* { dg-skip-if "do not override fpu" { *-*-* } { "-mfpu=*" } { "-mfpu=fpv5-sp-d16" } } */
 /* { dg-skip-if "do not disable fpu" { *-*-* } { "-mfloat-abi=soft" } { * } } */
 /* { dg-skip-if "do not override fp16-format" { *-*-* } { "-mfp16-format=*" } { "-mfp16-format=ieee" } } */

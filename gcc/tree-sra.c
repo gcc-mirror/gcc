@@ -2752,8 +2752,12 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
 
 	      rchild->grp_hint = 1;
 	      new_acc->grp_hint |= new_acc->grp_read;
-	      if (rchild->first_child)
-		ret |= propagate_subaccesses_across_link (new_acc, rchild);
+	      if (rchild->first_child
+		  && propagate_subaccesses_across_link (new_acc, rchild))
+		{
+		  ret = 1;
+		  add_access_to_work_queue (new_acc);
+		}
 	    }
 	  else
 	    {

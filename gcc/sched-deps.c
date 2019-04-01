@@ -3005,6 +3005,11 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
   if (JUMP_P (insn))
     {
       rtx_insn *next = next_nonnote_nondebug_insn (insn);
+      /* ??? For tablejumps, the barrier may appear not immediately after
+         the jump, but after a label and a jump_table_data insn.  */
+      if (next && LABEL_P (next) && NEXT_INSN (next)
+	  && JUMP_TABLE_DATA_P (NEXT_INSN (next)))
+	next = NEXT_INSN (NEXT_INSN (next));
       if (next && BARRIER_P (next))
 	reg_pending_barrier = MOVE_BARRIER;
       else

@@ -1,3 +1,55 @@
+2019-04-01  Richard Biener  <rguenther@suse.de>
+
+	PR c/71598
+	* c-tree.h (c_get_alias_set): Declare.
+	* c-objc-common.h (LANG_HOOKS_GET_ALIAS_SET): Use c_get_alias_set.
+	* c-objc-common.c (c_get_alias_set): Treat enumeral types
+	as the underlying integer type.
+
+2019-03-19  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/89688
+	* c-decl.c (finish_decl): Call braced_lists_to_string for more
+	kinds of initializers.
+
+2019-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89734
+	* c-decl.c (grokdeclarator): Call c_build_qualified_type on function
+	return type even if quals_used is 0.  Formatting fixes.
+
+2019-03-14  Richard Biener  <rguenther@suse.de>
+
+	* c-tree.h (enum c_declspec_il): New.
+	(struct c_declspecs): Merge gimple_p and rtl_p into declspec_il
+	enum bitfield.
+	* c-parser.c (c_parser_declaration_or_fndef): Adjust accordingly.
+	Pass start pass and declspec_il to c_parser_parse_gimple_body.
+	(c_parser_declspecs): Adjust.
+	* gimple-parser.c: Include cfg.h, cfghooks.h, cfganal.h, tree-cfg.h,
+	gimple-iterator.h, cfgloop.h, tree-phinodes.h, tree-into-ssa.h
+	and bitmap.h.
+	(struct gimple_parser): New.
+	(gimple_parser::push_edge): New method.
+	(c_parser_gimple_parse_bb_spec): New helper.
+	(c_parser_parse_gimple_body): Get start pass and IL specification.
+	Initialize SSA and CFG.
+	(c_parser_gimple_compound_statement): Handle CFG and SSA build.
+	Build a gimple_parser parsing state and pass it along.
+	(c_parser_gimple_statement): Change intermittend __PHI internal
+	function argument for the edge.
+	(c_parser_gimple_or_rtl_pass_list): Handle ssa, cfg flags.
+	(c_parser_gimple_goto_stmt): Record edges to build.
+	(c_parser_gimple_if_stmt): Likewise.
+	* gimple-parser.h (c_parser_parse_gimple_body): Adjust.
+	(c_parser_gimple_or_rtl_pass_list): Likewise.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* c-decl.c (check_for_loop_decls): Wrap an option name
+	in a string format message and fix GNU coding style.
+	* c-parser.c (c_parser_declspecs): Likewise.
+
 2019-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/89550

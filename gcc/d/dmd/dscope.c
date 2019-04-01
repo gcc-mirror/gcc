@@ -685,14 +685,16 @@ Dsymbol *Scope::search_correct(Identifier *ident)
 const char *Scope::search_correct_C(Identifier *ident)
 {
     TOK tok;
-    if (ident == Id::_NULL)
+    if (ident == Id::C_NULL)
         tok = TOKnull;
-    else if (ident == Id::_TRUE)
+    else if (ident == Id::C_TRUE)
         tok = TOKtrue;
-    else if (ident == Id::_FALSE)
+    else if (ident == Id::C_FALSE)
         tok = TOKfalse;
-    else if (ident == Id::_unsigned)
+    else if (ident == Id::C_unsigned)
         tok = TOKuns32;
+    else if (ident == Id::C_wchar_t)
+        tok = global.params.isWindows ? TOKwchar : TOKdchar;
     else
         return NULL;
     return Token::toChars(tok);

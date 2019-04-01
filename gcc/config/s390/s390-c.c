@@ -810,7 +810,13 @@ s390_fn_types_compatible (enum s390_builtin_ov_type_index typeindex,
 
     mismatch:
       if (TARGET_DEBUG_ARG)
-	fprintf (stderr, " mismatch in operand: %d\n", i + 1);
+	{
+	  fprintf (stderr, " mismatch in operand: %d incoming: ", i + 1);
+	  print_generic_expr (stderr, in_type, TDF_VOPS|TDF_MEMSYMS);
+	  fprintf (stderr, " expected: ");
+	  print_generic_expr (stderr, b_arg_type, TDF_VOPS|TDF_MEMSYMS);
+	  fprintf (stderr, "\n");
+	}
       return INT_MAX;
     }
 
@@ -889,7 +895,7 @@ s390_resolve_overloaded_builtin (location_t loc,
 
   if (!TARGET_VX && (ob_flags & B_VX))
     {
-      error_at (loc, "%qF requires -mvx", ob_fndecl);
+      error_at (loc, "%qF requires %<-mvx%>", ob_fndecl);
       return error_mark_node;
     }
 

@@ -6951,7 +6951,7 @@ Type::make_struct_type(Struct_field_list* fields,
 // called for a slice.
 
 bool
-Array_type::int_length(int64_t* plen)
+Array_type::int_length(int64_t* plen) const
 {
   go_assert(this->length_ != NULL);
   Numeric_constant nc;
@@ -8808,10 +8808,19 @@ Interface_type::is_identical(const Interface_type* t, int flags) const
   if (!this->methods_are_finalized_ || !t->methods_are_finalized_)
     return false;
 
+  // Consult a flag to see whether we need to compare based on
+  // parse methods or all methods.
+  Typed_identifier_list* methods = (((flags & COMPARE_EMBEDDED_INTERFACES) != 0)
+				      ? this->parse_methods_
+                                      : this->all_methods_);
+  Typed_identifier_list* tmethods = (((flags & COMPARE_EMBEDDED_INTERFACES) != 0)
+				       ? t->parse_methods_
+				       : t->all_methods_);
+
   // We require the same methods with the same types.  The methods
   // have already been sorted.
-  if (this->all_methods_ == NULL || t->all_methods_ == NULL)
-    return this->all_methods_ == t->all_methods_;
+  if (methods == NULL || tmethods == NULL)
+    return methods == tmethods;
 
   if (this->assume_identical(this, t) || t->assume_identical(t, this))
     return true;
@@ -8823,11 +8832,11 @@ Interface_type::is_identical(const Interface_type* t, int flags) const
   ai.next = hold_ai;
   this->assume_identical_ = &ai;
 
-  Typed_identifier_list::const_iterator p1 = this->all_methods_->begin();
+  Typed_identifier_list::const_iterator p1 = methods->begin();
   Typed_identifier_list::const_iterator p2;
-  for (p2 = t->all_methods_->begin(); p2 != t->all_methods_->end(); ++p1, ++p2)
+  for (p2 = tmethods->begin(); p2 != tmethods->end(); ++p1, ++p2)
     {
-      if (p1 == this->all_methods_->end())
+      if (p1 == methods->end())
 	break;
       if (p1->name() != p2->name()
 	  || !Type::are_identical(p1->type(), p2->type(), flags, NULL))
@@ -8836,7 +8845,7 @@ Interface_type::is_identical(const Interface_type* t, int flags) const
 
   this->assume_identical_ = hold_ai;
 
-  return p1 == this->all_methods_->end() && p2 == t->all_methods_->end();
+  return p1 == methods->end() && p2 == tmethods->end();
 }
 
 // Return true if T1 and T2 are assumed to be identical during a type

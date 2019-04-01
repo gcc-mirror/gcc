@@ -15,7 +15,7 @@ pragma(lib, "wininet");
 
 // FIXME: check types and grouping of constants
 
-import core.sys.windows.windows;
+import core.sys.windows.winbase, core.sys.windows.windef;
 
 enum {
     INTERNET_INVALID_PORT_NUMBER =    0,
@@ -729,22 +729,22 @@ enum INTERNET_INVALID_STATUS_CALLBACK
   = cast(INTERNET_STATUS_CALLBACK) -1;
 
 struct GOPHER_FIND_DATAA {
-    CHAR[MAX_GOPHER_DISPLAY_TEXT+1] DisplayString;
+    CHAR[MAX_GOPHER_DISPLAY_TEXT+1] DisplayString = 0;
     DWORD    GopherType;
     DWORD    SizeLow;
     DWORD    SizeHigh;
     FILETIME LastModificationTime;
-    CHAR[MAX_GOPHER_LOCATOR_LENGTH+1] Locator;
+    CHAR[MAX_GOPHER_LOCATOR_LENGTH+1] Locator = 0;
 }
 alias GOPHER_FIND_DATAA* LPGOPHER_FIND_DATAA;
 
 struct GOPHER_FIND_DATAW {
-    WCHAR[MAX_GOPHER_DISPLAY_TEXT+1] DisplayString;
+    WCHAR[MAX_GOPHER_DISPLAY_TEXT+1] DisplayString = 0;
     DWORD    GopherType;
     DWORD    SizeLow;
     DWORD    SizeHigh;
     FILETIME LastModificationTime;
-    WCHAR[MAX_GOPHER_LOCATOR_LENGTH+1] Locator;
+    WCHAR[MAX_GOPHER_LOCATOR_LENGTH+1] Locator = 0;
 }
 alias GOPHER_FIND_DATAW* LPGOPHER_FIND_DATAW;
 
@@ -953,7 +953,7 @@ struct INTERNET_CACHE_GROUP_INFOA {
     DWORD dwDiskUsage;
     DWORD dwDiskQuota;
     DWORD[GROUP_OWNER_STORAGE_SIZE] dwOwnerStorage;
-    CHAR[GROUPNAME_MAX_LENGTH]      szGroupName;
+    CHAR[GROUPNAME_MAX_LENGTH]      szGroupName = 0;
 }
 alias INTERNET_CACHE_GROUP_INFOA* LPINTERNET_CACHE_GROUP_INFOA;
 
@@ -964,7 +964,7 @@ struct INTERNET_CACHE_GROUP_INFOW {
     DWORD dwDiskUsage;
     DWORD dwDiskQuota;
     DWORD[GROUP_OWNER_STORAGE_SIZE] dwOwnerStorage;
-    WCHAR[GROUPNAME_MAX_LENGTH]     szGroupName;
+    WCHAR[GROUPNAME_MAX_LENGTH]     szGroupName = 0;
 }
 alias INTERNET_CACHE_GROUP_INFOW* LPINTERNET_CACHE_GROUP_INFOW;
 

@@ -1,3 +1,314 @@
+2019-03-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89852 - ICE with C++11 functional cast with { }.
+	* constexpr.c (fold_non_dependent_expr_template): New static function
+	broken out of...
+	(fold_non_dependent_expr): ...here.
+	(fold_non_dependent_init): New function.
+	* cp-tree.h (fold_non_dependent_init): Declare.
+	* typeck2.c (massage_init_elt): Call fold_non_dependent_init instead
+	of fold_non_dependent_expr.  Don't call maybe_constant_init.
+
+2019-03-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89744 - ICE with specialization of member class template.
+	* pt.c (lookup_template_class_1): If the partial instantiation is
+	explicitly specialized, adjust.
+	(maybe_process_partial_specialization): Also adjust
+	CLASSTYPE_TI_ARGS.
+
+2019-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/89869
+	* typeck.c: Include gimplify.h.
+	(cp_build_modify_expr) <case COND_EXPR>: Unshare rhs before using it
+	for second time.  Formatting fixes.
+
+2019-03-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89876 - ICE with deprecated conversion.
+	* call.c (convert_like_real): Only give warnings with tf_warning.
+
+2019-03-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89612 - ICE with member friend template with noexcept.
+	* pt.c (maybe_instantiate_noexcept): For function templates, use their
+	template result (function decl).  Don't set up local specializations.
+	Temporarily turn on processing_template_decl.  Update the template type
+	too.
+
+	PR c++/89836 - bool constant expression and explicit conversions.
+	* call.c (build_converted_constant_expr_internal): New function,
+	renamed from...
+	(build_converted_constant_expr): ...this.  New.
+	(build_converted_constant_bool_expr): New.
+	* cp-tree.h (build_converted_constant_bool_expr): Declare.
+	* decl.c (build_explicit_specifier): Call
+	build_converted_constant_bool_expr.
+
+2019-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89785
+	* constexpr.c (struct check_for_return_continue_data): New type.
+	(check_for_return_continue): New function.
+	(potential_constant_expression_1) <case SWITCH_STMT>: Walk
+	SWITCH_STMT_BODY to find RETURN_EXPRs or CONTINUE_STMTs not nested
+	in loop bodies and set *jump_target to that if found.
+
+2019-03-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89831 - error with qualified-id in const member function.
+	* semantics.c (finish_non_static_data_member): Use object cv-quals
+	in scoped case, too.
+
+	PR c++/89421 - ICE with lambda in template parameter list.
+	* parser.c (cp_parser_lambda_expression): Also reject a lambda in a
+	template parameter list before C++20.
+	* pt.c (type_dependent_expression_p): True for LAMBDA_EXPR.
+	* semantics.c (begin_class_definition): Restore error about defining
+	non-lambda class in template parm list.
+
+2019-03-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86932 - missed SFINAE with empty pack.
+	* pt.c (coerce_template_parms): Don't add an empty pack if
+	tf_partial.
+	(fn_type_unification): Pass tf_partial to coerce_template_parms.
+
+	PR c++/86429 - constexpr variable in lambda.
+	PR c++/82643
+	PR c++/87327
+	* constexpr.c (cxx_eval_constant_expression): In a lambda function,
+	try evaluating the captured variable directly.
+
+2019-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89796
+	* semantics.c (finish_omp_atomic): Add warning_sentinel for
+	-Wunused-value around finish_expr_stmt call.
+
+2019-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84661
+	PR c++/85013
+	* parser.c (cp_parser_binary_expression): Don't call cp_fully_fold
+	to undo the disabling of warnings.
+
+2019-03-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87748 - substitution failure error with decltype.
+	* pt.c (most_specialized_partial_spec): Clear
+	processing_template_decl.
+
+2019-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89214 - ICE when initializing aggregates with bases.
+	* typeck2.c (digest_init_r): Warn about object slicing instead of
+	crashing.
+
+	PR c++/89705 - ICE with reference binding with conversion function.
+	* call.c (reference_binding): If the result of the conversion function
+	is a prvalue of non-class type, use the cv-unqualified type.
+
+2019-03-25  Nathan Sidwell  <nathan@acm.org>
+
+	* lambda.c (maybe_add_lambda_conv_op): Don't add to comdat group.
+
+2019-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60702
+	* cp-tree.h (get_tls_wrapper_fn): Remove declaration.
+	(maybe_get_tls_wrapper_call): Declare.
+	* decl2.c (get_tls_wrapper_fn): Make static.
+	(maybe_get_tls_wrapper_call): New function.
+	* typeck.c (build_class_member_access_expr): Handle accesses to TLS
+	variables.
+	* semantics.c (finish_qualified_id_expr): Likewise.
+	(finish_id_expression_1): Use maybe_get_tls_wrapper_call.
+	* pt.c (tsubst_copy_and_build): Likewise.
+
+	PR c++/87481
+	* constexpr.c (struct constexpr_ctx): Add constexpr_ops_count member.
+	(cxx_eval_constant_expression): When not skipping, not constant class
+	or location wrapper, increment *ctx->constexpr_ops_count and if it is
+	above constexpr_loop_nest_limit, diagnose failure.
+	(cxx_eval_outermost_constant_expr): Add constexpr_ops_count and
+	initialize ctx.constexpr_ops_count to its address.
+	(is_sub_constant_expr): Likewise.
+
+2019-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71446
+	* call.c (filed_in_pset): Change pset from hash_set<tree> * to
+	hash_set<tree, true> &, adjust uses accordingly.
+	(build_aggr_conv): Change pset from hash_set<tree> *
+	to hash_set<tree, true>.  Replace goto fail; with return NULL;,
+	adjust pset uses.
+
+	PR c++/89767
+	* parser.c (cp_parser_lambda_introducer): Add ids and first_capture_id
+	variables, check for duplicates in this function.
+	* lambda.c (add_capture): Don't check for duplicates nor use
+	IDENTIFIER_MARKED.
+	(register_capture_members): Don't clear IDENTIFIER_MARKED here.
+
+2019-03-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/89571
+	* method.c (after_nsdmi_defaulted_late_checks): Avoid passing
+	error_mark_node to comp_except_specs.
+
+2019-03-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87480 - decltype of member access in default template arg
+	* pt.c (type_unification_real): Accept a dependent result in
+	template context.
+
+2019-03-19  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/89688
+	* typeck2.c (store_init_value): Call braced_lists_to_string for more
+	kinds of initializers.
+
+2019-03-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89630 - ICE with dependent using-decl as template arg.
+	* tree.c (cp_tree_equal): Always return false for USING_DECL.
+
+	PR c++/89761 - ICE with sizeof... in pack expansion.
+	* pt.c (argument_pack_element_is_expansion_p): Handle
+	ARGUMENT_PACK_SELECT.
+
+	PR c++/89640 - GNU attributes on lambda.
+	* parser.c (cp_parser_lambda_declarator_opt): Allow GNU attributes.
+
+	PR c++/89682 - wrong access error in default argument.
+	* pt.c (tsubst_default_argument): Don't defer access checks.
+
+2019-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85014
+	* semantics.c (finish_non_static_data_member): Check return value
+	of context_for_name_lookup and immediately return error_mark_node
+	if isn't a type.
+
+2019-03-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89571 - ICE with ill-formed noexcept on constructor.
+	* pt.c (maybe_instantiate_noexcept): Only return false if defaulted.
+	(regenerate_decl_from_template): Use it for noexcept-specs.
+
+2019-03-14  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_decl_specifier_seq): Support C++20
+	concept-definition syntax without 'bool'.
+
+2019-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89512
+	* semantics.c (finish_qualified_id_expr): Reject variable templates.
+
+	PR c++/89652
+	* constexpr.c (struct constexpr_ctx): Change save_exprs type from
+	hash_set<tree> to vec<tree>.
+	(cxx_eval_call_expression): Adjust for save_exprs being a vec instead
+	of hash_set.
+	(cxx_eval_loop_expr): Likewise.  Truncate the vector after each
+	removal of SAVE_EXPRs from values.
+	(cxx_eval_constant_expression) <case SAVE_EXPR>: Call safe_push
+	method on save_exprs instead of add.
+
+2019-03-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86521 - C++17 copy elision in initialization by constructor.
+	* call.c (joust_maybe_elide_copy): New.
+	(joust): Call it.
+
+2019-03-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88979 - further P0634 fix for constructors.
+	* parser.c (cp_parser_decl_specifier_seq): Pass flags to
+	cp_parser_constructor_declarator_p.
+	(cp_parser_direct_declarator): Allow missing typename for constructor
+	parameters.
+	(cp_parser_constructor_declarator_p): Add FLAGS parameter.  Pass it to
+	cp_parser_type_specifier.
+
+	PR c++/89686 - mixing init-capture and simple-capture in lambda.
+	* parser.c (cp_parser_lambda_introducer): Give error when combining
+	init-capture and simple-capture.
+
+	PR c++/89660 - bogus error with -Wredundant-move.
+	* typeck.c (maybe_warn_pessimizing_move): Only accept (T &) &arg
+	as the std::move's argument.  Don't call convert_for_initialization
+	when warn_redundant_move isn't on.
+
+2019-03-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86521 - wrong overload resolution with ref-qualifiers.
+	* call.c (build_user_type_conversion_1): Don't use a conversion to a
+	reference of the wrong rvalueness for direct binding.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* cvt.c (build_expr_type_conversion): Wrap apostrophes
+	in gcc internal format with %'.
+	* decl.c (check_no_redeclaration_friend_default_args): Likewise.
+	(grokfndecl): Likewise.
+	* name-lookup.c (do_pushtag): Likewise.
+	* pt.c (unify_parameter_deduction_failure): Likewise.
+	(unify_template_deduction_failure): Likewise.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* call.c (convert_arg_to_ellipsis): Wrap an option name
+	in a string format message and fix GNU coding style.
+	(build_over_call): Likewise.
+	* class.c (check_field_decl): Likewise.
+	(layout_nonempty_base_or_field): Likewise.
+	* constexpr.c (cxx_eval_loop_expr): Likewise.
+	* cvt.c (type_promotes_to): Likewise.
+	* decl.c (cxx_init_decl_processing): Likewise.
+	(mark_inline_variable): Likewise.
+	(grokdeclarator): Likewise.
+	* decl2.c (record_mangling): Likewise.
+	* error.c (maybe_warn_cpp0x): Likewise.
+	* except.c (doing_eh): Likewise.
+	* mangle.c (maybe_check_abi_tags): Likewise.
+	* parser.c (cp_parser_diagnose_invalid_type_name): Likewise.
+	(cp_parser_userdef_numeric_literal): Likewise.
+	(cp_parser_primary_expression): Likewise.
+	(cp_parser_unqualified_id): Likewise.
+	(cp_parser_pseudo_destructor_name): Likewise.
+	(cp_parser_builtin_offsetof): Likewise.
+	(cp_parser_lambda_expression): Likewise.
+	(cp_parser_lambda_introducer): Likewise.
+	(cp_parser_lambda_declarator_opt): Likewise.
+	(cp_parser_selection_statement): Likewise.
+	(cp_parser_init_statement): Likewise.
+	(cp_parser_decomposition_declaration): Likewise.
+	(cp_parser_function_specifier_opt): Likewise.
+	(cp_parser_static_assert): Likewise.
+	(cp_parser_simple_type_specifier): Likewise.
+	(cp_parser_namespace_definition): Likewise.
+	(cp_parser_using_declaration): Likewise.
+	(cp_parser_ctor_initializer_opt_and_function_body): Likewise.
+	(cp_parser_initializer_list): Likewise.
+	(cp_parser_type_parameter_key): Likewise.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_try_block): Likewise.
+	(cp_parser_std_attribute_spec): Likewise.
+	(cp_parser_requires_clause_opt): Likewise.
+	* pt.c (check_template_variable): Likewise.
+	(check_default_tmpl_args): Likewise.
+	(push_tinst_level_loc): Likewise.
+	(instantiate_pending_templates): Likewise.
+	(invalid_nontype_parm_type_p): Likewise.
+	* repo.c (get_base_filename): Likewise.
+	* rtti.c (typeid_ok_p): Likewise.
+	(build_dynamic_cast_1): Likewise.
+	* tree.c (maybe_warn_parm_abi): Likewise.
+
 2019-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/80058

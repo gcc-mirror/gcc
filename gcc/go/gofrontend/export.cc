@@ -60,6 +60,7 @@ class Type_hash_alias_identical
     return type->hash_for_method(NULL,
 				 (Type::COMPARE_ERRORS
 				  | Type::COMPARE_TAGS
+				  | Type::COMPARE_EMBEDDED_INTERFACES
 				  | Type::COMPARE_ALIASES));
   }
 };
@@ -73,6 +74,7 @@ class Type_alias_identical
     return Type::are_identical(t1, t2,
 			       (Type::COMPARE_ERRORS
 				| Type::COMPARE_TAGS
+                                | Type::COMPARE_EMBEDDED_INTERFACES
 				| Type::COMPARE_ALIASES),
 			       NULL);
   }
@@ -295,6 +297,16 @@ Find_types_to_prepare::type(Type* type)
   if (type->is_abstract())
     return TRAVERSE_SKIP_COMPONENTS;
 
+  // For interfaces make sure that embedded methods are sorted, since the
+  // comparison function we use for indexing types relies on it (this call has
+  // to happen before the set_type_index call below).
+  if (type->classification() == Type::TYPE_INTERFACE)
+    {
+      Interface_type* it = type->interface_type();
+      if (it != NULL)
+        it->sort_embedded();
+    }
+
   if (!this->exp_->set_type_index(type))
     {
       // We've already seen this type.
@@ -408,6 +420,9 @@ Export::prepare_types(const std::vector<Named_object*>* exports,
     {
       if (!(*p)->is_type())
 	continue;
+      Interface_type* it = (*p)->type_value()->interface_type();
+      if (it != NULL)
+        it->sort_embedded();
       this->set_type_index((*p)->type_value());
     }
 

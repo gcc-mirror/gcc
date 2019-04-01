@@ -1,7 +1,8 @@
 /* PR middle-end/86453 - error: type variant differs by TYPE_PACKED in
    free_lang_data since r255469
    { dg-do compile }
-   { dg-options "-Wall -ftrack-macro-expansion=0" } */
+   { dg-options "-Wall -ftrack-macro-expansion=0" }
+   { dg-additional-options "-fno-common" { target hppa*-*-hpux* } } */
 
 #define A(expr) do { int a[1 - 2 * !(expr)]; (void)&a; } while (0)
 

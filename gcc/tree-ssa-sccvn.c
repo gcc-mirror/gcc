@@ -3746,10 +3746,13 @@ set_ssa_val_to (tree from, tree to)
 	    }
 	  return false;
 	}
-      else if (currval != VN_TOP
-	       && ! is_gimple_min_invariant (currval)
-	       && ! ssa_undefined_value_p (currval, false)
-	       && is_gimple_min_invariant (to))
+      bool curr_invariant = is_gimple_min_invariant (currval);
+      bool curr_undefined = (TREE_CODE (currval) == SSA_NAME
+			     && ssa_undefined_value_p (currval, false));
+      if (currval != VN_TOP
+	  && !curr_invariant
+	  && !curr_undefined
+	  && is_gimple_min_invariant (to))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -3761,6 +3764,24 @@ set_ssa_val_to (tree from, tree to)
 	      fprintf (dump_file, " (non-constant) to ");
 	      print_generic_expr (dump_file, to);
 	      fprintf (dump_file, " (constant)\n");
+	    }
+	  to = from;
+	}
+      else if (currval != VN_TOP
+	       && !curr_undefined
+	       && TREE_CODE (to) == SSA_NAME
+	       && ssa_undefined_value_p (to, false))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Forcing VARYING instead of changing "
+		       "value number of ");
+	      print_generic_expr (dump_file, from);
+	      fprintf (dump_file, " from ");
+	      print_generic_expr (dump_file, currval);
+	      fprintf (dump_file, " (non-undefined) to ");
+	      print_generic_expr (dump_file, to);
+	      fprintf (dump_file, " (undefined)\n");
 	    }
 	  to = from;
 	}

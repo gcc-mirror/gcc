@@ -1901,7 +1901,10 @@ dimode_scalar_chain::make_vector_copies (unsigned regno)
 		 || GET_CODE (src) == LSHIFTRT)
 		&& !CONST_INT_P (XEXP (src, 1))
 		&& reg_or_subregno (XEXP (src, 1)) == regno)
-	      XEXP (src, 1) = vreg;
+	      {
+		XEXP (src, 0) = replace_with_subreg (XEXP (src, 0), reg, reg);
+		XEXP (src, 1) = vreg;
+	      }
 	  }
 	else
 	  replace_with_subreg_in_insn (insn, reg, vreg);
@@ -2040,6 +2043,7 @@ dimode_scalar_chain::convert_reg (unsigned regno)
 
 		emit_insn_before (seq, insn);
 
+		XEXP (src, 0) = replace_with_subreg (XEXP (src, 0), reg, reg);
 		XEXP (src, 1) = gen_rtx_SUBREG (DImode, tmp2, 0);
 	      }
 	    else if (!MEM_P (dst) || !REG_P (src))
@@ -2819,6 +2823,8 @@ remove_partial_avx_dependency (void)
   rtx set;
   rtx v4sf_const0 = NULL_RTX;
 
+  auto_vec<rtx_insn *> control_flow_insns;
+
   FOR_EACH_BB_FN (bb, cfun)
     {
       FOR_BB_INSNS (bb, insn)
@@ -2875,6 +2881,17 @@ remove_partial_avx_dependency (void)
 	  set_insn = emit_insn_before (set, insn);
 	  df_insn_rescan (set_insn);
 
+	  if (cfun->can_throw_non_call_exceptions)
+	    {
+	      /* Handle REG_EH_REGION note.  */
+	      rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
+	      if (note)
+		{
+		  control_flow_insns.safe_push (set_insn);
+		  add_reg_note (set_insn, REG_EH_REGION, XEXP (note, 0));
+		}
+	    }
+
 	  src = gen_rtx_SUBREG (dest_mode, vec, 0);
 	  set = gen_rtx_SET (dest, src);
 
@@ -2925,6 +2942,23 @@ remove_partial_avx_dependency (void)
       df_insn_rescan (set_insn);
       df_process_deferred_rescans ();
       loop_optimizer_finalize ();
+
+      if (!control_flow_insns.is_empty ())
+	{
+	  free_dominance_info (CDI_DOMINATORS);
+
+	  unsigned int i;
+	  FOR_EACH_VEC_ELT (control_flow_insns, i, insn)
+	    if (control_flow_insn_p (insn))
+	      {
+		/* Split the block after insn.  There will be a fallthru
+		   edge, which is OK so we keep it.  We have to create
+		   the exception edges ourselves.  */
+		bb = BLOCK_FOR_INSN (insn);
+		split_block (bb, insn);
+		rtl_make_eh_edge (NULL, bb, BB_END (bb));
+	      }
+	}
     }
 
   bitmap_obstack_release (NULL);
@@ -3553,8 +3587,8 @@ parse_mtune_ctrl_str (bool dump)
             }
         }
       if (i == X86_TUNE_LAST)
-        error ("unknown parameter to option -mtune-ctrl: %s",
-               clear ? curr_feature_string - 1 : curr_feature_string);
+	error ("unknown parameter to option %<-mtune-ctrl%>: %s",
+	       clear ? curr_feature_string - 1 : curr_feature_string);
       curr_feature_string = next_feature_string;
     }
   while (curr_feature_string);
@@ -3750,7 +3784,7 @@ ix86_option_override_internal (bool main_args_p,
       && !TARGET_64BIT_P (opts->x_ix86_isa_flags))
     {
       /* rep; movq isn't available in 32-bit code.  */
-      error ("-mstringop-strategy=rep_8byte not supported for 32-bit code");
+      error ("%<-mstringop-strategy=rep_8byte%> not supported for 32-bit code");
       opts->x_ix86_stringop_alg = no_stringop;
     }
 
@@ -3779,7 +3813,7 @@ ix86_option_override_internal (bool main_args_p,
     opts->x_ix86_abi = DEFAULT_ABI;
 
   if (opts->x_ix86_abi == MS_ABI && TARGET_X32_P (opts->x_ix86_isa_flags))
-    error ("-mabi=ms not supported with X32 ABI");
+    error ("%<-mabi=ms%> not supported with X32 ABI");
   gcc_assert (opts->x_ix86_abi == SYSV_ABI || opts->x_ix86_abi == MS_ABI);
 
   if ((opts->x_flag_sanitize & SANITIZE_USER_ADDRESS) && opts->x_ix86_abi == MS_ABI)
@@ -3871,7 +3905,7 @@ ix86_option_override_internal (bool main_args_p,
     }
   if (TARGET_MACHO && opts->x_ix86_asm_dialect == ASM_INTEL)
     {
-      error ("-masm=intel not supported in this configuration");
+      error ("%<-masm=intel%> not supported in this configuration");
       opts->x_ix86_asm_dialect = ASM_ATT;
     }
   if ((TARGET_64BIT_P (opts->x_ix86_isa_flags) != 0)
@@ -4326,12 +4360,12 @@ ix86_option_override_internal (bool main_args_p,
   if (opts_set->x_ix86_regparm)
     {
       if (TARGET_64BIT_P (opts->x_ix86_isa_flags))
-	warning (0, "-mregparm is ignored in 64-bit mode");
+	warning (0, "%<-mregparm%> is ignored in 64-bit mode");
       else if (TARGET_IAMCU_P (opts->x_target_flags))
-	warning (0, "-mregparm is ignored for Intel MCU psABI");
+	warning (0, "%<-mregparm%> is ignored for Intel MCU psABI");
       if (opts->x_ix86_regparm > REGPARM_MAX)
 	{
-	  error ("-mregparm=%d is not between 0 and %d",
+	  error ("%<-mregparm=%d%> is not between 0 and %d",
 		 opts->x_ix86_regparm, REGPARM_MAX);
 	  opts->x_ix86_regparm = 0;
 	}
@@ -4439,10 +4473,10 @@ ix86_option_override_internal (bool main_args_p,
 	  || opts->x_ix86_preferred_stack_boundary_arg > max)
 	{
 	  if (min == max)
-	    error ("-mpreferred-stack-boundary is not supported "
+	    error ("%<-mpreferred-stack-boundary%> is not supported "
 		   "for this target");
 	  else
-	    error ("-mpreferred-stack-boundary=%d is not between %d and %d",
+	    error ("%<-mpreferred-stack-boundary=%d%> is not between %d and %d",
 		   opts->x_ix86_preferred_stack_boundary_arg, min, max);
 	}
       else
@@ -4465,7 +4499,7 @@ ix86_option_override_internal (bool main_args_p,
 
       if (opts->x_ix86_incoming_stack_boundary_arg < min
 	  || opts->x_ix86_incoming_stack_boundary_arg > 12)
-	error ("-mincoming-stack-boundary=%d is not between %d and 12",
+	error ("%<-mincoming-stack-boundary=%d%> is not between %d and 12",
 	       opts->x_ix86_incoming_stack_boundary_arg, min);
       else
 	{
@@ -4478,10 +4512,10 @@ ix86_option_override_internal (bool main_args_p,
 
 #ifndef NO_PROFILE_COUNTERS
   if (flag_nop_mcount)
-    error ("-mnop-mcount is not compatible with this target");
+    error ("%<-mnop-mcount%> is not compatible with this target");
 #endif
   if (flag_nop_mcount && flag_pic)
-    error ("-mnop-mcount is not implemented for -fPIC");
+    error ("%<-mnop-mcount%> is not implemented for %<-fPIC%>");
 
   /* Accept -msseregparm only if at least SSE support is enabled.  */
   if (TARGET_SSEREGPARM_P (opts->x_target_flags)
@@ -4683,14 +4717,14 @@ ix86_option_override_internal (bool main_args_p,
     {
       if (!TARGET_64BIT_P (opts->x_ix86_isa_flags) && opts->x_flag_pic
 	  && opts->x_flag_fentry)
-	sorry ("-mfentry isn%'t supported for 32-bit in combination "
-	       "with -fpic");
+	sorry ("%<-mfentry%> isn%'t supported for 32-bit in combination "
+	       "with %<-fpic%>");
       else if (TARGET_SEH && !opts->x_flag_fentry)
-	sorry ("-mno-fentry isn%'t compatible with SEH");
+	sorry ("%<-mno-fentry%> isn%'t compatible with SEH");
     }
 
   if (TARGET_SEH && TARGET_CALL_MS2SYSV_XLOGUES)
-    sorry ("-mcall-ms2sysv-xlogues isn%'t currently supported with SEH");
+    sorry ("%<-mcall-ms2sysv-xlogues%> isn%'t currently supported with SEH");
 
   if (!(opts_set->x_target_flags & MASK_VZEROUPPER)
       && TARGET_EMIT_VZEROUPPER)
@@ -4755,7 +4789,7 @@ ix86_option_override_internal (bool main_args_p,
 
 	      if (i == ARRAY_SIZE (recip_options))
 		{
-		  error ("unknown option for -mrecip=%s", q);
+		  error ("unknown option for %<-mrecip=%s%>", q);
 		  invert = false;
 		  mask = RECIP_MASK_NONE;
 		}
@@ -4815,12 +4849,12 @@ ix86_option_override_internal (bool main_args_p,
 
       if (!*str || *endp || errno)
 	error ("%qs is not a valid number "
-	       "in -mstack-protector-guard-offset=", str);
+	       "in %<-mstack-protector-guard-offset=%>", str);
 
       if (!IN_RANGE (offset, HOST_WIDE_INT_C (-0x80000000),
 		     HOST_WIDE_INT_C (0x7fffffff)))
 	error ("%qs is not a valid offset "
-	       "in -mstack-protector-guard-offset=", str);
+	       "in %<-mstack-protector-guard-offset=%>", str);
 
       opts->x_ix86_stack_protector_guard_offset = offset;
     }
@@ -4848,7 +4882,7 @@ ix86_option_override_internal (bool main_args_p,
 
       if (seg == ADDR_SPACE_GENERIC)
 	error ("%qs is not a valid base register "
-	       "in -mstack-protector-guard-reg=",
+	       "in %<-mstack-protector-guard-reg=%>",
 	       opts->x_ix86_stack_protector_guard_reg_str);
 
       opts->x_ix86_stack_protector_guard_reg = seg;
@@ -9242,6 +9276,25 @@ function_value_64 (machine_mode orig_mode, machine_mode mode,
 }
 
 static rtx
+function_value_ms_32 (machine_mode orig_mode, machine_mode mode,
+		      const_tree fntype, const_tree fn, const_tree valtype)
+{
+  unsigned int regno;
+
+  /* Floating point return values in %st(0)
+     (unless -mno-fp-ret-in-387 or aggregate type of up to 8 bytes).  */
+  if (X87_FLOAT_MODE_P (mode) && TARGET_FLOAT_RETURNS_IN_80387
+	   && (GET_MODE_SIZE (mode) > 8
+	       || valtype == NULL_TREE || !AGGREGATE_TYPE_P (valtype)))
+  {
+    regno = FIRST_FLOAT_REG;
+    return gen_rtx_REG (orig_mode, regno);
+  }
+  else
+    return function_value_32(orig_mode, mode, fntype,fn);
+}
+
+static rtx
 function_value_ms_64 (machine_mode orig_mode, machine_mode mode,
 		      const_tree valtype)
 {
@@ -9286,9 +9339,14 @@ ix86_function_value_1 (const_tree valtype, const_tree fntype_or_decl,
   if (fntype_or_decl && DECL_P (fntype_or_decl))
     fn = fntype_or_decl;
   fntype = fn ? TREE_TYPE (fn) : fntype_or_decl;
-
-  if (TARGET_64BIT && ix86_function_type_abi (fntype) == MS_ABI)
-    return function_value_ms_64 (orig_mode, mode, valtype);
+  
+  if (ix86_function_type_abi (fntype) == MS_ABI)
+    {
+      if (TARGET_64BIT)
+	return function_value_ms_64 (orig_mode, mode, valtype);
+      else
+	return function_value_ms_32 (orig_mode, mode, fntype, fn, valtype);
+    }
   else if (TARGET_64BIT)
     return function_value_64 (orig_mode, mode, valtype);
   else
@@ -11336,7 +11394,7 @@ static void warn_once_call_ms2sysv_xlogues (const char *feature)
   static bool warned_once = false;
   if (!warned_once)
     {
-      warning (0, "-mcall-ms2sysv-xlogues is not compatible with %s",
+      warning (0, "%<-mcall-ms2sysv-xlogues%> is not compatible with %s",
 	       feature);
       warned_once = true;
     }
@@ -13336,7 +13394,7 @@ ix86_expand_prologue (void)
          prologue variant. If so sorry.  */
       if (crtl->profile && flag_fentry != 0)
         sorry ("ms_hook_prologue attribute isn%'t compatible "
-	       "with -mfentry for 32-bit");
+	       "with %<-mfentry%> for 32-bit");
 
       /* In ix86_asm_output_function_label we emitted:
 	 8b ff     movl.s %edi,%edi
@@ -14715,7 +14773,7 @@ split_stack_prologue_scratch_regno (void)
 	{
 	  if (DECL_STATIC_CHAIN (cfun->decl))
 	    {
-	      sorry ("-fsplit-stack does not support fastcall with "
+	      sorry ("%<-fsplit-stack%> does not support fastcall with "
 		     "nested function");
 	      return INVALID_REGNUM;
 	    }
@@ -14735,7 +14793,7 @@ split_stack_prologue_scratch_regno (void)
 	    {
 	      if (regparm >= 2)
 		{
-		  sorry ("-fsplit-stack does not support 2 register "
+		  sorry ("%<-fsplit-stack%> does not support 2 register "
 			 "parameters for a nested function");
 		  return INVALID_REGNUM;
 		}
@@ -14746,7 +14804,7 @@ split_stack_prologue_scratch_regno (void)
 	{
 	  /* FIXME: We could make this work by pushing a register
 	     around the addition and comparison.  */
-	  sorry ("-fsplit-stack does not support 3 register parameters");
+	  sorry ("%<-fsplit-stack%> does not support 3 register parameters");
 	  return INVALID_REGNUM;
 	}
     }
@@ -17813,6 +17871,7 @@ print_reg (rtx x, int code, FILE *file)
    ; -- print a semicolon (after prefixes due to bug in older gas).
    ~ -- print "i" if TARGET_AVX2, "f" otherwise.
    ^ -- print addr32 prefix if TARGET_64BIT and Pmode != word_mode
+   M -- print addr32 prefix for TARGET_X32 with VSIB address.
    ! -- print NOTRACK prefix for jxx/call/ret instructions if required.
  */
 
@@ -18358,6 +18417,26 @@ ix86_print_operand (FILE *file, rtx x, int code)
 
 	case '~':
 	  putc (TARGET_AVX2 ? 'i' : 'f', file);
+	  return;
+
+	case 'M':
+	  if (TARGET_X32)
+	    {
+	      /* NB: 32-bit indices in VSIB address are sign-extended
+		 to 64 bits. In x32, if 32-bit address 0xf7fa3010 is
+		 sign-extended to 0xfffffffff7fa3010 which is invalid
+		 address.  Add addr32 prefix if there is no base
+		 register nor symbol.  */
+	      bool ok;
+	      struct ix86_address parts;
+	      ok = ix86_decompose_address (x, &parts);
+	      gcc_assert (ok && parts.index == NULL_RTX);
+	      if (parts.base == NULL_RTX
+		  && (parts.disp == NULL_RTX
+		      || !symbolic_operand (parts.disp,
+					    GET_MODE (parts.disp))))
+		fputs ("addr32 ", file);
+	    }
 	  return;
 
 	case '^':
@@ -28399,7 +28478,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       if (fndecl
 	  && (lookup_attribute ("interrupt",
 				TYPE_ATTRIBUTES (TREE_TYPE (fndecl)))))
-	error ("interrupt service routine can't be called directly");
+	error ("interrupt service routine can%'t be called directly");
     }
   else
     fndecl = NULL_TREE;
@@ -29779,7 +29858,7 @@ ix86_warn_parameter_passing_abi (cumulative_args_t cum_v, tree type)
     return;
 
   warning (OPT_Wabi, "empty class %qT parameter passing ABI "
-	   "changes in -fabi-version=12 (GCC 8)", type);
+	   "changes in %<-fabi-version=12%> (GCC 8)", type);
 
   /* Only warn once.  */
   cum->warn_empty = false;
@@ -30473,8 +30552,6 @@ enum ix86_builtins
   IX86_BUILTIN_GATHERSIV8SI,
   IX86_BUILTIN_GATHERDIV4SI,
   IX86_BUILTIN_GATHERDIV8SI,
-  IX86_BUILTIN_VFMSUBSD3_MASK3,
-  IX86_BUILTIN_VFMSUBSS3_MASK3,
   IX86_BUILTIN_GATHER3SIV8SF,
   IX86_BUILTIN_GATHER3SIV4SF,
   IX86_BUILTIN_GATHER3SIV4DF,
@@ -32551,6 +32628,7 @@ make_resolver_func (const tree default_decl,
     }
   /* Build result decl and add to function_decl. */
   t = build_decl (UNKNOWN_LOCATION, RESULT_DECL, NULL_TREE, ptr_type_node);
+  DECL_CONTEXT (t) = decl;
   DECL_ARTIFICIAL (t) = 1;
   DECL_IGNORED_P (t) = 1;
   DECL_RESULT (decl) = t;
@@ -38375,7 +38453,8 @@ rdseed_step:
       mode0 = insn_data[icode].operand[0].mode;
       if (!insn_data[icode].operand[0].predicate (op0, mode0))
 	{
-	  error ("the xabort's argument must be an 8-bit immediate");
+	  error ("the argument to %<xabort%> intrinsic must "
+		 "be an 8-bit immediate");
 	  return const0_rtx;
 	}
       emit_insn (gen_xabort (op0));
@@ -41440,7 +41519,7 @@ ix86_handle_interrupt_attribute (tree *node, tree, tree, int, bool *)
     error ("interrupt service routine can only have a pointer argument "
 	   "and an optional integer argument");
   if (! VOID_TYPE_P (return_type))
-    error ("interrupt service routine can't have non-void return value");
+    error ("interrupt service routine can%'t have non-void return value");
 
   return NULL_TREE;
 }
@@ -45510,8 +45589,10 @@ ix86_expand_floorceildf_32 (rtx operand0, rtx operand1, bool do_floor)
           x2 -= 1;
      Compensate.  Ceil:
         if (x2 < x)
-          x2 -= -1;
-        return x2;
+          x2 += 1;
+	if (HONOR_SIGNED_ZEROS (mode))
+	  x2 = copysign (x2, x);
+	return x2;
    */
   machine_mode mode = GET_MODE (operand0);
   rtx xa, TWO52, tmp, one, res, mask;
@@ -45537,17 +45618,16 @@ ix86_expand_floorceildf_32 (rtx operand0, rtx operand1, bool do_floor)
   /* xa = copysign (xa, operand1) */
   ix86_sse_copysign_to_positive (xa, xa, res, mask);
 
-  /* generate 1.0 or -1.0 */
-  one = force_reg (mode,
-	           const_double_from_real_value (do_floor
-						 ? dconst1 : dconstm1, mode));
+  /* generate 1.0 */
+  one = force_reg (mode, const_double_from_real_value (dconst1, mode));
 
   /* Compensate: xa = xa - (xa > operand1 ? 1 : 0) */
   tmp = ix86_expand_sse_compare_mask (UNGT, xa, res, !do_floor);
   emit_insn (gen_rtx_SET (tmp, gen_rtx_AND (mode, one, tmp)));
-  /* We always need to subtract here to preserve signed zero.  */
-  tmp = expand_simple_binop (mode, MINUS,
+  tmp = expand_simple_binop (mode, do_floor ? MINUS : PLUS,
 			     xa, tmp, NULL_RTX, 0, OPTAB_DIRECT);
+  if (!do_floor && HONOR_SIGNED_ZEROS (mode))
+    ix86_sse_copysign_to_positive (tmp, tmp, res, mask);
   emit_move_insn (res, tmp);
 
   emit_label (label);
@@ -50511,14 +50591,15 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
      latency and execution resources for the many scalar loads
      (AGU and load ports).  Try to account for this by scaling the
      construction cost by the number of elements involved.  */
-  if (kind == vec_construct
+  if ((kind == vec_construct || kind == vec_to_scalar)
       && stmt_info
-      && STMT_VINFO_TYPE (stmt_info) == load_vec_info_type
+      && (STMT_VINFO_TYPE (stmt_info) == load_vec_info_type
+	  || STMT_VINFO_TYPE (stmt_info) == store_vec_info_type)
       && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_ELEMENTWISE
       && TREE_CODE (DR_STEP (STMT_VINFO_DATA_REF (stmt_info))) != INTEGER_CST)
     {
       stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
-      stmt_cost *= TYPE_VECTOR_SUBPARTS (vectype);
+      stmt_cost *= (TYPE_VECTOR_SUBPARTS (vectype) + 1);
     }
   if (stmt_cost == -1)
     stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);

@@ -1305,7 +1305,7 @@ check_no_redeclaration_friend_default_args (tree olddecl, tree newdecl,
 	auto_diagnostic_group d;
 	if (permerror (DECL_SOURCE_LOCATION (newdecl),
 		       "friend declaration of %q#D specifies default "
-		       "arguments and isn't the only declaration", newdecl))
+		       "arguments and isn%'t the only declaration", newdecl))
 	  inform (DECL_SOURCE_LOCATION (olddecl),
 		  "previous declaration of %q#D", olddecl);
 	return;
@@ -4267,7 +4267,8 @@ cxx_init_decl_processing (void)
   if (aligned_new_threshold > 1
       && !pow2p_hwi (aligned_new_threshold))
     {
-      error ("-faligned-new=%d is not a power of two", aligned_new_threshold);
+      error ("%<-faligned-new=%d%> is not a power of two",
+	     aligned_new_threshold);
       aligned_new_threshold = 1;
     }
   if (aligned_new_threshold == -1)
@@ -8912,7 +8913,7 @@ grokfndecl (tree ctype,
 	  {
 	    permerror (DECL_SOURCE_LOCATION (decl),
 		       "friend declaration of %qD specifies default "
-		       "arguments and isn't a definition", decl);
+		       "arguments and isn%'t a definition", decl);
 	    break;
 	  }
     }
@@ -10170,7 +10171,7 @@ mark_inline_variable (tree decl, location_t loc)
     }
   else if (cxx_dialect < cxx17)
     pedwarn (loc, 0, "inline variables are only available "
-	     "with -std=c++17 or -std=gnu++17");
+	     "with %<-std=c++17%> or %<-std=gnu++17%>");
   if (inlinep)
     {
       retrofit_lang_decl (decl);
@@ -10963,8 +10964,8 @@ grokdeclarator (const cp_declarator *declarator,
 	  gcc_rich_location richloc (declspecs->locations[ds_virtual]);
 	  richloc.add_range (declspecs->locations[ds_constexpr]);
 	  pedwarn (&richloc, OPT_Wpedantic, "member %qD can be declared both "
-		   "%<virtual%> and %<constexpr%> only in -std=c++2a or "
-		   "-std=gnu++2a", dname);
+		   "%<virtual%> and %<constexpr%> only in %<-std=c++2a%> or "
+		   "%<-std=gnu++2a%>", dname);
 	}
     }
   friendp = decl_spec_seq_has_spec_p (declspecs, ds_friend);
@@ -11331,7 +11332,7 @@ grokdeclarator (const cp_declarator *declarator,
 				      "trailing return type", name);
 			    inform (typespec_loc,
 				    "deduced return type only available "
-				    "with -std=c++14 or -std=gnu++14");
+				    "with %<-std=c++14%> or %<-std=gnu++14%>");
 			  }
 			else if (virtualp)
 			  {
@@ -11402,7 +11403,7 @@ grokdeclarator (const cp_declarator *declarator,
 			 always be an error.  */
 		      error_at (typespec_loc,
 				"trailing return type only available "
-				"with -std=c++11 or -std=gnu++11");
+				"with %<-std=c++11%> or %<-std=gnu++11%>");
 		    else
 		      error_at (typespec_loc, "%qs function with trailing "
 				"return type not declared with %<auto%> "
@@ -16747,7 +16748,7 @@ build_explicit_specifier (tree expr, tsubst_flags_t complain)
   expr = instantiate_non_dependent_expr_sfinae (expr, complain);
   /* Don't let convert_like_real create more template codes.  */
   processing_template_decl_sentinel s;
-  expr = build_converted_constant_expr (boolean_type_node, expr, complain);
+  expr = build_converted_constant_bool_expr (expr, complain);
   expr = cxx_constant_value (expr);
   return expr;
 }

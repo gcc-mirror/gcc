@@ -265,7 +265,8 @@ elf_platform (void)
 	  candidates_list_and_hint (cpu, s, candidates);
 	  fatal_error (
 	    input_location,
-	    "Unsupported cpu name returned from kernel for -mcpu=native: %s\n"
+	    "Unsupported cpu name returned from kernel for "
+	    "%<-mcpu=native%>: %s\n"
 	    "Please use an explicit cpu name.  Valid cpu names are: %s",
 	    cpu, s);
 	}

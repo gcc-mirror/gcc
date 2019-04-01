@@ -907,9 +907,9 @@ can_convert_array (tree atype, tree ctor, int flags, tsubst_flags_t complain)
    is in PSET.  */
 
 static bool
-field_in_pset (hash_set<tree> *pset, tree field)
+field_in_pset (hash_set<tree, true> &pset, tree field)
 {
-  if (pset->contains (field))
+  if (pset.contains (field))
     return true;
   if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
     for (field = TYPE_FIELDS (TREE_TYPE (field));
@@ -934,7 +934,7 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
   conversion *c;
   tree field = next_initializable_field (TYPE_FIELDS (type));
   tree empty_ctor = NULL_TREE;
-  hash_set<tree> *pset = NULL;
+  hash_set<tree, true> pset;
 
   /* We already called reshape_init in implicit_conversion.  */
 
@@ -964,7 +964,7 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 				      complain);
 
 	      if (!ok)
-		goto fail;
+		return NULL;
 	      /* For unions, there should be just one initializer.  */
 	      if (TREE_CODE (type) == UNION_TYPE)
 		{
@@ -972,12 +972,10 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 		  i = 1;
 		  break;
 		}
-	      if (pset == NULL)
-		pset = new hash_set<tree>;
-	      pset->add (idx);
+	      pset.add (idx);
 	    }
 	  else
-	    goto fail;
+	    return NULL;
 	}
     }
 
@@ -987,7 +985,7 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
       tree val;
       bool ok;
 
-      if (pset && field_in_pset (pset, field))
+      if (pset.elements () && field_in_pset (pset, field))
 	continue;
       if (i < CONSTRUCTOR_NELTS (ctor))
 	{
@@ -998,7 +996,7 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 	val = get_nsdmi (field, /*ctor*/false, complain);
       else if (TYPE_REF_P (ftype))
 	/* Value-initialization of reference is ill-formed.  */
-	goto fail;
+	return NULL;
       else
 	{
 	  if (empty_ctor == NULL_TREE)
@@ -1014,22 +1012,15 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 			      complain);
 
       if (!ok)
-	goto fail;
+	return NULL;
 
       if (TREE_CODE (type) == UNION_TYPE)
 	break;
     }
 
   if (i < CONSTRUCTOR_NELTS (ctor))
-    {
-    fail:
-      if (pset)
-	delete pset;
-      return NULL;
-    }
+    return NULL;
 
-  if (pset)
-    delete pset;
   c = alloc_conversion (ck_aggr);
   c->type = type;
   c->rank = cr_exact;
@@ -1862,6 +1853,9 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 	    && DECL_CONV_FN_P (t->cand->fn))
 	  {
 	    tree ftype = TREE_TYPE (TREE_TYPE (t->cand->fn));
+	    /* A prvalue of non-class type is cv-unqualified.  */
+	    if (!TYPE_REF_P (ftype) && !CLASS_TYPE_P (ftype))
+	      ftype = cv_unqualified (ftype);
 	    int sflags = (flags|LOOKUP_NO_CONVERSION)&~LOOKUP_NO_TEMP_BIND;
 	    conversion *new_second
 	      = reference_binding (rto, ftype, NULL_TREE, c_cast_p,
@@ -4040,6 +4034,14 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 						       rettype, totype,
 						       EXPR_LOCATION (expr));
 	    }
+	  else if (TYPE_REF_P (totype) && !ics->rvaluedness_matches_p
+		   && TREE_CODE (TREE_TYPE (totype)) != FUNCTION_TYPE)
+	    {
+	      /* If we are called to convert to a reference type, we are trying
+		 to find a direct binding per [over.match.ref], so rvaluedness
+		 must match for non-functions.  */
+	      cand->viable = 0;
+	    }
 	  else if (DECL_NONCONVERTING_P (cand->fn)
 		   && ics->rank > cr_exact)
 	    {
@@ -4174,18 +4176,11 @@ build_user_type_conversion (tree totype, tree expr, int flags,
   return ret;
 }
 
-/* Subroutine of convert_nontype_argument.
+/* Worker for build_converted_constant_expr.  */
 
-   EXPR is an expression used in a context that requires a converted
-   constant-expression, such as a template non-type parameter.  Do any
-   necessary conversions (that are permitted for converted
-   constant-expressions) to convert it to the desired type.
-
-   If conversion is successful, returns the converted expression;
-   otherwise, returns error_mark_node.  */
-
-tree
-build_converted_constant_expr (tree type, tree expr, tsubst_flags_t complain)
+static tree
+build_converted_constant_expr_internal (tree type, tree expr,
+					int flags, tsubst_flags_t complain)
 {
   conversion *conv;
   void *p;
@@ -4199,8 +4194,7 @@ build_converted_constant_expr (tree type, tree expr, tsubst_flags_t complain)
   p = conversion_obstack_alloc (0);
 
   conv = implicit_conversion (type, TREE_TYPE (expr), expr,
-			      /*c_cast_p=*/false,
-			      LOOKUP_IMPLICIT, complain);
+			      /*c_cast_p=*/false, flags, complain);
 
   /* A converted constant expression of type T is an expression, implicitly
      converted to type T, where the converted expression is a constant
@@ -4301,6 +4295,38 @@ build_converted_constant_expr (tree type, tree expr, tsubst_flags_t complain)
   obstack_free (&conversion_obstack, p);
 
   return expr;
+}
+
+/* Subroutine of convert_nontype_argument.
+
+   EXPR is an expression used in a context that requires a converted
+   constant-expression, such as a template non-type parameter.  Do any
+   necessary conversions (that are permitted for converted
+   constant-expressions) to convert it to the desired type.
+
+   This function doesn't consider explicit conversion functions.  If
+   you mean to use "a contextually converted constant expression of type
+   bool", use build_converted_constant_bool_expr.
+
+   If conversion is successful, returns the converted expression;
+   otherwise, returns error_mark_node.  */
+
+tree
+build_converted_constant_expr (tree type, tree expr, tsubst_flags_t complain)
+{
+  return build_converted_constant_expr_internal (type, expr, LOOKUP_IMPLICIT,
+						 complain);
+}
+
+/* Used to create "a contextually converted constant expression of type
+   bool".  This differs from build_converted_constant_expr in that it
+   also considers explicit conversion functions.  */
+
+tree
+build_converted_constant_bool_expr (tree expr, tsubst_flags_t complain)
+{
+  return build_converted_constant_expr_internal (boolean_type_node, expr,
+						 LOOKUP_NORMAL, complain);
 }
 
 /* Do any initial processing on the arguments to a function call.  */
@@ -7433,7 +7459,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 
     case ck_qual:
       /* Warn about deprecated conversion if appropriate.  */
-      string_conv_p (totype, expr, 1);
+      if (complain & tf_warning)
+	string_conv_p (totype, expr, 1);
       break;
 
     case ck_ptr:
@@ -7512,7 +7539,7 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 	      && TYPE_MODE (TREE_TYPE (prom)) != TYPE_MODE (arg_type)
 	      && (complain & tf_warning))
 	    warning_at (loc, OPT_Wabi, "scoped enum %qT passed through ... as "
-			"%qT before -fabi-version=6, %qT after", arg_type,
+			"%qT before %<-fabi-version=6%>, %qT after", arg_type,
 			TREE_TYPE (prom), ENUM_UNDERLYING_TYPE (arg_type));
 	  if (!abi_version_at_least (6))
 	    arg = prom;
@@ -8348,7 +8375,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	      pedwarn (DECL_SOURCE_LOCATION (cand->fn), 0,
 		       "  in call to %qD", cand->fn);
 	      pedwarn (input_location, 0,
-		       "  (you can disable this with -fno-deduce-init-list)");
+		       "  (you can disable this with "
+		       "%<-fno-deduce-init-list%>)");
 	    }
 	}
 
@@ -10512,6 +10540,33 @@ add_warning (struct z_candidate *winner, struct z_candidate *loser)
   winner->warnings = cw;
 }
 
+/* CAND is a constructor candidate in joust in C++17 and up.  If it copies a
+   prvalue returned from a conversion function, replace CAND with the candidate
+   for the conversion and return true.  Otherwise, return false.  */
+
+static bool
+joust_maybe_elide_copy (z_candidate *&cand)
+{
+  tree fn = cand->fn;
+  if (!DECL_COPY_CONSTRUCTOR_P (fn) && !DECL_MOVE_CONSTRUCTOR_P (fn))
+    return false;
+  conversion *conv = cand->convs[0];
+  gcc_checking_assert (conv->kind == ck_ref_bind);
+  conv = next_conversion (conv);
+  if (conv->kind == ck_user && !TYPE_REF_P (conv->type))
+    {
+      gcc_checking_assert (same_type_ignoring_top_level_qualifiers_p
+			   (conv->type, DECL_CONTEXT (fn)));
+      z_candidate *uc = conv->cand;
+      if (DECL_CONV_FN_P (uc->fn))
+	{
+	  cand = uc;
+	  return true;
+	}
+    }
+  return false;
+}
+
 /* Compare two candidates for overloading as described in
    [over.match.best].  Return values:
 
@@ -10590,6 +10645,27 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 	  off1 = 1;
 	  --len;
 	}
+    }
+
+  /* Handle C++17 copy elision in [over.match.ctor] (direct-init) context.  The
+     standard currently says that only constructors are candidates, but if one
+     copies a prvalue returned by a conversion function we want to treat the
+     conversion as the candidate instead.
+
+     Clang does something similar, as discussed at
+     http://lists.isocpp.org/core/2017/10/3166.php
+     http://lists.isocpp.org/core/2019/03/5721.php  */
+  int elided_tiebreaker = 0;
+  if (len == 1 && cxx_dialect >= cxx17
+      && DECL_P (cand1->fn)
+      && DECL_COMPLETE_CONSTRUCTOR_P (cand1->fn)
+      && !(cand1->flags & LOOKUP_ONLYCONVERTING))
+    {
+      bool elided1 = joust_maybe_elide_copy (cand1);
+      bool elided2 = joust_maybe_elide_copy (cand2);
+      /* As a tiebreaker below we will prefer a constructor to a conversion
+	 operator exposed this way.  */
+      elided_tiebreaker = elided2 - elided1;
     }
 
   for (i = 0; i < len; ++i)
@@ -10700,6 +10776,11 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 
   if (winner)
     return winner;
+
+  /* Put this tiebreaker first, so that we don't try to look at second_conv of
+     a constructor candidate that doesn't have one.  */
+  if (elided_tiebreaker)
+    return elided_tiebreaker;
 
   /* DR 495 moved this tiebreaker above the template ones.  */
   /* or, if not that,

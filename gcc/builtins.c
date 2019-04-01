@@ -2692,7 +2692,7 @@ expand_builtin_int_roundingfn (tree exp, rtx target)
   tree arg;
 
   if (!validate_arglist (exp, REAL_TYPE, VOID_TYPE))
-    gcc_unreachable ();
+    return NULL_RTX;
 
   arg = CALL_EXPR_ARG (exp, 0);
 
@@ -2828,7 +2828,7 @@ expand_builtin_int_roundingfn_2 (tree exp, rtx target)
   enum built_in_function fallback_fn = BUILT_IN_NONE;
 
   if (!validate_arglist (exp, REAL_TYPE, VOID_TYPE))
-     gcc_unreachable ();
+    return NULL_RTX;
 
   arg = CALL_EXPR_ARG (exp, 0);
 
@@ -3650,7 +3650,8 @@ compute_objsize (tree dest, int ostype)
 		      /* Ignore negative offsets for now.  For others,
 			 use the lower bound as the most optimistic
 			 estimate of the (remaining)size.  */
-		      if (wi::sign_mask (min))
+		      if (wi::sign_mask (min)
+			  || wi::sign_mask (max))
 			;
 		      else if (wi::ltu_p (min, wisiz))
 			return wide_int_to_tree (TREE_TYPE (size),
@@ -6889,7 +6890,7 @@ expand_builtin_thread_pointer (tree exp, rtx target)
       expand_insn (icode, 1, &op);
       return target;
     }
-  error ("__builtin_thread_pointer is not supported on this target");
+  error ("%<__builtin_thread_pointer%> is not supported on this target");
   return const0_rtx;
 }
 
@@ -6909,7 +6910,7 @@ expand_builtin_set_thread_pointer (tree exp)
       expand_insn (icode, 1, &op);
       return;
     }
-  error ("__builtin_set_thread_pointer is not supported on this target");
+  error ("%<__builtin_set_thread_pointer%> is not supported on this target");
 }
 
 

@@ -1,5 +1,5 @@
 
-// EXTRA_CPP_SOURCES: extra-files/cabi2.cpp
+// EXTRA_CPP_SOURCES: cabi2.cpp
 
 import core.stdc.stdio;
 import core.stdc.config;

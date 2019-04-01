@@ -288,6 +288,14 @@ enum c_declspec_word {
 			    enumerator.  */
 };
 
+enum c_declspec_il {
+  cdil_none,
+  cdil_gimple,		/* __GIMPLE  */
+  cdil_gimple_cfg,	/* __GIMPLE(cfg)  */
+  cdil_gimple_ssa,	/* __GIMPLE(ssa)  */
+  cdil_rtl		/* __RTL  */
+};
+
 /* A sequence of declaration specifiers in C.  When a new declaration
    specifier is added, please update the enum c_declspec_word above
    accordingly.  */
@@ -326,6 +334,7 @@ struct c_declspecs {
   /* The kind of type specifier if one has been seen, ctsk_none
      otherwise.  */
   ENUM_BITFIELD (c_typespec_kind) typespec_kind : 3;
+  ENUM_BITFIELD (c_declspec_il) declspec_il : 3;
   /* Whether any expressions in typeof specifiers may appear in
      constant expressions.  */
   BOOL_BITFIELD expr_const_operands : 1;
@@ -381,10 +390,6 @@ struct c_declspecs {
   /* Whether any alignment specifier (even with zero alignment) was
      specified.  */
   BOOL_BITFIELD alignas_p : 1;
-  /* Whether any __GIMPLE specifier was specified.  */
-  BOOL_BITFIELD gimple_p : 1;
-  /* Whether any __RTL specifier was specified.  */
-  BOOL_BITFIELD rtl_p : 1;
   /* The address space that the declaration belongs to.  */
   addr_space_t address_space;
 };
@@ -618,6 +623,7 @@ extern bool c_missing_noreturn_ok_p (tree);
 extern bool c_warn_unused_global_decl (const_tree);
 extern void c_initialize_diagnostics (diagnostic_context *);
 extern bool c_vla_unspec_p (tree x, tree fn);
+extern alias_set_type c_get_alias_set (tree);
 
 /* in c-typeck.c */
 extern int in_alignof;

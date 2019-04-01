@@ -23,7 +23,7 @@ void
 test01()
 {
   using namespace std;
-  unordered_map<int, int, equal_to<int>, hash<int>> c2;  // { dg-error "here" }
+  unordered_map<int, int, equal_to<int>, hash<int>> c2;
 }
 
 // { dg-error "hash function must be invocable" "" { target *-*-* } 0 }

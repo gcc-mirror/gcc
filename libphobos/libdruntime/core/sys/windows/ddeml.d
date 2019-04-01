@@ -249,7 +249,7 @@ struct MONHSZSTRUCT {
     DWORD    dwTime;
     HSZ      hsz;
     HANDLE   hTask;
-    TCHAR[1] _str;
+    TCHAR[1] _str = 0;
 
     TCHAR* str() return { return _str.ptr; }
 }

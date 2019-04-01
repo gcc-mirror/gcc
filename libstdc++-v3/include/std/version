@@ -145,6 +145,7 @@
 #define __cpp_lib_unordered_map_try_emplace 201411
 #define __cpp_lib_variant 201606L
 #define __cpp_lib_void_t 201411
+#define __cpp_lib_parallel_algorithm 201603L
 
 #if __cplusplus > 201703L
 // c++2a

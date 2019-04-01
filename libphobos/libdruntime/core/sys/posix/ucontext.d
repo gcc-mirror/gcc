@@ -431,7 +431,7 @@ version (CRuntime_Glibc)
                 mcontext_t*  uc_regs;
             }
             sigset_t    uc_sigmask;
-            char[mcontext_t.sizeof + 12] uc_reg_space;
+            char[mcontext_t.sizeof + 12] uc_reg_space = 0;
         }
     }
     else version (PPC64)
@@ -632,7 +632,7 @@ version (CRuntime_Glibc)
             ucontext_t* uc_link;
             stack_t     uc_stack;
             sigset_t    uc_sigmask;
-            char[1024 / 8 - sigset_t.sizeof] __reserved;
+            char[1024 / 8 - sigset_t.sizeof] __reserved = 0;
             mcontext_t  uc_mcontext;
         }
     }

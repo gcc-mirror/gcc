@@ -800,8 +800,8 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
       /* Detect obviously dead sets (via REG_UNUSED notes) and remove them.  */
       if (set
-	  && INSN_P (insn)
-	  && !may_trap_p (insn)
+	  && !RTX_FRAME_RELATED_P (insn)
+	  && !may_trap_p (set)
 	  && find_reg_note (insn, REG_UNUSED, SET_DEST (set))
 	  && !side_effects_p (SET_SRC (set))
 	  && !side_effects_p (SET_DEST (set)))
@@ -1034,6 +1034,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	     DEBUG_INSNs can be applied.  */
 	  if (vd->n_debug_insn_changes)
 	    note_uses (&PATTERN (insn), cprop_find_used_regs, vd);
+	  df_insn_rescan (insn);
 	}
 
       ksvd.vd = vd;
@@ -1112,7 +1113,10 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
 	  /* Notice copies.  */
 	  if (copy_p)
-	    copy_value (SET_DEST (set), SET_SRC (set), vd);
+	    {
+	      df_insn_rescan (insn);
+	      copy_value (SET_DEST (set), SET_SRC (set), vd);
+	    }
 	}
 
       if (insn == BB_END (bb))
@@ -1277,78 +1281,140 @@ public:
 
 }; // class pass_cprop_hardreg
 
+static bool
+cprop_hardreg_bb (basic_block bb, struct value_data *all_vd, sbitmap visited)
+{
+  bitmap_set_bit (visited, bb->index);
+
+  /* If a block has a single predecessor, that we've already
+     processed, begin with the value data that was live at
+     the end of the predecessor block.  */
+  /* ??? Ought to use more intelligent queuing of blocks.  */
+  if (single_pred_p (bb)
+      && bitmap_bit_p (visited, single_pred (bb)->index)
+      && ! (single_pred_edge (bb)->flags & (EDGE_ABNORMAL_CALL | EDGE_EH)))
+    {
+      all_vd[bb->index] = all_vd[single_pred (bb)->index];
+      if (all_vd[bb->index].n_debug_insn_changes)
+	{
+	  unsigned int regno;
+
+	  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	    {
+	      if (all_vd[bb->index].e[regno].debug_insn_changes)
+		{
+		  struct queued_debug_insn_change *cur;
+		  for (cur = all_vd[bb->index].e[regno].debug_insn_changes;
+		       cur; cur = cur->next)
+		    --all_vd[bb->index].n_debug_insn_changes;
+		  all_vd[bb->index].e[regno].debug_insn_changes = NULL;
+		  if (all_vd[bb->index].n_debug_insn_changes == 0)
+		    break;
+		}
+	    }
+	}
+    }
+  else
+    init_value_data (all_vd + bb->index);
+
+  return copyprop_hardreg_forward_1 (bb, all_vd + bb->index);
+}
+
+static void
+cprop_hardreg_debug (function *fun, struct value_data *all_vd)
+{
+  basic_block bb;
+
+  FOR_EACH_BB_FN (bb, fun)
+    if (all_vd[bb->index].n_debug_insn_changes)
+      {
+	unsigned int regno;
+	bitmap live;
+
+	live = df_get_live_out (bb);
+	for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	  if (all_vd[bb->index].e[regno].debug_insn_changes)
+	    {
+	      if (REGNO_REG_SET_P (live, regno))
+		apply_debug_insn_changes (all_vd + bb->index, regno);
+
+	      struct queued_debug_insn_change *cur;
+	      for (cur = all_vd[bb->index].e[regno].debug_insn_changes;
+		   cur; cur = cur->next)
+		--all_vd[bb->index].n_debug_insn_changes;
+	      all_vd[bb->index].e[regno].debug_insn_changes = NULL;
+	      if (all_vd[bb->index].n_debug_insn_changes == 0)
+		break;
+	    }
+      }
+
+  queued_debug_insn_change_pool.release ();
+}
+
 unsigned int
 pass_cprop_hardreg::execute (function *fun)
 {
   struct value_data *all_vd;
   basic_block bb;
-  bool analyze_called = false;
 
   all_vd = XNEWVEC (struct value_data, last_basic_block_for_fn (fun));
 
   auto_sbitmap visited (last_basic_block_for_fn (fun));
   bitmap_clear (visited);
 
+  auto_vec<int> worklist;
+  bool any_debug_changes = false;
+
+  /* We need accurate notes.  Earlier passes such as if-conversion may
+     leave notes in an inconsistent state.  */
+  df_note_add_problem ();
+  df_analyze ();
+
+  /* It is tempting to set DF_LR_RUN_DCE, but DCE may choose to delete
+     an insn and this pass would not have visibility into the removal.
+     This pass would then potentially use the source of that
+     INSN for propagation purposes, generating invalid code.
+
+     So we just ask for updated notes and handle trivial deletions
+     within this pass where we can update this passes internal
+     data structures appropriately.  */
+  df_set_flags (DF_DEFER_INSN_RESCAN);
+
   FOR_EACH_BB_FN (bb, fun)
     {
-      bitmap_set_bit (visited, bb->index);
-
-      /* If a block has a single predecessor, that we've already
-	 processed, begin with the value data that was live at
-	 the end of the predecessor block.  */
-      /* ??? Ought to use more intelligent queuing of blocks.  */
-      if (single_pred_p (bb)
-	  && bitmap_bit_p (visited, single_pred (bb)->index)
-	  && ! (single_pred_edge (bb)->flags & (EDGE_ABNORMAL_CALL | EDGE_EH)))
-	{
-	  all_vd[bb->index] = all_vd[single_pred (bb)->index];
-	  if (all_vd[bb->index].n_debug_insn_changes)
-	    {
-	      unsigned int regno;
-
-	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		{
-		  if (all_vd[bb->index].e[regno].debug_insn_changes)
-		    {
-		      all_vd[bb->index].e[regno].debug_insn_changes = NULL;
-		      if (--all_vd[bb->index].n_debug_insn_changes == 0)
-			break;
-		    }
-		}
-	    }
-	}
-      else
-	init_value_data (all_vd + bb->index);
-
-      copyprop_hardreg_forward_1 (bb, all_vd + bb->index);
+      if (cprop_hardreg_bb (bb, all_vd, visited))
+	worklist.safe_push (bb->index);
+      if (all_vd[bb->index].n_debug_insn_changes)
+	any_debug_changes = true;
     }
 
-  if (MAY_HAVE_DEBUG_BIND_INSNS)
+  /* We must call df_analyze here unconditionally to ensure that the
+     REG_UNUSED and REG_DEAD notes are consistent with and without -g.  */
+  df_analyze ();
+
+  if (MAY_HAVE_DEBUG_BIND_INSNS && any_debug_changes)
+    cprop_hardreg_debug (fun, all_vd);
+
+  /* Second pass if we've changed anything, only for the bbs where we have
+     changed anything though.  */
+  if (!worklist.is_empty ())
     {
-      FOR_EACH_BB_FN (bb, fun)
-	if (bitmap_bit_p (visited, bb->index)
-	    && all_vd[bb->index].n_debug_insn_changes)
-	  {
-	    unsigned int regno;
-	    bitmap live;
+      unsigned int i;
+      int index;
 
-	    if (!analyze_called)
-	      {
-		df_analyze ();
-		analyze_called = true;
-	      }
-	    live = df_get_live_out (bb);
-	    for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	      if (all_vd[bb->index].e[regno].debug_insn_changes)
-		{
-		  if (REGNO_REG_SET_P (live, regno))
-		    apply_debug_insn_changes (all_vd + bb->index, regno);
-		  if (all_vd[bb->index].n_debug_insn_changes == 0)
-		    break;
-		}
-	  }
+      any_debug_changes = false;
+      bitmap_clear (visited);
+      FOR_EACH_VEC_ELT (worklist, i, index)
+	{
+	  bb = BASIC_BLOCK_FOR_FN (fun, index);
+	  cprop_hardreg_bb (bb, all_vd, visited);
+	  if (all_vd[bb->index].n_debug_insn_changes)
+	    any_debug_changes = true;
+	}
 
-      queued_debug_insn_change_pool.release ();
+      df_analyze ();
+      if (MAY_HAVE_DEBUG_BIND_INSNS && any_debug_changes)
+	cprop_hardreg_debug (fun, all_vd);
     }
 
   free (all_vd);

@@ -22,20 +22,28 @@ test (__m64 s1, __m64 s2)
   return _mm_sub_pi32 (s1, s2);
 }
 
+static __m64
+__attribute__((noinline, unused))
+test_alias (__m64 s1, __m64 s2)
+{
+  return _m_psubd (s1, s2);
+}
+
 static void
 TEST (void)
 {
   __m64_union u, s1, s2;
-  __m64_union e;
+  __m64_union e, v;
   int i;
    
   s1.as_m64 = _mm_setr_pi32 (30, 90);
   s2.as_m64 = _mm_setr_pi32 (76, -100);
   u.as_m64 = test (s1.as_m64, s2.as_m64);
-   
+  v.as_m64 = test_alias (s1.as_m64, s2.as_m64);
+
   for (i = 0; i < 2; i++)
      e.as_int[i] = s1.as_int[i] - s2.as_int[i];
 
-  if (u.as_m64 != e.as_m64)
+  if (u.as_m64 != e.as_m64 || u.as_m64 != v.as_m64)
     abort ();
 }

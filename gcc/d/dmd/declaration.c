@@ -2008,6 +2008,7 @@ bool VarDeclaration::isDataseg()
         else if (storage_class & (STCstatic | STCextern | STCtls | STCgshared) ||
                  parent->isModule() || parent->isTemplateInstance() || parent->isNspace())
         {
+            assert(!isParameter() && !isResult());
             isdataseg = 1; // It is in the DataSegment
         }
     }

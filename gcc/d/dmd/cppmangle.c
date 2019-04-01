@@ -120,6 +120,40 @@ class CppMangleVisitor : public Visitor
                 !getQualifier(s));      // at global level
     }
 
+    /************************
+     * Determine if type is a C++ fundamental type.
+     * Params:
+     *  t = type to check
+     * Returns:
+     *  true if it is a fundamental type
+     */
+    static bool isFundamentalType(Type *t)
+    {
+        // First check the target whether some specific ABI is being followed.
+        bool isFundamental;
+        if (Target::cppFundamentalType(t, isFundamental))
+            return isFundamental;
+        if (t->ty == Tenum)
+        {
+            // Peel off enum type from special types.
+            TypeEnum *te = (TypeEnum *)t;
+            if (te->sym->isSpecial())
+                t = te->sym->getMemtype(Loc());
+        }
+
+        // Fundamental arithmetic types:
+        // 1. integral types: bool, char, int, ...
+        // 2. floating point types: float, double, real
+        // 3. void
+        // 4. null pointer: std::nullptr_t (since C++11)
+        if (t->ty == Tvoid || t->ty == Tbool)
+            return true;
+        else if (t->ty == Tnull && global.params.cplusplus >= CppStdRevisionCpp11)
+            return true;
+        else
+            return t->isTypeBasic() && (t->isintegral() || t->isreal());
+    }
+
     /******************************
      * Write the mangled representation of the template arguments.
      * Params:
@@ -741,7 +775,8 @@ public:
      */
     void writeBasicType(Type *t, char p, char c)
     {
-        if (p || t->isConst())
+        // Only do substitutions for non-fundamental types.
+        if (!isFundamentalType(t) || t->isConst())
         {
             if (substitute(t))
                 return;
@@ -766,6 +801,22 @@ public:
     {
         if (t->isImmutable() || t->isShared())
             return error(t);
+
+        // Handle any target-specific basic types.
+        if (const char *tm = Target::cppTypeMangle(t))
+        {
+            // Only do substitutions for non-fundamental types.
+            if (!isFundamentalType(t) || t->isConst())
+            {
+                if (substitute(t))
+                    return;
+                else
+                    append(t);
+            }
+            CV_qualifiers(t);
+            buf->writestring(tm);
+            return;
+        }
 
         /* <builtin-type>:
          * v        void
@@ -832,17 +883,6 @@ public:
             case Tcomplex80:    p = 'C'; c = 'e';       break;
 
             default:
-                // Handle any target-specific basic types.
-                if (const char *tm = Target::cppTypeMangle(t))
-                {
-                    if (substitute(t))
-                        return;
-                    else
-                        append(t);
-                    CV_qualifiers(t);
-                    buf->writestring(tm);
-                    return;
-                }
                 return error(t);
         }
         writeBasicType(t, p, c);

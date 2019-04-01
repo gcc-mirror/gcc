@@ -245,7 +245,7 @@ class reproducer : public dump
   {
     static void remove (const char *) {}
   };
-  hash_set<const char *, hash_traits> m_set_identifiers;
+  hash_set<const char *, false, hash_traits> m_set_identifiers;
   allocator m_allocator;
 };
 

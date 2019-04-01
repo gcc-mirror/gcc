@@ -1,3 +1,43 @@
+2019-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87481
+	* c.opt (-fconstexpr-ops-limit=): New option.
+
+2019-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (per_file_includes_t): Use false as Lazy in hash_set
+	template param.
+
+2019-03-19  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/89688
+	* c-common.c (braced_list_to_string): Make static.
+	(braced_lists_to_strings): Define new function.
+	* c-common.h (braced_list_to_string): Remove.
+	(braced_lists_to_strings): Declare.
+
+2019-03-12  Martin Liska  <mliska@suse.cz>
+
+	* c-opts.c (c_common_handle_option): Wrap option with %< and %>.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* c-opts.c (c_common_post_options): Wrap apostrophes
+	in gcc internal format with %'.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* c-attribs.c (handle_nocf_check_attribute): Wrap an option name
+	in a string format message and fix GNU coding style.
+	* c-common.c (vector_types_convertible_p): Likewise.
+	(c_build_vec_perm_expr): Likewise.
+	* c-indentation.c (get_visual_column): Likewise.
+	* c-opts.c (c_common_handle_option): Likewise.
+	(c_common_post_options): Likewise.
+	(sanitize_cpp_opts): Likewise.
+	* c-pch.c (c_common_pch_pragma): Likewise.
+	* c-pragma.c (handle_pragma_pack): Likewise.
+
 2019-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/89550

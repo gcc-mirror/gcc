@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-require-visibility "" }
 !
 ! PR 84504: [F08] procedure pointer variables cannot be initialized with functions returning pointers
 !

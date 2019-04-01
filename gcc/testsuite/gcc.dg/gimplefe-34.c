@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fgimple" } */
+/* { dg-additional-options "-fno-common" { target hppa*-*-hpux* } } */
 
 typedef unsigned char v16qi __attribute__((vector_size(16)));
 typedef unsigned char v8qi __attribute__((vector_size(8)));

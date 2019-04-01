@@ -2314,20 +2314,18 @@ gfc_match_oacc_routine (void)
 	  if (st)
 	    {
 	      sym = st->n.sym;
+	      /* If the name in a 'routine' directive refers to the containing
+		 subroutine or function, then make sure that we'll later handle
+		 this accordingly.  */
 	      if (gfc_current_ns->proc_name != NULL
 		  && strcmp (sym->name, gfc_current_ns->proc_name->name) == 0)
 	        sym = NULL;
 	    }
 
-	  if ((isym == NULL && st == NULL)
-	      || (sym
-		  && !sym->attr.external
-		  && !sym->attr.function
-		  && !sym->attr.subroutine))
+	  if (isym == NULL && st == NULL)
 	    {
-	      gfc_error ("Syntax error in !$ACC ROUTINE ( NAME ) at %C, "
-			 "invalid function name %s",
-			 (sym) ? sym->name : buffer);
+	      gfc_error ("Invalid NAME %qs in !$ACC ROUTINE ( NAME ) at %C",
+			 buffer);
 	      gfc_current_locus = old_loc;
 	      return MATCH_ERROR;
 	    }
@@ -2393,10 +2391,13 @@ gfc_match_oacc_routine (void)
 
       if (add)
 	{
+	  sym->attr.oacc_routine_lop = lop;
+
 	  n = gfc_get_oacc_routine_name ();
 	  n->sym = sym;
 	  n->clauses = c;
 	  n->next = gfc_current_ns->oacc_routine_names;
+	  n->loc = old_loc;
 	  gfc_current_ns->oacc_routine_names = n;
 	}
     }
@@ -6068,6 +6069,33 @@ gfc_resolve_oacc_declare (gfc_namespace *ns)
 	  n->sym->mark = 0;
     }
 }
+
+
+void
+gfc_resolve_oacc_routines (gfc_namespace *ns)
+{
+  for (gfc_oacc_routine_name *orn = ns->oacc_routine_names;
+       orn;
+       orn = orn->next)
+    {
+      gfc_symbol *sym = orn->sym;
+      if (!sym->attr.external
+	  && !sym->attr.function
+	  && !sym->attr.subroutine)
+	{
+	  gfc_error ("NAME %qs does not refer to a subroutine or function"
+		     " in !$ACC ROUTINE ( NAME ) at %L", sym->name, &orn->loc);
+	  continue;
+	}
+      if (!gfc_add_omp_declare_target (&sym->attr, sym->name, &orn->loc))
+	{
+	  gfc_error ("NAME %qs invalid"
+		     " in !$ACC ROUTINE ( NAME ) at %L", sym->name, &orn->loc);
+	  continue;
+	}
+    }
+}
+
 
 void
 gfc_resolve_oacc_directive (gfc_code *code, gfc_namespace *ns ATTRIBUTE_UNUSED)

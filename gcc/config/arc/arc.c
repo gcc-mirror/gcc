@@ -933,10 +933,10 @@ arc_init (void)
 
   /* MPY instructions valid only for ARC700 or ARCv2.  */
   if (TARGET_NOMPY_SET && TARGET_ARC600_FAMILY)
-      error ("-mno-mpy supported only for ARC700 or ARCv2");
+      error ("%<-mno-mpy%> supported only for ARC700 or ARCv2");
 
   if (!TARGET_DPFP && TARGET_DPFP_DISABLE_LRSR)
-      error ("-mno-dpfp-lrsr supported only with -mdpfp");
+      error ("%<-mno-dpfp-lrsr%> supported only with %<-mdpfp%>");
 
   /* FPX-1. No fast and compact together.  */
   if ((TARGET_DPFP_FAST_SET && TARGET_DPFP_COMPACT_SET)
@@ -945,7 +945,7 @@ arc_init (void)
 
   /* FPX-2. No fast-spfp for arc600 or arc601.  */
   if (TARGET_SPFP_FAST_SET && TARGET_ARC600_FAMILY)
-    error ("-mspfp_fast not available on ARC600 or ARC601");
+    error ("%<-mspfp_fast%> not available on ARC600 or ARC601");
 
   /* FPX-4.  No FPX extensions mixed with FPU extensions.  */
   if ((TARGET_DPFP_FAST_SET || TARGET_DPFP_COMPACT_SET || TARGET_SPFP)
@@ -1110,7 +1110,7 @@ parse_mrgf_banked_regs_option (const char *arg)
   if (errno != 0 || *arg == '\0' || *end_ptr != '\0'
       || (val != 0 && val != 4 && val != 8 && val != 16 && val != 32))
     {
-      error ("invalid number in -mrgf-banked-regs=%s "
+      error ("invalid number in %<-mrgf-banked-regs=%s%> "
 	     "valid values are 0, 4, 8, 16, or 32", arg);
       return;
     }
@@ -1172,7 +1172,8 @@ arc_override_options (void)
 	      irq_range (opt->arg);
 	    else
 	      warning (OPT_mirq_ctrl_saved_,
-		       "option -mirq-ctrl-saved valid only for ARC v2 processors");
+		       "option %<-mirq-ctrl-saved%> valid only "
+		       "for ARC v2 processors");
 	    break;
 
 	  case OPT_mrgf_banked_regs_:
@@ -1180,7 +1181,8 @@ arc_override_options (void)
 	      parse_mrgf_banked_regs_option (opt->arg);
 	    else
 	      warning (OPT_mrgf_banked_regs_,
-		       "option -mrgf-banked-regs valid only for ARC v2 processors");
+		       "option %<-mrgf-banked-regs%> valid only for "
+		       "ARC v2 processors");
 	    break;
 
 	  default:
@@ -1291,6 +1293,9 @@ arc_override_options (void)
 
   if (arc_size_opt_level == 3)
     optimize_size = 1;
+
+  if (TARGET_V2 && optimize_size && (ATTRIBUTE_PCS == 2))
+    TARGET_CODE_DENSITY_FRAME = 1;
 
   if (flag_pic)
     target_flags |= MASK_NO_SDATA_SET;
@@ -1803,54 +1808,6 @@ arc_conditional_register_usage (void)
       if (!fixed_regs[regno])
 	warning (0, "multiply option implies r%d is fixed", regno);
       fixed_regs [regno] = call_used_regs[regno] = 1;
-    }
-  if (TARGET_Q_CLASS)
-    {
-      if (optimize_size)
-	{
-	  reg_alloc_order[0] = 0;
-	  reg_alloc_order[1] = 1;
-	  reg_alloc_order[2] = 2;
-	  reg_alloc_order[3] = 3;
-	  reg_alloc_order[4] = 12;
-	  reg_alloc_order[5] = 13;
-	  reg_alloc_order[6] = 14;
-	  reg_alloc_order[7] = 15;
-	  reg_alloc_order[8] = 4;
-	  reg_alloc_order[9] = 5;
-	  reg_alloc_order[10] = 6;
-	  reg_alloc_order[11] = 7;
-	  reg_alloc_order[12] = 8;
-	  reg_alloc_order[13] = 9;
-	  reg_alloc_order[14] = 10;
-	  reg_alloc_order[15] = 11;
-	}
-      else
-	{
-	  reg_alloc_order[2] = 12;
-	  reg_alloc_order[3] = 13;
-	  reg_alloc_order[4] = 14;
-	  reg_alloc_order[5] = 15;
-	  reg_alloc_order[6] = 1;
-	  reg_alloc_order[7] = 0;
-	  reg_alloc_order[8] = 4;
-	  reg_alloc_order[9] = 5;
-	  reg_alloc_order[10] = 6;
-	  reg_alloc_order[11] = 7;
-	  reg_alloc_order[12] = 8;
-	  reg_alloc_order[13] = 9;
-	  reg_alloc_order[14] = 10;
-	  reg_alloc_order[15] = 11;
-	}
-    }
-  if (TARGET_SIMD_SET)
-    {
-      int i;
-      for (i = ARC_FIRST_SIMD_VR_REG; i <= ARC_LAST_SIMD_VR_REG; i++)
-	reg_alloc_order [i] = i;
-      for (i = ARC_FIRST_SIMD_DMA_CONFIG_REG;
-	   i <= ARC_LAST_SIMD_DMA_CONFIG_REG; i++)
-	reg_alloc_order [i] = i;
     }
 
   /* Reduced configuration: don't use r4-r9, r16-r25.  */
@@ -3186,7 +3143,7 @@ arc_save_callee_enter (unsigned int gmask,
   reg = gen_rtx_SET (stack_pointer_rtx,
 		     plus_constant (Pmode,
 				    stack_pointer_rtx,
-				    nregs * UNITS_PER_WORD));
+				    -nregs * UNITS_PER_WORD));
   RTX_FRAME_RELATED_P (reg) = 1;
   XVECEXP (insn, 0, indx++) = reg;
   off = nregs * UNITS_PER_WORD;
@@ -6791,7 +6748,7 @@ arc_expand_builtin_aligned (tree exp)
       /* If we can't fold the alignment to a constant integer
 	 whilst optimizing, this is probably a user error.  */
       if (optimize)
-	warning (0, "__builtin_arc_aligned with non-constant alignment");
+	warning (0, "%<__builtin_arc_aligned%> with non-constant alignment");
     }
   else
     {
@@ -6799,7 +6756,7 @@ arc_expand_builtin_aligned (tree exp)
       /* Check alignTest is positive, and a power of two.  */
       if (alignTest <= 0 || alignTest != (alignTest & -alignTest))
 	{
-	  error ("invalid alignment value for __builtin_arc_aligned");
+	  error ("invalid alignment value for %<__builtin_arc_aligned%>");
 	  return NULL_RTX;
 	}
 
@@ -11402,6 +11359,25 @@ gen_operands_ldd_std (rtx *operands, bool load, bool commute)
   return false;
 }
 
+/* This order of allocation is used when we compile for size.  It
+   allocates first the registers which are most probably to end up in
+   a short instruction.  */
+static const int size_alloc_order[] =
+{
+ 0, 1, 2, 3, 12, 13, 14, 15,
+ 4, 5, 6, 7, 8, 9, 10, 11
+};
+
+/* Adjust register allocation order when compiling for size.  */
+void
+arc_adjust_reg_alloc_order (void)
+{
+  const int arc_default_alloc_order[] = REG_ALLOC_ORDER;
+  memcpy (reg_alloc_order, arc_default_alloc_order, sizeof (reg_alloc_order));
+  if (optimize_size)
+    memcpy (reg_alloc_order, size_alloc_order, sizeof (size_alloc_order));
+}
+
 #undef TARGET_USE_ANCHORS_FOR_SYMBOL_P
 #define TARGET_USE_ANCHORS_FOR_SYMBOL_P arc_use_anchors_for_symbol_p
 
@@ -11413,6 +11389,9 @@ gen_operands_ldd_std (rtx *operands, bool load, bool commute)
 
 #undef TARGET_ASM_TRAMPOLINE_TEMPLATE
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE arc_asm_trampoline_template
+
+#undef TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

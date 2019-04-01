@@ -6899,6 +6899,8 @@ Function_declaration::import_function_body(Gogo* gogo, Named_object* no)
 
   if (fntype->is_method())
     {
+      if (this->nointerface())
+        fn->set_nointerface();
       const Typed_identifier* receiver = fntype->receiver();
       Variable* recv_param = new Variable(receiver->type(), NULL, false,
 					  true, true, start_loc);

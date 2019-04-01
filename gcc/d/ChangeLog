@@ -1,3 +1,32 @@
+2019-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/88462
+	* modules.cc (layout_moduleinfo_fields): Properly align ModuleInfo,
+	instead of forcing alignment to be 1.
+
+2019-03-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/89017
+	* d-codegen.cc (d_decl_context): Skip over template instances when
+	finding the context.
+	* decl.cc (DeclVisitor::visit(TemplateDeclaration)): New override.
+	(build_type_decl): Include parameters in name of template types.
+
+2019-03-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/88957
+	* expr.cc (ExprVisitor::visit(VectorArrayExp)): New override.
+
+2019-03-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/87866
+	* d-system.h (realpath): Redefine as lrealpath.
+
+2019-03-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_init_options): Set global.params.cplusplus to C++14.
+	* d-target.cc (Target::cppFundamentalType): New method.
+
 2019-03-09  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/89041

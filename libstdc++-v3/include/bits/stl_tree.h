@@ -440,17 +440,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       typedef __gnu_cxx::__alloc_traits<_Node_allocator> _Alloc_traits;
 
-#if __cplusplus >= 201103L
-      static_assert(__is_invocable<_Compare&, const _Key&, const _Key&>{},
-	  "comparison object must be invocable with two arguments of key type");
-# if __cplusplus >= 201703L
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 2542. Missing const requirements for associative containers
-      static_assert(is_invocable_v<const _Compare&, const _Key&, const _Key&>,
-	  "comparison object must be invocable as const");
-# endif // C++17
-#endif // C++11
-
     protected:
       typedef _Rb_tree_node_base* 		_Base_ptr;
       typedef const _Rb_tree_node_base* 	_Const_Base_ptr;
@@ -985,7 +974,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       ~_Rb_tree() _GLIBCXX_NOEXCEPT
-      { _M_erase(_M_begin()); }
+      {
+	_M_erase(_M_begin());
+
+#if __cplusplus >= 201103L
+	static_assert(__is_invocable<_Compare&, const _Key&, const _Key&>{},
+		      "comparison object must be invocable "
+		      "with two arguments of key type");
+# if __cplusplus >= 201703L
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2542. Missing const requirements for associative containers
+	static_assert(is_invocable_v<const _Compare&, const _Key&, const _Key&>,
+		      "comparison object must be invocable as const");
+# endif // C++17
+#endif // C++11
+      }
 
       _Rb_tree&
       operator=(const _Rb_tree& __x);

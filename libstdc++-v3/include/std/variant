@@ -323,6 +323,12 @@ namespace __variant
       _Variadic_union<_Rest...> _M_rest;
     };
 
+  template <typename... _Types>
+  constexpr bool __never_valueless()
+  {
+    return (is_trivially_copyable_v<_Types> && ...);
+  }
+
   // Defines index and the dtor, possibly trivial.
   template<bool __trivially_destructible, typename... _Types>
     struct _Variant_storage;
@@ -408,7 +414,7 @@ namespace __variant
       constexpr bool
       _M_valid() const noexcept
       {
-	if constexpr ((is_trivially_copyable_v<_Types> && ...))
+	if constexpr (__never_valueless<_Types...>())
 	  return true;
 	return this->_M_index != __index_type(variant_npos);
       }
@@ -422,22 +428,27 @@ namespace __variant
     using _Variant_storage_alias =
 	_Variant_storage<_Traits<_Types...>::_S_trivial_dtor, _Types...>;
 
+  template<typename _Tp, typename _Up>
+    void __variant_construct_single(_Tp&& __lhs, _Up&& __rhs_mem)
+    {
+      void* __storage = std::addressof(__lhs._M_u);
+      using _Type = remove_reference_t<decltype(__rhs_mem)>;
+      if constexpr (!is_same_v<_Type, __variant_cookie>)
+        ::new (__storage)
+	  _Type(std::forward<decltype(__rhs_mem)>(__rhs_mem));
+    }
+
   template<typename... _Types, typename _Tp, typename _Up>
     void __variant_construct(_Tp&& __lhs, _Up&& __rhs)
     {
       __lhs._M_index = __rhs._M_index;
-      __do_visit([](auto&& __this_mem, auto&& __rhs_mem) mutable
+      __do_visit([&__lhs](auto&& __rhs_mem) mutable
 		 -> __detail::__variant::__variant_cookie
         {
-	  using _Type = remove_reference_t<decltype(__this_mem)>;
-	  if constexpr (is_same_v<__remove_cvref_t<decltype(__rhs_mem)>,
-			          remove_cv_t<_Type>>
-			&& !is_same_v<_Type, __variant_cookie>)
-	    ::new ((void*)std::addressof(__this_mem))
-	      _Type(std::forward<decltype(__rhs_mem)>(__rhs_mem));
+	  __variant_construct_single(std::forward<_Tp>(__lhs),
+				     std::forward<decltype(__rhs_mem)>(__rhs_mem));
 	  return {};
-	}, __variant_cast<_Types...>(__lhs),
-	   __variant_cast<_Types...>(std::forward<decltype(__rhs)>(__rhs)));
+	}, __variant_cast<_Types...>(std::forward<decltype(__rhs)>(__rhs)));
     }
 
   // The following are (Copy|Move) (ctor|assign) layers for forwarding
@@ -484,34 +495,38 @@ namespace __variant
 	  std::forward<_Move_ctor_base>(__rhs));
       }
 
-      void _M_destructive_move(_Move_ctor_base&& __rhs)
-      {
-	this->_M_reset();
-	__try
-	  {
-	    __variant_construct<_Types...>(*this,
-	      std::forward<_Move_ctor_base>(__rhs));
-	  }
-	__catch (...)
-	  {
-	    this->_M_index = variant_npos;
-	    __throw_exception_again;
-	  }
-      }
+      template<typename _Up>
+        void _M_destructive_move(unsigned short __rhs_index, _Up&& __rhs)
+        {
+	  this->_M_reset();
+	  this->_M_index = __rhs_index;
+	  __try
+	    {
+	      __variant_construct_single(*this,
+					 std::forward<_Up>(__rhs));
+	    }
+	  __catch (...)
+	    {
+	      this->_M_index = variant_npos;
+	      __throw_exception_again;
+	    }
+	}
 
-      void _M_destructive_copy(const _Move_ctor_base& __rhs)
-      {
-	this->_M_reset();
-	__try
-	  {
-	    __variant_construct<_Types...>(*this, __rhs);
-	  }
-	__catch (...)
-	  {
-	    this->_M_index = variant_npos;
-	    __throw_exception_again;
-	  }
-      }
+      template<typename _Up>
+        void _M_destructive_copy(unsigned short __rhs_index, const _Up& __rhs)
+        {
+	  this->_M_reset();
+	  this->_M_index = __rhs_index;
+	  __try
+	    {
+	      __variant_construct_single(*this, __rhs);
+	    }
+	  __catch (...)
+	    {
+	      this->_M_index = variant_npos;
+	      __throw_exception_again;
+	    }
+	}
 
       _Move_ctor_base(const _Move_ctor_base&) = default;
       _Move_ctor_base& operator=(const _Move_ctor_base&) = default;
@@ -524,17 +539,21 @@ namespace __variant
       using _Base = _Copy_ctor_alias<_Types...>;
       using _Base::_Base;
 
-      void _M_destructive_move(_Move_ctor_base&& __rhs)
-      {
-	this->_M_reset();
-	__variant_construct<_Types...>(*this,
-          std::forward<_Move_ctor_base>(__rhs));
-      }
-      void _M_destructive_copy(const _Move_ctor_base& __rhs)
-      {
-	this->_M_reset();
-	__variant_construct<_Types...>(*this, __rhs);
-      }
+      template<typename _Up>
+        void _M_destructive_move(unsigned short __rhs_index, _Up&& __rhs)
+        {
+	  this->_M_reset();
+	  this->_M_index = __rhs_index;
+	  __variant_construct_single(*this,
+				     std::forward<_Up>(__rhs));
+	}
+      template<typename _Up>
+        void _M_destructive_copy(unsigned short __rhs_index, const _Up& __rhs)
+        {
+	  this->_M_reset();
+	  this->_M_index = __rhs_index;
+	  __variant_construct_single(*this, __rhs);
+	}
     };
 
   template<typename... _Types>
@@ -574,12 +593,13 @@ namespace __variant
 		    if constexpr (is_nothrow_copy_constructible_v<__rhs_type>
 		      || !is_nothrow_move_constructible_v<__rhs_type>)
 		      {
-			this->_M_destructive_copy(__rhs);
+			this->_M_destructive_copy(__rhs._M_index, __rhs_mem);
 		      }
 		    else
 		      {
-			_Copy_assign_base __tmp(__rhs);
-			this->_M_destructive_move(std::move(__tmp));
+			auto __tmp(__rhs_mem);
+			this->_M_destructive_move(__rhs._M_index,
+						  std::move(__tmp));
 		      }
 		  }
 		else
@@ -635,8 +655,8 @@ namespace __variant
 	      }
 	    else
 	      {
-		_Move_assign_base __tmp(std::move(__rhs));
-		this->_M_destructive_move(std::move(__tmp));
+		auto __tmp(std::move(__rhs_mem));
+		this->_M_destructive_move(__rhs._M_index, std::move(__tmp));
 	      }
 	  return {};
 	}, __variant_cast<_Types...>(*this), __variant_cast<_Types...>(__rhs));
@@ -747,6 +767,20 @@ namespace __variant
     void* __get_storage(_Variant&& __v)
     { return __v._M_storage(); }
 
+  template <typename _Maybe_variant_cookie, typename _Variant>
+  struct _Extra_visit_slot_needed
+  {
+    template <typename> struct _Variant_never_valueless;
+
+    template <typename... _Types>
+    struct _Variant_never_valueless<variant<_Types...>>
+      : bool_constant<__never_valueless<_Types...>()> {};
+
+    static constexpr bool value =
+      is_same_v<_Maybe_variant_cookie, __variant_cookie>
+      && !_Variant_never_valueless<__remove_cvref_t<_Variant>>::value;
+  };
+
   // Used for storing multi-dimensional vtable.
   template<typename _Tp, size_t... _Dimensions>
     struct _Multi_array
@@ -764,8 +798,11 @@ namespace __variant
 	   size_t __first, size_t... __rest>
     struct _Multi_array<_Ret(*)(_Visitor, _Variants...), __first, __rest...>
     {
+      static constexpr size_t __index =
+	sizeof...(_Variants) - sizeof...(__rest) - 1;
+      using _Variant = typename _Nth_type<__index, _Variants...>::type;
       static constexpr int __do_cookie =
-	is_same_v<_Ret, __variant_cookie> ? 1 : 0;
+	_Extra_visit_slot_needed<_Ret, _Variant>::value ? 1 : 0;
       using _Tp = _Ret(*)(_Visitor, _Variants...);
       template<typename... _Args>
 	constexpr const _Tp&
@@ -832,7 +869,7 @@ namespace __variant
 	_S_apply_all_alts(_Array_type& __vtable,
 			  std::index_sequence<__var_indices...>)
 	{
-	  if constexpr (is_same_v<_Result_type, __variant_cookie>)
+	  if constexpr (_Extra_visit_slot_needed<_Result_type, _Next>::value)
 	    (_S_apply_single_alt<true, __var_indices>(
 	      __vtable._M_arr[__var_indices + 1],
 	      &(__vtable._M_arr[0])), ...);
@@ -904,9 +941,7 @@ namespace __variant
       using _Func_ptr = _Result_type (*)(_Visitor&&, _Variants...);
       using _Array_type =
 	  _Multi_array<_Func_ptr,
-		       (variant_size_v<remove_reference_t<_Variants>>
-			+ (is_same_v<_Result_type, __variant_cookie> ? 1 : 0))
-	               ...>;
+		       variant_size_v<remove_reference_t<_Variants>>...>;
 
       static constexpr _Array_type
       _S_apply()
@@ -1388,21 +1423,26 @@ namespace __variant
 			        remove_reference_t<decltype(__this_mem)>,
 			        __detail::__variant::__variant_cookie>)
 		  {
-		    this->_M_destructive_move(std::move(__rhs));
+		    this->_M_destructive_move(__rhs.index(),
+					      std::move(__rhs_mem));
 		    __rhs._M_reset();
 		  }
 		else if constexpr (is_same_v<
 			             remove_reference_t<decltype(__rhs_mem)>,
 			             __detail::__variant::__variant_cookie>)
 		  {
-		    __rhs._M_destructive_move(std::move(*this));
+		    __rhs._M_destructive_move(this->index(),
+					      std::move(__this_mem));
 		    this->_M_reset();
 		  }
 		else
 		  {
-		    auto __tmp = std::move(__rhs);
-		    __rhs._M_destructive_move(std::move(*this));
-		    this->_M_destructive_move(std::move(__tmp));
+		    auto __tmp(std::move(__rhs_mem));
+		    auto __idx = __rhs.index();
+		    __rhs._M_destructive_move(this->index(),
+					      std::move(__this_mem));
+		    this->_M_destructive_move(__idx,
+					      std::move(__tmp));
 		  }
 	      }
 	  return {};

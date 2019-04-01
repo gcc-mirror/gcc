@@ -7258,11 +7258,10 @@ rewrite_groups (struct ivopts_data *data)
 /* Removes the ivs that are not used after rewriting.  */
 
 static void
-remove_unused_ivs (struct ivopts_data *data)
+remove_unused_ivs (struct ivopts_data *data, bitmap toremove)
 {
   unsigned j;
   bitmap_iterator bi;
-  bitmap toremove = BITMAP_ALLOC (NULL);
 
   /* Figure out an order in which to release SSA DEFs so that we don't
      release something that we'd have to propagate into a debug stmt
@@ -7384,10 +7383,6 @@ remove_unused_ivs (struct ivopts_data *data)
 	    }
 	}
     }
-
-  release_defs_bitset (toremove);
-
-  BITMAP_FREE (toremove);
 }
 
 /* Frees memory occupied by struct tree_niter_desc in *VALUE. Callback
@@ -7530,7 +7525,8 @@ loop_body_includes_call (basic_block *body, unsigned num_nodes)
 /* Optimizes the LOOP.  Returns true if anything changed.  */
 
 static bool
-tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
+tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop,
+			   bitmap toremove)
 {
   bool changed = false;
   struct iv_ca *iv_ca;
@@ -7600,12 +7596,7 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
   rewrite_groups (data);
 
   /* Remove the ivs that are unused after rewriting.  */
-  remove_unused_ivs (data);
-
-  /* We have changed the structure of induction variables; it might happen
-     that definitions in the scev database refer to some of them that were
-     eliminated.  */
-  scev_reset ();
+  remove_unused_ivs (data, toremove);
 
 finish:
   free_loop_data (data);
@@ -7620,6 +7611,7 @@ tree_ssa_iv_optimize (void)
 {
   struct loop *loop;
   struct ivopts_data data;
+  auto_bitmap toremove;
 
   tree_ssa_iv_optimize_init (&data);
 
@@ -7629,8 +7621,18 @@ tree_ssa_iv_optimize (void)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	flow_loop_dump (loop, dump_file, NULL, 1);
 
-      tree_ssa_iv_optimize_loop (&data, loop);
+      tree_ssa_iv_optimize_loop (&data, loop, toremove);
     }
+
+  /* Remove eliminated IV defs.  */
+  release_defs_bitset (toremove);
+
+  /* We have changed the structure of induction variables; it might happen
+     that definitions in the scev database refer to some of them that were
+     eliminated.  */
+  scev_reset_htab ();
+  /* Likewise niter and control-IV information.  */
+  free_numbers_of_iterations_estimates (cfun);
 
   tree_ssa_iv_optimize_finalize (&data);
 }

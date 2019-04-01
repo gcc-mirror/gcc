@@ -24,6 +24,7 @@
 ; Named registers
 (define_constants
   [(FIRST_SGPR_REG		 0)
+   (CC_SAVE_REG			 22)
    (LAST_SGPR_REG		 101)
    (FLAT_SCRATCH_REG		 102)
    (FLAT_SCRATCH_LO_REG		 102)
@@ -403,7 +404,10 @@
 	&& (GET_CODE (operands[1]) == SYMBOL_REF
 	    || GET_CODE (operands[1]) == LABEL_REF))
       {
-	emit_insn (gen_movdi_symbol (operands[0], operands[1]));
+	if (lra_in_progress)
+	  emit_insn (gen_movdi_symbol_save_scc (operands[0], operands[1]));
+	else
+	  emit_insn (gen_movdi_symbol (operands[0], operands[1]));
 	DONE;
       }
   })
@@ -825,6 +829,19 @@
   }
  [(set_attr "type" "mult")
   (set_attr "length" "32")])
+
+(define_insn_and_split "movdi_symbol_save_scc"
+ [(set (match_operand:DI 0 "nonimmediate_operand" "=Sg")
+       (match_operand:DI 1 "general_operand" "Y"))
+  (clobber (reg:BI CC_SAVE_REG))]
+ "GET_CODE (operands[1]) == SYMBOL_REF || GET_CODE (operands[1]) == LABEL_REF
+  && (lra_in_progress || reload_completed)"
+ "#"
+ "reload_completed"
+ [(set (reg:BI CC_SAVE_REG) (reg:BI SCC_REG))
+  (parallel [(set (match_dup 0) (match_dup 1))
+	     (clobber (reg:BI SCC_REG))])
+  (set (reg:BI SCC_REG) (reg:BI CC_SAVE_REG))])
 
 (define_insn "gcn_indirect_call"
   [(call (mem (match_operand:DI 0 "register_operand" "Sg"))

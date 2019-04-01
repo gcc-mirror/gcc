@@ -196,7 +196,7 @@ else
 struct msgbuf
 {
     c_long mtype;
-    char[1] mtext;
+    char[1] mtext = 0;
 }
 
 int msgctl(int msqid, int cmd, msqid_ds* __buf);

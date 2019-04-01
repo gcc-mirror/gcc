@@ -3173,7 +3173,7 @@ darwin_override_options (void)
   if (global_options_set.x_dwarf_split_debug_info)
     {
       inform (input_location,
-	      "-gsplit-dwarf is not supported on this platform, ignored");
+	      "%<-gsplit-dwarf%> is not supported on this platform, ignored");
       dwarf_split_debug_info = 0;
       global_options_set.x_dwarf_split_debug_info = 0;
     }
@@ -3203,8 +3203,8 @@ darwin_override_options (void)
 	       && !global_options_set.x_flag_asynchronous_unwind_tables)))
     {
       inform (input_location,
-	      "-freorder-blocks-and-partition does not work with exceptions "
-	      "on this architecture");
+	      "%<-freorder-blocks-and-partition%> does not work with "
+	      "exceptions on this architecture");
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }

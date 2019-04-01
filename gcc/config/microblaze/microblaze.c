@@ -1759,7 +1759,7 @@ microblaze_option_override (void)
       flag_pic = 2;
       if (!TARGET_SUPPORTS_PIC)
         {
-          error ("-fPIC/-fpic not supported for this target");
+	  error ("%<-fPIC%>/%<-fpic%> not supported for this target");
           /* Clear it to avoid further errors.  */
           flag_pic = 0;
         }
@@ -1771,7 +1771,7 @@ microblaze_option_override (void)
   ver = microblaze_version_to_int (microblaze_select_cpu);
   if (ver == -1)
     {
-      error ("%qs is an invalid argument to -mcpu=", microblaze_select_cpu);
+      error ("%qs is an invalid argument to %<-mcpu=%>", microblaze_select_cpu);
     }
 
   ver = MICROBLAZE_VERSION_COMPARE (microblaze_select_cpu, "v3.00.a");
@@ -1820,7 +1820,8 @@ microblaze_option_override (void)
     {
       if (TARGET_MULTIPLY_HIGH)
 	warning (0,
-		 "-mxl-multiply-high can be used only with -mcpu=v6.00.a or greater");
+		 "%<-mxl-multiply-high%> can be used only with "
+		 "%<-mcpu=v6.00.a%> or greater");
     }
 
   ver = MICROBLAZE_VERSION_COMPARE (microblaze_select_cpu, "v8.10.a");
@@ -1836,18 +1837,20 @@ microblaze_option_override (void)
   if (ver < 0)
     {
         if (TARGET_REORDER == 1)
-          warning (0, "-mxl-reorder can be used only with -mcpu=v8.30.a or greater");
+	  warning (0, "%<-mxl-reorder%> can be used only with "
+		   "%<-mcpu=v8.30.a%> or greater");
         TARGET_REORDER = 0;
     }
   else if ((ver == 0) && !TARGET_PATTERN_COMPARE)
     {
         if (TARGET_REORDER == 1)
-          warning (0, "-mxl-reorder requires -mxl-pattern-compare for -mcpu=v8.30.a");
+	  warning (0, "%<-mxl-reorder%> requires %<-mxl-pattern-compare%> for "
+		   "%<-mcpu=v8.30.a%>");
         TARGET_REORDER = 0;
     }
 
   if (TARGET_MULTIPLY_HIGH && TARGET_SOFT_MUL)
-    error ("-mxl-multiply-high requires -mno-xl-soft-mul");
+    error ("%<-mxl-multiply-high%> requires %<-mno-xl-soft-mul%>");
 
   /* Always use DFA scheduler.  */
   microblaze_sched_use_dfa = 1;

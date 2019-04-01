@@ -73,7 +73,7 @@ struct OLECMDTEXT {
     DWORD cmdtextf;
     ULONG cwActual;
     ULONG cwBuf;
-    wchar[1] rgwz;
+    wchar[1] rgwz = 0;
 }
 
 struct OLECMD {

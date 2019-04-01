@@ -601,19 +601,6 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 	  IDENTIFIER_LENGTH (id) + 1);
   name = get_identifier (buf);
 
-  /* If TREE_TYPE isn't set, we're still in the introducer, so check
-     for duplicates.  */
-  if (!LAMBDA_EXPR_CLOSURE (lambda))
-    {
-      if (IDENTIFIER_MARKED (name))
-	{
-	  pedwarn (input_location, 0,
-		   "already captured %qD in lambda expression", id);
-	  return NULL_TREE;
-	}
-      IDENTIFIER_MARKED (name) = true;
-    }
-
   if (variadic)
     type = make_pack_expansion (type);
 
@@ -674,8 +661,6 @@ register_capture_members (tree captures)
   if (PACK_EXPANSION_P (field))
     field = PACK_EXPANSION_PATTERN (field);
 
-  /* We set this in add_capture to avoid duplicates.  */
-  IDENTIFIER_MARKED (DECL_NAME (field)) = false;
   finish_member_declaration (field);
 }
 
@@ -1267,12 +1252,6 @@ maybe_add_lambda_conv_op (tree type)
 
   start_preparsed_function (statfn, NULL_TREE,
 			    SF_PRE_PARSED | SF_INCLASS_INLINE);
-  if (DECL_ONE_ONLY (statfn))
-    {
-      /* Put the thunk in the same comdat group as the call op.  */
-      cgraph_node::get_create (statfn)->add_to_same_comdat_group
-	(cgraph_node::get_create (callop));
-    }
   tree body = begin_function_body ();
   tree compound_stmt = begin_compound_stmt (0);
   if (!generic_lambda_p)
