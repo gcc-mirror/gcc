@@ -1,3 +1,9 @@
+2019-04-01  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/89865
+	* ira-costs.c (process_bb_node_for_hard_reg_moves): Skip hard
+	register if it is a part of small class.
+
 2019-04-01  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/87273
