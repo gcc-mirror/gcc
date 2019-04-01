@@ -170,6 +170,29 @@ template anySatisfy(alias F, T...)
     }
 }
 
+// simplified from std.traits.maxAlignment
+template maxAlignment(U...)
+{
+    static if (U.length == 0)
+        static assert(0);
+    else static if (U.length == 1)
+        enum maxAlignment = U[0].alignof;
+    else static if (U.length == 2)
+        enum maxAlignment = U[0].alignof > U[1].alignof ? U[0].alignof : U[1].alignof;
+    else
+    {
+        enum a = maxAlignment!(U[0 .. ($+1)/2]);
+        enum b = maxAlignment!(U[($+1)/2 .. $]);
+        enum maxAlignment = a > b ? a : b;
+    }
+}
+
+template classInstanceAlignment(T)
+if (is(T == class))
+{
+    alias classInstanceAlignment = maxAlignment!(void*, typeof(T.tupleof));
+}
+
 // Somehow fails for non-static nested structs without support for aliases
 template hasElaborateDestructor(T...)
 {

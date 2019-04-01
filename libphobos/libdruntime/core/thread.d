@@ -114,6 +114,13 @@ private
 {
     import core.atomic, core.memory, core.sync.mutex;
 
+    // Handling unaligned mutexes are not supported on all platforms, so we must
+    // ensure that the address of all shared data are appropriately aligned.
+    import core.internal.traits : classInstanceAlignment;
+
+    enum mutexAlign = classInstanceAlignment!Mutex;
+    enum mutexClassInstanceSize = __traits(classInstanceSize, Mutex);
+
     //
     // exposed by compiler runtime
     //
@@ -1708,29 +1715,30 @@ private:
     // lock order inversion.
     @property static Mutex slock() nothrow @nogc
     {
-        return cast(Mutex)_locks[0].ptr;
+        return cast(Mutex)_slock.ptr;
     }
 
     @property static Mutex criticalRegionLock() nothrow @nogc
     {
-        return cast(Mutex)_locks[1].ptr;
+        return cast(Mutex)_criticalRegionLock.ptr;
     }
 
-    __gshared align(Mutex.alignof) void[__traits(classInstanceSize, Mutex)][2] _locks;
+    __gshared align(mutexAlign) void[mutexClassInstanceSize] _slock;
+    __gshared align(mutexAlign) void[mutexClassInstanceSize] _criticalRegionLock;
 
     static void initLocks()
     {
-        foreach (ref lock; _locks)
-        {
-            lock[] = typeid(Mutex).initializer[];
-            (cast(Mutex)lock.ptr).__ctor();
-        }
+        _slock[] = typeid(Mutex).initializer[];
+        (cast(Mutex)_slock.ptr).__ctor();
+
+        _criticalRegionLock[] = typeid(Mutex).initializer[];
+        (cast(Mutex)_criticalRegionLock.ptr).__ctor();
     }
 
     static void termLocks()
     {
-        foreach (ref lock; _locks)
-            (cast(Mutex)lock.ptr).__dtor();
+        (cast(Mutex)_slock.ptr).__dtor();
+        (cast(Mutex)_criticalRegionLock.ptr).__dtor();
     }
 
     __gshared Context*  sm_cbeg;
