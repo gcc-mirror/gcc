@@ -703,11 +703,6 @@ merge_fences (fence_t f, insn_t insn,
       else
         if (candidate->src == BLOCK_FOR_INSN (last_scheduled_insn))
           {
-            /* Would be weird if same insn is successor of several fallthrough
-               edges.  */
-            gcc_assert (BLOCK_FOR_INSN (insn)->prev_bb
-                        != BLOCK_FOR_INSN (last_scheduled_insn_old));
-
             state_free (FENCE_STATE (f));
             FENCE_STATE (f) = state;
 

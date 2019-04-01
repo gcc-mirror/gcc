@@ -1,3 +1,8 @@
+2019-04-01  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/87273
+	* gcc.dg/pr87273.c: New test.
+
 2019-04-01  Martin Liska  <mliska@suse.cz>
 
 	PR driver/89861
