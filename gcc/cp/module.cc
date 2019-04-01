@@ -2200,12 +2200,33 @@ elf_out::end ()
    we add depset #3 to the dependencies.  */
 
 class depset {
-public:
-  typedef std::pair<tree,tree> key_type;
-
 private:
-  // FIXME:Break apart
-  key_type key;
+  tree entity;  /* Entity, or containing namespace.  */
+  uintptr_t discriminator;  /* Flags or identifier.  */
+
+public:
+  /* The kinds of entity the depset could describe.  */
+  enum entity_kind
+  {
+    EK_DECL,
+    EK_USING,
+    EK_NAMESPACE,
+    EK_BINDING, /* Implicitly encoded.  */
+    EK_BITS = 2,
+  };
+private:
+  /* Placement of bit fields in discriminator.  */
+  enum disc_bits 
+  {
+    DB_ZERO_BIT, /* Must be first.  */
+    DB_KIND_BIT,
+    DB_KIND_BITS = EK_BITS,
+    DB_DEFN_BIT = DB_KIND_BIT + DB_KIND_BITS,
+    DB_IS_UNNAMED_BIT,
+    DB_IS_INTERNAL_BIT,
+    DB_REFS_UNNAMED_BIT,
+    DB_REFS_INTERNAL_BIT,
+  };
 
 public:
   vec<depset *> deps;  /* Depsets in this TU we reference.  */
@@ -2220,105 +2241,92 @@ public:
   /* During SCC construction, section is lowlink, until the depset is
      removed from the stack.   */
 
+private:
+  /* Construction via factories.  Destruction via hash traits.  */
+  depset (tree entity);
+  ~depset ();
+
 public:
-  /* A binding key -- NAMESPACE_DECL & IDENTIFIER.  For late setting
-     the name, any random identifier will do to start.  */
-  inline static key_type binding_key (tree decl, tree name = global_identifier)
-  {
-    gcc_checking_assert (TREE_CODE (decl) == NAMESPACE_DECL);
-    return key_type (decl, name);
-  }
-  /* A declaration key.  */
-  inline static key_type entity_key (tree decl)
-  {
-    return key_type (decl, NULL_TREE);
-  }
+  static depset *make_binding (tree, tree);
+  static depset *make_entity (tree, entity_kind, bool = false);
   /* Late setting a binding name -- /then/ insert into hash!  */
   inline void set_binding_name (tree name)
   {
-    gcc_checking_assert (key.second == global_identifier);
-    key.second = name;
+    gcc_checking_assert (!get_name ());
+    discriminator = reinterpret_cast<uintptr_t> (name);
   }
-  /* Setting an entity type -- before or after hash table insertion.  */
-  // FIXME: More types will be added
-  inline void set_entity_kind (bool is_defn)
-  {
-    gcc_checking_assert (!is_binding ());
-    if (is_defn)
-      key.second = key.first;
-  }
-
-public:
-  depset (const key_type &key);
-  ~depset ();
 
 public:
   bool is_binding () const
   {
-    return key.second && TREE_CODE (key.second) == IDENTIFIER_NODE;
+    return !(discriminator & (1 << DB_ZERO_BIT));
   }
-  bool is_defn () const
+  entity_kind get_entity_kind () const
+  {
+    if (is_binding ())
+      return EK_BINDING;
+    return entity_kind ((discriminator >> DB_KIND_BIT) & ((1u << EK_BITS) - 1));
+  }
+  bool has_defn () const
   {
     gcc_checking_assert (!is_binding ());
-    return key.second != NULL_TREE;
-  }
-  bool is_using () const
-  {
-    return TREE_CODE (key.first) == OVERLOAD;
-  }
-  bool is_namespace () const
-  {
-    return (!key.second
-	    && TREE_CODE (key.first) == NAMESPACE_DECL
-	    && !DECL_NAMESPACE_ALIAS (key.first));
+    return bool ((discriminator >> DB_DEFN_BIT) & 1);
   }
 
 public:
   tree get_entity () const
   {
-    return key.first;
+    return entity;
   }
   tree get_name () const
   {
     gcc_checking_assert (is_binding ());
-    return key.second;
+    return reinterpret_cast <tree> (discriminator);
   }
 
 public:
   /* Traits for a hash table of pointers to bindings.  */
   struct traits {
-    /* Each entry is a pointer to a binding. */
+    /* Each entry is a pointer to a depset. */
     typedef depset *value_type;
     /* We lookup by container:maybe-identifier pair.  */
-    typedef key_type compare_type;
+    typedef std::pair<tree,tree> compare_type;
 
     /* hash and equality for compare_type.  */
     inline static hashval_t hash (const compare_type &p)
     {
-      hashval_t a = pointer_hash<tree_node>::hash (p.first);
-      if (p.second && TREE_CODE (p.second) == IDENTIFIER_NODE)
+      hashval_t h = pointer_hash<tree_node>::hash (p.first);
+      if (p.second)
 	{
-	  hashval_t b = pointer_hash<tree_node>::hash (p.second);
-	  a = iterative_hash_hashval_t (a, b);
+	  hashval_t nh = IDENTIFIER_HASH_VALUE (p.second);
+	  h = iterative_hash_hashval_t (h, nh);
 	}
-      return a;
+      return h;
     }
     inline static bool equal (const value_type b, const compare_type &p)
     {
-      if (b->key.first != p.first)
-	return false;
-      if (p.second && TREE_CODE (p.second) == IDENTIFIER_NODE
-	  && b->key.second != p.second)
+      if (b->entity != p.first)
 	return false;
 
-      return true;
+      if (p.second)
+	return b->discriminator == reinterpret_cast<uintptr_t> (p.second);
+      else
+	return !b->is_binding ();
     }
 
     /* (re)hasher for a binding itself.  */
     inline static hashval_t hash (const value_type b)
     {
-      return hash (b->key);
+      hashval_t h = pointer_hash<tree_node>::hash (b->entity);
+      if (b->is_binding ())
+	{
+	  hashval_t nh = IDENTIFIER_HASH_VALUE (b->get_name ());
+	  h = iterative_hash_hashval_t (h, nh);
+	}
+      return h;
     }
+
+    /* Empty via NULL.  */
     static inline void mark_empty (value_type &p) {p = NULL;}
     static inline bool is_empty (value_type p) {return !p;}
 
@@ -2365,17 +2373,13 @@ public:
     }
 
   private:
-    void insert (depset *d)
-    {
-      depset **slot = maybe_insert (d->key);
-      gcc_checking_assert (!*slot);
-      *slot = d;
-    }
-    depset **maybe_insert (const key_type &, bool = true);
+    depset **entity_slot (tree entity, bool = true);
+    depset **binding_slot (tree ctx, tree name, bool = true);
     depset *maybe_add_declaration (tree decl);
 
   public:
-    depset *find (const key_type &);
+    depset *find_entity (tree entity);
+    depset *find_binding (tree ctx, tree name);
 
   public:
     void add_mergeable (tree decl);
@@ -2407,14 +2411,36 @@ public:
   };
 };
 
-depset::depset (const key_type &key)
-  :key (key), deps (), cluster (0), is_unnamed (false), is_internal (false),
+inline
+depset::depset (tree entity)
+  :entity (entity), discriminator (0), deps (),
+   cluster (0), is_unnamed (false), is_internal (false),
    section (0), refs_unnamed (false), refs_internal (false)
 {
 }
 
+inline
 depset::~depset ()
 {
+}
+
+depset *depset::make_binding (tree ns, tree name)
+{
+  depset *r = new depset (ns);
+
+  r->discriminator = reinterpret_cast <uintptr_t> (name);
+  return r;
+}
+
+depset *depset::make_entity (tree entity, entity_kind ek, bool is_defn)
+{
+  depset *r = new depset (entity);
+
+  r->discriminator = ((1 << DB_ZERO_BIT)
+		      | (ek << DB_KIND_BIT)
+		      | is_defn << DB_DEFN_BIT);
+
+  return r;
 }
 
 /* Tree tags.  */
@@ -6486,14 +6512,14 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	  {
 	    /* Look directly into the binding depset, as that's
 	       what importers will observe.  */
-	    depset *bind
-	      = dep_hash->find (depset::binding_key (ctx, name));
+	    depset *bind = dep_hash->find_binding (ctx, name);
 	    if (bind)
 	      for (ident = bind->deps.length (); ident--;)
 		if (bind->deps[ident]->get_entity () == proxy)
 		  break;
 	    gcc_checking_assert (ident >= 0);
-	    if (bind->deps.length () > 1
+	    if (bind
+		&& bind->deps.length () > 1
 		&& TREE_CODE (bind->deps[0]->get_entity ()) == TYPE_DECL)
 	      ident--;
 	    kind = "named decl";
@@ -8467,8 +8493,19 @@ trees_in::read_definition (tree decl)
 /* Lookup an maybe insert a slot for depset for KEY.  */
 
 depset **
-depset::hash::maybe_insert (const key_type &key, bool insert)
+depset::hash::entity_slot (tree entity, bool insert)
 {
+  traits::compare_type key (entity, NULL);
+  depset **slot = find_slot_with_hash (key, traits::hash (key),
+				       insert ? INSERT : NO_INSERT);
+
+  return slot;
+}
+
+depset **
+depset::hash::binding_slot (tree ctx, tree name, bool insert)
+{
+  traits::compare_type key (ctx, name);
   depset **slot = find_slot_with_hash (key, traits::hash (key),
 				       insert ? INSERT : NO_INSERT);
 
@@ -8476,9 +8513,17 @@ depset::hash::maybe_insert (const key_type &key, bool insert)
 }
 
 depset *
-depset::hash::find (const key_type &key)
+depset::hash::find_entity (tree entity)
 {
-  depset **slot = maybe_insert (key, false);
+  depset **slot = entity_slot (entity, false);
+
+  return slot ? *slot : NULL;
+}
+
+depset *
+depset::hash::find_binding (tree ctx, tree name)
+{
+  depset **slot = binding_slot (ctx, name, false);
 
   return slot ? *slot : NULL;
 }
@@ -8493,25 +8538,28 @@ depset::hash::find (const key_type &key)
 void
 depset::hash::add_dependency (tree decl, tree maybe_using)
 {
-  key_type key = entity_key (maybe_using ? maybe_using : decl);
+  tree ent = maybe_using ? maybe_using : decl;
 
-  if (depset **slot = maybe_insert (key, !is_mergeable ()))
+  if (depset **slot = entity_slot (ent, !is_mergeable ()))
     {
       bool binding_p = current && current->is_binding ();
-      bool ns_p = (TREE_CODE (decl) == NAMESPACE_DECL
-		   && !DECL_NAMESPACE_ALIAS (decl));
       depset *dep = *slot;
 
       gcc_checking_assert (!is_mergeable () || !binding_p);
       if (!dep)
 	{
-	  *slot = dep = new depset (key);
 	  bool has_def = (!is_mergeable ()
 			  && !maybe_using && has_definition (decl));
-	  dep->set_entity_kind (has_def);
+	  entity_kind ek = EK_DECL;
+	  if (maybe_using)
+	    ek = EK_USING;
+	  else if (TREE_CODE (decl) == NAMESPACE_DECL
+		   && !DECL_NAMESPACE_ALIAS (decl))
+	    ek = EK_NAMESPACE;
+	  *slot = dep = make_entity (ent, ek, has_def);
 	  worklist.safe_push (dep);
 
-	  if (!binding_p && !ns_p)
+	  if (!binding_p && ek != EK_NAMESPACE)
 	    {
 	      /* A not-for-binding dependency.  Either:
 		 1) an ill-formed internal linkage entity, or
@@ -8556,11 +8604,10 @@ depset::hash::add_dependency (tree decl, tree maybe_using)
 		     it to its scope's binding depset.  */
 		  gcc_checking_assert (MAYBE_DECL_MODULE_OWNER (decl)
 				       == MODULE_NONE);
-		  key_type bkey = binding_key (ctx, DECL_NAME (decl));
-		  depset **bslot = maybe_insert (bkey, true);
+		  depset **bslot = binding_slot (ctx, DECL_NAME (decl), true);
 		  depset *bdep = *bslot;
 		  if (!bdep)
-		    *bslot = bdep = new depset (bkey);
+		    *bslot = bdep = make_binding (ctx, DECL_NAME (decl));
 		  bdep->deps.safe_push (dep);
 		  dep->deps.safe_push (bdep);
 		  dump (dumper::DEPEND)
@@ -8571,10 +8618,11 @@ depset::hash::add_dependency (tree decl, tree maybe_using)
 
       dump (dumper::DEPEND)
 	&& dump ("%s on %s %C:%N added", binding_p ? "Binding" : "Dependency",
-		 dep->is_using () ? "using" : dep->is_defn () ? "definition"
+		 dep->get_entity_kind () == EK_USING ? "using"
+		 : dep->has_defn () ? "definition"
 		 : "declaration", TREE_CODE (decl), decl);
 
-      if (!ns_p)
+      if (dep->get_entity_kind () != EK_NAMESPACE)
 	{
 	  current->deps.safe_push (dep);
 	  if (current->is_binding ())
@@ -8605,7 +8653,7 @@ depset::hash::add_dependency (tree decl, tree maybe_using)
 void
 depset::hash::add_binding (tree ns, tree value)
 {
-  current = new depset (binding_key (ns));
+  current = make_binding (ns, NULL_TREE);
 
   tree name = NULL_TREE;
   gcc_checking_assert (!is_mergeable () && TREE_PUBLIC (ns));
@@ -8642,7 +8690,9 @@ depset::hash::add_binding (tree ns, tree value)
   if (current->deps.length ())
     {
       current->set_binding_name (name);
-      insert (current);
+      depset **slot = binding_slot (ns, name, true);
+      gcc_checking_assert (!*slot);
+      *slot = current;
     }
   else
     delete current;
@@ -8721,12 +8771,13 @@ depset::hash::find_dependencies ()
 
       gcc_checking_assert (!current->is_binding ());
       tree decl = current->get_entity ();
-      if (current->is_using ())
+      if (current->get_entity_kind () == EK_USING)
 	decl = OVL_FUNCTION (decl);
       dump (dumper::DEPEND)
 	&& dump ("Dependencies of %s %C:%N",
-		 is_mergeable () ? "mergeable" : current->is_using () ? "using"
-		 : current->is_defn () ? "definition" : "declaration",
+		 is_mergeable () ? "mergeable"
+		 : current->get_entity_kind () == EK_USING ? "using"
+		 : current->has_defn () ? "definition" : "declaration",
 		 TREE_CODE (decl), decl);
       dump.indent ();
       walker.begin ();
@@ -8734,18 +8785,18 @@ depset::hash::find_dependencies ()
 	/* Depending a fixed decl.  */;
       else if (is_mergeable ())
 	walker.tree_mergeable (decl);
-      else if (current->is_using ())
+      else if (current->get_entity_kind () == EK_USING)
 	walker.tree_ctx (decl, false, NULL_TREE);
       else
 	{
 	  walker.mark_node (decl);
-	  if (current->is_defn ())
+	  if (current->has_defn ())
 	    walker.mark_definition (decl);
 	  /* Turn the Sneakoscope on when depending the decl.  */
 	  sneakoscope = true;
 	  walker.tree_ctx (decl, false, NULL_TREE);
 	  sneakoscope = false;
-	  if (current->is_defn ())
+	  if (current->has_defn ())
 	    walker.write_definition (decl);
 	}
       walker.end ();
@@ -8758,9 +8809,10 @@ void
 depset::hash::add_mergeable (tree decl)
 {
   gcc_checking_assert (is_mergeable ());
-  key_type key = entity_key (decl);
-  depset *dep = new depset (key);
-  insert (dep);
+  depset **slot = entity_slot (decl, true);
+  gcc_checking_assert (!*slot);
+  depset *dep = make_entity (decl, EK_DECL);
+  *slot = dep;
   worklist.safe_push (dep);
 }
 
@@ -8787,7 +8839,7 @@ binding_cmp (const void *a_, const void *b_)
   if (TREE_CODE (b_ent) == TYPE_DECL)
     return +1;  /* B first.  */
 
-  bool a_using = a->is_using ();
+  bool a_using = a->get_entity_kind () == depset::EK_USING;
   bool a_export;
   if (a_using)
     {
@@ -8797,7 +8849,7 @@ binding_cmp (const void *a_, const void *b_)
   else
     a_export = DECL_MODULE_EXPORT_P (a_ent);
   
-  bool b_using = b->is_using ();
+  bool b_using = b->get_entity_kind () == depset::EK_USING;
   bool b_export;
   if (b_using)
     {
@@ -8908,6 +8960,7 @@ depset::tarjan::connect (depset *v)
 /* Compare members of a cluster.  Order defn < decl < bind.  depsets
    of the same kind can be arbitrary, but we want something
    stable.  */
+// FIXME: Use entity_kind more
 
 static int
 cluster_cmp (const void *a_, const void *b_)
@@ -8923,16 +8976,16 @@ cluster_cmp (const void *a_, const void *b_)
   if (!is_bind)
     {
       /* Neither is a binding, try order-by-defn.  */
-      bool is_defn = a->is_defn ();
-      if (is_defn != b->is_defn ())
+      bool is_defn = a->has_defn ();
+      if (is_defn != b->has_defn ())
 	/* Exactly one is a defn.  It comes first.  */
 	return is_defn ? -1 : +1;
 
       if (!is_defn)
 	{
 	  /* Neither is a defn, try order-by-using.  */
-	  bool is_using = a->is_using ();
-	  if (is_using != b->is_using ())
+	  bool is_using = a->get_entity_kind () == depset::EK_USING;
+	  if (is_using != (b->get_entity_kind () == depset::EK_USING))
 	    /* Exactly one is a using.  It comes last.  */
 	    return is_using ? +1 : -1;
 	}
@@ -8942,7 +8995,7 @@ cluster_cmp (const void *a_, const void *b_)
   tree a_decl = a->get_entity ();
   tree b_decl = b->get_entity ();
 
-  if (a->is_using ())
+  if (a->get_entity_kind () == depset::EK_USING)
     {
       /* If one is a using, the other must be too.  */
       a_decl = OVL_FUNCTION (a_decl);
@@ -8991,7 +9044,7 @@ depset::hash::connect (auto_vec<depset *> &sccs)
 	(v->is_binding ()
 	 ? dump ("Connecting binding %P", v->get_entity (), v->get_name ())
 	 : dump ("Connecting %s %C:%N", is_mergeable () ? "mergeable "
-		 : !v->is_defn () ? "declaration" : "definition",
+		 : !v->has_defn () ? "declaration" : "definition",
 		 TREE_CODE (v->get_entity ()), v->get_entity ()));
       if (!v->cluster)
 	connector.connect (v);
@@ -10514,11 +10567,11 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  dump () && dump ("Unnamed %u %N", unnamed, decl);
 	  b->cluster = ++unnamed;
 	}
-      else if (!b->is_binding () && !b->is_using ())
+      else if (!b->is_binding () && b->get_entity_kind () != depset::EK_USING)
 	{
 	  // FIXME: What about non-mergeable decls in this SCC that
 	  // are nevertheless referenced in locating the mergeable
-	  // decls?
+	  // decls?  Can that actually happen?
 	  if (TREE_PUBLIC (CP_DECL_CONTEXT (decl)))
 	    {
 	      unsigned owner = MODULE_NONE;
@@ -10591,15 +10644,15 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	for (unsigned jx = b->deps.length (); jx--;)
 	  {
 	    depset *dep = b->deps[jx];
-	    gcc_checking_assert (dep->is_using ()
+	    gcc_checking_assert (dep->get_entity_kind () == depset::EK_USING
 				 || TREE_VISITED (dep->get_entity ()));
 	  }
-      else if (!b->is_using ())
+      else if (b->get_entity_kind () != depset::EK_USING)
 	{
 	  tree decl = b->get_entity ();
 
 	  sec.mark_node (decl);
-	  if (b->is_defn ())
+	  if (b->has_defn ())
 	    sec.mark_definition (decl);
 	}
     }
@@ -10609,15 +10662,16 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
     {
       depset *b = scc[ix];
       tree decl = b->get_entity ();
-      if (b->is_using ())
+      if (b->get_entity_kind () == depset::EK_USING)
 	decl = OVL_FUNCTION (decl);
 
       if (b->is_binding ())
 	dump () && dump ("Depset:%u binding %C:%P", ix, TREE_CODE (decl),
 			 decl, b->get_name ());
       else
-	dump () && dump ("Depset:%u %s %C:%N", ix, b->is_using () ? "using"
-			 : b->is_defn () ? "definition" : "declaration",
+	dump () && dump ("Depset:%u %s %C:%N", ix,
+			 b->get_entity_kind () == depset::EK_USING ? "using"
+			 : b->has_defn () ? "definition" : "declaration",
 			 TREE_CODE (decl), decl);
 
       if (b->is_binding ())
@@ -10636,7 +10690,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	      tree decl = dep->get_entity ();
 	      bool exp = false;
 	      unsigned code = 1;
-	      if (dep->is_using ())
+	      if (dep->get_entity_kind () == depset::EK_USING)
 		{
 		  exp = OVL_EXPORT_P (decl);
 		  code = 2 + exp;
@@ -10662,15 +10716,15 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  /* Terminate the list.  */
 	  sec.u (0);
 	}
-      else if (!b->is_using ())
+      else if (b->get_entity_kind () != depset::EK_USING)
 	{
-	  sec.u (b->is_defn () ? ct_defn: ct_decl);
+	  sec.u (b->has_defn () ? ct_defn: ct_decl);
 	  sec.tree_ctx (decl, false, NULL_TREE);
 
 	  if (b->cluster)
 	    dump () && dump ("Voldemort:%u %N", b->cluster - 1, decl);
 	  sec.u (b->cluster);
-	  if (b->is_defn ()) 
+	  if (b->has_defn ()) 
 	    sec.write_definition (decl);
 	}
     }
@@ -10678,7 +10732,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   /* We don't find the section by name.  Use depset's decl's name for
      human friendliness.  */
   tree naming_decl = scc[0]->get_entity ();
-  if (scc[0]->is_using ())
+  if (scc[0]->get_entity_kind () == depset::EK_USING)
     /* This unfortunately names the section from the target of the
        using decl.  But the name is only a guide, so Do Not Care.  */
     naming_decl = OVL_FUNCTION (naming_decl);
@@ -10686,7 +10740,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
     /* Lose any anonymousness.  */
     naming_decl = TYPE_NAME (TREE_TYPE (naming_decl));
 
-  unsigned name = to->qualified_name (naming_decl, scc[0]->is_defn ());
+  unsigned name = to->qualified_name (naming_decl, scc[0]->has_defn ());
   unsigned snum = sec.end (to, name, crc_ptr);
 
   for (unsigned ix = size; ix--;)
@@ -10916,7 +10970,7 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
       unsigned ctx_num = 0;
       tree ctx = CP_DECL_CONTEXT (ns);
       if (ctx != global_namespace)
-	ctx_num = table.find (depset::entity_key (ctx))->section;
+	ctx_num = table.find_entity (ctx)->section;
       bool export_p = DECL_MODULE_EXPORT_P (ns);
       bool inline_p = DECL_NAMESPACE_INLINE_P (ns);
       bool public_p = TREE_PUBLIC (ns);
@@ -11037,7 +11091,7 @@ module_state::write_bindings (elf_out *to, depset::hash &table, unsigned *crc_p)
 	  unsigned ns_num = 0;
 	  tree ns = b->get_entity ();
 	  if (ns != global_namespace)
-	    ns_num = table.find (depset::entity_key (ns))->section;
+	    ns_num = table.find_entity (ns)->section;
 	  dump () && dump ("Bindings %P section:%u", ns, b->get_name (),
 			   b->section);
 	  sec.u (to->name (b->get_name ()));
@@ -13131,7 +13185,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	  if (base[size]->cluster != base[0]->cluster)
 	    break;
 	  base[size]->cluster = base[size]->section = 0;
-	  gcc_checking_assert (!base[size]->is_namespace ());
+	  gcc_checking_assert (base[size]->get_entity_kind ()
+			       != depset::EK_NAMESPACE);
 	}
       base[0]->cluster = base[0]->section = 0;
 
@@ -13139,7 +13194,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	 of defns < decls < bindings. */
       qsort (base, size, sizeof (depset *), cluster_cmp);
 
-      if (base[0]->is_namespace ())
+      if (base[0]->get_entity_kind () == depset::EK_NAMESPACE)
 	/* A namespace decl, these are handled specially.  */
 	n_spaces++;
       else

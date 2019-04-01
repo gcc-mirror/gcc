@@ -1,6 +1,11 @@
 2019-04-01  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset): Replace key wih entity/discriminator tuple.
+	Add entity_kind and disc_bits enums.  Adjust hashing &
+	construction routines.
+
+	gcc/cp/
 	* module.cc (depset): Entity keying uses unique entity.  Set
 	entity kind later.
 	(depset::hash): Adjust hashing.
