@@ -30080,7 +30080,7 @@ for @var{module}.  The response should be @samp{OK @var{bmipath}}.
 
 @item HELLO @var{ver} @var{kind} @var{ident}
 This is the first command.  It informs the server of the name of the
-source being compiled.  Response is either @samp{OK
+source being compiled.  Response is either @samp{HELLO
 @var{ver} @var{agent} @var{repopath}}, or @samp{ERROR @var{msg}}.
 
 @item IMPORT @var{module}

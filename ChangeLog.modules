@@ -1,3 +1,14 @@
+2019-04-01  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (depset): Entity keying uses unique entity.  Set
+	entity kind later.
+	(depset::hash): Adjust hashing.
+	(depset::hash::add_dependency): Set kind after insertion.
+	(depset::hash::add_mergeable): Adjust.
+	gcc/
+	* doc/invoke.texi: Fix module mapper thinko.
+
 2019-03-29  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

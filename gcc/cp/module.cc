@@ -2204,6 +2204,7 @@ public:
   typedef std::pair<tree,tree> key_type;
 
 private:
+  // FIXME:Break apart
   key_type key;
 
 public:
@@ -2227,15 +2228,24 @@ public:
     gcc_checking_assert (TREE_CODE (decl) == NAMESPACE_DECL);
     return key_type (decl, name);
   }
+  /* A declaration key.  */
+  inline static key_type entity_key (tree decl)
+  {
+    return key_type (decl, NULL_TREE);
+  }
+  /* Late setting a binding name -- /then/ insert into hash!  */
   inline void set_binding_name (tree name)
   {
     gcc_checking_assert (key.second == global_identifier);
     key.second = name;
   }
-  /* A declaration key -- namespace-scope DECL.  */
-  inline static key_type entity_key (tree decl, bool defn = false)
+  /* Setting an entity type -- before or after hash table insertion.  */
+  // FIXME: More types will be added
+  inline void set_entity_kind (bool is_defn)
   {
-    return key_type (decl, defn ? decl : NULL_TREE);
+    gcc_checking_assert (!is_binding ());
+    if (is_defn)
+      key.second = key.first;
   }
 
 public:
@@ -2286,12 +2296,22 @@ public:
     inline static hashval_t hash (const compare_type &p)
     {
       hashval_t a = pointer_hash<tree_node>::hash (p.first);
-      hashval_t b = pointer_hash<tree_node>::hash (p.second);
-      return iterative_hash_hashval_t (a, b);
+      if (p.second && TREE_CODE (p.second) == IDENTIFIER_NODE)
+	{
+	  hashval_t b = pointer_hash<tree_node>::hash (p.second);
+	  a = iterative_hash_hashval_t (a, b);
+	}
+      return a;
     }
     inline static bool equal (const value_type b, const compare_type &p)
     {
-      return b->key == p;
+      if (b->key.first != p.first)
+	return false;
+      if (p.second && TREE_CODE (p.second) == IDENTIFIER_NODE
+	  && b->key.second != p.second)
+	return false;
+
+      return true;
     }
 
     /* (re)hasher for a binding itself.  */
@@ -8473,8 +8493,7 @@ depset::hash::find (const key_type &key)
 void
 depset::hash::add_dependency (tree decl, tree maybe_using)
 {
-  bool has_def = !is_mergeable () && !maybe_using && has_definition (decl);
-  key_type key = entity_key (maybe_using ? maybe_using : decl, has_def);
+  key_type key = entity_key (maybe_using ? maybe_using : decl);
 
   if (depset **slot = maybe_insert (key, !is_mergeable ()))
     {
@@ -8487,6 +8506,9 @@ depset::hash::add_dependency (tree decl, tree maybe_using)
       if (!dep)
 	{
 	  *slot = dep = new depset (key);
+	  bool has_def = (!is_mergeable ()
+			  && !maybe_using && has_definition (decl));
+	  dep->set_entity_kind (has_def);
 	  worklist.safe_push (dep);
 
 	  if (!binding_p && !ns_p)
@@ -8736,7 +8758,7 @@ void
 depset::hash::add_mergeable (tree decl)
 {
   gcc_checking_assert (is_mergeable ());
-  key_type key = entity_key (decl, false);
+  key_type key = entity_key (decl);
   depset *dep = new depset (key);
   insert (dep);
   worklist.safe_push (dep);
