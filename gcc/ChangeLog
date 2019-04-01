@@ -1,3 +1,10 @@
+2019-04-01  Martin Liska  <mliska@suse.cz>
+
+	PR driver/89861
+	* opt-suggestions.c (option_proposer::build_option_suggestions):
+	Add variant without any argument in order to provide better
+	hints.
+
 2019-04-01  Richard Biener  <rguenther@suse.de>
 
 	PR c/71598
