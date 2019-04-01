@@ -1,6 +1,9 @@
 2019-04-01  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset): Move flags into discriminator field.  Adjust uses.
+
+	gcc/cp/
 	* module.cc (depset): Replace key wih entity/discriminator tuple.
 	Add entity_kind and disc_bits enums.  Adjust hashing &
 	construction routines.

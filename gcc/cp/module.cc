@@ -2214,32 +2214,29 @@ public:
     EK_BINDING, /* Implicitly encoded.  */
     EK_BITS = 2,
   };
+
 private:
   /* Placement of bit fields in discriminator.  */
   enum disc_bits 
   {
-    DB_ZERO_BIT, /* Must be first.  */
-    DB_KIND_BIT,
+    DB_ZERO_BIT, /* Set to disambiguate identifier from flags  */
+    DB_KIND_BIT, /* Kind of the entity.  */
     DB_KIND_BITS = EK_BITS,
     DB_DEFN_BIT = DB_KIND_BIT + DB_KIND_BITS,
-    DB_IS_UNNAMED_BIT,
-    DB_IS_INTERNAL_BIT,
-    DB_REFS_UNNAMED_BIT,
-    DB_REFS_INTERNAL_BIT,
+    DB_IS_UNNAMED_BIT, /* It is a voldemort entity.  */
+    DB_IS_INTERNAL_BIT, /* It is an internal-linkage entity.  */
+    DB_REFS_UNNAMED_BIT,  /* Refer to a voldemort entity.  */
+    DB_REFS_INTERNAL_BIT,  /* Refers to an internal-linkage entity.  */
   };
 
 public:
   vec<depset *> deps;  /* Depsets in this TU we reference.  */
 
 public:
-  unsigned cluster : 30; /* Strongly connected cluster.  */
-  bool is_unnamed : 1;   /* This decl is not found by name.  */
-  bool is_internal : 1;  /* This decl is internal.  */
-  unsigned section : 30; /* Section written to.  */
-  bool refs_unnamed : 1;  /* A dependency is not found by name.  */
-  bool refs_internal : 1; /* Refs an internal entity (bad).  */
+  unsigned cluster; /* Strongly connected cluster.  */
+  unsigned section; /* Section written to.  */
   /* During SCC construction, section is lowlink, until the depset is
-     removed from the stack.   */
+     removed from the stack.  See Tarjan algorithm for details.  */
 
 private:
   /* Construction via factories.  Destruction via hash traits.  */
@@ -2267,10 +2264,41 @@ public:
       return EK_BINDING;
     return entity_kind ((discriminator >> DB_KIND_BIT) & ((1u << EK_BITS) - 1));
   }
+  const char *entity_kind_name () const;
   bool has_defn () const
   {
     gcc_checking_assert (!is_binding ());
     return bool ((discriminator >> DB_DEFN_BIT) & 1);
+  }
+
+private:
+  template<unsigned I> void set_flag_bit ()
+  {
+    gcc_checking_assert (!is_binding ());
+    discriminator |= 1u << I;
+  }
+  template<unsigned I> bool get_flag_bit () const
+  {
+    gcc_checking_assert (!is_binding ());
+    return bool ((discriminator >> I) & 1);
+  }
+  
+public:
+  bool is_unnamed () const
+  {
+    return get_flag_bit<DB_IS_UNNAMED_BIT> ();
+  }
+  bool is_internal () const
+  {
+    return get_flag_bit<DB_IS_INTERNAL_BIT> ();
+  }
+  bool refs_unnamed () const
+  {
+    return get_flag_bit<DB_REFS_UNNAMED_BIT> ();
+  }
+  bool refs_internal () const
+  {
+    return get_flag_bit<DB_REFS_INTERNAL_BIT> ();
   }
 
 public:
@@ -2413,15 +2441,22 @@ public:
 
 inline
 depset::depset (tree entity)
-  :entity (entity), discriminator (0), deps (),
-   cluster (0), is_unnamed (false), is_internal (false),
-   section (0), refs_unnamed (false), refs_internal (false)
+  :entity (entity), discriminator (0), deps (), cluster (0), section (0)
 {
 }
 
 inline
 depset::~depset ()
 {
+}
+
+const char *
+depset::entity_kind_name () const
+{
+/* Same order as entity_kind.  */
+  static const char *const names[] = 
+    {"regular", "using", "namespace", "binding"};
+  return names[get_entity_kind ()];
 }
 
 depset *depset::make_binding (tree ns, tree name)
@@ -8572,18 +8607,18 @@ depset::hash::add_dependency (tree decl, tree maybe_using)
 	      tree ctx = CP_DECL_CONTEXT (decl);
 	      if (TREE_CODE (ctx) != NAMESPACE_DECL)
 		/* A voldemort type.  */
-		dep->is_unnamed = true;
+		dep->set_flag_bit<DB_IS_UNNAMED_BIT> ();
 	      else if ((TREE_CODE (STRIP_TEMPLATE (decl)) == TYPE_DECL
 			|| TREE_CODE (STRIP_TEMPLATE (decl)) == CONST_DECL)
 		       ?  !TREE_PUBLIC (ctx) : DECL_THIS_STATIC (decl))
 		/* An internal decl.  */
-		dep->is_internal = true;
+		dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
 	      else if (DECL_IMPLICIT_TYPEDEF_P (decl)
 		       && IDENTIFIER_ANON_P (DECL_NAME (decl)))
 		{
 		  tree linkage_name = TYPE_LINKAGE_IDENTIFIER (TREE_TYPE (decl));
 		  if (linkage_name == DECL_NAME (decl))
-		    dep->is_internal = true;
+		    dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
 		  else
 		    {
 		      /* It has a name for linkage purposes.  */
@@ -8618,9 +8653,7 @@ depset::hash::add_dependency (tree decl, tree maybe_using)
 
       dump (dumper::DEPEND)
 	&& dump ("%s on %s %C:%N added", binding_p ? "Binding" : "Dependency",
-		 dep->get_entity_kind () == EK_USING ? "using"
-		 : dep->has_defn () ? "definition"
-		 : "declaration", TREE_CODE (decl), decl);
+		 dep->entity_kind_name (), TREE_CODE (decl), decl);
 
       if (dep->get_entity_kind () != EK_NAMESPACE)
 	{
@@ -8629,9 +8662,13 @@ depset::hash::add_dependency (tree decl, tree maybe_using)
 	    dep->deps.safe_push (current);
 	  else
 	    {
-	      current->refs_unnamed |= dep->is_unnamed;
-	      current->refs_internal |= dep->is_internal;
-	      bad_refs |= dep->is_internal;
+	      if (dep->is_unnamed ())
+		current->set_flag_bit<DB_REFS_UNNAMED_BIT> ();
+	      if (dep->is_internal ())
+		{
+		  current->set_flag_bit<DB_REFS_INTERNAL_BIT> ();
+		  bad_refs |= 1;
+		}
 
 	      if (TREE_CODE (decl) == TYPE_DECL
 		  && UNSCOPED_ENUM_P (TREE_TYPE (decl))
@@ -8775,9 +8812,7 @@ depset::hash::find_dependencies ()
 	decl = OVL_FUNCTION (decl);
       dump (dumper::DEPEND)
 	&& dump ("Dependencies of %s %C:%N",
-		 is_mergeable () ? "mergeable"
-		 : current->get_entity_kind () == EK_USING ? "using"
-		 : current->has_defn () ? "definition" : "declaration",
+		 is_mergeable () ? "mergeable" : current->entity_kind_name (),
 		 TREE_CODE (decl), decl);
       dump.indent ();
       walker.begin ();
@@ -8883,14 +8918,14 @@ depset::hash::finalize_dependencies ()
       depset *dep = *iter;
       if (dep->is_binding ())
 	dep->deps.qsort (binding_cmp);
-      else if (dep->refs_internal)
+      else if (dep->refs_internal ())
 	{
 	  ok = false;
 	  tree decl = dep->get_entity ();
 	  for (unsigned ix = dep->deps.length (); ix--;)
 	    {
 	      depset *rdep = dep->deps[ix];
-	      if (rdep->is_internal)
+	      if (rdep->is_internal ())
 		{
 		  // FIXME: Better location information?  We're
 		  // losing, so it doesn't matter about efficiency
@@ -10555,19 +10590,22 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
+      if (b->is_binding ())
+	continue;
+
       tree decl = b->get_entity ();
 
-      if (b->refs_unnamed)
+      if (b->refs_unnamed ())
 	refs_unnamed_p = true;
 
-      if (b->is_unnamed)
+      if (b->is_unnamed ())
 	{
 	  /* There is no binding for this decl.  It is therefore not
 	     findable by name.  Determine its horcrux number.  */
 	  dump () && dump ("Unnamed %u %N", unnamed, decl);
 	  b->cluster = ++unnamed;
 	}
-      else if (!b->is_binding () && b->get_entity_kind () != depset::EK_USING)
+      else if (b->get_entity_kind () != depset::EK_USING)
 	{
 	  // FIXME: What about non-mergeable decls in this SCC that
 	  // are nevertheless referenced in locating the mergeable
@@ -10598,14 +10636,16 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
     /* We contain references to unnamed decls.  Seed those that are in
        earlier clusters (others will be within this cluster).  */
     for (unsigned ix = 0; ix != size; ix++)
-      if (scc[ix]->refs_unnamed)
+      if (!scc[ix]->is_binding () && scc[ix]->refs_unnamed ())
 	{
 	  depset *b = scc[ix];
 
 	  for (unsigned jx = 0; jx != b->deps.length (); jx++)
 	    {
 	      depset *d = b->deps[jx];
-	      if (d->is_unnamed && d->cluster <= incoming_unnamed)
+	      if (!d->is_binding ()
+		  && d->is_unnamed ()
+		  && d->cluster <= incoming_unnamed)
 		{
 		  tree u_decl = d->get_entity ();
 		  if (!TREE_VISITED (u_decl))
@@ -10669,9 +10709,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	dump () && dump ("Depset:%u binding %C:%P", ix, TREE_CODE (decl),
 			 decl, b->get_name ());
       else
-	dump () && dump ("Depset:%u %s %C:%N", ix,
-			 b->get_entity_kind () == depset::EK_USING ? "using"
-			 : b->has_defn () ? "definition" : "declaration",
+	dump () && dump ("Depset:%u %s %C:%N", ix, b->entity_kind_name (),
 			 TREE_CODE (decl), decl);
 
       if (b->is_binding ())

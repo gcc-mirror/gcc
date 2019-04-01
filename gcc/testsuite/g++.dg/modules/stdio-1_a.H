@@ -10,6 +10,6 @@
 #endif
 // There should be *lots* of depsets (209 for glibc today)
 // { dg-final { scan-lang-dump {Writing SCC:60 } module } }
-// { dg-final { scan-lang-dump {Depset:0 declaration function_decl:'::printf'} module } }
+// { dg-final { scan-lang-dump {Depset:0 regular function_decl:'::printf'} module } }
 // { dg-final { scan-lang-dump {Depset:1 binding namespace_decl:'::printf'} module } }
 // { dg-final { scan-lang-dump {Controlling macro=_PROXY_STDIO_H} module } }
