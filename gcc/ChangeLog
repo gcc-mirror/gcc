@@ -1,3 +1,10 @@
+2019-04-01  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/86928
+	* sel-sched-ir.c (sel_redirect_edge_and_branch_force): Invoke
+	compute_live if necessary.
+	(sel_redirect_edge_and_branch): Likewise.
+
 2019-04-01  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/89865

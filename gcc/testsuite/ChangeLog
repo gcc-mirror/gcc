@@ -1,5 +1,10 @@
 2019-04-01  Andrey Belevantsev  <abel@ispras.ru>
 
+	PR rtl-optimization/86928
+	* gcc.dg/pr86928.c: New test.
+
+2019-04-01  Andrey Belevantsev  <abel@ispras.ru>
+
 	PR rtl-optimization/87273
 	* gcc.dg/pr87273.c: New test.
 

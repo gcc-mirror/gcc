@@ -5637,6 +5637,8 @@ sel_redirect_edge_and_branch_force (edge e, basic_block to)
 			   recompute_dominator (CDI_DOMINATORS, to));
   set_immediate_dominator (CDI_DOMINATORS, orig_dest,
 			   recompute_dominator (CDI_DOMINATORS, orig_dest));
+  if (jump && sel_bb_head_p (jump))
+    compute_live (jump);
 }
 
 /* A wrapper for redirect_edge_and_branch.  Return TRUE if blocks connected by
@@ -5697,6 +5699,8 @@ sel_redirect_edge_and_branch (edge e, basic_block to)
       set_immediate_dominator (CDI_DOMINATORS, orig_dest,
                                recompute_dominator (CDI_DOMINATORS, orig_dest));
     }
+  if (jump && sel_bb_head_p (jump))
+    compute_live (jump);
   return recompute_toporder_p;
 }
 
