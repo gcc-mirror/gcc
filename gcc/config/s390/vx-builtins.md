@@ -22,7 +22,6 @@
 
 (define_mode_iterator V_HW_32_64 [V4SI V2DI V2DF (V4SF "TARGET_VXE")])
 (define_mode_iterator VI_HW_SD [V4SI V2DI])
-(define_mode_iterator V_HW_HSD [V8HI V4SI (V4SF "TARGET_VXE") V2DI V2DF])
 (define_mode_iterator V_HW_4 [V4SI V4SF])
 ; Full size vector modes with more than one element which are directly supported in vector registers by the hardware.
 (define_mode_iterator VEC_HW  [V16QI V8HI V4SI V2DI V2DF (V4SF "TARGET_VXE")])
