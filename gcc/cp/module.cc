@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
    for entities declared in the Global Module Fragment.  In the
    purview of the current module, it is MODULE_PURVIEW.  For any
    imported declaration it is >= MODULE_IMPORT_BASE.  Decls from
-   header imports have a MODULE_OWNER, even though they are in the
+
    global module.  Builtins are always MODULE_NONE. (Note that
    this is happenstance for decls lacking DECL_LANG_SPECIFIC.)  For
    efficiency, MODULE_OWNER is also set in the decl of container-like
@@ -2209,12 +2209,13 @@ public:
   enum entity_kind
   {
     EK_DECL,
+    EK_UNNAMED,
     EK_SPECIALIZATION, /* *any* kind of specialization.  */
     EK_USING,
     EK_NAMESPACE,
     EK_EXPLICIT_HWM,  
     EK_BINDING = EK_EXPLICIT_HWM, /* Implicitly encoded.  */
-    EK_BITS = 2, /* Only need to encode below EK_EXPLICIT_HWM.  */
+    EK_BITS = 3, /* Only need to encode below EK_EXPLICIT_HWM.  */
   };
 
 private:
@@ -2225,7 +2226,6 @@ private:
     DB_KIND_BIT, /* Kind of the entity.  */
     DB_KIND_BITS = EK_BITS,
     DB_DEFN_BIT = DB_KIND_BIT + DB_KIND_BITS,
-    DB_IS_UNNAMED_BIT, /* It is a voldemort entity.  */
     DB_IS_INTERNAL_BIT, /* It is an internal-linkage entity.  */
     DB_REFS_UNNAMED_BIT,  /* Refer to a voldemort entity.  */
     DB_REFS_INTERNAL_BIT,  /* Refers to an internal-linkage entity.  */
@@ -2286,10 +2286,6 @@ private:
   }
   
 public:
-  bool is_unnamed () const
-  {
-    return get_flag_bit<DB_IS_UNNAMED_BIT> ();
-  }
   bool is_internal () const
   {
     return get_flag_bit<DB_IS_INTERNAL_BIT> ();
@@ -2413,7 +2409,7 @@ public:
 
   public:
     void add_mergeable (tree decl);
-    void add_dependency (tree decl);
+    void add_dependency (tree decl, entity_kind);
     void add_binding (tree ns, tree value);
     void add_writables (tree ns, bitmap partitions);
     void find_dependencies ();
@@ -2457,7 +2453,7 @@ depset::entity_kind_name () const
 {
   /* Same order as entity_kind.  */
   static const char *const names[] = 
-    {"regular", "specialization", "using", "namespace", "binding"};
+    {"regular", "unnamed", "specialization", "using", "namespace", "binding"};
   return names[get_entity_kind ()];
 }
 
@@ -6362,7 +6358,7 @@ trees_out::tree_namespace (tree ns, walk_kind ref, tree inner_decl)
   else if (ref == WK_body)
     tree_ctx (CP_DECL_CONTEXT (ns), true, ns);
   else if (DECL_SOURCE_LOCATION (ns) != BUILTINS_LOCATION)
-    dep_hash->add_dependency (ns);
+    dep_hash->add_dependency (ns, depset::EK_NAMESPACE);
 
   int tag = insert (ns, ref);
   if (streaming_p ())
@@ -6507,7 +6503,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	      {
 		/* We've found a voldemort type.  Add it as a
 		   dependency.  */
-		dep_hash->add_dependency (decl);
+		dep_hash->add_dependency (decl, depset::EK_UNNAMED);
 		kind = "unnamed";
 		goto insert;
 	      }
@@ -6585,7 +6581,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	else if (TREE_CODE (ctx) != NAMESPACE_DECL)
 	  tree_ctx (ctx, true, decl);
 	else if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION)
-	  dep_hash->add_dependency (decl);
+	  dep_hash->add_dependency (decl, depset::EK_DECL);
 
 	tree_node (name);
       }
@@ -8582,55 +8578,58 @@ depset::hash::find_binding (tree ctx, tree name)
    a using decl.  */
 
 void
-depset::hash::add_dependency (tree decl)
+depset::hash::add_dependency (tree decl, entity_kind ek)
 {
+  /* Make sure we're being told consistent information.  */
+  gcc_checking_assert ((ek == EK_USING) == (TREE_CODE (decl) == OVERLOAD));
+  gcc_checking_assert ((ek == EK_NAMESPACE)
+		       == (TREE_CODE (decl) == NAMESPACE_DECL
+			   && !DECL_NAMESPACE_ALIAS (decl)));
+  gcc_checking_assert (ek != EK_BINDING);
+
   if (depset **slot = entity_slot (decl, !is_mergeable ()))
     {
       bool binding_p = current && current->is_binding ();
       depset *dep = *slot;
 
       gcc_checking_assert (!is_mergeable () || !binding_p);
+      /* Usings only occur in bindings.  */
+      gcc_checking_assert (ek != EK_USING || (OVL_USING_P (decl) && binding_p));
+      /* Unnameable things are not namespace scope  */
+      gcc_checking_assert (ek != EK_UNNAMED
+			   || (TREE_CODE (CP_DECL_CONTEXT (decl))
+			       != NAMESPACE_DECL));
       if (!dep)
 	{
-	  bool using_p = TREE_CODE (decl) == OVERLOAD;
-	  bool has_def = !is_mergeable () && !using_p && has_definition (decl);
-	  entity_kind ek = EK_DECL;
+	  bool has_def = (!is_mergeable () && ek != EK_USING
+			  && has_definition (decl));
 
 	  /* The only OVERLOADS we should see are USING decls from
 	     bindings.  */
-	  gcc_checking_assert (!using_p || (OVL_USING_P (decl) && binding_p));
-	  if (using_p)
-	    ek = EK_USING;
-	  else if (TREE_CODE (decl) == NAMESPACE_DECL
-		   && !DECL_NAMESPACE_ALIAS (decl))
-	    ek = EK_NAMESPACE;
 	  *slot = dep = make_entity (decl, ek, has_def);
 	  worklist.safe_push (dep);
 
-	  if (!binding_p && ek != EK_NAMESPACE)
+	  if (binding_p)
+	    /* Dependency of a namespace binding.  */;
+	  else if (ek == EK_NAMESPACE)
+	    /* Dependency is a namespace.  */;
+	  else if (ek == EK_UNNAMED)
+	    /* Dependency is unnameable.  We do not have to apply the
+	       below checks to this entity, because we can only refer
+	       to it by depending on its containing entity, and that
+	       entity will have the below checks applied to it.  */;
+	  else
 	    {
-	      /* A not-for-binding dependency.  Either:
-		 1) an ill-formed internal linkage entity, or
-		 2) a reachable global module fragment entity, or
-		 3) a voldemort type.  */
-	      // FIXME: It is unfortunate we'll already have cleared
-	      // TREE_PUBLIC for entities that are iternal by dint of
-	      // referring to internal types.  Hence the use of
-	      // DECL_THIS_STATIC.
 	      tree ctx = CP_DECL_CONTEXT (decl);
-	      if (TREE_CODE (ctx) != NAMESPACE_DECL)
-		/* A voldemort type.  */
-		dep->set_flag_bit<DB_IS_UNNAMED_BIT> ();
-	      else if ((TREE_CODE (STRIP_TEMPLATE (decl)) == TYPE_DECL
-			|| TREE_CODE (STRIP_TEMPLATE (decl)) == CONST_DECL)
-		       ?  !TREE_PUBLIC (ctx) : DECL_THIS_STATIC (decl))
-		/* An internal decl.  */
-		dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
-	      else if (DECL_IMPLICIT_TYPEDEF_P (decl)
-		       && IDENTIFIER_ANON_P (DECL_NAME (decl)))
+	      gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
+
+	      if (DECL_IMPLICIT_TYPEDEF_P (decl)
+		  && IDENTIFIER_ANON_P (DECL_NAME (decl)))
+		/* An anonymous elaborated type.  */
 		{
 		  tree linkage_name = TYPE_LINKAGE_IDENTIFIER (TREE_TYPE (decl));
 		  if (linkage_name == DECL_NAME (decl))
+		    /* With no linkage.  */
 		    dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
 		  else
 		    {
@@ -8643,6 +8642,12 @@ depset::hash::add_dependency (tree decl)
 				 decl, naming_decl);
 		    }
 		}
+	      else if ((TREE_CODE (STRIP_TEMPLATE (decl)) == TYPE_DECL
+			|| TREE_CODE (STRIP_TEMPLATE (decl)) == CONST_DECL)
+		       ? !TREE_PUBLIC (ctx)
+		       : DECL_THIS_STATIC (decl))
+		/* An internal decl.  */
+		dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
 	      else
 		{
 		  // FIXME: We have to walk the non-emitted entities
@@ -8652,6 +8657,7 @@ depset::hash::add_dependency (tree decl)
 		     it to its scope's binding depset.  */
 		  gcc_checking_assert (MAYBE_DECL_MODULE_OWNER (decl)
 				       == MODULE_NONE);
+		  tree ctx = CP_DECL_CONTEXT (decl);
 		  depset **bslot = binding_slot (ctx, DECL_NAME (decl), true);
 		  depset *bdep = *bslot;
 		  if (!bdep)
@@ -8663,6 +8669,9 @@ depset::hash::add_dependency (tree decl)
 		}
 	    }
 	}
+      else
+	/* Make sure we have consistent categorization.  */
+	gcc_checking_assert (dep->get_entity_kind () == ek);
 
       dump (dumper::DEPEND)
 	&& dump ("%s on %s %C:%N added", binding_p ? "Binding" : "Dependency",
@@ -8675,8 +8684,9 @@ depset::hash::add_dependency (tree decl)
 	    dep->deps.safe_push (current);
 	  else
 	    {
-	      if (dep->is_unnamed ())
+	      if (dep->get_entity_kind () == EK_UNNAMED)
 		current->set_flag_bit<DB_REFS_UNNAMED_BIT> ();
+
 	      if (dep->is_internal ())
 		{
 		  current->set_flag_bit<DB_REFS_INTERNAL_BIT> ();
@@ -8735,7 +8745,8 @@ depset::hash::add_binding (tree ns, tree value)
 	continue;
 
       bool using_p = iter.using_p ();
-      add_dependency (using_p ? iter.get_using () : decl);
+      add_dependency (using_p ? iter.get_using () : decl,
+		      using_p ? depset::EK_USING : depset::EK_DECL);
     }
 
   if (current->deps.length ())
@@ -8801,7 +8812,7 @@ depset::hash::add_writables (tree ns, bitmap partitions)
 	  // FIXME: What about opening and closing it in the
 	  // purview, shouldn't that add the namespace too?
 	  if (DECL_MODULE_EXPORT_P (value))
-	    add_dependency (value);
+	    add_dependency (value, depset::EK_NAMESPACE);
 	}
     }
 
@@ -10612,7 +10623,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
       if (b->refs_unnamed ())
 	refs_unnamed_p = true;
 
-      if (b->is_unnamed ())
+      if (b->get_entity_kind () == depset::EK_UNNAMED)
 	{
 	  /* There is no binding for this decl.  It is therefore not
 	     findable by name.  Determine its horcrux number.  */
@@ -10658,7 +10669,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	    {
 	      depset *d = b->deps[jx];
 	      if (!d->is_binding ()
-		  && d->is_unnamed ()
+		  && d->get_entity_kind () != depset::EK_UNNAMED
 		  && d->cluster <= incoming_unnamed)
 		{
 		  tree u_decl = d->get_entity ();
@@ -10716,9 +10727,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
     {
       depset *b = scc[ix];
       tree decl = b->get_entity ();
-      if (b->get_entity_kind () == depset::EK_USING)
-	decl = OVL_FUNCTION (decl);
-
       if (b->is_binding ())
 	dump () && dump ("Depset:%u binding %C:%P", ix, TREE_CODE (decl),
 			 decl, b->get_name ());
