@@ -1,5 +1,11 @@
 2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* config/s390/s390-builtins.def (B_VXE2): New builtin flag definition.
+	* config/s390/s390-c.c (s390_cpu_cpp_builtins_internal): Increment
+	vector builtin version number in __VEC__.
+
+2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* config/s390/s390.md (VX_CONV_BFP, VX_CONV_INT): New mode
 	iterators.
 	(SFSI): New mode attribute.

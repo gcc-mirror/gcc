@@ -326,7 +326,7 @@ s390_cpu_cpp_builtins_internal (cpp_reader *pfile,
   s390_def_or_undef_macro (pfile, MASK_OPT_VX, old_opts, opts,
 			   "__VX__", "__VX__");
   s390_def_or_undef_macro (pfile, MASK_ZVECTOR, old_opts, opts,
-			   "__VEC__=10302", "__VEC__");
+			   "__VEC__=10303", "__VEC__");
   s390_def_or_undef_macro (pfile, MASK_ZVECTOR, old_opts, opts,
 			   "__vector=__attribute__((vector_size(16)))",
 			   "__vector__");
