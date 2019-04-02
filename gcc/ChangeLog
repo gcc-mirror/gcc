@@ -1,5 +1,16 @@
 2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* config/s390/s390-builtin-types.def: Add new builtin function types.
+	* config/s390/s390-builtins.def: Add overloaded builtin
+	s390_vec_revb. Add low-level builtins for vlbr and vstbr
+	instructions.
+	* config/s390/vecintrin.h (vec_revb): New builtin name definition.
+	* config/s390/vector.md (VT_HW_HSDT): New mode iterator.
+	("bswap<mode>"): New expander.
+	("*bswap<mode>", "*bswap<mode>_emu"): New insn definitions.
+
+2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* config/s390/s390-builtins.def (B_VXE2): New builtin flag definition.
 	* config/s390/s390-c.c (s390_cpu_cpp_builtins_internal): Increment
 	vector builtin version number in __VEC__.
