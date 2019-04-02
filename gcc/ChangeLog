@@ -1,3 +1,9 @@
+2019-04-02  Martin Liska  <mliska@suse.cz>
+
+	PR translation/89912
+	* params.def (PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP):
+	Fix param description of graphite-max-arrays-per-scop.
+
 2019-04-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/linux64.h (ASAN_REJECT_SPEC): New macro.
