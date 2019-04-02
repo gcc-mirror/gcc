@@ -329,4 +329,6 @@ __lcbb(const void *ptr, int bndry)
 #define vec_reve __builtin_s390_vec_reve
 #define vec_sldb __builtin_s390_vec_sldb
 #define vec_srdb __builtin_s390_vec_srdb
+#define vec_search_string_cc __builtin_s390_vec_search_string_cc
+#define vec_search_string_until_zero_cc __builtin_s390_vec_search_string_until_zero_cc
 #endif /* _VECINTRIN_H */
