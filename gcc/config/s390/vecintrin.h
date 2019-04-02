@@ -159,6 +159,20 @@ __lcbb(const void *ptr, int bndry)
 			    | __VEC_CLASS_FP_SUBNORMAL_N, &cc);	\
       cc != 3 ? 1 : 0;						\
     })
+
+#define vec_vstbrh vec_vlbrh
+#define vec_vstbrf vec_vlbrf
+#define vec_vstbrg vec_vlbrg
+#define vec_vstbrq vec_vlbrq
+#define vec_vstbrf_flt vec_vlbrf_flt
+#define vec_vstbrg_dbl vec_vlbrg_dbl
+
+#define vec_vsterb vec_vlerb
+#define vec_vsterh vec_vlerh
+#define vec_vsterf vec_vlerh
+#define vec_vsterg vec_vlerh
+#define vec_vsterf_flt vec_vlerf_flt
+#define vec_vsterg_dbl vec_vlerg_dbl
 #define vec_gather_element __builtin_s390_vec_gather_element
 #define vec_xl __builtin_s390_vec_xl
 #define vec_xld2 __builtin_s390_vec_xld2
