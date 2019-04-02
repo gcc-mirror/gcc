@@ -248,6 +248,7 @@ md_file=
 # Obsolete configurations.
 case ${target} in
   *-*-solaris2.10*			\
+  | spu*-*-*				\
   | tile*-*-*				\
  )
     if test "x$enable_obsolete" != xyes; then
