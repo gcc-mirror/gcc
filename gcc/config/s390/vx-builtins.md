@@ -1030,7 +1030,7 @@
 	(unspec:V_HW [(match_operand:V_HW 1 "register_operand" "v")
 		      (match_operand:V_HW 2 "register_operand" "v")
 		      (match_operand:QI 3 "const_int_operand"  "C")]
-		     UNSPEC_VEC_SLDB))]
+		     UNSPEC_VEC_SLDBYTE))]
   "TARGET_VX"
   "vsldb\t%v0,%v1,%v2,%b3"
   [(set_attr "op_type" "VRI")])
@@ -1040,11 +1040,35 @@
 	(unspec:V_HW [(match_operand:V_HW 1 "register_operand" "")
 		      (match_operand:V_HW 2 "register_operand" "")
 		      (match_operand:QI 3 "const_int_operand"  "")]
-		     UNSPEC_VEC_SLDB))]
+		     UNSPEC_VEC_SLDBYTE))]
   "TARGET_VX"
 {
   operands[3] = GEN_INT (INTVAL (operands[3]) << 2);
 })
+
+; Vector shift left double by bit
+
+(define_insn "vec_sldb<mode>"
+  [(set (match_operand:V_HW 0 "register_operand"              "=v")
+	(unspec:V_HW [(match_operand:V_HW 1 "register_operand" "v")
+		      (match_operand:V_HW 2 "register_operand" "v")
+		      (match_operand:QI 3 "const_int_operand"  "C")]
+		     UNSPEC_VEC_SLDBIT))]
+  "TARGET_VXE2"
+  "vsld\t%v0,%v1,%v2,%b3"
+  [(set_attr "op_type" "VRI")])
+
+; Vector shift right double by bit
+
+(define_insn "vec_srdb<mode>"
+  [(set (match_operand:V_HW 0 "register_operand"              "=v")
+	(unspec:V_HW [(match_operand:V_HW 1 "register_operand" "v")
+		      (match_operand:V_HW 2 "register_operand" "v")
+		      (match_operand:QI 3 "const_int_operand"  "C")]
+		     UNSPEC_VEC_SRDBIT))]
+  "TARGET_VXE2"
+  "vsrd\t%v0,%v1,%v2,%b3"
+  [(set_attr "op_type" "VRI")])
 
 ; Vector shift right arithmetic
 
