@@ -312,4 +312,5 @@ __lcbb(const void *ptr, int bndry)
 #define vec_sqrt __builtin_s390_vec_sqrt
 #define vec_fp_test_data_class __builtin_s390_vec_fp_test_data_class
 #define vec_revb __builtin_s390_vec_revb
+#define vec_reve __builtin_s390_vec_reve
 #endif /* _VECINTRIN_H */

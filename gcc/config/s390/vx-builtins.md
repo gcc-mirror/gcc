@@ -22,7 +22,7 @@
 
 (define_mode_iterator V_HW_32_64 [V4SI V2DI V2DF (V4SF "TARGET_VXE")])
 (define_mode_iterator VI_HW_SD [V4SI V2DI])
-(define_mode_iterator V_HW_HSD [V8HI V4SI V2DI V2DF])
+(define_mode_iterator V_HW_HSD [V8HI V4SI (V4SF "TARGET_VXE") V2DI V2DF])
 (define_mode_iterator V_HW_4 [V4SI V4SF])
 ; Full size vector modes with more than one element which are directly supported in vector registers by the hardware.
 (define_mode_iterator VEC_HW  [V16QI V8HI V4SI V2DI V2DF (V4SF "TARGET_VXE")])
@@ -2058,3 +2058,84 @@
   "TARGET_VXE"
   "<vw>fmax<sdx>b\t%v0,%v1,%v2,%b3"
   [(set_attr "op_type" "VRR")])
+
+; The element reversal builtins introduced with arch13 have been made
+; available also for older CPUs down to z13.
+(define_expand "eltswap<mode>"
+  [(set (match_operand:VEC_HW                 0 "nonimmediate_operand" "")
+	(unspec:VEC_HW [(match_operand:VEC_HW 1 "nonimmediate_operand" "")]
+		       UNSPEC_VEC_ELTSWAP))]
+  "TARGET_VX")
+
+; The byte element reversal is implemented as 128 bit byte swap.
+; Alternatively this could be emitted as bswap:V1TI but the required
+; subregs appear to confuse combine.
+(define_insn "*eltswapv16qi"
+  [(set (match_operand:V16QI                0 "nonimmediate_operand" "=v,v,R")
+	(unspec:V16QI [(match_operand:V16QI 1 "nonimmediate_operand"  "v,R,v")]
+		      UNSPEC_VEC_ELTSWAP))]
+  "TARGET_VXE2"
+  "@
+   #
+   vlbrq\t%v0,%v1
+   vstbrq\t%v1,%v0"
+  [(set_attr "op_type" "*,VRX,VRX")])
+
+; vlerh, vlerf, vlerg, vsterh, vsterf, vsterg
+(define_insn "*eltswap<mode>"
+  [(set (match_operand:V_HW_HSD                   0 "nonimmediate_operand" "=v,v,R")
+	(unspec:V_HW_HSD [(match_operand:V_HW_HSD 1 "nonimmediate_operand"  "v,R,v")]
+			 UNSPEC_VEC_ELTSWAP))]
+  "TARGET_VXE2"
+  "@
+   #
+   vler<bhfgq>\t%v0,%v1
+   vster<bhfgq>\t%v1,%v0"
+  [(set_attr "op_type" "*,VRX,VRX")])
+
+; arch13 has instructions for doing element reversal from mem to reg
+; or the other way around.  For reg to reg or on pre arch13 machines
+; we have to emulate it with vector permute.
+(define_insn_and_split "*eltswap<mode>_emu"
+  [(set (match_operand:VEC_HW                 0 "nonimmediate_operand" "=vR")
+	(unspec:VEC_HW [(match_operand:VEC_HW 1 "nonimmediate_operand" "vR")]
+		       UNSPEC_VEC_ELTSWAP))]
+  "TARGET_VX && can_create_pseudo_p ()"
+  "#"
+  "&& ((!memory_operand (operands[0], <MODE>mode)
+        && !memory_operand (operands[1], <MODE>mode))
+       || !TARGET_VXE2)"
+  [(set (match_dup 3)
+	(unspec:V16QI [(match_dup 4)
+		       (match_dup 4)
+		       (match_dup 2)]
+		      UNSPEC_VEC_PERM))
+   (set (match_dup 0) (subreg:VEC_HW (match_dup 3) 0))]
+{
+  static char p[4][16] =
+    { { 15, 14, 13, 12, 11, 10, 9,  8,  7,  6,  5,  4,  3,  2,  1,  0 },   /* Q */
+      { 14, 15, 12, 13, 10, 11, 8,  9,  6,  7,  4,  5,  2,  3,  0,  1 },   /* H */
+      { 12, 13, 14, 15, 8,  9,  10, 11, 4,  5,  6,  7,  0,  1,  2,  3 },   /* S */
+      { 8,  9,  10, 11, 12, 13, 14, 15, 0,  1,  2,  3,  4,  5,  6,  7 } }; /* D */
+  char *perm;
+  rtx perm_rtx[16], constv;
+
+  switch (GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)))
+    {
+    case 1: perm = p[0]; break;
+    case 2: perm = p[1]; break;
+    case 4: perm = p[2]; break;
+    case 8: perm = p[3]; break;
+    default: gcc_unreachable ();
+    }
+
+  for (int i = 0; i < 16; i++)
+    perm_rtx[i] = GEN_INT (perm[i]);
+
+  operands[1] = force_reg (<MODE>mode, operands[1]);
+  operands[2] = gen_reg_rtx (V16QImode);
+  operands[3] = gen_reg_rtx (V16QImode);
+  operands[4] = simplify_gen_subreg (V16QImode, operands[1], <MODE>mode, 0);
+  constv = force_const_mem (V16QImode, gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, perm_rtx)));
+  emit_move_insn (operands[2], constv);
+})
