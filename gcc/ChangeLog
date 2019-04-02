@@ -1,3 +1,20 @@
+2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* common/config/s390/s390-common.c (processor_flags_table): New
+	entry for arch13.
+	* config.gcc: Support arch13 with the --with-arch= configure flag.
+	* config/s390/driver-native.c (s390_host_detect_local_cpu):
+	* config/s390/s390-opts.h (enum processor_type): Add PROCESSOR_ARCH13.
+	* config/s390/s390.c (s390_get_sched_attrmask)
+	(s390_get_unit_mask): Add PROCESSOR_ARCH13.
+	* config/s390/s390.h (enum processor_flags): Add PF_VXE2 and PF_ARCH13.
+	* config/s390/s390.md (TARGET_CPU_ARCH13, TARGET_CPU_ARCH13_P)
+	(TARGET_CPU_VXE2, TARGET_CPU_VXE2_P, TARGET_ARCH13)
+	(TARGET_ARCH13_P, TARGET_VXE2, TARGET_VXE2_P): New macro
+	definitions.
+	* config/s390/s390.opt: Support arch13 as processor type in
+	command line options.
+
 2019-04-02  Martin Liska  <mliska@suse.cz>
 
 	PR translation/89912
