@@ -1,5 +1,11 @@
 2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* config/s390/s390.c (s390_rtx_costs): Do not add extra costs for
+	if-then-else constructs if we can use the select instruction.
+	* config/s390/s390.md ("*mov<mode>cc"): Add the new instructions.
+
+2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* config/s390/s390.md ("*popcountdi_arch13_cc")
 	("*popcountdi_arch13_cconly", "*popcountdi_arch13"): New insn
 	definition.
