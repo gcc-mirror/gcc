@@ -299,7 +299,9 @@ private:
 
   dom_accumulator *m_dom_accumulator;
   auto_vec<basic_block> m_bbs;
-  trace_ranger m_ranger;
+  // This is a pointer so we can delay construction until after loop
+  // info is available.
+  trace_ranger *m_ranger;
   auto_bitmap m_touched;
   propagate_cleanups m_cleanups;
   enum rvrp_order m_order;
@@ -308,14 +310,15 @@ private:
 rvrp_engine::rvrp_engine (enum rvrp_order order)
   : m_order (order)
 {
-  basic_block bb;
-  m_bbs.reserve (n_basic_blocks_for_fn (cfun));
-
-  // This is needed for all variants, because we want range refinement
-  // of loops (loop_ranger).
+  // Loop info must be initialized before the ranger because
+  // loop_optimizer_init() may alter the IL while normalizing loops.
   calculate_dominance_info (CDI_DOMINATORS);
   loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
   scev_initialize ();
+
+  basic_block bb;
+  m_bbs.reserve (n_basic_blocks_for_fn (cfun));
+  m_ranger = new trace_ranger;
 
   switch (order)
     {
@@ -354,7 +357,7 @@ rvrp_engine::~rvrp_engine ()
   loop_optimizer_finalize ();
   free_dominance_info (CDI_DOMINATORS);
 
-  rvrp_final_propagate (m_ranger, m_touched);
+  rvrp_final_propagate (*m_ranger, m_touched);
 }
 
 void
@@ -366,8 +369,8 @@ rvrp_engine::visit (basic_block bb)
     {
       gphi *phi = gpi.phi ();
       tree phi_def = gimple_phi_result (phi);
-      if (m_ranger.valid_ssa_p (phi_def))
-	m_ranger.range_of_stmt (r, phi);
+      if (m_ranger->valid_ssa_p (phi_def))
+	m_ranger->range_of_stmt (r, phi);
     }
 
   if (dump_file)
@@ -379,13 +382,13 @@ rvrp_engine::visit (basic_block bb)
       gimple *stmt = gsi_stmt (gsi);
       gimple *old_stmt = gimple_copy (stmt);
       tree lhs = gimple_get_lhs (stmt);
-      if (gimple_code (stmt) == GIMPLE_COND || m_ranger.valid_ssa_p (lhs))
+      if (gimple_code (stmt) == GIMPLE_COND || m_ranger->valid_ssa_p (lhs))
 	{
 	  bool changed = false;
-	  if (m_ranger.range_of_stmt (r, stmt))
-	    changed = rvrp_fold (m_ranger, stmt, m_touched);
+	  if (m_ranger->range_of_stmt (r, stmt))
+	    changed = rvrp_fold (*m_ranger, stmt, m_touched);
 	  if (!changed)
-	    changed = rvrp_simplify (m_ranger, &gsi);
+	    changed = rvrp_simplify (*m_ranger, &gsi);
 	  if (changed)
 	    m_cleanups.record_change (old_stmt, stmt);
 	}
