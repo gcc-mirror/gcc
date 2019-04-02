@@ -359,9 +359,11 @@ private:
   trace_ranger m_ranger;
   auto_bitmap m_touched;
   propagate_cleanups m_cleanups;
+  enum rvrp_order m_order;
 };
 
 rvrp_engine::rvrp_engine (enum rvrp_order order)
+  : m_order (order)
 {
   basic_block bb;
   m_bbs.reserve (n_basic_blocks_for_fn (cfun));
@@ -397,7 +399,7 @@ rvrp_engine::~rvrp_engine ()
   if (m_dom_accumulator)
     delete m_dom_accumulator;
 
-  if (dom_info_available_p (cfun, CDI_POST_DOMINATORS))
+  if (m_order == RVRP_ORDER_POSTDOM)
     free_dominance_info (CDI_POST_DOMINATORS);
 
   rvrp_final_propagate (m_ranger, m_touched);
