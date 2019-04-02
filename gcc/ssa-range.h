@@ -80,9 +80,9 @@ protected:
   bool range_of_range_op  (irange &r, grange_op *s, gimple *eval_from);
   bool range_of_range_op  (irange &r, grange_op *s, edge on_edge);
 
-  bool range_of_phi (irange &r, gphi *phi, tree name = NULL_TREE,
-		     const irange *name_range = NULL, gimple *eval_from = NULL,
-		     edge on_edge = NULL);
+  virtual bool range_of_phi (irange &r, gphi *phi, tree name = NULL_TREE,
+			     const irange *name_range = NULL,
+			     gimple *eval_from = NULL, edge on_edge = NULL);
 
   bool range_of_call (irange &r, gcall *call, tree name = NULL_TREE,
 		      const irange *name_range = NULL,
@@ -141,14 +141,31 @@ public:
   void dump (FILE *f);
   void calculate_and_dump (FILE *f);   /* Calculate all stmts and dump */
 
-  friend class phi_loop_range;
 protected:
   gori_cache m_gori; 	  /* Generates Outgoing Range Info.  */
   ssa_global_cache m_globals;
 };
 
+// FIXME: Forward declaration for loop_ranger.
+class vr_values;
 
-class trace_ranger : public global_ranger
+// A global ranger that uses SCEV/loop (if available) to refine PHI results.
+
+class loop_ranger : public global_ranger
+{
+public:
+  loop_ranger ();
+  ~loop_ranger ();
+private:
+  void adjust_phi_with_loop_info (irange &r, gphi *phi);
+  virtual bool range_of_phi (irange &r, gphi *phi, tree name,
+			     const irange *name_range, gimple *eval_from,
+			     edge on_edge);
+
+  vr_values *m_vr_values;
+};
+
+class trace_ranger : public loop_ranger
 {
 public:
   trace_ranger();

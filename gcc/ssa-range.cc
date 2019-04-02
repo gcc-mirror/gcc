@@ -46,6 +46,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-range.h"
 #include "ssa-range-gori.h"
 #include "fold-const.h"
+#include "cfgloop.h"
+#include "tree-scalar-evolution.h"
+#include "tree-ssa-loop.h"
+#include "alloc-pool.h"
+#include "vr-values.h"
 
 
 // If there is a range control statment at the end of block BB, return it.
@@ -976,6 +981,60 @@ global_ranger::calculate_and_dump (FILE *output)
     }
   // The dump it.
   dump (output);
+}
+
+loop_ranger::loop_ranger ()
+{
+  m_vr_values = new vr_values;
+}
+
+loop_ranger::~loop_ranger ()
+{
+  delete m_vr_values;
+}
+
+// Adjust a PHI result with loop information.
+
+void
+loop_ranger::adjust_phi_with_loop_info (irange &r, gphi *phi)
+{
+  struct loop *l = loop_containing_stmt (phi);
+  if (l && l->header == gimple_bb (phi))
+    {
+      tree phi_result = PHI_RESULT (phi);
+      value_range vr = irange_to_value_range (r);
+      m_vr_values->adjust_range_with_scev (&vr, l, phi, phi_result);
+      if (vr.constant_p ())
+	{
+	  irange old = r;
+	  r = value_range_to_irange (TREE_TYPE (phi_result), vr);
+	  if (old != r
+	      && dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "LOOP_RANGER refined this PHI result: ");
+	      print_gimple_stmt (dump_file, phi, 0, TDF_SLIM);
+	      fprintf (dump_file, "  from this range: ");
+	      old.dump (dump_file);
+	      fprintf (dump_file, "  into this range: ");
+	      r.dump (dump_file);
+	    }
+	}
+    }
+}
+
+// Virtual override of global_ranger::range_of_phi() that adjusts the
+// result with loop information if available.
+
+bool
+loop_ranger::range_of_phi (irange &r, gphi *phi, tree name,
+			   const irange *name_range, gimple *eval_from,
+			   edge on_edge)
+{
+  bool result = global_ranger::range_of_phi (r, phi, name, name_range,
+					     eval_from, on_edge);
+  if (result && scev_initialized_p ())
+    adjust_phi_with_loop_info (r, phi);
+  return result;
 }
 
 // Constructor for trace_ranger.
