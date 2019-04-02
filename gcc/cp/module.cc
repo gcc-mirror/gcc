@@ -2209,10 +2209,12 @@ public:
   enum entity_kind
   {
     EK_DECL,
+    EK_SPECIALIZATION, /* *any* kind of specialization.  */
     EK_USING,
     EK_NAMESPACE,
-    EK_BINDING, /* Implicitly encoded.  */
-    EK_BITS = 2,
+    EK_EXPLICIT_HWM,  
+    EK_BINDING = EK_EXPLICIT_HWM, /* Implicitly encoded.  */
+    EK_BITS = 2, /* Only need to encode below EK_EXPLICIT_HWM.  */
   };
 
 private:
@@ -2411,7 +2413,7 @@ public:
 
   public:
     void add_mergeable (tree decl);
-    void add_dependency (tree decl, tree maybe_decl = NULL_TREE);
+    void add_dependency (tree decl);
     void add_binding (tree ns, tree value);
     void add_writables (tree ns, bitmap partitions);
     void find_dependencies ();
@@ -2453,9 +2455,9 @@ depset::~depset ()
 const char *
 depset::entity_kind_name () const
 {
-/* Same order as entity_kind.  */
+  /* Same order as entity_kind.  */
   static const char *const names[] = 
-    {"regular", "using", "namespace", "binding"};
+    {"regular", "specialization", "using", "namespace", "binding"};
   return names[get_entity_kind ()];
 }
 
@@ -3711,6 +3713,8 @@ dumper::operator () (const char *format, ...)
 	case 'N': /* Name.  */
 	  {
 	    tree t = va_arg (args, tree);
+	    if (TREE_CODE (t) == OVERLOAD)
+	      t = OVL_FUNCTION (t);
 	    fputc ('\'', dumps->stream);
 	    dumps->nested_name (t);
 	    fputc ('\'', dumps->stream);
@@ -7792,13 +7796,17 @@ has_definition (tree decl)
 	/* Not defined.  */
 	break;
 
+      if (DECL_DECLARED_INLINE_P (decl))
+	return true;
+
       if (DECL_TEMPLATE_INFO (decl))
 	{
-	  if (!(DECL_USE_TEMPLATE (decl) & 1))
+	  int use_tpl = DECL_USE_TEMPLATE (decl);
+
+	  // FIXME: partial specializations have definitions too.
+	  if (use_tpl < 2)
 	    return true;
 	}
-      else if (DECL_DECLARED_INLINE_P (decl))
-	return true;
       break;
 
     case VAR_DECL:
@@ -8568,14 +8576,15 @@ depset::hash::find_binding (tree ctx, tree name)
    Append it to current's depset.  The decls newly discovered at this
    point are not export or module linkage.  They may be voldemort
    types, internal-linkage entities or reachable global module
-   fragment entities.  */
+   fragment entities.
+
+   DECL will be an OVL_USING_P OVERLOAD, if it's from a binding that's
+   a using decl.  */
 
 void
-depset::hash::add_dependency (tree decl, tree maybe_using)
+depset::hash::add_dependency (tree decl)
 {
-  tree ent = maybe_using ? maybe_using : decl;
-
-  if (depset **slot = entity_slot (ent, !is_mergeable ()))
+  if (depset **slot = entity_slot (decl, !is_mergeable ()))
     {
       bool binding_p = current && current->is_binding ();
       depset *dep = *slot;
@@ -8583,15 +8592,19 @@ depset::hash::add_dependency (tree decl, tree maybe_using)
       gcc_checking_assert (!is_mergeable () || !binding_p);
       if (!dep)
 	{
-	  bool has_def = (!is_mergeable ()
-			  && !maybe_using && has_definition (decl));
+	  bool using_p = TREE_CODE (decl) == OVERLOAD;
+	  bool has_def = !is_mergeable () && !using_p && has_definition (decl);
 	  entity_kind ek = EK_DECL;
-	  if (maybe_using)
+
+	  /* The only OVERLOADS we should see are USING decls from
+	     bindings.  */
+	  gcc_checking_assert (!using_p || (OVL_USING_P (decl) && binding_p));
+	  if (using_p)
 	    ek = EK_USING;
 	  else if (TREE_CODE (decl) == NAMESPACE_DECL
 		   && !DECL_NAMESPACE_ALIAS (decl))
 	    ek = EK_NAMESPACE;
-	  *slot = dep = make_entity (ent, ek, has_def);
+	  *slot = dep = make_entity (decl, ek, has_def);
 	  worklist.safe_push (dep);
 
 	  if (!binding_p && ek != EK_NAMESPACE)
@@ -8603,7 +8616,7 @@ depset::hash::add_dependency (tree decl, tree maybe_using)
 	      // FIXME: It is unfortunate we'll already have cleared
 	      // TREE_PUBLIC for entities that are iternal by dint of
 	      // referring to internal types.  Hence the use of
-	      // DECL_THIS_STATIC. 
+	      // DECL_THIS_STATIC.
 	      tree ctx = CP_DECL_CONTEXT (decl);
 	      if (TREE_CODE (ctx) != NAMESPACE_DECL)
 		/* A voldemort type.  */
@@ -8721,7 +8734,8 @@ depset::hash::add_binding (tree ns, tree value)
 	/* Ignore TINFO things.  */
 	continue;
 
-      add_dependency (decl, iter.using_p () ? iter.get_using () : NULL_TREE);
+      bool using_p = iter.using_p ();
+      add_dependency (using_p ? iter.get_using () : decl);
     }
 
   if (current->deps.length ())

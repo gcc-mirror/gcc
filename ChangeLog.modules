@@ -1,3 +1,11 @@
+2019-04-02  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (depset::add_dependency): Drop maybe_using arg.
+	Adjust callers.
+	(dumper::operator()): Overloads have a name.
+	(has_definition): Adjust.
+
 2019-04-01  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
