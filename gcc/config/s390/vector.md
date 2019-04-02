@@ -68,6 +68,10 @@
 
 (define_mode_iterator V_128_NOSINGLE [V16QI V8HI V4SI V4SF V2DI V2DF])
 
+; 32 bit int<->fp vector conversion instructions are available since VXE2 (arch13).
+(define_mode_iterator VX_VEC_CONV_BFP [V2DF (V4SF "TARGET_VXE2")])
+(define_mode_iterator VX_VEC_CONV_INT [V2DI (V4SI "TARGET_VXE2")])
+
 ; Empty string for all but TImode.  This is used to hide the TImode
 ; expander name in case it is defined already.  See addti3 for an
 ; example.
@@ -1993,48 +1997,52 @@
 
 ; op2: inexact exception not suppressed (IEEE 754 2008)
 ; op3: according to current rounding mode
-
-(define_insn "floatv2div2df2"
-  [(set (match_operand:V2DF             0 "register_operand" "=v")
-	(float:V2DF (match_operand:V2DI 1 "register_operand"  "v")))]
-  "TARGET_VX"
-  "vcdgb\t%v0,%v1,0,0"
+; vcdgb, vcefb
+(define_insn "float<VX_VEC_CONV_INT:mode><VX_VEC_CONV_BFP:mode>2"
+  [(set (match_operand:VX_VEC_CONV_BFP                        0 "register_operand" "=v")
+	(float:VX_VEC_CONV_BFP (match_operand:VX_VEC_CONV_INT 1 "register_operand"  "v")))]
+  "TARGET_VX
+   && GET_MODE_UNIT_SIZE (<VX_VEC_CONV_INT:MODE>mode) == GET_MODE_UNIT_SIZE (<VX_VEC_CONV_BFP:MODE>mode)"
+  "vc<VX_VEC_CONV_BFP:xde><VX_VEC_CONV_INT:bhfgq>b\t%v0,%v1,0,0"
   [(set_attr "op_type" "VRR")])
 
 ; unsigned integer to floating point
 
 ; op2: inexact exception not suppressed (IEEE 754 2008)
 ; op3: according to current rounding mode
-
-(define_insn "floatunsv2div2df2"
-  [(set (match_operand:V2DF                      0 "register_operand" "=v")
-	(unsigned_float:V2DF (match_operand:V2DI 1 "register_operand"  "v")))]
-  "TARGET_VX"
-  "vcdlgb\t%v0,%v1,0,0"
+; vcdlgb, vcelfb
+(define_insn "floatuns<VX_VEC_CONV_INT:mode><VX_VEC_CONV_BFP:mode>2"
+  [(set (match_operand:VX_VEC_CONV_BFP                                 0 "register_operand" "=v")
+	(unsigned_float:VX_VEC_CONV_BFP (match_operand:VX_VEC_CONV_INT 1 "register_operand"  "v")))]
+  "TARGET_VX
+   && GET_MODE_UNIT_SIZE (<VX_VEC_CONV_INT:MODE>mode) == GET_MODE_UNIT_SIZE (<VX_VEC_CONV_BFP:MODE>mode)"
+  "vc<VX_VEC_CONV_BFP:xde>l<VX_VEC_CONV_INT:bhfgq>b\t%v0,%v1,0,0"
   [(set_attr "op_type" "VRR")])
 
 ; floating point to signed integer
 
 ; op2: inexact exception not suppressed (IEEE 754 2008)
 ; op3: rounding mode 5 (round towards 0 C11 6.3.1.4)
-
-(define_insn "fix_truncv2dfv2di2"
-  [(set (match_operand:V2DI           0 "register_operand" "=v")
-	(fix:V2DI (match_operand:V2DF 1 "register_operand"  "v")))]
-  "TARGET_VX"
-  "vcgdb\t%v0,%v1,0,5"
+; vcgdb, vcfeb
+(define_insn "fix_trunc<VX_VEC_CONV_BFP:mode><VX_VEC_CONV_INT:mode>2"
+  [(set (match_operand:VX_VEC_CONV_INT                      0 "register_operand" "=v")
+	(fix:VX_VEC_CONV_INT (match_operand:VX_VEC_CONV_BFP 1 "register_operand"  "v")))]
+  "TARGET_VX
+   && GET_MODE_UNIT_SIZE (<VX_VEC_CONV_INT:MODE>mode) == GET_MODE_UNIT_SIZE (<VX_VEC_CONV_BFP:MODE>mode)"
+  "vc<VX_VEC_CONV_INT:bhfgq><VX_VEC_CONV_BFP:xde>b\t%v0,%v1,0,5"
   [(set_attr "op_type" "VRR")])
 
 ; floating point to unsigned integer
 
 ; op2: inexact exception not suppressed (IEEE 754 2008)
 ; op3: rounding mode 5 (round towards 0 C11 6.3.1.4)
-
-(define_insn "fixuns_truncv2dfv2di2"
-  [(set (match_operand:V2DI                    0 "register_operand" "=v")
-	(unsigned_fix:V2DI (match_operand:V2DF 1 "register_operand"  "v")))]
-  "TARGET_VX"
-  "vclgdb\t%v0,%v1,0,5"
+; vclgdb, vclfeb
+(define_insn "fixuns_trunc<VX_VEC_CONV_BFP:mode><VX_VEC_CONV_INT:mode>2"
+  [(set (match_operand:VX_VEC_CONV_INT                               0 "register_operand" "=v")
+	(unsigned_fix:VX_VEC_CONV_INT (match_operand:VX_VEC_CONV_BFP 1 "register_operand"  "v")))]
+  "TARGET_VX
+   && GET_MODE_UNIT_SIZE (<VX_VEC_CONV_INT:MODE>mode) == GET_MODE_UNIT_SIZE (<VX_VEC_CONV_BFP:MODE>mode)"
+  "vcl<VX_VEC_CONV_INT:bhfgq><VX_VEC_CONV_BFP:xde>b\t%v0,%v1,0,5"
   [(set_attr "op_type" "VRR")])
 
 ; reduc_smin
