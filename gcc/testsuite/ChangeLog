@@ -1,3 +1,12 @@
+2019-04-02  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89902
+	PR target/89903
+	* gcc.target/i386/pr70799-4.c: Remove.
+	* gcc.target/i386/pr70799-5.c: Remove.
+	* gcc.target/i386/pr89902.c: New test.
+	* gcc.target/i386/pr89903.c: Ditto.
+
 2019-03-31  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/83515
