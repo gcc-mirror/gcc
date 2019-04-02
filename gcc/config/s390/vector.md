@@ -33,6 +33,7 @@
 (define_mode_iterator V_HW2 [V16QI V8HI V4SI V2DI V2DF (V4SF "TARGET_VXE") (V1TF "TARGET_VXE")])
 
 (define_mode_iterator V_HW_64 [V2DI V2DF])
+(define_mode_iterator VT_HW_HSDT [V8HI V4SI V4SF V2DI V2DF V1TI V1TF TI TF])
 
 ; Including TI for instructions that support it (va, vn, ...)
 (define_mode_iterator VT_HW [V16QI V8HI V4SI V2DI V2DF V1TI TI (V4SF "TARGET_VXE") (V1TF "TARGET_VXE")])
@@ -2044,6 +2045,71 @@
    && GET_MODE_UNIT_SIZE (<VX_VEC_CONV_INT:MODE>mode) == GET_MODE_UNIT_SIZE (<VX_VEC_CONV_BFP:MODE>mode)"
   "vcl<VX_VEC_CONV_INT:bhfgq><VX_VEC_CONV_BFP:xde>b\t%v0,%v1,0,5"
   [(set_attr "op_type" "VRR")])
+
+;
+; Vector byte swap patterns
+;
+
+; FIXME: The bswap rtl standard name currently does not appear to be
+; used for vector modes.
+(define_expand "bswap<mode>"
+  [(set (match_operand:VT_HW_HSDT                   0 "nonimmediate_operand" "")
+	(bswap:VT_HW_HSDT (match_operand:VT_HW_HSDT 1 "nonimmediate_operand" "")))]
+  "TARGET_VX")
+
+; vlbrh, vlbrf, vlbrg, vlbrq, vstbrh, vstbrf, vstbrg, vstbrq
+(define_insn "*bswap<mode>"
+  [(set (match_operand:VT_HW_HSDT                   0 "nonimmediate_operand" "=v,v,R")
+	(bswap:VT_HW_HSDT (match_operand:VT_HW_HSDT 1 "nonimmediate_operand"  "v,R,v")))]
+  "TARGET_VXE2"
+  "@
+   #
+   vlbr<bhfgq>\t%v0,%v1
+   vstbr<bhfgq>\t%v1,%v0"
+  [(set_attr "op_type" "*,VRX,VRX")])
+
+(define_insn_and_split "*bswap<mode>_emu"
+  [(set (match_operand:VT_HW_HSDT                   0 "nonimmediate_operand" "=vR")
+	(bswap:VT_HW_HSDT (match_operand:VT_HW_HSDT 1 "nonimmediate_operand" "vR")))]
+  "TARGET_VX && can_create_pseudo_p ()"
+  "#"
+  "&& ((!memory_operand (operands[1], <MODE>mode)
+        && !memory_operand (operands[0], <MODE>mode))
+        || !TARGET_VXE2)"
+  [(set (match_dup 3)
+	(unspec:V16QI [(match_dup 4)
+		       (match_dup 4)
+		       (match_dup 2)]
+		      UNSPEC_VEC_PERM))
+   (set (match_dup 0) (subreg:VT_HW_HSDT (match_dup 3) 0))]
+{
+  static char p[4][16] =
+    { { 1,  0,  3,  2,  5,  4,  7, 6, 9,  8,  11, 10, 13, 12, 15, 14 },   /* H */
+      { 3,  2,  1,  0,  7,  6,  5, 4, 11, 10, 9,  8,  15, 14, 13, 12 },   /* S */
+      { 7,  6,  5,  4,  3,  2,  1, 0, 15, 14, 13, 12, 11, 10, 9,  8  },   /* D */
+      { 15, 14, 13, 12, 11, 10, 9, 8, 7,  6,  5,  4,  3,  2,  1,  0  } }; /* T */
+  char *perm;
+  rtx perm_rtx[16], constv;
+
+  switch (GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)))
+    {
+    case 2: perm = p[0]; break;
+    case 4: perm = p[1]; break;
+    case 8: perm = p[2]; break;
+    case 16: perm = p[3]; break;
+    default: gcc_unreachable ();
+    }
+  for (int i = 0; i < 16; i++)
+    perm_rtx[i] = GEN_INT (perm[i]);
+
+  operands[1] = force_reg (<MODE>mode, operands[1]);
+  operands[2] = gen_reg_rtx (V16QImode);
+  operands[3] = gen_reg_rtx (V16QImode);
+  operands[4] = simplify_gen_subreg (V16QImode, operands[1], <MODE>mode, 0);
+  constv = force_const_mem (V16QImode, gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, perm_rtx)));
+  emit_move_insn (operands[2], constv);
+})
+
 
 ; reduc_smin
 ; reduc_smax

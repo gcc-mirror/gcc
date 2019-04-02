@@ -2867,3 +2867,28 @@ OB_DEF_VAR (s390_vec_fp_test_data_class_flt,s390_vftcisbcc, B_VXE,              
 OB_DEF_VAR (s390_vec_fp_test_data_class_dbl,s390_vftcidbcc, 0,                  O2_U12,             BT_OV_BV2DI_V2DF_USHORT_INTPTR)          /* vftcidb */
 
 /* arch 13 builtins */
+
+/* Returns a vector where each vector element contains the corresponding byte-reversed vector element of the input vector in OP0.  */
+OB_DEF     (s390_vec_revb,              s390_vec_revb_s16,  s390_vec_revb_dbl,  B_VX,               BT_FN_OV4SI_OV4SI)
+OB_DEF_VAR (s390_vec_revb_s16,          s390_vlbrh,         0,                  0,                  BT_OV_V8HI_V8HI)
+OB_DEF_VAR (s390_vec_revb_u16,          s390_vlbrh,         0,                  0,                  BT_OV_UV8HI_UV8HI)
+OB_DEF_VAR (s390_vec_revb_s32,          s390_vlbrf,         0,                  0,                  BT_OV_V4SI_V4SI)
+OB_DEF_VAR (s390_vec_revb_u32,          s390_vlbrf,         0,                  0,                  BT_OV_UV4SI_UV4SI)
+OB_DEF_VAR (s390_vec_revb_s64,          s390_vlbrg,         0,                  0,                  BT_OV_V2DI_V2DI)
+OB_DEF_VAR (s390_vec_revb_u64,          s390_vlbrg,         0,                  0,                  BT_OV_UV2DI_UV2DI)
+OB_DEF_VAR (s390_vec_revb_flt,          s390_vlbrf_flt,     0,                  B_VXE,              BT_OV_V4SF_V4SF)
+OB_DEF_VAR (s390_vec_revb_dbl,          s390_vlbrg_dbl,     0,                  0,                  BT_OV_V2DF_V2DF)
+
+B_DEF      (s390_vlbrh,                 bswapv8hi,          0,                  B_VX,               0,                   BT_FN_V8HI_V8HI)
+B_DEF      (s390_vlbrf,                 bswapv4si,          0,                  B_VX,               0,                   BT_FN_V4SI_V4SI)
+B_DEF      (s390_vlbrg,                 bswapv2di,          0,                  B_VX,               0,                   BT_FN_V2DI_V2DI)
+B_DEF      (s390_vlbrq,                 bswapv1ti,          0,                  B_VX,               0,                   BT_FN_V1TI_V1TI)
+B_DEF      (s390_vlbrf_flt,             bswapv4sf,          0,                  B_VXE,              0,                   BT_FN_V4SF_V4SF)
+B_DEF      (s390_vlbrg_dbl,             bswapv2df,          0,                  B_VX,               0,                   BT_FN_V2DF_V2DF)
+
+B_DEF      (s390_vstbrh,                bswapv8hi,          0,                  B_VX,               0,                   BT_FN_V8HI_V8HI)
+B_DEF      (s390_vstbrf,                bswapv4si,          0,                  B_VX,               0,                   BT_FN_V4SI_V4SI)
+B_DEF      (s390_vstbrg,                bswapv2di,          0,                  B_VX,               0,                   BT_FN_V2DI_V2DI)
+B_DEF      (s390_vstbrq,                bswapv1ti,          0,                  B_VX,               0,                   BT_FN_V1TI_V1TI)
+B_DEF      (s390_vstbrf_flt,            bswapv4sf,          0,                  B_VXE,              0,                   BT_FN_V4SF_V4SF)
+B_DEF      (s390_vstbrg_dbl,            bswapv2df,          0,                  B_VX,               0,                   BT_FN_V2DF_V2DF)
