@@ -1,3 +1,66 @@
+2019-04-02  Xiong Hu Luo <luoxhu@linux.ibm.com>
+
+	Backport from trunk r250477.
+
+	2017-07-24  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-3-p9-runnable.c: Add new test file for
+	the new built-ins.
+
+	Backport from trunk r255555.
+
+	2017-12-11  Carl Love  <cel@us.ibm.com>
+	* gcc.target/powerpc/altivec-7.c: Renamed altivec-7.h.
+	* gcc.target/powerpc/altivec-7.h (main): Add testcases for vec_unpackl.
+	Add dg-final tests for the instructions generated.
+	* gcc.target/powerpc/altivec-7-be.c: New file to test on big endian.
+	* gcc.target/powerpc/altivec-7-le.c: New file to test on little endian.
+	* gcc.target/powerpc/altivec-13.c (foo): Add vec_sld, vec_srl,
+	 vec_sro testcases. Add dg-final tests for the instructions generated.
+	* gcc.target/powerpc/builtins-3-p8.c (test_vsi_packs_vui,
+	test_vsi_packs_vsi, test_vsi_packs_vssi, test_vsi_packs_vusi,
+	test_vsi_packsu-vssi, test_vsi_packsu-vusi, test_vsi_packsu-vsll,
+	test_vsi_packsu-vull, test_vsi_packsu-vsi, test_vsi_packsu-vui): Add
+	testcases. Add dg-final tests for new instructions.
+	* gcc.target/powerpc/p8vector-builtin-2.c (vbschar_eq, vbchar_eq,
+	vuchar_eq, vbint_eq, vsint_eq, viint_eq, vuint_eq, vbool_eq, vbint_ne,
+	vsint_ne, vuint_ne, vbool_ne, vsign_ne, vuns_ne, vbshort_ne): Add
+	tests.
+	Add dg-final instruction tests.
+	* gcc.target/powerpc/vsx-vector-6.c: Renamed vsx-vector-6.h.
+	* gcc.target/powerpc/vsx-vector-6.h (vec_andc,vec_nmsub, vec_nmadd,
+	vec_or, vec_nor, vec_andc, vec_or, vec_andc, vec_msums): Add tests.
+	Add dg-final tests for the generated instructions.
+	* gcc.target/powerpc/builtins-3.c (test_sll_vsc_vsc_vsuc,
+	test_sll_vuc_vuc, test_sll_vsi_vsi_vuc, test_sll_vui_vui_vuc,
+	test_sll_vbll_vull, test_sll_vbll_vbll_vus, test_sll_vp_vp_vuc,
+	test_sll_vssi_vssi_vuc, test_sll_vusi_vusi_vuc, test_slo_vsc_vsc_vsc,
+	test_slo_vuc_vuc_vsc, test_slo_vsi_vsi_vsc, test_slo_vsi_vsi_vuc,
+	test_slo_vui_vui_vsc, test_slo_vui_vui_vuc, test_slo_vsll_slo_vsll_vsc,
+	test_slo_vsll_slo_vsll_vuc, test_slo_vull_slo_vull_vsc,
+	test_slo_vull_slo_vull_vuc, test_slo_vp_vp_vsc, test_slo_vp_vp_vuc,
+	test_slo_vssi_vssi_vsc, test_slo_vssi_vssi_vuc, test_slo_vusi_vusi_vsc,
+	test_slo_vusi_vusi_vuc, test_slo_vusi_vusi_vuc, test_slo_vf_vf_vsc,
+	test_slo_vf_vf_vuc, test_cmpb_float): Add tests.
+
+	Backport from trunk r257253.
+
+	2018-01-31  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/altivec-13.c: Remove VSX-requiring built-ins.
+	* gcc.target/powerpc/vsx-13.c: New.
+
+	Backport from trunk r258137.
+
+	2018-03-02  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/altivec-7-be.c: Remove VSX content, allow
+	32-bit target.
+	* gcc.target/powerpc/altivec-7.h: Remove VSX content.
+	* gcc.target/powerpc/vsx-7-be.c: New test (VSX content).
+	* gcc.target/powerpc/vsx-7.h: New include (VSX content).
+	* gcc.target/powerpc/altivec-7-le.c: Add vsx-7.h include.
+
 2019-03-31  Harald Anlauf  <anlauf@gmx.de>
 
 	Backport from trunk
