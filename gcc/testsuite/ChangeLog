@@ -1,5 +1,13 @@
 2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* gcc.target/s390/arch13/bitops-1.c: New test.
+	* gcc.target/s390/arch13/bitops-2.c: New test.
+	* gcc.target/s390/md/andc-splitter-1.c: Add -march=z14 build
+	option and adjust line numbers.
+	* gcc.target/s390/md/andc-splitter-2.c: Likewise.
+
+2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* gcc.target/s390/s390.exp: Run tests in arch13 subdir.
 	* lib/target-supports.exp (check_effective_target_s390_vxe2): New
 	runtime check for the vxe2 hardware feature on IBM Z.
