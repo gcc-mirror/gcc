@@ -1,5 +1,12 @@
 2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	("*vec_splats_bswap_vec<mode>", "*vec_splats_bswap_elem<mode>"):
+	New insn definition.
+	* config/s390/vx-builtins.md (V_HW_HSD): Move to ...
+	* config/s390/vector.md (V_HW_HSD): ... here.
+
+2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* config/s390/vecintrin.h: Map vec_vster low-level builtins to vec_vler.
 	* config/s390/vx-builtins.md ("*vec_insert_and_zero_bswap<mode>")
 	("*vec_set_bswap_elem<mode>", "*vec_set_bswap_vec<mode>")

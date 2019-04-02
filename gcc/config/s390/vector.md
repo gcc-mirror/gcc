@@ -34,6 +34,7 @@
 
 (define_mode_iterator V_HW_64 [V2DI V2DF])
 (define_mode_iterator VT_HW_HSDT [V8HI V4SI V4SF V2DI V2DF V1TI V1TF TI TF])
+(define_mode_iterator V_HW_HSD [V8HI V4SI (V4SF "TARGET_VXE") V2DI V2DF])
 
 ; Including TI for instructions that support it (va, vn, ...)
 (define_mode_iterator VT_HW [V16QI V8HI V4SI V2DI V2DF V1TI TI (V4SF "TARGET_VXE") (V1TF "TARGET_VXE")])
@@ -547,6 +548,25 @@
    vrep<bhfgq>\t%v0,%v1,0
    #"
   [(set_attr "op_type" "VRX,VRI,VRI,*")])
+
+; vlbrreph, vlbrrepf, vlbrrepg
+(define_insn "*vec_splats_bswap_vec<mode>"
+  [(set (match_operand:V_HW_HSD                           0 "register_operand" "=v")
+	(bswap:V_HW_HSD
+	 (vec_duplicate:V_HW_HSD (match_operand:<non_vec> 1 "memory_operand"    "R"))))]
+  "TARGET_VXE2"
+  "vlbrrep<bhfgq>\t%v0,%1"
+  [(set_attr "op_type" "VRX")])
+
+; Why do we need both? Shouldn't there be a canonical form?
+; vlbrreph, vlbrrepf, vlbrrepg
+(define_insn "*vec_splats_bswap_elem<mode>"
+  [(set (match_operand:V_HW_HSD                    0 "register_operand" "=v")
+	(vec_duplicate:V_HW_HSD
+	 (bswap:<non_vec> (match_operand:<non_vec> 1 "memory_operand"    "R"))))]
+  "TARGET_VXE2"
+  "vlbrrep<bhfgq>\t%v0,%1"
+  [(set_attr "op_type" "VRX")])
 
 ; A TFmode operand resides in FPR register pairs while V1TF is in a
 ; single vector register.
