@@ -346,6 +346,7 @@ extern void add_module_decl (tree ctx, tree name, tree decl);
 extern tree extract_module_binding (tree &binding, tree ns, bitmap partitions);
 extern int get_lookup_ident (tree ctx, tree name, unsigned mod, tree decl);
 extern tree lookup_by_ident (tree ctx, tree name, unsigned mod, int ident);
+extern tree lookup_by_type (tree ctx, tree name, tree type);
 extern tree get_imported_namespace (tree ctx, tree name, unsigned mod);
 extern tree add_imported_namespace (tree ctx, tree name, unsigned mod,
 				    location_t, bool visible_p, bool inline_p,

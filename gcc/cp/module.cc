@@ -2209,9 +2209,9 @@ public:
   enum entity_kind
   {
     EK_DECL,
+    EK_USING,
     EK_UNNAMED,
     EK_SPECIALIZATION, /* *any* kind of specialization.  */
-    EK_USING,
     EK_NAMESPACE,
     EK_EXPLICIT_HWM,  
     EK_BINDING = EK_EXPLICIT_HWM, /* Implicitly encoded.  */
@@ -2453,7 +2453,7 @@ depset::entity_kind_name () const
 {
   /* Same order as entity_kind.  */
   static const char *const names[] = 
-    {"regular", "unnamed", "specialization", "using", "namespace", "binding"};
+    {"regular", "using", "unnamed", "specialization", "namespace", "binding"};
   return names[get_entity_kind ()];
 }
 
@@ -2493,6 +2493,7 @@ enum tree_tag {
   tt_enum_int,		/* An enum const.  */
   tt_named_decl,  	/* Named decl. */
   tt_anon_decl,		/* Anonymous decl.  */
+  tt_builtin,		/* A builtin decl.  */
   tt_namespace,		/* Namespace reference.  */
   tt_inst,		/* A template instantiation.  */
   tt_binfo,		/* A BINFO.  */
@@ -6459,6 +6460,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 
     /* We should not get cross-module references to the pseudo
        template of a member of a template class.  */
+    // FIXME: Except I clearly do ...
     gcc_assert (true
 		|| TREE_CODE (decl) != TEMPLATE_DECL
 		|| TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL
@@ -6543,7 +6545,13 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	      name = NULL_TREE;
 	  }
 
-	if (TREE_CODE (ctx) == NAMESPACE_DECL && owner < MODULE_IMPORT_BASE)
+	if (DECL_SOURCE_LOCATION (decl) == BUILTINS_LOCATION)
+	  {
+	    gcc_assert (code == tt_named_decl);
+	    code = tt_builtin;
+	    kind = "builtin";
+	  }
+	else if (TREE_CODE (ctx) == NAMESPACE_DECL && owner < MODULE_IMPORT_BASE)
 	  {
 	    /* Look directly into the binding depset, as that's
 	       what importers will observe.  */
@@ -6571,8 +6579,13 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	i (code);
 	tree_ctx (ctx, true, decl);
 	tree_node (name);
-	u (owner);
-	i (ident);
+	if (code == tt_builtin)
+	  tree_node (TREE_TYPE (decl));
+	else
+	  {
+	    u (owner);
+	    i (ident);
+	  }
       }
     else
       {
@@ -7105,40 +7118,53 @@ trees_in::tree_node ()
     case tt_named_decl:
     case tt_implicit_template:
     case tt_anon_decl:
+    case tt_builtin:
       {
 	/* A named decl.  */
 	tree ctx = tree_node ();
 	tree name = tree_node ();
-	owner = u ();
-	owner = state->slurp ()->remap_module (owner);
-	int ident = i ();
-	if (owner != MODULE_NONE && !get_overrun ())
+	if (tag == tt_builtin)
 	  {
-	    res = lookup_by_ident (ctx, name, owner, ident);
-	    if (!res)
-	      ;
-	    else if (tag == tt_implicit_template)
+	    owner = 0;
+	    tree type = tree_node ();
+	    if (!get_overrun ())
+	      res = lookup_by_type (ctx, name, type);
+	  }
+	else
+	  {
+	    owner = u ();
+	    owner = state->slurp ()->remap_module (owner);
+	    int ident = i ();
+	    if (owner != MODULE_NONE && !get_overrun ())
 	      {
-		int use_tpl = -1;
-		tree ti = node_template_info (res, use_tpl);
-		res = TI_TEMPLATE (ti);
+		res = lookup_by_ident (ctx, name, owner, ident);
+		if (!res)
+		  ;
+		else if (tag == tt_anon_decl)
+		  res = TYPE_STUB_DECL (TREE_TYPE (res));
+		else if (tag == tt_implicit_template)
+		  {
+		    int use_tpl = -1;
+		    tree ti = node_template_info (res, use_tpl);
+		    res = TI_TEMPLATE (ti);
+		  }
 	      }
-	    else if (tag == tt_anon_decl)
-	      res = TYPE_STUB_DECL (TREE_TYPE (res));
 	  }
 
 	if (!res)
 	  {
-	    error_at (state->loc, "failed to find %<%E%s%E@%s%>",
-		      ctx, &"::"[2 * (ctx == global_namespace)],
-		      name, (*modules)[owner]->get_flatname ());
+	    error_at (state->loc, "failed to find %<%E%s%E%s%s%>",
+		      ctx, &"::"[2 * (ctx == global_namespace)], name,
+		      owner ? "@" : "",
+		      owner ? (*modules)[owner]->get_flatname () : "");
 	    set_overrun ();
 	  }
 	else if (TREE_CODE (res) != TYPE_DECL
 		 && owner != state->mod)
 	  mark_used (res, tf_none);
 
-	kind = owner != state->mod ?  "Imported" : "Named";
+	kind = (tag == tt_builtin ? "Builtin"
+		: owner != state->mod ? "Imported" : "Named");
       }
       finish_decl:
       {
@@ -8833,20 +8859,18 @@ depset::hash::find_dependencies ()
 
       gcc_checking_assert (!current->is_binding ());
       tree decl = current->get_entity ();
-      if (current->get_entity_kind () == EK_USING)
-	decl = OVL_FUNCTION (decl);
       dump (dumper::DEPEND)
 	&& dump ("Dependencies of %s %C:%N",
 		 is_mergeable () ? "mergeable" : current->entity_kind_name (),
 		 TREE_CODE (decl), decl);
       dump.indent ();
       walker.begin ();
-      if (TREE_VISITED (decl))
+      if (current->get_entity_kind () == EK_USING)
+	walker.tree_ctx (OVL_FUNCTION (decl), false, NULL_TREE);
+      else if (TREE_VISITED (decl))
 	/* Depending a fixed decl.  */;
       else if (is_mergeable ())
 	walker.tree_mergeable (decl);
-      else if (current->get_entity_kind () == EK_USING)
-	walker.tree_ctx (decl, false, NULL_TREE);
       else
 	{
 	  walker.mark_node (decl);
@@ -9103,9 +9127,11 @@ depset::hash::connect (auto_vec<depset *> &sccs)
       dump (dumper::DEPEND) &&
 	(v->is_binding ()
 	 ? dump ("Connecting binding %P", v->get_entity (), v->get_name ())
-	 : dump ("Connecting %s %C:%N", is_mergeable () ? "mergeable "
+	 : dump ("Connecting %s %s %C:%N",
+		 is_mergeable () ? "mergeable "
 		 : !v->has_defn () ? "declaration" : "definition",
-		 TREE_CODE (v->get_entity ()), v->get_entity ()));
+		 v->entity_kind_name (), TREE_CODE (v->get_entity ()),
+		 v->get_entity ()));
       if (!v->cluster)
 	connector.connect (v);
     }
@@ -14649,10 +14675,10 @@ load_macros (cpp_reader *reader, cpp_hashnode *node, void *)
   return 1;
 }
 
-/* Finished parsing, write the BMI, if we're a module interface.  */
+/* Write the BMI, if we're a module interface.  */
 
 void
-finish_module_parse (cpp_reader *reader)
+finish_module_processing (cpp_reader *reader)
 {
   if (module_header_p ())
     module_kind &= ~MK_EXPORTING;
@@ -14733,25 +14759,16 @@ finish_module_parse (cpp_reader *reader)
   vec_free (macro_exports);
   vec_free (macro_imports);
   headers = NULL;
-  if (modules)
-    for (unsigned ix = modules->length (); ix--;)
-      if (module_state *state = (*modules)[ix])
-	if (state->is_header ())
-	  state->slurped ();
-}
 
-/* We're now done with everything but the module names.  */
-
-void
-finish_module_processing ()
-{
-  module_state_config::release ();
-
+  /* We're now done with everything but the module names.  */
   set_bmi_repo (NULL);
   module_mapper::fini (input_location);
+  module_state_config::release ();
 
-  for (unsigned ix = modules->length (); --ix >= MODULE_IMPORT_BASE;)
-    (*modules)[ix]->release ();
+  if (modules)
+    for (unsigned ix = modules->length (); --ix >= MODULE_IMPORT_BASE;)
+      if (module_state *state = (*modules)[ix])
+	state->release ();
 
   /* No need to lookup modules anymore.  */
   modules_hash = NULL;

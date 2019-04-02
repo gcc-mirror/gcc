@@ -4121,6 +4121,26 @@ get_binding_or_decl (tree ctx, tree name, unsigned mod)
   return binding;
 }
 
+/* Find a decl by name & type.  */
+
+tree
+lookup_by_type (tree ctx, tree name, tree type)
+{
+  if (tree *slot = find_namespace_slot (ctx, name, false))
+    {
+      slot = get_fixed_binding_slot (slot, name, MODULE_SLOT_CURRENT, 0);
+      if (slot)
+	for (ovl_iterator iter (*slot); iter; ++iter)
+	  {
+	    tree decl = *iter;
+	    if (same_type_p (TREE_TYPE (decl), type))
+	      return decl;
+	  }
+    }
+
+  return NULL_TREE;
+}
+
 /* CTX contains a module MOD binding for NAME.  Use ident to find the
    binding we want.  Return NULL if nothing found (that would be an
    error).  */

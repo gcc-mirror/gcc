@@ -1,5 +1,20 @@
 2019-04-02  Nathan Sidwell  <nathan@acm.org>
 
+	Write bmi /after/ deferred instantiations.
+	gcc/cp/
+	* cp-tree.h (finish_module_processing): Add cpp arg.
+	(finish_module_parse): Delete.
+	* name-lookup.h (lookup_by_type): Declare.
+	* decl2.c (c_parse_final_cleanups): Adjust.
+	* module.c (tree_tag): Add tt_builtin.
+	(trees_out::tree_decl): Use tt_builtin for builtins.
+	(trees_in::tree_node): Likewise.
+	(finish_module_parse): Move processing into ...
+	(finish_module_processing): ... here.
+	* name-lookup.c (lookup_by_type): New.
+	gcc/testsuite/
+	* g++.dg/modules/builtin-1_[ab].C: New.
+
 	gcc/cp/
 	* module.cc (depset): Add EK_UNNAMED. Delete DB_IS_UNNAMED_BIT,
 	is_unnamed accessor.
