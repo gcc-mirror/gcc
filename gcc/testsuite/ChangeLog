@@ -1,5 +1,16 @@
 2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* gcc.target/s390/zvector/bswap-and-replicate-1.c: New test.
+	* gcc.target/s390/zvector/get-element-bswap-1.c: New test.
+	* gcc.target/s390/zvector/get-element-bswap-2.c: New test.
+	* gcc.target/s390/zvector/get-element-bswap-3.c: New test.
+	* gcc.target/s390/zvector/get-element-bswap-4.c: New test.
+	* gcc.target/s390/zvector/set-element-bswap-1.c: New test.
+	* gcc.target/s390/zvector/set-element-bswap-2.c: New test.
+	* gcc.target/s390/zvector/set-element-bswap-3.c: New test.
+
+2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* gcc.target/s390/zvector/vec-reve-load-byte-z14.c: New test.
 	* gcc.target/s390/zvector/vec-reve-load-byte.c: New test.
 	* gcc.target/s390/zvector/vec-reve-load-halfword-z14.c: New test.

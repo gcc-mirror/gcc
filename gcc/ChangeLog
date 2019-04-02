@@ -1,5 +1,13 @@
 2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* config/s390/vecintrin.h: Map vec_vster low-level builtins to vec_vler.
+	* config/s390/vx-builtins.md ("*vec_insert_and_zero_bswap<mode>")
+	("*vec_set_bswap_elem<mode>", "*vec_set_bswap_vec<mode>")
+	("*vec_extract_bswap_vec<mode>", "*vec_extract_bswap_elem<mode>"):
+	New insn definitions.
+
+2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* config/s390/s390-builtin-types.def: Add new builtin function type.
 	* config/s390/s390-builtins.def: Add overloaded builtin
 	s390_vec_reve and low-level builtins for s390_vler and s390_vster.

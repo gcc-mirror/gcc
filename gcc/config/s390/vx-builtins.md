@@ -181,6 +181,18 @@
   "vllez<bhfgq>\t%v0,%1"
   [(set_attr "op_type" "VRX")])
 
+; vec_revb (vec_insert_and_zero(x))             bswap-and-replicate-1.c
+; vllebrzh, vllebrzf, vllebrzg
+(define_insn "*vec_insert_and_zero_bswap<mode>"
+  [(set (match_operand:V_HW_HSD                    0 "register_operand" "=v")
+	(bswap:V_HW_HSD (unspec:V_HW_HSD
+			 [(match_operand:<non_vec> 1 "memory_operand"    "R")]
+			 UNSPEC_VEC_INSERT_AND_ZERO)))]
+  "TARGET_VXE2"
+  "vllebrz<bhfgq>\t%v0,%1"
+  [(set_attr "op_type" "VRX")])
+
+
 (define_insn "vlbb"
   [(set (match_operand:V16QI              0 "register_operand"   "=v")
 	(unspec:V16QI [(match_operand:BLK 1 "memory_operand"      "R")
@@ -2139,3 +2151,54 @@
   constv = force_const_mem (V16QImode, gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, perm_rtx)));
   emit_move_insn (operands[2], constv);
 })
+
+; vec_insert (__builtin_bswap32 (*a), b, 1)        set-element-bswap-2.c
+; b[1] = __builtin_bswap32 (*a)                    set-element-bswap-3.c
+; vlebrh, vlebrf, vlebrg
+(define_insn "*vec_set_bswap_elem<mode>"
+  [(set (match_operand:V_HW_HSD                                     0 "register_operand" "=v")
+	(unspec:V_HW_HSD [(bswap:<non_vec> (match_operand:<non_vec> 1 "memory_operand"    "R"))
+		                           (match_operand:SI        2 "const_int_operand" "C")
+					   (match_operand:V_HW_HSD  3 "register_operand"  "0")]
+		  UNSPEC_VEC_SET))]
+  "TARGET_VXE2 && UINTVAL (operands[2]) < GET_MODE_NUNITS (<V_HW_HSD:MODE>mode)"
+  "vlebr<bhfgq>\t%v0,%1,%2"
+  [(set_attr "op_type" "VRX")])
+
+; vec_revb (vec_insert (*a, vec_revb (b), 1))      set-element-bswap-1.c
+; vlebrh, vlebrf, vlebrg
+(define_insn "*vec_set_bswap_vec<mode>"
+  [(set (match_operand:V_HW_HSD                                     0 "register_operand" "=v")
+	(bswap:V_HW_HSD
+	 (unspec:V_HW_HSD [(match_operand:<non_vec>                 1 "memory_operand"    "R")
+		           (match_operand:SI                        2 "const_int_operand" "C")
+			   (bswap:V_HW_HSD (match_operand:V_HW_HSD  3 "register_operand"  "0"))]
+			  UNSPEC_VEC_SET)))]
+  "TARGET_VXE2 && UINTVAL (operands[2]) < GET_MODE_NUNITS (<V_HW_HSD:MODE>mode)"
+  "vlebr<bhfgq>\t%v0,%1,%2"
+  [(set_attr "op_type" "VRX")])
+
+; *a = vec_extract (vec_revb (b), 1);              get-element-bswap-3.c
+; *a = vec_revb (b)[1];                            get-element-bswap-4.c
+; vstebrh, vstebrf, vstebrg
+(define_insn "*vec_extract_bswap_vec<mode>"
+  [(set (match_operand:<non_vec>                                    0 "memory_operand"   "=R")
+	(unspec:<non_vec> [(bswap:V_HW_HSD (match_operand:V_HW_HSD  1 "register_operand"  "v"))
+			   (match_operand:SI                        2 "const_int_operand" "C")]
+			   UNSPEC_VEC_EXTRACT))]
+  "TARGET_VXE2 && UINTVAL (operands[2]) < GET_MODE_NUNITS (<V_HW_HSD:MODE>mode)"
+  "vstebr<bhfgq>\t%v1,%0,%2"
+  [(set_attr "op_type" "VRX")])
+
+; *a = __builtin_bswap32 (vec_extract (b, 1));     get-element-bswap-1.c
+; *a = __builtin_bswap32 (b[1]);                   get-element-bswap-2.c
+; vstebrh, vstebrf, vstebrg
+(define_insn "*vec_extract_bswap_elem<mode>"
+  [(set (match_operand:<non_vec>                     0 "memory_operand"   "=R")
+	(bswap:<non_vec>
+	 (unspec:<non_vec> [(match_operand:V_HW_HSD  1 "register_operand"  "v")
+			    (match_operand:SI        2 "const_int_operand" "C")]
+			   UNSPEC_VEC_EXTRACT)))]
+  "TARGET_VXE2 && UINTVAL (operands[2]) < GET_MODE_NUNITS (<V_HW_HSD:MODE>mode)"
+  "vstebr<bhfgq>\t%v1,%0,%2"
+  [(set_attr "op_type" "VRX")])
