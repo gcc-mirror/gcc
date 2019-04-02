@@ -1,5 +1,18 @@
 2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* config/s390/s390.md (VX_CONV_BFP, VX_CONV_INT): New mode
+	iterators.
+	(SFSI): New mode attribute.
+	("*fixuns_truncdfdi2_vx", "*fix_truncdfdi2_bfp_z13")
+	("*floatunsdidf2_z13", ): Add support for 32 bit conversions and
+	rename to ...
+	("*fixuns_trunc<VX_CONV_BFP:mode><VX_CONV_INT:mode>2_z13")
+	("*fix_trunc<VX_CONV_BFP:mode><VX_CONV_INT:mode>2_bfp_z13")
+	("*floatuns<VX_CONV_INT:mode><VX_CONV_BFP:mode>2_z13"): ... these.
+	("floatsi<mode>2"): Add wcefb instruction.
+
+2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* config/s390/s390.md ("xde"): Extend mode attribute to vector
 	types.
 	* config/s390/vector.md (VX_VEC_CONV_BFP, VX_VEC_CONV_INT): New
