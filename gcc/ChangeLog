@@ -1,3 +1,9 @@
+2019-04-02  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/85876
+	* sel-sched.c (code_motion_path_driver): Avoid unwinding first_insn
+	beyond the original fence.
+
 2019-04-02  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config.gcc: Mark spu* targets as deprecated/obsolete.
