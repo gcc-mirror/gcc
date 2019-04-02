@@ -1,5 +1,22 @@
 2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* config/s390/s390-builtin-types.def: Add new builtin function
+	types.
+	* config/s390/s390-builtins.def (s390_vec_sldb, s390_vec_srdb):
+	New overloaded builtins.
+	(s390_vec_sldb, s390_vec_srdb): New low-level builtins.  and
+	s390_vsrd.
+	* config/s390/s390.md (UNSPEC_VEC_SLDB): Rename to ...
+	(UNSPEC_VEC_SLDBYTE): ... this.
+	(UNSPEC_VEC_SLDBIT, UNSPEC_VEC_SRDBIT): New constant definitions.
+	* config/s390/vecintrin.h (vec_sldb, vec_srdb): New builtin name
+	definitions.
+	* config/s390/vx-builtins.md ("vec_sld<mode>", "vec_sldw<mode>"):
+	Rename UNSPEC_VEC_SLDB to UNSPEC_VEC_SLDBYTE.
+	("vec_sldb<mode>", "vec_srdb<mode>"): New insn definitions.
+
+2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	("*vec_splats_bswap_vec<mode>", "*vec_splats_bswap_elem<mode>"):
 	New insn definition.
 	* config/s390/vx-builtins.md (V_HW_HSD): Move to ...
