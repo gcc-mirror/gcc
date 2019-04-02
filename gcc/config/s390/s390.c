@@ -337,6 +337,7 @@ const struct s390_processor processor_table[] =
   { "zEC12",  "zEC12",  PROCESSOR_2827_ZEC12,  &zEC12_cost,  10 },
   { "z13",    "z13",    PROCESSOR_2964_Z13,    &zEC12_cost,  11 },
   { "z14",    "arch12", PROCESSOR_3906_Z14,    &zEC12_cost,  12 },
+  { "arch13", "",       PROCESSOR_ARCH13,      &zEC12_cost,  13 },
   { "native", "",       PROCESSOR_NATIVE,      NULL,         0  }
 };
 
@@ -14313,6 +14314,7 @@ s390_get_sched_attrmask (rtx_insn *insn)
 	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
       break;
     case PROCESSOR_3906_Z14:
+    case PROCESSOR_ARCH13:
       if (get_attr_z14_cracked (insn))
 	mask |= S390_SCHED_ATTR_MASK_CRACKED;
       if (get_attr_z14_expanded (insn))
@@ -14349,6 +14351,7 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
 	mask |= 1 << 3;
       break;
     case PROCESSOR_3906_Z14:
+    case PROCESSOR_ARCH13:
       *units = 4;
       if (get_attr_z14_unit_lsu (insn))
 	mask |= 1 << 0;
