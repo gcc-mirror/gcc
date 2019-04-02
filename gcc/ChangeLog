@@ -1,5 +1,11 @@
 2019-04-02  Andrey Belevantsev  <abel@ispras.ru>
 
+	PR rtl-optimization/84206
+	* sel-sched-ir.h (get_all_loop_exits): Avoid the outer loop when
+	iterating over loop headers.
+
+2019-04-02  Andrey Belevantsev  <abel@ispras.ru>
+
 	PR rtl-optimization/85876
 	* sel-sched.c (code_motion_path_driver): Avoid unwinding first_insn
 	beyond the original fence.
