@@ -232,62 +232,6 @@ rvrp_simplify (global_ranger &ranger, gimple_stmt_iterator *gsi)
   return false;
 }
 
-// Class to adjust a PHI result with loop info.
-
-class phi_loop_range
-{
- public:
-  phi_loop_range ();
-  ~phi_loop_range ();
-  bool adjust_range_with_loop_info (global_ranger &, gphi *, irange &);
-
- private:
-  vr_values m_vr_values;
-};
-
-phi_loop_range::phi_loop_range ()
-{
-  calculate_dominance_info (CDI_DOMINATORS);
-  loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
-  scev_initialize ();
-}
-
-phi_loop_range::~phi_loop_range ()
-{
-  scev_finalize ();
-  loop_optimizer_finalize ();
-  free_dominance_info (CDI_DOMINATORS);
-}
-
-// Adjust a PHI result's range with loop information.  R is the known
-// range of the PHI result.
-//
-// Adjust R and return TRUE if we were able to refine the range with
-// loop information.
-
-bool
-phi_loop_range::adjust_range_with_loop_info (global_ranger &ranger,
-					     gphi *phi, irange &r)
-{
-  struct loop *l = loop_containing_stmt (phi);
-  if (l && l->header == gimple_bb (phi))
-    {
-      tree phi_result = PHI_RESULT (phi);
-      value_range vr = irange_to_value_range (r);
-      m_vr_values.adjust_range_with_scev (&vr, l, phi, phi_result);
-      if (vr.constant_p ())
-	{
-	  irange prev_range = r;
-	  r = value_range_to_irange (TREE_TYPE (phi_result), vr);
-	  if (r == prev_range)
-	    return false;
-	  ranger.m_globals.set_global_range (phi_result, r);
-	  return true;
-	}
-    }
-  return false;
-}
-
 // Given a bitmap of TOUCHED ssa names throughout the pass, attempt to
 // propagate any uses and possibly remove dead code.
 
@@ -355,7 +299,6 @@ private:
 
   dom_accumulator *m_dom_accumulator;
   auto_vec<basic_block> m_bbs;
-  phi_loop_range m_loop_range;
   trace_ranger m_ranger;
   auto_bitmap m_touched;
   propagate_cleanups m_cleanups;
@@ -367,14 +310,19 @@ rvrp_engine::rvrp_engine (enum rvrp_order order)
 {
   basic_block bb;
   m_bbs.reserve (n_basic_blocks_for_fn (cfun));
+
+  // This is needed for all variants, because we want range refinement
+  // of loops (loop_ranger).
+  calculate_dominance_info (CDI_DOMINATORS);
+  loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
+  scev_initialize ();
+
   switch (order)
     {
     case RVRP_ORDER_DOMINATOR:
       m_dom_accumulator = new dom_accumulator (CDI_DOMINATORS, m_bbs);
       break;
     case RVRP_ORDER_POSTDOM:
-      // ?? CDI_DOMINATORS is also being built by phi_loop_range
-      // constructor.  Do we need it?
       calculate_dominance_info (CDI_POST_DOMINATORS);
       m_dom_accumulator = new dom_accumulator (CDI_POST_DOMINATORS, m_bbs);
       break;
@@ -402,6 +350,10 @@ rvrp_engine::~rvrp_engine ()
   if (m_order == RVRP_ORDER_POSTDOM)
     free_dominance_info (CDI_POST_DOMINATORS);
 
+  scev_finalize ();
+  loop_optimizer_finalize ();
+  free_dominance_info (CDI_DOMINATORS);
+
   rvrp_final_propagate (m_ranger, m_touched);
 }
 
@@ -414,11 +366,8 @@ rvrp_engine::visit (basic_block bb)
     {
       gphi *phi = gpi.phi ();
       tree phi_def = gimple_phi_result (phi);
-      if (m_ranger.valid_ssa_p (phi_def) && m_ranger.range_of_stmt (r, phi))
-	{
-	  // Adjust range with loop info and store into the cache.
-	  m_loop_range.adjust_range_with_loop_info (m_ranger, phi, r);
-	}
+      if (m_ranger.valid_ssa_p (phi_def))
+	m_ranger.range_of_stmt (r, phi);
     }
 
   if (dump_file)
