@@ -109,8 +109,6 @@ __lcbb(const void *ptr, int bndry)
 #define vec_rint(X)   __builtin_s390_vfi((X), 0, 0)
 #define vec_roundc(X) __builtin_s390_vfi((X), 4, 0)
 #define vec_round(X)  __builtin_s390_vfi((X), 4, 4)
-#define vec_signed(X) __builtin_s390_vcgdb((X), 0, 0)
-#define vec_unsigned(X) __builtin_s390_vclgdb((X), 0, 0)
 #define vec_doublee(X) __builtin_s390_vfll((X))
 #define vec_floate(X) __builtin_s390_vflr((X), 0, 0)
 #define vec_load_len_r(X,Y) __builtin_s390_vlrl((Y),(X))
@@ -315,9 +313,12 @@ __lcbb(const void *ptr, int bndry)
 #define vec_ctd_u64 __builtin_s390_vec_ctd_u64
 #define vec_ctsl __builtin_s390_vec_ctsl
 #define vec_ctul __builtin_s390_vec_ctul
+#define vec_float __builtin_s390_vec_float
+#define vec_double __builtin_s390_vec_double
+#define vec_signed __builtin_s390_vec_signed
+#define vec_unsigned __builtin_s390_vec_unsigned
 #define vec_ld2f __builtin_s390_vec_ld2f
 #define vec_st2f __builtin_s390_vec_st2f
-#define vec_double __builtin_s390_vec_double
 #define vec_madd __builtin_s390_vec_madd
 #define vec_msub __builtin_s390_vec_msub
 #define vec_nmadd __builtin_s390_vec_nmadd

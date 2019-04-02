@@ -1,6 +1,22 @@
 2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/s390-builtin-types.def: New builtin function type
+	definitions. Remove unused types.
+	* config/s390/s390-builtins.def (s390_vcdgb, s390_vcdlgb)
+	(s390_vcgdb, s390_vclgdb): Remove low-level builtin definitions.
+	(s390_vec_float, s390_vec_signed, s390_vec_unsigned): New
+	overloaded builtins.
+	(s390_vcefb, s390_vcdgb, s390_vcelfb, s390_vcdlgb, s390_vcfeb)
+	(s390_vcgdb, s390_vclfeb, s390_vclgdb): New low-level builtins.
+	* config/s390/vecintrin.h (vec_float): New builtin macro definition.
+	(vec_double, vec_signed, vec_unsigned): Define to use the new
+	overloaded builtins.
+	* config/s390/vx-builtins.md ("vec_double_s64", "vec_double_u64"):
+	Remove expanders.
+
+2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390-builtin-types.def: New builtin function type
 	definitions.
 	* config/s390/s390-builtins.def (s390_vec_search_string_cc)
 	(s390_vec_search_string_until_zero_cc): New overloaded builtins.

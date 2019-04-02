@@ -2125,22 +2125,6 @@
   "<vw>fche<sdx>bs\t%v2,%v0,%v1"
   [(set_attr "op_type" "VRR")])
 
-(define_expand "vec_double_s64"
-  [(set (match_operand:V2DF               0 "register_operand")
-	(unspec:V2DF [(match_operand:V2DI 1 "register_operand")
-		      (const_int VEC_INEXACT)
-		      (const_int VEC_RND_CURRENT)]
-		     UNSPEC_VEC_VCDGB))]
-  "TARGET_VX")
-
-(define_expand "vec_double_u64"
-  [(set (match_operand:V2DF               0 "register_operand")
-	(unspec:V2DF [(match_operand:V2DI 1 "register_operand")
-		      (const_int VEC_INEXACT)
-		      (const_int VEC_RND_CURRENT)]
-		     UNSPEC_VEC_VCDLGB))]
-  "TARGET_VX")
-
 
 (define_insn "vfmin<mode>"
   [(set (match_operand:VF_HW                0 "register_operand" "=v")
