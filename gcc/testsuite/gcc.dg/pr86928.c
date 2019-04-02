@@ -1,6 +1,5 @@
 /* { dg-do compile { target powerpc*-*-* ia64-*-* i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2 -fnon-call-exceptions -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops -fselective-scheduling -fno-if-conversion -fno-tree-dce -w" } */
-/* { dg-additional-options "-m32" { target powerpc*-*-* } } */
 
 int kn;
 
