@@ -1,5 +1,17 @@
 2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* config/s390/s390.md ("*popcountdi_arch13_cc")
+	("*popcountdi_arch13_cconly", "*popcountdi_arch13"): New insn
+	definition.
+	("*popcount<mode>", "popcountdi2", "popcountsi2", "popcounthi2"):
+	Append _z196 to make it ...
+	("*popcount<mode>_z196", "popcountdi2_z196", "popcountsi2_z196")
+	("popcounthi2_z196"): ... this.
+	("popcountdi2_z196"): Remove TARGET_64BIT from the insn condition.
+	("popcountdi2", "popcountsi2", "popcounthi2"): New expanders.
+
+2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* config/s390/s390.c (s390_canonicalize_comparison): Convert
 	certain compares for arch13 in order to make use of the condition
 	code result produced by the new instructions.
