@@ -324,7 +324,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 /* -fsanitize=address is currently only supported for 32-bit.  */
 #define ASAN_REJECT_SPEC \
-  DEF_ARCH64_SPEC("%e:-fsanitize=address is not supported in this configuration")
+  DEF_ARCH64_SPEC("%e-fsanitize=address is not supported in this configuration")
 
 
 /* Register the Solaris-specific #pragma directives.  */
