@@ -1,5 +1,20 @@
 2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* config/s390/s390.md ("xde"): Extend mode attribute to vector
+	types.
+	* config/s390/vector.md (VX_VEC_CONV_BFP, VX_VEC_CONV_INT): New
+	mode iterators.
+	("floatv2div2df2", "floatunsv2div2df2", "fix_truncv2dfv2di2")
+	("fixuns_truncv2dfv2di2"): Enhance with mode iterator to also
+	support 32 bit fp-int conversions. Rename to ...
+	("float<VX_VEC_CONV_INT:mode><VX_VEC_CONV_BFP:mode>2")
+	("floatuns<VX_VEC_CONV_INT:mode><VX_VEC_CONV_BFP:mode>2")
+	("fix_trunc<VX_VEC_CONV_BFP:mode><VX_VEC_CONV_INT:mode>2")
+	("fixuns_trunc<VX_VEC_CONV_BFP:mode><VX_VEC_CONV_INT:mode>2"):
+	... to these.
+
+2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* config/s390/s390.c (s390_rtx_costs): Do not add extra costs for
 	if-then-else constructs if we can use the select instruction.
 	* config/s390/s390.md ("*mov<mode>cc"): Add the new instructions.
