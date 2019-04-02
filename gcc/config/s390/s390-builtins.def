@@ -2951,3 +2951,33 @@ OB_DEF_VAR (s390_vec_srdb_flt,          s390_vsrd,          0,                  
 OB_DEF_VAR (s390_vec_srdb_dbl,          s390_vsrd,          0,                  O3_U3,              BT_OV_V2DF_V2DF_V2DF_UINT)
 
 B_DEF      (s390_vsrd,                  vec_srdbv16qi,      0,                  B_VXE2,             O3_U3,              BT_FN_UV16QI_UV16QI_UV16QI_INT)
+
+OB_DEF     (s390_vec_search_string_cc,  s390_vstrs_s8,      s390_vstrs_u32,     B_VXE2,             BT_FN_OV4SI_OV4SI_OV4SI_OV4SI_INTPTR)
+OB_DEF_VAR (s390_vstrs_s8,              s390_vstrsb,        0,                  0,                  BT_OV_UV16QI_V16QI_V16QI_UV16QI_INTPTR)
+OB_DEF_VAR (s390_vstrs_b8,              s390_vstrsb,        0,                  0,                  BT_OV_UV16QI_BV16QI_BV16QI_UV16QI_INTPTR)
+OB_DEF_VAR (s390_vstrs_u8,              s390_vstrsb,        0,                  0,                  BT_OV_UV16QI_UV16QI_UV16QI_UV16QI_INTPTR)
+OB_DEF_VAR (s390_vstrs_s16,             s390_vstrsh,        0,                  0,                  BT_OV_UV16QI_V8HI_V8HI_UV16QI_INTPTR)
+OB_DEF_VAR (s390_vstrs_b16,             s390_vstrsh,        0,                  0,                  BT_OV_UV16QI_BV8HI_BV8HI_UV16QI_INTPTR)
+OB_DEF_VAR (s390_vstrs_u16,             s390_vstrsh,        0,                  0,                  BT_OV_UV16QI_UV8HI_UV8HI_UV16QI_INTPTR)
+OB_DEF_VAR (s390_vstrs_s32,             s390_vstrsf,        0,                  0,                  BT_OV_UV16QI_V4SI_V4SI_UV16QI_INTPTR)
+OB_DEF_VAR (s390_vstrs_b32,             s390_vstrsf,        0,                  0,                  BT_OV_UV16QI_BV4SI_BV4SI_UV16QI_INTPTR)
+OB_DEF_VAR (s390_vstrs_u32,             s390_vstrsf,        0,                  0,                  BT_OV_UV16QI_UV4SI_UV4SI_UV16QI_INTPTR)
+
+B_DEF      (s390_vstrsb,                vstrsv16qi,         0,                  B_VXE2,             0,                  BT_FN_UV16QI_UV16QI_UV16QI_UV16QI_INTPTR)
+B_DEF      (s390_vstrsh,                vstrsv8hi,          0,                  B_VXE2,             0,                  BT_FN_UV8HI_UV8HI_UV8HI_UV8HI_INTPTR)
+B_DEF      (s390_vstrsf,                vstrsv4si,          0,                  B_VXE2,             0,                  BT_FN_UV4SI_UV4SI_UV4SI_UV8HI_INTPTR)
+
+OB_DEF     (s390_vec_search_string_until_zero_cc,  s390_vstrsz_s8,  s390_vstrsz_u32, B_VXE2,        BT_FN_OV4SI_OV4SI_OV4SI_OV4SI_INTPTR)
+OB_DEF_VAR (s390_vstrsz_s8,              s390_vstrszb,      0,                  0,                  BT_OV_UV16QI_V16QI_V16QI_UV16QI_INTPTR)
+OB_DEF_VAR (s390_vstrsz_b8,              s390_vstrszb,      0,                  0,                  BT_OV_UV16QI_BV16QI_BV16QI_UV16QI_INTPTR)
+OB_DEF_VAR (s390_vstrsz_u8,              s390_vstrszb,      0,                  0,                  BT_OV_UV16QI_UV16QI_UV16QI_UV16QI_INTPTR)
+OB_DEF_VAR (s390_vstrsz_s16,             s390_vstrszh,      0,                  0,                  BT_OV_UV16QI_V8HI_V8HI_UV16QI_INTPTR)
+OB_DEF_VAR (s390_vstrsz_b16,             s390_vstrszh,      0,                  0,                  BT_OV_UV16QI_BV8HI_BV8HI_UV16QI_INTPTR)
+OB_DEF_VAR (s390_vstrsz_u16,             s390_vstrszh,      0,                  0,                  BT_OV_UV16QI_UV8HI_UV8HI_UV16QI_INTPTR)
+OB_DEF_VAR (s390_vstrsz_s32,             s390_vstrszf,      0,                  0,                  BT_OV_UV16QI_V4SI_V4SI_UV16QI_INTPTR)
+OB_DEF_VAR (s390_vstrsz_b32,             s390_vstrszf,      0,                  0,                  BT_OV_UV16QI_BV4SI_BV4SI_UV16QI_INTPTR)
+OB_DEF_VAR (s390_vstrsz_u32,             s390_vstrszf,      0,                  0,                  BT_OV_UV16QI_UV4SI_UV4SI_UV16QI_INTPTR)
+
+B_DEF      (s390_vstrszb,                vstrszv16qi,       0,                  B_VXE2,             0,                  BT_FN_UV16QI_UV16QI_UV16QI_UV16QI_INTPTR)
+B_DEF      (s390_vstrszh,                vstrszv8hi,        0,                  B_VXE2,             0,                  BT_FN_UV8HI_UV8HI_UV8HI_UV8HI_INTPTR)
+B_DEF      (s390_vstrszf,                vstrszv4si,        0,                  B_VXE2,             0,                  BT_FN_UV4SI_UV4SI_UV4SI_UV8HI_INTPTR)

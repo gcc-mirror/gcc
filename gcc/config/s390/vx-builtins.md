@@ -1626,6 +1626,74 @@
   operands[4] = GEN_INT (INTVAL (operands[4]) | VSTRING_FLAG_CS | VSTRING_FLAG_ZS);
 })
 
+; Vector string search
+
+(define_expand "vstrs<mode>"
+  [(parallel
+    [(set (match_operand:V16QI                    0 "register_operand" "")
+	  (unspec:V16QI [(match_operand:VI_HW_QHS 1 "register_operand" "")
+			 (match_operand:VI_HW_QHS 2 "register_operand" "")
+			 (match_operand:V16QI     3 "register_operand" "")
+			 (const_int 0)]
+			UNSPEC_VEC_VSTRS))
+     (set (reg:CCRAW CC_REGNUM)
+	  (unspec:CCRAW [(match_dup 1)
+			 (match_dup 2)
+			 (match_dup 3)
+			 (const_int 0)]
+			UNSPEC_VEC_VSTRSCC))])
+   (set (match_operand:SI 4 "memory_operand" "")
+	(unspec:SI [(reg:CCRAW CC_REGNUM)] UNSPEC_CC_TO_INT))]
+  "TARGET_VXE2")
+
+(define_expand "vstrsz<mode>"
+  [(parallel
+    [(set (match_operand:V16QI                    0 "register_operand" "")
+	  (unspec:V16QI [(match_operand:VI_HW_QHS 1 "register_operand" "")
+			 (match_operand:VI_HW_QHS 2 "register_operand" "")
+			 (match_operand:V16QI     3 "register_operand" "")
+			 (const_int VSTRING_FLAG_ZS)]
+			UNSPEC_VEC_VSTRS))
+     (set (reg:CCRAW CC_REGNUM)
+	  (unspec:CCRAW [(match_dup 1)
+			 (match_dup 2)
+			 (match_dup 3)
+			 (const_int VSTRING_FLAG_ZS)]
+			UNSPEC_VEC_VSTRSCC))])
+   (set (match_operand:SI 4 "memory_operand" "")
+	(unspec:SI [(reg:CCRAW CC_REGNUM)] UNSPEC_CC_TO_INT))]
+  "TARGET_VXE2")
+
+; vstrsb, vstrsh, vstrsf
+; vstrszb, vstrszh, vstrszf
+(define_insn "vec_vstrs<mode>"
+  [(set (match_operand:V16QI                    0 "register_operand" "=v")
+	(unspec:V16QI [(match_operand:VI_HW_QHS 1 "register_operand" "v")
+		       (match_operand:VI_HW_QHS 2 "register_operand" "v")
+		       (match_operand:V16QI     3 "register_operand" "v")
+		       (match_operand:QI        4 "const_mask_operand" "C")]
+		      UNSPEC_VEC_VSTRS))
+   (set (reg:CCRAW CC_REGNUM)
+	(unspec:CCRAW [(match_dup 1)
+		       (match_dup 2)
+		       (match_dup 3)
+		       (match_dup 4)]
+		      UNSPEC_VEC_VSTRSCC))]
+  "TARGET_VXE2"
+{
+  unsigned HOST_WIDE_INT flags = UINTVAL (operands[4]);
+
+  gcc_assert (!(flags & ~VSTRING_FLAG_ZS));
+
+  if (flags == VSTRING_FLAG_ZS)
+    return "vstrsz<bhfgq>\t%v0,%v1,%v2,%v3";
+  return "vstrs<bhfgq>\t%v0,%v1,%v2,%v3";
+}
+  [(set_attr "op_type" "VRR")])
+
+
+; Vector convert int<->float
+
 (define_insn "vcdgb"
   [(set (match_operand:V2DF 0 "register_operand"                "=v")
 	(unspec:V2DF [(match_operand:V2DI 1 "register_operand"   "v")

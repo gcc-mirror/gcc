@@ -1,5 +1,21 @@
 2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* config/s390/s390-builtin-types.def: New builtin function type
+	definitions.
+	* config/s390/s390-builtins.def (s390_vec_search_string_cc)
+	(s390_vec_search_string_until_zero_cc): New overloaded builtins.
+	(s390_vstrsb, s390_vstrsh, s390_vstrsf, s390_vstrszb)
+	(s390_vstrszh, s390_vstrszf): New low-level builtins.
+	* config/s390/s390.md (UNSPEC_VEC_VSTRS, UNSPEC_VEC_VSTRSCC): New
+	constant definitions.
+	* config/s390/vecintrin.h (vec_search_string_cc)
+	(vec_search_string_until_zero_cc): New builtin name definitions.
+	* config/s390/vx-builtins.md ("vstrs<mode>", "vstrsz<mode>"): New
+	expanders.
+	("vec_vstrs<mode>"): New insn definition.
+
+2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* config/s390/s390-builtin-types.def: Add new builtin function
 	types.
 	* config/s390/s390-builtins.def (s390_vec_sldb, s390_vec_srdb):
