@@ -1,5 +1,23 @@
 2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* config/s390/s390.c (s390_canonicalize_comparison): Convert
+	certain compares for arch13 in order to make use of the condition
+	code result produced by the new instructions.
+	(s390_rtx_costs): Adjust the costs for nnrk, nngrk, nork, nogrk,
+	nxrk, and nxgrk instruction patterns.
+	* config/s390/s390.md (ANDOR, bitops_name, inv_bitops_name)
+	(inv_no): Add new code iterator together with some attributes.
+	("*andc_split_<mode>"): Disable splitter for arch13.
+	("*<ANDOR:bitops_name>c<GPR:mode>_cc")
+	("*<ANDOR:bitops_name>c<GPR:mode>_cconly")
+	("*<ANDOR:bitops_name>c<GPR:mode>")
+	("*n<ANDOR:inv_bitops_name><GPR:mode>_cc")
+	("*n<ANDOR:inv_bitops_name><mode>_cconly")
+	("*n<ANDOR:inv_bitops_name><mode>", "*nxor<GPR:mode>_cc")
+	("*nxor<mode>_cconly", "*nxor<mode>"): New insn definitions.
+
+2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* common/config/s390/s390-common.c (processor_flags_table): New
 	entry for arch13.
 	* config.gcc: Support arch13 with the --with-arch= configure flag.
