@@ -76,7 +76,7 @@ public:
   };
 
   mrules ()
-    : module_name (NULL), bmi_name (NULL), is_legacy (false), quote_lwm (0)
+    : module_name (NULL), bmi_name (NULL), is_header_unit (false), quote_lwm (0)
   {
   }
   ~mrules ()
@@ -104,7 +104,7 @@ public:
 public:
   const char *module_name;
   const char *bmi_name;
-  bool is_legacy;
+  bool is_header_unit;
   unsigned short quote_lwm;
 };
 
@@ -316,9 +316,14 @@ deps_add_vpath (struct mrules *d, const char *vpath)
     }
 }
 
+/* Add a new module dependency.  M is the module name, with P being
+   any partition name thereof (might be NULL).  If BMI is NULL, this
+   is an import dependency.  Otherwise, this is an output dependency
+   specifying BMI as the output file, of type IS_HEADER_UNIT.  */
+
 void
 deps_add_module (struct mrules *d, const char *m, const char *p,
-		 const char *bmi, bool is_legacy)
+		 const char *bmi, bool is_header_unit)
 {
   size_t m_len = strlen (m);
   size_t p_len = p ? strlen (p) : 0;
@@ -327,14 +332,15 @@ deps_add_module (struct mrules *d, const char *m, const char *p,
   memcpy (m_name, m, m_len + 1);
   if (p_len)
     memcpy (m_name + m_len, p, p_len + 1);
+
   if (bmi)
     {
-      d->module_name = m;
-      d->is_legacy = is_legacy;
-      d->bmi_name = *bmi ? bmi : NULL;
+      d->module_name = m_name;
+      d->is_header_unit = is_header_unit;
+      d->bmi_name = xstrdup (bmi);
     }
   else
-    d->modules.push (m);
+    d->modules.push (m_name);
 }
 
 static unsigned
@@ -420,7 +426,7 @@ make_write (const struct mrules *d, FILE *fp, bool phony, unsigned int colmax)
 	  fputs ("\n", fp);
 	}
 
-      if (d->bmi_name && !d->is_legacy)
+      if (d->bmi_name && !d->is_header_unit)
 	{
 	  /* bmi-name :| first-target */
 	  column = make_write_name (d->bmi_name, fp, 0, colmax);
