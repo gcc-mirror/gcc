@@ -1,3 +1,16 @@
+2019-04-02  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89902
+	PR target/89903
+	* config/i386/i386.c (dimode_scalar_to_vector_candidate_p):
+	Return false for variable DImode shifts.
+	(dimode_scalar_chain::compute_convert_gain): Do not handle
+	register count operand in variable DImode shifts.
+	(dimode_scalar_chain::make_vector_copies): Remove support to copy
+	count argument of a variable shift instruction to a vector register.
+	(dimode_scalar_chain::convert_reg): Remove support to convert
+	count argument of a variable shift instruction.
+
 2019-04-02  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/84206
