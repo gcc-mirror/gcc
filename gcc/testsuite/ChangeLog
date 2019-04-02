@@ -1,5 +1,14 @@
 2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* gcc.target/s390/zvector/vec-reve-load-byte-z14.c: New test.
+	* gcc.target/s390/zvector/vec-reve-load-byte.c: New test.
+	* gcc.target/s390/zvector/vec-reve-load-halfword-z14.c: New test.
+	* gcc.target/s390/zvector/vec-reve-load-halfword.c: New test.
+	* gcc.target/s390/zvector/vec-reve-store-byte-z14.c: New test.
+	* gcc.target/s390/zvector/vec-reve-store-byte.c: New test.
+
+2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* gcc.target/s390/zvector/vec-revb-load-double-z14.c: New test.
 	* gcc.target/s390/zvector/vec-revb-load-double.c: New test.
 	* gcc.target/s390/zvector/vec-revb-store-double-z14.c: New test.

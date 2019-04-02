@@ -1,5 +1,17 @@
 2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* config/s390/s390-builtin-types.def: Add new builtin function type.
+	* config/s390/s390-builtins.def: Add overloaded builtin
+	s390_vec_reve and low-level builtins for s390_vler and s390_vster.
+	* config/s390/s390.md (UNSPEC_VEC_ELTSWAP): New constant definition.
+	* config/s390/vecintrin.h (vec_reve): New builtin name definition.
+	* config/s390/vx-builtins.md (V_HW_HSD): New mode iterator.
+	("eltswap<mode>"): New expander.
+	("*eltswapv16qi", "*eltswap<mode>", "*eltswap<mode>_emu"): New
+	insn definitions.
+
+2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* config/s390/s390-builtin-types.def: Add new builtin function types.
 	* config/s390/s390-builtins.def: Add overloaded builtin
 	s390_vec_revb. Add low-level builtins for vlbr and vstbr
