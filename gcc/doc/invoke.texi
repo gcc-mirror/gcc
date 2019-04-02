@@ -30034,6 +30034,15 @@ Your @var{PATH} environment variable is searched for the program.
 Arguments are separated by space characters, (it is not possible for
 one of the arguments delivered to the program to contain a space).
 
+@item <>@r{[}?@var{ident}@r{]}
+@item <>@var{fdinout}@r[{]?@var{ident}@r{]}
+@item <@var{fdin}>@var{fdout}@r[{]?@var{ident}@r{]}
+File descriptors to communicate over.  The first form, @option{<>}
+communicates over stdin and stdout.  The second form specifies a
+bidirectional file descriptor and the last form allows specifying
+two independent descriptors.  Note that other compiler options might
+cause the compiler to read stdin or write stdout.
+
 @item @var{file}@r{[}?@var{ident}@r{]}
 A mapping file consisting of space-separated module-name, filename
 pairs, one per line.  Only the mappings for the direct imports and any

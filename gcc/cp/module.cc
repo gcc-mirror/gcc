@@ -9410,7 +9410,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
       *cookie = 0;
     }
 
-  if (option[0] == '|')
+  if (writable[0] == '|')
     {
       /* A program to spawn and talk to.  */
       /* Split writable at white-space.  No space-containing args
@@ -9490,6 +9490,33 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	      fclose (to);
 	      to = NULL;
 	    }
+	}
+      name = writable;
+    }
+  else if (writable[0] == '<')
+    {
+      /* File descriptors, inc stdin/out.  */
+      int from = -1, to = -1;
+      char *ptr = writable + 1, *eptr;
+      from = strtoul (ptr, &eptr, 0);
+      if (*eptr == '>')
+	{
+	  ptr = eptr + 1;
+	  to = strtoul (ptr, &eptr, 0);
+	  if (eptr != ptr && from == -1)
+	    from = to;
+	}
+      if (*eptr)
+	errmsg = "parsing";
+      else
+	{
+	  if (eptr == writable + 2)
+	    {
+	      from = fileno (stdin);
+	      to = fileno (stdout);
+	    }
+	  fd_to = to;
+	  fd_from = from;
 	}
       name = writable;
     }

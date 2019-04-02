@@ -1,5 +1,11 @@
 2019-04-02  Nathan Sidwell  <nathan@acm.org>
 
+	Allow mapper protocol of file descriptors.
+	gcc/
+	* doc/invoke.texi (C++ Module Mapper): Document <> form.
+	gcc/cp/
+	* module.cc (module_mapper::module_mapper): Parse <> option.
+
 	Write bmi /after/ deferred instantiations.
 	gcc/cp/
 	* cp-tree.h (finish_module_processing): Add cpp arg.
