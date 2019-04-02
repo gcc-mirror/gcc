@@ -1,3 +1,7 @@
+2019-04-02  Jeff Law  <law@redhat.com>
+
+	* gcc.target/visium/bit_shift.c: xfail.
+
 2019-04-02  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/89902
