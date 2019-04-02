@@ -3529,7 +3529,8 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
 
 	/* It is a real IF-THEN-ELSE.  An additional move will be
 	   needed to implement that.  */
-	if (reload_completed
+	if (!TARGET_ARCH13
+	    && reload_completed
 	    && !rtx_equal_p (dst, then)
 	    && !rtx_equal_p (dst, els))
 	  *total += COSTS_N_INSNS (1) / 2;

@@ -1,5 +1,9 @@
 2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* gcc.target/s390/arch13/sel-1.c: New test.
+
+2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* gcc.target/s390/arch13/popcount-1.c: New test.
 
 2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
