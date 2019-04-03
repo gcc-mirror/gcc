@@ -1,3 +1,9 @@
+2019-04-03  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/68567
+	* expr.c (gfc_reduce_init_expr): Add extra check to avoid
+	dereferencing a null pointer.
+
 2019-04-03  Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
 	PR fortran/89375

@@ -3003,7 +3003,7 @@ gfc_reduce_init_expr (gfc_expr *expr)
     t = gfc_check_init_expr (expr);
   gfc_init_expr_flag = false;
 
-  if (!t)
+  if (!t || !expr)
     return false;
 
   if (expr->expr_type == EXPR_ARRAY)
