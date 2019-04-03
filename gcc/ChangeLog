@@ -1,3 +1,12 @@
+2019-04-03  qing zhao  <qing.zhao@oracle.com>
+
+	PR tree-optimization/89730
+	* ipa-inline.c (can_inline_edge_p): Delete the checking for
+	-flive-patching=inline-only-static.
+	(can_inline_edge_by_limits_p): Add the checking for 
+	-flive-patching=inline-only-static and grant always_inline
+	even when -flive-patching=inline-only-static is specified. 
+
 2019-04-03  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/81025
