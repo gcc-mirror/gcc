@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-skip-if "" { short_enums } } */
 /* { dg-additional-options "-fno-short-enums" } */
 
 enum e1 { c1 };
