@@ -3,7 +3,7 @@
 	PR libstdc++/85184
 	* include/std/variant (_Copy_assign_base, _Move_assign_base, variant):
 	Remove assertions.
-	(variant::emplace<_Tp>): Remove result of emplace<N> directly.
+	(variant::emplace<_Tp>): Return result of emplace<N> directly.
 
 	* include/std/string (__hash_string_base): New class template defining
 	operator() for hashing strings.
