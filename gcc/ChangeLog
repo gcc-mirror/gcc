@@ -1,3 +1,9 @@
+2019-04-03  Sudakshina Das  <sudi.das@arm.com>
+
+	* doc/extend.texi: Add deprecated comment on sign-return-address
+	function attribute and add mbranch-protection.
+	* doc/invoke.texi: Add bti to the options for mbranch-protection.
+
 2019-04-03  Richard Biener  <rguenther@suse.de>
 
 	PR lto/89896
