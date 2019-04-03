@@ -1,6 +1,9 @@
 2019-04-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::write_cluster): Refactor.
+
+	gcc/cp/
 	* module.cc (cluster_tag): Remove ct_defn.
 	(module_state::{read,write}_cluster): Definitions marked via flag.
 

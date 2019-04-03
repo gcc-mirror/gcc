@@ -10653,6 +10653,7 @@ module_state::read_partitions (unsigned count)
 /* Contents of a cluster.  */
 enum cluster_tag {
   ct_decl,	/* A decl.  */
+  ct_specialization, /* A specialization.  */
   ct_bind,	/* A binding.  */
   ct_horcrux,	/* Preseed reference to unnamed decl.  */
   ct_mergeable,	/* A set of mergeable decls.  */
@@ -10697,8 +10698,12 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	{
 	  // FIXME: What about non-mergeable decls in this SCC that
 	  // are nevertheless referenced in locating the mergeable
-	  // decls?  Can that actually happen?
-	  if (TREE_PUBLIC (CP_DECL_CONTEXT (decl)))
+	  // decls?  Can that actually happen? (I think the only cases
+	  // are specializations, and if it does that, it will never
+	  // find something to merge with, so we could cull them from
+	  // this set.)
+	  if (b->get_entity_kind () == depset::EK_SPECIALIZATION
+	      || TREE_PUBLIC (CP_DECL_CONTEXT (decl)))
 	    {
 	      unsigned owner = MODULE_NONE;
 
@@ -10797,59 +10802,72 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	dump () && dump ("Depset:%u %s %C:%N", ix, b->entity_kind_name (),
 			 TREE_CODE (decl), decl);
 
-      if (b->is_binding ())
+      switch (b->get_entity_kind ())
 	{
-	  gcc_assert (TREE_CODE (decl) == NAMESPACE_DECL);
-	  sec.u (ct_bind);
-	  sec.tree_ctx (decl, false, decl);
-	  sec.tree_node (b->get_name ());
-	  /* Write in reverse order, so reading will see the
-	     exports first, thus building the overload chain will be
-	     optimized.  */
-	  bool exporting = true;
-	  for (unsigned jx = b->deps.length (); jx--;)
-	    {
-	      depset *dep = b->deps[jx];
-	      tree decl = dep->get_entity ();
-	      bool exp = false;
-	      unsigned code = 1;
-	      if (dep->get_entity_kind () == depset::EK_USING)
-		{
-		  exp = OVL_EXPORT_P (decl);
-		  code = 2 + exp;
-		  decl = OVL_FUNCTION (decl);
-		}
-	      else if (TREE_CODE (decl) != TYPE_DECL)
-		exp = DECL_MODULE_EXPORT_P (decl);
+	case depset::EK_BINDING:
+	  {
+	    gcc_assert (TREE_CODE (decl) == NAMESPACE_DECL);
+	    sec.u (ct_bind);
+	    sec.tree_ctx (decl, false, decl);
+	    sec.tree_node (b->get_name ());
+	    /* Write in reverse order, so reading will see the exports
+	       first, thus building the overload chain will be
+	       optimized.  */
+	    bool exporting = true;
+	    for (unsigned jx = b->deps.length (); jx--;)
+	      {
+		depset *dep = b->deps[jx];
+		tree decl = dep->get_entity ();
+		bool exp = false;
+		unsigned code = 1;
+		if (dep->get_entity_kind () == depset::EK_USING)
+		  {
+		    exp = OVL_EXPORT_P (decl);
+		    code = 2 + exp;
+		    decl = OVL_FUNCTION (decl);
+		  }
+		else if (TREE_CODE (decl) != TYPE_DECL)
+		  exp = DECL_MODULE_EXPORT_P (decl);
 
-	      gcc_checking_assert (DECL_P (decl));
+		gcc_checking_assert (DECL_P (decl));
 
-	      if (exporting && !exp)
-		{
-		  exporting = false;
-		  sec.i (-1);
-		}
+		if (exporting && !exp)
+		  {
+		    exporting = false;
+		    sec.i (-1);
+		  }
 
-	      sec.i (code);
-	      sec.tree_node (decl);
-	    }
-	  if (exporting)
-	    sec.u (-1);
+		sec.i (code);
+		sec.tree_node (decl);
+	      }
+	    if (exporting)
+	      sec.u (-1);
 
-	  /* Terminate the list.  */
-	  sec.u (0);
-	}
-      else if (b->get_entity_kind () != depset::EK_USING)
-	{
-	  sec.u (ct_decl);
-	  sec.tree_ctx (decl, false, NULL_TREE);
+	    /* Terminate the list.  */
+	    sec.u (0);
+	  }
+	  break;
 
-	  if (b->cluster)
-	    dump () && dump ("Voldemort:%u %N", b->cluster - 1, decl);
-	  sec.u (b->cluster);
-	  sec.u (b->has_defn ());
-	  if (b->has_defn ()) 
-	    sec.write_definition (decl);
+	case depset::EK_SPECIALIZATION:
+	  // FIXME:
+	  break;
+
+	case depset::EK_DECL:
+	case depset::EK_UNNAMED:
+	  {
+	    sec.u (ct_decl);
+	    sec.tree_ctx (decl, false, NULL_TREE);
+
+	    if (b->cluster)
+	      dump () && dump ("Voldemort:%u %N", b->cluster - 1, decl);
+	    sec.u (b->cluster);
+	    sec.u (b->has_defn ());
+	    if (b->has_defn ()) 
+	      sec.write_definition (decl);
+	  }
+	  break;
+
+	default:;
 	}
     }
 
