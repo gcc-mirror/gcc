@@ -1,3 +1,8 @@
+2019-04-03  Clément Chigot  <clement.chigot@atos.net>
+
+	* lib/go-torture.exp: Only add lto to TORTURE_OPTIONS if it is
+	supported.
+
 2019-04-13  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR c/71598
