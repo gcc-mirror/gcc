@@ -1,6 +1,10 @@
 2019-04-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (dumper): Add CLUSTER.
+	(module_state::write): Dump cluster information.
+
+	gcc/cp/
 	* module.cc (node_template_info): Move earlier, protect from
 	partial read in.
 	(dumper::impl::nested_name): Dump template args.

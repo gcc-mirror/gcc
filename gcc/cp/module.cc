@@ -3486,9 +3486,10 @@ public:
   enum {
     LOCATION = TDF_LINENO,  /* -lineno:Source location streaming.  */
     DEPEND = TDF_GRAPH,	/* -graph:Dependency graph construction.  */
+    CLUSTER = TDF_BLOCKS,   /* -blocks:Clusters.  */
     TREE = TDF_UID, 	/* -uid:Tree streaming.  */
     MERGE = TDF_ALIAS,	/* -alias:Mergeable Entities.  */
-    ELF = TDF_BLOCKS	/* -blocks:Elf data.  */
+    ELF = TDF_ASMNAME	/* -asmname:Elf data.  */
   };
 
 private:
@@ -9160,7 +9161,7 @@ depset::hash::connect (auto_vec<depset *> &sccs)
   while (deps.length ())
     {
       depset *v = deps.pop ();
-      dump (dumper::DEPEND) &&
+      dump (dumper::CLUSTER) &&
 	(v->is_binding ()
 	 ? dump ("Connecting binding %P", v->get_entity (), v->get_name ())
 	 : dump ("Connecting %s %s %C:%N",
@@ -13361,8 +13362,12 @@ module_state::write (elf_out *to, cpp_reader *reader)
       qsort (base, size, sizeof (depset *), cluster_cmp);
 
       if (base[0]->get_entity_kind () == depset::EK_NAMESPACE)
-	/* A namespace decl, these are handled specially.  */
-	n_spaces++;
+	{
+	  /* A namespace decl, these are handled specially.  */
+	  n_spaces++;
+	  dump (dumper::CLUSTER)
+	    && dump ("Cluster namespace %N", base[0]->get_entity ());
+	}
       else
 	{
 	  /* Save the size in the first member's cluster slot.  */
@@ -13370,6 +13375,19 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	  /* Set the section number.  */
 	  for (unsigned jx = size; jx--;)
 	    base[jx]->section = config.sec_range.second;
+	  if (dump (dumper::CLUSTER))
+	    {
+	      dump ("Cluster:%u %u depsets", config.sec_range.second, size);
+	      for (unsigned jx = 0; jx != size; jx++)
+		if (base[jx]->is_binding ())
+		  dump ("  [%u]=%s %P", jx, base[jx]->entity_kind_name (),
+			base[jx]->get_entity (), base[jx]->get_name ());
+		else
+		  dump ("  [%u]=%s %s %N", jx, base[jx]->entity_kind_name (),
+			base[jx]->has_defn () ? "definition" : "declaration",
+			base[jx]->get_entity ());
+	    }
+
 	  config.sec_range.second++;
 	}
     }
