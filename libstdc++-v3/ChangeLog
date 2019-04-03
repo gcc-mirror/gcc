@@ -1,3 +1,12 @@
+2019-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string (__hash_string_base): New class template defining
+	operator() for hashing strings.
+	(hash<pmr::string>, hash<pmr::u8string>, hash<pmr::u16string>)
+	(hash<pmr::u32string>, hash<pmr::wstring>): Define for C++17.
+	* testsuite/21_strings/basic_string/hash/hash.cc: New test.
+	* testsuite/21_strings/basic_string/hash/hash_char8_t.cc: New test.
+
 2019-04-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Use single-visitation in variant assignment and swap and relops.
