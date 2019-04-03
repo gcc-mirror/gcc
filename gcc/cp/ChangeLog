@@ -1,5 +1,9 @@
 2019-04-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/81866 - ICE with member template and default targ.
+	* pt.c (tsubst_template_decl): Handle getting a type from
+	retrieve_specialization.
+
 	PR c++/86586 - -fcompare-debug=-Wsign-compare.
 	* typeck.c (cp_build_binary_op): Don't fold for -Wsign-compare.
 
