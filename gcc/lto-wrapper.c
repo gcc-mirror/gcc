@@ -1403,7 +1403,9 @@ cont:
 	  struct pex_obj *pex;
 	  char jobs[32];
 
-	  fprintf (mstream, "all:");
+	  fprintf (mstream,
+		   ".PHONY: all\n"
+		   "all:");
 	  for (i = 0; i < nr; ++i)
 	    fprintf (mstream, " \\\n\t%s", output_names[i]);
 	  fprintf (mstream, "\n");
