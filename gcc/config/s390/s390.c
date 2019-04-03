@@ -4677,6 +4677,17 @@ s390_legitimate_address_p (machine_mode mode, rtx addr, bool strict)
   if (!s390_decompose_address (addr, &ad))
     return false;
 
+  /* The vector memory instructions only support short displacements.
+     Reject invalid displacements early to prevent plenty of lay
+     instructions to be generated later which then cannot be merged
+     properly.  */
+  if (TARGET_VX
+      && VECTOR_MODE_P (mode)
+      && ad.disp != NULL_RTX
+      && CONST_INT_P (ad.disp)
+      && !SHORT_DISP_IN_RANGE (INTVAL (ad.disp)))
+    return false;
+
   if (strict)
     {
       if (ad.base && !REGNO_OK_FOR_BASE_P (REGNO (ad.base)))
