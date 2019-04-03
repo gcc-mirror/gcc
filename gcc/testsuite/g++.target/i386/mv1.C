@@ -1,7 +1,7 @@
 /* Test case to check if Multiversioning works.  */
 /* { dg-do run } */
 /* { dg-require-ifunc "" }  */
-/* { dg-options "-O2 -fPIC" } */
+/* { dg-options "-O2 -fPIC -fcompare-debug=-Wsign-compare" } */
 
 #include <assert.h>
 
