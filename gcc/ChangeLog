@@ -1,3 +1,9 @@
+2019-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR lto/89896
+	* lto-wrapper.c (run_gcc): Avoid implicit rules making
+	the all target phony.
+
 2019-04-02  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/89902

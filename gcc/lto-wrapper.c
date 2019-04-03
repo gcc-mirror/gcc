@@ -1669,7 +1669,9 @@ cont:
 	  struct pex_obj *pex;
 	  char jobs[32];
 
-	  fprintf (mstream, "all:");
+	  fprintf (mstream,
+		   ".PHONY: all\n"
+		   "all:");
 	  for (i = 0; i < nr; ++i)
 	    {
 	      int j = ltrans_priorities[i*2 + 1];
