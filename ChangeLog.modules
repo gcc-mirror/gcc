@@ -1,6 +1,10 @@
 2019-04-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (cluster_tag): Remove ct_defn.
+	(module_state::{read,write}_cluster): Definitions marked via flag.
+
+	gcc/cp/
 	* module.cc (depset::hash): Rename mergeables flag to mergeable_dep.
 
 2019-04-02  Nathan Sidwell  <nathan@acm.org>

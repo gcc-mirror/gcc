@@ -10653,7 +10653,6 @@ module_state::read_partitions (unsigned count)
 /* Contents of a cluster.  */
 enum cluster_tag {
   ct_decl,	/* A decl.  */
-  ct_defn,	/* A defn.  */
   ct_bind,	/* A binding.  */
   ct_horcrux,	/* Preseed reference to unnamed decl.  */
   ct_mergeable,	/* A set of mergeable decls.  */
@@ -10842,12 +10841,13 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	}
       else if (b->get_entity_kind () != depset::EK_USING)
 	{
-	  sec.u (b->has_defn () ? ct_defn: ct_decl);
+	  sec.u (ct_decl);
 	  sec.tree_ctx (decl, false, NULL_TREE);
 
 	  if (b->cluster)
 	    dump () && dump ("Voldemort:%u %N", b->cluster - 1, decl);
 	  sec.u (b->cluster);
+	  sec.u (b->has_defn ());
 	  if (b->has_defn ()) 
 	    sec.write_definition (decl);
 	}
@@ -11011,7 +11011,6 @@ module_state::read_cluster (unsigned snum)
 	  break;
 
 	case ct_decl:
-	case ct_defn:
 	  /* A decl or defn.  */
 	  {
 	    tree decl = sec.tree_node ();
@@ -11027,7 +11026,7 @@ module_state::read_cluster (unsigned snum)
 		else
 		  sec.set_overrun ();
 	      }
-	    if (ct == ct_defn && !sec.get_overrun ())
+	    if (sec.u () && !sec.get_overrun ())
 	      /* A definition.  */
 	      sec.read_definition (decl);
 	  }
