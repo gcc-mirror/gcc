@@ -1,3 +1,8 @@
+2019-04-03  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/81025
+	* reorg.c (skip_consecutive_labels): Do not skip past a BARRIER.
+
 2019-04-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84101
