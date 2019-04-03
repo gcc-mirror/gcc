@@ -4144,6 +4144,9 @@ finish_offsetof (tree object_ptr, tree expr, location_t loc)
       return expr;
     }
 
+  if (expr == error_mark_node)
+    return error_mark_node;
+
   if (TREE_CODE (expr) == PSEUDO_DTOR_EXPR)
     {
       error ("cannot apply %<offsetof%> to destructor %<~%T%>",
