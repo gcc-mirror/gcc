@@ -1,5 +1,10 @@
 2019-04-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/89331 - ICE with offsetof in incomplete class.
+	* semantics.c (finish_offsetof): Handle error_mark_node.
+	* typeck.c (build_class_member_access_expr): Call
+	complete_type_or_maybe_complain before converting to base.
+
 	PR c++/89917 - ICE with lambda in variadic mem-init.
 	* pt.c (make_pack_expansion): Change type_pack_expansion_p to false.
 

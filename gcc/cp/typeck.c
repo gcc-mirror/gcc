@@ -2474,6 +2474,14 @@ build_class_member_access_expr (cp_expr object, tree member,
 	  tree binfo;
 	  base_kind kind;
 
+	  /* We didn't complain above about a currently open class, but now we
+	     must: we don't know how to refer to a base member before layout is
+	     complete.  But still don't complain in a template.  */
+	  if (!dependent_type_p (object_type)
+	      && !complete_type_or_maybe_complain (object_type, object,
+						   complain))
+	    return error_mark_node;
+
 	  binfo = lookup_base (access_path ? access_path : object_type,
 			       member_scope, ba_unique, &kind, complain);
 	  if (binfo == error_mark_node)
