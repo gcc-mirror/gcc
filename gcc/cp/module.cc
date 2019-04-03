@@ -2226,9 +2226,10 @@ private:
     DB_KIND_BIT, /* Kind of the entity.  */
     DB_KIND_BITS = EK_BITS,
     DB_DEFN_BIT = DB_KIND_BIT + DB_KIND_BITS,
-    DB_IS_INTERNAL_BIT, /* It is an internal-linkage entity.  */
-    DB_REFS_UNNAMED_BIT,  /* Refer to a voldemort entity.  */
-    DB_REFS_INTERNAL_BIT,  /* Refers to an internal-linkage entity.  */
+    DB_IS_INTERNAL_BIT,		/* It is an internal-linkage entity.  */
+    DB_REFS_UNNAMED_BIT,	/* Refer to a voldemort entity.  */
+    DB_REFS_INTERNAL_BIT,	/* Refers to an internal-linkage entity. */
+    DB_GLOBAL_ENTITY_BIT,	/* Global module entity.  */
   };
 
 public:
@@ -2297,6 +2298,10 @@ public:
   bool refs_internal () const
   {
     return get_flag_bit<DB_REFS_INTERNAL_BIT> ();
+  }
+  bool is_global_entity () const
+  {
+    return get_flag_bit<DB_GLOBAL_ENTITY_BIT> ();
   }
 
 public:
@@ -2375,7 +2380,7 @@ public:
   public:
     vec<depset *> worklist;  /* Worklist of decls to walk.  */
     depset *current;         /* Current depset being depended.  */
-    bool mergeables;         /* Mergeables ordering only.  */
+    bool mergeable_dep;      /* Mergeables ordering only.  */
     bool sneakoscope;        /* Detecting dark magic (of a voldemort
 				type).  */
     bool bad_refs;	     /* bad references are present.  */
@@ -2383,7 +2388,7 @@ public:
   public:
     hash (size_t size, bool mergeable = false)
       : parent (size), worklist (), current (NULL),
-	mergeables (mergeable), sneakoscope (false),
+	mergeable_dep (mergeable), sneakoscope (false),
 	bad_refs (false)
     {
       worklist.reserve (size);
@@ -2393,9 +2398,9 @@ public:
     }
 
   public:
-    bool is_mergeable () const 
+    bool is_mergeable_dep () const 
     {
-      return mergeables;
+      return mergeable_dep;
     }
 
   private:
@@ -2493,6 +2498,9 @@ enum tree_tag {
   tt_enum_int,		/* An enum const.  */
   tt_named_decl,  	/* Named decl. */
   tt_anon_decl,		/* Anonymous decl.  */
+  // FIXME: I suspect builtins should be treated as mergeable GM
+  // entities.  Need to make sure we correctly propagate into the GM
+  // slot when creating it though.
   tt_builtin,		/* A builtin decl.  */
   tt_namespace,		/* Namespace reference.  */
   tt_inst,		/* A template instantiation.  */
@@ -7252,10 +7260,10 @@ trees_in::tree_node ()
     case tt_node:
       {
 	/* A new node.  Stream it in.  */
-	bool is_mergeable = tag == tt_mergeable;
+	bool is_mergeable_node = tag == tt_mergeable;
 	tree existing = NULL_TREE;
 
-	if (is_mergeable)
+	if (is_mergeable_node)
 	  {
 	    /* A mergeable entity.  We've already deduped it, but need
 	       to read in the value here.  Either in-place, or as a
@@ -7289,10 +7297,11 @@ trees_in::tree_node ()
 	if (res)
 	  {
 	    dump (dumper::TREE)
-	      && dump ("Reading%s:%d %C", is_mergeable ? " mergeable" : "", tag,
+	      && dump ("Reading%s:%d %C",
+		       is_mergeable_node ? " mergeable" : "", tag,
 		       TREE_CODE (res));
 
-	    specific = tree_node_specific (res, is_mergeable && !existing);
+	    specific = tree_node_specific (res, is_mergeable_node && !existing);
 	    ok = tree_node_bools (res, specific);
 	  }
 
@@ -7304,13 +7313,13 @@ trees_in::tree_node ()
 	    tpl = res;
 	    t_specific = specific;
 	    unsigned c = u ();
-	    res = is_mergeable && !existing
+	    res = is_mergeable_node && !existing
 	      ? DECL_TEMPLATE_RESULT (tpl) : start (c);
-	    r_tag = insert (is_mergeable && existing
+	    r_tag = insert (is_mergeable_node && existing
 			    ? DECL_TEMPLATE_RESULT (existing) : res);
 	    dump (dumper::TREE)
 	      && dump ("Reading:%d %C", r_tag, TREE_CODE (res));
-	    specific = tree_node_specific (res, is_mergeable && !existing);
+	    specific = tree_node_specific (res, is_mergeable_node && !existing);
 	    tree_node_bools (res, specific);
 	  }
 
@@ -7319,12 +7328,13 @@ trees_in::tree_node ()
 	if (ok && DECL_IMPLICIT_TYPEDEF_P (res))
 	  {
 	    unsigned c = u ();
-	    type = is_mergeable && !existing ? TREE_TYPE (res) : start (c);
-	    t_tag = insert (is_mergeable && existing
+	    type = is_mergeable_node && !existing ? TREE_TYPE (res) : start (c);
+	    t_tag = insert (is_mergeable_node && existing
 			    ? TREE_TYPE (existing) : type);
 	    dump (dumper::TREE)
 	      && dump ("Reading:%d %C", t_tag, TREE_CODE (type));
-	    bool specific = tree_node_specific (type, is_mergeable && !existing);
+	    bool specific = tree_node_specific (type,
+						is_mergeable_node && !existing);
 	    tree_node_bools (type, specific);
 	    tree_node_vals (type, specific);
 	    if (!existing)
@@ -8613,12 +8623,12 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
 			   && !DECL_NAMESPACE_ALIAS (decl)));
   gcc_checking_assert (ek != EK_BINDING);
 
-  if (depset **slot = entity_slot (decl, !is_mergeable ()))
+  if (depset **slot = entity_slot (decl, !is_mergeable_dep ()))
     {
       bool binding_p = current && current->is_binding ();
       depset *dep = *slot;
 
-      gcc_checking_assert (!is_mergeable () || !binding_p);
+      gcc_checking_assert (!is_mergeable_dep () || !binding_p);
       /* Usings only occur in bindings.  */
       gcc_checking_assert (ek != EK_USING || (OVL_USING_P (decl) && binding_p));
       /* Unnameable things are not namespace scope  */
@@ -8627,7 +8637,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
 			       != NAMESPACE_DECL));
       if (!dep)
 	{
-	  bool has_def = (!is_mergeable () && ek != EK_USING
+	  bool has_def = (!is_mergeable_dep () && ek != EK_USING
 			  && has_definition (decl));
 
 	  /* The only OVERLOADS we should see are USING decls from
@@ -8690,6 +8700,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
 		    *bslot = bdep = make_binding (ctx, DECL_NAME (decl));
 		  bdep->deps.safe_push (dep);
 		  dep->deps.safe_push (bdep);
+		  dep->set_flag_bit<DB_GLOBAL_ENTITY_BIT> ();
 		  dump (dumper::DEPEND)
 		    && dump ("Reachable GMF %N added", decl);
 		}
@@ -8742,7 +8753,7 @@ depset::hash::add_binding (tree ns, tree value)
   current = make_binding (ns, NULL_TREE);
 
   tree name = NULL_TREE;
-  gcc_checking_assert (!is_mergeable () && TREE_PUBLIC (ns));
+  gcc_checking_assert (!is_mergeable_dep () && TREE_PUBLIC (ns));
   for (lkp_iterator iter (value); iter; ++iter)
     {
       tree decl = *iter;
@@ -8861,15 +8872,15 @@ depset::hash::find_dependencies ()
       tree decl = current->get_entity ();
       dump (dumper::DEPEND)
 	&& dump ("Dependencies of %s %C:%N",
-		 is_mergeable () ? "mergeable" : current->entity_kind_name (),
-		 TREE_CODE (decl), decl);
+		 is_mergeable_dep () ? "mergeable"
+		 : current->entity_kind_name (), TREE_CODE (decl), decl);
       dump.indent ();
       walker.begin ();
       if (current->get_entity_kind () == EK_USING)
 	walker.tree_ctx (OVL_FUNCTION (decl), false, NULL_TREE);
       else if (TREE_VISITED (decl))
 	/* Depending a fixed decl.  */;
-      else if (is_mergeable ())
+      else if (is_mergeable_dep ())
 	walker.tree_mergeable (decl);
       else
 	{
@@ -8892,7 +8903,7 @@ depset::hash::find_dependencies ()
 void
 depset::hash::add_mergeable (tree decl)
 {
-  gcc_checking_assert (is_mergeable ());
+  gcc_checking_assert (is_mergeable_dep ());
   depset **slot = entity_slot (decl, true);
   gcc_checking_assert (!*slot);
   depset *dep = make_entity (decl, EK_DECL);
@@ -9128,7 +9139,7 @@ depset::hash::connect (auto_vec<depset *> &sccs)
 	(v->is_binding ()
 	 ? dump ("Connecting binding %P", v->get_entity (), v->get_name ())
 	 : dump ("Connecting %s %s %C:%N",
-		 is_mergeable () ? "mergeable "
+		 is_mergeable_dep () ? "mergeable "
 		 : !v->has_defn () ? "declaration" : "definition",
 		 v->entity_kind_name (), TREE_CODE (v->get_entity ()),
 		 v->get_entity ()));
