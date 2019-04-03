@@ -1,3 +1,8 @@
+2019-04-03  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/89375
+	* expr.c (comp_pointer): Remove redundant condition.
+
 2019-03-31  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/83515

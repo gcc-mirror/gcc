@@ -4782,7 +4782,6 @@ static bool
 comp_pointer (gfc_component *comp)
 {
   return comp->attr.pointer
-    || comp->attr.pointer
     || comp->attr.proc_pointer
     || comp->attr.class_pointer
     || class_pointer (comp);
