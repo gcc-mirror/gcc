@@ -1981,8 +1981,12 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, machine_mode mode,
   machine_mode vmode = mode;
   rtvec par;
 
-  if (vector_mode || mode == TFmode)
-    use_sse = true;
+  if (vector_mode || mode == TFmode || mode == HFmode)
+    {
+      use_sse = true;
+      if (mode == HFmode)
+	vmode = V8HFmode;
+    }
   else if (TARGET_SSE_MATH)
     {
       use_sse = SSE_FLOAT_MODE_P (mode);
@@ -2123,7 +2127,9 @@ ix86_expand_copysign (rtx operands[])
 
   mode = GET_MODE (operands[0]);
 
-  if (mode == SFmode)
+  if (mode == HFmode)
+    vmode = V8HFmode;
+  else if (mode == SFmode)
     vmode = V4SFmode;
   else if (mode == DFmode)
     vmode = V2DFmode;
@@ -2182,7 +2188,9 @@ ix86_expand_xorsign (rtx operands[])
 
   mode = GET_MODE (dest);
 
-  if (mode == SFmode)
+  if (mode == HFmode)
+    vmode = V8HFmode;
+  else if (mode == SFmode)
     vmode = V4SFmode;
   else if (mode == DFmode)
     vmode = V2DFmode;

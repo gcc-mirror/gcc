@@ -319,9 +319,24 @@
    (V16SF "TARGET_AVX512F") (V8SF "TARGET_AVX") V4SF
    (V8DF "TARGET_AVX512F") (V4DF "TARGET_AVX") (V2DF "TARGET_SSE2")])
 
+;; 128-, 256- and 512-bit float vector modes for bitwise operations
+(define_mode_iterator VFB
+  [(V32HF "TARGET_AVX512FP16")
+   (V16HF "TARGET_AVX512FP16")
+   (V8HF "TARGET_AVX512FP16")
+   (V16SF "TARGET_AVX512F") (V8SF "TARGET_AVX") V4SF
+   (V8DF "TARGET_AVX512F") (V4DF "TARGET_AVX") (V2DF "TARGET_SSE2")])
+
 ;; 128- and 256-bit float vector modes
 (define_mode_iterator VF_128_256
   [(V8SF "TARGET_AVX") V4SF
+   (V4DF "TARGET_AVX") (V2DF "TARGET_SSE2")])
+
+;; 128- and 256-bit float vector modes for bitwise operations
+(define_mode_iterator VFB_128_256
+  [(V16HF "TARGET_AVX512FP16")
+   (V8HF "TARGET_AVX512FP16")
+   (V8SF "TARGET_AVX") V4SF
    (V4DF "TARGET_AVX") (V2DF "TARGET_SSE2")])
 
 ;; All SFmode vector float modes
@@ -375,6 +390,10 @@
 ;; All 512bit vector float modes
 (define_mode_iterator VF_512
   [V16SF V8DF])
+
+;; All 512bit vector float modes for bitwise operations
+(define_mode_iterator VFB_512
+  [(V32HF "TARGET_AVX512FP16") V16SF V8DF])
 
 (define_mode_iterator VI48_AVX512VL
   [V16SI (V8SI  "TARGET_AVX512VL") (V4SI  "TARGET_AVX512VL")
@@ -954,7 +973,8 @@
 
 (define_mode_attr sseintvecmode2
   [(V8DF "XI") (V4DF "OI") (V2DF "TI")
-   (V8SF "OI") (V4SF "TI")])
+   (V8SF "OI") (V4SF "TI")
+   (V16HF "OI") (V8HF "TI")])
 
 (define_mode_attr sseintvecmodelower
   [(V16SF "v16si") (V8DF "v8di")
@@ -2030,22 +2050,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_expand "<code><mode>2"
-  [(set (match_operand:VF 0 "register_operand")
-	(absneg:VF
-	  (match_operand:VF 1 "register_operand")))]
+  [(set (match_operand:VFB 0 "register_operand")
+	(absneg:VFB
+	  (match_operand:VFB 1 "register_operand")))]
   "TARGET_SSE"
   "ix86_expand_fp_absneg_operator (<CODE>, <MODE>mode, operands); DONE;")
 
 (define_insn_and_split "*<code><mode>2"
-  [(set (match_operand:VF 0 "register_operand" "=x,x,v,v")
-	(absneg:VF
-	  (match_operand:VF 1 "vector_operand" "0,xBm,v,m")))
-   (use (match_operand:VF 2 "vector_operand" "xBm,0,vm,v"))]
+  [(set (match_operand:VFB 0 "register_operand" "=x,x,v,v")
+	(absneg:VFB
+	  (match_operand:VFB 1 "vector_operand" "0,xBm,v,m")))
+   (use (match_operand:VFB 2 "vector_operand" "xBm,0,vm,v"))]
   "TARGET_SSE"
   "#"
   "&& reload_completed"
   [(set (match_dup 0)
-	(<absneg_op>:VF (match_dup 1) (match_dup 2)))]
+	(<absneg_op>:VFB (match_dup 1) (match_dup 2)))]
 {
   if (TARGET_AVX)
     {
@@ -4073,11 +4093,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_insn "<sse>_andnot<mode>3<mask_name>"
-  [(set (match_operand:VF_128_256 0 "register_operand" "=x,x,v,v")
-	(and:VF_128_256
-	  (not:VF_128_256
-	    (match_operand:VF_128_256 1 "register_operand" "0,x,v,v"))
-	  (match_operand:VF_128_256 2 "vector_operand" "xBm,xm,vm,vm")))]
+  [(set (match_operand:VFB_128_256 0 "register_operand" "=x,x,v,v")
+	(and:VFB_128_256
+	  (not:VFB_128_256
+	    (match_operand:VFB_128_256 1 "register_operand" "0,x,v,v"))
+	  (match_operand:VFB_128_256 2 "vector_operand" "xBm,xm,vm,vm")))]
   "TARGET_SSE && <mask_avx512vl_condition>"
 {
   char buf[128];
@@ -4100,6 +4120,8 @@
 
   switch (get_attr_mode (insn))
     {
+    case MODE_V16HF:
+    case MODE_V8HF:
     case MODE_V8SF:
     case MODE_V4SF:
       suffix = "ps";
@@ -4138,11 +4160,11 @@
 	      (const_string "<MODE>")))])
 
 (define_insn "<sse>_andnot<mode>3<mask_name>"
-  [(set (match_operand:VF_512 0 "register_operand" "=v")
-	(and:VF_512
-	  (not:VF_512
-	    (match_operand:VF_512 1 "register_operand" "v"))
-	  (match_operand:VF_512 2 "nonimmediate_operand" "vm")))]
+  [(set (match_operand:VFB_512 0 "register_operand" "=v")
+	(and:VFB_512
+	  (not:VFB_512
+	    (match_operand:VFB_512 1 "register_operand" "v"))
+	  (match_operand:VFB_512 2 "nonimmediate_operand" "vm")))]
   "TARGET_AVX512F"
 {
   char buf[128];
@@ -4152,8 +4174,9 @@
   suffix = "<ssemodesuffix>";
   ops = "";
 
-  /* There is no vandnp[sd] in avx512f.  Use vpandn[qd].  */
-  if (!TARGET_AVX512DQ)
+  /* Since there are no vandnp[sd] without AVX512DQ nor vandnph,
+     use vp<logic>[dq].  */
+  if (!TARGET_AVX512DQ || <MODE>mode == V32HFmode)
     {
       suffix = GET_MODE_INNER (<MODE>mode) == DFmode ? "q" : "d";
       ops = "p";
@@ -4173,26 +4196,26 @@
 		      (const_string "XI")))])
 
 (define_expand "<code><mode>3<mask_name>"
-  [(set (match_operand:VF_128_256 0 "register_operand")
-       (any_logic:VF_128_256
-         (match_operand:VF_128_256 1 "vector_operand")
-         (match_operand:VF_128_256 2 "vector_operand")))]
+  [(set (match_operand:VFB_128_256 0 "register_operand")
+       (any_logic:VFB_128_256
+         (match_operand:VFB_128_256 1 "vector_operand")
+         (match_operand:VFB_128_256 2 "vector_operand")))]
   "TARGET_SSE && <mask_avx512vl_condition>"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
 (define_expand "<code><mode>3<mask_name>"
-  [(set (match_operand:VF_512 0 "register_operand")
-       (any_logic:VF_512
-         (match_operand:VF_512 1 "nonimmediate_operand")
-         (match_operand:VF_512 2 "nonimmediate_operand")))]
+  [(set (match_operand:VFB_512 0 "register_operand")
+       (any_logic:VFB_512
+         (match_operand:VFB_512 1 "nonimmediate_operand")
+         (match_operand:VFB_512 2 "nonimmediate_operand")))]
   "TARGET_AVX512F"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
 (define_insn "*<code><mode>3<mask_name>"
-  [(set (match_operand:VF_128_256 0 "register_operand" "=x,x,v,v")
-	(any_logic:VF_128_256
-	  (match_operand:VF_128_256 1 "vector_operand" "%0,x,v,v")
-	  (match_operand:VF_128_256 2 "vector_operand" "xBm,xm,vm,vm")))]
+  [(set (match_operand:VFB_128_256 0 "register_operand" "=x,x,v,v")
+	(any_logic:VFB_128_256
+	  (match_operand:VFB_128_256 1 "vector_operand" "%0,x,v,v")
+	  (match_operand:VFB_128_256 2 "vector_operand" "xBm,xm,vm,vm")))]
   "TARGET_SSE && <mask_avx512vl_condition>
    && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
 {
@@ -4216,6 +4239,8 @@
 
   switch (get_attr_mode (insn))
     {
+    case MODE_V16HF:
+    case MODE_V8HF:
     case MODE_V8SF:
     case MODE_V4SF:
       suffix = "ps";
@@ -4254,10 +4279,10 @@
 	      (const_string "<MODE>")))])
 
 (define_insn "*<code><mode>3<mask_name>"
-  [(set (match_operand:VF_512 0 "register_operand" "=v")
-	(any_logic:VF_512
-	  (match_operand:VF_512 1 "nonimmediate_operand" "%v")
-	  (match_operand:VF_512 2 "nonimmediate_operand" "vm")))]
+  [(set (match_operand:VFB_512 0 "register_operand" "=v")
+	(any_logic:VFB_512
+	  (match_operand:VFB_512 1 "nonimmediate_operand" "%v")
+	  (match_operand:VFB_512 2 "nonimmediate_operand" "vm")))]
   "TARGET_AVX512F && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
 {
   char buf[128];
@@ -4267,8 +4292,9 @@
   suffix = "<ssemodesuffix>";
   ops = "";
 
-  /* There is no v<logic>p[sd] in avx512f.  Use vp<logic>[dq].  */
-  if (!TARGET_AVX512DQ)
+  /* Since there are no v<logic>p[sd] without AVX512DQ nor v<logic>ph,
+     use vp<logic>[dq].  */
+  if (!TARGET_AVX512DQ || <MODE>mode == V32HFmode)
     {
       suffix = GET_MODE_INNER (<MODE>mode) == DFmode ? "q" : "d";
       ops = "p";
@@ -4289,14 +4315,14 @@
 
 (define_expand "copysign<mode>3"
   [(set (match_dup 4)
-	(and:VF
-	  (not:VF (match_dup 3))
-	  (match_operand:VF 1 "vector_operand")))
+	(and:VFB
+	  (not:VFB (match_dup 3))
+	  (match_operand:VFB 1 "vector_operand")))
    (set (match_dup 5)
-	(and:VF (match_dup 3)
-		(match_operand:VF 2 "vector_operand")))
-   (set (match_operand:VF 0 "register_operand")
-	(ior:VF (match_dup 4) (match_dup 5)))]
+	(and:VFB (match_dup 3)
+		 (match_operand:VFB 2 "vector_operand")))
+   (set (match_operand:VFB 0 "register_operand")
+	(ior:VFB (match_dup 4) (match_dup 5)))]
   "TARGET_SSE"
 {
   operands[3] = ix86_build_signbit_mask (<MODE>mode, 1, 0);
@@ -4307,11 +4333,11 @@
 
 (define_expand "xorsign<mode>3"
   [(set (match_dup 4)
-	(and:VF (match_dup 3)
-		(match_operand:VF 2 "vector_operand")))
-   (set (match_operand:VF 0 "register_operand")
-	(xor:VF (match_dup 4)
-		(match_operand:VF 1 "vector_operand")))]
+	(and:VFB (match_dup 3)
+		(match_operand:VFB 2 "vector_operand")))
+   (set (match_operand:VFB 0 "register_operand")
+	(xor:VFB (match_dup 4)
+		 (match_operand:VFB 1 "vector_operand")))]
   "TARGET_SSE"
 {
   operands[3] = ix86_build_signbit_mask (<MODE>mode, 1, 0);
