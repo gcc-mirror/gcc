@@ -612,7 +612,6 @@ namespace __variant
 	      this->_M_reset();
 	    return {};
 	  }, __variant_cast<_Types...>(__rhs));
-	__glibcxx_assert(this->_M_index == __rhs._M_index);
 	return *this;
       }
 
@@ -670,7 +669,6 @@ namespace __variant
 	      this->_M_reset();
 	    return {};
 	  }, __variant_cast<_Types...>(__rhs));
-	__glibcxx_assert(this->_M_index == __rhs._M_index);
 	return *this;
       }
 
@@ -1245,7 +1243,7 @@ namespace __variant
 	noexcept(is_nothrow_constructible_v<__accepted_type<_Tp&&>, _Tp&&>)
 	: variant(in_place_index<__accepted_index<_Tp&&>>,
 		  std::forward<_Tp>(__t))
-	{ __glibcxx_assert(holds_alternative<__accepted_type<_Tp&&>>(*this)); }
+	{ }
 
       template<typename _Tp, typename... _Args,
 	       typename = enable_if_t<__exactly_once<_Tp>
@@ -1254,7 +1252,7 @@ namespace __variant
 	variant(in_place_type_t<_Tp>, _Args&&... __args)
 	: variant(in_place_index<__index_of<_Tp>>,
 		  std::forward<_Args>(__args)...)
-	{ __glibcxx_assert(holds_alternative<_Tp>(*this)); }
+	{ }
 
       template<typename _Tp, typename _Up, typename... _Args,
 	       typename = enable_if_t<__exactly_once<_Tp>
@@ -1265,7 +1263,7 @@ namespace __variant
 		_Args&&... __args)
 	: variant(in_place_index<__index_of<_Tp>>, __il,
 		  std::forward<_Args>(__args)...)
-	{ __glibcxx_assert(holds_alternative<_Tp>(*this)); }
+	{ }
 
       template<size_t _Np, typename... _Args,
 	       typename = enable_if_t<
@@ -1274,7 +1272,7 @@ namespace __variant
 	variant(in_place_index_t<_Np>, _Args&&... __args)
 	: _Base(in_place_index<_Np>, std::forward<_Args>(__args)...),
 	_Default_ctor_enabler(_Enable_default_constructor_tag{})
-	{ __glibcxx_assert(index() == _Np); }
+	{ }
 
       template<size_t _Np, typename _Up, typename... _Args,
 	       typename = enable_if_t<is_constructible_v<__to_type<_Np>,
@@ -1284,7 +1282,7 @@ namespace __variant
 		_Args&&... __args)
 	: _Base(in_place_index<_Np>, __il, std::forward<_Args>(__args)...),
 	_Default_ctor_enabler(_Enable_default_constructor_tag{})
-	{ __glibcxx_assert(index() == _Np); }
+	{ }
 
       template<typename _Tp>
 	enable_if_t<__exactly_once<__accepted_type<_Tp&&>>
@@ -1300,7 +1298,6 @@ namespace __variant
 	    std::get<__index>(*this) = std::forward<_Tp>(__rhs);
 	  else
 	    this->emplace<__index>(std::forward<_Tp>(__rhs));
-	  __glibcxx_assert(holds_alternative<__accepted_type<_Tp&&>>(*this));
 	  return *this;
 	}
 
@@ -1309,10 +1306,8 @@ namespace __variant
 		    _Tp&>
 	emplace(_Args&&... __args)
 	{
-	  auto& ret =
-	    this->emplace<__index_of<_Tp>>(std::forward<_Args>(__args)...);
-	  __glibcxx_assert(holds_alternative<_Tp>(*this));
-	  return ret;
+	  constexpr size_t __index = __index_of<_Tp>;
+	  return this->emplace<__index>(std::forward<_Args>(__args)...);
 	}
 
       template<typename _Tp, typename _Up, typename... _Args>
@@ -1321,11 +1316,8 @@ namespace __variant
 		    _Tp&>
 	emplace(initializer_list<_Up> __il, _Args&&... __args)
 	{
-	  auto& ret =
-	    this->emplace<__index_of<_Tp>>(__il,
-					   std::forward<_Args>(__args)...);
-	  __glibcxx_assert(holds_alternative<_Tp>(*this));
-	  return ret;
+	  constexpr size_t __index = __index_of<_Tp>;
+	  return this->emplace<__index>(__il, std::forward<_Args>(__args)...);
 	}
 
       template<size_t _Np, typename... _Args>
@@ -1363,7 +1355,6 @@ namespace __variant
 	      this->_M_index = variant_npos;
 	      __throw_exception_again;
 	    }
-	  __glibcxx_assert(index() == _Np);
 	  return std::get<_Np>(*this);
 	}
 
@@ -1399,7 +1390,6 @@ namespace __variant
 	      this->_M_index = variant_npos;
 	      __throw_exception_again;
 	    }
-	  __glibcxx_assert(index() == _Np);
 	  return std::get<_Np>(*this);
 	}
 
