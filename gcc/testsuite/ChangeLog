@@ -1,3 +1,9 @@
+2019-04-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR c/71598
+	* gcc.dg/torture/pr71598-1.c: Skip if short_enums target.
+	* gcc.dg/torture/pr71598-2.c: Skip if not short_enums target.
+
 2019-04-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84101
