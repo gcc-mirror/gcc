@@ -3925,7 +3925,15 @@ same as for the @option{-mcpu=} command-line option.
 @cindex @code{sign-return-address} function attribute, AArch64
 Select the function scope on which return address signing will be applied.  The
 behavior and permissible arguments are the same as for the command-line option
-@option{-msign-return-address=}.  The default value is @code{none}.
+@option{-msign-return-address=}.  The default value is @code{none}.  This
+attribute is deprecated.  The @code{branch-protection} attribute should
+be used instead.
+
+@item branch-protection
+@cindex @code{branch-protection} function attribute, AArch64
+Select the function scope on which branch protection will be applied.  The
+behavior and permissible arguments are the same as for the command-line option
+@option{-mbranch-protection=}.  The default value is @code{none}.
 
 @end table
 
