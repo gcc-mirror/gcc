@@ -1,3 +1,13 @@
+2019-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84101
+	* tree-vect-stmts.c: Include explow.h for hard_function_value,
+	regs.h for hard_regno_nregs.
+	(cfun_returns): New helper.
+	(vect_model_store_cost): When vectorizing a store to a decl
+	we return and the function ABI returns in a multi-reg location
+	account for the possible spilling that will happen.
+
 2019-04-03  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/s390.c (s390_legitimate_address_p): Reject long
