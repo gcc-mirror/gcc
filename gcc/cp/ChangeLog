@@ -1,5 +1,8 @@
 2019-04-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/86586 - -fcompare-debug=-Wsign-compare.
+	* typeck.c (cp_build_binary_op): Don't fold for -Wsign-compare.
+
 	PR c++/89331 - ICE with offsetof in incomplete class.
 	* semantics.c (finish_offsetof): Handle error_mark_node.
 	* typeck.c (build_class_member_access_expr): Call

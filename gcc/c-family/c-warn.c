@@ -2073,6 +2073,9 @@ warn_for_sign_compare (location_t location,
       else
 	sop = orig_op1, uop = orig_op0;
 
+      sop = fold_for_warn (sop);
+      uop = fold_for_warn (uop);
+
       STRIP_TYPE_NOPS (sop);
       STRIP_TYPE_NOPS (uop);
       base_type = (TREE_CODE (result_type) == COMPLEX_TYPE

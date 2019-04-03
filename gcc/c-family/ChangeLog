@@ -1,3 +1,8 @@
+2019-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86586 - -fcompare-debug=-Wsign-compare.
+	* c-warn.c (warn_for_sign_compare): Call fold_for_warn.
+
 2019-04-01  Martin Sebor  <msebor@redhat.com>
 
 	PR c/89685
