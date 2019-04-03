@@ -1,6 +1,13 @@
 2019-04-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (node_template_info): Move earlier, protect from
+	partial read in.
+	(dumper::impl::nested_name): Dump template args.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-[234]_[abc].C: Adjust scans.
+
+	gcc/cp/
 	* module.cc (module_state::write_cluster): Refactor.
 
 	gcc/cp/

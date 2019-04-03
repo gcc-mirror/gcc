@@ -3440,6 +3440,45 @@ private:
 /* Our module mapper (created lazily).  */
 module_mapper *module_mapper::mapper;
 
+static tree
+node_template_info (tree decl, int &use)
+{
+  tree ti = NULL_TREE;
+  int use_tpl = -1;
+  if (DECL_IMPLICIT_TYPEDEF_P (decl))
+    {
+      tree type = TREE_TYPE (decl);
+      /* During read in, type might not have been set yet!  */
+      if (type)
+	ti = TYPE_TEMPLATE_INFO (type);
+
+      if (ti)
+	{
+	  if (!TYPE_LANG_SPECIFIC (type))
+	    /* Take it from the type's context, which must itself be a
+	       template.  */
+	    type = DECL_CONTEXT (decl);
+	  use_tpl = CLASSTYPE_USE_TEMPLATE (type);
+	}
+    }
+  else if (DECL_LANG_SPECIFIC (decl)
+	   && (TREE_CODE (decl) == VAR_DECL
+	       || TREE_CODE (decl) == TYPE_DECL
+	       || TREE_CODE (decl) == FUNCTION_DECL
+	       /* || TREE_CODE (decl) == FIELD_DECL
+		  || TREE_CODE (decl) == TEMPLATE_DECL*/))
+    {
+      use_tpl = DECL_USE_TEMPLATE (decl);
+      ti = DECL_TEMPLATE_INFO (decl);
+      gcc_assert (!ti || use_tpl
+		  || TREE_CODE (decl) != TEMPLATE_DECL
+		  || TI_TEMPLATE (ti) == decl);
+    }
+
+  use = use_tpl;
+  return ti;
+}
+
 /* A dumping machinery.  */
 
 class dumper {
@@ -3582,6 +3621,8 @@ void dumper::pop (unsigned n)
 bool
 dumper::impl::nested_name (tree t)
 {
+  tree ti = NULL_TREE;
+
   if (t && TREE_CODE (t) == TREE_BINFO)
     t = BINFO_TYPE (t);
 
@@ -3596,6 +3637,13 @@ dumper::impl::nested_name (tree t)
 	if (TREE_CODE (ctx) == TRANSLATION_UNIT_DECL
 	    || nested_name (ctx))
 	  fputs ("::", stream);
+      int use_tpl;
+      // FIXME: See avoidance of TEMPLATE_DECL in node_template_info
+      if (TREE_CODE (t) == TEMPLATE_DECL)
+	ti = DECL_TEMPLATE_INFO (t);
+      else
+	ti = node_template_info (t, use_tpl);
+
       t = DECL_NAME (t) ? DECL_NAME (t)
 	: HAS_DECL_ASSEMBLER_NAME_P (t) ? DECL_ASSEMBLER_NAME_RAW (t)
 	: NULL_TREE;
@@ -3606,25 +3654,39 @@ dumper::impl::nested_name (tree t)
       {
       case IDENTIFIER_NODE:
 	fwrite (IDENTIFIER_POINTER (t), 1, IDENTIFIER_LENGTH (t), stream);
-	return true;
+	break;
 
       case STRING_CST:
 	/* If TREE_TYPE is NULL, this is a raw string.  */
 	fwrite (TREE_STRING_POINTER (t), 1,
 		TREE_STRING_LENGTH (t) - (TREE_TYPE (t) != NULL_TREE), stream);
-	return true;
+	break;
 
       case INTEGER_CST:
 	print_hex (wi::to_wide (t), stream);
-	return true;
+	break;
 
       default:
+	fputs ("#", stream);
 	break;
       }
   else
-    fwrite ("<anon>", 1, 6, stream);
+    fputs ("$", stream);
 
-  return false;
+  if (ti)
+    {
+      tree args = INNERMOST_TEMPLATE_ARGS (TI_ARGS (ti));
+      fputs ("<", stream);
+      for (int ix = 0; ix != TREE_VEC_LENGTH (args); ix++)
+	{
+	  if (ix)
+	    fputs (",", stream);
+	  nested_name (TREE_VEC_ELT (args, ix));
+	}
+      fputs (">", stream);
+    }
+
+  return true;
 }
 
 /* Formatted dumping.  FORMAT begins with '+' do not emit a trailing
@@ -4042,43 +4104,6 @@ trees_out::unmark_trees ()
       gcc_checking_assert (TREE_VISITED (node) && ref && ref < mergeable_lwm);
       TREE_VISITED (node) = false;
     }
-}
-
-static tree
-node_template_info (tree decl, int &use)
-{
-  tree ti = NULL_TREE;
-  int use_tpl = -1;
-  if (DECL_IMPLICIT_TYPEDEF_P (decl))
-    {
-      tree type = TREE_TYPE (decl);
-      ti = TYPE_TEMPLATE_INFO (type);
-
-      if (ti)
-	{
-	  if (!TYPE_LANG_SPECIFIC (type))
-	    /* Take it from the type's context, which must itself be a
-	       template.  */
-	    type = DECL_CONTEXT (decl);
-	  use_tpl = CLASSTYPE_USE_TEMPLATE (type);
-	}
-    }
-  else if (DECL_LANG_SPECIFIC (decl)
-	   && (TREE_CODE (decl) == VAR_DECL
-	       || TREE_CODE (decl) == TYPE_DECL
-	       || TREE_CODE (decl) == FUNCTION_DECL
-	       /* || TREE_CODE (decl) == FIELD_DECL
-		  || TREE_CODE (decl) == TEMPLATE_DECL*/))
-    {
-      use_tpl = DECL_USE_TEMPLATE (decl);
-      ti = DECL_TEMPLATE_INFO (decl);
-      gcc_assert (!ti || use_tpl
-		  || TREE_CODE (decl) != TEMPLATE_DECL
-		  || TI_TEMPLATE (ti) == decl);
-    }
-
-  use = use_tpl;
-  return ti;
 }
 
 /* Mark DECL for by-value walking.  We do this by inserting it into
@@ -6435,8 +6460,8 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	{
 	  /* Implicit or explicit instantiation. */
 	  tree tpl = TI_TEMPLATE (ti);
-	  enum tree_code c = TREE_CODE (DECL_CONTEXT (tpl));
-	  if ((RECORD_OR_UNION_CODE_P (c) || c == ENUMERAL_TYPE)
+	  enum tree_code ctx_code = TREE_CODE (DECL_CONTEXT (tpl));
+	  if ((RECORD_OR_UNION_CODE_P (ctx_code) || ctx_code == ENUMERAL_TYPE)
 	      && !DECL_MEMBER_TEMPLATE_P (tpl))
 	    ; /* Implicit member template.  */
 	  else

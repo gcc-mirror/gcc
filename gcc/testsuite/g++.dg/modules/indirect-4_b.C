@@ -14,6 +14,6 @@ namespace bar
 
 // { dg-final { scan-lang-dump {Lazily binding '::foo::TPL'@'foo' section:} module } }
 // { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::TPL'@foo} module } }
-// { dg-final { scan-lang-dump {Wrote instantiation:-[0-9]* type_decl:'::foo::TPL'@} module } }
-// { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::TPL::frob'@foo} module } }
-// { dg-final { scan-lang-dump {Wrote instantiation:-[0-9]* function_decl:'::foo::TPL::frob'@} module } }
+// { dg-final { scan-lang-dump {Wrote instantiation:-[0-9]* type_decl:'::foo::TPL<0x1>'@} module } }
+// { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::TPL<0x1>::frob<#>'@foo} module } }
+// { dg-final { scan-lang-dump {Wrote instantiation:-[0-9]* function_decl:'::foo::TPL<0x1>::frob<0x2>'@} module } }
