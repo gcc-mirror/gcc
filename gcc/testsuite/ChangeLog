@@ -1,3 +1,8 @@
+2019-04-03  qing zhao  <qing.zhao@oracle.com>
+
+	PR tree-optimization/89730
+	* gcc.dg/live-patching-4.c: New test.
+
 2019-04-03  Clément Chigot  <clement.chigot@atos.net>
 
 	* lib/go-torture.exp: Only add lto to TORTURE_OPTIONS if it is
