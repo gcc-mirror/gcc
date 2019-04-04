@@ -52,7 +52,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "range-op.h"
 #include "wide-int-range.h"
 
-/* Convert the value_range in this object to an irange and return it.  */
+/* Convert the value_range in this object to an irange.  This function
+   will normalize non-constant ranges into constant ranges by
+   degrading them to VARYING.  */
 
 irange
 vr_values::get_value_irange (tree op)
@@ -60,8 +62,15 @@ vr_values::get_value_irange (tree op)
   if (TREE_CODE (op) == INTEGER_CST)
     return irange (TREE_TYPE (op), op, op);
 
+  if (TREE_CODE (op) != SSA_NAME)
+    return irange (TREE_TYPE (op));
+
   value_range *vr = get_value_range (op);
-  if (vr->symbolic_p ())
+  /* Degrade all symbolics and non-constants into VARYING.  This will
+     downgrade things like [0, "a"], etc.  */
+  if (vr->symbolic_p ()
+      || ((vr->kind () == VR_RANGE || vr->kind () == VR_ANTI_RANGE)
+	  && !vr->constant_p ()))
     return irange (TREE_TYPE (op));
 
   return value_range_to_irange (TREE_TYPE (op), *vr);
@@ -394,7 +403,7 @@ valid_value_p (tree expr)
    constant.  */
 
 tree
-vr_values::op_with_constant_singleton_value_range (tree op)
+vr_values_misc::singleton (tree op)
 {
   if (is_gimple_min_invariant (op))
     return op;
@@ -402,7 +411,7 @@ vr_values::op_with_constant_singleton_value_range (tree op)
   if (TREE_CODE (op) != SSA_NAME)
     return NULL_TREE;
 
-  return value_range_constant_singleton (get_value_range (op));
+  return value_range_constant_singleton (m_values->get_value_range (op));
 }
 
 /* Return true if op is in a boolean [0, 1] value-range.  */
@@ -1686,28 +1695,25 @@ compare_range_with_value (enum tree_code comp, value_range *vr, tree val,
 
   gcc_unreachable ();
 }
+
 /* Given a range VR, a LOOP and a variable VAR, determine whether it
    would be profitable to adjust VR using scalar evolution information
    for VAR.  If so, update VR with the new limits.  */
 
 void
-vr_values::adjust_range_with_scev (value_range_base *vr, struct loop *loop,
+range_misc::adjust_range_with_loop (irange &ir, struct loop *loop,
 				   gimple *stmt, tree var)
 {
   tree init, step, chrec, tmin, tmax, min, max, type, tem;
   enum ev_direction dir;
-
-  /* TODO.  Don't adjust anti-ranges.  An anti-range may provide
-     better opportunities than a regular range, but I'm not sure.  */
-  if (vr->kind () == VR_ANTI_RANGE)
-    return;
 
   chrec = instantiate_parameters (loop, analyze_scalar_evolution (loop, var));
 
   /* Like in PR19590, scev can return a constant function.  */
   if (is_gimple_min_invariant (chrec))
     {
-      vr->set (chrec);
+      gcc_assert (TREE_CODE (chrec) == INTEGER_CST);
+      ir = irange (TREE_TYPE (chrec), chrec, chrec);
       return;
     }
 
@@ -1715,11 +1721,12 @@ vr_values::adjust_range_with_scev (value_range_base *vr, struct loop *loop,
     return;
 
   init = initial_condition_in_loop_num (chrec, loop->num);
-  tem = op_with_constant_singleton_value_range (init);
+
+  tem = singleton (init);
   if (tem)
     init = tem;
   step = evolution_part_in_loop_num (chrec, loop->num);
-  tem = op_with_constant_singleton_value_range (step);
+  tem = singleton (step);
   if (tem)
     step = tem;
 
@@ -1753,10 +1760,12 @@ vr_values::adjust_range_with_scev (value_range_base *vr, struct loop *loop,
 
   /* Try to use estimated number of iterations for the loop to constrain the
      final value in the evolution.  */
+  irange trange;
   if (TREE_CODE (step) == INTEGER_CST
       && is_gimple_val (init)
       && (TREE_CODE (init) != SSA_NAME
-	  || get_value_range (init)->kind () == VR_RANGE))
+	  || (!(trange = get_range (init)).undefined_p ()
+	      && !trange.varying_p ())))
     {
       widest_int nit;
 
@@ -1764,7 +1773,6 @@ vr_values::adjust_range_with_scev (value_range_base *vr, struct loop *loop,
 	 the number of latch executions is the correct thing to use.  */
       if (max_loop_iterations (loop, &nit))
 	{
-	  value_range maxvr;
 	  signop sgn = TYPE_SIGN (TREE_TYPE (step));
 	  wi::overflow_type overflow;
 
@@ -1781,28 +1789,43 @@ vr_values::adjust_range_with_scev (value_range_base *vr, struct loop *loop,
 		  || wi::gts_p (wtmp, 0) == wi::gts_p (wi::to_wide (step), 0)))
 	    {
 	      tem = wide_int_to_tree (TREE_TYPE (init), wtmp);
-	      extract_range_from_binary_expr (&maxvr, PLUS_EXPR,
-					      TREE_TYPE (init), init, tem);
+
+	      /* Normalize the ranges for INIT and TEM to a constant
+		 range, and call the generic
+		 extract_range_from_binary_expr.  */
+	      irange ir0 = get_range (init);
+	      irange ir1 = get_range (tem);
+	      value_range_base vr0 = irange_to_value_range (ir0);
+	      value_range_base vr1 = irange_to_value_range (ir1);
+	      value_range_base maxvr;
+	      /* ?? Deep down inside, this will use range-ops.c, and
+		 therefore can be eventually converted to a direct
+		 call to range_op_handler.  */
+	      ::extract_range_from_binary_expr (&maxvr, PLUS_EXPR,
+						TREE_TYPE (init), &vr0, &vr1);
 	      /* Likewise if the addition did.  */
 	      if (maxvr.kind () == VR_RANGE)
 		{
-		  value_range_base initvr;
-
 		  if (TREE_CODE (init) == SSA_NAME)
-		    initvr = *(get_value_range (init));
+		    trange = get_range (init);
 		  else if (is_gimple_min_invariant (init))
-		    initvr.set (init);
+		    trange = irange (TREE_TYPE (init), init, init);
 		  else
 		    return;
+
+		  tree init_min = wide_int_to_tree (TREE_TYPE (init),
+						    trange.lower_bound ());
+		  tree init_max = wide_int_to_tree (TREE_TYPE (init),
+						    trange.upper_bound ());
 
 		  /* Check if init + nit * step overflows.  Though we checked
 		     scev {init, step}_loop doesn't wrap, it is not enough
 		     because the loop may exit immediately.  Overflow could
 		     happen in the plus expression in this case.  */
 		  if ((dir == EV_DIR_DECREASES
-		       && compare_values (maxvr.min (), initvr.min ()) != -1)
+		       && compare_values (maxvr.min (), init_min) != -1)
 		      || (dir == EV_DIR_GROWS
-			  && compare_values (maxvr.max (), initvr.max ()) != 1))
+			  && compare_values (maxvr.max (), init_max) != 1))
 		    return;
 
 		  tmin = maxvr.min ();
@@ -1812,7 +1835,7 @@ vr_values::adjust_range_with_scev (value_range_base *vr, struct loop *loop,
 	}
     }
 
-  if (vr->varying_p () || vr->undefined_p ())
+  if (ir.varying_p () || ir.undefined_p ())
     {
       min = tmin;
       max = tmax;
@@ -1825,15 +1848,15 @@ vr_values::adjust_range_with_scev (value_range_base *vr, struct loop *loop,
       else
 	min = init;
     }
-  else if (vr->kind () == VR_RANGE)
+  else
     {
-      min = vr->min ();
-      max = vr->max ();
+      min = wide_int_to_tree (ir.type (), ir.lower_bound ());
+      max = wide_int_to_tree (ir.type (), ir.upper_bound ());
 
       if (dir == EV_DIR_DECREASES)
 	{
-	  /* INIT is the maximum value.  If INIT is lower than VR->MAX ()
-	     but no smaller than VR->MIN (), set VR->MAX () to INIT.  */
+	  /* INIT is the maximum value.  If INIT is lower than IR->MAX ()
+	     but no smaller than IR->MIN (), set IR->MAX () to INIT.  */
 	  if (compare_values (init, max) == -1)
 	    max = init;
 
@@ -1845,7 +1868,7 @@ vr_values::adjust_range_with_scev (value_range_base *vr, struct loop *loop,
 	}
       else
 	{
-	  /* If INIT is bigger than VR->MIN (), set VR->MIN () to INIT.  */
+	  /* If INIT is bigger than IR->MIN (), set IR->MIN () to INIT.  */
 	  if (compare_values (init, min) == 1)
 	    min = init;
 
@@ -1853,8 +1876,6 @@ vr_values::adjust_range_with_scev (value_range_base *vr, struct loop *loop,
 	    max = tmax;
 	}
     }
-  else
-    return;
 
   /* If we just created an invalid range with the minimum
      greater than the maximum, we fail conservatively.
@@ -1871,7 +1892,26 @@ vr_values::adjust_range_with_scev (value_range_base *vr, struct loop *loop,
   if (TREE_OVERFLOW_P (max))
     max = drop_tree_overflow (max);
 
-  vr->set (VR_RANGE, min, max);
+  if (TREE_CODE (min) == INTEGER_CST
+      && TREE_CODE (max) == INTEGER_CST)
+    ir = irange (ir.type (), min, max);
+  else
+    ir.set_varying (ir.type ());
+}
+
+/* This is the value_range wrapper for adjust_range_with_loop.  */
+
+void
+vr_values::adjust_range_with_scev (value_range_base *vr, struct loop *loop,
+				   gimple *stmt, tree var)
+{
+  /* Bail on anything remotely symbolic.  */
+  if (!vr->varying_p () && !vr->undefined_p () && !vr->constant_p ())
+    return;
+  irange ir = value_range_to_irange (TREE_TYPE (var), *vr);
+  vr_values_misc misc (this);
+  misc.adjust_range_with_loop (ir, loop, stmt, var);
+  *vr = irange_to_value_range (ir);
 }
 
 /* Dump value ranges of all SSA_NAMEs to FILE.  */

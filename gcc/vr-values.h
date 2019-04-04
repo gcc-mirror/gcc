@@ -87,6 +87,7 @@ private:
 class vr_values
 {
   friend class simplify_with_vranges;
+  friend class vr_values_misc;
 
  public:
   vr_values (void);
@@ -97,7 +98,6 @@ class vr_values
   void set_vr_value (tree, value_range *);
   void set_defs_to_varying (gimple *);
   bool update_value_range (const_tree, value_range *);
-  tree op_with_constant_singleton_value_range (tree);
   void adjust_range_with_scev (value_range_base *, struct loop *, gimple *,
 			       tree);
   tree vrp_evaluate_conditional (tree_code, tree, tree, gimple *);
@@ -180,6 +180,36 @@ class vr_values
 
   vec<edge> to_remove_edges;
   vec<switch_update> to_update_switch_stmts;
+};
+
+// Miscellaneous range operations that can work with either irange or
+// value_range.
+
+class range_misc
+{
+public:
+  void adjust_range_with_loop (irange &, struct loop *, gimple *, tree);
+
+private:
+  // We can't have a generic irange/value_range version here, because
+  // the vr_values version may return non-constant invariants such as
+  // [&foo, &foo].
+  virtual tree singleton (tree) = 0;
+  virtual irange get_range (tree) = 0;
+};
+
+class vr_values_misc : public range_misc
+{
+public:
+  vr_values_misc (vr_values *v) : m_values (v) { }
+
+  virtual tree singleton (tree);
+
+private:
+  virtual irange get_range (tree var)
+  { return m_values->get_value_irange (var); }
+
+  vr_values *m_values;
 };
 
 extern tree get_output_for_vrp (gimple *);

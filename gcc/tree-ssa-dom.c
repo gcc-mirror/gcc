@@ -1723,7 +1723,10 @@ cprop_operand (gimple *stmt, use_operand_p op_p, vr_values *vr_values)
      CONST_AND_COPIES.  */
   val = SSA_NAME_VALUE (op);
   if (!val)
-    val = vr_values->op_with_constant_singleton_value_range (op);
+    {
+      vr_values_misc misc (vr_values);
+      val = misc.singleton (op);
+    }
 
   if (val && val != op)
     {

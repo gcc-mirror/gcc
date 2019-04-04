@@ -6568,7 +6568,8 @@ class vrp_folder : public substitute_and_fold_engine
   bool simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
     { return vr_values->simplify_stmt_using_ranges (gsi); }
  tree op_with_constant_singleton_value_range (tree op)
-    { return vr_values->op_with_constant_singleton_value_range (op); }
+   { vr_values_misc misc (vr_values);
+     return misc.singleton (op); }
 };
 
 /* If the statement pointed by SI has a predicate whose value can be
