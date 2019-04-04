@@ -59,8 +59,7 @@ class evrp_folder : public substitute_and_fold_engine
 tree
 evrp_folder::get_value (tree op)
 {
-  vr_values_misc misc (vr_values);
-  return misc.singleton (op);
+  return vr_values->singleton (op, NULL);
 }
 
 /* evrp_dom_walker visits the basic blocks in the dominance order and set

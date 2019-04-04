@@ -55,18 +55,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "vr-values.h"
 #include "tree-ssa-propagate.h"
 
-class simplify_with_iranges : public simplify_with_ranges
+class irange_misc : public range_misc
 {
 public:
-  simplify_with_iranges (gimple_stmt_iterator *gsi, global_ranger *ranger)
-    : simplify_with_ranges (gsi), m_ranger (ranger) { }
-  irange get_value_irange (tree);
+  irange_misc (global_ranger *r) : m_ranger (r) { }
 private:
+  virtual irange get_irange (tree, gimple *);
+  virtual tree singleton (tree, gimple *stmt);
   global_ranger *m_ranger;
 };
 
 irange
-simplify_with_iranges::get_value_irange (tree op)
+irange_misc::get_irange (tree op, gimple *stmt)
 {
   if (TREE_CODE (op) == INTEGER_CST)
     return irange (TREE_TYPE (op), op, op);
@@ -74,6 +74,25 @@ simplify_with_iranges::get_value_irange (tree op)
   irange r;
   m_ranger->range_of_expr (r, op, stmt);
   return r;
+}
+
+/* If OP has a value range with a single constant value return that,
+   otherwise return NULL_TREE.  This returns OP itself if OP is a
+   constant.  */
+
+tree
+irange_misc::singleton (tree op, gimple *stmt)
+{
+  if (is_gimple_min_invariant (op))
+    return op;
+
+  if (TREE_CODE (op) != SSA_NAME)
+    return NULL_TREE;
+
+  wide_int w;
+  if (get_irange (op, stmt).singleton_p (w))
+    return wide_int_to_tree (TREE_TYPE (op), w);
+  return NULL;
 }
 
 // Return TRUE if NAME can be propagated.,
@@ -215,8 +234,8 @@ rvrp_simplify (global_ranger &ranger, gimple_stmt_iterator *gsi)
   if (details)
     orig = gimple_copy (gsi_stmt (*gsi));
 
-  simplify_with_iranges simpl (gsi, &ranger);
-  if (simpl.simplify ())
+  irange_misc misc (&ranger);
+  if (misc.simplify_stmt_using_ranges (gsi))
     {
       gimple *stmt = gsi_stmt (*gsi);
       if (details)

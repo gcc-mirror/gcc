@@ -20,54 +20,40 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_VR_VALUES_H
 #define GCC_VR_VALUES_H
 
-class vr_values;
+// Miscellaneous range operations that can work with either irange or
+// value_range.
 
-// Class to simplify a statement taking into account range info.
-class simplify_with_ranges
+class range_misc
 {
 public:
-  // Default constructor has no statement context.
-  simplify_with_ranges () : gsi (NULL), stmt (NULL) { }
-  simplify_with_ranges (gimple_stmt_iterator *_gsi)
-    : gsi (_gsi), stmt (gsi_stmt (*_gsi)) { }
-  bool simplify ();
+  virtual ~range_misc (void) { }
+  void adjust_range_with_loop (irange &, struct loop *, gimple *, tree);
+  bool simplify_stmt_using_ranges (gimple_stmt_iterator *);
 
 private:
-  virtual irange get_value_irange (tree) = 0;
-
+  virtual irange get_irange (tree, gimple *) = 0;
+  // We can't have a generic irange/value_range version here, because
+  // the vr_values version may return non-constant invariants such as
+  // [&foo, &foo].
+  virtual tree singleton (tree, gimple *) = 0;
   // Default to nothing, as simplifying switches involves cleaning up
   // edges and switches by the caller.  Perhaps come up with a generic
   // solution if needed.
-  virtual bool simplify_switch_using_ranges () { return false; }
+  virtual bool simplify_switch_using_ranges (gswitch *) { return false; }
 
-  bool op_has_boolean_range_p (tree);
-  bool simplify_truth_ops_using_ranges ();
-  bool simplify_div_or_mod_using_ranges ();
-  bool simplify_min_or_max_using_ranges ();
-  bool simplify_abs_using_ranges ();
-  bool simplify_bit_ops_using_ranges ();
-  bool simplify_cond_using_ranges_1 ();
-  bool simplify_conversion_using_ranges ();
-  bool simplify_float_conversion_using_ranges ();
-  bool simplify_internal_call_using_ranges ();
-  bool two_valued_val_range_p (tree, tree *, tree *);
-
-protected:
-  // Do not use m_ prefix to avoid heavy changes throughout existing code.
-  gimple_stmt_iterator *gsi;
-  gimple *stmt;
-};
-
-class simplify_with_vranges : public simplify_with_ranges
-{
-public:
-  simplify_with_vranges (gimple_stmt_iterator *gsi, vr_values *vr_values)
-    : simplify_with_ranges (gsi), m_vr_values (vr_values) { }
-  simplify_with_vranges (vr_values *vr_values) : m_vr_values (vr_values) { }
-  irange get_value_irange (tree);
-  bool simplify_switch_using_ranges ();
-private:
-    vr_values *m_vr_values;
+  bool op_has_boolean_range_p (tree, gimple *);
+  bool simplify_truth_ops_using_ranges (gimple_stmt_iterator *, gimple *);
+  bool simplify_div_or_mod_using_ranges (gimple_stmt_iterator *, gimple *);
+  bool simplify_min_or_max_using_ranges (gimple_stmt_iterator *, gimple *);
+  bool simplify_abs_using_ranges (gimple_stmt_iterator *, gimple *);
+  bool simplify_bit_ops_using_ranges (gimple_stmt_iterator *, gimple *);
+  bool simplify_cond_using_ranges_1 (gcond *);
+  bool simplify_conversion_using_ranges (gimple_stmt_iterator *, gimple *);
+  bool simplify_float_conversion_using_ranges (gimple_stmt_iterator *,
+					       gimple *);
+  bool simplify_internal_call_using_ranges (gimple_stmt_iterator *gsi,
+					    gimple *stmt);
+  bool two_valued_val_range_p (tree, tree *, tree *, gimple *);
 };
 
 /* The VR_VALUES class holds the current view of range information
@@ -84,11 +70,8 @@ private:
    gets attached to an SSA_NAME.  It's unclear how useful that global
    information will be in a world where we can compute context sensitive
    range information fast or perform on-demand queries.  */
-class vr_values
+class vr_values : public range_misc
 {
-  friend class simplify_with_vranges;
-  friend class vr_values_misc;
-
  public:
   vr_values (void);
   ~vr_values (void);
@@ -98,6 +81,7 @@ class vr_values
   void set_vr_value (tree, value_range *);
   void set_defs_to_varying (gimple *);
   bool update_value_range (const_tree, value_range *);
+  tree singleton (tree, gimple *);
   void adjust_range_with_scev (value_range_base *, struct loop *, gimple *,
 			       tree);
   tree vrp_evaluate_conditional (tree_code, tree, tree, gimple *);
@@ -112,7 +96,6 @@ class vr_values
   void vrp_visit_cond_stmt (gcond *, edge *);
 
   void simplify_cond_using_ranges_2 (gcond *);
-  bool simplify_stmt_using_ranges (gimple_stmt_iterator *);
 
   /* Indicate that propagation through the lattice is complete.  */
   void set_lattice_propagation_complete (void) { values_propagated = true; }
@@ -125,7 +108,8 @@ class vr_values
   void cleanup_edges_and_switches (void);
 
  private:
-  irange get_value_irange (tree);
+  irange get_irange (tree, gimple *);
+
   bool vrp_stmt_computes_nonzero (gimple *);
   bool op_with_boolean_value_range_p (tree);
   value_range *get_vr_for_comparison (int, value_range *);
@@ -148,6 +132,8 @@ class vr_values
   void vrp_visit_switch_stmt (gswitch *, edge *);
   tree vrp_evaluate_conditional_warnv_with_ops_using_ranges
     (enum tree_code, tree, tree, bool *);
+
+  bool simplify_switch_using_ranges (gswitch *);
 
   /* Allocation pools for value_range objects.  */
   object_allocator<value_range> vrp_value_range_pool;
@@ -180,36 +166,6 @@ class vr_values
 
   vec<edge> to_remove_edges;
   vec<switch_update> to_update_switch_stmts;
-};
-
-// Miscellaneous range operations that can work with either irange or
-// value_range.
-
-class range_misc
-{
-public:
-  void adjust_range_with_loop (irange &, struct loop *, gimple *, tree);
-
-private:
-  // We can't have a generic irange/value_range version here, because
-  // the vr_values version may return non-constant invariants such as
-  // [&foo, &foo].
-  virtual tree singleton (tree) = 0;
-  virtual irange get_range (tree) = 0;
-};
-
-class vr_values_misc : public range_misc
-{
-public:
-  vr_values_misc (vr_values *v) : m_values (v) { }
-
-  virtual tree singleton (tree);
-
-private:
-  virtual irange get_range (tree var)
-  { return m_values->get_value_irange (var); }
-
-  vr_values *m_values;
 };
 
 extern tree get_output_for_vrp (gimple *);

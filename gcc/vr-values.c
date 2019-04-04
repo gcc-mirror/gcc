@@ -57,7 +57,7 @@ along with GCC; see the file COPYING3.  If not see
    degrading them to VARYING.  */
 
 irange
-vr_values::get_value_irange (tree op)
+vr_values::get_irange (tree op, gimple *stmt ATTRIBUTE_UNUSED)
 {
   if (TREE_CODE (op) == INTEGER_CST)
     return irange (TREE_TYPE (op), op, op);
@@ -74,14 +74,6 @@ vr_values::get_value_irange (tree op)
     return irange (TREE_TYPE (op));
 
   return value_range_to_irange (TREE_TYPE (op), *vr);
-}
-
-/* vr_values interface to simplify_with_ranges.  */
-
-irange
-simplify_with_vranges::get_value_irange (tree op)
-{
-  return m_vr_values->get_value_irange (op);
 }
 
 /* Set value range VR to a non-negative range of type TYPE.  */
@@ -403,7 +395,7 @@ valid_value_p (tree expr)
    constant.  */
 
 tree
-vr_values_misc::singleton (tree op)
+vr_values::singleton (tree op, gimple *stmt ATTRIBUTE_UNUSED)
 {
   if (is_gimple_min_invariant (op))
     return op;
@@ -411,13 +403,13 @@ vr_values_misc::singleton (tree op)
   if (TREE_CODE (op) != SSA_NAME)
     return NULL_TREE;
 
-  return value_range_constant_singleton (m_values->get_value_range (op));
+  return value_range_constant_singleton (get_value_range (op));
 }
 
 /* Return true if op is in a boolean [0, 1] value-range.  */
 
 bool
-simplify_with_ranges::op_has_boolean_range_p (tree op)
+range_misc::op_has_boolean_range_p (tree op, gimple *stmt)
 {
   if (TYPE_PRECISION (TREE_TYPE (op)) == 1)
     return true;
@@ -432,7 +424,7 @@ simplify_with_ranges::op_has_boolean_range_p (tree op)
   irange zero_one (TREE_TYPE (op),
 		   wi::zero (TYPE_PRECISION (TREE_TYPE (op))),
 		   wi::one (TYPE_PRECISION (TREE_TYPE (op))));
-  return get_value_irange (op) == zero_one;
+  return get_irange (op, stmt) == zero_one;
 }
 
 /* Extract value range information for VAR when (OP COND_CODE LIMIT) is
@@ -1351,8 +1343,8 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
 		    {
 		      bool ovf = false;
 
-		      irange ir0 = get_value_irange (op0);
-		      irange ir1 = get_value_irange (op1);
+		      irange ir0 = get_irange (op0, stmt);
+		      irange ir1 = get_irange (op1, stmt);
 		      if (check_for_binary_op_overflow
 			  (subcode, type, op0, ir0, op1, ir1, &ovf))
 			vr->set (build_int_cst (type, ovf));
@@ -1712,7 +1704,6 @@ range_misc::adjust_range_with_loop (irange &ir, struct loop *loop,
   /* Like in PR19590, scev can return a constant function.  */
   if (is_gimple_min_invariant (chrec))
     {
-      gcc_assert (TREE_CODE (chrec) == INTEGER_CST);
       ir = irange (TREE_TYPE (chrec), chrec, chrec);
       return;
     }
@@ -1722,11 +1713,11 @@ range_misc::adjust_range_with_loop (irange &ir, struct loop *loop,
 
   init = initial_condition_in_loop_num (chrec, loop->num);
 
-  tem = singleton (init);
+  tem = singleton (init, stmt);
   if (tem)
     init = tem;
   step = evolution_part_in_loop_num (chrec, loop->num);
-  tem = singleton (step);
+  tem = singleton (step, stmt);
   if (tem)
     step = tem;
 
@@ -1764,7 +1755,7 @@ range_misc::adjust_range_with_loop (irange &ir, struct loop *loop,
   if (TREE_CODE (step) == INTEGER_CST
       && is_gimple_val (init)
       && (TREE_CODE (init) != SSA_NAME
-	  || (!(trange = get_range (init)).undefined_p ()
+	  || (!(trange = get_irange (init, stmt)).undefined_p ()
 	      && !trange.varying_p ())))
     {
       widest_int nit;
@@ -1793,8 +1784,8 @@ range_misc::adjust_range_with_loop (irange &ir, struct loop *loop,
 	      /* Normalize the ranges for INIT and TEM to a constant
 		 range, and call the generic
 		 extract_range_from_binary_expr.  */
-	      irange ir0 = get_range (init);
-	      irange ir1 = get_range (tem);
+	      irange ir0 = get_irange (init, stmt);
+	      irange ir1 = get_irange (tem, stmt);
 	      value_range_base vr0 = irange_to_value_range (ir0);
 	      value_range_base vr1 = irange_to_value_range (ir1);
 	      value_range_base maxvr;
@@ -1807,7 +1798,7 @@ range_misc::adjust_range_with_loop (irange &ir, struct loop *loop,
 	      if (maxvr.kind () == VR_RANGE)
 		{
 		  if (TREE_CODE (init) == SSA_NAME)
-		    trange = get_range (init);
+		    trange = get_irange (init, stmt);
 		  else if (is_gimple_min_invariant (init))
 		    trange = irange (TREE_TYPE (init), init, init);
 		  else
@@ -1909,8 +1900,7 @@ vr_values::adjust_range_with_scev (value_range_base *vr, struct loop *loop,
   if (!vr->varying_p () && !vr->undefined_p () && !vr->constant_p ())
     return;
   irange ir = value_range_to_irange (TREE_TYPE (var), *vr);
-  vr_values_misc misc (this);
-  misc.adjust_range_with_loop (ir, loop, stmt, var);
+  adjust_range_with_loop (ir, loop, stmt, var);
   *vr = irange_to_value_range (ir);
 }
 
@@ -3030,7 +3020,8 @@ update_range:
 /* Simplify boolean operations if the source is known
    to be already a boolean.  */
 bool
-simplify_with_ranges::simplify_truth_ops_using_ranges ()
+range_misc::simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi,
+					     gimple *stmt)
 {
   enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
   tree lhs, op0, op1;
@@ -3040,11 +3031,11 @@ simplify_with_ranges::simplify_truth_ops_using_ranges ()
   gcc_assert (rhs_code == EQ_EXPR || rhs_code == NE_EXPR);
 
   op0 = gimple_assign_rhs1 (stmt);
-  if (!op_has_boolean_range_p (op0))
+  if (!op_has_boolean_range_p (op0, stmt))
     return false;
 
   op1 = gimple_assign_rhs2 (stmt);
-  if (!op_has_boolean_range_p (op1))
+  if (!op_has_boolean_range_p (op1, stmt))
     return false;
 
   /* Reduce number of cases to handle to NE_EXPR.  As there is no
@@ -3106,14 +3097,15 @@ simplify_with_ranges::simplify_truth_ops_using_ranges ()
    modulo.  */
 
 bool
-simplify_with_ranges::simplify_div_or_mod_using_ranges ()
+range_misc::simplify_div_or_mod_using_ranges (gimple_stmt_iterator *gsi,
+					      gimple *stmt)
 {
   enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
   tree op0 = gimple_assign_rhs1 (stmt);
   tree op1 = gimple_assign_rhs2 (stmt);
   tree op0min = NULL_TREE, op0max = NULL_TREE;
   tree op1min = op1;
-  irange ir = get_value_irange (op0);
+  irange ir = get_irange (op0, stmt);
 
   if (!ir.varying_p () && !ir.undefined_p ())
     {
@@ -3124,7 +3116,7 @@ simplify_with_ranges::simplify_div_or_mod_using_ranges ()
   if (rhs_code == TRUNC_MOD_EXPR
       && TREE_CODE (op1) == SSA_NAME)
     {
-      irange vr1 = get_value_irange (op1);
+      irange vr1 = get_irange (op1, stmt);
       if (!vr1.varying_p () && !vr1.undefined_p ())
 	op1min = wide_int_to_tree (TREE_TYPE (op1), vr1.lower_bound ());
     }
@@ -3197,12 +3189,13 @@ simplify_with_ranges::simplify_div_or_mod_using_ranges ()
    disjoint.   Return true if we do simplify.  */
 
 bool
-simplify_with_ranges::simplify_min_or_max_using_ranges ()
+range_misc::simplify_min_or_max_using_ranges (gimple_stmt_iterator *gsi,
+					      gimple *stmt)
 {
   tree op0 = gimple_assign_rhs1 (stmt);
   tree op1 = gimple_assign_rhs2 (stmt);
-  irange ir0 = get_value_irange (op0);
-  irange ir1 = get_value_irange (op1);
+  irange ir0 = get_irange (op0, stmt);
+  irange ir1 = get_irange (op1, stmt);
   if (ir0.varying_p () || ir1.varying_p ())
     return false;
   if (!range_intersect (ir0, ir1).undefined_p ())
@@ -3228,12 +3221,13 @@ simplify_with_ranges::simplify_min_or_max_using_ranges ()
    ABS_EXPR into a NEGATE_EXPR.  */
 
 bool
-simplify_with_ranges::simplify_abs_using_ranges ()
+range_misc::simplify_abs_using_ranges (gimple_stmt_iterator *gsi,
+				       gimple *stmt)
 {
   tree op = gimple_assign_rhs1 (stmt);
 
   bool updated = false;
-  irange ir0 = get_value_irange (op);
+  irange ir0 = get_irange (op, stmt);
   irange tmp = range_positives (TREE_TYPE (op));
   /* If range is >= 0, eliminate the ABS.  */
   if (tmp.intersect (ir0) == ir0)
@@ -3291,7 +3285,8 @@ irange_set_zero_nonzero_bits (irange &r,
    operation is redundant.  */
 
 bool
-simplify_with_ranges::simplify_bit_ops_using_ranges ()
+range_misc::simplify_bit_ops_using_ranges (gimple_stmt_iterator *gsi,
+					   gimple *stmt)
 {
   tree op0 = gimple_assign_rhs1 (stmt);
   tree op1 = gimple_assign_rhs2 (stmt);
@@ -3301,8 +3296,8 @@ simplify_with_ranges::simplify_bit_ops_using_ranges ()
   wide_int mask;
   irange ir0, ir1;
 
-  ir0 = get_value_irange (op0);
-  ir1 = get_value_irange (op1);
+  ir0 = get_irange (op0, stmt);
+  ir1 = get_irange (op1, stmt);
   if (ir0.varying_p () || ir1.varying_p ())
     return false;
 
@@ -3469,9 +3464,8 @@ range_fits_type_p (irange &ir, unsigned dest_precision, signop dest_sgn)
    the original conditional.  */
 
 bool
-simplify_with_ranges::simplify_cond_using_ranges_1 ()
+range_misc::simplify_cond_using_ranges_1 (gcond *stmt)
 {
-  gcond *stmt = as_a <gcond *> (simplify_with_ranges::stmt);
   tree op0 = gimple_cond_lhs (stmt);
   tree op1 = gimple_cond_rhs (stmt);
   enum tree_code cond_code = gimple_cond_code (stmt);
@@ -3482,7 +3476,7 @@ simplify_with_ranges::simplify_cond_using_ranges_1 ()
       && INTEGRAL_TYPE_P (TREE_TYPE (op0))
       && is_gimple_min_invariant (op1))
     {
-      irange ir = get_value_irange (op0);
+      irange ir = get_irange (op0, stmt);
 
       /* If we have range information for OP0, then we might be
 	 able to simplify this conditional. */
@@ -3616,9 +3610,8 @@ vr_values::simplify_cond_using_ranges_2 (gcond *stmt)
    argument.  */
 
 bool
-simplify_with_vranges::simplify_switch_using_ranges ()
+vr_values::simplify_switch_using_ranges (gswitch *stmt)
 {
-  gswitch *stmt = as_a <gswitch *> (simplify_with_ranges::stmt);
   tree op = gimple_switch_index (stmt);
   value_range_base vr_obj;
   value_range_base *vr = NULL;
@@ -3632,8 +3625,8 @@ simplify_with_vranges::simplify_switch_using_ranges ()
 
   if (TREE_CODE (op) == SSA_NAME)
     {
-      // FIXME: Temporary hack.  We should convert entire function to iranges.
-      irange ir = get_value_irange (op);
+      // FIXME: We should convert this entire function to iranges.
+      irange ir = get_irange (op, stmt);
       vr_obj = irange_to_value_range (ir);
       vr = &vr_obj;
 
@@ -3789,7 +3782,7 @@ simplify_with_vranges::simplify_switch_using_ranges ()
 	{
 	  fprintf (dump_file, "removing unreachable case label\n");
 	}
-      m_vr_values->to_remove_edges.safe_push (e);
+      to_remove_edges.safe_push (e);
       e->flags &= ~EDGE_EXECUTABLE;
       e->flags |= EDGE_IGNORE;
     }
@@ -3797,7 +3790,7 @@ simplify_with_vranges::simplify_switch_using_ranges ()
   /* And queue an update for the stmt.  */
   su.stmt = stmt;
   su.vec = vec2;
-  m_vr_values->to_update_switch_stmts.safe_push (su);
+  to_update_switch_stmts.safe_push (su);
   return false;
 }
 
@@ -3843,7 +3836,8 @@ vr_values::cleanup_edges_and_switches (void)
 /* Simplify an integral conversion from an SSA name in STMT.  */
 
 bool
-simplify_with_ranges::simplify_conversion_using_ranges ()
+range_misc::simplify_conversion_using_ranges (gimple_stmt_iterator *gsi,
+					      gimple *stmt)
 {
   tree innerop, middleop, finaltype;
   gimple *def_stmt;
@@ -3920,10 +3914,11 @@ simplify_with_ranges::simplify_conversion_using_ranges ()
 /* Simplify a conversion from integral SSA name to float in STMT.  */
 
 bool
-simplify_with_ranges::simplify_float_conversion_using_ranges ()
+range_misc::simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi,
+						    gimple *stmt)
 {
   tree rhs1 = gimple_assign_rhs1 (stmt);
-  irange ir = get_value_irange (rhs1);
+  irange ir = get_irange (rhs1, stmt);
   scalar_float_mode fltmode
     = SCALAR_FLOAT_TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt)));
   scalar_int_mode mode;
@@ -3977,7 +3972,8 @@ simplify_with_ranges::simplify_float_conversion_using_ranges ()
 /* Simplify an internal fn call using ranges if possible.  */
 
 bool
-simplify_with_ranges::simplify_internal_call_using_ranges ()
+range_misc::simplify_internal_call_using_ranges (gimple_stmt_iterator *gsi,
+						 gimple *stmt)
 {
   enum tree_code subcode;
   bool is_ubsan = false;
@@ -4022,8 +4018,8 @@ simplify_with_ranges::simplify_internal_call_using_ranges ()
     return false;
   else
     type = TREE_TYPE (TREE_TYPE (gimple_call_lhs (stmt)));
-  irange ir0 = get_value_irange (op0);
-  irange ir1 = get_value_irange (op1);
+  irange ir0 = get_irange (op0, stmt);
+  irange ir1 = get_irange (op1, stmt);
   if (!check_for_binary_op_overflow (subcode, type, op0, ir0, op1, ir1, &ovf)
       || (is_ubsan && ovf))
     return false;
@@ -4081,9 +4077,9 @@ simplify_with_ranges::simplify_internal_call_using_ranges ()
    two-values when it is true.  Return false otherwise.  */
 
 bool
-simplify_with_ranges::two_valued_val_range_p (tree var, tree *a, tree *b)
+range_misc::two_valued_val_range_p (tree var, tree *a, tree *b, gimple *stmt)
 {
-  irange ir = get_value_irange (var);
+  irange ir = get_irange (var, stmt);
   if (ir.varying_p () || ir.undefined_p ())
     return false;
 
@@ -4102,8 +4098,9 @@ simplify_with_ranges::two_valued_val_range_p (tree var, tree *a, tree *b)
 /* Simplify STMT using ranges if possible.  */
 
 bool
-simplify_with_ranges::simplify ()
+range_misc::simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 {
+  gimple *stmt = gsi_stmt (*gsi);
   if (is_gimple_assign (stmt))
     {
       enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
@@ -4141,7 +4138,7 @@ simplify_with_ranges::simplify ()
 	  tree cmp_var = NULL_TREE;
 
 	  if (TREE_CODE (rhs2) == SSA_NAME
-	      && two_valued_val_range_p (rhs2, &val1, &val2))
+	      && two_valued_val_range_p (rhs2, &val1, &val2, stmt))
 	    {
 	      /* Optimize RHS1 OP [VAL1, VAL2].  */
 	      new_rhs1 = int_const_binop (rhs_code, rhs1, val1);
@@ -4149,7 +4146,7 @@ simplify_with_ranges::simplify ()
 	      cmp_var = rhs2;
 	    }
 	  else if (TREE_CODE (rhs1) == SSA_NAME
-		   && two_valued_val_range_p (rhs1, &val1, &val2))
+		   && two_valued_val_range_p (rhs1, &val1, &val2, stmt))
 	    {
 	      /* Optimize [VAL1, VAL2] OP RHS2.  */
 	      new_rhs1 = int_const_binop (rhs_code, val1, rhs2);
@@ -4180,7 +4177,7 @@ simplify_with_ranges::simplify ()
 	     if the RHS is zero or one, and the LHS are known to be boolean
 	     values.  */
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
-	    return simplify_truth_ops_using_ranges ();
+	    return simplify_truth_ops_using_ranges (gsi, stmt);
 	  break;
 
       /* Transform TRUNC_DIV_EXPR and TRUNC_MOD_EXPR into RSHIFT_EXPR
@@ -4194,14 +4191,14 @@ simplify_with_ranges::simplify ()
 	  if ((TREE_CODE (rhs1) == SSA_NAME
 	       || TREE_CODE (rhs1) == INTEGER_CST)
 	      && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
-	    return simplify_div_or_mod_using_ranges ();
+	    return simplify_div_or_mod_using_ranges (gsi, stmt);
 	  break;
 
       /* Transform ABS (X) into X or -X as appropriate.  */
 	case ABS_EXPR:
 	  if (TREE_CODE (rhs1) == SSA_NAME
 	      && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
-	    return simplify_abs_using_ranges ();
+	    return simplify_abs_using_ranges (gsi, stmt);
 	  break;
 
 	case BIT_AND_EXPR:
@@ -4210,25 +4207,25 @@ simplify_with_ranges::simplify ()
 	     if all the bits being cleared are already cleared or
 	     all the bits being set are already set.  */
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
-	    return simplify_bit_ops_using_ranges ();
+	    return simplify_bit_ops_using_ranges (gsi, stmt);
 	  break;
 
 	CASE_CONVERT:
 	  if (TREE_CODE (rhs1) == SSA_NAME
 	      && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
-	    return simplify_conversion_using_ranges ();
+	    return simplify_conversion_using_ranges (gsi, stmt);
 	  break;
 
 	case FLOAT_EXPR:
 	  if (TREE_CODE (rhs1) == SSA_NAME
 	      && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
-	    return simplify_float_conversion_using_ranges ();
+	    return simplify_float_conversion_using_ranges (gsi, stmt);
 	  break;
 
 	case MIN_EXPR:
 	case MAX_EXPR:
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
-	    return simplify_min_or_max_using_ranges ();
+	    return simplify_min_or_max_using_ranges (gsi, stmt);
 	  break;
 
 	default:
@@ -4236,21 +4233,14 @@ simplify_with_ranges::simplify ()
 	}
     }
   else if (gimple_code (stmt) == GIMPLE_COND)
-    return simplify_cond_using_ranges_1 ();
+    return simplify_cond_using_ranges_1 (as_a <gcond *> (stmt));
   else if (gimple_code (stmt) == GIMPLE_SWITCH)
-    return simplify_switch_using_ranges ();
+    return simplify_switch_using_ranges (as_a <gswitch *> (stmt));
   else if (is_gimple_call (stmt)
 	   && gimple_call_internal_p (stmt))
-    return simplify_internal_call_using_ranges ();
+    return simplify_internal_call_using_ranges (gsi, stmt);
 
   return false;
-}
-
-bool
-vr_values::simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
-{
-  simplify_with_vranges simpl (gsi, this);
-  return simpl.simplify ();
 }
 
 void
