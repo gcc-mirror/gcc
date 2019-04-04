@@ -942,7 +942,9 @@ irange_to_value_range (const irange &r)
   if (TYPE_UNSIGNED (type)
       && r.num_pairs () == 1
       && r.lower_bound () == wi::uhwi (1, precision)
-      && r.upper_bound () == wi::max_value (precision, UNSIGNED))
+      && r.upper_bound () == wi::max_value (precision, UNSIGNED)
+      // Do not get confused by booleans.
+      && TYPE_PRECISION (type) != 1)
     vr = value_range (VR_ANTI_RANGE,
 		      build_int_cst (type, 0), build_int_cst (type, 0));
   // Represent anti-ranges.
