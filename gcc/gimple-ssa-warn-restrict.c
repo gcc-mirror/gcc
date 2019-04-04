@@ -698,6 +698,10 @@ builtin_access::builtin_access (gcall *call, builtin_memref &dst,
   offset_int bounds[2] = { maxobjsize, maxobjsize };
   if (dstref->strbounded_p)
     {
+      unsigned nargs = gimple_call_num_args (call);
+      if (nargs <= sizeargno)
+	return;
+
       tree size = gimple_call_arg (call, sizeargno);
       tree range[2];
       if (get_size_range (size, range, true))
