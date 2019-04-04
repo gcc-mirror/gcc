@@ -1,5 +1,21 @@
 2019-04-04  Martin Sebor  <msebor@redhat.com>
 
+	PR c++/89974
+	PR c++/89878
+	PR c++/89833
+	PR c++/47488
+	* gcc/testsuite/g++.dg/abi/mangle69.C: New test.
+	* gcc/testsuite/g++.dg/abi/mangle70.C: New test.
+	* gcc/testsuite/g++.dg/abi/mangle71.C: New test.
+	* gcc/testsuite/g++.dg/abi/mangle72.C: New test.
+	* gcc/testsuite/g++.dg/cpp0x/constexpr-array19.C: New test.
+	* gcc/testsuite/g++.dg/cpp2a/nontype-class15.C: New test.
+	* gcc/testsuite/g++.dg/cpp2a/nontype-class16.C: New test.
+	* gcc/testsuite/g++.dg/init/array51.C: New test.
+	* gcc/testsuite/g++.dg/template/nontype29.C: New test.
+
+2019-04-04  Martin Sebor  <msebor@redhat.com>
+
 	PR middle-end/89957
 	PR middle-end/89911
 	* gcc.dg/Wstringop-overflow-13.c: New test.

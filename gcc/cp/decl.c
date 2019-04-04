@@ -5799,6 +5799,9 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
 	max_index_cst = tree_to_uhwi (fold_convert (size_type_node, max_index));
     }
 
+  /* Set to the index of the last element with a non-zero initializer.
+     Initializers for elements past this one can be dropped.  */
+  unsigned HOST_WIDE_INT last_nonzero = -1;
   /* Loop until there are no more initializers.  */
   for (index = 0;
        d->cur != d->end && (!sized_array_p || index <= max_index_cst);
@@ -5817,9 +5820,28 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
       if (!TREE_CONSTANT (elt_init))
 	TREE_CONSTANT (new_init) = false;
 
+      if (!initializer_zerop (elt_init))
+	last_nonzero = index;
+
       /* This can happen with an invalid initializer (c++/54501).  */
       if (d->cur == old_cur && !sized_array_p)
 	break;
+    }
+
+  if (sized_array_p
+      && (!CLASS_TYPE_P (elt_type)
+	  || TYPE_HAS_TRIVIAL_DFLT (elt_type)))
+    {
+      /* Strip trailing zero-initializers from an array of a trivial
+	 type of known size.  They are redundant and get in the way
+	 of telling them apart from those with implicit zero value.  */
+      unsigned HOST_WIDE_INT nelts = CONSTRUCTOR_NELTS (new_init);
+      if (last_nonzero > nelts)
+	nelts = 0;
+      else if (last_nonzero < nelts - 1)
+	nelts = last_nonzero + 1;
+
+      vec_safe_truncate (CONSTRUCTOR_ELTS (new_init), nelts);
     }
 
   return new_init;

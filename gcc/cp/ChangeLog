@@ -1,3 +1,18 @@
+2019-04-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/89974
+	PR c++/89878
+	PR c++/89833
+	PR c++/47488
+	* decl.c (reshape_init_array_1): Strip trailing zero-initializers
+	from arrays of trivial type and known size.
+        * mangle.c (write_expression): Convert braced initializer lists
+        to STRING_CSTs.
+	(write_expression): Trim trailing zero-initializers from arrays
+	of trivial type.
+        (write_template_arg_literal): Mangle strings the same as braced
+        initializer lists.
+
 2019-04-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/81866 - ICE with member template and default targ.
