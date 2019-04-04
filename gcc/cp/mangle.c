@@ -3136,18 +3136,48 @@ write_expression (tree expr)
     }
   else if (code == CONSTRUCTOR)
     {
-      vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (expr);
-      unsigned i; tree val;
+      bool braced_init = BRACE_ENCLOSED_INITIALIZER_P (expr);
+      tree etype = TREE_TYPE (expr);
 
-      if (BRACE_ENCLOSED_INITIALIZER_P (expr))
+      if (braced_init)
 	write_string ("il");
       else
 	{
 	  write_string ("tl");
-	  write_type (TREE_TYPE (expr));
+	  write_type (etype);
 	}
-      FOR_EACH_CONSTRUCTOR_VALUE (elts, i, val)
-	write_expression (val);
+
+      if (!initializer_zerop (expr) || !trivial_type_p (etype))
+	{
+	  /* Convert braced initializer lists to STRING_CSTs so that
+	     A<"Foo"> mangles the same as A<{'F', 'o', 'o', 0}> while
+	     still using the latter mangling for strings that
+	     originated as braced initializer lists.  */
+	  expr = braced_lists_to_strings (etype, expr);
+
+	  if (TREE_CODE (expr) == CONSTRUCTOR)
+	    {
+	      vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (expr);
+	      unsigned last_nonzero = -1, i;
+	      tree val;
+
+	      FOR_EACH_CONSTRUCTOR_VALUE (elts, i, val)
+		if (!initializer_zerop (val))
+		  last_nonzero = i;
+
+	      FOR_EACH_CONSTRUCTOR_VALUE (elts, i, val)
+		{
+		  if (i > last_nonzero)
+		    break;
+		  write_expression (val);
+		}
+	    }
+	  else
+	    {
+	      gcc_assert (TREE_CODE (expr) == STRING_CST);
+	      write_expression (expr);
+	    }
+	}
       write_char ('E');
     }
   else if (code == LAMBDA_EXPR)
@@ -3353,8 +3383,14 @@ write_expression (tree expr)
 static void
 write_template_arg_literal (const tree value)
 {
-  write_char ('L');
-  write_type (TREE_TYPE (value));
+  if (TREE_CODE (value) == STRING_CST)
+    /* Temporarily mangle strings as braced initializer lists.  */
+    write_string ("tl");
+  else
+    write_char ('L');
+
+  tree valtype = TREE_TYPE (value);
+  write_type (valtype);
 
   /* Write a null member pointer value as (type)0, regardless of its
      real representation.  */
@@ -3397,8 +3433,31 @@ write_template_arg_literal (const tree value)
 	break;
 
       case STRING_CST:
-	sorry ("string literal in function template signature");
-	break;
+	{
+	  /* Mangle strings the same as braced initializer lists.  */
+	  unsigned n = TREE_STRING_LENGTH (value);
+	  const char *str = TREE_STRING_POINTER (value);
+
+	  /* Count the number of trailing nuls and subtract them from
+	     STRSIZE because they don't need to be mangled.  */
+	  for (const char *p = str + n - 1; ; --p)
+	    {
+	      if (*p || p == str)
+		{
+		  n -= str + n - !!*p - p;
+		  break;
+		}
+	    }
+	  tree eltype = TREE_TYPE (valtype);
+	  for (const char *p = str; n--; ++p)
+	    {
+	      write_char ('L');
+	      write_type (eltype);
+	      write_unsigned_number (*(const unsigned char*)p);
+	      write_string ("E");
+	    }
+	  break;
+	}
 
       default:
 	gcc_unreachable ();
