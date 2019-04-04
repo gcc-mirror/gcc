@@ -1,5 +1,11 @@
 2019-04-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/61327
+	* g++.dg/cpp0x/friend4.C: New.
+	* g++.dg/cpp0x/friend5.C: Likewise.
+
+2019-04-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/56643
 	* g++.dg/cpp0x/noexcept40.C: New.
 
