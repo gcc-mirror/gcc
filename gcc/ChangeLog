@@ -1,3 +1,15 @@
+2019-04-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/46590
+	* loop-invariant.c (find_defs): Move df_remove_problem and
+	df_process_deferred_rescans to move_invariants.
+	Move df_live_add_problem and df_live_set_all_dirty calls
+	to move_invariants.
+	(move_invariants): Likewise.
+	(move_loop_invariants): Likewise, making the df_live calls
+	conditional on -O.  Remove the problem again if we added it
+	locally.
+
 2019-04-03  qing zhao  <qing.zhao@oracle.com>
 
 	PR tree-optimization/89730

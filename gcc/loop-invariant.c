@@ -681,11 +681,7 @@ find_defs (struct loop *loop)
 	       loop->num);
     }
 
-  df_remove_problem (df_chain);
-  df_process_deferred_rescans ();
   df_chain_add_problem (DF_UD_CHAIN);
-  df_live_add_problem ();
-  df_live_set_all_dirty ();
   df_set_flags (DF_RD_PRUNE_DEAD_DEFS);
   df_analyze_loop (loop);
   check_invariant_table_size ();
@@ -1891,6 +1887,10 @@ move_invariants (struct loop *loop)
 				 GENERAL_REGS, NO_REGS, GENERAL_REGS);
 	  }
     }
+  /* Remove the DF_UD_CHAIN problem added in find_defs before rescanning,
+     to save a bit of compile time.  */
+  df_remove_problem (df_chain);
+  df_process_deferred_rescans ();
 }
 
 /* Initializes invariant motion data.  */
@@ -2254,6 +2254,14 @@ move_loop_invariants (void)
 {
   struct loop *loop;
 
+  if (optimize == 1)
+    df_live_add_problem ();
+  /* ??? This is a hack.  We should only need to call df_live_set_all_dirty
+     for optimize == 1, but can_move_invariant_reg relies on DF_INSN_LUID
+     being up-to-date.  That isn't always true (even after df_analyze)
+     because df_process_deferred_rescans doesn't necessarily cause
+     blocks to be rescanned.  */
+  df_live_set_all_dirty ();
   if (flag_ira_loop_pressure)
     {
       df_analyze ();
@@ -2285,6 +2293,9 @@ move_loop_invariants (void)
   free (invariant_table);
   invariant_table = NULL;
   invariant_table_size = 0;
+
+  if (optimize == 1)
+    df_remove_problem (df_live);
 
   checking_verify_flow_info ();
 }
