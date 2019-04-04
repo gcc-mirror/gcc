@@ -13,7 +13,7 @@
 	* lib/go-torture.exp: Only add lto to TORTURE_OPTIONS if it is
 	supported.
 
-2019-04-13  Christophe Lyon  <christophe.lyon@linaro.org>
+2019-04-03  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR c/71598
 	* gcc.dg/torture/pr71598-1.c: Skip if short_enums target.
