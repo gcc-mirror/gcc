@@ -1,3 +1,8 @@
+2019-04-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56643
+	* g++.dg/cpp0x/noexcept40.C: New.
+
 2019-04-03  Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
 	PR fortran/68567
