@@ -3151,7 +3151,7 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
     return NULL_RTX;
 
   if (!TREE_NO_WARNING (exp)
-      && wi::ltu_p (wi::to_wide (maxobjsize), min)
+      && wi::ltu_p (wi::to_wide (maxobjsize, min.get_precision ()), min)
       && warning_at (loc, OPT_Wstringop_overflow_,
 		     "%K%qD specified bound [%wu, %wu] "
 		     "exceeds maximum object size %E",

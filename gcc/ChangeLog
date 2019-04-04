@@ -1,5 +1,14 @@
 2019-04-04  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/89957
+	PR middle-end/89911
+	* builtins.c (expand_builtin_strnlen): Make sure wi::ltu_p operands
+	have the same precision since the function crashes otherwise.
+	* calls.c (maybe_warn_nonstring_arg): Avoid assuming strnlen() call
+	has non-zero arguments.
+
+2019-04-04  Martin Sebor  <msebor@redhat.com>
+
 	PR middle-end/89934
 	* gimple-ssa-warn-restrict.c (builtin_access::builtin_access): Bail
 	out if the number of arguments is less than expected.

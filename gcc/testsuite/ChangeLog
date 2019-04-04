@@ -1,5 +1,11 @@
 2019-04-04  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/89957
+	PR middle-end/89911
+	* gcc.dg/Wstringop-overflow-13.c: New test.
+
+2019-04-04  Martin Sebor  <msebor@redhat.com>
+
 	PR middle-end/89934
 	* gcc.dg/Wrestrict-19.c: New test.
 	* gcc.dg/Wrestrict-5.c: Add comment.  Remove unused code.
@@ -8,7 +14,7 @@
 
 	PR rtl-optimization/89399
 	* gcc.c-torture/compile/pr89399.c: New test.
- 
+
 2019-04-04  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/89004
