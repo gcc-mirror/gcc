@@ -1,3 +1,9 @@
+2019-04-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/89004
+	* check.c (gfc_check_transfer): Reject procedures as actual
+	arguments for SOURCE and MOLD of TRANSFER intrinsic.
+
 2019-04-03  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68567
