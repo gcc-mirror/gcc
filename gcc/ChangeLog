@@ -1,3 +1,9 @@
+2019-04-04  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/89934
+	* gimple-ssa-warn-restrict.c (builtin_access::builtin_access): Bail
+	out if the number of arguments is less than expected.
+
 2019-04-04  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/89399

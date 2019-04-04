@@ -1,19 +1,10 @@
-/* Test to verify that valid calls to common restrict-qualified built-in
+/* PR tree-optimization/83655 - ICE on an invalid call to memcpy declared
+   with no prototype
+   Test to verify that valid calls to common restrict-qualified built-in
    functions declared with no prototype are checked for overlap, and that
    invalid calls are ignored.
   { dg-do compile }
-  { dg-prune-output "conflicting types for built-in" }
   { dg-options "-O2 -Wrestrict" }  */
-
-typedef __SIZE_TYPE__ size_t;
-
-#if __cplusplus
-extern "C" {
-
-#define NO_PROTO ...
-#else
-#define NO_PROTO /* empty */
-#endif
 
 void* memcpy ();
 char* strncpy ();
