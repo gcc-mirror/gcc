@@ -1,5 +1,10 @@
 2019-04-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/65619
+	* g++.dg/template/friend67.C: New.
+
+2019-04-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/61327
 	* g++.dg/cpp0x/friend4.C: New.
 	* g++.dg/cpp0x/friend5.C: Likewise.
