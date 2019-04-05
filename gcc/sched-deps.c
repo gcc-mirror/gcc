@@ -2857,14 +2857,16 @@ sched_macro_fuse_insns (rtx_insn *insn)
     {
       unsigned int condreg1, condreg2;
       rtx cc_reg_1;
-      targetm.fixed_condition_code_regs (&condreg1, &condreg2);
-      cc_reg_1 = gen_rtx_REG (CCmode, condreg1);
-      if (reg_referenced_p (cc_reg_1, PATTERN (insn))
-	  && modified_in_p (cc_reg_1, prev))
+      if (targetm.fixed_condition_code_regs (&condreg1, &condreg2))
 	{
-	  if (targetm.sched.macro_fusion_pair_p (prev, insn))
-	    SCHED_GROUP_P (insn) = 1;
-	  return;
+	  cc_reg_1 = gen_rtx_REG (CCmode, condreg1);
+	  if (reg_referenced_p (cc_reg_1, PATTERN (insn))
+	      && modified_in_p (cc_reg_1, prev))
+	    {
+	      if (targetm.sched.macro_fusion_pair_p (prev, insn))
+		SCHED_GROUP_P (insn) = 1;
+	      return;
+	    }
 	}
     }
 

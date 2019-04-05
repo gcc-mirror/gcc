@@ -1,3 +1,8 @@
+2019-04-05  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* sched-deps.c (sched_macro_fuse_insns): Check return value of
+	targetm.fixed_condition_code_regs.
+
 2019-04-05  Richard Biener  <rguenther@suse.de>
 
 	PR debug/89892
