@@ -1,3 +1,10 @@
+2019-04-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87145 - bogus error converting class type in template arg list.
+	* pt.c (convert_nontype_argument): Don't call
+	build_converted_constant_expr if it could involve calling a conversion
+	function with a instantiation-dependent constructor as its argument.
+
 2019-04-05  Martin Sebor  <msebor@redhat.com>
 
 	PR bootstrap/89980
