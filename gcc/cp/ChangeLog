@@ -1,5 +1,10 @@
 2019-04-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/89966 - error with non-type auto tparm.
+	* pt.c (do_auto_deduction): Clear tf_partial.
+
+2019-04-04  Jason Merrill  <jason@redhat.com>
+
 	PR c++/86986 - ICE with TTP with parameter pack.
 	* pt.c (coerce_template_parameter_pack): Only look at the type of a
 	non-type parameter pack.
