@@ -1,3 +1,10 @@
+2019-04-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/89985
+	* c-warn.c (check_address_or_pointer_of_packed_member): Add
+	auto_diagnostic_group.  Guard inform calls by result of
+	warning_at call.
+
 2019-04-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89973 - -Waddress-of-packed-member ICE with invalid conversion. 
