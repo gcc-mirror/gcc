@@ -1,3 +1,8 @@
+2019-04-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89973 - -Waddress-of-packed-member ICE with invalid conversion. 
+	* g++.dg/warn/Waddress-of-packed-member2.C: New test.
+
 2019-04-05  Richard Biener  <rguenther@suse.de>
 
 	PR debug/89892
