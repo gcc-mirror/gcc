@@ -183,20 +183,27 @@ fs::directory_iterator::increment(error_code& ec)
 
 struct fs::recursive_directory_iterator::_Dir_stack : std::stack<_Dir>
 {
+  _Dir_stack(directory_options opts, posix::DIR* dirp, const path& p)
+  : options(opts), pending(true)
+  {
+    this->emplace(dirp, p);
+  }
+
+  const directory_options options;
+  bool pending;
+
   void clear() { c.clear(); }
 };
 
 fs::recursive_directory_iterator::
 recursive_directory_iterator(const path& p, directory_options options,
                              error_code* ecptr)
-: _M_options(options), _M_pending(true)
 {
   if (posix::DIR* dirp = posix::opendir(p.c_str()))
     {
       if (ecptr)
 	ecptr->clear();
-      auto sp = std::__make_shared<_Dir_stack>();
-      sp->push(_Dir{ dirp, p });
+      auto sp = std::__make_shared<_Dir_stack>(options, dirp, p);
       if (ecptr ? sp->top().advance(*ecptr) : sp->top().advance())
 	_M_dirs.swap(sp);
     }
@@ -222,14 +229,26 @@ recursive_directory_iterator(const path& p, directory_options options,
 
 fs::recursive_directory_iterator::~recursive_directory_iterator() = default;
 
+fs::directory_options
+fs::recursive_directory_iterator::options() const noexcept
+{
+  return _M_dirs->options;
+}
+
 int
-fs::recursive_directory_iterator::depth() const
+fs::recursive_directory_iterator::depth() const noexcept
 {
   return int(_M_dirs->size()) - 1;
 }
 
+bool
+fs::recursive_directory_iterator::recursion_pending() const noexcept
+{
+  return _M_dirs->pending;
+}
+
 const fs::directory_entry&
-fs::recursive_directory_iterator::operator*() const
+fs::recursive_directory_iterator::operator*() const noexcept
 {
   return _M_dirs->top().entry;
 }
@@ -263,13 +282,13 @@ fs::recursive_directory_iterator::increment(error_code& ec)
     }
 
   const bool follow
-    = is_set(_M_options, directory_options::follow_directory_symlink);
+    = is_set(_M_dirs->options, directory_options::follow_directory_symlink);
   const bool skip_permission_denied
-    = is_set(_M_options, directory_options::skip_permission_denied);
+    = is_set(_M_dirs->options, directory_options::skip_permission_denied);
 
   auto& top = _M_dirs->top();
 
-  if (std::exchange(_M_pending, true) && top.should_recurse(follow, ec))
+  if (std::exchange(_M_dirs->pending, true) && top.should_recurse(follow, ec))
     {
       _Dir dir(top.entry.path(), skip_permission_denied, ec);
       if (ec)
@@ -303,7 +322,7 @@ fs::recursive_directory_iterator::pop(error_code& ec)
     }
 
   const bool skip_permission_denied
-    = is_set(_M_options, directory_options::skip_permission_denied);
+    = is_set(_M_dirs->options, directory_options::skip_permission_denied);
 
   do {
     _M_dirs->pop();
@@ -326,4 +345,10 @@ fs::recursive_directory_iterator::pop()
 	  ? "recursive directory iterator cannot pop"
 	  : "non-dereferenceable recursive directory iterator cannot pop",
 	  ec));
+}
+
+void
+fs::recursive_directory_iterator::disable_recursion_pending() noexcept
+{
+  _M_dirs->pending = false;
 }

@@ -466,12 +466,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     ~recursive_directory_iterator();
 
     // observers
-    directory_options  options() const { return _M_options; }
-    int                depth() const;
-    bool               recursion_pending() const { return _M_pending; }
+    directory_options  options() const noexcept;
+    int                depth() const noexcept;
+    bool               recursion_pending() const noexcept;
 
-    const directory_entry& operator*() const;
-    const directory_entry* operator->() const { return &**this; }
+    const directory_entry& operator*() const noexcept;
+    const directory_entry* operator->() const noexcept { return &**this; }
 
     // modifiers
     recursive_directory_iterator&
@@ -492,7 +492,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     void pop();
     void pop(error_code&);
 
-    void disable_recursion_pending() { _M_pending = false; }
+    void disable_recursion_pending() noexcept;
 
   private:
     recursive_directory_iterator(const path&, directory_options, error_code*);
@@ -503,8 +503,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     struct _Dir_stack;
     std::__shared_ptr<_Dir_stack> _M_dirs;
-    directory_options _M_options = {};
-    bool _M_pending = false;
   };
 
   inline recursive_directory_iterator
