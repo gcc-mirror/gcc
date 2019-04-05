@@ -5800,7 +5800,7 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
     }
 
   /* Set to the index of the last element with a non-zero initializer.
-     Initializers for elements past this one can be dropped.  */
+     Zero initializers for elements past this one can be dropped.  */
   unsigned HOST_WIDE_INT last_nonzero = -1;
   /* Loop until there are no more initializers.  */
   for (index = 0;
@@ -5820,7 +5820,11 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
       if (!TREE_CONSTANT (elt_init))
 	TREE_CONSTANT (new_init) = false;
 
-      if (!initializer_zerop (elt_init))
+      /* Pointers initialized to strings must be treated as non-zero
+	 even if the string is empty.  */
+      tree init_type = TREE_TYPE (elt_init);
+      if ((POINTER_TYPE_P (elt_type) != POINTER_TYPE_P (init_type))
+	  || !initializer_zerop (elt_init))
 	last_nonzero = index;
 
       /* This can happen with an invalid initializer (c++/54501).  */
@@ -5828,9 +5832,7 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
 	break;
     }
 
-  if (sized_array_p
-      && (!CLASS_TYPE_P (elt_type)
-	  || TYPE_HAS_TRIVIAL_DFLT (elt_type)))
+  if (sized_array_p && trivial_type_p (elt_type))
     {
       /* Strip trailing zero-initializers from an array of a trivial
 	 type of known size.  They are redundant and get in the way

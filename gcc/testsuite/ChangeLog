@@ -1,3 +1,8 @@
+2019-04-05  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/89980
+	* g++.dg/init/array52.C: New test.
+
 2019-04-05  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/89985
@@ -12,7 +17,7 @@
 
 2019-04-05  Marek Polacek  <polacek@redhat.com>
 
-	PR c++/89973 - -Waddress-of-packed-member ICE with invalid conversion. 
+	PR c++/89973 - -Waddress-of-packed-member ICE with invalid conversion.
 	* g++.dg/warn/Waddress-of-packed-member2.C: New test.
 
 2019-04-05  Richard Biener  <rguenther@suse.de>

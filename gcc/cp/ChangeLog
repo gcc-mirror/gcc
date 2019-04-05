@@ -1,3 +1,10 @@
+2019-04-05  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/89980
+	* decl.c (reshape_init_array_1): Avoid treating empty strings
+	as zeros in array initializers.
+	Use trivial_type_p () instead of TYPE_HAS_TRIVIAL_DFLT().
+
 2019-04-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/89948 - ICE with break in statement-expr.
