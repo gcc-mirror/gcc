@@ -1,5 +1,31 @@
 2019-04-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	* config/abi/pre/gnu.ver: Export new symbols.
+	* include/bits/fs_dir.h (recursive_directory_iterator::options())
+	(recursive_directory_iterator::recursion_pending())
+	(recursive_directory_iterator::disable_recursion_pending()): Remove
+	inline definitions. Make noexcept.
+	(recursive_directory_iterator::depth())
+	(recursive_directory_iterator::operator*())
+	(recursive_directory_iterator::operator->()): Make noexcept.
+	(recursive_directory_iterator::_M_options)
+	(recursive_directory_iterator::_M_pending): Remove data members.
+	* src/c++17/fs_path.cc (_Dir_stack): Add constructor and data members.
+	(recursive_directory_iterator::recursive_directory_iterator): Remove
+	ctor-initializer. Use new constructor for _Dir_stack.
+	(recursive_directory_iterator::options())
+	(recursive_directory_iterator::recursion_pending())
+	(recursive_directory_iterator::disable_recursion_pending()): Add
+	non-inline definitions.
+	(recursive_directory_iterator::depth()): Make noexcept.
+	(recursive_directory_iterator::increment(error_code&))
+	(recursive_directory_iterator::pop(error_code&)): Adjust to new
+	location of options and recursion_pending members.
+	* testsuite/27_io/filesystem/iterators/recursion_pending.cc: New test.
+	* testsuite/util/testsuite_fs.h (__gnu_test::scoped_file): Add
+	user-declared move constructor and assignment operator, to make the
+	type move-only.
+
 	* src/c++17/fs_dir.cc (_Dir::advance(bool, error_code&)): Handle
 	d_type == DT_UNKNOWN immediately.
 	(_Dir::should_recurse(bool, error_code&)): Remove file_type::unknown
