@@ -1,3 +1,9 @@
+2019-04-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89973 - -Waddress-of-packed-member ICE with invalid conversion. 
+	* c-warn.c (check_address_or_pointer_of_packed_member): Check the type
+	of RHS.
+
 2019-04-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86586 - -fcompare-debug=-Wsign-compare.

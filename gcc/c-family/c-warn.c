@@ -2769,7 +2769,7 @@ check_address_or_pointer_of_packed_member (tree type, tree rhs)
 	  rhs = TREE_TYPE (rhs);	/* Pointer type.  */
 	  rhs = TREE_TYPE (rhs);	/* Function type.  */
 	  rhstype = TREE_TYPE (rhs);
-	  if (!POINTER_TYPE_P (rhstype))
+	  if (!rhstype || !POINTER_TYPE_P (rhstype))
 	    return NULL_TREE;
 	  rvalue = true;
 	}
