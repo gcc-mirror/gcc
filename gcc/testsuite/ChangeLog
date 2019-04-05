@@ -1,3 +1,10 @@
+2019-04-05  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR c/71598
+	* gcc.dg/torture/pr71598-1.c: dg-prune arm linker messages about
+	size of enums.
+	* gcc.dg/torture/pr71598-2.c: Likewise.
+
 2019-04-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89973 - -Waddress-of-packed-member ICE with invalid conversion. 
