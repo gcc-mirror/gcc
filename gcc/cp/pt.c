@@ -27504,6 +27504,10 @@ do_auto_deduction (tree type, tree init, tree auto_node,
   if (init && undeduced_auto_decl (init))
     return type;
 
+  /* We may be doing a partial substitution, but we still want to replace
+     auto_node.  */
+  complain &= ~tf_partial;
+
   if (tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node))
     /* C++17 class template argument deduction.  */
     return do_class_deduction (type, tmpl, init, flags, complain);
