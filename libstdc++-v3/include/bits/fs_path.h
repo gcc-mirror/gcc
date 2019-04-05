@@ -877,6 +877,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   inline path&
   path::operator=(path&& __p) noexcept
   {
+    if (&__p == this) [[__unlikely__]]
+      return *this;
+
     _M_pathname = std::move(__p._M_pathname);
     _M_cmpts = std::move(__p._M_cmpts);
     __p.clear();

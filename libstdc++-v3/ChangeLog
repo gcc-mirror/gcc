@@ -1,5 +1,11 @@
 2019-04-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/fs_path.h (path::operator=(path&&)): Check for self
+	assignment.
+	* src/c++17/fs_path.cc (path::operator=(const path&)): Likewise.
+	* testsuite/27_io/filesystem/path/assign/copy.cc: Test self
+	assignment.
+
 	PR libstdc++/87431 (again)
 	* include/bits/basic_string.h (__variant::_Never_valueless_alt):
 	Define partial specialization for basic_string.
