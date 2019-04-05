@@ -1,3 +1,9 @@
+2019-04-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/89956
+	* tree-ssa-math-opts.c (convert_mult_to_fma): Protect against
+	multiple negates of the same value.
+
 2019-04-04  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/89957
