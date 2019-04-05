@@ -1090,7 +1090,8 @@ objc_add_property_declaration (location_t location, tree decl,
       if (PROPERTY_NONATOMIC (x) != parsed_property_nonatomic)
 	{
 	  warning_at (location, 0,
-		      "'nonatomic' attribute of property %qD conflicts with previous declaration", decl);
+		      "%<nonatomic%> attribute of property %qD conflicts with "
+		      "previous declaration", decl);
 
 	  if (original_location != UNKNOWN_LOCATION)
 	    inform (original_location, "originally specified here");
@@ -1100,7 +1101,8 @@ objc_add_property_declaration (location_t location, tree decl,
       if (PROPERTY_GETTER_NAME (x) != parsed_property_getter_ident)
 	{
 	  warning_at (location, 0,
-		      "'getter' attribute of property %qD conflicts with previous declaration", decl);
+		      "%<getter%> attribute of property %qD conflicts with "
+		      "previous declaration", decl);
 
 	  if (original_location != UNKNOWN_LOCATION)
 	    inform (original_location, "originally specified here");
@@ -1113,7 +1115,8 @@ objc_add_property_declaration (location_t location, tree decl,
 	  if (PROPERTY_SETTER_NAME (x) != parsed_property_setter_ident)
 	    {
 	      warning_at (location, 0,
-			  "'setter' attribute of property %qD conflicts with previous declaration", decl);
+			  "%<setter%> attribute of property %qD conflicts with "
+			  "previous declaration", decl);
 
 	      if (original_location != UNKNOWN_LOCATION)
 		inform (original_location, "originally specified here");
@@ -1135,7 +1138,8 @@ objc_add_property_declaration (location_t location, tree decl,
       if (PROPERTY_READONLY (x) == 0  &&  property_readonly == 1)
 	{
 	  warning_at (location, 0,
-		      "'readonly' attribute of property %qD conflicts with previous declaration", decl);
+		      "%<readonly%> attribute of property %qD conflicts with "
+		      "previous declaration", decl);
 
 	  if (original_location != UNKNOWN_LOCATION)
 	    inform (original_location, "originally specified here");
@@ -7638,7 +7642,8 @@ objc_add_synthesize_declaration_for_property (location_t location, tree interfac
 	  {
 	    location_t original_location = DECL_SOURCE_LOCATION (ivar);
 
-	    error_at (location, "'assign' property %qs is using bit-field instance variable %qs",
+	    error_at (location, "%<assign%> property %qs is using bit-field "
+		      "instance variable %qs",
 		      IDENTIFIER_POINTER (property_name),
 		      IDENTIFIER_POINTER (ivar_name));
 
@@ -7651,7 +7656,8 @@ objc_add_synthesize_declaration_for_property (location_t location, tree interfac
 	  {
 	    location_t original_location = DECL_SOURCE_LOCATION (ivar);
 
-	    error_at (location, "'atomic' property %qs is using bit-field instance variable %qs",
+	    error_at (location, "%<atomic%> property %qs is using bit-field "
+		      "instance variable %qs",
 		      IDENTIFIER_POINTER (property_name),
 		      IDENTIFIER_POINTER (ivar_name));
 

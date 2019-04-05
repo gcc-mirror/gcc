@@ -250,8 +250,8 @@ riscv_subset_list::parsing_subset_version (const char *p,
 		}
 	      else
 		{
-		  error_at (m_loc, "%<-march=%s%>: Expect number after `%dp'.",
-			    m_arch, version);
+		  error_at (m_loc, "%<-march=%s%>: Expect number "
+			    "after %<%dp%>.", m_arch, version);
 		  return NULL;
 		}
 	    }
@@ -348,8 +348,8 @@ riscv_subset_list::parse_std_ext (const char *p)
       break;
 
     default:
-      error_at (m_loc, "%<-march=%s%>: first ISA subset must be `e', "
-		"`i' or `g'", m_arch);
+      error_at (m_loc, "%<-march=%s%>: first ISA subset must be %<e%>, "
+		"%<i%> or %<g%>", m_arch);
       return NULL;
     }
 
@@ -375,12 +375,12 @@ riscv_subset_list::parse_std_ext (const char *p)
       if (std_ext != *std_exts)
 	{
 	  if (strchr (all_std_exts, std_ext) == NULL)
-	    error_at (m_loc, "%<-march=%s%>: unsupported ISA subset `%c'",
+	    error_at (m_loc, "%<-march=%s%>: unsupported ISA subset %<%c%>",
 		      m_arch, *p);
 	  else
 	    error_at (m_loc,
 		      "%<-march=%s%>: ISA string is not in canonical order. "
-		      "`%c'", m_arch, *p);
+		      "%<%c%>", m_arch, *p);
 	  return NULL;
 	}
 

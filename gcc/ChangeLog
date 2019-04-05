@@ -1,3 +1,40 @@
+2019-04-05  Martin Liska  <mliska@suse.cz>
+
+	PR translation/89935
+	* collect-utils.c (collect_execute): Use %< and %>, or %qs in
+	order to wrap keywords or arguments.
+	* collect2.c (main): Likewise.
+	(scan_prog_file): Likewise.
+	(scan_libraries): Likewise.
+	* common/config/riscv/riscv-common.c (riscv_subset_list::parsing_subset_version): Likewise.
+	(riscv_subset_list::parse_std_ext): Likewise.
+	* config/aarch64/aarch64.c (aarch64_override_options_internal): Likewise.
+	* config/arm/arm.c (arm_option_override): Likewise.
+	* config/cris/cris.c (cris_print_operand): Likewise.
+	* config/darwin-c.c (darwin_pragma_options): Likewise.
+	(darwin_pragma_unused): Likewise.
+	(darwin_pragma_ms_struct): Likewise.
+	* config/ft32/ft32.c (ft32_print_operand): Likewise.
+	* config/i386/i386.c (print_reg): Likewise.
+	(ix86_print_operand): Likewise.
+	* config/i386/xm-djgpp.h: Likewise.
+	* config/iq2000/iq2000.c (iq2000_print_operand): Likewise.
+	* config/m32c/m32c.c (m32c_option_override): Likewise.
+	* config/msp430/msp430.c (msp430_option_override): Likewise.
+	* config/nds32/nds32.c (nds32_option_override): Likewise.
+	* config/nvptx/mkoffload.c (main): Likewise.
+	* config/rx/rx.c (rx_print_operand): Likewise.
+	(valid_psw_flag): Likewise.
+	* config/vms/vms-c.c (vms_pragma_member_alignment): Likewise.
+	(vms_pragma_nomember_alignment): Likewise.
+	(vms_pragma_extern_model): Likewise.
+	* lto-wrapper.c (compile_offload_image): Likewise.
+	* omp-offload.c (oacc_parse_default_dims): Likewise.
+	* symtab.c (symtab_node::verify_base): Likewise.
+	* tlink.c (recompile_files): Likewise.
+	(start_tweaking): Likewise.
+	* tree-profile.c (parse_profile_filter): Likewise.
+
 2019-04-05  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/89956

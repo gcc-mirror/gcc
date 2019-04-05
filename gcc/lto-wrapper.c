@@ -822,8 +822,8 @@ compile_offload_image (const char *target, const char *compiler_path,
 
   if (!compiler)
     fatal_error (input_location,
-		 "could not find %s in %s (consider using '-B')\n", suffix + 1,
-		 compiler_path);
+		 "could not find %s in %s (consider using %<-B%>)\n",
+		 suffix + 1, compiler_path);
 
   /* Generate temporary output file name.  */
   filename = make_temp_file (".target.o");

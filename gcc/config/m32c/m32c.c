@@ -417,7 +417,7 @@ m32c_option_override (void)
   if (global_options_set.x_target_memregs)
     {
       if (target_memregs < 0 || target_memregs > 16)
-	error ("invalid target memregs value '%d'", target_memregs);
+	error ("invalid target memregs value %<%d%>", target_memregs);
     }
   else
     target_memregs = 16;

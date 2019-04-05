@@ -176,7 +176,7 @@ collect_execute (const char *prog, char **argv, const char *outname,
      since we might not end up needing something that we could not find.  */
 
   if (argv[0] == 0)
-    fatal_error (input_location, "cannot find '%s'", prog);
+    fatal_error (input_location, "cannot find %qs", prog);
 
   pex = pex_init (0, "collect2", NULL);
   if (pex == NULL)
