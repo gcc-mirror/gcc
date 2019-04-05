@@ -17632,7 +17632,7 @@ print_reg (rtx x, int code, FILE *file)
       if (GENERAL_REGNO_P (regno))
 	msize = GET_MODE_SIZE (word_mode);
       else
-	error ("'V' modifier on non-integer register");
+	error ("%<V%> modifier on non-integer register");
     }
 
   duplicated = code == 'd' && TARGET_AVX;
@@ -17896,7 +17896,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	    }
 
 	  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
-	    warning (0, "non-integer operand used with operand code 'z'");
+	    warning (0, "non-integer operand used with operand code %<z%>");
 	  /* FALLTHRU */
 
 	case 'Z':

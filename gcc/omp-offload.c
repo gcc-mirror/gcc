@@ -639,7 +639,7 @@ oacc_parse_default_dims (const char *dims)
 	{
 	malformed:
 	  error_at (UNKNOWN_LOCATION,
-		    "%<-fopenacc-dim%> operand is malformed at '%s'", pos);
+		    "%<-fopenacc-dim%> operand is malformed at %qs", pos);
 	}
     }
 

@@ -178,7 +178,7 @@ ft32_print_operand (FILE * file, rtx x, int code)
 
     case 'h':
       if (GET_CODE (operand) != REG)
-        internal_error ("'h' applied to non-register operand");
+	internal_error ("%<h%> applied to non-register operand");
       fprintf (file, "%s", reg_names[REGNO (operand) + 1]);
       return;
 

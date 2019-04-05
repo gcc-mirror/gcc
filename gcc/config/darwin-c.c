@@ -99,17 +99,17 @@ darwin_pragma_options (cpp_reader *pfile ATTRIBUTE_UNUSED)
   tree t, x;
 
   if (pragma_lex (&t) != CPP_NAME)
-    BAD ("malformed '#pragma options', ignoring");
+    BAD ("malformed %<#pragma options%>, ignoring");
   arg = IDENTIFIER_POINTER (t);
   if (strcmp (arg, "align"))
-    BAD ("malformed '#pragma options', ignoring");
+    BAD ("malformed %<#pragma options%>, ignoring");
   if (pragma_lex (&t) != CPP_EQ)
-    BAD ("malformed '#pragma options', ignoring");
+    BAD ("malformed %<#pragma options%>, ignoring");
   if (pragma_lex (&t) != CPP_NAME)
-    BAD ("malformed '#pragma options', ignoring");
+    BAD ("malformed %<#pragma options%>, ignoring");
 
   if (pragma_lex (&x) != CPP_EOF)
-    warning (OPT_Wpragmas, "junk at end of '#pragma options'");
+    warning (OPT_Wpragmas, "junk at end of %<#pragma options%>");
 
   arg = IDENTIFIER_POINTER (t);
   if (!strcmp (arg, "mac68k"))
@@ -119,7 +119,7 @@ darwin_pragma_options (cpp_reader *pfile ATTRIBUTE_UNUSED)
   else if (!strcmp (arg, "reset"))
     pop_field_alignment ();
   else
-    BAD ("malformed '#pragma options align={mac68k|power|reset}', ignoring");
+    BAD ("malformed %<#pragma options align={mac68k|power|reset}%>, ignoring");
 }
 
 /* #pragma unused ([var {, var}*]) */
@@ -131,7 +131,7 @@ darwin_pragma_unused (cpp_reader *pfile ATTRIBUTE_UNUSED)
   int tok;
 
   if (pragma_lex (&x) != CPP_OPEN_PAREN)
-    BAD ("missing '(' after '#pragma unused', ignoring");
+    BAD ("missing %<(%> after %<#pragma unused%>, ignoring");
 
   while (1)
     {
@@ -152,10 +152,10 @@ darwin_pragma_unused (cpp_reader *pfile ATTRIBUTE_UNUSED)
     }
 
   if (tok != CPP_CLOSE_PAREN)
-    BAD ("missing ')' after '#pragma unused', ignoring");
+    BAD ("missing %<)%> after %<#pragma unused%>, ignoring");
 
   if (pragma_lex (&x) != CPP_EOF)
-    BAD ("junk at end of '#pragma unused'");
+    BAD ("junk at end of %<#pragma unused%>");
 }
 
 /* Parse the ms_struct pragma.  */
@@ -166,7 +166,7 @@ darwin_pragma_ms_struct (cpp_reader *pfile ATTRIBUTE_UNUSED)
   tree t;
 
   if (pragma_lex (&t) != CPP_NAME)
-    BAD ("malformed '#pragma ms_struct', ignoring");
+    BAD ("malformed %<#pragma ms_struct%>, ignoring");
   arg = IDENTIFIER_POINTER (t);
 
   if (!strcmp (arg, "on"))
@@ -174,10 +174,10 @@ darwin_pragma_ms_struct (cpp_reader *pfile ATTRIBUTE_UNUSED)
   else if (!strcmp (arg, "off") || !strcmp (arg, "reset"))
     darwin_ms_struct = false;
   else
-    BAD ("malformed '#pragma ms_struct {on|off|reset}', ignoring");
+    BAD ("malformed %<#pragma ms_struct {on|off|reset}%>, ignoring");
 
   if (pragma_lex (&t) != CPP_EOF)
-    BAD ("junk at end of '#pragma ms_struct'");
+    BAD ("junk at end of %<#pragma ms_struct%>");
 }
 
 static struct frameworks_in_use {

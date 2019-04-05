@@ -1002,7 +1002,7 @@ symtab_node::verify_base (void)
 		!= NULL)
 	       != dyn_cast <cgraph_node *> (this)->ifunc_resolver)
 	{
-          error ("inconsistent `ifunc' attribute");
+	  error ("inconsistent %<ifunc%> attribute");
           error_found = true;
 	}
     }
