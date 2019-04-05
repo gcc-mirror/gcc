@@ -1,5 +1,10 @@
 2019-04-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/fs_dir.h (directory_iterator::operator*)
+	(directory_iterator::operator->): Add noexcept.
+	(operator==, operator!=): Replace namespace-scope equality operators
+	for directory iterators with hidden friends.
+
 	PR libstdc++/89986
 	* config/abi/pre/gnu.ver: Add missing exports.
 	* testsuite/27_io/filesystem/iterators/directory_iterator.cc: Test

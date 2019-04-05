@@ -390,8 +390,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     directory_iterator&
     operator=(directory_iterator&& __rhs) noexcept = default;
 
-    const directory_entry& operator*() const;
-    const directory_entry* operator->() const { return &**this; }
+    const directory_entry& operator*() const noexcept;
+    const directory_entry* operator->() const noexcept { return &**this; }
     directory_iterator&    operator++();
     directory_iterator&    increment(error_code& __ec);
 
@@ -407,7 +407,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     friend bool
     operator==(const directory_iterator& __lhs,
-               const directory_iterator& __rhs);
+               const directory_iterator& __rhs) noexcept
+    {
+      return !__rhs._M_dir.owner_before(__lhs._M_dir)
+	&& !__lhs._M_dir.owner_before(__rhs._M_dir);
+    }
+
+    friend bool
+    operator!=(const directory_iterator& __lhs,
+	       const directory_iterator& __rhs) noexcept
+    { return !(__lhs == __rhs); }
 
     friend class recursive_directory_iterator;
 
@@ -421,17 +430,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   inline directory_iterator
   end(directory_iterator) noexcept
   { return directory_iterator(); }
-
-  inline bool
-  operator==(const directory_iterator& __lhs, const directory_iterator& __rhs)
-  {
-    return !__rhs._M_dir.owner_before(__lhs._M_dir)
-      && !__lhs._M_dir.owner_before(__rhs._M_dir);
-  }
-
-  inline bool
-  operator!=(const directory_iterator& __lhs, const directory_iterator& __rhs)
-  { return !(__lhs == __rhs); }
 
   class recursive_directory_iterator
   {
@@ -499,7 +497,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     friend bool
     operator==(const recursive_directory_iterator& __lhs,
-               const recursive_directory_iterator& __rhs);
+               const recursive_directory_iterator& __rhs) noexcept
+    {
+      return !__rhs._M_dirs.owner_before(__lhs._M_dirs)
+	&& !__lhs._M_dirs.owner_before(__rhs._M_dirs);
+    }
+
+    friend bool
+    operator!=(const recursive_directory_iterator& __lhs,
+               const recursive_directory_iterator& __rhs) noexcept
+    { return !(__lhs == __rhs); }
 
     struct _Dir_stack;
     std::__shared_ptr<_Dir_stack> _M_dirs;
@@ -512,19 +519,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   inline recursive_directory_iterator
   end(recursive_directory_iterator) noexcept
   { return recursive_directory_iterator(); }
-
-  inline bool
-  operator==(const recursive_directory_iterator& __lhs,
-             const recursive_directory_iterator& __rhs)
-  {
-    return !__rhs._M_dirs.owner_before(__lhs._M_dirs)
-      && !__lhs._M_dirs.owner_before(__rhs._M_dirs);
-  }
-
-  inline bool
-  operator!=(const recursive_directory_iterator& __lhs,
-             const recursive_directory_iterator& __rhs)
-  { return !(__lhs == __rhs); }
 
 _GLIBCXX_END_NAMESPACE_CXX11
 
