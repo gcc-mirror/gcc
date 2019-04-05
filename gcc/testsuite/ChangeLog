@@ -1,3 +1,8 @@
+2019-04-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/89985
+	* c-c++-common/pr89985.c: New test.
+
 2019-04-05  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR c/71598

@@ -2783,18 +2783,21 @@ check_address_or_pointer_of_packed_member (tree type, tree rhs)
 	  unsigned int rhs_align = min_align_of_type (rhstype);
 	  if (rhs_align < type_align)
 	    {
+	      auto_diagnostic_group d;
 	      location_t location = EXPR_LOC_OR_LOC (rhs, input_location);
-	      warning_at (location, OPT_Waddress_of_packed_member,
-			  "converting a packed %qT pointer (alignment %d) "
-			  "to a %qT pointer (alignment %d) may result in an "
-			  "unaligned pointer value",
-			  rhstype, rhs_align, type, type_align);
-	      tree decl = TYPE_STUB_DECL (rhstype);
-	      if (decl)
-		inform (DECL_SOURCE_LOCATION (decl), "defined here");
-	      decl = TYPE_STUB_DECL (type);
-	      if (decl)
-		inform (DECL_SOURCE_LOCATION (decl), "defined here");
+	      if (warning_at (location, OPT_Waddress_of_packed_member,
+			      "converting a packed %qT pointer (alignment %d) "
+			      "to a %qT pointer (alignment %d) may result in "
+			      "an unaligned pointer value",
+			      rhstype, rhs_align, type, type_align))
+		{
+		  tree decl = TYPE_STUB_DECL (rhstype);
+		  if (decl)
+		    inform (DECL_SOURCE_LOCATION (decl), "defined here");
+		  decl = TYPE_STUB_DECL (type);
+		  if (decl)
+		    inform (DECL_SOURCE_LOCATION (decl), "defined here");
+		}
 	    }
 	}
       return NULL_TREE;
