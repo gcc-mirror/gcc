@@ -6800,7 +6800,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_fast_hash<hash<u32string>> : std::false_type
     { };
 
-#if __cplusplus > 201103L
+#if __cplusplus >= 201402L
 
 #define __cpp_lib_string_udls 201304
 
@@ -6843,7 +6843,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   } // inline namespace string_literals
   } // inline namespace literals
 
-#endif // __cplusplus > 201103L
+#if __cplusplus >= 201703L
+  namespace __detail::__variant
+  {
+    template<typename> struct _Never_valueless_alt; // see <variant>
+
+    // Provide the strong exception-safety guarantee when emplacing a
+    // basic_string into a variant, but only if move assignment cannot throw.
+    template<typename _Tp, typename _Traits, typename _Alloc>
+      struct _Never_valueless_alt<std::basic_string<_Tp, _Traits, _Alloc>>
+      : std::is_nothrow_move_assignable<std::basic_string<_Tp, _Traits, _Alloc>>
+      { };
+  }  // namespace __detail::__variant
+#endif // C++17
+#endif // C++14
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

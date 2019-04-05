@@ -327,11 +327,31 @@ namespace __variant
       _Variadic_union<_Rest...> _M_rest;
     };
 
+  // _Never_valueless_alt is true for variant alternatives that can
+  // always be placed in a variant without it becoming valueless.
+
+  // For suitably-small, trivially copyable types we can create temporaries
+  // on the stack and then memcpy them into place.
+  template<typename _Tp>
+    struct _Never_valueless_alt
+    : __and_<bool_constant<sizeof(_Tp) <= 256>, is_trivially_copyable<_Tp>>
+    { };
+
+  // Specialize _Never_valueless_alt for other types which have a
+  // non-throwing and cheap move assignment operator, so that emplacing
+  // the type will provide the strong exception-safety guarantee,
+  // by creating and moving a temporary.
+  // Whether _Never_valueless_alt<T> is true or not affects the ABI of a
+  // variant using that alternative, so we can't change the value later!
+
+  // True if every alternative in _Types... can be emplaced in a variant
+  // without it becoming valueless. If this is true, variant<_Types...>
+  // can never be valueless, which enables some minor optimizations.
   template <typename... _Types>
-  constexpr bool __never_valueless()
-  {
-    return (is_trivially_copyable_v<_Types> && ...);
-  }
+    constexpr bool __never_valueless()
+    {
+      return (_Never_valueless_alt<_Types>::value && ...);
+    }
 
   // Defines index and the dtor, possibly trivial.
   template<bool __trivially_destructible, typename... _Types>
@@ -776,19 +796,19 @@ namespace __variant
     { return __v._M_storage(); }
 
   template <typename _Maybe_variant_cookie, typename _Variant>
-  struct _Extra_visit_slot_needed
-  {
-    template <typename> struct _Variant_never_valueless;
+    struct _Extra_visit_slot_needed
+    {
+      template <typename> struct _Variant_never_valueless;
 
-    template <typename... _Types>
-    struct _Variant_never_valueless<variant<_Types...>>
-      : bool_constant<__never_valueless<_Types...>()> {};
+      template <typename... _Types>
+	struct _Variant_never_valueless<variant<_Types...>>
+	: bool_constant<__never_valueless<_Types...>()> {};
 
-    static constexpr bool value =
-      (is_same_v<_Maybe_variant_cookie, __variant_cookie>
-       || is_same_v<_Maybe_variant_cookie, __variant_idx_cookie>)
-      && !_Variant_never_valueless<__remove_cvref_t<_Variant>>::value;
-  };
+      static constexpr bool value =
+	(is_same_v<_Maybe_variant_cookie, __variant_cookie>
+	 || is_same_v<_Maybe_variant_cookie, __variant_idx_cookie>)
+	&& !_Variant_never_valueless<__remove_cvref_t<_Variant>>::value;
+    };
 
   // Used for storing multi-dimensional vtable.
   template<typename _Tp, size_t... _Dimensions>
@@ -1329,31 +1349,45 @@ namespace __variant
 	  static_assert(_Np < sizeof...(_Types),
 			"The index should be in [0, number of alternatives)");
 	  using type = variant_alternative_t<_Np, variant>;
-	  // If constructing the value can throw but move assigning it can't,
-	  // construct in a temporary and then move assign from it. This gives
-	  // the strong exception safety guarantee, ensuring we never become
-	  // valueless.
-	  if constexpr (is_trivially_copyable_v<type>
-	      && !is_nothrow_constructible_v<type, _Args...>)
+	  // Provide the strong exception-safety guarantee when possible,
+	  // to avoid becoming valueless.
+	  if constexpr (is_nothrow_constructible_v<type, _Args...>)
 	    {
-	      // If move assignment cannot throw then we can provide the
-	      // strong exception safety guarantee, and never become valueless.
+	      this->_M_reset();
+	      __variant_construct_by_index<_Np>(*this,
+		  std::forward<_Args>(__args)...);
+	    }
+	  else if constexpr (is_scalar_v<type>)
+	    {
+	      // This might invoke a potentially-throwing conversion operator:
+	      const type __tmp(std::forward<_Args>(__args)...);
+	      // But these steps won't throw:
+	      this->_M_reset();
+	      __variant_construct_by_index<_Np>(*this, __tmp);
+	    }
+	  else if constexpr (__detail::__variant::_Never_valueless_alt<type>())
+	    {
+	      // This construction might throw:
 	      variant __tmp(in_place_index<_Np>,
 			    std::forward<_Args>(__args)...);
+	      // But _Never_valueless_alt<type> means this won't:
 	      *this = std::move(__tmp);
-	      return std::get<_Np>(*this);
 	    }
-
-	  this->_M_reset();
-	  __try
+	  else
 	    {
-	      __variant_construct_by_index<_Np>(*this,
-	        std::forward<_Args>(__args)...);
-	    }
-	  __catch (...)
-	    {
-	      this->_M_index = variant_npos;
-	      __throw_exception_again;
+	      // This case only provides the basic exception-safety guarantee,
+	      // i.e. the variant can become valueless.
+	      this->_M_reset();
+	      __try
+		{
+		  __variant_construct_by_index<_Np>(*this,
+		    std::forward<_Args>(__args)...);
+		}
+	      __catch (...)
+		{
+		  this->_M_index = variant_npos;
+		  __throw_exception_again;
+		}
 	    }
 	  return std::get<_Np>(*this);
 	}
@@ -1367,28 +1401,39 @@ namespace __variant
 	  static_assert(_Np < sizeof...(_Types),
 			"The index should be in [0, number of alternatives)");
 	  using type = variant_alternative_t<_Np, variant>;
-	  if constexpr (is_trivially_copyable_v<type>
-	      && !is_nothrow_constructible_v<type, initializer_list<_Up>,
-					     _Args...>)
+	  // Provide the strong exception-safety guarantee when possible,
+	  // to avoid becoming valueless.
+	  if constexpr (is_nothrow_constructible_v<type,
+						   initializer_list<_Up>&,
+						   _Args...>)
 	    {
-	      // If move assignment cannot throw then we can provide the
-	      // strong exception safety guarantee, and never become valueless.
+	      this->_M_reset();
+	      __variant_construct_by_index<_Np>(*this, __il,
+		  std::forward<_Args>(__args)...);
+	    }
+	  else if constexpr (__detail::__variant::_Never_valueless_alt<type>())
+	    {
+	      // This construction might throw:
 	      variant __tmp(in_place_index<_Np>, __il,
 			    std::forward<_Args>(__args)...);
+	      // But _Never_valueless_alt<type> means this won't:
 	      *this = std::move(__tmp);
-	      return std::get<_Np>(*this);
 	    }
-
-	  this->_M_reset();
-	  __try
+	  else
 	    {
-	      __variant_construct_by_index<_Np>(*this, __il,
-		std::forward<_Args>(__args)...);
-	    }
-	  __catch (...)
-	    {
-	      this->_M_index = variant_npos;
-	      __throw_exception_again;
+	      // This case only provides the basic exception-safety guarantee,
+	      // i.e. the variant can become valueless.
+	      this->_M_reset();
+	      __try
+		{
+		  __variant_construct_by_index<_Np>(*this, __il,
+		    std::forward<_Args>(__args)...);
+		}
+	      __catch (...)
+		{
+		  this->_M_index = variant_npos;
+		  __throw_exception_again;
+		}
 	    }
 	  return std::get<_Np>(*this);
 	}

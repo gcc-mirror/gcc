@@ -1938,6 +1938,21 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     { __x.swap(__y); }
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
+
+#if __cplusplus >= 201703L
+  namespace __detail::__variant
+  {
+    template<typename> struct _Never_valueless_alt; // see <variant>
+
+    // Provide the strong exception-safety guarantee when emplacing a
+    // vector into a variant, but only if move assignment cannot throw.
+    template<typename _Tp, typename _Alloc>
+      struct _Never_valueless_alt<_GLIBCXX_STD_C::vector<_Tp, _Alloc>>
+      : std::is_nothrow_move_assignable<_GLIBCXX_STD_C::vector<_Tp, _Alloc>>
+      { };
+  }  // namespace __detail::__variant
+#endif // C++17
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

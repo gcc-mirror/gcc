@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 #include <unordered_set>
+#include <memory_resource>
 #include <testsuite_hooks.h>
 
 using namespace std;
@@ -376,7 +377,7 @@ void test_visit()
 
 void test_hash()
 {
-  unordered_set<variant<int, string>> s;
+  unordered_set<variant<int, pmr::string>> s;
   VERIFY(s.emplace(3).second);
   VERIFY(s.emplace("asdf").second);
   VERIFY(s.emplace().second);
@@ -388,12 +389,12 @@ void test_hash()
   {
     struct A
     {
-      operator string()
+      operator pmr::string()
       {
         throw nullptr;
       }
     };
-    variant<int, string> v;
+    variant<int, pmr::string> v;
     try
       {
         v.emplace<1>(A{});

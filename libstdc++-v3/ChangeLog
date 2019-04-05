@@ -1,3 +1,34 @@
+2019-04-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87431 (again)
+	* include/bits/basic_string.h (__variant::_Never_valueless_alt):
+	Define partial specialization for basic_string.
+	* include/bits/shared_ptr.h (_Never_valueless_alt): Likewise for
+	shared_ptr and weak_ptr.
+	* include/bits/std_function.h (_Never_valueless_alt): Likewise for
+	function.
+	* include/bits/stl_vector.h (_Never_valueless_alt): Likewise for
+	vector.
+	* include/bits/unique_ptr.h (_Never_valueless_alt): Likewise for
+	unique_ptr.
+	* include/debug/vector (_Never_valueless_alt): Likewise for debug
+	vector.
+	* include/std/any (_Never_valueless_alt): Define explicit
+	specialization for any.
+	* include/std/variant (_Never_valueless_alt): Define primary template.
+	(__never_valueless): Use _Never_valueless_alt instead of
+	is_trivially_copyable.
+	(variant::emplace<N>(Args&&...)): Add special case for non-throwing
+	initializations to avoid try-catch overhead. Add special case for
+	scalars produced by potentially-throwing conversions. Use
+	_Never_valueless_alt instead of is_trivially_copyable for the
+	remaining strong exception-safety cases.
+	(variant::emplace<N>(initializer_list<U>, Args&&...)): Likewise.
+	* testsuite/20_util/variant/87431.cc: Run both test functions.
+	* testsuite/20_util/variant/exception_safety.cc: New test.
+	* testsuite/20_util/variant/run.cc: Use pmr::string instead of string,
+	so the variant becomes valueless.
+
 2019-04-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/85184
