@@ -1,5 +1,11 @@
 2019-04-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/c++17/fs_dir.cc (_Dir::advance(bool, error_code&)): Handle
+	d_type == DT_UNKNOWN immediately.
+	(_Dir::should_recurse(bool, error_code&)): Remove file_type::unknown
+	handling here.
+	* testsuite/27_io/filesystem/iterators/caching.cc: New test.
+
 	* include/bits/fs_path.h (path::operator=(path&&)): Check for self
 	assignment.
 	* src/c++17/fs_path.cc (path::operator=(const path&)): Likewise.

@@ -62,7 +62,13 @@ struct fs::_Dir : _Dir_base
       {
 	auto name = path;
 	name /= entp->d_name;
-	entry = fs::directory_entry{std::move(name), get_file_type(*entp)};
+	file_type type = file_type::none;
+#ifdef _GLIBCXX_HAVE_STRUCT_DIRENT_D_TYPE
+	// Even if the OS supports dirent::d_type the filesystem might not:
+	if (entp->d_type != DT_UNKNOWN)
+	  type = get_file_type(*entp);
+#endif
+	entry = fs::directory_entry{std::move(name), type};
 	return true;
       }
     else if (!ec)
@@ -90,7 +96,7 @@ struct fs::_Dir : _Dir_base
   bool should_recurse(bool follow_symlink, error_code& ec) const
   {
     file_type type = entry._M_type;
-    if (type == file_type::none || type == file_type::unknown)
+    if (type == file_type::none)
     {
       type = entry.symlink_status(ec).type();
       if (ec)
