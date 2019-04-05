@@ -564,15 +564,39 @@ remove_forwarder_block (basic_block bb)
 	gsi_next (&gsi);
     }
 
-  /* Move debug statements if the destination has a single predecessor.  */
-  if (can_move_debug_stmts && !gsi_end_p (gsi))
+  /* Move debug statements.  Reset them if the destination does not
+     have a single predecessor.  */
+  if (!gsi_end_p (gsi))
     {
       gsi_to = gsi_after_labels (dest);
       do
 	{
 	  gimple *debug = gsi_stmt (gsi);
 	  gcc_assert (is_gimple_debug (debug));
-	  gsi_move_before (&gsi, &gsi_to);
+	  /* Move debug binds anyway, but not anything else
+	     like begin-stmt markers unless they are always
+	     valid at the destination.  */
+	  if (can_move_debug_stmts
+	      || gimple_debug_bind_p (debug))
+	    {
+	      gsi_move_before (&gsi, &gsi_to);
+	      /* Reset debug-binds that are not always valid at the
+		 destination.  Simply dropping them can cause earlier
+		 values to become live, generating wrong debug information.
+		 ???  There are several things we could improve here.  For
+		 one we might be able to move stmts to the predecessor.
+		 For anther, if the debug stmt is immediately followed
+		 by a (debug) definition in the destination (on a
+		 post-dominated path?) we can elide it without any bad
+		 effects.  */
+	      if (!can_move_debug_stmts)
+		{
+		  gimple_debug_bind_reset_value (debug);
+		  update_stmt (debug);
+		}
+	    }
+	  else
+	    gsi_next (&gsi);
 	}
       while (!gsi_end_p (gsi));
     }
