@@ -24410,9 +24410,9 @@
   "TARGET_AVX")
 
 (define_expand "maskload<mode><avx512fmaskmodelower>"
-  [(set (match_operand:V48_AVX512VL 0 "register_operand")
-	(vec_merge:V48_AVX512VL
-	  (match_operand:V48_AVX512VL 1 "memory_operand")
+  [(set (match_operand:V48H_AVX512VL 0 "register_operand")
+	(vec_merge:V48H_AVX512VL
+	  (match_operand:V48H_AVX512VL 1 "memory_operand")
 	  (match_dup 0)
 	  (match_operand:<avx512fmaskmode> 2 "register_operand")))]
   "TARGET_AVX512F")
@@ -24435,9 +24435,9 @@
   "TARGET_AVX")
 
 (define_expand "maskstore<mode><avx512fmaskmodelower>"
-  [(set (match_operand:V48_AVX512VL 0 "memory_operand")
-	(vec_merge:V48_AVX512VL
-	  (match_operand:V48_AVX512VL 1 "register_operand")
+  [(set (match_operand:V48H_AVX512VL 0 "memory_operand")
+	(vec_merge:V48H_AVX512VL
+	  (match_operand:V48H_AVX512VL 1 "register_operand")
 	  (match_dup 0)
 	  (match_operand:<avx512fmaskmode> 2 "register_operand")))]
   "TARGET_AVX512F")
