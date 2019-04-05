@@ -1610,6 +1610,23 @@ namespace __variant
 			std::forward<_Variants>(__variants)...);
     }
 
+#if __cplusplus > 201703L
+  template<typename _Res, typename _Visitor, typename... _Variants>
+    constexpr _Res
+    visit(_Visitor&& __visitor, _Variants&&... __variants)
+    {
+      if ((__variants.valueless_by_exception() || ...))
+	__throw_bad_variant_access("Unexpected index");
+
+      if constexpr (std::is_void_v<_Res>)
+	(void) __do_visit(std::forward<_Visitor>(__visitor),
+			  std::forward<_Variants>(__variants)...);
+      else
+	return __do_visit(std::forward<_Visitor>(__visitor),
+			  std::forward<_Variants>(__variants)...);
+    }
+#endif
+
   template<bool, typename... _Types>
     struct __variant_hash_call_base_impl
     {

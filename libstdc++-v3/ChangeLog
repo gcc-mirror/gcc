@@ -1,5 +1,9 @@
 2019-04-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2020.xml: Update status.
+	* include/std/variant (visit<R>): Define for C++2a (P0655R1).
+	* testsuite/20_util/variant/visit_r.cc: New test.
+
 	* include/bits/fs_dir.h (directory_iterator::operator*)
 	(directory_iterator::operator->): Add noexcept.
 	(operator==, operator!=): Replace namespace-scope equality operators
