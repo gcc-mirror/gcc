@@ -2200,13 +2200,14 @@ GLIBCXX_3.4.26 {
     _ZNSt10filesystem16weakly_canonical*;
 
     _ZNKSt10filesystem18directory_iteratordeEv;
+    _ZNSt10filesystem18directory_iteratorC[12]ERKNS_4pathENS_17directory_optionsEPSt10error_code;
+    _ZNSt10filesystem18directory_iterator9incrementERSt10error_code;
+    _ZNSt10filesystem18directory_iteratorppEv;
     _ZNKSt10filesystem28recursive_directory_iterator7optionsEv;
     _ZNKSt10filesystem28recursive_directory_iterator5depthEv;
     _ZNKSt10filesystem28recursive_directory_iterator17recursion_pendingEv;
     _ZNSt10filesystem28recursive_directory_iterator25disable_recursion_pendingEv;
     _ZNKSt10filesystem28recursive_directory_iteratordeEv;
-    _ZNSt10filesystem18directory_iteratorC[12]ERKNS_4pathENS_17directory_optionsEPSt10error_code;
-    _ZNSt10filesystem18directory_iteratorppEv;
     _ZNSt10filesystem28recursive_directory_iterator3popERSt10error_code;
     _ZNSt10filesystem28recursive_directory_iterator3popEv;
     _ZNSt10filesystem28recursive_directory_iterator9incrementERSt10error_code;
@@ -2216,13 +2217,14 @@ GLIBCXX_3.4.26 {
     _ZNSt10filesystem28recursive_directory_iteratorppEv;
 
     _ZNKSt10filesystem7__cxx1118directory_iteratordeEv;
+    _ZNSt10filesystem7__cxx1118directory_iteratorC[12]ERKNS0_4pathENS_17directory_optionsEPSt10error_code;
+    _ZNSt10filesystem7__cxx1118directory_iterator9incrementERSt10error_code;
+    _ZNSt10filesystem7__cxx1118directory_iteratorppEv;
     _ZNKSt10filesystem7__cxx1128recursive_directory_iterator7optionsEv;
     _ZNKSt10filesystem7__cxx1128recursive_directory_iterator5depthEv;
     _ZNKSt10filesystem7__cxx1128recursive_directory_iterator17recursion_pendingEv;
     _ZNKSt10filesystem7__cxx1128recursive_directory_iteratordeEv;
     _ZNSt10filesystem7__cxx1128recursive_directory_iterator25disable_recursion_pendingEv;
-    _ZNSt10filesystem7__cxx1118directory_iteratorC[12]ERKNS0_4pathENS_17directory_optionsEPSt10error_code;
-    _ZNSt10filesystem7__cxx1118directory_iteratorppEv;
     _ZNSt10filesystem7__cxx1128recursive_directory_iterator3popERSt10error_code;
     _ZNSt10filesystem7__cxx1128recursive_directory_iterator3popEv;
     _ZNSt10filesystem7__cxx1128recursive_directory_iterator9incrementERSt10error_code;
