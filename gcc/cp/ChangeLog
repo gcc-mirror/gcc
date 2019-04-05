@@ -1,5 +1,11 @@
 2019-04-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/89948 - ICE with break in statement-expr.
+	* constexpr.c (cxx_eval_statement_list): Jumping out of a
+	statement-expr is non-constant.
+
+2019-04-04  Jason Merrill  <jason@redhat.com>
+
 	PR c++/89966 - error with non-type auto tparm.
 	* pt.c (do_auto_deduction): Clear tf_partial.
 

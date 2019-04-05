@@ -4153,6 +4153,15 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
       if (returns (jump_target) || breaks (jump_target))
 	break;
     }
+  if (*jump_target && jump_target == &local_target)
+    {
+      /* We aren't communicating the jump to our caller, so give up.  We don't
+	 need to support evaluation of jumps out of statement-exprs.  */
+      if (!ctx->quiet)
+	error_at (cp_expr_loc_or_loc (r, input_location),
+		  "statement is not a constant expression");
+      *non_constant_p = true;
+    }
   return r;
 }
 
