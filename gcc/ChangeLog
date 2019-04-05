@@ -1,6 +1,6 @@
 2019-04-05  Martin Liska  <mliska@suse.cz>
 
-	PR translation/89935
+	PR translation/89936
 	* collect-utils.c (collect_execute): Use %< and %>, or %qs in
 	order to wrap keywords or arguments.
 	* collect2.c (main): Likewise.
