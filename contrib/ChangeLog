@@ -1,6 +1,6 @@
 2019-04-05  Martin Liska  <mliska@suse.cz>
 
-	PR translation/89935
+	PR translation/89936
 	* check-internal-format-escaping.py: Properly detect wrong
 	apostrophes.
 
