@@ -1,3 +1,7 @@
+2019-04-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt73.adb: New test.
+
 2019-04-02  Xiong Hu Luo <luoxhu@linux.ibm.com>
 
 	Backport from trunk r250477.
