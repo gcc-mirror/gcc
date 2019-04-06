@@ -1,3 +1,11 @@
+2019-04-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2019-02-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* rtlanal.c (get_initial_register_offset): Fall back to the estimate
+	as long as the epilogue isn't completed.
+
 2019-04-03  Richard Biener  <rguenther@suse.de>
 
 	PR lto/89896
