@@ -1,5 +1,12 @@
 2019-04-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/87352
+	* gfortran.h (gfc_component): Add finalized field.
+	* class.c (finalize_component): If the component is already
+	finalized, return early.  Set component->finalized on exit.
+
+2019-04-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/89981
 	* resolve.c (resolve_global_procedure): If the global symbol is an
 	ENTRY, also look up its name among the entries.
