@@ -1,3 +1,9 @@
+2019-04-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/89981
+	* resolve.c (resolve_global_procedure): If the global symbol is an
+	ENTRY, also look up its name among the entries.
+
 2019-04-04  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/89004
