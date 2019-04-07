@@ -25,9 +25,11 @@
 	* collect2.c (main): Likewise.
 	(scan_prog_file): Likewise.
 	(scan_libraries): Likewise.
-	* common/config/riscv/riscv-common.c (riscv_subset_list::parsing_subset_version): Likewise.
+	* common/config/riscv/riscv-common.c
+	(riscv_subset_list::parsing_subset_version): Likewise.
 	(riscv_subset_list::parse_std_ext): Likewise.
-	* config/aarch64/aarch64.c (aarch64_override_options_internal): Likewise.
+	* config/aarch64/aarch64.c (aarch64_override_options_internal):
+	Likewise.
 	* config/arm/arm.c (arm_option_override): Likewise.
 	* config/cris/cris.c (cris_print_operand): Likewise.
 	* config/darwin-c.c (darwin_pragma_options): Likewise.
@@ -99,9 +101,9 @@
 	PR tree-optimization/89730
 	* ipa-inline.c (can_inline_edge_p): Delete the checking for
 	-flive-patching=inline-only-static.
-	(can_inline_edge_by_limits_p): Add the checking for 
+	(can_inline_edge_by_limits_p): Add the checking for
 	-flive-patching=inline-only-static and grant always_inline
-	even when -flive-patching=inline-only-static is specified. 
+	even when -flive-patching=inline-only-static is specified.
 
 2019-04-03  Jeff Law  <law@redhat.com>
 
@@ -278,8 +280,7 @@
 
 2019-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
 
-	* config/s390/s390.md ("xde"): Extend mode attribute to vector
-	types.
+	* config/s390/s390.md ("xde"): Extend mode attribute to vector types.
 	* config/s390/vector.md (VX_VEC_CONV_BFP, VX_VEC_CONV_INT): New
 	mode iterators.
 	("floatv2div2df2", "floatunsv2div2df2", "fix_truncv2dfv2di2")
@@ -1388,7 +1389,8 @@
 	* builtins.c (expand_builtin_thread_pointer): Wrap an option name
 	in a string format message and fix GNU coding style.
 	(expand_builtin_set_thread_pointer): Likewise.
-	* common/config/aarch64/aarch64-common.c (aarch64_rewrite_selected_cpu): Likewise.
+	* common/config/aarch64/aarch64-common.c
+	(aarch64_rewrite_selected_cpu): Likewise.
 	* common/config/alpha/alpha-common.c (alpha_handle_option): Likewise.
 	* common/config/arc/arc-common.c (arc_handle_option): Likewise.
 	* common/config/arm/arm-common.c (arm_parse_fpu_option): Likewise.
@@ -1398,8 +1400,10 @@
 	* common/config/m68k/m68k-common.c (m68k_handle_option): Likewise.
 	* common/config/msp430/msp430-common.c (msp430_handle_option): Likewise.
 	* common/config/nds32/nds32-common.c (nds32_handle_option): Likewise.
-	* common/config/powerpcspe/powerpcspe-common.c (rs6000_handle_option): Likewise.
-	* common/config/riscv/riscv-common.c (riscv_subset_list::parsing_subset_version): Likewise.
+	* common/config/powerpcspe/powerpcspe-common.c (rs6000_handle_option):
+	Likewise.
+	* common/config/riscv/riscv-common.c
+	(riscv_subset_list::parsing_subset_version): Likewise.
 	(riscv_subset_list::parse_std_ext): Likewise.
 	(riscv_subset_list::parse_sv_or_non_std_ext): Likewise.
 	(riscv_subset_list::parse): Likewise.
@@ -2607,7 +2611,7 @@
 
 2019-02-19  Richard Biener  <rguenther@suse.de>
 
-        PR middle-end/88074
+	PR middle-end/88074
 	* toplev.c (do_compile): Initialize mpfr's exponent range
 	based on available float modes.
 
@@ -4324,18 +4328,18 @@
 
 2019-01-18  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        * config/aarch64/aarch64-opts.h (enum stack_protector_guard): New
-        * config/aarch64/aarch64.c (aarch64_override_options_internal): Handle
-        and put in error checks for stack protector guard options.
-        (aarch64_stack_protect_guard): New.
-        (TARGET_STACK_PROTECT_GUARD): Define.
-        * config/aarch64/aarch64.md (UNSPEC_SSP_SYSREG): New.
-        (reg_stack_protect_address<mode>): New.
-        (stack_protect_set): Adjust for SSP_GLOBAL.
-        (stack_protect_test): Likewise.
-        * config/aarch64/aarch64.opt (-mstack-protector-guard-reg): New.
-        (-mstack-protector-guard): Likewise.
-        (-mstack-protector-guard-offset): Likewise.
+	* config/aarch64/aarch64-opts.h (enum stack_protector_guard): New
+	* config/aarch64/aarch64.c (aarch64_override_options_internal): Handle
+	and put in error checks for stack protector guard options.
+	(aarch64_stack_protect_guard): New.
+	(TARGET_STACK_PROTECT_GUARD): Define.
+	* config/aarch64/aarch64.md (UNSPEC_SSP_SYSREG): New.
+	(reg_stack_protect_address<mode>): New.
+	(stack_protect_set): Adjust for SSP_GLOBAL.
+	(stack_protect_test): Likewise.
+	* config/aarch64/aarch64.opt (-mstack-protector-guard-reg): New.
+	(-mstack-protector-guard): Likewise.
+	(-mstack-protector-guard-offset): Likewise.
 
 2019-01-18  Jakub Jelinek  <jakub@redhat.com>
 
@@ -4692,7 +4696,7 @@
 
 2019-01-15  Nikhil Benesch  <nikhil.benesch@gmail.com>
 
-        * godump.c (go_output_typedef): When outputting a typedef, refer
+	* godump.c (go_output_typedef): When outputting a typedef, refer
 	to the underlying type by its name and not its structure.
 
 2019-01-15  David Malcolm  <dmalcolm@redhat.com>
@@ -4901,7 +4905,7 @@
 	to false.
 	* lra.c (initialize_lra_reg_info_element): Set call_insn to NULL.
 	* regcprop.c (copyprop_hardreg_forward_1): Add argument to
-        targetm.hard_regno_call_part_clobbered call.
+	targetm.hard_regno_call_part_clobbered call.
 	* reginfo.c (choose_hard_reg_mode): Ditto.
 	* regrename.c (check_new_reg_p): Ditto.
 	* reload.c (find_equiv_reg): Ditto.
@@ -5077,9 +5081,10 @@
 	(vcmlaq_rot270_lane_f32): New.
 	(vcmlaq_rot270_laneq_f32): New.
 	* config/arm/arm_neon_builtins.def (vcadd90, vcadd270, vcmla0, vcmla90,
-	vcmla180, vcmla270, vcmla_lane0, vcmla_lane90, vcmla_lane180, vcmla_lane270,
-	vcmla_laneq0, vcmla_laneq90, vcmla_laneq180, vcmla_laneq270,
-	vcmlaq_lane0, vcmlaq_lane90, vcmlaq_lane180, vcmlaq_lane270): New.
+	vcmla180, vcmla270, vcmla_lane0, vcmla_lane90, vcmla_lane180,
+	vcmla_lane270, vcmla_laneq0, vcmla_laneq90, vcmla_laneq180,
+	vcmla_laneq270, vcmlaq_lane0, vcmlaq_lane90, vcmlaq_lane180,
+	vcmlaq_lane270): New.
 	* config/arm/neon.md (neon_vcmla_lane<rot><mode>,
 	neon_vcmla_laneq<rot><mode>, neon_vcmlaq_lane<rot><mode>): New.
 	* config/arm/arm.c (arm_arch8_3, arm_arch8_4): New.
@@ -5088,36 +5093,44 @@
 	* config/arm/iterators.md (VDF, VQ_HSF): New.
 	(VCADD, VCMLA): New.
 	(VF_constraint, rot, rotsplit1, rotsplit2): Add V4HF and V8HF.
-	* config/arm/neon.md (neon_vcadd<rot><mode>, neon_vcmla<rot><mode>): New.
+	* config/arm/neon.md (neon_vcadd<rot><mode>, neon_vcmla<rot><mode>):
+	New.
 	* config/arm/unspecs.md (UNSPEC_VCADD90, UNSPEC_VCADD270,
 	UNSPEC_VCMLA, UNSPEC_VCMLA90, UNSPEC_VCMLA180, UNSPEC_VCMLA270): New.
 
 2019-01-10  Tamar Christina  <tamar.christina@arm.com>
 
-	* config/aarch64/aarch64-builtins.c (enum aarch64_type_qualifiers): Add qualifier_lane_pair_index.
+	* config/aarch64/aarch64-builtins.c (enum aarch64_type_qualifiers):
+	Add qualifier_lane_pair_index.
 	(emit-rtl.h): Include.
 	(TYPES_QUADOP_LANE_PAIR): New.
 	(aarch64_simd_expand_args): Use it.
 	(aarch64_simd_expand_builtin): Likewise.
-	(AARCH64_SIMD_FCMLA_LANEQ_BUILTINS, aarch64_fcmla_laneq_builtin_datum): New.
+	(AARCH64_SIMD_FCMLA_LANEQ_BUILTINS, aarch64_fcmla_laneq_builtin_datum):
+	New.
 	(FCMLA_LANEQ_BUILTIN, AARCH64_SIMD_FCMLA_LANEQ_BUILTIN_BASE,
 	AARCH64_SIMD_FCMLA_LANEQ_BUILTINS, aarch64_fcmla_lane_builtin_data,
 	aarch64_init_fcmla_laneq_builtins, aarch64_expand_fcmla_builtin): New.
 	(aarch64_init_builtins): Add aarch64_init_fcmla_laneq_builtins.
 	(aarch64_expand_buildin): Add AARCH64_SIMD_BUILTIN_FCMLA_LANEQ0_V2SF,
-	AARCH64_SIMD_BUILTIN_FCMLA_LANEQ90_V2SF, AARCH64_SIMD_BUILTIN_FCMLA_LANEQ180_V2SF,
- 	AARCH64_SIMD_BUILTIN_FCMLA_LANEQ2700_V2SF, AARCH64_SIMD_BUILTIN_FCMLA_LANEQ0_V4HF,
-	AARCH64_SIMD_BUILTIN_FCMLA_LANEQ90_V4HF, AARCH64_SIMD_BUILTIN_FCMLA_LANEQ180_V4HF,
+	AARCH64_SIMD_BUILTIN_FCMLA_LANEQ90_V2SF,
+	AARCH64_SIMD_BUILTIN_FCMLA_LANEQ180_V2SF,
+	AARCH64_SIMD_BUILTIN_FCMLA_LANEQ2700_V2SF,
+	AARCH64_SIMD_BUILTIN_FCMLA_LANEQ0_V4HF,
+	AARCH64_SIMD_BUILTIN_FCMLA_LANEQ90_V4HF,
+	AARCH64_SIMD_BUILTIN_FCMLA_LANEQ180_V4HF,
 	AARCH64_SIMD_BUILTIN_FCMLA_LANEQ270_V4HF.
 	* config/aarch64/iterators.md (FCMLA_maybe_lane): New.
-	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Add __ARM_FEATURE_COMPLEX.
-	* config/aarch64/aarch64-simd-builtins.def (fcadd90, fcadd270, fcmla0, fcmla90,
-	fcmla180, fcmla270, fcmla_lane0, fcmla_lane90, fcmla_lane180, fcmla_lane270,
-	fcmla_laneq0, fcmla_laneq90, fcmla_laneq180, fcmla_laneq270,
-	fcmlaq_lane0, fcmlaq_lane90, fcmlaq_lane180, fcmlaq_lane270): New.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins):
+	Add __ARM_FEATURE_COMPLEX.
+	* config/aarch64/aarch64-simd-builtins.def (fcadd90, fcadd270, fcmla0,
+	fcmla90, fcmla180, fcmla270, fcmla_lane0, fcmla_lane90, fcmla_lane180,
+	fcmla_lane270, fcmla_laneq0, fcmla_laneq90, fcmla_laneq180,
+	fcmla_laneq270, fcmlaq_lane0, fcmlaq_lane90, fcmlaq_lane180,
+	fcmlaq_lane270): New.
 	* config/aarch64/aarch64-simd.md (aarch64_fcmla_lane<rot><mode>,
-	aarch64_fcmla_laneq<rot>v4hf, aarch64_fcmlaq_lane<rot><mode>,aarch64_fcadd<rot><mode>,
-	aarch64_fcmla<rot><mode>): New.
+	aarch64_fcmla_laneq<rot>v4hf, aarch64_fcmlaq_lane<rot><mode>,
+	aarch64_fcadd<rot><mode>, aarch64_fcmla<rot><mode>): New.
 	* config/aarch64/arm_neon.h:
 	(vcadd_rot90_f16): New.
 	(vcaddq_rot90_f16): New.
@@ -5401,7 +5414,7 @@
 	(*branch<P:mode>): ...this.
 
 2019-01-09  Eric Botcazou  <ebotcazou@adacore.com>
-            James Clarke  <jrtc27@jrtc27.com>
+	    James Clarke  <jrtc27@jrtc27.com>
 
 	PR target/84010
 	* config/sparc/sparc.c (sparc_legitimize_tls_address): Only use Pmode
@@ -5872,8 +5885,8 @@
 	Revert:
 	2017-05-22  Jan Hubicka  <hubicka@ucw.cz>
 
-        * ipa-inline.c (edge_badness): Use inlined_time instead of
-        inline_summaries->get.
+	* ipa-inline.c (edge_badness): Use inlined_time instead of
+	inline_summaries->get.
 
 2019-01-05  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -6040,7 +6053,7 @@
 	(ipa_merge_profiles): ... here; do not ICE on thunks and aliases.
 
 2019-01-02  Martin Sebor  <msebor@redhat.com>
-            Jeff Law  <law@redhat.com>
+	    Jeff Law  <law@redhat.com>
 
 	* gimple-fold.c (strlen_range_kind): Remove SRK_LENRANGE_2.
 	(get_range_strlen_tree): Update appropriately.
@@ -6111,7 +6124,7 @@
 	set after UIDs before splitting them.
 
 2019-01-01  Martin Sebor  <msebor@redhat.com>
-            Jeff Law  <law@redhat.com>
+	    Jeff Law  <law@redhat.com>
 
 	* gimple-fold.c (get_range_strlen_tree): Record if the computed
 	length is optimistic.  If it is, then arrange to compute the
