@@ -432,7 +432,7 @@
 2019-03-27  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR testsuite/89834
-        * gcc.dg/vect/pr81740-2.c: Require vect_hw_misalign.
+	* gcc.dg/vect/pr81740-2.c: Require vect_hw_misalign.
 
 2019-03-27  Peter Bergner  <bergner@linux.ibm.com>
 
@@ -2212,7 +2212,7 @@
 
 2019-02-19  Richard Biener  <rguenther@suse.de>
 
-        PR middle-end/88074
+	PR middle-end/88074
 	* gcc.dg/pr88074.c: New testcase.
 
 2019-02-19  Jakub Jelinek  <jakub@redhat.com>
@@ -2800,8 +2800,8 @@
 
 2019-02-05  Nikhil Benesch  <nikhil.benesch@gmail.com>
 
-        PR go/89019
-        * lib/go-torture.exp: Test compiling with -flto.
+	PR go/89019
+	* lib/go-torture.exp: Test compiling with -flto.
 
 2019-02-06  Joseph Myers  <joseph@codesourcery.com>
 
@@ -3892,7 +3892,7 @@
 
 2019-01-15  Nikhil Benesch  <nikhil.benesch@gmail.com>
 
-        * gcc.misc-tests/godump-1.c: Add test case for typedef before
+	* gcc.misc-tests/godump-1.c: Add test case for typedef before
 	struct.
 
 2019-01-15  David Malcolm  <dmalcolm@redhat.com>
@@ -4668,7 +4668,7 @@
 	* g++.dg/cpp1z/class-deduction61.C: New test.
 
 2019-01-02  Martin Sebor  <msebor@redhat.com>
-            Jeff Law  <law@redhat.com>
+	    Jeff Law  <law@redhat.com>
 
 	* gcc.dg/strlenopt-36.c: Update.
 	* gcc.dg/strlenopt-45.c: Update.
@@ -4736,7 +4736,7 @@
 	targets and expect _ZThn8 for ilp32 targets.
 
 2019-01-01  Martin Sebor  <msebor@redhat.com>
-            Jeff Law  <law@redhat.com>
+	    Jeff Law  <law@redhat.com>
 
 	* gcc.dg/strlenopt-40.c: Update.
 	* gcc.dg/strlenopt-51.c: Likewise.
