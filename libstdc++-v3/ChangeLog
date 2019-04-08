@@ -1,3 +1,8 @@
+2019-04-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* testsuite/27_io/filesystem/iterators/caching.cc: Add
+	dg-require-filesystem-ts.
+
 2019-04-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2020.xml: Update status.
