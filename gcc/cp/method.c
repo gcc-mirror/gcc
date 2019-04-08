@@ -2061,7 +2061,14 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   /* Create the function.  */
   fn_type = build_method_type_directly (type, return_type, parameter_types);
   if (raises)
-    fn_type = build_exception_variant (fn_type, raises);
+    {
+      if (raises != error_mark_node)
+	fn_type = build_exception_variant (fn_type, raises);
+      else
+	/* Can happen, eg, in C++98 mode for an ill-formed non-static data
+	   member initializer (c++/89914).  */
+	gcc_assert (seen_error ());
+    }
   fn = build_lang_decl (FUNCTION_DECL, name, fn_type);
   if (kind != sfk_inheriting_constructor)
     DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (TYPE_NAME (type));

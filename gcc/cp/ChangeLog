@@ -1,3 +1,12 @@
+2019-04-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/89914
+	* semantics.c (trait_expr_value): Don't use TYPE_NOTHROW_P
+	when maybe_instantiate_noexcept fails.
+	(classtype_has_nothrow_assign_or_copy_p): Likewise.
+	* method.c (implicitly_declare_fn): Avoid passing error_mark_node
+	to build_exception_variant.
+
 2019-04-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87145 - bogus error converting class type in template arg list.
