@@ -1,3 +1,8 @@
+2019-04-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/89914
+	* g++.dg/ext/has_nothrow_constructor-3.C: New.
+
 2019-04-07  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/89945
