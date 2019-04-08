@@ -1,3 +1,8 @@
+019-04-07  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89945
+	* gcc.target/i386/pr89945.c: New test.
+
 2019-04-04  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/89934
