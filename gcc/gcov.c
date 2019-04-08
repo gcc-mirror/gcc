@@ -1421,6 +1421,7 @@ generate_results (const char *file_name)
 
   if (bbg_cwd != NULL)
     root->set ("current_working_directory", new json::string (bbg_cwd));
+  root->set ("data_file", new json::string (file_name));
 
   json::array *json_files = new json::array ();
   root->set ("files", json_files);

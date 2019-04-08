@@ -192,6 +192,7 @@ Structure of the JSON is following:
 @smallexample
 @{
   "current_working_directory": @var{current_working_directory},
+  "data_file": @var{data_file},
   "format_version": @var{format_version},
   "gcc_version": @var{gcc_version}
   "files": [@var{file}]
@@ -204,6 +205,9 @@ Fields of the root element have following semantics:
 @item
 @var{current_working_directory}: working directory where
 a compilation unit was compiled
+
+@item
+@var{data_file}: name of the data file (GCDA)
 
 @item
 @var{format_version}: semantic version of the format

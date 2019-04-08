@@ -1,3 +1,9 @@
+2019-04-08  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/89961
+	* doc/gcov.texi: Document data_file.
+	* gcov.c (generate_results): Add data_info into JSON output.
+
 2019-04-01  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/89725
