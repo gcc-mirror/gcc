@@ -1,6 +1,9 @@
 2019-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/89865
+	* config/i386/i386.md: Add peepholes for z = x; x ^= y; x != z.
+
+	PR rtl-optimization/89865
 	* config/i386/i386.md
 	(SWI12 peephole for mem {+,-,&,|,^}= x; mem != 0): Fix up operand
 	numbers not to clash with the additional operands[4].

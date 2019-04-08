@@ -1,6 +1,9 @@
 2019-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/89865
+	* gcc.target/i386/pr49095.c: Don't expect any RMW sequences.
+
+	PR rtl-optimization/89865
 	* gcc.target/i386/pr49095.c: Adjust number of expected RMW spots
 	on ia32.
 
