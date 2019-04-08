@@ -1,3 +1,9 @@
+2019-04-08  Chenghua Xu  <paul.hua.gm@gmail.com>
+
+	PR target/89623
+	* config/mips/mips.opt (LOONGSON_EXT2): Use Var instead of
+	Mask.
+
 2019-04-07  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/89945
