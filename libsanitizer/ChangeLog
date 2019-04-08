@@ -1,5 +1,9 @@
 2019-04-08  Martin Liska  <mliska@suse.cz>
 
+	* LOCAL_PATCHES: Add revision.
+
+2019-04-08  Martin Liska  <mliska@suse.cz>
+
 	PR sanitizer/89941
 	* sanitizer_common/sanitizer_platform_limits_linux.cc (defined):
 	Reapply patch from r259664.
