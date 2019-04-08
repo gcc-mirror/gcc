@@ -138,7 +138,9 @@ namespace __variant
     constexpr variant_alternative_t<_Np, variant<_Types...>> const&&
     get(const variant<_Types...>&&);
 
-  template<bool __use_index=false, typename _Visitor, typename... _Variants>
+  template<bool __use_index=false,
+	   bool __same_return_types = true,
+	   typename _Visitor, typename... _Variants>
     constexpr decltype(auto)
     __do_visit(_Visitor&& __visitor, _Variants&&... __variants);
 
@@ -868,12 +870,15 @@ namespace __variant
   //                       tuple<V1&&, V2&&>, std::index_sequence<1, 2>>
   // The returned multi-dimensional vtable can be fast accessed by the visitor
   // using index calculation.
-  template<typename _Array_type, typename _Variant_tuple, typename _Index_seq>
+  template<bool __same_return_types,
+	   typename _Array_type, typename _Variant_tuple, typename _Index_seq>
     struct __gen_vtable_impl;
 
-  template<typename _Result_type, typename _Visitor, size_t... __dimensions,
+  template<bool __same_return_types,
+	   typename _Result_type, typename _Visitor, size_t... __dimensions,
 	   typename... _Variants, size_t... __indices>
     struct __gen_vtable_impl<
+        __same_return_types,
 	_Multi_array<_Result_type (*)(_Visitor, _Variants...), __dimensions...>,
 	tuple<_Variants...>, std::index_sequence<__indices...>>
     {
@@ -915,10 +920,12 @@ namespace __variant
 	  if constexpr (__do_cookie)
 	    {
 	      __element = __gen_vtable_impl<
+		__same_return_types,
 		_Tp,
 		tuple<_Variants...>,
 		std::index_sequence<__indices..., __index>>::_S_apply();
 	      *__cookie_element = __gen_vtable_impl<
+		__same_return_types,
 		_Tp,
 		tuple<_Variants...>,
 		std::index_sequence<__indices..., variant_npos>>::_S_apply();
@@ -926,15 +933,18 @@ namespace __variant
 	  else
 	    {
 	      __element = __gen_vtable_impl<
+		__same_return_types,
 		remove_reference_t<decltype(__element)>, tuple<_Variants...>,
 		std::index_sequence<__indices..., __index>>::_S_apply();
 	    }
 	}
     };
 
-  template<typename _Result_type, typename _Visitor, typename... _Variants,
+  template<bool __same_return_types,
+	   typename _Result_type, typename _Visitor, typename... _Variants,
 	   size_t... __indices>
     struct __gen_vtable_impl<
+      __same_return_types,
       _Multi_array<_Result_type (*)(_Visitor, _Variants...)>,
 		   tuple<_Variants...>, std::index_sequence<__indices...>>
     {
@@ -952,17 +962,47 @@ namespace __variant
 	}
 
       static constexpr decltype(auto)
-      __visit_invoke(_Visitor&& __visitor, _Variants... __vars)
+      __visit_invoke_impl(_Visitor&& __visitor, _Variants... __vars)
       {
-	if constexpr (is_same_v<_Result_type, __variant_idx_cookie>)
-	  return std::__invoke(std::forward<_Visitor>(__visitor),
+       if constexpr (is_same_v<_Result_type, __variant_idx_cookie>)
+         return std::__invoke(std::forward<_Visitor>(__visitor),
+            __element_by_index_or_cookie<__indices>(
+              std::forward<_Variants>(__vars))...,
+              integral_constant<size_t, __indices>()...);
+        else if constexpr (!__same_return_types &&
+			   std::is_void_v<_Result_type>)
+	  return (void)std::__invoke(std::forward<_Visitor>(__visitor),
 	    __element_by_index_or_cookie<__indices>(
-	      std::forward<_Variants>(__vars))...,
-	      integral_constant<size_t, __indices>()...);
+	      std::forward<_Variants>(__vars))...);
 	else
 	  return std::__invoke(std::forward<_Visitor>(__visitor),
 	    __element_by_index_or_cookie<__indices>(
 	      std::forward<_Variants>(__vars))...);
+      }
+
+      static constexpr decltype(auto)
+      __do_visit_invoke(_Visitor&& __visitor, _Variants... __vars)
+      {
+	return __visit_invoke_impl(std::forward<_Visitor>(__visitor),
+				   std::forward<_Variants>(__vars)...);
+      }
+
+      static constexpr _Result_type
+      __do_visit_invoke_r(_Visitor&& __visitor, _Variants... __vars)
+      {
+	return __visit_invoke_impl(std::forward<_Visitor>(__visitor),
+				   std::forward<_Variants>(__vars)...);
+      }
+
+      static constexpr decltype(auto)
+      __visit_invoke(_Visitor&& __visitor, _Variants... __vars)
+      {
+	if constexpr (__same_return_types)
+	  return __do_visit_invoke(std::forward<_Visitor>(__visitor),
+				   std::forward<_Variants>(__vars)...);
+	else
+	  return __do_visit_invoke_r(std::forward<_Visitor>(__visitor),
+				     std::forward<_Variants>(__vars)...);
       }
 
       static constexpr auto
@@ -970,7 +1010,8 @@ namespace __variant
       { return _Array_type{&__visit_invoke}; }
     };
 
-  template<typename _Result_type, typename _Visitor, typename... _Variants>
+  template<bool __same_return_types,
+	   typename _Result_type, typename _Visitor, typename... _Variants>
     struct __gen_vtable
     {
       using _Func_ptr = _Result_type (*)(_Visitor&&, _Variants...);
@@ -981,7 +1022,8 @@ namespace __variant
       static constexpr _Array_type
       _S_apply()
       {
-	return __gen_vtable_impl<_Array_type, tuple<_Variants...>,
+	return __gen_vtable_impl<__same_return_types,
+				 _Array_type, tuple<_Variants...>,
 				 std::index_sequence<>>::_S_apply();
       }
 
@@ -1582,7 +1624,9 @@ namespace __variant
 	  std::get<0>(std::forward<_Variants>(__variants))...);
     }
 
-  template<bool __use_index, typename _Visitor, typename... _Variants>
+  template<bool __use_index,
+	   bool __same_return_types,
+	   typename _Visitor, typename... _Variants>
     constexpr decltype(auto)
     __do_visit(_Visitor&& __visitor, _Variants&&... __variants)
     {
@@ -1592,6 +1636,7 @@ namespace __variant
 	           std::forward<_Variants>(__variants)...));
 
       constexpr auto& __vtable = __detail::__variant::__gen_vtable<
+	__same_return_types,
 	_Result_type, _Visitor&&, _Variants&&...>::_S_vtable;
 
       auto __func_ptr = __vtable._M_access(__variants.index()...);
@@ -1618,12 +1663,13 @@ namespace __variant
       if ((__variants.valueless_by_exception() || ...))
 	__throw_bad_variant_access("Unexpected index");
 
+
       if constexpr (std::is_void_v<_Res>)
-	(void) __do_visit(std::forward<_Visitor>(__visitor),
-			  std::forward<_Variants>(__variants)...);
+        (void) __do_visit<false, false>(std::forward<_Visitor>(__visitor),
+					std::forward<_Variants>(__variants)...);
       else
-	return __do_visit(std::forward<_Visitor>(__visitor),
-			  std::forward<_Variants>(__variants)...);
+	return __do_visit<false, false>(std::forward<_Visitor>(__visitor),
+					std::forward<_Variants>(__variants)...);
     }
 #endif
 
