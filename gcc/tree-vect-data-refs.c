@@ -145,6 +145,15 @@ vect_get_smallest_scalar_type (stmt_vec_info stmt_info,
       if (rhs < lhs)
         scalar_type = rhs_type;
     }
+  else if (is_gimple_call (stmt_info->stmt)
+	   && gimple_call_num_args (stmt_info->stmt) > 0)
+    {
+      tree rhs_type = TREE_TYPE (gimple_call_arg (stmt_info->stmt, 0));
+
+      rhs = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (rhs_type));
+      if (rhs < lhs)
+        scalar_type = rhs_type;
+    }
 
   *lhs_size_unit = lhs;
   *rhs_size_unit = rhs;
