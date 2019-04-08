@@ -361,6 +361,7 @@
 (include "thunderx.md")
 (include "../arm/xgene1.md")
 (include "thunderx2t99.md")
+(include "tsv110.md")
 
 ;; -------------------------------------------------------------------
 ;; Jumps and other miscellaneous insns

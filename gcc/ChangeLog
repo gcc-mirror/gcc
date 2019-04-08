@@ -1,3 +1,9 @@
+2019-04-08  wu yuan  <wuyuan5@huawei.com>
+
+	* config/aarch64/aarch64-cores.def (tsv1100): Change scheduling model.
+	* config/aarch64/aarch64.md : Add "tsv110.md"
+	* config/aarch64/tsv110.md: New file.
+
 2019-04-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90006
