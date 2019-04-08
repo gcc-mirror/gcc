@@ -1,3 +1,7 @@
+2019-04-08  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/riscv/arch-1.c: Fix expected scanned pattern.
+
 2019-04-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/89914
