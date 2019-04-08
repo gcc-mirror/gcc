@@ -304,7 +304,16 @@ struct nodel_ptr_hash : pointer_hash<T>, typed_noop_remove <T *> {
 typedef simple_hashmap_traits<nodel_ptr_hash<void>, int> ptr_int_traits;
 typedef hash_map<void *,signed,ptr_int_traits> ptr_int_hash_map;
 
-/* Variable length buffer. */
+
+/********************************************************************/
+/* Basic streaming & ELF.  Serialization is usually via mmap.  For
+   writing we slide a buffer over the output file, syncing it
+   approproiately.  For reading we simply map the whole file (as a
+   file-backed read-only map -- it's just address space, leaving the
+   OS pager to deal with getting the data to us).  Some buffers need
+   to be more conventional malloc'd contents.   */
+
+/* Variable length buffer.  */
 
 class data {
 public:
@@ -2181,23 +2190,21 @@ elf_out::end ()
   return parent::end ();
 }
 
-/* A dependency set.  These are not quite the decl-sets of the TS.  We
-   only record namespace-scope decls here.   A depset can be one of:
+/********************************************************************/
 
-   1) A namespace binding, keyed by {ns,name} tuple.  The
-   dependencies are the declarations on that binding.
+/* A dependency set.  This is used during stream out to determine the
+   connectivity of the graph.  Every namespace-scope declaration that
+   needs writing has a depset.  The depset is filled with the (depsets
+   of) declarations within this module that it references.  For a
+   declaration that'll generally be named types.  For definitions
+   it'll also be declarations in the body.
 
-   2) A namespace-scope declaration, keyed by {decl,NULL} tuple.  The
-   dependencies are those of the declaration.  One of which will be
-   the namespace-binding's depset.
+   From that we can convert the graph to a DAG, via determining the
+   Strongly Connected Clusters.  Each cluster is streamed
+   independently, and thus we achieve lazy loading.
 
-   3) A namespace-scope definition, keyed by {decl,decl} tuple.  The
-   dependencies are those of the definition.  One of which will be the
-   declaration's depset.
-
-   If a depset is dependent on a namespace-scope decl, we add depset
-   #2 to the dependencies.  If its dependent on the body of such a decl,
-   we add depset #3 to the dependencies.  */
+   Other decls that get a depset are namespaces themselves and
+   unnameable declarations.   */
 
 class depset {
 private:
@@ -2481,6 +2488,12 @@ depset *depset::make_entity (tree entity, entity_kind ek, bool is_defn)
   return r;
 }
 
+/********************************************************************/
+/* Tree streaming.   The tree streaming is very specific to the tree
+   structures themselves.  A tag indicates the kind of tree being
+   streamed.  -ve tags indicate backreferences to already-streamed
+   trees.  Backreferences are auto-numbered.  */
+
 /* Tree tags.  */
 enum tree_tag {
   tt_null,		/* NULL_TREE.  */
@@ -2761,6 +2774,14 @@ trees_out::~trees_out ()
 {
 }
 
+/********************************************************************/
+/* Location.  We're aware of the line-map concept and reproduce it
+   here.  Each imported module allocates a contiguous span of ordinary
+   maps, and of macro maps.  adhoc maps are serialized by contents,
+   not pre-allocated.   The scattered linemaps of a module are
+   coalesced when writing.  */
+
+
 /* I use half-open [first,second) ranges.  */
 typedef std::pair<unsigned,unsigned> range_t;
 
@@ -2839,9 +2860,18 @@ public:
 
 static loc_spans spans;
 
+/********************************************************************/
+/* Unnamed declarations.   */
+
+static GTY(()) vec<mc_slot, va_gc> *unnamed_ary;
+typedef hash_map<unsigned/*UID*/, unsigned/*index*/,
+		 simple_hashmap_traits<int_hash<unsigned,0>,
+				       unsigned> > unnamed_map_t;
+static unnamed_map_t *unnamed_map;
+
+/********************************************************************/
 /* Data needed by a module during the process of loading.  */
 struct GTY(()) slurping {
-  vec<mc_slot, va_gc> *unnamed;		/* Unnamed decls.  */
   vec<unsigned, va_heap, vl_embed> *
     GTY((skip)) remap;			/* Module owner remapping.  */
   elf_in *GTY((skip)) from;     	/* The elf loader.  */
@@ -2891,11 +2921,6 @@ struct GTY(()) slurping {
     for (unsigned ix = size; ix--;)
       remap->quick_push (0);
   }
-  void alloc_unnamed (unsigned size)
-  {
-    gcc_assert (!unnamed);
-    vec_safe_reserve (unnamed, size);
-  }
   unsigned remap_module (unsigned owner)
   {
     return owner < remap->length () ? (*remap)[owner] : MODULE_NONE;
@@ -2914,7 +2939,7 @@ struct GTY(()) slurping {
 };
 
 slurping::slurping (elf_in *from)
-  : unnamed (NULL), remap (NULL), from (from),
+  : remap (NULL), from (from),
     headers (BITMAP_GGC_ALLOC ()), macro_defs (), macro_tbl (),
     ordinary_locs (0, 0), macro_locs (0, 0), loc_deltas (0, 0),
     current (~0u), remaining (0), lru (0), pre_early_ok (false)
@@ -2925,8 +2950,6 @@ slurping::~slurping ()
 {
   vec_free (remap);
   remap = NULL;
-  vec_free (unnamed);
-  unnamed = NULL;
   if (macro_defs.size)
     elf_in::release (from, macro_defs);
   if (macro_tbl.size)
@@ -2934,6 +2957,7 @@ slurping::~slurping ()
   close ();
 }
 
+/********************************************************************/
 /* State of a particular module. */
 
 class GTY((chain_next ("%h.parent"), for_user)) module_state {
@@ -2943,7 +2967,6 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bitmap exports;	/* Subset of that, that we're exporting.  */
 
   module_state *parent;
-
   tree name;		/* Name of the module.  */
 
   /* Sadly this cannot be anonymous, because GTY.  */
@@ -2954,6 +2977,12 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
   const char *flatname;	/* Flatname of module.  */
   char *filename;	/* BMI Filename */
+
+  /* Unnnamed decls can be referred to transitively.  Base and number
+     of them for this module.  */
+  unsigned unnamed_lwm;
+  unsigned unnamed_num;
+
   /* The LOC is unset until we import the module.  */
   location_t loc; 	/* Location referring to module itself.  */
   /* The FROM_LOC is unset until we process a declaration.  */
@@ -3176,6 +3205,7 @@ struct module_state_hash : ggc_ptr_hash<module_state> {
 module_state::module_state (tree name, module_state *parent, bool partition)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
     parent (parent), name (name), flatname (NULL), filename (NULL),
+    unnamed_lwm (0), unnamed_num (0),
     loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
     mod (MODULE_UNKNOWN), subst (0), crc (0), remap (0),
     partition_p (partition)
@@ -3440,6 +3470,34 @@ private:
 /* Our module mapper (created lazily).  */
 module_mapper *module_mapper::mapper;
 
+/* IX is an index in the unnamed array.  Find the module owning that
+   index.  We can binary search the module array, as by construction
+   unnamed indices will be ordered.  */
+
+module_state *
+module_for_unnamed (unsigned ix)
+{
+  unsigned pos = MODULE_IMPORT_BASE;
+  unsigned len = modules->length () - pos;
+
+  while (len)
+    {
+      unsigned half = len / 2;
+      module_state *probe = (*modules)[pos + half];
+      if (ix < probe->unnamed_lwm)
+	len = half;
+      else if (ix < probe->unnamed_lwm + probe->unnamed_num)
+	return probe;
+      else
+	{
+	  pos += half + 1;
+	  len = len - (half + 1);
+	}
+    }
+
+  gcc_unreachable ();
+}
+
 static tree
 node_template_info (tree decl, int &use)
 {
@@ -3668,11 +3726,11 @@ dumper::impl::nested_name (tree t)
 	break;
 
       default:
-	fputs ("#", stream);
+	fputs ("#unnamed#", stream);
 	break;
       }
   else
-    fputs ("$", stream);
+    fputs ("#null#", stream);
 
   if (ti)
     {
@@ -11034,9 +11092,9 @@ module_state::read_cluster (unsigned snum)
 	  /* Resurrect a node from a horcrux.  */
 	  {
 	    unsigned index = sec.u ();
-	    if (index < vec_safe_length (slurp ()->unnamed))
+	    if (index < unnamed_num)
 	      {
-		mc_slot *slot = &(*slurp ()->unnamed)[index];
+		mc_slot *slot = &(*unnamed_ary)[unnamed_lwm + index];
 
 		if (slot->is_lazy ())
 		  lazy_load (NULL, NULL, slot, false);
@@ -11068,11 +11126,14 @@ module_state::read_cluster (unsigned snum)
 	    if (unsigned voldemort = sec.u ())
 	      {
 		/* An unnamed node, register it.  */
-		if (voldemort - 1 < vec_safe_length (slurp ()->unnamed))
+		if (voldemort - 1 < unnamed_num)
 		  {
-		    (*slurp ()->unnamed)[voldemort - 1] = decl;
-		    dump () && dump ("Voldemort decl:%u %N",
-				     voldemort - 1, decl);
+		    unsigned index = unnamed_lwm + voldemort - 1;
+		    (*unnamed_ary)[index] = decl;
+		    bool present = unnamed_map->put (DECL_UID (decl), index);
+		    gcc_checking_assert (!present);
+		    dump () && dump ("Voldemort decl:%u [%u] %N",
+				     voldemort - 1, index, decl);
 		  }
 		else
 		  sec.set_overrun ();
@@ -11371,8 +11432,9 @@ module_state::read_unnamed (unsigned count, const range_t &range)
   dump () && dump ("Reading unnamed");
   dump.indent ();
 
-  slurp ()->alloc_unnamed (count);
-  for (unsigned ix = 0; ix != count; ix++)
+  vec_safe_reserve (unnamed_ary, count);
+  unsigned ix;
+  for (ix = 0; ix != count; ix++)
     {
       unsigned snum = sec.u ();
 
@@ -11386,8 +11448,9 @@ module_state::read_unnamed (unsigned count, const range_t &range)
       mc_slot s;
       s = NULL_TREE;
       s.set_lazy (snum);
-      slurp ()->unnamed->quick_push (s);
+      unnamed_ary->quick_push (s);
     }
+  unnamed_num = ix;
 
   dump.outdent ();
   if (!sec.end (from ()))
@@ -13560,6 +13623,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
 	return NULL;
 
       /* And unnamed.  */
+      unnamed_lwm = vec_safe_length (unnamed_ary);
       if (!read_unnamed (config.num_unnamed, config.sec_range))
 	return NULL;
     }
@@ -14768,6 +14832,9 @@ init_module_processing (cpp_reader *reader)
     /* Get the mapper now, if we're not being lazy.  */
     module_mapper::get (BUILTINS_LOCATION);
 
+  if (!flag_preprocess_only)
+    unnamed_map = unnamed_map_t::create_ggc (31);
+
   /* Collect here to make sure things are tagged correctly (when
      aggressively GC'd).  */
   ggc_collect ();
@@ -14889,6 +14956,11 @@ finish_module_processing (cpp_reader *reader)
 
   /* No need to lookup modules anymore.  */
   modules_hash = NULL;
+
+  unnamed_map = NULL;
+  unnamed_ary = NULL;
+
+  ggc_collect ();
 }
 
 /* If CODE is a module option, handle it & return true.  Otherwise

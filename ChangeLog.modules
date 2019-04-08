@@ -1,5 +1,18 @@
 2019-04-08  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (unnamed_ary, unnamed_map_t, unnamed_map): New.
+	(struct slurping): Delete unnamed, alloc_unnamed, & deletion of
+	same.
+	(struct moduls_state): Add unnamed_lwm, unnamed_num.
+	(module_for_unnamed): New.
+	(dumper::impl::nested_name): More informative unnamedness.
+	(module_state::read_cluster): Use the unnamed_ary.
+	(module_state::read_unnamed): Populate unnamed_ary.
+	({init,finish}_module_processing): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-4_[bc].C: Adjust scans.
+
 	gcc/cp
 	* cp-tree.h (struc mc_slot): Move to ...
 	* name-lookup.h: ... here.
