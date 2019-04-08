@@ -16,48 +16,30 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++2a" }
-// { dg-do run { target c++2a } }
+// { dg-do compile { target c++2a } }
 
 #include <variant>
 #include <testsuite_hooks.h>
 
+// { dg-error "invalid conversion" "" { target *-*-* } 0 }
+// { dg-prune-output "in 'constexpr' expansion" }
+
 void
 test01()
 {
-  struct Visitor
   {
-    int operator()(int, void*) const { return 0; }
-    int operator()(char& c, void* p) const { return &c == p; }
-    int operator()(int i, const char* s) const { return s[i] == '\0'; }
-    int operator()(char c, const char* s) const { return c == *s; }
-  };
-
-  std::variant<int, char> v1{'c'};
-  std::variant<void*, const char*> v2{"chars"};
-
-  auto res = std::visit<bool>(Visitor{}, v1, v2);
-  static_assert(std::is_same_v<decltype(res), bool>);
-  VERIFY( res == true );
-
-  static_assert(std::is_void_v<decltype(std::visit<void>(Visitor{}, v1, v2))>);
+    struct Visitor
+    {
+      double operator()(double) {return 0.02;}
+      void operator()(int) {}
+    };
+    std::variant<int, double> v;
+    std::visit(Visitor(), v);
+  }
 }
-
-void test02()
-{
-  struct Visitor
-  {
-    int operator()(double) {return 42;}
-    double operator()(int) {return 0.02;}
-  };
-  std::variant<int, double> v;
-  std::visit<int>(Visitor(), v);
-  std::visit<const void>(Visitor(), v);
-}
-
 
 int
 main()
 {
   test01();
-  test02();
 }
