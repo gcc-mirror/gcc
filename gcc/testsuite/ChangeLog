@@ -1,3 +1,8 @@
+2019-04-01  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/89725
+	* gcc.dg/tree-ssa/pr89725.c: New test.
+
 2019-04-08  Martin Liska  <mliska@suse.cz>
 
 	* gcc.target/riscv/arch-1.c: Fix expected scanned pattern.
