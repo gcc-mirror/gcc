@@ -1,3 +1,11 @@
+2019-04-08  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	backport mainline
+	Vineet Gupta  <vgupta@synopsys.com>
+	PR 89877
+	* longlong.h [__arc__] (add_ssaaaa): Add cc clobber.
+	(sub_ddmmss): Likewise.
+
 2019-02-22  Release Manager
 
 	* GCC 8.3.0 released.
