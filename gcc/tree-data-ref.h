@@ -580,12 +580,11 @@ index_in_loop_nest (int var, vec<loop_p> loop_nest)
   struct loop *loopi;
   int var_index;
 
-  for (var_index = 0; loop_nest.iterate (var_index, &loopi);
-       var_index++)
+  for (var_index = 0; loop_nest.iterate (var_index, &loopi); var_index++)
     if (loopi->num == var)
-      break;
+      return var_index;
 
-  return var_index;
+  gcc_unreachable ();
 }
 
 /* Returns true when the data reference DR the form "A[i] = ..."
