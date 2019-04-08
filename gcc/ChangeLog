@@ -1,3 +1,12 @@
+2019-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/89865
+	* config/i386/i386.md
+	(SWI12 peephole for mem {+,-,&,|,^}= x; mem != 0): Fix up operand
+	numbers not to clash with the additional operands[4].
+	(peepholes for mem {+,-,&,|,^}= x; mem != 0): New peephole2s
+	with extra register copy in the middle.
+
 2019-04-08  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/89961
