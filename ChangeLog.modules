@@ -1,3 +1,20 @@
+2019-04-08  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp
+	* cp-tree.h (struc mc_slot): Move to ...
+	* name-lookup.h: ... here.
+	* module.c (depset::hash::{add_mergeable,connect}): Use depsets
+	not decls.
+	(depset::tarjan::connect): Add for_mergeables parm.
+	(tree_node::{mark,tree}_mergeable): Likewise.
+	(module_state::sort_mergeables): Likewise,
+	(module_state::{read,write}_bindings): Return/expect number of
+	bindings.
+	(module_state::write_macros): Return number of macros.
+	(module_state::write_cluster): Adjust.
+	(module_state::{read,write}_config): Adjust.
+	(module_state::{read,write}): Adjust.
+
 2019-04-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

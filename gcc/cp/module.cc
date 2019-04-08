@@ -2413,13 +2413,13 @@ public:
     depset *find_binding (tree ctx, tree name);
 
   public:
-    void add_mergeable (tree decl);
+    void add_mergeable (depset *);
     void add_dependency (tree decl, entity_kind);
     void add_binding (tree ns, tree value);
     void add_writables (tree ns, bitmap partitions);
     void find_dependencies ();
     bool finalize_dependencies ();
-    void connect (auto_vec<depset *> &);
+    void connect (auto_vec<depset *> &, bool);
   };
 
 public:
@@ -2438,7 +2438,7 @@ public:
     }
 
   public:
-    void connect (depset *);
+    void connect (depset *, bool);
   };
 };
 
@@ -2699,7 +2699,7 @@ private:
 public:
   /* Mark a node for special walking.  */
   void mark_node (tree);
-  void mark_mergeable (tree);
+  void mark_mergeable (depset *);
 
 public:
   void tree_node (tree);
@@ -2707,7 +2707,7 @@ public:
   void fn_parms (tree);
 
 public:
-  void tree_mergeable (tree);
+  void tree_mergeable (depset *);
   void tree_value (tree, walk_kind ref);
   void tree_ctx (tree, bool need_contents, tree inner_decl);
 
@@ -3092,11 +3092,11 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  private:
   /* Add writable bindings to hash table.  */
-  static void sort_mergeables (auto_vec<tree> &mergeables);
+  static void sort_mergeables (auto_vec<depset *> &mergeables);
 
-  static void write_bindings (elf_out *to, depset::hash &table,
-			      unsigned *crc_ptr);
-  bool read_bindings (auto_vec<tree> &spaces, const range_t &range);
+  static unsigned write_bindings (elf_out *to, depset::hash &table,
+				  unsigned *crc_ptr);
+  bool read_bindings (auto_vec<tree> &spaces, unsigned, const range_t &range);
 
   void write_namespaces (elf_out *to, depset::hash &table,
 			 auto_vec<depset *> &spaces, unsigned *crc_ptr);
@@ -3118,7 +3118,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
  private:
   void write_define (bytes_out &, const cpp_macro *, bool located = true);
   cpp_macro *read_define (bytes_in &, cpp_reader *, bool located = true) const;
-  bool write_macros (elf_out *to, cpp_reader *, unsigned *crc_ptr);
+  unsigned write_macros (elf_out *to, cpp_reader *, unsigned *crc_ptr);
   bool read_macros ();
   void install_macros ();
 
@@ -4134,15 +4134,17 @@ trees_out::mark_node (tree decl)
 }
 
 void
-trees_out::mark_mergeable (tree t)
+trees_out::mark_mergeable (depset *dep)
 {
-  int use_tpl = -1;
-  if (tree ti = node_template_info (t, use_tpl))
-    if (!use_tpl)
-      t = TI_TEMPLATE (ti);
+  tree decl = dep->get_entity ();
 
-  gcc_checking_assert (TREE_VISITED (t));
-  int *val = tree_map.get (t);
+  int use_tpl = -1;
+  if (tree ti = node_template_info (decl, use_tpl))
+    if (!use_tpl)
+      decl = TI_TEMPLATE (ti);
+
+  gcc_checking_assert (TREE_VISITED (decl));
+  int *val = tree_map.get (decl);
   gcc_assert (val && *val);
   *val = mergeable_lwm - *val;
 }
@@ -7563,8 +7565,9 @@ trees_in::fn_parms ()
    an existing declaration /before/ reading in this declaration.  */
 
 void
-trees_out::tree_mergeable (tree decl)
+trees_out::tree_mergeable (depset *dep)
 {
+  tree decl = dep->get_entity ();
   gcc_checking_assert (DECL_P (decl));
   tree inner = decl;
 
@@ -8902,13 +8905,11 @@ depset::hash::find_dependencies ()
 		 : current->entity_kind_name (), TREE_CODE (decl), decl);
       dump.indent ();
       walker.begin ();
-      if (current->get_entity_kind () == EK_USING)
+      if (is_mergeable_dep ())
+	walker.tree_mergeable (current);
+      else if (current->get_entity_kind () == EK_USING)
 	walker.tree_ctx (OVL_FUNCTION (decl), false, NULL_TREE);
-      else if (TREE_VISITED (decl))
-	/* Depending a fixed decl.  */;
-      else if (is_mergeable_dep ())
-	walker.tree_mergeable (decl);
-      else
+      else if (!TREE_VISITED (decl))
 	{
 	  walker.mark_node (decl);
 	  if (current->has_defn ())
@@ -8927,14 +8928,19 @@ depset::hash::find_dependencies ()
 
 /* Add a mergeable decl into the dependency hash.  */
 void
-depset::hash::add_mergeable (tree decl)
+depset::hash::add_mergeable (depset *mergeable)
 {
   gcc_checking_assert (is_mergeable_dep ());
+  tree decl = mergeable->get_entity ();
   depset **slot = entity_slot (decl, true);
   gcc_checking_assert (!*slot);
-  depset *dep = make_entity (decl, EK_DECL);
+  depset *dep = make_entity (decl, mergeable->get_entity_kind ());
   *slot = dep;
   worklist.safe_push (dep);
+
+  /* Se we can locate the mergeable depset this depset refers to, push
+     it as a dependency.  */
+  dep->deps.safe_push (mergeable);
 }
 
 /* Compare two binding entries.  TYPE_DECL before non-exported before
@@ -9040,20 +9046,20 @@ depset::hash::finalize_dependencies ()
    dependent SCCs are found before their dependers.  */
 
 void
-depset::tarjan::connect (depset *v)
+depset::tarjan::connect (depset *v, bool for_mergeable)
 {
   v->cluster = v->section = ++index;
   stack.safe_push (v);
 
   /* Walk all our dependencies.  */
-  for (unsigned ix = v->deps.length (); ix--;)
+  for (unsigned ix = v->deps.length (); ix-- != for_mergeable;)
     {
       depset *dep = v->deps[ix];
       unsigned lwm = dep->cluster;
       if (!dep->cluster)
 	{
 	  /* A new node.  Connect it.  */
-	  connect (dep);
+	  connect (dep, for_mergeable);
 	  lwm = dep->section;
 	}
 
@@ -9140,7 +9146,7 @@ cluster_cmp (const void *a_, const void *b_)
 /* Reduce graph to SCCS clusters.  */
 
 void
-depset::hash::connect (auto_vec<depset *> &sccs)
+depset::hash::connect (auto_vec<depset *> &sccs, bool for_mergeable)
 {
   sccs.reserve (size ());
 
@@ -9170,7 +9176,7 @@ depset::hash::connect (auto_vec<depset *> &sccs)
 		 v->entity_kind_name (), TREE_CODE (v->get_entity ()),
 		 v->get_entity ()));
       if (!v->cluster)
-	connector.connect (v);
+	connector.connect (v, for_mergeable);
     }
 }
 
@@ -10699,9 +10705,10 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
   unsigned incoming_unnamed = unnamed;
   bool refs_unnamed_p = false;
-  auto_vec<tree> mergeables;
+  auto_vec<depset *> mergeables;
 
-  /* Determine horcrux numbers for unnamed decls.  */
+  /* Determine horcrux numbers for unnamed decls.  Gather mergeable
+     decls.  */
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
@@ -10740,7 +10747,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		owner = (*modules)[owner]->remap;
 
 	      if (owner < MODULE_IMPORT_BASE)
-		mergeables.safe_push (decl);
+		mergeables.safe_push (b);
 	    }
 	}
     }
@@ -11240,12 +11247,13 @@ module_state::read_namespaces (auto_vec<tree> &spaces)
      u:context - number of containing namespace
      u:section - section number of binding. */
 
-void
+unsigned
 module_state::write_bindings (elf_out *to, depset::hash &table, unsigned *crc_p)
 {
   dump () && dump ("Writing binding table");
   dump.indent ();
 
+  unsigned num = 0;
   bytes_out sec (to);
   sec.begin ();
 
@@ -11264,17 +11272,21 @@ module_state::write_bindings (elf_out *to, depset::hash &table, unsigned *crc_p)
 	  sec.u (to->name (b->get_name ()));
 	  sec.u (ns_num);
 	  sec.u (b->section);
+	  num++;
 	}
     }
 
   sec.end (to, to->name (MOD_SNAME_PFX ".bnd"), crc_p);
   dump.outdent ();
+
+  return num;
 }
 
 /* Read the binding table from MOD_SNAME_PFX.bind.  */
 
 bool
-module_state::read_bindings (auto_vec<tree> &spaces, const range_t &range)
+module_state::read_bindings (auto_vec<tree> &spaces, unsigned num,
+			     const range_t &range)
 {
   bytes_in sec;
 
@@ -11283,7 +11295,7 @@ module_state::read_bindings (auto_vec<tree> &spaces, const range_t &range)
 
   dump () && dump ("Reading binding table");
   dump.indent ();
-  while (sec.more_p ())
+  for (; !sec.get_overrun () && num--;)
     {
       const char *name = from ()->name (sec.u ());
       unsigned nsnum = sec.u ();
@@ -11292,14 +11304,15 @@ module_state::read_bindings (auto_vec<tree> &spaces, const range_t &range)
       if (nsnum >= spaces.length () || !name
 	  || snum < range.first || snum >= range.second)
 	sec.set_overrun ();
-      if (sec.get_overrun ())
-	break;
-      tree ctx = spaces[nsnum];
-      tree id = get_identifier (name);
-      dump () && dump ("Bindings %P section:%u", ctx, id, snum);
-      if (mod >= MODULE_IMPORT_BASE
-	  && !import_module_binding (ctx, id, mod, snum))
-	break;
+      if (!sec.get_overrun ())
+	{
+	  tree ctx = spaces[nsnum];
+	  tree id = get_identifier (name);
+	  dump () && dump ("Bindings %P section:%u", ctx, id, snum);
+	  if (mod >= MODULE_IMPORT_BASE
+	      && !import_module_binding (ctx, id, mod, snum))
+	    break;
+	}
     }
 
   dump.outdent ();
@@ -12446,7 +12459,7 @@ macro_loc_cmp (const void *a_, const void *b_)
 /* Write out the exported defines.  This is two sections, one
    containing the definitions, the other a table of node names.  */
 
-bool
+unsigned
 module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
 {
   dump () && dump ("Writing macros");
@@ -12536,13 +12549,12 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
     }
 
   dump.outdent ();
-  return count != 0;
+  return count;
 }
  
 bool
 module_state::read_macros ()
 {
-  
   /* Get the tbl section.  */
   if (!slurp ()->macro_tbl.begin (loc, from (), MOD_SNAME_PFX ".mac"))
     return false;
@@ -12764,7 +12776,7 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
    appearing in the types of another member of this set.  Ugh!  */
 
 void
-module_state::sort_mergeables (auto_vec<tree> &mergeables)
+module_state::sort_mergeables (auto_vec<depset *> &mergeables)
 {
   depset::hash table (mergeables.length () * 2, true);
 
@@ -12776,13 +12788,13 @@ module_state::sort_mergeables (auto_vec<tree> &mergeables)
   table.find_dependencies ();
 
   auto_vec<depset *> sccs;
-  table.connect (sccs);
+  table.connect (sccs, true);
 
   /* Each mergeable must be its own cluster.  */
   gcc_assert (sccs.length () == mergeables.length ());
 
   for (unsigned ix = mergeables.length (); ix--;)
-    mergeables[ix] = sccs[ix]->get_entity ();
+    mergeables[ix] = sccs[ix]->deps[0];
 
   dump.outdent ();
 }
@@ -12839,16 +12851,18 @@ struct module_state_config {
   const char *opt_str;
   range_t sec_range;
   unsigned num_unnamed;
-  unsigned imports;
-  unsigned partitions;
-  bool any_macros;
+  unsigned num_imports;
+  unsigned num_partitions;
+  unsigned num_bindings;
+  unsigned num_macros;
   const cpp_hashnode *controlling_node;
   module_state *alias;
 
 public:
   module_state_config ()
     :opt_str (get_opts ()), sec_range (0,0), num_unnamed (0),
-     imports (0), partitions (0), any_macros (false),
+     num_imports (0), num_partitions (0),
+     num_bindings (0), num_macros (0),
      controlling_node (NULL), alias (NULL)
   {
   }
@@ -13014,19 +13028,20 @@ module_state::write_config (elf_out *to, module_state_config &config,
   if (is_partition ())
     cfg.u (is_interface ());
 
-  cfg.u (config.imports);
-  cfg.u (config.partitions);
+  cfg.u (config.num_imports);
+  cfg.u (config.num_partitions);
 
-  dump () && dump ("Declaration sections are [%u,%u)",
-		   config.sec_range.first, config.sec_range.second);
   cfg.u (config.sec_range.first);
   cfg.u (config.sec_range.second);
+  dump () && dump ("Declaration sections are [%u,%u)",
+		   config.sec_range.first, config.sec_range.second);
 
-  dump () && dump ("Unnamed %u decls", config.num_unnamed);
+  cfg.u (config.num_bindings);
+  dump () && dump ("Bindings %u", config.num_bindings);
   cfg.u (config.num_unnamed);
-
-  dump () && dump ("Macros %s", config.any_macros ? "yes" : "no");
-  cfg.u (config.any_macros);
+  dump () && dump ("Unnamed %u", config.num_unnamed);
+  cfg.u (config.num_macros);
+  dump () && dump ("Macros %u", config.num_macros);
 
   /* Now generate CRC, we'll have incorporated the inner CRC because
      of its serialization above.  */
@@ -13220,11 +13235,11 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
   /* All non-partitions are interfaces.  */
   interface_p = !is_partition () || cfg.u ();
 
-  config.imports = cfg.u ();
-  config.partitions = cfg.u ();
+  config.num_imports = cfg.u ();
+  config.num_partitions = cfg.u ();
 
   /* Allocate the REMAP vector.  */
-  slurp ()->alloc_remap (config.imports);
+  slurp ()->alloc_remap (config.num_imports);
 
   /* Random config data.  */
   config.sec_range.first = cfg.u ();
@@ -13232,11 +13247,13 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
   dump () && dump ("Declaration sections are [%u,%u)",
 		   config.sec_range.first, config.sec_range.second);
 
+  config.num_bindings = cfg.u ();
+  dump () && dump ("Bindings %u", config.num_bindings);
   config.num_unnamed = cfg.u ();
-  dump () && dump ("%u unnamed decls", config.num_unnamed);
+  dump () && dump ("Unnamed %u", config.num_unnamed);
 
-  config.any_macros = cfg.u ();
-  dump () && dump ("Macros %s", config.any_macros ? "yes" : "no");
+  config.num_macros = cfg.u ();
+  dump () && dump ("Macros %u", config.num_macros);
 
   if (config.sec_range.first > config.sec_range.second
       || config.sec_range.second > from ()->get_section_limit ())
@@ -13318,14 +13335,14 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   /* Determine Strongy Connected Components.  */
   auto_vec<depset *> sccs (table.size ());
-  table.connect (sccs);
+  table.connect (sccs, false);
 
   unsigned crc = 0;
   unsigned range_bits = prepare_locations ();
   module_state_config config;
 
-  config.imports = mod_hwm;
-  config.partitions = modules->length () - mod_hwm;
+  config.num_imports = mod_hwm;
+  config.num_partitions = modules->length () - mod_hwm;
 
   /* depset::cluster is the cluster number,
      depset::section is unspecified scratch value.
@@ -13427,23 +13444,23 @@ module_state::write (elf_out *to, cpp_reader *reader)
   write_namespaces (to, table, spaces, &crc);
 
   /* Write the bindings themselves.  */
-  write_bindings (to, table, &crc);
+  config.num_bindings = write_bindings (to, table, &crc);
 
   /* Write the unnamed.  */
   write_unnamed (to, sccs, config.num_unnamed, &crc);
 
   /* Write the import table.  */
-  if (config.imports > MODULE_IMPORT_BASE)
+  if (config.num_imports > MODULE_IMPORT_BASE)
     write_imports (to, &crc);
 
   /* Write elided partition table.  */
-  if (config.partitions)
-    write_partitions (to, config.partitions, &crc);
+  if (config.num_partitions)
+    write_partitions (to, config.num_partitions, &crc);
 
   /* Write the line maps.  */
-  write_locations (to, range_bits, config.partitions, &crc);
+  write_locations (to, range_bits, config.num_partitions, &crc);
 
-  config.any_macros = module_header_p () && write_macros (to, reader, &crc);
+  config.num_macros = module_header_p () ? write_macros (to, reader, &crc) : 0;
   config.controlling_node = cpp_main_controlling_macro (reader);
 
   /* And finish up.  */
@@ -13479,13 +13496,13 @@ module_state::read (int fd, int e, cpp_reader *reader)
     return NULL;
 
   /* Read the import table.  */
-  if (config.imports > MODULE_IMPORT_BASE
+  if (config.num_imports > MODULE_IMPORT_BASE
       && !read_imports (reader, line_table))
     return NULL;
 
   /* Read the elided partition table, if we're the primary partition.  */
-  if (config.partitions && is_primary ()
-      && !read_partitions (config.partitions))
+  if (config.num_partitions && is_primary ()
+      && !read_partitions (config.num_partitions))
     return NULL;
 
   /* Determine the module's number.  */
@@ -13527,7 +13544,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
 
   /* Look away.  Look away now.  */
   extern cpp_options *cpp_opts;
-  if (config.any_macros && !cpp_opts->preprocessed)
+  if (config.num_macros && !cpp_opts->preprocessed)
     if (!read_macros ())
       return NULL;
 
@@ -13539,7 +13556,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
 	return NULL;
 
       /* And the bindings.  */
-      if (!read_bindings (spaces, config.sec_range))
+      if (!read_bindings (spaces, config.num_bindings, config.sec_range))
 	return NULL;
 
       /* And unnamed.  */
@@ -13581,7 +13598,9 @@ module_state::maybe_defrost ()
     }
 }
 
-/* Load section SNUM, dealing with laziness.  */
+/* Load section SNUM, dealing with laziness.  It doesn't matter if we
+   have multiple concurrent loads, because we do not use TREE_VISITED
+   when reading back in.  */
 
 void
 module_state::load_section (unsigned snum)

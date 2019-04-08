@@ -910,42 +910,6 @@ struct mc_index {
   unsigned short span;
 };
 
-/* To support lazy module loading, we squirrel away a section number
-   for unloaded bindings.  We rely on pointers being aligned and
-   setting the bottom bit to mark a lazy value.
-   GTY doesn't like an array of union, so hve a containing struct.  */
-
-struct GTY(()) mc_slot {
-  union GTY((desc ("%1.is_lazy ()"))) mc_slot_lazy {
-    tree GTY((tag ("false"))) binding;
-  } u;
-
-  operator tree & ()
-  {
-    gcc_checking_assert (!is_lazy ());
-    return u.binding;
-  }
-  mc_slot &operator= (tree t)
-  {
-    u.binding = t;
-    return *this;
-  }
-  bool is_lazy () const
-  {
-    return bool (intptr_t (u.binding) & 1);
-  }
-  void set_lazy (unsigned snum)
-  {
-    gcc_checking_assert (!u.binding);
-    u.binding = tree (intptr_t ((snum << 1) | 1));
-  }
-  unsigned get_lazy () const
-  {
-    gcc_checking_assert (is_lazy ());
-    return unsigned (intptr_t (u.binding) >> 1);
-  }
-};
-
 struct GTY(()) module_cluster
 {
   mc_index GTY((skip)) indices[MODULE_VECTOR_SLOTS_PER_CLUSTER];
