@@ -3,4 +3,4 @@
 int foo()
 {
 }
-/* { dg-error ".'-march=rv32I': first ISA subset must be `e', `i' or `g'" "" { target *-*-* } 0 } */
+/* { dg-error ".'-march=rv32I': first ISA subset must be 'e', 'i' or 'g'" "" { target *-*-* } 0 } */

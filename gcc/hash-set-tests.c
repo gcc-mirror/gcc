@@ -44,6 +44,9 @@ test_set_of_strings ()
 
   ASSERT_EQ (false, s.contains (red));
 
+  for (hash_set<const char *>::iterator it = s.begin (); it != s.end (); ++it)
+    ASSERT_EQ (true, false);
+
   /* Populate the hash_set.  */
   ASSERT_EQ (false, s.add (red));
   ASSERT_EQ (false, s.add (green));
@@ -68,6 +71,67 @@ test_set_of_strings ()
   ASSERT_EQ (true, s.contains (green));
   ASSERT_EQ (true, s.contains (blue));
   ASSERT_EQ (2, s.elements ());
+
+  int seen = 0;
+  for (hash_set<const char *>::iterator it = s.begin (); it != s.end (); ++it)
+    {
+      int n = *it == green;
+      if (n == 0)
+	ASSERT_EQ (*it, blue);
+      ASSERT_EQ (seen & (1 << n), 0);
+      seen |= 1 << n;
+    }
+  ASSERT_EQ (seen, 3);
+
+  hash_set <const char *, true> t;
+  ASSERT_EQ (0, t.elements ());
+
+  ASSERT_EQ (false, t.contains (red));
+
+  for (hash_set<const char *, true>::iterator it = t.begin ();
+       it != t.end (); ++it)
+    ASSERT_EQ (true, false);
+
+  /* Populate the hash_set.  */
+  ASSERT_EQ (false, t.add (red));
+  ASSERT_EQ (false, t.add (green));
+  ASSERT_EQ (false, t.add (blue));
+  ASSERT_EQ (true, t.add (green));
+
+  /* Verify that the values are now within the set.  */
+  ASSERT_EQ (true, t.contains (red));
+  ASSERT_EQ (true, t.contains (green));
+  ASSERT_EQ (true, t.contains (blue));
+  ASSERT_EQ (3, t.elements ());
+
+  seen = 0;
+  for (hash_set<const char *, true>::iterator it = t.begin ();
+       it != t.end (); ++it)
+    {
+      int n = 2;
+      if (*it == green)
+	n = 0;
+      else if (*it == blue)
+	n = 1;
+      else
+	ASSERT_EQ (*it, red);
+      ASSERT_EQ (seen & (1 << n), 0);
+      seen |= 1 << n;
+    }
+  ASSERT_EQ (seen, 7);
+
+  /* Test removal.  */
+  t.remove (red);
+  ASSERT_EQ (false, t.contains (red));
+  ASSERT_EQ (true, t.contains (green));
+  ASSERT_EQ (true, t.contains (blue));
+  ASSERT_EQ (2, t.elements ());
+
+  t.remove (red);
+  ASSERT_EQ (false, t.contains (red));
+  ASSERT_EQ (true, t.contains (green));
+  ASSERT_EQ (true, t.contains (blue));
+  ASSERT_EQ (2, t.elements ());
 }
 
 /* Run all of the selftests within this file.  */

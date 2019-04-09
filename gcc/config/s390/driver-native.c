@@ -120,7 +120,7 @@ s390_host_detect_local_cpu (int argc, const char **argv)
 	      cpu = "z14";
 	      break;
 	    default:
-	      cpu = "z14";
+	      cpu = "arch13";
 	      break;
 	    }
 	}

@@ -19,7 +19,9 @@ version (Windows):
        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
 
-private import core.sys.windows.windows;
+private import core.sys.windows.basetsd /+: DECLARE_HANDLE, HANDLE+/;
+private import core.sys.windows.windef /+: BOOL, CHAR, DWORD, LPBYTE, LPDWORD+/;
+private import core.sys.windows.winnt /+: LPCSTR, LPSTR, LPVOID, PVOID, VOID+/;
 
 enum {
     HSE_VERSION_MAJOR               = 2,
@@ -49,7 +51,7 @@ mixin DECLARE_HANDLE!("HCONN");
 
 struct HSE_VERSION_INFO {
     DWORD dwExtensionVersion;
-    CHAR[HSE_MAX_EXT_DLL_NAME_LEN] lpszExtensionDesc;
+    CHAR[HSE_MAX_EXT_DLL_NAME_LEN] lpszExtensionDesc = 0;
 }
 alias HSE_VERSION_INFO* LPHSE_VERSION_INFO;
 
@@ -58,7 +60,7 @@ struct EXTENSION_CONTROL_BLOCK {
     DWORD  dwVersion;
     HCONN  ConnID;
     DWORD  dwHttpStatusCode;
-    CHAR[HSE_LOG_BUFFER_LEN] lpszLogData;
+    CHAR[HSE_LOG_BUFFER_LEN] lpszLogData = 0;
     LPSTR  lpszMethod;
     LPSTR  lpszQueryString;
     LPSTR  lpszPathInfo;
@@ -67,16 +69,16 @@ struct EXTENSION_CONTROL_BLOCK {
     DWORD  cbAvailable;
     LPBYTE lpbData;
     LPSTR  lpszContentType;
-    extern(Pascal) BOOL function(HCONN, LPSTR, LPVOID, LPDWORD)
-      GetServerVariable;
-    extern(Pascal) BOOL function(HCONN, LPVOID, LPDWORD, DWORD) WriteClient;
-    extern(Pascal) BOOL function(HCONN, LPVOID, LPDWORD) ReadClient;
-    extern(Pascal) BOOL function(HCONN, DWORD, LPVOID, LPDWORD, LPDWORD)
-      ServerSupportFunction;
+    extern (Windows) {
+        BOOL function(HCONN, LPSTR, LPVOID, LPDWORD) GetServerVariable;
+        BOOL function(HCONN, LPVOID, LPDWORD, DWORD) WriteClient;
+        BOOL function(HCONN, LPVOID, LPDWORD) ReadClient;
+        BOOL function(HCONN, DWORD, LPVOID, LPDWORD, LPDWORD) ServerSupportFunction;
+    }
 }
 alias EXTENSION_CONTROL_BLOCK* LPEXTENSION_CONTROL_BLOCK;
 
-extern (Pascal) {
+extern (Windows) {
     alias BOOL function(HSE_VERSION_INFO*) PFN_GETEXTENSIONVERSION;
     alias DWORD function(EXTENSION_CONTROL_BLOCK*) PFN_HTTPEXTENSIONPROC;
     alias BOOL function(DWORD) PFN_TERMINATEEXTENSION;
@@ -107,7 +109,7 @@ struct HSE_SEND_HEADER_EX_INFO {
 }
 alias HSE_SEND_HEADER_EX_INFO* LPHSE_SEND_HEADER_EX_INF;
 
-extern (Pascal) {
+extern (Windows) {
     BOOL GetExtensionVersion(HSE_VERSION_INFO*);
     DWORD HttpExtensionProc(EXTENSION_CONTROL_BLOCK*);
     BOOL TerminateExtension(DWORD);

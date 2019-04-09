@@ -25,13 +25,13 @@
     FUNCTION c_deallocate(a) BIND(C, NAME="deallocate_c") RESULT(err)
       USE, INTRINSIC :: ISO_C_BINDING
       INTEGER(C_INT) :: err
-      type(*), DIMENSION(..) :: a
+      INTEGER(C_INT), DIMENSION(..), allocatable :: a
     END FUNCTION c_deallocate
 
     FUNCTION c_allocate(a, lower, upper) BIND(C, NAME="allocate_c") RESULT(err)
       USE, INTRINSIC :: ISO_C_BINDING
       INTEGER(C_INT) :: err
-      type(*), DIMENSION(..) :: a
+      INTEGER(C_INT), DIMENSION(..), allocatable :: a
       integer(C_INTPTR_T), DIMENSION(15) :: lower, upper
     END FUNCTION c_allocate
 
@@ -67,7 +67,7 @@
       USE, INTRINSIC :: ISO_C_BINDING
       INTEGER(C_INT) :: err
       INTEGER(C_INT), dimension(2) :: lbounds
-      type(*), DIMENSION(..) :: a
+      INTEGER(C_INT), DIMENSION(..), pointer :: a
     END FUNCTION c_setpointer
 
     FUNCTION c_assumed_size(a) BIND(C, NAME="assumed_size_c") RESULT(err)

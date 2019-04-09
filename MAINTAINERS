@@ -165,7 +165,6 @@ libcpp			Per Bothner		<per@bothner.com>
 libcpp			All C and C++ front end maintainers
 libcpp			David Malcolm		<dmalcolm@redhat.com>
 fp-bit			Ian Lance Taylor	<ian@airs.com>
-libdecnumber		Ben Elliston		<bje@gnu.org>
 libgcc			Ian Lance Taylor	<ian@airs.com>
 libgo			Ian Lance Taylor	<ian@airs.com>
 libgomp			Jakub Jelinek		<jakub@redhat.com>
@@ -234,7 +233,6 @@ tree browser/unparser	Sebastian Pop		<sebpop@gmail.com>
 scev, data dependence	Sebastian Pop		<sebpop@gmail.com>
 profile feedback	Jan Hubicka		<hubicka@ucw.cz>
 reload			Ulrich Weigand		<uweigand@de.ibm.com>
-dfp.c, related		Ben Elliston		<bje@gnu.org>
 RTL optimizers		Eric Botcazou		<ebotcazou@libertysurf.fr>
 instruction combiner	Segher Boessenkool	<segher@kernel.crashing.org>
 auto-vectorizer		Richard Biener		<rguenther@suse.de>

@@ -72,7 +72,7 @@ version (CRuntime_Glibc)
         off_t       d_off;
         ushort      d_reclen;
         ubyte       d_type;
-        char[256]   d_name;
+        char[256]   d_name = 0;
     }
 
     struct DIR
@@ -116,7 +116,7 @@ else version (Darwin)
         ushort      d_reclen;
         ushort      d_namlen;
         ubyte       d_type;
-        char[1024]  d_name;
+        char[1024]  d_name = 0;
     }
 
     struct DIR
@@ -156,7 +156,7 @@ else version (FreeBSD)
         ushort    d_reclen;
         ubyte     d_type;
         ubyte     d_namlen;
-        char[256] d_name;
+        char[256] d_name = 0;
     }
 
     alias void* DIR;
@@ -184,7 +184,7 @@ else version (NetBSD)
         ushort    d_reclen;
         ushort    d_namlen;
         ubyte     d_type;
-        char[512] d_name;
+        char[512] d_name = 0;
     }
 
     alias void* DIR;
@@ -215,7 +215,7 @@ else version (OpenBSD)
         ubyte     d_type;
         ubyte     d_namlen;
         ubyte[4]  __d_padding;
-        char[256] d_name;
+        char[256] d_name = 0;
     }
 
     alias void* DIR;
@@ -245,7 +245,7 @@ else version (DragonFlyBSD)
         ubyte     d_type;         /* file type, see blow */
         ubyte     d_unused1;      /* padding, reserved */
         uint      d_unused2;      /* reserved */
-        char[256] d_name;         /* name, NUL-terminated */
+        char[256] d_name = 0;     /* name, NUL-terminated */
     }
 
     alias void* DIR;
@@ -259,7 +259,7 @@ else version (Solaris)
         ino_t d_ino;
         off_t d_off;
         ushort d_reclen;
-        char[1] d_name;
+        char[1] d_name = 0;
     }
 
     struct DIR
@@ -309,7 +309,7 @@ else version (CRuntime_Bionic)
         long        d_off;
         ushort      d_reclen;
         ubyte       d_type;
-        char[256]   d_name;
+        char[256]   d_name = 0;
     }
 
     struct DIR
@@ -339,7 +339,7 @@ else version (CRuntime_Musl)
         off_t       d_off;
         ushort      d_reclen;
         ubyte       d_type;
-        char[256]   d_name;
+        char[256]   d_name = 0;
     }
 
     struct DIR
@@ -387,7 +387,7 @@ else version (CRuntime_UClibc)
         }
         ushort      d_reclen;
         ubyte       d_type;
-        char[256]   d_name;
+        char[256]   d_name = 0;
     }
 
     struct DIR

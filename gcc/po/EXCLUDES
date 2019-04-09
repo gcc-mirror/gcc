@@ -57,8 +57,8 @@ read-md.c
 #   These files are part of the front end to D, and have no i18n support.
 d/dmd/arrayop.c
 d/dmd/attrib.c
+d/dmd/blockexit.c
 d/dmd/canthrow.c
-d/dmd/cond.c
 d/dmd/constfold.c
 d/dmd/cppmangle.c
 d/dmd/ctfeexpr.c
@@ -77,9 +77,10 @@ d/dmd/dsymbol.c
 d/dmd/dtemplate.c
 d/dmd/dversion.c
 d/dmd/expression.c
+d/dmd/expressionsem.c
 d/dmd/func.c
-d/dmd/init.c
-d/dmd/inline.c
+d/dmd/iasmgcc.c
+d/dmd/initsem.c
 d/dmd/lexer.c
 d/dmd/mtype.c
 d/dmd/nogc.c
@@ -88,8 +89,10 @@ d/dmd/objc.c
 d/dmd/opover.c
 d/dmd/optimize.c
 d/dmd/parse.c
+d/dmd/safe.c
 d/dmd/sideeffect.c
 d/dmd/statement.c
 d/dmd/statementsem.c
 d/dmd/staticassert.c
+d/dmd/staticcond.c
 d/dmd/traits.c

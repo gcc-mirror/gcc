@@ -143,8 +143,18 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define DRIVER_SELF_SPECS MCPU_MTUNE_NATIVE_SPECS
 
+/* -fsanitize=address is currently only supported for 32-bit.  */
+#define ASAN_REJECT_SPEC \
+  "%{!%:sanitize(thread):%e-fsanitize=address is not supported in this configuration}"
+
 #undef  ASAN_CC1_SPEC
-#define ASAN_CC1_SPEC "%{%:sanitize(address):-funwind-tables}"
+#if DEFAULT_ARCH32_P
+#define ASAN_CC1_SPEC \
+  "%{%:sanitize(address):-funwind-tables %{m64:" ASAN_REJECT_SPEC "}}"
+#else
+#define ASAN_CC1_SPEC \
+  "%{%:sanitize(address):-funwind-tables %{!m32:" ASAN_REJECT_SPEC "}}"
+#endif
 
 #undef  CC1_SPEC
 #if DEFAULT_ARCH32_P

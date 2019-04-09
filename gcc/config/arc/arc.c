@@ -2506,6 +2506,9 @@ struct GTY (()) arc_frame_info
   bool save_return_addr;
 };
 
+/* GMASK bit length -1.  */
+#define GMASK_LEN 31
+
 /* Defining data structures for per-function information.  */
 
 typedef struct GTY (()) machine_function
@@ -3048,6 +3051,8 @@ arc_restore_callee_saves (unsigned int gmask,
 {
   rtx reg;
   int frame_deallocated = 0;
+  HOST_WIDE_INT offs = cfun->machine->frame_info.reg_size;
+  bool early_blink_restore;
 
   /* Emit mov fp,sp.  */
   if (arc_frame_pointer_needed () && offset)
@@ -3073,9 +3078,21 @@ arc_restore_callee_saves (unsigned int gmask,
       offset = 0;
     }
 
+  /* When we do not optimize for size, restore first blink.  */
+  early_blink_restore = restore_blink && !optimize_size && offs;
+  if (early_blink_restore)
+    {
+      rtx addr = plus_constant (Pmode, stack_pointer_rtx, offs);
+      reg = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
+      rtx insn = frame_move_inc (reg, gen_frame_mem (Pmode, addr),
+				 stack_pointer_rtx, NULL_RTX);
+      add_reg_note (insn, REG_CFA_RESTORE, reg);
+      restore_blink = false;
+    }
+
   /* N.B. FRAME_POINTER_MASK and RETURN_ADDR_MASK are cleared in gmask.  */
   if (gmask)
-    for (int i = 0; i <= 31; i++)
+    for (int i = 0; i <= GMASK_LEN; i++)
       {
 	machine_mode restore_mode = SImode;
 
@@ -3088,7 +3105,23 @@ arc_restore_callee_saves (unsigned int gmask,
 	  continue;
 
 	reg = gen_rtx_REG (restore_mode, i);
-	frame_deallocated += frame_restore_reg (reg, 0);
+	offs = 0;
+	switch (restore_mode)
+	  {
+	  case E_DImode:
+	    if ((GMASK_LEN - __builtin_clz (gmask)) == (i + 1)
+		&& early_blink_restore)
+	      offs = 4;
+	    break;
+	  case E_SImode:
+	    if ((GMASK_LEN - __builtin_clz (gmask)) == i
+		&& early_blink_restore)
+	      offs = 4;
+	    break;
+	  default:
+	    offs = 0;
+	  }
+	frame_deallocated += frame_restore_reg (reg, offs);
 	offset = 0;
 
 	if (restore_mode == DImode)

@@ -400,7 +400,7 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
     {
       /* However we cannot unroll completely at the RTL level a loop with
 	 constant number of iterations; it should have been peeled instead.  */
-      if ((unsigned) loop->unroll > desc->niter - 1)
+      if (desc->niter == 0 || (unsigned) loop->unroll > desc->niter - 1)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, ";; Loop should have been peeled\n");
@@ -652,7 +652,7 @@ unroll_loop_constant_iterations (struct loop *loop)
   if (loop->any_likely_upper_bound)
     loop->nb_iterations_likely_upper_bound
       = wi::udiv_trunc (loop->nb_iterations_likely_upper_bound, max_unroll + 1);
-  desc->niter_expr = GEN_INT (desc->niter);
+  desc->niter_expr = gen_int_mode (desc->niter, desc->mode);
 
   /* Remove the edges.  */
   FOR_EACH_VEC_ELT (remove_edges, i, e)
@@ -1020,9 +1020,9 @@ unroll_loop_runtime_iterations (struct loop *loop)
       preheader = split_edge (loop_preheader_edge (loop));
       /* Add in count of edge from switch block.  */
       preheader->count += iter_count;
-      branch_code = compare_and_jump_seq (copy_rtx (niter), GEN_INT (j), EQ,
-					  block_label (preheader), p,
-					  NULL);
+      branch_code = compare_and_jump_seq (copy_rtx (niter),
+					  gen_int_mode (j, desc->mode), EQ,
+					  block_label (preheader), p, NULL);
 
       /* We rely on the fact that the compare and jump cannot be optimized out,
 	 and hence the cfg we create is correct.  */

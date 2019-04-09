@@ -597,7 +597,7 @@ _mm_sub_pi32 (__m64 __m1, __m64 __m2)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _m_psubd (__m64 __m1, __m64 __m2)
 {
-  return _mm_add_pi32 (__m1, __m2);
+  return _mm_sub_pi32 (__m1, __m2);
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))

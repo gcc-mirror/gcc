@@ -50,6 +50,7 @@ enum
     EPOLLERR    = 0x008,
     EPOLLHUP    = 0x010,
     EPOLLRDHUP  = 0x2000, // since Linux 2.6.17
+    EPOLLEXCLUSIVE = 1u << 28, // since Linux 4.5
     EPOLLONESHOT = 1u << 30,
     EPOLLET     = 1u << 31
 }

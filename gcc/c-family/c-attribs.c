@@ -2413,15 +2413,31 @@ handle_copy_attribute (tree *node, tree name, tree args,
     }
 
   /* Consider address-of expressions in the attribute argument
-     as requests to copy from the referenced entity.  For constant
-     expressions, consider those to be requests to copy from their
-     type, such as in:
+     as requests to copy from the referenced entity.  */
+  if (TREE_CODE (ref) == ADDR_EXPR)
+    ref = TREE_OPERAND (ref, 0);
+
+  do
+    {
+      /* Drill down into references to find the referenced decl.  */
+      tree_code refcode = TREE_CODE (ref);
+      if (refcode == ARRAY_REF
+	  || refcode == INDIRECT_REF)
+	ref = TREE_OPERAND (ref, 0);
+      else if (refcode == COMPONENT_REF)
+	ref = TREE_OPERAND (ref, 1);
+      else
+	break;
+    } while (!DECL_P (ref));
+
+  /* For object pointer expressions, consider those to be requests
+     to copy from their type, such as in:
        struct __attribute__ (copy ((struct T *)0)) U { ... };
      which copies type attributes from struct T to the declaration
      of struct U.  */
-  if (TREE_CODE (ref) == ADDR_EXPR)
-    ref = TREE_OPERAND (ref, 0);
-  else if (CONSTANT_CLASS_P (ref))
+  if ((CONSTANT_CLASS_P (ref) || EXPR_P (ref))
+      && POINTER_TYPE_P (TREE_TYPE (ref))
+      && !FUNCTION_POINTER_TYPE_P (TREE_TYPE (ref)))
     ref = TREE_TYPE (ref);
 
   if (DECL_P (decl))

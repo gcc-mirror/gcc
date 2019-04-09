@@ -10111,8 +10111,8 @@ locations of the maximum element along each row of the array in the
 which @var{MASK} is @code{.TRUE.} are considered.  If more than one
 element in the array has the maximum value, the location returned is
 that of the first such element in array element order if the
-@var{BACK} is not present, or if it false; otherwise, the location
-returned is that of the first such element. If the array has zero
+@var{BACK} is not present, or is false; if @var{BACK} is true, the location
+returned is that of the last such element. If the array has zero
 size, or all of the elements of @var{MASK} are @code{.FALSE.}, then
 the result is an array of zeroes.  Similarly, if @var{DIM} is supplied
 and all of the elements of @var{MASK} along a given row are zero, the
@@ -10468,8 +10468,8 @@ locations of the minimum element along each row of the array in the
 which @var{MASK} is @code{.TRUE.} are considered.  If more than one
 element in the array has the minimum value, the location returned is
 that of the first such element in array element order if the
-@var{BACK} is not present, or if it false; otherwise, the location
-returned is that of the first such element.  If the array has
+@var{BACK} is not present, or is false; if @var{BACK} is true, the location
+returned is that of the last such element.  If the array has
 zero size, or all of the elements of @var{MASK} are @code{.FALSE.}, then
 the result is an array of zeroes.  Similarly, if @var{DIM} is supplied
 and all of the elements of @var{MASK} along a given row are zero, the

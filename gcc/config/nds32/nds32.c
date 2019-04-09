@@ -4175,10 +4175,10 @@ nds32_option_override (void)
     {
       if (nds32_arch_option == ARCH_V3S || nds32_arch_option == ARCH_V3F)
 	error ("Disable FPU ISA, "
-	       "the ABI option must be enable '-mfloat-abi=soft'");
+	       "the ABI option must be enable %<-mfloat-abi=soft%>");
       else
-	error ("'-mabi=2fp+' option only support when FPU available, "
-	       "must be enable '-mext-fpu-sp' or '-mext-fpu-dp'");
+	error ("%<-mabi=2fp+%> option only support when FPU available, "
+	       "must be enable %<-mext-fpu-sp%> or %<-mext-fpu-dp%>");
     }
 
   nds32_init_rtx_costs ();

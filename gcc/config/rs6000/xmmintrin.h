@@ -1586,9 +1586,15 @@ _mm_movemask_pi8 (__m64 __A)
 #endif
   return __builtin_bpermd (p, __A);
 #else
+#ifdef __LITTLE_ENDIAN__
   unsigned int mask = 0x20283038UL;
   unsigned int r1 = __builtin_bpermd (mask, __A) & 0xf;
   unsigned int r2 = __builtin_bpermd (mask, __A >> 32) & 0xf;
+#else
+  unsigned int mask = 0x38302820UL;
+  unsigned int r1 = __builtin_bpermd (mask, __A >> 32) & 0xf;
+  unsigned int r2 = __builtin_bpermd (mask, __A) & 0xf;
+#endif
   return (r2 << 4) | r1;
 #endif
 }

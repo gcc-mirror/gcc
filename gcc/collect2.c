@@ -1516,7 +1516,7 @@ main (int argc, char **argv)
 		      enum demangling_styles style
 			= cplus_demangle_name_to_style (arg+11);
 		      if (style == unknown_demangling)
-			error ("unknown demangling style '%s'", arg+11);
+			error ("unknown demangling style %qs", arg+11);
 		      else
 			current_demangling_style = style;
 		    }
@@ -2422,7 +2422,7 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 
   /* If we do not have an `nm', complain.  */
   if (nm_file_name == 0)
-    fatal_error (input_location, "cannot find 'nm'");
+    fatal_error (input_location, "cannot find %<nm%>");
 
   nm_argv[argc++] = nm_file_name;
   if (NM_FLAGS[0] != '\0')
@@ -2593,7 +2593,7 @@ scan_libraries (const char *prog_name)
   /* If we do not have an `ldd', complain.  */
   if (ldd_file_name == 0)
     {
-      error ("cannot find 'ldd'");
+      error ("cannot find %<ldd%>");
       return;
     }
 
@@ -2669,8 +2669,8 @@ scan_libraries (const char *prog_name)
       if (access (name, R_OK) == 0)
 	add_to_list (&libraries, name);
       else
-	fatal_error (input_location, "unable to open dynamic dependency '%s'",
-		     buf);
+	fatal_error (input_location, "unable to open dynamic dependency "
+		     "%qs", buf);
 
       if (debug)
 	fprintf (stderr, "\t%s\n", buf);

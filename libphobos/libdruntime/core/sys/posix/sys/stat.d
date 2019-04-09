@@ -453,26 +453,84 @@ version (CRuntime_Glibc)
     }
     else version (RISCV_Any)
     {
+        private
+        {
+            alias __dev_t = ulong;
+            alias __ino_t = c_ulong;
+            alias __ino64_t = ulong;
+            alias __mode_t = uint;
+            alias __nlink_t = uint;
+            alias __uid_t = uint;
+            alias __gid_t = uint;
+            alias __off_t = c_long;
+            alias __off64_t = long;
+            alias __blksize_t = int;
+            alias __blkcnt_t = c_long;
+            alias __blkcnt64_t = long;
+            alias __timespec = timespec;
+            alias __time_t = time_t;
+        }
         struct stat_t
         {
-            dev_t       st_dev;
-            ino_t       st_ino;
-            mode_t      st_mode;
-            nlink_t     st_nlink;
-            uid_t       st_uid;
-            gid_t       st_gid;
-            dev_t       st_rdev;
-            dev_t       __pad1;
-            off_t       st_size;
-            blksize_t   st_blksize;
-            int         __pad2;
-            time_t      st_atime;
-            c_ulong     st_atime_nsec;
-            time_t      st_mtime;
-            c_ulong     st_mtime_nsec;
-            time_t      st_ctime;
-            c_ulong     st_ctime_nsec;
-            int[2]      __reserved;
+            __dev_t st_dev;
+
+            static if (__USE_FILE_OFFSET64)
+            {
+                __ino64_t st_ino;
+            }
+            else
+            {
+                __ino_t st_ino;
+            }
+            __mode_t st_mode;
+            __nlink_t st_nlink;
+            __uid_t st_uid;
+            __gid_t st_gid;
+            __dev_t st_rdev;
+            __dev_t __pad1;
+
+            static if (__USE_FILE_OFFSET64)
+            {
+                __off64_t st_size;
+            }
+            else
+            {
+                __off_t st_size;
+            }
+            __blksize_t st_blksize;
+            int __pad2;
+
+            static if (__USE_FILE_OFFSET64)
+            {
+                __blkcnt64_t st_blocks;
+            }
+            else
+            {
+                __blkcnt_t st_blocks;
+            }
+
+            static if (__USE_MISC)
+            {
+                __timespec st_atim;
+                __timespec st_mtim;
+                __timespec st_ctim;
+                extern(D)
+                {
+                    @property ref time_t st_atime() { return st_atim.tv_sec; }
+                    @property ref time_t st_mtime() { return st_mtim.tv_sec; }
+                    @property ref time_t st_ctime() { return st_ctim.tv_sec; }
+                }
+            }
+            else
+            {
+                __time_t st_atime;
+                c_ulong st_atimensec;
+                __time_t st_mtime;
+                c_ulong st_mtimensec;
+                __time_t st_ctime;
+                c_ulong st_ctimensec;
+            }
+            int[2] __unused;
         }
     }
     else version (ARM)
@@ -1161,7 +1219,7 @@ else version (Solaris)
             }
             blksize_t st_blksize;
             blkcnt_t st_blocks;
-            char[_ST_FSTYPSZ] st_fstype;
+            char[_ST_FSTYPSZ] st_fstype = 0;
         }
 
         static if (__USE_LARGEFILE64) alias stat_t stat64_t;
@@ -1198,7 +1256,7 @@ else version (Solaris)
             }
             blksize_t st_blksize;
             blkcnt_t st_blocks;
-            char[_ST_FSTYPSZ] st_fstype;
+            char[_ST_FSTYPSZ] st_fstype = 0;
             c_long[8] st_pad4;
         }
 
@@ -1232,7 +1290,7 @@ else version (Solaris)
             }
             blksize_t st_blksize;
             blkcnt64_t st_blocks;
-            char[_ST_FSTYPSZ] st_fstype;
+            char[_ST_FSTYPSZ] st_fstype = 0;
             c_long[8] st_pad4;
         }
 
@@ -1361,6 +1419,31 @@ else version (CRuntime_Bionic)
             uint        __unused5;
         }
     }
+    else version (X86_64)
+    {
+        struct stat_t
+        {
+            ulong       st_dev;
+            ulong       st_ino;
+            ulong       st_nlink;
+            uint        st_mode;
+            uid_t       st_uid;
+            gid_t       st_gid;
+            uint        __pad0;
+
+            ulong       st_rdev;
+            long        st_size;
+            long        st_blksize;
+            long        st_blocks;
+            long        st_atime;
+            ulong       st_atime_nsec;
+            long        st_mtime;
+            ulong       st_mtime_nsec;
+            long        st_ctime;
+            ulong       st_ctime_nsec;
+            long[3]     __pad3;
+        }
+    }
     else
     {
         static assert(false, "Architecture not supported.");
@@ -1445,11 +1528,11 @@ else version (CRuntime_Musl)
         timespec st_atim;
         timespec st_mtim;
         timespec st_ctim;
-        extern(D) @safe @property
+        extern(D) @safe @property inout pure nothrow
         {
-            ref time_t st_atime() return { return st_atim.tv_sec; }
-            ref time_t st_mtime() return { return st_mtim.tv_sec; }
-            ref time_t st_ctime() return { return st_ctim.tv_sec; }
+            ref inout(time_t) st_atime() return { return st_atim.tv_sec; }
+            ref inout(time_t) st_mtime() return { return st_mtim.tv_sec; }
+            ref inout(time_t) st_ctime() return { return st_ctim.tv_sec; }
         }
         long[3] __unused;
     }

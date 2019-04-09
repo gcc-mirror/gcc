@@ -1,3 +1,133 @@
+2019-04-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87352
+	* gfortran.h (gfc_component): Add finalized field.
+	* class.c (finalize_component): If the component is already
+	finalized, return early.  Set component->finalized on exit.
+
+2019-04-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/89981
+	* resolve.c (resolve_global_procedure): If the global symbol is an
+	ENTRY, also look up its name among the entries.
+
+2019-04-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/89904
+	* check.c (gfc_check_transfer): Reject procedures as actual
+	arguments for SOURCE and MOLD of TRANSFER intrinsic.
+
+2019-04-03  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/68567
+	* expr.c (gfc_reduce_init_expr): Add extra check to avoid
+	dereferencing a null pointer.
+
+2019-04-03  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/89375
+	* expr.c (comp_pointer): Remove redundant condition.
+
+2019-03-31  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/83515
+	PR fortran/85797
+	* trans-types.c (gfc_typenode_for_spec): Handle conversion for
+	procedure pointers.
+	* target-memory.c (gfc_element_size): Handle size determination
+	for procedure pointers.
+
+2019-03-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.c (debug):  Add for symbol_attribute *,
+	symbol_attribute and gfc_ref * arguments.
+
+2019-03-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89841
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Use the formal
+	argument attributes rather than those of the actual argument.
+
+	PR fortran/89842
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Call
+	'set_dtype_for_unallocated' for any type of arrayspec.
+
+2019-03-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/85537
+	* expr.c (gfc_check_assign_symbol): Reject internal and dummy procedures
+	in procedure pointer initialization.
+
+2019-03-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/88247
+	* expr.c (is_subref_array): Permit substrings to be detected
+	as subref arrays.
+	* trans-array.c (get_array_ctor_var_strlen): Obtain the length
+	of deferred length strings. Handle substrings with a NULL end
+	expression.
+	(trans_array_constructor): Remove an unnecessary blank line.
+	(gfc_conv_scalarized_array_ref): Skip to label 'done' if 'decl'
+	is a pointer array.
+	(get_array_charlen): If the expression is an array, convert the
+	first element of the constructor and use its string length. Get
+	a new charlen if necessary.
+	(gfc_conv_expr_descriptor): Call 'get_array_charlen' for array
+	constructor expressions. If the ss_info string length is
+	available, use that to set the span of character arrays.
+	* trans-expr.c (gfc_get_expr_charlen): Handle substrings
+	* trans-stmt.c (trans_associate_var): Set the pointer array
+	flag for variable targets and constant array constructors. Take
+	care not to reset the string length or the span in the case of
+	expressions that are not converted as direct by reference.
+
+2019-03-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* intrinsic.texi (MINLOC): Fix typo in BACK argument documentation.
+	(MAXLOC): Likewise.
+
+2019-03-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/78865
+	* interface.c (compare_actual_formal): Change errors about
+	missing or extra to gfc_error_now to make sure they are issued.
+	Change "spec" to "specifier" in message.
+	* resolve.c (resolve_global_procedure): Also check for mismatching
+	interface with global symbols if the namespace has already been
+	resolved.
+
+2019-03-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/72741
+	* openmp.c (gfc_match_oacc_routine): Set the level of parallelism
+	for all variants.
+	(gfc_resolve_oacc_routines): Call gfc_add_omp_declare_target.
+
+	PR fortran/89773
+	* gfortran.h (gfc_oacc_routine_name): Add loc member.
+	(gfc_resolve_oacc_routines): Declare.
+	* openmp.c (gfc_match_oacc_routine): Move some error checking
+	into...
+	(gfc_resolve_oacc_routines): ... this new function.
+	* resolve.c (resolve_codes): Call it.
+
+	PR fortran/72741
+	* openmp.c (gfc_match_oacc_routine): Clarify.
+
+	PR fortran/72741
+	* module.c (verify_OACC_ROUTINE_LOP_NONE): New function.
+	(enum ab_attribute): Add AB_OACC_ROUTINE_LOP_GANG,
+	AB_OACC_ROUTINE_LOP_WORKER, AB_OACC_ROUTINE_LOP_VECTOR,
+	AB_OACC_ROUTINE_LOP_SEQ.
+	(attr_bits): Add these.
+	(mio_symbol_attribute): Handle these.
+
+2019-03-20  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/71861
+	* symbol.c (check_conflict): ABSTRACT attribute conflicts with
+	INTRINSIC attribute.
+
 2019-03-18  Thomas Koenig  <tkoeng@gcc.gnu.org>
 
 	PR fortran/68009

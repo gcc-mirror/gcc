@@ -20702,7 +20702,7 @@ static const char *
 comp_dir_string (void)
 {
   const char *wd;
-  char *wd1;
+  char *wd_plus_sep = NULL;
   static const char *cached_wd = NULL;
 
   if (cached_wd != NULL)
@@ -20714,17 +20714,26 @@ comp_dir_string (void)
 
   if (DWARF2_DIR_SHOULD_END_WITH_SEPARATOR)
     {
-      int wdlen;
-
-      wdlen = strlen (wd);
-      wd1 = ggc_vec_alloc<char> (wdlen + 2);
-      strcpy (wd1, wd);
-      wd1 [wdlen] = DIR_SEPARATOR;
-      wd1 [wdlen + 1] = 0;
-      wd = wd1;
+      size_t wdlen = strlen (wd);
+      wd_plus_sep = XNEWVEC (char, wdlen + 2);
+      strcpy (wd_plus_sep, wd);
+      wd_plus_sep [wdlen] = DIR_SEPARATOR;
+      wd_plus_sep [wdlen + 1] = 0;
+      wd = wd_plus_sep;
     }
 
   cached_wd = remap_debug_filename (wd);
+
+  /* remap_debug_filename can just pass through wd or return a new gc string.
+     These two types can't be both stored in a GTY(())-tagged string, but since
+     the cached value lives forever just copy it if needed.  */
+  if (cached_wd != wd)
+    {
+      cached_wd = xstrdup (cached_wd);
+      if (DWARF2_DIR_SHOULD_END_WITH_SEPARATOR && wd_plus_sep != NULL)
+        free (wd_plus_sep);
+    }
+
   return cached_wd;
 }
 
@@ -22721,6 +22730,21 @@ premark_types_used_by_global_vars (void)
   if (types_used_by_vars_hash)
     types_used_by_vars_hash
       ->traverse<void *, premark_types_used_by_global_vars_helper> (NULL);
+}
+
+/* Mark all variables used by the symtab as perennial.  */
+
+static void
+premark_used_variables (void)
+{
+  /* Mark DIEs in the symtab as used.  */
+  varpool_node *var;
+  FOR_EACH_VARIABLE (var)
+    {
+      dw_die_ref die = lookup_decl_die (var->decl);
+      if (die)
+	die->die_perennial_p = 1;
+    }
 }
 
 /* Generate a DW_TAG_call_site DIE in function DECL under SUBR_DIE
@@ -29385,6 +29409,19 @@ prune_unused_types_walk (dw_die_ref die)
 
       return;
 
+    case DW_TAG_variable:
+      if (flag_debug_only_used_symbols)
+	{
+	  if (die->die_perennial_p)
+	    break;
+
+	  /* premark_used_variables marks external variables --- don't mark
+	     them here.  */
+	  if (get_AT (die, DW_AT_external))
+	    return;
+	}
+      /* FALLTHROUGH */
+
     default:
       /* Mark everything else.  */
       break;
@@ -29510,6 +29547,10 @@ prune_unused_types (void)
 
   /* Mark types that are used in global variables.  */
   premark_types_used_by_global_vars ();
+
+  /* Mark variables used in the symtab.  */
+  if (flag_debug_only_used_symbols)
+    premark_used_variables ();
 
   /* Set the mark on nodes that are actually used.  */
   prune_unused_types_walk (comp_unit_die ());

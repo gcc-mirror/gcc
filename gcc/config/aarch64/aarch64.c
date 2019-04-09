@@ -11575,8 +11575,8 @@ aarch64_override_options_internal (struct gcc_options *opts)
   int probe_interval
     = PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL);
   if (guard_size != probe_interval)
-    error ("stack clash guard size '%d' must be equal to probing interval "
-	   "'%d'", guard_size, probe_interval);
+    error ("stack clash guard size %<%d%> must be equal to probing interval "
+	   "%<%d%>", guard_size, probe_interval);
 
   /* Enable sw prefetching at specified optimization level for
      CPUS that have prefetch.  Lower optimization level threshold by 1

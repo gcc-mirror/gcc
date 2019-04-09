@@ -23,15 +23,15 @@ version (CRuntime_Glibc)
 
     struct utsname
     {
-        char[utsNameLength] sysname;
-        char[utsNameLength] nodename;
-        char[utsNameLength] release;
-        char[utsNameLength] version_;
+        char[utsNameLength] sysname = 0;
+        char[utsNameLength] nodename = 0;
+        char[utsNameLength] release = 0;
+        char[utsNameLength] version_ = 0;
         // TODO Deprecate after version_ has been in an official release.
         alias update = version_;
-        char[utsNameLength] machine;
+        char[utsNameLength] machine = 0;
 
-        char[utsNameLength] __domainname;
+        char[utsNameLength] __domainname = 0;
     }
 
     int uname(utsname* __name);
@@ -42,13 +42,13 @@ else version (Darwin)
 
     struct utsname
     {
-        char[utsNameLength] sysname;
-        char[utsNameLength] nodename;
-        char[utsNameLength] release;
-        char[utsNameLength] version_;
+        char[utsNameLength] sysname = 0;
+        char[utsNameLength] nodename = 0;
+        char[utsNameLength] release = 0;
+        char[utsNameLength] version_ = 0;
         // TODO Deprecate after version_ has been in an official release.
         alias update = version_;
-        char[utsNameLength] machine;
+        char[utsNameLength] machine = 0;
     }
 
     int uname(utsname* __name);
@@ -60,13 +60,13 @@ else version (FreeBSD)
 
     struct utsname
     {
-        char[SYS_NMLN] sysname;
-        char[SYS_NMLN] nodename;
-        char[SYS_NMLN] release;
-        char[SYS_NMLN] version_;
+        char[SYS_NMLN] sysname = 0;
+        char[SYS_NMLN] nodename = 0;
+        char[SYS_NMLN] release = 0;
+        char[SYS_NMLN] version_ = 0;
         // TODO Deprecate after version_ has been in an official release.
         alias update = version_;
-        char[SYS_NMLN] machine;
+        char[SYS_NMLN] machine = 0;
     }
 
     int __xuname(int, void*);
@@ -78,13 +78,13 @@ else version (NetBSD)
 
     struct utsname
     {
-        char[utsNameLength] sysname;
-        char[utsNameLength] nodename;
-        char[utsNameLength] release;
-        char[utsNameLength] version_;
+        char[utsNameLength] sysname = 0;
+        char[utsNameLength] nodename = 0;
+        char[utsNameLength] release = 0;
+        char[utsNameLength] version_ = 0;
         // TODO Deprecate after version_ has been in an official release.
         alias update = version_;
-        char[utsNameLength] machine;
+        char[utsNameLength] machine = 0;
     }
 
     int uname(utsname* __name);
@@ -95,13 +95,13 @@ else version (DragonFlyBSD)
 
     struct utsname
     {
-        char[utsNameLength] sysname;
-        char[utsNameLength] nodename;
-        char[utsNameLength] release;
-        char[utsNameLength] version_;
+        char[utsNameLength] sysname = 0;
+        char[utsNameLength] nodename = 0;
+        char[utsNameLength] release = 0;
+        char[utsNameLength] version_ = 0;
         // TODO Deprecate after version_ has been in an official release.
         alias update = version_;
-        char[utsNameLength] machine;
+        char[utsNameLength] machine = 0;
     }
 
     int uname(utsname* __name);
@@ -112,12 +112,12 @@ else version (Solaris)
 
     struct utsname
     {
-        char[SYS_NMLN] sysname;
-        char[SYS_NMLN] nodename;
-        char[SYS_NMLN] release;
+        char[SYS_NMLN] sysname = 0;
+        char[SYS_NMLN] nodename = 0;
+        char[SYS_NMLN] release = 0;
         // The field name is version but version is a keyword in D.
-        char[SYS_NMLN] _version;
-        char[SYS_NMLN] machine;
+        char[SYS_NMLN] _version = 0;
+        char[SYS_NMLN] machine = 0;
     }
 
     int uname(utsname* __name);
@@ -128,13 +128,13 @@ else version (CRuntime_Bionic)
 
     struct utsname
     {
-        char[SYS_NMLN] sysname;
-        char[SYS_NMLN] nodename;
-        char[SYS_NMLN] release;
+        char[SYS_NMLN] sysname = 0;
+        char[SYS_NMLN] nodename = 0;
+        char[SYS_NMLN] release = 0;
         // The field name is version but version is a keyword in D.
-        char[SYS_NMLN] _version;
-        char[SYS_NMLN] machine;
-        char[SYS_NMLN] domainname;
+        char[SYS_NMLN] _version = 0;
+        char[SYS_NMLN] machine = 0;
+        char[SYS_NMLN] domainname = 0;
     }
 
     int uname(utsname*);
@@ -145,12 +145,12 @@ else version (CRuntime_Musl)
 
     struct utsname
     {
-        char[SYS_NMLN] sysname;
-        char[SYS_NMLN] nodename;
-        char[SYS_NMLN] release;
-        char[SYS_NMLN] _version;
-        char[SYS_NMLN] machine;
-        char[SYS_NMLN] domainname;
+        char[SYS_NMLN] sysname = 0;
+        char[SYS_NMLN] nodename = 0;
+        char[SYS_NMLN] release = 0;
+        char[SYS_NMLN] _version = 0;
+        char[SYS_NMLN] machine = 0;
+        char[SYS_NMLN] domainname = 0;
     }
 
     int uname(utsname*);
@@ -161,12 +161,12 @@ else version (CRuntime_UClibc)
 
     struct utsname
     {
-        char[utsNameLength] sysname;
-        char[utsNameLength] nodename;
-        char[utsNameLength] release;
-        char[utsNameLength] version_;
-        char[utsNameLength] machine;
-        char[utsNameLength] domainname;
+        char[utsNameLength] sysname = 0;
+        char[utsNameLength] nodename = 0;
+        char[utsNameLength] release = 0;
+        char[utsNameLength] version_ = 0;
+        char[utsNameLength] machine = 0;
+        char[utsNameLength] domainname = 0;
     }
 
     int uname(utsname*);

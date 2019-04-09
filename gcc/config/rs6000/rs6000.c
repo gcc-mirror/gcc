@@ -3050,7 +3050,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
      below.  */
   gcc_assert ((int)VECTOR_NONE == 0);
   memset ((void *) &rs6000_vector_unit[0], '\0', sizeof (rs6000_vector_unit));
-  memset ((void *) &rs6000_vector_mem[0], '\0', sizeof (rs6000_vector_unit));
+  memset ((void *) &rs6000_vector_mem[0], '\0', sizeof (rs6000_vector_mem));
 
   gcc_assert ((int)CODE_FOR_nothing == 0);
   memset ((void *) &reg_addr[0], '\0', sizeof (reg_addr));
@@ -3204,8 +3204,8 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	wy - Register class to do ISA 2.07 SF operations.
 	wz - Float register if we can do 32-bit unsigned int loads.
 	wH - Altivec register if SImode is allowed in VSX registers.
-	wI - VSX register if SImode is allowed in VSX registers.
-	wJ - VSX register if QImode/HImode are allowed in VSX registers.
+	wI - Float register if SImode is allowed in VSX registers.
+	wJ - Float register if QImode/HImode are allowed in VSX registers.
 	wK - Altivec register if QImode/HImode are allowed in VSX registers.  */
 
   if (TARGET_HARD_FLOAT)
@@ -3463,13 +3463,13 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
   for (r = 0; HARD_REGISTER_NUM_P (r); ++r)
     for (m = 0; m < NUM_MACHINE_MODES; ++m)
       rs6000_hard_regno_nregs[m][r]
-	= rs6000_hard_regno_nregs_internal (r, (machine_mode)m);
+	= rs6000_hard_regno_nregs_internal (r, (machine_mode) m);
 
   /* Precalculate TARGET_HARD_REGNO_MODE_OK.  */
   for (r = 0; HARD_REGISTER_NUM_P (r); ++r)
     for (m = 0; m < NUM_MACHINE_MODES; ++m)
-      if (rs6000_hard_regno_mode_ok_uncached (r, (machine_mode)m))
-	rs6000_hard_regno_mode_ok_p[m][r] = true;
+      rs6000_hard_regno_mode_ok_p[m][r]
+	= rs6000_hard_regno_mode_ok_uncached (r, (machine_mode) m);
 
   /* Precalculate CLASS_MAX_NREGS sizes.  */
   for (c = 0; c < LIM_REG_CLASSES; ++c)
@@ -8785,6 +8785,11 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	  else
 	    emit_library_call_value (tga, dest, LCT_CONST, Pmode);
 	  global_tlsarg = NULL_RTX;
+
+	  /* Make a note so that the result of this call can be CSEd.  */
+	  rtvec vec = gen_rtvec (1, copy_rtx (arg));
+	  rtx uns = gen_rtx_UNSPEC (Pmode, vec, UNSPEC_TLS_GET_ADDR);
+	  set_unique_reg_note (get_last_insn (), REG_EQUAL, uns);
 	}
       else if (model == TLS_MODEL_LOCAL_DYNAMIC)
 	{
@@ -8802,6 +8807,11 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	  else
 	    emit_library_call_value (tga, tmp1, LCT_CONST, Pmode);
 	  global_tlsarg = NULL_RTX;
+
+	  /* Make a note so that the result of this call can be CSEd.  */
+	  rtvec vec = gen_rtvec (1, copy_rtx (arg));
+	  rtx uns = gen_rtx_UNSPEC (Pmode, vec, UNSPEC_TLS_GET_ADDR);
+	  set_unique_reg_note (get_last_insn (), REG_EQUAL, uns);
 
 	  if (rs6000_tls_size == 16)
 	    {
@@ -20226,7 +20236,7 @@ rs6000_preferred_reload_class (rtx x, enum reg_class rclass)
       return NO_REGS;
     }
 
-  if (GET_MODE_CLASS (mode) == MODE_INT && rclass == NON_SPECIAL_REGS)
+  if (GET_MODE_CLASS (mode) == MODE_INT && rclass == GEN_OR_FLOAT_REGS)
     return GENERAL_REGS;
 
   return rclass;
@@ -20374,7 +20384,7 @@ rs6000_secondary_reload_class (enum reg_class rclass, machine_mode mode,
 
   /* Constants, memory, and FP registers can go into FP registers.  */
   if ((regno == -1 || FP_REGNO_P (regno))
-      && (rclass == FLOAT_REGS || rclass == NON_SPECIAL_REGS))
+      && (rclass == FLOAT_REGS || rclass == GEN_OR_FLOAT_REGS))
     return (mode != SDmode || lra_in_progress) ? NO_REGS : GENERAL_REGS;
 
   /* Memory, and AltiVec registers can go into AltiVec registers.  */
@@ -36144,7 +36154,7 @@ rs6000_libcall_value (machine_mode mode)
 }
 
 /* Compute register pressure classes.  We implement the target hook to avoid
-   IRA picking something like NON_SPECIAL_REGS as a pressure class, which can
+   IRA picking something like GEN_OR_FLOAT_REGS as a pressure class, which can
    lead to incorrect estimates of number of available registers and therefor
    increased register pressure/spill.   */
 static int

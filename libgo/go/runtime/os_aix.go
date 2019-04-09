@@ -62,12 +62,19 @@ func semasleep(ns int64) int32 {
 		if clock_gettime(_CLOCK_REALTIME, &ts) != 0 {
 			throw("clock_gettime")
 		}
-		ts.tv_sec += ns / 1e9
-		ts.tv_nsec += ns % 1e9
-		if ts.tv_nsec >= 1e9 {
-			ts.tv_sec++
-			ts.tv_nsec -= 1e9
+
+		sec := int64(ts.tv_sec) + ns/1e9
+		nsec := int64(ts.tv_nsec) + ns%1e9
+		if nsec >= 1e9 {
+			sec++
+			nsec -= 1e9
 		}
+		if sec != int64(timespec_sec_t(sec)) {
+			// Handle overflows (timespec_sec_t is 32-bit in 32-bit applications)
+			sec = 1<<31 - 1
+		}
+		ts.tv_sec = timespec_sec_t(sec)
+		ts.tv_nsec = timespec_nsec_t(nsec)
 
 		if sem_timedwait((*semt)(unsafe.Pointer(_m_.mos.waitsema)), &ts) != 0 {
 			err := errno()

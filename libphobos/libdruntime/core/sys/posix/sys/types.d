@@ -247,34 +247,15 @@ else version (CRuntime_Bionic)
     alias c_long    time_t;
     alias uint      uid_t;
 
-    version (X86)
-    {
-        alias ushort    mode_t;
-        alias ushort    nlink_t;
-    }
-    else version (X86_64)
-    {
-        alias ushort    mode_t;
-        alias uint      nlink_t;
-    }
-    else version (ARM)
-    {
-        alias ushort    mode_t;
-        alias ushort    nlink_t;
-    }
-    else version (AArch64)
-    {
-        alias uint      mode_t;
-        alias uint      nlink_t;
-    }
-    else version (MIPS32)
+    version (D_LP64)
     {
         alias uint      mode_t;
         alias uint      nlink_t;
     }
     else
     {
-        static assert(false, "Architecture not supported.");
+        alias ushort    mode_t;
+        alias ushort    nlink_t;
     }
 }
 else version (CRuntime_UClibc)
@@ -1068,7 +1049,7 @@ else version (CRuntime_Bionic)
         size_t  guard_size;
         int     sched_policy;
         int     sched_priority;
-        version (D_LP64) char[16] __reserved;
+        version (D_LP64) char[16] __reserved = 0;
     }
 
     struct pthread_cond_t

@@ -482,6 +482,8 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 	    = gomp_realloc (pool->threads,
 			    pool->threads_size
 			    * sizeof (struct gomp_thread *));
+	  /* Add current (master) thread to threads[].  */
+	  pool->threads[0] = thr;
 	}
 
       /* Release existing idle threads.  */

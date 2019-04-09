@@ -1144,6 +1144,7 @@ get_all_loop_exits (basic_block bb)
       struct loop *this_loop;
       struct loop *pred_loop = NULL;
       int i;
+      unsigned this_depth;
       edge e;
 
       for (this_loop = bb->loop_father;
@@ -1155,11 +1156,14 @@ get_all_loop_exits (basic_block bb)
       gcc_assert (this_loop != NULL);
 
       exits = get_loop_exit_edges_unique_dests (this_loop);
+      this_depth = loop_depth (this_loop);
 
-      /* Traverse all loop headers.  */
+      /* Traverse all loop headers.  Be careful not to go back
+	 to the outer loop's header (see PR 84206).  */
       for (i = 0; exits.iterate (i, &e); i++)
-	if (in_current_region_p (e->dest)
-	    || inner_loop_header_p (e->dest))
+	if ((in_current_region_p (e->dest)
+	     || (inner_loop_header_p (e->dest)))
+	    && loop_depth (e->dest->loop_father) >= this_depth)
 	  {
 	    vec<edge> next_exits = get_all_loop_exits (e->dest);
 

@@ -1,3 +1,23 @@
+2019-04-01  Richard Biener  <rguenther@suse.de>
+
+	PR c/71598
+	* c-tree.h (c_get_alias_set): Declare.
+	* c-objc-common.h (LANG_HOOKS_GET_ALIAS_SET): Use c_get_alias_set.
+	* c-objc-common.c (c_get_alias_set): Treat enumeral types
+	as the underlying integer type.
+
+2019-03-19  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/89688
+	* c-decl.c (finish_decl): Call braced_lists_to_string for more
+	kinds of initializers.
+
+2019-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89734
+	* c-decl.c (grokdeclarator): Call c_build_qualified_type on function
+	return type even if quals_used is 0.  Formatting fixes.
+
 2019-03-14  Richard Biener  <rguenther@suse.de>
 
 	* c-tree.h (enum c_declspec_il): New.

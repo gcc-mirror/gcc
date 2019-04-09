@@ -1,3 +1,27 @@
+2019-04-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/89823
+	* EXCLUDES: Update list of d/dmd sources.
+	* gcc.pot: Regenerated.
+
+2019-04-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* fr.po, sv.po: Update.
+
+2019-03-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* be.po, da.po, de.po, el.po, es.po, fi.po, fr.po, hr.po, id.po,
+	ja.po, nl.po, ru.po, sr.po, sv.po, tr.po, uk.po, vi.po, zh_CN.po,
+	zh_TW.po: Update.
+
+2019-03-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
+2019-03-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* sv.po: Update.
+
 2019-03-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* fi.po: Update.

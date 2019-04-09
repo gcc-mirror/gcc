@@ -15,7 +15,10 @@
 module core.sys.windows.threadaux;
 version (Windows):
 
-import core.sys.windows.windows;
+import core.sys.windows.basetsd/+ : HANDLE+/;
+import core.sys.windows.winbase/+ : CloseHandle, GetCurrentThreadId, GetCurrentProcessId,
+    GetModuleHandleA, GetProcAddress+/;
+import core.sys.windows.windef/+ : BOOL, DWORD, FALSE, HRESULT+/;
 import core.stdc.stdlib;
 
 public import core.thread;

@@ -176,34 +176,9 @@ else version (DragonFlyBSD)
 }
 else version (CRuntime_Bionic)
 {
-    // All except ftok are from the linux kernel headers.
-    version (X86)
-    {
-        struct ipc_perm
-        {
-            key_t   key;
-            ushort  uid;
-            ushort  gid;
-            ushort  cuid;
-            ushort  cgid;
-            mode_t  mode;
-            ushort  seq;
-        }
-    }
-    else version (ARM)
-    {
-        struct ipc_perm
-        {
-            key_t   key;
-            ushort  uid;
-            ushort  gid;
-            ushort  cuid;
-            ushort  cgid;
-            mode_t  mode;
-            ushort  seq;
-        }
-    }
-    else version (AArch64)
+    // All except ftok are from the linux kernel headers. Latest Bionic headers
+    // don't use this legacy definition anymore, consider updating.
+    version (D_LP64)
     {
         struct ipc_perm
         {
@@ -218,7 +193,16 @@ else version (CRuntime_Bionic)
     }
     else
     {
-        static assert(false, "Architecture not supported.");
+        struct ipc_perm
+        {
+            key_t   key;
+            ushort  uid;
+            ushort  gid;
+            ushort  cuid;
+            ushort  cgid;
+            mode_t  mode;
+            ushort  seq;
+        }
     }
 
     enum IPC_CREAT      = 0x0200; // 01000

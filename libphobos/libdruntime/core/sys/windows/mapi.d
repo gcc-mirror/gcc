@@ -124,7 +124,7 @@ struct MapiMessage {
 }
 alias MapiMessage* lpMapiMessage;
 
-extern (Pascal) {
+extern (Windows) {
     ULONG MAPILogon(ULONG_PTR, LPSTR, LPSTR, FLAGS, ULONG, LPLHANDLE);
     ULONG MAPISendMail(LHANDLE, ULONG_PTR, lpMapiMessage, FLAGS, ULONG);
     ULONG MAPISendDocuments(ULONG_PTR, LPSTR, LPSTR, LPSTR, ULONG);

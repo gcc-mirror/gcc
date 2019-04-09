@@ -1229,10 +1229,21 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
 	    if (pred->ep_probability <= PROB_VERY_UNLIKELY
 		|| pred->ep_predictor == PRED_COLD_LABEL)
 	      unlikely_edges.add (pred->ep_edge);
-	    if (pred->ep_probability >= PROB_VERY_LIKELY
-		|| pred->ep_predictor == PRED_BUILTIN_EXPECT
-		|| pred->ep_predictor == PRED_HOT_LABEL)
+	    else if (pred->ep_probability >= PROB_VERY_LIKELY
+		     || pred->ep_predictor == PRED_BUILTIN_EXPECT
+		     || pred->ep_predictor == PRED_HOT_LABEL)
 	      likely_edges.add (pred);
+	  }
+
+      /* It can happen that an edge is both in likely_edges and unlikely_edges.
+	 Clear both sets in that situation.  */
+      for (hash_set<edge_prediction *>::iterator it = likely_edges.begin ();
+	   it != likely_edges.end (); ++it)
+	if (unlikely_edges.contains ((*it)->ep_edge))
+	  {
+	    likely_edges.empty ();
+	    unlikely_edges.empty ();
+	    break;
 	  }
 
       if (!dry_run)

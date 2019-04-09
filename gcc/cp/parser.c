@@ -9443,6 +9443,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 {
   cp_parser_expression_stack stack;
   cp_parser_expression_stack_entry *sp = &stack[0];
+  cp_parser_expression_stack_entry *disable_warnings_sp = NULL;
   cp_parser_expression_stack_entry current;
   cp_expr rhs;
   cp_token *token;
@@ -9506,12 +9507,14 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 
       /* For "false && x" or "true || x", x will never be executed;
 	 disable warnings while evaluating it.  */
-      if (current.tree_type == TRUTH_ANDIF_EXPR)
-	c_inhibit_evaluation_warnings +=
-	  cp_fully_fold (current.lhs) == truthvalue_false_node;
-      else if (current.tree_type == TRUTH_ORIF_EXPR)
-	c_inhibit_evaluation_warnings +=
-	  cp_fully_fold (current.lhs) == truthvalue_true_node;
+      if ((current.tree_type == TRUTH_ANDIF_EXPR
+	   && cp_fully_fold (current.lhs) == truthvalue_false_node)
+	  || (current.tree_type == TRUTH_ORIF_EXPR
+	      && cp_fully_fold (current.lhs) == truthvalue_true_node))
+	{
+	  disable_warnings_sp = sp;
+	  ++c_inhibit_evaluation_warnings;
+	}
 
       /* Extract another operand.  It may be the RHS of this expression
 	 or the LHS of a new, higher priority expression.  */
@@ -9557,12 +9560,11 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	}
 
       /* Undo the disabling of warnings done above.  */
-      if (current.tree_type == TRUTH_ANDIF_EXPR)
-	c_inhibit_evaluation_warnings -=
-	  cp_fully_fold (current.lhs) == truthvalue_false_node;
-      else if (current.tree_type == TRUTH_ORIF_EXPR)
-	c_inhibit_evaluation_warnings -=
-	  cp_fully_fold (current.lhs) == truthvalue_true_node;
+      if (sp == disable_warnings_sp)
+	{
+	  disable_warnings_sp = NULL;
+	  --c_inhibit_evaluation_warnings;
+	}
 
       if (warn_logical_not_paren
 	  && TREE_CODE_CLASS (current.tree_type) == tcc_comparison
@@ -10395,7 +10397,7 @@ cp_parser_lambda_expression (cp_parser* parser)
 	}
       ok = false;
     }
-  else if (parser->in_template_argument_list_p)
+  else if (parser->in_template_argument_list_p || processing_template_parmlist)
     {
       if (!token->error_reported)
 	{
@@ -10547,6 +10549,8 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	error ("non-local lambda expression cannot have a capture-default");
     }
 
+  hash_set<tree, true> ids;
+  tree first_capture_id = NULL_TREE;
   while (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_SQUARE))
     {
       cp_token* capture_token;
@@ -10582,11 +10586,14 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	    pedwarn (loc, 0, "explicit by-copy capture of %<this%> redundant "
 		     "with by-copy capture default");
 	  cp_lexer_consume_token (parser->lexer);
-	  add_capture (lambda_expr,
-		       /*id=*/this_identifier,
-		       /*initializer=*/finish_this_expr (),
-		       /*by_reference_p=*/true,
-		       explicit_init_p);
+	  if (LAMBDA_EXPR_THIS_CAPTURE (lambda_expr))
+	    pedwarn (input_location, 0,
+		     "already captured %qD in lambda expression",
+		     this_identifier);
+	  else
+	    add_capture (lambda_expr, /*id=*/this_identifier,
+			 /*initializer=*/finish_this_expr (),
+			 /*by_reference_p=*/true, explicit_init_p);
 	  continue;
 	}
 
@@ -10600,11 +10607,14 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 			     "%<-std=c++17%> or %<-std=gnu++17%>");
 	  cp_lexer_consume_token (parser->lexer);
 	  cp_lexer_consume_token (parser->lexer);
-	  add_capture (lambda_expr,
-		       /*id=*/this_identifier,
-		       /*initializer=*/finish_this_expr (),
-		       /*by_reference_p=*/false,
-		       explicit_init_p);
+	  if (LAMBDA_EXPR_THIS_CAPTURE (lambda_expr))
+	    pedwarn (input_location, 0,
+		     "already captured %qD in lambda expression",
+		     this_identifier);
+	  else
+	    add_capture (lambda_expr, /*id=*/this_identifier,
+			 /*initializer=*/finish_this_expr (),
+			 /*by_reference_p=*/false, explicit_init_p);
 	  continue;
 	}
 
@@ -10753,11 +10763,28 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 		     "default", capture_id);
 	}
 
-      add_capture (lambda_expr,
-		   capture_id,
-		   capture_init_expr,
-		   /*by_reference_p=*/capture_kind == BY_REFERENCE,
-		   explicit_init_p);
+      /* Check for duplicates.
+	 Optimize for the zero or one explicit captures cases and only create
+	 the hash_set after adding second capture.  */
+      bool found = false;
+      if (ids.elements ())
+	found = ids.add (capture_id);
+      else if (first_capture_id == NULL_TREE)
+	first_capture_id = capture_id;
+      else if (capture_id == first_capture_id)
+	found = true;
+      else
+	{
+	  ids.add (first_capture_id);
+	  ids.add (capture_id);
+	}
+      if (found)
+	pedwarn (input_location, 0,
+		 "already captured %qD in lambda expression", capture_id);
+      else
+	add_capture (lambda_expr, capture_id, capture_init_expr,
+		     /*by_reference_p=*/capture_kind == BY_REFERENCE,
+		     explicit_init_p);
 
       /* If there is any qualification still in effect, clear it
 	 now; we will be starting fresh with the next capture.  */

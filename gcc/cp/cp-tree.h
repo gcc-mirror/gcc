@@ -3534,7 +3534,15 @@ struct GTY(()) lang_decl {
       template <typename T> struct S {};
       template <typename T> struct S<T*> {};
       
-   the CLASSTPYE_TI_TEMPLATE for S<int*> will be S, not the S<T*>.  */
+   the CLASSTPYE_TI_TEMPLATE for S<int*> will be S, not the S<T*>.
+
+   For a member class template, CLASSTYPE_TI_TEMPLATE always refers to the
+   partial instantiation rather than the primary template.  CLASSTYPE_TI_ARGS
+   are for the primary template if the partial instantiation isn't
+   specialized, or for the explicit specialization if it is, e.g.
+
+      template <class T> class C { template <class U> class D; }
+      template <> template <class U> class C<int>::D;  */
 #define CLASSTYPE_TI_TEMPLATE(NODE) TI_TEMPLATE (CLASSTYPE_TEMPLATE_INFO (NODE))
 #define CLASSTYPE_TI_ARGS(NODE)     TI_ARGS (CLASSTYPE_TEMPLATE_INFO (NODE))
 
@@ -6233,6 +6241,7 @@ extern int remaining_arguments			(tree);
 extern tree perform_implicit_conversion		(tree, tree, tsubst_flags_t);
 extern tree perform_implicit_conversion_flags	(tree, tree, tsubst_flags_t, int);
 extern tree build_converted_constant_expr	(tree, tree, tsubst_flags_t);
+extern tree build_converted_constant_bool_expr	(tree, tsubst_flags_t);
 extern tree perform_direct_initialization_if_possible (tree, tree, bool,
                                                        tsubst_flags_t);
 extern tree in_charge_arg_for_name		(tree);
@@ -6513,7 +6522,7 @@ extern tree cp_build_parm_decl			(tree, tree, tree);
 extern tree get_guard				(tree);
 extern tree get_guard_cond			(tree, bool);
 extern tree set_guard				(tree);
-extern tree get_tls_wrapper_fn			(tree);
+extern tree maybe_get_tls_wrapper_call		(tree);
 extern void mark_needed				(tree);
 extern bool decl_needed_p			(tree);
 extern void note_vague_linkage_fn		(tree);
@@ -7705,6 +7714,9 @@ extern tree cxx_constant_init			(tree, tree = NULL_TREE);
 extern tree maybe_constant_value		(tree, tree = NULL_TREE, bool = false);
 extern tree maybe_constant_init			(tree, tree = NULL_TREE, bool = false);
 extern tree fold_non_dependent_expr		(tree,
+						 tsubst_flags_t = tf_warning_or_error,
+						 bool = false);
+extern tree fold_non_dependent_init		(tree,
 						 tsubst_flags_t = tf_warning_or_error,
 						 bool = false);
 extern tree fold_simple				(tree);

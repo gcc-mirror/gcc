@@ -107,6 +107,10 @@ else version (CRuntime_UClibc)
     else
         enum __WORDSIZE=32;
 }
+else version (CRuntime_Bionic)
+{
+    enum __USE_GNU           = false;
+}
 else version (Solaris)
 {
     enum _FILE_OFFSET_BITS = 64;

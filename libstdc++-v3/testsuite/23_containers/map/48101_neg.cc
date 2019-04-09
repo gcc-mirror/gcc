@@ -23,8 +23,10 @@
 void
 test01()
 {
-  std::map<int, int, std::less<int*>> c;      // { dg-error "here" }
-  std::map<int, int, std::allocator<int>> c2; // { dg-error "here" }
+  std::map<int, int, std::less<int*>> c;
+  std::map<int, int, std::allocator<int>> c2;
 }
 
+// { dg-error "_Compare = std::less<int.>" "" { target *-*-* } 0 }
+// { dg-error "_Compare = std::allocator<int>" "" { target *-*-* } 0 }
 // { dg-error "comparison object must be invocable" "" { target *-*-* } 0 }

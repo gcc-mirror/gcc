@@ -1094,6 +1094,7 @@ typedef struct gfc_component
   struct gfc_typebound_proc *tb;
   /* When allocatable/pointer and in a coarray the associated token.  */
   tree caf_token;
+  bool finalized;
 }
 gfc_component;
 
@@ -1739,6 +1740,7 @@ typedef struct gfc_oacc_routine_name
   struct gfc_symbol *sym;
   struct gfc_omp_clauses *clauses;
   struct gfc_oacc_routine_name *next;
+  locus loc;
 }
 gfc_oacc_routine_name;
 
@@ -3210,6 +3212,7 @@ void gfc_resolve_oacc_directive (gfc_code *, gfc_namespace *);
 void gfc_resolve_oacc_declare (gfc_namespace *);
 void gfc_resolve_oacc_parallel_loop_blocks (gfc_code *, gfc_namespace *);
 void gfc_resolve_oacc_blocks (gfc_code *, gfc_namespace *);
+void gfc_resolve_oacc_routines (gfc_namespace *);
 
 /* expr.c */
 void gfc_free_actual_arglist (gfc_actual_arglist *);

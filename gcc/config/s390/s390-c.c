@@ -326,7 +326,7 @@ s390_cpu_cpp_builtins_internal (cpp_reader *pfile,
   s390_def_or_undef_macro (pfile, MASK_OPT_VX, old_opts, opts,
 			   "__VX__", "__VX__");
   s390_def_or_undef_macro (pfile, MASK_ZVECTOR, old_opts, opts,
-			   "__VEC__=10302", "__VEC__");
+			   "__VEC__=10303", "__VEC__");
   s390_def_or_undef_macro (pfile, MASK_ZVECTOR, old_opts, opts,
 			   "__vector=__attribute__((vector_size(16)))",
 			   "__vector__");
@@ -810,7 +810,13 @@ s390_fn_types_compatible (enum s390_builtin_ov_type_index typeindex,
 
     mismatch:
       if (TARGET_DEBUG_ARG)
-	fprintf (stderr, " mismatch in operand: %d\n", i + 1);
+	{
+	  fprintf (stderr, " mismatch in operand: %d incoming: ", i + 1);
+	  print_generic_expr (stderr, in_type, TDF_VOPS|TDF_MEMSYMS);
+	  fprintf (stderr, " expected: ");
+	  print_generic_expr (stderr, b_arg_type, TDF_VOPS|TDF_MEMSYMS);
+	  fprintf (stderr, "\n");
+	}
       return INT_MAX;
     }
 

@@ -224,7 +224,7 @@ static if (_DARWIN_C_SOURCE)
     struct ip_opts
     {
         in_addr  ip_dst;
-        char[40] ip_opts;
+        char[40] ip_opts = 0;
     };
 
     enum IP_OPTIONS         = 1;

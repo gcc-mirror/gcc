@@ -3499,7 +3499,7 @@ arm_option_override (void)
 	       || pic_register >= PC_REGNUM
 	       || (TARGET_VXWORKS_RTP
 		   && (unsigned int) pic_register != arm_pic_register))
-	error ("unable to use '%s' for PIC register", arm_pic_register_string);
+	error ("unable to use %qs for PIC register", arm_pic_register_string);
       else
 	arm_pic_register = pic_register;
     }

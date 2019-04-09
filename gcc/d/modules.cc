@@ -534,7 +534,9 @@ layout_moduleinfo_fields (Module *decl, tree type)
   layout_moduleinfo_field (make_array_type (Type::tchar, namelen),
 			   type, offset);
 
-  finish_aggregate_type (offset, 1, type, NULL);
+  size_t alignsize = MAX (TYPE_ALIGN_UNIT (type),
+			  TYPE_ALIGN_UNIT (ptr_type_node));
+  finish_aggregate_type (offset, alignsize, type, NULL);
 
   return type;
 }

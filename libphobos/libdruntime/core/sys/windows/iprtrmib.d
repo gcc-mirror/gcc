@@ -145,7 +145,7 @@ struct MIB_ICMP {
 alias MIB_ICMP* PMIB_ICMP;
 
 struct MIB_IFROW {
-    WCHAR[MAX_INTERFACE_NAME_LEN] wszName;
+    WCHAR[MAX_INTERFACE_NAME_LEN] wszName = 0;
     DWORD dwIndex;
     DWORD dwType;
     DWORD dwMtu;

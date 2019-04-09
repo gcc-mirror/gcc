@@ -1,3 +1,14 @@
+2019-03-28  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/89829
+	* Makefile.in: Revert r254150.
+	* Makefile.tpl: Likewise.
+
+2019-03-28  Ben Elliston  <bje@gnu.org>
+
+	* MAINTAINERS (Various Maintainers): Remove myself from dfp.c and
+	related, and libdecnumber.
+
 2019-03-15  Alexander Monakov  <amonakov@ispras.ru>
 
 	* MAINTAINERS (Reviewers): Add myself as selective scheduling reviewer.

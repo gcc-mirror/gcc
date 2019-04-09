@@ -7403,7 +7403,7 @@ proc check_avx_available { } {
 # Return true if we are compiling for AVX2 target.
 
 proc check_avx2_available { } {
-  if { [check_no_compiler_messages avx_available assembly {
+  if { [check_no_compiler_messages avx2_available assembly {
     #ifndef __AVX2__
     #error unsupported
     #endif
@@ -8959,6 +8959,22 @@ proc check_effective_target_s390_vxe { } {
 	    return 0;
 	}
     } "-march=z14 -mzarch" ]
+}
+
+# Same as above but for the arch13 vector enhancement facility. Test
+# is performed with the vector shift left double by bit instruction.
+proc check_effective_target_s390_vxe2 { } {
+    if ![istarget s390*-*-*] then {
+	return 0;
+    }
+
+    return [check_runtime s390_check_vxe2 {
+	int main (void)
+	{
+	    asm ("vsld %%v24, %%v26, %%v28, 3" : : : "v24", "v26", "v28");
+	    return 0;
+	}
+    } "-march=arch13 -mzarch" ]
 }
 
 #For versions of ARM architectures that have hardware div insn,

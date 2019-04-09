@@ -68,4 +68,5 @@ int
 main()
 {
   test01();
+  test02();
 }

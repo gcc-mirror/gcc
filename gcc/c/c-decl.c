@@ -5165,11 +5165,10 @@ finish_decl (tree decl, location_t init_loc, tree init,
       relayout_decl (decl);
     }
 
-  if (TREE_CODE (type) == ARRAY_TYPE
-      && TYPE_STRING_FLAG (TREE_TYPE (type))
-      && DECL_INITIAL (decl)
-      && TREE_CODE (DECL_INITIAL (decl)) == CONSTRUCTOR)
-    DECL_INITIAL (decl) = braced_list_to_string (type, DECL_INITIAL (decl));
+  /* Look for braced array initializers for character arrays and
+     recursively convert them into STRING_CSTs.  */
+  if (tree init = DECL_INITIAL (decl))
+    DECL_INITIAL (decl) = braced_lists_to_strings (type, init);
 
   if (VAR_P (decl))
     {
@@ -6611,10 +6610,12 @@ grokdeclarator (const struct c_declarator *declarator,
 		  quals_used &= TYPE_QUAL_ATOMIC;
 		if (quals_used && VOID_TYPE_P (type) && really_funcdef)
 		  pedwarn (specs_loc, 0,
-			   "function definition has qualified void return type");
+			   "function definition has qualified void "
+			   "return type");
 		else
 		  warning_at (specs_loc, OPT_Wignored_qualifiers,
-			   "type qualifiers ignored on function return type");
+			      "type qualifiers ignored on function "
+			      "return type");
 
 		/* Ensure an error for restrict on invalid types; the
 		   DR#423 resolution is not entirely clear about
@@ -6624,8 +6625,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		    && (!POINTER_TYPE_P (type)
 			|| !C_TYPE_OBJECT_OR_INCOMPLETE_P (TREE_TYPE (type))))
 		  error_at (loc, "invalid use of %<restrict%>");
-		if (quals_used)
-		  type = c_build_qualified_type (type, quals_used);
+		type = c_build_qualified_type (type, quals_used);
 	      }
 	    type_quals = TYPE_UNQUALIFIED;
 

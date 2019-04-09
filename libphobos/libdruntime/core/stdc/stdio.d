@@ -429,7 +429,7 @@ else version (CRuntime_Glibc)
         int     _old_offset;
         ushort  _cur_column;
         byte    _vtable_offset;
-        char[1] _shortbuf;
+        char[1] _shortbuf = 0;
         void*   _lock;
     }
 
@@ -442,7 +442,7 @@ else version (CRuntime_Musl)
 {
     union fpos_t
     {
-        char[16] __opaque;
+        char[16] __opaque = 0;
         double __align;
     }
     struct _IO_FILE;
@@ -572,7 +572,7 @@ else version (NetBSD)
 
         int     function(void *)    _flush;
         /* Formerly used by fgetln/fgetwln; kept for binary compatibility */
-        char[__sbuf.sizeof - _flush.sizeof]    _lb_unused;
+        char[__sbuf.sizeof - _flush.sizeof]    _lb_unused = void;
 
 
         int             _blksize;
@@ -672,8 +672,8 @@ else version (Solaris)
             char* _ptr;
             int _cnt;
             char* _base;
-            char _flag;
-            char _magic;
+            char _flag = 0;
+            char _magic = 0;
             ushort __flags; // __orientation:2
                             // __ionolock:1
                             // __seekable:1
@@ -756,7 +756,7 @@ else version (CRuntime_UClibc)
     struct __STDIO_FILE_STRUCT
     {
         ushort __modeflags;
-        char[2] __ungot_width;
+        char[2] __ungot_width = 0;
         int __filedes;
         char* __bufstart;
         char* __bufend;
@@ -767,7 +767,7 @@ else version (CRuntime_UClibc)
         __STDIO_FILE_STRUCT* __nextopen;
         void *__cookie;
         _IO_cookie_io_functions_t __gcs;
-        wchar_t[2] __ungot;
+        wchar_t[2] __ungot = 0;
         mbstate_t __state;
         void *__unused;
         int __user_locking;

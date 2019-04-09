@@ -75,6 +75,24 @@ else version (CRuntime_Musl)
         alias errno = __errno_location;
     }
 }
+else version (OpenBSD)
+{
+    // https://github.com/openbsd/src/blob/master/include/errno.h
+    extern (C)
+    {
+        ref int __errno();
+        alias errno = __errno;
+    }
+}
+else version (NetBSD)
+{
+    // https://github.com/NetBSD/src/blob/trunk/include/errno.h
+    extern (C)
+    {
+        ref int __errno();
+        alias errno = __errno;
+    }
+}
 else version (FreeBSD)
 {
     extern (C)
@@ -85,8 +103,14 @@ else version (FreeBSD)
 }
 else version (DragonFlyBSD)
 {
-    pragma(mangle, "errno") extern int __errno;
-    ref int errno() { return __errno;}
+    extern (C)
+    {
+        pragma(mangle, "errno") int __errno;
+        ref int __error() {
+            return __errno;
+        }
+        alias errno = __error;
+    }
 }
 else version (CRuntime_Bionic)
 {

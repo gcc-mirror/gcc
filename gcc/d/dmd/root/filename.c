@@ -262,6 +262,7 @@ const char *FileName::name(const char *str)
                 if (e == str + 1 || e == str + len - 1)
                     return e + 1;
 #endif
+                /* falls through */
             default:
                 if (e == str)
                     break;
@@ -542,7 +543,7 @@ int FileName::exists(const char *name)
     int result;
 
     dw = GetFileAttributesA(name);
-    if (dw == -1L)
+    if (dw == INVALID_FILE_ATTRIBUTES)
         result = 0;
     else if (dw & FILE_ATTRIBUTE_DIRECTORY)
         result = 2;
@@ -568,7 +569,7 @@ bool FileName::ensurePathExists(const char *path)
                 size_t len = strlen(path);
                 if ((len > 2 && p[-1] == ':' && strcmp(path + 2, p) == 0) ||
                     len == strlen(p))
-                {   mem.xfree(const_cast<void *>(p));
+                {   mem.xfree(const_cast<char *>(p));
                     return 0;
                 }
 #endif
@@ -621,7 +622,7 @@ const char *FileName::canonicalName(const char *name)
     DWORD result = GetFullPathNameA(name, 0, NULL, NULL);
     if (result)
     {
-        char *buf = (char *)malloc(result);
+        char *buf = (char *)mem.xmalloc(result);
         result = GetFullPathNameA(name, result, buf, NULL);
         if (result == 0)
         {

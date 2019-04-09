@@ -32,6 +32,8 @@ const _RTAX_NETMASK = 2
 const _RTAX_IFA = 5
 const _RTAX_MAX = 8
 
+const _SIOCGIFMTU = -0x3fd796aa
+
 func getIfList() ([]byte, error) {
 	needed, err := syscall.Getkerninfo(_KINFO_RT_IFLIST, 0, 0, 0)
 	if err != nil {
@@ -62,7 +64,7 @@ func interfaceTable(ifindex int) ([]Interface, error) {
 		}
 		if ifm.Type == syscall.RTM_IFINFO {
 			if ifindex == 0 || ifindex == int(ifm.Index) {
-				sdl := (*rawSockaddrDatalink)(unsafe.Pointer(&tab[syscall.SizeofIfMsghdr]))
+				sdl := (*rawSockaddrDatalink)(unsafe.Pointer(&tab[unsafe.Sizeof(syscall.IfMsgHdr)]))
 
 				ifi := &Interface{Index: int(ifm.Index), Flags: linkFlags(ifm.Flags)}
 				ifi.Name = string(sdl.Data[:sdl.Nlen])
@@ -75,7 +77,7 @@ func interfaceTable(ifindex int) ([]Interface, error) {
 				if err != nil {
 					return nil, err
 				}
-				err = unix.Ioctl(sock, syscall.SIOCGIFMTU, uintptr(unsafe.Pointer(ifr)))
+				err = unix.Ioctl(sock, _SIOCGIFMTU, uintptr(unsafe.Pointer(ifr)))
 				if err != nil {
 					return nil, err
 				}
@@ -131,7 +133,7 @@ func interfaceAddrTable(ifi *Interface) ([]Addr, error) {
 		if ifm.Type == syscall.RTM_NEWADDR {
 			if ifi == nil || ifi.Index == int(ifm.Index) {
 				mask := ifm.Addrs
-				off := uint(syscall.SizeofIfMsghdr)
+				off := uint(unsafe.Sizeof(syscall.IfMsgHdr))
 
 				var iprsa, nmrsa *syscall.RawSockaddr
 				for i := uint(0); i < _RTAX_MAX; i++ {

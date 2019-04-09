@@ -824,10 +824,9 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
       value = digest_init_flags (type, init, flags, tf_warning_or_error);
     }
 
-  if (TREE_CODE (type) == ARRAY_TYPE
-      && TYPE_STRING_FLAG (TREE_TYPE (type))
-      && TREE_CODE (value) == CONSTRUCTOR)
-    value = braced_list_to_string (type, value);
+  /* Look for braced array initializers for character arrays and
+     recursively convert them into STRING_CSTs.  */
+  value = braced_lists_to_strings (type, value);
 
   current_ref_temp_count = 0;
   value = extend_ref_init_temps (decl, value, cleanups);
@@ -1201,8 +1200,7 @@ digest_init_r (tree type, tree init, int nested, int flags,
   /* "If T is a class type and the initializer list has a single
      element of type cv U, where U is T or a class derived from T,
      the object is initialized from that element."  */
-  if (flag_checking
-      && cxx_dialect >= cxx11
+  if (cxx_dialect >= cxx11
       && BRACE_ENCLOSED_INITIALIZER_P (stripped_init)
       && CONSTRUCTOR_NELTS (stripped_init) == 1
       && ((CLASS_TYPE_P (type) && !CLASSTYPE_NON_AGGREGATE (type))
@@ -1210,8 +1208,29 @@ digest_init_r (tree type, tree init, int nested, int flags,
     {
       tree elt = CONSTRUCTOR_ELT (stripped_init, 0)->value;
       if (reference_related_p (type, TREE_TYPE (elt)))
-	/* We should have fixed this in reshape_init.  */
-	gcc_unreachable ();
+	{
+	  /* In C++17, aggregates can have bases, thus participate in
+	     aggregate initialization.  In the following case:
+
+	       struct B { int c; };
+	       struct D : B { };
+	       D d{{D{{42}}}};
+
+	    there's an extra set of braces, so the D temporary initializes
+	    the first element of d, which is the B base subobject.  The base
+	    of type B is copy-initialized from the D temporary, causing
+	    object slicing.  */
+	  tree field = next_initializable_field (TYPE_FIELDS (type));
+	  if (field && DECL_FIELD_IS_BASE (field))
+	    {
+	      if (warning_at (loc, 0, "initializing a base class of type %qT "
+			      "results in object slicing", TREE_TYPE (field)))
+		inform (loc, "remove %<{ }%> around initializer");
+	    }
+	  else if (flag_checking)
+	    /* We should have fixed this in reshape_init.  */
+	    gcc_unreachable ();
+	}
     }
 
   if (BRACE_ENCLOSED_INITIALIZER_P (stripped_init)
@@ -1326,8 +1345,7 @@ massage_init_elt (tree type, tree init, int nested, int flags,
     init = TARGET_EXPR_INITIAL (init);
   /* When we defer constant folding within a statement, we may want to
      defer this folding as well.  */
-  tree t = fold_non_dependent_expr (init, complain);
-  t = maybe_constant_init (t);
+  tree t = fold_non_dependent_init (init, complain);
   if (TREE_CONSTANT (t))
     init = t;
   return init;

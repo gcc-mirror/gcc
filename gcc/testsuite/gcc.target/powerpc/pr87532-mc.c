@@ -1,8 +1,8 @@
 /* { dg-do run { target int128 } } */
-/* { dg-require-effective-target vmx_hw } */
-/* { dg-options "-maltivec -O2" } */
+/* { dg-require-effective-target vsx_hw } */
+/* { dg-options "-mvsx -O2" } */
 
-/* This test should run the same on any target that supports altivec/dfp
+/* This test should run the same on any target that supports vsx
    instructions.  Intentionally not specifying cpu in order to test
    all code generation paths.  */
 

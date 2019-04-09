@@ -1,5 +1,5 @@
 // PERMUTE_ARGS: -g
-// EXTRA_CPP_SOURCES: extra-files/cppb.cpp
+// EXTRA_CPP_SOURCES: cppb.cpp
 
 import core.stdc.stdio;
 import core.stdc.stdarg;

@@ -43,7 +43,28 @@ int eventfd_read (int fd, eventfd_t* value);
 /* Increment event counter.  */
 int eventfd_write (int fd, eventfd_t value);
 
-version (X86_Any)
+version (CRuntime_UClibc)
+{
+    version (MIPS_Any)
+    {
+        enum EFD_SEMAPHORE = 1;
+        enum EFD_CLOEXEC = 0x80000; // octal!02000000
+        enum EFD_NONBLOCK = 0x80; // octal!00000200
+    }
+    else version (SPARC_Any)
+    {
+        enum EFD_SEMAPHORE = 1;
+        enum EFD_CLOEXEC = 0x400000;
+        enum EFD_NONBLOCK = 0x004000;
+    }
+    else
+    {
+        enum EFD_SEMAPHORE = 1;
+        enum EFD_CLOEXEC = 0x80000; // octal!02000000
+        enum EFD_NONBLOCK = 0x800; // octal!00004000
+    }
+}
+else version (X86_Any)
 {
     enum EFD_SEMAPHORE = 1;
     enum EFD_CLOEXEC = 0x80000; // octal!2000000

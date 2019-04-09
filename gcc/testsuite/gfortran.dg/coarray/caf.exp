@@ -51,11 +51,21 @@ proc dg-compile-aux-modules { args } {
     global gfortran_test_path
     global gfortran_aux_module_flags
     if { [llength $args] != 2 } {
-	error "dg-set-target-env-var: needs one argument"
+	error "dg-compile-aux-modules: needs one argument"
 	return
     }
+
+    set level [info level]
+    if { [info procs dg-save-unknown] != [list] } {
+	rename dg-save-unknown dg-save-unknown-level-$level
+    }
+
     dg-test $gfortran_test_path/[lindex $args 1] "" $gfortran_aux_module_flags
-    # cleanup-modules isn't intentionally invoked here.
+    # cleanup-modules is intentionally not invoked here.
+
+    if { [info procs dg-save-unknown-level-$level] != [list] } {
+	rename dg-save-unknown-level-$level dg-save-unknown
+    }
 }
 
 # Add -latomic only where supported.  Assume built-in support elsewhere.

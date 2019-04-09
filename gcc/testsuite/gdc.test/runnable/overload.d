@@ -1,4 +1,5 @@
-// EXTRA_SOURCES: imports/ovs1528a.d imports/ovs1528b.d imports/template_ovs1.d imports/template_ovs2.d imports/template_ovs3.d
+// EXTRA_SOURCES: imports/ovs1528a.d imports/ovs1528b.d
+// EXTRA_SOURCES: imports/template_ovs1.d imports/template_ovs2.d imports/template_ovs3.d
 
 import imports.template_ovs1;
 import imports.template_ovs2;

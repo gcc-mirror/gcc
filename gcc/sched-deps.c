@@ -2857,14 +2857,16 @@ sched_macro_fuse_insns (rtx_insn *insn)
     {
       unsigned int condreg1, condreg2;
       rtx cc_reg_1;
-      targetm.fixed_condition_code_regs (&condreg1, &condreg2);
-      cc_reg_1 = gen_rtx_REG (CCmode, condreg1);
-      if (reg_referenced_p (cc_reg_1, PATTERN (insn))
-	  && modified_in_p (cc_reg_1, prev))
+      if (targetm.fixed_condition_code_regs (&condreg1, &condreg2))
 	{
-	  if (targetm.sched.macro_fusion_pair_p (prev, insn))
-	    SCHED_GROUP_P (insn) = 1;
-	  return;
+	  cc_reg_1 = gen_rtx_REG (CCmode, condreg1);
+	  if (reg_referenced_p (cc_reg_1, PATTERN (insn))
+	      && modified_in_p (cc_reg_1, prev))
+	    {
+	      if (targetm.sched.macro_fusion_pair_p (prev, insn))
+		SCHED_GROUP_P (insn) = 1;
+	      return;
+	    }
 	}
     }
 
@@ -3005,6 +3007,11 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
   if (JUMP_P (insn))
     {
       rtx_insn *next = next_nonnote_nondebug_insn (insn);
+      /* ??? For tablejumps, the barrier may appear not immediately after
+         the jump, but after a label and a jump_table_data insn.  */
+      if (next && LABEL_P (next) && NEXT_INSN (next)
+	  && JUMP_TABLE_DATA_P (NEXT_INSN (next)))
+	next = NEXT_INSN (NEXT_INSN (next));
       if (next && BARRIER_P (next))
 	reg_pending_barrier = MOVE_BARRIER;
       else

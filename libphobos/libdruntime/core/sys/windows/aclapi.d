@@ -13,7 +13,7 @@ version (Windows):
 version (ANSI) {} else version = Unicode;
 pragma(lib, "advapi32");
 
-import core.sys.windows.windows, core.sys.windows.accctrl;
+import core.sys.windows.accctrl, core.sys.windows.basetyps, core.sys.windows.w32api, core.sys.windows.winnt;
 
 extern (Windows) {
     VOID BuildExplicitAccessWithNameA(PEXPLICIT_ACCESS_A, LPSTR, DWORD,

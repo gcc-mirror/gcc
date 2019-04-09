@@ -5215,7 +5215,8 @@ fld_type_variant (tree first, tree t, struct free_lang_data_d *fld,
   if (inner_type)
     TREE_TYPE (v) = inner_type;
   gcc_checking_assert (fld_type_variant_equal_p (t,v, inner_type));
-  add_tree_to_fld_list (v, fld);
+  if (!fld->pset.add (v))
+    add_tree_to_fld_list (v, fld);
   return v;
 }
 
@@ -5253,7 +5254,8 @@ fld_process_array_type (tree t, tree t2, hash_map<tree, tree> *map,
       array = build_array_type_1 (t2, TYPE_DOMAIN (t),
 				  TYPE_TYPELESS_STORAGE (t), false);
       TYPE_CANONICAL (array) = TYPE_CANONICAL (t);
-      add_tree_to_fld_list (array, fld);
+      if (!fld->pset.add (array))
+	add_tree_to_fld_list (array, fld);
     }
   return array;
 }
@@ -5298,7 +5300,8 @@ fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
 						TYPE_REF_CAN_ALIAS_ALL (t));
 	  gcc_assert (TYPE_CANONICAL (t2) != t2
 		      && TYPE_CANONICAL (t2) == TYPE_CANONICAL (TREE_TYPE (t)));
-	  add_tree_to_fld_list (first, fld);
+	  if (!fld->pset.add (first))
+	    add_tree_to_fld_list (first, fld);
 	  return fld_type_variant (first, t, fld);
 	}
       return t;
@@ -5321,7 +5324,8 @@ fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
 	  copy = build_distinct_type_copy (t);
 
 	  /* It is possible that type was not seen by free_lang_data yet.  */
-	  add_tree_to_fld_list (copy, fld);
+	  if (!fld->pset.add (copy))
+	    add_tree_to_fld_list (copy, fld);
 	  TYPE_SIZE (copy) = NULL;
 	  TYPE_USER_ALIGN (copy) = 0;
 	  TYPE_SIZE_UNIT (copy) = NULL;
@@ -5445,6 +5449,18 @@ free_lang_data_in_type (tree type, struct free_lang_data_d *fld)
 
   TYPE_NEEDS_CONSTRUCTING (type) = 0;
 
+  /* Purge non-marked variants from the variants chain, so that they
+     don't reappear in the IL after free_lang_data.  */
+  while (TYPE_NEXT_VARIANT (type)
+	 && !fld->pset.contains (TYPE_NEXT_VARIANT (type)))
+    {
+      tree t = TYPE_NEXT_VARIANT (type);
+      TYPE_NEXT_VARIANT (type) = TYPE_NEXT_VARIANT (t);
+      /* Turn the removed types into distinct types.  */
+      TYPE_MAIN_VARIANT (t) = t;
+      TYPE_NEXT_VARIANT (t) = NULL_TREE;
+    }
+
   if (TREE_CODE (type) == FUNCTION_TYPE)
     {
       TREE_TYPE (type) = fld_simplified_type (TREE_TYPE (type), fld);
@@ -5464,7 +5480,8 @@ free_lang_data_in_type (tree type, struct free_lang_data_d *fld)
 			  & ~TYPE_QUAL_CONST
 			  & ~TYPE_QUAL_VOLATILE;
 	      TREE_VALUE (p) = build_qualified_type (arg_type, quals);
-	      free_lang_data_in_type (TREE_VALUE (p), fld);
+	      if (!fld->pset.add (TREE_VALUE (p)))
+		free_lang_data_in_type (TREE_VALUE (p), fld);
 	    }
 	  /* C++ FE uses TREE_PURPOSE to store initial values.  */
 	  TREE_PURPOSE (p) = NULL;
@@ -5772,10 +5789,16 @@ free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
      not do well with TREE_CHAIN pointers linking them.
 
      Also do not drop containing types for virtual methods and tables because
-     these are needed by devirtualization.  */
+     these are needed by devirtualization.
+     C++ destructors are special because C++ frontends sometimes produces
+     virtual destructor as an alias of non-virtual destructor.  In
+     devirutalization code we always walk through aliases and we need
+     context to be preserved too.  See PR89335  */
   if (TREE_CODE (decl) != FIELD_DECL
       && ((TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL)
-          || !DECL_VIRTUAL_P (decl)))
+          || (!DECL_VIRTUAL_P (decl)
+	      && (TREE_CODE (decl) != FUNCTION_DECL
+		  || !DECL_CXX_DESTRUCTOR_P (decl)))))
     DECL_CONTEXT (decl) = fld_decl_context (DECL_CONTEXT (decl));
 }
 
@@ -5880,8 +5903,7 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	    ctx = BLOCK_SUPERCONTEXT (ctx);
 	  fld_worklist_push (ctx, fld);
 	}
-      /* Do not walk TYPE_CANONICAL.  We do not stream it and thus do not
-	 and want not to reach unused types this way.  */
+      fld_worklist_push (TYPE_CANONICAL (t), fld);
 
       if (RECORD_OR_UNION_TYPE_P (t) && TYPE_BINFO (t))
 	{
@@ -12806,13 +12828,10 @@ tree_nop_conversion (const_tree exp)
   if (!CONVERT_EXPR_P (exp)
       && TREE_CODE (exp) != NON_LVALUE_EXPR)
     return false;
-  if (TREE_OPERAND (exp, 0) == error_mark_node)
-    return false;
 
   outer_type = TREE_TYPE (exp);
   inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
-
-  if (!inner_type)
+  if (!inner_type || inner_type == error_mark_node)
     return false;
 
   return tree_nop_conversion_p (outer_type, inner_type);

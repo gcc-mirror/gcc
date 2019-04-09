@@ -2099,6 +2099,8 @@ get_array_ctor_var_strlen (stmtblock_t *block, gfc_expr * expr, tree * len)
 	{
 	case REF_ARRAY:
 	  /* Array references don't change the string length.  */
+	  if (ts->deferred)
+	    get_array_ctor_all_strlen (block, expr, len);
 	  break;
 
 	case REF_COMPONENT:
@@ -2107,7 +2109,8 @@ get_array_ctor_var_strlen (stmtblock_t *block, gfc_expr * expr, tree * len)
 	  break;
 
 	case REF_SUBSTRING:
-	  if (ref->u.ss.start->expr_type != EXPR_CONSTANT
+	  if (ref->u.ss.end == NULL
+	      || ref->u.ss.start->expr_type != EXPR_CONSTANT
 	      || ref->u.ss.end->expr_type != EXPR_CONSTANT)
 	    {
 	      /* Note that this might evaluate expr.  */
@@ -2507,7 +2510,6 @@ trans_array_constructor (gfc_ss * ss, locus * where)
 			       ss_info->string_length);
 	  ss_info->string_length = gfc_evaluate_now (ss_info->string_length,
 						     &length_se.pre);
-
 	  gfc_add_block_to_block (&outer_loop->pre, &length_se.pre);
 	  gfc_add_block_to_block (&outer_loop->post, &length_se.post);
 	}
@@ -3470,6 +3472,9 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
 					 || expr->expr_type == EXPR_FUNCTION))))
     decl = expr->symtree->n.sym->backend_decl;
 
+  if (decl && GFC_DECL_PTR_ARRAY_P (decl))
+    goto done;
+
   /* A pointer array component can be detected from its field decl. Fix
      the descriptor, mark the resulting variable decl and pass it to
      gfc_build_array_ref.  */
@@ -3486,6 +3491,7 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
 	decl = info->descriptor;
     }
 
+done:
   se->expr = gfc_build_array_ref (base, index, decl);
 }
 
@@ -6929,6 +6935,7 @@ get_array_charlen (gfc_expr *expr, gfc_se *se)
   gfc_formal_arglist *formal;
   gfc_actual_arglist *arg;
   gfc_se tse;
+  gfc_expr *e;
 
   if (expr->ts.u.cl->length
 	&& gfc_is_constant_expr (expr->ts.u.cl->length))
@@ -6940,6 +6947,34 @@ get_array_charlen (gfc_expr *expr, gfc_se *se)
 
   switch (expr->expr_type)
     {
+    case EXPR_ARRAY:
+
+      /* This is somewhat brutal. The expression for the first
+	 element of the array is evaluated and assigned to a
+	 new string length for the original expression.  */
+      e = gfc_constructor_first (expr->value.constructor)->expr;
+
+      gfc_init_se (&tse, NULL);
+      if (e->rank)
+	gfc_conv_expr_descriptor (&tse, e);
+      else
+	gfc_conv_expr (&tse, e);
+
+      gfc_add_block_to_block (&se->pre, &tse.pre);
+      gfc_add_block_to_block (&se->post, &tse.post);
+
+      if (!expr->ts.u.cl->backend_decl || !VAR_P (expr->ts.u.cl->backend_decl))
+	{
+	  expr->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
+	  expr->ts.u.cl->backend_decl =
+			gfc_create_var (gfc_charlen_type_node, "sln");
+	}
+
+      gfc_add_modify (&se->pre, expr->ts.u.cl->backend_decl,
+		      tse.string_length);
+
+      return;
+
     case EXPR_OP:
       get_array_charlen (expr->value.op.op1, se);
 
@@ -6947,7 +6982,7 @@ get_array_charlen (gfc_expr *expr, gfc_se *se)
       if (expr->value.op.op == INTRINSIC_PARENTHESES)
 	return;
 
-     expr->ts.u.cl->backend_decl =
+      expr->ts.u.cl->backend_decl =
 		gfc_create_var (gfc_charlen_type_node, "sln");
 
       if (expr->value.op.op2)
@@ -7325,7 +7360,8 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 
   if (need_tmp)
     {
-      if (expr->ts.type == BT_CHARACTER && !expr->ts.u.cl->backend_decl)
+      if (expr->ts.type == BT_CHARACTER
+	  && (!expr->ts.u.cl->backend_decl || expr->expr_type == EXPR_ARRAY))
 	get_array_charlen (expr, se);
 
       /* Tell the scalarizer to make a temporary.  */
@@ -7447,7 +7483,17 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 
       /* Set the string_length for a character array.  */
       if (expr->ts.type == BT_CHARACTER)
-	se->string_length =  gfc_get_expr_charlen (expr);
+	{
+	  se->string_length =  gfc_get_expr_charlen (expr);
+	  if (VAR_P (se->string_length)
+	      && expr->ts.u.cl->backend_decl == se->string_length)
+	    tmp = ss_info->string_length;
+	  else
+	    tmp = se->string_length;
+
+	  if (expr->ts.deferred)
+	    gfc_add_modify (&se->pre, expr->ts.u.cl->backend_decl, tmp);
+	}
 
       /* If we have an array section or are assigning make sure that
 	 the lower bound is 1.  References to the full
@@ -7509,7 +7555,10 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	}
 
       /* Set the span field.  */
-      tmp = gfc_get_array_span (desc, expr);
+      if (expr->ts.type == BT_CHARACTER && ss_info->string_length)
+	tmp = ss_info->string_length;
+      else
+	tmp = gfc_get_array_span (desc, expr);
       if (tmp != NULL_TREE)
 	gfc_conv_descriptor_span_set (&loop.pre, parm, tmp);
 
