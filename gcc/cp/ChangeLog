@@ -1,3 +1,8 @@
+2019-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/90011
+	* typeck2.c (check_narrowing): Remove trailing space from diagnostics.
+
 2019-04-08  Marek Polacek  <polacek@redhat.com>
 
 	* typeck2.c (digest_init_r): Don't condition the object slicing warning
