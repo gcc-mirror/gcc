@@ -1,3 +1,8 @@
+2019-04-09  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Use GENERATOR_CFLAGS for all generators.
+	* doc/install.texi: Document the new config.
+
 2019-04-09  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-data-refs.c (vect_get_smallest_scalar_type): Always
