@@ -161,6 +161,7 @@ munge (const char *str, const char *trail = NULL, ...)
 	      /* FALLTHROUGH  */
 
 	    case '#':
+	    case ':':
 	      buf[dst++] = '\\';
 	      /* FALLTHROUGH  */
 
@@ -329,9 +330,9 @@ deps_add_module (struct mrules *d, const char *m, const char *p,
   size_t p_len = p ? strlen (p) : 0;
 
   char *m_name = XNEWVEC (char, m_len + p_len + 1);
-  memcpy (m_name, m, m_len + 1);
   if (p_len)
-    memcpy (m_name + m_len, p, p_len + 1);
+    memcpy (m_name, p, p_len + 1);
+  memcpy (m_name + p_len, m, m_len + 1);
 
   if (bmi)
     {
@@ -415,14 +416,16 @@ make_write (const struct mrules *d, FILE *fp, bool phony, unsigned int colmax)
       if (d->bmi_name)
 	{
 	  /* module-name : bmi-name */
-	  column = make_write_name (d->module_name, fp, 0, colmax);
+	  column = make_write_name (d->module_name, fp, 0, colmax,
+				    true, ".c++m");
 	  fputs (":", fp);
 	  column++;
 	  column = make_write_name (d->bmi_name, fp, column, colmax);
 	  fputs ("\n", fp);
 
 	  column = fprintf (fp, ".PHONY:");
-	  column = make_write_name (d->module_name, fp, column, colmax);
+	  column = make_write_name (d->module_name, fp, column, colmax,
+				    true, ".c++m");
 	  fputs ("\n", fp);
 	}
 

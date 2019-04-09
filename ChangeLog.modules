@@ -1,6 +1,13 @@
 2019-04-09  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/
+	* mkdeps (munge): Quote ':'.
+	(deps_add_module): Correct partion/module order.
+	(make_write): Add .c++m suffix to module name.
+	gcc/testsuite/
+	* g++.dg/modules/dep-1_[ab].C: New.
+
+	libcpp/
 	* mkdeps (mkrules::~mkrules): Use free appropriately.
 
 	gcc/
