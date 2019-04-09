@@ -9427,25 +9427,41 @@ get_module (tree name, module_state *parent, bool partition)
 /* Process string name PTR into a module_state.  */
 
 static module_state *
-get_module (const char *ptr)
+get_module (const char *ptr, module_state *parent)
 {
   if (IS_ABSOLUTE_PATH (ptr) || ptr[0] == '.')
     /* A header name.  */
     return get_module (build_string (strlen (ptr), ptr));
 
-  module_state *parent = NULL;
-  bool partition = *ptr == ':';
-  for (const char *probe = ptr += partition;; probe++)
-    if (!*probe || *probe == '.')
+  int partition = 0;
+  if (!parent)
+    {
+      if (ptr[0] == ':')
+	return NULL;
+      partition = -1;
+    }
+
+  if (ptr[0] == ':')
+    {
+      ptr++;
+      partition = 1;
+      while (parent->is_partition ())
+	parent = parent->parent;
+    }
+  else
+    parent = NULL;
+
+  for (const char *probe = ptr;; probe++)
+    if (!*probe || *probe == '.' || *probe == ':')
       {
 	size_t len = probe - ptr;
-	if (!len)
-	  {
-	    return NULL;
-	  }
+	if (!len || (*probe == ':' && partition >= 0))
+	  return NULL;
 	parent = get_module (get_identifier_with_length (ptr, len),
-			     parent, partition);
+			     parent, partition > 0);
 	ptr = probe;
+	if (*ptr == ':')
+	  partition = +1;
 	if (!*ptr++)
 	  break;
       }
@@ -9815,7 +9831,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	    
 	    starting = false;
 	    file = maybe_strip_bmi_prefix (file);
-	    module_state *state = get_module (mod);
+	    module_state *state = get_module (mod, NULL);
 	    if (!state)
 	      response_unexpected (loc);
 	    else if (!state->filename)
@@ -10524,7 +10540,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	}
 
       const char *name = sec.str (NULL);
-      module_state *imp = get_module (name);
+      module_state *imp = get_module (name, this);
       unsigned crc = sec.u32 ();
       bool exported = false;
 
@@ -10704,8 +10720,8 @@ module_state::read_partitions (unsigned count)
 
       dump () && dump ("Reading elided partition %s (crc=%x)", name, crc);
 
-      module_state *imp = get_module (name);
-      if (!imp->is_partition () || !imp->is_detached ())
+      module_state *imp = get_module (name, this);
+      if (!imp || !imp->is_partition () || !imp->is_detached ())
 	{
 	  sec.set_overrun ();
 	  break;
@@ -14964,8 +14980,9 @@ finish_module_processing (cpp_reader *reader)
       if (to.begin ())
 	state->write (&to, reader);
       if (!to.end ())
-	error_at (state->from_loc, "failed to write module %qs: %s",
-		  state->get_flatname (), to.get_error (state->filename));
+	error_at (state->from_loc, "failed to write module %<%s%s%>: %s",
+		  state->get_flatname (true), state->get_flatname (false),
+		  to.get_error (state->filename));
 
       dump.pop (n);
       if (!errorcount)

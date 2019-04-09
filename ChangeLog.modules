@@ -1,6 +1,18 @@
 2019-04-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (get_module): Add parent option, use it.
+	(module_state::read_{imports,partitions}): Adjust.
+	(finish_module_processing): Show full module name on error.
+	gcc/testsuite/
+	* g++.dg/modules/ben-1{_[ab].C,.map}: New.
+	* g++.dg/modules/alias-1_f.C: Use [srcdir].
+	* g++.dg/modules/gc-2_a.C: Likewise.
+	* g++.dg/modules/inc-xlate-1_d.C: Likewise.
+	* g++.dg/modules/legacy-6_[cdef].C: Likewise.
+	* g++.dg/modules/map-1_[ab].C: Likewise.
+
+	gcc/cp/
 	* module.cc (depset::is_imported_entity): New.
 	(module_for_unnamed): Delete.
 	(depset::hash::add_dependency): Note imported dependencies.

@@ -1,8 +1,7 @@
 // { dg-module-do run }
-// { dg-additional-options "-fmodules-ts" }
+// { dg-additional-options "-fmodules-ts -fmodule-mapper=[srcdir]/map-1.map" }
 
 // Ick!  no cross-host testing for you!
-// { dg-additional-options -fmodule-mapper=$srcdir/g++.dg/modules/map-1.map }
 // { dg-additional-files map-1.map }
 
 export module frob;
