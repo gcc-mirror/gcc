@@ -1,3 +1,10 @@
+2019-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-data-refs.c (vect_get_smallest_scalar_type): Always
+	use gimple_expr_type for load and store calls.  Skip over the
+	condition argument in a conditional internal function.
+	Protect use of TREE_INT_CST_LOW.
+
 2019-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/90015

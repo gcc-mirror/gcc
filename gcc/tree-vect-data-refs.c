@@ -145,14 +145,29 @@ vect_get_smallest_scalar_type (stmt_vec_info stmt_info,
       if (rhs < lhs)
         scalar_type = rhs_type;
     }
-  else if (is_gimple_call (stmt_info->stmt)
-	   && gimple_call_num_args (stmt_info->stmt) > 0)
+  else if (gcall *call = dyn_cast <gcall *> (stmt_info->stmt))
     {
-      tree rhs_type = TREE_TYPE (gimple_call_arg (stmt_info->stmt, 0));
-
-      rhs = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (rhs_type));
-      if (rhs < lhs)
-        scalar_type = rhs_type;
+      unsigned int i = 0;
+      if (gimple_call_internal_p (call))
+	{
+	  internal_fn ifn = gimple_call_internal_fn (call);
+	  if (internal_load_fn_p (ifn) || internal_store_fn_p (ifn))
+	    /* gimple_expr_type already picked the type of the loaded
+	       or stored data.  */
+	    i = ~0U;
+	  else if (internal_fn_mask_index (ifn) == 0)
+	    i = 1;
+	}
+      if (i < gimple_call_num_args (call))
+	{
+	  tree rhs_type = TREE_TYPE (gimple_call_arg (call, i));
+	  if (tree_fits_uhwi_p (TYPE_SIZE_UNIT (rhs_type)))
+	    {
+	      rhs = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (rhs_type));
+	      if (rhs < lhs)
+		scalar_type = rhs_type;
+	    }
+	}
     }
 
   *lhs_size_unit = lhs;
