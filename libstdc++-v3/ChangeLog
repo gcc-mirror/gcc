@@ -1,5 +1,10 @@
 2019-04-09  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/variant (__variant_idx_cookie): Add member type.
+	(__visitor_result_type): Remove.
+	(__do_visit): Use invoke_result instead of __visitor_result_type.
+	* testsuite/20_util/variant/visit.cc: New test.
+
 	PR libstdc++/90008
 	* include/std/variant (_VARIANT_RELATION_FUNCTION_TEMPLATE): Remove
 	unused capture.
