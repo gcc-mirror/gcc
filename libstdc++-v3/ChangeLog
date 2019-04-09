@@ -1,3 +1,13 @@
+2019-04-09  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/pstl/algorithm_impl.h: Add namespace qualification.
+	* include/pstl/execution_defs.h: Add namespace qualification.
+	* include/pstl/execution_impl.h: Add namespace qualification.
+	* include/pstl/numeric_impl.h: Add namespace qualification.
+	* include/pstl/parallel_backend_tbb.h: Add namespace qualification.
+	* include/pstl/unseq_backend_simd.h: Add namespace qualification.
+	* include/pstl/parallel_backend_utils.h: Include <cassert>.
+
 2019-04-08  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Fix visit<R> for variant.

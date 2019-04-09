@@ -55,7 +55,7 @@ template <typename _IteratorType, typename... _OtherIteratorTypes>
 struct __is_random_access_iterator
 {
     static constexpr bool value =
-        __is_random_access_iterator<_IteratorType>::value && __is_random_access_iterator<_OtherIteratorTypes...>::value;
+      __internal::__is_random_access_iterator<_IteratorType>::value && __internal::__is_random_access_iterator<_OtherIteratorTypes...>::value;
     typedef std::integral_constant<bool, value> type;
 };
 
@@ -106,38 +106,38 @@ struct __policy_traits<parallel_unsequenced_policy>
 #endif
 
 template <typename _ExecutionPolicy>
-using __collector_t = typename __policy_traits<typename std::decay<_ExecutionPolicy>::type>::__collector_type;
+using __collector_t = typename __internal::__policy_traits<typename std::decay<_ExecutionPolicy>::type>::__collector_type;
 
 template <typename _ExecutionPolicy>
-using __allow_vector = typename __policy_traits<typename std::decay<_ExecutionPolicy>::type>::__allow_vector;
+using __allow_vector = typename __internal::__policy_traits<typename std::decay<_ExecutionPolicy>::type>::__allow_vector;
 
 template <typename _ExecutionPolicy>
-using __allow_unsequenced = typename __policy_traits<typename std::decay<_ExecutionPolicy>::type>::__allow_unsequenced;
+using __allow_unsequenced = typename __internal::__policy_traits<typename std::decay<_ExecutionPolicy>::type>::__allow_unsequenced;
 
 template <typename _ExecutionPolicy>
-using __allow_parallel = typename __policy_traits<typename std::decay<_ExecutionPolicy>::type>::__allow_parallel;
+using __allow_parallel = typename __internal::__policy_traits<typename std::decay<_ExecutionPolicy>::type>::__allow_parallel;
 
 template <typename _ExecutionPolicy, typename... _IteratorTypes>
 auto
 __is_vectorization_preferred(_ExecutionPolicy&& __exec)
-    -> decltype(__lazy_and(__exec.__allow_vector(), typename __is_random_access_iterator<_IteratorTypes...>::type()))
+    -> decltype(__internal::__lazy_and(__exec.__allow_vector(), typename __internal::__is_random_access_iterator<_IteratorTypes...>::type()))
 {
-    return __lazy_and(__exec.__allow_vector(), typename __is_random_access_iterator<_IteratorTypes...>::type());
+    return __internal::__lazy_and(__exec.__allow_vector(), typename __internal::__is_random_access_iterator<_IteratorTypes...>::type());
 }
 
 template <typename _ExecutionPolicy, typename... _IteratorTypes>
 auto
 __is_parallelization_preferred(_ExecutionPolicy&& __exec)
-    -> decltype(__lazy_and(__exec.__allow_parallel(), typename __is_random_access_iterator<_IteratorTypes...>::type()))
+    -> decltype(__internal::__lazy_and(__exec.__allow_parallel(), typename __internal::__is_random_access_iterator<_IteratorTypes...>::type()))
 {
-    return __lazy_and(__exec.__allow_parallel(), typename __is_random_access_iterator<_IteratorTypes...>::type());
+    return __internal::__lazy_and(__exec.__allow_parallel(), typename __internal::__is_random_access_iterator<_IteratorTypes...>::type());
 }
 
 template <typename policy, typename... _IteratorTypes>
 struct __prefer_unsequenced_tag
 {
     static constexpr bool value =
-        __allow_unsequenced<policy>::value && __is_random_access_iterator<_IteratorTypes...>::value;
+        __internal::__allow_unsequenced<policy>::value && __internal::__is_random_access_iterator<_IteratorTypes...>::value;
     typedef std::integral_constant<bool, value> type;
 };
 
@@ -145,7 +145,7 @@ template <typename policy, typename... _IteratorTypes>
 struct __prefer_parallel_tag
 {
     static constexpr bool value =
-        __allow_parallel<policy>::value && __is_random_access_iterator<_IteratorTypes...>::value;
+        __internal::__allow_parallel<policy>::value && __internal::__is_random_access_iterator<_IteratorTypes...>::value;
     typedef std::integral_constant<bool, value> type;
 };
 
