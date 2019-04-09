@@ -3692,10 +3692,10 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
 	 are badly declared.  */
       && !stmt_ends_bb_p (info.callstmt))
     {
-      tree cst = build_int_cst (integer_type_node, retval[0]);
+      tree cst = build_int_cst (lhs ? TREE_TYPE (lhs) : integer_type_node,
+				retval[0]);
 
-      if (lhs == NULL_TREE
-	  && info.nowrite)
+      if (lhs == NULL_TREE && info.nowrite)
 	{
 	  /* Remove the call to the bounded function with a zero size
 	     (e.g., snprintf(0, 0, "%i", 123)) if there is no lhs.  */
@@ -3736,7 +3736,7 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
 	    }
 	}
     }
-  else if (lhs)
+  else if (lhs && types_compatible_p (TREE_TYPE (lhs), integer_type_node))
     {
       bool setrange = false;
 

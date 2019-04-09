@@ -1,3 +1,13 @@
+2019-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89998
+	* gimple-ssa-sprintf.c (try_substitute_return_value): Use lhs type
+	instead of integer_type_node if possible, don't add ranges if return
+	type is not compatible with int.
+	* gimple-fold.c (gimple_fold_builtin_sprintf,
+	gimple_fold_builtin_snprintf): Use lhs type instead of hardcoded
+	integer_type_node.
+
 2019-04-09  Martin Liska  <mliska@suse.cz>
 
 	* Makefile.in: Use GENERATOR_CFLAGS for all generators.
