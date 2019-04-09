@@ -1,3 +1,10 @@
+2019-04-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90008
+	* include/std/variant (_VARIANT_RELATION_FUNCTION_TEMPLATE): Remove
+	unused capture.
+	* testsuite/20_util/variant/90008.cc: New test.
+
 2019-04-09  Thomas Rodgers  <trodgers@redhat.com>
 
 	* include/pstl/algorithm_impl.h: Add namespace qualification.
