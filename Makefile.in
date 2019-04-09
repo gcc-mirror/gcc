@@ -837,30 +837,39 @@ BASE_FLAGS_TO_PASS = \
 	"LEAN=$(LEAN)" \
 	"STAGE1_CFLAGS=$(STAGE1_CFLAGS)" \
 	"STAGE1_CXXFLAGS=$(STAGE1_CXXFLAGS)" \
+	"STAGE1_GENERATOR_CFLAGS=$(STAGE1_GENERATOR_CFLAGS)" \
 	"STAGE1_TFLAGS=$(STAGE1_TFLAGS)" \
 	"STAGE2_CFLAGS=$(STAGE2_CFLAGS)" \
 	"STAGE2_CXXFLAGS=$(STAGE2_CXXFLAGS)" \
+	"STAGE2_GENERATOR_CFLAGS=$(STAGE2_GENERATOR_CFLAGS)" \
 	"STAGE2_TFLAGS=$(STAGE2_TFLAGS)" \
 	"STAGE3_CFLAGS=$(STAGE3_CFLAGS)" \
 	"STAGE3_CXXFLAGS=$(STAGE3_CXXFLAGS)" \
+	"STAGE3_GENERATOR_CFLAGS=$(STAGE3_GENERATOR_CFLAGS)" \
 	"STAGE3_TFLAGS=$(STAGE3_TFLAGS)" \
 	"STAGE4_CFLAGS=$(STAGE4_CFLAGS)" \
 	"STAGE4_CXXFLAGS=$(STAGE4_CXXFLAGS)" \
+	"STAGE4_GENERATOR_CFLAGS=$(STAGE4_GENERATOR_CFLAGS)" \
 	"STAGE4_TFLAGS=$(STAGE4_TFLAGS)" \
 	"STAGEprofile_CFLAGS=$(STAGEprofile_CFLAGS)" \
 	"STAGEprofile_CXXFLAGS=$(STAGEprofile_CXXFLAGS)" \
+	"STAGEprofile_GENERATOR_CFLAGS=$(STAGEprofile_GENERATOR_CFLAGS)" \
 	"STAGEprofile_TFLAGS=$(STAGEprofile_TFLAGS)" \
 	"STAGEtrain_CFLAGS=$(STAGEtrain_CFLAGS)" \
 	"STAGEtrain_CXXFLAGS=$(STAGEtrain_CXXFLAGS)" \
+	"STAGEtrain_GENERATOR_CFLAGS=$(STAGEtrain_GENERATOR_CFLAGS)" \
 	"STAGEtrain_TFLAGS=$(STAGEtrain_TFLAGS)" \
 	"STAGEfeedback_CFLAGS=$(STAGEfeedback_CFLAGS)" \
 	"STAGEfeedback_CXXFLAGS=$(STAGEfeedback_CXXFLAGS)" \
+	"STAGEfeedback_GENERATOR_CFLAGS=$(STAGEfeedback_GENERATOR_CFLAGS)" \
 	"STAGEfeedback_TFLAGS=$(STAGEfeedback_TFLAGS)" \
 	"STAGEautoprofile_CFLAGS=$(STAGEautoprofile_CFLAGS)" \
 	"STAGEautoprofile_CXXFLAGS=$(STAGEautoprofile_CXXFLAGS)" \
+	"STAGEautoprofile_GENERATOR_CFLAGS=$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 	"STAGEautoprofile_TFLAGS=$(STAGEautoprofile_TFLAGS)" \
 	"STAGEautofeedback_CFLAGS=$(STAGEautofeedback_CFLAGS)" \
 	"STAGEautofeedback_CXXFLAGS=$(STAGEautofeedback_CXXFLAGS)" \
+	"STAGEautofeedback_GENERATOR_CFLAGS=$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 	"STAGEautofeedback_TFLAGS=$(STAGEautofeedback_TFLAGS)" \
 	$(CXX_FOR_TARGET_FLAG_TO_PASS) \
 	"TFLAGS=$(TFLAGS)" \
@@ -3573,6 +3582,7 @@ all-stage1-bfd: configure-stage1-bfd
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -3617,6 +3627,7 @@ all-stage2-bfd: configure-stage2-bfd
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -3659,6 +3670,7 @@ all-stage3-bfd: configure-stage3-bfd
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -3701,6 +3713,7 @@ all-stage4-bfd: configure-stage4-bfd
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -3743,6 +3756,7 @@ all-stageprofile-bfd: configure-stageprofile-bfd
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -3785,6 +3799,7 @@ all-stagetrain-bfd: configure-stagetrain-bfd
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -3827,6 +3842,7 @@ all-stagefeedback-bfd: configure-stagefeedback-bfd
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -3869,6 +3885,7 @@ all-stageautoprofile-bfd: configure-stageautoprofile-bfd
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -3911,6 +3928,7 @@ all-stageautofeedback-bfd: configure-stageautofeedback-bfd
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -4678,6 +4696,7 @@ all-stage1-opcodes: configure-stage1-opcodes
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -4722,6 +4741,7 @@ all-stage2-opcodes: configure-stage2-opcodes
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -4764,6 +4784,7 @@ all-stage3-opcodes: configure-stage3-opcodes
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -4806,6 +4827,7 @@ all-stage4-opcodes: configure-stage4-opcodes
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -4848,6 +4870,7 @@ all-stageprofile-opcodes: configure-stageprofile-opcodes
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -4890,6 +4913,7 @@ all-stagetrain-opcodes: configure-stagetrain-opcodes
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -4932,6 +4956,7 @@ all-stagefeedback-opcodes: configure-stagefeedback-opcodes
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -4974,6 +4999,7 @@ all-stageautoprofile-opcodes: configure-stageautoprofile-opcodes
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -5016,6 +5042,7 @@ all-stageautofeedback-opcodes: configure-stageautofeedback-opcodes
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -5783,6 +5810,7 @@ all-stage1-binutils: configure-stage1-binutils
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -5827,6 +5855,7 @@ all-stage2-binutils: configure-stage2-binutils
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -5869,6 +5898,7 @@ all-stage3-binutils: configure-stage3-binutils
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -5911,6 +5941,7 @@ all-stage4-binutils: configure-stage4-binutils
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -5953,6 +5984,7 @@ all-stageprofile-binutils: configure-stageprofile-binutils
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -5995,6 +6027,7 @@ all-stagetrain-binutils: configure-stagetrain-binutils
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -6037,6 +6070,7 @@ all-stagefeedback-binutils: configure-stagefeedback-binutils
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -6079,6 +6113,7 @@ all-stageautoprofile-binutils: configure-stageautoprofile-binutils
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -6121,6 +6156,7 @@ all-stageautofeedback-binutils: configure-stageautofeedback-binutils
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -9099,6 +9135,7 @@ all-stage1-fixincludes: configure-stage1-fixincludes
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -9143,6 +9180,7 @@ all-stage2-fixincludes: configure-stage2-fixincludes
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -9185,6 +9223,7 @@ all-stage3-fixincludes: configure-stage3-fixincludes
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -9227,6 +9266,7 @@ all-stage4-fixincludes: configure-stage4-fixincludes
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -9269,6 +9309,7 @@ all-stageprofile-fixincludes: configure-stageprofile-fixincludes
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -9311,6 +9352,7 @@ all-stagetrain-fixincludes: configure-stagetrain-fixincludes
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -9353,6 +9395,7 @@ all-stagefeedback-fixincludes: configure-stagefeedback-fixincludes
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -9395,6 +9438,7 @@ all-stageautoprofile-fixincludes: configure-stageautoprofile-fixincludes
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -9437,6 +9481,7 @@ all-stageautofeedback-fixincludes: configure-stageautofeedback-fixincludes
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -10633,6 +10678,7 @@ all-stage1-gas: configure-stage1-gas
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -10677,6 +10723,7 @@ all-stage2-gas: configure-stage2-gas
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -10719,6 +10766,7 @@ all-stage3-gas: configure-stage3-gas
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -10761,6 +10809,7 @@ all-stage4-gas: configure-stage4-gas
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -10803,6 +10852,7 @@ all-stageprofile-gas: configure-stageprofile-gas
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -10845,6 +10895,7 @@ all-stagetrain-gas: configure-stagetrain-gas
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -10887,6 +10938,7 @@ all-stagefeedback-gas: configure-stagefeedback-gas
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -10929,6 +10981,7 @@ all-stageautoprofile-gas: configure-stageautoprofile-gas
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -10971,6 +11024,7 @@ all-stageautofeedback-gas: configure-stageautofeedback-gas
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -11738,6 +11792,7 @@ all-stage1-gcc: configure-stage1-gcc
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -11782,6 +11837,7 @@ all-stage2-gcc: configure-stage2-gcc
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -11824,6 +11880,7 @@ all-stage3-gcc: configure-stage3-gcc
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -11866,6 +11923,7 @@ all-stage4-gcc: configure-stage4-gcc
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -11908,6 +11966,7 @@ all-stageprofile-gcc: configure-stageprofile-gcc
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -11950,6 +12009,7 @@ all-stagetrain-gcc: configure-stagetrain-gcc
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -11992,6 +12052,7 @@ all-stagefeedback-gcc: configure-stagefeedback-gcc
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -12034,6 +12095,7 @@ all-stageautoprofile-gcc: configure-stageautoprofile-gcc
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -12076,6 +12138,7 @@ all-stageautofeedback-gcc: configure-stageautofeedback-gcc
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -12852,6 +12915,7 @@ all-stage1-gmp: configure-stage1-gmp
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -12896,6 +12960,7 @@ all-stage2-gmp: configure-stage2-gmp
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -12938,6 +13003,7 @@ all-stage3-gmp: configure-stage3-gmp
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -12980,6 +13046,7 @@ all-stage4-gmp: configure-stage4-gmp
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -13022,6 +13089,7 @@ all-stageprofile-gmp: configure-stageprofile-gmp
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -13064,6 +13132,7 @@ all-stagetrain-gmp: configure-stagetrain-gmp
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -13106,6 +13175,7 @@ all-stagefeedback-gmp: configure-stagefeedback-gmp
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -13148,6 +13218,7 @@ all-stageautoprofile-gmp: configure-stageautoprofile-gmp
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -13190,6 +13261,7 @@ all-stageautofeedback-gmp: configure-stageautofeedback-gmp
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -13954,6 +14026,7 @@ all-stage1-mpfr: configure-stage1-mpfr
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -13998,6 +14071,7 @@ all-stage2-mpfr: configure-stage2-mpfr
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -14040,6 +14114,7 @@ all-stage3-mpfr: configure-stage3-mpfr
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -14082,6 +14157,7 @@ all-stage4-mpfr: configure-stage4-mpfr
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -14124,6 +14200,7 @@ all-stageprofile-mpfr: configure-stageprofile-mpfr
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -14166,6 +14243,7 @@ all-stagetrain-mpfr: configure-stagetrain-mpfr
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -14208,6 +14286,7 @@ all-stagefeedback-mpfr: configure-stagefeedback-mpfr
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -14250,6 +14329,7 @@ all-stageautoprofile-mpfr: configure-stageautoprofile-mpfr
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -14292,6 +14372,7 @@ all-stageautofeedback-mpfr: configure-stageautofeedback-mpfr
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -15056,6 +15137,7 @@ all-stage1-mpc: configure-stage1-mpc
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -15100,6 +15182,7 @@ all-stage2-mpc: configure-stage2-mpc
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -15142,6 +15225,7 @@ all-stage3-mpc: configure-stage3-mpc
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -15184,6 +15268,7 @@ all-stage4-mpc: configure-stage4-mpc
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -15226,6 +15311,7 @@ all-stageprofile-mpc: configure-stageprofile-mpc
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -15268,6 +15354,7 @@ all-stagetrain-mpc: configure-stagetrain-mpc
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -15310,6 +15397,7 @@ all-stagefeedback-mpc: configure-stagefeedback-mpc
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -15352,6 +15440,7 @@ all-stageautoprofile-mpc: configure-stageautoprofile-mpc
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -15394,6 +15483,7 @@ all-stageautofeedback-mpc: configure-stageautofeedback-mpc
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -16158,6 +16248,7 @@ all-stage1-isl: configure-stage1-isl
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -16202,6 +16293,7 @@ all-stage2-isl: configure-stage2-isl
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -16244,6 +16336,7 @@ all-stage3-isl: configure-stage3-isl
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -16286,6 +16379,7 @@ all-stage4-isl: configure-stage4-isl
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -16328,6 +16422,7 @@ all-stageprofile-isl: configure-stageprofile-isl
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -16370,6 +16465,7 @@ all-stagetrain-isl: configure-stagetrain-isl
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -16412,6 +16508,7 @@ all-stagefeedback-isl: configure-stagefeedback-isl
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -16454,6 +16551,7 @@ all-stageautoprofile-isl: configure-stageautoprofile-isl
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -16496,6 +16594,7 @@ all-stageautofeedback-isl: configure-stageautofeedback-isl
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -17260,6 +17359,7 @@ all-stage1-libelf: configure-stage1-libelf
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -17304,6 +17404,7 @@ all-stage2-libelf: configure-stage2-libelf
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -17346,6 +17447,7 @@ all-stage3-libelf: configure-stage3-libelf
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -17388,6 +17490,7 @@ all-stage4-libelf: configure-stage4-libelf
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -17430,6 +17533,7 @@ all-stageprofile-libelf: configure-stageprofile-libelf
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -17472,6 +17576,7 @@ all-stagetrain-libelf: configure-stagetrain-libelf
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -17514,6 +17619,7 @@ all-stagefeedback-libelf: configure-stagefeedback-libelf
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -17556,6 +17662,7 @@ all-stageautoprofile-libelf: configure-stageautoprofile-libelf
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -17598,6 +17705,7 @@ all-stageautofeedback-libelf: configure-stageautofeedback-libelf
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -18353,6 +18461,7 @@ all-stage1-gold: configure-stage1-gold
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -18397,6 +18506,7 @@ all-stage2-gold: configure-stage2-gold
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -18439,6 +18549,7 @@ all-stage3-gold: configure-stage3-gold
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -18481,6 +18592,7 @@ all-stage4-gold: configure-stage4-gold
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -18523,6 +18635,7 @@ all-stageprofile-gold: configure-stageprofile-gold
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -18565,6 +18678,7 @@ all-stagetrain-gold: configure-stagetrain-gold
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -18607,6 +18721,7 @@ all-stagefeedback-gold: configure-stagefeedback-gold
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -18649,6 +18764,7 @@ all-stageautoprofile-gold: configure-stageautoprofile-gold
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -18691,6 +18807,7 @@ all-stageautofeedback-gold: configure-stageautofeedback-gold
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -19899,6 +20016,7 @@ all-stage1-intl: configure-stage1-intl
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -19943,6 +20061,7 @@ all-stage2-intl: configure-stage2-intl
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -19985,6 +20104,7 @@ all-stage3-intl: configure-stage3-intl
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -20027,6 +20147,7 @@ all-stage4-intl: configure-stage4-intl
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -20069,6 +20190,7 @@ all-stageprofile-intl: configure-stageprofile-intl
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -20111,6 +20233,7 @@ all-stagetrain-intl: configure-stagetrain-intl
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -20153,6 +20276,7 @@ all-stagefeedback-intl: configure-stagefeedback-intl
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -20195,6 +20319,7 @@ all-stageautoprofile-intl: configure-stageautoprofile-intl
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -20237,6 +20362,7 @@ all-stageautofeedback-intl: configure-stageautofeedback-intl
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -21871,6 +21997,7 @@ all-stage1-ld: configure-stage1-ld
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -21915,6 +22042,7 @@ all-stage2-ld: configure-stage2-ld
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -21957,6 +22085,7 @@ all-stage3-ld: configure-stage3-ld
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -21999,6 +22128,7 @@ all-stage4-ld: configure-stage4-ld
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -22041,6 +22171,7 @@ all-stageprofile-ld: configure-stageprofile-ld
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -22083,6 +22214,7 @@ all-stagetrain-ld: configure-stagetrain-ld
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -22125,6 +22257,7 @@ all-stagefeedback-ld: configure-stagefeedback-ld
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -22167,6 +22300,7 @@ all-stageautoprofile-ld: configure-stageautoprofile-ld
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -22209,6 +22343,7 @@ all-stageautofeedback-ld: configure-stageautofeedback-ld
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -22976,6 +23111,7 @@ all-stage1-libbacktrace: configure-stage1-libbacktrace
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -23020,6 +23156,7 @@ all-stage2-libbacktrace: configure-stage2-libbacktrace
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -23062,6 +23199,7 @@ all-stage3-libbacktrace: configure-stage3-libbacktrace
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -23104,6 +23242,7 @@ all-stage4-libbacktrace: configure-stage4-libbacktrace
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -23146,6 +23285,7 @@ all-stageprofile-libbacktrace: configure-stageprofile-libbacktrace
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -23188,6 +23328,7 @@ all-stagetrain-libbacktrace: configure-stagetrain-libbacktrace
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -23230,6 +23371,7 @@ all-stagefeedback-libbacktrace: configure-stagefeedback-libbacktrace
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -23272,6 +23414,7 @@ all-stageautoprofile-libbacktrace: configure-stageautoprofile-libbacktrace
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -23314,6 +23457,7 @@ all-stageautofeedback-libbacktrace: configure-stageautofeedback-libbacktrace
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -24081,6 +24225,7 @@ all-stage1-libcpp: configure-stage1-libcpp
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -24125,6 +24270,7 @@ all-stage2-libcpp: configure-stage2-libcpp
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -24167,6 +24313,7 @@ all-stage3-libcpp: configure-stage3-libcpp
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -24209,6 +24356,7 @@ all-stage4-libcpp: configure-stage4-libcpp
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -24251,6 +24399,7 @@ all-stageprofile-libcpp: configure-stageprofile-libcpp
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -24293,6 +24442,7 @@ all-stagetrain-libcpp: configure-stagetrain-libcpp
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -24335,6 +24485,7 @@ all-stagefeedback-libcpp: configure-stagefeedback-libcpp
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -24377,6 +24528,7 @@ all-stageautoprofile-libcpp: configure-stageautoprofile-libcpp
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -24419,6 +24571,7 @@ all-stageautofeedback-libcpp: configure-stageautofeedback-libcpp
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -25186,6 +25339,7 @@ all-stage1-libdecnumber: configure-stage1-libdecnumber
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -25230,6 +25384,7 @@ all-stage2-libdecnumber: configure-stage2-libdecnumber
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -25272,6 +25427,7 @@ all-stage3-libdecnumber: configure-stage3-libdecnumber
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -25314,6 +25470,7 @@ all-stage4-libdecnumber: configure-stage4-libdecnumber
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -25356,6 +25513,7 @@ all-stageprofile-libdecnumber: configure-stageprofile-libdecnumber
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -25398,6 +25556,7 @@ all-stagetrain-libdecnumber: configure-stagetrain-libdecnumber
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -25440,6 +25599,7 @@ all-stagefeedback-libdecnumber: configure-stagefeedback-libdecnumber
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -25482,6 +25642,7 @@ all-stageautoprofile-libdecnumber: configure-stageautoprofile-libdecnumber
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -25524,6 +25685,7 @@ all-stageautofeedback-libdecnumber: configure-stageautofeedback-libdecnumber
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -26741,6 +26903,7 @@ all-stage1-libiberty: configure-stage1-libiberty
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -26785,6 +26948,7 @@ all-stage2-libiberty: configure-stage2-libiberty
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -26827,6 +26991,7 @@ all-stage3-libiberty: configure-stage3-libiberty
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -26869,6 +27034,7 @@ all-stage4-libiberty: configure-stage4-libiberty
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -26911,6 +27077,7 @@ all-stageprofile-libiberty: configure-stageprofile-libiberty
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -26953,6 +27120,7 @@ all-stagetrain-libiberty: configure-stagetrain-libiberty
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -26995,6 +27163,7 @@ all-stagefeedback-libiberty: configure-stagefeedback-libiberty
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -27037,6 +27206,7 @@ all-stageautoprofile-libiberty: configure-stageautoprofile-libiberty
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -27079,6 +27249,7 @@ all-stageautofeedback-libiberty: configure-stageautofeedback-libiberty
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -27855,6 +28026,7 @@ all-stage1-libiberty-linker-plugin: configure-stage1-libiberty-linker-plugin
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -27899,6 +28071,7 @@ all-stage2-libiberty-linker-plugin: configure-stage2-libiberty-linker-plugin
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -27941,6 +28114,7 @@ all-stage3-libiberty-linker-plugin: configure-stage3-libiberty-linker-plugin
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -27983,6 +28157,7 @@ all-stage4-libiberty-linker-plugin: configure-stage4-libiberty-linker-plugin
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -28025,6 +28200,7 @@ all-stageprofile-libiberty-linker-plugin: configure-stageprofile-libiberty-linke
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -28067,6 +28243,7 @@ all-stagetrain-libiberty-linker-plugin: configure-stagetrain-libiberty-linker-pl
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -28109,6 +28286,7 @@ all-stagefeedback-libiberty-linker-plugin: configure-stagefeedback-libiberty-lin
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -28151,6 +28329,7 @@ all-stageautoprofile-libiberty-linker-plugin: configure-stageautoprofile-libiber
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -28193,6 +28372,7 @@ all-stageautofeedback-libiberty-linker-plugin: configure-stageautofeedback-libib
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -28969,6 +29149,7 @@ all-stage1-libiconv: configure-stage1-libiconv
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -29013,6 +29194,7 @@ all-stage2-libiconv: configure-stage2-libiconv
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -29055,6 +29237,7 @@ all-stage3-libiconv: configure-stage3-libiconv
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -29097,6 +29280,7 @@ all-stage4-libiconv: configure-stage4-libiconv
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -29139,6 +29323,7 @@ all-stageprofile-libiconv: configure-stageprofile-libiconv
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -29181,6 +29366,7 @@ all-stagetrain-libiconv: configure-stagetrain-libiconv
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -29223,6 +29409,7 @@ all-stagefeedback-libiconv: configure-stagefeedback-libiconv
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -29265,6 +29452,7 @@ all-stageautoprofile-libiconv: configure-stageautoprofile-libiconv
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -29307,6 +29495,7 @@ all-stageautofeedback-libiconv: configure-stageautofeedback-libiconv
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -32171,6 +32360,7 @@ all-stage1-zlib: configure-stage1-zlib
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -32215,6 +32405,7 @@ all-stage2-zlib: configure-stage2-zlib
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -32257,6 +32448,7 @@ all-stage3-zlib: configure-stage3-zlib
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -32299,6 +32491,7 @@ all-stage4-zlib: configure-stage4-zlib
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -32341,6 +32534,7 @@ all-stageprofile-zlib: configure-stageprofile-zlib
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -32383,6 +32577,7 @@ all-stagetrain-zlib: configure-stagetrain-zlib
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -32425,6 +32620,7 @@ all-stagefeedback-zlib: configure-stagefeedback-zlib
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -32467,6 +32663,7 @@ all-stageautoprofile-zlib: configure-stageautoprofile-zlib
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -32509,6 +32706,7 @@ all-stageautofeedback-zlib: configure-stageautofeedback-zlib
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -36282,6 +36480,7 @@ all-stage1-lto-plugin: configure-stage1-lto-plugin
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -36326,6 +36525,7 @@ all-stage2-lto-plugin: configure-stage2-lto-plugin
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -36368,6 +36568,7 @@ all-stage3-lto-plugin: configure-stage3-lto-plugin
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -36410,6 +36611,7 @@ all-stage4-lto-plugin: configure-stage4-lto-plugin
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -36452,6 +36654,7 @@ all-stageprofile-lto-plugin: configure-stageprofile-lto-plugin
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -36494,6 +36697,7 @@ all-stagetrain-lto-plugin: configure-stagetrain-lto-plugin
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -36536,6 +36740,7 @@ all-stagefeedback-lto-plugin: configure-stagefeedback-lto-plugin
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -36578,6 +36783,7 @@ all-stageautoprofile-lto-plugin: configure-stageautoprofile-lto-plugin
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
@@ -36620,6 +36826,7 @@ all-stageautofeedback-lto-plugin: configure-stageautofeedback-lto-plugin
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \

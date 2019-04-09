@@ -1,3 +1,7 @@
+2019-04-09  Martin Liska  <mliska@suse.cz>
+
+	* bootstrap-lto-lean.mk: New file.
+
 2019-03-02  Johannes Pfau  <johannespfau@gmail.com>
 
 	* mh-mingw: Also set __USE_MINGW_ACCESS flag for C++ code.

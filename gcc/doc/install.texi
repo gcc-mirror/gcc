@@ -2529,6 +2529,12 @@ static libraries are not compiled with link-time optimizations.  Since
 the GCC middle end and back end are in @file{libbackend.a} this means
 that only the front end is actually LTO optimized.
 
+@item @samp{bootstrap-lto-lean}
+This option is similar to @code{bootstrap-lto}, but is intended for
+faster build by only using LTO in the final bootstrap stage.
+With @samp{make profiledbootstrap} the LTO frontend
+is trained only on generator files.
+
 @item @samp{bootstrap-debug}
 Verifies that the compiler generates the same executable code, whether
 or not it is asked to emit debug information.  To this end, this
