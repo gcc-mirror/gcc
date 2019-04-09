@@ -145,7 +145,8 @@ namespace __variant
     __do_visit(_Visitor&& __visitor, _Variants&&... __variants);
 
   template <typename... _Types, typename _Tp>
-    decltype(auto) __variant_cast(_Tp&& __rhs)
+    decltype(auto)
+    __variant_cast(_Tp&& __rhs)
     {
       if constexpr (is_lvalue_reference_v<_Tp>)
 	{
@@ -197,9 +198,10 @@ namespace __variant
     struct _Uninitialized<_Type, true>
     {
       template<typename... _Args>
-      constexpr _Uninitialized(in_place_index_t<0>, _Args&&... __args)
-      : _M_storage(std::forward<_Args>(__args)...)
-      { }
+	constexpr
+	_Uninitialized(in_place_index_t<0>, _Args&&... __args)
+	: _M_storage(std::forward<_Args>(__args)...)
+	{ }
 
       constexpr const _Type& _M_get() const &
       { return _M_storage; }
@@ -220,11 +222,12 @@ namespace __variant
     struct _Uninitialized<_Type, false>
     {
       template<typename... _Args>
-      constexpr _Uninitialized(in_place_index_t<0>, _Args&&... __args)
-      {
-	::new ((void*)std::addressof(_M_storage))
-	  _Type(std::forward<_Args>(__args)...);
-      }
+	constexpr
+	_Uninitialized(in_place_index_t<0>, _Args&&... __args)
+	{
+	  ::new ((void*)std::addressof(_M_storage))
+	    _Type(std::forward<_Args>(__args)...);
+	}
 
       const _Type& _M_get() const &
       { return *_M_storage._M_ptr(); }
@@ -360,15 +363,14 @@ namespace __variant
     struct _Variant_storage;
 
   template <typename... _Types>
-  using __select_index =
-    typename __select_int::_Select_int_base<sizeof...(_Types),
-					    unsigned char,
-					    unsigned short>::type::value_type;
+    using __select_index =
+      typename __select_int::_Select_int_base<sizeof...(_Types),
+					      unsigned char,
+					      unsigned short>::type::value_type;
 
   template<typename... _Types>
     struct _Variant_storage<false, _Types...>
     {
-
       constexpr _Variant_storage() : _M_index(variant_npos) { }
 
       template<size_t _Np, typename... _Args>
@@ -387,7 +389,7 @@ namespace __variant
 	      std::_Destroy(std::__addressof(__this_mem));
 	    return {};
 	  }, __variant_cast<_Types...>(*this));
-	}
+      }
 
       void _M_reset()
       {
@@ -472,7 +474,7 @@ namespace __variant
 		 -> __detail::__variant::__variant_cookie
         {
 	  __variant_construct_single(std::forward<_Tp>(__lhs),
-				     std::forward<decltype(__rhs_mem)>(__rhs_mem));
+	      std::forward<decltype(__rhs_mem)>( __rhs_mem));
 	  return {};
 	}, __variant_cast<_Types...>(std::forward<decltype(__rhs)>(__rhs)));
     }
@@ -573,6 +575,7 @@ namespace __variant
 	  __variant_construct_single(*this,
 				     std::forward<_Up>(__rhs));
 	}
+
       template<typename _Up>
         void _M_destructive_copy(unsigned short __rhs_index, const _Up& __rhs)
         {
@@ -708,8 +711,7 @@ namespace __variant
 
   template<typename... _Types>
     using _Move_assign_alias =
-	_Move_assign_base<_Traits<_Types...>::_S_trivial_move_assign,
-			  _Types...>;
+      _Move_assign_base<_Traits<_Types...>::_S_trivial_move_assign, _Types...>;
 
   template<typename... _Types>
     struct _Variant_base : _Move_assign_alias<_Types...>
@@ -812,9 +814,13 @@ namespace __variant
 	&& !_Variant_never_valueless<__remove_cvref_t<_Variant>>::value;
     };
 
-  // Used for storing multi-dimensional vtable.
+  // Used for storing a multi-dimensional vtable.
   template<typename _Tp, size_t... _Dimensions>
-    struct _Multi_array
+    struct _Multi_array;
+
+  // Partial specialization with rank zero, stores a single _Tp element.
+  template<typename _Tp>
+    struct _Multi_array<_Tp>
     {
       constexpr const _Tp&
       _M_access() const
@@ -823,6 +829,7 @@ namespace __variant
       _Tp _M_data;
     };
 
+  // Partial specialization with rank >= 1.
   template<typename _Ret,
 	   typename _Visitor,
 	   typename... _Variants,
@@ -831,42 +838,53 @@ namespace __variant
     {
       static constexpr size_t __index =
 	sizeof...(_Variants) - sizeof...(__rest) - 1;
+
       using _Variant = typename _Nth_type<__index, _Variants...>::type;
+
       static constexpr int __do_cookie =
 	_Extra_visit_slot_needed<_Ret, _Variant>::value ? 1 : 0;
+
       using _Tp = _Ret(*)(_Visitor, _Variants...);
+
       template<typename... _Args>
 	constexpr const _Tp&
 	_M_access(size_t __first_index, _Args... __rest_indices) const
-        { return _M_arr[__first_index + __do_cookie]._M_access(__rest_indices...); }
+        {
+	  return _M_arr[__first_index + __do_cookie]
+	    ._M_access(__rest_indices...);
+	}
 
       _Multi_array<_Tp, __rest...> _M_arr[__first + __do_cookie];
     };
 
   // Creates a multi-dimensional vtable recursively.
   //
+  // The __same_return_types non-type template parameter specifies whether
+  // to enforce that all visitor invocations return the same type. This is
+  // required by std::visit but not std::visit<R>.
+  //
   // For example,
   // visit([](auto, auto){},
   //       variant<int, char>(),  // typedef'ed as V1
   //       variant<float, double, long double>())  // typedef'ed as V2
   // will trigger instantiations of:
-  // __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&), 2, 3>,
+  // __gen_vtable_impl<true, _Multi_array<void(*)(V1&&, V2&&), 2, 3>,
   //                   tuple<V1&&, V2&&>, std::index_sequence<>>
-  //   __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&), 3>,
+  //   __gen_vtable_impl<true, _Multi_array<void(*)(V1&&, V2&&), 3>,
   //                     tuple<V1&&, V2&&>, std::index_sequence<0>>
-  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
+  //     __gen_vtable_impl<true, _Multi_array<void(*)(V1&&, V2&&)>,
   //                       tuple<V1&&, V2&&>, std::index_sequence<0, 0>>
-  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
+  //     __gen_vtable_impl<true, _Multi_array<void(*)(V1&&, V2&&)>,
   //                       tuple<V1&&, V2&&>, std::index_sequence<0, 1>>
-  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
+  //     __gen_vtable_impl<true, _Multi_array<void(*)(V1&&, V2&&)>,
   //                       tuple<V1&&, V2&&>, std::index_sequence<0, 2>>
-  //   __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&), 3>,
+  //   __gen_vtable_impl<true, _Multi_array<void(*)(V1&&, V2&&), 3>,
   //                     tuple<V1&&, V2&&>, std::index_sequence<1>>
-  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
+  //     __gen_vtable_impl<true, _Multi_array<void(*)(V1&&, V2&&)>,
   //                       tuple<V1&&, V2&&>, std::index_sequence<1, 0>>
-  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
+  //     __gen_vtable_impl<true, _Multi_array<void(*)(V1&&, V2&&)>,
   //                       tuple<V1&&, V2&&>, std::index_sequence<1, 1>>
-  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
+  //     __gen_vtable_impl<true, _Multi_array<void(*)(V1&&, V2&&)>,
   //                       tuple<V1&&, V2&&>, std::index_sequence<1, 2>>
   // The returned multi-dimensional vtable can be fast accessed by the visitor
   // using index calculation.
@@ -874,6 +892,13 @@ namespace __variant
 	   typename _Array_type, typename _Variant_tuple, typename _Index_seq>
     struct __gen_vtable_impl;
 
+  // Defines the _S_apply() member that returns a _Multi_array populated
+  // with function pointers that perform the visitation expressions e(m)
+  // for each valid pack of indexes into the variant types _Variants.
+  //
+  // This partial specialization builds up the index sequences by recursively
+  // calling _S_apply() on the next specialization of __gen_vtable_impl.
+  // The base case of the recursion defines the actual function pointers.
   template<bool __same_return_types,
 	   typename _Result_type, typename _Visitor, size_t... __dimensions,
 	   typename... _Variants, size_t... __indices>
@@ -940,6 +965,9 @@ namespace __variant
 	}
     };
 
+  // This partial specialization is the base case for the recursion.
+  // It populates a _Multi_array element with the address of a function
+  // that invokes the visitor with the alternatives specified by __indices.
   template<bool __same_return_types,
 	   typename _Result_type, typename _Visitor, typename... _Variants,
 	   size_t... __indices>
@@ -949,7 +977,7 @@ namespace __variant
 		   tuple<_Variants...>, std::index_sequence<__indices...>>
     {
       using _Array_type =
-	  _Multi_array<_Result_type (*)(_Visitor&&, _Variants...)>;
+	  _Multi_array<_Result_type (*)(_Visitor, _Variants...)>;
 
       template<size_t __index, typename _Variant>
 	static constexpr decltype(auto)
@@ -964,20 +992,22 @@ namespace __variant
       static constexpr decltype(auto)
       __visit_invoke_impl(_Visitor&& __visitor, _Variants... __vars)
       {
-       if constexpr (is_same_v<_Result_type, __variant_idx_cookie>)
-         return std::__invoke(std::forward<_Visitor>(__visitor),
-            __element_by_index_or_cookie<__indices>(
-              std::forward<_Variants>(__vars))...,
-              integral_constant<size_t, __indices>()...);
-        else if constexpr (!__same_return_types &&
+	// For raw visitation using indices, pass the indices to the visitor:
+	if constexpr (is_same_v<_Result_type, __variant_idx_cookie>)
+	  return std::__invoke(std::forward<_Visitor>(__visitor),
+	      __element_by_index_or_cookie<__indices>(
+		std::forward<_Variants>(__vars))...,
+	      integral_constant<size_t, __indices>()...);
+	// For std::visit<cv void>, cast the result to void:
+	else if constexpr (!__same_return_types &&
 			   std::is_void_v<_Result_type>)
 	  return (void)std::__invoke(std::forward<_Visitor>(__visitor),
-	    __element_by_index_or_cookie<__indices>(
-	      std::forward<_Variants>(__vars))...);
+	      __element_by_index_or_cookie<__indices>(
+		std::forward<_Variants>(__vars))...);
 	else
 	  return std::__invoke(std::forward<_Visitor>(__visitor),
-	    __element_by_index_or_cookie<__indices>(
-	      std::forward<_Variants>(__vars))...);
+	      __element_by_index_or_cookie<__indices>(
+		std::forward<_Variants>(__vars))...);
       }
 
       static constexpr decltype(auto)
@@ -987,6 +1017,7 @@ namespace __variant
 				   std::forward<_Variants>(__vars)...);
       }
 
+      // Perform the implicit conversion to _Result_type for std::visit<R>.
       static constexpr _Result_type
       __do_visit_invoke_r(_Visitor&& __visitor, _Variants... __vars)
       {
@@ -1014,20 +1045,14 @@ namespace __variant
 	   typename _Result_type, typename _Visitor, typename... _Variants>
     struct __gen_vtable
     {
-      using _Func_ptr = _Result_type (*)(_Visitor&&, _Variants...);
       using _Array_type =
-	  _Multi_array<_Func_ptr,
+	  _Multi_array<_Result_type (*)(_Visitor, _Variants...),
 		       variant_size_v<remove_reference_t<_Variants>>...>;
 
-      static constexpr _Array_type
-      _S_apply()
-      {
-	return __gen_vtable_impl<__same_return_types,
-				 _Array_type, tuple<_Variants...>,
-				 std::index_sequence<>>::_S_apply();
-      }
-
-      static constexpr auto _S_vtable = _S_apply();
+      static constexpr _Array_type _S_vtable
+	= __gen_vtable_impl<__same_return_types,
+			    _Array_type, tuple<_Variants...>,
+			    std::index_sequence<>>::_S_apply();
     };
 
   template<size_t _Np, typename _Tp>
