@@ -2237,6 +2237,7 @@ private:
     DB_REFS_UNNAMED_BIT,	/* Refer to a voldemort entity.  */
     DB_REFS_INTERNAL_BIT,	/* Refers to an internal-linkage entity. */
     DB_GLOBAL_ENTITY_BIT,	/* Global module entity.  */
+    DB_IMPORTED_BIT,		/* An imported entity.  */
   };
 
 public:
@@ -2309,6 +2310,10 @@ public:
   bool is_global_entity () const
   {
     return get_flag_bit<DB_GLOBAL_ENTITY_BIT> ();
+  }
+  bool is_imported_entity () const
+  {
+    return get_flag_bit<DB_IMPORTED_BIT> ();
   }
 
 public:
@@ -3469,34 +3474,6 @@ private:
 
 /* Our module mapper (created lazily).  */
 module_mapper *module_mapper::mapper;
-
-/* IX is an index in the unnamed array.  Find the module owning that
-   index.  We can binary search the module array, as by construction
-   unnamed indices will be ordered.  */
-
-module_state *
-module_for_unnamed (unsigned ix)
-{
-  unsigned pos = MODULE_IMPORT_BASE;
-  unsigned len = modules->length () - pos;
-
-  while (len)
-    {
-      unsigned half = len / 2;
-      module_state *probe = (*modules)[pos + half];
-      if (ix < probe->unnamed_lwm)
-	len = half;
-      else if (ix < probe->unnamed_lwm + probe->unnamed_num)
-	return probe;
-      else
-	{
-	  pos += half + 1;
-	  len = len - (half + 1);
-	}
-    }
-
-  gcc_unreachable ();
-}
 
 static tree
 node_template_info (tree decl, int &use)
@@ -8730,17 +8707,23 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
 	  /* The only OVERLOADS we should see are USING decls from
 	     bindings.  */
 	  *slot = dep = make_entity (decl, ek, has_def);
-	  worklist.safe_push (dep);
 
 	  if (binding_p)
 	    /* Dependency of a namespace binding.  */;
 	  else if (ek == EK_NAMESPACE)
 	    /* Dependency is a namespace.  */;
 	  else if (ek == EK_UNNAMED)
+	    {
 	    /* Dependency is unnameable.  We do not have to apply the
 	       below checks to this entity, because we can only refer
 	       to it by depending on its containing entity, and that
 	       entity will have the below checks applied to it.  */;
+	      unsigned owner = (*modules)[MAYBE_DECL_MODULE_OWNER (decl)]->remap;
+
+	      /* Note this entity came from elsewhere.  */
+	      if (owner >= MODULE_IMPORT_BASE)
+		dep->set_flag_bit<DB_IMPORTED_BIT> ();
+	    }
 	  else
 	    {
 	      tree ctx = CP_DECL_CONTEXT (decl);
@@ -8792,6 +8775,9 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
 		    && dump ("Reachable GMF %N added", decl);
 		}
 	    }
+
+	  if (!dep->is_imported_entity ())
+	    worklist.safe_push (dep);
 	}
       else
 	/* Make sure we have consistent categorization.  */
@@ -10817,8 +10803,9 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   sec.begin ();
 
   if (refs_unnamed_p)
-    /* We contain references to unnamed decls.  Seed those that are in
-       earlier clusters (others will be within this cluster).  */
+    /* We contain references to unnamed decls.  Seed those that are
+       imported or in earlier clusters (others will be within this
+       cluster).  */
     for (unsigned ix = 0; ix != size; ix++)
       if (!scc[ix]->is_binding () && scc[ix]->refs_unnamed ())
 	{
@@ -10828,20 +10815,39 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	    {
 	      depset *d = b->deps[jx];
 	      if (!d->is_binding ()
-		  && d->get_entity_kind () != depset::EK_UNNAMED
-		  && d->cluster <= incoming_unnamed)
+		  && (d->is_imported_entity ()
+		      // FIXME Why not for UNNAMED?
+		      || (d->get_entity_kind () != depset::EK_UNNAMED
+			  && d->cluster <= incoming_unnamed)))
 		{
 		  tree u_decl = d->get_entity ();
 		  if (!TREE_VISITED (u_decl))
 		    {
-		      gcc_checking_assert (d->cluster);
+		      bool is_imported = d->is_imported_entity ();
+		      gcc_checking_assert (is_imported == !d->cluster);
 		      sec.u (ct_horcrux);
-		      sec.u (d->cluster - 1);
-		      sec.insert (u_decl);
+		      unsigned owner = 0;
+		      unsigned index = d->cluster - 1;
+		      if (is_imported)
+			{
+			  owner = MAYBE_DECL_MODULE_OWNER (u_decl);
+			  module_state *import = (*modules)[owner];
+			  /* It must be in the unnamed map.  */
+			  index = *unnamed_map->get (DECL_UID (u_decl));
+			  index -= import->unnamed_lwm;
+			  gcc_checking_assert (index < import->unnamed_num);
+			  owner = import->remap;
+			}
+		      sec.u (owner);
+		      sec.u (index);
+		      unsigned tag = sec.insert (u_decl);
+		      dump () && dump ("Inserted:%d horcrux:%u@%u for %N",
+				       tag, index, owner, u_decl);
 		      int type_tag = sec.maybe_insert_typeof (u_decl);
 		      sec.u (type_tag != 0);
-		      dump () && dump ("Created horcrux:%u for %N",
-				       d->cluster - 1, u_decl);
+		      if (type_tag)
+			dump () && dump ("Inserted:%d type tag for %N",
+					 type_tag, u_decl);
 		    }
 		}
 	    }
@@ -11091,21 +11097,43 @@ module_state::read_cluster (unsigned snum)
 	case ct_horcrux:
 	  /* Resurrect a node from a horcrux.  */
 	  {
+	    unsigned owner = sec.u ();
 	    unsigned index = sec.u ();
-	    if (index < unnamed_num)
+	    module_state *import = this;
+
+	    if (owner)
 	      {
-		mc_slot *slot = &(*unnamed_ary)[unnamed_lwm + index];
+		owner = slurp ()->remap_module (owner);
+		if (!owner)
+		  goto bad_tom_riddle;
+		import = (*modules)[owner];
+	      }
+
+	    if (index < import->unnamed_num)
+	      {
+		mc_slot *slot = &(*unnamed_ary)[import->unnamed_lwm + index];
 
 		if (slot->is_lazy ())
-		  lazy_load (NULL, NULL, slot, false);
-		tree decl = *slot;
-		int tag = sec.insert (decl);
-		if (sec.u ())
-		  sec.insert (TREE_TYPE (decl));
-		dump () && dump ("Inserted horcrux:%d %N", tag, decl);
+		  import->lazy_load (NULL, NULL, slot, false);
+
+		if (tree decl = *slot)
+		  {
+		    int tag = sec.insert (decl);
+		    dump () && dump ("Inserted:%d horcrux:%u@%u %N", tag,
+				     index, owner, decl);
+		    if (sec.u ())
+		      {
+			tag = sec.insert (TREE_TYPE (decl));
+			dump () && dump ("Inserted:%d type tag for %N",
+					 tag, decl);
+		      }
+		  }
 	      }
 	    else
-	      sec.set_overrun ();
+	      {
+	      bad_tom_riddle:
+		sec.set_overrun ();
+	      }
 	  }
 	  break;
 
@@ -13432,8 +13460,13 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	  if (base[size]->cluster != base[0]->cluster)
 	    break;
 	  base[size]->cluster = base[size]->section = 0;
+
+	  /* Namespaces and imported entities should be their own
+	     clusters.  */
 	  gcc_checking_assert (base[size]->get_entity_kind ()
 			       != depset::EK_NAMESPACE);
+	  gcc_checking_assert (base[size]->is_binding ()
+			       || !base[size]->is_imported_entity ());
 	}
       base[0]->cluster = base[0]->section = 0;
 
@@ -13448,6 +13481,9 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	  dump (dumper::CLUSTER)
 	    && dump ("Cluster namespace %N", base[0]->get_entity ());
 	}
+      else if (!base[0]->is_binding () && base[0]->is_imported_entity ())
+	dump (dumper::CLUSTER)
+	  && dump ("Cluster imported entity %N", base[0]->get_entity ());
       else
 	{
 	  /* Save the size in the first member's cluster slot.  */
@@ -13484,8 +13520,9 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
       if (!size)
 	{
-	  /* A namespace  */
-	  spaces.quick_push (base[0]);
+	  /* A namespace or import */
+	  if (!base[0]->is_imported_entity ())
+	    spaces.quick_push (base[0]);
 	  size = 1;
 	}
       else
