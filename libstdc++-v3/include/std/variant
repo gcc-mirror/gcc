@@ -178,7 +178,7 @@ namespace __variant
   // used for raw visitation
   struct __variant_cookie {};
   // used for raw visitation with indices passed in
-  struct __variant_idx_cookie {};
+  struct __variant_idx_cookie { using type = __variant_idx_cookie; };
   // a more explanatory name than 'true'
   inline constexpr auto __visit_with_index = bool_constant<true>{};
 
@@ -1613,27 +1613,18 @@ namespace __variant
       return __detail::__variant::__get<_Np>(std::move(__v));
     }
 
-  template<bool __use_index, typename _Visitor, typename... _Variants>
-    decltype(auto)
-    __visitor_result_type(_Visitor&& __visitor, _Variants&&... __variants)
-    {
-      if constexpr(__use_index)
-        return __detail::__variant::__variant_idx_cookie{};
-      else
-	return std::forward<_Visitor>(__visitor)(
-	  std::get<0>(std::forward<_Variants>(__variants))...);
-    }
-
   template<bool __use_index,
 	   bool __same_return_types,
 	   typename _Visitor, typename... _Variants>
     constexpr decltype(auto)
     __do_visit(_Visitor&& __visitor, _Variants&&... __variants)
     {
-      using _Result_type =
-	decltype(__visitor_result_type<__use_index>(
-	           std::forward<_Visitor>(__visitor),
-	           std::forward<_Variants>(__variants)...));
+      using _Deduced_type = std::invoke_result<_Visitor,
+	decltype(std::get<0>(std::declval<_Variants>()))...>;
+
+      using _Result_type = typename std::conditional_t<__use_index,
+	__detail::__variant::__variant_idx_cookie,
+	_Deduced_type>::type;
 
       constexpr auto& __vtable = __detail::__variant::__gen_vtable<
 	__same_return_types,
@@ -1662,7 +1653,6 @@ namespace __variant
     {
       if ((__variants.valueless_by_exception() || ...))
 	__throw_bad_variant_access("Unexpected index");
-
 
       if constexpr (std::is_void_v<_Res>)
         (void) __do_visit<false, false>(std::forward<_Visitor>(__visitor),
