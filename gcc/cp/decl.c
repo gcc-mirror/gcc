@@ -80,7 +80,6 @@ static void maybe_deduce_size_from_array_init (tree, tree);
 static void layout_var_decl (tree);
 static tree check_initializer (tree, tree, int, vec<tree, va_gc> **);
 static void make_rtl_for_nonlocal_decl (tree, tree, const char *);
-static void save_function_data (tree);
 static void copy_type_enum (tree , tree);
 static void check_function_type (tree, tree);
 static void finish_constructor_body (void);
@@ -15447,19 +15446,20 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   current_stmt_tree ()->stmts_are_full_exprs_p = 1;
   current_binding_level = bl;
 
+  /* If we are (erroneously) defining a function that we have already
+     defined before, wipe out what we knew before.  */
+  gcc_checking_assert (!DECL_PENDING_INLINE_P (decl1));
+  FNDECL_USED_AUTO (decl1) = false;
+  DECL_SAVED_AUTO_RETURN_TYPE (decl1) = NULL;
+
   if (!processing_template_decl && type_uses_auto (restype))
     {
       FNDECL_USED_AUTO (decl1) = true;
-      current_function_auto_return_pattern = restype;
+      DECL_SAVED_AUTO_RETURN_TYPE (decl1) = restype;
     }
 
   /* Start the statement-tree, start the tree now.  */
   DECL_SAVED_TREE (decl1) = push_stmt_list ();
-
-  /* If we are (erroneously) defining a function that we have already
-     defined before, wipe out what we knew before.  */
-  if (!DECL_PENDING_INLINE_P (decl1))
-    DECL_SAVED_AUTO_RETURN_TYPE (decl1) = NULL;
 
   if (ctype && !doing_friend && !DECL_STATIC_FUNCTION_P (decl1))
     {
@@ -15751,21 +15751,6 @@ store_parm_decls (tree current_function_parms)
 }
 
 
-/* We have finished doing semantic analysis on DECL, but have not yet
-   generated RTL for its body.  Save away our current state, so that
-   when we want to generate RTL later we know what to do.  */
-
-static void
-save_function_data (tree decl)
-{
-  /* Save the language-specific per-function data so that we can
-     get it back when we really expand this function.  */
-  gcc_assert (!DECL_PENDING_INLINE_P (decl));
-
-  DECL_SAVED_AUTO_RETURN_TYPE (decl) = current_function_auto_return_pattern;
-}
-
-
 /* Set the return value of the constructor (if present).  */
 
 static void
@@ -16094,9 +16079,9 @@ finish_function (bool inline_p)
      the return type is void.  But if the declared type is something like
      auto*, this is an error.  */
   if (!processing_template_decl && FNDECL_USED_AUTO (fndecl)
-      && TREE_TYPE (fntype) == current_function_auto_return_pattern)
+      && TREE_TYPE (fntype) == DECL_SAVED_AUTO_RETURN_TYPE (fndecl))
     {
-      if (is_auto (current_function_auto_return_pattern))
+      if (is_auto (DECL_SAVED_AUTO_RETURN_TYPE (fndecl)))
 	{
 	  apply_deduced_return_type (fndecl, void_type_node);
 	  fntype = TREE_TYPE (fndecl);
@@ -16105,7 +16090,7 @@ finish_function (bool inline_p)
 	       && !current_function_returns_null)
 	{
 	  error ("no return statements in function returning %qT",
-		 current_function_auto_return_pattern);
+		 DECL_SAVED_AUTO_RETURN_TYPE (fndecl));
 	  inform (input_location, "only plain %<auto%> return type can be "
 		  "deduced to %<void%>");
 	}
@@ -16167,10 +16152,6 @@ finish_function (bool inline_p)
   /* Set the BLOCK_SUPERCONTEXT of the outermost function scope to point
      to the FUNCTION_DECL node itself.  */
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
-
-  /* Save away current state, if appropriate.  */
-  if (!processing_template_decl)
-    save_function_data (fndecl);
 
   /* Complain if there's just no return statement.  */
   if (warn_return_type
@@ -16668,12 +16649,7 @@ fndecl_declared_return_type (tree fn)
 {
   fn = STRIP_TEMPLATE (fn);
   if (FNDECL_USED_AUTO (fn))
-    {
-      if (DECL_STRUCT_FUNCTION (fn))
-	if (struct language_function *f = DECL_STRUCT_FUNCTION (fn)->language)
-	  return f->x_auto_return_pattern;
-      return DECL_SAVED_AUTO_RETURN_TYPE (fn);
-    }
+    return DECL_SAVED_AUTO_RETURN_TYPE (fn);
 
   return TREE_TYPE (TREE_TYPE (fn));
 }

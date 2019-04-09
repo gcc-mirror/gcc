@@ -27546,7 +27546,10 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 	       emitted by now.  Also, having a mention to '<type error>'
 	       in the diagnostic is not really useful to the user.  */
 	    {
-	      if (cfun && auto_node == current_function_auto_return_pattern
+	      if (cfun
+		  && FNDECL_USED_AUTO (current_function_decl)
+		  && (auto_node
+		      == DECL_SAVED_AUTO_RETURN_TYPE (current_function_decl))
 		  && LAMBDA_FUNCTION_P (current_function_decl))
 		error ("unable to deduce lambda return type from %qE", init);
 	      else

@@ -1,3 +1,19 @@
+2019-04-09  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (language_function): Remove x_auto_return_pattern.
+	(current_function_auto_return_pattern): Delete.
+	(FNDECL_USED_AUTO): Correct documentation.
+	* decl.c (save_function_data): Delete.
+	(fndecl_declared_return_type): Don't look at language_function.
+	(start_preparsed_function): Replace
+	current_function_auto_return_pattern with
+	DECL_SAVED_AUTO_RETURN_TYPE.
+	(finish_function): Likewise.
+	* mangle.c (write_unqualified_name): Likewise.
+	* parser.c (cp_parser_jump_statement): Likewise.
+	* typeck.c (check_return_expr): Likewise.
+
 2019-04-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

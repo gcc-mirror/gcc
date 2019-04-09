@@ -1420,8 +1420,7 @@ write_unqualified_name (tree decl)
 	      type = TREE_TYPE (fn_type);
 	    }
 	  else if (FNDECL_USED_AUTO (decl))
-	    type = (DECL_STRUCT_FUNCTION (decl)->language
-		    ->x_auto_return_pattern);
+	    type = DECL_SAVED_AUTO_RETURN_TYPE (decl);
 	  else
 	    type = DECL_CONV_FN_TYPE (decl);
 	  write_conversion_operator_name (type);

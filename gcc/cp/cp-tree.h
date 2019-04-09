@@ -1918,7 +1918,6 @@ struct GTY(()) language_function {
   tree x_in_charge_parm;
   tree x_vtt_parm;
   tree x_return_value;
-  tree x_auto_return_pattern;
 
   BOOL_BITFIELD returns_value : 1;
   BOOL_BITFIELD returns_null : 1;
@@ -2013,11 +2012,6 @@ struct GTY(()) language_function {
 
 #define current_function_return_value \
   (cp_function_chain->x_return_value)
-
-/* A type involving 'auto' to be used for return type deduction.  */
-
-#define current_function_auto_return_pattern \
-  (cp_function_chain->x_auto_return_pattern)
 
 /* In parser.c.  */
 extern tree cp_literal_operator_id (const char *);
@@ -4027,7 +4021,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* True if NODE was declared with auto in its return type, but it has
    started compilation and so the return type might have been changed by
    return type deduction; its declared return type should be found in
-   DECL_STRUCT_FUNCTION(NODE)->language->x_auto_return_pattern.  */
+   DECL_SAVED_AUTO_RETURN_TYPE (NODE).   */
 #define FNDECL_USED_AUTO(NODE) \
   TREE_LANG_FLAG_2 (FUNCTION_DECL_CHECK (NODE))
 

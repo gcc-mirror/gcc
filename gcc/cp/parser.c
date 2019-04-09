@@ -13186,7 +13186,7 @@ cp_parser_jump_statement (cp_parser* parser)
 	     expression.  */
 	  expr = NULL_TREE;
 	/* Build the return-statement.  */
-	if (current_function_auto_return_pattern && in_discarded_stmt)
+	if (FNDECL_USED_AUTO (current_function_decl) && in_discarded_stmt)
 	  /* Don't deduce from a discarded return statement.  */;
 	else
 	  statement = finish_return_stmt (expr);
