@@ -1,3 +1,8 @@
+2019-04-09  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	PR target/90024
+	* gcc.dg/torture/neon-immediate-timode.c: New test.
+
 2019-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/89998
