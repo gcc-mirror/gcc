@@ -30035,9 +30035,9 @@ Arguments are separated by space characters, (it is not possible for
 one of the arguments delivered to the program to contain a space).
 
 @item <>@r{[}?@var{ident}@r{]}
-@item <>@var{fdinout}@r[{]?@var{ident}@r{]}
-@item <@var{fdin}>@var{fdout}@r[{]?@var{ident}@r{]}
-File descriptors to communicate over.  The first form, @option{<>}
+@item <>@var{fdinout}@r{[}?@var{ident}@r{]}
+@item <@var{fdin}>@var{fdout}@r{[}?@var{ident}@r{]}
+File descriptors to communicate over.  The first form, @option{<>},
 communicates over stdin and stdout.  The second form specifies a
 bidirectional file descriptor and the last form allows specifying
 two independent descriptors.  Note that other compiler options might

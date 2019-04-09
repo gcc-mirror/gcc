@@ -84,15 +84,15 @@ public:
     unsigned int i;
 
     for (i = targets.size (); i--;)
-      XDELETEVEC (targets[i]);
+      free (const_cast <char *> (targets[i]));
     for (i = deps.size (); i--;)
-      XDELETEVEC (deps[i]);
+      free (const_cast <char *> (deps[i]));
     for (i = vpath.size (); i--;)
       XDELETEVEC (vpath[i].str);
     for (i = modules.size (); i--;)
       XDELETEVEC (modules[i]);
     XDELETEVEC (module_name);
-    XDELETEVEC (bmi_name);
+    free (const_cast <char *> (bmi_name));
   }
 
 public:

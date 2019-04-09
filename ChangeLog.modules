@@ -1,5 +1,11 @@
 2019-04-09  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* mkdeps (mkrules::~mkrules): Use free appropriately.
+
+	gcc/
+	* doc/invoke.texi (C++ Module Mapper): Fix markup.
+
 	gcc/cp/
 	* cp-tree.h (language_function): Remove x_auto_return_pattern.
 	(current_function_auto_return_pattern): Delete.
