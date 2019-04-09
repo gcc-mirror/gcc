@@ -1,5 +1,9 @@
 2019-04-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/89998
+	* gcc.c-torture/compile/pr89998-1.c: New test.
+	* gcc.c-torture/compile/pr89998-2.c: New test.
+
 	PR target/90015
 	* gcc.target/riscv/interrupt-conflict-mode.c (foo): Adjust expected
 	diagnostics.
