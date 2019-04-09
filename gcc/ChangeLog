@@ -1,5 +1,15 @@
 2019-04-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR translation/90011
+	* ipa-devirt.c (compare_virtual_tables): Remove two trailing spaces
+	from diagnostics.
+	* config/arm/freebsd.h (LINK_SPEC): Remove trailing space from -p
+	diagnostics.
+	* config/riscv/freebsd.h (LINK_SPEC): Likewise.
+	* config/aarch64/aarch64-freebsd.h (FBSD_TARGET_LINK_SPEC): Likewise.
+	* config/darwin.h (DRIVER_SELF_SPECS, ASM_FINAL_SPEC): Remove
+	trailing space from -gsplit-dwarf diagnostics.
+
 	PR tree-optimization/89998
 	* gimple-ssa-sprintf.c (try_substitute_return_value): Use lhs type
 	instead of integer_type_node if possible, don't add ranges if return

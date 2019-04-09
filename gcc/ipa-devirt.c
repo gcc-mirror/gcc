@@ -874,7 +874,7 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 				(TYPE_NAME (DECL_CONTEXT (vtable->decl))),
 			      OPT_Wodr,
 			      "virtual table of type %qD violates "
-			      "one definition rule  ",
+			      "one definition rule",
 			      DECL_CONTEXT (vtable->decl)))
 		{
 		  inform (DECL_SOURCE_LOCATION
