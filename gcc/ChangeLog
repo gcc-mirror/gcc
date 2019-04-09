@@ -1,3 +1,10 @@
+2019-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90015
+	* config/riscv/riscv.c (riscv_get_interrupt_type): Fix comment typo.
+	(riscv_merge_decl_attributes): Fix typo in diagnostics.  Remove
+	trailing period from it too.
+
 2019-04-08  wu yuan  <wuyuan5@huawei.com>
 
 	* config/aarch64/aarch64-cores.def (tsv1100): Change scheduling model.
