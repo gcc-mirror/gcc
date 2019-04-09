@@ -2886,14 +2886,12 @@ struct GTY(()) slurping {
   bitmap headers;	/* Transitive direct header import graph. */
 
   /* These objects point into the mmapped area, unless we're not doing
-     that, or we got frozen or closed.  In those cases the points to
+     that, or we got frozen or closed.  In those cases they point to
      buffers we own.  */
   bytes_in macro_defs;	/* Macro definitions.  */
   bytes_in macro_tbl;	/* Macro table.  */
 
   /* Location remapping.  */
-  loc_range_t GTY((skip)) ordinary_locs;
-  loc_range_t GTY((skip)) macro_locs;
   range_t GTY((skip)) loc_deltas;
 
   unsigned current;	/* Section currently being loaded.  */
@@ -2946,7 +2944,7 @@ struct GTY(()) slurping {
 slurping::slurping (elf_in *from)
   : remap (NULL), from (from),
     headers (BITMAP_GGC_ALLOC ()), macro_defs (), macro_tbl (),
-    ordinary_locs (0, 0), macro_locs (0, 0), loc_deltas (0, 0),
+    loc_deltas (0, 0),
     current (~0u), remaining (0), lru (0), pre_early_ok (false)
 {
 }
@@ -2987,6 +2985,11 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
      of them for this module.  */
   unsigned unnamed_lwm;
   unsigned unnamed_num;
+
+  /* Location ranges for this module.  adhoc-locs are decomposed, so
+     don't have a range.  */
+  loc_range_t GTY((skip)) ordinary_locs;
+  loc_range_t GTY((skip)) macro_locs;
 
   /* The LOC is unset until we import the module.  */
   location_t loc; 	/* Location referring to module itself.  */
@@ -3211,6 +3214,7 @@ module_state::module_state (tree name, module_state *parent, bool partition)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
     parent (parent), name (name), flatname (NULL), filename (NULL),
     unnamed_lwm (0), unnamed_num (0),
+    ordinary_locs (0, 0), macro_locs (0, 0),
     loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
     mod (MODULE_UNKNOWN), subst (0), crc (0), remap (0),
     partition_p (partition)
@@ -11565,11 +11569,13 @@ module_state::read_location (bytes_in &sec) const
     }
   else if (IS_MACRO_LOC (off))
     {
-      if (off >= slurp ()->macro_locs.second)
+      location_t adjusted = off - slurp ()->loc_deltas.second;
+      
+      if (adjusted < macro_locs.first)
 	sec.set_overrun ();
-      else if (off >= slurp ()->macro_locs.first)
+      else if (adjusted < macro_locs.second)
 	{
-	  locus = off - slurp ()->loc_deltas.second;
+	  locus = adjusted;
 	  dump (dumper::LOCATION) && dump ("macro %u becoming %u", off, locus);
 	}
       else if (slurp ()->pre_early_ok)
@@ -11577,14 +11583,17 @@ module_state::read_location (bytes_in &sec) const
     }
   else if (IS_ORDINARY_LOC (off))
     {
-      if (off >= slurp ()->ordinary_locs.second)
+      location_t adjusted = off + slurp ()->loc_deltas.first;
+      
+      if (adjusted >= ordinary_locs.second)
 	sec.set_overrun ();
-      else if (off >= slurp ()->ordinary_locs.first)
+      else if (adjusted >= ordinary_locs.first)
 	{
-	  locus = off + slurp ()->loc_deltas.first;
+	  locus = adjusted;
 	  dump (dumper::LOCATION)
 	    && dump ("Ordinary location %u becoming %u", off, locus);
 	}
+      // FIXME: could we at least get builtin and command line locs?
       else if (slurp ()->pre_early_ok)
 	locus = off;
     }
@@ -11992,8 +12001,8 @@ module_state::read_locations ()
       (line_map_new_raw (line_table, false, num_ordinary));
 
     location_t lwm = offset;
-    slurp ()->ordinary_locs.first = zero + low_bits;
     slurp ()->loc_deltas.first = offset - zero;
+    ordinary_locs.first = zero + low_bits + slurp ()->loc_deltas.first;
     dump () && dump ("Ordinary loc delta %d", slurp ()->loc_deltas.first);
 
     for (unsigned ix = 0; ix != num_ordinary && !sec.get_overrun (); ix++)
@@ -12003,7 +12012,7 @@ module_state::read_locations ()
 
 	/* Record the current HWM so that the below read_location is
 	   ok.  */
-	slurp ()->ordinary_locs.second = hwm;
+	ordinary_locs.second = hwm + slurp ()->loc_deltas.first;
 	map->start_location = hwm + (offset - zero);
 	if (map->start_location < lwm)
 	  sec.set_overrun ();
@@ -12022,13 +12031,16 @@ module_state::read_locations ()
       }
 
     location_t hwm = sec.u ();
-    slurp ()->ordinary_locs.second = hwm;
-    line_table->highest_location = hwm + (offset - zero) - 1;
+    ordinary_locs.second = hwm + slurp ()->loc_deltas.first;
+
+    /* highest_location is the one handed out, not the next one to
+       hand out.  */
+    line_table->highest_location = ordinary_locs.second - 1;
+
     if (lwm > line_table->highest_location)
       /* We ran out of locations, fail.  */
       sec.set_overrun ();
-    dump () && dump ("Ordinary location hwm:%u",
-		     line_table->highest_location + 1);
+    dump () && dump ("Ordinary location hwm:%u", ordinary_locs.second);
   }
 
   {
@@ -12037,17 +12049,17 @@ module_state::read_locations ()
     location_t zero = sec.u ();
     dump () && dump ("Macro maps:%u zero:%u", num_macros, zero);
 
-    slurp ()->macro_locs.second = zero;
     location_t offset = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
     slurp ()->loc_deltas.second = zero - offset;
+    macro_locs.second = zero - slurp ()->loc_deltas.second;
     dump () && dump ("Macro loc delta %d", slurp ()->loc_deltas.second);
 
-    for (unsigned ix = 0; ix != num_macros; ix++)
+    for (unsigned ix = 0; ix != num_macros && !sec.get_overrun (); ix++)
       {
 	unsigned lwm = sec.u ();
 	/* Record the current LWM so that the below read_location is
 	   ok.  */
-	slurp ()->macro_locs.first = lwm;
+	macro_locs.first = lwm - slurp ()->loc_deltas.second;
 
 	unsigned n_tokens = sec.u ();
 	cpp_hashnode *node = sec.cpp_node ();
@@ -12064,9 +12076,9 @@ module_state::read_locations ()
 	location_t tok_loc = loc;
 	unsigned count = sec.u ();
 	unsigned runs = 0;
-	for (unsigned jx = macro->n_tokens * 2; jx--;)
+	for (unsigned jx = macro->n_tokens * 2; jx-- && !sec.get_overrun ();)
 	  {
-	    while (!count--)
+	    while (!count-- && !sec.get_overrun ())
 	      {
 		runs++;
 		tok_loc = read_location (sec);
@@ -12083,10 +12095,10 @@ module_state::read_locations ()
 		   MAP_START_LOCATION (macro) + n_tokens);
       }
     location_t lwm = sec.u ();
-    slurp ()->macro_locs.first = lwm;
-    dump () && dump ("Macro location lwm:%u",
-		     LINEMAPS_MACRO_LOWEST_LOCATION (line_table));
-		     
+    macro_locs.first = lwm - slurp ()->loc_deltas.second;
+
+    dump () && dump ("Macro location lwm:%u", macro_locs.first);
+
     if (module_interface_p () && !module_partition_p () && is_partition ())
       spans.close ();
   }

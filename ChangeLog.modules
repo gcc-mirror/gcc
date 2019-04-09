@@ -1,6 +1,13 @@
 2019-04-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (slurping): Move {ordinary,macro}_locs to ..
+	(module_state): ... here.
+	(module_state::read_location): Adjust.
+	(module_state::read_locations): Adjust, recorded locations are for
+	current TU.
+
+	gcc/cp/
 	* module.cc (get_module): Add parent option, use it.
 	(module_state::read_{imports,partitions}): Adjust.
 	(finish_module_processing): Show full module name on error.
