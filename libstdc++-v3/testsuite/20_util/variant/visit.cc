@@ -66,8 +66,30 @@ test01()
   VERIFY( res == 35 );
 }
 
+void
+test02()
+{
+  struct NoCopy
+  {
+    NoCopy() { }
+    NoCopy(const NoCopy&) = delete;
+    NoCopy(NoCopy&&) = delete;
+    ~NoCopy() { }
+
+    int operator()(int i) { return i; }
+    int operator()(const NoCopy&) { return 0; }
+  };
+
+  std::variant<NoCopy, int> v{1};
+  NoCopy f;
+  // Visit should not need arguments to be copyable:
+  int res = std::visit(f, v);
+  VERIFY( res == 1 );
+}
+
 int
 main()
 {
   test01();
+  test02();
 }

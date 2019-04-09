@@ -1,5 +1,15 @@
 2019-04-09  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/variant: Adjust whitespace. Add comments.
+	(_Multi_array): Leave primary template undefined.
+	(_Multi_array<_Tp>): Define partial specialization for base case of
+	recursion.
+	(__gen_vtable_impl, __gen_vtable): Remove redundant && from type
+	which is always a reference.
+	(__gen_vtable::_S_apply()): Remove function, inline body into
+	default member initializer.
+	* testsuite/20_util/variant/visit.cc: Test with noncopyable types.
+
 	* include/std/variant (__variant_idx_cookie): Add member type.
 	(__visitor_result_type): Remove.
 	(__do_visit): Use invoke_result instead of __visitor_result_type.
