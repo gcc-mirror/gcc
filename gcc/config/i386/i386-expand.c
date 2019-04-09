@@ -10738,6 +10738,7 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V8HF_FTYPE_V8DI_V8HF_UQI_INT:
     case V8HF_FTYPE_V8DF_V8HF_UQI_INT:
     case V16HF_FTYPE_V16SF_V16HF_UHI_INT:
+    case V8HF_FTYPE_V8HF_V8HF_V8HF_INT:
       nargs = 4;
       break;
     case V4SF_FTYPE_V4SF_V4SF_INT_INT:

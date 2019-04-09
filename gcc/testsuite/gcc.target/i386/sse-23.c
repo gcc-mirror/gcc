@@ -793,6 +793,18 @@
 #define __builtin_ia32_vfnmsubph512_mask(A, B, C, D, E) __builtin_ia32_vfnmsubph512_mask(A, B, C, D, 8)
 #define __builtin_ia32_vfnmsubph512_mask3(A, B, C, D, E) __builtin_ia32_vfnmsubph512_mask3(A, B, C, D, 8)
 #define __builtin_ia32_vfnmsubph512_maskz(A, B, C, D, E) __builtin_ia32_vfnmsubph512_maskz(A, B, C, D, 8)
+#define __builtin_ia32_vfmaddsh3_mask(A, B, C, D, E) __builtin_ia32_vfmaddsh3_mask(A, B, C, D, 8)
+#define __builtin_ia32_vfmaddsh3_mask3(A, B, C, D, E) __builtin_ia32_vfmaddsh3_mask3(A, B, C, D, 8)
+#define __builtin_ia32_vfmaddsh3_maskz(A, B, C, D, E) __builtin_ia32_vfmaddsh3_maskz(A, B, C, D, 8)
+#define __builtin_ia32_vfnmaddsh3_mask(A, B, C, D, E) __builtin_ia32_vfnmaddsh3_mask(A, B, C, D, 8)
+#define __builtin_ia32_vfnmaddsh3_mask3(A, B, C, D, E) __builtin_ia32_vfnmaddsh3_mask3(A, B, C, D, 8)
+#define __builtin_ia32_vfnmaddsh3_maskz(A, B, C, D, E) __builtin_ia32_vfnmaddsh3_maskz(A, B, C, D, 8)
+#define __builtin_ia32_vfmsubsh3_mask(A, B, C, D, E) __builtin_ia32_vfmsubsh3_mask(A, B, C, D, 8)
+#define __builtin_ia32_vfmsubsh3_mask3(A, B, C, D, E) __builtin_ia32_vfmsubsh3_mask3(A, B, C, D, 8)
+#define __builtin_ia32_vfmsubsh3_maskz(A, B, C, D, E) __builtin_ia32_vfmsubsh3_maskz(A, B, C, D, 8)
+#define __builtin_ia32_vfnmsubsh3_mask(A, B, C, D, E) __builtin_ia32_vfnmsubsh3_mask(A, B, C, D, 8)
+#define __builtin_ia32_vfnmsubsh3_mask3(A, B, C, D, E) __builtin_ia32_vfnmsubsh3_mask3(A, B, C, D, 8)
+#define __builtin_ia32_vfnmsubsh3_maskz(A, B, C, D, E) __builtin_ia32_vfnmsubsh3_maskz(A, B, C, D, 8)
 
 /* avx512fp16vlintrin.h */
 #define __builtin_ia32_cmpph128_mask(A, B, C, D) __builtin_ia32_cmpph128_mask(A, B, 1, D)
