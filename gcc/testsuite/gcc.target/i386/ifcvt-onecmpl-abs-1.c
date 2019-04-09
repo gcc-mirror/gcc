@@ -1,9 +1,5 @@
 /* { dg-do compile } */
-/* This test checks for if-conversion of one's complement
- * abs function.  */
-/* { dg-options "-O -mtune=generic" } */
-/* { dg-final { scan-assembler "cltd" } } */
-/* { dg-final { scan-assembler "xor" } } */
+/* { dg-options "-O2 -fdump-rtl-ce1" } */
 
 /* Check code generation for one's complement version of abs */
 
@@ -13,3 +9,5 @@ int onecmplabs(int x)
     x = ~x;
   return x;
 }
+
+/* { dg-final { scan-rtl-dump "succeeded through noce_try_abs" "ce1" } } */
