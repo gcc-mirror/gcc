@@ -2663,6 +2663,8 @@ print_destructor (pretty_printer *buffer, tree t)
   tree decl_name = DECL_NAME (DECL_ORIGIN (t));
 
   pp_string (buffer, "Delete_");
+  if (strncmp (IDENTIFIER_POINTER (DECL_NAME (t)), "__del", 5) == 0)
+    pp_string (buffer, "And_Free_");
   pp_ada_tree_identifier (buffer, decl_name, t, false);
 }
 
@@ -2915,8 +2917,9 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	  if (DECL_ARTIFICIAL (t))
 	    return 0;
 
-	  /* Only consider constructors/destructors for complete objects.  */
-	  if (strncmp (IDENTIFIER_POINTER (decl_name), "__comp", 6) != 0)
+	  /* Only consider complete constructors and deleting destructors.  */
+	  if (strncmp (IDENTIFIER_POINTER (decl_name), "__comp", 6) != 0
+	      && strncmp (IDENTIFIER_POINTER (decl_name), "__del", 5) != 0)
 	    return 0;
 	}
 

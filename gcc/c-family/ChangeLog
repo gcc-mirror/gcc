@@ -1,3 +1,8 @@
+2019-04-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (print_destructor): Deal with deleting destructors.
+	(dump_ada_declaration) <FUNCTION_DECL>: Likewise.
+
 2018-12-06  Release Manager
 
 	* GCC 7.4.0 released.
