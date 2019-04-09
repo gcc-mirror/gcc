@@ -1160,7 +1160,7 @@ namespace __variant
     { \
       bool __ret = true; \
       __do_visit<__detail::__variant::__visit_with_index>( \
-        [&__ret, &__lhs, __rhs] \
+        [&__ret, &__lhs] \
 		 (auto&& __rhs_mem, auto __rhs_index) mutable \
 		   -> __detail::__variant::__variant_idx_cookie \
         { \
