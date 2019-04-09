@@ -1,3 +1,9 @@
+2019-04-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/ifcvt-onecmpl-abs-1.c
+	(dg-options): Use -O2 -fdump-rtl-ce1.
+	(dg-final): Scan ce1 RTL dump instead of asm dump.
+
 2019-04-09  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	PR target/90024
