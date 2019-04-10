@@ -14579,11 +14579,17 @@ void
 module_preprocess (mrules *deps, module_state *state, int is_module)
 {
   if (is_module)
+    /* Record the module, so that partition imports resolve
+       correctly.  */
     (*modules)[MODULE_PURVIEW] = state;
+
   if (!state->flatname)
     state->set_flatname ();
+
   const char *path = NULL;
-  if (is_module > 0)
+  if (is_module > 0
+      /* Partitions always produce a BMI.  */
+      || (is_module < 0 && state->is_partition ()))
     {
       path = state->filename;
       if (!path)

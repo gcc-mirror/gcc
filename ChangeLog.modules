@@ -1,6 +1,12 @@
 2019-04-10  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_preprocess): Module partitions always produce
+	a BMI.
+	gcc/testsuite/
+	* g++.dg/modules/dep-2.C: New.
+
+	gcc/cp/
 	* module.cc (module_state::write_cluster): Remove unnecessary
 	check & FIXME.
 
