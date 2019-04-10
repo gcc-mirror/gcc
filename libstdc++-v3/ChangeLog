@@ -1,5 +1,11 @@
 2019-04-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/faq.xml: Add information about emergency EH pool.
+	* doc/xml/manual/debug.xml: Update list of memory debugging tools.
+	Move outdated information on mt_allocator to a separate section.
+	* doc/xml/manual/evolution.xml: Clarify that GLIBCXX_FORCE_NEW
+	doesn't affect the default allocator.
+
 	* testsuite/lib/libstdc++.exp (check_v3_target_parallel_mode): Fix
 	typo.
 
