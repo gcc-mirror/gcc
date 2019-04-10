@@ -872,9 +872,6 @@ struct _stmt_vec_info {
   stmt_vec_info first_element;
   /* Pointer to the next element in the group.  */
   stmt_vec_info next_element;
-  /* For data-refs, in case that two or more stmts share data-ref, this is the
-     pointer to the previously detected stmt with the same dr.  */
-  stmt_vec_info same_dr_stmt;
   /* The size of the group.  */
   unsigned int size;
   /* For stores, number of stores from this group seen. We vectorize the last
@@ -1044,8 +1041,6 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
   (gcc_checking_assert ((S)->dr_aux.dr), (S)->store_count)
 #define DR_GROUP_GAP(S) \
   (gcc_checking_assert ((S)->dr_aux.dr), (S)->gap)
-#define DR_GROUP_SAME_DR_STMT(S) \
-  (gcc_checking_assert ((S)->dr_aux.dr), (S)->same_dr_stmt)
 
 #define REDUC_GROUP_FIRST_ELEMENT(S) \
   (gcc_checking_assert (!(S)->dr_aux.dr), (S)->first_element)

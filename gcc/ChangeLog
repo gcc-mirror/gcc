@@ -1,3 +1,14 @@
+2019-04-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_stmt_vec_info): Remove same_dr_stmt
+	member.
+	(DR_GROUP_SAME_DR_STMT): Remove.
+	* tree-vect-stmts.c (vectorizable_load): Remove unreachable code.
+	* tree-vect-data-refs.c (vect_analyze_group_access_1): Likewise,
+	replace with assert.
+	(vect_analyze_data_ref_accesses): Fix INTEGER_CST comparison.
+	(vect_record_grouped_load_vectors): Remove unreachable code.
+
 2019-04-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/90016

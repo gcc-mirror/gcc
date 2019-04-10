@@ -2523,40 +2523,15 @@ vect_analyze_group_access_1 (dr_vec_info *dr_info)
       struct data_reference *data_ref = dr;
       unsigned int count = 1;
       tree prev_init = DR_INIT (data_ref);
-      stmt_vec_info prev = stmt_info;
       HOST_WIDE_INT diff, gaps = 0;
 
       /* By construction, all group members have INTEGER_CST DR_INITs.  */
       while (next)
         {
-          /* Skip same data-refs.  In case that two or more stmts share
-             data-ref (supported only for loads), we vectorize only the first
-             stmt, and the rest get their vectorized loads from the first
-             one.  */
-          if (!tree_int_cst_compare (DR_INIT (data_ref),
-				     DR_INIT (STMT_VINFO_DATA_REF (next))))
-            {
-              if (DR_IS_WRITE (data_ref))
-                {
-                  if (dump_enabled_p ())
-                    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                     "Two store stmts share the same dr.\n");
-                  return false;
-                }
+          /* We never have the same DR multiple times.  */
+          gcc_assert (tree_int_cst_compare (DR_INIT (data_ref),
+				DR_INIT (STMT_VINFO_DATA_REF (next))) != 0);
 
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-				 "Two or more load stmts share the same dr.\n");
-
-	      /* For load use the same data-ref load.  */
-	      DR_GROUP_SAME_DR_STMT (next) = prev;
-
-	      prev = next;
-	      next = DR_GROUP_NEXT_ELEMENT (next);
-	      continue;
-            }
-
-	  prev = next;
 	  data_ref = STMT_VINFO_DATA_REF (next);
 
 	  /* All group members have the same STEP by construction.  */
@@ -3072,8 +3047,8 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
       stmt_vec_info next, g = grp;
       while ((next = DR_GROUP_NEXT_ELEMENT (g)))
 	{
-	  if ((DR_INIT (STMT_VINFO_DR_INFO (next)->dr)
-	       == DR_INIT (STMT_VINFO_DR_INFO (g)->dr))
+	  if (tree_int_cst_equal (DR_INIT (STMT_VINFO_DR_INFO (next)->dr),
+				  DR_INIT (STMT_VINFO_DR_INFO (g)->dr))
 	      && gimple_uid (STMT_VINFO_STMT (next)) < first_duplicate)
 	    first_duplicate = gimple_uid (STMT_VINFO_STMT (next));
 	  g = next;
@@ -6329,12 +6304,14 @@ vect_record_grouped_load_vectors (stmt_vec_info stmt_info,
        correspond to the gaps.  */
       if (next_stmt_info != first_stmt_info
 	  && gap_count < DR_GROUP_GAP (next_stmt_info))
-      {
-        gap_count++;
-        continue;
-      }
+	{
+	  gap_count++;
+	  continue;
+	}
 
-      while (next_stmt_info)
+      /* ???  The following needs cleanup after the removal of
+         DR_GROUP_SAME_DR_STMT.  */
+      if (next_stmt_info)
         {
 	  stmt_vec_info new_stmt_info = vinfo->lookup_def (tmp_data_ref);
 	  /* We assume that if VEC_STMT is not NULL, this is a case of multiple
@@ -6344,29 +6321,21 @@ vect_record_grouped_load_vectors (stmt_vec_info stmt_info,
 	    STMT_VINFO_VEC_STMT (next_stmt_info) = new_stmt_info;
 	  else
             {
-	      if (!DR_GROUP_SAME_DR_STMT (next_stmt_info))
-                {
-		  stmt_vec_info prev_stmt_info
-		    = STMT_VINFO_VEC_STMT (next_stmt_info);
-		  stmt_vec_info rel_stmt_info
-		    = STMT_VINFO_RELATED_STMT (prev_stmt_info);
-		  while (rel_stmt_info)
-		    {
-		      prev_stmt_info = rel_stmt_info;
-		      rel_stmt_info = STMT_VINFO_RELATED_STMT (rel_stmt_info);
-		    }
+	      stmt_vec_info prev_stmt_info
+		= STMT_VINFO_VEC_STMT (next_stmt_info);
+	      stmt_vec_info rel_stmt_info
+		= STMT_VINFO_RELATED_STMT (prev_stmt_info);
+	      while (rel_stmt_info)
+		{
+		  prev_stmt_info = rel_stmt_info;
+		  rel_stmt_info = STMT_VINFO_RELATED_STMT (rel_stmt_info);
+		}
 
-		  STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
-                }
+	      STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
             }
 
 	  next_stmt_info = DR_GROUP_NEXT_ELEMENT (next_stmt_info);
 	  gap_count = 1;
-	  /* If NEXT_STMT_INFO accesses the same DR as the previous statement,
-	     put the same TMP_DATA_REF as its vectorized statement; otherwise
-	     get the next data-ref from RESULT_CHAIN.  */
-	  if (!next_stmt_info || !DR_GROUP_SAME_DR_STMT (next_stmt_info))
-	    break;
         }
     }
 }
