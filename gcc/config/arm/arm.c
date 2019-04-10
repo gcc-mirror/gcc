@@ -11696,8 +11696,7 @@ neon_valid_immediate (rtx op, machine_mode mode, int inverse,
   else
     {
       n_elts = 1;
-      if (mode == VOIDmode)
-	mode = DImode;
+      gcc_assert (mode != VOIDmode);
     }
 
   innersize = GET_MODE_UNIT_SIZE (mode);

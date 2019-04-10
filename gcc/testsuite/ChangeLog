@@ -1,3 +1,8 @@
+2019-04-10  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	PR target/90024
+	* gcc.dg/torture/neon-immediate-timode.c: New test.
+
 2019-04-07  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/89945
