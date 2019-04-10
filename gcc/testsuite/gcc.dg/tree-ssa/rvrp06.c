@@ -18,5 +18,4 @@ f4 (unsigned a, unsigned b)
     }
 }
 
-/* { dg-final { scan-tree-dump "Branch rewritten.*1 !=" "rvrp" } } */
-/* { dg-final { scan-tree-dump "Branch rewritten.*0 !=" "rvrp" } } */
+/* { dg-final { scan-tree-dump-times "Branch rewritten" 2 "rvrp" } } */

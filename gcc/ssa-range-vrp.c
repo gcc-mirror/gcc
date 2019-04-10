@@ -126,6 +126,9 @@ rvrp_fold_const_assign (gassign *assign, const irange &r)
 {
   irange trange;
   wide_int wi;
+  // ?? Perhaps we could set the assignment to 0 instead?
+  if (r.undefined_p ())
+    return false;
   gcc_assert (r.singleton_p (wi));
   tree lhs = gimple_assign_lhs (assign);
   tree rhs = wide_int_to_tree (TREE_TYPE (lhs), wi);
@@ -158,7 +161,10 @@ rvrp_fold (ssa_ranger &ranger, gimple *stmt, bitmap touched)
   if (ranger.range_of_stmt (r, stmt) && !r.varying_p ())
     {
       // If it folds to a constant and it's OK to propagate the args.
-      if (r.singleton_p ())
+      // Also, if it folds to [], the statement is unreachable (and
+      // the BB for that matter).  Fold the branch enough so we can
+      // nuke any possible SSA uses in the conditional.
+      if (r.singleton_p () || r.undefined_p ())
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
