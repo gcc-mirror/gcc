@@ -1,5 +1,8 @@
 2019-04-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/lib/libstdc++.exp (check_v3_target_parallel_mode): Fix
+	typo.
+
 	PR libstdc++/89851
 	* testsuite/20_util/variant/89851.cc: New test.
 
