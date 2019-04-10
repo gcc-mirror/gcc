@@ -324,8 +324,8 @@ private:
 
   dom_accumulator *m_dom_accumulator;
   auto_vec<basic_block> m_bbs;
-  // This is a pointer so we can delay construction until after loop
-  // info is available.
+  // This is a pointer instead of a scalar so we can delay
+  // construction until after loop info is available.
   trace_ranger *m_ranger;
   auto_bitmap m_touched;
   propagate_cleanups m_cleanups;
@@ -355,11 +355,12 @@ rvrp_engine::rvrp_engine (enum rvrp_order order)
       m_dom_accumulator = new dom_accumulator (CDI_POST_DOMINATORS, m_bbs);
       break;
     case RVRP_ORDER_FORWARD:
+    case RVRP_ORDER_CONDITIONALS:
       FOR_EACH_BB_FN (bb, cfun)
 	m_bbs.quick_push (bb);
       m_dom_accumulator = NULL;
       break;
-    case RVRP_ORDER_BACKWARDS:
+    case RVRP_ORDER_BACKWARD:
       FOR_EACH_BB_REVERSE_FN (bb, cfun)
 	m_bbs.quick_push (bb);
       m_dom_accumulator = NULL;
@@ -389,14 +390,17 @@ void
 rvrp_engine::visit (basic_block bb)
 {
   irange r;
-  for (gphi_iterator gpi = gsi_start_phis (bb); !gsi_end_p (gpi);
-       gsi_next (&gpi))
-    {
-      gphi *phi = gpi.phi ();
-      tree phi_def = gimple_phi_result (phi);
-      if (m_ranger->valid_ssa_p (phi_def))
-	m_ranger->range_of_stmt (r, phi);
-    }
+
+  // If we're only looking at conditionals, there's no need to look at PHIs.
+  if (m_order != RVRP_ORDER_CONDITIONALS)
+    for (gphi_iterator gpi = gsi_start_phis (bb); !gsi_end_p (gpi);
+	 gsi_next (&gpi))
+      {
+	gphi *phi = gpi.phi ();
+	tree phi_def = gimple_phi_result (phi);
+	if (m_ranger->valid_ssa_p (phi_def))
+	  m_ranger->range_of_stmt (r, phi);
+      }
 
   if (dump_file)
     fprintf (dump_file, "RVRP: Considering BB %d.\n", bb->index);
@@ -404,12 +408,21 @@ rvrp_engine::visit (basic_block bb)
   for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
        gsi_next (&gsi))
     {
+      // When looking at conditionals, there's nothing interesting
+      // before the last statement.
+      if (m_order == RVRP_ORDER_CONDITIONALS && !gsi_one_before_end_p (gsi))
+	continue;
+
       gimple *stmt = gsi_stmt (gsi);
-      gimple *old_stmt = gimple_copy (stmt);
       tree lhs = gimple_get_lhs (stmt);
-      if (gimple_code (stmt) == GIMPLE_COND || m_ranger->valid_ssa_p (lhs))
+      if (gimple_code (stmt) == GIMPLE_COND
+	  || (m_order != RVRP_ORDER_CONDITIONALS
+	      && m_ranger->valid_ssa_p (lhs)))
 	{
 	  bool changed = false;
+	  // ?? This is only needed for propagate_mark_stmt_for_cleanup.
+	  // Can we get away with a shallow copy?
+	  gimple *old_stmt = gimple_copy (stmt);
 	  if (m_ranger->range_of_stmt (r, stmt))
 	    changed = rvrp_fold (*m_ranger, stmt, m_touched);
 	  if (!changed)
@@ -445,53 +458,6 @@ execute_ranger_vrp ()
   enum rvrp_order order
     = flag_rvrp_order ? flag_rvrp_order : RVRP_ORDER_DOMINATOR;
   rvrp_engine w (order);
-  return 0;
-}
-
-
-
-// This routine uses a ranger to query the arguments of branches at the bottom
-// of every block and try to fold them if appropriate.
-// A walk of the block is not performed, so no values within the block are
-// folded, just the branches.
-
-unsigned int
-execute_ranger_vrp_conditional ()
-{
-  bool details = dump_file && (dump_flags & TDF_DETAILS);
-  // Create a temp ranger and exercise it before running in order to get a
-  // listing in the dump file, and to fully exercise the code.
-  if (details)
-  { 
-    global_ranger e;
-    e.calculate_and_dump (dump_file);
-  }
-
-  global_ranger ranger;
-  basic_block bb;
-  irange r;
-  auto_bitmap touched;
-  propagate_cleanups cleanups;
-
-  // Fold conditionals at the end of each BB.
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      gimple *stmt = last_stmt (bb);
-      gimple *old_stmt = gimple_copy (stmt);
-      gcond *cond;
-      if (stmt && (cond = dyn_cast <gcond *> (stmt)))
-	{
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "RVRP: Considering BB %d:  ", bb->index);
-	      print_gimple_stmt (dump_file, cond, 0, TDF_NONE);
-	    }
-	  if (rvrp_fold (ranger, stmt, touched))
-	    cleanups.record_change (old_stmt, stmt);
-	}
-    }
-
-  rvrp_final_propagate (ranger, touched);
   return 0;
 }
 

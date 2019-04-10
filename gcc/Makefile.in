@@ -223,6 +223,7 @@ generic-match.o-warn = -Wno-unused
 dfp.o-warn = -Wno-strict-aliasing
 # I fucking hate this warning and my stage1 compiler is too dumb.
 gimple-ssa-warn-restrict.o-warn = -Wno-format
+tree-ssa-strlen.o-warn = -Wno-format
 
 # All warnings have to be shut off in stage1 if the compiler used then
 # isn't gcc; configure determines that.  WARN_CFLAGS will be either

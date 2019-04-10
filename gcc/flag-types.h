@@ -152,7 +152,8 @@ enum rvrp_order
   RVRP_ORDER_DOMINATOR,
   RVRP_ORDER_POSTDOM,
   RVRP_ORDER_FORWARD,
-  RVRP_ORDER_BACKWARDS
+  RVRP_ORDER_BACKWARD,
+  RVRP_ORDER_CONDITIONALS
 };
 
 /* Which method to use for operations on ranges.  */
