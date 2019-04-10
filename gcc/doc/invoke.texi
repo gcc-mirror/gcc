@@ -9359,7 +9359,7 @@ The optimization reduces code size and may disturb unwind stacks by replacing
 a function by equivalent one with a different name. The optimization works
 more effectively with link-time optimization enabled.
 
-Nevertheless the behavior is similar to Gold Linker ICF optimization, GCC ICF
+Although the behavior is similar to the Gold Linker's ICF optimization, GCC ICF
 works on different levels and thus the optimizations are not same - there are
 equivalences that are found only by GCC and equivalences found only by Gold.
 
