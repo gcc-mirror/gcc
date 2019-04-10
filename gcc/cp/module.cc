@@ -14139,7 +14139,7 @@ module_state::do_import (char const *fname, cpp_reader *reader)
     }
 
   if (mrules *deps = cpp_get_deps (reader))
-    deps_add_module (deps, get_flatname (false), get_flatname (true));
+    deps_add_module (deps, get_flatname (true), get_flatname (false));
 
   int fd = -1;
   int e = ENOENT;
@@ -14605,7 +14605,7 @@ module_preprocess (mrules *deps, module_state *state, int is_module)
       path = path ? maybe_add_bmi_prefix (path) : "";
     }
 
-  deps_add_module (deps, state->get_flatname (false), state->get_flatname (true),
+  deps_add_module (deps, state->get_flatname (true), state->get_flatname (false),
 		   path, state->is_header ());
 }
 
@@ -14969,8 +14969,8 @@ finish_module_processing (cpp_reader *reader)
 	  const char *path = maybe_add_bmi_prefix (state->filename);
 
 	  if (mrules *deps = cpp_get_deps (reader))
-	    deps_add_module (deps, state->get_flatname (false),
-			     state->get_flatname (true), path,
+	    deps_add_module (deps, state->get_flatname (true),
+			     state->get_flatname (false), path,
 			     state->is_header ());
 
 	  for (unsigned again = 2; ; again--)

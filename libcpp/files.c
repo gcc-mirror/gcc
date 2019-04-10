@@ -927,6 +927,10 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
 
       file->header_unit = +1;
       _cpp_mark_file_once_only (pfile, file);
+
+      // FIXME in preprocessing mode, should we continue with the
+      // include in a directives-only mode, completely eliding
+      // non-directive lines?
     }
   else
     {

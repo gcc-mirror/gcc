@@ -323,25 +323,25 @@ deps_add_vpath (struct mrules *d, const char *vpath)
    specifying BMI as the output file, of type IS_HEADER_UNIT.  */
 
 void
-deps_add_module (struct mrules *d, const char *m, const char *p,
+deps_add_module (struct mrules *d, const char *p, const char *m,
 		 const char *bmi, bool is_header_unit)
 {
-  size_t m_len = strlen (m);
   size_t p_len = p ? strlen (p) : 0;
+  size_t m_len = strlen (m);
 
-  char *m_name = XNEWVEC (char, m_len + p_len + 1);
+  char *name = XNEWVEC (char, m_len + p_len + 1);
   if (p_len)
-    memcpy (m_name, p, p_len + 1);
-  memcpy (m_name + p_len, m, m_len + 1);
+    memcpy (name, p, p_len + 1);
+  memcpy (name + p_len, m, m_len + 1);
 
   if (bmi)
     {
-      d->module_name = m_name;
+      d->module_name = name;
       d->is_header_unit = is_header_unit;
       d->bmi_name = xstrdup (bmi);
     }
   else
-    d->modules.push (m_name);
+    d->modules.push (name);
 }
 
 static unsigned
