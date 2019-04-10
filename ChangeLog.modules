@@ -1,6 +1,10 @@
 2019-04-10  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::write_cluster): Remove unnecessary
+	check & FIXME.
+
+	gcc/cp/
 	* module.cc (trees_out::depending_p): Delete.
 	(trees_out::tree_decl): Refactor asserts.
 	(module_state::write_cluster): Refactor initial scan.

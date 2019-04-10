@@ -10822,9 +10822,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	      depset *d = b->deps[jx];
 	      if (!d->is_binding ()
 		  && (d->is_imported_entity ()
-		      // FIXME Why not for UNNAMED?
-		      || (d->get_entity_kind () != depset::EK_UNNAMED
-			  && d->cluster <= incoming_unnamed)))
+		      || d->cluster <= incoming_unnamed))
 		{
 		  tree u_decl = d->get_entity ();
 		  if (!TREE_VISITED (u_decl))
