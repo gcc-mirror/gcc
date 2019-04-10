@@ -1,3 +1,9 @@
+2019-04-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/90016
+	* config/aarch64/aarch64.opt (msve-vector-bits): Remove redundant and
+	obsolete reference to N.
+
 2019-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/90025
