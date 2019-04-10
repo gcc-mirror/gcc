@@ -1,5 +1,8 @@
 2019-04-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/invoke.texi (Optimize Options): Change "Nevertheless" to
+	"Although" in -fipa-icf documentation.
+
 	* doc/invoke.texi (Debugging Options): Explicitly state the semantics
 	of using multiple -g options.
 
