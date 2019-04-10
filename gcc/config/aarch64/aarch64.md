@@ -5491,6 +5491,94 @@
   [(set_attr "type" "bfm")]
 )
 
+;;  Match a bfi instruction where the shift of OP3 means that we are
+;;  actually copying the least significant bits of OP3 into OP0 by way
+;;  of the AND masks and the IOR instruction.  A similar instruction
+;;  with the two parts of the IOR swapped around was never triggered
+;;  in a bootstrap build and test of GCC so it was not included.
+
+(define_insn "*aarch64_bfi<GPI:mode>5_shift"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+        (ior:GPI (and:GPI (match_operand:GPI 1 "register_operand" "0")
+                          (match_operand:GPI 2 "const_int_operand" "n"))
+                 (and:GPI (ashift:GPI
+                           (match_operand:GPI 3 "register_operand" "r")
+                           (match_operand:GPI 4 "aarch64_simd_shift_imm_<mode>" "n"))
+                          (match_operand:GPI 5 "const_int_operand" "n"))))]
+  "aarch64_masks_and_shift_for_bfi_p (<MODE>mode, UINTVAL (operands[2]),
+				      UINTVAL (operands[4]),
+				      UINTVAL(operands[5]))"
+  "bfi\t%<GPI:w>0, %<GPI:w>3, %4, %P5"
+  [(set_attr "type" "bfm")]
+)
+
+(define_insn "*aarch64_bfi<GPI:mode>5_shift_alt"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+        (ior:GPI (and:GPI (ashift:GPI
+                           (match_operand:GPI 1 "register_operand" "r")
+                           (match_operand:GPI 2 "aarch64_simd_shift_imm_<mode>" "n"))
+                          (match_operand:GPI 3 "const_int_operand" "n"))
+		 (and:GPI (match_operand:GPI 4 "register_operand" "0")
+                          (match_operand:GPI 5 "const_int_operand" "n"))))]
+  "aarch64_masks_and_shift_for_bfi_p (<MODE>mode, UINTVAL (operands[5]),
+				      UINTVAL (operands[2]),
+				      UINTVAL(operands[3]))"
+  "bfi\t%<GPI:w>0, %<GPI:w>1, %2, %P3"
+  [(set_attr "type" "bfm")]
+)
+
+;; Like *aarch64_bfi<GPI:mode>5_shift but with no and of the ashift because
+;; the shift is large enough to remove the need for an AND instruction.
+
+(define_insn "*aarch64_bfi<GPI:mode>4_noand"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+        (ior:GPI (and:GPI (match_operand:GPI 1 "register_operand" "0")
+                          (match_operand:GPI 2 "const_int_operand" "n"))
+                 (ashift:GPI
+                          (match_operand:GPI 3 "register_operand" "r")
+                          (match_operand:GPI 4 "aarch64_simd_shift_imm_<mode>" "n"))))]
+  "aarch64_masks_and_shift_for_bfi_p (<MODE>mode, UINTVAL (operands[2]),
+				      UINTVAL (operands[4]),
+				      HOST_WIDE_INT_M1U << UINTVAL (operands[4]) )"
+{
+  operands[5] = GEN_INT (GET_MODE_BITSIZE (<MODE>mode) - UINTVAL (operands[4]));
+  return "bfi\t%<GPI:w>0, %<GPI:w>3, %4, %5";
+}
+  [(set_attr "type" "bfm")]
+)
+
+(define_insn "*aarch64_bfi<GPI:mode>4_noand_alt"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+        (ior:GPI (ashift:GPI
+                          (match_operand:GPI 1 "register_operand" "r")
+                          (match_operand:GPI 2 "aarch64_simd_shift_imm_<mode>" "n"))
+		 (and:GPI (match_operand:GPI 3 "register_operand" "0")
+                          (match_operand:GPI 4 "const_int_operand" "n"))))]
+  "aarch64_masks_and_shift_for_bfi_p (<MODE>mode, UINTVAL (operands[4]),
+				      UINTVAL (operands[2]),
+				      HOST_WIDE_INT_M1U << UINTVAL (operands[2]) )"
+{
+  operands[5] = GEN_INT (GET_MODE_BITSIZE (<MODE>mode) - UINTVAL (operands[2]));
+  return "bfi\t%<GPI:w>0, %<GPI:w>1, %2, %5";
+}
+  [(set_attr "type" "bfm")]
+)
+
+;; Like *aarch64_bfi<GPI:mode>5_shift but with no shifting, we are just
+;; copying the least significant bits of OP3 to OP0.
+
+(define_insn "*aarch64_bfi<GPI:mode>4_noshift"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+        (ior:GPI (and:GPI (match_operand:GPI 1 "register_operand" "0")
+                          (match_operand:GPI 2 "const_int_operand" "n"))
+                 (and:GPI (match_operand:GPI 3 "register_operand" "r")
+                          (match_operand:GPI 4 "const_int_operand" "n"))))]
+  "aarch64_masks_and_shift_for_bfi_p (<MODE>mode, UINTVAL (operands[2]), 0,
+				      UINTVAL (operands[4]))"
+  "bfi\t%<GPI:w>0, %<GPI:w>3, 0, %P4"
+  [(set_attr "type" "bfm")]
+)
+
 (define_insn "*extr_insv_lower_reg<mode>"
   [(set (zero_extract:GPI (match_operand:GPI 0 "register_operand" "+r")
 			  (match_operand 1 "const_int_operand" "n")
