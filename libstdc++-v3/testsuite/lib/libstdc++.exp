@@ -1048,7 +1048,7 @@ proc check_v3_target_parallel_mode { } {
 	global v3-libgomp
 	# If 'make check-parallel' is running the test succeeds.
 	if { ${v3-libgomp} == 1 && [regexp "libgomp" $cxxflags] } {
-	    return1 1
+	    return 1
 	}
 	return 0
     }]
