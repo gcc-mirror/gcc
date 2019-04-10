@@ -1,3 +1,8 @@
+2019-04-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89851
+	* testsuite/20_util/variant/89851.cc: New test.
+
 2019-04-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/variant: Adjust whitespace. Add comments.
