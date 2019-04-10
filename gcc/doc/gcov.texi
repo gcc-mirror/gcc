@@ -431,13 +431,15 @@ Print verbose informations related to basic blocks and arcs.
 
 @item -x
 @itemx --hash-filenames
-By default, gcov uses the full pathname of the source files to create
+When using @var{--preserve-paths},
+gcov uses the full pathname of the source files to create
 an output filename.  This can lead to long filenames that can overflow
 filesystem limits.  This option creates names of the form
 @file{@var{source-file}##@var{md5}.gcov},
 where the @var{source-file} component is the final filename part and
 the @var{md5} component is calculated from the full mangled name that
-would have been used otherwise.
+would have been used otherwise.  The option is an alternative
+to the @var{--preserve-paths} on systems which have a filesystem limit.
 
 @end table
 
