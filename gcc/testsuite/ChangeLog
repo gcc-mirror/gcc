@@ -1,3 +1,10 @@
+2018-04-10  Steve Ellcey  <sellcey@marvell.com>
+
+	PR rtl-optimization/87763
+	* gcc.target/aarch64/combine_bfxil.c: Change some bfxil checks
+	to bfi.
+	* gcc.target/aarch64/combine_bfi_2.c: New test.
+
 2019-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/90025
