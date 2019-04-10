@@ -1,5 +1,8 @@
 2019-04-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/90025
+	* gcc.c-torture/execute/pr90025.c: New test.
+
 	PR c++/90010
 	* gcc.dg/pr90010.c: New test.
 
