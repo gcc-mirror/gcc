@@ -31,7 +31,8 @@
 ;; 'H' was previously used for FPA.
 
 ;; The following multi-letter normal constraints have been used:
-;; in ARM/Thumb-2 state: Da, Db, Dc, Dd, Dn, Dl, DL, Do, Dv, Dy, Di, Dt, Dp, Dz
+;; in ARM/Thumb-2 state: Da, Db, Dc, Dd, Dn, DN, Dm, Dl, DL, Do, Dv, Dy, Di,
+;;			 Dt, Dp, Dz
 ;; in Thumb-1 state: Pa, Pb, Pc, Pd, Pe
 ;; in Thumb-2 state: Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py
 ;; in all states: Pf
@@ -294,13 +295,27 @@
  (and (match_code "const_double,const_int")
       (match_test "TARGET_32BIT && arm_const_double_by_immediates (op)")))
 
-(define_constraint "Dn"
+(define_constraint "Dm"
  "@internal
-  In ARM/Thumb-2 state a const_vector or const_int which can be loaded with a
-  Neon vmov immediate instruction."
- (and (match_code "const_vector,const_int")
+  In ARM/Thumb-2 state a const_vector which can be loaded with a Neon vmov
+  immediate instruction."
+ (and (match_code "const_vector")
       (match_test "TARGET_32BIT
 		   && imm_for_neon_mov_operand (op, GET_MODE (op))")))
+
+(define_constraint "Dn"
+ "@internal
+  In ARM/Thumb-2 state a DImode const_int which can be loaded with a Neon vmov
+  immediate instruction."
+ (and (match_code "const_int")
+      (match_test "TARGET_32BIT && imm_for_neon_mov_operand (op, DImode)")))
+
+(define_constraint "DN"
+ "@internal
+  In ARM/Thumb-2 state a TImode const_int which can be loaded with a Neon vmov
+  immediate instruction."
+ (and (match_code "const_int")
+      (match_test "TARGET_32BIT && imm_for_neon_mov_operand (op, TImode)")))
 
 (define_constraint "Dl"
  "@internal
