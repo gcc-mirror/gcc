@@ -2659,12 +2659,6 @@ public:
   ~trees_out ();
 
 private:
-  bool depending_p () const
-  {
-    return !streaming_p ();
-  }
-
-private:
   void mark_trees ();
   void unmark_trees ();
 
@@ -6460,10 +6454,9 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
     {
       /* If we requested by-value, this better not be a cross-module
 	 import.  */
-      unsigned owner = MAYBE_DECL_MODULE_OWNER (get_module_owner (decl));
-
-      gcc_checking_assert (owner < MODULE_IMPORT_BASE
-			   || (*modules)[owner]->remap < MODULE_IMPORT_BASE);
+      gcc_checking_assert ((*modules)[MAYBE_DECL_MODULE_OWNER
+				      (get_module_owner (decl))]->remap
+			   < MODULE_IMPORT_BASE);
       return true;
     }
 
@@ -6560,7 +6553,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	if (!DECL_IMPLICIT_TYPEDEF_P (decl))
 	  return true;
 
-	if (depending_p ())
+	if (!streaming_p ())
 	  {
 	    bool unnameable = dep_hash->sneakoscope || is_import;
 	    if (!unnameable)
@@ -10791,7 +10784,9 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  dump () && dump ("Unnamed %u %N", unnamed, decl);
 	  b->cluster = ++unnamed;
 	}
-      else if (b->get_entity_kind () != depset::EK_USING)
+
+      if (b->get_entity_kind () == depset::EK_DECL
+	  && TREE_PUBLIC (CP_DECL_CONTEXT (decl)))
 	{
 	  // FIXME: What about non-mergeable decls in this SCC that
 	  // are nevertheless referenced in locating the mergeable
@@ -10799,20 +10794,11 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  // are specializations, and if it does that, it will never
 	  // find something to merge with, so we could cull them from
 	  // this set.)
-	  if (b->get_entity_kind () == depset::EK_SPECIALIZATION
-	      || TREE_PUBLIC (CP_DECL_CONTEXT (decl)))
-	    {
-	      unsigned owner = MODULE_NONE;
 
-	      if (!is_header ())
-		owner = MAYBE_DECL_MODULE_OWNER (decl);
-
-	      if (owner >= MODULE_IMPORT_BASE) 
-		owner = (*modules)[owner]->remap;
-
-	      if (owner < MODULE_IMPORT_BASE)
-		mergeables.safe_push (b);
-	    }
+	  gcc_checking_assert (is_header ()
+			       || ((*modules)[MAYBE_DECL_MODULE_OWNER (decl)]
+				   ->remap < MODULE_IMPORT_BASE));
+	  mergeables.safe_push (b);
 	}
     }
 
@@ -11701,6 +11687,8 @@ module_state::prepare_locations ()
    location spans.  */
 // FIXME: I do not prune the unreachable locations out of the GMF.
 // Modules with GMFs could well cause us to run out of locations.
+// FIXME: location tables of partitions need incorporating into the
+// primary module.
 
 void
 module_state::write_locations (elf_out *to, unsigned max_rager,
@@ -15023,9 +15011,11 @@ finish_module_processing (cpp_reader *reader)
   /* No need to lookup modules anymore.  */
   modules_hash = NULL;
 
+  /* Or unnamed entitites.  */
   unnamed_map = NULL;
   unnamed_ary = NULL;
 
+  /* Allow a GC, we've possibly made much data unreachable.  */
   ggc_collect ();
 }
 
