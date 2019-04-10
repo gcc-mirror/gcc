@@ -7818,6 +7818,9 @@ Level 3 includes extra information, such as all the macro definitions
 present in the program.  Some debuggers support macro expansion when
 you use @option{-g3}.
 
+If you use multiple @option{-g} options, with or without level numbers,
+the last such option is the one that is effective.
+
 @option{-gdwarf} does not accept a concatenated debug level, to avoid
 confusion with @option{-gdwarf-@var{level}}.
 Instead use an additional @option{-g@var{level}} option to change the
