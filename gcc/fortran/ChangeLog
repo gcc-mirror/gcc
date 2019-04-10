@@ -1,3 +1,10 @@
+2019-04-10  Harald Anlauf  <anlauf@gmx.de>
+
+	Backport from trunk
+	PR fortran/89904
+	* check.c (gfc_check_transfer): Reject procedures as actual
+	arguments for SOURCE and MOLD of TRANSFER intrinsic.
+
 2019-03-31  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/83515
