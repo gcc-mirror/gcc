@@ -2470,7 +2470,7 @@ depset::entity_kind_name () const
 {
   /* Same order as entity_kind.  */
   static const char *const names[] = 
-    {"regular", "using", "unnamed", "specialization", "namespace", "binding"};
+    {"decl", "using", "unnamed", "specialization", "namespace", "binding"};
   return names[get_entity_kind ()];
 }
 
@@ -4127,6 +4127,8 @@ trees_out::unmark_trees ()
     {
       tree node = reinterpret_cast<tree> ((*iter).first);
       int ref = (*iter).second;
+      /* We should have visited the node, and converted its mergeable
+	 reference to a regular reference.  */
       gcc_checking_assert (TREE_VISITED (node) && ref && ref < mergeable_lwm);
       TREE_VISITED (node) = false;
     }
@@ -7585,8 +7587,9 @@ trees_in::fn_parms ()
   return nreverse (parms);
 }
 
-/* DECL is a mergeable entity, write out information so we may locate
-   an existing declaration /before/ reading in this declaration.  */
+/* DEP is a mergeable entity's depset, write out information so we may
+   locate an existing declaration /before/ reading in the declaration
+   to which it refers.  */
 
 void
 trees_out::tree_mergeable (depset *dep)
@@ -7595,7 +7598,7 @@ trees_out::tree_mergeable (depset *dep)
   gcc_checking_assert (DECL_P (decl));
   tree inner = decl;
 
-  tree_ctx (DECL_CONTEXT (inner), true, inner);
+  tree_ctx (CP_DECL_CONTEXT (inner), true, inner);
   tree_node (DECL_NAME (inner));
 
   unsigned is_mod = false;
@@ -7680,7 +7683,7 @@ trees_in::tree_mergeable (bool mod_mergeable)
       core_bools (inner);
       bflush ();
       
-      DECL_CONTEXT (inner) = ctx;
+      DECL_CONTEXT (inner) = FROB_CONTEXT (ctx);
       DECL_NAME (inner) = name;
       DECL_SOURCE_LOCATION (inner) = loc;
 
@@ -7725,7 +7728,7 @@ trees_in::tree_mergeable (bool mod_mergeable)
       if (is_mod && !mod_mergeable)
 	kind = "unique";
       else if (tree existing
-	       = match_mergeable_decl (decl, is_mod, tpl, ret, args))
+	       = match_mergeable_decl (decl, ctx, name, is_mod, tpl, ret, args))
 	{
 	  decl = existing;
 	  mergeables.quick_push (decl);
@@ -7733,6 +7736,7 @@ trees_in::tree_mergeable (bool mod_mergeable)
 	    mergeables.quick_push (DECL_TEMPLATE_RESULT (decl));
 	  kind = "matched";
 	}
+
       int tag = insert (decl);
       dump (dumper::MERGE)
 	&& dump ("Read:%d %s mergeable decl %C:%N", tag, kind,

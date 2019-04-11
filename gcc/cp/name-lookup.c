@@ -3594,7 +3594,7 @@ check_module_override (tree decl, tree mvec, bool is_friend,
 	  .slots[MODULE_SLOT_PARTITION % MODULE_VECTOR_SLOTS_PER_CLUSTER];
       else
 	mergeable = MODULE_VECTOR_CLUSTER (mvec, 0).slots[MODULE_SLOT_GLOBAL];
-      
+
       if (mergeable)
 	{
 	  tree tpl = NULL_TREE;
@@ -3858,21 +3858,20 @@ lookup_enum_member (tree etype, tree name)
   return NULL_TREE;
 }
 
-/* DECL is a yet-to-be-loaded mergeable entity.  PARTITION is true if
-   it is from a module partition (otherwise it is a global module
-   entity), TPL, RET and ARGS are its distinguishing features (some of
-   which may be NULL).  Look for an existing mergeable that matches
-   and return that if found.  Otherwise add this DECL into the
-   mergeable list.  */
+/* DECL is a yet-to-be-loaded mergeable entity in namespace CTX slot
+   NAME.  PARTITION is true if it is from a module partition
+   (otherwise it is a global module entity), TPL, RET and ARGS are its
+   distinguishing features (some of which may be NULL).  Look for an
+   existing mergeable that matches and return that if found.
+   Otherwise add this DECL into the mergeable list.  */
 
 tree
-match_mergeable_decl (tree decl, bool partition, tree tpl, tree ret, tree args)
+match_mergeable_decl (tree decl, tree ctx, tree name, bool partition,
+		      tree tpl, tree ret, tree args)
 {
-  tree *slot = find_namespace_slot (CP_DECL_CONTEXT (decl), DECL_NAME (decl),
-				    true);
+  tree *slot = find_namespace_slot (ctx, name, true);
   tree *gslot = get_fixed_binding_slot
-    (slot, DECL_NAME (decl),
-     partition ? MODULE_SLOT_PARTITION : MODULE_SLOT_GLOBAL, true);
+    (slot, name, partition ? MODULE_SLOT_PARTITION : MODULE_SLOT_GLOBAL, true);
 
   if (tree match = check_mergeable_decl (decl, *gslot, tpl, ret, args))
     return match;

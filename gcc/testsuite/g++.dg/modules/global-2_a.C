@@ -16,7 +16,7 @@ export void Log (char const *fmt, ...)
   va_end (args);
 }
 
-// { dg-final { scan-lang-dump {Dependencies of regular function_decl:'::Log'} module } }
+// { dg-final { scan-lang-dump {Dependencies of decl function_decl:'::Log'} module } }
 // not reachable (body not inline)
 // { dg-final { scan-lang-dump-not {Reachable GMF '::printf' added} module } }
 

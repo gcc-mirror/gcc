@@ -1,6 +1,15 @@
 2019-04-11  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::entity_kind_name): Tweak.
+	(trees_{in,out}::tree_mergeable): Frob context.
+	* name-lookup.h (match_mergeable_decl): Pass context explicitly.
+	* name-lookup.c (match_mergeable_decl): Pass context explicitly.
+	gcc/testsuite/
+	* g++.dg/modules/global-[23]_a.C: Adjust scans.
+	* g++.dg/modules/stdio-1_a.H: Likewise.
+
+	gcc/cp/
 	* module.cc (loc_kind): New.
 	(module_state::{read,write}_location): Use tagging, compress macro
 	& adhoc better.

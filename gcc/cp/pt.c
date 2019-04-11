@@ -19726,10 +19726,11 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
      but it doesn't seem to be on the hot path.  */
   spec = retrieve_specialization (gen_tmpl, targ_ptr, 0);
 
-  gcc_assert (tmpl == gen_tmpl
-	      || ((fndecl = retrieve_specialization (tmpl, orig_args, 0))
-		  == spec)
-	      || fndecl == NULL_TREE);
+  gcc_checking_assert (tmpl == gen_tmpl
+		       || ((fndecl
+			    = retrieve_specialization (tmpl, orig_args, 0))
+			   == spec)
+		       || fndecl == NULL_TREE);
 
   if (spec != NULL_TREE)
     {
