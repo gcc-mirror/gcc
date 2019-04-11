@@ -16,7 +16,8 @@ module gc.os;
 
 version (Windows)
 {
-    import core.sys.windows.windows;
+    import core.sys.windows.winbase : GetCurrentThreadId, VirtualAlloc, VirtualFree;
+    import core.sys.windows.winnt : MEM_COMMIT, MEM_RELEASE, MEM_RESERVE, PAGE_READWRITE;
 
     alias int pthread_t;
 
@@ -40,9 +41,11 @@ else version (Posix)
 
     import core.sys.posix.sys.mman;
     version (FreeBSD) import core.sys.freebsd.sys.mman : MAP_ANON;
+    version (DragonFlyBSD) import core.sys.dragonflybsd.sys.mman : MAP_ANON;
     version (NetBSD) import core.sys.netbsd.sys.mman : MAP_ANON;
     version (CRuntime_Glibc) import core.sys.linux.sys.mman : MAP_ANON;
     version (Darwin) import core.sys.darwin.sys.mman : MAP_ANON;
+    version (CRuntime_UClibc) import core.sys.linux.sys.mman : MAP_ANON;
     import core.stdc.stdlib;
 
     //version = GC_Use_Alloc_MMap;
@@ -170,7 +173,7 @@ version (Windows)
             return false;
         else
         {
-            import core.sys.windows.windows;
+            import core.sys.windows.winbase : GlobalMemoryStatus, MEMORYSTATUS;
             MEMORYSTATUS stat;
             GlobalMemoryStatus(&stat);
             // Less than 5 % of virtual address space available
