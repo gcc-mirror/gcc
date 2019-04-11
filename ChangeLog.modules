@@ -1,6 +1,10 @@
 2019-04-11  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_for_{ordinary,macro}_loc): New.
+	(module_state::{read,write}_location): Deal with imported locations.
+
+	gcc/cp/
 	* module.cc (depset::entity_kind_name): Tweak.
 	(trees_{in,out}::tree_mergeable): Frob context.
 	* name-lookup.h (match_mergeable_decl): Pass context explicitly.

@@ -11474,9 +11474,53 @@ enum loc_kind {
   LK_IMPORT_MACRO
 };
 
-// FIXME: We can get cross-module location writing because of template
-// instantiations.  That we don't stream instantiations hides that
-// problem.
+static const module_state *
+module_for_ordinary_loc (location_t loc)
+{
+  unsigned pos = MODULE_IMPORT_BASE;
+  unsigned len = modules->length () - pos;
+
+  while (len)
+    {
+      unsigned half = len / 2;
+      module_state *probe = (*modules)[pos + half];
+      if (loc < probe->ordinary_locs.first)
+	len = half;
+      else if (loc < probe->ordinary_locs.second)
+	return probe;
+      else
+	{
+	  pos += half + 1;
+	  len = len - (half + 1);
+	}
+    }
+
+  return NULL;
+}
+
+static const module_state *
+module_for_macro_loc (location_t loc)
+{
+  unsigned pos = MODULE_IMPORT_BASE;
+  unsigned len = modules->length () - pos;
+
+  while (len)
+    {
+      unsigned half = len / 2;
+      module_state *probe = (*modules)[pos + half];
+      if (loc >= probe->macro_locs.second)
+	len = half;
+      else if (loc >= probe->macro_locs.first)
+	return probe;
+      else
+	{
+	  pos += half + 1;
+	  len = len - (half + 1);
+	}
+    }
+
+  return NULL;
+}
 
 void
 module_state::write_location (bytes_out &sec, location_t loc)
@@ -11505,6 +11549,16 @@ module_state::write_location (bytes_out &sec, location_t loc)
 	  dump (dumper::LOCATION)
 	    && dump ("Macro location %u output %u", loc, off);
 	}
+      else if (const module_state *import = module_for_macro_loc (loc))
+	{
+	  unsigned off = import->macro_locs.second - loc - 1;
+	  sec.u (LK_IMPORT_MACRO);
+	  sec.u (import->remap);
+	  sec.u (off);
+	  dump (dumper::LOCATION)
+	    && dump ("Imported macro location %u output %u:%u",
+		     loc, import->remap, off);
+	}
       else
 	gcc_unreachable ();
     }
@@ -11520,6 +11574,16 @@ module_state::write_location (bytes_out &sec, location_t loc)
 
 	  dump (dumper::LOCATION)
 	    && dump ("Ordinary location %u output %u", loc, off);
+	}
+      else if (const module_state *import = module_for_ordinary_loc (loc))
+	{
+	  unsigned off = loc - import->ordinary_locs.first;
+	  sec.u (LK_IMPORT_ORDINARY);
+	  sec.u (import->remap);
+	  sec.u (off);
+	  dump (dumper::LOCATION)
+	    && dump ("Imported ordinary location %u output %u:%u",
+		     import->remap, import->remap, off);
 	}
       else
 	gcc_unreachable ();
@@ -11583,6 +11647,36 @@ module_state::read_location (bytes_in &sec) const
 	  && dump ("Ordinary location %u becoming %u", off, locus);
       }
       break;
+
+     case LK_IMPORT_MACRO:
+     case LK_IMPORT_ORDINARY:
+       {
+	 unsigned mod = slurp ()->remap_module (sec.u ());
+	 unsigned off = sec.u ();
+
+	 if (mod < MODULE_IMPORT_BASE)
+	   sec.set_overrun ();
+	 else
+	   {
+	     const module_state *import = (*modules)[mod];
+	     if (kind == LK_IMPORT_MACRO)
+	       {
+		 if (off < import->macro_locs.second - macro_locs.first)
+		   locus = import->macro_locs.second - off - 1;
+		 else
+		   sec.set_overrun ();
+	       }
+	     else
+	       {
+		 if (off < (import->ordinary_locs.second
+			    - import->ordinary_locs.first))
+		   locus = import->ordinary_locs.first + off;
+		 else
+		   sec.set_overrun ();
+	       }
+	   }
+       }
+       break;
 
     default:
       sec.set_overrun ();
