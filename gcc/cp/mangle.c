@@ -173,7 +173,7 @@ integer_type_codes[itk_none] =
   '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'
 };
 
-static int decl_is_template_id (const tree, tree* const);
+static tree maybe_template_info (const tree);
 
 /* Functions for handling substitutions.  */
 
@@ -275,11 +275,10 @@ static tree mangle_special_for_type (const tree, const char *);
   write_number ((NUMBER), /*unsigned_p=*/1, 10)
 
 /* If DECL is a template instance (including the uninstantiated template
-   itself), return nonzero and, if TEMPLATE_INFO is non-NULL, set
-   *TEMPLATE_INFO to its template info.  Otherwise return zero.  */
+   itself), return its TEMPLATE_INFO.  Otherwise return NULL.  */
 
-static int
-decl_is_template_id (const tree decl, tree* const template_info)
+static tree
+maybe_template_info (const tree decl)
 {
   if (TREE_CODE (decl) == TYPE_DECL)
     {
@@ -288,33 +287,20 @@ decl_is_template_id (const tree decl, tree* const template_info)
       const tree type = TREE_TYPE (decl);
 
       if (CLASS_TYPE_P (type) && CLASSTYPE_TEMPLATE_ID_P (type))
-	{
-	  if (template_info != NULL)
-	    /* For a templated TYPE_DECL, the template info is hanging
-	       off the type.  */
-	    *template_info = TYPE_TEMPLATE_INFO (type);
-	  return 1;
-	}
+	return TYPE_TEMPLATE_INFO (type);
     }
   else
     {
-      /* Check if this is a primary template.  */
+      /* Check if the template is a primary template.  */
       if (DECL_LANG_SPECIFIC (decl) != NULL
 	  && VAR_OR_FUNCTION_DECL_P (decl)
 	  && DECL_TEMPLATE_INFO (decl)
-	  && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (decl))
-	  && TREE_CODE (decl) != TEMPLATE_DECL)
-	{
-	  if (template_info != NULL)
-	    /* For most templated decls, the template info is hanging
-	       off the decl.  */
-	    *template_info = DECL_TEMPLATE_INFO (decl);
-	  return 1;
-	}
+	  && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (decl)))
+	return DECL_TEMPLATE_INFO (decl);
     }
 
   /* It's not a template id.  */
-  return 0;
+  return NULL_TREE;
 }
 
 /* Produce debugging output of current substitution candidates.  */
@@ -802,7 +788,7 @@ mangle_return_type_p (tree decl)
   return (!DECL_CONSTRUCTOR_P (decl)
 	  && !DECL_DESTRUCTOR_P (decl)
 	  && !DECL_CONV_FN_P (decl)
-	  && decl_is_template_id (decl, NULL));
+	  && maybe_template_info (decl));
 }
 
 /*   <encoding>		::= <function name> <bare-function-type>
@@ -829,9 +815,8 @@ write_encoding (const tree decl)
     {
       tree fn_type;
       tree d;
-      bool tmpl = decl_is_template_id (decl, NULL);
 
-      if (tmpl)
+      if (maybe_template_info (decl))
 	{
 	  fn_type = get_mostly_instantiated_function_type (decl);
 	  /* FN_TYPE will not have parameter types for in-charge or
@@ -977,13 +962,12 @@ write_name (tree decl, const int ignore_local_scope)
 	      || (abi_version_at_least (7)
 		  && TREE_CODE (context) == PARM_DECL))))
     {
-      tree template_info;
       /* Is this a template instance?  */
-      if (decl_is_template_id (decl, &template_info))
+      if (tree info = maybe_template_info (decl))
 	{
 	  /* Yes: use <unscoped-template-name>.  */
-	  write_unscoped_template_name (TI_TEMPLATE (template_info));
-	  write_template_args (TI_ARGS (template_info));
+	  write_unscoped_template_name (TI_TEMPLATE (info));
+	  write_template_args (TI_ARGS (info));
 	}
       else
 	/* Everything else gets an <unqualified-name>.  */
@@ -1085,8 +1069,6 @@ write_unscoped_template_name (const tree decl)
 static void
 write_nested_name (const tree decl)
 {
-  tree template_info;
-
   MANGLE_TRACE_TREE ("nested-name", decl);
 
   write_char ('N');
@@ -1109,11 +1091,11 @@ write_nested_name (const tree decl)
     }
 
   /* Is this a template instance?  */
-  if (decl_is_template_id (decl, &template_info))
+  if (tree info = maybe_template_info (decl))
     {
       /* Yes, use <template-prefix>.  */
       write_template_prefix (decl);
-      write_template_args (TI_ARGS (template_info));
+      write_template_args (TI_ARGS (info));
     }
   else if ((!abi_version_at_least (10) || TREE_CODE (decl) == TYPE_DECL)
 	   && TREE_CODE (TREE_TYPE (decl)) == TYPENAME_TYPE)
@@ -1150,8 +1132,6 @@ static void
 write_prefix (const tree node)
 {
   tree decl;
-  /* Non-NULL if NODE represents a template-id.  */
-  tree template_info = NULL;
 
   if (node == NULL
       || node == global_namespace)
@@ -1168,6 +1148,7 @@ write_prefix (const tree node)
   if (find_substitution (node))
     return;
 
+  tree template_info = NULL_TREE;
   if (DECL_P (node))
     {
       /* If this is a function or parm decl, that means we've hit function
@@ -1180,19 +1161,20 @@ write_prefix (const tree node)
 	return;
 
       decl = node;
-      decl_is_template_id (decl, &template_info);
+      template_info = maybe_template_info (decl);
     }
   else
     {
       /* Node is a type.  */
       decl = TYPE_NAME (node);
+      /* The DECL might not point at the node.  */
       if (CLASSTYPE_TEMPLATE_ID_P (node))
 	template_info = TYPE_TEMPLATE_INFO (node);
     }
 
   if (TREE_CODE (node) == TEMPLATE_TYPE_PARM)
     write_template_param (node);
-  else if (template_info != NULL)
+  else if (template_info)
     /* Templated.  */
     {
       write_template_prefix (decl);
@@ -1239,15 +1221,14 @@ write_template_prefix (const tree node)
   tree decl = DECL_P (node) ? node : TYPE_NAME (node);
   tree type = DECL_P (node) ? TREE_TYPE (node) : node;
   tree context = decl_mangling_context (decl);
-  tree template_info;
   tree templ;
   tree substitution;
 
   MANGLE_TRACE_TREE ("template-prefix", node);
 
   /* Find the template decl.  */
-  if (decl_is_template_id (decl, &template_info))
-    templ = TI_TEMPLATE (template_info);
+  if (tree info = maybe_template_info (decl))
+    templ = TI_TEMPLATE (info);
   else if (TREE_CODE (type) == TYPENAME_TYPE)
     /* For a typename type, all we have is the name.  */
     templ = DECL_NAME (decl);
@@ -1413,7 +1394,7 @@ write_unqualified_name (tree decl)
 	  /* Conversion operator. Handle it right here.
 	     <operator> ::= cv <type>  */
 	  tree type;
-	  if (decl_is_template_id (decl, NULL))
+	  if (maybe_template_info (decl))
 	    {
 	      tree fn_type;
 	      fn_type = get_mostly_instantiated_function_type (decl);

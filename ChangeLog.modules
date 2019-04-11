@@ -1,6 +1,13 @@
 2019-04-11  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* mangle.c (decl_is_template_id): Rename to ...
+	(maybe_template_info): ... here.  Simplify API.
+	(mangle_return_type, write_encoding, write_name)
+	(write_nested_name, write_prefix, write_template_prefix)
+	(write_unqualified_name): Update all callers.
+
+	gcc/cp/
 	* module.cc (module_for_{ordinary,macro}_loc): New.
 	(module_state::{read,write}_location): Deal with imported locations.
 
