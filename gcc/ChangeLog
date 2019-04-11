@@ -1,5 +1,10 @@
+2019-04-11  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/90016
+	* config/aarch64/aarch64.opt (msve-vector-bits): Add missing final '.'.
+
 2019-04-11  Jakub Jelinek  <jakub@redhat.com>
-	
+
 	PR rtl-optimization/89965
 	* dce.c (sp_based_mem_offset): New function.
 	(find_call_stack_args): Use sp_based_mem_offset.
