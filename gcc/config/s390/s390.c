@@ -337,7 +337,7 @@ const struct s390_processor processor_table[] =
   { "zEC12",  "zEC12",  PROCESSOR_2827_ZEC12,  &zEC12_cost,  10 },
   { "z13",    "z13",    PROCESSOR_2964_Z13,    &zEC12_cost,  11 },
   { "z14",    "arch12", PROCESSOR_3906_Z14,    &zEC12_cost,  12 },
-  { "arch13", "",       PROCESSOR_ARCH13,      &zEC12_cost,  13 },
+  { "arch13", "",       PROCESSOR_8561_ARCH13, &zEC12_cost,  13 },
   { "native", "",       PROCESSOR_NATIVE,      NULL,         0  }
 };
 
@@ -14419,7 +14419,6 @@ s390_get_sched_attrmask (rtx_insn *insn)
 	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
       break;
     case PROCESSOR_3906_Z14:
-    case PROCESSOR_ARCH13:
       if (get_attr_z14_cracked (insn))
 	mask |= S390_SCHED_ATTR_MASK_CRACKED;
       if (get_attr_z14_expanded (insn))
@@ -14429,6 +14428,18 @@ s390_get_sched_attrmask (rtx_insn *insn)
       if (get_attr_z14_groupalone (insn))
 	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
       if (get_attr_z14_groupoftwo (insn))
+	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
+      break;
+    case PROCESSOR_8561_ARCH13:
+      if (get_attr_arch13_cracked (insn))
+	mask |= S390_SCHED_ATTR_MASK_CRACKED;
+      if (get_attr_arch13_expanded (insn))
+	mask |= S390_SCHED_ATTR_MASK_EXPANDED;
+      if (get_attr_arch13_endgroup (insn))
+	mask |= S390_SCHED_ATTR_MASK_ENDGROUP;
+      if (get_attr_arch13_groupalone (insn))
+	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
+      if (get_attr_arch13_groupoftwo (insn))
 	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
       break;
     default:
@@ -14456,7 +14467,6 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
 	mask |= 1 << 3;
       break;
     case PROCESSOR_3906_Z14:
-    case PROCESSOR_ARCH13:
       *units = 4;
       if (get_attr_z14_unit_lsu (insn))
 	mask |= 1 << 0;
@@ -14465,6 +14475,17 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
       if (get_attr_z14_unit_fxb (insn))
 	mask |= 1 << 2;
       if (get_attr_z14_unit_vfu (insn))
+	mask |= 1 << 3;
+      break;
+    case PROCESSOR_8561_ARCH13:
+      *units = 4;
+      if (get_attr_arch13_unit_lsu (insn))
+	mask |= 1 << 0;
+      if (get_attr_arch13_unit_fxa (insn))
+	mask |= 1 << 1;
+      if (get_attr_arch13_unit_fxb (insn))
+	mask |= 1 << 2;
+      if (get_attr_arch13_unit_vfu (insn))
 	mask |= 1 << 3;
       break;
     default:
@@ -14479,7 +14500,8 @@ s390_is_fpd (rtx_insn *insn)
   if (insn == NULL_RTX)
     return false;
 
-  return get_attr_z13_unit_fpd (insn) || get_attr_z14_unit_fpd (insn);
+  return get_attr_z13_unit_fpd (insn) || get_attr_z14_unit_fpd (insn)
+    || get_attr_arch13_unit_fpd (insn);
 }
 
 static bool
@@ -14488,7 +14510,8 @@ s390_is_fxd (rtx_insn *insn)
   if (insn == NULL_RTX)
     return false;
 
-  return get_attr_z13_unit_fxd (insn) || get_attr_z14_unit_fxd (insn);
+  return get_attr_z13_unit_fxd (insn) || get_attr_z14_unit_fxd (insn)
+    || get_attr_arch13_unit_fxd (insn);
 }
 
 /* Returns TRUE if INSN is a long-running instruction.  */

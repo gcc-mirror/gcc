@@ -1,3 +1,17 @@
+2019-04-11  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/8561.md: New file.
+	* config/s390/driver-native.c (s390_host_detect_local_cpu):
+	Add arch13 cpu model.
+	* config/s390/s390-opts.h (enum processor_type): Likewise.
+	* config/s390/s390.c (s390_get_sched_attrmask): Add arch13.
+	(s390_get_unit_mask): Likewise.
+	(s390_is_fpd): Likewise.
+	(s390_is_fxd): Likewise.
+	* config/s390/s390.h (s390_tune_attr): Likewise.
+	* config/s390/s390.md: Include arch13 pipeline description.
+	* config/s390/s390.opt: Add arch13.
+
 2018-04-10  Steve Ellcey  <sellcey@marvell.com>
 
 	PR rtl-optimization/87763
