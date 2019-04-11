@@ -2833,19 +2833,13 @@ public:
 public:
   enum {
     SPAN_RESERVED = 0,
-    SPAN_CMD_LINE = 1,
-    SPAN_FORCED = 2,
-    SPAN_MAIN = 3
+    SPAN_MAIN = 1
   };
 
 public:
   location_t main_start () const
   {
     return spans[SPAN_MAIN].ordinary.first;
-  }
-  location_t cmd_line () const
-  {
-    return spans[SPAN_CMD_LINE].ordinary.first;
   }
 
 public:
@@ -2892,8 +2886,6 @@ struct GTY(()) slurping {
   unsigned remaining;	/* Number of lazy sections yet to read.  */
   unsigned lru;		/* An LRU counter.  */
 
-  bool pre_early_ok;
-
  public:
   slurping (elf_in *);
   ~slurping ();
@@ -2939,7 +2931,7 @@ slurping::slurping (elf_in *from)
   : remap (NULL), from (from),
     headers (BITMAP_GGC_ALLOC ()), macro_defs (), macro_tbl (),
     loc_deltas (0, 0),
-    current (~0u), remaining (0), lru (0), pre_early_ok (false)
+    current (~0u), remaining (0), lru (0)
 {
 }
 
@@ -9224,7 +9216,7 @@ depset::hash::connect (auto_vec<depset *> &sccs, bool for_mergeable)
 /* Initialize location spans.  */
 
 void
-loc_spans::init (const line_map_ordinary *map)
+loc_spans::init (const line_map_ordinary *)
 {
   gcc_checking_assert (!init_p ());
   spans.reserve (20);
@@ -9242,32 +9234,11 @@ loc_spans::init (const line_map_ordinary *map)
 	     interval.macro.first, interval.macro.second);
   spans.quick_push (interval);
 
-  /* A span for the command line.  */
-  interval.ordinary.first
-    = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (line_table, 2));
-  interval.ordinary.second
-    = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (line_table, 3));
-  dump (dumper::LOCATION)
-    && dump ("Command span %u ordinary:[%u,%u) macro:[%u,%u)", spans.length (),
-	     interval.ordinary.first, interval.ordinary.second,
-	     interval.macro.first, interval.macro.second);
-  spans.quick_push (interval);
-
-  /* Create a span for the forced headers.  */
-  interval.ordinary.first = interval.ordinary.second;
-  interval.ordinary.second = MAP_START_LOCATION (map);
-  interval.macro.first = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
-  dump (dumper::LOCATION)
-    && dump ("Header span %u ordinary:[%u,%u) macro:[%u,%u)", spans.length (),
-	     interval.ordinary.first, interval.ordinary.second,
-	     interval.macro.first, interval.macro.second);
-  spans.quick_push (interval);
-
   /* Start an interval for the main file.  */
   interval.ordinary.first = interval.ordinary.second;
   interval.macro.first = interval.macro.second;
   dump (dumper::LOCATION)
-    && dump ("Main span %u ordinary:[%u macro:%u)", spans.length (),
+    && dump ("Main span %u ordinary:[%u,*) macro:[*,%u)", spans.length (),
 	     interval.ordinary.first, interval.macro.second);
   spans.quick_push (interval);
 }
@@ -9352,7 +9323,7 @@ loc_spans::macro (location_t loc)
       const span &probe = spans[pos + half];
       if (loc >= probe.macro.second)
 	len = half;
-      else if (loc < probe.macro.first)
+      else if (loc >= probe.macro.first)
 	return &probe;
       else
 	{
@@ -11562,7 +11533,7 @@ module_state::read_location (bytes_in &sec) const
 	  locus = adjusted;
 	  dump (dumper::LOCATION) && dump ("macro %u becoming %u", off, locus);
 	}
-      else if (slurp ()->pre_early_ok)
+      else
 	locus = off;
     }
   else if (IS_ORDINARY_LOC (off))
@@ -11577,8 +11548,7 @@ module_state::read_location (bytes_in &sec) const
 	  dump (dumper::LOCATION)
 	    && dump ("Ordinary location %u becoming %u", off, locus);
 	}
-      // FIXME: could we at least get builtin and command line locs?
-      else if (slurp ()->pre_early_ok)
+      else
 	locus = off;
     }
   else
@@ -11600,11 +11570,6 @@ module_state::prepare_locations ()
 {
   dump () && dump ("Preparing locations");
   dump.indent ();
-
-  /* Map the command line to UNKNOWN_LOCATION, which will map to the
-     module upon loading.  */
-  spans[loc_spans::SPAN_CMD_LINE].ordinary_delta
-    = -spans[loc_spans::SPAN_CMD_LINE].ordinary.first;
 
   /* Figure the alignment of ordinary location spans.  */
   unsigned max_rager = 0;  /* Brains! */
@@ -11954,12 +11919,6 @@ module_state::read_locations ()
   unsigned reserved_ord = sec.u ();
   unsigned reserved_mac = sec.u ();
   dump () && dump ("Reserved locations <%u && >=%u", reserved_ord, reserved_mac);
-  slurp ()->pre_early_ok
-    = (reserved_ord == spans[loc_spans::SPAN_FORCED].ordinary.second
-       && reserved_mac == spans[loc_spans::SPAN_FORCED].macro.first);
-
-  if (!slurp ()->pre_early_ok)
-    dump () && dump ("WARNING: Line map prefix mismatch");
 
   {
     /* Read the ordinary maps.  */
@@ -12505,11 +12464,9 @@ maybe_add_macro (cpp_reader *, cpp_hashnode *node, void *data_)
   if (cpp_user_macro_p (node))
     if (cpp_macro *macro = node->value.macro)
       /* Ignore imported & builtins and forced header macros.  */
-      if (!macro->imported
-	  && (macro->line >= spans.main_start ()
-	      || macro->line == spans.cmd_line ()))
+      if (!macro->imported && !macro->lazy && macro->line >= spans.main_start ())
 	{
-	  gcc_checking_assert (macro->kind == cmk_macro && !macro->lazy);
+	  gcc_checking_assert (macro->kind == cmk_macro);
 	  /* I don't want to deal with this corner case, that I suspect is
 	     a devil's advocate reading of the standard.  */
 	  gcc_checking_assert (!macro->extra_tokens);
@@ -14491,6 +14448,7 @@ canonicalize_header_name (cpp_reader *reader, location_t loc, bool unquoted,
       memcpy (buf + 2, str, len);
       len += 2;
       buf[len] = 0;
+      str = buf;
     }
 
   len_r = len;

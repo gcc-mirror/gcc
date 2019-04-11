@@ -1,3 +1,19 @@
+2019-04-11  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (loc_spans): Main span is all but reserved.
+	(slurping): Drop pre_early_ok.
+	(loc_spans::init): Don't push command line and forced header
+	spans.
+	(loc_spans::macro): Fix comparison thinko.
+	(module_state::read_location): No such thing as early.
+	(module_state::prepare_locations): Drop command line and forced
+	header handling.
+	(maybe_add_macro): Ignore lazy macros.
+	(canonicalize_header_name): Return the buffer.
+	gcc/testsuite/
+	* g++.dg/modules/macro-5_c.C: Adjust regexp.
+
 2019-04-10  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
