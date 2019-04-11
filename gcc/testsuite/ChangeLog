@@ -1,3 +1,14 @@
+2019-04-11  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-03-08  Martin Liska  <mliska@suse.cz>
+
+	PR target/86952
+	* gcc.target/i386/pr86952.c: New test.
+	* gcc.target/i386/indirect-thunk-7.c: Use jump tables to match
+	scanned pattern.
+	* gcc.target/i386/indirect-thunk-inline-7.c: Likewise.
+
 2019-04-10  Harald Anlauf  <anlauf@gmx.de>
 
 	Backport from trunk
