@@ -10,7 +10,6 @@
 #ifndef __PSTL_parallel_backend_tbb_H
 #define __PSTL_parallel_backend_tbb_H
 
-#include <cassert>
 #include <algorithm>
 #include <type_traits>
 
@@ -139,7 +138,7 @@ struct __par_trans_red_body
     _Tp&
     sum()
     {
-        __TBB_ASSERT(_M_has_sum, "sum expected");
+        __PSTL_ASSERT_MSG(_M_has_sum, "sum expected");
         return *(_Tp*)_M_sum_storage;
     }
     __par_trans_red_body(_Up __u, _Tp __init, _Cp __c, _Rp __r)
@@ -173,7 +172,7 @@ struct __par_trans_red_body
         _Index __j = __range.end();
         if (!_M_has_sum)
         {
-            __TBB_ASSERT(__range.size() > 1, "there should be at least 2 elements");
+            __PSTL_ASSERT_MSG(__range.size() > 1, "there should be at least 2 elements");
             new (&_M_sum_storage)
                 _Tp(_M_combine(_M_u(__i), _M_u(__i + 1))); // The condition i+1 < j is provided by the grain size of 3
             _M_has_sum = true;
@@ -233,7 +232,7 @@ class __trans_scan_body
     _Tp&
     sum() const
     {
-        __TBB_ASSERT(_M_has_sum, "sum expected");
+        __PSTL_ASSERT_MSG(_M_has_sum, "sum expected");
         return *const_cast<_Tp*>(reinterpret_cast<_Tp const*>(_M_sum_storage));
     }
 
@@ -591,7 +590,7 @@ __parallel_stable_sort(_ExecutionPolicy&&, _RandomAccessIterator __xs, _RandomAc
         const _DifferenceType __sort_cut_off = __PSTL_STABLE_SORT_CUT_OFF;
         if (__n > __sort_cut_off)
         {
-            assert(__nsort > 0 && __nsort <= __n);
+            __PSTL_ASSERT(__nsort > 0 && __nsort <= __n);
             __buffer<_ValueType> __buf(__n);
             using tbb::task;
             task::spawn_root_and_wait(*new (task::allocate_root())
