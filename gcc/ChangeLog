@@ -1,3 +1,11 @@
+2019-04-11  David Edelsohn  <dje.gcc@gmail.com>
+
+	* xcoffout.h (xcoff_private_rodata_section_name): Declare.
+	* xcoffout.c (xcoff_private_rodata_section_name): Define.
+	* config/rs6000/rs6000.c (rs6000_xcoff_asm_init_sections): Create
+	read_only_private_data_section using xcoff_private_rodata_section_name.
+	(rs6000_xcoff_file_start): Generate xcoff_private_rodata_section_name.
+
 2019-04-11  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR target/90016
