@@ -708,7 +708,7 @@ static if (_WIN32_IE >= 0x500) {
             ULONG dwFlags;
             DWORD dwFileAttributes;
             ULONG dwReserved;
-            WCHAR *pwszExt = 0;
+            WCHAR *pwszExt = null;
             WCHAR[MAX_PATH] wszFile = 0;
         }
         alias SHCOLUMNDATA*        LPSHCOLUMNDATA;

@@ -180,6 +180,37 @@ else version (CRuntime_UClibc)
         FILE* tmpfile();
     }
 }
+else version (Solaris)
+{
+    static if (__USE_FILE_OFFSET64 && __WORDSIZE != 64)
+    {
+        int   fgetpos64(FILE*, fpos_t *);
+        alias fgetpos = fgetpos64;
+
+        FILE* fopen64(in char*, in char*);
+        alias fopen = fopen64;
+
+        FILE* freopen64(in char*, in char*, FILE*);
+        alias freopen = freopen64;
+
+        int   fseek(FILE*, c_long, int);
+
+        int   fsetpos64(FILE*, in fpos_t*);
+        alias fsetpos = fsetpos64;
+
+        FILE* tmpfile64();
+        alias tmpfile = tmpfile64;
+    }
+    else
+    {
+        int   fgetpos(FILE*, fpos_t *);
+        FILE* fopen(in char*, in char*);
+        FILE* freopen(in char*, in char*, FILE*);
+        int   fseek(FILE*, c_long, int);
+        int   fsetpos(FILE*, in fpos_t*);
+        FILE* tmpfile();
+    }
+}
 
 //
 // C Extension (CX)
@@ -245,6 +276,31 @@ else version (CRuntime_UClibc)
   {
     off_t ftello(FILE*);
   }
+}
+else version (Solaris)
+{
+    enum L_ctermid = 9;
+    enum L_cuserid = 9;
+
+    static if (__USE_FILE_OFFSET64 && __WORDSIZE != 64)
+    {
+        int   fseeko64(FILE*, off_t, int);
+        alias fseeko = fseeko64;
+    }
+    else
+    {
+        int   fseeko(FILE*, off_t, int);
+    }
+
+    static if (__USE_FILE_OFFSET64 && __WORDSIZE != 64)
+    {
+        off_t ftello64(FILE*);
+        alias ftello = ftello64;
+    }
+    else
+    {
+        off_t ftello(FILE*);
+    }
 }
 else version (Posix)
 {

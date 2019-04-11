@@ -29,7 +29,11 @@ else version (WatchOS)
 
 version (Windows)
 {
-    private import core.sys.windows.windows;
+    private import core.sys.windows.basetsd /+: HANDLE+/;
+    private import core.sys.windows.winbase /+: CloseHandle, CreateSemaphoreA, INFINITE,
+        ReleaseSemaphore, WAIT_OBJECT_0, WaitForSingleObject+/;
+    private import core.sys.windows.windef /+: BOOL, DWORD+/;
+    private import core.sys.windows.winerror /+: WAIT_TIMEOUT+/;
 }
 else version (Darwin)
 {
@@ -337,19 +341,17 @@ class Semaphore
     }
 
 
-private:
-    version (Windows)
-    {
-        HANDLE  m_hndl;
-    }
-    else version (Darwin)
-    {
-        semaphore_t m_hndl;
-    }
-    else version (Posix)
-    {
-        sem_t   m_hndl;
-    }
+protected:
+
+    /// Aliases the operating-system-specific semaphore type.
+    version (Windows)        alias Handle = HANDLE;
+    /// ditto
+    else version (Darwin)    alias Handle = semaphore_t;
+    /// ditto
+    else version (Posix)     alias Handle = sem_t;
+
+    /// Handle to the system-specific semaphore.
+    Handle m_hndl;
 }
 
 
