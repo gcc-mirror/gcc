@@ -1488,6 +1488,7 @@ if (isInputRange!R && !isInfinite!R && isSomeChar!(ElementEncodingType!R))
 // - OS X, where the native filesystem (HFS+) stores filesystem
 //   timestamps with 1-second precision.
 version (FreeBSD) {} else
+version (DragonFlyBSD) {} else
 version (OSX) {} else
 @system unittest
 {
@@ -2779,6 +2780,10 @@ else version (NetBSD)
     {
         return readLink("/proc/self/exe");
     }
+    else version (DragonFlyBSD)
+    {
+        return readLink("/proc/curproc/file");
+    }
     else version (Solaris)
     {
         import core.sys.posix.unistd : getpid;
@@ -3092,8 +3097,12 @@ else version (Posix)
         {
             import std.path : buildPath;
 
-            immutable len = core.stdc.string.strlen(fd.d_name.ptr);
-            _name = buildPath(path, fd.d_name[0 .. len]);
+            static if (is(typeof(fd.d_namlen)))
+                immutable len = fd.d_namlen;
+            else
+                immutable len = (() @trusted => core.stdc.string.strlen(fd.d_name.ptr))();
+
+            _name = buildPath(path, (() @trusted => fd.d_name.ptr[0 .. len])());
 
             _didLStat = false;
             _didStat = false;
