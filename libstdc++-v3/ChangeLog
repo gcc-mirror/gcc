@@ -1,3 +1,11 @@
+2019-04-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90046
+	* src/c++17/memory_resource.cc
+	(monotonic_buffer_resource::_Chunk::allocate): Increase alignment if
+	needed to allow placing a _Chunk at the end of the buffer.
+	(monotonic_buffer_resource::_M_new_buffer): Remove static_assert.
+
 2019-04-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/faq.xml: Add information about emergency EH pool.
