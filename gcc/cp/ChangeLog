@@ -1,3 +1,17 @@
+2019-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/90035
+	* parser.h (struct cp_parser): Add
+	type_definition_forbidden_message_arg member.
+	* parser.c (cp_debug_parser): Print it.
+	(cp_parser_check_type_definition): Pass
+	parser->type_definition_forbidden_message_arg as second argument to
+	error.
+	(cp_parser_has_attribute_expression, cp_parser_sizeof_operand): Set
+	parser->type_definition_forbidden_message_arg and use G_() with
+	%qs for parser->type_definition_forbidden_message instead of
+	building untranslatable message using concat.
+
 2019-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR translation/90011
