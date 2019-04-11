@@ -1,3 +1,8 @@
+2019-04-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90018
+	* gcc.dg/vect/pr90018.c: New testcase.
+
 2019-04-10  Harald Anlauf  <anlauf@gmx.de>
 
 	Backport from trunk
