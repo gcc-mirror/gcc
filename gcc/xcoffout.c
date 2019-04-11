@@ -64,6 +64,7 @@ static const char *xcoff_current_function_file;
 
 char *xcoff_bss_section_name;
 char *xcoff_private_data_section_name;
+char *xcoff_private_rodata_section_name;
 char *xcoff_tls_data_section_name;
 char *xcoff_tbss_section_name;
 char *xcoff_read_only_section_name;
