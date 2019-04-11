@@ -9367,24 +9367,24 @@ This flag is enabled by default at @option{-O2} and @option{-Os}.
 
 @item -flive-patching=@var{level}
 @opindex flive-patching
-Control GCC's optimizations to provide a safe compilation for live-patching.
+Control GCC's optimizations to produce output suitable for live-patching.
 
 If the compiler's optimization uses a function's body or information extracted
 from its body to optimize/change another function, the latter is called an
 impacted function of the former.  If a function is patched, its impacted
 functions should be patched too.
 
-The impacted functions are decided by the compiler's interprocedural
-optimizations.  For example, inlining a function into its caller, cloning
-a function and changing its caller to call this new clone, or extracting
-a function's pureness/constness information to optimize its direct or
-indirect callers, etc.
+The impacted functions are determined by the compiler's interprocedural
+optimizations.  For example, a caller is impacted when inlining a function
+into its caller,
+cloning a function and changing its caller to call this new clone,
+or extracting a function's pureness/constness information to optimize
+its direct or indirect callers, etc.
 
 Usually, the more IPA optimizations enabled, the larger the number of
 impacted functions for each function.  In order to control the number of
-impacted functions and computed the list of impacted function easily,
-we provide control to partially enable IPA optimizations on two different
-levels.
+impacted functions and more easily compute the list of impacted function,
+IPA optimizations can be partially enabled at two different levels.
 
 The @var{level} argument should be one of the following:
 
@@ -9395,7 +9395,7 @@ The @var{level} argument should be one of the following:
 Only enable inlining and cloning optimizations, which includes inlining,
 cloning, interprocedural scalar replacement of aggregates and partial inlining.
 As a result, when patching a function, all its callers and its clones'
-callers need to be patched as well.
+callers are impacted, therefore need to be patched as well.
 
 @option{-flive-patching=inline-clone} disables the following optimization flags:
 @gccoptlist{-fwhole-program  -fipa-pta  -fipa-reference  -fipa-ra @gol
@@ -9406,22 +9406,23 @@ callers need to be patched as well.
 @item inline-only-static
 
 Only enable inlining of static functions.
-As a result, when patching a static function, all its callers need to be
-patches as well.
+As a result, when patching a static function, all its callers are impacted
+and so need to be patched as well.
 
-In addition to all the flags that -flive-patching=inline-clone disables,
+In addition to all the flags that @option{-flive-patching=inline-clone}
+disables,
 @option{-flive-patching=inline-only-static} disables the following additional
 optimization flags:
 @gccoptlist{-fipa-cp-clone  -fipa-sra  -fpartial-inlining  -fipa-cp}
 
 @end table
 
-When -flive-patching specified without any value, the default value
-is "inline-clone".
+When @option{-flive-patching} is specified without any value, the default value
+is @var{inline-clone}.
 
 This flag is disabled by default.
 
-Note that -flive-patching is not supported with link-time optimizer.
+Note that @option{-flive-patching} is not supported with link-time optimization
 (@option{-flto}).
 
 @item -fisolate-erroneous-paths-dereference
