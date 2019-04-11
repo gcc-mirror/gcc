@@ -234,26 +234,60 @@ vect_preserves_scalar_order_p (dr_vec_info *dr_info_a, dr_vec_info *dr_info_b)
     return true;
 
   /* STMT_A and STMT_B belong to overlapping groups.  All loads in a
-     group are emitted at the position of the last scalar load and all
-     stores in a group are emitted at the position of the last scalar store.
+     SLP group are emitted at the position of the last scalar load and
+     all loads in an interleaving group are emitted at the position
+     of the first scalar load.
+     Stores in a group are emitted at the position of the last scalar store.
      Compute that position and check whether the resulting order matches
-     the current one.  */
-  stmt_vec_info last_a = DR_GROUP_FIRST_ELEMENT (stmtinfo_a);
+     the current one.
+     We have not yet decided between SLP and interleaving so we have
+     to conservatively assume both.  */
+  stmt_vec_info il_a;
+  stmt_vec_info last_a = il_a = DR_GROUP_FIRST_ELEMENT (stmtinfo_a);
   if (last_a)
-    for (stmt_vec_info s = DR_GROUP_NEXT_ELEMENT (last_a); s;
-	 s = DR_GROUP_NEXT_ELEMENT (s))
-      last_a = get_later_stmt (last_a, s);
+    {
+      for (stmt_vec_info s = DR_GROUP_NEXT_ELEMENT (last_a); s;
+	   s = DR_GROUP_NEXT_ELEMENT (s))
+	last_a = get_later_stmt (last_a, s);
+      if (!DR_IS_WRITE (STMT_VINFO_DATA_REF (stmtinfo_a)))
+	{
+	  for (stmt_vec_info s = DR_GROUP_NEXT_ELEMENT (il_a); s;
+	       s = DR_GROUP_NEXT_ELEMENT (s))
+	    if (get_later_stmt (il_a, s) == il_a)
+	      il_a = s;
+	}
+      else
+	il_a = last_a;
+    }
   else
-    last_a = stmtinfo_a;
-  stmt_vec_info last_b = DR_GROUP_FIRST_ELEMENT (stmtinfo_b);
+    last_a = il_a = stmtinfo_a;
+  stmt_vec_info il_b;
+  stmt_vec_info last_b = il_b = DR_GROUP_FIRST_ELEMENT (stmtinfo_b);
   if (last_b)
-    for (stmt_vec_info s = DR_GROUP_NEXT_ELEMENT (last_b); s;
-	 s = DR_GROUP_NEXT_ELEMENT (s))
-      last_b = get_later_stmt (last_b, s);
+    {
+      for (stmt_vec_info s = DR_GROUP_NEXT_ELEMENT (last_b); s;
+	   s = DR_GROUP_NEXT_ELEMENT (s))
+	last_b = get_later_stmt (last_b, s);
+      if (!DR_IS_WRITE (STMT_VINFO_DATA_REF (stmtinfo_b)))
+	{
+	  for (stmt_vec_info s = DR_GROUP_NEXT_ELEMENT (il_b); s;
+	       s = DR_GROUP_NEXT_ELEMENT (s))
+	    if (get_later_stmt (il_b, s) == il_b)
+	      il_b = s;
+	}
+      else
+	il_b = last_b;
+    }
   else
-    last_b = stmtinfo_b;
-  return ((get_later_stmt (last_a, last_b) == last_a)
-	  == (get_later_stmt (stmtinfo_a, stmtinfo_b) == stmtinfo_a));
+    last_b = il_b = stmtinfo_b;
+  bool a_after_b = (get_later_stmt (stmtinfo_a, stmtinfo_b) == stmtinfo_a);
+  return (/* SLP */
+	  (get_later_stmt (last_a, last_b) == last_a) == a_after_b
+	  /* Interleaving */
+	  && (get_later_stmt (il_a, il_b) == il_a) == a_after_b
+	  /* Mixed */
+	  && (get_later_stmt (il_a, last_b) == il_a) == a_after_b
+	  && (get_later_stmt (last_a, il_b) == last_a) == a_after_b);
 }
 
 /* A subroutine of vect_analyze_data_ref_dependence.  Handle

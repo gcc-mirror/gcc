@@ -1,3 +1,9 @@
+2019-04-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90018
+	* tree-vect-data-refs.c (vect_preserves_scalar_order_p):
+	Test both SLP and interleaving variants.
+
 2019-04-11  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* config/s390/8561.md: New file.
