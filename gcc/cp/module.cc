@@ -11462,9 +11462,17 @@ module_state::read_unnamed (unsigned count, const range_t &range)
 }
 
 /* Read & write locations.  */
-// FIXME: I think we can get cross-module location writing because of
-// template instantiations.  That we don't stream instantiations hides
-// that problem.
+enum loc_kind {
+  LK_ORDINARY,
+  LK_MACRO,
+  LK_ADHOC,
+  LK_IMPORT_ORDINARY,
+  LK_IMPORT_MACRO
+};
+
+// FIXME: We can get cross-module location writing because of template
+// instantiations.  That we don't stream instantiations hides that
+// problem.
 
 void
 module_state::write_location (bytes_out &sec, location_t loc)
@@ -11472,7 +11480,7 @@ module_state::write_location (bytes_out &sec, location_t loc)
   if (IS_ADHOC_LOC (loc))
     {
       dump (dumper::LOCATION) && dump ("Adhoc location");
-      sec.u (MAX_LOCATION_T + 1);
+      sec.u (LK_ADHOC);
       location_t locus = get_location_from_adhoc_loc (line_table, loc);
       write_location (sec, locus);
       source_range range = get_range_from_loc (line_table, loc);
@@ -11482,24 +11490,35 @@ module_state::write_location (bytes_out &sec, location_t loc)
     }
   else if (IS_MACRO_LOC (loc))
     {
-      const loc_spans::span *span = spans.macro (loc);
-      /* We should only be writing locs inside us.  */      
-      gcc_checking_assert (span);
-      dump (dumper::LOCATION) && dump ("Macro location %u output %u",
-					loc, loc + span->macro_delta);
-      sec.u (loc + span->macro_delta);
+      if (const loc_spans::span *span = spans.macro (loc))
+	{
+	  unsigned off = MAX_LOCATION_T - loc;
+
+	  off -= span->macro_delta;
+
+	  sec.u (LK_MACRO);
+	  sec.u (off);
+	  dump (dumper::LOCATION)
+	    && dump ("Macro location %u output %u", loc, off);
+	}
+      else
+	gcc_unreachable ();
     }
   else if (IS_ORDINARY_LOC (loc))
     {
-      const loc_spans::span *span = spans.ordinary (loc);
-      /* We should only be writing locs inside us.  */      
-      gcc_checking_assert (span);
-      /* This is too noisy, it'd be nice to have some command line
-	 control.  */
-      dump (dumper::LOCATION)
-	&& dump ("Ordinary location %u output %u",
-		 loc, loc + span->ordinary_delta);
-      sec.u (loc + span->ordinary_delta);
+      if (const loc_spans::span *span = spans.ordinary (loc))
+	{
+	  unsigned off = loc;
+
+	  off += span->ordinary_delta;
+	  sec.u (LK_ORDINARY);
+	  sec.u (off);
+
+	  dump (dumper::LOCATION)
+	    && dump ("Ordinary location %u output %u", loc, off);
+	}
+      else
+	gcc_unreachable ();
     }
   else
     gcc_unreachable ();
@@ -11509,50 +11528,62 @@ location_t
 module_state::read_location (bytes_in &sec) const
 {
   location_t locus = UNKNOWN_LOCATION;
-  unsigned off = sec.u ();
-  if (IS_ADHOC_LOC (off))
-    {
-      dump (dumper::LOCATION) && dump ("Adhoc location");
-      locus = read_location (sec);
-      source_range range;
-      range.m_start = read_location (sec);
-      if (range.m_start == loc)
-	range.m_start = locus;
-      range.m_finish = read_location (sec);
-      if (locus != loc && range.m_start != loc && range.m_finish != loc)
-	locus = get_combined_adhoc_loc (line_table, locus, range, NULL);
-    }
-  else if (IS_MACRO_LOC (off))
-    {
-      location_t adjusted = off - slurp ()->loc_deltas.second;
-      
-      if (adjusted < macro_locs.first)
-	sec.set_overrun ();
-      else if (adjusted < macro_locs.second)
-	{
+  unsigned kind = sec.u ();
+  switch (kind)
+     {
+    case LK_ADHOC:
+      {
+	dump (dumper::LOCATION) && dump ("Adhoc location");
+	locus = read_location (sec);
+	source_range range;
+	range.m_start = read_location (sec);
+	if (range.m_start == loc)
+	  range.m_start = locus;
+	range.m_finish = read_location (sec);
+	if (locus != loc && range.m_start != loc && range.m_finish != loc)
+	  locus = get_combined_adhoc_loc (line_table, locus, range, NULL);
+      }
+      break;
+
+    case LK_MACRO:
+      {
+	unsigned off = sec.u ();
+	location_t adjusted = MAX_LOCATION_T - off;
+
+	adjusted -= slurp ()->loc_deltas.second;
+	if (adjusted < macro_locs.first)
+	  sec.set_overrun ();
+	else if (adjusted < macro_locs.second)
 	  locus = adjusted;
-	  dump (dumper::LOCATION) && dump ("macro %u becoming %u", off, locus);
-	}
-      else
-	locus = off;
-    }
-  else if (IS_ORDINARY_LOC (off))
-    {
-      location_t adjusted = off + slurp ()->loc_deltas.first;
-      
-      if (adjusted >= ordinary_locs.second)
-	sec.set_overrun ();
-      else if (adjusted >= ordinary_locs.first)
-	{
+	else
+	  sec.set_overrun ();
+	dump (dumper::LOCATION)
+	  && dump ("Macro %u becoming %u", off, locus);
+      }
+      break;
+
+    case LK_ORDINARY:
+      {
+	unsigned off = sec.u ();
+	location_t adjusted = off;
+
+	adjusted += slurp ()->loc_deltas.first;
+	if (adjusted >= ordinary_locs.second)
+	  sec.set_overrun ();
+	else if (adjusted >= ordinary_locs.first)
 	  locus = adjusted;
-	  dump (dumper::LOCATION)
-	    && dump ("Ordinary location %u becoming %u", off, locus);
-	}
-      else
-	locus = off;
+	else if (adjusted < spans.main_start ())
+	  locus = off;
+
+	dump (dumper::LOCATION)
+	  && dump ("Ordinary location %u becoming %u", off, locus);
+      }
+      break;
+
+    default:
+      sec.set_overrun ();
+      break;
     }
-  else
-    sec.set_overrun ();
 
   if (locus == UNKNOWN_LOCATION)
     locus = loc;
