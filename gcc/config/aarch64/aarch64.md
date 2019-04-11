@@ -5565,7 +5565,8 @@
 )
 
 ;; Like *aarch64_bfi<GPI:mode>5_shift but with no shifting, we are just
-;; copying the least significant bits of OP3 to OP0.
+;; copying the least significant bits of OP3 to OP0.  We need two versions
+;; of the instruction to handle different checks on the constant values.
 
 (define_insn "*aarch64_bfi<GPI:mode>4_noshift"
   [(set (match_operand:GPI 0 "register_operand" "=r")
@@ -5573,6 +5574,18 @@
                           (match_operand:GPI 2 "const_int_operand" "n"))
                  (and:GPI (match_operand:GPI 3 "register_operand" "r")
                           (match_operand:GPI 4 "const_int_operand" "n"))))]
+  "aarch64_masks_and_shift_for_bfi_p (<MODE>mode, UINTVAL (operands[2]), 0,
+				      UINTVAL (operands[4]))"
+  "bfi\t%<GPI:w>0, %<GPI:w>3, 0, %P4"
+  [(set_attr "type" "bfm")]
+)
+
+(define_insn "*aarch64_bfi<GPI:mode>4_noshift_alt"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+        (ior:GPI (and:GPI (match_operand:GPI 3 "register_operand" "r")
+                          (match_operand:GPI 4 "const_int_operand" "n"))
+                 (and:GPI (match_operand:GPI 1 "register_operand" "0")
+                          (match_operand:GPI 2 "const_int_operand" "n"))))]
   "aarch64_masks_and_shift_for_bfi_p (<MODE>mode, UINTVAL (operands[2]), 0,
 				      UINTVAL (operands[4]))"
   "bfi\t%<GPI:w>0, %<GPI:w>3, 0, %P4"
