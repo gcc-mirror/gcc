@@ -1,3 +1,8 @@
+2019-04-11  Tom de Vries  <tdevries@suse.de>
+
+	* doc/extend.texi (@node Statement Exprs): Note variable shadowing at
+	max macro using statement expression.
+
 2019-04-11  David Edelsohn  <dje.gcc@gmail.com>
 
 	* xcoffout.h (xcoff_private_rodata_section_name): Declare.
