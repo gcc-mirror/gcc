@@ -1,3 +1,16 @@
+2019-04-11  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/bits/c++config:
+	Add definition for __PSTL_ASSERT.
+	Add definition for __PSTL_ASSERT_MSG.
+	* include/pstl/algorithm_impl.h: Replace use of assert().
+	* include/pstl/numeric_impl.h: Replace use of assert().
+	* include/pstl/parallel_backend_tbb.h:
+	Replace use of assert().
+	Replace use of __TBB_ASSERT().
+
+	* include/pstl/parallel_backend_utils.h: Replace use of assert().
+
 2019-04-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90046

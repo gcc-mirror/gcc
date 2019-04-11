@@ -2731,8 +2731,8 @@ __pattern_includes(_ExecutionPolicy&& __exec, _ForwardIterator1 __first1, _Forwa
          return !__internal::__parallel_or(
             std::forward<_ExecutionPolicy>(__exec), __first2, __last2,
             [__first1, __last1, __first2, __last2, &__comp](_ForwardIterator2 __i, _ForwardIterator2 __j) {
-                assert(__j > __i);
-                //assert(__j - __i > 1);
+                __PSTL_ASSERT(__j > __i);
+                //__PSTL_ASSERT(__j - __i > 1);
 
                 //1. moving boundaries to "consume" subsequence of equal elements
                 auto __is_equal = [&__comp](_ForwardIterator2 __a, _ForwardIterator2 __b) -> bool {
@@ -2756,8 +2756,8 @@ __pattern_includes(_ExecutionPolicy&& __exec, _ForwardIterator1 __first1, _Forwa
                 //2. testing is __a subsequence of the second range included into the first range
                 auto __b = std::lower_bound(__first1, __last1, *__i, __comp);
 
-                assert(!__comp(*(__last1 - 1), *__b));
-                assert(!__comp(*(__j - 1), *__i));
+                __PSTL_ASSERT(!__comp(*(__last1 - 1), *__b));
+                __PSTL_ASSERT(!__comp(*(__j - 1), *__i));
                 return !std::includes(__b, __last1, __i, __j, __comp);
             });
     });
@@ -2948,7 +2948,7 @@ __parallel_set_union_op(_ExecutionPolicy&& __exec, _ForwardIterator1 __first1, _
     }
 
     const auto __m2 = __left_bound_seq_2 - __first2;
-    assert(__m1 == 0 || __m2 == 0);
+    __PSTL_ASSERT(__m1 == 0 || __m2 == 0);
     if (__m2 > __set_algo_cut_off)
     {
         auto __res_or = __result;
