@@ -1,3 +1,12 @@
+2019-04-11  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-03-08  Martin Liska  <mliska@suse.cz>
+
+	PR target/86952
+	* config/i386/i386.c (ix86_option_override_internal): Disable
+	jump tables when retpolines are used.
+
 2019-04-10  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	PR target/90024
