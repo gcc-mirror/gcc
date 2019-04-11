@@ -214,6 +214,22 @@ public:
                            hnsecsToUnixEpoch;
                 }
             }
+            else version (DragonFlyBSD)
+            {
+                import core.sys.dragonflybsd.time : clock_gettime, CLOCK_REALTIME,
+                    CLOCK_REALTIME_FAST, CLOCK_REALTIME_PRECISE, CLOCK_SECOND;
+                static if (clockType == ClockType.coarse)       alias clockArg = CLOCK_REALTIME_FAST;
+                else static if (clockType == ClockType.normal)  alias clockArg = CLOCK_REALTIME;
+                else static if (clockType == ClockType.precise) alias clockArg = CLOCK_REALTIME_PRECISE;
+                else static if (clockType == ClockType.second)  alias clockArg = CLOCK_SECOND;
+                else static assert(0, "Previous static if is wrong.");
+                timespec ts;
+                if (clock_gettime(clockArg, &ts) != 0)
+                    throw new TimeException("Call to clock_gettime() failed");
+                return convert!("seconds", "hnsecs")(ts.tv_sec) +
+                       ts.tv_nsec / 100 +
+                       hnsecsToUnixEpoch;
+            }
             else version (Solaris)
             {
                 static if (clockType == ClockType.second)
