@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "valtrack.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
+#include "rtl-iter.h"
 
 
 /* -------------------------------------------------------------------------
@@ -325,6 +326,48 @@ sp_based_mem_offset (rtx_call_insn *call_insn, const_rtx mem, bool fast)
   return off;
 }
 
+/* Data for check_argument_load called via note_uses.  */
+struct check_argument_load_data {
+  bitmap sp_bytes;
+  HOST_WIDE_INT min_sp_off, max_sp_off;
+  rtx_call_insn *call_insn;
+  bool fast;
+  bool load_found;
+};
+
+/* Helper function for find_call_stack_args.  Check if there are
+   any loads from the argument slots in between the const/pure call
+   and store to the argument slot, set LOAD_FOUND if any is found.  */
+
+static void
+check_argument_load (rtx *loc, void *data)
+{
+  struct check_argument_load_data *d
+    = (struct check_argument_load_data *) data;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, *loc, NONCONST)
+    {
+      const_rtx mem = *iter;
+      HOST_WIDE_INT size;
+      if (MEM_P (mem)
+	  && MEM_SIZE_KNOWN_P (mem)
+	  && MEM_SIZE (mem).is_constant (&size))
+	{
+	  HOST_WIDE_INT off = sp_based_mem_offset (d->call_insn, mem, d->fast);
+	  if (off != INTTYPE_MINIMUM (HOST_WIDE_INT)
+	      && off < d->max_sp_off
+	      && off + size > d->min_sp_off)
+	    for (HOST_WIDE_INT byte = MAX (off, d->min_sp_off);
+		 byte < MIN (off + size, d->max_sp_off); byte++)
+	      if (bitmap_bit_p (d->sp_bytes, byte - d->min_sp_off))
+		{
+		  d->load_found = true;
+		  return;
+		}
+	}
+    }
+}
+
 /* Try to find all stack stores of CALL_INSN arguments if
    ACCUMULATE_OUTGOING_ARGS.  If all stack stores have been found
    and it is therefore safe to eliminate the call, return true,
@@ -394,8 +437,10 @@ find_call_stack_args (rtx_call_insn *call_insn, bool do_mark, bool fast,
       }
 
   /* Walk backwards, looking for argument stores.  The search stops
-     when seeing another call, sp adjustment or memory store other than
-     argument store.  */
+     when seeing another call, sp adjustment, memory store other than
+     argument store or a read from an argument stack slot.  */
+  struct check_argument_load_data data
+    = { sp_bytes, min_sp_off, max_sp_off, call_insn, fast, false };
   ret = false;
   for (insn = PREV_INSN (call_insn); insn; insn = prev_insn)
     {
@@ -412,6 +457,10 @@ find_call_stack_args (rtx_call_insn *call_insn, bool do_mark, bool fast,
 
       rtx set = single_set (insn);
       if (!set || SET_DEST (set) == stack_pointer_rtx)
+	break;
+
+      note_uses (&PATTERN (insn), check_argument_load, &data);
+      if (data.load_found)
 	break;
 
       if (!MEM_P (SET_DEST (set)))

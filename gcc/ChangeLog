@@ -1,4 +1,11 @@
 2019-04-12  Jakub Jelinek  <jakub@redhat.com>
+	
+	PR rtl-optimization/89965
+	* dce.c: Include rtl-iter.h.
+	(struct check_argument_load_data): New type.
+	(check_argument_load): New function.
+	(find_call_stack_args): Check for loads from stack slots still tracked
+	in sp_bytes and punt if any is found.
 
 	* config/mips/loongson-mmiintrin.h: Fix up #error message.
 
