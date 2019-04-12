@@ -3494,19 +3494,56 @@ type_valid_for_vector_size (tree type, tree atname, tree args,
     return type;
 
   tree size = TREE_VALUE (args);
+  /* Erroneous arguments have already been diagnosed.  */
+  if (size == error_mark_node)
+    return NULL_TREE;
+
   if (size && TREE_CODE (size) != IDENTIFIER_NODE
       && TREE_CODE (size) != FUNCTION_DECL)
     size = default_conversion (size);
 
-  if (!tree_fits_uhwi_p (size))
+  if (TREE_CODE (size) != INTEGER_CST)
     {
-      /* FIXME: make the error message more informative.  */
       if (error_p)
-	warning (OPT_Wattributes, "%qE attribute ignored", atname);
+	error ("%qE attribute argument value %qE is not an integer constant",
+	       atname, size);
+      else
+	warning (OPT_Wattributes,
+		 "%qE attribute argument value %qE is not an integer constant",
+		 atname, size);
       return NULL_TREE;
     }
 
-  unsigned HOST_WIDE_INT vecsize = tree_to_uhwi (size);
+  if (!TYPE_UNSIGNED (TREE_TYPE (size))
+      && tree_int_cst_sgn (size) < 0)
+    {
+      if (error_p)
+	error ("%qE attribute argument value %qE is negative",
+	       atname, size);
+      else
+	warning (OPT_Wattributes,
+		 "%qE attribute argument value %qE is negative",
+		 atname, size);
+      return NULL_TREE;
+    }
+
+  /* The attribute argument value is constrained by the maximum bit
+     alignment representable in unsigned int on the host.  */
+  unsigned HOST_WIDE_INT vecsize;
+  unsigned HOST_WIDE_INT maxsize = tree_to_uhwi (max_object_size ());
+  if (!tree_fits_uhwi_p (size)
+      || (vecsize = tree_to_uhwi (size)) > maxsize)
+    {
+      if (error_p)
+	error ("%qE attribute argument value %qE exceeds %wu",
+	       atname, size, maxsize);
+      else
+	warning (OPT_Wattributes,
+		 "%qE attribute argument value %qE exceeds %wu",
+		 atname, size, maxsize);
+      return NULL_TREE;
+    }
+
   if (vecsize % tree_to_uhwi (TYPE_SIZE_UNIT (type)))
     {
       if (error_p)
@@ -4068,8 +4105,12 @@ validate_attribute (location_t atloc, tree oper, tree attr)
 
   if (TYPE_P (oper))
     tmpdecl = build_decl (atloc, TYPE_DECL, tmpid, oper);
-  else
+  else if (DECL_P (oper))
     tmpdecl = build_decl (atloc, TREE_CODE (oper), tmpid, TREE_TYPE (oper));
+  else if (EXPR_P (oper))
+    tmpdecl = build_decl (atloc, TYPE_DECL, tmpid, TREE_TYPE (oper));
+  else
+    return false;
 
   /* Temporarily clear CURRENT_FUNCTION_DECL to make decl_attributes
      believe the DECL declared above is at file scope.  (See bug 87526.)  */
@@ -4078,7 +4119,7 @@ validate_attribute (location_t atloc, tree oper, tree attr)
   if (DECL_P (tmpdecl))
     {
       if (DECL_P (oper))
-	/* An alias cannot be a defintion so declare the symbol extern.  */
+	/* An alias cannot be a definition so declare the symbol extern.  */
 	DECL_EXTERNAL (tmpdecl) = true;
       /* Attribute visibility only applies to symbols visible from other
 	 translation units so make it "public."   */
@@ -4114,11 +4155,17 @@ has_attribute (location_t atloc, tree t, tree attr, tree (*convert)(tree))
       do
 	{
 	  /* Determine the array element/member declaration from
-	     an ARRAY/COMPONENT_REF.  */
+	     a COMPONENT_REF and an INDIRECT_REF involving a refeence.  */
 	  STRIP_NOPS (t);
 	  tree_code code = TREE_CODE (t);
-	  if (code == ARRAY_REF)
-	    t = TREE_OPERAND (t, 0);
+	  if (code == INDIRECT_REF)
+	    {
+	      tree op0 = TREE_OPERAND (t, 0);
+	      if (TREE_CODE (TREE_TYPE (op0)) == REFERENCE_TYPE)
+		t = op0;
+	      else
+		break;
+	    }
 	  else if (code == COMPONENT_REF)
 	    t = TREE_OPERAND (t, 1);
 	  else
@@ -4169,7 +4216,8 @@ has_attribute (location_t atloc, tree t, tree attr, tree (*convert)(tree))
 	}
       else
 	{
-	  atlist = TYPE_ATTRIBUTES (TREE_TYPE (expr));
+	  type = TREE_TYPE (expr);
+	  atlist = TYPE_ATTRIBUTES (type);
 	  done = true;
 	}
 
@@ -4245,9 +4293,10 @@ has_attribute (location_t atloc, tree t, tree attr, tree (*convert)(tree))
 	      if (tree arg = TREE_VALUE (attr))
 		{
 		  arg = convert (TREE_VALUE (arg));
-		  if (expr && DECL_P (expr)
-		      && DECL_USER_ALIGN (expr)
-		      && tree_fits_uhwi_p (arg))
+		  if (!tree_fits_uhwi_p (arg))
+		    /* Invalid argument.  */;
+		  else if (expr && DECL_P (expr)
+			   && DECL_USER_ALIGN (expr))
 		    found_match = DECL_ALIGN_UNIT (expr) == tree_to_uhwi (arg);
 		  else if (type && TYPE_USER_ALIGN (type))
 		    found_match = TYPE_ALIGN_UNIT (type) == tree_to_uhwi (arg);
@@ -4284,13 +4333,7 @@ has_attribute (location_t atloc, tree t, tree attr, tree (*convert)(tree))
 	    }
 	  else if (!strcmp ("vector_size", namestr))
 	    {
-	      if (!type)
-		continue;
-
-	      /* Determine the base type from arrays, pointers, and such.
-		 Fail if the base type is not a vector.  */
-	      type = type_for_vector_size (type);
-	      if (!VECTOR_TYPE_P (type))
+	      if (!type || !VECTOR_TYPE_P (type))
 		return false;
 
 	      if (tree arg = TREE_VALUE (attr))
