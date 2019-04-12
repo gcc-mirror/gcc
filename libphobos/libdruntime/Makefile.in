@@ -425,9 +425,9 @@ am__objects_27 = $(am__objects_1) $(am__objects_3) $(am__objects_5) \
 	$(am__objects_13) $(am__objects_15) $(am__objects_17) \
 	$(am__objects_19) $(am__objects_21) $(am__objects_23) \
 	$(am__objects_25) $(am__objects_26)
-am__objects_28 = libgdruntime_la-errno_.lo \
-	libgdruntime_la-bss_section.lo
-am__objects_29 = libgdruntime_la-threadasm.lo
+am__objects_28 = core/stdc/libgdruntime_la-errno_.lo \
+	rt/libgdruntime_la-bss_section.lo
+am__objects_29 = core/libgdruntime_la-threadasm.lo
 am__objects_30 = $(am__objects_27) $(am__objects_28) $(am__objects_29)
 am_libgdruntime_la_OBJECTS = $(am__objects_30)
 libgdruntime_la_OBJECTS = $(am_libgdruntime_la_OBJECTS)
@@ -1626,6 +1626,9 @@ core/sys/solaris/sys/types.lo: core/sys/solaris/sys/$(am__dirstamp)
 core/sys/solaris/time.lo: core/sys/solaris/$(am__dirstamp)
 gcc/config.lo: gcc/$(am__dirstamp)
 gcc/libbacktrace.lo: gcc/$(am__dirstamp)
+core/stdc/libgdruntime_la-errno_.lo: core/stdc/$(am__dirstamp)
+rt/libgdruntime_la-bss_section.lo: rt/$(am__dirstamp)
+core/libgdruntime_la-threadasm.lo: core/$(am__dirstamp)
 
 libgdruntime.la: $(libgdruntime_la_OBJECTS) $(libgdruntime_la_DEPENDENCIES) $(EXTRA_libgdruntime_la_DEPENDENCIES) 
 	$(AM_V_GEN)$(libgdruntime_la_LINK) -rpath $(toolexeclibdir) $(libgdruntime_la_OBJECTS) $(libgdruntime_la_LIBADD) $(LIBS)
@@ -1725,8 +1728,8 @@ distclean-compile:
 .S.lo:
 	$(AM_V_CPPAS)$(LTCPPASCOMPILE) -c -o $@ $<
 
-libgdruntime_la-threadasm.lo: core/threadasm.S
-	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o libgdruntime_la-threadasm.lo `test -f 'core/threadasm.S' || echo '$(srcdir)/'`core/threadasm.S
+core/libgdruntime_la-threadasm.lo: core/threadasm.S
+	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o core/libgdruntime_la-threadasm.lo `test -f 'core/threadasm.S' || echo '$(srcdir)/'`core/threadasm.S
 
 .c.o:
 	$(AM_V_CC)$(COMPILE) -c -o $@ $<
@@ -1737,11 +1740,11 @@ libgdruntime_la-threadasm.lo: core/threadasm.S
 .c.lo:
 	$(AM_V_CC)$(LTCOMPILE) -c -o $@ $<
 
-libgdruntime_la-errno_.lo: core/stdc/errno_.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgdruntime_la-errno_.lo `test -f 'core/stdc/errno_.c' || echo '$(srcdir)/'`core/stdc/errno_.c
+core/stdc/libgdruntime_la-errno_.lo: core/stdc/errno_.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o core/stdc/libgdruntime_la-errno_.lo `test -f 'core/stdc/errno_.c' || echo '$(srcdir)/'`core/stdc/errno_.c
 
-libgdruntime_la-bss_section.lo: rt/bss_section.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgdruntime_la-bss_section.lo `test -f 'rt/bss_section.c' || echo '$(srcdir)/'`rt/bss_section.c
+rt/libgdruntime_la-bss_section.lo: rt/bss_section.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rt/libgdruntime_la-bss_section.lo `test -f 'rt/bss_section.c' || echo '$(srcdir)/'`rt/bss_section.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
