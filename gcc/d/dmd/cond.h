@@ -39,6 +39,7 @@ public:
     virtual Condition *syntaxCopy() = 0;
     virtual int include(Scope *sc, ScopeDsymbol *sds) = 0;
     virtual DebugCondition *isDebugCondition() { return NULL; }
+    virtual VersionCondition *isVersionCondition() { return NULL; }
     virtual void accept(Visitor *v) { v->visit(this); }
 };
 
@@ -91,6 +92,7 @@ public:
     VersionCondition(Module *mod, unsigned level, Identifier *ident);
 
     int include(Scope *sc, ScopeDsymbol *sds);
+    VersionCondition *isVersionCondition() { return this; }
     void accept(Visitor *v) { v->visit(this); }
 };
 
