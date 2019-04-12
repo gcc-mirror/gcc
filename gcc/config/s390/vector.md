@@ -551,9 +551,10 @@
 
 ; vlbrreph, vlbrrepf, vlbrrepg
 (define_insn "*vec_splats_bswap_vec<mode>"
-  [(set (match_operand:V_HW_HSD                           0 "register_operand" "=v")
+  [(set (match_operand:V_HW_HSD                           0 "register_operand"        "=v")
 	(bswap:V_HW_HSD
-	 (vec_duplicate:V_HW_HSD (match_operand:<non_vec> 1 "memory_operand"    "R"))))]
+	 (vec_duplicate:V_HW_HSD (match_operand:<non_vec> 1 "memory_operand"           "R"))))
+   (use (match_operand:V16QI                              2 "permute_pattern_operand"  "X"))]
   "TARGET_VXE2"
   "vlbrrep<bhfgq>\t%v0,%1"
   [(set_attr "op_type" "VRX")])
@@ -654,6 +655,17 @@
   "TARGET_VX"
   "vperm\t%v0,%v1,%v2,%v3"
   [(set_attr "op_type" "VRR")])
+
+(define_insn "*vec_perm<mode>"
+  [(set (match_operand:VT_HW                                            0 "register_operand" "=v")
+	(subreg:VT_HW (unspec:V16QI [(subreg:V16QI (match_operand:VT_HW 1 "register_operand"  "v") 0)
+				     (subreg:V16QI (match_operand:VT_HW 2 "register_operand"  "v") 0)
+				     (match_operand:V16QI               3 "register_operand"  "v")]
+				    UNSPEC_VEC_PERM) 0))]
+  "TARGET_VX"
+  "vperm\t%v0,%v1,%v2,%v3"
+  [(set_attr "op_type" "VRR")])
+
 
 ; vec_perm_const for V2DI using vpdi?
 
@@ -2073,35 +2085,11 @@
 ; FIXME: The bswap rtl standard name currently does not appear to be
 ; used for vector modes.
 (define_expand "bswap<mode>"
-  [(set (match_operand:VT_HW_HSDT                   0 "nonimmediate_operand" "")
-	(bswap:VT_HW_HSDT (match_operand:VT_HW_HSDT 1 "nonimmediate_operand" "")))]
-  "TARGET_VX")
-
-; vlbrh, vlbrf, vlbrg, vlbrq, vstbrh, vstbrf, vstbrg, vstbrq
-(define_insn "*bswap<mode>"
-  [(set (match_operand:VT_HW_HSDT                   0 "nonimmediate_operand" "=v,v,R")
-	(bswap:VT_HW_HSDT (match_operand:VT_HW_HSDT 1 "nonimmediate_operand"  "v,R,v")))]
-  "TARGET_VXE2"
-  "@
-   #
-   vlbr<bhfgq>\t%v0,%v1
-   vstbr<bhfgq>\t%v1,%v0"
-  [(set_attr "op_type" "*,VRX,VRX")])
-
-(define_insn_and_split "*bswap<mode>_emu"
-  [(set (match_operand:VT_HW_HSDT                   0 "nonimmediate_operand" "=vR")
-	(bswap:VT_HW_HSDT (match_operand:VT_HW_HSDT 1 "nonimmediate_operand" "vR")))]
-  "TARGET_VX && can_create_pseudo_p ()"
-  "#"
-  "&& ((!memory_operand (operands[1], <MODE>mode)
-        && !memory_operand (operands[0], <MODE>mode))
-        || !TARGET_VXE2)"
-  [(set (match_dup 3)
-	(unspec:V16QI [(match_dup 4)
-		       (match_dup 4)
-		       (match_dup 2)]
-		      UNSPEC_VEC_PERM))
-   (set (match_dup 0) (subreg:VT_HW_HSDT (match_dup 3) 0))]
+  [(parallel
+    [(set (match_operand:VT_HW_HSDT                   0 "nonimmediate_operand" "")
+	  (bswap:VT_HW_HSDT (match_operand:VT_HW_HSDT 1 "nonimmediate_operand" "")))
+     (use (match_dup 2))])]
+  "TARGET_VX"
 {
   static char p[4][16] =
     { { 1,  0,  3,  2,  5,  4,  7, 6, 9,  8,  11, 10, 13, 12, 15, 14 },   /* H */
@@ -2109,7 +2097,7 @@
       { 7,  6,  5,  4,  3,  2,  1, 0, 15, 14, 13, 12, 11, 10, 9,  8  },   /* D */
       { 15, 14, 13, 12, 11, 10, 9, 8, 7,  6,  5,  4,  3,  2,  1,  0  } }; /* T */
   char *perm;
-  rtx perm_rtx[16], constv;
+  rtx perm_rtx[16];
 
   switch (GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)))
     {
@@ -2122,14 +2110,57 @@
   for (int i = 0; i < 16; i++)
     perm_rtx[i] = GEN_INT (perm[i]);
 
-  operands[1] = force_reg (<MODE>mode, operands[1]);
-  operands[2] = gen_reg_rtx (V16QImode);
-  operands[3] = gen_reg_rtx (V16QImode);
-  operands[4] = simplify_gen_subreg (V16QImode, operands[1], <MODE>mode, 0);
-  constv = force_const_mem (V16QImode, gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, perm_rtx)));
-  emit_move_insn (operands[2], constv);
+  operands[2] = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, perm_rtx));
+
+  /* Without vxe2 we do not have byte swap instructions dealing
+     directly with memory operands.  So instead of waiting until
+     reload to fix that up switch over to vector permute right
+     now.  */
+  if (!TARGET_VXE2)
+    {
+      rtx in = force_reg (V16QImode, simplify_gen_subreg (V16QImode, operands[1], <MODE>mode, 0));
+      rtx permute = force_reg (V16QImode, force_const_mem (V16QImode, operands[2]));
+      rtx out = gen_reg_rtx (V16QImode);
+
+      emit_insn (gen_vec_permv16qi (out, in, in, permute));
+      emit_move_insn (operands[0], simplify_gen_subreg (<MODE>mode, out, V16QImode, 0));
+      DONE;
+    }
 })
 
+; Switching late to the reg-reg variant requires the vector permute
+; pattern to be pushed into literal pool and allocating a vector
+; register to load it into.  We rely on both being provided by LRA
+; when fixing up the v constraint for operand 2.
+
+; permute_pattern_operand: general_operand would reject the permute
+; pattern constants since these are not accepted by
+; s390_legimitate_constant_p
+
+; ^R: Prevent these alternatives from being chosen if it would require
+; pushing the operand into memory first
+
+; vlbrh, vlbrf, vlbrg, vlbrq, vstbrh, vstbrf, vstbrg, vstbrq
+(define_insn_and_split "*bswap<mode>"
+  [(set (match_operand:VT_HW_HSDT                   0 "nonimmediate_operand"    "=v, v,^R")
+	(bswap:VT_HW_HSDT (match_operand:VT_HW_HSDT 1 "nonimmediate_operand"     "v,^R, v")))
+   (use (match_operand:V16QI                        2 "permute_pattern_operand"  "v, X, X"))]
+  "TARGET_VXE2"
+  "@
+   #
+   vlbr<bhfgq>\t%v0,%v1
+   vstbr<bhfgq>\t%v1,%v0"
+  "&& reload_completed
+   && !memory_operand (operands[0], <MODE>mode)
+   && !memory_operand (operands[1], <MODE>mode)"
+  [(set (match_dup 0)
+	(subreg:VT_HW_HSDT
+	 (unspec:V16QI [(subreg:V16QI (match_dup 1) 0)
+			(subreg:V16QI (match_dup 1) 0)
+			(match_dup 2)]
+		       UNSPEC_VEC_PERM) 0))]
+  ""
+  [(set_attr "op_type"      "*,VRX,VRX")])
 
 ; reduc_smin
 ; reduc_smax

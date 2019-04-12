@@ -1,3 +1,19 @@
+2019-04-12  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/predicates.md (permute_pattern_operand): New
+	predicate.
+	* config/s390/vector.md ("*vec_splats_bswap_vec<mode>"): Add USE
+	operand for the permute pattern.
+	("*vec_perm<mode>"): New insn definition.
+	("bswap<mode>"): Generate the permute pattern operand in the
+	expander and perform the operand reloads for pre arch13 level
+	already.
+	("*bswap<mode>_emu"): Rename to ...
+	("*bswap<mode>"): ... this. And make the splitter vxe2 only.
+	* config/s390/vx-builtins.md ("*vec_insert_and_zero_bswap<mode>"):
+	Add the USE operand for the permute pattern.
+	("*vec_set_bswap_vec<mode>"): Likewise.
+
 2019-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/89946
