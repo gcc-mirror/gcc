@@ -1516,7 +1516,7 @@ fguiding-decls
 C++ ObjC++ Deprecated
 
 fhandle-exceptions
-C++ ObjC++ Optimization Alias(fexceptions) Warn({-fhandle-exceptions has been renamed -fexceptions (and is now on by default)})
+C++ ObjC++ Optimization Alias(fexceptions) Warn({%<-fhandle-exceptions%> has been renamed %<-fexceptions%> (and is now on by default)})
 
 fhonor-std
 C++ ObjC++ Deprecated

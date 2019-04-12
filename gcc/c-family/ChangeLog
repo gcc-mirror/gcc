@@ -1,5 +1,9 @@
 2019-04-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR translation/90041
+	* c.opt (-fhandle-exceptions): Use %< and %> around option names
+	in the Warn diagnostics.
+
 	PR c/89946
 	* c-attribs.c (handle_patchable_function_entry_attribute): Add
 	function comment.  Warn if arguments of the attribute are not positive
