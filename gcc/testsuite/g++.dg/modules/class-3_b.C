@@ -8,8 +8,8 @@ export inline void Frob (X &q)
   q.b = q.a;
 }
 
-// { dg-final { scan-lang-dump "Writing interstitial named type type_decl:'::X'" module } }
-// { dg-final { scan-lang-dump "Wrote import:-\[0-9\]* type_decl:'::X'@One" module } }
-// { dg-final { scan-lang-dump "Wrote decl's type:-\[0-9\]* record_type:'::X'" module } }
-// { dg-final { scan-lang-dump "Wrote import:-\[0-9\]* field_decl:'::X::a'@One" module } }
-// { dg-final { scan-lang-dump "Wrote import:-\[0-9\]* field_decl:'::X::b'@One" module } }
+// { dg-final { scan-lang-dump {Writing interstitial named type type_decl:'::X@\(One\)'} module } }
+// { dg-final { scan-lang-dump {Wrote import:-[0-9]* type_decl:'::X@\(One\)'@One} module } }
+// { dg-final { scan-lang-dump {Wrote decl's type:-[0-9]* record_type:'::X@\(One\)'} module } }
+// { dg-final { scan-lang-dump {Wrote import:-[0-9]* field_decl:'::X@\(One\)::a'@One} module } }
+// { dg-final { scan-lang-dump {Wrote import:-[0-9]* field_decl:'::X@\(One\)::b'@One} module } }

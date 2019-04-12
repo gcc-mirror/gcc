@@ -2426,7 +2426,7 @@ public:
 
   public:
     void add_mergeable (depset *);
-    void add_dependency (tree decl, entity_kind);
+    void add_dependency (tree decl, entity_kind, bool is_import = false);
     void add_binding (tree ns, tree value);
     void add_writables (tree ns, bitmap partitions);
     void find_dependencies ();
@@ -3648,6 +3648,7 @@ bool
 dumper::impl::nested_name (tree t)
 {
   tree ti = NULL_TREE;
+  unsigned owner = MODULE_NONE;
 
   if (t && TREE_CODE (t) == TREE_BINFO)
     t = BINFO_TYPE (t);
@@ -3663,6 +3664,12 @@ dumper::impl::nested_name (tree t)
 	if (TREE_CODE (ctx) == TRANSLATION_UNIT_DECL
 	    || nested_name (ctx))
 	  fputs ("::", stream);
+
+      if (TREE_CODE (t) != NAMESPACE_DECL
+	  || DECL_NAMESPACE_ALIAS (t)
+	  || (!TREE_PUBLIC (t) && TREE_PUBLIC (CP_DECL_CONTEXT (t))))
+      owner = MAYBE_DECL_MODULE_OWNER (t);
+
       int use_tpl;
       // FIXME: See avoidance of TEMPLATE_DECL in node_template_info
       if (TREE_CODE (t) == TEMPLATE_DECL)
@@ -3698,6 +3705,13 @@ dumper::impl::nested_name (tree t)
       }
   else
     fputs ("#null#", stream);
+
+  if (owner != MODULE_NONE)
+    {
+      fputs ("@(", stream);
+      fputs ((*modules)[owner]->get_flatname (), stream);
+      fputs (")", stream);
+    }
 
   if (ti)
     {
@@ -6529,49 +6543,25 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 		|| DECL_MEMBER_TEMPLATE_P (decl)
 		|| owner < MODULE_IMPORT_BASE);
 
-    if (TREE_CODE (owner_decl) == FUNCTION_DECL
-	&& owner_decl != STRIP_TEMPLATE (decl))
-      {
-	/* We cannot look up inside a function by name.  */
-	gcc_assert (owner < MODULE_IMPORT_BASE);
-
-	return true;
-      }
-
-    bool is_import = owner >= MODULE_IMPORT_BASE;
     tree ctx = CP_DECL_CONTEXT (decl);
+    bool is_import = owner >= MODULE_IMPORT_BASE;
 
     if (TREE_CODE (ctx) == FUNCTION_DECL)
       {
-	/* Some internal decl of the function.  */
-	if (!DECL_IMPLICIT_TYPEDEF_P (decl))
-	  return true;
-
-	if (!streaming_p ())
+	/* We cannot lookup by name inside a function.  */
+	if (!streaming_p ()
+	    && (dep_hash->sneakoscope || is_import))
 	  {
-	    bool unnameable = dep_hash->sneakoscope || is_import;
-	    if (!unnameable)
-	      {
-		/* If the owning function is not within
-		   dep_hash->current, it is also a voldemort.  */
-
-		// FIXME: For now, not nested of nested.  Here it'd be
-		// nice to just call the context dumper and get some
-		// kind of result back 'hey, you're voldemorty'
-		gcc_assert (TREE_CODE (CP_DECL_CONTEXT (ctx)) == NAMESPACE_DECL);
-		if (dep_hash->current->get_entity () != ctx)
-		  unnameable = true;
-	      }
-
-	    if (unnameable)
-	      {
-		/* We've found a voldemort type.  Add it as a
-		   dependency.  */
-		dep_hash->add_dependency (decl, depset::EK_UNNAMED);
-		kind = "unnamed";
-		goto insert;
-	      }
+	    /* We've found a voldemort type.  Add it as a
+	       dependency.  */
+	    dep_hash->add_dependency (decl, depset::EK_UNNAMED, is_import);
+	    kind = "unnamed";
+	    goto insert;
 	  }
+
+	/* Some internal entity of the function.  Do by value.  */
+	gcc_assert (!is_import);
+	return true;
       }
 
     /* A named decl -> tt_named_decl.  */
@@ -8671,7 +8661,7 @@ depset::hash::find_binding (tree ctx, tree name)
    a using decl.  */
 
 void
-depset::hash::add_dependency (tree decl, entity_kind ek)
+depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 {
   /* Make sure we're being told consistent information.  */
   gcc_checking_assert ((ek == EK_USING) == (TREE_CODE (decl) == OVERLOAD));
@@ -8679,6 +8669,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
 		       == (TREE_CODE (decl) == NAMESPACE_DECL
 			   && !DECL_NAMESPACE_ALIAS (decl)));
   gcc_checking_assert (ek != EK_BINDING);
+  gcc_checking_assert (!is_import || ek == EK_UNNAMED);
 
   if (depset **slot = entity_slot (decl, !is_mergeable_dep ()))
     {
@@ -8711,10 +8702,9 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
 	       below checks to this entity, because we can only refer
 	       to it by depending on its containing entity, and that
 	       entity will have the below checks applied to it.  */;
-	      unsigned owner = (*modules)[MAYBE_DECL_MODULE_OWNER (decl)]->remap;
 
-	      /* Note this entity came from elsewhere.  */
-	      if (owner >= MODULE_IMPORT_BASE)
+	      if (is_import)
+		/* Note this entity came from elsewhere.  */
 		dep->set_flag_bit<DB_IMPORTED_BIT> ();
 	    }
 	  else
@@ -10809,7 +10799,8 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		      unsigned index = d->cluster - 1;
 		      if (is_imported)
 			{
-			  owner = MAYBE_DECL_MODULE_OWNER (u_decl);
+			  tree o_decl = get_module_owner (u_decl);
+			  owner = MAYBE_DECL_MODULE_OWNER (o_decl);
 			  module_state *import = (*modules)[owner];
 			  /* It must be in the unnamed map.  */
 			  index = *unnamed_map->get (DECL_UID (u_decl));
@@ -13981,73 +13972,43 @@ module_state::set_import (module_state const *other, bool is_export)
     bitmap_ior_into (slurp ()->headers, other->slurp ()->headers);
 }
 
-/* Return the decl that determines the owning module of DECL.  That
-   may be DECL itself, or it may DECL's context, or it may be some
-   other DECL (for instance an unscoped enum's CONST_DECLs are owned
-   by the TYPE_DECL).  It might not be an outermost namespace-scope
-   decl.  */
-
+/* Return the namespace-scope decl that determines the owning module
+   of DECL.  That may be DECL itself, or it may DECL's context, or it
+   may be some other DECL (for instance an unscoped enum's CONST_DECLs
+   are owned by the TYPE_DECL).  */
+// FIXME: May need a variant that gets the owning module of a specialization
 tree
 get_module_owner (tree decl)
 {
- again:
-  gcc_assert (DECL_P (decl));
+  gcc_checking_assert (TREE_CODE (decl) != NAMESPACE_DECL);
 
-  switch (TREE_CODE (decl))
+  for (tree ctx;; decl = ctx)
     {
-    case TEMPLATE_DECL:
-      /* Although a template-decl has ownership, that's mainly for
-         namespace-scope name pushing.  Whether it has one depends on
-         the thing it's templating, so look at that directly.  */
-      decl = DECL_TEMPLATE_RESULT (decl);
-      goto again;
-
-    case NAMESPACE_DECL:
-    case FUNCTION_DECL:
-      /* Things that are containers hold their own module owner
-	 info.  */
-      return decl;
-
-    case TYPE_DECL:
-      /* The implicit typedef of a tagged type has its own module
-	 owner.  */
-      if (DECL_IMPLICIT_TYPEDEF_P (decl))
-	return decl;
-      /* Fallthrough.  */
-
-    case VAR_DECL:
-      /* Things at namespace scope, have their own module owner ...  */
-      if (TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
-	return decl;
-      break;
-
-    case CONST_DECL:
-      /* ... except enumeration constants.  */
-      if (TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE
-	  && DECL_CONTEXT (decl) == DECL_CONTEXT (TYPE_NAME (TREE_TYPE (decl))))
-	/* An enumeration is controlled by its enum-decl.  Its
-	   enumerations may not have that as DECL_CONTEXT.  */
-	return TYPE_NAME (TREE_TYPE (decl));
-      break;
-
-    default:
-      break;
+      ctx = CP_DECL_CONTEXT (decl);
+      if (TREE_CODE (ctx) == NAMESPACE_DECL)
+	break;
+      if (TYPE_P (ctx))
+	{
+	  if (tree tn = TYPE_STUB_DECL (ctx))
+	    ctx = tn;
+	  else
+	    /* Always return something, global_namespace is a useful
+	       non-owning decl.  */
+	    return global_namespace;
+	}
     }
 
-  /* Otherwise, find this decl's context, which should itself have
-     the data.  */
-  tree ctx = CP_DECL_CONTEXT (decl);
-  gcc_assert (ctx && TREE_CODE (decl) != NAMESPACE_DECL);
-  if (TYPE_P (ctx))
-    {
-      if (tree tn = TYPE_NAME (ctx))
-	ctx = tn;
-      else
-	/* Always return something, global_namespace is a useful
-	   non-owning decl.  */
-	ctx = global_namespace;
-    }
-  return ctx;
+  decl = STRIP_TEMPLATE (decl);
+  
+  /* An enumeration is controlled by its enum-decl.  Its
+     enumerations may not have that as DECL_CONTEXT.  */
+  if (TREE_CODE (decl) == CONST_DECL
+      && TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE
+      /*
+	&& DECL_CONTEXT (decl) == DECL_CONTEXT (TYPE_NAME (TREE_TYPE (decl)))*/)
+    decl = TYPE_NAME (TREE_TYPE (decl));
+
+  return decl;
 }
 
 /* Is it permissible to redeclare an entity with owner FROM.  */
@@ -14064,18 +14025,19 @@ module_may_redeclare (unsigned from)
   return (*modules)[from]->is_primary ();
 }
 
-/* Set the module EXPORT and OWNER fields on DECL.  */
+/* Set the module EXPORT and OWNER fields on DECL.  Only
+   namespace-scope entites get this.  */
 
 void
 set_module_owner (tree decl)
 {
-  /* We should only be setting moduleness on things that are their own
-     owners.  */
-  gcc_checking_assert (STRIP_TEMPLATE (decl) == get_module_owner (decl));
-
-  if (!modules)
-    /* We can be called when modules are not enabled.  */
+  if (!modules_p ())
     return;
+  
+  if (!DECL_NAMESPACE_SCOPE_P (decl))
+    return;
+
+  gcc_checking_assert (STRIP_TEMPLATE (decl) == get_module_owner (decl));
 
   // FIXME: Check ill-formed linkage
 
@@ -14098,9 +14060,9 @@ set_module_owner (tree decl)
 void
 set_implicit_module_owner (tree decl, tree from)
 {
-  gcc_checking_assert (decl == get_module_owner (decl));
-
-  if (!modules)
+  if (!modules_p ())
+    return;
+  if (!DECL_NAMESPACE_SCOPE_P (decl))
     return;
 
   if (unsigned owner = MAYBE_DECL_MODULE_OWNER (from))

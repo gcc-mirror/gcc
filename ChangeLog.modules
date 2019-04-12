@@ -1,3 +1,26 @@
+2019-04-12  Nathan Sidwell  <nathan@acm.org>
+
+	Ownership only on namespace-scope.
+	gcc/cp/
+	* module.cc (dumper::impl::nested_name): Show decl's ownership.
+	(trees_out::tree_decl): Remove unnecessary unnameable code.
+	(depset::hash::add_dependency): Add is_import parm.
+	(module_state::write_clister): Get owner decl of unnamed.
+	(get_module_owner): Always look at the namespace-scope entity.
+	(set_module_owner): Only set namespace-scope entity.
+	(set_implicit_module_owner): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/by-name-1.C: Adjust scans.
+	* g++.dg/modules/class-3_[bd].C: Likewise.
+	* g++.dg/modules/enum-1_a.C: Likewise.
+	* g++.dg/modules/global-[23]_a.C: Likewise.
+	* g++.dg/modules/indirect-[1234]_[bc].C: Likewise.
+	* g++.dg/modules/part-3_c.C: Likewise.
+	* g++.dg/modules/scc-1.C: Likewise.
+	* g++.dg/modules/stdio-1_a.H: Likewise.
+	* g++.dg/modules/using-4_a.C: Likewise.
+	* g++.dg/modules/vmort-2_[abc].C: Likewise.
+
 2019-04-11  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
