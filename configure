@@ -2813,7 +2813,8 @@ target_libraries="target-libgcc \
 		target-libobjc \
 		target-libada \
 		target-libgo \
-		target-libphobos"
+		target-libphobos \
+		target-zlib"
 
 # these tools are built using the target libraries, and are intended to
 # run only in the target environment
