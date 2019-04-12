@@ -166,7 +166,7 @@ irange_storage::set_empty_pair (unsigned i, unsigned j, tree type)
 
 // Return TRUE if pair [i, j] is marked as empty.
 
-bool
+inline bool
 irange_storage::empty_pair_p (unsigned i, unsigned j, tree type) const
 {
   unsigned precision = wi::get_precision (trailing_bounds[0]);
