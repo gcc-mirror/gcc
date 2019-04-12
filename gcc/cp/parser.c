@@ -8555,9 +8555,9 @@ cp_parser_has_attribute_expression (cp_parser *parser)
   cp_parser_parse_definitely (parser);
 
   /* If the type-id production did not work out, then we must be
-     looking at the unary-expression production.  */
+     looking at an expression.  */
   if (!oper || oper == error_mark_node)
-    oper = cp_parser_unary_expression (parser);
+    oper = cp_parser_assignment_expression (parser);
 
   STRIP_ANY_LOCATION_WRAPPER (oper);
 

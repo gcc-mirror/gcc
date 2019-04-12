@@ -3741,7 +3741,7 @@ TYPE_VECTOR_SUBPARTS (const_tree node)
       return res;
     }
   else
-    return 1 << precision;
+    return (unsigned HOST_WIDE_INT)1 << precision;
 }
 
 /* Set the number of elements in VECTOR_TYPE NODE to SUBPARTS, which must
