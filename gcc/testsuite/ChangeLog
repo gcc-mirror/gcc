@@ -1,5 +1,19 @@
+2019-04-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88383
+	PR c/89288
+	PR c/89798
+	PR c/89797
+	* c-c++-common/attributes-1.c: Adjust.
+	* c-c++-common/builtin-has-attribute-4.c: Adjust expectations.
+	* c-c++-common/builtin-has-attribute-6.c: New test.
+	* c-c++-common/builtin-has-attribute-7.c: New test.
+	* c-c++-common/pr71574.c: Adjust.
+	* gcc.dg/pr25559.c: Adjust.
+	* gcc.dg/attr-vector_size.c: New test.
+
 2019-04-12  Jakub Jelinek  <jakub@redhat.com>
-	
+
 	PR rtl-optimization/89965
 	* gcc.target/i386/pr89965.c: New test.
 

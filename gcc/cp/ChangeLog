@@ -1,3 +1,10 @@
+2019-04-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88383
+	PR c/89288
+	* parser.c (cp_parser_has_attribute_expression): Handle assignment
+	expressions.
+
 2019-04-12  Jason Merrill  <jason@redhat.com>
 
 	* call.c (null_member_pointer_value_p): Handle an empty CONSTRUCTOR

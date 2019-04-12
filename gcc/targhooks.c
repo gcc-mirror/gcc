@@ -1247,14 +1247,18 @@ constant_alignment_word_strings (const_tree exp, HOST_WIDE_INT align)
   return align;
 }
 
-/* Default to natural alignment for vector types.  */
+/* Default to natural alignment for vector types, bounded by
+   MAX_OFILE_ALIGNMENT.  */
+
 HOST_WIDE_INT
 default_vector_alignment (const_tree type)
 {
-  HOST_WIDE_INT align = tree_to_shwi (TYPE_SIZE (type));
-  if (align > MAX_OFILE_ALIGNMENT)
-    align = MAX_OFILE_ALIGNMENT;
-  return align;
+  unsigned HOST_WIDE_INT align = MAX_OFILE_ALIGNMENT;
+  tree size = TYPE_SIZE (type);
+  if (tree_fits_uhwi_p (size))
+    align = tree_to_uhwi (size);
+
+  return align < MAX_OFILE_ALIGNMENT ? align : MAX_OFILE_ALIGNMENT;
 }
 
 /* The default implementation of
