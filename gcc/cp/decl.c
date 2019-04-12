@@ -2132,13 +2132,16 @@ next_arg:;
 	  if (TYPE_NAME (TREE_TYPE (newdecl)) == newdecl)
 	    {
 	      tree remove = TREE_TYPE (newdecl);
-	      for (tree t = TYPE_MAIN_VARIANT (remove); ;
-		   t = TYPE_NEXT_VARIANT (t))
-		if (TYPE_NEXT_VARIANT (t) == remove)
-		  {
-		    TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (remove);
-		    break;
-		  }
+	      if (TYPE_MAIN_VARIANT (remove) == remove)
+		gcc_assert (TYPE_NEXT_VARIANT (remove) == NULL_TREE);
+	      else
+		for (tree t = TYPE_MAIN_VARIANT (remove); ;
+		     t = TYPE_NEXT_VARIANT (t))
+		  if (TYPE_NEXT_VARIANT (t) == remove)
+		    {
+		      TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (remove);
+		      break;
+		    }
 	    }
 	}
       else if (merge_attr)
