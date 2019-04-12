@@ -3,6 +3,12 @@
 	* except.c (build_noexcept_spec): Use build_converted_constant_bool_expr
 	instead of perform_implicit_conversion_flags.
 
+	PR c++/87603 - constexpr functions are no longer noexcept.
+	* constexpr.c (is_sub_constant_expr): Remove unused function.
+	* cp-tree.h (is_sub_constant_expr): Remove declaration.
+	* except.c (check_noexcept_r): Don't consider a call to a constexpr
+	function noexcept.
+
 2019-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR translation/90035

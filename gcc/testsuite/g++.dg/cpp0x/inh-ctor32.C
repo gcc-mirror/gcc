@@ -168,7 +168,7 @@ namespace derived_ctor {
       };
       struct bar : boo {
 	template <typename ...T>
-	constexpr bar(T ... args) : boo(args...) {} // { dg-message "sorry, unimplemented: passing arguments to ellipsis" }
+	constexpr bar(T ... args) : boo(args...) {}
       };
       void f() noexcept(noexcept(bar{0,1}));
     }
@@ -200,12 +200,12 @@ namespace derived_ctor {
       };
       struct bor : boo {
 	template <typename ...T>
-	constexpr bor(T ... args) : boo(args...) {} // { dg-message "sorry, unimplemented: passing arguments to ellipsis" }
+	constexpr bor(T ... args) : boo(args...) {}
       };
       struct bar : bor {
 	using bor::bor;
       };
-      void f() noexcept(noexcept(bar{0,1})); // { dg-message "'constexpr' expansion" }
+      void f() noexcept(noexcept(bar{0,1}));
     }
 
     namespace no_constexpr_noninherited_ctor {

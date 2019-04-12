@@ -1,5 +1,15 @@
 2019-04-12  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/87603 - constexpr functions are no longer noexcept.
+	* g++.dg/cpp0x/constexpr-noexcept.C: Adjust the expected result.
+	* g++.dg/cpp0x/constexpr-noexcept3.C: Likewise.
+	* g++.dg/cpp0x/constexpr-noexcept4.C: Likewise.
+	* g++.dg/cpp0x/constexpr-noexcept8.C: New test.
+	* g++.dg/cpp0x/inh-ctor32.C: Remove dg-message.
+	* g++.dg/cpp1y/constexpr-noexcept1.C: New test.
+
+2019-04-12  Marek Polacek  <polacek@redhat.com>
+
 	* g++.dg/cpp0x/noexcept30.C: Tweak dg-error.
 	* g++.dg/cpp0x/pr86397-1.C: Likewise.
 	* g++.dg/cpp0x/pr86397-2.C: Likewise.
