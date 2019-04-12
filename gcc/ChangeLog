@@ -1,3 +1,7 @@
+2019-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* doc/install.texi: Document --with-target-system-zlib.
+
 2019-04-12  Martin Sebor  <msebor@redhat.com>
 
 	PR c/88383

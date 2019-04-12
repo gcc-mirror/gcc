@@ -1,5 +1,16 @@
 2019-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	* m4/druntime/libraries.m4 (DRUNTIME_LIBRARIES_ZLIB): Use
+	libz_convenience.a if not using system zlib.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/Makefile.am: Remove ZLIB_CSOURCES and AM_CFLAGS.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2019-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	* testsuite/Makefile.am:
 	* testsuite/Makefile.am (AUTOMAKE_OPTIONS): Remove dejagnu.
 	(RUNTEST): Remove variable.

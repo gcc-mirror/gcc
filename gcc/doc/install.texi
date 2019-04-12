@@ -2344,6 +2344,18 @@ If none of these options are specified, the library is assumed in
 default locations.
 @end table
 
+@subheading D-Specific Options
+
+The following options apply to the build of the D runtime library.
+
+@table @code
+@item --with-target-system-zlib
+Use installed @samp{zlib} rather than that included with GCC@.  This needs
+to be available for each multilib variant, unless configured with
+@option{--with-target-system-zlib=@samp{auto}} in which case the GCC@ included
+@samp{zlib} is only used when the system installed library is not available.
+@end table
+
 @html
 <hr />
 <p>

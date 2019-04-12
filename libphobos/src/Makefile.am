@@ -22,9 +22,6 @@ include $(top_srcdir)/d_rules.am
 D_EXTRA_DFLAGS=-nostdinc -I $(srcdir) \
 	-I $(top_srcdir)/libdruntime -I ../libdruntime -I .
 
-# C flags for zlib compilation
-AM_CFLAGS=@DEFS@ -I. -I$(srcdir)/../libdruntime/gcc -I$(top_srcdir)/../zlib
-
 # D flags for compilation
 AM_DFLAGS=$(phobos_compiler_pic_flag)
 
@@ -37,19 +34,13 @@ ALL_PHOBOS_COMPILE_DSOURCES = $(PHOBOS_DSOURCES)
 ALL_PHOBOS_SOURCES = $(ALL_PHOBOS_COMPILE_DSOURCES)
 
 # Main library build definitions
-if DRUNTIME_ZLIB_SYSTEM
-    ZLIB_SRC =
-else
-    ZLIB_SRC = $(ZLIB_CSOURCES)
-endif
-
 toolexeclib_DATA = libgphobos.spec
 toolexeclib_LTLIBRARIES = libgphobos.la
-libgphobos_la_SOURCES = $(ALL_PHOBOS_SOURCES) $(ZLIB_SRC)
+libgphobos_la_SOURCES = $(ALL_PHOBOS_SOURCES)
 libgphobos_la_LIBTOOLFLAGS =
 libgphobos_la_LDFLAGS = -Wc,-nophoboslib,-dstartfiles,-B../libdruntime/gcc \
     -version-info $(libtool_VERSION)
-libgphobos_la_LIBADD = ../libdruntime/libgdruntime.la
+libgphobos_la_LIBADD = ../libdruntime/libgdruntime.la $(LIBZ)
 libgphobos_la_DEPENDENCIES = libgphobos.spec
 
 # Handles generated files as well
@@ -63,16 +54,6 @@ install-data-local:
 	      $(DESTDIR)$(gdc_include_dir)/$$file ; \
 	  fi ; \
 	done
-
-# Zlib sources when not using system libz
-ZLIB_CSOURCES=$(top_srcdir)/../zlib/adler32.c $(top_srcdir)/../zlib/compress.c \
-	$(top_srcdir)/../zlib/crc32.c $(top_srcdir)/../zlib/deflate.c \
-	$(top_srcdir)/../zlib/gzclose.c $(top_srcdir)/../zlib/gzlib.c \
-	$(top_srcdir)/../zlib/gzread.c $(top_srcdir)/../zlib/gzwrite.c \
-	$(top_srcdir)/../zlib/infback.c $(top_srcdir)/../zlib/inffast.c \
-	$(top_srcdir)/../zlib/inflate.c $(top_srcdir)/../zlib/inftrees.c \
-	$(top_srcdir)/../zlib/trees.c $(top_srcdir)/../zlib/uncompr.c \
-	$(top_srcdir)/../zlib/zutil.c
 
 # Source file definitions. Boring stuff, auto-generated with
 # https://gist.github.com/jpf91/8744acebc9dcf1e9d1a35cdff20afbb2

@@ -640,8 +640,7 @@ gdc_include_dir
 libphobos_toolexeclibdir
 libphobos_toolexecdir
 gcc_version
-DRUNTIME_ZLIB_SYSTEM_FALSE
-DRUNTIME_ZLIB_SYSTEM_TRUE
+LIBZ
 BACKTRACE_SUPPORTS_THREADS
 BACKTRACE_USES_MALLOC
 BACKTRACE_SUPPORTED
@@ -1480,7 +1479,7 @@ Optional Packages:
   --without-libatomic     Do not use libatomic in core.atomic (default: auto)
   --without-libbacktrace  Do not use libbacktrace in core.runtime (default:
                           auto)
-  --with-target-system-zlib
+  --with-target-system-zlib={yes,no,auto}
                           use installed libz (default: no)
   --with-cross-host=HOST  configuring with a cross compiler
 
@@ -11495,7 +11494,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11498 "configure"
+#line 11497 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11601,7 +11600,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11604 "configure"
+#line 11603 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14844,79 +14843,94 @@ $as_echo "$druntime_cv_lib_sockets" >&6; }
   LIBS="$LIBS $druntime_cv_lib_sockets"
 
 
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+  LIBZ=""
+
 
 # Check whether --with-target-system-zlib was given.
 if test "${with_target_system_zlib+set}" = set; then :
   withval=$with_target_system_zlib;
+else
+  with_target_system_zlib=no
 fi
 
 
-  system_zlib=false
-  if test "x$with_target_system_zlib" = "xyes"; then :
+  case "$with_target_system_zlib" in
+    yes|no|auto) ;;
+    *) as_fn_error $? "Invalid argument for --with-target-system-zlib" "$LINENO" 5 ;;
+  esac
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for deflate in -lz" >&5
-$as_echo_n "checking for deflate in -lz... " >&6; }
-if ${ac_cv_lib_z_deflate+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lz  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for system zlib" >&5
+$as_echo_n "checking for system zlib... " >&6; }
+  save_LIBS=$LIBS
+  LIBS="$LIBS -lz"
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char deflate ();
+#include <zlib.h>
 int
 main ()
 {
-return deflate ();
+gzopen("none", "rb")
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_z_deflate=yes
+
+      if test "$cross_compiling" = yes; then :
+          system_zlib_found=no
+
 else
-  ac_cv_lib_z_deflate=no
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+        #include <zlib.h>
+        int main() {
+          gzFile file = gzopen("none", "rb");
+          return 0;
+        }
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  system_zlib_found=yes
+else
+  system_zlib_found=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+
+else
+  system_zlib_found=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_z_deflate" >&5
-$as_echo "$ac_cv_lib_z_deflate" >&6; }
-if test "x$ac_cv_lib_z_deflate" = xyes; then :
+  LIBS=$save_LIBS
 
-      system_zlib=yes
-
-else
-
-      as_fn_error $? "System zlib not found" "$LINENO" 5
-
-fi
-
-
-else
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for zlib" >&5
-$as_echo_n "checking for zlib... " >&6; }
+  if test x$system_zlib_found = xyes && test x$with_target_system_zlib != xno; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+$as_echo "found" >&6; }
+    LIBS="$LIBS -lz"
+  elif test x$system_zlib_found = xno && test x$with_target_system_zlib = xyes; then
+    as_fn_error $? "system zlib required but not found" "$LINENO" 5
+  else
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: just compiled" >&5
 $as_echo "just compiled" >&6; }
+    LIBZ=../../zlib/libz_convenience.la
+  fi
 
-fi
 
-   if test "$with_target_system_zlib" = yes; then
-  DRUNTIME_ZLIB_SYSTEM_TRUE=
-  DRUNTIME_ZLIB_SYSTEM_FALSE='#'
-else
-  DRUNTIME_ZLIB_SYSTEM_TRUE='#'
-  DRUNTIME_ZLIB_SYSTEM_FALSE=
-fi
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
@@ -15224,10 +15238,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${DRUNTIME_OS_MINFO_BRACKETING_TRUE}" && test -z "${DRUNTIME_OS_MINFO_BRACKETING_FALSE}"; then
   as_fn_error $? "conditional \"DRUNTIME_OS_MINFO_BRACKETING\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${DRUNTIME_ZLIB_SYSTEM_TRUE}" && test -z "${DRUNTIME_ZLIB_SYSTEM_FALSE}"; then
-  as_fn_error $? "conditional \"DRUNTIME_ZLIB_SYSTEM\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
