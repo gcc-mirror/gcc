@@ -1,5 +1,8 @@
 2019-04-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/89946
+	* c-c++-common/pr89946.c: New test.
+
 	PR rtl-optimization/90026
 	* g++.dg/opt/pr90026.C: New test.
 

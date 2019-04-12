@@ -1865,28 +1865,20 @@ assemble_start_function (tree decl, const char *fnname)
       tree pp_val = TREE_VALUE (patchable_function_entry_attr);
       tree patchable_function_entry_value1 = TREE_VALUE (pp_val);
 
-      if (tree_fits_uhwi_p (patchable_function_entry_value1))
-	patch_area_size = tree_to_uhwi (patchable_function_entry_value1);
-      else
-	gcc_unreachable ();
-
+      patch_area_size = tree_to_uhwi (patchable_function_entry_value1);
       patch_area_entry = 0;
-      if (list_length (pp_val) > 1)
+      if (TREE_CHAIN (pp_val) != NULL_TREE)
 	{
-	  tree patchable_function_entry_value2 =
-	    TREE_VALUE (TREE_CHAIN (pp_val));
-
-	  if (tree_fits_uhwi_p (patchable_function_entry_value2))
-	    patch_area_entry = tree_to_uhwi (patchable_function_entry_value2);
-	  else
-	    gcc_unreachable ();
+	  tree patchable_function_entry_value2
+	    = TREE_VALUE (TREE_CHAIN (pp_val));
+	  patch_area_entry = tree_to_uhwi (patchable_function_entry_value2);
 	}
     }
 
   if (patch_area_entry > patch_area_size)
     {
       if (patch_area_size > 0)
-	warning (OPT_Wattributes, "Patchable function entry > size");
+	warning (OPT_Wattributes, "patchable function entry > size");
       patch_area_entry = 0;
     }
 
@@ -1906,7 +1898,8 @@ assemble_start_function (tree decl, const char *fnname)
   /* And the area after the label.  Record it if we haven't done so yet.  */
   if (patch_area_size > patch_area_entry)
     targetm.asm_out.print_patchable_function_entry (asm_out_file,
-					     patch_area_size-patch_area_entry,
+						    patch_area_size
+						    - patch_area_entry,
 						    patch_area_entry == 0);
 
   if (lookup_attribute ("no_split_stack", DECL_ATTRIBUTES (decl)))
