@@ -42,11 +42,12 @@ AC_SUBST(target_alias)
 # no-dependencies: Don't generate automatic dependencies.
 #    (because it breaks when using bootstrap-lean, since some of the
 #    headers are gone at "make install" time).
+# subdir-objects: Build objects in sub-directories.
 # -Wall: Issue all automake warnings.
 # -Wno-portability: Don't warn about constructs supported by GNU make.
 #    (because GCC requires GNU make anyhow).
 #  -Wno-override: Overrides used in testsuite.
-AM_INIT_AUTOMAKE([1.11.1 foreign no-dist no-define no-dependencies -Wall -Wno-portability -Wno-override])
+AM_INIT_AUTOMAKE([1.11.1 foreign no-dist no-define no-dependencies subdir-objects -Wall -Wno-portability -Wno-override])
 
 m4_rename([_AC_ARG_VAR_PRECIOUS],[glibd_PRECIOUS])
 m4_define([_AC_ARG_VAR_PRECIOUS],[])
