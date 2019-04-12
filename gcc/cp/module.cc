@@ -3665,9 +3665,6 @@ dumper::impl::nested_name (tree t)
 	    || nested_name (ctx))
 	  fputs ("::", stream);
 
-      if (TREE_CODE (t) != NAMESPACE_DECL
-	  || DECL_NAMESPACE_ALIAS (t)
-	  || (!TREE_PUBLIC (t) && TREE_PUBLIC (CP_DECL_CONTEXT (t))))
       owner = MAYBE_DECL_MODULE_OWNER (t);
 
       int use_tpl;

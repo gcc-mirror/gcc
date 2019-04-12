@@ -1,5 +1,10 @@
 2019-04-12  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (dumper::impl::nested_name): Remove namespace owner
+	fiddling.
+	* name-lookup.c (make_namespace): Don't set owner.  Adjust callers.
+
 	Ownership only on namespace-scope.
 	gcc/cp/
 	* module.cc (dumper::impl::nested_name): Show decl's ownership.

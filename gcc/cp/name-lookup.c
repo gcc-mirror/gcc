@@ -8434,7 +8434,7 @@ reuse_namespace (tree *slot, tree ctx, tree name)
 static tree GTY() anon_name;
 
 static tree
-make_namespace (tree ctx, tree name, unsigned mod, location_t loc,
+make_namespace (tree ctx, tree name, location_t loc,
 		bool inline_p, tree asm_name = NULL_TREE)
 {
   /* Create the namespace.  */
@@ -8484,7 +8484,6 @@ make_namespace (tree ctx, tree name, unsigned mod, location_t loc,
     }
   else if (TREE_PUBLIC (ctx))
     TREE_PUBLIC (ns) = true;
-  DECL_MODULE_OWNER (ns) = mod;
 
   if (inline_p)
     DECL_NAMESPACE_INLINE_P (ns) = true;
@@ -8571,7 +8570,7 @@ push_namespace (tree name, bool make_inline)
       tree *slot = find_namespace_slot (current_namespace, name, true);
       ns = reuse_namespace (slot, current_namespace, name);
       if (!ns)
-	ns = make_namespace (current_namespace, name, MODULE_PURVIEW,
+	ns = make_namespace (current_namespace, name,
 			     input_location, make_inline);
 
       if (pushdecl (ns) == error_mark_node)
@@ -8635,7 +8634,7 @@ add_imported_namespace (tree ctx, tree name, unsigned mod, location_t loc,
   tree decl = reuse_namespace (slot, ctx, name);
   if (!decl)
     {
-      decl = make_namespace (ctx, name, mod, loc, inline_p, anon_name);
+      decl = make_namespace (ctx, name, loc, inline_p, anon_name);
       make_namespace_finish (decl, slot, true);
     }
   else if (DECL_NAMESPACE_INLINE_P (decl) != inline_p)
