@@ -1,5 +1,10 @@
 2019-04-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR translation/90041
+	* exgettext: Print MissingArgError, UnknownError or Warn
+	*.opt argument using error or warning instead of _ to mark it
+	as gcc-internal-format.
+
 	* de.po, sv.po: Update.
 
 2019-04-02  Iain Buclaw  <ibuclaw@gdcproject.org>
