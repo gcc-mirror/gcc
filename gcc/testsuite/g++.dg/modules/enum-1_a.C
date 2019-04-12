@@ -27,4 +27,4 @@ export inline Ben func2 ()
   return Ben (4);
 }
 
-// { dg-final { scan-lang-dump {Written enum value '::Ben@\(enUm\)'\[2\]} module } }
+// { dg-final { scan-lang-dump {Written enum value '::Ben@1\(enUm\)'\[2\]} module } }

@@ -3705,8 +3705,9 @@ dumper::impl::nested_name (tree t)
 
   if (owner != MODULE_NONE)
     {
-      fputs ("@(", stream);
-      fputs ((*modules)[owner]->get_flatname (), stream);
+      fprintf (stream, "@%d(", owner);
+      if (const module_state *mod = (*modules)[owner])
+	fputs (mod->get_flatname (), stream);
       fputs (")", stream);
     }
 
@@ -10406,6 +10407,11 @@ module_state::write_readme (elf_out *to, const char *options,
   verstr_t string;
   version2string (MODULE_VERSION, string);
   readme.printf ("version: %s", string);
+
+#ifdef MODULE_REVISION
+  if (MODULE_REVISION[0])
+    readme.printf ("revision: %s", MODULE_REVISION);
+#endif
 
   /* Module information.  */
   readme.printf ("module: %s%s", get_flatname (true), get_flatname ());

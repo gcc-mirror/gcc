@@ -70,7 +70,10 @@ version.o : $(srcdir)/cp/module.cc
 # Remember, Make thinks of REVISION_s as a set of space-separated words
 REVISION_s := $(REVISION_s:%]\""=%:20$(MODULE_VERSION)]\"")
 endif
-CFLAGS-cp/module.o += -DMODULE_VERSION='($(subst -,,$(MODULE_VERSION))U)'
+MODULE_REVISION = $(shell svn info $(srcdir)/../ChangeLog.modules 2>/dev/null | \
+	grep '^Revision:')
+CFLAGS-cp/module.o += -DMODULE_VERSION='($(subst -,,$(MODULE_VERSION))U)' \
+     -DMODULE_REVISION='"$(word 2,$(MODULE_REVISION))"'
 endif
 
 # Create the compiler driver for g++.

@@ -10,7 +10,7 @@ export auto conduit (int i)
   return frobber (i);
 }
 
-// { dg-final { scan-lang-dump {Voldemort decl:0 \[0\] '::frobber@\(voldy\)::._0'} module } }
-// { dg-final { scan-lang-dump {Cluster imported entity '::frobber@\(voldy\)::._0'} module } }
-// { dg-final { scan-lang-dump {Inserted:-1 horcrux:0@2 for '::frobber@\(voldy\)::._0'} module } }
+// { dg-final { scan-lang-dump {Voldemort decl:0 \[0\] '::frobber@2\(voldy\)::._0'} module } }
+// { dg-final { scan-lang-dump {Cluster imported entity '::frobber@2\(voldy\)::._0'} module } }
+// { dg-final { scan-lang-dump {Inserted:-1 horcrux:0@2 for '::frobber@2\(voldy\)::._0'} module } }
 

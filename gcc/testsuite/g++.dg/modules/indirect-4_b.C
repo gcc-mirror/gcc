@@ -13,7 +13,7 @@ namespace bar
 }
 
 // { dg-final { scan-lang-dump {Lazily binding '::foo::TPL'@'foo' section:} module } }
-// { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::TPL@\(foo\)'@foo} module } }
-// { dg-final { scan-lang-dump {Wrote instantiation:-[0-9]* type_decl:'::foo::TPL@\(foo\)<0x1>'@\(none\)} module } }
-// { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::TPL@\(foo\)<0x1>::frob<#unnamed#>'@foo} module } }
-// { dg-final { scan-lang-dump {Wrote instantiation:-[0-9]* function_decl:'::foo::TPL@\(foo\)<0x1>::frob<0x2>'@\(none\)} module } }
+// { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::TPL@2\(foo\)'@foo} module } }
+// { dg-final { scan-lang-dump {Wrote instantiation:-[0-9]* type_decl:'::foo::TPL@2\(foo\)<0x1>'@\(none\)} module } }
+// { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::TPL@2\(foo\)<0x1>::frob<#unnamed#>'@foo} module } }
+// { dg-final { scan-lang-dump {Wrote instantiation:-[0-9]* function_decl:'::foo::TPL@2\(foo\)<0x1>::frob<0x2>'@\(none\)} module } }

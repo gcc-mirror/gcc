@@ -19,8 +19,8 @@ int main ()
   return 0;
 }
 
-// { dg-final { scan-lang-dump {Imported:-[0-9]* type_decl:'::X@\(One\)'@One} module } }
-// { dg-final { scan-lang-dump {Read imported type:-[0-9]* record_type:'::X@\(One\)'} module } }
-// { dg-final { scan-lang-dump {Read named type type_decl:'::X@\(One\)'} module } }
-// { dg-final { scan-lang-dump {Imported:-[0-9]* field_decl:'::X@\(One\)::a'@One} module } }
-// { dg-final { scan-lang-dump {Imported:-[0-9]* field_decl:'::X@\(One\)::b'@One} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* type_decl:'::X@2\(One\)'@One} module } }
+// { dg-final { scan-lang-dump {Read imported type:-[0-9]* record_type:'::X@2\(One\)'} module } }
+// { dg-final { scan-lang-dump {Read named type type_decl:'::X@2\(One\)'} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* field_decl:'::X@2\(One\)::a'@One} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* field_decl:'::X@2\(One\)::b'@One} module } }

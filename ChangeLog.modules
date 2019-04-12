@@ -1,6 +1,22 @@
 2019-04-12  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* Make-lang.in (MODULE_REVISION): New.
+	* module.cc (dumper::impl::nested_name): Print module number.
+	(module_state::write_readme): Write revision.
+	gcc/testsuite/
+	* g++.dg/modules/by-name-1.C: Adjust scans.
+	* g++.dg/modules/class-3_[bd].C: Likewise.
+	* g++.dg/modules/enum-1_a.C: Likewise.
+	* g++.dg/modules/global-[23]_a.C: Likewise.
+	* g++.dg/modules/indirect-[1234]_[bc].C: Likewise.
+	* g++.dg/modules/part-3_c.C: Likewise.
+	* g++.dg/modules/scc-1.C: Likewise.
+	* g++.dg/modules/stdio-1_a.H: Likewise.
+	* g++.dg/modules/using-4_a.C: Likewise.
+	* g++.dg/modules/vmort-2_[abc].C: Likewise.
+
+	gcc/cp/
 	* module.cc (dumper::impl::nested_name): Remove namespace owner
 	fiddling.
 	* name-lookup.c (make_namespace): Don't set owner.  Adjust callers.

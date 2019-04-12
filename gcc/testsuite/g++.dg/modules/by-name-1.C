@@ -11,5 +11,5 @@ class X
 
 export X *f ();
 
-// { dg-final { scan-lang-dump {Wrote named decl:-[0-9]* type_decl:'::X@\(frob\)'} "module" } }
-// { dg-final { scan-lang-dump {Wrote decl's type:-[0-9]* record_type:'::X@\(frob\)'} "module" } }
+// { dg-final { scan-lang-dump {Wrote named decl:-[0-9]* type_decl:'::X@1\(frob\)'} "module" } }
+// { dg-final { scan-lang-dump {Wrote decl's type:-[0-9]* record_type:'::X@1\(frob\)'} "module" } }

@@ -9,6 +9,6 @@ export auto frobber (int i)
   return [=] (int j) { return i + j; };
 }
 
-// { dg-final { scan-lang-dump {Voldemort:0 '::frobber@\(voldy\)::._0'} module } }
-// { dg-final { scan-lang-dump {Connecting definition unnamed type_decl:'::frobber@\(voldy\)::._0'} module } }
-// { dg-final { scan-lang-dump {Unnamed 0 '::frobber@\(voldy\)::._0' section:1} module } }
+// { dg-final { scan-lang-dump {Voldemort:0 '::frobber@1\(voldy\)::._0'} module } }
+// { dg-final { scan-lang-dump {Connecting definition unnamed type_decl:'::frobber@1\(voldy\)::._0'} module } }
+// { dg-final { scan-lang-dump {Unnamed 0 '::frobber@1\(voldy\)::._0' section:1} module } }

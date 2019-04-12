@@ -10,4 +10,4 @@ int main ()
 }
 
 // { dg-final { scan-lang-dump {Lazily binding '#null##null#'@'voldy' section:1} module } }
-// { dg-final { scan-lang-dump {Inserted:-1 horcrux:0@2 '::frobber@\(voldy\)::._0'} module } }
+// { dg-final { scan-lang-dump {Inserted:-1 horcrux:0@2 '::frobber@2\(voldy\)::._0'} module } }
