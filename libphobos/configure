@@ -687,10 +687,6 @@ libphobos_builddir
 get_gcc_base_ver
 phobos_compiler_shared_flag
 phobos_compiler_pic_flag
-ENABLE_STATIC_FALSE
-ENABLE_STATIC_TRUE
-ENABLE_SHARED_FALSE
-ENABLE_SHARED_TRUE
 CPP
 OTOOL64
 OTOOL
@@ -11499,7 +11495,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11502 "configure"
+#line 11498 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11605,7 +11601,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11608 "configure"
+#line 11604 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13747,22 +13743,6 @@ GDCFLAGS=$lt_save_DFLAGS
 
   GDCFLAGS=$gdc_save_DFLAGS
 
- if test "$enable_shared" = "yes"; then
-  ENABLE_SHARED_TRUE=
-  ENABLE_SHARED_FALSE='#'
-else
-  ENABLE_SHARED_TRUE='#'
-  ENABLE_SHARED_FALSE=
-fi
-
- if test "$enable_static" = "yes"; then
-  ENABLE_STATIC_TRUE=
-  ENABLE_STATIC_FALSE='#'
-else
-  ENABLE_STATIC_TRUE='#'
-  ENABLE_STATIC_FALSE=
-fi
-
 
 # libtool variables for Phobos shared and position-independent compiles.
 #
@@ -15188,14 +15168,6 @@ fi
 
 if test -z "${MAINTAINER_MODE_TRUE}" && test -z "${MAINTAINER_MODE_FALSE}"; then
   as_fn_error $? "conditional \"MAINTAINER_MODE\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${ENABLE_SHARED_TRUE}" && test -z "${ENABLE_SHARED_FALSE}"; then
-  as_fn_error $? "conditional \"ENABLE_SHARED\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${ENABLE_STATIC_TRUE}" && test -z "${ENABLE_STATIC_FALSE}"; then
-  as_fn_error $? "conditional \"ENABLE_STATIC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${DRUNTIME_GC_ENABLE_TRUE}" && test -z "${DRUNTIME_GC_ENABLE_FALSE}"; then

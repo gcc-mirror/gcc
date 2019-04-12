@@ -41,8 +41,10 @@ foreach cycle_test $cycle_test_list {
     set expected_fail [lindex $cycle_test 2]
 
     foreach test $tests {
+	set libphobos_test_name "[dg-trim-dirname $srcdir $test] $libphobos_run_args"
 	set shouldfail $expected_fail
-	dg-test $test "" $DEFAULT_DFLAGS
+	dg-runtest $test "" $DEFAULT_DFLAGS
+	set libphobos_test_name ""
     }
 
     set shouldfail 0
