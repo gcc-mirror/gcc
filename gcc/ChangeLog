@@ -1,3 +1,8 @@
+2019-04-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* params.def (PARAM_MAX_LTO_STREAMING_PARALLELISM): New parameter.
+	* doc/invoke.texi (max-lto-streaming-paralellism): New --param.
+
 2019-04-12  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/89970

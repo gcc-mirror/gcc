@@ -1146,6 +1146,11 @@ DEFPARAM (MAX_PARTITION_SIZE,
 	  "Maximal size of a partition for LTO (in estimated instructions).",
 	  1000000, 0, INT_MAX)
 
+DEFPARAM (PARAM_MAX_LTO_STREAMING_PARALLELISM,
+	  "lto-max-streaming-parallelism",
+	  "maximal number of LTO partitions streamed in parallel.",
+	  32, 1, 0)
+
 /* Diagnostic parameters.  */
 
 DEFPARAM (CXX_MAX_NAMESPACES_FOR_DIAGNOSTIC_HELP,
