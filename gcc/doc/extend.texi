@@ -12623,8 +12623,11 @@ check its compatibility with @var{size}.
 The @code{__builtin_has_attribute} function evaluates to an integer constant
 expression equal to @code{true} if the symbol or type referenced by
 the @var{type-or-expression} argument has been declared with
-the @var{attribute} referenced by the second argument.  Neither argument
-is evaluated.  The @var{type-or-expression} argument is subject to the same
+the @var{attribute} referenced by the second argument.  For
+an @var{type-or-expression} argument that does not reference a symbol,
+since attributes do not apply to expressions the built-in consider
+the type of the argument.  Neither argument is evaluated.
+The @var{type-or-expression} argument is subject to the same
 restrictions as the argument to @code{typeof} (@pxref{Typeof}).  The
 @var{attribute} argument is an attribute name optionally followed by
 a comma-separated list of arguments enclosed in parentheses.  Both forms
