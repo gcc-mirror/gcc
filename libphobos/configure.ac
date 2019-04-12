@@ -75,8 +75,6 @@ AC_SUBST(CFLAGS_FOR_BUILD)
 LT_INIT(dlopen)
 AM_PROG_LIBTOOL
 WITH_LOCAL_DRUNTIME([LT_LANG([D])], [])
-AM_CONDITIONAL([ENABLE_SHARED], [test "$enable_shared" = "yes"])
-AM_CONDITIONAL([ENABLE_STATIC], [test "$enable_static" = "yes"])
 
 # libtool variables for Phobos shared and position-independent compiles.
 #

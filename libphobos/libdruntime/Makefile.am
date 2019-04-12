@@ -93,18 +93,6 @@ ALL_DRUNTIME_COMPILE_DSOURCES += $(DRUNTIME_DSOURCES_GENERATED)
 
 ALL_DRUNTIME_SOURCES = $(ALL_DRUNTIME_COMPILE_DSOURCES) $(DRUNTIME_CSOURCES) \
 	$(DRUNTIME_SSOURCES)
-DRUNTIME_TEST_LOBJECTS = $(ALL_DRUNTIME_COMPILE_DSOURCES:.d=.t.lo)
-DRUNTIME_TEST_OBJECTS  = $(ALL_DRUNTIME_COMPILE_DSOURCES:.d=.t.o)
-
-# Main library build definitions
-check_PROGRAMS =
-if ENABLE_SHARED
-  check_LTLIBRARIES = libgdruntime_t.la
-  check_PROGRAMS += unittest
-endif
-if ENABLE_STATIC
-  check_PROGRAMS += unittest_static
-endif
 
 toolexeclib_LTLIBRARIES = libgdruntime.la
 libgdruntime_la_SOURCES = $(ALL_DRUNTIME_SOURCES)
@@ -113,36 +101,6 @@ libgdruntime_la_LDFLAGS = -Wc,-nophoboslib,-dstartfiles,-B../src,-Bgcc \
     -version-info $(libtool_VERSION)
 libgdruntime_la_LIBADD = $(LIBATOMIC) $(LIBBACKTRACE)
 libgdruntime_la_DEPENDENCIES = $(DRTSTUFF)
-
-# For static unittest, link objects directly
-unittest_static_SOURCES = ../testsuite/test_runner.d $(DRUNTIME_CSOURCES) \
-    $(DRUNTIME_SSOURCES)
-unittest_static_LIBTOOLFLAGS =
-unittest_static_LDFLAGS = -Wc,-nophoboslib
-unittest_static_LDADD = $(DRUNTIME_TEST_OBJECTS) $(LIBATOMIC) $(LIBBACKTRACE)
-EXTRA_unittest_static_DEPENDENCIES = $(DRUNTIME_TEST_OBJECTS)
-
-# For unittest with dynamic library
-libgdruntime_t_la_SOURCES = $(DRUNTIME_CSOURCES) $(DRUNTIME_SSOURCES)
-libgdruntime_t_la_LIBTOOLFLAGS =
-# Automake by default does not generate shared libs for non-installed
-# libraries. Use -rpath to force shared lib generation.
-libgdruntime_t_la_LDFLAGS = -Wc,-nophoboslib -rpath /foo -shared
-libgdruntime_t_la_LIBADD = $(DRUNTIME_TEST_LOBJECTS) $(LIBATOMIC) $(LIBBACKTRACE)
-EXTRA_libgdruntime_t_la_DEPENDENCIES = $(DRUNTIME_TEST_LOBJECTS)
-
-# For unittest
-unittest_SOURCES = ../testsuite/test_runner.d
-unittest_LIBTOOLFLAGS =
-unittest_LDFLAGS = -Wc,-nophoboslib
-unittest_LDADD = libgdruntime_t.la
-
-# Extra install and clean rules.
-# This does not delete the .libs/.t.o files, but deleting
-# the .lo is good enough to rerun the rules
-clean-local:
-	rm -f $(DRUNTIME_TEST_LOBJECTS)
-	rm -f $(DRUNTIME_TEST_OBJECTS)
 
 # Handles generated files as well
 install-data-local:
