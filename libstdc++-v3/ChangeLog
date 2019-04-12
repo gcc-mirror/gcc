@@ -8,7 +8,6 @@
 	* include/pstl/parallel_backend_tbb.h:
 	Replace use of assert().
 	Replace use of __TBB_ASSERT().
-
 	* include/pstl/parallel_backend_utils.h: Replace use of assert().
 
 2019-04-11  Jonathan Wakely  <jwakely@redhat.com>
