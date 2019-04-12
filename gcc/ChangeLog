@@ -1,3 +1,11 @@
+2019-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/90026
+	* cfgcleanup.c (try_optimize_cfg): When removing empty bb with no
+	successors, look for BARRIERs inside of the whole BB_FOOTER chain
+	rather than just at the start of it.  If e->src BB_FOOTER is not NULL
+	in cfglayout mode, use emit_barrier_after_bb.
+
 2018-04-11  Steve Ellcey  <sellcey@marvell.com>
 
 	PR rtl-optimization/87763
