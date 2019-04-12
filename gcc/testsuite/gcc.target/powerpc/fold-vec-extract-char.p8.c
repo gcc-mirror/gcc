@@ -6,9 +6,9 @@
 /* { dg-options "-mdejagnu-cpu=power8 -O2" } */
 
 // six tests total. Targeting P8LE / P8BE.
-// P8 LE variable offset: rldicl, subfic, sldi, mtvsrd, xxpermdi, vslo, mfvsrd, sradi, (extsb)
+// P8 LE variable offset: rldicl, subfic, sldi, mtvsrd, xxpermdi, vslo, mfvsrd, sradi, rlwinm, (extsb)
 // P8 LE constant offset: vspltb, mfvsrd, rlwinm, (extsb)
-// P8 BE variable offset:                 sldi, mtvsrd, xxpermdi, vslo, mfvsrd, sradi, (extsb)
+// P8 BE variable offset:                 sldi, mtvsrd, xxpermdi, vslo, mfvsrd, sradi, rlwinm, (extsb)
 // P8 BE constant offset: vspltb, mfvsrd, rlwinm, (extsb)
 
 /* { dg-final { scan-assembler-times {\mrldicl\M} 3 { target { le } } } } */
@@ -21,12 +21,12 @@
 /* { dg-final { scan-assembler-times {\msrdi\M} 3 { target lp64 } } } */
 /* { dg-final { scan-assembler-times "extsb" 2 } } */
 /* { dg-final { scan-assembler-times {\mvspltb\M} 3 { target lp64 } } } */
-/* { dg-final { scan-assembler-times {\mrlwinm\M} 2 { target lp64} } } */
+/* { dg-final { scan-assembler-times {\mrlwinm\M} 4 { target lp64 } } } */
 
 /* multiple codegen variations for -m32. */
-/* { dg-final { scan-assembler-times {\mrlwinm\M} 3 { target ilp32} } } */
-/* { dg-final { scan-assembler-times {\mstxvw4x\M} 6 { target ilp32} } } */
-/* { dg-final { scan-assembler-times {\mlbz\M} 6 { target ilp32} } } */
+/* { dg-final { scan-assembler-times {\mrlwinm\M} 3 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mstxvw4x\M} 6 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mlbz\M} 6 { target ilp32 } } } */
 
 
 #include <altivec.h>

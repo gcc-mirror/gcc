@@ -1,3 +1,11 @@
+2019-04-12  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/87532
+	* gcc.target/powerpc/fold-vec-extract-char.p8.c: Adjust expected
+	instruction counts.
+	* gcc.target/powerpc/fold-vec-extract-int.p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-extract-short.p8.c: Likewise.
+
 2019-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/89946

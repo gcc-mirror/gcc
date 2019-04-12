@@ -6,10 +6,10 @@
 /* { dg-options "-mdejagnu-cpu=power8 -O2" } */
 
 // six tests total. Targeting P8, both LE and BE.
-// p8 (le) variable offset: rldicl, subfic, sldi, mtvsrd, xxpermdi, vslo, mfvsrd, srdi, *extsh
-// p8 (le) const offset:                          mtvsrd,                                *extsh/rlwinm
-// p8 (be) var offset:                      sldi, mtvsrd, xxpermdi, vslo, mfvsrd, srdi, *extsh
-// p8 (be) const offset:    vsplth,               mfvsrd,                                *extsh/rlwinm
+// p8 (le) variable offset: rldicl, subfic, sldi, mtvsrd, xxpermdi, vslo, mfvsrd, srdi, (1:extsh/2:rlwinm)
+// p8 (le) const offset:                          mtvsrd,                                (1:extsh/2:rlwinm)
+// p8 (be) var offset:                      sldi, mtvsrd, xxpermdi, vslo, mfvsrd, srdi, (1:extsh:2:rlwinm)
+// p8 (be) const offset:    vsplth,               mfvsrd,                                (1:extsh/2:rlwinm)
 
 // * - each of the above will have an extsh if the argument is signed.
 // * - bool and unsigned tests also have an rlwinm.
@@ -24,7 +24,7 @@
 /* { dg-final { scan-assembler-times "mfvsrd" 6 { target lp64 } } } */
 /* { dg-final { scan-assembler-times "srdi" 3 { target lp64 } } } */
 /* { dg-final { scan-assembler-times "extsh" 2 { target lp64 } } } */
-/* { dg-final { scan-assembler-times "rlwinm" 2 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "rlwinm" 4 { target lp64 } } } */
 
 /* -m32 codegen tests. */
 /* { dg-final { scan-assembler-times {\mli\M} 6 { target ilp32 } } } */
