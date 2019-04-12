@@ -569,6 +569,7 @@ null_member_pointer_value_p (tree t)
     return false;
   else if (TYPE_PTRMEMFUNC_P (type))
     return (TREE_CODE (t) == CONSTRUCTOR
+	    && CONSTRUCTOR_NELTS (t)
 	    && integer_zerop (CONSTRUCTOR_ELT (t, 0)->value));
   else if (TYPE_PTRDATAMEM_P (type))
     return integer_all_onesp (t);

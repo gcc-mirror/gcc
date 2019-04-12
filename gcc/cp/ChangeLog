@@ -1,3 +1,8 @@
+2019-04-12  Jason Merrill  <jason@redhat.com>
+
+	* call.c (null_member_pointer_value_p): Handle an empty CONSTRUCTOR
+	of PMF type.
+
 2019-04-12  Marek Polacek  <polacek@redhat.com>
 
 	* except.c (build_noexcept_spec): Use build_converted_constant_bool_expr
