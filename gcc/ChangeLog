@@ -1,3 +1,7 @@
+2019-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/mips/loongson-mmiintrin.h: Fix up #error message.
+
 2019-04-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	* params.def (PARAM_MAX_LTO_STREAMING_PARALLELISM): New parameter.
