@@ -1,3 +1,10 @@
+2019-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89946
+	* c-attribs.c (handle_patchable_function_entry_attribute): Add
+	function comment.  Warn if arguments of the attribute are not positive
+	integer constants.
+
 2019-04-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (print_destructor): Deal with deleting destructors.

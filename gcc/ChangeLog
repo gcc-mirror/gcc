@@ -1,5 +1,11 @@
 2019-04-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/89946
+	* varasm.c (assemble_start_function): Don't use tree_fits_uhwi_p
+	and gcc_unreachable if it fails, just call tree_to_uhwi which
+	verifies that too.  Test TREE_CHAIN instead of list_length > 1.
+	Start warning message with a lower-case letter.  Formatting fixes.
+
 	PR rtl-optimization/90026
 	* cfgcleanup.c (try_optimize_cfg): When removing empty bb with no
 	successors, look for BARRIERs inside of the whole BB_FOOTER chain

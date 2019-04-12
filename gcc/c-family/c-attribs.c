@@ -3988,10 +3988,29 @@ handle_fallthrough_attribute (tree *, tree name, tree, int,
   return NULL_TREE;
 }
 
+/* Handle a "patchable_function_entry" attributes; arguments as in
+   struct attribute_spec.handler.  */
+
 static tree
-handle_patchable_function_entry_attribute (tree *, tree, tree, int, bool *)
+handle_patchable_function_entry_attribute (tree *, tree name, tree args,
+					   int, bool *no_add_attrs)
 {
-  /* Nothing to be done here.  */
+  for (; args; args = TREE_CHAIN (args))
+    {
+      tree val = TREE_VALUE (args);
+      if (val && TREE_CODE (val) != IDENTIFIER_NODE
+	  && TREE_CODE (val) != FUNCTION_DECL)
+	val = default_conversion (val);
+
+      if (!tree_fits_uhwi_p (val))
+	{
+	  warning (OPT_Wattributes,
+		   "%qE attribute argument %qE is not an integer constant",
+		   name, val);
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+    }
   return NULL_TREE;
 }
 
