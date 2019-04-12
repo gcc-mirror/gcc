@@ -1,3 +1,8 @@
+2019-04-12  Marek Polacek  <polacek@redhat.com>
+
+	* except.c (build_noexcept_spec): Use build_converted_constant_bool_expr
+	instead of perform_implicit_conversion_flags.
+
 2019-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR translation/90035

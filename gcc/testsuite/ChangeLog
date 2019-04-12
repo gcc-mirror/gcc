@@ -1,3 +1,9 @@
+2019-04-12  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/noexcept30.C: Tweak dg-error.
+	* g++.dg/cpp0x/pr86397-1.C: Likewise.
+	* g++.dg/cpp0x/pr86397-2.C: Likewise.
+
 2019-04-12  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* g++.target/arm/arm.exp: Change format of default prune regex.
