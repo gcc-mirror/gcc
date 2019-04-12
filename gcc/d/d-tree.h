@@ -59,7 +59,8 @@ typedef Array<Expression *> Expressions;
 
    Usage of DECL_LANG_FLAG_?:
    0: LABEL_VARIABLE_CASE (in LABEL_DECL).
-      DECL_BUILT_IN_CTFE (in FUNCTION_DECL).  */
+      DECL_BUILT_IN_CTFE (in FUNCTION_DECL).
+   1: DECL_IN_UNITTEST_CONDITION_P (in FUNCTION_DECL).  */
 
 /* The kinds of scopes we recognize.  */
 
@@ -379,6 +380,10 @@ lang_tree_node
 /* True if the decl is a CTFE built-in.  */
 #define DECL_BUILT_IN_CTFE(NODE) \
   (DECL_LANG_FLAG_0 (FUNCTION_DECL_CHECK (NODE)))
+
+/* True if the decl is only compiled in when unittests are turned on.  */
+#define DECL_IN_UNITTEST_CONDITION_P(NODE) \
+  (DECL_LANG_FLAG_1 (FUNCTION_DECL_CHECK (NODE)))
 
 enum d_tree_index
 {

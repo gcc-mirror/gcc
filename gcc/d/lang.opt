@@ -197,6 +197,10 @@ Enum(bounds_check) String(safeonly) Value(1)
 EnumValue
 Enum(bounds_check) String(on) Value(2)
 
+; Generates a secondary ModuleInfo symbol for linking in unittests
+fbuilding-libphobos-tests
+D Undocumented Var(flag_building_libphobos_tests)
+
 fbuiltin
 D Var(flag_no_builtin, 0)
 ; Documented in C
