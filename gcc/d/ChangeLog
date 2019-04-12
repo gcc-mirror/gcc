@@ -1,3 +1,17 @@
+2019-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-tree.h (DECL_IN_UNITTEST_CONDITION_P): Define.
+	* decl.cc (DeclVisitor): Add in_version_unittest_ field.
+	(DeclVisitor::visit(ConditionalDeclaration)): New override.
+	(DeclVisitor::visit(FuncDeclaration)): Set
+	DECL_IN_UNITTEST_CONDITION_P.
+	* lang.opt (-fbuilding-libphobos-tests): Add option.
+	* modules.cc (current_testing_module): New static variable.
+	(build_module_tree): Generate second moduleinfo symbol to hold
+	reference to unittests if flag_building_libphobos_tests.
+	(register_module_decl): Check DECL_IN_UNITTEST_CONDITION_P to decide
+	which moduleinfo the decl should be registered against.
+
 2019-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/88462

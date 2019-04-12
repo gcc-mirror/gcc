@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "dmd/aggregate.h"
 #include "dmd/attrib.h"
+#include "dmd/cond.h"
 #include "dmd/ctfe.h"
 #include "dmd/declaration.h"
 #include "dmd/enum.h"
@@ -121,9 +122,13 @@ class DeclVisitor : public Visitor
 {
   using Visitor::visit;
 
+  /* If we're lowering the body of a version(unittest) condition.  */
+  bool in_version_unittest_;
+
 public:
   DeclVisitor (void)
   {
+    this->in_version_unittest_ = false;
   }
 
   /* This should be overridden by each declaration class.  */
@@ -239,6 +244,25 @@ public:
       }
 
     visit ((AttribDeclaration *) d);
+  }
+
+  /* Conditional compilation is the process of selecting which code to compile
+     and which code to not compile.  Look for version conditions that may  */
+
+  void visit (ConditionalDeclaration *d)
+  {
+    bool old_condition = this->in_version_unittest_;
+
+    if (global.params.useUnitTests)
+      {
+	VersionCondition *vc = d->condition->isVersionCondition ();
+	if (vc && vc->ident == Identifier::idPool ("unittest"))
+	  this->in_version_unittest_ = true;
+      }
+
+    visit ((AttribDeclaration *) d);
+
+    this->in_version_unittest_ = old_condition;
   }
 
   /* Walk over all members in the namespace scope.  */
@@ -868,6 +892,7 @@ public:
       }
 
     DECL_ARGUMENTS (fndecl) = param_list;
+    DECL_IN_UNITTEST_CONDITION_P (fndecl) = this->in_version_unittest_;
     rest_of_decl_compilation (fndecl, 1, 0);
 
     /* If this is a member function that nested (possibly indirectly) in another
