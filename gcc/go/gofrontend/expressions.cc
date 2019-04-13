@@ -1846,12 +1846,20 @@ String_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
   String_expression::export_string(ast_dump_context, this);
 }
 
-// Make a string expression.
+// Make a string expression with abstract string type (common case).
 
 Expression*
 Expression::make_string(const std::string& val, Location location)
 {
-  return new String_expression(val, location);
+  return new String_expression(val, NULL, location);
+}
+
+// Make a string expression with a specific string type.
+
+Expression*
+Expression::make_string_typed(const std::string& val, Type* type, Location location)
+{
+  return new String_expression(val, type, location);
 }
 
 // An expression that evaluates to some characteristic of a string.
@@ -5485,7 +5493,16 @@ Binary_expression::do_lower(Gogo* gogo, Named_object*,
   }
 
   // String constant expressions.
-  if (left->type()->is_string_type() && right->type()->is_string_type())
+  //
+  // Avoid constant folding here if the left and right types are incompatible
+  // (leave the operation intact so that the type checker can complain about it
+  // later on). If concatenating an abstract string with a named string type,
+  // result type needs to be of the named type (see issue 31412).
+  if (left->type()->is_string_type()
+      && right->type()->is_string_type()
+      && (left->type()->named_type() == NULL
+          || right->type()->named_type() == NULL
+          || left->type()->named_type() == right->type()->named_type()))
     {
       std::string left_string;
       std::string right_string;
@@ -5493,8 +5510,13 @@ Binary_expression::do_lower(Gogo* gogo, Named_object*,
 	  && right->string_constant_value(&right_string))
 	{
 	  if (op == OPERATOR_PLUS)
-	    return Expression::make_string(left_string + right_string,
-					   location);
+            {
+              Type* result_type = (left->type()->named_type() != NULL
+                                   ? left->type()
+                                   : right->type());
+              return Expression::make_string_typed(left_string + right_string,
+                                                   result_type, location);
+            }
 	  else if (is_comparison)
 	    {
 	      int cmp = left_string.compare(right_string);
