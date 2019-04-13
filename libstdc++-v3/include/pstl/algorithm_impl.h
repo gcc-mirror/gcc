@@ -283,20 +283,20 @@ __pattern_walk2(_ExecutionPolicy&& __exec, _ForwardIterator1 __first1, _ForwardI
 template <class _ExecutionPolicy, class _ForwardIterator1, class _Size, class _ForwardIterator2, class _Function,
           class _IsVector>
 _ForwardIterator2
-__pattern_walk2_n(_ExecutionPolicy&&, _ForwardIterator1 __first1, _Size n, _ForwardIterator2 __first2, _Function f,
+__pattern_walk2_n(_ExecutionPolicy&&, _ForwardIterator1 __first1, _Size __n, _ForwardIterator2 __first2, _Function __f,
                   _IsVector is_vector, /*parallel=*/std::false_type) noexcept
 {
-    return __internal::__brick_walk2_n(__first1, n, __first2, f, is_vector);
+    return __internal::__brick_walk2_n(__first1, __n, __first2, __f, is_vector);
 }
 
 template <class _ExecutionPolicy, class _RandomAccessIterator1, class _Size, class _RandomAccessIterator2,
           class _Function, class _IsVector>
 _RandomAccessIterator2
-__pattern_walk2_n(_ExecutionPolicy&& __exec, _RandomAccessIterator1 __first1, _Size n, _RandomAccessIterator2 __first2,
-                  _Function f, _IsVector is_vector, /*parallel=*/std::true_type)
+__pattern_walk2_n(_ExecutionPolicy&& __exec, _RandomAccessIterator1 __first1, _Size __n, _RandomAccessIterator2 __first2,
+                  _Function __f, _IsVector __is_vector, /*parallel=*/std::true_type)
 {
-    return __internal::__pattern_walk2(std::forward<_ExecutionPolicy>(__exec), __first1, __first1 + n, __first2, f, is_vector,
-                           std::true_type());
+    return __internal::__pattern_walk2(std::forward<_ExecutionPolicy>(__exec), __first1, __first1 + __n, __first2, __f,
+                                       __is_vector, std::true_type());
 }
 
 template <class _ExecutionPolicy, class _ForwardIterator1, class _ForwardIterator2, class _Brick>
@@ -1033,7 +1033,7 @@ __pattern_copy_if(_ExecutionPolicy&& __exec, _RandomAccessIterator __first, _Ran
         return __internal::__except_handler([&__exec, __n, __first, __result, __is_vector, __pred, &__mask_buf]() {
             bool* __mask = __mask_buf.get();
             _DifferenceType __m{};
-            __par_backend::parallel_strict_scan(
+            __par_backend::__parallel_strict_scan(
                 std::forward<_ExecutionPolicy>(__exec), __n, _DifferenceType(0),
                 [=](_DifferenceType __i, _DifferenceType __len) { // Reduce
                     return __internal::__brick_calc_mask_1<_DifferenceType>(__first + __i, __first + (__i + __len), __mask + __i,
@@ -1182,7 +1182,7 @@ __remove_elements(_ExecutionPolicy&& __exec, _ForwardIterator __first, _ForwardI
         __mask += __min;
         _DifferenceType __m{};
         // 2. Elements that doesn't satisfy pred are moved to result
-        __par_backend::parallel_strict_scan(
+        __par_backend::__parallel_strict_scan(
             std::forward<_ExecutionPolicy>(__exec), __n, _DifferenceType(0),
             [__mask, __is_vector](_DifferenceType __i, _DifferenceType __len) {
                 return __internal::__brick_count(__mask + __i, __mask + __i + __len, [](bool __val) { return __val; }, __is_vector);
@@ -1309,7 +1309,7 @@ __pattern_unique_copy(_ExecutionPolicy&& __exec, _RandomAccessIterator __first, 
             return __internal::__except_handler([&__exec, __n, __first, __result, __pred, __is_vector, &__mask_buf]() {
                 bool* __mask = __mask_buf.get();
                 _DifferenceType __m{};
-                __par_backend::parallel_strict_scan(
+                __par_backend::__parallel_strict_scan(
                     std::forward<_ExecutionPolicy>(__exec), __n, _DifferenceType(0),
                     [=](_DifferenceType __i, _DifferenceType __len) -> _DifferenceType { // Reduce
                         _DifferenceType __extra = 0;
@@ -2033,7 +2033,7 @@ __pattern_partition_copy(_ExecutionPolicy&& __exec, _RandomAccessIterator __firs
         return __internal::__except_handler([&__exec, __n, __first, __out_true, __out_false, __is_vector, __pred, &__mask_buf]() {
             bool* __mask = __mask_buf.get();
             _ReturnType __m{};
-            __par_backend::parallel_strict_scan(
+            __par_backend::__parallel_strict_scan(
                 std::forward<_ExecutionPolicy>(__exec), __n, std::make_pair(_DifferenceType(0), _DifferenceType(0)),
                 [=](_DifferenceType __i, _DifferenceType __len) { // Reduce
                     return __internal::__brick_calc_mask_1<_DifferenceType>(__first + __i, __first + (__i + __len), __mask + __i,
@@ -2801,7 +2801,7 @@ __parallel_set_op(_ExecutionPolicy&& __exec, _ForwardIterator1 __first1, _Forwar
                 __internal::__brick_move(__buffer + __s.__buf_pos, __buffer + (__s.__buf_pos + __s.__len), __result + __s.__pos,
                              __is_vector);
         };
-        __par_backend::parallel_strict_scan(
+        __par_backend::__parallel_strict_scan(
             std::forward<_ExecutionPolicy>(__exec), __n1, _SetRange{0, 0, 0}, //-1, 0},
             [=](_DifferenceType __i, _DifferenceType __len) {                 // Reduce
                 //[__b; __e) - a subrange of the first sequence, to reduce
