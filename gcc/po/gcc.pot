@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
-"POT-Creation-Date: 2019-04-13 10:12+0200\n"
+"POT-Creation-Date: 2019-04-13 17:21+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -60410,9 +60410,14 @@ msgid ""
 "different version of GNU Fortran"
 msgstr ""
 
-#: fortran/module.c:7147
-#, gcc-internal-format, gfc-internal-format
-msgid "Cannot USE the same %smodule we're building"
+#: fortran/module.c:7149
+#, gcc-internal-format
+msgid "Cannot USE a submodule that is currently built"
+msgstr ""
+
+#: fortran/module.c:7151
+#, gcc-internal-format
+msgid "Cannot USE a module that is currently built"
 msgstr ""
 
 #: fortran/openmp.c:296 fortran/openmp.c:397 fortran/openmp.c:692
