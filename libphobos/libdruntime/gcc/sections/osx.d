@@ -1,16 +1,26 @@
-/**
- * Written in the D programming language.
- * This module provides OSX-specific support for sections.
- *
- * Copyright: Copyright Digital Mars 2008 - 2012.
- * License: Distributed under the
- *      $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0).
- *    (See accompanying file LICENSE)
- * Authors:   Walter Bright, Sean Kelly, Martin Nowak
- * Source: $(DRUNTIMESRC src/rt/_sections_osx.d)
- */
+// OSX-specific support for sections.
+// Copyright (C) 2019 Free Software Foundation, Inc.
 
-module rt.sections_osx;
+// GCC is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 3, or (at your option) any later
+// version.
+
+// GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+module gcc.sections.osx;
 
 version (OSX):
 
@@ -35,22 +45,22 @@ struct SectionGroup
         return dg(_sections);
     }
 
-    @property immutable(ModuleInfo*)[] modules() const
+    @property immutable(ModuleInfo*)[] modules() const nothrow @nogc
     {
         return _moduleGroup.modules;
     }
 
-    @property ref inout(ModuleGroup) moduleGroup() inout
+    @property ref inout(ModuleGroup) moduleGroup() inout nothrow @nogc
     {
         return _moduleGroup;
     }
 
-    @property inout(void[])[] gcRanges() inout
+    @property inout(void[])[] gcRanges() inout nothrow @nogc
     {
         return _gcRanges[];
     }
 
-    @property immutable(FuncTable)[] ehTables() const
+    @property immutable(FuncTable)[] ehTables() const nothrow @nogc
     {
         return _ehTables[];
     }
@@ -70,7 +80,7 @@ __gshared bool _isRuntimeInitialized;
 /****
  * Gets called on program startup just before GC is initialized.
  */
-void initSections()
+void initSections() nothrow @nogc
 {
     pthread_key_create(&_tlsKey, null);
     _dyld_register_func_for_add_image(&sections_osx_onAddImage);
@@ -80,19 +90,19 @@ void initSections()
 /***
  * Gets called on program shutdown just after GC is terminated.
  */
-void finiSections()
+void finiSections() nothrow @nogc
 {
     _sections._gcRanges.reset();
     pthread_key_delete(_tlsKey);
     _isRuntimeInitialized = false;
 }
 
-void[]* initTLSRanges()
+void[]* initTLSRanges() nothrow @nogc
 {
     return &getTLSBlock();
 }
 
-void finiTLSRanges(void[]* rng)
+void finiTLSRanges(void[]* rng) nothrow @nogc
 {
     .free(rng.ptr);
     .free(rng);
@@ -148,7 +158,7 @@ body
     assert(0);
 }
 
-ref void[] getTLSBlock()
+ref void[] getTLSBlock() nothrow @nogc
 {
     auto pary = cast(void[]*)pthread_getspecific(_tlsKey);
     if (pary is null)
@@ -179,7 +189,6 @@ ref void[] getTLSBlockAlloc()
     }
     return *pary;
 }
-
 
 __gshared SectionGroup _sections;
 
@@ -245,11 +254,9 @@ struct SegRef
     string sect;
 }
 
-
 static immutable SegRef[] dataSegs = [{SEG_DATA, SECT_DATA},
                                       {SEG_DATA, SECT_BSS},
                                       {SEG_DATA, SECT_COMMON}];
-
 
 ubyte[] getSection(in mach_header* header, intptr_t slide,
                    in char* segmentName, in char* sectionName)

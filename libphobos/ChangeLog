@@ -1,3 +1,24 @@
+2019-04-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/Makefile.am (DRUNTIME_CSOURCES): Remove bss_sections.c.
+	(DRUNTIME_DSOURCES): Rename rt/sections_* modules to gcc/sections/*.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/gcc/sections/android.d: New file.
+	* libdruntime/gcc/sections/elf_shared.d: New file.
+	* libdruntime/gcc/sections/osx.d: New file.
+	* libdruntime/gcc/sections/package.d: New file.
+	* libdruntime/gcc/sections/solaris.d: New file.
+	* libdruntime/gcc/sections/win32.d: New file.
+	* libdruntime/gcc/sections/win64.d: New file.
+	* libdruntime/rt/bss_section.c: Remove.
+	* libdruntime/rt/sections.d: Publicly import gcc.sections.
+	* libdruntime/rt/sections_android.d: Remove.
+	* libdruntime/rt/sections_elf_shared.d: Remove.
+	* libdruntime/rt/sections_osx.d: Remove.
+	* libdruntime/rt/sections_solaris.d: Remove.
+	* libdruntime/rt/sections_win32.d: Remove.
+	* libdruntime/rt/sections_win64.d: Remove.
+
 2019-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* configure.ac (AM_INIT_AUTOMAKE): Add subdir-objects.
