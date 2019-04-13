@@ -1,3 +1,9 @@
+2019-04-12  Thomas Rodgers  <trodgers@redhat.com>
+	
+	* include/pstl/algorithm_impl.h: Uglify identfiers.
+	* include/pstl/numeric_impl.h:  Uglify identfiers.
+	* include/pstl/parallel_backend_tbb.h: Uglify identfiers.
+
 2019-04-11  Thomas Rodgers  <trodgers@redhat.com>
 
 	* include/bits/c++config:
