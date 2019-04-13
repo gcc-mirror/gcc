@@ -1,3 +1,7 @@
+2019-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.pot: Regenerate.
+
 2019-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR translation/90041
