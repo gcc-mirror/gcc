@@ -194,7 +194,10 @@ am__objects_1 = core/atomic.lo core/attribute.lo core/bitop.lo \
 	core/sync/exception.lo core/sync/mutex.lo core/sync/rwmutex.lo \
 	core/sync/semaphore.lo core/thread.lo core/time.lo \
 	core/vararg.lo gcc/attribute.lo gcc/backtrace.lo \
-	gcc/builtins.lo gcc/deh.lo gcc/unwind/arm.lo \
+	gcc/builtins.lo gcc/deh.lo gcc/sections/android.lo \
+	gcc/sections/elf_shared.lo gcc/sections/osx.lo \
+	gcc/sections/package.lo gcc/sections/solaris.lo \
+	gcc/sections/win32.lo gcc/sections/win64.lo gcc/unwind/arm.lo \
 	gcc/unwind/arm_common.lo gcc/unwind/c6x.lo \
 	gcc/unwind/generic.lo gcc/unwind/package.lo gcc/unwind/pe.lo \
 	object.lo rt/aApply.lo rt/aApplyR.lo rt/aaA.lo rt/adi.lo \
@@ -202,31 +205,29 @@ am__objects_1 = core/atomic.lo core/attribute.lo core/bitop.lo \
 	rt/config.lo rt/critical_.lo rt/deh.lo rt/dmain2.lo \
 	rt/invariant.lo rt/lifetime.lo rt/memory.lo rt/minfo.lo \
 	rt/monitor_.lo rt/obj.lo rt/qsort.lo rt/sections.lo \
-	rt/sections_android.lo rt/sections_elf_shared.lo \
-	rt/sections_osx.lo rt/sections_solaris.lo rt/sections_win32.lo \
-	rt/sections_win64.lo rt/switch_.lo rt/tlsgc.lo \
-	rt/typeinfo/ti_Acdouble.lo rt/typeinfo/ti_Acfloat.lo \
-	rt/typeinfo/ti_Acreal.lo rt/typeinfo/ti_Adouble.lo \
-	rt/typeinfo/ti_Afloat.lo rt/typeinfo/ti_Ag.lo \
-	rt/typeinfo/ti_Aint.lo rt/typeinfo/ti_Along.lo \
-	rt/typeinfo/ti_Areal.lo rt/typeinfo/ti_Ashort.lo \
-	rt/typeinfo/ti_C.lo rt/typeinfo/ti_byte.lo \
-	rt/typeinfo/ti_cdouble.lo rt/typeinfo/ti_cent.lo \
-	rt/typeinfo/ti_cfloat.lo rt/typeinfo/ti_char.lo \
-	rt/typeinfo/ti_creal.lo rt/typeinfo/ti_dchar.lo \
-	rt/typeinfo/ti_delegate.lo rt/typeinfo/ti_double.lo \
-	rt/typeinfo/ti_float.lo rt/typeinfo/ti_idouble.lo \
-	rt/typeinfo/ti_ifloat.lo rt/typeinfo/ti_int.lo \
-	rt/typeinfo/ti_ireal.lo rt/typeinfo/ti_long.lo \
-	rt/typeinfo/ti_n.lo rt/typeinfo/ti_ptr.lo \
-	rt/typeinfo/ti_real.lo rt/typeinfo/ti_short.lo \
-	rt/typeinfo/ti_ubyte.lo rt/typeinfo/ti_ucent.lo \
-	rt/typeinfo/ti_uint.lo rt/typeinfo/ti_ulong.lo \
-	rt/typeinfo/ti_ushort.lo rt/typeinfo/ti_void.lo \
-	rt/typeinfo/ti_wchar.lo rt/util/array.lo \
-	rt/util/container/array.lo rt/util/container/common.lo \
-	rt/util/container/hashtab.lo rt/util/container/treap.lo \
-	rt/util/random.lo rt/util/typeinfo.lo rt/util/utf.lo
+	rt/switch_.lo rt/tlsgc.lo rt/typeinfo/ti_Acdouble.lo \
+	rt/typeinfo/ti_Acfloat.lo rt/typeinfo/ti_Acreal.lo \
+	rt/typeinfo/ti_Adouble.lo rt/typeinfo/ti_Afloat.lo \
+	rt/typeinfo/ti_Ag.lo rt/typeinfo/ti_Aint.lo \
+	rt/typeinfo/ti_Along.lo rt/typeinfo/ti_Areal.lo \
+	rt/typeinfo/ti_Ashort.lo rt/typeinfo/ti_C.lo \
+	rt/typeinfo/ti_byte.lo rt/typeinfo/ti_cdouble.lo \
+	rt/typeinfo/ti_cent.lo rt/typeinfo/ti_cfloat.lo \
+	rt/typeinfo/ti_char.lo rt/typeinfo/ti_creal.lo \
+	rt/typeinfo/ti_dchar.lo rt/typeinfo/ti_delegate.lo \
+	rt/typeinfo/ti_double.lo rt/typeinfo/ti_float.lo \
+	rt/typeinfo/ti_idouble.lo rt/typeinfo/ti_ifloat.lo \
+	rt/typeinfo/ti_int.lo rt/typeinfo/ti_ireal.lo \
+	rt/typeinfo/ti_long.lo rt/typeinfo/ti_n.lo \
+	rt/typeinfo/ti_ptr.lo rt/typeinfo/ti_real.lo \
+	rt/typeinfo/ti_short.lo rt/typeinfo/ti_ubyte.lo \
+	rt/typeinfo/ti_ucent.lo rt/typeinfo/ti_uint.lo \
+	rt/typeinfo/ti_ulong.lo rt/typeinfo/ti_ushort.lo \
+	rt/typeinfo/ti_void.lo rt/typeinfo/ti_wchar.lo \
+	rt/util/array.lo rt/util/container/array.lo \
+	rt/util/container/common.lo rt/util/container/hashtab.lo \
+	rt/util/container/treap.lo rt/util/random.lo \
+	rt/util/typeinfo.lo rt/util/utf.lo
 am__objects_2 = gc/bits.lo gc/config.lo gc/gcinterface.lo \
 	gc/impl/conservative/gc.lo gc/impl/manual/gc.lo gc/os.lo \
 	gc/pooltable.lo gc/proxy.lo
@@ -425,8 +426,7 @@ am__objects_27 = $(am__objects_1) $(am__objects_3) $(am__objects_5) \
 	$(am__objects_13) $(am__objects_15) $(am__objects_17) \
 	$(am__objects_19) $(am__objects_21) $(am__objects_23) \
 	$(am__objects_25) $(am__objects_26)
-am__objects_28 = core/stdc/libgdruntime_la-errno_.lo \
-	rt/libgdruntime_la-bss_section.lo
+am__objects_28 = core/stdc/libgdruntime_la-errno_.lo
 am__objects_29 = core/libgdruntime_la-threadasm.lo
 am__objects_30 = $(am__objects_27) $(am__objects_28) $(am__objects_29)
 am_libgdruntime_la_OBJECTS = $(am__objects_30)
@@ -719,7 +719,7 @@ DRUNTIME_DSOURCES_GENERATED = gcc/config.d gcc/libbacktrace.d
 # Can't use wildcards here:
 # https://www.gnu.org/software/automake/manual/html_node/Wildcards.html
 DRUNTIME_SSOURCES = core/threadasm.S
-DRUNTIME_CSOURCES = core/stdc/errno_.c rt/bss_section.c
+DRUNTIME_CSOURCES = core/stdc/errno_.c
 DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/checkedint.d core/cpuid.d core/demangle.d core/exception.d \
 	core/internal/abort.d core/internal/arrayop.d core/internal/convert.d \
@@ -736,14 +736,14 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/sync/config.d core/sync/exception.d core/sync/mutex.d \
 	core/sync/rwmutex.d core/sync/semaphore.d core/thread.d core/time.d \
 	core/vararg.d gcc/attribute.d gcc/backtrace.d gcc/builtins.d gcc/deh.d \
-	gcc/unwind/arm.d gcc/unwind/arm_common.d gcc/unwind/c6x.d \
-	gcc/unwind/generic.d gcc/unwind/package.d gcc/unwind/pe.d object.d \
-	rt/aApply.d rt/aApplyR.d rt/aaA.d rt/adi.d rt/arrayassign.d \
-	rt/arraycast.d rt/arraycat.d rt/cast_.d rt/config.d rt/critical_.d \
-	rt/deh.d rt/dmain2.d rt/invariant.d rt/lifetime.d rt/memory.d \
-	rt/minfo.d rt/monitor_.d rt/obj.d rt/qsort.d rt/sections.d \
-	rt/sections_android.d rt/sections_elf_shared.d rt/sections_osx.d \
-	rt/sections_solaris.d rt/sections_win32.d rt/sections_win64.d \
+	gcc/sections/android.d gcc/sections/elf_shared.d gcc/sections/osx.d \
+	gcc/sections/package.d gcc/sections/solaris.d gcc/sections/win32.d \
+	gcc/sections/win64.d gcc/unwind/arm.d gcc/unwind/arm_common.d \
+	gcc/unwind/c6x.d gcc/unwind/generic.d gcc/unwind/package.d \
+	gcc/unwind/pe.d object.d rt/aApply.d rt/aApplyR.d rt/aaA.d rt/adi.d \
+	rt/arrayassign.d rt/arraycast.d rt/arraycat.d rt/cast_.d rt/config.d \
+	rt/critical_.d rt/deh.d rt/dmain2.d rt/invariant.d rt/lifetime.d \
+	rt/memory.d rt/minfo.d rt/monitor_.d rt/obj.d rt/qsort.d rt/sections.d \
 	rt/switch_.d rt/tlsgc.d rt/typeinfo/ti_Acdouble.d \
 	rt/typeinfo/ti_Acfloat.d rt/typeinfo/ti_Acreal.d \
 	rt/typeinfo/ti_Adouble.d rt/typeinfo/ti_Afloat.d rt/typeinfo/ti_Ag.d \
@@ -1083,6 +1083,16 @@ gcc/attribute.lo: gcc/$(am__dirstamp)
 gcc/backtrace.lo: gcc/$(am__dirstamp)
 gcc/builtins.lo: gcc/$(am__dirstamp)
 gcc/deh.lo: gcc/$(am__dirstamp)
+gcc/sections/$(am__dirstamp):
+	@$(MKDIR_P) gcc/sections
+	@: > gcc/sections/$(am__dirstamp)
+gcc/sections/android.lo: gcc/sections/$(am__dirstamp)
+gcc/sections/elf_shared.lo: gcc/sections/$(am__dirstamp)
+gcc/sections/osx.lo: gcc/sections/$(am__dirstamp)
+gcc/sections/package.lo: gcc/sections/$(am__dirstamp)
+gcc/sections/solaris.lo: gcc/sections/$(am__dirstamp)
+gcc/sections/win32.lo: gcc/sections/$(am__dirstamp)
+gcc/sections/win64.lo: gcc/sections/$(am__dirstamp)
 gcc/unwind/$(am__dirstamp):
 	@$(MKDIR_P) gcc/unwind
 	@: > gcc/unwind/$(am__dirstamp)
@@ -1115,12 +1125,6 @@ rt/monitor_.lo: rt/$(am__dirstamp)
 rt/obj.lo: rt/$(am__dirstamp)
 rt/qsort.lo: rt/$(am__dirstamp)
 rt/sections.lo: rt/$(am__dirstamp)
-rt/sections_android.lo: rt/$(am__dirstamp)
-rt/sections_elf_shared.lo: rt/$(am__dirstamp)
-rt/sections_osx.lo: rt/$(am__dirstamp)
-rt/sections_solaris.lo: rt/$(am__dirstamp)
-rt/sections_win32.lo: rt/$(am__dirstamp)
-rt/sections_win64.lo: rt/$(am__dirstamp)
 rt/switch_.lo: rt/$(am__dirstamp)
 rt/tlsgc.lo: rt/$(am__dirstamp)
 rt/typeinfo/$(am__dirstamp):
@@ -1627,7 +1631,6 @@ core/sys/solaris/time.lo: core/sys/solaris/$(am__dirstamp)
 gcc/config.lo: gcc/$(am__dirstamp)
 gcc/libbacktrace.lo: gcc/$(am__dirstamp)
 core/stdc/libgdruntime_la-errno_.lo: core/stdc/$(am__dirstamp)
-rt/libgdruntime_la-bss_section.lo: rt/$(am__dirstamp)
 core/libgdruntime_la-threadasm.lo: core/$(am__dirstamp)
 
 libgdruntime.la: $(libgdruntime_la_OBJECTS) $(libgdruntime_la_DEPENDENCIES) $(EXTRA_libgdruntime_la_DEPENDENCIES) 
@@ -1703,6 +1706,8 @@ mostlyclean-compile:
 	-rm -f gc/impl/manual/*.lo
 	-rm -f gcc/*.$(OBJEXT)
 	-rm -f gcc/*.lo
+	-rm -f gcc/sections/*.$(OBJEXT)
+	-rm -f gcc/sections/*.lo
 	-rm -f gcc/unwind/*.$(OBJEXT)
 	-rm -f gcc/unwind/*.lo
 	-rm -f gcstub/*.$(OBJEXT)
@@ -1743,9 +1748,6 @@ core/libgdruntime_la-threadasm.lo: core/threadasm.S
 core/stdc/libgdruntime_la-errno_.lo: core/stdc/errno_.c
 	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o core/stdc/libgdruntime_la-errno_.lo `test -f 'core/stdc/errno_.c' || echo '$(srcdir)/'`core/stdc/errno_.c
 
-rt/libgdruntime_la-bss_section.lo: rt/bss_section.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rt/libgdruntime_la-bss_section.lo `test -f 'rt/bss_section.c' || echo '$(srcdir)/'`rt/bss_section.c
-
 mostlyclean-libtool:
 	-rm -f *.lo
 
@@ -1785,6 +1787,7 @@ clean-libtool:
 	-rm -rf gc/impl/conservative/.libs gc/impl/conservative/_libs
 	-rm -rf gc/impl/manual/.libs gc/impl/manual/_libs
 	-rm -rf gcc/.libs gcc/_libs
+	-rm -rf gcc/sections/.libs gcc/sections/_libs
 	-rm -rf gcc/unwind/.libs gcc/unwind/_libs
 	-rm -rf gcstub/.libs gcstub/_libs
 	-rm -rf rt/.libs rt/_libs
@@ -1931,6 +1934,7 @@ distclean-generic:
 	-rm -f gc/impl/conservative/$(am__dirstamp)
 	-rm -f gc/impl/manual/$(am__dirstamp)
 	-rm -f gcc/$(am__dirstamp)
+	-rm -f gcc/sections/$(am__dirstamp)
 	-rm -f gcc/unwind/$(am__dirstamp)
 	-rm -f gcstub/$(am__dirstamp)
 	-rm -f rt/$(am__dirstamp)

@@ -1,14 +1,26 @@
-/**
- * Written in the D programming language.
- * This module provides bionic-specific support for sections.
- *
- * Copyright: Copyright Martin Nowak 2012-2013.
- * License:   $(WEB www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
- * Authors:   Martin Nowak
- * Source: $(DRUNTIMESRC src/rt/_sections_android.d)
- */
+// Bionic-specific support for sections.
+// Copyright (C) 2019 Free Software Foundation, Inc.
 
-module rt.sections_android;
+// GCC is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 3, or (at your option) any later
+// version.
+
+// GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+module gcc.sections.android;
 
 version (CRuntime_Bionic):
 
@@ -69,6 +81,8 @@ void initSections() nothrow @nogc
 
     auto pbeg = cast(void*)&_tlsend;
     auto pend = cast(void*)&__bss_end__;
+    // _tlsend is a 32-bit int and may not be 64-bit void*-aligned, so align pbeg.
+    version (D_LP64) pbeg = cast(void*)(cast(size_t)(pbeg + 7) & ~cast(size_t)7);
     _sections._gcRanges[0] = pbeg[0 .. pend - pbeg];
 }
 
@@ -105,32 +119,14 @@ void scanTLSRanges(void[]* rng, scope void delegate(void* pbeg, void* pend) noth
  *       the corresponding address in the TLS dynamic per-thread data.
  */
 
-version (X86)
+extern(C) void* __tls_get_addr( void* p ) nothrow @nogc
 {
-    // NB: the compiler mangles this function as '___tls_get_addr'
-    // even though it is extern(D)
-    extern(D) void* ___tls_get_addr( void* p ) nothrow @nogc
-    {
-        debug(PRINTF) printf("  ___tls_get_addr input - %p\n", p);
-        immutable offset = cast(size_t)(p - cast(void*)&_tlsstart);
-        auto tls = getTLSBlockAlloc();
-        assert(offset < tls.length);
-        return tls.ptr + offset;
-    }
+    debug(PRINTF) printf("  __tls_get_addr input - %p\n", p);
+    immutable offset = cast(size_t)(p - cast(void*)&_tlsstart);
+    auto tls = getTLSBlockAlloc();
+    assert(offset < tls.length);
+    return tls.ptr + offset;
 }
-else version (ARM)
-{
-    extern(C) void* __tls_get_addr( void** p ) nothrow @nogc
-    {
-        debug(PRINTF) printf("  __tls_get_addr input - %p\n", *p);
-        immutable offset = cast(size_t)(*p - cast(void*)&_tlsstart);
-        auto tls = getTLSBlockAlloc();
-        assert(offset < tls.length);
-        return tls.ptr + offset;
-    }
-}
-else
-    static assert( false, "Android architecture not supported." );
 
 private:
 
@@ -182,7 +178,7 @@ extern(C)
 
         size_t __bss_end__;
 
-        void* _tlsstart;
-        void* _tlsend;
+        int _tlsstart;
+        int _tlsend;
     }
 }
