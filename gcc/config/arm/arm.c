@@ -30874,16 +30874,16 @@ arm_valid_target_attribute_rec (tree args, struct gcc_options *opts)
       while (ISSPACE (*q)) ++q;
 
       argstr = NULL;
-      if (!strncmp (q, "thumb", 5))
-	  opts->x_target_flags |= MASK_THUMB;
+      if (!strcmp (q, "thumb"))
+	opts->x_target_flags |= MASK_THUMB;
 
-      else if (!strncmp (q, "arm", 3))
-	  opts->x_target_flags &= ~MASK_THUMB;
+      else if (!strcmp (q, "arm"))
+	opts->x_target_flags &= ~MASK_THUMB;
 
       else if (!strncmp (q, "fpu=", 4))
 	{
 	  int fpu_index;
-	  if (! opt_enum_arg_to_value (OPT_mfpu_, q+4,
+	  if (! opt_enum_arg_to_value (OPT_mfpu_, q + 4,
 				       &fpu_index, CL_TARGET))
 	    {
 	      error ("invalid fpu for target attribute or pragma %qs", q);
@@ -30901,7 +30901,7 @@ arm_valid_target_attribute_rec (tree args, struct gcc_options *opts)
 	}
       else if (!strncmp (q, "arch=", 5))
 	{
-	  char* arch = q+5;
+	  char *arch = q + 5;
 	  const arch_option *arm_selected_arch
 	     = arm_parse_arch_option_name (all_architectures, "arch", arch);
 
