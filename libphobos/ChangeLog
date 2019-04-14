@@ -1,4 +1,22 @@
 2019-04-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/88150
+	* m4/druntime/os.m4 (DRUNTIME_OS_DLPI_TLS_MODID): New macro.
+	* configure.ac: Use it.
+	Call AC_USE_SYSTEM_EXTENSIONS.
+	* configure: Regenerate.
+	* Makefile.in, libdruntime/Makefile.in, src/Makefile.in,
+	testsuite/Makefile.in: Regenerate.
+	* libdruntime/gcc/config.d.in (OS_Have_Dlpi_Tls_Modid): Define.
+	* libdruntime/gcc/sections/elf_shared.d: Import gcc.config.
+	(scanSegments) <PT_TLS> [OS_Have_Dlpi_Tls_Modid]: Use
+	dlpi_tls_modid.
+	[Solaris]: Use dlinfo(RTLD_DI_LINKMAP) to get rt_tlsmodid.
+	Otherwise clear pdso._tlsMod, pdso._tlsSize.
+	(getTLSRange) [Solaris && !OS_Have_Dlpi_Tls_Modid]: Readjust mod.
+
+2019-04-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* m4/druntime/os.m4 (DRUNTIME_OS_LINK_SPEC): New macro.
 	* configure.ac: Call it.
@@ -6,6 +24,8 @@
 	* Makefile.in, libdruntime/Makefile.in, src/Makefile.in,
 	testsuite/Makefile.in: Regenerate.
 	* src/libgphobos.spec.in (*link): Append OS_LINK_SPEC.
+
+2019-04-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR d/88150
 	* libdruntime/gcc/sections/elf_shared.d [Solaris] (SharedELF): Set

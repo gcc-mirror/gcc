@@ -184,6 +184,20 @@ AC_DEFUN([DRUNTIME_OS_MINFO_BRACKETING],
   AC_LANG_POP([C])
 ])
 
+# DRUNTIME_OS_DLPI_TLS_MODID
+# ----------------------------
+# Check if struct dl_phdr_info includes the dlpi_tls_modid member and  
+# substitute DCFG_DLPI_TLS_MODID.
+AC_DEFUN([DRUNTIME_OS_DLPI_TLS_MODID],
+[
+  AC_LANG_PUSH([C])
+  AC_CHECK_MEMBER([struct dl_phdr_info.dlpi_tls_modid],
+		  [DCFG_DLPI_TLS_MODID=true], [DCFG_DLPI_TLS_MODID=false],
+		  [[#include <link.h>]])
+  AC_SUBST(DCFG_DLPI_TLS_MODID)
+  AC_LANG_POP([C])
+])
+
 # DRUNTIME_OS_LINK_SPEC
 # ---------------------
 # Add target-specific link options to link_spec.
