@@ -1,5 +1,5 @@
 // { dg-do compile { target c++11 } }
-
+//
 // Copyright (C) 2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -17,10 +17,13 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-error "must be a complete class" "" { target *-*-* } 0 }
+
 #include <type_traits>
 
-struct X;
-static_assert(!std::__is_size_known(std::__type_identity<X>{}), "");
+class X;
 
-struct X{};
-static_assert(std::__is_size_known(std::__type_identity<X>{}), "Result memoized. This leads to worse diagnostics");
+void test01()
+{
+  std::is_polymorphic<X>();		// { dg-error "required from here" }
+}
