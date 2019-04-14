@@ -188,7 +188,7 @@ am__define_uniq_tagged_files = \
 ETAGS = etags
 CTAGS = ctags
 CSCOPE = cscope
-DIST_SUBDIRS = $(SUBDIRS)
+DIST_SUBDIRS = libdruntime src testsuite
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
@@ -335,7 +335,8 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-SUBDIRS = libdruntime src testsuite
+@ENABLE_LIBPHOBOS_FALSE@SUBDIRS = 
+@ENABLE_LIBPHOBOS_TRUE@SUBDIRS = libdruntime src testsuite
 ACLOCAL_AMFLAGS = -I . -I .. -I ../config
 
 # Multilib support.
