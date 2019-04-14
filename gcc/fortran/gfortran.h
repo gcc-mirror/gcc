@@ -3221,6 +3221,7 @@ gfc_actual_arglist *gfc_copy_actual_arglist (gfc_actual_arglist *);
 bool gfc_extract_int (gfc_expr *, int *, int = 0);
 bool gfc_extract_hwi (gfc_expr *, HOST_WIDE_INT *, int = 0);
 
+bool is_CFI_desc (gfc_symbol *, gfc_expr *);
 bool is_subref_array (gfc_expr *);
 bool gfc_is_simply_contiguous (gfc_expr *, bool, bool);
 bool gfc_is_not_contiguous (gfc_expr *);

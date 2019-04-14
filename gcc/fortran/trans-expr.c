@@ -4987,11 +4987,11 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
   tree tmp;
   tree cfi_desc_ptr;
   tree gfc_desc_ptr;
-  tree ptr = NULL_TREE;
-  tree size;
   tree type;
+  tree cond;
   int attribute;
   symbol_attribute attr = gfc_expr_attr (e);
+  stmtblock_t block;
 
   /* If this is a full array or a scalar, the allocatable and pointer
      attributes can be passed. Otherwise it is 'CFI_attribute_other'*/
@@ -5056,37 +5056,6 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 	  tmp = fold_convert (gfc_array_index_type, tmp);
 	  gfc_conv_descriptor_span_set (&parmse->pre, parmse->expr, tmp);
 	}
-
-      /* INTENT(IN) requires a temporary for the data. Assumed types do not
-	 work with the standard temporary generation schemes. */
-      if (e->expr_type == EXPR_VARIABLE && fsym->attr.intent == INTENT_IN)
-	{
-	  /* Fix the descriptor and determine the size of the data.  */
-	  parmse->expr = gfc_evaluate_now (parmse->expr, &parmse->pre);
-	  size = build_call_expr_loc (input_location,
-				gfor_fndecl_size0, 1,
-				gfc_build_addr_expr (NULL, parmse->expr));
-	  size = fold_convert (size_type_node, size);
-	  tmp = gfc_conv_descriptor_span_get (parmse->expr);
-	  tmp = fold_convert (size_type_node, tmp);
-	  size = fold_build2_loc (input_location, MULT_EXPR,
-				  size_type_node, size, tmp);
-	  /* Fix the size and allocate.  */
-	  size = gfc_evaluate_now (size, &parmse->pre);
-	  tmp = builtin_decl_explicit (BUILT_IN_MALLOC);
-	  ptr = build_call_expr_loc (input_location, tmp, 1, size);
-	  ptr = gfc_evaluate_now (ptr, &parmse->pre);
-	  /* Copy the data to the temporary descriptor.  */
-	  tmp = builtin_decl_explicit (BUILT_IN_MEMCPY);
-	  tmp = build_call_expr_loc (input_location, tmp, 3, ptr,
-				gfc_conv_descriptor_data_get (parmse->expr),
-				size);
-	  gfc_add_expr_to_block (&parmse->pre, tmp);
-
-	  /* The temporary 'ptr' is freed below.  */
-	  gfc_conv_descriptor_data_set (&parmse->pre, parmse->expr, ptr);
-	}
-
     }
   else
     {
@@ -5095,28 +5064,6 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
       if (POINTER_TYPE_P (TREE_TYPE (parmse->expr)))
 	parmse->expr = build_fold_indirect_ref_loc (input_location,
 						    parmse->expr);
-
-      /* Copy the scalar for INTENT(IN).  */
-      if (e->expr_type == EXPR_VARIABLE && fsym->attr.intent == INTENT_IN)
-	{
-	  if (e->ts.type != BT_CHARACTER)
-	    parmse->expr = gfc_evaluate_now (parmse->expr, &parmse->pre);
-	  else
-	    {
-	      /* The temporary string 'ptr' is freed below.  */
-	      tmp = build_pointer_type (TREE_TYPE (parmse->expr));
-	      ptr = gfc_create_var (tmp, "str");
-	      tmp = build_call_expr_loc (input_location,
-				 builtin_decl_explicit (BUILT_IN_MALLOC),
-				 1, parmse->string_length);
-	      tmp = fold_convert (TREE_TYPE (ptr), tmp);
-	      gfc_add_modify (&parmse->pre, ptr, tmp);
-	      tmp = gfc_build_memcpy_call (ptr, parmse->expr,
-					   parmse->string_length);
-	      gfc_add_expr_to_block (&parmse->pre, tmp);
-	      parmse->expr = ptr;
-	    }
-	}
 
       parmse->expr = gfc_conv_scalar_to_descriptor (parmse,
 						    parmse->expr, attr);
@@ -5135,6 +5082,8 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
   /* Variables to point to the gfc and CFI descriptors.  */
   gfc_desc_ptr = parmse->expr;
   cfi_desc_ptr = gfc_create_var (pvoid_type_node, "cfi");
+  gfc_add_modify (&parmse->pre, cfi_desc_ptr,
+		  build_int_cst (pvoid_type_node, 0));
 
   /* Allocate the CFI descriptor and fill the fields.  */
   tmp = gfc_build_addr_expr (NULL_TREE, cfi_desc_ptr);
@@ -5145,18 +5094,19 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
   /* The CFI descriptor is passed to the bind_C procedure.  */
   parmse->expr = cfi_desc_ptr;
 
-  if (ptr)
-    {
-      /* Free both the temporary data and the CFI descriptor for
-	 INTENT(IN) arrays.  */
-      tmp = gfc_call_free (ptr);
-      gfc_prepend_expr_to_block (&parmse->post, tmp);
-      tmp = gfc_call_free (cfi_desc_ptr);
-      gfc_prepend_expr_to_block (&parmse->post, tmp);
-      return;
-    }
+  /* Free the CFI descriptor.  */
+  gfc_init_block (&block);
+  cond = fold_build2_loc (input_location, NE_EXPR,
+			  logical_type_node, cfi_desc_ptr,
+			  build_int_cst (TREE_TYPE (cfi_desc_ptr), 0));
+  tmp = gfc_call_free (cfi_desc_ptr);
+  gfc_add_expr_to_block (&block, tmp);
+  tmp = build3_v (COND_EXPR, cond,
+		  gfc_finish_block (&block),
+		  build_empty_stmt (input_location));
+  gfc_prepend_expr_to_block (&parmse->post, tmp);
 
-  /* Transfer values back to gfc descriptor and free the CFI descriptor.  */
+  /* Transfer values back to gfc descriptor.  */
   tmp = gfc_build_addr_expr (NULL_TREE, parmse->expr);
   tmp = build_call_expr_loc (input_location,
 			     gfor_fndecl_cfi_to_gfc, 2, gfc_desc_ptr, tmp);
@@ -5516,11 +5466,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		}
 
 	      else if (sym->attr.is_bind_c && e
-		       && ((fsym && fsym->attr.dimension
-			    && (fsym->attr.pointer
-				|| fsym->attr.allocatable
-				|| fsym->as->type == AS_ASSUMED_RANK
-				|| fsym->as->type == AS_ASSUMED_SHAPE))
+		       && (is_CFI_desc (fsym, NULL)
 			   || non_unity_length_string))
 		/* Implement F2018, C.12.6.1: paragraph (2).  */
 		gfc_conv_gfc_desc_to_cfi_desc (&parmse, e, fsym);
@@ -5965,12 +5911,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		}
 
 	      if (sym->attr.is_bind_c && e
-		  && fsym && fsym->attr.dimension
-		  && (fsym->attr.pointer
-		      || fsym->attr.allocatable
-		      || fsym->as->type == AS_ASSUMED_RANK
-		      || fsym->as->type == AS_ASSUMED_SHAPE
-		      || non_unity_length_string))
+		  && (is_CFI_desc (fsym, NULL) || non_unity_length_string))
 		/* Implement F2018, C.12.6.1: paragraph (2).  */
 		gfc_conv_gfc_desc_to_cfi_desc (&parmse, e, fsym);
 
