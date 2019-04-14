@@ -899,6 +899,9 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
   if (!comp_is_finalizable (comp))
     return;
 
+  if (comp->finalized)
+    return;
+
   e = gfc_copy_expr (expr);
   if (!e->ref)
     e->ref = ref = gfc_get_ref ();
@@ -1026,6 +1029,7 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
 			    sub_ns);
       gfc_free_expr (e);
     }
+  comp->finalized = true;
 }
 
 
