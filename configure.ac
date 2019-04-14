@@ -695,7 +695,7 @@ if test -d ${srcdir}/libphobos; then
 	AC_MSG_CHECKING([for libphobos support])
 	if (srcdir=${srcdir}/libphobos; \
 		. ${srcdir}/configure.tgt; \
-		test -n "$UNSUPPORTED")
+		test "$LIBPHOBOS_SUPPORTED" != "yes")
 	then
 	    AC_MSG_RESULT([no])
 	    noconfigdirs="$noconfigdirs target-libphobos"

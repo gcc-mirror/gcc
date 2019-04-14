@@ -686,6 +686,8 @@ DRUNTIME_GC_ENABLE_TRUE
 libphobos_srcdir
 libphobos_builddir
 get_gcc_base_ver
+ENABLE_LIBPHOBOS_FALSE
+ENABLE_LIBPHOBOS_TRUE
 phobos_compiler_shared_flag
 phobos_compiler_pic_flag
 OTOOL64
@@ -813,6 +815,7 @@ with_pic
 enable_fast_install
 with_gnu_ld
 enable_libtool_lock
+enable_libphobos
 with_gcc_major_version_only
 enable_werror
 enable_druntime_gc
@@ -1463,6 +1466,7 @@ Optional Features:
   --enable-fast-install[=PKGS]
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
+  --enable-libphobos      Enable libphobos
   --enable-werror         turns on -Werror [default=no]
   --enable-druntime-gc    enable D runtime garbage collector (default: yes)
   --enable-unix           enables Unix runtime (default: yes, for Unix
@@ -11619,7 +11623,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11622 "configure"
+#line 11626 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11725,7 +11729,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11728 "configure"
+#line 11732 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13903,6 +13907,56 @@ fi
 lt_prog_compiler_pic_D="$phobos_compiler_shared_flag"
 pic_mode='default'
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for --enable-libphobos" >&5
+$as_echo_n "checking for --enable-libphobos... " >&6; }
+# Check whether --enable-libphobos was given.
+if test "${enable_libphobos+set}" = set; then :
+  enableval=$enable_libphobos;
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_libphobos" >&5
+$as_echo "$enable_libphobos" >&6; }
+
+# See if supported.
+unset LIBPHOBOS_SUPPORTED
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for host support for libphobos" >&5
+$as_echo_n "checking for host support for libphobos... " >&6; }
+. ${srcdir}/configure.tgt
+case ${host} in
+  x86_64-*-solaris2.* | i?86-*-solaris2.*)
+    # libphobos doesn't compile with the Solaris/x86 assembler due to a
+    # relatively low linelength limit.
+    as_prog=`$CC -print-prog-name=as`
+    if test -n "$as_prog" && $as_prog -v /dev/null 2>&1 | grep GNU > /dev/null 2>&1; then
+      druntime_cv_use_gas=yes;
+    else
+      druntime_cv_use_gas=no;
+    fi
+    rm -f a.out
+    if test x$druntime_cv_use_gas = xno; then
+      LIBPHOBOS_SUPPORTED=no
+    fi
+    ;;
+esac
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $LIBPHOBOS_SUPPORTED" >&5
+$as_echo "$LIBPHOBOS_SUPPORTED" >&6; }
+
+# Decide if it's usable.
+case $LIBPHOBOS_SUPPORTED:$enable_libphobos in
+*:no)  use_libphobos=no  ;;
+*:yes) use_libphobos=yes ;;
+yes:*) use_libphobos=yes ;;
+*:*)   use_libphobos=no  ;;
+esac
+ if test x$use_libphobos = xyes; then
+  ENABLE_LIBPHOBOS_TRUE=
+  ENABLE_LIBPHOBOS_FALSE='#'
+else
+  ENABLE_LIBPHOBOS_TRUE='#'
+  ENABLE_LIBPHOBOS_FALSE=
+fi
+
+
 # Determine what GCC version number to use in filesystem paths.
 
   get_gcc_base_ver="cat"
@@ -15347,6 +15401,10 @@ fi
 
 if test -z "${MAINTAINER_MODE_TRUE}" && test -z "${MAINTAINER_MODE_FALSE}"; then
   as_fn_error $? "conditional \"MAINTAINER_MODE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_LIBPHOBOS_TRUE}" && test -z "${ENABLE_LIBPHOBOS_FALSE}"; then
+  as_fn_error $? "conditional \"ENABLE_LIBPHOBOS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${DRUNTIME_GC_ENABLE_TRUE}" && test -z "${DRUNTIME_GC_ENABLE_FALSE}"; then

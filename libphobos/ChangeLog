@@ -1,4 +1,17 @@
 2019-04-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.tgt (LIBPHOBOS_SUPPORTED): Default to no.
+	Set to yes explicitly.
+	(x86_64-*-solaris2.11* | i?86-*-solaris2.11*): Mark supported.
+	* configure.ac: Handle --enable-libphobos.
+	(x86_64-*-solaris2.* | i?86-*-solaris2.*): Only mark supported
+	with gas.
+	(ENABLE_LIBPHOBOS): New conditional.
+	* configure: Regenerate.
+	* Makefile.am (SUBDIRS): Only set if ENABLE_LIBPHOBOS.
+	* Makefile.in: Regenerate.
+
+2019-04-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 	    Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/88150

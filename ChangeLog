@@ -1,3 +1,8 @@
+2019-04-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (enable_libphobos): Check LIBPHOBOS_SUPPORTED.
+	* configure: Regenerate.
+
 2019-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* configure.ac: Add target-zlib to target_libraries.
