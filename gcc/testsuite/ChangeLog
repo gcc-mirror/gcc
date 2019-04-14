@@ -1,3 +1,25 @@
+2019-04-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89843
+	* gfortran.dg/ISO_Fortran_binding_4.f90: Modify the value of x
+	in ctg. Test the conversion of the descriptor types in the main
+	program.
+	* gfortran.dg/ISO_Fortran_binding_10.f90: New test.
+	* gfortran.dg/ISO_Fortran_binding_10.c: Called by it.
+
+	PR fortran/89846
+	* gfortran.dg/ISO_Fortran_binding_11.f90: New test.
+	* gfortran.dg/ISO_Fortran_binding_11.c: Called by it.
+
+	PR fortran/90022
+	* gfortran.dg/ISO_Fortran_binding_1.c: Correct the indexing for
+	the computation of 'ans'. Also, change the expected results for
+	CFI_is_contiguous to comply with standard.
+	* gfortran.dg/ISO_Fortran_binding_1.f90: Correct the expected
+	results for CFI_is_contiguous to comply with standard.
+	* gfortran.dg/ISO_Fortran_binding_9.f90: New test.
+	* gfortran.dg/ISO_Fortran_binding_9.c: Called by it.
+
 2019-04-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/89093
