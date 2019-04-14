@@ -55,4 +55,10 @@
 #undef tolower
 #define tolower(c) TOLOWER(c)
 
+/* Forward _mkdir on MinGW to mkdir in system.h.  */
+#ifdef _WIN32
+#undef _mkdir
+#define _mkdir(p) mkdir(p, 0)
+#endif
+
 #endif  /* GCC_D_SYSTEM_H  */
