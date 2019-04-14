@@ -650,6 +650,7 @@ DCFG_HAVE_LIBATOMIC
 DCFG_HAVE_64BIT_ATOMICS
 DCFG_HAVE_ATOMIC_BUILTINS
 DCFG_HAVE_QSORT_R
+OS_LINK_SPEC
 DRUNTIME_OS_MINFO_BRACKETING_FALSE
 DRUNTIME_OS_MINFO_BRACKETING_TRUE
 DCFG_MINFO_BRACKETING
@@ -11495,7 +11496,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11498 "configure"
+#line 11499 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11601,7 +11602,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11604 "configure"
+#line 11605 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14115,6 +14116,23 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+  case $target in
+    i?86-*-solaris2.* | x86_64-*-solaris2.*)
+      # 64-bit Solaris/x86 ld breaks calls to __tls_get_addr with non-TLS
+      # relocs.  Work around by disabling TLS transitions.  Not necessary
+      # on 32-bit x86, but cannot be distinguished reliably in specs.
+      druntime_ld_prog=`$CC -print-prog-name=ld`
+      if test -n "$druntime_ld_prog" \
+         && $druntime_ld_prog -v 2>&1 | grep GNU > /dev/null 2>&1; then
+        :
+      else
+        OS_LINK_SPEC='-z relax=transtls'
+      fi
+      ;;
+  esac
 
 
 
