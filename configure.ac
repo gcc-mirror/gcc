@@ -681,7 +681,7 @@ case ,${enable_languages}, in
     ;;
   *)
     case "${target}" in
-      *-*-darwin* | *-*-cygwin* | *-*-mingw*)
+      *-*-darwin*)
 	unsupported_languages="$unsupported_languages d"
 	;;
     esac

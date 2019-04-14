@@ -1,3 +1,8 @@
+2019-04-14  Johannes Pfau  <johannespfau@gmail.com>
+
+	* configure.ac: Remove d from unsupported languages on mingw and cygwin.
+	* configure: Regenerate.
+
 2019-04-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (enable_libphobos): Check LIBPHOBOS_SUPPORTED.
