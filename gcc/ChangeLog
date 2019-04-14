@@ -1,3 +1,9 @@
+2019-04-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/89358
+	* ipa-devirt.c (skip_in_fields_list_p): New.
+	(odr_types_equivalent_p): Use it.
+
 2019-04-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/89093
