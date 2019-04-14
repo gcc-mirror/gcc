@@ -1,3 +1,9 @@
+2019-04-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85448
+	* gfortran.dg/bind_c_usage_33.f90: New test and...
+	* gfortran.dg/bind_c_usage_33_c.c: Additional source.
+
 2019-04-14  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/89843
