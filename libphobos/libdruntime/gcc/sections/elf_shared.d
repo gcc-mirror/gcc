@@ -28,6 +28,7 @@ else version (FreeBSD) enum SharedELF = true;
 else version (NetBSD) enum SharedELF = true;
 else version (DragonFlyBSD) enum SharedELF = true;
 else version (CRuntime_UClibc) enum SharedELF = true;
+else version (Solaris) enum SharedELF = true;
 else enum SharedELF = false;
 static if (SharedELF):
 
@@ -60,6 +61,13 @@ else version (DragonFlyBSD)
     import core.sys.dragonflybsd.dlfcn;
     import core.sys.dragonflybsd.sys.elf;
     import core.sys.dragonflybsd.sys.link_elf;
+}
+else version (Solaris)
+{
+    import core.sys.solaris.dlfcn;
+    import core.sys.solaris.link;
+    import core.sys.solaris.sys.elf;
+    import core.sys.solaris.sys.link;
 }
 else
 {
@@ -163,6 +171,7 @@ __gshared bool _isRuntimeInitialized;
 version (FreeBSD) private __gshared void* dummy_ref;
 version (DragonFlyBSD) private __gshared void* dummy_ref;
 version (NetBSD) private __gshared void* dummy_ref;
+version (Solaris) private __gshared void* dummy_ref;
 
 /****
  * Gets called on program startup just before GC is initialized.
@@ -174,6 +183,7 @@ void initSections() nothrow @nogc
     version (FreeBSD) dummy_ref = &_d_dso_registry;
     version (DragonFlyBSD) dummy_ref = &_d_dso_registry;
     version (NetBSD) dummy_ref = &_d_dso_registry;
+    version (Solaris) dummy_ref = &_d_dso_registry;
 }
 
 
@@ -719,6 +729,8 @@ version (Shared)
                     strtab = cast(const(char)*)(info.dlpi_addr + dyn.d_un.d_ptr); // relocate
                 else version (DragonFlyBSD)
                     strtab = cast(const(char)*)(info.dlpi_addr + dyn.d_un.d_ptr); // relocate
+                else version (Solaris)
+                    strtab = cast(const(char)*)(info.dlpi_addr + dyn.d_un.d_ptr); // relocate
                 else
                     static assert(0, "unimplemented");
                 break;
@@ -745,7 +757,8 @@ version (Shared)
     void* handleForName(const char* name)
     {
         auto handle = .dlopen(name, RTLD_NOLOAD | RTLD_LAZY);
-        if (handle !is null) .dlclose(handle); // drop reference count
+        version (Solaris) { }
+        else if (handle !is null) .dlclose(handle); // drop reference count
         return handle;
     }
 }
@@ -799,9 +812,10 @@ void scanSegments(in ref dl_phdr_info info, DSO* pdso) nothrow @nogc
  */
 bool findDSOInfoForAddr(in void* addr, dl_phdr_info* result=null) nothrow @nogc
 {
-    version (linux)       enum IterateManually = true;
-    else version (NetBSD) enum IterateManually = true;
-    else                  enum IterateManually = false;
+    version (linux)        enum IterateManually = true;
+    else version (NetBSD)  enum IterateManually = true;
+    else version (Solaris) enum IterateManually = true;
+    else                   enum IterateManually = false;
 
     static if (IterateManually)
     {
@@ -864,6 +878,7 @@ version (linux) import core.sys.linux.errno : program_invocation_name;
 version (FreeBSD) extern(C) const(char)* getprogname() nothrow @nogc;
 version (DragonFlyBSD) extern(C) const(char)* getprogname() nothrow @nogc;
 version (NetBSD) extern(C) const(char)* getprogname() nothrow @nogc;
+version (Solaris) extern(C) const(char)* getprogname() nothrow @nogc;
 
 @property const(char)* progname() nothrow @nogc
 {
@@ -871,6 +886,7 @@ version (NetBSD) extern(C) const(char)* getprogname() nothrow @nogc;
     version (FreeBSD) return getprogname();
     version (DragonFlyBSD) return getprogname();
     version (NetBSD) return getprogname();
+    version (Solaris) return getprogname();
 }
 
 const(char)[] dsoName(const char* dlpi_name) nothrow @nogc

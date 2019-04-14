@@ -35,7 +35,7 @@ else version (NetBSD)
 else version (DragonFlyBSD)
     public import gcc.sections.elf_shared;
 else version (Solaris)
-    public import gcc.sections.solaris;
+    public import gcc.sections.elf_shared;
 else version (OSX)
     public import gcc.sections.osx;
 else version (CRuntime_DigitalMars)
