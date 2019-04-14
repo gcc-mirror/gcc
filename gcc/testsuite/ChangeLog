@@ -1,6 +1,13 @@
 2019-04-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
+	PR fortran/87352
+	* gfortran.dg/finalize_28.f90: Adjust count of __builtin_free.
+	* gfortran.dg/finalize_34.f90: New test.
+
+2019-04-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
 	PR fortran/89981
 	* gfortran.dg/entry_22.f90: New test.
 

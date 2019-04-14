@@ -1080,6 +1080,7 @@ typedef struct gfc_component
   struct gfc_typebound_proc *tb;
   /* When allocatable/pointer and in a coarray the associated token.  */
   tree caf_token;
+  bool finalized;
 }
 gfc_component;
 
