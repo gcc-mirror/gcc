@@ -1,5 +1,12 @@
 2019-04-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* m4/druntime/os.m4 (DRUNTIME_OS_LINK_SPEC): New macro.
+	* configure.ac: Call it.
+	* configure: Regenerate.
+	* Makefile.in, libdruntime/Makefile.in, src/Makefile.in,
+	testsuite/Makefile.in: Regenerate.
+	* src/libgphobos.spec.in (*link): Append OS_LINK_SPEC.
+
 	PR d/88150
 	* libdruntime/gcc/sections/elf_shared.d [Solaris] (SharedELF): Set
 	to true.
