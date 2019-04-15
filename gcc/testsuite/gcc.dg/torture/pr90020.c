@@ -1,5 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-weak "" } */
+/* { dg-additional-options "-Wl,-undefined,dynamic_lookup" { target *-*-darwin* } } */
+/* { dg-additional-options "-Wl,-flat_namespace" { target *-*-darwin[89]* } } */
 
 void __attribute__((noinline,noclone))
 check (int i)
