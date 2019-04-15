@@ -1,3 +1,12 @@
+2019-04-15  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2019-04-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/89693
+	* cgraph.c (clone_of_p): Loop over clone chain for each step in
+	the thunk chain.
+
 2019-04-15  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
