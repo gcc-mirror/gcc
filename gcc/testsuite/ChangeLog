@@ -1,3 +1,10 @@
+2019-04-15  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/88936
+	* gcc.dg/torture/pr88936-1.c: New testcase.
+	* gcc.dg/torture/pr88936-2.c: Likewise.
+	* gcc.dg/torture/pr88936-3.c: Likewise.
+
 2019-04-15  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/pr89693

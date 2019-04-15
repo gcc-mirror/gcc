@@ -9268,17 +9268,25 @@ get_type_static_bounds (const_tree type, mpz_t min, mpz_t max)
     }
 }
 
+/* Return true if VAR is an automatic variable.  */
+
+bool
+auto_var_p (const_tree var)
+{
+  return ((((VAR_P (var) && ! DECL_EXTERNAL (var))
+	    || TREE_CODE (var) == PARM_DECL)
+	   && ! TREE_STATIC (var))
+	  || TREE_CODE (var) == RESULT_DECL);
+}
+
 /* Return true if VAR is an automatic variable defined in function FN.  */
 
 bool
 auto_var_in_fn_p (const_tree var, const_tree fn)
 {
   return (DECL_P (var) && DECL_CONTEXT (var) == fn
-	  && ((((VAR_P (var) && ! DECL_EXTERNAL (var))
-		|| TREE_CODE (var) == PARM_DECL)
-	       && ! TREE_STATIC (var))
-	      || TREE_CODE (var) == LABEL_DECL
-	      || TREE_CODE (var) == RESULT_DECL));
+	  && (auto_var_p (var)
+	      || TREE_CODE (var) == LABEL_DECL));
 }
 
 /* Subprogram of following function.  Called by walk_tree.

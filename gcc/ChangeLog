@@ -1,3 +1,20 @@
+2019-04-15  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/88936
+	* tree.h (auto_var_p): Declare.
+	* tree.c (auto_var_p): New function, split out from ...
+	(auto_var_in_fn_p): ... here.
+	* tree-ssa-structalias.c (struct variable_info): Add shadow_var_uid
+	member.
+	(new_var_info): Initialize it.
+	(set_uids_in_ptset): Also set the shadow variable uid if required.
+	(ipa_pta_execute): Postprocess points-to solutions assigning
+	shadow variable uids for locals that may reach their containing
+	function recursively.
+	* tree-ssa-ccp.c (fold_builtin_alloca_with_align): Do not
+	assert but instead check whether the points-to solution is
+	a singleton.
+
 2019-04-15  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/pr89693
