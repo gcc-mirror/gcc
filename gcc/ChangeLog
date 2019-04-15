@@ -1,3 +1,21 @@
+2019-04-15  Monk Chiang  <sh.chiang04@gmail.com>
+	    Kito Cheng  <kito.cheng@gmail.com>
+	    Shiva Chen  <shiva0217@gmail.com>
+
+	* config/nds32/nds32-md-auxiliary.c
+	(nds32_legitimize_pic_address): Use new PIC pattern.
+	(nds32_legitimize_tls_address): Use new TLS pattern.
+	(nds32_output_symrel): New.
+	* config/nds32/nds32-protos.h (nds32_output_symrel): Declare.
+	(nds32_alloc_relax_group_id): Ditto.
+	* config/nds32/nds32-relax-opt.c (nds32_alloc_relax_group_id): New.
+	(nds32_group_insns): Use nds32_alloc_relax_group_id instead of use
+	relax_group_id.
+	(nds32_group_tls_insn): Ditto.
+	(nds32_group_float_insns): Ditto.
+	* config/nds32/nds32.md (tls_le): New.
+	(sym_got): Ditto.
+
 2019-04-15  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* configure: Add nds32 target for dwarf2 debug_line checking.
