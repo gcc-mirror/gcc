@@ -1,3 +1,23 @@
+2019-04-15  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-01-18  Martin Liska  <mliska@suse.cz>
+		    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/88587
+	* cgraph.h (create_version_clone_with_body): Add new argument
+	with attributes.
+	* cgraphclones.c (cgraph_node::create_version_clone): Add
+	DECL_ATTRIBUTES to a newly created decl.  And call
+	valid_attribute_p so that proper cl_target_optimization_node
+	is set for the newly created declaration.
+	* multiple_target.c (create_target_clone): Set DECL_ATTRIBUTES
+	for declaration.
+	(expand_target_clones): Do not call valid_attribute_p, it must
+	be already done.
+	* tree-inline.c (copy_decl_for_dup_finish): Reset mode for
+	vector types.
+
 2019-04-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90018

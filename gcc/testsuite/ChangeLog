@@ -1,3 +1,12 @@
+2019-04-15  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-01-18  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/88587
+	* g++.target/i386/pr88587.C: New test.
+	* gcc.target/i386/mvc13.c: New test.
+
 2019-04-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
