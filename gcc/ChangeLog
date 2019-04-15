@@ -1,4 +1,8 @@
 2019-04-15  Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config.gcc (nds32*-*-linux*): Set gcc_cv_initfini_array to yes.
+
+2019-04-15  Monk Chiang  <sh.chiang04@gmail.com>
 	    Kito Cheng  <kito.cheng@gmail.com>
 	    Shiva Chen  <shiva0217@gmail.com>
 
