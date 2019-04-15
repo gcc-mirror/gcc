@@ -1,3 +1,8 @@
+2019-04-15  Jeff Law  <law@redhat.com>
+
+	* config/microblaze/microblaze.c (microblaze_expand_block_move): Treat
+	size and alignment as unsigned.
+ 
 2019-04-15  Richard Biener  <rguenther@suse.de>
 
 	PR debug/90074
