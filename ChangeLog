@@ -1,3 +1,12 @@
+2019-04-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/89794
+	* combine.c (count_auto_inc): New function.
+	(try_combine): Count how many auto_inc expressions there were in the
+	original instructions.  Ensure we have the same number in the new
+	instructions.  Remove the code that tried to ensure auto_inc side
+	effects on i1 and i0 are not lost.
+
 2019-04-14  Johannes Pfau  <johannespfau@gmail.com>
 
 	* configure.ac: Remove d from unsupported languages on mingw and cygwin.
