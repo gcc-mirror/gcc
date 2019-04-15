@@ -1,3 +1,8 @@
+2019-04-15  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* configure: Add nds32 target for dwarf2 debug_line checking.
+	* configure.ac: Regenerated.
+
 2019-04-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/89358
