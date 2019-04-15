@@ -1,5 +1,11 @@
 2019-04-15  Richard Biener  <rguenther@suse.de>
 
+	PR debug/90074
+	* tree-loop-distribution.c (destroy_loop): Preserve correct
+	debug info.
+
+2019-04-15  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/90071
 	* tree-ssa-reassoc.c (init_range_entry): Do not pick up
 	abnormal operands from def stmts.

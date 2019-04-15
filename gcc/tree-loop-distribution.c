@@ -1094,12 +1094,8 @@ destroy_loop (struct loop *loop)
 
   bbs = get_loop_body_in_dom_order (loop);
 
-  redirect_edge_pred (exit, src);
-  exit->flags &= ~(EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);
-  exit->flags |= EDGE_FALLTHRU;
-  cancel_loop_tree (loop);
-  rescan_loop_exit (exit, false, true);
-
+  gimple_stmt_iterator dst_gsi = gsi_after_labels (exit->dest);
+  bool safe_p = single_pred_p (exit->dest);
   i = nbbs;
   do
     {
@@ -1116,14 +1112,45 @@ destroy_loop (struct loop *loop)
 	  if (virtual_operand_p (gimple_phi_result (phi)))
 	    mark_virtual_phi_result_for_renaming (phi);
 	}
-      for (gimple_stmt_iterator gsi = gsi_start_bb (bbs[i]); !gsi_end_p (gsi);
-	   gsi_next (&gsi))
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bbs[i]); !gsi_end_p (gsi);)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 	  tree vdef = gimple_vdef (stmt);
 	  if (vdef && TREE_CODE (vdef) == SSA_NAME)
 	    mark_virtual_operand_for_renaming (vdef);
+	  /* Also move and eventually reset debug stmts.  We can leave
+	     constant values in place in case the stmt dominates the exit.
+	     ???  Non-constant values from the last iteration can be
+	     replaced with final values if we can compute them.  */
+	  if (gimple_debug_bind_p (stmt))
+	    {
+	      tree val = gimple_debug_bind_get_value (stmt);
+	      gsi_move_before (&gsi, &dst_gsi);
+	      if (val
+		  && (!safe_p
+		      || !is_gimple_min_invariant (val)
+		      || !dominated_by_p (CDI_DOMINATORS, exit->src, bbs[i])))
+		{
+		  gimple_debug_bind_reset_value (stmt);
+		  update_stmt (stmt);
+		}
+	    }
+	  else
+	    gsi_next (&gsi);
 	}
+    }
+  while (i != 0);
+
+  redirect_edge_pred (exit, src);
+  exit->flags &= ~(EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);
+  exit->flags |= EDGE_FALLTHRU;
+  cancel_loop_tree (loop);
+  rescan_loop_exit (exit, false, true);
+
+  i = nbbs;
+  do
+    {
+      --i;
       delete_basic_block (bbs[i]);
     }
   while (i != 0);
