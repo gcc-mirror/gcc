@@ -2487,6 +2487,7 @@ nds32*-*-*)
 	  nds32*-*-linux*)
 	    tm_file="dbxelf.h elfos.h ${tm_file} gnu-user.h linux.h glibc-stdint.h nds32/linux.h nds32/nds32_intrinsic.h"
 	    tmake_file="${tmake_file} nds32/t-nds32 nds32/t-linux"
+	    gcc_cv_initfini_array=yes
 	    ;;
 	esac
 
