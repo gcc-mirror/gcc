@@ -1,3 +1,8 @@
+2019-04-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/pr89693
+	* g++.dg/ipa/pr89693.C: New test.
+
 2019-04-15  Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
 	PR tree-optimization/90020
