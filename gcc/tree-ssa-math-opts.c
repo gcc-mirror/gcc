@@ -334,7 +334,8 @@ is_division_by (gimple *use_stmt, tree def)
 	 /* Do not recognize x / x as valid division, as we are getting
 	    confused later by replacing all immediate uses x in such
 	    a stmt.  */
-	 && gimple_assign_rhs1 (use_stmt) != def;
+	 && gimple_assign_rhs1 (use_stmt) != def
+	 && !stmt_can_throw_internal (cfun, use_stmt);
 }
 
 /* Return TRUE if USE_STMT is a multiplication of DEF by A.  */
@@ -367,13 +368,12 @@ is_division_by_square (gimple *use_stmt, tree def)
 {
   if (gimple_code (use_stmt) == GIMPLE_ASSIGN
       && gimple_assign_rhs_code (use_stmt) == RDIV_EXPR
-      && gimple_assign_rhs1 (use_stmt) != gimple_assign_rhs2 (use_stmt))
+      && gimple_assign_rhs1 (use_stmt) != gimple_assign_rhs2 (use_stmt)
+      && !stmt_can_throw_internal (cfun, use_stmt))
     {
       tree denominator = gimple_assign_rhs2 (use_stmt);
       if (TREE_CODE (denominator) == SSA_NAME)
-	{
-	  return is_square_of (SSA_NAME_DEF_STMT (denominator), def);
-	}
+	return is_square_of (SSA_NAME_DEF_STMT (denominator), def);
     }
   return 0;
 }

@@ -1,3 +1,10 @@
+2019-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90090
+	* tree-ssa-math-opts.c (is_division_by): Ignore divisions that can
+	throw internally.
+	(is_division_by_square): Likewise.  Formatting fix.
+
 2019-04-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56049
