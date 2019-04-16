@@ -14838,7 +14838,7 @@ fi
     LIBBACKTRACE=../../libbacktrace/libbacktrace.la
 
     gdc_save_CPPFLAGS=$CPPFLAGS
-    CPPFLAGS+=" -I../libbacktrace "
+    CPPFLAGS="$CPPFLAGS -I../libbacktrace "
 
     ac_fn_c_check_header_mongrel "$LINENO" "backtrace-supported.h" "ac_cv_header_backtrace_supported_h" "$ac_includes_default"
 if test "x$ac_cv_header_backtrace_supported_h" = xyes; then :

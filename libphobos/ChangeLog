@@ -1,3 +1,10 @@
+2019-04-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* m4/druntime/libraries.m4 (DRUNTIME_LIBRARIES_BACKTRACE): Set
+	CPPFLAGS correctly for backtrace support test.
+
 2019-04-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.tgt (LIBPHOBOS_SUPPORTED): Default to no.

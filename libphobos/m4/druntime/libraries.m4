@@ -178,7 +178,7 @@ AC_DEFUN([DRUNTIME_LIBRARIES_BACKTRACE],
     LIBBACKTRACE=../../libbacktrace/libbacktrace.la
 
     gdc_save_CPPFLAGS=$CPPFLAGS
-    CPPFLAGS+=" -I../libbacktrace "
+    CPPFLAGS="$CPPFLAGS -I../libbacktrace "
 
     AC_CHECK_HEADER(backtrace-supported.h, have_libbacktrace_h=true,
       have_libbacktrace_h=false)
