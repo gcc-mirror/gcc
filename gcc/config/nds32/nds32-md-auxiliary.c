@@ -3304,15 +3304,22 @@ nds32_split_ashiftdi3 (rtx dst, rtx src, rtx shiftamount)
       ext_start = gen_reg_rtx (SImode);
 
       /*
-	 if (shiftamount < 32)
+	 # In fact, we want to check shift amonut is great than or equal 32,
+	 # but in some corner case, the shift amount might be very large value,
+	 # however we've defined SHIFT_COUNT_TRUNCATED, so GCC think we've
+	 # handle that correctly without any truncate.
+	 # so check the the condition of (shiftamount & 32) is most
+	 # safe way to do.
+	 if (shiftamount & 32)
+	   dst_low_part = 0
+	   dst_high_part = src_low_part << shiftamount & 0x1f
+	 else
 	   dst_low_part = src_low_part << shiftamout
 	   dst_high_part = wext (src, 32 - shiftamount)
 	   # wext can't handle wext (src, 32) since it's only take rb[0:4]
 	   # for extract.
 	   dst_high_part = shiftamount == 0 ? src_high_part : dst_high_part
-	 else
-	   dst_low_part = 0
-	   dst_high_part = src_low_part << shiftamount & 0x1f
+
       */
 
       emit_insn (gen_subsi3 (ext_start,
@@ -3331,11 +3338,11 @@ nds32_split_ashiftdi3 (rtx dst, rtx src, rtx shiftamount)
       emit_insn (gen_ashlsi3 (dst_high_part_g32, src_low_part,
 						 new_shift_amout));
 
-      emit_insn (gen_slt_compare (select_reg, shiftamount, GEN_INT (32)));
+      emit_insn (gen_andsi3 (select_reg, shiftamount, GEN_INT (32)));
 
-      emit_insn (gen_cmovnsi (dst_low_part, select_reg,
+      emit_insn (gen_cmovzsi (dst_low_part, select_reg,
 			      dst_low_part_l32, dst_low_part_g32));
-      emit_insn (gen_cmovnsi (dst_high_part, select_reg,
+      emit_insn (gen_cmovzsi (dst_high_part, select_reg,
 			      dst_high_part_l32, dst_high_part_g32));
     }
 }

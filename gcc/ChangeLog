@@ -1,3 +1,9 @@
+2019-04-16  Kito Cheng  <kito.cheng@gmail.com>
+	    Shiva Chen  <shiva0217@gmail.com>
+
+	* config/nds32/nds32-md-auxiliary.c (nds32_split_ashiftdi3): Fix wrong
+	code gen with large shift amount.
+
 2019-04-16  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32-pipelines-auxiliary.c (wext_odd_dep_p): Handle
