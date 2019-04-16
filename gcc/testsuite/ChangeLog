@@ -1,3 +1,7 @@
+2019-04-16  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	* g++.dg/lto/pr89358_0.C: Replace dg-* with dg-lto-*.
+
 2019-04-16  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/89528
