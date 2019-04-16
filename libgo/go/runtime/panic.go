@@ -53,8 +53,8 @@ var indexError = error(errorString("index out of range"))
 // entire runtime stack for easier debugging.
 
 func panicindex() {
-	name, _, _ := funcfileline(getcallerpc(), -1)
-	if hasprefix(name, "runtime.") {
+	name, _, _ := funcfileline(getcallerpc()-1, -1)
+	if hasPrefix(name, "runtime.") {
 		throw(string(indexError.(errorString)))
 	}
 	panicCheckMalloc(indexError)
@@ -64,8 +64,8 @@ func panicindex() {
 var sliceError = error(errorString("slice bounds out of range"))
 
 func panicslice() {
-	name, _, _ := funcfileline(getcallerpc(), -1)
-	if hasprefix(name, "runtime.") {
+	name, _, _ := funcfileline(getcallerpc()-1, -1)
+	if hasPrefix(name, "runtime.") {
 		throw(string(sliceError.(errorString)))
 	}
 	panicCheckMalloc(sliceError)
@@ -151,6 +151,14 @@ func newdefer() *_defer {
 		systemstack(func() {
 			d = new(_defer)
 		})
+		if debugCachedWork {
+			// Duplicate the tail below so if there's a
+			// crash in checkPut we can tell if d was just
+			// allocated or came from the pool.
+			d.link = gp._defer
+			gp._defer = d
+			return d
+		}
 	}
 	d.link = gp._defer
 	gp._defer = d
@@ -242,14 +250,19 @@ func deferreturn(frame *bool) {
 			// code in jmpdefer.
 			var fn func(unsafe.Pointer)
 			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(noescape(unsafe.Pointer(&pfn)))
+			gp.deferring = true
 			fn(d.arg)
+			gp.deferring = false
 		}
 
-		// If we are returning from a Go function called by a
-		// C function running in a C thread, g may now be nil,
-		// in which case CgocallBackDone will have cleared _defer.
-		// In that case some other goroutine may already be using gp.
+		// If that was CgocallBackDone, it will have freed the
+		// defer for us, since we are no longer running as Go code.
 		if getg() == nil {
+			*frame = true
+			return
+		}
+		if gp.ranCgocallBackDone {
+			gp.ranCgocallBackDone = false
 			*frame = true
 			return
 		}
@@ -316,7 +329,9 @@ func checkdefer(frame *bool) {
 
 			var fn func(unsafe.Pointer)
 			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(noescape(unsafe.Pointer(&pfn)))
+			gp.deferring = true
 			fn(d.arg)
+			gp.deferring = false
 
 			freedefer(d)
 
@@ -389,6 +404,7 @@ func Goexit() {
 	// This code is similar to gopanic, see that implementation
 	// for detailed comments.
 	gp := getg()
+	gp.goexiting = true
 	for {
 		d := gp._defer
 		if d == nil {
@@ -409,7 +425,9 @@ func Goexit() {
 
 		var fn func(unsafe.Pointer)
 		*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(noescape(unsafe.Pointer(&pfn)))
+		gp.deferring = true
 		fn(d.arg)
+		gp.deferring = false
 
 		if gp._defer != d {
 			throw("bad defer entry in Goexit")
@@ -419,6 +437,7 @@ func Goexit() {
 		freedefer(d)
 		// Note: we ignore recovers here because Goexit isn't a panic
 	}
+	gp.goexiting = false
 	goexit1()
 }
 
@@ -532,7 +551,9 @@ func gopanic(e interface{}) {
 
 		var fn func(unsafe.Pointer)
 		*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(noescape(unsafe.Pointer(&pfn)))
+		gp.deferring = true
 		fn(d.arg)
+		gp.deferring = false
 
 		if gp._defer != d {
 			throw("bad defer entry in panic")
@@ -649,7 +670,7 @@ func canrecover(retaddr uintptr) bool {
 	}
 
 	name := locs[1].function
-	if hasprefix(name, "runtime.") {
+	if hasPrefix(name, "runtime.") {
 		return true
 	}
 
@@ -676,7 +697,7 @@ func canrecover(retaddr uintptr) bool {
 		}
 
 		// Ignore function in libffi.
-		if hasprefix(name, "ffi_") {
+		if hasPrefix(name, "ffi_") {
 			continue
 		}
 
@@ -690,7 +711,7 @@ func canrecover(retaddr uintptr) bool {
 		}
 
 		// Ignore other functions in the reflect package.
-		if hasprefix(name, "reflect.") || hasprefix(name, ".1reflect.") {
+		if hasPrefix(name, "reflect.") || hasPrefix(name, ".1reflect.") {
 			continue
 		}
 
@@ -700,7 +721,7 @@ func canrecover(retaddr uintptr) bool {
 
 	if i < n {
 		name = locs[i].function
-		if hasprefix(name, "runtime.") {
+		if hasPrefix(name, "runtime.") {
 			return true
 		}
 	}
@@ -734,7 +755,7 @@ func makefuncfficanrecover(loc []location) {
 	}
 
 	name := loc[1].function
-	if hasprefix(name, "runtime.") {
+	if hasPrefix(name, "runtime.") {
 		d.makefunccanrecover = true
 	}
 }
@@ -935,10 +956,13 @@ func fatalpanic(msgs *_panic) {
 // It returns true if panic messages should be printed, or false if
 // the runtime is in bad shape and should just print stacks.
 //
-// It can have write barriers because the write barrier explicitly
-// ignores writes once dying > 0.
+// It must not have write barriers even though the write barrier
+// explicitly ignores writes once dying > 0. Write barriers still
+// assume that g.m.p != nil, and this function may not have P
+// in some contexts (e.g. a panic in a signal handler for a signal
+// sent to an M with no P).
 //
-//go:yeswritebarrierrec
+//go:nowritebarrierrec
 func startpanic_m() bool {
 	_g_ := getg()
 	if mheap_.cachealloc.size == 0 { // very early
@@ -958,8 +982,8 @@ func startpanic_m() bool {
 
 	switch _g_.m.dying {
 	case 0:
+		// Setting dying >0 has the side-effect of disabling this G's writebuf.
 		_g_.m.dying = 1
-		_g_.writebuf = nil
 		atomic.Xadd(&panicking, 1)
 		lock(&paniclk)
 		if debug.schedtrace > 0 || debug.scheddetail > 0 {
@@ -1061,7 +1085,7 @@ func canpanic(gp *g) bool {
 	return true
 }
 
-// isAbortPC returns true if pc is the program counter at which
+// isAbortPC reports whether pc is the program counter at which
 // runtime.abort raises a signal.
 //
 // It is nosplit because it's part of the isgoexception

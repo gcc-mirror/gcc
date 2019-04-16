@@ -42,6 +42,9 @@ test01()
   VERIFY( !ec );
   VERIFY( n == 0 );
 
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  // No symlink support
+#else
   auto link = __gnu_test::nonexistent_path();
   create_symlink(p, link);  // dangling symlink
   ec = bad_ec;
@@ -58,6 +61,7 @@ test01()
   VERIFY( n == 1 );
   VERIFY( !exists(symlink_status(link)) );  // The symlink is removed, but
   VERIFY( exists(p) );                      // its target is not.
+#endif
 
   const auto dir = __gnu_test::nonexistent_path();
   create_directories(dir/"a/b/c");

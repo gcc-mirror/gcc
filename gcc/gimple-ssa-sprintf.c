@@ -65,6 +65,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "calls.h"
 #include "cfgloop.h"
+#include "tree-scalar-evolution.h"
+#include "tree-ssa-loop.h"
 #include "intl.h"
 #include "langhooks.h"
 
@@ -366,9 +368,14 @@ target_to_host (char *hostr, size_t hostsz, const char *targstr)
      overlong strings just like the translated strings are.  */
   if (target_to_host_charmap['\0'] == 1)
     {
-      strncpy (hostr, targstr, hostsz - 4);
-      if (strlen (targstr) >= hostsz)
-	strcpy (hostr + hostsz - 4, "...");
+      size_t len = strlen (targstr);
+      if (len >= hostsz)
+	{
+	  memcpy (hostr, targstr, hostsz - 4);
+	  strcpy (hostr + hostsz - 4, "...");
+	}
+      else
+	memcpy (hostr, targstr, len + 1);
       return hostr;
     }
 
@@ -382,10 +389,9 @@ target_to_host (char *hostr, size_t hostsz, const char *targstr)
       if (!*targstr)
 	break;
 
-      if (size_t (ph - hostr) == hostsz - 4)
+      if (size_t (ph - hostr) == hostsz)
 	{
-	  *ph = '\0';
-	  strcat (ph, "...");
+	  strcpy (ph - 4, "...");
 	  break;
 	}
     }
@@ -394,12 +400,12 @@ target_to_host (char *hostr, size_t hostsz, const char *targstr)
 }
 
 /* Convert the sequence of decimal digits in the execution character
-   starting at S to a long, just like strtol does.  Return the result
-   and set *END to one past the last converted character.  On range
-   error set ERANGE to the digit that caused it.  */
+   starting at *PS to a HOST_WIDE_INT, analogously to strtol.  Return
+   the result and set *PS to one past the last converted character.
+   On range error set ERANGE to the digit that caused it.  */
 
-static inline long
-target_strtol10 (const char **ps, const char **erange)
+static inline HOST_WIDE_INT
+target_strtowi (const char **ps, const char **erange)
 {
   unsigned HOST_WIDE_INT val = 0;
   for ( ; ; ++*ps)
@@ -410,9 +416,9 @@ target_strtol10 (const char **ps, const char **erange)
 	  c -= '0';
 
 	  /* Check for overflow.  */
-	  if (val > (LONG_MAX - c) / 10LU)
+	  if (val > ((unsigned HOST_WIDE_INT) HOST_WIDE_INT_MAX - c) / 10LU)
 	    {
-	      val = LONG_MAX;
+	      val = HOST_WIDE_INT_MAX;
 	      *erange = *ps;
 
 	      /* Skip the remaining digits.  */
@@ -929,6 +935,29 @@ struct call_info
   int warnopt () const
   {
     return bounded ? OPT_Wformat_truncation_ : OPT_Wformat_overflow_;
+  }
+
+  /* Return true for calls to file formatted functions.  */
+  bool is_file_func () const
+  {
+    return (fncode == BUILT_IN_FPRINTF
+	    || fncode == BUILT_IN_FPRINTF_CHK
+	    || fncode == BUILT_IN_FPRINTF_UNLOCKED
+	    || fncode == BUILT_IN_VFPRINTF
+	    || fncode == BUILT_IN_VFPRINTF_CHK);
+  }
+
+  /* Return true for calls to string formatted functions.  */
+  bool is_string_func () const
+  {
+    return (fncode == BUILT_IN_SPRINTF
+	    || fncode == BUILT_IN_SPRINTF_CHK
+	    || fncode == BUILT_IN_SNPRINTF
+	    || fncode == BUILT_IN_SNPRINTF_CHK
+	    || fncode == BUILT_IN_VSPRINTF
+	    || fncode == BUILT_IN_VSPRINTF_CHK
+	    || fncode == BUILT_IN_VSNPRINTF
+	    || fncode == BUILT_IN_VSNPRINTF_CHK);
   }
 };
 
@@ -2823,6 +2852,8 @@ format_directive (const call_info &info,
   if (!warned
       /* Only warn at level 2.  */
       && warn_level > 1
+      /* Only warn for string functions.  */
+      && info.is_string_func ()
       && (!minunder4k
 	  || (!maxunder4k && fmtres.range.max < HOST_WIDE_INT_MAX)))
     {
@@ -2831,7 +2862,9 @@ format_directive (const call_info &info,
 	 of C11.  Warn on this only at level 2 but remember this and
 	 prevent folding the return value when done.  This allows for
 	 the possibility of the actual libc call failing due to ENOMEM
-	 (like Glibc does under some conditions).  */
+	 (like Glibc does with very large precision or width).
+	 Issue the "may exceed" warning only for string functions and
+	 not for fprintf or printf.  */
 
       if (fmtres.range.min == fmtres.range.max)
 	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
@@ -2839,14 +2872,18 @@ format_directive (const call_info &info,
 			  "minimum required size of 4095", dirlen,
 			  target_to_host (hostdir, sizeof hostdir, dir.beg),
 			  fmtres.range.min);
-      else
+      else if (!minunder4k)
 	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
-			  minunder4k
-			  ? G_("%<%.*s%> directive output between %wu and %wu "
-			       "bytes may exceed minimum required size of "
-			       "4095")
-			  : G_("%<%.*s%> directive output between %wu and %wu "
-			       "bytes exceeds minimum required size of 4095"),
+			  "%<%.*s%> directive output between %wu and %wu "
+			  "bytes exceeds minimum required size of 4095",
+			  dirlen,
+			  target_to_host (hostdir, sizeof hostdir, dir.beg),
+			  fmtres.range.min, fmtres.range.max);
+      else if (!info.retval_used () && info.is_string_func ())
+	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			  "%<%.*s%> directive output between %wu and %wu "
+			  "bytes may exceed minimum required size of "
+			  "4095",
 			  dirlen,
 			  target_to_host (hostdir, sizeof hostdir, dir.beg),
 			  fmtres.range.min, fmtres.range.max);
@@ -2869,24 +2906,48 @@ format_directive (const call_info &info,
 	      && maxximax
 	      && fmtres.range.max < HOST_WIDE_INT_MAX)))
     {
-      /* The directive output causes the total length of output
-	 to exceed INT_MAX bytes.  */
-
-      if (fmtres.range.min == fmtres.range.max)
+      if (fmtres.range.min > target_int_max ())
+	{
+	  /* The directive output exceeds INT_MAX bytes.  */
+	  if (fmtres.range.min == fmtres.range.max)
+	    warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			      "%<%.*s%> directive output of %wu bytes exceeds "
+			      "%<INT_MAX%>", dirlen,
+			      target_to_host (hostdir, sizeof hostdir, dir.beg),
+			      fmtres.range.min);
+	  else
+	    warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			      "%<%.*s%> directive output between %wu and "
+			      "%wu bytes exceeds %<INT_MAX%>", dirlen,
+			      target_to_host (hostdir, sizeof hostdir, dir.beg),
+			      fmtres.range.min, fmtres.range.max);
+	}
+      else if (res->range.min > target_int_max ())
+	{
+	  /* The directive output is under INT_MAX but causes the result
+	     to exceed INT_MAX bytes.  */
+	  if (fmtres.range.min == fmtres.range.max)
+	    warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			      "%<%.*s%> directive output of %wu bytes causes "
+			      "result to exceed %<INT_MAX%>", dirlen,
+			      target_to_host (hostdir, sizeof hostdir, dir.beg),
+			      fmtres.range.min);
+	  else
+	    warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			      "%<%.*s%> directive output between %wu and "
+			      "%wu bytes causes result to exceed %<INT_MAX%>",
+			      dirlen,
+			      target_to_host (hostdir, sizeof hostdir, dir.beg),
+			      fmtres.range.min, fmtres.range.max);
+	}
+      else if ((!info.retval_used () || !info.bounded)
+	       && (info.is_string_func ()))
+	/* Warn for calls to string functions that either aren't bounded
+	   (sprintf) or whose return value isn't used.  */
 	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
-			  "%<%.*s%> directive output of %wu bytes causes "
-			  "result to exceed %<INT_MAX%>", dirlen,
-			  target_to_host (hostdir, sizeof hostdir, dir.beg),
-			  fmtres.range.min);
-      else
-	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
-			  fmtres.range.min > target_int_max ()
-			  ? G_("%<%.*s%> directive output between %wu and "
-			       "%wu bytes causes result to exceed "
-			       "%<INT_MAX%>")
-			  : G_("%<%.*s%> directive output between %wu and "
-			       "%wu bytes may cause result to exceed "
-			       "%<INT_MAX%>"), dirlen,
+			  "%<%.*s%> directive output between %wu and "
+			  "%wu bytes may cause result to exceed "
+			  "%<INT_MAX%>", dirlen,
 			  target_to_host (hostdir, sizeof hostdir, dir.beg),
 			  fmtres.range.min, fmtres.range.max);
     }
@@ -2926,37 +2987,65 @@ format_directive (const call_info &info,
 
   res->warned |= warned;
 
-  if (!dir.beg[0] && res->warned && info.objsize < HOST_WIDE_INT_MAX)
+  if (!dir.beg[0] && res->warned)
     {
-      /* If a warning has been issued for buffer overflow or truncation
-	 (but not otherwise) help the user figure out how big a buffer
-	 they need.  */
-
       location_t callloc = gimple_location (info.callstmt);
 
       unsigned HOST_WIDE_INT min = res->range.min;
       unsigned HOST_WIDE_INT max = res->range.max;
 
-      if (min == max)
-	inform (callloc,
-		(min == 1
-		 ? G_("%qE output %wu byte into a destination of size %wu")
-		 : G_("%qE output %wu bytes into a destination of size %wu")),
-		info.func, min, info.objsize);
-      else if (max < HOST_WIDE_INT_MAX)
-	inform (callloc,
-		"%qE output between %wu and %wu bytes into "
-		"a destination of size %wu",
-		info.func, min, max, info.objsize);
-      else if (min < res->range.likely && res->range.likely < max)
-	inform (callloc,
-		"%qE output %wu or more bytes (assuming %wu) into "
-		"a destination of size %wu",
-		info.func, min, res->range.likely, info.objsize);
-      else
-	inform (callloc,
-		"%qE output %wu or more bytes into a destination of size %wu",
-		info.func, min, info.objsize);
+      if (info.objsize < HOST_WIDE_INT_MAX)
+	{
+	  /* If a warning has been issued for buffer overflow or truncation
+	     help the user figure out how big a buffer they need.  */
+
+	  if (min == max)
+	    inform (callloc,
+		    (min == 1
+		     ? G_("%qE output %wu byte into a destination of size %wu")
+		     : G_("%qE output %wu bytes into a destination of size "
+			  "%wu")),
+		    info.func, min, info.objsize);
+	  else if (max < HOST_WIDE_INT_MAX)
+	    inform (callloc,
+		    "%qE output between %wu and %wu bytes into "
+		    "a destination of size %wu",
+		    info.func, min, max, info.objsize);
+	  else if (min < res->range.likely && res->range.likely < max)
+	    inform (callloc,
+		    "%qE output %wu or more bytes (assuming %wu) into "
+		    "a destination of size %wu",
+		    info.func, min, res->range.likely, info.objsize);
+	  else
+	    inform (callloc,
+		    "%qE output %wu or more bytes into a destination of size "
+		    "%wu",
+		    info.func, min, info.objsize);
+	}
+      else if (!info.is_string_func ())
+	{
+	  /* If the warning is for a file function function like fprintf
+	     of printf with no destination size just print the computed
+	     result.  */
+	  if (min == max)
+	    inform (callloc,
+		    (min == 1
+		     ? G_("%qE output %wu byte")
+		     : G_("%qE output %wu bytes")),
+		    info.func, min);
+	  else if (max < HOST_WIDE_INT_MAX)
+	    inform (callloc,
+		    "%qE output between %wu and %wu bytes",
+		    info.func, min, max);
+	  else if (min < res->range.likely && res->range.likely < max)
+	    inform (callloc,
+		    "%qE output %wu or more bytes (assuming %wu)",
+		    info.func, min, res->range.likely);
+	  else
+	    inform (callloc,
+		    "%qE output %wu or more bytes",
+		    info.func, min);
+	}
     }
 
   if (dump_file && *dir.beg)
@@ -3048,7 +3137,7 @@ parse_directive (call_info &info,
 	 width and sort it out later after the next character has
 	 been seen.  */
       pwidth = pf;
-      width = target_strtol10 (&pf, &werange);
+      width = target_strtowi (&pf, &werange);
     }
   else if (target_to_host (*pf) == '*')
     {
@@ -3130,7 +3219,7 @@ parse_directive (call_info &info,
 	{
 	  werange = 0;
 	  pwidth = pf;
-	  width = target_strtol10 (&pf, &werange);
+	  width = target_strtowi (&pf, &werange);
 	}
       else if (target_to_host (*pf) == '*')
 	{
@@ -3163,7 +3252,7 @@ parse_directive (call_info &info,
       if (ISDIGIT (target_to_host (*pf)))
 	{
 	  pprec = pf;
-	  precision = target_strtol10 (&pf, &perange);
+	  precision = target_strtowi (&pf, &perange);
 	}
       else if (target_to_host (*pf) == '*')
 	{
@@ -3317,7 +3406,7 @@ parse_directive (call_info &info,
     }
   else
     {
-      if (width == LONG_MAX && werange)
+      if (width == HOST_WIDE_INT_MAX && werange)
 	{
 	  size_t begin = dir.beg - info.fmtstr + (pwidth - pcnt);
 	  size_t caret = begin + (werange - pcnt);
@@ -3350,7 +3439,7 @@ parse_directive (call_info &info,
     }
   else
     {
-      if (precision == LONG_MAX && perange)
+      if (precision == HOST_WIDE_INT_MAX && perange)
 	{
 	  size_t begin = dir.beg - info.fmtstr + (pprec - pcnt) - 1;
 	  size_t caret = dir.beg - info.fmtstr + (perange - pcnt) - 1;
@@ -3480,14 +3569,14 @@ compute_format_length (call_info &info, format_result *res)
 }
 
 /* Return the size of the object referenced by the expression DEST if
-   available, or -1 otherwise.  */
+   available, or the maximum possible size otherwise.  */
 
 static unsigned HOST_WIDE_INT
 get_destination_size (tree dest)
 {
-  /* When there is no destination return -1.  */
+  /* When there is no destination return the maximum.  */
   if (!dest)
-    return HOST_WIDE_INT_M1U;
+    return HOST_WIDE_INT_MAX;
 
   /* Initialize object size info before trying to compute it.  */
   init_object_sizes ();
@@ -3502,7 +3591,7 @@ get_destination_size (tree dest)
   if (compute_builtin_object_size (dest, ost, &size))
     return size;
 
-  return HOST_WIDE_INT_M1U;
+  return HOST_WIDE_INT_MAX;
 }
 
 /* Return true if the call described by INFO with result RES safe to
@@ -3588,10 +3677,10 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
 	 are badly declared.  */
       && !stmt_ends_bb_p (info.callstmt))
     {
-      tree cst = build_int_cst (integer_type_node, retval[0]);
+      tree cst = build_int_cst (lhs ? TREE_TYPE (lhs) : integer_type_node,
+				retval[0]);
 
-      if (lhs == NULL_TREE
-	  && info.nowrite)
+      if (lhs == NULL_TREE && info.nowrite)
 	{
 	  /* Remove the call to the bounded function with a zero size
 	     (e.g., snprintf(0, 0, "%i", 123)) if there is no lhs.  */
@@ -3632,7 +3721,7 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
 	    }
 	}
     }
-  else if (lhs)
+  else if (lhs && types_compatible_p (TREE_TYPE (lhs), integer_type_node))
     {
       bool setrange = false;
 
@@ -3754,16 +3843,21 @@ handle_gimple_call (gimple_stmt_iterator *gsi)
   if (!info.func)
     return false;
 
-  info.fncode = DECL_FUNCTION_CODE (info.func);
-
   /* Format string argument number (valid for all functions).  */
   unsigned idx_format = UINT_MAX;
-  if (!gimple_call_builtin_p (info.callstmt, BUILT_IN_NORMAL))
+  if (gimple_call_builtin_p (info.callstmt, BUILT_IN_NORMAL))
+    info.fncode = DECL_FUNCTION_CODE (info.func);
+  else
     {
       unsigned idx_args;
       idx_format = get_user_idx_format (info.func, &idx_args);
-      if (idx_format == UINT_MAX)
+      if (idx_format == UINT_MAX
+	  || idx_format >= gimple_call_num_args (info.callstmt)
+	  || idx_args > gimple_call_num_args (info.callstmt)
+	  || !POINTER_TYPE_P (TREE_TYPE (gimple_call_arg (info.callstmt,
+							  idx_format))))
 	return false;
+      info.fncode = BUILT_IN_NONE;
       info.argidx = idx_args;
     }
 
@@ -3823,7 +3917,7 @@ handle_gimple_call (gimple_stmt_iterator *gsi)
 
     case BUILT_IN_PRINTF_CHK:
       // Signature:
-      //   __builtin_printf_chk (it, format, ...)
+      //   __builtin_printf_chk (ost, format, ...)
       idx_format = 1;
       info.argidx = 2;
       idx_dstptr = -1;

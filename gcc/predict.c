@@ -826,7 +826,7 @@ unlikely_executed_bb_p (basic_block bb)
   return false;
 }
 
-/* We can not predict the probabilities of outgoing edges of bb.  Set them
+/* We cannot predict the probabilities of outgoing edges of bb.  Set them
    evenly and hope for the best.  If UNLIKELY_EDGES is not null, distribute
    even probability for all edges not mentioned in the set.  These edges
    are given PROB_VERY_UNLIKELY probability.  Similarly for LIKELY_EDGES,
@@ -1229,10 +1229,21 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
 	    if (pred->ep_probability <= PROB_VERY_UNLIKELY
 		|| pred->ep_predictor == PRED_COLD_LABEL)
 	      unlikely_edges.add (pred->ep_edge);
-	    if (pred->ep_probability >= PROB_VERY_LIKELY
-		|| pred->ep_predictor == PRED_BUILTIN_EXPECT
-		|| pred->ep_predictor == PRED_HOT_LABEL)
+	    else if (pred->ep_probability >= PROB_VERY_LIKELY
+		     || pred->ep_predictor == PRED_BUILTIN_EXPECT
+		     || pred->ep_predictor == PRED_HOT_LABEL)
 	      likely_edges.add (pred);
+	  }
+
+      /* It can happen that an edge is both in likely_edges and unlikely_edges.
+	 Clear both sets in that situation.  */
+      for (hash_set<edge_prediction *>::iterator it = likely_edges.begin ();
+	   it != likely_edges.end (); ++it)
+	if (unlikely_edges.contains ((*it)->ep_edge))
+	  {
+	    likely_edges.empty ();
+	    unlikely_edges.empty ();
+	    break;
 	  }
 
       if (!dry_run)
@@ -4266,7 +4277,7 @@ report_predictor_hitrates (void)
    we are not 100% sure.
 
    This function locally updates profile without attempt to keep global
-   consistency which can not be reached in full generality without full profile
+   consistency which cannot be reached in full generality without full profile
    rebuild from probabilities alone.  Doing so is not necessarily a good idea
    because frequencies and counts may be more realistic then probabilities.
 
@@ -4344,7 +4355,7 @@ force_edge_cold (edge e, bool impossible)
 	{
 	  if (impossible)
 	    e->probability = profile_probability::never ();
-	  /* If BB has some edges out that are not impossible, we can not
+	  /* If BB has some edges out that are not impossible, we cannot
 	     assume that BB itself is.  */
 	  impossible = false;
 	}

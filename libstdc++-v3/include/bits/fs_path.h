@@ -69,8 +69,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   {
     template<typename _CharT, typename _Ch = remove_const_t<_CharT>>
       using __is_encoded_char
-	= __or_<is_same<_Ch, char>, is_same<_Ch, wchar_t>,
-		is_same<_Ch, char16_t>, is_same<_Ch, char32_t>>;
+	= __or_<is_same<_Ch, char>,
+#ifdef _GLIBCXX_USE_CHAR8_T
+		is_same<_Ch, char8_t>,
+#endif
+		is_same<_Ch, wchar_t>,
+		is_same<_Ch, char16_t>,
+		is_same<_Ch, char32_t>>;
 
     template<typename _Iter,
 	     typename _Iter_traits = std::iterator_traits<_Iter>>
@@ -161,7 +166,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
     typedef std::basic_string<value_type>	string_type;
 
-    enum format { native_format, generic_format, auto_format };
+    enum format : unsigned char { native_format, generic_format, auto_format };
 
     // constructors and destructor
 
@@ -320,7 +325,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if _GLIBCXX_USE_WCHAR_T
     std::wstring   wstring() const;
 #endif
+#ifdef _GLIBCXX_USE_CHAR8_T
+    __attribute__((__abi_tag__("__u8")))
+    std::u8string  u8string() const;
+#else
     std::string    u8string() const;
+#endif // _GLIBCXX_USE_CHAR8_T
     std::u16string u16string() const;
     std::u32string u32string() const;
 
@@ -334,7 +344,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if _GLIBCXX_USE_WCHAR_T
     std::wstring   generic_wstring() const;
 #endif
+#ifdef _GLIBCXX_USE_CHAR8_T
+    __attribute__((__abi_tag__("__u8")))
+    std::u8string  generic_u8string() const;
+#else
     std::string    generic_u8string() const;
+#endif // _GLIBCXX_USE_CHAR8_T
     std::u16string generic_u16string() const;
     std::u32string generic_u32string() const;
 
@@ -359,16 +374,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     // query
 
     [[nodiscard]] bool empty() const noexcept { return _M_pathname.empty(); }
-    bool has_root_name() const;
-    bool has_root_directory() const;
-    bool has_root_path() const;
-    bool has_relative_path() const;
-    bool has_parent_path() const;
-    bool has_filename() const;
-    bool has_stem() const;
-    bool has_extension() const;
-    bool is_absolute() const;
-    bool is_relative() const { return !is_absolute(); }
+    bool has_root_name() const noexcept;
+    bool has_root_directory() const noexcept;
+    bool has_root_path() const noexcept;
+    bool has_relative_path() const noexcept;
+    bool has_parent_path() const noexcept;
+    bool has_filename() const noexcept;
+    bool has_stem() const noexcept;
+    bool has_extension() const noexcept;
+    bool is_absolute() const noexcept;
+    bool is_relative() const noexcept { return !is_absolute(); }
 
     // generation
     path lexically_normal() const;
@@ -433,7 +448,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     void _M_append(basic_string_view<value_type>);
     void _M_concat(basic_string_view<value_type>);
 
-    pair<const string_type*, size_t> _M_find_extension() const;
+    pair<const string_type*, size_t> _M_find_extension() const noexcept;
 
     template<typename _CharT>
       struct _Cvt;
@@ -735,10 +750,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       static string_type
       _S_convert(const _CharT* __f, const _CharT* __l)
       {
-	std::codecvt_utf8<_CharT> __cvt;
-	std::string __str;
-	if (__str_codecvt_out(__f, __l, __str, __cvt))
-	  return __str;
+#ifdef _GLIBCXX_USE_CHAR8_T
+	if constexpr (is_same_v<_CharT, char8_t>)
+	  {
+	    string_type __str(__f, __l);
+	    return __str;
+	  }
+	else
+	  {
+#endif
+	    std::codecvt_utf8<_CharT> __cvt;
+	    std::string __str;
+	    if (__str_codecvt_out(__f, __l, __str, __cvt))
+	      return __str;
+#ifdef _GLIBCXX_USE_CHAR8_T
+	  }
+#endif
 	_GLIBCXX_THROW_OR_ABORT(filesystem_error(
 	      "Cannot convert character sequence",
 	      std::make_error_code(errc::illegal_byte_sequence)));
@@ -850,6 +877,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   inline path&
   path::operator=(path&& __p) noexcept
   {
+    if (&__p == this) [[__unlikely__]]
+      return *this;
+
     _M_pathname = std::move(__p._M_pathname);
     _M_cmpts = std::move(__p._M_cmpts);
     __p.clear();
@@ -938,6 +968,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	{
 	  if constexpr (is_same_v<_CharT, char>)
 	    return __u8str;
+#ifdef _GLIBCXX_USE_CHAR8_T
+	  else if constexpr (is_same_v<_CharT, char8_t>)
+	    {
+	      const char* __f = __u8str.data();
+	      const char* __l = __f + __u8str.size();
+	      _WString __wstr(__f, __l);
+	      return __wstr;
+	    }
+#endif
 	  else
 	    {
 	      _WString __wstr;
@@ -950,10 +989,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	    }
 	}
 #else
-      codecvt_utf8<_CharT> __cvt;
-      basic_string<_CharT, _Traits, _Allocator> __wstr{__a};
-      if (__str_codecvt_in(__first, __last, __wstr, __cvt))
-	return __wstr;
+#ifdef _GLIBCXX_USE_CHAR8_T
+      if constexpr (is_same_v<_CharT, char8_t>)
+	{
+	  basic_string<_CharT, _Traits, _Allocator> __wstr{__first, __last, __a};
+	  return __wstr;
+	}
+      else
+	{
+#endif
+	  codecvt_utf8<_CharT> __cvt;
+	  basic_string<_CharT, _Traits, _Allocator> __wstr{__a};
+	  if (__str_codecvt_in(__first, __last, __wstr, __cvt))
+	    return __wstr;
+#ifdef _GLIBCXX_USE_CHAR8_T
+	}
+#endif
 #endif
       _GLIBCXX_THROW_OR_ABORT(filesystem_error(
 	    "Cannot convert character sequence",
@@ -978,6 +1029,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   path::wstring() const { return string<wchar_t>(); }
 #endif
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+  inline std::u8string
+  path::u8string() const { return string<char8_t>(); }
+#else
   inline std::string
   path::u8string() const
   {
@@ -996,6 +1051,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return _M_pathname;
 #endif
   }
+#endif // _GLIBCXX_USE_CHAR8_T
 
   inline std::u16string
   path::u16string() const { return string<char16_t>(); }
@@ -1045,9 +1101,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   { return generic_string<wchar_t>(); }
 #endif
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+  inline std::u8string
+  path::generic_u8string() const
+  { return generic_string<char8_t>(); }
+#else
   inline std::string
   path::generic_u8string() const
   { return generic_string(); }
+#endif
 
   inline std::u16string
   path::generic_u16string() const
@@ -1102,21 +1164,21 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   }
 
   inline bool
-  path::has_stem() const
+  path::has_stem() const noexcept
   {
     auto ext = _M_find_extension();
     return ext.first && ext.second != 0;
   }
 
   inline bool
-  path::has_extension() const
+  path::has_extension() const noexcept
   {
     auto ext = _M_find_extension();
     return ext.first && ext.second != string_type::npos;
   }
 
   inline bool
-  path::is_absolute() const
+  path::is_absolute() const noexcept
   {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
     return has_root_name() && has_root_directory();

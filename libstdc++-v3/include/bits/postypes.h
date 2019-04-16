@@ -235,6 +235,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// File position for wchar_t streams.
   typedef fpos<mbstate_t> wstreampos;
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+  /// File position for char8_t streams.
+  typedef fpos<mbstate_t> u8streampos;
+#endif
+
 #if __cplusplus >= 201103L
   /// File position for char16_t streams.
   typedef fpos<mbstate_t> u16streampos;

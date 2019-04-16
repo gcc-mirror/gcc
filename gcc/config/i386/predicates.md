@@ -182,7 +182,7 @@
 	  rtx op1 = XEXP (XEXP (op, 0), 0);
 	  rtx op2 = XEXP (XEXP (op, 0), 1);
 
-	  if (ix86_cmodel == CM_LARGE)
+	  if (ix86_cmodel == CM_LARGE && GET_CODE (op1) != UNSPEC)
 	    return false;
 	  if (!CONST_INT_P (op2))
 	    return false;

@@ -224,46 +224,26 @@ void test6()
     assert(&t.Bottom < &t.foo2);
 
     assert(TRECT6.foo1.offsetof == 0);
-version (Win32)
-{
-    assert(TRECT6.Left.offsetof == 8);
-    assert(TRECT6.Top.offsetof == 12);
-    assert(TRECT6.Right.offsetof == 16);
-    assert(TRECT6.Bottom.offsetof == 20);
-    assert(TRECT6.TopLeft.offsetof == 8);
-    assert(TRECT6.BottomRight.offsetof == 16);
-    assert(TRECT6.foo2.offsetof == 24);
-}
-else version (X86_64)
-{
-    assert(TRECT6.Left.offsetof == 8);
-    assert(TRECT6.Top.offsetof == 12);
-    assert(TRECT6.Right.offsetof == 16);
-    assert(TRECT6.Bottom.offsetof == 20);
-    assert(TRECT6.TopLeft.offsetof == 8);
-    assert(TRECT6.BottomRight.offsetof == 16);
-    assert(TRECT6.foo2.offsetof == 24);
-}
-else version(ARM)
-{
-    assert(TRECT6.Left.offsetof == 8);
-    assert(TRECT6.Top.offsetof == 12);
-    assert(TRECT6.Right.offsetof == 16);
-    assert(TRECT6.Bottom.offsetof == 20);
-    assert(TRECT6.TopLeft.offsetof == 8);
-    assert(TRECT6.BottomRight.offsetof == 16);
-    assert(TRECT6.foo2.offsetof == 24);
-}
-else
-{
-    assert(TRECT6.Left.offsetof == 4);
-    assert(TRECT6.Top.offsetof == 8);
-    assert(TRECT6.Right.offsetof == 12);
-    assert(TRECT6.Bottom.offsetof == 16);
-    assert(TRECT6.TopLeft.offsetof == 4);
-    assert(TRECT6.BottomRight.offsetof == 12);
-    assert(TRECT6.foo2.offsetof == 20);
-}
+    static if (long.alignof == 8)
+    {
+        assert(TRECT6.Left.offsetof == 8);
+        assert(TRECT6.Top.offsetof == 12);
+        assert(TRECT6.Right.offsetof == 16);
+        assert(TRECT6.Bottom.offsetof == 20);
+        assert(TRECT6.TopLeft.offsetof == 8);
+        assert(TRECT6.BottomRight.offsetof == 16);
+        assert(TRECT6.foo2.offsetof == 24);
+    }
+    else
+    {
+        assert(TRECT6.Left.offsetof == 4);
+        assert(TRECT6.Top.offsetof == 8);
+        assert(TRECT6.Right.offsetof == 12);
+        assert(TRECT6.Bottom.offsetof == 16);
+        assert(TRECT6.TopLeft.offsetof == 4);
+        assert(TRECT6.BottomRight.offsetof == 12);
+        assert(TRECT6.foo2.offsetof == 20);
+    }
 }
 
 /* ================================ */

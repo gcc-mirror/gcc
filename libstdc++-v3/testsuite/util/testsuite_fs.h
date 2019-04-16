@@ -86,8 +86,18 @@ namespace __gnu_test
   // This is NOT supposed to be a secure way to get a unique name!
   // We just need a path that doesn't exist for testing purposes.
   test_fs::path
-  nonexistent_path()
+  nonexistent_path(std::string file = __builtin_FILE())
   {
+    // Include the caller's filename to help identify tests that fail to
+    // clean up the files they create.
+    // Remove .cc extension:
+    if (file.length() > 3 && file.compare(file.length() - 3, 3, ".cc") == 0)
+      file.resize(file.length() - 3);
+    // And directory:
+    auto pos = file.find_last_of("/\\");
+    if (pos != file.npos)
+      file.erase(0, pos+1);
+
     test_fs::path p;
 #if defined(_GNU_SOURCE) || _XOPEN_SOURCE >= 500 || _POSIX_C_SOURCE >= 200112L
     char tmp[] = "filesystem-test.XXXXXX";
@@ -97,16 +107,22 @@ namespace __gnu_test
 	  std::error_code(errno, std::generic_category()));
     ::unlink(tmp);
     ::close(fd);
-    p = tmp;
+    if (!file.empty())
+      file.insert(0, 1, '-');
+    file.insert(0, tmp);
+    p = file;
 #else
-    char buf[64];
+    if (file.length() > 64)
+      file.resize(64);
+    char buf[128];
     static int counter;
 #if _GLIBCXX_USE_C99_STDIO
-    std::snprintf(buf, 64,
+    std::snprintf(buf, 128,
 #else
     std::sprintf(buf,
 #endif
-      "filesystem-test.%d.%lu", counter++, (unsigned long) ::getpid());
+      "filesystem-test.%d.%lu-%s", counter++, (unsigned long) ::getpid(),
+      file.c_str());
     p = buf;
 #endif
     return p;
@@ -126,6 +142,9 @@ namespace __gnu_test
     scoped_file(path_type p, adopt_file_t) : path(p) { }
 
     ~scoped_file() { if (!path.empty()) remove(path); }
+
+    scoped_file(scoped_file&&) = default;
+    scoped_file& operator=(scoped_file&&) = default;
 
     path_type path;
   };

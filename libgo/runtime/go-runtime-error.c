@@ -63,7 +63,7 @@ __go_runtime_error (int32 i)
   struct funcfileline_return fileline;
   bool in_runtime;
 
-  fileline = runtime_funcfileline ((uintptr) runtime_getcallerpc(), 0);
+  fileline = runtime_funcfileline ((uintptr) runtime_getcallerpc()-1, 0);
   in_runtime = (fileline.retfn.len > 0
 		&& (__builtin_strncmp ((const char *) fileline.retfn.str,
 				      "runtime.", 8)

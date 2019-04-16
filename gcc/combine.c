@@ -530,7 +530,7 @@ target_canonicalize_comparison (enum rtx_code *code, rtx *op0, rtx *op1,
 }
 
 /* Try to split PATTERN found in INSN.  This returns NULL_RTX if
-   PATTERN can not be split.  Otherwise, it returns an insn sequence.
+   PATTERN cannot be split.  Otherwise, it returns an insn sequence.
    This is a wrapper around split_insns which ensures that the
    reg_stat vector is made larger if the splitter creates a new
    register.  */
@@ -983,13 +983,16 @@ combine_validate_cost (rtx_insn *i0, rtx_insn *i1, rtx_insn *i2, rtx_insn *i3,
 }
 
 
-/* Delete any insns that copy a register to itself.  */
+/* Delete any insns that copy a register to itself.
+   Return true if the CFG was changed.  */
 
-static void
+static bool
 delete_noop_moves (void)
 {
   rtx_insn *insn, *next;
   basic_block bb;
+
+  bool edges_deleted = false;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -1001,10 +1004,12 @@ delete_noop_moves (void)
 	      if (dump_file)
 		fprintf (dump_file, "deleting noop move %d\n", INSN_UID (insn));
 
-	      delete_insn_and_edges (insn);
+	      edges_deleted |= delete_insn_and_edges (insn);
 	    }
 	}
     }
+
+  return edges_deleted;
 }
 
 
@@ -1143,8 +1148,8 @@ insn_a_feeds_b (rtx_insn *a, rtx_insn *b)
 /* Main entry point for combiner.  F is the first insn of the function.
    NREGS is the first unused pseudo-reg number.
 
-   Return nonzero if the combiner has turned an indirect jump
-   instruction into a direct jump.  */
+   Return nonzero if the CFG was changed (e.g. if the combiner has
+   turned an indirect jump instruction into a direct jump).  */
 static int
 combine_instructions (rtx_insn *f, unsigned int nregs)
 {
@@ -1529,7 +1534,7 @@ retry:
   default_rtl_profile ();
   clear_bb_flags ();
   new_direct_jump_p |= purge_all_dead_edges ();
-  delete_noop_moves ();
+  new_direct_jump_p |= delete_noop_moves ();
 
   /* Clean up.  */
   obstack_free (&insn_link_obstack, NULL);
@@ -3073,21 +3078,21 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
   /* Verify that I2 and maybe I1 and I0 can be combined into I3.  */
   if (!can_combine_p (i2, i3, i0, i1, NULL, NULL, &i2dest, &i2src))
     {
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Can't combine i2 into i3\n");
       undo_all ();
       return 0;
     }
   if (i1 && !can_combine_p (i1, i3, i0, NULL, i2, NULL, &i1dest, &i1src))
     {
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Can't combine i1 into i3\n");
       undo_all ();
       return 0;
     }
   if (i0 && !can_combine_p (i0, i3, NULL, NULL, i1, i2, &i0dest, &i0src))
     {
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Can't combine i0 into i3\n");
       undo_all ();
       return 0;
@@ -7682,6 +7687,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	      /* We can't do this if we are widening INNER_MODE (it
 		 may not be aligned, for one thing).  */
 	      && !paradoxical_subreg_p (tmode, inner_mode)
+	      && known_le (pos + len, GET_MODE_PRECISION (is_mode))
 	      && (inner_mode == tmode
 		  || (! mode_dependent_address_p (XEXP (inner, 0),
 						  MEM_ADDR_SPACE (inner))
@@ -7823,6 +7829,10 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
   if (mode != VOIDmode
       && partial_subreg_p (extraction_mode, mode))
     extraction_mode = mode;
+
+  /* Punt if len is too large for extraction_mode.  */
+  if (maybe_gt (len, GET_MODE_PRECISION (extraction_mode)))
+    return NULL_RTX;
 
   if (!MEM_P (inner))
     wanted_inner_mode = wanted_inner_reg_mode;

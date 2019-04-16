@@ -64,7 +64,7 @@ get_visual_column (expanded_location exploc, location_t loc,
 	  /* Notify the user the first time this happens.  */
 	  issued_note = true;
 	  inform (loc,
-		  "-Wmisleading-indentation is disabled from this point"
+		  "%<-Wmisleading-indentation%> is disabled from this point"
 		  " onwards, since column-tracking was disabled due to"
 		  " the size of the code/headers");
 	}

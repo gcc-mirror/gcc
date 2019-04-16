@@ -21,6 +21,9 @@ func check(t *testing.T, b *Builder, want string) {
 	if n := b.Len(); n != len(got) {
 		t.Errorf("Len: got %d; but len(String()) is %d", n, len(got))
 	}
+	if n := b.Cap(); n < len(got) {
+		t.Errorf("Cap: got %d; but len(String()) is %d", n, len(got))
+	}
 }
 
 func TestBuilder(t *testing.T) {
@@ -93,6 +96,9 @@ func TestBuilderGrow(t *testing.T) {
 		allocs := testing.AllocsPerRun(100, func() {
 			var b Builder
 			b.Grow(growLen) // should be only alloc, when growLen > 0
+			if b.Cap() < growLen {
+				t.Fatalf("growLen=%d: Cap() is lower than growLen", growLen)
+			}
 			b.Write(p)
 			if b.String() != string(p) {
 				t.Fatalf("growLen=%d: bad data written after Grow", growLen)
@@ -231,6 +237,16 @@ func TestBuilderCopyPanic(t *testing.T) {
 				a.WriteByte('x')
 				b := a
 				b.Len()
+			},
+		},
+		{
+			name:      "Cap",
+			wantPanic: false,
+			fn: func() {
+				var a Builder
+				a.WriteByte('x')
+				b := a
+				b.Cap()
 			},
 		},
 		{

@@ -503,7 +503,7 @@ cond_exec_process_if_block (ce_if_block * ce_info,
     return FALSE;
 
   /* If the conditional jump is more than just a conditional jump,
-     then we can not do conditional execution conversion on this block.  */
+     then we cannot do conditional execution conversion on this block.  */
   if (! onlyjump_p (BB_END (test_bb)))
     return FALSE;
 
@@ -652,7 +652,7 @@ cond_exec_process_if_block (ce_if_block * ce_info,
 	    goto fail;
 
 	  /* If the conditional jump is more than just a conditional jump, then
-	     we can not do conditional execution conversion on this block.  */
+	     we cannot do conditional execution conversion on this block.  */
 	  if (! onlyjump_p (BB_END (bb)))
 	    goto fail;
 
@@ -4022,7 +4022,7 @@ noce_find_if_block (basic_block test_bb, edge then_edge, edge else_edge,
     }
 
   /* If the conditional jump is more than just a conditional
-     jump, then we can not do if-conversion on this block.  */
+     jump, then we cannot do if-conversion on this block.  */
   jump = BB_END (test_bb);
   if (! onlyjump_p (jump))
     return FALSE;
@@ -4642,7 +4642,7 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
     return FALSE;
 
   /* If the conditional jump is more than just a conditional jump, then
-     we can not do if-conversion on this block.  Give up for returnjump_p,
+     we cannot do if-conversion on this block.  Give up for returnjump_p,
      changing a conditional return followed by unconditional trap for
      conditional trap followed by unconditional return is likely not
      beneficial and harder to handle.  */

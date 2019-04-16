@@ -639,7 +639,6 @@ TARGET_LIBRARY_FALSE
 TARGET_LIBRARY_TRUE
 toolexeclibdir
 toolexecdir
-target_all
 CPP
 OTOOL64
 OTOOL
@@ -10644,7 +10643,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10647 "configure"
+#line 10646 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10750,7 +10749,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10753 "configure"
+#line 10752 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11139,9 +11138,6 @@ if test -n "$with_cross_host"; then
 
    $as_echo "#define HAVE_STRERROR 1" >>confdefs.h
 
-
-   # We ignore --with-system-zlib in this case.
-   target_all=libzgcj.la
 else
    if test x$gcc_no_link = xyes; then
   if test "x${ac_cv_func_mmap_fixed_mapped+set}" != xset; then
@@ -11363,59 +11359,7 @@ _ACEOF
 fi
 done
 
-
-   if test "$with_system_zlib" = yes; then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for deflate in -lz" >&5
-$as_echo_n "checking for deflate in -lz... " >&6; }
-if ${ac_cv_lib_z_deflate+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lz  $LIBS"
-if test x$gcc_no_link = xyes; then
-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
 fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char deflate ();
-int
-main ()
-{
-return deflate ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_z_deflate=yes
-else
-  ac_cv_lib_z_deflate=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_z_deflate" >&5
-$as_echo "$ac_cv_lib_z_deflate" >&6; }
-if test "x$ac_cv_lib_z_deflate" = xyes; then :
-  target_all=
-else
-  target_all=libzgcj.la
-fi
-
-   else
-      target_all=libzgcj.la
-   fi
-fi
-
-
 
 for ac_header in unistd.h
 do :

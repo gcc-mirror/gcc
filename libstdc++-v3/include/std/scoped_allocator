@@ -343,10 +343,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const outer_allocator_type& outer_allocator() const noexcept
       { return static_cast<const _OuterAlloc&>(*this); }
 
-      pointer allocate(size_type __n)
+      _GLIBCXX_NODISCARD pointer allocate(size_type __n)
       { return __traits::allocate(outer_allocator(), __n); }
 
-      pointer allocate(size_type __n, const_void_pointer __hint)
+      _GLIBCXX_NODISCARD pointer allocate(size_type __n, const_void_pointer __hint)
       { return __traits::allocate(outer_allocator(), __n, __hint); }
 
       void deallocate(pointer __p, size_type __n)

@@ -189,9 +189,9 @@ struct ICINFO {
     DWORD   dwFlags;
     DWORD   dwVersion;
     DWORD   dwVersionICM;
-    WCHAR[16]   szName;
-    WCHAR[128]  szDescription;
-    WCHAR[128]  szDriver;
+    WCHAR[16]   szName = 0;
+    WCHAR[128]  szDescription = 0;
+    WCHAR[128]  szDriver = 0;
 }
 
 enum {
@@ -890,7 +890,7 @@ struct AVISTREAMINFOW {
     RECT    rcFrame;
     DWORD   dwEditCount;
     DWORD   dwFormatChangeCount;
-    WCHAR[64]   szName;
+    WCHAR[64]   szName = 0;
 }
 alias AVISTREAMINFOW* LPAVISTREAMINFOW;
 
@@ -912,7 +912,7 @@ struct AVISTREAMINFOA {
     RECT    rcFrame;
     DWORD   dwEditCount;
     DWORD   dwFormatChangeCount;
-    char[64]    szName;
+    char[64]    szName = 0;
 }
 alias AVISTREAMINFOA* LPAVISTREAMINFOA;
 
@@ -939,7 +939,7 @@ struct AVIFILEINFOW {
     DWORD   dwRate;
     DWORD   dwLength;
     DWORD   dwEditCount;
-    WCHAR[64]   szFileType;
+    WCHAR[64]   szFileType = 0;
 }
 alias AVIFILEINFOW* LPAVIFILEINFOW;
 
@@ -955,7 +955,7 @@ struct AVIFILEINFOA {
     DWORD   dwRate;
     DWORD   dwLength;
     DWORD   dwEditCount;
-    char[64]    szFileType;
+    char[64]    szFileType = 0;
 }
 alias AVIFILEINFOA* LPAVIFILEINFOA;
 

@@ -389,8 +389,8 @@ setup_regno_cost_classes_by_aclass (int regno, enum reg_class aclass)
 
 /* Setup cost classes for pseudo REGNO with MODE.  Usage of MODE can
    decrease number of cost classes for the pseudo, if hard registers
-   of some important classes can not hold a value of MODE.  So the
-   pseudo can not get hard register of some important classes and cost
+   of some important classes cannot hold a value of MODE.  So the
+   pseudo cannot get hard register of some important classes and cost
    calculation for such important classes is only wasting CPU
    time.  */
 static void
@@ -2107,6 +2107,13 @@ process_bb_node_for_hard_reg_moves (ira_loop_tree_node_t loop_tree_node)
 	}
       else
 	continue;
+      if (reg_class_size[(int) REGNO_REG_CLASS (hard_regno)]
+	  == (ira_reg_class_max_nregs
+	      [REGNO_REG_CLASS (hard_regno)][(int) ALLOCNO_MODE(a)]))
+	/* If the class can provide only one hard reg to the allocno,
+	   we processed the insn record_operand_costs already and we
+	   actually updated the hard reg cost there.  */
+	continue;
       rclass = ALLOCNO_CLASS (a);
       if (! TEST_HARD_REG_BIT (reg_class_contents[rclass], hard_regno))
 	continue;
@@ -2379,7 +2386,7 @@ ira_tune_allocno_costs (void)
 						   *crossed_calls_clobber_regs)
 		  && (ira_hard_reg_set_intersection_p (regno, mode,
 						       call_used_reg_set)
-		      || targetm.hard_regno_call_part_clobbered (regno,
+		      || targetm.hard_regno_call_part_clobbered (NULL, regno,
 								 mode)))
 		cost += (ALLOCNO_CALL_FREQ (a)
 			 * (ira_memory_move_cost[mode][rclass][0]

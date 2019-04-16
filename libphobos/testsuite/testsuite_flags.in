@@ -35,11 +35,13 @@ case ${query} in
       GDCPATHS_default="-nostdinc"
       GDCPATHS_config="-B${BUILD_DIR}/src
                        -I${BUILD_DIR}/libdruntime
-                       -I${SRC_DIR}/libdruntime"
+                       -I${SRC_DIR}/libdruntime
+                       -I${SRC_DIR}/src"
       echo ${GDCPATHS_default} ${GDCPATHS_config}
       ;;
     --gdcldflags)
       GDCLDFLAGS="-B${BUILD_DIR}/src
+                  -B${BUILD_DIR}/libdruntime/gcc
                   -L${BUILD_DIR}/libdruntime/.libs
                   -L${BUILD_DIR}/src/.libs"
       echo ${GDCLDFLAGS}

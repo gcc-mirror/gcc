@@ -218,7 +218,15 @@ constexpr bool test_to_integer(unsigned char c)
 
 static_assert( test_to_integer<int>(0) );
 static_assert( test_to_integer<int>(255) );
+static_assert( test_to_integer<signed char>(0) );
 static_assert( test_to_integer<signed char>(255) );
 static_assert( test_to_integer<unsigned>(0) );
 static_assert( test_to_integer<unsigned>(255) );
-
+#ifdef _GLIBCXX_USE_CHAR8_T
+static_assert( test_to_integer<char8_t>(0) );
+static_assert( test_to_integer<char8_t>(255) );
+#endif
+static_assert( test_to_integer<char16_t>(0) );
+static_assert( test_to_integer<char16_t>(255) );
+static_assert( test_to_integer<char32_t>(0) );
+static_assert( test_to_integer<char32_t>(255) );

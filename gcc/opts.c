@@ -670,7 +670,16 @@ default_options_optimization (struct gcc_options *opts,
   /* For -O1 only do loop invariant motion for very small loops.  */
   maybe_set_param_value
     (PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP,
-     opt2 ? default_param_value (PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP) : 1000,
+     opt2 ? default_param_value (PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP)
+     : default_param_value (PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP) / 10,
+     opts->x_param_values, opts_set->x_param_values);
+
+  /* For -O1 reduce the maximum number of active local stores for RTL DSE
+     since this can consume huge amounts of memory (PR89115).  */
+  maybe_set_param_value
+    (PARAM_MAX_DSE_ACTIVE_LOCAL_STORES,
+     opt2 ? default_param_value (PARAM_MAX_DSE_ACTIVE_LOCAL_STORES)
+     : default_param_value (PARAM_MAX_DSE_ACTIVE_LOCAL_STORES) / 10,
      opts->x_param_values, opts_set->x_param_values);
 
   /* At -Ofast, allow store motion to introduce potential race conditions.  */
@@ -1067,6 +1076,14 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	    error_at (loc, "%<-fno-fat-lto-objects%> are supported only with "
 		      "linker plugin");
 	  opts->x_flag_fat_lto_objects = 1;
+	}
+
+      /* -gsplit-dwarf isn't compatible with LTO, see PR88389.  */
+      if (opts->x_dwarf_split_debug_info)
+	{
+	  inform (loc, "%<-gsplit-dwarf%> is not supported with LTO,"
+		  " disabling");
+	  opts->x_dwarf_split_debug_info = 0;
 	}
     }
 
@@ -1918,14 +1935,14 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 
 	  if (hint)
 	    error_at (loc,
-		      "unrecognized argument to -f%ssanitize%s= option: %q.*s;"
-		      " did you mean %qs?",
+		      "unrecognized argument to %<-f%ssanitize%s=%> "
+		      "option: %q.*s; did you mean %qs?",
 		      value ? "" : "no-",
 		      suffix, (int) len, p, hint);
 	  else
 	    error_at (loc,
-		      "unrecognized argument to -f%ssanitize%s= option: %q.*s",
-		      value ? "" : "no-",
+		      "unrecognized argument to %<-f%ssanitize%s=%> option: "
+		      "%q.*s", value ? "" : "no-",
 		      suffix, (int) len, p);
 	}
 
@@ -2668,9 +2685,9 @@ common_handle_option (struct gcc_options *opts,
     case OPT_gdwarf:
       if (arg && strlen (arg) != 0)
         {
-          error_at (loc, "%<-gdwarf%s%> is ambiguous; "
-                    "use %<-gdwarf-%s%> for DWARF version "
-                    "or %<-gdwarf -g%s%> for debug level", arg, arg, arg);
+	  error_at (loc, "%<-gdwarf%s%> is ambiguous; "
+		    "use %<-gdwarf-%s%> for DWARF version "
+		    "or %<-gdwarf%> %<-g%s%> for debug level", arg, arg, arg);
           break;
         }
       else
@@ -3070,10 +3087,10 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
   strcpy (new_option + 1, arg);
   option_index = find_opt (new_option, lang_mask);
   if (option_index == OPT_SPECIAL_unknown)
-    error_at (loc, "-Werror=%s: no option -%s", arg, new_option);
+    error_at (loc, "%<-Werror=%s%>: no option -%s", arg, new_option);
   else if (!(cl_options[option_index].flags & CL_WARNING))
-    error_at (loc, "-Werror=%s: -%s is not an option that controls warnings",
-	      arg, new_option);
+    error_at (loc, "%<-Werror=%s%>: -%s is not an option that controls "
+	      "warnings", arg, new_option);
   else
     {
       const diagnostic_t kind = value ? DK_ERROR : DK_WARNING;

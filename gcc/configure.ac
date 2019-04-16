@@ -1228,6 +1228,14 @@ LDEXP_LIB="$LIBS"
 LIBS="$save_LIBS"
 AC_SUBST(LDEXP_LIB)
 
+# Some systems need dlopen
+save_LIBS="$LIBS"
+LIBS=
+AC_SEARCH_LIBS(dlopen, dl)
+DL_LIB="$LIBS"
+LIBS="$save_LIBS"
+AC_SUBST(DL_LIB)
+
 # Use <inttypes.h> only if it exists,
 # doesn't clash with <sys/types.h>, declares intmax_t and defines
 # PRId64
@@ -3962,6 +3970,29 @@ case "$target" in
 	ldr     x0, [[x2, #:gotpage_lo15:globalsym]]
     ],,[AC_DEFINE(HAVE_AS_SMALL_PIC_RELOCS, 1,
 	[Define if your assembler supports relocs needed by -fpic.])])
+    # Enable Branch Target Identification Mechanism and Return Address
+    # Signing by default.
+    AC_ARG_ENABLE(standard-branch-protection,
+    [
+AS_HELP_STRING([--enable-standard-branch-protection],
+        [enable Branch Target Identification Mechanism and Return Address Signing by default for AArch64])
+AS_HELP_STRING([--disable-standard-branch-protection],
+        [disable Branch Target Identification Mechanism and Return Address Signing by default for AArch64])
+    ],
+      [
+        case $enableval in
+          yes)
+            tm_defines="${tm_defines} TARGET_ENABLE_BTI=1 TARGET_ENABLE_PAC_RET=1"
+            ;;
+          no)
+            ;;
+          *)
+            AC_MSG_ERROR(['$enableval' is an invalid value for --enable-standard-branch-protection.\
+  Valid choices are 'yes' and 'no'.])
+            ;;
+        esac
+      ],
+    [])
     # Enable default workaround for AArch64 Cortex-A53 erratum 835769.
     AC_ARG_ENABLE(fix-cortex-a53-835769,
     [
@@ -4849,6 +4880,13 @@ pointers into PC-relative form.])
       AC_MSG_ERROR(
 	[Requesting --with-nan= requires assembler support for -mnan=])
     fi
+    ;;
+    riscv*-*-*)
+    gcc_GAS_CHECK_FEATURE([.attribute support],
+      gcc_cv_as_riscv_attribute, [2,32,0],,
+      [.attribute stack_align,4],,
+      [AC_DEFINE(HAVE_AS_RISCV_ATTRIBUTE, 1,
+	  [Define if your assembler supports .attribute.])])
     ;;
     s390*-*-*)
     gcc_GAS_CHECK_FEATURE([.gnu_attribute support],

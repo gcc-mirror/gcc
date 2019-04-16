@@ -1531,11 +1531,18 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
 
   { ALTIVEC_BUILTIN_VEC_LD, ALTIVEC_BUILTIN_LVX_V2DF,
     RS6000_BTI_V2DF, RS6000_BTI_INTSI, ~RS6000_BTI_V2DF, 0 },
+  { ALTIVEC_BUILTIN_VEC_LD, ALTIVEC_BUILTIN_LVX_V2DF,
+    RS6000_BTI_V2DF, RS6000_BTI_INTSI, ~RS6000_BTI_double, 0 },
   { ALTIVEC_BUILTIN_VEC_LD, ALTIVEC_BUILTIN_LVX_V2DI,
     RS6000_BTI_V2DI, RS6000_BTI_INTSI, ~RS6000_BTI_V2DI, 0 },
   { ALTIVEC_BUILTIN_VEC_LD, ALTIVEC_BUILTIN_LVX_V2DI,
+    RS6000_BTI_V2DI, RS6000_BTI_INTSI, ~RS6000_BTI_long_long, 0 },
+  { ALTIVEC_BUILTIN_VEC_LD, ALTIVEC_BUILTIN_LVX_V2DI,
     RS6000_BTI_unsigned_V2DI, RS6000_BTI_INTSI,
     ~RS6000_BTI_unsigned_V2DI, 0 },
+  { ALTIVEC_BUILTIN_VEC_LD, ALTIVEC_BUILTIN_LVX_V2DI,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_INTSI,
+    ~RS6000_BTI_unsigned_long_long, 0 },
   { ALTIVEC_BUILTIN_VEC_LD, ALTIVEC_BUILTIN_LVX_V2DI,
     RS6000_BTI_bool_V2DI, RS6000_BTI_INTSI, ~RS6000_BTI_bool_V2DI, 0 },
   { ALTIVEC_BUILTIN_VEC_LD, ALTIVEC_BUILTIN_LVX_V4SF,
@@ -3737,14 +3744,27 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
 
   { ALTIVEC_BUILTIN_VEC_ST, ALTIVEC_BUILTIN_STVX_V2DF,
     RS6000_BTI_void, RS6000_BTI_V2DF, RS6000_BTI_INTSI, ~RS6000_BTI_V2DF },
+  { ALTIVEC_BUILTIN_VEC_ST, ALTIVEC_BUILTIN_STVX_V2DF,
+    RS6000_BTI_void, RS6000_BTI_V2DF, RS6000_BTI_INTSI, ~RS6000_BTI_double },
   { ALTIVEC_BUILTIN_VEC_ST, ALTIVEC_BUILTIN_STVX_V2DI,
     RS6000_BTI_void, RS6000_BTI_V2DI, RS6000_BTI_INTSI, ~RS6000_BTI_V2DI },
+  { ALTIVEC_BUILTIN_VEC_ST, ALTIVEC_BUILTIN_STVX_V2DI,
+    RS6000_BTI_void, RS6000_BTI_V2DI, RS6000_BTI_INTSI, ~RS6000_BTI_long_long },
   { ALTIVEC_BUILTIN_VEC_ST, ALTIVEC_BUILTIN_STVX_V2DI,
     RS6000_BTI_void, RS6000_BTI_unsigned_V2DI, RS6000_BTI_INTSI,
     ~RS6000_BTI_unsigned_V2DI },
   { ALTIVEC_BUILTIN_VEC_ST, ALTIVEC_BUILTIN_STVX_V2DI,
+    RS6000_BTI_void, RS6000_BTI_unsigned_V2DI, RS6000_BTI_INTSI,
+    ~RS6000_BTI_unsigned_long_long },
+  { ALTIVEC_BUILTIN_VEC_ST, ALTIVEC_BUILTIN_STVX_V2DI,
     RS6000_BTI_void, RS6000_BTI_bool_V2DI, RS6000_BTI_INTSI,
     ~RS6000_BTI_bool_V2DI },
+  { ALTIVEC_BUILTIN_VEC_ST, ALTIVEC_BUILTIN_STVX_V2DI,
+    RS6000_BTI_void, RS6000_BTI_bool_V2DI, RS6000_BTI_INTSI,
+    ~RS6000_BTI_long_long },
+  { ALTIVEC_BUILTIN_VEC_ST, ALTIVEC_BUILTIN_STVX_V2DI,
+    RS6000_BTI_void, RS6000_BTI_bool_V2DI, RS6000_BTI_INTSI,
+    ~RS6000_BTI_unsigned_long_long },
   { ALTIVEC_BUILTIN_VEC_ST, ALTIVEC_BUILTIN_STVX_V4SF,
     RS6000_BTI_void, RS6000_BTI_V4SF, RS6000_BTI_INTSI, ~RS6000_BTI_V4SF },
   { ALTIVEC_BUILTIN_VEC_ST, ALTIVEC_BUILTIN_STVX_V4SF,
@@ -6545,12 +6565,14 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 
 	  arg2 = fold_for_warn (arg2);
 
-	  /* If the second argument is an integer constant, if the value is in
-	     the expected range, generate the built-in code if we can.  We need
-	     64-bit and direct move to extract the small integer vectors.  */
-	  if (TREE_CODE (arg2) == INTEGER_CST
-	      && wi::ltu_p (wi::to_wide (arg2), nunits))
+	  /* If the second argument is an integer constant, generate
+	     the built-in code if we can.  We need 64-bit and direct
+	     move to extract the small integer vectors.  */
+	  if (TREE_CODE (arg2) == INTEGER_CST)
 	    {
+	      wide_int selector = wi::to_wide (arg2);
+	      selector = wi::umod_trunc (selector, nunits);
+	      arg2 = wide_int_to_tree (TREE_TYPE (arg2), selector);
 	      switch (mode)
 		{
 		default:
@@ -6625,7 +6647,13 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	    }
 
 	  if (call)
-	    return build_call_expr (call, 2, arg1, arg2);
+	    {
+	      tree result = build_call_expr (call, 2, arg1, arg2);
+	      /* Coerce the result to vector element type.  May be no-op.  */
+	      arg1_inner_type = TREE_TYPE (arg1_type);
+	      result = fold_convert (arg1_inner_type, result);
+	      return result;
+	    }
 	}
 
       /* Build *(((arg1_inner_type*)&(vector type){arg1})+arg2). */

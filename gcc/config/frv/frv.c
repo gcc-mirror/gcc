@@ -9115,7 +9115,7 @@ frv_expand_builtin (tree exp,
 
   if (fcode < FRV_BUILTIN_FIRST_NONMEDIA && !TARGET_MEDIA)
     {
-      error ("media functions are not available unless -mmedia is used");
+      error ("media functions are not available unless %<-mmedia%> is used");
       return NULL_RTX;
     }
 

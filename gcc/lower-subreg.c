@@ -79,7 +79,7 @@ along with GCC; see the file COPYING3.  If not see
 static bitmap decomposable_context;
 
 /* Bit N in this bitmap is set if regno N is used in a context in
-   which it can not be decomposed.  */
+   which it cannot be decomposed.  */
 static bitmap non_decomposable_context;
 
 /* Bit N in this bitmap is set if regno N is used in a subreg
@@ -561,7 +561,7 @@ find_decomposable_subregs (rtx *loc, enum classify_move_insn *pcmi)
 	     the register.
 
 	     If this is not a simple copy from one location to another,
-	     then we can not decompose this register.  If this is a simple
+	     then we cannot decompose this register.  If this is a simple
 	     copy we want to decompose, and the mode is right,
 	     then we mark the register as decomposable.
 	     Otherwise we don't say anything about this register --
@@ -982,7 +982,7 @@ resolve_simple_move (rtx set, rtx_insn *insn)
   /* It's possible for the code to use a subreg of a decomposed
      register while forming an address.  We need to handle that before
      passing the address to emit_move_insn.  We pass NULL_RTX as the
-     insn parameter to resolve_subreg_use because we can not validate
+     insn parameter to resolve_subreg_use because we cannot validate
      the insn yet.  */
   if (MEM_P (src) || MEM_P (dest))
     {

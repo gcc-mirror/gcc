@@ -762,13 +762,13 @@ avr_option_override (void)
     }
 
   if (flag_pic == 1)
-    warning (OPT_fpic, "-fpic is not supported");
+    warning (OPT_fpic, "%<-fpic%> is not supported");
   if (flag_pic == 2)
-    warning (OPT_fPIC, "-fPIC is not supported");
+    warning (OPT_fPIC, "%<-fPIC%> is not supported");
   if (flag_pie == 1)
-    warning (OPT_fpie, "-fpie is not supported");
+    warning (OPT_fpie, "%<-fpie%> is not supported");
   if (flag_pie == 2)
-    warning (OPT_fPIE, "-fPIE is not supported");
+    warning (OPT_fPIE, "%<-fPIE%> is not supported");
 
 #if !defined (HAVE_AS_AVR_MGCCISR_OPTION)
   avr_gasisr_prologues = 0;
@@ -12181,7 +12181,8 @@ avr_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 /* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  */
 
 static bool
-avr_hard_regno_call_part_clobbered (unsigned regno, machine_mode mode)
+avr_hard_regno_call_part_clobbered (rtx_insn *insn ATTRIBUTE_UNUSED,
+				    unsigned regno, machine_mode mode)
 {
   /* FIXME: This hook gets called with MODE:REGNO combinations that don't
         represent valid hard registers like, e.g. HI:29.  Returning TRUE

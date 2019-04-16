@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build aix darwin dragonfly freebsd js,wasm linux nacl netbsd openbsd solaris
+// +build aix darwin dragonfly freebsd hurd js,wasm linux nacl netbsd openbsd solaris
 
 package poll
 
@@ -445,11 +445,6 @@ func (fd *FD) Fstat(s *syscall.Stat_t) error {
 	return syscall.Fstat(fd.Sysfd, s)
 }
 
-// Use a helper function to call fcntl.  This is defined in C in
-// libgo/runtime.
-//extern __go_fcntl_uintptr
-func fcntl(uintptr, uintptr, uintptr) (uintptr, uintptr)
-
 // tryDupCloexec indicates whether F_DUPFD_CLOEXEC should be used.
 // If the kernel doesn't support it, this is set to 0.
 var tryDupCloexec = int32(1)
@@ -457,13 +452,11 @@ var tryDupCloexec = int32(1)
 // DupCloseOnExec dups fd and marks it close-on-exec.
 func DupCloseOnExec(fd int) (int, string, error) {
 	if atomic.LoadInt32(&tryDupCloexec) == 1 {
-		syscall.Entersyscall()
-		r0, errno := fcntl(uintptr(fd), syscall.F_DUPFD_CLOEXEC, 0)
-		syscall.Exitsyscall()
-		e1 := syscall.Errno(errno)
-		switch e1 {
-		case 0:
-			return int(r0), "", nil
+		r0, e1 := fcntl(fd, syscall.F_DUPFD_CLOEXEC, 0)
+		if e1 == nil {
+			return r0, "", nil
+		}
+		switch e1.(syscall.Errno) {
 		case syscall.EINVAL, syscall.ENOSYS:
 			// Old kernel, or js/wasm (which returns
 			// ENOSYS). Fall back to the portable way from

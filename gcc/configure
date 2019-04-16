@@ -782,6 +782,7 @@ manext
 LIBICONV_DEP
 LTLIBICONV
 LIBICONV
+DL_LIB
 LDEXP_LIB
 EXTRA_GCC_LIBS
 GNAT_LIBEXC
@@ -979,6 +980,7 @@ with_plugin_ld
 enable_gnu_indirect_function
 enable_initfini_array
 enable_comdat
+enable_standard_branch_protection
 enable_fix_cortex_a53_835769
 enable_fix_cortex_a53_843419
 with_glibc_version
@@ -1707,6 +1709,14 @@ Optional Features:
                           glibc systems
   --enable-initfini-array	use .init_array/.fini_array sections
   --enable-comdat         enable COMDAT group support
+
+  --enable-standard-branch-protection
+                          enable Branch Target Identification Mechanism and
+                          Return Address Signing by default for AArch64
+  --disable-standard-branch-protection
+                          disable Branch Target Identification Mechanism and
+                          Return Address Signing by default for AArch64
+
 
   --enable-fix-cortex-a53-835769
                           enable workaround for AArch64 Cortex-A53 erratum
@@ -9723,6 +9733,69 @@ if test "$ac_res" != no; then :
 fi
 
 LDEXP_LIB="$LIBS"
+LIBS="$save_LIBS"
+
+
+# Some systems need dlopen
+save_LIBS="$LIBS"
+LIBS=
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing dlopen" >&5
+$as_echo_n "checking for library containing dlopen... " >&6; }
+if ${ac_cv_search_dlopen+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char dlopen ();
+int
+main ()
+{
+return dlopen ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' dl; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_search_dlopen=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_dlopen+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_dlopen+:} false; then :
+
+else
+  ac_cv_search_dlopen=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_dlopen" >&5
+$as_echo "$ac_cv_search_dlopen" >&6; }
+ac_res=$ac_cv_search_dlopen
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+fi
+
+DL_LIB="$LIBS"
 LIBS="$save_LIBS"
 
 
@@ -18573,7 +18646,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18576 "configure"
+#line 18649 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18679,7 +18752,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18682 "configure"
+#line 18755 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -23236,16 +23309,16 @@ EOF
 	      cat > conftest.s <<EOF
 .section $sh_quote.fini_array.65530$sh_quote,$sh_flags,$sh_type
 .align 4
-.byte 'C', 'C', 'C', 'C'
+.byte 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C'
 .section $sh_quote.init_array.65530$sh_quote,$sh_flags,$sh_type
 .align 4
-.byte 'D', 'D', 'D', 'D'
+.byte 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D'
 .section $sh_quote.fini_array.01005$sh_quote,$sh_flags,$sh_type
 .align 4
-.byte 'G', 'G', 'G', 'G'
+.byte 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'
 .section $sh_quote.init_array.01005$sh_quote,$sh_flags,$sh_type
 .align 4
-.byte 'H', 'H', 'H', 'H'
+.byte 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'
 .text
 .globl _start
 _start:
@@ -23253,9 +23326,9 @@ EOF
 	      if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
 	         && $gcc_cv_ld -o conftest conftest.o > /dev/null 2>&1 \
 	         && $gcc_cv_objdump -s -j .init_array conftest \
-		    | grep HHHHDDDD > /dev/null 2>&1 \
+		    | grep HHHHHHHHDDDDDDDD > /dev/null 2>&1 \
 	         && $gcc_cv_objdump -s -j .fini_array conftest \
-		    | grep GGGGCCCC > /dev/null 2>&1; then
+		    | grep GGGGGGGGCCCCCCCC > /dev/null 2>&1; then
 	        gcc_cv_initfini_array=yes
 	      fi
 	      ;;
@@ -25053,6 +25126,25 @@ $as_echo "$gcc_cv_as_aarch64_picreloc" >&6; }
 if test $gcc_cv_as_aarch64_picreloc = yes; then
 
 $as_echo "#define HAVE_AS_SMALL_PIC_RELOCS 1" >>confdefs.h
+
+fi
+
+    # Enable Branch Target Identification Mechanism and Return Address
+    # Signing by default.
+    # Check whether --enable-standard-branch-protection was given.
+if test "${enable_standard_branch_protection+set}" = set; then :
+  enableval=$enable_standard_branch_protection;
+        case $enableval in
+          yes)
+            tm_defines="${tm_defines} TARGET_ENABLE_BTI=1 TARGET_ENABLE_PAC_RET=1"
+            ;;
+          no)
+            ;;
+          *)
+            as_fn_error $? "'$enableval' is an invalid value for --enable-standard-branch-protection.\
+  Valid choices are 'yes' and 'no'." "$LINENO" 5
+            ;;
+        esac
 
 fi
 
@@ -27510,6 +27602,43 @@ fi
        && test x$with_nan != x; then
       as_fn_error $? "Requesting --with-nan= requires assembler support for -mnan=" "$LINENO" 5
     fi
+    ;;
+    riscv*-*-*)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .attribute support" >&5
+$as_echo_n "checking assembler for .attribute support... " >&6; }
+if ${gcc_cv_as_riscv_attribute+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_riscv_attribute=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 32 \) \* 1000 + 0`
+  then gcc_cv_as_riscv_attribute=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo '.attribute stack_align,4' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_riscv_attribute=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_riscv_attribute" >&5
+$as_echo "$gcc_cv_as_riscv_attribute" >&6; }
+if test $gcc_cv_as_riscv_attribute = yes; then
+
+$as_echo "#define HAVE_AS_RISCV_ATTRIBUTE 1" >>confdefs.h
+
+fi
+
     ;;
     s390*-*-*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .gnu_attribute support" >&5

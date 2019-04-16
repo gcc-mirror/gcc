@@ -61,4 +61,6 @@ extern int visium_expand_block_set (rtx *);
 extern unsigned int reg_or_subreg_regno (rtx);
 #endif /* RTX_CODE */
 
+extern rtl_opt_pass * make_pass_visium_reorg (gcc::context *);
+
 #endif

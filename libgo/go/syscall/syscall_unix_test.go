@@ -46,11 +46,13 @@ func _() {
 	// fcntl file locking structure and constants
 	var (
 		_ = syscall.Flock_t{
-			Type:   int16(0),
-			Whence: int16(0),
-			Start:  int64(0),
-			Len:    int64(0),
-			Pid:    int32(0),
+			// Comment out the Type and Whence tests because
+			// on the Hurd they are int32, not int16.
+			// Type:   int16(0),
+			// Whence: int16(0),
+			Start: int64(0),
+			Len:   int64(0),
+			Pid:   int32(0),
 		}
 	)
 	const (
@@ -315,6 +317,12 @@ func TestRlimit(t *testing.T) {
 	}
 	set := rlimit
 	set.Cur = set.Max - 1
+	if runtime.GOOS == "darwin" && set.Cur > 10240 {
+		// The max file limit is 10240, even though
+		// the max returned by Getrlimit is 1<<63-1.
+		// This is OPEN_MAX in sys/syslimits.h.
+		set.Cur = 10240
+	}
 	err = syscall.Setrlimit(syscall.RLIMIT_NOFILE, &set)
 	if err != nil {
 		t.Fatalf("Setrlimit: set failed: %#v %v", set, err)
@@ -326,15 +334,11 @@ func TestRlimit(t *testing.T) {
 	}
 	set = rlimit
 	set.Cur = set.Max - 1
+	if runtime.GOOS == "darwin" && set.Cur > 10240 {
+		set.Cur = 10240
+	}
 	if set != get {
-		// Seems like Darwin requires some privilege to
-		// increase the soft limit of rlimit sandbox, though
-		// Setrlimit never reports an error.
-		switch runtime.GOOS {
-		case "darwin":
-		default:
-			t.Fatalf("Rlimit: change failed: wanted %#v got %#v", set, get)
-		}
+		t.Fatalf("Rlimit: change failed: wanted %#v got %#v", set, get)
 	}
 	err = syscall.Setrlimit(syscall.RLIMIT_NOFILE, &rlimit)
 	if err != nil {

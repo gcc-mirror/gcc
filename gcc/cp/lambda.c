@@ -263,6 +263,9 @@ is_capture_proxy (tree decl)
 	  && !DECL_ANON_UNION_VAR_P (decl)
 	  && !DECL_DECOMPOSITION_P (decl)
 	  && !DECL_FNAME_P (decl)
+	  && !(DECL_ARTIFICIAL (decl)
+	       && DECL_LANG_SPECIFIC (decl)
+	       && DECL_OMP_PRIVATIZED_MEMBER (decl))
 	  && LAMBDA_FUNCTION_P (DECL_CONTEXT (decl)));
 }
 
@@ -276,20 +279,8 @@ is_normal_capture_proxy (tree decl)
     /* It's not a capture proxy.  */
     return false;
 
-  if (variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
-    /* VLA capture.  */
-    return true;
-
-  /* It is a capture proxy, is it a normal capture?  */
-  tree val = DECL_VALUE_EXPR (decl);
-  if (val == error_mark_node)
-    return true;
-
-  if (TREE_CODE (val) == ADDR_EXPR)
-    val = TREE_OPERAND (val, 0);
-  gcc_assert (TREE_CODE (val) == COMPONENT_REF);
-  val = TREE_OPERAND (val, 1);
-  return DECL_NORMAL_CAPTURE_P (val);
+  return (DECL_LANG_SPECIFIC (decl)
+	  && DECL_CAPTURED_VARIABLE (decl));
 }
 
 /* Returns true iff DECL is a capture proxy for a normal capture
@@ -536,7 +527,7 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
   if (type == error_mark_node)
     return error_mark_node;
 
-  if (array_of_runtime_bound_p (type))
+  if (!dependent_type_p (type) && array_of_runtime_bound_p (type))
     {
       vla = true;
       if (!by_reference_p)
@@ -610,19 +601,6 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 	  IDENTIFIER_LENGTH (id) + 1);
   name = get_identifier (buf);
 
-  /* If TREE_TYPE isn't set, we're still in the introducer, so check
-     for duplicates.  */
-  if (!LAMBDA_EXPR_CLOSURE (lambda))
-    {
-      if (IDENTIFIER_MARKED (name))
-	{
-	  pedwarn (input_location, 0,
-		   "already captured %qD in lambda expression", id);
-	  return NULL_TREE;
-	}
-      IDENTIFIER_MARKED (name) = true;
-    }
-
   if (variadic)
     type = make_pack_expansion (type);
 
@@ -683,8 +661,6 @@ register_capture_members (tree captures)
   if (PACK_EXPANSION_P (field))
     field = PACK_EXPANSION_PATTERN (field);
 
-  /* We set this in add_capture to avoid duplicates.  */
-  IDENTIFIER_MARKED (DECL_NAME (field)) = false;
   finish_member_declaration (field);
 }
 
@@ -739,10 +715,11 @@ add_default_capture (tree lambda_stack, tree id, tree initializer)
 
 /* Return the capture pertaining to a use of 'this' in LAMBDA, in the
    form of an INDIRECT_REF, possibly adding it through default
-   capturing, if ADD_CAPTURE_P is true.  */
+   capturing, if ADD_CAPTURE_P is nonzero.  If ADD_CAPTURE_P is negative,
+   try to capture but don't complain if we can't.  */
 
 tree
-lambda_expr_this_capture (tree lambda, bool add_capture_p)
+lambda_expr_this_capture (tree lambda, int add_capture_p)
 {
   tree result;
 
@@ -838,7 +815,7 @@ lambda_expr_this_capture (tree lambda, bool add_capture_p)
     result = this_capture;
   else if (!this_capture)
     {
-      if (add_capture_p)
+      if (add_capture_p == 1)
 	{
 	  error ("%<this%> was not captured for this lambda function");
 	  result = error_mark_node;
@@ -938,11 +915,12 @@ maybe_generic_this_capture (tree object, tree fns)
 	  fns = TREE_OPERAND (fns, 0);
 
 	for (lkp_iterator iter (fns); iter; ++iter)
-	  if ((!id_expr || TREE_CODE (*iter) == TEMPLATE_DECL)
+	  if (((!id_expr && TREE_CODE (*iter) != USING_DECL)
+	       || TREE_CODE (*iter) == TEMPLATE_DECL)
 	      && DECL_NONSTATIC_MEMBER_FUNCTION_P (*iter))
 	    {
 	      /* Found a non-static member.  Capture this.  */
-	      lambda_expr_this_capture (lam, true);
+	      lambda_expr_this_capture (lam, /*maybe*/-1);
 	      break;
 	    }
       }
@@ -1083,8 +1061,7 @@ maybe_add_lambda_conv_op (tree type)
   tree optype = TREE_TYPE (callop);
   tree fn_result = TREE_TYPE (optype);
 
-  tree thisarg = build_nop (TREE_TYPE (DECL_ARGUMENTS (callop)),
-			    null_pointer_node);
+  tree thisarg = build_int_cst (TREE_TYPE (DECL_ARGUMENTS (callop)), 0);
   if (generic_lambda_p)
     {
       ++processing_template_decl;
@@ -1095,8 +1072,10 @@ maybe_add_lambda_conv_op (tree type)
 	 implementation of the conversion operator.  */
 
       tree instance = cp_build_fold_indirect_ref (thisarg);
-      tree objfn = build_min (COMPONENT_REF, NULL_TREE,
-			      instance, DECL_NAME (callop), NULL_TREE);
+      tree objfn = lookup_template_function (DECL_NAME (callop),
+					     DECL_TI_ARGS (callop));
+      objfn = build_min (COMPONENT_REF, NULL_TREE,
+			 instance, objfn, NULL_TREE);
       int nargs = list_length (DECL_ARGUMENTS (callop)) - 1;
 
       call = prepare_op_call (objfn, nargs);
@@ -1125,6 +1104,9 @@ maybe_add_lambda_conv_op (tree type)
       {
 	tree new_node = copy_node (src);
 
+	/* Clear TREE_ADDRESSABLE on thunk arguments.  */
+	TREE_ADDRESSABLE (new_node) = 0;
+
 	if (!fn_args)
 	  fn_args = tgt = new_node;
 	else
@@ -1137,18 +1119,21 @@ maybe_add_lambda_conv_op (tree type)
 
 	if (generic_lambda_p)
 	  {
-	    /* Avoid capturing variables in this context.  */
-	    ++cp_unevaluated_operand;
-	    tree a = forward_parm (tgt);
-	    --cp_unevaluated_operand;
-
+	    tree a = tgt;
+	    if (DECL_PACK_P (tgt))
+	      {
+		a = make_pack_expansion (a);
+		PACK_EXPANSION_LOCAL_P (a) = true;
+	      }
 	    CALL_EXPR_ARG (call, ix) = a;
-	    if (decltype_call)
-	      CALL_EXPR_ARG (decltype_call, ix) = unshare_expr (a);
 
-	    if (PACK_EXPANSION_P (a))
-	      /* Set this after unsharing so it's not in decltype_call.  */
-	      PACK_EXPANSION_LOCAL_P (a) = true;
+	    if (decltype_call)
+	      {
+		/* Avoid capturing variables in this context.  */
+		++cp_unevaluated_operand;
+		CALL_EXPR_ARG (decltype_call, ix) = forward_parm (tgt);
+		--cp_unevaluated_operand;
+	      }
 
 	    ++ix;
 	  }
@@ -1267,12 +1252,6 @@ maybe_add_lambda_conv_op (tree type)
 
   start_preparsed_function (statfn, NULL_TREE,
 			    SF_PRE_PARSED | SF_INCLASS_INLINE);
-  if (DECL_ONE_ONLY (statfn))
-    {
-      /* Put the thunk in the same comdat group as the call op.  */
-      cgraph_node::get_create (statfn)->add_to_same_comdat_group
-	(cgraph_node::get_create (callop));
-    }
   tree body = begin_function_body ();
   tree compound_stmt = begin_compound_stmt (0);
   if (!generic_lambda_p)
@@ -1480,8 +1459,10 @@ mark_const_cap_r (tree *t, int *walk_subtrees, void *data)
     {
       tree decl = DECL_EXPR_DECL (*t);
       if (is_constant_capture_proxy (decl))
-	var = DECL_CAPTURED_VARIABLE (decl);
-      *walk_subtrees = 0;
+	{
+	  var = DECL_CAPTURED_VARIABLE (decl);
+	  *walk_subtrees = 0;
+	}
     }
   else if (is_constant_capture_proxy (*t))
     var = DECL_CAPTURED_VARIABLE (*t);

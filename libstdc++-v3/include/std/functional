@@ -836,6 +836,106 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					  std::forward<_BoundArgs>(__args)...);
     }
 
+#if __cplusplus > 201703L
+#define __cpp_lib_bind_front 201902L
+
+  template<typename _Fd, typename... _BoundArgs>
+    struct _Bind_front
+    {
+      static_assert(is_move_constructible_v<_Fd>);
+      static_assert((is_move_constructible_v<_BoundArgs> && ...));
+
+      // First parameter is to ensure this constructor is never used
+      // instead of the copy/move constructor.
+      template<typename _Fn, typename... _Args>
+	explicit constexpr
+	_Bind_front(int, _Fn&& __fn, _Args&&... __args)
+	noexcept(__and_<is_nothrow_constructible<_Fd, _Fn>,
+			is_nothrow_constructible<_BoundArgs, _Args>...>::value)
+	: _M_fd(std::forward<_Fn>(__fn)),
+	  _M_bound_args(std::forward<_Args>(__args)...)
+	{ static_assert(sizeof...(_Args) == sizeof...(_BoundArgs)); }
+
+      _Bind_front(const _Bind_front&) = default;
+      _Bind_front(_Bind_front&&) = default;
+      _Bind_front& operator=(const _Bind_front&) = default;
+      _Bind_front& operator=(_Bind_front&&) = default;
+      ~_Bind_front() = default;
+
+      template<typename... _CallArgs>
+	constexpr
+	invoke_result_t<_Fd&, _BoundArgs&..., _CallArgs...>
+	operator()(_CallArgs&&... __call_args) &
+	noexcept(is_nothrow_invocable_v<_Fd&, _BoundArgs&..., _CallArgs...>)
+	{
+	  return _S_call(*this, _BoundIndices(),
+	      std::forward<_CallArgs>(__call_args)...);
+	}
+
+      template<typename... _CallArgs>
+	constexpr
+	invoke_result_t<const _Fd&, const _BoundArgs&..., _CallArgs...>
+	operator()(_CallArgs&&... __call_args) const &
+	noexcept(is_nothrow_invocable_v<const _Fd&, const _BoundArgs&...,
+					_CallArgs...>)
+	{
+	  return _S_call(*this, _BoundIndices(),
+	      std::forward<_CallArgs>(__call_args)...);
+	}
+
+      template<typename... _CallArgs>
+	constexpr
+	invoke_result_t<_Fd, _BoundArgs..., _CallArgs...>
+	operator()(_CallArgs&&... __call_args) &&
+	noexcept(is_nothrow_invocable_v<_Fd, _BoundArgs..., _CallArgs...>)
+	{
+	  return _S_call(std::move(*this), _BoundIndices(),
+	      std::forward<_CallArgs>(__call_args)...);
+	}
+
+      template<typename... _CallArgs>
+	constexpr
+	invoke_result_t<const _Fd, const _BoundArgs..., _CallArgs...>
+	operator()(_CallArgs&&... __call_args) const &&
+	noexcept(is_nothrow_invocable_v<const _Fd, const _BoundArgs...,
+					_CallArgs...>)
+	{
+	  return _S_call(std::move(*this), _BoundIndices(),
+	      std::forward<_CallArgs>(__call_args)...);
+	}
+
+    private:
+      using _BoundIndices = index_sequence_for<_BoundArgs...>;
+
+      template<typename _Tp, size_t... _Ind, typename... _CallArgs>
+	static constexpr
+	decltype(auto)
+	_S_call(_Tp&& __g, index_sequence<_Ind...>, _CallArgs&&... __call_args)
+	{
+	  return std::invoke(std::forward<_Tp>(__g)._M_fd,
+	      std::get<_Ind>(std::forward<_Tp>(__g)._M_bound_args)...,
+	      std::forward<_CallArgs>(__call_args)...);
+	}
+
+      _Fd _M_fd;
+      std::tuple<_BoundArgs...> _M_bound_args;
+    };
+
+  template<typename _Fn, typename... _Args>
+    using _Bind_front_t
+      = _Bind_front<decay_t<_Fn>, unwrap_ref_decay_t<_Args>...>;
+
+  template<typename _Fn, typename... _Args>
+    _Bind_front_t<_Fn, _Args...>
+    bind_front(_Fn&& __fn, _Args&&... __args)
+    noexcept(is_nothrow_constructible_v<int, _Bind_front_t<_Fn, _Args...>,
+					_Fn, _Args...>)
+    {
+      return _Bind_front_t<_Fn, _Args...>(0, std::forward<_Fn>(__fn),
+					  std::forward<_Args>(__args)...);
+    }
+#endif
+
 #if __cplusplus >= 201402L
   /// Generalized negator.
   template<typename _Fn>

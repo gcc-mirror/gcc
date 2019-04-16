@@ -1,3 +1,222 @@
+2019-03-27  Kevin Buettner  <kevinb@redhat.com>
+
+	* team.c (gomp_team_start): Initialize pool->threads[0].
+
+2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c++/c++.exp: Specify
+	"-foffload=$offload_target".
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_openacc_nvidia_accel_configured): Remove,
+	as (conceptually) merged into
+	check_effective_target_openacc_nvidia_accel_selected.  Adjust all
+	users.
+
+	* plugin/configfrag.ac: Populate and AC_SUBST offload_targets.
+	* testsuite/libgomp-test-support.exp.in: Adjust.
+	* testsuite/lib/libgomp.exp: Likewise.  Don't populate
+	openacc_device_types_s.
+	(offload_target_to_openacc_device_type): New proc.
+	* testsuite/libgomp.oacc-c++/c++.exp: Adjust.
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+	* plugin/configfrag.ac: Populate and AC_SUBST offload_plugins
+	instead of offload_targets, and AC_DEFINE_UNQUOTED OFFLOAD_PLUGINS
+	instead of OFFLOAD_TARGETS.
+	* target.c (gomp_target_init): Adjust.
+	* testsuite/libgomp-test-support.exp.in: Likewise.
+	* testsuite/lib/libgomp.exp: Likewise.  Populate
+	openacc_device_types_s instead of offload_targets_s_openacc.
+	(check_effective_target_openacc_nvidia_accel_selected)
+	(check_effective_target_openacc_host_selected): Adjust.
+	* testsuite/libgomp.oacc-c++/c++.exp: Likewise.
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+	* Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+	* testsuite/lib/libgomp.exp: Error out for unknown offload target.
+	* testsuite/libgomp.oacc-c++/c++.exp: Likewise.  Report if
+	"offloading: supported, but hardware not accessible".
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+
+2019-02-19  Chung-Lin Tang <cltang@codesourcery.com>
+
+	PR c/87924
+	* oacc-parallel.c (GOACC_parallel_keyed): Remove condition on call to
+	goacc_wait().
+	(goacc_wait): Handle ACC_ASYNC_NOVAL case, remove goacc_thread() call
+	and related adjustment.
+
+2019-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88988
+	* testsuite/libgomp.c++/pr88988.C: New test.
+
+2019-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89002
+	* testsuite/libgomp.c/pr89002.c: New test.
+
+2019-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/89064
+	PR tree-optimization/86865
+	* testsuite/libgomp.graphite/force-parallel-5.c: XFAIL.
+
+2019-01-24  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_fini_device): Free ptx_devices
+	once instantiated_devices drops to 0.
+
+2019-01-23  Tom de Vries  <tdevries@suse.de>
+
+	PR target/PR88946
+	* plugin/plugin-nvptx.c (cuda_map_destroy): Use CUDA_CALL_NOCHECK for
+	cuMemFree.
+	(nvptx_exec): Don't call map_push if mapnum == 0.
+	* testsuite/libgomp.oacc-c-c++-common/pr88946.c: New test.
+
+2019-01-23  Tom de Vries  <tdevries@suse.de>
+
+	PR target/88941
+	PR target/88939
+	* plugin/plugin-nvptx.c (cuda_map_destroy): Handle map->active case.
+	(map_fini): Remove "assert (!s->map->active)".
+	* testsuite/libgomp.oacc-c-c++-common/pr88941.c: New test.
+
+2019-01-23  Tom de Vries  <tdevries@suse.de>
+
+	PR target/87835
+	* plugin/plugin-nvptx.c (map_push): Fix adding of allocated element.
+	* testsuite/libgomp.oacc-c-c++-common/pr87835.c: New test.
+
+2019-01-15  Tom de Vries  <tdevries@suse.de>
+
+	PR target/80547
+	* testsuite/libgomp.oacc-c-c++-common/gang-reduction-var-assignment.c:
+	New test.
+
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/pr85486-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-5.c: New test.
+	* testsuite/libgomp.oacc-fortran/gemm-2.f90: New test.
+
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (nvptx_exec): Update error message.
+
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-64-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-64-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-64-3.c: New test.
+
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	PR target/85486
+	* testsuite/libgomp.oacc-c-c++-common/pr85486-3.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/pr85486.c: New test.
+
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	PR target/85381
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-5.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/pr85381.c: New test.
+
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/vred2d-128.c: New test.
+	* testsuite/libgomp.oacc-fortran/gemm.f90: New test.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-10.c: New test.
+
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-7.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-4.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-6.c: New test.
+
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (nvptx_exec): Update insufficient hardware
+	resources diagnostic.
+
+2019-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-1.c: Expect
+	vector length to be 128.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Expect vector
+	length 2097152 to be reduced to 1024 instead of 32.
+
+2019-01-11  Thomas Schwinge  <thomas@codesourcery.com>
+            James Norris  <jnorris@codesourcery.com>
+
+	* libgomp.texi: Better distinguish OpenACC and OpenMP "Runtime
+	Library Routines", and "Environment Variables".
+
+2019-01-11  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (nvptx_exec): Prevent vector_length 64 and
+	num_workers 16.
+
+2019-01-11  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/reduction-1.c: Remove
+	-foffload=-w.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-2.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-3.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-4.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c: Same.
+
+2019-01-11  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/insufficient-resources.c: New
+	test.
+
+2019-01-10  Nathan Sidwell  <nathan@acm.org>
+	    Julian Brown  <julian@codesourcery.com>
+
+	PR lto/71959
+	* testsuite/libgomp.oacc-c++/pr71959-aux.cc: New.
+	* testsuite/libgomp.oacc-c++/pr71959.C: New.
+
+2019-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems/bar.c: Include "../linux/bar.c" and delete copy
+	and paste code.
+
+2019-01-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems/affinity-fmt.c: New file.  Include affinity-fmt.c,
+	undefining HAVE_GETPID and HAVE_GETHOSTNAME, and mapping fwrite to
+	write.
+
+2019-01-09  Tom de Vries  <tdevries@suse.de>
+
+	PR target/88756
+	* testsuite/libgomp.oacc-c-c++-common/reduction-1.c (ng, nw, vl): Use
+	#define instead of "const int".
+	* testsuite/libgomp.oacc-c-c++-common/reduction-2.c (ng, nw, vl): Same.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-3.c (ng, nw, vl): Same.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-4.c (ng, nw, vl): Same.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c (ng, nw, vl): Same.
+
+2019-01-09  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (nvptx_exec): Make sure to launch with at least
+	one worker.
+
 2019-01-07  Tom de Vries  <tdevries@suse.de>
 
 	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-3.c: Fix

@@ -840,7 +840,7 @@ struct GTY(()) rtvec_def {
 #define DEBUG_INSN_P(X) (GET_CODE (X) == DEBUG_INSN)
 
 /* Predicate yielding nonzero iff X is an insn that is not a debug insn.  */
-#define NONDEBUG_INSN_P(X) (INSN_P (X) && !DEBUG_INSN_P (X))
+#define NONDEBUG_INSN_P(X) (NONJUMP_INSN_P (X) || JUMP_P (X) || CALL_P (X))
 
 /* Nonzero if DEBUG_MARKER_INSN_P may possibly hold.  */
 #define MAY_HAVE_DEBUG_MARKER_INSNS debug_nonbind_markers_p
@@ -851,8 +851,7 @@ struct GTY(()) rtvec_def {
   (MAY_HAVE_DEBUG_MARKER_INSNS || MAY_HAVE_DEBUG_BIND_INSNS)
 
 /* Predicate yielding nonzero iff X is a real insn.  */
-#define INSN_P(X) \
-  (NONJUMP_INSN_P (X) || DEBUG_INSN_P (X) || JUMP_P (X) || CALL_P (X))
+#define INSN_P(X) (NONDEBUG_INSN_P (X) || DEBUG_INSN_P (X))
 
 /* Predicate yielding nonzero iff X is a note insn.  */
 #define NOTE_P(X) (GET_CODE (X) == NOTE)
@@ -1629,7 +1628,7 @@ extern const char * const reg_note_name[];
    are passed to the function.
      CLOBBER expressions document the registers explicitly clobbered
    by this CALL_INSN.
-     Pseudo registers can not be mentioned in this list.  */
+     Pseudo registers cannot be mentioned in this list.  */
 #define CALL_INSN_FUNCTION_USAGE(INSN)	XEXP(INSN, 7)
 
 /* The label-number of a code-label.  The assembler label
@@ -4078,6 +4077,9 @@ extern void init_lower_subreg (void);
 /* In gcse.c */
 extern bool can_copy_p (machine_mode);
 extern bool can_assign_to_reg_without_clobbers_p (rtx, machine_mode);
+extern rtx_insn *prepare_copy_insn (rtx, rtx);
+
+/* In cprop.c */
 extern rtx fis_get_condition (rtx_insn *);
 
 /* In ira.c */
@@ -4398,6 +4400,7 @@ word_register_operation_p (const_rtx x)
 {
   switch (GET_CODE (x))
     {
+    case CONST_INT:
     case ROTATE:
     case ROTATERT:
     case SIGN_EXTRACT:

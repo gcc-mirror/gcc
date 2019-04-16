@@ -11,6 +11,7 @@ nothrow:
 
 version (ARM)     version = ARM_Any;
 version (AArch64) version = ARM_Any;
+version (HPPA)    version = HPPA_Any;
 version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
@@ -29,6 +30,12 @@ import core.sys.linux.elf;
 
 // <bits/elfclass.h>
 version (X86_Any)
+{
+    // http://sourceware.org/git/?p=glibc.git;a=blob;f=bits/elfclass.h
+    alias __WORDSIZE __ELF_NATIVE_CLASS;
+    alias uint32_t Elf_Symndx;
+}
+else version (HPPA_Any)
 {
     // http://sourceware.org/git/?p=glibc.git;a=blob;f=bits/elfclass.h
     alias __WORDSIZE __ELF_NATIVE_CLASS;

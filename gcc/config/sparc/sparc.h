@@ -90,23 +90,12 @@ along with GCC; see the file COPYING3.  If not see
 
    Different code models are not supported in 32-bit environment.  */
 
-enum cmodel {
-  CM_32,
-  CM_MEDLOW,
-  CM_MEDMID,
-  CM_MEDANY,
-  CM_EMBMEDANY
-};
+#define TARGET_CM_MEDLOW    (sparc_code_model == CM_MEDLOW)
+#define TARGET_CM_MEDMID    (sparc_code_model == CM_MEDMID)
+#define TARGET_CM_MEDANY    (sparc_code_model == CM_MEDANY)
+#define TARGET_CM_EMBMEDANY (sparc_code_model == CM_EMBMEDANY)
 
-/* One of CM_FOO.  */
-extern enum cmodel sparc_cmodel;
-
-/* V9 code model selection.  */
-#define TARGET_CM_MEDLOW    (sparc_cmodel == CM_MEDLOW)
-#define TARGET_CM_MEDMID    (sparc_cmodel == CM_MEDMID)
-#define TARGET_CM_MEDANY    (sparc_cmodel == CM_MEDANY)
-#define TARGET_CM_EMBMEDANY (sparc_cmodel == CM_EMBMEDANY)
-
+/* Default code model to be overridden in 64-bit environment.  */
 #define SPARC_DEFAULT_CMODEL CM_32
 
 /* Do not use the .note.GNU-stack convention by default.  */
@@ -804,7 +793,6 @@ extern enum cmodel sparc_cmodel;
 #define STATIC_CHAIN_REGNUM (TARGET_ARCH64 ? 5 : 2)
 
 /* Register which holds the global offset table, if any.  */
-
 #define GLOBAL_OFFSET_TABLE_REGNUM 23
 
 /* Register which holds offset table for position-independent data references.
@@ -812,7 +800,6 @@ extern enum cmodel sparc_cmodel;
    so we use a pseudo-register to make sure it is properly saved and restored
    around calls to setjmp.  Now the ABI of VxWorks RTP makes it live on entry
    to PLT entries so we use the canonical GOT register in this case.  */
-
 #define PIC_OFFSET_TABLE_REGNUM \
   (TARGET_VXWORKS_RTP && flag_pic ? GLOBAL_OFFSET_TABLE_REGNUM : INVALID_REGNUM)
 
@@ -822,7 +809,6 @@ extern enum cmodel sparc_cmodel;
    Originally it was -1, but later on the container of options changed to
    unsigned byte, so we decided to pick 127 as default value, which does
    reflect an undefined default value in case of 0/1.  */
-
 #define DEFAULT_PCC_STRUCT_RETURN 127
 
 /* Functions which return large structures get the address

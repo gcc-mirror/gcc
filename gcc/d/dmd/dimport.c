@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2018 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -173,6 +173,8 @@ void Import::importAll(Scope *sc)
         load(sc);
         if (mod)                // if successfully loaded module
         {
+            mod->importAll(NULL);
+
             if (mod->md && mod->md->isdeprecated)
             {
                 Expression *msg = mod->md->msg;
@@ -181,8 +183,6 @@ void Import::importAll(Scope *sc)
                 else
                     mod->deprecation(loc, "is deprecated");
             }
-
-            mod->importAll(NULL);
 
             if (sc->explicitProtection)
                 protection = sc->protection;

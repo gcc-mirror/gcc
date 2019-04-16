@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Warray-bounds -fdump-tree-phiopt2" } */
+/* { dg-options "-O2 -ftree-cselim -Warray-bounds -fdump-tree-phiopt2" } */
 
 void
 h (const void *p, unsigned n)

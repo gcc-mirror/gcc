@@ -76,6 +76,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<> struct __byte_operand<wchar_t> { using __type = byte; };
 #endif
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<> struct __byte_operand<char8_t> { using __type = byte; };
+#endif
   template<> struct __byte_operand<char16_t> { using __type = byte; };
   template<> struct __byte_operand<char32_t> { using __type = byte; };
   template<> struct __byte_operand<short> { using __type = byte; };

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build linux,cgo darwin,cgo
+// +build linux,cgo darwin,cgo hurd,cgo
 
 package plugin
 
@@ -38,16 +38,6 @@ import (
 	"sync"
 	"unsafe"
 )
-
-// avoid a dependency on strings
-func lastIndexByte(s string, c byte) int {
-	for i := len(s) - 1; i >= 0; i-- {
-		if s[i] == c {
-			return i
-		}
-	}
-	return -1
-}
 
 func open(name string) (*Plugin, error) {
 	cPath := make([]byte, C.PATH_MAX+1)

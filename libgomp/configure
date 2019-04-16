@@ -667,6 +667,8 @@ PLUGIN_NVPTX_FALSE
 PLUGIN_NVPTX_TRUE
 offload_additional_lib_paths
 offload_additional_options
+offload_targets
+offload_plugins
 PLUGIN_HSA_LIBS
 PLUGIN_HSA_LDFLAGS
 PLUGIN_HSA_CPPFLAGS
@@ -679,7 +681,6 @@ PLUGIN_NVPTX_CPPFLAGS
 PLUGIN_NVPTX
 CUDA_DRIVER_LIB
 CUDA_DRIVER_INCLUDE
-offload_targets
 libtool_VERSION
 ac_ct_FC
 FCFLAGS
@@ -11392,7 +11393,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11395 "configure"
+#line 11396 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11498,7 +11499,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11501 "configure"
+#line 11502 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15401,8 +15402,6 @@ fi
 # see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-offload_targets=
-
 plugin_support=yes
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlsym in -ldl" >&5
 $as_echo_n "checking for dlsym in -ldl... " >&6; }
@@ -15621,7 +15620,13 @@ PLUGIN_HSA_LIBS=
 
 
 
-# Get offload targets and path to install tree of offloading compiler.
+# Parse '--enable-offload-targets', figure out the corresponding libgomp
+# plugins, and configure to find the corresponding offload compilers.
+# 'offload_plugins' and 'offload_targets' will be populated in the same order.
+offload_plugins=
+offload_targets=
+
+
 offload_additional_options=
 offload_additional_lib_paths=
 
@@ -15630,13 +15635,13 @@ if test x"$enable_offload_targets" != x; then
   for tgt in `echo $enable_offload_targets | sed -e 's#,# #g'`; do
     tgt_dir=`echo $tgt | grep '=' | sed 's/.*=//'`
     tgt=`echo $tgt | sed 's/=.*//'`
-    tgt_name=
+    tgt_plugin=
     case $tgt in
       *-intelmic-* | *-intelmicemul-*)
-	tgt_name=intelmic
+	tgt_plugin=intelmic
 	;;
       nvptx*)
-        tgt_name=nvptx
+	tgt_plugin=nvptx
 	PLUGIN_NVPTX=$tgt
 	if test "x$CUDA_DRIVER_LIB" != xno \
 	   && test "x$CUDA_DRIVER_LIB" != xno; then
@@ -15695,7 +15700,7 @@ rm -f core conftest.err conftest.$ac_objext \
 	        PLUGIN_HSA=0
 		;;
 	      *)
-	        tgt_name=hsa
+		tgt_plugin=hsa
 	        PLUGIN_HSA=$tgt
 	        PLUGIN_HSA_CPPFLAGS=$HSA_RUNTIME_CPPFLAGS
 	        PLUGIN_HSA_LDFLAGS="$HSA_RUNTIME_LDFLAGS"
@@ -15713,7 +15718,7 @@ rm -f core conftest.err conftest.$ac_objext \
 	        LDFLAGS=$PLUGIN_HSA_save_LDFLAGS
 	        LIBS=$PLUGIN_HSA_save_LIBS
 	        case $PLUGIN_HSA in
-	          hsa*)
+		  hsa*)
 	            HSA_PLUGIN=0
 	            as_fn_error $? "HSA run-time package required for HSA support" "$LINENO" 5
 	            ;;
@@ -15730,16 +15735,19 @@ rm -f core conftest.err conftest.$ac_objext \
 	as_fn_error $? "unknown offload target specified" "$LINENO" 5
 	;;
     esac
-    if test x"$tgt_name" = x; then
-      # Don't configure libgomp for this offloading target if we don't build
-      # the corresponding plugin.
+    if test x"$tgt_plugin" = x; then
+      # Not configuring libgomp for this offload target if we're not building
+      # the corresponding offload plugin.
       continue
-    elif test x"$offload_targets" = x; then
-      offload_targets=$tgt_name
+    elif test x"$offload_plugins" = x; then
+      offload_plugins=$tgt_plugin
+      offload_targets=$tgt
     else
-      offload_targets=$offload_targets,$tgt_name
+      offload_plugins=$offload_plugins,$tgt_plugin
+      offload_targets=$offload_targets,$tgt
     fi
-    if test "$tgt_name" = hsa; then
+    # Configure additional search paths.
+    if test "$tgt_plugin" = hsa; then
       # Offloading compilation is all handled by the target compiler.
       :
     elif test x"$tgt_dir" != x; then
@@ -15753,7 +15761,7 @@ rm -f core conftest.err conftest.$ac_objext \
 fi
 
 cat >>confdefs.h <<_ACEOF
-#define OFFLOAD_TARGETS "$offload_targets"
+#define OFFLOAD_PLUGINS "$offload_plugins"
 _ACEOF
 
  if test $PLUGIN_NVPTX = 1; then

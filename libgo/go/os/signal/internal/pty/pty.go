@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build aix darwin dragonfly freebsd linux,!android netbsd openbsd solaris
+// +build aix darwin dragonfly freebsd hurd linux,!android netbsd openbsd solaris
+// +build cgo
 
 // Package pty is a simple pseudo-terminal package for Unix systems,
 // implemented by calling C functions via cgo.

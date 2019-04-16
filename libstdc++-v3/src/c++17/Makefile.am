@@ -41,6 +41,8 @@ endif
 if ENABLE_EXTERN_TEMPLATE
 # XTEMPLATE_FLAGS = -fno-implicit-templates
 inst_sources = \
+	ostream-inst.cc \
+	string-inst.cc \
 	$(extra_string_inst_sources)
 else
 # XTEMPLATE_FLAGS =
@@ -52,7 +54,6 @@ sources = \
 	fs_ops.cc \
 	fs_path.cc \
 	memory_resource.cc \
-	string-inst.cc \
 	$(extra_fs_sources)
 
 vpath % $(top_srcdir)/src/c++17

@@ -57,12 +57,8 @@ import std.internal.cstring;
 
 version (Windows)
 {
-    version (GNU) {}
-    else
-    {
-        pragma (lib, "ws2_32.lib");
-        pragma (lib, "wsock32.lib");
-    }
+    pragma (lib, "ws2_32.lib");
+    pragma (lib, "wsock32.lib");
 
     import core.sys.windows.windows, std.windows.syserror;
     public import core.sys.windows.winsock2;
@@ -184,6 +180,14 @@ string formatSocketError(int err) @trusted
                 return "Socket error " ~ to!string(err);
         }
         else version (NetBSD)
+        {
+            auto errs = strerror_r(err, buf.ptr, buf.length);
+            if (errs == 0)
+                cs = buf.ptr;
+            else
+                return "Socket error " ~ to!string(err);
+        }
+        else version (DragonFlyBSD)
         {
             auto errs = strerror_r(err, buf.ptr, buf.length);
             if (errs == 0)

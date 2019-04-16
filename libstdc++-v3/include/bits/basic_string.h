@@ -1027,7 +1027,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  Returns true if the %string is empty.  Equivalent to 
        *  <code>*this == ""</code>.
        */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const _GLIBCXX_NOEXCEPT
       { return this->size() == 0; }
 
@@ -4007,7 +4007,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  Returns true if the %string is empty.  Equivalent to 
        *  <code>*this == ""</code>.
        */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const _GLIBCXX_NOEXCEPT
       { return this->size() == 0; }
 
@@ -6753,6 +6753,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif /* _GLIBCXX_COMPATIBILITY_CXX0X */
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+  /// std::hash specialization for u8string.
+  template<>
+    struct hash<u8string>
+    : public __hash_base<size_t, u8string>
+    {
+      size_t
+      operator()(const u8string& __s) const noexcept
+      { return std::_Hash_impl::hash(__s.data(),
+                                     __s.length() * sizeof(char8_t)); }
+    };
+
+  template<>
+    struct __is_fast_hash<hash<u8string>> : std::false_type
+    { };
+#endif
+
   /// std::hash specialization for u16string.
   template<>
     struct hash<u16string>
@@ -6783,7 +6800,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_fast_hash<hash<u32string>> : std::false_type
     { };
 
-#if __cplusplus > 201103L
+#if __cplusplus >= 201402L
 
 #define __cpp_lib_string_udls 201304
 
@@ -6805,6 +6822,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return basic_string<wchar_t>{__str, __len}; }
 #endif
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+    _GLIBCXX_DEFAULT_ABI_TAG
+    inline basic_string<char8_t>
+    operator""s(const char8_t* __str, size_t __len)
+    { return basic_string<char8_t>{__str, __len}; }
+#endif
+
     _GLIBCXX_DEFAULT_ABI_TAG
     inline basic_string<char16_t>
     operator""s(const char16_t* __str, size_t __len)
@@ -6819,7 +6843,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   } // inline namespace string_literals
   } // inline namespace literals
 
-#endif // __cplusplus > 201103L
+#if __cplusplus >= 201703L
+  namespace __detail::__variant
+  {
+    template<typename> struct _Never_valueless_alt; // see <variant>
+
+    // Provide the strong exception-safety guarantee when emplacing a
+    // basic_string into a variant, but only if move assignment cannot throw.
+    template<typename _Tp, typename _Traits, typename _Alloc>
+      struct _Never_valueless_alt<std::basic_string<_Tp, _Traits, _Alloc>>
+      : std::is_nothrow_move_assignable<std::basic_string<_Tp, _Traits, _Alloc>>
+      { };
+  }  // namespace __detail::__variant
+#endif // C++17
+#endif // C++14
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

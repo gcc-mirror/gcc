@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build aix linux solaris,386 solaris,sparc
+// +build aix hurd linux solaris,386 solaris,sparc
 
 // POSIX library calls on systems which use the largefile interface.
 
 package syscall
+
+//sys	Creat(path string, mode uint32) (fd int, err error)
+//creat64(path *byte, mode Mode_t) _C_int
 
 //sys	Fstat(fd int, stat *Stat_t) (err error)
 //fstat64(fd _C_int, stat *Stat_t) _C_int

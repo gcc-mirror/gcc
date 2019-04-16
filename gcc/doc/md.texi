@@ -1800,6 +1800,100 @@ DF modes
 @end table
 
 
+@item AMD GCN ---@file{config/gcn/constraints.md}
+@table @code
+@item I
+Immediate integer in the range @minus{}16 to 64
+
+@item J
+Immediate 16-bit signed integer
+
+@item Kf
+Immediate constant @minus{}1
+
+@item L
+Immediate 15-bit unsigned integer
+
+@item A
+Immediate constant that can be inlined in an instruction encoding: integer
+@minus{}16..64, or float 0.0, +/@minus{}0.5, +/@minus{}1.0, +/@minus{}2.0,
++/@minus{}4.0, 1.0/(2.0*PI)
+
+@item B
+Immediate 32-bit signed integer that can be attached to an instruction encoding
+
+@item C
+Immediate 32-bit integer in range @minus{}16..4294967295 (i.e. 32-bit unsigned
+integer or @samp{A} constraint)
+
+@item DA
+Immediate 64-bit constant that can be split into two @samp{A} constants
+
+@item DB
+Immediate 64-bit constant that can be split into two @samp{B} constants
+
+@item U
+Any @code{unspec}
+
+@item Y
+Any @code{symbol_ref} or @code{label_ref}
+
+@item v
+VGPR register
+
+@item Sg
+SGPR register
+
+@item SD
+SGPR registers valid for instruction destinations, including VCC, M0 and EXEC
+
+@item SS
+SGPR registers valid for instruction sources, including VCC, M0, EXEC and SCC
+
+@item Sm
+SGPR registers valid as a source for scalar memory instructions (excludes M0
+and EXEC)
+
+@item Sv
+SGPR registers valid as a source or destination for vector instructions
+(excludes EXEC)
+
+@item ca
+All condition registers: SCC, VCCZ, EXECZ
+
+@item cs
+Scalar condition register: SCC
+
+@item cV
+Vector condition register: VCC, VCC_LO, VCC_HI
+
+@item e
+EXEC register (EXEC_LO and EXEC_HI)
+
+@item RB
+Memory operand with address space suitable for @code{buffer_*} instructions
+
+@item RF
+Memory operand with address space suitable for @code{flat_*} instructions
+
+@item RS
+Memory operand with address space suitable for @code{s_*} instructions
+
+@item RL
+Memory operand with address space suitable for @code{ds_*} LDS instructions
+
+@item RG
+Memory operand with address space suitable for @code{ds_*} GDS instructions
+
+@item RD
+Memory operand with address space suitable for any @code{ds_*} instructions
+
+@item RM
+Memory operand with address space suitable for @code{global_*} instructions
+
+@end table
+
+
 @item ARC ---@file{config/arc/constraints.md}
 @table @code
 @item q
@@ -4583,7 +4677,7 @@ The syntax and semantics are otherwise identical to
 
 @deffn {MD Expression} define_special_memory_constraint name docstring exp
 Use this expression for constraints that match a subset of all memory
-operands: that is, @code{reload} can not make them match by reloading
+operands: that is, @code{reload} cannot make them match by reloading
 the address as it is described for @code{define_memory_constraint} or
 such address reload is undesirable with the performance point of view.
 
@@ -6213,8 +6307,8 @@ in a way that the blocks are not required to be aligned according to it in
 all cases. This expected alignment is also in bytes, just like operand 4.
 Expected size, when unknown, is set to @code{(const_int -1)}.
 Operand 7 is the minimal size of the block and operand 8 is the
-maximal size of the block (NULL if it can not be represented as CONST_INT).
-Operand 9 is the probable maximal size (i.e.@: we can not rely on it for
+maximal size of the block (NULL if it cannot be represented as CONST_INT).
+Operand 9 is the probable maximal size (i.e.@: we cannot rely on it for
 correctness, but it can be used for choosing proper code sequence for a
 given size).
 
@@ -6534,7 +6628,7 @@ for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
 where, for example, @var{op} is @code{+} for @samp{cond_add@var{mode}}.
 
 When defined for floating-point modes, the contents of @samp{op3[i]}
-are not interpreted if @var{op1[i]} is false, just like they would not
+are not interpreted if @samp{op1[i]} is false, just like they would not
 be in a normal C @samp{?:} condition.
 
 Operands 0, 2, 3 and 4 all have mode @var{m}.  Operand 1 is a scalar
@@ -9901,7 +9995,7 @@ the common part by the following construction
 @var{reservation-name} is a string giving name of @var{regexp}.
 Functional unit names and reservation names are in the same name
 space.  So the reservation names should be different from the
-functional unit names and can not be the reserved name @samp{nothing}.
+functional unit names and cannot be the reserved name @samp{nothing}.
 
 @findex define_bypass
 @cindex instruction latency time
@@ -9967,7 +10061,7 @@ separated by comma.  Currently pattern is one unit or units
 separated by white-spaces.
 
 The first construction (@samp{exclusion_set}) means that each
-functional unit in the first string can not be reserved simultaneously
+functional unit in the first string cannot be reserved simultaneously
 with a unit whose name is in the second string and vice versa.  For
 example, the construction is useful for describing processors
 (e.g.@: some SPARC processors) with a fully pipelined floating point
@@ -9975,7 +10069,7 @@ functional unit which can execute simultaneously only single floating
 point insns or only double floating point insns.
 
 The second construction (@samp{presence_set}) means that each
-functional unit in the first string can not be reserved unless at
+functional unit in the first string cannot be reserved unless at
 least one of pattern of units whose names are in the second string is
 reserved.  This is an asymmetric relation.  For example, it is useful
 for description that @acronym{VLIW} @samp{slot1} is reserved after
@@ -10030,7 +10124,7 @@ can be described as:
 (absence_set "slot0" "slot1, slot2")
 @end smallexample
 
-Or @samp{slot2} can not be reserved if @samp{slot0} and unit @samp{b0}
+Or @samp{slot2} cannot be reserved if @samp{slot0} and unit @samp{b0}
 are reserved or @samp{slot1} and unit @samp{b1} are reserved.  In
 this case we could write
 
@@ -10133,7 +10227,7 @@ are issued into the second pipeline.  Integer division and
 multiplication insns can be executed only in the second integer
 pipeline and their results are ready correspondingly in 9 and 4
 cycles.  The integer division is not pipelined, i.e.@: the subsequent
-integer division insn can not be issued until the current division
+integer division insn cannot be issued until the current division
 insn finished.  Floating point insns are fully pipelined and their
 results are ready in 3 cycles.  Where the result of a floating point
 insn is used by an integer insn, an additional delay of one cycle is

@@ -71,7 +71,7 @@ namespace __debug
       template<std::size_t _Size>
 	struct _Array_check_nonempty
  	{
-	  bool empty() { return _Size == 0; }
+	  _GLIBCXX_NODISCARD bool empty() { return _Size == 0; }
 
 	  _Array_check_nonempty()
 	  { __glibcxx_check_nonempty(); }
@@ -145,7 +145,7 @@ namespace __debug
       constexpr size_type
       max_size() const noexcept { return _Nm; }
 
-      constexpr bool
+      _GLIBCXX_NODISCARD constexpr bool
       empty() const noexcept { return size() == 0; }
 
       // Element access.

@@ -103,6 +103,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 
+; Attribute for cpu type.
+; These must match the values for enum processor_type in visium-opts.h.
+(define_attr "cpu" "gr5,gr6" (const (symbol_ref "visium_cpu_attr")))
+
 ; Instruction type.
 ;
 ;imm_reg       Move of immediate value to register.
@@ -154,14 +158,25 @@
 		? EMPTY_DELAY_SLOT_TRUE : EMPTY_DELAY_SLOT_FALSE)"))
 
 ; Length in bytes.
-; The allowed range for the offset of short branches is [-131072;131068]
+; On the GR6, absolute branches must be aligned on a 64-bit boundary to avoid
+; a pipeline hazard.  This is done by the assembler, so the length of these
+; instructions for the compiler can effectively be 4, 8, or 12 bytes.
+; The allowed range for the offset of relative branches is [-131072;131068]
 ; and it is counted from the address of the insn so we need to subtract
 ; 8 for forward branches because (pc) points to the next insn for them.
 (define_attr "length" ""
   (cond [(eq_attr "type" "abs_branch,call,ret")
            (if_then_else (eq_attr "empty_delay_slot" "true")
-                         (const_int 8)
-                         (const_int 4))
+                         (if_then_else (and (eq_attr "cpu" "gr6")
+                                            (eq (mod (pc) (const_int 8))
+                                                (const_int 4)))
+                                       (const_int 12)
+                                       (const_int 8))
+                         (if_then_else (and (eq_attr "cpu" "gr6")
+                                            (eq (mod (pc) (const_int 8))
+                                                (const_int 4)))
+                                       (const_int 8)
+                                       (const_int 4)))
          (eq_attr "type" "branch")
            (if_then_else (leu (plus (minus (match_dup 0) (pc))
                                     (const_int 131060))
@@ -169,7 +184,11 @@
                          (if_then_else (eq_attr "empty_delay_slot" "true")
                                        (const_int 8)
                                        (const_int 4))
-                         (const_int 20))
+                         (if_then_else (and (eq_attr "cpu" "gr6")
+                                            (eq (mod (pc) (const_int 8))
+                                                (const_int 0)))
+                                       (const_int 24)
+                                       (const_int 20)))
          (eq_attr "single_insn" "no")
            (const_int 8)] (const_int 4)))
 
@@ -188,10 +207,6 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-
-; Attribute for cpu type.
-; These must match the values for enum processor_type in visium-opts.h.
-(define_attr "cpu" "gr5,gr6" (const (symbol_ref "visium_cpu_attr")))
 
 (include "gr5.md")
 (include "gr6.md")

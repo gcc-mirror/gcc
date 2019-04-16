@@ -988,6 +988,31 @@ block_label (basic_block block)
   return as_a <rtx_code_label *> (BB_HEAD (block));
 }
 
+/* Remove all barriers from BB_FOOTER of a BB.  */
+
+static void
+remove_barriers_from_footer (basic_block bb)
+{
+  rtx_insn *insn = BB_FOOTER (bb);
+
+  /* Remove barriers but keep jumptables.  */
+  while (insn)
+    {
+      if (BARRIER_P (insn))
+	{
+	  if (PREV_INSN (insn))
+	    SET_NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
+	  else
+	    BB_FOOTER (bb) = NEXT_INSN (insn);
+	  if (NEXT_INSN (insn))
+	    SET_PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
+	}
+      if (LABEL_P (insn))
+	return;
+      insn = NEXT_INSN (insn);
+    }
+}
+
 /* Attempt to perform edge redirection by replacing possibly complex jump
    instruction by unconditional jump or removing jump completely.  This can
    apply only if all edges now point to the same block.  The parameters and
@@ -1051,26 +1076,8 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
       /* Selectively unlink whole insn chain.  */
       if (in_cfglayout)
 	{
-	  rtx_insn *insn = BB_FOOTER (src);
-
 	  delete_insn_chain (kill_from, BB_END (src), false);
-
-	  /* Remove barriers but keep jumptables.  */
-	  while (insn)
-	    {
-	      if (BARRIER_P (insn))
-		{
-		  if (PREV_INSN (insn))
-		    SET_NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
-		  else
-		    BB_FOOTER (src) = NEXT_INSN (insn);
-		  if (NEXT_INSN (insn))
-		    SET_PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
-		}
-	      if (LABEL_P (insn))
-		break;
-	      insn = NEXT_INSN (insn);
-	    }
+	  remove_barriers_from_footer (src);
 	}
       else
 	delete_insn_chain (kill_from, PREV_INSN (BB_HEAD (target)),
@@ -4243,7 +4250,7 @@ duplicate_insn_chain (rtx_insn *from, rtx_insn *to)
 /* Create a duplicate of the basic block BB.  */
 
 static basic_block
-cfg_layout_duplicate_bb (basic_block bb)
+cfg_layout_duplicate_bb (basic_block bb, copy_bb_data *)
 {
   rtx_insn *insn;
   basic_block new_bb;
@@ -4396,6 +4403,7 @@ cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
 	  	 "Removing crossing jump while redirecting edge form %i to %i\n",
 		 e->src->index, dest->index);
       delete_insn (BB_END (src));
+      remove_barriers_from_footer (src);
       e->flags |= EDGE_FALLTHRU;
     }
 
@@ -5072,9 +5080,9 @@ rtl_can_remove_branch_p (const_edge e)
 }
 
 static basic_block
-rtl_duplicate_bb (basic_block bb)
+rtl_duplicate_bb (basic_block bb, copy_bb_data *id)
 {
-  bb = cfg_layout_duplicate_bb (bb);
+  bb = cfg_layout_duplicate_bb (bb, id);
   bb->aux = NULL;
   return bb;
 }

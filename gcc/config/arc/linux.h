@@ -133,3 +133,7 @@ along with GCC; see the file COPYING3.  If not see
    fun = gen_rtx_SYMBOL_REF (Pmode, "_mcount");			\
    emit_library_call (fun, LCT_NORMAL, VOIDmode, rt, Pmode);	\
   }
+
+/* Enter/Leave ops are default off for linux targets.  */
+#undef TARGET_CODE_DENSITY_FRAME_DEFAULT
+#define TARGET_CODE_DENSITY_FRAME_DEFAULT 0

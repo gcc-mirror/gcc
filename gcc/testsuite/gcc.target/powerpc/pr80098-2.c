@@ -1,7 +1,6 @@
 /* { dg-do compile { target { powerpc64*-*-* } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-mcpu=power8 -mno-power8-vector -mcrypto" } */
+/* { dg-options "-mdejagnu-cpu=power8 -mno-power8-vector -mcrypto" } */
 
 int i;
 

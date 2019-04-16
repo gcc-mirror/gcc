@@ -41,7 +41,7 @@ func Sinh(x float64) float64 {
 	}
 
 	var temp float64
-	switch true {
+	switch {
 	case x > 21:
 		temp = Exp(x) * 0.5
 

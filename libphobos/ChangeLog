@@ -1,3 +1,214 @@
+2019-04-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/Makefile.am (DRUNTIME_CSOURCES): Remove bss_sections.c.
+	(DRUNTIME_DSOURCES): Rename rt/sections_* modules to gcc/sections/*.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/gcc/sections/android.d: New file.
+	* libdruntime/gcc/sections/elf_shared.d: New file.
+	* libdruntime/gcc/sections/osx.d: New file.
+	* libdruntime/gcc/sections/package.d: New file.
+	* libdruntime/gcc/sections/solaris.d: New file.
+	* libdruntime/gcc/sections/win32.d: New file.
+	* libdruntime/gcc/sections/win64.d: New file.
+	* libdruntime/rt/bss_section.c: Remove.
+	* libdruntime/rt/sections.d: Publicly import gcc.sections.
+	* libdruntime/rt/sections_android.d: Remove.
+	* libdruntime/rt/sections_elf_shared.d: Remove.
+	* libdruntime/rt/sections_osx.d: Remove.
+	* libdruntime/rt/sections_solaris.d: Remove.
+	* libdruntime/rt/sections_win32.d: Remove.
+	* libdruntime/rt/sections_win64.d: Remove.
+
+2019-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure.ac (AM_INIT_AUTOMAKE): Add subdir-objects.
+	* configure: Regenerate.
+	* libdruntime/Makefile.in: Regenerate.
+
+2019-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* m4/druntime/libraries.m4 (DRUNTIME_LIBRARIES_ZLIB): Use
+	libz_convenience.a if not using system zlib.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/Makefile.am: Remove ZLIB_CSOURCES and AM_CFLAGS.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2019-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* testsuite/Makefile.am (AUTOMAKE_OPTIONS): Remove dejagnu.
+	(RUNTEST): Remove variable.
+	(RUNTESTDEFAULTFLAGS, check_p_subno, check_p_numbers0,
+	check_p_numbers1, check_p_numbers2, check_p_numbers3,
+	check_p_numbers4, check_p_numbers5, check_p_numbers6, check_p_numbers,
+	check_p_subdirs, check_DEJAGNU_libphobos_targets): New variables.
+	(site.exp, %/site.exp, check-DEJAGNU, check-am, clean-local): New
+	rules written so that all the *.exp files are ran parallelized.
+	(CLEANFILES): Add *.exe, *.o, and site.exp.
+	* testsuite/Makefile.in: Regenerate.
+
+2019-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/89255
+	* configure.ac (ENABLE_SHARED, ENABLE_STATIC): Remove conditionals.
+	* configure: Regenerate.
+	* d_rules.am (%.t.lo, %.t.o): Remove rules.
+	(unittest_static_LINK, unittest_LINK, libgdruntime_t_la_LINK,
+	libgphobos_t_la_LINK): Remove variables.
+	* libdruntime/Makefile.am (DRUNTIME_TEST_LOBJECTS,
+	DRUNTIME_TEST_OBJECTS, check_PROGRAMS, check_LTLIBRARIES,
+	unittest_static_SOURCES, unittest_static_LIBTOOLFLAGS,
+	unittest_static_LDFLAGS, unittest_static_LDADD,
+	EXTRA_unittest_static_DEPENDENCIES, libgdruntime_t_la_SOURCES,
+	libgdruntime_t_la_LIBTOOLFLAGS, libgdruntime_t_la_LDFLAGS,
+	libgdruntime_t_la_LIBADD, EXTRA_libgdruntime_t_la_DEPENDENCIES,
+	unittest_SOURCES, unittest_LIBTOOLFLAGS, unittest_LDFLAGS,
+	unittest_LDADD): Remove variables.
+	(clean-local): Remove rule.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/Makefile.am (PHOBOS_TEST_LOBJECTS,
+	PHOBOS_TEST_OBJECTS, check_PROGRAMS, check_LTLIBRARIES,
+	unittest_static_SOURCES, unittest_static_LIBTOOLFLAGS,
+	unittest_static_LDFLAGS, unittest_static_LDADD,
+	EXTRA_unittest_static_DEPENDENCIES, libgdruntime_t_la_SOURCES,
+	libgdruntime_t_la_LIBTOOLFLAGS, libgdruntime_t_la_LDFLAGS,
+	libgdruntime_t_la_LIBADD, EXTRA_libgdruntime_t_la_DEPENDENCIES,
+	unittest_SOURCES, unittest_LIBTOOLFLAGS, unittest_LDFLAGS,
+	unittest_LDADD): Remove variables.
+	(clean-local): Remove rule.
+	* src/Makefile.in: Regenerate.
+	* testsuite/lib/libphobos.exp (libphobos_test_name): New global.
+	(libphobos_init): Set libphobos_test_name.
+	(libphobos-dg-test): Override name if libphobos_test_name is set.
+	(filter_libphobos_unittests): New proc.
+	* testsuite/libphobos.aa/aa.exp: Don't load libphobos-dg.exp.
+	* testsuite/libphobos.cycles/cycles.exp: Set libphobos_test_name.
+	* testsuite/libphobos.druntime/druntime.exp: New file.
+	* testsuite/libphobos.druntime_shared/druntime_shared.exp: New file.
+	* testsuite/libphobos.phobos/phobos.exp: New file.
+	* testsuite/libphobos.phobos_shared/phobos_shared.exp: New file.
+	* testsuite/libphobos.shared/shared.exp: Use dg-runtest to run tests.
+	* testsuite/libphobos.hash/hash.exp: Don't load libphobos-dg.exp
+	* testsuite/libphobos.init_fini/init_fini.exp: Likewise.
+	* testsuite/libphobos.thread/thread.exp: Likewise.
+	* testsuite/libphobos.typeinfo/typeinfo.exp: Likewise.
+	* testsuite/libphobos.unittests/unittests.exp: Remove.
+	* testsuite/test_runner.d: Remove.
+	* testsuite/testsuite_flags.in: Add phobos to --gdcpaths.
+
+2019-03-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES_DARWIN): Add
+	core/sys/darwin/crt_externs.d.
+	(DRUNTIME_DSOURCES_FREEBSD): Add core/sys/freebsd/unistd.d.
+	(DRUNTIME_DSOURCES_POSIX): Add core/sys/posix/spawn.d.
+	* libdruntime/Makefile.in: Regenerate.
+
+2019-03-23  Johannes Pfau  <johannespfau@gmail.com>
+
+	* configure.ac: Update autotool version comment.
+
+2019-02-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* src/Makefile.am: Avoid the -D option which is not available
+	with the install-sh fallback.  Use $(MKDIR_P) instead.
+	* libdruntime/Makefile.am: Likewise.
+	* src/Makefile.in: Regenerated.
+	* libdruntime/Makefile.in: Regenerated.
+
+2019-02-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* testsuite/libphobos.shared/load.d: Import core.sys.posix.dlfcn.
+	[DragonFlyBSD, FreeBSD, linux, NetBSD, OSX, Solaris]: Import only
+	RTLD_NOLOAD from core.sys.*.dlfcn.
+	Assert RTLD_NOLOAD is available.
+
+2019-02-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* m4/druntime/libraries.m4 (DRUNTIME_LIBRARIES_NET): New macro.
+	* configure.ac: Invoke it.
+	* configure: Regenerate.
+
+2019-02-19  Johannes Pfau  <johannespfau@gmail.com>
+
+	PR d/88127
+	* m4/druntime/libraries.m4 (DRUNTIME_LIBRARIES_CLIB): Add new macro.
+	* configure.ac: Use DRUNTIME_LIBRARIES_CLIB.
+	* configure: Regenerate
+	* Makefile.in: Regenerate
+	* libdruntime/gcc/config.d.in: Add Have_Qsort_R.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2019-02-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/lib/libphobos-dg.exp: Tabify.
+	* testsuite/lib/libphobos.exp: Likewise.
+	* testsuite/libphobos.cycles/cycles.exp: Likewise.
+	* testsuite/libphobos.shared/shared.exp: Likewise.
+	* testsuite/libphobos.unittests/unittests.exp: Likewise.
+
+2019-02-14  Maya Rashish  <coypu@sdf.org>
+
+	* configure.tgt: Add netbsd/x86 as supported target.
+
+2019-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR d/87864
+	* configure.ac (DRTSTUFF_SPEC): New variable.
+	Substitute it.
+	* libdruntime/m4/druntime/os.m4 (DRUNTIME_OS_MINFO_BRACKETING):
+	New automake conditional.
+	* configure: Regenerate.
+	* libdruntime/gcc/drtstuff.c: New file.
+	* libdruntime/Makefile.am [!DRUNTIME_OS_MINFO_BRACKETING]
+	(DRTSTUFF, toolexeclib_DATA): New variables.
+	(gcc/drtbegin.lo, gcc/drtend.lo): New rules.
+	(libgdruntime_la_LDFLAGS): Use -Wc instead of -Xcompiler.
+	Add -dstartfiles -B../src -Bgcc.
+	(libgdruntime_la_DEPENDENCIES): New variable.
+	(unittest_static_LDFLAGS): Use -Wc instead of -Xcompiler.
+	(libgdruntime_t_la_LDFLAGS): Likewise.
+	(unittest_LDFLAGS): Likewise.
+	* src/Makefile.am (libgphobos_la_LDFLAGS): Use -Wc instead of
+	-Xcompiler.
+	Add -dstartfiles -B../libdruntime/gcc.
+	(unittest_static_LDFLAGS): Use -Wc instead of -Xcompiler.
+	(libgphobos_t_la_LDFLAGS): Likewise.
+	(unittest_LDFLAGS): Likewise.
+	* libdruntime/Makefile.in, src/Makefile.in: Regenerate.
+	* Makefile.in, testsuite/Makefile.in: Regenerate.
+	* libdruntime/rt/sections_elf_shared.d (Minfo_Bracketing): Don't
+	assert.
+	* libdruntime/gcc/config.d.in (Minfo_Bracketing): Remove.
+	* src/drtstuff.spec: New file.
+	* src/libgphobos.spec.in (DRTSTUFF_SPEC): Substitute.
+	(*lib): Only pass SPEC_PHOBOS_DEPS without -debuglib, -defaultlib,
+	-nophoboslib.
+	* testsuite/testsuite_flags.in <--gdcldflags> (GDCLDFLAGS): Add
+	-B${BUILD_DIR}/libdruntime/gcc.
+
+2019-02-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/core/runtime.d (defaultTraceHandler): Give
+	UnwindBacktrace handler precedence over backtrace.
+
+2019-02-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Remove rt/util/hash.d
+	* libdruntime/Makefile.in: Rebuild.
+	* testsuite/libphobos.aa/aa.exp: New file.
+	* testsuite/libphobos.aa/test_aa.d: New test.
+	* testsuite/libphobos.hash/hash.exp: New file.
+	* testsuite/libphobos.hash/test_hash.d: New test.
+
+2019-01-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* README.gcc: New file.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

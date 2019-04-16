@@ -6273,6 +6273,83 @@ _mm512_mask_storeu_ps (void *__P, __mmask16 __U, __m512 __A)
 				   (__mmask16) __U);
 }
 
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_load_ss (__m128 __W, __mmask8 __U, const float *__P)
+{
+  return (__m128) __builtin_ia32_loadss_mask (__P, (__v4sf) __W, __U);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_load_ss (__mmask8 __U, const float *__P)
+{
+  return (__m128) __builtin_ia32_loadss_mask (__P, (__v4sf) _mm_setzero_ps (),
+					      __U);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_load_sd (__m128d __W, __mmask8 __U, const double *__P)
+{
+  return (__m128d) __builtin_ia32_loadsd_mask (__P, (__v2df) __W, __U);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_load_sd (__mmask8 __U, const double *__P)
+{
+  return (__m128d) __builtin_ia32_loadsd_mask (__P, (__v2df) _mm_setzero_pd (),
+					       __U);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_move_ss (__m128 __W, __mmask8 __U, __m128 __A, __m128 __B)
+{
+  return (__m128) __builtin_ia32_movess_mask ((__v4sf) __A, (__v4sf) __B,
+					      (__v4sf) __W, __U);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_move_ss (__mmask8 __U, __m128 __A, __m128 __B)
+{
+  return (__m128) __builtin_ia32_movess_mask ((__v4sf) __A, (__v4sf) __B,
+					      (__v4sf) _mm_setzero_ps (), __U);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_move_sd (__m128d __W, __mmask8 __U, __m128d __A, __m128d __B)
+{
+  return (__m128d) __builtin_ia32_movesd_mask ((__v2df) __A, (__v2df) __B,
+					       (__v2df) __W, __U);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_move_sd (__mmask8 __U, __m128d __A, __m128d __B)
+{
+  return (__m128d) __builtin_ia32_movesd_mask ((__v2df) __A, (__v2df) __B,
+					       (__v2df) _mm_setzero_pd (),
+					       __U);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_store_ss (float *__P, __mmask8 __U, __m128 __A)
+{
+  __builtin_ia32_storess_mask (__P, (__v4sf) __A, (__mmask8) __U);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_store_sd (double *__P, __mmask8 __U, __m128d __A)
+{
+  __builtin_ia32_storesd_mask (__P, (__v2df) __A, (__mmask8) __U);
+}
+
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_loadu_epi64 (__m512i __W, __mmask8 __U, void const *__P)
@@ -6977,132 +7054,140 @@ _mm512_maskz_shuffle_pd (__mmask8 __U, __m512d __M, __m512d __V,
 
 extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_fixupimm_round_pd (__m512d __A, __m512i __B,
+_mm512_fixupimm_round_pd (__m512d __A, __m512d __B, __m512i __C,
 			  const int __imm, const int __R)
 {
-  return (__m512d) __builtin_ia32_fixupimmpd512 ((__v8df) __A,
-						      (__v8di) __B,
+  return (__m512d) __builtin_ia32_fixupimmpd512_mask ((__v8df) __A,
+						      (__v8df) __B,
+						      (__v8di) __C,
 						      __imm,
-						      __R);
+						      (__mmask8) -1, __R);
 }
 
 extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_fixupimm_round_pd (__m512d __W, __mmask8 __U, __m512d __A,
-			       __m512i __B, const int __imm, const int __R)
+_mm512_mask_fixupimm_round_pd (__m512d __A, __mmask8 __U, __m512d __B,
+			       __m512i __C, const int __imm, const int __R)
 {
   return (__m512d) __builtin_ia32_fixupimmpd512_mask ((__v8df) __A,
-						      (__v8di) __B,
+						      (__v8df) __B,
+						      (__v8di) __C,
 						      __imm,
-						      (__v8df) __W,
 						      (__mmask8) __U, __R);
 }
 
 extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_fixupimm_round_pd (__mmask8 __U, __m512d __A,
-				__m512i __B, const int __imm, const int __R)
+_mm512_maskz_fixupimm_round_pd (__mmask8 __U, __m512d __A, __m512d __B,
+				__m512i __C, const int __imm, const int __R)
 {
   return (__m512d) __builtin_ia32_fixupimmpd512_maskz ((__v8df) __A,
-						       (__v8di) __B,
+						       (__v8df) __B,
+						       (__v8di) __C,
 						       __imm,
 						       (__mmask8) __U, __R);
 }
 
 extern __inline __m512
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_fixupimm_round_ps (__m512 __A, __m512i __B,
+_mm512_fixupimm_round_ps (__m512 __A, __m512 __B, __m512i __C,
 			  const int __imm, const int __R)
 {
-  return (__m512) __builtin_ia32_fixupimmps512 ((__v16sf) __A,
-						     (__v16si) __B,
+  return (__m512) __builtin_ia32_fixupimmps512_mask ((__v16sf) __A,
+						     (__v16sf) __B,
+						     (__v16si) __C,
 						     __imm,
-						     __R);
+						     (__mmask16) -1, __R);
 }
 
 extern __inline __m512
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_fixupimm_round_ps (__m512 __W, __mmask16 __U, __m512 __A,
-			       __m512i __B, const int __imm, const int __R)
+_mm512_mask_fixupimm_round_ps (__m512 __A, __mmask16 __U, __m512 __B,
+			       __m512i __C, const int __imm, const int __R)
 {
   return (__m512) __builtin_ia32_fixupimmps512_mask ((__v16sf) __A,
-						     (__v16si) __B,
+						     (__v16sf) __B,
+						     (__v16si) __C,
 						     __imm,
-						     (__v16sf) __W,
 						     (__mmask16) __U, __R);
 }
 
 extern __inline __m512
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_fixupimm_round_ps (__mmask16 __U, __m512 __A,
-				__m512i __B, const int __imm, const int __R)
+_mm512_maskz_fixupimm_round_ps (__mmask16 __U, __m512 __A, __m512 __B,
+				__m512i __C, const int __imm, const int __R)
 {
   return (__m512) __builtin_ia32_fixupimmps512_maskz ((__v16sf) __A,
-						      (__v16si) __B,
+						      (__v16sf) __B,
+						      (__v16si) __C,
 						      __imm,
 						      (__mmask16) __U, __R);
 }
 
 extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_fixupimm_round_sd (__m128d __A, __m128i __B,
+_mm_fixupimm_round_sd (__m128d __A, __m128d __B, __m128i __C,
 		       const int __imm, const int __R)
 {
-  return (__m128d) __builtin_ia32_fixupimmsd ((__v2df) __A,
-						   (__v2di) __B, __imm,
-						   __R);
+  return (__m128d) __builtin_ia32_fixupimmsd_mask ((__v2df) __A,
+						   (__v2df) __B,
+						   (__v2di) __C, __imm,
+						   (__mmask8) -1, __R);
 }
 
 extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_fixupimm_round_sd (__m128d __W, __mmask8 __U, __m128d __A,
-			    __m128i __B, const int __imm, const int __R)
+_mm_mask_fixupimm_round_sd (__m128d __A, __mmask8 __U, __m128d __B,
+			    __m128i __C, const int __imm, const int __R)
 {
   return (__m128d) __builtin_ia32_fixupimmsd_mask ((__v2df) __A,
-						   (__v2di) __B, __imm,
-						   (__v2df) __W,
+						   (__v2df) __B,
+						   (__v2di) __C, __imm,
 						   (__mmask8) __U, __R);
 }
 
 extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_fixupimm_round_sd (__mmask8 __U, __m128d __A,
-			     __m128i __B, const int __imm, const int __R)
+_mm_maskz_fixupimm_round_sd (__mmask8 __U, __m128d __A, __m128d __B,
+			     __m128i __C, const int __imm, const int __R)
 {
   return (__m128d) __builtin_ia32_fixupimmsd_maskz ((__v2df) __A,
-						    (__v2di) __B,
+						    (__v2df) __B,
+						    (__v2di) __C,
 						    __imm,
 						    (__mmask8) __U, __R);
 }
 
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_fixupimm_round_ss (__m128 __A, __m128i __B,
+_mm_fixupimm_round_ss (__m128 __A, __m128 __B, __m128i __C,
 		       const int __imm, const int __R)
 {
-  return (__m128) __builtin_ia32_fixupimmss ((__v4sf) __A,
-						  (__v4si) __B, __imm,
-						  __R);
+  return (__m128) __builtin_ia32_fixupimmss_mask ((__v4sf) __A,
+						  (__v4sf) __B,
+						  (__v4si) __C, __imm,
+						  (__mmask8) -1, __R);
 }
 
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_fixupimm_round_ss (__m128 __W, __mmask8 __U, __m128 __A,
-			    __m128i __B, const int __imm, const int __R)
+_mm_mask_fixupimm_round_ss (__m128 __A, __mmask8 __U, __m128 __B,
+			    __m128i __C, const int __imm, const int __R)
 {
   return (__m128) __builtin_ia32_fixupimmss_mask ((__v4sf) __A,
-						  (__v4si) __B, __imm,
-						  (__v4sf) __W,
+						  (__v4sf) __B,
+						  (__v4si) __C, __imm,
 						  (__mmask8) __U, __R);
 }
 
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_fixupimm_round_ss (__mmask8 __U, __m128 __A,
-			     __m128i __B, const int __imm, const int __R)
+_mm_maskz_fixupimm_round_ss (__mmask8 __U, __m128 __A, __m128 __B,
+			     __m128i __C, const int __imm, const int __R)
 {
   return (__m128) __builtin_ia32_fixupimmss_maskz ((__v4sf) __A,
-						   (__v4si) __B, __imm,
+						   (__v4sf) __B,
+						   (__v4si) __C, __imm,
 						   (__mmask8) __U, __R);
 }
 
@@ -7143,63 +7228,64 @@ _mm_maskz_fixupimm_round_ss (__mmask8 __U, __m128 __A,
     (__v16sf)(__m512)_mm512_setzero_ps(),\
     (__mmask16)(U)))
 
-#define _mm512_fixupimm_round_pd(X, Y, C, R)					\
-  ((__m512d)__builtin_ia32_fixupimmpd512 ((__v8df)(__m512d)(X),	\
-      (__v8di)(__m512i)(Y), (int)(C), (R)))
+#define _mm512_fixupimm_round_pd(X, Y, Z, C, R)					\
+  ((__m512d)__builtin_ia32_fixupimmpd512_mask ((__v8df)(__m512d)(X),	\
+      (__v8df)(__m512d)(Y), (__v8di)(__m512i)(Z), (int)(C),		\
+      (__mmask8)(-1), (R)))
 
-#define _mm512_mask_fixupimm_round_pd(W, U, X, Y, C, R)                          \
+#define _mm512_mask_fixupimm_round_pd(X, U, Y, Z, C, R)                          \
   ((__m512d)__builtin_ia32_fixupimmpd512_mask ((__v8df)(__m512d)(X),    \
-      (__v8di)(__m512i)(Y), (int)(C), (__v8df)(__m512d)(W),            \
+      (__v8df)(__m512d)(Y), (__v8di)(__m512i)(Z), (int)(C),             \
       (__mmask8)(U), (R)))
 
-#define _mm512_maskz_fixupimm_round_pd(U, X, Y, C, R)                         \
+#define _mm512_maskz_fixupimm_round_pd(U, X, Y, Z, C, R)                         \
   ((__m512d)__builtin_ia32_fixupimmpd512_maskz ((__v8df)(__m512d)(X),   \
-      (__v8di)(__m512i)(Y), (int)(C),             \
+      (__v8df)(__m512d)(Y), (__v8di)(__m512i)(Z), (int)(C),             \
       (__mmask8)(U), (R)))
 
-#define _mm512_fixupimm_round_ps(X, Y, C, R)					\
-  ((__m512)__builtin_ia32_fixupimmps512 ((__v16sf)(__m512)(X),	\
-    (__v16si)(__m512i)(Y), (int)(C),		\
-    (R)))
+#define _mm512_fixupimm_round_ps(X, Y, Z, C, R)					\
+  ((__m512)__builtin_ia32_fixupimmps512_mask ((__v16sf)(__m512)(X),	\
+    (__v16sf)(__m512)(Y), (__v16si)(__m512i)(Z), (int)(C),		\
+    (__mmask16)(-1), (R)))
 
-#define _mm512_mask_fixupimm_round_ps(W, U, X, Y, C, R)                          \
+#define _mm512_mask_fixupimm_round_ps(X, U, Y, Z, C, R)                          \
   ((__m512)__builtin_ia32_fixupimmps512_mask ((__v16sf)(__m512)(X),     \
-    (__v16si)(__m512i)(Y), (int)(C),              \
-    (__v16sf)(__m512)(W), (__mmask16)(U), (R)))
-
-#define _mm512_maskz_fixupimm_round_ps(U, X, Y, C, R)                         \
-  ((__m512)__builtin_ia32_fixupimmps512_maskz ((__v16sf)(__m512)(X),    \
-    (__v16si)(__m512i)(Y), (int)(C),              \
+    (__v16sf)(__m512)(Y), (__v16si)(__m512i)(Z), (int)(C),              \
     (__mmask16)(U), (R)))
 
-#define _mm_fixupimm_round_sd(X, Y, C, R)					\
-    ((__m128d)__builtin_ia32_fixupimmsd ((__v2df)(__m128d)(X),	\
-      (__v2di)(__m128i)(Y), (int)(C),		\
-      (R)))
+#define _mm512_maskz_fixupimm_round_ps(U, X, Y, Z, C, R)                         \
+  ((__m512)__builtin_ia32_fixupimmps512_maskz ((__v16sf)(__m512)(X),    \
+    (__v16sf)(__m512)(Y), (__v16si)(__m512i)(Z), (int)(C),              \
+    (__mmask16)(U), (R)))
 
-#define _mm_mask_fixupimm_round_sd(W, U, X, Y, C, R)				\
+#define _mm_fixupimm_round_sd(X, Y, Z, C, R)					\
     ((__m128d)__builtin_ia32_fixupimmsd_mask ((__v2df)(__m128d)(X),	\
-      (__v2di)(__m128i)(Y), (int)(C),		\
-      (__v2df)(__m128d)(W), (__mmask8)(U), (R)))
+      (__v2df)(__m128d)(Y), (__v2di)(__m128i)(Z), (int)(C),		\
+      (__mmask8)(-1), (R)))
 
-#define _mm_maskz_fixupimm_round_sd(U, X, Y, C, R)				\
-    ((__m128d)__builtin_ia32_fixupimmsd_maskz ((__v2df)(__m128d)(X),	\
-      (__v2di)(__m128i)(Y), (int)(C),		\
+#define _mm_mask_fixupimm_round_sd(X, U, Y, Z, C, R)				\
+    ((__m128d)__builtin_ia32_fixupimmsd_mask ((__v2df)(__m128d)(X),	\
+      (__v2df)(__m128d)(Y), (__v2di)(__m128i)(Z), (int)(C),		\
       (__mmask8)(U), (R)))
 
-#define _mm_fixupimm_round_ss(X, Y, C, R)					\
-    ((__m128)__builtin_ia32_fixupimmss ((__v4sf)(__m128)(X),	\
-      (__v4si)(__m128i)(Y), (int)(C),		\
-      (R)))
+#define _mm_maskz_fixupimm_round_sd(U, X, Y, Z, C, R)				\
+    ((__m128d)__builtin_ia32_fixupimmsd_maskz ((__v2df)(__m128d)(X),	\
+      (__v2df)(__m128d)(Y), (__v2di)(__m128i)(Z), (int)(C),		\
+      (__mmask8)(U), (R)))
 
-#define _mm_mask_fixupimm_round_ss(W, U, X, Y, C, R)				\
+#define _mm_fixupimm_round_ss(X, Y, Z, C, R)					\
     ((__m128)__builtin_ia32_fixupimmss_mask ((__v4sf)(__m128)(X),	\
-      (__v4si)(__m128i)(Y), (int)(C),		\
-      (__v4sf)(__m128)(W), (__mmask8)(U), (R)))
+      (__v4sf)(__m128)(Y), (__v4si)(__m128i)(Z), (int)(C),		\
+      (__mmask8)(-1), (R)))
 
-#define _mm_maskz_fixupimm_round_ss(U, X, Y, C, R)				\
+#define _mm_mask_fixupimm_round_ss(X, U, Y, Z, C, R)				\
+    ((__m128)__builtin_ia32_fixupimmss_mask ((__v4sf)(__m128)(X),	\
+      (__v4sf)(__m128)(Y), (__v4si)(__m128i)(Z), (int)(C),		\
+      (__mmask8)(U), (R)))
+
+#define _mm_maskz_fixupimm_round_ss(U, X, Y, Z, C, R)				\
     ((__m128)__builtin_ia32_fixupimmss_maskz ((__v4sf)(__m128)(X),	\
-      (__v4si)(__m128i)(Y), (int)(C),		\
+      (__v4sf)(__m128)(Y), (__v4si)(__m128i)(Z), (int)(C),		\
       (__mmask8)(U), (R)))
 #endif
 
@@ -11476,6 +11562,608 @@ _mm_fnmsub_round_ss (__m128 __W, __m128 __A, __m128 __B, const int __R)
     (__m128)__builtin_ia32_vfmaddss3_round(A, -(B), -(C), R)
 #endif
 
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fmadd_sd (__m128d __W, __mmask8 __U, __m128d __A, __m128d __B)
+{
+  return (__m128d) __builtin_ia32_vfmaddsd3_mask ((__v2df) __W,
+						  (__v2df) __A,
+						  (__v2df) __B,
+						  (__mmask8) __U,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fmadd_ss (__m128 __W, __mmask8 __U, __m128 __A, __m128 __B)
+{
+  return (__m128) __builtin_ia32_vfmaddss3_mask ((__v4sf) __W,
+						 (__v4sf) __A,
+						 (__v4sf) __B,
+						 (__mmask8) __U,
+						 _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fmadd_sd (__m128d __W, __m128d __A, __m128d __B, __mmask8 __U)
+{
+  return (__m128d) __builtin_ia32_vfmaddsd3_mask3 ((__v2df) __W,
+						   (__v2df) __A,
+						   (__v2df) __B,
+						   (__mmask8) __U,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fmadd_ss (__m128 __W, __m128 __A, __m128 __B, __mmask8 __U)
+{
+  return (__m128) __builtin_ia32_vfmaddss3_mask3 ((__v4sf) __W,
+						  (__v4sf) __A,
+						  (__v4sf) __B,
+						  (__mmask8) __U,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fmadd_sd (__mmask8 __U, __m128d __W, __m128d __A, __m128d __B)
+{
+  return (__m128d) __builtin_ia32_vfmaddsd3_maskz ((__v2df) __W,
+						   (__v2df) __A,
+						   (__v2df) __B,
+						   (__mmask8) __U,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fmadd_ss (__mmask8 __U, __m128 __W, __m128 __A, __m128 __B)
+{
+  return (__m128) __builtin_ia32_vfmaddss3_maskz ((__v4sf) __W,
+						  (__v4sf) __A,
+						  (__v4sf) __B,
+						  (__mmask8) __U,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fmsub_sd (__m128d __W, __mmask8 __U, __m128d __A, __m128d __B)
+{
+  return (__m128d) __builtin_ia32_vfmaddsd3_mask ((__v2df) __W,
+						  (__v2df) __A,
+						  -(__v2df) __B,
+						  (__mmask8) __U,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fmsub_ss (__m128 __W, __mmask8 __U, __m128 __A, __m128 __B)
+{
+  return (__m128) __builtin_ia32_vfmaddss3_mask ((__v4sf) __W,
+						 (__v4sf) __A,
+						 -(__v4sf) __B,
+						 (__mmask8) __U,
+						 _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fmsub_sd (__m128d __W, __m128d __A, __m128d __B, __mmask8 __U)
+{
+  return (__m128d) __builtin_ia32_vfmsubsd3_mask3 ((__v2df) __W,
+						   (__v2df) __A,
+						   (__v2df) __B,
+						   (__mmask8) __U,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fmsub_ss (__m128 __W, __m128 __A, __m128 __B, __mmask8 __U)
+{
+  return (__m128) __builtin_ia32_vfmsubss3_mask3 ((__v4sf) __W,
+						  (__v4sf) __A,
+						  (__v4sf) __B,
+						  (__mmask8) __U,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fmsub_sd (__mmask8 __U, __m128d __W, __m128d __A, __m128d __B)
+{
+  return (__m128d) __builtin_ia32_vfmaddsd3_maskz ((__v2df) __W,
+						   (__v2df) __A,
+						   -(__v2df) __B,
+						   (__mmask8) __U,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fmsub_ss (__mmask8 __U, __m128 __W, __m128 __A, __m128 __B)
+{
+  return (__m128) __builtin_ia32_vfmaddss3_maskz ((__v4sf) __W,
+						  (__v4sf) __A,
+						  -(__v4sf) __B,
+						  (__mmask8) __U,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fnmadd_sd (__m128d __W, __mmask8 __U, __m128d __A, __m128d __B)
+{
+  return (__m128d) __builtin_ia32_vfmaddsd3_mask ((__v2df) __W,
+						  -(__v2df) __A,
+						  (__v2df) __B,
+						  (__mmask8) __U,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fnmadd_ss (__m128 __W, __mmask8 __U, __m128 __A, __m128 __B)
+{
+  return (__m128) __builtin_ia32_vfmaddss3_mask ((__v4sf) __W,
+						 -(__v4sf) __A,
+						 (__v4sf) __B,
+						 (__mmask8) __U,
+						 _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fnmadd_sd (__m128d __W, __m128d __A, __m128d __B, __mmask8 __U)
+{
+  return (__m128d) __builtin_ia32_vfmaddsd3_mask3 ((__v2df) __W,
+						   -(__v2df) __A,
+						   (__v2df) __B,
+						   (__mmask8) __U,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fnmadd_ss (__m128 __W, __m128 __A, __m128 __B, __mmask8 __U)
+{
+  return (__m128) __builtin_ia32_vfmaddss3_mask3 ((__v4sf) __W,
+						  -(__v4sf) __A,
+						  (__v4sf) __B,
+						  (__mmask8) __U,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fnmadd_sd (__mmask8 __U, __m128d __W, __m128d __A, __m128d __B)
+{
+  return (__m128d) __builtin_ia32_vfmaddsd3_maskz ((__v2df) __W,
+						   -(__v2df) __A,
+						   (__v2df) __B,
+						   (__mmask8) __U,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fnmadd_ss (__mmask8 __U, __m128 __W, __m128 __A, __m128 __B)
+{
+  return (__m128) __builtin_ia32_vfmaddss3_maskz ((__v4sf) __W,
+						  -(__v4sf) __A,
+						  (__v4sf) __B,
+						  (__mmask8) __U,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fnmsub_sd (__m128d __W, __mmask8 __U, __m128d __A, __m128d __B)
+{
+  return (__m128d) __builtin_ia32_vfmaddsd3_mask ((__v2df) __W,
+						  -(__v2df) __A,
+						  -(__v2df) __B,
+						  (__mmask8) __U,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fnmsub_ss (__m128 __W, __mmask8 __U, __m128 __A, __m128 __B)
+{
+  return (__m128) __builtin_ia32_vfmaddss3_mask ((__v4sf) __W,
+						 -(__v4sf) __A,
+						 -(__v4sf) __B,
+						 (__mmask8) __U,
+						 _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fnmsub_sd (__m128d __W, __m128d __A, __m128d __B, __mmask8 __U)
+{
+  return (__m128d) __builtin_ia32_vfmsubsd3_mask3 ((__v2df) __W,
+						   -(__v2df) __A,
+						   (__v2df) __B,
+						   (__mmask8) __U,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fnmsub_ss (__m128 __W, __m128 __A, __m128 __B, __mmask8 __U)
+{
+  return (__m128) __builtin_ia32_vfmsubss3_mask3 ((__v4sf) __W,
+						  -(__v4sf) __A,
+						  (__v4sf) __B,
+						  (__mmask8) __U,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fnmsub_sd (__mmask8 __U, __m128d __W, __m128d __A, __m128d __B)
+{
+  return (__m128d) __builtin_ia32_vfmaddsd3_maskz ((__v2df) __W,
+						   -(__v2df) __A,
+						   -(__v2df) __B,
+						   (__mmask8) __U,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fnmsub_ss (__mmask8 __U, __m128 __W, __m128 __A, __m128 __B)
+{
+  return (__m128) __builtin_ia32_vfmaddss3_maskz ((__v4sf) __W,
+						  -(__v4sf) __A,
+						  -(__v4sf) __B,
+						  (__mmask8) __U,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fmadd_round_sd (__m128d __W, __mmask8 __U, __m128d __A, __m128d __B,
+			 const int __R)
+{
+  return (__m128d) __builtin_ia32_vfmaddsd3_mask ((__v2df) __W,
+						  (__v2df) __A,
+						  (__v2df) __B,
+						  (__mmask8) __U, __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fmadd_round_ss (__m128 __W, __mmask8 __U, __m128 __A, __m128 __B,
+			 const int __R)
+{
+  return (__m128) __builtin_ia32_vfmaddss3_mask ((__v4sf) __W,
+						 (__v4sf) __A,
+						 (__v4sf) __B,
+						 (__mmask8) __U, __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fmadd_round_sd (__m128d __W, __m128d __A, __m128d __B, __mmask8 __U,
+			  const int __R)
+{
+  return (__m128d) __builtin_ia32_vfmaddsd3_mask3 ((__v2df) __W,
+						   (__v2df) __A,
+						   (__v2df) __B,
+						   (__mmask8) __U, __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fmadd_round_ss (__m128 __W, __m128 __A, __m128 __B, __mmask8 __U,
+			  const int __R)
+{
+  return (__m128) __builtin_ia32_vfmaddss3_mask3 ((__v4sf) __W,
+						  (__v4sf) __A,
+						  (__v4sf) __B,
+						  (__mmask8) __U, __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fmadd_round_sd (__mmask8 __U, __m128d __W, __m128d __A, __m128d __B,
+			  const int __R)
+{
+  return (__m128d) __builtin_ia32_vfmaddsd3_maskz ((__v2df) __W,
+						   (__v2df) __A,
+						   (__v2df) __B,
+						   (__mmask8) __U, __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fmadd_round_ss (__mmask8 __U, __m128 __W, __m128 __A, __m128 __B,
+			  const int __R)
+{
+  return (__m128) __builtin_ia32_vfmaddss3_maskz ((__v4sf) __W,
+						  (__v4sf) __A,
+						  (__v4sf) __B,
+						  (__mmask8) __U, __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fmsub_round_sd (__m128d __W, __mmask8 __U, __m128d __A, __m128d __B,
+			 const int __R)
+{
+  return (__m128d) __builtin_ia32_vfmaddsd3_mask ((__v2df) __W,
+						  (__v2df) __A,
+						  -(__v2df) __B,
+						  (__mmask8) __U, __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fmsub_round_ss (__m128 __W, __mmask8 __U, __m128 __A, __m128 __B,
+			 const int __R)
+{
+  return (__m128) __builtin_ia32_vfmaddss3_mask ((__v4sf) __W,
+						 (__v4sf) __A,
+						 -(__v4sf) __B,
+						 (__mmask8) __U, __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fmsub_round_sd (__m128d __W, __m128d __A, __m128d __B, __mmask8 __U,
+			  const int __R)
+{
+  return (__m128d) __builtin_ia32_vfmsubsd3_mask3 ((__v2df) __W,
+						   (__v2df) __A,
+						   (__v2df) __B,
+						   (__mmask8) __U, __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fmsub_round_ss (__m128 __W, __m128 __A, __m128 __B, __mmask8 __U,
+			  const int __R)
+{
+  return (__m128) __builtin_ia32_vfmsubss3_mask3 ((__v4sf) __W,
+						  (__v4sf) __A,
+						  (__v4sf) __B,
+						  (__mmask8) __U, __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fmsub_round_sd (__mmask8 __U, __m128d __W, __m128d __A, __m128d __B,
+			  const int __R)
+{
+  return (__m128d) __builtin_ia32_vfmaddsd3_maskz ((__v2df) __W,
+						   (__v2df) __A,
+						   -(__v2df) __B,
+						   (__mmask8) __U, __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fmsub_round_ss (__mmask8 __U, __m128 __W, __m128 __A, __m128 __B,
+			  const int __R)
+{
+  return (__m128) __builtin_ia32_vfmaddss3_maskz ((__v4sf) __W,
+						  (__v4sf) __A,
+						  -(__v4sf) __B,
+						  (__mmask8) __U, __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fnmadd_round_sd (__m128d __W, __mmask8 __U, __m128d __A, __m128d __B,
+			 const int __R)
+{
+  return (__m128d) __builtin_ia32_vfmaddsd3_mask ((__v2df) __W,
+						  -(__v2df) __A,
+						  (__v2df) __B,
+						  (__mmask8) __U, __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fnmadd_round_ss (__m128 __W, __mmask8 __U, __m128 __A, __m128 __B,
+			 const int __R)
+{
+  return (__m128) __builtin_ia32_vfmaddss3_mask ((__v4sf) __W,
+						 -(__v4sf) __A,
+						 (__v4sf) __B,
+						 (__mmask8) __U, __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fnmadd_round_sd (__m128d __W, __m128d __A, __m128d __B, __mmask8 __U,
+			  const int __R)
+{
+  return (__m128d) __builtin_ia32_vfmaddsd3_mask3 ((__v2df) __W,
+						   -(__v2df) __A,
+						   (__v2df) __B,
+						   (__mmask8) __U, __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fnmadd_round_ss (__m128 __W, __m128 __A, __m128 __B, __mmask8 __U,
+			  const int __R)
+{
+  return (__m128) __builtin_ia32_vfmaddss3_mask3 ((__v4sf) __W,
+						  -(__v4sf) __A,
+						  (__v4sf) __B,
+						  (__mmask8) __U, __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fnmadd_round_sd (__mmask8 __U, __m128d __W, __m128d __A, __m128d __B,
+			  const int __R)
+{
+  return (__m128d) __builtin_ia32_vfmaddsd3_maskz ((__v2df) __W,
+						   -(__v2df) __A,
+						   (__v2df) __B,
+						   (__mmask8) __U, __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fnmadd_round_ss (__mmask8 __U, __m128 __W, __m128 __A, __m128 __B,
+			  const int __R)
+{
+  return (__m128) __builtin_ia32_vfmaddss3_maskz ((__v4sf) __W,
+						  -(__v4sf) __A,
+						  (__v4sf) __B,
+						  (__mmask8) __U, __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fnmsub_round_sd (__m128d __W, __mmask8 __U, __m128d __A, __m128d __B,
+			 const int __R)
+{
+  return (__m128d) __builtin_ia32_vfmaddsd3_mask ((__v2df) __W,
+						  -(__v2df) __A,
+						  -(__v2df) __B,
+						  (__mmask8) __U, __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fnmsub_round_ss (__m128 __W, __mmask8 __U, __m128 __A, __m128 __B,
+			 const int __R)
+{
+  return (__m128) __builtin_ia32_vfmaddss3_mask ((__v4sf) __W,
+						 -(__v4sf) __A,
+						 -(__v4sf) __B,
+						 (__mmask8) __U, __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fnmsub_round_sd (__m128d __W, __m128d __A, __m128d __B, __mmask8 __U,
+			  const int __R)
+{
+  return (__m128d) __builtin_ia32_vfmsubsd3_mask3 ((__v2df) __W,
+						   -(__v2df) __A,
+						   (__v2df) __B,
+						   (__mmask8) __U, __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fnmsub_round_ss (__m128 __W, __m128 __A, __m128 __B, __mmask8 __U,
+			  const int __R)
+{
+  return (__m128) __builtin_ia32_vfmsubss3_mask3 ((__v4sf) __W,
+						  -(__v4sf) __A,
+						  (__v4sf) __B,
+						  (__mmask8) __U, __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fnmsub_round_sd (__mmask8 __U, __m128d __W, __m128d __A, __m128d __B,
+			  const int __R)
+{
+  return (__m128d) __builtin_ia32_vfmaddsd3_maskz ((__v2df) __W,
+						   -(__v2df) __A,
+						   -(__v2df) __B,
+						   (__mmask8) __U, __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fnmsub_round_ss (__mmask8 __U, __m128 __W, __m128 __A, __m128 __B,
+			  const int __R)
+{
+  return (__m128) __builtin_ia32_vfmaddss3_maskz ((__v4sf) __W,
+						  -(__v4sf) __A,
+						  -(__v4sf) __B,
+						  (__mmask8) __U, __R);
+}
+#else
+#define _mm_mask_fmadd_round_sd(A, U, B, C, R)            \
+    (__m128d) __builtin_ia32_vfmaddsd3_mask (A, B, C, U, R)
+
+#define _mm_mask_fmadd_round_ss(A, U, B, C, R)            \
+    (__m128) __builtin_ia32_vfmaddss3_mask (A, B, C, U, R)
+
+#define _mm_mask3_fmadd_round_sd(A, B, C, U, R)            \
+    (__m128d) __builtin_ia32_vfmaddsd3_mask3 (A, B, C, U, R)
+
+#define _mm_mask3_fmadd_round_ss(A, B, C, U, R)            \
+    (__m128) __builtin_ia32_vfmaddss3_mask3 (A, B, C, U, R)
+
+#define _mm_maskz_fmadd_round_sd(U, A, B, C, R)            \
+    (__m128d) __builtin_ia32_vfmaddsd3_mask3 (A, B, C, U, R)
+
+#define _mm_maskz_fmadd_round_ss(U, A, B, C, R)            \
+    (__m128) __builtin_ia32_vfmaddss3_mask3 (A, B, C, U, R)
+
+#define _mm_mask_fmsub_round_sd(A, U, B, C, R)            \
+    (__m128d) __builtin_ia32_vfmaddsd3_mask (A, B, -(C), U, R)
+
+#define _mm_mask_fmsub_round_ss(A, U, B, C, R)            \
+    (__m128) __builtin_ia32_vfmaddss3_mask (A, B, -(C), U, R)
+
+#define _mm_mask3_fmsub_round_sd(A, B, C, U, R)            \
+    (__m128d) __builtin_ia32_vfmsubsd3_mask3 (A, B, C, U, R)
+
+#define _mm_mask3_fmsub_round_ss(A, B, C, U, R)            \
+    (__m128) __builtin_ia32_vfmsubss3_mask3 (A, B, C, U, R)
+
+#define _mm_maskz_fmsub_round_sd(U, A, B, C, R)            \
+    (__m128d) __builtin_ia32_vfmaddsd3_mask3 (A, B, -(C), U, R)
+
+#define _mm_maskz_fmsub_round_ss(U, A, B, C, R)            \
+    (__m128) __builtin_ia32_vfmaddss3_mask3 (A, B, -(C), U, R)
+
+#define _mm_mask_fnmadd_round_sd(A, U, B, C, R)            \
+    (__m128d) __builtin_ia32_vfmaddsd3_mask (A, -(B), C, U, R)
+
+#define _mm_mask_fnmadd_round_ss(A, U, B, C, R)            \
+    (__m128) __builtin_ia32_vfmaddss3_mask (A, -(B), C, U, R)
+
+#define _mm_mask3_fnmadd_round_sd(A, B, C, U, R)            \
+    (__m128d) __builtin_ia32_vfmaddsd3_mask3 (A, -(B), C, U, R)
+
+#define _mm_mask3_fnmadd_round_ss(A, B, C, U, R)            \
+    (__m128) __builtin_ia32_vfmaddss3_mask3 (A, -(B), C, U, R)
+
+#define _mm_maskz_fnmadd_round_sd(U, A, B, C, R)            \
+    (__m128d) __builtin_ia32_vfmaddsd3_mask3 (A, -(B), C, U, R)
+
+#define _mm_maskz_fnmadd_round_ss(U, A, B, C, R)            \
+    (__m128) __builtin_ia32_vfmaddss3_mask3 (A, -(B), C, U, R)
+
+#define _mm_mask_fnmsub_round_sd(A, U, B, C, R)            \
+    (__m128d) __builtin_ia32_vfmaddsd3_mask (A, -(B), -(C), U, R)
+
+#define _mm_mask_fnmsub_round_ss(A, U, B, C, R)            \
+    (__m128) __builtin_ia32_vfmaddss3_mask (A, -(B), -(C), U, R)
+
+#define _mm_mask3_fnmsub_round_sd(A, B, C, U, R)            \
+    (__m128d) __builtin_ia32_vfmsubsd3_mask3 (A, -(B), C, U, R)
+
+#define _mm_mask3_fnmsub_round_ss(A, B, C, U, R)            \
+    (__m128) __builtin_ia32_vfmsubss3_mask3 (A, -(B), C, U, R)
+
+#define _mm_maskz_fnmsub_round_sd(U, A, B, C, R)            \
+    (__m128d) __builtin_ia32_vfmaddsd3_mask3 (A, -(B), -(C), U, R)
+
+#define _mm_maskz_fnmsub_round_ss(U, A, B, C, R)            \
+    (__m128) __builtin_ia32_vfmaddss3_mask3 (A, -(B), -(C), U, R)
+#endif
+
 #ifdef __OPTIMIZE__
 extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -13206,34 +13894,37 @@ _mm512_maskz_cvtepu32_ps (__mmask16 __U, __m512i __A)
 #ifdef __OPTIMIZE__
 extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_fixupimm_pd (__m512d __A, __m512i __B, const int __imm)
+_mm512_fixupimm_pd (__m512d __A, __m512d __B, __m512i __C, const int __imm)
 {
-  return (__m512d) __builtin_ia32_fixupimmpd512 ((__v8df) __A,
-						      (__v8di) __B,
+  return (__m512d) __builtin_ia32_fixupimmpd512_mask ((__v8df) __A,
+						      (__v8df) __B,
+						      (__v8di) __C,
 						      __imm,
+						      (__mmask8) -1,
 						      _MM_FROUND_CUR_DIRECTION);
 }
 
 extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_fixupimm_pd (__m512d __W, __mmask8 __U, __m512d __A,
-			 __m512i __B, const int __imm)
+_mm512_mask_fixupimm_pd (__m512d __A, __mmask8 __U, __m512d __B,
+			 __m512i __C, const int __imm)
 {
   return (__m512d) __builtin_ia32_fixupimmpd512_mask ((__v8df) __A,
-						      (__v8di) __B,
+						      (__v8df) __B,
+						      (__v8di) __C,
 						      __imm,
-						      (__v8df) __W,
 						      (__mmask8) __U,
 						      _MM_FROUND_CUR_DIRECTION);
 }
 
 extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_fixupimm_pd (__mmask8 __U, __m512d __A,
-			  __m512i __B, const int __imm)
+_mm512_maskz_fixupimm_pd (__mmask8 __U, __m512d __A, __m512d __B,
+			  __m512i __C, const int __imm)
 {
   return (__m512d) __builtin_ia32_fixupimmpd512_maskz ((__v8df) __A,
-						       (__v8di) __B,
+						       (__v8df) __B,
+						       (__v8di) __C,
 						       __imm,
 						       (__mmask8) __U,
 						       _MM_FROUND_CUR_DIRECTION);
@@ -13241,34 +13932,37 @@ _mm512_maskz_fixupimm_pd (__mmask8 __U, __m512d __A,
 
 extern __inline __m512
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_fixupimm_ps (__m512 __A, __m512i __B, const int __imm)
+_mm512_fixupimm_ps (__m512 __A, __m512 __B, __m512i __C, const int __imm)
 {
-  return (__m512) __builtin_ia32_fixupimmps512 ((__v16sf) __A,
-						     (__v16si) __B,
+  return (__m512) __builtin_ia32_fixupimmps512_mask ((__v16sf) __A,
+						     (__v16sf) __B,
+						     (__v16si) __C,
 						     __imm,
+						     (__mmask16) -1,
 						     _MM_FROUND_CUR_DIRECTION);
 }
 
 extern __inline __m512
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_fixupimm_ps (__m512 __W, __mmask16 __U, __m512 __A,
-			 __m512i __B, const int __imm)
+_mm512_mask_fixupimm_ps (__m512 __A, __mmask16 __U, __m512 __B,
+			 __m512i __C, const int __imm)
 {
   return (__m512) __builtin_ia32_fixupimmps512_mask ((__v16sf) __A,
-						     (__v16si) __B,
+						     (__v16sf) __B,
+						     (__v16si) __C,
 						     __imm,
-						     (__v16sf) __W,
 						     (__mmask16) __U,
 						     _MM_FROUND_CUR_DIRECTION);
 }
 
 extern __inline __m512
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_fixupimm_ps (__mmask16 __U, __m512 __A,
-			  __m512i __B, const int __imm)
+_mm512_maskz_fixupimm_ps (__mmask16 __U, __m512 __A, __m512 __B,
+			  __m512i __C, const int __imm)
 {
   return (__m512) __builtin_ia32_fixupimmps512_maskz ((__v16sf) __A,
-						      (__v16si) __B,
+						      (__v16sf) __B,
+						      (__v16si) __C,
 						      __imm,
 						      (__mmask16) __U,
 						      _MM_FROUND_CUR_DIRECTION);
@@ -13276,32 +13970,35 @@ _mm512_maskz_fixupimm_ps (__mmask16 __U, __m512 __A,
 
 extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_fixupimm_sd (__m128d __A, __m128i __B, const int __imm)
+_mm_fixupimm_sd (__m128d __A, __m128d __B, __m128i __C, const int __imm)
 {
-  return (__m128d) __builtin_ia32_fixupimmsd ((__v2df) __A,
-						   (__v2di) __B, __imm,
+  return (__m128d) __builtin_ia32_fixupimmsd_mask ((__v2df) __A,
+						   (__v2df) __B,
+						   (__v2di) __C, __imm,
+						   (__mmask8) -1,
 						   _MM_FROUND_CUR_DIRECTION);
 }
 
 extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_fixupimm_sd (__m128d __W, __mmask8 __U, __m128d __A,
-		      __m128i __B, const int __imm)
+_mm_mask_fixupimm_sd (__m128d __A, __mmask8 __U, __m128d __B,
+		      __m128i __C, const int __imm)
 {
   return (__m128d) __builtin_ia32_fixupimmsd_mask ((__v2df) __A,
-						   (__v2di) __B, __imm,
-						   (__v2df) __W,
+						   (__v2df) __B,
+						   (__v2di) __C, __imm,
 						   (__mmask8) __U,
 						   _MM_FROUND_CUR_DIRECTION);
 }
 
 extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_fixupimm_sd (__mmask8 __U, __m128d __A,
-		       __m128i __B, const int __imm)
+_mm_maskz_fixupimm_sd (__mmask8 __U, __m128d __A, __m128d __B,
+		       __m128i __C, const int __imm)
 {
   return (__m128d) __builtin_ia32_fixupimmsd_maskz ((__v2df) __A,
-						    (__v2di) __B,
+						    (__v2df) __B,
+						    (__v2di) __C,
 						    __imm,
 						    (__mmask8) __U,
 						    _MM_FROUND_CUR_DIRECTION);
@@ -13309,94 +14006,97 @@ _mm_maskz_fixupimm_sd (__mmask8 __U, __m128d __A,
 
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_fixupimm_ss (__m128 __A, __m128i __B, const int __imm)
+_mm_fixupimm_ss (__m128 __A, __m128 __B, __m128i __C, const int __imm)
 {
-  return (__m128) __builtin_ia32_fixupimmss ((__v4sf) __A,
-						  (__v4si) __B, __imm,
+  return (__m128) __builtin_ia32_fixupimmss_mask ((__v4sf) __A,
+						  (__v4sf) __B,
+						  (__v4si) __C, __imm,
+						  (__mmask8) -1,
 						  _MM_FROUND_CUR_DIRECTION);
 }
 
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_fixupimm_ss (__m128 __W, __mmask8 __U, __m128 __A,
-		      __m128i __B, const int __imm)
+_mm_mask_fixupimm_ss (__m128 __A, __mmask8 __U, __m128 __B,
+		      __m128i __C, const int __imm)
 {
   return (__m128) __builtin_ia32_fixupimmss_mask ((__v4sf) __A,
-						  (__v4si) __B, __imm,
-						  (__v4sf) __W,
+						  (__v4sf) __B,
+						  (__v4si) __C, __imm,
 						  (__mmask8) __U,
 						  _MM_FROUND_CUR_DIRECTION);
 }
 
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_fixupimm_ss (__mmask8 __U, __m128 __A,
-		       __m128i __B, const int __imm)
+_mm_maskz_fixupimm_ss (__mmask8 __U, __m128 __A, __m128 __B,
+		       __m128i __C, const int __imm)
 {
   return (__m128) __builtin_ia32_fixupimmss_maskz ((__v4sf) __A,
-						   (__v4si) __B, __imm,
+						   (__v4sf) __B,
+						   (__v4si) __C, __imm,
 						   (__mmask8) __U,
 						   _MM_FROUND_CUR_DIRECTION);
 }
 #else
-#define _mm512_fixupimm_pd(X, Y, C)					\
-  ((__m512d)__builtin_ia32_fixupimmpd512((__v8df)(__m512d)(X),	\
-      (__v8di)(__m512i)(Y), (int)(C),  		\
-      _MM_FROUND_CUR_DIRECTION))
+#define _mm512_fixupimm_pd(X, Y, Z, C)					\
+  ((__m512d)__builtin_ia32_fixupimmpd512_mask ((__v8df)(__m512d)(X),	\
+      (__v8df)(__m512d)(Y), (__v8di)(__m512i)(Z), (int)(C),		\
+      (__mmask8)(-1), _MM_FROUND_CUR_DIRECTION))
 
-#define _mm512_mask_fixupimm_pd(W, U, X, Y, C)                          \
+#define _mm512_mask_fixupimm_pd(X, U, Y, Z, C)                          \
   ((__m512d)__builtin_ia32_fixupimmpd512_mask ((__v8df)(__m512d)(X),    \
-      (__v8di)(__m512i)(Y), (int)(C), (__v8df)(__m512d)(W),             \
+      (__v8df)(__m512d)(Y), (__v8di)(__m512i)(Z), (int)(C),             \
       (__mmask8)(U), _MM_FROUND_CUR_DIRECTION))
 
-#define _mm512_maskz_fixupimm_pd(U, X, Y, C)                         \
+#define _mm512_maskz_fixupimm_pd(U, X, Y, Z, C)                         \
   ((__m512d)__builtin_ia32_fixupimmpd512_maskz ((__v8df)(__m512d)(X),   \
-      (__v8di)(__m512i)(Y), (int)(C),             \
+      (__v8df)(__m512d)(Y), (__v8di)(__m512i)(Z), (int)(C),             \
       (__mmask8)(U), _MM_FROUND_CUR_DIRECTION))
 
-#define _mm512_fixupimm_ps(X, Y, C)					\
-  ((__m512)__builtin_ia32_fixupimmps512 ((__v16sf)(__m512)(X),	\
-    (__v16si)(__m512i)(Y), (int)(C),		\
-    _MM_FROUND_CUR_DIRECTION))
+#define _mm512_fixupimm_ps(X, Y, Z, C)					\
+  ((__m512)__builtin_ia32_fixupimmps512_mask ((__v16sf)(__m512)(X),	\
+    (__v16sf)(__m512)(Y), (__v16si)(__m512i)(Z), (int)(C),		\
+    (__mmask16)(-1), _MM_FROUND_CUR_DIRECTION))
 
-#define _mm512_mask_fixupimm_ps(W, U, X, Y, C)                          \
+#define _mm512_mask_fixupimm_ps(X, U, Y, Z, C)                          \
   ((__m512)__builtin_ia32_fixupimmps512_mask ((__v16sf)(__m512)(X),     \
-    (__v16si)(__m512i)(Y), (int)(C), (__v16sf)(__m512)(W),             \
+    (__v16sf)(__m512)(Y), (__v16si)(__m512i)(Z), (int)(C),              \
     (__mmask16)(U), _MM_FROUND_CUR_DIRECTION))
 
-#define _mm512_maskz_fixupimm_ps(U, X, Y, C)                         \
+#define _mm512_maskz_fixupimm_ps(U, X, Y, Z, C)                         \
   ((__m512)__builtin_ia32_fixupimmps512_maskz ((__v16sf)(__m512)(X),    \
-    (__v16si)(__m512i)(Y), (int)(C),              \
+    (__v16sf)(__m512)(Y), (__v16si)(__m512i)(Z), (int)(C),              \
     (__mmask16)(U), _MM_FROUND_CUR_DIRECTION))
 
-#define _mm_fixupimm_sd(X, Y, C)					\
-    ((__m128d)__builtin_ia32_fixupimmsd ((__v2df)(__m128d)(X),	\
-      (__v2di)(__m128i)(Y), (int)(C),		\
-      _MM_FROUND_CUR_DIRECTION))
-
-#define _mm_mask_fixupimm_sd(W, U, X, Y, C)				\
+#define _mm_fixupimm_sd(X, Y, Z, C)					\
     ((__m128d)__builtin_ia32_fixupimmsd_mask ((__v2df)(__m128d)(X),	\
-      (__v2di)(__m128i)(Y), (int)(C), (__v2df)(__m128d)(W), 		\
+      (__v2df)(__m128d)(Y), (__v2di)(__m128i)(Z), (int)(C),		\
+      (__mmask8)(-1), _MM_FROUND_CUR_DIRECTION))
+
+#define _mm_mask_fixupimm_sd(X, U, Y, Z, C)				\
+    ((__m128d)__builtin_ia32_fixupimmsd_mask ((__v2df)(__m128d)(X),	\
+      (__v2df)(__m128d)(Y), (__v2di)(__m128i)(Z), (int)(C),		\
       (__mmask8)(U), _MM_FROUND_CUR_DIRECTION))
 
-#define _mm_maskz_fixupimm_sd(U, X, Y, C)				\
+#define _mm_maskz_fixupimm_sd(U, X, Y, Z, C)				\
     ((__m128d)__builtin_ia32_fixupimmsd_maskz ((__v2df)(__m128d)(X),	\
-      (__v2di)(__m128i)(Y), (int)(C),		\
+      (__v2df)(__m128d)(Y), (__v2di)(__m128i)(Z), (int)(C),		\
       (__mmask8)(U), _MM_FROUND_CUR_DIRECTION))
 
-#define _mm_fixupimm_ss(X, Y, C)					\
-    ((__m128)__builtin_ia32_fixupimmss ((__v4sf)(__m128)(X),	\
-      (__v4si)(__m128i)(Y), (int)(C),		\
-      _MM_FROUND_CUR_DIRECTION))
-
-#define _mm_mask_fixupimm_ss(W, U, X, Y, C)				\
+#define _mm_fixupimm_ss(X, Y, Z, C)					\
     ((__m128)__builtin_ia32_fixupimmss_mask ((__v4sf)(__m128)(X),	\
-      (__v4si)(__m128i)(Y), (int)(C), (__v4sf)(__m128)(W), 	\
+      (__v4sf)(__m128)(Y), (__v4si)(__m128i)(Z), (int)(C),		\
+      (__mmask8)(-1), _MM_FROUND_CUR_DIRECTION))
+
+#define _mm_mask_fixupimm_ss(X, U, Y, Z, C)				\
+    ((__m128)__builtin_ia32_fixupimmss_mask ((__v4sf)(__m128)(X),	\
+      (__v4sf)(__m128)(Y), (__v4si)(__m128i)(Z), (int)(C),		\
       (__mmask8)(U), _MM_FROUND_CUR_DIRECTION))
 
-#define _mm_maskz_fixupimm_ss(U, X, Y, C)				\
+#define _mm_maskz_fixupimm_ss(U, X, Y, Z, C)				\
     ((__m128)__builtin_ia32_fixupimmss_maskz ((__v4sf)(__m128)(X),	\
-      (__v4si)(__m128i)(Y), (int)(C),		\
+      (__v4sf)(__m128)(Y), (__v4si)(__m128i)(Z), (int)(C),		\
       (__mmask8)(U), _MM_FROUND_CUR_DIRECTION))
 #endif
 

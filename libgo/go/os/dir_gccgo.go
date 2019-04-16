@@ -48,11 +48,11 @@ func (file *File) readdirnames(n int) (names []string, err error) {
 		}
 
 		syscall.Entersyscall()
-		r := libc_opendir(p)
+		r := libc_fdopendir(int32(file.pfd.Sysfd))
 		errno := syscall.GetErrno()
 		syscall.Exitsyscall()
 		if r == nil {
-			return nil, &PathError{"opendir", file.name, errno}
+			return nil, &PathError{"fdopendir", file.name, errno}
 		}
 
 		file.dirinfo = new(dirInfo)

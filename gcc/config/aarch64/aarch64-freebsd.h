@@ -34,7 +34,7 @@
 
 #undef  FBSD_TARGET_LINK_SPEC
 #define FBSD_TARGET_LINK_SPEC "                                 \
-    %{p:%nconsider using `-pg' instead of `-p' with gprof (1) } \
+    %{p:%nconsider using `-pg' instead of `-p' with gprof (1)}  \
     %{v:-V}                                                     \
     %{assert*} %{R*} %{rpath*} %{defsym*}                       \
     %{shared:-Bshareable %{h*} %{soname*}}                      \

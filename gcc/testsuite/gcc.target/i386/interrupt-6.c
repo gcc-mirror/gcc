@@ -8,7 +8,7 @@ extern int error;
 __attribute__((interrupt))
 void
 fn1 (void *p, short error_code)
-{ /* { dg-error "interrupt service routine should have unsigned \(long long |long |\)int as the second argument" } */
+{ /* { dg-error "interrupt service routine should have 'unsigned \(long long |long |\)int' as the second argument" } */
 }
 
 __attribute__((interrupt))

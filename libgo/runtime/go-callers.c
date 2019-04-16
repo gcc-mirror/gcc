@@ -236,11 +236,11 @@ runtime_callers (int32 skip, Location *locbuf, int32 m, bool keep_thunks)
   return data.index;
 }
 
-int Callers (int, struct __go_open_array)
+intgo Callers (intgo, struct __go_open_array)
   __asm__ (GOSYM_PREFIX "runtime.Callers");
 
-int
-Callers (int skip, struct __go_open_array pc)
+intgo
+Callers (intgo skip, struct __go_open_array pc)
 {
   Location *locbuf;
   int ret;

@@ -1870,7 +1870,7 @@ namespace regex_constants
        * @retval true The %match_results object is empty.
        * @retval false The %match_results object is not empty.
        */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const
       { return size() == 0; }
       

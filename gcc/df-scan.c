@@ -2208,10 +2208,7 @@ df_mw_compare (const df_mw_hardreg *mw1, const df_mw_hardreg *mw2)
   if (mw1->end_regno != mw2->end_regno)
     return mw1->end_regno - mw2->end_regno;
 
-  if (mw1->mw_reg != mw2->mw_reg)
-    return mw1->mw_order - mw2->mw_order;
-
-  return 0;
+  return mw1->mw_order - mw2->mw_order;
 }
 
 /* Like df_mw_compare, but compare two df_mw_hardreg** pointers R1 and R2.  */
@@ -2982,7 +2979,7 @@ df_uses_record (struct df_collection_rec *collection_rec,
 	   scanned and regs_asm_clobbered is filled out.
 
 	   For all ASM_OPERANDS, we must traverse the vector of input
-	   operands.  We can not just fall through here since then we
+	   operands.  We cannot just fall through here since then we
 	   would be confused by the ASM_INPUT rtx inside ASM_OPERANDS,
 	   which do not indicate traditional asms unlike their normal
 	   usage.  */

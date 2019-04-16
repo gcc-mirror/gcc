@@ -466,6 +466,38 @@ else version (CRuntime_Bionic)
 else version (CRuntime_Musl)
 {
     alias ulong rlim_t;
+
+    int getrlimit(int, rlimit*);
+    int setrlimit(int, in rlimit*);
+    alias getrlimit getrlimit64;
+    alias setrlimit setrlimit64;
+    enum
+    {
+        RUSAGE_SELF = 0,
+        RUSAGE_CHILDREN = -1,
+        RUSAGE_THREAD = 1
+    }
+    struct rusage
+    {
+        timeval ru_utime;
+        timeval ru_stime;
+        c_long ru_maxrss;
+        c_long ru_ixrss;
+        c_long ru_idrss;
+        c_long ru_isrss;
+        c_long ru_minflt;
+        c_long ru_majflt;
+        c_long ru_nswap;
+        c_long ru_inblock;
+        c_long ru_oublock;
+        c_long ru_msgsnd;
+        c_long ru_msgrcv;
+        c_long ru_nsignals;
+        c_long ru_nvcsw;
+        c_long ru_nivcsw;
+        c_long[16] __reserved;
+    }
+
     enum
     {
         RLIMIT_CPU    = 0,
@@ -476,10 +508,6 @@ else version (CRuntime_Musl)
         RLIMIT_NOFILE = 7,
         RLIMIT_AS     = 9,
     }
-    int getrlimit(int, rlimit*);
-    int setrlimit(int, in rlimit*);
-    alias getrlimit getrlimit64;
-    alias setrlimit setrlimit64;
 }
 else version (CRuntime_UClibc)
 {

@@ -787,9 +787,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     swap(function<_Res(_Args...)>& __x, function<_Res(_Args...)>& __y) noexcept
     { __x.swap(__y); }
 
+#if __cplusplus >= 201703L
+  namespace __detail::__variant
+  {
+    template<typename> struct _Never_valueless_alt; // see <variant>
+
+    // Provide the strong exception-safety guarantee when emplacing a
+    // function into a variant.
+    template<typename _Signature>
+      struct _Never_valueless_alt<std::function<_Signature>>
+      : std::true_type
+      { };
+  }  // namespace __detail::__variant
+#endif // C++17
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++11
-
 #endif // _GLIBCXX_STD_FUNCTION_H

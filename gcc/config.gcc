@@ -248,6 +248,7 @@ md_file=
 # Obsolete configurations.
 case ${target} in
   *-*-solaris2.10*			\
+  | spu*-*-*				\
   | tile*-*-*				\
  )
     if test "x$enable_obsolete" != xyes; then
@@ -318,13 +319,17 @@ aarch64*-*-*)
 	c_target_objs="aarch64-c.o"
 	cxx_target_objs="aarch64-c.o"
 	d_target_objs="aarch64-d.o"
-	extra_objs="aarch64-builtins.o aarch-common.o cortex-a57-fma-steering.o aarch64-speculation.o falkor-tag-collision-avoidance.o"
+	extra_objs="aarch64-builtins.o aarch-common.o cortex-a57-fma-steering.o aarch64-speculation.o falkor-tag-collision-avoidance.o aarch64-bti-insert.o"
 	target_gtfiles="\$(srcdir)/config/aarch64/aarch64-builtins.c"
 	target_has_targetm_common=yes
 	;;
 alpha*-*-*)
 	cpu_type=alpha
 	extra_options="${extra_options} g.opt"
+	;;
+amdgcn*)
+	cpu_type=gcn
+	use_gcc_stdint=wrap
 	;;
 am33_2.0-*-linux*)
 	cpu_type=mn10300
@@ -835,6 +840,7 @@ case ${target} in
   tm_p_file="${tm_p_file} netbsd-protos.h"
   tmake_file="t-netbsd t-slibgcc"
   extra_objs="${extra_objs} netbsd.o"
+  d_target_objs="${d_target_objs} netbsd-d.o"
   gas=yes
   gnu_ld=yes
   use_gcc_stdint=wrap
@@ -843,6 +849,7 @@ case ${target} in
   esac
   nbsd_tm_file="netbsd.h netbsd-stdint.h netbsd-elf.h"
   default_use_cxa_atexit=yes
+  target_has_targetdm=yes
   ;;
 *-*-openbsd*)
   tmake_file="t-openbsd"
@@ -1106,7 +1113,10 @@ arc*-*-linux*)
 	case ${with_endian} in
 	big*)	tm_file="arc/big.h ${tm_file}"
 	esac
-        ;;
+	# Force .init_array support.  The configure script cannot always
+	# automatically detect that GAS supports it, yet we require it.
+	gcc_cv_initfini_array=yes
+	;;
 arm-wrs-vxworks|arm-wrs-vxworks7)
 	extra_options="${extra_options} arm/vxworks.opt"
 	tmake_file="${tmake_file} arm/t-arm arm/t-vxworks"
@@ -1400,6 +1410,25 @@ ft32-*-elf)
 	gnu_ld=yes
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
 	tmake_file="${tmake_file} ft32/t-ft32"
+	;;
+amdgcn-*-amdhsa)
+	tm_file="elfos.h gcn/gcn-hsa.h gcn/gcn.h newlib-stdint.h"
+	tmake_file="gcn/t-gcn-hsa"
+	native_system_header_dir=/include
+	extra_modes=gcn/gcn-modes.def
+	extra_objs="${extra_objs} gcn-tree.o"
+	extra_gcc_objs="driver-gcn.o"
+	case "$host" in
+	x86_64*-*-linux-gnu )
+		if test "$ac_cv_search_dlopen" != no; then
+			extra_programs="${extra_programs} gcn-run\$(exeext)"
+		fi
+		;;
+	esac
+	if test x$enable_as_accelerator = xyes; then
+		extra_programs="${extra_programs} mkoffload\$(exeext)"
+		tm_file="${tm_file} gcn/offload.h"
+	fi
 	;;
 moxie-*-elf)
 	gas=yes
@@ -4087,6 +4116,24 @@ case "${target}" in
 		esac
 		;;
 
+	amdgcn-*-*)
+		supported_defaults="arch tune"
+
+		for which in arch tune; do
+			eval "val=\$with_$which"
+			case ${val} in
+			"" | carrizo | fiji | gfx900 )
+				# OK
+				;;
+			*)
+				echo "Unknown cpu used in --with-$which=$val." 1>&2
+				exit 1
+				;;
+			esac
+		done
+		[ "x$with_arch" = x ] && with_arch=fiji
+		;;
+
 	hppa*-*-*)
 		supported_defaults="arch schedule"
 
@@ -4165,13 +4212,37 @@ case "${target}" in
 		;;
 
 	riscv*-*-*)
-		supported_defaults="abi arch tune"
+		supported_defaults="abi arch tune riscv_attribute"
 
 		case "${target}" in
 		riscv-* | riscv32*) xlen=32 ;;
 		riscv64*) xlen=64 ;;
 		*) echo "Unsupported RISC-V target ${target}" 1>&2; exit 1 ;;
 		esac
+
+		case "${with_riscv_attribute}" in
+		yes)
+			tm_defines="${tm_defines} TARGET_RISCV_ATTRIBUTE=1"
+			;;
+		no)
+			tm_defines="${tm_defines} TARGET_RISCV_ATTRIBUTE=0"
+			;;
+		""|default)
+			case "${target}" in
+			riscv*-*-elf*)
+				tm_defines="${tm_defines} TARGET_RISCV_ATTRIBUTE=1"
+				;;
+			*)
+				tm_defines="${tm_defines} TARGET_RISCV_ATTRIBUTE=0"
+				;;
+			esac
+			;;
+		*)
+			echo "--with-riscv-attribute=${with_riscv_attribute} is not supported.  The argument must begin with yes, no or default." 1>&2
+			exit 1
+			;;
+		esac
+
 
 		# Infer arch from --with-arch, --target, and --with-abi.
 		case "${with_arch}" in
@@ -4479,9 +4550,18 @@ case "${target}" in
 		# process --with-nds32-lib
 		case "${with_nds32_lib}" in
 		"")
-			# the default library is newlib
-			with_nds32_lib=newlib
-			tm_defines="${tm_defines} TARGET_DEFAULT_CTOR_DTOR=1"
+			case ${target} in
+			*-*-*uclibc*)
+				with_nds32_lib=ulibc
+				;;
+			*-*-linux*)
+				with_nds32_lib=glibc
+				;;
+			*)
+				with_nds32_lib=newlib
+				tm_defines="${tm_defines} TARGET_DEFAULT_CTOR_DTOR=1"
+				;;
+			esac
 			;;
 		newlib)
 			# OK
@@ -4497,11 +4577,8 @@ case "${target}" in
 				;;
 			esac
 			;;
-		glibc)
+		glibc | uclibc)
 			# OK
-			tm_defines="${tm_defines} TARGET_DEFAULT_TLSDESC_TRAMPOLINE=0"
-			;;
-		uclibc)
 			;;
 		*)
 			echo "Cannot accept --with-nds32-lib=$with_nds32_lib, available values are: newlib mculib glibc uclibc" 1>&2
@@ -4651,7 +4728,7 @@ case "${target}" in
 		for which in arch tune; do
 			eval "val=\$with_$which"
 			case ${val} in
-			"" | native | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | z14 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11 | arch12)
+			"" | native | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | z14 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11 | arch12 | arch13 )
 				# OK
 				;;
 			*)

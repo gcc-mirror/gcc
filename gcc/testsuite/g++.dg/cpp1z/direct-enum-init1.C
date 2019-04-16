@@ -42,7 +42,7 @@ foo ()
 			// { dg-error "narrowing conversion of '-4' from 'int' to 'unsigned char'" "" { target c++17 } .-1 }
   bar ({ 10 });		// { dg-error "cannot convert \[^\n\r]* to 'E'" }
   bar (E { 9 });	// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
-  V v1 = { { 11 } };	// { dg-error "braces around scalar initializer for type 'E'" }
+  V v1 = { { 11 } };	// { dg-error "cannot convert '<brace-enclosed initializer list>' to 'E' in initialization" }
   V v2 = { E { 12 } };	// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
   V v3 = { E { 5.0 } };	// { dg-error "cannot convert 'double' to 'E' in initialization" "" { target c++14_down } }
 			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char'" "" { target c++17 } .-1 }
@@ -108,7 +108,7 @@ foo2 ()
 			// { dg-error "narrowing conversion of '-4' from 'int' to 'unsigned char'" "" { target c++17 } .-1 }
   bar ({ 10 });		// { dg-error "cannot convert \[^\n\r]* to 'E'" }
   bar (E { 9 });	// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
-  V v1 = { { 11 } };	// { dg-error "braces around scalar initializer for type 'E'" }
+  V v1 = { { 11 } };	// { dg-error "cannot convert '<brace-enclosed initializer list>' to 'E' in initialization" }
   V v2 = { E { 12 } };	// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
   V v3 = { E { 5.0 } };	// { dg-error "cannot convert 'double' to 'E' in initialization" "" { target c++14_down } }
 			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char'" "" { target c++17 } .-1 }
@@ -176,7 +176,7 @@ foo3 ()
 			// { dg-error "narrowing conversion of '-4' from 'int' to 'unsigned char'" "" { target c++17 } .-1 }
   bar3 ({ 10 });	// { dg-error "cannot convert \[^\n\r]* to 'E'" }
   bar3 (E { 9 });	// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
-  M v1 = { { 11 } };	// { dg-error "braces around scalar initializer for type 'E'" }
+  M v1 = { { 11 } };	// { dg-error "cannot convert '<brace-enclosed initializer list>' to 'E' in initialization" }
   M v2 = { L { 12 } };	// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
   M v3 = { L { 5.0 } };	// { dg-error "cannot convert 'double' to 'E' in initialization" "" { target c++14_down } }
 			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char'" "" { target c++17 } .-1 }

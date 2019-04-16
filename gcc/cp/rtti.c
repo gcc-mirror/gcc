@@ -310,7 +310,7 @@ typeid_ok_p (void)
 {
   if (! flag_rtti)
     {
-      error ("cannot use %<typeid%> with -fno-rtti");
+      error ("cannot use %<typeid%> with %<-fno-rtti%>");
       return false;
     }
 
@@ -719,7 +719,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	  if (!flag_rtti)
 	    {
               if (complain & tf_error)
-                error ("%<dynamic_cast%> not permitted with -fno-rtti");
+		error ("%<dynamic_cast%> not permitted with %<-fno-rtti%>");
 	      return error_mark_node;
 	    }
 
@@ -1539,7 +1539,7 @@ emit_support_tinfos (void)
   {
     &void_type_node,
     &boolean_type_node,
-    &wchar_type_node, &char16_type_node, &char32_type_node,
+    &wchar_type_node, &char8_type_node, &char16_type_node, &char32_type_node,
     &char_type_node, &signed_char_type_node, &unsigned_char_type_node,
     &short_integer_type_node, &short_unsigned_type_node,
     &integer_type_node, &unsigned_type_node,

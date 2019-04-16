@@ -49,7 +49,9 @@ test01()
   (void) resolver::passive;
   (void) resolver::canonical_name;
   (void) resolver::numeric_host;
+#ifdef AI_NUMERICSERV
   (void) resolver::numeric_service;
+#endif
   (void) resolver::v4_mapped;
   (void) resolver::all_matching;
   (void) resolver::address_configured;

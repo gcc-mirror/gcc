@@ -27,6 +27,6 @@ int main()
   return 0;
 }
 
-// { dg-error "operator" "" { target *-*-* } 406 }
-// { dg-error "operator" "" { target *-*-* } 407 }
-// { dg-error "operator" "" { target *-*-* } 408 }
+// { dg-error "operator" "" { target *-*-* } 425 }
+// { dg-error "operator" "" { target *-*-* } 426 }
+// { dg-error "operator" "" { target *-*-* } 427 }

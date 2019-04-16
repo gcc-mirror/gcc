@@ -826,7 +826,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
+# define __cpp_lib_raw_memory_algorithms 201606L
+
   template <typename _ForwardIterator>
     inline void
     uninitialized_default_construct(_ForwardIterator __first,
@@ -877,7 +879,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	 __count, __result);
       return {__res.first.base(), __res.second};
     }
-#endif
+#endif // C++17
 
 #if __cplusplus >= 201103L
   template<typename _Tp, typename _Up, typename _Allocator>
@@ -894,14 +896,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   // This class may be specialized for specific types.
+  // Also known as is_trivially_relocatable.
   template<typename _Tp, typename = void>
-    struct __is_trivially_relocatable
+    struct __is_bitwise_relocatable
     : is_trivial<_Tp> { };
 
   template <typename _Tp, typename _Up>
-    inline __enable_if_t<std::__is_trivially_relocatable<_Tp>::value, _Tp*>
+    inline __enable_if_t<std::__is_bitwise_relocatable<_Tp>::value, _Tp*>
     __relocate_a_1(_Tp* __first, _Tp* __last,
-		   _Tp* __result, allocator<_Up>& __alloc) noexcept
+		   _Tp* __result, allocator<_Up>&) noexcept
     {
       ptrdiff_t __count = __last - __first;
       if (__count > 0)
@@ -922,7 +925,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_ValueType;
       typedef typename iterator_traits<_ForwardIterator>::value_type
 	_ValueType2;
-      static_assert(std::is_same<_ValueType, _ValueType2>::value);
+      static_assert(std::is_same<_ValueType, _ValueType2>::value,
+	  "relocation is only possible for values of the same type");
       _ForwardIterator __cur = __result;
       for (; __first != __last; ++__first, (void)++__cur)
 	std::__relocate_object_a(std::__addressof(*__cur),

@@ -1039,7 +1039,7 @@
 ; use next_active_insn to look at the 'following' insn.  That should
 ; exist, because peephole2 runs after reload, and there has to be
 ; a return after an fp_int insn.
-; ??? However, we can not even ordinarily match the preceding insn;
+; ??? However, we cannot even ordinarily match the preceding insn;
 ; there is some bug in the generators such that then it leaves out
 ; the check for PARALLEL before the length check for the then-second
 ; main insn.  Observed when compiling compatibility-atomic-c++0x.cc

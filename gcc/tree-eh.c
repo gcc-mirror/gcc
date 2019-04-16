@@ -4763,7 +4763,7 @@ verify_eh_edges (gimple *stmt)
     {
       if (eh_edge)
 	{
-	  error ("BB %i can not throw but has an EH edge", bb->index);
+	  error ("BB %i cannot throw but has an EH edge", bb->index);
 	  return true;
 	}
       return false;

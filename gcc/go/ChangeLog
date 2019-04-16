@@ -1,3 +1,47 @@
+2019-03-06  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/89227
+	* go-gcc.cc (Gcc_backend::function): Set TREE_PUBLIC for an
+	only-inline function.
+
+2019-02-15  Cherry Zhang  <cherryyz@google.com>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Define __builtin_dwarf_cfa
+	instead of __builtin_frame_address.
+
+2019-02-14  Ian Lance Taylor  <iant@golang.org>
+
+	* go-backend.c (go_imported_unsafe): Update
+	optimization_default_node.
+
+2019-02-13  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc: #include "opts.h".
+	(Gcc_backend::function): Compile thunks with -Os.
+
+2019-02-05  Nikhil Benesch  <nikhil.benesch@gmail.com>
+
+        PR go/89019
+        * go-gcc.cc (Gcc_backend::placeholder_struct_type): Mark
+        placeholder structs as requiring structural equality.
+        (Gcc_backend::set_placeholder_pointer_type): Propagate the
+	canonical type from the desired pointer type to the placeholder
+	pointer type.
+
+2019-01-09  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/86343
+	* go-gcc.cc (Gcc_backend::set_placeholder_struct_type): Go back to
+	build_distinct_type_copy, but copy the fields so that they have
+	the right DECL_CONTEXT.
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* go-backend.c: Mechanically replace "can not" with "cannot".
+	* go-gcc.cc: Likewise.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

@@ -192,11 +192,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(is_same<typename _Alloc::value_type, _Value>{},
 	  "unordered container must have the same value_type as its allocator");
 #endif
-      static_assert(__is_invocable<const _H1&, const _Key&>{},
-	  "hash function must be invocable with an argument of key type");
-      static_assert(__is_invocable<const _Equal&, const _Key&, const _Key&>{},
-	  "key equality predicate must be invocable with two arguments of "
-	  "key type");
 
       using __traits_type = _Traits;
       using __hash_cached = typename __traits_type::__hash_cached;
@@ -533,7 +528,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size() const noexcept
       { return _M_element_count; }
 
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const noexcept
       { return size() == 0; }
 
@@ -1356,6 +1351,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       clear();
       _M_deallocate_buckets();
+
+      static_assert(__is_invocable<const _H1&, const _Key&>{},
+	  "hash function must be invocable with an argument of key type");
+      static_assert(__is_invocable<const _Equal&, const _Key&, const _Key&>{},
+	  "key equality predicate must be invocable with two arguments of "
+	  "key type");
     }
 
   template<typename _Key, typename _Value,
@@ -2213,6 +2214,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus > 201402L
   template<typename, typename, typename> class _Hash_merge_helper { };
 #endif // C++17
+
+#if __cpp_deduction_guides >= 201606
+  // Used to constrain deduction guides
+  template<typename _Hash>
+    using _RequireNotAllocatorOrIntegral
+      = __enable_if_t<!__or_<is_integral<_Hash>, __is_allocator<_Hash>>::value>;
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

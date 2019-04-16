@@ -58,7 +58,6 @@ DEFPARAM (PARAM_INLINE_MIN_SPEEDUP,
    of a function counted in internal gcc instructions (not in
    real machine instructions) that is eligible for inlining
    by the tree inliner.
-   The default value is 400.
    Only functions marked inline (or methods defined in the class
    definition for C++) are affected by this.
    There are more restrictions to inlining: If inlined functions
@@ -69,7 +68,7 @@ DEFPARAM (PARAM_INLINE_MIN_SPEEDUP,
 DEFPARAM (PARAM_MAX_INLINE_INSNS_SINGLE,
 	  "max-inline-insns-single",
 	  "The maximum number of instructions in a single function eligible for inlining.",
-	  400, 0, 0)
+	  200, 0, 0)
 
 /* The single function inlining limit for functions that are
    inlined by virtue of -finline-functions (-O3).
@@ -97,23 +96,23 @@ DEFPARAM (PARAM_UNINLINED_FUNCTION_INSNS,
 	  "uninlined-function-insns",
 	  "Instruction accounted for function prologue, epilogue and other"
 	  " overhead.",
-	  2, 0, 0)
+	  2, 0, 1000000)
 
 DEFPARAM (PARAM_UNINLINED_FUNCTION_TIME,
 	  "uninlined-function-time",
 	  "Time accounted for function prologue, epilogue and other"
 	  " overhead.",
-	  0, 0, 0)
+	  0, 0, 1000000)
 
 DEFPARAM (PARAM_UNINLINED_FUNCTION_THUNK_INSNS,
 	  "uninlined-thunk-insns",
 	  "Instruction accounted for function thunk overhead.",
-	  2, 0, 0)
+	  2, 0, 1000000)
 
 DEFPARAM (PARAM_UNINLINED_FUNCTION_THUNK_TIME,
 	  "uninlined-thunk-time",
 	  "Time accounted for function thunk overhead.",
-	  2, 0, 0)
+	  2, 0, 1000000)
 
 DEFPARAM (PARAM_MAX_INLINE_INSNS_RECURSIVE,
 	  "max-inline-insns-recursive",
@@ -227,7 +226,7 @@ DEFPARAM(PARAM_LARGE_UNIT_INSNS,
 DEFPARAM(PARAM_INLINE_UNIT_GROWTH,
 	 "inline-unit-growth",
 	 "How much can given compilation unit grow because of the inlining (in percent).",
-	 20, 0, 0)
+	 40, 0, 0)
 DEFPARAM(PARAM_IPCP_UNIT_GROWTH,
 	 "ipcp-unit-growth",
 	 "How much can given compilation unit grow because of the interprocedural constant propagation (in percent).",
@@ -958,7 +957,7 @@ DEFPARAM (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS,
 
 DEFPARAM (PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP,
 	  "graphite-max-arrays-per-scop",
-	  "Maximum number of arrays per scop.",
+	  "Maximum number of arrays per SCoP.",
 	  100, 0, 0)
 
 DEFPARAM (PARAM_MAX_ISL_OPERATIONS,
@@ -995,7 +994,7 @@ DEFPARAM (PARAM_PROFILE_FUNC_INTERNAL_ID,
 
 /* When the parameter is 1, track the most frequent N target
    addresses in indirect-call profile. This disables
-   indirect_call_profiler_v2 which tracks single target.  */
+   indirect_call_profiler_v3 which tracks single target.  */
 DEFPARAM (PARAM_INDIR_CALL_TOPN_PROFILE,
 	  "indir-call-topn-profile",
 	  "Track top N target addresses in indirect-call profile.",
@@ -1146,6 +1145,11 @@ DEFPARAM (MAX_PARTITION_SIZE,
 	  "lto-max-partition",
 	  "Maximal size of a partition for LTO (in estimated instructions).",
 	  1000000, 0, INT_MAX)
+
+DEFPARAM (PARAM_MAX_LTO_STREAMING_PARALLELISM,
+	  "lto-max-streaming-parallelism",
+	  "maximal number of LTO partitions streamed in parallel.",
+	  32, 1, 0)
 
 /* Diagnostic parameters.  */
 

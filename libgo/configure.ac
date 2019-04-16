@@ -10,7 +10,7 @@ AC_INIT(package-unused, version-unused,, libgo)
 AC_CONFIG_SRCDIR(Makefile.am)
 AC_CONFIG_HEADER(config.h)
 
-libtool_VERSION=13:0:0
+libtool_VERSION=14:0:0
 AC_SUBST(libtool_VERSION)
 
 AM_ENABLE_MULTILIB(, ..)
@@ -153,7 +153,7 @@ AC_SUBST(go_include)
 # All known GOOS values.  This is the union of all operating systems
 # supported by the gofrontend and all operating systems supported by
 # the gc toolchain.
-ALLGOOS="aix android darwin dragonfly freebsd irix linux netbsd openbsd plan9 rtems solaris windows"
+ALLGOOS="aix android darwin dragonfly freebsd hurd irix js linux netbsd openbsd plan9 rtems solaris windows"
 
 is_darwin=no
 is_freebsd=no
@@ -165,6 +165,7 @@ is_dragonfly=no
 is_rtems=no
 is_solaris=no
 is_aix=no
+is_hurd=no
 GOOS=unknown
 case ${host} in
   *-*-darwin*)   is_darwin=yes;  GOOS=darwin ;;
@@ -177,6 +178,7 @@ case ${host} in
   *-*-rtems*)    is_rtems=yes;   GOOS=rtems ;;
   *-*-solaris2*) is_solaris=yes; GOOS=solaris ;;
   *-*-aix*)      is_aix=yes;     GOOS=aix ;;
+  *-*-gnu*)      is_hurd=yes;    GOOS=hurd ;;
 esac
 AM_CONDITIONAL(LIBGO_IS_DARWIN, test $is_darwin = yes)
 AM_CONDITIONAL(LIBGO_IS_FREEBSD, test $is_freebsd = yes)
@@ -188,6 +190,7 @@ AM_CONDITIONAL(LIBGO_IS_DRAGONFLY, test $is_dragonfly = yes)
 AM_CONDITIONAL(LIBGO_IS_RTEMS, test $is_rtems = yes)
 AM_CONDITIONAL(LIBGO_IS_SOLARIS, test $is_solaris = yes)
 AM_CONDITIONAL(LIBGO_IS_AIX, test $is_aix = yes)
+AM_CONDITIONAL(LIBGO_IS_HURD, test $is_hurd = yes)
 AM_CONDITIONAL(LIBGO_IS_BSD, test $is_darwin = yes -o $is_dragonfly = yes -o $is_freebsd = yes -o $is_netbsd = yes -o $is_openbsd = yes)
 AC_SUBST(GOOS)
 AC_SUBST(ALLGOOS)
@@ -349,6 +352,20 @@ esac
 AC_SUBST(GOARCH)
 AC_SUBST(ALLGOARCH)
 AC_SUBST(ALLGOARCHFAMILY)
+
+FUNCTION_DESCRIPTORS=false
+case ${host} in
+  rs6000*-*-* | powerpc*-*-*)
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+#if _CALL_ELF == 1
+#error descriptors
+#endif
+])],
+	[FUNCTION_DESCRIPTORS=false],
+	[FUNCTION_DESCRIPTORS=true])
+    ;;
+esac
+AC_SUBST(FUNCTION_DESCRIPTORS)
 
 dnl Some files are only present when needed for specific architectures.
 GO_LIBCALL_OS_FILE=
@@ -577,62 +594,6 @@ LIBS_hold="$LIBS"
 LIBS="$LIBS $MATH_LIBS"
 AC_CHECK_FUNCS(matherr)
 LIBS="$LIBS_hold"
-
-AC_CACHE_CHECK([for __sync_bool_compare_and_swap_4],
-[libgo_cv_func___sync_bool_compare_and_swap_4],
-[AC_LINK_IFELSE([AC_LANG_SOURCE([
-typedef unsigned int uint32  __attribute__ ((mode (SI)));
-uint32 i;
-int main() { return __sync_bool_compare_and_swap (&i, 0, 1); }
-])],
-[libgo_cv_func___sync_bool_compare_and_swap_4=yes],
-[libgo_cv_func___sync_bool_compare_and_swap_4=no])])
-if test "$libgo_cv_func___sync_bool_compare_and_swap_4" = "yes"; then
-  AC_DEFINE(HAVE_SYNC_BOOL_COMPARE_AND_SWAP_4, 1,
-    [Define to 1 if the compiler provides the __sync_bool_compare_and_swap function for uint32])
-fi
-
-AC_CACHE_CHECK([for __sync_bool_compare_and_swap_8],
-[libgo_cv_func___sync_bool_compare_and_swap_8],
-[AC_LINK_IFELSE([AC_LANG_SOURCE([
-typedef unsigned int uint64  __attribute__ ((mode (DI)));
-uint64 i;
-int main() { return __sync_bool_compare_and_swap (&i, 0, 1); }
-])],
-[libgo_cv_func___sync_bool_compare_and_swap_8=yes],
-[libgo_cv_func___sync_bool_compare_and_swap_8=no])])
-if test "$libgo_cv_func___sync_bool_compare_and_swap_8" = "yes"; then
-  AC_DEFINE(HAVE_SYNC_BOOL_COMPARE_AND_SWAP_8, 1,
-    [Define to 1 if the compiler provides the __sync_bool_compare_and_swap function for uint64])
-fi
-
-AC_CACHE_CHECK([for __sync_fetch_and_add_4],
-[libgo_cv_func___sync_fetch_and_add_4],
-[AC_LINK_IFELSE([AC_LANG_SOURCE([
-typedef unsigned int uint32  __attribute__ ((mode (SI)));
-uint32 i;
-int main() { return __sync_fetch_and_add (&i, 1); }
-])],
-[libgo_cv_func___sync_fetch_and_add_4=yes],
-[libgo_cv_func___sync_fetch_and_add_4=no])])
-if test "$libgo_cv_func___sync_fetch_and_add_4" = "yes"; then
-  AC_DEFINE(HAVE_SYNC_FETCH_AND_ADD_4, 1,
-    [Define to 1 if the compiler provides the __sync_fetch_and_add function for uint32])
-fi
-
-AC_CACHE_CHECK([for __sync_add_and_fetch_8],
-[libgo_cv_func___sync_add_and_fetch_8],
-[AC_LINK_IFELSE([AC_LANG_SOURCE([
-typedef unsigned int uint64  __attribute__ ((mode (DI)));
-uint64 i;
-int main() { return __sync_add_and_fetch (&i, 1); }
-])],
-[libgo_cv_func___sync_add_and_fetch_8=yes],
-[libgo_cv_func___sync_add_and_fetch_8=no])])
-if test "$libgo_cv_func___sync_add_and_fetch_8" = "yes"; then
-  AC_DEFINE(HAVE_SYNC_ADD_AND_FETCH_8, 1,
-    [Define to 1 if the compiler provides the __sync_add_and_fetch function for uint64])
-fi
 
 dnl For x86 we want to use the -minline-all-stringops option to avoid
 dnl forcing a stack split when calling memcpy and friends.

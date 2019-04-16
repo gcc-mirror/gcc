@@ -62,3 +62,8 @@ int test_INT_MAX (void)
   /* { dg-bogus "__INT_MAX__" "" { target *-*-* } INT_MAX_line } */
   /* { dg-message "'INT_MAX' is defined in header '<limits.h>'; did you forget to '#include <limits.h>'?" "" { target *-*-* } INT_MAX_line } */
 }
+
+/* Missing <float.h>.  */
+float test_FLT_MAX = FLT_MAX; /* { dg-line FLT_MAX_line } */
+/* { dg-error "'FLT_MAX' undeclared" "" { target *-*-* } FLT_MAX_line } */
+/* { dg-message "'FLT_MAX' is defined in header '<float.h>'; did you forget to '#include <float.h>'?" "" { target *-*-* } FLT_MAX_line } */

@@ -15,7 +15,7 @@
 @SET_MAKE@
 
 # Makefile for the D runtime library.
-# Copyright (C) 2012-2018 Free Software Foundation, Inc.
+# Copyright (C) 2012-2019 Free Software Foundation, Inc.
 #
 # GCC is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
+
 
 VPATH = @srcdir@
 am__is_gnu_make = { \
@@ -120,9 +121,6 @@ target_triplet = @target@
 @DRUNTIME_OS_LINUX_TRUE@am__append_10 = $(DRUNTIME_DSOURCES_LINUX)
 @DRUNTIME_OS_MINGW_TRUE@am__append_11 = $(DRUNTIME_DSOURCES_WINDOWS)
 @DRUNTIME_OS_SOLARIS_TRUE@am__append_12 = $(DRUNTIME_DSOURCES_SOLARIS)
-check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
-@ENABLE_SHARED_TRUE@am__append_13 = unittest
-@ENABLE_STATIC_TRUE@am__append_14 = unittest_static
 subdir = libdruntime
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -172,11 +170,10 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
+am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
+	"$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-libgdruntime_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
 am__dirstamp = $(am__leading_dot)dirstamp
 am__objects_1 = core/atomic.lo core/attribute.lo core/bitop.lo \
 	core/checkedint.lo core/cpuid.lo core/demangle.lo \
@@ -197,7 +194,10 @@ am__objects_1 = core/atomic.lo core/attribute.lo core/bitop.lo \
 	core/sync/exception.lo core/sync/mutex.lo core/sync/rwmutex.lo \
 	core/sync/semaphore.lo core/thread.lo core/time.lo \
 	core/vararg.lo gcc/attribute.lo gcc/backtrace.lo \
-	gcc/builtins.lo gcc/deh.lo gcc/unwind/arm.lo \
+	gcc/builtins.lo gcc/deh.lo gcc/sections/android.lo \
+	gcc/sections/elf_shared.lo gcc/sections/osx.lo \
+	gcc/sections/package.lo gcc/sections/solaris.lo \
+	gcc/sections/win32.lo gcc/sections/win64.lo gcc/unwind/arm.lo \
 	gcc/unwind/arm_common.lo gcc/unwind/c6x.lo \
 	gcc/unwind/generic.lo gcc/unwind/package.lo gcc/unwind/pe.lo \
 	object.lo rt/aApply.lo rt/aApplyR.lo rt/aaA.lo rt/adi.lo \
@@ -205,32 +205,29 @@ am__objects_1 = core/atomic.lo core/attribute.lo core/bitop.lo \
 	rt/config.lo rt/critical_.lo rt/deh.lo rt/dmain2.lo \
 	rt/invariant.lo rt/lifetime.lo rt/memory.lo rt/minfo.lo \
 	rt/monitor_.lo rt/obj.lo rt/qsort.lo rt/sections.lo \
-	rt/sections_android.lo rt/sections_elf_shared.lo \
-	rt/sections_osx.lo rt/sections_solaris.lo rt/sections_win32.lo \
-	rt/sections_win64.lo rt/switch_.lo rt/tlsgc.lo \
-	rt/typeinfo/ti_Acdouble.lo rt/typeinfo/ti_Acfloat.lo \
-	rt/typeinfo/ti_Acreal.lo rt/typeinfo/ti_Adouble.lo \
-	rt/typeinfo/ti_Afloat.lo rt/typeinfo/ti_Ag.lo \
-	rt/typeinfo/ti_Aint.lo rt/typeinfo/ti_Along.lo \
-	rt/typeinfo/ti_Areal.lo rt/typeinfo/ti_Ashort.lo \
-	rt/typeinfo/ti_C.lo rt/typeinfo/ti_byte.lo \
-	rt/typeinfo/ti_cdouble.lo rt/typeinfo/ti_cent.lo \
-	rt/typeinfo/ti_cfloat.lo rt/typeinfo/ti_char.lo \
-	rt/typeinfo/ti_creal.lo rt/typeinfo/ti_dchar.lo \
-	rt/typeinfo/ti_delegate.lo rt/typeinfo/ti_double.lo \
-	rt/typeinfo/ti_float.lo rt/typeinfo/ti_idouble.lo \
-	rt/typeinfo/ti_ifloat.lo rt/typeinfo/ti_int.lo \
-	rt/typeinfo/ti_ireal.lo rt/typeinfo/ti_long.lo \
-	rt/typeinfo/ti_n.lo rt/typeinfo/ti_ptr.lo \
-	rt/typeinfo/ti_real.lo rt/typeinfo/ti_short.lo \
-	rt/typeinfo/ti_ubyte.lo rt/typeinfo/ti_ucent.lo \
-	rt/typeinfo/ti_uint.lo rt/typeinfo/ti_ulong.lo \
-	rt/typeinfo/ti_ushort.lo rt/typeinfo/ti_void.lo \
-	rt/typeinfo/ti_wchar.lo rt/util/array.lo \
-	rt/util/container/array.lo rt/util/container/common.lo \
-	rt/util/container/hashtab.lo rt/util/container/treap.lo \
-	rt/util/hash.lo rt/util/random.lo rt/util/typeinfo.lo \
-	rt/util/utf.lo
+	rt/switch_.lo rt/tlsgc.lo rt/typeinfo/ti_Acdouble.lo \
+	rt/typeinfo/ti_Acfloat.lo rt/typeinfo/ti_Acreal.lo \
+	rt/typeinfo/ti_Adouble.lo rt/typeinfo/ti_Afloat.lo \
+	rt/typeinfo/ti_Ag.lo rt/typeinfo/ti_Aint.lo \
+	rt/typeinfo/ti_Along.lo rt/typeinfo/ti_Areal.lo \
+	rt/typeinfo/ti_Ashort.lo rt/typeinfo/ti_C.lo \
+	rt/typeinfo/ti_byte.lo rt/typeinfo/ti_cdouble.lo \
+	rt/typeinfo/ti_cent.lo rt/typeinfo/ti_cfloat.lo \
+	rt/typeinfo/ti_char.lo rt/typeinfo/ti_creal.lo \
+	rt/typeinfo/ti_dchar.lo rt/typeinfo/ti_delegate.lo \
+	rt/typeinfo/ti_double.lo rt/typeinfo/ti_float.lo \
+	rt/typeinfo/ti_idouble.lo rt/typeinfo/ti_ifloat.lo \
+	rt/typeinfo/ti_int.lo rt/typeinfo/ti_ireal.lo \
+	rt/typeinfo/ti_long.lo rt/typeinfo/ti_n.lo \
+	rt/typeinfo/ti_ptr.lo rt/typeinfo/ti_real.lo \
+	rt/typeinfo/ti_short.lo rt/typeinfo/ti_ubyte.lo \
+	rt/typeinfo/ti_ucent.lo rt/typeinfo/ti_uint.lo \
+	rt/typeinfo/ti_ulong.lo rt/typeinfo/ti_ushort.lo \
+	rt/typeinfo/ti_void.lo rt/typeinfo/ti_wchar.lo \
+	rt/util/array.lo rt/util/container/array.lo \
+	rt/util/container/common.lo rt/util/container/hashtab.lo \
+	rt/util/container/treap.lo rt/util/random.lo \
+	rt/util/typeinfo.lo rt/util/utf.lo
 am__objects_2 = gc/bits.lo gc/config.lo gc/gcinterface.lo \
 	gc/impl/conservative/gc.lo gc/impl/manual/gc.lo gc/os.lo \
 	gc/pooltable.lo gc/proxy.lo
@@ -248,22 +245,23 @@ am__objects_6 = core/sys/posix/aio.lo core/sys/posix/arpa/inet.lo \
 	core/sys/posix/pthread.lo core/sys/posix/pwd.lo \
 	core/sys/posix/sched.lo core/sys/posix/semaphore.lo \
 	core/sys/posix/setjmp.lo core/sys/posix/signal.lo \
-	core/sys/posix/stdio.lo core/sys/posix/stdlib.lo \
-	core/sys/posix/sys/filio.lo core/sys/posix/sys/ioccom.lo \
-	core/sys/posix/sys/ioctl.lo core/sys/posix/sys/ipc.lo \
-	core/sys/posix/sys/mman.lo core/sys/posix/sys/msg.lo \
-	core/sys/posix/sys/resource.lo core/sys/posix/sys/select.lo \
-	core/sys/posix/sys/shm.lo core/sys/posix/sys/socket.lo \
-	core/sys/posix/sys/stat.lo core/sys/posix/sys/statvfs.lo \
-	core/sys/posix/sys/time.lo core/sys/posix/sys/ttycom.lo \
-	core/sys/posix/sys/types.lo core/sys/posix/sys/uio.lo \
-	core/sys/posix/sys/un.lo core/sys/posix/sys/utsname.lo \
-	core/sys/posix/sys/wait.lo core/sys/posix/syslog.lo \
-	core/sys/posix/termios.lo core/sys/posix/time.lo \
-	core/sys/posix/ucontext.lo core/sys/posix/unistd.lo \
-	core/sys/posix/utime.lo
+	core/sys/posix/spawn.lo core/sys/posix/stdio.lo \
+	core/sys/posix/stdlib.lo core/sys/posix/sys/filio.lo \
+	core/sys/posix/sys/ioccom.lo core/sys/posix/sys/ioctl.lo \
+	core/sys/posix/sys/ipc.lo core/sys/posix/sys/mman.lo \
+	core/sys/posix/sys/msg.lo core/sys/posix/sys/resource.lo \
+	core/sys/posix/sys/select.lo core/sys/posix/sys/shm.lo \
+	core/sys/posix/sys/socket.lo core/sys/posix/sys/stat.lo \
+	core/sys/posix/sys/statvfs.lo core/sys/posix/sys/time.lo \
+	core/sys/posix/sys/ttycom.lo core/sys/posix/sys/types.lo \
+	core/sys/posix/sys/uio.lo core/sys/posix/sys/un.lo \
+	core/sys/posix/sys/utsname.lo core/sys/posix/sys/wait.lo \
+	core/sys/posix/syslog.lo core/sys/posix/termios.lo \
+	core/sys/posix/time.lo core/sys/posix/ucontext.lo \
+	core/sys/posix/unistd.lo core/sys/posix/utime.lo
 @DRUNTIME_OS_UNIX_TRUE@am__objects_7 = $(am__objects_6)
-am__objects_8 = core/sys/darwin/dlfcn.lo core/sys/darwin/execinfo.lo \
+am__objects_8 = core/sys/darwin/crt_externs.lo \
+	core/sys/darwin/dlfcn.lo core/sys/darwin/execinfo.lo \
 	core/sys/darwin/mach/dyld.lo core/sys/darwin/mach/getsect.lo \
 	core/sys/darwin/mach/kern_return.lo \
 	core/sys/darwin/mach/loader.lo core/sys/darwin/mach/port.lo \
@@ -300,7 +298,7 @@ am__objects_14 = core/sys/freebsd/dlfcn.lo \
 	core/sys/freebsd/sys/elf_common.lo \
 	core/sys/freebsd/sys/event.lo core/sys/freebsd/sys/link_elf.lo \
 	core/sys/freebsd/sys/mman.lo core/sys/freebsd/sys/mount.lo \
-	core/sys/freebsd/time.lo
+	core/sys/freebsd/time.lo core/sys/freebsd/unistd.lo
 @DRUNTIME_OS_FREEBSD_TRUE@am__objects_15 = $(am__objects_14)
 am__objects_16 = core/sys/netbsd/dlfcn.lo core/sys/netbsd/execinfo.lo \
 	core/sys/netbsd/sys/elf.lo core/sys/netbsd/sys/elf32.lo \
@@ -428,32 +426,11 @@ am__objects_27 = $(am__objects_1) $(am__objects_3) $(am__objects_5) \
 	$(am__objects_13) $(am__objects_15) $(am__objects_17) \
 	$(am__objects_19) $(am__objects_21) $(am__objects_23) \
 	$(am__objects_25) $(am__objects_26)
-am__objects_28 = libgdruntime_la-errno_.lo \
-	libgdruntime_la-bss_section.lo
-am__objects_29 = libgdruntime_la-threadasm.lo
+am__objects_28 = core/stdc/libgdruntime_la-errno_.lo
+am__objects_29 = core/libgdruntime_la-threadasm.lo
 am__objects_30 = $(am__objects_27) $(am__objects_28) $(am__objects_29)
 am_libgdruntime_la_OBJECTS = $(am__objects_30)
 libgdruntime_la_OBJECTS = $(am_libgdruntime_la_OBJECTS)
-libgdruntime_t_la_DEPENDENCIES = $(DRUNTIME_TEST_LOBJECTS) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
-am__objects_31 = libgdruntime_t_la-errno_.lo \
-	libgdruntime_t_la-bss_section.lo
-am__objects_32 = libgdruntime_t_la-threadasm.lo
-am_libgdruntime_t_la_OBJECTS = $(am__objects_31) $(am__objects_32)
-libgdruntime_t_la_OBJECTS = $(am_libgdruntime_t_la_OBJECTS)
-@ENABLE_SHARED_TRUE@am_libgdruntime_t_la_rpath =
-@ENABLE_SHARED_TRUE@am__EXEEXT_1 = unittest$(EXEEXT)
-@ENABLE_STATIC_TRUE@am__EXEEXT_2 = unittest_static$(EXEEXT)
-am_unittest_OBJECTS = ../testsuite/test_runner.$(OBJEXT)
-unittest_OBJECTS = $(am_unittest_OBJECTS)
-unittest_DEPENDENCIES = libgdruntime_t.la
-am__objects_33 = errno_.$(OBJEXT) bss_section.$(OBJEXT)
-am__objects_34 = threadasm.$(OBJEXT)
-am_unittest_static_OBJECTS = ../testsuite/test_runner.$(OBJEXT) \
-	$(am__objects_33) $(am__objects_34)
-unittest_static_OBJECTS = $(am_unittest_static_OBJECTS)
-unittest_static_DEPENDENCIES = $(DRUNTIME_TEST_OBJECTS) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -500,13 +477,13 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libgdruntime_la_SOURCES) $(libgdruntime_t_la_SOURCES) \
-	$(unittest_SOURCES) $(unittest_static_SOURCES)
+SOURCES = $(libgdruntime_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+DATA = $(toolexeclib_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -550,6 +527,7 @@ DCFG_ARM_EABI_UNWINDER = @DCFG_ARM_EABI_UNWINDER@
 DCFG_HAVE_64BIT_ATOMICS = @DCFG_HAVE_64BIT_ATOMICS@
 DCFG_HAVE_ATOMIC_BUILTINS = @DCFG_HAVE_ATOMIC_BUILTINS@
 DCFG_HAVE_LIBATOMIC = @DCFG_HAVE_LIBATOMIC@
+DCFG_HAVE_QSORT_R = @DCFG_HAVE_QSORT_R@
 DCFG_MINFO_BRACKETING = @DCFG_MINFO_BRACKETING@
 DCFG_THREAD_MODEL = @DCFG_THREAD_MODEL@
 DEFS = @DEFS@
@@ -577,6 +555,7 @@ LIBBACKTRACE = @LIBBACKTRACE@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
+LIBZ = @LIBZ@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
@@ -656,7 +635,6 @@ phobos_compiler_shared_flag = @phobos_compiler_shared_flag@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -679,19 +657,6 @@ LTDCOMPILE = $(LIBTOOL) --tag=D $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(GDC) $(AM_DFLAGS)
 
 
-# Override executable linking commands: We have to use GDC for linking
-# to make sure we link pthreads and other dependencies
-unittest_static_LINK = $(LIBTOOL) --tag=D \
-	$(unittest_static_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
-	$(GDC) $(AM_CFLAGS) $(CFLAGS) $(unittest_static_LDFLAGS) \
-	$(LDFLAGS) -o $@
-
-unittest_LINK = $(LIBTOOL) --tag=D \
-	$(unittest_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
-	$(GDC) $(AM_CFLAGS) $(CFLAGS) $(unittest_LDFLAGS) \
-	$(LDFLAGS) -o $@
-
-
 # Also override library link commands: This is not strictly
 # required, but we want to record additional dependencies such
 # as pthread in the library
@@ -699,18 +664,9 @@ libgdruntime_la_LINK = $(LIBTOOL) --tag=D $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(GDC) $(AM_CFLAGS) $(CFLAGS) \
 	$(libgdruntime_la_LDFLAGS) $(LDFLAGS) -o $@
 
-libgdruntime_t_la_LINK = $(LIBTOOL) --tag=D $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(GDC) $(AM_CFLAGS) $(CFLAGS) \
-	$(libgdruntime_t_la_LDFLAGS) $(LDFLAGS) -o $@
-
 libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(GDC) $(AM_CFLAGS) $(CFLAGS) \
 	$(libgphobos_la_LDFLAGS) $(LDFLAGS) -o $@
-
-libgphobos_t_la_LINK = $(LIBTOOL) --tag=D \
-	$(libgphobos_t_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
-	$(GDC) $(AM_CFLAGS) $(CFLAGS) $(libgphobos_t_la_LDFLAGS) \
-	$(LDFLAGS) -o $@
 
 
 # Include D build rules
@@ -734,6 +690,7 @@ ALL_DRUNTIME_INSTALL_DSOURCES = $(DRUNTIME_DSOURCES) \
 
 
 # Setup source files depending on configure
+
 # Generated by configure
 ALL_DRUNTIME_COMPILE_DSOURCES = $(DRUNTIME_DSOURCES) $(am__append_1) \
 	$(am__append_2) $(am__append_3) $(am__append_4) \
@@ -741,57 +698,28 @@ ALL_DRUNTIME_COMPILE_DSOURCES = $(DRUNTIME_DSOURCES) $(am__append_1) \
 	$(am__append_8) $(am__append_9) $(am__append_10) \
 	$(am__append_11) $(am__append_12) \
 	$(DRUNTIME_DSOURCES_GENERATED)
+
+# Provide __start_minfo, __stop_minfo if linker doesn't.
+@DRUNTIME_OS_MINFO_BRACKETING_FALSE@DRTSTUFF = gcc/drtbegin.o gcc/drtend.o
+@DRUNTIME_OS_MINFO_BRACKETING_FALSE@toolexeclib_DATA = $(DRTSTUFF)
 ALL_DRUNTIME_SOURCES = $(ALL_DRUNTIME_COMPILE_DSOURCES) $(DRUNTIME_CSOURCES) \
 	$(DRUNTIME_SSOURCES)
 
-REAL_DRUNTIME_TEST_LOBJECTS = $(ALL_DRUNTIME_COMPILE_DSOURCES:.d=.t.lo)
-REAL_DRUNTIME_TEST_OBJECTS = $(ALL_DRUNTIME_COMPILE_DSOURCES:.d=.t.o)
-# Workaround issue #
-DRUNTIME_TEST_OBJECTS = $(filter-out rt/util/typeinfo.t.o \
-	core/internal/convert.t.o, $(REAL_DRUNTIME_TEST_OBJECTS)) \
-	rt/util/typeinfo.o core/internal/convert.o
-
-DRUNTIME_TEST_LOBJECTS = $(filter-out rt/util/typeinfo.t.lo \
-	core/internal/convert.t.lo, $(REAL_DRUNTIME_TEST_LOBJECTS)) \
-	rt/util/typeinfo.lo core/internal/convert.lo
-
-@ENABLE_SHARED_TRUE@check_LTLIBRARIES = libgdruntime_t.la
 toolexeclib_LTLIBRARIES = libgdruntime.la
 libgdruntime_la_SOURCES = $(ALL_DRUNTIME_SOURCES)
 libgdruntime_la_LIBTOOLFLAGS = 
-libgdruntime_la_LDFLAGS = -Xcompiler -nophoboslib -version-info $(libtool_VERSION)
+libgdruntime_la_LDFLAGS = -Wc,-nophoboslib,-dstartfiles,-B../src,-Bgcc \
+    -version-info $(libtool_VERSION)
+
 libgdruntime_la_LIBADD = $(LIBATOMIC) $(LIBBACKTRACE)
-
-# For static unittest, link objects directly
-unittest_static_SOURCES = ../testsuite/test_runner.d $(DRUNTIME_CSOURCES) \
-    $(DRUNTIME_SSOURCES)
-
-unittest_static_LIBTOOLFLAGS = 
-unittest_static_LDFLAGS = -Xcompiler -nophoboslib
-unittest_static_LDADD = $(DRUNTIME_TEST_OBJECTS) $(LIBATOMIC) $(LIBBACKTRACE)
-EXTRA_unittest_static_DEPENDENCIES = $(DRUNTIME_TEST_OBJECTS)
-
-# For unittest with dynamic library
-libgdruntime_t_la_SOURCES = $(DRUNTIME_CSOURCES) $(DRUNTIME_SSOURCES)
-libgdruntime_t_la_LIBTOOLFLAGS = 
-# Automake by default does not generate shared libs for non-installed
-# libraries. Use -rpath to force shared lib generation.
-libgdruntime_t_la_LDFLAGS = -Xcompiler -nophoboslib -rpath /foo -shared
-libgdruntime_t_la_LIBADD = $(DRUNTIME_TEST_LOBJECTS) $(LIBATOMIC) $(LIBBACKTRACE)
-EXTRA_libgdruntime_t_la_DEPENDENCIES = $(DRUNTIME_TEST_LOBJECTS)
-
-# For unittest
-unittest_SOURCES = ../testsuite/test_runner.d
-unittest_LIBTOOLFLAGS = 
-unittest_LDFLAGS = -Xcompiler -nophoboslib
-unittest_LDADD = libgdruntime_t.la
+libgdruntime_la_DEPENDENCIES = $(DRTSTUFF)
 DRUNTIME_DSOURCES_GENERATED = gcc/config.d gcc/libbacktrace.d
 # Source file definitions. Boring stuff, auto-generated with
 # https://gist.github.com/jpf91/8ad1dbc9902d6ad876313f134c6527d1
 # Can't use wildcards here:
 # https://www.gnu.org/software/automake/manual/html_node/Wildcards.html
 DRUNTIME_SSOURCES = core/threadasm.S
-DRUNTIME_CSOURCES = core/stdc/errno_.c rt/bss_section.c
+DRUNTIME_CSOURCES = core/stdc/errno_.c
 DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/checkedint.d core/cpuid.d core/demangle.d core/exception.d \
 	core/internal/abort.d core/internal/arrayop.d core/internal/convert.d \
@@ -808,14 +736,14 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/sync/config.d core/sync/exception.d core/sync/mutex.d \
 	core/sync/rwmutex.d core/sync/semaphore.d core/thread.d core/time.d \
 	core/vararg.d gcc/attribute.d gcc/backtrace.d gcc/builtins.d gcc/deh.d \
-	gcc/unwind/arm.d gcc/unwind/arm_common.d gcc/unwind/c6x.d \
-	gcc/unwind/generic.d gcc/unwind/package.d gcc/unwind/pe.d object.d \
-	rt/aApply.d rt/aApplyR.d rt/aaA.d rt/adi.d rt/arrayassign.d \
-	rt/arraycast.d rt/arraycat.d rt/cast_.d rt/config.d rt/critical_.d \
-	rt/deh.d rt/dmain2.d rt/invariant.d rt/lifetime.d rt/memory.d \
-	rt/minfo.d rt/monitor_.d rt/obj.d rt/qsort.d rt/sections.d \
-	rt/sections_android.d rt/sections_elf_shared.d rt/sections_osx.d \
-	rt/sections_solaris.d rt/sections_win32.d rt/sections_win64.d \
+	gcc/sections/android.d gcc/sections/elf_shared.d gcc/sections/osx.d \
+	gcc/sections/package.d gcc/sections/solaris.d gcc/sections/win32.d \
+	gcc/sections/win64.d gcc/unwind/arm.d gcc/unwind/arm_common.d \
+	gcc/unwind/c6x.d gcc/unwind/generic.d gcc/unwind/package.d \
+	gcc/unwind/pe.d object.d rt/aApply.d rt/aApplyR.d rt/aaA.d rt/adi.d \
+	rt/arrayassign.d rt/arraycast.d rt/arraycat.d rt/cast_.d rt/config.d \
+	rt/critical_.d rt/deh.d rt/dmain2.d rt/invariant.d rt/lifetime.d \
+	rt/memory.d rt/minfo.d rt/monitor_.d rt/obj.d rt/qsort.d rt/sections.d \
 	rt/switch_.d rt/tlsgc.d rt/typeinfo/ti_Acdouble.d \
 	rt/typeinfo/ti_Acfloat.d rt/typeinfo/ti_Acreal.d \
 	rt/typeinfo/ti_Adouble.d rt/typeinfo/ti_Afloat.d rt/typeinfo/ti_Ag.d \
@@ -831,8 +759,8 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	rt/typeinfo/ti_ucent.d rt/typeinfo/ti_uint.d rt/typeinfo/ti_ulong.d \
 	rt/typeinfo/ti_ushort.d rt/typeinfo/ti_void.d rt/typeinfo/ti_wchar.d \
 	rt/util/array.d rt/util/container/array.d rt/util/container/common.d \
-	rt/util/container/hashtab.d rt/util/container/treap.d rt/util/hash.d \
-	rt/util/random.d rt/util/typeinfo.d rt/util/utf.d
+	rt/util/container/hashtab.d rt/util/container/treap.d rt/util/random.d \
+	rt/util/typeinfo.d rt/util/utf.d
 
 DRUNTIME_DSOURCES_STDCXX = core/stdcpp/exception.d \
 	core/stdcpp/typeinfo.d
@@ -845,14 +773,14 @@ DRUNTIME_DSOURCES_GCSTUB = gcstub/gc.d
 DRUNTIME_DSOURCES_BIONIC = core/sys/bionic/fcntl.d \
 	core/sys/bionic/unistd.d
 
-DRUNTIME_DSOURCES_DARWIN = core/sys/darwin/dlfcn.d \
-	core/sys/darwin/execinfo.d core/sys/darwin/mach/dyld.d \
-	core/sys/darwin/mach/getsect.d core/sys/darwin/mach/kern_return.d \
-	core/sys/darwin/mach/loader.d core/sys/darwin/mach/port.d \
-	core/sys/darwin/mach/semaphore.d core/sys/darwin/mach/thread_act.d \
-	core/sys/darwin/netinet/in_.d core/sys/darwin/pthread.d \
-	core/sys/darwin/sys/cdefs.d core/sys/darwin/sys/event.d \
-	core/sys/darwin/sys/mman.d
+DRUNTIME_DSOURCES_DARWIN = core/sys/darwin/crt_externs.d \
+	core/sys/darwin/dlfcn.d core/sys/darwin/execinfo.d \
+	core/sys/darwin/mach/dyld.d core/sys/darwin/mach/getsect.d \
+	core/sys/darwin/mach/kern_return.d core/sys/darwin/mach/loader.d \
+	core/sys/darwin/mach/port.d core/sys/darwin/mach/semaphore.d \
+	core/sys/darwin/mach/thread_act.d core/sys/darwin/netinet/in_.d \
+	core/sys/darwin/pthread.d core/sys/darwin/sys/cdefs.d \
+	core/sys/darwin/sys/event.d core/sys/darwin/sys/mman.d
 
 DRUNTIME_DSOURCES_DRAGONFLYBSD = core/sys/dragonflybsd/dlfcn.d \
 	core/sys/dragonflybsd/execinfo.d core/sys/dragonflybsd/netinet/in_.d \
@@ -872,7 +800,7 @@ DRUNTIME_DSOURCES_FREEBSD = core/sys/freebsd/dlfcn.d \
 	core/sys/freebsd/sys/elf64.d core/sys/freebsd/sys/elf_common.d \
 	core/sys/freebsd/sys/event.d core/sys/freebsd/sys/link_elf.d \
 	core/sys/freebsd/sys/mman.d core/sys/freebsd/sys/mount.d \
-	core/sys/freebsd/time.d
+	core/sys/freebsd/time.d core/sys/freebsd/unistd.d
 
 DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
 	core/sys/linux/dlfcn.d core/sys/linux/elf.d core/sys/linux/epoll.d \
@@ -906,18 +834,19 @@ DRUNTIME_DSOURCES_POSIX = core/sys/posix/aio.d \
 	core/sys/posix/netinet/in_.d core/sys/posix/netinet/tcp.d \
 	core/sys/posix/poll.d core/sys/posix/pthread.d core/sys/posix/pwd.d \
 	core/sys/posix/sched.d core/sys/posix/semaphore.d \
-	core/sys/posix/setjmp.d core/sys/posix/signal.d core/sys/posix/stdio.d \
-	core/sys/posix/stdlib.d core/sys/posix/sys/filio.d \
-	core/sys/posix/sys/ioccom.d core/sys/posix/sys/ioctl.d \
-	core/sys/posix/sys/ipc.d core/sys/posix/sys/mman.d \
-	core/sys/posix/sys/msg.d core/sys/posix/sys/resource.d \
-	core/sys/posix/sys/select.d core/sys/posix/sys/shm.d \
-	core/sys/posix/sys/socket.d core/sys/posix/sys/stat.d \
-	core/sys/posix/sys/statvfs.d core/sys/posix/sys/time.d \
-	core/sys/posix/sys/ttycom.d core/sys/posix/sys/types.d \
-	core/sys/posix/sys/uio.d core/sys/posix/sys/un.d \
-	core/sys/posix/sys/utsname.d core/sys/posix/sys/wait.d \
-	core/sys/posix/syslog.d core/sys/posix/termios.d core/sys/posix/time.d \
+	core/sys/posix/setjmp.d core/sys/posix/signal.d core/sys/posix/spawn.d \
+	core/sys/posix/stdio.d core/sys/posix/stdlib.d \
+	core/sys/posix/sys/filio.d core/sys/posix/sys/ioccom.d \
+	core/sys/posix/sys/ioctl.d core/sys/posix/sys/ipc.d \
+	core/sys/posix/sys/mman.d core/sys/posix/sys/msg.d \
+	core/sys/posix/sys/resource.d core/sys/posix/sys/select.d \
+	core/sys/posix/sys/shm.d core/sys/posix/sys/socket.d \
+	core/sys/posix/sys/stat.d core/sys/posix/sys/statvfs.d \
+	core/sys/posix/sys/time.d core/sys/posix/sys/ttycom.d \
+	core/sys/posix/sys/types.d core/sys/posix/sys/uio.d \
+	core/sys/posix/sys/un.d core/sys/posix/sys/utsname.d \
+	core/sys/posix/sys/wait.d core/sys/posix/syslog.d \
+	core/sys/posix/termios.d core/sys/posix/time.d \
 	core/sys/posix/ucontext.d core/sys/posix/unistd.d \
 	core/sys/posix/utime.d
 
@@ -1051,17 +980,6 @@ $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 
-clean-checkLTLIBRARIES:
-	-test -z "$(check_LTLIBRARIES)" || rm -f $(check_LTLIBRARIES)
-	@list='$(check_LTLIBRARIES)'; \
-	locs=`for p in $$list; do echo $$p; done | \
-	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
-	      sort -u`; \
-	test -z "$$locs" || { \
-	  echo rm -f $${locs}; \
-	  rm -f $${locs}; \
-	}
-
 install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	@list='$(toolexeclib_LTLIBRARIES)'; test -n "$(toolexeclibdir)" || list=; \
@@ -1165,6 +1083,16 @@ gcc/attribute.lo: gcc/$(am__dirstamp)
 gcc/backtrace.lo: gcc/$(am__dirstamp)
 gcc/builtins.lo: gcc/$(am__dirstamp)
 gcc/deh.lo: gcc/$(am__dirstamp)
+gcc/sections/$(am__dirstamp):
+	@$(MKDIR_P) gcc/sections
+	@: > gcc/sections/$(am__dirstamp)
+gcc/sections/android.lo: gcc/sections/$(am__dirstamp)
+gcc/sections/elf_shared.lo: gcc/sections/$(am__dirstamp)
+gcc/sections/osx.lo: gcc/sections/$(am__dirstamp)
+gcc/sections/package.lo: gcc/sections/$(am__dirstamp)
+gcc/sections/solaris.lo: gcc/sections/$(am__dirstamp)
+gcc/sections/win32.lo: gcc/sections/$(am__dirstamp)
+gcc/sections/win64.lo: gcc/sections/$(am__dirstamp)
 gcc/unwind/$(am__dirstamp):
 	@$(MKDIR_P) gcc/unwind
 	@: > gcc/unwind/$(am__dirstamp)
@@ -1197,12 +1125,6 @@ rt/monitor_.lo: rt/$(am__dirstamp)
 rt/obj.lo: rt/$(am__dirstamp)
 rt/qsort.lo: rt/$(am__dirstamp)
 rt/sections.lo: rt/$(am__dirstamp)
-rt/sections_android.lo: rt/$(am__dirstamp)
-rt/sections_elf_shared.lo: rt/$(am__dirstamp)
-rt/sections_osx.lo: rt/$(am__dirstamp)
-rt/sections_solaris.lo: rt/$(am__dirstamp)
-rt/sections_win32.lo: rt/$(am__dirstamp)
-rt/sections_win64.lo: rt/$(am__dirstamp)
 rt/switch_.lo: rt/$(am__dirstamp)
 rt/tlsgc.lo: rt/$(am__dirstamp)
 rt/typeinfo/$(am__dirstamp):
@@ -1256,7 +1178,6 @@ rt/util/container/array.lo: rt/util/container/$(am__dirstamp)
 rt/util/container/common.lo: rt/util/container/$(am__dirstamp)
 rt/util/container/hashtab.lo: rt/util/container/$(am__dirstamp)
 rt/util/container/treap.lo: rt/util/container/$(am__dirstamp)
-rt/util/hash.lo: rt/util/$(am__dirstamp)
 rt/util/random.lo: rt/util/$(am__dirstamp)
 rt/util/typeinfo.lo: rt/util/$(am__dirstamp)
 rt/util/utf.lo: rt/util/$(am__dirstamp)
@@ -1315,6 +1236,7 @@ core/sys/posix/sched.lo: core/sys/posix/$(am__dirstamp)
 core/sys/posix/semaphore.lo: core/sys/posix/$(am__dirstamp)
 core/sys/posix/setjmp.lo: core/sys/posix/$(am__dirstamp)
 core/sys/posix/signal.lo: core/sys/posix/$(am__dirstamp)
+core/sys/posix/spawn.lo: core/sys/posix/$(am__dirstamp)
 core/sys/posix/stdio.lo: core/sys/posix/$(am__dirstamp)
 core/sys/posix/stdlib.lo: core/sys/posix/$(am__dirstamp)
 core/sys/posix/sys/$(am__dirstamp):
@@ -1348,6 +1270,7 @@ core/sys/posix/utime.lo: core/sys/posix/$(am__dirstamp)
 core/sys/darwin/$(am__dirstamp):
 	@$(MKDIR_P) core/sys/darwin
 	@: > core/sys/darwin/$(am__dirstamp)
+core/sys/darwin/crt_externs.lo: core/sys/darwin/$(am__dirstamp)
 core/sys/darwin/dlfcn.lo: core/sys/darwin/$(am__dirstamp)
 core/sys/darwin/execinfo.lo: core/sys/darwin/$(am__dirstamp)
 core/sys/darwin/mach/$(am__dirstamp):
@@ -1445,6 +1368,7 @@ core/sys/freebsd/sys/link_elf.lo:  \
 core/sys/freebsd/sys/mman.lo: core/sys/freebsd/sys/$(am__dirstamp)
 core/sys/freebsd/sys/mount.lo: core/sys/freebsd/sys/$(am__dirstamp)
 core/sys/freebsd/time.lo: core/sys/freebsd/$(am__dirstamp)
+core/sys/freebsd/unistd.lo: core/sys/freebsd/$(am__dirstamp)
 core/sys/netbsd/$(am__dirstamp):
 	@$(MKDIR_P) core/sys/netbsd
 	@: > core/sys/netbsd/$(am__dirstamp)
@@ -1706,37 +1630,14 @@ core/sys/solaris/sys/types.lo: core/sys/solaris/sys/$(am__dirstamp)
 core/sys/solaris/time.lo: core/sys/solaris/$(am__dirstamp)
 gcc/config.lo: gcc/$(am__dirstamp)
 gcc/libbacktrace.lo: gcc/$(am__dirstamp)
+core/stdc/libgdruntime_la-errno_.lo: core/stdc/$(am__dirstamp)
+core/libgdruntime_la-threadasm.lo: core/$(am__dirstamp)
 
 libgdruntime.la: $(libgdruntime_la_OBJECTS) $(libgdruntime_la_DEPENDENCIES) $(EXTRA_libgdruntime_la_DEPENDENCIES) 
 	$(AM_V_GEN)$(libgdruntime_la_LINK) -rpath $(toolexeclibdir) $(libgdruntime_la_OBJECTS) $(libgdruntime_la_LIBADD) $(LIBS)
 
-libgdruntime_t.la: $(libgdruntime_t_la_OBJECTS) $(libgdruntime_t_la_DEPENDENCIES) $(EXTRA_libgdruntime_t_la_DEPENDENCIES) 
-	$(AM_V_GEN)$(libgdruntime_t_la_LINK) $(am_libgdruntime_t_la_rpath) $(libgdruntime_t_la_OBJECTS) $(libgdruntime_t_la_LIBADD) $(LIBS)
-
-clean-checkPROGRAMS:
-	@list='$(check_PROGRAMS)'; test -n "$$list" || exit 0; \
-	echo " rm -f" $$list; \
-	rm -f $$list || exit $$?; \
-	test -n "$(EXEEXT)" || exit 0; \
-	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
-	echo " rm -f" $$list; \
-	rm -f $$list
-../testsuite/$(am__dirstamp):
-	@$(MKDIR_P) ../testsuite
-	@: > ../testsuite/$(am__dirstamp)
-../testsuite/test_runner.$(OBJEXT): ../testsuite/$(am__dirstamp)
-
-unittest$(EXEEXT): $(unittest_OBJECTS) $(unittest_DEPENDENCIES) $(EXTRA_unittest_DEPENDENCIES) 
-	@rm -f unittest$(EXEEXT)
-	$(AM_V_GEN)$(unittest_LINK) $(unittest_OBJECTS) $(unittest_LDADD) $(LIBS)
-
-unittest_static$(EXEEXT): $(unittest_static_OBJECTS) $(unittest_static_DEPENDENCIES) $(EXTRA_unittest_static_DEPENDENCIES) 
-	@rm -f unittest_static$(EXEEXT)
-	$(AM_V_GEN)$(unittest_static_LINK) $(unittest_static_OBJECTS) $(unittest_static_LDADD) $(LIBS)
-
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
-	-rm -f ../testsuite/*.$(OBJEXT)
 	-rm -f core/*.$(OBJEXT)
 	-rm -f core/*.lo
 	-rm -f core/internal/*.$(OBJEXT)
@@ -1805,6 +1706,8 @@ mostlyclean-compile:
 	-rm -f gc/impl/manual/*.lo
 	-rm -f gcc/*.$(OBJEXT)
 	-rm -f gcc/*.lo
+	-rm -f gcc/sections/*.$(OBJEXT)
+	-rm -f gcc/sections/*.lo
 	-rm -f gcc/unwind/*.$(OBJEXT)
 	-rm -f gcc/unwind/*.lo
 	-rm -f gcstub/*.$(OBJEXT)
@@ -1830,17 +1733,8 @@ distclean-compile:
 .S.lo:
 	$(AM_V_CPPAS)$(LTCPPASCOMPILE) -c -o $@ $<
 
-libgdruntime_la-threadasm.lo: core/threadasm.S
-	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o libgdruntime_la-threadasm.lo `test -f 'core/threadasm.S' || echo '$(srcdir)/'`core/threadasm.S
-
-libgdruntime_t_la-threadasm.lo: core/threadasm.S
-	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_t_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o libgdruntime_t_la-threadasm.lo `test -f 'core/threadasm.S' || echo '$(srcdir)/'`core/threadasm.S
-
-threadasm.o: core/threadasm.S
-	$(AM_V_CPPAS)$(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o threadasm.o `test -f 'core/threadasm.S' || echo '$(srcdir)/'`core/threadasm.S
-
-threadasm.obj: core/threadasm.S
-	$(AM_V_CPPAS)$(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o threadasm.obj `if test -f 'core/threadasm.S'; then $(CYGPATH_W) 'core/threadasm.S'; else $(CYGPATH_W) '$(srcdir)/core/threadasm.S'; fi`
+core/libgdruntime_la-threadasm.lo: core/threadasm.S
+	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o core/libgdruntime_la-threadasm.lo `test -f 'core/threadasm.S' || echo '$(srcdir)/'`core/threadasm.S
 
 .c.o:
 	$(AM_V_CC)$(COMPILE) -c -o $@ $<
@@ -1851,29 +1745,8 @@ threadasm.obj: core/threadasm.S
 .c.lo:
 	$(AM_V_CC)$(LTCOMPILE) -c -o $@ $<
 
-libgdruntime_la-errno_.lo: core/stdc/errno_.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgdruntime_la-errno_.lo `test -f 'core/stdc/errno_.c' || echo '$(srcdir)/'`core/stdc/errno_.c
-
-libgdruntime_la-bss_section.lo: rt/bss_section.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgdruntime_la-bss_section.lo `test -f 'rt/bss_section.c' || echo '$(srcdir)/'`rt/bss_section.c
-
-libgdruntime_t_la-errno_.lo: core/stdc/errno_.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgdruntime_t_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgdruntime_t_la-errno_.lo `test -f 'core/stdc/errno_.c' || echo '$(srcdir)/'`core/stdc/errno_.c
-
-libgdruntime_t_la-bss_section.lo: rt/bss_section.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgdruntime_t_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgdruntime_t_la-bss_section.lo `test -f 'rt/bss_section.c' || echo '$(srcdir)/'`rt/bss_section.c
-
-errno_.o: core/stdc/errno_.c
-	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o errno_.o `test -f 'core/stdc/errno_.c' || echo '$(srcdir)/'`core/stdc/errno_.c
-
-errno_.obj: core/stdc/errno_.c
-	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o errno_.obj `if test -f 'core/stdc/errno_.c'; then $(CYGPATH_W) 'core/stdc/errno_.c'; else $(CYGPATH_W) '$(srcdir)/core/stdc/errno_.c'; fi`
-
-bss_section.o: rt/bss_section.c
-	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o bss_section.o `test -f 'rt/bss_section.c' || echo '$(srcdir)/'`rt/bss_section.c
-
-bss_section.obj: rt/bss_section.c
-	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o bss_section.obj `if test -f 'rt/bss_section.c'; then $(CYGPATH_W) 'rt/bss_section.c'; else $(CYGPATH_W) '$(srcdir)/rt/bss_section.c'; fi`
+core/stdc/libgdruntime_la-errno_.lo: core/stdc/errno_.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o core/stdc/libgdruntime_la-errno_.lo `test -f 'core/stdc/errno_.c' || echo '$(srcdir)/'`core/stdc/errno_.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1914,12 +1787,34 @@ clean-libtool:
 	-rm -rf gc/impl/conservative/.libs gc/impl/conservative/_libs
 	-rm -rf gc/impl/manual/.libs gc/impl/manual/_libs
 	-rm -rf gcc/.libs gcc/_libs
+	-rm -rf gcc/sections/.libs gcc/sections/_libs
 	-rm -rf gcc/unwind/.libs gcc/unwind/_libs
 	-rm -rf gcstub/.libs gcstub/_libs
 	-rm -rf rt/.libs rt/_libs
 	-rm -rf rt/typeinfo/.libs rt/typeinfo/_libs
 	-rm -rf rt/util/.libs rt/util/_libs
 	-rm -rf rt/util/container/.libs rt/util/container/_libs
+install-toolexeclibDATA: $(toolexeclib_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(toolexeclib_DATA)'; test -n "$(toolexeclibdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(toolexeclibdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(toolexeclibdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibdir)" || exit $$?; \
+	done
+
+uninstall-toolexeclibDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(toolexeclib_DATA)'; test -n "$(toolexeclibdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(toolexeclibdir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -1973,11 +1868,10 @@ cscopelist-am: $(am__tagged_files)
 distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 check-am: all-am
-	$(MAKE) $(AM_MAKEFLAGS) $(check_LTLIBRARIES) $(check_PROGRAMS)
 check: check-am
-all-am: Makefile $(LTLIBRARIES)
+all-am: Makefile $(LTLIBRARIES) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(toolexeclibdir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -2006,7 +1900,6 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
-	-rm -f ../testsuite/$(am__dirstamp)
 	-rm -f core/$(am__dirstamp)
 	-rm -f core/internal/$(am__dirstamp)
 	-rm -f core/stdc/$(am__dirstamp)
@@ -2041,6 +1934,7 @@ distclean-generic:
 	-rm -f gc/impl/conservative/$(am__dirstamp)
 	-rm -f gc/impl/manual/$(am__dirstamp)
 	-rm -f gcc/$(am__dirstamp)
+	-rm -f gcc/sections/$(am__dirstamp)
 	-rm -f gcc/unwind/$(am__dirstamp)
 	-rm -f gcstub/$(am__dirstamp)
 	-rm -f rt/$(am__dirstamp)
@@ -2053,8 +1947,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-checkLTLIBRARIES clean-checkPROGRAMS clean-generic \
-	clean-libtool clean-local clean-toolexeclibLTLIBRARIES \
+clean-am: clean-generic clean-libtool clean-toolexeclibLTLIBRARIES \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -2080,7 +1973,8 @@ install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-toolexeclibLTLIBRARIES
+install-exec-am: install-toolexeclibDATA \
+	install-toolexeclibLTLIBRARIES
 
 install-html: install-html-am
 
@@ -2119,25 +2013,26 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-toolexeclibLTLIBRARIES
+uninstall-am: uninstall-toolexeclibDATA \
+	uninstall-toolexeclibLTLIBRARIES
 
-.MAKE: check-am install-am install-strip
+.MAKE: install-am install-strip
 
-.PHONY: CTAGS GTAGS TAGS all all-am check check-am clean \
-	clean-checkLTLIBRARIES clean-checkPROGRAMS clean-generic \
-	clean-libtool clean-local clean-toolexeclibLTLIBRARIES \
-	cscopelist-am ctags ctags-am distclean distclean-compile \
-	distclean-generic distclean-libtool distclean-tags dvi dvi-am \
-	html html-am info info-am install install-am install-data \
-	install-data-am install-data-local install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
+.PHONY: CTAGS GTAGS TAGS all all-am check check-am clean clean-generic \
+	clean-libtool clean-toolexeclibLTLIBRARIES cscopelist-am ctags \
+	ctags-am distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags dvi dvi-am html html-am info \
+	info-am install install-am install-data install-data-am \
+	install-data-local install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip install-toolexeclibDATA \
 	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
 	installdirs maintainer-clean maintainer-clean-generic \
 	mostlyclean mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-toolexeclibLTLIBRARIES
+	uninstall-am uninstall-toolexeclibDATA \
+	uninstall-toolexeclibLTLIBRARIES
 
 .PRECIOUS: Makefile
 
@@ -2150,31 +2045,20 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 .d.lo:
 	$(LTDCOMPILE) $(GDCFLAGS) $(MULTIFLAGS) $(D_EXTRA_DFLAGS) -c -o $@ $<
 
-# Unittest rules. Unfortunately we can't use _DFLAGS in automake without
-# explicit D support, so use this hack.
-# Compile D sources with libtool and test flags
-%.t.lo : %.d
-	$(LTDCOMPILE) $(GDCFLAGSX) $(MULTIFLAGS) $(D_EXTRA_DFLAGS) -c -o $@ $<
+@DRUNTIME_OS_MINFO_BRACKETING_FALSE@gcc/drtbegin.o: gcc/drtstuff.c
+@DRUNTIME_OS_MINFO_BRACKETING_FALSE@	$(COMPILE) -DDRT_BEGIN -c -o $@ $<
 
-# Compile objects for static linking with test flags
-# Automake breaks empty rules, so use the shell NOP :
-%.t.o : %.t.lo
-	@:
-
-# Extra install and clean rules.
-# This does not delete the .libs/.t.o files, but deleting
-# the .lo is good enough to rerun the rules
-clean-local:
-	rm -f $(DRUNTIME_TEST_LOBJECTS)
-	rm -f $(DRUNTIME_TEST_OBJECTS)
+@DRUNTIME_OS_MINFO_BRACKETING_FALSE@gcc/drtend.o: gcc/drtstuff.c
+@DRUNTIME_OS_MINFO_BRACKETING_FALSE@	$(COMPILE) -DDRT_END -c -o $@ $<
 
 # Handles generated files as well
 install-data-local:
 	for file in $(ALL_DRUNTIME_INSTALL_DSOURCES); do \
+	  $(MKDIR_P) `dirname $(DESTDIR)$(gdc_include_dir)/$$file` ; \
 	  if test -f $$file; then \
-	    $(INSTALL_HEADER) -D $$file $(DESTDIR)$(gdc_include_dir)/$$file ; \
+	    $(INSTALL_HEADER) $$file $(DESTDIR)$(gdc_include_dir)/$$file ; \
 	  else \
-	    $(INSTALL_HEADER) -D $(srcdir)/$$file \
+	    $(INSTALL_HEADER) $(srcdir)/$$file \
 	      $(DESTDIR)$(gdc_include_dir)/$$file ; \
 	  fi ; \
 	done

@@ -417,9 +417,8 @@ d_init_versions (void)
   if (!targetm.have_tls)
     VersionCondition::addPredefinedGlobalIdent ("GNU_EMUTLS");
 
-#ifdef STACK_GROWS_DOWNWARD
-  VersionCondition::addPredefinedGlobalIdent ("GNU_StackGrowsDown");
-#endif
+  if (STACK_GROWS_DOWNWARD)
+    VersionCondition::addPredefinedGlobalIdent ("GNU_StackGrowsDown");
 
   /* Should define this anyway to set us apart from the competition.  */
   VersionCondition::addPredefinedGlobalIdent ("GNU_InlineAsm");
@@ -453,6 +452,8 @@ d_init_versions (void)
   /* Emit all target-specific version identifiers.  */
   targetdm.d_cpu_versions ();
   targetdm.d_os_versions ();
+
+  VersionCondition::addPredefinedGlobalIdent ("CppRuntime_Gcc");
 }
 
 /* A helper for d_build_builtins_module.  Return a new ALIAS for TYPE.

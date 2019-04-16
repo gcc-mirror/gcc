@@ -88,7 +88,7 @@ namespace pmr {
 
     memory_resource& operator=(const memory_resource&) = default;
 
-    void*
+    _GLIBCXX_NODISCARD void*
     allocate(size_t __bytes, size_t __alignment = _S_max_align)
     { return do_allocate(__bytes, __alignment); }
 
@@ -145,7 +145,7 @@ namespace pmr {
       polymorphic_allocator&
 	operator=(const polymorphic_allocator& __rhs) = default;
 
-      _Tp* allocate(size_t __n)
+      _GLIBCXX_NODISCARD _Tp* allocate(size_t __n)
       { return static_cast<_Tp*>(_M_resource->allocate(__n * sizeof(_Tp),
 						       alignof(_Tp))); }
 

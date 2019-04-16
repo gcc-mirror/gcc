@@ -2,8 +2,7 @@
    float types.  */
 
 /* { dg-do compile { target { powerpc*-*-linux* && powerpc_fprs } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power6" } } */
-/* { dg-options "-std=gnu99 -O -mcpu=power6" } */
+/* { dg-options "-std=gnu99 -O -mdejagnu-cpu=power6" } */
 /* { dg-final { scan-assembler-not "fneg" } } */
 
 extern _Decimal32 a32, b32;

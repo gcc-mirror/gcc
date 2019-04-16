@@ -226,6 +226,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define HAVE_AS_PLTSEQ 0
 #endif
 
+#ifndef TARGET_PLTSEQ
+#define TARGET_PLTSEQ 0
+#endif
+
 #ifndef TARGET_LINK_STACK
 #define TARGET_LINK_STACK 0
 #endif
@@ -240,7 +244,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 /* Return 1 for a symbol ref for a thread-local storage symbol.  */
 #define RS6000_SYMBOL_REF_TLS_P(RTX) \
-  (GET_CODE (RTX) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (RTX) != 0)
+  (SYMBOL_REF_P (RTX) && SYMBOL_REF_TLS_MODEL (RTX) != 0)
 
 #ifdef IN_LIBGCC2
 /* For libgcc2 we make sure this is a compile time constant */
@@ -1134,7 +1138,7 @@ enum reg_class
   VRSAVE_REGS,
   VSCR_REGS,
   SPR_REGS,
-  NON_SPECIAL_REGS,
+  GEN_OR_FLOAT_REGS,
   LINK_REGS,
   CTR_REGS,
   LINK_OR_CTR_REGS,
@@ -1163,7 +1167,7 @@ enum reg_class
   "VRSAVE_REGS",							\
   "VSCR_REGS",								\
   "SPR_REGS",								\
-  "NON_SPECIAL_REGS",							\
+  "GEN_OR_FLOAT_REGS",							\
   "LINK_REGS",								\
   "CTR_REGS",								\
   "LINK_OR_CTR_REGS",							\
@@ -1200,7 +1204,7 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000000, 0x00004000 },			\
   /* SPR_REGS.  */							\
   { 0x00000000, 0x00000000, 0x00000000, 0x00010000 },			\
-  /* NON_SPECIAL_REGS.  */						\
+  /* GEN_OR_FLOAT_REGS.  */						\
   { 0xffffffff, 0xffffffff, 0x00000008, 0x00008000 },			\
   /* LINK_REGS.  */							\
   { 0x00000000, 0x00000000, 0x00000002, 0x00000000 },			\
@@ -1489,6 +1493,16 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 #define CALL_LONG		0x00000008	/* always call indirect */
 #define CALL_LIBCALL		0x00000010	/* libcall */
 
+#define IS_V4_FP_ARGS(OP) \
+  ((INTVAL (OP) & (CALL_V4_CLEAR_FP_ARGS | CALL_V4_SET_FP_ARGS)) != 0)
+
+/* Whether OP is an UNSPEC used in !TARGET_TLS_MARKER calls.  */
+#define IS_NOMARK_TLSGETADDR(OP)		\
+  (!TARGET_TLS_MARKERS				\
+   && GET_CODE (OP) == UNSPEC			\
+   && (XINT (OP, 1) == UNSPEC_TLSGD		\
+       || XINT (OP, 1) == UNSPEC_TLSLD))
+
 /* We don't have prologue and epilogue functions to save/restore
    everything for most ABIs.  */
 #define WORLD_SAVE_P(INFO) 0
@@ -1675,7 +1689,7 @@ typedef struct rs6000_args
    allocation.  */
 
 #define REGNO_OK_FOR_INDEX_P(REGNO)				\
-((REGNO) < FIRST_PSEUDO_REGISTER				\
+(HARD_REGISTER_NUM_P (REGNO)					\
  ? (REGNO) <= 31 || (REGNO) == 67				\
    || (REGNO) == FRAME_POINTER_REGNUM				\
  : (reg_renumber[REGNO] >= 0					\
@@ -1683,7 +1697,7 @@ typedef struct rs6000_args
 	|| reg_renumber[REGNO] == FRAME_POINTER_REGNUM)))
 
 #define REGNO_OK_FOR_BASE_P(REGNO)				\
-((REGNO) < FIRST_PSEUDO_REGISTER				\
+(HARD_REGISTER_NUM_P (REGNO)					\
  ? ((REGNO) > 0 && (REGNO) <= 31) || (REGNO) == 67		\
    || (REGNO) == FRAME_POINTER_REGNUM				\
  : (reg_renumber[REGNO] > 0					\
@@ -1693,13 +1707,13 @@ typedef struct rs6000_args
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg in the non-strict case.  */
 #define INT_REG_OK_FOR_INDEX_P(X, STRICT)			\
-  ((!(STRICT) && REGNO (X) >= FIRST_PSEUDO_REGISTER)		\
+  ((!(STRICT) && !HARD_REGISTER_P (X))				\
    || REGNO_OK_FOR_INDEX_P (REGNO (X)))
 
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg in the non-strict case.  */
 #define INT_REG_OK_FOR_BASE_P(X, STRICT)			\
-  ((!(STRICT) && REGNO (X) >= FIRST_PSEUDO_REGISTER)		\
+  ((!(STRICT) && !HARD_REGISTER_P (X))				\
    || REGNO_OK_FOR_BASE_P (REGNO (X)))
 
 
@@ -1710,8 +1724,8 @@ typedef struct rs6000_args
 /* Recognize any constant value that is a valid address.  */
 
 #define CONSTANT_ADDRESS_P(X)   \
-  (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
-   || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
+  (GET_CODE (X) == LABEL_REF || SYMBOL_REF_P (X)			\
+   || CONST_INT_P (X) || GET_CODE (X) == CONST				\
    || GET_CODE (X) == HIGH)
 
 #define EASY_VECTOR_15(n) ((n) >= -16 && (n) <= 15)

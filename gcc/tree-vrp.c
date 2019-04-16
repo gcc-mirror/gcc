@@ -2484,6 +2484,16 @@ extract_range_from_unary_expr (value_range_base *vr,
 	vr->set_varying ();
       return;
     }
+  else if (code == ABSU_EXPR)
+    {
+      wide_int wmin, wmax;
+      wide_int vr0_min, vr0_max;
+      extract_range_into_wide_ints (&vr0, SIGNED, prec, vr0_min, vr0_max);
+      wide_int_range_absu (wmin, wmax, prec, vr0_min, vr0_max);
+      vr->set (VR_RANGE, wide_int_to_tree (type, wmin),
+	       wide_int_to_tree (type, wmax));
+      return;
+    }
 
   /* For unhandled operations fall back to varying.  */
   vr->set_varying ();
@@ -4824,9 +4834,9 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
   const value_range *vr = NULL;
 
   /* Determine the offsets and increment OFFRANGE for the bounds of each.
-     The loop computes the the range of the final offset for expressions
-     such as (A + i0 + ... + iN)[CSTOFF] where i0 through iN are SSA_NAMEs
-     in some range.  */
+     The loop computes the range of the final offset for expressions such
+     as (A + i0 + ... + iN)[CSTOFF] where i0 through iN are SSA_NAMEs in
+     some range.  */
   while (TREE_CODE (arg) == SSA_NAME)
     {
       gimple *def = SSA_NAME_DEF_STMT (arg);
@@ -4861,26 +4871,21 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
 
       if (vr->kind () == VR_RANGE)
 	{
-	  if (tree_int_cst_lt (vr->min (), vr->max ()))
+	  offset_int min
+	    = wi::to_offset (fold_convert (ptrdiff_type_node, vr->min ()));
+	  offset_int max
+	    = wi::to_offset (fold_convert (ptrdiff_type_node, vr->max ()));
+	  if (min < max)
 	    {
-	      offset_int min
-		= wi::to_offset (fold_convert (ptrdiff_type_node, vr->min ()));
-	      offset_int max
-		= wi::to_offset (fold_convert (ptrdiff_type_node, vr->max ()));
-	      if (min < max)
-		{
-		  offrange[0] += min;
-		  offrange[1] += max;
-		}
-	      else
-		{
-		  offrange[0] += max;
-		  offrange[1] += min;
-		}
+	      offrange[0] += min;
+	      offrange[1] += max;
 	    }
 	  else
 	    {
-	      /* Conservatively add [-MAXOBJSIZE -1, MAXOBJSIZE]
+	      /* When MIN >= MAX, the offset is effectively in a union
+		 of two ranges: [-MAXOBJSIZE -1, MAX] and [MIN, MAXOBJSIZE].
+		 Since there is no way to represent such a range across
+		 additions, conservatively add [-MAXOBJSIZE -1, MAXOBJSIZE]
 		 to OFFRANGE.  */
 	      offrange[0] += arrbounds[0];
 	      offrange[1] += arrbounds[1];
@@ -4996,13 +5001,16 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
 	{
 	  /* Extract the element type out of MEM_REF and use its size
 	     to compute the index to print in the diagnostic; arrays
-	     in MEM_REF don't mean anything.   */
+	     in MEM_REF don't mean anything.  A type with no size like
+	     void is as good as having a size of 1.  */
 	  tree type = TREE_TYPE (ref);
 	  while (TREE_CODE (type) == ARRAY_TYPE)
 	    type = TREE_TYPE (type);
-	  tree size = TYPE_SIZE_UNIT (type);
-	  offrange[0] = offrange[0] / wi::to_offset (size);
-	  offrange[1] = offrange[1] / wi::to_offset (size);
+	  if (tree size = TYPE_SIZE_UNIT (type))
+	    {
+	      offrange[0] = offrange[0] / wi::to_offset (size);
+	      offrange[1] = offrange[1] / wi::to_offset (size);
+	    }
 	}
       else
 	{
@@ -5027,7 +5035,8 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
       if (warned && DECL_P (arg))
 	inform (DECL_SOURCE_LOCATION (arg), "while referencing %qD", arg);
 
-      TREE_NO_WARNING (ref) = 1;
+      if (warned)
+	TREE_NO_WARNING (ref) = 1;
       return;
     }
 
@@ -5040,11 +5049,10 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
     {
       HOST_WIDE_INT tmpidx = extrema[i].to_shwi () / eltsize.to_shwi ();
 
-      warning_at (location, OPT_Warray_bounds,
-		  "intermediate array offset %wi is outside array bounds "
-		  "of %qT",
-		  tmpidx,  reftype);
-      TREE_NO_WARNING (ref) = 1;
+      if (warning_at (location, OPT_Warray_bounds,
+		      "intermediate array offset %wi is outside array bounds "
+		      "of %qT", tmpidx, reftype))
+	TREE_NO_WARNING (ref) = 1;
     }
 }
 

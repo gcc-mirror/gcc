@@ -216,8 +216,13 @@ vr_values::update_value_range (const_tree var, value_range *new_vr)
 	 because VR_RANGE and VR_ANTI_RANGE need to be considered
 	 the same.  We may not have is_new when transitioning to
 	 UNDEFINED.  If old_vr->type is VARYING, we shouldn't be
-	 called.  */
-      if (new_vr->undefined_p ())
+	 called, if we are anyway, keep it VARYING.  */
+      if (old_vr->varying_p ())
+	{
+	  new_vr->set_varying ();
+	  is_new = false;
+	}
+      else if (new_vr->undefined_p ())
 	{
 	  old_vr->set_varying ();
 	  new_vr->set_varying ();
@@ -2422,7 +2427,7 @@ vr_values::vrp_evaluate_conditional_warnv_with_ops (enum tree_code code,
 }
 
 /* Given (CODE OP0 OP1) within STMT, try to simplify it based on value range
-   information.  Return NULL if the conditional can not be evaluated.
+   information.  Return NULL if the conditional cannot be evaluated.
    The ranges of all the names equivalent with the operands in COND
    will be used when trying to compute the value.  If the result is
    based on undefined signed overflow, issue a warning if
@@ -2629,7 +2634,7 @@ find_case_label_ranges (gswitch *stmt, value_range_base *vr, size_t *min_idx1,
 
   take_default = !find_case_label_range (stmt, min, max, &i, &j);
 
-  /* Set second range to emtpy.  */
+  /* Set second range to empty.  */
   *min_idx2 = 1;
   *max_idx2 = 0;
 

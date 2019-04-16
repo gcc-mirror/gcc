@@ -156,7 +156,7 @@ enum built_in_class {
   BUILT_IN_NORMAL
 };
 
-/* Last marker used for LTO stremaing of built_in_class.  We can not add it
+/* Last marker used for LTO stremaing of built_in_class.  We cannot add it
    to the enum since we need the enumb to fit in 2 bits.  */
 #define BUILT_IN_LAST (BUILT_IN_NORMAL + 1)
 
@@ -1032,7 +1032,9 @@ struct GTY(()) tree_base {
        expression trees and specify known data non-dependences.  For
        two memory references in a function they are known to not
        alias if dependence_info.clique are equal and dependence_info.base
-       are distinct.  */
+       are distinct.  Clique number zero means there is no information,
+       clique number one is populated from function global information
+       and thus needs no remapping on transforms like loop unrolling.  */
     struct {
       unsigned short clique;
       unsigned short base;

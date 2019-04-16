@@ -171,7 +171,6 @@ static bool gimple_can_merge_blocks_p (basic_block, basic_block);
 static void remove_bb (basic_block);
 static edge find_taken_edge_computed_goto (basic_block, tree);
 static edge find_taken_edge_cond_expr (const gcond *, tree);
-static void lower_phi_internal_fn ();
 
 void
 init_empty_tree_cfg_for_function (struct function *fn)
@@ -246,7 +245,6 @@ build_gimple_cfg (gimple_seq seq)
   discriminator_per_locus = new hash_table<locus_discrim_hasher> (13);
   make_edges ();
   assign_discriminators ();
-  lower_phi_internal_fn ();
   cleanup_dead_labels ();
   delete discriminator_per_locus;
   discriminator_per_locus = NULL;
@@ -355,47 +353,6 @@ replace_loop_annotate (void)
 	  stmt = gimple_build_assign (gimple_call_lhs (stmt),
 				      gimple_call_arg (stmt, 0));
 	  gsi_replace (&gsi, stmt, true);
-	}
-    }
-}
-
-/* Lower internal PHI function from GIMPLE FE.  */
-
-static void
-lower_phi_internal_fn ()
-{
-  basic_block bb, pred = NULL;
-  gimple_stmt_iterator gsi;
-  tree lhs;
-  gphi *phi_node;
-  gimple *stmt;
-
-  /* After edge creation, handle __PHI function from GIMPLE FE.  */
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi);)
-	{
-	  stmt = gsi_stmt (gsi);
-	  if (! gimple_call_internal_p (stmt, IFN_PHI))
-	    break;
-
-	  lhs = gimple_call_lhs (stmt);
-	  phi_node = create_phi_node (lhs, bb);
-
-	  /* Add arguments to the PHI node.  */
-	  for (unsigned i = 0; i < gimple_call_num_args (stmt); ++i)
-	    {
-	      tree arg = gimple_call_arg (stmt, i);
-	      if (TREE_CODE (arg) == LABEL_DECL)
-		pred = label_to_block (cfun, arg);
-	      else
-		{
-		  edge e = find_edge (pred, bb);
-		  add_phi_arg (phi_node, arg, e, UNKNOWN_LOCATION);
-		}
-	    }
-
-	  gsi_remove (&gsi, true);
 	}
     }
 }
@@ -2136,7 +2093,7 @@ gimple_merge_blocks (basic_block a, basic_block b)
 	     a situation where we have a forced label in block B
 	     However, the label at the start of block B might still be
 	     used in other ways (think about the runtime checking for
-	     Fortran assigned gotos).  So we can not just delete the
+	     Fortran assigned gotos).  So we cannot just delete the
 	     label.  Instead we move the label to the start of block A.  */
 	  if (FORCED_LABEL (label))
 	    {
@@ -2359,7 +2316,7 @@ find_taken_edge (basic_block bb, tree val)
   if (computed_goto_p (stmt))
     {
       /* Only optimize if the argument is a label, if the argument is
-	 not a label then we can not construct a proper CFG.
+	 not a label then we cannot construct a proper CFG.
 
          It may be the case that we only need to allow the LABEL_REF to
          appear inside an ADDR_EXPR, but we also allow the LABEL_REF to
@@ -3118,6 +3075,12 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
 		     "match field size of BIT_FIELD_REF");
 	      return true;
 	    }
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (op))
+	      && !type_has_mode_precision_p (TREE_TYPE (op)))
+	    {
+	      error ("BIT_FIELD_REF of non-mode-precision operand");
+	      return true;
+	    }
 	  if (!AGGREGATE_TYPE_P (TREE_TYPE (op))
 	      && maybe_gt (size + bitpos,
 			   tree_to_poly_uint64 (TYPE_SIZE (TREE_TYPE (op)))))
@@ -3331,11 +3294,6 @@ verify_gimple_call (gcall *stmt)
 	  debug_generic_stmt (fn);
 	  return true;
 	}
-      /* FIXME : for passing label as arg in internal fn PHI from GIMPLE FE*/
-      else if (gimple_call_internal_fn (stmt) == IFN_PHI)
-	{
-	  return false;
-	}
     }
   else
     {
@@ -3438,8 +3396,8 @@ verify_gimple_call (gcall *stmt)
 		 __builtin_unreachable internally, for example when IPA figures
 		 out a call cannot happen in a legal program.  In such cases,
 		 we must make sure arguments are stripped off.  */
-	      error ("__builtin_unreachable or __builtin_trap call with "
-		     "arguments");
+	      error ("%<__builtin_unreachable%> or %<__builtin_trap%> call "
+		     "with arguments");
 	      return true;
 	    }
 	  break;
@@ -4319,6 +4277,12 @@ verify_gimple_assign_ternary (gassign *stmt)
 	  error ("invalid position or size in BIT_INSERT_EXPR");
 	  return true;
 	}
+      if (INTEGRAL_TYPE_P (rhs1_type)
+	  && !type_has_mode_precision_p (rhs1_type))
+	{
+	  error ("BIT_INSERT_EXPR into non-mode-precision operand");
+	  return true;
+	}
       if (INTEGRAL_TYPE_P (rhs1_type))
 	{
 	  unsigned HOST_WIDE_INT bitpos = tree_to_uhwi (rhs3);
@@ -4815,7 +4779,7 @@ verify_gimple_label (glabel *stmt)
   if (!DECL_NONLOCAL (decl) && !FORCED_LABEL (decl)
       && DECL_CONTEXT (decl) != current_function_decl)
     {
-      error ("label's context is not the current function decl");
+      error ("label%'s context is not the current function decl");
       err |= true;
     }
 
@@ -6152,7 +6116,7 @@ gimple_can_duplicate_bb_p (const_basic_block bb ATTRIBUTE_UNUSED)
    preserve SSA form.  */
 
 static basic_block
-gimple_duplicate_bb (basic_block bb)
+gimple_duplicate_bb (basic_block bb, copy_bb_data *id)
 {
   basic_block new_bb;
   gimple_stmt_iterator gsi_tgt;
@@ -6216,6 +6180,39 @@ gimple_duplicate_bb (basic_block bb)
 	      && (!VAR_P (base) || !DECL_HAS_VALUE_EXPR_P (base)))
 	    DECL_NONSHAREABLE (base) = 1;
 	}
+ 
+      /* If requested remap dependence info of cliques brought in
+         via inlining.  */
+      if (id)
+	for (unsigned i = 0; i < gimple_num_ops (copy); ++i)
+	  {
+	    tree op = gimple_op (copy, i);
+	    if (!op)
+	      continue;
+	    if (TREE_CODE (op) == ADDR_EXPR
+		|| TREE_CODE (op) == WITH_SIZE_EXPR)
+	      op = TREE_OPERAND (op, 0);
+	    while (handled_component_p (op))
+	      op = TREE_OPERAND (op, 0);
+	    if ((TREE_CODE (op) == MEM_REF
+		 || TREE_CODE (op) == TARGET_MEM_REF)
+		&& MR_DEPENDENCE_CLIQUE (op) > 1
+		&& MR_DEPENDENCE_CLIQUE (op) != bb->loop_father->owned_clique)
+	      {
+		if (!id->dependence_map)
+		  id->dependence_map = new hash_map<dependence_hash,
+						    unsigned short>;
+		bool existed;
+		unsigned short &newc = id->dependence_map->get_or_insert
+		    (MR_DEPENDENCE_CLIQUE (op), &existed);
+		if (!existed)
+		  {
+		    gcc_assert (MR_DEPENDENCE_CLIQUE (op) <= cfun->last_clique);
+		    newc = ++cfun->last_clique;
+		  }
+		MR_DEPENDENCE_CLIQUE (op) = newc;
+	      }
+	  }
 
       /* Create new names for all the definitions created by COPY and
 	 add replacement mappings for each new name.  */
@@ -7131,11 +7128,14 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
 }
 
 /* Examine the statements in BB (which is in SRC_CFUN); find and return
-   the outermost EH region.  Use REGION as the incoming base EH region.  */
+   the outermost EH region.  Use REGION as the incoming base EH region.
+   If there is no single outermost region, return NULL and set *ALL to
+   true.  */
 
 static eh_region
 find_outermost_region_in_block (struct function *src_cfun,
-				basic_block bb, eh_region region)
+				basic_block bb, eh_region region,
+				bool *all)
 {
   gimple_stmt_iterator si;
 
@@ -7154,7 +7154,11 @@ find_outermost_region_in_block (struct function *src_cfun,
 	  else if (stmt_region != region)
 	    {
 	      region = eh_region_outermost (src_cfun, stmt_region, region);
-	      gcc_assert (region != NULL);
+	      if (region == NULL)
+		{
+		  *all = true;
+		  return NULL;
+		}
 	    }
 	}
     }
@@ -7489,12 +7493,17 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   if (saved_cfun->eh)
     {
       eh_region region = NULL;
+      bool all = false;
 
       FOR_EACH_VEC_ELT (bbs, i, bb)
-	region = find_outermost_region_in_block (saved_cfun, bb, region);
+	{
+	  region = find_outermost_region_in_block (saved_cfun, bb, region, &all);
+	  if (all)
+	    break;
+	}
 
       init_eh_for_function ();
-      if (region != NULL)
+      if (region != NULL || all)
 	{
 	  new_label_map = htab_create (17, tree_map_hash, tree_map_eq, free);
 	  eh_map = duplicate_eh_regions (saved_cfun, region, 0,
@@ -7865,7 +7874,11 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
     {
       print_generic_expr (file, TREE_TYPE (TREE_TYPE (fndecl)),
 			  dump_flags | TDF_SLIM);
-      fprintf (file, " __GIMPLE ()\n%s (", function_name (fun));
+      fprintf (file, " __GIMPLE (%s)\n%s (",
+	       (fun->curr_properties & PROP_ssa) ? "ssa"
+	       : (fun->curr_properties & PROP_cfg) ? "cfg"
+	       : "",
+	       function_name (fun));
     }
   else
     fprintf (file, "%s %s(", function_name (fun), tmclone ? "[tm-clone] " : "");
@@ -9272,9 +9285,9 @@ pass_warn_function_return::execute (function *fun)
 	      location = gimple_location (last);
 	      if (LOCATION_LOCUS (location) == UNKNOWN_LOCATION)
 		location = fun->function_end_locus;
-	      warning_at (location, OPT_Wreturn_type,
-			  "control reaches end of non-void function");
-	      TREE_NO_WARNING (fun->decl) = 1;
+	      if (warning_at (location, OPT_Wreturn_type,
+			      "control reaches end of non-void function"))
+		TREE_NO_WARNING (fun->decl) = 1;
 	      break;
 	    }
 	}
@@ -9304,9 +9317,9 @@ pass_warn_function_return::execute (function *fun)
 		    location = gimple_location (prev);
 		  if (LOCATION_LOCUS (location) == UNKNOWN_LOCATION)
 		    location = fun->function_end_locus;
-		  warning_at (location, OPT_Wreturn_type,
-			      "control reaches end of non-void function");
-		  TREE_NO_WARNING (fun->decl) = 1;
+		  if (warning_at (location, OPT_Wreturn_type,
+				  "control reaches end of non-void function"))
+		    TREE_NO_WARNING (fun->decl) = 1;
 		  break;
 		}
 	    }

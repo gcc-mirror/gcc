@@ -1,3 +1,58 @@
+2019-04-10  Nick Clifton  <nickc@redhat.com>
+
+	PR 89394
+	* cp-demangle.c (cplus_demangle_fill_name): Reject negative
+	lengths.
+	(d_count_templates_scopes): Replace num_templates and num_scopes
+	parameters with a struct d_print_info pointer parameter.  Adjust
+	body of the function accordingly.  Add recursion counter and check
+	that the recursion limit is not reached.
+	(d_print_init): Pass dpi parameter to d_count_templates_scopes.
+	Reset recursion counter afterwards, unless the recursion limit was
+	reached.
+
+2019-04-07  Alan Modra  <amodra@gmail.com>
+
+	* functions.texi: Regenerate.
+
+2019-03-14  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* hashtab.c (htab_remove_elt_with_hash): Return if slot is NULL rather
+	than if *slot is HTAB_EMPTY_ENTRY.
+
+2019-02-11  Philippe Waroquiers  <philippe.waroquiers@skynet.be>
+
+	* splay-tree.c (splay_tree_insert): Also release old KEY in case
+	of insertion of a key equal to an already present key.
+	(splay_tree_new_typed_alloc): Update comment.
+
+2019-01-22  Nidal Faour  <nidal.faour@wdc.com>
+
+	PR lto/88422
+	* simple-object.c (O_BINARY): Define if not already defined.
+	(simple_object_copy_lto_debug_sections): Create file in binary
+	mode.
+
+2019-01-21  Tom Tromey  <tom@tromey.com>
+
+	* splay-tree.c (splay_tree_remove): Delete the key if necessary.
+
+2019-01-14  Tom Honermann  <tom@honermann.net>
+
+	* cp-demangle.c (cplus_demangle_builtin_types)
+	(cplus_demangle_type): Add name demangling for char8_t (Du).
+	* cp-demangle.h: Increase D_BUILTIN_TYPE_COUNT to accommodate the
+	new char8_t type.
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* cp-demangle.c: Mechanically replace "can not" with "cannot".
+	* floatformat.c: Likewise.
+	* strerror.c: Likewise.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

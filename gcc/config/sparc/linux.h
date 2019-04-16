@@ -54,10 +54,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define DRIVER_SELF_SPECS MCPU_MTUNE_NATIVE_SPECS
 
-/* This is for -profile to use -lc_p instead of -lc.  */
-#undef	CC1_SPEC
-#define	CC1_SPEC "%{profile:-p} \
-"
+#undef  ASAN_CC1_SPEC
+#define ASAN_CC1_SPEC "%{%:sanitize(address):-funwind-tables}"
+
+#undef  CC1_SPEC
+#define CC1_SPEC GNU_USER_TARGET_CC1_SPEC ASAN_CC1_SPEC
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"

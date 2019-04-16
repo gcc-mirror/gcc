@@ -8,6 +8,9 @@
  * Source: $(DRUNTIMESRC src/rt/_sections.d)
  */
 
+/* NOTE: This file has been patched from the original DMD distribution to
+ * work with the GDC compiler.
+ */
 module rt.sections;
 
 version (OSX)
@@ -19,7 +22,9 @@ else version (TVOS)
 else version (WatchOS)
     version = Darwin;
 
-version (CRuntime_Glibc)
+version (GNU)
+    public import gcc.sections;
+else version (CRuntime_Glibc)
     public import rt.sections_elf_shared;
 else version (FreeBSD)
     public import rt.sections_elf_shared;

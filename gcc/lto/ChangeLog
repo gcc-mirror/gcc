@@ -1,3 +1,41 @@
+2019-04-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (do_stream_out): rename to ...
+	(stream_out): ... this one; move original code to ...
+	(stream_out_partitions_1, stream_out_partitions): ... these new
+	functions.
+	(lto_wpa_write_files): Honnor lto_parallelism
+
+2019-03-26  Martin Liska  <mliska@suse.cz>
+
+	* lto-symtab.c (lto_symtab_merge_decls_2): Fix option name
+	wrapping.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* lto-lang.c (lto_post_options): Wrap an option name
+	in a string format message and fix GNU coding style.
+	* lto-symtab.c (lto_symtab_merge_decls_2): Likewise.
+
+2019-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79645
+	* lang.opt: Terminate description text with a dot.
+
+2019-02-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88049 - ICE with undefined destructor and anon namespace.
+	* lto-symtab.c (lto_symtab_prevailing_virtual_decl): Return early
+	for a type in an anonymous namespace.
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* lto-partition.c: Mechanically replace "can not" with "cannot".
+	* lto-symtab.c: Likewise.
+	* lto.c: Likewise.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

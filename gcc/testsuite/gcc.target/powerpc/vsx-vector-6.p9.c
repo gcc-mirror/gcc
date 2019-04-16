@@ -1,14 +1,13 @@
-/* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
+/* { dg-do compile { target lp64 } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-options "-mvsx -O2 -mcpu=power9" } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
+/* { dg-options "-mvsx -O2 -mdejagnu-cpu=power9" } */
 
 /* Expected instruction counts for Power9. */
 
 /* { dg-final { scan-assembler-times "xvabsdp" 1 } } */
 /* { dg-final { scan-assembler-times "xvadddp" 1 } } */
-/* { dg-final { scan-assembler-times "xxlnor" 7 } } */
+/* { dg-final { scan-assembler-times "xxlnor" 5 } } */
 
 /* We generate xxlor instructions for many reasons other than or'ing vector
    operands or calling __builtin_vec_or(), which  means we cannot rely on

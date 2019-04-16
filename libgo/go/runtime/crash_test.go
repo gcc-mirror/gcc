@@ -657,6 +657,9 @@ func TestTimePprof(t *testing.T) {
 	if runtime.Compiler == "gccgo" {
 		t.Skip("gccgo may not have the pprof tool")
 	}
+	if runtime.GOOS == "aix" {
+		t.Skip("pprof not yet available on AIX (see golang.org/issue/28555)")
+	}
 	fn := runTestProg(t, "testprog", "TimeProf")
 	fn = strings.TrimSpace(fn)
 	defer os.Remove(fn)
@@ -760,4 +763,16 @@ func TestG0StackOverflow(t *testing.T) {
 	}
 
 	runtime.G0StackOverflow()
+}
+
+// Test that panic message is not clobbered.
+// See issue 30150.
+func TestDoublePanic(t *testing.T) {
+	output := runTestProg(t, "testprog", "DoublePanic", "GODEBUG=clobberfree=1")
+	wants := []string{"panic: XXX", "panic: YYY"}
+	for _, want := range wants {
+		if !strings.Contains(output, want) {
+			t.Errorf("output:\n%s\n\nwant output containing: %s", output, want)
+		}
+	}
 }

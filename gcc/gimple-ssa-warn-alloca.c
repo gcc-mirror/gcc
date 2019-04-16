@@ -288,7 +288,7 @@ pass_walloca::execute (function *fun)
 	    }
 	  else if (warn_alloca)
 	    {
-	      warning_at (loc, OPT_Walloca, G_("use of %<alloca%>"));
+	      warning_at (loc, OPT_Walloca, "use of %<alloca%>");
 	      continue;
 	    }
 	  else if (warn_alloca_limit < 0)
@@ -330,8 +330,8 @@ pass_walloca::execute (function *fun)
 		    && t.limit != 0)
 		  {
 		    print_decu (t.limit, buff);
-		    inform (loc, G_("limit is %wu bytes, but argument "
-				    "may be as large as %s"),
+		    inform (loc, "limit is %wu bytes, but argument "
+				 "may be as large as %s",
 			    is_vla ? warn_vla_limit : adjusted_alloca_limit,
 			    buff);
 		  }
@@ -347,7 +347,7 @@ pass_walloca::execute (function *fun)
 		    && t.limit != 0)
 		  {
 		    print_decu (t.limit, buff);
-		    inform (loc, G_("limit is %wu bytes, but argument is %s"),
+		    inform (loc, "limit is %wu bytes, but argument is %s",
 			      is_vla ? warn_vla_limit : adjusted_alloca_limit,
 			      buff);
 		  }
@@ -360,7 +360,7 @@ pass_walloca::execute (function *fun)
 	      break;
 	    case ALLOCA_IN_LOOP:
 	      gcc_assert (!is_vla);
-	      warning_at (loc, wcode, G_("use of %<alloca%> within a loop"));
+	      warning_at (loc, wcode, "use of %<alloca%> within a loop");
 	      break;
 	    case ALLOCA_ARG_IS_ZERO:
 	      warning_at (loc, wcode,

@@ -359,10 +359,10 @@ get_initial_register_offset (int from, int to)
   if (to == from)
     return 0;
 
-  /* It is not safe to call INITIAL_ELIMINATION_OFFSET
-     before the reload pass.  We need to give at least
-     an estimation for the resulting frame size.  */
-  if (! reload_completed)
+  /* It is not safe to call INITIAL_ELIMINATION_OFFSET before the epilogue
+     is completed, but we need to give at least an estimate for the stack
+     pointer based on the frame size.  */
+  if (!epilogue_completed)
     {
       offset1 = crtl->outgoing_args_size + get_frame_size ();
 #if !STACK_GROWS_DOWNWARD
@@ -1806,7 +1806,7 @@ reg_overlap_mentioned_p (const_rtx x, const_rtx in)
 {
   unsigned int regno, endregno;
 
-  /* If either argument is a constant, then modifying X can not
+  /* If either argument is a constant, then modifying X cannot
      affect IN.  Here we look at IN, we can profitably combine
      CONSTANT_P (x) with the switch statement below.  */
   if (CONSTANT_P (in))
@@ -2846,10 +2846,28 @@ may_trap_p_1 (const_rtx x, unsigned flags)
     case UMOD:
       if (HONOR_SNANS (x))
 	return 1;
-      if (SCALAR_FLOAT_MODE_P (GET_MODE (x)))
+      if (FLOAT_MODE_P (GET_MODE (x)))
 	return flag_trapping_math;
       if (!CONSTANT_P (XEXP (x, 1)) || (XEXP (x, 1) == const0_rtx))
 	return 1;
+      if (GET_CODE (XEXP (x, 1)) == CONST_VECTOR)
+	{
+	  /* For CONST_VECTOR, return 1 if any element is or might be zero.  */
+	  unsigned int n_elts;
+	  rtx op = XEXP (x, 1);
+	  if (!GET_MODE_NUNITS (GET_MODE (op)).is_constant (&n_elts))
+	    {
+	      if (!CONST_VECTOR_DUPLICATE_P (op))
+		return 1;
+	      for (unsigned i = 0; i < (unsigned int) XVECLEN (op, 0); i++)
+		if (CONST_VECTOR_ENCODED_ELT (op, i) == const0_rtx)
+		  return 1;
+	    }
+	  else
+	    for (unsigned i = 0; i < n_elts; i++)
+	      if (CONST_VECTOR_ELT (op, i) == const0_rtx)
+		return 1;
+	}
       break;
 
     case EXPR_LIST:
@@ -2898,12 +2916,16 @@ may_trap_p_1 (const_rtx x, unsigned flags)
     case NEG:
     case ABS:
     case SUBREG:
+    case VEC_MERGE:
+    case VEC_SELECT:
+    case VEC_CONCAT:
+    case VEC_DUPLICATE:
       /* These operations don't trap even with floating point.  */
       break;
 
     default:
       /* Any floating arithmetic may trap.  */
-      if (SCALAR_FLOAT_MODE_P (GET_MODE (x)) && flag_trapping_math)
+      if (FLOAT_MODE_P (GET_MODE (x)) && flag_trapping_math)
 	return 1;
     }
 

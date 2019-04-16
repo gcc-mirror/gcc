@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2018 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -39,6 +39,7 @@ public:
     virtual Condition *syntaxCopy() = 0;
     virtual int include(Scope *sc, ScopeDsymbol *sds) = 0;
     virtual DebugCondition *isDebugCondition() { return NULL; }
+    virtual VersionCondition *isVersionCondition() { return NULL; }
     virtual void accept(Visitor *v) { v->visit(this); }
 };
 
@@ -91,6 +92,7 @@ public:
     VersionCondition(Module *mod, unsigned level, Identifier *ident);
 
     int include(Scope *sc, ScopeDsymbol *sds);
+    VersionCondition *isVersionCondition() { return this; }
     void accept(Visitor *v) { v->visit(this); }
 };
 

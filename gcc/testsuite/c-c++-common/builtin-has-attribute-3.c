@@ -1,7 +1,9 @@
 /* Verify __builtin_has_attribute return value for functions.
    { dg-do compile }
    { dg-options "-Wall -ftrack-macro-expansion=0" }
-   { dg-options "-Wall -Wno-narrowing -Wno-unused-local-typedefs -ftrack-macro-expansion=0" { target c++ } }  */
+   { dg-options "-Wall -Wno-narrowing -Wno-unused-local-typedefs -ftrack-macro-expansion=0" { target c++ } } 
+   { dg-additional-options "-DSKIP_ALIAS" { target *-*-darwin* hppa*-*-hpux* } } 
+*/
 
 #define ATTR(...) __attribute__ ((__VA_ARGS__))
 
@@ -27,7 +29,9 @@ extern "C"
 #endif
 ATTR (noreturn) void fnoreturn (void) { __builtin_abort (); }
 
+#ifndef SKIP_ALIAS
 ATTR (alias ("fnoreturn")) void falias (void);
+#endif
 
 #define A(expect, sym, attr)						\
   typedef int Assert [1 - 2 * !(__builtin_has_attribute (sym, attr) == expect)]
@@ -114,7 +118,7 @@ void test_alloc_size_malloc (void)
   A (1, fmalloc_size_3, malloc);
 }
 
-
+#ifndef SKIP_ALIAS
 void test_alias (void)
 {
   A (0, fnoreturn, alias);
@@ -123,7 +127,7 @@ void test_alias (void)
   A (0, falias, alias ("falias"));
   A (0, falias, alias ("fnone"));
 }
-
+#endif
 
 void test_cold_hot (void)
 {

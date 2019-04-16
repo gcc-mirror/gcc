@@ -40,17 +40,17 @@ void test01()
   typedef str_conv<char> wsc;
 
   wsc c;
-  string input = u8"\u00a3 shillings pence";
+  string input = (const char*)u8"\u00a3 shillings pence";
   string woutput = c.from_bytes(input.substr(0, 1));
   auto partial_state = c.state();
   auto partial_count = c.converted();
 
-  auto woutput2 = c.from_bytes(u8"state reset on next conversion");
-  VERIFY( woutput2 == u8"state reset on next conversion" );
+  auto woutput2 = c.from_bytes("state reset on next conversion");
+  VERIFY( woutput2 == "state reset on next conversion" );
 
   wsc c2(new cvt<char>, partial_state);
   woutput += c2.from_bytes(input.substr(partial_count));
-  VERIFY( u8"\u00a3 shillings pence" == woutput );
+  VERIFY( (const char*)u8"\u00a3 shillings pence" == woutput );
 
   string roundtrip = c2.to_bytes(woutput);
   VERIFY( input == roundtrip );
@@ -61,12 +61,12 @@ void test02()
   typedef str_conv<char16_t> wsc;
 
   wsc c;
-  string input = u8"\u00a3 shillings pence";
+  string input = (const char*)u8"\u00a3 shillings pence";
   u16string woutput = c.from_bytes(input.substr(0, 1));
   auto partial_state = c.state();
   auto partial_count = c.converted();
 
-  auto woutput2 = c.from_bytes(u8"state reset on next conversion");
+  auto woutput2 = c.from_bytes("state reset on next conversion");
   VERIFY( woutput2 == u"state reset on next conversion" );
 
   wsc c2(new cvt<char16_t>, partial_state);
@@ -82,12 +82,12 @@ void test03()
   typedef str_conv<char32_t> wsc;
 
   wsc c;
-  string input = u8"\u00a3 shillings pence";
+  string input = (const char*)u8"\u00a3 shillings pence";
   u32string woutput = c.from_bytes(input.substr(0, 1));
   auto partial_state = c.state();
   auto partial_count = c.converted();
 
-  auto woutput2 = c.from_bytes(u8"state reset on next conversion");
+  auto woutput2 = c.from_bytes("state reset on next conversion");
   VERIFY( woutput2 == U"state reset on next conversion" );
 
   wsc c2(new cvt<char32_t>, partial_state);

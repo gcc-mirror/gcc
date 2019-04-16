@@ -1123,14 +1123,6 @@ if (isInputRange!T && !isInfinite!T && isSomeChar!(ElementEncodingType!T))
     return parseJSON!T(json, -1, options);
 }
 
-deprecated(
-    "Please use the overload that takes a ref JSONValue rather than a pointer. This overload will "
-    ~ "be removed in November 2017.")
-string toJSON(in JSONValue* root, in bool pretty = false, in JSONOptions options = JSONOptions.none) @safe
-{
-    return toJSON(*root, pretty, options);
-}
-
 /**
 Takes a tree of JSON values and returns the serialized string.
 

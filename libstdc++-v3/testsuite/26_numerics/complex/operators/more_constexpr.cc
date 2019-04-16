@@ -56,7 +56,9 @@ int main()
 {
   __gnu_test::test_operators<float>();
   __gnu_test::test_operators<double>();
+#ifndef __LONG_DOUBLE_IBM128__ // IBM128 format is not constexpr foldable
   __gnu_test::test_operators<long double>();
+#endif
 
   return 0;
 }

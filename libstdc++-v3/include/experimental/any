@@ -266,7 +266,7 @@ inline namespace fundamentals_v1
     // observers
 
     /// Reports whether there is a contained object or not.
-    bool empty() const noexcept { return _M_manager == nullptr; }
+    _GLIBCXX_NODISCARD bool empty() const noexcept { return _M_manager == nullptr; }
 
 #if __cpp_rtti
     /// The @c typeid of the contained object, or @c typeid(void) if empty.

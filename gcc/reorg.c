@@ -137,7 +137,20 @@ skip_consecutive_labels (rtx label_or_return)
 
   rtx_insn *label = as_a <rtx_insn *> (label_or_return);
 
-  for (insn = label; insn != 0 && !INSN_P (insn); insn = NEXT_INSN (insn))
+  /* __builtin_unreachable can create a CODE_LABEL followed by a BARRIER.
+
+     Since reaching the CODE_LABEL is undefined behavior, we can return
+     any code label and we're OK at runtime.
+
+     However, if we return a CODE_LABEL which leads to a shrinked wrapped
+     epilogue, but the path does not have a prologue, then we will trip
+     a sanity check in the dwarf2 cfi code which wants to verify that
+     the CFIs are all the same on the traces leading to the epilogue.
+
+     So we explicitly disallow looking through BARRIERS here.  */
+  for (insn = label;
+       insn != 0 && !INSN_P (insn) && !BARRIER_P (insn);
+       insn = NEXT_INSN (insn))
     if (LABEL_P (insn))
       label = insn;
 
@@ -1064,10 +1077,10 @@ steal_delay_list_from_target (rtx_insn *insn, rtx condition, rtx_sequence *seq,
      ??? It may be possible to move other sets into INSN in addition to
      moving the instructions in the delay slots.
 
-     We can not steal the delay list if one of the instructions in the
+     We cannot steal the delay list if one of the instructions in the
      current delay_list modifies the condition codes and the jump in the
-     sequence is a conditional jump. We can not do this because we can
-     not change the direction of the jump because the condition codes
+     sequence is a conditional jump. We cannot do this because we cannot
+     change the direction of the jump because the condition codes
      will effect the direction of the jump in the sequence.  */
 
   CLEAR_RESOURCE (&cc_set);

@@ -3109,25 +3109,21 @@ vect_slp_bb (basic_block bb)
 }
 
 
-/* Return 1 if vector type of boolean constant which is OPNUM
-   operand in statement STMT_VINFO is a boolean vector.  */
+/* Return 1 if vector type STMT_VINFO is a boolean vector.  */
 
 static bool
-vect_mask_constant_operand_p (stmt_vec_info stmt_vinfo, int opnum)
+vect_mask_constant_operand_p (stmt_vec_info stmt_vinfo)
 {
   enum tree_code code = gimple_expr_code (stmt_vinfo->stmt);
   tree op, vectype;
   enum vect_def_type dt;
 
   /* For comparison and COND_EXPR type is chosen depending
-     on the other comparison operand.  */
+     on the non-constant other comparison operand.  */
   if (TREE_CODE_CLASS (code) == tcc_comparison)
     {
       gassign *stmt = as_a <gassign *> (stmt_vinfo->stmt);
-      if (opnum)
-	op = gimple_assign_rhs1 (stmt);
-      else
-	op = gimple_assign_rhs2 (stmt);
+      op = gimple_assign_rhs1 (stmt);
 
       if (!vect_is_simple_use (op, stmt_vinfo->vinfo, &dt, &vectype))
 	gcc_unreachable ();
@@ -3142,8 +3138,6 @@ vect_mask_constant_operand_p (stmt_vec_info stmt_vinfo, int opnum)
 
       if (TREE_CODE (cond) == SSA_NAME)
 	op = cond;
-      else if (opnum)
-	op = TREE_OPERAND (cond, 1);
       else
 	op = TREE_OPERAND (cond, 0);
 
@@ -3302,7 +3296,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 
   /* Check if vector type is a boolean vector.  */
   if (VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (op))
-      && vect_mask_constant_operand_p (stmt_vinfo, op_num))
+      && vect_mask_constant_operand_p (stmt_vinfo))
     vector_type
       = build_same_sized_truth_vector_type (STMT_VINFO_VECTYPE (stmt_vinfo));
   else

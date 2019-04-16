@@ -2128,6 +2128,13 @@ Target can truncate a file from a file descriptor, as used by
 @file{libgfortran/io/unix.c:fd_truncate}; i.e.@: @code{ftruncate} or
 @code{chsize}.
 
+@item fenv
+Target provides @file{fenv.h} include file.
+
+@item fenv_exceptions
+Target supports @file{fenv.h} with all the standard IEEE exceptions
+and floating-point exceptions are raised by arithmetic operations.
+
 @item freestanding
 Target is @samp{freestanding} as defined in section 4 of the C99 standard.
 Effectively, it is a target which supports no extra headers or libraries
@@ -2228,6 +2235,9 @@ Target uses @code{__cxa_atexit}.
 @item default_packed
 Target has packed layout of structure members by default.
 
+@item exceptions
+Target supports exceptions.
+
 @item fgraphite
 Target supports Graphite optimizations.
 
@@ -2262,6 +2272,9 @@ Target uses GNU @command{ld}.
 Target keeps null pointer checks, either due to the use of
 @option{-fno-delete-null-pointer-checks} or hardwired into the target.
 
+@item llvm_binutils
+Target is using an LLVM assembler and/or linker, instead of GNU Binutils.
+
 @item lto
 Compiler has been configured to support link-time optimization (LTO).
 
@@ -2285,6 +2298,9 @@ Target uses natural alignment (aligned to type size) for types of
 
 @item nonpic
 Target does not generate PIC by default.
+
+@item offload_gcn
+Target has been configured for OpenACC/OpenMP offloading on AMD GCN.
 
 @item pie_enabled
 Target generates PIE by default.
@@ -2512,6 +2528,10 @@ Only MIPS targets support this feature, and only then in certain modes.
 Add the flags needed to define macro STACK_SIZE and set it to the stack size
 limit associated with the @ref{stack_size_et,,@code{stack_size} effective
 target}.
+
+@item sqrt_insn
+Add the target-specific flags needed to enable hardware square root
+instructions, if any.
 
 @item tls
 Add the target-specific flags needed to use thread-local storage.
@@ -2947,7 +2967,7 @@ in @file{lib/gcc-dg.exp} to compile and run the test program.  A typical
 @command{gcov} test contains the following DejaGnu commands within comments:
 
 @smallexample
-@{ dg-options "-fprofile-arcs -ftest-coverage" @}
+@{ dg-options "--coverage" @}
 @{ dg-do run @{ target native @} @}
 @{ dg-final @{ run-gcov sourcefile @} @}
 @end smallexample

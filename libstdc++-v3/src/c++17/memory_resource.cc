@@ -182,7 +182,21 @@ namespace pmr
 	     _Chunk*& __head)
     {
       __size = std::__ceil2(__size + sizeof(_Chunk));
+
+      if constexpr (alignof(_Chunk) > 1)
+	{
+	  // PR libstdc++/90046
+	  // For targets like epiphany-elf where alignof(_Chunk) != 1
+	  // ensure that the last sizeof(_Chunk) bytes in the buffer
+	  // are suitably-aligned for a _Chunk.
+	  // This should be unnecessary, because the caller already
+	  // passes in max(__align, alignof(max_align_t)).
+	  if (__align < alignof(_Chunk))
+	    __align = alignof(_Chunk);
+	}
+
       void* __p = __r->allocate(__size, __align);
+
       // Add a chunk defined by (__p, __size, __align) to linked list __head.
       void* const __back = (char*)__p + __size - sizeof(_Chunk);
       __head = ::new(__back) _Chunk(__size, __align, __head);
@@ -231,9 +245,6 @@ namespace pmr
   void
   monotonic_buffer_resource::_M_new_buffer(size_t bytes, size_t alignment)
   {
-    // Need to check this somewhere, so put it here:
-    static_assert(alignof(monotonic_buffer_resource::_Chunk) == 1);
-
     const size_t n = std::max(bytes, _M_next_bufsiz);
     const size_t m = std::max(alignment, alignof(std::max_align_t));
     auto [p, size] = _Chunk::allocate(_M_upstream, n, m, _M_head);

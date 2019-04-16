@@ -903,7 +903,7 @@ cris_print_operand (FILE *file, rtx x, int code)
     case ':':
       /* The PIC register.  */
       if (! flag_pic)
-	internal_error ("invalid use of ':' modifier");
+	internal_error ("invalid use of %<:%> modifier");
       fprintf (file, "$%s", reg_names [PIC_OFFSET_TABLE_REGNUM]);
       return;
 
@@ -2651,7 +2651,8 @@ cris_option_override (void)
 
       /* Do some sanity checking.  */
       if (cris_max_stackframe < 0 || cris_max_stackframe > 0x20000000)
-	internal_error ("-max-stackframe=%d is not usable, not between 0 and %d",
+	internal_error ("%<-max-stackframe=%d%> is not usable, "
+			"not between 0 and %d",
 			cris_max_stackframe, 0x20000000);
     }
 
@@ -2679,8 +2680,8 @@ cris_option_override (void)
 	cris_cpu_version = 10;
 
       if (cris_cpu_version < 0 || cris_cpu_version > 32)
-	error ("unknown CRIS version specification in -march= or -mcpu= : %s",
-	       cris_cpu_str);
+	error ("unknown CRIS version specification in %<-march=%> or "
+	       "%<-mcpu=%> : %s", cris_cpu_str);
 
       /* Set the target flags.  */
       if (cris_cpu_version >= CRIS_CPU_ETRAX4)
@@ -2715,7 +2716,7 @@ cris_option_override (void)
 	cris_tune = 10;
 
       if (cris_tune < 0 || cris_tune > 32)
-	error ("unknown CRIS cpu version specification in -mtune= : %s",
+	error ("unknown CRIS cpu version specification in %<-mtune=%> : %s",
 	       cris_tune_str);
 
       if (cris_tune >= CRIS_CPU_SVINTO)
@@ -2736,7 +2737,8 @@ cris_option_override (void)
 	 further errors.  */
       if (! TARGET_LINUX)
 	{
-	  error ("-fPIC and -fpic are not supported in this configuration");
+	  error ("%<-fPIC%> and %<-fpic%> are not supported "
+		 "in this configuration");
 	  flag_pic = 0;
 	}
 
@@ -4340,7 +4342,7 @@ cris_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 /* Return the preferred minimum alignment for a static object.  */
 
 static HOST_WIDE_INT
-cris_preferred_mininum_alignment (void)
+cris_preferred_minimum_alignment (void)
 {
   if (!TARGET_CONST_ALIGN)
     return 8;
@@ -4354,7 +4356,7 @@ cris_preferred_mininum_alignment (void)
 static HOST_WIDE_INT
 cris_static_rtx_alignment (machine_mode mode)
 {
-  return MAX (cris_preferred_mininum_alignment (), GET_MODE_ALIGNMENT (mode));
+  return MAX (cris_preferred_minimum_alignment (), GET_MODE_ALIGNMENT (mode));
 }
 
 /* Implement TARGET_CONSTANT_ALIGNMENT.  Note that this hook has the
@@ -4367,7 +4369,7 @@ cris_static_rtx_alignment (machine_mode mode)
 static HOST_WIDE_INT
 cris_constant_alignment (const_tree, HOST_WIDE_INT basic_align)
 {
-  return MAX (cris_preferred_mininum_alignment (), basic_align);
+  return MAX (cris_preferred_minimum_alignment (), basic_align);
 }
 
 #if 0

@@ -87,7 +87,7 @@ namespace __gnu_pbds
       inline void
       pop();
 
-      inline bool
+      _GLIBCXX_NODISCARD inline bool
       empty() const;
 
       inline size_type
@@ -178,7 +178,7 @@ namespace __gnu_pbds
     }
 
     template<typename _Node, typename _Alloc>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     rc<_Node, _Alloc>::
     empty() const
     {

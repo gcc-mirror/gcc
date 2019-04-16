@@ -233,6 +233,8 @@ init_reswords (void)
     mask |= D_CXX_CONCEPTS;
   if (!flag_tm)
     mask |= D_TRANSMEM;
+  if (!flag_char8_t)
+    mask |= D_CXX_CHAR8_T;
   if (flag_no_asm)
     mask |= D_ASM | D_EXT;
   if (flag_no_gnu_keywords)

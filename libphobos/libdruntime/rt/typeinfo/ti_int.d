@@ -24,9 +24,9 @@ class TypeInfo_i : TypeInfo
 
     override string toString() const pure nothrow @safe { return "int"; }
 
-    override size_t getHash(in void* p)
+    override size_t getHash(scope const void* p)
     {
-        return *cast(uint *)p;
+        return *cast(const int *)p;
     }
 
     override bool equals(in void* p1, in void* p2)

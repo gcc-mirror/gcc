@@ -357,42 +357,32 @@ void test16()
 
 void test17()
 {
+    version(D_InlineAsm_X86_64)
+        enum AsmX86 = true;
+    else version(D_InlineAsm_X86)
+        enum AsmX86 = true;
+    else
+        enum AsmX86 = false;
+
     version (OSX)
     {
     }
     else
     {
-        /*const*/ float f = 1.2f;
+        const f = 1.2f;
         float g = void;
 
-
-        version(D_SoftFloat)
-        {
-            g = f;
-        }
-        else version(GNU)
-        {
-            version(X86) asm
-            {
-                "flds %1; fstps %0;" : "=m" (g) : "m" (f) : ;
-            }
-            else version(X86_64) asm
-            {
-                "flds %1; fstps %0;" : "=m" (g) : "m" (f) : ;
-            }
-            else version(ARM) asm
-            {
-                "vldr d0, %1; vstr d0, %0;" : "=m" (g) : "m" (f), : "d0";
-            }
-            else static assert(false, "ASM code not implemented for this architecture");
-        }
-        else
+        static if (AsmX86)
         {
             asm
             {
                 fld f;  // doesn't work with PIC
                 fstp g;
             }
+        }
+        else
+        {
+            g = f;
         }
         assert(g == 1.2f);
     }

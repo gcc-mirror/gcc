@@ -13,7 +13,6 @@
  */
 module rt.typeinfo.ti_ulong;
 
-private import rt.util.hash;
 
 // ulong
 
@@ -26,9 +25,12 @@ class TypeInfo_m : TypeInfo
 
     override string toString() const pure nothrow @safe { return "ulong"; }
 
-    override size_t getHash(in void* p)
+    override size_t getHash(scope const void* p)
     {
-        return rt.util.hash.hashOf(p[0 .. ulong.sizeof], 0);
+        static if (ulong.sizeof <= size_t.sizeof)
+            return *cast(const ulong*)p;
+        else
+            return hashOf(*cast(const ulong*)p);
     }
 
     override bool equals(in void* p1, in void* p2)

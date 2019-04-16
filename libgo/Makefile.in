@@ -215,11 +215,11 @@ am_libgotool_a_OBJECTS =
 libgotool_a_OBJECTS = $(am_libgotool_a_OBJECTS)
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 @LIBGO_IS_LINUX_TRUE@am__DEPENDENCIES_1 = syscall/clone_linux.lo
-am__DEPENDENCIES_2 = $(addsuffix .lo,$(PACKAGES)) bytes/index.lo \
+am__DEPENDENCIES_2 = $(addsuffix .lo,$(PACKAGES)) \
 	internal/bytealg/bytealg.lo reflect/makefunc_ffi_c.lo \
-	strings/index.lo $(am__DEPENDENCIES_1) syscall/errno.lo \
-	syscall/signame.lo syscall/wait.lo $(golang_org_x_net_lif_lo) \
-	$(golang_org_x_net_route_lo) log/syslog/syslog_c.lo \
+	$(am__DEPENDENCIES_1) syscall/errno.lo syscall/signame.lo \
+	syscall/wait.lo $(internal_x_net_lif_lo) \
+	$(internal_x_net_route_lo) log/syslog/syslog_c.lo \
 	runtime/internal/atomic_c.lo sync/atomic_c.lo \
 	internal/cpu/cpu_gccgo.lo
 am__DEPENDENCIES_3 =
@@ -230,7 +230,8 @@ am__DEPENDENCIES_4 = $(am__DEPENDENCIES_2) \
 libgo_llgo_la_DEPENDENCIES = $(am__DEPENDENCIES_4)
 @LIBGO_IS_RTEMS_TRUE@am__objects_1 =  \
 @LIBGO_IS_RTEMS_TRUE@	runtime/rtems-task-variable-add.lo
-@LIBGO_IS_AIX_FALSE@@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@am__objects_2 = runtime/getncpu-none.lo
+@LIBGO_IS_AIX_FALSE@@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_HURD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@am__objects_2 = runtime/getncpu-none.lo
+@LIBGO_IS_AIX_FALSE@@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_HURD_TRUE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@am__objects_2 = runtime/getncpu-hurd.lo
 @LIBGO_IS_AIX_TRUE@@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@am__objects_2 = runtime/getncpu-aix.lo
 @LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_TRUE@@LIBGO_IS_SOLARIS_FALSE@am__objects_2 = runtime/getncpu-bsd.lo
 @LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_TRUE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@am__objects_2 = runtime/getncpu-bsd.lo
@@ -252,8 +253,8 @@ am__objects_3 = runtime/aeshash.lo runtime/go-assert.lo \
 	runtime/go-unsetenv.lo runtime/go-unwind.lo \
 	runtime/go-varargs.lo runtime/env_posix.lo runtime/panic.lo \
 	runtime/print.lo runtime/proc.lo runtime/runtime_c.lo \
-	runtime/stack.lo runtime/thread.lo runtime/yield.lo \
-	$(am__objects_1) $(am__objects_2)
+	runtime/stack.lo runtime/yield.lo $(am__objects_1) \
+	$(am__objects_2)
 am_libgo_llgo_la_OBJECTS = $(am__objects_3)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -396,6 +397,7 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+FUNCTION_DESCRIPTORS = @FUNCTION_DESCRIPTORS@
 GOARCH = @GOARCH@
 GOC = @GOC@
 GOFLAGS = @GOFLAGS@
@@ -527,6 +529,8 @@ top_srcdir = @top_srcdir@
 # Go support.
 SUFFIXES = .c .go .gox .o .obj .lo .a
 @LIBGO_IS_RTEMS_TRUE@subdirs = testsuite
+@LIBGO_IS_DARWIN_FALSE@GO_EXPORT_SECTION_NAME = .go_export
+@LIBGO_IS_DARWIN_TRUE@GO_EXPORT_SECTION_NAME = __GNU_GO.__go_export
 SUBDIRS = ${subdirs}
 gcc_version := $(shell $(GOC) -dumpversion)
 MAINT_CHARSET = latin1
@@ -696,8 +700,7 @@ toolexeclibgodebug_DATA = \
 	debug/gosym.gox \
 	debug/macho.gox \
 	debug/pe.gox \
-	debug/plan9obj.gox \
-	debug/xcoff.gox
+	debug/plan9obj.gox
 
 toolexeclibgoencodingdir = $(toolexeclibgodir)/encoding
 toolexeclibgoencoding_DATA = \
@@ -849,14 +852,15 @@ toolexeclibgounicode_DATA = \
 # Some packages are only needed for tests, so unlike the other
 # internal packages nothing will explicitly depend on them.
 # Force them to be built.
-noinst_DATA = golang_org/x/net/internal/nettest.gox \
-	golang_org/x/net/nettest.gox internal/testenv.gox \
+noinst_DATA = internal/x/net/internal/nettest.gox \
+	internal/x/net/nettest.gox internal/testenv.gox \
 	internal/trace.gox net/internal/socktest.gox \
 	os/signal/internal/pty.gox runtime/pprof/internal/profile.gox \
 	zdefaultcc.go
 @LIBGO_IS_RTEMS_FALSE@rtems_task_variable_add_file = 
 @LIBGO_IS_RTEMS_TRUE@rtems_task_variable_add_file = runtime/rtems-task-variable-add.c
-@LIBGO_IS_AIX_FALSE@@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@runtime_getncpu_file = runtime/getncpu-none.c
+@LIBGO_IS_AIX_FALSE@@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_HURD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@runtime_getncpu_file = runtime/getncpu-none.c
+@LIBGO_IS_AIX_FALSE@@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_HURD_TRUE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@runtime_getncpu_file = runtime/getncpu-hurd.c
 @LIBGO_IS_AIX_TRUE@@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@runtime_getncpu_file = runtime/getncpu-aix.c
 @LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_TRUE@@LIBGO_IS_SOLARIS_FALSE@runtime_getncpu_file = runtime/getncpu-bsd.c
 @LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_TRUE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@runtime_getncpu_file = runtime/getncpu-bsd.c
@@ -898,7 +902,6 @@ runtime_files = \
 	runtime/proc.c \
 	runtime/runtime_c.c \
 	runtime/stack.c \
-	runtime/thread.c \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
 	$(runtime_getncpu_file)
@@ -917,16 +920,14 @@ SYSINFO_FLAGS = \
 PACKAGES = $(shell cat $(srcdir)/libgo-packages.txt)
 libgo_go_objs = \
 	$(addsuffix .lo,$(PACKAGES)) \
-	bytes/index.lo \
 	internal/bytealg/bytealg.lo \
 	reflect/makefunc_ffi_c.lo \
-	strings/index.lo \
 	$(syscall_lib_clone_lo) \
 	syscall/errno.lo \
 	syscall/signame.lo \
 	syscall/wait.lo \
-	$(golang_org_x_net_lif_lo) \
-	$(golang_org_x_net_route_lo) \
+	$(internal_x_net_lif_lo) \
+	$(internal_x_net_route_lo) \
 	log/syslog/syslog_c.lo \
 	$(os_lib_inotify_lo) \
 	runtime/internal/atomic_c.lo \
@@ -991,7 +992,7 @@ BUILDDEPS = \
 BUILDPACKAGE = \
 	$(MKDIR_P) $(@D); \
 	files=`echo $^ | sed -e 's/[^ ]*\.gox//g' -e 's/[^ ]*\.dep//'`; \
-	$(LTGOCOMPILE) -I . -c -fgo-pkgpath=`echo $@ | sed -e 's/.lo$$//' -e 's|golang_org|vendor/golang_org|'` $($(subst -,_,$(subst .,_,$(subst /,_,$@)))_GOCFLAGS) -o $@ $$files
+	$(LTGOCOMPILE) -I . -c -fgo-pkgpath=`echo $@ | sed -e 's/.lo$$//'` $($(subst -,_,$(subst .,_,$(subst /,_,$@)))_GOCFLAGS) -o $@ $$files
 
 
 # How to build a .gox file from a .lo file.
@@ -1002,7 +1003,7 @@ BUILDGOX = \
 	if test ! -f $$f; then \
 	  f="$(basename $(<D)/.libs/$(<F)).o"; \
 	fi; \
-	$(OBJCOPY) -j .go_export $$f $@.tmp; \
+	$(OBJCOPY) -j $(GO_EXPORT_SECTION_NAME) $$f $@.tmp; \
 	$(SHELL) $(srcdir)/mvifdiff.sh $@.tmp `echo $@ | sed -e 's/s-gox/gox/'`
 
 GOTESTFLAGS = 
@@ -1105,6 +1106,7 @@ extra_check_libs_cmd_go_internal_cache = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_generate = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_get = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_load = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_lockedfile = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_imports = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_modconv = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_modfetch = $(abs_builddir)/libgotool.a
@@ -1123,22 +1125,22 @@ extra_check_libs_cmd_vet_internal_cfg = $(abs_builddir)/libgotool.a
 # Use a build tag, based on a configure check, to cope.
 @HAVE_STAT_TIMESPEC_TRUE@@LIBGO_IS_SOLARIS_TRUE@matchargs_os = --tag=solaristag
 @LIBGO_IS_SOLARIS_FALSE@matchargs_os = 
-@LIBGO_IS_BSD_TRUE@golang_org_x_net_route_lo = \
-@LIBGO_IS_BSD_TRUE@	golang_org/x/net/route.lo
+@LIBGO_IS_BSD_TRUE@internal_x_net_route_lo = \
+@LIBGO_IS_BSD_TRUE@	internal/x/net/route.lo
 
-@LIBGO_IS_BSD_TRUE@golang_org_x_net_route_check = \
-@LIBGO_IS_BSD_TRUE@	golang_org/x/net/route/check
+@LIBGO_IS_BSD_TRUE@internal_x_net_route_check = \
+@LIBGO_IS_BSD_TRUE@	internal/x/net/route/check
 
-@LIBGO_IS_SOLARIS_TRUE@golang_org_x_net_lif_lo = \
-@LIBGO_IS_SOLARIS_TRUE@	golang_org/x/net/lif.lo
+@LIBGO_IS_SOLARIS_TRUE@internal_x_net_lif_lo = \
+@LIBGO_IS_SOLARIS_TRUE@	internal/x/net/lif.lo
 
-@LIBGO_IS_SOLARIS_TRUE@golang_org_x_net_lif_check = \
-@LIBGO_IS_SOLARIS_TRUE@	golang_org/x/net/lif/check
+@LIBGO_IS_SOLARIS_TRUE@internal_x_net_lif_check = \
+@LIBGO_IS_SOLARIS_TRUE@	internal/x/net/lif/check
 
 TPACKAGES = $(shell cat $(srcdir)/check-packages.txt)
 TEST_PACKAGES = $(addsuffix /check,$(TPACKAGES)) \
-	$(golang_org_x_net_lif_check) \
-	$(golang_org_x_net_route_check)
+	$(internal_x_net_lif_check) \
+	$(internal_x_net_route_check)
 
 MOSTLYCLEANFILES = \
 	s-runtime_sysinfo s-sigtab s-runtime-inc s-zstdpkglist \
@@ -1375,13 +1377,13 @@ runtime/runtime_c.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/stack.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
-runtime/thread.lo: runtime/$(am__dirstamp) \
-	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/yield.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/rtems-task-variable-add.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/getncpu-none.lo: runtime/$(am__dirstamp) \
+	runtime/$(DEPDIR)/$(am__dirstamp)
+runtime/getncpu-hurd.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/getncpu-aix.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
@@ -1412,6 +1414,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/env_posix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/getncpu-aix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/getncpu-bsd.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/getncpu-hurd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/getncpu-irix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/getncpu-linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/getncpu-none.Plo@am__quote@
@@ -1451,7 +1454,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/rtems-task-variable-add.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/runtime_c.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/stack.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/thread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/yield.Plo@am__quote@
 
 .c.o:
@@ -2635,7 +2637,8 @@ cpugen.go: s-cpu; @true
 s-cpu: Makefile
 	rm -f cpugen.go.tmp
 	echo "package cpu" > cpugen.go.tmp
-	echo "const CacheLineSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) cachelinesize`" >> cpugen.go.tmp
+	echo "const CacheLinePadSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) cachelinesize`" >> cpugen.go.tmp
+	echo "const FunctionDescriptors = $(FUNCTION_DESCRIPTORS)" >> cpugen.go.tmp
 	$(SHELL) $(srcdir)/mvifdiff.sh cpugen.go.tmp cpugen.go
 	$(STAMP) $@
 
@@ -2653,7 +2656,7 @@ s-objabi: Makefile
 	echo 'const defaultGOARCH = runtime.GOARCH' >> objabi.go.tmp
 	echo 'const defaultGO_EXTLINK_ENABLED = ``' >> objabi.go.tmp
 	echo 'const version = `'`cat $(srcdir)/VERSION | sed 1q`' '`$(GOC) --version | sed 1q`'`' >> objabi.go.tmp
-	echo 'const stackGuardMultiplier = 1' >> objabi.go.tmp
+	echo 'const stackGuardMultiplierDefault = 1' >> objabi.go.tmp
 	echo 'const goexperiment = ``' >> objabi.go.tmp
 	$(SHELL) $(srcdir)/mvifdiff.sh objabi.go.tmp objabi.go
 	$(STAMP) $@
@@ -2846,13 +2849,7 @@ cmd/go/internal/cfg.lo.dep: $(extra_go_files_cmd_go_internal_cfg)
 # FIXME: The following C files may as well move to the runtime
 # directory and be treated like other C files.
 
-# Use C code to speed up {bytes,strings}.IndexByte and friends.
-bytes/index.lo: go/bytes/indexbyte.c runtime.inc
-	@$(MKDIR_P) bytes
-	$(LTCOMPILE) -c -o $@ $(srcdir)/go/bytes/indexbyte.c
-strings/index.lo: go/strings/indexbyte.c runtime.inc
-	@$(MKDIR_P) strings
-	$(LTCOMPILE) -c -o $@ $(srcdir)/go/strings/indexbyte.c
+# Use C code to speed up internal/bytealg.IndexByte and friends.
 internal/bytealg/bytealg.lo: go/internal/bytealg/bytealg.c runtime.inc
 	@$(MKDIR_P) internal/bytealg
 	$(LTCOMPILE) -c -o $@ $(srcdir)/go/internal/bytealg/bytealg.c
@@ -2895,13 +2892,13 @@ internal/cpu/cpu_gccgo.lo: go/internal/cpu/cpu_gccgo.c runtime.inc
 	@$(MKDIR_P) internal/cpu
 	$(LTCOMPILE) -c -o $@ $(srcdir)/go/internal/cpu/cpu_gccgo.c
 
-# Build golang_org/x/net/route only on BSD systems.
+# Build internal/x/net/route only on BSD systems.
 
-@LIBGO_IS_BSD_TRUE@$(eval $(call PACKAGE_template,golang_org/x/net/route))
+@LIBGO_IS_BSD_TRUE@$(eval $(call PACKAGE_template,internal/x/net/route))
 
-# Build golang_org/x/net/lif only on Solaris systems.
+# Build internal/x/net/lif only on Solaris systems.
 
-@LIBGO_IS_SOLARIS_TRUE@$(eval $(call PACKAGE_template,golang_org/x/net/lif))
+@LIBGO_IS_SOLARIS_TRUE@$(eval $(call PACKAGE_template,internal/x/net/lif))
 
 check: check-tail
 check-recursive: check-head

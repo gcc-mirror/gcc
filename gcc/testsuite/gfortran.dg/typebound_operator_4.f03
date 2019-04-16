@@ -54,7 +54,7 @@ CONTAINS
 
   SUBROUTINE in_module ()
     TYPE(myint) :: x
-    x = 0 ! { dg-bogus "Can't convert" }
+    x = 0 ! { dg-bogus "Cannot convert" }
     x = x + 42 ! { dg-bogus "Operands of" }
     x = x .PLUS. 5 ! { dg-bogus "Unknown operator" }
   END SUBROUTINE in_module
@@ -83,7 +83,7 @@ PROGRAM main
   IMPLICIT NONE
   TYPE(myint) :: x
 
-  x = 0 ! { dg-error "Can't convert" }
+  x = 0 ! { dg-error "Cannot convert" }
   x = x + 42 ! { dg-error "binary intrinsic numeric operator" }
   x = x .PLUS. 5 ! { dg-error "Unknown operator" }
 END PROGRAM main

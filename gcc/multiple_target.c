@@ -73,7 +73,7 @@ create_dispatcher_calls (struct cgraph_node *node)
   if (!targetm.has_ifunc_p ())
     {
       error_at (DECL_SOURCE_LOCATION (node->decl),
-		"the call requires ifunc, which is not"
+		"the call requires %<ifunc%>, which is not"
 		" supported by this target");
       return;
     }
@@ -103,10 +103,16 @@ create_dispatcher_calls (struct cgraph_node *node)
     inode->resolve_alias (cgraph_node::get (resolver_decl));
 
   auto_vec<cgraph_edge *> edges_to_redirect;
-  auto_vec<ipa_ref *> references_to_redirect;
+  /* We need to capture the references by value rather than just pointers to them
+     and remove them right away, as removing them later would invalidate what
+     some other reference pointers point to.  */
+  auto_vec<ipa_ref> references_to_redirect;
 
-  for (unsigned i = 0; node->iterate_referring (i, ref); i++)
-    references_to_redirect.safe_push (ref);
+  while (node->iterate_referring (0, ref))
+    {
+      references_to_redirect.safe_push (*ref);
+      ref->remove_reference ();
+    }
 
   /* We need to remember NEXT_CALLER as it could be modified in the loop.  */
   for (cgraph_edge *e = node->callers; e ; e = e->next_caller)
@@ -146,13 +152,11 @@ create_dispatcher_calls (struct cgraph_node *node)
 		}
 
 	      symtab_node *source = ref->referring;
-	      ref->remove_reference ();
 	      source->create_reference (inode, IPA_REF_ADDR);
 	    }
 	  else if (ref->use == IPA_REF_ALIAS)
 	    {
 	      symtab_node *source = ref->referring;
-	      ref->remove_reference ();
 	      source->create_reference (inode, IPA_REF_ALIAS);
 	      source->add_to_same_comdat_group (inode);
 	    }
@@ -231,8 +235,10 @@ get_attr_str (tree arglist, char *attr_str)
 }
 
 /* Return number of attributes separated by comma and put them into ARGS.
-   If there is no DEFAULT attribute return -1.  If there is an empty
-   string in attribute return -2.  */
+   If there is no DEFAULT attribute return -1.
+   If there is an empty string in attribute return -2.
+   If there are multiple DEFAULT attributes return -3.
+   */
 
 static int
 separate_attrs (char *attr_str, char **attrs, int attrnum)
@@ -252,6 +258,8 @@ separate_attrs (char *attr_str, char **attrs, int attrnum)
     }
   if (default_count == 0)
     return -1;
+  else if (default_count > 1)
+    return -3;
   else if (i + default_count < attrnum)
     return -2;
 
@@ -294,7 +302,8 @@ create_new_asm_name (char *old_asm_name, char *new_asm_name)
 /*  Creates target clone of NODE.  */
 
 static cgraph_node *
-create_target_clone (cgraph_node *node, bool definition, char *name)
+create_target_clone (cgraph_node *node, bool definition, char *name,
+		     tree attributes)
 {
   cgraph_node *new_node;
 
@@ -303,13 +312,16 @@ create_target_clone (cgraph_node *node, bool definition, char *name)
       new_node = node->create_version_clone_with_body (vNULL, NULL,
     						       NULL, false,
 						       NULL, NULL,
-						       name);
+						       name, attributes);
+      if (new_node == NULL)
+	return NULL;
       new_node->force_output = true;
     }
   else
     {
       tree new_decl = copy_node (node->decl);
       new_node = cgraph_node::get_create (new_decl);
+      DECL_ATTRIBUTES (new_decl) = attributes;
       /* Generate a new name for the new version.  */
       symtab->change_decl_assembler_name (new_node->decl,
 					  clone_function_name_numbered (
@@ -339,8 +351,7 @@ expand_target_clones (struct cgraph_node *node, bool definition)
   if (attr_len == -1)
     {
       warning_at (DECL_SOURCE_LOCATION (node->decl),
-		  0,
-		  "single %<target_clones%> attribute is ignored");
+		  0, "single %<target_clones%> attribute is ignored");
       return false;
     }
 
@@ -366,18 +377,26 @@ expand_target_clones (struct cgraph_node *node, bool definition)
   char **attrs = XNEWVEC (char *, attrnum);
 
   attrnum = separate_attrs (attr_str, attrs, attrnum);
-  if (attrnum == -1)
+  switch (attrnum)
     {
+    case -1:
       error_at (DECL_SOURCE_LOCATION (node->decl),
-		"default target was not set");
-      XDELETEVEC (attrs);
-      XDELETEVEC (attr_str);
-      return false;
-    }
-  else if (attrnum == -2)
-    {
+		"%<default%> target was not set");
+      break;
+    case -2:
       error_at (DECL_SOURCE_LOCATION (node->decl),
 		"an empty string cannot be in %<target_clones%> attribute");
+      break;
+    case -3:
+      error_at (DECL_SOURCE_LOCATION (node->decl),
+		"multiple %<default%> targets were set");
+      break;
+    default:
+      break;
+    }
+
+  if (attrnum < 0)
+    {
       XDELETEVEC (attrs);
       XDELETEVEC (attr_str);
       return false;
@@ -400,22 +419,16 @@ expand_target_clones (struct cgraph_node *node, bool definition)
 
       create_new_asm_name (attr, suffix);
       /* Create new target clone.  */
-      cgraph_node *new_node = create_target_clone (node, definition, suffix);
+      tree attributes = make_attribute ("target", attr,
+					DECL_ATTRIBUTES (node->decl));
+
+      cgraph_node *new_node = create_target_clone (node, definition, suffix,
+						   attributes);
+      if (new_node == NULL)
+	return false;
       new_node->local.local = false;
       XDELETEVEC (suffix);
 
-      /* Set new attribute for the clone.  */
-      tree attributes = make_attribute ("target", attr,
-					DECL_ATTRIBUTES (new_node->decl));
-      DECL_ATTRIBUTES (new_node->decl) = attributes;
-      location_t saved_loc = input_location;
-      input_location = DECL_SOURCE_LOCATION (node->decl);
-      if (!targetm.target_option.valid_attribute_p (new_node->decl, NULL,
-						    TREE_VALUE (attributes),
-						    0))
-	return false;
-
-      input_location = saved_loc;
       decl2_v = new_node->function_version ();
       if (decl2_v != NULL)
         continue;
@@ -442,13 +455,7 @@ expand_target_clones (struct cgraph_node *node, bool definition)
 				    DECL_ATTRIBUTES (node->decl));
   DECL_ATTRIBUTES (node->decl) = attributes;
   node->local.local = false;
-  location_t saved_loc = input_location;
-  input_location = DECL_SOURCE_LOCATION (node->decl);
-  bool ret
-    = targetm.target_option.valid_attribute_p (node->decl, NULL,
-					       TREE_VALUE (attributes), 0);
-  input_location = saved_loc;
-  return ret;
+  return true;
 }
 
 /* When NODE is a target clone, consider all callees and redirect

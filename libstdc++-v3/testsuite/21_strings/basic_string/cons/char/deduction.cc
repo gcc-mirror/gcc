@@ -123,6 +123,27 @@ test04()
 void
 test05()
 {
+#ifdef _GLIBCXX_USE_CHAR8_T
+  char8_t a[1] = {};
+  input_iterator_seq<char8_t> seq(a);
+
+  std::basic_string s1(seq.begin(), seq.end());
+  check_type<std::u8string>(s1);
+
+  std::basic_string s2(seq.begin(), seq.end(), std::allocator<char8_t>());
+  check_type<std::u8string>(s2);
+
+  std::basic_string s3((char8_t)1, u8'a');
+  check_type<std::u8string>(s3);
+
+  std::basic_string s4((char8_t)1, u8'a', std::allocator<char8_t>());
+  check_type<std::u8string>(s4);
+#endif
+}
+
+void
+test06()
+{
   // LWG 3075 basic_string needs deduction guides from basic_string_view
   std::string_view sv{"A View to a Kill"};
   const std::allocator<char> a;
@@ -141,7 +162,7 @@ test05()
 }
 
 void
-test06()
+test07()
 {
   // LWG 3076 basic_string CTAD ambiguity
   using namespace std;

@@ -67,6 +67,9 @@ int main()
 #ifdef _GLIBCXX_USE_WCHAR_T
   test.operator()<std::char_traits<wchar_t>>();
 #endif
+#ifdef _GLIBCXX_USE_CHAR8_T
+  test.operator()<std::char_traits<char8_t>>();
+#endif
   test.operator()<std::char_traits<char16_t>>();
   test.operator()<std::char_traits<char32_t>>();
   return 0;

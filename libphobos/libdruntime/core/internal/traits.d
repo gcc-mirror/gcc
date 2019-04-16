@@ -128,6 +128,30 @@ template dtorIsNothrow(T)
     enum dtorIsNothrow = is(typeof(function{T t=void;}) : void function() nothrow);
 }
 
+/*
+Tests whether all given items satisfy a template predicate, i.e. evaluates to
+$(D F!(T[0]) && F!(T[1]) && ... && F!(T[$ - 1])).
+*/
+package(core.internal)
+template allSatisfy(alias F, T...)
+{
+    static if (T.length == 0)
+    {
+        enum allSatisfy = true;
+    }
+    else static if (T.length == 1)
+    {
+        enum allSatisfy = F!(T[0]);
+    }
+    else
+    {
+        static if (allSatisfy!(F, T[0  .. $/2]))
+            enum allSatisfy = allSatisfy!(F, T[$/2 .. $]);
+        else
+            enum allSatisfy = false;
+    }
+}
+
 template anySatisfy(alias F, T...)
 {
     static if (T.length == 0)
@@ -144,6 +168,29 @@ template anySatisfy(alias F, T...)
             anySatisfy!(F, T[ 0  .. $/2]) ||
             anySatisfy!(F, T[$/2 ..  $ ]);
     }
+}
+
+// simplified from std.traits.maxAlignment
+template maxAlignment(U...)
+{
+    static if (U.length == 0)
+        static assert(0);
+    else static if (U.length == 1)
+        enum maxAlignment = U[0].alignof;
+    else static if (U.length == 2)
+        enum maxAlignment = U[0].alignof > U[1].alignof ? U[0].alignof : U[1].alignof;
+    else
+    {
+        enum a = maxAlignment!(U[0 .. ($+1)/2]);
+        enum b = maxAlignment!(U[($+1)/2 .. $]);
+        enum maxAlignment = a > b ? a : b;
+    }
+}
+
+template classInstanceAlignment(T)
+if (is(T == class))
+{
+    alias classInstanceAlignment = maxAlignment!(void*, typeof(T.tupleof));
 }
 
 // Somehow fails for non-static nested structs without support for aliases

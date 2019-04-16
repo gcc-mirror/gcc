@@ -15,22 +15,22 @@ import core.stdc.config;
 struct Elf32_Dyn
 {
     Elf32_Sword d_tag;
-    union d_un
+    union _d_un
     {
         Elf32_Word d_val;
         Elf32_Addr d_ptr;
         Elf32_Off  d_off;
-    }
+    } _d_un d_un;
 }
 
 struct Elf64_Dyn
 {
     Elf64_Xword d_tag;
-    union d_un
+    union _d_un
     {
         Elf64_Xword d_val;
         Elf64_Addr  d_ptr;
-    }
+    } _d_un d_un;
 }
 
 enum DT_NULL         = 0;

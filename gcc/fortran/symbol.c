@@ -525,7 +525,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   /* The copying of procedure dummy arguments for module procedures in
      a submodule occur whilst the current state is COMP_CONTAINS. It
      is necessary, therefore, to let this through.  */
-  if (attr->dummy
+  if (name && attr->dummy
       && (attr->function || attr->subroutine)
       && gfc_current_state () == COMP_CONTAINS
       && !(gfc_new_block && gfc_new_block->abr_modproc_decl))
@@ -557,6 +557,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 
   conf (external, intrinsic);
   conf (entry, intrinsic);
+  conf (abstract, intrinsic);
 
   if ((attr->if_source == IFSRC_DECL && !attr->procedure) || attr->contained)
     conf (external, subroutine);
@@ -1306,7 +1307,8 @@ gfc_add_save (symbol_attribute *attr, save_state s, const char *name,
   if (s == SAVE_EXPLICIT)
     gfc_unset_implicit_pure (NULL);
 
-  if (s == SAVE_EXPLICIT && attr->save == SAVE_EXPLICIT)
+  if (s == SAVE_EXPLICIT && attr->save == SAVE_EXPLICIT
+      && (flag_automatic || pedantic))
     {
 	if (!gfc_notify_std (GFC_STD_LEGACY,
 			     "Duplicate SAVE attribute specified at %L",
@@ -1688,7 +1690,15 @@ gfc_add_subroutine (symbol_attribute *attr, const char *name, locus *where)
     return false;
 
   attr->subroutine = 1;
-  return check_conflict (attr, name, where);
+
+  /* If we are looking at a BLOCK DATA statement and we encounter a
+     name with a leading underscore (which must be
+     compiler-generated), do not check. See PR 84394.  */
+
+  if (name && *name != '_' && gfc_current_state () != COMP_BLOCK_DATA)
+    return check_conflict (attr, name, where);
+  else
+    return true;
 }
 
 
@@ -1804,7 +1814,8 @@ gfc_add_procedure (symbol_attribute *attr, procedure_type t,
   if (where == NULL)
     where = &gfc_current_locus;
 
-  if (attr->proc != PROC_UNKNOWN && !attr->module_procedure)
+  if (attr->proc != PROC_UNKNOWN && !attr->module_procedure
+      && attr->access == ACCESS_UNKNOWN)
     {
       if (attr->proc == PROC_ST_FUNCTION && t == PROC_INTERNAL
 	  && !gfc_notification_std (GFC_STD_F2008))
@@ -2742,10 +2753,6 @@ gfc_define_st_label (gfc_st_label *lp, gfc_sl_type type, locus *label_locus)
 				  "DO termination statement which is not END DO"
 				  " or CONTINUE with label %d at %C", labelno))
 	    return;
-	  if (type == ST_LABEL_DO_TARGET
-	      && !gfc_notify_std (GFC_STD_F2018_OBS, "Labeled DO statement "
-				  "at %L", label_locus))
-	    return;
 	  break;
 
 	default:
@@ -2801,6 +2808,11 @@ gfc_reference_st_label (gfc_st_label *lp, gfc_sl_type type)
   if (lp->referenced == ST_LABEL_DO_TARGET && type == ST_LABEL_DO_TARGET
       && !gfc_notify_std (GFC_STD_F95_OBS | GFC_STD_F2018_DEL,
 			  "Shared DO termination label %d at %C", labelno))
+    return false;
+
+  if (type == ST_LABEL_DO_TARGET
+      && !gfc_notify_std (GFC_STD_F2018_OBS, "Labeled DO statement "
+			  "at %L", &gfc_current_locus))
     return false;
 
   if (lp->referenced != ST_LABEL_DO_TARGET)
@@ -4327,7 +4339,7 @@ gsym_compare (void *_s1, void *_s2)
 /* Get a global symbol, creating it if it doesn't exist.  */
 
 gfc_gsymbol *
-gfc_get_gsymbol (const char *name)
+gfc_get_gsymbol (const char *name, bool bind_c)
 {
   gfc_gsymbol *s;
 
@@ -4338,6 +4350,7 @@ gfc_get_gsymbol (const char *name)
   s = XCNEW (gfc_gsymbol);
   s->type = GSYM_UNKNOWN;
   s->name = gfc_get_string ("%s", name);
+  s->bind_c = bind_c;
 
   gfc_insert_bbt (&gfc_gsym_root, s, gsym_compare);
 
@@ -4470,7 +4483,7 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
 	  && curr_comp->ts.u.derived->ts.is_iso_c != 1
           && curr_comp->ts.u.derived != derived_sym)
         {
-          /* This should be allowed; the draft says a derived-type can not
+          /* This should be allowed; the draft says a derived-type cannot
              have type parameters if it is has the BIND attribute.  Type
              parameters seem to be for making parameterized derived types.
              There's no need to verify the type if it is c_ptr/c_funptr.  */

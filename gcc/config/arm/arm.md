@@ -287,7 +287,7 @@
 ; CLOB means that the condition codes are altered in an undefined manner, if
 ;   they are altered at all
 ;
-; UNCONDITIONAL means the instruction can not be conditionally executed and
+; UNCONDITIONAL means the instruction cannot be conditionally executed and
 ;   that the instruction does not use or alter the condition codes.
 ;
 ; NOCOND means that the instruction does not use or alter the condition
@@ -857,20 +857,31 @@
    (set_attr "type" "alus_sreg")]
 )
 
-;; This is the canonicalization of addsi3_compare0_for_combiner when the
+;; This is the canonicalization of subsi3_compare when the
 ;; addend is a constant.
 (define_insn "cmpsi2_addneg"
   [(set (reg:CC CC_REGNUM)
 	(compare:CC
 	 (match_operand:SI 1 "s_register_operand" "r,r")
-	 (match_operand:SI 2 "arm_addimm_operand" "L,I")))
+	 (match_operand:SI 2 "arm_addimm_operand" "I,L")))
    (set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(plus:SI (match_dup 1)
-		 (match_operand:SI 3 "arm_addimm_operand" "I,L")))]
-  "TARGET_32BIT && INTVAL (operands[2]) == -INTVAL (operands[3])"
-  "@
-   adds%?\\t%0, %1, %3
-   subs%?\\t%0, %1, #%n3"
+		 (match_operand:SI 3 "arm_addimm_operand" "L,I")))]
+  "TARGET_32BIT
+   && (INTVAL (operands[2])
+       == trunc_int_for_mode (-INTVAL (operands[3]), SImode))"
+{
+  /* For 0 and INT_MIN it is essential that we use subs, as adds will result
+     in different condition codes (like cmn rather than like cmp), so that
+     alternative comes first.  Both alternatives can match for any 0x??000000
+     where except for 0 and INT_MIN it doesn't matter what we choose, and also
+     for -1 and 1 with TARGET_THUMB2, in that case prefer instruction with #1
+     as it is shorter.  */
+  if (which_alternative == 0 && operands[3] != const1_rtx)
+    return "subs%?\\t%0, %1, #%n3";
+  else
+    return "adds%?\\t%0, %1, %3";
+}
   [(set_attr "conds" "set")
    (set_attr "type" "alus_sreg")]
 )
@@ -1145,10 +1156,20 @@
 (define_insn "*subsi3_carryin_const"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
         (minus:SI (plus:SI (match_operand:SI 1 "s_register_operand" "r")
-                           (match_operand:SI 2 "arm_not_immediate_operand" "K"))
+                           (match_operand:SI 2 "arm_neg_immediate_operand" "L"))
                   (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
   "TARGET_32BIT"
-  "sbc\\t%0, %1, #%B2"
+  "sbc\\t%0, %1, #%n2"
+  [(set_attr "conds" "use")
+   (set_attr "type" "adc_imm")]
+)
+
+(define_insn "*subsi3_carryin_const0"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+        (minus:SI (match_operand:SI 1 "s_register_operand" "r")
+                  (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  "TARGET_32BIT"
+  "sbc\\t%0, %1, #0"
   [(set_attr "conds" "use")
    (set_attr "type" "adc_imm")]
 )
@@ -1170,13 +1191,28 @@
 (define_insn "*subsi3_carryin_compare_const"
   [(set (reg:CC CC_REGNUM)
         (compare:CC (match_operand:SI 1 "reg_or_int_operand" "r")
-                    (match_operand:SI 2 "arm_not_operand" "K")))
+                    (match_operand:SI 2 "const_int_I_operand" "I")))
    (set (match_operand:SI 0 "s_register_operand" "=r")
         (minus:SI (plus:SI (match_dup 1)
-                           (match_dup 2))
+                           (match_operand:SI 3 "arm_neg_immediate_operand" "L"))
+                  (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  "TARGET_32BIT
+   && (INTVAL (operands[2])
+       == trunc_int_for_mode (-INTVAL (operands[3]), SImode))"
+  "sbcs\\t%0, %1, #%n3"
+  [(set_attr "conds" "set")
+   (set_attr "type" "adcs_imm")]
+)
+
+(define_insn "*subsi3_carryin_compare_const0"
+  [(set (reg:CC CC_REGNUM)
+        (compare:CC (match_operand:SI 1 "reg_or_int_operand" "r")
+		    (const_int 0)))
+   (set (match_operand:SI 0 "s_register_operand" "=r")
+        (minus:SI (match_dup 1)
                   (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
   "TARGET_32BIT"
-  "sbcs\\t%0, %1, #%B2"
+  "sbcs\\t%0, %1, #0"
   [(set_attr "conds" "set")
    (set_attr "type" "adcs_imm")]
 )
@@ -1301,14 +1337,13 @@
   [(parallel [(set (reg:CC CC_REGNUM)
 		   (compare:CC (match_dup 1) (match_dup 2)))
 	      (set (match_dup 0) (minus:SI (match_dup 1) (match_dup 2)))])
-   (set (match_dup 3) (minus:SI (plus:SI (match_dup 4) (match_dup 5))
+   (set (match_dup 3) (minus:SI (match_dup 4)
                                 (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
   {
     operands[3] = gen_highpart (SImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
     operands[4] = gen_highpart (SImode, operands[1]);
     operands[1] = gen_lowpart (SImode, operands[1]);
-    operands[5] = GEN_INT (~0);
    }
   [(set_attr "conds" "clob")
    (set_attr "length" "8")
@@ -5817,8 +5852,8 @@
 )
 
 (define_insn "*arm_movdi"
-  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r, r, q, m")
-	(match_operand:DI 1 "di_operand"              "rDa,Db,Dc,mi,q"))]
+  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r, r, r, m")
+	(match_operand:DI 1 "di_operand"              "rDa,Db,Dc,mi,r"))]
   "TARGET_32BIT
    && !(TARGET_HARD_FLOAT)
    && !TARGET_IWMMXT
@@ -5981,53 +6016,29 @@
         }
     }
 
-  if (ARM_OFFSETS_MUST_BE_WITHIN_SECTIONS_P)
+  split_const (operands[1], &base, &offset);
+  if (INTVAL (offset) != 0
+      && targetm.cannot_force_const_mem (SImode, operands[1]))
     {
-      split_const (operands[1], &base, &offset);
-      if (GET_CODE (base) == SYMBOL_REF
-	  && !offset_within_block_p (base, INTVAL (offset)))
-	{
-	  tmp = can_create_pseudo_p () ? gen_reg_rtx (SImode) : operands[0];
-	  emit_move_insn (tmp, base);
-	  emit_insn (gen_addsi3 (operands[0], tmp, offset));
-	  DONE;
-	}
+      tmp = can_create_pseudo_p () ? gen_reg_rtx (SImode) : operands[0];
+      emit_move_insn (tmp, base);
+      emit_insn (gen_addsi3 (operands[0], tmp, offset));
+      DONE;
     }
+
+  tmp = can_create_pseudo_p () ? NULL_RTX : operands[0];
 
   /* Recognize the case where operand[1] is a reference to thread-local
-     data and load its address to a register.  */
+     data and load its address to a register.  Offsets have been split off
+     already.  */
   if (arm_tls_referenced_p (operands[1]))
-    {
-      rtx tmp = operands[1];
-      rtx addend = NULL;
-
-      if (GET_CODE (tmp) == CONST && GET_CODE (XEXP (tmp, 0)) == PLUS)
-        {
-          addend = XEXP (XEXP (tmp, 0), 1);
-          tmp = XEXP (XEXP (tmp, 0), 0);
-        }
-
-      gcc_assert (GET_CODE (tmp) == SYMBOL_REF);
-      gcc_assert (SYMBOL_REF_TLS_MODEL (tmp) != 0);
-
-      tmp = legitimize_tls_address (tmp,
-				    !can_create_pseudo_p () ? operands[0] : 0);
-      if (addend)
-        {
-          tmp = gen_rtx_PLUS (SImode, tmp, addend);
-          tmp = force_operand (tmp, operands[0]);
-        }
-      operands[1] = tmp;
-    }
+    operands[1] = legitimize_tls_address (operands[1], tmp);
   else if (flag_pic
 	   && (CONSTANT_P (operands[1])
 	       || symbol_mentioned_p (operands[1])
 	       || label_mentioned_p (operands[1])))
-      operands[1] = legitimize_pic_address (operands[1], SImode,
-					    (!can_create_pseudo_p ()
-					     ? operands[0]
-					     : NULL_RTX), NULL_RTX,
-					    false /*compute_now*/);
+    operands[1] =
+      legitimize_pic_address (operands[1], SImode, tmp, NULL_RTX, false);
   }
   "
 )
@@ -7102,8 +7113,8 @@
 )
 
 (define_insn "*movdf_soft_insn"
-  [(set (match_operand:DF 0 "nonimmediate_soft_df_operand" "=r,r,r,q,m")
-	(match_operand:DF 1 "soft_df_operand" "rDa,Db,Dc,mF,q"))]
+  [(set (match_operand:DF 0 "nonimmediate_soft_df_operand" "=r,r,r,r,m")
+	(match_operand:DF 1 "soft_df_operand" "rDa,Db,Dc,mF,r"))]
   "TARGET_32BIT && TARGET_SOFT_FLOAT
    && (   register_operand (operands[0], DFmode)
        || register_operand (operands[1], DFmode))"
@@ -7406,7 +7417,7 @@
 )
 
 ;; DImode comparisons.  The generic code generates branches that
-;; if-conversion can not reduce to a conditional compare, so we do
+;; if-conversion cannot reduce to a conditional compare, so we do
 ;; that directly.
 
 (define_insn_and_split "*arm_cmpdi_insn"
@@ -7423,16 +7434,19 @@
                    (compare:CC (match_dup 3) (match_dup 4)))
               (set (match_dup 2)
                    (minus:SI (match_dup 5)
-                            (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))])]
+			     (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))])]
   {
     operands[3] = gen_highpart (SImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
     if (CONST_INT_P (operands[1]))
       {
-        operands[4] = GEN_INT (~INTVAL (gen_highpart_mode (SImode,
-                                                           DImode,
-                                                           operands[1])));
-        operands[5] = gen_rtx_PLUS (SImode, operands[3], operands[4]);
+	operands[4] = gen_highpart_mode (SImode, DImode, operands[1]);
+	if (operands[4] == const0_rtx)
+	  operands[5] = operands[3];
+	else
+	  operands[5] = gen_rtx_PLUS (SImode, operands[3],
+				      gen_int_mode (-UINTVAL (operands[4]),
+						    SImode));
       }
     else
       {
@@ -8914,16 +8928,35 @@
 
 ;; The USE in this pattern is needed to tell flow analysis that this is
 ;; a CASESI insn.  It has no other purpose.
-(define_insn "arm_casesi_internal"
+(define_expand "arm_casesi_internal"
+  [(parallel [(set (pc)
+	       (if_then_else
+		(leu (match_operand:SI 0 "s_register_operand")
+		     (match_operand:SI 1 "arm_rhs_operand"))
+		(match_dup 4)
+		(label_ref:SI (match_operand 3 ""))))
+	      (clobber (reg:CC CC_REGNUM))
+	      (use (label_ref:SI (match_operand 2 "")))])]
+  "TARGET_ARM"
+{
+  operands[4] = gen_rtx_MULT (SImode, operands[0], GEN_INT (4));
+  operands[4] = gen_rtx_PLUS (SImode, operands[4],
+			      gen_rtx_LABEL_REF (SImode, operands[2]));
+  operands[4] = gen_rtx_MEM (SImode, operands[4]);
+  MEM_READONLY_P (operands[4]) = 1;
+  MEM_NOTRAP_P (operands[4]) = 1;
+})
+
+(define_insn "*arm_casesi_internal"
   [(parallel [(set (pc)
 	       (if_then_else
 		(leu (match_operand:SI 0 "s_register_operand" "r")
 		     (match_operand:SI 1 "arm_rhs_operand" "rI"))
 		(mem:SI (plus:SI (mult:SI (match_dup 0) (const_int 4))
-				 (label_ref (match_operand 2 "" ""))))
-		(label_ref (match_operand 3 "" ""))))
+				 (label_ref:SI (match_operand 2 "" ""))))
+		(label_ref:SI (match_operand 3 "" ""))))
 	      (clobber (reg:CC CC_REGNUM))
-	      (use (label_ref (match_dup 2)))])]
+	      (use (label_ref:SI (match_dup 2)))])]
   "TARGET_ARM"
   "*
     if (flag_pic)
@@ -9256,7 +9289,7 @@
    (cond_exec (ne:CC (reg:CC CC_REGNUM) (const_int 0))
 	      (set (match_dup 0) (const_int 1)))]
 {
-  operands[3] = GEN_INT (-INTVAL (operands[2]));
+  operands[3] = gen_int_mode (-INTVAL (operands[2]), SImode);
 })
 
 (define_split
@@ -10036,7 +10069,8 @@
         /* Emit subs\\t%0, %1, %2\;mvnne\\t%0, #0 */
         if (CONST_INT_P (operands[2]))
           emit_insn (gen_cmpsi2_addneg (operands[0], operands[1], operands[2],
-                                        GEN_INT (- INTVAL (operands[2]))));
+                                        gen_int_mode (-INTVAL (operands[2]),
+						      SImode)));
         else
           emit_insn (gen_subsi3_compare (operands[0], operands[1], operands[2]));
 

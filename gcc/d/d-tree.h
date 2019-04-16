@@ -59,7 +59,8 @@ typedef Array<Expression *> Expressions;
 
    Usage of DECL_LANG_FLAG_?:
    0: LABEL_VARIABLE_CASE (in LABEL_DECL).
-      DECL_BUILT_IN_CTFE (in FUNCTION_DECL).  */
+      DECL_BUILT_IN_CTFE (in FUNCTION_DECL).
+   1: DECL_IN_UNITTEST_CONDITION_P (in FUNCTION_DECL).  */
 
 /* The kinds of scopes we recognize.  */
 
@@ -380,6 +381,10 @@ lang_tree_node
 #define DECL_BUILT_IN_CTFE(NODE) \
   (DECL_LANG_FLAG_0 (FUNCTION_DECL_CHECK (NODE)))
 
+/* True if the decl is only compiled in when unittests are turned on.  */
+#define DECL_IN_UNITTEST_CONDITION_P(NODE) \
+  (DECL_LANG_FLAG_1 (FUNCTION_DECL_CHECK (NODE)))
+
 enum d_tree_index
 {
   DTI_VTABLE_ENTRY_TYPE,
@@ -511,6 +516,7 @@ extern tree delegate_object (tree);
 extern tree build_delegate_cst (tree, tree, Type *);
 extern tree build_method_call (tree, tree, Type *);
 extern void extract_from_method_call (tree, tree &, tree &);
+extern tree build_typeof_null_value (Type *);
 extern tree build_vindex_ref (tree, tree, size_t);
 extern tree d_save_expr (tree);
 extern tree stabilize_expr (tree *);
@@ -521,6 +527,7 @@ extern tree d_mark_addressable (tree);
 extern tree d_mark_used (tree);
 extern tree d_mark_read (tree);
 extern bool identity_compare_p (StructDeclaration *);
+extern tree build_float_identity (tree_code, tree, tree);
 extern tree build_struct_comparison (tree_code, StructDeclaration *,
 				     tree, tree);
 extern tree build_array_struct_comparison (tree_code, StructDeclaration *,

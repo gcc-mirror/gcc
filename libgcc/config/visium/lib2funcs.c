@@ -315,7 +315,9 @@ __set_trampoline_parity (UWtype *addr)
 {
   int i;
 
-  for (i = 0; i < (TRAMPOLINE_SIZE * __CHAR_BIT__) / W_TYPE_SIZE; i++)
+  for (i = 0;
+       i < (__LIBGCC_TRAMPOLINE_SIZE__ * __CHAR_BIT__) / W_TYPE_SIZE;
+       i++)
     addr[i] |= parity_bit (addr[i]);
 }
 #endif

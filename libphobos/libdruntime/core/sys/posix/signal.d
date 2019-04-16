@@ -27,6 +27,7 @@ else version (WatchOS)
 
 version (ARM)     version = ARM_Any;
 version (AArch64) version = ARM_Any;
+version (HPPA)    version = HPPA_Any;
 version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
@@ -257,6 +258,30 @@ version (linux)
         enum SIGUSR1    = 10;
         enum SIGUSR2    = 12;
         enum SIGURG     = 23;
+    }
+    else version (HPPA_Any)
+    {
+        //SIGABRT (defined in core.stdc.signal)
+        enum SIGALRM    = 14;
+        enum SIGBUS     = 10;
+        enum SIGCHLD    = 18;
+        enum SIGCONT    = 26;
+        //SIGFPE (defined in core.stdc.signal)
+        enum SIGHUP     = 1;
+        //SIGILL (defined in core.stdc.signal)
+        //SIGINT (defined in core.stdc.signal)
+        enum SIGKILL    = 9;
+        enum SIGPIPE    = 13;
+        enum SIGQUIT    = 3;
+        //SIGSEGV (defined in core.stdc.signal)
+        enum SIGSTOP    = 24;
+        //SIGTERM (defined in core.stdc.signal)
+        enum SIGTSTP    = 25;
+        enum SIGTTIN    = 27;
+        enum SIGTTOU    = 28;
+        enum SIGUSR1    = 16;
+        enum SIGUSR2    = 17;
+        enum SIGURG     = 29;
     }
     else version (MIPS_Any)
     {
@@ -718,37 +743,7 @@ else version (CRuntime_UClibc)
 }
 else version (CRuntime_Bionic)
 {
-    version (X86)
-    {
-        struct sigaction_t
-        {
-            union
-            {
-                sigfn_t    sa_handler;
-                sigactfn_t sa_sigaction;
-            }
-
-            sigset_t        sa_mask;
-            int             sa_flags;
-            void function() sa_restorer;
-        }
-    }
-    else version (ARM)
-    {
-        struct sigaction_t
-        {
-            union
-            {
-                sigfn_t    sa_handler;
-                sigactfn_t sa_sigaction;
-            }
-
-            sigset_t        sa_mask;
-            int             sa_flags;
-            void function() sa_restorer;
-        }
-    }
-    else version (AArch64)
+    version (D_LP64)
     {
         struct sigaction_t
         {
@@ -765,7 +760,18 @@ else version (CRuntime_Bionic)
     }
     else
     {
-        static assert(false, "Architecture not supported.");
+        struct sigaction_t
+        {
+            union
+            {
+                sigfn_t    sa_handler;
+                sigactfn_t sa_sigaction;
+            }
+
+            sigset_t        sa_mask;
+            int             sa_flags;
+            void function() sa_restorer;
+        }
     }
 }
 else version (Darwin)
@@ -1412,8 +1418,8 @@ else version (Solaris)
                 caddr_t __faddr;
                 timestruc_t __tstamp;
                 short __syscall;
-                char __nsysarg;
-                char __fault;
+                char __nsysarg = 0;
+                char __fault = 0;
                 c_long[8] __sysarg;
                 int[10] __mstate;
             }
@@ -1450,17 +1456,22 @@ else version (CRuntime_Bionic)
 
     version (X86)
     {
-        alias c_ulong sigset_t;
+        alias uint sigset_t;
         enum int LONG_BIT = 32;
     }
     else version (ARM)
     {
-        alias c_ulong sigset_t;
+        alias uint sigset_t;
         enum int LONG_BIT = 32;
     }
     else version (AArch64)
     {
         struct sigset_t { ulong[1] sig; }
+        enum int LONG_BIT = 64;
+    }
+    else version (X86_64)
+    {
+        alias ulong sigset_t;
         enum int LONG_BIT = 64;
     }
     else
@@ -1589,7 +1600,7 @@ else version (CRuntime_Musl)
     struct siginfo_t {
         int si_signo, si_errno, si_code;
         union __si_fields_t {
-            char[128 - 2*int.sizeof - long.sizeof] __pad;
+            char[128 - 2*int.sizeof - long.sizeof] __pad = 0;
             struct __si_common_t {
                 union __first_t {
                     struct __piduid_t {
@@ -2014,6 +2025,16 @@ version (CRuntime_Glibc)
         enum SIGVTALRM      = 26;
         enum SIGXCPU        = 24;
         enum SIGXFSZ        = 25;
+    }
+    else version (HPPA_Any)
+    {
+        enum SIGPOLL    = 22;
+        enum SIGPROF    = 21;
+        enum SIGSYS     = 31;
+        enum SIGTRAP    = 5;
+        enum SIGVTALRM  = 20;
+        enum SIGXCPU    = 12;
+        enum SIGXFSZ    = 30;
     }
     else version (MIPS_Any)
     {
@@ -2908,93 +2929,30 @@ else version (Solaris)
 }
 else version (CRuntime_Bionic)
 {
-    version (X86)
+    enum SIGPOLL   = 29;
+    enum SIGPROF   = 27;
+    enum SIGSYS    = 31;
+    enum SIGTRAP   = 5;
+    enum SIGVTALRM = 26;
+    enum SIGXCPU   = 24;
+    enum SIGXFSZ   = 25;
+
+    enum SA_ONSTACK     = 0x08000000;
+    enum SA_RESETHAND   = 0x80000000;
+    enum SA_RESTART     = 0x10000000;
+    enum SA_SIGINFO     = 4;
+    enum SA_NOCLDWAIT   = 2;
+    enum SA_NODEFER     = 0x40000000;
+    enum SS_ONSTACK     = 1;
+    enum SS_DISABLE     = 2;
+    enum MINSIGSTKSZ    = 2048;
+    enum SIGSTKSZ       = 8192;
+
+    struct stack_t
     {
-        enum SIGPOLL   = 29;
-        enum SIGPROF   = 27;
-        enum SIGSYS    = 31;
-        enum SIGTRAP   = 5;
-        enum SIGVTALRM = 26;
-        enum SIGXCPU   = 24;
-        enum SIGXFSZ   = 25;
-
-        enum SA_ONSTACK     = 0x08000000;
-        enum SA_RESETHAND   = 0x80000000;
-        enum SA_RESTART     = 0x10000000;
-        enum SA_SIGINFO     = 4;
-        enum SA_NOCLDWAIT   = 2;
-        enum SA_NODEFER     = 0x40000000;
-        enum SS_ONSTACK     = 1;
-        enum SS_DISABLE     = 2;
-        enum MINSIGSTKSZ    = 2048;
-        enum SIGSTKSZ       = 8192;
-
-        struct stack_t
-        {
-            void*   ss_sp;
-            int     ss_flags;
-            size_t  ss_size;
-        }
-    }
-    else version (ARM)
-    {
-        enum SIGPOLL   = 29;
-        enum SIGPROF   = 27;
-        enum SIGSYS    = 31;
-        enum SIGTRAP   = 5;
-        enum SIGVTALRM = 26;
-        enum SIGXCPU   = 24;
-        enum SIGXFSZ   = 25;
-
-        enum SA_ONSTACK     = 0x08000000;
-        enum SA_RESETHAND   = 0x80000000;
-        enum SA_RESTART     = 0x10000000;
-        enum SA_SIGINFO     = 4;
-        enum SA_NOCLDWAIT   = 2;
-        enum SA_NODEFER     = 0x40000000;
-        enum SS_ONSTACK     = 1;
-        enum SS_DISABLE     = 2;
-        enum MINSIGSTKSZ    = 2048;
-        enum SIGSTKSZ       = 8192;
-
-        struct stack_t
-        {
-            void*   ss_sp;
-            int     ss_flags;
-            size_t  ss_size;
-        }
-    }
-    else version (AArch64)
-    {
-        enum SIGPOLL   = 29;
-        enum SIGPROF   = 27;
-        enum SIGSYS    = 31;
-        enum SIGTRAP   = 5;
-        enum SIGVTALRM = 26;
-        enum SIGXCPU   = 24;
-        enum SIGXFSZ   = 25;
-
-        enum SA_ONSTACK     = 0x08000000;
-        enum SA_RESETHAND   = 0x80000000;
-        enum SA_RESTART     = 0x10000000;
-        enum SA_SIGINFO     = 4;
-        enum SA_NOCLDWAIT   = 2;
-        enum SA_NODEFER     = 0x40000000;
-        enum SS_ONSTACK     = 1;
-        enum SS_DISABLE     = 2;
-        enum MINSIGSTKSZ    = 2048;
-        enum SIGSTKSZ       = 8192;
-
-        struct stack_t
-        {
-            void*   ss_sp;
-            int     ss_flags;
-            size_t  ss_size;
-        }
-    }
-    else
-    {
-        static assert(false, "Architecture not supported.");
+        void*   ss_sp;
+        int     ss_flags;
+        size_t  ss_size;
     }
 
     enum
@@ -3465,6 +3423,14 @@ else version (DragonFlyBSD)
 }
 else version (Darwin)
 {
+    struct sigevent
+    {
+        int sigev_notify;
+        int sigev_signo;
+        sigval sigev_value;
+        void function(sigval) sigev_notify_function;
+        pthread_attr_t* sigev_notify_attributes;
+    }
 }
 else version (Solaris)
 {
@@ -3517,7 +3483,7 @@ else version (CRuntime_Musl)
         int sigev_notify;
         void function(sigval) sigev_notify_function;
         pthread_attr_t *sigev_notify_attributes;
-        char[56 - 3 * long.sizeof] __pad;
+        char[56 - 3 * long.sizeof] __pad = void;
     }
 }
 else version (CRuntime_UClibc)

@@ -26,6 +26,9 @@ template class std::hash<bool>;
 template class std::hash<char>;
 template class std::hash<signed char>;
 template class std::hash<unsigned char>;
+#ifdef _GLIBCXX_USE_CHAR8_T
+template class std::hash<char8_t>;
+#endif
 template class std::hash<char16_t>;
 template class std::hash<char32_t>;
 template class std::hash<short>;

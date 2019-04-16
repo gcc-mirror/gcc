@@ -1,8 +1,7 @@
 /* { dg-do run { target { powerpc*-*-linux* } } } */
 /* { dg-require-effective-target vsx_hw } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
 /* { dg-require-effective-target p9vector_hw } */
-/* { dg-options "-mcpu=power9 -O2" } */
+/* { dg-options "-mdejagnu-cpu=power9 -O2" } */
 
 #include <altivec.h>
 #include <stdlib.h>

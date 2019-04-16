@@ -89,6 +89,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Tp>
       using vector = std::vector<_Tp, polymorphic_allocator<_Tp>>;
   } // namespace pmr
+# ifdef _GLIBCXX_DEBUG
+  namespace _GLIBCXX_STD_C::pmr {
+    template<typename _Tp>
+      using vector
+	= _GLIBCXX_STD_C::vector<_Tp, std::pmr::polymorphic_allocator<_Tp>>;
+  } // namespace _GLIBCXX_STD_C::pmr
+# endif
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++17
@@ -97,6 +104,9 @@ _GLIBCXX_END_NAMESPACE_VERSION
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+#define __cpp_lib_erase_if 201900L
+
   template<typename _Tp, typename _Alloc, typename _Predicate>
     inline typename vector<_Tp, _Alloc>::size_type
     erase_if(vector<_Tp, _Alloc>& __cont, _Predicate __pred)

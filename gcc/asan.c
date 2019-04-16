@@ -1440,13 +1440,15 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
 	base_align_bias = ((asan_frame_size + alignb - 1)
 			   & ~(alignb - HOST_WIDE_INT_1)) - asan_frame_size;
     }
+
   /* Align base if target is STRICT_ALIGNMENT.  */
   if (STRICT_ALIGNMENT)
-    base = expand_binop (Pmode, and_optab, base,
-			 gen_int_mode (-((GET_MODE_ALIGNMENT (SImode)
-					  << ASAN_SHADOW_SHIFT)
-					 / BITS_PER_UNIT), Pmode), NULL_RTX,
-			 1, OPTAB_DIRECT);
+    {
+      const HOST_WIDE_INT align
+	= (GET_MODE_ALIGNMENT (SImode) / BITS_PER_UNIT) << ASAN_SHADOW_SHIFT;
+      base = expand_binop (Pmode, and_optab, base, gen_int_mode (-align, Pmode),
+			   NULL_RTX, 1, OPTAB_DIRECT);
+    }
 
   if (use_after_return_class == -1 && pbase)
     emit_move_insn (pbase, base);
@@ -3218,7 +3220,10 @@ asan_expand_mark_ifn (gimple_stmt_iterator *iter)
   /* Generate direct emission if size_in_bytes is small.  */
   if (size_in_bytes <= ASAN_PARAM_USE_AFTER_SCOPE_DIRECT_EMISSION_THRESHOLD)
     {
-      unsigned HOST_WIDE_INT shadow_size = shadow_mem_size (size_in_bytes);
+      const unsigned HOST_WIDE_INT shadow_size
+	= shadow_mem_size (size_in_bytes);
+      const unsigned int shadow_align
+	= (get_pointer_alignment (base) / BITS_PER_UNIT) >> ASAN_SHADOW_SHIFT;
 
       tree shadow = build_shadow_mem_access (iter, loc, base_addr,
 					     shadow_ptr_types[0], true);
@@ -3226,9 +3231,11 @@ asan_expand_mark_ifn (gimple_stmt_iterator *iter)
       for (unsigned HOST_WIDE_INT offset = 0; offset < shadow_size;)
 	{
 	  unsigned size = 1;
-	  if (shadow_size - offset >= 4)
+	  if (shadow_size - offset >= 4
+	      && (!STRICT_ALIGNMENT || shadow_align >= 4))
 	    size = 4;
-	  else if (shadow_size - offset >= 2)
+	  else if (shadow_size - offset >= 2
+		   && (!STRICT_ALIGNMENT || shadow_align >= 2))
 	    size = 2;
 
 	  unsigned HOST_WIDE_INT last_chunk_size = 0;

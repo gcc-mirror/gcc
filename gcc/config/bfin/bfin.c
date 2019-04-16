@@ -2379,16 +2379,19 @@ bfin_option_override (void)
 
 #ifdef SUBTARGET_FDPIC_NOT_SUPPORTED
   if (TARGET_FDPIC)
-    error ("-mfdpic is not supported, please use a bfin-linux-uclibc target");
+    error ("%<-mfdpic%> is not supported, please use a bfin-linux-uclibc "
+	   "target");
 #endif
 
   /* Library identification */
   if (global_options_set.x_bfin_library_id && ! TARGET_ID_SHARED_LIBRARY)
-    error ("-mshared-library-id= specified without -mid-shared-library");
+    error ("%<-mshared-library-id=%> specified without "
+	   "%<-mid-shared-library%>");
 
   if (stack_limit_rtx && TARGET_FDPIC)
     {
-      warning (0, "-fstack-limit- options are ignored with -mfdpic; use -mstack-check-l1");
+      warning (0, "%<-fstack-limit-%> options are ignored with %<-mfdpic%>; "
+	       "use %<-mstack-check-l1%>");
       stack_limit_rtx = NULL_RTX;
     }
 
@@ -2401,7 +2404,7 @@ bfin_option_override (void)
   /* Don't allow the user to specify -mid-shared-library and -msep-data
      together, as it makes little sense from a user's point of view...  */
   if (TARGET_SEP_DATA && TARGET_ID_SHARED_LIBRARY)
-    error ("cannot specify both -msep-data and -mid-shared-library");
+    error ("cannot specify both %<-msep-data%> and %<-mid-shared-library%>");
   /* ... internally, however, it's nearly the same.  */
   if (TARGET_SEP_DATA)
     target_flags |= MASK_ID_SHARED_LIBRARY | MASK_LEAF_ID_SHARED_LIBRARY;
@@ -2421,16 +2424,16 @@ bfin_option_override (void)
     flag_pic = 0;
 
   if (TARGET_MULTICORE && bfin_cpu_type != BFIN_CPU_BF561)
-    error ("-mmulticore can only be used with BF561");
+    error ("%<-mmulticore%> can only be used with BF561");
 
   if (TARGET_COREA && !TARGET_MULTICORE)
-    error ("-mcorea should be used with -mmulticore");
+    error ("%<-mcorea%> should be used with %<-mmulticore%>");
 
   if (TARGET_COREB && !TARGET_MULTICORE)
-    error ("-mcoreb should be used with -mmulticore");
+    error ("%<-mcoreb%> should be used with %<-mmulticore%>");
 
   if (TARGET_COREA && TARGET_COREB)
-    error ("-mcorea and -mcoreb can%'t be used together");
+    error ("%<-mcorea%> and %<-mcoreb%> can%'t be used together");
 
   flag_schedule_insns = 0;
 

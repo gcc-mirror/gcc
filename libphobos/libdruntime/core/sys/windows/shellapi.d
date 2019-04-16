@@ -210,18 +210,18 @@ struct NOTIFYICONDATAA {
     UINT  uCallbackMessage;
     HICON hIcon;
     static if (_WIN32_IE >= 0x500) {
-        CHAR[128] szTip;
+        CHAR[128] szTip = 0;
         DWORD     dwState;
         DWORD     dwStateMask;
-        CHAR[256] szInfo;
+        CHAR[256] szInfo = 0;
         union {
             UINT  uTimeout;
             UINT  uVersion;
         }
-        CHAR[64]  szInfoTitle;
+        CHAR[64]  szInfoTitle = 0;
         DWORD     dwInfoFlags;
     } else {
-        CHAR[64]  szTip;
+        CHAR[64]  szTip = 0;
     }
     static if (_WIN32_IE >= 0x600) {
         GUID      guidItem;
@@ -237,18 +237,18 @@ struct NOTIFYICONDATAW {
     UINT  uCallbackMessage;
     HICON hIcon;
     static if (_WIN32_IE >= 0x500) {
-        WCHAR[128] szTip;
+        WCHAR[128] szTip = 0;
         DWORD      dwState;
         DWORD      dwStateMask;
-        WCHAR[256] szInfo;
+        WCHAR[256] szInfo = 0;
         union {
             UINT   uTimeout;
             UINT   uVersion;
         }
-        WCHAR[64]  szInfoTitle;
+        WCHAR[64]  szInfoTitle = 0;
         DWORD      dwInfoFlags;
     } else {
-        WCHAR[64]  szTip;
+        WCHAR[64]  szTip = 0;
     }
     static if (_WIN32_IE >= 0x600) {
         GUID guidItem;
@@ -332,16 +332,16 @@ struct SHFILEINFOA {
     HICON          hIcon;
     int            iIcon;
     DWORD          dwAttributes;
-    CHAR[MAX_PATH] szDisplayName;
-    CHAR[80]       szTypeName;
+    CHAR[MAX_PATH] szDisplayName = 0;
+    CHAR[80]       szTypeName = 0;
 }
 
 struct SHFILEINFOW {
     HICON           hIcon;
     int             iIcon;
     DWORD           dwAttributes;
-    WCHAR[MAX_PATH] szDisplayName;
-    WCHAR[80]       szTypeName;
+    WCHAR[MAX_PATH] szDisplayName = 0;
+    WCHAR[80]       szTypeName = 0;
 }
 
 align(1) struct SHQUERYRBINFO {

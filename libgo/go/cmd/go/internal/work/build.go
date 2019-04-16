@@ -10,7 +10,6 @@ import (
 	"go/build"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -99,7 +98,7 @@ and test commands:
 		link against shared libraries previously created with
 		-buildmode=shared.
 	-mod mode
-		module download mode to use: readonly, release, or vendor.
+		module download mode to use: readonly or vendor.
 		See 'go help modules' for more.
 	-pkgdir dir
 		install and load all packages from dir instead of the usual locations.
@@ -285,7 +284,7 @@ func runBuild(cmd *base.Command, args []string) {
 	pkgs := load.PackagesForBuild(args)
 
 	if len(pkgs) == 1 && pkgs[0].Name == "main" && cfg.BuildO == "" {
-		_, cfg.BuildO = path.Split(pkgs[0].ImportPath)
+		cfg.BuildO = load.DefaultExecName(pkgs[0].ImportPath)
 		cfg.BuildO += cfg.ExeSuffix
 	}
 
@@ -398,10 +397,10 @@ func libname(args []string, pkgs []*load.Package) (string, error) {
 					arg = bp.ImportPath
 				}
 			}
-			appendName(strings.Replace(arg, "/", "-", -1))
+			appendName(strings.ReplaceAll(arg, "/", "-"))
 		} else {
 			for _, pkg := range pkgs {
-				appendName(strings.Replace(pkg.ImportPath, "/", "-", -1))
+				appendName(strings.ReplaceAll(pkg.ImportPath, "/", "-"))
 			}
 		}
 	} else if haveNonMeta { // have both meta package and a non-meta one
@@ -518,7 +517,7 @@ func InstallPackages(patterns []string, pkgs []*load.Package) {
 	if len(patterns) == 0 && len(pkgs) == 1 && pkgs[0].Name == "main" {
 		// Compute file 'go build' would have created.
 		// If it exists and is an executable file, remove it.
-		_, targ := filepath.Split(pkgs[0].ImportPath)
+		targ := load.DefaultExecName(pkgs[0].ImportPath)
 		targ += cfg.ExeSuffix
 		if filepath.Join(pkgs[0].Dir, targ) != pkgs[0].Target { // maybe $GOBIN is the current directory
 			fi, err := os.Stat(targ)

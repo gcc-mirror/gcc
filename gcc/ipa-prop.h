@@ -428,8 +428,9 @@ struct ipa_func_body_info
   /* Number of parameters.  */
   int param_count;
 
-  /* Number of statements already walked by when analyzing this function.  */
-  unsigned int aa_walked;
+  /* Number of statements we are still allowed to walked by when analyzing this
+     function.  */
+  unsigned int aa_walk_budget;
 };
 
 /* ipa_node_params access functions.  Please use these to access fields that

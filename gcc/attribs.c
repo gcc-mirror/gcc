@@ -1664,7 +1664,7 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
 	      && DECL_DECLARED_INLINE_P (node))
 	{
 	  warning (OPT_Wattributes, "inline function %q+D declared as "
-		  " dllimport: attribute ignored", node);
+		  "dllimport: attribute ignored", node);
 	  *no_add_attrs = true;
 	}
       /* Like MS, treat definition of dllimported variables and
@@ -1691,6 +1691,11 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
 	     a function global scope, unless declared static.  */
 	  if (current_function_decl != NULL_TREE && !TREE_STATIC (node))
 	    TREE_PUBLIC (node) = 1;
+	  /* Clear TREE_STATIC because DECL_EXTERNAL is set, unless
+	     it is a C++ static data member.  */
+	  if (DECL_CONTEXT (node) == NULL_TREE
+	      || !RECORD_OR_UNION_TYPE_P (DECL_CONTEXT (node)))
+	    TREE_STATIC (node) = 0;
 	}
 
       if (*no_add_attrs == false)
@@ -2070,7 +2075,7 @@ test_attribute_exclusions ()
   const size_t ntables = ARRAY_SIZE (attribute_tables);
 
   /* Set of pairs of mutually exclusive attributes.  */
-  typedef hash_set<excl_pair, excl_hash_traits> exclusion_set;
+  typedef hash_set<excl_pair, false, excl_hash_traits> exclusion_set;
   exclusion_set excl_set;
 
   for (size_t ti0 = 0; ti0 != ntables; ++ti0)

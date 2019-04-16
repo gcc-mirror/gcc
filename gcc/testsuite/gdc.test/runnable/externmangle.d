@@ -1,4 +1,4 @@
-// EXTRA_CPP_SOURCES: extra-files/externmangle.cpp
+// EXTRA_CPP_SOURCES: externmangle.cpp
 
 extern(C++):
 

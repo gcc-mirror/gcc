@@ -379,7 +379,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       max_size() const
       { return size_type(-1); }
 
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const
       { return size() == 0; }
 

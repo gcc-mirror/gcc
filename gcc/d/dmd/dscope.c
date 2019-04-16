@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2018 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -685,14 +685,16 @@ Dsymbol *Scope::search_correct(Identifier *ident)
 const char *Scope::search_correct_C(Identifier *ident)
 {
     TOK tok;
-    if (ident == Id::_NULL)
+    if (ident == Id::C_NULL)
         tok = TOKnull;
-    else if (ident == Id::_TRUE)
+    else if (ident == Id::C_TRUE)
         tok = TOKtrue;
-    else if (ident == Id::_FALSE)
+    else if (ident == Id::C_FALSE)
         tok = TOKfalse;
-    else if (ident == Id::_unsigned)
+    else if (ident == Id::C_unsigned)
         tok = TOKuns32;
+    else if (ident == Id::C_wchar_t)
+        tok = global.params.isWindows ? TOKwchar : TOKdchar;
     else
         return NULL;
     return Token::toChars(tok);

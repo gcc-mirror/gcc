@@ -188,7 +188,7 @@ default_const_not_ok_for_debug_p (rtx x)
 rtx
 default_expand_builtin_saveregs (void)
 {
-  error ("__builtin_saveregs not supported by this target");
+  error ("%<__builtin_saveregs%> not supported by this target");
   return const0_rtx;
 }
 
@@ -1247,14 +1247,18 @@ constant_alignment_word_strings (const_tree exp, HOST_WIDE_INT align)
   return align;
 }
 
-/* Default to natural alignment for vector types.  */
+/* Default to natural alignment for vector types, bounded by
+   MAX_OFILE_ALIGNMENT.  */
+
 HOST_WIDE_INT
 default_vector_alignment (const_tree type)
 {
-  HOST_WIDE_INT align = tree_to_shwi (TYPE_SIZE (type));
-  if (align > MAX_OFILE_ALIGNMENT)
-    align = MAX_OFILE_ALIGNMENT;
-  return align;
+  unsigned HOST_WIDE_INT align = MAX_OFILE_ALIGNMENT;
+  tree size = TYPE_SIZE (type);
+  if (tree_fits_uhwi_p (size))
+    align = tree_to_uhwi (size);
+
+  return align < MAX_OFILE_ALIGNMENT ? align : MAX_OFILE_ALIGNMENT;
 }
 
 /* The default implementation of
@@ -1930,7 +1934,7 @@ default_dwarf_frame_reg_mode (int regno)
 {
   machine_mode save_mode = reg_raw_mode[regno];
 
-  if (targetm.hard_regno_call_part_clobbered (regno, save_mode))
+  if (targetm.hard_regno_call_part_clobbered (NULL, regno, save_mode))
     save_mode = choose_hard_reg_mode (regno, 1, true);
   return save_mode;
 }
@@ -2031,9 +2035,9 @@ default_pch_valid_p (const void *data_p, size_t len)
 
   /* -fpic and -fpie also usually make a PCH invalid.  */
   if (data[0] != flag_pic)
-    return _("created and used with different settings of -fpic");
+    return _("created and used with different settings of %<-fpic%>");
   if (data[1] != flag_pie)
-    return _("created and used with different settings of -fpie");
+    return _("created and used with different settings of %<-fpie%>");
   data += 2;
 
   /* Check target_flags.  */
@@ -2372,6 +2376,11 @@ default_speculation_safe_value (machine_mode mode ATTRIBUTE_UNUSED,
 #endif
 
   return result;
+}
+
+void
+default_remove_extra_call_preserved_regs (rtx_insn *, HARD_REG_SET *)
+{
 }
 
 #include "gt-targhooks.h"

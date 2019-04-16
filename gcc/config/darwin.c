@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "toplev.h"
 #include "lto-section-names.h"
+#include "intl.h"
 
 /* Darwin supports a feature called fix-and-continue, which is used
    for rapid turn around debugging.  When code is compiled with the
@@ -3172,7 +3173,7 @@ darwin_override_options (void)
   if (global_options_set.x_dwarf_split_debug_info)
     {
       inform (input_location,
-	      "-gsplit-dwarf is not supported on this platform, ignored");
+	      "%<-gsplit-dwarf%> is not supported on this platform, ignored");
       dwarf_split_debug_info = 0;
       global_options_set.x_dwarf_split_debug_info = 0;
     }
@@ -3202,8 +3203,8 @@ darwin_override_options (void)
 	       && !global_options_set.x_flag_asynchronous_unwind_tables)))
     {
       inform (input_location,
-	      "-freorder-blocks-and-partition does not work with exceptions "
-	      "on this architecture");
+	      "%<-freorder-blocks-and-partition%> does not work with "
+	      "exceptions on this architecture");
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }
@@ -3565,8 +3566,9 @@ darwin_build_constant_cfstring (tree str)
 	  for (l = 0; l < length; l++)
 	    if (!s[l] || !isascii (s[l]))
 	      {
-		warning (darwin_warn_nonportable_cfstrings, "%s in CFString literal",
-			 s[l] ? "non-ASCII character" : "embedded NUL");
+		warning (darwin_warn_nonportable_cfstrings,
+			 s[l] ? G_("non-ASCII character in CFString literal")
+			      : G_("embedded NUL in CFString literal"));
 		break;
 	      }
 	}

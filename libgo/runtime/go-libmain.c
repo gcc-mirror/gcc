@@ -11,10 +11,128 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "runtime.h"
 #include "array.h"
 #include "arch.h"
+
+#if defined(__sun) && defined(__SVR4)
+
+/* Read a file into memory on Solaris, returning an malloc'ed buffer
+   and setting *SIZE to its size.  */
+
+static char *
+read_file (const char *fn, size_t *size)
+{
+  struct stat st;
+  char *buf;
+  int o;
+  ssize_t got;
+
+  if (stat (fn, &st) < 0)
+    return NULL;
+  buf = malloc ((size_t) st.st_size);
+  if (buf == NULL)
+    return NULL;
+  o = open (fn, O_RDONLY);
+  if (o < 0)
+    {
+      free (buf);
+      return NULL;
+    }
+  got = read (o, buf, st.st_size);
+  close (o);
+  if (got != st.st_size)
+    {
+      free (buf);
+      return NULL;
+    }
+
+  *size = (size_t) got;
+  return buf;
+}
+
+/* On Solaris we don't get passed argc/argv, but we can fetch it from
+   /proc/PID/cmdline.  */
+
+static void
+read_cmdline (int *argc, char ***argv)
+{
+  pid_t pid;
+  char fn[50];
+  char *argbuf;
+  size_t argsize;
+  char *envbuf;
+  size_t envsize;
+  char *p;
+  int i;
+  int ac;
+
+  *argc = 0;
+  *argv = NULL;
+
+  pid = getpid ();
+  snprintf (fn, sizeof fn, "/proc/%ld/cmdline", (long) pid);
+  argbuf = read_file (fn, &argsize);
+  if (argbuf == NULL)
+    return;
+
+  snprintf (fn, sizeof fn, "/proc/%ld/environ", (long) pid);
+  envbuf = read_file (fn, &envsize);
+  if (envbuf == NULL)
+    {
+      free (argbuf);
+      return;
+    }
+
+  i = 0;
+  for (p = argbuf; p < argbuf + argsize; p++)
+    if (*p == '\0')
+      ++i;
+  ac = i;
+  ++i; // For trailing NULL.
+  for (p = envbuf; p < envbuf + envsize; p++)
+    if (*p == '\0')
+      ++i;
+  ++i; // For trailing NULL.
+
+  *argv = (char **) malloc (i * sizeof (char *));
+  if (*argv == NULL)
+    {
+      free (argbuf);
+      free (envbuf);
+      return;
+    }
+
+  *argc = ac;
+  (*argv)[0] = argbuf;
+  i = 0;
+  for (p = argbuf; p < argbuf + argsize; p++)
+    {
+      if (*p == '\0')
+	{
+	  ++i;
+	  (*argv)[i] = p + 1;
+	}
+    }
+  (*argv)[i] = NULL;
+  ++i;
+  (*argv)[i] = envbuf;
+  for (p = envbuf; p < envbuf + envsize; p++)
+    {
+      if (*p == '\0')
+	{
+	  ++i;
+	  (*argv)[i] = p + 1;
+	}
+    }
+  (*argv)[i] = NULL;
+}
+
+#endif /* defined(__sun) && defined(__SVR4) */
 
 /* This is used when building a standalone Go library using the Go
    command's -buildmode=c-archive or -buildmode=c-shared option.  It
@@ -64,6 +182,10 @@ __go_init (int argc, char **argv, char** env __attribute__ ((unused)))
   struct args *a;
   pthread_t tid;
 
+#if defined(__sun) && defined(__SVR4)
+  read_cmdline (&argc, &argv);
+#endif
+
   runtime_isarchive = true;
 
   setIsCgo ();
@@ -109,7 +231,7 @@ gostart (void *arg)
   setpagesize (getpagesize ());
   runtime_sched = runtime_getsched();
   runtime_schedinit ();
-  __go_go (runtime_main, NULL);
+  __go_go ((uintptr)(runtime_main), NULL);
   runtime_mstart (runtime_m ());
   abort ();
 }

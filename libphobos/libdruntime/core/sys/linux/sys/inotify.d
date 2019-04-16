@@ -13,6 +13,7 @@ nothrow:
 
 version (ARM)     version = ARM_Any;
 version (AArch64) version = ARM_Any;
+version (HPPA)    version = HPPA_Any;
 version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
@@ -72,6 +73,11 @@ version (X86_Any)
 {
     enum IN_CLOEXEC = 0x80000; // octal!2000000
     enum IN_NONBLOCK = 0x800; // octal!4000
+}
+else version (HPPA_Any)
+{
+    enum IN_CLOEXEC = 0x200000; // octal!10000000
+    enum IN_NONBLOCK = 0x10004; // octal!200004
 }
 else version (MIPS_Any)
 {

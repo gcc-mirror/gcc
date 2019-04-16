@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2018 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -2008,6 +2008,7 @@ bool VarDeclaration::isDataseg()
         else if (storage_class & (STCstatic | STCextern | STCtls | STCgshared) ||
                  parent->isModule() || parent->isTemplateInstance() || parent->isNspace())
         {
+            assert(!isParameter() && !isResult());
             isdataseg = 1; // It is in the DataSegment
         }
     }

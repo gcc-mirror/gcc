@@ -5152,7 +5152,11 @@ fld_simplified_type_name (tree type)
   /* Drop TYPE_DECLs in TYPE_NAME in favor of the identifier in the
      TYPE_DECL if the type doesn't have linkage.
      this must match fld_  */
-  if (type != TYPE_MAIN_VARIANT (type) || ! type_with_linkage_p (type))
+  if (type != TYPE_MAIN_VARIANT (type)
+      || (!DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (type))
+	  && (TREE_CODE (type) != RECORD_TYPE
+	      || !TYPE_BINFO (type)
+	      || !BINFO_VTABLE (TYPE_BINFO (type)))))
     return DECL_NAME (TYPE_NAME (type));
   return TYPE_NAME (type);
 }
@@ -5211,7 +5215,8 @@ fld_type_variant (tree first, tree t, struct free_lang_data_d *fld,
   if (inner_type)
     TREE_TYPE (v) = inner_type;
   gcc_checking_assert (fld_type_variant_equal_p (t,v, inner_type));
-  add_tree_to_fld_list (v, fld);
+  if (!fld->pset.add (v))
+    add_tree_to_fld_list (v, fld);
   return v;
 }
 
@@ -5249,7 +5254,8 @@ fld_process_array_type (tree t, tree t2, hash_map<tree, tree> *map,
       array = build_array_type_1 (t2, TYPE_DOMAIN (t),
 				  TYPE_TYPELESS_STORAGE (t), false);
       TYPE_CANONICAL (array) = TYPE_CANONICAL (t);
-      add_tree_to_fld_list (array, fld);
+      if (!fld->pset.add (array))
+	add_tree_to_fld_list (array, fld);
     }
   return array;
 }
@@ -5294,7 +5300,8 @@ fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
 						TYPE_REF_CAN_ALIAS_ALL (t));
 	  gcc_assert (TYPE_CANONICAL (t2) != t2
 		      && TYPE_CANONICAL (t2) == TYPE_CANONICAL (TREE_TYPE (t)));
-	  add_tree_to_fld_list (first, fld);
+	  if (!fld->pset.add (first))
+	    add_tree_to_fld_list (first, fld);
 	  return fld_type_variant (first, t, fld);
 	}
       return t;
@@ -5317,7 +5324,8 @@ fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
 	  copy = build_distinct_type_copy (t);
 
 	  /* It is possible that type was not seen by free_lang_data yet.  */
-	  add_tree_to_fld_list (copy, fld);
+	  if (!fld->pset.add (copy))
+	    add_tree_to_fld_list (copy, fld);
 	  TYPE_SIZE (copy) = NULL;
 	  TYPE_USER_ALIGN (copy) = 0;
 	  TYPE_SIZE_UNIT (copy) = NULL;
@@ -5441,6 +5449,18 @@ free_lang_data_in_type (tree type, struct free_lang_data_d *fld)
 
   TYPE_NEEDS_CONSTRUCTING (type) = 0;
 
+  /* Purge non-marked variants from the variants chain, so that they
+     don't reappear in the IL after free_lang_data.  */
+  while (TYPE_NEXT_VARIANT (type)
+	 && !fld->pset.contains (TYPE_NEXT_VARIANT (type)))
+    {
+      tree t = TYPE_NEXT_VARIANT (type);
+      TYPE_NEXT_VARIANT (type) = TYPE_NEXT_VARIANT (t);
+      /* Turn the removed types into distinct types.  */
+      TYPE_MAIN_VARIANT (t) = t;
+      TYPE_NEXT_VARIANT (t) = NULL_TREE;
+    }
+
   if (TREE_CODE (type) == FUNCTION_TYPE)
     {
       TREE_TYPE (type) = fld_simplified_type (TREE_TYPE (type), fld);
@@ -5460,7 +5480,8 @@ free_lang_data_in_type (tree type, struct free_lang_data_d *fld)
 			  & ~TYPE_QUAL_CONST
 			  & ~TYPE_QUAL_VOLATILE;
 	      TREE_VALUE (p) = build_qualified_type (arg_type, quals);
-	      free_lang_data_in_type (TREE_VALUE (p), fld);
+	      if (!fld->pset.add (TREE_VALUE (p)))
+		free_lang_data_in_type (TREE_VALUE (p), fld);
 	    }
 	  /* C++ FE uses TREE_PURPOSE to store initial values.  */
 	  TREE_PURPOSE (p) = NULL;
@@ -5658,7 +5679,7 @@ free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
 	 use for middle-end.
 
 	 It would make more sense if frontends set TREE_ADDRESSABLE to 0 only
-	 for public objects that indeed can not be adressed, but it is not
+	 for public objects that indeed cannot be adressed, but it is not
 	 the case.  Set the flag to true so we do not get merge failures for
 	 i.e. virtual tables between units that take address of it and
 	 units that don't.  */
@@ -5768,10 +5789,16 @@ free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
      not do well with TREE_CHAIN pointers linking them.
 
      Also do not drop containing types for virtual methods and tables because
-     these are needed by devirtualization.  */
+     these are needed by devirtualization.
+     C++ destructors are special because C++ frontends sometimes produces
+     virtual destructor as an alias of non-virtual destructor.  In
+     devirutalization code we always walk through aliases and we need
+     context to be preserved too.  See PR89335  */
   if (TREE_CODE (decl) != FIELD_DECL
       && ((TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL)
-          || !DECL_VIRTUAL_P (decl)))
+          || (!DECL_VIRTUAL_P (decl)
+	      && (TREE_CODE (decl) != FUNCTION_DECL
+		  || !DECL_CXX_DESTRUCTOR_P (decl)))))
     DECL_CONTEXT (decl) = fld_decl_context (DECL_CONTEXT (decl));
 }
 
@@ -5876,8 +5903,7 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	    ctx = BLOCK_SUPERCONTEXT (ctx);
 	  fld_worklist_push (ctx, fld);
 	}
-      /* Do not walk TYPE_CANONICAL.  We do not stream it and thus do not
-	 and want not to reach unused types this way.  */
+      fld_worklist_push (TYPE_CANONICAL (t), fld);
 
       if (RECORD_OR_UNION_TYPE_P (t) && TYPE_BINFO (t))
 	{
@@ -6325,51 +6351,11 @@ check_lang_type (const_tree cand, const_tree base)
   return lang_hooks.types.type_hash_eq (cand, base);
 }
 
-/* Returns true iff unqualified CAND and BASE are equivalent.  */
-
-bool
-check_base_type (const_tree cand, const_tree base)
-{
-  return (TYPE_NAME (cand) == TYPE_NAME (base)
-	  /* Apparently this is needed for Objective-C.  */
-	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
-	  /* Check alignment.  */
-	  && TYPE_ALIGN (cand) == TYPE_ALIGN (base)
-	  && attribute_list_equal (TYPE_ATTRIBUTES (cand),
-				   TYPE_ATTRIBUTES (base)));
-}
-
-/* Returns true iff CAND is equivalent to BASE with TYPE_QUALS.  */
-
-bool
-check_qualified_type (const_tree cand, const_tree base, int type_quals)
-{
-  return (TYPE_QUALS (cand) == type_quals
-	  && check_base_type (cand, base)
-	  && check_lang_type (cand, base));
-}
-
-/* Returns true iff CAND is equivalent to BASE with ALIGN.  */
-
-static bool
-check_aligned_type (const_tree cand, const_tree base, unsigned int align)
-{
-  return (TYPE_QUALS (cand) == TYPE_QUALS (base)
-	  && TYPE_NAME (cand) == TYPE_NAME (base)
-	  /* Apparently this is needed for Objective-C.  */
-	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
-	  /* Check alignment.  */
-	  && TYPE_ALIGN (cand) == align
-	  && attribute_list_equal (TYPE_ATTRIBUTES (cand),
-				   TYPE_ATTRIBUTES (base))
-	  && check_lang_type (cand, base));
-}
-
 /* This function checks to see if TYPE matches the size one of the built-in 
    atomic types, and returns that core atomic type.  */
 
 static tree
-find_atomic_core_type (tree type)
+find_atomic_core_type (const_tree type)
 {
   tree base_atomic_type;
 
@@ -6404,6 +6390,58 @@ find_atomic_core_type (tree type)
     }
 
   return base_atomic_type;
+}
+
+/* Returns true iff unqualified CAND and BASE are equivalent.  */
+
+bool
+check_base_type (const_tree cand, const_tree base)
+{
+  if (TYPE_NAME (cand) != TYPE_NAME (base)
+      /* Apparently this is needed for Objective-C.  */
+      || TYPE_CONTEXT (cand) != TYPE_CONTEXT (base)
+      || !attribute_list_equal (TYPE_ATTRIBUTES (cand),
+			        TYPE_ATTRIBUTES (base)))
+    return false;
+  /* Check alignment.  */
+  if (TYPE_ALIGN (cand) == TYPE_ALIGN (base))
+    return true;
+  /* Atomic types increase minimal alignment.  We must to do so as well
+     or we get duplicated canonical types. See PR88686.  */
+  if ((TYPE_QUALS (cand) & TYPE_QUAL_ATOMIC))
+    {
+      /* See if this object can map to a basic atomic type.  */
+      tree atomic_type = find_atomic_core_type (cand);
+      if (atomic_type && TYPE_ALIGN (atomic_type) == TYPE_ALIGN (cand))
+       return true;
+    }
+  return false;
+}
+
+/* Returns true iff CAND is equivalent to BASE with TYPE_QUALS.  */
+
+bool
+check_qualified_type (const_tree cand, const_tree base, int type_quals)
+{
+  return (TYPE_QUALS (cand) == type_quals
+	  && check_base_type (cand, base)
+	  && check_lang_type (cand, base));
+}
+
+/* Returns true iff CAND is equivalent to BASE with ALIGN.  */
+
+static bool
+check_aligned_type (const_tree cand, const_tree base, unsigned int align)
+{
+  return (TYPE_QUALS (cand) == TYPE_QUALS (base)
+	  && TYPE_NAME (cand) == TYPE_NAME (base)
+	  /* Apparently this is needed for Objective-C.  */
+	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
+	  /* Check alignment.  */
+	  && TYPE_ALIGN (cand) == align
+	  && attribute_list_equal (TYPE_ATTRIBUTES (cand),
+				   TYPE_ATTRIBUTES (base))
+	  && check_lang_type (cand, base));
 }
 
 /* Return a version of the TYPE, qualified as indicated by the
@@ -7496,10 +7534,12 @@ compare_tree_int (const_tree t, unsigned HOST_WIDE_INT u)
 
 /* Return true if SIZE represents a constant size that is in bounds of
    what the middle-end and the backend accepts (covering not more than
-   half of the address-space).  */
+   half of the address-space).
+   When PERR is non-null, set *PERR on failure to the description of
+   why SIZE is not valid.  */
 
 bool
-valid_constant_size_p (const_tree size)
+valid_constant_size_p (const_tree size, cst_size_error *perr /* = NULL */)
 {
   if (POLY_INT_CST_P (size))
     {
@@ -7510,10 +7550,36 @@ valid_constant_size_p (const_tree size)
 	  return false;
       return true;
     }
-  if (! tree_fits_uhwi_p (size)
-      || TREE_OVERFLOW (size)
-      || tree_int_cst_sign_bit (size) != 0)
-    return false;
+
+  cst_size_error error;
+  if (!perr)
+    perr = &error;
+
+  if (TREE_CODE (size) != INTEGER_CST)
+    {
+      *perr = cst_size_not_constant;
+      return false;
+    }
+
+  if (TREE_OVERFLOW_P (size))
+    {
+      *perr = cst_size_overflow;
+      return false;
+    }
+
+  if (tree_int_cst_sgn (size) < 0)
+    {
+      *perr = cst_size_negative;
+      return false;
+    }
+  if (!tree_fits_uhwi_p (size)
+      || (wi::to_widest (TYPE_MAX_VALUE (sizetype))
+	  < wi::to_widest (size) * 2))
+    {
+      *perr = cst_size_too_big;
+      return false;
+    }
+
   return true;
 }
 
@@ -7698,6 +7764,8 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
       hstate.merge_hash (0);
       return;
     }
+
+  STRIP_ANY_LOCATION_WRAPPER (t);
 
   if (!(flags & OEP_ADDRESS_OF))
     STRIP_NOPS (t);
@@ -8454,6 +8522,8 @@ build_function_type (tree value_type, tree arg_types)
   inchash::hash hstate;
   bool any_structural_p, any_noncanonical_p;
   tree canon_argtypes;
+
+  gcc_assert (arg_types != error_mark_node);
 
   if (TREE_CODE (value_type) == FUNCTION_TYPE)
     {
@@ -11255,7 +11325,7 @@ initializer_each_zero_or_onep (const_tree expr)
 
 	for (unsigned int i = 0; i < nelts; ++i)
 	  {
-	    tree elt = VECTOR_CST_ENCODED_ELT (expr, i);
+	    tree elt = vector_cst_elt (expr, i);
 	    if (!initializer_each_zero_or_onep (elt))
 	      return false;
 	  }
@@ -12758,13 +12828,10 @@ tree_nop_conversion (const_tree exp)
   if (!CONVERT_EXPR_P (exp)
       && TREE_CODE (exp) != NON_LVALUE_EXPR)
     return false;
-  if (TREE_OPERAND (exp, 0) == error_mark_node)
-    return false;
 
   outer_type = TREE_TYPE (exp);
   inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
-
-  if (!inner_type)
+  if (!inner_type || inner_type == error_mark_node)
     return false;
 
   return tree_nop_conversion_p (outer_type, inner_type);
@@ -13769,9 +13836,9 @@ verify_type_variant (const_tree t, tree tv)
 					TYPE_SIZE_UNIT (tv), 0));
 	  error ("type variant has different TYPE_SIZE_UNIT");
 	  debug_tree (tv);
-	  error ("type variant's TYPE_SIZE_UNIT");
+	  error ("type variant%'s TYPE_SIZE_UNIT");
 	  debug_tree (TYPE_SIZE_UNIT (tv));
-	  error ("type's TYPE_SIZE_UNIT");
+	  error ("type%'s TYPE_SIZE_UNIT");
 	  debug_tree (TYPE_SIZE_UNIT (t));
 	  return false;
 	}
@@ -13842,9 +13909,9 @@ verify_type_variant (const_tree t, tree tv)
     {
       error ("type variant has different TYPE_BINFO");
       debug_tree (tv);
-      error ("type variant's TYPE_BINFO");
+      error ("type variant%'s TYPE_BINFO");
       debug_tree (TYPE_BINFO (tv));
-      error ("type's TYPE_BINFO");
+      error ("type%'s TYPE_BINFO");
       debug_tree (TYPE_BINFO (t));
       return false;
     }
@@ -13906,9 +13973,9 @@ verify_type_variant (const_tree t, tree tv)
     {
       error ("type variant has different TREE_TYPE");
       debug_tree (tv);
-      error ("type variant's TREE_TYPE");
+      error ("type variant%'s TREE_TYPE");
       debug_tree (TREE_TYPE (tv));
-      error ("type's TREE_TYPE");
+      error ("type%'s TREE_TYPE");
       debug_tree (TREE_TYPE (t));
       return false;
     }
@@ -13917,9 +13984,9 @@ verify_type_variant (const_tree t, tree tv)
     {
       error ("type is not compatible with its variant");
       debug_tree (tv);
-      error ("type variant's TREE_TYPE");
+      error ("type variant%'s TREE_TYPE");
       debug_tree (TREE_TYPE (tv));
-      error ("type's TREE_TYPE");
+      error ("type%'s TREE_TYPE");
       debug_tree (TREE_TYPE (t));
       return false;
     }
@@ -14239,7 +14306,7 @@ verify_type (const_tree t)
       debug_tree (ct);
       error_found = true;
     }
-  /* Method and function types can not be used to address memory and thus
+  /* Method and function types cannot be used to address memory and thus
      TYPE_CANONICAL really matters only for determining useless conversions.
 
      FIXME: C++ FE produce declarations of builtin functions that are not
@@ -14247,7 +14314,7 @@ verify_type (const_tree t)
   else if (TREE_CODE (t) == FUNCTION_TYPE)
     ;
   else if (t != ct
-	   /* FIXME: gimple_canonical_types_compatible_p can not compare types
+	   /* FIXME: gimple_canonical_types_compatible_p cannot compare types
 	      with variably sized arrays because their sizes possibly
 	      gimplified to different variables.  */
 	   && !variably_modified_type_p (ct, NULL)
@@ -14996,6 +15063,15 @@ const builtin_structptr_type builtin_structptr_types[6] =
   { fexcept_t_ptr_type_node, ptr_type_node, "fexcept_t" },
   { const_fexcept_t_ptr_type_node, const_ptr_type_node, "fexcept_t" }
 };
+
+/* Return the maximum object size.  */
+
+tree
+max_object_size (void)
+{
+  /* To do: Make this a configurable parameter.  */
+  return TYPE_MAX_VALUE (ptrdiff_type_node);
+}
 
 #if CHECKING_P
 

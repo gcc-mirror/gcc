@@ -1,3 +1,79 @@
+2019-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure.ac: Add target-zlib to target_libraries.
+	* configure: Regenerate.
+
+2019-04-09  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Regenerate.
+	* Makefile.tpl: Pass GENERATOR_CFLAGS
+	in all stages.
+
+2019-03-28  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/89829
+	* Makefile.in: Revert r254150.
+	* Makefile.tpl: Likewise.
+
+2019-03-28  Ben Elliston  <bje@gnu.org>
+
+	* MAINTAINERS (Various Maintainers): Remove myself from dfp.c and
+	related, and libdecnumber.
+
+2019-03-15  Alexander Monakov  <amonakov@ispras.ru>
+
+	* MAINTAINERS (Reviewers): Add myself as selective scheduling reviewer.
+	(Write After Approval): Remove myself.
+
+2019-02-27  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-02-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* MAINTAINERS (amdgcn port): Add myself and Julian Brown.
+	(Write After Approval): Remove myself and Julian.
+
+2019-01-26  Harald Anlauf  <anlauf@gmx.de>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-01-24  Xiong Hu Luo  <luoxhu@linux.vnet.ibm.com>
+
+	* ChangeLog: Replace space with tab.
+	* MAINTAINERS: Delete 1 tab to keep alignment.
+
+2019-01-21  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-01-18  Li Jia He  <helijia@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-01-17  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+	    Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+	* contrib/config-list.mk: Add amdgcn-amdhsa.
+
+2019-01-16  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-01-16  Xiong Hu Luo  <luoxhu@linux.vnet.ibm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2019-01-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/88535

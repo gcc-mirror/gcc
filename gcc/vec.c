@@ -98,11 +98,9 @@ struct vec_usage: public mem_usage
   inline void
   dump_footer ()
   {
-    print_dash_line ();
     fprintf (stderr, "%s" PRsa (64) PRsa (25) PRsa (16) "\n",
 	     "Total", SIZE_AMOUNT (m_allocated),
 	     SIZE_AMOUNT (m_times), SIZE_AMOUNT (m_items));
-    print_dash_line ();
   }
 
   /* Dump header with NAME.  */
@@ -111,7 +109,6 @@ struct vec_usage: public mem_usage
   {
     fprintf (stderr, "%-48s %10s%11s%16s%10s%17s%11s\n", name, "sizeof(T)",
 	     "Leak", "Peak", "Times", "Leak items", "Peak items");
-    print_dash_line ();
   }
 
   /* Current number of items allocated.  */

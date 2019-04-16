@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2018 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -2324,16 +2324,11 @@ Identifier *Type::getTypeInfoIdent()
     size_t namelen = 19 + sizeof(len) * 3 + len + 1;
     char *name = namelen <= sizeof(namebuf) ? namebuf : (char *)mem.xmalloc(namelen);
 
-    sprintf(name, "_D%lluTypeInfo_%s6__initZ", (unsigned long long) 9 + len, buf.data);
+    int length = sprintf(name, "_D%lluTypeInfo_%s6__initZ", (unsigned long long) 9 + len, buf.data);
     //printf("%p, deco = %s, name = %s\n", this, deco, name);
-    assert(strlen(name) < namelen);     // don't overflow the buffer
+    assert(0 < length && (size_t)length < namelen);     // don't overflow the buffer
 
-    size_t off = 0;
-#ifndef IN_GCC
-    if (global.params.isOSX || (global.params.isWindows && !global.params.is64bit))
-        ++off;                 // C mangling will add '_' back in
-#endif
-    Identifier *id = Identifier::idPool(name + off);
+    Identifier *id = Identifier::idPool(name, length);
 
     if (name != namebuf)
         free(name);
@@ -3771,8 +3766,8 @@ Expression *TypeVector::dotExp(Scope *sc, Expression *e, Identifier *ident, int 
     {
         //e = e->castTo(sc, basetype);
         // Keep lvalue-ness
-        e = e->copy();
-        e->type = basetype;
+        e = new VectorArrayExp(e->loc, e);
+        e = ::semantic(e, sc);
         return e;
     }
     if (ident == Id::_init || ident == Id::offsetof || ident == Id::stringof || ident == Id::__xalignof)
@@ -4340,8 +4335,7 @@ Expression *TypeSArray::defaultInitLiteral(Loc loc)
     elements->setDim(d);
     for (size_t i = 0; i < d; i++)
         (*elements)[i] = NULL;
-    ArrayLiteralExp *ae = new ArrayLiteralExp(Loc(), elementinit, elements);
-    ae->type = this;
+    ArrayLiteralExp *ae = new ArrayLiteralExp(Loc(), this, elementinit, elements);
     return ae;
 }
 
@@ -5337,9 +5331,16 @@ int Type::covariant(Type *t, StorageClass *pstc, bool fix17349)
     }
     else if (t1n->ty == t2n->ty && t1n->implicitConvTo(t2n))
         goto Lcovariant;
-    else if (t1n->ty == Tnull && t1n->implicitConvTo(t2n) &&
-             t1n->size() == t2n->size())
-        goto Lcovariant;
+    else if (t1n->ty == Tnull)
+    {
+        // NULL is covariant with any pointer type, but not with any
+        // dynamic arrays, associative arrays or delegates.
+        // https://issues.dlang.org/show_bug.cgi?id=8589
+        // https://issues.dlang.org/show_bug.cgi?id=19618
+        Type *t2bn = t2n->toBasetype();
+        if (t2bn->ty == Tnull || t2bn->ty == Tpointer || t2bn->ty == Tclass)
+            goto Lcovariant;
+    }
   }
     goto Lnotcovariant;
 

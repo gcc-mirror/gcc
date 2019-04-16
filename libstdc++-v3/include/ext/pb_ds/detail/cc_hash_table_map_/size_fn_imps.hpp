@@ -46,6 +46,7 @@ size() const
 { return m_num_used_e; }
 
 PB_DS_CLASS_T_DEC
+_GLIBCXX_NODISCARD
 inline bool
 PB_DS_CLASS_C_DEC::
 empty() const

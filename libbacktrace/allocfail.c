@@ -130,7 +130,7 @@ main (int argc, char **argv)
 #endif
 
   if (argc == 1)
-    fprintf (stderr, "%lu\n", get_nr_allocs ());
+    fprintf (stderr, "%llu\n", (long long unsigned) get_nr_allocs ());
 
   exit (failures ? EXIT_FAILURE : EXIT_SUCCESS);
 }

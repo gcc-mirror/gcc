@@ -2,22 +2,19 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin dragonfly freebsd linux netbsd openbsd solaris
+// +build aix dragonfly freebsd hurd linux netbsd openbsd solaris
 
 package unix
 
-import (
-	"syscall"
-	_ "unsafe" // for go:linkname
-)
+import "syscall"
 
-//extern __go_fcntl
-func syscall_fcntl(fd int32, cmd int32, arg int32) int32
+//extern __go_fcntl_uintptr
+func fcntl(uintptr, uintptr, uintptr) (uintptr, uintptr)
 
 func IsNonblock(fd int) (nonblocking bool, err error) {
-	flag := syscall_fcntl(int32(fd), syscall.F_GETFL, 0)
-	if flag < 0 {
-		return false, syscall.GetErrno()
+	flag, e1 := fcntl(uintptr(fd), syscall.F_GETFL, 0)
+	if e1 != 0 {
+		return false, syscall.Errno(e1)
 	}
 	return flag&syscall.O_NONBLOCK != 0, nil
 }

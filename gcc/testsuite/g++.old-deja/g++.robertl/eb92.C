@@ -1,2 +1,2 @@
 // { dg-do assemble  }
-template<int N> f<0>(){}  // { dg-error "" } invalid code
+template<int N> f<0>(){}  // { dg-message "" } invalid code

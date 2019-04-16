@@ -205,8 +205,10 @@ integral_argument (const char *arg, int *err, bool byte_size_suffix)
 	  value = strtoull (arg, &end, 0);
 	  if (*end)
 	    {
-	      /* errno is most likely EINVAL here.  */
-	      *err = errno;
+	      if (errno)
+		*err = errno;
+	      else
+		*err = EINVAL;
 	      return -1;
 	    }
 
@@ -1015,7 +1017,9 @@ prune_options (struct cl_decoded_option **decoded_options,
 	    goto keep;
 
 	  /* Skip joined switches.  */
-	  if ((option->flags & CL_JOINED))
+	  if ((option->flags & CL_JOINED)
+	      && (!option->cl_reject_negative
+		  || (unsigned int) option->neg_index != opt_idx))
 	    goto keep;
 
 	  for (j = i + 1; j < old_decoded_options_count; j++)
@@ -1027,8 +1031,11 @@ prune_options (struct cl_decoded_option **decoded_options,
 		continue;
 	      if (cl_options[next_opt_idx].neg_index < 0)
 		continue;
-	      if ((cl_options[next_opt_idx].flags & CL_JOINED))
-		  continue;
+	      if ((cl_options[next_opt_idx].flags & CL_JOINED)
+		  && (!cl_options[next_opt_idx].cl_reject_negative
+		      || ((unsigned int) cl_options[next_opt_idx].neg_index
+			  != next_opt_idx)))
+		continue;
 	      if (cancel_option (opt_idx, next_opt_idx, next_opt_idx))
 		break;
 	    }

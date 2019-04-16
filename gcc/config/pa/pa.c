@@ -453,7 +453,7 @@ fix_range (const char *const_str)
       dash = strchr (str, '-');
       if (!dash)
 	{
-	  warning (0, "value of -mfixed-range must have form REG1-REG2");
+	  warning (0, "value of %<-mfixed-range%> must have form REG1-REG2");
 	  return;
 	}
       *dash = '\0';
@@ -539,8 +539,8 @@ pa_option_override (void)
 
   if (! TARGET_GAS && write_symbols != NO_DEBUG)
     {
-      warning (0, "-g is only supported when using GAS on this processor,");
-      warning (0, "-g option disabled");
+      warning (0, "%<-g%> is only supported when using GAS on this processor,");
+      warning (0, "%<-g%> option disabled");
       write_symbols = NO_DEBUG;
     }
 
@@ -554,8 +554,8 @@ pa_option_override (void)
   if (flag_reorder_blocks_and_partition)
     {
       inform (input_location,
-              "-freorder-blocks-and-partition does not work "
-              "on this architecture");
+	      "%<-freorder-blocks-and-partition%> does not work "
+	      "on this architecture");
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }
@@ -1135,8 +1135,8 @@ hppa_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       /* If the newoffset will not fit in 14 bits (ldo), then
 	 handling this would take 4 or 5 instructions (2 to load
 	 the SYMBOL_REF + 1 or 2 to load the newoffset + 1 to
-	 add the new offset and the SYMBOL_REF.)  Combine can
-	 not handle 4->2 or 5->2 combinations, so do not create
+	 add the new offset and the SYMBOL_REF.)  Combine cannot
+	 handle 4->2 or 5->2 combinations, so do not create
 	 them.  */
       if (! VAL_14_BITS_P (newoffset)
 	  && GET_CODE (XEXP (x, 0)) == SYMBOL_REF)
@@ -4013,7 +4013,7 @@ pa_expand_prologue (void)
 	     the callee registers.  */
 	  if (VAL_14_BITS_P (actual_fsize) && local_fsize == 0)
 	    merge_sp_adjust_with_store = 1;
-	  /* Can not optimize.  Adjust the stack frame by actual_fsize
+	  /* Cannot optimize.  Adjust the stack frame by actual_fsize
 	     bytes.  */
 	  else
 	    set_reg_plus_d (STACK_POINTER_REGNUM, STACK_POINTER_REGNUM,
@@ -9835,8 +9835,8 @@ pa_som_tm_clone_table_section (void)
 
 /* On hpux10, the linker will give an error if we have a reference
    in the read-only data section to a symbol defined in a shared
-   library.  Therefore, expressions that might require a reloc can
-   not be placed in the read-only data section.  */
+   library.  Therefore, expressions that might require a reloc
+   cannot be placed in the read-only data section.  */
 
 static section *
 pa_select_section (tree exp, int reloc,

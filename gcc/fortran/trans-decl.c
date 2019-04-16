@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-stmt.h"
 #include "gomp-constants.h"
 #include "gimplify.h"
+#include "omp-general.h"
 
 #define MAX_LABEL_VALUE 99999
 
@@ -114,6 +115,8 @@ tree gfor_fndecl_fdate;
 tree gfor_fndecl_ttynam;
 tree gfor_fndecl_in_pack;
 tree gfor_fndecl_in_unpack;
+tree gfor_fndecl_cfi_to_gfc;
+tree gfor_fndecl_gfc_to_cfi;
 tree gfor_fndecl_associated;
 tree gfor_fndecl_system_clock4;
 tree gfor_fndecl_system_clock8;
@@ -840,7 +843,7 @@ gfc_get_module_backend_decl (gfc_symbol *sym)
 	{
 	  if (!gsym)
 	    {
-	      gsym = gfc_get_gsymbol (sym->module);
+	      gsym = gfc_get_gsymbol (sym->module, false);
 	      gsym->type = GSYM_MODULE;
 	      gsym->ns = gfc_get_namespace (NULL, 0);
 	    }
@@ -1369,7 +1372,7 @@ gfc_add_assign_aux_vars (gfc_symbol * sym)
   gfc_finish_var_decl (length, sym);
   gfc_finish_var_decl (addr, sym);
   /*  STRING_LENGTH is also used as flag. Less than -1 means that
-      ASSIGN_ADDR can not be used. Equal -1 means that ASSIGN_ADDR is the
+      ASSIGN_ADDR cannot be used. Equal -1 means that ASSIGN_ADDR is the
       target label's address. Otherwise, value is the length of a format string
       and ASSIGN_ADDR is its address.  */
   if (TREE_STATIC (length))
@@ -1404,18 +1407,32 @@ add_attributes_to_decl (symbol_attribute sym_attr, tree list)
     list = tree_cons (get_identifier ("omp declare target"),
 		      NULL_TREE, list);
 
-  if (sym_attr.oacc_function)
+  if (sym_attr.oacc_routine_lop != OACC_ROUTINE_LOP_NONE)
     {
-      tree dims = NULL_TREE;
-      int ix;
-      int level = sym_attr.oacc_function - 1;
+      omp_clause_code code;
+      switch (sym_attr.oacc_routine_lop)
+	{
+	case OACC_ROUTINE_LOP_GANG:
+	  code = OMP_CLAUSE_GANG;
+	  break;
+	case OACC_ROUTINE_LOP_WORKER:
+	  code = OMP_CLAUSE_WORKER;
+	  break;
+	case OACC_ROUTINE_LOP_VECTOR:
+	  code = OMP_CLAUSE_VECTOR;
+	  break;
+	case OACC_ROUTINE_LOP_SEQ:
+	  code = OMP_CLAUSE_SEQ;
+	  break;
+	case OACC_ROUTINE_LOP_NONE:
+	case OACC_ROUTINE_LOP_ERROR:
+	default:
+	  gcc_unreachable ();
+	}
+      tree c = build_omp_clause (UNKNOWN_LOCATION, code);
 
-      for (ix = GOMP_DIM_MAX; ix--;)
-	dims = tree_cons (build_int_cst (boolean_type_node, ix >= level),
-			  integer_zero_node, dims);
-
-      list = tree_cons (get_identifier ("oacc function"),
-			dims, list);
+      tree dims = oacc_build_routine_dims (c);
+      list = oacc_replace_fn_attrib_attr (list, dims);
     }
 
   return list;
@@ -1570,13 +1587,17 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	  if (VAR_P (length) && DECL_FILE_SCOPE_P (length))
 	    {
 	      /* Add the string length to the same context as the symbol.  */
-	      if (DECL_CONTEXT (sym->backend_decl) == current_function_decl)
-	        gfc_add_decl_to_function (length);
-	      else
-		gfc_add_decl_to_parent_function (length);
+	      if (DECL_CONTEXT (length) == NULL_TREE)
+		{
+		  if (DECL_CONTEXT (sym->backend_decl)
+		      == current_function_decl)
+		    gfc_add_decl_to_function (length);
+		  else
+		    gfc_add_decl_to_parent_function (length);
+		}
 
-	      gcc_assert (DECL_CONTEXT (sym->backend_decl) ==
-			    DECL_CONTEXT (length));
+	      gcc_assert (DECL_CONTEXT (sym->backend_decl)
+			  == DECL_CONTEXT (length));
 
 	      gfc_defer_symbol_init (sym);
 	    }
@@ -1956,7 +1977,7 @@ get_proc_pointer_decl (gfc_symbol *sym)
 /* Get a basic decl for an external function.  */
 
 tree
-gfc_get_extern_function_decl (gfc_symbol * sym)
+gfc_get_extern_function_decl (gfc_symbol * sym, gfc_actual_arglist *actual_args)
 {
   tree type;
   tree fndecl;
@@ -1981,9 +2002,22 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
     return get_proc_pointer_decl (sym);
 
   /* See if this is an external procedure from the same file.  If so,
-     return the backend_decl.  */
-  gsym =  gfc_find_gsymbol (gfc_gsym_root, sym->binding_label
-					   ? sym->binding_label : sym->name);
+     return the backend_decl.  If we are looking at a BIND(C)
+     procedure and the symbol is not BIND(C), or vice versa, we
+     haven't found the right procedure.  */
+
+  if (sym->binding_label)
+    {
+      gsym = gfc_find_gsymbol (gfc_gsym_root, sym->binding_label);
+      if (gsym && !gsym->bind_c)
+	gsym = NULL;
+    }
+  else
+    {
+      gsym = gfc_find_gsymbol (gfc_gsym_root, sym->name);
+      if (gsym && gsym->bind_c)
+	gsym = NULL;
+    }
 
   if (gsym && !gsym->defined)
     gsym = NULL;
@@ -2129,7 +2163,7 @@ module_sym:
       mangled_name = gfc_sym_mangled_function_id (sym);
     }
 
-  type = gfc_get_function_type (sym);
+  type = gfc_get_function_type (sym, actual_args);
   fndecl = build_decl (input_location,
 		       FUNCTION_DECL, name, type);
 
@@ -3618,6 +3652,14 @@ gfc_build_builtin_function_decls (void)
   gfor_fndecl_in_unpack = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("internal_unpack")), ".wR",
 	void_type_node, 2, pvoid_type_node, pvoid_type_node);
+
+  gfor_fndecl_cfi_to_gfc = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("cfi_desc_to_gfc_desc")), ".ww",
+	void_type_node, 2, pvoid_type_node, ppvoid_type_node);
+
+  gfor_fndecl_gfc_to_cfi = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("gfc_desc_to_cfi_desc")), ".wR",
+	void_type_node, 2, ppvoid_type_node, pvoid_type_node);
 
   gfor_fndecl_associated = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("associated")), ".RR",
@@ -5385,6 +5427,33 @@ generate_coarray_sym_init (gfc_symbol *sym)
   /* Handle "static" initializer.  */
   if (sym->value)
     {
+      if (sym->value->expr_type == EXPR_ARRAY)
+	{
+	  gfc_constructor *c, *cnext;
+
+	  /* Test if the array has more than one element.  */
+	  c = gfc_constructor_first (sym->value->value.constructor);
+	  gcc_assert (c);  /* Empty constructor should not happen here.  */
+	  cnext = gfc_constructor_next (c);
+
+	  if (cnext)
+	    {
+	      /* An EXPR_ARRAY with a rank > 1 here has to come from a
+		 DATA statement.  Set its rank here as not to confuse
+		 the following steps.   */
+	      sym->value->rank = 1;
+	    }
+	  else
+	    {
+	      /* There is only a single value in the constructor, use
+		 it directly for the assignment.  */
+	      gfc_expr *new_expr;
+	      new_expr = gfc_copy_expr (c->expr);
+	      gfc_free_expr (sym->value);
+	      sym->value = new_expr;
+	    }
+	}
+
       sym->attr.pointer = 1;
       tmp = gfc_trans_assignment (gfc_lval_expr_from_sym (sym), sym->value,
 				  true, false);
@@ -5721,10 +5790,7 @@ generate_local_decl (gfc_symbol * sym)
 			  "imported at %L", sym->name, &sym->declared_at);
 	}
 
-      if (sym->ns
-	  && sym->ns->parent
-	  && sym->ns->parent->code
-	  && sym->ns->parent->code->op == EXEC_BLOCK)
+      if (sym->ns && sym->ns->construct_entities)
 	{
 	  if (sym->attr.referenced)
 	    gfc_get_symbol_decl (sym);

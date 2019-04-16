@@ -27,6 +27,12 @@
 
 namespace fs = std::experimental::filesystem;
 
+bool check(fs::space_info const& s)
+{
+  const std::uintmax_t err = -1;
+  return s.capacity != err || s.free != err || s.available != err;
+}
+
 void
 test01()
 {
@@ -36,17 +42,18 @@ test01()
   s = fs::space(root, ec);
   VERIFY( !ec );
 
-  s = fs::space(__gnu_test::nonexistent_path(), ec);
-  VERIFY( ec );
-  VERIFY( s.capacity ==  static_cast<uintmax_t>(-1) );
-  VERIFY( s.free ==  static_cast<uintmax_t>(-1) );
-  VERIFY( s.available ==  static_cast<uintmax_t>(-1) );
+  s = fs::space(__gnu_test::nonexistent_path()/".", ec);
+  if (ec)
+    VERIFY( ! check(s) );
+  else
+    VERIFY( check(s) );
 }
 
 void
 test02()
 {
   fs::space_info s = fs::space(".");
+  VERIFY( check(s) );
   VERIFY( s.capacity >= s.free );
 }
 

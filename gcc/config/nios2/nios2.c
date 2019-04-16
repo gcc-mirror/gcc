@@ -1193,7 +1193,8 @@ nios2_custom_check_insns (void)
     for (i = 0; i < ARRAY_SIZE (nios2_fpu_insn); i++)
       if (N2FPU_ENABLED_P (i) && N2FPU_UNSAFE_P (i))
 	warning (0, "switch %<-mcustom-%s%> has no effect unless "
-		 "-funsafe-math-optimizations is specified", N2FPU_NAME (i));
+		 "%<-funsafe-math-optimizations%> is specified",
+		 N2FPU_NAME (i));
 
   /* Warn if the user is trying to use -mcustom-fmins et. al, that won't
      get used without -ffinite-math-only.  See fold_builtin_fmin_fmax ()
@@ -1202,7 +1203,7 @@ nios2_custom_check_insns (void)
     for (i = 0; i < ARRAY_SIZE (nios2_fpu_insn); i++)
       if (N2FPU_ENABLED_P (i) && N2FPU_FINITE_P (i))
 	warning (0, "switch %<-mcustom-%s%> has no effect unless "
-		 "-ffinite-math-only is specified", N2FPU_NAME (i));
+		 "%<-ffinite-math-only%> is specified", N2FPU_NAME (i));
 
   /* Warn if the user is trying to use a custom rounding instruction
      that won't get used without -fno-math-errno.  See
@@ -1211,12 +1212,12 @@ nios2_custom_check_insns (void)
     for (i = 0; i < ARRAY_SIZE (nios2_fpu_insn); i++)
       if (N2FPU_ENABLED_P (i) && N2FPU_NO_ERRNO_P (i))
 	warning (0, "switch %<-mcustom-%s%> has no effect unless "
-		 "-fno-math-errno is specified", N2FPU_NAME (i));
+		 "%<-fno-math-errno%> is specified", N2FPU_NAME (i));
 
   if (errors || custom_code_conflict)
     fatal_error (input_location,
-		 "conflicting use of -mcustom switches, target attributes, "
-		 "and/or __builtin_custom_ functions");
+		 "conflicting use of %<-mcustom%> switches, target attributes, "
+		 "and/or %<__builtin_custom_%> functions");
 }
 
 static void
@@ -1362,7 +1363,7 @@ nios2_option_override (void)
     sorry ("position-independent code requires the Linux ABI");
   if (flag_pic && stack_limit_rtx
       && GET_CODE (stack_limit_rtx) == SYMBOL_REF)
-    sorry ("PIC support for -fstack-limit-symbol");
+    sorry ("PIC support for %<-fstack-limit-symbol%>");
 
   /* Function to allocate machine-dependent function status.  */
   init_machine_status = &nios2_init_machine_status;
@@ -1384,11 +1385,11 @@ nios2_option_override (void)
   if (flag_pic)
     {
       if (nios2_gpopt_option != gpopt_none)
-	error ("-mgpopt not supported with PIC.");
+	error ("%<-mgpopt%> not supported with PIC.");
       if (nios2_gprel_sec)
-	error ("-mgprel-sec= not supported with PIC.");
+	error ("%<-mgprel-sec=%> not supported with PIC.");
       if (nios2_r0rel_sec)
-	error ("-mr0rel-sec= not supported with PIC.");
+	error ("%<-mr0rel-sec=%> not supported with PIC.");
     }
 
   /* Process -mgprel-sec= and -m0rel-sec=.  */
@@ -1396,13 +1397,13 @@ nios2_option_override (void)
     {
       if (regcomp (&nios2_gprel_sec_regex, nios2_gprel_sec, 
 		   REG_EXTENDED | REG_NOSUB))
-	error ("-mgprel-sec= argument is not a valid regular expression.");
+	error ("%<-mgprel-sec=%> argument is not a valid regular expression.");
     }
   if (nios2_r0rel_sec)
     {
       if (regcomp (&nios2_r0rel_sec_regex, nios2_r0rel_sec, 
 		   REG_EXTENDED | REG_NOSUB))
-	error ("-mr0rel-sec= argument is not a valid regular expression.");
+	error ("%<-mr0rel-sec=%> argument is not a valid regular expression.");
     }
 
   /* If we don't have mul, we don't have mulx either!  */
@@ -3699,7 +3700,7 @@ nios2_expand_custom_builtin (tree exp, unsigned int index, rtx target)
 	{
 	  if (!custom_insn_opcode (value, VOIDmode))
 	    error ("custom instruction opcode must be compile time "
-		   "constant in the range 0-255 for __builtin_custom_%s",
+		   "constant in the range 0-255 for %<__builtin_custom_%s%>",
 		   custom_builtin_name[index]);
 	}
       else

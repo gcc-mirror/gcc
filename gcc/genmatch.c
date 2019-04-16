@@ -3311,7 +3311,9 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
     }
 
   fprintf_indent (f, indent, "if (__builtin_expect (dump_file && (dump_flags & TDF_FOLDING), 0)) "
-	   "fprintf (dump_file, \"Applying pattern ");
+	   "fprintf (dump_file, \"%s ",
+	   s->kind == simplify::SIMPLIFY
+	   ? "Applying pattern" : "Matching expression");
   fprintf (f, "%%s:%%d, %%s:%%d\\n\", ");
   output_line_directive (f,
 			 result ? result->location : s->match->location, true,

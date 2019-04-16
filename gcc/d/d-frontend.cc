@@ -446,7 +446,7 @@ Compiler::genCmain (Scope *sc)
    so we just lower the value to GCC and return the converted CST.  */
 
 Expression *
-Compiler::paintAsType (Expression *expr, Type *type)
+Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
 {
   /* We support up to 512-bit values.  */
   unsigned char buffer[64];

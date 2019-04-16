@@ -1,6 +1,6 @@
 /* PR middle-end/40340 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wall -Wno-system-headers -g" } */
+/* { dg-options "-O2 -Wall -Wno-array-bounds -Wno-system-headers -g" } */
 
 #define TEST3
 #include "pr40340.h"

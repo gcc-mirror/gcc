@@ -315,7 +315,9 @@ tag_function (const char *filename ATTRIBUTE_UNUSED,
 	  unsigned line_start = gcov_read_unsigned ();
 	  unsigned column_start = gcov_read_unsigned ();
 	  unsigned line_end = gcov_read_unsigned ();
-	  printf (":%u:%u:%u", line_start, column_start, line_end);
+	  unsigned column_end = gcov_read_unsigned ();
+	  printf (":%u:%u-%u:%u", line_start, column_start,
+		  line_end, column_end);
 	  if (artificial)
 	    printf (", artificial");
 	}

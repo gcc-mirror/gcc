@@ -5,7 +5,6 @@
 // +build !darwin
 // +build !windows
 // +build !freebsd
-
 package runtime
 
 func walltime() (sec int64, nsec int32)

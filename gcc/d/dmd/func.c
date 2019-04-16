@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2018 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -1437,7 +1437,7 @@ void FuncDeclaration::semantic3(Scope *sc)
         sc2->sw = NULL;
         sc2->fes = fes;
         sc2->linkage = LINKd;
-        sc2->stc &= ~(STCauto | STCscope | STCstatic | STCabstract |
+        sc2->stc &= ~(STCauto | STCscope | STCstatic | STCextern | STCabstract |
                         STCdeprecated | STCoverride |
                         STC_TYPECTOR | STCfinal | STCtls | STCgshared | STCref | STCreturn |
                         STCproperty | STCnothrow | STCpure | STCsafe | STCtrusted | STCsystem);

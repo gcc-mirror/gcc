@@ -1,7 +1,7 @@
 C     Test program for common block debugging.  G. Helffrich 11 July 2004.
 C { dg-do compile }
 C { dg-skip-if "No stabs" { aarch64*-*-* mmix-*-* alpha*-*-* hppa*64*-*-* ia64-*-* *-*-vxworks* } }
-C { dg-skip-if "No stabs" {*-*-* } { "*" } { "-gstabs" } }
+C { dg-skip-if "No stabs" { *-*-* } { "*" } { "-gstabs" } }
       common i,j
       common /label/l,m
       i = 1

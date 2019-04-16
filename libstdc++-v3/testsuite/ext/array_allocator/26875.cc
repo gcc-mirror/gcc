@@ -33,8 +33,8 @@ int main()
 
   try
     {
-      Allocator1.allocate(1);
-      Allocator2.allocate(1);
+      (void) Allocator1.allocate(1);
+      (void) Allocator2.allocate(1);
     }
   catch (std::bad_alloc& ex)
     {

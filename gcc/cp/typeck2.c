@@ -824,11 +824,11 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
       value = digest_init_flags (type, init, flags, tf_warning_or_error);
     }
 
-  if (TREE_CODE (type) == ARRAY_TYPE
-      && TYPE_STRING_FLAG (TREE_TYPE (type))
-      && TREE_CODE (value) == CONSTRUCTOR)
-    value = braced_list_to_string (type, value);
+  /* Look for braced array initializers for character arrays and
+     recursively convert them into STRING_CSTs.  */
+  value = braced_lists_to_strings (type, value);
 
+  current_ref_temp_count = 0;
   value = extend_ref_init_temps (decl, value, cleanups);
 
   /* In C++11 constant expression is a semantic, not syntactic, property.
@@ -842,13 +842,17 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
       value = fold_non_dependent_expr (value);
       if (DECL_DECLARED_CONSTEXPR_P (decl)
 	  || (DECL_IN_AGGR_P (decl)
-	      && DECL_INITIALIZED_IN_CLASS_P (decl)
-	      && !DECL_VAR_DECLARED_INLINE_P (decl)))
+	      && DECL_INITIALIZED_IN_CLASS_P (decl)))
 	{
 	  /* Diagnose a non-constant initializer for constexpr variable or
 	     non-inline in-class-initialized static data member.  */
 	  if (!require_constant_expression (value))
 	    value = error_mark_node;
+	  else if (processing_template_decl)
+	    /* In a template we might not have done the necessary
+	       transformations to make value actually constant,
+	       e.g. extend_ref_init_temps.  */
+	    value = maybe_constant_init (value, decl, true);
 	  else
 	    value = cxx_constant_init (value, decl);
 	}
@@ -1015,7 +1019,7 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain, bool const_only)
 	  int savederrorcount = errorcount;
 	  global_dc->pedantic_errors = 1;
 	  pedwarn (loc, OPT_Wnarrowing,
-		   "narrowing conversion of %qE from %qH to %qI ",
+		   "narrowing conversion of %qE from %qH to %qI",
 		   init, ftype, type);
 	  if (errorcount == savederrorcount)
 	    ok = true;
@@ -1024,6 +1028,17 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain, bool const_only)
     }
 
   return ok;
+}
+
+/* True iff TYPE is a C++2a "ordinary" character type.  */
+
+bool
+ordinary_char_type_p (tree type)
+{
+  type = TYPE_MAIN_VARIANT (type);
+  return (type == char_type_node
+	  || type == signed_char_type_node
+	  || type == unsigned_char_type_node);
 }
 
 /* Process the initializer INIT for a variable of type TYPE, emitting
@@ -1087,40 +1102,33 @@ digest_init_r (tree type, tree init, int nested, int flags,
 
       tree typ1 = TYPE_MAIN_VARIANT (TREE_TYPE (type));
       if (char_type_p (typ1)
-	  /*&& init */
 	  && TREE_CODE (stripped_init) == STRING_CST)
 	{
 	  tree char_type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (init)));
+	  bool incompat_string_cst = false;
 
-	  if (TYPE_PRECISION (typ1) == BITS_PER_UNIT)
+	  if (typ1 != char_type)
 	    {
-	      if (char_type != char_type_node
-		  && char_type != signed_char_type_node
-		  && char_type != unsigned_char_type_node)
-		{
-		  if (complain & tf_error)
-		    error_at (loc, "char-array initialized from wide string");
-		  return error_mark_node;
-		}
+	      /* The array element type does not match the initializing string
+	         literal element type; this is only allowed when both types are
+	         ordinary character type.  There are no string literals of
+	         signed or unsigned char type in the language, but we can get
+	         them internally from converting braced-init-lists to
+	         STRING_CST.  */
+	      if (ordinary_char_type_p (typ1)
+		  && ordinary_char_type_p (char_type))
+		/* OK */;
+	      else
+		incompat_string_cst = true;
 	    }
-	  else
+
+	  if (incompat_string_cst)
 	    {
-	      if (char_type == char_type_node
-		  || char_type == signed_char_type_node
-		  || char_type == unsigned_char_type_node)
-		{
-		  if (complain & tf_error)
-		    error_at (loc,
-			      "int-array initialized from non-wide string");
-		  return error_mark_node;
-		}
-	      else if (char_type != typ1)
-		{
-		  if (complain & tf_error)
-		    error_at (loc, "int-array initialized from incompatible "
-			      "wide string");
-		  return error_mark_node;
-		}
+	      if (complain & tf_error)
+		error_at (loc, "cannot initialize array of %qT from "
+		          "a string literal with type array of %qT",
+		          typ1, char_type);
+	      return error_mark_node;
 	    }
 
 	  if (nested == 2 && !TYPE_DOMAIN (type))
@@ -1192,8 +1200,7 @@ digest_init_r (tree type, tree init, int nested, int flags,
   /* "If T is a class type and the initializer list has a single
      element of type cv U, where U is T or a class derived from T,
      the object is initialized from that element."  */
-  if (flag_checking
-      && cxx_dialect >= cxx11
+  if (cxx_dialect >= cxx11
       && BRACE_ENCLOSED_INITIALIZER_P (stripped_init)
       && CONSTRUCTOR_NELTS (stripped_init) == 1
       && ((CLASS_TYPE_P (type) && !CLASSTYPE_NON_AGGREGATE (type))
@@ -1201,8 +1208,29 @@ digest_init_r (tree type, tree init, int nested, int flags,
     {
       tree elt = CONSTRUCTOR_ELT (stripped_init, 0)->value;
       if (reference_related_p (type, TREE_TYPE (elt)))
-	/* We should have fixed this in reshape_init.  */
-	gcc_unreachable ();
+	{
+	  /* In C++17, aggregates can have bases, thus participate in
+	     aggregate initialization.  In the following case:
+
+	       struct B { int c; };
+	       struct D : B { };
+	       D d{{D{{42}}}};
+
+	    there's an extra set of braces, so the D temporary initializes
+	    the first element of d, which is the B base subobject.  The base
+	    of type B is copy-initialized from the D temporary, causing
+	    object slicing.  */
+	  tree field = next_initializable_field (TYPE_FIELDS (type));
+	  if (field && DECL_FIELD_IS_BASE (field))
+	    {
+	      if (warning_at (loc, 0, "initializing a base class of type %qT "
+			      "results in object slicing", TREE_TYPE (field)))
+		inform (loc, "remove %<{ }%> around initializer");
+	    }
+	  else if (flag_checking)
+	    /* We should have fixed this in reshape_init.  */
+	    gcc_unreachable ();
+	}
     }
 
   if (BRACE_ENCLOSED_INITIALIZER_P (stripped_init)
@@ -1317,8 +1345,7 @@ massage_init_elt (tree type, tree init, int nested, int flags,
     init = TARGET_EXPR_INITIAL (init);
   /* When we defer constant folding within a statement, we may want to
      defer this folding as well.  */
-  tree t = fold_non_dependent_expr (init, complain);
-  t = maybe_constant_init (t);
+  tree t = fold_non_dependent_init (init, complain);
   if (TREE_CONSTANT (t))
     init = t;
   return init;
@@ -1592,12 +1619,15 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	      else
 		return PICFLAG_ERRONEOUS;
 	    }
+	  /* Do nothing for flexible array members since they need not have any
+	     elements.  Don't worry about 'skipped' because a flexarray has to
+	     be the last field.  */
+	  else if (TREE_CODE (fldtype) == ARRAY_TYPE && !TYPE_DOMAIN (fldtype))
+	    continue;
 
 	  /* Warn when some struct elements are implicitly initialized
-	     to zero.  However, avoid issuing the warning for flexible
-	     array members since they need not have any elements.  */
-	  if ((TREE_CODE (fldtype) != ARRAY_TYPE || TYPE_DOMAIN (fldtype))
-	      && (complain & tf_warning)
+	     to zero.  */
+	  if ((complain & tf_warning)
 	      && !EMPTY_CONSTRUCTOR_P (init))
 	    warning (OPT_Wmissing_field_initializers,
 		     "missing initializer for member %qD", field);
@@ -1614,6 +1644,13 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	      continue;
 	    }
 	}
+
+      if (DECL_SIZE (field) && integer_zerop (DECL_SIZE (field))
+	  && !TREE_SIDE_EFFECTS (next))
+	/* Don't add trivial initialization of an empty base/field to the
+	   constructor, as they might not be ordered the way the back-end
+	   expects.  */
+	continue;
 
       /* If this is a bitfield, now convert to the lowered type.  */
       if (type != TREE_TYPE (field))
@@ -2352,6 +2389,9 @@ tree
 merge_exception_specifiers (tree list, tree add)
 {
   tree noex, orig_list;
+
+  if (list == error_mark_node || add == error_mark_node)
+    return error_mark_node;
 
   /* No exception-specifier or noexcept(false) are less strict than
      anything else.  Prefer the newer variant (LIST).  */

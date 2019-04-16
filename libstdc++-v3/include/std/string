@@ -65,12 +65,50 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using basic_string = std::basic_string<_CharT, _Traits,
 					     polymorphic_allocator<_CharT>>;
     using string    = basic_string<char>;
+#ifdef _GLIBCXX_USE_CHAR8_T
+    using u8string  = basic_string<char8_t>;
+#endif
     using u16string = basic_string<char16_t>;
     using u32string = basic_string<char32_t>;
 #ifdef _GLIBCXX_USE_WCHAR_T
     using wstring   = basic_string<wchar_t>;
 #endif
   } // namespace pmr
+
+  template<typename _Str>
+    struct __hash_string_base
+    : public __hash_base<size_t, _Str>
+    {
+      size_t
+      operator()(const _Str& __s) const noexcept
+      { return hash<basic_string_view<typename _Str::value_type>>{}(__s); }
+    };
+
+  template<>
+    struct hash<pmr::string>
+    : public __hash_string_base<pmr::string>
+    { };
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<>
+    struct hash<pmr::u8string>
+    : public __hash_string_base<pmr::u8string>
+    { };
+#endif
+  template<>
+    struct hash<pmr::u16string>
+    : public __hash_string_base<pmr::u16string>
+    { };
+  template<>
+    struct hash<pmr::u32string>
+    : public __hash_string_base<pmr::u32string>
+    { };
+#ifdef _GLIBCXX_USE_WCHAR_T
+  template<>
+    struct hash<pmr::wstring>
+    : public __hash_string_base<pmr::wstring>
+    { };
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++17
@@ -79,6 +117,9 @@ _GLIBCXX_END_NAMESPACE_VERSION
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+#define __cpp_lib_erase_if 201900L
+
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   typename _Predicate>
     inline typename basic_string<_CharT, _Traits, _Alloc>::size_type

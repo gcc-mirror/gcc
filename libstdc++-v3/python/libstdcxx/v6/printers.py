@@ -1093,13 +1093,23 @@ class StdExpOptionalPrinter(SingleObjContainerPrinter):
 
     def __init__ (self, typename, val):
         valtype = self._recognize (val.type.template_argument(0))
-        self.typename = strip_versioned_namespace(typename)
-        self.typename = re.sub('^std::(experimental::|)(fundamentals_v\d::|)(.*)', r'std::\1\3<%s>' % valtype, self.typename, 1)
-        if not self.typename.startswith('std::experimental'):
-            val = val['_M_payload']
-        self.val = val
-        contained_value = val['_M_payload'] if self.val['_M_engaged'] else None
-        visualizer = gdb.default_visualizer (val['_M_payload'])
+        typename = strip_versioned_namespace(typename)
+        self.typename = re.sub('^std::(experimental::|)(fundamentals_v\d::|)(.*)', r'std::\1\3<%s>' % valtype, typename, 1)
+        payload = val['_M_payload']
+        if self.typename.startswith('std::experimental'):
+            engaged = val['_M_engaged']
+            contained_value = payload
+        else:
+            engaged = payload['_M_engaged']
+            contained_value = payload['_M_payload']
+            try:
+                # Since GCC 9
+                contained_value = contained_value['_M_value']
+            except:
+                pass
+        visualizer = gdb.default_visualizer (contained_value)
+        if not engaged:
+            contained_value = None
         super (StdExpOptionalPrinter, self).__init__ (contained_value, visualizer)
 
     def to_string (self):
@@ -1630,7 +1640,7 @@ def register_type_printers(obj):
         return
 
     # Add type printers for typedefs std::string, std::wstring etc.
-    for ch in ('', 'w', 'u16', 'u32'):
+    for ch in ('', 'w', 'u8', 'u16', 'u32'):
         add_one_type_printer(obj, 'basic_string', ch + 'string')
         add_one_type_printer(obj, '__cxx11::basic_string', ch + 'string')
         # Typedefs for __cxx11::basic_string used to be in namespace __cxx11:
@@ -1680,7 +1690,7 @@ def register_type_printers(obj):
 
     # Add type printers for experimental::basic_string_view typedefs.
     ns = 'experimental::fundamentals_v1::'
-    for ch in ('', 'w', 'u16', 'u32'):
+    for ch in ('', 'w', 'u8', 'u16', 'u32'):
         add_one_type_printer(obj, ns + 'basic_string_view',
                              ns + ch + 'string_view')
 

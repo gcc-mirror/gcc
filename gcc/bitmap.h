@@ -258,7 +258,6 @@ struct bitmap_usage: public mem_usage
   {
     fprintf (stderr, "%-48s %11s%16s%17s%12s%12s%10s\n", name, "Leak", "Peak",
 	     "Times", "N searches", "Search iter", "Type");
-    print_dash_line ();
   }
 
   /* Number search operations.  */
@@ -288,10 +287,10 @@ typedef unsigned long BITMAP_WORD;
 #define BITMAP_ELEMENT_ALL_BITS (BITMAP_ELEMENT_WORDS * BITMAP_WORD_BITS)
 
 /* Obstack for allocating bitmaps and elements from.  */
-struct GTY (()) bitmap_obstack {
+struct bitmap_obstack {
   struct bitmap_element *elements;
   struct bitmap_head *heads;
-  struct obstack GTY ((skip)) obstack;
+  struct obstack obstack;
 };
 
 /* Bitmap set element.  We use a linked list to hold only the bits that
@@ -306,7 +305,7 @@ struct GTY (()) bitmap_obstack {
    bitmap_elt_clear_from to be implemented in unit time rather than
    linear in the number of elements to be freed.  */
 
-struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) bitmap_element {
+struct GTY((chain_next ("%h.next"))) bitmap_element {
   /* In list form, the next element in the linked list;
      in tree form, the left child node in the tree.  */
   struct bitmap_element *next;
@@ -340,7 +339,7 @@ struct GTY(()) bitmap_head {
   /* Last element looked at.  */
   bitmap_element * GTY((skip(""))) current;
   /* Obstack to allocate elements from.  If NULL, then use GGC allocation.  */
-  bitmap_obstack *obstack;
+  bitmap_obstack * GTY((skip(""))) obstack;
   void dump ();
 };
 

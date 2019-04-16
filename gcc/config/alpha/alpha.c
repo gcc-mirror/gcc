@@ -417,7 +417,8 @@ alpha_option_override (void)
       else if (! strcmp (alpha_tp_string, "i"))
 	alpha_tp = ALPHA_TP_INSN;
       else
-	error ("bad value %qs for -mtrap-precision switch", alpha_tp_string);
+	error ("bad value %qs for %<-mtrap-precision%> switch",
+	       alpha_tp_string);
     }
 
   if (alpha_fprm_string)
@@ -431,7 +432,7 @@ alpha_option_override (void)
       else if (! strcmp (alpha_fprm_string,"d"))
 	alpha_fprm = ALPHA_FPRM_DYN;
       else
-	error ("bad value %qs for -mfp-rounding-mode switch",
+	error ("bad value %qs for %<-mfp-rounding-mode%> switch",
 	       alpha_fprm_string);
     }
 
@@ -446,7 +447,8 @@ alpha_option_override (void)
       else if (strcmp (alpha_fptm_string, "sui") == 0)
 	alpha_fptm = ALPHA_FPTM_SUI;
       else
-	error ("bad value %qs for -mfp-trap-mode switch", alpha_fptm_string);
+	error ("bad value %qs for %<-mfp-trap-mode%> switch",
+	       alpha_fptm_string);
     }
 
   if (alpha_cpu_string)
@@ -463,7 +465,7 @@ alpha_option_override (void)
 	    break;
 	  }
       if (i == ct_size)
-	error ("bad value %qs for -mcpu switch", alpha_cpu_string);
+	error ("bad value %qs for %<-mcpu%> switch", alpha_cpu_string);
     }
 
   if (alpha_tune_string)
@@ -478,7 +480,7 @@ alpha_option_override (void)
 	    break;
 	  }
       if (i == ct_size)
-	error ("bad value %qs for -mtune switch", alpha_tune_string);
+	error ("bad value %qs for %<-mtune%> switch", alpha_tune_string);
     }
 
   if (line_size)
@@ -499,7 +501,7 @@ alpha_option_override (void)
   if ((alpha_fptm == ALPHA_FPTM_SU || alpha_fptm == ALPHA_FPTM_SUI)
       && alpha_tp != ALPHA_TP_INSN && alpha_cpu != PROCESSOR_EV6)
     {
-      warning (0, "fp software completion requires -mtrap-precision=i");
+      warning (0, "fp software completion requires %<-mtrap-precision=i%>");
       alpha_tp = ALPHA_TP_INSN;
     }
 
@@ -567,7 +569,8 @@ alpha_option_override (void)
       }
     else
       {
-	warning (0, "bad value %qs for -mmemory-latency", alpha_mlat_string);
+	warning (0, "bad value %qs for %<-mmemory-latency%>",
+		 alpha_mlat_string);
 	lat = 3;
       }
 
@@ -6378,8 +6381,40 @@ alpha_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   offset = get_initialized_tmp_var (t, pre_p, NULL);
 
   indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+
   if (indirect)
-    type = build_pointer_type_for_mode (type, ptr_mode, true);
+    {
+      if (TREE_CODE (type) == COMPLEX_TYPE
+	  && targetm.calls.split_complex_arg (type))
+	{
+	  tree real_part, imag_part, real_temp;
+
+	  tree ptr_type = build_pointer_type_for_mode (TREE_TYPE (type),
+						       ptr_mode, true);
+
+	  real_part = alpha_gimplify_va_arg_1 (ptr_type, base,
+					       offset, pre_p);
+	  real_part = build_va_arg_indirect_ref (real_part);
+
+	  /* Copy the value into a new temporary, lest the formal temporary
+	     be reused out from under us.  */
+	  real_temp = get_initialized_tmp_var (real_part, pre_p, NULL);
+
+	  imag_part = alpha_gimplify_va_arg_1 (ptr_type, base,
+					       offset, pre_p);
+	  imag_part = build_va_arg_indirect_ref (imag_part);
+
+	  r = build2 (COMPLEX_EXPR, type, real_temp, imag_part);
+
+	  /* Stuff the offset temporary back into its field.  */
+	  gimplify_assign (unshare_expr (offset_field),
+			   fold_convert (TREE_TYPE (offset_field), offset),
+			   pre_p);
+	  return r;
+	}
+      else
+	type = build_pointer_type_for_mode (type, ptr_mode, true);
+    }
 
   /* Find the value.  Note that this will be a stable indirection, or
      a composite of stable indirections in the case of complex.  */

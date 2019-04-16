@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-ssa-loop-manip.h"
 #include "cfgloop.h"
+#include "explow.h"
 #include "tree-ssa-loop.h"
 #include "tree-scalar-evolution.h"
 #include "tree-vectorizer.h"
@@ -52,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec-perm-indices.h"
 #include "tree-ssa-loop-niter.h"
 #include "gimple-fold.h"
+#include "regs.h"
 
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"
@@ -948,6 +950,37 @@ vect_model_promotion_demotion_cost (stmt_vec_info stmt_info,
                      "prologue_cost = %d .\n", inside_cost, prologue_cost);
 }
 
+/* Returns true if the current function returns DECL.  */
+
+static bool
+cfun_returns (tree decl)
+{
+  edge_iterator ei;
+  edge e;
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
+    {
+      greturn *ret = safe_dyn_cast <greturn *> (last_stmt (e->src));
+      if (!ret)
+	continue;
+      if (gimple_return_retval (ret) == decl)
+	return true;
+      /* We often end up with an aggregate copy to the result decl,
+         handle that case as well.  First skip intermediate clobbers
+	 though.  */
+      gimple *def = ret;
+      do
+	{
+	  def = SSA_NAME_DEF_STMT (gimple_vuse (def));
+	}
+      while (gimple_clobber_p (def));
+      if (is_a <gassign *> (def)
+	  && gimple_assign_lhs (def) == gimple_return_retval (ret)
+	  && gimple_assign_rhs1 (def) == decl)
+	return true;
+    }
+  return false;
+}
+
 /* Function vect_model_store_cost
 
    Models cost for stores.  In the case of grouped accesses, one access
@@ -1030,6 +1063,37 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
       inside_cost += record_stmt_cost (cost_vec,
 				       ncopies * assumed_nunits,
 				       vec_to_scalar, stmt_info, 0, vect_body);
+    }
+
+  /* When vectorizing a store into the function result assign
+     a penalty if the function returns in a multi-register location.
+     In this case we assume we'll end up with having to spill the
+     vector result and do piecewise loads as a conservative estimate.  */
+  tree base = get_base_address (STMT_VINFO_DATA_REF (stmt_info)->ref);
+  if (base
+      && (TREE_CODE (base) == RESULT_DECL
+	  || (DECL_P (base) && cfun_returns (base)))
+      && !aggregate_value_p (base, cfun->decl))
+    {
+      rtx reg = hard_function_value (TREE_TYPE (base), cfun->decl, 0, 1);
+      /* ???  Handle PARALLEL in some way.  */
+      if (REG_P (reg))
+	{
+	  int nregs = hard_regno_nregs (REGNO (reg), GET_MODE (reg));
+	  /* Assume that a single reg-reg move is possible and cheap,
+	     do not account for vector to gp register move cost.  */
+	  if (nregs > 1)
+	    {
+	      /* Spill.  */
+	      prologue_cost += record_stmt_cost (cost_vec, ncopies,
+						 vector_store,
+						 stmt_info, 0, vect_epilogue);
+	      /* Loads.  */
+	      prologue_cost += record_stmt_cost (cost_vec, ncopies * nregs,
+						 scalar_load,
+						 stmt_info, 0, vect_epilogue);
+	    }
+	}
     }
 
   if (dump_enabled_p ())
@@ -3123,6 +3187,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   enum vect_def_type dt[4]
     = { vect_unknown_def_type, vect_unknown_def_type, vect_unknown_def_type,
 	vect_unknown_def_type };
+  tree vectypes[ARRAY_SIZE (dt)] = {};
   int ndts = ARRAY_SIZE (dt);
   int ncopies, j;
   auto_vec<tree, 8> vargs;
@@ -3182,10 +3247,8 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
   for (i = 0; i < nargs; i++)
     {
-      tree opvectype;
-
       op = gimple_call_arg (stmt, i);
-      if (!vect_is_simple_use (op, vinfo, &dt[i], &opvectype))
+      if (!vect_is_simple_use (op, vinfo, &dt[i], &vectypes[i]))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -3211,9 +3274,9 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	rhs_type = TREE_TYPE (op);
 
       if (!vectype_in)
-	vectype_in = opvectype;
-      else if (opvectype
-	       && opvectype != vectype_in)
+	vectype_in = vectypes[i];
+      else if (vectypes[i]
+	       && vectypes[i] != vectype_in)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -3446,12 +3509,19 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      continue;
 	    }
 
+	  if (mask_opno >= 0 && !vectypes[mask_opno])
+	    {
+	      gcc_assert (modifier != WIDEN);
+	      vectypes[mask_opno]
+		= build_same_sized_truth_vector_type (vectype_in);
+	    }
+
 	  for (i = 0; i < nargs; i++)
 	    {
 	      op = gimple_call_arg (stmt, i);
 	      if (j == 0)
 		vec_oprnd0
-		  = vect_get_vec_def_for_operand (op, stmt_info);
+		  = vect_get_vec_def_for_operand (op, stmt_info, vectypes[i]);
 	      else
 		vec_oprnd0
 		  = vect_get_vec_def_for_stmt_copy (vinfo, orig_vargs[i]);
@@ -3584,7 +3654,8 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      if (j == 0)
 		{
 		  vec_oprnd0
-		    = vect_get_vec_def_for_operand (op, stmt_info);
+		    = vect_get_vec_def_for_operand (op, stmt_info,
+						    vectypes[i]);
 		  vec_oprnd1
 		    = vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd0);
 		}
@@ -5540,6 +5611,16 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      if (!operand_equal_p (gimple_assign_rhs2 (slpstmt), op1, 0))
 		scalar_shift_arg = false;
 	    }
+
+	  /* For internal SLP defs we have to make sure we see scalar stmts
+	     for all vector elements.
+	     ???  For different vectors we could resort to a different
+	     scalar shift operand but code-generation below simply always
+	     takes the first.  */
+	  if (dt[1] == vect_internal_def
+	      && maybe_ne (nunits_out * SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node),
+			   stmts.length ()))
+	    scalar_shift_arg = false;
 	}
 
       /* If the shift amount is computed by a pattern stmt we cannot
@@ -7623,19 +7704,6 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			     "group loads with negative dependence distance\n");
 	  return false;
 	}
-
-      /* Similarly when the stmt is a load that is both part of a SLP
-         instance and a loop vectorized stmt via the same-dr mechanism
-	 we have to give up.  */
-      if (DR_GROUP_SAME_DR_STMT (stmt_info)
-	  && (STMT_SLP_TYPE (stmt_info)
-	      != STMT_SLP_TYPE (DR_GROUP_SAME_DR_STMT (stmt_info))))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "conflicting SLP types for CSEd load\n");
-	  return false;
-	}
     }
   else
     group_size = 1;
@@ -9248,6 +9316,7 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
        BITOP2 (rhs1 BITOP1 rhs2) or
        rhs1 BITOP2 (BITOP1 rhs2)
      depending on bitop1 and bitop2 arity.  */
+  bool swap_p = false;
   if (VECTOR_BOOLEAN_TYPE_P (vectype))
     {
       if (code == GT_EXPR)
@@ -9264,15 +9333,13 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	{
 	  bitop1 = BIT_NOT_EXPR;
 	  bitop2 = BIT_AND_EXPR;
-	  std::swap (rhs1, rhs2);
-	  std::swap (dts[0], dts[1]);
+	  swap_p = true;
 	}
       else if (code == LE_EXPR)
 	{
 	  bitop1 = BIT_NOT_EXPR;
 	  bitop2 = BIT_IOR_EXPR;
-	  std::swap (rhs1, rhs2);
-	  std::swap (dts[0], dts[1]);
+	  swap_p = true;
 	}
       else
 	{
@@ -9339,6 +9406,8 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      vect_get_slp_defs (ops, slp_node, &vec_defs);
 	      vec_oprnds1 = vec_defs.pop ();
 	      vec_oprnds0 = vec_defs.pop ();
+	      if (swap_p)
+		std::swap (vec_oprnds0, vec_oprnds1);
 	    }
 	  else
 	    {
@@ -9358,6 +9427,8 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
       if (!slp_node)
 	{
+	  if (swap_p)
+	    std::swap (vec_rhs1, vec_rhs2);
 	  vec_oprnds0.quick_push (vec_rhs1);
 	  vec_oprnds1.quick_push (vec_rhs2);
 	}

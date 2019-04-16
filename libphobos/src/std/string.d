@@ -5174,30 +5174,8 @@ body
     assert(buffer.data == "h5 rd");
 }
 
-//@@@DEPRECATED_2018-05@@@
-/***********************************************
- * $(RED This function is deprecated and will be removed May 2018.)
- * Please use the functions in $(MREF std, regex) and $(MREF std, algorithm)
- * instead. If you still need this function, it will be available in
- * $(LINK2 https://github.com/dlang/undeaD, undeaD).
- *
- * See if character c is in the pattern.
- * Patterns:
- *
- *  A $(I pattern) is an array of characters much like a $(I character
- *  class) in regular expressions. A sequence of characters
- *  can be given, such as "abcde". The '-' can represent a range
- *  of characters, as "a-e" represents the same pattern as "abcde".
- *  "a-fA-F0-9" represents all the hex characters.
- *  If the first character of a pattern is '^', then the pattern
- *  is negated, i.e. "^0-9" means any character except a digit.
- *  The functions inPattern, $(B countchars), $(B removeschars),
- *  and $(B squeeze) use patterns.
- *
- * Note: In the future, the pattern syntax may be improved
- *  to be more like regular expression character classes.
- */
-deprecated("This function is obsolete and will be removed May 2018. See the docs for more details")
+//@@@DEPRECATED_2.086@@@
+deprecated("This function is obsolete. It is available in https://github.com/dlang/undeaD if necessary.")
 bool inPattern(S)(dchar c, in S pattern) @safe pure @nogc
 if (isSomeString!S)
 {
@@ -5262,16 +5240,8 @@ deprecated
     });
 }
 
-//@@@DEPRECATED_2018-05@@@
-/***********************************************
- * $(RED This function is deprecated and will be removed May 2018.)
- * Please use the functions in $(MREF std, regex) and $(MREF std, algorithm)
- * instead. If you still need this function, it will be available in
- * $(LINK2 https://github.com/dlang/undeaD, undeaD).
- *
- * See if character c is in the intersection of the patterns.
- */
-deprecated("This function is obsolete and will be removed May 2018. See the docs for more details")
+//@@@DEPRECATED_2.086@@@
+deprecated("This function is obsolete. It is available in https://github.com/dlang/undeaD if necessary.")
 bool inPattern(S)(dchar c, S[] patterns) @safe pure @nogc
 if (isSomeString!S)
 {
@@ -5285,16 +5255,8 @@ if (isSomeString!S)
     return true;
 }
 
-//@@@DEPRECATED_2018-05@@@
-/********************************************
- * $(RED This function is deprecated and will be removed May 2018.)
- * Please use the functions in $(MREF std, regex) and $(MREF std, algorithm)
- * instead. If you still need this function, it will be available in
- * $(LINK2 https://github.com/dlang/undeaD, undeaD).
- *
- * Count characters in s that match pattern.
- */
-deprecated("This function is obsolete and will be removed May 2018. See the docs for more details")
+//@@@DEPRECATED_2.086@@@
+deprecated("This function is obsolete. It is available in https://github.com/dlang/undeaD if necessary.")
 size_t countchars(S, S1)(S s, in S1 pattern) @safe pure @nogc
 if (isSomeString!S && isSomeString!S1)
 {
@@ -5319,16 +5281,8 @@ deprecated
     });
 }
 
-//@@@DEPRECATED_2018-05@@@
-/********************************************
- * $(RED This function is deprecated and will be removed May 2018.)
- * Please use the functions in $(MREF std, regex) and $(MREF std, algorithm)
- * instead. If you still need this function, it will be available in
- * $(LINK2 https://github.com/dlang/undeaD, undeaD).
- *
- * Return string that is s with all characters removed that match pattern.
- */
-deprecated("This function is obsolete and will be removed May 2018. See the docs for more details")
+//@@@DEPRECATED_2.086@@@
+deprecated("This function is obsolete. It is available in https://github.com/dlang/undeaD if necessary.")
 S removechars(S)(S s, in S pattern) @safe pure
 if (isSomeString!S)
 {
@@ -5380,18 +5334,8 @@ deprecated
     assert(removechars("abc", "x") == "abc");
 }
 
-//@@@DEPRECATED_2018-05@@@
-/***************************************************
- * $(RED This function is deprecated and will be removed May 2018.)
- * Please use the functions in $(MREF std, regex) and $(MREF std, algorithm)
- * instead. If you still need this function, it will be available in
- * $(LINK2 https://github.com/dlang/undeaD, undeaD).
- *
- * Return string where sequences of a character in s[] from pattern[]
- * are replaced with a single instance of that character.
- * If pattern is null, it defaults to all characters.
- */
-deprecated("This function is obsolete and will be removed May 2018. See the docs for more details")
+//@@@DEPRECATED_2.086@@@
+deprecated("This function is obsolete. It is available in https://github.com/dlang/undeaD if necessary.")
 S squeeze(S)(S s, in S pattern = null)
 {
     import std.utf : encode, stride;
@@ -5456,24 +5400,8 @@ deprecated
     });
 }
 
-//@@@DEPRECATED_2018-05@@@
-/***************************************************************
- $(RED This function is deprecated and will be removed May 2018.)
- Please use the functions in $(MREF std, regex) and $(MREF std, algorithm)
- instead. If you still need this function, it will be available in
- $(LINK2 https://github.com/dlang/undeaD, undeaD).
-
- Finds the position $(D_PARAM pos) of the first character in $(D_PARAM
- s) that does not match $(D_PARAM pattern) (in the terminology used by
- $(REF inPattern, std,string)). Updates $(D_PARAM s =
- s[pos..$]). Returns the slice from the beginning of the original
- (before update) string up to, and excluding, $(D_PARAM pos).
-
-The $(D_PARAM munch) function is mostly convenient for skipping
-certain category of characters (e.g. whitespace) when parsing
-strings. (In such cases, the return value is not used.)
- */
-deprecated("This function is obsolete and will be removed May 2018. See the docs for more details")
+//@@@DEPRECATED_2.086@@@
+deprecated("This function is obsolete. It is available in https://github.com/dlang/undeaD if necessary.")
 S1 munch(S1, S2)(ref S1 s, S2 pattern) @safe pure @nogc
 {
     size_t j = s.length;

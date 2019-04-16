@@ -307,8 +307,8 @@
 ;; DImode moves
 
 (define_insn "*movdi_vfp"
-  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r,r,r,r,q,q,m,w,!r,w,w, Uv")
-	(match_operand:DI 1 "di_operand"	      "r,rDa,Db,Dc,mi,mi,q,r,w,w,UvTu,w"))]
+  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r,r,r,r,r,r,m,w,!r,w,w, Uv")
+	(match_operand:DI 1 "di_operand"	      "r,rDa,Db,Dc,mi,mi,r,r,w,w,UvTu,w"))]
   "TARGET_32BIT && TARGET_HARD_FLOAT
    && (   register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))
@@ -871,14 +871,15 @@
   if (REGNO (operands[0]) == REGNO (operands[1]))
     {
       operands[0] = gen_highpart (SImode, operands[0]);
-      operands[1] = gen_rtx_XOR (SImode, operands[0], GEN_INT (0x80000000));
+      operands[1] = gen_rtx_XOR (SImode, operands[0],
+				 gen_int_mode (0x80000000, SImode));
     }
   else
     {
       rtx in_hi, in_lo, out_hi, out_lo;
 
       in_hi = gen_rtx_XOR (SImode, gen_highpart (SImode, operands[1]),
-			   GEN_INT (0x80000000));
+			   gen_int_mode (0x80000000, SImode));
       in_lo = gen_lowpart (SImode, operands[1]);
       out_hi = gen_highpart (SImode, operands[0]);
       out_lo = gen_lowpart (SImode, operands[0]);

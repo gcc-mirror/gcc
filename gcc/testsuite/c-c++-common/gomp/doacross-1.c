@@ -38,11 +38,11 @@ foo (void)
   for (i = 0; i < 64; i++)
     {
       #pragma omp ordered depend (sink: i - 1) depend (sink: i - 2)
-      #pragma omp ordered depend (source) depend (source) /* { dg-error "more than one .depend.source.. clause on an" } */
+      #pragma omp ordered depend (source) depend (source) /* { dg-error "more than one .depend. clause with .source. modifier on an .ordered. construct" } */
     }
   #pragma omp for ordered (1)
   for (i = 0; i < 64; i++)
     {
-      #pragma omp ordered depend (sink: i - 1) depend (source) depend (sink: i - 2) /* { dg-error "clause specified together with" } */
+      #pragma omp ordered depend (sink: i - 1) depend (source) depend (sink: i - 2) /* { dg-error ".depend. clause with .source. modifier specified together with .depend. clauses with .sink. modifier on the same construct" } */
     }
 }

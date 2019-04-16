@@ -161,6 +161,17 @@ proc libstdc++_init { testfile } {
     }
     v3track gccdir 3
 
+    # Locate libatomic.
+    set v3-libatomic 0
+    set libatomicdir [lookfor_file $blddir/../libatomic .libs/libatomic.$shlib_ext]
+    if {$libatomicdir != ""} {
+	set v3-libatomic 1
+	set libatomicdir [file dirname $libatomicdir]
+	append ld_library_path_tmp ":${libatomicdir}"
+	verbose -log "libatomic support detected"
+    }
+    v3track libatomicdir 3
+
     # Locate libgomp. This is only required for parallel mode.
     set v3-libgomp 0
     set libgompdir [lookfor_file $blddir/../libgomp .libs/libgomp.$shlib_ext]
@@ -1037,7 +1048,7 @@ proc check_v3_target_parallel_mode { } {
 	global v3-libgomp
 	# If 'make check-parallel' is running the test succeeds.
 	if { ${v3-libgomp} == 1 && [regexp "libgomp" $cxxflags] } {
-	    return1 1
+	    return 1
 	}
 	return 0
     }]
@@ -1592,6 +1603,29 @@ proc check_effective_target_random_device { } {
 
     verbose "check_v3_random_device: `0'" 2
     return 0
+}
+
+# Return 1 if tbb parallel backend is available
+proc check_effective_target_tbb-backend { } {
+		global cxxflags
+
+		# Set up and preprocess a C++ test program that depends
+		# on tbb
+		set src tbb_backend[pid].cc
+
+		set f [open $src "w"]
+		puts $f "#include <tbb/tbb.h>"
+		close $f
+		set lines [v3_target_compile $src /dev/null preprocess ""]
+		file delete $src
+
+		if [string match "" $lines] {
+				# No error message, preprocessing succeeded.
+				verbose "check_v3_tbb-backend: `1'" 2
+				return 1
+		}
+		verbose "check_v3_tbb-backend: `0'" 2
+		return 0
 }
 
 set additional_prunes ""

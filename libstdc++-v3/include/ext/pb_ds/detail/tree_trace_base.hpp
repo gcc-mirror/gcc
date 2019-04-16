@@ -80,7 +80,7 @@ namespace __gnu_pbds
       void
       trace_node(node_const_iterator, size_type) const;
 
-      virtual bool
+      _GLIBCXX_NODISCARD virtual bool
       empty() const = 0;
 
       virtual node_const_iterator

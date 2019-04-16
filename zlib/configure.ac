@@ -74,21 +74,10 @@ if test -n "$with_cross_host"; then
    # we'll have.
    AC_DEFINE(HAVE_MEMCPY)
    AC_DEFINE(HAVE_STRERROR)
-
-   # We ignore --with-system-zlib in this case.
-   target_all=libzgcj.la
 else
    AC_FUNC_MMAP
    AC_CHECK_FUNCS(memcpy strerror)
-
-   if test "$with_system_zlib" = yes; then
-      AC_CHECK_LIB(z, deflate, target_all=, target_all=libzgcj.la)
-   else
-      target_all=libzgcj.la
-   fi
 fi
-
-AC_SUBST(target_all)
 
 AC_CHECK_HEADERS(unistd.h)
 

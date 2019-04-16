@@ -780,6 +780,7 @@ Archive_iterator::read_next_header()
                                      &this->next_off_))
 	{
 	  this->header_.off = filesize;
+	  this->off_ = filesize;
 	  return;
 	}
       this->header_.off = this->off_;

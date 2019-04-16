@@ -18,12 +18,12 @@
 # This requires that you have your environment set-up to use explicit
 # versions of automake and autoconf.
 #
-#    export ACLOCAL=/usr/bin/aclocal-1.11
-#    export AUTOMAKE=/usr/bin/automake-1.11
-#    export AUTOM4TE=/usr/bin/autom4te2.64
-#    export AUTOCONF=/usr/bin/autoconf2.64
+#    export ACLOCAL=/usr/bin/aclocal-1.15
+#    export AUTOMAKE=/usr/bin/automake-1.15
+#    export AUTOM4TE=/usr/bin/autom4te2.69
+#    export AUTOCONF=/usr/bin/autoconf2.69
 #
-#    autoreconf2.64
+#    autoreconf2.69
 #
 
 AC_INIT(package-unused, version-unused,, libphobos)
@@ -42,11 +42,12 @@ AC_SUBST(target_alias)
 # no-dependencies: Don't generate automatic dependencies.
 #    (because it breaks when using bootstrap-lean, since some of the
 #    headers are gone at "make install" time).
+# subdir-objects: Build objects in sub-directories.
 # -Wall: Issue all automake warnings.
 # -Wno-portability: Don't warn about constructs supported by GNU make.
 #    (because GCC requires GNU make anyhow).
 #  -Wno-override: Overrides used in testsuite.
-AM_INIT_AUTOMAKE([1.11.1 foreign no-dist no-define no-dependencies -Wall -Wno-portability -Wno-override])
+AM_INIT_AUTOMAKE([1.11.1 foreign no-dist no-define no-dependencies subdir-objects -Wall -Wno-portability -Wno-override])
 
 m4_rename([_AC_ARG_VAR_PRECIOUS],[glibd_PRECIOUS])
 m4_define([_AC_ARG_VAR_PRECIOUS],[])
@@ -75,8 +76,6 @@ AC_SUBST(CFLAGS_FOR_BUILD)
 LT_INIT(dlopen)
 AM_PROG_LIBTOOL
 WITH_LOCAL_DRUNTIME([LT_LANG([D])], [])
-AM_CONDITIONAL([ENABLE_SHARED], [test "$enable_shared" = "yes"])
-AM_CONDITIONAL([ENABLE_STATIC], [test "$enable_static" = "yes"])
 
 # libtool variables for Phobos shared and position-independent compiles.
 #
@@ -126,6 +125,7 @@ DRUNTIME_OS_SOURCES
 DRUNTIME_OS_THREAD_MODEL
 DRUNTIME_OS_ARM_EABI_UNWINDER
 DRUNTIME_OS_MINFO_BRACKETING
+DRUNTIME_LIBRARIES_CLIB
 
 WITH_LOCAL_DRUNTIME([
   AC_LANG_PUSH([D])
@@ -140,8 +140,17 @@ WITH_LOCAL_DRUNTIME([
 DRUNTIME_LIBRARIES_ATOMIC
 DRUNTIME_LIBRARIES_BACKTRACE
 DRUNTIME_LIBRARIES_DLOPEN
+DRUNTIME_LIBRARIES_NET
 DRUNTIME_LIBRARIES_ZLIB
 DRUNTIME_INSTALL_DIRECTORIES
+
+# Add drtbegin.o/drtend.o to startfile/endfile specs in libgphobos.spec
+if test "$DCFG_MINFO_BRACKETING" = "false"; then
+    DRTSTUFF_SPEC=$srcdir/src/drtstuff.spec
+else
+    DRTSTUFF_SPEC=/dev/null
+fi
+AC_SUBST_FILE(DRTSTUFF_SPEC)
 
 # Add dependencies for libgphobos.spec file
 SPEC_PHOBOS_DEPS="$LIBS"

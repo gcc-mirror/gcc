@@ -1,3 +1,7 @@
+2019-02-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* generate_libstdcxx_web_docs: Improve error output.
+
 2018-11-22  Martin Liska  <mliska@suse.cz>
 
 	* bugzilla-close-candidate.py: New file.

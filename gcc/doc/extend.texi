@@ -47,6 +47,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Escaped Newlines::    Slightly looser rules for escaped newlines.
 * Subscripting::        Any array can be subscripted, even if not an lvalue.
 * Pointer Arith::       Arithmetic on @code{void}-pointers and function pointers.
+* Variadic Pointer Args::  Pointer arguments to variadic functions.
 * Pointers to Arrays::  Pointers to arrays with qualifiers work as expected.
 * Initializers::        Non-constant initializers.
 * Compound Literals::   Compound literals give structures, unions
@@ -141,12 +142,34 @@ follows:
 @cindex side effects, macro argument
 But this definition computes either @var{a} or @var{b} twice, with bad
 results if the operand has side effects.  In GNU C, if you know the
-type of the operands (here taken as @code{int}), you can define
-the macro safely as follows:
+type of the operands (here taken as @code{int}), you can avoid this
+problem by defining the macro as follows:
 
 @smallexample
 #define maxint(a,b) \
   (@{int _a = (a), _b = (b); _a > _b ? _a : _b; @})
+@end smallexample
+
+Note that introducing variable declarations (as we do in @code{maxint}) can
+cause variable shadowing, so while this example using the @code{max} macro
+produces correct results:
+@smallexample
+int _a = 1, _b = 2, c;
+c = max (_a, _b);
+@end smallexample
+@noindent
+this example using maxint will not:
+@smallexample
+int _a = 1, _b = 2, c;
+c = maxint (_a, _b);
+@end smallexample
+
+This problem may for instance occur when we use this pattern recursively, like
+so:
+
+@smallexample
+#define maxint3(a, b, c) \
+  (@{int _a = (a), _b = (b), _c = (c); maxint (maxint (_a, _b), _c); @})
 @end smallexample
 
 Embedded statements are not allowed in constant expressions, such as
@@ -213,7 +236,14 @@ statement expression is part of a larger expression then it is
 unspecified which other subexpressions of that expression have been
 evaluated except where the language definition requires certain
 subexpressions to be evaluated before or after the statement
-expression.  In any case, as with a function call, the evaluation of a
+expression.  A @code{break} or @code{continue} statement inside of
+a statement expression used in @code{while}, @code{do} or @code{for}
+loop or @code{switch} statement condition
+or @code{for} statement init or increment expressions jumps to an
+outer loop or @code{switch} statement if any (otherwise it is an error),
+rather than to the loop or @code{switch} statement in whose condition
+or init or increment expression it appears.
+In any case, as with a function call, the evaluation of a
 statement expression is not interleaved with the evaluation of other
 parts of the containing expression.  For example,
 
@@ -1937,6 +1967,22 @@ and on function types, and returns 1.
 The option @option{-Wpointer-arith} requests a warning if these extensions
 are used.
 
+@node Variadic Pointer Args
+@section Pointer Arguments in Variadic Functions
+@cindex pointer arguments in variadic functions
+@cindex variadic functions, pointer arguments
+
+Standard C requires that pointer types used with @code{va_arg} in
+functions with variable argument lists either must be compatible with
+that of the actual argument, or that one type must be a pointer to
+@code{void} and the other a pointer to a character type.  GNU C
+implements the POSIX XSI extension that additionally permits the use
+of @code{va_arg} with a pointer type to receive arguments of any other
+pointer type.
+
+In particular, in GNU C @samp{va_arg (ap, void *)} can safely be used
+to consume an argument of any pointer type.
+
 @node Pointers to Arrays
 @section Pointers to Arrays with Qualifiers Work as Expected
 @cindex pointers to arrays
@@ -2268,27 +2314,46 @@ case 1...5:
 @cindex cast to a union
 @cindex union, casting to a
 
-A cast to union type looks similar to other casts, except that the type
-specified is a union type.  You can specify the type either with the
-@code{union} keyword or with a @code{typedef} name that refers to
-a union.  A cast to a union actually creates a compound literal and
-yields an lvalue, not an rvalue like true casts do.
+A cast to a union type is a C extension not available in C++.  It looks
+just like ordinary casts with the constraint that the type specified is
+a union type.  You can specify the type either with the @code{union}
+keyword or with a @code{typedef} name that refers to a union.  The result
+of a cast to a union is a temporary rvalue of the union type with a member
+whose type matches that of the operand initialized to the value of
+the operand.  The effect of a cast to a union is similar to a compound
+literal except that it yields an rvalue like standard casts do.
 @xref{Compound Literals}.
 
-The types that may be cast to the union type are those of the members
-of the union.  Thus, given the following union and variables:
+Expressions that may be cast to the union type are those whose type matches
+at least one of the members of the union.  Thus, given the following union
+and variables:
 
 @smallexample
 union foo @{ int i; double d; @};
 int x;
 double y;
+union foo z;
 @end smallexample
 
 @noindent
-both @code{x} and @code{y} can be cast to type @code{union foo}.
+both @code{x} and @code{y} can be cast to type @code{union foo} and
+the following assignments
+@smallexample
+  z = (union foo) x;
+  z = (union foo) y;
+@end smallexample
+are shorthand equivalents of these
+@smallexample
+  z = (union foo) @{ .i = x @};
+  z = (union foo) @{ .d = y @};
+@end smallexample
+
+However, @code{(union foo) FLT_MAX;} is not a valid cast because the union
+has no member of type @code{float}.
 
 Using the cast as the right-hand side of an assignment to a variable of
-union type is equivalent to storing in a member of the union:
+union type is equivalent to storing in a member of the union with
+the same type
 
 @smallexample
 union foo u;
@@ -2393,6 +2458,7 @@ GCC plugins may provide their own attributes.
 @menu
 * Common Function Attributes::
 * AArch64 Function Attributes::
+* AMD GCN Function Attributes::
 * ARC Function Attributes::
 * ARM Function Attributes::
 * AVR Function Attributes::
@@ -3881,7 +3947,15 @@ same as for the @option{-mcpu=} command-line option.
 @cindex @code{sign-return-address} function attribute, AArch64
 Select the function scope on which return address signing will be applied.  The
 behavior and permissible arguments are the same as for the command-line option
-@option{-msign-return-address=}.  The default value is @code{none}.
+@option{-msign-return-address=}.  The default value is @code{none}.  This
+attribute is deprecated.  The @code{branch-protection} attribute should
+be used instead.
+
+@item branch-protection
+@cindex @code{branch-protection} function attribute, AArch64
+Select the function scope on which branch protection will be applied.  The
+behavior and permissible arguments are the same as for the command-line option
+@option{-mbranch-protection=}.  The default value is @code{none}.
 
 @end table
 
@@ -3953,6 +4027,96 @@ Note that CPU tuning options and attributes such as the @option{-mcpu=},
 @option{-mtune=} do not inhibit inlining unless the CPU specified by the
 @option{-mcpu=} option or the @code{cpu=} attribute conflicts with the
 architectural feature rules specified above.
+
+@node AMD GCN Function Attributes
+@subsection AMD GCN Function Attributes
+
+These function attributes are supported by the AMD GCN back end:
+
+@table @code
+@item amdgpu_hsa_kernel
+@cindex @code{amdgpu_hsa_kernel} function attribute, AMD GCN
+This attribute indicates that the corresponding function should be compiled as
+a kernel function, that is an entry point that can be invoked from the host
+via the HSA runtime library.  By default functions are only callable only from
+other GCN functions.
+
+This attribute is implicitly applied to any function named @code{main}, using
+default parameters.
+
+Kernel functions may return an integer value, which will be written to a
+conventional place within the HSA "kernargs" region.
+
+The attribute parameters configure what values are passed into the kernel
+function by the GPU drivers, via the initial register state.  Some values are
+used by the compiler, and therefore forced on.  Enabling other options may
+break assumptions in the compiler and/or run-time libraries.
+
+@table @code
+@item private_segment_buffer
+Set @code{enable_sgpr_private_segment_buffer} flag.  Always on (required to
+locate the stack).
+
+@item dispatch_ptr
+Set @code{enable_sgpr_dispatch_ptr} flag.  Always on (required to locate the
+launch dimensions).
+
+@item queue_ptr
+Set @code{enable_sgpr_queue_ptr} flag.  Always on (required to convert address
+spaces).
+
+@item kernarg_segment_ptr
+Set @code{enable_sgpr_kernarg_segment_ptr} flag.  Always on (required to
+locate the kernel arguments, "kernargs").
+
+@item dispatch_id
+Set @code{enable_sgpr_dispatch_id} flag.
+
+@item flat_scratch_init
+Set @code{enable_sgpr_flat_scratch_init} flag.
+
+@item private_segment_size
+Set @code{enable_sgpr_private_segment_size} flag.
+
+@item grid_workgroup_count_X
+Set @code{enable_sgpr_grid_workgroup_count_x} flag.  Always on (required to
+use OpenACC/OpenMP).
+
+@item grid_workgroup_count_Y
+Set @code{enable_sgpr_grid_workgroup_count_y} flag.
+
+@item grid_workgroup_count_Z
+Set @code{enable_sgpr_grid_workgroup_count_z} flag.
+
+@item workgroup_id_X
+Set @code{enable_sgpr_workgroup_id_x} flag.
+
+@item workgroup_id_Y
+Set @code{enable_sgpr_workgroup_id_y} flag.
+
+@item workgroup_id_Z
+Set @code{enable_sgpr_workgroup_id_z} flag.
+
+@item workgroup_info
+Set @code{enable_sgpr_workgroup_info} flag.
+
+@item private_segment_wave_offset
+Set @code{enable_sgpr_private_segment_wave_byte_offset} flag.  Always on
+(required to locate the stack).
+
+@item work_item_id_X
+Set @code{enable_vgpr_workitem_id} parameter.  Always on (can't be disabled).
+
+@item work_item_id_Y
+Set @code{enable_vgpr_workitem_id} parameter.  Always on (required to enable
+vectorization.)
+
+@item work_item_id_Z
+Set @code{enable_vgpr_workitem_id} parameter.  Always on (required to use
+OpenACC/OpenMP).
+
+@end table
+@end table
 
 @node ARC Function Attributes
 @subsection ARC Function Attributes
@@ -5923,35 +6087,305 @@ allows specification of target-specific compilation options.
 
 On the x86, the following options are allowed:
 @table @samp
+@item 3dnow
+@itemx no-3dnow
+@cindex @code{target("3dnow")} function attribute, x86
+Enable/disable the generation of the 3DNow!@: instructions.
+
+@item 3dnowa
+@itemx no-3dnowa
+@cindex @code{target("3dnowa")} function attribute, x86
+Enable/disable the generation of the enhanced 3DNow!@: instructions.
+
 @item abm
 @itemx no-abm
 @cindex @code{target("abm")} function attribute, x86
 Enable/disable the generation of the advanced bit instructions.
+
+@item adx
+@itemx no-adx
+@cindex @code{target("adx")} function attribute, x86
+Enable/disable the generation of the ADX instructions.
 
 @item aes
 @itemx no-aes
 @cindex @code{target("aes")} function attribute, x86
 Enable/disable the generation of the AES instructions.
 
+@item avx
+@itemx no-avx
+@cindex @code{target("avx")} function attribute, x86
+Enable/disable the generation of the AVX instructions.
+
+@item avx2
+@itemx no-avx2
+@cindex @code{target("avx2")} function attribute, x86
+Enable/disable the generation of the AVX2 instructions.
+
+@item avx5124fmaps
+@itemx no-avx5124fmaps
+@cindex @code{target("avx5124fmaps")} function attribute, x86
+Enable/disable the generation of the AVX5124FMAPS instructions.
+
+@item avx5124vnniw
+@itemx no-avx5124vnniw
+@cindex @code{target("avx5124vnniw")} function attribute, x86
+Enable/disable the generation of the AVX5124VNNIW instructions.
+
+@item avx512bitalg
+@itemx no-avx512bitalg
+@cindex @code{target("avx512bitalg")} function attribute, x86
+Enable/disable the generation of the AVX512BITALG instructions.
+
+@item avx512bw
+@itemx no-avx512bw
+@cindex @code{target("avx512bw")} function attribute, x86
+Enable/disable the generation of the AVX512BW instructions.
+
+@item avx512cd
+@itemx no-avx512cd
+@cindex @code{target("avx512cd")} function attribute, x86
+Enable/disable the generation of the AVX512CD instructions.
+
+@item avx512dq
+@itemx no-avx512dq
+@cindex @code{target("avx512dq")} function attribute, x86
+Enable/disable the generation of the AVX512DQ instructions.
+
+@item avx512er
+@itemx no-avx512er
+@cindex @code{target("avx512er")} function attribute, x86
+Enable/disable the generation of the AVX512ER instructions.
+
+@item avx512f
+@itemx no-avx512f
+@cindex @code{target("avx512f")} function attribute, x86
+Enable/disable the generation of the AVX512F instructions.
+
+@item avx512ifma
+@itemx no-avx512ifma
+@cindex @code{target("avx512ifma")} function attribute, x86
+Enable/disable the generation of the AVX512IFMA instructions.
+
+@item avx512pf
+@itemx no-avx512pf
+@cindex @code{target("avx512pf")} function attribute, x86
+Enable/disable the generation of the AVX512PF instructions.
+
+@item avx512vbmi
+@itemx no-avx512vbmi
+@cindex @code{target("avx512vbmi")} function attribute, x86
+Enable/disable the generation of the AVX512VBMI instructions.
+
+@item avx512vbmi2
+@itemx no-avx512vbmi2
+@cindex @code{target("avx512vbmi2")} function attribute, x86
+Enable/disable the generation of the AVX512VBMI2 instructions.
+
+@item avx512vl
+@itemx no-avx512vl
+@cindex @code{target("avx512vl")} function attribute, x86
+Enable/disable the generation of the AVX512VL instructions.
+
+@item avx512vnni
+@itemx no-avx512vnni
+@cindex @code{target("avx512vnni")} function attribute, x86
+Enable/disable the generation of the AVX512VNNI instructions.
+
+@item avx512vpopcntdq
+@itemx no-avx512vpopcntdq
+@cindex @code{target("avx512vpopcntdq")} function attribute, x86
+Enable/disable the generation of the AVX512VPOPCNTDQ instructions.
+
+@item bmi
+@itemx no-bmi
+@cindex @code{target("bmi")} function attribute, x86
+Enable/disable the generation of the BMI instructions.
+
+@item bmi2
+@itemx no-bmi2
+@cindex @code{target("bmi2")} function attribute, x86
+Enable/disable the generation of the BMI2 instructions.
+
+@item cldemote
+@itemx no-cldemote
+@cindex @code{target("cldemote")} function attribute, x86
+Enable/disable the generation of the CLDEMOTE instructions.
+
+@item clflushopt
+@itemx no-clflushopt
+@cindex @code{target("clflushopt")} function attribute, x86
+Enable/disable the generation of the CLFLUSHOPT instructions.
+
+@item clwb
+@itemx no-clwb
+@cindex @code{target("clwb")} function attribute, x86
+Enable/disable the generation of the CLWB instructions.
+
+@item clzero
+@itemx no-clzero
+@cindex @code{target("clzero")} function attribute, x86
+Enable/disable the generation of the CLZERO instructions.
+
+@item crc32
+@itemx no-crc32
+@cindex @code{target("crc32")} function attribute, x86
+Enable/disable the generation of the CRC32 instructions.
+
+@item cx16
+@itemx no-cx16
+@cindex @code{target("cx16")} function attribute, x86
+Enable/disable the generation of the CMPXCHG16B instructions.
+
 @item default
 @cindex @code{target("default")} function attribute, x86
 @xref{Function Multiversioning}, where it is used to specify the
 default function version.
+
+@item f16c
+@itemx no-f16c
+@cindex @code{target("f16c")} function attribute, x86
+Enable/disable the generation of the F16C instructions.
+
+@item fma
+@itemx no-fma
+@cindex @code{target("fma")} function attribute, x86
+Enable/disable the generation of the FMA instructions.
+
+@item fma4
+@itemx no-fma4
+@cindex @code{target("fma4")} function attribute, x86
+Enable/disable the generation of the FMA4 instructions.
+
+@item fsgsbase
+@itemx no-fsgsbase
+@cindex @code{target("fsgsbase")} function attribute, x86
+Enable/disable the generation of the FSGSBASE instructions.
+
+@item fxsr
+@itemx no-fxsr
+@cindex @code{target("fxsr")} function attribute, x86
+Enable/disable the generation of the FXSR instructions.
+
+@item gfni
+@itemx no-gfni
+@cindex @code{target("gfni")} function attribute, x86
+Enable/disable the generation of the GFNI instructions.
+
+@item hle
+@itemx no-hle
+@cindex @code{target("hle")} function attribute, x86
+Enable/disable the generation of the HLE instruction prefixes.
+
+@item lwp
+@itemx no-lwp
+@cindex @code{target("lwp")} function attribute, x86
+Enable/disable the generation of the LWP instructions.
+
+@item lzcnt
+@itemx no-lzcnt
+@cindex @code{target("lzcnt")} function attribute, x86
+Enable/disable the generation of the LZCNT instructions.
 
 @item mmx
 @itemx no-mmx
 @cindex @code{target("mmx")} function attribute, x86
 Enable/disable the generation of the MMX instructions.
 
+@item movbe
+@itemx no-movbe
+@cindex @code{target("movbe")} function attribute, x86
+Enable/disable the generation of the MOVBE instructions.
+
+@item movdir64b
+@itemx no-movdir64b
+@cindex @code{target("movdir64b")} function attribute, x86
+Enable/disable the generation of the MOVDIR64B instructions.
+
+@item movdiri
+@itemx no-movdiri
+@cindex @code{target("movdiri")} function attribute, x86
+Enable/disable the generation of the MOVDIRI instructions.
+
+@item mwaitx
+@itemx no-mwaitx
+@cindex @code{target("mwaitx")} function attribute, x86
+Enable/disable the generation of the MWAITX instructions.
+
 @item pclmul
 @itemx no-pclmul
 @cindex @code{target("pclmul")} function attribute, x86
 Enable/disable the generation of the PCLMUL instructions.
 
+@item pconfig
+@itemx no-pconfig
+@cindex @code{target("pconfig")} function attribute, x86
+Enable/disable the generation of the PCONFIG instructions.
+
+@item pku
+@itemx no-pku
+@cindex @code{target("pku")} function attribute, x86
+Enable/disable the generation of the PKU instructions.
+
 @item popcnt
 @itemx no-popcnt
 @cindex @code{target("popcnt")} function attribute, x86
 Enable/disable the generation of the POPCNT instruction.
+
+@item prefetchwt1
+@itemx no-prefetchwt1
+@cindex @code{target("prefetchwt1")} function attribute, x86
+Enable/disable the generation of the PREFETCHWT1 instructions.
+
+@item prfchw
+@itemx no-prfchw
+@cindex @code{target("prfchw")} function attribute, x86
+Enable/disable the generation of the PREFETCHW instruction.
+
+@item ptwrite
+@itemx no-ptwrite
+@cindex @code{target("ptwrite")} function attribute, x86
+Enable/disable the generation of the PTWRITE instructions.
+
+@item rdpid
+@itemx no-rdpid
+@cindex @code{target("rdpid")} function attribute, x86
+Enable/disable the generation of the RDPID instructions.
+
+@item rdrnd
+@itemx no-rdrnd
+@cindex @code{target("rdrnd")} function attribute, x86
+Enable/disable the generation of the RDRND instructions.
+
+@item rdseed
+@itemx no-rdseed
+@cindex @code{target("rdseed")} function attribute, x86
+Enable/disable the generation of the RDSEED instructions.
+
+@item rtm
+@itemx no-rtm
+@cindex @code{target("rtm")} function attribute, x86
+Enable/disable the generation of the RTM instructions.
+
+@item sahf
+@itemx no-sahf
+@cindex @code{target("sahf")} function attribute, x86
+Enable/disable the generation of the SAHF instructions.
+
+@item sgx
+@itemx no-sgx
+@cindex @code{target("sgx")} function attribute, x86
+Enable/disable the generation of the SGX instructions.
+
+@item sha
+@itemx no-sha
+@cindex @code{target("sha")} function attribute, x86
+Enable/disable the generation of the SHA instructions.
+
+@item shstk
+@itemx no-shstk
+@cindex @code{target("shstk")} function attribute, x86
+Enable/disable the shadow stack built-in functions from CET.
 
 @item sse
 @itemx no-sse
@@ -5989,25 +6423,60 @@ Enable/disable the generation of the sse4.2 instructions.
 @cindex @code{target("sse4a")} function attribute, x86
 Enable/disable the generation of the SSE4A instructions.
 
-@item fma4
-@itemx no-fma4
-@cindex @code{target("fma4")} function attribute, x86
-Enable/disable the generation of the FMA4 instructions.
+@item ssse3
+@itemx no-ssse3
+@cindex @code{target("ssse3")} function attribute, x86
+Enable/disable the generation of the SSSE3 instructions.
+
+@item tbm
+@itemx no-tbm
+@cindex @code{target("tbm")} function attribute, x86
+Enable/disable the generation of the TBM instructions.
+
+@item vaes
+@itemx no-vaes
+@cindex @code{target("vaes")} function attribute, x86
+Enable/disable the generation of the VAES instructions.
+
+@item vpclmulqdq
+@itemx no-vpclmulqdq
+@cindex @code{target("vpclmulqdq")} function attribute, x86
+Enable/disable the generation of the VPCLMULQDQ instructions.
+
+@item waitpkg
+@itemx no-waitpkg
+@cindex @code{target("waitpkg")} function attribute, x86
+Enable/disable the generation of the WAITPKG instructions.
+
+@item wbnoinvd
+@itemx no-wbnoinvd
+@cindex @code{target("wbnoinvd")} function attribute, x86
+Enable/disable the generation of the WBNOINVD instructions.
 
 @item xop
 @itemx no-xop
 @cindex @code{target("xop")} function attribute, x86
 Enable/disable the generation of the XOP instructions.
 
-@item lwp
-@itemx no-lwp
-@cindex @code{target("lwp")} function attribute, x86
-Enable/disable the generation of the LWP instructions.
+@item xsave
+@itemx no-xsave
+@cindex @code{target("xsave")} function attribute, x86
+Enable/disable the generation of the XSAVE instructions.
 
-@item ssse3
-@itemx no-ssse3
-@cindex @code{target("ssse3")} function attribute, x86
-Enable/disable the generation of the SSSE3 instructions.
+@item xsavec
+@itemx no-xsavec
+@cindex @code{target("xsavec")} function attribute, x86
+Enable/disable the generation of the XSAVEC instructions.
+
+@item xsaveopt
+@itemx no-xsaveopt
+@cindex @code{target("xsaveopt")} function attribute, x86
+Enable/disable the generation of the XSAVEOPT instructions.
+
+@item xsaves
+@itemx no-xsaves
+@cindex @code{target("xsaves")} function attribute, x86
+Enable/disable the generation of the XSAVES instructions.
 
 @item cld
 @itemx no-cld
@@ -6602,8 +7071,10 @@ class itself is instantiated.
 
 @item vector_size (@var{bytes})
 @cindex @code{vector_size} variable attribute
-This attribute specifies the vector size for the variable, measured in
-bytes.  For example, the declaration:
+This attribute specifies the vector size for the type of the declared
+variable, measured in bytes.  The type to which it applies is known as
+the @dfn{base type}.  The @var{bytes} argument must be a positive
+power-of-two multiple of the base type size.  For example, the declaration:
 
 @smallexample
 int foo __attribute__ ((vector_size (16)));
@@ -6611,10 +7082,12 @@ int foo __attribute__ ((vector_size (16)));
 
 @noindent
 causes the compiler to set the mode for @code{foo}, to be 16 bytes,
-divided into @code{int} sized units.  Assuming a 32-bit int (a vector of
-4 units of 4 bytes), the corresponding mode of @code{foo} is V4SI@.
+divided into @code{int} sized units.  Assuming a 32-bit @code{int},
+@code{foo}'s type is a vector of four units of four bytes each, and
+the corresponding mode of @code{foo} is @code{V4SI}.
+@xref{Vector Extensions} for details of manipulating vector variables.
 
-This attribute is only applicable to integral and float scalars,
+This attribute is only applicable to integral and floating scalars,
 although arrays, pointers, and function return values are allowed in
 conjunction with this construct.
 
@@ -7677,6 +8150,39 @@ the case with lock or thread classes, which are usually defined and then
 not referenced, but contain constructors and destructors that have
 nontrivial bookkeeping functions.
 
+@item vector_size (@var{bytes})
+@cindex @code{vector_size} type attribute
+This attribute specifies the vector size for the type, measured in bytes.
+The type to which it applies is known as the @dfn{base type}.  The @var{bytes}
+argument must be a positive power-of-two multiple of the base type size.  For
+example, the following declarations:
+
+@smallexample
+typedef __attribute__ ((vector_size (32))) int int_vec32_t ;
+typedef __attribute__ ((vector_size (32))) int* int_vec32_ptr_t;
+typedef __attribute__ ((vector_size (32))) int int_vec32_arr3_t[3];
+@end smallexample
+
+@noindent
+define @code{int_vec32_t} to be a 32-byte vector type composed of @code{int}
+sized units.  With @code{int} having a size of 4 bytes, the type defines
+a vector of eight units, four bytes each.  The mode of variables of type
+@code{int_vec32_t} is @code{V8SI}.  @code{int_vec32_ptr_t} is then defined
+to be a pointer to such a vector type, and @code{int_vec32_arr3_t} to be
+an array of three such vectors.  @xref{Vector Extensions} for details of
+manipulating objects of vector types.
+
+This attribute is only applicable to integral and floating scalar types.
+In function declarations the attribute applies to the function return
+type.
+
+For example, the following:
+@smallexample
+__attribute__ ((vector_size (16))) float get_flt_vec16 (void);
+@end smallexample
+declares @code{get_flt_vec16} to be a function returning a 16-byte vector
+with the base type @code{float}.
+
 @item visibility
 @cindex @code{visibility} type attribute
 In C++, attribute visibility (@pxref{Function Attributes}) can also be
@@ -8625,6 +9131,8 @@ outside of C functions, you must use basic @code{asm}.
 You can use this technique to emit assembler directives,
 define assembly language macros that can be invoked elsewhere in the file,
 or write entire functions in assembly language.
+Basic @code{asm} statements outside of functions may not use any
+qualifiers.
 
 @item
 Functions declared
@@ -9441,6 +9949,15 @@ When the compiler selects which registers to use to represent input and output
 operands, it does not use any of the clobbered registers. As a result, 
 clobbered registers are available for any use in the assembler code.
 
+Another restriction is that the clobber list should not contain the
+stack pointer register.  This is because the compiler requires the
+value of the stack pointer to be the same after an @code{asm}
+statement as it was on entry to the statement.  However, previous
+versions of GCC did not enforce this rule and allowed the stack
+pointer to appear in the list, with unclear semantics.  This behavior
+is deprecated and listing the stack pointer may become an error in
+future versions of GCC@.
+
 Here is a realistic example for the VAX showing the use of clobbered 
 registers: 
 
@@ -10054,7 +10571,7 @@ register.
 
 @subsubheading Declaring the variable
 
-Global register variables can not have initial values, because an
+Global register variables cannot have initial values, because an
 executable file has no means to supply initial contents for a register.
 
 When selecting a register, choose one that is normally saved and 
@@ -10433,7 +10950,7 @@ typedef int v4si __attribute__ ((vector_size (16)));
 @end smallexample
 
 @noindent
-The @code{int} type specifies the base type, while the attribute specifies
+The @code{int} type specifies the @dfn{base type}, while the attribute specifies
 the vector size for the variable, measured in bytes.  For example, the
 declaration above causes the compiler to set the mode for the @code{v4si}
 type to be 16 bytes wide and divided into @code{int} sized units.  For
@@ -10441,9 +10958,9 @@ a 32-bit @code{int} this means a vector of 4 units of 4 bytes, and the
 corresponding mode of @code{foo} is @acronym{V4SI}.
 
 The @code{vector_size} attribute is only applicable to integral and
-float scalars, although arrays, pointers, and function return values
+floating scalars, although arrays, pointers, and function return values
 are allowed in conjunction with this construct. Only sizes that are
-a power of two are currently allowed.
+positive power-of-two multiples of the base type size are currently allowed.
 
 All the basic integer types can be used as base types, both as signed
 and as unsigned: @code{char}, @code{short}, @code{int}, @code{long},
@@ -10621,6 +11138,47 @@ v4df e = __builtin_convertvector (a, v4df); /* e is @{1.,-2.,3.,-4.@} */
 v4df f = __builtin_convertvector (b, v4df); /* f is @{1.5,-2.5,3.,7.@} */
 v4si g = __builtin_convertvector (f, v4si); /* g is @{1,-2,3,7@} */
 v4si h = __builtin_convertvector (c, v4si); /* h is @{1,5,0,10@} */
+@end smallexample
+
+@cindex vector types, using with x86 intrinsics
+Sometimes it is desirable to write code using a mix of generic vector
+operations (for clarity) and machine-specific vector intrinsics (to
+access vector instructions that are not exposed via generic built-ins).
+On x86, intrinsic functions for integer vectors typically use the same
+vector type @code{__m128i} irrespective of how they interpret the vector,
+making it necessary to cast their arguments and return values from/to
+other vector types.  In C, you can make use of a @code{union} type:
+@c In C++ such type punning via a union is not allowed by the language
+@smallexample
+#include <immintrin.h>
+
+typedef unsigned char u8x16 __attribute__ ((vector_size (16)));
+typedef unsigned int  u32x4 __attribute__ ((vector_size (16)));
+
+typedef union @{
+        __m128i mm;
+        u8x16   u8;
+        u32x4   u32;
+@} v128;
+@end smallexample
+
+@noindent
+for variables that can be used with both built-in operators and x86
+intrinsics:
+
+@smallexample
+v128 x, y = @{ 0 @};
+memcpy (&x, ptr, sizeof x);
+y.u8  += 0x80;
+x.mm  = _mm_adds_epu8 (x.mm, y.mm);
+x.u32 &= 0xffffff;
+
+/* Instead of a variable, a compound literal may be used to pass the
+   return value of an intrinsic call to a function expecting the union: */
+v128 foo (v128);
+x = foo ((v128) @{_mm_adds_epu8 (x.mm, y.mm)@});
+@c This could be done implicitly with __attribute__((transparent_union)),
+@c but GCC does not accept it for unions of vector types (PR 88955).
 @end smallexample
 
 @node Offsetof
@@ -11008,6 +11566,7 @@ they are not scaled by the size of the type to which the pointer points.
 
 @smallexample
 @{ *ptr @var{op}= val; return *ptr; @}
+@{ *ptr = ~(*ptr & val); return *ptr; @} // nand
 @end smallexample
 
 The object pointed to by the first argument must be of integer or pointer
@@ -11029,6 +11588,7 @@ the type to which the pointer points.
 
 @smallexample
 @{ tmp = *ptr; *ptr @var{op}= val; return tmp; @}
+@{ tmp = *ptr; *ptr = ~(*ptr & val); return tmp; @} // nand
 @end smallexample
 
 The same constraints on arguments apply as for the corresponding
@@ -11284,7 +11844,7 @@ is a built-in construct that returns a constant number of bytes from
 @var{ptr} to the end of the object @var{ptr} pointer points to
 (if known at compile time).  To determine the sizes of dynamically allocated
 objects the function relies on the allocation functions called to obtain
-the storage to be declared with the @code{alloc_size} attribute (@xref{Common
+the storage to be declared with the @code{alloc_size} attribute (@pxref{Common
 Function Attributes}).  @code{__builtin_object_size} never evaluates
 its arguments for side effects.  If there are any side effects in them, it
 returns @code{(size_t) -1} for @var{type} 0 or 1 and @code{(size_t) 0}
@@ -12063,13 +12623,16 @@ check its compatibility with @var{size}.
 The @code{__builtin_has_attribute} function evaluates to an integer constant
 expression equal to @code{true} if the symbol or type referenced by
 the @var{type-or-expression} argument has been declared with
-the @var{attribute} referenced by the second argument.  Neither argument
-is evaluated.  The @var{type-or-expression} argument is subject to the same
+the @var{attribute} referenced by the second argument.  For
+an @var{type-or-expression} argument that does not reference a symbol,
+since attributes do not apply to expressions the built-in consider
+the type of the argument.  Neither argument is evaluated.
+The @var{type-or-expression} argument is subject to the same
 restrictions as the argument to @code{typeof} (@pxref{Typeof}).  The
 @var{attribute} argument is an attribute name optionally followed by
 a comma-separated list of arguments enclosed in parentheses.  Both forms
 of attribute names---with and without double leading and trailing
-underscores---are recognized.  @xref{Attribute Syntax} for details.
+underscores---are recognized.  @xref{Attribute Syntax}, for details.
 When no attribute arguments are specified for an attribute that expects
 one or more arguments the function returns @code{true} if
 @var{type-or-expression} has been declared with the attribute regardless
@@ -12416,6 +12979,23 @@ built-in in this case, because it has no opportunity to perform
 optimization.
 @end deftypefn
 
+@deftypefn {Built-in Function} bool __builtin_is_constant_evaluated (void)
+The @code{__builtin_is_constant_evaluated} function is available only
+in C++.  The built-in is intended to be used by implementations of
+the @code{std::is_constant_evaluated} C++ function.  Programs should make
+use of the latter function rather than invoking the built-in directly.
+
+The main use case of the built-in is to determine whether a @code{constexpr}
+function is being called in a @code{constexpr} context.  A call to
+the function evaluates to a core constant expression with the value
+@code{true} if and only if it occurs within the evaluation of an expression
+or conversion that is manifestly constant-evaluated as defined in the C++
+standard.  Manifestly constant-evaluated contexts include constant-expressions,
+the conditions of @code{constexpr if} statements, constraint-expressions, and
+initializers of variables usable in constant expressions.   For more details
+refer to the latest revision of the C++ standard.
+@end deftypefn
+
 @deftypefn {Built-in Function} long __builtin_expect (long @var{exp}, long @var{c})
 @opindex fprofile-arcs
 You may use @code{__builtin_expect} to provide the compiler with
@@ -12599,7 +13179,7 @@ void foo (void)
 
 @end deftypefn
 
-@deftypefn {Built-in Function} void __builtin___clear_cache (char *@var{begin}, char *@var{end})
+@deftypefn {Built-in Function} void __builtin___clear_cache (void *@var{begin}, void *@var{end})
 This function is used to flush the processor's instruction cache for
 the region of memory between @var{begin} inclusive and @var{end}
 exclusive.  Some targets require that the instruction cache be
@@ -12655,7 +13235,8 @@ and GCC does not issue a warning.
 @end deftypefn
 
 @deftypefn {Built-in Function}{size_t} __builtin_object_size (const void * @var{ptr}, int @var{type})
-Returns the size of an object pointed to by @var{ptr}.  @xref{Object Size Checking} for a detailed description of the function.
+Returns the size of an object pointed to by @var{ptr}.  @xref{Object Size
+Checking}, for a detailed description of the function.
 @end deftypefn
 
 @deftypefn {Built-in Function} double __builtin_huge_val (void)
@@ -18451,6 +19032,10 @@ vector double vec_div (vector double, vector double);
 vector long vec_div (vector long, vector long);
 vector unsigned long vec_div (vector unsigned long, vector unsigned long);
 vector double vec_floor (vector double);
+vector signed long long vec_ld (int, const vector signed long long *);
+vector signed long long vec_ld (int, const signed long long *);
+vector unsigned long long vec_ld (int, const vector unsigned long long *);
+vector unsigned long long vec_ld (int, const unsigned long long *);
 vector __int128 vec_ld (int, const vector __int128 *);
 vector unsigned __int128 vec_ld (int, const vector unsigned __int128 *);
 vector __int128 vec_ld (int, const __int128 *);
@@ -18529,6 +19114,13 @@ vector signed long vec_splats (signed long);
 vector unsigned long vec_splats (unsigned long);
 vector float vec_sqrt (vector float);
 vector double vec_sqrt (vector double);
+void vec_st (vector signed long long, int, vector signed long long *);
+void vec_st (vector signed long long, int, signed long long *);
+void vec_st (vector unsigned long long, int, vector unsigned long long *);
+void vec_st (vector unsigned long long, int, unsigned long long *);
+void vec_st (vector bool long long, int, vector bool long long *);
+void vec_st (vector bool long long, int, signed long long *);
+void vec_st (vector bool long long, int, unsigned long long *);
 void vec_st (vector double, int, vector double *);
 void vec_st (vector double, int, double *);
 vector double vec_sub (vector double, vector double);
@@ -19651,18 +20243,31 @@ If the cryptographic instructions are enabled (@option{-mcrypto} or
 @smallexample
 vector unsigned long long __builtin_crypto_vsbox (vector unsigned long long);
 
+vector unsigned char vec_sbox_be (vector unsigned char);
+
 vector unsigned long long __builtin_crypto_vcipher (vector unsigned long long,
                                                     vector unsigned long long);
+
+vector unsigned char vec_cipher_be (vector unsigned char, vector unsigned char);
 
 vector unsigned long long __builtin_crypto_vcipherlast
                                      (vector unsigned long long,
                                       vector unsigned long long);
 
+vector unsigned char vec_cipherlast_be (vector unsigned char,
+                                        vector unsigned char);
+
 vector unsigned long long __builtin_crypto_vncipher (vector unsigned long long,
                                                      vector unsigned long long);
 
+vector unsigned char vec_ncipher_be (vector unsigned char,
+                                     vector unsigned char);
+
 vector unsigned long long __builtin_crypto_vncipherlast (vector unsigned long long,
                                                          vector unsigned long long);
+
+vector unsigned char vec_ncipherlast_be (vector unsigned char,
+                                         vector unsigned char);
 
 vector unsigned char __builtin_crypto_vpermxor (vector unsigned char,
                                                 vector unsigned char,
@@ -22397,10 +23002,14 @@ bit-fields.  See the Solaris man page for @code{cmn_err} for more information.
 @node Darwin Format Checks
 @subsection Darwin Format Checks
 
-Darwin targets support the @code{CFString} (or @code{__CFString__}) in the format
-attribute context.  Declarations made with such attribution are parsed for correct syntax
-and format argument types.  However, parsing of the format string itself is currently undefined
-and is not carried out by this version of the compiler.
+In addition to the full set of format archetypes (attribute format style
+arguments such as @code{printf}, @code{scanf}, @code{strftime}, and
+@code{strfmon}), Darwin targets also support the @code{CFString} (or
+@code{__CFString__}) archetype in the @code{format} attribute.
+Declarations with this archetype are parsed for correct syntax
+and argument types.  However, parsing of the format string itself and
+validating arguments against it in calls to such functions is currently
+not performed.
 
 Additionally, @code{CFStringRefs} (defined by the @code{CoreFoundation} headers) may
 also be used as format arguments.  Note that the relevant headers are only likely to be

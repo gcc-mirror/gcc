@@ -2550,7 +2550,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
      Consider if we have two jump threading paths A and B.  If the
      target edge of A is the starting edge of B and we thread path A
      first, then we create an additional incoming edge into B->dest that
-     we can not discover as a jump threading path on this iteration.
+     we cannot discover as a jump threading path on this iteration.
 
      If we instead thread B first, then the edge into B->dest will have
      already been redirected before we process path A and path A will

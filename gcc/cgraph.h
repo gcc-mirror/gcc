@@ -51,7 +51,7 @@ enum symtab_type
 struct GTY((for_user)) section_hash_entry
 {
   int ref_count;
-  char *name;  /* As long as this datastructure stays in GGC, we can not put
+  char *name;  /* As long as this datastructure stays in GGC, we cannot put
 		  string at the tail of structure of GGC dies in horrible
 		  way  */
 };
@@ -283,7 +283,7 @@ public:
 				    void *data,
 				    bool include_overwrite);
 
-  /* If node can not be interposable by static or dynamic linker to point to
+  /* If node cannot be interposable by static or dynamic linker to point to
      different definition, return this symbol. Otherwise look for alias with
      such property and if none exists, introduce new one.  */
   symtab_node *noninterposable_alias (void);
@@ -482,7 +482,7 @@ public:
   /* C++ frontend produce same body aliases and extra name aliases for
      virtual functions and vtables that are obviously equivalent.
      Those aliases are bit special, especially because C++ frontend
-     visibility code is so ugly it can not get them right at first time
+     visibility code is so ugly it cannot get them right at first time
      and their visibility needs to be copied from their "masters" at
      the end of parsing.  */
   unsigned cpp_implicit_alias : 1;
@@ -690,9 +690,6 @@ struct GTY(()) cgraph_thunk_info {
        the virtual one.  */
   bool virtual_offset_p;
 
-  /* ??? True for special kind of thunks, seems related to instrumentation.  */
-  bool add_pointer_bounds_args;
-
   /* Set to true when alias node (the cgraph_node to which this struct belong)
      is a thunk.  Access to any other fields is invalid if this is false.  */
   bool thunk_p;
@@ -709,7 +706,7 @@ struct GTY(()) cgraph_local_info {
   /* False when there is something makes versioning impossible.  */
   unsigned versionable : 1;
 
-  /* False when function calling convention and signature can not be changed.
+  /* False when function calling convention and signature cannot be changed.
      This is the case when __builtin_apply_args is used.  */
   unsigned can_change_signature : 1;
 
@@ -1019,12 +1016,17 @@ public:
      If non-NULL BLOCK_TO_COPY determine what basic blocks to copy.
      If non_NULL NEW_ENTRY determine new entry BB of the clone.
 
+     If TARGET_ATTRIBUTES is non-null, when creating a new declaration,
+     add the attributes to DECL_ATTRIBUTES.  And call valid_attribute_p
+     that will promote value of the attribute DECL_FUNCTION_SPECIFIC_TARGET
+     of the declaration.
+
      Return the new version's cgraph node.  */
   cgraph_node *create_version_clone_with_body
     (vec<cgraph_edge *> redirect_callers,
      vec<ipa_replace_map *, va_gc> *tree_map, bitmap args_to_skip,
      bool skip_return, bitmap bbs_to_copy, basic_block new_entry_block,
-     const char *clone_name);
+     const char *clone_name, tree target_attributes = NULL_TREE);
 
   /* Insert a new cgraph_function_version_info node into cgraph_fnver_htab
      corresponding to cgraph_node.  */
@@ -1229,7 +1231,7 @@ public:
      compilation units.  */
   bool can_be_local_p (void);
 
-  /* Return true when cgraph_node can not return or throw and thus
+  /* Return true when cgraph_node cannot return or throw and thus
      it is safe to ignore its side effects for IPA analysis.  */
   bool cannot_return_p (void);
 
@@ -1281,6 +1283,9 @@ public:
      Note that at WPA stage, the function body may not be present in memory.  */
   inline bool has_gimple_body_p (void);
 
+  /* Return true if this node represents a former, i.e. an expanded, thunk.  */
+  inline bool former_thunk_p (void);
+
   /* Return true if function should be optimized for size.  */
   bool optimize_for_size_p (void);
 
@@ -1298,6 +1303,12 @@ public:
   inline int get_uid ()
   {
     return m_uid;
+  }
+
+  /* Get summary id of the node.  */
+  inline int get_summary_id ()
+  {
+    return m_summary_id;
   }
 
   /* Record that DECL1 and DECL2 are semantically identical function
@@ -1468,6 +1479,9 @@ private:
   /* Unique id of the node.  */
   int m_uid;
 
+  /* Summary id that is recycled.  */
+  int m_summary_id;
+
   /* Worker for call_for_symbol_and_aliases.  */
   bool call_for_symbol_and_aliases_1 (bool (*callback) (cgraph_node *,
 						        void *),
@@ -1552,7 +1566,7 @@ public:
 
   /* Look for vtable stores or constructor calls to work out dynamic type
      of memory location.  */
-  bool get_dynamic_type (tree, tree, tree, gimple *);
+  bool get_dynamic_type (tree, tree, tree, gimple *, unsigned *);
 
   /* Make context non-speculative.  */
   void clear_speculation ();
@@ -1577,7 +1591,7 @@ public:
 
   /* Adjust all offsets in contexts by given number of bits.  */
   void offset_by (HOST_WIDE_INT);
-  /* Use when we can not track dynamic type change.  This speculatively assume
+  /* Use when we cannot track dynamic type change.  This speculatively assume
      type change is not happening.  */
   void possible_dynamic_type_change (bool, tree otr_type = NULL);
   /* Assume that both THIS and a given context is valid and strenghten THIS
@@ -1709,7 +1723,7 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   /* Verify edge count and frequency.  */
   bool verify_count ();
 
-  /* Return true when call of edge can not lead to return from caller
+  /* Return true when call of edge cannot lead to return from caller
      and thus it is safe to ignore its side effects for IPA analysis
      when computing side effects of the caller.  */
   bool cannot_lead_to_return_p (void);
@@ -1724,6 +1738,12 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   inline int get_uid ()
   {
     return m_uid;
+  }
+
+  /* Get summary id of the edge.  */
+  inline int get_summary_id ()
+  {
+    return m_summary_id;
   }
 
   /* Rebuild cgraph edges for current function node.  This needs to be run after
@@ -1802,6 +1822,9 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
 private:
   /* Unique id of the edge.  */
   int m_uid;
+
+  /* Summary id that is recycled.  */
+  int m_summary_id;
 
   /* Remove the edge from the list of the callers of the callee.  */
   void remove_caller (void);
@@ -1934,10 +1957,6 @@ public:
   /* Set when variable is scheduled to be assembled.  */
   unsigned output : 1;
 
-  /* Set when variable has statically initialized pointer
-     or is a static bounds variable and needs initalization.  */
-  unsigned need_bounds_init : 1;
-
   /* Set if the variable is dynamically initialized, except for
      function local statics.   */
   unsigned dynamically_initialized : 1;
@@ -2053,7 +2072,8 @@ public:
   friend class cgraph_node;
   friend class cgraph_edge;
 
-  symbol_table (): cgraph_max_uid (1), edges_max_uid (1)
+  symbol_table (): cgraph_max_uid (1), cgraph_max_summary_id (0),
+  edges_max_uid (1), edges_max_summary_id (0)
   {
   }
 
@@ -2256,15 +2276,31 @@ public:
   /* Dump symbol table to stderr.  */
   void DEBUG_FUNCTION debug (void);
 
+  /* Assign a new summary ID for the callgraph NODE.  */
+  inline int assign_summary_id (cgraph_node *node)
+  {
+    node->m_summary_id = cgraph_max_summary_id++;
+    return node->m_summary_id;
+  }
+
+  /* Assign a new summary ID for the callgraph EDGE.  */
+  inline int assign_summary_id (cgraph_edge *edge)
+  {
+    edge->m_summary_id = edges_max_summary_id++;
+    return edge->m_summary_id;
+  }
+
   /* Return true if assembler names NAME1 and NAME2 leads to the same symbol
      name.  */
   static bool assembler_names_equal_p (const char *name1, const char *name2);
 
   int cgraph_count;
   int cgraph_max_uid;
+  int cgraph_max_summary_id;
 
   int edges_count;
   int edges_max_uid;
+  int edges_max_summary_id;
 
   symtab_node* GTY(()) nodes;
   asm_node* GTY(()) asmnodes;
@@ -2636,8 +2672,10 @@ symbol_table::release_symbol (cgraph_node *node)
 
   /* Clear out the node to NULL all pointers and add the node to the free
      list.  */
+  int summary_id = node->m_summary_id;
   memset (node, 0, sizeof (*node));
   node->type = SYMTAB_FUNCTION;
+  node->m_summary_id = summary_id;
   SET_NEXT_FREE_NODE (node, free_nodes);
   free_nodes = node;
 }
@@ -2655,7 +2693,10 @@ symbol_table::allocate_cgraph_symbol (void)
       free_nodes = NEXT_FREE_NODE (node);
     }
   else
-    node = ggc_cleared_alloc<cgraph_node> ();
+    {
+      node = ggc_cleared_alloc<cgraph_node> ();
+      node->m_summary_id = -1;
+    }
 
   node->m_uid = cgraph_max_uid++;
   return node;
@@ -2883,6 +2924,17 @@ cgraph_node::has_gimple_body_p (void)
   return definition && !thunk.thunk_p && !alias;
 }
 
+/* Return true if this node represents a former, i.e. an expanded, thunk.  */
+
+inline bool
+cgraph_node::former_thunk_p (void)
+{
+  return (!thunk.thunk_p
+	  && (thunk.fixed_offset
+	      || thunk.virtual_offset_p
+	      || thunk.indirect_offset));
+}
+
 /* Walk all functions with body defined.  */
 #define FOR_EACH_FUNCTION_WITH_GIMPLE_BODY(node) \
    for ((node) = symtab->first_function_with_gimple_body (); (node); \
@@ -2933,7 +2985,7 @@ cgraph_node::can_remove_if_no_direct_calls_and_refs_p (void)
   /* Extern inlines can always go, we will use the external definition.  */
   if (DECL_EXTERNAL (decl))
     return true;
-  /* When function is needed, we can not remove it.  */
+  /* When function is needed, we cannot remove it.  */
   if (force_output || used_from_other_partition)
     return false;
   if (DECL_STATIC_CONSTRUCTOR (decl)

@@ -92,4 +92,10 @@ enum aarch64_sve_vector_bits_enum {
   SVE_2048 = 2048
 };
 
+/* Where to get the canary for the stack protector.  */
+enum stack_protector_guard {
+  SSP_SYSREG,			/* per-thread canary in special system register */
+  SSP_GLOBAL			/* global canary */
+};
+
 #endif

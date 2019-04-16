@@ -237,7 +237,7 @@ match_integer_constant (gfc_expr **result, int signflag)
   if (gfc_range_check (e) != ARITH_OK)
     {
       gfc_error ("Integer too big for its kind at %C. This check can be "
-		 "disabled with the option -fno-range-check");
+		 "disabled with the option %<-fno-range-check%>");
 
       gfc_free_expr (e);
       return MATCH_ERROR;
@@ -1570,7 +1570,7 @@ match_actual_arg (gfc_expr **result)
 	  gfc_set_sym_referenced (sym);
 	  if (sym->attr.flavor == FL_NAMELIST)
 	    {
-	      gfc_error ("Namelist %qs can not be an argument at %L",
+	      gfc_error ("Namelist %qs cannot be an argument at %L",
 	      sym->name, &where);
 	      break;
 	    }
@@ -2979,7 +2979,7 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 
   if (!parent && sym->attr.abstract)
     {
-      gfc_error ("Can't construct ABSTRACT type %qs at %L",
+      gfc_error ("Cannot construct ABSTRACT type %qs at %L",
 		 sym->name, &expr->where);
       goto cleanup;
     }
@@ -3598,7 +3598,7 @@ gfc_match_rvalue (gfc_expr **result)
       /* F08:C612.  */
       if (gfc_peek_ascii_char() == '%')
 	{
-	  gfc_error ("The leftmost part-ref in a data-ref can not be a "
+	  gfc_error ("The leftmost part-ref in a data-ref cannot be a "
 		     "function reference at %C");
 	  m = MATCH_ERROR;
 	}

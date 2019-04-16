@@ -1,7 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-linux* } } } */
 /* { dg-require-effective-target powerpc_float128_sw_ok } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
-/* { dg-options "-O2 -mcpu=power7 -mfloat128 -mno-regnames" } */
+/* { dg-options "-O2 -mdejagnu-cpu=power7 -mfloat128 -mno-regnames" } */
 
 #ifndef __FLOAT128__
 #error "-mfloat128 is not supported."

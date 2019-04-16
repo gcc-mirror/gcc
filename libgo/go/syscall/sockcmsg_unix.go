@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build aix darwin dragonfly freebsd linux netbsd openbsd solaris
+// +build aix darwin dragonfly freebsd hurd linux netbsd openbsd solaris
 
 // Socket control messages
 
@@ -16,17 +16,22 @@ import (
 // Round the length of a raw sockaddr up to align it properly.
 func cmsgAlignOf(salen int) int {
 	salign := int(sizeofPtr)
-	// NOTE: It seems like 64-bit Darwin, DragonFly BSD and
-	// Solaris kernels still require 32-bit aligned access to
-	// network subsystem.
-	if darwin64Bit || dragonfly64Bit || solaris64Bit {
-		salign = 4
+
+	switch runtime.GOOS {
+	case "darwin", "dragonfly", "solaris":
+		// NOTE: It seems like 64-bit Darwin, DragonFly BSD and
+		// Solaris kernels still require 32-bit aligned access to
+		// network subsystem.
+		if sizeofPtr == 8 {
+			salign = 4
+		}
+	case "openbsd":
+		// OpenBSD armv7 requires 64-bit alignment.
+		if runtime.GOARCH == "arm" {
+			salign = 8
+		}
 	}
-	// NOTE: Solaris always uses 32-bit alignment,
-	// cf. _CMSG_DATA_ALIGNMENT in <sys/socket.h>.
-	if runtime.GOOS == "solaris" {
-		salign = 4
-	}
+
 	return (salen + salign - 1) & ^(salign - 1)
 }
 

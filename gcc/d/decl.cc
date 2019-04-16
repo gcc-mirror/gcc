@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "dmd/aggregate.h"
 #include "dmd/attrib.h"
+#include "dmd/cond.h"
 #include "dmd/ctfe.h"
 #include "dmd/declaration.h"
 #include "dmd/enum.h"
@@ -121,9 +122,13 @@ class DeclVisitor : public Visitor
 {
   using Visitor::visit;
 
+  /* If we're lowering the body of a version(unittest) condition.  */
+  bool in_version_unittest_;
+
 public:
   DeclVisitor (void)
   {
+    this->in_version_unittest_ = false;
   }
 
   /* This should be overridden by each declaration class.  */
@@ -241,6 +246,25 @@ public:
     visit ((AttribDeclaration *) d);
   }
 
+  /* Conditional compilation is the process of selecting which code to compile
+     and which code to not compile.  Look for version conditions that may  */
+
+  void visit (ConditionalDeclaration *d)
+  {
+    bool old_condition = this->in_version_unittest_;
+
+    if (global.params.useUnitTests)
+      {
+	VersionCondition *vc = d->condition->isVersionCondition ();
+	if (vc && vc->ident == Identifier::idPool ("unittest"))
+	  this->in_version_unittest_ = true;
+      }
+
+    visit ((AttribDeclaration *) d);
+
+    this->in_version_unittest_ = old_condition;
+  }
+
   /* Walk over all members in the namespace scope.  */
 
   void visit (Nspace *d)
@@ -253,6 +277,40 @@ public:
 	Dsymbol *s = (*d->members)[i];
 	s->accept (this);
       }
+  }
+
+  /* Templates are D's approach to generic programming.  They have no members
+     that can be emitted, however if the template is nested and used as a
+     voldemort type, then it's members must be compiled before the parent
+     function finishes.  */
+
+  void visit (TemplateDeclaration *d)
+  {
+    /* Type cannot be directly named outside of the scope it's declared in, so
+       the only way it can be escaped is if the function has auto return.  */
+    FuncDeclaration *fd = d_function_chain ? d_function_chain->function : NULL;
+
+    if (!fd || !fd->isAuto ())
+      return;
+
+    /* Check if the function returns an instantiated type that may contain
+       nested members.  Only applies to classes or structs.  */
+    Type *tb = fd->type->nextOf ()->baseElemOf ();
+
+    while (tb->ty == Tarray || tb->ty == Tpointer)
+      tb = tb->nextOf ()->baseElemOf ();
+
+    TemplateInstance *ti = NULL;
+
+    if (tb->ty == Tstruct)
+      ti = ((TypeStruct *) tb)->sym->isInstantiated ();
+    else if (tb->ty == Tclass)
+      ti = ((TypeClass *) tb)->sym->isInstantiated ();
+
+    /* Return type is instantiated from this template declaration, walk over
+       all members of the instance.  */
+    if (ti && ti->tempdecl == d)
+      ti->accept (this);
   }
 
   /* Walk over all members in the instantiated template.  */
@@ -593,8 +651,11 @@ public:
 	if (d->isInstantiated ())
 	  return;
 
+	/* Cannot make an expression out of a void initializer.  */
+	if (!d->_init || d->_init->isVoidInitializer ())
+	  return;
+
 	tree decl = get_symbol_decl (d);
-	gcc_assert (d->_init && !d->_init->isVoidInitializer ());
 	Expression *ie = initializerToExpression (d->_init);
 
 	/* CONST_DECL was initially intended for enumerals and may be used for
@@ -831,6 +892,7 @@ public:
       }
 
     DECL_ARGUMENTS (fndecl) = param_list;
+    DECL_IN_UNITTEST_CONDITION_P (fndecl) = this->in_version_unittest_;
     rest_of_decl_compilation (fndecl, 1, 0);
 
     /* If this is a member function that nested (possibly indirectly) in another
@@ -2225,8 +2287,13 @@ build_type_decl (tree type, Dsymbol *dsym)
 
   gcc_assert (!POINTER_TYPE_P (type));
 
+  /* If a templated type, use the template instance name, as that includes all
+     template parameters.  */
+  const char *name = dsym->parent->isTemplateInstance ()
+    ? ((TemplateInstance *) dsym->parent)->toChars () : dsym->ident->toChars ();
+
   tree decl = build_decl (make_location_t (dsym->loc), TYPE_DECL,
-			  get_identifier (dsym->ident->toChars ()), type);
+			  get_identifier (name), type);
   SET_DECL_ASSEMBLER_NAME (decl, get_identifier (mangle_decl (dsym)));
   TREE_PUBLIC (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;

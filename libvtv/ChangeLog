@@ -1,3 +1,8 @@
+2019-02-19  Caroline Tice <cmtice@google.com>
+
+	Fix testsuite
+	* testsuite/libvtv.cc/const_vtable.cc (main): Fix function signature.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

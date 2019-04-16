@@ -21,6 +21,12 @@
 #include <unordered_map>
 #include <testsuite_hooks.h>
 
+#ifndef __cpp_lib_erase_if
+# error "Feature-test macro for erase_if missing"
+#elif __cpp_lib_erase_if < 201811
+# error "Feature-test macro for erase_if has wrong value"
+#endif
+
 auto is_odd_pair = [](const std::pair<const int, std::string>& p)
 {
   return p.first % 2 != 0;

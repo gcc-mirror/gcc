@@ -3356,13 +3356,20 @@ expand_mult_const (machine_mode mode, rtx op0, HOST_WIDE_INT val,
 	      tem = gen_lowpart (nmode, op0);
 	    }
 
-	  insn = get_last_insn ();
-	  wide_int wval_so_far
-	    = wi::uhwi (val_so_far,
-			GET_MODE_PRECISION (as_a <scalar_mode> (nmode)));
-	  rtx c = immed_wide_int_const (wval_so_far, nmode);
-	  set_dst_reg_note (insn, REG_EQUAL, gen_rtx_MULT (nmode, tem, c),
-			    accum_inner);
+	  /* Don't add a REG_EQUAL note if tem is a paradoxical SUBREG.
+	     In that case, only the low bits of accum would be guaranteed to
+	     be equal to the content of the REG_EQUAL note, the upper bits
+	     can be anything.  */
+	  if (!paradoxical_subreg_p (tem))
+	    {
+	      insn = get_last_insn ();
+	      wide_int wval_so_far
+		= wi::uhwi (val_so_far,
+			    GET_MODE_PRECISION (as_a <scalar_mode> (nmode)));
+	      rtx c = immed_wide_int_const (wval_so_far, nmode);
+	      set_dst_reg_note (insn, REG_EQUAL, gen_rtx_MULT (nmode, tem, c),
+				accum_inner);
+	    }
 	}
     }
 
@@ -3876,7 +3883,7 @@ expmed_mult_highpart_optab (scalar_int_mode mode, rtx op0, rtx op1,
 
 /* Emit code to multiply OP0 and OP1 (where OP1 is an integer constant),
    putting the high half of the result in TARGET if that is convenient,
-   and return where the result is.  If the operation can not be performed,
+   and return where the result is.  If the operation cannot be performed,
    0 is returned.
 
    MODE is the mode of operation and result.

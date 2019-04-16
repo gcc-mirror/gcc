@@ -3,26 +3,25 @@
 
 /* { dg-do compile { target { powerpc*-*-linux* } } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8 -O2" } */
+/* { dg-options "-mdejagnu-cpu=power8 -O2" } */
 
 // Targeting P8 (LE) and (BE).  6 tests total.
 // P8 LE constant:  vspltw, mfvsrwz, (1:extsw/2:rldicl)
-// P8 LE variables: rldicl, subfic,  sldi, mtvsrd, xxpermdi, vslo, mfvsrd, sradi, (1:extsw)
+// P8 LE variables: subfic,  sldi, mtvsrd, xxpermdi, vslo, mfvsrd, sradi, (1:extsw/5:rldicl))
 // P8 BE constant:  vspltw, mfvsrwz, (1:extsw/2:rldicl)
-// P8 BE variables:                  sldi, mtvsrd, xxpermdi, vslo, mfvsrd, sradi, (1:extsw)
+// P8 BE variables:                  sldi, mtvsrd, xxpermdi, vslo, mfvsrd, sradi, (1:extsw/2:rldicl))
 
 /* { dg-final { scan-assembler-times {\mvspltw\M} 3 { target lp64 } } } */
 /* { dg-final { scan-assembler-times {\mmfvsrwz\M} 3 { target lp64 } } } */
-/* { dg-final { scan-assembler-times {\mrldicl\M} 5 { target { le } } } } */
-/* { dg-final { scan-assembler-times {\mrldicl\M} 2 { target { lp64 && be } } } } */
+/* { dg-final { scan-assembler-times {\mrldicl\M} 7 { target { le } } } } */
+/* { dg-final { scan-assembler-times {\mrldicl\M} 4 { target { lp64 && be } } } } */
 /* { dg-final { scan-assembler-times {\msubfic\M} 3 { target { le } } } } */
 /* { dg-final { scan-assembler-times {\msldi\M} 3  { target lp64 } } } */
 /* { dg-final { scan-assembler-times {\mmtvsrd\M} 3 { target lp64 } } } */
 /* { dg-final { scan-assembler-times {\mxxpermdi\M} 3 { target lp64 } } } */
 /* { dg-final { scan-assembler-times {\mvslo\M} 3 { target lp64 } } } */
 /* { dg-final { scan-assembler-times {\mmfvsrd\M} 3 { target lp64 } } } */
-/* { dg-final { scan-assembler-times {\msradi\M} 3 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\msrdi\M} 3 { target lp64 } } } */
 /* { dg-final { scan-assembler-times {\mextsw\M} 2 { target lp64 } } } */
 
 

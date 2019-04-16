@@ -53,8 +53,10 @@ intgo Compare(struct __go_open_array a, struct __go_open_array b)
 		int i;
 
 		i = __builtin_memcmp(a.__values, b.__values, (size_t)(l));
-		if (i != 0) {
-			return i;
+		if (i < 0) {
+			return -1;
+		} else if (i > 0) {
+			return 1;
 		}
 	}
 	if (a.__count < b.__count) {

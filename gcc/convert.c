@@ -216,12 +216,15 @@ convert_to_real_1 (tree type, tree expr, bool fold_p)
 	  CASE_MATHFN (FABS)
 	  CASE_MATHFN (LOGB)
 #undef CASE_MATHFN
+	    if (call_expr_nargs (expr) != 1
+		|| !SCALAR_FLOAT_TYPE_P (TREE_TYPE (CALL_EXPR_ARG (expr, 0))))
+	      break;
 	    {
 	      tree arg0 = strip_float_extensions (CALL_EXPR_ARG (expr, 0));
 	      tree newtype = type;
 
-	      /* We have (outertype)sqrt((innertype)x).  Choose the wider mode from
-		 the both as the safe type for operation.  */
+	      /* We have (outertype)sqrt((innertype)x).  Choose the wider mode
+		 from the both as the safe type for operation.  */
 	      if (TYPE_PRECISION (TREE_TYPE (arg0)) > TYPE_PRECISION (type))
 		newtype = TREE_TYPE (arg0);
 
@@ -618,7 +621,8 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	CASE_FLT_FN (BUILT_IN_ROUND):
 	CASE_FLT_FN_FLOATN_NX (BUILT_IN_ROUND):
 	  /* Only convert in ISO C99 mode and with -fno-math-errno.  */
-	  if (!targetm.libc_has_function (function_c99_misc) || flag_errno_math)
+	  if (!targetm.libc_has_function (function_c99_misc)
+	      || flag_errno_math)
 	    break;
 	  if (outprec < TYPE_PRECISION (integer_type_node)
 	      || (outprec == TYPE_PRECISION (integer_type_node)
@@ -641,7 +645,8 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	CASE_FLT_FN (BUILT_IN_RINT):
 	CASE_FLT_FN_FLOATN_NX (BUILT_IN_RINT):
 	  /* Only convert in ISO C99 mode and with -fno-math-errno.  */
-	  if (!targetm.libc_has_function (function_c99_misc) || flag_errno_math)
+	  if (!targetm.libc_has_function (function_c99_misc)
+	      || flag_errno_math)
 	    break;
 	  if (outprec < TYPE_PRECISION (integer_type_node)
 	      || (outprec == TYPE_PRECISION (integer_type_node)
@@ -657,14 +662,20 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 
 	CASE_FLT_FN (BUILT_IN_TRUNC):
 	CASE_FLT_FN_FLOATN_NX (BUILT_IN_TRUNC):
-	  return convert_to_integer_1 (type, CALL_EXPR_ARG (s_expr, 0), dofold);
+	  if (call_expr_nargs (s_expr) != 1
+	      || !SCALAR_FLOAT_TYPE_P (TREE_TYPE (CALL_EXPR_ARG (s_expr, 0))))
+	    break;
+	  return convert_to_integer_1 (type, CALL_EXPR_ARG (s_expr, 0),
+				       dofold);
 
 	default:
 	  break;
 	}
 
-      if (fn)
-        {
+      if (fn
+	  && call_expr_nargs (s_expr) == 1
+	  && SCALAR_FLOAT_TYPE_P (TREE_TYPE (CALL_EXPR_ARG (s_expr, 0))))
+	{
 	  tree newexpr = build_call_expr (fn, 1, CALL_EXPR_ARG (s_expr, 0));
 	  return convert_to_integer_1 (type, newexpr, dofold);
 	}
@@ -694,7 +705,9 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	  break;
 	}
 
-      if (fn)
+      if (fn
+	  && call_expr_nargs (s_expr) == 1
+	  && SCALAR_FLOAT_TYPE_P (TREE_TYPE (CALL_EXPR_ARG (s_expr, 0))))
         {
 	  tree newexpr = build_call_expr (fn, 1, CALL_EXPR_ARG (s_expr, 0));
 	  return convert_to_integer_1 (type, newexpr, dofold);

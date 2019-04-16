@@ -223,7 +223,7 @@ namespace __gnu_pbds
 	    }
 	}
 
-	inline bool
+	_GLIBCXX_NODISCARD inline bool
 	empty() const
 	{ return m_bag.empty(); }
       };
@@ -279,7 +279,7 @@ namespace __gnu_pbds
 
       ~PB_DS_PAT_TRIE_NAME();
 
-      inline bool
+      _GLIBCXX_NODISCARD inline bool
       empty() const;
 
       inline size_type

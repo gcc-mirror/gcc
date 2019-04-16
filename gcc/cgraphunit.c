@@ -1051,7 +1051,7 @@ analyze_functions (bool first_time)
   symtab->state = CONSTRUCTION;
   input_location = UNKNOWN_LOCATION;
 
-  /* Ugly, but the fixup can not happen at a time same body alias is created;
+  /* Ugly, but the fixup cannot happen at a time same body alias is created;
      C++ FE is confused about the COMDAT groups being right.  */
   if (symtab->cpp_implicit_aliases_done)
     FOR_EACH_SYMBOL (node)
@@ -1226,6 +1226,15 @@ analyze_functions (bool first_time)
        && node != first_handled_var; node = next)
     {
       next = node->next;
+      /* For symbols declared locally we clear TREE_READONLY when emitting
+	 the construtor (if one is needed).  For external declarations we can
+	 not safely assume that the type is readonly because we may be called
+	 during its construction.  */
+      if (TREE_CODE (node->decl) == VAR_DECL
+	  && TYPE_P (TREE_TYPE (node->decl))
+	  && TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (node->decl))
+	  && DECL_EXTERNAL (node->decl))
+	TREE_READONLY (node->decl) = 0;
       if (!node->aux && !node->referred_to_p ())
 	{
 	  if (symtab->dump_file)
@@ -1773,11 +1782,6 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
   tree thunk_fndecl = decl;
   tree a;
 
-  /* Instrumentation thunk is the same function with
-     a different signature.  Never need to expand it.  */
-  if (thunk.add_pointer_bounds_args)
-    return false;
-
   if (!force_gimple_thunk
       && this_adjusting
       && indirect_offset == 0
@@ -1916,10 +1920,9 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	      restmp = gimple_fold_indirect_ref (resdecl);
 	      if (!restmp)
 		restmp = build2 (MEM_REF,
-				 TREE_TYPE (TREE_TYPE (DECL_RESULT (alias))),
+				 TREE_TYPE (TREE_TYPE (resdecl)),
 				 resdecl,
-				 build_int_cst (TREE_TYPE
-				   (DECL_RESULT (alias)), 0));
+				 build_int_cst (TREE_TYPE (resdecl), 0));
 	    }
 	  else if (!is_gimple_reg_type (restype))
 	    {
@@ -2115,8 +2118,7 @@ cgraph_node::assemble_thunks_and_aliases (void)
 
   for (e = callers; e;)
     if (e->caller->thunk.thunk_p
-	&& !e->caller->global.inlined_to
-	&& !e->caller->thunk.add_pointer_bounds_args)
+	&& !e->caller->global.inlined_to)
       {
 	cgraph_node *thunk = e->caller;
 

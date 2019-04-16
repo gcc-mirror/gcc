@@ -124,7 +124,7 @@ namespace __profile
       constexpr size_type
       max_size() const noexcept { return _Nm; }
 
-      constexpr bool
+      _GLIBCXX_NODISCARD constexpr bool
       empty() const noexcept { return size() == 0; }
 
       // Element access.

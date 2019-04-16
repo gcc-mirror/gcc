@@ -1073,10 +1073,19 @@ sysv, aix.
 @itemx --without-multilib-list
 Specify what multilibs to build.  @var{list} is a comma separated list of
 values, possibly consisting of a single value.  Currently only implemented
-for arm*-*-*, riscv*-*-*, sh*-*-* and x86-64-*-linux*.  The accepted
-values and meaning for each target is given below.
+for aarch64*-*-*, arm*-*-*, riscv*-*-*, sh*-*-* and x86-64-*-linux*.  The
+accepted values and meaning for each target is given below.
 
 @table @code
+@item aarch64*-*-*
+@var{list} is a comma separated list of @code{ilp32}, and @code{lp64}
+to enable ILP32 and LP64 run-time libraries, respectively.  If
+@var{list} is empty, then there will be no multilibs and only the
+default run-time library will be built.  If @var{list} is
+@code{default} or --with-multilib-list= is not specified, then the
+default set of libraries is selected based on the value of
+@option{--target}.
+
 @item arm*-*-*
 @var{list} is a comma separated list of @code{aprofile} and
 @code{rmprofile} to build multilibs for A or R and M architecture
@@ -2152,6 +2161,13 @@ is used, it is enabled on Linux/x86 if target binutils
 supports @code{Intel CET} instructions and disabled otherwise.
 In this case the target libraries are configured to get additional
 @option{-fcf-protection} option.
+
+@item --with-riscv-attribute=@samp{yes}, @samp{no} or @samp{default}
+Generate RISC-V attribute by default, in order to record extra build
+information in object.
+
+The option is disabled by default. It is enabled on RISC-V/ELF (bare-metal)
+target if target binutils supported.
 @end table
 
 @subheading Cross-Compiler-Specific Options
@@ -2326,6 +2342,18 @@ multilib is used (e.g.@: @samp{--with-target-bdw-gc-include=/opt/bdw-gc/include}
 @samp{--with-target-bdw-gc-lib=/opt/bdw-gc/lib64,32=/opt-bdw-gc/lib32}).
 If none of these options are specified, the library is assumed in
 default locations.
+@end table
+
+@subheading D-Specific Options
+
+The following options apply to the build of the D runtime library.
+
+@table @code
+@item --with-target-system-zlib
+Use installed @samp{zlib} rather than that included with GCC@.  This needs
+to be available for each multilib variant, unless configured with
+@option{--with-target-system-zlib=@samp{auto}} in which case the GCC@ included
+@samp{zlib} is only used when the system installed library is not available.
 @end table
 
 @html
@@ -2512,6 +2540,12 @@ hosts that do not support the linker plugin.  Without the linker plugin
 static libraries are not compiled with link-time optimizations.  Since 
 the GCC middle end and back end are in @file{libbackend.a} this means
 that only the front end is actually LTO optimized.
+
+@item @samp{bootstrap-lto-lean}
+This option is similar to @code{bootstrap-lto}, but is intended for
+faster build by only using LTO in the final bootstrap stage.
+With @samp{make profiledbootstrap} the LTO frontend
+is trained only on generator files.
 
 @item @samp{bootstrap-debug}
 Verifies that the compiler generates the same executable code, whether
@@ -3413,6 +3447,16 @@ The workaround is disabled by default if neither of
 @option{--enable-fix-cortex-a53-843419} or
 @option{--disable-fix-cortex-a53-843419} is given at configure time.
 
+To enable Branch Target Identification Mechanism and Return Address Signing by
+default at configure time use the @option{--enable-standard-branch-protection}
+option.  This is equivalent to having @option{-mbranch-protection=standard}
+during compilation.  This can be explicitly disabled during compilation by
+passing the @option{-mbranch-protection=none} option which turns off all
+types of branch protections.  Conversely,
+@option{--disable-standard-branch-protection} will disable both the
+protections by default.  This mechanism is turned off by default if neither
+of the options are given at configure time.
+
 @html
 <hr />
 @end html
@@ -3433,6 +3477,27 @@ shared libraries.
 @anchor{amd64-x-solaris210}
 @heading amd64-*-solaris2.1[0-9]*
 This is a synonym for @samp{x86_64-*-solaris2.1[0-9]*}.
+
+@html
+<hr />
+@end html
+@anchor{amdgcn-unknown-amdhsa}
+@heading amdgcn-unknown-amdhsa
+AMD GCN GPU target.
+
+Instead of GNU Binutils, you will need to install LLVM 6, or later, and copy
+@file{bin/llvm-mc} to @file{amdgcn-unknown-amdhsa/bin/as},
+@file{bin/lld} to @file{amdgcn-unknown-amdhsa/bin/ld},
+@file{bin/llvm-nm} to @file{amdgcn-unknown-amdhsa/bin/nm}, and
+@file{bin/llvm-ar} to both @file{bin/amdgcn-unknown-amdhsa-ar} and
+@file{bin/amdgcn-unknown-amdhsa-ranlib}.
+
+Use Newlib (2019-01-16, or newer).
+
+To run the binaries, install the HSA Runtime from the
+@uref{https://rocm.github.io,,ROCm Platform}, and use
+@file{libexec/gcc/amdhsa-unknown-amdhsa/@var{version}/gcn-run} to launch them
+on the GPU.
 
 @html
 <hr />

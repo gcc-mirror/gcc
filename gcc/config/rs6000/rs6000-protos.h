@@ -141,6 +141,7 @@ extern rtx (*rs6000_legitimize_reload_address_ptr) (rtx, machine_mode,
 						    int, int, int, int *);
 extern bool rs6000_legitimate_offset_address_p (machine_mode, rtx,
 						bool, bool);
+extern void rs6000_output_tlsargs (rtx *);
 extern rtx rs6000_find_base_term (rtx);
 extern rtx rs6000_return_addr (int, rtx);
 extern void rs6000_output_symbol_ref (FILE*, rtx);

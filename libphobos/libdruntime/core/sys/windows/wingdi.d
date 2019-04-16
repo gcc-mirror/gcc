@@ -2217,7 +2217,7 @@ struct DEVMODEA {
 alias DEVMODEA* PDEVMODEA, NPDEVMODEA, LPDEVMODEA;
 
 struct DEVMODEW {
-    WCHAR[CCHDEVICENAME]   dmDeviceName;
+    WCHAR[CCHDEVICENAME]   dmDeviceName = 0;
     WORD   dmSpecVersion;
     WORD   dmDriverVersion;
     WORD   dmSize;
@@ -2246,7 +2246,7 @@ struct DEVMODEW {
     short  dmYResolution;
     short  dmTTOption;
     short  dmCollate;
-    WCHAR[CCHFORMNAME]  dmFormName;
+    WCHAR[CCHFORMNAME]  dmFormName = 0;
     WORD   dmLogPixels;
     DWORD  dmBitsPerPel;
     DWORD  dmPelsWidth;
@@ -2344,7 +2344,7 @@ struct LOGFONTA {
     BYTE lfClipPrecision;
     BYTE lfQuality;
     BYTE lfPitchAndFamily;
-    CHAR[LF_FACESIZE] lfFaceName;
+    CHAR[LF_FACESIZE] lfFaceName = 0;
 }
 alias LOGFONTA* PLOGFONTA, NPLOGFONTA, LPLOGFONTA;
 
@@ -2362,7 +2362,7 @@ struct LOGFONTW {
     BYTE lfClipPrecision;
     BYTE lfQuality;
     BYTE lfPitchAndFamily;
-    WCHAR[LF_FACESIZE] lfFaceName;
+    WCHAR[LF_FACESIZE] lfFaceName = 0;
 }
 alias LOGFONTW* PLOGFONTW, NPLOGFONTW, LPLOGFONTW;
 
@@ -2382,8 +2382,8 @@ alias EXTLOGFONTA* PEXTLOGFONTA, NPEXTLOGFONTA, LPEXTLOGFONTA;
 
 struct EXTLOGFONTW {
     LOGFONTW               elfLogFont;
-    WCHAR[LF_FULLFACESIZE] elfFullName;
-    WCHAR[LF_FACESIZE]     elfStyle;
+    WCHAR[LF_FULLFACESIZE] elfFullName = 0;
+    WCHAR[LF_FACESIZE]     elfStyle = 0;
     DWORD                  elfVersion;
     DWORD                  elfStyleSize;
     DWORD                  elfMatch;
@@ -2497,7 +2497,7 @@ struct LOGCOLORSPACEA {
     DWORD lcsGammaRed;
     DWORD lcsGammaGreen;
     DWORD lcsGammaBlue;
-    CHAR[MAX_PATH] lcsFilename;
+    CHAR[MAX_PATH] lcsFilename = 0;
 }
 alias LOGCOLORSPACEA* LPLOGCOLORSPACEA;
 
@@ -2511,7 +2511,7 @@ struct LOGCOLORSPACEW {
     DWORD lcsGammaRed;
     DWORD lcsGammaGreen;
     DWORD lcsGammaBlue;
-    WCHAR[MAX_PATH] lcsFilename;
+    WCHAR[MAX_PATH] lcsFilename = 0;
 }
 alias LOGCOLORSPACEW* LPLOGCOLORSPACEW;
 
@@ -3376,10 +3376,10 @@ struct TEXTMETRICW {
     LONG tmOverhang;
     LONG tmDigitizedAspectX;
     LONG tmDigitizedAspectY;
-    WCHAR tmFirstChar;
-    WCHAR tmLastChar;
-    WCHAR tmDefaultChar;
-    WCHAR tmBreakChar;
+    WCHAR tmFirstChar = 0;
+    WCHAR tmLastChar = 0;
+    WCHAR tmDefaultChar = 0;
+    WCHAR tmBreakChar = 0;
     BYTE tmItalic;
     BYTE tmUnderlined;
     BYTE tmStruckOut;
@@ -3399,7 +3399,7 @@ alias RGNDATAHEADER* PRGNDATAHEADER;
 
 struct RGNDATA {
     RGNDATAHEADER rdh;
-    char[1] Buffer;
+    char[1] Buffer = 0;
 }
 alias RGNDATA* PRGNDATA, NPRGNDATA, LPRGNDATA;
 
@@ -3442,7 +3442,7 @@ alias GLYPHMETRICS* LPGLYPHMETRICS;
 
 static if (_WIN32_WINNT >= 0x500) {
     struct WCRANGE {
-        WCHAR  wcLow;
+        WCHAR  wcLow = 0;
         USHORT cGlyphs;
     }
     alias WCRANGE* PWCRANGE, LPWCRANGE;
@@ -3668,10 +3668,10 @@ struct NEWTEXTMETRICW {
     LONG tmOverhang;
     LONG tmDigitizedAspectX;
     LONG tmDigitizedAspectY;
-    WCHAR tmFirstChar;
-    WCHAR tmLastChar;
-    WCHAR tmDefaultChar;
-    WCHAR tmBreakChar;
+    WCHAR tmFirstChar = 0;
+    WCHAR tmLastChar = 0;
+    WCHAR tmDefaultChar = 0;
+    WCHAR tmBreakChar = 0;
     BYTE tmItalic;
     BYTE tmUnderlined;
     BYTE tmStruckOut;
@@ -3713,8 +3713,8 @@ alias ENUMLOGFONTA* LPENUMLOGFONTA;
 
 struct ENUMLOGFONTW {
     LOGFONTW elfLogFont;
-    WCHAR[LF_FULLFACESIZE] elfFullName;
-    WCHAR[LF_FACESIZE] elfStyle;
+    WCHAR[LF_FULLFACESIZE] elfFullName = 0;
+    WCHAR[LF_FACESIZE] elfStyle = 0;
 }
 alias ENUMLOGFONTW* LPENUMLOGFONTW;
 
@@ -3728,9 +3728,9 @@ alias ENUMLOGFONTEXA* LPENUMLOGFONTEXA;
 
 struct ENUMLOGFONTEXW {
     LOGFONTW elfLogFont;
-    WCHAR[LF_FULLFACESIZE] elfFullName;
-    WCHAR[LF_FACESIZE] elfStyle;
-    WCHAR[LF_FACESIZE] elfScript;
+    WCHAR[LF_FULLFACESIZE] elfFullName = 0;
+    WCHAR[LF_FACESIZE] elfStyle = 0;
+    WCHAR[LF_FACESIZE] elfScript = 0;
 }
 alias ENUMLOGFONTEXW* LPENUMLOGFONTEXW;
 
@@ -3830,7 +3830,7 @@ enum MM_MAX_AXES_NAMELEN = 16;
     struct AXISINFOW {
         LONG axMinValue;
         LONG axMaxValue;
-        WCHAR[MM_MAX_AXES_NAMELEN] axAxisName;
+        WCHAR[MM_MAX_AXES_NAMELEN] axAxisName = 0;
     }
     alias AXISINFOW* PAXISINFOW, LPAXISINFOW;
 
@@ -3930,21 +3930,21 @@ alias GRADIENT_RECT* PGRADIENT_RECT, LPGRADIENT_RECT;
 
 struct DISPLAY_DEVICEA {
     DWORD cb;
-    CHAR[32] DeviceName;
-    CHAR[128] DeviceString;
+    CHAR[32] DeviceName = 0;
+    CHAR[128] DeviceString = 0;
     DWORD StateFlags;
-    CHAR[128] DeviceID;
-    CHAR[128] DeviceKey;
+    CHAR[128] DeviceID = 0;
+    CHAR[128] DeviceKey = 0;
 }
 alias DISPLAY_DEVICEA* PDISPLAY_DEVICEA, LPDISPLAY_DEVICEA;
 
 struct DISPLAY_DEVICEW {
     DWORD cb;
-    WCHAR[32] DeviceName;
-    WCHAR[128] DeviceString;
+    WCHAR[32] DeviceName = 0;
+    WCHAR[128] DeviceString = 0;
     DWORD StateFlags;
-    WCHAR[128] DeviceID;
-    WCHAR[128] DeviceKey;
+    WCHAR[128] DeviceID = 0;
+    WCHAR[128] DeviceKey = 0;
 }
 alias DISPLAY_DEVICEW* PDISPLAY_DEVICEW, LPDISPLAY_DEVICEW;
 

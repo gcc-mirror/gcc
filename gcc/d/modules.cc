@@ -110,6 +110,11 @@ enum module_info_flags
 
 static module_info *current_moduleinfo;
 
+/* When compiling with -fbuilding-libphobos-tests, this contains information
+   about the module that gets compiled in only when unittests are enabled.  */
+
+static module_info *current_testing_module;
+
 /* The declaration of the current module being compiled.  */
 
 static Module *current_module_decl;
@@ -534,7 +539,9 @@ layout_moduleinfo_fields (Module *decl, tree type)
   layout_moduleinfo_field (make_array_type (Type::tchar, namelen),
 			   type, offset);
 
-  finish_aggregate_type (offset, 1, type, NULL);
+  size_t alignsize = MAX (TYPE_ALIGN_UNIT (type),
+			  TYPE_ALIGN_UNIT (ptr_type_node));
+  finish_aggregate_type (offset, alignsize, type, NULL);
 
   return type;
 }
@@ -704,8 +711,10 @@ build_module_tree (Module *decl)
   assert (!current_moduleinfo && !current_module_decl);
 
   module_info mi = module_info ();
+  module_info mitest = module_info ();
 
   current_moduleinfo = &mi;
+  current_testing_module = &mitest;
   current_module_decl = decl;
 
   /* Layout module members.  */
@@ -716,6 +725,53 @@ build_module_tree (Module *decl)
 	  Dsymbol *s = (*decl->members)[i];
 	  build_decl_tree (s);
 	}
+    }
+
+  /* For libphobos-internal use only.  Generate a separate module info symbol
+     that references all compiled in unittests, this allows compiling library
+     modules and linking to libphobos without having run-time conflicts because
+     of two ModuleInfo records with the same name being present in two DSOs.  */
+  if (flag_building_libphobos_tests)
+    {
+      /* Associate the module info symbol with a mock module.  */
+      const char *name = concat (GDC_PREFIX ("modtest__"),
+				 decl->ident->toChars (), NULL);
+      Module *tm = Module::create (decl->arg, Identifier::idPool (name), 0, 0);
+      Dsymbols members;
+
+      /* Setting parent puts module in the same package as the current, to
+	 avoid any symbol conflicts.  */
+      tm->parent = decl->parent;
+      tm->needmoduleinfo = decl->needmoduleinfo;
+      tm->members = &members;
+      /* Register the current module as being imported by the mock module.
+	 This informs run-time that there is a dependency between the two.  */
+      tm->aimports.push (decl);
+
+      if (mitest.ctors || mitest.ctorgates)
+	tm->sctor = build_funcs_gates_fn (get_identifier ("*__modtestctor"),
+					  mitest.ctors, mitest.ctorgates);
+
+      if (mitest.dtors)
+	tm->sdtor = build_funcs_gates_fn (get_identifier ("*__modtestdtor"),
+					  mitest.dtors, NULL);
+
+      if (mitest.sharedctors || mitest.sharedctorgates)
+	tm->ssharedctor
+	  = build_funcs_gates_fn (get_identifier ("*__modtestsharedctor"),
+				  mitest.sharedctors, mitest.sharedctorgates);
+
+      if (mitest.shareddtors)
+	tm->sshareddtor
+	  = build_funcs_gates_fn (get_identifier ("*__modtestshareddtor"),
+				  mitest.shareddtors, NULL);
+
+      if (mi.unitTests)
+	tm->stest = build_funcs_gates_fn (get_identifier ("*__modtest"),
+					  mi.unitTests, NULL);
+
+      mi.unitTests = NULL;
+      layout_moduleinfo (tm);
     }
 
   /* Default behavior is to always generate module info because of templates.
@@ -749,6 +805,7 @@ build_module_tree (Module *decl)
     }
 
   current_moduleinfo = NULL;
+  current_testing_module = NULL;
   current_module_decl = NULL;
 }
 
@@ -775,13 +832,24 @@ register_module_decl (Declaration *d)
     {
       tree decl = get_symbol_decl (fd);
 
+      /* Any module constructors or destructors that are only present when
+	 compiling in unittests are kept track of separately so they are
+	 not omitted when compiling with -fbuilding-libphobos-tests.  */
+      module_info *minfo;
+      if (flag_building_libphobos_tests && DECL_IN_UNITTEST_CONDITION_P (decl))
+	minfo = current_testing_module;
+      else
+	minfo = current_moduleinfo;
+
+      gcc_assert (minfo != NULL);
+
       /* If a static constructor, push into the current ModuleInfo.
 	 Checks for `shared' first because it derives from the non-shared
 	 constructor type in the front-end.  */
       if (fd->isSharedStaticCtorDeclaration ())
-	vec_safe_push (current_moduleinfo->sharedctors, decl);
+	vec_safe_push (minfo->sharedctors, decl);
       else if (fd->isStaticCtorDeclaration ())
-	vec_safe_push (current_moduleinfo->ctors, decl);
+	vec_safe_push (minfo->ctors, decl);
 
       /* If a static destructor, do same as with constructors, but also
 	 increment the destructor's vgate at construction time.  */
@@ -791,9 +859,9 @@ register_module_decl (Declaration *d)
 	  if (vgate != NULL)
 	    {
 	      tree gate = get_symbol_decl (vgate);
-	      vec_safe_push (current_moduleinfo->sharedctorgates, gate);
+	      vec_safe_push (minfo->sharedctorgates, gate);
 	    }
-	  vec_safe_insert (current_moduleinfo->shareddtors, 0, decl);
+	  vec_safe_insert (minfo->shareddtors, 0, decl);
 	}
       else if (fd->isStaticDtorDeclaration ())
 	{
@@ -801,14 +869,14 @@ register_module_decl (Declaration *d)
 	  if (vgate != NULL)
 	    {
 	      tree gate = get_symbol_decl (vgate);
-	      vec_safe_push (current_moduleinfo->ctorgates, gate);
+	      vec_safe_push (minfo->ctorgates, gate);
 	    }
-	  vec_safe_insert (current_moduleinfo->dtors, 0, decl);
+	  vec_safe_insert (minfo->dtors, 0, decl);
 	}
 
       /* If a unittest function.  */
       if (fd->isUnitTestDeclaration ())
-	vec_safe_push (current_moduleinfo->unitTests, decl);
+	vec_safe_push (minfo->unitTests, decl);
     }
 }
 

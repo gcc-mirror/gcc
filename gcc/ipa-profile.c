@@ -391,7 +391,7 @@ ipa_propagate_frequency (struct cgraph_node *node)
   struct ipa_propagate_frequency_data d = {node, true, true, true, true};
   bool changed = false;
 
-  /* We can not propagate anything useful about externally visible functions
+  /* We cannot propagate anything useful about externally visible functions
      nor about virtuals.  */
   if (!node->local.local
       || node->alias

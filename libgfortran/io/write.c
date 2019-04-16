@@ -1342,6 +1342,10 @@ write_integer (st_parameter_dt *dtp, const char *source, int kind)
       width = 20;
       break;
 
+    case 16:
+      width = 40;
+      break;
+
     default:
       width = 0;
       break;

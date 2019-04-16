@@ -60,13 +60,12 @@ public:
     REACHABLE_BLOCKS_PRESERVING_FLAGS
   };
 
-  dom_walker (cdi_direction direction, enum reachability = ALL_BLOCKS);
-
   /* You can provide a mapping of basic-block index to RPO if you
      have that readily available or you do multiple walks.  If you
      specify NULL as BB_INDEX_TO_RPO dominator children will not be
      walked in RPO order.  */
-  dom_walker (cdi_direction direction, enum reachability, int *bb_index_to_rpo);
+  dom_walker (cdi_direction direction, enum reachability = ALL_BLOCKS,
+	      int *bb_index_to_rpo = NULL);
 
   ~dom_walker ();
 
@@ -94,7 +93,7 @@ private:
      if it is set to CDI_POST_DOMINATORS, then we walk the post
      dominator tree.  */
   const ENUM_BITFIELD (cdi_direction) m_dom_direction : 2;
-  bool m_skip_unreachable_blocks;
+  const ENUM_BITFIELD (reachability) m_reachability : 2;
   bool m_user_bb_to_rpo;
   basic_block m_unreachable_dom;
   int *m_bb_to_rpo;

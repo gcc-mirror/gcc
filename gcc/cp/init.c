@@ -419,6 +419,15 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
 	      if (ftype == error_mark_node)
 		continue;
 
+	      /* Ignore flexible array members for value initialization.  */
+	      if (TREE_CODE (ftype) == ARRAY_TYPE
+		  && !COMPLETE_TYPE_P (ftype)
+		  && !TYPE_DOMAIN (ftype)
+		  && COMPLETE_TYPE_P (TREE_TYPE (ftype))
+		  && (next_initializable_field (DECL_CHAIN (field))
+		      == NULL_TREE))
+		continue;
+
 	      /* We could skip vfields and fields of types with
 		 user-defined constructors, but I think that won't improve
 		 performance at all; it should be simpler in general just
@@ -2058,7 +2067,7 @@ expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags,
       /* If the type has data but no user-provided ctor, we need to zero
 	 out the object.  */
       if (!type_has_user_provided_constructor (type)
-	  && !is_really_empty_class (type))
+	  && !is_really_empty_class (type, /*ignore_vptr*/true))
 	{
 	  tree field_size = NULL_TREE;
 	  if (exp != true_exp && CLASSTYPE_AS_BASE (type) != type)
@@ -3086,7 +3095,21 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       if (overflow || wi::gtu_p (inner_size, max_size))
 	{
 	  if (complain & tf_error)
-	    error ("size of array is too large");
+	    {
+	      cst_size_error error;
+	      if (overflow)
+		error = cst_size_overflow;
+	      else
+		{
+		  error = cst_size_too_big;
+		  size = size_binop (MULT_EXPR, size,
+				     wide_int_to_tree (sizetype,
+						       inner_nelts_count));
+		  size = cp_fully_fold (size);
+		}
+	      invalid_array_size_error (input_location, error, size,
+					/*name=*/NULL_TREE);
+	    }
 	  return error_mark_node;
 	}
 
@@ -3105,7 +3128,11 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 		 isn't explicitly stated but it's enforced anyway -- see
 		 grokdeclarator in cp/decl.c).  */
 	      if (complain & tf_error)
-		error ("size of array is too large");
+		{
+		  size = cp_fully_fold (size);
+		  invalid_array_size_error (input_location, cst_size_too_big,
+					    size, NULL_TREE);
+		}
 	      return error_mark_node;
 	    }
 	}
@@ -3747,12 +3774,9 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
 	 less than zero. ... If the expression is a constant expression,
 	 the program is ill-fomed.  */
       if (TREE_CODE (cst_nelts) == INTEGER_CST
-	  && tree_int_cst_sgn (cst_nelts) == -1)
-	{
-	  if (complain & tf_error)
-	    error ("size of array is negative");
-	  return error_mark_node;
-	}
+	  && !valid_array_size_p (input_location, cst_nelts, NULL_TREE,
+				  complain & tf_error))
+	return error_mark_node;
 
       nelts = mark_rvalue_use (nelts);
       nelts = cp_save_expr (cp_convert (sizetype, nelts, complain));

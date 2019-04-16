@@ -283,6 +283,9 @@ struct function_info
   /* Last line number.  */
   unsigned end_line;
 
+  /* Last line column.  */
+  unsigned end_column;
+
   /* Index of source file where the function is defined.  */
   unsigned src;
 
@@ -615,7 +618,8 @@ static void find_exception_blocks (function_info *);
 static void add_branch_counts (coverage_info *, const arc_info *);
 static void add_line_counts (coverage_info *, function_info *);
 static void executed_summary (unsigned, unsigned);
-static void function_summary (const coverage_info *, const char *);
+static void function_summary (const coverage_info *);
+static void file_summary (const coverage_info *);
 static const char *format_gcov (gcov_type, gcov_type, int);
 static void accumulate_line_counts (source_info *);
 static void output_gcov_file (const char *, source_info *);
@@ -630,7 +634,8 @@ function_info::function_info (): m_name (NULL), m_demangled_name (NULL),
   ident (0), lineno_checksum (0), cfg_checksum (0), has_catch (0),
   artificial (0), is_group (0),
   blocks (), blocks_executed (0), counts (),
-  start_line (0), start_column (), end_line (0), src (0), lines (), next (NULL)
+  start_line (0), start_column (0), end_line (0), end_column (0),
+  src (0), lines (), next (NULL)
 {
 }
 
@@ -886,7 +891,7 @@ print_usage (int error_p)
   fnotice (file, "  -d, --display-progress          Display progress information\n");
   fnotice (file, "  -f, --function-summaries        Output summaries for each function\n");
   fnotice (file, "  -h, --help                      Print this help, then exit\n");
-  fnotice (file, "  -i, --json-format		    Output JSON intermediate format into .gcov.json.gz file\n");
+  fnotice (file, "  -i, --json-format               Output JSON intermediate format into .gcov.json.gz file\n");
   fnotice (file, "  -j, --human-readable            Output human readable numbers\n");
   fnotice (file, "  -k, --use-colors                Emit colored output\n");
   fnotice (file, "  -l, --long-file-names           Use long output file names for included\n\
@@ -1040,17 +1045,21 @@ process_args (int argc, char **argv)
   return optind;
 }
 
-/* Output intermediate LINE sitting on LINE_NUM to JSON OBJECT.  */
+/* Output intermediate LINE sitting on LINE_NUM to JSON OBJECT.
+   Add FUNCTION_NAME to the LINE.  */
 
 static void
 output_intermediate_json_line (json::array *object,
-			       line_info *line, unsigned line_num)
+			       line_info *line, unsigned line_num,
+			       const char *function_name)
 {
   if (!line->exists)
     return;
 
   json::object *lineo = new json::object ();
   lineo->set ("line_number", new json::number (line_num));
+  if (function_name != NULL)
+    lineo->set ("function_name", new json::string (function_name));
   lineo->set ("count", new json::number (line->count));
   lineo->set ("unexecuted_block",
 	      new json::literal (line->has_unexecuted_block));
@@ -1126,7 +1135,9 @@ output_json_intermediate_file (json::array *json_files, source_info *src)
       function->set ("demangled_name",
 		     new json::string ((*it)->get_demangled_name ()));
       function->set ("start_line", new json::number ((*it)->start_line));
+      function->set ("start_column", new json::number ((*it)->start_column));
       function->set ("end_line", new json::number ((*it)->end_line));
+      function->set ("end_column", new json::number ((*it)->end_column));
       function->set ("blocks",
 		     new json::number ((*it)->get_block_count ()));
       function->set ("blocks_executed",
@@ -1140,6 +1151,8 @@ output_json_intermediate_file (json::array *json_files, source_info *src)
   json::array *lineso = new json::array ();
   root->set ("lines", lineso);
 
+  function_info *last_non_group_fn = NULL;
+
   for (unsigned line_num = 1; line_num <= src->lines.size (); line_num++)
     {
       vector<function_info *> *fns = src->get_functions_at_location (line_num);
@@ -1149,17 +1162,23 @@ output_json_intermediate_file (json::array *json_files, source_info *src)
 	for (vector<function_info *>::iterator it2 = fns->begin ();
 	     it2 != fns->end (); it2++)
 	  {
+	    if (!(*it2)->is_group)
+	      last_non_group_fn = *it2;
+
 	    vector<line_info> &lines = (*it2)->lines;
 	    for (unsigned i = 0; i < lines.size (); i++)
 	      {
 		line_info *line = &lines[i];
-		output_intermediate_json_line (lineso, line, line_num + i);
+		output_intermediate_json_line (lineso, line, line_num + i,
+					       (*it2)->m_name);
 	      }
 	  }
 
       /* Follow with lines associated with the source file.  */
       if (line_num < src->lines.size ())
-	output_intermediate_json_line (lineso, &src->lines[line_num], line_num);
+	output_intermediate_json_line (lineso, &src->lines[line_num], line_num,
+				       (last_non_group_fn != NULL
+					? last_non_group_fn->m_name : NULL));
     }
 }
 
@@ -1376,7 +1395,7 @@ generate_results (const char *file_name)
       add_line_counts (flag_function_summary ? &coverage : NULL, fn);
       if (flag_function_summary)
 	{
-	  function_summary (&coverage, "Function");
+	  function_summary (&coverage);
 	  fnotice (stdout, "\n");
 	}
     }
@@ -1402,6 +1421,7 @@ generate_results (const char *file_name)
 
   if (bbg_cwd != NULL)
     root->set ("current_working_directory", new json::string (bbg_cwd));
+  root->set ("data_file", new json::string (file_name));
 
   json::array *json_files = new json::array ();
   root->set ("files", json_files);
@@ -1427,7 +1447,7 @@ generate_results (const char *file_name)
       accumulate_line_counts (src);
 
       if (!flag_use_stdout)
-	function_summary (&src->coverage, "File");
+	file_summary (&src->coverage);
       total_lines += src->coverage.lines;
       total_executed += src->coverage.lines_executed;
       if (flag_gcov_file)
@@ -1713,6 +1733,7 @@ read_graph_file (void)
 	  unsigned start_line = gcov_read_unsigned ();
 	  unsigned start_column = gcov_read_unsigned ();
 	  unsigned end_line = gcov_read_unsigned ();
+	  unsigned end_column = gcov_read_unsigned ();
 
 	  fn = new function_info ();
 	  functions.push_back (fn);
@@ -1726,6 +1747,7 @@ read_graph_file (void)
 	  fn->start_line = start_line;
 	  fn->start_column = start_column;
 	  fn->end_line = end_line;
+	  fn->end_column = end_column;
 	  fn->artificial = artificial;
 
 	  current_tag = tag;
@@ -2339,12 +2361,21 @@ executed_summary (unsigned lines, unsigned executed)
     fnotice (stdout, "No executable lines\n");
 }
 
-/* Output summary info for a function or file.  */
+/* Output summary info for a function.  */
 
 static void
-function_summary (const coverage_info *coverage, const char *title)
+function_summary (const coverage_info *coverage)
 {
-  fnotice (stdout, "%s '%s'\n", title, coverage->name);
+  fnotice (stdout, "%s '%s'\n", "Function", coverage->name);
+  executed_summary (coverage->lines, coverage->lines_executed);
+}
+
+/* Output summary info for a file.  */
+
+static void
+file_summary (const coverage_info *coverage)
+{
+  fnotice (stdout, "%s '%s'\n", "File", coverage->name);
   executed_summary (coverage->lines, coverage->lines_executed);
 
   if (flag_branches)
@@ -2520,6 +2551,9 @@ make_gcov_file_name (const char *input_name, const char *src_name)
   return result;
 }
 
+/* Mangle BASE name, copy it at the beginning of PTR buffer and
+   return address of the \0 character of the buffer.  */
+
 static char *
 mangle_name (char const *base, char *ptr)
 {
@@ -2527,14 +2561,13 @@ mangle_name (char const *base, char *ptr)
 
   /* Generate the source filename part.  */
   if (!flag_preserve_paths)
-    {
-      base = lbasename (base);
-      len = strlen (base);
-      memcpy (ptr, base, len);
-      ptr += len;
-    }
+    base = lbasename (base);
   else
-    ptr = mangle_path (base);
+    base = mangle_path (base);
+
+  len = strlen (base);
+  memcpy (ptr, base, len);
+  ptr += len;
 
   return ptr;
 }

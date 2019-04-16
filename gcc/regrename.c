@@ -339,9 +339,9 @@ check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
 	 && ! DEBUG_INSN_P (tmp->insn))
 	|| (this_head->need_caller_save_reg
 	    && ! (targetm.hard_regno_call_part_clobbered
-		  (reg, GET_MODE (*tmp->loc)))
+		  (NULL, reg, GET_MODE (*tmp->loc)))
 	    && (targetm.hard_regno_call_part_clobbered
-		(new_reg, GET_MODE (*tmp->loc)))))
+		(NULL, new_reg, GET_MODE (*tmp->loc)))))
       return false;
 
   return true;

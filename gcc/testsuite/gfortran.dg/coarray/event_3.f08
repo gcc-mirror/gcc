@@ -3,9 +3,9 @@
 ! Check PR fortran/70696 is fixed.
 
 program global_event
-  use iso_fortran_env , only : event_type
+  use iso_fortran_env, only : event_type
   implicit none
-  type(event_type) :: x[*]
+  type(event_type), save :: x[*]
   
   call exchange
   contains

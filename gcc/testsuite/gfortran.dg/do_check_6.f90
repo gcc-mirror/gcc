@@ -26,10 +26,10 @@ subroutine test1()
   end do
 
   ! Invalid: io-implied-do
-  print *, (i, i=1,5 ) ! { dg-error "PROTECTED and can not appear in a variable definition context .iterator variable." }
+  print *, (i, i=1,5 ) ! { dg-error "PROTECTED and cannot appear in a variable definition context .iterator variable." }
 
   ! Invalid: do-variable in a do-stmt
-  do i = 1, 5 ! { dg-error "PROTECTED and can not appear in a variable definition context .iterator variable." }
+  do i = 1, 5 ! { dg-error "PROTECTED and cannot appear in a variable definition context .iterator variable." }
   end do
 end subroutine test1
 

@@ -23,6 +23,6 @@ subroutine f3(x, limit, step)
   end do
 end subroutine f3
 
-! { dg-final { scan-tree-dump-times {likely to be the innermost dimension} 1 "lversion" } }
+! { dg-final { scan-tree-dump-times {likely to be the innermost dimension} 2 "lversion" } }
 ! { dg-final { scan-tree-dump-times {want to version containing loop} 3 "lversion" } }
 ! { dg-final { scan-tree-dump-times {versioned this loop} 3 "lversion" } }

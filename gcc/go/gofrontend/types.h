@@ -577,6 +577,11 @@ class Type
   // Compare aliases: treat an alias to T as distinct from T.
   static const int COMPARE_ALIASES = 4;
 
+  // When comparing interface types compare the interface embedding heirarchy,
+  // if any, rather than only comparing method sets. Useful primarily when
+  // exporting types.
+  static const int COMPARE_EMBEDDED_INTERFACES = 8;
+
   // Return true if two types are identical.  If this returns false,
   // and REASON is not NULL, it may set *REASON.
   static bool
@@ -634,6 +639,12 @@ class Type
   bool
   needs_key_update()
   { return this->do_needs_key_update(); }
+
+  // Return whether the hash function of this type might panic.  This
+  // is only called for types used as a key in a map type.
+  bool
+  hash_might_panic()
+  { return this->do_hash_might_panic(); }
 
   // Whether the type is permitted in the heap.
   bool
@@ -1074,6 +1085,10 @@ class Type
   { return false; }
 
   virtual bool
+  do_hash_might_panic()
+  { return false; }
+
+  virtual bool
   do_in_heap()
   { return true; }
 
@@ -1150,10 +1165,6 @@ class Type
   void
   append_mangled_name(const Type* type, Gogo* gogo, std::string* ret) const
   { type->do_mangled_name(gogo, ret); }
-
-  // Incorporate a string into a hash code.
-  static unsigned int
-  hash_string(const std::string&, unsigned int);
 
   // Return the backend representation for the underlying type of a
   // named type.
@@ -2432,7 +2443,7 @@ class Struct_type : public Type
   Struct_type(Struct_field_list* fields, Location location)
     : Type(TYPE_STRUCT),
       fields_(fields), location_(location), all_methods_(NULL),
-      is_struct_incomparable_(false)
+      is_struct_incomparable_(false), has_padding_(false)
   { }
 
   // Return the field NAME.  This only looks at local fields, not at
@@ -2552,6 +2563,17 @@ class Struct_type : public Type
   set_is_struct_incomparable()
   { this->is_struct_incomparable_ = true; }
 
+  // Return whether this struct's backend type has padding, due to
+  // trailing zero-sized field.
+  bool
+  has_padding() const
+  { return this->has_padding_; }
+
+  // Record that this struct's backend type has padding.
+  void
+  set_has_padding()
+  { this->has_padding_ = true; }
+
   // Write the hash function for this type.
   void
   write_hash_function(Gogo*, Named_type*, Function_type*, Function_type*);
@@ -2588,6 +2610,9 @@ class Struct_type : public Type
 
   bool
   do_needs_key_update();
+
+  bool
+  do_hash_might_panic();
 
   bool
   do_in_heap();
@@ -2656,6 +2681,9 @@ class Struct_type : public Type
   // True if this is a generated struct that is not considered to be
   // comparable.
   bool is_struct_incomparable_;
+  // True if this struct's backend type has padding, due to trailing
+  // zero-sized field.
+  bool has_padding_;
 };
 
 // The type of an array.
@@ -2683,7 +2711,7 @@ class Array_type : public Type
   // length can not be determined.  This will assert if called for a
   // slice.
   bool
-  int_length(int64_t* plen);
+  int_length(int64_t* plen) const;
 
   // Whether this type is identical with T.
   bool
@@ -2763,6 +2791,10 @@ class Array_type : public Type
   bool
   do_needs_key_update()
   { return this->element_type_->needs_key_update(); }
+
+  bool
+  do_hash_might_panic()
+  { return this->length_ != NULL && this->element_type_->hash_might_panic(); }
 
   bool
   do_in_heap()
@@ -3059,7 +3091,7 @@ class Interface_type : public Type
     return this->all_methods_ == NULL;
   }
 
-  // Return the list of locally defined methos.  This will return NULL
+  // Return the list of locally defined methods.  This will return NULL
   // for an empty interface.  Embedded interfaces will appear in this
   // list as an entry with no name.
   const Typed_identifier_list*
@@ -3133,6 +3165,20 @@ class Interface_type : public Type
   static Type*
   make_interface_type_descriptor_type();
 
+  // Return whether methods are finalized for this interface.
+  bool
+  methods_are_finalized() const
+  { return this->methods_are_finalized_; }
+
+  // Sort embedded interfaces by name. Needed when we are preparing
+  // to emit types into the export data.
+  void
+  sort_embedded()
+  {
+    if (parse_methods_ != NULL)
+      parse_methods_->sort_by_name();
+  }
+
  protected:
   int
   do_traverse(Traverse*);
@@ -3154,6 +3200,11 @@ class Interface_type : public Type
   // contains a float.
   bool
   do_needs_key_update()
+  { return true; }
+
+  // Hashing an unhashable type stored in an interface might panic.
+  bool
+  do_hash_might_panic()
   { return true; }
 
   unsigned int

@@ -1682,7 +1682,7 @@ expand_complex_operations_1 (gimple_stmt_iterator *gsi)
       ac = gimple_assign_rhs1 (stmt);
       bc = (gimple_num_ops (stmt) > 2) ? gimple_assign_rhs2 (stmt) : NULL;
     }
-  /* GIMPLE_CALL can not get here.  */
+  /* GIMPLE_CALL cannot get here.  */
   else
     {
       ac = gimple_cond_lhs (stmt);

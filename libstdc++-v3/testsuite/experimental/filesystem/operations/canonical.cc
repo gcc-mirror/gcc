@@ -37,24 +37,26 @@ test01()
   canonical( p, ec );
   VERIFY( !ec );
 
+  const auto root = fs::absolute("/");
+
   p = "/";
   p = canonical( p, ec );
-  VERIFY( p == "/" );
+  VERIFY( p == root );
   VERIFY( !ec );
 
   p = "/.";
   p = canonical( p, ec );
-  VERIFY( p == "/" );
+  VERIFY( p == root );
   VERIFY( !ec );
 
   p = "/..";
   p = canonical( p, ec );
-  VERIFY( p == "/" );
+  VERIFY( p == root );
   VERIFY( !ec );
 
   p = "/../.././.";
   p = canonical( p, ec );
-  VERIFY( p == "/" );
+  VERIFY( p == root );
   VERIFY( !ec );
 }
 

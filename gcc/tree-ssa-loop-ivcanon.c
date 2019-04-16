@@ -718,7 +718,7 @@ try_unroll_loop_completely (struct loop *loop,
       if (edge_to_cancel == exit)
 	edge_to_cancel = EDGE_SUCC (exit->src, 1);
     }
-  /* We do not know the number of iterations and thus we can not eliminate
+  /* We do not know the number of iterations and thus we cannot eliminate
      the EXIT edge.  */
   else
     exit = NULL;
@@ -730,7 +730,7 @@ try_unroll_loop_completely (struct loop *loop,
     {
       n_unroll = maxiter;
       n_unroll_found = true;
-      /* Loop terminates before the IV variable test, so we can not
+      /* Loop terminates before the IV variable test, so we cannot
 	 remove it in the last iteration.  */
       edge_to_cancel = NULL;
     }
@@ -1443,7 +1443,7 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 
           unloop_loops (loop_closed_ssa_invalidated, &irred_invalidated);
 
-	  /* We can not use TODO_update_ssa_no_phi because VOPS gets confused.  */
+	  /* We cannot use TODO_update_ssa_no_phi because VOPS gets confused.  */
 	  if (loop_closed_ssa_invalidated
 	      && !bitmap_empty_p (loop_closed_ssa_invalidated))
             rewrite_into_loop_closed_ssa (loop_closed_ssa_invalidated,

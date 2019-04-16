@@ -39,4 +39,4 @@ int main ()
 }
 
 
-/* { dg-final { scan-tree-dump-times "vectorized 0 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 0 loops" 1 "vect" { xfail amdgcn*-*-* } } } */

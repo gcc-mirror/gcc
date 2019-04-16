@@ -2897,7 +2897,7 @@ in the @code{insv} or @code{extv} pattern.
 The mode @var{m} is the same as the mode that would be used for
 @var{loc} if it were a register.
 
-A @code{sign_extract} can not appear as an lvalue, or part thereof,
+A @code{sign_extract} cannot appear as an lvalue, or part thereof,
 in RTL.
 
 @findex zero_extract
@@ -3157,7 +3157,7 @@ given the value @var{x} and the rest of the register is not changed.
 If @var{lval} is a @code{zero_extract}, then the referenced part of
 the bit-field (a memory or register reference) specified by the
 @code{zero_extract} is given the value @var{x} and the rest of the
-bit-field is not changed.  Note that @code{sign_extract} can not
+bit-field is not changed.  Note that @code{sign_extract} cannot
 appear in @var{lval}.
 
 If @var{lval} is @code{(cc0)}, it has no machine mode, and @var{x} may

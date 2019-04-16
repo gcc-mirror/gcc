@@ -9,11 +9,11 @@
 @end
 
 @interface bar
--(void) my_method:(foo) my_param; /* { dg-error "can not use an object as parameter to a method" } */
+-(void) my_method:(foo) my_param; /* { dg-error "cannot use an object as parameter to a method" } */
 @end
 
 @implementation bar
--(void) my_method:(foo) my_param /* { dg-error "can not use an object as parameter to a method" } */
+-(void) my_method:(foo) my_param /* { dg-error "cannot use an object as parameter to a method" } */
 {
 }
 @end

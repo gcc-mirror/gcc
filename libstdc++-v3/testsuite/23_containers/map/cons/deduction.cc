@@ -44,6 +44,23 @@ static_assert(std::is_same_v<
 	      decltype(std::map{{std::pair{1, 2.0}, {2, 3.0}, {3, 4.0}}, {}}),
 	      std::map<int, double>>);
 
+/* This is not deducible, ambiguous candidates:
+ * map(initializer_list<value_type>, const Compare&, const _Allocator& = {})
+ * map(initializer_list<value_type>, const _Allocator&)
+ * map(initializer_list<pair<Key, T>>, const _Allocator&) -> map
+static_assert(std::is_same_v<
+	      decltype(std::map{{value_type{1, 2.0}, {2, 3.0}, {3, 4.0}},
+				SimpleAllocator<value_type>{}}),
+	      std::map<int, double, std::less<int>,
+		       SimpleAllocator<value_type>>>);
+*/
+
+static_assert(std::is_same_v<
+	      decltype(std::map{{std::pair{1, 2.0}, {2, 3.0}, {3, 4.0}},
+				SimpleAllocator<value_type>{}}),
+	      std::map<int, double, std::less<int>,
+		       SimpleAllocator<value_type>>>);
+
 static_assert(std::is_same_v<
 	      decltype(std::map{{value_type{1, 2.0}, {2, 3.0}, {3, 4.0}},
 				{}, SimpleAllocator<value_type>{}}),
@@ -78,6 +95,17 @@ void f()
 		decltype(std::map(x.begin(), x.end(),
 				  {})),
 		std::map<int, double>>);
+
+  static_assert(std::is_same_v<
+		decltype(std::map{x.begin(), x.end(),
+				  std::allocator<value_type>{}}),
+		std::map<int, double>>);
+
+  static_assert(std::is_same_v<
+		decltype(std::map{x.begin(), x.end(),
+				  SimpleAllocator<value_type>{}}),
+		std::map<int, double, std::less<int>,
+			 SimpleAllocator<value_type>>>);
 
   static_assert(std::is_same_v<
 		decltype(std::map{x.begin(), x.end(),
@@ -123,6 +151,17 @@ void g()
 
   static_assert(std::is_same_v<
 		decltype(std::map{x.begin(), x.end(),
+				  std::allocator<value_type>{}}),
+		std::map<int, double>>);
+
+  static_assert(std::is_same_v<
+		decltype(std::map{x.begin(), x.end(),
+				  SimpleAllocator<value_type>{}}),
+		std::map<int, double, std::less<int>,
+			 SimpleAllocator<value_type>>>);
+
+  static_assert(std::is_same_v<
+		decltype(std::map{x.begin(), x.end(),
 				  {},
 				  std::allocator<value_type>{}}),
 		std::map<int, double>>);
@@ -159,6 +198,17 @@ void h()
 		decltype(std::map(x.begin(), x.end(),
 				  {})),
 		std::map<int, double>>);
+
+  static_assert(std::is_same_v<
+		decltype(std::map{x.begin(), x.end(),
+				  std::allocator<value_type>{}}),
+		std::map<int, double>>);
+
+  static_assert(std::is_same_v<
+		decltype(std::map{x.begin(), x.end(),
+				  SimpleAllocator<value_type>{}}),
+		std::map<int, double, std::less<int>,
+			 SimpleAllocator<value_type>>>);
 
   static_assert(std::is_same_v<
 		decltype(std::map{x.begin(), x.end(),

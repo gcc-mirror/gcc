@@ -30,12 +30,6 @@ module gc.impl.conservative.gc;
 //debug = INVARIANT;            // enable invariants
 //debug = PROFILE_API;          // profile API calls for config.profile > 1
 
-/*************** Configuration *********************/
-
-version = STACKGROWSDOWN;       // growing the stack means subtracting from the stack pointer
-                                // (use for Intel X86 CPUs)
-                                // else growing the stack means adding to the stack pointer
-
 /***************************************************/
 
 import gc.bits;

@@ -40,14 +40,14 @@ void test01()
   typedef str_conv<char> sc;
 
   const sc::byte_string berr = "invalid wide string";
-  const sc::wide_string werr = u8"invalid byte string";
+  const sc::wide_string werr = "invalid byte string";
 
   sc c(berr, werr);
   string input = "Stop";
   input += char(0xFF);
   string woutput = c.from_bytes(input);
   VERIFY( input == woutput ); // noconv case doesn't detect invalid input
-  string winput = u8"Stop";
+  string winput = "Stop";
   winput += char(0xFF);
   string output = c.to_bytes(winput);
   VERIFY( winput == output ); // noconv case doesn't detect invalid input

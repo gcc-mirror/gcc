@@ -55,8 +55,12 @@ grep '^type _mld_hdr_t ' gen-sysinfo.go | \
   sed -e 's/_in6_addr/[16]byte/' >> ${OUT}
 
 # The errno constants.  These get type Errno.
-  egrep '#define E[A-Z0-9_]+ ' errno.i | \
+egrep '#define E[A-Z0-9_]+ [0-9E]' errno.i | \
   sed -e 's/^#define \(E[A-Z0-9_]*\) .*$/const \1 = Errno(_\1)/' >> ${OUT}
+
+# Workaround for GNU/Hurd _EMIG_* errors having negative values
+egrep '#define E[A-Z0-9_]+ -[0-9]' errno.i | \
+  sed -e 's/^#define \(E[A-Z0-9_]*\) .*$/const \1 = Errno(-_\1)/' >> ${OUT}
 
 # The O_xxx flags.
 egrep '^const _(O|F|FD)_' gen-sysinfo.go | \
@@ -129,6 +133,11 @@ grep '^const _SYS_' gen-sysinfo.go | \
     sup=`echo $sys | tr abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ`
     echo "const $sup = _$sys" >> ${OUT}
   done
+
+# Special treatment of SYS_IOCTL for GNU/Hurd.
+if ! grep '^const SYS_IOCTL' ${OUT} > /dev/null 2>&1; then
+  echo "const SYS_IOCTL = 0" >> ${OUT}
+fi
 
 # The GNU/Linux support wants to use SYS_GETDENTS64 if available.
 if ! grep '^const SYS_GETDENTS ' ${OUT} >/dev/null 2>&1; then
@@ -475,6 +484,13 @@ grep '^type _st_timespec ' gen-sysinfo.go | \
       -e 's/tv_sec/Sec/' \
       -e 's/tv_nsec/Nsec/' >> ${OUT}
 
+# Special treatment of struct stat st_dev for GNU/Hurd
+# /usr/include/i386-gnu/bits/stat.h: #define st_dev st_fsid
+st_dev='-e s/st_dev/Dev/'
+if grep 'define st_dev st_fsid' gen-sysinfo.go > /dev/null 2>&1; then
+  st_dev='-e s/st_fsid/Dev/'
+fi
+
 # The stat type.
 # Prefer largefile variant if available.
 stat=`grep '^type _stat64 ' gen-sysinfo.go || true`
@@ -484,7 +500,7 @@ else
   grep '^type _stat ' gen-sysinfo.go
 fi | sed -e 's/type _stat64/type Stat_t/' \
          -e 's/type _stat/type Stat_t/' \
-         -e 's/st_dev/Dev/' \
+         ${st_dev} \
          -e 's/st_ino/Ino/g' \
          -e 's/st_nlink/Nlink/' \
          -e 's/st_mode/Mode/' \
@@ -1008,6 +1024,18 @@ grep '^type _ifinfomsg ' gen-sysinfo.go | \
       -e 's/ifi_change/Change/' \
     >> ${OUT}
 
+# The if_msghdr struct.
+grep '^type _if_msghdr ' gen-sysinfo.go | \
+    sed -e 's/_if_msghdr/IfMsgHdr/' \
+		-e 's/ifm_msglen/Msglen/' \
+		-e 's/ifm_version/Version/' \
+		-e 's/ifm_type/Type/' \
+		-e 's/ifm_addrs/Addrs/' \
+		-e 's/ifm_flags/Flags/' \
+		-e 's/ifm_index/Index/' \
+		-e 's/ifm_addrlen/Addrlen/' \
+		>> ${OUT}
+
 # The interface information types and flags.
 grep '^const _IFA' gen-sysinfo.go | \
     sed -e 's/^\(const \)_\(IFA[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
@@ -1097,12 +1125,15 @@ grep '^const _FALLOC_' gen-sysinfo.go |
 
 # The statfs struct.
 # Prefer largefile variant if available.
+# CentOS 5 does not have f_flags, so pull from f_spare.
 statfs=`grep '^type _statfs64 ' gen-sysinfo.go || true`
-if test "$statfs" != ""; then
-  grep '^type _statfs64 ' gen-sysinfo.go
-else
-  grep '^type _statfs ' gen-sysinfo.go
-fi | sed -e 's/type _statfs64/type Statfs_t/' \
+if test "$statfs" == ""; then
+  statfs=`grep '^type _statfs ' gen-sysinfo.go || true`
+fi
+if ! echo "$statfs" | grep f_flags; then
+  statfs=`echo "$statfs" | sed -e 's/f_spare \[4+1\]\([^ ;]*\)/f_flags \1; f_spare [3+1]\1/'`
+fi
+echo "$statfs" | sed -e 's/type _statfs64/type Statfs_t/' \
 	 -e 's/type _statfs/type Statfs_t/' \
 	 -e 's/f_type/Type/' \
 	 -e 's/f_bsize/Bsize/' \

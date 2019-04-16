@@ -458,23 +458,7 @@ else version (CRuntime_Bionic)
     enum MAP_SHARED     = 0x0001;
     enum MAP_PRIVATE    = 0x0002;
     enum MAP_FIXED      = 0x0010;
-
-    version (X86)
-    {
-        enum MAP_ANON       = 0x0020;
-    }
-    else version (ARM)
-    {
-        enum MAP_ANON       = 0x0020;
-    }
-    else version (AArch64)
-    {
-        enum MAP_ANON       = 0x0020;
-    }
-    else
-    {
-        static assert(false, "Architecture not supported.");
-    }
+    enum MAP_ANON       = 0x0020;
 
     enum MAP_FAILED     = cast(void*)-1;
 

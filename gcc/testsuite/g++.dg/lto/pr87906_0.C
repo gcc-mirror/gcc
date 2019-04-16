@@ -1,4 +1,5 @@
 // { dg-lto-do link }
+// { dg-require-effective-target fpic }
 // { dg-lto-options { { -O -fPIC -flto } } }
 // { dg-extra-ld-options "-shared -nostdlib" }
 

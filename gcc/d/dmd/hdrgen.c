@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2018 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
  * written by Dave Fladebo
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -2831,6 +2831,12 @@ public:
         typeToBuffer(e->to, NULL);
         buf->writeByte(')');
         expToBuffer(e->e1, precedence[e->op]);
+    }
+
+    void visit(VectorArrayExp *e)
+    {
+        expToBuffer(e->e1, PREC_primary);
+        buf->writestring(".array");
     }
 
     void visit(SliceExp *e)

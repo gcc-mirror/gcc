@@ -1,3 +1,79 @@
+2019-02-21  Martin Sebor  <msebor@redhat.com>
+
+	* libgcc2.h (__clear_cache): Correct signature.
+	* libgcc2.c (__clear_cache): Same.
+
+2019-02-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/linux-unwind.h (alpha_fallback_frame_state):
+	Cast 'mcontext_t *' &rt_->uc.uc_mcontext to 'struct sigcontext *'.
+
+2019-02-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* unwind-dw2.c (_Unwind_GetGR) [DWARF_ZERO_REG]: Compare
+	regno instead of index to DWARF_ZERO_REG.
+
+2019-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/visium/lib2funcs.c (__set_trampoline_parity): Replace
+	TRAMPOLINE_SIZE with __LIBGCC_TRAMPOLINE_SIZE__.
+
+2019-01-31  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/t-linux: Add -mfp-rounding-mode=d
+	to HOST_LIBGCC2_CFLAGS.
+
+2019-01-23  Joseph Myers  <joseph@codesourcery.com>
+
+	PR libgcc/88931
+	* libgcc2.c (FSTYPE FUNC (DWtype u)): Correct no leading bits case.
+
+2019-01-18  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-profiler.c (__gcov_indirect_call_profiler_v2): Rename
+	to ...
+	(__gcov_indirect_call_profiler_v3): ... this.
+	* libgcov.h (__gcov_indirect_call_profiler_v2): Likewise.
+	(__gcov_indirect_call_profiler_v3): Likewise.
+	* Makefile.in: Bump function name.
+
+2019-01-18  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (GCOV_PROF_PREFIX): Define.
+	(gcov_version): Use in gcov_error.
+	(merge_one_data): Likewise.
+	(dump_one_gcov): Likewise.
+
+2019-01-18  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (gcov_version_string): New function.
+	(gcov_version): Convert version integer into string.
+
+2019-01-17  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* config.host: Recognize amdgcn*-*-amdhsa.
+	* config/gcn/crt0.c: New file.
+	* config/gcn/lib2-divmod-hi.c: New file.
+	* config/gcn/lib2-divmod.c: New file.
+	* config/gcn/lib2-gcn.h: New file.
+	* config/gcn/sfp-machine.h: New file.
+	* config/gcn/t-amdgcn: New file.
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* config/c6x/libunwind.S: Mechanically replace "can not" with
+	"cannot".
+	* config/tilepro/atomic.h: Likewise.
+	* config/vxlib-tls.c: Likewise.
+	* generic-morestack-thread.c: Likewise.
+	* generic-morestack.c: Likewise.
+	* mkmap-symver.awk: Likewise.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

@@ -17,6 +17,7 @@
 
 // { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
+// { dg-require-filesystem-ts "" }
 
 #undef _GLIBCXX_USE_CXX11_ABI
 #define _GLIBCXX_USE_CXX11_ABI 0

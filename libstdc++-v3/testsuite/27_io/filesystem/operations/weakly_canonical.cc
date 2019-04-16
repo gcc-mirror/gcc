@@ -28,6 +28,9 @@ namespace fs = std::filesystem;
 void
 test01()
 {
+  const std::error_code bad_ec = make_error_code(std::errc::invalid_argument);
+  std::error_code ec;
+
   auto dir = __gnu_test::nonexistent_path();
   fs::create_directory(dir);
   const auto dirc = canonical(dir);
@@ -35,17 +38,19 @@ test01()
   fs::create_directory(foo);
   fs::create_directory(bar);
   fs::create_directory(bar/"baz");
+  fs::path p;
+
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  // No symlink support
+#else
   fs::create_symlink("../bar", foo/"bar");
 
-  auto p = fs::weakly_canonical(dir/"foo//./bar///../biz/.");
+  p = fs::weakly_canonical(dir/"foo//./bar///../biz/.");
   VERIFY( p == dirc/"biz/" );
   p = fs::weakly_canonical(dir/"foo/.//bar/././baz/.");
   VERIFY( p == dirc/"bar/baz" );
   p = fs::weakly_canonical(fs::current_path()/dir/"bar//../foo/bar/baz");
   VERIFY( p == dirc/"bar/baz" );
-
-  const std::error_code bad_ec = make_error_code(std::errc::invalid_argument);
-  std::error_code ec;
 
   ec = bad_ec;
   p = fs::weakly_canonical(dir/"foo//./bar///../biz/.", ec);
@@ -57,6 +62,30 @@ test01()
   VERIFY( p == dirc/"bar/baz" );
   ec = bad_ec;
   p = fs::weakly_canonical(fs::current_path()/dir/"bar//../foo/bar/baz", ec);
+  VERIFY( !ec );
+  VERIFY( p == dirc/"bar/baz" );
+#endif
+
+  // As above, but using "foo/.." instead of "foo",
+  // because there is no "foo/bar" symlink
+
+  p = fs::weakly_canonical(dir/"./bar///../biz/.");
+  VERIFY( p == dirc/"biz/" );
+  p = fs::weakly_canonical(dir/"foo/.././/bar/././baz/.");
+  VERIFY( p == dirc/"bar/baz" );
+  p = fs::weakly_canonical(fs::current_path()/dir/"bar//../foo/../bar/baz");
+  VERIFY( p == dirc/"bar/baz" );
+
+  ec = bad_ec;
+  p = fs::weakly_canonical(dir/"foo/..//./bar///../biz/.", ec);
+  VERIFY( !ec );
+  VERIFY( p == dirc/"biz/" );
+  ec = bad_ec;
+  p = fs::weakly_canonical(dir/"foo/.././/bar/././baz/.", ec);
+  VERIFY( !ec );
+  VERIFY( p == dirc/"bar/baz" );
+  ec = bad_ec;
+  p = fs::weakly_canonical(fs::current_path()/dir/"bar//../foo/../bar/baz", ec);
   VERIFY( !ec );
   VERIFY( p == dirc/"bar/baz" );
 

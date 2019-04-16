@@ -377,7 +377,6 @@ assign_stack_local_1 (machine_mode mode, poly_int64 size,
   poly_int64 bigend_correction = 0;
   poly_int64 slot_offset = 0, old_frame_offset;
   unsigned int alignment, alignment_in_bits;
-  bool dynamic_align_addr = false;
 
   if (align == 0)
     {
@@ -396,20 +395,14 @@ assign_stack_local_1 (machine_mode mode, poly_int64 size,
 
   alignment_in_bits = alignment * BITS_PER_UNIT;
 
+  /* Ignore alignment if it exceeds MAX_SUPPORTED_STACK_ALIGNMENT.  */
   if (alignment_in_bits > MAX_SUPPORTED_STACK_ALIGNMENT)
     {
-      /* If the required alignment exceeds MAX_SUPPORTED_STACK_ALIGNMENT and
-	 it is not OK to reduce it.  Align the slot dynamically.  */
-      if (mode == BLKmode && (kind & ASLK_REDUCE_ALIGN) == 0)
-	dynamic_align_addr = true;
-      else
-	{
-	  alignment_in_bits = MAX_SUPPORTED_STACK_ALIGNMENT;
-	  alignment = MAX_SUPPORTED_STACK_ALIGNMENT / BITS_PER_UNIT;
-	}
+      alignment_in_bits = MAX_SUPPORTED_STACK_ALIGNMENT;
+      alignment = MAX_SUPPORTED_STACK_ALIGNMENT / BITS_PER_UNIT;
     }
 
-  if (SUPPORTS_STACK_ALIGNMENT && !dynamic_align_addr)
+  if (SUPPORTS_STACK_ALIGNMENT)
     {
       if (crtl->stack_alignment_estimated < alignment_in_bits)
 	{
@@ -439,42 +432,10 @@ assign_stack_local_1 (machine_mode mode, poly_int64 size,
 	}
     }
 
-  /* Handle overalignment here for parameter copy on the stack.
-     Reserved enough space for it and dynamically align the address.
-     No free frame_space is added here.  */
-  if (dynamic_align_addr)
-    {
-      rtx allocsize = gen_int_mode (size, Pmode);
-      get_dynamic_stack_size (&allocsize, 0, alignment_in_bits, NULL);
-
-      /* This is the size of space needed to accommodate required size of data
-	 with given alignment.  */
-      poly_int64 len = rtx_to_poly_int64 (allocsize);
-      old_frame_offset = frame_offset;
-
-      if (FRAME_GROWS_DOWNWARD)
-	{
-	  frame_offset -= len;
-	  try_fit_stack_local (frame_offset, len, len,
-			       PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT,
-			       &slot_offset);
-	}
-      else
-	{
-	  frame_offset += len;
-	  try_fit_stack_local (old_frame_offset, len, len,
-			       PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT,
-			       &slot_offset);
-	}
-      goto found_space;
-    }
-  else
-    {
-      if (crtl->stack_alignment_needed < alignment_in_bits)
-	crtl->stack_alignment_needed = alignment_in_bits;
-      if (crtl->max_used_stack_slot_alignment < alignment_in_bits)
-	crtl->max_used_stack_slot_alignment = alignment_in_bits;
-    }
+  if (crtl->stack_alignment_needed < alignment_in_bits)
+    crtl->stack_alignment_needed = alignment_in_bits;
+  if (crtl->max_used_stack_slot_alignment < alignment_in_bits)
+    crtl->max_used_stack_slot_alignment = alignment_in_bits;
 
   if (mode != BLKmode || maybe_ne (size, 0))
     {
@@ -560,12 +521,6 @@ assign_stack_local_1 (machine_mode mode, poly_int64 size,
 			  trunc_int_for_mode
 			  (slot_offset + bigend_correction,
 			   Pmode));
-
-  if (dynamic_align_addr)
-    {
-      addr = align_dynamic_address (addr, alignment_in_bits);
-      mark_reg_pointer (addr, alignment_in_bits);
-    }
 
   x = gen_rtx_MEM (mode, addr);
   set_mem_align (x, alignment_in_bits);
@@ -2958,8 +2913,21 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
   if (stack_parm == 0)
     {
       SET_DECL_ALIGN (parm, MAX (DECL_ALIGN (parm), BITS_PER_WORD));
-      stack_parm = assign_stack_local (BLKmode, size_stored,
-				       DECL_ALIGN (parm));
+      if (DECL_ALIGN (parm) > MAX_SUPPORTED_STACK_ALIGNMENT)
+	{
+	  rtx allocsize = gen_int_mode (size_stored, Pmode);
+	  get_dynamic_stack_size (&allocsize, 0, DECL_ALIGN (parm), NULL);
+	  stack_parm = assign_stack_local (BLKmode, UINTVAL (allocsize),
+					   MAX_SUPPORTED_STACK_ALIGNMENT);
+	  rtx addr = align_dynamic_address (XEXP (stack_parm, 0),
+					    DECL_ALIGN (parm));
+	  mark_reg_pointer (addr, DECL_ALIGN (parm));
+	  stack_parm = gen_rtx_MEM (GET_MODE (stack_parm), addr);
+	  MEM_NOTRAP_P (stack_parm) = 1;
+	}
+      else
+	stack_parm = assign_stack_local (BLKmode, size_stored,
+					 DECL_ALIGN (parm));
       if (known_eq (GET_MODE_SIZE (GET_MODE (entry_parm)), size))
 	PUT_MODE (stack_parm, GET_MODE (entry_parm));
       set_mem_attributes (stack_parm, parm, 1);
@@ -4934,7 +4902,7 @@ init_function_start (tree subr)
 void
 stack_protect_epilogue (void)
 {
-  tree guard_decl = targetm.stack_protect_guard ();
+  tree guard_decl = crtl->stack_protect_guard_decl;
   rtx_code_label *label = gen_label_rtx ();
   rtx x, y;
   rtx_insn *seq = NULL;
@@ -5362,6 +5330,12 @@ expand_function_end (void)
      communicate between __builtin_eh_return and the epilogue.  */
   expand_eh_return ();
 
+  /* If stack protection is enabled for this function, check the guard.  */
+  if (crtl->stack_protect_guard
+      && targetm.stack_protect_runtime_enabled_p ()
+      && naked_return_label == NULL_RTX)
+    stack_protect_epilogue ();
+
   /* If scalar return value was computed in a pseudo-reg, or was a named
      return value that got dumped to the stack, copy that to the hard
      return register.  */
@@ -5508,7 +5482,9 @@ expand_function_end (void)
     emit_insn (gen_blockage ());
 
   /* If stack protection is enabled for this function, check the guard.  */
-  if (crtl->stack_protect_guard && targetm.stack_protect_runtime_enabled_p ())
+  if (crtl->stack_protect_guard
+      && targetm.stack_protect_runtime_enabled_p ()
+      && naked_return_label)
     stack_protect_epilogue ();
 
   /* If we had calls to alloca, and this machine needs
@@ -6427,6 +6403,21 @@ make_pass_thread_prologue_and_epilogue (gcc::context *ctxt)
 }
 
 
+/* If CONSTRAINT is a matching constraint, then return its number.
+   Otherwise, return -1.  */
+
+static int
+matching_constraint_num (const char *constraint)
+{
+  if (*constraint == '%')
+    constraint++;
+
+  if (IN_RANGE (*constraint, '0', '9'))
+    return strtoul (constraint, NULL, 10);
+
+  return -1;
+}
+
 /* This mini-pass fixes fall-out from SSA in asm statements that have
    in-out constraints.  Say you start with
 
@@ -6485,14 +6476,10 @@ match_asm_constraints_1 (rtx_insn *insn, rtx *p_sets, int noutputs)
       rtx input, output;
       rtx_insn *insns;
       const char *constraint = ASM_OPERANDS_INPUT_CONSTRAINT (op, i);
-      char *end;
       int match, j;
 
-      if (*constraint == '%')
-	constraint++;
-
-      match = strtoul (constraint, &end, 10);
-      if (end == constraint)
+      match = matching_constraint_num (constraint);
+      if (match < 0)
 	continue;
 
       gcc_assert (match < noutputs);
@@ -6509,14 +6496,14 @@ match_asm_constraints_1 (rtx_insn *insn, rtx *p_sets, int noutputs)
       /* We can't do anything if the output is also used as input,
 	 as we're going to overwrite it.  */
       for (j = 0; j < ninputs; j++)
-        if (reg_overlap_mentioned_p (output, RTVEC_ELT (inputs, j)))
+	if (reg_overlap_mentioned_p (output, RTVEC_ELT (inputs, j)))
 	  break;
       if (j != ninputs)
 	continue;
 
       /* Avoid changing the same input several times.  For
 	 asm ("" : "=mr" (out1), "=mr" (out2) : "0" (in), "1" (in));
-	 only change in once (to out1), rather than changing it
+	 only change it once (to out1), rather than changing it
 	 first to out1 and afterwards to out2.  */
       if (i > 0)
 	{
@@ -6533,6 +6520,9 @@ match_asm_constraints_1 (rtx_insn *insn, rtx *p_sets, int noutputs)
       insns = get_insns ();
       end_sequence ();
       emit_insn_before (insns, insn);
+
+      constraint = ASM_OPERANDS_OUTPUT_CONSTRAINT(SET_SRC(p_sets[match]));
+      bool early_clobber_p = strchr (constraint, '&') != NULL;
 
       /* Now replace all mentions of the input with output.  We can't
 	 just replace the occurrence in inputs[i], as the register might
@@ -6555,7 +6545,14 @@ match_asm_constraints_1 (rtx_insn *insn, rtx *p_sets, int noutputs)
 	 value, but different pseudos) where we formerly had only one.
 	 With more complicated asms this might lead to reload failures
 	 which wouldn't have happen without this pass.  So, iterate over
-	 all operands and replace all occurrences of the register used.  */
+	 all operands and replace all occurrences of the register used.
+
+	 However, if one or more of the 'input' uses have a non-matching
+	 constraint and the matched output operand is an early clobber
+	 operand, then do not replace the input operand, since by definition
+	 it conflicts with the output operand and cannot share the same
+	 register.  See PR89313 for details.  */
+
       for (j = 0; j < noutputs; j++)
 	if (!rtx_equal_p (SET_DEST (p_sets[j]), input)
 	    && reg_overlap_mentioned_p (input, SET_DEST (p_sets[j])))
@@ -6563,8 +6560,13 @@ match_asm_constraints_1 (rtx_insn *insn, rtx *p_sets, int noutputs)
 					      input, output);
       for (j = 0; j < ninputs; j++)
 	if (reg_overlap_mentioned_p (input, RTVEC_ELT (inputs, j)))
-	  RTVEC_ELT (inputs, j) = replace_rtx (RTVEC_ELT (inputs, j),
-					       input, output);
+	  {
+	    if (!early_clobber_p
+		|| match == matching_constraint_num
+			      (ASM_OPERANDS_INPUT_CONSTRAINT (op, j)))
+	      RTVEC_ELT (inputs, j) = replace_rtx (RTVEC_ELT (inputs, j),
+						   input, output);
+	  }
 
       changed = true;
     }

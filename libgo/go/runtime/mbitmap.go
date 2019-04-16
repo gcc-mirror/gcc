@@ -242,7 +242,7 @@ func (s *mspan) nextFreeIndex() uintptr {
 	return result
 }
 
-// isFree returns whether the index'th object in s is unallocated.
+// isFree reports whether the index'th object in s is unallocated.
 func (s *mspan) isFree(index uintptr) bool {
 	if index < s.freeindex {
 		return false
@@ -283,9 +283,7 @@ func (m markBits) isMarked() bool {
 	return *m.bytep&m.mask != 0
 }
 
-// setMarked sets the marked bit in the markbits, atomically. Some compilers
-// are not able to inline atomic.Or8 function so if it appears as a hot spot consider
-// inlining it manually.
+// setMarked sets the marked bit in the markbits, atomically.
 func (m markBits) setMarked() {
 	// Might be racing with other updates, so use atomic update always.
 	// We used to be clever here and use a non-atomic update in certain
@@ -368,7 +366,7 @@ func findObject(p, refBase, refOff uintptr, forStack bool) (base uintptr, s *msp
 	s = spanOf(p)
 	// If p is a bad pointer, it may not be in s's bounds.
 	if s == nil || p < s.base() || p >= s.limit || s.state != mSpanInUse {
-		if s == nil || s.state == _MSpanManual || forStack {
+		if s == nil || s.state == mSpanManual || forStack {
 			// If s is nil, the virtual address has never been part of the heap.
 			// This pointer may be to some mmap'd region, so we allow it.
 			// Pointers into stacks are also ok, the runtime manages these explicitly.
@@ -533,7 +531,7 @@ func (h heapBits) bits() uint32 {
 	return uint32(*h.bitp) >> (h.shift & 31)
 }
 
-// morePointers returns true if this word and all remaining words in this object
+// morePointers reports whether this word and all remaining words in this object
 // are scalars.
 // h must not describe the second word of the object.
 func (h heapBits) morePointers() bool {
@@ -631,7 +629,7 @@ func bulkBarrierPreWrite(dst, src, size uintptr) {
 			}
 		}
 		return
-	} else if s.state != _MSpanInUse || dst < s.base() || s.limit <= dst {
+	} else if s.state != mSpanInUse || dst < s.base() || s.limit <= dst {
 		// dst was heap memory at some point, but isn't now.
 		// It can't be a global. It must be either our stack,
 		// or in the case of direct channel sends, it could be
@@ -664,6 +662,35 @@ func bulkBarrierPreWrite(dst, src, size uintptr) {
 			}
 			h = h.next()
 		}
+	}
+}
+
+// bulkBarrierPreWriteSrcOnly is like bulkBarrierPreWrite but
+// does not execute write barriers for [dst, dst+size).
+//
+// In addition to the requirements of bulkBarrierPreWrite
+// callers need to ensure [dst, dst+size) is zeroed.
+//
+// This is used for special cases where e.g. dst was just
+// created and zeroed with malloc.
+//go:nosplit
+func bulkBarrierPreWriteSrcOnly(dst, src, size uintptr) {
+	if (dst|src|size)&(sys.PtrSize-1) != 0 {
+		throw("bulkBarrierPreWrite: unaligned arguments")
+	}
+	if !writeBarrier.needed {
+		return
+	}
+	buf := &getg().m.p.ptr().wbBuf
+	h := heapBitsForAddr(dst)
+	for i := uintptr(0); i < size; i += sys.PtrSize {
+		if h.isPointer() {
+			srcx := (*uintptr)(unsafe.Pointer(src + i))
+			if !buf.putFast(0, *srcx) {
+				wbBufFlush(nil, 0)
+			}
+		}
+		h = h.next()
 	}
 }
 
@@ -1902,6 +1929,20 @@ Run:
 	return totalBits
 }
 
+// materializeGCProg allocates space for the (1-bit) pointer bitmask
+// for an object of size ptrdata.  Then it fills that space with the
+// pointer bitmask specified by the program prog.
+// The bitmask starts at s.startAddr.
+// The result must be deallocated with dematerializeGCProg.
+func materializeGCProg(ptrdata uintptr, prog *byte) *mspan {
+	s := mheap_.allocManual((ptrdata/(8*sys.PtrSize)+pageSize-1)/pageSize, &memstats.gc_sys)
+	runGCProg(addb(prog, 4), nil, (*byte)(unsafe.Pointer(s.startAddr)), 1)
+	return s
+}
+func dematerializeGCProg(s *mspan) {
+	mheap_.freeManual(s, &memstats.gc_sys)
+}
+
 func dumpGCProg(p *byte) {
 	nptr := 0
 	for {
@@ -1962,7 +2003,9 @@ func reflect_gcbits(x interface{}) []byte {
 	return ret
 }
 
-// Returns GC type info for object p for testing.
+// Returns GC type info for the pointer stored in ep for testing.
+// If ep points to the stack, only static live information will be returned
+// (i.e. not for objects which are only dynamically live stack objects).
 func getgcmask(ep interface{}) (mask []byte) {
 	e := *efaceOf(&ep)
 	p := e.data

@@ -308,6 +308,11 @@ thread_jump (edge e, basic_block b)
       || !rtx_equal_p (XEXP (cond1, 1), XEXP (cond2, 1)))
     return NULL;
 
+  /* Punt if BB_END (e->src) is doloop-like conditional jump that modifies
+     the registers used in cond1.  */
+  if (modified_in_p (cond1, BB_END (e->src)))
+    return NULL;
+
   /* Short circuit cases where block B contains some side effects, as we can't
      safely bypass it.  */
   for (insn = NEXT_INSN (BB_HEAD (b)); insn != NEXT_INSN (BB_END (b));
@@ -338,6 +343,13 @@ thread_jump (edge e, basic_block b)
        insn != NEXT_INSN (BB_END (b)) && !failed;
        insn = NEXT_INSN (insn))
     {
+      /* cond2 must not mention any register that is not equal to the
+	 former block.  Check this before processing that instruction,
+	 as BB_END (b) could contain also clobbers.  */
+      if (insn == BB_END (b)
+	  && mentions_nonequal_regs (cond2, nonequal))
+	goto failed_exit;
+
       if (INSN_P (insn))
 	{
 	  rtx pat = PATTERN (insn);
@@ -361,11 +373,6 @@ thread_jump (edge e, basic_block b)
       b->flags |= BB_NONTHREADABLE_BLOCK;
       goto failed_exit;
     }
-
-  /* cond2 must not mention any register that is not equal to the
-     former block.  */
-  if (mentions_nonequal_regs (cond2, nonequal))
-    goto failed_exit;
 
   EXECUTE_IF_SET_IN_REG_SET (nonequal, 0, i, rsi)
     goto failed_exit;
@@ -2705,23 +2712,23 @@ try_optimize_cfg (int mode)
 
 		      if (current_ir_type () == IR_RTL_CFGLAYOUT)
 			{
-			  if (BB_FOOTER (b)
-			      && BARRIER_P (BB_FOOTER (b)))
+			  rtx_insn *insn;
+			  for (insn = BB_FOOTER (b);
+			       insn; insn = NEXT_INSN (insn))
+			    if (BARRIER_P (insn))
+			      break;
+			  if (insn)
 			    FOR_EACH_EDGE (e, ei, b->preds)
-			      if ((e->flags & EDGE_FALLTHRU)
-				  && BB_FOOTER (e->src) == NULL)
+			      if ((e->flags & EDGE_FALLTHRU))
 				{
-				  if (BB_FOOTER (b))
+				  if (BB_FOOTER (b)
+				      && BB_FOOTER (e->src) == NULL)
 				    {
 				      BB_FOOTER (e->src) = BB_FOOTER (b);
 				      BB_FOOTER (b) = NULL;
 				    }
 				  else
-				    {
-				      start_sequence ();
-				      BB_FOOTER (e->src) = emit_barrier ();
-				      end_sequence ();
-				    }
+				    emit_barrier_after_bb (e->src);
 				}
 			}
 		      else

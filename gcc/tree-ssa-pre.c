@@ -1262,7 +1262,7 @@ get_representative_for (const pre_expr e, basic_block b = NULL)
   switch (e->kind)
     {
     case NAME:
-      return VN_INFO (PRE_EXPR_NAME (e))->valnum;
+      return PRE_EXPR_NAME (e);
     case CONSTANT:
       return PRE_EXPR_CONSTANT (e);
     case NARY:
@@ -3930,6 +3930,13 @@ compute_avail (void)
 			  operands.release ();
 			  continue;
 			}
+
+		      /* If the REFERENCE traps and there was a preceding
+		         point in the block that might not return avoid
+			 adding the reference to EXP_GEN.  */
+		      if (BB_MAY_NOTRETURN (block)
+			  && vn_reference_may_trap (ref))
+			continue;
 
 		      /* If the value of the reference is not invalidated in
 			 this block until it is computed, add the expression

@@ -206,6 +206,7 @@ static int empty_base_at_nonzero_offset_p (tree, tree, splay_tree);
 static tree end_of_base (tree);
 static tree get_vcall_index (tree, tree);
 static bool type_maybe_constexpr_default_constructor (tree);
+static bool field_poverlapping_p (tree);
 
 /* Return a COND_EXPR that executes TRUE_STMT if this execution of the
    'structor is in charge of 'structing virtual bases, or FALSE_STMT
@@ -1132,9 +1133,6 @@ add_method (tree type, tree method, bool via_using)
 	    }
 	}
     }
-
-  /* A class should never have more than one destructor.  */
-  gcc_assert (!current_fns || !DECL_DESTRUCTOR_P (method));
 
   current_fns = ovl_insert (method, current_fns, via_using);
 
@@ -3332,7 +3330,7 @@ check_field_decl (tree field,
 	  if (!warned && errorcount > oldcount)
 	    {
 	      inform (DECL_SOURCE_LOCATION (field), "unrestricted unions "
-		      "only available with -std=c++11 or -std=gnu++11");
+		      "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	      warned = true;
 	    }
 	}
@@ -3556,6 +3554,11 @@ check_field_decls (tree t, tree *access_decls,
 	/* We don't treat zero-width bitfields as making a class
 	   non-empty.  */
 	;
+      else if (field_poverlapping_p (x) && is_empty_class (type))
+	{
+	  /* Empty data members also don't make a class non-empty.  */
+	  CLASSTYPE_CONTAINS_EMPTY_CLASS_P (t) = 1;
+	}
       else
 	{
 	  /* The class is non-empty.  */
@@ -3606,6 +3609,11 @@ check_field_decls (tree t, tree *access_decls,
       if (! layout_pod_type_p (type))
 	/* DR 148 now allows pointers to members (which are POD themselves),
 	   to be allowed in POD structs.  */
+	CLASSTYPE_NON_LAYOUT_POD_P (t) = 1;
+
+      if (field_poverlapping_p (x))
+	/* A potentially-overlapping non-static data member makes the class
+	   non-layout-POD.  */
 	CLASSTYPE_NON_LAYOUT_POD_P (t) = 1;
 
       if (!std_layout_type_p (type))
@@ -4135,11 +4143,12 @@ layout_nonempty_base_or_field (record_layout_info rli,
 	    {
 	      if (abi_version_at_least (9))
 		warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wabi,
-			    "alignment of %qD increased in -fabi-version=9 "
+			    "alignment of %qD increased in %<-fabi-version=9%> "
 			    "(GCC 5.2)", decl);
 	      else
 		warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wabi, "alignment "
-			    "of %qD will increase in -fabi-version=9", decl);
+			    "of %qD will increase in %<-fabi-version=9%>",
+			    decl);
 	    }
 	  break;
 	}
@@ -5129,7 +5138,8 @@ trivial_default_constructor_is_constexpr (tree t)
   /* A defaulted trivial default constructor is constexpr
      if there is nothing to initialize.  */
   gcc_assert (!TYPE_HAS_COMPLEX_DFLT (t));
-  return is_really_empty_class (t);
+  /* A class with a vptr doesn't have a trivial default ctor.  */
+  return is_really_empty_class (t, /*ignore_vptr*/true);
 }
 
 /* Returns true iff class T has a constexpr default constructor.  */
@@ -5211,7 +5221,9 @@ classtype_has_move_assign_or_move_ctor_p (tree t, bool user_p)
     for (ovl_iterator iter (get_class_binding_direct
 			    (t, assign_op_identifier));
 	 iter; ++iter)
-      if ((!user_p || !DECL_ARTIFICIAL (*iter)) && move_fn_p (*iter))
+      if ((!user_p || !DECL_ARTIFICIAL (*iter))
+	  && DECL_CONTEXT (*iter) == t
+	  && move_fn_p (*iter))
 	return true;
   
   return false;
@@ -5926,13 +5938,12 @@ end_of_base (tree binfo)
   return size_binop (PLUS_EXPR, BINFO_OFFSET (binfo), size);
 }
 
-/* Returns the offset of the byte just past the end of the base class
-   with the highest offset in T.  If INCLUDE_VIRTUALS_P is zero, then
-   only non-virtual bases are included.  If INCLUDE_FIELDS_P is true,
-   then also consider non-static data members.  */
+/* Returns the offset of the byte just past the end of the base class or empty
+   data member with the highest offset in T.  If INCLUDE_VIRTUALS_P is zero,
+   then only non-virtual bases are included.  */
 
 static tree
-end_of_class (tree t, bool include_virtuals_p, bool include_fields_p = false)
+end_of_class (tree t, bool include_virtuals_p)
 {
   tree result = size_zero_node;
   vec<tree, va_gc> *vbases;
@@ -5955,15 +5966,19 @@ end_of_class (tree t, bool include_virtuals_p, bool include_fields_p = false)
 	result = offset;
     }
 
-  if (include_fields_p)
-    for (tree field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
-      if (TREE_CODE (field) == FIELD_DECL)
-	{
-	  offset = size_binop (PLUS_EXPR, DECL_FIELD_OFFSET (field),
-			       DECL_SIZE_UNIT (field));
-	  if (tree_int_cst_lt (result, offset))
-	    result = offset;
-	}
+  /* Also consider empty data members.  */
+  for (tree field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
+    if (TREE_CODE (field) == FIELD_DECL
+	&& !DECL_ARTIFICIAL (field)
+	&& field_poverlapping_p (field)
+	&& is_empty_class (TREE_TYPE (field)))
+      {
+	/* Update sizeof(C) to max (sizeof(C), offset(D)+sizeof(D)) */
+	offset = size_binop (PLUS_EXPR, DECL_FIELD_OFFSET (field),
+			     TYPE_SIZE_UNIT (TREE_TYPE (field)));
+	if (tree_int_cst_lt (result, offset))
+	  result = offset;
+      }
 
   if (include_virtuals_p)
     for (vbases = CLASSTYPE_VBASECLASSES (t), i = 0;
@@ -6154,12 +6169,14 @@ layout_class_type (tree t, tree *virtuals_p)
       bool might_overlap = field_poverlapping_p (field);
 
       if (might_overlap && CLASS_TYPE_P (type)
-	  && CLASSTYPE_NON_LAYOUT_POD_P (type))
+	  && (CLASSTYPE_NON_LAYOUT_POD_P (type) || CLASSTYPE_EMPTY_P (type)))
 	{
 	  /* if D is a potentially-overlapping data member, update sizeof(C) to
 	     max (sizeof(C), offset(D)+max (nvsize(D), dsize(D))).  */
 	  tree nvsize = CLASSTYPE_SIZE_UNIT (type);
-	  tree dsize = end_of_class (type, /*vbases*/true, /*fields*/true);
+	  /* end_of_class doesn't always give dsize, but it does in the case of
+	     a class with virtual bases, which is when dsize > nvsize.  */
+	  tree dsize = end_of_class (type, /*vbases*/true);
 	  if (tree_int_cst_le (dsize, nvsize))
 	    {
 	      DECL_SIZE_UNIT (field) = nvsize;
@@ -8297,10 +8314,12 @@ is_empty_class (tree type)
 }
 
 /* Returns true if TYPE contains no actual data, just various
-   possible combinations of empty classes and possibly a vptr.  */
+   possible combinations of empty classes.  If IGNORE_VPTR is true,
+   a vptr doesn't prevent the class from being considered empty.  Typically
+   we want to ignore the vptr on assignment, and not on initialization.  */
 
 bool
-is_really_empty_class (tree type)
+is_really_empty_class (tree type, bool ignore_vptr)
 {
   if (CLASS_TYPE_P (type))
     {
@@ -8314,22 +8333,25 @@ is_really_empty_class (tree type)
       if (COMPLETE_TYPE_P (type) && is_empty_class (type))
 	return true;
 
+      if (!ignore_vptr && TYPE_CONTAINS_VPTR_P (type))
+	return false;
+
       for (binfo = TYPE_BINFO (type), i = 0;
 	   BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
-	if (!is_really_empty_class (BINFO_TYPE (base_binfo)))
+	if (!is_really_empty_class (BINFO_TYPE (base_binfo), ignore_vptr))
 	  return false;
       for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL
 	    && !DECL_ARTIFICIAL (field)
 	    /* An unnamed bit-field is not a data member.  */
 	    && !DECL_UNNAMED_BIT_FIELD (field)
-	    && !is_really_empty_class (TREE_TYPE (field)))
+	    && !is_really_empty_class (TREE_TYPE (field), ignore_vptr))
 	  return false;
       return true;
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     return (integer_zerop (array_type_nelts_top (type))
-	    || is_really_empty_class (TREE_TYPE (type)));
+	    || is_really_empty_class (TREE_TYPE (type), ignore_vptr));
   return false;
 }
 

@@ -707,41 +707,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator==(const unique_ptr<_Tp, _Dp>& __x,
 	       const unique_ptr<_Up, _Ep>& __y)
     { return __x.get() == __y.get(); }
 
   template<typename _Tp, typename _Dp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator==(const unique_ptr<_Tp, _Dp>& __x, nullptr_t) noexcept
     { return !__x; }
 
   template<typename _Tp, typename _Dp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator==(nullptr_t, const unique_ptr<_Tp, _Dp>& __x) noexcept
     { return !__x; }
 
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator!=(const unique_ptr<_Tp, _Dp>& __x,
 	       const unique_ptr<_Up, _Ep>& __y)
     { return __x.get() != __y.get(); }
 
   template<typename _Tp, typename _Dp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator!=(const unique_ptr<_Tp, _Dp>& __x, nullptr_t) noexcept
     { return (bool)__x; }
 
   template<typename _Tp, typename _Dp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator!=(nullptr_t, const unique_ptr<_Tp, _Dp>& __x) noexcept
     { return (bool)__x; }
 
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator<(const unique_ptr<_Tp, _Dp>& __x,
 	      const unique_ptr<_Up, _Ep>& __y)
     {
@@ -752,67 +752,67 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp, typename _Dp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator<(const unique_ptr<_Tp, _Dp>& __x, nullptr_t)
     { return std::less<typename unique_ptr<_Tp, _Dp>::pointer>()(__x.get(),
 								 nullptr); }
 
   template<typename _Tp, typename _Dp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator<(nullptr_t, const unique_ptr<_Tp, _Dp>& __x)
     { return std::less<typename unique_ptr<_Tp, _Dp>::pointer>()(nullptr,
 								 __x.get()); }
 
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator<=(const unique_ptr<_Tp, _Dp>& __x,
 	       const unique_ptr<_Up, _Ep>& __y)
     { return !(__y < __x); }
 
   template<typename _Tp, typename _Dp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator<=(const unique_ptr<_Tp, _Dp>& __x, nullptr_t)
     { return !(nullptr < __x); }
 
   template<typename _Tp, typename _Dp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator<=(nullptr_t, const unique_ptr<_Tp, _Dp>& __x)
     { return !(__x < nullptr); }
 
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator>(const unique_ptr<_Tp, _Dp>& __x,
 	      const unique_ptr<_Up, _Ep>& __y)
     { return (__y < __x); }
 
   template<typename _Tp, typename _Dp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator>(const unique_ptr<_Tp, _Dp>& __x, nullptr_t)
     { return std::less<typename unique_ptr<_Tp, _Dp>::pointer>()(nullptr,
 								 __x.get()); }
 
   template<typename _Tp, typename _Dp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator>(nullptr_t, const unique_ptr<_Tp, _Dp>& __x)
     { return std::less<typename unique_ptr<_Tp, _Dp>::pointer>()(__x.get(),
 								 nullptr); }
 
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator>=(const unique_ptr<_Tp, _Dp>& __x,
 	       const unique_ptr<_Up, _Ep>& __y)
     { return !(__x < __y); }
 
   template<typename _Tp, typename _Dp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator>=(const unique_ptr<_Tp, _Dp>& __x, nullptr_t)
     { return !(__x < nullptr); }
 
   template<typename _Tp, typename _Dp>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator>=(nullptr_t, const unique_ptr<_Tp, _Dp>& __x)
     { return !(nullptr < __x); }
 
@@ -865,6 +865,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   // @} group pointer_abstractions
+
+#if __cplusplus >= 201703L
+  namespace __detail::__variant
+  {
+    template<typename> struct _Never_valueless_alt; // see <variant>
+
+    // Provide the strong exception-safety guarantee when emplacing a
+    // unique_ptr into a variant.
+    template<typename _Tp, typename _Del>
+      struct _Never_valueless_alt<std::unique_ptr<_Tp, _Del>>
+      : std::true_type
+      { };
+  }  // namespace __detail::__variant
+#endif // C++17
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

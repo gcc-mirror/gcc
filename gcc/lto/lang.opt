@@ -47,7 +47,7 @@ Enum(lto_linker_output) String(exec) Value(LTO_LINKER_OUTPUT_EXEC)
 
 flinker-output=
 LTO Report Driver Joined RejectNegative Enum(lto_linker_output) Var(flag_lto_linker_output) Init(LTO_LINKER_OUTPUT_UNKNOWN)
-Set linker output type (used internally during LTO optimization)
+Set linker output type (used internally during LTO optimization).
 
 
 fltrans

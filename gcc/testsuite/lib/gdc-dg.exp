@@ -37,7 +37,7 @@ proc gdc-dg-test { prog do_what extra_tool_flags } {
     set prog [dg-trim-dirname gdc.test $prog]
 
     set result \
-        [gcc-dg-test-1 gdc_target_compile $prog $do_what $extra_tool_flags]
+	[gcc-dg-test-1 gdc_target_compile $prog $do_what $extra_tool_flags]
 
     set comp_output [lindex $result 0]
     set output_file [lindex $result 1]
@@ -60,26 +60,26 @@ proc gdc-dg-runtest { testcases flags default-extra-flags } {
     global runtests
 
     foreach test $testcases {
-        # If we're only testing specific files and this isn't one of
-        # them, skip it.
-        if ![runtest_file_p $runtests $test] {
-            continue
-        }
+	# If we're only testing specific files and this isn't one of
+	# them, skip it.
+	if ![runtest_file_p $runtests $test] {
+	    continue
+	}
 
-        # Use TORTURE_OPTIONS to cycle through an option list.
-        if [torture-options-exist] then {
-            global torture_with_loops
-            set option_list $torture_with_loops
-        } else {
-            set option_list { "" }
-        }
+	# Use TORTURE_OPTIONS to cycle through an option list.
+	if [torture-options-exist] then {
+	    global torture_with_loops
+	    set option_list $torture_with_loops
+	} else {
+	    set option_list { "" }
+	}
 
-        set nshort [file tail [file dirname $test]]/[file tail $test]
+	set nshort [file tail [file dirname $test]]/[file tail $test]
 
-        foreach flags_t $option_list {
-            verbose "Testing $nshort, $flags $flags_t" 1
-            dg-test $test "$flags $flags_t" ${default-extra-flags}
-        }
+	foreach flags_t $option_list {
+	    verbose "Testing $nshort, $flags $flags_t" 1
+	    dg-test $test "$flags $flags_t" ${default-extra-flags}
+	}
     }
 }
 
@@ -93,13 +93,13 @@ if { [info procs gdc_load] != [list] \
     rename gdc_load prev_gdc_load
 
     proc gdc_load { program args } {
-        global GDC_EXECUTE_ARGS
-        if [info exists GDC_EXECUTE_ARGS] then {
-            set args [concat "{$GDC_EXECUTE_ARGS}"]
-        }
-        #print "Running: $program [lindex $args 0]"
-        set result [eval [list prev_gdc_load $program] $args ]
-        return $result
+	global GDC_EXECUTE_ARGS
+	if [info exists GDC_EXECUTE_ARGS] then {
+	    set args [concat "{$GDC_EXECUTE_ARGS}"]
+	}
+	#print "Running: $program [lindex $args 0]"
+	set result [eval [list prev_gdc_load $program] $args ]
+	return $result
     }
 }
 

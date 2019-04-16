@@ -1,3 +1,11 @@
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* include/coi/common/COIResult_common.h: Mechanically replace
+	"can not" with "cannot".
+	* include/coi/source/COIBuffer_source.h: Likewise.
+
 2018-12-14  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* runtime/offload.h (omp_target_is_present, omp_target_memcpy)

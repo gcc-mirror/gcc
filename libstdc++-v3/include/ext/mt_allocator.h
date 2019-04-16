@@ -665,7 +665,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       ~__mt_alloc() _GLIBCXX_USE_NOEXCEPT { }
 
-      pointer
+      _GLIBCXX_NODISCARD pointer
       allocate(size_type __n, const void* = 0);
 
       void
@@ -684,7 +684,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Tp, typename _Poolp>
-    typename __mt_alloc<_Tp, _Poolp>::pointer
+    _GLIBCXX_NODISCARD typename __mt_alloc<_Tp, _Poolp>::pointer
     __mt_alloc<_Tp, _Poolp>::
     allocate(size_type __n, const void*)
     {

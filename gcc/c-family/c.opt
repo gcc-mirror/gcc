@@ -477,8 +477,8 @@ C++ ObjC++ Var(warn_delnonvdtor) Warning LangEnabledBy(C++ ObjC++,Wall || Weffc+
 Warn about deleting polymorphic objects with non-virtual destructors.
 
 Wdeprecated
-C C++ ObjC ObjC++ CPP(cpp_warn_deprecated) CppReason(CPP_W_DEPRECATED) Var(warn_deprecated) Init(1) Warning
-Warn if a deprecated compiler feature, class, method, or field is used.
+C C++ ObjC ObjC++ CPP(cpp_warn_deprecated) CppReason(CPP_W_DEPRECATED)
+; Documented in common.opt
 
 Wdeprecated-copy
 C++ ObjC++ Var(warn_deprecated_copy) Warning LangEnabledBy(C++ ObjC++, Wextra)
@@ -818,7 +818,7 @@ Warn on primary template declaration.
 Wmissing-attributes
 C ObjC C++ ObjC++ Var(warn_missing_attributes) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about declarations of entities that may be missing attributes
-that related entities have been declared with it.
+that related entities have been declared with.
 
 Wmissing-format-attribute
 C ObjC C++ ObjC++ Warning Alias(Wsuggest-attribute=format)
@@ -1300,6 +1300,11 @@ fcanonical-system-headers
 C ObjC C++ ObjC++
 Where shorter, use canonicalized paths to systems headers.
 
+fchar8_t
+C++ ObjC++ Var(flag_char8_t) Init(-1)
+Enable the char8_t fundamental type and use it as the type for UTF-8 string
+and character literals.
+
 fcheck-pointer-bounds
 C ObjC C++ ObjC++ LTO Deprecated
 Deprecated in GCC 9.  This switch has no effect.
@@ -1411,6 +1416,10 @@ fconstexpr-loop-limit=
 C++ ObjC++ Joined RejectNegative UInteger Var(constexpr_loop_limit) Init(262144)
 -fconstexpr-loop-limit=<number>	Specify maximum constexpr loop iteration count.
 
+fconstexpr-ops-limit=
+C++ ObjC++ Joined RejectNegative Host_Wide_Int Var(constexpr_ops_limit) Init(33554432)
+-fconstexpr-ops-limit=<number>	Specify maximum number of constexpr operations during a single constexpr evaluation.
+
 fdebug-cpp
 C ObjC C++ ObjC++
 Emit debug annotations during preprocessing.
@@ -1507,7 +1516,7 @@ fguiding-decls
 C++ ObjC++ Deprecated
 
 fhandle-exceptions
-C++ ObjC++ Optimization Alias(fexceptions) Warn({-fhandle-exceptions has been renamed -fexceptions (and is now on by default)})
+C++ ObjC++ Optimization Alias(fexceptions) Warn({%<-fhandle-exceptions%> has been renamed %<-fexceptions%> (and is now on by default)})
 
 fhonor-std
 C++ ObjC++ Deprecated

@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build aix darwin dragonfly freebsd linux netbsd openbsd solaris
+// +build aix darwin dragonfly freebsd hurd linux netbsd openbsd solaris
 
 package net
 
 import (
 	"context"
+	"internal/bytealg"
 	"sync"
 	"syscall"
 
-	"golang_org/x/net/dns/dnsmessage"
+	"internal/x/net/dns/dnsmessage"
 )
 
 var onceReadProtocols sync.Once
@@ -27,7 +28,7 @@ func readProtocols() {
 
 	for line, ok := file.readLine(); ok; line, ok = file.readLine() {
 		// tcp    6   TCP    # transmission control protocol
-		if i := byteIndex(line, '#'); i >= 0 {
+		if i := bytealg.IndexByteString(line, '#'); i >= 0 {
 			line = line[0:i]
 		}
 		f := getFields(line)
@@ -86,13 +87,13 @@ func (r *Resolver) lookupHost(ctx context.Context, host string) (addrs []string,
 	return r.goLookupHostOrder(ctx, host, order)
 }
 
-func (r *Resolver) lookupIP(ctx context.Context, host string) (addrs []IPAddr, err error) {
+func (r *Resolver) lookupIP(ctx context.Context, network, host string) (addrs []IPAddr, err error) {
 	if r.preferGo() {
 		return r.goLookupIP(ctx, host)
 	}
 	order := systemConf().hostLookupOrder(r, host)
 	if order == hostLookupCgo {
-		if addrs, err, ok := cgoLookupIP(ctx, host); ok {
+		if addrs, err, ok := cgoLookupIP(ctx, network, host); ok {
 			return addrs, err
 		}
 		// cgo not available (or netgo); fall back to Go's DNS resolver

@@ -4,7 +4,7 @@ version (Windows):
 pragma(lib,"uuid");
 
 import core.atomic;
-import core.sys.windows.windows;
+import core.sys.windows.windef /+: HRESULT, LONG, ULONG+/;
 //import std.string;
 
 public import core.sys.windows.basetyps : GUID, IID, CLSID;

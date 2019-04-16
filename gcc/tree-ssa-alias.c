@@ -202,7 +202,7 @@ ptr_deref_may_alias_decl_p (tree ptr, tree decl)
 	return true;
     }
 
-  /* Non-aliased variables can not be pointed to.  */
+  /* Non-aliased variables cannot be pointed to.  */
   if (!may_be_aliased (decl))
     return false;
 
@@ -2365,7 +2365,7 @@ same_addr_size_stores_p (tree base1, poly_int64 offset1, poly_int64 size1,
 
   /* Be conservative with non-call exceptions when the address might
      be NULL.  */
-  if (flag_non_call_exceptions && pi->pt.null)
+  if (cfun->can_throw_non_call_exceptions && pi->pt.null)
     return false;
 
   /* Check that ptr points relative to obj.  */

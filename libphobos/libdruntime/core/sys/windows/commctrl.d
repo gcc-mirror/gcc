@@ -2185,7 +2185,7 @@ static if (_WIN32_IE >= 0x400) {
 }
 
 enum {
-    DTM_FIRST         = 0x10000,
+    DTM_FIRST         = 0x1000,
     DTM_GETSYSTEMTIME = 0x1001,
     DTM_SETSYSTEMTIME = 0x1002,
     DTM_GETRANGE      = 0x1003,
@@ -2832,14 +2832,14 @@ static if (_WIN32_IE >= 0x400) {
     struct NMCBEDRAGBEGINW {
         NMHDR hdr;
         int   iItemid;
-        WCHAR[CBEMAXSTRLEN] szText;
+        WCHAR[CBEMAXSTRLEN] szText = 0;
     }
     alias NMCBEDRAGBEGINW* LPNMCBEDRAGBEGINW, PNMCBEDRAGBEGINW;
 
     struct NMCBEDRAGBEGINA {
         NMHDR hdr;
         int   iItemid;
-        char[CBEMAXSTRLEN] szText;
+        char[CBEMAXSTRLEN] szText = 0;
     }
     alias NMCBEDRAGBEGINA* LPNMCBEDRAGBEGINA, PNMCBEDRAGBEGINA;
 
@@ -2964,7 +2964,7 @@ struct NMCBEENDEDITW {
     NMHDR hdr;
     BOOL  fChanged;
     int   iNewSelection;
-    WCHAR[CBEMAXSTRLEN] szText;
+    WCHAR[CBEMAXSTRLEN] szText = 0;
     int   iWhy;
 }
 alias NMCBEENDEDITW* LPNMCBEENDEDITW, PNMCBEENDEDITW;
@@ -2973,7 +2973,7 @@ struct NMCBEENDEDITA {
     NMHDR hdr;
     BOOL  fChanged;
     int   iNewSelection;
-    char[CBEMAXSTRLEN] szText;
+    char[CBEMAXSTRLEN] szText = 0;
     int   iWhy;
 }
 alias NMCBEENDEDITA* LPNMCBEENDEDITA, PNMCBEENDEDITA;
@@ -3545,7 +3545,7 @@ static if (_WIN32_IE >= 0x300) {
     struct NMTTDISPINFOA {
         NMHDR     hdr;
         LPSTR     lpszText;
-        char[80]  szText;
+        char[80]  szText = 0;
         HINSTANCE hinst;
         UINT      uFlags;
         LPARAM    lParam;
@@ -3554,7 +3554,7 @@ static if (_WIN32_IE >= 0x300) {
     struct NMTTDISPINFOW {
         NMHDR     hdr;
         LPWSTR    lpszText;
-        WCHAR[80] szText;
+        WCHAR[80] szText = 0;
         HINSTANCE hinst;
         UINT      uFlags;
         LPARAM    lParam;
@@ -3563,7 +3563,7 @@ static if (_WIN32_IE >= 0x300) {
     struct NMTTDISPINFOA {
         NMHDR     hdr;
         LPSTR     lpszText;
-        char[80]  szText;
+        char[80]  szText = 0;
         HINSTANCE hinst;
         UINT      uFlags;
     }
@@ -3571,7 +3571,7 @@ static if (_WIN32_IE >= 0x300) {
     struct NMTTDISPINFOW {
         NMHDR     hdr;
         LPWSTR    lpszText;
-        WCHAR[80] szText;
+        WCHAR[80] szText = 0;
         HINSTANCE hinst;
         UINT      uFlags;
     }
@@ -4919,8 +4919,8 @@ static if (_WIN32_WINNT >= 0x501) {
         int  iLink;
         UINT state;
         UINT stateMask;
-        WCHAR[MAX_LINKID_TEXT]  szID;
-        WCHAR[L_MAX_URL_LENGTH] szUrl;
+        WCHAR[MAX_LINKID_TEXT]  szID = 0;
+        WCHAR[L_MAX_URL_LENGTH] szUrl = 0;
     }
     alias LITEM* PLITEM;
 

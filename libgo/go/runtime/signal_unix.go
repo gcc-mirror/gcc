@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build aix darwin dragonfly freebsd linux netbsd openbsd solaris
+// +build aix darwin dragonfly freebsd hurd linux netbsd openbsd solaris
 
 package runtime
 
@@ -142,8 +142,8 @@ func sigInstallGoHandler(sig uint32) bool {
 	}
 
 	// When built using c-archive or c-shared, only install signal
-	// handlers for synchronous signals and SIGPIPE.
-	if (isarchive || islibrary) && t.flags&_SigPanic == 0 && sig != _SIGPIPE {
+	// handlers for synchronous signals, SIGPIPE, and SIGURG.
+	if (isarchive || islibrary) && t.flags&_SigPanic == 0 && sig != _SIGPIPE && sig != _SIGURG {
 		return false
 	}
 
@@ -441,7 +441,10 @@ func raisebadsignal(sig uint32, c *sigctxt) {
 	//
 	// On FreeBSD, the libthr sigaction code prevents
 	// this from working so we fall through to raise.
-	if GOOS != "freebsd" && (isarchive || islibrary) && handler == _SIG_DFL && c.sigcode() != _SI_USER {
+	//
+	// The argument above doesn't hold for SIGPIPE, which won't
+	// necessarily be re-raised if we return.
+	if GOOS != "freebsd" && (isarchive || islibrary) && handler == _SIG_DFL && c.sigcode() != _SI_USER && sig != _SIGPIPE {
 		return
 	}
 
@@ -725,7 +728,7 @@ func unminitSignals() {
 	}
 }
 
-// blockableSig returns whether sig may be blocked by the signal mask.
+// blockableSig reports whether sig may be blocked by the signal mask.
 // We never want to block the signals marked _SigUnblock;
 // these are the synchronous signals that turn into a Go panic.
 // In a Go program--not a c-archive/c-shared--we never want to block

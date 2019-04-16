@@ -112,7 +112,7 @@ extern int dot_symbols;
 	    {							\
 	      rs6000_current_abi = ABI_ELFv2;			\
 	      if (dot_symbols)					\
-		error ("-mcall-aixdesc incompatible with -mabi=elfv2"); \
+		error ("%<-mcall-aixdesc%> incompatible with %<-mabi=elfv2%>"); \
 	    }							\
 	  if (rs6000_isa_flags & OPTION_MASK_RELOCATABLE)	\
 	    {							\
@@ -132,14 +132,14 @@ extern int dot_symbols;
 	  if ((rs6000_isa_flags & OPTION_MASK_POWERPC64) == 0)	\
 	    {							\
 	      rs6000_isa_flags |= OPTION_MASK_POWERPC64;	\
-	      error ("-m64 requires a PowerPC64 cpu");		\
+	      error ("%<-m64%> requires a PowerPC64 cpu");		\
 	    }							\
 	  if ((rs6000_isa_flags_explicit			\
 	       & OPTION_MASK_MINIMAL_TOC) != 0)			\
 	    {							\
 	      if (global_options_set.x_rs6000_current_cmodel	\
 		  && rs6000_current_cmodel != CMODEL_SMALL)	\
-		error ("-mcmodel incompatible with other toc options"); \
+		error ("%<-mcmodel incompatible with other toc options%>"); \
 	      SET_CMODEL (CMODEL_SMALL);			\
 	    }							\
 	  else							\
@@ -154,6 +154,13 @@ extern int dot_symbols;
 		  if (!global_options_set.x_TARGET_NO_SUM_IN_TOC) \
 		    TARGET_NO_SUM_IN_TOC = 0;			\
 		}						\
+	    }							\
+	  if (TARGET_PLTSEQ && DEFAULT_ABI != ABI_ELFv2)	\
+	    {							\
+	      if (global_options_set.x_rs6000_pltseq)		\
+		warning (0, "%qs unsupported for this ABI",	\
+			 "-mpltseq");				\
+	      rs6000_pltseq = false;				\
 	    }							\
 	}							\
       else							\
@@ -580,14 +587,14 @@ extern int dot_symbols;
 #undef  ASM_OUTPUT_SPECIAL_POOL_ENTRY_P
 #define ASM_OUTPUT_SPECIAL_POOL_ENTRY_P(X, MODE)			\
   (TARGET_TOC								\
-   && (GET_CODE (X) == SYMBOL_REF					\
+   && (SYMBOL_REF_P (X)							\
        || (GET_CODE (X) == CONST && GET_CODE (XEXP (X, 0)) == PLUS	\
-	   && GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF)		\
+	   && SYMBOL_REF_P (XEXP (XEXP (X, 0), 0)))			\
        || GET_CODE (X) == LABEL_REF					\
-       || (GET_CODE (X) == CONST_INT 					\
+       || (CONST_INT_P (X)						\
 	   && TARGET_CMODEL != CMODEL_MEDIUM				\
 	   && GET_MODE_BITSIZE (MODE) <= GET_MODE_BITSIZE (Pmode))	\
-       || (GET_CODE (X) == CONST_DOUBLE					\
+       || (CONST_DOUBLE_P (X)						\
 	   && ((TARGET_64BIT						\
 		&& (TARGET_MINIMAL_TOC					\
 		    || (SCALAR_FLOAT_MODE_P (GET_MODE (X))		\

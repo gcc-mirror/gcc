@@ -2699,14 +2699,6 @@ if (isSomeString!S)
     }());
 }
 
-//@@@DEPRECATED_2017-10@@@
-deprecated("To be removed November 2017. Please use std.utf.encode instead.")
-char[] toUTF8(return out char[4] buf, dchar c) nothrow @nogc @safe pure
-{
-    const sz = encode!(Yes.useReplacementDchar)(buf, c);
-    return buf[0 .. sz];
-}
-
 /**
  * Encodes the elements of `s` to UTF-8 and returns a newly allocated
  * string of the elements.
@@ -2746,14 +2738,6 @@ if (isInputRange!S && !isInfinite!S && isSomeChar!(ElementEncodingType!S))
 
     assert(r1.toUTF8.equal(['H', 'e', 'l', 'l', 0xC3, 0xB8]));
     assert(r2.toUTF8.equal([0xF0, 0x90, 0x90, 0xB7]));
-}
-
-//@@@DEPRECATED_2017-10@@@
-deprecated("To be removed November 2017. Please use std.utf.encode instead.")
-wchar[] toUTF16(return ref wchar[2] buf, dchar c) nothrow @nogc @safe pure
-{
-    const sz = encode!(Yes.useReplacementDchar)(buf, c);
-    return buf[0 .. sz];
 }
 
 /**

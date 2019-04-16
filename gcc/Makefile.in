@@ -749,7 +749,7 @@ EXTRA_HEADERS =@extra_headers_list@
 USE_GCC_STDINT = @use_gcc_stdint@
 
 # The configure script will set this to collect2$(exeext), except on a
-# (non-Unix) host which can not build collect2, for which it will be
+# (non-Unix) host which cannot build collect2, for which it will be
 # set to empty.
 COLLECT2 = @collect2@
 
@@ -788,8 +788,8 @@ CC_FOR_BUILD = @CC_FOR_BUILD@
 CXX_FOR_BUILD = @CXX_FOR_BUILD@
 NO_PIE_CFLAGS_FOR_BUILD = @NO_PIE_CFLAGS_FOR_BUILD@
 NO_PIE_FLAG_FOR_BUILD = @NO_PIE_FLAG_FOR_BUILD@
-BUILD_CFLAGS= @BUILD_CFLAGS@ -DGENERATOR_FILE
-BUILD_CXXFLAGS = @BUILD_CXXFLAGS@ -DGENERATOR_FILE
+BUILD_CFLAGS= @BUILD_CFLAGS@ $(GENERATOR_CFLAGS) -DGENERATOR_FILE
+BUILD_CXXFLAGS = @BUILD_CXXFLAGS@ $(GENERATOR_CFLAGS) -DGENERATOR_FILE
 BUILD_NO_PIE_CFLAGS = @BUILD_NO_PIE_CFLAGS@
 BUILD_CFLAGS += $(BUILD_NO_PIE_CFLAGS)
 BUILD_CXXFLAGS += $(BUILD_NO_PIE_CFLAGS)
@@ -2182,7 +2182,9 @@ DRIVER_DEFINES = \
   @TARGET_SYSTEM_ROOT_DEFINE@ \
   $(VALGRIND_DRIVER_DEFINES) \
   $(if $(SHLIB),$(if $(filter yes,@enable_shared@),-DENABLE_SHARED_LIBGCC)) \
-  -DCONFIGURE_SPECS="\"@CONFIGURE_SPECS@\""
+  -DCONFIGURE_SPECS="\"@CONFIGURE_SPECS@\"" \
+  -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
+  -DNATIVE_SYSTEM_HEADER_DIR=\"$(NATIVE_SYSTEM_HEADER_DIR)\"
 
 CFLAGS-gcc.o += $(DRIVER_DEFINES) -DBASEVER=$(BASEVER_s)
 gcc.o: $(BASEVER)
@@ -3520,7 +3522,7 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   tree-ssa-loop-niter.h tree-ssa-ter.h tree-ssa-threadedge.h \
   tree-ssa-threadupdate.h inchash.h wide-int.h signop.h hash-map.h \
   hash-set.h dominance.h cfg.h cfgrtl.h cfganal.h cfgbuild.h cfgcleanup.h \
-  lcm.h cfgloopmanip.h file-prefix-map.h builtins.def \
+  lcm.h cfgloopmanip.h file-prefix-map.h builtins.def $(INSN_ATTR_H) \
   pass-instances.def params.list
 
 # generate the 'build fragment' b-header-vars

@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
+#include "gimplify.h"
 
 static tree cp_build_addr_expr_strict (tree, tsubst_flags_t);
 static tree cp_build_function_call (tree, tree, tsubst_flags_t);
@@ -2009,13 +2010,7 @@ decay_conversion (tree exp,
   if (type == error_mark_node)
     return error_mark_node;
 
-  exp = resolve_nondeduced_context (exp, complain);
-  if (type_unknown_p (exp))
-    {
-      if (complain & tf_error)
-	cxx_incomplete_type_error (exp, TREE_TYPE (exp));
-      return error_mark_node;
-    }
+  exp = resolve_nondeduced_context_or_error (exp, complain);
 
   code = TREE_CODE (type);
 
@@ -2216,6 +2211,7 @@ string_conv_p (const_tree totype, const_tree exp, int warn)
 
   t = TREE_TYPE (totype);
   if (!same_type_p (t, char_type_node)
+      && !same_type_p (t, char8_type_node)
       && !same_type_p (t, char16_type_node)
       && !same_type_p (t, char32_type_node)
       && !same_type_p (t, wchar_type_node))
@@ -2448,6 +2444,12 @@ build_class_member_access_expr (cp_expr object, tree member,
       /* A static data member.  */
       result = member;
       mark_exp_read (object);
+
+      if (tree wrap = maybe_get_tls_wrapper_call (result))
+	/* Replace an evaluated use of the thread_local variable with
+	   a call to its wrapper.  */
+	result = wrap;
+
       /* If OBJECT has side-effects, they are supposed to occur.  */
       if (TREE_SIDE_EFFECTS (object))
 	result = build2 (COMPOUND_EXPR, TREE_TYPE (result), object, result);
@@ -2471,6 +2473,14 @@ build_class_member_access_expr (cp_expr object, tree member,
 	{
 	  tree binfo;
 	  base_kind kind;
+
+	  /* We didn't complain above about a currently open class, but now we
+	     must: we don't know how to refer to a base member before layout is
+	     complete.  But still don't complain in a template.  */
+	  if (!dependent_type_p (object_type)
+	      && !complete_type_or_maybe_complain (object_type, object,
+						   complain))
+	    return error_mark_node;
 
 	  binfo = lookup_base (access_path ? access_path : object_type,
 			       member_scope, ba_unique, &kind, complain);
@@ -2567,7 +2577,8 @@ build_class_member_access_expr (cp_expr object, tree member,
 	type = unknown_type_node;
       /* Note that we do not convert OBJECT to the BASELINK_BINFO
 	 base.  That will happen when the function is called.  */
-      result = build3 (COMPONENT_REF, type, object, member, NULL_TREE);
+      result = build3_loc (input_location, COMPONENT_REF, type, object, member,
+			   NULL_TREE);
     }
   else if (TREE_CODE (member) == CONST_DECL)
     {
@@ -4145,7 +4156,11 @@ build_x_binary_op (const op_location_t &loc, enum tree_code code, tree arg1,
     {
       if (type_dependent_expression_p (arg1)
 	  || type_dependent_expression_p (arg2))
-	return build_min_nt_loc (loc, code, arg1, arg2);
+	{
+	  expr = build_min_nt_loc (loc, code, arg1, arg2);
+	  maybe_save_operator_binding (expr);
+	  return expr;
+	}
       arg1 = build_non_dependent_expr (arg1);
       arg2 = build_non_dependent_expr (arg2);
     }
@@ -5238,6 +5253,7 @@ cp_build_binary_op (const op_location_t &location,
 	}
 
       if ((code0 == POINTER_TYPE || code1 == POINTER_TYPE)
+	  && !processing_template_decl
 	  && sanitize_flags_p (SANITIZE_POINTER_COMPARE))
 	{
 	  op0 = save_expr (op0);
@@ -5470,14 +5486,7 @@ cp_build_binary_op (const op_location_t &location,
 	  && !enum_cast_to_int (orig_op0)
 	  && !enum_cast_to_int (orig_op1))
 	{
-	  tree oop0 = maybe_constant_value (orig_op0);
-	  tree oop1 = maybe_constant_value (orig_op1);
-
-	  if (TREE_CODE (oop0) != INTEGER_CST)
-	    oop0 = cp_fully_fold (orig_op0);
-	  if (TREE_CODE (oop1) != INTEGER_CST)
-	    oop1 = cp_fully_fold (orig_op1);
-	  warn_for_sign_compare (location, oop0, oop1, op0, op1, 
+	  warn_for_sign_compare (location, orig_op0, orig_op1, op0, op1,
 				 result_type, resultcode);
 	}
     }
@@ -5655,7 +5664,8 @@ pointer_diff (location_t loc, tree op0, tree op1, tree ptrtype,
   else
     inttype = restype;
 
-  if (sanitize_flags_p (SANITIZE_POINTER_SUBTRACT))
+  if (!processing_template_decl
+      && sanitize_flags_p (SANITIZE_POINTER_SUBTRACT))
     {
       op0 = save_expr (op0);
       op1 = save_expr (op1);
@@ -5727,7 +5737,11 @@ build_x_unary_op (location_t loc, enum tree_code code, cp_expr xarg,
   if (processing_template_decl)
     {
       if (type_dependent_expression_p (xarg))
-	return build_min_nt_loc (loc, code, xarg.get_value (), NULL_TREE);
+	{
+	  tree e = build_min_nt_loc (loc, code, xarg.get_value (), NULL_TREE);
+	  maybe_save_operator_binding (e);
+	  return e;
+	}
 
       xarg = build_non_dependent_expr (xarg);
     }
@@ -5869,18 +5883,17 @@ cp_truthvalue_conversion (tree expr)
     return c_common_truthvalue_conversion (input_location, expr);
 }
 
-/* Just like cp_truthvalue_conversion, but we want a CLEANUP_POINT_EXPR.  */
+/* Just like cp_truthvalue_conversion, but we want a CLEANUP_POINT_EXPR.  This
+   is a low-level function; most callers should use maybe_convert_cond.  */
 
 tree
 condition_conversion (tree expr)
 {
   tree t;
-  /* Anything that might happen in a template should go through
-     maybe_convert_cond.  */
-  gcc_assert (!processing_template_decl);
   t = perform_implicit_conversion_flags (boolean_type_node, expr,
 					 tf_warning_or_error, LOOKUP_NORMAL);
-  t = fold_build_cleanup_point_expr (boolean_type_node, t);
+  if (!processing_template_decl)
+    t = fold_build_cleanup_point_expr (boolean_type_node, t);
   return t;
 }
 
@@ -7480,7 +7493,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
      reinterpret_cast.  */
   if (TYPE_REF_P (type))
     {
-      if (TYPE_REF_IS_RVALUE (type))
+      if (TYPE_REF_IS_RVALUE (type) && !VOID_TYPE_P (intype))
 	{
 	  if (!obvalue_p (expr))
 	    /* Perform the temporary materialization conversion.  */
@@ -8118,8 +8131,6 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	/* Produce (a ? (b = rhs) : (c = rhs))
 	   except that the RHS goes through a save-expr
 	   so the code to compute it is only emitted once.  */
-	tree cond;
-
 	if (VOID_TYPE_P (TREE_TYPE (rhs)))
 	  {
 	    if (complain & tf_error)
@@ -8134,13 +8145,21 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	if (!lvalue_or_else (lhs, lv_assign, complain))
 	  return error_mark_node;
 
-	cond = build_conditional_expr
-	  (input_location, TREE_OPERAND (lhs, 0),
-	   cp_build_modify_expr (loc, TREE_OPERAND (lhs, 1),
-				 modifycode, rhs, complain),
-	   cp_build_modify_expr (loc, TREE_OPERAND (lhs, 2),
-				 modifycode, rhs, complain),
-           complain);
+	tree op1 = cp_build_modify_expr (loc, TREE_OPERAND (lhs, 1),
+					 modifycode, rhs, complain);
+	/* When sanitizing undefined behavior, even when rhs doesn't need
+	   stabilization at this point, the sanitization might add extra
+	   SAVE_EXPRs in there and so make sure there is no tree sharing
+	   in the rhs, otherwise those SAVE_EXPRs will have initialization
+	   only in one of the two branches.  */
+	if (sanitize_flags_p (SANITIZE_UNDEFINED
+			      | SANITIZE_UNDEFINED_NONDEFAULT))
+	  rhs = unshare_expr (rhs);
+	tree op2 = cp_build_modify_expr (loc, TREE_OPERAND (lhs, 2),
+					 modifycode, rhs, complain);
+	tree cond = build_conditional_expr (input_location,
+					    TREE_OPERAND (lhs, 0), op1, op2,
+					    complain);
 
 	if (cond == error_mark_node)
 	  return cond;
@@ -9066,15 +9085,14 @@ convert_for_assignment (tree type, tree rhs,
       && TREE_CODE (rhs) == MODIFY_EXPR
       && !TREE_NO_WARNING (rhs)
       && TREE_CODE (TREE_TYPE (rhs)) != BOOLEAN_TYPE
-      && (complain & tf_warning))
-    {
-      warning_at (rhs_loc, OPT_Wparentheses,
-		  "suggest parentheses around assignment used as truth value");
-      TREE_NO_WARNING (rhs) = 1;
-    }
+      && (complain & tf_warning)
+      && warning_at (rhs_loc, OPT_Wparentheses,
+		     "suggest parentheses around assignment used as "
+		     "truth value"))
+    TREE_NO_WARNING (rhs) = 1;
 
   if (complain & tf_warning)
-    warn_for_address_or_pointer_of_packed_member (false, type, rhs);
+    warn_for_address_or_pointer_of_packed_member (type, rhs);
 
   return perform_implicit_conversion_flags (strip_top_quals (type), rhs,
 					    complain, flags);
@@ -9342,6 +9360,8 @@ is_std_move_p (tree fn)
 static bool
 can_do_nrvo_p (tree retval, tree functype)
 {
+  if (functype == error_mark_node)
+    return false;
   if (retval)
     STRIP_ANY_LOCATION_WRAPPER (retval);
   tree result = DECL_RESULT (current_function_decl);
@@ -9403,7 +9423,7 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
   if (!CLASS_TYPE_P (functype))
     return;
 
-  /* We're looking for *std::move<T&> (&arg).  */
+  /* We're looking for *std::move<T&> ((T &) &arg).  */
   if (REFERENCE_REF_P (retval)
       && TREE_CODE (TREE_OPERAND (retval, 0)) == CALL_EXPR)
     {
@@ -9411,9 +9431,12 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
       if (is_std_move_p (fn))
 	{
 	  tree arg = CALL_EXPR_ARG (fn, 0);
-	  STRIP_NOPS (arg);
-	  if (TREE_CODE (arg) == ADDR_EXPR)
-	    arg = TREE_OPERAND (arg, 0);
+	  if (TREE_CODE (arg) != NOP_EXPR)
+	    return;
+	  arg = TREE_OPERAND (arg, 0);
+	  if (TREE_CODE (arg) != ADDR_EXPR)
+	    return;
+	  arg = TREE_OPERAND (arg, 0);
 	  arg = convert_from_reference (arg);
 	  /* Warn if we could do copy elision were it not for the move.  */
 	  if (can_do_nrvo_p (arg, functype))
@@ -9426,12 +9449,27 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
 	    }
 	  /* Warn if the move is redundant.  It is redundant when we would
 	     do maybe-rvalue overload resolution even without std::move.  */
-	  else if (treat_lvalue_as_rvalue_p (arg, /*parm_ok*/true))
+	  else if (warn_redundant_move
+		   && treat_lvalue_as_rvalue_p (arg, /*parm_ok*/true))
 	    {
-	      auto_diagnostic_group d;
-	      if (warning_at (loc, OPT_Wredundant_move,
-			      "redundant move in return statement"))
-		inform (loc, "remove %<std::move%> call");
+	      /* Make sure that the overload resolution would actually succeed
+		 if we removed the std::move call.  */
+	      tree t = convert_for_initialization (NULL_TREE, functype,
+						   move (arg),
+						   (LOOKUP_NORMAL
+						    | LOOKUP_ONLYCONVERTING
+						    | LOOKUP_PREFER_RVALUE),
+						   ICR_RETURN, NULL_TREE, 0,
+						   tf_none);
+	      /* If this worked, implicit rvalue would work, so the call to
+		 std::move is redundant.  */
+	      if (t != error_mark_node)
+		{
+		  auto_diagnostic_group d;
+		  if (warning_at (loc, OPT_Wredundant_move,
+				  "redundant move in return statement"))
+		    inform (loc, "remove %<std::move%> call");
+		}
 	    }
 	}
     }
@@ -9727,6 +9765,11 @@ check_return_expr (tree retval, bool *no_warning)
 	      converted = true;
 	    }
 	}
+
+      /* The call in a (lambda) thunk needs no conversions.  */
+      if (TREE_CODE (retval) == CALL_EXPR
+	  && CALL_FROM_THUNK_P (retval))
+	converted = true;
 
       /* First convert the value to the function's return type, then
 	 to the type of return value's location to handle the
@@ -10287,6 +10330,7 @@ check_literal_operator_args (const_tree decl,
 	      t = TYPE_MAIN_VARIANT (t);
 	      if ((maybe_raw_p = same_type_p (t, char_type_node))
 		  || same_type_p (t, wchar_type_node)
+		  || same_type_p (t, char8_type_node)
 		  || same_type_p (t, char16_type_node)
 		  || same_type_p (t, char32_type_node))
 		{
@@ -10318,6 +10362,8 @@ check_literal_operator_args (const_tree decl,
 	  else if (same_type_p (t, char_type_node))
 	    max_arity = 1;
 	  else if (same_type_p (t, wchar_type_node))
+	    max_arity = 1;
+	  else if (same_type_p (t, char8_type_node))
 	    max_arity = 1;
 	  else if (same_type_p (t, char16_type_node))
 	    max_arity = 1;

@@ -124,7 +124,7 @@ Warn about casts that will produce a null result.
 
 Wdeprecated
 D
-; Documented in C
+; Documented in common.opt
 
 Werror
 D
@@ -162,6 +162,10 @@ defaultlib=
 Driver Joined
 Default library to use instead of phobos.
 
+dstartfiles
+Driver
+Do link the standard D startup files in the compilation.
+
 -verbose
 D Alias(v)
 
@@ -192,6 +196,10 @@ Enum(bounds_check) String(safeonly) Value(1)
 
 EnumValue
 Enum(bounds_check) String(on) Value(2)
+
+; Generates a secondary ModuleInfo symbol for linking in unittests
+fbuilding-libphobos-tests
+D Undocumented Var(flag_building_libphobos_tests)
 
 fbuiltin
 D Var(flag_no_builtin, 0)

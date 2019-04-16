@@ -2459,6 +2459,10 @@ invoke_driver (const char *ctxt_progname,
   if (0)
     ADD_ARG ("-v");
 
+  /* Add any user-provided driver extra options.  */
+
+  m_recording_ctxt->append_driver_options (&argvec);
+
 #undef ADD_ARG
 
   /* pex_one's error-handling requires pname to be non-NULL.  */

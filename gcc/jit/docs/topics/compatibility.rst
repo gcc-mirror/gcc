@@ -168,6 +168,12 @@ entrypoints:
 
 ``LIBGCCJIT_ABI_10``
 --------------------
-
 ``LIBGCCJIT_ABI_10`` covers the addition of
 :func:`gcc_jit_context_new_rvalue_from_vector`
+
+.. _LIBGCCJIT_ABI_11:
+
+``LIBGCCJIT_ABI_11``
+--------------------
+``LIBGCCJIT_ABI_11`` covers the addition of
+:func:`gcc_jit_context_add_driver_option`

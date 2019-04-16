@@ -69,7 +69,8 @@ _Bool CompareAndSwapInt32 (int32_t *, int32_t, int32_t)
 _Bool
 CompareAndSwapInt32 (int32_t *val, int32_t old, int32_t new)
 {
-  return __sync_bool_compare_and_swap (val, old, new);
+  return __atomic_compare_exchange_n (val, &old, new, false, __ATOMIC_SEQ_CST,
+				      __ATOMIC_RELAXED);
 }
 
 _Bool CompareAndSwapInt64 (int64_t *, int64_t, int64_t)
@@ -81,7 +82,8 @@ CompareAndSwapInt64 (int64_t *val, int64_t old, int64_t new)
 {
   if (((uintptr_t) val & 7) != 0)
     val = NULL;
-  return __sync_bool_compare_and_swap (val, old, new);
+  return __atomic_compare_exchange_n (val, &old, new, false, __ATOMIC_SEQ_CST,
+				      __ATOMIC_RELAXED);
 }
 
 _Bool CompareAndSwapUint32 (uint32_t *, uint32_t, uint32_t)
@@ -91,7 +93,8 @@ _Bool CompareAndSwapUint32 (uint32_t *, uint32_t, uint32_t)
 _Bool
 CompareAndSwapUint32 (uint32_t *val, uint32_t old, uint32_t new)
 {
-  return __sync_bool_compare_and_swap (val, old, new);
+  return __atomic_compare_exchange_n (val, &old, new, false, __ATOMIC_SEQ_CST,
+				      __ATOMIC_RELAXED);
 }
 
 _Bool CompareAndSwapUint64 (uint64_t *, uint64_t, uint64_t)
@@ -103,7 +106,8 @@ CompareAndSwapUint64 (uint64_t *val, uint64_t old, uint64_t new)
 {
   if (((uintptr_t) val & 7) != 0)
     val = NULL;
-  return __sync_bool_compare_and_swap (val, old, new);
+  return __atomic_compare_exchange_n (val, &old, new, false, __ATOMIC_SEQ_CST,
+				      __ATOMIC_RELAXED);
 }
 
 _Bool CompareAndSwapUintptr (uintptr_t *, uintptr_t, uintptr_t)
@@ -113,7 +117,8 @@ _Bool CompareAndSwapUintptr (uintptr_t *, uintptr_t, uintptr_t)
 _Bool
 CompareAndSwapUintptr (uintptr_t *val, uintptr_t old, uintptr_t new)
 {
-  return __sync_bool_compare_and_swap (val, old, new);
+  return __atomic_compare_exchange_n (val, &old, new, false, __ATOMIC_SEQ_CST,
+				      __ATOMIC_RELAXED);
 }
 
 int32_t AddInt32 (int32_t *, int32_t)
@@ -123,7 +128,7 @@ int32_t AddInt32 (int32_t *, int32_t)
 int32_t
 AddInt32 (int32_t *val, int32_t delta)
 {
-  return __sync_add_and_fetch (val, delta);
+  return __atomic_add_fetch (val, delta, __ATOMIC_SEQ_CST);
 }
 
 uint32_t AddUint32 (uint32_t *, uint32_t)
@@ -133,7 +138,7 @@ uint32_t AddUint32 (uint32_t *, uint32_t)
 uint32_t
 AddUint32 (uint32_t *val, uint32_t delta)
 {
-  return __sync_add_and_fetch (val, delta);
+  return __atomic_add_fetch (val, delta, __ATOMIC_SEQ_CST);
 }
 
 int64_t AddInt64 (int64_t *, int64_t)
@@ -145,7 +150,7 @@ AddInt64 (int64_t *val, int64_t delta)
 {
   if (((uintptr_t) val & 7) != 0)
     val = NULL;
-  return __sync_add_and_fetch (val, delta);
+  return __atomic_add_fetch (val, delta, __ATOMIC_SEQ_CST);
 }
 
 uint64_t AddUint64 (uint64_t *, uint64_t)
@@ -157,7 +162,7 @@ AddUint64 (uint64_t *val, uint64_t delta)
 {
   if (((uintptr_t) val & 7) != 0)
     val = NULL;
-  return __sync_add_and_fetch (val, delta);
+  return __atomic_add_fetch (val, delta, __ATOMIC_SEQ_CST);
 }
 
 uintptr_t AddUintptr (uintptr_t *, uintptr_t)
@@ -167,7 +172,7 @@ uintptr_t AddUintptr (uintptr_t *, uintptr_t)
 uintptr_t
 AddUintptr (uintptr_t *val, uintptr_t delta)
 {
-  return __sync_add_and_fetch (val, delta);
+  return __atomic_add_fetch (val, delta, __ATOMIC_SEQ_CST);
 }
 
 int32_t LoadInt32 (int32_t *addr)
@@ -177,12 +182,7 @@ int32_t LoadInt32 (int32_t *addr)
 int32_t
 LoadInt32 (int32_t *addr)
 {
-  int32_t v;
-
-  v = *addr;
-  while (! __sync_bool_compare_and_swap (addr, v, v))
-    v = *addr;
-  return v;
+  return __atomic_load_n (addr, __ATOMIC_SEQ_CST);
 }
 
 int64_t LoadInt64 (int64_t *addr)
@@ -192,14 +192,9 @@ int64_t LoadInt64 (int64_t *addr)
 int64_t
 LoadInt64 (int64_t *addr)
 {
-  int64_t v;
-
   if (((uintptr_t) addr & 7) != 0)
     panicmem ();
-  v = *addr;
-  while (! __sync_bool_compare_and_swap (addr, v, v))
-    v = *addr;
-  return v;
+  return __atomic_load_n (addr, __ATOMIC_SEQ_CST);
 }
 
 uint32_t LoadUint32 (uint32_t *addr)
@@ -209,12 +204,7 @@ uint32_t LoadUint32 (uint32_t *addr)
 uint32_t
 LoadUint32 (uint32_t *addr)
 {
-  uint32_t v;
-
-  v = *addr;
-  while (! __sync_bool_compare_and_swap (addr, v, v))
-    v = *addr;
-  return v;
+  return __atomic_load_n (addr, __ATOMIC_SEQ_CST);
 }
 
 uint64_t LoadUint64 (uint64_t *addr)
@@ -224,14 +214,9 @@ uint64_t LoadUint64 (uint64_t *addr)
 uint64_t
 LoadUint64 (uint64_t *addr)
 {
-  uint64_t v;
-
   if (((uintptr_t) addr & 7) != 0)
     panicmem ();
-  v = *addr;
-  while (! __sync_bool_compare_and_swap (addr, v, v))
-    v = *addr;
-  return v;
+  return __atomic_load_n (addr, __ATOMIC_SEQ_CST);
 }
 
 uintptr_t LoadUintptr (uintptr_t *addr)
@@ -241,12 +226,7 @@ uintptr_t LoadUintptr (uintptr_t *addr)
 uintptr_t
 LoadUintptr (uintptr_t *addr)
 {
-  uintptr_t v;
-
-  v = *addr;
-  while (! __sync_bool_compare_and_swap (addr, v, v))
-    v = *addr;
-  return v;
+  return __atomic_load_n (addr, __ATOMIC_SEQ_CST);
 }
 
 void *LoadPointer (void **addr)
@@ -256,12 +236,7 @@ void *LoadPointer (void **addr)
 void *
 LoadPointer (void **addr)
 {
-  void *v;
-
-  v = *addr;
-  while (! __sync_bool_compare_and_swap (addr, v, v))
-    v = *addr;
-  return v;
+  return __atomic_load_n (addr, __ATOMIC_SEQ_CST);
 }
 
 void StoreInt32 (int32_t *addr, int32_t val)
@@ -271,11 +246,7 @@ void StoreInt32 (int32_t *addr, int32_t val)
 void
 StoreInt32 (int32_t *addr, int32_t val)
 {
-  int32_t v;
-
-  v = *addr;
-  while (! __sync_bool_compare_and_swap (addr, v, val))
-    v = *addr;
+  __atomic_store_n (addr, val, __ATOMIC_SEQ_CST);
 }
 
 void StoreInt64 (int64_t *addr, int64_t val)
@@ -285,13 +256,9 @@ void StoreInt64 (int64_t *addr, int64_t val)
 void
 StoreInt64 (int64_t *addr, int64_t val)
 {
-  int64_t v;
-
   if (((uintptr_t) addr & 7) != 0)
     panicmem ();
-  v = *addr;
-  while (! __sync_bool_compare_and_swap (addr, v, val))
-    v = *addr;
+  __atomic_store_n (addr, val, __ATOMIC_SEQ_CST);
 }
 
 void StoreUint32 (uint32_t *addr, uint32_t val)
@@ -301,11 +268,7 @@ void StoreUint32 (uint32_t *addr, uint32_t val)
 void
 StoreUint32 (uint32_t *addr, uint32_t val)
 {
-  uint32_t v;
-
-  v = *addr;
-  while (! __sync_bool_compare_and_swap (addr, v, val))
-    v = *addr;
+  __atomic_store_n (addr, val, __ATOMIC_SEQ_CST);
 }
 
 void StoreUint64 (uint64_t *addr, uint64_t val)
@@ -315,13 +278,9 @@ void StoreUint64 (uint64_t *addr, uint64_t val)
 void
 StoreUint64 (uint64_t *addr, uint64_t val)
 {
-  uint64_t v;
-
   if (((uintptr_t) addr & 7) != 0)
     panicmem ();
-  v = *addr;
-  while (! __sync_bool_compare_and_swap (addr, v, val))
-    v = *addr;
+  __atomic_store_n (addr, val, __ATOMIC_SEQ_CST);
 }
 
 void StoreUintptr (uintptr_t *addr, uintptr_t val)
@@ -331,9 +290,5 @@ void StoreUintptr (uintptr_t *addr, uintptr_t val)
 void
 StoreUintptr (uintptr_t *addr, uintptr_t val)
 {
-  uintptr_t v;
-
-  v = *addr;
-  while (! __sync_bool_compare_and_swap (addr, v, val))
-    v = *addr;
+  __atomic_store_n (addr, val, __ATOMIC_SEQ_CST);
 }

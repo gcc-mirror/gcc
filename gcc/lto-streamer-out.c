@@ -857,7 +857,7 @@ DFS::DFS_write_tree_body (struct output_block *ob,
       /* TYPE_CANONICAL is re-computed during type merging, so no need
 	 to follow it here.  */
       /* Do not stream TYPE_STUB_DECL; it is not needed by LTO but currently
-	 it can not be freed by free_lang_data without triggering ICEs in
+	 it cannot be freed by free_lang_data without triggering ICEs in
 	 langhooks.  */
     }
 
@@ -1938,6 +1938,7 @@ output_cfg (struct output_block *ob, struct function *fn)
       /* Write OMP SIMD related info.  */
       streamer_write_hwi (ob, loop->safelen);
       streamer_write_hwi (ob, loop->unroll);
+      streamer_write_hwi (ob, loop->owned_clique);
       streamer_write_hwi (ob, loop->dont_vectorize);
       streamer_write_hwi (ob, loop->force_vectorize);
       stream_write_tree (ob, loop->simduid, true);
@@ -2412,8 +2413,7 @@ lto_output (void)
       if (cgraph_node *node = dyn_cast <cgraph_node *> (snode))
 	{
 	  if (lto_symtab_encoder_encode_body_p (encoder, node)
-	      && !node->alias
-	      && (!node->thunk.thunk_p || !node->thunk.add_pointer_bounds_args))
+	      && !node->alias)
 	    {
 	      if (flag_checking)
 		{

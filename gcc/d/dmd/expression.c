@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2018 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -1493,7 +1493,6 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
                          * is now optimized. See Bugzilla 2356.
                          */
                         Type *tbn = ((TypeArray *)tb)->next;
-                        Type *tsa = tbn->sarrayOf(nargs - i);
 
                         Expressions *elements = new Expressions();
                         elements->setDim(nargs - i);
@@ -1511,8 +1510,7 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
                             (*elements)[u] = a;
                         }
                         // Bugzilla 14395: Convert to a static array literal, or its slice.
-                        arg = new ArrayLiteralExp(loc, elements);
-                        arg->type = tsa;
+                        arg = new ArrayLiteralExp(loc, tbn->sarrayOf(nargs - i), elements);
                         if (tb->ty == Tarray)
                         {
                             arg = new SliceExp(loc, arg, NULL, NULL);
@@ -3741,34 +3739,37 @@ unsigned StringExp::charAt(uinteger_t i) const
 
 // [ e1, e2, e3, ... ]
 
-ArrayLiteralExp::ArrayLiteralExp(Loc loc, Expressions *elements)
+ArrayLiteralExp::ArrayLiteralExp(Loc loc, Type *type, Expressions *elements)
     : Expression(loc, TOKarrayliteral, sizeof(ArrayLiteralExp))
 {
     this->basis = NULL;
+    this->type = type;
     this->elements = elements;
     this->ownedByCtfe = OWNEDcode;
 }
 
-ArrayLiteralExp::ArrayLiteralExp(Loc loc, Expression *e)
+ArrayLiteralExp::ArrayLiteralExp(Loc loc, Type *type, Expression *e)
     : Expression(loc, TOKarrayliteral, sizeof(ArrayLiteralExp))
 {
     this->basis = NULL;
+    this->type = type;
     elements = new Expressions;
     elements->push(e);
     this->ownedByCtfe = OWNEDcode;
 }
 
-ArrayLiteralExp::ArrayLiteralExp(Loc loc, Expression *basis, Expressions *elements)
+ArrayLiteralExp::ArrayLiteralExp(Loc loc, Type *type, Expression *basis, Expressions *elements)
     : Expression(loc, TOKarrayliteral, sizeof(ArrayLiteralExp))
 {
     this->basis = basis;
+    this->type = type;
     this->elements = elements;
     this->ownedByCtfe = OWNEDcode;
 }
 
 ArrayLiteralExp *ArrayLiteralExp::create(Loc loc, Expressions *elements)
 {
-    return new ArrayLiteralExp(loc, elements);
+    return new ArrayLiteralExp(loc, NULL, elements);
 }
 
 bool ArrayLiteralExp::equals(RootObject *o)
@@ -3806,6 +3807,7 @@ bool ArrayLiteralExp::equals(RootObject *o)
 Expression *ArrayLiteralExp::syntaxCopy()
 {
     return new ArrayLiteralExp(loc,
+        NULL,
         basis ? basis->syntaxCopy() : NULL,
         arraySyntaxCopy(elements));
 }
@@ -4082,8 +4084,7 @@ Expression *StructLiteralExp::getField(Type *type, unsigned offset)
                 z->setDim(length);
                 for (size_t q = 0; q < length; ++q)
                     (*z)[q] = e->copy();
-                e = new ArrayLiteralExp(loc, z);
-                e->type = type;
+                e = new ArrayLiteralExp(loc, type, z);
             }
             else
             {
@@ -5743,6 +5744,7 @@ VectorExp::VectorExp(Loc loc, Expression *e, Type *t)
     assert(t->ty == Tvector);
     to = (TypeVector *)t;
     dim = ~0;
+    ownedByCtfe = OWNEDcode;
 }
 
 VectorExp *VectorExp::create(Loc loc, Expression *e, Type *t)
@@ -5753,6 +5755,24 @@ VectorExp *VectorExp::create(Loc loc, Expression *e, Type *t)
 Expression *VectorExp::syntaxCopy()
 {
     return new VectorExp(loc, e1->syntaxCopy(), to->syntaxCopy());
+}
+
+/************************************************************/
+
+VectorArrayExp::VectorArrayExp(Loc loc, Expression *e1)
+        : UnaExp(loc, TOKvectorarray, sizeof(VectorExp), e1)
+{
+}
+
+bool VectorArrayExp::isLvalue()
+{
+    return e1->isLvalue();
+}
+
+Expression *VectorArrayExp::toLvalue(Scope *sc, Expression *e)
+{
+    e1 = e1->toLvalue(sc, e);
+    return this;
 }
 
 /************************************************************/
@@ -6847,6 +6867,43 @@ Expression *resolveOpDollar(Scope *sc, ArrayExp *ae, Expression **pe0)
     }
 
     return ae;
+}
+
+/***********************************************************
+ * Resolve `exp` as a compile-time known string.
+ * Params:
+ *  sc  = scope
+ *  exp = Expression which expected as a string
+ *  s   = What the string is expected for, will be used in error diagnostic.
+ * Returns:
+ *  String literal, or `null` if error happens.
+ */
+StringExp *semanticString(Scope *sc, Expression *exp, const char *s)
+{
+    sc = sc->startCTFE();
+    exp = semantic(exp, sc);
+    exp = resolveProperties(sc, exp);
+    sc = sc->endCTFE();
+
+    if (exp->op == TOKerror)
+        return NULL;
+
+    Expression *e = exp;
+    if (exp->type->isString())
+    {
+        e = e->ctfeInterpret();
+        if (e->op == TOKerror)
+            return NULL;
+    }
+
+    StringExp *se = e->toStringExp();
+    if (!se)
+    {
+        exp->error("string expected for %s, not (%s) of type %s",
+            s, exp->toChars(), exp->type->toChars());
+        return NULL;
+    }
+    return se;
 }
 
 /**************************************

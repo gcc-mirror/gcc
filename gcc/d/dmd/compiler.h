@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2018 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -19,6 +19,7 @@ class Expression;
 class Module;
 class Type;
 struct Scope;
+struct UnionExp;
 
 // DMD-generated module `__entrypoint` where the C main resides
 extern Module *entrypoint;
@@ -28,7 +29,7 @@ extern Module *rootHasMain;
 struct Compiler
 {
     // CTFE support for cross-compilation.
-    static Expression *paintAsType(Expression *, Type *);
+    static Expression *paintAsType(UnionExp *, Expression *, Type *);
     // Backend
     static void loadModule(Module *);
     static void genCmain(Scope *);

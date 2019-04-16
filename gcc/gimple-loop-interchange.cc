@@ -688,11 +688,16 @@ loop_cand::analyze_induction_var (tree var, tree chrec)
   /* Var is loop invariant, though it's unlikely to happen.  */
   if (tree_does_not_contain_chrecs (chrec))
     {
+      /* Punt on floating point invariants if honoring signed zeros,
+	 representing that as + 0.0 would change the result if init
+	 is -0.0.  Similarly for SNaNs it can raise exception.  */
+      if (HONOR_SIGNED_ZEROS (chrec) || HONOR_SNANS (chrec))
+	return false;
       struct induction *iv = XCNEW (struct induction);
       iv->var = var;
       iv->init_val = init;
       iv->init_expr = chrec;
-      iv->step = build_int_cst (TREE_TYPE (chrec), 0);
+      iv->step = build_zero_cst (TREE_TYPE (chrec));
       m_inductions.safe_push (iv);
       return true;
     }

@@ -1100,11 +1100,11 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
             continue;
 
           /* Skip stmts that are not vectorized inside the loop.  */
-          if (stmt_info
-              && !STMT_VINFO_RELEVANT_P (stmt_info)
-              && (!STMT_VINFO_LIVE_P (stmt_info)
-                  || !VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)))
-	      && !STMT_VINFO_IN_PATTERN_P (stmt_info))
+	  stmt_vec_info vstmt_info = vect_stmt_to_vectorize (stmt_info);
+          if (!STMT_VINFO_RELEVANT_P (vstmt_info)
+              && (!STMT_VINFO_LIVE_P (vstmt_info)
+                  || !VECTORIZABLE_CYCLE_DEF
+			(STMT_VINFO_DEF_TYPE (vstmt_info))))
             continue;
 
 	  vect_cost_for_stmt kind;
@@ -1470,8 +1470,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 
   DUMP_VECT_SCOPE ("vect_analyze_loop_operations");
 
-  stmt_vector_for_cost cost_vec;
-  cost_vec.create (2);
+  auto_vec<stmt_info_for_cost> cost_vec;
 
   for (i = 0; i < nbbs; i++)
     {
@@ -1581,7 +1580,6 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
     } /* bbs */
 
   add_stmt_costs (loop_vinfo->target_cost_data, &cost_vec);
-  cost_vec.release ();
 
   /* All operations in the loop are either irrelevant (deal with loop
      control, or dead), or only used outside the loop and can be moved
@@ -3602,35 +3600,16 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   /* Calculate number of iterations required to make the vector version
      profitable, relative to the loop bodies only.  The following condition
      must hold true:
-     SIC * niters + SOC > VIC * ((niters-PL_ITERS-EP_ITERS)/VF) + VOC
+     SIC * niters + SOC > VIC * ((niters - NPEEL) / VF) + VOC
      where
      SIC = scalar iteration cost, VIC = vector iteration cost,
      VOC = vector outside cost, VF = vectorization factor,
-     PL_ITERS = prologue iterations, EP_ITERS= epilogue iterations
+     NPEEL = prologue iterations + epilogue iterations,
      SOC = scalar outside cost for run time cost model check.  */
 
-  if ((scalar_single_iter_cost * assumed_vf) > (int) vec_inside_cost)
-    {
-      min_profitable_iters = ((vec_outside_cost - scalar_outside_cost)
-			      * assumed_vf
-			      - vec_inside_cost * peel_iters_prologue
-			      - vec_inside_cost * peel_iters_epilogue);
-      if (min_profitable_iters <= 0)
-        min_profitable_iters = 0;
-      else
-	{
-	  min_profitable_iters /= ((scalar_single_iter_cost * assumed_vf)
-				   - vec_inside_cost);
-
-	  if ((scalar_single_iter_cost * assumed_vf * min_profitable_iters)
-	      <= (((int) vec_inside_cost * min_profitable_iters)
-		  + (((int) vec_outside_cost - scalar_outside_cost)
-		     * assumed_vf)))
-	    min_profitable_iters++;
-	}
-    }
-  /* vector version will never be profitable.  */
-  else
+  int saving_per_viter = (scalar_single_iter_cost * assumed_vf
+			  - vec_inside_cost);
+  if (saving_per_viter <= 0)
     {
       if (LOOP_VINFO_LOOP (loop_vinfo)->force_vectorize)
 	warning_at (vect_location.get_location_t (), OPT_Wopenmp_simd,
@@ -3646,6 +3625,81 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
       *ret_min_profitable_niters = -1;
       *ret_min_profitable_estimate = -1;
       return;
+    }
+
+  /* ??? The "if" arm is written to handle all cases; see below for what
+     we would do for !LOOP_VINFO_FULLY_MASKED_P.  */
+  if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+    {
+      /* Rewriting the condition above in terms of the number of
+	 vector iterations (vniters) rather than the number of
+	 scalar iterations (niters) gives:
+
+	 SIC * (vniters * VF + NPEEL) + SOC > VIC * vniters + VOC
+
+	 <==> vniters * (SIC * VF - VIC) > VOC - SIC * NPEEL - SOC
+
+	 For integer N, X and Y when X > 0:
+
+	 N * X > Y <==> N >= (Y /[floor] X) + 1.  */
+      int outside_overhead = (vec_outside_cost
+			      - scalar_single_iter_cost * peel_iters_prologue
+			      - scalar_single_iter_cost * peel_iters_epilogue
+			      - scalar_outside_cost);
+      /* We're only interested in cases that require at least one
+	 vector iteration.  */
+      int min_vec_niters = 1;
+      if (outside_overhead > 0)
+	min_vec_niters = outside_overhead / saving_per_viter + 1;
+
+      if (dump_enabled_p ())
+	dump_printf (MSG_NOTE, "  Minimum number of vector iterations: %d\n",
+		     min_vec_niters);
+
+      if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+	{
+	  /* Now that we know the minimum number of vector iterations,
+	     find the minimum niters for which the scalar cost is larger:
+
+	     SIC * niters > VIC * vniters + VOC - SOC
+
+	     We know that the minimum niters is no more than
+	     vniters * VF + NPEEL, but it might be (and often is) less
+	     than that if a partial vector iteration is cheaper than the
+	     equivalent scalar code.  */
+	  int threshold = (vec_inside_cost * min_vec_niters
+			   + vec_outside_cost
+			   - scalar_outside_cost);
+	  if (threshold <= 0)
+	    min_profitable_iters = 1;
+	  else
+	    min_profitable_iters = threshold / scalar_single_iter_cost + 1;
+	}
+      else
+	/* Convert the number of vector iterations into a number of
+	   scalar iterations.  */
+	min_profitable_iters = (min_vec_niters * assumed_vf
+				+ peel_iters_prologue
+				+ peel_iters_epilogue);
+    }
+  else
+    {
+      min_profitable_iters = ((vec_outside_cost - scalar_outside_cost)
+			      * assumed_vf
+			      - vec_inside_cost * peel_iters_prologue
+			      - vec_inside_cost * peel_iters_epilogue);
+      if (min_profitable_iters <= 0)
+        min_profitable_iters = 0;
+      else
+	{
+	  min_profitable_iters /= saving_per_viter;
+
+	  if ((scalar_single_iter_cost * assumed_vf * min_profitable_iters)
+	      <= (((int) vec_inside_cost * min_profitable_iters)
+		  + (((int) vec_outside_cost - scalar_outside_cost)
+		     * assumed_vf)))
+	    min_profitable_iters++;
+	}
     }
 
   if (dump_enabled_p ())
@@ -3670,10 +3724,34 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 
      Non-vectorized variant is SIC * niters and it must win over vector
      variant on the expected loop trip count.  The following condition must hold true:
-     SIC * niters > VIC * ((niters-PL_ITERS-EP_ITERS)/VF) + VOC + SOC  */
+     SIC * niters > VIC * ((niters - NPEEL) / VF) + VOC + SOC  */
 
   if (vec_outside_cost <= 0)
     min_profitable_estimate = 0;
+  else if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+    {
+      /* This is a repeat of the code above, but with + SOC rather
+	 than - SOC.  */
+      int outside_overhead = (vec_outside_cost
+			      - scalar_single_iter_cost * peel_iters_prologue
+			      - scalar_single_iter_cost * peel_iters_epilogue
+			      + scalar_outside_cost);
+      int min_vec_niters = 1;
+      if (outside_overhead > 0)
+	min_vec_niters = outside_overhead / saving_per_viter + 1;
+
+      if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+	{
+	  int threshold = (vec_inside_cost * min_vec_niters
+			   + vec_outside_cost
+			   + scalar_outside_cost);
+	  min_profitable_estimate = threshold / scalar_single_iter_cost + 1;
+	}
+      else
+	min_profitable_estimate = (min_vec_niters * assumed_vf
+				   + peel_iters_prologue
+				   + peel_iters_epilogue);
+    }
   else
     {
       min_profitable_estimate = ((vec_outside_cost + scalar_outside_cost)
@@ -5496,13 +5574,6 @@ vect_finalize_reduction:
 		= loop_vinfo->lookup_stmt (exit_phi);
               gphi *vect_phi;
 
-              /* FORNOW. Currently not supporting the case that an inner-loop
-                 reduction is not used in the outer-loop (but only outside the
-                 outer-loop), unless it is double reduction.  */
-              gcc_assert ((STMT_VINFO_RELEVANT_P (exit_phi_vinfo)
-                           && !STMT_VINFO_LIVE_P (exit_phi_vinfo))
-                          || double_reduc);
-
 	      if (double_reduc)
 		STMT_VINFO_VEC_STMT (exit_phi_vinfo) = inner_phi;
 	      else
@@ -5742,8 +5813,14 @@ vectorize_fold_left_reduction (stmt_vec_info stmt_info,
   auto_vec<tree> vec_oprnds0;
   if (slp_node)
     {
-      vect_get_vec_defs (op0, NULL_TREE, stmt_info, &vec_oprnds0, NULL,
-			 slp_node);
+      auto_vec<vec<tree> > vec_defs (2);
+      auto_vec<tree> sops(2);
+      sops.quick_push (ops[0]);
+      sops.quick_push (ops[1]);
+      vect_get_slp_defs (sops, slp_node, &vec_defs);
+      vec_oprnds0.safe_splice (vec_defs[1 - reduc_index]);
+      vec_defs[0].release ();
+      vec_defs[1].release ();
       group_size = SLP_TREE_SCALAR_STMTS (slp_node).length ();
       scalar_dest_def_info = SLP_TREE_SCALAR_STMTS (slp_node)[group_size - 1];
     }
@@ -8204,8 +8281,10 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 					      versioning_threshold);
 	  check_profitability = false;
 	}
-      vect_loop_versioning (loop_vinfo, th, check_profitability,
-			    versioning_threshold);
+      struct loop *sloop
+	= vect_loop_versioning (loop_vinfo, th, check_profitability,
+				versioning_threshold);
+      sloop->force_vectorize = false;
       check_profitability = false;
     }
 
@@ -8574,6 +8653,7 @@ optimize_mask_stores (struct loop *loop)
   gimple_stmt_iterator gsi;
   gimple *stmt;
   auto_vec<gimple *> worklist;
+  auto_purge_vect_location sentinel;
 
   vect_location = find_loop_location (loop);
   /* Pick up all masked stores in loop if any.  */

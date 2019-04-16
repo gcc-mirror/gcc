@@ -6073,8 +6073,10 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 
       if (!side_effects_p (op2))
 	{
-	  rtx top0 = simplify_merge_mask (op0, op2, 0);
-	  rtx top1 = simplify_merge_mask (op1, op2, 1);
+	  rtx top0
+	    = may_trap_p (op0) ? NULL_RTX : simplify_merge_mask (op0, op2, 0);
+	  rtx top1
+	    = may_trap_p (op1) ? NULL_RTX : simplify_merge_mask (op1, op2, 1);
 	  if (top0 || top1)
 	    return simplify_gen_ternary (code, mode, mode,
 					 top0 ? top0 : op0,
@@ -6581,7 +6583,7 @@ simplify_subreg (machine_mode outermode, rtx op,
 
 	  /* Propagate original regno.  We don't have any way to specify
 	     the offset inside original regno, so do so only for lowpart.
-	     The information is used only by alias analysis that can not
+	     The information is used only by alias analysis that cannot
 	     grog partial register anyway.  */
 
 	  if (known_eq (subreg_lowpart_offset (outermode, innermode), byte))

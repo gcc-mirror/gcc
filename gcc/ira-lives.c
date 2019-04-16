@@ -1381,7 +1381,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		  /* We should create a conflict of PIC pseudo with
 		     PIC hard reg as PIC hard reg can have a wrong
 		     value after jump described by the abnormal edge.
-		     In this case we can not allocate PIC hard reg to
+		     In this case we cannot allocate PIC hard reg to
 		     PIC pseudo as PIC pseudo will also have a wrong
 		     value.  This code is not critical as LRA can fix
 		     it but it is better to have the right allocation

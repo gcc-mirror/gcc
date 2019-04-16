@@ -187,7 +187,13 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
 
     case TEMPLATE_TYPE_PARM:
     case TEMPLATE_TEMPLATE_PARM:
-      if (TYPE_IDENTIFIER (t))
+      if (template_placeholder_p (t))
+	{
+	  t = TREE_TYPE (CLASS_PLACEHOLDER_TEMPLATE (t));
+	  pp_cxx_unqualified_id (pp, TYPE_IDENTIFIER (t));
+	  pp_string (pp, "<...auto...>");
+	}
+      else if (TYPE_IDENTIFIER (t))
 	pp_cxx_unqualified_id (pp, TYPE_IDENTIFIER (t));
       else
 	pp_cxx_canonical_template_parameter (pp, t);
@@ -303,14 +309,14 @@ static void
 pp_cxx_enumeration_constant (cxx_pretty_printer *pp, tree e)
 {
   tree type = TREE_TYPE (e);
-  tree value;
+  tree value = NULL_TREE;
 
   /* Find the name of this constant.  */
-  for (value = TYPE_VALUES (type);
-       value != NULL_TREE
-	&& !tree_int_cst_equal (DECL_INITIAL (TREE_VALUE (value)), e);
-       value = TREE_CHAIN (value))
-    ;
+  if ((pp->flags & pp_c_flag_gnu_v3) == 0)
+    for (value = TYPE_VALUES (type); value != NULL_TREE;
+	 value = TREE_CHAIN (value))
+      if (tree_int_cst_equal (DECL_INITIAL (TREE_VALUE (value)), e))
+	break;
 
   if (value != NULL_TREE)
     {

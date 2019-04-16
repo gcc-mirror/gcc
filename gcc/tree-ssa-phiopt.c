@@ -1852,14 +1852,14 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
      form arg0 = -arg1 or arg1 = -arg0.  */
 
   assign = last_and_only_stmt (middle_bb);
-  /* If we did not find the proper negation assignment, then we can not
+  /* If we did not find the proper negation assignment, then we cannot
      optimize.  */
   if (assign == NULL)
     return false;
 
   /* If we got here, then we have found the only executable statement
      in OTHER_BLOCK.  If it is anything other than arg = -arg1 or
-     arg1 = -arg0, then we can not optimize.  */
+     arg1 = -arg0, then we cannot optimize.  */
   if (gimple_code (assign) != GIMPLE_ASSIGN)
     return false;
 

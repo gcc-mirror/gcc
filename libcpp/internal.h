@@ -593,6 +593,8 @@ struct cpp_reader
 #define is_nvspace(x)	IS_NVSPACE(x)
 #define is_space(x)	IS_SPACE_OR_NUL(x)
 
+#define SEEN_EOL() (pfile->cur_token[-1].type == CPP_EOF)
+
 /* This table is constant if it can be initialized at compile time,
    which is the case if cpp was compiled with GCC >=2.7, or another
    compiler that supports C99.  */

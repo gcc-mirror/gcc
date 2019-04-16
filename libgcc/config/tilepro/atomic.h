@@ -59,7 +59,7 @@
    advantage of the kernel's existing atomic-integer support (managed
    by a distributed array of locks).  The kernel provides proper
    ordering among simultaneous atomic operations on different cores,
-   and guarantees a process can not be context-switched part way
+   and guarantees a process cannot be context-switched part way
    through an atomic operation.  By virtue of sharing the kernel
    atomic implementation, the userspace atomic operations
    are compatible with the atomic methods provided by the kernel's

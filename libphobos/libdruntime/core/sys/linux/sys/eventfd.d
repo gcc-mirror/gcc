@@ -14,6 +14,7 @@ nothrow:
 
 version (ARM)     version = ARM_Any;
 version (AArch64) version = ARM_Any;
+version (HPPA)    version = HPPA_Any;
 version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
@@ -42,11 +43,38 @@ int eventfd_read (int fd, eventfd_t* value);
 /* Increment event counter.  */
 int eventfd_write (int fd, eventfd_t value);
 
-version (X86_Any)
+version (CRuntime_UClibc)
+{
+    version (MIPS_Any)
+    {
+        enum EFD_SEMAPHORE = 1;
+        enum EFD_CLOEXEC = 0x80000; // octal!02000000
+        enum EFD_NONBLOCK = 0x80; // octal!00000200
+    }
+    else version (SPARC_Any)
+    {
+        enum EFD_SEMAPHORE = 1;
+        enum EFD_CLOEXEC = 0x400000;
+        enum EFD_NONBLOCK = 0x004000;
+    }
+    else
+    {
+        enum EFD_SEMAPHORE = 1;
+        enum EFD_CLOEXEC = 0x80000; // octal!02000000
+        enum EFD_NONBLOCK = 0x800; // octal!00004000
+    }
+}
+else version (X86_Any)
 {
     enum EFD_SEMAPHORE = 1;
     enum EFD_CLOEXEC = 0x80000; // octal!2000000
     enum EFD_NONBLOCK = 0x800; // octal!4000
+}
+else version (HPPA_Any)
+{
+    enum EFD_SEMAPHORE = 1;
+    enum EFD_CLOEXEC = 0x200000; // octal!10000000
+    enum EFD_NONBLOCK = 0x10004; // octal!00200004
 }
 else version (MIPS_Any)
 {

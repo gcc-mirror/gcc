@@ -1824,6 +1824,8 @@ number_of_iterations_cond (struct loop *loop,
   tree tem = fold_binary (code, boolean_type_node, iv0->base, iv1->base);
   if (tem && integer_zerop (tem))
     {
+      if (!every_iteration)
+	return false;
       niter->niter = build_int_cst (unsigned_type_for (type), 0);
       niter->max = 0;
       return true;
@@ -4505,7 +4507,7 @@ n_of_executions_at_most (gimple *stmt,
 
 	  /* By stmt_dominates_stmt_p we already know that STMT appears
 	     before NITER_BOUND->STMT.  Still need to test that the loop
-	     can not be terinated by a side effect in between.  */
+	     cannot be terinated by a side effect in between.  */
 	  for (bsi = gsi_for_stmt (stmt); gsi_stmt (bsi) != niter_bound->stmt;
 	       gsi_next (&bsi))
 	    if (gimple_has_side_effects (gsi_stmt (bsi)))

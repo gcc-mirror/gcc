@@ -1778,7 +1778,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 
 	  /* Rule 6 */
 	case CONST_INT:
-	case POLY_INT_CST:
+	case CONST_POLY_INT:
 	  cur_trace->cfa_temp.reg = dwf_regno (dest);
 	  cur_trace->cfa_temp.offset = rtx_to_poly_int64 (src);
 	  break;

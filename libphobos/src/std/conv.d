@@ -3865,19 +3865,9 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) &&
 string text(T...)(T args)
 if (T.length > 0) { return textImpl!string(args); }
 
-// @@@DEPRECATED_2018-06@@@
-deprecated("Calling `text` with 0 arguments is deprecated")
-string text(T...)(T args)
-if (T.length == 0) { return textImpl!string(args); }
-
 ///ditto
 wstring wtext(T...)(T args)
 if (T.length > 0) { return textImpl!wstring(args); }
-
-// @@@DEPRECATED_2018-06@@@
-deprecated("Calling `wtext` with 0 arguments is deprecated")
-wstring wtext(T...)(T args)
-if (T.length == 0) { return textImpl!wstring(args); }
 
 ///ditto
 dstring dtext(T...)(T args)
@@ -3891,10 +3881,24 @@ if (T.length > 0) { return textImpl!dstring(args); }
     assert(dtext(42, ' ', 1.5, ": xyz") == "42 1.5: xyz"d);
 }
 
-// @@@DEPRECATED_2018-06@@@
-deprecated("Calling `dtext` with 0 arguments is deprecated")
-dstring dtext(T...)(T args)
-if (T.length == 0) { return textImpl!dstring(args); }
+@safe unittest
+{
+    char  c = 'h';
+    wchar w = '你';
+    dchar d = 'እ';
+
+    assert( text(c, "ello", ' ', w, "好 ", d, "ው ሰላም ነው") == "hello 你好 እው ሰላም ነው"c);
+    assert(wtext(c, "ello", ' ', w, "好 ", d, "ው ሰላም ነው") == "hello 你好 እው ሰላም ነው"w);
+    assert(dtext(c, "ello", ' ', w, "好 ", d, "ው ሰላም ነው") == "hello 你好 እው ሰላም ነው"d);
+
+    string  cs = "今日は";
+    wstring ws = "여보세요";
+    dstring ds = "Здравствуйте";
+
+    assert( text(cs, ' ', ws, " ", ds) == "今日は 여보세요 Здравствуйте"c);
+    assert(wtext(cs, ' ', ws, " ", ds) == "今日は 여보세요 Здравствуйте"w);
+    assert(dtext(cs, ' ', ws, " ", ds) == "今日は 여보세요 Здравствуйте"d);
+}
 
 private S textImpl(S, U...)(U args)
 {

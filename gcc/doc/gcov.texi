@@ -192,6 +192,7 @@ Structure of the JSON is following:
 @smallexample
 @{
   "current_working_directory": @var{current_working_directory},
+  "data_file": @var{data_file},
   "format_version": @var{format_version},
   "gcc_version": @var{gcc_version}
   "files": [@var{file}]
@@ -204,6 +205,9 @@ Fields of the root element have following semantics:
 @item
 @var{current_working_directory}: working directory where
 a compilation unit was compiled
+
+@item
+@var{data_file}: name of the data file (GCDA)
 
 @item
 @var{format_version}: semantic version of the format
@@ -236,9 +240,11 @@ Each @var{function} has the following form:
   "blocks": @var{blocks},
   "blocks_executed": @var{blocks_executed},
   "demangled_name": "@var{demangled_name},
+  "end_column": @var{end_column},
   "end_line": @var{end_line},
   "execution_count": @var{execution_count},
   "name": @var{name},
+  "start_column": @var{start_column}
   "start_line": @var{start_line}
 @}
 @end smallexample
@@ -256,6 +262,9 @@ Fields of the @var{function} element have following semantics:
 @var{demangled_name}: demangled name of the function
 
 @item
+@var{end_column}: column in the source file where the function ends
+
+@item
 @var{end_line}: line in the source file where the function ends
 
 @item
@@ -265,8 +274,16 @@ Fields of the @var{function} element have following semantics:
 @var{name}: name of the function
 
 @item
+@var{start_column}: column in the source file where the function begins
+
+@item
 @var{start_line}: line in the source file where the function begins
 @end itemize
+
+Note that line numbers and column numbers number from 1.  In the current
+implementation, @var{start_line} and @var{start_column} do not include
+any template parameters and the leading return type but that
+this is likely to be fixed in the future.
 
 Each @var{line} has the following form:
 
@@ -276,6 +293,7 @@ Each @var{line} has the following form:
   "count": @var{count},
   "line_number": @var{line_number},
   "unexecuted_block": @var{unexecuted_block}
+  "function_name": @var{function_name},
 @}
 @end smallexample
 
@@ -292,6 +310,10 @@ Fields of the @var{line} element have following semantics:
 @item
 @var{unexecuted_block}: flag whether the line contains an unexecuted block
 (not all statements on the line are executed)
+
+@item
+@var{function_name}: a name of a function this @var{line} belongs to
+(for a line with an inlined statements can be not set)
 @end itemize
 
 Each @var{branch} has the following form:
@@ -409,13 +431,15 @@ Print verbose informations related to basic blocks and arcs.
 
 @item -x
 @itemx --hash-filenames
-By default, gcov uses the full pathname of the source files to create
+When using @var{--preserve-paths},
+gcov uses the full pathname of the source files to create
 an output filename.  This can lead to long filenames that can overflow
 filesystem limits.  This option creates names of the form
 @file{@var{source-file}##@var{md5}.gcov},
 where the @var{source-file} component is the final filename part and
 the @var{md5} component is calculated from the full mangled name that
-would have been used otherwise.
+would have been used otherwise.  The option is an alternative
+to the @var{--preserve-paths} on systems which have a filesystem limit.
 
 @end table
 
@@ -486,8 +510,8 @@ are @emph{exactly} 0% and 100% respectively.  Other values which would
 conventionally be rounded to 0% or 100% are instead printed as the
 nearest non-boundary value.
 
-When using @command{gcov}, you must first compile your program with two
-special GCC options: @samp{-fprofile-arcs -ftest-coverage}.
+When using @command{gcov}, you must first compile your program
+with a special GCC option @samp{--coverage}.
 This tells the compiler to generate additional information needed by
 gcov (basically a flow graph of the program) and also includes
 additional code in the object files for generating the extra profiling
@@ -504,7 +528,7 @@ for each line.  For example, if your program is called @file{tmp.cpp}, this
 is what you see when you use the basic @command{gcov} facility:
 
 @smallexample
-$ g++ -fprofile-arcs -ftest-coverage tmp.cpp
+$ g++ --coverage tmp.cpp
 $ a.out
 $ gcov tmp.cpp -m
 File 'tmp.cpp'
@@ -802,8 +826,8 @@ new execution counts and finally writes the data to the file.
 @section Using @command{gcov} with GCC Optimization
 
 If you plan to use @command{gcov} to help optimize your code, you must
-first compile your program with two special GCC options:
-@samp{-fprofile-arcs -ftest-coverage}.  Aside from that, you can use any
+first compile your program with a special GCC option
+@samp{--coverage}.  Aside from that, you can use any
 other GCC options; but if you want to prove that every single line
 in your program was executed, you should not compile with optimization
 at the same time.  On some machines the optimizer can eliminate some

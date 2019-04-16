@@ -30,7 +30,12 @@ extern (C) void[] _d_arrayassign(TypeInfo ti, void[] from, void[] to)
 
     // Need a temporary buffer tmp[] big enough to hold one element
     void[16] buf = void;
-    void* ptmp = (elementSize > buf.sizeof) ? alloca(elementSize) : buf.ptr;
+    void* ptmp = (elementSize > buf.sizeof) ? malloc(elementSize) : buf.ptr;
+    scope (exit)
+    {
+        if (ptmp != buf.ptr)
+            free(ptmp);
+    }
     return _d_arrayassign_l(ti, from, to, ptmp);
 }
 
@@ -206,24 +211,20 @@ extern (C) void* _d_arraysetassign(void* p, void* value, int count, TypeInfo ti)
 
     auto element_size = ti.tsize;
 
-    //Need a temporary buffer tmp[] big enough to hold one element
-    void[16] buf = void;
-    void[] tmp;
-    if (element_size > buf.sizeof)
-    {
-        tmp = alloca(element_size)[0 .. element_size];
-    }
-    else
-        tmp = buf[];
+    // Need a temporary buffer tmp[] big enough to hold one element
+    immutable maxAllocaSize = 512;
+    void *ptmp = (element_size > maxAllocaSize) ? malloc(element_size) : alloca(element_size);
 
     foreach (i; 0 .. count)
     {
-        memcpy(tmp.ptr, p, element_size);
+        memcpy(ptmp, p, element_size);
         memcpy(p, value, element_size);
         ti.postblit(p);
-        ti.destroy(tmp.ptr);
+        ti.destroy(ptmp);
         p += element_size;
     }
+    if (element_size > maxAllocaSize)
+        free(ptmp);
     return pstart;
 }
 

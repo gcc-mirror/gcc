@@ -156,7 +156,7 @@
 (define_attr "type"
   "unknown,branch,jump,call,load,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
-   fmadd,fdiv,fcmp,fcvt,fsqrt,multi,nop,ghost"
+   fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,nop,ghost"
   (cond [(eq_attr "got" "load") (const_string "load")
 
 	 ;; If a doubleword move uses these expensive instructions,
@@ -234,6 +234,12 @@
 
 ;; Is copying of this instruction disallowed?
 (define_attr "cannot_copy" "no,yes" (const_string "no"))
+
+;; Microarchitectures we know how to tune for.
+;; Keep this in sync with enum riscv_microarchitecture.
+(define_attr "tune"
+  "generic,sifive_7"
+  (const (symbol_ref "((enum attr_tune) riscv_microarchitecture)")))
 
 ;; Describe a user's asm statement.
 (define_asm_attributes
@@ -1247,7 +1253,7 @@
 	    UNSPEC_AUIPC))]
   ""
   ".LA%2: auipc\t%0,%h1"
-  [(set_attr "type" "arith")
+  [(set_attr "type" "auipc")
    (set_attr "cannot_copy" "yes")])
 
 ;; Instructions for adding the low 12 bits of an address to a register.
@@ -2422,7 +2428,25 @@
   [(set_attr "length" "0")]
 )
 
+;; This fixes a failure with gcc.c-torture/execute/pr64242.c at -O2 for a
+;; 32-bit target when using -mtune=sifive-7-series.  The first sched pass
+;; runs before register elimination, and we have a non-obvious dependency
+;; between a use of the soft fp and a set of the hard fp.  We fix this by
+;; emitting a clobber using the hard fp between the two insns.
+(define_expand "restore_stack_nonlocal"
+  [(match_operand 0 "register_operand")
+   (match_operand 1 "memory_operand")]
+  ""
+{
+  emit_move_insn (operands[0], operands[1]);
+  /* Prevent the following hard fp restore from being moved before the move
+     insn above which uses a copy of the soft fp reg.  */
+  emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
+  DONE;
+})
+
 (include "sync.md")
 (include "peephole.md")
 (include "pic.md")
 (include "generic.md")
+(include "sifive-7.md")

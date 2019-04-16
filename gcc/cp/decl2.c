@@ -744,6 +744,11 @@ finish_static_data_member_decl (tree decl,
 				tree asmspec_tree,
 				int flags)
 {
+  if (DECL_TEMPLATE_INSTANTIATED (decl))
+    /* We already needed to instantiate this, so the processing in this
+       function is unnecessary/wrong.  */
+    return;
+
   DECL_CONTEXT (decl) = current_class_type;
 
   /* We cannot call pushdecl here, because that would fill in the
@@ -772,7 +777,12 @@ finish_static_data_member_decl (tree decl,
 	  break;
 	}
 
-  DECL_IN_AGGR_P (decl) = 1;
+  if (DECL_INLINE_VAR_P (decl) && !DECL_TEMPLATE_INSTANTIATION (decl))
+    /* An inline variable is immediately defined, so don't set DECL_IN_AGGR_P.
+       Except that if decl is a template instantiation, it isn't defined until
+       instantiate_decl.  */;
+  else
+    DECL_IN_AGGR_P (decl) = 1;
 
   if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
       && TYPE_DOMAIN (TREE_TYPE (decl)) == NULL_TREE)
@@ -820,7 +830,8 @@ grokfield (const cp_declarator *declarator,
 
   if (TREE_CODE (value) == TYPE_DECL && init)
     {
-      error ("typedef %qD is initialized (use decltype instead)", value);
+      error_at (cp_expr_loc_or_loc (init, DECL_SOURCE_LOCATION (value)),
+		"typedef %qD is initialized (use decltype instead)", value);
       init = NULL_TREE;
     }
 
@@ -924,12 +935,14 @@ grokfield (const cp_declarator *declarator,
 	  else
 	    {
 	      gcc_assert (TREE_CODE (TREE_TYPE (value)) == FUNCTION_TYPE);
+	      location_t iloc
+		= cp_expr_loc_or_loc (init, DECL_SOURCE_LOCATION (value));
 	      if (friendp)
-		error ("initializer specified for friend function %qD",
-		       value);
+		error_at (iloc, "initializer specified for friend "
+			  "function %qD", value);
 	      else
-		error ("initializer specified for static member function %qD",
-		       value);
+		error_at (iloc, "initializer specified for static "
+			  "member function %qD", value);
 	    }
 	}
       else if (TREE_CODE (value) == FIELD_DECL)
@@ -1036,7 +1049,8 @@ grokbitfield (const cp_declarator *declarator,
 
   if (TREE_CODE (value) == TYPE_DECL)
     {
-      error ("cannot declare %qD to be a bit-field type", value);
+      error_at (DECL_SOURCE_LOCATION (value),
+		"cannot declare %qD to be a bit-field type", value);
       return NULL_TREE;
     }
 
@@ -1753,9 +1767,9 @@ coerce_delete_type (tree decl, location_t loc)
   if (destroying_delete_p (decl))
     {
       if (DECL_CLASS_SCOPE_P (decl))
-	/* If the function is a destroying operator delete declared in class type
-	   C, the type of its first parameter shall be C*.  */
-	ptrtype = TYPE_POINTER_TO (DECL_CONTEXT (decl));
+	/* If the function is a destroying operator delete declared in class
+	   type C, the type of its first parameter shall be C*.  */
+	ptrtype = build_pointer_type (DECL_CONTEXT (decl));
       else
 	/* A destroying operator delete shall be a class member function named
 	   operator delete.  */
@@ -2219,6 +2233,17 @@ maybe_emit_vtables (tree ctype)
 	  last = current;
 	}
     }
+
+  /* For abstract classes, the destructor has been removed from the
+     vtable (in class.c's build_vtbl_initializer).  For a compiler-
+     generated destructor, it hence might not have been generated in
+     this translation unit - and with '#pragma interface' it might
+     never get generated.  */
+  if (CLASSTYPE_PURE_VIRTUALS (ctype)
+      && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (ctype)
+      && !CLASSTYPE_LAZY_DESTRUCTOR (ctype)
+      && DECL_DEFAULTED_IN_CLASS_P (CLASSTYPE_DESTRUCTOR (ctype)))
+    note_vague_linkage_fn (CLASSTYPE_DESTRUCTOR (ctype));
 
   /* Since we're writing out the vtable here, also write the debug
      info.  */
@@ -3417,7 +3442,7 @@ get_tls_init_fn (tree var)
    VAR and then returns a reference to VAR.  The wrapper function is used
    in place of VAR everywhere VAR is mentioned.  */
 
-tree
+static tree
 get_tls_wrapper_fn (tree var)
 {
   /* Only C++11 TLS vars need this wrapper fn.  */
@@ -3433,7 +3458,9 @@ get_tls_wrapper_fn (tree var)
       tree type = non_reference (TREE_TYPE (var));
       type = build_reference_type (type);
       tree fntype = build_function_type (type, void_list_node);
-      fn = build_lang_decl (FUNCTION_DECL, sname, fntype);
+
+      fn = build_lang_decl_loc (DECL_SOURCE_LOCATION (var),
+				FUNCTION_DECL, sname, fntype);
       SET_DECL_LANGUAGE (fn, lang_c);
       TREE_PUBLIC (fn) = TREE_PUBLIC (var);
       DECL_ARTIFICIAL (fn) = true;
@@ -3467,6 +3494,22 @@ get_tls_wrapper_fn (tree var)
       set_global_binding (fn);
     }
   return fn;
+}
+
+/* If EXPR is a thread_local variable that should be wrapped by init
+   wrapper function, return a call to that function, otherwise return
+   NULL.  */
+
+tree
+maybe_get_tls_wrapper_call (tree expr)
+{
+  if (VAR_P (expr)
+      && !processing_template_decl
+      && !cp_unevaluated_operand
+      && CP_DECL_THREAD_LOCAL_P (expr))
+    if (tree wrap = get_tls_wrapper_fn (expr))
+      return build_cxx_call (wrap, 0, NULL, tf_warning_or_error);
+  return NULL;
 }
 
 /* At EOF, generate the definition for the TLS wrapper function FN:
@@ -4581,7 +4624,7 @@ record_mangling (tree decl, bool need_warning)
       inform (DECL_SOURCE_LOCATION (*slot),
 	      "previous mangling %q#D", *slot);
       inform (DECL_SOURCE_LOCATION (decl),
-	      "a later -fabi-version= (or =0)"
+	      "a later %<-fabi-version=%> (or =0)"
 	      " avoids this error with a change in mangling");
       *slot = decl;
     }
@@ -4948,11 +4991,6 @@ c_parse_final_cleanups (void)
 	      /* Generate RTL for this function now that we know we
 		 need it.  */
 	      expand_or_defer_fn (decl);
-	      /* If we're compiling -fsyntax-only pretend that this
-		 function has been written out so that we don't try to
-		 expand it again.  */
-	      if (flag_syntax_only)
-		TREE_ASM_WRITTEN (decl) = 1;
 	      reconsider = true;
 	    }
 	}
@@ -4965,7 +5003,7 @@ c_parse_final_cleanups (void)
 	{
 	  if (var_finalized_p (decl) || DECL_REALLY_EXTERN (decl)
 	      /* Don't write it out if we haven't seen a definition.  */
-	      || (DECL_IN_AGGR_P (decl) && !DECL_INLINE_VAR_P (decl)))
+	      || DECL_IN_AGGR_P (decl))
 	    continue;
 	  import_export_decl (decl);
 	  /* If this static data member is needed, provide it to the
@@ -5000,13 +5038,11 @@ c_parse_final_cleanups (void)
 	  /* Don't complain if the template was defined.  */
 	  && !(DECL_TEMPLATE_INSTANTIATION (decl)
 	       && DECL_INITIAL (DECL_TEMPLATE_RESULT
-				(template_for_substitution (decl)))))
-	{
-	  warning_at (DECL_SOURCE_LOCATION (decl), 0,
-		      "inline function %qD used but never defined", decl);
-	  /* Avoid a duplicate warning from check_global_declaration.  */
-	  TREE_NO_WARNING (decl) = 1;
-	}
+				(template_for_substitution (decl))))
+	  && warning_at (DECL_SOURCE_LOCATION (decl), 0,
+			 "inline function %qD used but never defined", decl))
+	/* Avoid a duplicate warning from check_global_declaration.  */
+	TREE_NO_WARNING (decl) = 1;
     }
 
   /* So must decls that use a type with no linkage.  */
@@ -5497,7 +5533,7 @@ mark_used (tree decl, tsubst_flags_t complain)
 	 within the body of a function so as to avoid collecting live data
 	 on the stack (such as overload resolution candidates).
 
-         We could just let cp_write_global_declarations handle synthesizing
+         We could just let c_parse_final_cleanups handle synthesizing
          this function by adding it to deferred_fns, but doing
          it at the use site produces better error messages.  */
       ++function_depth;

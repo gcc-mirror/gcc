@@ -1,6 +1,6 @@
 /* PR target/68872 */
 /* { dg-do assemble { target { powerpc64le-*-* } } } */
-/* { dg-options "-mcpu=powerpc64le" } */
+/* { dg-options "-mdejagnu-cpu=powerpc64le" } */
 
 /* Verify that -mcpu=powerpc64le passes -mpower8 to the assembler.  */
 

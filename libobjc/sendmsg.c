@@ -1045,7 +1045,7 @@ __objc_prepare_dtable_for_class (Class cls)
   struct sarray *dtable;
   struct sarray *super_dtable;
 
-  /* This table could be initialized in init.c.  We can not use the
+  /* This table could be initialized in init.c.  We cannot use the
      class name since the class maintains the instance methods and the
      meta class maintains the the class methods yet both share the
      same name.  Classes should be unique in any program.  */

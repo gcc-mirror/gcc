@@ -247,34 +247,15 @@ else version (CRuntime_Bionic)
     alias c_long    time_t;
     alias uint      uid_t;
 
-    version (X86)
-    {
-        alias ushort    mode_t;
-        alias ushort    nlink_t;
-    }
-    else version (X86_64)
-    {
-        alias ushort    mode_t;
-        alias uint      nlink_t;
-    }
-    else version (ARM)
-    {
-        alias ushort    mode_t;
-        alias ushort    nlink_t;
-    }
-    else version (AArch64)
-    {
-        alias uint      mode_t;
-        alias uint      nlink_t;
-    }
-    else version (MIPS32)
+    version (D_LP64)
     {
         alias uint      mode_t;
         alias uint      nlink_t;
     }
     else
     {
-        static assert(false, "Architecture not supported.");
+        alias ushort    mode_t;
+        alias ushort    nlink_t;
     }
 }
 else version (CRuntime_UClibc)
@@ -543,6 +524,18 @@ version (CRuntime_Glibc)
         enum __SIZEOF_PTHREAD_RWLOCK_T = 32;
         enum __SIZEOF_PTHREAD_RWLOCKATTR_T = 8;
         enum __SIZEOF_PTHREAD_BARRIER_T = 20;
+        enum __SIZEOF_PTHREAD_BARRIERATTR_T = 4;
+    }
+    else version (HPPA)
+    {
+        enum __SIZEOF_PTHREAD_ATTR_T = 36;
+        enum __SIZEOF_PTHREAD_MUTEX_T = 48;
+        enum __SIZEOF_PTHREAD_MUTEXATTR_T = 4;
+        enum __SIZEOF_PTHREAD_COND_T = 48;
+        enum __SIZEOF_PTHREAD_CONDATTR_T = 4;
+        enum __SIZEOF_PTHREAD_RWLOCK_T = 64;
+        enum __SIZEOF_PTHREAD_RWLOCKATTR_T = 8;
+        enum __SIZEOF_PTHREAD_BARRIER_T = 48;
         enum __SIZEOF_PTHREAD_BARRIERATTR_T = 4;
     }
     else version (IA64)
@@ -1056,7 +1049,7 @@ else version (CRuntime_Bionic)
         size_t  guard_size;
         int     sched_policy;
         int     sched_priority;
-        version (D_LP64) char[16] __reserved;
+        version (D_LP64) char[16] __reserved = 0;
     }
 
     struct pthread_cond_t

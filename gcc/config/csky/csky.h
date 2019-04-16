@@ -923,7 +923,7 @@ extern const int csky_dbx_regno[];
 #define MOVE_MAX 4
 
 /* Shift counts are truncated to 6-bits (0 to 63) instead of the expected
-   5-bits, so we can not define SHIFT_COUNT_TRUNCATED to true for this
+   5-bits, so we cannot define SHIFT_COUNT_TRUNCATED to true for this
    target.  */
 #define SHIFT_COUNT_TRUNCATED 0
 

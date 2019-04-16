@@ -7,4 +7,5 @@
 -flto-partition=max
 -flto-partition=none
 -flto-partition=one
+-flto-partition=
    { dg-end-multiline-output "" } */

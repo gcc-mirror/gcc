@@ -23,7 +23,12 @@ public import core.time;
 version (Windows)
 {
     private import core.sync.semaphore;
-    private import core.sys.windows.windows;
+    private import core.sys.windows.basetsd /+: HANDLE+/;
+    private import core.sys.windows.winbase /+: CloseHandle, CreateSemaphoreA, CRITICAL_SECTION,
+        DeleteCriticalSection, EnterCriticalSection, INFINITE, InitializeCriticalSection,
+        LeaveCriticalSection, ReleaseSemaphore, WAIT_OBJECT_0, WaitForSingleObject+/;
+    private import core.sys.windows.windef /+: BOOL, DWORD+/;
+    private import core.sys.windows.winerror /+: WAIT_TIMEOUT+/;
 }
 else version (Posix)
 {

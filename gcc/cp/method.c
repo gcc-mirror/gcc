@@ -1256,9 +1256,13 @@ process_subob_fn (tree fn, tree *spec_p, bool *trivial_p,
 
   if (spec_p)
     {
-      maybe_instantiate_noexcept (fn);
-      tree raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
-      *spec_p = merge_exception_specifiers (*spec_p, raises);
+      if (!maybe_instantiate_noexcept (fn))
+	*spec_p = error_mark_node;
+      else
+	{
+	  tree raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
+	  *spec_p = merge_exception_specifiers (*spec_p, raises);
+	}
     }
 
   if (!trivial_fn_p (fn) && !dtor_from_ctor)
@@ -1367,7 +1371,10 @@ walk_field_subobs (tree fields, special_function_kind sfk, tree fnname,
 	      if (spec_p)
 		{
 		  tree nsdmi = get_nsdmi (field, /*ctor*/false, complain);
-		  if (!expr_noexcept_p (nsdmi, complain))
+		  if (nsdmi == error_mark_node)
+		    *spec_p = error_mark_node;
+		  else if (*spec_p != error_mark_node
+			   && !expr_noexcept_p (nsdmi, complain))
 		    *spec_p = noexcept_false_spec;
 		}
 	      /* Don't do the normal processing.  */
@@ -1753,8 +1760,13 @@ get_defaulted_eh_spec (tree decl, tsubst_flags_t complain)
   if (SFK_DTOR_P (sfk) && DECL_VIRTUAL_P (decl))
     /* We have to examine virtual bases even if abstract.  */
     sfk = sfk_virtual_destructor;
+  bool pushed = false;
+  if (CLASSTYPE_TEMPLATE_INSTANTIATION (ctype))
+    pushed = push_tinst_level (decl);
   synthesized_method_walk (ctype, sfk, const_p, &spec, NULL, NULL,
 			   NULL, diag, &inh, parms);
+  if (pushed)
+    pop_tinst_level ();
   return spec;
 }
 
@@ -2049,7 +2061,14 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   /* Create the function.  */
   fn_type = build_method_type_directly (type, return_type, parameter_types);
   if (raises)
-    fn_type = build_exception_variant (fn_type, raises);
+    {
+      if (raises != error_mark_node)
+	fn_type = build_exception_variant (fn_type, raises);
+      else
+	/* Can happen, eg, in C++98 mode for an ill-formed non-static data
+	   member initializer (c++/89914).  */
+	gcc_assert (seen_error ());
+    }
   fn = build_lang_decl (FUNCTION_DECL, name, fn_type);
   if (kind != sfk_inheriting_constructor)
     DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (TYPE_NAME (type));
@@ -2262,6 +2281,9 @@ after_nsdmi_defaulted_late_checks (tree t)
 	  continue;
 
 	tree eh_spec = get_defaulted_eh_spec (fn);
+	if (eh_spec == error_mark_node)
+	  continue;
+
 	if (!comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)),
 				eh_spec, ce_normal))
 	  DECL_DELETED_FN (fn) = true;

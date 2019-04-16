@@ -19,6 +19,7 @@
 
 // { dg-do run }
 // { dg-options "-pthread"  }
+// { dg-add-options libatomic }
 // { dg-require-effective-target c++11 }
 // { dg-require-effective-target pthread }
 // { dg-require-cstdint "" }

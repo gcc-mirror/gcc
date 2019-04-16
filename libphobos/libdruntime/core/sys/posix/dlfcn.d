@@ -27,6 +27,7 @@ else version (WatchOS)
 
 version (ARM)     version = ARM_Any;
 version (AArch64) version = ARM_Any;
+version (HPPA)    version = HPPA_Any;
 version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
@@ -68,6 +69,13 @@ version (CRuntime_Glibc)
         enum RTLD_NOW       = 0x00002;
         enum RTLD_GLOBAL    = 0x00100;
         enum RTLD_LOCAL     = 0x00000;
+    }
+    else version (HPPA_Any)
+    {
+        enum RTLD_LAZY      = 0x0001;
+        enum RTLD_NOW       = 0x0002;
+        enum RTLD_GLOBAL    = 0x0100;
+        enum RTLD_LOCAL     = 0;
     }
     else version (MIPS_Any)
     {

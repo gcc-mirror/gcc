@@ -799,7 +799,7 @@ execute_cse_reciprocals_1 (gimple_stmt_iterator *def_gsi, tree def)
 
   /* If it is more profitable to optimize 1 / x, don't optimize 1 / (x * x).  */
   if (sqrt_recip_count > square_recip_count)
-    return;
+    goto out;
 
   /* Do the expensive part only if we can hope to optimize something.  */
   if (count + square_recip_count >= threshold && count >= 1)
@@ -842,6 +842,7 @@ execute_cse_reciprocals_1 (gimple_stmt_iterator *def_gsi, tree def)
 	}
     }
 
+out:
   for (occ = occ_head; occ; )
     occ = free_bb (occ);
 
@@ -2916,8 +2917,13 @@ convert_mult_to_fma_1 (tree mul_result, tree op1, tree op2)
       gsi_replace (&gsi, fma_stmt, true);
       /* Follow all SSA edges so that we generate FMS, FNMA and FNMS
 	 regardless of where the negation occurs.  */
+      gimple *orig_stmt = gsi_stmt (gsi);
       if (fold_stmt (&gsi, follow_all_ssa_edges))
-	update_stmt (gsi_stmt (gsi));
+	{
+	  if (maybe_clean_or_replace_eh_stmt (orig_stmt, gsi_stmt (gsi)))
+	    gcc_unreachable ();
+	  update_stmt (gsi_stmt (gsi));
+	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -3088,6 +3094,7 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
        && (tree_to_shwi (TYPE_SIZE (type))
 	   <= PARAM_VALUE (PARAM_AVOID_FMA_MAX_BITS)));
   bool defer = check_defer;
+  bool seen_negate_p = false;
   /* Make sure that the multiplication statement becomes dead after
      the transformation, thus that all uses are transformed to FMAs.
      This means we assume that an FMA operation has the same cost
@@ -3121,6 +3128,12 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 	  ssa_op_iter iter;
 	  use_operand_p usep;
 
+	  /* If (due to earlier missed optimizations) we have two
+	     negates of the same value, treat them as equivalent
+	     to a single negate with multiple uses.  */
+	  if (seen_negate_p)
+	    return false;
+
 	  result = gimple_assign_lhs (use_stmt);
 
 	  /* Make sure the negate statement becomes dead with this
@@ -3139,7 +3152,7 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 	  if (gimple_bb (use_stmt) != gimple_bb (mul_stmt))
 	    return false;
 
-	  negate_p = true;
+	  negate_p = seen_negate_p = true;
 	}
 
       tree cond, else_value, ops[3];

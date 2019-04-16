@@ -206,7 +206,7 @@ genericize_if_stmt (tree *stmt_p)
 	  richloc.add_range (EXPR_LOC_OR_LOC (fe, locus));
 	  warning_at (&richloc, OPT_Wattributes,
 		      "both branches of %<if%> statement marked as %qs",
-		      predictor_name (pr));
+		      pr == PRED_HOT_LABEL ? "likely" : "unlikely");
 	}
     }
 
@@ -242,14 +242,15 @@ genericize_cp_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
   tree exit = NULL;
   tree stmt_list = NULL;
 
-  blab = begin_bc_block (bc_break, start_locus);
-  clab = begin_bc_block (bc_continue, start_locus);
-
   protected_set_expr_location (incr, start_locus);
 
   cp_walk_tree (&cond, cp_genericize_r, data, NULL);
-  cp_walk_tree (&body, cp_genericize_r, data, NULL);
   cp_walk_tree (&incr, cp_genericize_r, data, NULL);
+
+  blab = begin_bc_block (bc_break, start_locus);
+  clab = begin_bc_block (bc_continue, start_locus);
+
+  cp_walk_tree (&body, cp_genericize_r, data, NULL);
   *walk_subtrees = 0;
 
   if (cond && TREE_CODE (cond) != INTEGER_CST)
@@ -356,16 +357,17 @@ genericize_switch_stmt (tree *stmt_p, int *walk_subtrees, void *data)
   tree break_block, body, cond, type;
   location_t stmt_locus = EXPR_LOCATION (stmt);
 
-  break_block = begin_bc_block (bc_break, stmt_locus);
-
   body = SWITCH_STMT_BODY (stmt);
   if (!body)
     body = build_empty_stmt (stmt_locus);
   cond = SWITCH_STMT_COND (stmt);
   type = SWITCH_STMT_TYPE (stmt);
 
-  cp_walk_tree (&body, cp_genericize_r, data, NULL);
   cp_walk_tree (&cond, cp_genericize_r, data, NULL);
+
+  break_block = begin_bc_block (bc_break, stmt_locus);
+
+  cp_walk_tree (&body, cp_genericize_r, data, NULL);
   cp_walk_tree (&type, cp_genericize_r, data, NULL);
   *walk_subtrees = 0;
 
@@ -582,7 +584,7 @@ simple_empty_class_p (tree type, tree op)
 	 && !TREE_CLOBBER_P (op))
      || (TREE_CODE (op) == CALL_EXPR
 	 && !CALL_EXPR_RETURN_SLOT_OPT (op)))
-    && is_really_empty_class (type);
+    && is_really_empty_class (type, /*ignore_vptr*/true);
 }
 
 /* Returns true if evaluating E as an lvalue has side-effects;
@@ -2124,6 +2126,8 @@ cp_fold_maybe_rvalue (tree x, bool rval)
   while (true)
     {
       x = cp_fold (x);
+      if (rval)
+	x = mark_rvalue_use (x);
       if (rval && DECL_P (x)
 	  && !TYPE_REF_P (TREE_TYPE (x)))
 	{
@@ -2761,7 +2765,7 @@ remove_hotness_attribute (tree list)
    PREDICT_EXPR.  */
 
 tree
-process_stmt_hotness_attribute (tree std_attrs)
+process_stmt_hotness_attribute (tree std_attrs, location_t attrs_loc)
 {
   if (std_attrs == error_mark_node)
     return std_attrs;
@@ -2772,7 +2776,7 @@ process_stmt_hotness_attribute (tree std_attrs)
 		  || is_attribute_p ("likely", name));
       tree pred = build_predict_expr (hot ? PRED_HOT_LABEL : PRED_COLD_LABEL,
 				      hot ? TAKEN : NOT_TAKEN);
-      SET_EXPR_LOCATION (pred, input_location);
+      SET_EXPR_LOCATION (pred, attrs_loc);
       add_stmt (pred);
       if (tree other = lookup_hotness_attribute (TREE_CHAIN (attr)))
 	warning (OPT_Wattributes, "ignoring attribute %qE after earlier %qE",

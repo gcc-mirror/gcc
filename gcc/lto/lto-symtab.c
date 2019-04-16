@@ -240,7 +240,7 @@ warn_type_compatibility_p (tree prevailing_type, tree type,
   prevailing_type = TYPE_MAIN_VARIANT (prevailing_type);
   type = TYPE_MAIN_VARIANT (type);
 
-  /* We can not use types_compatible_p because we permit some changes
+  /* We cannot use types_compatible_p because we permit some changes
      across types.  For example unsigned size_t and "signed size_t" may be
      compatible when merging C and Fortran types.  */
   if (COMPLETE_TYPE_P (prevailing_type)
@@ -750,7 +750,7 @@ lto_symtab_merge_decls_2 (symtab_node *first, bool diagnosed_p)
   if (tbaa_p)
     inform (DECL_SOURCE_LOCATION (prevailing->decl),
 	    "code may be misoptimized unless "
-	    "-fno-strict-aliasing is used");
+	    "%<-fno-strict-aliasing%> is used");
 
   mismatches.release ();
 }
@@ -1085,8 +1085,12 @@ lto_symtab_prevailing_virtual_decl (tree decl)
 {
   if (DECL_ABSTRACT_P (decl))
     return decl;
-  gcc_checking_assert (!type_in_anonymous_namespace_p (DECL_CONTEXT (decl))
-		       && DECL_ASSEMBLER_NAME_SET_P (decl));
+
+  if (type_in_anonymous_namespace_p (DECL_CONTEXT (decl)))
+    /* There can't be any other declarations.  */
+    return decl;
+
+  gcc_checking_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
 
   symtab_node *n = symtab_node::get_for_asmname
 		     (DECL_ASSEMBLER_NAME (decl));

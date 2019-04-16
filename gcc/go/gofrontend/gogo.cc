@@ -265,6 +265,21 @@ Gogo::pkgpath_for_symbol(const std::string& pkgpath)
   return go_encode_id(pkgpath);
 }
 
+// Return a hash code for a string, given a starting hash.
+
+unsigned int
+Gogo::hash_string(const std::string& s, unsigned int h)
+{
+  const char* p = s.data();
+  size_t len = s.length();
+  for (; len > 0; --len)
+    {
+      h ^= *p++;
+      h*= 16777619;
+    }
+  return h;
+}
+
 // Get the package path to use for type reflection data.  This should
 // ideally be unique across the entire link.
 
@@ -1944,6 +1959,10 @@ Gogo::start_function(const std::string& name, Function_type* type,
 	  go_assert(at_top_level);
 	  Type* rtype = type->receiver()->type();
 
+	  while (rtype->named_type() != NULL
+		 && rtype->named_type()->is_alias())
+	    rtype = rtype->named_type()->real_type()->forwarded();
+
 	  // We want to look through the pointer created by the
 	  // parser, without getting an error if the type is not yet
 	  // defined.
@@ -2092,11 +2111,19 @@ Gogo::declare_function(const std::string& name, Function_type* type,
       // declarations.
       Type* rtype = type->receiver()->type();
 
+      while (rtype->named_type() != NULL
+	  && rtype->named_type()->is_alias())
+	rtype = rtype->named_type()->real_type()->forwarded();
+
       // We want to look through the pointer created by the
       // parser, without getting an error if the type is not yet
       // defined.
       if (rtype->classification() == Type::TYPE_POINTER)
 	rtype = rtype->points_to();
+
+      while (rtype->named_type() != NULL
+	  && rtype->named_type()->is_alias())
+	rtype = rtype->named_type()->real_type()->forwarded();
 
       if (rtype->is_error_type())
 	return NULL;
@@ -4484,15 +4511,15 @@ Build_recover_thunks::can_recover_arg(Location location)
   static Named_object* builtin_return_address;
   if (builtin_return_address == NULL)
     builtin_return_address =
-      Gogo::declare_builtin_rf_address("__builtin_return_address");
+      Gogo::declare_builtin_rf_address("__builtin_return_address", true);
 
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
   static Named_object* can_recover;
   if (can_recover == NULL)
     {
       const Location bloc = Linemap::predeclared_location();
       Typed_identifier_list* param_types = new Typed_identifier_list();
-      Type* voidptr_type = Type::make_pointer_type(Type::make_void_type());
-      param_types->push_back(Typed_identifier("a", voidptr_type, bloc));
+      param_types->push_back(Typed_identifier("a", uintptr_type, bloc));
       Type* boolean_type = Type::lookup_bool_type();
       Typed_identifier_list* results = new Typed_identifier_list();
       results->push_back(Typed_identifier("", boolean_type, bloc));
@@ -4512,6 +4539,7 @@ Build_recover_thunks::can_recover_arg(Location location)
   args->push_back(zexpr);
 
   Expression* call = Expression::make_call(fn, args, false, location);
+  call = Expression::make_unsafe_cast(uintptr_type, call, location);
 
   args = new Expression_list();
   args->push_back(call);
@@ -4537,16 +4565,19 @@ Gogo::build_recover_thunks()
 }
 
 // Return a declaration for __builtin_return_address or
-// __builtin_frame_address.
+// __builtin_dwarf_cfa.
 
 Named_object*
-Gogo::declare_builtin_rf_address(const char* name)
+Gogo::declare_builtin_rf_address(const char* name, bool hasarg)
 {
   const Location bloc = Linemap::predeclared_location();
 
   Typed_identifier_list* param_types = new Typed_identifier_list();
-  Type* uint32_type = Type::lookup_integer_type("uint32");
-  param_types->push_back(Typed_identifier("l", uint32_type, bloc));
+  if (hasarg)
+    {
+      Type* uint32_type = Type::lookup_integer_type("uint32");
+      param_types->push_back(Typed_identifier("l", uint32_type, bloc));
+    }
 
   Typed_identifier_list* return_types = new Typed_identifier_list();
   Type* voidptr_type = Type::make_pointer_type(Type::make_void_type());
@@ -6868,6 +6899,8 @@ Function_declaration::import_function_body(Gogo* gogo, Named_object* no)
 
   if (fntype->is_method())
     {
+      if (this->nointerface())
+        fn->set_nointerface();
       const Typed_identifier* receiver = fntype->receiver();
       Variable* recv_param = new Variable(receiver->type(), NULL, false,
 					  true, true, start_loc);

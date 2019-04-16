@@ -284,10 +284,10 @@ var codeRepoTests = []struct {
 	{
 		path:    "gopkg.in/yaml.v2",
 		rev:     "v2",
-		version: "v2.2.1",
-		name:    "5420a8b6744d3b0345ab293f6fcba19c978f1183",
-		short:   "5420a8b6744d",
-		time:    time.Date(2018, 3, 28, 19, 50, 20, 0, time.UTC),
+		version: "v2.2.2",
+		name:    "51d6538a90f86fe93ac480b35f37b2be17fef232",
+		short:   "51d6538a90f8",
+		time:    time.Date(2018, 11, 15, 11, 05, 04, 0, time.UTC),
 		gomod:   "module \"gopkg.in/yaml.v2\"\n\nrequire (\n\t\"gopkg.in/check.v1\" v0.0.0-20161208181325-20d25e280405\n)\n",
 	},
 	{
@@ -322,6 +322,15 @@ var codeRepoTests = []struct {
 		short:   "a96e63847dc3",
 		time:    time.Date(2017, 5, 31, 16, 3, 50, 0, time.UTC),
 		gomod:   "module gopkg.in/natefinch/lumberjack.v2\n",
+	},
+	{
+		path:    "nanomsg.org/go/mangos/v2",
+		rev:     "v2.0.2",
+		version: "v2.0.2",
+		name:    "63f66a65137b9a648ac9f7bf0160b4a4d17d7999",
+		short:   "63f66a65137b",
+		time:    time.Date(2018, 12, 1, 15, 7, 40, 0, time.UTC),
+		gomod:   "module nanomsg.org/go/mangos/v2\n\nrequire (\n\tgithub.com/Microsoft/go-winio v0.4.11\n\tgithub.com/droundy/goopt v0.0.0-20170604162106-0b8effe182da\n\tgithub.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect\n\tgithub.com/gorilla/websocket v1.4.0\n\tgithub.com/jtolds/gls v4.2.1+incompatible // indirect\n\tgithub.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d // indirect\n\tgithub.com/smartystreets/goconvey v0.0.0-20181108003508-044398e4856c\n\tgolang.org/x/sys v0.0.0-20181128092732-4ed8d59d0b35 // indirect\n)\n",
 	},
 }
 
@@ -391,7 +400,13 @@ func TestCodeRepo(t *testing.T) {
 				}
 			}
 			if tt.zip != nil || tt.ziperr != "" {
-				zipfile, err := repo.Zip(tt.version, tmpdir)
+				f, err := ioutil.TempFile(tmpdir, tt.version+".zip.")
+				if err != nil {
+					t.Fatalf("ioutil.TempFile: %v", err)
+				}
+				zipfile := f.Name()
+				err = repo.Zip(f, tt.version)
+				f.Close()
 				if err != nil {
 					if tt.ziperr != "" {
 						if err.Error() == tt.ziperr {
@@ -423,7 +438,7 @@ func TestCodeRepo(t *testing.T) {
 				}
 			}
 		}
-		t.Run(strings.Replace(tt.path, "/", "_", -1)+"/"+tt.rev, f)
+		t.Run(strings.ReplaceAll(tt.path, "/", "_")+"/"+tt.rev, f)
 		if strings.HasPrefix(tt.path, vgotest1git) {
 			for _, alt := range altVgotests {
 				// Note: Communicating with f through tt; should be cleaned up.
@@ -442,7 +457,7 @@ func TestCodeRepo(t *testing.T) {
 				tt.rev = remap(tt.rev, m)
 				tt.gomoderr = remap(tt.gomoderr, m)
 				tt.ziperr = remap(tt.ziperr, m)
-				t.Run(strings.Replace(tt.path, "/", "_", -1)+"/"+tt.rev, f)
+				t.Run(strings.ReplaceAll(tt.path, "/", "_")+"/"+tt.rev, f)
 				tt = old
 			}
 		}
@@ -473,9 +488,9 @@ func remap(name string, m map[string]string) string {
 		}
 	}
 	for k, v := range m {
-		name = strings.Replace(name, k, v, -1)
+		name = strings.ReplaceAll(name, k, v)
 		if codehost.AllHex(k) {
-			name = strings.Replace(name, k[:12], v[:12], -1)
+			name = strings.ReplaceAll(name, k[:12], v[:12])
 		}
 	}
 	return name
@@ -505,11 +520,11 @@ var codeRepoVersionsTests = []struct {
 	},
 	{
 		path:     "gopkg.in/russross/blackfriday.v2",
-		versions: []string{"v2.0.0"},
+		versions: []string{"v2.0.0", "v2.0.1"},
 	},
 	{
 		path:     "gopkg.in/natefinch/lumberjack.v2",
-		versions: nil,
+		versions: []string{"v2.0.0"},
 	},
 }
 
@@ -522,7 +537,7 @@ func TestCodeRepoVersions(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpdir)
 	for _, tt := range codeRepoVersionsTests {
-		t.Run(strings.Replace(tt.path, "/", "_", -1), func(t *testing.T) {
+		t.Run(strings.ReplaceAll(tt.path, "/", "_"), func(t *testing.T) {
 			repo, err := Lookup(tt.path)
 			if err != nil {
 				t.Fatalf("Lookup(%q): %v", tt.path, err)
@@ -570,7 +585,7 @@ func TestLatest(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpdir)
 	for _, tt := range latestTests {
-		name := strings.Replace(tt.path, "/", "_", -1)
+		name := strings.ReplaceAll(tt.path, "/", "_")
 		t.Run(name, func(t *testing.T) {
 			repo, err := Lookup(tt.path)
 			if err != nil {

@@ -33,7 +33,6 @@ main (void)
 
   return 0;
 }
-/* { dg-prune-output "using vector_length \\(32\\), ignoring 128" } */
 
-/* { dg-final { scan-offload-tree-dump "__attribute__\\(\\(oacc function \\(1, 1, 32\\)" "oaccdevlow" } } */
-/* { dg-output "nvptx_exec: kernel main\\\$_omp_fn\\\$0: launch gangs=1, workers=1, vectors=32" } */
+/* { dg-final { scan-offload-tree-dump "__attribute__\\(\\(oacc function \\(1, 1, 128\\)" "oaccdevlow" } } */
+/* { dg-output "nvptx_exec: kernel main\\\$_omp_fn\\\$0: launch gangs=1, workers=1, vectors=128" } */

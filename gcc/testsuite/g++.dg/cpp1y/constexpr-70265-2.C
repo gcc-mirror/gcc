@@ -5,8 +5,8 @@ constexpr int
 foo (int p)
 {
   int t = 0;
-  while (1)
-    t = 0;  // { dg-error "count exceeds" }
+  while (1)  // { dg-error "count exceeds" }
+    t = 0;
   return t;
 }
 

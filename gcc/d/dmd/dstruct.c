@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2018 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -723,7 +723,14 @@ bool AggregateDeclaration::fill(Loc loc, Expressions *elements, bool ctorinit)
             else if (vx->_init)
             {
                 assert(!vx->_init->isVoidInitializer());
-                e = vx->getConstInitializer(false);
+                if (vx->inuse)   // https://issues.dlang.org/show_bug.cgi?id=18057
+                {
+                    vx->error(loc, "recursive initialization of field");
+                    errors = true;
+                    e = NULL;
+                }
+                else
+                    e = vx->getConstInitializer(false);
             }
             else
             {

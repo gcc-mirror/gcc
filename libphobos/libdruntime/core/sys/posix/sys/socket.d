@@ -29,6 +29,7 @@ else version (WatchOS)
 
 version (ARM)     version = ARM_Any;
 version (AArch64) version = ARM_Any;
+version (HPPA)    version = HPPA_Any;
 version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
@@ -288,6 +289,40 @@ version (CRuntime_Glibc)
             SO_SNDLOWAT     = 19,
             SO_SNDTIMEO     = 21,
             SO_TYPE         = 3
+        }
+    }
+    else version (HPPA_Any)
+    {
+        enum
+        {
+            SOCK_DGRAM      = 2,
+            SOCK_SEQPACKET  = 5,
+            SOCK_STREAM     = 1,
+        }
+
+        enum
+        {
+            SOL_SOCKET      = 0xffff
+        }
+
+        enum
+        {
+            SO_ACCEPTCONN   = 0x401c,
+            SO_BROADCAST    = 0x0020,
+            SO_DEBUG        = 0x0001,
+            SO_DONTROUTE    = 0x0010,
+            SO_ERROR        = 0x1007,
+            SO_KEEPALIVE    = 0x0008,
+            SO_LINGER       = 0x0080,
+            SO_OOBINLINE    = 0x0100,
+            SO_RCVBUF       = 0x1002,
+            SO_RCVLOWAT     = 0x1004,
+            SO_RCVTIMEO     = 0x1006,
+            SO_REUSEADDR    = 0x0004,
+            SO_SNDBUF       = 0x1001,
+            SO_SNDLOWAT     = 0x1003,
+            SO_SNDTIMEO     = 0x1005,
+            SO_TYPE         = 0x1008,
         }
     }
     else version (MIPS_Any)
@@ -1395,7 +1430,7 @@ else version (Solaris)
     struct sockaddr
     {
         sa_family_t sa_family;
-        char[14] sa_data;
+        char[14] sa_data = 0;
     }
 
     alias double sockaddr_maxalign_t;
@@ -1411,9 +1446,9 @@ else version (Solaris)
     struct sockaddr_storage
     {
          sa_family_t ss_family;
-         char[_SS_PAD1SIZE] _ss_pad1;
+         char[_SS_PAD1SIZE] _ss_pad1 = void;
          sockaddr_maxalign_t _ss_align;
-         char[_SS_PAD2SIZE] _ss_pad2;
+         char[_SS_PAD2SIZE] _ss_pad2 = void;
     }
 
     struct msghdr
@@ -1609,117 +1644,38 @@ else version (CRuntime_Bionic)
         int             cmsg_type;
     }
 
-    version (X86)
+    alias size_t __kernel_size_t;
+
+    enum
     {
-        alias uint __kernel_size_t;
-
-        enum
-        {
-            SOCK_DGRAM      = 2,
-            SOCK_SEQPACKET  = 5,
-            SOCK_STREAM     = 1
-        }
-
-        enum
-        {
-            SOL_SOCKET      = 1
-        }
-
-        enum
-        {
-            SO_ACCEPTCONN   = 30,
-            SO_BROADCAST    = 6,
-            SO_DEBUG        = 1,
-            SO_DONTROUTE    = 5,
-            SO_ERROR        = 4,
-            SO_KEEPALIVE    = 9,
-            SO_LINGER       = 13,
-            SO_OOBINLINE    = 10,
-            SO_RCVBUF       = 8,
-            SO_RCVLOWAT     = 18,
-            SO_RCVTIMEO     = 20,
-            SO_REUSEADDR    = 2,
-            SO_SNDBUF       = 7,
-            SO_SNDLOWAT     = 19,
-            SO_SNDTIMEO     = 21,
-            SO_TYPE         = 3
-        }
+        SOCK_DGRAM      = 2,
+        SOCK_SEQPACKET  = 5,
+        SOCK_STREAM     = 1
     }
-    else version (ARM)
+
+    enum
     {
-        alias uint __kernel_size_t;
-
-        enum
-        {
-            SOCK_DGRAM      = 2,
-            SOCK_SEQPACKET  = 5,
-            SOCK_STREAM     = 1
-        }
-
-        enum
-        {
-            SOL_SOCKET      = 1
-        }
-
-        enum
-        {
-            SO_ACCEPTCONN   = 30,
-            SO_BROADCAST    = 6,
-            SO_DEBUG        = 1,
-            SO_DONTROUTE    = 5,
-            SO_ERROR        = 4,
-            SO_KEEPALIVE    = 9,
-            SO_LINGER       = 13,
-            SO_OOBINLINE    = 10,
-            SO_RCVBUF       = 8,
-            SO_RCVLOWAT     = 18,
-            SO_RCVTIMEO     = 20,
-            SO_REUSEADDR    = 2,
-            SO_SNDBUF       = 7,
-            SO_SNDLOWAT     = 19,
-            SO_SNDTIMEO     = 21,
-            SO_TYPE         = 3
-        }
+        SOL_SOCKET      = 1
     }
-    else version (AArch64)
+
+    enum
     {
-        alias ulong __kernel_size_t;
-
-        enum
-        {
-            SOCK_DGRAM      = 2,
-            SOCK_SEQPACKET  = 5,
-            SOCK_STREAM     = 1
-        }
-
-        enum
-        {
-            SOL_SOCKET      = 1
-        }
-
-        enum
-        {
-            SO_ACCEPTCONN   = 30,
-            SO_BROADCAST    = 6,
-            SO_DEBUG        = 1,
-            SO_DONTROUTE    = 5,
-            SO_ERROR        = 4,
-            SO_KEEPALIVE    = 9,
-            SO_LINGER       = 13,
-            SO_OOBINLINE    = 10,
-            SO_RCVBUF       = 8,
-            SO_RCVLOWAT     = 18,
-            SO_RCVTIMEO     = 20,
-            SO_REUSEADDR    = 2,
-            SO_SNDBUF       = 7,
-            SO_SNDLOWAT     = 19,
-            SO_SNDTIMEO     = 21,
-            SO_TYPE         = 3
-        }
-    }
-    else
-    {
-        static assert(false, "Architecture not supported.");
+        SO_ACCEPTCONN   = 30,
+        SO_BROADCAST    = 6,
+        SO_DEBUG        = 1,
+        SO_DONTROUTE    = 5,
+        SO_ERROR        = 4,
+        SO_KEEPALIVE    = 9,
+        SO_LINGER       = 13,
+        SO_OOBINLINE    = 10,
+        SO_RCVBUF       = 8,
+        SO_RCVLOWAT     = 18,
+        SO_RCVTIMEO     = 20,
+        SO_REUSEADDR    = 2,
+        SO_SNDBUF       = 7,
+        SO_SNDLOWAT     = 19,
+        SO_SNDTIMEO     = 21,
+        SO_TYPE         = 3
     }
 
     enum
@@ -1985,31 +1941,37 @@ else version (CRuntime_UClibc)
         int l_linger;
     }
 
-    version (X86_64)
+    version (X86_Any)
     {
         enum
         {
             SOCK_DGRAM      = 2,
             SOCK_SEQPACKET  = 5,
-            SOCK_STREAM     = 1
+            SOCK_STREAM     = 1,
+            SOCK_CLOEXEC    = 0x80000, // octal 02000000
+            SOCK_NONBLOCK   = 0x800 // octal 00004000
         }
     }
-    else version (MIPS32)
+    else version (MIPS_Any)
     {
         enum
         {
             SOCK_DGRAM      = 1,
             SOCK_SEQPACKET  = 5,
             SOCK_STREAM     = 2,
+            SOCK_CLOEXEC    = 0x80000, // octal 02000000
+            SOCK_NONBLOCK   = 0x80 // octal 00000200
         }
     }
-    else version (ARM)
+    else version (ARM_Any)
     {
         enum
         {
             SOCK_DGRAM      = 2,
             SOCK_SEQPACKET  = 5,
-            SOCK_STREAM     = 1
+            SOCK_STREAM     = 1,
+            SOCK_CLOEXEC    = 0x80000, // octal 02000000
+            SOCK_NONBLOCK   = 0x800 // octal 00004000
         }
     }
     else
@@ -2035,6 +1997,7 @@ else version (CRuntime_UClibc)
         SO_TYPE         = 3,
 
         SOL_SOCKET      = 1,
+        SOL_TCP         = 6,
         SOMAXCONN       = 128
     }
 

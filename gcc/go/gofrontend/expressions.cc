@@ -673,7 +673,7 @@ Type_expression : public Expression
   { go_unreachable(); }
 
   void do_dump_expression(Ast_dump_context*) const;
- 
+
  private:
   // The type which we are representing as an expression.
   Type* type_;
@@ -1344,7 +1344,7 @@ Func_descriptor_expression::make_func_descriptor_type()
   if (Func_descriptor_expression::descriptor_type != NULL)
     return;
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
-  Type* struct_type = Type::make_builtin_struct_type(1, "code", uintptr_type);
+  Type* struct_type = Type::make_builtin_struct_type(1, "fn", uintptr_type);
   Func_descriptor_expression::descriptor_type =
     Type::make_builtin_named_type("functionDescriptor", struct_type);
 }
@@ -1846,12 +1846,20 @@ String_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
   String_expression::export_string(ast_dump_context, this);
 }
 
-// Make a string expression.
+// Make a string expression with abstract string type (common case).
 
 Expression*
 Expression::make_string(const std::string& val, Location location)
 {
-  return new String_expression(val, location);
+  return new String_expression(val, NULL, location);
+}
+
+// Make a string expression with a specific string type.
+
+Expression*
+Expression::make_string_typed(const std::string& val, Type* type, Location location)
+{
+  return new String_expression(val, type, location);
 }
 
 // An expression that evaluates to some characteristic of a string.
@@ -2950,7 +2958,7 @@ Const_expression::do_numeric_constant_value(Numeric_constant* nc) const
     return false;
 
   Expression* e = this->constant_->const_value()->expr();
-  
+
   this->seen_ = true;
 
   bool r = e->numeric_constant_value(nc);
@@ -3298,10 +3306,10 @@ class Iota_expression : public Parser_expression
   Expression*
   do_copy()
   { go_unreachable(); }
-  
+
   void
   do_dump_expression(Ast_dump_context* ast_dump_context) const
-  { ast_dump_context->ostream() << "iota"; } 
+  { ast_dump_context->ostream() << "iota"; }
 };
 
 // Make an iota expression.  This is only called for one case: the
@@ -3874,7 +3882,9 @@ Unsafe_type_conversion_expression::do_get_backend(Translate_context* context)
 	      || et->integer_type() != NULL
               || et->is_nil_type());
   else if (et->is_unsafe_pointer_type())
-    go_assert(t->points_to() != NULL);
+    go_assert(t->points_to() != NULL
+	      || (t->integer_type() != NULL
+		  && t->integer_type() == Type::lookup_integer_type("uintptr")->real_type()));
   else if (t->interface_type() != NULL)
     {
       bool empty_iface = t->interface_type()->is_empty();
@@ -4174,7 +4184,7 @@ Unary_expression::base_is_static_initializer(Expression* expr)
 // know the address of this expression is being taken, we must always
 // check for nil.
 Unary_expression::Nil_check_classification
-Unary_expression::requires_nil_check(Gogo* gogo) 
+Unary_expression::requires_nil_check(Gogo* gogo)
 {
   go_assert(this->op_ == OPERATOR_MULT);
   go_assert(this->expr_->type()->points_to() != NULL);
@@ -5483,7 +5493,16 @@ Binary_expression::do_lower(Gogo* gogo, Named_object*,
   }
 
   // String constant expressions.
-  if (left->type()->is_string_type() && right->type()->is_string_type())
+  //
+  // Avoid constant folding here if the left and right types are incompatible
+  // (leave the operation intact so that the type checker can complain about it
+  // later on). If concatenating an abstract string with a named string type,
+  // result type needs to be of the named type (see issue 31412).
+  if (left->type()->is_string_type()
+      && right->type()->is_string_type()
+      && (left->type()->named_type() == NULL
+          || right->type()->named_type() == NULL
+          || left->type()->named_type() == right->type()->named_type()))
     {
       std::string left_string;
       std::string right_string;
@@ -5491,8 +5510,13 @@ Binary_expression::do_lower(Gogo* gogo, Named_object*,
 	  && right->string_constant_value(&right_string))
 	{
 	  if (op == OPERATOR_PLUS)
-	    return Expression::make_string(left_string + right_string,
-					   location);
+            {
+              Type* result_type = (left->type()->named_type() != NULL
+                                   ? left->type()
+                                   : right->type());
+              return Expression::make_string_typed(left_string + right_string,
+                                                   result_type, location);
+            }
 	  else if (is_comparison)
 	    {
 	      int cmp = left_string.compare(right_string);
@@ -7311,14 +7335,14 @@ Bound_method_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
 {
   if (this->expr_type_ != NULL)
     ast_dump_context->ostream() << "(";
-  ast_dump_context->dump_expression(this->expr_); 
-  if (this->expr_type_ != NULL) 
+  ast_dump_context->dump_expression(this->expr_);
+  if (this->expr_type_ != NULL)
     {
       ast_dump_context->ostream() << ":";
       ast_dump_context->dump_type(this->expr_type_);
       ast_dump_context->ostream() << ")";
     }
-    
+
   ast_dump_context->ostream() << "." << this->function_->name();
 }
 
@@ -7461,7 +7485,7 @@ Builtin_call_expression::do_lower(Gogo*, Named_object* function,
 	  farg = farg->expr()->field_reference_expression();
 	}
     }
- 
+
   if (this->is_constant())
     {
       Numeric_constant nc;
@@ -7787,21 +7811,29 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
   Expression* call;
   if (is_slice)
     {
+      Temporary_statement* len_temp = NULL;
+      if (!len_arg->is_constant())
+	{
+	  len_temp = Statement::make_temporary(NULL, len_arg, loc);
+	  inserter->insert(len_temp);
+	  len_arg = Expression::make_temporary_reference(len_temp, loc);
+	}
+
       if (cap_arg == NULL)
 	{
           cap_small = len_small;
-          if (len_arg->numeric_constant_value(&nclen)
-              && nclen.to_unsigned_long(&vlen) == Numeric_constant::NC_UL_VALID)
-            cap_arg = Expression::make_integer_ul(vlen, len_arg->type(), loc);
-          else
-            {
-              Temporary_statement* temp = Statement::make_temporary(NULL,
-                                                                    len_arg,
-                                                                    loc);
-              inserter->insert(temp);
-              len_arg = Expression::make_temporary_reference(temp, loc);
-              cap_arg = Expression::make_temporary_reference(temp, loc);
-            }
+	  if (len_temp == NULL)
+	    cap_arg = len_arg->copy();
+	  else
+	    cap_arg = Expression::make_temporary_reference(len_temp, loc);
+	}
+      else if (!cap_arg->is_constant())
+	{
+	  Temporary_statement* cap_temp = Statement::make_temporary(NULL,
+								    cap_arg,
+								    loc);
+	  inserter->insert(cap_temp);
+	  cap_arg = Expression::make_temporary_reference(cap_temp, loc);
 	}
 
       Type* et = type->array_type()->element_type();
@@ -7809,7 +7841,14 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
       Runtime::Function code = Runtime::MAKESLICE;
       if (!len_small || !cap_small)
 	code = Runtime::MAKESLICE64;
-      call = Runtime::make_call(code, loc, 3, type_arg, len_arg, cap_arg);
+      Expression* mem = Runtime::make_call(code, loc, 3, type_arg, len_arg,
+					   cap_arg);
+      mem = Expression::make_unsafe_cast(Type::make_pointer_type(et), mem,
+					 loc);
+      Type* int_type = Type::lookup_integer_type("int");
+      len_arg = Expression::make_cast(int_type, len_arg->copy(), loc);
+      cap_arg = Expression::make_cast(int_type, cap_arg->copy(), loc);
+      call = Expression::make_slice_value(type, mem, len_arg, cap_arg, loc);
     }
   else if (is_map)
     {
@@ -7969,30 +8008,40 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
   // Using uint here means that if the computation of ntmp overflowed,
   // we will call growslice which will panic.
 
-  Expression* left = Expression::make_temporary_reference(ntmp, loc);
-  left = Expression::make_cast(uint_type, left, loc);
-
   Named_object* capfn = gogo->lookup_global("cap");
   Expression* capref = Expression::make_func_reference(capfn, NULL, loc);
   call_args = new Expression_list();
   call_args->push_back(Expression::make_temporary_reference(s1tmp, loc));
-  Expression* right = Expression::make_call(capref, call_args, false, loc);
+  Expression* cap = Expression::make_call(capref, call_args, false, loc);
+  gogo->lower_expression(function, inserter, &cap);
+  gogo->flatten_expression(function, inserter, &cap);
+  Temporary_statement* c1tmp = Statement::make_temporary(int_type, cap, loc);
+  inserter->insert(c1tmp);
+
+  Expression* left = Expression::make_temporary_reference(ntmp, loc);
+  left = Expression::make_cast(uint_type, left, loc);
+  Expression* right = Expression::make_temporary_reference(c1tmp, loc);
   right = Expression::make_cast(uint_type, right, loc);
 
   Expression* cond = Expression::make_binary(OPERATOR_GT, left, right, loc);
 
+  Type* unsafe_ptr_type = Type::make_pointer_type(Type::make_void_type());
   Expression* a1 = Expression::make_type_descriptor(element_type, loc);
   Expression* a2 = Expression::make_temporary_reference(s1tmp, loc);
-  Expression* a3 = Expression::make_temporary_reference(ntmp, loc);
-  Expression* call = Runtime::make_call(Runtime::GROWSLICE, loc, 3,
-					a1, a2, a3);
+  a2 = slice_type->array_type()->get_value_pointer(gogo, a2, false);
+  a2 = Expression::make_cast(unsafe_ptr_type, a2, loc);
+  Expression* a3 = Expression::make_temporary_reference(l1tmp, loc);
+  Expression* a4 = Expression::make_temporary_reference(c1tmp, loc);
+  Expression* a5 = Expression::make_temporary_reference(ntmp, loc);
+  Expression* call = Runtime::make_call(Runtime::GROWSLICE, loc, 5,
+					a1, a2, a3, a4, a5);
   call = Expression::make_unsafe_cast(slice_type, call, loc);
 
   ref = Expression::make_temporary_reference(s1tmp, loc);
   Expression* zero = Expression::make_integer_ul(0, int_type, loc);
   Expression* ref2 = Expression::make_temporary_reference(ntmp, loc);
-  // FIXME: Mark this index as not requiring bounds checks.
-  ref = Expression::make_index(ref, zero, ref2, NULL, loc);
+  ref = Expression::make_array_index(ref, zero, ref2, NULL, loc);
+  ref->array_index_expression()->set_needs_bounds_check(false);
 
   if (assign_lhs == NULL)
     {
@@ -8041,8 +8090,8 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
       a1 = Expression::make_temporary_reference(s1tmp, loc);
       ref = Expression::make_temporary_reference(l1tmp, loc);
       Expression* nil = Expression::make_nil(loc);
-      // FIXME: Mark this index as not requiring bounds checks.
-      a1 = Expression::make_index(a1, ref, nil, NULL, loc);
+      a1 = Expression::make_array_index(a1, ref, nil, NULL, loc);
+      a1->array_index_expression()->set_needs_bounds_check(false);
 
       a2 = Expression::make_temporary_reference(s2tmp, loc);
 
@@ -8069,9 +8118,9 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
 	  ref2 = Expression::make_temporary_reference(l1tmp, loc);
 	  Expression* off = Expression::make_integer_ul(i, int_type, loc);
 	  ref2 = Expression::make_binary(OPERATOR_PLUS, ref2, off, loc);
-	  // FIXME: Mark this index as not requiring bounds checks.
-	  Expression* lhs = Expression::make_index(ref, ref2, NULL, NULL,
-						   loc);
+	  Expression* lhs = Expression::make_array_index(ref, ref2, NULL,
+                                                         NULL, loc);
+          lhs->array_index_expression()->set_needs_bounds_check(false);
 	  gogo->lower_expression(function, inserter, &lhs);
 	  gogo->flatten_expression(function, inserter, &lhs);
 	  // The flatten pass runs after the write barrier pass, so we
@@ -9886,17 +9935,18 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 	      && n == "getcallerpc")
 	    {
 	      static Named_object* builtin_return_address;
+              int arg = 0;
 	      return this->lower_to_builtin(&builtin_return_address,
 					    "__builtin_return_address",
-					    0);
+					    &arg);
 	    }
 	  else if ((this->args_ == NULL || this->args_->size() == 0)
 		   && n == "getcallersp")
 	    {
-	      static Named_object* builtin_frame_address;
-	      return this->lower_to_builtin(&builtin_frame_address,
-					    "__builtin_frame_address",
-					    1);
+	      static Named_object* builtin_dwarf_cfa;
+	      return this->lower_to_builtin(&builtin_dwarf_cfa,
+					    "__builtin_dwarf_cfa",
+					    NULL);
 	    }
 	}
     }
@@ -10014,21 +10064,24 @@ Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
   this->varargs_are_lowered_ = true;
 }
 
-// Return a call to __builtin_return_address or __builtin_frame_address.
+// Return a call to __builtin_return_address or __builtin_dwarf_cfa.
 
 Expression*
 Call_expression::lower_to_builtin(Named_object** pno, const char* name,
-				  int arg)
+				  int* arg)
 {
   if (*pno == NULL)
-    *pno = Gogo::declare_builtin_rf_address(name);
+    *pno = Gogo::declare_builtin_rf_address(name, arg != NULL);
 
   Location loc = this->location();
 
   Expression* fn = Expression::make_func_reference(*pno, NULL, loc);
-  Expression* a = Expression::make_integer_ul(arg, NULL, loc);
   Expression_list *args = new Expression_list();
-  args->push_back(a);
+  if (arg != NULL)
+    {
+      Expression* a = Expression::make_integer_ul(*arg, NULL, loc);
+      args->push_back(a);
+    }
   Expression* call = Expression::make_call(fn, args, false, loc);
 
   // The builtin functions return void*, but the Go functions return uintptr.
@@ -10797,7 +10850,7 @@ void
 Call_result_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
-  // FIXME: Wouldn't it be better if the call is assigned to a temporary 
+  // FIXME: Wouldn't it be better if the call is assigned to a temporary
   // (struct) and the fields are referenced instead.
   ast_dump_context->ostream() << this->index_ << "@(";
   ast_dump_context->dump_expression(this->call_);
@@ -10915,8 +10968,8 @@ Index_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
 // (expr[expr:expr:expr], expr[expr:expr] or expr[expr]) to a dump context.
 
 void
-Index_expression::dump_index_expression(Ast_dump_context* ast_dump_context, 
-					const Expression* expr, 
+Index_expression::dump_index_expression(Ast_dump_context* ast_dump_context,
+					const Expression* expr,
 					const Expression* start,
 					const Expression* end,
 					const Expression* cap)
@@ -10940,10 +10993,10 @@ Index_expression::dump_index_expression(Ast_dump_context* ast_dump_context,
 // Dump ast representation for an index expression.
 
 void
-Index_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+Index_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
-  Index_expression::dump_index_expression(ast_dump_context, this->left_, 
+  Index_expression::dump_index_expression(ast_dump_context, this->left_,
                                           this->start_, this->end_, this->cap_);
 }
 
@@ -11307,15 +11360,6 @@ Array_index_expression::do_get_backend(Translate_context* context)
   if (length == NULL)
     length = cap_arg;
 
-  int code = (array_type->length() != NULL
-	      ? (this->end_ == NULL
-		 ? RUNTIME_ERROR_ARRAY_INDEX_OUT_OF_BOUNDS
-		 : RUNTIME_ERROR_ARRAY_SLICE_OUT_OF_BOUNDS)
-	      : (this->end_ == NULL
-		 ? RUNTIME_ERROR_SLICE_INDEX_OUT_OF_BOUNDS
-		 : RUNTIME_ERROR_SLICE_SLICE_OUT_OF_BOUNDS));
-  Bexpression* crash = gogo->runtime_error(code, loc)->get_backend(context);
-
   if (this->start_->type()->integer_type() == NULL
       && !Type::are_convertible(int_type, this->start_->type(), NULL))
     {
@@ -11323,31 +11367,46 @@ Array_index_expression::do_get_backend(Translate_context* context)
       return context->backend()->error_expression();
     }
 
-  Bexpression* bad_index =
-    Expression::check_bounds(this->start_, loc)->get_backend(context);
-
   Bexpression* start = this->start_->get_backend(context);
   start = gogo->backend()->convert_expression(int_btype, start, loc);
-  Bexpression* start_too_large =
-    gogo->backend()->binary_expression((this->end_ == NULL
-					? OPERATOR_GE
-					: OPERATOR_GT),
-                                       start,
-				       (this->end_ == NULL
-					? length
-					: capacity),
-                                       loc);
-  bad_index = gogo->backend()->binary_expression(OPERATOR_OROR, start_too_large,
-						 bad_index, loc);
+
+  Bexpression* crash = NULL;
+  Bexpression* bad_index = NULL;
+  if (this->needs_bounds_check_)
+    {
+      int code = (array_type->length() != NULL
+                  ? (this->end_ == NULL
+                     ? RUNTIME_ERROR_ARRAY_INDEX_OUT_OF_BOUNDS
+                     : RUNTIME_ERROR_ARRAY_SLICE_OUT_OF_BOUNDS)
+                  : (this->end_ == NULL
+                     ? RUNTIME_ERROR_SLICE_INDEX_OUT_OF_BOUNDS
+                     : RUNTIME_ERROR_SLICE_SLICE_OUT_OF_BOUNDS));
+      crash = gogo->runtime_error(code, loc)->get_backend(context);
+      bad_index = Expression::check_bounds(this->start_, loc)->get_backend(context);
+      Bexpression* start_too_large =
+        gogo->backend()->binary_expression((this->end_ == NULL
+                                            ? OPERATOR_GE
+                                            : OPERATOR_GT),
+                                           start,
+                                           (this->end_ == NULL
+                                            ? length
+                                            : capacity),
+                                           loc);
+      bad_index = gogo->backend()->binary_expression(OPERATOR_OROR,
+                                                     start_too_large,
+                                                     bad_index, loc);
+    }
+
 
   Bfunction* bfn = context->function()->func_value()->get_decl();
   if (this->end_ == NULL)
     {
       // Simple array indexing.  This has to return an l-value, so
       // wrap the index check into START.
-      start =
-        gogo->backend()->conditional_expression(bfn, int_btype, bad_index,
-						crash, start, loc);
+      if (this->needs_bounds_check_)
+        start =
+          gogo->backend()->conditional_expression(bfn, int_btype, bad_index,
+                                                  crash, start, loc);
 
       Bexpression* ret;
       if (array_type->length() != NULL)
@@ -11375,22 +11434,26 @@ Array_index_expression::do_get_backend(Translate_context* context)
 
   if (this->cap_ != NULL)
     {
-      Bexpression* bounds_bcheck =
-	Expression::check_bounds(this->cap_, loc)->get_backend(context);
-      bad_index =
-	gogo->backend()->binary_expression(OPERATOR_OROR, bounds_bcheck,
-					   bad_index, loc);
       cap_arg = gogo->backend()->convert_expression(int_btype, cap_arg, loc);
 
-      Bexpression* cap_too_small =
-	gogo->backend()->binary_expression(OPERATOR_LT, cap_arg, start, loc);
-      Bexpression* cap_too_large =
-	gogo->backend()->binary_expression(OPERATOR_GT, cap_arg, capacity, loc);
-      Bexpression* bad_cap =
-	gogo->backend()->binary_expression(OPERATOR_OROR, cap_too_small,
-					   cap_too_large, loc);
-      bad_index = gogo->backend()->binary_expression(OPERATOR_OROR, bad_cap,
-						     bad_index, loc);
+      if (this->needs_bounds_check_)
+        {
+          Bexpression* bounds_bcheck =
+            Expression::check_bounds(this->cap_, loc)->get_backend(context);
+          bad_index =
+            gogo->backend()->binary_expression(OPERATOR_OROR, bounds_bcheck,
+                                               bad_index, loc);
+
+          Bexpression* cap_too_small =
+            gogo->backend()->binary_expression(OPERATOR_LT, cap_arg, start, loc);
+          Bexpression* cap_too_large =
+            gogo->backend()->binary_expression(OPERATOR_GT, cap_arg, capacity, loc);
+          Bexpression* bad_cap =
+            gogo->backend()->binary_expression(OPERATOR_OROR, cap_too_small,
+                                               cap_too_large, loc);
+          bad_index = gogo->backend()->binary_expression(OPERATOR_OROR, bad_cap,
+                                                         bad_index, loc);
+        }
     }
 
   Bexpression* end;
@@ -11398,24 +11461,26 @@ Array_index_expression::do_get_backend(Translate_context* context)
     end = length;
   else
     {
-      Bexpression* bounds_bcheck =
-	Expression::check_bounds(this->end_, loc)->get_backend(context);
-
-      bad_index =
-	gogo->backend()->binary_expression(OPERATOR_OROR, bounds_bcheck,
-					   bad_index, loc);
-
       end = this->end_->get_backend(context);
       end = gogo->backend()->convert_expression(int_btype, end, loc);
-      Bexpression* end_too_small =
-	gogo->backend()->binary_expression(OPERATOR_LT, end, start, loc);
-      Bexpression* end_too_large =
-	gogo->backend()->binary_expression(OPERATOR_GT, end, cap_arg, loc);
-      Bexpression* bad_end =
-	gogo->backend()->binary_expression(OPERATOR_OROR, end_too_small,
-					   end_too_large, loc);
-      bad_index = gogo->backend()->binary_expression(OPERATOR_OROR, bad_end,
-						     bad_index, loc);
+      if (this->needs_bounds_check_)
+        {
+          Bexpression* bounds_bcheck =
+            Expression::check_bounds(this->end_, loc)->get_backend(context);
+          bad_index =
+            gogo->backend()->binary_expression(OPERATOR_OROR, bounds_bcheck,
+                                               bad_index, loc);
+
+          Bexpression* end_too_small =
+            gogo->backend()->binary_expression(OPERATOR_LT, end, start, loc);
+          Bexpression* end_too_large =
+            gogo->backend()->binary_expression(OPERATOR_GT, end, cap_arg, loc);
+          Bexpression* bad_end =
+            gogo->backend()->binary_expression(OPERATOR_OROR, end_too_small,
+                                               end_too_large, loc);
+          bad_index = gogo->backend()->binary_expression(OPERATOR_OROR, bad_end,
+                                                         bad_index, loc);
+        }
     }
 
   Bexpression* result_length =
@@ -11447,19 +11512,21 @@ Array_index_expression::do_get_backend(Translate_context* context)
   init.push_back(result_length);
   init.push_back(result_capacity);
 
-  Bexpression* ctor =
+  Bexpression* ret =
     gogo->backend()->constructor_expression(struct_btype, init, loc);
-  return gogo->backend()->conditional_expression(bfn, struct_btype, bad_index,
-						 crash, ctor, loc);
+  if (this->needs_bounds_check_)
+    ret = gogo->backend()->conditional_expression(bfn, struct_btype, bad_index,
+                                                  crash, ret, loc);
+  return ret;
 }
 
 // Dump ast representation for an array index expression.
 
 void
-Array_index_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+Array_index_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
-  Index_expression::dump_index_expression(ast_dump_context, this->array_, 
+  Index_expression::dump_index_expression(ast_dump_context, this->array_,
                                           this->start_, this->end_, this->cap_);
 }
 
@@ -11682,7 +11749,7 @@ String_index_expression::do_get_backend(Translate_context* context)
       Bexpression* ptr = bytes->get_backend(context);
       ptr = gogo->backend()->pointer_offset_expression(ptr, bstart, loc);
       Btype* ubtype = Type::lookup_integer_type("uint8")->get_backend(gogo);
-      Bexpression* index = 
+      Bexpression* index =
 	gogo->backend()->indirect_expression(ubtype, ptr, true, loc);
 
       Btype* byte_btype = bytes->type()->points_to()->get_backend(gogo);
@@ -11930,7 +11997,7 @@ Map_index_expression::get_value_pointer(Gogo* gogo)
 // Dump ast representation for a map index expression
 
 void
-Map_index_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+Map_index_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
   Index_expression::dump_index_expression(ast_dump_context, this->map_,
@@ -12531,7 +12598,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 	imethod = it->find_method(name);
     }
 
-  if ((method == NULL && imethod == NULL) 
+  if ((method == NULL && imethod == NULL)
       || (left_type->named_type() != NULL && left_type->points_to() != NULL))
     {
       if (!is_ambiguous)
@@ -12606,7 +12673,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 	   ++p)
 	results->push_back(*p);
     }
-  
+
   Function_type* fntype = Type::make_function_type(NULL, parameters, results,
 						   location);
   if (method_type->is_varargs())
@@ -12693,14 +12760,14 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 // Dump the ast for a selector expression.
 
 void
-Selector_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+Selector_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
   ast_dump_context->dump_expression(this->left_);
   ast_dump_context->ostream() << ".";
   ast_dump_context->ostream() << this->name_;
 }
-                      
+
 // Make a selector expression.
 
 Expression*
@@ -12785,7 +12852,7 @@ Allocation_expression::do_get_backend(Translate_context* context)
 // Dump ast representation for an allocation expression.
 
 void
-Allocation_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+Allocation_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
     const
 {
   ast_dump_context->ostream() << "new(";
@@ -13066,6 +13133,12 @@ Struct_construction_expression::do_get_backend(Translate_context* context)
           init.push_back(val->get_backend(context));
 	  ++pv;
 	}
+    }
+  if (this->type_->struct_type()->has_padding())
+    {
+      // Feed an extra value if there is a padding field.
+      Btype *fbtype = Type::lookup_integer_type("uint8")->get_backend(gogo);
+      init.push_back(gogo->backend()->zero_expression(fbtype));
     }
   return gogo->backend()->constructor_expression(btype, init, this->location());
 }
@@ -13585,9 +13658,13 @@ Slice_construction_expression::do_get_backend(Translate_context* context)
       go_assert(this->storage_escapes_ || this->element_count() == 0);
       space = Expression::make_heap_expression(this->array_val_, loc);
     }
+  Array_type* at = this->valtype_->array_type();
+  Type* et = at->element_type();
+  space = Expression::make_unsafe_cast(Type::make_pointer_type(et),
+				       space, loc);
 
   // Build a constructor for the slice.
-  Expression* len = this->valtype_->array_type()->length();
+  Expression* len = at->length();
   Expression* slice_val =
     Expression::make_slice_value(this->type(), space, len, len, loc);
   return slice_val->get_backend(context);
@@ -14219,6 +14296,13 @@ Composite_literal_expression::lower_array(Type* type)
 
       if (index_expr == NULL)
 	{
+	  if (std::find(indexes->begin(), indexes->end(), index)
+	      != indexes->end())
+	    {
+	      go_error_at(val->location(),
+			  "duplicate value for index %lu", index);
+	      return Expression::make_error(location);
+	    }
 	  if (!indexes->empty())
 	    indexes->push_back(index);
 	}
@@ -14415,6 +14499,8 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
 					Type* type)
 {
   Location location = this->location();
+  Unordered_map(unsigned int, std::vector<Expression*>) st;
+  Unordered_map(unsigned int, std::vector<Expression*>) nt;
   if (this->vals_ != NULL)
     {
       if (!this->has_keys_)
@@ -14444,6 +14530,84 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
 	      gogo->lower_expression(function, inserter, &*p);
 	      go_assert((*p)->is_error_expression());
 	      return Expression::make_error(location);
+	    }
+	  // Check if there are duplicate constant keys.
+	  if (!(*p)->is_constant())
+	    continue;
+	  std::string sval;
+	  Numeric_constant nval;
+	  if ((*p)->string_constant_value(&sval)) // Check string keys.
+	    {
+	      unsigned int h = Gogo::hash_string(sval, 0);
+	      // Search the index h in the hash map.
+	      Unordered_map(unsigned int, std::vector<Expression*>)::iterator mit;
+	      mit = st.find(h);
+	      if (mit == st.end())
+		{
+		  // No duplicate since h is a new index.
+		  // Create a new vector indexed by h and add it to the hash map.
+		  std::vector<Expression*> l;
+		  l.push_back(*p);
+		  std::pair<unsigned int, std::vector<Expression*> > val(h, l);
+		  st.insert(val);
+		}
+	      else
+		{
+		  // Do further check since index h already exists.
+		  for (std::vector<Expression*>::iterator lit =
+			   mit->second.begin();
+		       lit != mit->second.end();
+		       lit++)
+		    {
+		      std::string s;
+		      bool ok = (*lit)->string_constant_value(&s);
+		      go_assert(ok);
+		      if (s == sval)
+			{
+			  go_error_at((*p)->location(), ("duplicate key "
+				      "in map literal"));
+			  return Expression::make_error(location);
+			}
+		    }
+		  // Add this new string key to the vector indexed by h.
+		  mit->second.push_back(*p);
+		}
+	    }
+	  else if ((*p)->numeric_constant_value(&nval)) // Check numeric keys.
+	    {
+	      unsigned int h = nval.hash(0);
+	      Unordered_map(unsigned int, std::vector<Expression*>)::iterator mit;
+	      mit = nt.find(h);
+	      if (mit == nt.end())
+		{
+		  // No duplicate since h is a new code.
+		  // Create a new vector indexed by h and add it to the hash map.
+		  std::vector<Expression*> l;
+		  l.push_back(*p);
+		  std::pair<unsigned int, std::vector<Expression*> > val(h, l);
+		  nt.insert(val);
+		}
+	      else
+		{
+		  // Do further check since h already exists.
+		  for (std::vector<Expression*>::iterator lit =
+			   mit->second.begin();
+		       lit != mit->second.end();
+		       lit++)
+		    {
+		      Numeric_constant rval;
+		      bool ok = (*lit)->numeric_constant_value(&rval);
+		      go_assert(ok);
+		      if (nval.equals(rval))
+			{
+			  go_error_at((*p)->location(),
+				      "duplicate key in map literal");
+			  return Expression::make_error(location);
+			}
+		    }
+		  // Add this new numeric key to the vector indexed by h.
+		  mit->second.push_back(*p);
+		}
 	    }
 	}
     }
@@ -15228,8 +15392,8 @@ Type_info_expression::do_dump_expression(
   ast_dump_context->ostream() << "typeinfo(";
   ast_dump_context->dump_type(this->type_);
   ast_dump_context->ostream() << ",";
-  ast_dump_context->ostream() << 
-    (this->type_info_ == TYPE_INFO_ALIGNMENT ? "alignment" 
+  ast_dump_context->ostream() <<
+    (this->type_info_ == TYPE_INFO_ALIGNMENT ? "alignment"
     : this->type_info_ == TYPE_INFO_FIELD_ALIGNMENT ? "field alignment"
     : this->type_info_ == TYPE_INFO_SIZE ? "size"
     : this->type_info_ == TYPE_INFO_BACKEND_PTRDATA ? "backend_ptrdata"
@@ -15337,8 +15501,8 @@ Slice_info_expression::do_dump_expression(
   ast_dump_context->ostream() << "sliceinfo(";
   this->slice_->dump_expression(ast_dump_context);
   ast_dump_context->ostream() << ",";
-  ast_dump_context->ostream() << 
-      (this->slice_info_ == SLICE_INFO_VALUE_POINTER ? "values" 
+  ast_dump_context->ostream() <<
+      (this->slice_info_ == SLICE_INFO_VALUE_POINTER ? "values"
     : this->slice_info_ == SLICE_INFO_LENGTH ? "length"
     : this->slice_info_ == SLICE_INFO_CAPACITY ? "capacity "
     : "unknown");
@@ -15354,72 +15518,33 @@ Expression::make_slice_info(Expression* slice, Slice_info slice_info,
   return new Slice_info_expression(slice, slice_info, location);
 }
 
-// An expression that represents a slice value: a struct with value pointer,
-// length, and capacity fields.
-
-class Slice_value_expression : public Expression
-{
- public:
-  Slice_value_expression(Type* type, Expression* valptr, Expression* len,
-                         Expression* cap, Location location)
-      : Expression(EXPRESSION_SLICE_VALUE, location),
-        type_(type), valptr_(valptr), len_(len), cap_(cap)
-  { }
-
- protected:
-  int
-  do_traverse(Traverse*);
-
-  Type*
-  do_type()
-  { return this->type_; }
-
-  void
-  do_determine_type(const Type_context*)
-  { go_unreachable(); }
-
-  Expression*
-  do_copy()
-  {
-    return new Slice_value_expression(this->type_->copy_expressions(),
-				      this->valptr_->copy(),
-                                      this->len_->copy(), this->cap_->copy(),
-                                      this->location());
-  }
-
-  Bexpression*
-  do_get_backend(Translate_context* context);
-
-  void
-  do_dump_expression(Ast_dump_context*) const;
-
- private:
-  // The type of the slice value.
-  Type* type_;
-  // The pointer to the values in the slice.
-  Expression* valptr_;
-  // The length of the slice.
-  Expression* len_;
-  // The capacity of the slice.
-  Expression* cap_;
-};
+// Class Slice_value_expression.
 
 int
 Slice_value_expression::do_traverse(Traverse* traverse)
 {
   if (Type::traverse(this->type_, traverse) == TRAVERSE_EXIT
-      || Expression::traverse(&this->valptr_, traverse) == TRAVERSE_EXIT
+      || Expression::traverse(&this->valmem_, traverse) == TRAVERSE_EXIT
       || Expression::traverse(&this->len_, traverse) == TRAVERSE_EXIT
       || Expression::traverse(&this->cap_, traverse) == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
   return TRAVERSE_CONTINUE;
 }
 
+Expression*
+Slice_value_expression::do_copy()
+{
+  return new Slice_value_expression(this->type_->copy_expressions(),
+				    this->valmem_->copy(),
+				    this->len_->copy(), this->cap_->copy(),
+				    this->location());
+}
+
 Bexpression*
 Slice_value_expression::do_get_backend(Translate_context* context)
 {
   std::vector<Bexpression*> vals(3);
-  vals[0] = this->valptr_->get_backend(context);
+  vals[0] = this->valmem_->get_backend(context);
   vals[1] = this->len_->get_backend(context);
   vals[2] = this->cap_->get_backend(context);
 
@@ -15434,7 +15559,7 @@ Slice_value_expression::do_dump_expression(
 {
   ast_dump_context->ostream() << "slicevalue(";
   ast_dump_context->ostream() << "values: ";
-  this->valptr_->dump_expression(ast_dump_context);
+  this->valmem_->dump_expression(ast_dump_context);
   ast_dump_context->ostream() << ", length: ";
   this->len_->dump_expression(ast_dump_context);
   ast_dump_context->ostream() << ", capacity: ";
@@ -15443,11 +15568,14 @@ Slice_value_expression::do_dump_expression(
 }
 
 Expression*
-Expression::make_slice_value(Type* at, Expression* valptr, Expression* len,
+Expression::make_slice_value(Type* at, Expression* valmem, Expression* len,
                              Expression* cap, Location location)
 {
   go_assert(at->is_slice_type());
-  return new Slice_value_expression(at, valptr, len, cap, location);
+  go_assert(valmem->is_nil_expression()
+	    || (at->array_type()->element_type()
+		== valmem->type()->points_to()));
+  return new Slice_value_expression(at, valmem, len, cap, location);
 }
 
 // An expression that evaluates to some characteristic of a non-empty interface.
@@ -15973,7 +16101,7 @@ class Struct_field_offset_expression : public Expression
 
   void
   do_dump_expression(Ast_dump_context*) const;
-  
+
  private:
   // The type of the struct.
   Struct_type* type_;
@@ -16060,7 +16188,7 @@ class Label_addr_expression : public Expression
   void
   do_dump_expression(Ast_dump_context* ast_dump_context) const
   { ast_dump_context->ostream() << this->label_->name(); }
-  
+
  private:
   // The label whose address we are taking.
   Label* label_;
@@ -16425,6 +16553,36 @@ Numeric_constant::operator=(const Numeric_constant& a)
       go_unreachable();
     }
   return *this;
+}
+
+// Check equality with another numeric constant.
+
+bool
+Numeric_constant::equals(const Numeric_constant& a) const
+{
+  if (this->classification_ != a.classification_)
+    return false;
+
+  if (this->type_ != NULL && a.type_ != NULL
+      && !Type::are_identical(this->type_, a.type_,
+			      Type::COMPARE_ALIASES, NULL))
+    return false;
+
+  switch (a.classification_)
+    {
+    case NC_INVALID:
+      break;
+    case NC_INT:
+    case NC_RUNE:
+      return mpz_cmp(this->u_.int_val, a.u_.int_val) == 0;
+    case NC_FLOAT:
+      return mpfr_cmp(this->u_.float_val, a.u_.float_val) == 0;
+    case NC_COMPLEX:
+      return mpc_cmp(this->u_.complex_val, a.u_.complex_val) == 0;
+    default:
+      go_unreachable();
+    }
+  return false;
 }
 
 // Clear the contents.
@@ -17032,7 +17190,7 @@ Numeric_constant::check_float_type(Float_type* type, bool issue_error,
     }
 
   return ret;
-} 
+}
 
 // Check whether the constant can be expressed in a complex type.
 
@@ -17153,3 +17311,40 @@ Numeric_constant::expression(Location loc) const
       go_unreachable();
     }
 }
+
+// Calculate a hash code with a given seed.
+
+unsigned int
+Numeric_constant::hash(unsigned int seed) const
+{
+  unsigned long val;
+  const unsigned int PRIME = 97;
+  long e = 0;
+  double f = 1.0;
+  mpfr_t m;
+
+  switch (this->classification_)
+    {
+    case NC_INVALID:
+      return PRIME;
+    case NC_INT:
+    case NC_RUNE:
+      val = mpz_get_ui(this->u_.int_val);
+      break;
+    case NC_COMPLEX:
+      mpfr_init(m);
+      mpc_abs(m, this->u_.complex_val, GMP_RNDN);
+      val = mpfr_get_ui(m, GMP_RNDN);
+      mpfr_clear(m);
+      break;
+    case NC_FLOAT:
+      f = mpfr_get_d_2exp(&e, this->u_.float_val, GMP_RNDN) * 4294967295.0;
+      val = static_cast<unsigned long>(e + static_cast<long>(f));
+      break;
+    default:
+      go_unreachable();
+    }
+
+  return (static_cast<unsigned int>(val) + seed) * PRIME;
+}
+

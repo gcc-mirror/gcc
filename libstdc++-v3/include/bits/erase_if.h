@@ -38,6 +38,10 @@ namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if __cplusplus > 201703L
+# define __cpp_lib_erase_if 201900L
+#endif
+
   namespace __detail
   {
     template<typename _Container, typename _Predicate>

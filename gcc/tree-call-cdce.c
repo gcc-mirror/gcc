@@ -172,7 +172,7 @@ check_target_format (tree arg)
       || (mode == DFmode
 	  && (rfmt == &ieee_double_format || rfmt == &mips_double_format
 	      || rfmt == &motorola_double_format))
-      /* For long double, we can not really check XFmode
+      /* For long double, we cannot really check XFmode
          which is only defined on intel platforms.
          Candidate pre-selection using builtin function
          code guarantees that we are checking formats

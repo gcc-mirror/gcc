@@ -170,18 +170,22 @@
 ;; all-true.  Note that this pattern is generated directly by
 ;; aarch64_emit_sve_pred_move, so changes to this pattern will
 ;; need changes there as well.
-(define_insn "*pred_mov<mode>"
-  [(set (match_operand:SVE_ALL 0 "nonimmediate_operand" "=w, m")
+(define_insn_and_split "@aarch64_pred_mov<mode>"
+  [(set (match_operand:SVE_ALL 0 "nonimmediate_operand" "=w, w, m")
 	(unspec:SVE_ALL
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
-	   (match_operand:SVE_ALL 2 "nonimmediate_operand" "m, w")]
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (match_operand:SVE_ALL 2 "nonimmediate_operand" "w, m, w")]
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[2], <MODE>mode))"
   "@
+   #
    ld1<Vesize>\t%0.<Vetype>, %1/z, %2
    st1<Vesize>\t%2.<Vetype>, %1, %0"
+  "&& register_operand (operands[0], <MODE>mode)
+   && register_operand (operands[2], <MODE>mode)"
+  [(set (match_dup 0) (match_dup 2))]
 )
 
 (define_expand "movmisalign<mode>"
@@ -400,11 +404,11 @@
 
 ;; Predicated structure moves.  This works for both endiannesses but in
 ;; practice is only useful for big-endian.
-(define_insn_and_split "pred_mov<mode>"
-  [(set (match_operand:SVE_STRUCT 0 "aarch64_sve_struct_nonimmediate_operand" "=w, Utx")
+(define_insn_and_split "@aarch64_pred_mov<mode>"
+  [(set (match_operand:SVE_STRUCT 0 "aarch64_sve_struct_nonimmediate_operand" "=w, w, Utx")
 	(unspec:SVE_STRUCT
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
-	   (match_operand:SVE_STRUCT 2 "aarch64_sve_struct_nonimmediate_operand" "Utx, w")]
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (match_operand:SVE_STRUCT 2 "aarch64_sve_struct_nonimmediate_operand" "w, Utx, w")]
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE
    && (register_operand (operands[0], <MODE>mode)
@@ -3073,4 +3077,58 @@
   "@
    insr\t%0.<Vetype>, %<vwcore>2
    insr\t%0.<Vetype>, %<Vetype>2"
+)
+
+(define_expand "copysign<mode>3"
+  [(match_operand:SVE_F 0 "register_operand")
+   (match_operand:SVE_F 1 "register_operand")
+   (match_operand:SVE_F 2 "register_operand")]
+  "TARGET_SVE"
+  {
+    rtx sign = gen_reg_rtx (<V_INT_EQUIV>mode);
+    rtx mant = gen_reg_rtx (<V_INT_EQUIV>mode);
+    rtx int_res = gen_reg_rtx (<V_INT_EQUIV>mode);
+    int bits = GET_MODE_UNIT_BITSIZE (<MODE>mode) - 1;
+
+    rtx arg1 = lowpart_subreg (<V_INT_EQUIV>mode, operands[1], <MODE>mode);
+    rtx arg2 = lowpart_subreg (<V_INT_EQUIV>mode, operands[2], <MODE>mode);
+
+    emit_insn (gen_and<v_int_equiv>3
+	       (sign, arg2,
+		aarch64_simd_gen_const_vector_dup (<V_INT_EQUIV>mode,
+						   HOST_WIDE_INT_M1U
+						   << bits)));
+    emit_insn (gen_and<v_int_equiv>3
+	       (mant, arg1,
+		aarch64_simd_gen_const_vector_dup (<V_INT_EQUIV>mode,
+						   ~(HOST_WIDE_INT_M1U
+						     << bits))));
+    emit_insn (gen_ior<v_int_equiv>3 (int_res, sign, mant));
+    emit_move_insn (operands[0], gen_lowpart (<MODE>mode, int_res));
+    DONE;
+  }
+)
+
+(define_expand "xorsign<mode>3"
+  [(match_operand:SVE_F 0 "register_operand")
+   (match_operand:SVE_F 1 "register_operand")
+   (match_operand:SVE_F 2 "register_operand")]
+  "TARGET_SVE"
+  {
+    rtx sign = gen_reg_rtx (<V_INT_EQUIV>mode);
+    rtx int_res = gen_reg_rtx (<V_INT_EQUIV>mode);
+    int bits = GET_MODE_UNIT_BITSIZE (<MODE>mode) - 1;
+
+    rtx arg1 = lowpart_subreg (<V_INT_EQUIV>mode, operands[1], <MODE>mode);
+    rtx arg2 = lowpart_subreg (<V_INT_EQUIV>mode, operands[2], <MODE>mode);
+
+    emit_insn (gen_and<v_int_equiv>3
+	       (sign, arg2,
+		aarch64_simd_gen_const_vector_dup (<V_INT_EQUIV>mode,
+						   HOST_WIDE_INT_M1U
+						   << bits)));
+    emit_insn (gen_xor<v_int_equiv>3 (int_res, arg1, sign));
+    emit_move_insn (operands[0], gen_lowpart (<MODE>mode, int_res));
+    DONE;
+  }
 )

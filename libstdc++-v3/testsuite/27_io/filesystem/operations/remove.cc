@@ -42,6 +42,9 @@ test01()
   VERIFY( !ec );
   VERIFY( !n );
 
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  // No symlink support
+#else
   auto link = __gnu_test::nonexistent_path();
   create_symlink(p, link);  // dangling symlink
   ec = bad_ec;
@@ -64,6 +67,7 @@ test01()
   VERIFY( !ec );
   VERIFY( n );
   VERIFY( !exists(symlink_status(p)) );
+#endif
 
   const auto dir = __gnu_test::nonexistent_path();
   create_directories(dir/"a/b");
@@ -73,6 +77,9 @@ test01()
   VERIFY( !n );
   VERIFY( exists(dir/"a/b") );
 
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  // No permissions support
+#else
   permissions(dir, fs::perms::none, ec);
   if (!ec)
   {
@@ -82,6 +89,7 @@ test01()
     VERIFY( !n );
     permissions(dir, fs::perms::owner_all, ec);
   }
+#endif
 
   ec = bad_ec;
   n = remove(dir/"a/b", ec);

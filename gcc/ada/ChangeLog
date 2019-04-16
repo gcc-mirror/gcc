@@ -1,3 +1,171 @@
+2019-04-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/i-cexten.ads (CFloat_128): New type.
+
+2019-03-22  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	PR ada/89583
+	* libgnat/g-socket.adb (Bind_Socket, Connect_Socket,
+	Send_Socket): Fix the computation of structure lengths passed to
+	low level routines.
+	(Is_IPv6_Address): Fix the number of expected colons.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* gcc-interface/misc.c (gnat_post_options): Wrap option name in string
+	format message and fix GNU coding style.
+
+2019-02-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Aggregate>: Minor tweak.
+	* gcc-interface/utils.c (convert): Do not pad when doing an unchecked
+	conversion here.  Use TREE_CONSTANT throughout the function.
+	(unchecked_convert): Also pad if the source is a CONSTRUCTOR and the
+	destination is a more aligned array type or a larger aggregate type,
+	but not between original and packable versions of a type.
+
+2019-02-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (max_size) <tcc_unary>: Be prepared for an
+	operand with VOID_TYPE.
+
+2019-02-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (elaborate_all_entities): Do not elaborate the
+	entities of a package renaming another one.
+
+2019-02-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Regular_Loop_to_gnu): Replace tests on
+	individual flag_unswitch_loops and flag_tree_loop_vectorize switches
+	with test on global optimize switch.
+	(Raise_Error_to_gnu): Likewise.
+
+2019-02-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnarl/s-linux__sparc.ads (ETIMEDOUT): Set to correct value.
+
+2019-02-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnarl/s-linux__x32.ads: Resync list of signals with s-linux.ads
+
+2019-01-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_Component_Layout): Remove superfluous space for
+	zero-sized field.
+	* gcc-interface/ada-tree.h (TYPE_IS_EXTRA_SUBTYPE_P): New macro.
+	* gcc-interface/gigi.h (create_extra_subtype): Declare.
+	* gcc-interface/decl.c (TYPE_ARRAY_SIZE_LIMIT): Likewise.
+	(update_n_elem): New function.
+	(gnat_to_gnu_entity): Use create_extra_subtype to create extra subtypes
+	instead of doing it manually.
+	<E_Array_Type>: Use update_n_elem to compute the maximum size.  Use the
+ 	index type instead of base type for the bounds. Set TYPE_ARRAY_MAX_SIZE
+	of the array to the maximum size.
+	<E_Array_Subtype>: Create an extra subtype using the index type of the
+	base array type for self-referential bounds.  Use update_n_elem to
+	compute the maximum size.  Set TYPE_ARRAY_MAX_SIZE of the array to the
+	maximum size.
+	(gnat_to_gnu_field): Clear DECL_NONADDRESSABLE_P on discriminants.
+	* gcc-interface/misc.c (gnat_get_alias_set): Return the alias set of
+	the base type for an extra subtype.
+	(gnat_type_max_size): Remove obsolete code.
+	* gcc-interface/trans.c (Attribute_to_gnu): Minor tweak.
+	(can_be_lower_p): Deal with pathological types.
+	* gcc-interface/utils.c (create_extra_subtype): New function.
+	(create_field_decl): Minor tweak.
+	(max_size) <tcc_reference>: Compute a better value by using the extra
+ 	subtypes on the self-referential bounds.
+	<tcc_binary>: Rewrite.  Deal with "negative value" in unsigned types.
+	<tcc_expression>: Likewise.
+	* gcc-interface/utils2.c (compare_arrays): Retrieve the original bounds
+	of the arrays upfront.  Swap only if the second length is not constant.
+	Use comparisons on the original bounds consistently for the null tests.
+	(build_binary_op): Use TYPE_IS_EXTRA_SUBTYPE_P macro.
+	(build_allocator): Minor tweak.
+
+2019-01-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (array_type_has_nonaliased_component): Return
+	the same value for every dimension of a multidimensional array type.
+
+2019-01-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Regular_Loop_to_gnu): Use the SLOC of the
+	iteration scheme, if present, throughout the translation.
+
+2019-01-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Assignment_Statement>: Use
+	DECL_SIZE_UNIT instead of TYPE_SIZE_UNIT for the size to be assigned
+	by a call to memset if the LHS is a DECL.
+
+2019-01-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (struct loop_info_d): Remove artificial field.
+	(Loop_Statement_to_gnu): Do not set it.
+
+2019-01-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Iterate_Acc_Clause_Arg): Fix formatting.
+	(Acc_gnat_to_gnu): Likewise.
+	(Acc_Data_to_gnu): Likewise.
+	(Acc_Var_to_gnu): Likewise.
+	(Acc_Reduc_to_gnu): Likewise.
+	(Acc_Size_List_to_gnu): Likewise.
+	(Pragma_to_gnu) <Pragma_Acc_Loop>: Likewise.
+	<Pragma_Acc_Data>): Likewise.
+	(find_loop_for): Remove default value for parameters.
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Op_And>: Merge into...
+	<N_Op_Eq>): ...this.
+
+2019-01-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (annotate_value) <INTEGER_CST>: Use test on
+	the sign bit instead of on the sign of the value.
+	<PLUS_EXPR>: Turn addition of negative constant into subtraction.
+	<MULT_EXPR>: Add test for degenerate case.
+	<BIT_AND_EXPR>: Simplify.
+
+2019-01-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* s-oscons-tmplt.c (AF_INET6): Do not undefine for RTEMS.
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+	* exp_ch11.adb: Change "can not" to "cannot".
+	* sem_ch4.adb: Likewise.
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+	* exp_ch9.adb: Mechanically replace "can not" with "cannot".
+	* libgnat/s-regpat.ads: Likewise.
+	* par-ch4.adb: Likewise.
+	* set_targ.adb: Likewise.
+	* types.ads: Likewise.
+
+2019-01-08  Justin Squirek  <squirek@adacore.com>
+
+	Revert:
+	2018-07-31  Justin Squirek  <squirek@adacore.com>
+
+	* lib-writ.adb (Write_With_Lines): Modfiy the generation
+	of dependencies within ali files so that source unit
+	bodies are properly listed even if said bodies are
+	missing.  Perform legacy behavior in GNATprove mode.
+	* lib-writ.ads: Modify documentation to reflect current
+	behavior.
+
+	and:
+	2018-09-26  Justin Squirek  <squirek@adacore.com>
+
+	* lib-writ.adb, lib-writ.ads (Write_With_Lines): Add
+	documentation and an extra conditional check for RCI
+	units so that generated ali files will list the spec
+	only instead of a body when a body is not found.
+
 2019-01-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnatvsn.ads: Bump copyright year.

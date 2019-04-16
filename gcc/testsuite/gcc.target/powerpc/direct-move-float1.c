@@ -2,8 +2,7 @@
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-skip-if "" { powerpc*-*-*spe* } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8 -O2" } */
+/* { dg-options "-mdejagnu-cpu=power8 -O2" } */
 /* { dg-final { scan-assembler {\mmtvsrd\M}    } } */
 /* { dg-final { scan-assembler {\mmfvsrwz\M}   } } */
 /* { dg-final { scan-assembler {\mxscvdpspn\M} } } */

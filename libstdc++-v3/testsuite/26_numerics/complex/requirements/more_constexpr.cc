@@ -23,7 +23,6 @@
 
 namespace __gnu_test
 {
-
   // Test constexpr real(val) imag(val).
   template<typename _Tp, const int _Val = 42>
     inline void
@@ -160,9 +159,11 @@ int main()
   __gnu_test::test_operator_members<double, float>();
   __gnu_test::test_operator_members<double, double>();
   __gnu_test::test_operator_members<double, long double>();
+#ifndef __LONG_DOUBLE_IBM128__ // IBM128 format is not constexpr foldable
   __gnu_test::test_operator_members<long double, float>();
   __gnu_test::test_operator_members<long double, double>();
   __gnu_test::test_operator_members<long double, long double>();
+#endif
 
 #if defined(_GLIBCXX_USE_FLOAT128)
   // Test primary template.

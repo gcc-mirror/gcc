@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2018 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -306,8 +306,9 @@ public:
         buf2.reserve(32);
         Mangler v(&buf2);
         v.paramsToDecoBuffer(t->arguments);
+        const char *s = buf2.peekString();
         int len = (int)buf2.offset;
-        buf->printf("%d%.*s", len, len, buf2.extractData());
+        buf->printf("%d%.*s", len, len, s);
     }
 
     void visit(TypeNull *t)

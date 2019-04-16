@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1338,7 +1338,7 @@ package body Repinfo is
             if List_Representation_Info_To_JSON then
                UI_Write (Esiz);
             else
-               if Lbit < 10 then
+               if Lbit >= 0 and then Lbit < 10 then
                   Write_Char (' ');
                end if;
 

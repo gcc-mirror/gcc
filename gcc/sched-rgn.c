@@ -927,7 +927,7 @@ haifa_find_rgns (void)
 	     The algorithm in the DFS traversal may not mark B & D as part
 	     of the loop (i.e. they will not have max_hdr set to A).
 
-	     We know they can not be loop latches (else they would have
+	     We know they cannot be loop latches (else they would have
 	     had max_hdr set since they'd have a backedge to a dominator
 	     block).  So we don't need them on the initial queue.
 

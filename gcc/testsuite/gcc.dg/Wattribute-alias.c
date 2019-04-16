@@ -14,6 +14,13 @@ ATTR (alias ("target_no_nothrow"), nothrow) void
 alias_nothrow (void);           /* { dg-warning ".alias_nothrow. specifies more restrictive attribute than its target .target_no_nothrow.: .nothrow." } */
 
 
+#pragma GCC diagnostic push "-Wattribute-alias"
+#pragma GCC diagnostic ignored "-Wattribute-alias"
+ATTR (alias ("target_no_nothrow"), nothrow) void
+alias_nothrow_ignored (void);
+#pragma GCC diagnostic pop "-Wattribute-alias"
+
+
 ATTR (pure) int
 alias_pure (void);
 

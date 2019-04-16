@@ -17,6 +17,7 @@ nothrow:
 
 version (ARM)     version = ARM_Any;
 version (AArch64) version = ARM_Any;
+version (HPPA)    version = HPPA_Any;
 version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
@@ -49,6 +50,7 @@ enum
     EPOLLERR    = 0x008,
     EPOLLHUP    = 0x010,
     EPOLLRDHUP  = 0x2000, // since Linux 2.6.17
+    EPOLLEXCLUSIVE = 1u << 28, // since Linux 4.5
     EPOLLONESHOT = 1u << 30,
     EPOLLET     = 1u << 31
 }
@@ -79,6 +81,14 @@ else version (ARM_Any)
     }
 }
 else version (PPC_Any)
+{
+    struct epoll_event
+    {
+        uint events;
+        epoll_data_t data;
+    }
+}
+else version (HPPA_Any)
 {
     struct epoll_event
     {

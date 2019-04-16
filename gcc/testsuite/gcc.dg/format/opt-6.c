@@ -4,4 +4,4 @@
 /* { dg-do compile } */
 /* { dg-options "-Wformat-contains-nul" } */
 
-/* { dg-warning "-Wformat-contains-nul ignored without -Wformat" "ignored" { target *-*-* } 0 } */
+/* { dg-warning "'-Wformat-contains-nul' ignored without '-Wformat'" "ignored" { target *-*-* } 0 } */

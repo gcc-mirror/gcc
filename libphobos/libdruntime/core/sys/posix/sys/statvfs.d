@@ -119,9 +119,9 @@ else version (NetBSD)
         c_ulong f_namemax;
         int f_owner;
         int[4] f_spare;
-        char[_VFS_NAMELEN] f_fstypename;
-        char[_VFS_MNAMELEN] f_mntonname;
-        char[_VFS_MNAMELEN] f_mntfromname;
+        char[_VFS_NAMELEN] f_fstypename = 0;
+        char[_VFS_MNAMELEN] f_mntonname = 0;
+        char[_VFS_MNAMELEN] f_mntfromname = 0;
     }
 
     enum FFlag

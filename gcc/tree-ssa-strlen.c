@@ -156,7 +156,8 @@ struct decl_stridxlist_map
    mappings.  */
 static hash_map<tree_decl_hash, stridxlist> *decl_to_stridxlist_htab;
 
-/* Hash table mapping strlen calls to stridx instances describing
+/* Hash table mapping strlen (or strnlen with constant bound and return
+   smaller than bound) calls to stridx instances describing
    the calls' arguments.  Non-null only when warn_stringop_truncation
    is non-zero.  */
 typedef std::pair<int, location_t> stridx_strlenloc;
@@ -970,12 +971,21 @@ valid_builtin_call (gimple *stmt)
     return false;
 
   tree callee = gimple_call_fndecl (stmt);
+  tree decl = builtin_decl_explicit (DECL_FUNCTION_CODE (callee));
+  if (decl
+      && decl != callee
+      && !gimple_builtin_call_types_compatible_p (stmt, decl))
+    return false;
+
   switch (DECL_FUNCTION_CODE (callee))
     {
     case BUILT_IN_MEMCMP:
     case BUILT_IN_MEMCMP_EQ:
+    case BUILT_IN_STRCMP:
+    case BUILT_IN_STRNCMP:
     case BUILT_IN_STRCHR:
     case BUILT_IN_STRLEN:
+    case BUILT_IN_STRNLEN:
       /* The above functions should be pure.  Punt if they aren't.  */
       if (gimple_vdef (stmt) || gimple_vuse (stmt) == NULL_TREE)
 	return false;
@@ -990,10 +1000,16 @@ valid_builtin_call (gimple *stmt)
     case BUILT_IN_MEMSET:
     case BUILT_IN_STPCPY:
     case BUILT_IN_STPCPY_CHK:
+    case BUILT_IN_STPNCPY:
+    case BUILT_IN_STPNCPY_CHK:
     case BUILT_IN_STRCAT:
     case BUILT_IN_STRCAT_CHK:
     case BUILT_IN_STRCPY:
     case BUILT_IN_STRCPY_CHK:
+    case BUILT_IN_STRNCAT:
+    case BUILT_IN_STRNCAT_CHK:
+    case BUILT_IN_STRNCPY:
+    case BUILT_IN_STRNCPY_CHK:
       /* The above functions should be neither const nor pure.  Punt if they
 	 aren't.  */
       if (gimple_vdef (stmt) == NULL_TREE || gimple_vuse (stmt) == NULL_TREE)
@@ -1269,19 +1285,33 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
   tree bound = (DECL_FUNCTION_CODE (callee) == BUILT_IN_STRNLEN
 		? gimple_call_arg (stmt, 1) : NULL_TREE);
   int idx = get_stridx (src);
-  if (idx)
+  if (idx || (bound && integer_zerop (bound)))
     {
       strinfo *si = NULL;
       tree rhs;
 
       if (idx < 0)
 	rhs = build_int_cst (TREE_TYPE (lhs), ~idx);
+      else if (idx == 0)
+	rhs = bound;
       else
 	{
 	  rhs = NULL_TREE;
 	  si = get_strinfo (idx);
 	  if (si != NULL)
-	    rhs = get_string_length (si);
+	    {
+	      rhs = get_string_length (si);
+	      /* For strnlen, if bound is constant, even if si is not known
+		 to be zero terminated, if we know at least bound bytes are
+		 not zero, the return value will be bound.  */
+	      if (rhs == NULL_TREE
+		  && bound != NULL_TREE
+		  && TREE_CODE (bound) == INTEGER_CST
+		  && si->nonzero_chars != NULL_TREE
+		  && TREE_CODE (si->nonzero_chars) == INTEGER_CST
+		  && tree_int_cst_le (bound, si->nonzero_chars))
+		rhs = bound;
+	    }
 	}
       if (rhs != NULL_TREE)
 	{
@@ -1294,18 +1324,8 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
 	  if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
 	    rhs = fold_convert_loc (loc, TREE_TYPE (lhs), rhs);
 
-	  /* Set for strnlen() calls with a non-constant bound.  */
-	  bool noncst_bound = false;
 	  if (bound)
-	    {
-	      tree new_rhs
-		= fold_build2_loc (loc, MIN_EXPR, TREE_TYPE (rhs), rhs, bound);
-
-	      noncst_bound = (TREE_CODE (new_rhs) != INTEGER_CST
-			      || tree_int_cst_lt (new_rhs, rhs));
-
-	      rhs = new_rhs;
-	    }
+	    rhs = fold_build2_loc (loc, MIN_EXPR, TREE_TYPE (rhs), rhs, bound);
 
 	  if (!update_call_from_tree (gsi, rhs))
 	    gimplify_and_update_call_from_tree (gsi, rhs);
@@ -1317,12 +1337,9 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
 	      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 	    }
 
-	  /* Avoid storing the length for calls to strnlen() with
-	     a non-constant bound.  */
-	  if (noncst_bound)
-	    return;
-
 	  if (si != NULL
+	      /* Don't update anything for strnlen.  */
+	      && bound == NULL_TREE
 	      && TREE_CODE (si->nonzero_chars) != SSA_NAME
 	      && TREE_CODE (si->nonzero_chars) != INTEGER_CST
 	      && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
@@ -1332,7 +1349,13 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
 	      gcc_assert (si->full_string_p);
 	    }
 
-	  if (strlen_to_stridx)
+	  if (strlen_to_stridx
+	      && (bound == NULL_TREE
+		  /* For strnlen record this only if the call is proven
+		     to return the same value as strlen would.  */
+		  || (TREE_CODE (bound) == INTEGER_CST
+		      && TREE_CODE (rhs) == INTEGER_CST
+		      && tree_int_cst_lt (rhs, bound))))
 	    strlen_to_stridx->put (lhs, stridx_strlenloc (idx, loc));
 
 	  return;
@@ -1742,7 +1765,7 @@ handle_builtin_strcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
 
   if (const strinfo *chksi = olddsi ? olddsi : dsi)
     if (si
-	&& !check_bounds_or_overlap (stmt, chksi->ptr, si->ptr, NULL_TREE, len))
+	&& check_bounds_or_overlap (stmt, chksi->ptr, si->ptr, NULL_TREE, len))
       {
 	gimple_set_no_warning (stmt, true);
 	set_no_warning = true;
@@ -2183,13 +2206,21 @@ handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *gsi)
   int didx = get_stridx (dst);
   if (strinfo *sidst = didx > 0 ? get_strinfo (didx) : NULL)
     {
-      /* Compute the size of the destination string including the NUL.  */
+      /* Compute the size of the destination string including the nul
+	 if it is known to be nul-terminated.  */
       if (sidst->nonzero_chars)
 	{
-	  tree type = TREE_TYPE (sidst->nonzero_chars);
-	  dstsize = fold_build2 (PLUS_EXPR, type, sidst->nonzero_chars,
-				 build_int_cst (type, 1));
+	  if (sidst->full_string_p)
+	    {
+	      /* String is known to be nul-terminated.  */
+	      tree type = TREE_TYPE (sidst->nonzero_chars);
+	      dstsize = fold_build2 (PLUS_EXPR, type, sidst->nonzero_chars,
+				     build_int_cst (type, 1));
+	    }
+	  else
+	    dstsize = sidst->nonzero_chars;
 	}
+
       dst = sidst->ptr;
     }
 
@@ -2201,12 +2232,18 @@ handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *gsi)
 	 over the terminating nul so SISRC->DONT_INVALIDATE must be left
 	 clear.  */
 
-      /* Compute the size of the source string including the NUL.  */
+      /* Compute the size of the source string including the terminating
+	 nul if its known to be nul-terminated.  */
       if (sisrc->nonzero_chars)
 	{
-	  tree type = TREE_TYPE (sisrc->nonzero_chars);
-	  srcsize = fold_build2 (PLUS_EXPR, type, sisrc->nonzero_chars,
-				 build_int_cst (type, 1));
+	  if (sisrc->full_string_p)
+	    {
+	      tree type = TREE_TYPE (sisrc->nonzero_chars);
+	      srcsize = fold_build2 (PLUS_EXPR, type, sisrc->nonzero_chars,
+				     build_int_cst (type, 1));
+	    }
+	  else
+	    srcsize = sisrc->nonzero_chars;
 	}
 
 	src = sisrc->ptr;
@@ -2214,7 +2251,7 @@ handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *gsi)
   else
     srcsize = NULL_TREE;
 
-  if (!check_bounds_or_overlap (stmt, dst, src, dstsize, srcsize))
+  if (check_bounds_or_overlap (stmt, dst, src, dstsize, srcsize))
     {
       gimple_set_no_warning (stmt, true);
       return;
@@ -2512,7 +2549,7 @@ handle_builtin_strcat (enum built_in_function bcode, gimple_stmt_iterator *gsi)
 
 	tree sptr = si && si->ptr ? si->ptr : src;
 
-	if (!check_bounds_or_overlap (stmt, dst, sptr, NULL_TREE, slen))
+	if (check_bounds_or_overlap (stmt, dst, sptr, NULL_TREE, slen))
 	  {
 	    gimple_set_no_warning (stmt, true);
 	    set_no_warning = true;
@@ -2622,7 +2659,7 @@ handle_builtin_strcat (enum built_in_function bcode, gimple_stmt_iterator *gsi)
 
       tree sptr = si && si->ptr ? si->ptr : src;
 
-      if (!check_bounds_or_overlap (stmt, dst, sptr, dstlen, srcsize))
+      if (check_bounds_or_overlap (stmt, dst, sptr, dstlen, srcsize))
 	{
 	  gimple_set_no_warning (stmt, true);
 	  set_no_warning = true;
@@ -3232,8 +3269,9 @@ get_min_string_length (tree rhs, bool *full_string_p)
 
   if (rhs && TREE_CODE (rhs) == STRING_CST)
     {
-      *full_string_p = true;
-      return strlen (TREE_STRING_POINTER (rhs));
+      HOST_WIDE_INT len = strlen (TREE_STRING_POINTER (rhs));
+      *full_string_p = len < TREE_STRING_LENGTH (rhs);
+      return len;
     }
 
   return -1;

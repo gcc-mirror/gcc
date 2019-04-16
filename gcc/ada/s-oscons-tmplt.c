@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1040,14 +1040,6 @@ CST(PTY_Library, "for g-exptty")
 # define AF_INET -1
 #endif
 CND(AF_INET, "IPv4 address family")
-
-/**
- ** RTEMS lies and defines AF_INET6 even though there is no IPV6 support.
- ** Its TCP/IP stack is in transition.  It has newer .h files but no IPV6 yet.
- **/
-#if defined(__rtems__)
-# undef AF_INET6
-#endif
 
 #ifndef AF_INET6
 # define AF_INET6 -1

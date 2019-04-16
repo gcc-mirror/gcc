@@ -118,7 +118,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       debug_allocator(const _Alloc& __a)
       : _M_allocator(__a), _M_extra(_S_extra()) { }
 
-      pointer
+      _GLIBCXX_NODISCARD pointer
       allocate(size_type __n)
       {
         pointer __res = _M_allocator.allocate(__n + _M_extra);      
@@ -127,7 +127,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         return __res + _M_extra;
       }
 
-      pointer
+      _GLIBCXX_NODISCARD pointer
       allocate(size_type __n, const void* __hint)
       {
         pointer __res = _M_allocator.allocate(__n + _M_extra, __hint);

@@ -2154,10 +2154,12 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	      tree d = start_decl (declarator, specs, false,
 				   chainon (postfix_attrs,
 					    all_prefix_attrs));
-	      if (d && TREE_CODE (d) == FUNCTION_DECL)
-		if (declarator->kind == cdk_function)
-		  if (DECL_ARGUMENTS (d) == NULL_TREE)
-		    DECL_ARGUMENTS (d) = declarator->u.arg_info->parms;
+	      if (d
+		  && TREE_CODE (d) == FUNCTION_DECL
+		  && declarator->kind == cdk_function
+		  && DECL_ARGUMENTS (d) == NULL_TREE
+		  && DECL_INITIAL (d) == NULL_TREE)
+		DECL_ARGUMENTS (d) = declarator->u.arg_info->parms;
 	      if (omp_declare_simd_clauses.exists ())
 		{
 		  tree parms = NULL_TREE;
@@ -2322,19 +2324,9 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       DECL_STRUCT_FUNCTION (current_function_decl)->function_start_locus
 	= c_parser_peek_token (parser)->location;
 
-      /* If the definition was marked with __GIMPLE then parse the
-         function body as GIMPLE.  */
-      if (specs->gimple_p)
-	{
-	  cfun->pass_startwith = specs->gimple_or_rtl_pass;
-	  bool saved = in_late_binary_op;
-	  in_late_binary_op = true;
-	  c_parser_parse_gimple_body (parser);
-	  in_late_binary_op = saved;
-	}
-      /* Similarly, if it was marked with __RTL, use the RTL parser now,
+      /* If the definition was marked with __RTL, use the RTL parser now,
 	 consuming the function body.  */
-      else if (specs->rtl_p)
+      if (specs->declspec_il == cdil_rtl)
 	{
 	  c_parser_parse_rtl_body (parser, specs->gimple_or_rtl_pass);
 
@@ -2347,6 +2339,16 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 
 	  finish_function ();
 	  return;
+	}
+      /* If the definition was marked with __GIMPLE then parse the
+         function body as GIMPLE.  */
+      else if (specs->declspec_il != cdil_none)
+	{
+	  bool saved = in_late_binary_op;
+	  in_late_binary_op = true;
+	  c_parser_parse_gimple_body (parser, specs->gimple_or_rtl_pass,
+				      specs->declspec_il);
+	  in_late_binary_op = saved;
 	}
       else
 	fnbody = c_parser_compound_statement (parser);
@@ -2370,8 +2372,8 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	    add_stmt (fnbody);
 	  finish_function ();
 	}
-      /* Get rid of the empty stmt list for GIMPLE.  */
-      if (specs->gimple_p)
+      /* Get rid of the empty stmt list for GIMPLE/RTL.  */
+      if (specs->declspec_il != cdil_none)
 	DECL_SAVED_TREE (fndecl) = NULL_TREE;
 
       break;
@@ -2878,17 +2880,17 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	  break;
 	case RID_GIMPLE:
 	  if (! flag_gimple)
-	    error_at (loc, "%<__GIMPLE%> only valid with -fgimple");
+	    error_at (loc, "%<__GIMPLE%> only valid with %<-fgimple%>");
 	  c_parser_consume_token (parser);
-	  specs->gimple_p = true;
+	  specs->declspec_il = cdil_gimple;
 	  specs->locations[cdw_gimple] = loc;
-	  specs->gimple_or_rtl_pass = c_parser_gimple_or_rtl_pass_list (parser);
+	  c_parser_gimple_or_rtl_pass_list (parser, specs);
 	  break;
 	case RID_RTL:
 	  c_parser_consume_token (parser);
-	  specs->rtl_p = true;
+	  specs->declspec_il = cdil_rtl;
 	  specs->locations[cdw_rtl] = loc;
-	  specs->gimple_or_rtl_pass = c_parser_gimple_or_rtl_pass_list (parser);
+	  c_parser_gimple_or_rtl_pass_list (parser, specs);
 	  break;
 	default:
 	  goto out;
@@ -9372,6 +9374,10 @@ sizeof_ptr_memacc_comptypes (tree type1, tree type2)
 static void
 warn_for_abs (location_t loc, tree fndecl, tree arg)
 {
+  /* Avoid warning in unreachable subexpressions.  */
+  if (c_inhibit_evaluation_warnings)
+    return;
+
   tree atype = TREE_TYPE (arg);
 
   /* Casts from pointers (and thus arrays and fndecls) will generate
@@ -13157,12 +13163,12 @@ c_parser_oacc_single_int_clause (c_parser *parser, omp_clause_code code,
 */
 
 static tree
-c_parser_oacc_shape_clause (c_parser *parser, omp_clause_code kind,
+c_parser_oacc_shape_clause (c_parser *parser, location_t loc,
+			    omp_clause_code kind,
 			    const char *str, tree list)
 {
   const char *id = "num";
   tree ops[2] = { NULL_TREE, NULL_TREE }, c;
-  location_t loc = c_parser_peek_token (parser)->location;
 
   if (kind == OMP_CLAUSE_VECTOR)
     id = "length";
@@ -13294,12 +13300,12 @@ c_parser_oacc_shape_clause (c_parser *parser, omp_clause_code kind,
    seq */
 
 static tree
-c_parser_oacc_simple_clause (c_parser *parser, enum omp_clause_code code,
+c_parser_oacc_simple_clause (location_t loc, enum omp_clause_code code,
 			     tree list)
 {
   check_no_duplicate_clause (list, code, omp_clause_code_name[code]);
 
-  tree c = build_omp_clause (c_parser_peek_token (parser)->location, code);
+  tree c = build_omp_clause (loc, code);
   OMP_CLAUSE_CHAIN (c) = list;
 
   return c;
@@ -13410,7 +13416,7 @@ c_parser_oacc_clause_tile (c_parser *parser, tree list)
 }
 
 /* OpenACC:
-   wait ( int-expr-list ) */
+   wait [( int-expr-list )] */
 
 static tree
 c_parser_oacc_clause_wait (c_parser *parser, tree list)
@@ -13419,6 +13425,14 @@ c_parser_oacc_clause_wait (c_parser *parser, tree list)
 
   if (c_parser_peek_token (parser)->type == CPP_OPEN_PAREN)
     list = c_parser_oacc_wait_list (parser, clause_loc, list);
+  else
+    {
+      tree c = build_omp_clause (clause_loc, OMP_CLAUSE_WAIT);
+
+      OMP_CLAUSE_DECL (c) = build_int_cst (integer_type_node, GOMP_ASYNC_NOVAL);
+      OMP_CLAUSE_CHAIN (c) = list;
+      list = c;
+    }
 
   return list;
 }
@@ -14797,8 +14811,8 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 	  c_name = "async";
 	  break;
 	case PRAGMA_OACC_CLAUSE_AUTO:
-	  clauses = c_parser_oacc_simple_clause (parser, OMP_CLAUSE_AUTO,
-						clauses);
+	  clauses = c_parser_oacc_simple_clause (here, OMP_CLAUSE_AUTO,
+						 clauses);
 	  c_name = "auto";
 	  break;
 	case PRAGMA_OACC_CLAUSE_COLLAPSE:
@@ -14842,7 +14856,7 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 	  c_name = "device_resident";
 	  break;
 	case PRAGMA_OACC_CLAUSE_FINALIZE:
-	  clauses = c_parser_oacc_simple_clause (parser, OMP_CLAUSE_FINALIZE,
+	  clauses = c_parser_oacc_simple_clause (here, OMP_CLAUSE_FINALIZE,
 						 clauses);
 	  c_name = "finalize";
 	  break;
@@ -14852,7 +14866,7 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 	  break;
 	case PRAGMA_OACC_CLAUSE_GANG:
 	  c_name = "gang";
-	  clauses = c_parser_oacc_shape_clause (parser, OMP_CLAUSE_GANG,
+	  clauses = c_parser_oacc_shape_clause (parser, here, OMP_CLAUSE_GANG,
 						c_name, clauses);
 	  break;
 	case PRAGMA_OACC_CLAUSE_HOST:
@@ -14864,13 +14878,13 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 	  c_name = "if";
 	  break;
 	case PRAGMA_OACC_CLAUSE_IF_PRESENT:
-	  clauses = c_parser_oacc_simple_clause (parser, OMP_CLAUSE_IF_PRESENT,
+	  clauses = c_parser_oacc_simple_clause (here, OMP_CLAUSE_IF_PRESENT,
 						 clauses);
 	  c_name = "if_present";
 	  break;
 	case PRAGMA_OACC_CLAUSE_INDEPENDENT:
-	  clauses = c_parser_oacc_simple_clause (parser, OMP_CLAUSE_INDEPENDENT,
-						clauses);
+	  clauses = c_parser_oacc_simple_clause (here, OMP_CLAUSE_INDEPENDENT,
+						 clauses);
 	  c_name = "independent";
 	  break;
 	case PRAGMA_OACC_CLAUSE_LINK:
@@ -14904,7 +14918,7 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 	  c_name = "reduction";
 	  break;
 	case PRAGMA_OACC_CLAUSE_SEQ:
-	  clauses = c_parser_oacc_simple_clause (parser, OMP_CLAUSE_SEQ,
+	  clauses = c_parser_oacc_simple_clause (here, OMP_CLAUSE_SEQ,
 						 clauses);
 	  c_name = "seq";
 	  break;
@@ -14918,7 +14932,7 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 	  break;
 	case PRAGMA_OACC_CLAUSE_VECTOR:
 	  c_name = "vector";
-	  clauses = c_parser_oacc_shape_clause (parser, OMP_CLAUSE_VECTOR,
+	  clauses = c_parser_oacc_shape_clause (parser, here, OMP_CLAUSE_VECTOR,
 						c_name,	clauses);
 	  break;
 	case PRAGMA_OACC_CLAUSE_VECTOR_LENGTH:
@@ -14933,7 +14947,7 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 	  break;
 	case PRAGMA_OACC_CLAUSE_WORKER:
 	  c_name = "worker";
-	  clauses = c_parser_oacc_shape_clause (parser, OMP_CLAUSE_WORKER,
+	  clauses = c_parser_oacc_shape_clause (parser, here, OMP_CLAUSE_WORKER,
 						c_name, clauses);
 	  break;
 	default:

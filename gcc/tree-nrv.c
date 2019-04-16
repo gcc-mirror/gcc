@@ -193,7 +193,7 @@ pass_nrv::execute (function *fun)
 	      if (found != NULL)
 		{
 		  /* If we found a return statement using a different variable
-		     than previous return statements, then we can not perform
+		     than previous return statements, then we cannot perform
 		     NRV optimizations.  */
 		  if (found != rhs)
 		    return 0;

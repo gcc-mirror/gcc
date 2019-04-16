@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2018, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2019, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -2260,7 +2260,7 @@ merge_sizes (tree last_size, tree first_bit, tree size, bool special,
 						       1, has_rep));
 
   /* We don't need any NON_VALUE_EXPRs and they can confuse us (especially
-     when fed through substitute_in_expr) into thinking that a constant
+     when fed through SUBSTITUTE_IN_EXPR) into thinking that a constant
      size is not constant.  */
   while (TREE_CODE (new_size) == NON_LVALUE_EXPR)
     new_size = TREE_OPERAND (new_size, 0);
@@ -2427,6 +2427,24 @@ create_range_type (tree type, tree min, tree max)
   SET_TYPE_RM_MAX_VALUE (range_type, max);
 
   return range_type;
+}
+
+/* Return an extra subtype of TYPE with range MIN to MAX.  */
+
+tree
+create_extra_subtype (tree type, tree min, tree max)
+{
+  const bool uns = TYPE_UNSIGNED (type);
+  const unsigned prec = TYPE_PRECISION (type);
+  tree subtype = uns ? make_unsigned_type (prec) : make_signed_type (prec);
+
+  TREE_TYPE (subtype) = type;
+  TYPE_EXTRA_SUBTYPE_P (subtype) = 1;
+
+  SET_TYPE_RM_MIN_VALUE (subtype, min);
+  SET_TYPE_RM_MAX_VALUE (subtype, max);
+
+  return subtype;
 }
 
 /* Return a TYPE_DECL node suitable for the TYPE_STUB_DECL field of TYPE.
@@ -2811,8 +2829,8 @@ create_field_decl (tree name, tree type, tree record_type, tree size, tree pos,
 
       layout_decl (field_decl, known_align);
       SET_DECL_OFFSET_ALIGN (field_decl,
-			     tree_fits_uhwi_p (pos) ? BIGGEST_ALIGNMENT
-			     : BITS_PER_UNIT);
+			     tree_fits_uhwi_p (pos)
+			     ? BIGGEST_ALIGNMENT : BITS_PER_UNIT);
       pos_from_bit (&DECL_FIELD_OFFSET (field_decl),
 		    &DECL_FIELD_BIT_OFFSET (field_decl),
 		    DECL_OFFSET_ALIGN (field_decl), pos);
@@ -2829,6 +2847,15 @@ create_field_decl (tree name, tree type, tree record_type, tree size, tree pos,
   if (!addressable && !type_for_nonaliased_component_p (type))
     addressable = 1;
 
+  /* Note that there is a trade-off in making a field nonaddressable because
+     this will cause type-based alias analysis to use the same alias set for
+     accesses to the field as for accesses to the whole record: while doing
+     so will make it more likely to disambiguate accesses to other objects
+     and accesses to the field, it will make it less likely to disambiguate
+     accesses to the other fields of the record and accesses to the field.
+     If the record is fully static, then the trade-off is irrelevant since
+     the fields of the record can always be disambiguated by their offsets
+     but, if the record is dynamic, then it can become problematic.  */
   DECL_NONADDRESSABLE_P (field_decl) = !addressable;
 
   return field_decl;
@@ -3615,7 +3642,10 @@ fntype_same_flags_p (const_tree t, tree cico_list, bool return_unconstrained_p,
 
 /* EXP is an expression for the size of an object.  If this size contains
    discriminant references, replace them with the maximum (if MAX_P) or
-   minimum (if !MAX_P) possible value of the discriminant.  */
+   minimum (if !MAX_P) possible value of the discriminant.
+
+   Note that the expression may have already been gimplified,in which case
+   COND_EXPRs have VOID_TYPE and no operands, and this must be handled.  */
 
 tree
 max_size (tree exp, bool max_p)
@@ -3658,11 +3688,27 @@ max_size (tree exp, bool max_p)
 	 modify.  Otherwise, we treat it like a variable.  */
       if (CONTAINS_PLACEHOLDER_P (exp))
 	{
-	  tree val_type = TREE_TYPE (TREE_OPERAND (exp, 1));
-	  tree val = (max_p ? TYPE_MAX_VALUE (type) : TYPE_MIN_VALUE (type));
-	  return
-	    convert (type,
-		     max_size (convert (get_base_type (val_type), val), true));
+	  tree base_type = get_base_type (TREE_TYPE (TREE_OPERAND (exp, 1)));
+	  tree val
+	    = fold_convert (base_type,
+			    max_p
+			    ? TYPE_MAX_VALUE (type) : TYPE_MIN_VALUE (type));
+
+	  /* Walk down the extra subtypes to get more restrictive bounds.  */
+	  while (TYPE_IS_EXTRA_SUBTYPE_P (type))
+	    {
+	      type = TREE_TYPE (type);
+	      if (max_p)
+		val = fold_build2 (MIN_EXPR, base_type, val,
+				   fold_convert (base_type,
+						 TYPE_MAX_VALUE (type)));
+	      else
+		val = fold_build2 (MAX_EXPR, base_type, val,
+				   fold_convert (base_type,
+						 TYPE_MIN_VALUE (type)));
+	    }
+
+	  return fold_convert (type, max_size (val, max_p));
 	}
 
       return exp;
@@ -3671,11 +3717,15 @@ max_size (tree exp, bool max_p)
       return build_int_cst (type, max_p ? 1 : 0);
 
     case tcc_unary:
-      if (code == NON_LVALUE_EXPR)
-	return max_size (TREE_OPERAND (exp, 0), max_p);
+      op0 = TREE_OPERAND (exp, 0);
 
-      op0 = max_size (TREE_OPERAND (exp, 0),
-		      code == NEGATE_EXPR ? !max_p : max_p);
+      if (code == NON_LVALUE_EXPR)
+	return max_size (op0, max_p);
+
+      if (VOID_TYPE_P (TREE_TYPE (op0)))
+	return max_p ? TYPE_MAX_VALUE (type) : TYPE_MIN_VALUE (type);
+
+      op0 = max_size (op0, code == NEGATE_EXPR ? !max_p : max_p);
 
       if (op0 == TREE_OPERAND (exp, 0))
 	return exp;
@@ -3683,49 +3733,57 @@ max_size (tree exp, bool max_p)
       return fold_build1 (code, type, op0);
 
     case tcc_binary:
-      {
-	tree lhs = max_size (TREE_OPERAND (exp, 0), max_p);
-	tree rhs = max_size (TREE_OPERAND (exp, 1),
-			     code == MINUS_EXPR ? !max_p : max_p);
+      op0 = TREE_OPERAND (exp, 0);
+      op1 = TREE_OPERAND (exp, 1);
 
-	/* Special-case wanting the maximum value of a MIN_EXPR.
-	   In that case, if one side overflows, return the other.  */
-	if (max_p && code == MIN_EXPR)
-	  {
-	    if (TREE_CODE (rhs) == INTEGER_CST && TREE_OVERFLOW (rhs))
-	      return lhs;
+      /* If we have a multiply-add with a "negative" value in an unsigned
+	 type, do a multiply-subtract with the negated value, in order to
+	 avoid creating a spurious overflow below.  */
+      if (code == PLUS_EXPR
+	  && TREE_CODE (op0) == MULT_EXPR
+	  && TYPE_UNSIGNED (type)
+	  && TREE_CODE (TREE_OPERAND (op0, 1)) == INTEGER_CST
+	  && !TREE_OVERFLOW (TREE_OPERAND (op0, 1))
+	  && tree_int_cst_sign_bit (TREE_OPERAND (op0, 1)))
+	{
+	  tree tmp = op1;
+	  op1 = build2 (MULT_EXPR, type, TREE_OPERAND (op0, 0),
+			fold_build1 (NEGATE_EXPR, type,
+				    TREE_OPERAND (op0, 1)));
+	  op0 = tmp;
+	  code = MINUS_EXPR;
+	}
 
-	    if (TREE_CODE (lhs) == INTEGER_CST && TREE_OVERFLOW (lhs))
-	      return rhs;
-	  }
+      op0 = max_size (op0, max_p);
+      op1 = max_size (op1, code == MINUS_EXPR ? !max_p : max_p);
 
-	/* Likewise, handle a MINUS_EXPR or PLUS_EXPR with the LHS
-	   overflowing and the RHS a variable.  */
-	if ((code == MINUS_EXPR || code == PLUS_EXPR)
-	    && TREE_CODE (lhs) == INTEGER_CST
-	    && TREE_OVERFLOW (lhs)
-	    && TREE_CODE (rhs) != INTEGER_CST)
-	  return lhs;
+      if ((code == MINUS_EXPR || code == PLUS_EXPR))
+	{
+	  /* If the op0 has overflowed and the op1 is a variable,
+	     propagate the overflow by returning the op0.  */
+	  if (TREE_CODE (op0) == INTEGER_CST
+	      && TREE_OVERFLOW (op0)
+	      && TREE_CODE (op1) != INTEGER_CST)
+	    return op0;
 
-	/* If we are going to subtract a "negative" value in an unsigned type,
-	   do the operation as an addition of the negated value, in order to
-	   avoid creating a spurious overflow below.  */
-	if (code == MINUS_EXPR
-	    && TYPE_UNSIGNED (type)
-	    && TREE_CODE (rhs) == INTEGER_CST
-	    && !TREE_OVERFLOW (rhs)
-	    && tree_int_cst_sign_bit (rhs) != 0)
-	  {
-	    rhs = fold_build1 (NEGATE_EXPR, type, rhs);
-	    code = PLUS_EXPR;
-	  }
+	  /* If we have a "negative" value in an unsigned type, do the
+	     opposite operation on the negated value, in order to avoid
+	     creating a spurious overflow below.  */
+	  if (TYPE_UNSIGNED (type)
+	      && TREE_CODE (op1) == INTEGER_CST
+	      && !TREE_OVERFLOW (op1)
+	      && tree_int_cst_sign_bit (op1))
+	    {
+	      op1 = fold_build1 (NEGATE_EXPR, type, op1);
+	      code = (code == MINUS_EXPR ? PLUS_EXPR : MINUS_EXPR);
+	    }
+	}
 
-	if (lhs == TREE_OPERAND (exp, 0) && rhs == TREE_OPERAND (exp, 1))
-	  return exp;
+      if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1))
+	return exp;
 
-	/* We need to detect overflows so we call size_binop here.  */
-	return size_binop (code, lhs, rhs);
-      }
+      /* We need to detect overflows so we call size_binop here.  */
+      return size_binop (code, op0, op1);
 
     case tcc_expression:
       switch (TREE_CODE_LENGTH (code))
@@ -3757,15 +3815,28 @@ max_size (tree exp, bool max_p)
 	case 3:
 	  if (code == COND_EXPR)
 	    {
+	      op0 = TREE_OPERAND (exp, 0);
 	      op1 = TREE_OPERAND (exp, 1);
 	      op2 = TREE_OPERAND (exp, 2);
 
 	      if (!op1 || !op2)
 		return exp;
 
-	      return
-		fold_build2 (max_p ? MAX_EXPR : MIN_EXPR, type,
-			     max_size (op1, max_p), max_size (op2, max_p));
+	      op1 = max_size (op1, max_p);
+	      op2 = max_size (op2, max_p);
+
+	      /* If we have the MAX of a "negative" value in an unsigned type
+		 and zero for a length expression, just return zero.  */
+	      if (max_p
+		  && TREE_CODE (op0) == LE_EXPR
+		  && TYPE_UNSIGNED (type)
+		  && TREE_CODE (op1) == INTEGER_CST
+		  && !TREE_OVERFLOW (op1)
+		  && tree_int_cst_sign_bit (op1)
+		  && integer_zerop (op2))
+		return op2;
+
+	      return fold_build2 (max_p ? MAX_EXPR : MIN_EXPR, type, op1, op2);
 	    }
 	  break;
 
@@ -4285,19 +4356,12 @@ convert (tree type, tree expr)
 
       /* If the inner type is of self-referential size and the expression type
 	 is a record, do this as an unchecked conversion unless both types are
-	 essentially the same.  But first pad the expression if possible to
-	 have the same size on both sides.  */
+	 essentially the same.  */
       if (ecode == RECORD_TYPE
 	  && CONTAINS_PLACEHOLDER_P (DECL_SIZE (TYPE_FIELDS (type)))
 	  && TYPE_MAIN_VARIANT (etype)
 	     != TYPE_MAIN_VARIANT (TREE_TYPE (TYPE_FIELDS (type))))
-	{
-	  if (TREE_CODE (TYPE_SIZE (etype)) == INTEGER_CST)
-	    expr = convert (maybe_pad_type (etype, TYPE_SIZE (type), 0, Empty,
-					    false, false, false, true),
-			    expr);
-	  return unchecked_convert (type, expr, false);
-	}
+	return unchecked_convert (type, expr, false);
 
       /* If we are converting between array types with variable size, do the
 	 final conversion as an unchecked conversion, again to avoid the need
@@ -4412,9 +4476,9 @@ convert (tree type, tree expr)
     case STRING_CST:
       /* If we are converting a STRING_CST to another constrained array type,
 	 just make a new one in the proper type.  */
-      if (code == ecode && AGGREGATE_TYPE_P (etype)
-	  && !(TREE_CODE (TYPE_SIZE (etype)) == INTEGER_CST
-	       && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST))
+      if (code == ecode
+	  && !(TREE_CONSTANT (TYPE_SIZE (etype))
+	       && !TREE_CONSTANT (TYPE_SIZE (type))))
 	{
 	  expr = copy_node (expr);
 	  TREE_TYPE (expr) = type;
@@ -5261,7 +5325,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
      so we skip all expressions that are references.  */
   else if (!REFERENCE_CLASS_P (expr)
 	   && !AGGREGATE_TYPE_P (etype)
-	   && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+	   && TREE_CONSTANT (TYPE_SIZE (type))
 	   && (c = tree_int_cst_compare (TYPE_SIZE (etype), TYPE_SIZE (type))))
     {
       if (c < 0)
@@ -5309,13 +5373,33 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
       return unchecked_convert (type, expr, notrunc_p);
     }
 
-  /* If we are converting a CONSTRUCTOR to a more aligned RECORD_TYPE, bump
-     the alignment of the CONSTRUCTOR to speed up the copy operation.  */
+  /* If we are converting a CONSTRUCTOR to a more aligned aggregate type, bump
+     the alignment of the CONSTRUCTOR to speed up the copy operation.  But do
+     not do it for a conversion between original and packable version to avoid
+     an infinite recursion.  */
   else if (TREE_CODE (expr) == CONSTRUCTOR
-	   && code == RECORD_TYPE
+	   && AGGREGATE_TYPE_P (type)
+	   && TYPE_NAME (type) != TYPE_NAME (etype)
 	   && TYPE_ALIGN (etype) < TYPE_ALIGN (type))
     {
       expr = convert (maybe_pad_type (etype, NULL_TREE, TYPE_ALIGN (type),
+				      Empty, false, false, false, true),
+		      expr);
+      return unchecked_convert (type, expr, notrunc_p);
+    }
+
+  /* If we are converting a CONSTRUCTOR to a larger aggregate type, bump the
+     size of the CONSTRUCTOR to make sure there are enough allocated bytes.
+     But do not do it for a conversion between original and packable version
+     to avoid an infinite recursion.  */
+  else if (TREE_CODE (expr) == CONSTRUCTOR
+	   && AGGREGATE_TYPE_P (type)
+	   && TYPE_NAME (type) != TYPE_NAME (etype)
+	   && TREE_CONSTANT (TYPE_SIZE (type))
+	   && (!TREE_CONSTANT (TYPE_SIZE (etype))
+	       || tree_int_cst_lt (TYPE_SIZE (etype), TYPE_SIZE (type))))
+    {
+      expr = convert (maybe_pad_type (etype, TYPE_SIZE (type), 0,
 				      Empty, false, false, false, true),
 		      expr);
       return unchecked_convert (type, expr, notrunc_p);

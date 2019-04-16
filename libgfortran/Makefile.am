@@ -30,6 +30,9 @@ version_arg =
 version_dep =
 endif
 
+gfor_c_HEADERS = $(srcdir)/ISO_Fortran_binding.h
+gfor_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/include
+
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
 	    $(lt_host_flags)
 
@@ -783,6 +786,9 @@ $(srcdir)/generated/spread_c8.c \
 $(srcdir)/generated/spread_c10.c \
 $(srcdir)/generated/spread_c16.c 
 
+i_isobinding_c = \
+$(srcdir)/runtime/ISO_Fortran_binding.c
+
 m4_files= m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
     m4/any.m4 m4/count.m4 m4/maxloc0.m4 m4/maxloc1.m4 m4/maxval.m4 \
     m4/minloc0.m4 m4/minloc1.m4 m4/minval.m4 m4/product.m4 m4/sum.m4 \
@@ -810,7 +816,7 @@ gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_minloc1s_c) $(i_maxloc2s_c) $(i_minloc2s_c) $(i_maxvals_c) \
     $(i_maxval0s_c) $(i_minval0s_c) $(i_maxval1s_c) $(i_minval1s_c) \
     $(i_findloc0_c) $(i_findloc0s_c) $(i_findloc1_c) $(i_findloc1s_c) \
-    $(i_findloc2s_c)
+    $(i_findloc2s_c) $(i_isobinding_c)
 
 # Machine generated specifics
 gfor_built_specific_src= \

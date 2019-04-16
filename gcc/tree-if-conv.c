@@ -119,6 +119,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "fold-const.h"
 #include "tree-ssa-sccvn.h"
+#include "tree-cfgcleanup.h"
 
 /* Only handle PHIs with no more arguments unless we are asked to by
    simd pragma.  */
@@ -2633,6 +2634,8 @@ combine_blocks (struct loop *loop)
 	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
 		SET_USE (use_p, last_vdef);
 	    }
+	  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_phi_result (vphi)))
+	    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (last_vdef) = 1;
 	  gsi = gsi_for_stmt (vphi); 
 	  remove_phi_node (&gsi, true);
 	}
@@ -2691,6 +2694,8 @@ combine_blocks (struct loop *loop)
 	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
 		SET_USE (use_p, last_vdef);
 	    }
+	  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_phi_result (vphi)))
+	    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (last_vdef) = 1;
 	  gimple_stmt_iterator gsi = gsi_for_stmt (vphi); 
 	  remove_phi_node (&gsi, true);
 	}
@@ -2715,7 +2720,7 @@ combine_blocks (struct loop *loop)
    consistent after the condition is folded in the vectorizer.  */
 
 static struct loop *
-version_loop_for_if_conversion (struct loop *loop)
+version_loop_for_if_conversion (struct loop *loop, vec<gimple *> *preds)
 {
   basic_block cond_bb;
   tree cond = make_ssa_name (boolean_type_node);
@@ -2755,6 +2760,8 @@ version_loop_for_if_conversion (struct loop *loop)
   new_loop->force_vectorize = false;
   gsi = gsi_last_bb (cond_bb);
   gimple_call_set_arg (g, 1, build_int_cst (integer_type_node, new_loop->num));
+  if (preds)
+    preds->safe_push (g);
   gsi_insert_before (&gsi, g, GSI_SAME_STMT);
   update_ssa (TODO_update_ssa);
   return new_loop;
@@ -2975,7 +2982,7 @@ ifcvt_local_dce (basic_block bb)
    changed.  */
 
 unsigned int
-tree_if_conversion (struct loop *loop)
+tree_if_conversion (struct loop *loop, vec<gimple *> *preds)
 {
   unsigned int todo = 0;
   bool aggressive_if_conv;
@@ -3023,7 +3030,7 @@ tree_if_conversion (struct loop *loop)
       struct loop *vloop
 	= (versionable_outer_loop_p (loop_outer (loop))
 	   ? loop_outer (loop) : loop);
-      struct loop *nloop = version_loop_for_if_conversion (vloop);
+      struct loop *nloop = version_loop_for_if_conversion (vloop, preds);
       if (nloop == NULL)
 	goto cleanup;
       if (vloop != loop)
@@ -3135,11 +3142,12 @@ pass_if_conversion::execute (function *fun)
   if (number_of_loops (fun) <= 1)
     return 0;
 
+  auto_vec<gimple *> preds;
   FOR_EACH_LOOP (loop, 0)
     if (flag_tree_loop_if_convert == 1
 	|| ((flag_tree_loop_vectorize || loop->force_vectorize)
 	    && !loop->dont_vectorize))
-      todo |= tree_if_conversion (loop);
+      todo |= tree_if_conversion (loop, &preds);
 
   if (todo)
     {
@@ -3154,7 +3162,32 @@ pass_if_conversion::execute (function *fun)
 	gcc_assert (!bb->aux);
     }
 
-  return todo;
+  /* Perform IL update now, it might elide some loops.  */
+  if (todo & TODO_cleanup_cfg)
+    {
+      cleanup_tree_cfg ();
+      if (need_ssa_update_p (fun))
+	todo |= TODO_update_ssa;
+    }
+  if (todo & TODO_update_ssa_any)
+    update_ssa (todo & TODO_update_ssa_any);
+
+  /* If if-conversion elided the loop fall back to the original one.  */
+  for (unsigned i = 0; i < preds.length (); ++i)
+    {
+      gimple *g = preds[i];
+      if (!gimple_bb (g))
+	continue;
+      unsigned ifcvt_loop = tree_to_uhwi (gimple_call_arg (g, 0));
+      if (!get_loop (fun, ifcvt_loop))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "If-converted loop vanished\n");
+	  fold_loop_internal_call (g, boolean_false_node);
+	}
+    }
+
+  return 0;
 }
 
 } // anon namespace

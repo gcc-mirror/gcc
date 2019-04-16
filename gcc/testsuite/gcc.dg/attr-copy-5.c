@@ -3,6 +3,7 @@
    copied.  Also verify that copying attribute tls_model to a non-thread
    variable triggers a warning.
    { dg-do compile }
+   { dg-require-alias "" }
    { dg-options "-Wall" }
    { dg-require-effective-target tls } */
 

@@ -36,7 +36,7 @@ struct ipa_dfs_info {
 
 /* In ipa-utils.c  */
 void ipa_print_order (FILE*, const char *, struct cgraph_node**, int);
-int ipa_reduced_postorder (struct cgraph_node **, bool, bool,
+int ipa_reduced_postorder (struct cgraph_node **, bool,
 			  bool (*ignore_edge) (struct cgraph_edge *));
 void ipa_free_postorder_info (void);
 vec<cgraph_node *> ipa_get_nodes_in_cycle (struct cgraph_node *);

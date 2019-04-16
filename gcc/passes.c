@@ -361,9 +361,9 @@ finish_optimization_passes (void)
 
   if (optimize > 0)
     {
-      dumps->dump_start (pass_profile_1->static_pass_number, NULL);
+      dumps->dump_start (pass_combine_1->static_pass_number, NULL);
       print_combine_total_stats ();
-      dumps->dump_finish (pass_profile_1->static_pass_number);
+      dumps->dump_finish (pass_combine_1->static_pass_number);
     }
 
   /* Do whatever is necessary to finish printing the graphs.  */
@@ -1021,9 +1021,9 @@ enable_disable_pass (const char *arg, bool is_enable)
   if (!*phase_name)
     {
       if (is_enable)
-        error ("unrecognized option -fenable");
+	error ("unrecognized option %<-fenable%>");
       else
-        error ("unrecognized option -fdisable");
+	error ("unrecognized option %<-fdisable%>");
       free (argstr);
       return;
     }
@@ -1031,9 +1031,9 @@ enable_disable_pass (const char *arg, bool is_enable)
   if (!pass || pass->static_pass_number == -1)
     {
       if (is_enable)
-        error ("unknown pass %s specified in -fenable", phase_name);
+	error ("unknown pass %s specified in %<-fenable%>", phase_name);
       else
-        error ("unknown pass %s specified in -fdisable", phase_name);
+	error ("unknown pass %s specified in %<-fdisable%>", phase_name);
       free (argstr);
       return;
     }
@@ -1927,7 +1927,7 @@ execute_function_todo (function *fn, void *data)
   /* Always cleanup the CFG before trying to update SSA.  */
   if (flags & TODO_cleanup_cfg)
     {
-      cleanup_tree_cfg ();
+      cleanup_tree_cfg (flags & TODO_update_ssa_any);
 
       /* When cleanup_tree_cfg merges consecutive blocks, it may
 	 perform some simplistic propagation when removing single
@@ -2361,6 +2361,10 @@ should_skip_pass_p (opt_pass *pass)
      too much for a dumped __RTL function.  */
   if (pass->type == GIMPLE_PASS
       && pass->properties_provided != 0)
+    return false;
+
+  /* We need to (re-)build cgraph edges as needed.  */
+  if (strstr (pass->name, "build_cgraph_edges") != NULL)
     return false;
 
   /* Don't skip df init; later RTL passes need it.  */

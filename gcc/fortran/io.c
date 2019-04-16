@@ -2504,16 +2504,15 @@ gfc_match_open (void)
 	  goto cleanup;
 	}
 
-      if (!open->file && open->status)
-        {
-	  if (open->status->expr_type == EXPR_CONSTANT
+      if (!open->file &&
+	  (!open->status ||
+	   (open->status->expr_type == EXPR_CONSTANT
 	     && gfc_wide_strncasecmp (open->status->value.character.string,
-				       "scratch", 7) != 0)
-	   {
+				      "scratch", 7) != 0)))
+	{
 	     gfc_error ("NEWUNIT specifier must have FILE= "
 			"or STATUS='scratch' at %C");
 	     goto cleanup;
-	   }
 	}
     }
   else if (!open->unit)
@@ -3610,6 +3609,16 @@ match_io_element (io_kind k, gfc_code **cpp)
       m = gfc_match_variable (&expr, 0);
       if (m == MATCH_NO)
 	gfc_error ("Expected variable in READ statement at %C");
+
+      if (m == MATCH_YES
+	  && expr->expr_type == EXPR_VARIABLE
+	  && expr->symtree->n.sym->attr.external)
+	{
+	  gfc_error ("Expecting variable or io-implied-do at %L",
+		     &expr->where);
+	  m = MATCH_ERROR;
+	}
+
     }
   else
     {
@@ -4162,6 +4171,23 @@ match_io (io_kind k)
 	      else
 		gfc_current_locus = where;
 	    }
+
+	  if (gfc_match_char ('*') == MATCH_YES
+	      && gfc_match_char(',') == MATCH_YES)
+	    {
+	      locus where2 = gfc_current_locus;
+	      if (gfc_match_eos () == MATCH_YES)
+		{
+		  gfc_current_locus = where2;
+		  gfc_error ("Comma after * at %C not allowed without I/O list");
+		  m = MATCH_ERROR;
+		  goto cleanup;
+		}
+	      else
+		gfc_current_locus = where;
+	    }
+	  else
+	    gfc_current_locus = where;
 	}
 
       if (gfc_current_form == FORM_FREE)
@@ -4619,7 +4645,7 @@ gfc_match_inquire (void)
       && ((mpz_get_si (inquire->unit->value.integer) == GFC_INTERNAL_UNIT4)
       || (mpz_get_si (inquire->unit->value.integer) == GFC_INTERNAL_UNIT)))
     {
-      gfc_error ("UNIT number in INQUIRE statement at %L can not "
+      gfc_error ("UNIT number in INQUIRE statement at %L cannot "
 		 "be %d", &loc, (int) mpz_get_si (inquire->unit->value.integer));
       goto cleanup;
     }

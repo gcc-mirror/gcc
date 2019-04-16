@@ -1,6 +1,6 @@
 
 // Compiler implementation of the D programming language
-// Copyright: Copyright (C) 2014-2018 by The D Language Foundation, All Rights Reserved
+// Copyright: Copyright (C) 2014-2019 by The D Language Foundation, All Rights Reserved
 // Authors: Walter Bright, http://www.digitalmars.com
 // License: http://boost.org/LICENSE_1_0.txt
 // Source: https://github.com/D-Programming-Language/dmd/blob/master/src/nspace.c
@@ -17,23 +17,29 @@
 /* This implements namespaces.
  */
 
-Nspace::Nspace(Loc loc, Identifier *ident, Dsymbols *members)
+Nspace::Nspace(Loc loc, Identifier *ident, Dsymbols *members, bool mangleOnly)
     : ScopeDsymbol(ident)
 {
     //printf("Nspace::Nspace(ident = %s)\n", ident->toChars());
     this->loc = loc;
     this->members = members;
+    // Determines whether the symbol for this namespace should be included in
+    // the symbol table.
+    this->mangleOnly = mangleOnly;
 }
 
 Dsymbol *Nspace::syntaxCopy(Dsymbol *)
 {
-    Nspace *ns = new Nspace(loc, ident, NULL);
+    Nspace *ns = new Nspace(loc, ident, NULL, mangleOnly);
     return ScopeDsymbol::syntaxCopy(ns);
 }
 
 void Nspace::addMember(Scope *sc, ScopeDsymbol *sds)
 {
-    ScopeDsymbol::addMember(sc, sds);
+    if (mangleOnly)
+        parent = sds;
+    else
+        ScopeDsymbol::addMember(sc, sds);
     if (members)
     {
         if (!symtab)

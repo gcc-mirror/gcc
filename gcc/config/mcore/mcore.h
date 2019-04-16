@@ -533,7 +533,7 @@ extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define SLOW_BYTE_ACCESS TARGET_SLOW_BYTES
 
 /* Shift counts are truncated to 6-bits (0 to 63) instead of the expected
-   5-bits, so we can not define SHIFT_COUNT_TRUNCATED to true for this
+   5-bits, so we cannot define SHIFT_COUNT_TRUNCATED to true for this
    target.  */
 #define SHIFT_COUNT_TRUNCATED 0
 

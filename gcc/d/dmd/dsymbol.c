@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2018 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -30,6 +30,7 @@
 #include "attrib.h"
 #include "enum.h"
 #include "lexer.h"
+#include "nspace.h"
 
 bool symbolIsVisible(Dsymbol *origin, Dsymbol *s);
 typedef int (*ForeachDg)(void *ctx, size_t idx, Dsymbol *s);
@@ -310,6 +311,14 @@ Dsymbol *Dsymbol::toAlias2()
     return toAlias();
 }
 
+/**
+ * `pastMixin` returns the enclosing symbol if this is a template mixin.
+ *
+ * `pastMixinAndNspace` does likewise, additionally skipping over Nspaces that
+ * are mangleOnly.
+ *
+ * See also `parent`, `toParent`, `toParent2` and `toParent3`.
+ */
 Dsymbol *Dsymbol::pastMixin()
 {
     Dsymbol *s = this;
@@ -320,15 +329,30 @@ Dsymbol *Dsymbol::pastMixin()
     return s;
 }
 
+/// ditto
+Dsymbol *Dsymbol::pastMixinAndNspace()
+{
+    //printf("Dsymbol::pastMixinAndNspace() %s\n", toChars());
+    Nspace *ns = isNspace();
+    if (!(ns && ns->mangleOnly) && !isTemplateMixin() && !isForwardingAttribDeclaration())
+        return this;
+    if (!parent)
+        return NULL;
+    return parent->pastMixinAndNspace();
+}
+
 /**********************************
  * `parent` field returns a lexically enclosing scope symbol this is a member of.
  *
  * `toParent()` returns a logically enclosing scope symbol this is a member of.
- * It skips over TemplateMixin's.
+ * It skips over TemplateMixin's and Nspaces that are mangleOnly.
  *
  * `toParent2()` returns an enclosing scope symbol this is living at runtime.
  * It skips over both TemplateInstance's and TemplateMixin's.
  * It's used when looking for the 'this' pointer of the enclosing function/class.
+ *
+ * `toParent3()` returns a logically enclosing scope symbol this is a member of.
+ * It skips over TemplateMixin's.
  *
  * Examples:
  *  module mod;
@@ -352,7 +376,7 @@ Dsymbol *Dsymbol::pastMixin()
  */
 Dsymbol *Dsymbol::toParent()
 {
-    return parent ? parent->pastMixin() : NULL;
+    return parent ? parent->pastMixinAndNspace() : NULL;
 }
 
 /// ditto
@@ -362,6 +386,12 @@ Dsymbol *Dsymbol::toParent2()
     while (s && s->isTemplateInstance())
         s = s->parent;
     return s;
+}
+
+/// ditto
+Dsymbol *Dsymbol::toParent3()
+{
+    return parent ? parent->pastMixin() : NULL;
 }
 
 TemplateInstance *Dsymbol::isInstantiated()
@@ -1189,23 +1219,26 @@ void ScopeDsymbol::importScope(Dsymbol *s, Prot protection)
     }
 }
 
+#define BITS_PER_INDEX (sizeof(size_t) * CHAR_BIT)
+
 static void bitArraySet(BitArray *array, size_t idx)
 {
-    array->ptr[idx / (sizeof(size_t) * CHAR_BIT)] |= 1ULL << (idx & (sizeof(size_t) * CHAR_BIT - 1));
+    array->ptr[idx / BITS_PER_INDEX] |= 1ULL << (idx % BITS_PER_INDEX);
 }
 
 static bool bitArrayGet(BitArray *array, size_t idx)
 {
-    return (array->ptr[idx / (sizeof(size_t) * CHAR_BIT)] & (1ULL << (idx & (sizeof(size_t) * CHAR_BIT - 1)))) != 0;
+    const size_t boffset = idx % BITS_PER_INDEX;
+    return (array->ptr[idx / BITS_PER_INDEX] & (1ULL << boffset)) >> boffset;
 }
 
 static void bitArrayLength(BitArray *array, size_t len)
 {
-    size_t obytes = (array->len + CHAR_BIT - 1) / CHAR_BIT;
-    size_t nbytes = (len + CHAR_BIT - 1) / CHAR_BIT;
-
-    if (obytes < nbytes)
+    if (array->len < len)
     {
+        const size_t obytes = (array->len + BITS_PER_INDEX - 1) / BITS_PER_INDEX;
+        const size_t nbytes = (len + BITS_PER_INDEX - 1) / BITS_PER_INDEX;
+
         if (!array->ptr)
             array->ptr = (size_t *)mem.xmalloc(nbytes * sizeof(size_t));
         else
@@ -1213,8 +1246,9 @@ static void bitArrayLength(BitArray *array, size_t len)
 
         for (size_t i = obytes; i < nbytes; i++)
             array->ptr[i] = 0;
+
+        array->len = nbytes * BITS_PER_INDEX;
     }
-    array->len = len;
 }
 
 void ScopeDsymbol::addAccessiblePackage(Package *p, Prot protection)

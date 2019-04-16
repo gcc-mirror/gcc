@@ -43,6 +43,13 @@ func cgoCheckWriteBarrier(dst *uintptr, src uintptr) {
 		return
 	}
 
+	// It's OK if writing to memory allocated by persistentalloc.
+	// Do this check last because it is more expensive and rarely true.
+	// If it is false the expense doesn't matter since we are crashing.
+	if inPersistentAlloc(uintptr(unsafe.Pointer(dst))) {
+		return
+	}
+
 	systemstack(func() {
 		println("write of Go pointer", hex(src), "to non-Go memory", hex(uintptr(unsafe.Pointer(dst))))
 		throw(cgoWriteBarrierFail)
@@ -127,7 +134,7 @@ func cgoCheckTypedBlock(typ *_type, src unsafe.Pointer, off, size uintptr) {
 	}
 
 	s := spanOfUnchecked(uintptr(src))
-	if s.state == _MSpanManual {
+	if s.state == mSpanManual {
 		// There are no heap bits for value stored on the stack.
 		// For a channel receive src might be on the stack of some
 		// other goroutine, so we can't unwind the stack even if

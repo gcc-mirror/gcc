@@ -28,8 +28,8 @@
 #define _GCC_LOONGSON_MMIINTRIN_H
 
 #if !defined(__mips_loongson_mmi)
-# error "You must select -mloongson-mmi or -march=loongson2e/2f/3a to use
-	 loongson-mmiintrin.h"
+# error You must select -mloongson-mmi or -march=loongson2e/2f/3a to use\
+ loongson-mmiintrin.h
 #endif
 
 #ifdef __cplusplus

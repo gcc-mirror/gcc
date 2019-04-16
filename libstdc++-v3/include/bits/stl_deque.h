@@ -61,7 +61,7 @@
 #include <bits/stl_iterator_base_funcs.h>
 #if __cplusplus >= 201103L
 #include <initializer_list>
-#include <bits/stl_uninitialized.h> // for __is_trivially_relocatable
+#include <bits/stl_uninitialized.h> // for __is_bitwise_relocatable
 #endif
 
 #include <debug/assertions.h>
@@ -1377,7 +1377,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns true if the %deque is empty.  (Thus begin() would
        *  equal end().)
        */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const _GLIBCXX_NOEXCEPT
       { return this->_M_impl._M_finish == this->_M_impl._M_start; }
 
@@ -2372,7 +2372,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
   // std::allocator is safe, but it is not the only allocator
   // for which this is valid.
   template<class _Tp>
-    struct __is_trivially_relocatable<_GLIBCXX_STD_C::deque<_Tp>>
+    struct __is_bitwise_relocatable<_GLIBCXX_STD_C::deque<_Tp>>
     : true_type { };
 #endif
 

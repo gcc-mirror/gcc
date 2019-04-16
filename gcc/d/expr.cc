@@ -282,12 +282,21 @@ public:
 	tree t1 = d_save_expr (build_expr (e->e1));
 	tree t2 = d_save_expr (build_expr (e->e2));
 
-	tree tmemcmp = builtin_decl_explicit (BUILT_IN_MEMCMP);
-	tree size = size_int (TYPE_PRECISION (TREE_TYPE (t1)) / BITS_PER_UNIT);
+	if (!tb1->iscomplex ())
+	  this->result_ = build_float_identity (code, t1, t2);
+	else
+	  {
+	    /* Compare the real and imaginary parts separately.  */
+	    tree req = build_float_identity (code, real_part (t1),
+					     real_part (t2));
+	    tree ieq = build_float_identity (code, imaginary_part (t1),
+					     imaginary_part (t2));
 
-	tree result = build_call_expr (tmemcmp, 3, build_address (t1),
-				       build_address (t2), size);
-	this->result_ = build_boolop (code, result, integer_zero_node);
+	    if (code == EQ_EXPR)
+	      this->result_ = build_boolop (TRUTH_ANDIF_EXPR, req, ieq);
+	    else
+	      this->result_ = build_boolop (TRUTH_ORIF_EXPR, req, ieq);
+	  }
       }
     else if (tb1->ty == Tstruct)
       {
@@ -2941,33 +2950,7 @@ public:
 
   void visit (NullExp *e)
   {
-    Type *tb = e->type->toBasetype ();
-    tree value;
-
-    /* Handle certain special case conversions, where the underlying type is an
-       aggregate with a nullable interior pointer.  */
-    if (tb->ty == Tarray)
-      {
-	/* For dynamic arrays, set length and pointer fields to zero.  */
-	value = d_array_value (build_ctype (e->type), size_int (0),
-			       null_pointer_node);
-      }
-    else if (tb->ty == Taarray)
-      {
-	/* For associative arrays, set the pointer field to null.  */
-	value = build_constructor (build_ctype (e->type), NULL);
-      }
-    else if (tb->ty == Tdelegate)
-      {
-	/* For delegates, set the frame and function pointer to null.  */
-	value = build_delegate_cst (null_pointer_node,
-				    null_pointer_node, e->type);
-      }
-    else
-      value = d_convert (build_ctype (e->type), integer_zero_node);
-
-    TREE_CONSTANT (value) = 1;
-    this->result_ = value;
+    this->result_ = build_typeof_null_value (e->type);
   }
 
   /* Build a vector literal.  */
@@ -3007,6 +2990,14 @@ public:
 	tree val = d_convert (etype, build_expr (e->e1, this->constp_));
 	this->result_ = build_vector_from_val (type, val);
       }
+  }
+
+  /* Build a static array representation of a vector expression.  */
+
+  void visit (VectorArrayExp *e)
+  {
+    this->result_ = convert_expr (build_expr (e->e1, this->constp_),
+				  e->e1->type, e->type);
   }
 
   /* Build a static class literal, return its reference.  */

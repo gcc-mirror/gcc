@@ -5480,16 +5480,41 @@ gfc_calculate_transfer_sizes (gfc_expr *source, gfc_expr *mold, gfc_expr *size,
     return false;
 
   /* Calculate the size of the source.  */
-  *source_size = gfc_target_expr_size (source);
-  if (*source_size == 0)
+  if (!gfc_target_expr_size (source, source_size))
     return false;
 
   /* Determine the size of the element.  */
-  result_elt_size = gfc_element_size (mold);
-  if (result_elt_size == 0)
+  if (!gfc_element_size (mold, &result_elt_size))
     return false;
 
-  if (mold->expr_type == EXPR_ARRAY || mold->rank || size)
+  /* If the storage size of SOURCE is greater than zero and MOLD is an array,
+   * a scalar with the type and type parameters of MOLD shall not have a
+   * storage size equal to zero.
+   * If MOLD is a scalar and SIZE is absent, the result is a scalar.
+   * If MOLD is an array and SIZE is absent, the result is an array and of
+   * rank one. Its size is as small as possible such that its physical
+   * representation is not shorter than that of SOURCE.
+   * If SIZE is present, the result is an array of rank one and size SIZE.
+   */
+  if (result_elt_size == 0 && *source_size > 0 && !size
+      && mold->expr_type == EXPR_ARRAY)
+    {
+      gfc_error ("%<MOLD%> argument of %<TRANSFER%> intrinsic at %L is an "
+		 "array and shall not have storage size 0 when %<SOURCE%> "
+		 "argument has size greater than 0", &mold->where);
+      return false;
+    }
+
+  if (result_elt_size == 0 && *source_size == 0 && !size)
+    {
+      *result_size = 0;
+      if (result_length_p)
+	*result_length_p = 0;
+      return true;
+    }
+
+  if ((result_elt_size > 0 && (mold->expr_type == EXPR_ARRAY || mold->rank))
+      || size)
     {
       int result_length;
 
@@ -5519,6 +5544,26 @@ gfc_check_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
   size_t source_size;
   size_t result_size;
 
+  /* SOURCE shall be a scalar or array of any type.  */
+  if (source->ts.type == BT_PROCEDURE
+      && source->symtree->n.sym->attr.subroutine == 1)
+    {
+      gfc_error ("%<SOURCE%> argument of %<TRANSFER%> intrinsic at %L "
+                 "must not be a %s", &source->where,
+		 gfc_basic_typename (source->ts.type));
+      return false;
+    }
+
+  /* MOLD shall be a scalar or array of any type.  */
+  if (mold->ts.type == BT_PROCEDURE
+      && mold->symtree->n.sym->attr.subroutine == 1)
+    {
+      gfc_error ("%<MOLD%> argument of %<TRANSFER%> intrinsic at %L "
+                 "must not be a %s", &mold->where,
+		 gfc_basic_typename (mold->ts.type));
+      return false;
+    }
+
   if (mold->ts.type == BT_HOLLERITH)
     {
       gfc_error ("%<MOLD%> argument of %<TRANSFER%> intrinsic at %L must not be"
@@ -5526,6 +5571,8 @@ gfc_check_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
       return false;
     }
 
+  /* SIZE (optional) shall be an integer scalar.  The corresponding actual
+     argument shall not be an optional dummy argument.  */
   if (size != NULL)
     {
       if (!type_check (size, 2, BT_INTEGER))

@@ -100,6 +100,15 @@ test02()
   VERIFY( entry1.path() == p/"x" );
   VERIFY( iter == end(iter) );
 
+  // Test post-increment (libstdc++/89986)
+  ec = bad_ec;
+  iter = fs::directory_iterator(p, ec);
+  VERIFY( !ec );
+  VERIFY( iter != end(iter) );
+  iter.increment(ec);
+  VERIFY( !ec );
+  VERIFY( iter == end(iter) );
+
   remove_all(p, ec);
 }
 
@@ -138,6 +147,9 @@ test05()
   static_assert( noexcept(begin(it)), "begin is noexcept" );
   VERIFY( end(it) == endit );
   static_assert( noexcept(end(it)), "end is noexcept" );
+
+  std::error_code ec;
+  remove_all(p, ec);
 }
 
 int

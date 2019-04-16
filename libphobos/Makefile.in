@@ -15,7 +15,7 @@
 @SET_MAKE@
 
 # Makefile for the toplevel directory of the D Standard library.
-# Copyright (C) 2006-2018 Free Software Foundation, Inc.
+# Copyright (C) 2006-2019 Free Software Foundation, Inc.
 #
 # GCC is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -213,6 +213,7 @@ DCFG_ARM_EABI_UNWINDER = @DCFG_ARM_EABI_UNWINDER@
 DCFG_HAVE_64BIT_ATOMICS = @DCFG_HAVE_64BIT_ATOMICS@
 DCFG_HAVE_ATOMIC_BUILTINS = @DCFG_HAVE_ATOMIC_BUILTINS@
 DCFG_HAVE_LIBATOMIC = @DCFG_HAVE_LIBATOMIC@
+DCFG_HAVE_QSORT_R = @DCFG_HAVE_QSORT_R@
 DCFG_MINFO_BRACKETING = @DCFG_MINFO_BRACKETING@
 DCFG_THREAD_MODEL = @DCFG_THREAD_MODEL@
 DEFS = @DEFS@
@@ -240,6 +241,7 @@ LIBBACKTRACE = @LIBBACKTRACE@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
+LIBZ = @LIBZ@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
@@ -319,7 +321,6 @@ phobos_compiler_shared_flag = @phobos_compiler_shared_flag@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@

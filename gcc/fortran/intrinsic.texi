@@ -6762,7 +6762,7 @@ kind.
 
 @item @emph{Return value}:
 After @code{GETARG} returns, the @var{VALUE} argument holds the
-@var{POS}th command line argument. If @var{VALUE} can not hold the
+@var{POS}th command line argument. If @var{VALUE} cannot hold the
 argument, it is truncated to fit the length of @var{VALUE}. If there are
 less than @var{POS} arguments specified at the command line, @var{VALUE}
 will be filled with blanks. If @math{@var{POS} = 0}, @var{VALUE} is set
@@ -6875,7 +6875,7 @@ and of default kind.
 
 @item @emph{Return value}:
 After @code{GET_COMMAND_ARGUMENT} returns, the @var{VALUE} argument holds the 
-@var{NUMBER}-th command line argument. If @var{VALUE} can not hold the argument, it is 
+@var{NUMBER}-th command line argument. If @var{VALUE} cannot hold the argument, it is 
 truncated to fit the length of @var{VALUE}. If there are less than @var{NUMBER}
 arguments specified at the command line, @var{VALUE} will be filled with blanks. 
 If @math{@var{NUMBER} = 0}, @var{VALUE} is set to the name of the program (on
@@ -10111,8 +10111,8 @@ locations of the maximum element along each row of the array in the
 which @var{MASK} is @code{.TRUE.} are considered.  If more than one
 element in the array has the maximum value, the location returned is
 that of the first such element in array element order if the
-@var{BACK} is not present, or if it false; otherwise, the location
-returned is that of the first such element. If the array has zero
+@var{BACK} is not present, or is false; if @var{BACK} is true, the location
+returned is that of the last such element. If the array has zero
 size, or all of the elements of @var{MASK} are @code{.FALSE.}, then
 the result is an array of zeroes.  Similarly, if @var{DIM} is supplied
 and all of the elements of @var{MASK} along a given row are zero, the
@@ -10468,8 +10468,8 @@ locations of the minimum element along each row of the array in the
 which @var{MASK} is @code{.TRUE.} are considered.  If more than one
 element in the array has the minimum value, the location returned is
 that of the first such element in array element order if the
-@var{BACK} is not present, or if it false; otherwise, the location
-returned is that of the first such element.  If the array has
+@var{BACK} is not present, or is false; if @var{BACK} is true, the location
+returned is that of the last such element.  If the array has
 zero size, or all of the elements of @var{MASK} are @code{.FALSE.}, then
 the result is an array of zeroes.  Similarly, if @var{DIM} is supplied
 and all of the elements of @var{MASK} along a given row are zero, the

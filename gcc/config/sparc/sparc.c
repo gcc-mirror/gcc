@@ -724,11 +724,6 @@ static const struct attribute_spec sparc_attribute_table[] =
 };
 #endif
 
-/* Option handling.  */
-
-/* Parsed value.  */
-enum cmodel sparc_cmodel;
-
 char sparc_hard_reg_printed[8];
 
 /* Initialize the GCC target structure.  */
@@ -1636,22 +1631,10 @@ dump_target_flags (const char *prefix, const int flags)
 static void
 sparc_option_override (void)
 {
-  static struct code_model {
-    const char *const name;
-    const enum cmodel value;
-  } const cmodels[] = {
-    { "32", CM_32 },
-    { "medlow", CM_MEDLOW },
-    { "medmid", CM_MEDMID },
-    { "medany", CM_MEDANY },
-    { "embmedany", CM_EMBMEDANY },
-    { NULL, (enum cmodel) 0 }
-  };
-  const struct code_model *cmodel;
   /* Map TARGET_CPU_DEFAULT to value for -m{cpu,tune}=.  */
   static struct cpu_default {
     const int cpu;
-    const enum processor_type processor;
+    const enum sparc_processor_type processor;
   } const cpu_default[] = {
     /* There must be one entry here for each TARGET_CPU value.  */
     { TARGET_CPU_sparc, PROCESSOR_CYPRESS },
@@ -1757,7 +1740,7 @@ sparc_option_override (void)
 	  else if (! strcmp (q, "options"))
 	    mask = MASK_DEBUG_OPTIONS;
 	  else
-	    error ("unknown -mdebug-%s switch", q);
+	    error ("unknown %<-mdebug-%s%> switch", q);
 
 	  if (invert)
 	    sparc_debug &= ~mask;
@@ -1791,39 +1774,15 @@ sparc_option_override (void)
   /* We force all 64bit archs to use 128 bit long double */
   if (TARGET_ARCH64 && !TARGET_LONG_DOUBLE_128)
     {
-      error ("-mlong-double-64 not allowed with -m64");
+      error ("%<-mlong-double-64%> not allowed with %<-m64%>");
       target_flags |= MASK_LONG_DOUBLE_128;
-    }
-
-  /* Code model selection.  */
-  sparc_cmodel = SPARC_DEFAULT_CMODEL;
-
-#ifdef SPARC_BI_ARCH
-  if (TARGET_ARCH32)
-    sparc_cmodel = CM_32;
-#endif
-
-  if (sparc_cmodel_string != NULL)
-    {
-      if (TARGET_ARCH64)
-	{
-	  for (cmodel = &cmodels[0]; cmodel->name; cmodel++)
-	    if (strcmp (sparc_cmodel_string, cmodel->name) == 0)
-	      break;
-	  if (cmodel->name == NULL)
-	    error ("bad value (%s) for -mcmodel= switch", sparc_cmodel_string);
-	  else
-	    sparc_cmodel = cmodel->value;
-	}
-      else
-	error ("-mcmodel= is not supported on 32-bit systems");
     }
 
   /* Check that -fcall-saved-REG wasn't specified for out registers.  */
   for (i = 8; i < 16; i++)
     if (!call_used_regs [i])
       {
-	error ("-fcall-saved-REG is not supported for out registers");
+	error ("%<-fcall-saved-REG%> is not supported for out registers");
         call_used_regs [i] = 1;
       }
 
@@ -1935,6 +1894,48 @@ sparc_option_override (void)
   if (sparc_fix_ut699)
     target_flags &= ~MASK_FSMULD;
 
+#ifdef TARGET_DEFAULT_LONG_DOUBLE_128
+  if (!(target_flags_explicit & MASK_LONG_DOUBLE_128))
+    target_flags |= MASK_LONG_DOUBLE_128;
+#endif
+
+  if (TARGET_DEBUG_OPTIONS)
+    dump_target_flags ("Final target_flags", target_flags);
+
+  /* Set the code model if no -mcmodel option was specified.  */
+  if (global_options_set.x_sparc_code_model)
+    {
+      if (TARGET_ARCH32)
+	error ("%<-mcmodel=%> is not supported in 32-bit mode");
+    }
+  else
+    {
+      if (TARGET_ARCH32)
+	sparc_code_model = CM_32;
+      else
+	sparc_code_model = SPARC_DEFAULT_CMODEL;
+    }
+
+  /* Set the memory model if no -mmemory-model option was specified.  */
+  if (!global_options_set.x_sparc_memory_model)
+    {
+      /* Choose the memory model for the operating system.  */
+      enum sparc_memory_model_type os_default = SUBTARGET_DEFAULT_MEMORY_MODEL;
+      if (os_default != SMM_DEFAULT)
+	sparc_memory_model = os_default;
+      /* Choose the most relaxed model for the processor.  */
+      else if (TARGET_V9)
+	sparc_memory_model = SMM_RMO;
+      else if (TARGET_LEON3)
+	sparc_memory_model = SMM_TSO;
+      else if (TARGET_LEON)
+	sparc_memory_model = SMM_SC;
+      else if (TARGET_V8)
+	sparc_memory_model = SMM_PSO;
+      else
+	sparc_memory_model = SMM_SC;
+    }
+
   /* Supply a default value for align_functions.  */
   if (flag_align_functions && !str_align_functions)
     {
@@ -1958,12 +1959,7 @@ sparc_option_override (void)
   if (!TARGET_ARCH64)
     targetm.asm_out.unaligned_op.di = NULL;
 
-  /* Do various machine dependent initializations.  */
-  sparc_init_modes ();
-
-  /* Set up function hooks.  */
-  init_machine_status = sparc_init_machine_status;
-
+  /* Set the processor costs.  */
   switch (sparc_cpu)
     {
     case PROCESSOR_V7:
@@ -2020,33 +2016,6 @@ sparc_option_override (void)
     case PROCESSOR_NATIVE:
       gcc_unreachable ();
     };
-
-  if (sparc_memory_model == SMM_DEFAULT)
-    {
-      /* Choose the memory model for the operating system.  */
-      enum sparc_memory_model_type os_default = SUBTARGET_DEFAULT_MEMORY_MODEL;
-      if (os_default != SMM_DEFAULT)
-	sparc_memory_model = os_default;
-      /* Choose the most relaxed model for the processor.  */
-      else if (TARGET_V9)
-	sparc_memory_model = SMM_RMO;
-      else if (TARGET_LEON3)
-	sparc_memory_model = SMM_TSO;
-      else if (TARGET_LEON)
-	sparc_memory_model = SMM_SC;
-      else if (TARGET_V8)
-	sparc_memory_model = SMM_PSO;
-      else
-	sparc_memory_model = SMM_SC;
-    }
-
-#ifdef TARGET_DEFAULT_LONG_DOUBLE_128
-  if (!(target_flags_explicit & MASK_LONG_DOUBLE_128))
-    target_flags |= MASK_LONG_DOUBLE_128;
-#endif
-
-  if (TARGET_DEBUG_OPTIONS)
-    dump_target_flags ("Final target_flags", target_flags);
 
   /* PARAM_SIMULTANEOUS_PREFETCHES is the number of prefetches that
      can run at the same time.  More important, it is the threshold
@@ -2146,6 +2115,12 @@ sparc_option_override (void)
      redundant 32-to-64-bit extensions.  */
   if (!global_options_set.x_flag_ree && TARGET_ARCH32)
     flag_ree = 0;
+
+  /* Do various machine dependent initializations.  */
+  sparc_init_modes ();
+
+  /* Set up function hooks.  */
+  init_machine_status = sparc_init_machine_status;
 }
 
 /* Miscellaneous utilities.  */
@@ -2460,8 +2435,8 @@ sparc_emit_set_symbolic_const64 (rtx op0, rtx op1, rtx temp)
       temp = gen_rtx_REG (DImode, REGNO (temp));
     }
 
-  /* SPARC-V9 code-model support.  */
-  switch (sparc_cmodel)
+  /* SPARC-V9 code model support.  */
+  switch (sparc_code_model)
     {
     case CM_MEDLOW:
       /* The range spanned by all instructions in the object is less
@@ -4269,19 +4244,84 @@ sparc_cannot_force_const_mem (machine_mode mode, rtx x)
 
 /* Global Offset Table support.  */
 static GTY(()) rtx got_helper_rtx = NULL_RTX;
-static GTY(()) rtx global_offset_table_rtx = NULL_RTX;
+static GTY(()) rtx got_register_rtx = NULL_RTX;
+static GTY(()) rtx got_symbol_rtx = NULL_RTX;
 
 /* Return the SYMBOL_REF for the Global Offset Table.  */
-
-static GTY(()) rtx sparc_got_symbol = NULL_RTX;
 
 static rtx
 sparc_got (void)
 {
-  if (!sparc_got_symbol)
-    sparc_got_symbol = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
+  if (!got_symbol_rtx)
+    got_symbol_rtx = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
 
-  return sparc_got_symbol;
+  return got_symbol_rtx;
+}
+
+#ifdef HAVE_GAS_HIDDEN
+# define USE_HIDDEN_LINKONCE 1
+#else
+# define USE_HIDDEN_LINKONCE 0
+#endif
+
+static void
+get_pc_thunk_name (char name[32], unsigned int regno)
+{
+  const char *reg_name = reg_names[regno];
+
+  /* Skip the leading '%' as that cannot be used in a
+     symbol name.  */
+  reg_name += 1;
+
+  if (USE_HIDDEN_LINKONCE)
+    sprintf (name, "__sparc_get_pc_thunk.%s", reg_name);
+  else
+    ASM_GENERATE_INTERNAL_LABEL (name, "LADDPC", regno);
+}
+
+/* Wrapper around the load_pcrel_sym{si,di} patterns.  */
+
+static rtx
+gen_load_pcrel_sym (rtx op0, rtx op1, rtx op2)
+{
+  int orig_flag_pic = flag_pic;
+  rtx insn;
+
+  /* The load_pcrel_sym{si,di} patterns require absolute addressing.  */
+  flag_pic = 0;
+  if (TARGET_ARCH64)
+    insn = gen_load_pcrel_symdi (op0, op1, op2, GEN_INT (REGNO (op0)));
+  else
+    insn = gen_load_pcrel_symsi (op0, op1, op2, GEN_INT (REGNO (op0)));
+  flag_pic = orig_flag_pic;
+
+  return insn;
+}
+
+/* Emit code to load the GOT register.  */
+
+void
+load_got_register (void)
+{
+  if (!got_register_rtx)
+    got_register_rtx = gen_rtx_REG (Pmode, GLOBAL_OFFSET_TABLE_REGNUM);
+
+  if (TARGET_VXWORKS_RTP)
+    emit_insn (gen_vxworks_load_got ());
+  else
+    {
+      /* The GOT symbol is subject to a PC-relative relocation so we need a
+	 helper function to add the PC value and thus get the final value.  */
+      if (!got_helper_rtx)
+	{
+	  char name[32];
+	  get_pc_thunk_name (name, GLOBAL_OFFSET_TABLE_REGNUM);
+	  got_helper_rtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
+	}
+
+      emit_insn (gen_load_pcrel_sym (got_register_rtx, sparc_got (),
+				     got_helper_rtx));
+    }
 }
 
 /* Ensure that we are not using patterns that are not OK with PIC.  */
@@ -4607,7 +4647,7 @@ sparc_tls_got (void)
   if (TARGET_SUN_TLS && TARGET_ARCH32)
     {
       load_got_register ();
-      return global_offset_table_rtx;
+      return got_register_rtx;
     }
 
   /* In all other cases, we load a new pseudo with the GOT symbol.  */
@@ -4644,30 +4684,38 @@ sparc_legitimize_tls_address (rtx addr)
   gcc_assert (can_create_pseudo_p ());
 
   if (GET_CODE (addr) == SYMBOL_REF)
+    /* Although the various sethi/or sequences generate SImode values, many of
+       them can be transformed by the linker when relaxing and, if relaxing to
+       local-exec, will become a sethi/xor pair, which is signed and therefore
+       a full DImode value in 64-bit mode.  Thus we must use Pmode, lest these
+       values be spilled onto the stack in 64-bit mode.  */
     switch (SYMBOL_REF_TLS_MODEL (addr))
       {
       case TLS_MODEL_GLOBAL_DYNAMIC:
 	start_sequence ();
-	temp1 = gen_reg_rtx (SImode);
-	temp2 = gen_reg_rtx (SImode);
+	temp1 = gen_reg_rtx (Pmode);
+	temp2 = gen_reg_rtx (Pmode);
 	ret = gen_reg_rtx (Pmode);
 	o0 = gen_rtx_REG (Pmode, 8);
 	got = sparc_tls_got ();
-	emit_insn (gen_tgd_hi22 (temp1, addr));
-	emit_insn (gen_tgd_lo10 (temp2, temp1, addr));
 	if (TARGET_ARCH32)
 	  {
-	    emit_insn (gen_tgd_add32 (o0, got, temp2, addr));
-	    insn = emit_call_insn (gen_tgd_call32 (o0, sparc_tls_get_addr (),
+	    emit_insn (gen_tgd_hi22si (temp1, addr));
+	    emit_insn (gen_tgd_lo10si (temp2, temp1, addr));
+	    emit_insn (gen_tgd_addsi (o0, got, temp2, addr));
+	    insn = emit_call_insn (gen_tgd_callsi (o0, sparc_tls_get_addr (),
 						   addr, const1_rtx));
 	  }
 	else
 	  {
-	    emit_insn (gen_tgd_add64 (o0, got, temp2, addr));
-	    insn = emit_call_insn (gen_tgd_call64 (o0, sparc_tls_get_addr (),
+	    emit_insn (gen_tgd_hi22di (temp1, addr));
+	    emit_insn (gen_tgd_lo10di (temp2, temp1, addr));
+	    emit_insn (gen_tgd_adddi (o0, got, temp2, addr));
+	    insn = emit_call_insn (gen_tgd_calldi (o0, sparc_tls_get_addr (),
 						   addr, const1_rtx));
 	  }
 	use_reg (&CALL_INSN_FUNCTION_USAGE (insn), o0);
+	RTL_CONST_CALL_P (insn) = 1;
 	insn = get_insns ();
 	end_sequence ();
 	emit_libcall_block (insn, ret, o0, addr);
@@ -4675,61 +4723,78 @@ sparc_legitimize_tls_address (rtx addr)
 
       case TLS_MODEL_LOCAL_DYNAMIC:
 	start_sequence ();
-	temp1 = gen_reg_rtx (SImode);
-	temp2 = gen_reg_rtx (SImode);
+	temp1 = gen_reg_rtx (Pmode);
+	temp2 = gen_reg_rtx (Pmode);
 	temp3 = gen_reg_rtx (Pmode);
 	ret = gen_reg_rtx (Pmode);
 	o0 = gen_rtx_REG (Pmode, 8);
 	got = sparc_tls_got ();
-	emit_insn (gen_tldm_hi22 (temp1));
-	emit_insn (gen_tldm_lo10 (temp2, temp1));
 	if (TARGET_ARCH32)
 	  {
-	    emit_insn (gen_tldm_add32 (o0, got, temp2));
-	    insn = emit_call_insn (gen_tldm_call32 (o0, sparc_tls_get_addr (),
+	    emit_insn (gen_tldm_hi22si (temp1));
+	    emit_insn (gen_tldm_lo10si (temp2, temp1));
+	    emit_insn (gen_tldm_addsi (o0, got, temp2));
+	    insn = emit_call_insn (gen_tldm_callsi (o0, sparc_tls_get_addr (),
 						    const1_rtx));
 	  }
 	else
 	  {
-	    emit_insn (gen_tldm_add64 (o0, got, temp2));
-	    insn = emit_call_insn (gen_tldm_call64 (o0, sparc_tls_get_addr (),
+	    emit_insn (gen_tldm_hi22di (temp1));
+	    emit_insn (gen_tldm_lo10di (temp2, temp1));
+	    emit_insn (gen_tldm_adddi (o0, got, temp2));
+	    insn = emit_call_insn (gen_tldm_calldi (o0, sparc_tls_get_addr (),
 						    const1_rtx));
 	  }
 	use_reg (&CALL_INSN_FUNCTION_USAGE (insn), o0);
+	RTL_CONST_CALL_P (insn) = 1;
 	insn = get_insns ();
 	end_sequence ();
+	/* Attach a unique REG_EQUAL, to allow the RTL optimizers to
+	  share the LD_BASE result with other LD model accesses.  */
 	emit_libcall_block (insn, temp3, o0,
 			    gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
 					    UNSPEC_TLSLD_BASE));
-	temp1 = gen_reg_rtx (SImode);
-	temp2 = gen_reg_rtx (SImode);
-	emit_insn (gen_tldo_hix22 (temp1, addr));
-	emit_insn (gen_tldo_lox10 (temp2, temp1, addr));
+	temp1 = gen_reg_rtx (Pmode);
+	temp2 = gen_reg_rtx (Pmode);
 	if (TARGET_ARCH32)
-	  emit_insn (gen_tldo_add32 (ret, temp3, temp2, addr));
+	  {
+	    emit_insn (gen_tldo_hix22si (temp1, addr));
+	    emit_insn (gen_tldo_lox10si (temp2, temp1, addr));
+	    emit_insn (gen_tldo_addsi (ret, temp3, temp2, addr));
+	  }
 	else
-	  emit_insn (gen_tldo_add64 (ret, temp3, temp2, addr));
+	  {
+	    emit_insn (gen_tldo_hix22di (temp1, addr));
+	    emit_insn (gen_tldo_lox10di (temp2, temp1, addr));
+	    emit_insn (gen_tldo_adddi (ret, temp3, temp2, addr));
+	  }
 	break;
 
       case TLS_MODEL_INITIAL_EXEC:
-	temp1 = gen_reg_rtx (SImode);
-	temp2 = gen_reg_rtx (SImode);
+	temp1 = gen_reg_rtx (Pmode);
+	temp2 = gen_reg_rtx (Pmode);
 	temp3 = gen_reg_rtx (Pmode);
 	got = sparc_tls_got ();
-	emit_insn (gen_tie_hi22 (temp1, addr));
-	emit_insn (gen_tie_lo10 (temp2, temp1, addr));
 	if (TARGET_ARCH32)
-	  emit_insn (gen_tie_ld32 (temp3, got, temp2, addr));
+	  {
+	    emit_insn (gen_tie_hi22si (temp1, addr));
+	    emit_insn (gen_tie_lo10si (temp2, temp1, addr));
+	    emit_insn (gen_tie_ld32 (temp3, got, temp2, addr));
+	  }
 	else
-	  emit_insn (gen_tie_ld64 (temp3, got, temp2, addr));
+	  {
+	    emit_insn (gen_tie_hi22di (temp1, addr));
+	    emit_insn (gen_tie_lo10di (temp2, temp1, addr));
+	    emit_insn (gen_tie_ld64 (temp3, got, temp2, addr));
+	  }
         if (TARGET_SUN_TLS)
 	  {
 	    ret = gen_reg_rtx (Pmode);
 	    if (TARGET_ARCH32)
-	      emit_insn (gen_tie_add32 (ret, gen_rtx_REG (Pmode, 7),
+	      emit_insn (gen_tie_addsi (ret, gen_rtx_REG (Pmode, 7),
 					temp3, addr));
 	    else
-	      emit_insn (gen_tie_add64 (ret, gen_rtx_REG (Pmode, 7),
+	      emit_insn (gen_tie_adddi (ret, gen_rtx_REG (Pmode, 7),
 					temp3, addr));
 	  }
 	else
@@ -4741,13 +4806,13 @@ sparc_legitimize_tls_address (rtx addr)
 	temp2 = gen_reg_rtx (Pmode);
 	if (TARGET_ARCH32)
 	  {
-	    emit_insn (gen_tle_hix22_sp32 (temp1, addr));
-	    emit_insn (gen_tle_lox10_sp32 (temp2, temp1, addr));
+	    emit_insn (gen_tle_hix22si (temp1, addr));
+	    emit_insn (gen_tle_lox10si (temp2, temp1, addr));
 	  }
 	else
 	  {
-	    emit_insn (gen_tle_hix22_sp64 (temp1, addr));
-	    emit_insn (gen_tle_lox10_sp64 (temp2, temp1, addr));
+	    emit_insn (gen_tle_hix22di (temp1, addr));
+	    emit_insn (gen_tle_lox10di (temp2, temp1, addr));
 	  }
 	ret = gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode, 7), temp2);
 	break;
@@ -4949,12 +5014,19 @@ sparc_delegitimize_address (rtx x)
 {
   x = delegitimize_mem_from_attrs (x);
 
-  if (GET_CODE (x) == LO_SUM && GET_CODE (XEXP (x, 1)) == UNSPEC)
-    switch (XINT (XEXP (x, 1), 1))
+  if (GET_CODE (x) == LO_SUM)
+    x = XEXP (x, 1);
+
+  if (GET_CODE (x) == UNSPEC)
+    switch (XINT (x, 1))
       {
       case UNSPEC_MOVE_PIC:
       case UNSPEC_TLSLE:
-	x = XVECEXP (XEXP (x, 1), 0, 0);
+	x = XVECEXP (x, 0, 0);
+	gcc_assert (GET_CODE (x) == SYMBOL_REF);
+	break;
+      case UNSPEC_MOVE_GOTDATA:
+	x = XVECEXP (x, 0, 2);
 	gcc_assert (GET_CODE (x) == SYMBOL_REF);
 	break;
       default:
@@ -4963,17 +5035,23 @@ sparc_delegitimize_address (rtx x)
 
   /* This is generated by mov{si,di}_pic_label_ref in PIC mode.  */
   if (GET_CODE (x) == MINUS
-      && sparc_pic_register_p (XEXP (x, 0))
-      && GET_CODE (XEXP (x, 1)) == LO_SUM
-      && GET_CODE (XEXP (XEXP (x, 1), 1)) == UNSPEC
-      && XINT (XEXP (XEXP (x, 1), 1), 1) == UNSPEC_MOVE_PIC_LABEL)
+      && (XEXP (x, 0) == got_register_rtx
+	  || sparc_pic_register_p (XEXP (x, 0))))
     {
-      x = XVECEXP (XEXP (XEXP (x, 1), 1), 0, 0);
-      gcc_assert (GET_CODE (x) == LABEL_REF
-		  || (GET_CODE (x) == CONST
-		      && GET_CODE (XEXP (x, 0)) == PLUS
-		      && GET_CODE (XEXP (XEXP (x, 0), 0)) == LABEL_REF
-		      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT));
+      rtx y = XEXP (x, 1);
+
+      if (GET_CODE (y) == LO_SUM)
+	y = XEXP (y, 1);
+
+      if (GET_CODE (y) == UNSPEC && XINT (y, 1) == UNSPEC_MOVE_PIC_LABEL)
+	{
+	  x = XVECEXP (y, 0, 0);
+	  gcc_assert (GET_CODE (x) == LABEL_REF
+		      || (GET_CODE (x) == CONST
+			  && GET_CODE (XEXP (x, 0)) == PLUS
+			  && GET_CODE (XEXP (XEXP (x, 0), 0)) == LABEL_REF
+			  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT));
+	}
     }
 
   return x;
@@ -5002,7 +5080,7 @@ sparc_legitimize_reload_address (rtx x, machine_mode mode,
       && GET_MODE (x) == SImode
       && GET_CODE (x) != LO_SUM
       && GET_CODE (x) != HIGH
-      && sparc_cmodel <= CM_MEDLOW
+      && sparc_code_model <= CM_MEDLOW
       && !(flag_pic
 	   && (symbolic_operand (x, Pmode) || pic_address_needs_scratch (x))))
     {
@@ -5052,72 +5130,6 @@ sparc_mode_dependent_address_p (const_rtx addr,
     return true;
 
   return false;
-}
-
-#ifdef HAVE_GAS_HIDDEN
-# define USE_HIDDEN_LINKONCE 1
-#else
-# define USE_HIDDEN_LINKONCE 0
-#endif
-
-static void
-get_pc_thunk_name (char name[32], unsigned int regno)
-{
-  const char *reg_name = reg_names[regno];
-
-  /* Skip the leading '%' as that cannot be used in a
-     symbol name.  */
-  reg_name += 1;
-
-  if (USE_HIDDEN_LINKONCE)
-    sprintf (name, "__sparc_get_pc_thunk.%s", reg_name);
-  else
-    ASM_GENERATE_INTERNAL_LABEL (name, "LADDPC", regno);
-}
-
-/* Wrapper around the load_pcrel_sym{si,di} patterns.  */
-
-static rtx
-gen_load_pcrel_sym (rtx op0, rtx op1, rtx op2)
-{
-  int orig_flag_pic = flag_pic;
-  rtx insn;
-
-  /* The load_pcrel_sym{si,di} patterns require absolute addressing.  */
-  flag_pic = 0;
-  if (TARGET_ARCH64)
-    insn = gen_load_pcrel_symdi (op0, op1, op2, GEN_INT (REGNO (op0)));
-  else
-    insn = gen_load_pcrel_symsi (op0, op1, op2, GEN_INT (REGNO (op0)));
-  flag_pic = orig_flag_pic;
-
-  return insn;
-}
-
-/* Emit code to load the GOT register.  */
-
-void
-load_got_register (void)
-{
-  if (!global_offset_table_rtx)
-    global_offset_table_rtx = gen_rtx_REG (Pmode, GLOBAL_OFFSET_TABLE_REGNUM);
-
-  if (TARGET_VXWORKS_RTP)
-    emit_insn (gen_vxworks_load_got ());
-  else
-    {
-      /* The GOT symbol is subject to a PC-relative relocation so we need a
-	 helper function to add the PC value and thus get the final value.  */
-      if (!got_helper_rtx)
-	{
-	  char name[32];
-	  get_pc_thunk_name (name, GLOBAL_OFFSET_TABLE_REGNUM);
-	  got_helper_rtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
-	}
-
-      emit_insn (gen_load_pcrel_sym (global_offset_table_rtx, sparc_got (),
-				     got_helper_rtx));
-    }
 }
 
 /* Emit a call instruction with the pattern given by PAT.  ADDR is the
@@ -5474,7 +5486,7 @@ save_local_or_in_reg_p (unsigned int regno, int leaf_function)
     return true;
 
   /* GOT register (%l7) if needed.  */
-  if (regno == PIC_OFFSET_TABLE_REGNUM && crtl->uses_pic_offset_table)
+  if (regno == GLOBAL_OFFSET_TABLE_REGNUM && got_register_rtx)
     return true;
 
   /* If the function accesses prior frames, the frame pointer and the return
@@ -6872,6 +6884,10 @@ function_arg_slotno (const struct sparc_args *cum, machine_mode mode,
     = incoming ? SPARC_INCOMING_INT_ARG_FIRST : SPARC_OUTGOING_INT_ARG_FIRST;
   int slotno = cum->words, regno;
   enum mode_class mclass = GET_MODE_CLASS (mode);
+
+  /* Silence warnings in the callers.  */
+  *pregno = -1;
+  *ppadding = -1;
 
   if (type && TREE_ADDRESSABLE (type))
     return -1;
@@ -12399,7 +12415,7 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	  start_sequence ();
 	  load_got_register ();  /* clobbers %o7 */
 	  if (!TARGET_VXWORKS_RTP)
-	    pic_offset_table_rtx = global_offset_table_rtx;
+	    pic_offset_table_rtx = got_register_rtx;
 	  scratch = sparc_legitimize_pic_address (funexp, scratch);
 	  seq = get_insns ();
 	  end_sequence ();
@@ -12414,7 +12430,7 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	}
       else  /* TARGET_ARCH64 */
         {
-	  switch (sparc_cmodel)
+	  switch (sparc_code_model)
 	    {
 	    case CM_MEDLOW:
 	    case CM_MEDMID:
@@ -12483,7 +12499,7 @@ sparc_init_machine_status (void)
 static unsigned HOST_WIDE_INT
 sparc_asan_shadow_offset (void)
 {
-  return TARGET_ARCH64 ? HOST_WIDE_INT_C (0x7fff8000) : (HOST_WIDE_INT_1 << 29);
+  return TARGET_ARCH64 ? (HOST_WIDE_INT_1 << 43) : (HOST_WIDE_INT_1 << 29);
 }
 
 /* This is called from dwarf2out.c via TARGET_ASM_OUTPUT_DWARF_DTPREL.
@@ -13075,7 +13091,7 @@ sparc_init_pic_reg (void)
   start_sequence ();
   load_got_register ();
   if (!TARGET_VXWORKS_RTP)
-    emit_move_insn (pic_offset_table_rtx, global_offset_table_rtx);
+    emit_move_insn (pic_offset_table_rtx, got_register_rtx);
   seq = get_insns ();
   end_sequence ();
 

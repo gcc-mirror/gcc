@@ -34,7 +34,7 @@
 #include <sys/types.h>
 #if !defined(HAVE_STDINT_H) && !defined(HAVE_INTTYPES_H) && \
     !defined(UINT64_MAX) && !defined(uint64_t)
-#error can not find uint64_t type
+#error cannot find uint64_t type
 #endif
 
 #ifdef __cplusplus

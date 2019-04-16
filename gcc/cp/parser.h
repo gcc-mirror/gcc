@@ -282,9 +282,12 @@ struct GTY(()) cp_parser {
      been seen that makes the expression non-constant.  */
   bool non_integral_constant_expression_p;
 
-  /* TRUE if local variable names and `this' are forbidden in the
-     current context.  */
-  bool local_variables_forbidden_p;
+  /* Used to track if local variable names and/or `this' are forbidden
+     in the current context.  */
+#define LOCAL_VARS_FORBIDDEN (1 << 0)
+#define THIS_FORBIDDEN (1 << 1)
+#define LOCAL_VARS_AND_THIS_FORBIDDEN (LOCAL_VARS_FORBIDDEN | THIS_FORBIDDEN)
+  unsigned char local_variables_forbidden_p;
 
   /* TRUE if the declaration we are parsing is part of a
      linkage-specification of the form `extern string-literal
@@ -346,6 +349,9 @@ struct GTY(()) cp_parser {
      definitions are not permitted.  The string stored here will be
      issued as an error message if a type is defined.  */
   const char *type_definition_forbidden_message;
+
+  /* Argument for type_definition_forbidden_message if needed.  */
+  const char *type_definition_forbidden_message_arg;
 
   /* A stack used for member functions of local classes.  The lists
      contained in an individual entry can only be processed once the

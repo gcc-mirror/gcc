@@ -101,8 +101,8 @@ namespace std
   _GLIBCXX17_DEPRECATED
   bool uncaught_exception() _GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
 
-#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++17 or gnu++98
-#define __cpp_lib_uncaught_exceptions 201411
+#if __cplusplus >= 201703L || !defined(__STRICT_ANSI__) // c++17 or gnu++98
+#define __cpp_lib_uncaught_exceptions 201411L
   /// The number of uncaught exceptions.
   int uncaught_exceptions() _GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
 #endif

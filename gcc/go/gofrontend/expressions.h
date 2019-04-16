@@ -61,6 +61,7 @@ class Map_construction_expression;
 class Type_guard_expression;
 class Heap_expression;
 class Receive_expression;
+class Slice_value_expression;
 class Conditional_expression;
 class Compound_expression;
 class Numeric_constant;
@@ -228,6 +229,10 @@ class Expression
   // Make a constant string expression.
   static Expression*
   make_string(const std::string&, Location);
+
+  // Make a constant string expression with a specific string subtype.
+  static Expression*
+  make_string_typed(const std::string&, Type*, Location);
 
   // Make an expression that evaluates to some characteristic of an string.
   // For simplicity, the enum values must match the field indexes in the
@@ -840,6 +845,12 @@ class Expression
   Receive_expression*
   receive_expression()
   { return this->convert<Receive_expression, EXPRESSION_RECEIVE>(); }
+
+  // If this is a slice value expression, return the Slice_valiue_expression
+  // structure.  Otherwise, return NULL.
+  Slice_value_expression*
+  slice_value_expression()
+  { return this->convert<Slice_value_expression, EXPRESSION_SLICE_VALUE>(); }
 
   // If this is a conditional expression, return the Conditional_expression
   // structure.  Otherwise, return NULL.
@@ -1563,9 +1574,9 @@ class Set_and_use_temporary_expression : public Expression
 class String_expression : public Expression
 {
  public:
-  String_expression(const std::string& val, Location location)
+  String_expression(const std::string& val, Type* type, Location location)
     : Expression(EXPRESSION_STRING, location),
-      val_(val), type_(NULL)
+      val_(val), type_(type)
   { }
 
   const std::string&
@@ -2349,7 +2360,7 @@ class Call_expression : public Expression
   check_argument_type(int, const Type*, const Type*, Location, bool);
 
   Expression*
-  lower_to_builtin(Named_object**, const char*, int);
+  lower_to_builtin(Named_object**, const char*, int*);
 
   Expression*
   interface_method_function(Interface_field_reference_expression*,
@@ -2847,7 +2858,7 @@ class Array_index_expression : public Expression
 			 Expression* end, Expression* cap, Location location)
     : Expression(EXPRESSION_ARRAY_INDEX, location),
       array_(array), start_(start), end_(end), cap_(cap), type_(NULL),
-      is_lvalue_(false)
+      is_lvalue_(false), needs_bounds_check_(true)
   { }
 
   // Return the array.
@@ -2891,6 +2902,10 @@ class Array_index_expression : public Expression
   set_is_lvalue()
   { this->is_lvalue_ = true; }
 
+  void
+  set_needs_bounds_check(bool b)
+  { this->needs_bounds_check_ = b; }
+
  protected:
   int
   do_traverse(Traverse*);
@@ -2910,15 +2925,17 @@ class Array_index_expression : public Expression
   Expression*
   do_copy()
   {
-    return Expression::make_array_index(this->array_->copy(),
-					this->start_->copy(),
-					(this->end_ == NULL
-					 ? NULL
-					 : this->end_->copy()),
-					(this->cap_ == NULL
-					 ? NULL
-					 : this->cap_->copy()),
-					this->location());
+    Expression* ret = Expression::make_array_index(this->array_->copy(),
+                                                   this->start_->copy(),
+                                                   (this->end_ == NULL
+                                                    ? NULL
+                                                    : this->end_->copy()),
+                                                   (this->cap_ == NULL
+                                                    ? NULL
+                                                    : this->cap_->copy()),
+                                                   this->location());
+    ret->array_index_expression()->set_needs_bounds_check(this->needs_bounds_check_);
+    return ret;
   }
 
   bool
@@ -2955,6 +2972,8 @@ class Array_index_expression : public Expression
   Type* type_;
   // Whether expr appears in an lvalue context.
   bool is_lvalue_;
+  // Whether bounds check is needed.
+  bool needs_bounds_check_;
 };
 
 // A string index.  This is used for both indexing and slicing.
@@ -3955,6 +3974,56 @@ class Receive_expression : public Expression
   Temporary_statement* temp_receiver_;
 };
 
+// An expression that represents a slice value: a struct with value pointer,
+// length, and capacity fields.
+
+class Slice_value_expression : public Expression
+{
+ public:
+  Slice_value_expression(Type* type, Expression* valmem, Expression* len,
+                         Expression* cap, Location location)
+    : Expression(EXPRESSION_SLICE_VALUE, location),
+      type_(type), valmem_(valmem), len_(len), cap_(cap)
+  { }
+
+  // The memory holding the values in the slice.  The type should be a
+  // pointer to the element value of the slice.
+  Expression*
+  valmem() const
+  { return this->valmem_; }
+
+ protected:
+  int
+  do_traverse(Traverse*);
+
+  Type*
+  do_type()
+  { return this->type_; }
+
+  void
+  do_determine_type(const Type_context*)
+  { }
+
+  Expression*
+  do_copy();
+
+  Bexpression*
+  do_get_backend(Translate_context* context);
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
+ private:
+  // The type of the slice value.
+  Type* type_;
+  // The memory holding the values in the slice.
+  Expression* valmem_;
+  // The length of the slice.
+  Expression* len_;
+  // The capacity of the slice.
+  Expression* cap_;
+};
+
 // Conditional expressions.
 
 class Conditional_expression : public Expression
@@ -4106,6 +4175,10 @@ class Numeric_constant
 
   Numeric_constant& operator=(const Numeric_constant&);
 
+  // Check equality with another numeric constant.
+  bool
+  equals(const Numeric_constant&) const;
+
   // Set to an unsigned long value.
   void
   set_unsigned_long(Type*, unsigned long);
@@ -4224,6 +4297,10 @@ class Numeric_constant
   // Return an Expression for this value.
   Expression*
   expression(Location) const;
+
+  // Calculate a hash code with a given seed.
+  unsigned int
+  hash(unsigned int seed) const;
 
  private:
   void

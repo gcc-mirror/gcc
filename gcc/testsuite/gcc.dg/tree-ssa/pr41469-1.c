@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fexceptions -fdump-tree-optimized" } */
+/* { dg-require-effective-target exceptions } */
 
 void af (void *a);
 

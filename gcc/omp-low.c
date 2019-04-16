@@ -868,6 +868,8 @@ new_omp_context (gimple *stmt, omp_context *outer_ctx)
       ctx->cb.copy_decl = omp_copy_decl;
       ctx->cb.eh_lp_nr = 0;
       ctx->cb.transform_call_graph_edges = CB_CGE_MOVE;
+      ctx->cb.adjust_array_error_bounds = true;
+      ctx->cb.dont_remap_vla_if_no_change = true;
       ctx->depth = 1;
     }
 
@@ -7131,7 +7133,7 @@ lower_omp_task_reductions (omp_context *ctx, enum tree_code code, tree clauses,
 	  lab3 = create_artificial_label (UNKNOWN_LOCATION);
 	  if (code == OMP_FOR)
 	    c = gimple_omp_for_clauses (ctx->stmt);
-	  else if (code == OMP_SECTIONS)
+	  else /* if (code == OMP_SECTIONS) */
 	    c = gimple_omp_sections_clauses (ctx->stmt);
 	  c = OMP_CLAUSE_DECL (omp_find_clause (c, OMP_CLAUSE__REDUCTEMP_));
 	  cancellable = c;

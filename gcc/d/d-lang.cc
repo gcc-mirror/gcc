@@ -282,6 +282,9 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   global.params.betterC = false;
   global.params.allInst = false;
 
+  /* Default extern(C++) mangling to C++14.  */
+  global.params.cplusplus = CppStdRevisionCpp14;
+
   global.params.linkswitches = new Strings ();
   global.params.libfiles = new Strings ();
   global.params.objfiles = new Strings ();
@@ -724,6 +727,12 @@ d_post_options (const char ** fn)
       if (!global_options_set.x_flag_switch_errors)
 	global.params.useSwitchError = false;
     }
+
+  /* Turn off partitioning unless it was explicitly requested, as it doesn't
+     work with D exception chaining, where EH handler uses LSDA to determine
+     whether two thrown exception are in the same context.  */
+  if (!global_options_set.x_flag_reorder_blocks_and_partition)
+    global_options.x_flag_reorder_blocks_and_partition = 0;
 
   /* Error about use of deprecated features.  */
   if (global.params.useDeprecated == DIAGNOSTICinform

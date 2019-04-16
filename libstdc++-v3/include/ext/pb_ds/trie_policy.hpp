@@ -315,7 +315,7 @@ namespace __gnu_pbds
     typedef typename __rebind_ma::reference 		metadata_reference;
 
     /// Returns true if the container is empty.
-    virtual bool
+    _GLIBCXX_NODISCARD virtual bool
     empty() const = 0;
 
     /// Returns the iterator associated with the trie's first element.

@@ -3614,11 +3614,7 @@ find_nml_name:
   while (!dtp->u.p.input_complete)
     {
       if (!nml_get_obj_data (dtp, &prev_nl, nml_err_msg, sizeof nml_err_msg))
-	{
-	  if (dtp->u.p.current_unit->unit_number != options.stdin_unit)
-	    goto nml_err_ret;
-	  generate_error (&dtp->common, LIBERROR_READ_VALUE, nml_err_msg);
-        }
+	goto nml_err_ret;
 
       /* Reset the previous namelist pointer if we know we are not going
 	 to be doing multiple reads within a single namelist object.  */

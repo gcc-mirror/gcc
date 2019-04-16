@@ -1,3 +1,187 @@
+2019-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89933
+	* c-decl.c (merge_decls): When newdecl's type is its main variant,
+	don't try to remove it from the variant list, but instead assert
+	it has no variants.
+
+2019-04-01  Richard Biener  <rguenther@suse.de>
+
+	PR c/71598
+	* c-tree.h (c_get_alias_set): Declare.
+	* c-objc-common.h (LANG_HOOKS_GET_ALIAS_SET): Use c_get_alias_set.
+	* c-objc-common.c (c_get_alias_set): Treat enumeral types
+	as the underlying integer type.
+
+2019-03-19  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/89688
+	* c-decl.c (finish_decl): Call braced_lists_to_string for more
+	kinds of initializers.
+
+2019-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89734
+	* c-decl.c (grokdeclarator): Call c_build_qualified_type on function
+	return type even if quals_used is 0.  Formatting fixes.
+
+2019-03-14  Richard Biener  <rguenther@suse.de>
+
+	* c-tree.h (enum c_declspec_il): New.
+	(struct c_declspecs): Merge gimple_p and rtl_p into declspec_il
+	enum bitfield.
+	* c-parser.c (c_parser_declaration_or_fndef): Adjust accordingly.
+	Pass start pass and declspec_il to c_parser_parse_gimple_body.
+	(c_parser_declspecs): Adjust.
+	* gimple-parser.c: Include cfg.h, cfghooks.h, cfganal.h, tree-cfg.h,
+	gimple-iterator.h, cfgloop.h, tree-phinodes.h, tree-into-ssa.h
+	and bitmap.h.
+	(struct gimple_parser): New.
+	(gimple_parser::push_edge): New method.
+	(c_parser_gimple_parse_bb_spec): New helper.
+	(c_parser_parse_gimple_body): Get start pass and IL specification.
+	Initialize SSA and CFG.
+	(c_parser_gimple_compound_statement): Handle CFG and SSA build.
+	Build a gimple_parser parsing state and pass it along.
+	(c_parser_gimple_statement): Change intermittend __PHI internal
+	function argument for the edge.
+	(c_parser_gimple_or_rtl_pass_list): Handle ssa, cfg flags.
+	(c_parser_gimple_goto_stmt): Record edges to build.
+	(c_parser_gimple_if_stmt): Likewise.
+	* gimple-parser.h (c_parser_parse_gimple_body): Adjust.
+	(c_parser_gimple_or_rtl_pass_list): Likewise.
+
+2019-03-11  Martin Liska  <mliska@suse.cz>
+
+	* c-decl.c (check_for_loop_decls): Wrap an option name
+	in a string format message and fix GNU coding style.
+	* c-parser.c (c_parser_declspecs): Likewise.
+
+2019-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89550
+	* c-decl.c (finish_function): Only set TREE_NO_WARNING if warning_at
+	returned true.
+	(c_write_global_declarations_1): Only set TREE_NO_WARNING if pedwarn
+	or warning returned true.
+
+2019-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89525
+	* c-typeck.c (convert_arguments): Call inform_declaration only if
+	the previous warning_at call returned true.
+
+2019-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.c (c_parser_oacc_shape_clause): Add loc formal
+	parameter.  Adjust all users.
+	(c_parser_oacc_simple_clause): Replace parser with loc formal
+	parameter.  Adjust all users.
+
+2019-02-19  Chung-Lin Tang <cltang@codesourcery.com>
+
+	PR c/87924
+	* c-parser.c (c_parser_oacc_clause_wait): Add representation of wait
+	clause without argument as 'wait (GOMP_ASYNC_NOVAL)', adjust comments.
+
+2019-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89340
+	* c-decl.c (start_function): Clear TREE_PUBLIC on nested functions
+	before c_decl_attributes rather than after it.
+
+2019-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89211
+	* c-parser.c (c_parser_declaration_or_fndef): Don't update
+	DECL_ARGUMENTS of d if it has been defined already.  Use a single if
+	instead of 3 nested ifs.
+
+2019-02-06  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/88584
+	* c-decl.c (finish_decl): Do not complete array types for arrays
+	with external linkage not at file scope.
+
+2019-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR c/88606
+	* c-decl.c (finish_struct): Reset TYPE_TRANSPARENT_AGGR on
+	all type variants when not supported.
+
+2019-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89061
+	* c-tree.h (C_DECL_COMPOUND_LITERAL_P): Define.
+	* c-decl.c (decl_jump_unsafe): Return false for
+	C_DECL_COMPOUND_LITERAL_P decls.
+	(build_compound_literal): Set C_DECL_COMPOUND_LITERAL_P.
+
+2019-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89045
+	* c-decl.c (build_compound_literal): Don't pushdecl if in parameter
+	scope.
+
+	PR c/86125
+	* c-decl.c (last_fileptr_type): Remove.
+	(last_structptr_types): New variable.
+	(match_builtin_function_types): Compare TYPE_MAIN_VARIANT of
+	{old,new}rettype instead of the types themselves.  Assert
+	last_structptr_types array has the same number of elements
+	as builtin_structptr_types array.  Use TYPE_MAIN_VARIANT for
+	argument oldtype and newtype.  Instead of handling
+	just fileptr_type_node specially, handle all builtin_structptr_types
+	pointer nodes.  Formatting fix.
+
+2019-01-24  Martin Sebor  <msebor@redhat.com>
+
+	PR c/86125
+	PR c/88886
+	PR middle-end/86308
+	* c-decl.c (match_builtin_function_types): Add arguments.
+	(diagnose_mismatched_decls): Diagnose mismatched declarations
+	of built-ins more strictly.
+
+2019-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88976
+	* c-typeck.c (c_finish_omp_cancel): Diagnose more than one if
+	on #pragma omp cancel with different modifiers.
+
+2019-01-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/51628
+	PR c/88664
+	* c-typeck.c (convert_for_assignment): Upate the
+	warn_for_address_or_pointer_of_packed_member call.
+
+2019-01-16  Tom Honermann  <tom@honermann.net>
+	    Jason Merrill  <jason@redhat.com>
+
+	* c-typeck.c (digest_init): Revised the error message produced for
+	ill-formed cases of array initialization with a string literal.
+	(error_init): Make variadic.
+
+2019-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (convert_for_assignment): Fix a comment typo.
+
+2019-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/88701
+	* c-decl.c (build_compound_literal): If not TREE_STATIC, only pushdecl
+	if current_function_decl is non-NULL.
+
+2019-01-07  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/88720
+	PR c/88726
+	* c-decl.c (pop_scope): Use TREE_PUBLIC and b->nested to determine
+	whether a function is nested, not DECL_EXTERNAL.  Diagnose inline
+	functions declared but never defined only for external scope, not
+	for other scopes.
+
 2019-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85052

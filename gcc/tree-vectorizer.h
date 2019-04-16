@@ -872,9 +872,6 @@ struct _stmt_vec_info {
   stmt_vec_info first_element;
   /* Pointer to the next element in the group.  */
   stmt_vec_info next_element;
-  /* For data-refs, in case that two or more stmts share data-ref, this is the
-     pointer to the previously detected stmt with the same dr.  */
-  stmt_vec_info same_dr_stmt;
   /* The size of the group.  */
   unsigned int size;
   /* For stores, number of stores from this group seen. We vectorize the last
@@ -1044,8 +1041,6 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
   (gcc_checking_assert ((S)->dr_aux.dr), (S)->store_count)
 #define DR_GROUP_GAP(S) \
   (gcc_checking_assert ((S)->dr_aux.dr), (S)->gap)
-#define DR_GROUP_SAME_DR_STMT(S) \
-  (gcc_checking_assert ((S)->dr_aux.dr), (S)->same_dr_stmt)
 
 #define REDUC_GROUP_FIRST_ELEMENT(S) \
   (gcc_checking_assert (!(S)->dr_aux.dr), (S)->first_element)
@@ -1420,6 +1415,24 @@ extern dump_user_location_t vect_location;
 #define DUMP_VECT_SCOPE(MSG) \
   AUTO_DUMP_SCOPE (MSG, vect_location)
 
+/* A sentinel class for ensuring that the "vect_location" global gets
+   reset at the end of a scope.
+
+   The "vect_location" global is used during dumping and contains a
+   location_t, which could contain references to a tree block via the
+   ad-hoc data.  This data is used for tracking inlining information,
+   but it's not a GC root; it's simply assumed that such locations never
+   get accessed if the blocks are optimized away.
+
+   Hence we need to ensure that such locations are purged at the end
+   of any operations using them (e.g. via this class).  */
+
+class auto_purge_vect_location
+{
+ public:
+  ~auto_purge_vect_location ();
+};
+
 /*-----------------------------------------------------------------*/
 /* Function prototypes.                                            */
 /*-----------------------------------------------------------------*/
@@ -1431,8 +1444,8 @@ extern void vect_set_loop_condition (struct loop *, loop_vec_info,
 extern bool slpeel_can_duplicate_loop_p (const struct loop *, const_edge);
 struct loop *slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *,
 						     struct loop *, edge);
-extern void vect_loop_versioning (loop_vec_info, unsigned int, bool,
-				  poly_uint64);
+struct loop *vect_loop_versioning (loop_vec_info, unsigned int, bool,
+				   poly_uint64);
 extern struct loop *vect_do_peeling (loop_vec_info, tree, tree,
 				     tree *, tree *, tree *, int, bool, bool);
 extern void vect_prepare_for_masked_peels (loop_vec_info);

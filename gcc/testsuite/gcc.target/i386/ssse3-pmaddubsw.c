@@ -16,7 +16,6 @@
 
 #include <tmmintrin.h>
 
-#ifndef __AVX__
 /* Test the 64-bit form */
 static void
 ssse3_test_pmaddubsw (int *i1, int *i2, int *r)
@@ -26,7 +25,6 @@ ssse3_test_pmaddubsw (int *i1, int *i2, int *r)
   *(__m64 *) r = _mm_maddubs_pi16 (t1, t2);
   _mm_empty ();
 }
-#endif
 
 /* Test the 128-bit form */
 static void
@@ -81,12 +79,10 @@ TEST (void)
       /* Manually compute the result */
       compute_correct_result (&vals[i + 0], &vals[i + 4], ck);
 
-#ifndef __AVX__
       /* Run the 64-bit tests */
       ssse3_test_pmaddubsw (&vals[i + 0], &vals[i + 4], &r[0]);
       ssse3_test_pmaddubsw (&vals[i + 2], &vals[i + 6], &r[2]);
       fail += chk_128 (ck, r);
-#endif
 
       /* Run the 128-bit tests */
       ssse3_test_pmaddubsw128 (&vals[i + 0], &vals[i + 4], r);

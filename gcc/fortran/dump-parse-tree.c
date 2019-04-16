@@ -48,10 +48,61 @@ static void show_expr (gfc_expr *p);
 static void show_code_node (int, gfc_code *);
 static void show_namespace (gfc_namespace *ns);
 static void show_code (int, gfc_code *);
-
+static void show_symbol (gfc_symbol *);
+static void show_typespec (gfc_typespec *);
+static void show_ref (gfc_ref *);
+static void show_attr (symbol_attribute *, const char *);
 
 /* Allow dumping of an expression in the debugger.  */
 void gfc_debug_expr (gfc_expr *);
+
+void debug (symbol_attribute *attr)
+{
+  FILE *tmp = dumpfile;
+  dumpfile = stderr;
+  show_attr (attr, NULL);
+  fputc ('\n', dumpfile);
+  dumpfile = tmp;
+}
+
+void debug (symbol_attribute attr)
+{
+  debug (&attr);
+}
+
+void debug (gfc_expr *e)
+{
+  FILE *tmp = dumpfile;
+  dumpfile = stderr;
+  show_expr (e);
+  fputc (' ', dumpfile);
+  show_typespec (&e->ts);
+  fputc ('\n', dumpfile);
+  dumpfile = tmp;
+}
+
+void debug (gfc_typespec *ts)
+{
+  FILE *tmp = dumpfile;
+  dumpfile = stderr;
+  show_typespec (ts);
+  fputc ('\n', dumpfile);
+  dumpfile = tmp;
+}
+
+void debug (gfc_typespec ts)
+{
+  debug (&ts);
+}
+
+void debug (gfc_ref *p)
+{
+  FILE *tmp = dumpfile;
+  dumpfile = stderr;
+  show_ref (p);
+  fputc ('\n', dumpfile);
+  dumpfile = tmp;
+}
 
 void
 gfc_debug_expr (gfc_expr *e)
@@ -72,6 +123,15 @@ gfc_debug_code (gfc_code *c)
   FILE *tmp = dumpfile;
   dumpfile = stderr;
   show_code (1, c);
+  fputc ('\n', dumpfile);
+  dumpfile = tmp;
+}
+
+void debug (gfc_symbol *sym)
+{
+  FILE *tmp = dumpfile;
+  dumpfile = stderr;
+  show_symbol (sym);
   fputc ('\n', dumpfile);
   dumpfile = tmp;
 }

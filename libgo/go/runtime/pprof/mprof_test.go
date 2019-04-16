@@ -45,7 +45,7 @@ func allocatePersistent1K() {
 // Allocate transient memory using reflect.Call.
 
 func allocateReflectTransient() {
-	memSink = make([]byte, 2<<20)
+	memSink = make([]byte, 3<<20)
 }
 
 func allocateReflect() {
@@ -106,7 +106,7 @@ func TestMemoryProfiler(t *testing.T) {
 		// GC means that sometimes the value is not collected.
 		fmt.Sprintf(`(0|%v): (0|%v) \[%v: %v\] @( 0x[0-9,a-f]+)+
 #	0x[0-9,a-f]+	pprof\.allocateReflectTransient\+0x[0-9,a-f]+	.*/mprof_test.go:48
-`, memoryProfilerRun, (2<<20)*memoryProfilerRun, memoryProfilerRun, (2<<20)*memoryProfilerRun),
+`, memoryProfilerRun, (3<<20)*memoryProfilerRun, memoryProfilerRun, (3<<20)*memoryProfilerRun),
 	}
 
 	for _, test := range tests {

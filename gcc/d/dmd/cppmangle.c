@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2018 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -120,6 +120,40 @@ class CppMangleVisitor : public Visitor
                 !getQualifier(s));      // at global level
     }
 
+    /************************
+     * Determine if type is a C++ fundamental type.
+     * Params:
+     *  t = type to check
+     * Returns:
+     *  true if it is a fundamental type
+     */
+    static bool isFundamentalType(Type *t)
+    {
+        // First check the target whether some specific ABI is being followed.
+        bool isFundamental;
+        if (Target::cppFundamentalType(t, isFundamental))
+            return isFundamental;
+        if (t->ty == Tenum)
+        {
+            // Peel off enum type from special types.
+            TypeEnum *te = (TypeEnum *)t;
+            if (te->sym->isSpecial())
+                t = te->sym->getMemtype(Loc());
+        }
+
+        // Fundamental arithmetic types:
+        // 1. integral types: bool, char, int, ...
+        // 2. floating point types: float, double, real
+        // 3. void
+        // 4. null pointer: std::nullptr_t (since C++11)
+        if (t->ty == Tvoid || t->ty == Tbool)
+            return true;
+        else if (t->ty == Tnull && global.params.cplusplus >= CppStdRevisionCpp11)
+            return true;
+        else
+            return t->isTypeBasic() && (t->isintegral() || t->isreal());
+    }
+
     /******************************
      * Write the mangled representation of the template arguments.
      * Params:
@@ -196,8 +230,8 @@ class CppMangleVisitor : public Visitor
                 Expression *e = isExpression(o);
                 if (d && d->isFuncDeclaration())
                 {
-                    bool is_nested = d->toParent() &&
-                        !d->toParent()->isModule() &&
+                    bool is_nested = d->toParent3() &&
+                        !d->toParent3()->isModule() &&
                         ((TypeFunction*)d->isFuncDeclaration()->type)->linkage == LINKcpp;
                     if (is_nested)
                         buf->writeByte('X');
@@ -271,7 +305,7 @@ class CppMangleVisitor : public Visitor
      */
     Dsymbol *getInstance(Dsymbol *s)
     {
-        Dsymbol *p = s->toParent();
+        Dsymbol *p = s->toParent3();
         if (p)
         {
             if (TemplateInstance *ti = p->isTemplateInstance())
@@ -292,7 +326,7 @@ class CppMangleVisitor : public Visitor
      */
     static Dsymbol *getQualifier(Dsymbol *s)
     {
-        Dsymbol *p = s->toParent();
+        Dsymbol *p = s->toParent3();
         return (p && !p->isModule()) ? p : NULL;
     }
 
@@ -324,7 +358,7 @@ class CppMangleVisitor : public Visitor
         Dsymbol *s = ((TypeStruct*)t)->toDsymbol(NULL);
         if (s->ident != ident)
             return false;
-        Dsymbol *p = s->toParent();
+        Dsymbol *p = s->toParent3();
         if (!p)
             return false;
         TemplateInstance *ti = p->isTemplateInstance();
@@ -427,7 +461,7 @@ class CppMangleVisitor : public Visitor
     void cpp_mangle_name(Dsymbol *s, bool qualified)
     {
         //printf("cpp_mangle_name(%s, %d)\n", s->toChars(), qualified);
-        Dsymbol *p = s->toParent();
+        Dsymbol *p = s->toParent3();
         Dsymbol *se = s;
         bool write_prefix = true;
         if (p && p->isTemplateInstance())
@@ -435,7 +469,7 @@ class CppMangleVisitor : public Visitor
             se = p;
             if (find(p->isTemplateInstance()->tempdecl) >= 0)
                 write_prefix = false;
-            p = p->toParent();
+            p = p->toParent3();
         }
 
         if (p && !p->isModule())
@@ -521,7 +555,7 @@ class CppMangleVisitor : public Visitor
             fatal();
         }
 
-        Dsymbol *p = d->toParent();
+        Dsymbol *p = d->toParent3();
         if (p && !p->isModule()) //for example: char Namespace1::beta[6] should be mangled as "_ZN10Namespace14betaE"
         {
             buf->writestring("_ZN");
@@ -561,7 +595,7 @@ class CppMangleVisitor : public Visitor
              */
             TemplateInstance *ti = d->parent->isTemplateInstance();
             assert(ti);
-            Dsymbol *p = ti->toParent();
+            Dsymbol *p = ti->toParent3();
             if (p && !p->isModule() && tf->linkage == LINKcpp)
             {
                 buf->writeByte('N');
@@ -581,7 +615,7 @@ class CppMangleVisitor : public Visitor
         }
         else
         {
-            Dsymbol *p = d->toParent();
+            Dsymbol *p = d->toParent3();
             if (p && !p->isModule() && tf->linkage == LINKcpp)
             {
                 /* <nested-name> ::= N [<CV-qualifiers>] <prefix> <unqualified-name> E
@@ -741,7 +775,8 @@ public:
      */
     void writeBasicType(Type *t, char p, char c)
     {
-        if (p || t->isConst())
+        // Only do substitutions for non-fundamental types.
+        if (!isFundamentalType(t) || t->isConst())
         {
             if (substitute(t))
                 return;
@@ -766,6 +801,22 @@ public:
     {
         if (t->isImmutable() || t->isShared())
             return error(t);
+
+        // Handle any target-specific basic types.
+        if (const char *tm = Target::cppTypeMangle(t))
+        {
+            // Only do substitutions for non-fundamental types.
+            if (!isFundamentalType(t) || t->isConst())
+            {
+                if (substitute(t))
+                    return;
+                else
+                    append(t);
+            }
+            CV_qualifiers(t);
+            buf->writestring(tm);
+            return;
+        }
 
         /* <builtin-type>:
          * v        void
@@ -832,17 +883,6 @@ public:
             case Tcomplex80:    p = 'C'; c = 'e';       break;
 
             default:
-                // Handle any target-specific basic types.
-                if (const char *tm = Target::cppTypeMangle(t))
-                {
-                    if (substitute(t))
-                        return;
-                    else
-                        append(t);
-                    CV_qualifiers(t);
-                    buf->writestring(tm);
-                    return;
-                }
                 return error(t);
         }
         writeBasicType(t, p, c);
@@ -997,7 +1037,7 @@ public:
         else
         {
             Dsymbol *s = t->toDsymbol(NULL);
-            Dsymbol *p = s->toParent();
+            Dsymbol *p = s->toParent3();
             if (p && p->isTemplateInstance())
             {
                 /* https://issues.dlang.org/show_bug.cgi?id=17947
@@ -1044,7 +1084,7 @@ public:
 
         {
             Dsymbol *s = t->toDsymbol(NULL);
-            Dsymbol *p = s->toParent();
+            Dsymbol *p = s->toParent3();
             if (p && p->isTemplateInstance())
             {
                  /* https://issues.dlang.org/show_bug.cgi?id=17947

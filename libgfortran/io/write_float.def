@@ -620,14 +620,15 @@ build_float_string (st_parameter_dt *dtp, const fnode *f, char *buffer,
     }
 
   /* Set digits after the decimal point, padding with zeros.  */
-  if (nafter > 0)
+  if (ndigits >= 0 && nafter > 0)
     {
       if (nafter > ndigits)
 	i = ndigits;
       else
 	i = nafter;
 
-      memcpy (put, digits, i);
+      if (i > 0)
+	memcpy (put, digits, i);
       while (i < nafter)
 	put[i++] = '0';
 

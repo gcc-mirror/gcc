@@ -565,7 +565,7 @@ gfc_intrinsic_hash_value (gfc_typespec *ts)
    ref to the _len component.  */
 
 gfc_expr *
-gfc_get_len_component (gfc_expr *e)
+gfc_get_len_component (gfc_expr *e, int k)
 {
   gfc_expr *ptr;
   gfc_ref *ref, **last;
@@ -590,6 +590,14 @@ gfc_get_len_component (gfc_expr *e)
     }
   /* And replace if with a ref to the _len component.  */
   gfc_add_len_component (ptr);
+  if (k != ptr->ts.kind)
+    {
+      gfc_typespec ts;
+      gfc_clear_ts (&ts);
+      ts.type = BT_INTEGER;
+      ts.kind = k;
+      gfc_convert_type_warn (ptr, &ts, 2, 0);
+    }
   return ptr;
 }
 
@@ -630,7 +638,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 		   || attr->select_type_temporary || attr->associate_var;
 
   if (!attr->class_ok)
-    /* We can not build the class container yet.  */
+    /* We cannot build the class container yet.  */
     return true;
 
   /* Determine the name of the encapsulating type.  */
@@ -903,6 +911,9 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
   if (!comp_is_finalizable (comp))
     return;
 
+  if (comp->finalized)
+    return;
+
   e = gfc_copy_expr (expr);
   if (!e->ref)
     e->ref = ref = gfc_get_ref ();
@@ -1030,6 +1041,7 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
 			    sub_ns);
       gfc_free_expr (e);
     }
+  comp->finalized = true;
 }
 
 
@@ -2666,6 +2678,7 @@ find_intrinsic_vtab (gfc_typespec *ts)
 	      gfc_namespace *sub_ns;
 	      gfc_namespace *contained;
 	      gfc_expr *e;
+	      size_t e_size;
 
 	      gfc_get_symbol (name, ns, &vtype);
 	      if (!gfc_add_flavor (&vtype->attr, FL_DERIVED, NULL,
@@ -2700,11 +2713,13 @@ find_intrinsic_vtab (gfc_typespec *ts)
 	      e = gfc_get_expr ();
 	      e->ts = *ts;
 	      e->expr_type = EXPR_VARIABLE;
+	      if (ts->type == BT_CHARACTER)
+		e_size = ts->kind;
+	      else
+		gfc_element_size (e, &e_size);
 	      c->initializer = gfc_get_int_expr (gfc_size_kind,
 						 NULL,
-						 ts->type == BT_CHARACTER
-						 ? ts->kind
-						 : gfc_element_size (e));
+						 e_size);
 	      gfc_free_expr (e);
 
 	      /* Add component _extends.  */
@@ -2846,7 +2861,10 @@ gfc_find_vtab (gfc_typespec *ts)
     case BT_DERIVED:
       return gfc_find_derived_vtab (ts->u.derived);
     case BT_CLASS:
-      return gfc_find_derived_vtab (ts->u.derived->components->ts.u.derived);
+      if (ts->u.derived->components && ts->u.derived->components->ts.u.derived)
+	return gfc_find_derived_vtab (ts->u.derived->components->ts.u.derived);
+      else
+	return NULL;
     default:
       return find_intrinsic_vtab (ts);
     }

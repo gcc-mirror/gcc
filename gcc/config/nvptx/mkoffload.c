@@ -454,7 +454,7 @@ main (int argc, char **argv)
 
   if (!found)
     fatal_error (input_location,
-		 "offload compiler %s not found (consider using '-B')",
+		 "offload compiler %s not found (consider using %<-B%>)",
 		 GCC_INSTALL_NAME);
 
   /* We may be called with all the arguments stored in some file and
@@ -488,7 +488,8 @@ main (int argc, char **argv)
 	verbose = true;
     }
   if (!(fopenacc ^ fopenmp))
-    fatal_error (input_location, "either -fopenacc or -fopenmp must be set");
+    fatal_error (input_location, "either %<-fopenacc%> or %<-fopenmp%> "
+		 "must be set");
 
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);

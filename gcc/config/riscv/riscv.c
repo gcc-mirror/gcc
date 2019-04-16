@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define IN_TARGET_CODE 1
 
+#define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -225,6 +226,9 @@ struct riscv_cpu_info {
   /* This CPU's canonical name.  */
   const char *name;
 
+  /* Which automaton to use for tuning.  */
+  enum riscv_microarchitecture_type microarchitecture;
+
   /* Tuning parameters for this CPU.  */
   const struct riscv_tune_info *tune_info;
 };
@@ -244,6 +248,9 @@ static int epilogue_cfa_sp_offset;
 
 /* Which tuning parameters to use.  */
 static const struct riscv_tune_info *tune_info;
+
+/* Which automaton to use for tuning.  */
+enum riscv_microarchitecture_type riscv_microarchitecture;
 
 /* Index R is the smallest register class that contains register R.  */
 const enum reg_class riscv_regno_to_class[FIRST_PSEUDO_REGISTER] = {
@@ -276,6 +283,19 @@ static const struct riscv_tune_info rocket_tune_info = {
   1,						/* issue_rate */
   3,						/* branch_cost */
   5,						/* memory_cost */
+  true,						/* slow_unaligned_access */
+};
+
+/* Costs to use when optimizing for Sifive 7 Series.  */
+static const struct riscv_tune_info sifive_7_tune_info = {
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_add */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_mul */
+  {COSTS_N_INSNS (20), COSTS_N_INSNS (20)},	/* fp_div */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* int_mul */
+  {COSTS_N_INSNS (6), COSTS_N_INSNS (6)},	/* int_div */
+  2,						/* issue_rate */
+  4,						/* branch_cost */
+  3,						/* memory_cost */
   true,						/* slow_unaligned_access */
 };
 
@@ -315,8 +335,11 @@ static const struct attribute_spec riscv_attribute_table[] =
 
 /* A table describing all the processors GCC knows about.  */
 static const struct riscv_cpu_info riscv_cpu_info_table[] = {
-  { "rocket", &rocket_tune_info },
-  { "size", &optimize_size_tune_info },
+  { "rocket", generic, &rocket_tune_info },
+  { "sifive-3-series", generic, &rocket_tune_info },
+  { "sifive-5-series", generic, &rocket_tune_info },
+  { "sifive-7-series", sifive_7, &sifive_7_tune_info },
+  { "size", generic, &optimize_size_tune_info },
 };
 
 /* Return the riscv_cpu_info entry for the given name string.  */
@@ -328,7 +351,7 @@ riscv_parse_cpu (const char *cpu_string)
     if (strcmp (riscv_cpu_info_table[i].name, cpu_string) == 0)
       return riscv_cpu_info_table + i;
 
-  error ("unknown cpu %qs for -mtune", cpu_string);
+  error ("unknown cpu %qs for %<-mtune%>", cpu_string);
   return riscv_cpu_info_table;
 }
 
@@ -707,11 +730,15 @@ riscv_split_symbol_type (enum riscv_symbol_type symbol_type)
 }
 
 /* Return true if a LO_SUM can address a value of mode MODE when the
-   LO_SUM symbol has type SYM_TYPE.  */
+   LO_SUM symbol has type SYM_TYPE.  X is the LO_SUM second operand, which
+   is used when the mode is BLKmode.  */
 
 static bool
-riscv_valid_lo_sum_p (enum riscv_symbol_type sym_type, machine_mode mode)
+riscv_valid_lo_sum_p (enum riscv_symbol_type sym_type, machine_mode mode,
+		      rtx x)
 {
+  int align, size;
+
   /* Check that symbols of type SYMBOL_TYPE can be used to access values
      of mode MODE.  */
   if (riscv_symbol_insns (sym_type) == 0)
@@ -721,11 +748,38 @@ riscv_valid_lo_sum_p (enum riscv_symbol_type sym_type, machine_mode mode)
   if (!riscv_split_symbol_type (sym_type))
     return false;
 
+  /* We can't tell size or alignment when we have BLKmode, so try extracing a
+     decl from the symbol if possible.  */
+  if (mode == BLKmode)
+    {
+      rtx offset;
+
+      /* Extract the symbol from the LO_SUM operand, if any.  */
+      split_const (x, &x, &offset);
+
+      /* Might be a CODE_LABEL.  We can compute align but not size for that,
+	 so don't bother trying to handle it.  */
+      if (!SYMBOL_REF_P (x))
+	return false;
+
+      /* Use worst case assumptions if we don't have a SYMBOL_REF_DECL.  */
+      align = (SYMBOL_REF_DECL (x)
+	       ? DECL_ALIGN (SYMBOL_REF_DECL (x))
+	       : 1);
+      size = (SYMBOL_REF_DECL (x) && DECL_SIZE (SYMBOL_REF_DECL (x))
+	      ? tree_to_uhwi (DECL_SIZE (SYMBOL_REF_DECL (x)))
+	      : 2*BITS_PER_WORD);
+    }
+  else
+    {
+      align = GET_MODE_ALIGNMENT (mode);
+      size = GET_MODE_BITSIZE (mode);
+    }
+
   /* We may need to split multiword moves, so make sure that each word
      can be accessed without inducing a carry.  */
-  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD
-      && (!TARGET_STRICT_ALIGN
-	  || GET_MODE_BITSIZE (mode) > GET_MODE_ALIGNMENT (mode)))
+  if (size > BITS_PER_WORD
+      && (!TARGET_STRICT_ALIGN || size > align))
     return false;
 
   return true;
@@ -771,7 +825,7 @@ riscv_classify_address (struct riscv_address_info *info, rtx x,
       info->symbol_type
 	= riscv_classify_symbolic_expression (info->offset);
       return (riscv_valid_base_register_p (info->reg, mode, strict_p)
-	      && riscv_valid_lo_sum_p (info->symbol_type, mode));
+	      && riscv_valid_lo_sum_p (info->symbol_type, mode, info->offset));
 
     case CONST_INT:
       /* Small-integer addresses don't occur very often, but they
@@ -2448,13 +2502,14 @@ riscv_pass_aggregate_in_fpr_and_gpr_p (const_tree type,
 
 static rtx
 riscv_pass_fpr_single (machine_mode type_mode, unsigned regno,
-		       machine_mode value_mode)
+		       machine_mode value_mode,
+		       HOST_WIDE_INT offset)
 {
   rtx x = gen_rtx_REG (value_mode, regno);
 
   if (type_mode != value_mode)
     {
-      x = gen_rtx_EXPR_LIST (VOIDmode, x, const0_rtx);
+      x = gen_rtx_EXPR_LIST (VOIDmode, x, GEN_INT (offset));
       x = gen_rtx_PARALLEL (type_mode, gen_rtvec (1, x));
     }
   return x;
@@ -2516,7 +2571,8 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
 	  {
 	  case 1:
 	    return riscv_pass_fpr_single (mode, fregno,
-					  TYPE_MODE (fields[0].type));
+					  TYPE_MODE (fields[0].type),
+					  fields[0].offset);
 
 	  case 2:
 	    return riscv_pass_fpr_pair (mode, fregno,
@@ -4060,6 +4116,93 @@ riscv_can_use_return_insn (void)
 	  && ! cfun->machine->interrupt_handler_p);
 }
 
+/* Given that there exists at least one variable that is set (produced)
+   by OUT_INSN and read (consumed) by IN_INSN, return true iff
+   IN_INSN represents one or more memory store operations and none of
+   the variables set by OUT_INSN is used by IN_INSN as the address of a
+   store operation.  If either IN_INSN or OUT_INSN does not represent
+   a "single" RTL SET expression (as loosely defined by the
+   implementation of the single_set function) or a PARALLEL with only
+   SETs, CLOBBERs, and USEs inside, this function returns false.
+
+   Borrowed from rs6000, riscv_store_data_bypass_p checks for certain
+   conditions that result in assertion failures in the generic
+   store_data_bypass_p function and returns FALSE in such cases.
+
+   This is required to make -msave-restore work with the sifive-7
+   pipeline description.  */
+
+bool
+riscv_store_data_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
+{
+  rtx out_set, in_set;
+  rtx out_pat, in_pat;
+  rtx out_exp, in_exp;
+  int i, j;
+
+  in_set = single_set (in_insn);
+  if (in_set)
+    {
+      if (MEM_P (SET_DEST (in_set)))
+	{
+	  out_set = single_set (out_insn);
+	  if (!out_set)
+	    {
+	      out_pat = PATTERN (out_insn);
+	      if (GET_CODE (out_pat) == PARALLEL)
+		{
+		  for (i = 0; i < XVECLEN (out_pat, 0); i++)
+		    {
+		      out_exp = XVECEXP (out_pat, 0, i);
+		      if ((GET_CODE (out_exp) == CLOBBER)
+			  || (GET_CODE (out_exp) == USE))
+			continue;
+		      else if (GET_CODE (out_exp) != SET)
+			return false;
+		    }
+		}
+	    }
+	}
+    }
+  else
+    {
+      in_pat = PATTERN (in_insn);
+      if (GET_CODE (in_pat) != PARALLEL)
+	return false;
+
+      for (i = 0; i < XVECLEN (in_pat, 0); i++)
+	{
+	  in_exp = XVECEXP (in_pat, 0, i);
+	  if ((GET_CODE (in_exp) == CLOBBER) || (GET_CODE (in_exp) == USE))
+	    continue;
+	  else if (GET_CODE (in_exp) != SET)
+	    return false;
+
+	  if (MEM_P (SET_DEST (in_exp)))
+	    {
+	      out_set = single_set (out_insn);
+	      if (!out_set)
+		{
+		  out_pat = PATTERN (out_insn);
+		  if (GET_CODE (out_pat) != PARALLEL)
+		    return false;
+		  for (j = 0; j < XVECLEN (out_pat, 0); j++)
+		    {
+		      out_exp = XVECEXP (out_pat, 0, j);
+		      if ((GET_CODE (out_exp) == CLOBBER)
+			  || (GET_CODE (out_exp) == USE))
+			continue;
+		      else if (GET_CODE (out_exp) != SET)
+			return false;
+		    }
+		}
+	    }
+	}
+    }
+
+  return store_data_bypass_p (out_insn, in_insn);
+}
+
 /* Implement TARGET_SECONDARY_MEMORY_NEEDED.
 
    When floating-point registers are wider than integer ones, moves between
@@ -4177,6 +4320,20 @@ riscv_issue_rate (void)
   return tune_info->issue_rate;
 }
 
+/* Auxiliary function to emit RISC-V ELF attribute. */
+static void
+riscv_emit_attribute ()
+{
+  fprintf (asm_out_file, "\t.attribute arch, \"%s\"\n",
+	   riscv_arch_str ().c_str ());
+
+  fprintf (asm_out_file, "\t.attribute unaligned_access, %d\n",
+           TARGET_STRICT_ALIGN ? 0 : 1);
+
+  fprintf (asm_out_file, "\t.attribute stack_align, %d\n",
+           riscv_stack_boundary / 8);
+}
+
 /* Implement TARGET_ASM_FILE_START.  */
 
 static void
@@ -4191,6 +4348,9 @@ riscv_file_start (void)
      relaxation in the assembler.  */
   if (! riscv_mrelax)
     fprintf (asm_out_file, "\t.option norelax\n");
+
+  if (riscv_emit_attribute_p)
+    riscv_emit_attribute ();
 }
 
 /* Implement TARGET_ASM_OUTPUT_MI_THUNK.  Generate rtl rather than asm text
@@ -4298,7 +4458,7 @@ riscv_option_override (void)
   if (TARGET_MUL && (target_flags_explicit & MASK_DIV) == 0)
     target_flags |= MASK_DIV;
   else if (!TARGET_MUL && TARGET_DIV)
-    error ("-mdiv requires -march to subsume the %<M%> extension");
+    error ("%<-mdiv%> requires %<-march%> to subsume the %<M%> extension");
 
   /* Likewise floating-point division and square root.  */
   if (TARGET_HARD_FLOAT && (target_flags_explicit & MASK_FDIV) == 0)
@@ -4307,6 +4467,7 @@ riscv_option_override (void)
   /* Handle -mtune.  */
   cpu = riscv_parse_cpu (riscv_tune_string ? riscv_tune_string :
 			 RISCV_TUNE_STRING_DEFAULT);
+  riscv_microarchitecture = cpu->microarchitecture;
   tune_info = optimize_size ? &optimize_size_tune_info : cpu->tune_info;
 
   /* Use -mtune's setting for slow_unaligned_access, even when optimizing
@@ -4338,7 +4499,7 @@ riscv_option_override (void)
 
   /* Require that the ISA supports the requested floating-point ABI.  */
   if (UNITS_PER_FP_ARG > (TARGET_HARD_FLOAT ? UNITS_PER_FP_REG : 0))
-    error ("requested ABI requires -march to subsume the %qc extension",
+    error ("requested ABI requires %<-march%> to subsume the %qc extension",
 	   UNITS_PER_FP_ARG > 8 ? 'Q' : (UNITS_PER_FP_ARG > 4 ? 'D' : 'F'));
 
   if (TARGET_RVE && riscv_abi != ABI_ILP32E)
@@ -4346,7 +4507,7 @@ riscv_option_override (void)
 
   /* We do not yet support ILP32 on RV64.  */
   if (BITS_PER_WORD != POINTER_SIZE)
-    error ("ABI requires -march=rv%d", POINTER_SIZE);
+    error ("ABI requires %<-march=rv%d%>", POINTER_SIZE);
 
   /* Validate -mpreferred-stack-boundary= value.  */
   riscv_stack_boundary = ABI_STACK_BOUNDARY;
@@ -4356,11 +4517,22 @@ riscv_option_override (void)
       int max = 8;
 
       if (!IN_RANGE (riscv_preferred_stack_boundary_arg, min, max))
-	error ("-mpreferred-stack-boundary=%d must be between %d and %d",
+	error ("%<-mpreferred-stack-boundary=%d%> must be between %d and %d",
 	       riscv_preferred_stack_boundary_arg, min, max);
 
       riscv_stack_boundary = 8 << riscv_preferred_stack_boundary_arg;
     }
+
+  if (riscv_emit_attribute_p < 0)
+#ifdef HAVE_AS_RISCV_ATTRIBUTE
+    riscv_emit_attribute_p = TARGET_RISCV_ATTRIBUTE;
+#else
+    riscv_emit_attribute_p = 0;
+
+  if (riscv_emit_attribute_p)
+    error ("%<-mriscv-attribute%> RISC-V ELF attribute requires GNU as 2.32"
+	   " [%<-mriscv-attribute%>]");
+#endif
 }
 
 /* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */
@@ -4564,7 +4736,7 @@ riscv_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
   return true;
 }
 
-/* Get the intterupt type, return UNKNOWN_MODE if it's not
+/* Get the interrupt type, return UNKNOWN_MODE if it's not
    interrupt function. */
 static enum riscv_privilege_levels
 riscv_get_interrupt_type (tree decl)
@@ -4650,7 +4822,7 @@ riscv_merge_decl_attributes (tree olddecl, tree newdecl)
   if ((old_interrupt_type != UNKNOWN_MODE)
       && (new_interrupt_type != UNKNOWN_MODE)
       && (old_interrupt_type != new_interrupt_type))
-    error ("%qs function cannot have different intterupt type.", "interrupt");
+    error ("%qs function cannot have different interrupt type", "interrupt");
 
   /* Create combined attributes.  */
   combined_attrs = merge_attributes (DECL_ATTRIBUTES (olddecl),

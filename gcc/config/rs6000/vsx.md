@@ -459,7 +459,7 @@
      allocation and the hard register destination is not in the altivec
      range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((reg_or_subregno (operands[0]) >= FIRST_PSEUDO_REGISTER)
+      && (!HARD_REGISTER_NUM_P (reg_or_subregno (operands[0]))
 	  || ALTIVEC_REGNO_P (reg_or_subregno (operands[0]))))
     {
       rtx mem_address = XEXP (mem, 0);
@@ -509,7 +509,7 @@
      allocation and the hard register destination is not in the altivec
      range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((REGNO(operands[0]) >= FIRST_PSEUDO_REGISTER)
+      && (!HARD_REGISTER_P (operands[0])
 	  || ALTIVEC_REGNO_P (REGNO(operands[0]))))
     {
       rtx mem_address = XEXP (mem, 0);
@@ -563,7 +563,7 @@
      allocation and the hard register destination is not in the altivec
      range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((REGNO(operands[0]) >= FIRST_PSEUDO_REGISTER)
+      && (!HARD_REGISTER_P (operands[0])
 	  || ALTIVEC_REGNO_P (REGNO(operands[0]))))
     {
       rtx mem_address = XEXP (mem, 0);
@@ -625,7 +625,7 @@
      allocation and the hard register destination is not in the altivec
      range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((REGNO(operands[0]) >= FIRST_PSEUDO_REGISTER)
+      && (!HARD_REGISTER_P (operands[0])
 	  || ALTIVEC_REGNO_P (REGNO(operands[0]))))
     {
       rtx mem_address = XEXP (mem, 0);
@@ -678,8 +678,8 @@
   /* Don't apply the swap optimization if we've already performed register
      allocation and the hard register source is not in the altivec range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((reg_or_subregno (operands[1]) >= FIRST_PSEUDO_REGISTER)
-          || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
+      && (!HARD_REGISTER_NUM_P (reg_or_subregno (operands[1]))
+	  || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
     {
       rtx mem_address = XEXP (mem, 0);
       enum machine_mode mode = GET_MODE (mem);
@@ -750,8 +750,8 @@
   /* Don't apply the swap optimization if we've already performed register
      allocation and the hard register source is not in the altivec range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((reg_or_subregno (operands[1]) >= FIRST_PSEUDO_REGISTER)
-          || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
+      && (!HARD_REGISTER_NUM_P (reg_or_subregno (operands[1]))
+	  || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
     {
       rtx mem_address = XEXP (mem, 0);
       enum machine_mode mode = GET_MODE (mem);
@@ -829,8 +829,8 @@
   /* Don't apply the swap optimization if we've already performed register
      allocation and the hard register source is not in the altivec range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((reg_or_subregno (operands[1]) >= FIRST_PSEUDO_REGISTER)
-          || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
+      && (!HARD_REGISTER_NUM_P (reg_or_subregno (operands[1]))
+	  || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
     {
       rtx mem_address = XEXP (mem, 0);
       enum machine_mode mode = GET_MODE (mem);
@@ -922,8 +922,8 @@
   /* Don't apply the swap optimization if we've already performed register
      allocation and the hard register source is not in the altivec range.  */
   if ((MEM_ALIGN (mem) >= 128)
-      && ((reg_or_subregno (operands[1]) >= FIRST_PSEUDO_REGISTER)
-          || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
+      && (!HARD_REGISTER_NUM_P (reg_or_subregno (operands[1]))
+	  || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
     {
       rtx mem_address = XEXP (mem, 0);
       enum machine_mode mode = GET_MODE (mem);
@@ -3739,9 +3739,9 @@
   DONE;
 })
 
-(define_insn_and_split "*vsx_extract_<VSX_EXTRACT_I:mode>_<SDI:mode>_var"
-  [(set (match_operand:SDI 0 "gpc_reg_operand" "=r,r,r")
-	(zero_extend:SDI
+(define_insn_and_split "*vsx_extract_<mode>_<VS_scalar>mode_var"
+  [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=r,r,r")
+	(zero_extend:<VS_scalar>
 	 (unspec:<VSX_EXTRACT_I:VS_scalar>
 	  [(match_operand:VSX_EXTRACT_I 1 "input_operand" "wK,v,m")
 	   (match_operand:DI 2 "gpc_reg_operand" "r,r,r")]
@@ -3753,7 +3753,7 @@
   "&& reload_completed"
   [(const_int 0)]
 {
-  machine_mode smode = <VSX_EXTRACT_I:MODE>mode;
+  machine_mode smode = <VS_scalar>mode;
   rs6000_split_vec_extract_var (gen_rtx_REG (smode, REGNO (operands[0])),
 				operands[1], operands[2],
 				operands[3], operands[4]);
@@ -4351,7 +4351,7 @@
 	  (match_dup 1))
 	 (parallel [(const_int 1)])))
    (clobber (match_scratch:DF 2 "=0,0,&wd,&wa"))]
-  "VECTOR_UNIT_VSX_P (V2DFmode)"
+  "BYTES_BIG_ENDIAN && VECTOR_UNIT_VSX_P (V2DFmode)"
   "#"
   ""
   [(const_int 0)]
@@ -4378,7 +4378,7 @@
    (clobber (match_scratch:V4SF 2 "=&wf,&wa"))
    (clobber (match_scratch:V4SF 3 "=&wf,&wa"))
    (clobber (match_scratch:V4SF 4 "=0,0"))]
-  "VECTOR_UNIT_VSX_P (V4SFmode)"
+  "BYTES_BIG_ENDIAN && VECTOR_UNIT_VSX_P (V4SFmode)"
   "#"
   ""
   [(const_int 0)]

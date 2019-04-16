@@ -28,10 +28,11 @@ immutable
     {
         win32 = 1, /// Microsoft 32 bit Windows systems
         win64,     /// Microsoft 64 bit Windows systems
-        linux,     /// All Linux Systems
+        linux,     /// All Linux Systems, except for Android
         osx,       /// Mac OS X
         freeBSD,   /// FreeBSD
         netBSD,    /// NetBSD
+        dragonFlyBSD, /// DragonFlyBSD
         solaris,   /// Solaris
         android,   /// Android
         otherPosix /// Other Posix Systems
@@ -45,6 +46,7 @@ immutable
     else version (OSX)     OS os = OS.osx;
     else version (FreeBSD) OS os = OS.freeBSD;
     else version (NetBSD)  OS os = OS.netBSD;
+    else version (DragonFlyBSD) OS os = OS.dragonFlyBSD;
     else version (Posix)   OS os = OS.otherPosix;
     else static assert(0, "Unknown OS.");
 
