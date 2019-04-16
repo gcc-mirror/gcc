@@ -1,3 +1,10 @@
+2020-01-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backport:
+	2019-04-16  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	* g++.dg/lto/pr89358_0.C: Replace dg-* with dg-lto-*.
+
 2020-01-22  Joseph Myers  <joseph@codesourcery.com>
 
 	Backport from mainline:

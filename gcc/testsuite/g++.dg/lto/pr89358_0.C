@@ -1,5 +1,5 @@
-/* { dg-do link } */
-/* { dg-options "-std=c++17"  } */
+/* { dg-lto-do link } */
+/* { dg-lto-options "-std=c++17"  } */
 #include <map>
 
 extern void test();
