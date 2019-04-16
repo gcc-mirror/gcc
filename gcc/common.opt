@@ -1770,7 +1770,7 @@ Common Report Var(flag_ipa_vrp) Optimization
 Perform IPA Value Range Propagation.
 
 ftree-rvrp
-Common Report Var(flag_tree_rvrp) Init(1) Optimization
+Common Report Var(flag_tree_rvrp) Init(0) Optimization
 Perform Ranger Value Range Propagation on trees.
 
 ; Temporary testing construct.
