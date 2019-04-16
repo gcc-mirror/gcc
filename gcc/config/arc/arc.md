@@ -201,8 +201,6 @@
    (LP_COUNT 60)
    (CC_REG 61)
    (PCL_REG 63)
-   (LP_START 144)
-   (LP_END 145)
   ]
 )
 
@@ -3466,8 +3464,6 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 			    (match_operand:SI 2 "nonmemory_operand" "rn,Cal")]))
    (clobber (match_scratch:SI 4 "=X,X"))
    (clobber (reg:SI LP_COUNT))
-   (clobber (reg:SI LP_START))
-   (clobber (reg:SI LP_END))
    (clobber (reg:CC CC_REG))
   ]
   "!TARGET_BARREL_SHIFTER"
@@ -6509,7 +6505,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   {
    int len = XVECLEN (operands[0], 0);
    rtx tmp = XVECEXP (operands[0], 0, len - 1);
-   if (XEXP (tmp, 0) != frame_pointer_rtx)
+   if (XEXP (tmp, 0) != hard_frame_pointer_rtx)
      {
       operands[3] = XEXP (tmp, 0);
       gcc_assert (INTVAL (operands[1]) == INTVAL (operands[2]));
@@ -6539,7 +6535,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   {
    int len = XVECLEN (operands[0], 0);
    rtx tmp = XVECEXP (operands[0], 0, len - 1);
-   if (XEXP (tmp, 0) != frame_pointer_rtx)
+   if (XEXP (tmp, 0) != hard_frame_pointer_rtx)
      {
       operands[3] = XEXP (tmp, 0);
       gcc_assert (INTVAL (operands[1]) == INTVAL (operands[2]));
@@ -6570,7 +6566,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   {
    int len = XVECLEN (operands[0], 0);
    rtx tmp = XVECEXP (operands[0], 0, len - 1);
-   if (XEXP (tmp, 0) != frame_pointer_rtx)
+   if (XEXP (tmp, 0) != hard_frame_pointer_rtx)
      {
       operands[3] = XEXP (tmp, 0);
       gcc_assert (INTVAL (operands[1]) == INTVAL (operands[2]));
@@ -6601,7 +6597,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   {
    int len = XVECLEN (operands[0], 0);
    rtx tmp = XVECEXP (operands[0], 0, len - 1);
-   if (XEXP (tmp, 0) != frame_pointer_rtx)
+   if (XEXP (tmp, 0) != hard_frame_pointer_rtx)
      {
       operands[3] = XEXP (tmp, 0);
       gcc_assert (INTVAL (operands[1]) == INTVAL (operands[2]));
