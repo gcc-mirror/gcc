@@ -1,5 +1,8 @@
 2019-04-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/90082
+	* gcc.dg/pr90082.c: New test.
+
 	PR tree-optimization/90090
 	* g++.dg/opt/pr90090.C: New test.
 
