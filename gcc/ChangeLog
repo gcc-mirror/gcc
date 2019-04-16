@@ -1,5 +1,11 @@
 2019-04-16  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.md (sibcall_insn): Use Rcd constraint.
+	(sibcall_value_insn): Likewise.
+	* config/arc/constraints.md (Rs5): Remove.
+
+2019-04-16  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.c (arc_hard_regno_modes): Add two missing modes
 	for last two fake registers.
 	(arc_conditional_register_usage): Make sure fake frame and arg
