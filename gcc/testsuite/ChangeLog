@@ -1,5 +1,8 @@
 2019-04-16  Alexandre Oliva <aoliva@redhat.com>
 
+	PR debug/89528
+	* gcc.dg/guality/pr89528.c: New.
+
 	PR rtl-optimization/86438
 	* gcc.dg/torture/pr86438.c: Split up too-wide shift.
 
