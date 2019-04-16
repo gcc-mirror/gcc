@@ -1,3 +1,8 @@
+2019-04-16  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR target/84369
+	* config/rs6000/power9.md: Add store forwarding bypass.
+
 2019-04-16  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/89528
