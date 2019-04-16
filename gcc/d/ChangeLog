@@ -1,3 +1,11 @@
+2019-04-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (d.mostyclean): Clean idgen and impcvgen.
+	(d/idgen): Rename to d/idgen$(build_exeext), add BUILD_LIBDEPS.
+	(d/impcvgen): Rename to d/impcvgen$(build_exeext), add BUILD_LIBDEPS.
+	(d/id.c): Call idgen$(build_exeext).
+	(d/impcnvtab.c): Call impcvgen$(build_exeext).
+
 2019-04-14  Johannes Pfau  <johannespfau@gmail.com>
 	PR d/87799
 	* d-system.h (_mkdir): Forward _mkdir on MinGW to mkdir in system.h.
