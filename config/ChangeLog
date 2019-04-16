@@ -1,3 +1,7 @@
+2019-04-16  Martin Liska  <mliska@suse.cz>
+
+	* bootstrap-lto-lean.mk: Filter out -flto in STAGEtrain_CFLAGS.
+
 2019-04-09  Martin Liska  <mliska@suse.cz>
 
 	* bootstrap-lto-lean.mk: New file.
