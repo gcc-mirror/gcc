@@ -1,5 +1,14 @@
 2019-04-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/90096
+	* config/i386/i386.c (ix86_target_string): Add ADD_ABI_P argument, only
+	print -m64/-mx32/-m32 if it is true.
+	(ix86_debug_options, ix86_function_specific_print): Pass true as
+	ADD_ABI_P to ix86_target_string.
+	(ix86_expand_builtin): Adjust ix86_target_string caller, pass true as
+	ADD_ABI_P only if OPTION_MASK_ISA_64BIT is set in bisa and in that case
+	or into it OPTION_MASK_ISA_ABI_64 or OPTION_MASK_ISA_ABI_X32.
+
 	PR rtl-optimization/90082
 	* dce.c (can_delete_call): New function.
 	(deletable_insn_p, mark_insn): Use it.

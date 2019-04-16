@@ -1,5 +1,11 @@
 2019-04-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/90096
+	* gcc.target/i386/pr90096.c: New test.
+	* gcc.target/i386/pr69255-1.c: Adjust expected diagnostics.
+	* gcc.target/i386/pr69255-2.c: Likewise.
+	* gcc.target/i386/pr69255-3.c: Likewise.
+
 	PR rtl-optimization/90082
 	* gcc.dg/pr90082.c: New test.
 
