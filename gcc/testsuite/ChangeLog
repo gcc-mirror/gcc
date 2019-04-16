@@ -1,3 +1,8 @@
+2019-04-16  Alexandre Oliva <aoliva@redhat.com>
+
+	PR rtl-optimization/86438
+	* gcc.dg/torture/pr86438.c: Split up too-wide shift.
+
 2019-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/90096
