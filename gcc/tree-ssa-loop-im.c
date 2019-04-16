@@ -178,7 +178,17 @@ mem_ref_hasher::equal (const im_mem_ref *mem1, const ao_ref *obj2)
 	    && known_eq (mem1->mem.size, obj2->size)
 	    && known_eq (mem1->mem.max_size, obj2->max_size)
 	    && mem1->mem.volatile_p == obj2->volatile_p
-	    && mem1->mem.ref_alias_set == obj2->ref_alias_set
+	    && (mem1->mem.ref_alias_set == obj2->ref_alias_set
+		/* We are not canonicalizing alias-sets but for the
+		   special-case we didn't canonicalize yet and the
+		   incoming ref is a alias-set zero MEM we pick
+		   the correct one already.  */
+		|| (!mem1->ref_canonical
+		    && (TREE_CODE (obj2->ref) == MEM_REF
+			|| TREE_CODE (obj2->ref) == TARGET_MEM_REF)
+		    && obj2->ref_alias_set == 0)
+		/* Likewise if there's a canonical ref with alias-set zero.  */
+		|| (mem1->ref_canonical && mem1->mem.ref_alias_set == 0))
 	    && types_compatible_p (TREE_TYPE (mem1->mem.ref),
 				   TREE_TYPE (obj2->ref)));
   else
