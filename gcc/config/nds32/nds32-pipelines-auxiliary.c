@@ -363,20 +363,28 @@ wext_odd_dep_p (rtx insn, rtx def_reg)
     return reg_overlap_p (def_reg, use_reg);
 
   gcc_assert (REG_P (def_reg) || GET_CODE (def_reg) == SUBREG);
-  gcc_assert (REG_P (use_reg));
+  gcc_assert (REG_P (use_reg) || GET_CODE (use_reg) == SUBREG);
 
   if (REG_P (def_reg))
     {
-      if (!TARGET_BIG_ENDIAN)
-	return REGNO (def_reg) == REGNO (use_reg) + 1;
+      if REG_P (use_reg)
+	{
+	  if (!TARGET_BIG_ENDIAN)
+	    return REGNO (def_reg) == REGNO (use_reg) + 1;
+	  else
+	    return REGNO (def_reg) == REGNO (use_reg);
+	}
       else
-	return  REGNO (def_reg) == REGNO (use_reg);
+	return true;
     }
 
   if (GET_CODE (def_reg) == SUBREG)
     {
       if (!reg_overlap_p (def_reg, use_reg))
 	return false;
+
+      if (GET_CODE (use_reg) == SUBREG)
+	return true;
 
       if (!TARGET_BIG_ENDIAN)
 	return SUBREG_BYTE (def_reg) == 4;

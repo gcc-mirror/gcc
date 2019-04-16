@@ -1,3 +1,8 @@
+2019-04-16  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32-pipelines-auxiliary.c (wext_odd_dep_p): Handle
+	subreg.
+
 2019-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/90096
