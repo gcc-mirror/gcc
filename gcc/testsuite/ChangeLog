@@ -1,3 +1,8 @@
+2019-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86953
+	* g++.dg/cpp0x/constexpr-86953.C: New test.
+
 2019-04-16  Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
 	* g++.dg/lto/pr89358_0.C: Replace dg-* with dg-lto-*.
