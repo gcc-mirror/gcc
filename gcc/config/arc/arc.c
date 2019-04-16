@@ -2571,13 +2571,12 @@ arc_compute_function_type (struct function *fun)
 #define FRAME_POINTER_MASK (1 << (FRAME_POINTER_REGNUM))
 #define RETURN_ADDR_MASK (1 << (RETURN_ADDR_REGNUM))
 
-/* Tell prologue and epilogue if register REGNO should be saved / restored.
-   The return address and frame pointer are treated separately.
-   Don't consider them here.
-   Addition for pic: The gp register needs to be saved if the current
-   function changes it to access gotoff variables.
-   FIXME: This will not be needed if we used some arbitrary register
-   instead of r26.  */
+/* Tell prologue and epilogue if register REGNO should be saved /
+   restored.  The return address, stack pointer and frame pointer are
+   treated separately.  Don't consider them here.  Addition for pic:
+   The gp register needs to be saved if the current function changes
+   it to access gotoff variables.  FIXME: This will not be needed if
+   we used some arbitrary register instead of r26.  */
 
 static bool
 arc_must_save_register (int regno, struct function *func)
@@ -2610,6 +2609,7 @@ arc_must_save_register (int regno, struct function *func)
 
   if ((regno) != RETURN_ADDR_REGNUM
       && (regno) != FRAME_POINTER_REGNUM
+      && (regno) != STACK_POINTER_REGNUM
       && df_regs_ever_live_p (regno)
       && (!call_used_regs[regno]
 	  || ARC_INTERRUPT_P (fn_type))
@@ -3683,14 +3683,10 @@ arc_expand_prologue (void)
 
   /* Allocate the stack frame.  */
   if (frame_size_to_allocate > 0)
-    {
-      frame_stack_add ((HOST_WIDE_INT) 0 - frame_size_to_allocate);
-      /* If the frame pointer is needed, emit a special barrier that
-	 will prevent the scheduler from moving stores to the frame
-	 before the stack adjustment.  */
-      if (arc_frame_pointer_needed ())
-	emit_insn (gen_stack_tie (stack_pointer_rtx, hard_frame_pointer_rtx));
-    }
+    frame_stack_add ((HOST_WIDE_INT) 0 - frame_size_to_allocate);
+
+  /* Emit a blockage to avoid delay slot scheduling.  */
+  emit_insn (gen_blockage ());
 }
 
 /* Do any necessary cleanup after a function to restore stack, frame,
@@ -3726,6 +3722,10 @@ arc_expand_epilogue (int sibcall_p)
 
   if (!can_trust_sp_p)
     gcc_assert (arc_frame_pointer_needed ());
+
+  /* Emit a blockage to avoid/flush all pending sp operations.  */
+  if (size)
+    emit_insn (gen_blockage ());
 
   if (TARGET_CODE_DENSITY
       && TARGET_CODE_DENSITY_FRAME

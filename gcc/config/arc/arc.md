@@ -136,7 +136,6 @@
   UNSPEC_ARC_VMAC2HU
   UNSPEC_ARC_VMPY2H
   UNSPEC_ARC_VMPY2HU
-  UNSPEC_ARC_STKTIE
 
   VUNSPEC_ARC_RTIE
   VUNSPEC_ARC_SYNC
@@ -6299,18 +6298,6 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   (set_attr "type" "multi")
   (set_attr "predicable" "yes,no,no,yes,no")
   (set_attr "cond" "canuse,nocond,nocond,canuse_limm,nocond")])
-
-(define_insn "stack_tie"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK [(match_operand:SI 0 "register_operand" "r")
-		     (match_operand:SI 1 "register_operand" "r")]
-		    UNSPEC_ARC_STKTIE))]
-  ""
-  ""
-  [(set_attr "length" "0")
-   (set_attr "iscompact" "false")
-   (set_attr "type" "block")]
-  )
 
 (define_insn "*add_shift"
   [(set (match_operand:SI 0 "register_operand" "=q,r,r")
