@@ -164,19 +164,6 @@ irange_storage::set_empty_pair (unsigned i, unsigned j, tree type)
     }
 }
 
-// Return TRUE if pair [i, j] is marked as empty.
-
-inline bool
-irange_storage::empty_pair_p (unsigned i, unsigned j, tree type) const
-{
-  unsigned precision = wi::get_precision (trailing_bounds[0]);
-  if (precision == 1 && TYPE_SIGN (type) == SIGNED)
-    return (trailing_bounds[i] == wi::zero (precision)
-	    && trailing_bounds[j] == wi::one (precision));
-  return (trailing_bounds[i] == wi::one (precision)
-	  && trailing_bounds[j] == wi::zero (precision));
-}
-
 irange::irange (tree type, const irange_storage *storage)
 {
   m_type = type;
@@ -220,30 +207,6 @@ irange::set_varying (tree type)
   wide_int min = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
   wide_int max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
   init (type, min, max);
-}
-
-// Return true if this range is the full range for its type.
-
-bool
-irange::varying_p () const
-{
-  irange tmp;
-  tmp.set_varying (m_type);
-  return (*this == tmp);
-}
-
-inline bool
-irange::zero_p () const
-{
-  unsigned prec = TYPE_PRECISION (m_type);
-  return *this == irange (m_type, wi::zero (prec), wi::zero (prec));
-}
-
-inline bool
-irange::non_zero_p () const
-{
-  unsigned prec = TYPE_PRECISION (m_type);
-  return *this == irange (m_type, wi::zero (prec), wi::zero (prec), INVERSE);
 }
 
 bool

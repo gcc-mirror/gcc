@@ -329,12 +329,7 @@ builtin_memref::extend_offset_range (tree offset)
 	 as signed.  */
       wide_int min, max;
       value_range_kind rng = ranger_get_range_info (call, offset, &min, &max);
-      if (rng == VR_RANGE)
-	{
-	  offrange[0] += offset_int::from (min, SIGNED);
-	  offrange[1] += offset_int::from (max, SIGNED);
-	}
-      else if (rng == VR_ANTI_RANGE && wi::lts_p (max, min))
+      if (rng == VR_ANTI_RANGE && wi::lts_p (max, min))
 	{
 	  /* Convert an anti-range whose upper bound is less than
 	     its lower bound to a signed range.  */

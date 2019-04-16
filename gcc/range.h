@@ -187,6 +187,30 @@ irange::supports_type_p (tree type)
   return NULL;
 }
 
+inline bool
+irange::zero_p () const
+{
+  unsigned prec = TYPE_PRECISION (m_type);
+  return *this == irange (m_type, wi::zero (prec), wi::zero (prec));
+}
+
+inline bool
+irange::non_zero_p () const
+{
+  unsigned prec = TYPE_PRECISION (m_type);
+  return *this == irange (m_type, wi::zero (prec), wi::zero (prec), INVERSE);
+}
+
+// Return true if this range is the full range for its type.
+
+inline bool
+irange::varying_p () const
+{
+  irange tmp;
+  tmp.set_varying (m_type);
+  return (*this == tmp);
+}
+
 // An irange is memory inefficient, so this class is used to store
 // them in memory.  It is a variable length structure that contains
 // the sub-range pairs as well as the non-zero bitmask.  The number of
@@ -264,6 +288,19 @@ irange_storage::ggc_alloc_init (const irange &ir)
   stow->set_irange (ir);
   stow->set_nonzero_bits (wi::shwi (-1, precision));
   return stow;
+}
+
+// Return TRUE if pair [i, j] is marked as empty.
+
+inline bool
+irange_storage::empty_pair_p (unsigned i, unsigned j, tree type) const
+{
+  unsigned precision = wi::get_precision (trailing_bounds[0]);
+  if (precision == 1 && TYPE_SIGN (type) == SIGNED)
+    return (trailing_bounds[i] == wi::zero (precision)
+	    && trailing_bounds[j] == wi::one (precision));
+  return (trailing_bounds[i] == wi::one (precision)
+	  && trailing_bounds[j] == wi::zero (precision));
 }
 
 #endif // GCC_RANGE_H

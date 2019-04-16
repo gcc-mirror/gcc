@@ -4265,9 +4265,25 @@ pass_sprintf_length::execute (function *fun)
 {
   init_target_to_host_charmap ();
 
+  /* Dominator and SCEV info is needed for range refinement of PHIs in
+     the on-demand ranger (which uses loop_ranger).  */
+  calculate_dominance_info (CDI_DOMINATORS);
+  bool use_scev = optimize > 0 && flag_printf_return_value;
+  if (use_scev)
+    {
+      loop_optimizer_init (LOOPS_NORMAL);
+      scev_initialize ();
+    }
+
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     sprintf_walk (bb);
+
+   if (use_scev)
+     {
+       scev_finalize ();
+       loop_optimizer_finalize ();
+     }
 
   /* Clean up object size info.  */
   fini_object_sizes ();

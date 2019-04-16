@@ -1985,7 +1985,6 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator *si,
   edge retval = NULL;
 
   old_stmt = stmt = gsi_stmt (*si);
-  was_noreturn = is_gimple_call (stmt) && gimple_call_noreturn_p (stmt);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {

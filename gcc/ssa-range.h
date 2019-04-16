@@ -206,7 +206,7 @@ on_demand_get_range_on_stmt (irange &r, tree ssa, gimple *stmt)
 {
   if (!cfun->cfg)
     return false;
-  global_ranger ranger;
+  loop_ranger ranger;
   bool ret;
   ret = ranger.range_of_expr (r, ssa, stmt);
   if (ret && r.varying_p ())

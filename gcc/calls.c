@@ -1263,7 +1263,8 @@ get_size_range (tree exp, tree range[2], bool allow_zero /* = false */,
       r = value_range_to_irange (exptype, kind, min, max);
     }
   else if (!call || TREE_CODE (exp) != SSA_NAME || !integral
-	   || !ranger.range_of_expr (r, exp, call))
+	   || !ranger.range_of_expr (r, exp, call)
+	   || r.undefined_p ())
     {
       /* Use the full range of the type of the expression when
 	 no value range information is available.  */

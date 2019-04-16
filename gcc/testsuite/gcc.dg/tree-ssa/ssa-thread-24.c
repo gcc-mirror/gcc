@@ -6,44 +6,49 @@
 int result;
 int shouldnt_happen_from_bb4;
 
-void __GIMPLE (startwith ("thread1")) foo (int arg1, int arg2)
+void __GIMPLE (ssa, startwith ("thread1")) foo (int xarg1, int xarg2)
 {
   int v1;
   int _14;
   unsigned int _15;
   unsigned int _16;
+  int arg1;
+  int arg2;
 
- bb_2:
-  if (arg1 == arg2)
-    goto bb_3;
+ __BB(2):
+  arg1_597 = xarg1_9(D);
+  arg2_598 = xarg2_10(D);
+  if (arg1_597 == arg2_598)
+    goto __BB3;
   else
-    goto bb_4;
+    goto __BB4;
 
- bb_3:
+ __BB(3):
   result = 1;
-  goto bb_5;
+  goto __BB5;
 
- bb_4:
+ __BB(4):
   result = 2;
+  goto __BB5;
 
- bb_5:
-  v1_595 = __PHI (bb_3: arg1, bb_4: 0);
+ __BB(5):
+  v1_595 = __PHI (__BB3: arg1_597, __BB4: 0);
   _14 = v1_595 * 3600;
   _15 = (unsigned int) _14;
   _16 = _15 / 60U;
   if (_16 > 389U)
-    goto bb_6;
+    goto __BB6;
   else
-    goto bb_7;
+    goto __BB7;
 
- bb_6:
+ __BB(6):
   shouldnt_happen_from_bb4 = 0;
-  goto bb_8;
+  goto __BB8;
 
- bb_7:
+ __BB(7):
   result = 3;
 
- bb_8:
+ __BB(8):
   return;
 }
 

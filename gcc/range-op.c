@@ -149,10 +149,10 @@ min_limit (const_tree type)
   return wi::min_value (TYPE_PRECISION (type) , TYPE_SIGN (type));
 }
 
-// If the range of either operand is undefined, set the result to undefined and
-// return true.   THis is a common routine to most functions as
-// undefined is a viral condition, so if either operand it undefined,
-// so is the result.
+// If the range of either operand is undefined, set the result to
+// undefined and return true.  This is a common routine to most
+// functions as undefined is a viral condition, so if either operand
+// is undefined, so is the result.
 
 inline bool
 empty_range_check (irange& r, const irange& op1, const irange & op2, tree type)
@@ -671,6 +671,12 @@ op_wi (enum tree_code code, irange &r, tree rh_type,
       r.set_varying (type);
       return false;
 
+    case ABSU_EXPR:
+      wide_int_range_absu (new_lb, new_ub, TYPE_PRECISION (r.type ()),
+			   lh_lb, lh_ub);
+      r.union_ (irange (unsigned_type_for (r.type ()), new_lb, new_ub));
+      return true;
+
     default:
       return false;
     }
@@ -739,13 +745,13 @@ op_rr (enum tree_code code, irange& r, const irange& lh, const irange& rh)
   return res && !r.varying_p ();
 }
 
-/* Perform a unary operation on a range.  */
+/* Perform a unary operation on a range.  TYPE is the type of the
+   resulting operation (and thus R).  */
 
 static bool
-op_rr_unary (enum tree_code code, irange &r, const irange &lh)
+op_rr_unary (enum tree_code code, irange &r, const irange &lh, tree type)
 {
   bool res = false;
-  tree type = lh.type ();
   // Clear and set result type.
   r.set_undefined (type);
 
@@ -1967,12 +1973,12 @@ class operator_identity : public trange_operator
 class operator_abs : public trange_operator
 {
  public:
-  operator_abs () : trange_operator (ABS_EXPR) { }
+  operator_abs (enum tree_code code) : trange_operator (code) { }
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
   virtual bool op1_range (irange& r,
 			   const irange& lhs, const irange& op2) const;
-} op_abs;
+} op_abs (ABS_EXPR), op_absu (ABSU_EXPR);
 
 bool
 operator_abs::fold_range (irange &r,
@@ -1982,13 +1988,17 @@ operator_abs::fold_range (irange &r,
   if (empty_range_check (r, lh, rh, type))
     return true;
 
-  return op_rr_unary (ABS_EXPR, r, lh);
+  return op_rr_unary (code, r, lh, type);
 }
 
 bool
 operator_abs::op1_range (irange& r,
 			  const irange& lhs, const irange& op2) const
 {
+  // FIXME: ?? Andrew TODO ??
+  if (code == ABSU_EXPR)
+    return false;
+
   tree type = lhs.type ();
   if (empty_range_check (r, lhs, op2, type))
     return true;
