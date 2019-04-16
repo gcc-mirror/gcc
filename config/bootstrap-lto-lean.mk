@@ -2,6 +2,7 @@
 # Otherwise, LTO is used in only stage3.
 
 STAGE3_CFLAGS += -flto=jobserver
+override STAGEtrain_CFLAGS := $(filter-out -flto=jobserver,$(STAGEtrain_CFLAGS))
 STAGEtrain_GENERATOR_CFLAGS += -flto=jobserver
 STAGEfeedback_CFLAGS += -flto=jobserver
 
