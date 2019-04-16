@@ -838,7 +838,7 @@ enum ix86_function_specific_strings
 
 static char *ix86_target_string (HOST_WIDE_INT, HOST_WIDE_INT, int, int,
 				 const char *, const char *, enum fpmath_unit,
-				 bool);
+				 bool, bool);
 static void ix86_function_specific_save (struct cl_target_option *,
 					 struct gcc_options *opts);
 static void ix86_function_specific_restore (struct gcc_options *opts,
@@ -2928,7 +2928,7 @@ static char *
 ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
 		    int flags, int flags2,
 		    const char *arch, const char *tune,
-		    enum fpmath_unit fpmath, bool add_nl_p)
+		    enum fpmath_unit fpmath, bool add_nl_p, bool add_abi_p)
 {
   struct ix86_target_opts
   {
@@ -3095,19 +3095,20 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     }
 
   /* Add -m32/-m64/-mx32.  */
-  if ((isa & OPTION_MASK_ISA_64BIT) != 0)
+  if (add_abi_p)
     {
-      if ((isa & OPTION_MASK_ABI_64) != 0)
-	abi = "-m64";
+      if ((isa & OPTION_MASK_ISA_64BIT) != 0)
+	{
+	  if ((isa & OPTION_MASK_ABI_64) != 0)
+	    abi = "-m64";
+	  else
+	    abi = "-mx32";
+	}
       else
-	abi = "-mx32";
-      isa &= ~ (OPTION_MASK_ISA_64BIT
-		| OPTION_MASK_ABI_64
-		| OPTION_MASK_ABI_X32);
+	abi = "-m32";
+      opts[num++][0] = abi;
     }
-  else
-    abi = "-m32";
-  opts[num++][0] = abi;
+  isa &= ~(OPTION_MASK_ISA_64BIT | OPTION_MASK_ABI_64 | OPTION_MASK_ABI_X32);
 
   /* Pick out the options in isa2 options.  */
   for (i = 0; i < ARRAY_SIZE (isa2_opts); i++)
@@ -3269,7 +3270,7 @@ ix86_debug_options (void)
   char *opts = ix86_target_string (ix86_isa_flags, ix86_isa_flags2,
 				   target_flags, ix86_target_flags,
 				   ix86_arch_string,ix86_tune_string,
-				   ix86_fpmath, true);
+				   ix86_fpmath, true, true);
 
   if (opts)
     {
@@ -5121,7 +5122,7 @@ ix86_function_specific_print (FILE *file, int indent,
   char *target_string
     = ix86_target_string (ptr->x_ix86_isa_flags, ptr->x_ix86_isa_flags2,
 			  ptr->x_target_flags, ptr->x_ix86_target_flags,
-			  NULL, NULL, ptr->x_ix86_fpmath, false);
+			  NULL, NULL, ptr->x_ix86_fpmath, false, true);
 
   gcc_assert (ptr->arch < PROCESSOR_max);
   fprintf (file, "%*sarch = %d (%s)\n",
@@ -36709,8 +36710,13 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
     isa |= (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4);
   if ((bisa & isa) != bisa || (bisa2 & isa2) != bisa2)
     {
+      bool add_abi_p = bisa & OPTION_MASK_ISA_64BIT;
+      if (TARGET_ABI_X32)
+	bisa |= OPTION_MASK_ABI_X32;
+      else
+	bisa |= OPTION_MASK_ABI_64;
       char *opts = ix86_target_string (bisa, bisa2, 0, 0, NULL, NULL,
-				       (enum fpmath_unit) 0, false);
+				       (enum fpmath_unit) 0, false, add_abi_p);
       if (!opts)
 	error ("%qE needs unknown isa option", fndecl);
       else
