@@ -8682,9 +8682,11 @@ arc_preserve_reload_p (rtx in)
 	  && !((INTVAL (XEXP (in, 1)) & 511)));
 }
 
-int
+/* Implement TARGET_REGISTER_MOVE_COST.  */
+
+static int
 arc_register_move_cost (machine_mode,
-			enum reg_class from_class, enum reg_class to_class)
+			reg_class_t from_class, reg_class_t to_class)
 {
   /* Force an attempt to 'mov Dy,Dx' to spill.  */
   if ((TARGET_ARC700 || TARGET_EM) && TARGET_DPFP
@@ -11424,6 +11426,20 @@ arc_adjust_reg_alloc_order (void)
     memcpy (reg_alloc_order, size_alloc_order, sizeof (size_alloc_order));
 }
 
+/* Implement TARGET_MEMORY_MOVE_COST.  */
+
+static int
+arc_memory_move_cost (machine_mode mode,
+		      reg_class_t rclass ATTRIBUTE_UNUSED,
+		      bool in ATTRIBUTE_UNUSED)
+{
+  if ((GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
+      || ((GET_MODE_SIZE (mode) <= UNITS_PER_WORD * 2) && TARGET_LL64))
+    return 6;
+
+  return (2 * GET_MODE_SIZE (mode));
+}
+
 #undef TARGET_USE_ANCHORS_FOR_SYMBOL_P
 #define TARGET_USE_ANCHORS_FOR_SYMBOL_P arc_use_anchors_for_symbol_p
 
@@ -11438,6 +11454,12 @@ arc_adjust_reg_alloc_order (void)
 
 #undef TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST arc_register_move_cost
+
+#undef TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST arc_memory_move_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -1,5 +1,16 @@
 2019-04-16  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc-protos.h (arc_register_move_cost): Remove.
+	* config/arc/arc.c (arc_register_move_cost): Re-purpose it to
+	implement target hook.
+	(arc_memory_move_cost): New function.
+	(TARGET_REGISTER_MOVE_COST): Define.
+	(TARGET_MEMORY_MOVE_COST): Likewise.
+	* config/arc/arc.h (REGISTER_MOVE_COST): Remove.
+	(MEMORY_MOVE_COST): Likewise.
+
+2019-04-16  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.md (sibcall_insn): Use Rcd constraint.
 	(sibcall_value_insn): Likewise.
 	* config/arc/constraints.md (Rs5): Remove.
