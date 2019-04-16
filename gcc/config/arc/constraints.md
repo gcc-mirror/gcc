@@ -480,16 +480,6 @@
   (and (match_code "reg")
        (match_test "REGNO (op) == 31")))
 
-(define_constraint "Rs5"
-  "@internal
-   sibcall register - only allow one of the five available 16 bit isnsn.
-   Registers usable in ARCompact 16-bit instructions: @code{r0}-@code{r3},
-   @code{r12}"
-  (and (match_code "reg")
-       (match_test "!arc_ccfsm_cond_exec_p ()")
-       (ior (match_test "(unsigned) REGNO (op) <= 3")
-	    (match_test "REGNO (op) == 12"))))
-
 (define_constraint "Rcc"
   "@internal
   Condition Codes"

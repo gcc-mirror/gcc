@@ -4702,17 +4702,17 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 
 (define_insn "*sibcall_insn"
  [(call (mem:SI (match_operand:SI 0 "call_address_operand"
-		 "Cbp,Cbr,Rs5,Rsc,Cal"))
+		 "Cbp,Cbr,!Rcd,Rsc,Cal"))
 	(match_operand 1 "" ""))
   (simple_return)
   (use (match_operand 2 "" ""))]
   ""
   "@
-   b%!%* %P0
-   b%!%* %P0
-   j%!%* [%0]%&
-   j%!%* [%0]
-   j%! %P0"
+   b%!%*\\t%P0
+   b%!%*\\t%P0
+   j%!%*\\t[%0]
+   j%!%*\\t[%0]
+   j%!\\t%P0"
   [(set_attr "type" "call,call,call,call,call_no_delay_slot")
    (set_attr "predicable" "yes,no,no,yes,yes")
    (set_attr "iscompact" "false,false,maybe,false,false")
@@ -4722,17 +4722,17 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 (define_insn "*sibcall_value_insn"
  [(set (match_operand 0 "dest_reg_operand" "")
        (call (mem:SI (match_operand:SI 1 "call_address_operand"
-	      "Cbp,Cbr,Rs5,Rsc,Cal"))
+	      "Cbp,Cbr,!Rcd,Rsc,Cal"))
 	     (match_operand 2 "" "")))
   (simple_return)
   (use (match_operand 3 "" ""))]
   ""
   "@
-   b%!%* %P1
-   b%!%* %P1
-   j%!%* [%1]%&
-   j%!%* [%1]
-   j%! %P1"
+   b%!%*\\t%P1
+   b%!%*\\t%P1
+   j%!%*\\t[%1]
+   j%!%*\\t[%1]
+   j%!\\t%P1"
   [(set_attr "type" "call,call,call,call,call_no_delay_slot")
    (set_attr "predicable" "yes,no,no,yes,yes")
    (set_attr "iscompact" "false,false,maybe,false,false")
