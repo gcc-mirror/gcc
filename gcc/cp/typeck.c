@@ -2477,7 +2477,8 @@ build_class_member_access_expr (cp_expr object, tree member,
 	  /* We didn't complain above about a currently open class, but now we
 	     must: we don't know how to refer to a base member before layout is
 	     complete.  But still don't complain in a template.  */
-	  if (!dependent_type_p (object_type)
+	  if (!cp_unevaluated_operand
+	      && !dependent_type_p (object_type)
 	      && !complete_type_or_maybe_complain (object_type, object,
 						   complain))
 	    return error_mark_node;

@@ -1,3 +1,8 @@
+2019-04-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90124 - bogus error with incomplete type in decltype.
+	* g++.dg/cpp0x/decltype70.C: New test.
+
 2019-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/90095
