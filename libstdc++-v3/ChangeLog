@@ -1,5 +1,8 @@
 2019-04-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/variant/compile.cc: Remove empty string literals
+	from static_assert declarations.
+
 	* testsuite/20_util/variant/compile.cc (MoveCtorOnly): Fix type to
 	actually match its name.
 	(MoveCtorAndSwapOnly): Define new type that adds swap to MoveCtorOnly.

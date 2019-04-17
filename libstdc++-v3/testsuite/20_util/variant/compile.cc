@@ -77,59 +77,59 @@ struct nonliteral
 
 void default_ctor()
 {
-  static_assert(is_default_constructible_v<variant<int, string>>, "");
-  static_assert(is_default_constructible_v<variant<string, string>>, "");
-  static_assert(!is_default_constructible_v<variant<AllDeleted, string>>, "");
-  static_assert(is_default_constructible_v<variant<string, AllDeleted>>, "");
+  static_assert(is_default_constructible_v<variant<int, string>>);
+  static_assert(is_default_constructible_v<variant<string, string>>);
+  static_assert(!is_default_constructible_v<variant<AllDeleted, string>>);
+  static_assert(is_default_constructible_v<variant<string, AllDeleted>>);
 
-  static_assert(noexcept(variant<int>()), "");
-  static_assert(!noexcept(variant<Empty>()), "");
-  static_assert(noexcept(variant<DefaultNoexcept>()), "");
+  static_assert(noexcept(variant<int>()));
+  static_assert(!noexcept(variant<Empty>()));
+  static_assert(noexcept(variant<DefaultNoexcept>()));
 }
 
 void copy_ctor()
 {
-  static_assert(is_copy_constructible_v<variant<int, string>>, "");
-  static_assert(!is_copy_constructible_v<variant<AllDeleted, string>>, "");
-  static_assert(is_trivially_copy_constructible_v<variant<int>>, "");
-  static_assert(!is_trivially_copy_constructible_v<variant<std::string>>, "");
+  static_assert(is_copy_constructible_v<variant<int, string>>);
+  static_assert(!is_copy_constructible_v<variant<AllDeleted, string>>);
+  static_assert(is_trivially_copy_constructible_v<variant<int>>);
+  static_assert(!is_trivially_copy_constructible_v<variant<std::string>>);
 
   {
     variant<int> a;
-    static_assert(noexcept(variant<int>(a)), "");
+    static_assert(noexcept(variant<int>(a)));
   }
   {
     variant<string> a;
-    static_assert(!noexcept(variant<string>(a)), "");
+    static_assert(!noexcept(variant<string>(a)));
   }
   {
     variant<int, string> a;
-    static_assert(!noexcept(variant<int, string>(a)), "");
+    static_assert(!noexcept(variant<int, string>(a)));
   }
   {
     variant<int, char> a;
-    static_assert(noexcept(variant<int, char>(a)), "");
+    static_assert(noexcept(variant<int, char>(a)));
   }
 }
 
 void move_ctor()
 {
-  static_assert(is_move_constructible_v<variant<int, string>>, "");
-  static_assert(!is_move_constructible_v<variant<AllDeleted, string>>, "");
-  static_assert(is_trivially_move_constructible_v<variant<int>>, "");
-  static_assert(!is_trivially_move_constructible_v<variant<std::string>>, "");
-  static_assert(!noexcept(variant<int, Empty>(declval<variant<int, Empty>>())), "");
-  static_assert(noexcept(variant<int, DefaultNoexcept>(declval<variant<int, DefaultNoexcept>>())), "");
+  static_assert(is_move_constructible_v<variant<int, string>>);
+  static_assert(!is_move_constructible_v<variant<AllDeleted, string>>);
+  static_assert(is_trivially_move_constructible_v<variant<int>>);
+  static_assert(!is_trivially_move_constructible_v<variant<std::string>>);
+  static_assert(!noexcept(variant<int, Empty>(declval<variant<int, Empty>>())));
+  static_assert(noexcept(variant<int, DefaultNoexcept>(declval<variant<int, DefaultNoexcept>>())));
 }
 
 void arbitrary_ctor()
 {
-  static_assert(!is_constructible_v<variant<string, string>, const char*>, "");
-  static_assert(is_constructible_v<variant<int, string>, const char*>, "");
-  static_assert(noexcept(variant<int, Empty>(int{})), "");
-  static_assert(noexcept(variant<int, DefaultNoexcept>(int{})), "");
-  static_assert(!noexcept(variant<int, Empty>(Empty{})), "");
-  static_assert(noexcept(variant<int, DefaultNoexcept>(DefaultNoexcept{})), "");
+  static_assert(!is_constructible_v<variant<string, string>, const char*>);
+  static_assert(is_constructible_v<variant<int, string>, const char*>);
+  static_assert(noexcept(variant<int, Empty>(int{})));
+  static_assert(noexcept(variant<int, DefaultNoexcept>(int{})));
+  static_assert(!noexcept(variant<int, Empty>(Empty{})));
+  static_assert(noexcept(variant<int, DefaultNoexcept>(DefaultNoexcept{})));
 }
 
 void in_place_index_ctor()
@@ -142,105 +142,105 @@ void in_place_type_ctor()
 {
   variant<int, string, int> a(in_place_type<string>, "a");
   variant<int, string, int> b(in_place_type<string>, {'a'});
-  static_assert(!is_constructible_v<variant<string, string>, in_place_type_t<string>, const char*>, "");
+  static_assert(!is_constructible_v<variant<string, string>, in_place_type_t<string>, const char*>);
 }
 
 void dtor()
 {
-  static_assert(is_destructible_v<variant<int, string>>, "");
-  static_assert(is_destructible_v<variant<AllDeleted, string>>, "");
+  static_assert(is_destructible_v<variant<int, string>>);
+  static_assert(is_destructible_v<variant<AllDeleted, string>>);
 }
 
 void copy_assign()
 {
-  static_assert(is_copy_assignable_v<variant<int, string>>, "");
-  static_assert(!is_copy_assignable_v<variant<AllDeleted, string>>, "");
-  static_assert(is_trivially_copy_assignable_v<variant<int>>, "");
-  static_assert(!is_trivially_copy_assignable_v<variant<string>>, "");
+  static_assert(is_copy_assignable_v<variant<int, string>>);
+  static_assert(!is_copy_assignable_v<variant<AllDeleted, string>>);
+  static_assert(is_trivially_copy_assignable_v<variant<int>>);
+  static_assert(!is_trivially_copy_assignable_v<variant<string>>);
   {
     variant<Empty> a;
-    static_assert(!noexcept(a = a), "");
+    static_assert(!noexcept(a = a));
   }
   {
     variant<DefaultNoexcept> a;
-    static_assert(noexcept(a = a), "");
+    static_assert(noexcept(a = a));
   }
 }
 
 void move_assign()
 {
-  static_assert(is_move_assignable_v<variant<int, string>>, "");
-  static_assert(!is_move_assignable_v<variant<AllDeleted, string>>, "");
-  static_assert(is_trivially_move_assignable_v<variant<int>>, "");
-  static_assert(!is_trivially_move_assignable_v<variant<string>>, "");
+  static_assert(is_move_assignable_v<variant<int, string>>);
+  static_assert(!is_move_assignable_v<variant<AllDeleted, string>>);
+  static_assert(is_trivially_move_assignable_v<variant<int>>);
+  static_assert(!is_trivially_move_assignable_v<variant<string>>);
   {
     variant<Empty> a;
-    static_assert(!noexcept(a = std::move(a)), "");
+    static_assert(!noexcept(a = std::move(a)));
   }
   {
     variant<DefaultNoexcept> a;
-    static_assert(noexcept(a = std::move(a)), "");
+    static_assert(noexcept(a = std::move(a)));
   }
 }
 
 void arbitrary_assign()
 {
-  static_assert(!is_assignable_v<variant<string, string>, const char*>, "");
-  static_assert(is_assignable_v<variant<int, string>, const char*>, "");
-  static_assert(noexcept(variant<int, Empty>() = int{}), "");
-  static_assert(noexcept(variant<int, DefaultNoexcept>() = int{}), "");
-  static_assert(!noexcept(variant<int, Empty>() = Empty{}), "");
-  static_assert(noexcept(variant<int, DefaultNoexcept>() = DefaultNoexcept{}), "");
+  static_assert(!is_assignable_v<variant<string, string>, const char*>);
+  static_assert(is_assignable_v<variant<int, string>, const char*>);
+  static_assert(noexcept(variant<int, Empty>() = int{}));
+  static_assert(noexcept(variant<int, DefaultNoexcept>() = int{}));
+  static_assert(!noexcept(variant<int, Empty>() = Empty{}));
+  static_assert(noexcept(variant<int, DefaultNoexcept>() = DefaultNoexcept{}));
 }
 
 void test_get()
 {
-  static_assert(is_same<decltype(get<0>(variant<int, string>())), int&&>::value, "");
-  static_assert(is_same<decltype(get<1>(variant<int, string>())), string&&>::value, "");
-  static_assert(is_same<decltype(get<1>(variant<int, const string>())), const string&&>::value, "");
+  static_assert(is_same<decltype(get<0>(variant<int, string>())), int&&>::value);
+  static_assert(is_same<decltype(get<1>(variant<int, string>())), string&&>::value);
+  static_assert(is_same<decltype(get<1>(variant<int, const string>())), const string&&>::value);
 
-  static_assert(is_same<decltype(get<int>(variant<int, string>())), int&&>::value, "");
-  static_assert(is_same<decltype(get<string>(variant<int, string>())), string&&>::value, "");
-  static_assert(is_same<decltype(get<const string>(variant<int, const string>())), const string&&>::value, "");
+  static_assert(is_same<decltype(get<int>(variant<int, string>())), int&&>::value);
+  static_assert(is_same<decltype(get<string>(variant<int, string>())), string&&>::value);
+  static_assert(is_same<decltype(get<const string>(variant<int, const string>())), const string&&>::value);
 }
 
 void test_relational()
 {
   {
     constexpr variant<int, nonliteral> a(42), b(43);
-    static_assert((a < b), "");
-    static_assert(!(a > b), "");
-    static_assert((a <= b), "");
-    static_assert(!(a == b), "");
-    static_assert((a != b), "");
-    static_assert(!(a >= b), "");
+    static_assert((a < b));
+    static_assert(!(a > b));
+    static_assert((a <= b));
+    static_assert(!(a == b));
+    static_assert((a != b));
+    static_assert(!(a >= b));
   }
   {
     constexpr variant<int, nonliteral> a(42), b(42);
-    static_assert(!(a < b), "");
-    static_assert(!(a > b), "");
-    static_assert((a <= b), "");
-    static_assert((a == b), "");
-    static_assert(!(a != b), "");
-    static_assert((a >= b), "");
+    static_assert(!(a < b));
+    static_assert(!(a > b));
+    static_assert((a <= b));
+    static_assert((a == b));
+    static_assert(!(a != b));
+    static_assert((a >= b));
   }
   {
     constexpr variant<int, nonliteral> a(43), b(42);
-    static_assert(!(a < b), "");
-    static_assert((a > b), "");
-    static_assert(!(a <= b), "");
-    static_assert(!(a == b), "");
-    static_assert((a != b), "");
-    static_assert((a >= b), "");
+    static_assert(!(a < b));
+    static_assert((a > b));
+    static_assert(!(a <= b));
+    static_assert(!(a == b));
+    static_assert((a != b));
+    static_assert((a >= b));
   }
   {
     constexpr monostate a, b;
-    static_assert(!(a < b), "");
-    static_assert(!(a > b), "");
-    static_assert((a <= b), "");
-    static_assert((a == b), "");
-    static_assert(!(a != b), "");
-    static_assert((a >= b), "");
+    static_assert(!(a < b));
+    static_assert(!(a > b));
+    static_assert((a <= b));
+    static_assert((a == b));
+    static_assert(!(a != b));
+    static_assert((a >= b));
   }
 }
 
@@ -261,10 +261,10 @@ static_assert( !std::is_swappable_v<variant<D, int>> );
 
 void test_swap()
 {
-  static_assert(is_swappable_v<variant<int, string>>, "");
-  static_assert(!is_swappable_v<variant<MoveCtorOnly>>, "");
-  static_assert(is_swappable_v<variant<MoveCtorAndSwapOnly>>, "");
-  static_assert(!is_swappable_v<variant<AllDeleted>>, "");
+  static_assert(is_swappable_v<variant<int, string>>);
+  static_assert(!is_swappable_v<variant<MoveCtorOnly>>);
+  static_assert(is_swappable_v<variant<MoveCtorAndSwapOnly>>);
+  static_assert(!is_swappable_v<variant<AllDeleted>>);
 }
 
 void test_visit()
@@ -297,7 +297,7 @@ void test_visit()
       constexpr bool operator()(const int&) { return true; }
       constexpr bool operator()(const nonliteral&) { return false; }
     };
-    static_assert(visit(Visitor(), variant<int, nonliteral>(0)), "");
+    static_assert(visit(Visitor(), variant<int, nonliteral>(0)));
   }
   {
     struct Visitor
@@ -305,7 +305,7 @@ void test_visit()
       constexpr bool operator()(const int&) { return true; }
       constexpr bool operator()(const nonliteral&) { return false; }
     };
-    static_assert(visit(Visitor(), variant<int, nonliteral>(0)), "");
+    static_assert(visit(Visitor(), variant<int, nonliteral>(0)));
   }
   // PR libstdc++/79513
   {
@@ -318,17 +318,17 @@ void test_visit()
 void test_constexpr()
 {
   constexpr variant<int> a;
-  static_assert(holds_alternative<int>(a), "");
+  static_assert(holds_alternative<int>(a));
   constexpr variant<int, char> b(in_place_index<0>, int{});
-  static_assert(holds_alternative<int>(b), "");
+  static_assert(holds_alternative<int>(b));
   constexpr variant<int, char> c(in_place_type<int>, int{});
-  static_assert(holds_alternative<int>(c), "");
+  static_assert(holds_alternative<int>(c));
   constexpr variant<int, char> d(in_place_index<1>, char{});
-  static_assert(holds_alternative<char>(d), "");
+  static_assert(holds_alternative<char>(d));
   constexpr variant<int, char> e(in_place_type<char>, char{});
-  static_assert(holds_alternative<char>(e), "");
+  static_assert(holds_alternative<char>(e));
   constexpr variant<int, char> f(char{});
-  static_assert(holds_alternative<char>(f), "");
+  static_assert(holds_alternative<char>(f));
 
   {
     struct literal {
@@ -342,51 +342,51 @@ void test_constexpr()
 
   {
     constexpr variant<int> a(42);
-    static_assert(get<0>(a) == 42, "");
+    static_assert(get<0>(a) == 42);
   }
   {
     constexpr variant<int, nonliteral> a(42);
-    static_assert(get<0>(a) == 42, "");
+    static_assert(get<0>(a) == 42);
   }
   {
     constexpr variant<nonliteral, int> a(42);
-    static_assert(get<1>(a) == 42, "");
+    static_assert(get<1>(a) == 42);
   }
   {
     constexpr variant<int> a(42);
-    static_assert(get<int>(a) == 42, "");
+    static_assert(get<int>(a) == 42);
   }
   {
     constexpr variant<int, nonliteral> a(42);
-    static_assert(get<int>(a) == 42, "");
+    static_assert(get<int>(a) == 42);
   }
   {
     constexpr variant<nonliteral, int> a(42);
-    static_assert(get<int>(a) == 42, "");
+    static_assert(get<int>(a) == 42);
   }
   {
     constexpr variant<int> a(42);
-    static_assert(get<0>(std::move(a)) == 42, "");
+    static_assert(get<0>(std::move(a)) == 42);
   }
   {
     constexpr variant<int, nonliteral> a(42);
-    static_assert(get<0>(std::move(a)) == 42, "");
+    static_assert(get<0>(std::move(a)) == 42);
   }
   {
     constexpr variant<nonliteral, int> a(42);
-    static_assert(get<1>(std::move(a)) == 42, "");
+    static_assert(get<1>(std::move(a)) == 42);
   }
   {
     constexpr variant<int> a(42);
-    static_assert(get<int>(std::move(a)) == 42, "");
+    static_assert(get<int>(std::move(a)) == 42);
   }
   {
     constexpr variant<int, nonliteral> a(42);
-    static_assert(get<int>(std::move(a)) == 42, "");
+    static_assert(get<int>(std::move(a)) == 42);
   }
   {
     constexpr variant<nonliteral, int> a(42);
-    static_assert(get<int>(std::move(a)) == 42, "");
+    static_assert(get<int>(std::move(a)) == 42);
   }
 }
 
@@ -434,12 +434,12 @@ void test_adl()
 
 void test_variant_alternative()
 {
-  static_assert(is_same_v<variant_alternative_t<0, variant<int, string>>, int>, "");
-  static_assert(is_same_v<variant_alternative_t<1, variant<int, string>>, string>, "");
+  static_assert(is_same_v<variant_alternative_t<0, variant<int, string>>, int>);
+  static_assert(is_same_v<variant_alternative_t<1, variant<int, string>>, string>);
 
-  static_assert(is_same_v<variant_alternative_t<0, const variant<int>>, const int>, "");
-  static_assert(is_same_v<variant_alternative_t<0, volatile variant<int>>, volatile int>, "");
-  static_assert(is_same_v<variant_alternative_t<0, const volatile variant<int>>, const volatile int>, "");
+  static_assert(is_same_v<variant_alternative_t<0, const variant<int>>, const int>);
+  static_assert(is_same_v<variant_alternative_t<0, volatile variant<int>>, volatile int>);
+  static_assert(is_same_v<variant_alternative_t<0, const volatile variant<int>>, const volatile int>);
 }
 
 template<typename V, typename T>
@@ -460,11 +460,11 @@ template<typename V, size_t T>
 
 void test_emplace()
 {
-  static_assert(has_type_emplace<variant<int>, int>(0), "");
-  static_assert(!has_type_emplace<variant<long>, int>(0), "");
-  static_assert(has_index_emplace<variant<int>, 0>(0), "");
-  static_assert(!has_type_emplace<variant<AllDeleted>, AllDeleted>(0), "");
-  static_assert(!has_index_emplace<variant<AllDeleted>, 0>(0), "");
+  static_assert(has_type_emplace<variant<int>, int>(0));
+  static_assert(!has_type_emplace<variant<long>, int>(0));
+  static_assert(has_index_emplace<variant<int>, 0>(0));
+  static_assert(!has_type_emplace<variant<AllDeleted>, AllDeleted>(0));
+  static_assert(!has_index_emplace<variant<AllDeleted>, 0>(0));
 }
 
 void test_triviality()
@@ -479,10 +479,10 @@ void test_triviality()
       A& operator=(const A&) CA; \
       A& operator=(A&&) MA; \
     }; \
-    static_assert(CC_VAL == is_trivially_copy_constructible_v<variant<A>>, ""); \
-    static_assert(MC_VAL == is_trivially_move_constructible_v<variant<A>>, ""); \
-    static_assert(CA_VAL == is_trivially_copy_assignable_v<variant<A>>, ""); \
-    static_assert(MA_VAL == is_trivially_move_assignable_v<variant<A>>, ""); \
+    static_assert(CC_VAL == is_trivially_copy_constructible_v<variant<A>>); \
+    static_assert(MC_VAL == is_trivially_move_constructible_v<variant<A>>); \
+    static_assert(CA_VAL == is_trivially_copy_assignable_v<variant<A>>); \
+    static_assert(MA_VAL == is_trivially_move_assignable_v<variant<A>>); \
   }
   TEST_TEMPLATE(=default, =default, =default, =default, =default,  true,  true,  true,  true)
   TEST_TEMPLATE(=default, =default, =default, =default,         ,  true,  true,  true, false)
@@ -527,10 +527,10 @@ void test_triviality()
       A& operator=(const A&) CA; \
       A& operator=(A&&) MA; \
     }; \
-    static_assert(!is_trivially_copy_constructible_v<variant<AllDeleted, A>>, ""); \
-    static_assert(!is_trivially_move_constructible_v<variant<AllDeleted, A>>, ""); \
-    static_assert(!is_trivially_copy_assignable_v<variant<AllDeleted, A>>, ""); \
-    static_assert(!is_trivially_move_assignable_v<variant<AllDeleted, A>>, ""); \
+    static_assert(!is_trivially_copy_constructible_v<variant<AllDeleted, A>>); \
+    static_assert(!is_trivially_move_constructible_v<variant<AllDeleted, A>>); \
+    static_assert(!is_trivially_copy_assignable_v<variant<AllDeleted, A>>); \
+    static_assert(!is_trivially_move_assignable_v<variant<AllDeleted, A>>); \
   }
   TEST_TEMPLATE(=default, =default, =default, =default)
   TEST_TEMPLATE(=default, =default, =default,         )
@@ -550,8 +550,8 @@ void test_triviality()
   TEST_TEMPLATE(        ,         ,         ,         )
 #undef TEST_TEMPLATE
 
-  static_assert(is_trivially_copy_constructible_v<variant<DefaultNoexcept, int, char, float, double>>, "");
-  static_assert(is_trivially_move_constructible_v<variant<DefaultNoexcept, int, char, float, double>>, "");
-  static_assert(is_trivially_copy_assignable_v<variant<DefaultNoexcept, int, char, float, double>>, "");
-  static_assert(is_trivially_move_assignable_v<variant<DefaultNoexcept, int, char, float, double>>, "");
+  static_assert(is_trivially_copy_constructible_v<variant<DefaultNoexcept, int, char, float, double>>);
+  static_assert(is_trivially_move_constructible_v<variant<DefaultNoexcept, int, char, float, double>>);
+  static_assert(is_trivially_copy_assignable_v<variant<DefaultNoexcept, int, char, float, double>>);
+  static_assert(is_trivially_move_assignable_v<variant<DefaultNoexcept, int, char, float, double>>);
 }
