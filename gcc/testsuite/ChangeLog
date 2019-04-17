@@ -1,5 +1,10 @@
 2019-04-17  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR fortran/90048
+	* gfortran.dg/goacc/private-explicit-kernels-1.f95: New file.
+	* gfortran.dg/goacc/private-explicit-parallel-1.f95: Likewise.
+	* gfortran.dg/goacc/private-explicit-routine-1.f95: Likewise.
+
 	PR fortran/90067
 	PR fortran/90114
 	* gfortran.dg/goacc/private-1.f95: Remove file.
