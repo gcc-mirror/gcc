@@ -279,7 +279,7 @@ namespace __variant
       static constexpr bool _S_move_ctor =
 	  (is_move_constructible_v<_Types> && ...);
       static constexpr bool _S_copy_assign =
-	  _S_copy_ctor && _S_move_ctor
+	  _S_copy_ctor
 	  && (is_copy_assignable_v<_Types> && ...);
       static constexpr bool _S_move_assign =
 	  _S_move_ctor
@@ -613,7 +613,7 @@ namespace __variant
 			  __variant::__get<__rhs_index>(*this);
 			if constexpr (is_same_v<
 				      remove_reference_t<decltype(__this_mem)>,
-				      remove_reference_t<decltype(__rhs_mem)>>)
+				      __remove_cvref_t<decltype(__rhs_mem)>>)
 			  __this_mem = __rhs_mem;
 		      }
 		  }
