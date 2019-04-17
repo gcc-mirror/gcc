@@ -950,13 +950,13 @@ arc_init (void)
   /* FPX-4.  No FPX extensions mixed with FPU extensions.  */
   if ((TARGET_DPFP_FAST_SET || TARGET_DPFP_COMPACT_SET || TARGET_SPFP)
       && TARGET_HARD_FLOAT)
-    error ("No FPX/FPU mixing allowed");
+    error ("no FPX/FPU mixing allowed");
 
   /* Warn for unimplemented PIC in pre-ARC700 cores, and disable flag_pic.  */
   if (flag_pic && TARGET_ARC600_FAMILY)
     {
       warning (0,
-	       "PIC is not supported for %s. Generating non-PIC code only..",
+	       "PIC is not supported for %s.  Generating non-PIC code only",
 	       arc_cpu_string);
       flag_pic = 0;
     }
@@ -1222,26 +1222,26 @@ arc_override_options (void)
   do {								\
     if ((!(arc_selected_cpu->arch_info->flags & CODE))		\
 	&& (VAR == VAL))					\
-      error ("Option %s=%s is not available for %s CPU.",	\
+      error ("option %s=%s is not available for %s CPU",	\
 	     DOC0, DOC1, arc_selected_cpu->name);		\
     if ((arc_selected_cpu->arch_info->dflags & CODE)		\
 	&& (VAR != DEFAULT_##VAR)				\
 	&& (VAR != VAL))					\
-      warning (0, "Option %s is ignored, the default value %s"	\
-	       " is considered for %s CPU.", DOC0, DOC1,	\
+      warning (0, "option %s is ignored, the default value %s"	\
+	       " is considered for %s CPU", DOC0, DOC1,		\
 	       arc_selected_cpu->name);				\
  } while (0);
 #define ARC_OPT(NAME, CODE, MASK, DOC)				\
   do {								\
     if ((!(arc_selected_cpu->arch_info->flags & CODE))		\
 	&& (target_flags & MASK))				\
-      error ("Option %s is not available for %s CPU",		\
+      error ("option %s is not available for %s CPU",		\
 	     DOC, arc_selected_cpu->name);			\
     if ((arc_selected_cpu->arch_info->dflags & CODE)		\
 	&& (target_flags_explicit & MASK)			\
 	&& (!(target_flags & MASK)))				\
-      warning (0, "Unset option %s is ignored, it is always"	\
-	       " enabled for %s CPU.", DOC,			\
+      warning (0, "unset option %s is ignored, it is always"	\
+	       " enabled for %s CPU", DOC,			\
 	       arc_selected_cpu->name);				\
   } while (0);
 
@@ -7268,7 +7268,8 @@ check_if_valid_regno_const (rtx *operands, int opno)
     case CONST_INT :
       return true;
     default:
-	error ("register number must be a compile-time constant. Try giving higher optimization levels");
+	error ("register number must be a compile-time constant.  "
+	       "Try giving higher optimization levels");
 	break;
     }
   return false;
@@ -8261,7 +8262,8 @@ arc_reorg (void)
       cfun->machine->ccfsm_current_insn = NULL_RTX;
 
       if (!INSN_ADDRESSES_SET_P())
-	  fatal_error (input_location, "Insn addresses not set after shorten_branches");
+	  fatal_error (input_location,
+		       "insn addresses not set after shorten_branches");
 
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	{
