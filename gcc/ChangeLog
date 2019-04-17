@@ -1,3 +1,7 @@
+2019-04-17  Jonny Grant  <jg@jguk.org>
+
+        * collect2.c (main): Change gcc.gnu.org URL to HTTPS.
+
 2019-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/90095

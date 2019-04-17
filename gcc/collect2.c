@@ -1640,7 +1640,7 @@ main (int argc, char **argv)
       printf ("  --help          Display this information\n");
       printf ("  -v, --version   Display this program's version number\n");
       printf ("\n");
-      printf ("Overview: http://gcc.gnu.org/onlinedocs/gccint/Collect2.html\n");
+      printf ("Overview: https://gcc.gnu.org/onlinedocs/gccint/Collect2.html\n");
       printf ("Report bugs: %s\n", bug_report_url);
       printf ("\n");
     }
