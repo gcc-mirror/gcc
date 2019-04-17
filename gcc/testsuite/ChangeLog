@@ -1,3 +1,18 @@
+2019-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90125
+	* gcc.target/i386/avx512f-vfmsubXXXss-2.c (avx512f_test): Adjust
+	constants to ensure precise result even when not using fma.
+	* gcc.target/i386/avx512f-vfnmaddXXXss-2.c (avx512f_test): Likewise.
+	* gcc.target/i386/avx512f-vfmaddXXXsd-3.c: New test.
+	* gcc.target/i386/avx512f-vfmaddXXXss-3.c: New test.
+	* gcc.target/i386/avx512f-vfmsubXXXsd-3.c: New test.
+	* gcc.target/i386/avx512f-vfmsubXXXss-3.c: New test.
+	* gcc.target/i386/avx512f-vfnmaddXXXsd-3.c: New test.
+	* gcc.target/i386/avx512f-vfnmaddXXXss-3.c: New test.
+	* gcc.target/i386/avx512f-vfnmsubXXXsd-3.c: New test.
+	* gcc.target/i386/avx512f-vfnmsubXXXss-3.c: New test.
+
 2019-04-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90124 - bogus error with incomplete type in decltype.
