@@ -63,6 +63,15 @@ struct MoveCtorOnly
 struct MoveCtorAndSwapOnly : MoveCtorOnly { };
 void swap(MoveCtorAndSwapOnly&, MoveCtorAndSwapOnly&) { }
 
+struct DeletedMoves
+{
+  DeletedMoves() = default;
+  DeletedMoves(const DeletedMoves&) = default;
+  DeletedMoves(DeletedMoves&&) = delete;
+  DeletedMoves& operator=(const DeletedMoves&) = default;
+  DeletedMoves& operator=(DeletedMoves&&) = delete;
+};
+
 struct nonliteral
 {
   nonliteral() { }
@@ -81,6 +90,7 @@ void default_ctor()
   static_assert(is_default_constructible_v<variant<string, string>>);
   static_assert(!is_default_constructible_v<variant<AllDeleted, string>>);
   static_assert(is_default_constructible_v<variant<string, AllDeleted>>);
+  static_assert(is_default_constructible_v<variant<DeletedMoves>>);
 
   static_assert(noexcept(variant<int>()));
   static_assert(!noexcept(variant<Empty>()));
@@ -93,6 +103,7 @@ void copy_ctor()
   static_assert(!is_copy_constructible_v<variant<AllDeleted, string>>);
   static_assert(is_trivially_copy_constructible_v<variant<int>>);
   static_assert(!is_trivially_copy_constructible_v<variant<std::string>>);
+  static_assert(is_trivially_copy_constructible_v<variant<DeletedMoves>>);
 
   {
     variant<int> a;
@@ -116,6 +127,7 @@ void move_ctor()
 {
   static_assert(is_move_constructible_v<variant<int, string>>);
   static_assert(!is_move_constructible_v<variant<AllDeleted, string>>);
+  static_assert(is_move_constructible_v<variant<int, DeletedMoves>>); // uses copy ctor
   static_assert(is_trivially_move_constructible_v<variant<int>>);
   static_assert(!is_trivially_move_constructible_v<variant<std::string>>);
   static_assert(!noexcept(variant<int, Empty>(declval<variant<int, Empty>>())));
@@ -157,6 +169,7 @@ void copy_assign()
   static_assert(!is_copy_assignable_v<variant<AllDeleted, string>>);
   static_assert(is_trivially_copy_assignable_v<variant<int>>);
   static_assert(!is_trivially_copy_assignable_v<variant<string>>);
+  static_assert(is_trivially_copy_assignable_v<variant<DeletedMoves>>);
   {
     variant<Empty> a;
     static_assert(!noexcept(a = a));
@@ -171,6 +184,7 @@ void move_assign()
 {
   static_assert(is_move_assignable_v<variant<int, string>>);
   static_assert(!is_move_assignable_v<variant<AllDeleted, string>>);
+  static_assert(is_move_assignable_v<variant<int, DeletedMoves>>); // uses copy assignment
   static_assert(is_trivially_move_assignable_v<variant<int>>);
   static_assert(!is_trivially_move_assignable_v<variant<string>>);
   {

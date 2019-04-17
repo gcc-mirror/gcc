@@ -1,5 +1,17 @@
 2019-04-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/variant (__detail::__variant::_Traits::_S_copy_assign):
+	Do not depend on whether all alternative types are move constructible.
+	(__detail::__variant::_Copy_assign_base::operator=): Remove cv-quals
+	from the operand when deciding whether to perform the assignment.
+	* testsuite/20_util/variant/compile.cc (DeletedMoves): Define type
+	with deleted move constructor and deleted move assignment operator.
+	(default_ctor, copy_ctor, move_ctor, copy_assign, move_assign): Check
+	behaviour of variants with DeletedMoves as an alternative.
+	* testsuite/20_util/variant/run.cc (DeletedMoves): Define same type.
+	(move_ctor, move_assign): Check that moving a variant with a
+	DeletedMoves alternative falls back to copying instead of moving.
+
 	* testsuite/20_util/variant/compile.cc: Remove empty string literals
 	from static_assert declarations.
 
