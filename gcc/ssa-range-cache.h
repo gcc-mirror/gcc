@@ -88,6 +88,8 @@ public:
   bool block_range (irange &r, basic_block bb, tree name, bool calc = true);
   void dump_block (FILE *f, basic_block bb);
 
+  ssa_global_cache m_globals;
+
 private:
   void add_to_update (basic_block bb);
   bool edge_range (irange &r, edge e, tree name);

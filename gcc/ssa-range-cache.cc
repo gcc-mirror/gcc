@@ -571,7 +571,11 @@ gori_cache::edge_range (irange &r, edge e, tree name)
       tree term = terminal_name (name);
       if (!term || !m_on_entry.get_bb_range (tmp, term, src) ||
 	  !range_from_import (r, name, tmp))
-	r = range_from_ssa (name);
+	{
+	  // Try to pick up any known value first. 
+	  if (!m_globals.get_global_range (r, name))
+	    r = range_from_ssa (name);
+	}
     }
   else
     if (!m_on_entry.get_bb_range (r, name, src))

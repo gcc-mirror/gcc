@@ -719,19 +719,19 @@ global_ranger::range_of_stmt (irange &r, gimple *s, tree name)
   gcc_checking_assert (supports_ssa_p (name));
 
   // If this STMT has already been processed, return that value. 
-  if (m_globals.get_global_range (r, name))
+  if (m_gori.m_globals.get_global_range (r, name))
     return true;
  
   // Avoid infinite recursion by initializing global cache
   irange tmp;
   tmp = range_from_ssa (name);
-  m_globals.set_global_range (name, tmp);
+  m_gori.m_globals.set_global_range (name, tmp);
 
   gcc_assert (ssa_ranger::range_of_stmt (r, s, name));
 
   if (is_a<gphi *> (s))
     r.intersect (tmp);
-  m_globals.set_global_range (name, r);
+  m_gori.m_globals.set_global_range (name, r);
   return true;
 }
 
@@ -829,7 +829,7 @@ global_ranger::export_global_ranges ()
     {
       tree name = ssa_name (x);
       if (name && !SSA_NAME_IN_FREE_LIST (name) &&
-	  valid_ssa_p (name) && m_globals.get_global_range (r, name) &&
+	  valid_ssa_p (name) && m_gori.m_globals.get_global_range (r, name) &&
 	  !r.varying_p())
 	{
 	  // Make sure that the new range is a subet of the old range.
@@ -880,7 +880,7 @@ global_ranger::dump (FILE *f)
 	  tree name = ssa_name (x);
 	  if (valid_ssa_p (name) && SSA_NAME_DEF_STMT (name) &&
 	      gimple_bb (SSA_NAME_DEF_STMT (name)) == bb &&
-	      m_globals.get_global_range (range, name))
+	      m_gori.m_globals.get_global_range (range, name))
 	    {
 	      if (!range.varying_p ())
 	       {
@@ -929,7 +929,7 @@ global_ranger::dump (FILE *f)
 	}
     }
 
-  m_globals.dump (dump_file);
+  m_gori.m_globals.dump (dump_file);
 
   if (dump_flags & TDF_DETAILS)
     {

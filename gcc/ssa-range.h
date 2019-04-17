@@ -143,7 +143,6 @@ public:
 
 protected:
   gori_cache m_gori; 	  /* Generates Outgoing Range Info.  */
-  ssa_global_cache m_globals;
 };
 
 // FIXME: Forward declaration for loop_ranger.
