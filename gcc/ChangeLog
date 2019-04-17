@@ -1,3 +1,10 @@
+2019-04-17  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_init): Format diagnostic string.
+	(arc_override_options): Likewise.
+	(check_if_valid_regno_const): Likewise.
+	(arc_reorg): Likewise.
+
 2019-04-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/17108
