@@ -975,7 +975,7 @@ value_range_to_irange (tree type, const value_range_base &vr)
   return r;
 }
 
-#ifdef CHECKING_P
+#if CHECKING_P
 #include "stor-layout.h"
 
 // Ideally this should go in namespace selftest, but irange_tests
