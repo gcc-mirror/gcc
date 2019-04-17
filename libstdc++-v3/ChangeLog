@@ -1,5 +1,11 @@
 2019-04-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/variant/compile.cc (MoveCtorOnly): Fix type to
+	actually match its name.
+	(MoveCtorAndSwapOnly): Define new type that adds swap to MoveCtorOnly.
+	(test_swap()): Fix result for MoveCtorOnly and check
+	MoveCtorAndSwapOnly.
+
 	* include/std/optional (optional::value_or(U&&) &&): Add missing
 	constexpr specifier.
 	* testsuite/20_util/optional/constexpr/observers/4.cc: Check value_or
