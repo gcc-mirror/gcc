@@ -1,5 +1,15 @@
 2019-04-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/90105
+	* include/bits/forward_list.h (operator==): Do not use operator!= to
+	compare elements.
+	(forward_list<T, A>::sort(Comp)): When elements are equal take the one
+	earlier in the list, so that sort is stable.
+	* testsuite/23_containers/forward_list/operations/90105.cc: New test.
+	* testsuite/23_containers/forward_list/comparable.cc: Test with
+	types that meet the minimum EqualityComparable and LessThanComparable
+	requirements. Remove irrelevant comment.
+
 	* include/std/variant (__detail::__variant::_Traits::_S_copy_assign):
 	Do not depend on whether all alternative types are move constructible.
 	(__detail::__variant::_Copy_assign_base::operator=): Remove cv-quals

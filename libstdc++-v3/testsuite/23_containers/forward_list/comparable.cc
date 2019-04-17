@@ -17,15 +17,11 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
-// NOTE: This makes use of the fact that we know how moveable
-// is implemented on list (via swap). If the implementation changed
-// this test may begin to fail.
-
 #include <forward_list>
 #include <testsuite_hooks.h>
 
-int main()
+void
+test01()
 {
   std::forward_list<double> a = {0.0, 1.0, 2.0, 3.0, 4.0};
   std::forward_list<double> b = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0};
@@ -43,6 +39,40 @@ int main()
   VERIFY((b >  a) == true);
   VERIFY((b >= a) == true);
   VERIFY((b <= a) == false);
+}
 
-  return 0;
+void
+test02()
+{
+  // The EqualityComparable requirements only require ==
+  struct X {
+    bool operator==(const X&) const { return true; }
+  };
+
+  std::forward_list<X> a(2);
+  const auto b = a;
+  VERIFY( a == b );
+}
+
+void
+test03()
+{
+  // The LessThanComparable requirements only require <
+  struct X {
+    bool operator<(const X&) const { return false; }
+  };
+
+  std::forward_list<X> a(2);
+  const auto b = a;
+  VERIFY( !(a < b) );
+  VERIFY( !(a > b) );
+  VERIFY( a <= b );
+  VERIFY( a >= b );
+}
+
+int main()
+{
+  test01();
+  test02();
+  test03();
 }
