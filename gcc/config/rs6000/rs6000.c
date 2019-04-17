@@ -35023,7 +35023,7 @@ rs6000_register_move_cost (machine_mode mode,
     {
       if (dbg_cost_ctrl == 1)
 	fprintf (stderr,
-		 "rs6000_register_move_cost:, ret=%d, mode=%s, from=%s, to=%s\n",
+		 "rs6000_register_move_cost: ret=%d, mode=%s, from=%s, to=%s\n",
 		 ret, GET_MODE_NAME (mode), reg_class_names[from],
 		 reg_class_names[to]);
       dbg_cost_ctrl--;

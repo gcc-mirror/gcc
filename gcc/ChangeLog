@@ -1,3 +1,7 @@
+2018-04-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_register_move_cost): Fix typo.
+
 2019-04-17  Hongtao Liu  <hongtao.liu@intel.com>
 
 	PR target/90125
