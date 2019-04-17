@@ -1,4 +1,9 @@
-2019-04-10  Joao Moreira  <jmoreira@suse.de>
+2019-04-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* auto-inc-dec.c (attempt_change): Set the alignment of the
+	temporary memory to that of the original.
+
+2019-04-17  Joao Moreira  <jmoreira@suse.de>
 
 	* targhooks.c (default_print_patchable_function_entry): Emit
 	__patchable_function_entries section with writable flags to allow
@@ -6,7 +11,7 @@
 
 2019-04-17  Jonny Grant  <jg@jguk.org>
 
-        * collect2.c (main): Change gcc.gnu.org URL to HTTPS.
+	* collect2.c (main): Change gcc.gnu.org URL to HTTPS.
 
 2019-04-17  Jakub Jelinek  <jakub@redhat.com>
 
