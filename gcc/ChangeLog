@@ -1,3 +1,9 @@
+2019-04-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	* ira-conflicts.c (print_allocno_conflicts): Always print something,
+	even for allocno's with no conflicts.
+	(print_conflicts): Print an extra newline.
+
 2019-04-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* auto-inc-dec.c (attempt_change): Set the alignment of the

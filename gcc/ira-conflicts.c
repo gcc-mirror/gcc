@@ -633,7 +633,12 @@ print_allocno_conflicts (FILE * file, bool reg_p, ira_allocno_t a)
       ira_object_conflict_iterator oci;
 
       if (OBJECT_CONFLICT_ARRAY (obj) == NULL)
-	continue;
+	{
+	  fprintf (file, "\n;;     total conflict hard regs:\n");
+	  fprintf (file, ";;     conflict hard regs:\n\n");
+	  continue;
+	}
+
       if (n > 1)
 	fprintf (file, "\n;;   subobject %d:", i);
       FOR_EACH_OBJECT_CONFLICT (obj, conflict_obj, oci)
@@ -683,6 +688,7 @@ print_conflicts (FILE *file, bool reg_p)
 
   FOR_EACH_ALLOCNO (a, ai)
     print_allocno_conflicts (file, reg_p, a);
+  putc ('\n', file);
 }
 
 /* Print information about allocno or only regno (if REG_P) conflicts
