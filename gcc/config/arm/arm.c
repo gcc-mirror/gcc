@@ -30871,8 +30871,6 @@ arm_valid_target_attribute_rec (tree args, struct gcc_options *opts)
 
   while ((q = strtok (argstr, ",")) != NULL)
     {
-      while (ISSPACE (*q)) ++q;
-
       argstr = NULL;
       if (!strcmp (q, "thumb"))
 	opts->x_target_flags |= MASK_THUMB;
