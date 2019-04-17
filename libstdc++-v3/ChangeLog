@@ -1,3 +1,11 @@
+2019-04-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional (optional::value_or(U&&) &&): Add missing
+	constexpr specifier.
+	* testsuite/20_util/optional/constexpr/observers/4.cc: Check value_or
+	for disengaged optionals and rvalue optionals.
+	* testsuite/20_util/optional/observers/4.cc: Likewise.
+
 2019-04-12  Thomas Rodgers  <trodgers@redhat.com>
 	
 	* include/pstl/algorithm_impl.h: Uglify identfiers.

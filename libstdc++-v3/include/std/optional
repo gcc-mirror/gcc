@@ -959,7 +959,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Up>
-	_Tp
+	constexpr _Tp
 	value_or(_Up&& __u) &&
 	{
 	  static_assert(is_move_constructible_v<_Tp>);
