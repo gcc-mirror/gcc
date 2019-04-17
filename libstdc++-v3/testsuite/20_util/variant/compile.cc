@@ -54,11 +54,14 @@ struct DefaultNoexcept
 struct MoveCtorOnly
 {
   MoveCtorOnly() noexcept = delete;
-  MoveCtorOnly(const DefaultNoexcept&) noexcept = delete;
-  MoveCtorOnly(DefaultNoexcept&&) noexcept { }
-  MoveCtorOnly& operator=(const DefaultNoexcept&) noexcept = delete;
-  MoveCtorOnly& operator=(DefaultNoexcept&&) noexcept = delete;
+  MoveCtorOnly(const MoveCtorOnly&) noexcept = delete;
+  MoveCtorOnly(MoveCtorOnly&&) noexcept { }
+  MoveCtorOnly& operator=(const MoveCtorOnly&) noexcept = delete;
+  MoveCtorOnly& operator=(MoveCtorOnly&&) noexcept = delete;
 };
+
+struct MoveCtorAndSwapOnly : MoveCtorOnly { };
+void swap(MoveCtorAndSwapOnly&, MoveCtorAndSwapOnly&) { }
 
 struct nonliteral
 {
@@ -259,7 +262,8 @@ static_assert( !std::is_swappable_v<variant<D, int>> );
 void test_swap()
 {
   static_assert(is_swappable_v<variant<int, string>>, "");
-  static_assert(is_swappable_v<variant<MoveCtorOnly>>, "");
+  static_assert(!is_swappable_v<variant<MoveCtorOnly>>, "");
+  static_assert(is_swappable_v<variant<MoveCtorAndSwapOnly>>, "");
   static_assert(!is_swappable_v<variant<AllDeleted>>, "");
 }
 
