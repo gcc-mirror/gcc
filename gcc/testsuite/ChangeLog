@@ -1,3 +1,14 @@
+2019-04-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/90067
+	PR fortran/90114
+	* gfortran.dg/goacc/private-1.f95: Remove file.
+	* gfortran.dg/goacc/private-2.f95: Likewise.
+	* gfortran.dg/goacc/private-predetermined-kernels-1.f95: New file.
+	* gfortran.dg/goacc/private-predetermined-parallel-1.f95:
+	Likewise.
+	* gfortran.dg/goacc/private-predetermined-routine-1.f95: Likewise.
+
 2019-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/89093
