@@ -1150,29 +1150,36 @@ contains_view_convert_expr_p (const_tree ref)
   return false;
 }
 
-/* Return true if REF contains a VIEW_CONVERT_EXPR or a MEM_REF that performs
-   type conversion or a COMPONENT_REF with a bit-field field declaration.  */
+/* Return true if REF contains a VIEW_CONVERT_EXPR or a COMPONENT_REF with a
+   bit-field field declaration.  If TYPE_CHANGING_P is non-NULL, set the bool
+   it points to will be set if REF contains any of the above or a MEM_REF
+   expression that effectively performs type conversion.  */
 
 static bool
-contains_vce_or_bfcref_p (const_tree ref)
+contains_vce_or_bfcref_p (const_tree ref, bool *type_changing_p = NULL)
 {
   while (handled_component_p (ref))
     {
       if (TREE_CODE (ref) == VIEW_CONVERT_EXPR
 	  || (TREE_CODE (ref) == COMPONENT_REF
 	      && DECL_BIT_FIELD (TREE_OPERAND (ref, 1))))
-	return true;
+	{
+	  if (type_changing_p)
+	    *type_changing_p = true;
+	  return true;
+	}
       ref = TREE_OPERAND (ref, 0);
     }
 
-  if (TREE_CODE (ref) != MEM_REF
+  if (!type_changing_p
+      || TREE_CODE (ref) != MEM_REF
       || TREE_CODE (TREE_OPERAND (ref, 0)) != ADDR_EXPR)
     return false;
 
   tree mem = TREE_OPERAND (TREE_OPERAND (ref, 0), 0);
   if (TYPE_MAIN_VARIANT (TREE_TYPE (ref))
       != TYPE_MAIN_VARIANT (TREE_TYPE (mem)))
-    return true;
+    *type_changing_p = true;
 
   return false;
 }
@@ -1368,15 +1375,26 @@ build_accesses_from_assign (gimple *stmt)
       lacc->grp_assignment_write = 1;
       if (storage_order_barrier_p (rhs))
 	lacc->grp_unscalarizable_region = 1;
+
+      if (should_scalarize_away_bitmap && !is_gimple_reg_type (lacc->type))
+	{
+	  bool type_changing_p = false;
+	  contains_vce_or_bfcref_p (lhs, &type_changing_p);
+	  if (type_changing_p)
+	    bitmap_set_bit (cannot_scalarize_away_bitmap,
+			    DECL_UID (lacc->base));
+	}
     }
 
   if (racc)
     {
       racc->grp_assignment_read = 1;
-      if (should_scalarize_away_bitmap && !gimple_has_volatile_ops (stmt)
-	  && !is_gimple_reg_type (racc->type))
+      if (should_scalarize_away_bitmap && !is_gimple_reg_type (racc->type))
 	{
-	  if (contains_vce_or_bfcref_p (rhs))
+	  bool type_changing_p = false;
+	  contains_vce_or_bfcref_p (rhs, &type_changing_p);
+
+	  if (type_changing_p || gimple_has_volatile_ops (stmt))
 	    bitmap_set_bit (cannot_scalarize_away_bitmap,
 			    DECL_UID (racc->base));
 	  else

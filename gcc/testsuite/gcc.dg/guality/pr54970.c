@@ -8,17 +8,17 @@
 int
 main ()
 {
-  int a[] = { 1, 2, 3 };	/* { dg-final { gdb-test 15 "a\[0\]" "1" } } */
+  int a[] = { 1, 2, 3 };	/* { dg-final { gdb-test 15 "a\[0\]" "1" { xfail { *-*-* } } } } */
   int *p = a + 2;		/* { dg-final { gdb-test 15 "a\[1\]" "2" } } */
   int *q = a + 1;		/* { dg-final { gdb-test 15 "a\[2\]" "3" } } */
 				/* { dg-final { gdb-test 15 "*p" "3" } } */
   asm volatile (NOP);		/* { dg-final { gdb-test 15 "*q" "2" } } */
-  *p += 10;			/* { dg-final { gdb-test 20 "a\[0\]" "1" } } */
+  *p += 10;			/* { dg-final { gdb-test 20 "a\[0\]" "1" { xfail { *-*-* } } } } */
 				/* { dg-final { gdb-test 20 "a\[1\]" "2" } } */
 				/* { dg-final { gdb-test 20 "a\[2\]" "13" } } */
 				/* { dg-final { gdb-test 20 "*p" "13" } } */
   asm volatile (NOP);		/* { dg-final { gdb-test 20 "*q" "2" } } */
-  *q += 10;			/* { dg-final { gdb-test 25 "a\[0\]" "1" } } */
+  *q += 10;			/* { dg-final { gdb-test 25 "a\[0\]" "1" { xfail { *-*-* } } } } */
 				/* { dg-final { gdb-test 25 "a\[1\]" "12" } } */
 				/* { dg-final { gdb-test 25 "a\[2\]" "13" } } */
 				/* { dg-final { gdb-test 25 "*p" "13" } } */

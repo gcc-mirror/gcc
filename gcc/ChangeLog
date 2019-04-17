@@ -1,3 +1,17 @@
+2019-04-17  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2019-03-10  Martin Jambor  <mjambor@suse.cz>
+
+        PR tree-optimization/85762
+        PR tree-optimization/87008
+        PR tree-optimization/85459
+        * tree-sra.c (contains_vce_or_bfcref_p): New parameter, set the bool
+        it points to if there is a type changing MEM_REF.  Adjust all callers.
+        (build_accesses_from_assign): Disable total scalarization if
+        contains_vce_or_bfcref_p returns true through the new parameter, for
+        both rhs and lhs.
+
 2019-04-17  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	Backport from mainline
