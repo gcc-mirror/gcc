@@ -1,3 +1,9 @@
+2019-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/90095
+	* gcc.dg/pr90095-1.c: New test.
+	* gcc.dg/pr90095-2.c: New test.
+
 2019-04-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR fortran/90048
