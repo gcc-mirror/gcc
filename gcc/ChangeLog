@@ -1,3 +1,39 @@
+2019-04-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/17108
+	* config/rs6000/rs6000.c (rs6000_split_multireg_move): Adjust pattern
+	name.
+	(rs6000_emit_allocate_stack_1): Simplify condition.  Adjust pattern
+	name.
+	* config/rs6000/rs6000.md (bits): Add entries for SF and DF.
+	(*movdi_update1): Use Pmode.
+	(movdi_<mode>_update): Fix argument to avoiding_indexed_address_p.
+	(movdi_<mode>_update_stack): Rename to ...
+	(movdi_update_stack): ... this.  Fix comment.  Change condition. Don't
+	use Pmode.
+	(*movsi_update1): Use Pmode.
+	(*movsi_update2): Use Pmode.
+	(movsi_update): Rename to ...
+	(movsi_<mode>_update): ... this.  Use Pmode.
+	(movsi_update_stack): Fix condition.
+	(*movhi_update1): Use Pmode.  Fix argument to
+	avoiding_indexed_address_p.
+	(*movhi_update2): Ditto.
+	(*movhi_update3): Ditto.
+	(*movhi_update4): Ditto.
+	(*movqi_update1): Ditto.
+	(*movqi_update2): Ditto.
+	(*movqi_update3): Ditto.
+	(*movsf_update1, *movdf_update1): Merge, rename to...
+	(*mov<mode>_update1): This.  Use Pmode.  Fix argument to
+	avoiding_indexed_address_p.  Add "size" attribute.
+	(*movsf_update2, *movdf_update2): Merge, rename to...
+	(*mov<mode>_update2): This.  Ditto.
+	(*movsf_update3): Use Pmode.  Fix argument to
+	avoiding_indexed_address_p.
+	(*movsf_update4): Ditto.
+	(allocate_stack): Simplify condition.  Adjust pattern names.
+
 2019-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/89093
