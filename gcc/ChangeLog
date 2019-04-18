@@ -1,3 +1,9 @@
+2019-04-18  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/87871
+	* ira-lives.c (make_object_dead): Don't add conflicts to
+	TOTAL_CONFLICT_HARD_REGS for register ignore_reg_for_conflicts.
+
 2019-04-18  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/89797
