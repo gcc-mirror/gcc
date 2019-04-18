@@ -6451,17 +6451,28 @@ check_aligned_type (const_tree cand, const_tree base, unsigned int align)
 tree
 get_qualified_type (tree type, int type_quals)
 {
-  tree t;
-
   if (TYPE_QUALS (type) == type_quals)
     return type;
+
+  tree mv = TYPE_MAIN_VARIANT (type);
+  if (check_qualified_type (mv, type, type_quals))
+    return mv;
 
   /* Search the chain of variants to see if there is already one there just
      like the one we need to have.  If so, use that existing one.  We must
      preserve the TYPE_NAME, since there is code that depends on this.  */
-  for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
-    if (check_qualified_type (t, type, type_quals))
-      return t;
+  for (tree *tp = &TYPE_NEXT_VARIANT (mv); *tp; tp = &TYPE_NEXT_VARIANT (*tp))
+    if (check_qualified_type (*tp, type, type_quals))
+      {
+	/* Put the found variant at the head of the variant list so
+	   frequently searched variants get found faster.  The C++ FE
+	   benefits greatly from this.  */
+	tree t = *tp;
+	*tp = TYPE_NEXT_VARIANT (t);
+	TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (mv);
+	TYPE_NEXT_VARIANT (mv) = t;
+	return t;
+      }
 
   return NULL_TREE;
 }

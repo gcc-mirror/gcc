@@ -1,3 +1,8 @@
+2019-04-18  Richard Biener  <rguenther@suse.de>
+
+	* tree.c (get_qualified_type): Put found type variants at the
+	head of the variant list.
+
 2018-04-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (rs6000_register_move_cost): Fix typo.
