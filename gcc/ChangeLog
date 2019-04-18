@@ -1,3 +1,11 @@
+2019-04-18  Richard Biener  <rguenther@suse.de>
+
+	PR debug/90131
+	* tree-cfgcleanup.c (move_debug_stmts_from_forwarder): Split
+	out from ...
+	(remove_forwarder_block): ... here.
+	(remove_forwarder_block_with_phi): Also move debug stmts here.
+
 2019-04-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR translation/79183

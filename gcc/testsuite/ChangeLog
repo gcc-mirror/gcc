@@ -1,3 +1,8 @@
+2019-04-18  Richard Biener  <rguenther@suse.de>
+
+	PR debug/90131
+	* gcc.dg/guality/pr90131.c: New testcase.
+
 2019-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89325
