@@ -67,11 +67,11 @@ void
 irange::init (tree type, const wide_int &lbound, const wide_int &ubound,
 	      kind rt)
 {
-  gcc_assert (irange::supports_type_p (type));
-  gcc_assert (TYPE_PRECISION (type) == lbound.get_precision ());
-  gcc_assert (lbound.get_precision () == ubound.get_precision ());
+  gcc_checking_assert (irange::supports_type_p (type));
+  gcc_checking_assert (TYPE_PRECISION (type) == lbound.get_precision ());
+  gcc_checking_assert (lbound.get_precision () == ubound.get_precision ());
   m_type = type;
-  gcc_assert (wi::le_p (lbound, ubound, TYPE_SIGN (type)));
+  gcc_checking_assert (wi::le_p (lbound, ubound, TYPE_SIGN (type)));
   if (rt == INVERSE)
     {
       // Calculate INVERSE([I,J]) as [-MIN, I-1][J+1, +MAX].
@@ -118,7 +118,7 @@ irange
 range_from_ssa (tree ssa)
 {
   tree type = TREE_TYPE (ssa);
-  gcc_assert (irange::supports_type_p (type));
+  gcc_checking_assert (irange::supports_type_p (type));
   if (!SSA_NAME_RANGE_INFO (ssa) || POINTER_TYPE_P (type))
     return irange (type);
   wide_int min, max;
@@ -170,7 +170,7 @@ irange::irange (tree type, const irange_storage *storage)
   m_nitems = 0;
   unsigned i = 0;
   unsigned precision = wi::get_precision (storage->trailing_bounds[0]);
-  gcc_assert (precision == TYPE_PRECISION (type));
+  gcc_checking_assert (precision == TYPE_PRECISION (type));
   while (i < m_max_pairs * 2)
     {
       if (storage->empty_pair_p (i, i + 1, type))
@@ -185,7 +185,7 @@ irange::irange (tree type, const irange_storage *storage)
 bool
 irange::operator== (const irange &r) const
 {
-  if (!range_compatible_p (m_type, r.m_type) || m_nitems != r.m_nitems)
+  if (m_nitems != r.m_nitems || !range_compatible_p (m_type, r.m_type))
     return false;
   for (unsigned i = 0; i < m_nitems; ++i)
     if (!wi::eq_p (m_bounds[i], r.m_bounds[i]))
@@ -356,7 +356,7 @@ irange::contains_p (const wide_int &element) const
 bool
 irange::contains_p (tree element) const
 {
-  gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (element)));
+  gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (element)));
   tree type = fold_convert (m_type, element);
   if (TREE_OVERFLOW (type))
     return false;
@@ -371,7 +371,7 @@ irange::remove_pair (unsigned pair)
 {
   unsigned i = pair * 2;
   unsigned j = i + 1;
-  gcc_assert (i < m_nitems && i < j);
+  gcc_checking_assert (i < m_nitems && i < j);
   unsigned dst = i;
   unsigned ndeleted = j - i + 1;
   for (++j; j < m_nitems; ++j)
@@ -433,7 +433,7 @@ irange::canonicalize ()
       irange bits (m_type, TYPE_MIN_VALUE (m_type), TYPE_MAX_VALUE (m_type));
       intersect (bits);
     }
-  gcc_assert (!CHECKING_P || valid_p ());
+  gcc_checking_assert (valid_p ());
 }
 
 // THIS = THIS U R
@@ -441,7 +441,7 @@ irange::canonicalize ()
 irange &
 irange::union_ (const irange &r)
 {
-  gcc_assert (range_compatible_p (m_type, r.m_type));
+  gcc_checking_assert (range_compatible_p (m_type, r.m_type));
 
   if (undefined_p ())
     {
@@ -548,7 +548,7 @@ irange::union_ (const irange &r)
     m_bounds[j] = res [j];
   m_nitems = i;
     
-  gcc_assert (!CHECKING_P || valid_p ());
+  gcc_checking_assert (valid_p ());
   return *this;
 }
 
@@ -584,7 +584,7 @@ irange::intersect (const wide_int &x, const wide_int &y)
 	}
     }
   m_nitems = pos;
-  gcc_assert (!CHECKING_P || valid_p ());
+  gcc_checking_assert (valid_p ());
   return *this;
 }
 
@@ -593,7 +593,7 @@ irange::intersect (const wide_int &x, const wide_int &y)
 irange &
 irange::intersect (const irange &r)
 {
-  gcc_assert (range_compatible_p (m_type, r.m_type));
+  gcc_checking_assert (range_compatible_p (m_type, r.m_type));
   irange orig_range (*this);
 
   // Intersection with an empty range is an empty range.
@@ -721,7 +721,7 @@ irange::invert ()
 	m_nitems -= 2;
     }
 
-  gcc_assert (!CHECKING_P || valid_p ());
+  gcc_checking_assert (valid_p ());
   return *this;
 }
 
@@ -950,7 +950,7 @@ irange
 value_range_to_irange (tree type, enum value_range_kind kind,
 		       const wide_int &min, const wide_int &max)
 {
-  gcc_assert (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type));
+  gcc_checking_assert (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type));
   irange r;
   if (kind == VR_VARYING || kind == VR_UNDEFINED)
     r.set_varying (type);

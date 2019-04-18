@@ -190,8 +190,8 @@ irange::supports_type_p (tree type)
 inline bool
 irange::zero_p () const
 {
-  unsigned prec = TYPE_PRECISION (m_type);
-  return *this == irange (m_type, wi::zero (prec), wi::zero (prec));
+  wide_int z = wi::zero (TYPE_PRECISION (m_type));
+  return (m_nitems == 2 && m_bounds[0] == z && m_bounds[1] == z);
 }
 
 inline bool
@@ -206,9 +206,11 @@ irange::non_zero_p () const
 inline bool
 irange::varying_p () const
 {
-  irange tmp;
-  tmp.set_varying (m_type);
-  return (*this == tmp);
+  return (m_nitems == 2 &&
+	  m_bounds[0] == wi::min_value (TYPE_PRECISION (m_type),
+					TYPE_SIGN (m_type)) &&
+	  m_bounds[1] == wi::max_value (TYPE_PRECISION (m_type),
+					TYPE_SIGN (m_type)));
 }
 
 // An irange is memory inefficient, so this class is used to store
