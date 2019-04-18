@@ -8946,7 +8946,7 @@ force_int_to_mode (rtx x, scalar_int_mode mode, scalar_int_mode xmode,
       /* If X is (minus C Y) where C's least set bit is larger than any bit
 	 in the mask, then we may replace with (neg Y).  */
       if (poly_int_rtx_p (XEXP (x, 0), &const_op0)
-	  && (unsigned HOST_WIDE_INT) known_alignment (const_op0) > mask)
+	  && known_alignment (poly_uint64 (const_op0)) > mask)
 	{
 	  x = simplify_gen_unary (NEG, xmode, XEXP (x, 1), xmode);
 	  return force_to_mode (x, mode, mask, next_select);

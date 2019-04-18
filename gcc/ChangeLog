@@ -1,3 +1,10 @@
+2019-04-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/85164
+	* combine.c (force_int_to_mode): Cast the argument rather than
+	the result of known_alignment.
+	* rtlanal.c (rtx_addr_can_trap_p_1): Use known_subrange_p.
+
 2019-04-18  Richard Biener  <rguenther@suse.de>
 
 	PR debug/90131
