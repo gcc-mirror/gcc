@@ -1,3 +1,10 @@
+2020-04-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90136
+	* gdc.dg/pr90136a.d: New test.
+	* gdc.dg/pr90136b.d: New test.
+	* gdc.dg/pr90136c.d: New test.
+
 2020-03-31  Andrea Corallo  <andrea.corallo@arm.com>
 
 	* jit.dg/test-version.c: New testcase.

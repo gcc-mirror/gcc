@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 
+#include "dmd/attrib.h"
 #include "dmd/declaration.h"
 #include "dmd/mtype.h"
 
@@ -234,7 +235,7 @@ uda_attribute_p (const char *name)
    `gcc.attribute.Attribute'.  This symbol is internally recognized by the
    compiler and maps them to their equivalent GCC attribute.  */
 
-tree
+static tree
 build_attributes (Expressions *eattrs)
 {
   if (!eattrs)
@@ -317,6 +318,30 @@ build_attributes (Expressions *eattrs)
     }
 
   return attribs;
+}
+
+/* If any GCC attributes are found in the declaration SYM, apply them to the
+   type or decl NODE.  */
+
+void
+apply_user_attributes (Dsymbol *sym, tree node)
+{
+  if (!sym->userAttribDecl)
+    {
+      if (DECL_P (node) && DECL_ATTRIBUTES (node) != NULL)
+	decl_attributes (&node, DECL_ATTRIBUTES (node), 0);
+
+      return;
+    }
+
+  location_t saved_location = input_location;
+  input_location = make_location_t (sym->loc);
+
+  Expressions *attrs = sym->userAttribDecl->getAttributes ();
+  decl_attributes (&node, build_attributes (attrs),
+		   TYPE_P (node) ? ATTR_FLAG_TYPE_IN_PLACE : 0);
+
+  input_location = saved_location;
 }
 
 /* Built-in attribute handlers.  */
