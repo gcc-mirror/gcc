@@ -3735,13 +3735,13 @@ TYPE_VECTOR_SUBPARTS (const_tree node)
   if (NUM_POLY_INT_COEFFS == 2)
     {
       poly_uint64 res = 0;
-      res.coeffs[0] = 1 << (precision & 0xff);
+      res.coeffs[0] = HOST_WIDE_INT_1U << (precision & 0xff);
       if (precision & 0x100)
-	res.coeffs[1] = 1 << (precision & 0xff);
+	res.coeffs[1] = HOST_WIDE_INT_1U << (precision & 0xff);
       return res;
     }
   else
-    return (unsigned HOST_WIDE_INT)1 << precision;
+    return HOST_WIDE_INT_1U << precision;
 }
 
 /* Set the number of elements in VECTOR_TYPE NODE to SUBPARTS, which must

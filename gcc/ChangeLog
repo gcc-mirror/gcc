@@ -1,3 +1,10 @@
+2019-04-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/89797
+	* tree.h (TYPE_VECTOR_SUBPARTS): Use HOST_WIDE_INT_1U.
+	* config/aarch64/aarch64.c (aarch64_simd_vector_alignment): Avoid
+	assuming type size fits in SHWI.
+
 2019-04-18  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/85051
