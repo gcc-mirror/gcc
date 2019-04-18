@@ -14924,8 +14924,7 @@ aarch64_simd_vector_alignment (const_tree type)
        be set for non-predicate vectors of booleans.  Modes are the most
        direct way we have of identifying real SVE predicate types.  */
     return GET_MODE_CLASS (TYPE_MODE (type)) == MODE_VECTOR_BOOL ? 16 : 128;
-  HOST_WIDE_INT align = tree_to_shwi (TYPE_SIZE (type));
-  return MIN (align, 128);
+  return wi::umin (wi::to_wide (TYPE_SIZE (type)), 128).to_uhwi ();
 }
 
 /* Implement target hook TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT.  */
