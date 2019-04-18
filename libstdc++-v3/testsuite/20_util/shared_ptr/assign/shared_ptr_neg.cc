@@ -35,3 +35,5 @@ test01()
   std::shared_ptr<B> b;
   a = b;                      // { dg-error "no match" }
 }
+
+// { dg-prune-output "enable_if" }

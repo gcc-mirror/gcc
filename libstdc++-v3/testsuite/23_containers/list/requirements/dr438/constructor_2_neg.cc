@@ -28,3 +28,5 @@ void f()
   typedef std::list<std::list<std::pair<char, char> > > list_type;
   list_type l('a', 'b');	// { dg-error "here|no match" }
 }
+
+// { dg-prune-output "iterator_traits" }

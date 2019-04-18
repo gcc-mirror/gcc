@@ -59,3 +59,5 @@ test03()
   std::get<6>(const_cast<const test_type&>(t));	// { dg-error "no match" }
   std::get<6>(static_cast<test_type&&>(t));	// { dg-error "no match" }
 }
+
+// { dg-prune-output "no type named .type" }

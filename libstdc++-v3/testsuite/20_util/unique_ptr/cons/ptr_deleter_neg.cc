@@ -51,3 +51,5 @@ main()
   test02();
   return 0;
 }
+
+// { dg-prune-output "enable_if" }
