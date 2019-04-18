@@ -1,3 +1,9 @@
+2019-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/79183
+	* gimple-ssa-sprintf.c (format_directive): Use inform_n instead of
+	inform where appropriate.
+
 2019-04-18  Richard Biener  <rguenther@suse.de>
 
 	* tree.c (get_qualified_type): Put found type variants at the
