@@ -163,7 +163,9 @@ static void
 make_object_dead (ira_object_t obj)
 {
   live_range_t lr;
+  int regno;
   int ignore_regno = -1;
+  int ignore_total_regno = -1;
   int end_regno = -1;
 
   sparseset_clear_bit (objects_live, OBJECT_CONFLICT_ID (obj));
@@ -174,16 +176,14 @@ make_object_dead (ira_object_t obj)
       && REGNO (ignore_reg_for_conflicts) < FIRST_PSEUDO_REGISTER)
     {
       end_regno = END_REGNO (ignore_reg_for_conflicts);
-      int src_regno = ignore_regno = REGNO (ignore_reg_for_conflicts);
+      ignore_regno = ignore_total_regno = REGNO (ignore_reg_for_conflicts);
 
-      while (src_regno < end_regno)
+      for (regno = ignore_regno; regno < end_regno; regno++)
 	{
-	  if (TEST_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS (obj), src_regno))
-	    {
-	      ignore_regno = end_regno = -1;
-	      break;
-	    }
-	  src_regno++;
+	  if (TEST_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS (obj), regno))
+	    ignore_regno = end_regno;
+	  if (TEST_HARD_REG_BIT (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj), regno))
+	    ignore_total_regno = end_regno;
 	}
     }
 
@@ -192,8 +192,10 @@ make_object_dead (ira_object_t obj)
 
   /* If IGNORE_REG_FOR_CONFLICTS did not already conflict with OBJ, make
      sure it still doesn't.  */
-  for (; ignore_regno < end_regno; ignore_regno++)
-    CLEAR_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS (obj), ignore_regno);
+  for (regno = ignore_regno; regno < end_regno; regno++)
+    CLEAR_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS (obj), regno);
+  for (regno = ignore_total_regno; regno < end_regno; regno++)
+    CLEAR_HARD_REG_BIT (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj), regno);
 
   lr = OBJECT_LIVE_RANGES (obj);
   ira_assert (lr != NULL);
