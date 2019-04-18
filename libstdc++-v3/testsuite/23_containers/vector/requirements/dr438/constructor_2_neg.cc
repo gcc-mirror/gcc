@@ -27,3 +27,5 @@ void f()
 {
   std::vector<std::vector<std::pair<char, char> > > v('a', 'b'); // { dg-error "here|no match" }
 }
+
+// { dg-prune-output "iterator_traits" }
