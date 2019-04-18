@@ -52,6 +52,195 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "vr-values.h"
 
+class switch_edge_manager
+{
+public:
+  switch_edge_manager ();
+  ~switch_edge_manager ();
+  gimple *get_range (irange &r, gimple *s, edge e, bool must_exist = false);
+  void clear_ranges ();
+private:
+  void calc_switch_ranges (gswitch *sw);
+  void calc_single_range (irange &r, gswitch *sw, edge e);
+  void init_ranges ();
+  irange *new_range ();
+  hash_map<edge, irange *> *m_edge_table;
+  obstack m_rstack;
+} switch_edge_range;
+
+switch_edge_manager::switch_edge_manager ()
+{
+  m_edge_table = NULL;
+}
+
+switch_edge_manager::~switch_edge_manager ()
+{
+  clear_ranges ();
+}
+
+void
+switch_edge_manager::init_ranges ()
+{
+  gcc_assert (!m_edge_table);
+  m_edge_table = new hash_map<edge, irange *> (n_edges_for_fn (cfun));
+  gcc_obstack_init (&m_rstack);
+}
+
+void
+switch_edge_manager::clear_ranges ()
+{
+  if (m_edge_table)
+    {
+      delete m_edge_table;
+      obstack_free (&m_rstack, NULL);
+    }
+  m_edge_table = NULL;
+}
+
+inline irange *
+switch_edge_manager::new_range ()
+{
+  return XOBNEW (&m_rstack, irange);
+}
+
+
+gimple *
+switch_edge_manager::get_range (irange &r, gimple *s, edge e, bool must_exist)
+{
+  gcc_checking_assert (is_a<gswitch *> (s));
+  gswitch *sw = as_a<gswitch *> (s);
+
+  // ADA currently has cases where the index is 64 bits and the case
+  // arguments are  32 bit, causing a trap when we create a case_range.
+  // Until this is resolved (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=87798)
+  // punt on these switches.
+  if (gimple_switch_num_labels (sw) > 1 && 
+      TYPE_PRECISION (TREE_TYPE (CASE_LOW (gimple_switch_label (sw, 1)))) != 
+      TYPE_PRECISION (TREE_TYPE (gimple_switch_index (sw))))
+    return NULL;
+
+  if (!m_edge_table)
+    init_ranges ();
+
+  irange **val = m_edge_table->get (e);
+  if (!val)
+    {
+      // Avoid infinite recursion in case of a bug.
+      gcc_assert (!must_exist);
+      // calculate ranges for the entire switch.
+      calc_switch_ranges (sw);
+      return get_range (r, s, e, true);
+    }
+
+  r = **val;
+#ifdef VERIFY_SWITCH
+  // Verify the range is as expected.
+  irange verify;
+  calc_single_range (verify, sw, e);
+  gcc_assert (verify == r);
+#endif
+  return s;
+}
+
+void
+switch_edge_manager::calc_switch_ranges (gswitch *sw)
+{
+  bool existed;
+  unsigned x, lim;
+  lim = gimple_switch_num_labels (sw);
+  tree type = TREE_TYPE (gimple_switch_index (sw));
+  
+  edge default_edge = gimple_switch_default_edge (cfun, sw);
+  irange *&default_slot = m_edge_table->get_or_insert (default_edge, &existed);
+  // This should be the first call into this switch.
+  // For the default range case, start with varying and intersect each other 
+  // case from it. 
+  gcc_assert (!existed);
+  default_slot = new_range ();
+  default_slot->set_varying (type);
+
+  for (x = 1; x < lim; x++)
+    {
+      edge e = gimple_switch_edge (cfun, sw, x);
+
+      // If this edge is the same as the default edge, do nothing else.
+      if (e == default_edge)
+        continue;
+
+      tree low = CASE_LOW (gimple_switch_label (sw, x));
+      tree high = CASE_HIGH (gimple_switch_label (sw, x));
+      if (!high)
+	high = low;
+
+      irange def_case_range (type, low, high, irange::INVERSE);
+      default_slot->intersect (def_case_range);
+
+      irange case_range (type, low, high);
+      irange *&slot = m_edge_table->get_or_insert (e, &existed);
+      if (!existed)
+        {
+	  slot = new_range ();
+	  *slot = case_range;
+	}
+      else
+        // Add this case range to the existing ranges on the edge.
+	slot->union_ (case_range);
+    }
+
+#ifdef VERIFY_SWITCH
+  for (x = 1; x < lim; x++)
+    {
+      edge e = gimple_switch_edge (cfun, sw, x);
+      irange r1;
+      // get range verifies it as is it should be.
+      gcc_assert (get_range (r1, sw, e, true));
+    }
+#endif
+
+}
+
+void
+switch_edge_manager::calc_single_range (irange &r, gswitch *sw, edge e)
+{
+  tree type = TREE_TYPE (gimple_switch_index (sw));
+
+  unsigned x, lim;
+  lim = gimple_switch_num_labels (sw);
+
+  if (e != gimple_switch_default_edge (cfun, sw))
+    {
+      r.set_undefined (type);
+      // Loop through all the switches edges, ignoring the default edge.
+      // unioning the ranges together.
+      for (x = 1; x < lim; x++)
+	{
+	  if (gimple_switch_edge (cfun, sw, x) != e)
+	    continue;
+	  tree low = CASE_LOW (gimple_switch_label (sw, x));
+	  tree high = CASE_HIGH (gimple_switch_label (sw, x));
+	  if (!high)
+	    high = low;
+	  irange case_range (type, low, high);
+	  r.union_ (case_range);
+	}
+    }
+  else
+    {
+      r.set_varying (type);
+      // Loop through all the switches edges, ignoring the default edge.
+      // intersecting the ranges not covered by the case.
+      for (x = 1; x < lim; x++)
+	{
+	  tree low = CASE_LOW (gimple_switch_label (sw, x));
+	  tree high = CASE_HIGH (gimple_switch_label (sw, x));
+	  if (!high)
+	    high = low;
+	  irange case_range (type, low, high, irange::INVERSE);
+	  r.intersect (case_range);
+	}
+    }
+}
+
 
 // If there is a range control statment at the end of block BB, return it.
 
@@ -93,50 +282,7 @@ gimple_outgoing_edge_range_p (irange &r, edge e)
   if (!ssa_ranger::supports_type_p (type))
     return NULL;
 
-  unsigned x, lim;
-  lim = gimple_switch_num_labels (sw);
-
-  // ADA currently has cases where the index is 64 bits and the case
-  // arguments are  32 bit, causing a trap when we create a case_range.
-  // Until this is resolved (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=87798)
-  // punt on these switches.
-  if (lim > 1 && 
-      TYPE_PRECISION (TREE_TYPE (CASE_LOW (gimple_switch_label (sw, 1)))) != 
-      TYPE_PRECISION (type))
-    return NULL;
-
-  if (e != gimple_switch_default_edge (cfun, sw))
-    {
-      r.set_undefined (type);
-      // Loop through all the switches edges, ignoring the default edge.
-      // unioning the ranges together.
-      for (x = 1; x < lim; x++)
-	{
-	  if (gimple_switch_edge (cfun, sw, x) != e)
-	    continue;
-	  tree low = CASE_LOW (gimple_switch_label (sw, x));
-	  tree high = CASE_HIGH (gimple_switch_label (sw, x));
-	  if (!high)
-	    high = low;
-	  irange case_range (type, low, high);
-	  r.union_ (case_range);
-	}
-      return s;
-    }
-  r.set_varying (type);
-  // Loop through all the switches edges, ignoring the default edge.
-  // intersecting the ranges not covered by the case.
-  for (x = 1; x < lim; x++)
-    {
-      tree low = CASE_LOW (gimple_switch_label (sw, x));
-      tree high = CASE_HIGH (gimple_switch_label (sw, x));
-      if (!high)
-	high = low;
-      irange case_range (type, low, high, irange::INVERSE);
-      r.intersect (case_range);
-    }
-
-  return s;
+  return switch_edge_range.get_range (r, s, e);
 }
 
 
@@ -199,12 +345,14 @@ get_tree_range (irange &r, tree expr)
 
 ssa_ranger::ssa_ranger ()
 {
+  switch_edge_range.clear_ranges ();
 }
 
 // Destruct a ranger.
 
 ssa_ranger::~ssa_ranger ()
 {
+  switch_edge_range.clear_ranges ();
 }
 
 // This function returns a range for a tree node.  If optional statement S
