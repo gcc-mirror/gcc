@@ -1173,7 +1173,6 @@ tree
 int_const_binop (enum tree_code code, const_tree arg1, const_tree arg2,
 		 int overflowable)
 {
-  bool success = false;
   poly_wide_int poly_res;
   tree type = TREE_TYPE (arg1);
   signop sign = TYPE_SIGN (type);
@@ -1183,17 +1182,18 @@ int_const_binop (enum tree_code code, const_tree arg1, const_tree arg2,
     {
       wide_int warg1 = wi::to_wide (arg1), res;
       wide_int warg2 = wi::to_wide (arg2, TYPE_PRECISION (type));
-      success = wide_int_binop (res, code, warg1, warg2, sign, &overflow);
+      if (!wide_int_binop (res, code, warg1, warg2, sign, &overflow))
+	return NULL_TREE;
       poly_res = res;
     }
-  else if (poly_int_tree_p (arg1) && poly_int_tree_p (arg2))
-    success = poly_int_binop (poly_res, code, arg1, arg2, sign, &overflow);
-  if (success)
-    return force_fit_type (type, poly_res, overflowable,
-			   (((sign == SIGNED || overflowable == -1)
-			     && overflow)
-			    | TREE_OVERFLOW (arg1) | TREE_OVERFLOW (arg2)));
-  return NULL_TREE;
+  else if (!poly_int_tree_p (arg1)
+	   || !poly_int_tree_p (arg2)
+	   || !poly_int_binop (poly_res, code, arg1, arg2, sign, &overflow))
+    return NULL_TREE;
+  return force_fit_type (type, poly_res, overflowable,
+			 (((sign == SIGNED || overflowable == -1)
+			   && overflow)
+			  | TREE_OVERFLOW (arg1) | TREE_OVERFLOW (arg2)));
 }
 
 /* Return true if binary operation OP distributes over addition in operand
