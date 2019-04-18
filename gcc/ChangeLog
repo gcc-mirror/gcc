@@ -238,6 +238,15 @@
 	* tree-ssa-reassoc.c (init_range_entry): Do not pick up
 	abnormal operands from def stmts.
 
+2019-04-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/89794
+	* combine.c (count_auto_inc): New function.
+	(try_combine): Count how many auto_inc expressions there were in the
+	original instructions.  Ensure we have the same number in the new
+	instructions.  Remove the code that tried to ensure auto_inc side
+	effects on i1 and i0 are not lost.
+
 2019-04-15  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/88936
