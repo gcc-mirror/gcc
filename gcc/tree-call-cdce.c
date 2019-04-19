@@ -362,6 +362,40 @@ can_guard_call_p (gimple *call)
 	  || find_fallthru_edge (gimple_bb (call)->succs));
 }
 
+/* For a comparison code return the comparison code we should use if we don't
+   HONOR_NANS.  */
+
+static enum tree_code
+comparison_code_if_no_nans (tree_code code)
+{
+  switch (code)
+    {
+    case UNLT_EXPR:
+      return LT_EXPR;
+    case UNGT_EXPR:
+      return GT_EXPR;
+    case UNLE_EXPR:
+      return LE_EXPR;
+    case UNGE_EXPR:
+      return GE_EXPR;
+    case UNEQ_EXPR:
+      return EQ_EXPR;
+    case LTGT_EXPR:
+      return NE_EXPR;
+
+    case LT_EXPR:
+    case GT_EXPR:
+    case LE_EXPR:
+    case GE_EXPR:
+    case EQ_EXPR:
+    case NE_EXPR:
+      return code;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* A helper function to generate gimple statements for one bound
    comparison, so that the built-in function is called whenever
    TCODE <ARG, LBUB> is *false*.  TEMP_NAME1/TEMP_NAME2 are names
@@ -378,6 +412,9 @@ gen_one_condition (tree arg, int lbub,
 		   vec<gimple *> conds,
                    unsigned *nconds)
 {
+  if (!HONOR_NANS (arg))
+    tcode = comparison_code_if_no_nans (tcode);
+
   tree lbub_real_cst, lbub_cst, float_type;
   tree temp, tempn, tempc, tempcn;
   gassign *stmt1;
