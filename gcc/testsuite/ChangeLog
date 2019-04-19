@@ -1,3 +1,11 @@
+2019-04-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/89900
+	* g++.dg/cpp0x/pr89900-1.C: New.
+	* g++.dg/cpp0x/pr89900-2.C: Likewise.
+	* g++.dg/cpp0x/pr89900-3.C: Likewise.
+	* g++.dg/cpp0x/pr89900-4.C: Likewise.
+
 2019-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/90139
