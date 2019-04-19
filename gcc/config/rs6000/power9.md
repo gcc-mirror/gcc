@@ -236,6 +236,9 @@
        (eq_attr "cpu" "power9"))
   "DU_super_power9,LSU_pair_power9")
 
+; Store forwarding latency is 6
+(define_bypass 6 "power9-*store*" "power9-*load*")
+
 (define_insn_reservation "power9-larx" 4
   (and (eq_attr "type" "load_l")
        (eq_attr "cpu" "power9"))

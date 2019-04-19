@@ -1,3 +1,11 @@
+2019-04-19  Pat Haugen  <pthaugen@us.ibm.com>
+
+	Backport from mainline:
+	2019-04-16  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR target/84369
+	* config/rs6000/power9.md: Add store forwarding bypass.
+
 2019-04-17  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
