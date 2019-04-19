@@ -58,6 +58,10 @@ for i, l in enumerate(lines):
                         print('%s: %s' % (origin, text))
                     if re.search("[^%]'", p):
                         print('%s: %s' % (origin, text))
+                    # %< should not be preceded by a non-punctuation
+                    # %character.
+                    if re.search("[a-zA-Z0-9]%<", p):
+                        print('%s: %s' % (origin, text))
             j += 1
 
         origin = None
