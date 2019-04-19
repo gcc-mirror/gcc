@@ -1,3 +1,16 @@
+2019-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89888
+	* c-common.h (c_add_case_label): Remove orig_type and outside_range_p
+	arguments.
+	(c_do_switch_warnings): Remove outside_range_p argument.
+	* c-common.c (check_case_bounds): Removed.
+	(c_add_case_label): Remove orig_type and outside_range_p arguments.
+	Don't call check_case_bounds.  Fold low_value as well as high_value.
+	* c-warn.c (c_do_switch_warnings): Remove outside_range_p argument.
+	Check for case labels outside of range of original type here and
+	adjust them.
+
 2019-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR translation/90041

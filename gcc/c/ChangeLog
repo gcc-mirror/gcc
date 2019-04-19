@@ -1,5 +1,11 @@
 2019-04-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/89888
+	* c-typeck.c (struct c_switch): Remove outside_range_p member.
+	(c_start_case): Don't clear it.
+	(do_case): Adjust c_add_case_label caller.
+	(c_finish_case): Adjust c_do_switch_warnings caller.
+
 	PR c++/90108
 	* c-decl.c (merge_decls): If remove is main variant and
 	DECL_ORIGINAL_TYPE is some other type, remove a DECL_ORIGINAL_TYPE
