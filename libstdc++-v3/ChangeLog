@@ -1,3 +1,20 @@
+2019-04-19  Thomas Rodgers <trodgers@redhat.com>
+	
+	Improve implementation of parallel equal()
+	* include/pstl/algorithm_impl.h
+	(__internal::__brick_equal): use "4 iterator" version of
+	std::equal().
+	(__internal::__brick_equal): use simd for random access
+	iterators on unsequenced execution policies.
+	(__internal::__pattern_equal): add "4 iterator" version
+	(__internal::__pattern_equal): dispatch to simd __brick_equal
+	for vector-only execution policies.
+	(__internal::__pattern_equal): dispatch to __parallel_or for
+	parallel execution policies.
+	* include/pstl/glue_algorithm_impl.h
+	(std::equal): dispatch to "4 iterator" version of
+	__internal::__pattern_equal().
+	
 2019-04-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90105

@@ -757,7 +757,7 @@ __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, bool>
 equal(_ExecutionPolicy&& __exec, _ForwardIterator1 __first1, _ForwardIterator1 __last1, _ForwardIterator2 __first2,
       _ForwardIterator2 __last2)
 {
-    return equal(std::forward<_ExecutionPolicy>(__exec), __first1, __last1, __first2,
+    return equal(std::forward<_ExecutionPolicy>(__exec), __first1, __last1, __first2, __last2,
                  __pstl::__internal::__pstl_equal());
 }
 
