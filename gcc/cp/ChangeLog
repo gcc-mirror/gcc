@@ -1,3 +1,10 @@
+2019-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90108
+	* decl.c (duplicate_decls): If remove is main variant and
+	DECL_ORIGINAL_TYPE is some other type, remove a DECL_ORIGINAL_TYPE
+	variant that has newdecl as TYPE_NAME if any.
+
 2019-04-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/87554 - ICE with extern template and reference member.

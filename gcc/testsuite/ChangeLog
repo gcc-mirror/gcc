@@ -1,3 +1,8 @@
+2019-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90108
+	* c-c++-common/pr90108.c: New test.
+
 2019-04-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/85164
