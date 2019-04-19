@@ -1,3 +1,10 @@
+2019-04-19  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	Backport from trunk
+	2018-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* doc/sourcebuild.texi (Endianness): New subsubsection.
+
 2019-04-11  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
