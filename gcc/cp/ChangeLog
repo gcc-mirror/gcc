@@ -1,5 +1,9 @@
 2019-04-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/90138
+	* pt.c (process_template_parm): Set decl to pushdecl result.  If
+	!is_non_type, also set parm to that.
+
 	PR c/89888
 	* decl.c (struct cp_switch): Remove outside_range_p member.
 	(push_switch): Don't clear it.

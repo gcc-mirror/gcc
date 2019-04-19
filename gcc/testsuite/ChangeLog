@@ -1,5 +1,8 @@
 2019-04-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/90138
+	* g++.dg/template/pr90138.C: New test.
+
 	PR c/89888
 	* c-c++-common/pr89888.c: New test.
 	* g++.dg/torture/pr40335.C: Change dg-bogus into dg-warning.
