@@ -25,7 +25,7 @@ msgstr ""
 "Project-Id-Version: gcc 9.1-b20190324\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2019-03-22 21:56+0000\n"
-"PO-Revision-Date: 2019-04-07 20:45+0200\n"
+"PO-Revision-Date: 2019-04-14 12:59+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -18424,10 +18424,9 @@ msgid "Lower limit %d of %<-fdbg-cnt=%s%> must be a non-negative number"
 msgstr "Undre gränsen %d i %<-fdbg-cnt=%s%> måste vara ett icke-negativt tal"
 
 #: dbgcnt.c:108
-#, fuzzy, gcc-internal-format
-#| msgid "Upper limit %d of -fdbg-cnt=%s must be a non-negative number"
+#, gcc-internal-format
 msgid "Upper limit %d of %<-fdbg-cnt=%s%> must be a non-negative number"
-msgstr "Övre gränsen %d i -fdbg-cnt=%s måste vara ett icke-negativt tal"
+msgstr "Övre gränsen %d i %<-fdbg-cnt=%s%> måste vara ett icke-negativt tal"
 
 #: dbgcnt.c:175
 #, gcc-internal-format
@@ -18435,10 +18434,9 @@ msgid "cannot find a valid counter:value pair:"
 msgstr "kan inte hitta ett giltigt räknare:värde-par:"
 
 #: dbgcnt.c:176
-#, fuzzy, gcc-internal-format
-#| msgid "-fdbg-cnt=%s"
+#, gcc-internal-format
 msgid "%<-fdbg-cnt=%s%>"
-msgstr "-fdbg-cnt=%s"
+msgstr "%<-fdbg-cnt=%s%>"
 
 #: dbgcnt.c:177
 #, gcc-internal-format, gfc-internal-format
@@ -18501,10 +18499,9 @@ msgid "multiple EH personalities are supported only with assemblers supporting .
 msgstr "multipla EH-personligheter stödjs endast med assemblerare som stödjer direktivet .cfi.personality."
 
 #: dwarf2out.c:10987
-#, fuzzy, gcc-internal-format
-#| msgid "-gdwarf-6 is output as version 5 with incompatibilities"
+#, gcc-internal-format
 msgid "%<-gdwarf-6%> is output as version 5 with incompatibilities"
-msgstr "-gdwarf-6 matas ut som version 5 med inkompatibiliteter"
+msgstr "%<-gdwarf-6%> matas ut som version 5 med inkompatibiliteter"
 
 #: dwarf2out.c:14509
 #, gcc-internal-format, gfc-internal-format
@@ -18542,10 +18539,9 @@ msgid "argument of %<__builtin_eh_return_regno%> must be constant"
 msgstr "argumentet till %<__builtin_eh_return_regno%> måste vara konstant"
 
 #: except.c:2291
-#, fuzzy, gcc-internal-format
-#| msgid "__builtin_eh_return not supported on this target"
+#, gcc-internal-format
 msgid "%<__builtin_eh_return%> not supported on this target"
-msgstr "__builtin_eh_return stödjs inte på denna målarkitektur"
+msgstr "%<__builtin_eh_return%> stödjs inte på denna målarkitektur"
 
 #: except.c:3415 except.c:3440
 #, gcc-internal-format, gfc-internal-format
@@ -18633,10 +18629,9 @@ msgid "invalid argument %qs to %qs"
 msgstr "ogiltigt argument %qs till %qs"
 
 #: final.c:1798
-#, fuzzy, gcc-internal-format
-#| msgid "the frame size of %wd bytes is larger than %wd bytes"
+#, gcc-internal-format
 msgid "the frame size of %wu bytes is larger than %wu bytes"
-msgstr "ramstorleken på %wd byte är större än %wd byte"
+msgstr "ramstorleken på %wu byte är större än %wu byte"
 
 #: final.c:4810 toplev.c:1493 tree-cfgcleanup.c:1464
 #, gcc-internal-format
@@ -18694,16 +18689,14 @@ msgid "fold check: original tree changed by fold"
 msgstr "vikningskontroll: originalträdet ändrat av vikning"
 
 #: function.c:248
-#, fuzzy, gcc-internal-format
-#| msgid "total size of local objects too large"
+#, gcc-internal-format
 msgid "total size of local objects %wu exceeds maximum %wu"
-msgstr "total storlek på lokala objekt är för stor"
+msgstr "total storlek på lokala objekt %wu överskrider maximum %wu"
 
 #: function.c:252
-#, fuzzy, gcc-internal-format
-#| msgid "total size of local objects too large"
+#, gcc-internal-format
 msgid "total size of local objects exceeds maximum %wu"
-msgstr "total storlek på lokala objekt är för stor"
+msgstr "total storlek på lokala objekt överskrider maximum %wu"
 
 #: function.c:1782 gimplify.c:6165 gimplify.c:6321
 #, gcc-internal-format
@@ -18726,16 +18719,14 @@ msgid "function returns an aggregate"
 msgstr "funktionen returnerar ett aggregat"
 
 #: gcc.c:2029
-#, fuzzy, gcc-internal-format
-#| msgid "could not open response file %s"
+#, gcc-internal-format
 msgid "cannot open nested response file"
-msgstr "det gick inte att öppna svarsfilen %s"
+msgstr "det gick inte att öppna nästad svarsfil"
 
 #: gcc.c:2040
-#, fuzzy, gcc-internal-format
-#| msgid "could not close response file %s"
+#, gcc-internal-format
 msgid "cannot close nonexistent response file"
-msgstr "det gick inte att stänga svarsfilen %s"
+msgstr "det gick inte att stänga ej existerande svarsfil"
 
 #: gcc.c:2063
 #, gcc-internal-format, gfc-internal-format
@@ -18754,10 +18745,9 @@ msgstr "det gick inte att stänga temporär svarsfil %s"
 
 #. This leaves DESC open, but the OS will save us.
 #: gcc.c:2108
-#, fuzzy, gcc-internal-format
-#| msgid "cannot read %s: %m"
+#, gcc-internal-format
 msgid "cannot read spec file %qs: %m"
-msgstr "kan inte läsa %s: %m"
+msgstr "kan inte läsa spec-filen %qs: %m"
 
 #: gcc.c:2202 gcc.c:2223
 #, gcc-internal-format, gfc-internal-format
@@ -18800,22 +18790,19 @@ msgid "system path %qs is not absolute"
 msgstr "systemsökväg %qs är inte absolut"
 
 #: gcc.c:3078
-#, fuzzy, gcc-internal-format
-#| msgid "-pipe not supported"
+#, gcc-internal-format
 msgid "%<-pipe%> not supported"
-msgstr "-pipe stödjs inte"
+msgstr "%<-pipe%> stödjs inte"
 
 #: gcc.c:3218 gcc.c:6936
-#, fuzzy, gcc-internal-format
-#| msgid "cannot open %s: %m"
+#, gcc-internal-format
 msgid "cannot execute %qs: %s: %m"
-msgstr "det går inte att öppna %s: %m"
+msgstr "det går inte att köra %qs: %s: %m"
 
 #: gcc.c:3219 gcc.c:6937
-#, fuzzy, gcc-internal-format
-#| msgid "cannot open %s: %m"
+#, gcc-internal-format
 msgid "cannot execute %qs: %s"
-msgstr "det går inte att öppna %s: %m"
+msgstr "det går inte att köra %qs: %s"
 
 #: gcc.c:3238
 #, gcc-internal-format
@@ -18844,10 +18831,9 @@ msgid "GCC is not configured to support %s as offload target"
 msgstr "GCC är inte konfigurerat för att stödja %s som ett avlastningsmål"
 
 #: gcc.c:4151
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is an unknown -save-temps option"
+#, gcc-internal-format
 msgid "%qs is an unknown %<-save-temps%> option"
-msgstr "%qs är en okänd flagga till -save-temps"
+msgstr "%qs är en okänd flagga till %<-save-temps%>"
 
 #: gcc.c:4624 toplev.c:878
 #, gcc-internal-format
@@ -18860,10 +18846,9 @@ msgid "output filename may not be empty"
 msgstr "utdatafilens namn får inte vara tomt"
 
 #: gcc.c:4654
-#, fuzzy, gcc-internal-format
-#| msgid "-pipe ignored because -save-temps specified"
+#, gcc-internal-format
 msgid "%<-pipe%> ignored because %<-save-temps%> specified"
-msgstr "-pipe ignorerad eftersom -save-temps angivits"
+msgstr "%<-pipe%> ignorerad eftersom %<-save-temps%> angivits"
 
 #: gcc.c:4742
 #, gcc-internal-format
@@ -18901,10 +18886,9 @@ msgid "spec %qs has invalid %<%%W%c%>"
 msgstr "specifikation %qs har ogiltig %<%%W%c%>"
 
 #: gcc.c:5774
-#, fuzzy, gcc-internal-format
-#| msgid "spec %qs has invalid %<%%0%c%>"
+#, gcc-internal-format
 msgid "spec %qs has invalid %<%%@%c%>"
-msgstr "specifikation %qs har ogiltig %<%%0%c%>"
+msgstr "specifikationen %qs har ogiltig %<%%@%c%>"
 
 #: gcc.c:5795
 #, gcc-internal-format
@@ -18971,10 +18955,9 @@ msgid "%s: could not determine length of compare-debug file %s"
 msgstr "%s: det gick inte att avgöra längden på compare-debug-filen %s"
 
 #: gcc.c:7246
-#, fuzzy, gcc-internal-format
-#| msgid "%s: -fcompare-debug failure (length)"
+#, gcc-internal-format
 msgid "%s: %<-fcompare-debug%> failure (length)"
-msgstr "%s: -fcompare-debug misslyckades (längd)"
+msgstr "%s: %<-fcompare-debug%> misslyckades (längd)"
 
 #: gcc.c:7256 gcc.c:7297
 #, gcc-internal-format, gfc-internal-format
@@ -18982,10 +18965,9 @@ msgid "%s: could not open compare-debug file %s"
 msgstr "%s: det gick inte att öppna compare-debug-filen %s"
 
 #: gcc.c:7276 gcc.c:7313
-#, fuzzy, gcc-internal-format
-#| msgid "%s: -fcompare-debug failure"
+#, gcc-internal-format
 msgid "%s: %<-fcompare-debug%> failure"
-msgstr "%s: -fcompare-debug misslyckades"
+msgstr "%s: %<-fcompare-debug%> misslyckades"
 
 #: gcc.c:7618
 #, gcc-internal-format
@@ -19018,10 +19000,9 @@ msgid "no input files"
 msgstr "inga indatafiler"
 
 #: gcc.c:8089
-#, fuzzy, gcc-internal-format
-#| msgid "cannot specify -o with -c, -S or -E with multiple files"
+#, gcc-internal-format
 msgid "cannot specify %<-o%> with %<-c%>, %<-S%> or %<-E%> with multiple files"
-msgstr "det går inte att ange -o med -c, -S eller -E med flera filer"
+msgstr "det går inte att ange %<-o%> med %<-c%>, %<-S%> eller %<-E%> med flera filer"
 
 #: gcc.c:8131
 #, gcc-internal-format, gfc-internal-format
@@ -19029,16 +19010,14 @@ msgid "%s: %s compiler not installed on this system"
 msgstr "%s: kompilatorn %s är inte installerad på detta system"
 
 #: gcc.c:8156
-#, fuzzy, gcc-internal-format
-#| msgid "recompiling with -fcompare-debug"
+#, gcc-internal-format
 msgid "recompiling with %<-fcompare-debug%>"
-msgstr "kompilerar om med -fcompare-debug"
+msgstr "kompilerar om med %<-fcompare-debug%>"
 
 #: gcc.c:8172
-#, fuzzy, gcc-internal-format
-#| msgid "during -fcompare-debug recompilation"
+#, gcc-internal-format
 msgid "during %<-fcompare-debug%> recompilation"
-msgstr "under omkompilering med -fcompare-debug"
+msgstr "under omkompilering med %<-fcompare-debug%>"
 
 #: gcc.c:8181
 #, gcc-internal-format
@@ -19046,10 +19025,9 @@ msgid "comparing final insns dumps"
 msgstr "jämför slutliga instruktionsdumpar"
 
 #: gcc.c:8298
-#, fuzzy, gcc-internal-format
-#| msgid "-fuse-linker-plugin, but %s not found"
+#, gcc-internal-format
 msgid "%<-fuse-linker-plugin%>, but %s not found"
-msgstr "-fuse-linker-plugin, men %s inte funnen"
+msgstr "%<-fuse-linker-plugin%>, men %s inte funnen"
 
 #: gcc.c:8331
 #, gcc-internal-format, gfc-internal-format
@@ -19512,10 +19490,8 @@ msgid "%<%.*s%> directive writing %wu or more bytes into a region of size betwee
 msgstr "direktivet %<%.*s%> skrev %wu eller fler byte till en region med storlek mellan %wu och %wu"
 
 #: gimple-ssa-sprintf.c:2810
-#, fuzzy
-#| msgid "%<%.*s%> directive argument is null"
 msgid "%G%<%.*s%> directive argument is null"
-msgstr "direktivargumentet %<%.*s%> är null"
+msgstr "%Gdirektivargumentet %<%.*s%> är null"
 
 #: gimple-ssa-sprintf.c:2883
 #, gcc-internal-format
@@ -19533,16 +19509,14 @@ msgid "%<%.*s%> directive output between %wu and %wu bytes may exceed minimum re
 msgstr "utdata från direktivet %<%.*s%> mellan %wu och %wu byte kan överskrida minsta nödvändiga storlek på 4095"
 
 #: gimple-ssa-sprintf.c:2926
-#, fuzzy, gcc-internal-format
-#| msgid "%<%.*s%> directive output of %wu bytes causes result to exceed %<INT_MAX%>"
+#, gcc-internal-format
 msgid "%<%.*s%> directive output of %wu bytes exceeds %<INT_MAX%>"
-msgstr "utdata från direktivet %<%.*s%> på %wu byte får resultatet att överskrida %<INT_MAX%>"
+msgstr "utdata från direktivet %<%.*s%> på %wu byte överskrider %<INT_MAX%>"
 
 #: gimple-ssa-sprintf.c:2932
-#, fuzzy, gcc-internal-format
-#| msgid "%<%.*s%> directive output between %wu and %wu bytes causes result to exceed %<INT_MAX%>"
+#, gcc-internal-format
 msgid "%<%.*s%> directive output between %wu and %wu bytes exceeds %<INT_MAX%>"
-msgstr "utdata från direktivet %<%.*s%> mellan %wu och %wu byte får resultatet att överskrida %<INT_MAX%>"
+msgstr "utdata från direktivet %<%.*s%> mellan %wu och %wu byte överskrider %<INT_MAX%>"
 
 #: gimple-ssa-sprintf.c:2943
 #, gcc-internal-format
@@ -19560,10 +19534,9 @@ msgid "%<%.*s%> directive output between %wu and %wu bytes may cause result to e
 msgstr "utdata från direktivet %<%.*s%> mellan %wu och %wu byte kan få resultatet att överskrida %<INT_MAX%>"
 
 #: gimple-ssa-sprintf.c:2970
-#, fuzzy, gcc-internal-format
-#| msgid "%<%.*s%> directive argument is null"
+#, gcc-internal-format
 msgid "%<%.*s%> directive argument is not a nul-terminated string"
-msgstr "direktivargumentet %<%.*s%> är null"
+msgstr "direktivargumentet %<%.*s%> är inte en nollavslutad sträng"
 
 #: gimple-ssa-sprintf.c:2983
 #, gcc-internal-format
@@ -19623,22 +19596,19 @@ msgid "%qE output %wu bytes"
 msgstr "%qE-utdata %wu byte"
 
 #: gimple-ssa-sprintf.c:3050
-#, fuzzy, gcc-internal-format
-#| msgid "%qE output between %wu and %wu bytes into a destination of size %wu"
+#, gcc-internal-format
 msgid "%qE output between %wu and %wu bytes"
-msgstr "%qE-utdata mellan %wu och %wu byte in i en destination med storlek %wu"
+msgstr "%qE-utdata mellan %wu och %wu byte"
 
 #: gimple-ssa-sprintf.c:3054
-#, fuzzy, gcc-internal-format
-#| msgid "%qE output %wu or more bytes (assuming %wu) into a destination of size %wu"
+#, gcc-internal-format
 msgid "%qE output %wu or more bytes (assuming %wu)"
-msgstr "%qE-utdata på %wu eller fler byte (antar %wu) in i en destination med storlek %wu"
+msgstr "%qE-utdata på %wu eller fler byte (antar %wu)"
 
 #: gimple-ssa-sprintf.c:3058
-#, fuzzy, gcc-internal-format
-#| msgid "%qE output %wu or more bytes into a destination of size %wu"
+#, gcc-internal-format
 msgid "%qE output %wu or more bytes"
-msgstr "%qE-utdata på %wu eller fler byte in i en destination med storlek %wu"
+msgstr "%qE-utdata på %wu eller fler byte"
 
 #: gimple-ssa-sprintf.c:3433
 #, gcc-internal-format
@@ -19661,16 +19631,13 @@ msgid "specified bound %wu exceeds %<INT_MAX%>"
 msgstr "angiven gräns på %wu överskrider %<INT_MAX%>"
 
 #: gimple-ssa-sprintf.c:4128
-#, fuzzy, gcc-internal-format
-#| msgid "specified bound %wu exceeds %<INT_MAX%>"
+#, gcc-internal-format
 msgid "specified bound range [%wu, %wu] exceeds %<INT_MAX%>"
-msgstr "angiven gräns på %wu överskrider %<INT_MAX%>"
+msgstr "angiven gränsintervall på [%wu, %wu] överskrider %<INT_MAX%>"
 
 #: gimple-ssa-sprintf.c:4179
-#, fuzzy
-#| msgid "null destination pointer"
 msgid "%Gnull destination pointer"
-msgstr "nolldestinationspekare"
+msgstr "%Gnolldestinationspekare"
 
 #: gimple-ssa-sprintf.c:4197
 #, gcc-internal-format
@@ -19678,10 +19645,8 @@ msgid "specified bound %wu exceeds the size %wu of the destination object"
 msgstr "angiven gräns på %wu överskrider storleken %wu på destinationsobjektet"
 
 #: gimple-ssa-sprintf.c:4209
-#, fuzzy
-#| msgid "null format string"
 msgid "%Gnull format string"
-msgstr "nollformatsträng"
+msgstr "%Gnollformatsträng"
 
 #: gimple-ssa-warn-alloca.c:531
 #, gcc-internal-format
@@ -19699,10 +19664,9 @@ msgid "argument to %<alloca%> may be too large"
 msgstr "argumentet till %<alloca%> kan vara för stort"
 
 #: gimple-ssa-warn-alloca.c:574
-#, fuzzy, gcc-internal-format
-#| msgid "limit is %u bytes, but argument may be as large as %s"
+#, gcc-internal-format
 msgid "limit is %wu bytes, but argument may be as large as %s"
-msgstr "gränsen är %u byte, men argumentet kan vara så stort som %s"
+msgstr "gränsen är %wu byte, men argumentet kan vara så stort som %s"
 
 #: gimple-ssa-warn-alloca.c:585
 #, gcc-internal-format
@@ -19715,10 +19679,9 @@ msgid "argument to %<alloca%> is too large"
 msgstr "argumentet till %<alloca%> är för stort"
 
 #: gimple-ssa-warn-alloca.c:591
-#, fuzzy, gcc-internal-format
-#| msgid "limit is %u bytes, but argument is %s"
+#, gcc-internal-format
 msgid "limit is %wu bytes, but argument is %s"
-msgstr "gränsen är %u byte, men argumentet är %s"
+msgstr "gränsen är %wu byte, men argumentet är %s"
 
 #: gimple-ssa-warn-alloca.c:599
 #, gcc-internal-format
@@ -19864,16 +19827,12 @@ msgstr[0] "%G%qD åtkomst av %wu eller fler byte på avstånden %s och %s kan ö
 msgstr[1] "%G%qD åtkomst av %wu eller fler byte på avstånden %s och %s kan överlappa %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1648
-#, fuzzy
-#| msgid "specified bound %wu exceeds maximum object size %wu"
 msgid "%G%qD specified bound %wu exceeds maximum object size %wu"
-msgstr "angiven gräns på %wu överskrider maximal objektstorlek %wu"
+msgstr "%G%qD angiven gräns på %wu överskrider maximal objektstorlek %wu"
 
 #: gimple-ssa-warn-restrict.c:1654
-#, fuzzy
-#| msgid "%K%qD specified bound between %E and %E exceeds maximum object size %E"
 msgid "%G%qD specified bound between %wu and %wu exceeds maximum object size %wu"
-msgstr "%K%qD: den angivna gränsen mellan %E och %E överskrider maximal objektstorlek %E"
+msgstr "%G%qD den angivna gränsen mellan %wu och %wu överskrider maximal objektstorlek %wu"
 
 #: gimple-ssa-warn-restrict.c:1713
 msgid "%G%qD pointer overflow between offset %s and size %s accessing array %qD with type %qT"
@@ -19979,10 +19938,9 @@ msgid "using result of function returning %<void%>"
 msgstr "använder resultat från funktion som returnerar %<void%>"
 
 #: gimplify.c:6166
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "non-memory input %d must stay in memory"
+#, gcc-internal-format, gfc-internal-format
 msgid "non-memory output %d must stay in memory"
-msgstr "icke-minnesindata %d måste stanna i minnet"
+msgstr "icke-minnesutdata %d måste stanna i minnet"
 
 #: gimplify.c:6179
 #, gcc-internal-format, gfc-internal-format
@@ -20050,16 +20008,14 @@ msgid "%qE requires a %<declare%> directive for use in a %<routine%> function"
 msgstr "%qE behöver ett %<declare%>-direktiv att användas i en %<routine%>-funktion"
 
 #: gimplify.c:7307
-#, fuzzy, gcc-internal-format
-#| msgid "%qE not specified in enclosing %qs"
+#, gcc-internal-format
 msgid "%qE not specified in enclosing %<target%>"
-msgstr "%qE inte angiven i omgivande %qs"
+msgstr "%qE inte angiven i omgivande %<target%>"
 
 #: gimplify.c:7309
-#, fuzzy, gcc-internal-format
-#| msgid "enclosing target region"
+#, gcc-internal-format
 msgid "enclosing %<target%>"
-msgstr "omgivande målregion"
+msgstr "omgivande %<target%>"
 
 #: gimplify.c:7339 gimplify.c:8446
 #, gcc-internal-format
@@ -20097,22 +20053,19 @@ msgid "iteration variable %qE should not be linear"
 msgstr "instansvariabel %qE får inte vara linjär"
 
 #: gimplify.c:8109
-#, fuzzy, gcc-internal-format
-#| msgid "%<_Atomic%> %qD in %<firstprivate%> clause on %<target%> construct"
+#, gcc-internal-format
 msgid "conditional %<lastprivate%> clause on %<distribute%> construct"
-msgstr "%<_Atomic%> %qD i %<firstprivate%>-klausul vid %<target%>-konstruktion"
+msgstr "villkorlig %<lastprivate%>-klausul på %<distribute%>-konstruktion"
 
 #: gimplify.c:8115
-#, fuzzy, gcc-internal-format
-#| msgid "%<_Atomic%> %qD in %<firstprivate%> clause on %<target%> construct"
+#, gcc-internal-format
 msgid "conditional %<lastprivate%> clause on %<taskloop%> construct"
-msgstr "%<_Atomic%> %qD i %<firstprivate%>-klausul vid %<target%>-konstruktion"
+msgstr "villkorlig %<lastprivate%>-klausul på %<taskloop%>-konstruktion"
 
 #: gimplify.c:8131
-#, fuzzy, gcc-internal-format
-#| msgid "%qD is not a variable in clause %<lastprivate%>"
+#, gcc-internal-format
 msgid "non-scalar variable %qD in conditional %<lastprivate%> clause"
-msgstr "%qD är inte en variabel i klausul %<lastprivate%>"
+msgstr "icke-skalär variabel %qD i villkorlig %<lastprivate%>-klausul"
 
 #: gimplify.c:8137
 #, gcc-internal-format
@@ -20190,10 +20143,9 @@ msgid "invalid private reduction on %qE"
 msgstr "ogiltig privat reduktion av %qE"
 
 #: gimplify.c:10259
-#, fuzzy, gcc-internal-format
-#| msgid "%<_Atomic%> %qD in %<firstprivate%> clause on %<target%> construct"
+#, gcc-internal-format
 msgid "%<mutexinoutset%> kind in %<depend%> clause on a %<taskwait%> construct"
-msgstr "%<_Atomic%> %qD i %<firstprivate%>-klausul vid %<target%>-konstruktion"
+msgstr "%<mutexinoutset%>-sort i %<depend%>-klausul vid %<taskwait%>-konstruktion"
 
 #: gimplify.c:12130 omp-low.c:2925
 #, gcc-internal-format
@@ -20206,22 +20158,19 @@ msgid "variable %qE is not an iteration of outermost loop %d, expected %qE"
 msgstr "variabeln %qE är inte en iterator av den yttersta slingan %d, %qE förväntades"
 
 #: gimplify.c:12161
-#, fuzzy, gcc-internal-format
-#| msgid "number of variables in %<depend(sink)%> clause does not match number of iteration variables"
+#, gcc-internal-format
 msgid "number of variables in %<depend%> clause with %<sink%> modifier does not match number of iteration variables"
-msgstr "antalet variabler i %<depend(sink)%>-klausulen stämmer inte med antalet iterationsvariabler"
+msgstr "antalet variabler i %<depend%>-klausul med %<sink%>-modifierare stämmer inte med antalet iterationsvariabler"
 
 #: gimplify.c:12174
-#, fuzzy, gcc-internal-format
-#| msgid "more than one %<depend(source)%> clause on an %<ordered%> construct"
+#, gcc-internal-format
 msgid "more than one %<depend%> clause with %<source%> modifier on an %<ordered%> construct"
-msgstr "mer än en %<depend(source)%>-klausul på en %<ordered%>-konstruktion"
+msgstr "mer än en %<depend%>-klausul med %<source%>-modifierare på en %<ordered%>-konstruktion"
 
 #: gimplify.c:12185
-#, fuzzy, gcc-internal-format
-#| msgid "%<depend(source)%> clause specified together with %<depend(sink:)%> clauses on the same construct"
+#, gcc-internal-format
 msgid "%<depend%> clause with %<source%> modifier specified together with %<depend%> clauses with %<sink%> modifier on the same construct"
-msgstr "%<depend(source)%>-klausul angiven tillsammans med %<depend(sink:)%>-klausuler på samma konstruktion"
+msgstr "%<depend%>-klausul med %<source%>-modifierare angiven tillsammans med %<depend%>-klausuler med %<sink%>-modifierare på samma konstruktion"
 
 #: gimplify.c:13434
 #, gcc-internal-format
@@ -20389,10 +20338,9 @@ msgid "the conflicting type defined in another translation unit has virtual tabl
 msgstr "typen som står i konflikt är definierad i en annan översättningsenhet och har en virtuell tabell med annat innehåll"
 
 #: ipa-devirt.c:1007
-#, fuzzy, gcc-internal-format
-#| msgid "type %qT itself violates the C++ One Definition Rule"
+#, gcc-internal-format
 msgid "type %qT (typedef of %qT) violates the C++ One Definition Rule"
-msgstr "typen %qT själv bryter mot C++ endefinitionsregel"
+msgstr "typen %qT (typedef av %qT) bryter mot C++ endefinitionsregel"
 
 #: ipa-devirt.c:1015
 #, gcc-internal-format
@@ -20416,14 +20364,12 @@ msgid "the first difference of corresponding definitions is method %qD"
 msgstr "den första skillnaden mellan motsvarande definitioner är metoden %qD"
 
 #: ipa-devirt.c:1146
-#, fuzzy, gcc-internal-format
-#| msgid "type %qT defined in anonymous namespace can not match type %qT across the translation unit boundary"
+#, gcc-internal-format
 msgid "type %qT defined in anonymous namespace cannot match type %qT across the translation unit boundary"
 msgstr "typen %qT definierad i en anonym namnrymd kan inte matcha typen %qT över gränsen för översättningsenheten"
 
 #: ipa-devirt.c:1151
-#, fuzzy, gcc-internal-format
-#| msgid "type %qT defined in anonymous namespace can not match across the translation unit boundary"
+#, gcc-internal-format
 msgid "type %qT defined in anonymous namespace cannot match across the translation unit boundary"
 msgstr "typen %qT definierad i en anonym namnrymd kan inte matcha över gränsen för översättningsenheten"
 
@@ -20563,8 +20509,7 @@ msgid "fields have different layout in another translation unit"
 msgstr "fält har en annan layout i en annan översättningsenhet"
 
 #: ipa-devirt.c:1609
-#, fuzzy, gcc-internal-format
-#| msgid "one field is bitfield while other is not"
+#, gcc-internal-format
 msgid "one field is a bitfield while the other is not"
 msgstr "ett fält är ett bitfält medan det andra inte är det"
 
@@ -20636,10 +20581,9 @@ msgid "could not emit HSAIL for function %s: function cannot be cloned"
 msgstr "kunde inte mata ut HSAIL för funktionen %s: funktionen kan inte klonas"
 
 #: ipa-prop.c:4192
-#, fuzzy, gcc-internal-format
-#| msgid "invalid function in gimple call"
+#, gcc-internal-format
 msgid "invalid jump function in LTO stream"
-msgstr "ogiltig funktion i gimple-anrop"
+msgstr "ogiltig hoppfunktion i LTO-ström"
 
 #: ipa-pure-const.c:216
 #, gcc-internal-format
@@ -20843,10 +20787,9 @@ msgid "Option %s not used consistently in all LTO input files"
 msgstr "Flaggan %s inte konsekvent använd i alla LTO-indatafiler"
 
 #: lto-wrapper.c:825
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "could not find specs file %s\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "could not find %s in %s (consider using '-B')\n"
-msgstr "kunde inte hitta specs-filen %s\n"
+msgstr "kunde inte hitta %s i %s (överväg att använda ”-B”)\n"
 
 #: lto-wrapper.c:906
 #, gcc-internal-format, gfc-internal-format
@@ -20864,8 +20807,7 @@ msgid "writing output file"
 msgstr "skriver utdatafil"
 
 #: lto-wrapper.c:963
-#, fuzzy, gcc-internal-format
-#| msgid "installation error, can't find crtoffloadtable.o"
+#, gcc-internal-format
 msgid "installation error, can%'t find crtoffloadtable.o"
 msgstr "installationsfel, kan inte hitta crtoffloadtable.o"
 
@@ -20945,16 +20887,14 @@ msgid "an empty string cannot be in %<target_clones%> attribute"
 msgstr "en ensam sträng kan inte finnas i attributet %<target_clones%>"
 
 #: omp-expand.c:2150
-#, fuzzy, gcc-internal-format
-#| msgid "%<depend(sink)%> clause waiting for lexically later iteration"
+#, gcc-internal-format
 msgid "%<depend%> clause with %<sink%> modifier waiting for lexically later iteration"
-msgstr "%<depend(sink)%>-klausul väntar på en lexikalt senare iteration"
+msgstr "%<depend%>-klausul med %<sink%>-modifireare väntar på en lexikalt senare iteration"
 
 #: omp-expand.c:2287
-#, fuzzy, gcc-internal-format
-#| msgid "%<depend(sink)%> refers to iteration never in the iteration space"
+#, gcc-internal-format
 msgid "%<depend%> clause with %<sink%> modifier refers to iteration never in the iteration space"
-msgstr "%<depend(sink)%> refererar till en iteration som aldrig är i iterationsrymden"
+msgstr "%<depend%>-klausul med %<sink%>-modifierare refererar till en iteration som aldrig är i iterationsrymden"
 
 #: omp-general.c:637
 #, gcc-internal-format
@@ -20997,10 +20937,9 @@ msgid "%<ordered simd threads%> must be closely nested inside of %<for simd%> re
 msgstr "%<ordered simd threads%> måste vara nära inneslutet inuti en %<for simd%>-region"
 
 #: omp-low.c:2581
-#, fuzzy, gcc-internal-format
-#| msgid "OpenMP constructs other than %<#pragma omp ordered simd%> may not be nested inside %<simd%> region"
+#, gcc-internal-format
 msgid "OpenMP constructs other than %<#pragma omp ordered simd%> or %<#pragma omp atomic%> may not be nested inside %<simd%> region"
-msgstr "OpenMP-konstruktioner andra än %<#pragma omp ordered simd%> får inte inneslutna i en %<simd%>-region"
+msgstr "OpenMP-konstruktioner andra än %<#pragma omp ordered simd%> eller %<#pragma omp atomic%> får inte inneslutna i en %<simd%>-region"
 
 #: omp-low.c:2594
 #, gcc-internal-format
@@ -21098,10 +21037,9 @@ msgid "%<ordered%> region must be closely nested inside a loop region with an %<
 msgstr "en %<ordered%> region måste vara nära innesluten inuti en slingaregion med en %<ordered%>-klausul"
 
 #: omp-low.c:2983
-#, fuzzy, gcc-internal-format
-#| msgid "%<ordered%> construct with %<depend%> clause must be closely nested inside a loop with %<ordered%> clause with a parameter"
+#, gcc-internal-format
 msgid "%<ordered%> region without %<depend%> clause may not be closely nested inside a loop region with an %<ordered%> clause with a parameter"
-msgstr "%<ordered%>-konstruktion med %<depend%>-klausul måste vara nära innesluten inuti en slinga med %<ordered%>-klausul med en parameter"
+msgstr "%<ordered%>-konstruktion utan %<depend%>-klausul får inte vara nära innesluten inuti en slinga med en %<ordered%>-klausul med en parameter"
 
 #: omp-low.c:3014
 #, gcc-internal-format
@@ -21109,10 +21047,9 @@ msgid "%<critical%> region may not be nested inside a %<critical%> region with t
 msgstr "en %<critical%> region får inte vara innesluten inuti en %<critical%> region med samma namn"
 
 #: omp-low.c:3032
-#, fuzzy, gcc-internal-format
-#| msgid "%<teams%> construct not closely nested inside of %<target%> construct"
+#, gcc-internal-format
 msgid "%<teams%> construct must be closely nested inside of %<target%> construct or not nested in any OpenMP construct"
-msgstr "%<teams%>-konstruktion inte vara nära innesluten inuti en %<target%>-konstruktion"
+msgstr "%<teams%>-konstruktion måste vara nära innesluten inuti en %<target%>-konstruktion eller inte nästad i någon OpenMP-konstruktion"
 
 #: omp-low.c:3054
 #, gcc-internal-format
@@ -21166,10 +21103,9 @@ msgid "invalid branch to/from %s structured block"
 msgstr "ogiltig gren till/från strukturerat %s-block"
 
 #: omp-offload.c:642
-#, fuzzy, gcc-internal-format
-#| msgid "-fopenacc-dim operand is malformed at '%s'"
+#, gcc-internal-format
 msgid "%<-fopenacc-dim%> operand is malformed at '%s'"
-msgstr "operand till -fopenacc-dim är felformulerad vid ”%s”"
+msgstr "operand till %<-fopenacc-dim%> är felformulerad vid ”%s”"
 
 #: omp-offload.c:1217
 #, gcc-internal-format
@@ -21252,10 +21188,9 @@ msgid "missing argument to %qs"
 msgstr "argument saknas till %qs"
 
 #: opts-common.c:1252
-#, fuzzy, gcc-internal-format
-#| msgid "argument to %qs should be a non-negative integer"
+#, gcc-internal-format
 msgid "argument to %qs should be a non-negative integer optionally followed by a size unit"
-msgstr "argumentet till %qs skall vara ett ickenegativt heltal"
+msgstr "argumentet till %qs skall vara ett ickenegativt heltal eventuellt följt av en storleksenhet"
 
 #: opts-common.c:1256
 #, gcc-internal-format
@@ -21319,10 +21254,9 @@ msgid "unrecognized register name %qs"
 msgstr "okänt registernamn %qs"
 
 #: opts-global.c:451
-#, fuzzy, gcc-internal-format
-#| msgid "-fasan-shadow-offset should only be used with -fsanitize=kernel-address"
+#, gcc-internal-format
 msgid "%<-fasan-shadow-offset%> should only be used with %<-fsanitize=kernel-address%>"
-msgstr "-fasan-shadow-offset skall bara användas med -fsanitize=kernel-address"
+msgstr "%<-fasan-shadow-offset%> skall bara användas med %<-fsanitize=kernel-address%>"
 
 #: opts-global.c:454
 #, gcc-internal-format
@@ -21350,28 +21284,24 @@ msgid "argument to %<-O%> should be a non-negative integer, %<g%>, %<s%> or %<fa
 msgstr "argumentet till %<-O%> skall vara ett ickenegativt heltal, %<g%>, %<s%> eller %<fast%>"
 
 #: opts.c:729
-#, fuzzy, gcc-internal-format
-#| msgid "%<-fsanitize=leak%> is incompatible with %<-fsanitize=thread%>"
+#, gcc-internal-format
 msgid "%<-fipa-cp-clone%> is incompatible with %<-flive-patching=inline-only-static%>"
-msgstr "%<-fsanitize=leak%> är inkompatibel med %<-fsanitize=thread%>"
+msgstr "%<-fipa-cp-clone%> är inkompatibel med %<-flive-patching=inline-only-static%>"
 
 #: opts.c:736
-#, fuzzy, gcc-internal-format
-#| msgid "%<-fsanitize=leak%> is incompatible with %<-fsanitize=thread%>"
+#, gcc-internal-format
 msgid "%<-fipa-sra%> is incompatible with %<-flive-patching=inline-only-static%>"
-msgstr "%<-fsanitize=leak%> är inkompatibel med %<-fsanitize=thread%>"
+msgstr "%<-fipa-sra%> är inkompatibel med %<-flive-patching=inline-only-static%>"
 
 #: opts.c:743
-#, fuzzy, gcc-internal-format
-#| msgid "%<-fsanitize=leak%> is incompatible with %<-fsanitize=thread%>"
+#, gcc-internal-format
 msgid "%<-fpartial-inlining%> is incompatible with %<-flive-patching=inline-only-static%>"
-msgstr "%<-fsanitize=leak%> är inkompatibel med %<-fsanitize=thread%>"
+msgstr "%<-fpartial-inlining%> är inkompatibel med %<-flive-patching=inline-only-static%>"
 
 #: opts.c:750
-#, fuzzy, gcc-internal-format
-#| msgid "%<-fsanitize=leak%> is incompatible with %<-fsanitize=thread%>"
+#, gcc-internal-format
 msgid "%<-fipa-cp%> is incompatible with %<-flive-patching=inline-only-static%>"
-msgstr "%<-fsanitize=leak%> är inkompatibel med %<-fsanitize=thread%>"
+msgstr "%<-fipa-cp%> är inkompatibel med %<-flive-patching=inline-only-static%>"
 
 #: opts.c:760
 #, gcc-internal-format
@@ -21424,10 +21354,9 @@ msgid "%<-fipa-pure-const%> is incompatible with %<-flive-patching=inline-only-s
 msgstr "%<-fipa-pure-const%> är inkompatibel med %<-flive-patching=inline-only-static|inline-clone%>"
 
 #: opts.c:838
-#, fuzzy, gcc-internal-format
-#| msgid "%<-fsanitize=address%> is incompatible with %<-fsanitize=kernel-address%>"
+#, gcc-internal-format
 msgid "%<-fipa-reference-addressable%> is incompatible with %<-flive-patching=inline-only-static|inline-clone%>"
-msgstr "%<-fsanitize=address%> är inkompatibel med %<-fsanitize=kernel-address%>"
+msgstr "%<-fipa-reference-addressable%> är inkompatibel med %<-flive-patching=inline-only-static|inline-clone%>"
 
 #: opts.c:847
 #, gcc-internal-format
@@ -21475,10 +21404,9 @@ msgid "%<-fno-fat-lto-objects%> are supported only with linker plugin"
 msgstr "%<-fno-fat-lto-objects%> stödjs endast med insticksmodul för länkning"
 
 #: opts.c:1084
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute is not supported on this platform"
+#, gcc-internal-format
 msgid "%<-gsplit-dwarf%> is not supported with LTO, disabling"
-msgstr "attributet %qE stödjs inte på denna plattform"
+msgstr "%<-gsplit-dwarf%> stödjs inte med LTO, avaktiverar"
 
 #: opts.c:1098
 #, gcc-internal-format
@@ -21531,10 +21459,9 @@ msgid "transactional memory is not supported with %<-fsanitize=kernel-address%>"
 msgstr "transaktionsminne stödjs inte i med %<-fsanitize=kernel-address%>"
 
 #: opts.c:1217
-#, fuzzy, gcc-internal-format
-#| msgid "profiling not supported with -mg"
+#, gcc-internal-format
 msgid "live patching is not supported with LTO"
-msgstr "profilering stödjs inte med -mg"
+msgstr "uppdateringar i drift stödjs inte med LTO"
 
 #: opts.c:1668
 #, gcc-internal-format
@@ -21547,16 +21474,14 @@ msgid "%<-fsanitize=all%> option is not valid"
 msgstr "flaggan %<-fsanitize=all%> är inte giltig"
 
 #: opts.c:1938
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized argument to -f%ssanitize%s= option: %q.*s; did you mean %qs?"
+#, gcc-internal-format
 msgid "unrecognized argument to %<-f%ssanitize%s=%> option: %q.*s; did you mean %qs?"
-msgstr "okänt argument till flaggan -f%ssanitize%s=: %q.*s; menade du %qs?"
+msgstr "okänt argument till flaggan %<-f%ssanitize%s=%>: %q.*s; menade du %qs?"
 
 #: opts.c:1944
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized argument to -f%ssanitize%s= option: %q.*s"
+#, gcc-internal-format
 msgid "unrecognized argument to %<-f%ssanitize%s=%> option: %q.*s"
-msgstr "okänt argument till flaggan -f%ssanitize%s=: %q.*s"
+msgstr "okänt argument till flaggan %<-f%ssanitize%s=%>: %q.*s"
 
 #: opts.c:1979
 #, gcc-internal-format
@@ -21564,22 +21489,19 @@ msgid "%<%s%> attribute directive ignored"
 msgstr "attributdirektivet %<%s%> ignorerat"
 
 #: opts.c:2006
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument %qs to %qs"
+#, gcc-internal-format
 msgid "invalid arguments for %<-falign-%s%> option: %qs"
-msgstr "ogiltigt argument %qs till %qs"
+msgstr "ogiltigt argument till flaggan %<-falign-%s%>: %qs"
 
 #: opts.c:2028
-#, fuzzy, gcc-internal-format
-#| msgid "incorrect number of arguments to function %qE"
+#, gcc-internal-format
 msgid "invalid number of arguments for %<-falign-%s%> option: %qs"
-msgstr "felaktigt antal argument till funktionen %qE"
+msgstr "felaktigt antal argument till flaggan %<-falign-%s%>: %qs"
 
 #: opts.c:2037
-#, fuzzy, gcc-internal-format
-#| msgid "-falign-loops=%d is not between 0 and %d"
+#, gcc-internal-format
 msgid "%<-falign-%s%> is not between 0 and %d"
-msgstr "-falign-loops=%d är inte mellan 0 och %d"
+msgstr "%<-falign-%s%> är inte mellan 0 och %d"
 
 #: opts.c:2224
 #, gcc-internal-format
@@ -21602,10 +21524,9 @@ msgid "%<-foffload-abi%> option can be specified only for offload compiler"
 msgstr "flaggan %<-foffload-abi%> kan anges endast för en avlastande kompilator"
 
 #: opts.c:2516
-#, fuzzy, gcc-internal-format
-#| msgid "structure alignment must be a small power of two, not %d"
+#, gcc-internal-format
 msgid "structure alignment must be a small power of two, not %wu"
-msgstr "postjustering måste vara två upphöjt till ett litet tal, inte %d"
+msgstr "postjustering måste vara två upphöjt till ett litet tal, inte %wu"
 
 #: opts.c:2602
 #, gcc-internal-format
@@ -21618,16 +21539,14 @@ msgid "unknown stack check parameter %qs"
 msgstr "okänd stackkontrollparameter %qs"
 
 #: opts.c:2688
-#, fuzzy, gcc-internal-format
-#| msgid "%<-gdwarf%s%> is ambiguous; use %<-gdwarf-%s%> for DWARF version or %<-gdwarf -g%s%> for debug level"
+#, gcc-internal-format
 msgid "%<-gdwarf%s%> is ambiguous; use %<-gdwarf-%s%> for DWARF version or %<-gdwarf%> %<-g%s%> for debug level"
-msgstr "%<-gdwarf%s%> är tvetydigt; använd %<-gdwarf-%s%> för DWARF-version eller %<-gdwarf -g%s%> för felsökningsnivå"
+msgstr "%<-gdwarf%s%> är tvetydigt; använd %<-gdwarf-%s%> för DWARF-version eller %<-gdwarf%> %<-g%s%> för felsökningsnivå"
 
 #: opts.c:2699
-#, fuzzy, gcc-internal-format
-#| msgid "dwarf version %d is not supported"
+#, gcc-internal-format
 msgid "dwarf version %wu is not supported"
-msgstr "dwarf-version %d stödjs inte"
+msgstr "dwarf-version %wu stödjs inte"
 
 #: opts.c:2823
 #, gcc-internal-format, gfc-internal-format
@@ -21685,16 +21604,14 @@ msgid "unrecognized gcc debugging option: %c"
 msgstr "ej igenkänd felsökningsflagga för gcc: %c"
 
 #: opts.c:3090
-#, fuzzy, gcc-internal-format
-#| msgid "-Werror=%s: no option -%s"
+#, gcc-internal-format
 msgid "%<-Werror=%s%>: no option -%s"
-msgstr "-Werror=%s: ingen flagga -%s"
+msgstr "%<-Werror=%s%>: ingen flagga -%s"
 
 #: opts.c:3092
-#, fuzzy, gcc-internal-format
-#| msgid "-Werror=%s: -%s is not an option that controls warnings"
+#, gcc-internal-format
 msgid "%<-Werror=%s%>: -%s is not an option that controls warnings"
-msgstr "-Werror=%s: -%s är inte en flagga som styr varningar"
+msgstr "%<-Werror=%s%>: -%s är inte en flagga som styr varningar"
 
 #: params.c:156
 #, gcc-internal-format
@@ -21723,28 +21640,24 @@ msgid "pass %s needs a set_pass_param implementation to handle the extra argumen
 msgstr "pass %s behöver en set_pass_param-implementation för att hantera det extra argumentet i NEXT_PASS"
 
 #: passes.c:1024
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized option -fenable"
+#, gcc-internal-format
 msgid "unrecognized option %<-fenable%>"
-msgstr "okänd flagga -fenable"
+msgstr "okänd flagga %<-fenable%>"
 
 #: passes.c:1026
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized option -fdisable"
+#, gcc-internal-format
 msgid "unrecognized option %<-fdisable%>"
-msgstr "okänd flagga -fdisable"
+msgstr "okänd flagga %<-fdisable%>"
 
 #: passes.c:1034
-#, fuzzy, gcc-internal-format
-#| msgid "unknown pass %s specified in -fenable"
+#, gcc-internal-format
 msgid "unknown pass %s specified in %<-fenable%>"
-msgstr "okänt pass %s angivet i -fenable"
+msgstr "okänt pass %s angivet i %<-fenable%>"
 
 #: passes.c:1036
-#, fuzzy, gcc-internal-format
-#| msgid "unknown pass %s specified in -fdisable"
+#, gcc-internal-format
 msgid "unknown pass %s specified in %<-fdisable%>"
-msgstr "okänt pass %s angivet i -fdisable"
+msgstr "okänt pass %s angivet i %<-fdisable%>"
 
 #: passes.c:1061 passes.c:1150
 #, gcc-internal-format, gfc-internal-format
@@ -21813,16 +21726,14 @@ msgstr ""
 "%s"
 
 #: plugin.c:293
-#, fuzzy, gcc-internal-format
-#| msgid "malformed option -fplugin-arg-%s (missing -<key>[=<value>])"
+#, gcc-internal-format
 msgid "malformed option %<-fplugin-arg-%s%> (missing -<key>[=<value>])"
-msgstr "felformaterad flagga -fplugin-arg-%s (saknat -<nyckel>[=<värde>])"
+msgstr "felformaterad flagga %<-fplugin-arg-%s%> (saknat -<nyckel>[=<värde>])"
 
 #: plugin.c:356
-#, fuzzy, gcc-internal-format
-#| msgid "plugin %s should be specified before -fplugin-arg-%s in the command line"
+#, gcc-internal-format
 msgid "plugin %s should be specified before %<-fplugin-arg-%s%> in the command line"
-msgstr "insticksmodul %s skulle ha angetts före -fplugin-arg-%s på kommandoraden"
+msgstr "insticksmodul %s skulle ha angetts före %<-fplugin-arg-%s%> på kommandoraden"
 
 #: plugin.c:375
 #, gcc-internal-format
@@ -21872,16 +21783,14 @@ msgid "fail to initialize plugin %s"
 msgstr "misslyckades att initiera insticksmodulen %s"
 
 #: plugin.c:1006
-#, fuzzy, gcc-internal-format
-#| msgid "-iplugindir <dir> option not passed from the gcc driver"
+#, gcc-internal-format
 msgid "%<-iplugindir%> <dir> option not passed from the gcc driver"
-msgstr "flaggan -iplugindir <kat> skickas inte från gcc-drivrutin"
+msgstr "flaggan %<-iplugindir%> <kat> skickas inte från gcc-drivrutin"
 
 #: predict.c:2496
-#, fuzzy, gcc-internal-format
-#| msgid "expression %qE is not a constant expression"
+#, gcc-internal-format
 msgid "probability %qE must be constant floating-point expression"
-msgstr "uttrycket %qE är inte ett konstant uttryck"
+msgstr "sannolikheten %qE måste vara ett konstant flyttalsuttryck"
 
 #: predict.c:2509
 #, gcc-internal-format
@@ -22122,10 +22031,9 @@ msgid "RTL check: expected code '%s' or '%s', have '%s' in %s, at %s:%d"
 msgstr "RTL-kontroll: förväntade kod ”%s” eller ”%s”, har ”%s” i %s, vid %s:%d"
 
 #: rtl.c:904
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "RTL check: expected code '%s' or '%s', have '%s' in %s, at %s:%d"
+#, gcc-internal-format, gfc-internal-format
 msgid "RTL check: expected code '%s', '%s' or '%s', have '%s' in %s, at %s:%d"
-msgstr "RTL-kontroll: förväntade kod ”%s” eller ”%s”, har ”%s” i %s, vid %s:%d"
+msgstr "RTL-kontroll: förväntade kod ”%s”, ”%s” eller ”%s”, har ”%s” i %s, vid %s:%d"
 
 #: rtl.c:931
 #, gcc-internal-format, gfc-internal-format
@@ -22208,10 +22116,9 @@ msgid "undefined named operand %qs"
 msgstr "odefinierad namngiven operand %qs"
 
 #: stor-layout.c:773
-#, fuzzy, gcc-internal-format
-#| msgid "specified bound %wu exceeds maximum object size %wu"
+#, gcc-internal-format
 msgid "size of %q+D %E bytes exceeds maximum object size %wu"
-msgstr "angiven gräns på %wu överskrider maximal objektstorlek %wu"
+msgstr "storleken på %q+D %E byte överskrider maximal objektstorlek %wu"
 
 #: stor-layout.c:1154
 #, gcc-internal-format
@@ -22394,8 +22301,7 @@ msgid "comdat-local symbol referred to by %s outside its comdat"
 msgstr "comdat-lokal symbol refererad till av %s utanför dess comdat"
 
 #: symtab.c:1158
-#, fuzzy, gcc-internal-format
-#| msgid "implicit_section flag is set but section isn't"
+#, gcc-internal-format
 msgid "implicit_section flag is set but section isn%'t"
 msgstr "flaggan implicit_section är satt men sektionen är inte det"
 
@@ -22405,20 +22311,17 @@ msgid "Both section and comdat group is set"
 msgstr "både sektion och comdat-grupp är satt"
 
 #: symtab.c:1177
-#, fuzzy, gcc-internal-format
-#| msgid "Alias and target's section differs"
+#, gcc-internal-format
 msgid "Alias and target%'s section differs"
 msgstr "Aliasets och målets sektion skiljer"
 
 #: symtab.c:1184
-#, fuzzy, gcc-internal-format
-#| msgid "Alias and target's comdat groups differs"
+#, gcc-internal-format
 msgid "Alias and target%'s comdat groups differs"
 msgstr "Aliasets och målets comdat-grupper skiljer"
 
 #: symtab.c:1199
-#, fuzzy, gcc-internal-format
-#| msgid "Transparent alias and target's assembler names differs"
+#, gcc-internal-format
 msgid "Transparent alias and target%'s assembler names differs"
 msgstr "Transparent alias och målets assemblernamn skiljer"
 
@@ -22453,10 +22356,9 @@ msgid "section of alias %q+D must match section of its target"
 msgstr "sektionen för aliaset %q+D måste stämma med sektionen för dess mål"
 
 #: targhooks.c:191
-#, fuzzy, gcc-internal-format
-#| msgid "__builtin_saveregs not supported by this target"
+#, gcc-internal-format
 msgid "%<__builtin_saveregs%> not supported by this target"
-msgstr "__builtin_saveregs stödjs inte på denna målarkitektur"
+msgstr "%<__builtin_saveregs%> stödjs inte på denna målarkitektur"
 
 #: targhooks.c:1042
 #, gcc-internal-format
@@ -22509,10 +22411,9 @@ msgid "can%'t open %qs for writing: %m"
 msgstr "det går inte att öppna %qs för skrivning: %m"
 
 #: toplev.c:904
-#, fuzzy, gcc-internal-format
-#| msgid "-frecord-gcc-switches is not supported by the current target"
+#, gcc-internal-format
 msgid "%<-frecord-gcc-switches%> is not supported by the current target"
-msgstr "-frecord-gcc-switches stödjs inte för den aktuella målarkitekturen"
+msgstr "%<-frecord-gcc-switches%> stödjs inte för den aktuella målarkitekturen"
 
 #: toplev.c:953
 #, gcc-internal-format
@@ -22525,16 +22426,14 @@ msgid "stack usage might be unbounded"
 msgstr "stackanvändningen kan vara obegränsad"
 
 #: toplev.c:1040
-#, fuzzy, gcc-internal-format
-#| msgid "stack usage might be %wd bytes"
+#, gcc-internal-format
 msgid "stack usage might be %wu bytes"
-msgstr "stackanvändningen kan vara %wd byte"
+msgstr "stackanvändningen kan vara %wu byte"
 
 #: toplev.c:1043
-#, fuzzy, gcc-internal-format
-#| msgid "stack usage is %wd bytes"
+#, gcc-internal-format
 msgid "stack usage is %wu bytes"
-msgstr "stackanvändningen är %wd byte"
+msgstr "stackanvändningen är %wu byte"
 
 #: toplev.c:1059
 #, gcc-internal-format
@@ -22547,10 +22446,9 @@ msgid "this target does not support %qs"
 msgstr "denna målarkitektur stödjer inte %qs"
 
 #: toplev.c:1369
-#, fuzzy, gcc-internal-format
-#| msgid "Graphite loop optimizations cannot be used (isl is not available) (-fgraphite, -fgraphite-identity, -floop-nest-optimize, -floop-parallelize-all)"
+#, gcc-internal-format
 msgid "Graphite loop optimizations cannot be used (isl is not available) (%<-fgraphite%>, %<-fgraphite-identity%>, %<-floop-nest-optimize%>, %<-floop-parallelize-all%>)"
-msgstr "Graphite-slingoptimeringar kan inte användas (isl är inte tillgängligt) (-fgraphite, -fgraphite-identity, -floop-nest-optimize, -floop-parallelize-all)"
+msgstr "Graphite-slingoptimeringar kan inte användas (isl är inte tillgängligt) (%<-fgraphite%>, %<-fgraphite-identity%>, %<-floop-nest-optimize%>, %<-floop-parallelize-all%>)"
 
 #: toplev.c:1380
 #, gcc-internal-format
@@ -22583,10 +22481,9 @@ msgid "this target machine does not have delayed branches"
 msgstr "denna målmaskin har inte fördröjda grenar"
 
 #: toplev.c:1455
-#, fuzzy, gcc-internal-format
-#| msgid "-f%sleading-underscore not supported on this target machine"
+#, gcc-internal-format
 msgid "%<-f%sleading-underscore%> not supported on this target machine"
-msgstr "-f%sleading-underscore stödjs inte på denna målmaskin"
+msgstr "%<-f%sleading-underscore%> stödjs inte på denna målmaskin"
 
 #: toplev.c:1500
 #, gcc-internal-format
@@ -22614,58 +22511,49 @@ msgid "var-tracking-assignments changes selective scheduling"
 msgstr "var-tracking-assignments ändrar selektiv schemaläggning"
 
 #: toplev.c:1622
-#, fuzzy, gcc-internal-format
-#| msgid "without -gdwarf-5, -gvariable-location-views=incompat5 is equivalent to -gvariable-location-views"
+#, gcc-internal-format
 msgid "without %<-gdwarf-5%>, %<-gvariable-location-views=incompat5%> is equivalent to %<-gvariable-location-views%>"
-msgstr "utan -gdwarf-5 är -gvariable-location-views=incompat5 likvärdigt med -gvariable-location-views"
+msgstr "utan %<-gdwarf-5%> är %<-gvariable-location-views=incompat5%> likvärdigt med %<-gvariable-location-views%>"
 
 #: toplev.c:1638
-#, fuzzy, gcc-internal-format
-#| msgid "-ginternal-reset-location-views is forced disabled without -gvariable-location-views"
+#, gcc-internal-format
 msgid "%<-ginternal-reset-location-views%> is forced disabled without %<-gvariable-location-views%>"
-msgstr "-ginternal-reset-location-views avaktiveras tvingande utan -gvariable-location-views"
+msgstr "%<-ginternal-reset-location-views%> avaktiveras tvingande utan %<-gvariable-location-views%>"
 
 #: toplev.c:1648
-#, fuzzy, gcc-internal-format
-#| msgid "-ginline-points is forced disabled without -gstatement-frontiers"
+#, gcc-internal-format
 msgid "%<-ginline-points%> is forced disabled without %<-gstatement-frontiers%>"
-msgstr "-ginline-points avaktiveras tvingande utan -gstatement-frontiers"
+msgstr "%<-ginline-points%> avaktiveras tvingande utan %<-gstatement-frontiers%>"
 
 #: toplev.c:1677
-#, fuzzy, gcc-internal-format
-#| msgid "-ffunction-sections not supported for this target"
+#, gcc-internal-format
 msgid "%<-ffunction-sections%> not supported for this target"
-msgstr "-ffunction-sections stödjs inte för denna målarkitektur"
+msgstr "%<-ffunction-sections%> stödjs inte för denna målarkitektur"
 
 #: toplev.c:1683
-#, fuzzy, gcc-internal-format
-#| msgid "-fdata-sections not supported for this target"
+#, gcc-internal-format
 msgid "%<-fdata-sections%> not supported for this target"
-msgstr "-fdata-sections stödjs inte för denna målarkitektur"
+msgstr "%<-fdata-sections%> stödjs inte för denna målarkitektur"
 
 #: toplev.c:1691
-#, fuzzy, gcc-internal-format
-#| msgid "-fprefetch-loop-arrays not supported for this target"
+#, gcc-internal-format
 msgid "%<-fprefetch-loop-arrays%> not supported for this target"
-msgstr "-fprefetch-loop-arrays stödjs inte för denna målarkitektur"
+msgstr "%<-fprefetch-loop-arrays%> stödjs inte för denna målarkitektur"
 
 #: toplev.c:1697
-#, fuzzy, gcc-internal-format
-#| msgid "-fprefetch-loop-arrays not supported for this target (try -march switches)"
+#, gcc-internal-format
 msgid "%<-fprefetch-loop-arrays%> not supported for this target (try %<-march%> switches)"
-msgstr "-fprefetch-loop-arrays stödjs inte för denna målarkitektur (försök med -march-flaggor)"
+msgstr "%<-fprefetch-loop-arrays%> stödjs inte för denna målarkitektur (försök med %<-march%>-flaggor)"
 
 #: toplev.c:1707
-#, fuzzy, gcc-internal-format
-#| msgid "-fprefetch-loop-arrays is not supported with -Os"
+#, gcc-internal-format
 msgid "%<-fprefetch-loop-arrays%> is not supported with %<-Os%>"
-msgstr "-fprefetch-loop-arrays stödjs inte med -Os"
+msgstr "%<-fprefetch-loop-arrays%> stödjs inte med %<-Os%>"
 
 #: toplev.c:1719
-#, fuzzy, gcc-internal-format
-#| msgid "-fassociative-math disabled; other options take precedence"
+#, gcc-internal-format
 msgid "%<-fassociative-math%> disabled; other options take precedence"
-msgstr "-fassociative-math avslagen, andra flaggor går före"
+msgstr "%<-fassociative-math%> avslagen, andra flaggor går före"
 
 #: toplev.c:1729
 #, gcc-internal-format
@@ -22678,22 +22566,19 @@ msgid "%<-fstack-check=%> and %<-fstack-clash_protection%> are mutually exclusiv
 msgstr "%<-fstack-check=%> och %<-fstack-clash_protection%> är ömsesidigt uteslutande.  Avaktiverar %<-fstack-check=%>"
 
 #: toplev.c:1757
-#, fuzzy, gcc-internal-format
-#| msgid "-fstack-protector not supported for this target"
+#, gcc-internal-format
 msgid "%<-fstack-protector%> not supported for this target"
-msgstr "-fstack-protector stödjs inte av denna målarkitektur"
+msgstr "%<-fstack-protector%> stödjs inte av denna målarkitektur"
 
 #: toplev.c:1769
-#, fuzzy, gcc-internal-format
-#| msgid "-fsanitize=address and -fsanitize=kernel-address are not supported for this target"
+#, gcc-internal-format
 msgid "%<-fsanitize=address%> and %<-fsanitize=kernel-address%> are not supported for this target"
-msgstr "-fsanitize=address och -fsanitize=kernel stödjs inte för denna målarkitektur"
+msgstr "%<-fsanitize=address%> och %<-fsanitize=kernel-address%> stödjs inte för denna målarkitektur"
 
 #: toplev.c:1778
-#, fuzzy, gcc-internal-format
-#| msgid "-fsanitize=address not supported for this target"
+#, gcc-internal-format
 msgid "%<-fsanitize=address%> not supported for this target"
-msgstr "-fsanitize=address stödjs inte för denna målarkitektur"
+msgstr "%<-fsanitize=address%> stödjs inte för denna målarkitektur"
 
 #: toplev.c:2073
 #, gcc-internal-format
@@ -22711,10 +22596,9 @@ msgid "mpfr not configured to handle all float modes"
 msgstr "mpfr är inte konfigurerat att hantera alla flyttalslägen"
 
 #: toplev.c:2259
-#, fuzzy, gcc-internal-format
-#| msgid "self-tests incompatible with -E"
+#, gcc-internal-format
 msgid "self-tests incompatible with %<-E%>"
-msgstr "självtester är inkompatibla med -E"
+msgstr "självtester är inkompatibla med %<-E%>"
 
 #: toplev.c:2274
 #, gcc-internal-format
@@ -22897,10 +22781,9 @@ msgid "type mismatch in array range reference"
 msgstr "typfel i vektorintervallreferens"
 
 #: tree-cfg.c:3159
-#, fuzzy, gcc-internal-format
-#| msgid "invalid offset operand of MEM_REF"
+#, gcc-internal-format
 msgid "invalid COMPONENT_REF offset operator"
-msgstr "ogiltig avståndsoperand till MEM_REF"
+msgstr "ogiltig COMPONENT_REF-avståndsoperator"
 
 #: tree-cfg.c:3165
 #, gcc-internal-format
@@ -22999,10 +22882,9 @@ msgstr "statisk kedja med funktion som inte använder en"
 #. out a call cannot happen in a legal program.  In such cases,
 #. we must make sure arguments are stripped off.
 #: tree-cfg.c:3399
-#, fuzzy, gcc-internal-format
-#| msgid "__builtin_unreachable or __builtin_trap call with arguments"
+#, gcc-internal-format
 msgid "%<__builtin_unreachable%> or %<__builtin_trap%> call with arguments"
-msgstr "__builtin_unreachable eller __builtin_trap anropad utan argument"
+msgstr "%<__builtin_unreachable%> eller %<__builtin_trap%> anropad med argument"
 
 #: tree-cfg.c:3422
 #, gcc-internal-format
@@ -23075,16 +22957,14 @@ msgid "invalid types in conversion to integer"
 msgstr "ogiltiga typer i konvertering till heltal"
 
 #: tree-cfg.c:3665
-#, fuzzy, gcc-internal-format
-#| msgid "type mismatch in vector pack expression"
+#, gcc-internal-format
 msgid "type mismatch in vector unpack expression"
-msgstr "typer stämmer inte i vektorpaketeringsuttryck"
+msgstr "typer stämmer inte i vektorupppaketeringsuttryck"
 
 #: tree-cfg.c:3687
-#, fuzzy, gcc-internal-format
-#| msgid "invalid type for property"
+#, gcc-internal-format
 msgid "invalid types for ABSU_EXPR"
-msgstr "ogiltig typ på egenskap"
+msgstr "ogiltig typ på ABSU_EXPR"
 
 #: tree-cfg.c:3698
 #, gcc-internal-format
@@ -23377,8 +23257,7 @@ msgid "case labels not sorted in switch statement"
 msgstr "case-etiketter är inte sorterade i en switch-sats"
 
 #: tree-cfg.c:4782
-#, fuzzy, gcc-internal-format
-#| msgid "label's context is not the current function decl"
+#, gcc-internal-format
 msgid "label%'s context is not the current function decl"
 msgstr "etikettens kontext är inte den aktuella funktionsdeklarationen"
 
@@ -23438,10 +23317,9 @@ msgid "location references block not in block tree"
 msgstr "platsreferensblock som inte är i blockträd"
 
 #: tree-cfg.c:5168
-#, fuzzy, gcc-internal-format
-#| msgid "Local declaration from a different function"
+#, gcc-internal-format
 msgid "local declaration from a different function"
-msgstr "Lokal deklaration från en annan funktion"
+msgstr "lokal deklaration från en annan funktion"
 
 #: tree-cfg.c:5263
 #, gcc-internal-format
@@ -23596,8 +23474,7 @@ msgid "BB %i has multiple EH edges"
 msgstr "BB %i har flera EH-bågar"
 
 #: tree-eh.c:4766
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "BB %i can not throw but has an EH edge"
+#, gcc-internal-format, gfc-internal-format
 msgid "BB %i cannot throw but has an EH edge"
 msgstr "BB %i kan inte kasta men har en EH-båge"
 
@@ -23672,10 +23549,9 @@ msgid "function %q+F can never be inlined because it uses non-local goto"
 msgstr "funktion %q+F kan aldrig inline:as eftersom den använder icke-lokala goto"
 
 #: tree-inline.c:3676
-#, fuzzy, gcc-internal-format
-#| msgid "function %q+F can never be inlined because it uses __builtin_return or __builtin_apply_args"
+#, gcc-internal-format
 msgid "function %q+F can never be inlined because it uses %<__builtin_return%> or %<__builtin_apply_args%>"
-msgstr "funktion %q+F kan aldrig inline:as eftersom den använder __builtin_return eller __builtin_apply_args"
+msgstr "funktion %q+F kan aldrig inline:as eftersom den använder %<__builtin_return%> eller %<__builtin_apply_args%>"
 
 #: tree-inline.c:3696
 #, gcc-internal-format
@@ -23683,10 +23559,9 @@ msgid "function %q+F can never be inlined because it contains a computed goto"
 msgstr "funktion %q+F kan aldrig inline:as eftersom den innehåller ett beräknat goto"
 
 #: tree-inline.c:3797
-#, fuzzy, gcc-internal-format
-#| msgid "function %q+F can never be inlined because it is suppressed using -fno-inline"
+#, gcc-internal-format
 msgid "function %q+F can never be inlined because it is suppressed using %<-fno-inline%>"
-msgstr "funktionen %q+F kan aldrig vara inline eftersom det stängs av av -fno-inline"
+msgstr "funktionen %q+F kan aldrig vara inline eftersom det stängs av av %<-fno-inline%>"
 
 #: tree-inline.c:3805
 #, gcc-internal-format
@@ -23739,10 +23614,9 @@ msgid "%s from %s called in %s"
 msgstr "%s från %s anropad i %s"
 
 #: tree-profile.c:635
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format
 msgid "invalid regular expression '%s' in %<%s%>"
-msgstr "ogiltigt uttryck som operand"
+msgstr "ogiltigt reguljärt uttryck ”%s” i %<%s%>"
 
 #: tree-profile.c:725
 #, gcc-internal-format
@@ -24078,22 +23952,19 @@ msgid "while referencing %qD"
 msgstr "vid referens av %qD"
 
 #: tree-vrp.c:4738
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript [%E, %E] is outside array bounds of %qT"
+#, gcc-internal-format
 msgid "array subscript %wi is outside array bounds of %qT"
-msgstr "vektorindexen [%E, %E] är utanför vektorgränserna för %qT"
+msgstr "vektorindexen %wi är utanför vektorgränserna för %qT"
 
 #: tree-vrp.c:4743
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript [%E, %E] is outside array bounds of %qT"
+#, gcc-internal-format
 msgid "array subscript [%wi, %wi] is outside array bounds of %qT"
-msgstr "vektorindexen [%E, %E] är utanför vektorgränserna för %qT"
+msgstr "vektorindexen [%wi, %wi] är utanför vektorgränserna för %qT"
 
 #: tree-vrp.c:4765
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript [%E, %E] is outside array bounds of %qT"
+#, gcc-internal-format
 msgid "intermediate array offset %wi is outside array bounds of %qT"
-msgstr "vektorindexen [%E, %E] är utanför vektorgränserna för %qT"
+msgstr "intermediärt vektoravstånd %wi är utanför vektorgränserna för %qT"
 
 #: tree-vrp.c:4827
 #, gcc-internal-format
@@ -24236,14 +24107,12 @@ msgid "type variant has different TYPE_SIZE_UNIT"
 msgstr "typvariant har en annan TYPE_SIZE_UNIT"
 
 #: tree.c:13839
-#, fuzzy, gcc-internal-format
-#| msgid "type variant's TYPE_SIZE_UNIT"
+#, gcc-internal-format
 msgid "type variant%'s TYPE_SIZE_UNIT"
 msgstr "typvariantens TYPE_SIZE_UNIT"
 
 #: tree.c:13841
-#, fuzzy, gcc-internal-format
-#| msgid "type's TYPE_SIZE_UNIT"
+#, gcc-internal-format
 msgid "type%'s TYPE_SIZE_UNIT"
 msgstr "typens TYPE_SIZE_UNIT"
 
@@ -24263,14 +24132,12 @@ msgid "type variant has different TYPE_BINFO"
 msgstr "typvariant har en annan TYPE_BINFO"
 
 #: tree.c:13912
-#, fuzzy, gcc-internal-format
-#| msgid "type variant's TYPE_BINFO"
+#, gcc-internal-format
 msgid "type variant%'s TYPE_BINFO"
 msgstr "typvariantens TYPE_BINFO"
 
 #: tree.c:13914
-#, fuzzy, gcc-internal-format
-#| msgid "type's TYPE_BINFO"
+#, gcc-internal-format
 msgid "type%'s TYPE_BINFO"
 msgstr "typens TYPE_BINFO"
 
@@ -24295,14 +24162,12 @@ msgid "type variant has different TREE_TYPE"
 msgstr "typvariant har en annan TREE_TYPE"
 
 #: tree.c:13976 tree.c:13987
-#, fuzzy, gcc-internal-format
-#| msgid "type variant's TREE_TYPE"
+#, gcc-internal-format
 msgid "type variant%'s TREE_TYPE"
 msgstr "typvariantens TREE_TYPE"
 
 #: tree.c:13978 tree.c:13989
-#, fuzzy, gcc-internal-format
-#| msgid "type's TREE_TYPE"
+#, gcc-internal-format
 msgid "type%'s TREE_TYPE"
 msgstr "typens TREE_TYPE"
 
@@ -24492,10 +24357,9 @@ msgid "corrupted value profile: %s profile counter (%d out of %d) inconsistent w
 msgstr "trasig värdeprofil: profileringsräknaren %s (%d av %d) stämmer inte med GB-antal (%d)"
 
 #: var-tracking.c:7184
-#, fuzzy, gcc-internal-format
-#| msgid "variable tracking size limit exceeded with -fvar-tracking-assignments, retrying without"
+#, gcc-internal-format
 msgid "variable tracking size limit exceeded with %<-fvar-tracking-assignments%>, retrying without"
-msgstr "storleksgräns på variabelspårning överskriden med -fvar-tracking-assignments, försöker igen utan"
+msgstr "storleksgräns på variabelspårning överskriden med %<-fvar-tracking-assignments%>, försöker igen utan"
 
 #: var-tracking.c:7188
 #, gcc-internal-format
@@ -24744,100 +24608,84 @@ msgid "bytecode stream: tag %s is not in the expected range [%s, %s]"
 msgstr "bytekodström: taggen %s ligger inte i det förväntade intervallet [%s, %s]"
 
 #: c-family/c-ada-spec.c:2792
-#, fuzzy, gcc-internal-format
-#| msgid "unsupported mode %s\n"
+#, gcc-internal-format
 msgid "unsupported record layout"
-msgstr "ej stött läge: %s\n"
+msgstr "ej stödd postlayout"
 
 #: c-family/c-attribs.c:522
-#, fuzzy, gcc-internal-format
-#| msgid "template argument %d is invalid"
+#, gcc-internal-format
 msgid "%qE attribute argument is invalid"
-msgstr "mallargument %d är ogiltigt"
+msgstr "attributet %qE argument är ogiltigt"
 
 #: c-family/c-attribs.c:525
-#, fuzzy, gcc-internal-format
-#| msgid "template argument %d is invalid"
+#, gcc-internal-format
 msgid "%qE attribute argument %i is invalid"
-msgstr "mallargument %d är ogiltigt"
+msgstr "attributet %qE argument %i är ogiltigt"
 
 #: c-family/c-attribs.c:537
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute ignored for type %qT"
+#, gcc-internal-format
 msgid "%qE attribute argument has type %qT"
-msgstr "attributet %qE ignorerat för typen %qT"
+msgstr "attributet %qE argument har typen %qT"
 
 #: c-family/c-attribs.c:541
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute ignored for type %qT"
+#, gcc-internal-format
 msgid "%qE attribute argument %i has type %qT"
-msgstr "attributet %qE ignorerat för typen %qT"
+msgstr "attributet %qE argument %i har typen %qT"
 
 #: c-family/c-attribs.c:552
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute argument not an integer constant"
+#, gcc-internal-format
 msgid "%qE attribute argument value %qE is not an integer constant"
-msgstr "argumentet till attribut %qE är inte en heltalskonstant"
+msgstr "attributet %qE argumentet %qE värde är inte en heltalskonstant"
 
 #: c-family/c-attribs.c:557
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute argument not an integer constant"
+#, gcc-internal-format
 msgid "%qE attribute argument %i value %qE is not an integer constant"
-msgstr "argumentet till attribut %qE är inte en heltalskonstant"
+msgstr "attributet %qE argument %i värde %qE är inte en heltalskonstant"
 
 #: c-family/c-attribs.c:573
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute only applies to base type of a function pointer"
+#, gcc-internal-format
 msgid "%qE attribute argument value %qE does not refer to a function parameter"
-msgstr "attributet %qE är bara tillämpligt på bastypen av en funktionspekare"
+msgstr "attributet %qE argumentets värde %qE refererar inte till en funktionsparameter"
 
 #: c-family/c-attribs.c:578
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute only applies to base type of a function pointer"
+#, gcc-internal-format
 msgid "%qE attribute argument %i value %qE does not refer to a function parameter"
-msgstr "attributet %qE är bara tillämpligt på bastypen av en funktionspekare"
+msgstr "attributet %qE argumentet %i värde %qE refererar inte till en funktionsparameter"
 
 #: c-family/c-attribs.c:601
-#, fuzzy, gcc-internal-format
-#| msgid "default arguments are only permitted for function parameters"
+#, gcc-internal-format
 msgid "%qE attribute argument value %qE exceeds the number of function parameters %u"
-msgstr "standardargument är endast tillåtna för funktionsparametrar"
+msgstr "attributetet %qE argumentvärde %qE överskrider antalet funktionsparametrar %u"
 
 #: c-family/c-attribs.c:606
-#, fuzzy, gcc-internal-format
-#| msgid "%Kargument %i value %qE exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%qE attribute argument %i value %qE exceeds the number of function parameters %u"
-msgstr "%Kargument %i:s värde %qE överskrider maximal objektstorlek %E"
+msgstr "attributet %qE argument %i värde %qE överskrider antalet funktionsparametrar %u"
 
 #: c-family/c-attribs.c:624
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute not available to functions with variable number of arguments"
+#, gcc-internal-format
 msgid "%qE attribute argument value %qE does not refer to a variable argument list"
-msgstr "attributet %qE är inte tillgängligt för funktioner med ett variabelt antal argument"
+msgstr "attributet %qE argumentvärde %qE refererar inte till en variabelargumentlista"
 
 #: c-family/c-attribs.c:628
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute not available to functions with variable number of arguments"
+#, gcc-internal-format
 msgid "%qE attribute argument %i value %qE does not refer to a variable argument list"
-msgstr "attributet %qE är inte tillgängligt för funktioner med ett variabelt antal argument"
+msgstr "attributet %qE argument %i värde %qE refererar inte till en variabelargumentlista"
 
 #: c-family/c-attribs.c:655 c-family/c-attribs.c:668
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute ignored for type %qT"
+#, gcc-internal-format
 msgid "%qE attribute argument value %qE refers to parameter type %qT"
-msgstr "attributet %qE ignorerat för typen %qT"
+msgstr "attributet %qE argumentvärdet %qE refererar till parametertypen %qT"
 
 #: c-family/c-attribs.c:659 c-family/c-attribs.c:673
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute ignored for type %qT"
+#, gcc-internal-format
 msgid "%qE attribute argument %i value %qE refers to parameter type %qT"
-msgstr "attributet %qE ignorerat för typen %qT"
+msgstr "attributet %qE argumentet %i värde %qE refererar till parametertypen %qT"
 
 #: c-family/c-attribs.c:683
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute only applies to variadic functions"
+#, gcc-internal-format
 msgid "%qE attribute argument value %qE refers to a variadic function parameter of unknown type"
-msgstr "attributet %qE är bara tillämplig på funktioner med variabelt antal argument"
+msgstr "attributet %qE argumentvärdet %qE refererar till en variadisk funktionsparameter av okänd typ"
 
 #: c-family/c-attribs.c:688
 #, gcc-internal-format

@@ -1,3 +1,7 @@
+2019-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* de.po, es.po, fr.po, sv.po: Update.
+
 2019-04-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.pot: Regenerate.
