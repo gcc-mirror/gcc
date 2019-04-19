@@ -20179,21 +20179,17 @@ fn_type_unification (tree fn,
               parameter_pack = TEMPLATE_PARM_PARAMETER_PACK (parm);
             }
 
-	  if (!parameter_pack && targ == NULL_TREE)
+	  if (targ == NULL_TREE)
 	    /* No explicit argument for this template parameter.  */
 	    incomplete = true;
-
-          if (parameter_pack && pack_deducible_p (parm, fn))
+	  else if (parameter_pack && pack_deducible_p (parm, fn))
             {
               /* Mark the argument pack as "incomplete". We could
                  still deduce more arguments during unification.
 	         We remove this mark in type_unification_real.  */
-              if (targ)
-                {
-                  ARGUMENT_PACK_INCOMPLETE_P(targ) = 1;
-                  ARGUMENT_PACK_EXPLICIT_ARGS (targ) 
-                    = ARGUMENT_PACK_ARGS (targ);
-                }
+	      ARGUMENT_PACK_INCOMPLETE_P(targ) = 1;
+	      ARGUMENT_PACK_EXPLICIT_ARGS (targ)
+		= ARGUMENT_PACK_ARGS (targ);
 
               /* We have some incomplete argument packs.  */
               incomplete = true;
