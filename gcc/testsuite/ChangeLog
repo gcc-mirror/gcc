@@ -1,3 +1,73 @@
+2019-04-19  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	Backport from trunk
+	2018-02-07  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/vsx-vector-6-le.c: Update CPU target.
+	* gcc.target/powerpc/vsx-vector-6-le.p9.c: New.
+
+	Backport from trunk
+	2018-05-04  Carl Love  <cel@us.ibm.com>
+	* gcc.target/powerpc/vsx-vector-6.h (foo): Add test for vec_max,
+	vec_trunc.
+	* gcc.target/powerpc/vsx-vector-6-le.c (dg-final): Update xvcmpeqdp,
+	xvcmpgtdp, xvcmpgedp counts. Add xxsel counts.
+	* gcc.target/powerpc/vsx-vector-6-be.c (dg-final): Update xvcmpgtdp,
+	xvcmpgedp counts. Add xxsel counts.
+
+	Backport from trunk
+	2018-05-16  Carl Love  <cel@us.ibm.com>
+	* gcc.target/powerpc/vsx-vector-6-be.c: Remove file.
+	* gcc.target/powerpc/vsx-vector-6-be.p7.c: New test file.
+	* gcc.target/powerpc/vsx-vector-6-be.p8.c: New test file.
+	* gcc.target/powerpc/vsx-vector-6-le.c (dg-final): Update counts for
+	xvcmpeqdp., xvcmpgtdp., xvcmpgedp., xxlxor, xvrdpi.
+
+	Backport from trunk
+	2018-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* lib/target-supports.exp (check_effective_target_be): New.
+	(check_effective_target_le): New.
+
+	Backport from trunk
+	2018-06-01  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/altivec-7-be.c: Delete file.
+	* gcc.target/powerpc/altivec-7-le.c: Delete file.
+	* gcc.target/powerpc/vsx-7-be.c: Remove file.
+
+	Backport from trunk
+	2018-06-01  Carl Love  <cel@us.ibm.com>
+
+	Commit 260294 on 2018-05-16 by Carl Love was supposed to add the
+	following files.
+
+	* gcc.target/powerpc/vsx-vector-6-be.p7.c: New test file.
+	* gcc.target/powerpc/vsx-vector-6-be.p8.c: New test file.
+
+	Backport from trunk
+	2018-06-08  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/vsx-vector-6-be.p7.c: Rename this file to
+	vsx-vector-6.p7.c.
+	* gcc.target/powerpc/vsx-vector-6-le.p9.c: Rename this file to
+	vsx-vector-6.p9.c.
+	* gcc.target/powerpc/vsx-vector-6-be.p8.c: Move instruction counts
+	for BE system that are different then for an LE system from this file
+	into vsx-vector-6-le.c using be target qualifier.  Remove this file.
+	* gcc.target/powerpc/vsx-vector-6-le.c: Add le qualifiers as needed for
+	the various instruction counts.  Rename file to vsx-vector-6.p8.c.
+
+	Backport from trunk
+	2019-02-06  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vsx-vector-6.p7.c: Update instruction
+	counts and target.
+	* gcc.target/powerpc/vsx-vector-6.p8.c: Update instruction
+	counts and target.
+	* gcc.target/powerpc/vsx-vector-6.p9.c: Update instruction
+	counts and target.
+
 2019-04-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk

@@ -1,16 +1,24 @@
-/* { dg-do compile { target { powerpc64-*-* && lp64 } } } */
+/* { dg-do compile { target lp64 } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-options "-mvsx -O2" } */
+/* { dg-require-effective-target powerpc_p9vector_ok } */
+/* { dg-options "-mvsx -O2 -mcpu=power9" } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
 
-/* Expected instruction counts for Big Endian */
+/* Expected instruction counts for Power9. */
 
 /* { dg-final { scan-assembler-times "xvabsdp" 1 } } */
 /* { dg-final { scan-assembler-times "xvadddp" 1 } } */
-/* { dg-final { scan-assembler-times "xxlnor" 7 } } */
-/* { dg-final { scan-assembler-times "xvcmpeqdp" 6 } } */
-/* { dg-final { scan-assembler-times "xvcmpgtdp" 7 } } */
-/* { dg-final { scan-assembler-times "xvcmpgedp" 6 } } */
+/* { dg-final { scan-assembler-times "xxlnor" 5 } } */
+
+/* We generate xxlor instructions for many reasons other than or'ing vector
+   operands or calling __builtin_vec_or(), which  means we cannot rely on
+   their usage counts being stable.  Therefore, we just ensure at least one
+   xxlor instruction was generated.  */
+/* { dg-final { scan-assembler "xxlor" } } */
+
+/* { dg-final { scan-assembler-times "xvcmpeqdp" 7 } } */
+/* { dg-final { scan-assembler-times "xvcmpgtdp" 8 } } */
+/* { dg-final { scan-assembler-times "xvcmpgedp" 7 } } */
 /* { dg-final { scan-assembler-times "xvrdpim" 1 } } */
 /* { dg-final { scan-assembler-times "xvmaddadp" 1 } } */
 /* { dg-final { scan-assembler-times "xvmsubadp" 1 } } */

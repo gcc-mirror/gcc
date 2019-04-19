@@ -7,7 +7,9 @@
 void foo (vector double *out, vector double *in, vector long *p_l, vector bool long *p_b,
 	  vector unsigned char *p_uc, int *i, vector float *p_f,
 	  vector bool char *outbc, vector bool int *outbi,
-	  vector bool short *outbsi, vector int *outsi, vector unsigned int *outui)
+	  vector bool short *outbsi, vector int *outsi,
+	  vector unsigned int *outui, vector signed char *outsc,
+	  vector unsigned char *outuc)
 {
   vector double in0 = in[0];
   vector double in1 = in[1];
@@ -20,6 +22,8 @@ void foo (vector double *out, vector double *in, vector long *p_l, vector bool l
   vector float inf0;
   vector float inf1;
   vector float inf2;
+  vector char inc0;
+  vector char inc1;
   vector bool char inbc0;
   vector bool char inbc1;
   vector bool short inbs0;
@@ -30,6 +34,7 @@ void foo (vector double *out, vector double *in, vector long *p_l, vector bool l
   vector unsigned short int inusi0, inusi1;
   vector signed int insi0, insi1;
   vector unsigned int inui0, inui1;
+  vector unsigned char inuc0, inuc1;
   
   *out++ = vec_abs (in0);
   *out++ = vec_add (in0, in1);
@@ -103,6 +108,7 @@ void foo (vector double *out, vector double *in, vector long *p_l, vector bool l
   *p_f++ = vec_nmsub (inf0, inf1, inf2);
   *p_f++ = vec_nmadd (inf0, inf1, inf2);
   *p_f++ = vec_or (inf0, inf1);
+  *p_f++ = vec_trunc (inf0);
   
   *out++ = vec_or (inbl0, in0);
   *out++ = vec_or (in0, inbl0);
@@ -112,6 +118,8 @@ void foo (vector double *out, vector double *in, vector long *p_l, vector bool l
   *outbc++ = vec_nor (inbc0, inbc1);
   *outbc++ = vec_andc (inbc0, inbc1);
   *outbc++ = vec_or (inbc0, inbc1);
+
+  *outuc++ = vec_max (inuc0, inuc1);
 
   *outbi++ = vec_andc (inbi0, inbi1);
   *outbsi++ = vec_andc (inbs0, inbs1);
@@ -151,7 +159,9 @@ int main()
   vector bool short *outbsi;
   vector int *outsi;
   vector unsigned int *outui;
+  vector signed char *outsc;
+  vector unsigned char *outuc;
 
   foo (out, in, p_l, p_b, p_uc, i, p_f, outbc,
-       outbi, outbsi, outsi, outui);
+       outbi, outbsi, outsi, outui, outsc, outuc);
 }
