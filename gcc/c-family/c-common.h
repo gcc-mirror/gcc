@@ -988,8 +988,7 @@ extern tree boolean_increment (enum tree_code, tree);
 
 extern int case_compare (splay_tree_key, splay_tree_key);
 
-extern tree c_add_case_label (location_t, splay_tree, tree, tree, tree, tree,
-			      bool *);
+extern tree c_add_case_label (location_t, splay_tree, tree, tree, tree);
 extern bool c_switch_covers_all_cases_p (splay_tree, tree);
 
 extern tree build_function_call (location_t, tree, tree);
@@ -1291,8 +1290,7 @@ extern void sizeof_pointer_memaccess_warning (location_t *, tree,
 					      bool (*) (tree, tree));
 extern void check_main_parameter_types (tree decl);
 extern void warnings_for_convert_and_check (location_t, tree, tree, tree);
-extern void c_do_switch_warnings (splay_tree, location_t, tree, tree, bool,
-				  bool);
+extern void c_do_switch_warnings (splay_tree, location_t, tree, tree, bool);
 extern void warn_for_omitted_condop (location_t, tree);
 extern bool warn_for_restrict (unsigned, tree *, unsigned);
 extern void warn_for_address_or_pointer_of_packed_member (tree, tree);

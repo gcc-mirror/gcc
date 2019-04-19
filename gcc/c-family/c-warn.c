@@ -1428,12 +1428,87 @@ match_case_to_enum (splay_tree_node node, void *data)
 
 void
 c_do_switch_warnings (splay_tree cases, location_t switch_location,
-		      tree type, tree cond, bool bool_cond_p,
-		      bool outside_range_p)
+		      tree type, tree cond, bool bool_cond_p)
 {
   splay_tree_node default_node;
   splay_tree_node node;
   tree chain;
+  bool outside_range_p = false;
+
+  if (type != error_mark_node
+      && type != TREE_TYPE (cond)
+      && INTEGRAL_TYPE_P (type)
+      && INTEGRAL_TYPE_P (TREE_TYPE (cond))
+      && (!tree_int_cst_equal (TYPE_MIN_VALUE (type),
+			       TYPE_MIN_VALUE (TREE_TYPE (cond)))
+	  || !tree_int_cst_equal (TYPE_MAX_VALUE (type),
+				  TYPE_MAX_VALUE (TREE_TYPE (cond)))))
+    {
+      tree min_value = TYPE_MIN_VALUE (type);
+      tree max_value = TYPE_MAX_VALUE (type);
+
+      node = splay_tree_predecessor (cases, (splay_tree_key) min_value);
+      if (node && node->key)
+	{
+	  outside_range_p = true;
+	  /* There is at least one case smaller than TYPE's minimum value.
+	     NODE itself could be still a range overlapping the valid values,
+	     but any predecessors thereof except the default case will be
+	     completely outside of range.  */
+	  if (CASE_HIGH ((tree) node->value)
+	      && tree_int_cst_compare (CASE_HIGH ((tree) node->value),
+				       min_value) >= 0)
+	    {
+	      location_t loc = EXPR_LOCATION ((tree) node->value);
+	      warning_at (loc, 0, "lower value in case label range"
+				  " less than minimum value for type");
+	      CASE_LOW ((tree) node->value) = convert (TREE_TYPE (cond),
+						       min_value);
+	      node->key = (splay_tree_key) CASE_LOW ((tree) node->value);
+	    }
+	  /* All the following ones are completely outside of range.  */
+	  do
+	    {
+	      node = splay_tree_predecessor (cases,
+					     (splay_tree_key) min_value);
+	      if (node == NULL || !node->key)
+		break;
+	      location_t loc = EXPR_LOCATION ((tree) node->value);
+	      warning_at (loc, 0, "case label value is less than minimum "
+				  "value for type");
+	      splay_tree_remove (cases, node->key);
+	    }
+	  while (1);
+	}
+      node = splay_tree_lookup (cases, (splay_tree_key) max_value);
+      if (node == NULL)
+	node = splay_tree_predecessor (cases, (splay_tree_key) max_value);
+      /* Handle a single node that might partially overlap the range.  */
+      if (node
+	  && node->key
+	  && CASE_HIGH ((tree) node->value)
+	  && tree_int_cst_compare (CASE_HIGH ((tree) node->value),
+				   max_value) > 0)
+	{
+	  location_t loc = EXPR_LOCATION ((tree) node->value);
+	  warning_at (loc, 0, "upper value in case label range"
+			      " exceeds maximum value for type");
+	  CASE_HIGH ((tree) node->value)
+	    = convert (TREE_TYPE (cond), max_value);
+	  outside_range_p = true;
+	}
+      /* And any nodes that are completely outside of the range.  */
+      while ((node = splay_tree_successor (cases,
+					   (splay_tree_key) max_value))
+	     != NULL)
+	{
+	  location_t loc = EXPR_LOCATION ((tree) node->value);
+	  warning_at (loc, 0,
+		      "case label value exceeds maximum value for type");
+	  splay_tree_remove (cases, node->key);
+	  outside_range_p = true;
+	}
+    }
 
   if (!warn_switch && !warn_switch_enum && !warn_switch_default
       && !warn_switch_bool)

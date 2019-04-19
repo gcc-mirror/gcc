@@ -314,8 +314,6 @@ const struct fname_var_t fname_vars[] =
 struct visibility_flags visibility_options;
 
 static tree check_case_value (location_t, tree);
-static bool check_case_bounds (location_t, tree, tree, tree *, tree *,
-			       bool *);
 
 
 static void check_nonnull_arg (void *, tree, unsigned HOST_WIDE_INT);
@@ -2101,86 +2099,6 @@ check_case_value (location_t loc, tree value)
   constant_expression_warning (value);
 
   return value;
-}
-
-/* See if the case values LOW and HIGH are in the range of the original
-   type (i.e. before the default conversion to int) of the switch testing
-   expression.
-   TYPE is the promoted type of the testing expression, and ORIG_TYPE is
-   the type before promoting it.  CASE_LOW_P is a pointer to the lower
-   bound of the case label, and CASE_HIGH_P is the upper bound or NULL
-   if the case is not a case range.
-   The caller has to make sure that we are not called with NULL for
-   CASE_LOW_P (i.e. the default case).  OUTSIDE_RANGE_P says whether there
-   was a case value that doesn't fit into the range of the ORIG_TYPE.
-   Returns true if the case label is in range of ORIG_TYPE (saturated or
-   untouched) or false if the label is out of range.  */
-
-static bool
-check_case_bounds (location_t loc, tree type, tree orig_type,
-		   tree *case_low_p, tree *case_high_p,
-		   bool *outside_range_p)
-{
-  tree min_value, max_value;
-  tree case_low = *case_low_p;
-  tree case_high = case_high_p ? *case_high_p : case_low;
-
-  /* If there was a problem with the original type, do nothing.  */
-  if (orig_type == error_mark_node)
-    return true;
-
-  min_value = TYPE_MIN_VALUE (orig_type);
-  max_value = TYPE_MAX_VALUE (orig_type);
-
-  /* We'll really need integer constants here.  */
-  case_low = fold (case_low);
-  case_high = fold (case_high);
-
-  /* Case label is less than minimum for type.  */
-  if (tree_int_cst_compare (case_low, min_value) < 0
-      && tree_int_cst_compare (case_high, min_value) < 0)
-    {
-      warning_at (loc, 0, "case label value is less than minimum value "
-		  "for type");
-      *outside_range_p = true;
-      return false;
-    }
-
-  /* Case value is greater than maximum for type.  */
-  if (tree_int_cst_compare (case_low, max_value) > 0
-      && tree_int_cst_compare (case_high, max_value) > 0)
-    {
-      warning_at (loc, 0, "case label value exceeds maximum value for type");
-      *outside_range_p = true;
-      return false;
-    }
-
-  /* Saturate lower case label value to minimum.  */
-  if (tree_int_cst_compare (case_high, min_value) >= 0
-      && tree_int_cst_compare (case_low, min_value) < 0)
-    {
-      warning_at (loc, 0, "lower value in case label range"
-		  " less than minimum value for type");
-      *outside_range_p = true;
-      case_low = min_value;
-    }
-
-  /* Saturate upper case label value to maximum.  */
-  if (tree_int_cst_compare (case_low, max_value) <= 0
-      && tree_int_cst_compare (case_high, max_value) > 0)
-    {
-      warning_at (loc, 0, "upper value in case label range"
-		  " exceeds maximum value for type");
-      *outside_range_p = true;
-      case_high = max_value;
-    }
-
-  if (*case_low_p != case_low)
-    *case_low_p = convert (type, case_low);
-  if (case_high_p && *case_high_p != case_high)
-    *case_high_p = convert (type, case_high);
-
-  return true;
 }
 
 /* Return an integer type with BITS bits of precision,
@@ -4873,13 +4791,12 @@ case_compare (splay_tree_key k1, splay_tree_key k2)
    usual C/C++ syntax, rather than the GNU case range extension.
    CASES is a tree containing all the case ranges processed so far;
    COND is the condition for the switch-statement itself.
-   OUTSIDE_RANGE_P says whether there was a case value that doesn't
-   fit into the range of the ORIG_TYPE.  Returns the CASE_LABEL_EXPR
-   created, or ERROR_MARK_NODE if no CASE_LABEL_EXPR is created.  */
+   Returns the CASE_LABEL_EXPR created, or ERROR_MARK_NODE if no
+   CASE_LABEL_EXPR is created.  */
 
 tree
-c_add_case_label (location_t loc, splay_tree cases, tree cond, tree orig_type,
-		  tree low_value, tree high_value, bool *outside_range_p)
+c_add_case_label (location_t loc, splay_tree cases, tree cond,
+		  tree low_value, tree high_value)
 {
   tree type;
   tree label;
@@ -4913,6 +4830,7 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond, tree orig_type,
     {
       low_value = check_case_value (loc, low_value);
       low_value = convert_and_check (loc, type, low_value);
+      low_value = fold (low_value);
       if (low_value == error_mark_node)
 	goto error_out;
     }
@@ -4920,6 +4838,7 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond, tree orig_type,
     {
       high_value = check_case_value (loc, high_value);
       high_value = convert_and_check (loc, type, high_value);
+      high_value = fold (high_value);
       if (high_value == error_mark_node)
 	goto error_out;
     }
@@ -4934,15 +4853,6 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond, tree orig_type,
       else if (!tree_int_cst_lt (low_value, high_value))
 	warning_at (loc, 0, "empty range specified");
     }
-
-  /* See if the case is in range of the type of the original testing
-     expression.  If both low_value and high_value are out of range,
-     don't insert the case label and return NULL_TREE.  */
-  if (low_value
-      && !check_case_bounds (loc, type, orig_type,
-			     &low_value, high_value ? &high_value : NULL,
-			     outside_range_p))
-    return NULL_TREE;
 
   /* Look up the LOW_VALUE in the table of case labels we already
      have.  */

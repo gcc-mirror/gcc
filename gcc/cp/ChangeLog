@@ -1,5 +1,11 @@
 2019-04-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/89888
+	* decl.c (struct cp_switch): Remove outside_range_p member.
+	(push_switch): Don't clear it.
+	(pop_switch): Adjust c_do_switch_warnings caller.
+	(finish_case_label): Adjust c_add_case_label caller.
+
 	PR c++/90108
 	* decl.c (duplicate_decls): If remove is main variant and
 	DECL_ORIGINAL_TYPE is some other type, remove a DECL_ORIGINAL_TYPE
