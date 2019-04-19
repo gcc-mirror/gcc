@@ -1,3 +1,9 @@
+2019-04-19  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR translation/90118
+	* config/aarch64/aarch64.c (aarch64_override_options_internal):
+	Add missing space before %<.
+
 2019-04-18  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR rtl-optimization/87871
