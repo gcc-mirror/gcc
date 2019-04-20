@@ -682,90 +682,10 @@ namespace std
 #  define __PSTL_USE_PAR_POLICIES 1
 # endif
 
-# if __PSTL_USE_PAR_POLICIES
-#  if !defined(__PSTL_PAR_BACKEND_TBB)
-#   define __PSTL_PAR_BACKEND_TBB 1
-#  endif
-# else
-#  undef __PSTL_PAR_BACKEND_TBB
-# endif
-
 # define __PSTL_ASSERT(_Condition) __glibcxx_assert(_Condition)
 # define __PSTL_ASSERT_MSG(_Condition, _Message) __glibcxx_assert(_Condition)
 
-
-# define __PSTL_PRAGMA(x) _Pragma (#x)
-
-# define __PSTL_STRING_AUX(x) #x
-# define __PSTL_STRING(x) __PSTL_STRING_AUX(x)
-# define __PSTL_STRING_CONCAT(x, y) x#y
-
-# define __PSTL_GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + \
-			     __GNUC_PATCHLEVEL__)
-
-// Enable SIMD for compilers that support OpenMP 4.0
-# if (__PSTL_GCC_VERSION >= 40900)
-#  define __PSTL_PRAGMA_SIMD __PSTL_PRAGMA(omp simd)
-#define __PSTL_PRAGMA_DECLARE_SIMD __PSTL_PRAGMA(omp declare simd)
-#  define __PSTL_PRAGMA_SIMD_REDUCTION(PRM) __PSTL_PRAGMA(omp simd reduction(PRM))
-# else //no simd
-#  define __PSTL_PRAGMA_SIMD
-#  define __PSTL_PRAGMA_SIMD_REDUCTION(PRM)
-# endif //Enable SIMD
-
-#define __PSTL_PRAGMA_SIMD_SCAN(PRM)
-#define __PSTL_PRAGMA_SIMD_INCLUSIVE_SCAN(PRM)
-#define __PSTL_PRAGMA_SIMD_EXCLUSIVE_SCAN(PRM)
-
-#define __PSTL_PRAGMA_FORCEINLINE
-
-// Should be defined to 1 for environments with a vendor implementation
-// of C++17 execution policies
-// #define __PSTL_CPP17_EXECUTION_POLICIES_PRESENT (_MSC_VER >= 1912)
-// TODO define libstdc++ policies
-
-# define __PSTL_CPP14_2RANGE_MISMATCH_EQUAL_PRESENT \
-  (__cplusplus >= 201300L || __cpp_lib_robust_nonmodifying_seq_ops == 201304)
-# define __PSTL_CPP14_MAKE_REVERSE_ITERATOR_PRESENT \
-  (__cplusplus >= 201402L || __cpp_lib_make_reverse_iterator == 201402)
-# define __PSTL_CPP14_INTEGER_SEQUENCE_PRESENT (__cplusplus >= 201402L)
-# define __PSTL_CPP14_VARIABLE_TEMPLATES_PRESENT (__cplusplus >= 201402L)
-
-# if __PSTL_MONOTONIC_PRESENT
-#  define __PSTL_PRAGMA_SIMD_ORDERED_MONOTONIC(PRM) \
-  __PSTL_PRAGMA(omp ordered simd monotonic(PRM))
-#  define __PSTL_PRAGMA_SIMD_ORDERED_MONOTONIC_2ARGS(PRM1, PRM2) \
-  __PSTL_PRAGMA(omp ordered simd monotonic(PRM1, PRM2))
-# else
-#  define __PSTL_PRAGMA_SIMD_ORDERED_MONOTONIC(PRM)
-#  define __PSTL_PRAGMA_SIMD_ORDERED_MONOTONIC_2ARGS(PRM1, PRM2)
-# endif
-
-// Declaration of reduction functor, where
-// NAME - the name of the functor
-// OP - type of the callable object with the reduction operation
-// omp_in - refers to the local partial result
-// omp_out - refers to the final value of the combiner operator
-// omp_priv - refers to the private copy of the initial value
-// omp_orig - refers to the original variable to be reduced
-#define __PSTL_PRAGMA_DECLARE_REDUCTION(NAME, OP)                                                                      \
-    __PSTL_PRAGMA(omp declare reduction(NAME : OP : omp_out(omp_in)) initializer(omp_priv = omp_orig))
-
-# define __PSTL_PRAGMA_VECTOR_UNALIGNED
-# define __PSTL_USE_NONTEMPORAL_STORES_IF_ALLOWED
-# define __PSTL_PRAGMA_LOCATION
-
-# define __PSTL_PRAGMA_MESSAGE_IMPL(x) \
-  __PSTL_PRAGMA(message(__PSTL_STRING_CONCAT(__PSTL_PRAGMA_LOCATION, x)))
-# define __PSTL_PRAGMA_MESSAGE_POLICIES(x) __PSTL_PRAGMA_MESSAGE_IMPL(x)
-
-//Too many warnings in output, switched off
-# define __PSTL_PRAGMA_MESSAGE(x)
-
-# if defined(__GLIBCXX__)
-#  define __PSTL_CPP11_STD_ROTATE_BROKEN \
-  (__PSTL_GCC_VERSION < 50100) //GCC 5.1 release
-# endif
+#include <pstl/pstl_config.h>
 
 #endif
 // End of prewritten config; the settings discovered at configure time follow.
