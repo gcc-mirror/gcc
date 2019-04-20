@@ -1,3 +1,15 @@
+2019-04-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/89293
+	* libdruntime/core/atomic.d (casImpl): Remove static assert for
+	GNU_Have_Atomics, add static path to handle missing atomic support.
+	(atomicLoad): Likewise.
+	(atomicStore): Likewise.
+	(atomicFence):  Likewise.
+	(atomicMutexHandle, AtomicMutex): Declare types.
+	(_getAtomicMutex): New function.
+	(getAtomicMutex): Declare.
+
 2019-04-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* config.h.in: Regenerate.

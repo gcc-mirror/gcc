@@ -1353,36 +1353,62 @@ else version (GNU)
 
     private bool casImpl(T,V1,V2)( shared(T)* here, V1 ifThis, V2 writeThis ) pure nothrow @nogc @trusted
     {
-        static assert(GNU_Have_Atomics, "cas() not supported on this architecture");
         bool res = void;
 
-        static if (T.sizeof == byte.sizeof)
+        static if (GNU_Have_Atomics || GNU_Have_LibAtomic)
         {
-            res = __atomic_compare_exchange_1(here, cast(void*) &ifThis, *cast(ubyte*) &writeThis,
-                                              false, MemoryOrder.seq, MemoryOrder.seq);
-        }
-        else static if (T.sizeof == short.sizeof)
-        {
-            res = __atomic_compare_exchange_2(here, cast(void*) &ifThis, *cast(ushort*) &writeThis,
-                                              false, MemoryOrder.seq, MemoryOrder.seq);
-        }
-        else static if (T.sizeof == int.sizeof)
-        {
-            res = __atomic_compare_exchange_4(here, cast(void*) &ifThis, *cast(uint*) &writeThis,
-                                              false, MemoryOrder.seq, MemoryOrder.seq);
-        }
-        else static if (T.sizeof == long.sizeof && GNU_Have_64Bit_Atomics)
-        {
-            res = __atomic_compare_exchange_8(here, cast(void*) &ifThis, *cast(ulong*) &writeThis,
-                                              false, MemoryOrder.seq, MemoryOrder.seq);
-        }
-        else static if (GNU_Have_LibAtomic)
-        {
-            res = __atomic_compare_exchange(T.sizeof, here, cast(void*) &ifThis, cast(void*) &writeThis,
-                                            MemoryOrder.seq, MemoryOrder.seq);
+            static if (T.sizeof == byte.sizeof)
+            {
+                res = __atomic_compare_exchange_1(here, cast(void*) &ifThis, *cast(ubyte*) &writeThis,
+                                                  false, MemoryOrder.seq, MemoryOrder.seq);
+            }
+            else static if (T.sizeof == short.sizeof)
+            {
+                res = __atomic_compare_exchange_2(here, cast(void*) &ifThis, *cast(ushort*) &writeThis,
+                                                  false, MemoryOrder.seq, MemoryOrder.seq);
+            }
+            else static if (T.sizeof == int.sizeof)
+            {
+                res = __atomic_compare_exchange_4(here, cast(void*) &ifThis, *cast(uint*) &writeThis,
+                                                  false, MemoryOrder.seq, MemoryOrder.seq);
+            }
+            else static if (T.sizeof == long.sizeof && GNU_Have_64Bit_Atomics)
+            {
+                res = __atomic_compare_exchange_8(here, cast(void*) &ifThis, *cast(ulong*) &writeThis,
+                                                  false, MemoryOrder.seq, MemoryOrder.seq);
+            }
+            else static if (GNU_Have_LibAtomic)
+            {
+                res = __atomic_compare_exchange(T.sizeof, here, cast(void*) &ifThis, cast(void*) &writeThis,
+                                                MemoryOrder.seq, MemoryOrder.seq);
+            }
+            else
+                static assert(0, "Invalid template type specified.");
         }
         else
-            static assert(0, "Invalid template type specified.");
+        {
+            static if (T.sizeof == byte.sizeof)
+                alias U = byte;
+            else static if (T.sizeof == short.sizeof)
+                alias U = short;
+            else static if (T.sizeof == int.sizeof)
+                alias U = int;
+            else static if (T.sizeof == long.sizeof)
+                alias U = long;
+            else
+                static assert(0, "Invalid template type specified.");
+
+            getAtomicMutex.lock();
+            scope(exit) getAtomicMutex.unlock();
+
+            if (*cast(U*)here == *cast(U*)&ifThis)
+            {
+                *here = writeThis;
+                res = true;
+            }
+            else
+                res = false;
+        }
 
         return res;
     }
@@ -1406,36 +1432,44 @@ else version (GNU)
     {
         static assert(ms != MemoryOrder.rel, "Invalid MemoryOrder for atomicLoad");
         static assert(__traits(isPOD, T), "argument to atomicLoad() must be POD");
-        static assert(GNU_Have_Atomics, "atomicLoad() not supported on this architecture");
 
-        static if (T.sizeof == ubyte.sizeof)
+        static if (GNU_Have_Atomics || GNU_Have_LibAtomic)
         {
-            ubyte value = __atomic_load_1(&val, ms);
-            return *cast(HeadUnshared!T*) &value;
-        }
-        else static if (T.sizeof == ushort.sizeof)
-        {
-            ushort value = __atomic_load_2(&val, ms);
-            return *cast(HeadUnshared!T*) &value;
-        }
-        else static if (T.sizeof == uint.sizeof)
-        {
-            uint value = __atomic_load_4(&val, ms);
-            return *cast(HeadUnshared!T*) &value;
-        }
-        else static if (T.sizeof == ulong.sizeof && GNU_Have_64Bit_Atomics)
-        {
-            ulong value = __atomic_load_8(&val, ms);
-            return *cast(HeadUnshared!T*) &value;
-        }
-        else static if (GNU_Have_LibAtomic)
-        {
-            T value;
-            __atomic_load(T.sizeof, &val, cast(void*)&value, ms);
-            return *cast(HeadUnshared!T*) &value;
+            static if (T.sizeof == ubyte.sizeof)
+            {
+                ubyte value = __atomic_load_1(&val, ms);
+                return *cast(HeadUnshared!T*) &value;
+            }
+            else static if (T.sizeof == ushort.sizeof)
+            {
+                ushort value = __atomic_load_2(&val, ms);
+                return *cast(HeadUnshared!T*) &value;
+            }
+            else static if (T.sizeof == uint.sizeof)
+            {
+                uint value = __atomic_load_4(&val, ms);
+                return *cast(HeadUnshared!T*) &value;
+            }
+            else static if (T.sizeof == ulong.sizeof && GNU_Have_64Bit_Atomics)
+            {
+                ulong value = __atomic_load_8(&val, ms);
+                return *cast(HeadUnshared!T*) &value;
+            }
+            else static if (GNU_Have_LibAtomic)
+            {
+                T value;
+                __atomic_load(T.sizeof, &val, cast(void*)&value, ms);
+                return *cast(HeadUnshared!T*) &value;
+            }
+            else
+                static assert(0, "Invalid template type specified.");
         }
         else
-            static assert(0, "Invalid template type specified.");
+        {
+            getAtomicMutex.lock();
+            scope(exit) getAtomicMutex.unlock();
+            return *cast(HeadUnshared!T*)&val;
+        }
     }
 
 
@@ -1444,36 +1478,138 @@ else version (GNU)
     {
         static assert(ms != MemoryOrder.acq, "Invalid MemoryOrder for atomicStore");
         static assert(__traits(isPOD, T), "argument to atomicLoad() must be POD");
-        static assert(GNU_Have_Atomics, "atomicStore() not supported on this architecture");
 
-        static if (T.sizeof == ubyte.sizeof)
+        static if (GNU_Have_Atomics || GNU_Have_LibAtomic)
         {
-            __atomic_store_1(&val, *cast(ubyte*) &newval, ms);
-        }
-        else static if (T.sizeof == ushort.sizeof)
-        {
-            __atomic_store_2(&val, *cast(ushort*) &newval, ms);
-        }
-        else static if (T.sizeof == uint.sizeof)
-        {
-            __atomic_store_4(&val, *cast(uint*) &newval, ms);
-        }
-        else static if (T.sizeof == ulong.sizeof && GNU_Have_64Bit_Atomics)
-        {
-            __atomic_store_8(&val, *cast(ulong*) &newval, ms);
-        }
-        else static if (GNU_Have_LibAtomic)
-        {
-            __atomic_store(T.sizeof, &val, cast(void*)&newval, ms);
+            static if (T.sizeof == ubyte.sizeof)
+            {
+                __atomic_store_1(&val, *cast(ubyte*) &newval, ms);
+            }
+            else static if (T.sizeof == ushort.sizeof)
+            {
+                __atomic_store_2(&val, *cast(ushort*) &newval, ms);
+            }
+            else static if (T.sizeof == uint.sizeof)
+            {
+                __atomic_store_4(&val, *cast(uint*) &newval, ms);
+            }
+            else static if (T.sizeof == ulong.sizeof && GNU_Have_64Bit_Atomics)
+            {
+                __atomic_store_8(&val, *cast(ulong*) &newval, ms);
+            }
+            else static if (GNU_Have_LibAtomic)
+            {
+                __atomic_store(T.sizeof, &val, cast(void*)&newval, ms);
+            }
+            else
+                static assert(0, "Invalid template type specified.");
         }
         else
-            static assert(0, "Invalid template type specified.");
+        {
+            getAtomicMutex.lock();
+            val = newval;
+            getAtomicMutex.unlock();
+        }
     }
 
 
     void atomicFence() nothrow @nogc
     {
-        __atomic_thread_fence(MemoryOrder.seq);
+        static if (GNU_Have_Atomics || GNU_Have_LibAtomic)
+            __atomic_thread_fence(MemoryOrder.seq);
+        else
+        {
+            getAtomicMutex.lock();
+            getAtomicMutex.unlock();
+        }
+    }
+
+    static if (!GNU_Have_Atomics && !GNU_Have_LibAtomic)
+    {
+        // Use system mutex for atomics, faking the purity of the functions so
+        // that they can be used in pure/nothrow/@safe code.
+        extern (C) private pure @trusted @nogc nothrow
+        {
+            static if (GNU_Thread_Model == ThreadModel.Posix)
+            {
+                import core.sys.posix.pthread;
+                alias atomicMutexHandle = pthread_mutex_t;
+
+                pragma(mangle, "pthread_mutex_init") int fakePureMutexInit(pthread_mutex_t*, pthread_mutexattr_t*);
+                pragma(mangle, "pthread_mutex_lock") int fakePureMutexLock(pthread_mutex_t*);
+                pragma(mangle, "pthread_mutex_unlock") int fakePureMutexUnlock(pthread_mutex_t*);
+            }
+            else static if (GNU_Thread_Model == ThreadModel.Win32)
+            {
+                import core.sys.windows.winbase;
+                alias atomicMutexHandle = CRITICAL_SECTION;
+
+                pragma(mangle, "InitializeCriticalSection") int fakePureMutexInit(CRITICAL_SECTION*);
+                pragma(mangle, "EnterCriticalSection") void fakePureMutexLock(CRITICAL_SECTION*);
+                pragma(mangle, "LeaveCriticalSection") int fakePureMutexUnlock(CRITICAL_SECTION*);
+            }
+            else
+            {
+                alias atomicMutexHandle = int;
+            }
+        }
+
+        // Implements lock/unlock operations.
+        private struct AtomicMutex
+        {
+            int lock() pure @trusted @nogc nothrow
+            {
+                static if (GNU_Thread_Model == ThreadModel.Posix)
+                {
+                    if (!_inited)
+                    {
+                        fakePureMutexInit(&_handle, null);
+                        _inited = true;
+                    }
+                    return fakePureMutexLock(&_handle);
+                }
+                else
+                {
+                    static if (GNU_Thread_Model == ThreadModel.Win32)
+                    {
+                        if (!_inited)
+                        {
+                            fakePureMutexInit(&_handle);
+                            _inited = true;
+                        }
+                        fakePureMutexLock(&_handle);
+                    }
+                    return 0;
+                }
+            }
+
+            int unlock() pure @trusted @nogc nothrow
+            {
+                static if (GNU_Thread_Model == ThreadModel.Posix)
+                    return fakePureMutexUnlock(&_handle);
+                else
+                {
+                    static if (GNU_Thread_Model == ThreadModel.Win32)
+                        fakePureMutexUnlock(&_handle);
+                    return 0;
+                }
+            }
+
+        private:
+            atomicMutexHandle _handle;
+            bool _inited;
+        }
+
+        // Internal static mutex reference.
+        private AtomicMutex* _getAtomicMutex() @trusted @nogc nothrow
+        {
+            __gshared static AtomicMutex mutex;
+            return &mutex;
+        }
+
+        // Pure alias for _getAtomicMutex.
+        pragma(mangle, _getAtomicMutex.mangleof)
+        private AtomicMutex* getAtomicMutex() pure @trusted @nogc nothrow @property;
     }
 }
 
