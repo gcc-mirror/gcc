@@ -1,3 +1,13 @@
+2019-04-20  Thomas Rodgers <trodgers@redhat.com>
+
+	Cleanup algorithm implementations
+	* include/pstl/glue_algorithm_impl.h (stable_sort): Forward
+        execution policy.
+	(mismatch): Forward execution policy.
+	(equal): Qualify call to std::equal().
+	(partial_sort): Forward execution policy.
+	(inplace_merge): Forward execution policy.
+	
 2019-04-19  Thomas Rodgers <trodgers@redhat.com>
 	
 	Improve implementation of parallel equal()
