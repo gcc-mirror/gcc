@@ -1,3 +1,10 @@
+2019-04-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90171 - ICE with destroying delete with size_t parm.
+	* call.c (sized_deallocation_fn_p): New.  Use it instead of
+	second_parm_is_size_t in most cases.
+	(second_parm_is_size_t): Don't check for aligned.
+
 2019-04-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/89900
