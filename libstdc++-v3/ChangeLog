@@ -1,5 +1,12 @@
 2019-04-20  Thomas Rodgers <trodgers@redhat.com>
 
+	Delegate PSTL configuration to pstl/pstl_config.h
+
+	* include/bits/c++config: Remove explicit PSTL configuration
+	macros and use definitions from <pstl/pstl_config.h>.
+	
+2019-04-20  Thomas Rodgers <trodgers@redhat.com>
+
 	Cleanup algorithm implementations
 	* include/pstl/glue_algorithm_impl.h (stable_sort): Forward
         execution policy.
