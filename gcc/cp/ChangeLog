@@ -1,5 +1,9 @@
 2019-04-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/90190 - CTAD with list-constructor.
+	* pt.c (do_class_deduction): Don't try the single element deduction
+	if the single element is also a braced list.
+
 	PR c++/90171 - ICE with destroying delete with size_t parm.
 	* call.c (sized_deallocation_fn_p): New.  Use it instead of
 	second_parm_is_size_t in most cases.
