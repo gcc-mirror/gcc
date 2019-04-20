@@ -801,6 +801,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 _Sequence, std::random_access_iterator_tag>& __it)
     { return std::__niter_base(__it.base()); }
 
+#if __cplusplus >= 201703L
+  namespace __detail::__variant
+  {
+    template<typename> struct _Never_valueless_alt; // see <variant>
+
+    // Provide the strong exception-safety guarantee when emplacing a
+    // vector into a variant, but only if move assignment cannot throw.
+    template<typename _Tp, typename _Alloc>
+      struct _Never_valueless_alt<__debug::vector<_Tp, _Alloc>>
+      : std::is_nothrow_move_assignable<__debug::vector<_Tp, _Alloc>>
+      { };
+  }  // namespace __detail::__variant
+#endif // C++17
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

@@ -100,6 +100,15 @@ test02()
   VERIFY( entry1.path() == p/"x" );
   VERIFY( iter == end(iter) );
 
+  // Test post-increment (libstdc++/89986)
+  ec = bad_ec;
+  iter = fs::directory_iterator(p, ec);
+  VERIFY( !ec );
+  VERIFY( iter != end(iter) );
+  iter.increment(ec);
+  VERIFY( !ec );
+  VERIFY( iter == end(iter) );
+
   remove_all(p, ec);
 }
 

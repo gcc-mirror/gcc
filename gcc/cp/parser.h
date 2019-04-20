@@ -350,6 +350,9 @@ struct GTY(()) cp_parser {
      issued as an error message if a type is defined.  */
   const char *type_definition_forbidden_message;
 
+  /* Argument for type_definition_forbidden_message if needed.  */
+  const char *type_definition_forbidden_message_arg;
+
   /* A stack used for member functions of local classes.  The lists
      contained in an individual entry can only be processed once the
      outermost class being defined is complete.  */

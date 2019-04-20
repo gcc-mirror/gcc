@@ -703,11 +703,6 @@ merge_fences (fence_t f, insn_t insn,
       else
         if (candidate->src == BLOCK_FOR_INSN (last_scheduled_insn))
           {
-            /* Would be weird if same insn is successor of several fallthrough
-               edges.  */
-            gcc_assert (BLOCK_FOR_INSN (insn)->prev_bb
-                        != BLOCK_FOR_INSN (last_scheduled_insn_old));
-
             state_free (FENCE_STATE (f));
             FENCE_STATE (f) = state;
 
@@ -5642,6 +5637,8 @@ sel_redirect_edge_and_branch_force (edge e, basic_block to)
 			   recompute_dominator (CDI_DOMINATORS, to));
   set_immediate_dominator (CDI_DOMINATORS, orig_dest,
 			   recompute_dominator (CDI_DOMINATORS, orig_dest));
+  if (jump && sel_bb_head_p (jump))
+    compute_live (jump);
 }
 
 /* A wrapper for redirect_edge_and_branch.  Return TRUE if blocks connected by
@@ -5702,6 +5699,8 @@ sel_redirect_edge_and_branch (edge e, basic_block to)
       set_immediate_dominator (CDI_DOMINATORS, orig_dest,
                                recompute_dominator (CDI_DOMINATORS, orig_dest));
     }
+  if (jump && sel_bb_head_p (jump))
+    compute_live (jump);
   return recompute_toporder_p;
 }
 

@@ -33,3 +33,5 @@ test01(char* first, char* last)
   std::to_chars(first, last, U'\x1'); // { dg-error "no matching" }
   std::to_chars(first, last, U'\x1', 10); // { dg-error "no matching" }
 }
+
+// { dg-prune-output "enable_if" }

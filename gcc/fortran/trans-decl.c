@@ -4268,6 +4268,72 @@ gfc_null_and_pass_deferred_len (gfc_symbol *sym, stmtblock_t *init,
 }
 
 
+/* Convert CFI descriptor dummies into gfc types and back again.  */
+static void
+convert_CFI_desc (gfc_wrapped_block * block, gfc_symbol *sym)
+{
+  tree gfc_desc;
+  tree gfc_desc_ptr;
+  tree CFI_desc;
+  tree CFI_desc_ptr;
+  tree dummy_ptr;
+  tree tmp;
+  tree incoming;
+  tree outgoing;
+  stmtblock_t tmpblock;
+
+  /* dummy_ptr will be the pointer to the passed array descriptor,
+     while CFI_desc is the descriptor itself.  */
+  if (DECL_LANG_SPECIFIC (sym->backend_decl))
+    CFI_desc = GFC_DECL_SAVED_DESCRIPTOR (sym->backend_decl);
+  else
+    CFI_desc = NULL;
+
+  dummy_ptr = CFI_desc;
+
+  if (CFI_desc)
+    {
+      CFI_desc = build_fold_indirect_ref_loc (input_location, CFI_desc);
+
+      /* The compiler will have given CFI_desc the correct gfortran
+	 type. Use this new variable to store the converted
+	 descriptor.  */
+      gfc_desc = gfc_create_var (TREE_TYPE (CFI_desc), "gfc_desc");
+      tmp = build_pointer_type (TREE_TYPE (gfc_desc));
+      gfc_desc_ptr = gfc_create_var (tmp, "gfc_desc_ptr");
+      CFI_desc_ptr = gfc_create_var (pvoid_type_node, "CFI_desc_ptr");
+
+      gfc_init_block (&tmpblock);
+      /* Pointer to the gfc descriptor.  */
+      gfc_add_modify (&tmpblock, gfc_desc_ptr,
+		      gfc_build_addr_expr (NULL, gfc_desc));
+      /* Store the pointer to the CFI descriptor.  */
+      gfc_add_modify (&tmpblock, CFI_desc_ptr,
+		      fold_convert (pvoid_type_node, dummy_ptr));
+      tmp = gfc_build_addr_expr (ppvoid_type_node, CFI_desc_ptr);
+      /* Convert the CFI descriptor.  */
+      incoming = build_call_expr_loc (input_location,
+			gfor_fndecl_cfi_to_gfc, 2, gfc_desc_ptr, tmp);
+      gfc_add_expr_to_block (&tmpblock, incoming);
+      /* Set the dummy pointer to point to the gfc_descriptor.  */
+      gfc_add_modify (&tmpblock, dummy_ptr,
+		      fold_convert (TREE_TYPE (dummy_ptr), gfc_desc_ptr));
+      incoming = gfc_finish_block (&tmpblock);
+
+      gfc_init_block (&tmpblock);
+      /* Convert the gfc descriptor back to the CFI type before going
+	 out of scope.  */
+      tmp = gfc_build_addr_expr (ppvoid_type_node, CFI_desc_ptr);
+      outgoing = build_call_expr_loc (input_location,
+			gfor_fndecl_gfc_to_cfi, 2, tmp, gfc_desc_ptr);
+      gfc_add_expr_to_block (&tmpblock, outgoing);
+      outgoing = gfc_finish_block (&tmpblock);
+
+      /* Add the lot to the procedure init and finally blocks.  */
+      gfc_add_init_cleanup (block, incoming, outgoing);
+    }
+}
+
 /* Get the result expression for a procedure.  */
 
 static tree
@@ -4844,6 +4910,13 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	}
       else if (!(UNLIMITED_POLY(sym)) && !is_pdt_type)
 	gcc_unreachable ();
+
+      /* Assumed shape and assumed rank arrays are passed to BIND(C) procedures
+	 as ISO Fortran Interop descriptors. These have to be converted to
+	 gfortran descriptors and back again.  This has to be done here so that
+	 the conversion occurs at the start of the init block.  */
+      if (is_CFI_desc (sym, NULL))
+	convert_CFI_desc (block, sym);
     }
 
   gfc_init_block (&tmpblock);

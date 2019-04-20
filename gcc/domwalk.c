@@ -190,69 +190,11 @@ dom_walker::dom_walker (cdi_direction direction,
 			enum reachability reachability,
 			int *bb_index_to_rpo)
   : m_dom_direction (direction),
-    m_skip_unreachable_blocks (reachability != ALL_BLOCKS),
-    m_user_bb_to_rpo (true),
+    m_reachability (reachability),
+    m_user_bb_to_rpo (bb_index_to_rpo != NULL),
     m_unreachable_dom (NULL),
     m_bb_to_rpo (bb_index_to_rpo)
 {
-  /* Set up edge flags if need be.  */
-  switch (reachability)
-    {
-    default:
-      gcc_unreachable ();
-    case ALL_BLOCKS:
-      /* No need to touch edge flags.  */
-      break;
-
-    case REACHABLE_BLOCKS:
-      set_all_edges_as_executable (cfun);
-      break;
-
-    case REACHABLE_BLOCKS_PRESERVING_FLAGS:
-      /* Preserve the edge flags.  */
-      break;
-    }
-}
-
-/* Constructor for a dom walker.  */
-
-dom_walker::dom_walker (cdi_direction direction,
-			enum reachability reachability)
-  : m_dom_direction (direction),
-    m_skip_unreachable_blocks (reachability != ALL_BLOCKS),
-    m_user_bb_to_rpo (false),
-    m_unreachable_dom (NULL),
-    m_bb_to_rpo (NULL)
-{
-  /* Compute the basic-block index to RPO mapping.  */
-  if (direction == CDI_DOMINATORS)
-    {
-      int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
-      int postorder_num = pre_and_rev_post_order_compute (NULL, postorder,
-							  true);
-      m_bb_to_rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
-      for (int i = 0; i < postorder_num; ++i)
-	m_bb_to_rpo[postorder[i]] = i;
-      free (postorder);
-    }
-
-  /* Set up edge flags if need be.  */
-  switch (reachability)
-    {
-    default:
-      gcc_unreachable ();
-    case ALL_BLOCKS:
-      /* No need to touch edge flags.  */
-      break;
-
-    case REACHABLE_BLOCKS:
-      set_all_edges_as_executable (cfun);
-      break;
-
-    case REACHABLE_BLOCKS_PRESERVING_FLAGS:
-      /* Preserve the edge flags.  */
-      break;
-    }
 }
 
 /* Destructor.  */
@@ -270,7 +212,7 @@ dom_walker::bb_reachable (struct function *fun, basic_block bb)
 {
   /* If we're not skipping unreachable blocks, then assume everything
      is reachable.  */
-  if (!m_skip_unreachable_blocks)
+  if (m_reachability == ALL_BLOCKS)
     return true;
 
   /* If any of the predecessor edges that do not come from blocks dominated
@@ -331,6 +273,23 @@ const edge dom_walker::STOP = (edge)-1;
 void
 dom_walker::walk (basic_block bb)
 {
+  /* Compute the basic-block index to RPO mapping lazily.  */
+  if (!m_bb_to_rpo
+      && m_dom_direction == CDI_DOMINATORS)
+    {
+      int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+      int postorder_num = pre_and_rev_post_order_compute (NULL, postorder,
+							  true);
+      m_bb_to_rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
+      for (int i = 0; i < postorder_num; ++i)
+	m_bb_to_rpo[postorder[i]] = i;
+      free (postorder);
+    }
+
+  /* Set up edge flags if need be.  */
+  if (m_reachability == REACHABLE_BLOCKS)
+    set_all_edges_as_executable (cfun);
+
   basic_block dest;
   basic_block *worklist = XNEWVEC (basic_block,
 				   n_basic_blocks_for_fn (cfun) * 2);

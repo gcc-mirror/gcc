@@ -4153,6 +4153,15 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
       if (returns (jump_target) || breaks (jump_target))
 	break;
     }
+  if (*jump_target && jump_target == &local_target)
+    {
+      /* We aren't communicating the jump to our caller, so give up.  We don't
+	 need to support evaluation of jumps out of statement-exprs.  */
+      if (!ctx->quiet)
+	error_at (cp_expr_loc_or_loc (r, input_location),
+		  "statement is not a constant expression");
+      *non_constant_p = true;
+    }
   return r;
 }
 
@@ -5412,27 +5421,6 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
     }
 
   return r;
-}
-
-/* Returns true if T is a valid subexpression of a constant expression,
-   even if it isn't itself a constant expression.  */
-
-bool
-is_sub_constant_expr (tree t)
-{
-  bool non_constant_p = false;
-  bool overflow_p = false;
-  hash_map <tree, tree> map;
-  HOST_WIDE_INT constexpr_ops_count = 0;
-
-  constexpr_ctx ctx
-    = { NULL, &map, NULL, NULL, NULL, NULL, &constexpr_ops_count,
-	true, true, false };
-
-  instantiate_constexpr_fns (t);
-  cxx_eval_constant_expression (&ctx, t, false, &non_constant_p,
-				&overflow_p);
-  return !non_constant_p && !overflow_p;
 }
 
 /* If T represents a constant expression returns its reduced value.

@@ -14,8 +14,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-load_lib libphobos-dg.exp
-
 # Initialize dg.
 dg-init
 

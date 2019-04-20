@@ -27,3 +27,5 @@ void f()
   typedef std::list<std::list<int> > list_type;
   list_type l(10, 1);		// { dg-error "here|no match" }
 }
+
+// { dg-prune-output "iterator_traits" }

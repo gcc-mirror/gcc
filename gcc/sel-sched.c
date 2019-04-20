@@ -6439,7 +6439,7 @@ code_motion_path_driver (insn_t insn, av_set_t orig_ops, ilist_t path,
 {
   expr_t expr = NULL;
   basic_block bb = BLOCK_FOR_INSN (insn);
-  insn_t first_insn, bb_tail, before_first;
+  insn_t first_insn, original_insn, bb_tail, before_first;
   bool removed_last_insn = false;
 
   if (sched_verbose >= 6)
@@ -6523,7 +6523,7 @@ code_motion_path_driver (insn_t insn, av_set_t orig_ops, ilist_t path,
   /* It is enough to place only heads and tails of visited basic blocks into
      the PATH.  */
   ilist_add (&path, insn);
-  first_insn = insn;
+  first_insn = original_insn = insn;
   bb_tail = sel_bb_end (bb);
 
   /* Descend the basic block in search of the original expr; this part
@@ -6630,6 +6630,8 @@ code_motion_path_driver (insn_t insn, av_set_t orig_ops, ilist_t path,
         {
           insn = sel_bb_end (bb);
           first_insn = sel_bb_head (bb);
+	  if (first_insn != original_insn)
+	    first_insn = original_insn;
         }
 
       /* Remove bb tail from path.  */
@@ -7650,11 +7652,11 @@ sel_sched_region (int rgn)
       /* Schedule always selecting the next insn to make the correct data
 	 for bundling or other later passes.  */
       pipelining_p = false;
+      reset_sched_cycles_p = false;
       force_next_insn = 1;
       sel_sched_region_1 ();
       force_next_insn = 0;
     }
-  reset_sched_cycles_p = pipelining_p;
   sel_region_finish (reset_sched_cycles_p);
 }
 

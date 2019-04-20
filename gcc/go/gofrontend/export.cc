@@ -509,7 +509,24 @@ Export::set_type_index(Type* type)
 static bool
 packages_compare(const Package* a, const Package* b)
 {
-  return a->package_name() < b->package_name();
+  if (a->package_name() < b->package_name())
+    return true;
+  else if (a->package_name() > b->package_name())
+    return false;
+
+  if (a->pkgpath() < b->pkgpath())
+    return true;
+  else if (a->pkgpath() > b->pkgpath())
+    return false;
+
+  // In principle if we get here then a == b.  Try to do something sensible
+  // even if the import information is inconsistent.
+  if (a->pkgpath_symbol() < b->pkgpath_symbol())
+    return true;
+  else if (a->pkgpath_symbol() > b->pkgpath_symbol())
+    return false;
+
+  return a < b;
 }
 
 // Write out all the known packages whose pkgpath symbol is not a

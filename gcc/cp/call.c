@@ -569,6 +569,7 @@ null_member_pointer_value_p (tree t)
     return false;
   else if (TYPE_PTRMEMFUNC_P (type))
     return (TREE_CODE (t) == CONSTRUCTOR
+	    && CONSTRUCTOR_NELTS (t)
 	    && integer_zerop (CONSTRUCTOR_ELT (t, 0)->value));
   else if (TYPE_PTRDATAMEM_P (type))
     return integer_all_onesp (t);
@@ -6319,10 +6320,6 @@ second_parm_is_size_t (tree fn)
   t = TREE_CHAIN (t);
   if (t == void_list_node)
     return true;
-  if (aligned_new_threshold && t
-      && same_type_p (TREE_VALUE (t), align_type_node)
-      && TREE_CHAIN (t) == void_list_node)
-    return true;
   return false;
 }
 
@@ -6395,6 +6392,26 @@ aligned_deallocation_fn_p (tree t)
   return false;
 }
 
+/* Returns true if FN is a usual deallocation fn with a size_t parameter.  */
+
+static bool
+sized_deallocation_fn_p (tree fn)
+{
+  tree t = FUNCTION_ARG_CHAIN (fn);
+  if (destroying_delete_p (fn))
+    t = TREE_CHAIN (t);
+  if (!t || !same_type_p (TREE_VALUE (t), size_type_node))
+    return false;
+  t = TREE_CHAIN (t);
+  if (t == void_list_node)
+    return true;
+  if (aligned_new_threshold && t
+      && same_type_p (TREE_VALUE (t), align_type_node)
+      && TREE_CHAIN (t) == void_list_node)
+    return true;
+  return false;
+}
+
 /* Returns true iff T, an element of an OVERLOAD chain, is a usual
    deallocation function (3.7.4.2 [basic.stc.dynamic.deallocation]).  */
 
@@ -6407,13 +6424,11 @@ usual_deallocation_fn_p (tree t)
       || primary_template_specialization_p (t))
     return false;
 
-  /* If a class T has a member deallocation function named operator delete
-     with exactly one parameter, then that function is a usual
-     (non-placement) deallocation function. If class T does not declare
-     such an operator delete but does declare a member deallocation
-     function named operator delete with exactly two parameters, the second
-     of which has type std::size_t (18.2), then this function is a usual
-     deallocation function.  */
+  /* A usual deallocation function is a deallocation function whose parameters
+     after the first are
+     - optionally, a parameter of type std::destroying_delete_t, then
+     - optionally, a parameter of type std::size_t, then
+     - optionally, a parameter of type std::align_val_t.  */
   bool global = DECL_NAMESPACE_SCOPE_P (t);
   tree chain = FUNCTION_ARG_CHAIN (t);
   if (!chain)
@@ -6422,7 +6437,7 @@ usual_deallocation_fn_p (tree t)
     chain = TREE_CHAIN (chain);
   if (chain == void_list_node
       || ((!global || flag_sized_deallocation)
-	  && second_parm_is_size_t (t)))
+	  && sized_deallocation_fn_p (t)))
     return true;
   if (aligned_deallocation_fn_p (t))
     return true;
@@ -6637,8 +6652,8 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 		  /* We need a cookie to determine the array size.  */
 		  want_size = false;
 	      }
-	    bool fn_size = second_parm_is_size_t (fn);
-	    bool elt_size = second_parm_is_size_t (elt);
+	    bool fn_size = sized_deallocation_fn_p (fn);
+	    bool elt_size = sized_deallocation_fn_p (elt);
 	    gcc_assert (fn_size != elt_size);
 	    if (want_size == elt_size)
 	      fn = elt;
@@ -6694,7 +6709,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	  args->quick_push (addr);
 	  if (destroying)
 	    args->quick_push (destroying);
-	  if (second_parm_is_size_t (fn))
+	  if (sized_deallocation_fn_p (fn))
 	    args->quick_push (size);
 	  if (aligned_deallocation_fn_p (fn))
 	    {

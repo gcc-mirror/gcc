@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 #include <unordered_set>
+#include <memory_resource>
 #include <testsuite_hooks.h>
 
 using namespace std;
@@ -56,6 +57,15 @@ struct AlwaysThrow
   bool operator>(const AlwaysThrow&) const { VERIFY(false); }
 };
 
+struct DeletedMoves
+{
+  DeletedMoves() = default;
+  DeletedMoves(const DeletedMoves&) = default;
+  DeletedMoves(DeletedMoves&&) = delete;
+  DeletedMoves& operator=(const DeletedMoves&) = default;
+  DeletedMoves& operator=(DeletedMoves&&) = delete;
+};
+
 void default_ctor()
 {
   variant<monostate, string> v;
@@ -79,6 +89,12 @@ void move_ctor()
   VERIFY(holds_alternative<string>(u));
   VERIFY(get<string>(u) == "a");
   VERIFY(holds_alternative<string>(v));
+
+  variant<vector<int>, DeletedMoves> d{std::in_place_index<0>, {1, 2, 3, 4}};
+  // DeletedMoves is not move constructible, so this uses copy ctor:
+  variant<vector<int>, DeletedMoves> e(std::move(d));
+  VERIFY(std::get<0>(d).size() == 4);
+  VERIFY(std::get<0>(e).size() == 4);
 }
 
 void arbitrary_ctor()
@@ -136,6 +152,13 @@ void move_assign()
   VERIFY(holds_alternative<string>(u));
   VERIFY(get<string>(u) == "a");
   VERIFY(holds_alternative<string>(v));
+
+  variant<vector<int>, DeletedMoves> d{std::in_place_index<0>, {1, 2, 3, 4}};
+  variant<vector<int>, DeletedMoves> e;
+  // DeletedMoves is not move assignable, so this uses copy assignment:
+  e = std::move(d);
+  VERIFY(std::get<0>(d).size() == 4);
+  VERIFY(std::get<0>(e).size() == 4);
 }
 
 void arbitrary_assign()
@@ -376,7 +399,7 @@ void test_visit()
 
 void test_hash()
 {
-  unordered_set<variant<int, string>> s;
+  unordered_set<variant<int, pmr::string>> s;
   VERIFY(s.emplace(3).second);
   VERIFY(s.emplace("asdf").second);
   VERIFY(s.emplace().second);
@@ -388,12 +411,12 @@ void test_hash()
   {
     struct A
     {
-      operator string()
+      operator pmr::string()
       {
         throw nullptr;
       }
     };
-    variant<int, string> v;
+    variant<int, pmr::string> v;
     try
       {
         v.emplace<1>(A{});

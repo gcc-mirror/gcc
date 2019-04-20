@@ -5658,7 +5658,8 @@ store_expr (tree exp, rtx target, int call_param_p,
       dest_mem = store_by_pieces (target, str_copy_len, string_cst_read_str,
 				  (void *) str, MEM_ALIGN (target), false,
 				  RETURN_END);
-      clear_storage (adjust_address (dest_mem, BLKmode, 0),
+      clear_storage (adjust_address_1 (dest_mem, BLKmode, 0, 1, 1, 0,
+				       exp_len - str_copy_len),
 		     GEN_INT (exp_len - str_copy_len), BLOCK_OP_NORMAL);
       return NULL_RTX;
     }

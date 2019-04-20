@@ -32,6 +32,7 @@ AC_CONFIG_HEADERS(config.h)
 
 AM_ENABLE_MULTILIB(, ..)
 AC_CANONICAL_SYSTEM
+AC_USE_SYSTEM_EXTENSIONS
 
 target_alias=${target_alias-$target}
 AC_SUBST(target_alias)
@@ -42,11 +43,12 @@ AC_SUBST(target_alias)
 # no-dependencies: Don't generate automatic dependencies.
 #    (because it breaks when using bootstrap-lean, since some of the
 #    headers are gone at "make install" time).
+# subdir-objects: Build objects in sub-directories.
 # -Wall: Issue all automake warnings.
 # -Wno-portability: Don't warn about constructs supported by GNU make.
 #    (because GCC requires GNU make anyhow).
 #  -Wno-override: Overrides used in testsuite.
-AM_INIT_AUTOMAKE([1.11.1 foreign no-dist no-define no-dependencies -Wall -Wno-portability -Wno-override])
+AM_INIT_AUTOMAKE([1.11.1 foreign no-dist no-define no-dependencies subdir-objects -Wall -Wno-portability -Wno-override])
 
 m4_rename([_AC_ARG_VAR_PRECIOUS],[glibd_PRECIOUS])
 m4_define([_AC_ARG_VAR_PRECIOUS],[])
@@ -75,8 +77,6 @@ AC_SUBST(CFLAGS_FOR_BUILD)
 LT_INIT(dlopen)
 AM_PROG_LIBTOOL
 WITH_LOCAL_DRUNTIME([LT_LANG([D])], [])
-AM_CONDITIONAL([ENABLE_SHARED], [test "$enable_shared" = "yes"])
-AM_CONDITIONAL([ENABLE_STATIC], [test "$enable_static" = "yes"])
 
 # libtool variables for Phobos shared and position-independent compiles.
 #
@@ -113,6 +113,42 @@ AC_SUBST(phobos_compiler_shared_flag)
 lt_prog_compiler_pic_D="$phobos_compiler_shared_flag"
 pic_mode='default'
 
+AC_MSG_CHECKING([for --enable-libphobos])
+AC_ARG_ENABLE(libphobos,
+  [AS_HELP_STRING([--enable-libphobos], [Enable libphobos])])
+AC_MSG_RESULT($enable_libphobos)
+
+# See if supported.
+unset LIBPHOBOS_SUPPORTED
+AC_MSG_CHECKING([for host support for libphobos])
+. ${srcdir}/configure.tgt
+case ${host} in
+  x86_64-*-solaris2.* | i?86-*-solaris2.*)
+    # libphobos doesn't compile with the Solaris/x86 assembler due to a
+    # relatively low linelength limit.
+    as_prog=`$CC -print-prog-name=as`
+    if test -n "$as_prog" && $as_prog -v /dev/null 2>&1 | grep GNU > /dev/null 2>&1; then
+      druntime_cv_use_gas=yes;
+    else
+      druntime_cv_use_gas=no;
+    fi
+    rm -f a.out
+    if test x$druntime_cv_use_gas = xno; then
+      LIBPHOBOS_SUPPORTED=no
+    fi
+    ;;
+esac
+AC_MSG_RESULT($LIBPHOBOS_SUPPORTED)
+
+# Decide if it's usable.
+case $LIBPHOBOS_SUPPORTED:$enable_libphobos in
+*:no)  use_libphobos=no  ;;
+*:yes) use_libphobos=yes ;;
+yes:*) use_libphobos=yes ;;
+*:*)   use_libphobos=no  ;;
+esac
+AM_CONDITIONAL(ENABLE_LIBPHOBOS, test x$use_libphobos = xyes)
+
 # Determine what GCC version number to use in filesystem paths.
 GCC_BASE_VER
 
@@ -126,6 +162,8 @@ DRUNTIME_OS_SOURCES
 DRUNTIME_OS_THREAD_MODEL
 DRUNTIME_OS_ARM_EABI_UNWINDER
 DRUNTIME_OS_MINFO_BRACKETING
+DRUNTIME_OS_DLPI_TLS_MODID
+DRUNTIME_OS_LINK_SPEC
 DRUNTIME_LIBRARIES_CLIB
 
 WITH_LOCAL_DRUNTIME([

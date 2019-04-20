@@ -838,7 +838,7 @@ enum ix86_function_specific_strings
 
 static char *ix86_target_string (HOST_WIDE_INT, HOST_WIDE_INT, int, int,
 				 const char *, const char *, enum fpmath_unit,
-				 bool);
+				 bool, bool);
 static void ix86_function_specific_save (struct cl_target_option *,
 					 struct gcc_options *opts);
 static void ix86_function_specific_restore (struct gcc_options *opts,
@@ -1058,16 +1058,8 @@ dimode_scalar_to_vector_candidate_p (rtx_insn *insn)
 
     case ASHIFT:
     case LSHIFTRT:
-      if (!REG_P (XEXP (src, 1))
-	  && (!SUBREG_P (XEXP (src, 1))
-	      || SUBREG_BYTE (XEXP (src, 1)) != 0
-	      || !REG_P (SUBREG_REG (XEXP (src, 1))))
-	  && (!CONST_INT_P (XEXP (src, 1))
-	      || !IN_RANGE (INTVAL (XEXP (src, 1)), 0, 63)))
-	return false;
-
-      if (GET_MODE (XEXP (src, 1)) != QImode
-	  && !CONST_INT_P (XEXP (src, 1)))
+      if (!CONST_INT_P (XEXP (src, 1))
+	  || !IN_RANGE (INTVAL (XEXP (src, 1)), 0, 63))
 	return false;
       break;
 
@@ -1664,15 +1656,10 @@ dimode_scalar_chain::compute_convert_gain ()
 	{
     	  if (CONST_INT_P (XEXP (src, 0)))
 	    gain -= vector_const_cost (XEXP (src, 0));
-	  if (CONST_INT_P (XEXP (src, 1)))
-	    {
-	      gain += ix86_cost->shift_const;
-	      if (INTVAL (XEXP (src, 1)) >= 32)
-		gain -= COSTS_N_INSNS (1);
-	    }
-	  else
-	    /* Additional gain for omitting two CMOVs.  */
-	    gain += ix86_cost->shift_var + COSTS_N_INSNS (2);
+
+	  gain += ix86_cost->shift_const;
+	  if (INTVAL (XEXP (src, 1)) >= 32)
+	    gain -= COSTS_N_INSNS (1);
 	}
       else if (GET_CODE (src) == PLUS
 	       || GET_CODE (src) == MINUS
@@ -1788,60 +1775,14 @@ dimode_scalar_chain::make_vector_copies (unsigned regno)
 {
   rtx reg = regno_reg_rtx[regno];
   rtx vreg = gen_reg_rtx (DImode);
-  bool count_reg = false;
   df_ref ref;
 
   for (ref = DF_REG_DEF_CHAIN (regno); ref; ref = DF_REF_NEXT_REG (ref))
     if (!bitmap_bit_p (insns, DF_REF_INSN_UID (ref)))
       {
-	df_ref use;
-
-	/* Detect the count register of a shift instruction.  */
-	for (use = DF_REG_USE_CHAIN (regno); use; use = DF_REF_NEXT_REG (use))
-	  if (bitmap_bit_p (insns, DF_REF_INSN_UID (use)))
-	    {
-	      rtx_insn *insn = DF_REF_INSN (use);
-	      rtx def_set = single_set (insn);
-
-	      gcc_assert (def_set);
-
-	      rtx src = SET_SRC (def_set);
-
-	      if ((GET_CODE (src) == ASHIFT
-		   || GET_CODE (src) == ASHIFTRT
-		   || GET_CODE (src) == LSHIFTRT)
-		  && !CONST_INT_P (XEXP (src, 1))
-		  && reg_or_subregno (XEXP (src, 1)) == regno)
-		count_reg = true;
-	    }
-
 	start_sequence ();
-	if (count_reg)
-	  {
-	    rtx qreg = gen_lowpart (QImode, reg);
-	    rtx tmp = gen_reg_rtx (SImode);
 
-	    if (TARGET_ZERO_EXTEND_WITH_AND
-		&& optimize_function_for_speed_p (cfun))
-	      {
-		emit_move_insn (tmp, const0_rtx);
-		emit_insn (gen_movstrictqi
-			   (gen_lowpart (QImode, tmp), qreg));
-	      }
-	    else
-	      emit_insn (gen_rtx_SET
-			 (tmp, gen_rtx_ZERO_EXTEND (SImode, qreg)));
-
-	    if (!TARGET_INTER_UNIT_MOVES_TO_VEC)
-	      {
-		rtx slot = assign_386_stack_local (SImode, SLOT_STV_TEMP);
-		emit_move_insn (slot, tmp);
-		tmp = copy_rtx (slot);
-	      }
-
-	    emit_insn (gen_zero_extendsidi2 (vreg, tmp));
-	  }
-	else if (!TARGET_INTER_UNIT_MOVES_TO_VEC)
+	if (!TARGET_INTER_UNIT_MOVES_TO_VEC)
 	  {
 	    rtx tmp = assign_386_stack_local (DImode, SLOT_STV_TEMP);
 	    emit_move_insn (adjust_address (tmp, SImode, 0),
@@ -1889,25 +1830,8 @@ dimode_scalar_chain::make_vector_copies (unsigned regno)
     if (bitmap_bit_p (insns, DF_REF_INSN_UID (ref)))
       {
 	rtx_insn *insn = DF_REF_INSN (ref);
-	if (count_reg)
-	  {
-	    rtx def_set = single_set (insn);
-	    gcc_assert (def_set);
 
-	    rtx src = SET_SRC (def_set);
-
-	    if ((GET_CODE (src) == ASHIFT
-		 || GET_CODE (src) == ASHIFTRT
-		 || GET_CODE (src) == LSHIFTRT)
-		&& !CONST_INT_P (XEXP (src, 1))
-		&& reg_or_subregno (XEXP (src, 1)) == regno)
-	      {
-		XEXP (src, 0) = replace_with_subreg (XEXP (src, 0), reg, reg);
-		XEXP (src, 1) = vreg;
-	      }
-	  }
-	else
-	  replace_with_subreg_in_insn (insn, reg, vreg);
+	replace_with_subreg_in_insn (insn, reg, vreg);
 
 	if (dump_file)
 	  fprintf (dump_file, "  Replaced r%d with r%d in insn %d\n",
@@ -2010,43 +1934,7 @@ dimode_scalar_chain::convert_reg (unsigned regno)
 	    rtx src = SET_SRC (def_set);
 	    rtx dst = SET_DEST (def_set);
 
-	    if ((GET_CODE (src) == ASHIFT
-		 || GET_CODE (src) == ASHIFTRT
-		 || GET_CODE (src) == LSHIFTRT)
-		&& !CONST_INT_P (XEXP (src, 1))
-		&& reg_or_subregno (XEXP (src, 1)) == regno)
-	      {
-		rtx tmp2 = gen_reg_rtx (V2DImode);
-
-		start_sequence ();
-
-		if (TARGET_SSE4_1)
-		  emit_insn (gen_sse4_1_zero_extendv2qiv2di2
-			     (tmp2, gen_rtx_SUBREG (V16QImode, reg, 0)));
-		else
-		  {
-		    rtx vec_cst
-		      = gen_rtx_CONST_VECTOR (V2DImode,
-					      gen_rtvec (2, GEN_INT (0xff),
-							 const0_rtx));
-		    vec_cst
-		      = validize_mem (force_const_mem (V2DImode, vec_cst));
-
-		    emit_insn (gen_rtx_SET
-			       (tmp2,
-				gen_rtx_AND (V2DImode,
-					     gen_rtx_SUBREG (V2DImode, reg, 0),
-					     vec_cst)));
-		  }
-		rtx_insn *seq = get_insns ();
-		end_sequence ();
-
-		emit_insn_before (seq, insn);
-
-		XEXP (src, 0) = replace_with_subreg (XEXP (src, 0), reg, reg);
-		XEXP (src, 1) = gen_rtx_SUBREG (DImode, tmp2, 0);
-	      }
-	    else if (!MEM_P (dst) || !REG_P (src))
+	    if (!MEM_P (dst) || !REG_P (src))
 	      replace_with_subreg_in_insn (insn, reg, reg);
 
 	    bitmap_clear_bit (conv, INSN_UID (insn));
@@ -3040,7 +2928,7 @@ static char *
 ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
 		    int flags, int flags2,
 		    const char *arch, const char *tune,
-		    enum fpmath_unit fpmath, bool add_nl_p)
+		    enum fpmath_unit fpmath, bool add_nl_p, bool add_abi_p)
 {
   struct ix86_target_opts
   {
@@ -3207,19 +3095,20 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     }
 
   /* Add -m32/-m64/-mx32.  */
-  if ((isa & OPTION_MASK_ISA_64BIT) != 0)
+  if (add_abi_p)
     {
-      if ((isa & OPTION_MASK_ABI_64) != 0)
-	abi = "-m64";
+      if ((isa & OPTION_MASK_ISA_64BIT) != 0)
+	{
+	  if ((isa & OPTION_MASK_ABI_64) != 0)
+	    abi = "-m64";
+	  else
+	    abi = "-mx32";
+	}
       else
-	abi = "-mx32";
-      isa &= ~ (OPTION_MASK_ISA_64BIT
-		| OPTION_MASK_ABI_64
-		| OPTION_MASK_ABI_X32);
+	abi = "-m32";
+      opts[num++][0] = abi;
     }
-  else
-    abi = "-m32";
-  opts[num++][0] = abi;
+  isa &= ~(OPTION_MASK_ISA_64BIT | OPTION_MASK_ABI_64 | OPTION_MASK_ABI_X32);
 
   /* Pick out the options in isa2 options.  */
   for (i = 0; i < ARRAY_SIZE (isa2_opts); i++)
@@ -3381,7 +3270,7 @@ ix86_debug_options (void)
   char *opts = ix86_target_string (ix86_isa_flags, ix86_isa_flags2,
 				   target_flags, ix86_target_flags,
 				   ix86_arch_string,ix86_tune_string,
-				   ix86_fpmath, true);
+				   ix86_fpmath, true, true);
 
   if (opts)
     {
@@ -5233,7 +5122,7 @@ ix86_function_specific_print (FILE *file, int indent,
   char *target_string
     = ix86_target_string (ptr->x_ix86_isa_flags, ptr->x_ix86_isa_flags2,
 			  ptr->x_target_flags, ptr->x_ix86_target_flags,
-			  NULL, NULL, ptr->x_ix86_fpmath, false);
+			  NULL, NULL, ptr->x_ix86_fpmath, false, true);
 
   gcc_assert (ptr->arch < PROCESSOR_max);
   fprintf (file, "%*sarch = %d (%s)\n",
@@ -17744,7 +17633,7 @@ print_reg (rtx x, int code, FILE *file)
       if (GENERAL_REGNO_P (regno))
 	msize = GET_MODE_SIZE (word_mode);
       else
-	error ("'V' modifier on non-integer register");
+	error ("%<V%> modifier on non-integer register");
     }
 
   duplicated = code == 'd' && TARGET_AVX;
@@ -18008,7 +17897,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	    }
 
 	  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
-	    warning (0, "non-integer operand used with operand code 'z'");
+	    warning (0, "non-integer operand used with operand code %<z%>");
 	  /* FALLTHRU */
 
 	case 'Z':
@@ -36821,8 +36710,13 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
     isa |= (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4);
   if ((bisa & isa) != bisa || (bisa2 & isa2) != bisa2)
     {
+      bool add_abi_p = bisa & OPTION_MASK_ISA_64BIT;
+      if (TARGET_ABI_X32)
+	bisa |= OPTION_MASK_ABI_X32;
+      else
+	bisa |= OPTION_MASK_ABI_64;
       char *opts = ix86_target_string (bisa, bisa2, 0, 0, NULL, NULL,
-				       (enum fpmath_unit) 0, false);
+				       (enum fpmath_unit) 0, false, add_abi_p);
       if (!opts)
 	error ("%qE needs unknown isa option", fndecl);
       else

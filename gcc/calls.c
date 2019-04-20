@@ -1555,7 +1555,10 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
   if (TREE_NO_WARNING (exp) || !warn_stringop_overflow)
     return;
 
+  /* Avoid clearly invalid calls (more checking done below).  */
   unsigned nargs = call_expr_nargs (exp);
+  if (!nargs)
+    return;
 
   /* The bound argument to a bounded string function like strncpy.  */
   tree bound = NULL_TREE;

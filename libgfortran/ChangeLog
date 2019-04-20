@@ -1,3 +1,29 @@
+2019-04-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89843
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc): Only
+	return immediately if the source pointer is null. Bring
+	forward the extraction of the gfc type. Extract the kind so
+	that the element size can be correctly computed for sections
+	and components of derived type arrays. Remove the free of the
+	CFI descriptor since this is now done in trans-expr.c.
+	(gfc_desc_to_cfi_desc): Only allocate the CFI descriptor if it
+	is not null.
+	(CFI_section): Normalise the difference between the upper and
+	lower bounds by the stride to correctly calculate the extents
+	of the section.
+
+	PR fortran/89846
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc): Use
+	the stride measure for the gfc span if it is not a multiple
+	of the element length. Otherwise use the element length.
+
+	PR fortran/90022
+	* runtime/ISO_Fortran_binding.c (CFI_is_contiguous) : Return
+	1 for true and 0 otherwise to comply with the standard. Correct
+	the contiguity check for rank 3 and greater by using the stride
+	measure of the lower dimension rather than the element length.
+
 2019-03-25  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR libgfortran/79540

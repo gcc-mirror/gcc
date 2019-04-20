@@ -7167,7 +7167,7 @@ rs6000_split_vec_extract_var (rtx dest, rtx src, rtx element, rtx tmp_gpr,
 			      rtx tmp_altivec)
 {
   machine_mode mode = GET_MODE (src);
-  machine_mode scalar_mode = GET_MODE (dest);
+  machine_mode scalar_mode = GET_MODE_INNER (GET_MODE (src));
   unsigned scalar_size = GET_MODE_SIZE (scalar_mode);
   int byte_shift = exact_log2 (scalar_size);
 
@@ -24010,7 +24010,7 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 		  emit_insn (TARGET_32BIT
 			     ? (TARGET_POWERPC64
 				? gen_movdi_si_update (breg, breg, delta_rtx, nsrc)
-				: gen_movsi_update (breg, breg, delta_rtx, nsrc))
+				: gen_movsi_si_update (breg, breg, delta_rtx, nsrc))
 			     : gen_movdi_di_update (breg, breg, delta_rtx, nsrc));
 		  used_update = true;
 		}
@@ -25486,16 +25486,16 @@ rs6000_emit_allocate_stack_1 (HOST_WIDE_INT size_int, rtx orig_sp)
       size_rtx = tmp_reg;
     }
   
-  if (Pmode == SImode)
+  if (TARGET_32BIT)
     insn = emit_insn (gen_movsi_update_stack (stack_pointer_rtx,
 					      stack_pointer_rtx,
 					      size_rtx,
 					      orig_sp));
   else
-    insn = emit_insn (gen_movdi_di_update_stack (stack_pointer_rtx,
-						 stack_pointer_rtx,
-						 size_rtx,
-						 orig_sp));
+    insn = emit_insn (gen_movdi_update_stack (stack_pointer_rtx,
+					      stack_pointer_rtx,
+					      size_rtx,
+					      orig_sp));
   rtx par = PATTERN (insn);
   gcc_assert (GET_CODE (par) == PARALLEL);
   rtx set = XVECEXP (par, 0, 0);
@@ -33866,6 +33866,10 @@ rs6000_xcoff_asm_init_sections (void)
 			   rs6000_xcoff_output_readwrite_section_asm_op,
 			   &xcoff_private_data_section_name);
 
+  read_only_private_data_section
+    = get_unnamed_section (0, rs6000_xcoff_output_readonly_section_asm_op,
+			   &xcoff_private_rodata_section_name);
+
   tls_data_section
     = get_unnamed_section (SECTION_TLS,
 			   rs6000_xcoff_output_tls_section_asm_op,
@@ -33874,10 +33878,6 @@ rs6000_xcoff_asm_init_sections (void)
   tls_private_data_section
     = get_unnamed_section (SECTION_TLS,
 			   rs6000_xcoff_output_tls_section_asm_op,
-			   &xcoff_private_data_section_name);
-
-  read_only_private_data_section
-    = get_unnamed_section (0, rs6000_xcoff_output_readonly_section_asm_op,
 			   &xcoff_private_data_section_name);
 
   toc_section
@@ -34060,6 +34060,8 @@ rs6000_xcoff_file_start (void)
 			   main_input_filename, ".bss_");
   rs6000_gen_section_name (&xcoff_private_data_section_name,
 			   main_input_filename, ".rw_");
+  rs6000_gen_section_name (&xcoff_private_rodata_section_name,
+			   main_input_filename, ".rop_");
   rs6000_gen_section_name (&xcoff_read_only_section_name,
 			   main_input_filename, ".ro_");
   rs6000_gen_section_name (&xcoff_tls_data_section_name,
@@ -35021,7 +35023,7 @@ rs6000_register_move_cost (machine_mode mode,
     {
       if (dbg_cost_ctrl == 1)
 	fprintf (stderr,
-		 "rs6000_register_move_cost:, ret=%d, mode=%s, from=%s, to=%s\n",
+		 "rs6000_register_move_cost: ret=%d, mode=%s, from=%s, to=%s\n",
 		 ret, GET_MODE_NAME (mode), reg_class_names[from],
 		 reg_class_names[to]);
       dbg_cost_ctrl--;

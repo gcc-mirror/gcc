@@ -4144,6 +4144,9 @@ finish_offsetof (tree object_ptr, tree expr, location_t loc)
       return expr;
     }
 
+  if (expr == error_mark_node)
+    return error_mark_node;
+
   if (TREE_CODE (expr) == PSEUDO_DTOR_EXPR)
     {
       error ("cannot apply %<offsetof%> to destructor %<~%T%>",
@@ -9548,8 +9551,8 @@ classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
       if (copy_fn_p (fn) > 0)
 	{
 	  saw_copy = true;
-	  maybe_instantiate_noexcept (fn);
-	  if (!TYPE_NOTHROW_P (TREE_TYPE (fn)))
+	  if (!maybe_instantiate_noexcept (fn)
+	      || !TYPE_NOTHROW_P (TREE_TYPE (fn)))
 	    return false;
 	}
     }
@@ -9591,8 +9594,8 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
       return (trait_expr_value (CPTK_HAS_TRIVIAL_CONSTRUCTOR, type1, type2) 
 	      || (CLASS_TYPE_P (type1)
 		  && (t = locate_ctor (type1))
-		  && (maybe_instantiate_noexcept (t),
-		      TYPE_NOTHROW_P (TREE_TYPE (t)))));
+		  && maybe_instantiate_noexcept (t)
+		  && TYPE_NOTHROW_P (TREE_TYPE (t))));
 
     case CPTK_HAS_TRIVIAL_CONSTRUCTOR:
       type1 = strip_array_types (type1);

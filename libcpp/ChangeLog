@@ -1,3 +1,7 @@
+2019-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* files.c (search_path_exhausted): Fix typo in comment.
+
 2019-02-26  Martin Liska  <mliska@suse.cz>
 
 	* symtab.c (ht_dump_statistics): Make

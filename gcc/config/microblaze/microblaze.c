@@ -1258,8 +1258,8 @@ microblaze_expand_block_move (rtx dest, rtx src, rtx length, rtx align_rtx)
 
   if (GET_CODE (length) == CONST_INT)
     {
-      HOST_WIDE_INT bytes = INTVAL (length);
-      int align = INTVAL (align_rtx);
+      unsigned HOST_WIDE_INT bytes = UINTVAL (length);
+      unsigned int align = UINTVAL (align_rtx);
 
       if (align > UNITS_PER_WORD)
 	{
@@ -1267,7 +1267,7 @@ microblaze_expand_block_move (rtx dest, rtx src, rtx length, rtx align_rtx)
 	}
       else if (align < UNITS_PER_WORD)
 	{
-	  if (INTVAL (length) <= MAX_MOVE_BYTES)
+	  if (UINTVAL (length) <= MAX_MOVE_BYTES)
 	    {
 	      move_by_pieces (dest, src, bytes, align, RETURN_BEGIN);
 	      return true;
@@ -1276,14 +1276,14 @@ microblaze_expand_block_move (rtx dest, rtx src, rtx length, rtx align_rtx)
 	    return false;
 	}
 
-      if (INTVAL (length) <= 2 * MAX_MOVE_BYTES)
+      if (UINTVAL (length) <= 2 * MAX_MOVE_BYTES)
 	{
-	  microblaze_block_move_straight (dest, src, INTVAL (length));
+	  microblaze_block_move_straight (dest, src, UINTVAL (length));
 	  return true;
 	}
       else if (optimize)
 	{
-	  microblaze_block_move_loop (dest, src, INTVAL (length));
+	  microblaze_block_move_loop (dest, src, UINTVAL (length));
 	  return true;
 	}
     }

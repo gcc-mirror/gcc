@@ -252,7 +252,7 @@ echo "scanning option files..." >&2
 		} else
 			sub("\\).*", "", line)
 		printf("#line %d \"%s\"\n", lineno, file)
-		printf("_(\"%s\")\n", line)
+		printf("error(\"%s\")\n", line)
 	    }
 	    if ((field == 1) && /UnknownError/) {
 		line = $0
@@ -263,7 +263,7 @@ echo "scanning option files..." >&2
 		} else
 			sub("\\).*", "", line)
 		printf("#line %d \"%s\"\n", lineno, file)
-		printf("_(\"%s\")\n", line)
+		printf("error(\"%s\")\n", line)
 	    }
 	    if ((field == 1) && /Warn\(/) {
 		line = $0
@@ -274,7 +274,7 @@ echo "scanning option files..." >&2
 		} else
 			sub("\\).*", "", line)
 		printf("#line %d \"%s\"\n", lineno, file)
-		printf("_(\"%s\")\n", line)
+		printf("warning(0, \"%s\")\n", line)
 	    }
 	    if (field == 2) {
 		line = $0

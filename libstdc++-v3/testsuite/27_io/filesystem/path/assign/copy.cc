@@ -20,6 +20,7 @@
 
 #include <filesystem>
 #include <testsuite_fs.h>
+#include <testsuite_hooks.h>
 
 using std::filesystem::path;
 using __gnu_test::compare_paths;
@@ -47,9 +48,26 @@ test02()
   }
 }
 
+void
+test03()
+{
+  // self assignment should have no effect
+  const path orig = "foo/bar/baz";
+  path p = orig;
+  const auto ptr1 = p.c_str();
+  const auto ptr2 = p.begin()->c_str();
+  p = std::move(p);
+  __gnu_test::compare_paths(p, orig);
+  p = p;
+  __gnu_test::compare_paths(p, orig);
+  VERIFY( ptr1 == p.c_str() );
+  VERIFY( ptr2 == p.begin()->c_str() );
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }

@@ -2546,7 +2546,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 	  if (gsym->binding_label && gsym->sym_name != def_sym->name)
 	    gfc_find_symbol (gsym->sym_name, gsym->ns, 0, &def_sym);
 
-	  if (def_sym->attr.entry_master)
+	  if (def_sym->attr.entry_master || def_sym->attr.entry)
 	    {
 	      gfc_entry_list *entry;
 	      for (entry = gsym->ns->entries; entry; entry = entry->next)

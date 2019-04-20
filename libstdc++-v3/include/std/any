@@ -614,9 +614,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @}
 
+  namespace __detail::__variant
+  {
+    template<typename> struct _Never_valueless_alt; // see <variant>
+
+    // Provide the strong exception-safety guarantee when emplacing an
+    // any into a variant.
+    template<>
+      struct _Never_valueless_alt<std::any>
+      : std::true_type
+      { };
+  }  // namespace __detail::__variant
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#endif // C++14
-
+#endif // C++17
 #endif // _GLIBCXX_ANY

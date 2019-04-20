@@ -136,7 +136,6 @@
   UNSPEC_ARC_VMAC2HU
   UNSPEC_ARC_VMPY2H
   UNSPEC_ARC_VMPY2HU
-  UNSPEC_ARC_STKTIE
 
   VUNSPEC_ARC_RTIE
   VUNSPEC_ARC_SYNC
@@ -202,8 +201,6 @@
    (LP_COUNT 60)
    (CC_REG 61)
    (PCL_REG 63)
-   (LP_START 144)
-   (LP_END 145)
   ]
 )
 
@@ -3467,8 +3464,6 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 			    (match_operand:SI 2 "nonmemory_operand" "rn,Cal")]))
    (clobber (match_scratch:SI 4 "=X,X"))
    (clobber (reg:SI LP_COUNT))
-   (clobber (reg:SI LP_START))
-   (clobber (reg:SI LP_END))
    (clobber (reg:CC CC_REG))
   ]
   "!TARGET_BARREL_SHIFTER"
@@ -4707,17 +4702,17 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 
 (define_insn "*sibcall_insn"
  [(call (mem:SI (match_operand:SI 0 "call_address_operand"
-		 "Cbp,Cbr,Rs5,Rsc,Cal"))
+		 "Cbp,Cbr,!Rcd,Rsc,Cal"))
 	(match_operand 1 "" ""))
   (simple_return)
   (use (match_operand 2 "" ""))]
   ""
   "@
-   b%!%* %P0
-   b%!%* %P0
-   j%!%* [%0]%&
-   j%!%* [%0]
-   j%! %P0"
+   b%!%*\\t%P0
+   b%!%*\\t%P0
+   j%!%*\\t[%0]
+   j%!%*\\t[%0]
+   j%!\\t%P0"
   [(set_attr "type" "call,call,call,call,call_no_delay_slot")
    (set_attr "predicable" "yes,no,no,yes,yes")
    (set_attr "iscompact" "false,false,maybe,false,false")
@@ -4727,17 +4722,17 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 (define_insn "*sibcall_value_insn"
  [(set (match_operand 0 "dest_reg_operand" "")
        (call (mem:SI (match_operand:SI 1 "call_address_operand"
-	      "Cbp,Cbr,Rs5,Rsc,Cal"))
+	      "Cbp,Cbr,!Rcd,Rsc,Cal"))
 	     (match_operand 2 "" "")))
   (simple_return)
   (use (match_operand 3 "" ""))]
   ""
   "@
-   b%!%* %P1
-   b%!%* %P1
-   j%!%* [%1]%&
-   j%!%* [%1]
-   j%! %P1"
+   b%!%*\\t%P1
+   b%!%*\\t%P1
+   j%!%*\\t[%1]
+   j%!%*\\t[%1]
+   j%!\\t%P1"
   [(set_attr "type" "call,call,call,call,call_no_delay_slot")
    (set_attr "predicable" "yes,no,no,yes,yes")
    (set_attr "iscompact" "false,false,maybe,false,false")
@@ -6300,18 +6295,6 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   (set_attr "predicable" "yes,no,no,yes,no")
   (set_attr "cond" "canuse,nocond,nocond,canuse_limm,nocond")])
 
-(define_insn "stack_tie"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK [(match_operand:SI 0 "register_operand" "r")
-		     (match_operand:SI 1 "register_operand" "r")]
-		    UNSPEC_ARC_STKTIE))]
-  ""
-  ""
-  [(set_attr "length" "0")
-   (set_attr "iscompact" "false")
-   (set_attr "type" "block")]
-  )
-
 (define_insn "*add_shift"
   [(set (match_operand:SI 0 "register_operand" "=q,r,r")
 	(plus:SI (ashift:SI (match_operand:SI 1 "register_operand" "q,r,r")
@@ -6522,7 +6505,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   {
    int len = XVECLEN (operands[0], 0);
    rtx tmp = XVECEXP (operands[0], 0, len - 1);
-   if (XEXP (tmp, 0) != frame_pointer_rtx)
+   if (XEXP (tmp, 0) != hard_frame_pointer_rtx)
      {
       operands[3] = XEXP (tmp, 0);
       gcc_assert (INTVAL (operands[1]) == INTVAL (operands[2]));
@@ -6552,7 +6535,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   {
    int len = XVECLEN (operands[0], 0);
    rtx tmp = XVECEXP (operands[0], 0, len - 1);
-   if (XEXP (tmp, 0) != frame_pointer_rtx)
+   if (XEXP (tmp, 0) != hard_frame_pointer_rtx)
      {
       operands[3] = XEXP (tmp, 0);
       gcc_assert (INTVAL (operands[1]) == INTVAL (operands[2]));
@@ -6583,7 +6566,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   {
    int len = XVECLEN (operands[0], 0);
    rtx tmp = XVECEXP (operands[0], 0, len - 1);
-   if (XEXP (tmp, 0) != frame_pointer_rtx)
+   if (XEXP (tmp, 0) != hard_frame_pointer_rtx)
      {
       operands[3] = XEXP (tmp, 0);
       gcc_assert (INTVAL (operands[1]) == INTVAL (operands[2]));
@@ -6614,7 +6597,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   {
    int len = XVECLEN (operands[0], 0);
    rtx tmp = XVECEXP (operands[0], 0, len - 1);
-   if (XEXP (tmp, 0) != frame_pointer_rtx)
+   if (XEXP (tmp, 0) != hard_frame_pointer_rtx)
      {
       operands[3] = XEXP (tmp, 0);
       gcc_assert (INTVAL (operands[1]) == INTVAL (operands[2]));

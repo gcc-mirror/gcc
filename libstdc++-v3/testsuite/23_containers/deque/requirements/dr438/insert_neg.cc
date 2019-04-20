@@ -32,3 +32,5 @@ void f()
   std::deque<A> d;
   d.insert(d.begin(), 10, 1); // { dg-error "here|no match" }
 }
+
+// { dg-prune-output "iterator_traits" }

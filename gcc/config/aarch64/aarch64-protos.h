@@ -429,6 +429,9 @@ bool aarch64_label_mentioned_p (rtx);
 void aarch64_declare_function_name (FILE *, const char*, tree);
 bool aarch64_legitimate_pic_operand_p (rtx);
 bool aarch64_mask_and_shift_for_ubfiz_p (scalar_int_mode, rtx, rtx);
+bool aarch64_masks_and_shift_for_bfi_p (scalar_int_mode, unsigned HOST_WIDE_INT,
+					unsigned HOST_WIDE_INT,
+					unsigned HOST_WIDE_INT);
 bool aarch64_zero_extend_const_eq (machine_mode, rtx, machine_mode, rtx);
 bool aarch64_move_imm (HOST_WIDE_INT, machine_mode);
 opt_machine_mode aarch64_sve_pred_mode (unsigned int);

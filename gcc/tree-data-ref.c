@@ -4060,9 +4060,9 @@ analyze_miv_subscript (tree chrec_a,
     }
 
   else if (evolution_function_is_affine_in_loop (chrec_a, loop_nest->num)
-	   && !chrec_contains_symbols (chrec_a)
+	   && !chrec_contains_symbols (chrec_a, loop_nest)
 	   && evolution_function_is_affine_in_loop (chrec_b, loop_nest->num)
-	   && !chrec_contains_symbols (chrec_b))
+	   && !chrec_contains_symbols (chrec_b, loop_nest))
     {
       /* testsuite/.../ssa-chrec-35.c
 	 {0, +, 1}_2  vs.  {0, +, 1}_3
@@ -4272,6 +4272,7 @@ build_classic_dist_vector_1 (struct data_dependence_relation *ddr,
 {
   unsigned i;
   lambda_vector init_v = lambda_vector_new (DDR_NB_LOOPS (ddr));
+  struct loop *loop = DDR_LOOP_NEST (ddr)[0];
 
   for (i = 0; i < DDR_NUM_SUBSCRIPTS (ddr); i++)
     {
@@ -4301,6 +4302,15 @@ build_classic_dist_vector_1 (struct data_dependence_relation *ddr,
 	      non_affine_dependence_relation (ddr);
 	      return false;
 	    }
+
+	  /* When data references are collected in a loop while data
+	     dependences are analyzed in loop nest nested in the loop, we
+	     would have more number of access functions than number of
+	     loops.  Skip access functions of loops not in the loop nest.
+
+	     See PR89725 for more information.  */
+	  if (flow_loop_nested_p (get_loop (cfun, var_a), loop))
+	    continue;
 
 	  dist = int_cst_value (SUB_DISTANCE (subscript));
 	  index = index_in_loop_nest (var_a, DDR_LOOP_NEST (ddr));
@@ -4413,6 +4423,7 @@ add_other_self_distances (struct data_dependence_relation *ddr)
   unsigned i;
   int index_carry = DDR_NB_LOOPS (ddr);
   subscript *sub;
+  struct loop *loop = DDR_LOOP_NEST (ddr)[0];
 
   FOR_EACH_VEC_ELT (DDR_SUBSCRIPTS (ddr), i, sub)
     {
@@ -4441,6 +4452,16 @@ add_other_self_distances (struct data_dependence_relation *ddr)
 
 	      return;
 	    }
+
+	  /* When data references are collected in a loop while data
+	     dependences are analyzed in loop nest nested in the loop, we
+	     would have more number of access functions than number of
+	     loops.  Skip access functions of loops not in the loop nest.
+
+	     See PR89725 for more information.  */
+	  if (flow_loop_nested_p (get_loop (cfun, CHREC_VARIABLE (access_fun)),
+				  loop))
+	    continue;
 
 	  index_carry = MIN (index_carry,
 			     index_in_loop_nest (CHREC_VARIABLE (access_fun),

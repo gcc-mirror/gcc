@@ -4766,6 +4766,57 @@ vn_nary_may_trap (vn_nary_op_t nary)
   return false;
 }
 
+/* Return true if the reference operation REF may trap.  */
+
+bool
+vn_reference_may_trap (vn_reference_t ref)
+{
+  switch (ref->operands[0].opcode)
+    {
+    case MODIFY_EXPR:
+    case CALL_EXPR:
+      /* We do not handle calls.  */
+    case ADDR_EXPR:
+      /* And toplevel address computations never trap.  */
+      return false;
+    default:;
+    }
+
+  vn_reference_op_t op;
+  unsigned i;
+  FOR_EACH_VEC_ELT (ref->operands, i, op)
+    {
+      switch (op->opcode)
+	{
+	case WITH_SIZE_EXPR:
+	case TARGET_MEM_REF:
+	  /* Always variable.  */
+	  return true;
+	case COMPONENT_REF:
+	  if (op->op1 && TREE_CODE (op->op1) == SSA_NAME)
+	    return true;
+	  break;
+	case ARRAY_RANGE_REF:
+	case ARRAY_REF:
+	  if (TREE_CODE (op->op0) == SSA_NAME)
+	    return true;
+	  break;
+	case MEM_REF:
+	  /* Nothing interesting in itself, the base is separate.  */
+	  break;
+	/* The following are the address bases.  */
+	case SSA_NAME:
+	  return true;
+	case ADDR_EXPR:
+	  if (op->op0)
+	    return tree_could_trap_p (TREE_OPERAND (op->op0, 0));
+	  return false;
+	default:;
+	}
+    }
+  return false;
+}
+
 eliminate_dom_walker::eliminate_dom_walker (cdi_direction direction,
 					    bitmap inserted_exprs_)
   : dom_walker (direction), do_pre (inserted_exprs_ != NULL),

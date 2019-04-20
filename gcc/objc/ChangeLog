@@ -1,3 +1,10 @@
+2019-04-05  Martin Liska  <mliska@suse.cz>
+
+	PR translation/89936
+	* objc-act.c (objc_add_property_declaration): Use %< and %>, or %qs in
+	order to wrap keywords or arguments.
+	(objc_add_synthesize_declaration_for_property): Likewise.
+
 2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/16615

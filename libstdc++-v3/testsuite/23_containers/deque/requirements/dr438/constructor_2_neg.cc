@@ -27,3 +27,5 @@ void f()
 {
   std::deque<std::deque<std::pair<char, char> > > d('a', 'b'); // { dg-error "here|no match" }
 }
+
+// { dg-prune-output "iterator_traits" }

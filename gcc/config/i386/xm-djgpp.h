@@ -84,10 +84,10 @@ along with GCC; see the file COPYING3.  If not see
         if (djgpp == NULL) \
           fatal_error (UNKNOWN_LOCATION, "environment variable DJGPP not defined"); \
         else if (access (djgpp, R_OK) == 0) \
-          fatal_error (UNKNOWN_LOCATION, "environment variable DJGPP points to missing file '%s'", \
+          fatal_error (UNKNOWN_LOCATION, "environment variable DJGPP points to missing file %qs", \
                  djgpp); \
         else \
-          fatal_error (UNKNOWN_LOCATION, "environment variable DJGPP points to corrupt file '%s'", \
+          fatal_error (UNKNOWN_LOCATION, "environment variable DJGPP points to corrupt file %qs", \
                   djgpp); \
       } \
   } while (0)

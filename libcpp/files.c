@@ -455,7 +455,7 @@ find_file_in_dir (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch,
   return false;
 }
 
-/* Return tue iff the missing_header callback found the given HEADER.  */
+/* Return true iff the missing_header callback found the given HEADER.  */
 static bool
 search_path_exhausted (cpp_reader *pfile, const char *header, _cpp_file *file)
 {

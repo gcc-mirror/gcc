@@ -27,12 +27,12 @@ void ld_section(in char*, Elf32_Shdr*, Elf32_Word, Elf_Data*, Elf*);
 
 version (D_LP64)
 {
-void ld_start64(in char*, in Elf64_Half, in char*);
-void ld_atexit64(int);
-void ld_open64(in char**, in char**, int*, int, Elf**, Elf*, size_t, in Elf_Kind);
-void ld_file64(in char*, in Elf_Kind, int, Elf*);
-void ld_input_section64(in char*, Elf64_Shdr**, Elf64_Word, Elf_Data*, Elf*, uint*);
-void ld_section64(in char*, Elf64_Shdr*, Elf64_Word, Elf_Data*, Elf*);
+    void ld_start64(in char*, in Elf64_Half, in char*);
+    void ld_atexit64(int);
+    void ld_open64(in char**, in char**, int*, int, Elf**, Elf*, size_t, in Elf_Kind);
+    void ld_file64(in char*, in Elf_Kind, int, Elf*);
+    void ld_input_section64(in char*, Elf64_Shdr**, Elf64_Word, Elf_Data*, Elf*, uint*);
+    void ld_section64(in char*, Elf64_Shdr*, Elf64_Word, Elf_Data*, Elf*);
 }
 
 enum LD_SUP_VNONE    = 0;
@@ -137,17 +137,21 @@ int la_objfilter(uintptr_t*, in char*, uintptr_t*, uint);
 
 version (D_LP64)
 {
-uintptr_t la_amd64_pltenter(Elf64_Sym*, uint, uintptr_t*, uintptr_t*, La_amd64_regs*, uint*, in char*);
-uintptr_t la_symbind64(Elf64_Sym*, uint, uintptr_t*, uintptr_t*, uint*, in char*);
-uintptr_t la_sparcv9_pltenter(Elf64_Sym*, uint, uintptr_t*, uintptr_t*, La_sparcv9_regs*, uint*, in char*);
-uintptr_t la_pltexit64(Elf64_Sym*, uint, uintptr_t*, uintptr_t*, uintptr_t, in char*);
+    uintptr_t la_amd64_pltenter(Elf64_Sym*, uint, uintptr_t*, uintptr_t*,
+                                La_amd64_regs*, uint*, in char*);
+    uintptr_t la_symbind64(Elf64_Sym*, uint, uintptr_t*, uintptr_t*, uint*, in char*);
+    uintptr_t la_sparcv9_pltenter(Elf64_Sym*, uint, uintptr_t*, uintptr_t*,
+                                  La_sparcv9_regs*, uint*, in char*);
+    uintptr_t la_pltexit64(Elf64_Sym*, uint, uintptr_t*, uintptr_t*, uintptr_t, in char*);
 }
 else
 {
-uintptr_t la_symbind32(Elf32_Sym*, uint, uintptr_t*, uintptr_t*, uint*);
-uintptr_t la_sparcv8_pltenter(Elf32_Sym*, uint, uintptr_t*, uintptr_t*, La_sparcv8_regs*, uint*);
-uintptr_t la_i86_pltenter(Elf32_Sym*, uint, uintptr_t*, uintptr_t*, La_i86_regs*, uint*);
-uintptr_t la_pltexit(Elf32_Sym*, uint, uintptr_t*, uintptr_t*, uintptr_t);
+    uintptr_t la_symbind32(Elf32_Sym*, uint, uintptr_t*, uintptr_t*, uint*);
+    uintptr_t la_sparcv8_pltenter(Elf32_Sym*, uint, uintptr_t*, uintptr_t*,
+                                  La_sparcv8_regs*, uint*);
+    uintptr_t la_i86_pltenter(Elf32_Sym*, uint, uintptr_t*, uintptr_t*,
+                              La_i86_regs*, uint*);
+    uintptr_t la_pltexit(Elf32_Sym*, uint, uintptr_t*, uintptr_t*, uintptr_t);
 }
 
 template ElfW(string type)
@@ -158,13 +162,16 @@ template ElfW(string type)
         mixin("alias Elf32_"~type~" ElfW;");
 }
 
-struct dl_phdr_info {
+struct dl_phdr_info
+{
     ElfW!"Addr"        dlpi_addr;
     char*              dlpi_name;
     ElfW!"Phdr"*       dlpi_phdr;
     ElfW!"Half"        dlpi_phnum;
     uint64_t           dlpi_adds;
     uint64_t           dlpi_subs;
+    size_t             dlpi_tls_modid;  // since Solaris 11.5
+    void*              dlpi_tls_data;   // since Solaris 11.5
 };
 
 private alias extern(C) int function(dl_phdr_info*, size_t, void *) dl_iterate_phdr_cb;

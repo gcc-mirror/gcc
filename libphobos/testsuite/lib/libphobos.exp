@@ -46,6 +46,12 @@ proc libphobos-dg-test { prog do_what extra_tool_flags } {
     set compile_type ""
     set output_file ""
 
+    global libphobos_test_name
+    if { $libphobos_test_name != "" } {
+	upvar name name
+	set name $libphobos_test_name
+    }
+
     # Set up the compiler flags, based on what we're going to do.
     switch $do_what {
 	"run" {
@@ -109,6 +115,10 @@ proc libphobos_init { args } {
     # What arguments to pass to run program images.
     global libphobos_run_args
     set libphobos_run_args ""
+
+    # If the name of the test should be something else.
+    global libphobos_test_name
+    set libphobos_test_name ""
 
     # Default settings.
     set blddir [lookfor_file [get_multilibs] libphobos]
@@ -190,4 +200,21 @@ proc libphobos_target_compile { source dest type options } {
     set comp_output [target_compile $source $dest $type $options]
 
     return $comp_output
+}
+
+#
+# Helper used by libphobos and libdruntime unittest runner, filters out
+# D sources that may contain a unittest function.
+#
+
+proc filter_libphobos_unittests { list } {
+    set res {}
+    foreach filename $list {
+	set fid [open $filename r]
+	if [regexp -- {unittest} [read $fid [file size $filename]]] {
+	    lappend res $filename
+	}
+	close $fid
+    }
+    return $res
 }

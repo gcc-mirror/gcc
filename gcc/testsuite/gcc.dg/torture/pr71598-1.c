@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-prune-output "use of enum values across objects may fail" } */
 /* { dg-additional-options "-fno-short-enums" } */
 
 enum e1 { c1 };

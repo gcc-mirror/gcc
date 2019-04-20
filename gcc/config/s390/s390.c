@@ -337,6 +337,7 @@ const struct s390_processor processor_table[] =
   { "zEC12",  "zEC12",  PROCESSOR_2827_ZEC12,  &zEC12_cost,  10 },
   { "z13",    "z13",    PROCESSOR_2964_Z13,    &zEC12_cost,  11 },
   { "z14",    "arch12", PROCESSOR_3906_Z14,    &zEC12_cost,  12 },
+  { "arch13", "",       PROCESSOR_8561_ARCH13, &zEC12_cost,  13 },
   { "native", "",       PROCESSOR_NATIVE,      NULL,         0  }
 };
 
@@ -1791,6 +1792,38 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 	  *op1 = XEXP (*op0, 1);
 	  *op0 = XEXP (*op0, 0);
 	}
+    }
+
+  /* ~a==b -> ~(a^b)==0   ~a!=b -> ~(a^b)!=0 */
+  if (TARGET_ARCH13
+      && (*code == EQ || *code == NE)
+      && (GET_MODE (*op0) == DImode || GET_MODE (*op0) == SImode)
+      && GET_CODE (*op0) == NOT)
+    {
+      machine_mode mode = GET_MODE (*op0);
+      *op0 = gen_rtx_XOR (mode, XEXP (*op0, 0), *op1);
+      *op0 = gen_rtx_NOT (mode, *op0);
+      *op1 = const0_rtx;
+    }
+
+  /* a&b == -1 -> ~a|~b == 0    a|b == -1 -> ~a&~b == 0  */
+  if (TARGET_ARCH13
+      && (*code == EQ || *code == NE)
+      && (GET_CODE (*op0) == AND || GET_CODE (*op0) == IOR)
+      && (GET_MODE (*op0) == DImode || GET_MODE (*op0) == SImode)
+      && CONST_INT_P (*op1)
+      && *op1 == constm1_rtx)
+    {
+      machine_mode mode = GET_MODE (*op0);
+      rtx op00 = gen_rtx_NOT (mode, XEXP (*op0, 0));
+      rtx op01 = gen_rtx_NOT (mode, XEXP (*op0, 1));
+
+      if (GET_CODE (*op0) == AND)
+	*op0 = gen_rtx_IOR (mode, op00, op01);
+      else
+	*op0 = gen_rtx_AND (mode, op00, op01);
+
+      *op1 = const0_rtx;
     }
 }
 
@@ -3496,7 +3529,8 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
 
 	/* It is a real IF-THEN-ELSE.  An additional move will be
 	   needed to implement that.  */
-	if (reload_completed
+	if (!TARGET_ARCH13
+	    && reload_completed
 	    && !rtx_equal_p (dst, then)
 	    && !rtx_equal_p (dst, els))
 	  *total += COSTS_N_INSNS (1) / 2;
@@ -3515,6 +3549,21 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	return true;
       }
     case IOR:
+
+      /* nnrk, nngrk */
+      if (TARGET_ARCH13
+	  && (mode == SImode || mode == DImode)
+	  && GET_CODE (XEXP (x, 0)) == NOT
+	  && GET_CODE (XEXP (x, 1)) == NOT)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  if (!REG_P (XEXP (XEXP (x, 0), 0)))
+	    *total += 1;
+	  if (!REG_P (XEXP (XEXP (x, 1), 0)))
+	    *total += 1;
+	  return true;
+	}
+
       /* risbg */
       if (GET_CODE (XEXP (x, 0)) == AND
 	  && GET_CODE (XEXP (x, 1)) == ASHIFT
@@ -3543,19 +3592,33 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	  *total = COSTS_N_INSNS (1);
 	  return true;
 	}
+
+      *total = COSTS_N_INSNS (1);
+      return false;
+
+    case AND:
+      /* nork, nogrk */
+      if (TARGET_ARCH13
+	  && (mode == SImode || mode == DImode)
+	  && GET_CODE (XEXP (x, 0)) == NOT
+	  && GET_CODE (XEXP (x, 1)) == NOT)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  if (!REG_P (XEXP (XEXP (x, 0), 0)))
+	    *total += 1;
+	  if (!REG_P (XEXP (XEXP (x, 1), 0)))
+	    *total += 1;
+	  return true;
+	}
       /* fallthrough */
     case ASHIFT:
     case ASHIFTRT:
     case LSHIFTRT:
     case ROTATE:
     case ROTATERT:
-    case AND:
     case XOR:
     case NEG:
     case NOT:
-      *total = COSTS_N_INSNS (1);
-      return false;
-
     case PLUS:
     case MINUS:
       *total = COSTS_N_INSNS (1);
@@ -3705,6 +3768,38 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
 
     case COMPARE:
       *total = COSTS_N_INSNS (1);
+
+      /* nxrk, nxgrk ~(a^b)==0 */
+      if (TARGET_ARCH13
+	  && GET_CODE (XEXP (x, 0)) == NOT
+	  && XEXP (x, 1) == const0_rtx
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == XOR
+	  && (GET_MODE (XEXP (x, 0)) == SImode || GET_MODE (XEXP (x, 0)) == DImode)
+	  && mode == CCZmode)
+	{
+	  if (!REG_P (XEXP (XEXP (XEXP (x, 0), 0), 0)))
+	    *total += 1;
+	  if (!REG_P (XEXP (XEXP (XEXP (x, 0), 0), 1)))
+	    *total += 1;
+	  return true;
+	}
+
+      /* nnrk, nngrk, nork, nogrk */
+      if (TARGET_ARCH13
+	  && (GET_CODE (XEXP (x, 0)) == AND || GET_CODE (XEXP (x, 0)) == IOR)
+	  && XEXP (x, 1) == const0_rtx
+	  && (GET_MODE (XEXP (x, 0)) == SImode || GET_MODE (XEXP (x, 0)) == DImode)
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == NOT
+	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == NOT
+	  && mode == CCZmode)
+	{
+	  if (!REG_P (XEXP (XEXP (XEXP (x, 0), 0), 0)))
+	    *total += 1;
+	  if (!REG_P (XEXP (XEXP (XEXP (x, 0), 1), 0)))
+	    *total += 1;
+	  return true;
+	}
+
       if (GET_CODE (XEXP (x, 0)) == AND
 	  && GET_CODE (XEXP (x, 1)) == CONST_INT
 	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
@@ -4580,6 +4675,17 @@ s390_legitimate_address_p (machine_mode mode, rtx addr, bool strict)
     return true;
 
   if (!s390_decompose_address (addr, &ad))
+    return false;
+
+  /* The vector memory instructions only support short displacements.
+     Reject invalid displacements early to prevent plenty of lay
+     instructions to be generated later which then cannot be merged
+     properly.  */
+  if (TARGET_VX
+      && VECTOR_MODE_P (mode)
+      && ad.disp != NULL_RTX
+      && CONST_INT_P (ad.disp)
+      && !SHORT_DISP_IN_RANGE (INTVAL (ad.disp)))
     return false;
 
   if (strict)
@@ -14324,6 +14430,18 @@ s390_get_sched_attrmask (rtx_insn *insn)
       if (get_attr_z14_groupoftwo (insn))
 	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
       break;
+    case PROCESSOR_8561_ARCH13:
+      if (get_attr_arch13_cracked (insn))
+	mask |= S390_SCHED_ATTR_MASK_CRACKED;
+      if (get_attr_arch13_expanded (insn))
+	mask |= S390_SCHED_ATTR_MASK_EXPANDED;
+      if (get_attr_arch13_endgroup (insn))
+	mask |= S390_SCHED_ATTR_MASK_ENDGROUP;
+      if (get_attr_arch13_groupalone (insn))
+	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
+      if (get_attr_arch13_groupoftwo (insn))
+	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
+      break;
     default:
       gcc_unreachable ();
     }
@@ -14359,6 +14477,17 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
       if (get_attr_z14_unit_vfu (insn))
 	mask |= 1 << 3;
       break;
+    case PROCESSOR_8561_ARCH13:
+      *units = 4;
+      if (get_attr_arch13_unit_lsu (insn))
+	mask |= 1 << 0;
+      if (get_attr_arch13_unit_fxa (insn))
+	mask |= 1 << 1;
+      if (get_attr_arch13_unit_fxb (insn))
+	mask |= 1 << 2;
+      if (get_attr_arch13_unit_vfu (insn))
+	mask |= 1 << 3;
+      break;
     default:
       gcc_unreachable ();
     }
@@ -14371,7 +14500,8 @@ s390_is_fpd (rtx_insn *insn)
   if (insn == NULL_RTX)
     return false;
 
-  return get_attr_z13_unit_fpd (insn) || get_attr_z14_unit_fpd (insn);
+  return get_attr_z13_unit_fpd (insn) || get_attr_z14_unit_fpd (insn)
+    || get_attr_arch13_unit_fpd (insn);
 }
 
 static bool
@@ -14380,7 +14510,8 @@ s390_is_fxd (rtx_insn *insn)
   if (insn == NULL_RTX)
     return false;
 
-  return get_attr_z13_unit_fxd (insn) || get_attr_z14_unit_fxd (insn);
+  return get_attr_z13_unit_fxd (insn) || get_attr_z14_unit_fxd (insn)
+    || get_attr_arch13_unit_fxd (insn);
 }
 
 /* Returns TRUE if INSN is a long-running instruction.  */

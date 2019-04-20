@@ -690,6 +690,10 @@ namespace std
 #  undef __PSTL_PAR_BACKEND_TBB
 # endif
 
+# define __PSTL_ASSERT(_Condition) __glibcxx_assert(_Condition)
+# define __PSTL_ASSERT_MSG(_Condition, _Message) __glibcxx_assert(_Condition)
+
+
 # define __PSTL_PRAGMA(x) _Pragma (#x)
 
 # define __PSTL_STRING_AUX(x) #x

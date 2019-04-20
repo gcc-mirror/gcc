@@ -2132,13 +2132,33 @@ next_arg:;
 	  if (TYPE_NAME (TREE_TYPE (newdecl)) == newdecl)
 	    {
 	      tree remove = TREE_TYPE (newdecl);
-	      for (tree t = TYPE_MAIN_VARIANT (remove); ;
-		   t = TYPE_NEXT_VARIANT (t))
-		if (TYPE_NEXT_VARIANT (t) == remove)
-		  {
-		    TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (remove);
-		    break;
-		  }
+	      if (TYPE_MAIN_VARIANT (remove) == remove)
+		{
+		  gcc_assert (TYPE_NEXT_VARIANT (remove) == NULL_TREE);
+		  /* If remove is the main variant, no need to remove that
+		     from the list.  One of the DECL_ORIGINAL_TYPE
+		     variants, e.g. created for aligned attribute, might still
+		     refer to the newdecl TYPE_DECL though, so remove that one
+		     in that case.  */
+		  if (tree orig = DECL_ORIGINAL_TYPE (newdecl))
+		    if (orig != remove)
+		      for (tree t = TYPE_MAIN_VARIANT (orig); t;
+			   t = TYPE_MAIN_VARIANT (t))
+			if (TYPE_NAME (TYPE_NEXT_VARIANT (t)) == newdecl)
+			  {
+			    TYPE_NEXT_VARIANT (t)
+			      = TYPE_NEXT_VARIANT (TYPE_NEXT_VARIANT (t));
+			    break;
+			  }
+		}	    
+	      else
+		for (tree t = TYPE_MAIN_VARIANT (remove); ;
+		     t = TYPE_NEXT_VARIANT (t))
+		  if (TYPE_NEXT_VARIANT (t) == remove)
+		    {
+		      TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (remove);
+		      break;
+		    }
 	    }
 	}
       else if (merge_attr)
@@ -3475,9 +3495,6 @@ struct cp_switch
      label.  We need a tree, rather than simply a hash table, because
      of the GNU case range extension.  */
   splay_tree cases;
-  /* Remember whether there was a case value that is outside the
-     range of the original type of the controlling expression.  */
-  bool outside_range_p;
   /* Remember whether a default: case label has been seen.  */
   bool has_default_p;
   /* Remember whether a BREAK_STMT has been seen in this SWITCH_STMT.  */
@@ -3506,7 +3523,6 @@ push_switch (tree switch_stmt)
   p->next = switch_stack;
   p->switch_stmt = switch_stmt;
   p->cases = splay_tree_new (case_compare, NULL, NULL);
-  p->outside_range_p = false;
   p->has_default_p = false;
   p->break_stmt_seen_p = false;
   p->in_loop_body_p = false;
@@ -3527,8 +3543,7 @@ pop_switch (void)
   if (!processing_template_decl)
     c_do_switch_warnings (cs->cases, switch_location,
 			  SWITCH_STMT_TYPE (cs->switch_stmt),
-			  SWITCH_STMT_COND (cs->switch_stmt),
-			  bool_cond_p, cs->outside_range_p);
+			  SWITCH_STMT_COND (cs->switch_stmt), bool_cond_p);
 
   /* For the benefit of block_may_fallthru remember if the switch body
      case labels cover all possible values and if there are break; stmts.  */
@@ -3643,9 +3658,7 @@ finish_case_label (location_t loc, tree low_value, tree high_value)
   low_value = case_conversion (type, low_value);
   high_value = case_conversion (type, high_value);
 
-  r = c_add_case_label (loc, switch_stack->cases, cond, type,
-			low_value, high_value,
-			&switch_stack->outside_range_p);
+  r = c_add_case_label (loc, switch_stack->cases, cond, low_value, high_value);
 
   /* After labels, make any new cleanups in the function go into their
      own new (temporary) binding contour.  */
@@ -5799,6 +5812,9 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
 	max_index_cst = tree_to_uhwi (fold_convert (size_type_node, max_index));
     }
 
+  /* Set to the index of the last element with a non-zero initializer.
+     Zero initializers for elements past this one can be dropped.  */
+  unsigned HOST_WIDE_INT last_nonzero = -1;
   /* Loop until there are no more initializers.  */
   for (index = 0;
        d->cur != d->end && (!sized_array_p || index <= max_index_cst);
@@ -5817,9 +5833,30 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
       if (!TREE_CONSTANT (elt_init))
 	TREE_CONSTANT (new_init) = false;
 
+      /* Pointers initialized to strings must be treated as non-zero
+	 even if the string is empty.  */
+      tree init_type = TREE_TYPE (elt_init);
+      if ((POINTER_TYPE_P (elt_type) != POINTER_TYPE_P (init_type))
+	  || !initializer_zerop (elt_init))
+	last_nonzero = index;
+
       /* This can happen with an invalid initializer (c++/54501).  */
       if (d->cur == old_cur && !sized_array_p)
 	break;
+    }
+
+  if (sized_array_p && trivial_type_p (elt_type))
+    {
+      /* Strip trailing zero-initializers from an array of a trivial
+	 type of known size.  They are redundant and get in the way
+	 of telling them apart from those with implicit zero value.  */
+      unsigned HOST_WIDE_INT nelts = CONSTRUCTOR_NELTS (new_init);
+      if (last_nonzero > nelts)
+	nelts = 0;
+      else if (last_nonzero < nelts - 1)
+	nelts = last_nonzero + 1;
+
+      vec_safe_truncate (CONSTRUCTOR_ELTS (new_init), nelts);
     }
 
   return new_init;
@@ -7327,8 +7364,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	       && ! (DECL_LANG_SPECIFIC (decl)
 		     && DECL_NOT_REALLY_EXTERN (decl)))
 	{
-	  if (init)
-	    DECL_INITIAL (decl) = init;
+	  /* check_initializer will have done any constant initialization.  */
 	}
       /* A variable definition.  */
       else if (DECL_FUNCTION_SCOPE_P (decl) && !TREE_STATIC (decl))

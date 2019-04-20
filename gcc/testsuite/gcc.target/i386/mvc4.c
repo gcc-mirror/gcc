@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-ifunc "" } */
 
-__attribute__((target_clones("default","avx","default")))
+__attribute__((target_clones("default","avx")))
 int
 foo ()
 {

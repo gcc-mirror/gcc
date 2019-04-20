@@ -11,5 +11,5 @@ int fn6 (const char *, ...) __attribute__ ((sentinel (fn1))); /* { dg-warning "n
 void* fn7 (void) __attribute__ ((alloc_align (fn1))); /* { dg-warning ".alloc_align. attribute argument has type .int\\\(int\\\)." } */
 void* fn8 (void) __attribute__ ((assume_aligned (fn1))); /* { dg-warning "not an integer constant" } */
 
-typedef int __attribute__((vector_size (fn1))) v4si; /* { dg-warning "attribute ignored" } */
+typedef int __attribute__((vector_size (fn1))) v4si; /* { dg-error "'vector_size' attribute argument value 'fn1' is not an integer constant" } */
 typedef int T __attribute__((aligned (fn1))); /* { dg-error "requested alignment is not" } */

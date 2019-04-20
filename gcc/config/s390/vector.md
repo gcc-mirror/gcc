@@ -33,6 +33,8 @@
 (define_mode_iterator V_HW2 [V16QI V8HI V4SI V2DI V2DF (V4SF "TARGET_VXE") (V1TF "TARGET_VXE")])
 
 (define_mode_iterator V_HW_64 [V2DI V2DF])
+(define_mode_iterator VT_HW_HSDT [V8HI V4SI V4SF V2DI V2DF V1TI V1TF TI TF])
+(define_mode_iterator V_HW_HSD [V8HI V4SI (V4SF "TARGET_VXE") V2DI V2DF])
 
 ; Including TI for instructions that support it (va, vn, ...)
 (define_mode_iterator VT_HW [V16QI V8HI V4SI V2DI V2DF V1TI TI (V4SF "TARGET_VXE") (V1TF "TARGET_VXE")])
@@ -67,6 +69,10 @@
 (define_mode_iterator V_128 [V16QI V8HI V4SI V4SF V2DI V2DF V1TI V1TF])
 
 (define_mode_iterator V_128_NOSINGLE [V16QI V8HI V4SI V4SF V2DI V2DF])
+
+; 32 bit int<->fp vector conversion instructions are available since VXE2 (arch13).
+(define_mode_iterator VX_VEC_CONV_BFP [V2DF (V4SF "TARGET_VXE2")])
+(define_mode_iterator VX_VEC_CONV_INT [V2DI (V4SI "TARGET_VXE2")])
 
 ; Empty string for all but TImode.  This is used to hide the TImode
 ; expander name in case it is defined already.  See addti3 for an
@@ -543,6 +549,26 @@
    #"
   [(set_attr "op_type" "VRX,VRI,VRI,*")])
 
+; vlbrreph, vlbrrepf, vlbrrepg
+(define_insn "*vec_splats_bswap_vec<mode>"
+  [(set (match_operand:V_HW_HSD                           0 "register_operand"        "=v")
+	(bswap:V_HW_HSD
+	 (vec_duplicate:V_HW_HSD (match_operand:<non_vec> 1 "memory_operand"           "R"))))
+   (use (match_operand:V16QI                              2 "permute_pattern_operand"  "X"))]
+  "TARGET_VXE2"
+  "vlbrrep<bhfgq>\t%v0,%1"
+  [(set_attr "op_type" "VRX")])
+
+; Why do we need both? Shouldn't there be a canonical form?
+; vlbrreph, vlbrrepf, vlbrrepg
+(define_insn "*vec_splats_bswap_elem<mode>"
+  [(set (match_operand:V_HW_HSD                    0 "register_operand" "=v")
+	(vec_duplicate:V_HW_HSD
+	 (bswap:<non_vec> (match_operand:<non_vec> 1 "memory_operand"    "R"))))]
+  "TARGET_VXE2"
+  "vlbrrep<bhfgq>\t%v0,%1"
+  [(set_attr "op_type" "VRX")])
+
 ; A TFmode operand resides in FPR register pairs while V1TF is in a
 ; single vector register.
 (define_insn "*vec_tf_to_v1tf"
@@ -629,6 +655,17 @@
   "TARGET_VX"
   "vperm\t%v0,%v1,%v2,%v3"
   [(set_attr "op_type" "VRR")])
+
+(define_insn "*vec_perm<mode>"
+  [(set (match_operand:VT_HW                                            0 "register_operand" "=v")
+	(subreg:VT_HW (unspec:V16QI [(subreg:V16QI (match_operand:VT_HW 1 "register_operand"  "v") 0)
+				     (subreg:V16QI (match_operand:VT_HW 2 "register_operand"  "v") 0)
+				     (match_operand:V16QI               3 "register_operand"  "v")]
+				    UNSPEC_VEC_PERM) 0))]
+  "TARGET_VX"
+  "vperm\t%v0,%v1,%v2,%v3"
+  [(set_attr "op_type" "VRR")])
+
 
 ; vec_perm_const for V2DI using vpdi?
 
@@ -1993,49 +2030,137 @@
 
 ; op2: inexact exception not suppressed (IEEE 754 2008)
 ; op3: according to current rounding mode
-
-(define_insn "floatv2div2df2"
-  [(set (match_operand:V2DF             0 "register_operand" "=v")
-	(float:V2DF (match_operand:V2DI 1 "register_operand"  "v")))]
-  "TARGET_VX"
-  "vcdgb\t%v0,%v1,0,0"
+; vcdgb, vcefb
+(define_insn "float<VX_VEC_CONV_INT:mode><VX_VEC_CONV_BFP:mode>2"
+  [(set (match_operand:VX_VEC_CONV_BFP                        0 "register_operand" "=v")
+	(float:VX_VEC_CONV_BFP (match_operand:VX_VEC_CONV_INT 1 "register_operand"  "v")))]
+  "TARGET_VX
+   && GET_MODE_UNIT_SIZE (<VX_VEC_CONV_INT:MODE>mode) == GET_MODE_UNIT_SIZE (<VX_VEC_CONV_BFP:MODE>mode)"
+  "vc<VX_VEC_CONV_BFP:xde><VX_VEC_CONV_INT:bhfgq>b\t%v0,%v1,0,0"
   [(set_attr "op_type" "VRR")])
 
 ; unsigned integer to floating point
 
 ; op2: inexact exception not suppressed (IEEE 754 2008)
 ; op3: according to current rounding mode
-
-(define_insn "floatunsv2div2df2"
-  [(set (match_operand:V2DF                      0 "register_operand" "=v")
-	(unsigned_float:V2DF (match_operand:V2DI 1 "register_operand"  "v")))]
-  "TARGET_VX"
-  "vcdlgb\t%v0,%v1,0,0"
+; vcdlgb, vcelfb
+(define_insn "floatuns<VX_VEC_CONV_INT:mode><VX_VEC_CONV_BFP:mode>2"
+  [(set (match_operand:VX_VEC_CONV_BFP                                 0 "register_operand" "=v")
+	(unsigned_float:VX_VEC_CONV_BFP (match_operand:VX_VEC_CONV_INT 1 "register_operand"  "v")))]
+  "TARGET_VX
+   && GET_MODE_UNIT_SIZE (<VX_VEC_CONV_INT:MODE>mode) == GET_MODE_UNIT_SIZE (<VX_VEC_CONV_BFP:MODE>mode)"
+  "vc<VX_VEC_CONV_BFP:xde>l<VX_VEC_CONV_INT:bhfgq>b\t%v0,%v1,0,0"
   [(set_attr "op_type" "VRR")])
 
 ; floating point to signed integer
 
 ; op2: inexact exception not suppressed (IEEE 754 2008)
 ; op3: rounding mode 5 (round towards 0 C11 6.3.1.4)
-
-(define_insn "fix_truncv2dfv2di2"
-  [(set (match_operand:V2DI           0 "register_operand" "=v")
-	(fix:V2DI (match_operand:V2DF 1 "register_operand"  "v")))]
-  "TARGET_VX"
-  "vcgdb\t%v0,%v1,0,5"
+; vcgdb, vcfeb
+(define_insn "fix_trunc<VX_VEC_CONV_BFP:mode><VX_VEC_CONV_INT:mode>2"
+  [(set (match_operand:VX_VEC_CONV_INT                      0 "register_operand" "=v")
+	(fix:VX_VEC_CONV_INT (match_operand:VX_VEC_CONV_BFP 1 "register_operand"  "v")))]
+  "TARGET_VX
+   && GET_MODE_UNIT_SIZE (<VX_VEC_CONV_INT:MODE>mode) == GET_MODE_UNIT_SIZE (<VX_VEC_CONV_BFP:MODE>mode)"
+  "vc<VX_VEC_CONV_INT:bhfgq><VX_VEC_CONV_BFP:xde>b\t%v0,%v1,0,5"
   [(set_attr "op_type" "VRR")])
 
 ; floating point to unsigned integer
 
 ; op2: inexact exception not suppressed (IEEE 754 2008)
 ; op3: rounding mode 5 (round towards 0 C11 6.3.1.4)
-
-(define_insn "fixuns_truncv2dfv2di2"
-  [(set (match_operand:V2DI                    0 "register_operand" "=v")
-	(unsigned_fix:V2DI (match_operand:V2DF 1 "register_operand"  "v")))]
-  "TARGET_VX"
-  "vclgdb\t%v0,%v1,0,5"
+; vclgdb, vclfeb
+(define_insn "fixuns_trunc<VX_VEC_CONV_BFP:mode><VX_VEC_CONV_INT:mode>2"
+  [(set (match_operand:VX_VEC_CONV_INT                               0 "register_operand" "=v")
+	(unsigned_fix:VX_VEC_CONV_INT (match_operand:VX_VEC_CONV_BFP 1 "register_operand"  "v")))]
+  "TARGET_VX
+   && GET_MODE_UNIT_SIZE (<VX_VEC_CONV_INT:MODE>mode) == GET_MODE_UNIT_SIZE (<VX_VEC_CONV_BFP:MODE>mode)"
+  "vcl<VX_VEC_CONV_INT:bhfgq><VX_VEC_CONV_BFP:xde>b\t%v0,%v1,0,5"
   [(set_attr "op_type" "VRR")])
+
+;
+; Vector byte swap patterns
+;
+
+; FIXME: The bswap rtl standard name currently does not appear to be
+; used for vector modes.
+(define_expand "bswap<mode>"
+  [(parallel
+    [(set (match_operand:VT_HW_HSDT                   0 "nonimmediate_operand" "")
+	  (bswap:VT_HW_HSDT (match_operand:VT_HW_HSDT 1 "nonimmediate_operand" "")))
+     (use (match_dup 2))])]
+  "TARGET_VX"
+{
+  static char p[4][16] =
+    { { 1,  0,  3,  2,  5,  4,  7, 6, 9,  8,  11, 10, 13, 12, 15, 14 },   /* H */
+      { 3,  2,  1,  0,  7,  6,  5, 4, 11, 10, 9,  8,  15, 14, 13, 12 },   /* S */
+      { 7,  6,  5,  4,  3,  2,  1, 0, 15, 14, 13, 12, 11, 10, 9,  8  },   /* D */
+      { 15, 14, 13, 12, 11, 10, 9, 8, 7,  6,  5,  4,  3,  2,  1,  0  } }; /* T */
+  char *perm;
+  rtx perm_rtx[16];
+
+  switch (GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)))
+    {
+    case 2: perm = p[0]; break;
+    case 4: perm = p[1]; break;
+    case 8: perm = p[2]; break;
+    case 16: perm = p[3]; break;
+    default: gcc_unreachable ();
+    }
+  for (int i = 0; i < 16; i++)
+    perm_rtx[i] = GEN_INT (perm[i]);
+
+  operands[2] = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, perm_rtx));
+
+  /* Without vxe2 we do not have byte swap instructions dealing
+     directly with memory operands.  So instead of waiting until
+     reload to fix that up switch over to vector permute right
+     now.  */
+  if (!TARGET_VXE2)
+    {
+      rtx in = force_reg (V16QImode, simplify_gen_subreg (V16QImode, operands[1], <MODE>mode, 0));
+      rtx permute = force_reg (V16QImode, force_const_mem (V16QImode, operands[2]));
+      rtx out = gen_reg_rtx (V16QImode);
+
+      emit_insn (gen_vec_permv16qi (out, in, in, permute));
+      emit_move_insn (operands[0], simplify_gen_subreg (<MODE>mode, out, V16QImode, 0));
+      DONE;
+    }
+})
+
+; Switching late to the reg-reg variant requires the vector permute
+; pattern to be pushed into literal pool and allocating a vector
+; register to load it into.  We rely on both being provided by LRA
+; when fixing up the v constraint for operand 2.
+
+; permute_pattern_operand: general_operand would reject the permute
+; pattern constants since these are not accepted by
+; s390_legimitate_constant_p
+
+; ^R: Prevent these alternatives from being chosen if it would require
+; pushing the operand into memory first
+
+; vlbrh, vlbrf, vlbrg, vlbrq, vstbrh, vstbrf, vstbrg, vstbrq
+(define_insn_and_split "*bswap<mode>"
+  [(set (match_operand:VT_HW_HSDT                   0 "nonimmediate_operand"    "=v, v,^R")
+	(bswap:VT_HW_HSDT (match_operand:VT_HW_HSDT 1 "nonimmediate_operand"     "v,^R, v")))
+   (use (match_operand:V16QI                        2 "permute_pattern_operand"  "v, X, X"))]
+  "TARGET_VXE2"
+  "@
+   #
+   vlbr<bhfgq>\t%v0,%v1
+   vstbr<bhfgq>\t%v1,%v0"
+  "&& reload_completed
+   && !memory_operand (operands[0], <MODE>mode)
+   && !memory_operand (operands[1], <MODE>mode)"
+  [(set (match_dup 0)
+	(subreg:VT_HW_HSDT
+	 (unspec:V16QI [(subreg:V16QI (match_dup 1) 0)
+			(subreg:V16QI (match_dup 1) 0)
+			(match_dup 2)]
+		       UNSPEC_VEC_PERM) 0))]
+  ""
+  [(set_attr "op_type"      "*,VRX,VRX")])
 
 ; reduc_smin
 ; reduc_smax

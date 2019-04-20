@@ -3099,7 +3099,7 @@ iq2000_print_operand (FILE *file, rtx op, int letter)
 	  break;
 
 	default:
-	  error ("PRINT_OPERAND: Unknown punctuation '%c'", letter);
+	  error ("PRINT_OPERAND: Unknown punctuation %<%c%>", letter);
 	  break;
 	}
 

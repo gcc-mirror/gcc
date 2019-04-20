@@ -2474,6 +2474,15 @@ build_class_member_access_expr (cp_expr object, tree member,
 	  tree binfo;
 	  base_kind kind;
 
+	  /* We didn't complain above about a currently open class, but now we
+	     must: we don't know how to refer to a base member before layout is
+	     complete.  But still don't complain in a template.  */
+	  if (!cp_unevaluated_operand
+	      && !dependent_type_p (object_type)
+	      && !complete_type_or_maybe_complain (object_type, object,
+						   complain))
+	    return error_mark_node;
+
 	  binfo = lookup_base (access_path ? access_path : object_type,
 			       member_scope, ba_unique, &kind, complain);
 	  if (binfo == error_mark_node)
@@ -5478,14 +5487,7 @@ cp_build_binary_op (const op_location_t &location,
 	  && !enum_cast_to_int (orig_op0)
 	  && !enum_cast_to_int (orig_op1))
 	{
-	  tree oop0 = maybe_constant_value (orig_op0);
-	  tree oop1 = maybe_constant_value (orig_op1);
-
-	  if (TREE_CODE (oop0) != INTEGER_CST)
-	    oop0 = cp_fully_fold (orig_op0);
-	  if (TREE_CODE (oop1) != INTEGER_CST)
-	    oop1 = cp_fully_fold (orig_op1);
-	  warn_for_sign_compare (location, oop0, oop1, op0, op1, 
+	  warn_for_sign_compare (location, orig_op0, orig_op1, op0, op1,
 				 result_type, resultcode);
 	}
     }

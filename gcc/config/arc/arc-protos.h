@@ -68,8 +68,6 @@ extern bool arc_is_shortcall_p (rtx);
 extern bool valid_brcc_with_delay_p (rtx *);
 extern bool arc_ccfsm_cond_exec_p (void);
 struct secondary_reload_info;
-extern int arc_register_move_cost (machine_mode, enum reg_class,
-				   enum reg_class);
 extern rtx disi_highpart (rtx);
 extern int arc_adjust_insn_length (rtx_insn *, int, bool);
 extern int arc_corereg_hazard (rtx, rtx);

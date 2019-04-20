@@ -1,3 +1,271 @@
+2019-04-19  Thomas Rodgers <trodgers@redhat.com>
+	
+	Improve implementation of parallel equal()
+	* include/pstl/algorithm_impl.h
+	(__internal::__brick_equal): use "4 iterator" version of
+	std::equal().
+	(__internal::__brick_equal): use simd for random access
+	iterators on unsequenced execution policies.
+	(__internal::__pattern_equal): add "4 iterator" version
+	(__internal::__pattern_equal): dispatch to simd __brick_equal
+	for vector-only execution policies.
+	(__internal::__pattern_equal): dispatch to __parallel_or for
+	parallel execution policies.
+	* include/pstl/glue_algorithm_impl.h
+	(std::equal): dispatch to "4 iterator" version of
+	__internal::__pattern_equal().
+	
+2019-04-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90105
+	* include/bits/forward_list.h (operator==): Do not use operator!= to
+	compare elements.
+	(forward_list<T, A>::sort(Comp)): When elements are equal take the one
+	earlier in the list, so that sort is stable.
+	* testsuite/23_containers/forward_list/operations/90105.cc: New test.
+	* testsuite/23_containers/forward_list/comparable.cc: Test with
+	types that meet the minimum EqualityComparable and LessThanComparable
+	requirements. Remove irrelevant comment.
+
+	* include/std/variant (__detail::__variant::_Traits::_S_copy_assign):
+	Do not depend on whether all alternative types are move constructible.
+	(__detail::__variant::_Copy_assign_base::operator=): Remove cv-quals
+	from the operand when deciding whether to perform the assignment.
+	* testsuite/20_util/variant/compile.cc (DeletedMoves): Define type
+	with deleted move constructor and deleted move assignment operator.
+	(default_ctor, copy_ctor, move_ctor, copy_assign, move_assign): Check
+	behaviour of variants with DeletedMoves as an alternative.
+	* testsuite/20_util/variant/run.cc (DeletedMoves): Define same type.
+	(move_ctor, move_assign): Check that moving a variant with a
+	DeletedMoves alternative falls back to copying instead of moving.
+
+	* testsuite/20_util/variant/compile.cc: Remove empty string literals
+	from static_assert declarations.
+
+	* testsuite/20_util/variant/compile.cc (MoveCtorOnly): Fix type to
+	actually match its name.
+	(MoveCtorAndSwapOnly): Define new type that adds swap to MoveCtorOnly.
+	(test_swap()): Fix result for MoveCtorOnly and check
+	MoveCtorAndSwapOnly.
+
+	* include/std/optional (optional::value_or(U&&) &&): Add missing
+	constexpr specifier.
+	* testsuite/20_util/optional/constexpr/observers/4.cc: Check value_or
+	for disengaged optionals and rvalue optionals.
+	* testsuite/20_util/optional/observers/4.cc: Likewise.
+
+2019-04-12  Thomas Rodgers  <trodgers@redhat.com>
+	
+	* include/pstl/algorithm_impl.h: Uglify identfiers.
+	* include/pstl/numeric_impl.h:  Uglify identfiers.
+	* include/pstl/parallel_backend_tbb.h: Uglify identfiers.
+
+2019-04-11  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/bits/c++config:
+	Add definition for __PSTL_ASSERT.
+	Add definition for __PSTL_ASSERT_MSG.
+	* include/pstl/algorithm_impl.h: Replace use of assert().
+	* include/pstl/numeric_impl.h: Replace use of assert().
+	* include/pstl/parallel_backend_tbb.h:
+	Replace use of assert().
+	Replace use of __TBB_ASSERT().
+	* include/pstl/parallel_backend_utils.h: Replace use of assert().
+
+2019-04-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90046
+	* src/c++17/memory_resource.cc
+	(monotonic_buffer_resource::_Chunk::allocate): Increase alignment if
+	needed to allow placing a _Chunk at the end of the buffer.
+	(monotonic_buffer_resource::_M_new_buffer): Remove static_assert.
+
+2019-04-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/faq.xml: Add information about emergency EH pool.
+	* doc/xml/manual/debug.xml: Update list of memory debugging tools.
+	Move outdated information on mt_allocator to a separate section.
+	* doc/xml/manual/evolution.xml: Clarify that GLIBCXX_FORCE_NEW
+	doesn't affect the default allocator.
+
+	* testsuite/lib/libstdc++.exp (check_v3_target_parallel_mode): Fix
+	typo.
+
+	PR libstdc++/89851
+	* testsuite/20_util/variant/89851.cc: New test.
+
+2019-04-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant: Adjust whitespace. Add comments.
+	(_Multi_array): Leave primary template undefined.
+	(_Multi_array<_Tp>): Define partial specialization for base case of
+	recursion.
+	(__gen_vtable_impl, __gen_vtable): Remove redundant && from type
+	which is always a reference.
+	(__gen_vtable::_S_apply()): Remove function, inline body into
+	default member initializer.
+	* testsuite/20_util/variant/visit.cc: Test with noncopyable types.
+
+	* include/std/variant (__variant_idx_cookie): Add member type.
+	(__visitor_result_type): Remove.
+	(__do_visit): Use invoke_result instead of __visitor_result_type.
+	* testsuite/20_util/variant/visit.cc: New test.
+
+	PR libstdc++/90008
+	* include/std/variant (_VARIANT_RELATION_FUNCTION_TEMPLATE): Remove
+	unused capture.
+	* testsuite/20_util/variant/90008.cc: New test.
+
+2019-04-09  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/pstl/algorithm_impl.h: Add namespace qualification.
+	* include/pstl/execution_defs.h: Add namespace qualification.
+	* include/pstl/execution_impl.h: Add namespace qualification.
+	* include/pstl/numeric_impl.h: Add namespace qualification.
+	* include/pstl/parallel_backend_tbb.h: Add namespace qualification.
+	* include/pstl/unseq_backend_simd.h: Add namespace qualification.
+	* include/pstl/parallel_backend_utils.h: Include <cassert>.
+
+2019-04-08  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Fix visit<R> for variant.
+	* include/std/variant (__do_visit): Add a template parameter
+	for enforcing same return types for visit.
+	(__gen_vtable_impl): Likewise.
+	(_S_apply_single_alt): Adjust.
+	(__visit_invoke_impl): New. Handle casting to void.
+	(__do_visit_invoke): New. Enforces same return types.
+	(__do_visit_invoke_r): New. Converts return types.
+	(__visit_invoke): Adjust.
+	(__gen_vtable):  Add a template parameter for enforcing
+	same return types for visit.
+	* testsuite/20_util/variant/visit_r.cc: Add a test for a visitor with
+	different return types.
+	* testsuite/20_util/variant/visit_neg.cc: New. Ensures that
+	visitors with different return types don't accidentally
+	compile with regular visitation.
+
+2019-04-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* testsuite/27_io/filesystem/iterators/caching.cc: Add
+	dg-require-filesystem-ts.
+
+2019-04-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Update status.
+	* include/std/variant (visit<R>): Define for C++2a (P0655R1).
+	* testsuite/20_util/variant/visit_r.cc: New test.
+
+	* include/bits/fs_dir.h (directory_iterator::operator*)
+	(directory_iterator::operator->): Add noexcept.
+	(operator==, operator!=): Replace namespace-scope equality operators
+	for directory iterators with hidden friends.
+
+	PR libstdc++/89986
+	* config/abi/pre/gnu.ver: Add missing exports.
+	* testsuite/27_io/filesystem/iterators/directory_iterator.cc: Test
+	increment member.
+
+	* config/abi/pre/gnu.ver: Export new symbols.
+	* include/bits/fs_dir.h (recursive_directory_iterator::options())
+	(recursive_directory_iterator::recursion_pending())
+	(recursive_directory_iterator::disable_recursion_pending()): Remove
+	inline definitions. Make noexcept.
+	(recursive_directory_iterator::depth())
+	(recursive_directory_iterator::operator*())
+	(recursive_directory_iterator::operator->()): Make noexcept.
+	(recursive_directory_iterator::_M_options)
+	(recursive_directory_iterator::_M_pending): Remove data members.
+	* src/c++17/fs_path.cc (_Dir_stack): Add constructor and data members.
+	(recursive_directory_iterator::recursive_directory_iterator): Remove
+	ctor-initializer. Use new constructor for _Dir_stack.
+	(recursive_directory_iterator::options())
+	(recursive_directory_iterator::recursion_pending())
+	(recursive_directory_iterator::disable_recursion_pending()): Add
+	non-inline definitions.
+	(recursive_directory_iterator::depth()): Make noexcept.
+	(recursive_directory_iterator::increment(error_code&))
+	(recursive_directory_iterator::pop(error_code&)): Adjust to new
+	location of options and recursion_pending members.
+	* testsuite/27_io/filesystem/iterators/recursion_pending.cc: New test.
+	* testsuite/util/testsuite_fs.h (__gnu_test::scoped_file): Add
+	user-declared move constructor and assignment operator, to make the
+	type move-only.
+
+	* src/c++17/fs_dir.cc (_Dir::advance(bool, error_code&)): Handle
+	d_type == DT_UNKNOWN immediately.
+	(_Dir::should_recurse(bool, error_code&)): Remove file_type::unknown
+	handling here.
+	* testsuite/27_io/filesystem/iterators/caching.cc: New test.
+
+	* include/bits/fs_path.h (path::operator=(path&&)): Check for self
+	assignment.
+	* src/c++17/fs_path.cc (path::operator=(const path&)): Likewise.
+	* testsuite/27_io/filesystem/path/assign/copy.cc: Test self
+	assignment.
+
+	PR libstdc++/87431 (again)
+	* include/bits/basic_string.h (__variant::_Never_valueless_alt):
+	Define partial specialization for basic_string.
+	* include/bits/shared_ptr.h (_Never_valueless_alt): Likewise for
+	shared_ptr and weak_ptr.
+	* include/bits/std_function.h (_Never_valueless_alt): Likewise for
+	function.
+	* include/bits/stl_vector.h (_Never_valueless_alt): Likewise for
+	vector.
+	* include/bits/unique_ptr.h (_Never_valueless_alt): Likewise for
+	unique_ptr.
+	* include/debug/vector (_Never_valueless_alt): Likewise for debug
+	vector.
+	* include/std/any (_Never_valueless_alt): Define explicit
+	specialization for any.
+	* include/std/variant (_Never_valueless_alt): Define primary template.
+	(__never_valueless): Use _Never_valueless_alt instead of
+	is_trivially_copyable.
+	(variant::emplace<N>(Args&&...)): Add special case for non-throwing
+	initializations to avoid try-catch overhead. Add special case for
+	scalars produced by potentially-throwing conversions. Use
+	_Never_valueless_alt instead of is_trivially_copyable for the
+	remaining strong exception-safety cases.
+	(variant::emplace<N>(initializer_list<U>, Args&&...)): Likewise.
+	* testsuite/20_util/variant/87431.cc: Run both test functions.
+	* testsuite/20_util/variant/exception_safety.cc: New test.
+	* testsuite/20_util/variant/run.cc: Use pmr::string instead of string,
+	so the variant becomes valueless.
+
+2019-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85184
+	* include/std/variant (_Copy_assign_base, _Move_assign_base, variant):
+	Remove assertions.
+	(variant::emplace<_Tp>): Return result of emplace<N> directly.
+
+	* include/std/string (__hash_string_base): New class template defining
+	operator() for hashing strings.
+	(hash<pmr::string>, hash<pmr::u8string>, hash<pmr::u16string>)
+	(hash<pmr::u32string>, hash<pmr::wstring>): Define for C++17.
+	* testsuite/21_strings/basic_string/hash/hash.cc: New test.
+	* testsuite/21_strings/basic_string/hash/hash_char8_t.cc: New test.
+
+2019-04-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Use single-visitation in variant assignment and swap and relops.
+	Also use indices instead of types when checking whether
+	variants hold the same thing.
+	* include/std/variant (__do_visit): Add a template parameter
+	for index visitation, invoke with indices if index visitation
+	is used.
+	(__variant_idx_cookie): New.
+	(__visit_with_index): Likewise.
+	(_Copy_assign_base::operator=): Do single-visitation with
+	an index visitor.
+	(_Move_assign_base::operator=): Likewise.
+	(_Extra_visit_slot_needed): Adjust.
+	(__visit_invoke): Call with indices if it's an index visitor.
+	(relops): Do single-visitation with an index visitor.
+	(swap): Likewise.
+	(__visitor_result_type): New.
+
 2019-03-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* src/c++17/fs_ops.cc (fs::permissions): Use std::errc::not_supported.

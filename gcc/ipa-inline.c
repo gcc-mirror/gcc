@@ -385,12 +385,6 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
       e->inline_failed = CIF_ATTRIBUTE_MISMATCH;
       inlinable = false;
     }
-  else if (callee->externally_visible
-	   && flag_live_patching == LIVE_PATCHING_INLINE_ONLY_STATIC)
-    {
-      e->inline_failed = CIF_EXTERN_LIVE_ONLY_STATIC;
-      inlinable = false;
-    }
   if (!inlinable && report)
     report_inline_failed_reason (e);
   return inlinable;
@@ -433,6 +427,13 @@ can_inline_edge_by_limits_p (struct cgraph_edge *e, bool report,
      		 DECL_ATTRIBUTES (caller->decl))
       && !caller_growth_limits (e))
     inlinable = false;
+  else if (callee->externally_visible
+	   && !DECL_DISREGARD_INLINE_LIMITS (callee->decl)
+	   && flag_live_patching == LIVE_PATCHING_INLINE_ONLY_STATIC)
+    {
+      e->inline_failed = CIF_EXTERN_LIVE_ONLY_STATIC;
+      inlinable = false;
+    }
   /* Don't inline a function with a higher optimization level than the
      caller.  FIXME: this is really just tip of iceberg of handling
      optimization attribute.  */
@@ -2133,7 +2134,7 @@ inline_small_functions (void)
    at IPA inlining time.  */
 
 static void
-flatten_function (struct cgraph_node *node, bool early)
+flatten_function (struct cgraph_node *node, bool early, bool update)
 {
   struct cgraph_edge *e;
 
@@ -2163,7 +2164,7 @@ flatten_function (struct cgraph_node *node, bool early)
 	 it in order to fully flatten the leaves.  */
       if (!e->inline_failed)
 	{
-	  flatten_function (callee, early);
+	  flatten_function (callee, early, false);
 	  continue;
 	}
 
@@ -2203,14 +2204,15 @@ flatten_function (struct cgraph_node *node, bool early)
       inline_call (e, true, NULL, NULL, false);
       if (e->callee != orig_callee)
 	orig_callee->aux = (void *) node;
-      flatten_function (e->callee, early);
+      flatten_function (e->callee, early, false);
       if (e->callee != orig_callee)
 	orig_callee->aux = NULL;
     }
 
   node->aux = NULL;
-  if (!node->global.inlined_to)
-    ipa_update_overall_fn_summary (node);
+  if (update)
+    ipa_update_overall_fn_summary (node->global.inlined_to
+				   ? node->global.inlined_to : node);
 }
 
 /* Inline NODE to all callers.  Worker for cgraph_for_node_and_aliases.
@@ -2518,7 +2520,7 @@ ipa_inline (void)
 	 function.  */
       if (dump_file)
 	fprintf (dump_file, "Flattening %s\n", node->name ());
-      flatten_function (node, false);
+      flatten_function (node, false, true);
     }
 
   if (j < nnodes - 2)
@@ -2781,7 +2783,7 @@ early_inliner (function *fun)
       if (dump_enabled_p ())
 	dump_printf (MSG_OPTIMIZED_LOCATIONS,
 		     "Flattening %C\n", node);
-      flatten_function (node, true);
+      flatten_function (node, true, true);
       inlined = true;
     }
   else

@@ -903,7 +903,7 @@ cris_print_operand (FILE *file, rtx x, int code)
     case ':':
       /* The PIC register.  */
       if (! flag_pic)
-	internal_error ("invalid use of ':' modifier");
+	internal_error ("invalid use of %<:%> modifier");
       fprintf (file, "$%s", reg_names [PIC_OFFSET_TABLE_REGNUM]);
       return;
 

@@ -1,3 +1,30 @@
+2019-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* de.po, es.po, fr.po, sv.po: Update.
+
+2019-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.pot: Regenerate.
+
+2019-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/90041
+	* exgettext: Print MissingArgError, UnknownError or Warn
+	*.opt argument using error or warning instead of _ to mark it
+	as gcc-internal-format.
+
+	* de.po, sv.po: Update.
+
+2019-04-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/89823
+	* EXCLUDES: Update list of d/dmd sources.
+	* gcc.pot: Regenerated.
+
+2019-04-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* fr.po, sv.po: Update.
+
 2019-03-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* be.po, da.po, de.po, el.po, es.po, fi.po, fr.po, hr.po, id.po,

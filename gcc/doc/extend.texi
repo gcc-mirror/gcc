@@ -142,12 +142,34 @@ follows:
 @cindex side effects, macro argument
 But this definition computes either @var{a} or @var{b} twice, with bad
 results if the operand has side effects.  In GNU C, if you know the
-type of the operands (here taken as @code{int}), you can define
-the macro safely as follows:
+type of the operands (here taken as @code{int}), you can avoid this
+problem by defining the macro as follows:
 
 @smallexample
 #define maxint(a,b) \
   (@{int _a = (a), _b = (b); _a > _b ? _a : _b; @})
+@end smallexample
+
+Note that introducing variable declarations (as we do in @code{maxint}) can
+cause variable shadowing, so while this example using the @code{max} macro
+produces correct results:
+@smallexample
+int _a = 1, _b = 2, c;
+c = max (_a, _b);
+@end smallexample
+@noindent
+this example using maxint will not:
+@smallexample
+int _a = 1, _b = 2, c;
+c = maxint (_a, _b);
+@end smallexample
+
+This problem may for instance occur when we use this pattern recursively, like
+so:
+
+@smallexample
+#define maxint3(a, b, c) \
+  (@{int _a = (a), _b = (b), _c = (c); maxint (maxint (_a, _b), _c); @})
 @end smallexample
 
 Embedded statements are not allowed in constant expressions, such as
@@ -3925,7 +3947,15 @@ same as for the @option{-mcpu=} command-line option.
 @cindex @code{sign-return-address} function attribute, AArch64
 Select the function scope on which return address signing will be applied.  The
 behavior and permissible arguments are the same as for the command-line option
-@option{-msign-return-address=}.  The default value is @code{none}.
+@option{-msign-return-address=}.  The default value is @code{none}.  This
+attribute is deprecated.  The @code{branch-protection} attribute should
+be used instead.
+
+@item branch-protection
+@cindex @code{branch-protection} function attribute, AArch64
+Select the function scope on which branch protection will be applied.  The
+behavior and permissible arguments are the same as for the command-line option
+@option{-mbranch-protection=}.  The default value is @code{none}.
 
 @end table
 
@@ -12593,8 +12623,11 @@ check its compatibility with @var{size}.
 The @code{__builtin_has_attribute} function evaluates to an integer constant
 expression equal to @code{true} if the symbol or type referenced by
 the @var{type-or-expression} argument has been declared with
-the @var{attribute} referenced by the second argument.  Neither argument
-is evaluated.  The @var{type-or-expression} argument is subject to the same
+the @var{attribute} referenced by the second argument.  For
+an @var{type-or-expression} argument that does not reference a symbol,
+since attributes do not apply to expressions the built-in consider
+the type of the argument.  Neither argument is evaluated.
+The @var{type-or-expression} argument is subject to the same
 restrictions as the argument to @code{typeof} (@pxref{Typeof}).  The
 @var{attribute} argument is an attribute name optionally followed by
 a comma-separated list of arguments enclosed in parentheses.  Both forms

@@ -1,3 +1,62 @@
+2019-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89888
+	* c-common.h (c_add_case_label): Remove orig_type and outside_range_p
+	arguments.
+	(c_do_switch_warnings): Remove outside_range_p argument.
+	* c-common.c (check_case_bounds): Removed.
+	(c_add_case_label): Remove orig_type and outside_range_p arguments.
+	Don't call check_case_bounds.  Fold low_value as well as high_value.
+	* c-warn.c (c_do_switch_warnings): Remove outside_range_p argument.
+	Check for case labels outside of range of original type here and
+	adjust them.
+
+2019-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/90041
+	* c.opt (-fhandle-exceptions): Use %< and %> around option names
+	in the Warn diagnostics.
+
+	PR c/89946
+	* c-attribs.c (handle_patchable_function_entry_attribute): Add
+	function comment.  Warn if arguments of the attribute are not positive
+	integer constants.
+
+2019-04-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (print_destructor): Deal with deleting destructors.
+	(dump_ada_declaration) <FUNCTION_DECL>: Likewise.
+
+2019-04-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (is_float128): New predicate extracted from...
+	(dump_ada_node) <COMPLEX_TYPE>: Use it to recognize __cfloat128.
+	<REAL_TYPE>: ...here.  Call it.
+
+2019-04-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/89985
+	* c-warn.c (check_address_or_pointer_of_packed_member): Add
+	auto_diagnostic_group.  Guard inform calls by result of
+	warning_at call.
+
+2019-04-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89973 - -Waddress-of-packed-member ICE with invalid conversion. 
+	* c-warn.c (check_address_or_pointer_of_packed_member): Check the type
+	of RHS.
+
+2019-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86586 - -fcompare-debug=-Wsign-compare.
+	* c-warn.c (warn_for_sign_compare): Call fold_for_warn.
+
+2019-04-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c/89685
+	* c-attribs.c (handle_copy_attribute): Handle references and
+	non-constant expressions.
+
 2019-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87481
