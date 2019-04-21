@@ -1188,13 +1188,16 @@ version (Posix) @system unittest
     // can't run in directory if user does not have search permission on this directory
     version (Posix)
     {
-        import core.sys.posix.sys.stat : S_IRUSR;
-        auto directoryNoSearch = uniqueTempPath();
-        mkdir(directoryNoSearch);
-        scope(exit) rmdirRecurse(directoryNoSearch);
-        setAttributes(directoryNoSearch, S_IRUSR);
-        assertThrown!ProcessException(spawnProcess(prog.path, null, Config.none, directoryNoSearch));
-        assertThrown!ProcessException(spawnProcess(prog.path, null, Config.detached, directoryNoSearch));
+        if (core.sys.posix.unistd.getuid() != 0)
+        {
+            import core.sys.posix.sys.stat : S_IRUSR;
+            auto directoryNoSearch = uniqueTempPath();
+            mkdir(directoryNoSearch);
+            scope(exit) rmdirRecurse(directoryNoSearch);
+            setAttributes(directoryNoSearch, S_IRUSR);
+            assertThrown!ProcessException(spawnProcess(prog.path, null, Config.none, directoryNoSearch));
+            assertThrown!ProcessException(spawnProcess(prog.path, null, Config.detached, directoryNoSearch));
+        }
     }
 }
 
