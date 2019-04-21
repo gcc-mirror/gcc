@@ -126,6 +126,7 @@ xtensa port		Sterling Augustine	<augustine.sterling@gmail.com>
 
 aix			David Edelsohn		<dje.gcc@gmail.com>
 Android sub-port	Maxim Kuvyrkov		<maxim.kuvyrkov@linaro.org>
+darwin port		Iain Sandoe		<iain@sandoe.co.uk>
 darwin port		Mike Stump		<mikestump@comcast.net>
 DJGPP			DJ Delorie		<dj@delorie.com>
 freebsd			Andreas Tobler		<andreast@gcc.gnu.org>
