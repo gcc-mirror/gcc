@@ -519,9 +519,8 @@ extern (C) bool runModuleUnitTests()
         {
             static enum MAXFRAMES = 128;
             void*[MAXFRAMES]  callstack;
-            int               numframes;
 
-            numframes = backtrace( callstack.ptr, MAXFRAMES );
+            auto numframes = backtrace( callstack.ptr, MAXFRAMES );
             backtrace_symbols_fd( callstack.ptr, numframes, 2 );
         }
 
