@@ -1,3 +1,8 @@
+2019-04-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* modules.cc (register_module_decl): Don't register unittests against
+	the ModuleInfo symbol for -fbuilding-libphobos-tests.
+
 2019-04-17  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-system.h (POSIX): Define unix as POSIX.

@@ -836,7 +836,8 @@ register_module_decl (Declaration *d)
 	 compiling in unittests are kept track of separately so they are
 	 not omitted when compiling with -fbuilding-libphobos-tests.  */
       module_info *minfo;
-      if (flag_building_libphobos_tests && DECL_IN_UNITTEST_CONDITION_P (decl))
+      if (flag_building_libphobos_tests && !fd->isUnitTestDeclaration ()
+	  && DECL_IN_UNITTEST_CONDITION_P (decl))
 	minfo = current_testing_module;
       else
 	minfo = current_moduleinfo;
