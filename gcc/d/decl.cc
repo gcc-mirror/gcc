@@ -152,6 +152,9 @@ public:
 
   void visit (Import *d)
   {
+    if (d->semanticRun >= PASSobj)
+      return;
+
     /* Implements import declarations by telling the debug back-end we are
        importing the NAMESPACE_DECL of the module or IMPORTED_DECL of the
        declaration into the current lexical scope CONTEXT.  NAME is set if
@@ -193,6 +196,8 @@ public:
 	debug_hooks->imported_module_or_decl (decl, name, context,
 					      false, false);
       }
+
+    d->semanticRun = PASSobj;
   }
 
   /* Expand any local variables found in tuples.  */
@@ -349,6 +354,9 @@ public:
 
   void visit (StructDeclaration *d)
   {
+    if (d->semanticRun >= PASSobj)
+      return;
+
     if (d->type->ty == Terror)
       {
 	error_at (make_location_t (d->loc),
@@ -400,6 +408,8 @@ public:
 
     if (d->xhash)
       d->xhash->accept (this);
+
+    d->semanticRun = PASSobj;
   }
 
   /* Finish semantic analysis of functions in vtbl for class CD.  */
@@ -477,6 +487,9 @@ public:
 
   void visit (ClassDeclaration *d)
   {
+    if (d->semanticRun >= PASSobj)
+      return;
+
     if (d->type->ty == Terror)
       {
 	error_at (make_location_t (d->loc),
@@ -542,6 +555,8 @@ public:
     tree ctype = TREE_TYPE (build_ctype (d->type));
     if (TYPE_NAME (ctype))
       d_pushdecl (TYPE_NAME (ctype));
+
+    d->semanticRun = PASSobj;
   }
 
   /* Write out compiler generated TypeInfo and vtables for the given interface
@@ -549,6 +564,9 @@ public:
 
   void visit (InterfaceDeclaration *d)
   {
+    if (d->semanticRun >= PASSobj)
+      return;
+
     if (d->type->ty == Terror)
       {
 	error_at (make_location_t (d->loc),
@@ -581,6 +599,8 @@ public:
     tree ctype = TREE_TYPE (build_ctype (d->type));
     if (TYPE_NAME (ctype))
       d_pushdecl (TYPE_NAME (ctype));
+
+    d->semanticRun = PASSobj;
   }
 
   /* Write out compiler generated TypeInfo and initializer for the given
@@ -630,6 +650,9 @@ public:
 
   void visit (VarDeclaration *d)
   {
+    if (d->semanticRun >= PASSobj)
+      return;
+
     if (d->type->ty == Terror)
       {
 	error_at (make_location_t (d->loc),
@@ -755,6 +778,8 @@ public:
 	      }
 	  }
       }
+
+    d->semanticRun = PASSobj;
   }
 
   /* Generate and compile a static TypeInfo declaration, but only if it is
@@ -762,12 +787,16 @@ public:
 
   void visit (TypeInfoDeclaration *d)
   {
+    if (d->semanticRun >= PASSobj)
+      return;
+
     if (speculative_type_p (d->tinfo))
       return;
 
     tree t = get_typeinfo_decl (d);
     DECL_INITIAL (t) = layout_typeinfo (d);
     d_finish_decl (t);
+    d->semanticRun = PASSobj;
   }
 
   /* Finish up a function declaration and compile it all the way
