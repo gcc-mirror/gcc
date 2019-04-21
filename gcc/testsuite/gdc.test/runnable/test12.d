@@ -622,9 +622,12 @@ struct S29 {
 
 int hoge(S29 s) {
     char[10] b;
-    printf("%x\n", s);
-    sprintf(b.ptr, "%x", s);
-    assert(b[0 .. 7] == "4030201");
+    printf("%x\n", *cast(int*)&s);
+    sprintf(b.ptr, "%x", *cast(int*)&s);
+    version (LittleEndian)
+        assert(b[0 .. 7] == "4030201");
+    version (BigEndian)
+        assert(b[0 .. 7] == "1020304");
     return 0;
 }
 
