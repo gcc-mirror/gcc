@@ -120,6 +120,13 @@ version (CRuntime_Glibc)
     enum F_SETLK        = 6;
     enum F_SETLKW       = 7;
   }
+  else version (SystemZ)
+  {
+    static assert(off_t.sizeof == 8);
+    enum F_GETLK        = 5;
+    enum F_SETLK        = 6;
+    enum F_SETLKW       = 7;
+  }
   else
   static if ( __USE_FILE_OFFSET64 )
   {

@@ -193,7 +193,8 @@ else version (Windows)
     {
         pragma(lib, "snn.lib");
     }
-    import core.sys.windows.windows;
+    import core.sys.windows.winbase /+: CRITICAL_SECTION, DeleteCriticalSection,
+        EnterCriticalSection, InitializeCriticalSection, LeaveCriticalSection+/;
 
     alias Mutex = CRITICAL_SECTION;
 
@@ -206,6 +207,7 @@ else version (Posix)
 {
     import core.sys.posix.pthread;
 
+@nogc:
     alias Mutex = pthread_mutex_t;
     __gshared pthread_mutexattr_t gattr;
 
@@ -244,17 +246,17 @@ struct Monitor
 
 private:
 
-@property ref shared(Monitor*) monitor(Object h) pure nothrow
+@property ref shared(Monitor*) monitor(Object h) pure nothrow @nogc
 {
     return *cast(shared Monitor**)&h.__monitor;
 }
 
-private shared(Monitor)* getMonitor(Object h) pure
+private shared(Monitor)* getMonitor(Object h) pure @nogc
 {
     return atomicLoad!(MemoryOrder.acq)(h.monitor);
 }
 
-void setMonitor(Object h, shared(Monitor)* m) pure
+void setMonitor(Object h, shared(Monitor)* m) pure @nogc
 {
     atomicStore!(MemoryOrder.rel)(h.monitor, m);
 }
@@ -296,7 +298,7 @@ shared(Monitor)* ensureMonitor(Object h)
     }
 }
 
-void deleteMonitor(Monitor* m)
+void deleteMonitor(Monitor* m) @nogc
 {
     destroyMutex(&m.mtx);
     free(m);
