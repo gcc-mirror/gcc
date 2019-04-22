@@ -272,7 +272,7 @@ extern (C) int _aApplyRwc1(in wchar[] aa, dg_t dg)
 
         if (d & ~0x7F)
         {
-            char[4] buf;
+            char[4] buf = void;
 
             auto b = toUTF8(buf, d);
             foreach (char c2; b)
@@ -348,7 +348,7 @@ extern (C) int _aApplyRdc1(in dchar[] aa, dg_t dg)
 
         if (d & ~0x7F)
         {
-            char[4] buf;
+            char[4] buf = void;
 
             auto b = toUTF8(buf, d);
             foreach (char c2; b)
@@ -741,7 +741,7 @@ extern (C) int _aApplyRwc2(in wchar[] aa, dg2_t dg)
 
         if (d & ~0x7F)
         {
-            char[4] buf;
+            char[4] buf = void;
 
             auto b = toUTF8(buf, d);
             foreach (char c2; b)
@@ -819,7 +819,7 @@ extern (C) int _aApplyRdc2(in dchar[] aa, dg2_t dg)
 
         if (d & ~0x7F)
         {
-            char[4] buf;
+            char[4] buf = void;
 
             auto b = toUTF8(buf, d);
             foreach (char c2; b)

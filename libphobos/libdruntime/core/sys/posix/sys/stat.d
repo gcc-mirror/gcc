@@ -799,12 +799,12 @@ version (CRuntime_Glibc)
             alias __ino_t = c_ulong;
             alias __ino64_t = ulong;
             alias __mode_t = uint;
-            alias __nlink_t = uint;
+            alias __nlink_t = ulong;
             alias __uid_t = uint;
             alias __gid_t = uint;
             alias __off_t = c_long;
             alias __off64_t = long;
-            alias __blksize_t = int;
+            alias __blksize_t = c_long;
             alias __blkcnt_t = c_long;
             alias __blkcnt64_t = long;
             alias __timespec = timespec;
