@@ -6021,11 +6021,15 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  tree call = NULL_TREE;
 	  int nunits = GET_MODE_NUNITS (mode);
 
-	  /* If the second argument is an integer constant, if the value is in
-	     the expected range, generate the built-in code if we can.  We need
-	     64-bit and direct move to extract the small integer vectors.  */
-	  if (TREE_CODE (arg2) == INTEGER_CST && wi::ltu_p (arg2, nunits))
+	  /* If the second argument is an integer constant, generate
+	     the built-in code if we can.  We need 64-bit and direct
+	     move to extract the small integer vectors.  */
+	  if (TREE_CODE (arg2) == INTEGER_CST)
 	    {
+	      wide_int selector
+		= wi::to_wide (arg2, TYPE_PRECISION (TREE_TYPE (arg2)));
+	      selector = wi::umod_trunc (selector, nunits);
+	      arg2 = wide_int_to_tree (TREE_TYPE (arg2), selector);
 	      switch (mode)
 		{
 		default:
