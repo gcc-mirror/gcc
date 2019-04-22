@@ -408,11 +408,17 @@ class OutBuffer
   {
     OutBuffer buf = new OutBuffer();
     "hello"w.copy(buf);
-    assert(buf.toBytes() == "h\x00e\x00l\x00l\x00o\x00");
+    version (LittleEndian)
+        assert(buf.toBytes() == "h\x00e\x00l\x00l\x00o\x00");
+    version (BigEndian)
+        assert(buf.toBytes() == "\x00h\x00e\x00l\x00l\x00o");
   }
   {
     OutBuffer buf = new OutBuffer();
     "hello"d.copy(buf);
-    assert(buf.toBytes() == "h\x00\x00\x00e\x00\x00\x00l\x00\x00\x00l\x00\x00\x00o\x00\x00\x00");
+    version (LittleEndian)
+        assert(buf.toBytes() == "h\x00\x00\x00e\x00\x00\x00l\x00\x00\x00l\x00\x00\x00o\x00\x00\x00");
+    version (BigEndian)
+        assert(buf.toBytes() == "\x00\x00\x00h\x00\x00\x00e\x00\x00\x00l\x00\x00\x00l\x00\x00\x00o");
   }
 }
