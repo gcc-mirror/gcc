@@ -6070,6 +6070,28 @@ cleanup:
   return m;
 }
 
+static bool
+in_module_or_interface(void)
+{
+  if (gfc_current_state () == COMP_MODULE
+      || gfc_current_state () == COMP_SUBMODULE 
+      || gfc_current_state () == COMP_INTERFACE)
+    return true;
+
+  if (gfc_state_stack->state == COMP_CONTAINS
+      || gfc_state_stack->state == COMP_FUNCTION
+      || gfc_state_stack->state == COMP_SUBROUTINE)
+    {
+      gfc_state_data *p;
+      for (p = gfc_state_stack->previous; p ; p = p->previous)
+	{
+	  if (p->state == COMP_MODULE || p->state == COMP_SUBMODULE 
+	      || p->state == COMP_INTERFACE)
+	    return true;
+	}
+    }
+    return false;
+}
 
 /* Match a prefix associated with a function or subroutine
    declaration.  If the typespec pointer is nonnull, then a typespec
@@ -6102,6 +6124,13 @@ gfc_match_prefix (gfc_typespec *ts)
 	{
 	  if (!gfc_notify_std (GFC_STD_F2008, "MODULE prefix at %C"))
 	    goto error;
+
+	  if (!in_module_or_interface ())
+	    {
+	      gfc_error ("MODULE prefix at %C found outside of a module, "
+			 "submodule, or interface");
+	      goto error;
+	    }
 
 	  current_attr.module_procedure = 1;
 	  found_prefix = true;
