@@ -1,3 +1,11 @@
+2019-04-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87366 - wrong error with alias template.
+	* typeck.c (structural_comptypes): When comparing_specializations,
+	aliases are unequal.
+	(comptypes): When comparing_specializations, do structural
+	comparison.
+
 2019-04-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/90190 - CTAD with list-constructor.
