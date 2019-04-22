@@ -1,3 +1,10 @@
+2019-04-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90166
+	* decl.c (in_module_or_interface): New function to check that the
+	current state is in a module, submodule, or interface.
+	(gfc_match_prefix): Use it.
+
 2019-04-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/57284
