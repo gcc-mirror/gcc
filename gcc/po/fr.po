@@ -135,7 +135,7 @@ msgstr ""
 "Project-Id-Version: gcc 9.1-b20190414\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2019-04-13 17:21+0200\n"
-"PO-Revision-Date: 2019-04-15 05:48-0400\n"
+"PO-Revision-Date: 2019-04-21 11:13+0200\n"
 "Last-Translator: Frédéric Marchal <fmarchal@perso.be>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -20081,7 +20081,7 @@ msgstr "plus d'une clause %<depend%> avec le modificateur %<source%> sur une con
 #: gimplify.c:12186
 #, gcc-internal-format
 msgid "%<depend%> clause with %<source%> modifier specified together with %<depend%> clauses with %<sink%> modifier on the same construct"
-msgstr "une clause %<depend%> avec le modificateur %<source%> a été spécifiée avec des clauses %<depend)%> avec le modificateur %<sink%> sur la même construction"
+msgstr "une clause %<depend%> avec le modificateur %<source%> a été spécifiée avec des clauses %<depend%> avec le modificateur %<sink%> sur la même construction"
 
 #: gimplify.c:13435
 #, gcc-internal-format
@@ -21986,7 +21986,7 @@ msgstr "la contrainte de sortie %qc pour l'opérande %d n'est pas au début"
 #: stmt.c:254
 #, gcc-internal-format
 msgid "operand constraint contains incorrectly positioned %<+%> or %<=%>"
-msgstr "la contrainte de l'opérande contient un %<+%> ou un %<-%> incorrectement positionné"
+msgstr "la contrainte de l'opérande contient un %<+%> ou un %<=%> incorrectement positionné"
 
 #: stmt.c:261 stmt.c:350
 #, gcc-internal-format
@@ -22491,12 +22491,12 @@ msgstr "%<-fstack-protector%> n'est pas supporté pour cette cible"
 #: toplev.c:1769
 #, gcc-internal-format
 msgid "%<-fsanitize=address%> and %<-fsanitize=kernel-address%> are not supported for this target"
-msgstr "%<-fsanitize=adresse%> et %<-fsanitize=adresse-kernel%> ne sont pas supportés pour cette cible"
+msgstr "%<-fsanitize=address%> et %<-fsanitize=kernel-address%> ne sont pas supportés pour cette cible"
 
 #: toplev.c:1778
 #, gcc-internal-format
 msgid "%<-fsanitize=address%> not supported for this target"
-msgstr "%<-fsanitize=adresse%> n'est pas supporté pour cette cible"
+msgstr "%<-fsanitize=address%> n'est pas supporté pour cette cible"
 
 #: toplev.c:2073
 #, gcc-internal-format
@@ -26474,7 +26474,7 @@ msgstr "%<-MG%> ne peut être utilisé qu'avec %<-M%> ou %<-MM%>"
 #: c-family/c-opts.c:1365
 #, gcc-internal-format
 msgid "%<-fdirectives-only%> is incompatible with %<-Wunused-macros%>"
-msgstr "%<-fdirectives-only%> est incompatible avec %<-Wunused_macros%>"
+msgstr "%<-fdirectives-only%> est incompatible avec %<-Wunused-macros%>"
 
 #: c-family/c-opts.c:1368
 #, gcc-internal-format
@@ -26559,7 +26559,7 @@ msgstr "%<#pragma pack%> mal composée – ignoré"
 #: c-family/c-pragma.c:156
 #, gcc-internal-format
 msgid "malformed %<#pragma pack(push[, id][, <n>])%> - ignored"
-msgstr "%<#pragma pack(push[, id], <n>)%> mal composée – ignoré"
+msgstr "%<#pragma pack(push[, id][, <n>])%> mal composée – ignoré"
 
 #: c-family/c-pragma.c:158
 #, gcc-internal-format
@@ -31506,7 +31506,7 @@ msgid ""
 "Use the %<-mhwmult%> option to set this explicitly."
 msgstr ""
 "Nom de MCU %qs non reconnu, on va supposer qu'il ne dispose pas de multiplication matérielle.\n"
-"Utilisez l'option %<-mcwmult%> pour la définir explicitement."
+"Utilisez l'option %<-mhwmult%> pour la définir explicitement."
 
 #: config/msp430/msp430.c:859
 #, gcc-internal-format
@@ -31784,7 +31784,7 @@ msgstr "l'option %<-mcustom-%s%> n'a pas d'effet à moins que %<-fno-math-errno%
 #: config/nios2/nios2.c:1219
 #, gcc-internal-format
 msgid "conflicting use of %<-mcustom%> switches, target attributes, and/or %<__builtin_custom_%> functions"
-msgstr "utilisation conflictuelle des options %<-mcustom,%> des attributs de cible ou des fonctions %<__builtin_custom_%>"
+msgstr "utilisation conflictuelle des options %<-mcustom%> des attributs de cible ou des fonctions %<__builtin_custom_%>"
 
 #: config/nios2/nios2.c:1321
 #, gcc-internal-format
@@ -31954,7 +31954,7 @@ msgstr "impossible d'ouvrir le fichier ptx intermédiaire"
 #: config/nvptx/nvptx.c:197
 #, gcc-internal-format
 msgid "option %s is not supported together with %<-fopenacc%>"
-msgstr "l'option %s n'est pas supportée avec %<-fopenacc"
+msgstr "l'option %s n'est pas supportée avec %<-fopenacc%>"
 
 #: config/nvptx/nvptx.c:223
 #, gcc-internal-format
@@ -32411,7 +32411,7 @@ msgstr "erreur interne: fonction interne %qs déjà traitée"
 #: config/rs6000/rs6000.c:13378
 #, gcc-internal-format
 msgid "%<__builtin_mffsl%> not supported with %<-msoft-float%>"
-msgstr "%<__builtin_mffsl()%> n'est pas supporté avec %<-msoft-float%>"
+msgstr "%<__builtin_mffsl%> n'est pas supporté avec %<-msoft-float%>"
 
 #: config/rs6000/rs6000.c:13419
 #, gcc-internal-format
@@ -36597,7 +36597,7 @@ msgstr "utilisation invalide de la variable %<extern%> %qD dans %<#pragma acc de
 #: c/c-parser.c:15433 cp/parser.c:38830
 #, gcc-internal-format
 msgid "invalid use of %<global%> variable %qD in %<#pragma acc declare%>"
-msgstr "utilisation invalide de la variable %<globale%> %qD dans %<#pragma acc declare%>"
+msgstr "utilisation invalide de la variable %<global%> %qD dans %<#pragma acc declare%>"
 
 #: c/c-parser.c:15445 cp/parser.c:38842
 #, gcc-internal-format
@@ -38576,7 +38576,7 @@ msgstr "%qD apparaît plus d'une fois dans les clauses de mouvement"
 #: cp/semantics.c:7279
 #, gcc-internal-format
 msgid "%qD appears more than once in map clauses"
-msgstr "%qD apparaît plus d'une fois dans les clauses %<map%>"
+msgstr "%qD apparaît plus d'une fois dans les clauses « map »"
 
 #: c/c-typeck.c:14388 cp/semantics.c:7155
 #, gcc-internal-format
@@ -46596,7 +46596,7 @@ msgstr "le paquet de paramètres ne peut pas avoir d'argument par défaut"
 #: cp/parser.c:22685
 #, gcc-internal-format
 msgid "function-try-block body of %<constexpr%> constructor only available with %<-std=c++2a%> or %<-std=gnu++2a%>"
-msgstr "le corps d'un function-try-block d'un constructeur %<constexpr%> est uniquement disponible avec %<-std=c++2a%> ou %>-std=gnu++2a%>"
+msgstr "le corps d'un function-try-block d'un constructeur %<constexpr%> est uniquement disponible avec %<-std=c++2a%> ou %<-std=gnu++2a%>"
 
 #: cp/parser.c:22689
 #, gcc-internal-format
@@ -47121,7 +47121,7 @@ msgstr "%<~%> attendu"
 #: cp/parser.c:29403
 #, gcc-internal-format
 msgid "expected %<:%> or %<::%>"
-msgstr "%<;%> ou %<::%> attendu"
+msgstr "%<:%> ou %<::%> attendu"
 
 #: cp/parser.c:29430
 #, gcc-internal-format
@@ -50805,7 +50805,7 @@ msgstr "OK arithmétique en convertissant %s vers %s à %L"
 #: fortran/arith.c:1955
 #, gcc-internal-format
 msgid "Arithmetic overflow converting %s to %s at %L. This check can be disabled with the option %<-fno-range-check%>"
-msgstr "Débordement arithmétique en convertissant %s vers %s à %L. Cette vérification peut être désactivée avec l'option %<-nfo-range-check%>"
+msgstr "Débordement arithmétique en convertissant %s vers %s à %L. Cette vérification peut être désactivée avec l'option %<-fno-range-check%>"
 
 #: fortran/arith.c:1960
 #, gcc-internal-format
@@ -55617,7 +55617,7 @@ msgstr "add_sym(): Mauvais mode de dimensionnement"
 #: fortran/intrinsic.c:1125
 #, gcc-internal-format
 msgid "The intrinsic %qs at %L is not included in the selected standard but %s and %qs will be treated as if declared EXTERNAL.  Use an appropriate %<-std=%>* option or define %<-fall-intrinsics%> to allow this intrinsic."
-msgstr "L'intrinsèque %qs à %L n'est pas inclus dans le standard sélectionné mais %s et %qs seront traités comme si ils avaient été déclarés EXTERNAL.  Utilisez l'option %<-std=*%> appropriée ou définissez %<-fall-intrinsics%> pour autoriser ces intrinsèques"
+msgstr "L'intrinsèque %qs à %L n'est pas inclus dans le standard sélectionné mais %s et %qs seront traités comme si ils avaient été déclarés EXTERNAL.  Utilisez l'option %<-std=%> appropriée ou définissez %<-fall-intrinsics%> pour autoriser ces intrinsèques"
 
 #: fortran/intrinsic.c:1160
 #, gcc-internal-format
@@ -59808,7 +59808,7 @@ msgstr "%qs déclaré INTRINSIC à %L n'existe pas"
 #: fortran/resolve.c:1821
 #, gcc-internal-format
 msgid "The intrinsic %qs declared INTRINSIC at %L is not available in the current standard settings but %s. Use an appropriate %<-std=*%> option or enable %<-fall-intrinsics%> in order to use it."
-msgstr "L'intrinsèque %qs déclaré INTRINSIC à %L n'est pas disponible avec les paramètres standard actuels mais est %s. Utilisez l'option %<-std=*%> appropriée ou activez %<-fall-intrinsic%> de manière à pouvoir l'utiliser."
+msgstr "L'intrinsèque %qs déclaré INTRINSIC à %L n'est pas disponible avec les paramètres standard actuels mais est %s. Utilisez l'option %<-std=*%> appropriée ou activez %<-fall-intrinsics%> de manière à pouvoir l'utiliser."
 
 #: fortran/resolve.c:1857
 #, gcc-internal-format
