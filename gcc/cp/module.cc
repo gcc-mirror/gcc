@@ -7660,15 +7660,43 @@ trees_out::tree_mergeable (depset *dep)
       bflush ();
     }
 
-  if (dep->get_entity_kind () == depset::EK_DECL)
+  tree inner = decl;
+
+  if (TREE_CODE (inner) == TEMPLATE_DECL)
     {
-      tree inner = decl;
-
-      if (TREE_CODE (inner) == TEMPLATE_DECL)
+      inner = DECL_TEMPLATE_RESULT (inner);
+      if (streaming_p ())
 	{
-	  tpl_parms (DECL_TEMPLATE_PARMS (inner));
-	  inner = DECL_TEMPLATE_RESULT (inner);
+	  u (TREE_CODE (inner));
+	  tree_node_specific (inner);
+	  core_bools (inner);
+	  bflush ();
+	}
 
+      if (!is_specialization)
+	{
+	  tpl_parms (DECL_TEMPLATE_PARMS (decl));
+
+	  if (TREE_CODE (inner) == FUNCTION_DECL)
+	    tree_node (TREE_TYPE (TREE_TYPE (inner)));
+	}
+    }
+
+  switch (TREE_CODE (inner))
+    {
+    case FUNCTION_DECL:
+      if (!is_specialization)
+	fn_parms (TYPE_ARG_TYPES (TREE_TYPE (inner)));
+      break;
+
+    case VAR_DECL:
+      break;
+
+    case TYPE_DECL:
+      if (DECL_IMPLICIT_TYPEDEF_P (inner))
+	{
+	  inner = TREE_TYPE (inner);
+	  gcc_assert (TYPE_MAIN_VARIANT (inner) == inner);
 	  if (streaming_p ())
 	    {
 	      u (TREE_CODE (inner));
@@ -7676,39 +7704,12 @@ trees_out::tree_mergeable (depset *dep)
 	      core_bools (inner);
 	      bflush ();
 	    }
-
-	  if (TREE_CODE (inner) == FUNCTION_DECL)
-	    tree_node (TREE_TYPE (TREE_TYPE (inner)));
 	}
-
-      switch (TREE_CODE (inner))
-	{
-	case FUNCTION_DECL:
-	  fn_parms (TYPE_ARG_TYPES (TREE_TYPE (inner)));
-	  break;
-
-	case VAR_DECL:
-	  break;
-
-	case TYPE_DECL:
-	  if (DECL_IMPLICIT_TYPEDEF_P (inner))
-	    {
-	      inner = TREE_TYPE (inner);
-	      gcc_assert (TYPE_MAIN_VARIANT (inner) == inner);
-	      if (streaming_p ())
-		{
-		  u (TREE_CODE (inner));
-		  tree_node_specific (inner);
-		  core_bools (inner);
-		  bflush ();
-		}
-	    }
-	  break;
+      break;
 	  
-	default:
-	  // FIXME: More cases
-	  gcc_unreachable ();
-	}
+    default:
+      // FIXME: More cases
+      gcc_unreachable ();
     }
 
   int tag = insert (decl);
@@ -7743,59 +7744,64 @@ trees_in::tree_mergeable (bool mod_mergeable)
   bflush ();
 
   DECL_SOURCE_LOCATION (decl) = loc;
+
   if (is_specialization)
     {
-      // construct TEMPLATE_INFO?
+      DECL_CONTEXT (decl) = DECL_CONTEXT (ctx);
+      args = name;
+      name = DECL_NAME (ctx);
     }
   else
-    {
-      DECL_CONTEXT (decl) = FROB_CONTEXT (ctx);
-      DECL_NAME (decl) = name;
+    DECL_CONTEXT (decl) = FROB_CONTEXT (ctx);
+  DECL_NAME (decl) = name;
 
-      tree inner = decl;
-      if (code == TEMPLATE_DECL)
+  tree inner = decl;
+  if (code == TEMPLATE_DECL)
+    {
+      code = u ();
+      inner = start (code, tcc_declaration);
+      if (!inner)
+	return;
+
+      tree_node_specific (inner, false);
+      core_bools (inner);
+      bflush ();
+      DECL_TEMPLATE_RESULT (decl) = inner;
+      DECL_CONTEXT (inner) = DECL_CONTEXT (decl);
+      DECL_NAME (inner) = name;
+      if (!is_specialization)
 	{
 	  tpl = tpl_parms ();
-	  code = u ();
-	  inner = start (code, tcc_declaration);
-	  if (!inner)
-	    return;
-
-	  tree_node_specific (inner, false);
-	  core_bools (inner);
-	  bflush ();
-	  DECL_TEMPLATE_RESULT (decl) = inner;
-	  DECL_CONTEXT (inner) = DECL_CONTEXT (decl);
-	  DECL_NAME (inner) = name;
 	  if (code == FUNCTION_DECL)
 	    ret = tree_node ();
 	}
+    }
 
-      switch (code)
-	{
-	case FUNCTION_DECL:
-	  args = fn_parms ();
-	  break;
+  switch (code)
+    {
+    case FUNCTION_DECL:
+      if (!is_specialization)
+	args = fn_parms ();
+      break;
 
-	case VAR_DECL:
-	  break;
+    case VAR_DECL:
+      break;
 
-	case TYPE_DECL:
-	  if (DECL_IMPLICIT_TYPEDEF_P (inner))
-	    if (tree type = start (u (), tcc_type))
-	      {
-		tree_node_specific (type, false);
-		core_bools (type);
-		bflush ();
-		TREE_TYPE (inner) = type;
-		TYPE_NAME (type) = inner;
-	      }
-	  break;
+    case TYPE_DECL:
+      if (DECL_IMPLICIT_TYPEDEF_P (inner))
+	if (tree type = start (u (), tcc_type))
+	  {
+	    tree_node_specific (type, false);
+	    core_bools (type);
+	    bflush ();
+	    TREE_TYPE (inner) = type;
+	    TYPE_NAME (type) = inner;
+	  }
+      break;
 
-	default:
-	  // FIXME: More cases
-	  set_overrun ();
-	}
+      default:
+	// FIXME: More cases
+	set_overrun ();
     }
 
   if (get_overrun ())
@@ -7805,7 +7811,7 @@ trees_in::tree_mergeable (bool mod_mergeable)
   if (is_mod && !mod_mergeable)
     kind = "unique";
   else if (tree existing = is_specialization
-	   ? match_mergeable_specialization (decl, ctx, name)
+	   ? match_mergeable_specialization (decl, ctx, args)
 	   : match_mergeable_decl (decl, ctx, name, is_mod, tpl, ret, args))
     {
       decl = existing;
