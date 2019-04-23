@@ -1,5 +1,8 @@
 2019-04-23  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* Make-lang.in: Wedge revision number into REVISISON_s.
+
 	Function instantiation merging
 	gcc/cp/
 	* cp-tree.h (get_module_owner): Add tpl_owner parm.
