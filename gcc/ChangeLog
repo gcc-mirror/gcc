@@ -1,3 +1,10 @@
+2018-04-23  Sudakshina Das  <sudi.das@arm.com>
+
+	* config/aarch64/aarch64-linux.h (TARGET_ASM_FILE_END): Define for
+	AArch64.
+	(aarch64_file_end_indicate_exec_stack): Add gnu note section.
+
+
 2019-04-23  Roman Zhuykov  <zhroma@ispras.ru>
 
 	PR rtl-optimization/87979
