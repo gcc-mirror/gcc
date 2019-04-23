@@ -6808,7 +6808,7 @@ extern module_state *get_module (tree name, module_state *parent = NULL,
 				 bool partition = false);
 extern void module_preprocess (mrules *, module_state *, int is_module);
 extern bool module_may_redeclare (unsigned);
-extern tree get_module_owner (tree) ATTRIBUTE_PURE;
+extern tree get_module_owner (tree, bool = false) ATTRIBUTE_PURE;
 extern void set_module_owner (tree);
 extern void mangle_module (int m);
 extern void mangle_module_fini ();
@@ -7019,6 +7019,7 @@ extern bool deduction_guide_p			(const_tree);
 extern bool copy_guide_p			(const_tree);
 extern bool template_guide_p			(const_tree);
 extern void store_explicit_specifier		(tree, tree);
+extern tree match_mergeable_specialization	(tree, tree, tree);
 
 /* in repo.c */
 extern void init_repo				(void);

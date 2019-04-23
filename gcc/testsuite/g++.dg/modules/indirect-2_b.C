@@ -19,7 +19,7 @@ namespace bar
 
 // { dg-final { scan-lang-dump {Lazily binding '::foo::frob'@'foo' section} module } }
 // { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::frob@2\(foo\)'@foo} module } }
-// { dg-final { scan-lang-dump {Wrote instantiation:-[0-9]* function_decl:'::foo::frob@2\(foo\)<0x0>'@} module } }
+// { dg-final { scan-lang-dump {Wrote mergeable:-[0-9]* function_decl:'::foo::frob@1\(bar\)<0x0>'} module } }
 
 // { dg-final { scan-lang-dump {Lazily binding '::foo::X'@'foo' section:} module } }
 // { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::X@2\(foo\)'@foo} module } }

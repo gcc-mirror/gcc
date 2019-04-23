@@ -2854,7 +2854,7 @@ public:
 static loc_spans spans;
 
 /********************************************************************/
-/* Unnamed declarations.   */
+/* Unnamed declarations.  (a) voldemort types, (b) instantiations.  */
 
 static GTY(()) vec<mc_slot, va_gc> *unnamed_ary;
 typedef hash_map<unsigned/*UID*/, unsigned/*index*/,
@@ -6460,9 +6460,16 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
     {
       /* If we requested by-value, this better not be a cross-module
 	 import.  */
-      gcc_checking_assert ((*modules)[MAYBE_DECL_MODULE_OWNER
-				      (get_module_owner (decl))]->remap
-			   < MODULE_IMPORT_BASE);
+      // FIXME: For now only namespace-scope fdecl instantiations are streamed.
+      if (TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_NAMESPACE_SCOPE_P (decl))
+	gcc_checking_assert ((*modules)[MAYBE_DECL_MODULE_OWNER
+					(get_module_owner (decl, true))]->remap
+			     < MODULE_IMPORT_BASE);
+      else
+	gcc_checking_assert ((*modules)[MAYBE_DECL_MODULE_OWNER
+					(get_module_owner (decl, false))]->remap
+			     < MODULE_IMPORT_BASE);
       return true;
     }
 
@@ -6504,7 +6511,25 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	  enum tree_code ctx_code = TREE_CODE (DECL_CONTEXT (tpl));
 	  if ((RECORD_OR_UNION_CODE_P (ctx_code) || ctx_code == ENUMERAL_TYPE)
 	      && !DECL_MEMBER_TEMPLATE_P (tpl))
+	    // FIXME: The body could be instantiated elsewhere to the context?
 	    ; /* Implicit member template.  */
+	  else if (TREE_CODE (decl) == FUNCTION_DECL
+		   && DECL_NAMESPACE_SCOPE_P (decl))
+	    {
+	      // FIXME: Let's just do namespace-scope function decls for now
+	      owner = MAYBE_DECL_MODULE_OWNER (decl);
+	      owner = (*modules)[owner]->remap;
+	      if (streaming_p ())
+		{
+		  gcc_unreachable ();
+		}
+	      else
+		{
+		  dep_hash->add_dependency (decl, depset::EK_SPECIALIZATION);
+		  kind = "fn_instantiation";
+		  goto insert;
+		}
+	    }
 	  else
 	    {
 	      // FIXME: this should be a dependency and serialized as
@@ -6527,7 +6552,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 
   {
     /* Find the owning module and determine what to do.  */
-    tree owner_decl = get_module_owner (decl);
+    tree owner_decl = get_module_owner (decl, true);
     owner = MAYBE_DECL_MODULE_OWNER (owner_decl);
     if (owner >= MODULE_IMPORT_BASE)
       owner = (*modules)[owner]->remap;
@@ -7182,10 +7207,13 @@ trees_in::tree_node ()
 	  }
 	else
 	  {
+	    // FIXME: I think owner is only needed for namespace-scope CTX?
 	    owner = u ();
 	    owner = state->slurp ()->remap_module (owner);
 	    int ident = i ();
-	    if (owner != MODULE_NONE && !get_overrun ())
+	    if ((owner != MODULE_NONE
+		 || TREE_CODE (ctx) != NAMESPACE_DECL)
+		&& !get_overrun ())
 	      {
 		res = lookup_by_ident (ctx, name, owner, ident);
 		if (!res)
@@ -7586,21 +7614,32 @@ trees_out::tree_mergeable (depset *dep)
   gcc_checking_assert (DECL_P (decl));
   tree inner = decl;
 
-  tree_ctx (CP_DECL_CONTEXT (inner), true, inner);
-  tree_node (DECL_NAME (inner));
-
-  unsigned is_mod = false;
-  if (!module_header_p ())
-    is_mod = MAYBE_DECL_MODULE_OWNER (decl) != MODULE_NONE;
-
   if (streaming_p ())
-    {
-      u (is_mod);
+    state->write_location (*this, DECL_SOURCE_LOCATION (decl));
 
-      state->write_location (*this, DECL_SOURCE_LOCATION (inner));
+  if (dep->get_entity_kind () == depset::EK_SPECIALIZATION)
+    {
+      /* The template will not be a namespace!  */
+      tree_node (most_general_template (decl));
+      tree_node (DECL_TI_ARGS (decl));
+    }
+  else
+    {
+      tree ctx = CP_DECL_CONTEXT (decl);
+      gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
+      tree_ctx (ctx, true, decl);
+      tree_node (DECL_NAME (decl));
+
+      if (streaming_p ())
+	{
+	  unsigned is_mod = false;
+	  if (!module_header_p ())
+	    is_mod = MAYBE_DECL_MODULE_OWNER (decl) != MODULE_NONE;
+	  u (is_mod);
+	}
     }
 
- again:
+ again: // FIXME: This kind of loop is icky
   if (streaming_p ())
     {
       u (TREE_CODE (inner));
@@ -7609,56 +7648,61 @@ trees_out::tree_mergeable (depset *dep)
       bflush ();
     }
 
-  switch (TREE_CODE (inner))
-    {
-    case TEMPLATE_DECL:
-      tpl_parms (DECL_TEMPLATE_PARMS (inner));
-      inner = DECL_TEMPLATE_RESULT (inner);
-      goto again;
+  if (dep->get_entity_kind () == depset::EK_DECL)
+    switch (TREE_CODE (inner))
+      {
+      case TEMPLATE_DECL:
+	tpl_parms (DECL_TEMPLATE_PARMS (inner));
+	inner = DECL_TEMPLATE_RESULT (inner);
+	goto again;
 
-    case FUNCTION_DECL:
-      if (inner != decl)
-	tree_node (TREE_TYPE (TREE_TYPE (inner)));
-      fn_parms (TYPE_ARG_TYPES (TREE_TYPE (inner)));
-      break;
+      case FUNCTION_DECL:
+	if (inner != decl)
+	  tree_node (TREE_TYPE (TREE_TYPE (inner)));
+	fn_parms (TYPE_ARG_TYPES (TREE_TYPE (inner)));
+	break;
 
-    case VAR_DECL:
-      break;
+      case VAR_DECL:
+	break;
 
-    case TYPE_DECL:
-      if (DECL_IMPLICIT_TYPEDEF_P (inner))
-	{
-	  inner = TREE_TYPE (inner);
-	  gcc_assert (TYPE_MAIN_VARIANT (inner) == inner);
-	  if (streaming_p ())
-	    {
-	      u (TREE_CODE (inner));
-	      tree_node_specific (inner);
-	      core_bools (inner);
-	      bflush ();
-	    }
-	}
-      break;
+      case TYPE_DECL:
+	if (DECL_IMPLICIT_TYPEDEF_P (inner))
+	  {
+	    inner = TREE_TYPE (inner);
+	    gcc_assert (TYPE_MAIN_VARIANT (inner) == inner);
+	    if (streaming_p ())
+	      {
+		u (TREE_CODE (inner));
+		tree_node_specific (inner);
+		core_bools (inner);
+		bflush ();
+	      }
+	  }
+	break;
 
-    default:
-      // FIXME: More cases
-      gcc_unreachable ();
-    }
+      default:
+	// FIXME: More cases
+	gcc_unreachable ();
+      }
 
   int tag = insert (decl);
   if (streaming_p ())
     dump (dumper::MERGE)
-      && dump ("Wrote:%d global decl %C:%N", tag, TREE_CODE (decl), decl);
+      && dump ("Wrote:%d global %s %C:%N", tag,
+	       dep->entity_kind_name (), TREE_CODE (decl), decl);
 }
 
 void
 trees_in::tree_mergeable (bool mod_mergeable)
 {
   tree decl = NULL_TREE;
-  tree ctx = tree_node ();
-  tree name = tree_node ();
-  bool is_mod = u ();
   location_t loc = state->read_location (*this);
+
+  tree ctx = tree_node ();  /* Template or namespace.  */
+  tree name = tree_node ();  /* Identifier or template args.  */
+
+  bool is_specialization = ctx && TREE_CODE (ctx) != NAMESPACE_DECL;
+  bool is_mod = !is_specialization && u ();
 
   tree tpl = NULL_TREE;
   tree ret = NULL_TREE;
@@ -7670,43 +7714,51 @@ trees_in::tree_mergeable (bool mod_mergeable)
       tree_node_specific (inner, false);
       core_bools (inner);
       bflush ();
-      
-      DECL_CONTEXT (inner) = FROB_CONTEXT (ctx);
-      DECL_NAME (inner) = name;
+
       DECL_SOURCE_LOCATION (inner) = loc;
-
-      (decl ? DECL_TEMPLATE_RESULT (decl) : decl) = inner;
-
-      switch (TREE_CODE (inner))
+      if (is_specialization)
 	{
-	case TEMPLATE_DECL:
-	  tpl = tpl_parms ();
-	  goto again;
+	  decl = inner;
+	  // construct TEMPLATE_INFO?
+	}
+      else
+	{
+	  DECL_CONTEXT (inner) = FROB_CONTEXT (ctx);
+	  DECL_NAME (inner) = name;
 
-	case FUNCTION_DECL:
-	  if (inner != decl)
-	    ret = tree_node ();
-	  args = fn_parms ();
-	  break;
+	  (decl ? DECL_TEMPLATE_RESULT (decl) : decl) = inner;
 
-	case VAR_DECL:
-	  break;
+	  switch (TREE_CODE (inner))
+	    {
+	    case TEMPLATE_DECL:
+	      tpl = tpl_parms ();
+	      goto again;
 
-	case TYPE_DECL:
-	  if (DECL_IMPLICIT_TYPEDEF_P (inner))
-	    if (tree type = start (u (), tcc_type))
-	      {
-		tree_node_specific (type, false);
-		core_bools (type);
-		bflush ();
-		TREE_TYPE (inner) = type;
-		TYPE_NAME (type) = inner;
-	      }
-	  break;
+	    case FUNCTION_DECL:
+	      if (inner != decl)
+		ret = tree_node ();
+	      args = fn_parms ();
+	      break;
 
-	default:
-	  // FIXME: More cases
-	  set_overrun ();
+	    case VAR_DECL:
+	      break;
+
+	    case TYPE_DECL:
+	      if (DECL_IMPLICIT_TYPEDEF_P (inner))
+		if (tree type = start (u (), tcc_type))
+		  {
+		    tree_node_specific (type, false);
+		    core_bools (type);
+		    bflush ();
+		    TREE_TYPE (inner) = type;
+		    TYPE_NAME (type) = inner;
+		  }
+	      break;
+
+	    default:
+	      // FIXME: More cases
+	      set_overrun ();
+	    }
 	}
     }
 
@@ -7715,8 +7767,10 @@ trees_in::tree_mergeable (bool mod_mergeable)
       const char *kind = "new";
       if (is_mod && !mod_mergeable)
 	kind = "unique";
-      else if (tree existing
-	       = match_mergeable_decl (decl, ctx, name, is_mod, tpl, ret, args))
+      else if (tree existing = is_specialization
+	       ? match_mergeable_specialization (decl, ctx, name)
+	       : match_mergeable_decl (decl, ctx, name, is_mod,
+				       tpl, ret, args))
 	{
 	  decl = existing;
 	  mergeables.quick_push (decl);
@@ -7727,7 +7781,8 @@ trees_in::tree_mergeable (bool mod_mergeable)
 
       int tag = insert (decl);
       dump (dumper::MERGE)
-	&& dump ("Read:%d %s mergeable decl %C:%N", tag, kind,
+	&& dump ("Read:%d %s mergeable %s %C:%N", tag, kind,
+		 is_specialization ? "specialization" : "decl",
 		 TREE_CODE (decl), decl);
     }
 }
@@ -8694,7 +8749,8 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	    /* Dependency of a namespace binding.  */;
 	  else if (ek == EK_NAMESPACE)
 	    /* Dependency is a namespace.  */;
-	  else if (ek == EK_UNNAMED)
+	  else if (ek == EK_UNNAMED
+		   || ek == EK_SPECIALIZATION)
 	    {
 	    /* Dependency is unnameable.  We do not have to apply the
 	       below checks to this entity, because we can only refer
@@ -8775,7 +8831,8 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	    dep->deps.safe_push (current);
 	  else
 	    {
-	      if (dep->get_entity_kind () == EK_UNNAMED)
+	      if (dep->get_entity_kind () == EK_UNNAMED
+		  || dep->get_entity_kind () == EK_SPECIALIZATION)
 		current->set_flag_bit<DB_REFS_UNNAMED_BIT> ();
 
 	      if (dep->is_internal ())
@@ -9196,7 +9253,7 @@ depset::hash::connect (auto_vec<depset *> &sccs, bool for_mergeable)
 	(v->is_binding ()
 	 ? dump ("Connecting binding %P", v->get_entity (), v->get_name ())
 	 : dump ("Connecting %s %s %C:%N",
-		 is_mergeable_dep () ? "mergeable "
+		 is_mergeable_dep () ? "mergeable"
 		 : !v->has_defn () ? "declaration" : "definition",
 		 v->entity_kind_name (), TREE_CODE (v->get_entity ()),
 		 v->get_entity ()));
@@ -10408,11 +10465,6 @@ module_state::write_readme (elf_out *to, const char *options,
   version2string (MODULE_VERSION, string);
   readme.printf ("version: %s", string);
 
-#ifdef MODULE_REVISION
-  if (MODULE_REVISION[0])
-    readme.printf ("revision: %s", MODULE_REVISION);
-#endif
-
   /* Module information.  */
   readme.printf ("module: %s%s", get_flatname (true), get_flatname ());
   readme.printf ("source: %s", main_input_filename);
@@ -10745,7 +10797,8 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
       if (b->refs_unnamed ())
 	refs_unnamed_p = true;
 
-      if (b->get_entity_kind () == depset::EK_UNNAMED)
+      if (b->get_entity_kind () == depset::EK_UNNAMED
+	  || b->get_entity_kind () == depset::EK_SPECIALIZATION)
 	{
 	  /* There is no binding for this decl.  It is therefore not
 	     findable by name.  Determine its horcrux number.  */
@@ -10753,8 +10806,9 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  b->cluster = ++unnamed;
 	}
 
-      if (b->get_entity_kind () == depset::EK_DECL
-	  && TREE_PUBLIC (CP_DECL_CONTEXT (decl)))
+      if (b->get_entity_kind () == depset::EK_SPECIALIZATION
+	  || (b->get_entity_kind () == depset::EK_DECL
+	      && TREE_PUBLIC (CP_DECL_CONTEXT (decl))))
 	{
 	  // FIXME: What about non-mergeable decls in this SCC that
 	  // are nevertheless referenced in locating the mergeable
@@ -10788,9 +10842,9 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  for (unsigned jx = 0; jx != b->deps.length (); jx++)
 	    {
 	      depset *d = b->deps[jx];
-	      if (!d->is_binding ()
-		  && (d->is_imported_entity ()
-		      || d->cluster <= incoming_unnamed))
+	      if ((d->get_entity_kind () == depset::EK_UNNAMED
+		   || d->get_entity_kind () == depset::EK_SPECIALIZATION)
+		  && d->cluster <= incoming_unnamed)
 		{
 		  tree u_decl = d->get_entity ();
 		  if (!TREE_VISITED (u_decl))
@@ -10823,6 +10877,10 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 					 type_tag, u_decl);
 		    }
 		}
+	      else
+		/* All imported entities will have zero cluster.  */
+		gcc_checking_assert (d->is_binding () ||
+				     !d->is_imported_entity ());
 	    }
 	}
 
@@ -10836,6 +10894,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	 them below.  */
       for (unsigned ix = 0; ix != len; ix++)
 	sec.mark_mergeable (mergeables[ix]);
+      dump () && dump ("Seeded %d mergeables", len);
     }
 
   /* Mark members for walking.  */
@@ -10919,9 +10978,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  break;
 
 	case depset::EK_SPECIALIZATION:
-	  // FIXME:
-	  break;
-
 	case depset::EK_DECL:
 	case depset::EK_UNNAMED:
 	  {
@@ -11117,6 +11173,7 @@ module_state::read_cluster (unsigned snum)
 	    sec.reserve_mergeables (len);
 	    for (unsigned ix = 0; !sec.get_overrun () && ix != len; ix++)
 	      sec.tree_mergeable (is_primary () || is_partition ());
+	    dump () && dump ("Seeded %u mergeables", len);
 	  }
 	  break;
 
@@ -12320,7 +12377,7 @@ module_state::read_define (bytes_in &sec, cpp_reader *reader, bool located) cons
 
 	case CPP_TOKEN_FLD_STR:
 	  /* A string, number or comment.  */
-	  token->val.str.len = sec.z ();
+	  token->val.str.len = sec.u ();
 	  len += token->val.str.len + 1;
 	  break;
 
@@ -13936,7 +13993,7 @@ module_visible_instantiation_path (bitmap *path_map_p)
 	  if (TREE_CODE (decl) == TREE_LIST)
 	    decl = TREE_PURPOSE (decl);
 	  if (TYPE_P (decl))
-	    decl = TYPE_NAME (decl);
+	    decl = TYPE_STUB_DECL (decl);
 	  decl = get_module_owner (decl);
 	  if (unsigned mod = MAYBE_DECL_MODULE_OWNER (decl))
 	    if (!bitmap_bit_p (path_map, mod))
@@ -13979,14 +14036,23 @@ module_state::set_import (module_state const *other, bool is_export)
    of DECL.  That may be DECL itself, or it may DECL's context, or it
    may be some other DECL (for instance an unscoped enum's CONST_DECLs
    are owned by the TYPE_DECL).  */
-// FIXME: May need a variant that gets the owning module of a specialization
+
 tree
-get_module_owner (tree decl)
+get_module_owner (tree decl, bool inst_owner_p)
 {
   gcc_checking_assert (TREE_CODE (decl) != NAMESPACE_DECL);
 
   for (tree ctx;; decl = ctx)
     {
+      int use;
+      tree ti = node_template_info (decl, use);
+      if (use > 0)
+	{
+	  if (inst_owner_p)
+	    return decl;
+	  decl = DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti));
+	}
+
       ctx = CP_DECL_CONTEXT (decl);
       if (TREE_CODE (ctx) == NAMESPACE_DECL)
 	break;
@@ -14040,7 +14106,7 @@ set_module_owner (tree decl)
   if (!DECL_NAMESPACE_SCOPE_P (decl))
     return;
 
-  gcc_checking_assert (STRIP_TEMPLATE (decl) == get_module_owner (decl));
+  gcc_checking_assert (STRIP_TEMPLATE (decl) == get_module_owner (decl, true));
 
   // FIXME: Check ill-formed linkage
 

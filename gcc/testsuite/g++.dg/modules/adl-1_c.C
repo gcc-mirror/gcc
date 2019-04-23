@@ -1,6 +1,7 @@
 // { dg-additional-options -fmodules-ts }
 
 import inter;
+
 namespace details
 {
 
@@ -44,10 +45,12 @@ int main ()
   details::X x(2);
   hidden::Y y(2);
 
-  if (TPL (x) != 2)
+  // details::fn@worker is visible from TPL@inter
+  if (TPL (x) != 2) // instantiate TPL<details::X>(T&)
     return 1;
 
-  if (TPL (y) != -2)
+  // hidden::fn@inter is visible from TPL@inter
+  if (TPL (y) != -2) // instantiate TPL<hidden::Y>(T&)
     return 2;
 
   return 0;

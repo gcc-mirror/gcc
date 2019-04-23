@@ -872,6 +872,10 @@ maybe_write_module (tree decl)
   if (DECL_MODULE_EXPORT_P (owner))
     return;
 
+  if (tree ti = maybe_template_info (decl))
+    // FIXME: most general template?
+    owner = TI_TEMPLATE (ti);
+
   /* Legacy modules have an owner, but everything from them is
      exported so we never get here in that case.  */
   if (MAYBE_DECL_MODULE_OWNER (owner) == MODULE_NONE)

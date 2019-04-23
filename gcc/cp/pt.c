@@ -19802,6 +19802,11 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
       return error_mark_node;
     }
 
+  /* Regardless of where the template came from, this instantiation is
+     owned by this TU.  */
+  DECL_MODULE_OWNER (fndecl)
+    = module_purview_p () ? MODULE_PURVIEW : MODULE_NONE;
+
   /* The DECL_TI_TEMPLATE should always be the immediate parent
      template, not the most general template.  */
   DECL_TI_TEMPLATE (fndecl) = tmpl;
@@ -24506,10 +24511,6 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
       SET_DECL_IMPLICIT_INSTANTIATION (d);
     }
 
-  if (TREE_CODE (d) == FUNCTION_DECL
-      || TREE_CODE (CP_DECL_CONTEXT (d)) == NAMESPACE_DECL)
-    set_implicit_module_owner (d, gen_tmpl);
-
   /* Defer all other templates, unless we have been explicitly
      forbidden from doing so.  */
   if (/* If there is no definition, we cannot instantiate the
@@ -28237,6 +28238,28 @@ declare_integer_pack (void)
   DECL_BUILT_IN_CLASS (ipfn) = BUILT_IN_FRONTEND;
   DECL_FUNCTION_CODE (ipfn)
     = (enum built_in_function) (int) CP_BUILT_IN_INTEGER_PACK;
+}
+
+tree
+match_mergeable_specialization (tree spec, tree tmpl, tree args)
+{
+  spec_entry elt = {tmpl, args, NULL_TREE};
+  hash_table<spec_hasher> *specializations;
+  if (DECL_CLASS_TEMPLATE_P (tmpl))
+    specializations = type_specializations;
+  else
+    specializations = decl_specializations;
+  spec_entry **slot = specializations->find_slot (&elt, INSERT);
+  spec_entry *entry = *slot;
+  if (entry)
+    return entry->spec;
+
+  entry = ggc_alloc<spec_entry> ();
+  *entry = elt;
+  entry->spec = spec;
+  *slot = entry;
+
+  return NULL_TREE;
 }
 
 /* Set up the hash tables for template instantiations.  */

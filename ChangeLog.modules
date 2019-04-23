@@ -1,3 +1,31 @@
+2019-04-23  Nathan Sidwell  <nathan@acm.org>
+
+	Function instantiation merging
+	gcc/cp/
+	* cp-tree.h (get_module_owner): Add tpl_owner parm.
+	(match_mergeable_specialization): New.
+	* mangle.c (maybe_write_module): Look through template
+	instantiations.
+	* method.c (implicitly_declare_fn): Do not set owner here.
+	* module.cc (trees_out::tree_decl): Namespace-scope function
+	instantiations are merged.
+	(trees_in::tree_node): Likewise.
+	(trees_{in,out}::tree_mergeable): Allow instantiation merging.
+	(depset::hash::add_dependency): Specializations are unnameable.
+	(module_state::write_cluster): Seed specializations too.
+	(module_state::read_define): Fix size_t/unsigned mismatch.
+	(module_visible_instantiation_path): Use TYPE_STUB_DECL.
+	(get_module_owner): Add inst_owner_p arg.  Look through
+	instantiation, or don't.
+	* pt.c (instantiate_template_1): Set module owner here.
+	(instantiate_decl): ... not here.
+	(match_mergeable_decl): New.
+	gcc/testsuite/
+	* lib/scanlang.exp (scan-lang-dump-times): New. Cut-paste fu!
+	* g++.dg/modules/inst-[12]_[ab].C: New.
+	* g++.dg/modules/adl-1_c.C: Comment.
+	* g++.dg/modules/indirect[234]_[bc].C: Adjust.
+
 2019-04-12  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
