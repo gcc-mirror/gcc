@@ -1,3 +1,11 @@
+2019-04-23  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/92001
+	* tree-chrec.c (evolution_function_is_univariate_p): New parameter
+	and check univariate against it.
+	* tree-chrec.h (evolution_function_is_univariate_p): New parameter.
+	* tree-data-ref.c (add_other_self_distances): Pass new argument.
+
 2019-04-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/90178

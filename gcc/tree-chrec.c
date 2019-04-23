@@ -1142,23 +1142,30 @@ evolution_function_is_affine_multivariate_p (const_tree chrec, int loopnum)
 }
 
 /* Determine whether the given tree is a function in zero or one
-   variables.  */
+   variables with respect to loop specified by LOOPNUM.  Note only positive
+   LOOPNUM stands for a real loop.  */
 
 bool
-evolution_function_is_univariate_p (const_tree chrec)
+evolution_function_is_univariate_p (const_tree chrec, int loopnum)
 {
   if (chrec == NULL_TREE)
     return true;
 
+  tree sub_chrec;
   switch (TREE_CODE (chrec))
     {
     case POLYNOMIAL_CHREC:
       switch (TREE_CODE (CHREC_LEFT (chrec)))
 	{
 	case POLYNOMIAL_CHREC:
-	  if (CHREC_VARIABLE (chrec) != CHREC_VARIABLE (CHREC_LEFT (chrec)))
+	  sub_chrec = CHREC_LEFT (chrec);
+	  if (CHREC_VARIABLE (chrec) != CHREC_VARIABLE (sub_chrec)
+	      && (loopnum <= 0
+		  || CHREC_VARIABLE (sub_chrec) == (unsigned) loopnum
+		  || flow_loop_nested_p (get_loop (cfun, loopnum),
+					 get_chrec_loop (sub_chrec))))
 	    return false;
-	  if (!evolution_function_is_univariate_p (CHREC_LEFT (chrec)))
+	  if (!evolution_function_is_univariate_p (sub_chrec, loopnum))
 	    return false;
 	  break;
 
@@ -1171,9 +1178,14 @@ evolution_function_is_univariate_p (const_tree chrec)
       switch (TREE_CODE (CHREC_RIGHT (chrec)))
 	{
 	case POLYNOMIAL_CHREC:
-	  if (CHREC_VARIABLE (chrec) != CHREC_VARIABLE (CHREC_RIGHT (chrec)))
+	  sub_chrec = CHREC_RIGHT (chrec);
+	  if (CHREC_VARIABLE (chrec) != CHREC_VARIABLE (sub_chrec)
+	      && (loopnum <= 0
+		  || CHREC_VARIABLE (sub_chrec) == (unsigned) loopnum
+		  || flow_loop_nested_p (get_loop (cfun, loopnum),
+					 get_chrec_loop (sub_chrec))))
 	    return false;
-	  if (!evolution_function_is_univariate_p (CHREC_RIGHT (chrec)))
+	  if (!evolution_function_is_univariate_p (sub_chrec, loopnum))
 	    return false;
 	  break;
 
