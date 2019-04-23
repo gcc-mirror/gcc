@@ -2073,8 +2073,19 @@ public:
             CompoundStatement *cs;
             Statement *s;
 
-            if (global.params.useSwitchError)
-                s = new SwitchErrorStatement(ss->loc);
+            if (global.params.useSwitchError &&
+                global.params.checkAction != CHECKACTION_halt)
+            {
+                if (global.params.checkAction == CHECKACTION_C)
+                {
+                    /* Rewrite as an assert(0) and let e2ir generate
+                     * the call to the C assert failure function
+                     */
+                    s = new ExpStatement(ss->loc, new AssertExp(ss->loc, new IntegerExp(ss->loc, 0, Type::tint32)));
+                }
+                else
+                    s = new SwitchErrorStatement(ss->loc);
+            }
             else
                 s = new ExpStatement(ss->loc, new HaltExp(ss->loc));
 
@@ -3118,6 +3129,18 @@ public:
 
     void visit(TryCatchStatement *tcs)
     {
+        if (!global.params.useExceptions)
+        {
+            tcs->error("Cannot use try-catch statements with -betterC");
+            return setError();
+        }
+
+        if (!ClassDeclaration::throwable)
+        {
+            tcs->error("Cannot use try-catch statements because `object.Throwable` was not declared");
+            return setError();
+        }
+
         unsigned flags = 0;
         const unsigned FLAGcpp = 1;
         const unsigned FLAGd = 2;
@@ -3227,7 +3250,14 @@ public:
             return;
         }
 
-        if (blockExit(tfs->_body, sc->func, false) == BEfallthru)
+        int blockexit = blockExit(tfs->_body, sc->func, false);
+
+        // if not worrying about exceptions
+        if (!(global.params.useExceptions && ClassDeclaration::throwable))
+            blockexit &= ~BEthrow;            // don't worry about paths that otherwise may throw
+
+        // Don't care about paths that halt, either
+        if ((blockexit & ~BEhalt) == BEfallthru)
         {
             result = new CompoundStatement(tfs->loc, tfs->_body, tfs->finalbody);
             return;
@@ -3237,7 +3267,6 @@ public:
 
     void visit(OnScopeStatement *oss)
     {
-#ifndef IN_GCC
         if (oss->tok != TOKon_scope_exit)
         {
             // scope(success) and scope(failure) are rewritten to try-catch(-finally) statement,
@@ -3255,7 +3284,6 @@ public:
                 return setError();
             }
         }
-#endif
 
         sc = sc->push();
         sc->tf = NULL;
@@ -3280,6 +3308,18 @@ public:
     void visit(ThrowStatement *ts)
     {
         //printf("ThrowStatement::semantic()\n");
+
+        if (!global.params.useExceptions)
+        {
+            ts->error("Cannot use `throw` statements with -betterC");
+            return setError();
+        }
+
+        if (!ClassDeclaration::throwable)
+        {
+            ts->error("Cannot use `throw` statements because `object.Throwable` was not declared");
+            return setError();
+        }
 
         FuncDeclaration *fd = sc->parent->isFuncDeclaration();
         fd->hasReturnExp |= 2;
@@ -3463,7 +3503,6 @@ void semantic(Catch *c, Scope *sc)
 {
     //printf("Catch::semantic(%s)\n", ident->toChars());
 
-#ifndef IN_GCC
     if (sc->os && sc->os->tok != TOKon_scope_failure)
     {
         // If enclosing is scope(success) or scope(exit), this will be placed in finally block.
@@ -3481,7 +3520,6 @@ void semantic(Catch *c, Scope *sc)
         error(c->loc, "cannot put catch statement inside finally block");
         c->errors = true;
     }
-#endif
 
     ScopeDsymbol *sym = new ScopeDsymbol();
     sym->parent = sc->scopesym;

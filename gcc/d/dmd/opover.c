@@ -900,7 +900,9 @@ Expression *op_overload(Expression *e, Scope *sc)
             if (t->ty != Tstruct)
                 return false;
 
-            semanticTypeInfo(sc, t);
+            if (global.params.useTypeInfo && Type::dtypeinfo)
+                semanticTypeInfo(sc, t);
+
             return ((TypeStruct *)t)->sym->hasIdentityEquals;
         }
 
@@ -919,9 +921,9 @@ Expression *op_overload(Expression *e, Scope *sc)
                 if (needsDirectEq(t1, t2, sc))
                 {
                     /* Rewrite as:
-                     *      _ArrayEq(e1, e2)
+                     *      __ArrayEq(e1, e2)
                      */
-                    Expression *eeq = new IdentifierExp(e->loc, Id::_ArrayEq);
+                    Expression *eeq = new IdentifierExp(e->loc, Id::__ArrayEq);
                     result = new CallExp(e->loc, eeq, e->e1, e->e2);
                     if (e->op == TOKnotequal)
                         result = new NotExp(e->loc, result);
