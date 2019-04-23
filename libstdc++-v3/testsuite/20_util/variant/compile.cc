@@ -144,10 +144,15 @@ void arbitrary_ctor()
   static_assert(noexcept(variant<int, DefaultNoexcept>(DefaultNoexcept{})));
 }
 
+struct none { none() = delete; };
+struct any { template <typename T> any(T&&) {} };
+
 void in_place_index_ctor()
 {
   variant<string, string> a(in_place_index<0>, "a");
   variant<string, string> b(in_place_index<1>, {'a'});
+
+  static_assert(!is_constructible_v<variant<none, any>, std::in_place_index_t<0>>, "PR libstdc++/90165");
 }
 
 void in_place_type_ctor()
@@ -155,6 +160,7 @@ void in_place_type_ctor()
   variant<int, string, int> a(in_place_type<string>, "a");
   variant<int, string, int> b(in_place_type<string>, {'a'});
   static_assert(!is_constructible_v<variant<string, string>, in_place_type_t<string>, const char*>);
+  static_assert(!is_constructible_v<variant<none, any>, std::in_place_type_t<none>>, "PR libstdc++/90165");
 }
 
 void dtor()

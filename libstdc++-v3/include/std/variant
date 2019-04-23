@@ -1285,6 +1285,10 @@ namespace __variant
 	    variant<_Types...>>;
 
       template<typename _Tp>
+	static constexpr bool __not_self
+	  = !is_same_v<__remove_cvref_t<_Tp>, variant>;
+
+      template<typename _Tp>
 	static constexpr bool
 	__exactly_once = __detail::__variant::__exactly_once<_Tp, _Types...>;
 
@@ -1292,17 +1296,10 @@ namespace __variant
 	static constexpr size_t __accepted_index =
 	  __detail::__variant::__accepted_index<_Tp&&, variant>::value;
 
-      template<size_t _Np, bool = _Np < sizeof...(_Types)>
-	struct __to_type_impl;
+      template<size_t _Np, typename = enable_if_t<(_Np < sizeof...(_Types))>>
+	using __to_type = variant_alternative_t<_Np, variant>;
 
-      template<size_t _Np>
-	struct __to_type_impl<_Np, true>
-	{ using type = variant_alternative_t<_Np, variant>; };
-
-      template<size_t _Np>
-	using __to_type = typename __to_type_impl<_Np>::type;
-
-      template<typename _Tp>
+      template<typename _Tp, typename = enable_if_t<__not_self<_Tp>>>
 	using __accepted_type = __to_type<__accepted_index<_Tp>>;
 
       template<typename _Tp>
@@ -1310,6 +1307,17 @@ namespace __variant
 	  __detail::__variant::__index_of_v<_Tp, _Types...>;
 
       using _Traits = __detail::__variant::_Traits<_Types...>;
+
+      template<typename _Tp>
+	struct __is_in_place_tag : false_type { };
+      template<typename _Tp>
+	struct __is_in_place_tag<in_place_type_t<_Tp>> : true_type { };
+      template<size_t _Np>
+	struct __is_in_place_tag<in_place_index_t<_Np>> : true_type { };
+
+      template<typename _Tp>
+	static constexpr bool __not_in_place_tag
+	  = !__is_in_place_tag<__remove_cvref_t<_Tp>>::value;
 
     public:
       variant() = default;
@@ -1320,20 +1328,21 @@ namespace __variant
       ~variant() = default;
 
       template<typename _Tp,
-	       typename = enable_if_t<!is_same_v<decay_t<_Tp>, variant>>,
-	       typename = enable_if_t<(sizeof...(_Types)>0)>,
-	       typename = enable_if_t<__exactly_once<__accepted_type<_Tp&&>>
-			  && is_constructible_v<__accepted_type<_Tp&&>, _Tp&&>>>
+	       typename = enable_if_t<sizeof...(_Types) != 0>,
+	       typename = enable_if_t<__not_in_place_tag<_Tp>>,
+	       typename _Tj = __accepted_type<_Tp&&>,
+	       typename = enable_if_t<__exactly_once<_Tj>
+				      && is_constructible_v<_Tj, _Tp>>>
 	constexpr
 	variant(_Tp&& __t)
-	noexcept(is_nothrow_constructible_v<__accepted_type<_Tp&&>, _Tp&&>)
+	noexcept(is_nothrow_constructible_v<_Tj, _Tp>)
 	: variant(in_place_index<__accepted_index<_Tp&&>>,
 		  std::forward<_Tp>(__t))
 	{ }
 
       template<typename _Tp, typename... _Args,
 	       typename = enable_if_t<__exactly_once<_Tp>
-			  && is_constructible_v<_Tp, _Args&&...>>>
+				      && is_constructible_v<_Tp, _Args...>>>
 	constexpr explicit
 	variant(in_place_type_t<_Tp>, _Args&&... __args)
 	: variant(in_place_index<__index_of<_Tp>>,
@@ -1342,8 +1351,8 @@ namespace __variant
 
       template<typename _Tp, typename _Up, typename... _Args,
 	       typename = enable_if_t<__exactly_once<_Tp>
-			  && is_constructible_v<
-			    _Tp, initializer_list<_Up>&, _Args&&...>>>
+				      && is_constructible_v<_Tp,
+					   initializer_list<_Up>&, _Args...>>>
 	constexpr explicit
 	variant(in_place_type_t<_Tp>, initializer_list<_Up> __il,
 		_Args&&... __args)
@@ -1352,8 +1361,8 @@ namespace __variant
 	{ }
 
       template<size_t _Np, typename... _Args,
-	       typename = enable_if_t<
-		 is_constructible_v<__to_type<_Np>, _Args&&...>>>
+	       typename _Tp = __to_type<_Np>,
+	       typename = enable_if_t<is_constructible_v<_Tp, _Args...>>>
 	constexpr explicit
 	variant(in_place_index_t<_Np>, _Args&&... __args)
 	: _Base(in_place_index<_Np>, std::forward<_Args>(__args)...),
@@ -1361,8 +1370,10 @@ namespace __variant
 	{ }
 
       template<size_t _Np, typename _Up, typename... _Args,
-	       typename = enable_if_t<is_constructible_v<__to_type<_Np>,
-				      initializer_list<_Up>&, _Args&&...>>>
+	       typename _Tp = __to_type<_Np>,
+	       typename = enable_if_t<is_constructible_v<_Tp,
+							 initializer_list<_Up>&,
+							 _Args...>>>
 	constexpr explicit
 	variant(in_place_index_t<_Np>, initializer_list<_Up> __il,
 		_Args&&... __args)
@@ -1372,12 +1383,12 @@ namespace __variant
 
       template<typename _Tp>
 	enable_if_t<__exactly_once<__accepted_type<_Tp&&>>
-		    && is_constructible_v<__accepted_type<_Tp&&>, _Tp&&>
-		    && is_assignable_v<__accepted_type<_Tp&&>&, _Tp&&>
-		    && !is_same_v<decay_t<_Tp>, variant>, variant&>
+		    && is_constructible_v<__accepted_type<_Tp&&>, _Tp>
+		    && is_assignable_v<__accepted_type<_Tp&&>&, _Tp>,
+		    variant&>
 	operator=(_Tp&& __rhs)
-	noexcept(is_nothrow_assignable_v<__accepted_type<_Tp&&>&, _Tp&&>
-		 && is_nothrow_constructible_v<__accepted_type<_Tp&&>, _Tp&&>)
+	noexcept(is_nothrow_assignable_v<__accepted_type<_Tp&&>&, _Tp>
+		 && is_nothrow_constructible_v<__accepted_type<_Tp&&>, _Tp>)
 	{
 	  constexpr auto __index = __accepted_index<_Tp&&>;
 	  if (index() == __index)

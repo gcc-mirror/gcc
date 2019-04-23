@@ -1,5 +1,25 @@
 2019-04-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/90165
+	* include/std/variant (variant::__not_self): New helper for the
+	is_same_v<remove_cvref_t<T>, variant>==false constraints.
+	(variant::__to_type_impl): Remove.
+	(variant::__to_type): Add default argument to check pack size, instead
+	of using __to_type_impl.
+	(variant::__accepted_type): Add default argument using __not_self.
+	(variant::__is_in_place_tag, variant::__not_in_place_tag): New helpers
+	for variant(T&&) constructor constraint.
+	(variant::variant(T&&)): Use __not_in_place_tag in constraints.
+	Extract __accepted_type into a named template parameter for reuse in
+	other constraints and in the exception specification.
+	(variant::variant(in_place_type_t<T>, Args&&...))
+	(variant::variant(in_place_type_t<T>, initializer_list<U>, Args&&...))
+	(variant::variant(in_place_index_t<T>, Args&&...))
+	(variant::variant(in_place_index_t<T>, initializer_list<U>, Args&&...))
+	(variant::operator=T&&)): Remove redundant && from trait arguments.
+	* testsuite/20_util/variant/compile.cc: Check variant(T&&) constructor
+	isn't used for in_place_type or in_place_index arguments.
+
 	* include/std/type_traits (unwrap_reference_t): Define for C++2a.
 	(unwrap_ref_decay): Remove inheritance from unwrap_reference.
 	* testsuite/20_util/unwrap_reference/1.cc: Adjust test to use alias.
