@@ -25,8 +25,7 @@
 
 	Document PSTL linker flags
 
-	* doc/xml/manual/using.xml: Add PSTL linker flags to table
-        3.1.
+	* doc/xml/manual/using.xml: Add PSTL linker flags to table 3.1.
 	
 2019-04-23  Jonathan Wakely  <jwakely@redhat.com>
 
