@@ -1,5 +1,8 @@
 2019-04-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/variant/run.cc: Catch exception by reference to
+	prevent -Wcatch-value warning.
+
 	* include/std/variant (__variant_construct): Use template parameter
 	type instead of equivalent decltype-specifier.
 	(_Move_ctor_base<false, Types...>::_Move_ctor_base(_Move_ctor_base&&)):
