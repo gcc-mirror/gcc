@@ -169,10 +169,51 @@ test03()
   VERIFY( bad_emplace<std::unique_ptr<int>>(v) );
 }
 
+void
+test04()
+{
+  // LWG 2904. Make variant move-assignment more exception safe
+
+  struct ThrowOnCopy
+  {
+    ThrowOnCopy() { }
+    ThrowOnCopy(const ThrowOnCopy&) { throw 1; }
+    ThrowOnCopy& operator=(const ThrowOnCopy&) { throw "shouldn't happen"; }
+    ThrowOnCopy(ThrowOnCopy&&) noexcept { }
+  };
+
+  std::variant<int, ThrowOnCopy> v1(std::in_place_type<ThrowOnCopy>), v2(2);
+  try
+  {
+    v2 = v1; // uses variant<Types...>::operator=(const variant&)
+    VERIFY( false );
+  }
+  catch (int)
+  {
+    VERIFY( !v2.valueless_by_exception() );
+    VERIFY( v2.index() == 0 );
+    VERIFY( std::get<0>(v2) == 2 );
+  }
+
+  try
+  {
+    ThrowOnCopy toc;
+    v2 = toc; // uses variant<Types...>::operator=(T&&)
+    VERIFY( false );
+  }
+  catch (int)
+  {
+    VERIFY( !v2.valueless_by_exception() );
+    VERIFY( v2.index() == 0 );
+    VERIFY( std::get<0>(v2) == 2 );
+  }
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test04();
 }

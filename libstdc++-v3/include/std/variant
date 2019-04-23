@@ -477,9 +477,9 @@ namespace __variant
 		 -> __detail::__variant::__variant_cookie
         {
 	  __variant_construct_single(std::forward<_Tp>(__lhs),
-	      std::forward<decltype(__rhs_mem)>( __rhs_mem));
+	      std::forward<decltype(__rhs_mem)>(__rhs_mem));
 	  return {};
-	}, __variant_cast<_Types...>(std::forward<decltype(__rhs)>(__rhs)));
+	}, __variant_cast<_Types...>(std::forward<_Up>(__rhs)));
     }
 
   // The following are (Copy|Move) (ctor|assign) layers for forwarding
@@ -522,41 +522,23 @@ namespace __variant
       _Move_ctor_base(_Move_ctor_base&& __rhs)
 	  noexcept(_Traits<_Types...>::_S_nothrow_move_ctor)
       {
-	__variant_construct<_Types...>(*this,
-	  std::forward<_Move_ctor_base>(__rhs));
+	__variant_construct<_Types...>(*this, std::move(__rhs));
       }
 
       template<typename _Up>
         void _M_destructive_move(unsigned short __rhs_index, _Up&& __rhs)
         {
 	  this->_M_reset();
+	  __variant_construct_single(*this, std::forward<_Up>(__rhs));
 	  this->_M_index = __rhs_index;
-	  __try
-	    {
-	      __variant_construct_single(*this,
-					 std::forward<_Up>(__rhs));
-	    }
-	  __catch (...)
-	    {
-	      this->_M_index = variant_npos;
-	      __throw_exception_again;
-	    }
 	}
 
       template<typename _Up>
         void _M_destructive_copy(unsigned short __rhs_index, const _Up& __rhs)
         {
 	  this->_M_reset();
+	  __variant_construct_single(*this, __rhs);
 	  this->_M_index = __rhs_index;
-	  __try
-	    {
-	      __variant_construct_single(*this, __rhs);
-	    }
-	  __catch (...)
-	    {
-	      this->_M_index = variant_npos;
-	      __throw_exception_again;
-	    }
 	}
 
       _Move_ctor_base(const _Move_ctor_base&) = default;
@@ -574,17 +556,16 @@ namespace __variant
         void _M_destructive_move(unsigned short __rhs_index, _Up&& __rhs)
         {
 	  this->_M_reset();
+	  __variant_construct_single(*this, std::forward<_Up>(__rhs));
 	  this->_M_index = __rhs_index;
-	  __variant_construct_single(*this,
-				     std::forward<_Up>(__rhs));
 	}
 
       template<typename _Up>
         void _M_destructive_copy(unsigned short __rhs_index, const _Up& __rhs)
         {
 	  this->_M_reset();
-	  this->_M_index = __rhs_index;
 	  __variant_construct_single(*this, __rhs);
+	  this->_M_index = __rhs_index;
 	}
     };
 
@@ -609,31 +590,23 @@ namespace __variant
 	    if constexpr (__rhs_index != variant_npos)
 	      {
 		if (this->_M_index == __rhs_index)
-		  {
-		    if constexpr (__rhs_index != variant_npos)
-		      {
-			auto& __this_mem =
-			  __variant::__get<__rhs_index>(*this);
-			if constexpr (is_same_v<
-				      remove_reference_t<decltype(__this_mem)>,
-				      __remove_cvref_t<decltype(__rhs_mem)>>)
-			  __this_mem = __rhs_mem;
-		      }
-		  }
+		  __variant::__get<__rhs_index>(*this) = __rhs_mem;
 		else
 		  {
-		    using __rhs_type =
-		      remove_reference_t<decltype(__rhs_mem)>;
-		    if constexpr
-		      (is_nothrow_copy_constructible_v<__rhs_type>
-		       || !is_nothrow_move_constructible_v<__rhs_type>)
-			this->_M_destructive_copy(__rhs_index, __rhs_mem);
+		    using __rhs_type = __remove_cvref_t<decltype(__rhs_mem)>;
+		    if constexpr (is_nothrow_copy_constructible_v<__rhs_type>
+			|| !is_nothrow_move_constructible_v<__rhs_type>)
+		      // The standard says this->emplace<__rhs_type>(__rhs_mem)
+		      // should be used here, but _M_destructive_copy is
+		      // equivalent in this case. Either copy construction
+		      // doesn't throw, so _M_destructive_copy gives strong
+		      // exception safety guarantee, or both copy construction
+		      // and move construction can throw, so emplace only gives
+		      // basic exception safety anyway.
+		      this->_M_destructive_copy(__rhs_index, __rhs_mem);
 		    else
-		      {
-			auto __tmp(__rhs_mem);
-			this->_M_destructive_move(__rhs_index,
-						  std::move(__tmp));
-		      }
+		      __variant_cast<_Types...>(*this)
+			= variant<_Types...>(__rhs_mem);
 		  }
 	      }
 	    else
@@ -676,20 +649,10 @@ namespace __variant
 	    if constexpr (__rhs_index != variant_npos)
 	      {
 		if (this->_M_index == __rhs_index)
-		  {
-		    if constexpr (__rhs_index != variant_npos)
-		      {
-			auto& __this_mem =
-			  __variant::__get<__rhs_index>(*this);
-			if constexpr (is_same_v<
-				      remove_reference_t<decltype(__this_mem)>,
-				      remove_reference_t<decltype(__rhs_mem)>>)
-			  __this_mem = std::move(__rhs_mem);
-		      }
-		  }
+		  __variant::__get<__rhs_index>(*this) = std::move(__rhs_mem);
 		else
-		  this->_M_destructive_move(__rhs_index,
-					    std::move(__rhs_mem));
+		  __variant_cast<_Types...>(*this)
+		    .template emplace<__rhs_index>(std::move(__rhs_mem));
 	      }
 	    else
 	      this->_M_reset();
@@ -1395,7 +1358,14 @@ namespace __variant
 	  if (index() == __index)
 	    std::get<__index>(*this) = std::forward<_Tp>(__rhs);
 	  else
-	    this->emplace<__index>(std::forward<_Tp>(__rhs));
+	    {
+	      using _Tj = __accepted_type<_Tp&&>;
+	      if constexpr (is_nothrow_constructible_v<_Tj, _Tp>
+			    || !is_nothrow_move_constructible_v<_Tj>)
+		this->emplace<__index>(std::forward<_Tp>(__rhs));
+	      else
+		operator=(variant(std::forward<_Tp>(__rhs)));
+	    }
 	  return *this;
 	}
 
