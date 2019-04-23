@@ -1,5 +1,14 @@
 2019-04-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/variant (__detail::__variant::_Traits): Make
+	_S_trivial_copy_assign depend on _S_trivial_copy_ctor and make
+	_S_trivial_move_assign depend on _S_trivial_move_ctor, as per
+	P0602R4.
+	(__detail::__variant::_Copy_assign_alias): Only depend on
+	_S_trivial_copy_assign, which subsumes _S_trivial_copy_ctor now.
+	* testsuite/20_util/variant/compile.cc: Correct checks for trivial
+	move assignment operators.
+
 	PR libstdc++/90165
 	* include/std/variant (variant::__not_self): New helper for the
 	is_same_v<remove_cvref_t<T>, variant>==false constraints.
