@@ -379,7 +379,8 @@ public:
       return;
 
     /* Generate TypeInfo.  */
-    create_typeinfo (d->type, NULL);
+    if (have_typeinfo_p (Type::dtypeinfo))
+      create_typeinfo (d->type, NULL);
 
     /* Generate static initializer.  */
     d->sinit = aggregate_initializer_decl (d);
@@ -523,7 +524,9 @@ public:
     d_finish_decl (d->sinit);
 
     /* Put out the TypeInfo.  */
-    create_typeinfo (d->type, NULL);
+    if (have_typeinfo_p (Type::dtypeinfo))
+      create_typeinfo (d->type, NULL);
+
     DECL_INITIAL (d->csym) = layout_classinfo (d);
     d_linkonce_linkage (d->csym);
     d_finish_decl (d->csym);
@@ -588,8 +591,11 @@ public:
     d->csym = get_classinfo_decl (d);
 
     /* Put out the TypeInfo.  */
-    create_typeinfo (d->type, NULL);
-    d->type->vtinfo->accept (this);
+    if (have_typeinfo_p (Type::dtypeinfo))
+      {
+	create_typeinfo (d->type, NULL);
+	d->type->vtinfo->accept (this);
+      }
 
     DECL_INITIAL (d->csym) = layout_classinfo (d);
     d_linkonce_linkage (d->csym);
@@ -622,7 +628,8 @@ public:
       return;
 
     /* Generate TypeInfo.  */
-    create_typeinfo (d->type, NULL);
+    if (have_typeinfo_p (Type::dtypeinfo))
+      create_typeinfo (d->type, NULL);
 
     TypeEnum *tc = (TypeEnum *) d->type;
     if (tc->sym->members && !d->type->isZeroInit ())

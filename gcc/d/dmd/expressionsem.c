@@ -46,7 +46,7 @@ bool checkFrameAccess(Loc loc, Scope *sc, AggregateDeclaration *ad, size_t istar
 bool symbolIsVisible(Module *mod, Dsymbol *s);
 VarDeclaration *copyToTemp(StorageClass stc, const char *name, Expression *e);
 Expression *extractSideEffect(Scope *sc, const char *name, Expression **e0, Expression *e, bool alwaysCopy = false);
-Type *getTypeInfoType(Type *t, Scope *sc);
+Type *getTypeInfoType(Loc loc, Type *t, Scope *sc);
 bool MODimplicitConv(MOD modfrom, MOD modto);
 MATCH MODmethodConv(MOD modfrom, MOD modto);
 void MODMatchToBuffer(OutBuffer *buf, unsigned char lhsMod, unsigned char rhsMod);
@@ -713,7 +713,8 @@ public:
             return setError();
         }
 
-        semanticTypeInfo(sc, e->type);
+        if (global.params.useTypeInfo && Type::dtypeinfo)
+            semanticTypeInfo(sc, e->type);
 
         result = e;
     }
@@ -1819,7 +1820,7 @@ public:
         {
             // Handle this in the glue layer
             e = new TypeidExp(exp->loc, ta);
-            e->type = getTypeInfoType(ta, sc);
+            e->type = getTypeInfoType(exp->loc, ta, sc);
 
             semanticTypeInfo(sc, ta);
 
