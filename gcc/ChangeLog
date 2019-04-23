@@ -1,3 +1,11 @@
+2019-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR debug/90131
+	* tree-cfgcleanup.c (move_debug_stmts_from_forwarder): Add
+	dest_single_pred_p argument.
+	(remove_forwarder_block): Adjust.
+	(remove_forwarder_block_with_phi): Likewise.
+
 2019-04-23  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
 	    Jakub Jelinek  <jakub@redhat.com>
