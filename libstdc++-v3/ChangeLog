@@ -41,7 +41,7 @@
 
 	Cleanup algorithm implementations
 	* include/pstl/glue_algorithm_impl.h (stable_sort): Forward
-        execution policy.
+	execution policy.
 	(mismatch): Forward execution policy.
 	(equal): Qualify call to std::equal().
 	(partial_sort): Forward execution policy.
