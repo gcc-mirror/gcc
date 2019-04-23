@@ -6849,10 +6849,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename> struct _Never_valueless_alt; // see <variant>
 
     // Provide the strong exception-safety guarantee when emplacing a
-    // basic_string into a variant, but only if move assignment cannot throw.
+    // basic_string into a variant, but only if moving the string cannot throw.
     template<typename _Tp, typename _Traits, typename _Alloc>
       struct _Never_valueless_alt<std::basic_string<_Tp, _Traits, _Alloc>>
-      : std::is_nothrow_move_assignable<std::basic_string<_Tp, _Traits, _Alloc>>
+      : __and_<
+	is_nothrow_move_constructible<std::basic_string<_Tp, _Traits, _Alloc>>,
+	is_nothrow_move_assignable<std::basic_string<_Tp, _Traits, _Alloc>>
+	>::type
       { };
   }  // namespace __detail::__variant
 #endif // C++17
