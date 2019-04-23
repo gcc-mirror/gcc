@@ -5198,8 +5198,14 @@ trees_out::core_vals (tree t)
 	  WU (t->decl_common.align);
 	}
 
-      WT (t->decl_common.size);
-      WT (t->decl_common.size_unit);
+      /* For templates these hold instantiation (partial and/or
+	 specialization) information.  */
+      if (code != TEMPLATE_DECL)
+	{
+	  WT (t->decl_common.size);
+	  WT (t->decl_common.size_unit);
+	}
+
       WT (t->decl_common.attributes);
       switch (code)
 	// FIXME: Perhaps this should be done with the later
@@ -5647,8 +5653,12 @@ trees_in::core_vals (tree t)
       RU (t->decl_common.off_align);
       RU (t->decl_common.align);
 
-      RT (t->decl_common.size);
-      RT (t->decl_common.size_unit);
+      if (code != TEMPLATE_DECL)
+	{
+	  RT (t->decl_common.size);
+	  RT (t->decl_common.size_unit);
+	}
+
       RT (t->decl_common.attributes);
       switch (code)
 	// FIXME: Perhaps this should be done with the later
@@ -7612,16 +7622,19 @@ trees_out::tree_mergeable (depset *dep)
 {
   tree decl = dep->get_entity ();
   gcc_checking_assert (DECL_P (decl));
-  tree inner = decl;
 
   if (streaming_p ())
     state->write_location (*this, DECL_SOURCE_LOCATION (decl));
 
-  if (dep->get_entity_kind () == depset::EK_SPECIALIZATION)
+  bool is_specialization = dep->get_entity_kind () == depset::EK_SPECIALIZATION;
+
+  if (is_specialization)
     {
       /* The template will not be a namespace!  */
       tree_node (most_general_template (decl));
-      tree_node (DECL_TI_ARGS (decl));
+      int use = -1;
+      tree ti = node_template_info (decl, use);
+      tree_node (TI_ARGS (ti));
     }
   else
     {
@@ -7639,51 +7652,64 @@ trees_out::tree_mergeable (depset *dep)
 	}
     }
 
- again: // FIXME: This kind of loop is icky
   if (streaming_p ())
     {
-      u (TREE_CODE (inner));
-      tree_node_specific (inner);
-      core_bools (inner);
+      u (TREE_CODE (decl));
+      tree_node_specific (decl);
+      core_bools (decl);
       bflush ();
     }
 
   if (dep->get_entity_kind () == depset::EK_DECL)
-    switch (TREE_CODE (inner))
-      {
-      case TEMPLATE_DECL:
-	tpl_parms (DECL_TEMPLATE_PARMS (inner));
-	inner = DECL_TEMPLATE_RESULT (inner);
-	goto again;
+    {
+      tree inner = decl;
 
-      case FUNCTION_DECL:
-	if (inner != decl)
-	  tree_node (TREE_TYPE (TREE_TYPE (inner)));
-	fn_parms (TYPE_ARG_TYPES (TREE_TYPE (inner)));
-	break;
+      if (TREE_CODE (inner) == TEMPLATE_DECL)
+	{
+	  tpl_parms (DECL_TEMPLATE_PARMS (inner));
+	  inner = DECL_TEMPLATE_RESULT (inner);
 
-      case VAR_DECL:
-	break;
+	  if (streaming_p ())
+	    {
+	      u (TREE_CODE (inner));
+	      tree_node_specific (inner);
+	      core_bools (inner);
+	      bflush ();
+	    }
 
-      case TYPE_DECL:
-	if (DECL_IMPLICIT_TYPEDEF_P (inner))
-	  {
-	    inner = TREE_TYPE (inner);
-	    gcc_assert (TYPE_MAIN_VARIANT (inner) == inner);
-	    if (streaming_p ())
-	      {
-		u (TREE_CODE (inner));
-		tree_node_specific (inner);
-		core_bools (inner);
-		bflush ();
-	      }
-	  }
-	break;
+	  if (TREE_CODE (inner) == FUNCTION_DECL)
+	    tree_node (TREE_TYPE (TREE_TYPE (inner)));
+	}
 
-      default:
-	// FIXME: More cases
-	gcc_unreachable ();
-      }
+      switch (TREE_CODE (inner))
+	{
+	case FUNCTION_DECL:
+	  fn_parms (TYPE_ARG_TYPES (TREE_TYPE (inner)));
+	  break;
+
+	case VAR_DECL:
+	  break;
+
+	case TYPE_DECL:
+	  if (DECL_IMPLICIT_TYPEDEF_P (inner))
+	    {
+	      inner = TREE_TYPE (inner);
+	      gcc_assert (TYPE_MAIN_VARIANT (inner) == inner);
+	      if (streaming_p ())
+		{
+		  u (TREE_CODE (inner));
+		  tree_node_specific (inner);
+		  core_bools (inner);
+		  bflush ();
+		}
+	    }
+	  break;
+	  
+	default:
+	  // FIXME: More cases
+	  gcc_unreachable ();
+	}
+    }
 
   int tag = insert (decl);
   if (streaming_p ())
@@ -7695,7 +7721,6 @@ trees_out::tree_mergeable (depset *dep)
 void
 trees_in::tree_mergeable (bool mod_mergeable)
 {
-  tree decl = NULL_TREE;
   location_t loc = state->read_location (*this);
 
   tree ctx = tree_node ();  /* Template or namespace.  */
@@ -7708,83 +7733,93 @@ trees_in::tree_mergeable (bool mod_mergeable)
   tree ret = NULL_TREE;
   tree args = NULL_TREE;
 
- again:
-  if (tree inner = start (u (), tcc_declaration))
-    {
-      tree_node_specific (inner, false);
-      core_bools (inner);
-      bflush ();
+  unsigned code = u ();
+  tree decl = start (code, tcc_declaration);
+  if (!decl)
+    return;
 
-      DECL_SOURCE_LOCATION (inner) = loc;
-      if (is_specialization)
+  tree_node_specific (decl, false);
+  core_bools (decl);
+  bflush ();
+
+  DECL_SOURCE_LOCATION (decl) = loc;
+  if (is_specialization)
+    {
+      // construct TEMPLATE_INFO?
+    }
+  else
+    {
+      DECL_CONTEXT (decl) = FROB_CONTEXT (ctx);
+      DECL_NAME (decl) = name;
+
+      tree inner = decl;
+      if (code == TEMPLATE_DECL)
 	{
-	  decl = inner;
-	  // construct TEMPLATE_INFO?
-	}
-      else
-	{
-	  DECL_CONTEXT (inner) = FROB_CONTEXT (ctx);
+	  tpl = tpl_parms ();
+	  code = u ();
+	  inner = start (code, tcc_declaration);
+	  if (!inner)
+	    return;
+
+	  tree_node_specific (inner, false);
+	  core_bools (inner);
+	  bflush ();
+	  DECL_TEMPLATE_RESULT (decl) = inner;
+	  DECL_CONTEXT (inner) = DECL_CONTEXT (decl);
 	  DECL_NAME (inner) = name;
-
-	  (decl ? DECL_TEMPLATE_RESULT (decl) : decl) = inner;
-
-	  switch (TREE_CODE (inner))
-	    {
-	    case TEMPLATE_DECL:
-	      tpl = tpl_parms ();
-	      goto again;
-
-	    case FUNCTION_DECL:
-	      if (inner != decl)
-		ret = tree_node ();
-	      args = fn_parms ();
-	      break;
-
-	    case VAR_DECL:
-	      break;
-
-	    case TYPE_DECL:
-	      if (DECL_IMPLICIT_TYPEDEF_P (inner))
-		if (tree type = start (u (), tcc_type))
-		  {
-		    tree_node_specific (type, false);
-		    core_bools (type);
-		    bflush ();
-		    TREE_TYPE (inner) = type;
-		    TYPE_NAME (type) = inner;
-		  }
-	      break;
-
-	    default:
-	      // FIXME: More cases
-	      set_overrun ();
-	    }
+	  if (code == FUNCTION_DECL)
+	    ret = tree_node ();
 	}
-    }
 
-  if (!get_overrun ())
-    {
-      const char *kind = "new";
-      if (is_mod && !mod_mergeable)
-	kind = "unique";
-      else if (tree existing = is_specialization
-	       ? match_mergeable_specialization (decl, ctx, name)
-	       : match_mergeable_decl (decl, ctx, name, is_mod,
-				       tpl, ret, args))
+      switch (code)
 	{
-	  decl = existing;
-	  mergeables.quick_push (decl);
-	  if (TREE_CODE (decl) == TEMPLATE_DECL)
-	    mergeables.quick_push (DECL_TEMPLATE_RESULT (decl));
-	  kind = "matched";
-	}
+	case FUNCTION_DECL:
+	  args = fn_parms ();
+	  break;
 
-      int tag = insert (decl);
-      dump (dumper::MERGE)
-	&& dump ("Read:%d %s mergeable %s %C:%N", tag, kind,
-		 is_specialization ? "specialization" : "decl",
-		 TREE_CODE (decl), decl);
+	case VAR_DECL:
+	  break;
+
+	case TYPE_DECL:
+	  if (DECL_IMPLICIT_TYPEDEF_P (inner))
+	    if (tree type = start (u (), tcc_type))
+	      {
+		tree_node_specific (type, false);
+		core_bools (type);
+		bflush ();
+		TREE_TYPE (inner) = type;
+		TYPE_NAME (type) = inner;
+	      }
+	  break;
+
+	default:
+	  // FIXME: More cases
+	  set_overrun ();
+	}
     }
+
+  if (get_overrun ())
+    return;
+
+  const char *kind = "new";
+  if (is_mod && !mod_mergeable)
+    kind = "unique";
+  else if (tree existing = is_specialization
+	   ? match_mergeable_specialization (decl, ctx, name)
+	   : match_mergeable_decl (decl, ctx, name, is_mod, tpl, ret, args))
+    {
+      decl = existing;
+      mergeables.quick_push (decl);
+      if (TREE_CODE (decl) == TEMPLATE_DECL)
+	mergeables.quick_push (DECL_TEMPLATE_RESULT (decl));
+      kind = "matched";
+    }
+
+  int tag = insert (decl);
+  dump (dumper::MERGE)
+    && dump ("Read:%d %s mergeable %s %C:%N", tag, kind,
+	     is_specialization ? "specialization" : "decl",
+	     TREE_CODE (decl), decl);
 }
 
 /* Rebuild a streamed in type.  */
@@ -11808,10 +11843,10 @@ module_state::prepare_locations ()
 	{
 	  location_t start_loc = MAP_START_LOCATION (omap);
 	  unsigned to = start_loc + span.ordinary_delta;
-
+	  location_t end_loc = MAP_START_LOCATION (omap + 1);
+	  
 	  dump () && dump ("Ordinary:%u [%u,%u)=%u->%u", ix, start_loc,
-			   span.ordinary.second,
-			   span.ordinary.second - start_loc, to);
+			   end_loc, end_loc - start_loc, to);
 
 	  /* There should be no change in the low order bits.  */
 	  gcc_checking_assert (((start_loc ^ to) & range_mask) == 0);
