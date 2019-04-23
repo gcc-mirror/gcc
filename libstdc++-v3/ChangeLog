@@ -1,3 +1,11 @@
+2019-04-23  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89093
+	* libsupc++/eh_personality.cc (PERSONALITY_FUNCTION): Add
+	general-regs-only target attribute for ARM.
+
 2019-04-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/87431

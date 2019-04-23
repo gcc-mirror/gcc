@@ -1,3 +1,13 @@
+2019-04-23  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89093
+	* libdruntime/gcc/deh.d: Import gcc.attribute.
+	(personality_fn_attributes): New enum.
+	(scanLSDA, CONTINUE_UNWINDING, gdc_personality, __gdc_personality):
+	Add @personality_fn_attributes.
+
 2019-04-20  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/89293

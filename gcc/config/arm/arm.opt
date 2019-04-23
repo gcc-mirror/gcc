@@ -302,3 +302,7 @@ When linking for big-endian targets, generate a legacy BE32 format image.
 mbranch-cost=
 Target RejectNegative Joined UInteger Var(arm_branch_cost) Init(-1)
 Cost to assume for a branch insn.
+
+mgeneral-regs-only
+Target Report RejectNegative Mask(GENERAL_REGS_ONLY) Save
+Generate code which uses the core registers only (r0-r14).

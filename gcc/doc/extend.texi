@@ -4190,6 +4190,15 @@ into the @code{sjli} table needs to be passed as argument.
 These function attributes are supported for ARM targets:
 
 @table @code
+
+@item general-regs-only
+@cindex @code{general-regs-only} function attribute, ARM
+Indicates that no floating-point or Advanced SIMD registers should be
+used when generating code for this function.  If the function explicitly
+uses floating-point code, then the compiler gives an error.  This is
+the same behavior as that of the command-line option
+@option{-mgeneral-regs-only}.
+
 @item interrupt
 @cindex @code{interrupt} function attribute, ARM
 Use this attribute to indicate

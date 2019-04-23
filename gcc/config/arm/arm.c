@@ -6112,6 +6112,11 @@ aapcs_vfp_is_call_or_return_candidate (enum arm_pcs pcs_variant,
     return false;
 
   *base_mode = new_mode;
+
+  if (TARGET_GENERAL_REGS_ONLY)
+    error ("argument of type %qT not permitted with -mgeneral-regs-only",
+	   type);
+
   return true;
 }
 
@@ -28404,7 +28409,7 @@ arm_conditional_register_usage (void)
 	}
     }
 
-  if (TARGET_REALLY_IWMMXT)
+  if (TARGET_REALLY_IWMMXT && !TARGET_GENERAL_REGS_ONLY)
     {
       regno = FIRST_IWMMXT_GR_REGNUM;
       /* The 2002/10/09 revision of the XScale ABI has wCG0
@@ -30877,6 +30882,9 @@ arm_valid_target_attribute_rec (tree args, struct gcc_options *opts)
 
       else if (!strcmp (q, "arm"))
 	opts->x_target_flags &= ~MASK_THUMB;
+
+      else if (!strcmp (q, "general-regs-only"))
+	opts->x_target_flags |= MASK_GENERAL_REGS_ONLY;
 
       else if (!strncmp (q, "fpu=", 4))
 	{
