@@ -1,5 +1,10 @@
 2019-04-23  Roman Zhuykov  <zhroma@ispras.ru>
 
+	PR rtl-optimization/87979
+	* gcc.dg/pr87979.c: New test.
+
+2019-04-23  Roman Zhuykov  <zhroma@ispras.ru>
+
 	PR rtl-optimization/84032
 	* gcc.dg/pr84032.c: New test.
 
