@@ -1,3 +1,23 @@
+2019-04-23  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89093
+	* config/arm/arm.c (aapcs_vfp_is_call_or_return_candidate): Diagnose
+	if used with general-regs-only.
+	(arm_conditional_register_usage): Don't add non-general regs if
+	general-regs-only.
+	(arm_valid_target_attribute_rec): Handle general-regs-only.
+	* config/arm/arm.h (TARGET_HARD_FLOAT): Return false if
+	general-regs-only.
+	(TARGET_HARD_FLOAT_SUB): Define.
+	(TARGET_SOFT_FLOAT): Define as negation of TARGET_HARD_FLOAT_SUB.
+	(TARGET_REALLY_IWMMXT): Add && !TARGET_GENERAL_REGS_ONLY.
+	(TARGET_REALLY_IWMMXT2): Likewise.
+	* config/arm/arm.opt: Add -mgeneral-regs-only.
+	* doc/extend.texi: Document ARM general-regs-only target.
+	* doc/invoke.texi: Document ARM -mgeneral-regs-only.
+
 2019-04-23  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/90078

@@ -674,6 +674,7 @@ Objective-C and Objective-C++ Dialects}.
 -mabi=@var{name} @gol
 -mapcs-stack-check  -mno-apcs-stack-check @gol
 -mapcs-reentrant  -mno-apcs-reentrant @gol
+-mgeneral-regs-only @gol
 -msched-prolog  -mno-sched-prolog @gol
 -mlittle-endian  -mbig-endian @gol
 -mbe8  -mbe32 @gol
@@ -17067,6 +17068,12 @@ The default depends on the specific target configuration.  Note that
 the hard-float and soft-float ABIs are not link-compatible; you must
 compile your entire program with the same ABI, and link with a
 compatible set of libraries.
+
+@item -mgeneral-regs-only
+@opindex mgeneral-regs-only
+Generate code which uses only the general-purpose registers.  This will prevent
+the compiler from using floating-point and Advanced SIMD registers but will not
+impose any restrictions on the assembler.
 
 @item -mlittle-endian
 @opindex mlittle-endian

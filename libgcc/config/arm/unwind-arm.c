@@ -21,6 +21,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#pragma GCC target ("general-regs-only")
 #include "unwind.h"
 
 /* Misc constants.  */
