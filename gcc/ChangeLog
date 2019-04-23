@@ -1,6 +1,12 @@
 2019-04-23  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
-	PR tree-optimization/92001
+	PR tree-optimization/90078
+	* tree-ssa-loop-ivopts.c (comp_cost::operator +,-,+=,-+,/=,*=): Add
+	checks for infinite_cost overflow.
+
+2019-04-23  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/90021
 	* tree-chrec.c (evolution_function_is_univariate_p): New parameter
 	and check univariate against it.
 	* tree-chrec.h (evolution_function_is_univariate_p): New parameter.

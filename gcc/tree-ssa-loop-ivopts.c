@@ -243,6 +243,9 @@ operator+ (comp_cost cost1, comp_cost cost2)
   if (cost1.infinite_cost_p () || cost2.infinite_cost_p ())
     return infinite_cost;
 
+  if (cost1.cost + cost2.cost >= infinite_cost.cost)
+    return infinite_cost;
+
   cost1.cost += cost2.cost;
   cost1.complexity += cost2.complexity;
 
@@ -256,6 +259,8 @@ operator- (comp_cost cost1, comp_cost cost2)
     return infinite_cost;
 
   gcc_assert (!cost2.infinite_cost_p ());
+  if (cost1.cost - cost2.cost >= infinite_cost.cost)
+    return infinite_cost;
 
   cost1.cost -= cost2.cost;
   cost1.complexity -= cost2.complexity;
@@ -276,6 +281,8 @@ comp_cost::operator+= (HOST_WIDE_INT c)
   if (infinite_cost_p ())
     return *this;
 
+  if (this->cost + c >= infinite_cost.cost)
+    return infinite_cost;
   this->cost += c;
 
   return *this;
@@ -287,6 +294,8 @@ comp_cost::operator-= (HOST_WIDE_INT c)
   if (infinite_cost_p ())
     return *this;
 
+  if (this->cost - c >= infinite_cost.cost)
+    return infinite_cost;
   this->cost -= c;
 
   return *this;
@@ -295,6 +304,7 @@ comp_cost::operator-= (HOST_WIDE_INT c)
 comp_cost
 comp_cost::operator/= (HOST_WIDE_INT c)
 {
+  gcc_assert (c != 0);
   if (infinite_cost_p ())
     return *this;
 
@@ -308,6 +318,9 @@ comp_cost::operator*= (HOST_WIDE_INT c)
 {
   if (infinite_cost_p ())
     return *this;
+
+  if (this->cost * c >= infinite_cost.cost)
+    return infinite_cost;
 
   this->cost *= c;
 
