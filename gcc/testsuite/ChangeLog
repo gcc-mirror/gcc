@@ -1,3 +1,10 @@
+2018-04-23  Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.target/aarch64/bti-1.c: Add scan directive for gnu note section
+	for linux targets.
+	* gcc.target/aarch64/va_arg_1.c: Update scan directive to not clash
+	with GNU note section.
+
 2019-04-23  Jeff Law  <law@redhat.com>
 
 	* lib/target-supports.exp

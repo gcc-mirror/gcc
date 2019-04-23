@@ -4,7 +4,7 @@
 int
 f (int a, ...)
 {
-  /* { dg-final { scan-assembler-not "str" } } */
+  /* { dg-final { scan-assembler-not "str\t" } } */
   return a;
 }
 
