@@ -286,7 +286,7 @@ void emplace()
       Vector::allocator_type::set_limit(0);
       vv.emplace<2>(1, 1);
       VERIFY(false);
-    } catch (__gnu_cxx::forced_error) {
+    } catch (const __gnu_cxx::forced_error&) {
     }
     VERIFY(vv.valueless_by_exception());
   }
