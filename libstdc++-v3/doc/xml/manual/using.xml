@@ -107,6 +107,15 @@
       <entry><literal>-fopenmp</literal></entry>
       <entry>For <link linkend="manual.ext.parallel_mode">parallel</link> mode.</entry>
     </row>
+    
+    <row>
+      <entry><literal>-ltbb</literal></entry>
+      <entry>Linking to tbb (Thread Building Blocks) is required for use of the
+        Parallel Standard Algorithms and execution policies in
+        <filename class="headerfile">&lt;execution&gt;</filename>.
+      </entry>
+    </row>
+    
   </tbody>
 
 </tgroup>
