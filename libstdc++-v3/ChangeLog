@@ -1,3 +1,9 @@
+2019-04-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (unwrap_reference_t): Define for C++2a.
+	(unwrap_ref_decay): Remove inheritance from unwrap_reference.
+	* testsuite/20_util/unwrap_reference/1.cc: Adjust test to use alias.
+
 2019-04-23  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
 	    Jakub Jelinek  <jakub@redhat.com>
