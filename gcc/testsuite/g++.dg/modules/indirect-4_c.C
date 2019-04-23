@@ -11,7 +11,7 @@ int main ()
 
 // { dg-final { scan-lang-dump {Lazily binding '::bar::quux'@'bar' section:} module } }
 // { dg-final { scan-lang-dump {>Lazily binding '::foo::TPL'@'foo' section:} module } }
-// { dg-final { scan-lang-dump {Imported:-[0-9]* template_decl:'::foo::TPL@2\(foo\)'@foo} module } }
-// { dg-final { scan-lang-dump {Imported:-[0-9]* template_decl:'::foo::TPL@2\(foo\)<0x1>::frob<#unnamed#>'@foo} module } }
-// { dg-final { scan-lang-dump {Instantiation:-[0-9]* type_decl:'::foo::TPL@2\(foo\)<0x1>'@foo} module } }
-// { dg-final { scan-lang-dump {Instantiation:-[0-9]* function_decl:'::foo::TPL@2\(foo\)<0x1>::frob<0x2>'@\(detached\)} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* template_decl:'::foo::TPL@foo:2'@foo} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* template_decl:'::foo::TPL@foo:2<0x1>::frob<#unnamed#>'@foo} module } }
+// { dg-final { scan-lang-dump {Instantiation:-[0-9]* type_decl:'::foo::TPL@foo:2<0x1>'@foo} module } }
+// { dg-final { scan-lang-dump {Instantiation:-[0-9]* function_decl:'::foo::TPL@foo:2<0x1>::frob<0x2>'@\(detached\)} module } }

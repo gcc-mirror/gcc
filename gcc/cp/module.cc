@@ -3705,10 +3705,8 @@ dumper::impl::nested_name (tree t)
 
   if (owner != MODULE_NONE)
     {
-      fprintf (stream, "@%d(", owner);
-      if (const module_state *mod = (*modules)[owner])
-	fputs (mod->get_flatname (), stream);
-      fputs (")", stream);
+      const module_state *mod = (*modules)[owner];
+      fprintf (stream, "@%s:%d", mod ? mod->get_flatname () : "", owner);
     }
 
   if (ti)
@@ -13995,6 +13993,27 @@ module_name (unsigned ix, const char **maybe_primary)
     *maybe_primary = imp->get_flatname (true);
 
   return imp->get_flatname ();
+}
+
+char const *
+module_name (tree decl)
+{
+  if (TREE_CODE (decl) == NAMESPACE_DECL
+      ? !DECL_NAMESPACE_ALIAS (decl)
+      : !DECL_NAMESPACE_SCOPE_P (decl))
+    return NULL;
+
+  if (unsigned owner = MAYBE_DECL_MODULE_OWNER (decl))
+    {
+      module_state *module = (*modules)[owner];
+      if (!module->name)
+	module = module->parent;
+
+      if (!module->is_header ())
+	return module->get_flatname ();
+    }
+
+  return NULL;
 }
 
 /* Return the bitmap describing what modules are imported.  Remember,

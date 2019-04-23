@@ -26,18 +26,18 @@ int main ()
 // { dg-final { scan-lang-dump {Lazily binding '::bar::frob'@'bar' section:} module } }
 // { dg-final { scan-lang-dump {>Lazily binding '::foo::frob'@'foo' section:} module } }
 // { dg-final { scan-lang-dump {Namespace:-[0-9]* namespace_decl:'::foo'@.none.} module } }
-// { dg-final { scan-lang-dump {Imported:-[0-9]* function_decl:'::foo::frob@2\(foo\)'@foo} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* function_decl:'::foo::frob@foo:2'@foo} module } }
 
 // { dg-final { scan-lang-dump {Lazily binding '::bar::quux'@'bar' section:} module } }
 // { dg-final { scan-lang-dump {>Lazily binding '::foo::X'@'foo' section:} module } }
-// { dg-final { scan-lang-dump {Imported:-[0-9]* type_decl:'::foo::X@2\(foo\)'@foo} module } }
-// { dg-final { scan-lang-dump {Imported:-[0-9]* function_decl:'::foo::X@2\(foo\)::__ct_comp '@foo} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* type_decl:'::foo::X@foo:2'@foo} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* function_decl:'::foo::X@foo:2::__ct_comp '@foo} module } }
 
 // { dg-final { scan-lang-dump {Lazily binding '::bar::Z'@'bar' section:} module } }
 // { dg-final { scan-lang-dump {>Lazily binding '::foo::Y'@'foo' section:} module } }
-// { dg-final { scan-lang-dump {Imported:-[0-9]* type_decl:'::foo::Y@2\(foo\)'@foo} module } }
-// { dg-final { scan-lang-dump {Imported:-[0-9]* field_decl:'::foo::Y@2\(foo\)::_vptr.Y'@foo} module } }
-// { dg-final { scan-lang-dump {Imported:-[0-9]* function_decl:'::foo::Y@2\(foo\)::frob'@foo} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* type_decl:'::foo::Y@foo:2'@foo} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* field_decl:'::foo::Y@foo:2::_vptr.Y'@foo} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* function_decl:'::foo::Y@foo:2::frob'@foo} module } }
 
 // { dg-final { scan-lang-dump {Lazily binding '::bar::Plain_One'@'bar' section:} module } }
 // { dg-final { scan-lang-dump {>Lazily binding '::foo::Plain'@'foo' section} module } }

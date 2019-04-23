@@ -172,6 +172,20 @@ cxx_initialize_diagnostics (diagnostic_context *context)
   pp->m_format_postprocessor = new cxx_format_postprocessor ();
 }
 
+static void
+dump_module_suffix (cxx_pretty_printer *pp, tree decl)
+{
+  if (!modules_p ())
+    return;
+
+  if (const char *module = module_name (decl))
+    {
+      pp_character (pp, '@');
+      pp->padding = pp_none;
+      pp_string (pp, module);
+    }
+}
+
 /* Dump a scope, if deemed necessary.  */
 
 static void
@@ -687,7 +701,6 @@ class_key_or_enum_as_string (tree t)
 static void
 dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
 {
-  tree name;
   const char *variety = class_key_or_enum_as_string (t);
   int typdef = 0;
   int tmplate = 0;
@@ -697,23 +710,23 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
   if (flags & TFF_CLASS_KEY_OR_ENUM)
     pp_cxx_ws_string (pp, variety);
 
-  name = TYPE_NAME (t);
+  tree decl = TYPE_NAME (t);
 
-  if (name)
+  if (decl)
     {
-      typdef = (!DECL_ARTIFICIAL (name)
+      typdef = (!DECL_ARTIFICIAL (decl)
 		/* An alias specialization is not considered to be a
 		   typedef.  */
 		&& !alias_template_specialization_p (t));
 
       if ((typdef
 	   && ((flags & TFF_CHASE_TYPEDEF)
-	       || (!flag_pretty_templates && DECL_LANG_SPECIFIC (name)
-		   && DECL_TEMPLATE_INFO (name))))
-	  || DECL_SELF_REFERENCE_P (name))
+	       || (!flag_pretty_templates && DECL_LANG_SPECIFIC (decl)
+		   && DECL_TEMPLATE_INFO (decl))))
+	  || DECL_SELF_REFERENCE_P (decl))
 	{
 	  t = TYPE_MAIN_VARIANT (t);
-	  name = TYPE_NAME (t);
+	  decl = TYPE_NAME (t);
 	  typdef = 0;
 	}
 
@@ -723,7 +736,7 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
 		    || PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)));
       
       if (! (flags & TFF_UNQUALIFIED_NAME))
-	dump_scope (pp, CP_DECL_CONTEXT (name), flags | TFF_SCOPE);
+	dump_scope (pp, CP_DECL_CONTEXT (decl), flags | TFF_SCOPE);
       flags &= ~TFF_UNQUALIFIED_NAME;
       if (tmplate)
 	{
@@ -733,9 +746,8 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
 
 	  while (DECL_TEMPLATE_INFO (tpl))
 	    tpl = DECL_TI_TEMPLATE (tpl);
-	  name = tpl;
+	  decl = tpl;
 	}
-      name = DECL_NAME (name);
     }
 
   if (LAMBDA_TYPE_P (t))
@@ -748,7 +760,7 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
 			 flags);
       pp_greater (pp);
     }
-  else if (!name || IDENTIFIER_ANON_P (name))
+  else if (!decl || IDENTIFIER_ANON_P (DECL_NAME (decl)))
     {
       if (flags & TFF_CLASS_KEY_OR_ENUM)
 	pp_string (pp, M_("<unnamed>"));
@@ -756,7 +768,9 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
 	pp_printf (pp, M_("<unnamed %s>"), variety);
     }
   else
-    pp_cxx_tree_identifier (pp, name);
+    pp_cxx_tree_identifier (pp, DECL_NAME (decl));
+
+  dump_module_suffix (pp, decl);
 
   if (tmplate)
     dump_template_parms (pp, TYPE_TEMPLATE_INFO (t),
@@ -1015,22 +1029,6 @@ dump_global_iord (cxx_pretty_printer *pp, tree t)
     gcc_unreachable ();
 
   pp_printf (pp, p, DECL_SOURCE_FILE (t));
-}
-
-static void
-dump_module_suffix (cxx_pretty_printer *pp, tree decl)
-{
-  tree owner = get_module_owner (decl);
-
-  if (DECL_MODULE_EXPORT_P (owner))
-    return;
-
-  if (unsigned mod = MAYBE_DECL_MODULE_OWNER (owner))
-    {
-      pp_character (pp, '@');
-      pp->padding = pp_none;
-      pp_string (pp, module_name (mod));
-    }
 }
 
 static void

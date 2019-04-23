@@ -1,6 +1,28 @@
 2019-04-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (module_name): New overload.
+	* module.cc (dumper::impl::nested_name): Adjust module dump.
+	(module_name): New.
+	* error.c (dump_module_suffix): Dump for namespace-scope decl.
+	(dump_aggr_type): Dump module suffix.
+	gcc/testsuite/
+	* g++.dg/modules/adhoc-1_b.C: Adjust regexps.
+	* g++.dg/modules/err-1_[cd].C: Likewise.
+	* g++.dg/modules/macloc-1_[cd].C: Likewise
+	* g++.dg/modules/by-name-1.C: Adjust scans.
+	* g++.dg/modules/class-3_[bd].C: Likewise.
+	* g++.dg/modules/enum-1_a.C: Likewise.
+	* g++.dg/modules/global-[23]_a.C: Likewise.
+	* g++.dg/modules/indirect-[1234]_[bc].C: Likewise.
+	* g++.dg/modules/inst-[12]_[ab].C: Likewise.
+	* g++.dg/modules/part-3_c.C: Likewise.
+	* g++.dg/modules/scc-1.C: Likewise.
+	* g++.dg/modules/stdio-1_a.H: Likewise.
+	* g++.dg/modules/using-4_a.C: Likewise.
+	* g++.dg/modules/vmort-2_[abc].C: Likewise.
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::tree_mergeable): Stream more for
 	specializations.
 

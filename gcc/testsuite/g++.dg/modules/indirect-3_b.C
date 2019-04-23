@@ -18,10 +18,10 @@ namespace bar
 }
 
 // { dg-final { scan-lang-dump {Lazily binding '::foo::X'@'foo' section} module } }
-// { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::X@2\(foo\)::frob'@foo} module } }
-// { dg-final { scan-lang-dump {Wrote instantiation:-[0-9]* function_decl:'::foo::X@2\(foo\)::frob@1\(bar\)<0x0>'@} module } }
+// { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::X@foo:2::frob'@foo} module } }
+// { dg-final { scan-lang-dump {Wrote instantiation:-[0-9]* function_decl:'::foo::X@foo:2::frob@bar:1<0x0>'@} module } }
 
 // { dg-final { scan-lang-dump {Lazily binding '::foo::TPL'@'foo' section} module } }
-// { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::TPL@2\(foo\)'@foo} module } }
-// { dg-final { scan-lang-dump {Wrote instantiation:-[0-9]* type_decl:'::foo::TPL@2\(foo\)<0x0>'@} module } }
-// { dg-final { scan-lang-dump {Wrote member:-[0-9]* function_decl:'::foo::TPL@2\(foo\)<0x0>::frob<0x0>'@bar} module } }
+// { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::TPL@foo:2'@foo} module } }
+// { dg-final { scan-lang-dump {Wrote instantiation:-[0-9]* type_decl:'::foo::TPL@foo:2<0x0>'@} module } }
+// { dg-final { scan-lang-dump {Wrote member:-[0-9]* function_decl:'::foo::TPL@foo:2<0x0>::frob<0x0>'@bar} module } }
