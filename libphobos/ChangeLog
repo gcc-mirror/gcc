@@ -1,3 +1,10 @@
+2019-04-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure.tgt: Add linux/riscv as supported target.
+	* libdruntime/gcc/sections/elf_shared.d (getDependencies): Adjust
+	dlpi_addr on RISCV32 and RISCV64.
+	* src/std/math.d: Add IEEE FPU control support for RISC-V.
+
 2019-04-23  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
 	    Jakub Jelinek  <jakub@redhat.com>
