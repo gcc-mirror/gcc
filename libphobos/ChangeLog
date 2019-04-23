@@ -1,3 +1,7 @@
+2019-04-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure.tgt: Add aarch64*-*-linux* as a supported target.
+
 2019-04-23  Iain Buclaw  <ibuclaw@gdcproject.org>
 	    Robin Dapp  <rdapp@linux.ibm.com>
 
