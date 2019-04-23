@@ -1,12 +1,17 @@
+2019-04-23  Roman Zhuykov  <zhroma@ispras.ru>
+
+	PR rtl-optimization/84032
+	* gcc.dg/pr84032.c: New test.
+
 2018-04-23  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/90078
-	* gcc/testsuite/g++.dg/tree-ssa/pr90078.C: New test.
+	* g++.dg/tree-ssa/pr90078.C: New test.
 
 2018-04-23  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/90021
-	* gcc/testsuite/gfortran.dg/pr90021.f90: New test.
+	* gfortran.dg/pr90021.f90: New test.
 
 2019-04-22  Steven G. Kargl  <kargl@gcc.gnu.org>
 
