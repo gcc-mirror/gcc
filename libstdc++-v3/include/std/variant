@@ -289,9 +289,11 @@ namespace __variant
       static constexpr bool _S_trivial_move_ctor =
 	  (is_trivially_move_constructible_v<_Types> && ...);
       static constexpr bool _S_trivial_copy_assign =
-	  _S_trivial_dtor && (is_trivially_copy_assignable_v<_Types> && ...);
+	  _S_trivial_dtor && _S_trivial_copy_ctor
+	  && (is_trivially_copy_assignable_v<_Types> && ...);
       static constexpr bool _S_trivial_move_assign =
-	  _S_trivial_dtor && (is_trivially_move_assignable_v<_Types> && ...);
+	  _S_trivial_dtor && _S_trivial_move_ctor
+	  && (is_trivially_move_assignable_v<_Types> && ...);
 
       // The following nothrow traits are for non-trivial SMFs. Trivial SMFs
       // are always nothrow.
@@ -303,7 +305,8 @@ namespace __variant
 	  (is_nothrow_move_constructible_v<_Types> && ...);
       static constexpr bool _S_nothrow_copy_assign = false;
       static constexpr bool _S_nothrow_move_assign =
-	  _S_nothrow_move_ctor && (is_nothrow_move_assignable_v<_Types> && ...);
+	  _S_nothrow_move_ctor
+	  && (is_nothrow_move_assignable_v<_Types> && ...);
     };
 
   // Defines members and ctors.
@@ -654,9 +657,7 @@ namespace __variant
 
   template<typename... _Types>
     using _Copy_assign_alias =
-	_Copy_assign_base<_Traits<_Types...>::_S_trivial_copy_assign
-			  && _Traits<_Types...>::_S_trivial_copy_ctor,
-			  _Types...>;
+      _Copy_assign_base<_Traits<_Types...>::_S_trivial_copy_assign, _Types...>;
 
   template<bool, typename... _Types>
     struct _Move_assign_base : _Copy_assign_alias<_Types...>
