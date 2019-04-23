@@ -1,3 +1,11 @@
+2019-04-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__detail::__variant::__ref_cast): Remove
+	unused function.
+	(__detail::__variant::_Uninitialized::_M_get)
+	(__detail::__variant::__get)
+	(__gen_vtable_impl::__element_by_index_or_cookie): Add noexcept.
+
 2019-04-21  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* testsuite/17_intro/headers/c++1998/charset.cc: Skip for Darwin8

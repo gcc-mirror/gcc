@@ -203,16 +203,16 @@ namespace __variant
 	: _M_storage(std::forward<_Args>(__args)...)
 	{ }
 
-      constexpr const _Type& _M_get() const &
+      constexpr const _Type& _M_get() const & noexcept
       { return _M_storage; }
 
-      constexpr _Type& _M_get() &
+      constexpr _Type& _M_get() & noexcept
       { return _M_storage; }
 
-      constexpr const _Type&& _M_get() const &&
+      constexpr const _Type&& _M_get() const && noexcept
       { return std::move(_M_storage); }
 
-      constexpr _Type&& _M_get() &&
+      constexpr _Type&& _M_get() && noexcept
       { return std::move(_M_storage); }
 
       _Type _M_storage;
@@ -229,33 +229,29 @@ namespace __variant
 	    _Type(std::forward<_Args>(__args)...);
 	}
 
-      const _Type& _M_get() const &
+      const _Type& _M_get() const & noexcept
       { return *_M_storage._M_ptr(); }
 
-      _Type& _M_get() &
+      _Type& _M_get() & noexcept
       { return *_M_storage._M_ptr(); }
 
-      const _Type&& _M_get() const &&
+      const _Type&& _M_get() const && noexcept
       { return std::move(*_M_storage._M_ptr()); }
 
-      _Type&& _M_get() &&
+      _Type&& _M_get() && noexcept
       { return std::move(*_M_storage._M_ptr()); }
 
       __gnu_cxx::__aligned_membuf<_Type> _M_storage;
     };
 
-  template<typename _Ref>
-    _Ref __ref_cast(void* __ptr)
-    {
-      return static_cast<_Ref>(*static_cast<remove_reference_t<_Ref>*>(__ptr));
-    }
-
   template<typename _Union>
-    constexpr decltype(auto) __get(in_place_index_t<0>, _Union&& __u)
+    constexpr decltype(auto)
+    __get(in_place_index_t<0>, _Union&& __u) noexcept
     { return std::forward<_Union>(__u)._M_first._M_get(); }
 
   template<size_t _Np, typename _Union>
-    constexpr decltype(auto) __get(in_place_index_t<_Np>, _Union&& __u)
+    constexpr decltype(auto)
+    __get(in_place_index_t<_Np>, _Union&& __u) noexcept
     {
       return __variant::__get(in_place_index<_Np-1>,
 			      std::forward<_Union>(__u)._M_rest);
@@ -263,7 +259,8 @@ namespace __variant
 
   // Returns the typed storage for __v.
   template<size_t _Np, typename _Variant>
-    constexpr decltype(auto) __get(_Variant&& __v)
+    constexpr decltype(auto)
+    __get(_Variant&& __v) noexcept
     {
       return __variant::__get(std::in_place_index<_Np>,
 			      std::forward<_Variant>(__v)._M_u);
@@ -981,7 +978,7 @@ namespace __variant
 
       template<size_t __index, typename _Variant>
 	static constexpr decltype(auto)
-	__element_by_index_or_cookie(_Variant&& __var)
+	__element_by_index_or_cookie(_Variant&& __var) noexcept
         {
 	  if constexpr (__index != variant_npos)
 	    return __variant::__get<__index>(std::forward<_Variant>(__var));
@@ -1166,8 +1163,7 @@ namespace __variant
 
   template<typename _Tp, typename... _Types>
     constexpr add_pointer_t<const _Tp>
-    get_if(const variant<_Types...>* __ptr)
-    noexcept
+    get_if(const variant<_Types...>* __ptr) noexcept
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T should occur for exactly once in alternatives");
