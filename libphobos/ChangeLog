@@ -1,4 +1,14 @@
 2019-04-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+	    Robin Dapp  <rdapp@linux.ibm.com>
+
+	* configure.tgt: Add s390*-linux* as a supported target.
+	* libdruntime/gcc/sections/elf_shared.d: import gcc.builtins.
+	(__tls_get_addr_internal): Declare.
+	(TLS_DTV_OFFSET): Define as zero on SystemZ.
+	(getTLSRange): Support getting TLS on SystemZ.
+	* testsuite/libphobos.typeinfo/struct-align.d: New test.
+
+2019-04-23  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* configure.tgt: Add linux/riscv as supported target.
 	* libdruntime/gcc/sections/elf_shared.d (getDependencies): Adjust

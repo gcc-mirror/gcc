@@ -77,6 +77,7 @@ else
     static assert(0, "unimplemented");
 }
 import core.sys.posix.pthread;
+import gcc.builtins;
 import gcc.config;
 import rt.deh;
 import rt.dmain2;
@@ -992,6 +993,7 @@ struct tls_index
 }
 
 extern(C) void* __tls_get_addr(tls_index* ti) nothrow @nogc;
+extern(C) void* __tls_get_addr_internal(tls_index* ti) nothrow @nogc;
 
 /* The dynamic thread vector (DTV) pointers may point 0x8000 past the start of
  * each TLS block. This is at least true for PowerPC and Mips platforms.
@@ -1025,6 +1027,8 @@ else version (MIPS32)
     enum TLS_DTV_OFFSET = 0x8000;
 else version (MIPS64)
     enum TLS_DTV_OFFSET = 0x8000;
+else version (SystemZ)
+    enum TLS_DTV_OFFSET = 0x0;
 else
     static assert( false, "Platform not supported." );
 
@@ -1041,5 +1045,12 @@ void[] getTLSRange(size_t mod, size_t sz) nothrow @nogc
 
     // base offset
     auto ti = tls_index(mod, 0);
-    return (__tls_get_addr(&ti)-TLS_DTV_OFFSET)[0 .. sz];
+    version (SystemZ)
+    {
+        auto idx = cast(void *)__tls_get_addr_internal(&ti)
+            + cast(ulong)__builtin_thread_pointer();
+        return idx[0 .. sz];
+    }
+    else
+        return (__tls_get_addr(&ti)-TLS_DTV_OFFSET)[0 .. sz];
 }

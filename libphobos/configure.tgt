@@ -32,6 +32,9 @@ case "${target}" in
   riscv*-*-linux*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;
+  s390*-linux*)
+	LIBPHOBOS_SUPPORTED=yes
+	;;
   x86_64-*-kfreebsd*-gnu | i?86-*-kfreebsd*-gnu)
 	LIBPHOBOS_SUPPORTED=yes
 	;;

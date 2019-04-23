@@ -1,4 +1,11 @@
 2019-04-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+	    Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gdc.dg/link.d: Test if target d_runtime.
+	* gdc.dg/runnable.d: Fix tests to work on BigEndian.
+	* gdc.dg/simd.d: Likewise.
+
+2019-04-23  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* gdc.test/fail_compilation/fail2456.d: New test.
 	* gdc.test/fail_compilation/test18312.d: New test.

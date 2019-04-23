@@ -860,7 +860,7 @@ public:
 	flags |= ClassFlags::noPointers;
 
     Lhaspointers:
-	this->layout_field (size_int (flags));
+	this->layout_field (build_integer_cst (flags, d_uint_type));
 
 	/* void *deallocator;  */
 	tree ddtor = (cd->aggDelete)
@@ -916,7 +916,7 @@ public:
 	if (cd->isCOMinterface ())
 	  flags |= ClassFlags::isCOMclass;
 
-	this->layout_field (size_int (flags));
+	this->layout_field (build_integer_cst (flags, d_uint_type));
 
 	/* void *deallocator;
 	   OffsetTypeInfo[] m_offTi;  (not implemented)
@@ -1049,7 +1049,7 @@ public:
     StructFlags::Type m_flags = 0;
     if (ti->hasPointers ())
       m_flags |= StructFlags::hasPointers;
-    this->layout_field (size_int (m_flags));
+    this->layout_field (build_integer_cst (m_flags, d_uint_type));
 
     /* void function(void*) xdtor;  */
     tree dtor = (sd->dtor) ? build_address (get_symbol_decl (sd->dtor))
@@ -1063,7 +1063,7 @@ public:
       this->layout_field (null_pointer_node);
 
     /* uint m_align;  */
-    this->layout_field (size_int (ti->alignsize ()));
+    this->layout_field (build_integer_cst (ti->alignsize (), d_uint_type));
 
     if (global.params.is64bit)
       {
@@ -1531,8 +1531,8 @@ create_typeinfo (Type *type, Module *mod)
 				      array_type_node, array_type_node,
 				      ptr_type_node, ptr_type_node,
 				      ptr_type_node, ptr_type_node,
-				      size_type_node, ptr_type_node,
-				      ptr_type_node, size_type_node,
+				      d_uint_type, ptr_type_node,
+				      ptr_type_node, d_uint_type,
 				      ptr_type_node, argtype, argtype, NULL);
 	    }
 	  t->vtinfo = TypeInfoStructDeclaration::create (t);
