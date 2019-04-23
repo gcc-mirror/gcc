@@ -340,9 +340,9 @@ namespace __variant
     { };
 
   // Specialize _Never_valueless_alt for other types which have a
-  // non-throwing and cheap move assignment operator, so that emplacing
-  // the type will provide the strong exception-safety guarantee,
-  // by creating and moving a temporary.
+  // non-throwing and cheap move construction and move assignment operator,
+  // so that emplacing the type will provide the strong exception-safety
+  // guarantee, by creating and moving a temporary.
   // Whether _Never_valueless_alt<T> is true or not affects the ABI of a
   // variant using that alternative, so we can't change the value later!
 
@@ -352,7 +352,8 @@ namespace __variant
   template <typename... _Types>
     constexpr bool __never_valueless()
     {
-      return (_Never_valueless_alt<_Types>::value && ...);
+      return _Traits<_Types...>::_S_move_assign
+	&& (_Never_valueless_alt<_Types>::value && ...);
     }
 
   // Defines index and the dtor, possibly trivial.
@@ -407,6 +408,8 @@ namespace __variant
       constexpr bool
       _M_valid() const noexcept
       {
+	if constexpr (__never_valueless<_Types...>())
+	  return true;
 	return this->_M_index != __index_type(variant_npos);
       }
 
@@ -1428,7 +1431,8 @@ namespace __variant
 	      this->_M_reset();
 	      __variant_construct_by_index<_Np>(*this, __tmp);
 	    }
-	  else if constexpr (__detail::__variant::_Never_valueless_alt<type>())
+	  else if constexpr (__detail::__variant::_Never_valueless_alt<type>()
+	      && _Traits::_S_move_assign)
 	    {
 	      // This construction might throw:
 	      variant __tmp(in_place_index<_Np>,
@@ -1474,7 +1478,8 @@ namespace __variant
 	      __variant_construct_by_index<_Np>(*this, __il,
 		  std::forward<_Args>(__args)...);
 	    }
-	  else if constexpr (__detail::__variant::_Never_valueless_alt<type>())
+	  else if constexpr (__detail::__variant::_Never_valueless_alt<type>()
+	      && _Traits::_S_move_assign)
 	    {
 	      // This construction might throw:
 	      variant __tmp(in_place_index<_Np>, __il,

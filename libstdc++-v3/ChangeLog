@@ -1,5 +1,20 @@
 2019-04-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/87431
+	* include/bits/basic_string.h (_Never_valueless_alt): Make partial
+	specialization also depend on is_nothrow_move_constructible.
+	* include/std/variant (__detail::__variant::__never_valueless()):
+	Only true if the variant would have a move assignment operator.
+	(__detail::__variant::_Variant_storage<false, T...>::_M_valid()):
+	Check __never_valueless<T...>().
+	(variant::emplace): Only perform non-throwing move assignments
+	for never-valueless alternatives if the variant has a move assignment
+	operator.
+	* testsuite/20_util/variant/compile.cc: Check that never-valueless
+	types can be emplaced into non-assignable variants.
+	* testsuite/20_util/variant/run.cc: Check that never-valueless types
+	don't get copied when emplaced into non-assignable variants.
+
 	* include/std/variant (__detail::__variant::__ref_cast): Remove
 	unused function.
 	(__detail::__variant::_Uninitialized::_M_get)

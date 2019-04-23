@@ -479,6 +479,20 @@ void test_emplace()
   static_assert(has_index_emplace<variant<int>, 0>(0));
   static_assert(!has_type_emplace<variant<AllDeleted>, AllDeleted>(0));
   static_assert(!has_index_emplace<variant<AllDeleted>, 0>(0));
+  static_assert(has_type_emplace<variant<int, AllDeleted>, int>(0));
+  static_assert(has_index_emplace<variant<int, AllDeleted>, 0>(0));
+  static_assert(has_type_emplace<variant<int, vector<int>, AllDeleted>, vector<int>>(0));
+  static_assert(has_index_emplace<variant<int, vector<int>, AllDeleted>, 1>(0));
+
+  // The above tests only check the emplace members are available for
+  // overload resolution. The following odr-uses will instantiate them:
+  variant<int, vector<int>, AllDeleted> v;
+  v.emplace<0>(1);
+  v.emplace<int>(1);
+  v.emplace<1>(1, 1);
+  v.emplace<vector<int>>(1, 1);
+  v.emplace<1>({1, 2, 3, 4});
+  v.emplace<vector<int>>({1, 2, 3, 4});
 }
 
 void test_triviality()

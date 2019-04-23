@@ -23,6 +23,7 @@
 #include <vector>
 #include <unordered_set>
 #include <memory_resource>
+#include <ext/throw_allocator.h>
 #include <testsuite_hooks.h>
 
 using namespace std;
@@ -253,6 +254,41 @@ void emplace()
     variant<vector<int>> v;
     VERIFY(&v.emplace<0>({1,2,3}) == &std::get<0>(v));
     VERIFY(&v.emplace<vector<int>>({1,2,3}) == &std::get<vector<int>>(v));
+  }
+
+  {
+    // Ensure no copies of the vector are made, only moves.
+    // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=87431#c21
+
+    // static_assert(__detail::__variant::_Never_valueless_alt<vector<AlwaysThrow>>::value);
+    variant<int, DeletedMoves, vector<AlwaysThrow>> v;
+    v.emplace<2>(1);
+    v.emplace<vector<AlwaysThrow>>(1);
+    v.emplace<0>(0);
+
+    // To test the emplace(initializer_list<U>, Args&&...) members we
+    // can't use AlwaysThrow because elements in an initialier_list
+    // are always copied. Use throw_allocator instead.
+    using Vector = vector<int, __gnu_cxx::throw_allocator_limit<int>>;
+    // static_assert(__detail::__variant::_Never_valueless_alt<Vector>::value);
+    variant<int, DeletedMoves, Vector> vv;
+    Vector::allocator_type::set_limit(1);
+    vv.emplace<2>(1, 1);
+    Vector::allocator_type::set_limit(1);
+    vv.emplace<Vector>(1, 1);
+    Vector::allocator_type::set_limit(1);
+    vv.emplace<0>(0);
+    Vector::allocator_type::set_limit(1);
+    vv.emplace<2>({1, 2, 3});
+    Vector::allocator_type::set_limit(1);
+    vv.emplace<Vector>({1, 2, 3, 4});
+    try {
+      Vector::allocator_type::set_limit(0);
+      vv.emplace<2>(1, 1);
+      VERIFY(false);
+    } catch (__gnu_cxx::forced_error) {
+    }
+    VERIFY(vv.valueless_by_exception());
   }
 }
 
