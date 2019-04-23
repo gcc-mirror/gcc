@@ -1,3 +1,9 @@
+2019-04-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* be.po, da.po, de.po, el.po, fi.po, fr.po, hr.po, id.po, ja.po,
+	nl.po, ru.po, sr.po, sv.po, tr.po, uk.po, vi.po, zh_CN.po,
+	zh_TW.po: Update.
+
 2019-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* de.po, es.po, fr.po, sv.po: Update.
