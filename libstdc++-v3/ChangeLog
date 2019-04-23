@@ -1,3 +1,26 @@
+2019-04-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__variant_construct): Use template parameter
+	type instead of equivalent decltype-specifier.
+	(_Move_ctor_base<false, Types...>::_Move_ctor_base(_Move_ctor_base&&)):
+	Replace forward with move.
+	(_Move_ctor_base<false, Types...>::_M_destructive_move)
+	(_Move_ctor_base<false, Types...>::_M_destructive_copy)
+	(_Move_ctor_base<true, Types...>::_M_destructive_move)
+	(_Move_ctor_base<true, Types...>::_M_destructive_copy): Only set the
+	index after construction succeeds.
+	(_Copy_assign_base<false, Types...>::operator=): Remove redundant
+	if-constexpr checks that are always true. Use __remove_cvref_t instead
+	of remove_reference so that is_nothrow_move_constructible check
+	doesn't use a const rvalue parameter. In the potentially-throwing case
+	construct a temporary and move assign it, as per LWG 2904.
+	(_Move_assign_base<false, Types...>::operator=): Remove redundant
+	if-constexpr checks that are always true. Use emplace as per LWG 2904.
+	(variant::operator=(T&&)): Only use emplace conditionally, otherwise
+	construct a temporary and move assign from it, as per LWG 2904.
+	* testsuite/20_util/variant/exception_safety.cc: Check that
+	assignment operators have strong exception safety guarantee.
+
 2019-04-23  Thomas Rodgers <trodgers@redhat.com>
 
 	Document PSTL linker flags
