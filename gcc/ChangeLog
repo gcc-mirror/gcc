@@ -1,5 +1,9 @@
 2019-04-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/90187
+	* config/i386/i386.c (ix86_expand_sse_fp_minmax): Force if_true into
+	a register if both if_true and if_false are MEMs.
+
 	PR tree-optimization/90208
 	* tree-cfg.c (remove_bb): Move forced labels from removed bbs
 	after labels of new_bb, not before them.
