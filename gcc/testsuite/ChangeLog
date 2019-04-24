@@ -1,3 +1,8 @@
+2019-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90187
+	* g++.target/i386/pr90187.C: New test.
+
 2019-04-24  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* gdc.test/README.gcc: New file.
