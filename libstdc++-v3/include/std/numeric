@@ -162,8 +162,8 @@ namespace __detail
 
 template<typename _Tp>
     constexpr
-    enable_if_t<__and_<is_arithmetic<_Tp>, is_same<remove_cv_t<_Tp>, _Tp>,
-		       __not_<is_same<_Tp, bool>>>::value,
+    enable_if_t<__and_v<is_arithmetic<_Tp>, is_same<remove_cv_t<_Tp>, _Tp>,
+			__not_<is_same<_Tp, bool>>>,
 		_Tp>
     midpoint(_Tp __a, _Tp __b) noexcept
     {
@@ -192,8 +192,7 @@ template<typename _Tp>
 
   template<typename _Tp>
     constexpr
-    enable_if_t<__and_<is_object<_Tp>, bool_constant<sizeof(_Tp) != 0>>::value,
-		_Tp*>
+    enable_if_t<__and_v<is_object<_Tp>, bool_constant<sizeof(_Tp) != 0>>, _Tp*>
     midpoint(_Tp* __a, _Tp* __b) noexcept
     {
       return __a > __b ? __b + (__a - __b) / 2 : __a + (__b - __a) / 2;

@@ -1,5 +1,9 @@
 2019-04-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/any (any::any(ValueType&&)): Use __and_v.
+	* include/std/numeric (midpoint(T, T, T), midpoint(T*, T*, T*)):
+	Likewise.
+
 	* include/std/tuple (apply): Use remove_reference_t instead of decay_t
 	as per P0777R1.
 	* include/std/type_traits (__result_of_memfun): Use remove_reference
