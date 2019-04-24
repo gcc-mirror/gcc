@@ -1,5 +1,18 @@
 2019-04-24  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	PR d/88654
+	* testsuite/lib/libphobos.exp (libphobos-dg-test): Check
+	libphobos_skipped_test_p before running test.
+	(libphobos-dg-prune): New proc.
+	(libphobos_init): Set libphobos_skip_tests.
+	(libphobos_skipped_test_p): New proc.
+	(check_effective_target_libcurl_available): New proc.
+	* testsuite/libphobos.phobos/phobos.exp: Skip curl tests if library
+	not found.
+	* testsuite/libphobos.phobos_shared/phobos_shared.exp: Likewise.
+
+2019-04-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	PR d/88431
 	* configure: Regenerate.
 	* m4/libtool.m4 (lt_simple_compile_test_code): Update to not have
