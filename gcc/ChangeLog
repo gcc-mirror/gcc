@@ -1,5 +1,9 @@
 2019-04-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/90208
+	* tree-cfg.c (remove_bb): Move forced labels from removed bbs
+	after labels of new_bb, not before them.
+
 	PR tree-optimization/90211
 	* tree-parloops.c (try_create_reduction_list): Ignore phi arguments
 	which are not SSA_NAMEs.
