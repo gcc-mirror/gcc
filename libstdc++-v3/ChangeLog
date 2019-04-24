@@ -1,5 +1,8 @@
 2019-04-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2017.xml: Document P0024R2 status.
+	* doc/html/*: Regenerate.
+
 	* include/bits/fs_path.h (operator<, operator<=, operator>)
 	(operator>=, operator==, operator!=): Make hidden friends, as per
 	LWG 3065.
