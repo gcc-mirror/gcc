@@ -1,3 +1,7 @@
+2019-04-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.test/README.gcc: New file.
+
 2019-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/90208
