@@ -1,3 +1,11 @@
+2019-04-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from mainline
+	PR fortran/87127
+	* resolve.c (check_host_association): If an external function
+	is typed but not declared explicitly to be external, change the
+	old symbol from a variable to an external function.
+
 2019-04-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
