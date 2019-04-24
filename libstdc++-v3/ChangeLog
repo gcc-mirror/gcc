@@ -1,5 +1,11 @@
 2019-04-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/tuple (apply): Use remove_reference_t instead of decay_t
+	as per P0777R1.
+	* include/std/type_traits (__result_of_memfun): Use remove_reference
+	instead of __remove_cvref_t and remove redundant is_same check.
+	(__inv_unwrap): Use __remove_cvref_t instead of decay_t.
+
 	* include/experimental/string_view (basic_string_view::pointer)
 	(basic_string_view::reference): Fix to refer to non-const value_type.
 	* include/bits/basic_string.h (basic_string): Use __sv_check and

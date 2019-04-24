@@ -2327,10 +2327,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Res, typename _Class, typename _Arg, typename... _Args>
     struct __result_of_memfun<_Res _Class::*, _Arg, _Args...>
     {
-      typedef __remove_cvref_t<_Arg> _Argval;
+      typedef typename remove_reference<_Arg>::type _Argval;
       typedef _Res _Class::* _MemPtr;
-      typedef typename conditional<__or_<is_same<_Argval, _Class>,
-        is_base_of<_Class, _Argval>>::value,
+      typedef typename conditional<is_base_of<_Class, _Argval>::value,
         __result_of_memfun_ref<_MemPtr, _Arg, _Args...>,
         __result_of_memfun_deref<_MemPtr, _Arg, _Args...>
       >::type::type type;
@@ -2341,7 +2340,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   //        as the object expression
 
   // Used by result_of, invoke etc. to unwrap a reference_wrapper.
-  template<typename _Tp, typename _Up = typename decay<_Tp>::type>
+  template<typename _Tp, typename _Up = __remove_cvref_t<_Tp>>
     struct __inv_unwrap
     {
       using type = _Tp;
