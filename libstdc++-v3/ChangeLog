@@ -1,5 +1,47 @@
 2019-04-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/string_view (basic_string_view::pointer)
+	(basic_string_view::reference): Fix to refer to non-const value_type.
+	* include/bits/basic_string.h (basic_string): Use __sv_check and
+	__sv_limit instead of basic_string_view::_M_check and
+	basic_string_view::_M_limit.
+	* include/std/string_view (__sv_check, __sv_limit): New
+	helper functions to replace basic_string_view::_M_check and
+	basic_string_view::_M_limit.
+	(basic_string_view): Add static assertions to enforce ill-formed
+	requirement for traits_type::char_type from P1148R0, and to enforce
+	required properties of char-like types.
+	(basic_string_view::pointer, basic_string_view::reference): Fix to
+	refer to non-const value_type.
+	(basic_string_view::operator[], basic_string_view::at)
+	(basic_string_view::front, basic_string_view::back)
+	(basic_string_view::data): Use const_reference and const_pointer
+	typedefs for return types.
+	(basic_string_view::_M_check, basic_string_view::_M_limit): Remove.
+	(hash<wstring_view>): Fix argument_type typedef.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/
+	char/1.cc: Fix expected return type of basic_string_view::data().
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/
+	wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/
+	char/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/
+	wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/requirements/traits_neg.cc:
+	New test.
+	* testsuite/21_strings/basic_string_view/requirements/typedefs.cc:
+	Check reference and pointer typedefs.
+	* testsuite/experimental/string_view/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/experimental/string_view/modifiers/remove_prefix/char/1.cc:
+	Fix expected return type of basic_string_view::data().
+	* testsuite/experimental/string_view/modifiers/remove_prefix/wchar_t/
+	1.cc: Likewise.
+	* testsuite/experimental/string_view/modifiers/remove_suffix/char/1.cc:
+	Likewise.
+	* testsuite/experimental/string_view/modifiers/remove_suffix/wchar_t/
+	1.cc: Likewise.
+
 	PR libstdc++/90220
 	* include/std/any (__any_caster): Use remove_cv_t instead of decay_t.
 	Avoid a runtime check for types that can never be stored in std::any.

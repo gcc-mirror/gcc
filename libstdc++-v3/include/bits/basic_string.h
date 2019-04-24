@@ -1336,8 +1336,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	{
 	  __sv_type __sv = __svt;
 	  return _M_append(__sv.data()
-			   + __sv._M_check(__pos, "basic_string::append"),
-			   __sv._M_limit(__pos, __n));
+	      + std::__sv_check(__sv.size(), __pos, "basic_string::append"),
+	      std::__sv_limit(__sv.size(), __pos, __n));
 	}
 #endif // C++17
 
@@ -1507,9 +1507,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	assign(const _Tp& __svt, size_type __pos, size_type __n = npos)
 	{
 	  __sv_type __sv = __svt;
-	  return _M_replace(size_type(0), this->size(), __sv.data()
-			    + __sv._M_check(__pos, "basic_string::assign"),
-			    __sv._M_limit(__pos, __n));
+	  return _M_replace(size_type(0), this->size(),
+	      __sv.data()
+	      + std::__sv_check(__sv.size(), __pos, "basic_string::assign"),
+	      std::__sv_limit(__sv.size(), __pos, __n));
 	}
 #endif // C++17
 
@@ -1780,9 +1781,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	       size_type __pos2, size_type __n = npos)
 	{
 	  __sv_type __sv = __svt;
-	  return this->replace(__pos1, size_type(0), __sv.data()
-			       + __sv._M_check(__pos2, "basic_string::insert"),
-			       __sv._M_limit(__pos2, __n));
+	  return this->replace(__pos1, size_type(0),
+	      __sv.data()
+	      + std::__sv_check(__sv.size(), __pos2, "basic_string::insert"),
+	      std::__sv_limit(__sv.size(), __pos2, __n));
 	}
 #endif // C++17
 
@@ -2212,9 +2214,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 		size_type __pos2, size_type __n2 = npos)
 	{
 	  __sv_type __sv = __svt;
-	  return this->replace(__pos1, __n1, __sv.data()
-			       + __sv._M_check(__pos2, "basic_string::replace"),
-			       __sv._M_limit(__pos2, __n2));
+	  return this->replace(__pos1, __n1,
+	      __sv.data()
+	      + std::__sv_check(__sv.size(), __pos2, "basic_string::replace"),
+	      std::__sv_limit(__sv.size(), __pos2, __n2));
 	}
 
       /**
@@ -4303,8 +4306,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	{
 	  __sv_type __sv = __svt;
 	  return append(__sv.data()
-			+ __sv._M_check(__pos, "basic_string::append"),
-			__sv._M_limit(__pos, __n));
+	      + std::__sv_check(__sv.size(), __pos, "basic_string::append"),
+	      std::__sv_limit(__sv.size(), __pos, __n));
 	}
 #endif // C++17
 
@@ -4460,8 +4463,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	{
 	  __sv_type __sv = __svt;
 	  return assign(__sv.data()
-			+ __sv._M_check(__pos, "basic_string::assign"),
-			__sv._M_limit(__pos, __n));
+	      + std::__sv_check(__sv.size(), __pos, "basic_string::assign"),
+	      std::__sv_limit(__sv.size(), __pos, __n));
 	}
 #endif // C++17
 
@@ -4671,8 +4674,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	{
 	  __sv_type __sv = __svt;
 	  return this->replace(__pos1, size_type(0), __sv.data()
-			       + __sv._M_check(__pos2, "basic_string::insert"),
-			       __sv._M_limit(__pos2, __n));
+	      + std::__sv_check(__sv.size(), __pos2, "basic_string::insert"),
+	      std::__sv_limit(__sv.size(), __pos2, __n));
 	}
 #endif // C++17
 
@@ -5062,8 +5065,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	{
 	  __sv_type __sv = __svt;
 	  return this->replace(__pos1, __n1,
-	      __sv.data() + __sv._M_check(__pos2, "basic_string::replace"),
-	      __sv._M_limit(__pos2, __n2));
+	      __sv.data()
+	      + std::__sv_check(__sv.size(), __pos2, "basic_string::replace"),
+	      std::__sv_limit(__sv.size(), __pos2, __n2));
 	}
 
       /**
