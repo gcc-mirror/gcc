@@ -1,3 +1,9 @@
+2019-04-24  Claudiu Zissulescu  <claziss@sysnopsys.com>
+
+	* config/arc/arc-options.def: Fix typos and spelling mistakes.
+	* config/arc/arc.c (arc_init): Cleanup warning message.
+	(arc_override_options): Likewise.
+
 2019-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/90187

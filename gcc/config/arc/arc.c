@@ -955,8 +955,7 @@ arc_init (void)
   /* Warn for unimplemented PIC in pre-ARC700 cores, and disable flag_pic.  */
   if (flag_pic && TARGET_ARC600_FAMILY)
     {
-      warning (0,
-	       "PIC is not supported for %s.  Generating non-PIC code only",
+      warning (0, "PIC is not supported for %qs",
 	       arc_cpu_string);
       flag_pic = 0;
     }
@@ -1218,30 +1217,33 @@ arc_override_options (void)
      option is not allowed.  Extra, check options against default
      architecture/cpu flags and throw an warning if we find a
      mismatch.  */
+  /* TRANSLATORS: the DOC/DOC0/DOC1 are strings which shouldn't be
+     translated.  They are like keywords which one can relate with the
+     architectural choices taken for an ARC CPU implementation.  */
 #define ARC_OPTX(NAME, CODE, VAR, VAL, DOC0, DOC1)		\
   do {								\
     if ((!(arc_selected_cpu->arch_info->flags & CODE))		\
 	&& (VAR == VAL))					\
-      error ("option %s=%s is not available for %s CPU",	\
+      error ("option %<%s=%s%> is not available for %qs CPU",	\
 	     DOC0, DOC1, arc_selected_cpu->name);		\
     if ((arc_selected_cpu->arch_info->dflags & CODE)		\
 	&& (VAR != DEFAULT_##VAR)				\
 	&& (VAR != VAL))					\
-      warning (0, "option %s is ignored, the default value %s"	\
-	       " is considered for %s CPU", DOC0, DOC1,		\
+      warning (0, "option %qs is ignored, the default value %qs"	\
+	       " is considered for %qs CPU", DOC0, DOC1,		\
 	       arc_selected_cpu->name);				\
  } while (0);
 #define ARC_OPT(NAME, CODE, MASK, DOC)				\
   do {								\
     if ((!(arc_selected_cpu->arch_info->flags & CODE))		\
 	&& (target_flags & MASK))				\
-      error ("option %s is not available for %s CPU",		\
+      error ("option %qs is not available for %qs CPU",		\
 	     DOC, arc_selected_cpu->name);			\
     if ((arc_selected_cpu->arch_info->dflags & CODE)		\
 	&& (target_flags_explicit & MASK)			\
 	&& (!(target_flags & MASK)))				\
-      warning (0, "unset option %s is ignored, it is always"	\
-	       " enabled for %s CPU", DOC,			\
+      warning (0, "unset option %qs is ignored, it is always"	\
+	       " enabled for %qs CPU", DOC,			\
 	       arc_selected_cpu->name);				\
   } while (0);
 
