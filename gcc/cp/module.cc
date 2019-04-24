@@ -2521,7 +2521,6 @@ enum tree_tag {
   // slot when creating it though.
   tt_builtin,		/* A builtin decl.  */
   tt_namespace,		/* Namespace reference.  */
-  tt_inst,		/* A template instantiation.  */
   tt_binfo,		/* A BINFO.  */
   tt_vtable,		/* A vtable.  */
   tt_template,
@@ -6468,16 +6467,9 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
     {
       /* If we requested by-value, this better not be a cross-module
 	 import.  */
-      // FIXME: For now only namespace-scope fdecl instantiations are streamed.
-      if (TREE_CODE (decl) == FUNCTION_DECL
-	  && DECL_NAMESPACE_SCOPE_P (decl))
-	gcc_checking_assert ((*modules)[MAYBE_DECL_MODULE_OWNER
-					(get_module_owner (decl, true))]->remap
-			     < MODULE_IMPORT_BASE);
-      else
-	gcc_checking_assert ((*modules)[MAYBE_DECL_MODULE_OWNER
-					(get_module_owner (decl, false))]->remap
-			     < MODULE_IMPORT_BASE);
+      gcc_checking_assert ((*modules)[MAYBE_DECL_MODULE_OWNER
+				      (get_module_owner (decl, true))]->remap
+			   < MODULE_IMPORT_BASE);
       return true;
     }
 
@@ -6499,8 +6491,6 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
     {
       tree tpl = TI_TEMPLATE (ti);
       gcc_checking_assert (decl == DECL_TEMPLATE_RESULT (tpl));
-      gcc_checking_assert (!TREE_VISITED (tpl)
-			   || *tree_map.get (tpl) >= 0);
       if (streaming_p ())
 	i (tt_template);
       tree_node (tpl);
@@ -6521,33 +6511,13 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	      && !DECL_MEMBER_TEMPLATE_P (tpl))
 	    // FIXME: The body could be instantiated elsewhere to the context?
 	    ; /* Implicit member template.  */
-	  else if (TREE_CODE (decl) == FUNCTION_DECL
-		   && DECL_NAMESPACE_SCOPE_P (decl))
-	    {
-	      // FIXME: Let's just do namespace-scope function decls for now
-	      owner = MAYBE_DECL_MODULE_OWNER (decl);
-	      owner = (*modules)[owner]->remap;
-	      if (streaming_p ())
-		{
-		  gcc_unreachable ();
-		}
-	      else
-		{
-		  dep_hash->add_dependency (decl, depset::EK_SPECIALIZATION);
-		  kind = "fn_instantiation";
-		  goto insert;
-		}
-	    }
 	  else
 	    {
-	      // FIXME: this should be a dependency and serialized as
-	      // a mergeable decl.  We cannot rely on instantiating it
-	      // on read back
-	      if (streaming_p ())
-		i (tt_inst);
-	      tree_ctx (tpl, false, NULL_TREE);
-	      tree_node (INNERMOST_TEMPLATE_ARGS (TI_ARGS (ti)));
-	      kind = "instantiation";
+	      owner = MAYBE_DECL_MODULE_OWNER (decl);
+	      owner = (*modules)[owner]->remap;
+	      gcc_assert (!streaming_p ());
+	      dep_hash->add_dependency (decl, depset::EK_SPECIALIZATION);
+	      kind = "specialization";
 	      goto insert;
 	    }
 	}
@@ -7158,52 +7128,13 @@ trees_in::tree_node ()
 	}
       break;
 
-    case tt_inst:
-      /* An instantiation.  */
-      const char *kind;
-      unsigned owner;
-      {
-	tree tpl = tree_node ();
-	tree args = tree_node ();
-	if (TREE_CODE (tpl) != TEMPLATE_DECL)
-	  {
-	    tree ti = NULL_TREE;
-	    if (TREE_CODE (tpl) == TYPE_DECL)
-	      ti = TYPE_TEMPLATE_INFO (TREE_TYPE (tpl));
-	    else if (DECL_LANG_SPECIFIC (tpl))
-	      ti = DECL_TEMPLATE_INFO (tpl);
-	    tpl = ti ? TI_TEMPLATE (tpl) : NULL_TREE;
-	    if (!(tpl &&
-		  RECORD_OR_UNION_CODE_P (TREE_CODE (CP_DECL_CONTEXT (tpl)))
-		  && !DECL_MEMBER_TEMPLATE_P (tpl)))
-	      tpl = NULL_TREE;
-	  }
-
-	if (!tpl)
-	  set_overrun ();
-	else if (TREE_CODE (DECL_TEMPLATE_RESULT (tpl)) != TYPE_DECL)
-	  {
-	    res = instantiate_template (tpl, args, tf_error);
-	    mark_used (res, tf_none); // FIXME: This may be too early
-	  }
-	else
-	  {
-	    res = lookup_template_class (tpl, args, NULL_TREE, NULL_TREE,
-					 0, tf_error);
-	    complete_type (res); // FIXME: Probably too early
-	    res = TYPE_NAME (res);
-	  }
-	kind = "Instantiation";
-	owner = tpl ? MAYBE_DECL_MODULE_OWNER (tpl) : 0;
-      }
-      goto finish_decl;
-
     case tt_named_decl:
     case tt_implicit_template:
     case tt_anon_decl:
     case tt_builtin:
       {
 	/* A named decl.  */
+	unsigned owner;
 	tree ctx = tree_node ();
 	tree name = tree_node ();
 	if (tag == tt_builtin)
@@ -7249,11 +7180,8 @@ trees_in::tree_node ()
 		 && owner != state->mod)
 	  mark_used (res, tf_none);
 
-	kind = (tag == tt_builtin ? "Builtin"
-		: owner != state->mod ? "Imported" : "Named");
-      }
-      finish_decl:
-      {
+	const char *kind = (tag == tt_builtin ? "Builtin"
+			    : owner != state->mod ? "Imported" : "Named");
 	int tag = insert (res);
 	if (res)
 	  {
@@ -7725,7 +7653,7 @@ trees_in::tree_mergeable (bool mod_mergeable)
   tree ctx = tree_node ();  /* Template or namespace.  */
   tree name = tree_node ();  /* Identifier or template args.  */
 
-  bool is_specialization = ctx && TREE_CODE (ctx) != NAMESPACE_DECL;
+  int is_specialization = ctx && TREE_CODE (ctx) != NAMESPACE_DECL;
   bool is_mod = !is_specialization && u ();
 
   tree tpl = NULL_TREE;
@@ -7787,14 +7715,17 @@ trees_in::tree_mergeable (bool mod_mergeable)
 
     case TYPE_DECL:
       if (DECL_IMPLICIT_TYPEDEF_P (inner))
-	if (tree type = start (u (), tcc_type))
-	  {
-	    tree_node_specific (type, false);
-	    core_bools (type);
-	    bflush ();
-	    TREE_TYPE (inner) = type;
-	    TYPE_NAME (type) = inner;
-	  }
+	{
+	  is_specialization = -is_specialization;
+	  if (tree type = start (u (), tcc_type))
+	    {
+	      tree_node_specific (type, false);
+	      core_bools (type);
+	      bflush ();
+	      TREE_TYPE (inner) = type;
+	      TYPE_NAME (type) = inner;
+	    }
+	}
       break;
 
       default:
@@ -7809,9 +7740,12 @@ trees_in::tree_mergeable (bool mod_mergeable)
   if (is_mod && !mod_mergeable)
     kind = "unique";
   else if (tree existing = is_specialization
-	   ? match_mergeable_specialization (decl, ctx, args)
+	   ? (match_mergeable_specialization
+	      (is_specialization < 0 ? TREE_TYPE (decl) : decl, ctx, args))
 	   : match_mergeable_decl (decl, ctx, name, is_mod, tpl, ret, args))
     {
+      if (is_specialization < 0)
+	existing = TYPE_NAME (existing);
       decl = existing;
       mergeables.quick_push (decl);
       if (TREE_CODE (decl) == TEMPLATE_DECL)

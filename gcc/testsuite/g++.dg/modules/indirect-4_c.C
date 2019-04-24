@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-ts -fdump-lang-module-uid" }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module-uid-alias" }
 import bar;
 
 int main ()
@@ -12,6 +12,7 @@ int main ()
 // { dg-final { scan-lang-dump {Lazily binding '::bar::quux'@'bar' section:} module } }
 // { dg-final { scan-lang-dump {>Lazily binding '::foo::TPL'@'foo' section:} module } }
 // { dg-final { scan-lang-dump {Imported:-[0-9]* template_decl:'::foo::TPL@foo:2'@foo} module } }
-// { dg-final { scan-lang-dump {Imported:-[0-9]* template_decl:'::foo::TPL@foo:2<0x1>::frob<#unnamed#>'@foo} module } }
-// { dg-final { scan-lang-dump {Instantiation:-[0-9]* type_decl:'::foo::TPL@foo:2<0x1>'@foo} module } }
-// { dg-final { scan-lang-dump {Instantiation:-[0-9]* function_decl:'::foo::TPL@foo:2<0x1>::frob<0x2>'@\(detached\)} module } }
+
+// { dg-final { scan-lang-dump {Named:-[0-9]* template_decl:'::foo::TPL@bar:3<0x1>::frob<#unnamed#>'@bar} module } }
+// { dg-final { scan-lang-dump {Reading definition function_decl '::foo::TPL@bar:3<0x1>::frob@bar:3<0x2>'} module } }
+// { dg-final { scan-lang-dump {Reading definition type_decl '::foo::TPL@bar:3<0x1>'} module } }

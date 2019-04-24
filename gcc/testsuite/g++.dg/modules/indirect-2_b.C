@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-ts -fdump-lang-module-uid" }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module-blocks-alias-uid" }
 export module bar;
 // { dg-module-bmi bar }
 
@@ -23,5 +23,10 @@ namespace bar
 
 // { dg-final { scan-lang-dump {Lazily binding '::foo::X'@'foo' section:} module } }
 // { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::X@foo:2'@foo} module } }
-// { dg-final { scan-lang-dump {Wrote instantiation:-[0-9]* type_decl:'::foo::X@foo:2<0x0>'@} module } }
 
+// { dg-final { scan-lang-dump {Cluster:3 1 depsets\n  \[0\]=specialization definition '::foo::X@bar:1<0x0>'} module } }
+// { dg-final { scan-lang-dump {Wrote:-6 global specialization type_decl:'::foo::X@bar:1<0x0>'} module } }
+// { dg-final { scan-lang-dump {Depset:0 specialization type_decl:'::foo::X@bar:1<0x0>'} module } }
+// { dg-final { scan-lang-dump {Wrote mergeable:-6 type_decl:'::foo::X@bar:1<0x0>'} module } }
+// { dg-final { scan-lang-dump {Voldemort:1 '::foo::X@bar:1<0x0>'} module } }
+// { dg-final { scan-lang-dump {Inserted:-1 horcrux:1@0 for '::foo::X@bar:1<0x0>'} module } }

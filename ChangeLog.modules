@@ -1,3 +1,19 @@
+2019-04-24  Nathan Sidwell  <nathan@acm.org>
+
+	Instantiations now streamed.
+	gcc/cp/
+	* module.cc (tree_tag): Delete tt_inst.
+	(trees_out::tree_decl): All instantiations are depended.  Never
+	tt_inst.
+	(trees_in::tree_node): Delete tt_inst handling.
+	(trees_in::tree_mergeable): Deal with type specializations.
+	* pt.c (lookup_template_class_1): Set instatiation owner to
+	current TU.
+	(match_mergable): Accept type.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-[234]_[bc].C: Adjust scans.
+	* g++.dg/modules/inst-[34]_[bc].C: New.
+
 2019-04-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

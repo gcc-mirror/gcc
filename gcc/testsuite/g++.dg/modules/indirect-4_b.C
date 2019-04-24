@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-ts -fdump-lang-module-uid" }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module-blocks-alias-uid" }
 export module bar;
 // { dg-module-bmi bar }
 
@@ -14,6 +14,10 @@ namespace bar
 
 // { dg-final { scan-lang-dump {Lazily binding '::foo::TPL'@'foo' section:} module } }
 // { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::TPL@foo:2'@foo} module } }
-// { dg-final { scan-lang-dump {Wrote instantiation:-[0-9]* type_decl:'::foo::TPL@foo:2<0x1>'@\(none\)} module } }
-// { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::TPL@foo:2<0x1>::frob<#unnamed#>'@foo} module } }
-// { dg-final { scan-lang-dump {Wrote instantiation:-[0-9]* function_decl:'::foo::TPL@foo:2<0x1>::frob@bar:1<0x2>'@\(none\)} module } }
+
+// { dg-final { scan-lang-dump {Cluster:1 1 depsets\n  \[0\]=specialization definition '::foo::TPL@bar:1<0x1>'} module } }
+// { dg-final { scan-lang-dump {Cluster:2 1 depsets\n  \[0\]=specialization definition '::foo::TPL@bar:1<0x1>::frob@bar:1<0x2>'} module } }
+// { dg-final { scan-lang-dump {Wrote:-6 global specialization type_decl:'::foo::TPL@bar:1<0x1>'} module } }
+// { dg-final { scan-lang-dump {Inserted:-1 horcrux:0@0 for '::foo::TPL@bar:1<0x1>'} module } }
+// { dg-final { scan-lang-dump {Wrote:-13 global specialization function_decl:'::foo::TPL@bar:1<0x1>::frob@bar:1<0x2>'} module } }
+// { dg-final { scan-lang-dump {Writing unnamed\n Unnamed 0 '::foo::TPL@bar:1<0x1>' section:1\n Unnamed 1 '::foo::TPL@bar:1<0x1>::frob@bar:1<0x2>' section:2} module } }

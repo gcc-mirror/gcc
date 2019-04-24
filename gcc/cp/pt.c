@@ -9534,7 +9534,8 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 
       /* If we called start_enum or pushtag above, this information
 	 will already be set up.  */
-      if (!TYPE_NAME (t))
+      type_decl = TYPE_NAME (t);
+      if (!type_decl)
 	{
 	  TYPE_CONTEXT (t) = FROB_CONTEXT (context);
 
@@ -9542,10 +9543,16 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	  DECL_CONTEXT (type_decl) = TYPE_CONTEXT (t);
 	  DECL_SOURCE_LOCATION (type_decl)
 	    = DECL_SOURCE_LOCATION (TYPE_STUB_DECL (template_type));
-	  set_implicit_module_owner (type_decl, gen_tmpl);
 	}
-      else
-	type_decl = TYPE_NAME (t);
+
+      /* Regardless of where the template came from, this instantiation is
+	 owned by this TU.  */
+      if (DECL_LANG_SPECIFIC (type_decl) || module_purview_p ())
+	{
+	  retrofit_lang_decl (type_decl);
+	  DECL_MODULE_OWNER (type_decl)
+	    = module_purview_p () ? MODULE_PURVIEW : MODULE_NONE;
+	}
 
       if (CLASS_TYPE_P (template_type))
 	{
@@ -28240,12 +28247,16 @@ declare_integer_pack (void)
     = (enum built_in_function) (int) CP_BUILT_IN_INTEGER_PACK;
 }
 
+// FIXME: do we need to register the specialization on
+// DECL_TEMPLATE_SPECIALIZATIONS & DECL_TEMPLATE_INSTANTIATIONS?
+
 tree
 match_mergeable_specialization (tree spec, tree tmpl, tree args)
 {
   spec_entry elt = {tmpl, args, NULL_TREE};
   hash_table<spec_hasher> *specializations;
-  if (DECL_CLASS_TEMPLATE_P (tmpl))
+
+  if (TYPE_P (spec))
     specializations = type_specializations;
   else
     specializations = decl_specializations;
