@@ -1,3 +1,22 @@
+2019-04-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90086
+	* m4/druntime/cpu.m4 (DRUNTIME_CPU_SOURCES): New macro.
+	* configure.ac: Use it.
+	* configure: Regenerate.
+	* libdruntime/Makefile.am: Add new config sources to
+	DRUNTIME_SOURCES_CONFIGURED.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/config/aarch64/switchcontext.S: New file.
+	* libdruntime/config/arm/switchcontext.S: New file.
+	* libdruntime/config/common/threadasm.S: New file.
+	* libdruntime/config/mingw/switchcontext.S: New file.
+	* libdruntime/config/mips/switchcontext.S: New file.
+	* libdruntime/config/powerpc/switchcontext.S: New file.
+	* libdruntime/config/powerpc64/callwithstack.S: New file.
+	* libdruntime/config/x86/switchcontext.S: New file.
+	* libdruntime/core/threadasm.S: Remove.
+
 2019-04-24  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/89432
