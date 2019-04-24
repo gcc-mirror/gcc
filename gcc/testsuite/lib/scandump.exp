@@ -70,6 +70,7 @@ proc scan-dump { args } {
     set output_file "[glob -nocomplain $dumpbase.[lindex $args 2]]"
     if { $output_file == "" } {
 	verbose -log "$testcase: dump file does not exist"
+	verbose -log "dump file: $dumpbase.$suf"
 	unresolved "$testname"
 	return
     }

@@ -605,6 +605,7 @@ symtab_node::create_reference (symtab_node *referred_node,
   ref->referred = referred_node;
   ref->stmt = stmt;
   ref->lto_stmt_uid = 0;
+  ref->speculative_id = 0;
   ref->use = use_type;
   ref->speculative = 0;
 
@@ -662,6 +663,7 @@ symtab_node::clone_references (symtab_node *node)
       ref2 = create_reference (ref->referred, ref->use, ref->stmt);
       ref2->speculative = speculative;
       ref2->lto_stmt_uid = stmt_uid;
+      ref2->speculative_id = ref->speculative_id;
     }
 }
 
@@ -680,6 +682,7 @@ symtab_node::clone_referring (symtab_node *node)
       ref2 = ref->referring->create_reference (this, ref->use, ref->stmt);
       ref2->speculative = speculative;
       ref2->lto_stmt_uid = stmt_uid;
+      ref2->speculative_id = ref->speculative_id;
     }
 }
 
@@ -695,6 +698,7 @@ symtab_node::clone_reference (ipa_ref *ref, gimple *stmt)
   ref2 = create_reference (ref->referred, ref->use, stmt);
   ref2->speculative = speculative;
   ref2->lto_stmt_uid = stmt_uid;
+  ref2->speculative_id = ref->speculative_id;
   return ref2;
 }
 
@@ -749,6 +753,7 @@ symtab_node::clear_stmts_in_references (void)
       {
 	r->stmt = NULL;
 	r->lto_stmt_uid = 0;
+	r->speculative_id = 0;
       }
 }
 

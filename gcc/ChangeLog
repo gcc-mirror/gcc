@@ -1,3 +1,64 @@
+2020-01-14  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	PR ipa/69678
+	* cgraph.c (symbol_table::create_edge): Init speculative_id and
+	target_prob.
+	(cgraph_edge::make_speculative): Add param for setting speculative_id
+	and target_prob.
+	(cgraph_edge::speculative_call_info): Update comments and find reference
+	by speculative_id for multiple indirect targets.
+	(cgraph_edge::resolve_speculation): Decrease the speculations
+	for indirect edge, drop it's speculative if not direct target
+	left. Update comments.
+	(cgraph_edge::redirect_call_stmt_to_callee): Likewise.
+	(cgraph_node::dump): Print num_speculative_call_targets.
+	(cgraph_node::verify_node): Don't report error if speculative
+	edge not include statement.
+	(cgraph_edge::num_speculative_call_targets_p): New function.
+	* cgraph.h (int common_target_id): Remove.
+	(int common_target_probability): Remove.
+	(num_speculative_call_targets): New variable.
+	(make_speculative): Add param for setting speculative_id.
+	(cgraph_edge::num_speculative_call_targets_p): New declare.
+	(target_prob): New variable.
+	(speculative_id): New variable.
+	* ipa-fnsummary.c (analyze_function_body): Create and duplicate
+	  call summaries for multiple speculative call targets.
+	* cgraphclones.c (cgraph_node::create_clone): Clone speculative_id.
+	* ipa-profile.c (struct speculative_call_target): New struct.
+	(class speculative_call_summary): New class.
+	(class speculative_call_summaries): New class.
+	(call_sums): New variable.
+	(ipa_profile_generate_summary): Generate indirect multiple targets summaries.
+	(ipa_profile_write_edge_summary): New function.
+	(ipa_profile_write_summary): Stream out indirect multiple targets summaries.
+	(ipa_profile_dump_all_summaries): New function.
+	(ipa_profile_read_edge_summary): New function.
+	(ipa_profile_read_summary_section): New function.
+	(ipa_profile_read_summary): Stream in indirect multiple targets summaries.
+	(ipa_profile): Generate num_speculative_call_targets from
+	profile summaries.
+	* ipa-ref.h (speculative_id): New variable.
+	* ipa-utils.c (ipa_merge_profiles): Update with target_prob.
+	* lto-cgraph.c (lto_output_edge): Remove indirect common_target_id and
+	common_target_probability.   Stream out speculative_id and
+	num_speculative_call_targets.
+	(input_edge): Likewise.
+	* predict.c (dump_prediction): Remove edges count assert to be
+	precise.
+	* symtab.c (symtab_node::create_reference): Init speculative_id.
+	(symtab_node::clone_references): Clone speculative_id.
+	(symtab_node::clone_referring): Clone speculative_id.
+	(symtab_node::clone_reference): Clone speculative_id.
+	(symtab_node::clear_stmts_in_references): Clear speculative_id.
+	* tree-inline.c (copy_bb): Duplicate all the speculative edges
+	if indirect call contains multiple speculative targets.
+	* value-prof.h  (check_ic_target): Remove.
+	* value-prof.c  (gimple_value_profile_transformations):
+	Use void function gimple_ic_transform.
+	* value-prof.c  (gimple_ic_transform): Handle topn case.
+	Fix comment typos.  Change it to a void function.
+
 2020-01-13  Andrew Pinski  <apinski@marvell.com>
 
 	* config/aarch64/aarch64-cores.def (octeontx2): New define.

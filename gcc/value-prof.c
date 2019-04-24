@@ -106,7 +106,7 @@ static bool gimple_divmod_fixed_value_transform (gimple_stmt_iterator *);
 static bool gimple_mod_pow2_value_transform (gimple_stmt_iterator *);
 static bool gimple_mod_subtract_transform (gimple_stmt_iterator *);
 static bool gimple_stringops_transform (gimple_stmt_iterator *);
-static bool gimple_ic_transform (gimple_stmt_iterator *);
+static void gimple_ic_transform (gimple_stmt_iterator *);
 
 /* Allocate histogram value.  */
 
@@ -616,8 +616,7 @@ gimple_value_profile_transformations (void)
 	  if (gimple_mod_subtract_transform (&gsi)
 	      || gimple_divmod_fixed_value_transform (&gsi)
 	      || gimple_mod_pow2_value_transform (&gsi)
-	      || gimple_stringops_transform (&gsi)
-	      || gimple_ic_transform (&gsi))
+	      || gimple_stringops_transform (&gsi))
 	    {
 	      stmt = gsi_stmt (gsi);
 	      changed = true;
@@ -628,6 +627,9 @@ gimple_value_profile_transformations (void)
 		  gsi = gsi_for_stmt (stmt);
 		}
 	    }
+
+	  /* The function never thansforms a GIMPLE statement.  */
+	  gimple_ic_transform (&gsi);
         }
     }
 
@@ -1386,13 +1388,12 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
   return dcall_stmt;
 }
 
-/*
-  For every checked indirect/virtual call determine if most common pid of
-  function/class method has probability more than 50%. If yes modify code of
-  this call to:
- */
+/* There maybe multiple indirect targets in histogram.  Check every
+   indirect/virtual call if callee function exists, if not exist, leave it to
+   LTO stage for later process.  Modify code of this indirect call to an if-else
+   structure in ipa-profile finally.  */
 
-static bool
+static void
 gimple_ic_transform (gimple_stmt_iterator *gsi)
 {
   gcall *stmt;
@@ -1402,52 +1403,58 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
 
   stmt = dyn_cast <gcall *> (gsi_stmt (*gsi));
   if (!stmt)
-    return false;
+    return;
 
   if (gimple_call_fndecl (stmt) != NULL_TREE)
-    return false;
+    return;
 
   if (gimple_call_internal_p (stmt))
-    return false;
+    return;
 
   histogram = gimple_histogram_value_of_type (cfun, stmt, HIST_TYPE_INDIR_CALL);
   if (!histogram)
-    return false;
+    return;
 
-  if (!get_nth_most_common_value (NULL, "indirect call", histogram, &val,
-				  &count, &all))
-    return false;
+  count = 0;
+  all = histogram->hvalue.counters[0];
 
-  if (4 * count <= 3 * all)
-    return false;
-
-  direct_call = find_func_by_profile_id ((int)val);
-
-  if (direct_call == NULL)
+  for (unsigned j = 0; j < GCOV_TOPN_VALUES; j++)
     {
-      if (val)
+      if (!get_nth_most_common_value (NULL, "indirect call", histogram, &val,
+				      &count, &all, j))
+	return;
+
+      /* Minimum probability.  should be higher than 25%.  */
+      if (4 * count <= all)
+	return;
+
+      direct_call = find_func_by_profile_id ((int) val);
+
+      if (direct_call == NULL)
 	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, stmt,
-			     "Indirect call -> direct call from other "
-			     "module %T=> %i (will resolve only with LTO)\n",
-			     gimple_call_fn (stmt), (int)val);
+	  if (val)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (
+		  MSG_MISSED_OPTIMIZATION, stmt,
+		  "Indirect call -> direct call from other "
+		  "module %T=> %i (will resolve only with LTO)\n",
+		  gimple_call_fn (stmt), (int) val);
+	    }
+	  return;
 	}
-      return false;
-    }
 
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
-		       "Indirect call -> direct call "
-		       "%T => %T transformation on insn postponed\n",
-		       gimple_call_fn (stmt), direct_call->decl);
-      dump_printf_loc (MSG_NOTE, stmt,
-		       "hist->count %" PRId64
-		       " hist->all %" PRId64"\n", count, all);
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
+			   "Indirect call -> direct call "
+			   "%T => %T transformation on insn postponed\n",
+			   gimple_call_fn (stmt), direct_call->decl);
+	  dump_printf_loc (MSG_NOTE, stmt,
+			   "hist->count %" PRId64 " hist->all %" PRId64 "\n",
+			   count, all);
+	}
     }
-
-  return true;
 }
 
 /* Return true if the stringop CALL shall be profiled.  SIZE_ARG be

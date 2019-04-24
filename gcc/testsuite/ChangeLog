@@ -1,3 +1,13 @@
+2020-01-14  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	PR ipa/69678
+	* gcc.dg/tree-prof/indir-call-prof-topn.c: New testcase.
+	* gcc.dg/tree-prof/crossmodule-indir-call-topn-1.c: New testcase.
+	* gcc.dg/tree-prof/crossmodule-indir-call-topn-1a.c: New testcase.
+	* gcc.dg/tree-prof/crossmodule-indir-call-topn-2.c: New testcase.
+	* lib/scandump.exp: Dump executable file name.
+	* lib/scanwpaipa.exp: New scan-pgo-wap-ipa-dump.
+
 2020-01-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/diagnostic-test-paths-2.c: Remove unused dg-line
