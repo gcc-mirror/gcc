@@ -261,3 +261,20 @@ proc check_effective_target_libcurl_available { } {
 	int main (void) { return 0; }
     } "-lcurl"]
 }
+
+# Return true if the target is linux version < 2.6.39
+proc check_effective_target_linux_pre_2639 { } {
+    if { ![istarget *-*-linux*] } {
+	return 0
+    }
+
+    if { [check_no_compiler_messages linux_pre_2639 assembly {
+	#include <linux/version.h>
+	#if !defined LINUX_VERSION_CODE || LINUX_VERSION_CODE < KERNEL_VERSION(2.6.39)
+	#error Yes, it is.
+	#endif
+    }] } {
+	return 0
+    }
+    return 1
+}
