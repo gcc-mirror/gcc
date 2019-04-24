@@ -1,3 +1,12 @@
+2019-04-24  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/89952
+	* config/s390/s390.c (s390_restore_gprs_from_fprs): Restore GPRs
+    	from FPRs in reverse order.  Generate REG_CFA_DEF_CFA note also
+    	for restored hard frame pointer.
+	(s390_sched_dependencies_evaluation): Implement new target hook.
+	(TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK): New macro definition.
+
 2019-04-24  Claudiu Zissulescu  <claziss@sysnopsys.com>
 
 	* config/arc/arc-options.def: Fix typos and spelling mistakes.

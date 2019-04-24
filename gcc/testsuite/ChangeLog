@@ -1,3 +1,8 @@
+2019-04-24  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/89952
+	* gcc.target/s390/pr89952.c: New test.
+
 2019-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/90187
