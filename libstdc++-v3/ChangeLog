@@ -1,5 +1,11 @@
 2019-04-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/90220 (partial)
+	* include/std/any (any_cast<T>(any*), any_cast<T>(const any*)): Do
+	not attempt ill-formed static_cast to pointers to non-object types.
+	* testsuite/20_util/any/misc/any_cast.cc: Test std::any_cast with
+	function types.
+
 	* testsuite/20_util/variant/run.cc: Catch exception by reference to
 	prevent -Wcatch-value warning.
 
