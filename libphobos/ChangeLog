@@ -1,5 +1,14 @@
 2019-04-24  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	PR d/88431
+	* configure: Regenerate.
+	* m4/libtool.m4 (lt_simple_compile_test_code): Update to not have
+	dependencies on libphobos.
+	(lt_simple_link_test_code): Likewise.
+	(GDCFLAGS): Don't override for D compiler tests.
+
+2019-04-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	* configure.tgt: Add aarch64*-*-linux* as a supported target.
 
 2019-04-23  Iain Buclaw  <ibuclaw@gdcproject.org>
