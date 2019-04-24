@@ -1,4 +1,4 @@
-/* Declarations for C++ name lookup routines.
+/* Declarations for -*- C++ -*- name lookup routines.
    Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
@@ -107,17 +107,17 @@ struct GTY(()) mc_slot {
   }
   bool is_lazy () const
   {
-    return bool (intptr_t (u.binding) & 1);
+    return bool (uintptr_t (u.binding) & 1);
   }
   void set_lazy (unsigned snum)
   {
     gcc_checking_assert (!u.binding);
-    u.binding = tree (intptr_t ((snum << 1) | 1));
+    u.binding = tree (uintptr_t ((snum << 1) | 1));
   }
   unsigned get_lazy () const
   {
     gcc_checking_assert (is_lazy ());
-    return unsigned (intptr_t (u.binding) >> 1);
+    return unsigned (uintptr_t (u.binding) >> 1);
   }
 };
 

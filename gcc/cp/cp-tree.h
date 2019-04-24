@@ -1,4 +1,4 @@
-/* Definitions for C++ parsing and type checking.
+/* Definitions for -*- C++ -*- parsing and type checking.
    Copyright (C) 1987-2019 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -519,6 +519,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    7: DECL_THUNK_P (in a member FUNCTION_DECL)
       DECL_NORMAL_CAPTURE_P (in FIELD_DECL)
    8: DECL_DECLARED_CONSTEXPR_P (in VAR_DECL, FUNCTION_DECL)
+      DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P (in TEMPLATE_DECL)
 
    Usage of language-independent fields in a language-dependent manner:
 
@@ -4731,6 +4732,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define DECL_TEMPLATE_SPECIALIZATIONS(NODE)     \
   DECL_SIZE (TEMPLATE_DECL_CHECK (NODE))
 
+/* True if this template has unloaded specializations.  We must load
+   them before instantiation.  */
+#define DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P(NODE)	\
+  DECL_LANG_FLAG_8 (TEMPLATE_DECL_CHECK (NODE))
+    
 /* Nonzero for a DECL which is actually a template parameter.  Keep
    these checks in ascending tree code order.   */
 #define DECL_TEMPLATE_PARM_P(NODE)		\
@@ -6823,6 +6829,7 @@ extern void mangle_module (int m);
 extern void mangle_module_fini ();
 extern void lazy_load_binding (unsigned mod, tree ns, tree id,
 			       mc_slot *mslot, bool outermost);
+extern void lazy_load_specializations (tree tmpl);
 extern void fixup_unscoped_enum_owner (tree);
 extern void set_implicit_module_owner (tree, tree);
 extern bool import_module (module_state *, location_t, bool, tree,

@@ -3109,6 +3109,11 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool read_partitions (unsigned);
 
  private:
+  void write_specializations (elf_out *to, auto_vec<depset *> &depsets,
+			      unsigned, unsigned *crc_ptr);
+  bool read_specializations (unsigned, const range_t &range);
+
+ private:
   void write_config (elf_out *to, struct module_state_config &, unsigned crc);
   bool read_config (cpp_reader *, struct module_state_config &);
 
@@ -3124,8 +3129,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 			 auto_vec<depset *> &spaces, unsigned *crc_ptr);
   bool read_namespaces (auto_vec<tree> &spaces);
 
-  void write_cluster (elf_out *to, depset *depsets[], unsigned size,
-		      depset::hash &, unsigned &unnamed, unsigned *crc_ptr);
+  unsigned write_cluster (elf_out *to, depset *depsets[], unsigned size,
+			  depset::hash &, unsigned &unnamed, unsigned *crc_ptr);
   bool read_cluster (unsigned snum);
 
   void write_unnamed (elf_out *to, auto_vec<depset *> &depsets,
@@ -7561,6 +7566,7 @@ trees_out::tree_mergeable (depset *dep)
       int use = -1;
       tree ti = node_template_info (decl, use);
       tree_node (TI_ARGS (ti));
+      // FIXME: Do I need to write out parms etc when merging a specialization?
     }
   else
     {
@@ -10743,9 +10749,10 @@ enum cluster_tag {
 };
 
 /* Write the cluster of depsets in SCC[0-SIZE).  These are ordered
-   defns < decls < bindings.  */
+   defns < decls < bindings.  Returns number of non-implicit template
+   specializations. */
 
-void
+unsigned
 module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 			     depset::hash &table,
 			     unsigned &unnamed, unsigned *crc_ptr)
@@ -10753,6 +10760,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   dump () && dump ("Writing SCC:%u %u depsets", scc[0]->section, size);
   dump.indent ();
 
+  unsigned tmpls = 0;
   unsigned incoming_unnamed = unnamed;
   bool refs_unnamed_p = false;
   auto_vec<depset *> mergeables;
@@ -10989,6 +10997,8 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
   dump.outdent ();
   dump () && dump ("Wrote SCC:%u section:%N", scc[0]->section, naming_decl);
+
+  return tmpls;
 }
 
 /* Read a cluster from section SNUM.  */
@@ -11421,9 +11431,6 @@ void
 module_state::write_unnamed (elf_out *to, auto_vec<depset *> &depsets,
 			     unsigned count, unsigned *crc_p)
 {
-  if (!count)
-    return;
-
   dump () && dump ("Writing unnamed");
   dump.indent ();
 
@@ -11452,9 +11459,6 @@ module_state::write_unnamed (elf_out *to, auto_vec<depset *> &depsets,
 bool
 module_state::read_unnamed (unsigned count, const range_t &range)
 {
-  if (!count)
-    return true;
-
   bytes_in sec;
 
   if (!sec.begin (loc, from (), MOD_SNAME_PFX ".vld"))
@@ -13035,6 +13039,29 @@ space_cmp (const void *a_, const void *b_)
   return DECL_UID (ns_a) < DECL_UID (ns_b) ? -1 : +1;
 }
 
+void
+module_state::write_specializations (elf_out *to, auto_vec<depset *> &depsets,
+				     unsigned num, unsigned *crc_ptr)
+{
+}
+
+bool
+module_state::read_specializations (unsigned num, const range_t &range)
+{
+  trees_in sec (this);
+
+  if (!sec.begin (loc, from (), MOD_SNAME_PFX ".tpl"))
+    return false;
+
+  dump () && dump ("Reading template table");
+  dump.indent ();
+  dump.outdent ();
+
+  if (!sec.end (from ()))
+    return false;
+  return true;
+}
+
 /* Tool configuration:  MOD_SNAME_PFX .config
 
    This is data that confirms current state (or fails).
@@ -13069,6 +13096,7 @@ struct module_state_config {
   unsigned num_imports;
   unsigned num_partitions;
   unsigned num_bindings;
+  unsigned num_specializations;
   unsigned num_macros;
   const cpp_hashnode *controlling_node;
   module_state *alias;
@@ -13077,7 +13105,7 @@ public:
   module_state_config ()
     :opt_str (get_opts ()), sec_range (0,0), num_unnamed (0),
      num_imports (0), num_partitions (0),
-     num_bindings (0), num_macros (0),
+     num_bindings (0), num_specializations (0), num_macros (0),
      controlling_node (NULL), alias (NULL)
   {
   }
@@ -13253,6 +13281,8 @@ module_state::write_config (elf_out *to, module_state_config &config,
 
   cfg.u (config.num_bindings);
   dump () && dump ("Bindings %u", config.num_bindings);
+  cfg.u (config.num_specializations);
+  dump () && dump ("Specializations %u", config.num_specializations);
   cfg.u (config.num_unnamed);
   dump () && dump ("Unnamed %u", config.num_unnamed);
   cfg.u (config.num_macros);
@@ -13464,6 +13494,8 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
 
   config.num_bindings = cfg.u ();
   dump () && dump ("Bindings %u", config.num_bindings);
+  config.num_specializations = cfg.u ();
+  dump () && dump ("Specializations %u", config.num_specializations);
   config.num_unnamed = cfg.u ();
   dump () && dump ("Unnamed %u", config.num_unnamed);
 
@@ -13487,6 +13519,7 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
      MOD_SNAME_PFX.README   : human readable, stunningly STRTAB-like
      MOD_SNAME_PFX.nms 	    : namespace hierarchy
      MOD_SNAME_PFX.bnd      : binding table
+     MOD_SNAME_PFX.tpl	    : template table
      MOD_SNAME_PFX.vld      : unnamed table
      MOD_SNAME_PFX.imp      : import table
      MOD_SNAME_PFX.prt      : partitions table
@@ -13654,7 +13687,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	  /* Cluster is now used to number unnamed decls.  */
 	  base[0]->cluster = 0;
 
-	  write_cluster (to, base, size, table, config.num_unnamed, &crc);
+	  config.num_specializations
+	    += write_cluster (to, base, size, table, config.num_unnamed, &crc);
 	}
     }
 
@@ -13670,8 +13704,13 @@ module_state::write (elf_out *to, cpp_reader *reader)
   /* Write the bindings themselves.  */
   config.num_bindings = write_bindings (to, table, &crc);
 
+  /* Write the specializations.  */
+  if (config.num_specializations)
+    write_specializations (to, sccs, config.num_specializations, &crc);
+
   /* Write the unnamed.  */
-  write_unnamed (to, sccs, config.num_unnamed, &crc);
+  if (config.num_unnamed)
+    write_unnamed (to, sccs, config.num_unnamed, &crc);
 
   /* Write the import table.  */
   if (config.num_imports > MODULE_IMPORT_BASE)
@@ -13783,9 +13822,16 @@ module_state::read (int fd, int e, cpp_reader *reader)
       if (!read_bindings (spaces, config.num_bindings, config.sec_range))
 	return NULL;
 
+      /* And the specializations.  */
+      if (config.num_specializations
+	  && !read_specializations (config.num_specializations,
+				    config.sec_range))
+	return NULL;
+
       /* And unnamed.  */
       unnamed_lwm = vec_safe_length (unnamed_ary);
-      if (!read_unnamed (config.num_unnamed, config.sec_range))
+      if (config.num_unnamed
+	  && !read_unnamed (config.num_unnamed, config.sec_range))
 	return NULL;
     }
 
@@ -14416,6 +14462,16 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
   gcc_checking_assert (mod >= MODULE_IMPORT_BASE);
   (*modules)[mod]->lazy_load (ns, id, mslot, outer);
   gcc_assert (!mslot->is_lazy ());
+}
+
+/* Load any pending specializations of TMPL.  Called just before
+   instantiating TMPL.  */
+
+void
+lazy_load_specializations (tree tmpl)
+{
+  gcc_checking_assert (DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P (tmpl));
+  // FIXME: load it
 }
 
 /* Import the module NAME into the current TU and maybe re-export it.

@@ -9367,6 +9367,11 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	return error_mark_node;
 
       gen_tmpl = most_general_template (templ);
+
+      /* Make sure we don't have pending specializations.  */
+      if (DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P (templ))
+	lazy_load_specializations (templ);
+
       parmlist = DECL_TEMPLATE_PARMS (gen_tmpl);
       parm_depth = TMPL_PARMS_DEPTH (parmlist);
       arg_depth = TMPL_ARGS_DEPTH (arglist);
@@ -19762,6 +19767,8 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
     return error_mark_node;
 
   gcc_assert (TREE_CODE (tmpl) == TEMPLATE_DECL);
+  if (DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P (tmpl))
+    lazy_load_specializations (tmpl);
 
   /* If this function is a clone, handle it specially.  */
   if (DECL_CLONED_FUNCTION_P (tmpl))

@@ -1,5 +1,17 @@
 2019-04-24  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P): New.
+	(lazy_load_specializations): Declare.
+	* module.cc (module_state::{read,write}_specializations): New.
+	(module_state::write_cluster) Return template count.
+	(module_state_config): Add num_specializations.
+	(module_state::{read,write}_config): Stream it.
+	(module_state::{read,write}): Stream spcializizations.
+	(lazy_load_specializations): New.
+	* pt.c (lookup_template_class_1, instantiate_template_1): Lazy
+	load specializations.
+
 	Merge trunk r270543.
 
 	Instantiations now streamed.
