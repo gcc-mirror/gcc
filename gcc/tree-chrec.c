@@ -932,10 +932,12 @@ is_multivariate_chrec (const_tree chrec)
     return false;
 }
 
-/* Determines whether the chrec contains symbolic names or not.  */
+/* Determines whether the chrec contains symbolic names or not.  If LOOP isn't
+   NULL, we also consider chrec wrto outer loops of LOOP as symbol.  */
 
 static bool
-chrec_contains_symbols (const_tree chrec, hash_set<const_tree> &visited)
+chrec_contains_symbols (const_tree chrec, hash_set<const_tree> &visited,
+			struct loop *loop)
 {
   int i, n;
 
@@ -952,18 +954,28 @@ chrec_contains_symbols (const_tree chrec, hash_set<const_tree> &visited)
       || TREE_CODE (chrec) == FIELD_DECL)
     return true;
 
+  if (loop != NULL
+      && TREE_CODE (chrec) == POLYNOMIAL_CHREC
+      && flow_loop_nested_p (get_chrec_loop (chrec), loop))
+    return true;
+
   n = TREE_OPERAND_LENGTH (chrec);
   for (i = 0; i < n; i++)
-    if (chrec_contains_symbols (TREE_OPERAND (chrec, i), visited))
+    if (chrec_contains_symbols (TREE_OPERAND (chrec, i), visited, loop))
       return true;
   return false;
 }
 
+/* Return true if CHREC contains any symbols.  If LOOP is not NULL, check if
+   CHREC contains any chrec which is invariant wrto the loop (nest), in other
+   words, chrec defined by outer loops of loop, so from LOOP's point of view,
+   the chrec is considered as a SYMBOL.  */
+
 bool
-chrec_contains_symbols (const_tree chrec)
+chrec_contains_symbols (const_tree chrec, struct loop* loop)
 {
   hash_set<const_tree> visited;
-  return chrec_contains_symbols (chrec, visited);
+  return chrec_contains_symbols (chrec, visited, loop);
 }
 
 /* Determines whether the chrec contains undetermined coefficients.  */
@@ -1130,23 +1142,30 @@ evolution_function_is_affine_multivariate_p (const_tree chrec, int loopnum)
 }
 
 /* Determine whether the given tree is a function in zero or one
-   variables.  */
+   variables with respect to loop specified by LOOPNUM.  Note only positive
+   LOOPNUM stands for a real loop.  */
 
 bool
-evolution_function_is_univariate_p (const_tree chrec)
+evolution_function_is_univariate_p (const_tree chrec, int loopnum)
 {
   if (chrec == NULL_TREE)
     return true;
 
+  tree sub_chrec;
   switch (TREE_CODE (chrec))
     {
     case POLYNOMIAL_CHREC:
       switch (TREE_CODE (CHREC_LEFT (chrec)))
 	{
 	case POLYNOMIAL_CHREC:
-	  if (CHREC_VARIABLE (chrec) != CHREC_VARIABLE (CHREC_LEFT (chrec)))
+	  sub_chrec = CHREC_LEFT (chrec);
+	  if (CHREC_VARIABLE (chrec) != CHREC_VARIABLE (sub_chrec)
+	      && (loopnum <= 0
+		  || CHREC_VARIABLE (sub_chrec) == (unsigned) loopnum
+		  || flow_loop_nested_p (get_loop (cfun, loopnum),
+					 get_chrec_loop (sub_chrec))))
 	    return false;
-	  if (!evolution_function_is_univariate_p (CHREC_LEFT (chrec)))
+	  if (!evolution_function_is_univariate_p (sub_chrec, loopnum))
 	    return false;
 	  break;
 
@@ -1159,9 +1178,14 @@ evolution_function_is_univariate_p (const_tree chrec)
       switch (TREE_CODE (CHREC_RIGHT (chrec)))
 	{
 	case POLYNOMIAL_CHREC:
-	  if (CHREC_VARIABLE (chrec) != CHREC_VARIABLE (CHREC_RIGHT (chrec)))
+	  sub_chrec = CHREC_RIGHT (chrec);
+	  if (CHREC_VARIABLE (chrec) != CHREC_VARIABLE (sub_chrec)
+	      && (loopnum <= 0
+		  || CHREC_VARIABLE (sub_chrec) == (unsigned) loopnum
+		  || flow_loop_nested_p (get_loop (cfun, loopnum),
+					 get_chrec_loop (sub_chrec))))
 	    return false;
-	  if (!evolution_function_is_univariate_p (CHREC_RIGHT (chrec)))
+	  if (!evolution_function_is_univariate_p (sub_chrec, loopnum))
 	    return false;
 	  break;
 

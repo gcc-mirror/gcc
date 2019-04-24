@@ -35,7 +35,8 @@ case ${query} in
       GDCPATHS_default="-nostdinc"
       GDCPATHS_config="-B${BUILD_DIR}/src
                        -I${BUILD_DIR}/libdruntime
-                       -I${SRC_DIR}/libdruntime"
+                       -I${SRC_DIR}/libdruntime
+                       -I${SRC_DIR}/src"
       echo ${GDCPATHS_default} ${GDCPATHS_config}
       ;;
     --gdcldflags)

@@ -732,6 +732,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // @} group pointer_abstractions
 
+#if __cplusplus >= 201703L
+  namespace __detail::__variant
+  {
+    template<typename> struct _Never_valueless_alt; // see <variant>
+
+    // Provide the strong exception-safety guarantee when emplacing a
+    // shared_ptr into a variant.
+    template<typename _Tp>
+      struct _Never_valueless_alt<std::shared_ptr<_Tp>>
+      : std::true_type
+      { };
+
+    // Provide the strong exception-safety guarantee when emplacing a
+    // weak_ptr into a variant.
+    template<typename _Tp>
+      struct _Never_valueless_alt<std::weak_ptr<_Tp>>
+      : std::true_type
+      { };
+  }  // namespace __detail::__variant
+#endif // C++17
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

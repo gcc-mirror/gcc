@@ -1,3 +1,132 @@
+2019-04-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90166
+	* decl.c (in_module_or_interface): New function to check that the
+	current state is in a module, submodule, or interface.
+	(gfc_match_prefix): Use it.
+
+2019-04-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/57284
+	* resolve.c (find_array_spec): If this is a class expression
+	and the symbol and component array specs are the same, this is
+	not an error.
+	*trans-intrinsic.c (gfc_conv_intrinsic_size): If a class symbol
+	argument, has no namespace, it has come from the interface
+	mapping and the _data component must be accessed directly.
+
+2019-04-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/90048
+	* openmp.c (gfc_resolve_do_iterator): Handle sharing_clauses for
+	OpenACC, too.
+	(gfc_resolve_oacc_blocks): Populate sharing_clauses with private
+	clauses.
+
+2019-04-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89843
+	* trans-decl.c (gfc_get_symbol_decl): Assumed shape and assumed
+	rank dummies of bind C procs require deferred initialization.
+	(convert_CFI_desc): New procedure to convert incoming CFI
+	descriptors to gfc types and back again.
+	(gfc_trans_deferred_vars): Call it.
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Null the CFI
+	descriptor pointer. Free the descriptor in all cases.
+
+	PR fortran/89846
+	* expr.c (is_CFI_desc): New function.
+	(is_subref_array): Tidy up by referencing the symbol directly.
+	* gfortran.h : Prototype for is_CFI_desc.
+	* trans_array.c (get_CFI_desc): New function.
+	(gfc_get_array_span, gfc_conv_scalarized_array_ref,
+	gfc_conv_array_ref): Use it.
+	* trans.c (get_array_span): Extract the span from descriptors
+	that are indirect references.
+
+	PR fortran/90022
+	* trans-decl.c (gfc_get_symbol_decl): Make sure that the se
+	expression is a pointer type before converting it to the symbol
+	backend_decl type.
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Eliminate
+	temporary creation for intent(in).
+
+2019-04-13  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/79842
+	* module.c (gfc_use_module): use complete sentences.
+
+2019-04-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR translation/89939
+	* frontend-passes.c (B_ERROR): Delete macro.
+	(C_ERROR): Delete macro.
+	(B_ERROR_1): New macro.
+	(C_ERROR_1): New macro.
+	(C_ERROR_2): New macro.
+	(inline_matmul_assign): Use new macros.
+	(call_external_blas): Likewise.
+
+2019-04-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87352
+	* gfortran.h (gfc_component): Add finalized field.
+	* class.c (finalize_component): If the component is already
+	finalized, return early.  Set component->finalized on exit.
+
+2019-04-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/89981
+	* resolve.c (resolve_global_procedure): If the global symbol is an
+	ENTRY, also look up its name among the entries.
+
+2019-04-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/89904
+	* check.c (gfc_check_transfer): Reject procedures as actual
+	arguments for SOURCE and MOLD of TRANSFER intrinsic.
+
+2019-04-03  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/68567
+	* expr.c (gfc_reduce_init_expr): Add extra check to avoid
+	dereferencing a null pointer.
+
+2019-04-03  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/89375
+	* expr.c (comp_pointer): Remove redundant condition.
+
+2019-03-31  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/83515
+	PR fortran/85797
+	* trans-types.c (gfc_typenode_for_spec): Handle conversion for
+	procedure pointers.
+	* target-memory.c (gfc_element_size): Handle size determination
+	for procedure pointers.
+
+2019-03-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.c (debug):  Add for symbol_attribute *,
+	symbol_attribute and gfc_ref * arguments.
+
+2019-03-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89841
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Use the formal
+	argument attributes rather than those of the actual argument.
+
+	PR fortran/89842
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Call
+	'set_dtype_for_unallocated' for any type of arrayspec.
+
+2019-03-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/85537
+	* expr.c (gfc_check_assign_symbol): Reject internal and dummy procedures
+	in procedure pointer initialization.
+
 2019-03-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/88247

@@ -148,21 +148,22 @@ else
 }
 
 ///
-double  difftime(time_t time1, time_t time0);
+pure double  difftime(time_t time1, time_t time0); // MT-Safe
 ///
-time_t  mktime(tm* timeptr);
+@system time_t  mktime(scope tm* timeptr); // @system: MT-Safe env locale
 ///
-time_t  time(time_t* timer);
+time_t  time(scope time_t* timer);
+
 ///
-char*   asctime(in tm* timeptr);
+@system char*   asctime(const scope tm* timeptr); // @system: MT-Unsafe race:asctime locale
 ///
-char*   ctime(in time_t* timer);
+@system char*   ctime(const scope time_t* timer); // @system: MT-Unsafe race:tmbuf race:asctime env locale
 ///
-tm*     gmtime(in time_t* timer);
+@system tm*     gmtime(const scope time_t* timer); // @system: MT-Unsafe race:tmbuf env locale
 ///
-tm*     localtime(in time_t* timer);
+@system tm*     localtime(const scope time_t* timer); // @system: MT-Unsafe race:tmbuf env locale
 ///
-@system size_t  strftime(char* s, size_t maxsize, in char* format, in tm* timeptr);
+@system size_t  strftime(scope char* s, size_t maxsize, const scope char* format, const scope tm* timeptr); // @system: MT-Safe env locale
 
 version (Windows)
 {
@@ -171,9 +172,9 @@ version (Windows)
     ///
     void  _tzset();                          // non-standard
     ///
-    @system char* _strdate(char* s);                 // non-standard
+    @system char* _strdate(return scope char* s);                 // non-standard
     ///
-    @system char* _strtime(char* s);                 // non-standard
+    @system char* _strtime(return scope char* s);                 // non-standard
 
     ///
     extern __gshared const(char)*[2] tzname; // non-standard

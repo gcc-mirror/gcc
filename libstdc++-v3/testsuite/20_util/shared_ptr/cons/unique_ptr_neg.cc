@@ -43,3 +43,4 @@ main()
   return 0;
 }
 // { dg-prune-output "initializing argument" }
+// { dg-prune-output "enable_if" }

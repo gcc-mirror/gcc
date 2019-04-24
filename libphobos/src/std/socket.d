@@ -187,6 +187,14 @@ string formatSocketError(int err) @trusted
             else
                 return "Socket error " ~ to!string(err);
         }
+        else version (DragonFlyBSD)
+        {
+            auto errs = strerror_r(err, buf.ptr, buf.length);
+            if (errs == 0)
+                cs = buf.ptr;
+            else
+                return "Socket error " ~ to!string(err);
+        }
         else version (Solaris)
         {
             auto errs = strerror_r(err, buf.ptr, buf.length);

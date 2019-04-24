@@ -36,3 +36,5 @@ test01(const char* first, const char* last)
   std::from_chars(first, last, c32); // { dg-error "no matching" }
   std::from_chars(first, last, c32, 10); // { dg-error "no matching" }
 }
+
+// { dg-prune-output "enable_if" }

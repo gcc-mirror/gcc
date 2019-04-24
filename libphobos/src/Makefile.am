@@ -22,9 +22,6 @@ include $(top_srcdir)/d_rules.am
 D_EXTRA_DFLAGS=-nostdinc -I $(srcdir) \
 	-I $(top_srcdir)/libdruntime -I ../libdruntime -I .
 
-# C flags for zlib compilation
-AM_CFLAGS=@DEFS@ -I. -I$(srcdir)/../libdruntime/gcc -I$(top_srcdir)/../zlib
-
 # D flags for compilation
 AM_DFLAGS=$(phobos_compiler_pic_flag)
 
@@ -35,61 +32,16 @@ ALL_PHOBOS_INSTALL_DSOURCES = $(PHOBOS_DSOURCES)
 ALL_PHOBOS_COMPILE_DSOURCES = $(PHOBOS_DSOURCES)
 
 ALL_PHOBOS_SOURCES = $(ALL_PHOBOS_COMPILE_DSOURCES)
-PHOBOS_TEST_LOBJECTS = $(ALL_PHOBOS_COMPILE_DSOURCES:.d=.t.lo)
-PHOBOS_TEST_OBJECTS = $(ALL_PHOBOS_COMPILE_DSOURCES:.d=.t.o)
 
 # Main library build definitions
-if DRUNTIME_ZLIB_SYSTEM
-    ZLIB_SRC =
-else
-    ZLIB_SRC = $(ZLIB_CSOURCES)
-endif
-check_PROGRAMS =
-if ENABLE_SHARED
-    check_LTLIBRARIES = libgphobos_t.la
-    check_PROGRAMS += unittest
-endif
-if ENABLE_STATIC
-    check_PROGRAMS += unittest_static
-endif
-
 toolexeclib_DATA = libgphobos.spec
 toolexeclib_LTLIBRARIES = libgphobos.la
-libgphobos_la_SOURCES = $(ALL_PHOBOS_SOURCES) $(ZLIB_SRC)
+libgphobos_la_SOURCES = $(ALL_PHOBOS_SOURCES)
 libgphobos_la_LIBTOOLFLAGS =
 libgphobos_la_LDFLAGS = -Wc,-nophoboslib,-dstartfiles,-B../libdruntime/gcc \
     -version-info $(libtool_VERSION)
-libgphobos_la_LIBADD = ../libdruntime/libgdruntime.la
+libgphobos_la_LIBADD = ../libdruntime/libgdruntime.la $(LIBZ)
 libgphobos_la_DEPENDENCIES = libgphobos.spec
-
-# For static unittest, link objects directly
-unittest_static_SOURCES = ../testsuite/test_runner.d $(ZLIB_SRC)
-unittest_static_LIBTOOLFLAGS =
-unittest_static_LDFLAGS = -Wc,-nophoboslib -static-libtool-libs
-unittest_static_LDADD = $(PHOBOS_TEST_OBJECTS) \
-    ../libdruntime/libgdruntime.la
-EXTRA_unittest_static_DEPENDENCIES = $(PHOBOS_TEST_OBJECTS)
-
-# For unittest with dynamic library
-libgphobos_t_la_SOURCES = $(ZLIB_SRC)
-libgphobos_t_la_LIBTOOLFLAGS =
-libgphobos_t_la_LDFLAGS = -Wc,-nophoboslib -rpath /foo -shared
-libgphobos_t_la_LIBADD = $(PHOBOS_TEST_LOBJECTS) \
-    ../libdruntime/libgdruntime.la
-EXTRA_libgphobos_t_la_DEPENDENCIES = $(PHOBOS_TEST_LOBJECTS)
-
-# For unittest
-unittest_SOURCES = ../testsuite/test_runner.d
-unittest_LIBTOOLFLAGS =
-unittest_LDFLAGS = -Wc,-nophoboslib -shared
-unittest_LDADD = libgphobos_t.la ../libdruntime/libgdruntime.la
-
-# Extra install and clean rules.
-# This does not delete the .libs/.t.o files, but deleting
-# the .lo is good enough to rerun the rules
-clean-local:
-	rm -f $(PHOBOS_TEST_LOBJECTS)
-	rm -f $(PHOBOS_TEST_OBJECTS)
 
 # Handles generated files as well
 install-data-local:
@@ -102,16 +54,6 @@ install-data-local:
 	      $(DESTDIR)$(gdc_include_dir)/$$file ; \
 	  fi ; \
 	done
-
-# Zlib sources when not using system libz
-ZLIB_CSOURCES=$(top_srcdir)/../zlib/adler32.c $(top_srcdir)/../zlib/compress.c \
-	$(top_srcdir)/../zlib/crc32.c $(top_srcdir)/../zlib/deflate.c \
-	$(top_srcdir)/../zlib/gzclose.c $(top_srcdir)/../zlib/gzlib.c \
-	$(top_srcdir)/../zlib/gzread.c $(top_srcdir)/../zlib/gzwrite.c \
-	$(top_srcdir)/../zlib/infback.c $(top_srcdir)/../zlib/inffast.c \
-	$(top_srcdir)/../zlib/inflate.c $(top_srcdir)/../zlib/inftrees.c \
-	$(top_srcdir)/../zlib/trees.c $(top_srcdir)/../zlib/uncompr.c \
-	$(top_srcdir)/../zlib/zutil.c
 
 # Source file definitions. Boring stuff, auto-generated with
 # https://gist.github.com/jpf91/8744acebc9dcf1e9d1a35cdff20afbb2

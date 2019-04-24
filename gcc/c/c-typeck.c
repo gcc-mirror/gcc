@@ -10686,10 +10686,6 @@ struct c_switch {
   /* Remember whether the controlling expression had boolean type
      before integer promotions for the sake of -Wswitch-bool.  */
   bool bool_cond_p;
-
-  /* Remember whether there was a case value that is outside the
-     range of the ORIG_TYPE.  */
-  bool outside_range_p;
 };
 
 /* A stack of the currently active switch statements.  The innermost
@@ -10766,7 +10762,6 @@ c_start_case (location_t switch_loc,
   cs->cases = splay_tree_new (case_compare, NULL, NULL);
   cs->bindings = c_get_switch_bindings ();
   cs->bool_cond_p = bool_cond_p;
-  cs->outside_range_p = false;
   cs->next = c_switch_stack;
   c_switch_stack = cs;
 
@@ -10812,9 +10807,7 @@ do_case (location_t loc, tree low_value, tree high_value)
 
   label = c_add_case_label (loc, c_switch_stack->cases,
 			    SWITCH_COND (c_switch_stack->switch_expr),
-			    c_switch_stack->orig_type,
-			    low_value, high_value,
-			    &c_switch_stack->outside_range_p);
+			    low_value, high_value);
   if (label == error_mark_node)
     label = NULL_TREE;
   return label;
@@ -10835,8 +10828,7 @@ c_finish_case (tree body, tree type)
   switch_location = EXPR_LOCATION (cs->switch_expr);
   c_do_switch_warnings (cs->cases, switch_location,
 			type ? type : TREE_TYPE (cs->switch_expr),
-			SWITCH_COND (cs->switch_expr),
-			cs->bool_cond_p, cs->outside_range_p);
+			SWITCH_COND (cs->switch_expr), cs->bool_cond_p);
   if (c_switch_covers_all_cases_p (cs->cases, TREE_TYPE (cs->switch_expr)))
     SWITCH_ALL_CASES_P (cs->switch_expr) = 1;
 

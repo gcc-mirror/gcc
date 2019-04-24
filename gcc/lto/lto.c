@@ -2304,7 +2304,7 @@ static lto_file *current_lto_file;
 /* Actually stream out ENCODER into TEMP_FILENAME.  */
 
 static void
-do_stream_out (char *temp_filename, lto_symtab_encoder_t encoder, int part)
+stream_out (char *temp_filename, lto_symtab_encoder_t encoder, int part)
 {
   lto_file *file = lto_obj_file_open (temp_filename, true);
   if (!file)
@@ -2352,19 +2352,31 @@ wait_for_child ()
 }
 #endif
 
+static void
+stream_out_partitions_1 (char *temp_filename, int blen, int min, int max)
+{
+   /* Write all the nodes in SET.  */
+   for (int p = min; p < max; p ++)
+     {
+       sprintf (temp_filename + blen, "%u.o", p);
+       stream_out (temp_filename, ltrans_partitions[p]->encoder, p);
+       ltrans_partitions[p]->encoder = NULL;
+     }
+}
+
 /* Stream out ENCODER into TEMP_FILENAME
    Fork if that seems to help.  */
 
 static void
-stream_out (char *temp_filename, lto_symtab_encoder_t encoder,
-	    bool ARG_UNUSED (last), int part)
+stream_out_partitions (char *temp_filename, int blen, int min, int max,
+		       bool ARG_UNUSED (last))
 {
 #ifdef HAVE_WORKING_FORK
   static int nruns;
 
   if (lto_parallelism <= 1)
     {
-      do_stream_out (temp_filename, encoder, part);
+      stream_out_partitions_1 (temp_filename, blen, min, max);
       return;
     }
 
@@ -2384,12 +2396,12 @@ stream_out (char *temp_filename, lto_symtab_encoder_t encoder,
       if (!cpid)
 	{
 	  setproctitle ("lto1-wpa-streaming");
-	  do_stream_out (temp_filename, encoder, part);
+          stream_out_partitions_1 (temp_filename, blen, min, max);
 	  exit (0);
 	}
       /* Fork failed; lets do the job ourseleves.  */
       else if (cpid == -1)
-        do_stream_out (temp_filename, encoder, part);
+        stream_out_partitions_1 (temp_filename, blen, min, max);
       else
 	nruns++;
     }
@@ -2397,13 +2409,13 @@ stream_out (char *temp_filename, lto_symtab_encoder_t encoder,
   else
     {
       int i;
-      do_stream_out (temp_filename, encoder, part);
+      stream_out_partitions_1 (temp_filename, blen, min, max);
       for (i = 0; i < nruns; i++)
 	wait_for_child ();
     }
   asm_nodes_output = true;
 #else
-  do_stream_out (temp_filename, encoder, part);
+  stream_out_partitions_1 (temp_filename, blen, min, max);
 #endif
 }
 
@@ -2445,6 +2457,13 @@ lto_wpa_write_files (void)
   blen = strlen (temp_filename);
 
   n_sets = ltrans_partitions.length ();
+  unsigned sets_per_worker = n_sets;
+  if (lto_parallelism > 1)
+    {
+      if (lto_parallelism > (int)n_sets)
+	lto_parallelism = n_sets;
+      sets_per_worker = (n_sets + lto_parallelism - 1) / lto_parallelism;
+    }
 
   for (i = 0; i < n_sets; i++)
     {
@@ -2493,13 +2512,17 @@ lto_wpa_write_files (void)
 	}
       gcc_checking_assert (lto_symtab_encoder_size (part->encoder) || !i);
 
-      stream_out (temp_filename, part->encoder, i == n_sets - 1, i);
-
-      part->encoder = NULL;
-
       temp_priority.safe_push (part->insns);
       temp_filenames.safe_push (xstrdup (temp_filename));
     }
+
+  for (int set = 0; set < MAX (lto_parallelism, 1); set++)
+    {
+      stream_out_partitions (temp_filename, blen, set * sets_per_worker,
+			     MIN ((set + 1) * sets_per_worker, n_sets),
+			     set == MAX (lto_parallelism, 1) - 1);
+    }
+
   ltrans_output_list_stream = fopen (ltrans_output_list, "w");
   if (ltrans_output_list_stream == NULL)
     fatal_error (input_location,
@@ -3113,14 +3136,16 @@ do_whole_program_analysis (void)
 
   lto_parallelism = 1;
 
-  /* TODO: jobserver communicatoin is not supported, yet.  */
+  /* TODO: jobserver communication is not supported, yet.  */
   if (!strcmp (flag_wpa, "jobserver"))
-    lto_parallelism = -1;
+    lto_parallelism = PARAM_VALUE (PARAM_MAX_LTO_STREAMING_PARALLELISM);
   else
     {
       lto_parallelism = atoi (flag_wpa);
       if (lto_parallelism <= 0)
 	lto_parallelism = 0;
+      if (lto_parallelism >= PARAM_VALUE (PARAM_MAX_LTO_STREAMING_PARALLELISM))
+	lto_parallelism = PARAM_VALUE (PARAM_MAX_LTO_STREAMING_PARALLELISM);
     }
 
   timevar_start (TV_PHASE_OPT_GEN);

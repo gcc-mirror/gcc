@@ -4963,20 +4963,35 @@ struct Test244 {
 
 int noswap245(ubyte *data)
 {
-    return
-        (data[0]<<  0) |
-        (data[1]<<  8) |
-        (data[2]<< 16) |
-        (data[3]<< 24);
+    version (LittleEndian)
+        return
+            (data[0]<<  0) |
+            (data[1]<<  8) |
+            (data[2]<< 16) |
+            (data[3]<< 24);
+    version (BigEndian)
+        return
+            (data[0]<< 24) |
+            (data[1]<< 16) |
+            (data[2]<<  8) |
+            (data[3]<<  0);
+
 }
 
 int bswap245(ubyte *data)
 {
-    return
-        (data[0]<< 24) |
-        (data[1]<< 16) |
-        (data[2]<< 8 ) |
-        (data[3]<< 0 );
+    version (LittleEndian)
+        return
+            (data[0]<< 24) |
+            (data[1]<< 16) |
+            (data[2]<<  8) |
+            (data[3]<<  0);
+    version (BigEndian)
+        return
+            (data[0]<<  0) |
+            (data[1]<<  8) |
+            (data[2]<< 16) |
+            (data[3]<< 24);
 }
 
 void test245()
@@ -5676,7 +5691,11 @@ void testreal_to_ulong()
     real adjust = 1.0L/real.epsilon;
     u = r2ulong(adjust);
     //writefln("%s %s", adjust, u);
-    static if(real.mant_dig == 64)
+    static if(real.mant_dig == 113)
+        assert(u == 18446744073709551615UL);
+    else static if(real.mant_dig == 106)
+        assert(u == 18446744073709551615UL);
+    else static if(real.mant_dig == 64)
         assert(u == 9223372036854775808UL);
     else static if(real.mant_dig == 53)
         assert(u == 4503599627370496UL);

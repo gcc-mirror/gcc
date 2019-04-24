@@ -1,3 +1,11 @@
+2019-04-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (do_stream_out): rename to ...
+	(stream_out): ... this one; move original code to ...
+	(stream_out_partitions_1, stream_out_partitions): ... these new
+	functions.
+	(lto_wpa_write_files): Honnor lto_parallelism
+
 2019-03-26  Martin Liska  <mliska@suse.cz>
 
 	* lto-symtab.c (lto_symtab_merge_decls_2): Fix option name

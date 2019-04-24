@@ -411,7 +411,8 @@ optrecord_json_writer::optinfo_to_json (const optinfo *optinfo)
 
   if (current_function_decl)
     {
-      const char *fnname = get_fnname_from_decl (current_function_decl);
+      const char *fnname
+	= IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl));
       obj->set ("function", new json::string (fnname));
     }
 

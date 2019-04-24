@@ -444,6 +444,9 @@ path::_List::reserve(int newcap, bool exact = false)
 path&
 path::operator=(const path& p)
 {
+  if (&p == this) [[__unlikely__]]
+    return *this;
+
   _M_pathname.reserve(p._M_pathname.length());
   _M_cmpts = p._M_cmpts;	// might throw
   _M_pathname = p._M_pathname;	// won't throw because we reserved enough space

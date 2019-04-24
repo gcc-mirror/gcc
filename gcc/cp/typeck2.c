@@ -1019,7 +1019,7 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain, bool const_only)
 	  int savederrorcount = errorcount;
 	  global_dc->pedantic_errors = 1;
 	  pedwarn (loc, OPT_Wnarrowing,
-		   "narrowing conversion of %qE from %qH to %qI ",
+		   "narrowing conversion of %qE from %qH to %qI",
 		   init, ftype, type);
 	  if (errorcount == savederrorcount)
 	    ok = true;
@@ -1200,8 +1200,7 @@ digest_init_r (tree type, tree init, int nested, int flags,
   /* "If T is a class type and the initializer list has a single
      element of type cv U, where U is T or a class derived from T,
      the object is initialized from that element."  */
-  if (flag_checking
-      && cxx_dialect >= cxx11
+  if (cxx_dialect >= cxx11
       && BRACE_ENCLOSED_INITIALIZER_P (stripped_init)
       && CONSTRUCTOR_NELTS (stripped_init) == 1
       && ((CLASS_TYPE_P (type) && !CLASSTYPE_NON_AGGREGATE (type))
@@ -1228,7 +1227,7 @@ digest_init_r (tree type, tree init, int nested, int flags,
 			      "results in object slicing", TREE_TYPE (field)))
 		inform (loc, "remove %<{ }%> around initializer");
 	    }
-	  else
+	  else if (flag_checking)
 	    /* We should have fixed this in reshape_init.  */
 	    gcc_unreachable ();
 	}
@@ -1346,8 +1345,7 @@ massage_init_elt (tree type, tree init, int nested, int flags,
     init = TARGET_EXPR_INITIAL (init);
   /* When we defer constant folding within a statement, we may want to
      defer this folding as well.  */
-  tree t = fold_non_dependent_expr (init, complain);
-  t = maybe_constant_init (t);
+  tree t = fold_non_dependent_init (init, complain);
   if (TREE_CONSTANT (t))
     init = t;
   return init;

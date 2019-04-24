@@ -624,6 +624,7 @@ BASE_FLAGS_TO_PASS =[+ FOR flags_to_pass +][+ IF optional +] \
 	"[+flag+]=$([+flag+])"[+ ENDIF optional+][+ ENDFOR flags_to_pass +][+ FOR bootstrap-stage +] \
 	"STAGE[+id+]_CFLAGS=$(STAGE[+id+]_CFLAGS)" \
 	"STAGE[+id+]_CXXFLAGS=$(STAGE[+id+]_CXXFLAGS)" \
+	"STAGE[+id+]_GENERATOR_CFLAGS=$(STAGE[+id+]_GENERATOR_CFLAGS)" \
 	"STAGE[+id+]_TFLAGS=$(STAGE[+id+]_TFLAGS)"[+ ENDFOR bootstrap-stage +] \
 	$(CXX_FOR_TARGET_FLAG_TO_PASS) \
 	"TFLAGS=$(TFLAGS)" \
@@ -1193,6 +1194,7 @@ all-stage[+id+]-[+prefix+][+module+]: configure-stage[+id+]-[+prefix+][+module+]
 		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"[+ ELSE prefix +] \
 		CFLAGS="$(STAGE[+id+]_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE[+id+]_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE[+id+]_CXXFLAGS)"[+ IF prev +] \
 		LIBCFLAGS="$(STAGE[+id+]_CFLAGS)"[+ ELSE prev +] \
 		LIBCFLAGS="$(LIBCFLAGS)"[+ ENDIF prev +][+ ENDIF prefix +] \
@@ -1759,8 +1761,8 @@ stageprofile-end::
 stagefeedback-start::
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	for i in stageprofile-*; do \
-	  j=`echo $$i | sed s/^stageprofile-//`; \
+	for i in prev-*; do \
+	  j=`echo $$i | sed s/^prev-//`; \
 	  cd $$r/$$i && \
 	  { find . -type d | sort | sed 's,.*,$(SHELL) '"$$s"'/mkinstalldirs "../'$$j'/&",' | $(SHELL); } && \
 	  { find . -name '*.*da' | sed 's,.*,$(LN) -f "&" "../'$$j'/&",' | $(SHELL); }; \

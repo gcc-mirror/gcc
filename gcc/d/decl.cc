@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "dmd/aggregate.h"
 #include "dmd/attrib.h"
+#include "dmd/cond.h"
 #include "dmd/ctfe.h"
 #include "dmd/declaration.h"
 #include "dmd/enum.h"
@@ -121,9 +122,13 @@ class DeclVisitor : public Visitor
 {
   using Visitor::visit;
 
+  /* If we're lowering the body of a version(unittest) condition.  */
+  bool in_version_unittest_;
+
 public:
   DeclVisitor (void)
   {
+    this->in_version_unittest_ = false;
   }
 
   /* This should be overridden by each declaration class.  */
@@ -147,6 +152,9 @@ public:
 
   void visit (Import *d)
   {
+    if (d->semanticRun >= PASSobj)
+      return;
+
     /* Implements import declarations by telling the debug back-end we are
        importing the NAMESPACE_DECL of the module or IMPORTED_DECL of the
        declaration into the current lexical scope CONTEXT.  NAME is set if
@@ -188,6 +196,8 @@ public:
 	debug_hooks->imported_module_or_decl (decl, name, context,
 					      false, false);
       }
+
+    d->semanticRun = PASSobj;
   }
 
   /* Expand any local variables found in tuples.  */
@@ -239,6 +249,25 @@ public:
       }
 
     visit ((AttribDeclaration *) d);
+  }
+
+  /* Conditional compilation is the process of selecting which code to compile
+     and which code to not compile.  Look for version conditions that may  */
+
+  void visit (ConditionalDeclaration *d)
+  {
+    bool old_condition = this->in_version_unittest_;
+
+    if (global.params.useUnitTests)
+      {
+	VersionCondition *vc = d->condition->isVersionCondition ();
+	if (vc && vc->ident == Identifier::idPool ("unittest"))
+	  this->in_version_unittest_ = true;
+      }
+
+    visit ((AttribDeclaration *) d);
+
+    this->in_version_unittest_ = old_condition;
   }
 
   /* Walk over all members in the namespace scope.  */
@@ -325,6 +354,9 @@ public:
 
   void visit (StructDeclaration *d)
   {
+    if (d->semanticRun >= PASSobj)
+      return;
+
     if (d->type->ty == Terror)
       {
 	error_at (make_location_t (d->loc),
@@ -347,7 +379,8 @@ public:
       return;
 
     /* Generate TypeInfo.  */
-    create_typeinfo (d->type, NULL);
+    if (have_typeinfo_p (Type::dtypeinfo))
+      create_typeinfo (d->type, NULL);
 
     /* Generate static initializer.  */
     d->sinit = aggregate_initializer_decl (d);
@@ -376,6 +409,8 @@ public:
 
     if (d->xhash)
       d->xhash->accept (this);
+
+    d->semanticRun = PASSobj;
   }
 
   /* Finish semantic analysis of functions in vtbl for class CD.  */
@@ -453,6 +488,9 @@ public:
 
   void visit (ClassDeclaration *d)
   {
+    if (d->semanticRun >= PASSobj)
+      return;
+
     if (d->type->ty == Terror)
       {
 	error_at (make_location_t (d->loc),
@@ -486,7 +524,9 @@ public:
     d_finish_decl (d->sinit);
 
     /* Put out the TypeInfo.  */
-    create_typeinfo (d->type, NULL);
+    if (have_typeinfo_p (Type::dtypeinfo))
+      create_typeinfo (d->type, NULL);
+
     DECL_INITIAL (d->csym) = layout_classinfo (d);
     d_linkonce_linkage (d->csym);
     d_finish_decl (d->csym);
@@ -518,6 +558,8 @@ public:
     tree ctype = TREE_TYPE (build_ctype (d->type));
     if (TYPE_NAME (ctype))
       d_pushdecl (TYPE_NAME (ctype));
+
+    d->semanticRun = PASSobj;
   }
 
   /* Write out compiler generated TypeInfo and vtables for the given interface
@@ -525,6 +567,9 @@ public:
 
   void visit (InterfaceDeclaration *d)
   {
+    if (d->semanticRun >= PASSobj)
+      return;
+
     if (d->type->ty == Terror)
       {
 	error_at (make_location_t (d->loc),
@@ -546,8 +591,11 @@ public:
     d->csym = get_classinfo_decl (d);
 
     /* Put out the TypeInfo.  */
-    create_typeinfo (d->type, NULL);
-    d->type->vtinfo->accept (this);
+    if (have_typeinfo_p (Type::dtypeinfo))
+      {
+	create_typeinfo (d->type, NULL);
+	d->type->vtinfo->accept (this);
+      }
 
     DECL_INITIAL (d->csym) = layout_classinfo (d);
     d_linkonce_linkage (d->csym);
@@ -557,6 +605,8 @@ public:
     tree ctype = TREE_TYPE (build_ctype (d->type));
     if (TYPE_NAME (ctype))
       d_pushdecl (TYPE_NAME (ctype));
+
+    d->semanticRun = PASSobj;
   }
 
   /* Write out compiler generated TypeInfo and initializer for the given
@@ -578,7 +628,8 @@ public:
       return;
 
     /* Generate TypeInfo.  */
-    create_typeinfo (d->type, NULL);
+    if (have_typeinfo_p (Type::dtypeinfo))
+      create_typeinfo (d->type, NULL);
 
     TypeEnum *tc = (TypeEnum *) d->type;
     if (tc->sym->members && !d->type->isZeroInit ())
@@ -606,6 +657,9 @@ public:
 
   void visit (VarDeclaration *d)
   {
+    if (d->semanticRun >= PASSobj)
+      return;
+
     if (d->type->ty == Terror)
       {
 	error_at (make_location_t (d->loc),
@@ -731,6 +785,8 @@ public:
 	      }
 	  }
       }
+
+    d->semanticRun = PASSobj;
   }
 
   /* Generate and compile a static TypeInfo declaration, but only if it is
@@ -738,12 +794,16 @@ public:
 
   void visit (TypeInfoDeclaration *d)
   {
+    if (d->semanticRun >= PASSobj)
+      return;
+
     if (speculative_type_p (d->tinfo))
       return;
 
     tree t = get_typeinfo_decl (d);
     DECL_INITIAL (t) = layout_typeinfo (d);
     d_finish_decl (t);
+    d->semanticRun = PASSobj;
   }
 
   /* Finish up a function declaration and compile it all the way
@@ -868,6 +928,7 @@ public:
       }
 
     DECL_ARGUMENTS (fndecl) = param_list;
+    DECL_IN_UNITTEST_CONDITION_P (fndecl) = this->in_version_unittest_;
     rest_of_decl_compilation (fndecl, 1, 0);
 
     /* If this is a member function that nested (possibly indirectly) in another

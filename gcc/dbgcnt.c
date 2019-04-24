@@ -58,21 +58,27 @@ dbg_cnt_is_enabled (enum debug_counter index)
   return v > limit_low[index] && v <= limit_high[index];
 }
 
+static void
+print_limit_reach (const char *counter, int limit, bool upper_p)
+{
+  char buffer[128];
+  sprintf (buffer, "***dbgcnt: %s limit %d reached for %s.***\n",
+	   upper_p ? "upper" : "lower", limit, counter);
+  fputs (buffer, stderr);
+  if (dump_file)
+    fputs (buffer, dump_file);
+}
+
 bool
 dbg_cnt (enum debug_counter index)
 {
   count[index]++;
 
-  if (dump_file)
-    {
-      /* Do not print the info for default lower limit.  */
-      if (count[index] == limit_low[index] && limit_low[index] > 0)
-	fprintf (dump_file, "***dbgcnt: lower limit %d reached for %s.***\n",
-		 limit_low[index], map[index].name);
-      else if (count[index] == limit_high[index])
-	fprintf (dump_file, "***dbgcnt: upper limit %d reached for %s.***\n",
-		 limit_high[index], map[index].name);
-    }
+  /* Do not print the info for default lower limit.  */
+  if (count[index] == limit_low[index] && limit_low[index] > 0)
+    print_limit_reach (map[index].name, limit_low[index], false);
+  else if (count[index] == limit_high[index])
+    print_limit_reach (map[index].name, limit_high[index], true);
 
   return dbg_cnt_is_enabled (index);
 }
@@ -151,30 +157,35 @@ dbg_cnt_process_single_pair (const char *arg)
       high = strtol (value2, NULL, 10);
     }
 
-   return dbg_cnt_set_limit_by_name (name, low, high);
+  return dbg_cnt_set_limit_by_name (name, low, high);
 }
 
 void
 dbg_cnt_process_opt (const char *arg)
 {
   char *str = xstrdup (arg);
-  const char *next = strtok (str, ",");
   unsigned int start = 0;
 
-   do {
-     if (!dbg_cnt_process_single_pair (arg))
-       break;
-     start += strlen (arg) + 1;
-     next = strtok (NULL, ",");
-   } while (next != NULL);
+  auto_vec<const char *> tokens;
+  for (const char *next = strtok (str, ","); next != NULL;
+       next = strtok (NULL, ","))
+    tokens.safe_push (next);
 
-   if (next != NULL)
+  unsigned i;
+  for (i = 0; i < tokens.length (); i++)
+    {
+     if (!dbg_cnt_process_single_pair (tokens[i]))
+       break;
+     start += strlen (tokens[i]) + 1;
+    }
+
+   if (i != tokens.length ())
      {
        char *buffer = XALLOCAVEC (char, start + 2);
        sprintf (buffer, "%*c", start + 1, '^');
        error ("cannot find a valid counter:value pair:");
-       error ("%<-fdbg-cnt=%s%>", next);
-       error ("          %s", buffer);
+       error ("%<-fdbg-cnt=%s%>", arg);
+       error ("           %s", buffer);
      }
 }
 

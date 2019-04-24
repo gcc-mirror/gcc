@@ -1,3 +1,31 @@
+2019-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89888
+	* c-typeck.c (struct c_switch): Remove outside_range_p member.
+	(c_start_case): Don't clear it.
+	(do_case): Adjust c_add_case_label caller.
+	(c_finish_case): Adjust c_do_switch_warnings caller.
+
+	PR c++/90108
+	* c-decl.c (merge_decls): If remove is main variant and
+	DECL_ORIGINAL_TYPE is some other type, remove a DECL_ORIGINAL_TYPE
+	variant that has newdecl as TYPE_NAME if any.
+
+2019-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89933
+	* c-decl.c (merge_decls): When newdecl's type is its main variant,
+	don't try to remove it from the variant list, but instead assert
+	it has no variants.
+
+2019-04-01  Richard Biener  <rguenther@suse.de>
+
+	PR c/71598
+	* c-tree.h (c_get_alias_set): Declare.
+	* c-objc-common.h (LANG_HOOKS_GET_ALIAS_SET): Use c_get_alias_set.
+	* c-objc-common.c (c_get_alias_set): Treat enumeral types
+	as the underlying integer type.
+
 2019-03-19  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/89688

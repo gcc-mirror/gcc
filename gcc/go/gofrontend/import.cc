@@ -1478,8 +1478,9 @@ Import_function_body::read_type()
   this->off_ = i + 1;
 
   char *end;
-  long val = strtol(this->body_.substr(start, i - start).c_str(), &end, 10);
-  if (*end != '\0' || i > 0x7fffffff)
+  std::string num = this->body_.substr(start, i - start);
+  long val = strtol(num.c_str(), &end, 10);
+  if (*end != '\0' || val > 0x7fffffff)
     {
       if (!this->saw_error_)
 	go_error_at(this->location(),

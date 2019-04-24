@@ -292,10 +292,12 @@ public:
 
         version (Posix)
         {
-            version (FreeBSD)      enum utcZone = "Etc/UTC";
-            else version (NetBSD)  enum utcZone = "UTC";
-            else version (linux)   enum utcZone = "UTC";
-            else version (OSX)     enum utcZone = "UTC";
+            version (FreeBSD)            enum utcZone = "Etc/UTC";
+            else version (NetBSD)        enum utcZone = "UTC";
+            else version (DragonFlyBSD)  enum utcZone = "UTC";
+            else version (linux)         enum utcZone = "UTC";
+            else version (OSX)           enum utcZone = "UTC";
+            else version (Solaris)       enum utcZone = "UTC";
             else static assert(0, "The location of the UTC timezone file on this Posix platform must be set.");
 
             auto tzs = [testTZ("America/Los_Angeles", "PST", "PDT", dur!"hours"(-8), dur!"hours"(1)),
@@ -1890,6 +1892,14 @@ public:
     {
         // Android concatenates all time zone data into a single file and stores it here.
         enum defaultTZDatabaseDir = "/system/usr/share/zoneinfo/";
+    }
+    else version (Solaris)
+    {
+        /++
+            The default directory where the TZ Database files are. It's empty
+            for Windows, since Windows doesn't have them.
+          +/
+        enum defaultTZDatabaseDir = "/usr/share/lib/zoneinfo/";
     }
     else version (Posix)
     {

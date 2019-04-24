@@ -205,8 +205,10 @@ integral_argument (const char *arg, int *err, bool byte_size_suffix)
 	  value = strtoull (arg, &end, 0);
 	  if (*end)
 	    {
-	      /* errno is most likely EINVAL here.  */
-	      *err = errno;
+	      if (errno)
+		*err = errno;
+	      else
+		*err = EINVAL;
 	      return -1;
 	    }
 

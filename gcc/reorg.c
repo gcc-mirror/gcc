@@ -137,7 +137,20 @@ skip_consecutive_labels (rtx label_or_return)
 
   rtx_insn *label = as_a <rtx_insn *> (label_or_return);
 
-  for (insn = label; insn != 0 && !INSN_P (insn); insn = NEXT_INSN (insn))
+  /* __builtin_unreachable can create a CODE_LABEL followed by a BARRIER.
+
+     Since reaching the CODE_LABEL is undefined behavior, we can return
+     any code label and we're OK at runtime.
+
+     However, if we return a CODE_LABEL which leads to a shrinked wrapped
+     epilogue, but the path does not have a prologue, then we will trip
+     a sanity check in the dwarf2 cfi code which wants to verify that
+     the CFIs are all the same on the traces leading to the epilogue.
+
+     So we explicitly disallow looking through BARRIERS here.  */
+  for (insn = label;
+       insn != 0 && !INSN_P (insn) && !BARRIER_P (insn);
+       insn = NEXT_INSN (insn))
     if (LABEL_P (insn))
       label = insn;
 

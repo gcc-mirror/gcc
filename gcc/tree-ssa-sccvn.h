@@ -243,6 +243,7 @@ vn_reference_t vn_reference_insert_pieces (tree, alias_set_type, tree,
 bool vn_nary_op_eq (const_vn_nary_op_t const vno1,
 		    const_vn_nary_op_t const vno2);
 bool vn_nary_may_trap (vn_nary_op_t);
+bool vn_reference_may_trap (vn_reference_t);
 bool vn_reference_eq (const_vn_reference_t const, const_vn_reference_t const);
 unsigned int get_max_value_id (void);
 unsigned int get_next_value_id (void);

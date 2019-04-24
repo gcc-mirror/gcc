@@ -657,22 +657,12 @@ dead_debug_insert_temp (struct dead_debug_local *debug, unsigned int uregno,
 	{
 	  dest = SET_DEST (set);
 	  src = SET_SRC (set);
-	  /* Lose if the REG-setting insn is a CALL.  */
-	  if (GET_CODE (src) == CALL)
-	    {
-	      while (uses)
-		{
-		  cur = uses->next;
-		  XDELETE (uses);
-		  uses = cur;
-		}
-	      return 0;
-	    }
-	  /* Asm in DEBUG_INSN is never useful, we can't emit debug info for
-	     that.  And for volatile_insn_p, it is actually harmful
-	     - DEBUG_INSNs shouldn't have any side-effects.  */
-	  else if (GET_CODE (src) == ASM_OPERANDS
-		   || volatile_insn_p (src))
+	  /* Reset uses if the REG-setting insn is a CALL.  Asm in
+	     DEBUG_INSN is never useful, we can't emit debug info for
+	     that.  And for volatile_insn_p, it is actually harmful -
+	     DEBUG_INSNs shouldn't have any side-effects.  */
+	  if (GET_CODE (src) == CALL || GET_CODE (src) == ASM_OPERANDS
+	      || volatile_insn_p (src))
 	    set = NULL_RTX;
 	}
 

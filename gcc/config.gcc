@@ -248,6 +248,7 @@ md_file=
 # Obsolete configurations.
 case ${target} in
   *-*-solaris2.10*			\
+  | spu*-*-*				\
   | tile*-*-*				\
  )
     if test "x$enable_obsolete" != xyes; then
@@ -2486,6 +2487,7 @@ nds32*-*-*)
 	  nds32*-*-linux*)
 	    tm_file="dbxelf.h elfos.h ${tm_file} gnu-user.h linux.h glibc-stdint.h nds32/linux.h nds32/nds32_intrinsic.h"
 	    tmake_file="${tmake_file} nds32/t-nds32 nds32/t-linux"
+	    gcc_cv_initfini_array=yes
 	    ;;
 	esac
 
@@ -4727,7 +4729,7 @@ case "${target}" in
 		for which in arch tune; do
 			eval "val=\$with_$which"
 			case ${val} in
-			"" | native | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | z14 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11 | arch12)
+			"" | native | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | z14 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11 | arch12 | arch13 )
 				# OK
 				;;
 			*)

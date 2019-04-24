@@ -4736,7 +4736,7 @@ riscv_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
   return true;
 }
 
-/* Get the intterupt type, return UNKNOWN_MODE if it's not
+/* Get the interrupt type, return UNKNOWN_MODE if it's not
    interrupt function. */
 static enum riscv_privilege_levels
 riscv_get_interrupt_type (tree decl)
@@ -4822,7 +4822,7 @@ riscv_merge_decl_attributes (tree olddecl, tree newdecl)
   if ((old_interrupt_type != UNKNOWN_MODE)
       && (new_interrupt_type != UNKNOWN_MODE)
       && (old_interrupt_type != new_interrupt_type))
-    error ("%qs function cannot have different intterupt type.", "interrupt");
+    error ("%qs function cannot have different interrupt type", "interrupt");
 
   /* Create combined attributes.  */
   combined_attrs = merge_attributes (DECL_ATTRIBUTES (olddecl),

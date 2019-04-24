@@ -661,12 +661,12 @@ class TypeInfo_AssociativeArray : TypeInfo
 
     override bool equals(in void* p1, in void* p2) @trusted const
     {
-        return !!_aaEqual(this, *cast(const void**) p1, *cast(const void**) p2);
+        return !!_aaEqual(this, *cast(const AA*) p1, *cast(const AA*) p2);
     }
 
     override hash_t getHash(scope const void* p) nothrow @trusted const
     {
-        return _aaGetHash(cast(void*)p, this);
+        return _aaGetHash(cast(AA*)p, this);
     }
 
     // BUG: need to add the rest of the functions
@@ -1862,30 +1862,31 @@ extern (C)
 {
     // from druntime/src/rt/aaA.d
 
-    // size_t _aaLen(in void* p) pure nothrow @nogc;
-    private void* _aaGetY(void** paa, const TypeInfo_AssociativeArray ti, in size_t valuesize, in void* pkey) pure nothrow;
-    private void* _aaGetX(void** paa, const TypeInfo_AssociativeArray ti, in size_t valuesize, in void* pkey, out bool found) pure nothrow;
-    // inout(void)* _aaGetRvalueX(inout void* p, in TypeInfo keyti, in size_t valuesize, in void* pkey);
-    inout(void)[] _aaValues(inout void* p, in size_t keysize, in size_t valuesize, const TypeInfo tiValArray) pure nothrow;
-    inout(void)[] _aaKeys(inout void* p, in size_t keysize, const TypeInfo tiKeyArray) pure nothrow;
-    void* _aaRehash(void** pp, in TypeInfo keyti) pure nothrow;
-    void _aaClear(void* p) pure nothrow;
+    private struct AA { void* impl; }
+    // size_t _aaLen(in AA aa) pure nothrow @nogc;
+    private void* _aaGetY(AA* paa, const TypeInfo_AssociativeArray ti, in size_t valsz, in void* pkey) pure nothrow;
+    private void* _aaGetX(AA* paa, const TypeInfo_AssociativeArray ti, in size_t valsz, in void* pkey, out bool found) pure nothrow;
+    // inout(void)* _aaGetRvalueX(inout AA aa, in TypeInfo keyti, in size_t valsz, in void* pkey);
+    inout(void[]) _aaValues(inout AA aa, in size_t keysz, in size_t valsz, const TypeInfo tiValueArray) pure nothrow;
+    inout(void[]) _aaKeys(inout AA aa, in size_t keysz, const TypeInfo tiKeyArray) pure nothrow;
+    void* _aaRehash(AA* paa, in TypeInfo keyti) pure nothrow;
+    void _aaClear(AA aa) pure nothrow;
 
     // alias _dg_t = extern(D) int delegate(void*);
-    // int _aaApply(void* aa, size_t keysize, _dg_t dg);
+    // int _aaApply(AA aa, size_t keysize, _dg_t dg);
 
     // alias _dg2_t = extern(D) int delegate(void*, void*);
-    // int _aaApply2(void* aa, size_t keysize, _dg2_t dg);
+    // int _aaApply2(AA aa, size_t keysize, _dg2_t dg);
 
-    private struct AARange { void* impl; size_t idx; }
-    AARange _aaRange(void* aa) pure nothrow @nogc @safe;
+    private struct AARange { AA impl; size_t idx; }
+    AARange _aaRange(AA aa) pure nothrow @nogc @safe;
     bool _aaRangeEmpty(AARange r) pure nothrow @nogc @safe;
     void* _aaRangeFrontKey(AARange r) pure nothrow @nogc @safe;
     void* _aaRangeFrontValue(AARange r) pure nothrow @nogc @safe;
     void _aaRangePopFront(ref AARange r) pure nothrow @nogc @safe;
 
-    int _aaEqual(in TypeInfo tiRaw, in void* e1, in void* e2);
-    hash_t _aaGetHash(in void* aa, in TypeInfo tiRaw) nothrow;
+    int _aaEqual(in TypeInfo tiRaw, in AA aa1, in AA aa2);
+    hash_t _aaGetHash(in AA* aa, in TypeInfo tiRaw) nothrow;
 
     /*
         _d_assocarrayliteralTX marked as pure, because aaLiteral can be called from pure code.
@@ -1910,13 +1911,13 @@ alias AssociativeArray(Key, Value) = Value[Key];
  */
 void clear(T : Value[Key], Value, Key)(T aa)
 {
-    _aaClear(*cast(void **) &aa);
+    _aaClear(*cast(AA *) &aa);
 }
 
 /* ditto */
 void clear(T : Value[Key], Value, Key)(T* aa)
 {
-    _aaClear(*cast(void **) aa);
+    _aaClear(*cast(AA *) aa);
 }
 
 /***********************************
@@ -1929,28 +1930,28 @@ void clear(T : Value[Key], Value, Key)(T* aa)
  */
 T rehash(T : Value[Key], Value, Key)(T aa)
 {
-    _aaRehash(cast(void**)&aa, typeid(Value[Key]));
+    _aaRehash(cast(AA*)&aa, typeid(Value[Key]));
     return aa;
 }
 
 /* ditto */
 T rehash(T : Value[Key], Value, Key)(T* aa)
 {
-    _aaRehash(cast(void**)aa, typeid(Value[Key]));
+    _aaRehash(cast(AA*)aa, typeid(Value[Key]));
     return *aa;
 }
 
 /* ditto */
 T rehash(T : shared Value[Key], Value, Key)(T aa)
 {
-    _aaRehash(cast(void**)&aa, typeid(Value[Key]));
+    _aaRehash(cast(AA*)&aa, typeid(Value[Key]));
     return aa;
 }
 
 /* ditto */
 T rehash(T : shared Value[Key], Value, Key)(T* aa)
 {
-    _aaRehash(cast(void**)aa, typeid(Value[Key]));
+    _aaRehash(cast(AA*)aa, typeid(Value[Key]));
     return *aa;
 }
 
@@ -1977,7 +1978,7 @@ V[K] dup(T : V[K], K, V)(T aa)
     {
         import core.stdc.string : memcpy;
 
-        void* pv = _aaGetY(cast(void**)&result, typeid(V[K]), V.sizeof, &k);
+        void* pv = _aaGetY(cast(AA*)&result, typeid(V[K]), V.sizeof, &k);
         memcpy(pv, &v, V.sizeof);
         return *cast(V*)pv;
     }
@@ -2010,7 +2011,7 @@ private AARange _aaToRange(T: V[K], K, V)(ref T aa) pure nothrow @nogc @safe
         alias realAA = aa;
     else
         const(V[K]) realAA = aa;
-    return _aaRange(() @trusted { return cast(void*)realAA; } ());
+    return _aaRange(() @trusted { return *cast(AA*)&realAA; } ());
 }
 
 /***********************************
@@ -2146,7 +2147,12 @@ auto byKeyValue(T : V[K], K, V)(T* aa) pure nothrow @nogc
  */
 Key[] keys(T : Value[Key], Value, Key)(T aa) @property
 {
-    auto a = cast(void[])_aaKeys(cast(inout(void)*)aa, Key.sizeof, typeid(Key[]));
+    // ensure we are dealing with a genuine AA.
+    static if (is(const(Value[Key]) == const(T)))
+        alias realAA = aa;
+    else
+        const(Value[Key]) realAA = aa;
+    auto a = cast(void[])_aaKeys(*cast(inout(AA)*)&realAA, Key.sizeof, typeid(Key[]));
     auto res = *cast(Key[]*)&a;
     _doPostblit(res);
     return res;
@@ -2156,6 +2162,19 @@ Key[] keys(T : Value[Key], Value, Key)(T aa) @property
 Key[] keys(T : Value[Key], Value, Key)(T *aa) @property
 {
     return (*aa).keys;
+}
+
+@system unittest
+{
+    static struct S
+    {
+        string str;
+        void[][string] dict;
+        alias dict this;
+    }
+
+    auto s = S("a");
+    assert(s.keys.length == 0);
 }
 
 /***********************************
@@ -2168,7 +2187,12 @@ Key[] keys(T : Value[Key], Value, Key)(T *aa) @property
  */
 Value[] values(T : Value[Key], Value, Key)(T aa) @property
 {
-    auto a = cast(void[])_aaValues(cast(inout(void)*)aa, Key.sizeof, Value.sizeof, typeid(Value[]));
+    // ensure we are dealing with a genuine AA.
+    static if (is(const(Value[Key]) == const(T)))
+        alias realAA = aa;
+    else
+        const(Value[Key]) realAA = aa;
+    auto a = cast(void[])_aaValues(*cast(inout(AA)*)&realAA, Key.sizeof, Value.sizeof, typeid(Value[]));
     auto res = *cast(Value[]*)&a;
     _doPostblit(res);
     return res;
@@ -2178,6 +2202,19 @@ Value[] values(T : Value[Key], Value, Key)(T aa) @property
 Value[] values(T : Value[Key], Value, Key)(T *aa) @property
 {
     return (*aa).values;
+}
+
+@system unittest
+{
+    static struct S
+    {
+        string str;
+        void[][string] dict;
+        alias dict this;
+    }
+
+    auto s = S("a");
+    assert(s.values.length == 0);
 }
 
 /***********************************
@@ -2220,12 +2257,12 @@ ref V require(K, V)(ref V[K] aa, K key, lazy V value = V.init)
     {
         auto p = () @trusted
         {
-            return cast(V*) _aaGetX(cast(void**) &aa, typeid(V[K]), V.sizeof, &key, found);
+            return cast(V*) _aaGetX(cast(AA*) &aa, typeid(V[K]), V.sizeof, &key, found);
         } ();
     }
     else
     {
-        auto p = cast(V*) _aaGetX(cast(void**) &aa, typeid(V[K]), V.sizeof, &key, found);
+        auto p = cast(V*) _aaGetX(cast(AA*) &aa, typeid(V[K]), V.sizeof, &key, found);
     }
     return found ? *p : (*p = value);
 }
@@ -2276,12 +2313,12 @@ if (isCreateOperation!(C, V) && isUpdateOperation!(U, V))
     {
         auto p = () @trusted
         {
-            return cast(V*) _aaGetX(cast(void**) &aa, typeid(V[K]), V.sizeof, &key, found);
+            return cast(V*) _aaGetX(cast(AA*) &aa, typeid(V[K]), V.sizeof, &key, found);
         } ();
     }
     else
     {
-        auto p = cast(V*) _aaGetX(cast(void**) &aa, typeid(V[K]), V.sizeof, &key, found);
+        auto p = cast(V*) _aaGetX(cast(AA*) &aa, typeid(V[K]), V.sizeof, &key, found);
     }
     if (!found)
         *p = create();
@@ -3878,4 +3915,31 @@ unittest
     int p;
     scope arr = [S(&p)];
     auto a = arr.dup; // dup does escape
+}
+
+// compiler frontend lowers dynamic array comparison to this
+bool __ArrayEq(T1, T2)(T1[] a, T2[] b)
+{
+    if (a.length != b.length)
+        return false;
+    foreach (size_t i; 0 .. a.length)
+    {
+        if (a[i] != b[i])
+            return false;
+    }
+    return true;
+}
+
+// compiler frontend lowers struct array postblitting to this
+void __ArrayPostblit(T)(T[] a)
+{
+    foreach (ref T e; a)
+        e.__xpostblit();
+}
+
+// compiler frontend lowers dynamic array deconstruction to this
+void __ArrayDtor(T)(T[] a)
+{
+    foreach_reverse (ref T e; a)
+        e.__xdtor();
 }

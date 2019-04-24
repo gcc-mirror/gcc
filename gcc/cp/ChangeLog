@@ -1,6 +1,274 @@
+2019-04-24  Richard Biener  <rguenther@suse.de>
+
+	* call.c (null_ptr_cst_p): Order checks according to expensiveness.
+	(conversion_null_warnings): Likewise.
+	* typeck.c (same_type_ignoring_top_level_qualifiers_p): Return
+	early if type1 == type2.
+
+2019-04-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87366 - wrong error with alias template.
+	* typeck.c (structural_comptypes): When comparing_specializations,
+	aliases are unequal.
+	(comptypes): When comparing_specializations, do structural
+	comparison.
+
+2019-04-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90190 - CTAD with list-constructor.
+	* pt.c (do_class_deduction): Don't try the single element deduction
+	if the single element is also a braced list.
+
+	PR c++/90171 - ICE with destroying delete with size_t parm.
+	* call.c (sized_deallocation_fn_p): New.  Use it instead of
+	second_parm_is_size_t in most cases.
+	(second_parm_is_size_t): Don't check for aligned.
+
+2019-04-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/89900
+	* pt.c (fn_type_unification): When handling null explicit
+	arguments do not special case non-parameter packs.
+
+2019-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90138
+	* pt.c (process_template_parm): Set decl to pushdecl result.  If
+	!is_non_type, also set parm to that.
+
+	PR c/89888
+	* decl.c (struct cp_switch): Remove outside_range_p member.
+	(push_switch): Don't clear it.
+	(pop_switch): Adjust c_do_switch_warnings caller.
+	(finish_case_label): Adjust c_add_case_label caller.
+
+	PR c++/90108
+	* decl.c (duplicate_decls): If remove is main variant and
+	DECL_ORIGINAL_TYPE is some other type, remove a DECL_ORIGINAL_TYPE
+	variant that has newdecl as TYPE_NAME if any.
+
+2019-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87554 - ICE with extern template and reference member.
+	* decl.c (cp_finish_decl): Don't set DECL_INITIAL of external vars.
+
+2019-04-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90047 - ICE with enable_if alias template.
+	* pt.c (tsubst_decl) [TYPE_DECL]: Don't put an erroneous decl in the
+	hash table when we're in SFINAE context.
+
+2019-04-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90124 - bogus error with incomplete type in decltype.
+	* typeck.c (build_class_member_access_expr): Check
+	cp_unevaluated_operand.
+
+2019-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89933
+	* decl.c (duplicate_decls): When newdecl's type is its main variant,
+	don't try to remove it from the variant list, but instead assert
+	it has no variants.
+
+2019-04-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88383
+	PR c/89288
+	* parser.c (cp_parser_has_attribute_expression): Handle assignment
+	expressions.
+
+2019-04-12  Jason Merrill  <jason@redhat.com>
+
+	* call.c (null_member_pointer_value_p): Handle an empty CONSTRUCTOR
+	of PMF type.
+
+2019-04-12  Marek Polacek  <polacek@redhat.com>
+
+	* except.c (build_noexcept_spec): Use build_converted_constant_bool_expr
+	instead of perform_implicit_conversion_flags.
+
+	PR c++/87603 - constexpr functions are no longer noexcept.
+	* constexpr.c (is_sub_constant_expr): Remove unused function.
+	* cp-tree.h (is_sub_constant_expr): Remove declaration.
+	* except.c (check_noexcept_r): Don't consider a call to a constexpr
+	function noexcept.
+
+2019-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/90035
+	* parser.h (struct cp_parser): Add
+	type_definition_forbidden_message_arg member.
+	* parser.c (cp_debug_parser): Print it.
+	(cp_parser_check_type_definition): Pass
+	parser->type_definition_forbidden_message_arg as second argument to
+	error.
+	(cp_parser_has_attribute_expression, cp_parser_sizeof_operand): Set
+	parser->type_definition_forbidden_message_arg and use G_() with
+	%qs for parser->type_definition_forbidden_message instead of
+	building untranslatable message using concat.
+
+2019-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/90011
+	* typeck2.c (check_narrowing): Remove trailing space from diagnostics.
+
+2019-04-08  Marek Polacek  <polacek@redhat.com>
+
+	* typeck2.c (digest_init_r): Don't condition the object slicing warning
+	on flag_checking.
+
+2019-04-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/89914
+	* semantics.c (trait_expr_value): Don't use TYPE_NOTHROW_P
+	when maybe_instantiate_noexcept fails.
+	(classtype_has_nothrow_assign_or_copy_p): Likewise.
+	* method.c (implicitly_declare_fn): Avoid passing error_mark_node
+	to build_exception_variant.
+
+2019-04-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87145 - bogus error converting class type in template arg list.
+	* pt.c (convert_nontype_argument): Don't call
+	build_converted_constant_expr if it could involve calling a conversion
+	function with a instantiation-dependent constructor as its argument.
+
+2019-04-05  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/89980
+	* decl.c (reshape_init_array_1): Avoid treating empty strings
+	as zeros in array initializers.
+	Use trivial_type_p () instead of TYPE_HAS_TRIVIAL_DFLT().
+
+2019-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89948 - ICE with break in statement-expr.
+	* constexpr.c (cxx_eval_statement_list): Jumping out of a
+	statement-expr is non-constant.
+
+2019-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89966 - error with non-type auto tparm.
+	* pt.c (do_auto_deduction): Clear tf_partial.
+
+2019-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86986 - ICE with TTP with parameter pack.
+	* pt.c (coerce_template_parameter_pack): Only look at the type of a
+	non-type parameter pack.
+	(fixed_parameter_pack_p_1): Don't recurse into the type of a
+	non-type parameter pack.
+	(coerce_template_template_parms): Call add_outermost_template_args.
+
+2019-04-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/89974
+	PR c++/89878
+	PR c++/89833
+	PR c++/47488
+	* decl.c (reshape_init_array_1): Strip trailing zero-initializers
+	from arrays of trivial type and known size.
+        * mangle.c (write_expression): Convert braced initializer lists
+        to STRING_CSTs.
+	(write_expression): Trim trailing zero-initializers from arrays
+	of trivial type.
+        (write_template_arg_literal): Mangle strings the same as braced
+        initializer lists.
+
+2019-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81866 - ICE with member template and default targ.
+	* pt.c (tsubst_template_decl): Handle getting a type from
+	retrieve_specialization.
+
+	PR c++/86586 - -fcompare-debug=-Wsign-compare.
+	* typeck.c (cp_build_binary_op): Don't fold for -Wsign-compare.
+
+	PR c++/89331 - ICE with offsetof in incomplete class.
+	* semantics.c (finish_offsetof): Handle error_mark_node.
+	* typeck.c (build_class_member_access_expr): Call
+	complete_type_or_maybe_complain before converting to base.
+
+	PR c++/89917 - ICE with lambda in variadic mem-init.
+	* pt.c (make_pack_expansion): Change type_pack_expansion_p to false.
+
+2019-04-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86946 - ICE with function call in template argument.
+	DR 1321
+	* pt.c (iterative_hash_template_arg) [CALL_EXPR]: Use
+	dependent_name.
+
+2019-04-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62207
+	* pt.c (tsubst_copy): Deal with lookup_name not returing a variable.
+
+2019-03-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89852 - ICE with C++11 functional cast with { }.
+	* constexpr.c (fold_non_dependent_expr_template): New static function
+	broken out of...
+	(fold_non_dependent_expr): ...here.
+	(fold_non_dependent_init): New function.
+	* cp-tree.h (fold_non_dependent_init): Declare.
+	* typeck2.c (massage_init_elt): Call fold_non_dependent_init instead
+	of fold_non_dependent_expr.  Don't call maybe_constant_init.
+
+2019-03-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89744 - ICE with specialization of member class template.
+	* pt.c (lookup_template_class_1): If the partial instantiation is
+	explicitly specialized, adjust.
+	(maybe_process_partial_specialization): Also adjust
+	CLASSTYPE_TI_ARGS.
+
+2019-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/89869
+	* typeck.c: Include gimplify.h.
+	(cp_build_modify_expr) <case COND_EXPR>: Unshare rhs before using it
+	for second time.  Formatting fixes.
+
+2019-03-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89876 - ICE with deprecated conversion.
+	* call.c (convert_like_real): Only give warnings with tf_warning.
+
+2019-03-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89612 - ICE with member friend template with noexcept.
+	* pt.c (maybe_instantiate_noexcept): For function templates, use their
+	template result (function decl).  Don't set up local specializations.
+	Temporarily turn on processing_template_decl.  Update the template type
+	too.
+
+	PR c++/89836 - bool constant expression and explicit conversions.
+	* call.c (build_converted_constant_expr_internal): New function,
+	renamed from...
+	(build_converted_constant_expr): ...this.  New.
+	(build_converted_constant_bool_expr): New.
+	* cp-tree.h (build_converted_constant_bool_expr): Declare.
+	* decl.c (build_explicit_specifier): Call
+	build_converted_constant_bool_expr.
+
+2019-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89785
+	* constexpr.c (struct check_for_return_continue_data): New type.
+	(check_for_return_continue): New function.
+	(potential_constant_expression_1) <case SWITCH_STMT>: Walk
+	SWITCH_STMT_BODY to find RETURN_EXPRs or CONTINUE_STMTs not nested
+	in loop bodies and set *jump_target to that if found.
+
 2019-03-27  Jason Merrill  <jason@redhat.com>
 
-	PR c++/89241 - ICE with lambda in template parameter list.
+	PR c++/89831 - error with qualified-id in const member function.
+	* semantics.c (finish_non_static_data_member): Use object cv-quals
+	in scoped case, too.
+
+	PR c++/89421 - ICE with lambda in template parameter list.
 	* parser.c (cp_parser_lambda_expression): Also reject a lambda in a
 	template parameter list before C++20.
 	* pt.c (type_dependent_expression_p): True for LAMBDA_EXPR.

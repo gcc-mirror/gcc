@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-ssa-loop-manip.h"
 #include "cfgloop.h"
+#include "explow.h"
 #include "tree-ssa-loop.h"
 #include "tree-scalar-evolution.h"
 #include "tree-vectorizer.h"
@@ -52,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec-perm-indices.h"
 #include "tree-ssa-loop-niter.h"
 #include "gimple-fold.h"
+#include "regs.h"
 
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"
@@ -948,6 +950,37 @@ vect_model_promotion_demotion_cost (stmt_vec_info stmt_info,
                      "prologue_cost = %d .\n", inside_cost, prologue_cost);
 }
 
+/* Returns true if the current function returns DECL.  */
+
+static bool
+cfun_returns (tree decl)
+{
+  edge_iterator ei;
+  edge e;
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
+    {
+      greturn *ret = safe_dyn_cast <greturn *> (last_stmt (e->src));
+      if (!ret)
+	continue;
+      if (gimple_return_retval (ret) == decl)
+	return true;
+      /* We often end up with an aggregate copy to the result decl,
+         handle that case as well.  First skip intermediate clobbers
+	 though.  */
+      gimple *def = ret;
+      do
+	{
+	  def = SSA_NAME_DEF_STMT (gimple_vuse (def));
+	}
+      while (gimple_clobber_p (def));
+      if (is_a <gassign *> (def)
+	  && gimple_assign_lhs (def) == gimple_return_retval (ret)
+	  && gimple_assign_rhs1 (def) == decl)
+	return true;
+    }
+  return false;
+}
+
 /* Function vect_model_store_cost
 
    Models cost for stores.  In the case of grouped accesses, one access
@@ -1030,6 +1063,37 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
       inside_cost += record_stmt_cost (cost_vec,
 				       ncopies * assumed_nunits,
 				       vec_to_scalar, stmt_info, 0, vect_body);
+    }
+
+  /* When vectorizing a store into the function result assign
+     a penalty if the function returns in a multi-register location.
+     In this case we assume we'll end up with having to spill the
+     vector result and do piecewise loads as a conservative estimate.  */
+  tree base = get_base_address (STMT_VINFO_DATA_REF (stmt_info)->ref);
+  if (base
+      && (TREE_CODE (base) == RESULT_DECL
+	  || (DECL_P (base) && cfun_returns (base)))
+      && !aggregate_value_p (base, cfun->decl))
+    {
+      rtx reg = hard_function_value (TREE_TYPE (base), cfun->decl, 0, 1);
+      /* ???  Handle PARALLEL in some way.  */
+      if (REG_P (reg))
+	{
+	  int nregs = hard_regno_nregs (REGNO (reg), GET_MODE (reg));
+	  /* Assume that a single reg-reg move is possible and cheap,
+	     do not account for vector to gp register move cost.  */
+	  if (nregs > 1)
+	    {
+	      /* Spill.  */
+	      prologue_cost += record_stmt_cost (cost_vec, ncopies,
+						 vector_store,
+						 stmt_info, 0, vect_epilogue);
+	      /* Loads.  */
+	      prologue_cost += record_stmt_cost (cost_vec, ncopies * nregs,
+						 scalar_load,
+						 stmt_info, 0, vect_epilogue);
+	    }
+	}
     }
 
   if (dump_enabled_p ())
@@ -7638,19 +7702,6 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "cannot perform implicit CSE when performing "
 			     "group loads with negative dependence distance\n");
-	  return false;
-	}
-
-      /* Similarly when the stmt is a load that is both part of a SLP
-         instance and a loop vectorized stmt via the same-dr mechanism
-	 we have to give up.  */
-      if (DR_GROUP_SAME_DR_STMT (stmt_info)
-	  && (STMT_SLP_TYPE (stmt_info)
-	      != STMT_SLP_TYPE (DR_GROUP_SAME_DR_STMT (stmt_info))))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "conflicting SLP types for CSEd load\n");
 	  return false;
 	}
     }

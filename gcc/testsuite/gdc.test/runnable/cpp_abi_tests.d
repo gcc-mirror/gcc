@@ -1,4 +1,4 @@
-// EXTRA_CPP_SOURCES: extra-files/cpp_abi_tests.cpp
+// EXTRA_CPP_SOURCES: cpp_abi_tests.cpp
 
 extern(C++) {
 

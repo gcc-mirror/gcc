@@ -623,6 +623,7 @@ extern bool c_missing_noreturn_ok_p (tree);
 extern bool c_warn_unused_global_decl (const_tree);
 extern void c_initialize_diagnostics (diagnostic_context *);
 extern bool c_vla_unspec_p (tree x, tree fn);
+extern alias_set_type c_get_alias_set (tree);
 
 /* in c-typeck.c */
 extern int in_alignof;

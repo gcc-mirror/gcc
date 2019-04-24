@@ -632,7 +632,7 @@ parse_profile_filter (const char *regex, vec<regex_t> *v,
 	  regex_t r;
 	  if (regcomp (&r, p, REG_EXTENDED | REG_NOSUB) != 0)
 	    {
-	      error ("invalid regular expression '%s' in %<%s%>",
+	      error ("invalid regular expression %qs in %qs",
 		     p, flag_name);
 	      return;
 	    }

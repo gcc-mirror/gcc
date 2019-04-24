@@ -10,7 +10,6 @@
 #ifndef __PSTL_parallel_backend_tbb_H
 #define __PSTL_parallel_backend_tbb_H
 
-#include <cassert>
 #include <algorithm>
 #include <type_traits>
 
@@ -139,7 +138,7 @@ struct __par_trans_red_body
     _Tp&
     sum()
     {
-        __TBB_ASSERT(_M_has_sum, "sum expected");
+        __PSTL_ASSERT_MSG(_M_has_sum, "sum expected");
         return *(_Tp*)_M_sum_storage;
     }
     __par_trans_red_body(_Up __u, _Tp __init, _Cp __c, _Rp __r)
@@ -173,7 +172,7 @@ struct __par_trans_red_body
         _Index __j = __range.end();
         if (!_M_has_sum)
         {
-            __TBB_ASSERT(__range.size() > 1, "there should be at least 2 elements");
+            __PSTL_ASSERT_MSG(__range.size() > 1, "there should be at least 2 elements");
             new (&_M_sum_storage)
                 _Tp(_M_combine(_M_u(__i), _M_u(__i + 1))); // The condition i+1 < j is provided by the grain size of 3
             _M_has_sum = true;
@@ -190,7 +189,7 @@ _Tp
 __parallel_transform_reduce(_ExecutionPolicy&&, _Index __first, _Index __last, _Up __u, _Tp __init, _Cp __combine,
                             _Rp __brick_reduce)
 {
-    __par_trans_red_body<_Index, _Up, _Tp, _Cp, _Rp> __body(__u, __init, __combine, __brick_reduce);
+    __par_backend::__par_trans_red_body<_Index, _Up, _Tp, _Cp, _Rp> __body(__u, __init, __combine, __brick_reduce);
     // The grain size of 3 is used in order to provide mininum 2 elements for each body
     tbb::this_task_arena::isolate(
         [__first, __last, &__body]() { tbb::parallel_reduce(tbb::blocked_range<_Index>(__first, __last, 3), __body); });
@@ -233,8 +232,8 @@ class __trans_scan_body
     _Tp&
     sum() const
     {
-        __TBB_ASSERT(_M_has_sum, "sum expected");
-        return *(_Tp*)_M_sum_storage;
+        __PSTL_ASSERT_MSG(_M_has_sum, "sum expected");
+        return *const_cast<_Tp*>(reinterpret_cast<_Tp const*>(_M_sum_storage));
     }
 
     void
@@ -291,7 +290,7 @@ __split(_Index __m)
 }
 
 //------------------------------------------------------------------------
-// parallel_strict_scan
+// __parallel_strict_scan
 //------------------------------------------------------------------------
 
 template <typename _Index, typename _Tp, typename _Rp, typename _Cp>
@@ -304,8 +303,8 @@ __upsweep(_Index __i, _Index __m, _Index __tilesize, _Tp* __r, _Index __lastsize
     {
         _Index __k = __split(__m);
         tbb::parallel_invoke(
-            [=] { __upsweep(__i, __k, __tilesize, __r, __tilesize, __reduce, __combine); },
-            [=] { __upsweep(__i + __k, __m - __k, __tilesize, __r + __k, __lastsize, __reduce, __combine); });
+	    [=] { __par_backend::__upsweep(__i, __k, __tilesize, __r, __tilesize, __reduce, __combine); },
+            [=] { __par_backend::__upsweep(__i + __k, __m - __k, __tilesize, __r + __k, __lastsize, __reduce, __combine); });
         if (__m == 2 * __k)
             __r[__m - 1] = __combine(__r[__k - 1], __r[__m - 1]);
     }
@@ -321,11 +320,11 @@ __downsweep(_Index __i, _Index __m, _Index __tilesize, _Tp* __r, _Index __lastsi
     else
     {
         const _Index __k = __split(__m);
-        tbb::parallel_invoke([=] { __downsweep(__i, __k, __tilesize, __r, __tilesize, __initial, __combine, __scan); },
+        tbb::parallel_invoke([=] { __par_backend::__downsweep(__i, __k, __tilesize, __r, __tilesize, __initial, __combine, __scan); },
                              // Assumes that __combine never throws.
                              //TODO: Consider adding a requirement for user functors to be constant.
                              [=, &__combine] {
-                                 __downsweep(__i + __k, __m - __k, __tilesize, __r + __k, __lastsize,
+                                 __par_backend::__downsweep(__i + __k, __m - __k, __tilesize, __r + __k, __lastsize,
                                              __combine(__initial, __r[__k - 1]), __combine, __scan);
                              });
     }
@@ -347,7 +346,8 @@ __downsweep(_Index __i, _Index __m, _Index __tilesize, _Tp* __r, _Index __lastsi
 // T must have a trivial constructor and destructor.
 template <class _ExecutionPolicy, typename _Index, typename _Tp, typename _Rp, typename _Cp, typename _Sp, typename _Ap>
 void
-parallel_strict_scan(_ExecutionPolicy&&, _Index __n, _Tp __initial, _Rp __reduce, _Cp __combine, _Sp __scan, _Ap __apex)
+__parallel_strict_scan(_ExecutionPolicy&&, _Index __n, _Tp __initial, _Rp __reduce, _Cp __combine, _Sp __scan,
+                       _Ap __apex)
 {
     tbb::this_task_arena::isolate([=, &__combine]() {
         if (__n > 1)
@@ -358,7 +358,8 @@ parallel_strict_scan(_ExecutionPolicy&&, _Index __n, _Tp __initial, _Rp __reduce
             _Index __m = (__n - 1) / __tilesize;
             __buffer<_Tp> __buf(__m + 1);
             _Tp* __r = __buf.get();
-            __upsweep(_Index(0), _Index(__m + 1), __tilesize, __r, __n - __m * __tilesize, __reduce, __combine);
+            __par_backend::__upsweep(_Index(0), _Index(__m + 1), __tilesize, __r, __n - __m * __tilesize, __reduce, __combine);
+
             // When __apex is a no-op and __combine has no side effects, a good optimizer
             // should be able to eliminate all code between here and __apex.
             // Alternatively, provide a default value for __apex that can be
@@ -368,7 +369,7 @@ parallel_strict_scan(_ExecutionPolicy&&, _Index __n, _Tp __initial, _Rp __reduce
             while ((__k &= __k - 1))
                 __t = __combine(__r[__k - 1], __t);
             __apex(__combine(__initial, __t));
-            __downsweep(_Index(0), _Index(__m + 1), __tilesize, __r, __n - __m * __tilesize, __initial, __combine,
+            __par_backend::__downsweep(_Index(0), _Index(__m + 1), __tilesize, __r, __n - __m * __tilesize, __initial, __combine,
                         __scan);
             return;
         }
@@ -522,7 +523,7 @@ __stable_sort_task<_RandomAccessIterator1, _RandomAccessIterator2, _Compare, _Le
     {
         _M_leaf_sort(_M_xs, _M_xe, _M_comp);
         if (_M_inplace != 2)
-            __init_buf(_M_xs, _M_xe, _M_zs, _M_inplace == 0);
+            __par_backend::__init_buf(_M_xs, _M_xe, _M_zs, _M_inplace == 0);
         return NULL;
     }
     else
@@ -535,19 +536,19 @@ __stable_sort_task<_RandomAccessIterator1, _RandomAccessIterator2, _Compare, _Le
         auto __move_sequences = [](_RandomAccessIterator2 __first1, _RandomAccessIterator2 __last1,
                                    _RandomAccessIterator1 __first2) { return std::move(__first1, __last1, __first2); };
         if (_M_inplace == 2)
-            __m = new (allocate_continuation())
+	    __m = new (tbb::task::allocate_continuation())
                 __merge_task<_RandomAccessIterator2, _RandomAccessIterator2, _RandomAccessIterator1, _Compare,
                              __serial_destroy,
-                             __serial_move_merge<decltype(__move_values), decltype(__move_sequences)>>(
+                             __par_backend::__serial_move_merge<decltype(__move_values), decltype(__move_sequences)>>(
                     _M_zs, __zm, __zm, __ze, _M_xs, _M_comp, __serial_destroy(),
-                    __serial_move_merge<decltype(__move_values), decltype(__move_sequences)>(__nmerge, __move_values,
+                    __par_backend::__serial_move_merge<decltype(__move_values), decltype(__move_sequences)>(__nmerge, __move_values,
                                                                                              __move_sequences));
         else if (_M_inplace)
-            __m = new (allocate_continuation())
+            __m = new (tbb::task::allocate_continuation())
                 __merge_task<_RandomAccessIterator2, _RandomAccessIterator2, _RandomAccessIterator1, _Compare,
-                             __binary_no_op, __serial_move_merge<decltype(__move_values), decltype(__move_sequences)>>(
-                    _M_zs, __zm, __zm, __ze, _M_xs, _M_comp, __binary_no_op(),
-                    __serial_move_merge<decltype(__move_values), decltype(__move_sequences)>(__nmerge, __move_values,
+                             __par_backend::__binary_no_op, __par_backend::__serial_move_merge<decltype(__move_values), decltype(__move_sequences)>>(
+                    _M_zs, __zm, __zm, __ze, _M_xs, _M_comp, __par_backend::__binary_no_op(),
+                    __par_backend::__serial_move_merge<decltype(__move_values), decltype(__move_sequences)>(__nmerge, __move_values,
                                                                                              __move_sequences));
         else
         {
@@ -556,18 +557,18 @@ __stable_sort_task<_RandomAccessIterator1, _RandomAccessIterator2, _Compare, _Le
                                        _RandomAccessIterator2 __first2) {
                 return std::move(__first1, __last1, __first2);
             };
-            __m = new (allocate_continuation())
+            __m = new (tbb::task::allocate_continuation())
                 __merge_task<_RandomAccessIterator1, _RandomAccessIterator1, _RandomAccessIterator2, _Compare,
-                             __binary_no_op, __serial_move_merge<decltype(__move_values), decltype(__move_sequences)>>(
-                    _M_xs, __xm, __xm, _M_xe, _M_zs, _M_comp, __binary_no_op(),
-                    __serial_move_merge<decltype(__move_values), decltype(__move_sequences)>(__nmerge, __move_values,
+                             __par_backend::__binary_no_op, __par_backend::__serial_move_merge<decltype(__move_values), decltype(__move_sequences)>>(
+                    _M_xs, __xm, __xm, _M_xe, _M_zs, _M_comp, __par_backend::__binary_no_op(),
+                    __par_backend::__serial_move_merge<decltype(__move_values), decltype(__move_sequences)>(__nmerge, __move_values,
                                                                                              __move_sequences));
         }
         __m->set_ref_count(2);
         task* __right = new (__m->allocate_child())
             __stable_sort_task(__xm, _M_xe, __zm, !_M_inplace, _M_comp, _M_leaf_sort, __nmerge);
-        spawn(*__right);
-        recycle_as_child_of(*__m);
+	tbb::task::spawn(*__right);
+	tbb::task::recycle_as_child_of(*__m);
         _M_xe = __xm;
         _M_inplace = !_M_inplace;
     }
@@ -590,7 +591,7 @@ __parallel_stable_sort(_ExecutionPolicy&&, _RandomAccessIterator __xs, _RandomAc
         const _DifferenceType __sort_cut_off = __PSTL_STABLE_SORT_CUT_OFF;
         if (__n > __sort_cut_off)
         {
-            assert(__nsort > 0 && __nsort <= __n);
+            __PSTL_ASSERT(__nsort > 0 && __nsort <= __n);
             __buffer<_ValueType> __buf(__n);
             using tbb::task;
             task::spawn_root_and_wait(*new (task::allocate_root())
@@ -628,10 +629,10 @@ __parallel_merge(_ExecutionPolicy&&, _RandomAccessIterator1 __xs, _RandomAccessI
     {
         tbb::this_task_arena::isolate([=]() {
             typedef __merge_task<_RandomAccessIterator1, _RandomAccessIterator2, _RandomAccessIterator3, _Compare,
-                                 __binary_no_op, _LeafMerge>
+                                 __par_backend::__binary_no_op, _LeafMerge>
                 _TaskType;
             tbb::task::spawn_root_and_wait(*new (tbb::task::allocate_root()) _TaskType(
-                __xs, __xe, __ys, __ye, __zs, __comp, __binary_no_op(), __leaf_merge));
+                __xs, __xe, __ys, __ye, __zs, __comp, __par_backend::__binary_no_op(), __leaf_merge));
         });
     }
 }

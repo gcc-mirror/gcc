@@ -2344,6 +2344,18 @@ If none of these options are specified, the library is assumed in
 default locations.
 @end table
 
+@subheading D-Specific Options
+
+The following options apply to the build of the D runtime library.
+
+@table @code
+@item --with-target-system-zlib
+Use installed @samp{zlib} rather than that included with GCC@.  This needs
+to be available for each multilib variant, unless configured with
+@option{--with-target-system-zlib=@samp{auto}} in which case the GCC@ included
+@samp{zlib} is only used when the system installed library is not available.
+@end table
+
 @html
 <hr />
 <p>
@@ -2528,6 +2540,12 @@ hosts that do not support the linker plugin.  Without the linker plugin
 static libraries are not compiled with link-time optimizations.  Since 
 the GCC middle end and back end are in @file{libbackend.a} this means
 that only the front end is actually LTO optimized.
+
+@item @samp{bootstrap-lto-lean}
+This option is similar to @code{bootstrap-lto}, but is intended for
+faster build by only using LTO in the final bootstrap stage.
+With @samp{make profiledbootstrap} the LTO frontend
+is trained only on generator files.
 
 @item @samp{bootstrap-debug}
 Verifies that the compiler generates the same executable code, whether

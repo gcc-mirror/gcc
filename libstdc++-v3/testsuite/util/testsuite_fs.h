@@ -143,6 +143,9 @@ namespace __gnu_test
 
     ~scoped_file() { if (!path.empty()) remove(path); }
 
+    scoped_file(scoped_file&&) = default;
+    scoped_file& operator=(scoped_file&&) = default;
+
     path_type path;
   };
 

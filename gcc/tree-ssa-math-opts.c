@@ -334,7 +334,8 @@ is_division_by (gimple *use_stmt, tree def)
 	 /* Do not recognize x / x as valid division, as we are getting
 	    confused later by replacing all immediate uses x in such
 	    a stmt.  */
-	 && gimple_assign_rhs1 (use_stmt) != def;
+	 && gimple_assign_rhs1 (use_stmt) != def
+	 && !stmt_can_throw_internal (cfun, use_stmt);
 }
 
 /* Return TRUE if USE_STMT is a multiplication of DEF by A.  */
@@ -367,13 +368,12 @@ is_division_by_square (gimple *use_stmt, tree def)
 {
   if (gimple_code (use_stmt) == GIMPLE_ASSIGN
       && gimple_assign_rhs_code (use_stmt) == RDIV_EXPR
-      && gimple_assign_rhs1 (use_stmt) != gimple_assign_rhs2 (use_stmt))
+      && gimple_assign_rhs1 (use_stmt) != gimple_assign_rhs2 (use_stmt)
+      && !stmt_can_throw_internal (cfun, use_stmt))
     {
       tree denominator = gimple_assign_rhs2 (use_stmt);
       if (TREE_CODE (denominator) == SSA_NAME)
-	{
-	  return is_square_of (SSA_NAME_DEF_STMT (denominator), def);
-	}
+	return is_square_of (SSA_NAME_DEF_STMT (denominator), def);
     }
   return 0;
 }
@@ -3094,6 +3094,7 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
        && (tree_to_shwi (TYPE_SIZE (type))
 	   <= PARAM_VALUE (PARAM_AVOID_FMA_MAX_BITS)));
   bool defer = check_defer;
+  bool seen_negate_p = false;
   /* Make sure that the multiplication statement becomes dead after
      the transformation, thus that all uses are transformed to FMAs.
      This means we assume that an FMA operation has the same cost
@@ -3127,6 +3128,12 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 	  ssa_op_iter iter;
 	  use_operand_p usep;
 
+	  /* If (due to earlier missed optimizations) we have two
+	     negates of the same value, treat them as equivalent
+	     to a single negate with multiple uses.  */
+	  if (seen_negate_p)
+	    return false;
+
 	  result = gimple_assign_lhs (use_stmt);
 
 	  /* Make sure the negate statement becomes dead with this
@@ -3145,7 +3152,7 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 	  if (gimple_bb (use_stmt) != gimple_bb (mul_stmt))
 	    return false;
 
-	  negate_p = true;
+	  negate_p = seen_negate_p = true;
 	}
 
       tree cond, else_value, ops[3];

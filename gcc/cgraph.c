@@ -2977,17 +2977,25 @@ cgraph_node::collect_callers (void)
 static bool
 clone_of_p (cgraph_node *node, cgraph_node *node2)
 {
-  bool skipped_thunk = false;
   node = node->ultimate_alias_target ();
   node2 = node2->ultimate_alias_target ();
+
+  if (node2->clone_of == node
+      || node2->former_clone_of == node->decl)
+    return true;
+
+  if (!node->thunk.thunk_p && !node->former_thunk_p ())
+    {
+      while (node2 && node->decl != node2->decl)
+	node2 = node2->clone_of;
+      return node2 != NULL;
+    }
 
   /* There are no virtual clones of thunks so check former_clone_of or if we
      might have skipped thunks because this adjustments are no longer
      necessary.  */
   while (node->thunk.thunk_p || node->former_thunk_p ())
     {
-      if (node2->former_clone_of == node->decl)
-	return true;
       if (!node->thunk.this_adjusting)
 	return false;
       /* In case of instrumented expanded thunks, which can have multiple calls
@@ -2996,23 +3004,21 @@ clone_of_p (cgraph_node *node, cgraph_node *node2)
       if (node->callees->next_callee)
 	return true;
       node = node->callees->callee->ultimate_alias_target ();
-      skipped_thunk = true;
-    }
 
-  if (skipped_thunk)
-    {
       if (!node2->clone.args_to_skip
 	  || !bitmap_bit_p (node2->clone.args_to_skip, 0))
 	return false;
       if (node2->former_clone_of == node->decl)
 	return true;
-      else if (!node2->clone_of)
-	return false;
+
+      cgraph_node *n2 = node2;
+      while (n2 && node->decl != n2->decl)
+	n2 = n2->clone_of;
+      if (n2)
+	return true;
     }
 
-  while (node2 && node->decl != node2->decl)
-    node2 = node2->clone_of;
-  return node2 != NULL;
+  return false;
 }
 
 /* Verify edge count and frequency.  */

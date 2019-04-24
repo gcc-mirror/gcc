@@ -1941,31 +1941,37 @@ else version (CRuntime_UClibc)
         int l_linger;
     }
 
-    version (X86_64)
+    version (X86_Any)
     {
         enum
         {
             SOCK_DGRAM      = 2,
             SOCK_SEQPACKET  = 5,
-            SOCK_STREAM     = 1
+            SOCK_STREAM     = 1,
+            SOCK_CLOEXEC    = 0x80000, // octal 02000000
+            SOCK_NONBLOCK   = 0x800 // octal 00004000
         }
     }
-    else version (MIPS32)
+    else version (MIPS_Any)
     {
         enum
         {
             SOCK_DGRAM      = 1,
             SOCK_SEQPACKET  = 5,
             SOCK_STREAM     = 2,
+            SOCK_CLOEXEC    = 0x80000, // octal 02000000
+            SOCK_NONBLOCK   = 0x80 // octal 00000200
         }
     }
-    else version (ARM)
+    else version (ARM_Any)
     {
         enum
         {
             SOCK_DGRAM      = 2,
             SOCK_SEQPACKET  = 5,
-            SOCK_STREAM     = 1
+            SOCK_STREAM     = 1,
+            SOCK_CLOEXEC    = 0x80000, // octal 02000000
+            SOCK_NONBLOCK   = 0x800 // octal 00004000
         }
     }
     else
@@ -1991,6 +1997,7 @@ else version (CRuntime_UClibc)
         SO_TYPE         = 3,
 
         SOL_SOCKET      = 1,
+        SOL_TCP         = 6,
         SOMAXCONN       = 128
     }
 

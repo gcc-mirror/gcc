@@ -20,6 +20,7 @@
 
 #include <any>
 #include <string>
+#include <utility>
 #include <cstring>
 #include <testsuite_hooks.h>
 
@@ -121,6 +122,38 @@ void test05()
   VERIFY( p == nullptr );
 }
 
+void test06()
+{
+  // The contained value of a std::any is always an object type,
+  // but std::any_cast does not forbid checking for function types.
+
+  any a(1);
+  void (*p1)() = any_cast<void()>(&a);
+  VERIFY( p1 == nullptr );
+  int (*p2)(int) = any_cast<int(int)>(&a);
+  VERIFY( p2 == nullptr );
+  int (*p3)() = any_cast<int()>(&std::as_const(a));
+  VERIFY( p3 == nullptr );
+
+  try {
+    any_cast<int(&)()>(a);
+    VERIFY( false );
+  } catch (const std::bad_any_cast&) {
+  }
+
+  try {
+    any_cast<int(&)()>(std::move(a));
+    VERIFY( false );
+  } catch (const std::bad_any_cast&) {
+  }
+
+  try {
+    any_cast<int(&)()>(std::as_const(a));
+    VERIFY( false );
+  } catch (const std::bad_any_cast&) {
+  }
+}
+
 int main()
 {
   test01();
@@ -128,4 +161,5 @@ int main()
   test03();
   test04();
   test05();
+  test06();
 }

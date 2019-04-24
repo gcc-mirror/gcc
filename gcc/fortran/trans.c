@@ -352,6 +352,9 @@ get_array_span (tree type, tree decl)
       else
 	span = NULL_TREE;
     }
+  else if (TREE_CODE (decl) == INDIRECT_REF
+	   && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
+    span = gfc_conv_descriptor_span_get (decl);
   else
     span = NULL_TREE;
 

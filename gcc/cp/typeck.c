@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
+#include "gimplify.h"
 
 static tree cp_build_addr_expr_strict (tree, tsubst_flags_t);
 static tree cp_build_function_call (tree, tree, tsubst_flags_t);
@@ -1442,6 +1443,17 @@ structural_comptypes (tree t1, tree t2, int strict)
       return false;
     }
 
+  /* Don't treat an alias template specialization with dependent
+     arguments as equivalent to its underlying type when used as a
+     template argument; we need them to be distinct so that we
+     substitute into the specialization arguments at instantiation
+     time.  And aliases can't be equivalent without being ==, so
+     we don't need to look any deeper.  */
+  if (comparing_specializations
+      && (dependent_alias_template_spec_p (t1)
+	  || dependent_alias_template_spec_p (t2)))
+    return false;
+
   /* If we get here, we know that from a target independent POV the
      types are the same.  Make sure the target attributes are also
      the same.  */
@@ -1454,6 +1466,10 @@ structural_comptypes (tree t1, tree t2, int strict)
 bool
 comptypes (tree t1, tree t2, int strict)
 {
+  if (strict == COMPARE_STRICT && comparing_specializations
+      && (t1 != TYPE_CANONICAL (t1) || t2 != TYPE_CANONICAL (t2)))
+    /* If comparing_specializations, treat dependent aliases as distinct.  */
+    strict = COMPARE_STRUCTURAL;
   if (strict == COMPARE_STRICT)
     {
       if (t1 == t2)
@@ -1507,6 +1523,8 @@ same_type_ignoring_top_level_qualifiers_p (tree type1, tree type2)
 {
   if (type1 == error_mark_node || type2 == error_mark_node)
     return false;
+  if (type1 == type2)
+    return true;
 
   type1 = cp_build_qualified_type (type1, TYPE_UNQUALIFIED);
   type2 = cp_build_qualified_type (type2, TYPE_UNQUALIFIED);
@@ -2472,6 +2490,15 @@ build_class_member_access_expr (cp_expr object, tree member,
 	{
 	  tree binfo;
 	  base_kind kind;
+
+	  /* We didn't complain above about a currently open class, but now we
+	     must: we don't know how to refer to a base member before layout is
+	     complete.  But still don't complain in a template.  */
+	  if (!cp_unevaluated_operand
+	      && !dependent_type_p (object_type)
+	      && !complete_type_or_maybe_complain (object_type, object,
+						   complain))
+	    return error_mark_node;
 
 	  binfo = lookup_base (access_path ? access_path : object_type,
 			       member_scope, ba_unique, &kind, complain);
@@ -5477,14 +5504,7 @@ cp_build_binary_op (const op_location_t &location,
 	  && !enum_cast_to_int (orig_op0)
 	  && !enum_cast_to_int (orig_op1))
 	{
-	  tree oop0 = maybe_constant_value (orig_op0);
-	  tree oop1 = maybe_constant_value (orig_op1);
-
-	  if (TREE_CODE (oop0) != INTEGER_CST)
-	    oop0 = cp_fully_fold (orig_op0);
-	  if (TREE_CODE (oop1) != INTEGER_CST)
-	    oop1 = cp_fully_fold (orig_op1);
-	  warn_for_sign_compare (location, oop0, oop1, op0, op1, 
+	  warn_for_sign_compare (location, orig_op0, orig_op1, op0, op1,
 				 result_type, resultcode);
 	}
     }
@@ -8129,8 +8149,6 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	/* Produce (a ? (b = rhs) : (c = rhs))
 	   except that the RHS goes through a save-expr
 	   so the code to compute it is only emitted once.  */
-	tree cond;
-
 	if (VOID_TYPE_P (TREE_TYPE (rhs)))
 	  {
 	    if (complain & tf_error)
@@ -8145,13 +8163,21 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	if (!lvalue_or_else (lhs, lv_assign, complain))
 	  return error_mark_node;
 
-	cond = build_conditional_expr
-	  (input_location, TREE_OPERAND (lhs, 0),
-	   cp_build_modify_expr (loc, TREE_OPERAND (lhs, 1),
-				 modifycode, rhs, complain),
-	   cp_build_modify_expr (loc, TREE_OPERAND (lhs, 2),
-				 modifycode, rhs, complain),
-           complain);
+	tree op1 = cp_build_modify_expr (loc, TREE_OPERAND (lhs, 1),
+					 modifycode, rhs, complain);
+	/* When sanitizing undefined behavior, even when rhs doesn't need
+	   stabilization at this point, the sanitization might add extra
+	   SAVE_EXPRs in there and so make sure there is no tree sharing
+	   in the rhs, otherwise those SAVE_EXPRs will have initialization
+	   only in one of the two branches.  */
+	if (sanitize_flags_p (SANITIZE_UNDEFINED
+			      | SANITIZE_UNDEFINED_NONDEFAULT))
+	  rhs = unshare_expr (rhs);
+	tree op2 = cp_build_modify_expr (loc, TREE_OPERAND (lhs, 2),
+					 modifycode, rhs, complain);
+	tree cond = build_conditional_expr (input_location,
+					    TREE_OPERAND (lhs, 0), op1, op2,
+					    complain);
 
 	if (cond == error_mark_node)
 	  return cond;

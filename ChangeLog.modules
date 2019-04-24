@@ -1,5 +1,7 @@
 2019-04-24  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r270543.
+
 	Instantiations now streamed.
 	gcc/cp/
 	* module.cc (tree_tag): Delete tt_inst.

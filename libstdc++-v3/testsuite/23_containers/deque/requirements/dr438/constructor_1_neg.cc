@@ -26,3 +26,5 @@ void f()
 {
   std::deque<std::deque<int> > d(10, 1); // { dg-error "here|no match" }
 }
+
+// { dg-prune-output "iterator_traits" }

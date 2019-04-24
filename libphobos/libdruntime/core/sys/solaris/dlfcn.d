@@ -9,6 +9,7 @@ module core.sys.solaris.dlfcn;
 version (Solaris):
 extern (C):
 nothrow:
+@nogc:
 
 public import core.sys.posix.dlfcn;
 import core.stdc.config;

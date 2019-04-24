@@ -4633,8 +4633,8 @@ public:
             fd = ((VarExp *)ecall)->var->isFuncDeclaration();
             assert(fd);
 
-            if (fd->ident == Id::_ArrayPostblit ||
-                fd->ident == Id::_ArrayDtor)
+            if (fd->ident == Id::__ArrayPostblit ||
+                fd->ident == Id::__ArrayDtor)
             {
                 assert(e->arguments->dim == 1);
                 Expression *ea = (*e->arguments)[0];
@@ -4654,7 +4654,7 @@ public:
                 if (CTFEExp::isCantExp(result))
                     return;
 
-                if (fd->ident == Id::_ArrayPostblit)
+                if (fd->ident == Id::__ArrayPostblit)
                     result = evaluatePostblit(istate, result);
                 else
                     result = evaluateDtor(istate, result);
@@ -6272,10 +6272,13 @@ Expression *scrubReturnValue(Loc loc, Expression *e)
 /* Returns: true if e is void,
  * or is an array literal or struct literal of void elements.
  */
-static bool isVoid(Expression *e)
+static bool isVoid(Expression *e, bool checkArray = false)
 {
     if (e->op == TOKvoid)
         return true;
+
+    if (checkArray && e->type->ty != Tsarray)
+        return false;
 
     if (e->op == TOKarrayliteral)
         return isEntirelyVoid(((ArrayLiteralExp *)e)->elements);
@@ -6314,7 +6317,7 @@ Expression *scrubArray(Loc loc, Expressions *elems, bool structlit)
 
         // A struct .init may contain void members.
         // Static array members are a weird special case (bug 10994).
-        if (structlit && isVoid(e))
+        if (structlit && isVoid(e, true))
         {
             e = NULL;
         }

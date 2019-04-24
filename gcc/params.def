@@ -957,7 +957,7 @@ DEFPARAM (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS,
 
 DEFPARAM (PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP,
 	  "graphite-max-arrays-per-scop",
-	  "Maximum number of arrays per scop.",
+	  "Maximum number of arrays per SCoP.",
 	  100, 0, 0)
 
 DEFPARAM (PARAM_MAX_ISL_OPERATIONS,
@@ -1145,6 +1145,11 @@ DEFPARAM (MAX_PARTITION_SIZE,
 	  "lto-max-partition",
 	  "Maximal size of a partition for LTO (in estimated instructions).",
 	  1000000, 0, INT_MAX)
+
+DEFPARAM (PARAM_MAX_LTO_STREAMING_PARALLELISM,
+	  "lto-max-streaming-parallelism",
+	  "maximal number of LTO partitions streamed in parallel.",
+	  32, 1, 0)
 
 /* Diagnostic parameters.  */
 

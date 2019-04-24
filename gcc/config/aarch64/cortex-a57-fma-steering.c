@@ -114,6 +114,9 @@ public:
   void dispatch ();
 
 private:
+  /* Prohibit copy construction.  */
+  fma_forest (const fma_forest &);
+
   /* The list of roots that form this forest.  */
   std::list<fma_root_node *> *m_roots;
 
@@ -147,6 +150,10 @@ public:
   void set_head (du_head *);
   void rename (fma_forest *);
   void dump_info (fma_forest *);
+
+private:
+  /* Prohibit copy construction.  */
+  fma_node (const fma_node &);
 
 protected:
   /* Root node that lead to this node.  */
@@ -203,6 +210,9 @@ public:
   void execute_fma_steering ();
 
 private:
+  /* Prohibit copy construction.  */
+  func_fma_steering (const func_fma_steering &);
+
   void dfs (void (*) (fma_forest *), void (*) (fma_forest *, fma_root_node *),
 	    void (*) (fma_forest *, fma_node *), bool);
   void analyze ();

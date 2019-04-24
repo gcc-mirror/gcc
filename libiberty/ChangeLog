@@ -1,3 +1,20 @@
+2019-04-10  Nick Clifton  <nickc@redhat.com>
+
+	PR 89394
+	* cp-demangle.c (cplus_demangle_fill_name): Reject negative
+	lengths.
+	(d_count_templates_scopes): Replace num_templates and num_scopes
+	parameters with a struct d_print_info pointer parameter.  Adjust
+	body of the function accordingly.  Add recursion counter and check
+	that the recursion limit is not reached.
+	(d_print_init): Pass dpi parameter to d_count_templates_scopes.
+	Reset recursion counter afterwards, unless the recursion limit was
+	reached.
+
+2019-04-07  Alan Modra  <amodra@gmail.com>
+
+	* functions.texi: Regenerate.
+
 2019-03-14  Jason Merrill  <jason@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

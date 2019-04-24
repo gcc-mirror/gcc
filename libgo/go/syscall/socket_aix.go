@@ -11,6 +11,7 @@ import "unsafe"
 const SizeofSockaddrInet4 = 16
 const SizeofSockaddrInet6 = 28
 const SizeofSockaddrUnix = 1025
+const SizeofSockaddrDatalink = 128
 
 type RawSockaddrInet4 struct {
 	Len    uint8
@@ -86,4 +87,27 @@ func GetsockoptIPv6MTUInfo(fd, level, opt int) (*IPv6MTUInfo, error) {
 	vallen := Socklen_t(SizeofIPv6MTUInfo)
 	err := getsockopt(fd, level, opt, unsafe.Pointer(&value), &vallen)
 	return &value, err
+}
+
+type SockaddrDatalink struct {
+	Len    uint8
+	Family uint8
+	Index  uint16
+	Type   uint8
+	Nlen   uint8
+	Alen   uint8
+	Slen   uint8
+	Data   [120]uint8
+	raw    RawSockaddrDatalink
+}
+
+type RawSockaddrDatalink struct {
+	Len    uint8
+	Family uint8
+	Index  uint16
+	Type   uint8
+	Nlen   uint8
+	Alen   uint8
+	Slen   uint8
+	Data   [120]uint8
 }

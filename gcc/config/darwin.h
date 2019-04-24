@@ -123,7 +123,7 @@ extern GTY(()) int darwin_ms_struct;
   "%{gused:-g -feliminate-unused-debug-symbols} %<gused",	\
   "%{fapple-kext|mkernel:-static}",				\
   "%{shared:-Zdynamiclib} %<shared",                            \
-  "%{gsplit-dwarf:%ngsplit-dwarf is not supported on this platform } \
+  "%{gsplit-dwarf:%ngsplit-dwarf is not supported on this platform} \
      %<gsplit-dwarf"
 
 #define DARWIN_CC1_SPEC							\
@@ -424,7 +424,7 @@ extern GTY(()) int darwin_ms_struct;
 
 #define ASM_DEBUG_SPEC  "%{g*:%{%:debug-level-gt(0):%{!gdwarf*:--gstabs}}}"
 #define ASM_FINAL_SPEC \
-  "%{gsplit-dwarf:%ngsplit-dwarf is not supported on this platform } %<gsplit-dwarf"
+  "%{gsplit-dwarf:%ngsplit-dwarf is not supported on this platform} %<gsplit-dwarf"
 
 /* We still allow output of STABS if the assembler supports it.  */
 #ifdef HAVE_AS_STABS_DIRECTIVE

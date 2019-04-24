@@ -134,6 +134,10 @@ option_proposer::build_option_suggestions (const char *prefix)
 					      with_arg);
 		  free (with_arg);
 		}
+
+	      /* Add also variant without an option argument.  */
+	      add_misspelling_candidates (m_option_suggestions, option,
+					  opt_text);
 	    }
 	  else
 	    {
@@ -172,6 +176,10 @@ option_proposer::build_option_suggestions (const char *prefix)
 	       "-fsanitize=address"
 	     rather than to "-Wframe-address" (PR driver/69265).  */
 	  {
+	    /* Add also variant without an option argument.  */
+	    add_misspelling_candidates (m_option_suggestions, option,
+					opt_text);
+
 	    for (int j = 0; sanitizer_opts[j].name != NULL; ++j)
 	      {
 		struct cl_option optb;

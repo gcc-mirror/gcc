@@ -633,7 +633,7 @@ Objective-C and Objective-C++ Dialects}.
 -mlow-precision-recip-sqrt  -mlow-precision-sqrt  -mlow-precision-div @gol
 -mpc-relative-literal-loads @gol
 -msign-return-address=@var{scope} @gol
--mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}] @gol
+-mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}]|@var{bti} @gol
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}  @gol
 -moverride=@var{string}  -mverbose-cost-dump @gol
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{sysreg} @gol
@@ -675,6 +675,7 @@ Objective-C and Objective-C++ Dialects}.
 -mabi=@var{name} @gol
 -mapcs-stack-check  -mno-apcs-stack-check @gol
 -mapcs-reentrant  -mno-apcs-reentrant @gol
+-mgeneral-regs-only @gol
 -msched-prolog  -mno-sched-prolog @gol
 -mlittle-endian  -mbig-endian @gol
 -mbe8  -mbe32 @gol
@@ -4540,12 +4541,6 @@ of error, as programmers often forget that this type is signed on some
 machines.
 This warning is enabled by @option{-Wall}.
 
-@item -Wchkp
-@opindex Wchkp
-@opindex Wno-chkp
-Warn about an invalid memory access that is found by Pointer Bounds Checker
-(@option{-fcheck-pointer-bounds}).
-
 @item -Wno-coverage-mismatch
 @opindex Wno-coverage-mismatch
 @opindex Wcoverage-mismatch
@@ -7864,6 +7859,9 @@ Level 3 includes extra information, such as all the macro definitions
 present in the program.  Some debuggers support macro expansion when
 you use @option{-g3}.
 
+If you use multiple @option{-g} options, with or without level numbers,
+the last such option is the one that is effective.
+
 @option{-gdwarf} does not accept a concatenated debug level, to avoid
 confusion with @option{-gdwarf-@var{level}}.
 Instead use an additional @option{-g@var{level}} option to change the
@@ -9402,7 +9400,7 @@ The optimization reduces code size and may disturb unwind stacks by replacing
 a function by equivalent one with a different name. The optimization works
 more effectively with link-time optimization enabled.
 
-Nevertheless the behavior is similar to Gold Linker ICF optimization, GCC ICF
+Although the behavior is similar to the Gold Linker's ICF optimization, GCC ICF
 works on different levels and thus the optimizations are not same - there are
 equivalences that are found only by GCC and equivalences found only by Gold.
 
@@ -9410,24 +9408,24 @@ This flag is enabled by default at @option{-O2} and @option{-Os}.
 
 @item -flive-patching=@var{level}
 @opindex flive-patching
-Control GCC's optimizations to provide a safe compilation for live-patching.
+Control GCC's optimizations to produce output suitable for live-patching.
 
 If the compiler's optimization uses a function's body or information extracted
 from its body to optimize/change another function, the latter is called an
 impacted function of the former.  If a function is patched, its impacted
 functions should be patched too.
 
-The impacted functions are decided by the compiler's interprocedural
-optimizations.  For example, inlining a function into its caller, cloning
-a function and changing its caller to call this new clone, or extracting
-a function's pureness/constness information to optimize its direct or
-indirect callers, etc.
+The impacted functions are determined by the compiler's interprocedural
+optimizations.  For example, a caller is impacted when inlining a function
+into its caller,
+cloning a function and changing its caller to call this new clone,
+or extracting a function's pureness/constness information to optimize
+its direct or indirect callers, etc.
 
 Usually, the more IPA optimizations enabled, the larger the number of
 impacted functions for each function.  In order to control the number of
-impacted functions and computed the list of impacted function easily,
-we provide control to partially enable IPA optimizations on two different
-levels.
+impacted functions and more easily compute the list of impacted function,
+IPA optimizations can be partially enabled at two different levels.
 
 The @var{level} argument should be one of the following:
 
@@ -9438,7 +9436,7 @@ The @var{level} argument should be one of the following:
 Only enable inlining and cloning optimizations, which includes inlining,
 cloning, interprocedural scalar replacement of aggregates and partial inlining.
 As a result, when patching a function, all its callers and its clones'
-callers need to be patched as well.
+callers are impacted, therefore need to be patched as well.
 
 @option{-flive-patching=inline-clone} disables the following optimization flags:
 @gccoptlist{-fwhole-program  -fipa-pta  -fipa-reference  -fipa-ra @gol
@@ -9449,22 +9447,23 @@ callers need to be patched as well.
 @item inline-only-static
 
 Only enable inlining of static functions.
-As a result, when patching a static function, all its callers need to be
-patches as well.
+As a result, when patching a static function, all its callers are impacted
+and so need to be patched as well.
 
-In addition to all the flags that -flive-patching=inline-clone disables,
+In addition to all the flags that @option{-flive-patching=inline-clone}
+disables,
 @option{-flive-patching=inline-only-static} disables the following additional
 optimization flags:
 @gccoptlist{-fipa-cp-clone  -fipa-sra  -fpartial-inlining  -fipa-cp}
 
 @end table
 
-When -flive-patching specified without any value, the default value
-is "inline-clone".
+When @option{-flive-patching} is specified without any value, the default value
+is @var{inline-clone}.
 
 This flag is disabled by default.
 
-Note that -flive-patching is not supported with link-time optimizer.
+Note that @option{-flive-patching} is not supported with link-time optimization
 (@option{-flto}).
 
 @item -fisolate-erroneous-paths-dereference
@@ -11901,6 +11900,9 @@ partitions.
 Size of max partition for WHOPR (in estimated instructions).
 to provide an upper bound for individual size of partition.
 Meant to be used only with balanced partitioning.
+
+@item lto-max-streaming-parallelism
+Maximal number of parallel processes used for LTO streaming.
 
 @item cxx-max-namespaces-for-diagnostic-help
 The maximum number of namespaces to consult for suggestions when C++
@@ -15936,7 +15938,7 @@ functions, and @samp{all}, which enables pointer signing for all functions.  The
 default value is @samp{none}. This option has been deprecated by
 -mbranch-protection.
 
-@item -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}]
+@item -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}]|@var{bti}
 @opindex mbranch-protection
 Select the branch protection features to use.
 @samp{none} is the default and turns off all types of branch protection.
@@ -17118,6 +17120,12 @@ The default depends on the specific target configuration.  Note that
 the hard-float and soft-float ABIs are not link-compatible; you must
 compile your entire program with the same ABI, and link with a
 compatible set of libraries.
+
+@item -mgeneral-regs-only
+@opindex mgeneral-regs-only
+Generate code which uses only the general-purpose registers.  This will prevent
+the compiler from using floating-point and Advanced SIMD registers but will not
+impose any restrictions on the assembler.
 
 @item -mlittle-endian
 @opindex mlittle-endian

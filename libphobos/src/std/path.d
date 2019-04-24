@@ -3970,7 +3970,7 @@ string expandTilde(string inputPath) nothrow
                     }
 
                     if (errno != ERANGE &&
-                        // On FreeBSD and OSX, errno can be left at 0 instead of set to ERANGE
+                        // On BSD and OSX, errno can be left at 0 instead of set to ERANGE
                         errno != 0)
                         onOutOfMemoryError();
 

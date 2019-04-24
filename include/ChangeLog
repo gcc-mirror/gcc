@@ -1,3 +1,9 @@
+2019-04-03  Vineet Gupta  <vgupta@synopsys.com>
+
+	PR89877
+	* longlong.h [__arc__] (add_ssaaaa): Add cc clobber.
+	(sub_ddmmss): Likewise.
+
 2019-02-11  Philippe Waroquiers  <philippe.waroquiers@skynet.be>
 
 	* splay-tree.h (splay_tree_delete_key_fn): Update comment.

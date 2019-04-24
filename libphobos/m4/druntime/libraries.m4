@@ -79,28 +79,59 @@ AC_DEFUN([DRUNTIME_LIBRARIES_NET],
 # DRUNTIME_LIBRARIES_ZLIB
 # -----------------------
 # Allow specifying whether to use the system zlib or
-# compiling the zlib included in GCC. Define
-# DRUNTIME_ZLIB_SYSTEM conditional and add zlib to
-# LIBS if necessary.
+# compiling the zlib included in GCC.  Adds substitute
+# for LIBZ or adds zlib to LIBS if necessary.
 AC_DEFUN([DRUNTIME_LIBRARIES_ZLIB],
 [
+  AC_LANG_PUSH([C])
+  LIBZ=""
+
   AC_ARG_WITH(target-system-zlib,
-    AS_HELP_STRING([--with-target-system-zlib],
-                   [use installed libz (default: no)]))
+    AS_HELP_STRING([--with-target-system-zlib={yes,no,auto}],
+                   [use installed libz (default: no)]),,
+              [with_target_system_zlib=no])
 
-  system_zlib=false
-  AS_IF([test "x$with_target_system_zlib" = "xyes"], [
-    AC_CHECK_LIB([z], [deflate], [
-      system_zlib=yes
-    ], [
-      AC_MSG_ERROR([System zlib not found])
-    ])
-  ], [
-    AC_MSG_CHECKING([for zlib])
+  case "$with_target_system_zlib" in
+    yes|no|auto) ;;
+    *) AC_MSG_ERROR([Invalid argument for --with-target-system-zlib]) ;;
+  esac
+
+  AC_MSG_CHECKING([for system zlib])
+  save_LIBS=$LIBS
+  LIBS="$LIBS -lz"
+  dnl the link test is not good enough for ARM32 multilib detection,
+  dnl first check to link, then to run
+  AC_LINK_IFELSE(
+    [AC_LANG_PROGRAM([#include <zlib.h>],[gzopen("none", "rb")])],
+    [
+      AC_RUN_IFELSE([AC_LANG_SOURCE([[
+        #include <zlib.h>
+        int main() {
+          gzFile file = gzopen("none", "rb");
+          return 0;
+        }
+        ]])],
+        [system_zlib_found=yes],
+        [system_zlib_found=no],
+        dnl no system zlib for cross builds ...
+        [system_zlib_found=no]
+      )
+    ],
+    [system_zlib_found=no])
+  LIBS=$save_LIBS
+
+  if test x$system_zlib_found = xyes && test x$with_target_system_zlib != xno; then
+    AC_MSG_RESULT([found])
+    LIBS="$LIBS -lz"
+  elif test x$system_zlib_found = xno && test x$with_target_system_zlib = xyes; then
+    AC_MSG_ERROR([system zlib required but not found])
+  else
     AC_MSG_RESULT([just compiled])
-  ])
+    LIBZ=../../zlib/libz_convenience.la
+  fi
 
-  AM_CONDITIONAL([DRUNTIME_ZLIB_SYSTEM], [test "$with_target_system_zlib" = yes])
+  AC_SUBST(LIBZ)
+  AC_LANG_POP([C])
 ])
 
 # DRUNTIME_LIBRARIES_ATOMIC
@@ -147,7 +178,7 @@ AC_DEFUN([DRUNTIME_LIBRARIES_BACKTRACE],
     LIBBACKTRACE=../../libbacktrace/libbacktrace.la
 
     gdc_save_CPPFLAGS=$CPPFLAGS
-    CPPFLAGS+=" -I../libbacktrace "
+    CPPFLAGS="$CPPFLAGS -I../libbacktrace "
 
     AC_CHECK_HEADER(backtrace-supported.h, have_libbacktrace_h=true,
       have_libbacktrace_h=false)

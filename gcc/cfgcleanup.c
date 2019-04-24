@@ -2712,23 +2712,23 @@ try_optimize_cfg (int mode)
 
 		      if (current_ir_type () == IR_RTL_CFGLAYOUT)
 			{
-			  if (BB_FOOTER (b)
-			      && BARRIER_P (BB_FOOTER (b)))
+			  rtx_insn *insn;
+			  for (insn = BB_FOOTER (b);
+			       insn; insn = NEXT_INSN (insn))
+			    if (BARRIER_P (insn))
+			      break;
+			  if (insn)
 			    FOR_EACH_EDGE (e, ei, b->preds)
-			      if ((e->flags & EDGE_FALLTHRU)
-				  && BB_FOOTER (e->src) == NULL)
+			      if ((e->flags & EDGE_FALLTHRU))
 				{
-				  if (BB_FOOTER (b))
+				  if (BB_FOOTER (b)
+				      && BB_FOOTER (e->src) == NULL)
 				    {
 				      BB_FOOTER (e->src) = BB_FOOTER (b);
 				      BB_FOOTER (b) = NULL;
 				    }
 				  else
-				    {
-				      start_sequence ();
-				      BB_FOOTER (e->src) = emit_barrier ();
-				      end_sequence ();
-				    }
+				    emit_barrier_after_bb (e->src);
 				}
 			}
 		      else

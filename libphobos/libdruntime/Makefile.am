@@ -93,18 +93,6 @@ ALL_DRUNTIME_COMPILE_DSOURCES += $(DRUNTIME_DSOURCES_GENERATED)
 
 ALL_DRUNTIME_SOURCES = $(ALL_DRUNTIME_COMPILE_DSOURCES) $(DRUNTIME_CSOURCES) \
 	$(DRUNTIME_SSOURCES)
-DRUNTIME_TEST_LOBJECTS = $(ALL_DRUNTIME_COMPILE_DSOURCES:.d=.t.lo)
-DRUNTIME_TEST_OBJECTS  = $(ALL_DRUNTIME_COMPILE_DSOURCES:.d=.t.o)
-
-# Main library build definitions
-check_PROGRAMS =
-if ENABLE_SHARED
-  check_LTLIBRARIES = libgdruntime_t.la
-  check_PROGRAMS += unittest
-endif
-if ENABLE_STATIC
-  check_PROGRAMS += unittest_static
-endif
 
 toolexeclib_LTLIBRARIES = libgdruntime.la
 libgdruntime_la_SOURCES = $(ALL_DRUNTIME_SOURCES)
@@ -113,36 +101,6 @@ libgdruntime_la_LDFLAGS = -Wc,-nophoboslib,-dstartfiles,-B../src,-Bgcc \
     -version-info $(libtool_VERSION)
 libgdruntime_la_LIBADD = $(LIBATOMIC) $(LIBBACKTRACE)
 libgdruntime_la_DEPENDENCIES = $(DRTSTUFF)
-
-# For static unittest, link objects directly
-unittest_static_SOURCES = ../testsuite/test_runner.d $(DRUNTIME_CSOURCES) \
-    $(DRUNTIME_SSOURCES)
-unittest_static_LIBTOOLFLAGS =
-unittest_static_LDFLAGS = -Wc,-nophoboslib
-unittest_static_LDADD = $(DRUNTIME_TEST_OBJECTS) $(LIBATOMIC) $(LIBBACKTRACE)
-EXTRA_unittest_static_DEPENDENCIES = $(DRUNTIME_TEST_OBJECTS)
-
-# For unittest with dynamic library
-libgdruntime_t_la_SOURCES = $(DRUNTIME_CSOURCES) $(DRUNTIME_SSOURCES)
-libgdruntime_t_la_LIBTOOLFLAGS =
-# Automake by default does not generate shared libs for non-installed
-# libraries. Use -rpath to force shared lib generation.
-libgdruntime_t_la_LDFLAGS = -Wc,-nophoboslib -rpath /foo -shared
-libgdruntime_t_la_LIBADD = $(DRUNTIME_TEST_LOBJECTS) $(LIBATOMIC) $(LIBBACKTRACE)
-EXTRA_libgdruntime_t_la_DEPENDENCIES = $(DRUNTIME_TEST_LOBJECTS)
-
-# For unittest
-unittest_SOURCES = ../testsuite/test_runner.d
-unittest_LIBTOOLFLAGS =
-unittest_LDFLAGS = -Wc,-nophoboslib
-unittest_LDADD = libgdruntime_t.la
-
-# Extra install and clean rules.
-# This does not delete the .libs/.t.o files, but deleting
-# the .lo is good enough to rerun the rules
-clean-local:
-	rm -f $(DRUNTIME_TEST_LOBJECTS)
-	rm -f $(DRUNTIME_TEST_OBJECTS)
 
 # Handles generated files as well
 install-data-local:
@@ -164,7 +122,7 @@ DRUNTIME_DSOURCES_GENERATED = gcc/config.d gcc/libbacktrace.d
 # https://www.gnu.org/software/automake/manual/html_node/Wildcards.html
 DRUNTIME_SSOURCES = core/threadasm.S
 
-DRUNTIME_CSOURCES = core/stdc/errno_.c rt/bss_section.c
+DRUNTIME_CSOURCES = core/stdc/errno_.c
 
 DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/checkedint.d core/cpuid.d core/demangle.d core/exception.d \
@@ -182,14 +140,14 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/sync/config.d core/sync/exception.d core/sync/mutex.d \
 	core/sync/rwmutex.d core/sync/semaphore.d core/thread.d core/time.d \
 	core/vararg.d gcc/attribute.d gcc/backtrace.d gcc/builtins.d gcc/deh.d \
-	gcc/unwind/arm.d gcc/unwind/arm_common.d gcc/unwind/c6x.d \
-	gcc/unwind/generic.d gcc/unwind/package.d gcc/unwind/pe.d object.d \
-	rt/aApply.d rt/aApplyR.d rt/aaA.d rt/adi.d rt/arrayassign.d \
-	rt/arraycast.d rt/arraycat.d rt/cast_.d rt/config.d rt/critical_.d \
-	rt/deh.d rt/dmain2.d rt/invariant.d rt/lifetime.d rt/memory.d \
-	rt/minfo.d rt/monitor_.d rt/obj.d rt/qsort.d rt/sections.d \
-	rt/sections_android.d rt/sections_elf_shared.d rt/sections_osx.d \
-	rt/sections_solaris.d rt/sections_win32.d rt/sections_win64.d \
+	gcc/sections/android.d gcc/sections/elf_shared.d gcc/sections/osx.d \
+	gcc/sections/package.d gcc/sections/win32.d \
+	gcc/sections/win64.d gcc/unwind/arm.d gcc/unwind/arm_common.d \
+	gcc/unwind/c6x.d gcc/unwind/generic.d gcc/unwind/package.d \
+	gcc/unwind/pe.d object.d rt/aApply.d rt/aApplyR.d rt/aaA.d rt/adi.d \
+	rt/arrayassign.d rt/arraycast.d rt/arraycat.d rt/cast_.d rt/config.d \
+	rt/critical_.d rt/deh.d rt/dmain2.d rt/invariant.d rt/lifetime.d \
+	rt/memory.d rt/minfo.d rt/monitor_.d rt/obj.d rt/qsort.d rt/sections.d \
 	rt/switch_.d rt/tlsgc.d rt/typeinfo/ti_Acdouble.d \
 	rt/typeinfo/ti_Acfloat.d rt/typeinfo/ti_Acreal.d \
 	rt/typeinfo/ti_Adouble.d rt/typeinfo/ti_Afloat.d rt/typeinfo/ti_Ag.d \

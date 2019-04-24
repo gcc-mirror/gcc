@@ -1861,7 +1861,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
 
   if (current_class_ptr)
     TREE_USED (current_class_ptr) = 1;
-  if (processing_template_decl && !qualifying_scope)
+  if (processing_template_decl)
     {
       tree type = TREE_TYPE (decl);
 
@@ -1882,17 +1882,16 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
 	  type = cp_build_qualified_type (type, quals);
 	}
 
-      ret = (convert_from_reference
-	      (build_min (COMPONENT_REF, type, object, decl, NULL_TREE)));
+      if (qualifying_scope)
+	/* Wrap this in a SCOPE_REF for now.  */
+	ret = build_qualified_name (type, qualifying_scope, decl,
+				    /*template_p=*/false);
+      else
+	ret = (convert_from_reference
+	       (build_min (COMPONENT_REF, type, object, decl, NULL_TREE)));
     }
   /* If PROCESSING_TEMPLATE_DECL is nonzero here, then
-     QUALIFYING_SCOPE is also non-null.  Wrap this in a SCOPE_REF
-     for now.  */
-  else if (processing_template_decl)
-    ret = build_qualified_name (TREE_TYPE (decl),
-				qualifying_scope,
-				decl,
-				/*template_p=*/false);
+     QUALIFYING_SCOPE is also non-null.  */
   else
     {
       tree access_type = TREE_TYPE (object);
@@ -4144,6 +4143,9 @@ finish_offsetof (tree object_ptr, tree expr, location_t loc)
       SET_EXPR_LOCATION (expr, loc);
       return expr;
     }
+
+  if (expr == error_mark_node)
+    return error_mark_node;
 
   if (TREE_CODE (expr) == PSEUDO_DTOR_EXPR)
     {
@@ -9550,8 +9552,8 @@ classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
       if (copy_fn_p (fn) > 0)
 	{
 	  saw_copy = true;
-	  maybe_instantiate_noexcept (fn);
-	  if (!TYPE_NOTHROW_P (TREE_TYPE (fn)))
+	  if (!maybe_instantiate_noexcept (fn)
+	      || !TYPE_NOTHROW_P (TREE_TYPE (fn)))
 	    return false;
 	}
     }
@@ -9593,8 +9595,8 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
       return (trait_expr_value (CPTK_HAS_TRIVIAL_CONSTRUCTOR, type1, type2) 
 	      || (CLASS_TYPE_P (type1)
 		  && (t = locate_ctor (type1))
-		  && (maybe_instantiate_noexcept (t),
-		      TYPE_NOTHROW_P (TREE_TYPE (t)))));
+		  && maybe_instantiate_noexcept (t)
+		  && TYPE_NOTHROW_P (TREE_TYPE (t))));
 
     case CPTK_HAS_TRIVIAL_CONSTRUCTOR:
       type1 = strip_array_types (type1);

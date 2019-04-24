@@ -2546,7 +2546,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 	  if (gsym->binding_label && gsym->sym_name != def_sym->name)
 	    gfc_find_symbol (gsym->sym_name, gsym->ns, 0, &def_sym);
 
-	  if (def_sym->attr.entry_master)
+	  if (def_sym->attr.entry_master || def_sym->attr.entry)
 	    {
 	      gfc_entry_list *entry;
 	      for (entry = gsym->ns->entries; entry; entry = entry->next)
@@ -4712,9 +4712,13 @@ find_array_spec (gfc_expr *e)
   gfc_array_spec *as;
   gfc_component *c;
   gfc_ref *ref;
+  bool class_as = false;
 
   if (e->symtree->n.sym->ts.type == BT_CLASS)
-    as = CLASS_DATA (e->symtree->n.sym)->as;
+    {
+      as = CLASS_DATA (e->symtree->n.sym)->as;
+      class_as = true;
+    }
   else
     as = e->symtree->n.sym->as;
 
@@ -4733,7 +4737,7 @@ find_array_spec (gfc_expr *e)
 	c = ref->u.c.component;
 	if (c->attr.dimension)
 	  {
-	    if (as != NULL)
+	    if (as != NULL && !(class_as && as == c->as))
 	      gfc_internal_error ("find_array_spec(): unused as(1)");
 	    as = c->as;
 	  }

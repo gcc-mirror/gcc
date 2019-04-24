@@ -2,6 +2,7 @@
 /* { dg-require-alias "" } */
 /* { dg-options "-O2 -fdump-ipa-icf -fmerge-all-constants -fdbg-cnt=merged_ipa_icf:1:3"  } */
 /* { dg-prune-output "dbg_cnt 'merged_ipa_icf' set to 1-3" } */
+/* { dg-prune-output "\\*\\*\\*dbgcnt:.*limit.*reached" } */
 
 static int a;
 static int b;

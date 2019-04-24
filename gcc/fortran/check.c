@@ -5544,6 +5544,26 @@ gfc_check_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
   size_t source_size;
   size_t result_size;
 
+  /* SOURCE shall be a scalar or array of any type.  */
+  if (source->ts.type == BT_PROCEDURE
+      && source->symtree->n.sym->attr.subroutine == 1)
+    {
+      gfc_error ("%<SOURCE%> argument of %<TRANSFER%> intrinsic at %L "
+                 "must not be a %s", &source->where,
+		 gfc_basic_typename (source->ts.type));
+      return false;
+    }
+
+  /* MOLD shall be a scalar or array of any type.  */
+  if (mold->ts.type == BT_PROCEDURE
+      && mold->symtree->n.sym->attr.subroutine == 1)
+    {
+      gfc_error ("%<MOLD%> argument of %<TRANSFER%> intrinsic at %L "
+                 "must not be a %s", &mold->where,
+		 gfc_basic_typename (mold->ts.type));
+      return false;
+    }
+
   if (mold->ts.type == BT_HOLLERITH)
     {
       gfc_error ("%<MOLD%> argument of %<TRANSFER%> intrinsic at %L must not be"
@@ -5551,6 +5571,8 @@ gfc_check_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
       return false;
     }
 
+  /* SIZE (optional) shall be an integer scalar.  The corresponding actual
+     argument shall not be an optional dummy argument.  */
   if (size != NULL)
     {
       if (!type_check (size, 2, BT_INTEGER))

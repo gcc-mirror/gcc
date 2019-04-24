@@ -1,7 +1,10 @@
 /* PR c/89812 - incorrect maximum in error: requested alignment '536870912'
    exceeds maximum 2147483648
-   { dg-do compile }
-   { dg-require-effective-target size32plus } */
+   Limit to ELF targets that are known to use MAX_OFILE_ALIGNMENT
+   (1 << 28) * BITS_PER_UNIT.
+   { dg-do compile { target { { *-*-elf* *-*-gnu* *-*-solaris2.* } && { ! avr*-*-* } } } }
+   { dg-require-effective-target size32plus }
+   { dg-options "" } */
 
 #define POWALIGN(N) __attribute__ ((aligned ((__UINT64_TYPE__)1 << (N))))
 
