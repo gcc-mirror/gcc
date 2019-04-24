@@ -1,5 +1,14 @@
 2019-04-24  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	PR d/89432
+	* testsuite/lib/libphobos.exp (check_effective_target_linux_pre_2639):
+	New proc.
+	* testsuite/libphobos.druntime/druntime.exp: Add compiler flag
+	-fversion=Linux_Pre_2639 if target is linux_pre_2639.
+	* testsuite/libphobos.druntime_shared/druntime_shared.exp: Likewise.
+
+2019-04-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	PR d/88654
 	* testsuite/lib/libphobos.exp (libphobos-dg-test): Check
 	libphobos_skipped_test_p before running test.
