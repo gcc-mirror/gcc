@@ -154,6 +154,22 @@ void test06()
   }
 }
 
+void test07()
+{
+  int arr[3];
+  any a(arr);
+  VERIFY( a.type() == typeid(int*) );	// contained value is decayed
+
+  int (*p1)[3] = any_cast<int[3]>(&a);
+  VERIFY( a.type() != typeid(int[3]) ); // so any_cast should return nullptr
+  VERIFY( p1 == nullptr );
+  int (*p2)[] = any_cast<int[]>(&a);
+  VERIFY( a.type() != typeid(int[]) );	// so any_cast should return nullptr
+  VERIFY( p2 == nullptr );
+  const int (*p3)[] = any_cast<int[]>(&std::as_const(a));
+  VERIFY( p3 == nullptr );
+}
+
 int main()
 {
   test01();
@@ -162,4 +178,5 @@ int main()
   test04();
   test05();
   test06();
+  test07();
 }
