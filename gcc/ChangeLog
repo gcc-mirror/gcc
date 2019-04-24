@@ -1,3 +1,10 @@
+2019-04-24  Clement Chigot  <clement.chigot@atos.net>
+
+	* config/rs6000/aix71.h (SUBTARGET_OVERRIDE_OPTIONS): Disable
+	OPTION_MASK_VSX and OPTION_MASK_ALTIVEC from rs6000_isa_flags
+	for Go on 32 bit AIX.
+	* config/rs6000/aix72.h: Likewise.
+
 2019-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/90193
