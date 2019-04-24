@@ -1,5 +1,9 @@
 2019-04-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/90208
+	* gcc.dg/tsan/pr90208-1.c: New test.
+	* gcc.dg/tsan/pr90208-2.c: New test.
+
 	PR tree-optimization/90211
 	* gcc.dg/autopar/pr90211.c: New test.
 
