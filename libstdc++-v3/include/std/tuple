@@ -1674,7 +1674,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         second(std::forward<_Args2>(std::get<_Indexes2>(__tuple2))...)
       { }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 # define __cpp_lib_apply 201603
 
   template <typename _Fn, typename _Tuple, size_t... _Idx>
@@ -1689,7 +1689,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr decltype(auto)
     apply(_Fn&& __f, _Tuple&& __t)
     {
-      using _Indices = make_index_sequence<tuple_size_v<decay_t<_Tuple>>>;
+      using _Indices
+	= make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>;
       return std::__apply_impl(std::forward<_Fn>(__f),
 			       std::forward<_Tuple>(__t),
 			       _Indices{});
