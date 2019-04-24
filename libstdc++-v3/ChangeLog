@@ -1,5 +1,12 @@
 2019-04-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/fs_path.h (operator<, operator<=, operator>)
+	(operator>=, operator==, operator!=): Make hidden friends, as per
+	LWG 3065.
+	* testsuite/27_io/filesystem/path/native/string-char8_t.cc: Fix
+	string type in test.
+	* testsuite/27_io/filesystem/path/native/string.cc: Likewise.
+
 	* include/std/any (any::any(ValueType&&)): Use __and_v.
 	* include/std/numeric (midpoint(T, T, T), midpoint(T*, T*, T*)):
 	Likewise.

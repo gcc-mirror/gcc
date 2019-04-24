@@ -417,6 +417,40 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	return __is;
       }
 
+    // non-member operators
+
+    /// Compare paths
+    friend bool operator<(const path& __lhs, const path& __rhs) noexcept
+    { return __lhs.compare(__rhs) < 0; }
+
+    /// Compare paths
+    friend bool operator<=(const path& __lhs, const path& __rhs) noexcept
+    { return !(__rhs < __lhs); }
+
+    /// Compare paths
+    friend bool operator>(const path& __lhs, const path& __rhs) noexcept
+    { return __rhs < __lhs; }
+
+    /// Compare paths
+    friend bool operator>=(const path& __lhs, const path& __rhs) noexcept
+    { return !(__lhs < __rhs); }
+
+    /// Compare paths
+    friend bool operator==(const path& __lhs, const path& __rhs) noexcept
+    { return __lhs.compare(__rhs) == 0; }
+
+    /// Compare paths
+    friend bool operator!=(const path& __lhs, const path& __rhs) noexcept
+    { return !(__lhs == __rhs); }
+
+    /// Append one path to another
+    friend path operator/(const path& __lhs, const path& __rhs)
+    {
+      path __result(__lhs);
+      __result /= __rhs;
+      return __result;
+    }
+
     // Create a basic_string by reading until a null character.
     template<typename _InputIterator,
 	     typename _Traits = std::iterator_traits<_InputIterator>,
@@ -577,38 +611,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   inline void swap(path& __lhs, path& __rhs) noexcept { __lhs.swap(__rhs); }
 
   size_t hash_value(const path& __p) noexcept;
-
-  /// Compare paths
-  inline bool operator<(const path& __lhs, const path& __rhs) noexcept
-  { return __lhs.compare(__rhs) < 0; }
-
-  /// Compare paths
-  inline bool operator<=(const path& __lhs, const path& __rhs) noexcept
-  { return !(__rhs < __lhs); }
-
-  /// Compare paths
-  inline bool operator>(const path& __lhs, const path& __rhs) noexcept
-  { return __rhs < __lhs; }
-
-  /// Compare paths
-  inline bool operator>=(const path& __lhs, const path& __rhs) noexcept
-  { return !(__lhs < __rhs); }
-
-  /// Compare paths
-  inline bool operator==(const path& __lhs, const path& __rhs) noexcept
-  { return __lhs.compare(__rhs) == 0; }
-
-  /// Compare paths
-  inline bool operator!=(const path& __lhs, const path& __rhs) noexcept
-  { return !(__lhs == __rhs); }
-
-  /// Append one path to another
-  inline path operator/(const path& __lhs, const path& __rhs)
-  {
-    path __result(__lhs);
-    __result /= __rhs;
-    return __result;
-  }
 
   template<typename _InputIterator>
     inline auto
