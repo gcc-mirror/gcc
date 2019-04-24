@@ -709,10 +709,10 @@ version (CRuntime_Glibc)
             }
             int[2] __unused;
         }
-        static if (__USE_FILE_OFFSET64)
+        version (D_LP64)
             static assert(stat_t.sizeof == 128);
         else
-            static assert(stat_t.sizeof == 128);
+            static assert(stat_t.sizeof == 104);
     }
     else version (SPARC64)
     {
