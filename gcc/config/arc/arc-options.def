@@ -68,9 +68,9 @@ ARC_OPT (FL_SWAP,     (1ULL << 7), MASK_SWAP_SET,	   "swap")
 ARC_OPT (FL_MUL64,    (1ULL << 8), MASK_MUL64_SET,	   "mul64")
 ARC_OPT (FL_MUL32x16, (1ULL << 9), MASK_MULMAC_32BY16_SET, "mul32x16")
 
-ARC_OPT (FL_EA,	      (1ULL << 11), MASK_EA_SET,	   "extended arithmetics")
-ARC_OPT (FL_SPFP,     (1ULL << 12), MASK_SPFP_COMPACT_SET, "single precission FPX")
-ARC_OPT (FL_DPFP,     (1ULL << 13), MASK_DPFP_COMPACT_SET, "double precission FPX")
+ARC_OPT (FL_EA,	      (1ULL << 11), MASK_EA_SET,	   "extended arithmetic")
+ARC_OPT (FL_SPFP,     (1ULL << 12), MASK_SPFP_COMPACT_SET, "single precision FPX")
+ARC_OPT (FL_DPFP,     (1ULL << 13), MASK_DPFP_COMPACT_SET, "double precision FPX")
 ARC_OPT (FL_ARGONAUT, (1ULL << 14), MASK_ARGONAUT_SET,	   "argonaut")
 ARC_OPT (FL_SIMD,     (1ULL << 15), MASK_SIMD_SET,	   "simd")
 
@@ -101,9 +101,9 @@ ARC_OPTX (FL_FPU_FPUD_FMA,  (1ULL << 36), arc_fpu_build, FPU_FPUD_FMA,	"mfpu", "
 ARC_OPTX (FL_FPU_FPUD_ALL,  (1ULL << 37), arc_fpu_build, FPU_FPUD_ALL,	"mfpu", "fpud_all")
 ARC_OPTX (FL_FPX_QUARK,	    (1ULL << 38), arc_fpu_build, FPX_QK,	"quarkse fp", "N.A.")
 
-ARC_OPT (FL_FPUS,  (0xFULL << 26), 0, "single precission floating point")
-ARC_OPT (FL_FPUDA, (0xFFULL << 26), 0, "double precission fp assist")
-ARC_OPT (FL_FPUD,  (0xF0FULL << 26), 0, "double precission floating point")
+ARC_OPT (FL_FPUS,  (0xFULL << 26), 0, "single precision floating point")
+ARC_OPT (FL_FPUDA, (0xFFULL << 26), 0, "double precision fp assist")
+ARC_OPT (FL_FPUD,  (0xF0FULL << 26), 0, "double precision floating point")
 ARC_OPT (FL_QUARK, (1ULL << 38), 0, "Quark SE fp extension")
 
 /* Local Variables: */
