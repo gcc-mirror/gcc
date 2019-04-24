@@ -1523,6 +1523,8 @@ same_type_ignoring_top_level_qualifiers_p (tree type1, tree type2)
 {
   if (type1 == error_mark_node || type2 == error_mark_node)
     return false;
+  if (type1 == type2)
+    return true;
 
   type1 = cp_build_qualified_type (type1, TYPE_UNQUALIFIED);
   type2 = cp_build_qualified_type (type2, TYPE_UNQUALIFIED);

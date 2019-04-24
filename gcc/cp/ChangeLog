@@ -1,3 +1,10 @@
+2019-04-24  Richard Biener  <rguenther@suse.de>
+
+	* call.c (null_ptr_cst_p): Order checks according to expensiveness.
+	(conversion_null_warnings): Likewise.
+	* typeck.c (same_type_ignoring_top_level_qualifiers_p): Return
+	early if type1 == type2.
+
 2019-04-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/87366 - wrong error with alias template.
