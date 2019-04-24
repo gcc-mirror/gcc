@@ -541,11 +541,11 @@ null_ptr_cst_p (tree t)
       STRIP_ANY_LOCATION_WRAPPER (t);
 
       /* Core issue 903 says only literal 0 is a null pointer constant.  */
-      if (TREE_CODE (type) == INTEGER_TYPE
-	  && !char_type_p (type)
-	  && TREE_CODE (t) == INTEGER_CST
+      if (TREE_CODE (t) == INTEGER_CST
+	  && !TREE_OVERFLOW (t)
+	  && TREE_CODE (type) == INTEGER_TYPE
 	  && integer_zerop (t)
-	  && !TREE_OVERFLOW (t))
+	  && !char_type_p (type))
 	return true;
     }
   else if (CP_INTEGRAL_TYPE_P (type))
@@ -6858,8 +6858,9 @@ static void
 conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
 {
   /* Issue warnings about peculiar, but valid, uses of NULL.  */
-  if (null_node_p (expr) && TREE_CODE (totype) != BOOLEAN_TYPE
-      && ARITHMETIC_TYPE_P (totype))
+  if (TREE_CODE (totype) != BOOLEAN_TYPE
+      && ARITHMETIC_TYPE_P (totype)
+      && null_node_p (expr))
     {
       location_t loc = get_location_for_expr_unwinding_for_system_header (expr);
       if (fn)
@@ -6896,8 +6897,8 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
     }
   /* Handle zero as null pointer warnings for cases other
      than EQ_EXPR and NE_EXPR */
-  else if (null_ptr_cst_p (expr) &&
-	   (TYPE_PTR_OR_PTRMEM_P (totype) || NULLPTR_TYPE_P (totype)))
+  else if ((TYPE_PTR_OR_PTRMEM_P (totype) || NULLPTR_TYPE_P (totype))
+	   && null_ptr_cst_p (expr))
     {
       location_t loc = get_location_for_expr_unwinding_for_system_header (expr);
       maybe_warn_zero_as_null_pointer_constant (expr, loc);
