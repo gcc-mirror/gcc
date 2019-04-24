@@ -681,6 +681,18 @@ DRUNTIME_OS_AIX_FALSE
 DRUNTIME_OS_AIX_TRUE
 DRUNTIME_OS_UNIX_FALSE
 DRUNTIME_OS_UNIX_TRUE
+DRUNTIME_CPU_X86_FALSE
+DRUNTIME_CPU_X86_TRUE
+DRUNTIME_CPU_POWERPC64_FALSE
+DRUNTIME_CPU_POWERPC64_TRUE
+DRUNTIME_CPU_POWERPC_FALSE
+DRUNTIME_CPU_POWERPC_TRUE
+DRUNTIME_CPU_MIPS_FALSE
+DRUNTIME_CPU_MIPS_TRUE
+DRUNTIME_CPU_ARM_FALSE
+DRUNTIME_CPU_ARM_TRUE
+DRUNTIME_CPU_AARCH64_FALSE
+DRUNTIME_CPU_AARCH64_TRUE
 DRUNTIME_GC_ENABLE_FALSE
 DRUNTIME_GC_ENABLE_TRUE
 libphobos_srcdir
@@ -11623,7 +11635,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11626 "configure"
+#line 11638 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11729,7 +11741,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11732 "configure"
+#line 11744 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14024,6 +14036,74 @@ fi
 
 
 
+  druntime_target_cpu_parsed=""
+  case "$target_cpu" in
+      aarch64*)
+               druntime_target_cpu_parsed="aarch64"
+               ;;
+      arm*)    druntime_target_cpu_parsed="arm"
+               ;;
+      mips*)   druntime_target_cpu_parsed="mips"
+               ;;
+      powerpc) druntime_target_cpu_parsed="powerpc"
+               ;;
+      powerpc64)
+               druntime_target_cpu_parsed="powerpc64"
+               ;;
+      i3456786|x86_64)
+               druntime_target_cpu_parsed="x86"
+               ;;
+  esac
+   if test "$druntime_target_cpu_parsed" = "aarch64"; then
+  DRUNTIME_CPU_AARCH64_TRUE=
+  DRUNTIME_CPU_AARCH64_FALSE='#'
+else
+  DRUNTIME_CPU_AARCH64_TRUE='#'
+  DRUNTIME_CPU_AARCH64_FALSE=
+fi
+
+   if test "$druntime_target_cpu_parsed" = "arm"; then
+  DRUNTIME_CPU_ARM_TRUE=
+  DRUNTIME_CPU_ARM_FALSE='#'
+else
+  DRUNTIME_CPU_ARM_TRUE='#'
+  DRUNTIME_CPU_ARM_FALSE=
+fi
+
+   if test "$druntime_target_cpu_parsed" = "mips"; then
+  DRUNTIME_CPU_MIPS_TRUE=
+  DRUNTIME_CPU_MIPS_FALSE='#'
+else
+  DRUNTIME_CPU_MIPS_TRUE='#'
+  DRUNTIME_CPU_MIPS_FALSE=
+fi
+
+   if test "$druntime_target_cpu_parsed" = "powerpc"; then
+  DRUNTIME_CPU_POWERPC_TRUE=
+  DRUNTIME_CPU_POWERPC_FALSE='#'
+else
+  DRUNTIME_CPU_POWERPC_TRUE='#'
+  DRUNTIME_CPU_POWERPC_FALSE=
+fi
+
+   if test "$druntime_target_cpu_parsed" = "powerpc64"; then
+  DRUNTIME_CPU_POWERPC64_TRUE=
+  DRUNTIME_CPU_POWERPC64_FALSE='#'
+else
+  DRUNTIME_CPU_POWERPC64_TRUE='#'
+  DRUNTIME_CPU_POWERPC64_FALSE=
+fi
+
+   if test "$druntime_target_cpu_parsed" = "x86"; then
+  DRUNTIME_CPU_X86_TRUE=
+  DRUNTIME_CPU_X86_FALSE='#'
+else
+  DRUNTIME_CPU_X86_TRUE='#'
+  DRUNTIME_CPU_X86_FALSE=
+fi
+
+
+
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for target OS" >&5
 $as_echo_n "checking for target OS... " >&6; }
 if ${druntime_cv_target_os+:} false; then :
@@ -15411,6 +15491,30 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${DRUNTIME_GC_ENABLE_TRUE}" && test -z "${DRUNTIME_GC_ENABLE_FALSE}"; then
   as_fn_error $? "conditional \"DRUNTIME_GC_ENABLE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${DRUNTIME_CPU_AARCH64_TRUE}" && test -z "${DRUNTIME_CPU_AARCH64_FALSE}"; then
+  as_fn_error $? "conditional \"DRUNTIME_CPU_AARCH64\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${DRUNTIME_CPU_ARM_TRUE}" && test -z "${DRUNTIME_CPU_ARM_FALSE}"; then
+  as_fn_error $? "conditional \"DRUNTIME_CPU_ARM\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${DRUNTIME_CPU_MIPS_TRUE}" && test -z "${DRUNTIME_CPU_MIPS_FALSE}"; then
+  as_fn_error $? "conditional \"DRUNTIME_CPU_MIPS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${DRUNTIME_CPU_POWERPC_TRUE}" && test -z "${DRUNTIME_CPU_POWERPC_FALSE}"; then
+  as_fn_error $? "conditional \"DRUNTIME_CPU_POWERPC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${DRUNTIME_CPU_POWERPC64_TRUE}" && test -z "${DRUNTIME_CPU_POWERPC64_FALSE}"; then
+  as_fn_error $? "conditional \"DRUNTIME_CPU_POWERPC64\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${DRUNTIME_CPU_X86_TRUE}" && test -z "${DRUNTIME_CPU_X86_FALSE}"; then
+  as_fn_error $? "conditional \"DRUNTIME_CPU_X86\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${DRUNTIME_OS_UNIX_TRUE}" && test -z "${DRUNTIME_OS_UNIX_FALSE}"; then
