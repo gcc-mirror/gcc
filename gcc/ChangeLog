@@ -1,3 +1,8 @@
+2019-04-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-pass.h (make_pass_phi_only_cprop): Remove.
+	* timevar.def (TV_TREE_PHI_CPROP): Likewise.
+
 2019-04-24  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/90037
