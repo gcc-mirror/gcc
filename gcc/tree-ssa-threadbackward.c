@@ -1474,7 +1474,8 @@ thread_jumps::find_jump_threads_backwards (basic_block bb, bool speed_p)
 
   /* If we didn't thread any paths, try threading by making use of
      available range information.  */
-  if (m_max_threaded_paths == PARAM_VALUE (PARAM_MAX_FSM_THREAD_PATHS))
+  if (PARAM_VALUE (PARAM_FSM_RANGE_BASED_THREADING)
+      && m_max_threaded_paths == PARAM_VALUE (PARAM_MAX_FSM_THREAD_PATHS))
     find_range_based_jump_threads (name, bb);
 }
 

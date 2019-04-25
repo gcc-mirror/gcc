@@ -3303,7 +3303,8 @@ range_misc::simplify_bit_ops_using_ranges (gimple_stmt_iterator *gsi,
 
   ir0 = get_irange (op0, stmt);
   ir1 = get_irange (op1, stmt);
-  if (ir0.varying_p () || ir1.varying_p ())
+  if (ir0.varying_p () || ir1.varying_p ()
+      || ir0.undefined_p () || ir1.undefined_p ())
     return false;
 
   irange_set_zero_nonzero_bits (ir0, &may_be_nonzero0, &must_be_nonzero0);

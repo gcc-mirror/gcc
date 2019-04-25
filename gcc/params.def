@@ -1301,6 +1301,15 @@ DEFPARAM (PARAM_FSM_SCALE_PATH_BLOCKS,
 	  "Scale factor to apply to the number of blocks in a threading path when comparing to the number of (scaled) statements.",
 	  3, 1, 10)
 
+/* Temporary aid to disable the range based threader while
+   benchmarking.  This is needed because early threading (which runs
+   before [er]vrp) will modify the IL and make it harder to compare
+   [er]vrp speeds.  */
+DEFPARAM (PARAM_FSM_RANGE_BASED_THREADING,
+	  "fsm-range-based-threading",
+	  "Set to 1 if range based threading is enabled in backwards threader.",
+	  1, 0, 1)
+
 DEFPARAM (PARAM_MAX_FSM_THREAD_PATH_INSNS,
 	  "max-fsm-thread-path-insns",
 	  "Maximum number of instructions to copy when duplicating blocks on a finite state automaton jump thread path.",
