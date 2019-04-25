@@ -1,3 +1,11 @@
+2019-04-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90250
+	* libdruntime/gcc/sections/elf_shared.d (initTLSRanges): Populate
+	_tlsRanges in every startup thread.
+	* testsuite/libphobos.thread/thread.exp: Load libphobos-dg.exp.
+	* testsuite/libphobos.thread/tlsgc_sections.d: New test.
+
 2019-04-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* m4/druntime/cpu.m4 (DRUNTIME_CPU_SOURCES): Quote brackets.
