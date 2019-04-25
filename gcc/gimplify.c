@@ -12397,7 +12397,8 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  break;
 
 	case VIEW_CONVERT_EXPR:
-	  if (is_gimple_reg_type (TREE_TYPE (*expr_p))
+	  if ((fallback & fb_rvalue)
+	      && is_gimple_reg_type (TREE_TYPE (*expr_p))
 	      && is_gimple_reg_type (TREE_TYPE (TREE_OPERAND (*expr_p, 0))))
 	    {
 	      ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p,
