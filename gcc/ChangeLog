@@ -1,3 +1,18 @@
+2019-04-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89929
+	* config/i386/i386.c (feature_priority): Moved to file scope.
+	(processor_features): Likewise.
+	(processor_model): Likewise.
+	(_arch_names_table): Likewise.
+	(arch_names_table): Likewise.
+	(_feature_list): Removed.
+	(feature_list): Likewise.
+	(_isa_names_table): Moved to file scope.  Add priority.
+	(isa_names_table): Likewise.
+	(get_builtin_code_for_version): Replace feature_list with
+	isa_names_table.  Update error message for P_ZERO priority.
+
 2019-04-25  Richard Biener  <rguenther@suse.de>
 
 	* tree-pass.h (make_pass_phi_only_cprop): Remove.

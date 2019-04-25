@@ -1,3 +1,11 @@
+2019-04-25  Martin Liska  <mliska@suse.cz>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89929
+	* g++.target/i386/mv28.C: New test.
+	* gcc.target/i386/mvc14.c: Likewise.
+	* g++.target/i386/pr57362.C: Updated.
+
 2019-04-24  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/90037
