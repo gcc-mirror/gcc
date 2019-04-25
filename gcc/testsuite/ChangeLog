@@ -1,3 +1,12 @@
+2019-04-24  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/90037
+	* gcc.dg/tree-ssa/20030710-1.c: Update dump file to scan.
+	* gcc.dg/isolate-2.c: Likewise.
+	* gcc.dg/isolate-4.c: Likewise.
+	* gcc.dg/pr19431.c: Accept either ordering of PHI args.
+	* gcc.dg/pr90037.c: New test.
+
 2019-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/44648

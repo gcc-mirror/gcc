@@ -1,3 +1,12 @@
+2019-04-24  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/90037
+	* Makefile.in (OBJS): Remove tree-ssa-phionlycprop.c
+	* passes.def: Replace all instance of phi-only cprop with the
+	lattice propagator.  Move propagation pass from after erroneous
+	path isolation to before erroneous path isolation.
+	* tree-ssa-phionlycprop.c: Remove.
+
 2019-04-24  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/90213
