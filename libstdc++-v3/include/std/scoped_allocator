@@ -35,6 +35,7 @@
 # include <bits/c++0x_warning.h>
 #else
 
+#include <memory>
 #include <utility>
 #include <tuple>
 #include <bits/alloc_traits.h>
@@ -187,6 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	using __outermost_alloc_traits
 	  = allocator_traits<typename __outermost_type<_Alloc>::type>;
 
+#if __cplusplus <= 201703
       template<typename _Tp, typename... _Args>
         void
         _M_construct(__uses_alloc0, _Tp* __p, _Args&&... __args)
@@ -218,6 +220,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			       std::forward<_Args>(__args)...,
 			       inner_allocator());
         }
+#endif // C++17
 
       template<typename _Alloc>
         static _Alloc
@@ -355,6 +358,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_type max_size() const
       { return __traits::max_size(outer_allocator()); }
 
+#if __cplusplus <= 201703
       template<typename _Tp, typename... _Args>
 	typename __not_pair<_Tp>::type
 	construct(_Tp* __p, _Args&&... __args)
@@ -417,6 +421,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    std::forward_as_tuple(std::forward<_Up>(__x.first)),
 		    std::forward_as_tuple(std::forward<_Vp>(__x.second)));
 	}
+#else // C++2a
+      template<typename _Tp, typename... _Args>
+	__attribute__((__nonnull__))
+	void
+	construct(_Tp* __p, _Args&&... __args)
+	{
+	  typedef __outermost_alloc_traits<scoped_allocator_adaptor> _O_traits;
+	  std::apply([__p, this](auto&&... __newargs) {
+	      _O_traits::construct(__outermost(*this), __p,
+		  std::forward<decltype(__newargs)>(__newargs)...);
+	  },
+	  uses_allocator_construction_args<_Tp>(inner_allocator(),
+	    std::forward<_Args>(__args)...));
+	}
+#endif // C++2a
 
       template<typename _Tp>
         void destroy(_Tp* __p)
@@ -439,6 +458,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                  const scoped_allocator_adaptor<_OutA2, _InA...>& __b) noexcept;
 
     private:
+#if __cplusplus <= 201703L
       template<typename _Ind, typename... _Args>
 	tuple<_Args&&...>
 	_M_construct_p(__uses_alloc0, _Ind, tuple<_Args...>& __t)
@@ -461,6 +481,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  return { std::get<_Ind>(std::move(__t))..., inner_allocator() };
 	}
+#endif // C++17
     };
 
   template <typename _OutA1, typename _OutA2, typename... _InA>
