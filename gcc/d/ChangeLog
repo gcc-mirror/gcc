@@ -1,3 +1,7 @@
+2019-04-25  Johannes Pfau  <johannespfau@gmail.com>
+
+	* config-lang.in: Do not add target_libs if phobos is disabled.
+
 2019-04-23  Iain Buclaw  <ibuclaw@gdcproject.org>
 	    Robin Dapp  <rdapp@linux.ibm.com>
 
