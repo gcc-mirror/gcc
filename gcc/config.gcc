@@ -4927,7 +4927,10 @@ case ${target} in
 		;;
 	i[34567]86-*-dragonfly* | x86_64-*-dragonfly*)
 		;;
-	i[34567]86-*-freebsd* | x86_64-*-freebsd*)
+	i[34567]86-*-freebsd*)
+		;;
+	x86_64-*-freebsd*)
+		tmake_file="${tmake_file} i386/t-freebsd64"
 		;;
 	ia64*-*-linux*)
 		;;

@@ -1,3 +1,9 @@
+2019-04-25  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/i386/freebsd64.h: Add bits for 32-bit multilib support.
+	* config/i386/t-freebsd64: New file.
+	* config.gcc: Add the t-freebsd64 for multilib support.
+
 2019-04-25  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* doc/extend.texi (vector_size): Add missing comma after @xref.
