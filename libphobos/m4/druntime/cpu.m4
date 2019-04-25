@@ -22,7 +22,7 @@ AC_DEFUN([DRUNTIME_CPU_SOURCES],
       powerpc64)
                druntime_target_cpu_parsed="powerpc64"
                ;;
-      i[34567]86|x86_64)
+      i[[34567]]86|x86_64)
                druntime_target_cpu_parsed="x86"
                ;;
   esac

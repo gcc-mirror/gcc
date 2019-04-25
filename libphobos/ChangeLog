@@ -1,3 +1,8 @@
+2019-04-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* m4/druntime/cpu.m4 (DRUNTIME_CPU_SOURCES): Quote brackets.
+	* configure: Regenerate.
+
 2019-04-25  Johannes Pfau  <johannespfau@gmail.com>
 
         * libdruntime/Makefile.am: Add emutls and gthread files.
