@@ -1,3 +1,9 @@
+2019-04-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90239
+	* doc/xml/manual/status_cxx2020.xml: Correct status of P0591R4.
+	* doc/html/*: Regenerate.
+
 2019-04-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Document P0024R2 status.
