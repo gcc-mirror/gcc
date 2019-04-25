@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "type-utils.h"
 #include "gimplify.h"
+#include "bitmap.h"
 #include "gcc-rich-location.h"
 #include "selftest.h"
 
@@ -114,8 +115,9 @@ struct spec_hasher : ggc_ptr_hash<spec_entry>
 
 /* The general template is not in these tables.  (why do we have two
    tables?) */
-static GTY (()) hash_table<spec_hasher> *decl_specializations;
-static GTY (()) hash_table<spec_hasher> *type_specializations;
+typedef hash_table<spec_hasher> spec_hash_table;
+static GTY (()) spec_hash_table *decl_specializations;
+static GTY (()) spec_hash_table *type_specializations;
 
 /* Contains canonical template parameter types. The vector is indexed by
    the TEMPLATE_TYPE_IDX of the template parameter. Each element is a
@@ -1269,7 +1271,7 @@ retrieve_specialization (tree tmpl, tree args, hashval_t hash)
     {
       spec_entry *found;
       spec_entry elt;
-      hash_table<spec_hasher> *specializations;
+      spec_hash_table *specializations;
 
       elt.tmpl = tmpl;
       elt.args = args;
@@ -9367,10 +9369,8 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	return error_mark_node;
 
       gen_tmpl = most_general_template (templ);
-
-      /* Make sure we don't have pending specializations.  */
-      if (DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P (templ))
-	lazy_load_specializations (templ);
+      if (DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P (gen_tmpl))
+	lazy_load_specializations (gen_tmpl);
 
       parmlist = DECL_TEMPLATE_PARMS (gen_tmpl);
       parm_depth = TMPL_PARMS_DEPTH (parmlist);
@@ -11176,13 +11176,10 @@ instantiate_class_template_1 (tree type)
 		continue;
 
 	      /* Build new CLASSTYPE_NESTED_UTDS.  */
+	      bool class_template_p = (TREE_CODE (t) != ENUMERAL_TYPE
+				       && TYPE_LANG_SPECIFIC (t)
+				       && CLASSTYPE_IS_TEMPLATE (t));
 
-	      tree newtag;
-	      bool class_template_p;
-
-	      class_template_p = (TREE_CODE (t) != ENUMERAL_TYPE
-				  && TYPE_LANG_SPECIFIC (t)
-				  && CLASSTYPE_IS_TEMPLATE (t));
 	      /* If the member is a class template, then -- even after
 		 substitution -- there may be dependent types in the
 		 template argument list for the class.  We increment
@@ -11191,7 +11188,7 @@ instantiate_class_template_1 (tree type)
 		 when outside of a template.  */
 	      if (class_template_p)
 		++processing_template_decl;
-	      newtag = tsubst (t, args, tf_error, NULL_TREE);
+	      tree newtag = tsubst (t, args, tf_error, NULL_TREE);
 	      if (class_template_p)
 		--processing_template_decl;
 	      if (newtag == error_mark_node)
@@ -19767,8 +19764,6 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
     return error_mark_node;
 
   gcc_assert (TREE_CODE (tmpl) == TEMPLATE_DECL);
-  if (DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P (tmpl))
-    lazy_load_specializations (tmpl);
 
   /* If this function is a clone, handle it specially.  */
   if (DECL_CLONED_FUNCTION_P (tmpl))
@@ -19805,6 +19800,9 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
     targ_ptr = (add_outermost_template_args
 		(DECL_TI_ARGS (DECL_TEMPLATE_RESULT (tmpl)),
 		 targ_ptr));
+
+  if (DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P (gen_tmpl))
+    lazy_load_specializations (gen_tmpl);
 
   /* It would be nice to avoid hashing here and then again in tsubst_decl,
      but it doesn't seem to be on the hot path.  */
@@ -24515,13 +24513,14 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
   gen_tmpl = most_general_template (tmpl);
   gen_args = DECL_TI_ARGS (d);
 
-  if (tmpl != gen_tmpl)
-    /* We should already have the extra args.  */
-    gcc_assert (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (gen_tmpl))
-		== TMPL_ARGS_DEPTH (gen_args));
+  /* We should already have the extra args.  */
+  gcc_checking_assert (tmpl == gen_tmpl
+		       || (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (gen_tmpl))
+			   == TMPL_ARGS_DEPTH (gen_args)));
   /* And what's in the hash table should match D.  */
-  gcc_assert ((spec = retrieve_specialization (gen_tmpl, gen_args, 0)) == d
-	      || spec == NULL_TREE);
+  gcc_checking_assert ((spec = retrieve_specialization (gen_tmpl, gen_args, 0))
+		       == d
+		       || spec == NULL_TREE);
 
   /* This needs to happen before any tsubsting.  */
   if (! push_tinst_level (d))
@@ -28342,6 +28341,41 @@ declare_integer_pack (void)
   DECL_BUILT_IN_CLASS (ipfn) = BUILT_IN_FRONTEND;
   DECL_FUNCTION_CODE (ipfn)
     = (enum built_in_function) (int) CP_BUILT_IN_INTEGER_PACK;
+}
+
+/* Collect the specializations and explicit instantitions generated
+   in this module  */
+
+static void
+get_specializations (auto_vec<tree> &res,
+		     spec_hash_table *table, bitmap partitions)
+{
+  spec_hash_table::iterator end (table->end ());
+  for (spec_hash_table::iterator iter (table->begin ()); iter != end; ++iter)
+    {
+      const spec_entry *entry = *iter;
+      tree spec = entry->spec;
+      int use_tpl;
+      if (TYPE_P (spec))
+	use_tpl = CLASSTYPE_USE_TEMPLATE (spec);
+      else
+	use_tpl = DECL_USE_TEMPLATE (spec);
+      if (use_tpl & 2)
+	{
+	  unsigned module = MAYBE_DECL_MODULE_OWNER (spec);
+	  if (module == MODULE_PURVIEW
+	      || (partitions && bitmap_bit_p (partitions, module)))
+	    res.safe_push (spec);
+	}
+    }
+}
+
+void
+get_specializations_for_module (auto_vec<tree> &res, bitmap partitions)
+{
+  get_specializations (res, decl_specializations, partitions);
+  // FIXME: get the type specializations too
+  //  get_specializations (res, type_specializations, partitions);
 }
 
 // FIXME: do we need to register the specialization on

@@ -1,3 +1,21 @@
+2019-04-25  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (get_specializations_for_module): Declare.
+	* module.cc (depset): Add DB_IMPLICIT_BIT,
+	is_implicit_specialization.
+	(depset::hash::add_dependency): Add is_implicit arg.  Allow NULL
+	current.  Set is_imolicit_specialization.
+	(module_state::write_specializations): Implement.
+	(trees_out::tree_decl): Stream specializations.
+	(specialization_cmp): New.
+	(depset::hash::add_specializations): New.
+	(module_state::write_cluster): Count specializations.
+	(module_state::write): Add and stream specializations.
+	* pt.c (spec_hash_table): New typedef.  Use it.
+	(get_specializations): New.
+	(get_specializations_for_module): New.
+
 2019-04-24  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

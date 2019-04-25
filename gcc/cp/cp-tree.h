@@ -7036,6 +7036,7 @@ extern bool deduction_guide_p			(const_tree);
 extern bool copy_guide_p			(const_tree);
 extern bool template_guide_p			(const_tree);
 extern void store_explicit_specifier		(tree, tree);
+extern void get_specializations_for_module	(auto_vec<tree> &, bitmap);
 extern tree match_mergeable_specialization	(tree, tree, tree);
 
 /* in repo.c */

@@ -2218,7 +2218,7 @@ public:
     EK_DECL,
     EK_USING,
     EK_UNNAMED,
-    EK_SPECIALIZATION, /* *any* kind of specialization.  */
+    EK_SPECIALIZATION, /* Any kind of specialization.  */
     EK_NAMESPACE,
     EK_EXPLICIT_HWM,  
     EK_BINDING = EK_EXPLICIT_HWM, /* Implicitly encoded.  */
@@ -2238,6 +2238,8 @@ private:
     DB_REFS_INTERNAL_BIT,	/* Refers to an internal-linkage entity. */
     DB_GLOBAL_ENTITY_BIT,	/* Global module entity.  */
     DB_IMPORTED_BIT,		/* An imported entity.  */
+    DB_IMPLICIT_BIT,		/* An implicit specialization (AKA
+				   regular instantiation).  */
   };
 
 public:
@@ -2314,6 +2316,10 @@ public:
   bool is_imported_entity () const
   {
     return get_flag_bit<DB_IMPORTED_BIT> ();
+  }
+  bool is_implicit_specialization () const
+  {
+    return get_flag_bit<DB_IMPLICIT_BIT> ();
   }
 
 public:
@@ -2426,9 +2432,11 @@ public:
 
   public:
     void add_mergeable (depset *);
-    void add_dependency (tree decl, entity_kind, bool is_import = false);
+    void add_dependency (tree decl, entity_kind,
+			 bool is_import = false, bool is_implicit = false);
     void add_binding (tree ns, tree value);
     void add_writables (tree ns, bitmap partitions);
+    void add_specializations (bitmap partitions);
     void find_dependencies ();
     bool finalize_dependencies ();
     void connect (auto_vec<depset *> &, bool);
@@ -3109,11 +3117,6 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool read_partitions (unsigned);
 
  private:
-  void write_specializations (elf_out *to, auto_vec<depset *> &depsets,
-			      unsigned, unsigned *crc_ptr);
-  bool read_specializations (unsigned, const range_t &range);
-
- private:
   void write_config (elf_out *to, struct module_state_config &, unsigned crc);
   bool read_config (cpp_reader *, struct module_state_config &);
 
@@ -3133,9 +3136,15 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 			  depset::hash &, unsigned &unnamed, unsigned *crc_ptr);
   bool read_cluster (unsigned snum);
 
+ private:
   void write_unnamed (elf_out *to, auto_vec<depset *> &depsets,
 		      unsigned count, unsigned *crc_ptr);
   bool read_unnamed (unsigned count, const range_t &range);
+
+ private:
+  void write_specializations (elf_out *to, auto_vec<depset *> &specs,
+			      depset::hash &, unsigned count, unsigned *crc_ptr);
+  bool read_specializations (unsigned count, const range_t &range);
 
  private:
   unsigned prepare_locations ();
@@ -6505,31 +6514,26 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
   const char *kind = NULL;
   unsigned owner = MODULE_UNKNOWN;
 
-  if (ti)
+  if (use_tpl > 0)
     {
-      if (use_tpl & 1)
+      /* Some kind of specialization. */
+      tree tpl = TI_TEMPLATE (ti);
+      enum tree_code ctx_code = TREE_CODE (DECL_CONTEXT (tpl));
+      if ((RECORD_OR_UNION_CODE_P (ctx_code) || ctx_code == ENUMERAL_TYPE)
+	  && !DECL_MEMBER_TEMPLATE_P (tpl))
+	// FIXME: The body could be instantiated elsewhere to the context?
+	; /* Implicit member template.  */
+      else
 	{
-	  /* Implicit or explicit instantiation. */
-	  tree tpl = TI_TEMPLATE (ti);
-	  enum tree_code ctx_code = TREE_CODE (DECL_CONTEXT (tpl));
-	  if ((RECORD_OR_UNION_CODE_P (ctx_code) || ctx_code == ENUMERAL_TYPE)
-	      && !DECL_MEMBER_TEMPLATE_P (tpl))
-	    // FIXME: The body could be instantiated elsewhere to the context?
-	    ; /* Implicit member template.  */
-	  else
-	    {
-	      owner = MAYBE_DECL_MODULE_OWNER (decl);
-	      owner = (*modules)[owner]->remap;
-	      gcc_assert (!streaming_p ());
-	      dep_hash->add_dependency (decl, depset::EK_SPECIALIZATION);
-	      kind = "specialization";
-	      goto insert;
-	    }
-	}
-      else if (use_tpl == 2)
-	{
-	  // FIXME: partial/explicit specialization?
-	  gcc_unreachable ();
+	  owner = MAYBE_DECL_MODULE_OWNER (decl);
+	  if (owner >= MODULE_IMPORT_BASE)
+	    owner = (*modules)[owner]->remap;
+	  gcc_assert (!streaming_p ());
+	  dep_hash->add_dependency (decl, depset::EK_SPECIALIZATION,
+				    owner >= MODULE_IMPORT_BASE,
+				    use_tpl < 2);
+	  kind = "specialization";
+	  goto insert;
 	}
     }
 
@@ -8693,7 +8697,8 @@ depset::hash::find_binding (tree ctx, tree name)
    a using decl.  */
 
 void
-depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
+depset::hash::add_dependency (tree decl, entity_kind ek,
+			      bool is_import, bool is_implicit)
 {
   /* Make sure we're being told consistent information.  */
   gcc_checking_assert ((ek == EK_USING) == (TREE_CODE (decl) == OVERLOAD));
@@ -8701,7 +8706,9 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 		       == (TREE_CODE (decl) == NAMESPACE_DECL
 			   && !DECL_NAMESPACE_ALIAS (decl)));
   gcc_checking_assert (ek != EK_BINDING);
-  gcc_checking_assert (!is_import || ek == EK_UNNAMED);
+  gcc_checking_assert (!is_import
+		       || (ek == EK_UNNAMED || ek == EK_SPECIALIZATION));
+  gcc_checking_assert (!is_implicit || ek == EK_SPECIALIZATION);
 
   if (depset **slot = entity_slot (decl, !is_mergeable_dep ()))
     {
@@ -8715,6 +8722,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
       gcc_checking_assert (ek != EK_UNNAMED
 			   || (TREE_CODE (CP_DECL_CONTEXT (decl))
 			       != NAMESPACE_DECL));
+
       if (!dep)
 	{
 	  bool has_def = (!is_mergeable_dep () && ek != EK_USING
@@ -8739,6 +8747,9 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	      if (is_import)
 		/* Note this entity came from elsewhere.  */
 		dep->set_flag_bit<DB_IMPORTED_BIT> ();
+
+	      if (is_implicit)
+		dep->set_flag_bit<DB_IMPLICIT_BIT> ();
 	    }
 	  else
 	    {
@@ -8803,7 +8814,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	&& dump ("%s on %s %C:%N added", binding_p ? "Binding" : "Dependency",
 		 dep->entity_kind_name (), TREE_CODE (decl), decl);
 
-      if (dep->get_entity_kind () != EK_NAMESPACE)
+      if (current && dep->get_entity_kind () != EK_NAMESPACE)
 	{
 	  current->deps.safe_push (dep);
 	  if (current->is_binding ())
@@ -8944,6 +8955,36 @@ depset::hash::add_writables (tree ns, bitmap partitions)
     }
 
   dump.outdent ();
+}
+
+/* Arbitrary stable comparison.  */
+
+static int
+specialization_cmp (const void *a_, const void *b_)
+{
+  const_tree a = *reinterpret_cast<const const_tree *> (a_);
+  const_tree b = *reinterpret_cast<const const_tree *> (b_);
+
+  if (DECL_UID (a) != DECL_UID (b))
+    return DECL_UID (a) < DECL_UID (b) ? -1 : +1;
+  gcc_checking_assert (a == b);
+  return 0;
+}
+
+/* We add the partial & explicit specializations, and the explicit
+   instntiations.  */
+
+void
+depset::hash::add_specializations (bitmap partitions)
+{
+  auto_vec<tree> specs (100);
+  get_specializations_for_module (specs, partitions);
+  specs.qsort (specialization_cmp);
+  while (specs.length ())
+    {
+      tree spec = specs.pop ();
+      add_dependency (spec, depset::EK_SPECIALIZATION);
+    }
 }
 
 /* Iteratively find dependencies.  During the walk we may find more
@@ -10754,13 +10795,13 @@ enum cluster_tag {
 
 unsigned
 module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
-			     depset::hash &table,
-			     unsigned &unnamed, unsigned *crc_ptr)
+			     depset::hash &table, unsigned &unnamed,
+			     unsigned *crc_ptr)
 {
   dump () && dump ("Writing SCC:%u %u depsets", scc[0]->section, size);
   dump.indent ();
 
-  unsigned tmpls = 0;
+  unsigned specs = 0;
   unsigned incoming_unnamed = unnamed;
   bool refs_unnamed_p = false;
   auto_vec<depset *> mergeables;
@@ -10959,6 +11000,10 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  break;
 
 	case depset::EK_SPECIALIZATION:
+	  if (!b->is_implicit_specialization ())
+	    specs++;
+	  /* Fallthrough.  */
+
 	case depset::EK_DECL:
 	case depset::EK_UNNAMED:
 	  {
@@ -10998,7 +11043,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   dump.outdent ();
   dump () && dump ("Wrote SCC:%u section:%N", scc[0]->section, naming_decl);
 
-  return tmpls;
+  return specs;
 }
 
 /* Read a cluster from section SNUM.  */
@@ -11164,10 +11209,11 @@ module_state::read_cluster (unsigned snum)
 	  /* A decl or defn.  */
 	  {
 	    tree decl = sec.tree_node ();
+
 	    if (unsigned voldemort = sec.u ())
 	      {
 		/* An unnamed node, register it.  */
-		if (voldemort - 1 < unnamed_num)
+		if (decl && voldemort - 1 < unnamed_num)
 		  {
 		    unsigned index = unnamed_lwm + voldemort - 1;
 		    (*unnamed_ary)[index] = decl;
@@ -11179,6 +11225,7 @@ module_state::read_cluster (unsigned snum)
 		else
 		  sec.set_overrun ();
 	      }
+
 	    if (sec.u () && !sec.get_overrun ())
 	      /* A definition.  */
 	      sec.read_definition (decl);
@@ -13039,10 +13086,46 @@ space_cmp (const void *a_, const void *b_)
   return DECL_UID (ns_a) < DECL_UID (ns_b) ? -1 : +1;
 }
 
+// FIXME: Merge with unnamed.  All specializations are unnamed, but
+// not vice-versa
+
 void
 module_state::write_specializations (elf_out *to, auto_vec<depset *> &depsets,
-				     unsigned num, unsigned *crc_ptr)
+				     depset::hash &table,
+				     unsigned count, unsigned *crc_p)
 {
+  dump () && dump ("Writing specializations");
+  dump.indent ();
+
+  trees_out sec (to, this, table);
+  sec.begin ();
+
+  unsigned current = 0;
+  for (unsigned ix = 0; ix < depsets.length (); ix++)
+    {
+      depset *d = depsets[ix];
+
+      if (d->get_entity_kind () == depset::EK_SPECIALIZATION
+	  && !d->is_implicit_specialization ())
+	{
+	  tree spec = d->get_entity ();
+	  tree key = get_module_owner (spec);
+	  unsigned owner = MAYBE_DECL_MODULE_OWNER (key);
+	  if (owner >= MODULE_IMPORT_BASE)
+	    owner = (*modules)[owner]->remap;
+
+	  sec.tree_node (CP_DECL_CONTEXT (key));
+	  sec.tree_node (DECL_NAME (key));
+	  sec.u (owner);
+	  sec.u (d->section);
+	  dump () && dump ("Specialization %N section:%u keyed to %N",
+			   spec, d->section, key);
+	  current++;
+	}
+    }
+  gcc_assert (count == current);
+  sec.end (to, to->name (MOD_SNAME_PFX ".tpl"), crc_p);
+  dump.outdent ();
 }
 
 bool
@@ -13569,6 +13652,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   /* Find the set of decls we must write out.  */
   depset::hash table (DECL_NAMESPACE_BINDINGS (global_namespace)->size () * 8);
   table.add_writables (global_namespace, partitions);
+  table.add_specializations (partitions);
   table.find_dependencies ();
   // FIXME: Find reachable GMF entities from non-emitted pieces.  It'd
   // be nice to have a flag telling us this walk's necessary.  Even
@@ -13706,7 +13790,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   /* Write the specializations.  */
   if (config.num_specializations)
-    write_specializations (to, sccs, config.num_specializations, &crc);
+    write_specializations (to, sccs, table, config.num_specializations, &crc);
 
   /* Write the unnamed.  */
   if (config.num_unnamed)
@@ -14471,6 +14555,7 @@ void
 lazy_load_specializations (tree tmpl)
 {
   gcc_checking_assert (DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P (tmpl));
+
   // FIXME: load it
 }
 
