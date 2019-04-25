@@ -7094,7 +7094,7 @@ causes the compiler to set the mode for @code{foo}, to be 16 bytes,
 divided into @code{int} sized units.  Assuming a 32-bit @code{int},
 @code{foo}'s type is a vector of four units of four bytes each, and
 the corresponding mode of @code{foo} is @code{V4SI}.
-@xref{Vector Extensions} for details of manipulating vector variables.
+@xref{Vector Extensions}, for details of manipulating vector variables.
 
 This attribute is only applicable to integral and floating scalars,
 although arrays, pointers, and function return values are allowed in
@@ -8178,7 +8178,7 @@ sized units.  With @code{int} having a size of 4 bytes, the type defines
 a vector of eight units, four bytes each.  The mode of variables of type
 @code{int_vec32_t} is @code{V8SI}.  @code{int_vec32_ptr_t} is then defined
 to be a pointer to such a vector type, and @code{int_vec32_arr3_t} to be
-an array of three such vectors.  @xref{Vector Extensions} for details of
+an array of three such vectors.  @xref{Vector Extensions}, for details of
 manipulating objects of vector types.
 
 This attribute is only applicable to integral and floating scalar types.
