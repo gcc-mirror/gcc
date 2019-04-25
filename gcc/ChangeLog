@@ -1,3 +1,9 @@
+2019-04-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90213
+	* gimple-fold.c (fold_const_aggregate_ref_1): Do multiplication
+	by size and BITS_PER_UNIT on poly-wide-ints.
+
 2019-04-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/90194
