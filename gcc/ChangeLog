@@ -1,3 +1,9 @@
+2019-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90194
+	* match.pd: Add pattern to simplify view-conversion of an
+	empty constructor.
+
 2019-04-24  Clement Chigot  <clement.chigot@atos.net>
 
 	* config/rs6000/aix71.h (SUBTARGET_OVERRIDE_OPTIONS): Disable
