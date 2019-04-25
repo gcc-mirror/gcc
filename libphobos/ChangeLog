@@ -1,5 +1,10 @@
 2019-04-25  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	* testsuite/Makefile.am: Set PWD_COMMAND.
+	* testsuite/Makefile.in: Regenerate.
+
+2019-04-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	PR d/90086
 	* m4/druntime/cpu.m4 (DRUNTIME_CPU_SOURCES): New macro.
 	* configure.ac: Use it.
