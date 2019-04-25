@@ -1,5 +1,15 @@
 2019-04-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/90240
+	Revert:
+	2019-04-23  Bin Cheng  <bin.cheng@linux.alibaba.com>
+ 
+	PR tree-optimization/90078
+	* tree-ssa-loop-ivopts.c (comp_cost::operator +,-,+=,-+,/=,*=): Add
+	checks for infinite_cost overflow.
+
+2019-04-25  Jakub Jelinek  <jakub@redhat.com>
+
 	* DEV-PHASE: Set to prerelease.
 
 2019-04-25  Richard Biener  <rguenther@suse.de>
