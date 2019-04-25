@@ -1,3 +1,7 @@
+2019-04-25  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	* gcc.target/powerpc/vsx-vector-6.p8.c: Fix failure caused by typo.
+
 2019-04-22  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	Backport from mainline
