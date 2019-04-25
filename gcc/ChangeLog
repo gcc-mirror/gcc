@@ -1,3 +1,7 @@
+2019-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* BASE-VER: Set to 10.0.0.
+
 2019-04-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/89765
