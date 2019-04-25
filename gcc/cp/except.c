@@ -1128,11 +1128,14 @@ check_noexcept_r (tree *tp, int * /*walk_subtrees*/, void * /*data*/)
 	      && (DECL_ARTIFICIAL (fn)
 		  || nothrow_libfn_p (fn)))
 	    return TREE_NOTHROW (fn) ? NULL_TREE : fn;
-	  /* A call to a constexpr function is noexcept if the call
-	     is a constant expression.  */
-	  if (DECL_DECLARED_CONSTEXPR_P (fn)
-	      && is_sub_constant_expr (t))
-	    return NULL_TREE;
+	  /* We used to treat a call to a constexpr function as noexcept if
+	     the call was a constant expression (CWG 1129).  This has changed
+	     in P0003 whereby noexcept has no special rule for constant
+	     expressions anymore.  Since the current behavior is important for
+	     certain library functionality, we treat this as a DR, therefore
+	     adjusting the behavior for C++11 and C++14.  Previously, we had
+	     to evaluate the noexcept-specifier's operand here, but that could
+	     cause instantiations that would fail.  */
 	}
       if (!TYPE_NOTHROW_P (type))
 	return fn;
@@ -1285,9 +1288,7 @@ build_noexcept_spec (tree expr, tsubst_flags_t complain)
   if (TREE_CODE (expr) != DEFERRED_NOEXCEPT
       && !value_dependent_expression_p (expr))
     {
-      expr = perform_implicit_conversion_flags (boolean_type_node, expr,
-						complain,
-						LOOKUP_NORMAL);
+      expr = build_converted_constant_bool_expr (expr, complain);
       expr = instantiate_non_dependent_expr (expr);
       expr = cxx_constant_value (expr);
     }

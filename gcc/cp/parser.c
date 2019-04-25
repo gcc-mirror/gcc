@@ -570,8 +570,10 @@ cp_debug_parser (FILE *file, cp_parser *parser)
   cp_debug_print_flag (file, "Colon doesn't start a class definition",
 			      parser->colon_doesnt_start_class_def_p);
   if (parser->type_definition_forbidden_message)
-    fprintf (file, "Error message for forbidden type definitions: %s\n",
-	     parser->type_definition_forbidden_message);
+    fprintf (file, "Error message for forbidden type definitions: %s %s\n",
+	     parser->type_definition_forbidden_message,
+	     parser->type_definition_forbidden_message_arg
+	     ? parser->type_definition_forbidden_message_arg : "<none>");
   cp_debug_print_unparsed_queues (file, parser->unparsed_queues);
   fprintf (file, "Number of class definitions in progress: %u\n",
 	   parser->num_classes_being_defined);
@@ -3054,8 +3056,9 @@ cp_parser_check_type_definition (cp_parser* parser)
   if (parser->type_definition_forbidden_message)
     {
       /* Don't use `%s' to print the string, because quotations (`%<', `%>')
-	 in the message need to be interpreted.  */
-      error (parser->type_definition_forbidden_message);
+	 or %qs in the message need to be interpreted.  */
+      error (parser->type_definition_forbidden_message,
+	     parser->type_definition_forbidden_message_arg);
       return false;
     }
   return true;
@@ -8518,12 +8521,12 @@ cp_parser_has_attribute_expression (cp_parser *parser)
   /* Types cannot be defined in a `sizeof' expression.  Save away the
      old message.  */
   const char *saved_message = parser->type_definition_forbidden_message;
-  /* And create the new one.  */
-  const int kwd = RID_BUILTIN_HAS_ATTRIBUTE;
-  char *tmp = concat ("types may not be defined in %<",
-		      IDENTIFIER_POINTER (ridpointers[kwd]),
-		      "%> expressions", NULL);
-  parser->type_definition_forbidden_message = tmp;
+  const char *saved_message_arg
+    = parser->type_definition_forbidden_message_arg;
+  parser->type_definition_forbidden_message
+    = G_("types may not be defined in %qs expressions");
+  parser->type_definition_forbidden_message_arg
+    = IDENTIFIER_POINTER (ridpointers[RID_BUILTIN_HAS_ATTRIBUTE]);
 
   /* The restrictions on constant-expressions do not apply inside
      sizeof expressions.  */
@@ -8552,9 +8555,9 @@ cp_parser_has_attribute_expression (cp_parser *parser)
   cp_parser_parse_definitely (parser);
 
   /* If the type-id production did not work out, then we must be
-     looking at the unary-expression production.  */
+     looking at an expression.  */
   if (!oper || oper == error_mark_node)
-    oper = cp_parser_unary_expression (parser);
+    oper = cp_parser_assignment_expression (parser);
 
   STRIP_ANY_LOCATION_WRAPPER (oper);
 
@@ -8562,10 +8565,9 @@ cp_parser_has_attribute_expression (cp_parser *parser)
   --cp_unevaluated_operand;
   --c_inhibit_evaluation_warnings;
 
-  /* Free the message we created.  */
-  free (tmp);
   /* And restore the old one.  */
   parser->type_definition_forbidden_message = saved_message;
+  parser->type_definition_forbidden_message_arg = saved_message_arg;
   parser->integral_constant_expression_p
     = saved_integral_constant_expression_p;
   parser->non_integral_constant_expression_p
@@ -28928,7 +28930,7 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
 {
   tree expr = NULL_TREE;
   const char *saved_message;
-  char *tmp;
+  const char *saved_message_arg;
   bool saved_integral_constant_expression_p;
   bool saved_non_integral_constant_expression_p;
 
@@ -28941,11 +28943,11 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
   /* Types cannot be defined in a `sizeof' expression.  Save away the
      old message.  */
   saved_message = parser->type_definition_forbidden_message;
-  /* And create the new one.  */
-  tmp = concat ("types may not be defined in %<",
-		IDENTIFIER_POINTER (ridpointers[keyword]),
-		"%> expressions", NULL);
-  parser->type_definition_forbidden_message = tmp;
+  saved_message_arg = parser->type_definition_forbidden_message_arg;
+  parser->type_definition_forbidden_message
+    = G_("types may not be defined in %qs expressions");
+  parser->type_definition_forbidden_message_arg
+    = IDENTIFIER_POINTER (ridpointers[keyword]);
 
   /* The restrictions on constant-expressions do not apply inside
      sizeof expressions.  */
@@ -29002,10 +29004,9 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
   --cp_unevaluated_operand;
   --c_inhibit_evaluation_warnings;
 
-  /* Free the message we created.  */
-  free (tmp);
   /* And restore the old one.  */
   parser->type_definition_forbidden_message = saved_message;
+  parser->type_definition_forbidden_message_arg = saved_message_arg;
   parser->integral_constant_expression_p
     = saved_integral_constant_expression_p;
   parser->non_integral_constant_expression_p

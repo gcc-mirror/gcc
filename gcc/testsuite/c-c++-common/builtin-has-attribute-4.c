@@ -3,7 +3,7 @@
    { dg-skip-if "No section attribute" { { hppa*-*-hpux* } && { ! lp64 } } }
    { dg-options "-Wall -ftrack-macro-expansion=0" }
    { dg-options "-Wall -Wno-narrowing -Wno-unused -ftrack-macro-expansion=0" { target c++ } }
-   { dg-additional-options "-DSKIP_ALIAS" { target *-*-darwin* } } 
+   { dg-additional-options "-DSKIP_ALIAS" { target *-*-darwin* } }
 */
 
 #define ATTR(...) __attribute__ ((__VA_ARGS__))
@@ -155,7 +155,8 @@ void test_packed (struct PackedMember *p)
   A (0, gpak[0].c, packed);
   A (0, gpak[1].s, packed);
   A (1, gpak->a, packed);
-  A (1, (*gpak).a[0], packed);
+  /* It's the array that's declared packed but not its elements.  */
+  A (0, (*gpak).a[0], packed);
 
   /* The following fails because in C it's represented as
        INDIRECT_REF (POINTER_PLUS (NOP_EXPR (ADDR_EXPR (gpak)), ...))
@@ -165,7 +166,8 @@ void test_packed (struct PackedMember *p)
   A (0, p->c, packed);
   A (0, p->s, packed);
   A (1, p->a, packed);
-  A (1, p->a[0], packed);
+  /* It's the array that's declared packed but not its elements.  */
+  A (0, p->a[0], packed);
   /* Similar to the comment above.
    A (1, *p->a, packed);  */
 }
@@ -218,13 +220,68 @@ void test_vector_size (void)
   A (1, iv16, vector_size (16));
   A (0, iv16, vector_size (32));
 
+  /* Verify that the attribute not detected on an array of vectors
+     but is detected on its elements.  */
+  typedef ATTR (vector_size (8)) float afv8_t[4];
+  A (0, afv8_t, vector_size);
+  A (0, afv8_t, vector_size (1));
+  A (0, afv8_t, vector_size (2));
+  A (0, afv8_t, vector_size (4));
+  A (0, afv8_t, vector_size (8));
+  A (0, afv8_t, vector_size (16));
+
+  A (1, __typeof__ ((*(afv8_t*)0)[0]), vector_size);
+  A (0, __typeof__ ((*(afv8_t*)0)[1]), vector_size (1));
+  A (0, __typeof__ ((*(afv8_t*)0)[2]), vector_size (2));
+  A (0, __typeof__ ((*(afv8_t*)0)[3]), vector_size (4));
+  A (1, __typeof__ ((*(afv8_t*)0)[0]), vector_size (8));
+  A (0, __typeof__ ((*(afv8_t*)0)[1]), vector_size (16));
+
+  A (1, __typeof__ (**(afv8_t*)0), vector_size);
+  A (0, __typeof__ (**(afv8_t*)0), vector_size (1));
+  A (0, __typeof__ (**(afv8_t*)0), vector_size (2));
+  A (0, __typeof__ (**(afv8_t*)0), vector_size (4));
+  A (1, __typeof__ (**(afv8_t*)0), vector_size (8));
+  A (0, __typeof__ (**(afv8_t*)0), vector_size (16));
+
   ATTR (vector_size (8)) float afv8[4];
-  A (1, afv8, vector_size);
+  A (0, afv8, vector_size);
   A (0, afv8, vector_size (1));
   A (0, afv8, vector_size (2));
   A (0, afv8, vector_size (4));
-  A (1, afv8, vector_size (8));
+  A (0, afv8, vector_size (8));
   A (0, afv8, vector_size (16));
+
+  A (1, afv8[0], vector_size);
+  A (0, afv8[1], vector_size (1));
+  A (0, afv8[2], vector_size (2));
+  A (0, afv8[3], vector_size (4));
+  A (1, afv8[0], vector_size (8));
+  A (0, afv8[1], vector_size (16));
+
+  A (1, *afv8, vector_size);
+  A (0, *afv8, vector_size (1));
+  A (0, *afv8, vector_size (2));
+  A (0, *afv8, vector_size (4));
+  A (1, *afv8, vector_size (8));
+  A (0, *afv8, vector_size (16));
+
+  /* sizeof (long double) is 12 on i386.  */
+  enum { VecSize = 8 * sizeof (long double) };
+  ATTR (vector_size (VecSize)) long double aldv[1][2][3];
+  A (0, aldv, vector_size);
+  A (0, aldv[0], vector_size);
+  A (0, aldv[0][0], vector_size);
+  A (1, aldv[0][0][0], vector_size);
+  A (0, aldv[0][0][1], vector_size (VecSize / 2));
+  A (1, aldv[0][0][2], vector_size (VecSize));
+
+  A (0, aldv[0][0][0][0], vector_size);
+
+  A (0, *aldv, vector_size);
+  A (0, **aldv, vector_size);
+  A (1, ***aldv, vector_size);
+  A (1, ***aldv, vector_size (VecSize));
 }
 
 

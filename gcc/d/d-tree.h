@@ -59,7 +59,8 @@ typedef Array<Expression *> Expressions;
 
    Usage of DECL_LANG_FLAG_?:
    0: LABEL_VARIABLE_CASE (in LABEL_DECL).
-      DECL_BUILT_IN_CTFE (in FUNCTION_DECL).  */
+      DECL_BUILT_IN_CTFE (in FUNCTION_DECL).
+   1: DECL_IN_UNITTEST_CONDITION_P (in FUNCTION_DECL).  */
 
 /* The kinds of scopes we recognize.  */
 
@@ -380,6 +381,10 @@ lang_tree_node
 #define DECL_BUILT_IN_CTFE(NODE) \
   (DECL_LANG_FLAG_0 (FUNCTION_DECL_CHECK (NODE)))
 
+/* True if the decl is only compiled in when unittests are turned on.  */
+#define DECL_IN_UNITTEST_CONDITION_P(NODE) \
+  (DECL_LANG_FLAG_1 (FUNCTION_DECL_CHECK (NODE)))
+
 enum d_tree_index
 {
   DTI_VTABLE_ENTRY_TYPE,
@@ -642,11 +647,12 @@ extern void d_finish_compilation (tree *, int);
 extern tree build_libcall (libcall_fn, Type *, int ...);
 
 /* In typeinfo.cc.  */
+extern bool have_typeinfo_p (ClassDeclaration *);
 extern tree layout_typeinfo (TypeInfoDeclaration *);
 extern tree layout_classinfo (ClassDeclaration *);
 extern tree get_typeinfo_decl (TypeInfoDeclaration *);
 extern tree get_classinfo_decl (ClassDeclaration *);
-extern tree build_typeinfo (Type *);
+extern tree build_typeinfo (const Loc &, Type *);
 extern void create_typeinfo (Type *, Module *);
 extern void create_tinfo_types (Module *);
 extern void layout_cpp_typeinfo (ClassDeclaration *);

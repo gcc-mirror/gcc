@@ -46,6 +46,12 @@ proc libphobos-dg-test { prog do_what extra_tool_flags } {
     set compile_type ""
     set output_file ""
 
+    global libphobos_test_name
+    upvar name name
+    if { $libphobos_test_name != "" } {
+	set name $libphobos_test_name
+    }
+
     # Set up the compiler flags, based on what we're going to do.
     switch $do_what {
 	"run" {
@@ -74,9 +80,17 @@ proc libphobos-dg-test { prog do_what extra_tool_flags } {
 	lappend options "additional_flags=$extra_tool_flags"
     }
 
-    set comp_output [$select_compile "$prog" "$output_file" "$compile_type" $options]
+    set unsupported_message [libphobos_skipped_test_p $name]
+    if { $unsupported_message != "" } {
+	return [list "::unsupported::$unsupported_message" $output_file]
+    }
 
+    set comp_output [$select_compile "$prog" "$output_file" "$compile_type" $options]
     return [list $comp_output $output_file]
+}
+
+proc libphobos-dg-prune { system text } {
+    return $text
 }
 
 #
@@ -110,6 +124,13 @@ proc libphobos_init { args } {
     global libphobos_run_args
     set libphobos_run_args ""
 
+    # If the name of the test should be something else.
+    global libphobos_test_name
+    set libphobos_test_name ""
+
+    global libphobos_skip_tests
+    set libphobos_skip_tests { }
+
     # Default settings.
     set blddir [lookfor_file [get_multilibs] libphobos]
     set flags_file "${blddir}/testsuite/testsuite_flags"
@@ -133,7 +154,7 @@ proc libphobos_init { args } {
     }
 
     # Compute what needs to be added to the existing LD_LIBRARY_PATH.
-    set ld_library_path ""
+    set ld_library_path "."
 
     set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
     if {$gccdir != ""} {
@@ -190,4 +211,70 @@ proc libphobos_target_compile { source dest type options } {
     set comp_output [target_compile $source $dest $type $options]
 
     return $comp_output
+}
+
+#
+# Helper used by libphobos and libdruntime unittest runner, filters out
+# D sources that may contain a unittest function.
+#
+
+proc filter_libphobos_unittests { list } {
+    set res {}
+    foreach filename $list {
+	set fid [open $filename r]
+	if [regexp -- {unittest} [read $fid [file size $filename]]] {
+	    lappend res $filename
+	}
+	close $fid
+    }
+    return $res
+}
+
+# Skip the unittest (report it as UNSUPPORTED) if the module exists in
+# libphobos_skip_tests and its target list is matched by dg-process-target.
+#
+# The expected format of the libphobos_skip_tests file is:
+# { test { targets } }
+proc libphobos_skipped_test_p { test } {
+    global libphobos_skip_tests
+
+    set row [lsearch -inline -index 0 $libphobos_skip_tests $test]
+    if { $row eq "" } {
+	return ""
+    }
+
+    if { [llength $row] != 2 } {
+	error "syntax error in libphobos_skip_tests: $row"
+    }
+
+    set selector [list target [lindex $row 1]]
+    if { [dg-process-target-1 $selector] != "S" } {
+	return ""
+    }
+
+    return "skipped test"
+}
+
+# Return true if the curl library is supported on the target.
+proc check_effective_target_libcurl_available { } {
+    return [check_no_compiler_messages libcurl_available executable {
+	int main (void) { return 0; }
+    } "-lcurl"]
+}
+
+# Return true if the target is linux version < 2.6.39
+proc check_effective_target_linux_pre_2639 { } {
+    if { ![istarget *-*-linux*] } {
+	return 0
+    }
+
+    if { [check_no_compiler_messages linux_pre_2639 assembly {
+	#include <linux/version.h>
+	#if !defined LINUX_VERSION_CODE || LINUX_VERSION_CODE < KERNEL_VERSION(2.6.39)
+	#error Yes, it is.
+	#endif
+    }] } {
+	return 0
+    }
+    return 1
 }

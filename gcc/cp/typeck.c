@@ -1443,6 +1443,17 @@ structural_comptypes (tree t1, tree t2, int strict)
       return false;
     }
 
+  /* Don't treat an alias template specialization with dependent
+     arguments as equivalent to its underlying type when used as a
+     template argument; we need them to be distinct so that we
+     substitute into the specialization arguments at instantiation
+     time.  And aliases can't be equivalent without being ==, so
+     we don't need to look any deeper.  */
+  if (comparing_specializations
+      && (dependent_alias_template_spec_p (t1)
+	  || dependent_alias_template_spec_p (t2)))
+    return false;
+
   /* If we get here, we know that from a target independent POV the
      types are the same.  Make sure the target attributes are also
      the same.  */
@@ -1455,6 +1466,10 @@ structural_comptypes (tree t1, tree t2, int strict)
 bool
 comptypes (tree t1, tree t2, int strict)
 {
+  if (strict == COMPARE_STRICT && comparing_specializations
+      && (t1 != TYPE_CANONICAL (t1) || t2 != TYPE_CANONICAL (t2)))
+    /* If comparing_specializations, treat dependent aliases as distinct.  */
+    strict = COMPARE_STRUCTURAL;
   if (strict == COMPARE_STRICT)
     {
       if (t1 == t2)
@@ -1508,6 +1523,8 @@ same_type_ignoring_top_level_qualifiers_p (tree type1, tree type2)
 {
   if (type1 == error_mark_node || type2 == error_mark_node)
     return false;
+  if (type1 == type2)
+    return true;
 
   type1 = cp_build_qualified_type (type1, TYPE_UNQUALIFIED);
   type2 = cp_build_qualified_type (type2, TYPE_UNQUALIFIED);
@@ -2477,7 +2494,8 @@ build_class_member_access_expr (cp_expr object, tree member,
 	  /* We didn't complain above about a currently open class, but now we
 	     must: we don't know how to refer to a base member before layout is
 	     complete.  But still don't complain in a template.  */
-	  if (!dependent_type_p (object_type)
+	  if (!cp_unevaluated_operand
+	      && !dependent_type_p (object_type)
 	      && !complete_type_or_maybe_complain (object_type, object,
 						   complain))
 	    return error_mark_node;

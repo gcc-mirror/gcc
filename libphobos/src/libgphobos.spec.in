@@ -6,5 +6,8 @@
 
 @DRTSTUFF_SPEC@
 
+%rename link linkorig_gdc_renamed
+*link: %(linkorig_gdc_renamed) @OS_LINK_SPEC@
+
 %rename lib liborig_gdc_renamed
 *lib: %{debuglib|defaultlib|nophoboslib: ; :@SPEC_PHOBOS_DEPS@} %(liborig_gdc_renamed)

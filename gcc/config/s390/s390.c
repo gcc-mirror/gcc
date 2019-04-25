@@ -337,7 +337,7 @@ const struct s390_processor processor_table[] =
   { "zEC12",  "zEC12",  PROCESSOR_2827_ZEC12,  &zEC12_cost,  10 },
   { "z13",    "z13",    PROCESSOR_2964_Z13,    &zEC12_cost,  11 },
   { "z14",    "arch12", PROCESSOR_3906_Z14,    &zEC12_cost,  12 },
-  { "arch13", "",       PROCESSOR_ARCH13,      &zEC12_cost,  13 },
+  { "arch13", "",       PROCESSOR_8561_ARCH13, &zEC12_cost,  13 },
   { "native", "",       PROCESSOR_NATIVE,      NULL,         0  }
 };
 
@@ -10685,7 +10685,11 @@ s390_restore_gprs_from_fprs (void)
   if (!TARGET_Z10 || !TARGET_HARD_FLOAT || !crtl->is_leaf)
     return;
 
-  for (i = 6; i < 16; i++)
+  /* Restore the GPRs starting with the stack pointer.  That way the
+     stack pointer already has its original value when it comes to
+     restoring the hard frame pointer.  So we can set the cfa reg back
+     to the stack pointer.  */
+  for (i = STACK_POINTER_REGNUM; i >= 6; i--)
     {
       rtx_insn *insn;
 
@@ -10701,7 +10705,13 @@ s390_restore_gprs_from_fprs (void)
 
       df_set_regs_ever_live (i, true);
       add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (DImode, i));
-      if (i == STACK_POINTER_REGNUM)
+
+      /* If either the stack pointer or the frame pointer get restored
+	 set the CFA value to its value at function start.  Doing this
+	 for the frame pointer results in .cfi_def_cfa_register 15
+	 what is ok since if the stack pointer got modified it has
+	 been restored already.  */
+      if (i == STACK_POINTER_REGNUM || i == HARD_FRAME_POINTER_REGNUM)
 	add_reg_note (insn, REG_CFA_DEF_CFA,
 		      plus_constant (Pmode, stack_pointer_rtx,
 				     STACK_POINTER_OFFSET));
@@ -14419,7 +14429,6 @@ s390_get_sched_attrmask (rtx_insn *insn)
 	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
       break;
     case PROCESSOR_3906_Z14:
-    case PROCESSOR_ARCH13:
       if (get_attr_z14_cracked (insn))
 	mask |= S390_SCHED_ATTR_MASK_CRACKED;
       if (get_attr_z14_expanded (insn))
@@ -14429,6 +14438,18 @@ s390_get_sched_attrmask (rtx_insn *insn)
       if (get_attr_z14_groupalone (insn))
 	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
       if (get_attr_z14_groupoftwo (insn))
+	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
+      break;
+    case PROCESSOR_8561_ARCH13:
+      if (get_attr_arch13_cracked (insn))
+	mask |= S390_SCHED_ATTR_MASK_CRACKED;
+      if (get_attr_arch13_expanded (insn))
+	mask |= S390_SCHED_ATTR_MASK_EXPANDED;
+      if (get_attr_arch13_endgroup (insn))
+	mask |= S390_SCHED_ATTR_MASK_ENDGROUP;
+      if (get_attr_arch13_groupalone (insn))
+	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
+      if (get_attr_arch13_groupoftwo (insn))
 	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
       break;
     default:
@@ -14456,7 +14477,6 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
 	mask |= 1 << 3;
       break;
     case PROCESSOR_3906_Z14:
-    case PROCESSOR_ARCH13:
       *units = 4;
       if (get_attr_z14_unit_lsu (insn))
 	mask |= 1 << 0;
@@ -14465,6 +14485,17 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
       if (get_attr_z14_unit_fxb (insn))
 	mask |= 1 << 2;
       if (get_attr_z14_unit_vfu (insn))
+	mask |= 1 << 3;
+      break;
+    case PROCESSOR_8561_ARCH13:
+      *units = 4;
+      if (get_attr_arch13_unit_lsu (insn))
+	mask |= 1 << 0;
+      if (get_attr_arch13_unit_fxa (insn))
+	mask |= 1 << 1;
+      if (get_attr_arch13_unit_fxb (insn))
+	mask |= 1 << 2;
+      if (get_attr_arch13_unit_vfu (insn))
 	mask |= 1 << 3;
       break;
     default:
@@ -14479,7 +14510,8 @@ s390_is_fpd (rtx_insn *insn)
   if (insn == NULL_RTX)
     return false;
 
-  return get_attr_z13_unit_fpd (insn) || get_attr_z14_unit_fpd (insn);
+  return get_attr_z13_unit_fpd (insn) || get_attr_z14_unit_fpd (insn)
+    || get_attr_arch13_unit_fpd (insn);
 }
 
 static bool
@@ -14488,7 +14520,8 @@ s390_is_fxd (rtx_insn *insn)
   if (insn == NULL_RTX)
     return false;
 
-  return get_attr_z13_unit_fxd (insn) || get_attr_z14_unit_fxd (insn);
+  return get_attr_z13_unit_fxd (insn) || get_attr_z14_unit_fxd (insn)
+    || get_attr_arch13_unit_fxd (insn);
 }
 
 /* Returns TRUE if INSN is a long-running instruction.  */
@@ -16271,6 +16304,49 @@ s390_case_values_threshold (void)
   return default_case_values_threshold ();
 }
 
+/* Evaluate the insns between HEAD and TAIL and do back-end to install
+   back-end specific dependencies.
+
+   Establish an ANTI dependency between r11 and r15 restores from FPRs
+   to prevent the instructions scheduler from reordering them since
+   this would break CFI.  No further handling in the sched_reorder
+   hook is required since the r11 and r15 restore will never appear in
+   the same ready list with that change.  */
+void
+s390_sched_dependencies_evaluation (rtx_insn *head, rtx_insn *tail)
+{
+  if (!frame_pointer_needed || !epilogue_completed)
+    return;
+
+  while (head != tail && DEBUG_INSN_P (head))
+    head = NEXT_INSN (head);
+
+  rtx_insn *r15_restore = NULL, *r11_restore = NULL;
+
+  for (rtx_insn *insn = tail; insn != head; insn = PREV_INSN (insn))
+    {
+      rtx set = single_set (insn);
+      if (!INSN_P (insn)
+	  || !RTX_FRAME_RELATED_P (insn)
+	  || set == NULL_RTX
+	  || !REG_P (SET_DEST (set))
+	  || !FP_REG_P (SET_SRC (set)))
+	continue;
+
+      if (REGNO (SET_DEST (set)) == HARD_FRAME_POINTER_REGNUM)
+	r11_restore = insn;
+
+      if (REGNO (SET_DEST (set)) == STACK_POINTER_REGNUM)
+	r15_restore = insn;
+    }
+
+  if (r11_restore == NULL || r15_restore == NULL)
+    return;
+  add_dependence (r11_restore, r15_restore, REG_DEP_ANTI);
+}
+
+
+
 /* Initialize GCC target structure.  */
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
@@ -16561,6 +16637,11 @@ s390_case_values_threshold (void)
 
 #undef TARGET_CASE_VALUES_THRESHOLD
 #define TARGET_CASE_VALUES_THRESHOLD s390_case_values_threshold
+
+#undef TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK
+#define TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK \
+  s390_sched_dependencies_evaluation
+
 
 /* Use only short displacement, since long displacement is not available for
    the floating point instructions.  */

@@ -2118,7 +2118,7 @@ Expression *VarDeclaration::callScopeDtor(Scope *)
         }
         else
         {
-            // _ArrayDtor(v[0 .. n])
+            // __ArrayDtor(v[0 .. n])
             e = new VarExp(loc, this);
 
             const d_uns64 sdsz = sd->type->size();
@@ -2133,7 +2133,7 @@ Expression *VarDeclaration::callScopeDtor(Scope *)
             // This is a hack so we can call destructors on const/immutable objects.
             e->type = sd->type->arrayOf();
 
-            e = new CallExp(loc, new IdentifierExp(loc, Id::_ArrayDtor), e);
+            e = new CallExp(loc, new IdentifierExp(loc, Id::__ArrayDtor), e);
         }
         return e;
     }

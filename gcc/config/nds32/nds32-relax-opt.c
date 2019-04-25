@@ -78,6 +78,12 @@ static int relax_group_id = 0;
       lwi37	$rb, [(sym)]
       swi37	$rc, [(sym)] */
 
+int
+nds32_alloc_relax_group_id ()
+{
+  return relax_group_id++;
+}
+
 /* Return true if is load/store with REG addressing mode
    and memory mode is SImode.  */
 static bool
@@ -345,7 +351,7 @@ nds32_group_insns (rtx_insn *sethi)
 	return;
     }
 
-  group_id = GEN_INT (relax_group_id);
+  group_id = GEN_INT (nds32_alloc_relax_group_id ());
   /* Insert .relax_* directive for sethi.  */
   emit_insn_before (gen_relax_group (group_id), sethi);
 
@@ -378,8 +384,6 @@ nds32_group_insns (rtx_insn *sethi)
 	    }
 	}
     }
-
-  relax_group_id++;
 }
 
 /* Convert relax group id in rtl.  */
@@ -389,6 +393,7 @@ nds32_group_tls_insn (rtx insn)
 {
   rtx pat = PATTERN (insn);
   rtx unspec_relax_group = XEXP (XVECEXP (pat, 0, 1), 0);
+  int group_id = nds32_alloc_relax_group_id ();
 
   while (GET_CODE (pat) != SET && GET_CODE (pat) == PARALLEL)
     {
@@ -398,10 +403,8 @@ nds32_group_tls_insn (rtx insn)
   if (GET_CODE (unspec_relax_group) == UNSPEC
       && XINT (unspec_relax_group, 1) == UNSPEC_VOLATILE_RELAX_GROUP)
     {
-      XVECEXP (unspec_relax_group, 0, 0) = GEN_INT (relax_group_id);
+      XVECEXP (unspec_relax_group, 0, 0) = GEN_INT (group_id);
     }
-
-  relax_group_id++;
 }
 
 static bool
@@ -472,7 +475,7 @@ nds32_group_float_insns (rtx_insn *insn)
 	return;
     }
 
-  group_id = GEN_INT (relax_group_id);
+  group_id = GEN_INT (nds32_alloc_relax_group_id ());
   /* Insert .relax_* directive for insn.  */
   emit_insn_before (gen_relax_group (group_id), insn);
 
@@ -487,8 +490,6 @@ nds32_group_float_insns (rtx_insn *insn)
       /* Insert .relax_* directive.  */
 	emit_insn_before (gen_relax_group (group_id), use_insn);
     }
-
-  relax_group_id++;
 }
 
 /* Group the relax candidate instructions for linker.  */

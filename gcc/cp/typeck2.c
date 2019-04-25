@@ -1019,7 +1019,7 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain, bool const_only)
 	  int savederrorcount = errorcount;
 	  global_dc->pedantic_errors = 1;
 	  pedwarn (loc, OPT_Wnarrowing,
-		   "narrowing conversion of %qE from %qH to %qI ",
+		   "narrowing conversion of %qE from %qH to %qI",
 		   init, ftype, type);
 	  if (errorcount == savederrorcount)
 	    ok = true;

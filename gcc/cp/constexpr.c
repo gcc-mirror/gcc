@@ -5423,27 +5423,6 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   return r;
 }
 
-/* Returns true if T is a valid subexpression of a constant expression,
-   even if it isn't itself a constant expression.  */
-
-bool
-is_sub_constant_expr (tree t)
-{
-  bool non_constant_p = false;
-  bool overflow_p = false;
-  hash_map <tree, tree> map;
-  HOST_WIDE_INT constexpr_ops_count = 0;
-
-  constexpr_ctx ctx
-    = { NULL, &map, NULL, NULL, NULL, NULL, &constexpr_ops_count,
-	true, true, false };
-
-  instantiate_constexpr_fns (t);
-  cxx_eval_constant_expression (&ctx, t, false, &non_constant_p,
-				&overflow_p);
-  return !non_constant_p && !overflow_p;
-}
-
 /* If T represents a constant expression returns its reduced value.
    Otherwise return error_mark_node.  If T is dependent, then
    return NULL.  */

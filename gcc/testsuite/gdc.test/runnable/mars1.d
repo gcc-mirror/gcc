@@ -238,13 +238,13 @@ void test13023(ulong n)
 
 struct U { int a; union { char c; int d; } long b; }
 
-U f = { b:3, d:2, a:1 };
+U f = { b:3, d:0x22222222, a:1 };
 
 void testU()
 {
     assert(f.b == 3);
-    assert(f.d == 2);
-    assert(f.c == 2);
+    assert(f.d == 0x22222222);
+    assert(f.c == 0x22);
     assert(f.a == 1);
     assert(f.sizeof == 16);
     assert(U.sizeof == 16);

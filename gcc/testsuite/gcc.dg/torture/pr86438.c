@@ -24,6 +24,6 @@ main (void)
   u64 d = (g ? 5 : 4);
   u32 f = __builtin_sub_overflow_p (d, (u128) d, (u64) 0);
   u128 x = g + f + d;
-  check (x >> (sizeof (u64) * __CHAR_BIT__), x);
+  check ((x >> 1) >> (sizeof (u64) * __CHAR_BIT__ - 1), x);
   return 0;
 }

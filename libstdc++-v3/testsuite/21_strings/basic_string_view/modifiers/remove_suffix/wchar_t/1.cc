@@ -26,7 +26,7 @@ test01()
   using std::wstring_view;
 
   wstring_view str0{L"olympus mons"};
-  wstring_view::pointer p = str0.data();
+  wstring_view::const_pointer p = str0.data();
   str0.remove_suffix(2);
   VERIFY( str0.data() == p);
   VERIFY( str0.length() == 10 );
@@ -39,7 +39,7 @@ test02()
   using std::wstring_view;
 
   wstring_view str0{L"olympus mons"};
-  wstring_view::pointer p = str0.data();
+  wstring_view::const_pointer p = str0.data();
   str0.remove_suffix(2);
   if ( str0.data() != p)
     return false;

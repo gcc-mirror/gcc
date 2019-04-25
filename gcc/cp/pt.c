@@ -4433,7 +4433,9 @@ process_template_parm (tree list, location_t parm_loc, tree parm,
      process_template_parm could fail. */
   tree reqs = finish_shorthand_constraint (parm, constr);
 
-  pushdecl (decl);
+  decl = pushdecl (decl);
+  if (!is_non_type)
+    parm = decl;
 
   /* Build the parameter node linking the parameter declaration,
      its default argument (if any), and its constraints (if any). */
@@ -8475,7 +8477,7 @@ coerce_template_parms (tree parms,
 	arg = NULL_TREE;
 
       if (template_parameter_pack_p (TREE_VALUE (parm))
-	  && (arg || !(complain & tf_partial))
+	  && (arg || require_all_args || !(complain & tf_partial))
 	  && !(arg && ARGUMENT_PACK_P (arg)))
         {
 	  /* Some arguments will be placed in the
@@ -13948,7 +13950,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 
 	    DECL_TEMPLATE_INFO (r) = build_template_info (tmpl, argvec);
 	    SET_DECL_IMPLICIT_INSTANTIATION (r);
-	    register_specialization (r, gen_tmpl, argvec, false, hash);
+	    if (!error_operand_p (r) || (complain & tf_error))
+	      register_specialization (r, gen_tmpl, argvec, false, hash);
 	  }
 	else
 	  {
@@ -20176,21 +20179,17 @@ fn_type_unification (tree fn,
               parameter_pack = TEMPLATE_PARM_PARAMETER_PACK (parm);
             }
 
-	  if (!parameter_pack && targ == NULL_TREE)
+	  if (targ == NULL_TREE)
 	    /* No explicit argument for this template parameter.  */
 	    incomplete = true;
-
-          if (parameter_pack && pack_deducible_p (parm, fn))
+	  else if (parameter_pack && pack_deducible_p (parm, fn))
             {
               /* Mark the argument pack as "incomplete". We could
                  still deduce more arguments during unification.
 	         We remove this mark in type_unification_real.  */
-              if (targ)
-                {
-                  ARGUMENT_PACK_INCOMPLETE_P(targ) = 1;
-                  ARGUMENT_PACK_EXPLICIT_ARGS (targ) 
-                    = ARGUMENT_PACK_ARGS (targ);
-                }
+	      ARGUMENT_PACK_INCOMPLETE_P(targ) = 1;
+	      ARGUMENT_PACK_EXPLICIT_ARGS (targ)
+		= ARGUMENT_PACK_ARGS (targ);
 
               /* We have some incomplete argument packs.  */
               incomplete = true;
@@ -27326,15 +27325,18 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	     where U is a specialization of C or a class derived from a
 	     specialization of C.  */
 	  tree elt = CONSTRUCTOR_ELT (init, 0)->value;
-	  tree etype = TREE_TYPE (elt);
-
-	  tree tparms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (tmpl));
-	  tree targs = make_tree_vec (TREE_VEC_LENGTH (tparms));
-	  int err = unify (tparms, targs, type, etype,
-			   UNIFY_ALLOW_DERIVED, /*explain*/false);
-	  if (err == 0)
-	    try_list_ctor = false;
-	  ggc_free (targs);
+	  if (!BRACE_ENCLOSED_INITIALIZER_P (elt))
+	    {
+	      tree etype = TREE_TYPE (elt);
+	      tree tparms = (INNERMOST_TEMPLATE_PARMS
+			     (DECL_TEMPLATE_PARMS (tmpl)));
+	      tree targs = make_tree_vec (TREE_VEC_LENGTH (tparms));
+	      int err = unify (tparms, targs, type, etype,
+			       UNIFY_ALLOW_DERIVED, /*explain*/false);
+	      if (err == 0)
+		try_list_ctor = false;
+	      ggc_free (targs);
+	    }
 	}
       if (try_list_ctor || is_std_init_list (type))
 	args = make_tree_vector_single (init);

@@ -950,13 +950,12 @@ arc_init (void)
   /* FPX-4.  No FPX extensions mixed with FPU extensions.  */
   if ((TARGET_DPFP_FAST_SET || TARGET_DPFP_COMPACT_SET || TARGET_SPFP)
       && TARGET_HARD_FLOAT)
-    error ("No FPX/FPU mixing allowed");
+    error ("no FPX/FPU mixing allowed");
 
   /* Warn for unimplemented PIC in pre-ARC700 cores, and disable flag_pic.  */
   if (flag_pic && TARGET_ARC600_FAMILY)
     {
-      warning (0,
-	       "PIC is not supported for %s. Generating non-PIC code only..",
+      warning (0, "PIC is not supported for %qs",
 	       arc_cpu_string);
       flag_pic = 0;
     }
@@ -1218,30 +1217,33 @@ arc_override_options (void)
      option is not allowed.  Extra, check options against default
      architecture/cpu flags and throw an warning if we find a
      mismatch.  */
+  /* TRANSLATORS: the DOC/DOC0/DOC1 are strings which shouldn't be
+     translated.  They are like keywords which one can relate with the
+     architectural choices taken for an ARC CPU implementation.  */
 #define ARC_OPTX(NAME, CODE, VAR, VAL, DOC0, DOC1)		\
   do {								\
     if ((!(arc_selected_cpu->arch_info->flags & CODE))		\
 	&& (VAR == VAL))					\
-      error ("Option %s=%s is not available for %s CPU.",	\
+      error ("option %<%s=%s%> is not available for %qs CPU",	\
 	     DOC0, DOC1, arc_selected_cpu->name);		\
     if ((arc_selected_cpu->arch_info->dflags & CODE)		\
 	&& (VAR != DEFAULT_##VAR)				\
 	&& (VAR != VAL))					\
-      warning (0, "Option %s is ignored, the default value %s"	\
-	       " is considered for %s CPU.", DOC0, DOC1,	\
+      warning (0, "option %qs is ignored, the default value %qs"	\
+	       " is considered for %qs CPU", DOC0, DOC1,		\
 	       arc_selected_cpu->name);				\
  } while (0);
 #define ARC_OPT(NAME, CODE, MASK, DOC)				\
   do {								\
     if ((!(arc_selected_cpu->arch_info->flags & CODE))		\
 	&& (target_flags & MASK))				\
-      error ("Option %s is not available for %s CPU",		\
+      error ("option %qs is not available for %qs CPU",		\
 	     DOC, arc_selected_cpu->name);			\
     if ((arc_selected_cpu->arch_info->dflags & CODE)		\
 	&& (target_flags_explicit & MASK)			\
 	&& (!(target_flags & MASK)))				\
-      warning (0, "Unset option %s is ignored, it is always"	\
-	       " enabled for %s CPU.", DOC,			\
+      warning (0, "unset option %qs is ignored, it is always"	\
+	       " enabled for %qs CPU", DOC,			\
 	       arc_selected_cpu->name);				\
   } while (0);
 
@@ -1654,7 +1656,8 @@ static unsigned int arc_hard_regno_modes[] = {
   V_MODES, V_MODES, V_MODES, V_MODES, V_MODES, V_MODES, V_MODES, V_MODES,
 
   S_MODES, S_MODES, S_MODES, S_MODES, S_MODES, S_MODES, S_MODES, S_MODES,
-  S_MODES, S_MODES, S_MODES, S_MODES, S_MODES, S_MODES, S_MODES, S_MODES
+  S_MODES, S_MODES, S_MODES, S_MODES, S_MODES, S_MODES, S_MODES, S_MODES,
+  S_MODES, S_MODES
 };
 
 static unsigned int arc_mode_class [NUM_MACHINE_MODES];
@@ -1841,7 +1844,8 @@ arc_conditional_register_usage (void)
 
   /* Handle Special Registers.  */
   arc_regno_reg_class[CC_REG] = NO_REGS;      /* CC_REG: must be NO_REGS.  */
-  arc_regno_reg_class[62] = GENERAL_REGS;
+  arc_regno_reg_class[FRAME_POINTER_REGNUM] = GENERAL_REGS;
+  arc_regno_reg_class[ARG_POINTER_REGNUM] = GENERAL_REGS;
 
   if (TARGET_DPFP)
     for (i = R40_REG; i < R44_REG; ++i)
@@ -2568,71 +2572,6 @@ arc_compute_function_type (struct function *fun)
   return fun->machine->fn_type = fn_type;
 }
 
-#define FRAME_POINTER_MASK (1 << (FRAME_POINTER_REGNUM))
-#define RETURN_ADDR_MASK (1 << (RETURN_ADDR_REGNUM))
-
-/* Tell prologue and epilogue if register REGNO should be saved / restored.
-   The return address and frame pointer are treated separately.
-   Don't consider them here.
-   Addition for pic: The gp register needs to be saved if the current
-   function changes it to access gotoff variables.
-   FIXME: This will not be needed if we used some arbitrary register
-   instead of r26.  */
-
-static bool
-arc_must_save_register (int regno, struct function *func)
-{
-  unsigned int fn_type = arc_compute_function_type (func);
-  bool irq_auto_save_p = ((irq_ctrl_saved.irq_save_last_reg >= regno)
-			  && ARC_AUTO_IRQ_P (fn_type));
-  bool firq_auto_save_p = ARC_FAST_INTERRUPT_P (fn_type);
-
-  switch (rgf_banked_register_count)
-    {
-    case 4:
-      firq_auto_save_p &= (regno < 4);
-      break;
-    case 8:
-      firq_auto_save_p &= ((regno < 4) || ((regno > 11) && (regno < 16)));
-      break;
-    case 16:
-      firq_auto_save_p &= ((regno < 4) || ((regno > 9) && (regno < 16))
-			   || ((regno > 25) && (regno < 29))
-			   || ((regno > 29) && (regno < 32)));
-      break;
-    case 32:
-      firq_auto_save_p &= (regno != 29) && (regno < 32);
-      break;
-    default:
-      firq_auto_save_p = false;
-      break;
-    }
-
-  if ((regno) != RETURN_ADDR_REGNUM
-      && (regno) != FRAME_POINTER_REGNUM
-      && df_regs_ever_live_p (regno)
-      && (!call_used_regs[regno]
-	  || ARC_INTERRUPT_P (fn_type))
-      /* Do not emit code for auto saved regs.  */
-      && !irq_auto_save_p
-      && !firq_auto_save_p)
-    return true;
-
-  return false;
-}
-
-/* Return true if the return address must be saved in the current function,
-   otherwise return false.  */
-
-static bool
-arc_must_save_return_addr (struct function *func)
-{
-  if (func->machine->frame_info.save_return_addr)
-    return true;
-
-  return false;
-}
-
 /* Helper function to wrap FRAME_POINTER_NEEDED.  We do this as
    FRAME_POINTER_NEEDED will not be true until the IRA (Integrated
    Register Allocator) pass, while we want to get the frame size
@@ -2679,6 +2618,80 @@ static bool
 arc_frame_pointer_needed (void)
 {
   return (frame_pointer_needed || crtl->calls_eh_return);
+}
+
+/* Tell prologue and epilogue if register REGNO should be saved /
+   restored.  The return address, stack pointer and frame pointer are
+   treated separately.  Don't consider them here.  Addition for pic:
+   The gp register needs to be saved if the current function changes
+   it to access gotoff variables.  FIXME: This will not be needed if
+   we used some arbitrary register instead of r26.  */
+
+static bool
+arc_must_save_register (int regno, struct function *func)
+{
+  unsigned int fn_type = arc_compute_function_type (func);
+  bool irq_auto_save_p = ((irq_ctrl_saved.irq_save_last_reg >= regno)
+			  && ARC_AUTO_IRQ_P (fn_type));
+  bool firq_auto_save_p = ARC_FAST_INTERRUPT_P (fn_type);
+
+  switch (rgf_banked_register_count)
+    {
+    case 4:
+      firq_auto_save_p &= (regno < 4);
+      break;
+    case 8:
+      firq_auto_save_p &= ((regno < 4) || ((regno > 11) && (regno < 16)));
+      break;
+    case 16:
+      firq_auto_save_p &= ((regno < 4) || ((regno > 9) && (regno < 16))
+			   || ((regno > 25) && (regno < 29))
+			   || ((regno > 29) && (regno < 32)));
+      break;
+    case 32:
+      firq_auto_save_p &= (regno != 29) && (regno < 32);
+      break;
+    default:
+      firq_auto_save_p = false;
+      break;
+    }
+
+  switch (regno)
+    {
+    case RETURN_ADDR_REGNUM:
+    case STACK_POINTER_REGNUM:
+      return false;
+
+    case HARD_FRAME_POINTER_REGNUM:
+      /* If we need FP reg as a frame pointer then don't save it as a
+	 regular reg.  */
+      if (arc_frame_pointer_needed ())
+	return false;
+
+      /* FALLTHRU */
+    default:
+      if (df_regs_ever_live_p (regno)
+	  && (!call_used_regs[regno]
+	      || ARC_INTERRUPT_P (fn_type))
+	  /* Do not emit code for auto saved regs.  */
+	  && !irq_auto_save_p
+	  && !firq_auto_save_p)
+	return true;
+    }
+
+  return false;
+}
+
+/* Return true if the return address must be saved in the current function,
+   otherwise return false.  */
+
+static bool
+arc_must_save_return_addr (struct function *func)
+{
+  if (func->machine->frame_info.save_return_addr)
+    return true;
+
+  return false;
 }
 
 /* Return non-zero if there are registers to be saved or loaded using
@@ -2942,7 +2955,7 @@ frame_restore_reg (rtx reg, HOST_WIDE_INT offset)
   insn = frame_move_inc (reg, addr, stack_pointer_rtx, 0);
   add_reg_note (insn, REG_CFA_RESTORE, reg);
 
-  if (reg == frame_pointer_rtx)
+  if (reg == hard_frame_pointer_rtx)
     add_reg_note (insn, REG_CFA_DEF_CFA,
 		  plus_constant (Pmode, stack_pointer_rtx,
 				 GET_MODE_SIZE (GET_MODE (reg)) + offset));
@@ -3028,13 +3041,13 @@ arc_save_callee_saves (unsigned int gmask,
      registers are saved.  */
   if (save_fp)
     {
-      frame_allocated += frame_save_reg (frame_pointer_rtx, offset);
+      frame_allocated += frame_save_reg (hard_frame_pointer_rtx, offset);
       offset = 0;
     }
 
   /* Emit mov fp,sp.  */
   if (arc_frame_pointer_needed ())
-    frame_move (frame_pointer_rtx, stack_pointer_rtx);
+    frame_move (hard_frame_pointer_rtx, stack_pointer_rtx);
 
   return frame_allocated;
 }
@@ -3057,7 +3070,7 @@ arc_restore_callee_saves (unsigned int gmask,
   /* Emit mov fp,sp.  */
   if (arc_frame_pointer_needed () && offset)
     {
-      frame_move (stack_pointer_rtx, frame_pointer_rtx);
+      frame_move (stack_pointer_rtx, hard_frame_pointer_rtx);
       frame_deallocated += offset;
       offset = 0;
     }
@@ -3066,7 +3079,7 @@ arc_restore_callee_saves (unsigned int gmask,
     {
       /* Any offset is taken care by previous if-statement.  */
       gcc_assert (offset == 0);
-      frame_deallocated += frame_restore_reg (frame_pointer_rtx, 0);
+      frame_deallocated += frame_restore_reg (hard_frame_pointer_rtx, 0);
     }
 
   if (offset)
@@ -3211,11 +3224,11 @@ arc_save_callee_enter (unsigned int gmask,
       mem = gen_frame_mem (Pmode, plus_constant (Pmode,
 						 stack_pointer_rtx,
 						 off));
-      XVECEXP (insn, 0, indx) = gen_rtx_SET (mem, frame_pointer_rtx);
+      XVECEXP (insn, 0, indx) = gen_rtx_SET (mem, hard_frame_pointer_rtx);
       RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx++)) = 1;
       off -= UNITS_PER_WORD;
 
-      XVECEXP (insn, 0, indx) = gen_rtx_SET (frame_pointer_rtx,
+      XVECEXP (insn, 0, indx) = gen_rtx_SET (hard_frame_pointer_rtx,
 					     stack_pointer_rtx);
       RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx++)) = 1;
       save_fp = false;
@@ -3319,7 +3332,7 @@ arc_restore_callee_leave (unsigned int gmask,
       mem = gen_frame_mem (Pmode, plus_constant (Pmode,
 						 stack_pointer_rtx,
 						 off));
-      XVECEXP (insn, 0, indx) = gen_rtx_SET (frame_pointer_rtx, mem);
+      XVECEXP (insn, 0, indx) = gen_rtx_SET (hard_frame_pointer_rtx, mem);
       RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx++)) = 1;
       off -= UNITS_PER_WORD;
     }
@@ -3338,7 +3351,7 @@ arc_restore_callee_leave (unsigned int gmask,
   /* Dwarf related info.  */
   if (restore_fp)
     {
-      add_reg_note (insn, REG_CFA_RESTORE, frame_pointer_rtx);
+      add_reg_note (insn, REG_CFA_RESTORE, hard_frame_pointer_rtx);
       add_reg_note (insn, REG_CFA_DEF_CFA,
 		    plus_constant (Pmode, stack_pointer_rtx,
 				   offset + nregs * UNITS_PER_WORD));
@@ -3476,11 +3489,11 @@ arc_save_callee_milli (unsigned int gmask,
      above loop to save fp because our ABI states fp goes aftert all
      registers are saved.  */
   if (save_fp)
-    frame_allocated += frame_save_reg (frame_pointer_rtx, offset);
+    frame_allocated += frame_save_reg (hard_frame_pointer_rtx, offset);
 
   /* Emit mov fp,sp.  */
   if (arc_frame_pointer_needed ())
-    frame_move (frame_pointer_rtx, stack_pointer_rtx);
+    frame_move (hard_frame_pointer_rtx, stack_pointer_rtx);
 
   return frame_allocated;
 }
@@ -3510,13 +3523,13 @@ arc_restore_callee_milli (unsigned int gmask,
   /* Emit mov fp,sp.  */
   if (arc_frame_pointer_needed () && offset)
     {
-      frame_move (stack_pointer_rtx, frame_pointer_rtx);
+      frame_move (stack_pointer_rtx, hard_frame_pointer_rtx);
       frame_allocated = offset;
       offset = 0;
     }
 
   if (restore_fp)
-    frame_allocated += frame_restore_reg (frame_pointer_rtx, 0);
+    frame_allocated += frame_restore_reg (hard_frame_pointer_rtx, 0);
 
   if (offset)
     {
@@ -3683,14 +3696,10 @@ arc_expand_prologue (void)
 
   /* Allocate the stack frame.  */
   if (frame_size_to_allocate > 0)
-    {
-      frame_stack_add ((HOST_WIDE_INT) 0 - frame_size_to_allocate);
-      /* If the frame pointer is needed, emit a special barrier that
-	 will prevent the scheduler from moving stores to the frame
-	 before the stack adjustment.  */
-      if (arc_frame_pointer_needed ())
-	emit_insn (gen_stack_tie (stack_pointer_rtx, hard_frame_pointer_rtx));
-    }
+    frame_stack_add ((HOST_WIDE_INT) 0 - frame_size_to_allocate);
+
+  /* Emit a blockage to avoid delay slot scheduling.  */
+  emit_insn (gen_blockage ());
 }
 
 /* Do any necessary cleanup after a function to restore stack, frame,
@@ -3726,6 +3735,10 @@ arc_expand_epilogue (int sibcall_p)
 
   if (!can_trust_sp_p)
     gcc_assert (arc_frame_pointer_needed ());
+
+  /* Emit a blockage to avoid/flush all pending sp operations.  */
+  if (size)
+    emit_insn (gen_blockage ());
 
   if (TARGET_CODE_DENSITY
       && TARGET_CODE_DENSITY_FRAME
@@ -3826,7 +3839,7 @@ arc_check_multi (rtx op, bool push_p)
       if (REGNO (reg) == RETURN_ADDR_REGNUM
 	  && i == start)
 	regno = 12;
-      else if (REGNO (reg) == FRAME_POINTER_REGNUM)
+      else if (REGNO (reg) == HARD_FRAME_POINTER_REGNUM)
 	++i;
       else if (REGNO (reg) != regno)
 	return false;
@@ -3873,7 +3886,7 @@ arc_eh_return_address_location (rtx source)
      included in the 'extra_size' field.  */
   offset = afi->reg_size + afi->extra_size - 4;
   mem = gen_frame_mem (Pmode,
-		       plus_constant (Pmode, frame_pointer_rtx, offset));
+		       plus_constant (Pmode, hard_frame_pointer_rtx, offset));
 
   /* The following should not be needed, and is, really a hack.  The
      issue being worked around here is that the DSE (Dead Store
@@ -5347,7 +5360,7 @@ arc_final_prescan_insn (rtx_insn *insn, rtx *opvec ATTRIBUTE_UNUSED,
 static bool
 arc_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 {
-  return ((to == FRAME_POINTER_REGNUM) || !arc_frame_pointer_needed ());
+  return ((to == HARD_FRAME_POINTER_REGNUM) || (to == STACK_POINTER_REGNUM));
 }
 
 /* Define the offset between two registers, one to be eliminated, and
@@ -5359,7 +5372,7 @@ arc_initial_elimination_offset (int from, int to)
   if (!cfun->machine->frame_info.initialized)
     arc_compute_frame_size ();
 
-  if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
+  if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
     {
       return (cfun->machine->frame_info.extra_size
 	      + cfun->machine->frame_info.reg_size);
@@ -5378,6 +5391,8 @@ arc_initial_elimination_offset (int from, int to)
 	      + cfun->machine->frame_info.extra_size
 	      + cfun->machine->frame_info.reg_size));
     }
+  if ((from == FRAME_POINTER_REGNUM) && (to == HARD_FRAME_POINTER_REGNUM))
+    return 0;
 
   gcc_unreachable ();
 }
@@ -7255,7 +7270,8 @@ check_if_valid_regno_const (rtx *operands, int opno)
     case CONST_INT :
       return true;
     default:
-	error ("register number must be a compile-time constant. Try giving higher optimization levels");
+	error ("register number must be a compile-time constant.  "
+	       "Try giving higher optimization levels");
 	break;
     }
   return false;
@@ -8248,7 +8264,8 @@ arc_reorg (void)
       cfun->machine->ccfsm_current_insn = NULL_RTX;
 
       if (!INSN_ADDRESSES_SET_P())
-	  fatal_error (input_location, "Insn addresses not set after shorten_branches");
+	  fatal_error (input_location,
+		       "insn addresses not set after shorten_branches");
 
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	{
@@ -8669,9 +8686,11 @@ arc_preserve_reload_p (rtx in)
 	  && !((INTVAL (XEXP (in, 1)) & 511)));
 }
 
-int
+/* Implement TARGET_REGISTER_MOVE_COST.  */
+
+static int
 arc_register_move_cost (machine_mode,
-			enum reg_class from_class, enum reg_class to_class)
+			reg_class_t from_class, reg_class_t to_class)
 {
   /* Force an attempt to 'mov Dy,Dx' to spill.  */
   if ((TARGET_ARC700 || TARGET_EM) && TARGET_DPFP
@@ -10975,7 +10994,7 @@ arc_builtin_setjmp_frame_value (void)
      frame pointer value for this frame (if the use of the frame pointer
      had not been removed).  We really do want the raw frame pointer
      register value.  */
-  return gen_raw_REG (Pmode, FRAME_POINTER_REGNUM);
+  return gen_raw_REG (Pmode, HARD_FRAME_POINTER_REGNUM);
 }
 
 /* Return nonzero if a jli call should be generated for a call from
@@ -11411,6 +11430,20 @@ arc_adjust_reg_alloc_order (void)
     memcpy (reg_alloc_order, size_alloc_order, sizeof (size_alloc_order));
 }
 
+/* Implement TARGET_MEMORY_MOVE_COST.  */
+
+static int
+arc_memory_move_cost (machine_mode mode,
+		      reg_class_t rclass ATTRIBUTE_UNUSED,
+		      bool in ATTRIBUTE_UNUSED)
+{
+  if ((GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
+      || ((GET_MODE_SIZE (mode) <= UNITS_PER_WORD * 2) && TARGET_LL64))
+    return 6;
+
+  return (2 * GET_MODE_SIZE (mode));
+}
+
 #undef TARGET_USE_ANCHORS_FOR_SYMBOL_P
 #define TARGET_USE_ANCHORS_FOR_SYMBOL_P arc_use_anchors_for_symbol_p
 
@@ -11425,6 +11458,12 @@ arc_adjust_reg_alloc_order (void)
 
 #undef TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST arc_register_move_cost
+
+#undef TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST arc_memory_move_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

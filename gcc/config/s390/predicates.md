@@ -46,6 +46,16 @@
   (and (match_code "symbol_ref, label_ref, const, const_int, const_wide_int, const_double, const_vector")
        (match_test "CONSTANT_P (op)")))
 
+; An operand used as vector permutation pattern
+
+; This in particular accepts constants which would otherwise be
+; rejected.  These constants require special post reload handling
+
+(define_special_predicate "permute_pattern_operand"
+  (and (match_code "const_vector,mem,reg,subreg")
+       (match_test "GET_MODE (op) == V16QImode")
+       (match_test "!MEM_P (op) || s390_mem_constraint (\"R\", op)")))
+
 ;; Return true if OP is a valid S-type operand.
 
 (define_predicate "s_operand"

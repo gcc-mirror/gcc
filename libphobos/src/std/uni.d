@@ -770,6 +770,8 @@ version (X86)
     enum hasUnalignedReads = true;
 else version (X86_64)
     enum hasUnalignedReads = true;
+else version (SystemZ)
+    enum hasUnalignedReads = true;
 else
     enum hasUnalignedReads = false; // better be safe then sorry
 
@@ -1245,8 +1247,13 @@ pure nothrow:
 
         T opIndex(size_t idx) inout
         {
-            return __ctfe ? simpleIndex(idx) :
-                cast(inout(T))(cast(U*) origin)[idx];
+            T ret;
+            version (LittleEndian)
+                ret = __ctfe ? simpleIndex(idx) :
+                    cast(inout(T))(cast(U*) origin)[idx];
+            else
+                ret = simpleIndex(idx);
+            return ret;
         }
 
         static if (isBitPacked!T) // lack of user-defined implicit conversion
@@ -1259,10 +1266,15 @@ pure nothrow:
 
         void opIndexAssign(TypeOfBitPacked!T val, size_t idx)
         {
-            if (__ctfe)
-                simpleWrite(val, idx);
+            version (LittleEndian)
+            {
+                if (__ctfe)
+                    simpleWrite(val, idx);
+                else
+                    (cast(U*) origin)[idx] = cast(U) val;
+            }
             else
-                (cast(U*) origin)[idx] = cast(U) val;
+                simpleWrite(val, idx);
         }
     }
     else

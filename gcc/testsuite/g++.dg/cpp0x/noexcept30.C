@@ -5,7 +5,7 @@
 template<typename A>
 struct F {
   template<typename B>
-  void f() noexcept(&F::template f<B>) {} // { dg-error "exception specification" }
+  void f() noexcept(&F::template f<B>) {} // { dg-error "exception specification|convert" }
 };
 
 int main () {

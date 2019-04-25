@@ -227,6 +227,10 @@ create_tinfo_types (Module *mod)
 			  ptr_type_node, d_uint_type, ptr_type_node,
 			  array_type_node, ptr_type_node, ptr_type_node, NULL);
 
+  /* If there's no Object class defined, then neither can TypeInfo be.  */
+  if (ClassDeclaration::object == NULL)
+    return;
+
   /* Create all frontend TypeInfo classes declarations.  We rely on all
      existing, even if only just as stubs.  */
   if (!Type::dtypeinfo)
@@ -289,6 +293,27 @@ create_tinfo_types (Module *mod)
 			    ClassDeclaration::object);
 }
 
+/* Return true if TypeInfo class TINFO is available in the runtime library.  */
+
+bool
+have_typeinfo_p (ClassDeclaration *tinfo)
+{
+  /* Run-time typeinfo disabled on command line.  */
+  if (!global.params.useTypeInfo)
+    return false;
+
+  /* Can't layout TypeInfo if type is not declared, or is an opaque
+     declaration in the object module.  */
+  if (!tinfo || !tinfo->members)
+    return false;
+
+  /* Typeinfo is compiler-generated.  */
+  if (tinfo->storage_class & STCtemp)
+    return false;
+
+  return true;
+}
+
 /* Implements the visitor interface to build the TypeInfo layout of all
    TypeInfoDeclaration AST classes emitted from the D Front-end.
    All visit methods accept one parameter D, which holds the frontend AST
@@ -338,7 +363,12 @@ class TypeInfoVisitor : public Visitor
   void layout_base (ClassDeclaration *cd)
   {
     gcc_assert (cd != NULL);
-    this->layout_field (build_address (get_vtable_decl (cd)));
+
+    if (have_typeinfo_p (cd))
+      this->layout_field (build_address (get_vtable_decl (cd)));
+    else
+      this->layout_field (null_pointer_node);
+
     this->layout_field (null_pointer_node);
   }
 
@@ -490,7 +520,7 @@ public:
     this->layout_base (Type::typeinfoconst);
 
     /* TypeInfo for the mutable type.  */
-    this->layout_field (build_typeinfo (tm));
+    this->layout_field (build_typeinfo (d->loc, tm));
   }
 
   /* Layout of TypeInfo_Immutable is:
@@ -507,7 +537,7 @@ public:
     this->layout_base (Type::typeinfoinvariant);
 
     /* TypeInfo for the mutable type.  */
-    this->layout_field (build_typeinfo (tm));
+    this->layout_field (build_typeinfo (d->loc, tm));
   }
 
   /* Layout of TypeInfo_Shared is:
@@ -524,7 +554,7 @@ public:
     this->layout_base (Type::typeinfoshared);
 
     /* TypeInfo for the unshared type.  */
-    this->layout_field (build_typeinfo (tm));
+    this->layout_field (build_typeinfo (d->loc, tm));
   }
 
   /* Layout of TypeInfo_Inout is:
@@ -541,7 +571,7 @@ public:
     this->layout_base (Type::typeinfowild);
 
     /* TypeInfo for the mutable type.  */
-    this->layout_field (build_typeinfo (tm));
+    this->layout_field (build_typeinfo (d->loc, tm));
   }
 
   /* Layout of TypeInfo_Enum is:
@@ -561,7 +591,7 @@ public:
     this->layout_base (Type::typeinfoenum);
 
     /* TypeInfo for enum members.  */
-    tree memtype = (ed->memtype) ? build_typeinfo (ed->memtype)
+    tree memtype = (ed->memtype) ? build_typeinfo (d->loc, ed->memtype)
       : null_pointer_node;
     this->layout_field (memtype);
 
@@ -593,7 +623,7 @@ public:
     this->layout_base (Type::typeinfopointer);
 
     /* TypeInfo for pointer-to type.  */
-    this->layout_field (build_typeinfo (ti->next));
+    this->layout_field (build_typeinfo (d->loc, ti->next));
   }
 
   /* Layout of TypeInfo_Array is:
@@ -610,7 +640,7 @@ public:
     this->layout_base (Type::typeinfoarray);
 
     /* TypeInfo for array of type.  */
-    this->layout_field (build_typeinfo (ti->next));
+    this->layout_field (build_typeinfo (d->loc, ti->next));
   }
 
   /* Layout of TypeInfo_StaticArray is:
@@ -628,7 +658,7 @@ public:
     this->layout_base (Type::typeinfostaticarray);
 
     /* TypeInfo for array of type.  */
-    this->layout_field (build_typeinfo (ti->next));
+    this->layout_field (build_typeinfo (d->loc, ti->next));
 
     /* Static array length.  */
     this->layout_field (size_int (ti->dim->toInteger ()));
@@ -649,10 +679,10 @@ public:
     this->layout_base (Type::typeinfoassociativearray);
 
     /* TypeInfo for value of type.  */
-    this->layout_field (build_typeinfo (ti->next));
+    this->layout_field (build_typeinfo (d->loc, ti->next));
 
     /* TypeInfo for index of type.  */
-    this->layout_field (build_typeinfo (ti->index));
+    this->layout_field (build_typeinfo (d->loc, ti->index));
   }
 
   /* Layout of TypeInfo_Vector is:
@@ -669,7 +699,7 @@ public:
     this->layout_base (Type::typeinfovector);
 
     /* TypeInfo for equivalent static array.  */
-    this->layout_field (build_typeinfo (ti->basetype));
+    this->layout_field (build_typeinfo (d->loc, ti->basetype));
   }
 
   /* Layout of TypeInfo_Function is:
@@ -687,7 +717,7 @@ public:
     this->layout_base (Type::typeinfofunction);
 
     /* TypeInfo for function return value.  */
-    this->layout_field (build_typeinfo (ti->next));
+    this->layout_field (build_typeinfo (d->loc, ti->next));
 
     /* Mangled name of function declaration.  */
     this->layout_string (d->tinfo->deco);
@@ -708,7 +738,7 @@ public:
     this->layout_base (Type::typeinfodelegate);
 
     /* TypeInfo for delegate return value.  */
-    this->layout_field (build_typeinfo (ti->next));
+    this->layout_field (build_typeinfo (d->loc, ti->next));
 
     /* Mangled name of delegate declaration.  */
     this->layout_string (d->tinfo->deco);
@@ -830,7 +860,7 @@ public:
 	flags |= ClassFlags::noPointers;
 
     Lhaspointers:
-	this->layout_field (size_int (flags));
+	this->layout_field (build_integer_cst (flags, d_uint_type));
 
 	/* void *deallocator;  */
 	tree ddtor = (cd->aggDelete)
@@ -886,7 +916,7 @@ public:
 	if (cd->isCOMinterface ())
 	  flags |= ClassFlags::isCOMclass;
 
-	this->layout_field (size_int (flags));
+	this->layout_field (build_integer_cst (flags, d_uint_type));
 
 	/* void *deallocator;
 	   OffsetTypeInfo[] m_offTi;  (not implemented)
@@ -1019,7 +1049,7 @@ public:
     StructFlags::Type m_flags = 0;
     if (ti->hasPointers ())
       m_flags |= StructFlags::hasPointers;
-    this->layout_field (size_int (m_flags));
+    this->layout_field (build_integer_cst (m_flags, d_uint_type));
 
     /* void function(void*) xdtor;  */
     tree dtor = (sd->dtor) ? build_address (get_symbol_decl (sd->dtor))
@@ -1033,17 +1063,17 @@ public:
       this->layout_field (null_pointer_node);
 
     /* uint m_align;  */
-    this->layout_field (size_int (ti->alignsize ()));
+    this->layout_field (build_integer_cst (ti->alignsize (), d_uint_type));
 
     if (global.params.is64bit)
       {
 	/* TypeInfo m_arg1;  */
-	tree arg1type = (sd->arg1type) ? build_typeinfo (sd->arg1type)
+	tree arg1type = (sd->arg1type) ? build_typeinfo (d->loc, sd->arg1type)
 	  : null_pointer_node;
 	this->layout_field (arg1type);
 
 	/* TypeInfo m_arg2;  */
-	tree arg2type = (sd->arg2type) ? build_typeinfo (sd->arg2type)
+	tree arg2type = (sd->arg2type) ? build_typeinfo (d->loc, sd->arg2type)
 	  : null_pointer_node;
 	this->layout_field (arg2type);
       }
@@ -1075,7 +1105,7 @@ public:
       {
 	Parameter *arg = (*ti->arguments)[i];
 	CONSTRUCTOR_APPEND_ELT (elms, size_int (i),
-				build_typeinfo (arg->type));
+				build_typeinfo (d->loc, arg->type));
       }
     tree ctor = build_constructor (build_ctype (satype), elms);
     tree decl = build_artificial_decl (TREE_TYPE (ctor), ctor);
@@ -1311,8 +1341,20 @@ get_classinfo_decl (ClassDeclaration *decl)
 /* Returns typeinfo reference for TYPE.  */
 
 tree
-build_typeinfo (Type *type)
+build_typeinfo (const Loc &loc, Type *type)
 {
+  if (!global.params.useTypeInfo)
+    {
+      static int warned = 0;
+
+      if (!warned)
+	{
+	  error_at (make_location_t (loc),
+		    "%<object.TypeInfo%> cannot be used with -fno-rtti");
+	  warned = 1;
+	}
+    }
+
   gcc_assert (type->ty != Terror);
   create_typeinfo (type, NULL);
   return build_address (get_typeinfo_decl (type->vtinfo));
@@ -1489,8 +1531,8 @@ create_typeinfo (Type *type, Module *mod)
 				      array_type_node, array_type_node,
 				      ptr_type_node, ptr_type_node,
 				      ptr_type_node, ptr_type_node,
-				      size_type_node, ptr_type_node,
-				      ptr_type_node, size_type_node,
+				      d_uint_type, ptr_type_node,
+				      ptr_type_node, d_uint_type,
 				      ptr_type_node, argtype, argtype, NULL);
 	    }
 	  t->vtinfo = TypeInfoStructDeclaration::create (t);

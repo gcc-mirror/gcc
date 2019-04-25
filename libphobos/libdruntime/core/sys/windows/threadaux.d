@@ -24,7 +24,7 @@ import core.stdc.stdlib;
 public import core.thread;
 
 extern(Windows)
-HANDLE OpenThread(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwThreadId) nothrow;
+HANDLE OpenThread(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwThreadId) nothrow @nogc;
 
 extern (C) extern __gshared int _tls_index;
 
@@ -113,7 +113,7 @@ struct thread_aux
     }
 
     alias fnNtQuerySystemInformation = extern(Windows)
-    HRESULT function( uint SystemInformationClass, void* info, uint infoLength, uint* ReturnLength ) nothrow;
+    HRESULT function( uint SystemInformationClass, void* info, uint infoLength, uint* ReturnLength ) nothrow @nogc;
 
     enum ThreadBasicInformation = 0;
 
@@ -129,7 +129,7 @@ struct thread_aux
     }
 
     alias fnNtQueryInformationThread = extern(Windows)
-    int function( HANDLE ThreadHandle, uint ThreadInformationClass, void* buf, uint size, uint* ReturnLength ) nothrow;
+    int function( HANDLE ThreadHandle, uint ThreadInformationClass, void* buf, uint size, uint* ReturnLength ) nothrow @nogc;
 
     enum SYNCHRONIZE = 0x00100000;
     enum THREAD_GET_CONTEXT = 8;
@@ -138,7 +138,7 @@ struct thread_aux
 
     ///////////////////////////////////////////////////////////////////
     // get the thread environment block (TEB) of the thread with the given handle
-    static void** getTEB( HANDLE hnd ) nothrow
+    static void** getTEB( HANDLE hnd ) nothrow @nogc
     {
         HANDLE nthnd = GetModuleHandleA( "NTDLL" );
         assert( nthnd, "cannot get module handle for ntdll" );
@@ -153,7 +153,7 @@ struct thread_aux
     }
 
     // get the thread environment block (TEB) of the thread with the given identifier
-    static void** getTEB( uint id ) nothrow
+    static void** getTEB( uint id ) nothrow @nogc
     {
         HANDLE hnd = OpenThread( THREAD_QUERY_INFORMATION, FALSE, id );
         assert( hnd, "OpenThread failed" );
@@ -164,7 +164,7 @@ struct thread_aux
     }
 
     // get linear address of TEB of current thread
-    static void** getTEB() nothrow
+    static void** getTEB() nothrow @nogc
     {
         version (Win32)
         {
@@ -210,21 +210,21 @@ struct thread_aux
     }
 
     // get the stack bottom (the top address) of the thread with the given handle
-    static void* getThreadStackBottom( HANDLE hnd ) nothrow
+    static void* getThreadStackBottom( HANDLE hnd ) nothrow @nogc
     {
         void** teb = getTEB( hnd );
         return teb[1];
     }
 
     // get the stack bottom (the top address) of the thread with the given identifier
-    static void* getThreadStackBottom( uint id ) nothrow
+    static void* getThreadStackBottom( uint id ) nothrow @nogc
     {
         void** teb = getTEB( id );
         return teb[1];
     }
 
     // create a thread handle with full access to the thread with the given identifier
-    static HANDLE OpenThreadHandle( uint id ) nothrow
+    static HANDLE OpenThreadHandle( uint id ) nothrow @nogc
     {
         return OpenThread( SYNCHRONIZE|THREAD_GET_CONTEXT|THREAD_QUERY_INFORMATION|THREAD_SUSPEND_RESUME, FALSE, id );
     }

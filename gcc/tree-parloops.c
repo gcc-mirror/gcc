@@ -2794,7 +2794,7 @@ try_create_reduction_list (loop_p loop,
       gimple *reduc_phi;
       tree val = PHI_ARG_DEF_FROM_EDGE (phi, exit);
 
-      if (!virtual_operand_p (val))
+      if (TREE_CODE (val) == SSA_NAME && !virtual_operand_p (val))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {

@@ -230,6 +230,10 @@ class Expression
   static Expression*
   make_string(const std::string&, Location);
 
+  // Make a constant string expression with a specific string subtype.
+  static Expression*
+  make_string_typed(const std::string&, Type*, Location);
+
   // Make an expression that evaluates to some characteristic of an string.
   // For simplicity, the enum values must match the field indexes in the
   // underlying struct.
@@ -1570,9 +1574,9 @@ class Set_and_use_temporary_expression : public Expression
 class String_expression : public Expression
 {
  public:
-  String_expression(const std::string& val, Location location)
+  String_expression(const std::string& val, Type* type, Location location)
     : Expression(EXPRESSION_STRING, location),
-      val_(val), type_(NULL)
+      val_(val), type_(type)
   { }
 
   const std::string&

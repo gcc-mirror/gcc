@@ -85,7 +85,7 @@ import core.internal.string;
 
 version (Windows)
 {
-import core.sys.windows.windows;
+import core.sys.windows.winbase /+: QueryPerformanceCounter, QueryPerformanceFrequency+/;
 }
 else version (Posix)
 {
@@ -195,7 +195,7 @@ version (CoreDdoc) enum ClockType
         extremely frequently (e.g. hundreds of thousands of times a second) but
         don't care about high precision, the coarse clock might be appropriate.
 
-        Currently, only Linux and FreeBSD support a coarser clock, and on other
+        Currently, only Linux and FreeBSD/DragonFlyBSD support a coarser clock, and on other
         platforms, it's treated as $(D ClockType.normal).
       +/
     coarse = 2,
@@ -207,7 +207,7 @@ version (CoreDdoc) enum ClockType
         more precise clock than the normal one, it's treated as equivalent to
         $(D ClockType.normal).
 
-        Currently, only FreeBSD supports a more precise clock, where it uses
+        Currently, only FreeBSD/DragonFlyBSD supports a more precise clock, where it uses
         $(D CLOCK_MONOTONIC_PRECISE) for the monotonic time and
         $(D CLOCK_REALTIME_PRECISE) for the wall clock time.
       +/
@@ -231,7 +231,7 @@ version (CoreDdoc) enum ClockType
         Uses a clock that has a precision of one second (contrast to the coarse
         clock, which has sub-second precision like the normal clock does).
 
-        FreeBSD is the only system which specifically has a clock set up for
+        FreeBSD/DragonFlyBSD are the only systems which specifically have a clock set up for
         this (it has $(D CLOCK_SECOND) to use with $(D clock_gettime) which
         takes advantage of an in-kernel cached value), but on other systems, the
         fastest function available will be used, and the resulting $(D SysTime)
@@ -320,6 +320,16 @@ else version (NetBSD) enum ClockType
     precise = 3,
     second = 6,
 }
+else version (DragonFlyBSD) enum ClockType
+{
+    normal = 0,
+    coarse = 2,
+    precise = 3,
+    second = 6,
+    uptime = 8,
+    uptimeCoarse = 9,
+    uptimePrecise = 10,
+}
 else version (Solaris) enum ClockType
 {
     normal = 0,
@@ -383,6 +393,20 @@ version (Posix)
             case coarse: return CLOCK_MONOTONIC;
             case normal: return CLOCK_MONOTONIC;
             case precise: return CLOCK_MONOTONIC;
+            case second: assert(0);
+            }
+        }
+        else version (DragonFlyBSD)
+        {
+            import core.sys.dragonflybsd.time;
+            with(ClockType) final switch (clockType)
+            {
+            case coarse: return CLOCK_MONOTONIC_FAST;
+            case normal: return CLOCK_MONOTONIC;
+            case precise: return CLOCK_MONOTONIC_PRECISE;
+            case uptime: return CLOCK_UPTIME;
+            case uptimeCoarse: return CLOCK_UPTIME_FAST;
+            case uptimePrecise: return CLOCK_UPTIME_PRECISE;
             case second: assert(0);
             }
         }
@@ -451,6 +475,8 @@ unittest
 
     Examples:
 --------------------
+import std.datetime;
+
 assert(dur!"days"(12) == dur!"hnsecs"(10_368_000_000_000L));
 assert(dur!"hnsecs"(27) == dur!"hnsecs"(27));
 assert(std.datetime.Date(2010, 9, 7) + dur!"days"(5) ==
@@ -2513,8 +2539,11 @@ unittest
 
     static bool clockSupported(ClockType c)
     {
-        version (Linux_Pre_2639) // skip CLOCK_BOOTTIME on older linux kernels
-            return c != ClockType.second && c != ClockType.bootTime;
+        // Skip unsupported clocks on older linux kernels, assume that only
+        // CLOCK_MONOTONIC and CLOCK_REALTIME exist, as that is the lowest
+        // common denominator supported by all versions of Linux pre-2.6.12.
+        version (Linux_Pre_2639)
+            return c == ClockType.normal || c == ClockType.precise;
         else
             return c != ClockType.second; // second doesn't work with MonoTimeImpl
 

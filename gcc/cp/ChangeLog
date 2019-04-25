@@ -1,3 +1,124 @@
+2019-04-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90227 - error with template parameter packs.
+	* pt.c (coerce_template_parms): Do add empty pack when
+	require_all_args.
+
+2019-04-24  Richard Biener  <rguenther@suse.de>
+
+	* call.c (null_ptr_cst_p): Order checks according to expensiveness.
+	(conversion_null_warnings): Likewise.
+	* typeck.c (same_type_ignoring_top_level_qualifiers_p): Return
+	early if type1 == type2.
+
+2019-04-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87366 - wrong error with alias template.
+	* typeck.c (structural_comptypes): When comparing_specializations,
+	aliases are unequal.
+	(comptypes): When comparing_specializations, do structural
+	comparison.
+
+2019-04-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90190 - CTAD with list-constructor.
+	* pt.c (do_class_deduction): Don't try the single element deduction
+	if the single element is also a braced list.
+
+	PR c++/90171 - ICE with destroying delete with size_t parm.
+	* call.c (sized_deallocation_fn_p): New.  Use it instead of
+	second_parm_is_size_t in most cases.
+	(second_parm_is_size_t): Don't check for aligned.
+
+2019-04-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/89900
+	* pt.c (fn_type_unification): When handling null explicit
+	arguments do not special case non-parameter packs.
+
+2019-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90138
+	* pt.c (process_template_parm): Set decl to pushdecl result.  If
+	!is_non_type, also set parm to that.
+
+	PR c/89888
+	* decl.c (struct cp_switch): Remove outside_range_p member.
+	(push_switch): Don't clear it.
+	(pop_switch): Adjust c_do_switch_warnings caller.
+	(finish_case_label): Adjust c_add_case_label caller.
+
+	PR c++/90108
+	* decl.c (duplicate_decls): If remove is main variant and
+	DECL_ORIGINAL_TYPE is some other type, remove a DECL_ORIGINAL_TYPE
+	variant that has newdecl as TYPE_NAME if any.
+
+2019-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87554 - ICE with extern template and reference member.
+	* decl.c (cp_finish_decl): Don't set DECL_INITIAL of external vars.
+
+2019-04-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90047 - ICE with enable_if alias template.
+	* pt.c (tsubst_decl) [TYPE_DECL]: Don't put an erroneous decl in the
+	hash table when we're in SFINAE context.
+
+2019-04-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90124 - bogus error with incomplete type in decltype.
+	* typeck.c (build_class_member_access_expr): Check
+	cp_unevaluated_operand.
+
+2019-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89933
+	* decl.c (duplicate_decls): When newdecl's type is its main variant,
+	don't try to remove it from the variant list, but instead assert
+	it has no variants.
+
+2019-04-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88383
+	PR c/89288
+	* parser.c (cp_parser_has_attribute_expression): Handle assignment
+	expressions.
+
+2019-04-12  Jason Merrill  <jason@redhat.com>
+
+	* call.c (null_member_pointer_value_p): Handle an empty CONSTRUCTOR
+	of PMF type.
+
+2019-04-12  Marek Polacek  <polacek@redhat.com>
+
+	* except.c (build_noexcept_spec): Use build_converted_constant_bool_expr
+	instead of perform_implicit_conversion_flags.
+
+	PR c++/87603 - constexpr functions are no longer noexcept.
+	* constexpr.c (is_sub_constant_expr): Remove unused function.
+	* cp-tree.h (is_sub_constant_expr): Remove declaration.
+	* except.c (check_noexcept_r): Don't consider a call to a constexpr
+	function noexcept.
+
+2019-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/90035
+	* parser.h (struct cp_parser): Add
+	type_definition_forbidden_message_arg member.
+	* parser.c (cp_debug_parser): Print it.
+	(cp_parser_check_type_definition): Pass
+	parser->type_definition_forbidden_message_arg as second argument to
+	error.
+	(cp_parser_has_attribute_expression, cp_parser_sizeof_operand): Set
+	parser->type_definition_forbidden_message_arg and use G_() with
+	%qs for parser->type_definition_forbidden_message instead of
+	building untranslatable message using concat.
+
+2019-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/90011
+	* typeck2.c (check_narrowing): Remove trailing space from diagnostics.
+
 2019-04-08  Marek Polacek  <polacek@redhat.com>
 
 	* typeck2.c (digest_init_r): Don't condition the object slicing warning

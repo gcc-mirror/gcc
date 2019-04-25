@@ -207,9 +207,7 @@ version (unittest)
             }
             catch (Throwable e)
             {
-                import core.stdc.stdlib : exit, EXIT_FAILURE;
-                stderr.writeln(e);
-                exit(EXIT_FAILURE); // Bugzilla 7018
+                stderr.writeln(e);  // Bugzilla 7018
             }
         }
     }

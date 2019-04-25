@@ -120,6 +120,13 @@ version (CRuntime_Glibc)
     enum F_SETLK        = 6;
     enum F_SETLKW       = 7;
   }
+  else version (SystemZ)
+  {
+    static assert(off_t.sizeof == 8);
+    enum F_GETLK        = 5;
+    enum F_SETLK        = 6;
+    enum F_SETLKW       = 7;
+  }
   else
   static if ( __USE_FILE_OFFSET64 )
   {
@@ -868,7 +875,7 @@ else version (CRuntime_UClibc)
     enum F_UNLCK        = 2;
     enum F_WRLCK        = 1;
 
-    version (X86_64)
+    version (X86_Any)
     {
         enum O_CREAT        = 0x40;     // octal     0100
         enum O_EXCL         = 0x80;     // octal     0200
@@ -877,12 +884,13 @@ else version (CRuntime_UClibc)
 
         enum O_APPEND       = 0x400;    // octal    02000
         enum O_NONBLOCK     = 0x800;    // octal    04000
+        enum O_CLOEXEC      = 0x80000;  // octal    02000000
         enum O_SYNC         = 0x1000;   // octal    010000
         enum O_NDELAY       = O_NONBLOCK;
         enum O_FSYNC        = O_SYNC;
         enum O_ASYNC        = 0x2000;   // octal    020000
     }
-    else version (MIPS32)
+    else version (MIPS_Any)
     {
         enum O_CREAT        = 0x0100;
         enum O_EXCL         = 0x0400;
@@ -892,11 +900,12 @@ else version (CRuntime_UClibc)
         enum O_APPEND       = 0x0008;
         enum O_SYNC         = 0x0010;
         enum O_NONBLOCK     = 0x0080;
+        enum O_CLOEXEC      = 0x80000;  // octal    02000000
         enum O_NDELAY       = O_NONBLOCK;
         enum O_FSYNC        = O_SYNC;
         enum O_ASYNC        = 0x1000;
     }
-    else version (ARM)
+    else version (ARM_Any)
     {
         enum O_CREAT        = 0x40;     // octal     0100
         enum O_EXCL         = 0x80;     // octal     0200
@@ -905,6 +914,7 @@ else version (CRuntime_UClibc)
 
         enum O_APPEND       = 0x400;    // octal    02000
         enum O_NONBLOCK     = 0x800;    // octal    04000
+        enum O_CLOEXEC      = 0x80000;  // octal    02000000
         enum O_SYNC         = 0x1000;   // octal    010000
         enum O_NDELAY       = O_NONBLOCK;
         enum O_FSYNC        = O_SYNC;

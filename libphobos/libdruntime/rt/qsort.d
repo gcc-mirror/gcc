@@ -75,6 +75,21 @@ else version (FreeBSD)
         return a;
     }
 }
+else version (DragonFlyBSD)
+{
+    alias extern (C) int function(scope void *, scope const void *, scope const void *) Cmp;
+    extern (C) void qsort_r(scope void *base, size_t nmemb, size_t size, scope void *thunk, Cmp cmp);
+
+    extern (C) void[] _adSort(return scope void[] a, TypeInfo ti)
+    {
+        extern (C) int cmp(scope void* ti, scope const void* p1, scope const void* p2)
+        {
+            return (cast(TypeInfo)ti).compare(p1, p2);
+        }
+        qsort_r(a.ptr, a.length, ti.tsize, cast(void*)ti, &cmp);
+        return a;
+    }
+}
 else version (Darwin)
 {
     alias extern (C) int function(scope void *, scope const void *, scope const void *) Cmp;
@@ -87,6 +102,21 @@ else version (Darwin)
             return (cast(TypeInfo)ti).compare(p1, p2);
         }
         qsort_r(a.ptr, a.length, ti.tsize, cast(void*)ti, &cmp);
+        return a;
+    }
+}
+else version (CRuntime_UClibc)
+{
+    alias extern (C) int function(scope const void *, scope const void *, scope void *) __compar_d_fn_t;
+    extern (C) void qsort_r(scope void *base, size_t nmemb, size_t size, __compar_d_fn_t cmp, scope void *arg);
+
+    extern (C) void[] _adSort(return scope void[] a, TypeInfo ti)
+    {
+        extern (C) int cmp(scope const void* p1, scope const void* p2, scope void* ti)
+        {
+            return (cast(TypeInfo)ti).compare(p1, p2);
+        }
+        qsort_r(a.ptr, a.length, ti.tsize, &cmp, cast(void*)ti);
         return a;
     }
 }

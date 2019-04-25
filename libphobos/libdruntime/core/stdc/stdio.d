@@ -1643,9 +1643,6 @@ else version (CRuntime_Bionic)
 }
 else version (CRuntime_Musl)
 {
-    import core.sys.posix.sys.types : off_t;
-    ///
-    int fseeko(FILE *, off_t, int);
     @trusted
     {
         ///

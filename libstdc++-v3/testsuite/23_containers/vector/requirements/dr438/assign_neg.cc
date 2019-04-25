@@ -32,3 +32,5 @@ void f()
   std::vector<A> v;
   v.assign(10, 1);		// { dg-error "here|no match" }
 }
+
+// { dg-prune-output "iterator_traits" }

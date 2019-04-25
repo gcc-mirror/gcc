@@ -4431,7 +4431,7 @@ add_other_self_distances (struct data_dependence_relation *ddr)
 
       if (TREE_CODE (access_fun) == POLYNOMIAL_CHREC)
 	{
-	  if (!evolution_function_is_univariate_p (access_fun))
+	  if (!evolution_function_is_univariate_p (access_fun, loop->num))
 	    {
 	      if (DDR_NUM_SUBSCRIPTS (ddr) != 1)
 		{

@@ -890,12 +890,17 @@ struct S186
     }
 }
 
+static if (size_t.sizeof == 8)
+    enum checkval = 0x0200000000000002;
+else
+    enum checkval = 0x02000002;
+
 void check186(in S186 obj, byte fieldB)
 {
     assert(obj.fieldA == 2);
     assert(obj.fieldB == 0);
     assert(obj.fieldC == 0);
-    assert(obj._complete == 2);
+    assert(obj._complete == checkval);
     assert(fieldB == 0);
 }
 
@@ -907,7 +912,7 @@ void test186a(size_t val)
     assert(obj.fieldA == 2);
     assert(obj.fieldB == 0);
     assert(obj.fieldC == 0);
-    assert(obj._complete == 2);
+    assert(obj._complete == checkval);
 
     obj = S186(val);
     check186(obj, obj.fieldB);
@@ -915,12 +920,12 @@ void test186a(size_t val)
     assert(obj.fieldA == 2);
     assert(obj.fieldB == 0);
     assert(obj.fieldC == 0);
-    assert(obj._complete == 2);
+    assert(obj._complete == checkval);
 }
 
 void test186()
 {
-    test186a(2);
+    test186a(checkval);
 }
 
 /******************************************/

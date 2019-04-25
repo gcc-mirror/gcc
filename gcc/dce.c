@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "valtrack.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
+#include "rtl-iter.h"
 
 
 /* -------------------------------------------------------------------------
@@ -86,6 +87,32 @@ deletable_insn_p_1 (rtx body)
     }
 }
 
+/* Don't delete calls that may throw if we cannot do so.  */
+
+static bool
+can_delete_call (rtx_insn *insn)
+{
+  if (cfun->can_delete_dead_exceptions && can_alter_cfg)
+    return true;
+  if (!insn_nothrow_p (insn))
+    return false;
+  if (can_alter_cfg)
+    return true;
+  /* If we can't alter cfg, even when the call can't throw exceptions, it
+     might have EDGE_ABNORMAL_CALL edges and so we shouldn't delete such
+     calls.  */
+  gcc_assert (CALL_P (insn));
+  if (BLOCK_FOR_INSN (insn) && BB_END (BLOCK_FOR_INSN (insn)) == insn)
+    {
+      edge e;
+      edge_iterator ei;
+
+      FOR_EACH_EDGE (e, ei, BLOCK_FOR_INSN (insn)->succs)
+	if ((e->flags & EDGE_ABNORMAL_CALL) != 0)
+	  return false;
+    }
+  return true;
+}
 
 /* Return true if INSN is a normal instruction that can be deleted by
    the DCE pass.  */
@@ -110,8 +137,7 @@ deletable_insn_p (rtx_insn *insn, bool fast, bitmap arg_stores)
       && (RTL_CONST_OR_PURE_CALL_P (insn)
 	  && !RTL_LOOPING_CONST_OR_PURE_CALL_P (insn))
       /* Don't delete calls that may throw if we cannot do so.  */
-      && ((cfun->can_delete_dead_exceptions && can_alter_cfg)
-	  || insn_nothrow_p (insn)))
+      && can_delete_call (insn))
     return find_call_stack_args (as_a <rtx_call_insn *> (insn), false,
 				 fast, arg_stores);
 
@@ -205,8 +231,7 @@ mark_insn (rtx_insn *insn, bool fast)
 	  && !SIBLING_CALL_P (insn)
 	  && (RTL_CONST_OR_PURE_CALL_P (insn)
 	      && !RTL_LOOPING_CONST_OR_PURE_CALL_P (insn))
-	  && ((cfun->can_delete_dead_exceptions && can_alter_cfg)
-	      || insn_nothrow_p (insn)))
+	  && can_delete_call (insn))
 	find_call_stack_args (as_a <rtx_call_insn *> (insn), true, fast, NULL);
     }
 }
@@ -272,6 +297,100 @@ check_argument_store (HOST_WIDE_INT size, HOST_WIDE_INT off,
   return true;
 }
 
+/* If MEM has sp address, return 0, if it has sp + const address,
+   return that const, if it has reg address where reg is set to sp + const
+   and FAST is false, return const, otherwise return
+   INTTYPE_MINUMUM (HOST_WIDE_INT).  */
+
+static HOST_WIDE_INT
+sp_based_mem_offset (rtx_call_insn *call_insn, const_rtx mem, bool fast)
+{
+  HOST_WIDE_INT off = 0;
+  rtx addr = XEXP (mem, 0);
+  if (GET_CODE (addr) == PLUS
+      && REG_P (XEXP (addr, 0))
+      && CONST_INT_P (XEXP (addr, 1)))
+    {
+      off = INTVAL (XEXP (addr, 1));
+      addr = XEXP (addr, 0);
+    }
+  if (addr == stack_pointer_rtx)
+    return off;
+
+  if (!REG_P (addr) || fast)
+    return INTTYPE_MINIMUM (HOST_WIDE_INT);
+
+  /* If not fast, use chains to see if addr wasn't set to sp + offset.  */
+  df_ref use;
+  FOR_EACH_INSN_USE (use, call_insn)
+  if (rtx_equal_p (addr, DF_REF_REG (use)))
+    break;
+
+  if (use == NULL)
+    return INTTYPE_MINIMUM (HOST_WIDE_INT);
+
+  struct df_link *defs;
+  for (defs = DF_REF_CHAIN (use); defs; defs = defs->next)
+    if (! DF_REF_IS_ARTIFICIAL (defs->ref))
+      break;
+
+  if (defs == NULL)
+    return INTTYPE_MINIMUM (HOST_WIDE_INT);
+
+  rtx set = single_set (DF_REF_INSN (defs->ref));
+  if (!set)
+    return INTTYPE_MINIMUM (HOST_WIDE_INT);
+
+  if (GET_CODE (SET_SRC (set)) != PLUS
+      || XEXP (SET_SRC (set), 0) != stack_pointer_rtx
+      || !CONST_INT_P (XEXP (SET_SRC (set), 1)))
+    return INTTYPE_MINIMUM (HOST_WIDE_INT);
+
+  off += INTVAL (XEXP (SET_SRC (set), 1));
+  return off;
+}
+
+/* Data for check_argument_load called via note_uses.  */
+struct check_argument_load_data {
+  bitmap sp_bytes;
+  HOST_WIDE_INT min_sp_off, max_sp_off;
+  rtx_call_insn *call_insn;
+  bool fast;
+  bool load_found;
+};
+
+/* Helper function for find_call_stack_args.  Check if there are
+   any loads from the argument slots in between the const/pure call
+   and store to the argument slot, set LOAD_FOUND if any is found.  */
+
+static void
+check_argument_load (rtx *loc, void *data)
+{
+  struct check_argument_load_data *d
+    = (struct check_argument_load_data *) data;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, *loc, NONCONST)
+    {
+      const_rtx mem = *iter;
+      HOST_WIDE_INT size;
+      if (MEM_P (mem)
+	  && MEM_SIZE_KNOWN_P (mem)
+	  && MEM_SIZE (mem).is_constant (&size))
+	{
+	  HOST_WIDE_INT off = sp_based_mem_offset (d->call_insn, mem, d->fast);
+	  if (off != INTTYPE_MINIMUM (HOST_WIDE_INT)
+	      && off < d->max_sp_off
+	      && off + size > d->min_sp_off)
+	    for (HOST_WIDE_INT byte = MAX (off, d->min_sp_off);
+		 byte < MIN (off + size, d->max_sp_off); byte++)
+	      if (bitmap_bit_p (d->sp_bytes, byte - d->min_sp_off))
+		{
+		  d->load_found = true;
+		  return;
+		}
+	}
+    }
+}
 
 /* Try to find all stack stores of CALL_INSN arguments if
    ACCUMULATE_OUTGOING_ARGS.  If all stack stores have been found
@@ -309,58 +428,13 @@ find_call_stack_args (rtx_call_insn *call_insn, bool do_mark, bool fast,
     if (GET_CODE (XEXP (p, 0)) == USE
 	&& MEM_P (XEXP (XEXP (p, 0), 0)))
       {
-	rtx mem = XEXP (XEXP (p, 0), 0), addr;
-	HOST_WIDE_INT off = 0, size;
+	rtx mem = XEXP (XEXP (p, 0), 0);
+	HOST_WIDE_INT size;
 	if (!MEM_SIZE_KNOWN_P (mem) || !MEM_SIZE (mem).is_constant (&size))
 	  return false;
-	addr = XEXP (mem, 0);
-	if (GET_CODE (addr) == PLUS
-	    && REG_P (XEXP (addr, 0))
-	    && CONST_INT_P (XEXP (addr, 1)))
-	  {
-	    off = INTVAL (XEXP (addr, 1));
-	    addr = XEXP (addr, 0);
-	  }
-	if (addr != stack_pointer_rtx)
-	  {
-	    if (!REG_P (addr))
-	      return false;
-	    /* If not fast, use chains to see if addr wasn't set to
-	       sp + offset.  */
-	    if (!fast)
-	      {
-		df_ref use;
-		struct df_link *defs;
-		rtx set;
-
-		FOR_EACH_INSN_USE (use, call_insn)
-		  if (rtx_equal_p (addr, DF_REF_REG (use)))
-		    break;
-
-		if (use == NULL)
-		  return false;
-
-		for (defs = DF_REF_CHAIN (use); defs; defs = defs->next)
-		  if (! DF_REF_IS_ARTIFICIAL (defs->ref))
-		    break;
-
-		if (defs == NULL)
-		  return false;
-
-		set = single_set (DF_REF_INSN (defs->ref));
-		if (!set)
-		  return false;
-
-		if (GET_CODE (SET_SRC (set)) != PLUS
-		    || XEXP (SET_SRC (set), 0) != stack_pointer_rtx
-		    || !CONST_INT_P (XEXP (SET_SRC (set), 1)))
-		  return false;
-
-		off += INTVAL (XEXP (SET_SRC (set), 1));
-	      }
-	    else
-	      return false;
-	  }
+	HOST_WIDE_INT off = sp_based_mem_offset (call_insn, mem, fast);
+	if (off == INTTYPE_MINIMUM (HOST_WIDE_INT))
+	  return false;
 	min_sp_off = MIN (min_sp_off, off);
 	max_sp_off = MAX (max_sp_off, off + size);
       }
@@ -376,51 +450,24 @@ find_call_stack_args (rtx_call_insn *call_insn, bool do_mark, bool fast,
     if (GET_CODE (XEXP (p, 0)) == USE
 	&& MEM_P (XEXP (XEXP (p, 0), 0)))
       {
-	rtx mem = XEXP (XEXP (p, 0), 0), addr;
-	HOST_WIDE_INT off = 0, byte, size;
+	rtx mem = XEXP (XEXP (p, 0), 0);
 	/* Checked in the previous iteration.  */
-	size = MEM_SIZE (mem).to_constant ();
-	addr = XEXP (mem, 0);
-	if (GET_CODE (addr) == PLUS
-	    && REG_P (XEXP (addr, 0))
-	    && CONST_INT_P (XEXP (addr, 1)))
-	  {
-	    off = INTVAL (XEXP (addr, 1));
-	    addr = XEXP (addr, 0);
-	  }
-	if (addr != stack_pointer_rtx)
-	  {
-	    df_ref use;
-	    struct df_link *defs;
-	    rtx set;
-
-	    FOR_EACH_INSN_USE (use, call_insn)
-	      if (rtx_equal_p (addr, DF_REF_REG (use)))
-		break;
-
-	    for (defs = DF_REF_CHAIN (use); defs; defs = defs->next)
-	      if (! DF_REF_IS_ARTIFICIAL (defs->ref))
-		break;
-
-	    set = single_set (DF_REF_INSN (defs->ref));
-	    off += INTVAL (XEXP (SET_SRC (set), 1));
-	  }
-	for (byte = off; byte < off + size; byte++)
-	  {
-	    if (!bitmap_set_bit (sp_bytes, byte - min_sp_off))
-	      gcc_unreachable ();
-	  }
+	HOST_WIDE_INT size = MEM_SIZE (mem).to_constant ();
+	HOST_WIDE_INT off = sp_based_mem_offset (call_insn, mem, fast);
+	gcc_checking_assert (off != INTTYPE_MINIMUM (HOST_WIDE_INT));
+	for (HOST_WIDE_INT byte = off; byte < off + size; byte++)
+	  if (!bitmap_set_bit (sp_bytes, byte - min_sp_off))
+	    gcc_unreachable ();
       }
 
   /* Walk backwards, looking for argument stores.  The search stops
-     when seeing another call, sp adjustment or memory store other than
-     argument store.  */
+     when seeing another call, sp adjustment, memory store other than
+     argument store or a read from an argument stack slot.  */
+  struct check_argument_load_data data
+    = { sp_bytes, min_sp_off, max_sp_off, call_insn, fast, false };
   ret = false;
   for (insn = PREV_INSN (call_insn); insn; insn = prev_insn)
     {
-      rtx set, mem, addr;
-      HOST_WIDE_INT off;
-
       if (insn == BB_HEAD (BLOCK_FOR_INSN (call_insn)))
 	prev_insn = NULL;
       else
@@ -432,61 +479,21 @@ find_call_stack_args (rtx_call_insn *call_insn, bool do_mark, bool fast,
       if (!NONDEBUG_INSN_P (insn))
 	continue;
 
-      set = single_set (insn);
+      rtx set = single_set (insn);
       if (!set || SET_DEST (set) == stack_pointer_rtx)
+	break;
+
+      note_uses (&PATTERN (insn), check_argument_load, &data);
+      if (data.load_found)
 	break;
 
       if (!MEM_P (SET_DEST (set)))
 	continue;
 
-      mem = SET_DEST (set);
-      addr = XEXP (mem, 0);
-      off = 0;
-      if (GET_CODE (addr) == PLUS
-	  && REG_P (XEXP (addr, 0))
-	  && CONST_INT_P (XEXP (addr, 1)))
-	{
-	  off = INTVAL (XEXP (addr, 1));
-	  addr = XEXP (addr, 0);
-	}
-      if (addr != stack_pointer_rtx)
-	{
-	  if (!REG_P (addr))
-	    break;
-	  if (!fast)
-	    {
-	      df_ref use;
-	      struct df_link *defs;
-	      rtx set;
-
-	      FOR_EACH_INSN_USE (use, insn)
-		if (rtx_equal_p (addr, DF_REF_REG (use)))
-		  break;
-
-	      if (use == NULL)
-		break;
-
-	      for (defs = DF_REF_CHAIN (use); defs; defs = defs->next)
-		if (! DF_REF_IS_ARTIFICIAL (defs->ref))
-		  break;
-
-	      if (defs == NULL)
-		break;
-
-	      set = single_set (DF_REF_INSN (defs->ref));
-	      if (!set)
-		break;
-
-	      if (GET_CODE (SET_SRC (set)) != PLUS
-		  || XEXP (SET_SRC (set), 0) != stack_pointer_rtx
-		  || !CONST_INT_P (XEXP (SET_SRC (set), 1)))
-		break;
-
-	      off += INTVAL (XEXP (SET_SRC (set), 1));
-	    }
-	  else
-	    break;
-	}
+      rtx mem = SET_DEST (set);
+      HOST_WIDE_INT off = sp_based_mem_offset (call_insn, mem, fast);
+      if (off == INTTYPE_MINIMUM (HOST_WIDE_INT))
+	break;
 
       HOST_WIDE_INT size;
       if (!MEM_SIZE_KNOWN_P (mem)

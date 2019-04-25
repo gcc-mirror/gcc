@@ -20,10 +20,16 @@ objext=o
 _LT_TAGVAR(objext, $1)=$objext
 
 # Code to be used in simple compile tests
-lt_simple_compile_test_code="module mod; extern(C) int main() { return 0; }"
+lt_simple_compile_test_code="\
+  module object;
+  shared int some_variable = 0;
+"
 
 # Code to be used in simple link tests
-lt_simple_link_test_code='module mod; extern(C) int main() { return 0; }'
+lt_simple_link_test_code="\
+  module object;
+  extern(C) int main() { return 0; }
+"
 
 # ltmain only uses $CC for tagged configurations so make sure $CC is set.
 _LT_TAG_COMPILER
@@ -35,12 +41,9 @@ _LT_LINKER_BOILERPLATE
 # Allow CC to be a program name with arguments.
 lt_save_CC=$CC
 lt_save_CFLAGS=$CFLAGS
-lt_save_DFLAGS=$GDCFLAGS
 lt_save_GCC=$GCC
 GCC=yes
 CC=${GDC-"gdc"}
-# Need to specify location for object.d
-GDCFLAGS="-nophoboslib $GDCFLAGS"
 CFLAGS=$GDCFLAGS
 compiler=$CC
 _LT_TAGVAR(compiler, $1)=$CC
@@ -74,5 +77,4 @@ AC_LANG_RESTORE
 GCC=$lt_save_GCC
 CC=$lt_save_CC
 CFLAGS=$lt_save_CFLAGS
-GDCFLAGS=$lt_save_DFLAGS
 ])# _LT_LANG_D_CONFIG

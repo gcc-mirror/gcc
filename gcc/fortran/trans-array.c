@@ -849,6 +849,41 @@ is_pointer_array (tree expr)
 }
 
 
+/* If the symbol or expression reference a CFI descriptor, return the
+   pointer to the converted gfc descriptor. If an array reference is
+   present as the last argument, check that it is the one applied to
+   the CFI descriptor in the expression. Note that the CFI object is
+   always the symbol in the expression!  */
+
+static bool
+get_CFI_desc (gfc_symbol *sym, gfc_expr *expr,
+	      tree *desc, gfc_array_ref *ar)
+{
+  tree tmp;
+
+  if (!is_CFI_desc (sym, expr))
+    return false;
+
+  if (expr && ar)
+    {
+      if (!(expr->ref && expr->ref->type == REF_ARRAY)
+	  || (&expr->ref->u.ar != ar))
+	return false;
+    }
+
+  if (sym == NULL)
+    tmp = expr->symtree->n.sym->backend_decl;
+  else
+    tmp = sym->backend_decl;
+
+  if (tmp && DECL_LANG_SPECIFIC (tmp))
+    tmp = GFC_DECL_SAVED_DESCRIPTOR (tmp);
+
+  *desc = tmp;
+  return true;
+}
+
+
 /* Return the span of an array.  */
 
 tree
@@ -856,9 +891,14 @@ gfc_get_array_span (tree desc, gfc_expr *expr)
 {
   tree tmp;
 
-  if (is_pointer_array (desc))
-    /* This will have the span field set.  */
-    tmp = gfc_conv_descriptor_span_get (desc);
+  if (is_pointer_array (desc) || get_CFI_desc (NULL, expr, &desc, NULL))
+    {
+      if (POINTER_TYPE_P (TREE_TYPE (desc)))
+	desc = build_fold_indirect_ref_loc (input_location, desc);
+
+      /* This will have the span field set.  */
+      tmp = gfc_conv_descriptor_span_get (desc);
+    }
   else if (TREE_CODE (desc) == COMPONENT_REF
 	   && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc))
 	   && GFC_CLASS_TYPE_P (TREE_TYPE (TREE_OPERAND (desc, 0))))
@@ -3466,6 +3506,12 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
   if (build_class_array_ref (se, base, index))
     return;
 
+  if (get_CFI_desc (NULL, expr, &decl, ar))
+    {
+      decl = build_fold_indirect_ref_loc (input_location, decl);
+      goto done;
+    }
+
   if (expr && ((is_subref_array (expr)
 		&& GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (info->descriptor)))
 	       || (expr->ts.deferred && (expr->expr_type == EXPR_VARIABLE
@@ -3721,6 +3767,8 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
   /* A pointer array component can be detected from its field decl. Fix
      the descriptor, mark the resulting variable decl and pass it to
      build_array_ref.  */
+  if (get_CFI_desc (sym, expr, &decl, ar))
+    decl = build_fold_indirect_ref_loc (input_location, decl);
   if (!expr->ts.deferred && !sym->attr.codimension
       && is_pointer_array (se->expr))
     {

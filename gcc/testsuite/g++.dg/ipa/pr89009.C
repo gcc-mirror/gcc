@@ -1,5 +1,6 @@
 /* PR ipa/89009 */
 /* { dg-do run } */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-fpic -O2 -fno-inline" } */
 /* { dg-require-visibility "" } */
 

@@ -131,16 +131,19 @@ if (isSomeChar!To && (isInputRange!From || isSomeString!From) &&
     private:
         To* _ptr;
         size_t _length;        // length of the string
+
+        // the 'small string optimization'
         version (unittest)
         {
-            enum buffLength = 16 / To.sizeof;   // smaller size to trigger reallocations
+            // smaller size to trigger reallocations. Padding is to account for
+            // unittest/non-unittest cross-compilation (to avoid corruption)
+            To[16 / To.sizeof] _buff;
+            To[(256 - 16) / To.sizeof] _unittest_pad;
         }
         else
         {
-            enum buffLength = 256 / To.sizeof;   // production size
+            To[256 / To.sizeof] _buff; // production size
         }
-
-        To[buffLength] _buff;  // the 'small string optimization'
 
         static Res trustedVoidInit() { Res res = void; return res; }
     }

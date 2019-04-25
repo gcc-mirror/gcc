@@ -68,34 +68,34 @@ shared_library "$srcdir/$subdir/plugin.d" "plugin2.so" ""
 dg-init
 
 # Main loop.
-dg-test "$srcdir/$subdir/link.d" "-I$srcdir/$subdir lib.so -shared-libphobos" \
+dg-runtest "$srcdir/$subdir/link.d" "-I$srcdir/$subdir lib.so -shared-libphobos" \
 	"$DEFAULT_DFLAGS"
 
-dg-test "$srcdir/$subdir/link_linkdep.d" \
+dg-runtest "$srcdir/$subdir/link_linkdep.d" \
 	"-I$srcdir/$subdir liblinkdep.so lib.so -shared-libphobos" \
 	"$DEFAULT_DFLAGS"
 
-dg-test "$srcdir/$subdir/link_loaddep.d" \
+dg-runtest "$srcdir/$subdir/link_loaddep.d" \
 	"-I$srcdir/$subdir libloaddep.so -shared-libphobos" "$DEFAULT_DFLAGS"
 
 # dlopen() tests.
 if [is-effective-target dlopen] {
-    dg-test "$srcdir/$subdir/load.d" "-shared-libphobos -ldl" "$DEFAULT_DFLAGS"
-    dg-test "$srcdir/$subdir/load_linkdep.d" "-shared-libphobos -ldl" "$DEFAULT_DFLAGS"
-    dg-test "$srcdir/$subdir/load_loaddep.d" "-shared-libphobos -ldl" "$DEFAULT_DFLAGS"
-    dg-test "$srcdir/$subdir/load_13414.d" "-shared-libphobos -ldl" "$DEFAULT_DFLAGS"
-    dg-test "$srcdir/$subdir/finalize.d" "-shared-libphobos -ldl" "$DEFAULT_DFLAGS"
+    dg-runtest "$srcdir/$subdir/load.d" "-shared-libphobos -ldl" "$DEFAULT_DFLAGS"
+    dg-runtest "$srcdir/$subdir/load_linkdep.d" "-shared-libphobos -ldl" "$DEFAULT_DFLAGS"
+    dg-runtest "$srcdir/$subdir/load_loaddep.d" "-shared-libphobos -ldl" "$DEFAULT_DFLAGS"
+    dg-runtest "$srcdir/$subdir/load_13414.d" "-shared-libphobos -ldl" "$DEFAULT_DFLAGS"
+    dg-runtest "$srcdir/$subdir/finalize.d" "-shared-libphobos -ldl" "$DEFAULT_DFLAGS"
 }
 
 # C program link tests.
 if { [is-effective-target dlopen] && [is-effective-target pthread] } {
-    dg-test "$srcdir/$subdir/linkD.c" "lib.so -ldl -pthread" "$DEFAULT_CFLAGS"
-    dg-test "$srcdir/$subdir/linkDR.c" "-shared-libphobos -ldl -pthread" "$DEFAULT_CFLAGS"
-    dg-test "$srcdir/$subdir/host.c" "-ldl -pthread" "$DEFAULT_CFLAGS"
+    dg-runtest "$srcdir/$subdir/linkD.c" "lib.so -ldl -pthread" "$DEFAULT_CFLAGS"
+    dg-runtest "$srcdir/$subdir/linkDR.c" "-shared-libphobos -ldl -pthread" "$DEFAULT_CFLAGS"
+    dg-runtest "$srcdir/$subdir/host.c" "-ldl -pthread" "$DEFAULT_CFLAGS"
 
     # Test requires a command line argument to be passed to the program.
     set libphobos_run_args "${blddir}/src/.libs/libgphobos.${shlib_ext}"
-    dg-test "$srcdir/$subdir/loadDR.c" "-ldl -pthread -g" "$DEFAULT_CFLAGS"
+    dg-runtest "$srcdir/$subdir/loadDR.c" "-ldl -pthread -g" "$DEFAULT_CFLAGS"
     set libphobos_run_args ""
 }
 

@@ -35,6 +35,9 @@ enum ThreadModel
 
 enum ThreadModel GNU_Thread_Model = ThreadModel.@DCFG_THREAD_MODEL@;
 
+// Whether struct dl_phdr_info has dlpi_tls_modid member.
+enum OS_Have_Dlpi_Tls_Modid = @DCFG_DLPI_TLS_MODID@;
+
 // Whether target has support for builtin atomics.
 enum GNU_Have_Atomics = @DCFG_HAVE_ATOMIC_BUILTINS@;
 

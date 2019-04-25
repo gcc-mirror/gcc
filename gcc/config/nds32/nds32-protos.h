@@ -256,6 +256,7 @@ extern const char *nds32_output_call (rtx, rtx *, rtx,
 				      const char *, const char *, bool);
 extern const char *nds32_output_tls_desc (rtx *);
 extern const char *nds32_output_tls_ie (rtx *);
+extern const char *nds32_output_symrel (rtx *);
 
 /* Auxiliary functions to output stack push/pop instruction.  */
 
@@ -368,5 +369,7 @@ extern bool nds32_use_load_post_increment(machine_mode);
 /* Functions for create nds32 specific optimization pass.  */
 extern rtl_opt_pass *make_pass_nds32_relax_opt (gcc::context *);
 extern rtl_opt_pass *make_pass_nds32_fp_as_gp (gcc::context *);
+
+extern int nds32_alloc_relax_group_id ();
 
 /* ------------------------------------------------------------------------ */

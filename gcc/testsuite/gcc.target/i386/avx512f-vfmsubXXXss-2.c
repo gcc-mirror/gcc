@@ -41,8 +41,8 @@ avx512f_test (void)
   for (i = 0; i < SIZE; i++)
     {
       src1.a[i] = DEFAULT_VALUE;
-      src2.a[i] = 56.78 * (i + 1) * sign;
-      src3.a[i] = 90.12 * (i + 2) * sign;
+      src2.a[i] = 56.75 * (i + 1) * sign;
+      src3.a[i] = 90.25 * (i + 2) * sign;
       sign = sign * -1;
     }
   for (i = 0; i < SIZE; i++)

@@ -197,6 +197,10 @@ Enum(bounds_check) String(safeonly) Value(1)
 EnumValue
 Enum(bounds_check) String(on) Value(2)
 
+; Generates a secondary ModuleInfo symbol for linking in unittests
+fbuilding-libphobos-tests
+D Undocumented Var(flag_building_libphobos_tests)
+
 fbuiltin
 D Var(flag_no_builtin, 0)
 ; Documented in C
@@ -225,6 +229,10 @@ fdoc-inc=
 D Joined RejectNegative
 -fdoc-inc=<file>	Include a Ddoc macro <file>.
 
+fdruntime
+D
+Assume that standard D runtime libraries and \"D main\" exist.
+
 fdump-d-original
 D
 Display the frontend AST after parsing and semantic passes.
@@ -246,7 +254,7 @@ D Joined RejectNegative
 -fmodule-file=<package.module>=<filespec>	use <filespec> as source file for <package.module>.
 
 fmoduleinfo
-D
+D Var(flag_moduleinfo)
 Generate ModuleInfo struct for output module.
 
 fonly=
@@ -264,6 +272,10 @@ Generate code for precondition contracts.
 frelease
 D
 Compile release version.
+
+frtti
+D
+; Documented in C
 
 fswitch-errors
 D Var(flag_switch_errors)

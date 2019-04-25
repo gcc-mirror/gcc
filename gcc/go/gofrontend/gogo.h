@@ -220,6 +220,16 @@ class Gogo
 	    && name[name.length() - 2] == '.');
   }
 
+  // Helper used when adding parameters (including receiver param) to the
+  // bindings of a function. If the specified parameter name is empty or
+  // corresponds to the sink name, param name is replaced with a new unique
+  // name. PNAME is the address of a string containing the parameter variable
+  // name to be checked/updated; TAG is a descriptive tag to be used in
+  // manufacturing the new unique name, and COUNT is the address of a counter
+  // holding the number of params renamed so far with the tag in question.
+  static void
+  rename_if_empty(std::string* pname, const char* tag, unsigned* count);
+
   // Convert a pkgpath into a string suitable for a symbol
   static std::string
   pkgpath_for_symbol(const std::string& pkgpath);

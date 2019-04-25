@@ -12104,10 +12104,10 @@ _mm_maskz_fnmsub_round_ss (__mmask8 __U, __m128 __W, __m128 __A, __m128 __B,
     (__m128) __builtin_ia32_vfmaddss3_mask3 (A, B, C, U, R)
 
 #define _mm_maskz_fmadd_round_sd(U, A, B, C, R)            \
-    (__m128d) __builtin_ia32_vfmaddsd3_mask3 (A, B, C, U, R)
+    (__m128d) __builtin_ia32_vfmaddsd3_maskz (A, B, C, U, R)
 
 #define _mm_maskz_fmadd_round_ss(U, A, B, C, R)            \
-    (__m128) __builtin_ia32_vfmaddss3_mask3 (A, B, C, U, R)
+    (__m128) __builtin_ia32_vfmaddss3_maskz (A, B, C, U, R)
 
 #define _mm_mask_fmsub_round_sd(A, U, B, C, R)            \
     (__m128d) __builtin_ia32_vfmaddsd3_mask (A, B, -(C), U, R)
@@ -12122,10 +12122,10 @@ _mm_maskz_fnmsub_round_ss (__mmask8 __U, __m128 __W, __m128 __A, __m128 __B,
     (__m128) __builtin_ia32_vfmsubss3_mask3 (A, B, C, U, R)
 
 #define _mm_maskz_fmsub_round_sd(U, A, B, C, R)            \
-    (__m128d) __builtin_ia32_vfmaddsd3_mask3 (A, B, -(C), U, R)
+    (__m128d) __builtin_ia32_vfmaddsd3_maskz (A, B, -(C), U, R)
 
 #define _mm_maskz_fmsub_round_ss(U, A, B, C, R)            \
-    (__m128) __builtin_ia32_vfmaddss3_mask3 (A, B, -(C), U, R)
+    (__m128) __builtin_ia32_vfmaddss3_maskz (A, B, -(C), U, R)
 
 #define _mm_mask_fnmadd_round_sd(A, U, B, C, R)            \
     (__m128d) __builtin_ia32_vfmaddsd3_mask (A, -(B), C, U, R)
@@ -12140,10 +12140,10 @@ _mm_maskz_fnmsub_round_ss (__mmask8 __U, __m128 __W, __m128 __A, __m128 __B,
     (__m128) __builtin_ia32_vfmaddss3_mask3 (A, -(B), C, U, R)
 
 #define _mm_maskz_fnmadd_round_sd(U, A, B, C, R)            \
-    (__m128d) __builtin_ia32_vfmaddsd3_mask3 (A, -(B), C, U, R)
+    (__m128d) __builtin_ia32_vfmaddsd3_maskz (A, -(B), C, U, R)
 
 #define _mm_maskz_fnmadd_round_ss(U, A, B, C, R)            \
-    (__m128) __builtin_ia32_vfmaddss3_mask3 (A, -(B), C, U, R)
+    (__m128) __builtin_ia32_vfmaddss3_maskz (A, -(B), C, U, R)
 
 #define _mm_mask_fnmsub_round_sd(A, U, B, C, R)            \
     (__m128d) __builtin_ia32_vfmaddsd3_mask (A, -(B), -(C), U, R)
@@ -12158,10 +12158,10 @@ _mm_maskz_fnmsub_round_ss (__mmask8 __U, __m128 __W, __m128 __A, __m128 __B,
     (__m128) __builtin_ia32_vfmsubss3_mask3 (A, -(B), C, U, R)
 
 #define _mm_maskz_fnmsub_round_sd(U, A, B, C, R)            \
-    (__m128d) __builtin_ia32_vfmaddsd3_mask3 (A, -(B), -(C), U, R)
+    (__m128d) __builtin_ia32_vfmaddsd3_maskz (A, -(B), -(C), U, R)
 
 #define _mm_maskz_fnmsub_round_ss(U, A, B, C, R)            \
-    (__m128) __builtin_ia32_vfmaddss3_mask3 (A, -(B), -(C), U, R)
+    (__m128) __builtin_ia32_vfmaddss3_maskz (A, -(B), -(C), U, R)
 #endif
 
 #ifdef __OPTIMIZE__

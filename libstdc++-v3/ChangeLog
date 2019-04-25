@@ -1,3 +1,329 @@
+2019-04-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Document P0024R2 status.
+	* doc/html/*: Regenerate.
+
+	* include/bits/fs_path.h (operator<, operator<=, operator>)
+	(operator>=, operator==, operator!=): Make hidden friends, as per
+	LWG 3065.
+	* testsuite/27_io/filesystem/path/native/string-char8_t.cc: Fix
+	string type in test.
+	* testsuite/27_io/filesystem/path/native/string.cc: Likewise.
+
+	* include/std/any (any::any(ValueType&&)): Use __and_v.
+	* include/std/numeric (midpoint(T, T, T), midpoint(T*, T*, T*)):
+	Likewise.
+
+	* include/std/tuple (apply): Use remove_reference_t instead of decay_t
+	as per P0777R1.
+	* include/std/type_traits (__result_of_memfun): Use remove_reference
+	instead of __remove_cvref_t and remove redundant is_same check.
+	(__inv_unwrap): Use __remove_cvref_t instead of decay_t.
+
+	* include/experimental/string_view (basic_string_view::pointer)
+	(basic_string_view::reference): Fix to refer to non-const value_type.
+	* include/bits/basic_string.h (basic_string): Use __sv_check and
+	__sv_limit instead of basic_string_view::_M_check and
+	basic_string_view::_M_limit.
+	* include/std/string_view (__sv_check, __sv_limit): New
+	helper functions to replace basic_string_view::_M_check and
+	basic_string_view::_M_limit.
+	(basic_string_view): Add static assertions to enforce ill-formed
+	requirement for traits_type::char_type from P1148R0, and to enforce
+	required properties of char-like types.
+	(basic_string_view::pointer, basic_string_view::reference): Fix to
+	refer to non-const value_type.
+	(basic_string_view::operator[], basic_string_view::at)
+	(basic_string_view::front, basic_string_view::back)
+	(basic_string_view::data): Use const_reference and const_pointer
+	typedefs for return types.
+	(basic_string_view::_M_check, basic_string_view::_M_limit): Remove.
+	(hash<wstring_view>): Fix argument_type typedef.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/
+	char/1.cc: Fix expected return type of basic_string_view::data().
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/
+	wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/
+	char/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/
+	wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/requirements/traits_neg.cc:
+	New test.
+	* testsuite/21_strings/basic_string_view/requirements/typedefs.cc:
+	Check reference and pointer typedefs.
+	* testsuite/experimental/string_view/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/experimental/string_view/modifiers/remove_prefix/char/1.cc:
+	Fix expected return type of basic_string_view::data().
+	* testsuite/experimental/string_view/modifiers/remove_prefix/wchar_t/
+	1.cc: Likewise.
+	* testsuite/experimental/string_view/modifiers/remove_suffix/char/1.cc:
+	Likewise.
+	* testsuite/experimental/string_view/modifiers/remove_suffix/wchar_t/
+	1.cc: Likewise.
+
+	PR libstdc++/90220
+	* include/std/any (__any_caster): Use remove_cv_t instead of decay_t.
+	Avoid a runtime check for types that can never be stored in std::any.
+	* testsuite/20_util/any/misc/any_cast.cc: Test std::any_cast with
+	array types.
+
+	PR libstdc++/90220 (partial)
+	* include/std/any (any_cast<T>(any*), any_cast<T>(const any*)): Do
+	not attempt ill-formed static_cast to pointers to non-object types.
+	* testsuite/20_util/any/misc/any_cast.cc: Test std::any_cast with
+	function types.
+
+	* testsuite/20_util/variant/run.cc: Catch exception by reference to
+	prevent -Wcatch-value warning.
+
+	* include/std/variant (__variant_construct): Use template parameter
+	type instead of equivalent decltype-specifier.
+	(_Move_ctor_base<false, Types...>::_Move_ctor_base(_Move_ctor_base&&)):
+	Replace forward with move.
+	(_Move_ctor_base<false, Types...>::_M_destructive_move)
+	(_Move_ctor_base<false, Types...>::_M_destructive_copy)
+	(_Move_ctor_base<true, Types...>::_M_destructive_move)
+	(_Move_ctor_base<true, Types...>::_M_destructive_copy): Only set the
+	index after construction succeeds.
+	(_Copy_assign_base<false, Types...>::operator=): Remove redundant
+	if-constexpr checks that are always true. Use __remove_cvref_t instead
+	of remove_reference so that is_nothrow_move_constructible check
+	doesn't use a const rvalue parameter. In the potentially-throwing case
+	construct a temporary and move assign it, as per LWG 2904.
+	(_Move_assign_base<false, Types...>::operator=): Remove redundant
+	if-constexpr checks that are always true. Use emplace as per LWG 2904.
+	(variant::operator=(T&&)): Only use emplace conditionally, otherwise
+	construct a temporary and move assign from it, as per LWG 2904.
+	* testsuite/20_util/variant/exception_safety.cc: Check that
+	assignment operators have strong exception safety guarantee.
+
+2019-04-23  Thomas Rodgers <trodgers@redhat.com>
+
+	Document PSTL linker flags
+
+	* doc/xml/manual/using.xml: Add PSTL linker flags to table 3.1.
+	
+2019-04-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__detail::__variant::_Traits): Make
+	_S_trivial_copy_assign depend on _S_trivial_copy_ctor and make
+	_S_trivial_move_assign depend on _S_trivial_move_ctor, as per
+	P0602R4.
+	(__detail::__variant::_Copy_assign_alias): Only depend on
+	_S_trivial_copy_assign, which subsumes _S_trivial_copy_ctor now.
+	* testsuite/20_util/variant/compile.cc: Correct checks for trivial
+	move assignment operators.
+
+	PR libstdc++/90165
+	* include/std/variant (variant::__not_self): New helper for the
+	is_same_v<remove_cvref_t<T>, variant>==false constraints.
+	(variant::__to_type_impl): Remove.
+	(variant::__to_type): Add default argument to check pack size, instead
+	of using __to_type_impl.
+	(variant::__accepted_type): Add default argument using __not_self.
+	(variant::__is_in_place_tag, variant::__not_in_place_tag): New helpers
+	for variant(T&&) constructor constraint.
+	(variant::variant(T&&)): Use __not_in_place_tag in constraints.
+	Extract __accepted_type into a named template parameter for reuse in
+	other constraints and in the exception specification.
+	(variant::variant(in_place_type_t<T>, Args&&...))
+	(variant::variant(in_place_type_t<T>, initializer_list<U>, Args&&...))
+	(variant::variant(in_place_index_t<T>, Args&&...))
+	(variant::variant(in_place_index_t<T>, initializer_list<U>, Args&&...))
+	(variant::operator=T&&)): Remove redundant && from trait arguments.
+	* testsuite/20_util/variant/compile.cc: Check variant(T&&) constructor
+	isn't used for in_place_type or in_place_index arguments.
+
+	* include/std/type_traits (unwrap_reference_t): Define for C++2a.
+	(unwrap_ref_decay): Remove inheritance from unwrap_reference.
+	* testsuite/20_util/unwrap_reference/1.cc: Adjust test to use alias.
+
+2019-04-23  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89093
+	* libsupc++/eh_personality.cc (PERSONALITY_FUNCTION): Add
+	general-regs-only target attribute for ARM.
+
+2019-04-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87431
+	* include/bits/basic_string.h (_Never_valueless_alt): Make partial
+	specialization also depend on is_nothrow_move_constructible.
+	* include/std/variant (__detail::__variant::__never_valueless()):
+	Only true if the variant would have a move assignment operator.
+	(__detail::__variant::_Variant_storage<false, T...>::_M_valid()):
+	Check __never_valueless<T...>().
+	(variant::emplace): Only perform non-throwing move assignments
+	for never-valueless alternatives if the variant has a move assignment
+	operator.
+	* testsuite/20_util/variant/compile.cc: Check that never-valueless
+	types can be emplaced into non-assignable variants.
+	* testsuite/20_util/variant/run.cc: Check that never-valueless types
+	don't get copied when emplaced into non-assignable variants.
+
+	* include/std/variant (__detail::__variant::__ref_cast): Remove
+	unused function.
+	(__detail::__variant::_Uninitialized::_M_get)
+	(__detail::__variant::__get)
+	(__gen_vtable_impl::__element_by_index_or_cookie): Add noexcept.
+
+2019-04-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/17_intro/headers/c++1998/charset.cc: Skip for Darwin8
+	to Darwin10.
+	* testsuite/17_intro/headers/c++2011/charset.cc: Likewise.
+	* testsuite/17_intro/headers/c++2014/charset.cc: Likewise.
+	* testsuite/17_intro/headers/c++2017/charset.cc: Likewise.
+	* testsuite/17_intro/headers/c++2020/charset.cc: Likewise.
+
+2019-04-20  Thomas Rodgers <trodgers@redhat.com>
+
+	Delegate PSTL configuration to pstl/pstl_config.h
+
+	* include/bits/c++config: Remove explicit PSTL configuration
+	macros and use definitions from <pstl/pstl_config.h>.
+	
+2019-04-20  Thomas Rodgers <trodgers@redhat.com>
+
+	Cleanup algorithm implementations
+	* include/pstl/glue_algorithm_impl.h (stable_sort): Forward
+	execution policy.
+	(mismatch): Forward execution policy.
+	(equal): Qualify call to std::equal().
+	(partial_sort): Forward execution policy.
+	(inplace_merge): Forward execution policy.
+	
+2019-04-19  Thomas Rodgers <trodgers@redhat.com>
+	
+	Improve implementation of parallel equal()
+	* include/pstl/algorithm_impl.h
+	(__internal::__brick_equal): use "4 iterator" version of
+	std::equal().
+	(__internal::__brick_equal): use simd for random access
+	iterators on unsequenced execution policies.
+	(__internal::__pattern_equal): add "4 iterator" version
+	(__internal::__pattern_equal): dispatch to simd __brick_equal
+	for vector-only execution policies.
+	(__internal::__pattern_equal): dispatch to __parallel_or for
+	parallel execution policies.
+	* include/pstl/glue_algorithm_impl.h
+	(std::equal): dispatch to "4 iterator" version of
+	__internal::__pattern_equal().
+	
+2019-04-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90105
+	* include/bits/forward_list.h (operator==): Do not use operator!= to
+	compare elements.
+	(forward_list<T, A>::sort(Comp)): When elements are equal take the one
+	earlier in the list, so that sort is stable.
+	* testsuite/23_containers/forward_list/operations/90105.cc: New test.
+	* testsuite/23_containers/forward_list/comparable.cc: Test with
+	types that meet the minimum EqualityComparable and LessThanComparable
+	requirements. Remove irrelevant comment.
+
+	* include/std/variant (__detail::__variant::_Traits::_S_copy_assign):
+	Do not depend on whether all alternative types are move constructible.
+	(__detail::__variant::_Copy_assign_base::operator=): Remove cv-quals
+	from the operand when deciding whether to perform the assignment.
+	* testsuite/20_util/variant/compile.cc (DeletedMoves): Define type
+	with deleted move constructor and deleted move assignment operator.
+	(default_ctor, copy_ctor, move_ctor, copy_assign, move_assign): Check
+	behaviour of variants with DeletedMoves as an alternative.
+	* testsuite/20_util/variant/run.cc (DeletedMoves): Define same type.
+	(move_ctor, move_assign): Check that moving a variant with a
+	DeletedMoves alternative falls back to copying instead of moving.
+
+	* testsuite/20_util/variant/compile.cc: Remove empty string literals
+	from static_assert declarations.
+
+	* testsuite/20_util/variant/compile.cc (MoveCtorOnly): Fix type to
+	actually match its name.
+	(MoveCtorAndSwapOnly): Define new type that adds swap to MoveCtorOnly.
+	(test_swap()): Fix result for MoveCtorOnly and check
+	MoveCtorAndSwapOnly.
+
+	* include/std/optional (optional::value_or(U&&) &&): Add missing
+	constexpr specifier.
+	* testsuite/20_util/optional/constexpr/observers/4.cc: Check value_or
+	for disengaged optionals and rvalue optionals.
+	* testsuite/20_util/optional/observers/4.cc: Likewise.
+
+2019-04-12  Thomas Rodgers  <trodgers@redhat.com>
+	
+	* include/pstl/algorithm_impl.h: Uglify identfiers.
+	* include/pstl/numeric_impl.h:  Uglify identfiers.
+	* include/pstl/parallel_backend_tbb.h: Uglify identfiers.
+
+2019-04-11  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/bits/c++config:
+	Add definition for __PSTL_ASSERT.
+	Add definition for __PSTL_ASSERT_MSG.
+	* include/pstl/algorithm_impl.h: Replace use of assert().
+	* include/pstl/numeric_impl.h: Replace use of assert().
+	* include/pstl/parallel_backend_tbb.h:
+	Replace use of assert().
+	Replace use of __TBB_ASSERT().
+	* include/pstl/parallel_backend_utils.h: Replace use of assert().
+
+2019-04-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90046
+	* src/c++17/memory_resource.cc
+	(monotonic_buffer_resource::_Chunk::allocate): Increase alignment if
+	needed to allow placing a _Chunk at the end of the buffer.
+	(monotonic_buffer_resource::_M_new_buffer): Remove static_assert.
+
+2019-04-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/faq.xml: Add information about emergency EH pool.
+	* doc/xml/manual/debug.xml: Update list of memory debugging tools.
+	Move outdated information on mt_allocator to a separate section.
+	* doc/xml/manual/evolution.xml: Clarify that GLIBCXX_FORCE_NEW
+	doesn't affect the default allocator.
+
+	* testsuite/lib/libstdc++.exp (check_v3_target_parallel_mode): Fix
+	typo.
+
+	PR libstdc++/89851
+	* testsuite/20_util/variant/89851.cc: New test.
+
+2019-04-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant: Adjust whitespace. Add comments.
+	(_Multi_array): Leave primary template undefined.
+	(_Multi_array<_Tp>): Define partial specialization for base case of
+	recursion.
+	(__gen_vtable_impl, __gen_vtable): Remove redundant && from type
+	which is always a reference.
+	(__gen_vtable::_S_apply()): Remove function, inline body into
+	default member initializer.
+	* testsuite/20_util/variant/visit.cc: Test with noncopyable types.
+
+	* include/std/variant (__variant_idx_cookie): Add member type.
+	(__visitor_result_type): Remove.
+	(__do_visit): Use invoke_result instead of __visitor_result_type.
+	* testsuite/20_util/variant/visit.cc: New test.
+
+	PR libstdc++/90008
+	* include/std/variant (_VARIANT_RELATION_FUNCTION_TEMPLATE): Remove
+	unused capture.
+	* testsuite/20_util/variant/90008.cc: New test.
+
+2019-04-09  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/pstl/algorithm_impl.h: Add namespace qualification.
+	* include/pstl/execution_defs.h: Add namespace qualification.
+	* include/pstl/execution_impl.h: Add namespace qualification.
+	* include/pstl/numeric_impl.h: Add namespace qualification.
+	* include/pstl/parallel_backend_tbb.h: Add namespace qualification.
+	* include/pstl/unseq_backend_simd.h: Add namespace qualification.
+	* include/pstl/parallel_backend_utils.h: Include <cassert>.
+
 2019-04-08  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Fix visit<R> for variant.
