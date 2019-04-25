@@ -1,3 +1,8 @@
+2019-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/44648
+	* g++.dg/warn/Wunused-var-35.C: Remove xfail.
+
 2019-04-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/90194
