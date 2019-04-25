@@ -1,3 +1,12 @@
+2019-04-25  Johannes Pfau  <johannespfau@gmail.com>
+
+        * libdruntime/Makefile.am: Add emutls and gthread files.
+        * libdruntime/Makefile.in: Regenerate.
+        * libdruntime/gcc/emutls.d: New file. Implement GC-compatible emutls.
+        * libdruntime/gcc/gthread.d: New file.
+        * libdruntime/gcc/sections/elf_shared.d: Integrate emutls support.
+        * testsuite/libphobos.allocations/tls_gc_integration.d: New test for TLS.
+
 2019-04-25  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* testsuite/Makefile.am: Set PWD_COMMAND.
