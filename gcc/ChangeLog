@@ -1,3 +1,7 @@
+2019-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* DEV-PHASE: Set to prerelease.
+
 2019-04-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/89765
