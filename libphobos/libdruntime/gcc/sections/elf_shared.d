@@ -222,8 +222,16 @@ version (Shared)
 
     void scanTLSRanges(Array!(ThreadDSO)* tdsos, scope ScanDG dg) nothrow
     {
-        foreach (ref tdso; *tdsos)
-            dg(tdso._tlsRange.ptr, tdso._tlsRange.ptr + tdso._tlsRange.length);
+        version (GNU_EMUTLS)
+        {
+            import gcc.emutls;
+            _d_emutls_scan(dg);
+        }
+        else
+        {
+            foreach (ref tdso; *tdsos)
+                dg(tdso._tlsRange.ptr, tdso._tlsRange.ptr + tdso._tlsRange.length);
+        }
     }
 
     // interface for core.thread to inherit loaded libraries
@@ -310,8 +318,16 @@ else
 
     void scanTLSRanges(Array!(void[])* rngs, scope ScanDG dg) nothrow
     {
-        foreach (rng; *rngs)
-            dg(rng.ptr, rng.ptr + rng.length);
+        version (GNU_EMUTLS)
+        {
+            import gcc.emutls;
+            _d_emutls_scan(dg);
+        }
+        else
+        {
+            foreach (rng; *rngs)
+                dg(rng.ptr, rng.ptr + rng.length);
+        }
     }
 }
 
@@ -519,6 +535,11 @@ extern(C) void _d_dso_registry(CompilerDSOData* data)
                 _handleToDSO.reset();
             }
             finiLocks();
+            version (GNU_EMUTLS)
+            {
+                import gcc.emutls;
+                _d_emutls_destroy();
+            }
         }
     }
 }
@@ -805,40 +826,46 @@ void scanSegments(in ref dl_phdr_info info, DSO* pdso) nothrow @nogc
             break;
 
         case PT_TLS: // TLS segment
-            safeAssert(!pdso._tlsSize, "Multiple TLS segments in image header.");
-            static if (OS_Have_Dlpi_Tls_Modid)
+            version (GNU_EMUTLS)
             {
-                pdso._tlsMod = info.dlpi_tls_modid;
-                pdso._tlsSize = phdr.p_memsz;
-            }
-            else version (Solaris)
-            {
-                struct Rt_map
-                {
-                    Link_map rt_public;
-                    const char* rt_pathname;
-                    c_ulong rt_padstart;
-                    c_ulong rt_padimlen;
-                    c_ulong rt_msize;
-                    uint rt_flags;
-                    uint rt_flags1;
-                    c_ulong rt_tlsmodid;
-                }
-
-                Rt_map* map;
-                version (Shared)
-                    dlinfo(handleForName(info.dlpi_name), RTLD_DI_LINKMAP, &map);
-                else
-                    dlinfo(RTLD_SELF, RTLD_DI_LINKMAP, &map);
-                // Until Solaris 11.4, tlsmodid for the executable is 0.
-                // Let it start at 1 as the rest of the code expects.
-                pdso._tlsMod = map.rt_tlsmodid + 1;
-                pdso._tlsSize = phdr.p_memsz;
             }
             else
             {
-                pdso._tlsMod = 0;
-                pdso._tlsSize = 0;
+                safeAssert(!pdso._tlsSize, "Multiple TLS segments in image header.");
+                static if (OS_Have_Dlpi_Tls_Modid)
+                {
+                    pdso._tlsMod = info.dlpi_tls_modid;
+                    pdso._tlsSize = phdr.p_memsz;
+                }
+                else version (Solaris)
+                {
+                    struct Rt_map
+                    {
+                        Link_map rt_public;
+                        const char* rt_pathname;
+                        c_ulong rt_padstart;
+                        c_ulong rt_padimlen;
+                        c_ulong rt_msize;
+                        uint rt_flags;
+                        uint rt_flags1;
+                        c_ulong rt_tlsmodid;
+                    }
+
+                    Rt_map* map;
+                    version (Shared)
+                        dlinfo(handleForName(info.dlpi_name), RTLD_DI_LINKMAP, &map);
+                    else
+                        dlinfo(RTLD_SELF, RTLD_DI_LINKMAP, &map);
+                    // Until Solaris 11.4, tlsmodid for the executable is 0.
+                    // Let it start at 1 as the rest of the code expects.
+                    pdso._tlsMod = map.rt_tlsmodid + 1;
+                    pdso._tlsSize = phdr.p_memsz;
+                }
+                else
+                {
+                    pdso._tlsMod = 0;
+                    pdso._tlsSize = 0;
+                }
             }
             break;
 

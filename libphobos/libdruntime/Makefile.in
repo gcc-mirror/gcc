@@ -203,10 +203,10 @@ am__objects_1 = core/atomic.lo core/attribute.lo core/bitop.lo \
 	core/sync/exception.lo core/sync/mutex.lo core/sync/rwmutex.lo \
 	core/sync/semaphore.lo core/thread.lo core/time.lo \
 	core/vararg.lo gcc/attribute.lo gcc/backtrace.lo \
-	gcc/builtins.lo gcc/deh.lo gcc/sections/android.lo \
-	gcc/sections/elf_shared.lo gcc/sections/osx.lo \
-	gcc/sections/package.lo gcc/sections/win32.lo \
-	gcc/sections/win64.lo gcc/unwind/arm.lo \
+	gcc/builtins.lo gcc/deh.lo gcc/emutls.lo gcc/gthread.lo \
+	gcc/sections/android.lo gcc/sections/elf_shared.lo \
+	gcc/sections/osx.lo gcc/sections/package.lo \
+	gcc/sections/win32.lo gcc/sections/win64.lo gcc/unwind/arm.lo \
 	gcc/unwind/arm_common.lo gcc/unwind/c6x.lo \
 	gcc/unwind/generic.lo gcc/unwind/package.lo gcc/unwind/pe.lo \
 	object.lo rt/aApply.lo rt/aApplyR.lo rt/aaA.lo rt/adi.lo \
@@ -757,7 +757,8 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/sync/config.d core/sync/exception.d core/sync/mutex.d \
 	core/sync/rwmutex.d core/sync/semaphore.d core/thread.d core/time.d \
 	core/vararg.d gcc/attribute.d gcc/backtrace.d gcc/builtins.d gcc/deh.d \
-	gcc/sections/android.d gcc/sections/elf_shared.d gcc/sections/osx.d \
+	gcc/emutls.d gcc/gthread.d gcc/sections/android.d \
+	gcc/sections/elf_shared.d gcc/sections/osx.d \
 	gcc/sections/package.d gcc/sections/win32.d gcc/sections/win64.d \
 	gcc/unwind/arm.d gcc/unwind/arm_common.d gcc/unwind/c6x.d \
 	gcc/unwind/generic.d gcc/unwind/package.d gcc/unwind/pe.d object.d \
@@ -1104,6 +1105,8 @@ gcc/attribute.lo: gcc/$(am__dirstamp)
 gcc/backtrace.lo: gcc/$(am__dirstamp)
 gcc/builtins.lo: gcc/$(am__dirstamp)
 gcc/deh.lo: gcc/$(am__dirstamp)
+gcc/emutls.lo: gcc/$(am__dirstamp)
+gcc/gthread.lo: gcc/$(am__dirstamp)
 gcc/sections/$(am__dirstamp):
 	@$(MKDIR_P) gcc/sections
 	@: > gcc/sections/$(am__dirstamp)
