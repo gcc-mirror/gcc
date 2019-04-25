@@ -23,7 +23,7 @@
 /* { dg-final { scan-assembler-times {\mxvcmpeqdp\.\s} 5 { target be } } } */
 /* { dg-final { scan-assembler-times {\mxvcmpgtdp\s} 2 } } */
 /* { dg-final { scan-assembler-times {\mxvcmpgtdp\.\s} 5 { target le } } } */
-/* { dg-final { scan-assembler-times {\mxvcmpgtdp\.\s} 6 { target le } } } */
+/* { dg-final { scan-assembler-times {\mxvcmpgtdp\.\s} 6 { target be } } } */
 /* { dg-final { scan-assembler-times {\mxvcmpgedp\s} 2 } } */
 /* { dg-final { scan-assembler-times {\mxvcmpgedp\.\s} 4 } } */
 /* { dg-final { scan-assembler-times "xvrdpim" 1 } } */
