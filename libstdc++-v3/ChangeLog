@@ -1,5 +1,17 @@
 2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	Backport from mainline
+	2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/variant/run.cc: Use a new Hashable type to test
+	hashing, because pmr::string depends on _GLIBCXX_USE_CXX11_ABI==1.
+	* testsuite/21_strings/basic_string/hash/hash.cc
+	[!_GLIBCXX_USE_CXX11_ABI]: Don't test pmr strings.
+	* testsuite/21_strings/basic_string/hash/hash_char8_t.cc
+	[!_GLIBCXX_USE_CXX11_ABI]: Likewise.
+
+2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
 	* config/abi/pre/gnu.ver (GLIBCXX_3.4): Replace wildcard that matches
 	wstring::_M_replace_dispatch with more specific patterns.
 
