@@ -1,4 +1,11 @@
-2018-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+2019-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/90173
+	* decl.c (grokdeclarator): Set type to error_mark_node
+	upon error about template placeholder type non followed
+	by a simple declarator-id.
+
+2019-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokdeclarator): Fix value assigned to typespec_loc, use
 	min_location.
