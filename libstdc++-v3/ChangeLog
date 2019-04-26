@@ -1,5 +1,10 @@
 2019-04-26  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/abi/post/s390x-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt: Update.
+
 	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Update.
 	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Update.
 	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Update.
