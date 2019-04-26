@@ -1,3 +1,13 @@
+2019-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/90197
+	* c-tree.h (c_finish_loop): Add 2 further location_t arguments.
+	* c-parser.c (c_parser_while_statement): Adjust c_finish_loop caller.
+	(c_parser_do_statement): Likewise.
+	(c_parser_for_statement): Likewise.  Formatting fixes.
+	* c-typeck.c (c_finish_loop): Add COND_LOCUS and INCR_LOCUS arguments,
+	emit DEBUG_BEGIN_STMTs if needed.
+
 2019-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/89888
