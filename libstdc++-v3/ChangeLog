@@ -1,5 +1,9 @@
 2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/bits/fs_path.h
+	(path::_S_convert_loc<_InputIterator>): Create const std::string to
+	avoid redundant call to _S_convert_loc with non-const pointers.
+
 	* testsuite/20_util/variant/run.cc: Use a new Hashable type to test
 	hashing, because pmr::string depends on _GLIBCXX_USE_CXX11_ABI==1.
 	* testsuite/21_strings/basic_string/hash/hash.cc
