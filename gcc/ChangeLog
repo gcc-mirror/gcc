@@ -1,3 +1,8 @@
+2019-04-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree.h (TYPE_VECTOR_SUBPARTS, SET_TYPE_VECTOR_SUBPARTS): Add
+	commentary about the encoding of precision.
+
 2019-04-25  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/i386/freebsd64.h: Add bits for 32-bit multilib support.
