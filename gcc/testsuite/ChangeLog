@@ -1,3 +1,14 @@
+2019-04-26  Roman Zhuykov  <zhroma@ispras.ru>
+
+	Backport from mainline
+	2019-04-23  Roman Zhuykov  <zhroma@ispras.ru>
+
+	PR rtl-optimization/87979
+	* gcc.dg/pr87979.c: New test.
+
+	PR rtl-optimization/84032
+	* gcc.dg/pr84032.c: New test.
+
 2019-04-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from mainline
@@ -294,8 +305,7 @@
 	2019-02-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89296
-	* tree-ssa-loop-ch.c (ch_base::copy_headers): Restrict setting
-	of no-warning flag to cases that might emit the bogus warning.
+	* gcc.dg/uninit-pr89296.c: New testcase.
 
 2019-03-13  Andreas Krebbel  <krebbel@linux.ibm.com>
 

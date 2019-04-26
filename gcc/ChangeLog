@@ -1,3 +1,17 @@
+2019-04-26  Roman Zhuykov  <zhroma@ispras.ru>
+
+	Backport from mainline
+	2019-04-23  Roman Zhuykov  <zhroma@ispras.ru>
+
+	PR rtl-optimization/87979
+	* modulo-sched.c (sms_schedule): Start ii value "mii" should
+	not equal zero.
+
+	PR rtl-optimization/84032
+	* modulo-sched.c (ps_insn_find_column): Change condition so that
+	branch will always be the last insn in a row inside partial
+	schedule.
+
 2019-04-19  Pat Haugen  <pthaugen@us.ibm.com>
 
 	Backport from mainline:
