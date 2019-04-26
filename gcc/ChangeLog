@@ -1,3 +1,21 @@
+2019-04-26  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR other/90257
+	Revert the revert:
+	2019-04-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/90178
+	Revert:
+	2018-11-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	Revert the revert:
+	2013-10-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+	Revert:
+	2013-10-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-spills.c (lra_final_code_change): Remove useless move insns.
+
 2019-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/90240
