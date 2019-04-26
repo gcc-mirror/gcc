@@ -1,3 +1,9 @@
+2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/90243 - orphaned note in uninstantiated constexpr function
+	* decl.c (check_for_uninitialized_const_var): Suppress notes if no
+	error was shown.
+
 2019-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/90173

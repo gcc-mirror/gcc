@@ -1,3 +1,8 @@
+2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/90243
+	* g++.dg/diagnostic/pr90243.C: New test.
+
 2019-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/90173
