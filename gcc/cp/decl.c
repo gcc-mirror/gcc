@@ -5691,13 +5691,15 @@ check_for_uninitialized_const_var (tree decl, bool constexpr_context_p,
       if (!field)
 	return true;
 
+      bool show_notes = true;
+
       if (!constexpr_context_p)
 	{
 	  if (CP_TYPE_CONST_P (type))
 	    {
 	      if (complain & tf_error)
-		permerror (DECL_SOURCE_LOCATION (decl),
-			   "uninitialized const %qD", decl);
+		show_notes = permerror (DECL_SOURCE_LOCATION (decl),
+				        "uninitialized const %qD", decl);
 	    }
 	  else
 	    {
@@ -5706,6 +5708,8 @@ check_for_uninitialized_const_var (tree decl, bool constexpr_context_p,
 		error_at (DECL_SOURCE_LOCATION (decl),
 			  "uninitialized variable %qD in %<constexpr%> "
 			  "function", decl);
+	      else
+		show_notes = false;
 	      cp_function_chain->invalid_constexpr = true;
 	    }
 	}
@@ -5714,7 +5718,7 @@ check_for_uninitialized_const_var (tree decl, bool constexpr_context_p,
 		  "uninitialized variable %qD in %<constexpr%> context",
 		  decl);
 
-      if (CLASS_TYPE_P (type) && (complain & tf_error))
+      if (show_notes && CLASS_TYPE_P (type) && (complain & tf_error))
 	{
 	  tree defaulted_ctor;
 
