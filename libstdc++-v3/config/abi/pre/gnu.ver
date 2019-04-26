@@ -299,7 +299,8 @@ GLIBCXX_3.4 {
     _ZNSbIwSt11char_traitsIwESaIwEE12_S_constructE[jmy]wRKS1_;
     _ZNSbIwSt11char_traitsIwESaIwEE12_S_empty_repEv;
     _ZNSbIwSt11char_traitsIwESaIwEE13_S_copy_chars*;
-    _ZNSbIwSt11char_traitsIwESaIwEE[0-9][0-9]_M_replace*;
+    _ZNSbIwSt11char_traitsIwESaIwEE14_M_replace_aux*;
+    _ZNSbIwSt11char_traitsIwESaIwEE15_M_replace_safe*;
     _ZNSbIwSt11char_traitsIwESaIwEE4_Rep10_M_destroy*;
     _ZNSbIwSt11char_traitsIwESaIwEE4_Rep10_M_dispose*;
     _ZNSbIwSt11char_traitsIwESaIwEE4_Rep10_M_refcopyEv;

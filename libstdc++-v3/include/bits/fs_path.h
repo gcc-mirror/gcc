@@ -539,7 +539,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _S_convert_loc(_InputIterator __src, __null_terminated,
 		     const std::locale& __loc)
       {
-	std::string __s = _S_string_from_iter(__src);
+	const std::string __s = _S_string_from_iter(__src);
 	return _S_convert_loc(__s.data(), __s.data() + __s.size(), __loc);
       }
 
