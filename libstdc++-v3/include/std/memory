@@ -191,7 +191,9 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
 	    }
 	  else
 	    {
-	      static_assert(is_constructible_v<_Tp, _Args..., const _Alloc&>);
+	      static_assert(is_constructible_v<_Tp, _Args..., const _Alloc&>,
+		  "construction with an allocator must be possible"
+		  " if uses_allocator is true");
 
 	      return tuple<_Args&&..., const _Alloc&>(
 		  std::forward<_Args>(__args)..., __a);
@@ -207,7 +209,7 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
 
 #if __cpp_concepts
   template<typename _Tp>
-    concept bool _Std_pair = __is_pair<_Tp>::value;
+    concept _Std_pair = __is_pair<_Tp>::value;
 #endif
 
 // This is a temporary workaround until -fconcepts is implied by -std=gnu++2a
