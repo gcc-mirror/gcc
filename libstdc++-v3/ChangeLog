@@ -1,3 +1,7 @@
+2019-04-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
+
 2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/bits/fs_path.h
