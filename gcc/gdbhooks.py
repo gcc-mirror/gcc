@@ -229,7 +229,10 @@ class TreePrinter:
         val_code_name = val_tree_code_name[intptr(val_TREE_CODE)]
         #print(val_code_name.string())
 
-        result = '<%s 0x%x' % (val_code_name.string(), intptr(self.gdbval))
+        try:
+            result = '<%s 0x%x' % (val_code_name.string(), intptr(self.gdbval))
+        except:
+            return '<tree 0x%x>' % intptr(self.gdbval)
         if intptr(val_tclass) == tcc_declaration:
             tree_DECL_NAME = self.node.DECL_NAME()
             if tree_DECL_NAME.is_nonnull():
