@@ -1,3 +1,8 @@
+2018-04-26  Eugene Sharygin  <eush@ispras.ru>
+
+	* gdbhooks.py: Fix UnicodeDecodeErrors when printing trees with
+	corrupt codes.
+
 2019-04-26  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree.h (TYPE_VECTOR_SUBPARTS, SET_TYPE_VECTOR_SUBPARTS): Add
