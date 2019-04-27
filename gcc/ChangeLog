@@ -1,3 +1,11 @@
+2019-04-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89261
+	* config/i386/i386-protos.h (ix86_data_alignment): Change
+	the second argument type to unsigned int.
+	* config/i386/i386.c (ix86_data_alignment): Change "align"
+	argument type to unsigned int.
+
 2019-04-27  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/90258
