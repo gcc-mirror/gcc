@@ -1,3 +1,9 @@
+2019-04-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/87106
+	* include/bits/stl_uninitialized.h (__relocate_object_a): Mark the
+	arguments with __restrict.
+
 2019-04-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
