@@ -1,3 +1,17 @@
+2019-04-26  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv-protos.h (riscv_move_integer): Add machine_mode
+	parameter.
+	* config/riscv/riscv.c (riscv_move_integer): New parameter orig_mode.
+	Pass orig_mode to riscv_build_integer.
+	(riscv_split_integer): Pass mode to riscv_move_integer.
+	(riscv_legitimize_const_move): Likewise.
+	(riscv_legitimize_move): For MEM dest and CONST_INT src case, new local
+	promoted_mode.  Replace force_reg call with code to load constant into
+	promoted reg and then subreg it for the store.
+	* config/riscv/riscv.md (low<mode>+1): Pass <GPR:MODE>mode to
+	riscv_move_integer.
+
 2018-04-26  Eugene Sharygin  <eush@ispras.ru>
 
 	* gdbhooks.py: Fix UnicodeDecodeErrors when printing trees with
