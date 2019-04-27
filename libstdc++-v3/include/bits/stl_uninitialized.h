@@ -884,7 +884,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
   template<typename _Tp, typename _Up, typename _Allocator>
     inline void
-    __relocate_object_a(_Tp* __dest, _Up* __orig, _Allocator& __alloc)
+    __relocate_object_a(_Tp* __restrict __dest, _Up* __restrict __orig,
+			_Allocator& __alloc)
     noexcept(noexcept(std::allocator_traits<_Allocator>::construct(__alloc,
 			 __dest, std::move(*__orig)))
 	     && noexcept(std::allocator_traits<_Allocator>::destroy(
