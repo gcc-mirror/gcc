@@ -1,3 +1,8 @@
+2019-04-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89261
+	* gcc.target/i386/pr89261.c: New test.
+
 2019-04-27  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/90258

@@ -29802,7 +29802,7 @@ iamcu_alignment (tree type, int align)
    instead of that alignment to align the object.  */
 
 int
-ix86_data_alignment (tree type, int align, bool opt)
+ix86_data_alignment (tree type, unsigned int align, bool opt)
 {
   /* GCC 4.8 and earlier used to incorrectly assume this alignment even
      for symbols from other compilation units or symbols that don't need
@@ -29810,14 +29810,14 @@ ix86_data_alignment (tree type, int align, bool opt)
      those compilers, ensure we don't decrease alignment from what we
      used to assume.  */
 
-  int max_align_compat = MIN (256, MAX_OFILE_ALIGNMENT);
+  unsigned int max_align_compat = MIN (256, MAX_OFILE_ALIGNMENT);
 
   /* A data structure, equal or greater than the size of a cache line
      (64 bytes in the Pentium 4 and other recent Intel processors, including
      processors based on Intel Core microarchitecture) should be aligned
      so that its base address is a multiple of a cache line size.  */
 
-  int max_align
+  unsigned int max_align
     = MIN ((unsigned) ix86_tune_cost->prefetch_block * 8, MAX_OFILE_ALIGNMENT);
 
   if (max_align < BITS_PER_WORD)
