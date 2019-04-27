@@ -1,3 +1,7 @@
+2019-04-26  Jim Wilson  <jimw@sifive.com>
+
+	* gcc.target/riscv/load-immediate.c: New.
+
 2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/90243
