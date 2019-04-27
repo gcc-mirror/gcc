@@ -1,3 +1,9 @@
+2019-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90173
+	* g++.dg/cpp1z/class-deduction66.C: Use dg-do compile instead of
+	dg-do run.
+
 2019-04-27  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/89261
