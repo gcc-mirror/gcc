@@ -1,3 +1,10 @@
+2019-04-27  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/90258
+	* opt-suggestions.c (option_proposer::build_option_suggestions):
+	When get_valid_option_values returns empty values, add the
+	misspelling candidate.
+
 2019-04-26  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/riscv-protos.h (riscv_move_integer): Add machine_mode
