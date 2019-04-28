@@ -552,6 +552,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return
 	    __and_<is_nothrow_assignable<_Elements&, _UElements>...>::value;
 	}
+      template<typename... _UElements>
+	static constexpr bool __nothrow_constructible()
+	{
+	  return
+	    __and_<is_nothrow_constructible<_Elements, _UElements>...>::value;
+	}
 
     public:
       template<typename _Dummy = void,
@@ -559,6 +565,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                                     _ImplicitlyDefaultConstructibleTuple(),
                                   bool>::type = true>
       constexpr tuple()
+      noexcept(__and_<is_nothrow_default_constructible<_Elements>...>::value)
       : _Inherited() { }
 
       template<typename _Dummy = void,
@@ -569,6 +576,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                                     _ImplicitlyDefaultConstructibleTuple(),
                                   bool>::type = false>
       explicit constexpr tuple()
+      noexcept(__and_<is_nothrow_default_constructible<_Elements>...>::value)
       : _Inherited() { }
 
       // Shortcut for the cases where constructors taking _Elements...
@@ -586,6 +594,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                  && (sizeof...(_Elements) >= 1),
                bool>::type=true>
         constexpr tuple(const _Elements&... __elements)
+        noexcept(__nothrow_constructible<const _Elements&...>())
       : _Inherited(__elements...) { }
 
       template<typename _Dummy = void,
@@ -597,6 +606,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                  && (sizeof...(_Elements) >= 1),
                bool>::type=false>
       explicit constexpr tuple(const _Elements&... __elements)
+      noexcept(__nothrow_constructible<const _Elements&...>())
       : _Inherited(__elements...) { }
 
       // Shortcut for the cases where constructors taking _UElements...
@@ -624,6 +634,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                   && (sizeof...(_Elements) >= 1),
         bool>::type=true>
         constexpr tuple(_UElements&&... __elements)
+        noexcept(__nothrow_constructible<_UElements...>())
         : _Inherited(std::forward<_UElements>(__elements)...) { }
 
       template<typename... _UElements, typename
@@ -635,6 +646,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                   && (sizeof...(_Elements) >= 1),
         bool>::type=false>
         explicit constexpr tuple(_UElements&&... __elements)
+        noexcept(__nothrow_constructible<_UElements...>())
 	: _Inherited(std::forward<_UElements>(__elements)...) {	}
 
       constexpr tuple(const tuple&) = default;
@@ -656,6 +668,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                     _NonNestedTuple<const tuple<_UElements...>&>(),
         bool>::type=true>
         constexpr tuple(const tuple<_UElements...>& __in)
+        noexcept(__nothrow_constructible<const _UElements&...>())
         : _Inherited(static_cast<const _Tuple_impl<0, _UElements...>&>(__in))
         { }
 
@@ -668,6 +681,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                     _NonNestedTuple<const tuple<_UElements...>&>(),
         bool>::type=false>
         explicit constexpr tuple(const tuple<_UElements...>& __in)
+        noexcept(__nothrow_constructible<const _UElements&...>())
         : _Inherited(static_cast<const _Tuple_impl<0, _UElements...>&>(__in))
         { }
 
@@ -680,6 +694,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                     _NonNestedTuple<tuple<_UElements...>&&>(),
         bool>::type=true>
         constexpr tuple(tuple<_UElements...>&& __in)
+        noexcept(__nothrow_constructible<_UElements...>())
         : _Inherited(static_cast<_Tuple_impl<0, _UElements...>&&>(__in)) { }
 
       template<typename... _UElements, typename _Dummy = void, typename
@@ -691,6 +706,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                     _NonNestedTuple<tuple<_UElements...>&&>(),
         bool>::type=false>
         explicit constexpr tuple(tuple<_UElements...>&& __in)
+        noexcept(__nothrow_constructible<_UElements...>())
         : _Inherited(static_cast<_Tuple_impl<0, _UElements...>&&>(__in)) { }
 
       // Allocator-extended constructors.
@@ -908,6 +924,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			is_nothrow_assignable<_T2&, _U2>>::value;
 	}
 
+      template<typename _U1, typename _U2>
+    static constexpr bool __nothrow_constructible()
+    {
+      return __and_<is_nothrow_constructible<_T1, _U1>,
+			is_nothrow_constructible<_T2, _U2>>::value;
+    }
+
     public:
       template <typename _U1 = _T1,
                 typename _U2 = _T2,
@@ -916,6 +939,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                                      __is_implicitly_default_constructible<_U2>>
                                    ::value, bool>::type = true>
 	constexpr tuple()
+	noexcept(__and_<is_nothrow_default_constructible<_T1>,
+			is_nothrow_default_constructible<_T2>>::value)
 	: _Inherited() { }
 
       template <typename _U1 = _T1,
@@ -929,6 +954,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                              __is_implicitly_default_constructible<_U2>>>>
                   ::value, bool>::type = false>
 	explicit constexpr tuple()
+	noexcept(__and_<is_nothrow_default_constructible<_T1>,
+			is_nothrow_default_constructible<_T2>>::value)
 	: _Inherited() { }
 
       // Shortcut for the cases where constructors taking _T1, _T2
@@ -943,6 +970,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                            _ImplicitlyConvertibleTuple<_T1, _T2>(),
 	bool>::type = true>
         constexpr tuple(const _T1& __a1, const _T2& __a2)
+        noexcept(__nothrow_constructible<const _T1&, const _T2&>())
         : _Inherited(__a1, __a2) { }
 
       template<typename _Dummy = void, typename
@@ -952,6 +980,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                            _ImplicitlyConvertibleTuple<_T1, _T2>(),
 	bool>::type = false>
         explicit constexpr tuple(const _T1& __a1, const _T2& __a2)
+        noexcept(__nothrow_constructible<const _T1&, const _T2&>())
         : _Inherited(__a1, __a2) { }
 
       // Shortcut for the cases where constructors taking _U1, _U2
@@ -966,6 +995,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	          && !is_same<__remove_cvref_t<_U1>, allocator_arg_t>::value,
 	bool>::type = true>
         constexpr tuple(_U1&& __a1, _U2&& __a2)
+        noexcept(__nothrow_constructible<_U1, _U2>())
 	: _Inherited(std::forward<_U1>(__a1), std::forward<_U2>(__a2)) { }
 
       template<typename _U1, typename _U2, typename
@@ -976,6 +1006,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	          && !is_same<__remove_cvref_t<_U1>, allocator_arg_t>::value,
 	bool>::type = false>
         explicit constexpr tuple(_U1&& __a1, _U2&& __a2)
+        noexcept(__nothrow_constructible<_U1, _U2>())
 	: _Inherited(std::forward<_U1>(__a1), std::forward<_U2>(__a2)) { }
 
       constexpr tuple(const tuple&) = default;
@@ -989,6 +1020,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                     _ImplicitlyConvertibleTuple<_U1, _U2>(),
 	bool>::type = true>
         constexpr tuple(const tuple<_U1, _U2>& __in)
+        noexcept(__nothrow_constructible<const _U1&, const _U2&>())
 	: _Inherited(static_cast<const _Tuple_impl<0, _U1, _U2>&>(__in)) { }
 
       template<typename _U1, typename _U2, typename
@@ -998,6 +1030,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                     _ImplicitlyConvertibleTuple<_U1, _U2>(),
 	bool>::type = false>
         explicit constexpr tuple(const tuple<_U1, _U2>& __in)
+        noexcept(__nothrow_constructible<const _U1&, const _U2&>())
 	: _Inherited(static_cast<const _Tuple_impl<0, _U1, _U2>&>(__in)) { }
 
       template<typename _U1, typename _U2, typename
@@ -1007,6 +1040,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                     _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
 	bool>::type = true>
         constexpr tuple(tuple<_U1, _U2>&& __in)
+        noexcept(__nothrow_constructible<_U1, _U2>())
 	: _Inherited(static_cast<_Tuple_impl<0, _U1, _U2>&&>(__in)) { }
 
       template<typename _U1, typename _U2, typename
@@ -1016,6 +1050,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                     _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
 	bool>::type = false>
         explicit constexpr tuple(tuple<_U1, _U2>&& __in)
+        noexcept(__nothrow_constructible<_U1, _U2>())
 	: _Inherited(static_cast<_Tuple_impl<0, _U1, _U2>&&>(__in)) { }
 
       template<typename _U1, typename _U2, typename
@@ -1025,6 +1060,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                     _ImplicitlyConvertibleTuple<_U1, _U2>(),
 	bool>::type = true>
         constexpr tuple(const pair<_U1, _U2>& __in)
+        noexcept(__nothrow_constructible<const _U1&, const _U2&>())
 	: _Inherited(__in.first, __in.second) { }
 
       template<typename _U1, typename _U2, typename
@@ -1034,6 +1070,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                     _ImplicitlyConvertibleTuple<_U1, _U2>(),
 	bool>::type = false>
         explicit constexpr tuple(const pair<_U1, _U2>& __in)
+        noexcept(__nothrow_constructible<const _U1&, const _U2&>())
 	: _Inherited(__in.first, __in.second) { }
 
       template<typename _U1, typename _U2, typename
@@ -1043,6 +1080,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                     _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
 	bool>::type = true>
         constexpr tuple(pair<_U1, _U2>&& __in)
+        noexcept(__nothrow_constructible<_U1, _U2>())
 	: _Inherited(std::forward<_U1>(__in.first),
 		     std::forward<_U2>(__in.second)) { }
 
@@ -1053,6 +1091,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                     _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
 	bool>::type = false>
         explicit constexpr tuple(pair<_U1, _U2>&& __in)
+        noexcept(__nothrow_constructible<_U1, _U2>())
 	: _Inherited(std::forward<_U1>(__in.first),
 		     std::forward<_U2>(__in.second)) { }
 
