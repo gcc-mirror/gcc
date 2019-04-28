@@ -1,3 +1,20 @@
+2019-04-28 Nina Dinka Ranns <dinka.ranns@gmail.com>
+
+	Adding noexcept-specification on tuple constructors (LWG 2899)
+	* libstdc++-v3/include/std/tuple:
+	(tuple()): Add noexcept-specification.
+	(tuple(const _Elements&...)): Likewise
+	(tuple(_UElements&&...)): Likewise
+	(tuple(const tuple<_UElements...>&)): Likewise
+	(tuple(tuple<_UElements...>&&)): Likewise
+	(tuple(const _T1&, const _T2&)): Likewise
+	(tuple(_U1&&, _U2&&)): Likewise
+	(tuple(const tuple<_U1, _U2>&): Likewise
+	(tuple(tuple<_U1, _U2>&&): Likewise
+	(tuple(const pair<_U1, _U2>&): Likewise
+	(tuple(pair<_U1, _U2>&&): Likewise
+	* libstdc++-v3/testsuite/20_util/tuple/cons/noexcept_specs.cc: New
+
 2019-04-27  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/87106
