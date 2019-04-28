@@ -1,4 +1,4 @@
-2019-04-28 Nina Dinka Ranns <dinka.ranns@gmail.com>
+2019-04-28  Nina Dinka Ranns  <dinka.ranns@gmail.com>
 
 	Adding noexcept-specification on tuple constructors (LWG 2899)
 	* libstdc++-v3/include/std/tuple:
