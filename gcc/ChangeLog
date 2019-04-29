@@ -1,3 +1,9 @@
+2019-04-29  Vladislav Ivanishin  <vlad@ispras.ru>
+
+	* tree-ssa-uninit.c (is_pred_expr_subset_of): Correctly handle cases
+	where cond2 is NE_EXPR.
+	(is_value_included_in): Update comment.
+
 2019-04-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90278
