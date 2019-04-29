@@ -315,10 +315,10 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_strlen);
       NEXT_PASS (pass_thread_jumps);
       NEXT_PASS (pass_vrp, false /* warn_array_bounds_p */);
-      NEXT_PASS (pass_warn_restrict);
       /* Threading can leave many const/copy propagations in the IL.
 	 Clean them up.  */
       NEXT_PASS (pass_copy_prop);
+      NEXT_PASS (pass_warn_restrict);
       NEXT_PASS (pass_dse);
       NEXT_PASS (pass_cd_dce);
       NEXT_PASS (pass_forwprop);
