@@ -4433,7 +4433,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  Performs the assignment @c *i = @p __gen() for each @c i in the range
    *  @p [__first,__first+__n).
    *
-   * If @p __n is negative, the function does nothing.
+   * If @p __n is negative, the function does nothing and returns @p __first.
   */
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 865. More algorithms that throw away information
