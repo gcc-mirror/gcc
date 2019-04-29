@@ -2863,7 +2863,20 @@ static loc_spans spans;
 /********************************************************************/
 /* Unnamed declarations.  (a) voldemort types, (b) instantiations.  */
 
-static GTY(()) vec<mc_slot, va_gc> *unnamed_ary;
+struct unnamed_entity
+{
+  mc_slot slot;  /* The decl, or section number. */
+  tree ns;	 /* If a specialization, the ns::id it specializes.  */
+  tree id;
+
+  unnamed_entity ()
+    :ns (NULL), id (NULL)
+  {
+    slot.u.binding = NULL;
+  }
+};
+
+static GTY(()) vec<unnamed_entity, va_gc> *unnamed_ary;
 typedef hash_map<unsigned/*UID*/, unsigned/*index*/,
 		 simple_hashmap_traits<int_hash<unsigned,0>,
 				       unsigned> > unnamed_map_t;
@@ -3132,19 +3145,14 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 			 auto_vec<depset *> &spaces, unsigned *crc_ptr);
   bool read_namespaces (auto_vec<tree> &spaces);
 
-  unsigned write_cluster (elf_out *to, depset *depsets[], unsigned size,
-			  depset::hash &, unsigned &unnamed, unsigned *crc_ptr);
+  void write_cluster (elf_out *to, depset *depsets[], unsigned size,
+		      depset::hash &, unsigned &unnamed, unsigned *crc_ptr);
   bool read_cluster (unsigned snum);
 
  private:
   void write_unnamed (elf_out *to, auto_vec<depset *> &depsets,
-		      unsigned count, unsigned *crc_ptr);
+		      depset::hash &, unsigned count, unsigned *crc_ptr);
   bool read_unnamed (unsigned count, const range_t &range);
-
- private:
-  void write_specializations (elf_out *to, auto_vec<depset *> &specs,
-			      depset::hash &, unsigned count, unsigned *crc_ptr);
-  bool read_specializations (unsigned count, const range_t &range);
 
  private:
   unsigned prepare_locations ();
@@ -10793,7 +10801,7 @@ enum cluster_tag {
    defns < decls < bindings.  Returns number of non-implicit template
    specializations. */
 
-unsigned
+void
 module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 			     depset::hash &table, unsigned &unnamed,
 			     unsigned *crc_ptr)
@@ -10801,7 +10809,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   dump () && dump ("Writing SCC:%u %u depsets", scc[0]->section, size);
   dump.indent ();
 
-  unsigned specs = 0;
   unsigned incoming_unnamed = unnamed;
   bool refs_unnamed_p = false;
   auto_vec<depset *> mergeables;
@@ -11000,10 +11007,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  break;
 
 	case depset::EK_SPECIALIZATION:
-	  if (!b->is_implicit_specialization ())
-	    specs++;
-	  /* Fallthrough.  */
-
 	case depset::EK_DECL:
 	case depset::EK_UNNAMED:
 	  {
@@ -11042,8 +11045,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
   dump.outdent ();
   dump () && dump ("Wrote SCC:%u section:%N", scc[0]->section, naming_decl);
-
-  return specs;
 }
 
 /* Read a cluster from section SNUM.  */
@@ -11168,12 +11169,13 @@ module_state::read_cluster (unsigned snum)
 
 	    if (index < import->unnamed_num)
 	      {
-		mc_slot *slot = &(*unnamed_ary)[import->unnamed_lwm + index];
+		unnamed_entity *uent
+		  = &(*unnamed_ary)[import->unnamed_lwm + index];
 
-		if (slot->is_lazy ())
-		  import->lazy_load (NULL, NULL, slot, false);
+		if (uent->slot.is_lazy ())
+		  import->lazy_load (NULL, NULL, &uent->slot, false);
 
-		if (tree decl = *slot)
+		if (tree decl = uent->slot)
 		  {
 		    int tag = sec.insert (decl);
 		    dump () && dump ("Inserted:%d horcrux:%u@%u %N", tag,
@@ -11210,17 +11212,18 @@ module_state::read_cluster (unsigned snum)
 	  {
 	    tree decl = sec.tree_node ();
 
-	    if (unsigned voldemort = sec.u ())
+	    if (unsigned unnamed = sec.u ())
 	      {
 		/* An unnamed node, register it.  */
-		if (decl && voldemort - 1 < unnamed_num)
+		if (decl && unnamed - 1 < unnamed_num)
 		  {
-		    unsigned index = unnamed_lwm + voldemort - 1;
-		    (*unnamed_ary)[index] = decl;
+		    unsigned index = unnamed_lwm + unnamed - 1;
+		    unnamed_entity *uent = &(*unnamed_ary)[index];
+		    uent->slot = decl;
 		    bool present = unnamed_map->put (DECL_UID (decl), index);
 		    gcc_checking_assert (!present);
 		    dump () && dump ("Voldemort decl:%u [%u] %N",
-				     voldemort - 1, index, decl);
+				     unnamed - 1, index, decl);
 		  }
 		else
 		  sec.set_overrun ();
@@ -11476,12 +11479,13 @@ module_state::read_bindings (auto_vec<tree> &spaces, unsigned num,
 
 void
 module_state::write_unnamed (elf_out *to, auto_vec<depset *> &depsets,
+			     depset::hash &table,
 			     unsigned count, unsigned *crc_p)
 {
   dump () && dump ("Writing unnamed");
   dump.indent ();
 
-  bytes_out sec (to);
+  trees_out sec (to, this, table);
   sec.begin ();
 
   unsigned current = 0;
@@ -11491,11 +11495,30 @@ module_state::write_unnamed (elf_out *to, auto_vec<depset *> &depsets,
 
       if (d->cluster)
 	{
+	  tree uent = d->get_entity ();
 	  dump () && dump ("Unnamed %d %N section:%u",
-			   current, d->get_entity (), d->section);
+			   current, uent, d->section);
+
 	  current++;
 	  gcc_checking_assert (d->cluster == current);
 	  sec.u (d->section);
+
+	  if (d->get_entity_kind () == depset::EK_SPECIALIZATION
+	      && !d->is_implicit_specialization ())
+	    {
+	      tree key = get_module_owner (uent);
+	      unsigned owner = MAYBE_DECL_MODULE_OWNER (key);
+	      if (owner >= MODULE_IMPORT_BASE)
+		owner = (*modules)[owner]->remap;
+
+	      sec.tree_node (CP_DECL_CONTEXT (key));
+	      sec.tree_node (DECL_NAME (key));
+	      sec.u (owner);
+	      dump () && dump ("Specialization %N section:%u keyed to %N",
+			       uent, d->section, key);
+	    }
+	  else
+	    sec.tree_node (NULL);
 	}
       }
   gcc_assert (count == current);
@@ -11506,7 +11529,7 @@ module_state::write_unnamed (elf_out *to, auto_vec<depset *> &depsets,
 bool
 module_state::read_unnamed (unsigned count, const range_t &range)
 {
-  bytes_in sec;
+  trees_in sec (this);
 
   if (!sec.begin (loc, from (), MOD_SNAME_PFX ".vld"))
     return false;
@@ -11518,6 +11541,7 @@ module_state::read_unnamed (unsigned count, const range_t &range)
   unsigned ix;
   for (ix = 0; ix != count; ix++)
     {
+      unnamed_entity *uent = unnamed_ary->quick_push (unnamed_entity ());
       unsigned snum = sec.u ();
 
       if (snum < range.first || snum >= range.second)
@@ -11526,11 +11550,26 @@ module_state::read_unnamed (unsigned count, const range_t &range)
 	break;
 
       dump () && dump ("Unnamed %u section:%u", ix, snum);
+      uent->slot.set_lazy (snum);
 
-      mc_slot s;
-      s = NULL_TREE;
-      s.set_lazy (snum);
-      unnamed_ary->quick_push (s);
+      uent->ns = sec.tree_node ();
+      if (uent->ns)
+	{
+	  uent->id = sec.tree_node ();
+	  unsigned keyed_module = sec.u ();
+
+	  if (keyed_module)
+	    {
+	      keyed_module = slurp ()->remap_module (keyed_module);
+	      if (!keyed_module)
+		sec.set_overrun ();
+	    }
+
+	  dump () && dump ("Specialization key %P%M section:%u",
+			   uent->ns, uent->id,
+			   keyed_module ? (*modules)[keyed_module]
+			   : (module_state *)NULL, snum);
+	}
     }
   unnamed_num = ix;
 
@@ -13086,65 +13125,6 @@ space_cmp (const void *a_, const void *b_)
   return DECL_UID (ns_a) < DECL_UID (ns_b) ? -1 : +1;
 }
 
-// FIXME: Merge with unnamed.  All specializations are unnamed, but
-// not vice-versa
-
-void
-module_state::write_specializations (elf_out *to, auto_vec<depset *> &depsets,
-				     depset::hash &table,
-				     unsigned count, unsigned *crc_p)
-{
-  dump () && dump ("Writing specializations");
-  dump.indent ();
-
-  trees_out sec (to, this, table);
-  sec.begin ();
-
-  unsigned current = 0;
-  for (unsigned ix = 0; ix < depsets.length (); ix++)
-    {
-      depset *d = depsets[ix];
-
-      if (d->get_entity_kind () == depset::EK_SPECIALIZATION
-	  && !d->is_implicit_specialization ())
-	{
-	  tree spec = d->get_entity ();
-	  tree key = get_module_owner (spec);
-	  unsigned owner = MAYBE_DECL_MODULE_OWNER (key);
-	  if (owner >= MODULE_IMPORT_BASE)
-	    owner = (*modules)[owner]->remap;
-
-	  sec.tree_node (CP_DECL_CONTEXT (key));
-	  sec.tree_node (DECL_NAME (key));
-	  sec.u (owner);
-	  sec.u (d->section);
-	  dump () && dump ("Specialization %N section:%u keyed to %N",
-			   spec, d->section, key);
-	  current++;
-	}
-    }
-  gcc_assert (count == current);
-  sec.end (to, to->name (MOD_SNAME_PFX ".tpl"), crc_p);
-  dump.outdent ();
-}
-
-bool
-module_state::read_specializations (unsigned num, const range_t &range)
-{
-  trees_in sec (this);
-
-  if (!sec.begin (loc, from (), MOD_SNAME_PFX ".tpl"))
-    return false;
-
-  dump () && dump ("Reading template table");
-  dump.indent ();
-  dump.outdent ();
-
-  if (!sec.end (from ()))
-    return false;
-  return true;
-}
-
 /* Tool configuration:  MOD_SNAME_PFX .config
 
    This is data that confirms current state (or fails).
@@ -13179,7 +13159,6 @@ struct module_state_config {
   unsigned num_imports;
   unsigned num_partitions;
   unsigned num_bindings;
-  unsigned num_specializations;
   unsigned num_macros;
   const cpp_hashnode *controlling_node;
   module_state *alias;
@@ -13188,7 +13167,7 @@ public:
   module_state_config ()
     :opt_str (get_opts ()), sec_range (0,0), num_unnamed (0),
      num_imports (0), num_partitions (0),
-     num_bindings (0), num_specializations (0), num_macros (0),
+     num_bindings (0), num_macros (0),
      controlling_node (NULL), alias (NULL)
   {
   }
@@ -13364,8 +13343,6 @@ module_state::write_config (elf_out *to, module_state_config &config,
 
   cfg.u (config.num_bindings);
   dump () && dump ("Bindings %u", config.num_bindings);
-  cfg.u (config.num_specializations);
-  dump () && dump ("Specializations %u", config.num_specializations);
   cfg.u (config.num_unnamed);
   dump () && dump ("Unnamed %u", config.num_unnamed);
   cfg.u (config.num_macros);
@@ -13577,8 +13554,6 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
 
   config.num_bindings = cfg.u ();
   dump () && dump ("Bindings %u", config.num_bindings);
-  config.num_specializations = cfg.u ();
-  dump () && dump ("Specializations %u", config.num_specializations);
   config.num_unnamed = cfg.u ();
   dump () && dump ("Unnamed %u", config.num_unnamed);
 
@@ -13771,8 +13746,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	  /* Cluster is now used to number unnamed decls.  */
 	  base[0]->cluster = 0;
 
-	  config.num_specializations
-	    += write_cluster (to, base, size, table, config.num_unnamed, &crc);
+	  write_cluster (to, base, size, table, config.num_unnamed, &crc);
 	}
     }
 
@@ -13788,13 +13762,9 @@ module_state::write (elf_out *to, cpp_reader *reader)
   /* Write the bindings themselves.  */
   config.num_bindings = write_bindings (to, table, &crc);
 
-  /* Write the specializations.  */
-  if (config.num_specializations)
-    write_specializations (to, sccs, table, config.num_specializations, &crc);
-
   /* Write the unnamed.  */
   if (config.num_unnamed)
-    write_unnamed (to, sccs, config.num_unnamed, &crc);
+    write_unnamed (to, sccs, table, config.num_unnamed, &crc);
 
   /* Write the import table.  */
   if (config.num_imports > MODULE_IMPORT_BASE)
@@ -13904,12 +13874,6 @@ module_state::read (int fd, int e, cpp_reader *reader)
 
       /* And the bindings.  */
       if (!read_bindings (spaces, config.num_bindings, config.sec_range))
-	return NULL;
-
-      /* And the specializations.  */
-      if (config.num_specializations
-	  && !read_specializations (config.num_specializations,
-				    config.sec_range))
 	return NULL;
 
       /* And unnamed.  */

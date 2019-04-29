@@ -1,5 +1,19 @@
 2019-04-29  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (MODULE_VECTOR_LAZY_SPEC_P)
+	(MODULE_VECTOR_LAZY_GLOBAL_SPEC_P)
+	(MODULE_VECTOR_LAZY_PARTITION_SPEC_P): New.
+	* module.cc (struct unnamed_entity): New.
+	(unnamed_ary): Array of unnamed_entity.
+	(module_state::write_cluster): Return void.
+	(module_state::{read,write}_unnamed): Deal with specializations.
+	(module_State::{read,write}_specializations): Delete.
+	(module_state::read_cluster): Adjust.
+	(module_state_config): Drop specialization count.
+	(module_state::{read,write}_config): Adjust.
+	(module_state::{read,write}): Drop specialization streaming.
+
 	Merge trunk r270644. (GCC 10)
 
 	gcc/cp/
