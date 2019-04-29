@@ -1,3 +1,24 @@
+2019-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/90257
+	* cfgrtl.c (flow_active_insn_p): Return true for USE of a function
+	return value.
+
+	Revert the revert:
+	2019-04-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/90178
+	Revert:
+	2018-11-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	Revert the revert:
+	2013-10-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+	Revert:
+	2013-10-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-spills.c (lra_final_code_change): Remove useless move insns.
+
 2019-04-29  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa.c (insert_debug_temp_for_var_def): For {CLOBBER}
