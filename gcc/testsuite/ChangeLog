@@ -1,3 +1,10 @@
+2019-04-29  Vladislav Ivanishin  <vlad@ispras.ru>
+
+        * gcc.dg/uninit-25-gimple.c: New test.
+        * gcc.dg/uninit-25.c: New test.
+        * gcc.dg/uninit-26.c: New test.
+        * gcc.dg/uninit-27-gimple.c: New test.
+
 2019-04-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90278
