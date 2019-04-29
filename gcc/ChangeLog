@@ -1,3 +1,11 @@
+2019-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-data-ref.h (data_dependence_relation::inner_loop): Delete.
+	(DDR_INNER_LOOP): Likewise.
+	* tree-data-ref.c (dump_data_dependence_relation): Update accordingly.
+	(initialize_data_dependence_relation): Likewise.
+	(insert_innermost_unit_dist_vector): Use 0 instead of DDR_INNER_LOOP.
+
 2019-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/90257
