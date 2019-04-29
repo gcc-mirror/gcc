@@ -1,3 +1,19 @@
+2019-04-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87982
+	* include/bits/stl_algo.h (generate_n): Convert _Size parameter to
+	an integral type.
+	* include/bits/stl_algobase.h (__size_to_integer): New overloaded
+	functions to convert a value to an integral type.
+	(__fill_n_a, __fill_n_a): Assert that __n is already an integral type.
+	(fill_n): Convert _Size parameter to an integral type.
+	* testsuite/25_algorithms/fill_n/87982.cc: New test.
+	* testsuite/25_algorithms/fill_n/87982_neg.cc: New test.
+	* testsuite/25_algorithms/fill_n/dr426.cc: New test.
+	* testsuite/25_algorithms/generate_n/87982.cc: New test.
+	* testsuite/25_algorithms/generate_n/87982_neg.cc: New test.
+	* testsuite/25_algorithms/generate_n/dr426.cc: New test.
+
 2019-04-28  Nina Dinka Ranns  <dinka.ranns@gmail.com>
 
 	Adding noexcept-specification on tuple constructors (LWG 2899)
