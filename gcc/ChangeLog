@@ -1,6 +1,15 @@
 2019-04-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backport from mainline:
+	2019-01-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/89037
+	* varasm.c (output_constructor_bitfield): Use wi::extract_uhwi
+	instead of accessing TREE_INT_CST_ELT directly.
+
+2019-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backport from mainline:
 	2018-08-23  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/85910

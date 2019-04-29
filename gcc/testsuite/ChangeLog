@@ -1,3 +1,11 @@
+2019-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backport from mainline:
+	2019-01-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/89037
+	* gcc.dg/pr89037.c: New test.
+
 2019-04-26  Roman Zhuykov  <zhroma@ispras.ru>
 
 	Backport from mainline
