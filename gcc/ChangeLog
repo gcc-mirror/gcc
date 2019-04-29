@@ -1,3 +1,12 @@
+2019-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backport from mainline:
+	2019-03-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR debug/89631
+	* dwarf2cfi.c (dwarf2out_frame_debug_expr): Use CONST_POLY_INT
+	instead of POLY_INT_CST.
+
 2019-04-26  Roman Zhuykov  <zhroma@ispras.ru>
 
 	Backport from mainline
