@@ -207,26 +207,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   //@}
 
-#if __cplusplus < 201103L
-  // If _Iterator has a base returns it otherwise _Iterator is returned
-  // untouched
-  template<typename _Iterator, bool _HasBase>
-    struct _Iter_base
-    {
-      typedef _Iterator iterator_type;
-      static iterator_type _S_base(_Iterator __it)
-      { return __it; }
-    };
-
-  template<typename _Iterator>
-    struct _Iter_base<_Iterator, true>
-    {
-      typedef typename _Iterator::iterator_type iterator_type;
-      static iterator_type _S_base(_Iterator __it)
-      { return __it.base(); }
-    };
-#endif
-
 #if __cplusplus >= 201103L
   template<typename _InIter>
     using _RequireInputIter = typename
