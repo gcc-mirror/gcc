@@ -878,7 +878,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { return size_type(const_iterator(this->_M_impl._M_end_addr(), 0)
 			 - begin()); }
 
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const _GLIBCXX_NOEXCEPT
       { return begin() == end(); }
 

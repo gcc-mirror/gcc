@@ -1,5 +1,8 @@
 2019-04-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_bvector.h (vector<bool>::empty()): Add nodiscard
+	attribute.
+
 	* include/bits/stl_iterator_base_types.h (_Iter_base): Remove unused
 	class template and partial specialization.
 
