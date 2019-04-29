@@ -1,5 +1,8 @@
 2019-04-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/71312
+	* src/c++11/shared_ptr.cc (get_mutex): Align pool mutexes to 64 bytes.
+
 	* include/bits/stl_bvector.h (vector<bool>::empty()): Add nodiscard
 	attribute.
 
