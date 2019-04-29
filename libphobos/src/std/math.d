@@ -160,8 +160,10 @@ version (MIPS32)    version = MIPS_Any;
 version (MIPS64)    version = MIPS_Any;
 version (AArch64)   version = ARM_Any;
 version (ARM)       version = ARM_Any;
+version (S390)      version = IBMZ_Any;
 version (SPARC)     version = SPARC_Any;
 version (SPARC64)   version = SPARC_Any;
+version (SystemZ)   version = IBMZ_Any;
 version (RISCV32)   version = RISCV_Any;
 version (RISCV64)   version = RISCV_Any;
 
@@ -5241,7 +5243,7 @@ struct FloatingPointControl
                                  | inexactException,
         }
     }
-    else version (SystemZ)
+    else version (IBMZ_Any)
     {
         enum : ExceptionMask
         {
@@ -5379,7 +5381,7 @@ private:
     {
         alias ControlState = ulong;
     }
-    else version (SystemZ)
+    else version (IBMZ_Any)
     {
         alias ControlState = uint;
     }
