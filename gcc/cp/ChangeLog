@@ -1,3 +1,12 @@
+2019-04-29  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (duplicate_decls): Add whitespace, move comments into
+	conditional blocks.
+	* method.c (explain_implicit_non_constexpr): Refactor.
+	* pt.c (check_explicit_specialization): Fix indentation.
+	* semantics.c (process_outer_var_ref): Reformat.
+	(finish_id_expression_1): Use STRIP_TEMPLATE.
+
 2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/90243 - orphaned note in uninstantiated constexpr function

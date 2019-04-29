@@ -1884,15 +1884,14 @@ maybe_explain_implicit_delete (tree decl)
 void
 explain_implicit_non_constexpr (tree decl)
 {
-  tree parm_type = TREE_VALUE (FUNCTION_FIRST_USER_PARMTYPE (decl));
-  bool const_p = CP_TYPE_CONST_P (non_reference (parm_type));
+  tree parms = FUNCTION_FIRST_USER_PARMTYPE (decl);
+  bool const_p = CP_TYPE_CONST_P (non_reference (TREE_VALUE (parms)));
   tree inh = DECL_INHERITED_CTOR (decl);
   bool dummy;
   synthesized_method_walk (DECL_CLASS_CONTEXT (decl),
 			   special_function_p (decl), const_p,
 			   NULL, NULL, NULL, &dummy, true,
-			   &inh,
-			   FUNCTION_FIRST_USER_PARMTYPE (decl));
+			   &inh, parms);
 }
 
 /* DECL is an instantiation of an inheriting constructor template.  Deduce
