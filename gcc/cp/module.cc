@@ -8778,7 +8778,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek,
 	      else if ((TREE_CODE (STRIP_TEMPLATE (decl)) == TYPE_DECL
 			|| TREE_CODE (STRIP_TEMPLATE (decl)) == CONST_DECL)
 		       ? !TREE_PUBLIC (ctx)
-		       : DECL_THIS_STATIC (decl))
+		       : DECL_THIS_STATIC (STRIP_TEMPLATE (decl)))
 		/* An internal decl.  */
 		dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
 	      else
