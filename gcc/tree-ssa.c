@@ -358,6 +358,11 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
       else if (value == error_mark_node)
 	value = NULL;
     }
+  else if (gimple_clobber_p (def_stmt))
+    /* We can end up here when rewriting a decl into SSA and coming
+       along a clobber for the original decl.  Turn that into
+       # DEBUG decl => NULL  */
+    value = NULL;
   else if (is_gimple_assign (def_stmt))
     {
       bool no_value = false;
