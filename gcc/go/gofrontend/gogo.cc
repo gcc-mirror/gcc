@@ -7816,7 +7816,8 @@ Type_declaration::define_methods(Named_type* nt)
        p != this->methods_.end();
        ++p)
     {
-      if (!(*p)->func_value()->is_sink())
+      if ((*p)->is_function_declaration()
+	  || !(*p)->func_value()->is_sink())
 	nt->add_existing_method(*p);
     }
 }
