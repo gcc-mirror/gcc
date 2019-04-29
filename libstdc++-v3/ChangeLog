@@ -1,5 +1,8 @@
 2019-04-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/move.h (swap(T&, T&), swap(T (&)[N], T (&)[N])): Use
+	_GLIBCXX_NOEXCEPT_IF to simplify declarations.
+
 	PR libstdc++/71312
 	* src/c++11/shared_ptr.cc (get_mutex): Align pool mutexes to 64 bytes.
 
