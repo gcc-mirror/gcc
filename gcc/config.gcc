@@ -850,6 +850,11 @@ case ${target} in
   nbsd_tm_file="netbsd.h netbsd-stdint.h netbsd-elf.h"
   default_use_cxa_atexit=yes
   target_has_targetdm=yes
+  case ${target} in
+    arm*-* | i[34567]86-* | powerpc*-* | sparc*-* | x86_64-*)
+      default_gnu_indirect_function=yes
+      ;;
+  esac
   ;;
 *-*-openbsd*)
   tmake_file="t-openbsd"
