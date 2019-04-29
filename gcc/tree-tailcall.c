@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "tree-dfa.h"
 #include "except.h"
+#include "tree-eh.h"
 #include "dbgcnt.h"
 #include "cfgloop.h"
 #include "common/common-target.h"
@@ -470,6 +471,12 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
   if (ass_var
       && !is_gimple_reg (ass_var)
       && !auto_var_in_fn_p (ass_var, cfun->decl))
+    return;
+
+  /* If the call might throw an exception that wouldn't propagate out of
+     cfun, we can't transform to a tail or sibling call (82081).  */
+  if (stmt_could_throw_p (cfun, stmt)
+      && !stmt_can_throw_external (cfun, stmt))
     return;
 
   /* We found the call, check whether it is suitable.  */
