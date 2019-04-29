@@ -1,3 +1,7 @@
+2019-04-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
 2019-04-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* be.po, da.po, de.po, el.po, fi.po, fr.po, hr.po, id.po, ja.po,
