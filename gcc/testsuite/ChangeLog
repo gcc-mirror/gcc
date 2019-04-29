@@ -1,3 +1,84 @@
+2019-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90173
+	* g++.dg/cpp1z/class-deduction66.C: Use dg-do compile instead of
+	dg-do run.
+
+2019-04-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89261
+	* gcc.target/i386/pr89261.c: New test.
+
+2019-04-27  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/90258
+	* gcc.dg/completion-5.c: New test.
+	* gcc.target/i386/spellcheck-options-5.c: New test.
+
+2019-04-26  Jim Wilson  <jimw@sifive.com>
+
+	* gcc.target/riscv/load-immediate.c: New.
+
+2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/90243
+	* g++.dg/diagnostic/pr90243.C: New test.
+
+2019-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/90173
+	* g++.dg/cpp1z/class-deduction66.C: New.
+
+2019-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/trailing1.C: New.
+
+2019-04-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/alias-16.c: New test.
+
+2019-04-25  Martin Liska  <mliska@suse.cz>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89929
+	* g++.target/i386/mv28.C: New test.
+	* gcc.target/i386/mvc14.c: Likewise.
+	* g++.target/i386/pr57362.C: Updated.
+
+2019-04-24  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/90037
+	* gcc.dg/tree-ssa/20030710-1.c: Update dump file to scan.
+	* gcc.dg/isolate-2.c: Likewise.
+	* gcc.dg/isolate-4.c: Likewise.
+	* gcc.dg/pr19431.c: Accept either ordering of PHI args.
+	* gcc.dg/pr90037.c: New test.
+
+2019-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/44648
+	* g++.dg/warn/Wunused-var-35.C: Remove xfail.
+
+2019-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90194
+	* g++.dg/torture/pr90194.C: New testcase.
+
+2019-04-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90236
+	* g++.dg/cpp1z/nontype-auto16.C: New test.
+
+2019-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90193
+	* gcc.target/i386/pr90193.c: New test.
+
+2019-04-24  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/89952
+	* gcc.target/s390/pr89952.c: New test.
+
 2019-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/90187

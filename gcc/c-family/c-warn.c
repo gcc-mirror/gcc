@@ -746,7 +746,7 @@ strict_aliasing_warning (location_t loc, tree type, tree expr)
 	 are not revealed at higher levels.  */
       alias_set_type set1 = get_alias_set (TREE_TYPE (otype));
       alias_set_type set2 = get_alias_set (TREE_TYPE (type));
-      if (!COMPLETE_TYPE_P (type)
+      if (!COMPLETE_TYPE_P (TREE_TYPE (type))
 	  || !alias_sets_must_conflict_p (set1, set2))
 	{
 	  warning_at (loc, OPT_Wstrict_aliasing,

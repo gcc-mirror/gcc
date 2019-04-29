@@ -674,7 +674,9 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> 9.1 </entry>
-      <entry />
+      <entry>
+        <code>std::scoped_allocator_adaptor</code> changes missing in 9.1.0
+      </entry>
     </row>
 
     <row>

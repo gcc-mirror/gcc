@@ -1832,21 +1832,18 @@ Gogo::start_function(const std::string& name, Function_type* type,
       Variable* this_param = new Variable(receiver->type(), NULL, false,
 					  true, true, location);
       std::string rname = receiver->name();
-      if (rname.empty() || Gogo::is_sink_name(rname))
-	{
-	  // We need to give receivers a name since they wind up in
-	  // DECL_ARGUMENTS.  FIXME.
-	  static unsigned int count;
-	  char buf[50];
-	  snprintf(buf, sizeof buf, "r.%u", count);
-	  ++count;
-	  rname = buf;
-	}
+      unsigned rcounter = 0;
+
+      // We need to give a nameless receiver parameter a synthesized name to
+      // avoid having it clash with some other nameless param. FIXME.
+      Gogo::rename_if_empty(&rname, "r", &rcounter);
+
       block->bindings()->add_variable(rname, NULL, this_param);
     }
 
   const Typed_identifier_list* parameters = type->parameters();
   bool is_varargs = type->is_varargs();
+  unsigned pcounter = 0;
   if (parameters != NULL)
     {
       for (Typed_identifier_list::const_iterator p = parameters->begin();
@@ -1859,16 +1856,11 @@ Gogo::start_function(const std::string& name, Function_type* type,
 	    param->set_is_varargs_parameter();
 
 	  std::string pname = p->name();
-	  if (pname.empty() || Gogo::is_sink_name(pname))
-	    {
-	      // We need to give parameters a name since they wind up
-	      // in DECL_ARGUMENTS.  FIXME.
-	      static unsigned int count;
-	      char buf[50];
-	      snprintf(buf, sizeof buf, "p.%u", count);
-	      ++count;
-	      pname = buf;
-	    }
+
+          // We need to give each nameless parameter a non-empty name to avoid
+          // having it clash with some other nameless param. FIXME.
+          Gogo::rename_if_empty(&pname, "p", &pcounter);
+
 	  block->bindings()->add_variable(pname, NULL, param);
 	}
     }
@@ -2312,6 +2304,20 @@ Gogo::add_variable(const std::string& name, Variable* variable)
 
   return no;
 }
+
+void
+Gogo::rename_if_empty(std::string* pname, const char* tag, unsigned* count)
+{
+  if (pname->empty() || Gogo::is_sink_name(*pname))
+    {
+      char buf[50];
+      go_assert(strlen(tag) < 10);
+      snprintf(buf, sizeof buf, "%s.%u", tag, *count);
+      ++(*count);
+      *pname = buf;
+    }
+}
+
 
 // Add a sink--a reference to the blank identifier _.
 
@@ -6904,11 +6910,20 @@ Function_declaration::import_function_body(Gogo* gogo, Named_object* no)
       const Typed_identifier* receiver = fntype->receiver();
       Variable* recv_param = new Variable(receiver->type(), NULL, false,
 					  true, true, start_loc);
-      outer->bindings()->add_variable(receiver->name(), NULL, recv_param);
+
+      std::string rname = receiver->name();
+      unsigned rcounter = 0;
+
+      // We need to give a nameless receiver a name to avoid having it
+      // clash with some other nameless param. FIXME.
+      Gogo::rename_if_empty(&rname, "r", &rcounter);
+
+      outer->bindings()->add_variable(rname, NULL, recv_param);
     }
 
   const Typed_identifier_list* params = fntype->parameters();
   bool is_varargs = fntype->is_varargs();
+  unsigned pcounter = 0;
   if (params != NULL)
     {
       for (Typed_identifier_list::const_iterator p = params->begin();
@@ -6919,7 +6934,14 @@ Function_declaration::import_function_body(Gogo* gogo, Named_object* no)
 					 start_loc);
 	  if (is_varargs && p + 1 == params->end())
 	    param->set_is_varargs_parameter();
-	  outer->bindings()->add_variable(p->name(), NULL, param);
+
+	  std::string pname = p->name();
+
+          // We need to give each nameless parameter a non-empty name to avoid
+          // having it clash with some other nameless param. FIXME.
+          Gogo::rename_if_empty(&pname, "p", &pcounter);
+
+	  outer->bindings()->add_variable(pname, NULL, param);
 	}
     }
 

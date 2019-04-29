@@ -1,5 +1,7 @@
 2019-04-29  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r270644. (GCC 10)
+
 	gcc/cp/
 	* modules.cc (depset::hash::add_depednency): More STRIP_TEMPLATE.
 

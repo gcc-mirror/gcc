@@ -1,4 +1,154 @@
+2019-04-28  Nina Dinka Ranns  <dinka.ranns@gmail.com>
+
+	Adding noexcept-specification on tuple constructors (LWG 2899)
+	* libstdc++-v3/include/std/tuple:
+	(tuple()): Add noexcept-specification.
+	(tuple(const _Elements&...)): Likewise
+	(tuple(_UElements&&...)): Likewise
+	(tuple(const tuple<_UElements...>&)): Likewise
+	(tuple(tuple<_UElements...>&&)): Likewise
+	(tuple(const _T1&, const _T2&)): Likewise
+	(tuple(_U1&&, _U2&&)): Likewise
+	(tuple(const tuple<_U1, _U2>&): Likewise
+	(tuple(tuple<_U1, _U2>&&): Likewise
+	(tuple(const pair<_U1, _U2>&): Likewise
+	(tuple(pair<_U1, _U2>&&): Likewise
+	* libstdc++-v3/testsuite/20_util/tuple/cons/noexcept_specs.cc: New
+
+2019-04-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/87106
+	* include/bits/stl_uninitialized.h (__relocate_object_a): Mark the
+	arguments with __restrict.
+
+2019-04-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
+
+2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/fs_path.h
+	(path::_S_convert_loc<_InputIterator>): Create const std::string to
+	avoid redundant call to _S_convert_loc with non-const pointers.
+
+	* testsuite/20_util/variant/run.cc: Use a new Hashable type to test
+	hashing, because pmr::string depends on _GLIBCXX_USE_CXX11_ABI==1.
+	* testsuite/21_strings/basic_string/hash/hash.cc
+	[!_GLIBCXX_USE_CXX11_ABI]: Don't test pmr strings.
+	* testsuite/21_strings/basic_string/hash/hash_char8_t.cc
+	[!_GLIBCXX_USE_CXX11_ABI]: Likewise.
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4): Replace wildcard that matches
+	wstring::_M_replace_dispatch with more specific patterns.
+	* include/bits/fs_path.h (path::_S_convert_loc<_InputIterator>):
+	Create const std::string to avoid redundant call to _S_convert_loc
+	with non-const pointers.
+	* include/bits/locale_conv.h (__do_str_codecvt): Use if-constexpr to
+	avoid unnecessary basic_string::assign instantiations.
+
+	* include/std/memory (__uses_alloc_args): Add string-literal to
+	static_assert, to match the one in __uses_alloc.
+	[__cpp_concepts] (_Std_pair): Use C++2a syntax for concept.
+	* testsuite/20_util/polymorphic_allocator/construct_c++2a.cc: Check
+	for recursive uses-allocator construction of nested pairs.
+	* testsuite/20_util/scoped_allocator/construct_pair_c++2a.cc:: Add
+	comment.
+
+2019-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/post/s390x-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt: Update.
+
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Update.
+
+2019-04-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90239
+	* doc/xml/manual/status_cxx2020.xml: Amend P0591R4 status.
+	* include/std/scoped_allocator [__cplusplus > 201703L]
+	(scoped_allocator_adaptor::construct): Define in terms of
+	uses_allocator_construction_args, as per P0591R4.
+	* testsuite/20_util/scoped_allocator/construct_pair_c++2a.cc: New test.
+	* testsuite/util/testsuite_allocator.h: Remove name of unused
+	parameter.
+
 2019-04-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Document P0024R2 status.
+	* doc/html/*: Regenerate.
+
+	* include/bits/fs_path.h (operator<, operator<=, operator>)
+	(operator>=, operator==, operator!=): Make hidden friends, as per
+	LWG 3065.
+	* testsuite/27_io/filesystem/path/native/string-char8_t.cc: Fix
+	string type in test.
+	* testsuite/27_io/filesystem/path/native/string.cc: Likewise.
+
+	* include/std/any (any::any(ValueType&&)): Use __and_v.
+	* include/std/numeric (midpoint(T, T, T), midpoint(T*, T*, T*)):
+	Likewise.
+
+	* include/std/tuple (apply): Use remove_reference_t instead of decay_t
+	as per P0777R1.
+	* include/std/type_traits (__result_of_memfun): Use remove_reference
+	instead of __remove_cvref_t and remove redundant is_same check.
+	(__inv_unwrap): Use __remove_cvref_t instead of decay_t.
+
+	* include/experimental/string_view (basic_string_view::pointer)
+	(basic_string_view::reference): Fix to refer to non-const value_type.
+	* include/bits/basic_string.h (basic_string): Use __sv_check and
+	__sv_limit instead of basic_string_view::_M_check and
+	basic_string_view::_M_limit.
+	* include/std/string_view (__sv_check, __sv_limit): New
+	helper functions to replace basic_string_view::_M_check and
+	basic_string_view::_M_limit.
+	(basic_string_view): Add static assertions to enforce ill-formed
+	requirement for traits_type::char_type from P1148R0, and to enforce
+	required properties of char-like types.
+	(basic_string_view::pointer, basic_string_view::reference): Fix to
+	refer to non-const value_type.
+	(basic_string_view::operator[], basic_string_view::at)
+	(basic_string_view::front, basic_string_view::back)
+	(basic_string_view::data): Use const_reference and const_pointer
+	typedefs for return types.
+	(basic_string_view::_M_check, basic_string_view::_M_limit): Remove.
+	(hash<wstring_view>): Fix argument_type typedef.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/
+	char/1.cc: Fix expected return type of basic_string_view::data().
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/
+	wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/
+	char/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/
+	wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/requirements/traits_neg.cc:
+	New test.
+	* testsuite/21_strings/basic_string_view/requirements/typedefs.cc:
+	Check reference and pointer typedefs.
+	* testsuite/experimental/string_view/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/experimental/string_view/modifiers/remove_prefix/char/1.cc:
+	Fix expected return type of basic_string_view::data().
+	* testsuite/experimental/string_view/modifiers/remove_prefix/wchar_t/
+	1.cc: Likewise.
+	* testsuite/experimental/string_view/modifiers/remove_suffix/char/1.cc:
+	Likewise.
+	* testsuite/experimental/string_view/modifiers/remove_suffix/wchar_t/
+	1.cc: Likewise.
+
+	PR libstdc++/90220
+	* include/std/any (__any_caster): Use remove_cv_t instead of decay_t.
+	Avoid a runtime check for types that can never be stored in std::any.
+	* testsuite/20_util/any/misc/any_cast.cc: Test std::any_cast with
+	array types.
 
 	PR libstdc++/90220 (partial)
 	* include/std/any (any_cast<T>(any*), any_cast<T>(const any*)): Do

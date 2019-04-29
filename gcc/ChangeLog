@@ -1,3 +1,130 @@
+2019-04-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/netbsd-d.c: Include memmodel.h.  Remove unused tree.h,
+	varasm.h, and netbsd-protos.h.
+
+2019-04-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89261
+	* config/i386/i386-protos.h (ix86_data_alignment): Change
+	the second argument type to unsigned int.
+	* config/i386/i386.c (ix86_data_alignment): Change "align"
+	argument type to unsigned int.
+
+2019-04-27  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/90258
+	* opt-suggestions.c (option_proposer::build_option_suggestions):
+	When get_valid_option_values returns empty values, add the
+	misspelling candidate.
+
+2019-04-26  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv-protos.h (riscv_move_integer): Add machine_mode
+	parameter.
+	* config/riscv/riscv.c (riscv_move_integer): New parameter orig_mode.
+	Pass orig_mode to riscv_build_integer.
+	(riscv_split_integer): Pass mode to riscv_move_integer.
+	(riscv_legitimize_const_move): Likewise.
+	(riscv_legitimize_move): For MEM dest and CONST_INT src case, new local
+	promoted_mode.  Replace force_reg call with code to load constant into
+	promoted reg and then subreg it for the store.
+	* config/riscv/riscv.md (low<mode>+1): Pass <GPR:MODE>mode to
+	riscv_move_integer.
+
+2018-04-26  Eugene Sharygin  <eush@ispras.ru>
+
+	* gdbhooks.py: Fix UnicodeDecodeErrors when printing trees with
+	corrupt codes.
+
+2019-04-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree.h (TYPE_VECTOR_SUBPARTS, SET_TYPE_VECTOR_SUBPARTS): Add
+	commentary about the encoding of precision.
+
+2019-04-25  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/i386/freebsd64.h: Add bits for 32-bit multilib support.
+	* config/i386/t-freebsd64: New file.
+	* config.gcc: Add the t-freebsd64 for multilib support.
+
+2019-04-25  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* doc/extend.texi (vector_size): Add missing comma after @xref.
+
+2019-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* BASE-VER: Set to 10.0.0.
+
+2019-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89765
+	* gimplify.c (gimplify_expr): Avoid turning a lvalue
+	VIEW_CONVERT_EXPR into one operating on an rvalue.
+
+2019-04-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89929
+	* config/i386/i386.c (feature_priority): Moved to file scope.
+	(processor_features): Likewise.
+	(processor_model): Likewise.
+	(_arch_names_table): Likewise.
+	(arch_names_table): Likewise.
+	(_feature_list): Removed.
+	(feature_list): Likewise.
+	(_isa_names_table): Moved to file scope.  Add priority.
+	(isa_names_table): Likewise.
+	(get_builtin_code_for_version): Replace feature_list with
+	isa_names_table.  Update error message for P_ZERO priority.
+
+2019-04-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-pass.h (make_pass_phi_only_cprop): Remove.
+	* timevar.def (TV_TREE_PHI_CPROP): Likewise.
+
+2019-04-24  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/90037
+	* Makefile.in (OBJS): Remove tree-ssa-phionlycprop.c
+	* passes.def: Replace all instance of phi-only cprop with the
+	lattice propagator.  Move propagation pass from after erroneous
+	path isolation to before erroneous path isolation.
+	* tree-ssa-phionlycprop.c: Remove.
+
+2019-04-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90213
+	* gimple-fold.c (fold_const_aggregate_ref_1): Do multiplication
+	by size and BITS_PER_UNIT on poly-wide-ints.
+
+2019-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90194
+	* match.pd: Add pattern to simplify view-conversion of an
+	empty constructor.
+
+2019-04-24  Clement Chigot  <clement.chigot@atos.net>
+
+	* config/rs6000/aix71.h (SUBTARGET_OVERRIDE_OPTIONS): Disable
+	OPTION_MASK_VSX and OPTION_MASK_ALTIVEC from rs6000_isa_flags
+	for Go on 32 bit AIX.
+	* config/rs6000/aix72.h: Likewise.
+
+2019-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90193
+	* rtl.c (classify_insn): Return JUMP_INSN for asm goto.
+	* emit-rtl.c (try_split): Copy over REG_LABEL_TARGET.
+
+2019-04-24  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/89952
+	* config/s390/s390.c (s390_restore_gprs_from_fprs): Restore GPRs
+    	from FPRs in reverse order.  Generate REG_CFA_DEF_CFA note also
+    	for restored hard frame pointer.
+	(s390_sched_dependencies_evaluation): Implement new target hook.
+	(TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK): New macro definition.
+
 2019-04-24  Claudiu Zissulescu  <claziss@sysnopsys.com>
 
 	* config/arc/arc-options.def: Fix typos and spelling mistakes.

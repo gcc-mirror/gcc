@@ -1,3 +1,27 @@
+2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/90243 - orphaned note in uninstantiated constexpr function
+	* decl.c (check_for_uninitialized_const_var): Suppress notes if no
+	error was shown.
+
+2019-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/90173
+	* decl.c (grokdeclarator): Set type to error_mark_node
+	upon error about template placeholder type non followed
+	by a simple declarator-id.
+
+2019-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Fix value assigned to typespec_loc, use
+	min_location.
+
+2019-04-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90227 - error with template parameter packs.
+	* pt.c (coerce_template_parms): Do add empty pack when
+	require_all_args.
+
 2019-04-24  Richard Biener  <rguenther@suse.de>
 
 	* call.c (null_ptr_cst_p): Order checks according to expensiveness.

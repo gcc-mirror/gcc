@@ -1278,7 +1278,8 @@
   ""
   [(const_int 0)]
 {
-  riscv_move_integer (operands[2], operands[0], INTVAL (operands[1]));
+  riscv_move_integer (operands[2], operands[0], INTVAL (operands[1]),
+		      <GPR:MODE>mode);
   DONE;
 })
 

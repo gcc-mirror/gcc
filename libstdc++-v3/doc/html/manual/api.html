@@ -28,11 +28,12 @@ Removal of <code class="filename">&lt;ext/tree&gt;</code>, moved to <code class=
 </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_320"></a><code class="constant">3.2</code></h3></div></div></div><p>
   </p><p>Symbol versioning introduced for shared library.</p><p>Removal of include <code class="filename">&lt;backward/strstream.h&gt;</code>.</p><p>Allocator changes. Change <code class="code">__malloc_alloc</code> to <code class="code">malloc_allocator</code> and <code class="code">__new_alloc</code> to <code class="code">new_allocator</code>. </p><p> For GCC releases from 2.95 through the 3.1 series, defining
    <code class="literal">__USE_MALLOC</code> on the gcc command line would change the
-   default allocation strategy to instead use <code class="code"> malloc</code> and
-   <code class="function">free</code>. For the 3.2 and 3.3 release series the same
+   default allocation strategy to instead use <code class="code">malloc</code> and
+   <code class="code">free</code>. For the 3.2 and 3.3 release series the same
    functionality was spelled <code class="literal">_GLIBCXX_FORCE_NEW</code>. From
-   GCC 3.4 onwards the functionality is enabled by setting
-   <code class="literal">GLIBCXX_FORCE_NEW</code> in the environment, see
+   GCC 3.4 onwards the default allocator uses <code class="code">new</code> anyway,
+   but for the optional pooling allocators the functionality is enabled by
+   setting <code class="literal">GLIBCXX_FORCE_NEW</code> in the environment, see
    <a class="link" href="mt_allocator.html" title="Chapter 20. The mt_allocator">the mt allocator chapter</a>
    for details.
    </p><p>Error handling in iostreams cleaned up, made consistent. </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_330"></a><code class="constant">3.3</code></h3></div></div></div><p>
