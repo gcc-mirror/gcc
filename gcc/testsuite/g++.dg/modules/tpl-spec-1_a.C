@@ -1,6 +1,7 @@
 // { dg-additional-options {-fmodules-ts -fdump-lang-module-graph-blocks} }
 
 export module TPL;
+// { dg-module-bmi TPL }
 
 export template <typename T> int foo (T x) 
 {
