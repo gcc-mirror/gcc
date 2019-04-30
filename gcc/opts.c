@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr-common.h"
 #include "common/common-target.h"
 #include "spellcheck.h"
+#include "opt-suggestions.h"
 
 static void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
 
@@ -3088,10 +3089,20 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
   strcpy (new_option + 1, arg);
   option_index = find_opt (new_option, lang_mask);
   if (option_index == OPT_SPECIAL_unknown)
-    error_at (loc, "%<-Werror=%s%>: no option -%s", arg, new_option);
+    {
+      option_proposer op;
+      const char *hint = op.suggest_option (new_option);
+      if (hint)
+	error_at (loc, "%<-W%serror=%s%>: no option %<-%s%>;"
+		  " did you mean %<-%s%>?", value ? "" : "no-",
+		  arg, new_option, hint);
+      else
+	error_at (loc, "%<-W%serror=%s%>: no option %<-%s%>",
+		  value ? "" : "no-", arg, new_option);
+    }
   else if (!(cl_options[option_index].flags & CL_WARNING))
-    error_at (loc, "%<-Werror=%s%>: -%s is not an option that controls "
-	      "warnings", arg, new_option);
+    error_at (loc, "%<-Werror=%s%>: %<-%s%> is not an option that "
+	      "controls warnings", arg, new_option);
   else
     {
       const diagnostic_t kind = value ? DK_ERROR : DK_WARNING;
