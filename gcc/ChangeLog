@@ -1,6 +1,13 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89726
+	* config/i386/i386.c (ix86_expand_floorceildf_32): In ceil
+	compensation use x2 += 1 instead of x2 -= -1 and when honoring
+	signed zeros, do another copysign after the compensation.
+
 	2019-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/89704
