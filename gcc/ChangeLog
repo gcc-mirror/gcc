@@ -1,6 +1,14 @@
 2019-04-30  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2019-04-30  Martin Liska  <mliska@suse.cz>
+
+	PR translation/90274
+	* opts.c (print_filtered_help): Wrap string in _(...).
+
+2019-04-30  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2019-04-27  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/90258
