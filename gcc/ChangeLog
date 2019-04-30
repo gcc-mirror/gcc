@@ -1,10 +1,26 @@
+2019-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/88074
+	PR middle-end/89415
+	* toplev.c (do_compile): Double the emin/emax exponents to workaround
+	buggy mpc_norm.
+
+	2019-02-19  Richard Biener  <rguenther@suse.de>
+
+        PR middle-end/88074
+	* toplev.c (do_compile): Initialize mpfr's exponent range
+	based on available float modes.
+
 2019-04-30  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	Backport from mainline.
 	2019-04-30  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 	PR target/86538
 	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins):
-	Define __ARM_FEATURE_ATOMICS
+	Define __ARM_FEATURE_ATOMICS.
 
 2019-04-30  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
