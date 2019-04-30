@@ -1,6 +1,13 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90108
+	* c-decl.c (merge_decls): If remove is main variant and
+	DECL_ORIGINAL_TYPE is some other type, remove a DECL_ORIGINAL_TYPE
+	variant that has newdecl as TYPE_NAME if any.
+
 	2019-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/89933

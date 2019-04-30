@@ -1,6 +1,11 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90108
+	* c-c++-common/pr90108.c: New test.
+
 	2019-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/90082
