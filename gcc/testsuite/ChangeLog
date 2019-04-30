@@ -1,6 +1,12 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89998
+	* gcc.c-torture/compile/pr89998-1.c: New test.
+	* gcc.c-torture/compile/pr89998-2.c: New test.
+
 	2019-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/89869
