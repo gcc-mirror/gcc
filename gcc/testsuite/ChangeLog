@@ -1,6 +1,11 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89734
+	* gcc.dg/pr89734.c: New test.
+
 	2019-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/89704
