@@ -386,4 +386,7 @@ extern tree get_imported_namespace (tree ctx, tree name, unsigned mod);
 extern tree add_imported_namespace (tree ctx, tree name, unsigned mod,
 				    location_t, bool visible_p, bool inline_p,
 				    tree anon_name);
+extern bool note_pending_specializations (tree ns, tree name,
+					  unsigned import_kind);
+extern void note_loaded_specializations (tree ns, tree name);
 #endif /* GCC_CP_NAME_LOOKUP_H */

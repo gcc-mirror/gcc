@@ -130,6 +130,9 @@ Classes used:
    depset::hash - hash table of depsets
    depset::tarjan - SCC determinator
 
+   specset - specialization set
+   specset::hash - hash table of specsets
+
    loc_spans - location map data
 
    module_state - module object
@@ -2500,6 +2503,88 @@ depset *depset::make_entity (tree entity, entity_kind ek, bool is_defn)
 
   return r;
 }
+
+/* Specializations that have yet to be loaded.  These are keyed to
+   the name of the namespace-scope entity containing their
+   most-general template.  */
+
+class specset {
+public:
+  /* key  */
+  tree ns;  /* Namespace containing the template.  */
+  tree name;  /* Name of the entity.  */
+
+  /* Payload.  */
+  unsigned short allocp2;  /* Allocated pending  */
+  unsigned num;    /* Number of pending.  */
+
+  /* Trailing array of pending specializations.  These are indices
+     into the unnamed entity array.  */
+  unsigned pending[1];
+
+public:
+  /* Even with ctors, we're very pod-like.  */
+  specset (tree ns, tree name)
+    : ns (ns), name (name),
+      allocp2 (0), num (0)
+  {
+  }
+  specset (const specset *from)
+  {
+    size_t size = (offsetof (specset, pending)
+		   + sizeof (specset::pending) * from->num);
+    memmove (this, from, size);
+    if (from->num)
+      allocp2++;
+  }
+
+public:
+  struct traits : delete_ptr_hash<specset> {
+    /* hash and equality for compare_type.  */
+    inline static hashval_t hash (const compare_type p)
+    {
+      hashval_t h = pointer_hash<tree_node>::hash (p->ns);
+      hashval_t nh = pointer_hash<tree_node>::hash (p->name);
+      h = iterative_hash_hashval_t (h, nh);
+
+      return h;
+    }
+    inline static bool equal (const value_type b, const compare_type p)
+    {
+      if (b->ns != p->ns)
+	return false;
+
+      if (b->name != p->name)
+	return false;
+
+      return true;
+    }
+  };
+
+public:
+  class hash : public hash_table<traits> 
+  {
+    typedef traits::compare_type key_t;
+    typedef hash_table<traits> parent;
+
+  public:
+    hash (size_t size)
+      : parent (size)
+    {
+    }
+    ~hash ()
+    {
+    }
+
+  public:
+    bool add (tree ns, tree name, unsigned index);
+    specset *lookup (tree ns, tree name);
+  };
+
+  static hash *table;
+};
+
+specset::hash *specset::table;
 
 /********************************************************************/
 /* Tree streaming.   The tree streaming is very specific to the tree
@@ -9290,6 +9375,47 @@ depset::hash::connect (auto_vec<depset *> &sccs, bool for_mergeable)
     }
 }
 
+bool
+specset::hash::add (tree ns, tree name, unsigned index)
+{
+  specset key (ns, name);
+  specset **slot = find_slot (&key, INSERT);
+  specset *set = *slot;
+  bool is_new = !set;
+
+  if (is_new || set->num == (1u << set->allocp2))
+    {
+      unsigned n = set ? set->num * 2 : 1;
+      size_t new_size = (offsetof (specset, pending)
+			 + sizeof (specset::pending) * n);
+      specset *new_set = (new (::operator new (new_size))
+			  specset (set ? set : &key));
+      delete set;
+      set = new_set;
+      *slot = set;
+    }
+
+  set->pending[set->num++] = index;
+
+  return is_new;
+}
+
+specset *
+specset::hash::lookup (tree ns, tree name)
+{
+  specset key (ns, name);
+  specset *res = NULL;
+
+  if (specset **slot = find_slot (&key, NO_INSERT))
+    {
+      res = *slot;
+      /* We need to remove the specset without deleting it. */
+      traits::mark_deleted (*slot);
+    }
+
+  return res;
+}
+
 /* Initialize location spans.  */
 
 void
@@ -11508,14 +11634,22 @@ module_state::write_unnamed (elf_out *to, auto_vec<depset *> &depsets,
 	    {
 	      tree key = get_module_owner (uent);
 	      unsigned owner = MAYBE_DECL_MODULE_OWNER (key);
-	      if (owner >= MODULE_IMPORT_BASE)
-		owner = (*modules)[owner]->remap;
+	      unsigned import_kind = MODULE_IMPORT_BASE;
+	      if (owner)
+		{
+		  module_state *import = (*modules)[owner];
+
+		  if (import->is_header ())
+		    import_kind = MODULE_NONE;
+		  else if (import->is_partition ())
+		    import_kind = MODULE_PURVIEW;
+		}
 
 	      sec.tree_node (CP_DECL_CONTEXT (key));
 	      sec.tree_node (DECL_NAME (key));
-	      sec.u (owner);
-	      dump () && dump ("Specialization %N section:%u keyed to %N",
-			       uent, d->section, key);
+	      sec.u (import_kind);
+	      dump () && dump ("Specialization %N section:%u keyed to %N (%u)",
+			       uent, d->section, key, import_kind);
 	    }
 	  else
 	    sec.tree_node (NULL);
@@ -11549,26 +11683,25 @@ module_state::read_unnamed (unsigned count, const range_t &range)
       if (sec.get_overrun ())
 	break;
 
-      dump () && dump ("Unnamed %u section:%u", ix, snum);
+      dump () && dump ("Unnamed %u(%u) section:%u", ix, ix + unnamed_lwm, snum);
       uent->slot.set_lazy (snum);
 
       uent->ns = sec.tree_node ();
       if (uent->ns)
 	{
 	  uent->id = sec.tree_node ();
-	  unsigned keyed_module = sec.u ();
+	  unsigned import_kind = sec.u ();
 
-	  if (keyed_module)
-	    {
-	      keyed_module = slurp ()->remap_module (keyed_module);
-	      if (!keyed_module)
-		sec.set_overrun ();
-	    }
-
-	  dump () && dump ("Specialization key %P%M section:%u",
-			   uent->ns, uent->id,
-			   keyed_module ? (*modules)[keyed_module]
-			   : (module_state *)NULL, snum);
+	  /* It's now a regular import kind, if it's not part of the
+	     same module.  */
+	  if (import_kind == MODULE_PURVIEW
+	      && !(is_primary () || is_partition ()))
+	    import_kind = MODULE_IMPORT_BASE;
+	  dump () && dump ("Specialization key %P (%u) section:%u",
+			   uent->ns, uent->id, import_kind, snum);
+	  if (specset::table->add (uent->ns, uent->id, ix + unnamed_lwm))
+	    if (!note_pending_specializations (uent->ns, uent->id, import_kind))
+	      sec.set_overrun ();
 	}
     }
   unnamed_num = ix;
@@ -14512,6 +14645,28 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
   gcc_assert (!mslot->is_lazy ());
 }
 
+module_state *
+module_for_unnamed (unsigned unnamed)
+{
+  unsigned pos = MODULE_IMPORT_BASE;
+  unsigned len = modules->length () - pos;
+  while (len)
+    {
+      unsigned half = len / 2;
+      module_state *probe = (*modules)[pos + half];
+      if (unnamed < probe->unnamed_lwm)
+	len = half;
+      else if (unnamed < probe->unnamed_lwm + probe->unnamed_num)
+	return probe;
+      else
+	{
+	  pos += half + 1;
+	  len = len - (half + 1);
+	}
+    }
+  gcc_unreachable ();
+}
+
 /* Load any pending specializations of TMPL.  Called just before
    instantiating TMPL.  */
 
@@ -14520,7 +14675,33 @@ lazy_load_specializations (tree tmpl)
 {
   gcc_checking_assert (DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P (tmpl));
 
-  // FIXME: load it
+  tree owner = get_module_owner (tmpl);
+
+  if (specset *set
+      = specset::table->lookup (CP_DECL_CONTEXT (owner), DECL_NAME (owner)))
+    {
+      unsigned n = dump.push (NULL);
+      dump () && dump ("Reading %u pending specializations keyed to %N",
+		       set->num, owner);
+      dump.indent ();
+      for (unsigned ix = 0; ix != set->num; ix++)
+	{
+	  unsigned unnamed = set->pending[ix];
+	  unnamed_entity *uent = &(*unnamed_ary)[unnamed];
+	  if (uent->slot.is_lazy ())
+	    {
+	      module_state *module = module_for_unnamed (unnamed);
+	      module->lazy_load (NULL, NULL, &uent->slot, true);
+	    }
+	}
+
+      note_loaded_specializations (set->ns, set->name);
+
+      /* We own set, so delete it now.  */
+      delete set;
+      dump.outdent ();
+      dump.pop (n);
+    }
 }
 
 /* Import the module NAME into the current TU and maybe re-export it.
@@ -15107,7 +15288,10 @@ init_module_processing (cpp_reader *reader)
     module_mapper::get (BUILTINS_LOCATION);
 
   if (!flag_preprocess_only)
-    unnamed_map = unnamed_map_t::create_ggc (31);
+    {
+      unnamed_map = unnamed_map_t::create_ggc (31);
+      specset::table = new specset::hash (400);
+    }
 
   /* Collect here to make sure things are tagged correctly (when
      aggressively GC'd).  */
@@ -15235,6 +15419,10 @@ finish_module_processing (cpp_reader *reader)
   /* Or unnamed entitites.  */
   unnamed_map = NULL;
   unnamed_ary = NULL;
+
+  /* Or remember any pending specializations.  */
+  delete specset::table;
+  specset::table = NULL;
 
   /* Allow a GC, we've possibly made much data unreachable.  */
   ggc_collect ();

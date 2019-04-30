@@ -4019,6 +4019,29 @@ import_module_binding  (tree ns, tree name, unsigned mod, unsigned snum)
   return true;
 }
 
+static void
+mark_pending_on_decl (tree decl)
+{
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    {
+      DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P (decl) = true;
+      decl = DECL_TEMPLATE_RESULT (decl);
+    }
+
+  if (DECL_IMPLICIT_TYPEDEF_P (decl))
+    {
+      // FIXME: Walk it
+    }
+}
+
+static void
+mark_pending_on_binding (tree binding)
+{
+  for (ovl_iterator iter (binding); iter; ++iter)
+    if (!iter.using_p ())
+      mark_pending_on_decl (*iter);
+}
+
 /* During an import NAME is being bound within namespace NS and
    MODULE.  There should be no existing binding.  VALUE and TYPE are
    the value and type bindings.  */
@@ -4042,6 +4065,13 @@ set_module_binding (tree ns, tree name, unsigned mod, bool inter_p,
     /* Again, bogus BMI could give find to missing or already loaded slot.  */
     return false;
 
+  if (MODULE_VECTOR_LAZY_SPEC_P (*slot))
+    {
+      mark_pending_on_binding (value);
+      if (type)
+	mark_pending_on_decl (type);
+    }
+
   tree bind = value;
   if (type || visible != bind)
     {
@@ -4055,6 +4085,52 @@ set_module_binding (tree ns, tree name, unsigned mod, bool inter_p,
   *mslot = bind;
 
   return true;
+}
+
+bool
+note_pending_specializations (tree ns, tree name, unsigned import_kind)
+{
+  tree *slot = find_namespace_slot (ns, name, false);
+  /* We should have already created a vector on this slot.  */
+  // FIXME: What if we specialize a member of an anonymous namespace?
+  if (!slot || TREE_CODE (*slot) != MODULE_VECTOR)
+    return false;
+
+  tree vec = *slot;
+  MODULE_VECTOR_LAZY_SPEC_P (vec) = true;
+
+  if (import_kind < MODULE_IMPORT_BASE)
+    {
+      /* Mark the global or partition slot.  */
+      unsigned ix = (import_kind == MODULE_PURVIEW
+		     ? MODULE_SLOT_PARTITION : MODULE_SLOT_GLOBAL);
+      module_cluster &cluster
+	= MODULE_VECTOR_CLUSTER (vec, ix / MODULE_VECTOR_SLOTS_PER_CLUSTER);
+      unsigned off = ix % MODULE_VECTOR_SLOTS_PER_CLUSTER;
+      gcc_checking_assert (cluster.indices[off].base == 0
+			   && cluster.indices[off].span == 1);
+      if (tree binding = cluster.slots[off])
+	for (ovl_iterator iter (binding); iter; ++iter)
+	  mark_pending_on_decl (*iter);
+    }
+  else
+    {
+      /* Mark every slot's loaded entities.  */
+      // FIXME: iterate the slots
+    }
+
+  return true;
+}
+
+void
+note_loaded_specializations (tree ns, tree name)
+{
+  /* NS and NAME are from internal data, so we're not presuming the
+     fidelity of a BMI here.  */
+  tree *slot = find_namespace_slot (ns, name, false);
+  tree vec = *slot;
+
+  MODULE_VECTOR_LAZY_SPEC_P (vec) = false;
 }
 
 void

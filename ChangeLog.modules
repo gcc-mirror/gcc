@@ -1,3 +1,24 @@
+2019-04-30  Nathan Sidwell  <nathan@acm.org>
+
+	Namespace-scope function specializations.
+	gcc/cp/
+	* cp-tree.h (MODULE_VECTOR_LAZY_{PARTITION,GLOBAL}_SPEC_P):
+	Delete.
+	* module.cc (struct specset): New.
+	(module_for_unnamed): New.
+	(lazy_load_specializations): New.
+	(module_state::{read,write}_unnamed): Register the
+	specializations.
+	({init,finish}_module_processing): Adjust.
+	* name-lookup.c (mark_pending_on_decl, mark_pending_on_binding):
+	New.
+	(set_module_binding): If pending, mark the new decls.
+	(note_pending_specializations, note_loaded_specializations): New
+	* name-lookup.h (note_pending_specializations)
+	(note_loaded_specializations): Declare.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-spec-1_[ab].C: New.
+
 2019-04-29  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

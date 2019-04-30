@@ -431,7 +431,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       TINFO_USED_TEMPLATE_ID (in TEMPLATE_INFO)
       PACK_EXPANSION_SIZEOF_P (in *_PACK_EXPANSION)
       OVL_USING_P (in OVERLOAD)
-      MODULE_VEC_LAZY_GLOBAL_SPEC_P (in MODULE_VEC)
       IMPLICIT_CONV_EXPR_NONTYPE_ARG (in IMPLICIT_CONV_EXPR)
    2: IDENTIFIER_KIND_BIT_2 (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
@@ -445,7 +444,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       AGGR_INIT_ZERO_FIRST (in AGGR_INIT_EXPR)
       CONSTRUCTOR_MUTABLE_POISON (in CONSTRUCTOR)
       OVL_HIDDEN_P (in OVERLOAD)
-      MODULE_VEC_LAZY_PARTITION_SPEC_P (in MODULE_VEC)
       SWITCH_STMT_NO_BREAK_P (in SWITCH_STMT)
       LAMBDA_EXPR_CAPTURE_OPTIMIZED (in LAMBDA_EXPR)
       IMPLICIT_CONV_EXPR_BRACED_INIT (in IMPLICIT_CONV_EXPR)
@@ -903,8 +901,7 @@ struct named_decl_hash : ggc_remove <tree> {
    current TU slot, others are allocated as needed.  By construction
    of the importing mechanism we only ever need to append to the
    array.  Rather than have straight index/slot tuples, we bunch them
-   up for greater packing.  We don't optimize for lookups in the main
-   TU.
+   up for greater packing.
 
    The cluster representation packs well on a 64-bit system.  */
 
@@ -943,12 +940,6 @@ struct GTY(()) tree_module_vec {
 
 #define MODULE_VECTOR_LAZY_SPEC_P(NODE) \
   TREE_LANG_FLAG_0 (MODULE_VECTOR_CHECK (NODE))
-
-#define MODULE_VECTOR_LAZY_GLOBAL_SPEC_P(NODE) \
-  TREE_LANG_FLAG_1 (MODULE_VECTOR_CHECK (NODE))
-
-#define MODULE_VECTOR_LAZY_PARTITION_SPEC_P(NODE) \
-  TREE_LANG_FLAG_2 (MODULE_VECTOR_CHECK (NODE))
 
 /* Simplified unique_ptr clone to release a tree vec on exit.  */
 
