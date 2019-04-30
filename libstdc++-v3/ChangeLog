@@ -1,3 +1,12 @@
+2019-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/path/decompose/root_path.cc: Remove
+	macros accidentally left in.
+	* testsuite/27_io/filesystem/path/native/string-char8_t.cc: Remove
+	unnecessary -lstdc++fs option. Fix test for mingw.
+	* testsuite/experimental/filesystem/path/native/string-char8_t.cc:
+	Fix test for mingw.
+
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt: Update.
