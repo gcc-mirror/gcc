@@ -1,6 +1,11 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/89704
+	* gcc.dg/debug/pr89704.c: New test.
+
 	2019-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/89684

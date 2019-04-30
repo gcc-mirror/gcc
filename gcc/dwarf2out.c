@@ -19675,6 +19675,9 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 
     case HIGH:
     case CONST_FIXED:
+    case MINUS:
+    case SIGN_EXTEND:
+    case ZERO_EXTEND:
       return false;
 
     case MEM:
