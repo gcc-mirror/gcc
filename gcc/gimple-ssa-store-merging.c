@@ -1615,31 +1615,13 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
 		       unsigned int total_bytes)
 {
   unsigned int first_byte = bitpos / BITS_PER_UNIT;
+  tree tmp_int = expr;
   bool sub_byte_op_p = ((bitlen % BITS_PER_UNIT)
 			|| (bitpos % BITS_PER_UNIT)
 			|| !int_mode_for_size (bitlen, 0).exists ());
-  bool empty_ctor_p
-    = (TREE_CODE (expr) == CONSTRUCTOR
-       && CONSTRUCTOR_NELTS (expr) == 0
-       && TYPE_SIZE_UNIT (TREE_TYPE (expr))
-		       && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (expr))));
 
   if (!sub_byte_op_p)
-    {
-      if (first_byte >= total_bytes)
-	return false;
-      total_bytes -= first_byte;
-      if (empty_ctor_p)
-	{
-	  unsigned HOST_WIDE_INT rhs_bytes
-	    = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (expr)));
-	  if (rhs_bytes > total_bytes)
-	    return false;
-	  memset (ptr + first_byte, '\0', rhs_bytes);
-	  return true;
-	}
-      return native_encode_expr (expr, ptr + first_byte, total_bytes) != 0;
-    }
+    return native_encode_expr (tmp_int, ptr + first_byte, total_bytes) != 0;
 
   /* LITTLE-ENDIAN
      We are writing a non byte-sized quantity or at a position that is not
@@ -1685,29 +1667,14 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
 
   /* We must be dealing with fixed-size data at this point, since the
      total size is also fixed.  */
-  unsigned int byte_size;
-  if (empty_ctor_p)
-    {
-      unsigned HOST_WIDE_INT rhs_bytes
-	= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (expr)));
-      if (rhs_bytes > total_bytes)
-	return false;
-      byte_size = rhs_bytes;
-    }
-  else
-    {
-      fixed_size_mode mode
-	= as_a <fixed_size_mode> (TYPE_MODE (TREE_TYPE (expr)));
-      byte_size = GET_MODE_SIZE (mode);
-    }
+  fixed_size_mode mode = as_a <fixed_size_mode> (TYPE_MODE (TREE_TYPE (expr)));
   /* Allocate an extra byte so that we have space to shift into.  */
-  byte_size++;
+  unsigned int byte_size = GET_MODE_SIZE (mode) + 1;
   unsigned char *tmpbuf = XALLOCAVEC (unsigned char, byte_size);
   memset (tmpbuf, '\0', byte_size);
   /* The store detection code should only have allowed constants that are
-     accepted by native_encode_expr or empty ctors.  */
-  if (!empty_ctor_p
-      && native_encode_expr (expr, tmpbuf, byte_size - 1) == 0)
+     accepted by native_encode_expr.  */
+  if (native_encode_expr (expr, tmpbuf, byte_size - 1) == 0)
     gcc_unreachable ();
 
   /* The native_encode_expr machinery uses TYPE_MODE to determine how many
@@ -4197,8 +4164,7 @@ lhs_valid_for_store_merging_p (tree lhs)
   tree_code code = TREE_CODE (lhs);
 
   if (code == ARRAY_REF || code == ARRAY_RANGE_REF || code == MEM_REF
-      || code == COMPONENT_REF || code == BIT_FIELD_REF
-      || DECL_P (lhs))
+      || code == COMPONENT_REF || code == BIT_FIELD_REF)
     return true;
 
   return false;
@@ -4212,11 +4178,6 @@ static bool
 rhs_valid_for_store_merging_p (tree rhs)
 {
   unsigned HOST_WIDE_INT size;
-  if (TREE_CODE (rhs) == CONSTRUCTOR
-      && CONSTRUCTOR_NELTS (rhs) == 0
-      && TYPE_SIZE_UNIT (TREE_TYPE (rhs))
-      && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (rhs))))
-    return true;
   return (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (rhs))).is_constant (&size)
 	  && native_encode_expr (rhs, NULL, size) != 0);
 }
