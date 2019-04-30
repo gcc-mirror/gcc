@@ -1191,6 +1191,9 @@ dlang_parse_arrayliteral (string *decl, const char *mangled)
   while (elements--)
     {
       mangled = dlang_value (decl, mangled, NULL, '\0');
+      if (mangled == NULL)
+	return NULL;
+
       if (elements != 0)
 	string_append (decl, ", ");
     }
