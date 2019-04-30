@@ -2,6 +2,12 @@
 
 	Backported from mainline
 	2019-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89412
+	* expr.c (expand_assignment): If result is a MEM, use change_address
+	instead of simplify_gen_subreg.
+
+	2019-02-20  Jakub Jelinek  <jakub@redhat.com>
 		    David Malcolm  <dmalcolm@redhat.com>
 
 	PR middle-end/89091
