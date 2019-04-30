@@ -1,3 +1,16 @@
+2019-04-30  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	Backport from mainline
+	2018-12-11  Richard Earnshaw  <Richard.Earnshaw@arm.com>
+
+	PR target/37369
+	* config/aarch64/iterators.md (sizem1): Add sizes for
+	SFmode and DFmode.
+	(Vbtype): Add SFmode mapping.
+	* config/aarch64/aarch64.md (copysigndf3, copysignsf3): Delete.
+	(copysign<GPF:mode>3): New expand pattern.
+	(copysign<GPF:mode>3_insn): New insn pattern.
+
 2019-04-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backport from mainline:
