@@ -1,3 +1,8 @@
+2019-04-30  Martin Liska  <mliska@suse.cz>
+
+	PR translation/90274
+	* opts.c (print_filtered_help): Wrap string in _(...).
+
 2019-04-30  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/90240

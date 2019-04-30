@@ -1578,7 +1578,8 @@ print_filtered_help (unsigned int include_flags,
   for (unsigned i = 0; i < help_tuples.length (); i++)
     {
       const struct cl_option *option = cl_options + help_tuples[i].m_code;
-      printf ("  Known valid arguments for %s option:\n   ", option->opt_text);
+      printf (_("  Known valid arguments for %s option:\n   "),
+	      option->opt_text);
       for (unsigned j = 0; j < help_tuples[i].m_values.length (); j++)
 	printf (" %s", help_tuples[i].m_values[j]);
       printf ("\n\n");
