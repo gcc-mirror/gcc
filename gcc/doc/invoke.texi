@@ -7961,7 +7961,7 @@ assembler was found to support such directives.
 Force GCC to generate DWARF2+ line number tables internally, if DWARF2+
 line number tables are to be generated.
 
-@item gas-locview-support
+@item -gas-locview-support
 @opindex gas-locview-support
 Inform the compiler that the assembler supports @code{view} assignment
 and reset assertion checking in @code{.loc} directives.
@@ -7969,7 +7969,7 @@ and reset assertion checking in @code{.loc} directives.
 This option will be enabled by default if, at GCC configure time, the
 assembler was found to support them.
 
-@item gno-as-locview-support
+@item -gno-as-locview-support
 Force GCC to assign view numbers internally, if
 @option{-gvariable-location-views} are explicitly requested.
 
