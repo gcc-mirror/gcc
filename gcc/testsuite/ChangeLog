@@ -1,6 +1,13 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60702
+	* g++.dg/tls/thread_local11.C: Remove scan-tree-dump-times directives
+	for _ZTH* calls.
+	* g++.dg/tls/thread_local11a.C: New test.
+
 	2019-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/60702
