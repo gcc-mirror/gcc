@@ -3,6 +3,9 @@
 	Backported from mainline
 	2019-04-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/89933
+	* c-c++-common/pr89933.c: New test.
+
 	PR rtl-optimization/89965
 	* gcc.target/i386/pr89965.c: New test.
 
