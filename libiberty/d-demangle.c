@@ -1503,6 +1503,9 @@ dlang_parse_tuple (string *decl, const char *mangled)
   while (elements--)
     {
       mangled = dlang_type (decl, mangled);
+      if (mangled == NULL)
+	return NULL;
+
       if (elements != 0)
 	string_append (decl, ", ");
     }
