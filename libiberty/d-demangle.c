@@ -1217,8 +1217,13 @@ dlang_parse_assocarray (string *decl, const char *mangled)
   while (elements--)
     {
       mangled = dlang_value (decl, mangled, NULL, '\0');
+      if (mangled == NULL)
+	return NULL;
+
       string_append (decl, ":");
       mangled = dlang_value (decl, mangled, NULL, '\0');
+      if (mangled == NULL)
+	return NULL;
 
       if (elements != 0)
 	string_append (decl, ", ");
