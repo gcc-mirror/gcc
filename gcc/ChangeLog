@@ -1,6 +1,12 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89590
+	* builtins.c (maybe_emit_free_warning): Punt if free doesn't have
+	exactly one argument.
+
 	2019-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/89520
