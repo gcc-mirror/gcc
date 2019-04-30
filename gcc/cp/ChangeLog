@@ -1,6 +1,12 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89796
+	* semantics.c (finish_omp_atomic): Add warning_sentinel for
+	-Wunused-value around finish_expr_stmt call.
+
 	2019-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/60702

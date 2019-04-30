@@ -8462,6 +8462,11 @@ finish_omp_atomic (enum tree_code code, enum tree_code opcode, tree lhs,
       stmt = build2 (OMP_ATOMIC, void_type_node, integer_zero_node, stmt);
       OMP_ATOMIC_SEQ_CST (stmt) = seq_cst;
     }
+
+  /* Avoid -Wunused-value warnings here, the whole construct has side-effects
+     and even if it might be wrapped from fold-const.c or c-omp.c wrapped
+     in some tree that appears to be unused, the value is not unused.  */
+  warning_sentinel w (warn_unused_value);
   finish_expr_stmt (stmt);
 }
 

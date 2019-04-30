@@ -1,6 +1,12 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89796
+	* g++.dg/gomp/pr89796.C: New test.
+	* gcc.dg/gomp/pr89796.c: New test.
+
 	2019-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/60702
