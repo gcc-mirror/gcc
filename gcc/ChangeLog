@@ -3,6 +3,13 @@
 	Backported from mainline
 	2019-04-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/89965
+	* dce.c: Include rtl-iter.h.
+	(struct check_argument_load_data): New type.
+	(check_argument_load): New function.
+	(find_call_stack_args): Check for loads from stack slots still tracked
+	in sp_bytes and punt if any is found.
+
 	PR c/89946
 	* varasm.c (assemble_start_function): Don't use tree_fits_uhwi_p
 	and gcc_unreachable if it fails, just call tree_to_uhwi which
