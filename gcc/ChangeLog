@@ -1,5 +1,12 @@
 2019-04-30  Martin Liska  <mliska@suse.cz>
 
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Change endp
+	into built_in_function enum. Remove code for endp == 2 and
+	use BUILT_IN_* constants.
+	(gimple_fold_builtin): Call the function with fcode.
+
+2019-04-30  Martin Liska  <mliska@suse.cz>
+
 	* config/i386/i386.c (ix86_builtin_reciprocal): Cast
 	DECL_FUNCTION_CODE into ix86_builtins enum before
 	the switch statement.

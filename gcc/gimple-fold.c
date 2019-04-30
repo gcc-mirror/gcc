@@ -692,7 +692,7 @@ size_must_be_zero_p (tree size)
 
 static bool
 gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
-			       tree dest, tree src, int endp)
+			       tree dest, tree src, enum built_in_function code)
 {
   gimple *stmt = gsi_stmt (*gsi);
   tree lhs = gimple_call_lhs (stmt);
@@ -839,7 +839,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	    }
 	}
 
-      if (endp == 3)
+      if (code == BUILT_IN_MEMMOVE)
 	{
 	  /* Both DEST and SRC must be pointer types.
 	     ??? This is what old code did.  Is the testing for pointer types
@@ -1102,17 +1102,16 @@ set_vop_and_replace:
 
 done:
   gimple_seq stmts = NULL;
-  if (endp == 0 || endp == 3)
+  if (code == BUILT_IN_MEMCPY || code == BUILT_IN_MEMMOVE)
     len = NULL_TREE;
-  else if (endp == 2)
-    len = gimple_build (&stmts, loc, MINUS_EXPR, TREE_TYPE (len), len,
-			ssize_int (1));
-  if (endp == 2 || endp == 1)
+  else if (code == BUILT_IN_MEMPCPY)
     {
       len = gimple_convert_to_ptrofftype (&stmts, loc, len);
       dest = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
 			   TREE_TYPE (dest), dest, len);
     }
+  else
+    gcc_unreachable ();
 
   gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
   gimple *repl = gimple_build_assign (lhs, dest);
@@ -3847,14 +3846,10 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
 					 gimple_call_arg (stmt, 1),
 					 gimple_call_arg (stmt, 2));
     case BUILT_IN_MEMCPY:
-      return gimple_fold_builtin_memory_op (gsi, gimple_call_arg (stmt, 0),
-					    gimple_call_arg (stmt, 1), 0);
     case BUILT_IN_MEMPCPY:
-      return gimple_fold_builtin_memory_op (gsi, gimple_call_arg (stmt, 0),
-					    gimple_call_arg (stmt, 1), 1);
     case BUILT_IN_MEMMOVE:
       return gimple_fold_builtin_memory_op (gsi, gimple_call_arg (stmt, 0),
-					    gimple_call_arg (stmt, 1), 3);
+					    gimple_call_arg (stmt, 1), fcode);
     case BUILT_IN_SPRINTF_CHK:
     case BUILT_IN_VSPRINTF_CHK:
       return gimple_fold_builtin_sprintf_chk (gsi, fcode);
