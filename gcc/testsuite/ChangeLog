@@ -1,6 +1,11 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90208
+	* gcc.dg/tsan/pr90208-2.c: New test.
+
 	2019-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/90108
