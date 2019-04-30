@@ -1,6 +1,12 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89520
+	* gcc.dg/pr89520-1.c: New test.
+	* gcc.dg/pr89520-2.c: New test.
+
 	2019-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89403
