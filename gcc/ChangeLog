@@ -1,8 +1,14 @@
+2019-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89093
+	* config/aarch64/aarch64.c (aarch64_process_one_target_attr): Don't skip
+	whitespace at the start of target attribute string.
+
 2019-04-30  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/86538
 	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins):
-	Define __ARM_FEATURE_ATOMICS
+	Define __ARM_FEATURE_ATOMICS.
 
 2019-04-30  Martin Liska  <mliska@suse.cz>
 
