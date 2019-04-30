@@ -9640,6 +9640,15 @@ get_module (const char *ptr, module_state *parent)
   return parent;
 }
 
+bool
+module_normal_import_p (unsigned m)
+{
+  module_state *module = (*modules)[m];
+
+  return !(module->is_header () || module->is_partition ()
+	   || module->is_primary ());
+}
+
 /* Create a mapper.  The mapper may be dead.  Yes, I'm embedding some
    client-side socket handling in the compiler.  At least it's not
    ipv4.  */

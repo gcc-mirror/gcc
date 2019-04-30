@@ -1,5 +1,13 @@
 2019-04-30  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (module_normal_import_p): Declare.
+	* module.cc (module_normal_import_p): New.
+	* name-lookup.c (note_pending_specializations): Note already
+	loaded normal imports.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-spec-2_d.C: New
+
 	gcc/testsuite/
 	* tpl-spec-2_[abc].C: New.
 

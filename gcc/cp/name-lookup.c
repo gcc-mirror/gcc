@@ -4116,7 +4116,29 @@ note_pending_specializations (tree ns, tree name, unsigned import_kind)
   else
     {
       /* Mark every slot's loaded entities.  */
-      // FIXME: iterate the slots
+      module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (vec);
+      unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (vec);
+      if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_IMPORT_BASE)
+	{
+	  ix--;
+	  cluster++;
+	}
+
+      for (; ix--; cluster++)
+	for (unsigned jx = 0; jx != MODULE_VECTOR_SLOTS_PER_CLUSTER; jx++)
+	  {
+	    if (unsigned base = cluster->indices[jx].base)
+	      /* Spans of > 1 are namespaces.  */
+	      if (cluster->indices[jx].span == 1
+		  && !cluster->slots[jx].is_lazy ()
+		  && module_normal_import_p (base))
+		{
+		  tree binding = cluster->slots[jx];
+		  mark_pending_on_binding (MAYBE_STAT_DECL (binding));
+		  if (tree type = MAYBE_STAT_TYPE (binding))
+		    mark_pending_on_decl (type);
+		}
+	  }
     }
 
   return true;

@@ -6830,6 +6830,7 @@ extern tree get_module_owner (tree, bool = false) ATTRIBUTE_PURE;
 extern void set_module_owner (tree);
 extern void mangle_module (int m);
 extern void mangle_module_fini ();
+extern bool module_normal_import_p (unsigned m);
 extern void lazy_load_binding (unsigned mod, tree ns, tree id,
 			       mc_slot *mslot, bool outermost);
 extern void lazy_load_specializations (tree tmpl);
