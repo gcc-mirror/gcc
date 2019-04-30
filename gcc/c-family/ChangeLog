@@ -1,3 +1,8 @@
+2019-04-30  Martin Liska  <mliska@suse.cz>
+
+	* c-pragma.c (handle_pragma_diagnostic): Provide hints
+	for unknown options.
+
 2019-04-26  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-warn.c (strict_aliasing_warning): Apply COMPLETE_TYPE_P to

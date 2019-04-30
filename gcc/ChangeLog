@@ -1,5 +1,10 @@
 2019-04-30  Martin Liska  <mliska@suse.cz>
 
+	* opts.c (enable_warning_as_error): Provide hints
+	for unknown options.
+
+2019-04-30  Martin Liska  <mliska@suse.cz>
+
 	PR debug/90288
 	* doc/invoke.texi: Add missing dash for gas-locview-support
 	and gno-as-locview-support.
