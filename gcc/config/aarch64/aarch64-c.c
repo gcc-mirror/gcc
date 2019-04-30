@@ -147,6 +147,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
       builtin_define_with_int_value ("__ARM_FEATURE_SVE_BITS", bits);
     }
 
+  aarch64_def_or_undef (TARGET_LSE, "__ARM_FEATURE_ATOMICS", pfile);
   aarch64_def_or_undef (TARGET_AES, "__ARM_FEATURE_AES", pfile);
   aarch64_def_or_undef (TARGET_SHA2, "__ARM_FEATURE_SHA2", pfile);
   aarch64_def_or_undef (TARGET_SHA3, "__ARM_FEATURE_SHA3", pfile);
