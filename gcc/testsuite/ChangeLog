@@ -3,6 +3,9 @@
 	Backported from mainline
 	2019-04-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/90187
+	* g++.dg/opt/pr90187.C: New test.
+
 	PR tree-optimization/90208
 	* gcc.dg/tsan/pr90208-2.c: New test.
 

@@ -23981,6 +23981,8 @@ ix86_expand_sse_fp_minmax (rtx dest, enum rtx_code code, rtx cmp_op0,
   else
     {
       code = is_min ? SMIN : SMAX;
+      if (MEM_P (if_true) && MEM_P (if_false))
+	if_true = force_reg (mode, if_true);
       tmp = gen_rtx_fmt_ee (code, mode, if_true, if_false);
     }
 
