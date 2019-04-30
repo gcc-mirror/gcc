@@ -1,6 +1,11 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/89651
+	* gfortran.dg/gomp/pr89651.f90: New test.
+
 	2019-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/88568
