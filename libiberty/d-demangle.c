@@ -939,8 +939,8 @@ dlang_parse_integer (string *decl, const char *mangled, char type)
   if (type == 'a' || type == 'u' || type == 'w')
     {
       /* Parse character value.  */
-      char value[10];
-      int pos = 10;
+      char value[20];
+      int pos = sizeof(value);
       int width = 0;
       long val;
 
@@ -991,7 +991,7 @@ dlang_parse_integer (string *decl, const char *mangled, char type)
 	  for (; width > 0; width--)
 	    value[--pos] = '0';
 
-	  string_appendn (decl, &(value[pos]), 10 - pos);
+	  string_appendn (decl, &(value[pos]), sizeof(value) - pos);
 	}
       string_append (decl, "'");
     }

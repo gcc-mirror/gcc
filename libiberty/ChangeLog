@@ -1,5 +1,8 @@
 2019-04-30  Ben L  <bobsayshilol@live.co.uk>
 
+	* d-demangle.c (dlang_parse_integer): Fix stack underflow.
+	* testsuite/d-demangle-expected: Add testcase.
+
 	* cp-demangle (d_print_comp_inner): Guard against a NULL 'typed_name'.
 	* testsuite/demangle-expected: Add testcase.
 
