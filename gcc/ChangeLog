@@ -3,6 +3,10 @@
 	Backported from mainline
 	2019-04-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/90082
+	* dce.c (can_delete_call): New function.
+	(deletable_insn_p, mark_insn): Use it.
+
 	PR tree-optimization/90090
 	* tree-ssa-math-opts.c (is_division_by): Ignore divisions that can
 	throw internally.
