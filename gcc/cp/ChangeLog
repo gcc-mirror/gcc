@@ -1,6 +1,15 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89767
+	* parser.c (cp_parser_lambda_introducer): Add ids and first_capture_id
+	variables, check for duplicates in this function.
+	* lambda.c (add_capture): Don't check for duplicates nor use
+	IDENTIFIER_MARKED.
+	(register_capture_members): Don't clear IDENTIFIER_MARKED here.
+
 	2019-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89512
