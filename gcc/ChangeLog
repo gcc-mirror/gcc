@@ -1,3 +1,9 @@
+2019-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89475
+	* tree-ssa-ccp.c (evaluate_stmt): Handle BUILT_IN_BSWAP{16,32,64}
+	calls.
+
 2019-04-30  Martin Liska  <mliska@suse.cz>
 
 	PR translation/90274

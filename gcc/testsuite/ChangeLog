@@ -1,3 +1,8 @@
+2019-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89475
+	* gcc.dg/tree-ssa/pr89475.c: New test.
+
 2019-04-30  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/90240
