@@ -1,6 +1,11 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82075
+	* g++.dg/cpp1z/decomp49.C: New test.
+
 	2019-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87148
