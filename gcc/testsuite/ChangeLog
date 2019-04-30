@@ -1,3 +1,9 @@
+2019-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89093
+	* gcc.target/aarch64/return_address_sign_3.c: Remove extra space in
+	target attribute.
+
 2019-04-30  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* gcc.dg/sinhatanh-2.c: Count the number of functions.
