@@ -4888,11 +4888,6 @@ c_parse_final_cleanups (void)
 	      /* Generate RTL for this function now that we know we
 		 need it.  */
 	      expand_or_defer_fn (decl);
-	      /* If we're compiling -fsyntax-only pretend that this
-		 function has been written out so that we don't try to
-		 expand it again.  */
-	      if (flag_syntax_only)
-		TREE_ASM_WRITTEN (decl) = 1;
 	      reconsider = true;
 	    }
 	}
