@@ -114,6 +114,10 @@ as_internal_fn (combined_fn code)
   (MARK_TS_DECL_WITH_VIS (C),				\
    tree_contains_struct[C][TS_DECL_NON_COMMON] = true)
 
+#define MARK_TS_EXP(C)					\
+  (MARK_TS_TYPED (C),					\
+   tree_contains_struct[C][TS_EXP] = true)
+
 /* Returns the string representing CLASS.  */
 
 #define TREE_CODE_CLASS_STRING(CLASS)\
