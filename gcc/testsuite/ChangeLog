@@ -1,5 +1,9 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/89093
+	* gcc.target/aarch64/pr89093.c: New test.
+	* gcc.target/aarch64/pr63304_1.c: Remove space from target string.
+
 	PR tree-optimization/89475
 	* gcc.dg/tree-ssa/pr89475.c: New test.
 
