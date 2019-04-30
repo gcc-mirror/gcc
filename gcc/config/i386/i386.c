@@ -39382,7 +39382,9 @@ use_rsqrt_p ()
 static tree
 ix86_builtin_reciprocal (tree fndecl)
 {
-  switch (DECL_FUNCTION_CODE (fndecl))
+  enum ix86_builtins fn_code
+    = (enum ix86_builtins) DECL_FUNCTION_CODE (fndecl);
+  switch (fn_code)
     {
       /* Vectorized version of sqrt to rsqrt conversion.  */
     case IX86_BUILTIN_SQRTPS_NR:
