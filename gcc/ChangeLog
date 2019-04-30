@@ -1,3 +1,13 @@
+2019-04-30  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-04-27  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/90258
+	* opt-suggestions.c (option_proposer::build_option_suggestions):
+	When get_valid_option_values returns empty values, add the
+	misspelling candidate.
+
 2019-04-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90273
