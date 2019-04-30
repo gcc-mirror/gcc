@@ -3,6 +3,11 @@
 	Backported from mainline
 	2019-03-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/89768
+	* loop-unroll.c (unroll_loop_constant_iterations): Use gen_int_mode
+	instead of GEN_INT.
+	(unroll_loop_runtime_iterations): Likewise.
+
 	PR target/89752
 	* gimplify.c (gimplify_asm_expr): For output argument with
 	TREE_ADDRESSABLE type, clear allows_reg if it allows memory, otherwise
