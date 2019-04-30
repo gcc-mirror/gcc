@@ -3,6 +3,11 @@
 	Backported from mainline
 	2019-03-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/89752
+	* gimplify.c (gimplify_asm_expr): For output argument with
+	TREE_ADDRESSABLE type, clear allows_reg if it allows memory, otherwise
+	diagnose error.
+
 	PR target/89726
 	* config/i386/i386.c (ix86_expand_floorceildf_32): In ceil
 	compensation use x2 += 1 instead of x2 -= -1 and when honoring
