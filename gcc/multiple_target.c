@@ -103,10 +103,16 @@ create_dispatcher_calls (struct cgraph_node *node)
     inode->resolve_alias (cgraph_node::get (resolver_decl));
 
   auto_vec<cgraph_edge *> edges_to_redirect;
-  auto_vec<ipa_ref *> references_to_redirect;
+  /* We need to capture the references by value rather than just pointers to them
+     and remove them right away, as removing them later would invalidate what
+     some other reference pointers point to.  */
+  auto_vec<ipa_ref> references_to_redirect;
 
-  for (unsigned i = 0; node->iterate_referring (i, ref); i++)
-    references_to_redirect.safe_push (ref);
+  while (node->iterate_referring (0, ref))
+    {
+      references_to_redirect.safe_push (*ref);
+      ref->remove_reference ();
+    }
 
   /* We need to remember NEXT_CALLER as it could be modified in the loop.  */
   for (cgraph_edge *e = node->callers; e ; e = e->next_caller)
@@ -146,13 +152,11 @@ create_dispatcher_calls (struct cgraph_node *node)
 		}
 
 	      symtab_node *source = ref->referring;
-	      ref->remove_reference ();
 	      source->create_reference (inode, IPA_REF_ADDR);
 	    }
 	  else if (ref->use == IPA_REF_ALIAS)
 	    {
 	      symtab_node *source = ref->referring;
-	      ref->remove_reference ();
 	      source->create_reference (inode, IPA_REF_ALIAS);
 	      source->add_to_same_comdat_group (inode);
 	    }

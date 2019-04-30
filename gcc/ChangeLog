@@ -3,6 +3,12 @@
 	Backported from mainline
 	2019-03-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR ipa/89684
+	* multiple_target.c (create_dispatcher_calls): Change
+	references_to_redirect from vector of ipa_ref * to vector of ipa_ref.
+	In the node->iterate_referring loop, push *ref rather than ref, call
+	ref->remove_reference () and always pass 0 to iterate_referring.
+
 	PR rtl-optimization/89679
 	* expmed.c (expand_mult_const): Don't add a REG_EQUAL note if it
 	would contain a paradoxical SUBREG.

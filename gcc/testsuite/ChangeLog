@@ -3,6 +3,9 @@
 	Backported from mainline
 	2019-03-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR ipa/89684
+	* gcc.target/i386/pr89684.c: New test.
+
 	PR rtl-optimization/89679
 	* gcc.dg/pr89679.c: New test.
 
