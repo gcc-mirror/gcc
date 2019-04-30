@@ -851,6 +851,7 @@ new_omp_context (gimple *stmt, omp_context *outer_ctx)
       ctx->cb.copy_decl = omp_copy_decl;
       ctx->cb.eh_lp_nr = 0;
       ctx->cb.transform_call_graph_edges = CB_CGE_MOVE;
+      ctx->cb.dont_remap_vla_if_no_change = true;
       ctx->depth = 1;
     }
 
