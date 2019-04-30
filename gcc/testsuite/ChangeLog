@@ -1,6 +1,11 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/90026
+	* g++.dg/opt/pr90026.C: New test.
+
 	2019-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/90010
