@@ -72,6 +72,11 @@ _Q8ccQ4M2e.
 
 _ZmmAtl
 _ZmmAtl
+# Could crash
+--no-params
+_ZZaSFvOEES_
+_ZZaSFvOEES_
+_ZZaSFvOEES_
 #
 # demangler/80513 Test for bogus characters after __thunk_
 
