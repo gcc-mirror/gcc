@@ -438,7 +438,8 @@
 (define_mode_attr sizen [(QI "8") (HI "16") (SI "32") (DI "64")])
 
 ;; Give the ordinal of the MSB in the mode
-(define_mode_attr sizem1 [(QI "#7") (HI "#15") (SI "#31") (DI "#63")])
+(define_mode_attr sizem1 [(QI "#7") (HI "#15") (SI "#31") (DI "#63")
+			  (HF "#15") (SF "#31") (DF "#63")])
 
 ;; Attribute to describe constants acceptable in logical operations
 (define_mode_attr lconst [(SI "K") (DI "L")])
@@ -507,7 +508,7 @@
 			  (V8HF "16b") (V2SF  "8b")
 			  (V4SF "16b") (V2DF  "16b")
 			  (DI   "8b")  (DF    "8b")
-			  (SI   "8b")])
+			  (SI   "8b")  (SF    "8b")])
 
 ;; Define element mode for each vector mode.
 (define_mode_attr VEL [(V8QI "QI") (V16QI "QI")
@@ -647,6 +648,9 @@
 
 ;; Double vector types for ALLX.
 (define_mode_attr Vallxd [(QI "8b") (HI "4h") (SI "2s")])
+
+;; Mode with floating-point values replaced by like-sized integers.
+(define_mode_attr V_INT_EQUIV [(DF "DI") (SF "SI")])
 
 ;; Mode of result of comparison operations.
 (define_mode_attr V_cmp_result [(V8QI "V8QI") (V16QI "V16QI")
