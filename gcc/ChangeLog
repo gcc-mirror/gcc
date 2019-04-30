@@ -1,6 +1,12 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/88568
+	* attribs.c (handle_dll_attribute): Don't clear TREE_STATIC for
+	dllimport on VAR_DECLs with RECORD_TYPE or UNION_TYPE DECL_CONTEXT.
+
 	2019-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/89587

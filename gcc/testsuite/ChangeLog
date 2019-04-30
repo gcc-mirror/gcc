@@ -1,6 +1,11 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/88568
+	* g++.dg/other/pr88568.C: New test.
+
 	2019-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/82075
