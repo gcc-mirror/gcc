@@ -1,3 +1,19 @@
+2019-04-30  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/constraints.md (L): New.
+	* config/riscv/predicates.md (lui_operand): New.
+	(sfb_alu_operand): New.
+	* config/riscv/riscv-protos.h (riscv_expand_conditional_move): Declare.
+	* config/riscv/riscv.c (riscv_expand_conditional_move): New.
+	* config/riscv/riscv.h (TARGET_SFB_ALU): New.
+	* config/riscv/risc.md (type): Add sfb_alu.
+	(branch<mode>): Renamed from branch_order<mode>.  Change predicate for
+	operand 3 to reg_or_0_operand.  In output string, change %3 to %z3.
+	(branch_zero<mode>): Delete.
+	(mov<mode>cc): New.
+	(mov<GPR:mode><X:mode>cc): Likewise.
+	* config/riscv/sifive-7.md (sifive_7_sfb_alu): New.  Use in bypasses.
+
 2019-04-30  Nathan Sidwell  <nathan@acm.org>
 
 	* tree.h (MARK_TS_EXP): New.

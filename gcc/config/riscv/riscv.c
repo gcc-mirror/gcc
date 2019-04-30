@@ -2324,6 +2324,18 @@ riscv_expand_conditional_branch (rtx label, rtx_code code, rtx op0, rtx op1)
   emit_jump_insn (gen_condjump (condition, label));
 }
 
+/* If (CODE OP0 OP1) holds, move CONS to DEST; else move ALT to DEST.  */
+
+void
+riscv_expand_conditional_move (rtx dest, rtx cons, rtx alt, rtx_code code,
+			       rtx op0, rtx op1)
+{
+  riscv_emit_int_compare (&code, &op0, &op1);
+  rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
+  emit_insn (gen_rtx_SET (dest, gen_rtx_IF_THEN_ELSE (GET_MODE (dest), cond,
+						      cons, alt)));
+}
+
 /* Implement TARGET_FUNCTION_ARG_BOUNDARY.  Every parameter gets at
    least PARM_BOUNDARY bits of alignment, but will be given anything up
    to PREFERRED_STACK_BOUNDARY bits if the type requires it.  */
