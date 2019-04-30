@@ -1,6 +1,11 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87148
+	* g++.dg/ext/flexary34.C: New test.
+
 	2019-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/89590

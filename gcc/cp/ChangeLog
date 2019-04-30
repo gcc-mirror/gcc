@@ -1,6 +1,11 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87148
+	* init.c (build_value_init_noctor): Ignore flexible array members.
+
 	2019-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89403
