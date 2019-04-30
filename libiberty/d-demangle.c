@@ -1246,6 +1246,9 @@ dlang_parse_structlit (string *decl, const char *mangled, const char *name)
   while (args--)
     {
       mangled = dlang_value (decl, mangled, NULL, '\0');
+      if (mangled == NULL)
+	return NULL;
+
       if (args != 0)
 	string_append (decl, ", ");
     }
