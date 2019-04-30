@@ -3,6 +3,9 @@
 	Backported from mainline
 	2019-03-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/89679
+	* gcc.dg/pr89679.c: New test.
+
 	PR tree-optimization/89703
 	* gcc.c-torture/compile/pr89703-1.c: New test.
 	* gcc.c-torture/compile/pr89703-2.c: New test.

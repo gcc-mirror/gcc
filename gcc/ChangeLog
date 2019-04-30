@@ -3,6 +3,10 @@
 	Backported from mainline
 	2019-03-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/89679
+	* expmed.c (expand_mult_const): Don't add a REG_EQUAL note if it
+	would contain a paradoxical SUBREG.
+
 	PR tree-optimization/89703
 	* tree-ssa-strlen.c (valid_builtin_call): Punt if stmt call types
 	aren't compatible also with builtin_decl_explicit.  Check pure
