@@ -1,6 +1,12 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-04-11  Jakub Jelinek  <jakub@redhat.com>
+	
+	PR rtl-optimization/89965
+	* dce.c (sp_based_mem_offset): New function.
+	(find_call_stack_args): Use sp_based_mem_offset.
+
 	2019-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/90010
