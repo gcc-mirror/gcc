@@ -1,6 +1,12 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89752
+	* lra-constraints.c (process_alt_operands) <reg>: For BLKmode, don't
+	update this_alternative nor this_alternative_set.
+
 	2019-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/89768
