@@ -3,6 +3,9 @@
 	Backported from mainline
 	2019-04-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/90193
+	* gcc.target/i386/pr90193.c: New test.
+
 	PR target/90187
 	* g++.dg/opt/pr90187.C: New test.
 
