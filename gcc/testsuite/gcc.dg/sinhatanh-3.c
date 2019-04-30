@@ -51,12 +51,12 @@ coshatanhl_ (long double x)
 }
 
 /* There should be calls to sinh, cosh and atanh */
-/* { dg-final { scan-tree-dump "cosh " "optimized" } } */
-/* { dg-final { scan-tree-dump "sinh " "optimized" } } */
-/* { dg-final { scan-tree-dump "atanh " "optimized" } } */
-/* { dg-final { scan-tree-dump "coshf " "optimized" } } */
-/* { dg-final { scan-tree-dump "sinhf " "optimized" } } */
-/* { dg-final { scan-tree-dump "atanhf " "optimized" } } */
-/* { dg-final { scan-tree-dump "coshl " "optimized" } } */
-/* { dg-final { scan-tree-dump "sinhl " "optimized" } } */
-/* { dg-final { scan-tree-dump "atanhl " "optimized" } } */
+/* { dg-final { scan-tree-dump-times "cosh " "1" "optimized" } } */
+/* { dg-final { scan-tree-dump-times "sinh " "1" "optimized" } } */
+/* { dg-final { scan-tree-dump-times "atanh " "2" "optimized" } } */
+/* { dg-final { scan-tree-dump-times "coshf " "1" "optimized" } } */
+/* { dg-final { scan-tree-dump-times "sinhf " "1" "optimized" } } */
+/* { dg-final { scan-tree-dump-times "atanhf " "2" "optimized" } } */
+/* { dg-final { scan-tree-dump-times "coshl " "1" "optimized" } } */
+/* { dg-final { scan-tree-dump-times "sinhl " "1" "optimized" } } */
+/* { dg-final { scan-tree-dump-times "atanhl " "2" "optimized" } } */
