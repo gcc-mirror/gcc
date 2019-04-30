@@ -1,6 +1,14 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89703
+	* tree-ssa-strlen.c (valid_builtin_call): Punt if stmt call types
+	aren't compatible also with builtin_decl_explicit.  Check pure
+	or non-pure status of BUILT_IN_STR{{,N}CMP,N{LEN,{CAT,CPY}{,_CHK}}}
+	and BUILT_IN_STPNCPY{,_CHK}.
+
 	2019-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/89498
