@@ -1,6 +1,11 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89512
+	* semantics.c (finish_qualified_id_expr): Reject variable templates.
+
 	2019-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87148
