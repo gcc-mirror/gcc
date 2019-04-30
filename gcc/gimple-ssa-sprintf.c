@@ -376,9 +376,14 @@ target_to_host (char *hostr, size_t hostsz, const char *targstr)
      overlong strings just like the translated strings are.  */
   if (target_to_host_charmap['\0'] == 1)
     {
-      strncpy (hostr, targstr, hostsz - 4);
-      if (strlen (targstr) >= hostsz)
-	strcpy (hostr + hostsz - 4, "...");
+      size_t len = strlen (targstr);
+      if (len >= hostsz)
+	{
+	  memcpy (hostr, targstr, hostsz - 4);
+	  strcpy (hostr + hostsz - 4, "...");
+	}
+      else
+	memcpy (hostr, targstr, len + 1);
       return hostr;
     }
 
@@ -392,10 +397,9 @@ target_to_host (char *hostr, size_t hostsz, const char *targstr)
       if (!*targstr)
 	break;
 
-      if (size_t (ph - hostr) == hostsz - 4)
+      if (size_t (ph - hostr) == hostsz)
 	{
-	  *ph = '\0';
-	  strcat (ph, "...");
+	  strcpy (ph - 4, "...");
 	  break;
 	}
     }

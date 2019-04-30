@@ -1,6 +1,15 @@
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90010
+	* gimple-ssa-sprintf.c (target_to_host): Fix handling of targstr
+	with strlen in between hostsz-3 and hostsz-1 inclusive when no
+	translation is needed, and when translation is needed, only append
+	... if the string length is hostsz or more bytes long.  Avoid using
+	strncpy or strcat.
+
 	2019-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/89998
