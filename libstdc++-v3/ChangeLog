@@ -1,3 +1,13 @@
+2019-05-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61761
+	* include/std/complex (__complex_proj): Return parameter unchanged.
+	[_GLIBCXX_USE_C99_COMPLEX] (__complex_proj): Change overloads for
+	floating-point types to take std::complex arguments.
+	[_GLIBCXX_USE_C99_MATH_TR1] (__complex_proj): Add overloads for
+	floating-point types.
+	* testsuite/26_numerics/complex/proj.cc: New test.
+
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/pre/gnu.ver (GLIBCXX_3.4.26): Change _Lock_policyE2 exports
