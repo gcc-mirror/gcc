@@ -28357,7 +28357,18 @@ get_specializations (auto_vec<tree> &res,
       tree spec = entry->spec;
       int use_tpl;
       if (TYPE_P (spec))
-	use_tpl = CLASSTYPE_USE_TEMPLATE (spec);
+	{
+	  if (TYPE_DECL_ALIAS_P (DECL_TEMPLATE_RESULT (entry->tmpl)))
+	    // FIXME: Skip for now
+	    continue;
+	  if (TREE_CODE (TREE_TYPE (DECL_TEMPLATE_RESULT (entry->tmpl)))
+	      == ENUMERAL_TYPE)
+	    // FIXME: Likewise. Hey, make anon enum tags anon
+	    continue;
+
+	  use_tpl = CLASSTYPE_USE_TEMPLATE (spec);
+	  spec = TYPE_STUB_DECL (spec);
+	}
       else
 	use_tpl = DECL_USE_TEMPLATE (spec);
       if (use_tpl & 2)
@@ -28374,8 +28385,7 @@ void
 get_specializations_for_module (auto_vec<tree> &res, bitmap partitions)
 {
   get_specializations (res, decl_specializations, partitions);
-  // FIXME: get the type specializations too
-  //  get_specializations (res, type_specializations, partitions);
+  get_specializations (res, type_specializations, partitions);
 }
 
 // FIXME: do we need to register the specialization on
