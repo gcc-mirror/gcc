@@ -14332,7 +14332,18 @@ set_module_owner (tree decl)
 {
   if (!modules_p ())
     return;
-  
+
+  int use_tpl = -1;
+  node_template_info (decl, use_tpl);
+  if (use_tpl > 0)
+    {
+      /* Some kind of specialization.  */
+      retrofit_lang_decl (decl);
+      DECL_MODULE_OWNER (decl)
+	= module_purview_p () ? MODULE_PURVIEW : MODULE_NONE;
+      return;
+    }
+
   if (!DECL_NAMESPACE_SCOPE_P (decl))
     return;
 

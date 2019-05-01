@@ -4025,9 +4025,9 @@ mark_pending_on_decl (tree decl)
     }
 
   if (DECL_IMPLICIT_TYPEDEF_P (decl))
-    {
-      // FIXME: Walk it
-    }
+    for (tree member = TYPE_FIELDS (TREE_TYPE (member)); member;
+	 member = TREE_CHAIN (member))
+      mark_pending_on_decl (member);
 }
 
 static void

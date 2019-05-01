@@ -1,6 +1,12 @@
 2019-05-01  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (set_module_owner): Deal with specializations.
+	* name-lookup.c (mark_pending_on_decl): Walk class members.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-spec-3_[ab].C: New.
+
+	gcc/cp/
 	* parser.c (cp_parser_explicit_instantiation): Correctl unwind state.
 	* decl.c (grokfndecl): Set module ownership after specializationness
 	is known.
