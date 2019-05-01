@@ -3487,6 +3487,10 @@ _cpp_new_macro (cpp_reader *pfile, cpp_macro_kind kind, void *placement)
 {
   cpp_macro *macro = (cpp_macro *) placement;
 
+  /* Zero init all the fields.  This'll tell the compiler know all the
+     following inits are writing a virgin object.  */
+  memset (macro, 0, offsetof (cpp_macro, exp));
+
   macro->line = pfile->directive_line;
   macro->parm.params = 0;
   macro->lazy = 0;

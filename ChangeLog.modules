@@ -1,5 +1,8 @@
 2019-05-01  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* macro.c (_cpp_new_macro): memset before initing.
+
 	gcc/cp/
 	* module.cc (module_state:write_bindings): Iterate over sccs
 	array, not hash table.
