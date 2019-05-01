@@ -292,11 +292,11 @@ Expression::convert_type_to_interface(Type* lhs_type, Expression* rhs,
     }
 
   Expression* obj;
-  if (rhs_type->points_to() != NULL)
+  if (rhs_type->is_direct_iface_type())
     {
       // We are assigning a pointer to the interface; the interface
       // holds the pointer itself.
-      obj = rhs;
+      obj = unpack_direct_iface(rhs, location);
     }
   else
     {
@@ -308,6 +308,60 @@ Expression::convert_type_to_interface(Type* lhs_type, Expression* rhs,
     }
 
   return Expression::make_interface_value(lhs_type, first_field, obj, location);
+}
+
+// Return an expression for the pointer-typed value of a direct interface
+// type.  Specifically, for single field struct or array, get the single
+// field, and do this recursively.  The reason for this is that we don't
+// want to assign a struct or an array to a pointer-typed field.  The
+// backend may not like that.
+
+Expression*
+Expression::unpack_direct_iface(Expression* rhs, Location loc)
+{
+  Struct_type* st = rhs->type()->struct_type();
+  if (st != NULL)
+    {
+      go_assert(st->field_count() == 1);
+      Expression* field = Expression::make_field_reference(rhs, 0, loc);
+      return unpack_direct_iface(field, loc);
+    }
+  Array_type* at = rhs->type()->array_type();
+  if (at != NULL)
+    {
+      int64_t len;
+      bool ok = at->int_length(&len);
+      go_assert(ok && len == 1);
+      Type* int_type = Type::lookup_integer_type("int");
+      Expression* index = Expression::make_integer_ul(0, int_type, loc);
+      Expression* elem = Expression::make_array_index(rhs, index, NULL, NULL, loc);
+      return unpack_direct_iface(elem, loc);
+    }
+  return rhs;
+}
+
+// The opposite of unpack_direct_iface.
+
+Expression*
+Expression::pack_direct_iface(Type* t, Expression* rhs, Location loc)
+{
+  if (rhs->type() == t)
+    return rhs;
+  Struct_type* st = t->struct_type();
+  if (st != NULL)
+    {
+      Expression_list* vals = new Expression_list();
+      vals->push_back(pack_direct_iface(st->field(0)->type(), rhs, loc));
+      return Expression::make_struct_composite_literal(t, vals, loc);
+    }
+  Array_type* at = t->array_type();
+  if (at != NULL)
+    {
+      Expression_list* vals = new Expression_list();
+      vals->push_back(pack_direct_iface(at->element_type(), rhs, loc));
+      return Expression::make_array_composite_literal(t, vals, loc);
+    }
+  return Expression::make_unsafe_cast(t, rhs, loc);
 }
 
 // Return an expression for the type descriptor of RHS.
@@ -426,9 +480,11 @@ Expression::convert_interface_to_type(Type *lhs_type, Expression* rhs,
   Expression* obj = Expression::make_interface_info(rhs, INTERFACE_INFO_OBJECT,
                                                     location);
 
-  // If the value is a pointer, then it is the value we want.
+  // If the value is a direct interface, then it is the value we want.
   // Otherwise it points to the value.
-  if (lhs_type->points_to() == NULL)
+  if (lhs_type->is_direct_iface_type())
+    obj = Expression::pack_direct_iface(lhs_type, obj, location);
+  else
     {
       obj = Expression::make_unsafe_cast(Type::make_pointer_type(lhs_type), obj,
                                          location);
@@ -3871,9 +3927,9 @@ Unsafe_type_conversion_expression::do_get_backend(Translate_context* context)
                 && Type::are_convertible(t, et, NULL));
     }
   else if (t->map_type() != NULL)
-    go_assert(et->map_type() != NULL);
+    go_assert(et->map_type() != NULL || et->points_to() != NULL);
   else if (t->channel_type() != NULL)
-    go_assert(et->channel_type() != NULL);
+    go_assert(et->channel_type() != NULL || et->points_to() != NULL);
   else if (t->points_to() != NULL)
     go_assert(et->points_to() != NULL
               || et->channel_type() != NULL
@@ -3881,6 +3937,8 @@ Unsafe_type_conversion_expression::do_get_backend(Translate_context* context)
               || et->function_type() != NULL
 	      || et->integer_type() != NULL
               || et->is_nil_type());
+  else if (t->function_type() != NULL)
+    go_assert(et->points_to() != NULL);
   else if (et->is_unsafe_pointer_type())
     go_assert(t->points_to() != NULL
 	      || (t->integer_type() != NULL
@@ -3899,8 +3957,6 @@ Unsafe_type_conversion_expression::do_get_backend(Translate_context* context)
               || et->map_type() != NULL
               || et->channel_type() != NULL
 	      || et->is_nil_type());
-  else if (t->function_type() != NULL)
-    go_assert(et->points_to() != NULL);
   else
     go_unreachable();
 
@@ -6723,10 +6779,10 @@ Expression::comparison(Translate_context* context, Type* result_type,
 	}
 
       // The right operand is not an interface.  We need to take its
-      // address if it is not a pointer.
+      // address if it is not a direct interface type.
       Expression* pointer_arg = NULL;
-      if (right_type->points_to() != NULL)
-        pointer_arg = right;
+      if (right_type->is_direct_iface_type())
+        pointer_arg = Expression::unpack_direct_iface(right, location);
       else
 	{
           go_assert(right->is_addressable());
@@ -9871,11 +9927,15 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
   if (bme != NULL)
     {
       Named_object* methodfn = bme->function();
+      Function_type* mft = (methodfn->is_function()
+                            ? methodfn->func_value()->type()
+                            : methodfn->func_declaration_value()->type());
       Expression* first_arg = bme->first_argument();
 
-      // We always pass a pointer when calling a method.
-      if (first_arg->type()->points_to() == NULL
-	  && !first_arg->type()->is_error())
+      // We always pass a pointer when calling a method, except for
+      // direct interface types when calling a value method.
+      if (!first_arg->type()->is_error()
+          && !first_arg->type()->is_direct_iface_type())
 	{
 	  first_arg = Expression::make_unary(OPERATOR_AND, first_arg, loc);
 	  // We may need to create a temporary variable so that we can
@@ -9884,6 +9944,12 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 	  Unary_expression* ue = static_cast<Unary_expression*>(first_arg);
 	  ue->set_create_temp();
 	}
+      else if (mft->receiver()->type()->points_to() == NULL
+               && first_arg->type()->points_to() != NULL
+               && first_arg->type()->points_to()->is_direct_iface_type())
+        first_arg = Expression::make_dereference(first_arg,
+                                                 Expression::NIL_CHECK_DEFAULT,
+                                                 loc);
 
       // If we are calling a method which was inherited from an
       // embedded struct, and the method did not get a stub, then the
@@ -16018,11 +16084,19 @@ Interface_mtable_expression::do_get_backend(Translate_context* context)
       else
 	m = st->method_function(p->name(), &is_ambiguous);
       go_assert(m != NULL);
-      Named_object* no = m->named_object();
+      Named_object* no =
+        (this->is_pointer_
+         && this->type_->is_direct_iface_type()
+         && m->is_value_method()
+         ? m->iface_stub_object()
+         : m->named_object());
 
       go_assert(no->is_function() || no->is_function_declaration());
 
-      Btype* fcn_btype = m->type()->get_backend_fntype(gogo);
+      Function_type* fcn_type = (no->is_function()
+                                 ? no->func_value()->type()
+                                 : no->func_declaration_value()->type());
+      Btype* fcn_btype = fcn_type->get_backend_fntype(gogo);
       Backend::Btyped_identifier bmtype(p->name(), fcn_btype, loc);
       bstructfields.push_back(bmtype);
 

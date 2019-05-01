@@ -68,10 +68,9 @@ import (
 // pointer to memory that holds the value. It follows from this that
 // kindDirectIface can only be set for a type whose representation is
 // simply a pointer. In the current gccgo implementation, this is set
-// only for pointer types (including unsafe.Pointer). In the future it
-// could also be set for other types: channels, maps, functions,
-// single-field structs and single-element arrays whose single field
-// is simply a pointer.
+// for types that are pointer-shaped, including unsafe.Pointer, channels,
+// maps, functions, single-field structs and single-element arrays whose
+// single field is simply a pointer-shaped type.
 
 // For a nil interface value both fields in the interface struct are nil.
 
@@ -458,7 +457,11 @@ func ifaceE2T2(t *_type, e eface, ret unsafe.Pointer) bool {
 		typedmemclr(t, ret)
 		return false
 	} else {
-		typedmemmove(t, ret, e.data)
+		if isDirectIface(t) {
+			*(*unsafe.Pointer)(ret) = e.data
+		} else {
+			typedmemmove(t, ret, e.data)
+		}
 		return true
 	}
 }
@@ -469,7 +472,11 @@ func ifaceI2T2(t *_type, i iface, ret unsafe.Pointer) bool {
 		typedmemclr(t, ret)
 		return false
 	} else {
-		typedmemmove(t, ret, i.data)
+		if isDirectIface(t) {
+			*(*unsafe.Pointer)(ret) = i.data
+		} else {
+			typedmemmove(t, ret, i.data)
+		}
 		return true
 	}
 }
