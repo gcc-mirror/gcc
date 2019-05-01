@@ -16,5 +16,5 @@ include 'dec_type_print.f90'
 ! { dg-error "Invalid character in name" "" { target *-*-* } 57 }
 ! { dg-error "Invalid character in name" "" { target *-*-* } 58 }
 ! { dg-error "conflicts with PROCEDURE" "" { target *-*-* } 60 }
-! { dg-error "Cannot assign to a named constant" "" { target *-*-* } 80 }
+! { dg-error "Syntax error in IF-clause" "" { target *-*-* } 80 }
 

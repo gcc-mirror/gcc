@@ -1,3 +1,10 @@
+2019-05-01  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/60144
+	* gfortran.dg/block_name_2.f90: Adjust dg-error.
+	* gfortran.dg/dec_type_print_3.f90.f90: Likewise
+	* gfortran.dg/pr60144.f90: New test. 
+
 2019-05-01  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/90037

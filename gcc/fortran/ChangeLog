@@ -1,3 +1,13 @@
+2019-05-01 Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/60144
+	* match.c (gfc_match_parens): Change the location for missing ')'.
+	(gfc_match_if): Detect a missing '('. Remove the spurious named
+	constant error. Change the wording of some errors.
+	(gfc_match_else): Change the wording of an error.
+	(gfc_match_elseif): Detect a missing '('. Improve the matching
+	process to get a better syntax analysis.
+
 2019-04-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/90166
