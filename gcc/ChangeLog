@@ -1,3 +1,9 @@
+2019-05-01  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/88797
+	* gimple-ssa-split-paths (is_feasible_trace): Reject cases where the
+	PHI feeds a conditional on the RHS of an assignment.
+
 2019-04-30  Andrew Waterman  <andrew@sifive.com>
 	    Jim Wilson  <jimw@sifive.com>
 
