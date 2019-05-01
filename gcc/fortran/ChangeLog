@@ -1,3 +1,8 @@
+2019-05-01  Andrew Benson  <abensonca@gmail.com>
+
+	* module.c (write_module): Initialize module_column before writing
+	module to ensure line break occurs at correct column.
+
 2019-05-01 Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
 	PR fortran/60144
