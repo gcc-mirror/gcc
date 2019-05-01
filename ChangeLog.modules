@@ -1,6 +1,14 @@
 2019-05-01  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset): Add DB_PARTIAL_BIT,
+	is_partial_specialization, set_implicit_specialization.
+	(depset::hash::add_dependency): Drop is_implicit parm.  Return the
+	depset.
+	(trees_out::tree_decl): Set the implicit bit myself.
+	(depset::hash::add_specializations): Preliminary tweak.
+
+	gcc/cp/
 	* pt.c (get_specializations): Adjust type template checking.
 	(get_specializations_for_module): Get the type specializations
 	too.

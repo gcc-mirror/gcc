@@ -2243,6 +2243,8 @@ private:
     DB_IMPORTED_BIT,		/* An imported entity.  */
     DB_IMPLICIT_BIT,		/* An implicit specialization (AKA
 				   regular instantiation).  */
+    DB_PARTIAL_BIT,		/* A partial instantiation or
+				   specialization.  */
   };
 
 public:
@@ -2323,6 +2325,15 @@ public:
   bool is_implicit_specialization () const
   {
     return get_flag_bit<DB_IMPLICIT_BIT> ();
+  }
+  bool is_partial_specialization () const
+  {
+    return get_flag_bit<DB_PARTIAL_BIT> ();
+  }
+  /* We set this bit outside of depset.  */
+  void set_implicit_specialization ()
+  {
+    set_flag_bit<DB_IMPLICIT_BIT> ();
   }
 
 public:
@@ -2435,8 +2446,7 @@ public:
 
   public:
     void add_mergeable (depset *);
-    void add_dependency (tree decl, entity_kind,
-			 bool is_import = false, bool is_implicit = false);
+    depset *add_dependency (tree decl, entity_kind, bool is_import = false);
     void add_binding (tree ns, tree value);
     void add_writables (tree ns, bitmap partitions);
     void add_specializations (bitmap partitions);
@@ -6622,9 +6632,10 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	  if (owner >= MODULE_IMPORT_BASE)
 	    owner = (*modules)[owner]->remap;
 	  gcc_assert (!streaming_p ());
-	  dep_hash->add_dependency (decl, depset::EK_SPECIALIZATION,
-				    owner >= MODULE_IMPORT_BASE,
-				    use_tpl < 2);
+	  depset *dep = dep_hash->add_dependency
+	    (decl, depset::EK_SPECIALIZATION, owner >= MODULE_IMPORT_BASE);
+	  if (use_tpl < 2)
+	    dep->set_implicit_specialization ();
 	  kind = "specialization";
 	  goto insert;
 	}
@@ -8789,9 +8800,8 @@ depset::hash::find_binding (tree ctx, tree name)
    DECL will be an OVL_USING_P OVERLOAD, if it's from a binding that's
    a using decl.  */
 
-void
-depset::hash::add_dependency (tree decl, entity_kind ek,
-			      bool is_import, bool is_implicit)
+depset *
+depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 {
   /* Make sure we're being told consistent information.  */
   gcc_checking_assert ((ek == EK_USING) == (TREE_CODE (decl) == OVERLOAD));
@@ -8801,12 +8811,12 @@ depset::hash::add_dependency (tree decl, entity_kind ek,
   gcc_checking_assert (ek != EK_BINDING);
   gcc_checking_assert (!is_import
 		       || (ek == EK_UNNAMED || ek == EK_SPECIALIZATION));
-  gcc_checking_assert (!is_implicit || ek == EK_SPECIALIZATION);
 
+  depset *dep = NULL;
   if (depset **slot = entity_slot (decl, !is_mergeable_dep ()))
     {
       bool binding_p = current && current->is_binding ();
-      depset *dep = *slot;
+      dep = *slot;
 
       gcc_checking_assert (!is_mergeable_dep () || !binding_p);
       /* Usings only occur in bindings.  */
@@ -8840,9 +8850,6 @@ depset::hash::add_dependency (tree decl, entity_kind ek,
 	      if (is_import)
 		/* Note this entity came from elsewhere.  */
 		dep->set_flag_bit<DB_IMPORTED_BIT> ();
-
-	      if (is_implicit)
-		dep->set_flag_bit<DB_IMPLICIT_BIT> ();
 	    }
 	  else
 	    {
@@ -8935,6 +8942,8 @@ depset::hash::add_dependency (tree decl, entity_kind ek,
 	    }
 	}
     }
+ 
+  return dep;
 }
 
 /* VALUE is an overload of decls that is bound in this module.  Create
@@ -9066,7 +9075,8 @@ specialization_cmp (const void *a_, const void *b_)
 
 /* We add the partial & explicit specializations, and the explicit
    instntiations.  */
-
+// DECL_TEMPLATE_INSTANTIATIONS
+// DECL_TEMPLATE_SPECIALIZATIONS
 void
 depset::hash::add_specializations (bitmap partitions)
 {
@@ -9076,7 +9086,9 @@ depset::hash::add_specializations (bitmap partitions)
   while (specs.length ())
     {
       tree spec = specs.pop ();
-      add_dependency (spec, depset::EK_SPECIALIZATION);
+      depset *dep = add_dependency (spec, depset::EK_SPECIALIZATION);
+      if (false)
+	dep->set_flag_bit<DB_PARTIAL_BIT> ();
     }
 }
 
