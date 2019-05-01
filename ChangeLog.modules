@@ -1,10 +1,15 @@
 2019-05-01  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* parser.c (cp_parser_explicit_instantiation): Correctl unwind state.
+	* decl.c (grokfndecl): Set module ownership after specializationness
+	is known.
+
 	libcpp/
 	* macro.c (_cpp_new_macro): memset before initing.
 
 	gcc/cp/
-	* module.cc (module_state:write_bindings): Iterate over sccs
+	* module.cc (module_state::write_bindings): Iterate over sccs
 	array, not hash table.
 	(module_state::write): Adjust.
 

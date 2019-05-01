@@ -9027,8 +9027,6 @@ grokfndecl (tree ctype,
 	check_class_member_definition_namespace (decl);
     }
 
-  set_module_owner (decl);
-
   if (ctype == NULL_TREE && DECL_MAIN_P (decl))
     {
       if (PROCESSING_REAL_TEMPLATE_DECL_P())
@@ -9235,6 +9233,8 @@ grokfndecl (tree ctype,
 					*attrlist);
   if (decl == error_mark_node)
     return NULL_TREE;
+
+  set_module_owner (decl);
 
   if (DECL_STATIC_FUNCTION_P (decl))
     check_static_quals (decl, quals);
