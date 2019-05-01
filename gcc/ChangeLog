@@ -1,4 +1,5 @@
-2019-04-30  Jim Wilson  <jimw@sifive.com>
+2019-04-30  Andrew Waterman  <andrew@sifive.com>
+	    Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/constraints.md (L): New.
 	* config/riscv/predicates.md (lui_operand): New.
