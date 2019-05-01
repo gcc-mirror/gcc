@@ -134,6 +134,8 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
   aarch64_def_or_undef (TARGET_CRYPTO, "__ARM_FEATURE_CRYPTO", pfile);
   aarch64_def_or_undef (TARGET_SIMD_RDMA, "__ARM_FEATURE_QRDMX", pfile);
 
+  aarch64_def_or_undef (TARGET_LSE, "__ARM_FEATURE_ATOMICS", pfile);
+
   /* Not for ACLE, but required to keep "float.h" correct if we switch
      target between implementations that do or do not support ARMv8.2-A
      16-bit floating-point extensions.  */
