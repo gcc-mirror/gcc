@@ -1,5 +1,8 @@
 2019-05-01  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* macro.c (_cpp_new_macro): Initialize imported field.
+
 	Merge trunk r270765.
 
 2019-04-30  Nathan Sidwell  <nathan@acm.org>
