@@ -1,5 +1,10 @@
 2019-05-01  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (module_state:write_bindings): Iterate over sccs
+	array, not hash table.
+	(module_state::write): Adjust.
+
 	libcpp/
 	* macro.c (_cpp_new_macro): Initialize imported field.
 

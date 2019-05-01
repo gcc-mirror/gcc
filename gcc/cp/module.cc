@@ -3222,8 +3222,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   /* Add writable bindings to hash table.  */
   static void sort_mergeables (auto_vec<depset *> &mergeables);
 
-  static unsigned write_bindings (elf_out *to, depset::hash &table,
-				  unsigned *crc_ptr);
+  static unsigned write_bindings (elf_out *to, auto_vec<depset *> &depsets,
+				  depset::hash &table, unsigned *crc_ptr);
   bool read_bindings (auto_vec<tree> &spaces, unsigned, const range_t &range);
 
   void write_namespaces (elf_out *to, depset::hash &table,
@@ -11535,7 +11535,8 @@ module_state::read_namespaces (auto_vec<tree> &spaces)
      u:section - section number of binding. */
 
 unsigned
-module_state::write_bindings (elf_out *to, depset::hash &table, unsigned *crc_p)
+module_state::write_bindings (elf_out *to, auto_vec<depset *> &sccs,
+			      depset::hash &table, unsigned *crc_p)
 {
   dump () && dump ("Writing binding table");
   dump.indent ();
@@ -11544,10 +11545,9 @@ module_state::write_bindings (elf_out *to, depset::hash &table, unsigned *crc_p)
   bytes_out sec (to);
   sec.begin ();
 
-  depset::hash::iterator end (table.end ());
-  for (depset::hash::iterator iter (table.begin ()); iter != end; ++iter)
+  for (unsigned ix = 0; ix != sccs.length (); ix++)
     {
-      depset *b = *iter;
+      depset *b = sccs[ix];
       if (b->is_binding ())
 	{
 	  unsigned ns_num = 0;
@@ -13902,7 +13902,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   write_namespaces (to, table, spaces, &crc);
 
   /* Write the bindings themselves.  */
-  config.num_bindings = write_bindings (to, table, &crc);
+  config.num_bindings = write_bindings (to, sccs, table, &crc);
 
   /* Write the unnamed.  */
   if (config.num_unnamed)
