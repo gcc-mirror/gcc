@@ -1,3 +1,27 @@
+2019-05-01  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.h (get_class_binding_direct): Change final arg to
+	bool.
+	(get_class_binding): Likewise.
+	* name-lookup.c (get_class_binding_direct): Replace TYPE_OR_FNS
+	arg with WANT_TYPE bool.  Simplify.
+	(get_class_binding): Adjust final arg.
+	* decl.c (reshape_init_class): Adjust get_class_binding calls.
+
+2019-04-30  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-objcp-common.c (cp_common_init_ts): Use MARK_TS_EXP for _EXPR
+	nodes.  Call c_common_init_ts.
+
+2019-04-29  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (duplicate_decls): Add whitespace, move comments into
+	conditional blocks.
+	* method.c (explain_implicit_non_constexpr): Refactor.
+	* pt.c (check_explicit_specialization): Fix indentation.
+	* semantics.c (process_outer_var_ref): Reformat.
+	(finish_id_expression_1): Use STRIP_TEMPLATE.
+
 2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/90243 - orphaned note in uninstantiated constexpr function

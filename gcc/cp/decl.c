@@ -1,4 +1,4 @@
-/* Process declarations and variables for C++ compiler.
+/* Process declarations and variables for -*- C++ -*- compiler.
    Copyright (C) 1988-2019 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -5996,12 +5996,12 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 		  tree id = DECL_NAME (d->cur->index);
 		  gcc_assert (id);
 		  gcc_checking_assert (d->cur->index
-				       == get_class_binding (type, id, false));
+				       == get_class_binding (type, id));
 		  field = d->cur->index;
 		}
 	    }
 	  else if (TREE_CODE (d->cur->index) == IDENTIFIER_NODE)
-	    field = get_class_binding (type, d->cur->index, false);
+	    field = get_class_binding (type, d->cur->index);
 	  else
 	    {
 	      if (complain & tf_error)

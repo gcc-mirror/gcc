@@ -1011,8 +1011,7 @@ get_cmp_code (enum tree_code orig_cmp_code, bool swap_cond, bool invert)
   return tc;
 }
 
-/* Returns true if VAL falls in the range defined by BOUNDARY and CMPC, i.e.
-   all values in the range satisfies (x CMPC BOUNDARY) == true.  */
+/* Returns whether VAL CMPC BOUNDARY is true.  */
 
 static bool
 is_value_included_in (tree val, tree boundary, enum tree_code cmpc)
@@ -1488,11 +1487,17 @@ is_pred_expr_subset_of (pred_info expr1, pred_info expr2)
   if (expr2.invert)
     code2 = invert_tree_comparison (code2, false);
 
+  if (code2 == NE_EXPR && code1 == NE_EXPR)
+    return false;
+
+  if (code2 == NE_EXPR)
+    return !is_value_included_in (expr2.pred_rhs, expr1.pred_rhs, code1);
+
   if ((code1 == EQ_EXPR || code1 == BIT_AND_EXPR) && code2 == BIT_AND_EXPR)
     return (wi::to_wide (expr1.pred_rhs)
 	    == (wi::to_wide (expr1.pred_rhs) & wi::to_wide (expr2.pred_rhs)));
 
-  if (code1 != code2 && code2 != NE_EXPR)
+  if (code1 != code2)
     return false;
 
   if (is_value_included_in (expr1.pred_rhs, expr2.pred_rhs, code2))

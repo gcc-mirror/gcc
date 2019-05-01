@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-pragma.h"
 #include "opts.h"
 #include "plugin.h"
+#include "opt-suggestions.h"
 
 #define GCC_BAD(gmsgid) \
   do { warning (OPT_Wpragmas, gmsgid); return; } while (0)
@@ -804,8 +805,16 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
   unsigned int option_index = find_opt (option_string + 1, lang_mask);
   if (option_index == OPT_SPECIAL_unknown)
     {
-      warning_at (loc, OPT_Wpragmas,
-		  "unknown option after %<#pragma GCC diagnostic%> kind");
+      option_proposer op;
+      const char *hint = op.suggest_option (option_string + 1);
+      if (hint)
+	warning_at (loc, OPT_Wpragmas,
+		    "unknown option after %<#pragma GCC diagnostic%> kind;"
+		    " did you mean %<-%s%>", hint);
+      else
+	warning_at (loc, OPT_Wpragmas,
+		    "unknown option after %<#pragma GCC diagnostic%> kind");
+
       return;
     }
   else if (!(cl_options[option_index].flags & CL_WARNING))

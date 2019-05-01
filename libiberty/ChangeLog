@@ -1,3 +1,33 @@
+2019-04-30  Ben L  <bobsayshilol@live.co.uk>
+
+	* d-demangle.c (dlang_parse_assocarray): Correctly handle error result.
+	* testsuite/d-demangle-expected: Add testcase.
+
+	* d-demangle.c (dlang_parse_tuple): Correctly handle error result.
+	* testsuite/d-demangle-expected: Add testcase.
+
+	* d-demangle.c (dlang_parse_structlit): Correctly handle error result.
+	* testsuite/d-demangle-expected: Add testcase.
+
+	* d-demangle.c (dlang_parse_arrayliteral): Correctly handle error result.
+	* testsuite/d-demangle-expected: Add testcase.
+
+	* d-demangle.c (dlang_parse_integer): Fix stack underflow.
+	* testsuite/d-demangle-expected: Add testcase.
+
+	* cp-demangle (d_print_comp_inner): Guard against a NULL 'typed_name'.
+	* testsuite/demangle-expected: Add testcase.
+
+	* cp-demangle.c (d_encoding): Guard against NULL return values from
+	d_right (dc).
+	* testsuite/demangle-expected: Add testcase.
+
+2019-04-29  Ben L  <bobsayshilol@live.co.uk>
+
+	* cp-demangle.c (d_expression_1): Don't peek ahead unless the current
+	char is valid.
+	* testsuite/demangle-expected: Add testcase.
+
 2019-04-10  Nick Clifton  <nickc@redhat.com>
 
 	PR 89394

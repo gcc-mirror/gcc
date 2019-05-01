@@ -939,8 +939,8 @@ dlang_parse_integer (string *decl, const char *mangled, char type)
   if (type == 'a' || type == 'u' || type == 'w')
     {
       /* Parse character value.  */
-      char value[10];
-      int pos = 10;
+      char value[20];
+      int pos = sizeof(value);
       int width = 0;
       long val;
 
@@ -991,7 +991,7 @@ dlang_parse_integer (string *decl, const char *mangled, char type)
 	  for (; width > 0; width--)
 	    value[--pos] = '0';
 
-	  string_appendn (decl, &(value[pos]), 10 - pos);
+	  string_appendn (decl, &(value[pos]), sizeof(value) - pos);
 	}
       string_append (decl, "'");
     }
@@ -1191,6 +1191,9 @@ dlang_parse_arrayliteral (string *decl, const char *mangled)
   while (elements--)
     {
       mangled = dlang_value (decl, mangled, NULL, '\0');
+      if (mangled == NULL)
+	return NULL;
+
       if (elements != 0)
 	string_append (decl, ", ");
     }
@@ -1214,8 +1217,13 @@ dlang_parse_assocarray (string *decl, const char *mangled)
   while (elements--)
     {
       mangled = dlang_value (decl, mangled, NULL, '\0');
+      if (mangled == NULL)
+	return NULL;
+
       string_append (decl, ":");
       mangled = dlang_value (decl, mangled, NULL, '\0');
+      if (mangled == NULL)
+	return NULL;
 
       if (elements != 0)
 	string_append (decl, ", ");
@@ -1243,6 +1251,9 @@ dlang_parse_structlit (string *decl, const char *mangled, const char *name)
   while (args--)
     {
       mangled = dlang_value (decl, mangled, NULL, '\0');
+      if (mangled == NULL)
+	return NULL;
+
       if (args != 0)
 	string_append (decl, ", ");
     }
@@ -1497,6 +1508,9 @@ dlang_parse_tuple (string *decl, const char *mangled)
   while (elements--)
     {
       mangled = dlang_type (decl, mangled);
+      if (mangled == NULL)
+	return NULL;
+
       if (elements != 0)
 	string_append (decl, ", ");
     }

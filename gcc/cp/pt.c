@@ -3031,7 +3031,7 @@ check_explicit_specialization (tree declarator,
 	     `operator T'.  Grab all the conversion operators, and
 	     then select from them.  */
 	  tree fns = get_class_binding (ctype, IDENTIFIER_CONV_OP_P (name)
-				      ? conv_op_identifier : name);
+					? conv_op_identifier : name);
 
 	  if (fns == NULL_TREE)
 	    {

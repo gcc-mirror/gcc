@@ -460,7 +460,6 @@ dump_data_dependence_relation (FILE *outf,
 	  dump_subscript (outf, sub);
 	}
 
-      fprintf (outf, "  inner loop index: %d\n", DDR_INNER_LOOP (ddr));
       fprintf (outf, "  loop nest: (");
       FOR_EACH_VEC_ELT (DDR_LOOP_NEST (ddr), i, loopi)
 	fprintf (outf, "%d ", loopi->num);
@@ -2643,7 +2642,6 @@ initialize_data_dependence_relation (struct data_reference *a,
   DDR_ARE_DEPENDENT (res) = NULL_TREE;
   DDR_SUBSCRIPTS (res).create (full_seq.length);
   DDR_LOOP_NEST (res) = loop_nest;
-  DDR_INNER_LOOP (res) = 0;
   DDR_SELF_REFERENCE (res) = false;
 
   for (i = 0; i < full_seq.length; ++i)
@@ -4478,7 +4476,7 @@ insert_innermost_unit_dist_vector (struct data_dependence_relation *ddr)
 {
   lambda_vector dist_v = lambda_vector_new (DDR_NB_LOOPS (ddr));
 
-  dist_v[DDR_INNER_LOOP (ddr)] = 1;
+  dist_v[0] = 1;
   save_dist_v (ddr, dist_v);
 }
 

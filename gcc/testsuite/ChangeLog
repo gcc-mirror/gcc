@@ -1,3 +1,53 @@
+2019-05-01  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/cpp0x/decltype9.C: Adjust expected diagnostics.
+
+2019-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89093
+	* gcc.target/aarch64/return_address_sign_3.c: Remove extra space in
+	target attribute.
+
+2019-04-30  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* gcc.dg/sinhatanh-2.c: Count the number of functions.
+	* gcc.dg/sinhatanh-3.c: Likewise.
+
+2019-04-30  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/Werror-13.c: Add new tests for it.
+	* gcc.dg/pragma-diag-6.c: Likewise.
+
+2019-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89093
+	* gcc.target/aarch64/pr89093.c: New test.
+	* gcc.target/aarch64/pr63304_1.c: Remove space from target string.
+
+	PR tree-optimization/89475
+	* gcc.dg/tree-ssa/pr89475.c: New test.
+
+2019-04-30  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/90240
+	Revert:
+	2019-04-23  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/90078
+	* gcc/testsuite/g++.dg/tree-ssa/pr90078.C: New test.
+
+2019-04-29  Vladislav Ivanishin  <vlad@ispras.ru>
+
+        * gcc.dg/uninit-25-gimple.c: New test.
+        * gcc.dg/uninit-25.c: New test.
+        * gcc.dg/uninit-26.c: New test.
+        * gcc.dg/uninit-27-gimple.c: New test.
+
+2019-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90278
+	* gcc.dg/torture/pr90278.c: New testcase.
+
 2019-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/90173

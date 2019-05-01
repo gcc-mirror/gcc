@@ -1,3 +1,143 @@
+2019-04-30  Andrew Waterman  <andrew@sifive.com>
+	    Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/constraints.md (L): New.
+	* config/riscv/predicates.md (lui_operand): New.
+	(sfb_alu_operand): New.
+	* config/riscv/riscv-protos.h (riscv_expand_conditional_move): Declare.
+	* config/riscv/riscv.c (riscv_expand_conditional_move): New.
+	* config/riscv/riscv.h (TARGET_SFB_ALU): New.
+	* config/riscv/risc.md (type): Add sfb_alu.
+	(branch<mode>): Renamed from branch_order<mode>.  Change predicate for
+	operand 3 to reg_or_0_operand.  In output string, change %3 to %z3.
+	(branch_zero<mode>): Delete.
+	(mov<mode>cc): New.
+	(mov<GPR:mode><X:mode>cc): Likewise.
+	* config/riscv/sifive-7.md (sifive_7_sfb_alu): New.  Use in bypasses.
+
+2019-04-30  Nathan Sidwell  <nathan@acm.org>
+
+	* tree.h (MARK_TS_EXP): New.
+
+2019-04-30  Martin Liska  <mliska@suse.cz>
+
+	* opts.c (enable_warning_as_error): Provide hints
+	for unknown options.
+
+2019-04-30  Martin Liska  <mliska@suse.cz>
+
+	PR debug/90288
+	* doc/invoke.texi: Add missing dash for gas-locview-support
+	and gno-as-locview-support.
+
+2019-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89093
+	* config/aarch64/aarch64.c (aarch64_process_one_target_attr): Don't skip
+	whitespace at the start of target attribute string.
+
+2019-04-30  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/86538
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins):
+	Define __ARM_FEATURE_ATOMICS.
+
+2019-04-30  Martin Liska  <mliska@suse.cz>
+
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Change endp
+	into built_in_function enum. Remove code for endp == 2 and
+	use BUILT_IN_* constants.
+	(gimple_fold_builtin): Call the function with fcode.
+
+2019-04-30  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386.c (ix86_builtin_reciprocal): Cast
+	DECL_FUNCTION_CODE into ix86_builtins enum before
+	the switch statement.
+
+2019-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/89475
+	* tree-ssa-ccp.c (evaluate_stmt): Handle BUILT_IN_BSWAP{16,32,64}
+	calls.
+
+2019-04-30  Martin Liska  <mliska@suse.cz>
+
+	PR translation/90274
+	* opts.c (print_filtered_help): Wrap string in _(...).
+
+2019-04-30  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/90240
+	Revert:
+	2019-04-23  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/90078
+	* tree-ssa-loop-ivopts.c (comp_cost::operator +,-,+=,-+,/=,*=): Add
+	checks for infinite_cost overflow.
+
+2019-04-29  Jeff Law  <law@redhat.com>
+
+	* passes.def: Move -Wrestrict pass after copy propagation.
+
+2019-04-29  Maya Rashish  <coypu@sdf.org>
+
+	* config.gcc (default_gnu_indirect_function): Default to yes
+	for arm*-*-netbsd*, i[34567]86-*-netbsd*, powerpc*-*-netbsd*,
+	sparc*-*-netbsd*, x86_64-*-netbsd*.
+
+2019-04-29  Vladislav Ivanishin  <vlad@ispras.ru>
+
+	* tree-ssa-uninit.c (is_pred_expr_subset_of): Correctly handle cases
+	where cond2 is NE_EXPR.
+	(is_value_included_in): Update comment.
+
+2019-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90278
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Transfer/clean
+	EH on comparison simplification.
+
+2019-04-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82081 - tail call optimization breaks noexcept
+	* tree-tailcall.c (find_tail_calls): Don't turn a call from a
+	nothrow function to a might-throw function into a tail call.
+
+2019-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-data-ref.h (data_dependence_relation::inner_loop): Delete.
+	(DDR_INNER_LOOP): Likewise.
+	* tree-data-ref.c (dump_data_dependence_relation): Update accordingly.
+	(initialize_data_dependence_relation): Likewise.
+	(insert_innermost_unit_dist_vector): Use 0 instead of DDR_INNER_LOOP.
+
+2019-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/90257
+	* cfgrtl.c (flow_active_insn_p): Return true for USE of a function
+	return value.
+
+	Revert the revert:
+	2019-04-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/90178
+	Revert:
+	2018-11-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	Revert the revert:
+	2013-10-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+	Revert:
+	2013-10-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-spills.c (lra_final_code_change): Remove useless move insns.
+
+2019-04-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa.c (insert_debug_temp_for_var_def): For {CLOBBER}
+	rhs issue a reset.
+
 2019-04-27  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* config/netbsd-d.c: Include memmodel.h.  Remove unused tree.h,
