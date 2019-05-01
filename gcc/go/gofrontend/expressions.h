@@ -1036,6 +1036,11 @@ class Expression
   static Expression*
   check_bounds(Expression* val, Location);
 
+  // Return an expression for constructing a direct interface type from a
+  // pointer.
+  static Expression*
+  pack_direct_iface(Type*, Expression*, Location);
+
   // Dump an expression to a dump constext.
   void
   dump_expression(Ast_dump_context*) const;
@@ -1196,6 +1201,9 @@ class Expression
 
   static Expression*
   convert_type_to_interface(Type*, Expression*, Location);
+
+  static Expression*
+  unpack_direct_iface(Expression*, Location);
 
   static Expression*
   get_interface_type_descriptor(Expression*);

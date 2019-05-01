@@ -2204,7 +2204,14 @@ func StructOf(fields []StructField) Type {
 		typ.equalfn = nil
 	}
 
-	typ.kind &^= kindDirectIface
+	switch {
+	case len(fs) == 1 && !ifaceIndir(fs[0].typ):
+		// structs of 1 direct iface type can be direct
+		typ.kind |= kindDirectIface
+	default:
+		typ.kind &^= kindDirectIface
+	}
+
 	typ.uncommonType = nil
 	typ.ptrToThis = nil
 
@@ -2405,7 +2412,13 @@ func ArrayOf(count int, elem Type) Type {
 		array.ptrdata = array.size // overestimate but ok; must match program
 	}
 
-	array.kind &^= kindDirectIface
+	switch {
+	case count == 1 && !ifaceIndir(typ):
+		// array of 1 direct iface type can be direct
+		array.kind |= kindDirectIface
+	default:
+		array.kind &^= kindDirectIface
+	}
 
 	esize := typ.size
 

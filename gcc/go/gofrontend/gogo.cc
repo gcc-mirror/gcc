@@ -6039,7 +6039,7 @@ Function::build(Gogo* gogo, Named_object* named_function)
 	  // the receiver is declared as a non-pointer type, then we
 	  // copy the value into a local variable.
 	  if ((*p)->var_value()->is_receiver()
-	      && (*p)->var_value()->type()->points_to() == NULL)
+	      && !(*p)->var_value()->type()->is_direct_iface_type())
 	    {
 	      std::string name = (*p)->name() + ".pointer";
 	      Type* var_type = (*p)->var_value()->type();
@@ -7516,7 +7516,7 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
       else
 	{
 	  bool is_parameter = this->is_parameter_;
-	  if (this->is_receiver_ && type->points_to() == NULL)
+	  if (this->is_receiver_ && !type->is_direct_iface_type())
 	    is_parameter = false;
 	  if (this->is_in_heap())
 	    {
