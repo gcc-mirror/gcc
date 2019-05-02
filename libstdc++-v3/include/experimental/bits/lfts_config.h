@@ -36,9 +36,8 @@
    * Components defined by the _C++ Extensions for Library Fundamentals_
    * Technical Specification, versions 1 and 2.
    *
-   * ISO/IEC TS 19568:2015 C++ Extensions for Library Fundamentals
-   *
-   * ISO/IEC TS 19568:2017 C++ Extensions for Library Fundamentals, Version 2
+   * - ISO/IEC TS 19568:2015 C++ Extensions for Library Fundamentals
+   * - ISO/IEC TS 19568:2017 C++ Extensions for Library Fundamentals, Version 2
    */
 
 #if _GLIBCXX_INLINE_VERSION

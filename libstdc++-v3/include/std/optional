@@ -888,8 +888,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator->() const
       { return std::__addressof(this->_M_get()); }
 
-      constexpr
-      _Tp*
+      constexpr _Tp*
       operator->()
       { return std::__addressof(this->_M_get()); }
 
