@@ -5958,6 +5958,55 @@ is_nonwrapping_integer_induction (stmt_vec_info stmt_vinfo, struct loop *loop)
 	  <= TYPE_PRECISION (lhs_type));
 }
 
+/* Check if masking can be supported by inserting a conditional expression.
+   CODE is the code for the operation.  COND_FN is the conditional internal
+   function, if it exists.  VECTYPE_IN is the type of the vector input.  */
+static bool
+use_mask_by_cond_expr_p (enum tree_code code, internal_fn cond_fn,
+			 tree vectype_in)
+{
+  if (cond_fn != IFN_LAST
+      && direct_internal_fn_supported_p (cond_fn, vectype_in,
+					 OPTIMIZE_FOR_SPEED))
+    return false;
+
+  switch (code)
+    {
+    case DOT_PROD_EXPR:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
+/* Insert a conditional expression to enable masked vectorization.  CODE is the
+   code for the operation.  VOP is the array of operands.  MASK is the loop
+   mask.  GSI is a statement iterator used to place the new conditional
+   expression.  */
+static void
+build_vect_cond_expr (enum tree_code code, tree vop[3], tree mask,
+		      gimple_stmt_iterator *gsi)
+{
+  switch (code)
+    {
+    case DOT_PROD_EXPR:
+      {
+	tree vectype = TREE_TYPE (vop[1]);
+	tree zero = build_zero_cst (vectype);
+	tree masked_op1 = make_temp_ssa_name (vectype, NULL, "masked_op1");
+	gassign *select = gimple_build_assign (masked_op1, VEC_COND_EXPR,
+					       mask, vop[1], zero);
+	gsi_insert_before (gsi, select, GSI_SAME_STMT);
+	vop[1] = masked_op1;
+	break;
+      }
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Function vectorizable_reduction.
 
    Check if STMT_INFO performs a reduction operation that can be vectorized.
@@ -6931,6 +6980,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
   internal_fn cond_fn = get_conditional_internal_fn (code);
   vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
+  bool mask_by_cond_expr = use_mask_by_cond_expr_p (code, cond_fn, vectype_in);
 
   if (!vec_stmt) /* transformation not required.  */
     {
@@ -6938,6 +6988,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (loop_vinfo && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo))
 	{
 	  if (reduction_type != FOLD_LEFT_REDUCTION
+	      && !mask_by_cond_expr
 	      && (cond_fn == IFN_LAST
 		  || !direct_internal_fn_supported_p (cond_fn, vectype_in,
 						      OPTIMIZE_FOR_SPEED)))
@@ -7101,7 +7152,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       FOR_EACH_VEC_ELT (vec_oprnds0, i, def0)
         {
 	  tree vop[3] = { def0, vec_oprnds1[i], NULL_TREE };
-	  if (masked_loop_p)
+	  if (masked_loop_p && !mask_by_cond_expr)
 	    {
 	      /* Make sure that the reduction accumulator is vop[0].  */
 	      if (reduc_index == 1)
@@ -7124,6 +7175,14 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	    {
 	      if (op_type == ternary_op)
 		vop[2] = vec_oprnds2[i];
+
+	      if (masked_loop_p && mask_by_cond_expr)
+		{
+		  tree mask = vect_get_loop_mask (gsi, masks,
+						  vec_num * ncopies,
+						  vectype_in, i * ncopies + j);
+		  build_vect_cond_expr (code, vop, mask, gsi);
+		}
 
 	      gassign *new_stmt = gimple_build_assign (vec_dest, code,
 						       vop[0], vop[1], vop[2]);
