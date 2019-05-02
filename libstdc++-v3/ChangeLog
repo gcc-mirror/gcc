@@ -1,5 +1,15 @@
 2019-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/bits/net.h: Fix/improve doxygen markup.
+	* include/experimental/buffer: Likewise.
+	* include/experimental/executor: Likewise.
+	* include/experimental/internet: Likewise.
+	* include/experimental/io_context: Likewise.
+	* include/experimental/net: Likewise.
+	* include/experimental/netfwd: Likewise.
+	* include/experimental/socket: Likewise.
+	* include/experimental/timer: Likewise.
+
 	* doc/doxygen/doxygroups.cc: Move description of experimental group
 	here.
 	* include/experimental/algorithm: Add to libfund-ts doc group.
