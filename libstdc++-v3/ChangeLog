@@ -1,5 +1,14 @@
 2019-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/basic_string.h: Fix iterator/index confusion in
+	Doxygen comments.
+	* include/bits/range_access.h: Fix Doxygen warnings.
+	* include/bits/refwrap.h: Do not document implementation details.
+	(ref, cref): Group docs with reference_wrapper.
+	* include/std/fstream: Fix Doxygen markup.
+	* libsupc++/initializer_list (begin, end): Group docs with
+	initializer_list.
+
 	* doc/doxygen/user.cfg.in: Set MARKDOWN_SUPPORT=YES.
 
 	* include/bits/unique_lock.h: Fix/improve doxygen markup.
