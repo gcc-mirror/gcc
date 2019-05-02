@@ -38,6 +38,8 @@
  * Contains an implementation for thin_heap_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
@@ -278,3 +280,4 @@ update_max(node_pointer p_nd)
     m_p_max = p_nd;
 }
 
+#endif

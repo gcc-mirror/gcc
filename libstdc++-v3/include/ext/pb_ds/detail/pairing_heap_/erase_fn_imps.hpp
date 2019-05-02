@@ -38,6 +38,8 @@
  * Contains an implementation class for a pairing heap.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
@@ -231,3 +233,4 @@ erase_if(Pred pred)
   return ersd;
 }
 
+#endif

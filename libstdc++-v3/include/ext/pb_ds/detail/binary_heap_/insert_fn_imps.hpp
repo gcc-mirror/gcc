@@ -38,6 +38,8 @@
  * Contains an implementation class for a binary_heap.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
@@ -171,3 +173,4 @@ swap_value_imp(entry_pointer p_e, const_reference r_new_val, false_type)
   value_type tmp(r_new_val);
   (*p_e)->swap(tmp);
 }
+#endif

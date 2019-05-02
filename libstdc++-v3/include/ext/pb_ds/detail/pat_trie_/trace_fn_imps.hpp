@@ -38,6 +38,8 @@
  * Contains an implementation class for pat_trie_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 #ifdef PB_DS_PAT_TRIE_TRACE_
 
 PB_DS_CLASS_T_DEC
@@ -109,3 +111,4 @@ trace_node_metadata(node_const_pointer, type_to_type<null_type>)
 
 #endif 
 
+#endif

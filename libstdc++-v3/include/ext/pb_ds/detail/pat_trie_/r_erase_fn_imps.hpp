@@ -38,6 +38,8 @@
  * Contains an implementation class for pat_trie.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
@@ -101,3 +103,4 @@ clear_imp(node_pointer p_nd)
   s_node_allocator.deallocate(p_nd, 1);
 }
 
+#endif

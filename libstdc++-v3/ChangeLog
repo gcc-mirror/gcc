@@ -1,5 +1,33 @@
 2019-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/ext/pb_ds/detail/bin_search_tree_/*_imps.hpp: Do not define
+	anything unless PB_DS_CLASS_C_DEC is defined.
+	* include/ext/pb_ds/detail/binary_heap_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_base_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/hash_fn/*_imp.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/*_imps.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pairing_heap_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rb_tree_map_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/resize_policy*_imp.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/thin_heap_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/trie_policy*_imp.hpp: Likewise.
+	* include/ext/pb_ds/detail/unordered_iterator/const_iterator.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/unordered_iterator/iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/unordered_iterator/point_const_iterator.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/unordered_iterator/point_iterator.hpp:
+	Likewise.
+
 	* doc/doxygen/user.cfg.in: Regenerate with Doxygen 1.8.14 and set
 	GROUP_NESTED_COMPOUNDS=YES and SORT_BY_SCOPE_NAME=NO. Add various
 	_GLIBCXX_xxx macros and __attribute__(X) to PREDEFINED macros that

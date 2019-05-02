@@ -38,6 +38,8 @@
  * Contains an implementation class for a binary_heap.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
@@ -206,3 +208,4 @@ partition(Pred pred)
 
   return left;
 }
+#endif

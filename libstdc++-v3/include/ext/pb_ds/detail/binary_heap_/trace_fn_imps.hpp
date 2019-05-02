@@ -38,6 +38,8 @@
  * Contains an implementation class for a binary_heap.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 #ifdef PB_DS_BINARY_HEAP_TRACE_
 
 PB_DS_CLASS_T_DEC
@@ -76,3 +78,4 @@ trace_entry(const entry& r_e, true_type) const
 }
 
 #endif // #ifdef PB_DS_BINARY_HEAP_TRACE_
+#endif

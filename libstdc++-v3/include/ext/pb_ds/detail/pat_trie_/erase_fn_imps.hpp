@@ -38,6 +38,8 @@
  * Contains an implementation class for pat_trie.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline bool
 PB_DS_CLASS_C_DEC::
@@ -313,3 +315,4 @@ update_min_max_for_erased_leaf(leaf_pointer p_l)
       m_p_head->m_p_max = it.m_p_nd;
     }
 }
+#endif

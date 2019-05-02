@@ -38,6 +38,8 @@
  * Contains implementations of cc_ht_map_'s debug-mode functions.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 #ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
@@ -74,3 +76,4 @@ assert_entry_pointer_array_valid(const entry_pointer_array a_p_entries,
 #include <ext/pb_ds/detail/cc_hash_table_map_/debug_no_store_hash_fn_imps.hpp>
 
 #endif 
+#endif

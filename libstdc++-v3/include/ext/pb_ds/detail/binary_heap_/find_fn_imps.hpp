@@ -38,6 +38,8 @@
  * Contains an implementation class for a binary_heap.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::const_reference
 PB_DS_CLASS_C_DEC::
@@ -77,3 +79,4 @@ inline typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 parent(size_type i)
 { return (i - 1) / 2; }
+#endif

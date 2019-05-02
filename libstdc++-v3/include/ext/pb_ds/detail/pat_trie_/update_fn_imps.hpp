@@ -38,6 +38,8 @@
  * Contains an implementation class for pat_trie_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
@@ -53,3 +55,4 @@ apply_update(node_pointer p_nd, Node_Update_*)
   Node_Update_::operator()(node_iterator(p_nd, this),
 			   node_const_iterator(0, this));
 }
+#endif

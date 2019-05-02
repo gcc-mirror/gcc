@@ -39,6 +39,8 @@
  *    functions.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 template<typename Other_HT_Map_Type>
 bool
@@ -81,3 +83,4 @@ bool
 PB_DS_CLASS_C_DEC::
 operator!=(const Other_HT_Map_Type& other) const
 { return !operator==(other); }
+#endif
