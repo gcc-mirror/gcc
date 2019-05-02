@@ -1,4 +1,4 @@
-2019-05-02  Maciej Rozycki  <macro@wdc.com>
+2019-05-02  Maciej W. Rozycki  <macro@wdc.com>
 
 	* std/math.d (IeeeFlags.getIeeeFlags): Handle RISC-V soft-float ABI.
 	(IeeeFlags.resetIeeeFlags): Likewise.
