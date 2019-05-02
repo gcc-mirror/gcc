@@ -1,3 +1,10 @@
+2019-05-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/tree-prof/section-attr-1.c: Update scan-asm regex
+	for cold section label.
+	* gcc.dg/tree-prof/section-attr-2.c: Likewise.
+	* gcc.dg/tree-prof/section-attr-3.c: Likewise.
+
 2019-05-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/i386/spellcheck-options-5.c: Restrict to Linux and

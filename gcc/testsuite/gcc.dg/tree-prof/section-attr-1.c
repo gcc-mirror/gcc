@@ -47,4 +47,4 @@ foo (int path)
 }
 
 /* { dg-final-use { scan-assembler "\.section\[\t \]*\.text\.unlikely\[\\n\\r\]+\[\t \]*\.size\[\t \]*foo\.cold" { target *-*-linux* *-*-gnu* } } } */
-/* { dg-final-use { scan-assembler "\.section\[\t \]*__TEXT,__text_cold\*\[\\n\\r\]+_foo\.cold" { target *-*-darwin* } } } */
+/* { dg-final-use { scan-assembler {.section[\t ]*__TEXT,__text_cold[^\n]*[\n\r]+_foo.cold:} { target *-*-darwin* } } } */
