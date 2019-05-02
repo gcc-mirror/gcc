@@ -255,6 +255,8 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_fix_loops);
       NEXT_PASS (pass_tree_loop);
       PUSH_INSERT_PASSES_WITHIN (pass_tree_loop)
+          /* Before loop_init we rewrite no longer addressed locals into SSA
+	     form if possible.  */
 	  NEXT_PASS (pass_tree_loop_init);
 	  NEXT_PASS (pass_tree_unswitch);
 	  NEXT_PASS (pass_scev_cprop);
