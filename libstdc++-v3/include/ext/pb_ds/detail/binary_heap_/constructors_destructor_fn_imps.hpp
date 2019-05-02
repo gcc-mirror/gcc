@@ -38,6 +38,8 @@
  * Contains an implementation class for binary_heap_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::entry_allocator
 PB_DS_CLASS_C_DEC::s_entry_allocator;
@@ -137,3 +139,4 @@ PB_DS_CLASS_C_DEC::
     erase_at(m_a_entries, i, s_no_throw_copies_ind);
   s_entry_allocator.deallocate(m_a_entries, m_actual_size);
 }
+#endif

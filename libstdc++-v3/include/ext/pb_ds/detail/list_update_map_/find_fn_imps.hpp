@@ -38,6 +38,8 @@
  * Contains implementations of lu_map_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::entry_pointer
 PB_DS_CLASS_C_DEC::
@@ -88,3 +90,4 @@ PB_DS_CLASS_C_DEC::
 apply_update(entry_pointer, type_to_type<null_type>)
 { return s_update_policy(s_null_type); }
 
+#endif

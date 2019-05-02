@@ -36,9 +36,13 @@
 /**
  * @file iterator.hpp
  * Contains an iterator_ class used for ranging over the elements of the
- *    table.
+ * table.
+ *
+ * This file is intended to be included inside a class definition, with
+ * PB_DS_CLASS_C_DEC defined to the name of the enclosing class.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
 /// Range-type iterator.
 class iterator_
 : public const_iterator_
@@ -128,3 +132,4 @@ protected:
 
   friend class PB_DS_CLASS_C_DEC;
 };
+#endif

@@ -38,6 +38,8 @@
  * Contains an implementation class for splay_tree_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline std::pair<typename PB_DS_CLASS_C_DEC::point_iterator, bool>
 PB_DS_CLASS_C_DEC::
@@ -92,3 +94,4 @@ insert_leaf_imp(const_reference r_value)
 
   return std::make_pair(this->insert_leaf_new(r_value, p_nd, false), true);
 }
+#endif

@@ -38,6 +38,8 @@
  * Contains an implementation for rb_tree_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
@@ -304,3 +306,4 @@ split_at_node(node_pointer p_nd, PB_DS_CLASS_C_DEC& other)
   PB_DS_STRUCT_ONLY_ASSERT_VALID(other)
 }
 
+#endif

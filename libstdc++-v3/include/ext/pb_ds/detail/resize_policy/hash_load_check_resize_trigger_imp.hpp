@@ -38,6 +38,8 @@
  * Contains a resize trigger implementation.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 #define PB_DS_ASSERT_VALID(X)						\
   _GLIBCXX_DEBUG_ONLY(X.assert_valid(__FILE__, __LINE__);)
 
@@ -291,3 +293,4 @@ assert_valid(const char* __file, int __line) const
 # undef PB_DS_DEBUG_VERIFY
 #endif
 #undef PB_DS_ASSERT_VALID
+#endif

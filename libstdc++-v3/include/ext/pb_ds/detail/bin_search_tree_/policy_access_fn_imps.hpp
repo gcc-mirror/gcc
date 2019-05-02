@@ -38,6 +38,8 @@
  * Contains an implementation class for bin_search_tree_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 Cmp_Fn& 
 PB_DS_CLASS_C_DEC::
@@ -50,3 +52,4 @@ PB_DS_CLASS_C_DEC::
 get_cmp_fn() const
 { return (*this); }
 
+#endif

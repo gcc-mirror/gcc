@@ -38,6 +38,8 @@
  * Contains an implementation class for splay_tree_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline bool
 PB_DS_CLASS_C_DEC::
@@ -155,3 +157,4 @@ leftmost(node_pointer p_nd)
     p_nd = p_nd->m_p_left;
   return p_nd;
 }
+#endif

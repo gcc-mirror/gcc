@@ -38,6 +38,8 @@
  * Contains an implementation class for ov_tree_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
@@ -59,3 +61,4 @@ inline bool
 PB_DS_CLASS_C_DEC::
 empty() const
 { return size() == 0; }
+#endif
