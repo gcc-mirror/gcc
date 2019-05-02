@@ -54057,7 +54057,7 @@ compare:
         sed=`echo stage3 | sed 's,^stage,,;s,.,.,g'`; \
 	files=`find stage3-* -name "*$(objext)" -print | \
 		 sed -n s,^stage$$sed-,,p`; \
-	for file in $${files}; do \
+	for file in $${files} ${extra-compare}; do \
 	  f1=$$r/stage2-$$file; f2=$$r/stage3-$$file; \
 	  if test ! -f $$f1; then continue; fi; \
 	  $(do-compare) > /dev/null 2>&1; \
@@ -54455,7 +54455,7 @@ compare3:
         sed=`echo stage4 | sed 's,^stage,,;s,.,.,g'`; \
 	files=`find stage4-* -name "*$(objext)" -print | \
 		 sed -n s,^stage$$sed-,,p`; \
-	for file in $${files}; do \
+	for file in $${files} ${extra-compare}; do \
 	  f1=$$r/stage3-$$file; f2=$$r/stage4-$$file; \
 	  if test ! -f $$f1; then continue; fi; \
 	  $(do-compare3) > /dev/null 2>&1; \
