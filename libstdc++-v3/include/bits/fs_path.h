@@ -59,9 +59,8 @@ namespace filesystem
 {
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
-  /**
-   * @ingroup filesystem
-   * @{
+  /** @addtogroup filesystem
+   *  @{
    */
 
   /// A filesystem path.
@@ -158,14 +157,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   public:
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-    typedef wchar_t				value_type;
-    static constexpr value_type			preferred_separator = L'\\';
+    using value_type = wchar_t;
+    static constexpr value_type preferred_separator = L'\\';
 #else
-    typedef char				value_type;
-    static constexpr value_type			preferred_separator = '/';
+# ifdef _GLIBCXX_DOXYGEN
+    /// Windows uses wchar_t for path::value_type, POSIX uses char.
+    using value_type = __os_dependent__;
+# else
+    using value_type =  char;
+# endif
+    static constexpr value_type preferred_separator = '/';
 #endif
-    typedef std::basic_string<value_type>	string_type;
+    using string_type = std::basic_string<value_type>;
 
+    /// path::format is ignored in this implementation
     enum format : unsigned char { native_format, generic_format, auto_format };
 
     // constructors and destructor
@@ -392,7 +397,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     // iterators
     class iterator;
-    typedef iterator const_iterator;
+    using const_iterator = iterator;
 
     iterator begin() const;
     iterator end() const;
@@ -451,6 +456,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       return __result;
     }
 
+    /// @cond undocumented
     // Create a basic_string by reading until a null character.
     template<typename _InputIterator,
 	     typename _Traits = std::iterator_traits<_InputIterator>,
@@ -464,6 +470,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	  __str.push_back(__ch);
 	return __str;
       }
+    /// @endcond
 
   private:
     enum class _Type : unsigned char {
@@ -608,10 +615,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     struct _Parser;
   };
 
+  /// @relates std::filesystem::path @{
+
   inline void swap(path& __lhs, path& __rhs) noexcept { __lhs.swap(__rhs); }
 
   size_t hash_value(const path& __p) noexcept;
 
+  /// Create a path from a UTF-8-encoded sequence of char
   template<typename _InputIterator>
     inline auto
     u8path(_InputIterator __first, _InputIterator __last)
@@ -638,6 +648,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
     }
 
+  /// Create a path from a UTF-8-encoded sequence of char
   template<typename _Source>
     inline auto
     u8path(const _Source& __source)
@@ -659,6 +670,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
     }
 
+  /// @}
+
+  /// Exception type thrown by the Filesystem library
   class filesystem_error : public std::system_error
   {
   public:
@@ -686,6 +700,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     struct _Impl;
     std::__shared_ptr<const _Impl> _M_impl;
   };
+
+  /// @cond undocumented
 
   struct path::_Cmpt : path
   {
@@ -795,6 +811,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 		  __gnu_cxx::__normal_iterator<_Iter, _Cont> __last)
 	{ return _S_convert(__first.base(), __last.base()); }
     };
+
+  /// @endcond
 
   /// An iterator for the components of a path
   class path::iterator
@@ -948,6 +966,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     _M_cmpts.swap(__rhs._M_cmpts);
   }
 
+  /// @cond undocumented
   template<typename _CharT, typename _Traits, typename _Allocator>
     std::basic_string<_CharT, _Traits, _Allocator>
     path::_S_str_convert(const string_type& __str, const _Allocator& __a)
@@ -1012,6 +1031,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	    "Cannot convert character sequence",
 	    std::make_error_code(errc::illegal_byte_sequence)));
     }
+  /// @endcond
 
   template<typename _CharT, typename _Traits, typename _Allocator>
     inline basic_string<_CharT, _Traits, _Allocator>

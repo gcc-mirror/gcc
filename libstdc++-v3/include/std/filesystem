@@ -22,8 +22,9 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file filesystem
+/** @file include/filesystem
  *  This is a Standard C++ Library header.
+ *  @ingroup filesystem
  */
 
 #ifndef _GLIBCXX_FILESYSTEM
@@ -32,6 +33,13 @@
 #pragma GCC system_header
 
 #if __cplusplus >= 201703L
+
+/**
+ * @defgroup filesystem File System
+ *
+ * Utilities for performing operations on file systems and their components,
+ * such as paths, regular files, and directories.
+ */
 
 #include <bits/fs_fwd.h>
 #include <bits/fs_path.h>
