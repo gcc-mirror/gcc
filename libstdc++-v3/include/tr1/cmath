@@ -1126,16 +1126,25 @@ namespace tr1
 
 #endif // C++11
 
+} // namespace tr1
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+
+/**
+ * @defgroup tr1_math_spec_func TR1 Mathematical Special Functions
+ * @ingroup numerics
+ *
+ * A collection of advanced mathematical special functions.
+ */
+
 #if _GLIBCXX_USE_STD_SPEC_FUNCS
 
-  /**
-   * @defgroup tr1_math_spec_func Mathematical Special Functions
-   * @ingroup numerics
-   *
-   * A collection of advanced mathematical special functions.
-   * @{
-   */
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace tr1
+{
   using std::assoc_laguerref;
   using std::assoc_laguerrel;
   using std::assoc_laguerre;
@@ -1220,14 +1229,11 @@ namespace tr1
   using std::sph_neumannl;
   using std::sph_neumann;
 
-  /* @} */ // tr1_math_spec_func
-
-#else // ! _GLIBCXX_USE_STD_SPEC_FUNCS
-
 } // namespace tr1
-
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
+
+#else // ! _GLIBCXX_USE_STD_SPEC_FUNCS
 
 #include <bits/stl_algobase.h>
 #include <limits>
@@ -1247,15 +1253,10 @@ _GLIBCXX_END_NAMESPACE_VERSION
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
 namespace tr1
-{
-  /**
-   * @defgroup tr1_math_spec_func Mathematical Special Functions
-   * @ingroup numerics
-   *
-   * A collection of advanced mathematical special functions.
-   * @{
+  {
+  /** @addtogroup tr1_math_spec_func
+   *  @{
    */
 
   inline float
@@ -1617,13 +1618,14 @@ namespace tr1
       return __detail::__sph_neumann<__type>(__n, __x);
     }
 
-  /* @} */ // tr1_math_spec_func
-#endif // _GLIBCXX_USE_STD_SPEC_FUNCS
+  // @} tr1_math_spec_func
 
 } // namespace tr1
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
+
+#endif // _GLIBCXX_USE_STD_SPEC_FUNCS
 
 #if _GLIBCXX_USE_STD_SPEC_FUNCS && !defined(__STRICT_ANSI__)
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -1658,6 +1660,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 namespace tr1
 {
+  /** @addtogroup tr1_math_spec_func
+   *  @{
+   */
+
   inline float
   conf_hypergf(float __a, float __c, float __x)
   { return __detail::__conf_hyperg<float>(__a, __c, __x); }
@@ -1691,6 +1697,8 @@ namespace tr1
       typedef typename __gnu_cxx::__promote_4<_Tpa, _Tpb, _Tpc, _Tp>::__type __type;
       return __detail::__hyperg<__type>(__a, __b, __c, __x);
     }
+
+  // @} tr1_math_spec_func
 
 } // namespace tr1
 
