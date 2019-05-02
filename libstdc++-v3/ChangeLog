@@ -1,5 +1,12 @@
 2019-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/bits/fs_dir.h: Fix Doxygen markup.
+	* include/experimental/bits/fs_fwd.h: Improve docs.
+	* include/experimental/bits/fs_ops.h: fix Doxygen markup.
+	* include/experimental/bits/fs_path.h: Likewise.
+	(path, filesystem_error, u8path): Improve docs.
+	* include/experimental/filesystem: Link to docs for TS.
+
 	* config/allocator/new_allocator_base.h (__allocator_base): Add
 	workaround for Doxygen bug #6945.
 	* include/std/memory: Improve docs. Define group for pointer safety.
