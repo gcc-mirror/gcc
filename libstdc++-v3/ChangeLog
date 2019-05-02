@@ -1,5 +1,7 @@
 2019-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/doxygen/user.cfg.in: Set MARKDOWN_SUPPORT=YES.
+
 	* include/bits/unique_lock.h: Fix/improve doxygen markup.
 	* include/std/mutex: Likewise.
 	* include/std/shared_mutex: Likewise.
