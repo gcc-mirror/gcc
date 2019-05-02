@@ -52,6 +52,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "vr-values.h"
 
+// #define RANGER_SWITCH_NONE
+// #define RANGER_SWITCH_CALC
+
+
 class switch_edge_manager
 {
 public:
@@ -121,6 +125,17 @@ switch_edge_manager::get_range (irange &r, gimple *s, edge e, bool must_exist)
 
   if (!m_edge_table)
     init_ranges ();
+
+#ifdef RANGER_SWITCH_NONE
+  // Turn off switch support in ranger
+  return NULL;
+#endif
+
+#ifdef RANGER_SWITCH_CALC
+  // Calculate the switch edge each time.
+  calc_single_range (r, sw, e);
+  return s;
+#endif
 
   irange **val = m_edge_table->get (e);
   if (!val)
@@ -244,13 +259,24 @@ switch_edge_manager::calc_single_range (irange &r, gswitch *sw, edge e)
 
 // If there is a range control statment at the end of block BB, return it.
 
+gimple_stmt_iterator
+gsi_outgoing_range_stmt (basic_block bb)
+{
+  gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb);
+  if (!gsi_end_p (gsi))
+    {
+      gimple *s = gsi_stmt (gsi);
+      if (is_a<gcond *> (s) || is_a<gswitch *> (s))
+	return gsi;
+    }
+  return gsi_none ();
+}
+
 gimple *
 gimple_outgoing_range_stmt_p (basic_block bb)
 {
-  gimple *s = last_stmt (bb);
-  if (s && (is_a<gcond *> (s) || is_a<gswitch *> (s)))
-    return s;
-  return NULL;
+  // This will return NULL if there is not a branch statement.
+  return gsi_stmt (gsi_outgoing_range_stmt (bb));
 }
 
 // Calculate the range forced on on edge E by control flow, if any,  and

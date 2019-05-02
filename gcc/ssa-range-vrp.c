@@ -321,6 +321,7 @@ public:
 private:
   void run ();
   void visit (basic_block);
+  void fold_and_simplify (gimple_stmt_iterator &);
 
   dom_accumulator *m_dom_accumulator;
   auto_vec<basic_block> m_bbs;
@@ -387,50 +388,64 @@ rvrp_engine::~rvrp_engine ()
 }
 
 void
+rvrp_engine::fold_and_simplify (gimple_stmt_iterator &gsi)
+{
+  bool changed = false;
+  irange r;
+  gimple *stmt = gsi_stmt (gsi);
+
+  // Only process statements which are a COND expr or have a valid LHS.
+  if (gimple_code (stmt) != GIMPLE_COND &&
+      !m_ranger->valid_ssa_p (gimple_get_lhs (stmt)))
+    return;
+
+  // ?? This is only needed for propagate_mark_stmt_for_cleanup.
+  // Can we get away with a shallow copy?
+  gimple *old_stmt = gimple_copy (stmt);
+
+  if (m_ranger->range_of_stmt (r, stmt))
+    changed = rvrp_fold (*m_ranger, stmt, m_touched);
+  if (!changed)
+    changed = rvrp_simplify (*m_ranger, &gsi);
+  if (changed)
+    m_cleanups.record_change (old_stmt, stmt);
+}
+
+void
 rvrp_engine::visit (basic_block bb)
 {
   irange r;
-
-  // If we're only looking at conditionals, there's no need to look at PHIs.
-  if (m_order != RVRP_ORDER_CONDITIONALS)
-    for (gphi_iterator gpi = gsi_start_phis (bb); !gsi_end_p (gpi);
-	 gsi_next (&gpi))
-      {
-	gphi *phi = gpi.phi ();
-	tree phi_def = gimple_phi_result (phi);
-	if (m_ranger->valid_ssa_p (phi_def))
-	  m_ranger->range_of_stmt (r, phi);
-      }
+  gimple_stmt_iterator gsi;
 
   if (dump_file)
     fprintf (dump_file, "RVRP: Considering BB %d.\n", bb->index);
 
-  for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
-       gsi_next (&gsi))
+  if (m_order == RVRP_ORDER_CONDITIONALS)
     {
-      // When looking at conditionals, there's nothing interesting
-      // before the last statement.
-      if (m_order == RVRP_ORDER_CONDITIONALS && !gsi_one_before_end_p (gsi))
-	continue;
-
-      gimple *stmt = gsi_stmt (gsi);
-      tree lhs = gimple_get_lhs (stmt);
-      if (gimple_code (stmt) == GIMPLE_COND
-	  || (m_order != RVRP_ORDER_CONDITIONALS
-	      && m_ranger->valid_ssa_p (lhs)))
-	{
-	  bool changed = false;
-	  // ?? This is only needed for propagate_mark_stmt_for_cleanup.
-	  // Can we get away with a shallow copy?
-	  gimple *old_stmt = gimple_copy (stmt);
-	  if (m_ranger->range_of_stmt (r, stmt))
-	    changed = rvrp_fold (*m_ranger, stmt, m_touched);
-	  if (!changed)
-	    changed = rvrp_simplify (*m_ranger, &gsi);
-	  if (changed)
-	    m_cleanups.record_change (old_stmt, stmt);
-	}
+      // Check if there is a conditional at the end of the block and visit it.
+      gsi = gsi_outgoing_range_stmt (bb);
+      if (!gsi_end_p (gsi))
+        fold_and_simplify (gsi);
+      return;
     }
+
+  // Process all the PHI nodes.
+  for (gphi_iterator gpi = gsi_start_phis (bb); !gsi_end_p (gpi);
+       gsi_next (&gpi))
+    {
+      gphi *phi = gpi.phi ();
+      tree phi_def = gimple_phi_result (phi);
+      if (m_ranger->valid_ssa_p (phi_def))
+	m_ranger->range_of_stmt (r, phi);
+    }
+
+  // If processing in reverse, walk the IL bottom up.
+  if (m_order == RVRP_ORDER_BACKWARD)
+    for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+      fold_and_simplify (gsi);
+  else
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      fold_and_simplify (gsi);
 }
 
 void
