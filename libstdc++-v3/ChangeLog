@@ -1,5 +1,11 @@
 2019-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/fs_dir.h: Fix/improve doxygen markup.
+	* include/bits/fs_fwd.h: Likewise.
+	* include/bits/fs_ops.h: Likewise.
+	* include/bits/fs_path.h: Likewise.
+	* include/std/filesystem: Likewise.
+
 	* include/experimental/bits/net.h: Fix/improve doxygen markup.
 	* include/experimental/buffer: Likewise.
 	* include/experimental/executor: Likewise.
