@@ -1,5 +1,9 @@
 2019-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/shared_ptr.h: Improve docs.
+	* include/bits/shared_ptr_atomic.h: Likewise.
+	* include/bits/unique_ptr.h: Likewise. Adjust whitespace.
+
 	* include/bits/basic_string.h: Fix iterator/index confusion in
 	Doxygen comments.
 	* include/bits/range_access.h: Fix Doxygen warnings.
