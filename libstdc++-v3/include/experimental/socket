@@ -24,6 +24,7 @@
 
 /** @file experimental/socket
  *  This is a TS C++ Library header.
+ *  @ingroup networking-ts
  */
 
 #ifndef _GLIBCXX_EXPERIMENTAL_SOCKET
@@ -69,9 +70,8 @@ namespace net
 inline namespace v1
 {
 
-  /**
-   * @ingroup networking
-   * @{
+  /** @addtogroup networking-ts
+   *  @{
    */
 
   enum class socket_errc {  // TODO decide values
