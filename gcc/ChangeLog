@@ -1,5 +1,11 @@
 2019-05-02  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/89509
+	* tree-ssa-structalias.c (compute_dependence_clique): Look
+	at the first subvar when determining whether it is restrict.
+
+2019-05-02  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/90273
 	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Eliminate
 	useless debug stmts.
