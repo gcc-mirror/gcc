@@ -1,5 +1,50 @@
 2019-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/doxygen/doxygroups.cc: Move description of experimental group
+	here.
+	* include/experimental/algorithm: Add to libfund-ts doc group.
+	* include/experimental/any: Likewise. Do not document implementation
+	details.
+	* include/experimental/array: Add to libfund-ts doc group.
+	* include/experimental/bits/lfts_config.h: Define libfund-ts doc group
+	for Library Fundamentals.
+	* include/experimental/chrono: Add to libfund-ts doc group.
+	* include/experimental/deque: Likewise.
+	* include/experimental/forward_list: Likewise.
+	* include/experimental/functional: Likewise.
+	* include/experimental/iterator: Likewise.
+	* include/experimental/list: Likewise.
+	* include/experimental/map: Likewise.
+	* include/experimental/memory: Likewise.
+	* include/experimental/memory_resource: Likewise. Improve docs.
+	details.
+	* include/experimental/numeric: Add to libfund-ts doc group.
+	* include/experimental/optional: Likewise.
+	* include/experimental/propagate_const: Likewise.
+	* include/experimental/random: Likewise.
+	* include/experimental/ratio: Likewise.
+	* include/experimental/regex: Likewise.
+	* include/experimental/set: Likewise.
+	* include/experimental/source_location: Likewise.
+	* include/experimental/string: Likewise.
+	* include/experimental/string_view: Likewise.
+	* include/experimental/system_error: Likewise.
+	* include/experimental/tuple: Likewise.
+	* include/experimental/type_traits: Likewise.
+	* include/experimental/unordered_map: Likewise.
+	* include/experimental/unordered_set: Likewise.
+	* include/experimental/utility: Likewise.
+	* include/experimental/vector: Likewise.
+	* testsuite/experimental/any/misc/any_cast_neg.cc: Adjust dg-error.
+	* testsuite/experimental/array/neg.cc: Adjust dg-error.
+	* testsuite/experimental/propagate_const/assignment/move_neg.cc:
+	Likewise.
+	* testsuite/experimental/propagate_const/cons/move_neg.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements2.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements3.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements4.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements5.cc: Likewise.
+
 	* include/experimental/bits/fs_dir.h: Fix Doxygen markup.
 	* include/experimental/bits/fs_fwd.h: Improve docs.
 	* include/experimental/bits/fs_ops.h: fix Doxygen markup.

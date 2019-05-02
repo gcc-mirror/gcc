@@ -160,3 +160,15 @@ summarized in <a href="tables.html">tables</a>.  */
  * Components for concurrent operations, including threads, mutexes,
  * and condition variables.
  */
+
+/**
+ * @defgroup experimental Technical Specifications
+ *
+ * Components specified by various Technical Specifications.
+ *
+ * As indicated by the std::experimental namespace and the header paths,
+ * the contents of these Technical Specifications are experimental and not
+ * part of the C++ standard. As such the interfaces and implementations may
+ * change in the future, and there is <STRONG> no guarantee of compatibility
+ * between different GCC releases </STRONG> for these features.
+ */

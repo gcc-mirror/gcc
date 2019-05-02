@@ -24,6 +24,7 @@
 
 /** @file experimental/propagate_const
  *  This is a TS C++ Library header.
+ *  @ingroup libfund-ts
  */
 
 #ifndef _GLIBCXX_EXPERIMENTAL_PROPAGATE_CONST
@@ -49,7 +50,7 @@ inline namespace fundamentals_v2
 {
   /**
    * @defgroup propagate_const Const-propagating wrapper
-   * @ingroup experimental
+   * @ingroup libfund-ts
    *
    * A const-propagating wrapper that propagates const to pointer-like members,
    * as described in n4388 "A Proposal to Add a Const-Propagating Wrapper
@@ -58,7 +59,7 @@ inline namespace fundamentals_v2
    * @{
    */
 
-/// Const-propagating wrapper.
+  /// Const-propagating wrapper.
   template <typename _Tp>
     class propagate_const
     {
