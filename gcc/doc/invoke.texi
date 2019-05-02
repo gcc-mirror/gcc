@@ -28506,8 +28506,9 @@ By default GCC inlines string operations only when the destination is
 known to be aligned to least a 4-byte boundary.  
 This enables more inlining and increases code
 size, but may improve performance of code that depends on fast
-@code{memcpy}, @code{strlen},
-and @code{memset} for short lengths.
+@code{memcpy} and @code{memset} for short lengths.
+The option enables inline expansion of @code{strlen} for all
+pointer alignments.
 
 @item -minline-stringops-dynamically
 @opindex minline-stringops-dynamically

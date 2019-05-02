@@ -1,3 +1,9 @@
+2019-05-02  Martin Liska  <mliska@suse.cz>
+
+	PR target/88809
+	* gcc.target/i386/pr88809.c: New test.
+	* gcc.target/i386/pr88809-2.c: New test.
+
 2019-05-01  Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
 	PR fortran/60144

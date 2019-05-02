@@ -1,3 +1,11 @@
+2019-05-02  Martin Liska  <mliska@suse.cz>
+
+	PR target/88809
+	* config/i386/i386.c (ix86_expand_strlen): Use strlen call.
+	With -minline-all-stringops use inline expansion using 4B loop.
+	* doc/invoke.texi: Document the change of
+	-minline-all-stringops.
+
 2019-05-01  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/88797
