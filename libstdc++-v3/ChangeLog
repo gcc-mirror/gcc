@@ -1,5 +1,9 @@
 2019-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/specfun.h: Improve docs.
+	* include/tr1/cmath: Likewise. Fix nesting of preprocessor conditions
+	and namespaces.
+
 	* doc/doxygen/doxygroups.cc (std::tr2, std::__gnu_cxx): Improve docs.
 	(std::experimental): Add docs.
 	* doc/doxygen/user.cfg.in (PREDEFINED): Expand macros for __cxx11
