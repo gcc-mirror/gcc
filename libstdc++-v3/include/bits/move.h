@@ -183,8 +183,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
 #endif
     swap(_Tp& __a, _Tp& __b)
-    _GLIBCXX_NOEXCEPT_IF((__and_<is_nothrow_move_constructible<_Tp>,
-				 is_nothrow_move_assignable<_Tp>>::value))
+    _GLIBCXX_NOEXCEPT_IF(__and_<is_nothrow_move_constructible<_Tp>,
+				is_nothrow_move_assignable<_Tp>>::value)
     {
       // concept requirements
       __glibcxx_function_requires(_SGIAssignableConcept<_Tp>)

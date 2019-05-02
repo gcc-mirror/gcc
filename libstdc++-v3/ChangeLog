@@ -1,5 +1,9 @@
 2019-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/90314
+	* include/bits/c++config (_GLIBCXX_NOEXCEPT_IF): Use variadic macro.
+	* include/bits/move.h (swap): Remove extra parentheses.
+
 	* include/experimental/bits/lfts_config.h: Improve doc markup.
 	* include/experimental/optional: Improve docs.
 	(_Has_addressof_mem, _Has_addressof_free, _Has_addressof)
