@@ -1625,7 +1625,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert value of a string.
-       *  @param __pos1  Iterator referencing location in string to insert at.
+       *  @param __pos1 Position in string to insert at.
        *  @param __str  The string to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
@@ -1642,8 +1642,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a substring.
-       *  @param __pos1  Iterator referencing location in string to insert at.
-       *  @param __str  The string to insert.
+       *  @param __pos1  Position in string to insert at.
+       *  @param __str   The string to insert.
        *  @param __pos2  Start of characters in str to insert.
        *  @param __n  Number of characters to insert.
        *  @return  Reference to this string.
@@ -1667,7 +1667,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a C substring.
-       *  @param __pos  Iterator referencing location in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __s  The C string to insert.
        *  @param __n  The number of characters to insert.
        *  @return  Reference to this string.
@@ -1687,7 +1687,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a C string.
-       *  @param __pos  Iterator referencing location in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __s  The C string to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
@@ -1754,7 +1754,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus >= 201703L
       /**
        *  @brief  Insert a string_view.
-       *  @param __pos  Iterator referencing position in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __svt  The object convertible to string_view to insert.
        *  @return  Reference to this string.
       */
@@ -1768,10 +1768,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a string_view.
-       *  @param __pos  Iterator referencing position in string to insert at.
-       *  @param __svt  The object convertible to string_view to insert from.
-       *  @param __pos  Iterator referencing position in string_view to insert
-       *  from.
+       *  @param __pos1  Position in string to insert at.
+       *  @param __svt   The object convertible to string_view to insert from.
+       *  @param __pos2  Start of characters in str to insert.
        *  @param __n    The number of characters to insert.
        *  @return  Reference to this string.
       */
@@ -4519,7 +4518,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert value of a string.
-       *  @param __pos1  Iterator referencing location in string to insert at.
+       *  @param __pos1  Position in string to insert at.
        *  @param __str  The string to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
@@ -4535,7 +4534,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a substring.
-       *  @param __pos1  Iterator referencing location in string to insert at.
+       *  @param __pos1  Position in string to insert at.
        *  @param __str  The string to insert.
        *  @param __pos2  Start of characters in str to insert.
        *  @param __n  Number of characters to insert.
@@ -4560,7 +4559,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a C substring.
-       *  @param __pos  Iterator referencing location in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __s  The C string to insert.
        *  @param __n  The number of characters to insert.
        *  @return  Reference to this string.
@@ -4579,7 +4578,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a C string.
-       *  @param __pos  Iterator referencing location in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __s  The C string to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
@@ -4646,7 +4645,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus >= 201703L
       /**
        *  @brief  Insert a string_view.
-       *  @param __pos  Iterator referencing position in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __svt  The object convertible to string_view to insert.
        *  @return  Reference to this string.
       */
@@ -4660,9 +4659,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a string_view.
-       *  @param __pos  Iterator referencing position in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __svt  The object convertible to string_view to insert from.
-       *  @param __pos  Iterator referencing position in string_view to insert
+       *  @param __pos  Position in string_view to insert
        *  from.
        *  @param __n    The number of characters to insert.
        *  @return  Reference to this string.
