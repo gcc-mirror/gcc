@@ -215,9 +215,9 @@ extern unsigned int ix86_minimum_alignment (tree, machine_mode,
 extern tree ix86_handle_shared_attribute (tree *, tree, tree, int, bool *);
 extern tree ix86_handle_selectany_attribute (tree *, tree, tree, int, bool *);
 extern int x86_field_alignment (tree, int);
-extern tree ix86_valid_target_attribute_tree (tree,
+extern tree ix86_valid_target_attribute_tree (tree, tree,
 					      struct gcc_options *,
-					      struct gcc_options *);
+					      struct gcc_options *, bool);
 extern unsigned int ix86_get_callcvt (const_tree);
 
 #endif

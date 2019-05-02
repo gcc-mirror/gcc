@@ -1,5 +1,21 @@
 2019-05-02  Martin Liska  <mliska@suse.cz>
 
+	* cgraphclones.c: Call valid_attribute_p with 1 for
+	target_clone.
+	* config/i386/i386-c.c (ix86_pragma_target_parse): Use 0 as
+	it's for target attribute.
+	* config/i386/i386-protos.h (ix86_valid_target_attribute_tree):
+	Add new boolean argument.
+	* config/i386/i386.c (ix86_valid_target_attribute_inner_p):
+	Likewise.
+	(ix86_valid_target_attribute_tree): Pass target_clone_attr
+	to ix86_valid_target_attribute_inner_p.
+	(ix86_valid_target_attribute_p): Pass flags argument to
+	ix86_valid_target_attribute_inner_p.
+	(get_builtin_code_for_version): Use 0 as it's target attribute.
+
+2019-05-02  Martin Liska  <mliska@suse.cz>
+
 	* gcc.c (process_command): Add dummy file only
 	if n_infiles == 0.
 	* opts-global.c (decode_options): Pass lang_mask.

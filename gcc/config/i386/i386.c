@@ -847,10 +847,11 @@ static void ix86_function_specific_post_stream_in (struct cl_target_option *);
 static void ix86_function_specific_print (FILE *, int,
 					  struct cl_target_option *);
 static bool ix86_valid_target_attribute_p (tree, tree, tree, int);
-static bool ix86_valid_target_attribute_inner_p (tree, char *[],
+static bool ix86_valid_target_attribute_inner_p (tree, tree, char *[],
 						 struct gcc_options *,
 						 struct gcc_options *,
-						 struct gcc_options *);
+						 struct gcc_options *,
+						 bool);
 static bool ix86_can_inline_p (tree, tree);
 static void ix86_set_current_function (tree);
 static unsigned int ix86_minimum_incoming_stack_boundary (bool);
@@ -5149,10 +5150,11 @@ ix86_function_specific_print (FILE *file, int indent,
    over the list.  */
 
 static bool
-ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
+ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
 				     struct gcc_options *opts,
 				     struct gcc_options *opts_set,
-				     struct gcc_options *enum_opts_set)
+				     struct gcc_options *enum_opts_set,
+				     bool target_clone_attr)
 {
   char *next_optstr;
   bool ret = true;
@@ -5296,8 +5298,11 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_YES ("recip",
 		   OPT_mrecip,
 		   MASK_RECIP),
-
   };
+
+  location_t loc
+    = fndecl == NULL ? UNKNOWN_LOCATION : DECL_SOURCE_LOCATION (fndecl);
+  const char *attr_name = target_clone_attr ? "target_clone" : "target";
 
   /* If this is a list, recurse to get the options.  */
   if (TREE_CODE (args) == TREE_LIST)
@@ -5306,9 +5311,10 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
 
       for (; args; args = TREE_CHAIN (args))
 	if (TREE_VALUE (args)
-	    && !ix86_valid_target_attribute_inner_p (TREE_VALUE (args),
+	    && !ix86_valid_target_attribute_inner_p (fndecl, TREE_VALUE (args),
 						     p_strings, opts, opts_set,
-						     enum_opts_set))
+						     enum_opts_set,
+						     target_clone_attr))
 	  ret = false;
 
       return ret;
@@ -5316,7 +5322,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
 
   else if (TREE_CODE (args) != STRING_CST)
     {
-      error ("attribute %<target%> argument not a string");
+      error_at (loc, "attribute %qs argument is not a string", attr_name);
       return false;
     }
 
@@ -5328,7 +5334,6 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
       char *p = next_optstr;
       char *orig_p = p;
       char *comma = strchr (next_optstr, ',');
-      const char *opt_string;
       size_t len, opt_len;
       int opt;
       bool opt_set_p;
@@ -5374,7 +5379,6 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
 	    {
 	      opt = attrs[i].opt;
 	      mask = attrs[i].mask;
-	      opt_string = attrs[i].string;
 	      break;
 	    }
 	}
@@ -5382,7 +5386,8 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
       /* Process the option.  */
       if (opt == N_OPTS)
 	{
-	  error ("attribute(target(\"%s\")) is unknown", orig_p);
+	  error_at (loc, "attribute %qs argument %qs is unknown",
+		    orig_p, attr_name);
 	  ret = false;
 	}
 
@@ -5410,7 +5415,8 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
 	{
 	  if (p_strings[opt])
 	    {
-	      error ("option(\"%s\") was already specified", opt_string);
+	      error_at (loc, "attribute value %qs was already specified "
+			"in %qs attribute", orig_p, attr_name);
 	      ret = false;
 	    }
 	  else
@@ -5429,7 +5435,8 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
 			global_dc);
 	  else
 	    {
-	      error ("attribute(target(\"%s\")) is unknown", orig_p);
+	      error_at (loc, "attribute value %qs is unknown in %qs attribute",
+			orig_p, attr_name);
 	      ret = false;
 	    }
 	}
@@ -5453,9 +5460,10 @@ release_options_strings (char **option_strings)
 /* Return a TARGET_OPTION_NODE tree of the target options listed or NULL.  */
 
 tree
-ix86_valid_target_attribute_tree (tree args,
+ix86_valid_target_attribute_tree (tree fndecl, tree args,
 				  struct gcc_options *opts,
-				  struct gcc_options *opts_set)
+				  struct gcc_options *opts_set,
+				  bool target_clone_attr)
 {
   const char *orig_arch_string = opts->x_ix86_arch_string;
   const char *orig_tune_string = opts->x_ix86_tune_string;
@@ -5471,8 +5479,9 @@ ix86_valid_target_attribute_tree (tree args,
   memset (&enum_opts_set, 0, sizeof (enum_opts_set));
 
   /* Process each of the options on the chain.  */
-  if (! ix86_valid_target_attribute_inner_p (args, option_strings, opts,
-					     opts_set, &enum_opts_set))
+  if (!ix86_valid_target_attribute_inner_p (fndecl, args, option_strings, opts,
+					    opts_set, &enum_opts_set,
+					    target_clone_attr))
     return error_mark_node;
 
   /* If the changed options are different from the default, rerun
@@ -5545,7 +5554,7 @@ static bool
 ix86_valid_target_attribute_p (tree fndecl,
 			       tree ARG_UNUSED (name),
 			       tree args,
-			       int ARG_UNUSED (flags))
+			       int flags)
 {
   struct gcc_options func_options;
   tree new_target, new_optimize;
@@ -5580,8 +5589,10 @@ ix86_valid_target_attribute_p (tree fndecl,
   cl_target_option_restore (&func_options,
 			    TREE_TARGET_OPTION (target_option_default_node));
 
-  new_target = ix86_valid_target_attribute_tree (args, &func_options,
-						 &global_options_set);
+  /* FLAGS == 1 is used for target_clones attribute.  */
+  new_target
+    = ix86_valid_target_attribute_tree (fndecl, args, &func_options,
+					&global_options_set, flags == 1);
 
   new_optimize = build_optimization_node (&func_options);
 
@@ -32071,8 +32082,9 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
   if (strstr (attrs_str, "arch=") != NULL)
     {
       cl_target_option_save (&cur_target, &global_options);
-      target_node = ix86_valid_target_attribute_tree (attrs, &global_options,
-						      &global_options_set);
+      target_node
+	= ix86_valid_target_attribute_tree (decl, attrs, &global_options,
+					    &global_options_set, 0);
     
       gcc_assert (target_node);
       if (target_node == error_mark_node)
