@@ -24,6 +24,7 @@
 
 /** @file experimental/memory_resource
  *  This is a TS C++ Library header.
+ *  @ingroup libfund-ts
  */
 
 #ifndef _GLIBCXX_EXPERIMENTAL_MEMORY_RESOURCE
@@ -37,12 +38,14 @@
 #include <ext/new_allocator.h>
 #include <debug/assertions.h>
 
+/// @cond
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp> class malloc_allocator;
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __gnu_cxx
+/// @endcond
 
 namespace std {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -259,6 +262,7 @@ namespace pmr {
     { return !(__a == __b); }
 
 
+  /// @cond undocumented
   class __resource_adaptor_common
   {
     template<typename, typename> friend class __resource_adaptor_imp;
@@ -372,6 +376,7 @@ namespace pmr {
       : std::alignment_of<std::max_align_t>::type { };
 #endif
   };
+  /// @endcond
 
   // 8.7.1 __resource_adaptor_imp
   template<typename _Alloc, typename _Resource>
@@ -501,6 +506,7 @@ namespace pmr {
 
   // The default memory resource
 
+  /// @cond undocumented
   inline std::atomic<memory_resource*>&
   __get_default_resource()
   {
@@ -509,11 +515,14 @@ namespace pmr {
     static type* __r = new(__buf) type(new_delete_resource());
     return *__r;
   }
+  /// @endcond
 
+  /// Get the current default resource.
   inline memory_resource*
   get_default_resource() noexcept
   { return __get_default_resource().load(); }
 
+  /// Change the default resource and return the previous one.
   inline memory_resource*
   set_default_resource(memory_resource* __r) noexcept
   {

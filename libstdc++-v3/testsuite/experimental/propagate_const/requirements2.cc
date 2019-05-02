@@ -21,9 +21,8 @@
 
 using std::experimental::propagate_const;
 
-// { dg-error "requires a class or a pointer to an object type" "" { target *-*-* } 107 }
-// { dg-error "not a pointer-to-object type" "" { target *-*-* } 66 }
-// { dg-error "forming pointer to reference type" "" { target *-*-* } 187 }
-// { dg-error "forming pointer to reference type" "" { target *-*-* } 213 }
-
 propagate_const<void*> test1;
+
+// { dg-error "requires a class or a pointer to an object type" "" { target *-*-* } 0 }
+// { dg-prune-output "forming pointer to reference type" }
+// { dg-prune-output "not a pointer-to-object type" }
