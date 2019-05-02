@@ -1,3 +1,16 @@
+2019-05-02  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
+
+	* config/aarch64/aarch64-sve.md (<sur>dot_prod<vsi2qi>): Taken from SVE
+	ACLE branch.
+	* config/aarch64/iterators.md: Copied Vetype_fourth, VSI2QI and vsi2qi from
+	SVE ACLE branch.
+	* tree-vect-loop.c (use_mask_by_cond_expr_p): New function to check if a
+	VEC_COND_EXPR be inserted to emulate a conditional internal function.
+	(build_vect_cond_expr): Emit the VEC_COND_EXPR.
+	(vectorizable_reduction): Use the functions above to vectorize in a
+	fully masked loop codes that don't have a conditional internal
+	function.
+
 2019-05-02  Martin Liska  <mliska@suse.cz>
 
 	* cgraphclones.c: Call valid_attribute_p with 1 for

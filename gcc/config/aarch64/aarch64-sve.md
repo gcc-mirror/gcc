@@ -3132,3 +3132,19 @@
     DONE;
   }
 )
+
+;; Unpredicated DOT product.
+(define_insn "<sur>dot_prod<vsi2qi>"
+  [(set (match_operand:SVE_SDI 0 "register_operand" "=w, ?&w")
+	(plus:SVE_SDI
+	  (unspec:SVE_SDI
+	    [(match_operand:<VSI2QI> 1 "register_operand" "w, w")
+	     (match_operand:<VSI2QI> 2 "register_operand" "w, w")]
+	    DOTPROD)
+	  (match_operand:SVE_SDI 3 "register_operand" "0, w")))]
+  "TARGET_SVE"
+  "@
+   <sur>dot\\t%0.<Vetype>, %1.<Vetype_fourth>, %2.<Vetype_fourth>
+   movprfx\t%0, %3\;<sur>dot\\t%0.<Vetype>, %1.<Vetype_fourth>, %2.<Vetype_fourth>"
+  [(set_attr "movprfx" "*,yes")]
+)

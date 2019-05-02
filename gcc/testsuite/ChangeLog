@@ -1,3 +1,7 @@
+2019-05-02  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
+
+	* gcc.target/aarch64/sve/dot_1.c: New test for dot product.
+
 2019-05-02  Martin Liska  <mliska@suse.cz>
 
 	* gcc.target/i386/funcspec-4.c: Update scanned pattern.
