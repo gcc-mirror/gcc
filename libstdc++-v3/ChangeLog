@@ -1,5 +1,11 @@
 2019-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* config/allocator/new_allocator_base.h (__allocator_base): Add
+	workaround for Doxygen bug #6945.
+	* include/std/memory: Improve docs. Define group for pointer safety.
+	* include/std/scoped_allocator: Improve docs. Use "undocumented"
+	conditional to suppress documentation for implementation details.
+
 	* include/bits/specfun.h: Improve docs.
 	* include/tr1/cmath: Likewise. Fix nesting of preprocessor conditions
 	and namespaces.
