@@ -418,7 +418,8 @@ extern bool target_handle_option (struct gcc_options *opts,
 				  void (*target_option_override_hook) (void));
 extern void finish_options (struct gcc_options *opts,
 			    struct gcc_options *opts_set,
-			    location_t loc);
+			    location_t loc,
+			    unsigned int lang_mask);
 extern void default_options_optimization (struct gcc_options *opts,
 					  struct gcc_options *opts_set,
 					  struct cl_decoded_option *decoded_options,

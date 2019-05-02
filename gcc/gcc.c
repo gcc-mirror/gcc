@@ -4751,10 +4751,9 @@ process_command (unsigned int decoded_options_count,
     }
 
   /* Ensure we only invoke each subprocess once.  */
-  if (print_subprocess_help || print_help_list || print_version)
+  if (n_infiles == 0
+      && (print_subprocess_help || print_help_list || print_version))
     {
-      n_infiles = 0;
-
       /* Create a dummy input file, so that we can pass
 	 the help option on to the various sub-processes.  */
       add_infile ("help-dummy", "c");

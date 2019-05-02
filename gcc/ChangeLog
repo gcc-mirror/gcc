@@ -1,5 +1,17 @@
 2019-05-02  Martin Liska  <mliska@suse.cz>
 
+	* gcc.c (process_command): Add dummy file only
+	if n_infiles == 0.
+	* opts-global.c (decode_options): Pass lang_mask.
+	* opts.c (print_help): New function.
+	(finish_options): Print --help if help_option_argument
+	is set.
+	(common_handle_option): Factor out content of OPT__help_
+	into print_help.
+	* opts.h (finish_options): Add new argument.
+
+2019-05-02  Martin Liska  <mliska@suse.cz>
+
 	PR target/88809
 	* config/i386/i386.c (ix86_expand_strlen): Use strlen call.
 	With -minline-all-stringops use inline expansion using 4B loop.
