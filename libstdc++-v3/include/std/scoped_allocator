@@ -24,6 +24,7 @@
 
 /** @file include/scoped_allocator
  *  This is a Standard C++ Library header.
+ *  @ingroup allocators
  */
 
 #ifndef _SCOPED_ALLOCATOR
@@ -48,6 +49,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @addtogroup allocators
    * @{
    */
+
+  /// @cond undocumented
 
   template<typename _Alloc>
     using __outer_allocator_t
@@ -75,6 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __base::_S_outermost(__a.outer_allocator()); }
     };
 
+  /// Implementation of the OUTERMOST pseudofunction
   template<typename _Alloc>
     inline typename __outermost_type<_Alloc>::type&
     __outermost(_Alloc& __a)
@@ -164,7 +168,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __type _M_inner;
     };
 
-  /// Primary class template.
+  /// @endcond
+
+  /// An adaptor to recursively pass an allocator to the objects it constructs
   template<typename _OuterAlloc, typename... _InnerAllocs>
     class scoped_allocator_adaptor
     : public _OuterAlloc
@@ -484,6 +490,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++17
     };
 
+  /// @related std::scoped_allocator_adaptor
   template <typename _OutA1, typename _OutA2, typename... _InA>
     inline bool
     operator==(const scoped_allocator_adaptor<_OutA1, _InA...>& __a,
@@ -493,6 +500,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
           && __a._M_inner == __b._M_inner;
     }
 
+  /// @related std::scoped_allocator_adaptor
   template <typename _OutA1, typename _OutA2, typename... _InA>
     inline bool
     operator!=(const scoped_allocator_adaptor<_OutA1, _InA...>& __a,
