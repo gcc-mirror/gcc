@@ -314,7 +314,7 @@ decode_options (struct gcc_options *opts, struct gcc_options *opts_set,
 			loc, lang_mask,
 			&handlers, dc);
 
-  finish_options (opts, opts_set, loc);
+  finish_options (opts, opts_set, loc, lang_mask);
 }
 
 /* Hold command-line options associated with stack limitation.  */
