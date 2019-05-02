@@ -100,13 +100,6 @@ local_specialization_stack::~local_specialization_stack ()
 /* True if we've recursed into fn_type_unification too many times.  */
 static bool excessive_deduction_depth;
 
-struct GTY((for_user)) spec_entry
-{
-  tree tmpl;  /* The general template this is a specialization of.  */
-  tree args;  /* The args for this (maybe-partial) specialization.  */
-  tree spec;  /* The specialization itself.  */
-};
-
 struct spec_hasher : ggc_ptr_hash<spec_entry>
 {
   static hashval_t hash (spec_entry *);
@@ -28346,50 +28339,21 @@ declare_integer_pack (void)
 /* Collect the specializations and explicit instantitions generated
    in this module  */
 
-static void
-get_specializations (auto_vec<tree> &res,
-		     spec_hash_table *table, bitmap partitions)
+void
+walk_specializations (bool decls_p,
+		      void (*fn) (bool decls_p, spec_entry *entry, void *data),
+		      void *data)
 {
+  spec_hash_table *table = decls_p ? decl_specializations
+    : type_specializations;
   spec_hash_table::iterator end (table->end ());
   for (spec_hash_table::iterator iter (table->begin ()); iter != end; ++iter)
-    {
-      const spec_entry *entry = *iter;
-      tree spec = entry->spec;
-      int use_tpl;
-      if (TYPE_P (spec))
-	{
-	  if (TYPE_DECL_ALIAS_P (DECL_TEMPLATE_RESULT (entry->tmpl)))
-	    // FIXME: Skip for now
-	    continue;
-	  if (TREE_CODE (TREE_TYPE (DECL_TEMPLATE_RESULT (entry->tmpl)))
-	      == ENUMERAL_TYPE)
-	    // FIXME: Likewise. Hey, make anon enum tags anon
-	    continue;
-
-	  use_tpl = CLASSTYPE_USE_TEMPLATE (spec);
-	  spec = TYPE_STUB_DECL (spec);
-	}
-      else
-	use_tpl = DECL_USE_TEMPLATE (spec);
-      if (use_tpl & 2)
-	{
-	  unsigned module = MAYBE_DECL_MODULE_OWNER (spec);
-	  if (module == MODULE_PURVIEW
-	      || (partitions && bitmap_bit_p (partitions, module)))
-	    res.safe_push (spec);
-	}
-    }
-}
-
-void
-get_specializations_for_module (auto_vec<tree> &res, bitmap partitions)
-{
-  get_specializations (res, decl_specializations, partitions);
-  get_specializations (res, type_specializations, partitions);
+    fn (decls_p, *iter, data);
 }
 
 // FIXME: do we need to register the specialization on
 // DECL_TEMPLATE_SPECIALIZATIONS & DECL_TEMPLATE_INSTANTIATIONS?
+// Yes.  Yes we do.
 
 tree
 match_mergeable_specialization (tree spec, tree tmpl, tree args)

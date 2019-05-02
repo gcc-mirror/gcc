@@ -5411,6 +5411,14 @@ struct local_specialization_stack
   hash_map<tree, tree> *saved;
 };
 
+/* Entry in the specialization hash table.  */
+struct GTY((for_user)) spec_entry
+{
+  tree tmpl;  /* The general template this is a specialization of.  */
+  tree args;  /* The args for this (maybe-partial) specialization.  */
+  tree spec;  /* The specialization itself.  */
+};
+
 /* in class.c */
 
 extern int current_class_depth;
@@ -7040,7 +7048,10 @@ extern bool deduction_guide_p			(const_tree);
 extern bool copy_guide_p			(const_tree);
 extern bool template_guide_p			(const_tree);
 extern void store_explicit_specifier		(tree, tree);
-extern void get_specializations_for_module	(auto_vec<tree> &, bitmap);
+extern void walk_specializations		(bool,
+						 void (*)(bool, spec_entry *,
+							  void *),
+						 void *);
 extern tree match_mergeable_specialization	(tree, tree, tree);
 
 /* in repo.c */

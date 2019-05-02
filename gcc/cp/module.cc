@@ -2233,6 +2233,7 @@ private:
   enum disc_bits 
   {
     DB_ZERO_BIT, /* Set to disambiguate identifier from flags  */
+    DB_FIRST_BIT, /* First dep slot is repurposed.  */
     DB_KIND_BIT, /* Kind of the entity.  */
     DB_KIND_BITS = EK_BITS,
     DB_DEFN_BIT = DB_KIND_BIT + DB_KIND_BITS,
@@ -2248,6 +2249,11 @@ private:
   };
 
 public:
+  /* The first slot may be repurposed (see first_dep_repurposed):
+     1) when doing the mergeable sort, it refers to the original
+     depset of the decl being ordered.
+     2) for EK_SPECIALIZATIONS it is a spec_entry pointer.
+     Neither are relevant for the SCC determination.  */
   vec<depset *> deps;  /* Depsets in this TU we reference.  */
 
 public:
@@ -2271,10 +2277,22 @@ public:
     discriminator = reinterpret_cast<uintptr_t> (name);
   }
 
+private:
+  template<unsigned I> void set_flag_bit ()
+  {
+    gcc_checking_assert (I < 2 || !is_binding ());
+    discriminator |= 1u << I;
+  }
+  template<unsigned I> bool get_flag_bit () const
+  {
+    gcc_checking_assert (I < 2 || !is_binding ());
+    return bool ((discriminator >> I) & 1);
+  }
+  
 public:
   bool is_binding () const
   {
-    return !(discriminator & (1 << DB_ZERO_BIT));
+    return !get_flag_bit<DB_ZERO_BIT> ();
   }
   entity_kind get_entity_kind () const
   {
@@ -2283,24 +2301,13 @@ public:
     return entity_kind ((discriminator >> DB_KIND_BIT) & ((1u << EK_BITS) - 1));
   }
   const char *entity_kind_name () const;
+
+public:
   bool has_defn () const
   {
-    gcc_checking_assert (!is_binding ());
-    return bool ((discriminator >> DB_DEFN_BIT) & 1);
+    return get_flag_bit<DB_DEFN_BIT> ();
   }
 
-private:
-  template<unsigned I> void set_flag_bit ()
-  {
-    gcc_checking_assert (!is_binding ());
-    discriminator |= 1u << I;
-  }
-  template<unsigned I> bool get_flag_bit () const
-  {
-    gcc_checking_assert (!is_binding ());
-    return bool ((discriminator >> I) & 1);
-  }
-  
 public:
   bool is_internal () const
   {
@@ -2334,6 +2341,16 @@ public:
   void set_implicit_specialization ()
   {
     set_flag_bit<DB_IMPLICIT_BIT> ();
+  }
+
+public:
+  bool is_first_dep_repurposed () const
+  {
+    return get_flag_bit<DB_FIRST_BIT> ();
+  }
+  void set_first_dep_repurposed ()
+  {
+    set_flag_bit<DB_FIRST_BIT> ();
   }
 
 public:
@@ -2449,10 +2466,10 @@ public:
     depset *add_dependency (tree decl, entity_kind, bool is_import = false);
     void add_binding (tree ns, tree value);
     void add_writables (tree ns, bitmap partitions);
-    void add_specializations (bitmap partitions);
+    void add_specializations (bool, bitmap partitions);
     void find_dependencies ();
     bool finalize_dependencies ();
-    void connect (auto_vec<depset *> &, bool);
+    void connect (auto_vec<depset *> &);
   };
 
 public:
@@ -2471,7 +2488,7 @@ public:
     }
 
   public:
-    void connect (depset *, bool);
+    void connect (depset *);
   };
 };
 
@@ -9059,34 +9076,87 @@ depset::hash::add_writables (tree ns, bitmap partitions)
   dump.outdent ();
 }
 
+typedef std::pair<bitmap, auto_vec<spec_entry *> > spec_tuple;
+
+/* We add the partial & explicit specializations, and the explicit
+   instntiations.  */
+
+static void
+specialization_add (bool decl_p, spec_entry *entry, void *data_)
+{
+  spec_tuple *data = reinterpret_cast <spec_tuple *> (data_);
+  tree spec = entry->spec;
+  unsigned use_tpl;
+
+  if (decl_p)
+    use_tpl = DECL_USE_TEMPLATE (spec);
+  else
+    {
+      if (TYPE_DECL_ALIAS_P (DECL_TEMPLATE_RESULT (entry->tmpl)))
+	// FIXME: Skip for now
+	return;
+
+      if (TREE_CODE (TREE_TYPE (DECL_TEMPLATE_RESULT (entry->tmpl)))
+	  == ENUMERAL_TYPE)
+	// FIXME: Likewise. Hey, make anon enum tags anon
+	return;
+
+      use_tpl = CLASSTYPE_USE_TEMPLATE (spec);
+      spec = TYPE_NAME (spec);
+    }
+
+  if (!(use_tpl & 2))
+    return;
+
+  unsigned module = MAYBE_DECL_MODULE_OWNER (spec);
+  if (module != MODULE_PURVIEW
+      && !(data->first && bitmap_bit_p (data->first, module)))
+    return;
+
+  data->second.safe_push (entry);
+}
+
 /* Arbitrary stable comparison.  */
 
 static int
 specialization_cmp (const void *a_, const void *b_)
 {
-  const_tree a = *reinterpret_cast<const const_tree *> (a_);
-  const_tree b = *reinterpret_cast<const const_tree *> (b_);
+  const spec_entry *ea = *reinterpret_cast<const spec_entry *const *> (a_);
+  const spec_entry *eb = *reinterpret_cast<const spec_entry *const *> (b_);
+
+  tree a = ea->spec;
+  tree b = eb->spec;
+  if (TYPE_P (a))
+    {
+      a = TYPE_NAME (a);
+      b = TYPE_NAME (b);
+    }
 
   if (DECL_UID (a) != DECL_UID (b))
     return DECL_UID (a) < DECL_UID (b) ? -1 : +1;
+
   gcc_checking_assert (a == b);
   return 0;
 }
 
-/* We add the partial & explicit specializations, and the explicit
-   instntiations.  */
 // DECL_TEMPLATE_INSTANTIATIONS
 // DECL_TEMPLATE_SPECIALIZATIONS
 void
-depset::hash::add_specializations (bitmap partitions)
+depset::hash::add_specializations (bool decl_p, bitmap partitions)
 {
-  auto_vec<tree> specs (100);
-  get_specializations_for_module (specs, partitions);
-  specs.qsort (specialization_cmp);
-  while (specs.length ())
+  spec_tuple data (partitions, 100);
+  walk_specializations (decl_p, specialization_add, &data);
+  data.second.qsort (specialization_cmp);
+  while (data.second.length ())
     {
-      tree spec = specs.pop ();
+      spec_entry *entry = data.second.pop ();
+      tree spec = entry->spec;
+      if (!decl_p)
+	spec = TYPE_NAME (spec);
+
       depset *dep = add_dependency (spec, depset::EK_SPECIALIZATION);
+      dep->set_first_dep_repurposed ();
+      dep->deps.safe_push (reinterpret_cast<depset *> (entry));
       if (false)
 	dep->set_flag_bit<DB_PARTIAL_BIT> ();
     }
@@ -9145,8 +9215,9 @@ depset::hash::add_mergeable (depset *mergeable)
   *slot = dep;
   worklist.safe_push (dep);
 
-  /* Se we can locate the mergeable depset this depset refers to, push
-     it as a dependency.  */
+  /* Se we can locate the mergeable depset this depset refers to,
+     repurpose the first dep.  */
+  dep->set_first_dep_repurposed ();
   dep->deps.safe_push (mergeable);
 }
 
@@ -9253,20 +9324,22 @@ depset::hash::finalize_dependencies ()
    dependent SCCs are found before their dependers.  */
 
 void
-depset::tarjan::connect (depset *v, bool for_mergeable)
+depset::tarjan::connect (depset *v)
 {
   v->cluster = v->section = ++index;
   stack.safe_push (v);
 
   /* Walk all our dependencies.  */
-  for (unsigned ix = v->deps.length (); ix-- != for_mergeable;)
+  for (unsigned ix = v->is_first_dep_repurposed ();
+       ix != v->deps.length ();
+       ix++)
     {
       depset *dep = v->deps[ix];
       unsigned lwm = dep->cluster;
       if (!dep->cluster)
 	{
 	  /* A new node.  Connect it.  */
-	  connect (dep, for_mergeable);
+	  connect (dep);
 	  lwm = dep->section;
 	}
 
@@ -9353,7 +9426,7 @@ cluster_cmp (const void *a_, const void *b_)
 /* Reduce graph to SCCS clusters.  */
 
 void
-depset::hash::connect (auto_vec<depset *> &sccs, bool for_mergeable)
+depset::hash::connect (auto_vec<depset *> &sccs)
 {
   sccs.reserve (size ());
 
@@ -9383,7 +9456,7 @@ depset::hash::connect (auto_vec<depset *> &sccs, bool for_mergeable)
 		 v->entity_kind_name (), TREE_CODE (v->get_entity ()),
 		 v->get_entity ()));
       if (!v->cluster)
-	connector.connect (v, for_mergeable);
+	connector.connect (v);
     }
 }
 
@@ -13247,7 +13320,7 @@ module_state::sort_mergeables (auto_vec<depset *> &mergeables)
   table.find_dependencies ();
 
   auto_vec<depset *> sccs;
-  table.connect (sccs, true);
+  table.connect (sccs);
 
   /* Each mergeable must be its own cluster.  */
   gcc_assert (sccs.length () == mergeables.length ());
@@ -13781,7 +13854,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
   /* Find the set of decls we must write out.  */
   depset::hash table (DECL_NAMESPACE_BINDINGS (global_namespace)->size () * 8);
   table.add_writables (global_namespace, partitions);
-  table.add_specializations (partitions);
+  table.add_specializations (true, partitions);
+  table.add_specializations (false, partitions);
   table.find_dependencies ();
   // FIXME: Find reachable GMF entities from non-emitted pieces.  It'd
   // be nice to have a flag telling us this walk's necessary.  Even
@@ -13796,7 +13870,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   /* Determine Strongy Connected Components.  */
   auto_vec<depset *> sccs (table.size ());
-  table.connect (sccs, false);
+  table.connect (sccs);
 
   unsigned crc = 0;
   unsigned range_bits = prepare_locations ();

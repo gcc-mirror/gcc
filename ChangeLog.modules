@@ -1,3 +1,27 @@
+2019-05-02  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (spec_entry): Moved from pt.c.
+	(walk_specializations): Declare.
+	(get_specializations_for_module): Delete.
+	* module.cc (depset):  Add DB_FIRST_BIT.
+	(depset::{is,set}_first_dep_repurposed): New.
+	(depset::{,tarjan::}connect): Drop for_mergeable parm, use
+	is_first_dep_repurposed instead.
+	(spec_tuple): New.
+	(specialization_add): New.
+	(specialization_cmp): Adjust.
+	(depset::hash::add_specializations): Reimplement.
+	(depset::hash::add_mergable): Set set_first_dep_repurposed.
+	(module_state::sort_mergeables): Adjust.
+	(module_state::write): Likewise.
+	* pt.c (spec_entry): Move to cp-tree.h
+	(get_specializations, get_specializations_for_module): Replace
+	with ...
+	(walk_specializations): ... this.
+	gcc/testsuite/
+	* g++.dg/modules/inst-1_b.C: Adjust scans.
+
 2019-05-01  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
