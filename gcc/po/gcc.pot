@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
-"POT-Creation-Date: 2019-04-29 22:24+0000\n"
+"POT-Creation-Date: 2019-05-02 20:28+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1267,47 +1267,54 @@ msgid ""
 " All options with the desired characteristics have already been displayed\n"
 msgstr ""
 
-#: opts.c:1630
+#: opts.c:1581
+#, c-format
+msgid ""
+"  Known valid arguments for %s option:\n"
+"   "
+msgstr ""
+
+#: opts.c:1631
 msgid "The following options are target specific"
 msgstr ""
 
-#: opts.c:1633
+#: opts.c:1634
 msgid "The following options control compiler warning messages"
 msgstr ""
 
-#: opts.c:1636
+#: opts.c:1637
 msgid "The following options control optimizations"
 msgstr ""
 
-#: opts.c:1639 opts.c:1678
+#: opts.c:1640 opts.c:1679
 msgid "The following options are language-independent"
 msgstr ""
 
-#: opts.c:1642
+#: opts.c:1643
 msgid "The --param option recognizes the following as parameters"
 msgstr ""
 
-#: opts.c:1648
+#: opts.c:1649
 msgid "The following options are specific to just the language "
 msgstr ""
 
-#: opts.c:1650
+#: opts.c:1651
 msgid "The following options are supported by the language "
 msgstr ""
 
-#: opts.c:1661
+#: opts.c:1662
 msgid "The following options are not documented"
 msgstr ""
 
-#: opts.c:1663
+#: opts.c:1664
 msgid "The following options take separate arguments"
 msgstr ""
 
-#: opts.c:1665
+#: opts.c:1666
 msgid "The following options take joined arguments"
 msgstr ""
 
-#: opts.c:1676
+#: opts.c:1677
 msgid "The following options are language-related"
 msgstr ""
 
@@ -22273,7 +22280,7 @@ msgstr ""
 msgid "command line option %qs is not supported by this configuration"
 msgstr ""
 
-#: opts-common.c:1247 opts.c:2169
+#: opts-common.c:1247 opts.c:2170
 #, gcc-internal-format
 msgid "missing argument to %qs"
 msgstr ""
@@ -22604,155 +22611,155 @@ msgstr ""
 msgid "live patching is not supported with LTO"
 msgstr ""
 
-#: opts.c:1668
+#: opts.c:1669
 #, gcc-internal-format
 msgid "unrecognized include_flags 0x%x passed to print_specific_help"
 msgstr ""
 
-#: opts.c:1898
+#: opts.c:1899
 #, gcc-internal-format
 msgid "%<-fsanitize=all%> option is not valid"
 msgstr ""
 
-#: opts.c:1938
+#: opts.c:1939
 #, gcc-internal-format
 msgid ""
 "unrecognized argument to %<-f%ssanitize%s=%> option: %q.*s; did you mean %qs?"
 msgstr ""
 
-#: opts.c:1944
+#: opts.c:1945
 #, gcc-internal-format
 msgid "unrecognized argument to %<-f%ssanitize%s=%> option: %q.*s"
 msgstr ""
 
-#: opts.c:1979
+#: opts.c:1980
 #, gcc-internal-format
 msgid "%<%s%> attribute directive ignored"
 msgstr ""
 
-#: opts.c:2006
+#: opts.c:2007
 #, gcc-internal-format
 msgid "invalid arguments for %<-falign-%s%> option: %qs"
 msgstr ""
 
-#: opts.c:2028
+#: opts.c:2029
 #, gcc-internal-format
 msgid "invalid number of arguments for %<-falign-%s%> option: %qs"
 msgstr ""
 
-#: opts.c:2037
+#: opts.c:2038
 #, gcc-internal-format
 msgid "%<-falign-%s%> is not between 0 and %d"
 msgstr ""
 
-#: opts.c:2224
+#: opts.c:2225
 #, gcc-internal-format
 msgid "--help argument %q.*s is ambiguous, please be more specific"
 msgstr ""
 
-#: opts.c:2233
+#: opts.c:2234
 #, gcc-internal-format
 msgid "unrecognized argument to --help= option: %q.*s"
 msgstr ""
 
-#: opts.c:2496
+#: opts.c:2497
 #, gcc-internal-format
 msgid "HSA has not been enabled during configuration"
 msgstr ""
 
-#: opts.c:2508
+#: opts.c:2509
 #, gcc-internal-format
 msgid "%<-foffload-abi%> option can be specified only for offload compiler"
 msgstr ""
 
-#: opts.c:2516
+#: opts.c:2517
 #, gcc-internal-format
 msgid "structure alignment must be a small power of two, not %wu"
 msgstr ""
 
-#: opts.c:2602
+#: opts.c:2603
 #, gcc-internal-format
 msgid "invalid arguments for %<-fpatchable_function_entry%>"
 msgstr ""
 
-#: opts.c:2660
+#: opts.c:2661
 #, gcc-internal-format
 msgid "unknown stack check parameter %qs"
 msgstr ""
 
-#: opts.c:2688
+#: opts.c:2689
 #, gcc-internal-format
 msgid ""
 "%<-gdwarf%s%> is ambiguous; use %<-gdwarf-%s%> for DWARF version or %<-gdwarf"
 "%> %<-g%s%> for debug level"
 msgstr ""
 
-#: opts.c:2699
+#: opts.c:2700
 #, gcc-internal-format
 msgid "dwarf version %wu is not supported"
 msgstr ""
 
-#: opts.c:2823
+#: opts.c:2824
 #, gcc-internal-format, gfc-internal-format
 msgid "%s: --param arguments should be of the form NAME=VALUE"
 msgstr ""
 
-#: opts.c:2834
+#: opts.c:2835
 #, gcc-internal-format
 msgid "invalid --param name %qs; did you mean %qs?"
 msgstr ""
 
-#: opts.c:2837
+#: opts.c:2838
 #, gcc-internal-format
 msgid "invalid --param name %qs"
 msgstr ""
 
-#: opts.c:2845
+#: opts.c:2846
 #, gcc-internal-format
 msgid "invalid --param value %qs"
 msgstr ""
 
-#: opts.c:2967
+#: opts.c:2968
 #, gcc-internal-format
 msgid "target system does not support debug output"
 msgstr ""
 
-#: opts.c:2976
+#: opts.c:2977
 #, gcc-internal-format
 msgid "debug format %qs conflicts with prior selection"
 msgstr ""
 
-#: opts.c:2994
+#: opts.c:2995
 #, gcc-internal-format
 msgid "unrecognized debug output level %qs"
 msgstr ""
 
-#: opts.c:2996
+#: opts.c:2997
 #, gcc-internal-format
 msgid "debug output level %qs is too high"
 msgstr ""
 
-#: opts.c:3016
+#: opts.c:3017
 #, gcc-internal-format
 msgid "getting core file size maximum limit: %m"
 msgstr ""
 
-#: opts.c:3020
+#: opts.c:3021
 #, gcc-internal-format
 msgid "setting core file size limit to maximum: %m"
 msgstr ""
 
-#: opts.c:3065
+#: opts.c:3066
 #, gcc-internal-format, gfc-internal-format
 msgid "unrecognized gcc debugging option: %c"
 msgstr ""
 
-#: opts.c:3090
+#: opts.c:3091
 #, gcc-internal-format
 msgid "%<-Werror=%s%>: no option -%s"
 msgstr ""
 
-#: opts.c:3092
+#: opts.c:3093
 #, gcc-internal-format
 msgid "%<-Werror=%s%>: -%s is not an option that controls warnings"
 msgstr ""
