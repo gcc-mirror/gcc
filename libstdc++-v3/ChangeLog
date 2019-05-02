@@ -1,3 +1,10 @@
+2019-05-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Regenerate with Doxygen 1.8.14 and set
+	GROUP_NESTED_COMPOUNDS=YES and SORT_BY_SCOPE_NAME=NO. Add various
+	_GLIBCXX_xxx macros and __attribute__(X) to PREDEFINED macros that
+	Doxygen expands.
+
 2019-05-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/abi/post/i386-solaris2.10/baseline_symbols.txt: Regenerate.
