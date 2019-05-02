@@ -1,5 +1,10 @@
 2019-05-02  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.c (rs6000_dbx_register_number): Do not use
+	the internal register number, for any "real" register.
+
+2019-05-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.c (rs6000_dbx_register_number): Return the
 	correct numbers for TFHAR, TFIAR, TEXASR.
 
