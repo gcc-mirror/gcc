@@ -1,3 +1,9 @@
+2019-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90273
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Eliminate
+	useless debug stmts.
+
 2019-05-02  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
 
 	* config/aarch64/aarch64-sve.md (<sur>dot_prod<vsi2qi>): Taken from SVE
