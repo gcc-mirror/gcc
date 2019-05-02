@@ -1,3 +1,10 @@
+2019-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/85574
+	* Makefile.tpl (compare target): Also compare extra-compare
+	files.
+	* Makefile.in: Regenerate.
+
 2019-04-22  Roman Zhuykov  <zhroma@ispras.ru>
 
 	* MAINTAINERS (Various Maintainers): Remove Ayal Zaks and add myself
