@@ -4761,12 +4761,17 @@ private:
             }
             else version (RISCV_Any)
             {
-                uint result = void;
-                asm pure nothrow @nogc
+                version (D_SoftFloat)
+                    return 0;
+                else
                 {
-                    "frflags %0" : "=r" result;
+                    uint result = void;
+                    asm pure nothrow @nogc
+                    {
+                        "frflags %0" : "=r" result;
+                    }
+                    return result;
                 }
-                return result;
             }
             else
                 assert(0, "Not yet supported");
@@ -4844,10 +4849,15 @@ private:
             }
             else version (RISCV_Any)
             {
-                uint newValues = 0x0;
-                asm pure nothrow @nogc
+                version (D_SoftFloat)
+                    return;
+                else
                 {
-                    "fsflags %0" : : "r" newValues;
+                    uint newValues = 0x0;
+                    asm pure nothrow @nogc
+                    {
+                        "fsflags %0" : : "r" newValues;
+                    }
                 }
             }
             else
@@ -5444,12 +5454,17 @@ private:
             }
             else version (RISCV_Any)
             {
-                ControlState cont;
-                asm pure nothrow @nogc
+                version (D_SoftFloat)
+                    return 0;
+                else
                 {
-                    "frcsr %0" : "=r" cont;
+                    ControlState cont;
+                    asm pure nothrow @nogc
+                    {
+                        "frcsr %0" : "=r" cont;
+                    }
+                    return cont;
                 }
-                return cont;
             }
             else
                 assert(0, "Not yet supported");
@@ -5538,9 +5553,14 @@ private:
             }
             else version (RISCV_Any)
             {
-                asm pure nothrow @nogc
+                version (D_SoftFloat)
+                    return;
+                else
                 {
-                    "fscsr %0" : : "r" (newState);
+                    asm pure nothrow @nogc
+                    {
+                        "fscsr %0" : : "r" (newState);
+                    }
                 }
             }
             else
