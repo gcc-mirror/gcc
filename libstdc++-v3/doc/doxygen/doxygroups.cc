@@ -29,13 +29,15 @@
  *  @brief Implementation details not part of the namespace std::tr1 interface.
 */
 /** @namespace std::tr2
- *  @brief ISO C++ TR2 entities toplevel namespace is std::tr2.
+ *  @brief Namespace for non-standard "TR2" extensions.
+ *  @ingroup extensions
 */
 /** @namespace std::tr2::__detail
  *  @brief Implementation details not part of the namespace std::tr2 interface.
 */
 /** @namespace __gnu_cxx
  *  @brief GNU extensions for public use.
+ *  @ingroup extensions
 */
 /** @namespace __gnu_cxx::__detail
  *  @brief Implementation details not part of the namespace __gnu_cxx 
@@ -45,6 +47,9 @@
  *  @brief GNU implemenation details, not for public use or
  *  export. Used only when anonymous namespaces cannot be substituted.
 */
+/** @namespace std::experimental
+ *  @brief Namespace for features defined in ISO Technical Specifications.
+ */
 // // // // // // // // // // // // // // // // // // // // // // // //
 
 /**

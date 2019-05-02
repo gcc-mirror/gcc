@@ -54,7 +54,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 
   /** @namespace std::chrono
-   *  @brief ISO C++ 2011 entities sub-namespace for time and date.
+   *  @brief ISO C++ 2011 namespace for date and time utilities
    */
   namespace chrono
   {

@@ -1,5 +1,14 @@
 2019-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/doxygen/doxygroups.cc (std::tr2, std::__gnu_cxx): Improve docs.
+	(std::experimental): Add docs.
+	* doc/doxygen/user.cfg.in (PREDEFINED): Expand macros for __cxx11
+	namespace to nothing when generating docs.
+	* include/bits/regex_constants.h (std::regex_constants): Improve docs.
+	* include/std/chrono (std::chrono): Likewise.
+	* include/std/functional (std::placeholders): Likewise.
+	* include/std/thread (std::this_thread): Likewise.
+
 	* include/parallel/settings.h: Fix Doxygen markup.
 
 	* include/ext/pb_ds/detail/bin_search_tree_/*_imps.hpp: Do not define
