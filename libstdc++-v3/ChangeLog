@@ -1,5 +1,17 @@
 2019-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/bits/lfts_config.h: Improve doc markup.
+	* include/experimental/optional: Improve docs.
+	(_Has_addressof_mem, _Has_addressof_free, _Has_addressof)
+	(__constexpr_addressof): Remove.
+	(optional::operator->()): Use std::__addressof().
+	* include/std/optional (optional::operator->()): Adjust whitespace.
+	* testsuite/experimental/optional/constexpr/observers/2.cc: Check
+	that operator-> is still constexpr with overloaded operator&. Change
+	to compile-only test.
+	* testsuite/experimental/optional/constexpr/observers/3.cc: Change to
+	compile-only test.
+
 	* include/bits/shared_ptr.h: Improve docs.
 	* include/bits/shared_ptr_atomic.h: Likewise.
 	* include/bits/unique_ptr.h: Likewise. Adjust whitespace.
