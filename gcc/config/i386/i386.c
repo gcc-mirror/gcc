@@ -28270,68 +28270,34 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
 bool
 ix86_expand_strlen (rtx out, rtx src, rtx eoschar, rtx align)
 {
-  rtx addr, scratch1, scratch2, scratch3, scratch4;
-
-  /* The generic case of strlen expander is long.  Avoid it's
-     expanding unless TARGET_INLINE_ALL_STRINGOPS.  */
-
-  if (TARGET_UNROLL_STRLEN && eoschar == const0_rtx && optimize > 1
-      && !TARGET_INLINE_ALL_STRINGOPS
-      && !optimize_insn_for_size_p ()
-      && (!CONST_INT_P (align) || INTVAL (align) < 4))
-    return false;
-
-  addr = force_reg (Pmode, XEXP (src, 0));
-  scratch1 = gen_reg_rtx (Pmode);
-
-  if (TARGET_UNROLL_STRLEN && eoschar == const0_rtx && optimize > 1
-      && !optimize_insn_for_size_p ())
+if (TARGET_UNROLL_STRLEN
+	   && TARGET_INLINE_ALL_STRINGOPS
+	   && eoschar == const0_rtx
+	   && optimize > 1)
     {
+      /* The generic case of strlen expander is long.  Avoid it's
+	 expanding unless TARGET_INLINE_ALL_STRINGOPS.  */
+      rtx addr = force_reg (Pmode, XEXP (src, 0));
       /* Well it seems that some optimizer does not combine a call like
-         foo(strlen(bar), strlen(bar));
-         when the move and the subtraction is done here.  It does calculate
-         the length just once when these instructions are done inside of
-         output_strlen_unroll().  But I think since &bar[strlen(bar)] is
-         often used and I use one fewer register for the lifetime of
-         output_strlen_unroll() this is better.  */
+	 foo(strlen(bar), strlen(bar));
+	 when the move and the subtraction is done here.  It does calculate
+	 the length just once when these instructions are done inside of
+	 output_strlen_unroll().  But I think since &bar[strlen(bar)] is
+	 often used and I use one fewer register for the lifetime of
+	 output_strlen_unroll() this is better.  */
 
       emit_move_insn (out, addr);
 
       ix86_expand_strlensi_unroll_1 (out, src, align);
 
       /* strlensi_unroll_1 returns the address of the zero at the end of
-         the string, like memchr(), so compute the length by subtracting
-         the start address.  */
+	 the string, like memchr(), so compute the length by subtracting
+	 the start address.  */
       emit_insn (ix86_gen_sub3 (out, out, addr));
+      return true;
     }
   else
-    {
-      rtx unspec;
-
-      /* Can't use this if the user has appropriated eax, ecx, or edi.  */
-      if (fixed_regs[AX_REG] || fixed_regs[CX_REG] || fixed_regs[DI_REG])
-        return false;
-      /* Can't use this for non-default address spaces.  */
-      if (!ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (src)))
-	return false;
-
-      scratch2 = gen_reg_rtx (Pmode);
-      scratch3 = gen_reg_rtx (Pmode);
-      scratch4 = force_reg (Pmode, constm1_rtx);
-
-      emit_move_insn (scratch3, addr);
-      eoschar = force_reg (QImode, eoschar);
-
-      src = replace_equiv_address_nv (src, scratch3);
-
-      /* If .md starts supporting :P, this can be done in .md.  */
-      unspec = gen_rtx_UNSPEC (Pmode, gen_rtvec (4, src, eoschar, align,
-						 scratch4), UNSPEC_SCAS);
-      emit_insn (gen_strlenqi_1 (scratch1, scratch3, unspec));
-      emit_insn (ix86_gen_one_cmpl2 (scratch2, scratch1));
-      emit_insn (ix86_gen_add3 (out, scratch2, constm1_rtx));
-    }
-  return true;
+    return false;
 }
 
 /* For given symbol (function) construct code to compute address of it's PLT
