@@ -1373,7 +1373,8 @@ format_integer (const directive &dir, tree arg)
       /* Try to determine the range of values of the integer argument
 	 (range information is not available for pointers).  */
       irange r;
-      if (on_demand_get_range_on_stmt (r, arg, dir.callstmt))
+      if (on_demand_get_range_on_stmt (r, arg, dir.callstmt) &&
+	  !r.undefined_p ())
 	{
 	  argmin = wide_int_to_tree (TREE_TYPE (arg), r.lower_bound ());
 	  argmax = wide_int_to_tree (TREE_TYPE (arg), r.upper_bound ());
