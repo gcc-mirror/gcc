@@ -858,15 +858,13 @@ control_options_for_live_patching (struct gcc_options *opts,
 /* --help option argument if set.  */
 const char *help_option_argument = NULL;
 
-static void print_help (struct gcc_options *opts, unsigned int lang_mask);
-
 
 /* After all options at LOC have been read into OPTS and OPTS_SET,
    finalize settings of those options and diagnose incompatible
    combinations.  */
 void
 finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
-		location_t loc, unsigned int lang_mask)
+		location_t loc)
 {
   enum unwind_info_type ui_except;
 
@@ -1230,10 +1228,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 					 opts->x_flag_live_patching,
 					 loc);
     }
-
-  /* Print --help=* if used.  */
-  if (help_option_argument != NULL)
-    print_help (opts, lang_mask);
 }
 
 #define LEFT_COLUMN	27
@@ -2066,7 +2060,7 @@ check_alignment_argument (location_t loc, const char *flag, const char *name)
 
 /* Print help when OPT__help_ is set.  */
 
-static void
+void
 print_help (struct gcc_options *opts, unsigned int lang_mask)
 {
   const char *a = help_option_argument;
