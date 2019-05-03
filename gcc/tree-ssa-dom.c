@@ -616,7 +616,7 @@ private:
      various tables mantained by DOM.  Returns the taken edge if
      the statement is a conditional with a statically determined
      value.  */
-  edge optimize_stmt (basic_block, gimple_stmt_iterator);
+  edge optimize_stmt (basic_block, gimple_stmt_iterator *, bool *);
 };
 
 /* Jump threading, redundancy elimination and const/copy propagation.
@@ -1455,10 +1455,48 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
   m_avail_exprs_stack->pop_to_marker ();
 
   edge taken_edge = NULL;
+  /* Initialize visited flag ahead of us, it has undefined state on
+     pass entry.  */
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    gimple_set_visited (gsi_stmt (gsi), false);
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
     {
+      /* Do not optimize a stmt twice, substitution might end up with
+         _3 = _3 which is not valid.  */
+      if (gimple_visited_p (gsi_stmt (gsi)))
+	{
+	  gsi_next (&gsi);
+	  continue;
+	}
+
+      /* Compute range information and optimize the stmt.  */
       evrp_range_analyzer.record_ranges_from_stmt (gsi_stmt (gsi), false);
-      taken_edge = this->optimize_stmt (bb, gsi);
+      bool removed_p = false;
+      taken_edge = this->optimize_stmt (bb, &gsi, &removed_p);
+      if (!removed_p)
+	gimple_set_visited (gsi_stmt (gsi), true);
+
+      /* Go back and visit stmts inserted by folding after substituting
+	 into the stmt at gsi.  */
+      if (gsi_end_p (gsi))
+	{
+	  gcc_checking_assert (removed_p);
+	  gsi = gsi_last_bb (bb);
+	  while (!gsi_end_p (gsi) && !gimple_visited_p (gsi_stmt (gsi)))
+	    gsi_prev (&gsi);
+	}
+      else
+	{
+	  do
+	    {
+	      gsi_prev (&gsi);
+	    }
+	  while (!gsi_end_p (gsi) && !gimple_visited_p (gsi_stmt (gsi)));
+	}
+      if (gsi_end_p (gsi))
+	gsi = gsi_start_bb (bb);
+      else
+	gsi_next (&gsi);
     }
 
   /* Now prepare to process dominated blocks.  */
@@ -1923,7 +1961,8 @@ test_for_singularity (gimple *stmt, gcond *dummy_cond,
       condition to an equality condition.  */
 
 edge
-dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator si)
+dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator *si,
+				   bool *removed_p)
 {
   gimple *stmt, *old_stmt;
   bool may_optimize_p;
@@ -1931,7 +1970,7 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator si)
   bool was_noreturn;
   edge retval = NULL;
 
-  old_stmt = stmt = gsi_stmt (si);
+  old_stmt = stmt = gsi_stmt (*si);
   was_noreturn = is_gimple_call (stmt) && gimple_call_noreturn_p (stmt);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1954,9 +1993,9 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator si)
 
       /* Try to fold the statement making sure that STMT is kept
 	 up to date.  */
-      if (fold_stmt (&si))
+      if (fold_stmt (si))
 	{
-	  stmt = gsi_stmt (si);
+	  stmt = gsi_stmt (*si);
 	  gimple_set_modified (stmt, true);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2005,8 +2044,8 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator si)
 	      && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL
 	      && DECL_FUNCTION_CODE (callee) == BUILT_IN_CONSTANT_P)
 	    {
-	      propagate_tree_value_into_stmt (&si, integer_zero_node);
-	      stmt = gsi_stmt (si);
+	      propagate_tree_value_into_stmt (si, integer_zero_node);
+	      stmt = gsi_stmt (*si);
 	    }
 	}
 
@@ -2062,9 +2101,9 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator si)
 	}
 
       update_stmt_if_modified (stmt);
-      eliminate_redundant_computations (&si, m_const_and_copies,
+      eliminate_redundant_computations (si, m_const_and_copies,
 					m_avail_exprs_stack);
-      stmt = gsi_stmt (si);
+      stmt = gsi_stmt (*si);
 
       /* Perform simple redundant store elimination.  */
       if (gimple_assign_single_p (stmt)
@@ -2091,13 +2130,14 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator si)
 	    {
 	      basic_block bb = gimple_bb (stmt);
 	      unlink_stmt_vdef (stmt);
-	      if (gsi_remove (&si, true))
+	      if (gsi_remove (si, true))
 		{
 		  bitmap_set_bit (need_eh_cleanup, bb->index);
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "  Flagged to clear EH edges.\n");
 		}
 	      release_defs (stmt);
+	      *removed_p = true;
 	      return retval;
 	    }
 	}

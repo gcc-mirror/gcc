@@ -99,7 +99,7 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
     }
 
   last = last_stmt (header);
-  if (gimple_code (last) != GIMPLE_COND)
+  if (!last || gimple_code (last) != GIMPLE_COND)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,

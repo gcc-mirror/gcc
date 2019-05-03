@@ -3179,10 +3179,16 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       switch (TREE_CODE (arg0))
 	{
 	case INDIRECT_REF:
-	  if (!(flags & OEP_ADDRESS_OF)
-	      && (TYPE_ALIGN (TREE_TYPE (arg0))
-		  != TYPE_ALIGN (TREE_TYPE (arg1))))
-	    return 0;
+	  if (!(flags & OEP_ADDRESS_OF))
+	    {
+	      if (TYPE_ALIGN (TREE_TYPE (arg0))
+		  != TYPE_ALIGN (TREE_TYPE (arg1)))
+		return 0;
+	      /* Verify that the access types are compatible.  */
+	      if (TYPE_MAIN_VARIANT (TREE_TYPE (arg0))
+		  != TYPE_MAIN_VARIANT (TREE_TYPE (arg1)))
+		return 0;
+	    }
 	  flags &= ~OEP_ADDRESS_OF;
 	  return OP_SAME (0);
 

@@ -1,3 +1,31 @@
+2019-05-03  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-03-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89698
+	* g++.dg/torture/pr89698.C: New testcase.
+
+	2019-03-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89595
+	* gcc.dg/torture/pr89595.c: New testcase.
+
+	2019-03-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89710
+	* gcc.dg/torture/pr89710.c: New testcase.
+
+	2019-04-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90071
+	* gcc.dg/torture/pr90071.c: New testcase.
+
+	2018-08-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/86984
+	* gcc.target/alpha/pr86984.c: New test.
+
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
