@@ -1,5 +1,10 @@
 2019-05-03  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/89518
+	* match.pd: Add pattern to optimize (A / B) * B + (A % B) to A.
+
+2019-05-03  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/87314
 	* match.pd (cmp (convert1?@2 addr@0) (convert2? addr@1)):
 	Handle STRING_CST vs DECL or STRING_CST.

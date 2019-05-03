@@ -1,5 +1,10 @@
 2019-05-03  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/89518
+	* gcc.dg/pr89518.c: New testcase.
+
+2019-05-03  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/87314
 	* gcc.dg/pr87314-1.c: New testcase.
 
