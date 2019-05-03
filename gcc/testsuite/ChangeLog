@@ -1,3 +1,8 @@
+2019-05-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/90269
+	* g++.dg/tree-ssa/ldist-1.C: New file.
+
 2019-05-03  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/slp-reduc-sad-2.c: New testcase.
