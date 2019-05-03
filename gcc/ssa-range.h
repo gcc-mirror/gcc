@@ -55,7 +55,6 @@ class ssa_ranger
 
   static bool supports_type_p (tree type);
   static bool supports_ssa_p (tree ssa);
-  static bool supports_const_p (tree c);
   static bool supports_p (tree expr);
   static tree valid_ssa_p (tree exp);
 
@@ -235,17 +234,6 @@ ssa_ranger::supports_ssa_p (tree ssa)
  return false;
 }
 
-// This function returns TRUE if constant c is supported by ranges.
-
-inline bool
-ssa_ranger::supports_const_p (tree c)
-{
-  if (!TREE_OVERFLOW (c))
-    return supports_type_p (TREE_TYPE (c));
-  return false;
-
-}
-
 // This function returns true if expr is supported by ranges.
 
 inline bool
@@ -255,9 +243,6 @@ ssa_ranger::supports_p (tree expr)
     return supports_type_p (expr);
   else if (TREE_CODE (expr) == SSA_NAME)
     return supports_ssa_p (expr);
-  // Constant overflows are rejected.
-  else if (CONSTANT_CLASS_P (expr))
-    return supports_const_p (expr);
 
   return supports_type_p (TREE_TYPE (expr));
 }

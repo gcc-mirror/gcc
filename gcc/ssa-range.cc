@@ -322,7 +322,12 @@ get_tree_range (irange &r, tree expr)
   switch (TREE_CODE (expr))
     {
       case INTEGER_CST:
-	r = irange (TREE_TYPE (expr), expr, expr);
+        if (!TREE_OVERFLOW_P (expr))
+	  r = irange (TREE_TYPE (expr), expr, expr);
+	else
+	  // If we encounter an overflow, simply punt and drop to varying
+	  // since we hvae no idea how it will be used.
+	  r.set_varying (TREE_TYPE (expr));
 	return true;
 
       case SSA_NAME:
