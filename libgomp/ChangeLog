@@ -1,3 +1,7 @@
+2019-05-03  Release Manager
+
+	* GCC 9.1.0 released.
+
 2019-03-27  Kevin Buettner  <kevinb@redhat.com>
 
 	* team.c (gomp_team_start): Initialize pool->threads[0].
