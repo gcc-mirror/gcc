@@ -1,3 +1,9 @@
+2019-05-03  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR target/88809
+	* gcc.target/i386/pr88809.c: Adjust for darwin.
+	* gcc.target/i386/pr88809-2.c: Adjust for i386 and darwin.
+
 2019-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/90303
