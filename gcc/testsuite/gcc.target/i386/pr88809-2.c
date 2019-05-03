@@ -6,4 +6,4 @@ unsigned int foo (const char *ptr)
   return __builtin_strlen (ptr);
 }
 
-/* { dg-final { scan-assembler "call\[ \t\]strlen" } } */
+/* { dg-final { scan-assembler "(jmp|call)\[ \t\]_?strlen" } } */
