@@ -4197,6 +4197,7 @@ pass_pre::execute (function *fun)
   loop_optimizer_init (LOOPS_NORMAL);
   split_critical_edges ();
   scev_initialize ();
+  calculate_dominance_info (CDI_DOMINATORS);
 
   run_rpo_vn (VN_WALK);
 
