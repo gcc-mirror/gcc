@@ -1,3 +1,13 @@
+2019-05-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/89400
+	* config/arm/arm.md (unaligned_loadsi): Add variant for thumb1.
+	Restrict 'all' variant to 32-bit configurations.
+	(unaligned_loadhiu): Likewise.
+	(unaligned_storehi): Likewise.
+	(unaligned_storesi): Likewise.
+	(unaligned_loadhis): Disable when compiling for thumb1.
+
 2019-05-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/90269
