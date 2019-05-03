@@ -1,3 +1,9 @@
+2019-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90316
+	* tree-ssa-pre.c (pass_pre::execute): Re-compute DOM fast queries
+	before running VN.
+
 2019-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Set to 9.1.1.
