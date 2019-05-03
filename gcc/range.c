@@ -126,6 +126,66 @@ range_from_ssa (tree ssa)
   return value_range_to_irange (type, kind, min, max);
 }
 
+// This function returns a range for tree node EXPR in R.  
+// Return false if ranges are not supported.
+
+bool
+get_tree_range (irange &r, tree expr)
+{
+  tree type;
+  switch (TREE_CODE (expr))
+    {
+      case INTEGER_CST:
+        if (!TREE_OVERFLOW_P (expr))
+	  r = irange (TREE_TYPE (expr), expr, expr);
+	else
+	  // If we encounter an overflow, simply punt and drop to varying
+	  // since we hvae no idea how it will be used.
+	  r.set_varying (TREE_TYPE (expr));
+	return true;
+
+      case SSA_NAME:
+        if (irange::supports_ssa_p (expr))
+	  {
+	    r = range_from_ssa (expr);
+	    return true;
+	  }
+	break;
+
+      case ADDR_EXPR:
+        {
+	  // handle &var which can show up in phi arguments
+	  bool ov;
+	  type = TREE_TYPE (expr);
+	  if (irange::supports_type_p (type))
+	    {
+	      if (tree_single_nonzero_warnv_p (expr, &ov))
+		r = range_non_zero (type);
+	      else
+		r.set_varying (type);
+	      return true;
+	    }
+	  break;
+	}
+
+      default:
+	if (TYPE_P (expr))
+	  type = expr;
+	else
+	  type = TREE_TYPE (expr);
+	if (irange::supports_type_p (type))
+	  {
+	    // Set to range for this type.
+	    r.set_varying (type);
+	    return true;
+	  }
+	break;
+    }
+
+  return false;
+}
+
+
 irange::irange (tree type)
 {
   set_varying (type);

@@ -53,9 +53,6 @@ class ssa_ranger
   ssa_ranger ();
   ~ssa_ranger ();
 
-  static bool supports_type_p (tree type);
-  static bool supports_ssa_p (tree ssa);
-  static bool supports_p (tree expr);
   static tree valid_ssa_p (tree exp);
 
   virtual bool range_of_expr (irange &r, tree expr, gimple *s = NULL);
@@ -213,47 +210,13 @@ on_demand_get_range_on_stmt (irange &r, tree ssa, gimple *stmt)
   return ret;
 }
 
-// This function return true if type TYPE is supported by ranges.
-
-inline bool
-ssa_ranger::supports_type_p (tree type)
-{
-  // Only support irange at the moment.
-  return irange::supports_type_p (type);
-}
-
-
-// This function return true if SSA is a non-virtual SSA_NAME with a type
-// supported by ranges.
-
-inline bool
-ssa_ranger::supports_ssa_p (tree ssa)
-{
-  if (!SSA_NAME_IS_VIRTUAL_OPERAND (ssa))
-    return supports_type_p (TREE_TYPE (ssa));
- return false;
-}
-
-// This function returns true if expr is supported by ranges.
-
-inline bool
-ssa_ranger::supports_p (tree expr)
-{
-  if (TYPE_P (expr))
-    return supports_type_p (expr);
-  else if (TREE_CODE (expr) == SSA_NAME)
-    return supports_ssa_p (expr);
-
-  return supports_type_p (TREE_TYPE (expr));
-}
-
 // This function returns EXP if EXP is an ssa_name and is supported by ranges.
 // Otherwise it returns NULL_TREE
 
 inline tree
 ssa_ranger::valid_ssa_p (tree exp)
 {
-  if (exp && TREE_CODE (exp) == SSA_NAME && supports_ssa_p (exp))
+  if (exp && TREE_CODE (exp) == SSA_NAME && irange::supports_ssa_p (exp))
     return exp;
   return NULL_TREE;
 }

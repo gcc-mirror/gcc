@@ -61,6 +61,9 @@ class irange
   irange (tree type, const irange_storage *);
 
   static bool supports_type_p (tree type);
+  static bool supports_ssa_p (tree ssa);
+  static bool supports_p (tree expr);
+
   void set_varying (tree);
   void set_undefined (tree = NULL);
 
@@ -121,6 +124,9 @@ irange value_range_to_irange (tree type, enum value_range_kind kind,
 			      const wide_int &, const wide_int &);
 value_range_base irange_to_value_range (const irange &);
 
+// Extract a range from a tree node.
+bool get_tree_range (irange &r, tree expr);
+
 inline
 irange::irange () : m_type (NULL), m_nitems (0)
 {
@@ -176,8 +182,8 @@ irange::undefined_p () const
   return !m_nitems;
 }
 
-// Return TYPE if it is a valid type for irange to operator on.
-// Otherwise return NULL.
+// Return true if TYPE is a valid type for irange to operate on.
+// Otherwise return FALSE.
 
 inline bool
 irange::supports_type_p (tree type)
@@ -185,6 +191,30 @@ irange::supports_type_p (tree type)
   if (type && (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type)))
     return type;
   return NULL;
+}
+
+// Return true if SSA is a valid ssa_name for irange to operate on.
+// Otherwise return FALSE.
+
+inline bool
+irange::supports_ssa_p (tree ssa)
+{
+  if (!SSA_NAME_IS_VIRTUAL_OPERAND (ssa))
+    return supports_type_p (TREE_TYPE (ssa));
+ return false;
+}
+
+// Return true if EXPR is a valid tree expression for irange to operate on.
+// Otherwise return FALSE.
+
+inline bool
+irange::supports_p (tree expr)
+{
+  if (TYPE_P (expr))
+    return supports_type_p (expr);
+  else if (TREE_CODE (expr) == SSA_NAME)
+    return supports_ssa_p (expr);
+  return supports_type_p (TREE_TYPE (expr));
 }
 
 inline bool

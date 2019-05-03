@@ -305,72 +305,11 @@ gimple_outgoing_edge_range_p (irange &r, edge e)
   gswitch *sw = as_a<gswitch *> (s);
   tree type = TREE_TYPE (gimple_switch_index (sw));
 
-  if (!ssa_ranger::supports_type_p (type))
+  if (!irange::supports_type_p (type))
     return NULL;
 
   return switch_edge_range.get_range (r, s, e);
 }
-
-
-// This function returns a range for tree node EXPR in R.  
-// Return false if ranges are not supported.
-
-bool
-get_tree_range (irange &r, tree expr)
-{
-  tree type;
-  switch (TREE_CODE (expr))
-    {
-      case INTEGER_CST:
-        if (!TREE_OVERFLOW_P (expr))
-	  r = irange (TREE_TYPE (expr), expr, expr);
-	else
-	  // If we encounter an overflow, simply punt and drop to varying
-	  // since we hvae no idea how it will be used.
-	  r.set_varying (TREE_TYPE (expr));
-	return true;
-
-      case SSA_NAME:
-        if (ssa_ranger::supports_ssa_p (expr))
-	  {
-	    r = range_from_ssa (expr);
-	    return true;
-	  }
-	break;
-
-      case ADDR_EXPR:
-        {
-	  // handle &var which can show up in phi arguments
-	  bool ov;
-	  type = TREE_TYPE (expr);
-	  if (ssa_ranger::supports_type_p (type))
-	    {
-	      if (tree_single_nonzero_warnv_p (expr, &ov))
-		r = range_non_zero (type);
-	      else
-		r.set_varying (type);
-	      return true;
-	    }
-	  break;
-	}
-
-      default:
-	if (TYPE_P (expr))
-	  type = expr;
-	else
-	  type = TREE_TYPE (expr);
-	if (ssa_ranger::supports_type_p (type))
-	  {
-	    // Set to range for this type.
-	    r.set_varying (type);
-	    return true;
-	  }
-	break;
-    }
-
-  return false;
-}
-
 
 // Initialize a ranger.
 
@@ -401,7 +340,7 @@ ssa_ranger::range_of_expr (irange &r, tree expr, gimple *s ATTRIBUTE_UNUSED)
 bool
 ssa_ranger::range_of_expr (irange&r, tree op, edge e)
 {
-  if (!supports_p (op))
+  if (!irange::supports_p (op))
      return false;
   if (valid_ssa_p (op))
     {
@@ -476,7 +415,7 @@ ssa_ranger::range_of_stmt (irange &r, gimple *s, tree name)
   if (!name)
     {
       tree t = gimple_expr_type (s);
-      if (!supports_type_p (t))
+      if (!irange::supports_type_p (t))
 	return false;
       r.set_varying (t);
       return true;
@@ -518,7 +457,7 @@ ssa_ranger::range_on_entry (irange &r, basic_block bb, tree name)
   tree type = TREE_TYPE (name);
   irange pred_range;
 
-  gcc_checking_assert (supports_type_p (type));
+  gcc_checking_assert (irange::supports_type_p (type));
 
   // Start with an empty range.
   r.set_undefined (type);
@@ -587,7 +526,7 @@ ssa_ranger::range_of_range_op (irange &r, grange_op *s)
 {
   irange range1, range2;
   bool res = true;
-  gcc_checking_assert (supports_type_p (gimple_expr_type (s)));
+  gcc_checking_assert (irange::supports_type_p (gimple_expr_type (s)));
 
   tree op1 = s->operand1 ();
   tree op2 = s->operand2 ();
@@ -612,7 +551,7 @@ ssa_ranger::range_of_range_op (irange &r, grange_op *s, tree name,
 {
   irange range1, range2;
   bool res = true;
-  gcc_checking_assert (supports_type_p (gimple_expr_type (s)));
+  gcc_checking_assert (irange::supports_type_p (gimple_expr_type (s)));
 
   tree op1 = s->operand1 ();
   tree op2 = s->operand2 ();
@@ -644,7 +583,7 @@ ssa_ranger::range_of_range_op (irange &r, grange_op *s, gimple *eval_from)
 {
   irange range1, range2;
   bool res = true;
-  gcc_checking_assert (supports_type_p (gimple_expr_type (s)));
+  gcc_checking_assert (irange::supports_type_p (gimple_expr_type (s)));
 
   tree op1 = s->operand1 ();
   tree op2 = s->operand2 ();
@@ -669,7 +608,7 @@ ssa_ranger::range_of_range_op (irange &r, grange_op *s, edge eval_on)
 {
   irange range1, range2;
   bool res = true;
-  gcc_checking_assert (supports_type_p (gimple_expr_type (s)));
+  gcc_checking_assert (irange::supports_type_p (gimple_expr_type (s)));
 
   tree op1 = s->operand1 ();
   tree op2 = s->operand2 ();
@@ -702,7 +641,7 @@ ssa_ranger::range_of_phi (irange &r, gphi *phi, tree name,
   irange phi_range;
   unsigned x;
 
-  if (!supports_type_p (type))
+  if (!irange::supports_type_p (type))
     return false;
 
   // And start with an empty range, unioning in each argument's range.
@@ -746,7 +685,7 @@ ssa_ranger::range_of_call (irange &r, gcall *call, tree name ATTRIBUTE_UNUSED,
 			    edge on_edge ATTRIBUTE_UNUSED)
 {
   tree type = gimple_call_return_type (call);
-  if (!supports_type_p (type))
+  if (!irange::supports_type_p (type))
     return false;
 
   if (gimple_call_nonnull_result_p (call))
@@ -773,7 +712,7 @@ ssa_ranger::range_of_cond_expr  (irange &r, gassign *s, edge on_edge)
   gcc_checking_assert (gimple_assign_rhs_code (s) == COND_EXPR);
   gcc_checking_assert (useless_type_conversion_p  (TREE_TYPE (op1),
 						   TREE_TYPE (op2)));
-  if (!supports_type_p (TREE_TYPE (op1)))
+  if (!irange::supports_type_p (TREE_TYPE (op1)))
     return false;
 
   gcc_assert (range_of_expr (cond_range, cond, on_edge));
@@ -812,7 +751,7 @@ ssa_ranger::range_of_cond_expr  (irange &r, gassign *s, tree name,
   gcc_checking_assert (gimple_assign_rhs_code (s) == COND_EXPR);
   gcc_checking_assert (useless_type_conversion_p  (TREE_TYPE (op1),
 						   TREE_TYPE (op2)));
-  if (!supports_type_p (TREE_TYPE (op1)))
+  if (!irange::supports_type_p (TREE_TYPE (op1)))
     return false;
 
   if (!eval_from)
@@ -895,7 +834,7 @@ global_ranger::range_of_stmt (irange &r, gimple *s, tree name)
 	return ssa_ranger::range_of_stmt (r, s, name);
     }
 
-  gcc_checking_assert (supports_ssa_p (name));
+  gcc_checking_assert (irange::supports_ssa_p (name));
 
   // If this STMT has already been processed, return that value. 
   if (m_gori.m_globals.get_global_range (r, name))
@@ -928,7 +867,7 @@ global_ranger::range_of_expr (irange&r, tree op, edge e)
 bool
 global_ranger::range_of_expr (irange&r, tree op, gimple *s)
 {
-  if (!supports_p (op))
+  if (!irange::supports_p (op))
      return false;
 
   // If there is a statement, and a valid ssa_name, try to find a range.
