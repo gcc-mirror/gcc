@@ -4433,9 +4433,11 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  Performs the assignment @c *i = @p __gen() for each @c i in the range
    *  @p [__first,__first+__n).
    *
-   *  _GLIBCXX_RESOLVE_LIB_DEFECTS
-   *  DR 865. More algorithms that throw away information
+   * If @p __n is negative, the function does nothing and returns @p __first.
   */
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // DR 865. More algorithms that throw away information
+  // DR 426. search_n(), fill_n(), and generate_n() with negative n
   template<typename _OutputIterator, typename _Size, typename _Generator>
     _OutputIterator
     generate_n(_OutputIterator __first, _Size __n, _Generator __gen)
@@ -4445,7 +4447,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    // "the type returned by a _Generator"
 	    __typeof__(__gen())>)
 
-      for (__decltype(__n + 0) __niter = __n;
+      typedef __decltype(std::__size_to_integer(__n)) _IntSize;
+      for (_IntSize __niter = std::__size_to_integer(__n);
 	   __niter > 0; --__niter, (void) ++__first)
 	*__first = __gen();
       return __first;

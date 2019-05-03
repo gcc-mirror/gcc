@@ -82,6 +82,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   /// 20.7.2.2.10 shared_ptr get_deleter
+  /// @relates shared_ptr
   template<typename _Del, typename _Tp>
     inline _Del*
     get_deleter(const shared_ptr<_Tp>& __p) noexcept
@@ -96,8 +97,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  @brief  A smart pointer with reference-counted copy semantics.
    *
-   *  The object pointed to is deleted when the last shared_ptr pointing to
-   *  it is destroyed or reset.
+   * A `shared_ptr` object is either empty or _owns_ a pointer passed
+   * to the constructor. Copies of a `shared_ptr` share ownership of
+   * the same pointer. When the last `shared_ptr` that owns the pointer
+   * is destroyed or reset, the owned pointer is freed (either by `delete`
+   * or by invoking a custom deleter that was passed to the constructor).
+   *
+   * A `shared_ptr` also stores another pointer, which is usually
+   * (but not always) the same pointer as it owns. The stored pointer
+   * can be retrieved by calling the `get()` member function.
   */
   template<typename _Tp>
     class shared_ptr : public __shared_ptr<_Tp>
@@ -370,6 +378,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend class weak_ptr<_Tp>;
     };
 
+  /// @relates shared_ptr @{
+
 #if __cpp_deduction_guides >= 201606
   template<typename _Tp>
     shared_ptr(weak_ptr<_Tp>) ->  shared_ptr<_Tp>;
@@ -480,12 +490,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return !(nullptr < __a); }
 
   // 20.7.2.2.8 shared_ptr specialized algorithms.
+  /// Swap overload for shared_ptr
   template<typename _Tp>
     inline void
     swap(shared_ptr<_Tp>& __a, shared_ptr<_Tp>& __b) noexcept
     { __a.swap(__b); }
 
   // 20.7.2.2.9 shared_ptr casts.
+  /// Convert type of `shared_ptr`, via `static_cast`
   template<typename _Tp, typename _Up>
     inline shared_ptr<_Tp>
     static_pointer_cast(const shared_ptr<_Up>& __r) noexcept
@@ -494,6 +506,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _Sp(__r, static_cast<typename _Sp::element_type*>(__r.get()));
     }
 
+  /// Convert type of `shared_ptr`, via `const_cast`
   template<typename _Tp, typename _Up>
     inline shared_ptr<_Tp>
     const_pointer_cast(const shared_ptr<_Up>& __r) noexcept
@@ -502,6 +515,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _Sp(__r, const_cast<typename _Sp::element_type*>(__r.get()));
     }
 
+  /// Convert type of `shared_ptr`, via `dynamic_cast`
   template<typename _Tp, typename _Up>
     inline shared_ptr<_Tp>
     dynamic_pointer_cast(const shared_ptr<_Up>& __r) noexcept
@@ -512,7 +526,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _Sp();
     }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
+  /// Convert type of `shared_ptr`, via `reinterpret_cast`
   template<typename _Tp, typename _Up>
     inline shared_ptr<_Tp>
     reinterpret_pointer_cast(const shared_ptr<_Up>& __r) noexcept
@@ -521,6 +536,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _Sp(__r, reinterpret_cast<typename _Sp::element_type*>(__r.get()));
     }
 #endif
+
+  // @}
 
   /**
    *  @brief  A smart pointer with weak semantics.
@@ -601,6 +618,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   // 20.7.2.3.6 weak_ptr specialized algorithms.
+  /// Swap overload for weak_ptr
+  /// @relates weak_ptr
   template<typename _Tp>
     inline void
     swap(weak_ptr<_Tp>& __a, weak_ptr<_Tp>& __b) noexcept
@@ -617,12 +636,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   /// Partial specialization of owner_less for shared_ptr.
+  /// @relates shared_ptr
   template<typename _Tp>
     struct owner_less<shared_ptr<_Tp>>
     : public _Sp_owner_less<shared_ptr<_Tp>, weak_ptr<_Tp>>
     { };
 
   /// Partial specialization of owner_less for weak_ptr.
+  /// @relates weak_ptr
   template<typename _Tp>
     struct owner_less<weak_ptr<_Tp>>
     : public _Sp_owner_less<weak_ptr<_Tp>, shared_ptr<_Tp>>
@@ -683,6 +704,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       mutable weak_ptr<_Tp>  _M_weak_this;
     };
 
+  /// @relates unique_ptr @{
+
   /**
    *  @brief  Create an object that is owned by a shared_ptr.
    *  @param  __a     An allocator.
@@ -730,6 +753,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 
+  // @} relates shared_ptr
   // @} group pointer_abstractions
 
 #if __cplusplus >= 201703L

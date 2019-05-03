@@ -2150,7 +2150,7 @@ pass_store_merging::terminate_and_process_all_chains ()
   bool ret = false;
   while (m_stores_head)
     ret |= terminate_and_release_chain (m_stores_head);
-  gcc_assert (m_stores.elements () == 0);
+  gcc_assert (m_stores.is_empty ());
   gcc_assert (m_stores_head == NULL);
 
   return ret;

@@ -5,7 +5,7 @@
 extern void error1 (void) __attribute__((__target__("fma400"))); /* { dg-error "unknown" } */
 
 /* Multiple arch switches */
-extern void error2 (void) __attribute__((__target__("arch=core2,arch=k8"))); /* { dg-error "already specified" } */
+extern void error2 (void) __attribute__((__target__("arch=core2,arch=k8"))); /* { dg-error "attribute value 'arch=k8' was already specified in 'target' attribute" } */
 
 /* Unknown tune target */
 extern void error3 (void) __attribute__((__target__("tune=foobar"))); /* { dg-error "bad value" } */

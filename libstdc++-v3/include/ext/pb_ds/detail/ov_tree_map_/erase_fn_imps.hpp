@@ -38,6 +38,8 @@
  * Contains an implementation class for ov_tree_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
@@ -189,3 +191,4 @@ erase(key_const_reference r_key)
   erase(it);
   return true;
 }
+#endif

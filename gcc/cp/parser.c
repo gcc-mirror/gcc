@@ -10769,7 +10769,7 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	 Optimize for the zero or one explicit captures cases and only create
 	 the hash_set after adding second capture.  */
       bool found = false;
-      if (ids.elements ())
+      if (!ids.is_empty ())
 	found = ids.add (capture_id);
       else if (first_capture_id == NULL_TREE)
 	first_capture_id = capture_id;

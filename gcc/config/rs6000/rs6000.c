@@ -36269,37 +36269,74 @@ rs6000_init_dwarf_reg_sizes_extra (tree address)
 unsigned int
 rs6000_dbx_register_number (unsigned int regno, unsigned int format)
 {
-  /* Except for the above, we use the internal number for non-DWARF
-     debug information, and also for .eh_frame.  */
-  if ((format == 0 && write_symbols != DWARF2_DEBUG) || format == 2)
-    return regno;
-
   /* On some platforms, we use the standard DWARF register
      numbering for .debug_info and .debug_frame.  */
+  if ((format == 0 && write_symbols == DWARF2_DEBUG) || format == 1)
+    {
 #ifdef RS6000_USE_DWARF_NUMBERING
-  if (regno <= 63)
-    return regno;
-  if (regno == LR_REGNO)
-    return 108;
-  if (regno == CTR_REGNO)
-    return 109;
-  /* Special handling for CR for .debug_frame: rs6000_emit_prologue has
-     translated any combination of CR2, CR3, CR4 saves to a save of CR2.
-     The actual code emitted saves the whole of CR, so we map CR2_REGNO
-     to the DWARF reg for CR.  */
-  if (format == 1 && regno == CR2_REGNO)
-    return 64;
-  if (CR_REGNO_P (regno))
-    return regno - CR0_REGNO + 86;
-  if (regno == CA_REGNO)
-    return 101;  /* XER */
-  if (ALTIVEC_REGNO_P (regno))
-    return regno - FIRST_ALTIVEC_REGNO + 1124;
-  if (regno == VRSAVE_REGNO)
-    return 356;
-  if (regno == VSCR_REGNO)
-    return 67;
+      if (regno <= 31)
+	return regno;
+      if (FP_REGNO_P (regno))
+	return regno - FIRST_FPR_REGNO + 32;
+      if (ALTIVEC_REGNO_P (regno))
+	return regno - FIRST_ALTIVEC_REGNO + 1124;
+      if (regno == LR_REGNO)
+	return 108;
+      if (regno == CTR_REGNO)
+	return 109;
+      if (regno == CA_REGNO)
+	return 101;  /* XER */
+      /* Special handling for CR for .debug_frame: rs6000_emit_prologue has
+	 translated any combination of CR2, CR3, CR4 saves to a save of CR2.
+	 The actual code emitted saves the whole of CR, so we map CR2_REGNO
+	 to the DWARF reg for CR.  */
+      if (format == 1 && regno == CR2_REGNO)
+	return 64;
+      if (CR_REGNO_P (regno))
+	return regno - CR0_REGNO + 86;
+      if (regno == VRSAVE_REGNO)
+	return 356;
+      if (regno == VSCR_REGNO)
+	return 67;
+      if (regno == TFHAR_REGNO)
+	return 228;
+      if (regno == TFIAR_REGNO)
+	return 229;
+      if (regno == TEXASR_REGNO)
+	return 230;
+
+      return regno;
 #endif
+    }
+
+  /* We use the GCC 7 (and before) internal number for non-DWARF debug
+     information, and also for .eh_frame.  */
+  /* Translate the regnos to their numbers in GCC 7 (and before).  */
+  if (regno <= 31)
+    return regno;
+  if (FP_REGNO_P (regno))
+    return regno - FIRST_FPR_REGNO + 32;
+  if (ALTIVEC_REGNO_P (regno))
+    return regno - FIRST_ALTIVEC_REGNO + 77;
+  if (regno == LR_REGNO)
+    return 65;
+  if (regno == CTR_REGNO)
+    return 66;
+  if (regno == CA_REGNO)
+    return 76;  /* XER */
+  if (CR_REGNO_P (regno))
+    return regno - CR0_REGNO + 68;
+  if (regno == VRSAVE_REGNO)
+    return 109;
+  if (regno == VSCR_REGNO)
+    return 110;
+  if (regno == TFHAR_REGNO)
+    return 114;
+  if (regno == TFIAR_REGNO)
+    return 115;
+  if (regno == TEXASR_REGNO)
+    return 116;
+
   return regno;
 }
 

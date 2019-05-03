@@ -38,6 +38,7 @@
 
 /** @file include/memory
  *  This is a Standard C++ Library header.
+ *  @ingroup memory
  */
 
 #ifndef _GLIBCXX_MEMORY
@@ -100,19 +101,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 /**
  *  @brief Fit aligned storage in buffer.
- *
- *  [ptr.align]
+ *  @ingroup memory
  *
  *  This function tries to fit @a __size bytes of storage with alignment
  *  @a __align into the buffer @a __ptr of size @a __space bytes.  If such
  *  a buffer fits then @a __ptr is changed to point to the first byte of the
  *  aligned storage and @a __space is reduced by the bytes used for alignment.
  *
+ *  C++11 20.6.5 [ptr.align]
+ *
  *  @param __align   A fundamental or extended alignment value.
  *  @param __size    Size of the aligned storage required.
  *  @param __ptr     Pointer to a buffer of @a __space bytes.
  *  @param __space   Size of the buffer pointed to by @a __ptr.
  *  @return the updated pointer if the aligned storage fits, otherwise nullptr.
+ *
  */
 inline void*
 align(size_t __align, size_t __size, void*& __ptr, size_t& __space) noexcept
@@ -136,28 +139,52 @@ align(size_t __align, size_t __size, void*& __ptr, size_t& __space) noexcept
     }
 }
 
-// 20.7.4 [util.dynamic.safety], pointer safety
+/** @defgroup ptr_safety Pointer Safety and Garbage Collection
+ *  @ingroup memory
+ *
+ * Utilities to assist with garbage collection in an implementation
+ * that supports <em>strict pointer safety</em>.
+ * This implementation only supports <em>relaxed pointer safety</em>
+ * and so these functions have no effect.
+ *
+ * C++11 20.6.4 [util.dynamic.safety], Pointer safety
+ *
+ * @{
+ */
 
+/// Constants representing the different types of pointer safety.
 enum class pointer_safety { relaxed, preferred, strict };
 
+/// Inform a garbage collector that an object is still in use.
 inline void
 declare_reachable(void*) { }
 
+/// Unregister an object previously registered with declare_reachable.
 template <typename _Tp>
   inline _Tp*
   undeclare_reachable(_Tp* __p) { return __p; }
 
+/// Inform a garbage collector that a region of memory need not be traced.
 inline void
 declare_no_pointers(char*, size_t) { }
 
+/// Unregister a range previously registered with declare_no_pointers.
 inline void
 undeclare_no_pointers(char*, size_t) { }
 
+/// The type of pointer safety supported by the implementation.
 inline pointer_safety
 get_pointer_safety() noexcept { return pointer_safety::relaxed; }
+// @}
 
 #if __cplusplus > 201703L
-  /// Inform the compiler that a pointer is aligned.
+  /** @brief Inform the compiler that a pointer is aligned.
+   *
+   *  @tparam _Align An alignment value (i.e. a power of two)
+   *  @tparam _Tp    An object type
+   *  @param  __ptr  A pointer that is aligned to _Align
+   *  @ingroup memory
+   */
   template<size_t _Align, class _Tp>
     [[nodiscard,__gnu__::__always_inline__]]
     constexpr _Tp* assume_aligned(_Tp* __ptr)
@@ -176,6 +203,9 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
   template<typename _Tp, typename _Up>
     struct __is_pair<const pair<_Tp, _Up>> : true_type { };
 
+/** @addtogroup allocators
+ *  @{
+ */
   template<typename _Tp, typename __ = _Require<__not_<__is_pair<_Tp>>>,
 	   typename _Alloc, typename... _Args>
     constexpr auto
@@ -191,7 +221,9 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
 	    }
 	  else
 	    {
-	      static_assert(is_constructible_v<_Tp, _Args..., const _Alloc&>);
+	      static_assert(is_constructible_v<_Tp, _Args..., const _Alloc&>,
+		  "construction with an allocator must be possible"
+		  " if uses_allocator is true");
 
 	      return tuple<_Args&&..., const _Alloc&>(
 		  std::forward<_Args>(__args)..., __a);
@@ -207,7 +239,7 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
 
 #if __cpp_concepts
   template<typename _Tp>
-    concept bool _Std_pair = __is_pair<_Tp>::value;
+    concept _Std_pair = __is_pair<_Tp>::value;
 #endif
 
 // This is a temporary workaround until -fconcepts is implied by -std=gnu++2a
@@ -356,6 +388,7 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
       return ::new(__vp) _Tp(std::make_obj_using_allocator<_Tp>(__a,
 	    std::forward<_Args>(__args)...));
     }
+// @}
 
 #endif // C++2a
 

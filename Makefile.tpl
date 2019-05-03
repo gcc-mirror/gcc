@@ -1677,7 +1677,7 @@ do-clean: clean-stage[+id+]
         sed=`echo stage[+id+] | sed 's,^stage,,;s,.,.,g'`; \
 	files=`find stage[+id+]-* -name "*$(objext)" -print | \
 		 sed -n s,^stage$$sed-,,p`; \
-	for file in $${files}; do \
+	for file in $${files} ${extra-compare}; do \
 	  f1=$$r/stage[+prev+]-$$file; f2=$$r/stage[+id+]-$$file; \
 	  if test ! -f $$f1; then continue; fi; \
 	  $(do-[+compare-target+]) > /dev/null 2>&1; \

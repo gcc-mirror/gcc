@@ -222,19 +222,13 @@ along with GCC; see the file COPYING3.  If not see
 	 trying to move or duplicate pass_dominator somewhere earlier.  */
       NEXT_PASS (pass_thread_jumps);
       NEXT_PASS (pass_dominator, true /* may_peel_loop_headers_p */);
-      /* At this point the majority of const/copy propagations
-	 are exposed.  Go ahead and identify paths that should never
-	 be executed in a conforming program and isolate those paths.
-
-	 This will expose more degenerate PHIs in the main path and
-	 expose more PRE/DOM optimization opportunities.  */
+      /* Threading can leave many const/copy propagations in the IL.
+	 Clean them up.  Failure to do so well can lead to false
+	 positives from warnings for erroneous code.  */
+      NEXT_PASS (pass_copy_prop);
+      /* Identify paths that should never be executed in a conforming
+	 program and isolate those paths.  */
       NEXT_PASS (pass_isolate_erroneous_paths);
-      /* The only const/copy propagation opportunities left after
-	 DOM and erroneous path isolation should be due to degenerate PHI nodes.
-	 So rather than run the full propagators, run a specialized pass which
-	 only examines PHIs to discover const/copy propagation
-	 opportunities.  */
-      NEXT_PASS (pass_phi_only_cprop);
       NEXT_PASS (pass_dse);
       NEXT_PASS (pass_reassoc, true /* insert_powi_p */);
       NEXT_PASS (pass_dce);
@@ -261,6 +255,8 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_fix_loops);
       NEXT_PASS (pass_tree_loop);
       PUSH_INSERT_PASSES_WITHIN (pass_tree_loop)
+          /* Before loop_init we rewrite no longer addressed locals into SSA
+	     form if possible.  */
 	  NEXT_PASS (pass_tree_loop_init);
 	  NEXT_PASS (pass_tree_unswitch);
 	  NEXT_PASS (pass_scev_cprop);
@@ -321,13 +317,10 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_strlen);
       NEXT_PASS (pass_thread_jumps);
       NEXT_PASS (pass_vrp, false /* warn_array_bounds_p */);
-      /* The only const/copy propagation opportunities left after
-	 DOM and VRP should be due to degenerate PHI nodes.  So rather than
-	 run the full propagators, run a specialized pass which
-	 only examines PHIs to discover const/copy propagation
-	 opportunities.  */
+      /* Threading can leave many const/copy propagations in the IL.
+	 Clean them up.  */
+      NEXT_PASS (pass_copy_prop);
       NEXT_PASS (pass_warn_restrict);
-      NEXT_PASS (pass_phi_only_cprop);
       NEXT_PASS (pass_dse);
       NEXT_PASS (pass_cd_dce);
       NEXT_PASS (pass_forwprop);

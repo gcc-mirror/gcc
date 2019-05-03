@@ -39,6 +39,8 @@
  *    a string for a vector-based PATRICIA tree
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 detail::integral_constant<int, Reverse> PB_DS_CLASS_C_DEC::s_rev_ind;
 
@@ -97,3 +99,4 @@ end_imp(key_const_reference r_key, detail::true_type)
 {
   return (r_key.rend());
 }
+#endif

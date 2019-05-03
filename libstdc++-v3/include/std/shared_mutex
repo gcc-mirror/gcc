@@ -42,7 +42,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
-   * @ingroup mutexes
+   * @addtogroup mutexes
    * @{
    */
 
@@ -55,6 +55,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define __cpp_lib_shared_timed_mutex 201402
   class shared_timed_mutex;
+
+  /// @cond undocumented
 
 #if _GLIBCXX_USE_PTHREAD_RWLOCK_T
 #ifdef __gthrw
@@ -395,6 +397,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
   };
 #endif
+  /// @endcond
 
 #if __cplusplus > 201402L
   /// The standard shared mutex type.
@@ -432,11 +435,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 #endif // C++17
 
+  /// @cond undocumented
 #if _GLIBCXX_USE_PTHREAD_RWLOCK_T && _GTHREAD_USE_MUTEX_TIMEDLOCK
   using __shared_timed_mutex_base = __shared_mutex_pthread;
 #else
   using __shared_timed_mutex_base = __shared_mutex_cv;
 #endif
+  /// @endcond
 
   /// The standard shared timed mutex type.
   class shared_timed_mutex
@@ -754,6 +759,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /// Swap specialization for shared_lock
+  /// @relates shared_mutex
   template<typename _Mutex>
     void
     swap(shared_lock<_Mutex>& __x, shared_lock<_Mutex>& __y) noexcept

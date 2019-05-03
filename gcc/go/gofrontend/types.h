@@ -186,6 +186,22 @@ class Method
     this->stub_ = no;
   }
 
+  // Get the direct interface method stub object.
+  Named_object*
+  iface_stub_object() const
+  {
+    go_assert(this->iface_stub_ != NULL);
+    return this->iface_stub_;
+  }
+
+  // Set the direct interface method stub object.
+  void
+  set_iface_stub_object(Named_object* no)
+  {
+    go_assert(this->iface_stub_ == NULL);
+    this->iface_stub_ = no;
+  }
+
   // Return true if this method should not participate in any
   // interfaces.
   bool
@@ -196,7 +212,7 @@ class Method
   // These objects are only built by the child classes.
   Method(const Field_indexes* field_indexes, unsigned int depth,
 	 bool is_value_method, bool needs_stub_method)
-    : field_indexes_(field_indexes), depth_(depth), stub_(NULL),
+    : field_indexes_(field_indexes), depth_(depth), stub_(NULL), iface_stub_(NULL),
       is_value_method_(is_value_method), needs_stub_method_(needs_stub_method),
       is_ambiguous_(false)
   { }
@@ -230,6 +246,9 @@ class Method
   // If a stub method is required, this is its object.  This is only
   // set after stub methods are built in finalize_methods.
   Named_object* stub_;
+  // Stub object for direct interface type.  This is only set after
+  // stub methods are built in finalize_methods.
+  Named_object* iface_stub_;
   // Whether this is a value method--a method that does not require a
   // pointer.
   bool is_value_method_;
@@ -923,6 +942,11 @@ class Type
   is_unsafe_pointer_type() const
   { return this->points_to() != NULL && this->points_to()->is_void_type(); }
 
+  // Return whether this type is stored directly in an interface's
+  // data word.
+  bool
+  is_direct_iface_type() const;
+
   // Return a version of this type with any expressions copied, but
   // only if copying the expressions will affect the size of the type.
   // If there are no such expressions in the type (expressions can
@@ -1321,6 +1345,15 @@ class Type
 			const Typed_identifier_list*, bool is_varargs,
 			Location);
 
+  // Build direct interface stub methods for a type.
+  static void
+  build_direct_iface_stub_methods(Gogo*, const Type*, Methods*, Location);
+
+  static void
+  build_one_iface_stub_method(Gogo*, Method*, const char*,
+                              const Typed_identifier_list*,
+                              bool, Location);
+
   static Expression*
   apply_field_indexes(Expression*, const Method::Field_indexes*,
 		      Location);
@@ -1332,6 +1365,11 @@ class Type
 		       std::vector<const Named_type*>*, int* level,
 		       bool* is_method, bool* found_pointer_method,
 		       std::string* ambig1, std::string* ambig2);
+
+  // Helper function for is_direct_iface_type, to prevent infinite
+  // recursion.
+  bool
+  is_direct_iface_type_helper(Unordered_set(const Type*)*) const;
 
   // Get the backend representation for a type without looking in the
   // hash table for identical types.

@@ -330,7 +330,7 @@ const pass_data pass_data_tree_loop_init =
   PROP_cfg, /* properties_required */
   0, /* properties_provided */
   0, /* properties_destroyed */
-  0, /* todo_flags_start */
+  TODO_update_address_taken, /* todo_flags_start */
   0, /* todo_flags_finish */
 };
 

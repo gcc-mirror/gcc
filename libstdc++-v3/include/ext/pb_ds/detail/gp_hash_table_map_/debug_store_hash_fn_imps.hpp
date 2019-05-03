@@ -38,6 +38,8 @@
  * Contains implementations of gp_ht_map_'s debug-mode functions.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 #ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
@@ -76,3 +78,4 @@ assert_entry_array_valid(const entry_array a_entries, true_type,
 }
 
 #endif 
+#endif

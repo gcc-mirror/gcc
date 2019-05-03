@@ -38,6 +38,8 @@
  * Contains an implementation class for pat_trie_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 #ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
@@ -112,4 +114,5 @@ recursive_count_leafs(node_const_pointer p_nd, const char* __file, int __line)
   return ret;
 }
 
+#endif
 #endif

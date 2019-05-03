@@ -137,6 +137,9 @@ DEF_GO_RUNTIME(MAPITERINIT, "runtime.mapiterinit", P3(TYPE, MAP, POINTER),
 // Range over a map, moving to the next map entry.
 DEF_GO_RUNTIME(MAPITERNEXT, "runtime.mapiternext", P1(POINTER), R0())
 
+// Clear a map.
+DEF_GO_RUNTIME(MAPCLEAR, "runtime.mapclear", P2(TYPE, MAP), R0())
+
 
 // Make a channel.
 DEF_GO_RUNTIME(MAKECHAN, "runtime.makechan", P2(TYPE, INT), R1(CHAN))

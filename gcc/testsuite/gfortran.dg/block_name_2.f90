@@ -37,8 +37,8 @@ program blocks
   end do
 
   if (i > 0) then
-  else if (i ==0) then i2 ! { dg-error "Unexpected junk after ELSE IF statement" }
-  else i2 ! { dg-error "Unexpected junk after ELSE statement" }
+  else if (i ==0) then i2 ! { dg-error "Syntax error in ELSE IF statement" }
+  else i2 ! { dg-error "Invalid character.s. in ELSE statement" }
   end if i2 ! { dg-error "Syntax error in END IF statement" }
   end if
 
@@ -49,7 +49,7 @@ program blocks
   end select
 
   where (a > 0)
-  elsewhere w2  ! { dg-error "Unexpected junk after ELSE statement" }
+  elsewhere w2  ! { dg-error "Invalid character.s. in ELSE statement" }
   end where w2 ! { dg-error "Syntax error in END WHERE statement" }
   end where
 

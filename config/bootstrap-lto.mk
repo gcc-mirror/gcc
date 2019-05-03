@@ -15,3 +15,4 @@ LTO_EXPORTS = AR="$(LTO_AR)"; export AR; \
 LTO_FLAGS_TO_PASS = AR="$(LTO_AR)" RANLIB="$(LTO_RANLIB)"
 
 do-compare = $(SHELL) $(srcdir)/contrib/compare-lto $$f1 $$f2
+extra-compare = gcc/lto1$(exeext)

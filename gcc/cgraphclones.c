@@ -1056,7 +1056,7 @@ cgraph_node::create_version_clone_with_body
       location_t saved_loc = input_location;
       tree v = TREE_VALUE (target_attributes);
       input_location = DECL_SOURCE_LOCATION (new_decl);
-      bool r = targetm.target_option.valid_attribute_p (new_decl, NULL, v, 0);
+      bool r = targetm.target_option.valid_attribute_p (new_decl, NULL, v, 1);
       input_location = saved_loc;
       if (!r)
 	return NULL;

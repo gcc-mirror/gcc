@@ -24,6 +24,7 @@
 
 /** @file experimental/array
  *  This is a TS C++ Library header.
+ *  @ingroup libfund-ts
  */
 
 #ifndef _GLIBCXX_EXPERIMENTAL_ARRAY
@@ -47,7 +48,7 @@ inline namespace fundamentals_v2
 #define __cpp_lib_experimental_make_array 201505
   /**
    * @defgroup make_array Array creation functions
-   * @ingroup experimental
+   * @ingroup libfund-ts
    *
    * Array creation functions as described in N4529,
    * Working Draft, C++ Extensions for Library Fundamentals, Version 2
@@ -78,6 +79,7 @@ template<typename... _Types>
                   "any of the arguments is a reference_wrapper");
   };
 
+/// Create a std::array from a variable-length list of arguments.
 template <typename _Dest = void, typename... _Types>
   constexpr
   array<typename __make_array_elem<_Dest, _Types...>::type, sizeof...(_Types)>
@@ -93,6 +95,7 @@ template <typename _Tp, size_t _Nm, size_t... _Idx>
     return {{__a[_Idx]...}};
   }
 
+/// Create a std::array from an array.
 template <typename _Tp, size_t _Nm>
   constexpr array<remove_cv_t<_Tp>, _Nm>
   to_array(_Tp (&__a)[_Nm])

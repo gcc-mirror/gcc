@@ -1217,7 +1217,7 @@ search_anon_aggr (tree anon, tree name, bool want_type)
    Use this if you do not want lazy member creation.  */
 
 tree
-get_class_binding_direct (tree klass, tree name, int type_or_fns)
+get_class_binding_direct (tree klass, tree name, bool want_type)
 {
   gcc_checking_assert (RECORD_OR_UNION_TYPE_P (klass));
 
@@ -1233,31 +1233,26 @@ get_class_binding_direct (tree klass, tree name, int type_or_fns)
       val = member_vec_binary_search (member_vec, lookup);
       if (!val)
 	;
-      else if (type_or_fns > 0)
-	{
-	  if (STAT_HACK_P (val))
-	    val = STAT_TYPE (val);
-	  else if (!DECL_DECLARES_TYPE_P (val))
-	    val = NULL_TREE;
-	}
       else if (STAT_HACK_P (val))
-	val = STAT_DECL (val);
+	val = want_type ? STAT_TYPE (val) : STAT_DECL (val);
+      else if (want_type && !DECL_DECLARES_TYPE_P (val))
+	val = NULL_TREE;
     }
   else
     {
-      if (member_vec && type_or_fns <= 0)
+      if (member_vec && !want_type)
 	val = member_vec_linear_search (member_vec, lookup);
 
-      if (type_or_fns < 0)
-	/* Don't bother looking for field.  We don't want it.  */;
-      else if (!val || (TREE_CODE (val) == OVERLOAD
-			&& OVL_DEDUP_P (val)))
+      if (!val || (TREE_CODE (val) == OVERLOAD && OVL_DEDUP_P (val)))
 	/* Dependent using declarations are a 'field', make sure we
 	   return that even if we saw an overload already.  */
-	if (tree field_val = fields_linear_search (klass, lookup,
-						   type_or_fns > 0))
-	  if (!val || TREE_CODE (field_val) == USING_DECL)
-	    val = field_val;
+	if (tree field_val = fields_linear_search (klass, lookup, want_type))
+	  {
+	    if (!val)
+	      val = field_val;
+	    else if (TREE_CODE (field_val) == USING_DECL)
+	      val = ovl_make (field_val, val);
+	  }
     }
 
   /* Extract the conversion operators asked for, unless the general
@@ -1278,7 +1273,7 @@ get_class_binding_direct (tree klass, tree name, int type_or_fns)
    special function creation as necessary.  */
 
 tree
-get_class_binding (tree klass, tree name, int type_or_fns)
+get_class_binding (tree klass, tree name, bool want_type)
 {
   klass = complete_type (klass);
 
@@ -1308,7 +1303,7 @@ get_class_binding (tree klass, tree name, int type_or_fns)
 	}
     }
 
-  return get_class_binding_direct (klass, name, type_or_fns);
+  return get_class_binding_direct (klass, name, want_type);
 }
 
 /* Find the slot containing overloads called 'NAME'.  If there is no

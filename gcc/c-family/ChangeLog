@@ -1,3 +1,17 @@
+2019-04-30  Nathan Sidwell  <nathan@acm.org>
+
+	* c-common.c (c_common_init_ts): Use MARK_TS_EXP.  Mark SIZEOF_EXPR.
+
+2019-04-30  Martin Liska  <mliska@suse.cz>
+
+	* c-pragma.c (handle_pragma_diagnostic): Provide hints
+	for unknown options.
+
+2019-04-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-warn.c (strict_aliasing_warning): Apply COMPLETE_TYPE_P to
+	the pointer target rather than the pointer itself.
+
 2019-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/89888

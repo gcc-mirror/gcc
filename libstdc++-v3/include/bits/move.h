@@ -179,13 +179,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typename enable_if<__and_<__not_<__is_tuple_like<_Tp>>,
 			      is_move_constructible<_Tp>,
 			      is_move_assignable<_Tp>>::value>::type
-    swap(_Tp& __a, _Tp& __b)
-    noexcept(__and_<is_nothrow_move_constructible<_Tp>,
-	            is_nothrow_move_assignable<_Tp>>::value)
 #else
     void
-    swap(_Tp& __a, _Tp& __b)
 #endif
+    swap(_Tp& __a, _Tp& __b)
+    _GLIBCXX_NOEXCEPT_IF(__and_<is_nothrow_move_constructible<_Tp>,
+				is_nothrow_move_assignable<_Tp>>::value)
     {
       // concept requirements
       __glibcxx_function_requires(_SGIAssignableConcept<_Tp>)
@@ -202,12 +201,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline
 #if __cplusplus >= 201103L
     typename enable_if<__is_swappable<_Tp>::value>::type
-    swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
-    noexcept(__is_nothrow_swappable<_Tp>::value)
 #else
     void
-    swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
 #endif
+    swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
+    _GLIBCXX_NOEXCEPT_IF(__is_nothrow_swappable<_Tp>::value)
     {
       for (size_t __n = 0; __n < _Nm; ++__n)
 	swap(__a[__n], __b[__n]);

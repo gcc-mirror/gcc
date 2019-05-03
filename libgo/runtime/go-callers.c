@@ -75,7 +75,7 @@ callback (void *data, uintptr_t pc, const char *filename, int lineno,
 	return 0;
       if (p - function > 3 && __builtin_strcmp (p - 3, "..r") == 0)
 	return 0;
-      if (p - function > 6 && __builtin_strcmp (p - 6, "..stub") == 0)
+      if (p - function > 6 && __builtin_strncmp (p - 6, "..stub", 6) == 0)
 	return 0;
     }
 

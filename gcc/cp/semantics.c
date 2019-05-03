@@ -3482,16 +3482,12 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
 	/* A lambda in an NSDMI (c++/64496).  */
 	break;
 
-      if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr)
-	  == CPLD_NONE)
+      if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) == CPLD_NONE)
 	break;
 
-      lambda_stack = tree_cons (NULL_TREE,
-				lambda_expr,
-				lambda_stack);
+      lambda_stack = tree_cons (NULL_TREE, lambda_expr, lambda_stack);
 
-      containing_function
-	= decl_function_context (containing_function);
+      containing_function = decl_function_context (containing_function);
     }
 
   /* In a lambda within a template, wait until instantiation time to implicitly
@@ -3502,8 +3498,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
       && DECL_PACK_P (decl))
     return decl;
 
-  if (lambda_expr && VAR_P (decl)
-      && DECL_ANON_UNION_VAR_P (decl))
+  if (lambda_expr && VAR_P (decl) && DECL_ANON_UNION_VAR_P (decl))
     {
       if (complain & tf_error)
 	error ("cannot capture member %qD of anonymous union", decl);
@@ -3512,11 +3507,8 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
   /* Do lambda capture when processing the id-expression, not when
      odr-using a variable.  */
   if (!odr_use && context == containing_function)
-    {
-      decl = add_default_capture (lambda_stack,
-				  /*id=*/DECL_NAME (decl),
-				  initializer);
-    }
+    decl = add_default_capture (lambda_stack,
+				/*id=*/DECL_NAME (decl), initializer);
   /* Only an odr-use of an outer automatic variable causes an
      error, and a constant variable can decay to a prvalue
      constant without odr-use.  So don't complain yet.  */
@@ -3528,8 +3520,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
 	{
 	  error ("%qD is not captured", decl);
 	  tree closure = LAMBDA_EXPR_CLOSURE (lambda_expr);
-	  if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr)
-	      == CPLD_NONE)
+	  if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) == CPLD_NONE)
 	    inform (location_of (closure),
 		    "the lambda has no capture-default");
 	  else if (TYPE_CLASS_SCOPE_P (closure))
@@ -3749,17 +3740,13 @@ finish_id_expression_1 (tree id_expression,
 	   wrong, so just return the identifier.  */
 	return id_expression;
 
-      if (TREE_CODE (decl) == NAMESPACE_DECL)
-	{
-	  error ("use of namespace %qD as expression", decl);
-	  return error_mark_node;
-	}
-      else if (DECL_CLASS_TEMPLATE_P (decl))
+      if (DECL_CLASS_TEMPLATE_P (decl))
 	{
 	  error ("use of class template %qT as expression", decl);
 	  return error_mark_node;
 	}
-      else if (TREE_CODE (decl) == TREE_LIST)
+
+      if (TREE_CODE (decl) == TREE_LIST)
 	{
 	  /* Ambiguous reference to base members.  */
 	  error ("request for member %qD is ambiguous in "
@@ -3844,10 +3831,11 @@ finish_id_expression_1 (tree id_expression,
 	}
       else if (is_overloaded_fn (decl))
 	{
+	  /* We only need to look at the first function,
+	     because all the fns share the attribute we're
+	     concerned with (all member fns or all non-members).  */
 	  tree first_fn = get_first_fn (decl);
-
-	  if (TREE_CODE (first_fn) == TEMPLATE_DECL)
-	    first_fn = DECL_TEMPLATE_RESULT (first_fn);
+	  first_fn = STRIP_TEMPLATE (first_fn);
 
 	  /* [basic.def.odr]: "A function whose name appears as a
 	     potentially-evaluated expression is odr-used if it is the unique

@@ -38,6 +38,8 @@
  * Contains implementations of lu_map_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 #ifdef PB_DS_LU_MAP_TRACE_
 
 PB_DS_CLASS_T_DEC
@@ -57,3 +59,4 @@ trace() const
 
 #endif 
 
+#endif

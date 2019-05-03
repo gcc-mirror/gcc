@@ -264,8 +264,12 @@ is_feasible_trace (basic_block bb)
 	  if (is_gimple_debug (stmt))
 	    continue;
 	  /* If there's a use in the joiner this might be a CSE/DCE
-	     opportunity.  */
-	  if (gimple_bb (stmt) == bb)
+	     opportunity, but not if the use is in a conditional
+	     which makes this a likely if-conversion candidate.  */
+	  if (gimple_bb (stmt) == bb
+	      && (!is_gimple_assign (stmt)
+		  || (TREE_CODE_CLASS (gimple_assign_rhs_code (stmt))
+		      != tcc_comparison)))
 	    {
 	      found_useful_phi = true;
 	      break;

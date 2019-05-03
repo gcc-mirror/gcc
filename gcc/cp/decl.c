@@ -1,4 +1,4 @@
-/* Process declarations and variables for C++ compiler.
+/* Process declarations and variables for -*- C++ -*- compiler.
    Copyright (C) 1988-2019 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -1476,7 +1476,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
 		  if (! same_type_p (TREE_VALUE (t1), TREE_VALUE (t2)))
 		    break;
-next_arg:;
+		next_arg:;
 		}
 
 	      warning_at (newdecl_loc,
@@ -2386,9 +2386,10 @@ next_arg:;
 	    }
 	  DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
 	}
-      /* Only functions have these fields.  */
+
       if (DECL_DECLARES_FUNCTION_P (newdecl))
 	{
+	  /* Only functions have these fields.  */
 	  DECL_NONCONVERTING_P (newdecl) = DECL_NONCONVERTING_P (olddecl);
 	  DECL_BEFRIENDING_CLASSES (newdecl)
 	    = chainon (DECL_BEFRIENDING_CLASSES (newdecl),
@@ -2398,10 +2399,12 @@ next_arg:;
 	  if (DECL_VIRTUAL_P (newdecl))
 	    SET_DECL_THUNKS (newdecl, DECL_THUNKS (olddecl));
 	}
-      /* Only variables have this field.  */
-      else if (VAR_P (newdecl)
-	       && VAR_HAD_UNKNOWN_BOUND (olddecl))
-	SET_VAR_HAD_UNKNOWN_BOUND (newdecl);
+      else if (VAR_P (newdecl))
+	{
+	  /* Only variables have this field.  */
+	  if (VAR_HAD_UNKNOWN_BOUND (olddecl))
+	    SET_VAR_HAD_UNKNOWN_BOUND (newdecl);
+	}
     }
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
@@ -5691,13 +5694,15 @@ check_for_uninitialized_const_var (tree decl, bool constexpr_context_p,
       if (!field)
 	return true;
 
+      bool show_notes = true;
+
       if (!constexpr_context_p)
 	{
 	  if (CP_TYPE_CONST_P (type))
 	    {
 	      if (complain & tf_error)
-		permerror (DECL_SOURCE_LOCATION (decl),
-			   "uninitialized const %qD", decl);
+		show_notes = permerror (DECL_SOURCE_LOCATION (decl),
+				        "uninitialized const %qD", decl);
 	    }
 	  else
 	    {
@@ -5706,6 +5711,8 @@ check_for_uninitialized_const_var (tree decl, bool constexpr_context_p,
 		error_at (DECL_SOURCE_LOCATION (decl),
 			  "uninitialized variable %qD in %<constexpr%> "
 			  "function", decl);
+	      else
+		show_notes = false;
 	      cp_function_chain->invalid_constexpr = true;
 	    }
 	}
@@ -5714,7 +5721,7 @@ check_for_uninitialized_const_var (tree decl, bool constexpr_context_p,
 		  "uninitialized variable %qD in %<constexpr%> context",
 		  decl);
 
-      if (CLASS_TYPE_P (type) && (complain & tf_error))
+      if (show_notes && CLASS_TYPE_P (type) && (complain & tf_error))
 	{
 	  tree defaulted_ctor;
 
@@ -5961,12 +5968,12 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 		  tree id = DECL_NAME (d->cur->index);
 		  gcc_assert (id);
 		  gcc_checking_assert (d->cur->index
-				       == get_class_binding (type, id, false));
+				       == get_class_binding (type, id));
 		  field = d->cur->index;
 		}
 	    }
 	  else if (TREE_CODE (d->cur->index) == IDENTIFIER_NODE)
-	    field = get_class_binding (type, d->cur->index, false);
+	    field = get_class_binding (type, d->cur->index);
 	  else
 	    {
 	      if (complain & tf_error)
@@ -10417,8 +10424,8 @@ grokdeclarator (const cp_declarator *declarator,
 
   location_t typespec_loc = smallest_type_quals_location (type_quals,
 						      declspecs->locations);
-  if (typespec_loc == UNKNOWN_LOCATION)
-    typespec_loc = declspecs->locations[ds_type_spec];
+  typespec_loc = min_location (typespec_loc,
+			       declspecs->locations[ds_type_spec]);
   if (typespec_loc == UNKNOWN_LOCATION)
     typespec_loc = input_location;
 
@@ -10973,6 +10980,7 @@ grokdeclarator (const cp_declarator *declarator,
       error_at (typespec_loc, "template placeholder type %qT must be followed "
 		"by a simple declarator-id", type);
       inform (DECL_SOURCE_LOCATION (tmpl), "%qD declared here", tmpl);
+      type = error_mark_node;
     }
 
   staticp = 0;

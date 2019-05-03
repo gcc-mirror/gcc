@@ -38,6 +38,8 @@
  * Contains an implementation class for splay_tree_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
@@ -279,3 +281,4 @@ splay_zz_end(node_pointer p_nd, node_pointer p_parent,
   this->apply_update(p_nd, (node_update*)this);
   PB_DS_ASSERT_BASE_NODE_CONSISTENT(p_nd)
 }
+#endif

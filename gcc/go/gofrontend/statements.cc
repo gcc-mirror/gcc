@@ -5485,6 +5485,7 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
   Location loc = this->location();
   Block* temp_block = new Block(enclosing, loc);
 
+  Expression* orig_range_expr = this->range_;
   Named_object* range_object = NULL;
   Temporary_statement* range_temp = NULL;
   if (eval)
@@ -5498,6 +5499,22 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
 	  temp_block->add_statement(range_temp);
 	  this->range_ = NULL;
 	}
+    }
+
+  // Try to match "range clear" patterns and rewrite to simple runtime
+  // calls.
+  if (range_type->map_type() != NULL)
+    {
+      Statement* clear = this->lower_map_range_clear(range_type,
+                                                     enclosing,
+                                                     orig_range_expr,
+                                                     range_object,
+                                                     range_temp, loc);
+      if (clear != NULL)
+        {
+          temp_block->add_statement(clear);
+          return Statement::make_block_statement(temp_block, loc);
+        }
     }
 
   Temporary_statement* index_temp = Statement::make_temporary(index_type,
@@ -6139,6 +6156,85 @@ For_range_statement::lower_range_channel(Gogo*,
   iter_init->add_statement(s);
 
   *piter_init = iter_init;
+}
+
+// Match
+//
+//   for k := range m { delete(m, k) }
+//
+// Lower it to runtime.mapclear(TYPE, m) on match, return the statement
+// containing the call.  Return NULL otherwise.
+
+Statement*
+For_range_statement::lower_map_range_clear(Type* map_type,
+                                           Block* enclosing,
+                                           Expression* orig_range_expr,
+                                           Named_object* range_object,
+                                           Temporary_statement* range_temp,
+                                           Location loc)
+{
+  if (this->value_var_ != NULL)
+    return NULL;
+  if (this->index_var_ == NULL)
+    return NULL;
+
+  // Require the loop index be a new variable.  We cannot rewrite
+  // if it is used outside of the loop.
+  Var_expression* index_ve = this->index_var_->var_expression();
+  if (index_ve == NULL)
+    return NULL;
+  Named_object* index_no = index_ve->named_object();
+  if (enclosing->bindings()->lookup_local(index_no->name()) != index_no)
+    return NULL;
+
+  // Match the body.  When lowering the builtin delete function, we have
+  // inserted temporaries, so we actually match for
+  //
+  //   tmp1 = m
+  //   tmp2 = k
+  //   runtime.mapdelete(TYPE, tmp1, &tmp2)
+
+  const std::vector<Statement*>* statements = this->statements_->statements();
+  if (statements->size() != 3)
+    return NULL;
+
+  Temporary_statement* ts1 = statements->at(0)->temporary_statement();
+  Temporary_statement* ts2 = statements->at(1)->temporary_statement();
+  Expression_statement* es3 = statements->at(2)->expression_statement();
+  if (ts1 == NULL || ts2 == NULL || es3 == NULL
+      || !Expression::is_same_variable(orig_range_expr, ts1->init())
+      || !Expression::is_same_variable(this->index_var_, ts2->init()))
+    return NULL;
+  Call_expression* call = es3->expr()->call_expression();
+  if (call == NULL)
+    return NULL;
+  Func_expression* fe = call->fn()->func_expression();
+  if (fe == NULL || !fe->is_runtime_function()
+      || fe->runtime_code() != Runtime::MAPDELETE)
+    return NULL;
+  Expression* a1 = call->args()->at(1);
+  a1 = (a1->unsafe_conversion_expression() != NULL
+        ? a1->unsafe_conversion_expression()->expr()
+        : a1);
+  Temporary_reference_expression* tre = a1->temporary_reference_expression();
+  if (tre == NULL || tre->statement() != ts1)
+    return NULL;
+  Expression* a2 = call->args()->at(2);
+  a2 = (a2->conversion_expression() != NULL
+        ? a2->conversion_expression()->expr()
+        : a2);
+  Unary_expression* ue = a2->unary_expression();
+  if (ue == NULL || ue->op() != OPERATOR_AND)
+    return NULL;
+  tre = ue->operand()->temporary_reference_expression();
+  if (tre == NULL || tre->statement() != ts2)
+    return NULL;
+
+  // Everything matches. Rewrite to mapclear(TYPE, MAP).
+  Expression* e1 = Expression::make_type_descriptor(map_type, loc);
+  Expression* e2 = this->make_range_ref(range_object, range_temp, loc);
+  call = Runtime::make_call(Runtime::MAPCLEAR, loc, 2, e1, e2);
+  return Statement::make_statement(call, true);
 }
 
 // Return the break LABEL_EXPR.

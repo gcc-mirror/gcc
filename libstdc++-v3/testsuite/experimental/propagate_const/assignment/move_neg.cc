@@ -25,8 +25,6 @@
 using std::experimental::propagate_const;
 using std::unique_ptr;
 
-// { dg-error "no type" "" { target *-*-* } 160 }
-
 int main()
 {
   propagate_const<unique_ptr<const int>> test5;
@@ -35,3 +33,4 @@ int main()
   propagate_const<unique_ptr<const int>> test6;
   test6 = dummy2; // { dg-error "no match" }
 }
+// { dg-prune-output "no type" }

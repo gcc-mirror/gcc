@@ -850,6 +850,11 @@ case ${target} in
   nbsd_tm_file="netbsd.h netbsd-stdint.h netbsd-elf.h"
   default_use_cxa_atexit=yes
   target_has_targetdm=yes
+  case ${target} in
+    arm*-* | i[34567]86-* | powerpc*-* | sparc*-* | x86_64-*)
+      default_gnu_indirect_function=yes
+      ;;
+  esac
   ;;
 *-*-openbsd*)
   tmake_file="t-openbsd"
@@ -4927,7 +4932,10 @@ case ${target} in
 		;;
 	i[34567]86-*-dragonfly* | x86_64-*-dragonfly*)
 		;;
-	i[34567]86-*-freebsd* | x86_64-*-freebsd*)
+	i[34567]86-*-freebsd*)
+		;;
+	x86_64-*-freebsd*)
+		tmake_file="${tmake_file} i386/t-freebsd64"
 		;;
 	ia64*-*-linux*)
 		;;

@@ -2400,6 +2400,72 @@ pass_forwprop::execute (function *fun)
 	      else
 		gsi_next (&gsi);
 	    }
+	  else if (TREE_CODE (TREE_TYPE (lhs)) == VECTOR_TYPE
+		   && TYPE_MODE (TREE_TYPE (lhs)) == BLKmode
+		   && gimple_assign_load_p (stmt)
+		   && !gimple_has_volatile_ops (stmt)
+		   && (TREE_CODE (gimple_assign_rhs1 (stmt))
+		       != TARGET_MEM_REF)
+		   && !stmt_can_throw_internal (cfun, stmt))
+	    {
+	      /* Rewrite loads used only in BIT_FIELD_REF extractions to
+	         component-wise loads.  */
+	      use_operand_p use_p;
+	      imm_use_iterator iter;
+	      bool rewrite = true;
+	      FOR_EACH_IMM_USE_FAST (use_p, iter, lhs)
+		{
+		  gimple *use_stmt = USE_STMT (use_p);
+		  if (is_gimple_debug (use_stmt))
+		    continue;
+		  if (!is_gimple_assign (use_stmt)
+		      || gimple_assign_rhs_code (use_stmt) != BIT_FIELD_REF)
+		    {
+		      rewrite = false;
+		      break;
+		    }
+		}
+	      if (rewrite)
+		{
+		  gimple *use_stmt;
+		  FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
+		    {
+		      if (is_gimple_debug (use_stmt))
+			{
+			  if (gimple_debug_bind_p (use_stmt))
+			    {
+			      gimple_debug_bind_reset_value (use_stmt);
+			      update_stmt (use_stmt);
+			    }
+			  continue;
+			}
+
+		      tree bfr = gimple_assign_rhs1 (use_stmt);
+		      tree new_rhs = fold_build3 (BIT_FIELD_REF,
+						  TREE_TYPE (bfr),
+						  unshare_expr (rhs),
+						  TREE_OPERAND (bfr, 1),
+						  TREE_OPERAND (bfr, 2));
+		      gimple *new_stmt
+			= gimple_build_assign (gimple_assign_lhs (use_stmt),
+					       new_rhs);
+
+		      location_t loc = gimple_location (use_stmt);
+		      gimple_set_location (new_stmt, loc);
+		      gimple_stmt_iterator gsi2 = gsi_for_stmt (use_stmt);
+		      unlink_stmt_vdef (use_stmt);
+		      gsi_remove (&gsi2, true);
+
+		      gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
+		    }
+
+		  release_defs (stmt);
+		  gsi_remove (&gsi, true);
+		}
+	      else
+		gsi_next (&gsi);
+	    }
+
 	  else if (code == COMPLEX_EXPR)
 	    {
 	      /* Rewrite stores of a single-use complex build expression
@@ -2434,6 +2500,65 @@ pass_forwprop::execute (function *fun)
 		  gimple_assign_set_rhs1 (use_stmt, gimple_assign_rhs2 (stmt));
 		  update_stmt (use_stmt);
 
+		  release_defs (stmt);
+		  gsi_remove (&gsi, true);
+		}
+	      else
+		gsi_next (&gsi);
+	    }
+	  else if (code == CONSTRUCTOR
+		   && VECTOR_TYPE_P (TREE_TYPE (rhs))
+		   && TYPE_MODE (TREE_TYPE (rhs)) == BLKmode
+		   && CONSTRUCTOR_NELTS (rhs) > 0
+		   && (!VECTOR_TYPE_P (TREE_TYPE (CONSTRUCTOR_ELT (rhs, 0)->value))
+		       || (TYPE_MODE (TREE_TYPE (CONSTRUCTOR_ELT (rhs, 0)->value))
+			   != BLKmode)))
+	    {
+	      /* Rewrite stores of a single-use vector constructors
+	         to component-wise stores if the mode isn't supported.  */
+	      use_operand_p use_p;
+	      gimple *use_stmt;
+	      if (single_imm_use (lhs, &use_p, &use_stmt)
+		  && gimple_store_p (use_stmt)
+		  && !gimple_has_volatile_ops (use_stmt)
+		  && is_gimple_assign (use_stmt)
+		  && (TREE_CODE (gimple_assign_lhs (use_stmt))
+		      != TARGET_MEM_REF))
+		{
+		  tree elt_t = TREE_TYPE (CONSTRUCTOR_ELT (rhs, 0)->value);
+		  unsigned HOST_WIDE_INT elt_w
+		    = tree_to_uhwi (TYPE_SIZE (elt_t));
+		  unsigned HOST_WIDE_INT n
+		    = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (rhs)));
+		  for (unsigned HOST_WIDE_INT bi = 0; bi < n; bi += elt_w)
+		    {
+		      unsigned HOST_WIDE_INT ci = bi / elt_w;
+		      tree new_rhs;
+		      if (ci < CONSTRUCTOR_NELTS (rhs))
+			new_rhs = CONSTRUCTOR_ELT (rhs, ci)->value;
+		      else
+			new_rhs = build_zero_cst (elt_t);
+		      tree use_lhs = gimple_assign_lhs (use_stmt);
+		      tree new_lhs = build3 (BIT_FIELD_REF,
+					     elt_t,
+					     unshare_expr (use_lhs),
+					     bitsize_int (elt_w),
+					     bitsize_int (bi));
+		      gimple *new_stmt = gimple_build_assign (new_lhs, new_rhs);
+		      location_t loc = gimple_location (use_stmt);
+		      gimple_set_location (new_stmt, loc);
+		      gimple_set_vuse (new_stmt, gimple_vuse (use_stmt));
+		      gimple_set_vdef (new_stmt,
+				       make_ssa_name (gimple_vop (cfun)));
+		      SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
+		      gimple_set_vuse (use_stmt, gimple_vdef (new_stmt));
+		      gimple_stmt_iterator gsi2 = gsi_for_stmt (use_stmt);
+		      gsi_insert_before (&gsi2, new_stmt, GSI_SAME_STMT);
+		    }
+		  gimple_stmt_iterator gsi2 = gsi_for_stmt (use_stmt);
+		  unlink_stmt_vdef (use_stmt);
+		  release_defs (use_stmt);
+		  gsi_remove (&gsi2, true);
 		  release_defs (stmt);
 		  gsi_remove (&gsi, true);
 		}
@@ -2496,6 +2621,8 @@ pass_forwprop::execute (function *fun)
 		  {
 		    int did_something;
 		    did_something = forward_propagate_into_comparison (&gsi);
+		    if (maybe_clean_or_replace_eh_stmt (stmt, gsi_stmt (gsi)))
+		      bitmap_set_bit (to_purge, bb->index);
 		    if (did_something == 2)
 		      cfg_changed = true;
 		    changed = did_something != 0;

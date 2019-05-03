@@ -49,9 +49,17 @@ version (Solaris)
     import core.sys.solaris.sys.types;
 }
 
-// this should be true for most architectures
-version (GNU_StackGrowsDown)
+version (GNU)
+{
+    import gcc.builtins;
+    version (GNU_StackGrowsDown)
+        version = StackGrowsDown;
+}
+else
+{
+    // this should be true for most architectures
     version = StackGrowsDown;
+}
 
 /**
  * Returns the process ID of the calling process, which is guaranteed to be
@@ -299,11 +307,6 @@ else version (Posix)
         {
             import core.sys.darwin.mach.thread_act;
             import core.sys.darwin.pthread : pthread_mach_thread_np;
-        }
-
-        version (GNU)
-        {
-            import gcc.builtins;
         }
 
         //

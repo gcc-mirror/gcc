@@ -1,3 +1,7 @@
+2019-04-29  Michael K. Darling  <darlingm@gmail.com>
+
+	* gnatvsn.ads: Bump Library_Version to 10.
+
 2019-04-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
 	    Jakub Jelinek  <jakub@redhat.com>

@@ -569,7 +569,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201703L
       /**
-       *  @param  Create an input file stream.
+       *  @brief  Create an input file stream.
        *  @param  __s  filesystem::path specifying the filename.
        *  @param  __mode  Open file in specified mode (see std::ios_base).
        *
@@ -832,7 +832,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201703L
       /**
-       *  @param  Create an output file stream.
+       *  @brief  Create an output file stream.
        *  @param  __s  filesystem::path specifying the filename.
        *  @param  __mode  Open file in specified mode (see std::ios_base).
        *
@@ -1090,7 +1090,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201703L
       /**
-       *  @param  Create an input/output file stream.
+       *  @brief  Create an input/output file stream.
        *  @param  __s  filesystem::path specifying the filename.
        *  @param  __mode  Open file in specified mode (see std::ios_base).
        */

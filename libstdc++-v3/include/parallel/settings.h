@@ -25,12 +25,12 @@
 /** @file parallel/settings.h
  *  @brief Runtime settings and tuning parameters, heuristics to decide
  *  whether to use parallelized algorithms.
+ *
  *  This file is a GNU parallel extension to the Standard C++ Library.
  *
- *  @section parallelization_decision 
- *  The decision whether to run an algorithm in parallel.
+ *  @section parallelization_decision Deciding whether to run an algorithm in parallel.
  *
- *  There are several ways the user can switch on and __off the parallel
+ *  There are several ways the user can switch on and off the parallel
  *  execution of an algorithm, both at compile- and run-time.
  *
  *  Only sequential execution can be forced at compile-time.  This
@@ -60,18 +60,17 @@
  *  If the algorithm call is not forced to be executed sequentially
  *  at compile-time, the decision is made at run-time.
  *  The global variable __gnu_parallel::_Settings::algorithm_strategy
- *  is checked. _It is a tristate variable corresponding to:
- *
- *  a. force_sequential, meaning the sequential algorithm is executed.
-*  b. force_parallel, meaning the parallel algorithm is executed.
-*  c. heuristic
+ *  is checked. It is a tristate variable corresponding to:
+ *    - a. force_sequential, meaning the sequential algorithm is executed.
+ *    - b. force_parallel, meaning the parallel algorithm is executed.
+ *    - c. heuristic
  *
  *  For heuristic, the parallel algorithm implementation is called
  *  only if the input size is sufficiently large.  For most
  *  algorithms, the input size is the (combined) length of the input
-*  sequence(__s).  The threshold can be set by the user, individually
+ *  sequence(__s).  The threshold can be set by the user, individually
  *  for each algorithm.  The according variables are called
-*  gnu_parallel::_Settings::[algorithm]_minimal_n .
+ *  gnu_parallel::_Settings::[algorithm]_minimal_n .
  *
  *  For some of the algorithms, there are even more tuning options,
  *  e. g. the ability to choose from multiple algorithm variants.  See

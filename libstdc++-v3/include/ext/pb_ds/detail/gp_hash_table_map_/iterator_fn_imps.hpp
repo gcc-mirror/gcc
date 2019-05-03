@@ -39,6 +39,8 @@
  * begin().
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::iterator
 PB_DS_CLASS_C_DEC::s_end_it;
@@ -81,3 +83,4 @@ PB_DS_CLASS_C_DEC::
 end() const
 { return s_const_end_it; }
 
+#endif

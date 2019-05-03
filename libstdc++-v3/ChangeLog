@@ -1,3 +1,316 @@
+2019-05-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90314
+	* include/bits/c++config (_GLIBCXX_NOEXCEPT_IF): Use variadic macro.
+	* include/bits/move.h (swap): Remove extra parentheses.
+
+	* include/experimental/bits/lfts_config.h: Improve doc markup.
+	* include/experimental/optional: Improve docs.
+	(_Has_addressof_mem, _Has_addressof_free, _Has_addressof)
+	(__constexpr_addressof): Remove.
+	(optional::operator->()): Use std::__addressof().
+	* include/std/optional (optional::operator->()): Adjust whitespace.
+	* testsuite/experimental/optional/constexpr/observers/2.cc: Check
+	that operator-> is still constexpr with overloaded operator&. Change
+	to compile-only test.
+	* testsuite/experimental/optional/constexpr/observers/3.cc: Change to
+	compile-only test.
+
+	* include/bits/shared_ptr.h: Improve docs.
+	* include/bits/shared_ptr_atomic.h: Likewise.
+	* include/bits/unique_ptr.h: Likewise. Adjust whitespace.
+
+	* include/bits/basic_string.h: Fix iterator/index confusion in
+	Doxygen comments.
+	* include/bits/range_access.h: Fix Doxygen warnings.
+	* include/bits/refwrap.h: Do not document implementation details.
+	(ref, cref): Group docs with reference_wrapper.
+	* include/std/fstream: Fix Doxygen markup.
+	* libsupc++/initializer_list (begin, end): Group docs with
+	initializer_list.
+
+	* doc/doxygen/user.cfg.in: Set MARKDOWN_SUPPORT=YES.
+
+	* include/bits/unique_lock.h: Fix/improve doxygen markup.
+	* include/std/mutex: Likewise.
+	* include/std/shared_mutex: Likewise.
+
+	* include/bits/fs_dir.h: Fix/improve doxygen markup.
+	* include/bits/fs_fwd.h: Likewise.
+	* include/bits/fs_ops.h: Likewise.
+	* include/bits/fs_path.h: Likewise.
+	* include/std/filesystem: Likewise.
+
+	* include/experimental/bits/net.h: Fix/improve doxygen markup.
+	* include/experimental/buffer: Likewise.
+	* include/experimental/executor: Likewise.
+	* include/experimental/internet: Likewise.
+	* include/experimental/io_context: Likewise.
+	* include/experimental/net: Likewise.
+	* include/experimental/netfwd: Likewise.
+	* include/experimental/socket: Likewise.
+	* include/experimental/timer: Likewise.
+
+	* doc/doxygen/doxygroups.cc: Move description of experimental group
+	here.
+	* include/experimental/algorithm: Add to libfund-ts doc group.
+	* include/experimental/any: Likewise. Do not document implementation
+	details.
+	* include/experimental/array: Add to libfund-ts doc group.
+	* include/experimental/bits/lfts_config.h: Define libfund-ts doc group
+	for Library Fundamentals.
+	* include/experimental/chrono: Add to libfund-ts doc group.
+	* include/experimental/deque: Likewise.
+	* include/experimental/forward_list: Likewise.
+	* include/experimental/functional: Likewise.
+	* include/experimental/iterator: Likewise.
+	* include/experimental/list: Likewise.
+	* include/experimental/map: Likewise.
+	* include/experimental/memory: Likewise.
+	* include/experimental/memory_resource: Likewise. Improve docs.
+	details.
+	* include/experimental/numeric: Add to libfund-ts doc group.
+	* include/experimental/optional: Likewise.
+	* include/experimental/propagate_const: Likewise.
+	* include/experimental/random: Likewise.
+	* include/experimental/ratio: Likewise.
+	* include/experimental/regex: Likewise.
+	* include/experimental/set: Likewise.
+	* include/experimental/source_location: Likewise.
+	* include/experimental/string: Likewise.
+	* include/experimental/string_view: Likewise.
+	* include/experimental/system_error: Likewise.
+	* include/experimental/tuple: Likewise.
+	* include/experimental/type_traits: Likewise.
+	* include/experimental/unordered_map: Likewise.
+	* include/experimental/unordered_set: Likewise.
+	* include/experimental/utility: Likewise.
+	* include/experimental/vector: Likewise.
+	* testsuite/experimental/any/misc/any_cast_neg.cc: Adjust dg-error.
+	* testsuite/experimental/array/neg.cc: Adjust dg-error.
+	* testsuite/experimental/propagate_const/assignment/move_neg.cc:
+	Likewise.
+	* testsuite/experimental/propagate_const/cons/move_neg.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements2.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements3.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements4.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements5.cc: Likewise.
+
+	* include/experimental/bits/fs_dir.h: Fix Doxygen markup.
+	* include/experimental/bits/fs_fwd.h: Improve docs.
+	* include/experimental/bits/fs_ops.h: fix Doxygen markup.
+	* include/experimental/bits/fs_path.h: Likewise.
+	(path, filesystem_error, u8path): Improve docs.
+	* include/experimental/filesystem: Link to docs for TS.
+
+	* config/allocator/new_allocator_base.h (__allocator_base): Add
+	workaround for Doxygen bug #6945.
+	* include/std/memory: Improve docs. Define group for pointer safety.
+	* include/std/scoped_allocator: Improve docs. Use "undocumented"
+	conditional to suppress documentation for implementation details.
+
+	* include/bits/specfun.h: Improve docs.
+	* include/tr1/cmath: Likewise. Fix nesting of preprocessor conditions
+	and namespaces.
+
+	* doc/doxygen/doxygroups.cc (std::tr2, std::__gnu_cxx): Improve docs.
+	(std::experimental): Add docs.
+	* doc/doxygen/user.cfg.in (PREDEFINED): Expand macros for __cxx11
+	namespace to nothing when generating docs.
+	* include/bits/regex_constants.h (std::regex_constants): Improve docs.
+	* include/std/chrono (std::chrono): Likewise.
+	* include/std/functional (std::placeholders): Likewise.
+	* include/std/thread (std::this_thread): Likewise.
+
+	* include/parallel/settings.h: Fix Doxygen markup.
+
+	* include/ext/pb_ds/detail/bin_search_tree_/*_imps.hpp: Do not define
+	anything unless PB_DS_CLASS_C_DEC is defined.
+	* include/ext/pb_ds/detail/binary_heap_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_base_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/hash_fn/*_imp.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/*_imps.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pairing_heap_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rb_tree_map_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/resize_policy*_imp.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/thin_heap_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/trie_policy*_imp.hpp: Likewise.
+	* include/ext/pb_ds/detail/unordered_iterator/const_iterator.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/unordered_iterator/iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/unordered_iterator/point_const_iterator.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/unordered_iterator/point_iterator.hpp:
+	Likewise.
+
+	* doc/doxygen/user.cfg.in: Regenerate with Doxygen 1.8.14 and set
+	GROUP_NESTED_COMPOUNDS=YES and SORT_BY_SCOPE_NAME=NO. Add various
+	_GLIBCXX_xxx macros and __attribute__(X) to PREDEFINED macros that
+	Doxygen expands.
+
+2019-05-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/abi/post/i386-solaris2.10/baseline_symbols.txt: Regenerate.
+	* config/abi/post/i386-solaris2.10/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/i386-solaris2.11/baseline_symbols.txt: Likewise.
+	* config/abi/post/i386-solaris2.11/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris2.10/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris2.10/sparcv9/baseline_symbols.txt:
+	Likewise.
+	* config/abi/post/sparc-solaris2.11/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris2.11/sparcv9/baseline_symbols.txt:
+	Likewise.
+
+2019-05-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61761
+	* include/std/complex (__complex_proj): Return parameter unchanged.
+	[_GLIBCXX_USE_C99_COMPLEX] (__complex_proj): Change overloads for
+	floating-point types to take std::complex arguments.
+	[_GLIBCXX_USE_C99_MATH_TR1] (__complex_proj): Add overloads for
+	floating-point types.
+	* testsuite/26_numerics/complex/proj.cc: New test.
+
+2019-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.26): Change _Lock_policyE2 exports
+	to _Lock_policyE[012].
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt: Update.
+
+2019-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/path/decompose/root_path.cc: Remove
+	macros accidentally left in.
+	* testsuite/27_io/filesystem/path/native/string-char8_t.cc: Remove
+	unnecessary -lstdc++fs option. Fix test for mingw.
+	* testsuite/experimental/filesystem/path/native/string-char8_t.cc:
+	Fix test for mingw.
+
+2019-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt: Update.
+
+2019-04-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algo.h (generate_n): Adjust doxygen comment.
+
+	* include/bits/move.h (swap(T&, T&), swap(T (&)[N], T (&)[N])): Use
+	_GLIBCXX_NOEXCEPT_IF to simplify declarations.
+
+	PR libstdc++/71312
+	* src/c++11/shared_ptr.cc (get_mutex): Align pool mutexes to 64 bytes.
+
+	* include/bits/stl_bvector.h (vector<bool>::empty()): Add nodiscard
+	attribute.
+
+	* include/bits/stl_iterator_base_types.h (_Iter_base): Remove unused
+	class template and partial specialization.
+
+	PR libstdc++/87982
+	* include/bits/stl_algo.h (generate_n): Convert _Size parameter to
+	an integral type.
+	* include/bits/stl_algobase.h (__size_to_integer): New overloaded
+	functions to convert a value to an integral type.
+	(__fill_n_a, __fill_n_a): Assert that __n is already an integral type.
+	(fill_n): Convert _Size parameter to an integral type.
+	* testsuite/25_algorithms/fill_n/87982.cc: New test.
+	* testsuite/25_algorithms/fill_n/87982_neg.cc: New test.
+	* testsuite/25_algorithms/fill_n/dr426.cc: New test.
+	* testsuite/25_algorithms/generate_n/87982.cc: New test.
+	* testsuite/25_algorithms/generate_n/87982_neg.cc: New test.
+	* testsuite/25_algorithms/generate_n/dr426.cc: New test.
+
+2019-04-28  Nina Dinka Ranns  <dinka.ranns@gmail.com>
+
+	Adding noexcept-specification on tuple constructors (LWG 2899)
+	* libstdc++-v3/include/std/tuple:
+	(tuple()): Add noexcept-specification.
+	(tuple(const _Elements&...)): Likewise
+	(tuple(_UElements&&...)): Likewise
+	(tuple(const tuple<_UElements...>&)): Likewise
+	(tuple(tuple<_UElements...>&&)): Likewise
+	(tuple(const _T1&, const _T2&)): Likewise
+	(tuple(_U1&&, _U2&&)): Likewise
+	(tuple(const tuple<_U1, _U2>&): Likewise
+	(tuple(tuple<_U1, _U2>&&): Likewise
+	(tuple(const pair<_U1, _U2>&): Likewise
+	(tuple(pair<_U1, _U2>&&): Likewise
+	* libstdc++-v3/testsuite/20_util/tuple/cons/noexcept_specs.cc: New
+
+2019-04-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/87106
+	* include/bits/stl_uninitialized.h (__relocate_object_a): Mark the
+	arguments with __restrict.
+
+2019-04-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
+
+2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/fs_path.h
+	(path::_S_convert_loc<_InputIterator>): Create const std::string to
+	avoid redundant call to _S_convert_loc with non-const pointers.
+
+	* testsuite/20_util/variant/run.cc: Use a new Hashable type to test
+	hashing, because pmr::string depends on _GLIBCXX_USE_CXX11_ABI==1.
+	* testsuite/21_strings/basic_string/hash/hash.cc
+	[!_GLIBCXX_USE_CXX11_ABI]: Don't test pmr strings.
+	* testsuite/21_strings/basic_string/hash/hash_char8_t.cc
+	[!_GLIBCXX_USE_CXX11_ABI]: Likewise.
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4): Replace wildcard that matches
+	wstring::_M_replace_dispatch with more specific patterns.
+	* include/bits/fs_path.h (path::_S_convert_loc<_InputIterator>):
+	Create const std::string to avoid redundant call to _S_convert_loc
+	with non-const pointers.
+	* include/bits/locale_conv.h (__do_str_codecvt): Use if-constexpr to
+	avoid unnecessary basic_string::assign instantiations.
+
+	* include/std/memory (__uses_alloc_args): Add string-literal to
+	static_assert, to match the one in __uses_alloc.
+	[__cpp_concepts] (_Std_pair): Use C++2a syntax for concept.
+	* testsuite/20_util/polymorphic_allocator/construct_c++2a.cc: Check
+	for recursive uses-allocator construction of nested pairs.
+	* testsuite/20_util/scoped_allocator/construct_pair_c++2a.cc:: Add
+	comment.
+
+2019-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/post/s390x-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt: Update.
+
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Update.
+
+2019-04-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90239
+	* doc/xml/manual/status_cxx2020.xml: Amend P0591R4 status.
+	* include/std/scoped_allocator [__cplusplus > 201703L]
+	(scoped_allocator_adaptor::construct): Define in terms of
+	uses_allocator_construction_args, as per P0591R4.
+	* testsuite/20_util/scoped_allocator/construct_pair_c++2a.cc: New test.
+	* testsuite/util/testsuite_allocator.h: Remove name of unused
+	parameter.
+
 2019-04-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Document P0024R2 status.

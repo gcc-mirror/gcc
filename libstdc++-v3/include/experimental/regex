@@ -24,6 +24,7 @@
 
 /** @file experimental/regex
  *  This is a TS C++ Library header.
+ *  @ingroup libfund-ts
  */
 
 #ifndef _GLIBCXX_EXPERIMENTAL_REGEX

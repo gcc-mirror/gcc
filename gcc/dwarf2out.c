@@ -31321,7 +31321,7 @@ dwarf2out_finish (const char *filename)
   flush_limbo_die_list ();
 
   if (inline_entry_data_table)
-    gcc_assert (inline_entry_data_table->elements () == 0);
+    gcc_assert (inline_entry_data_table->is_empty ());
 
   if (flag_checking)
     {

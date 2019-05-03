@@ -160,8 +160,10 @@ version (MIPS32)    version = MIPS_Any;
 version (MIPS64)    version = MIPS_Any;
 version (AArch64)   version = ARM_Any;
 version (ARM)       version = ARM_Any;
+version (S390)      version = IBMZ_Any;
 version (SPARC)     version = SPARC_Any;
 version (SPARC64)   version = SPARC_Any;
+version (SystemZ)   version = IBMZ_Any;
 version (RISCV32)   version = RISCV_Any;
 version (RISCV64)   version = RISCV_Any;
 
@@ -172,6 +174,12 @@ version (D_InlineAsm_X86)
 else version (D_InlineAsm_X86_64)
 {
     version = InlineAsm_X86_Any;
+}
+
+version (CRuntime_Microsoft)
+{
+    version (InlineAsm_X86_Any)
+        version = MSVC_InlineAsm;
 }
 
 version (X86_64) version = StaticallyHaveSSE;
@@ -3692,7 +3700,7 @@ real logb(real x) @trusted nothrow @nogc
             ret                         ;
         }
     }
-    else version (CRuntime_Microsoft)
+    else version (MSVC_InlineAsm)
     {
         asm pure nothrow @nogc
         {
@@ -3979,7 +3987,7 @@ real ceil(real x) @trusted pure nothrow @nogc
             ret                         ;
         }
     }
-    else version (CRuntime_Microsoft)
+    else version (MSVC_InlineAsm)
     {
         short cw;
         asm pure nothrow @nogc
@@ -4107,7 +4115,7 @@ real floor(real x) @trusted pure nothrow @nogc
             ret                         ;
         }
     }
-    else version (CRuntime_Microsoft)
+    else version (MSVC_InlineAsm)
     {
         short cw;
         asm pure nothrow @nogc
@@ -4607,7 +4615,7 @@ real trunc(real x) @trusted nothrow @nogc
             ret                         ;
         }
     }
-    else version (CRuntime_Microsoft)
+    else version (MSVC_InlineAsm)
     {
         short cw;
         asm pure nothrow @nogc
@@ -4759,12 +4767,17 @@ private:
             }
             else version (RISCV_Any)
             {
-                uint result = void;
-                asm pure nothrow @nogc
+                version (D_SoftFloat)
+                    return 0;
+                else
                 {
-                    "frflags %0" : "=r" result;
+                    uint result = void;
+                    asm pure nothrow @nogc
+                    {
+                        "frflags %0" : "=r" result;
+                    }
+                    return result;
                 }
-                return result;
             }
             else
                 assert(0, "Not yet supported");
@@ -4842,10 +4855,15 @@ private:
             }
             else version (RISCV_Any)
             {
-                uint newValues = 0x0;
-                asm pure nothrow @nogc
+                version (D_SoftFloat)
+                    return;
+                else
                 {
-                    "fsflags %0" : : "r" newValues;
+                    uint newValues = 0x0;
+                    asm pure nothrow @nogc
+                    {
+                        "fsflags %0" : : "r" newValues;
+                    }
                 }
             }
             else
@@ -5235,7 +5253,7 @@ struct FloatingPointControl
                                  | inexactException,
         }
     }
-    else version (SystemZ)
+    else version (IBMZ_Any)
     {
         enum : ExceptionMask
         {
@@ -5373,7 +5391,7 @@ private:
     {
         alias ControlState = ulong;
     }
-    else version (SystemZ)
+    else version (IBMZ_Any)
     {
         alias ControlState = uint;
     }
@@ -5442,12 +5460,17 @@ private:
             }
             else version (RISCV_Any)
             {
-                ControlState cont;
-                asm pure nothrow @nogc
+                version (D_SoftFloat)
+                    return 0;
+                else
                 {
-                    "frcsr %0" : "=r" cont;
+                    ControlState cont;
+                    asm pure nothrow @nogc
+                    {
+                        "frcsr %0" : "=r" cont;
+                    }
+                    return cont;
                 }
-                return cont;
             }
             else
                 assert(0, "Not yet supported");
@@ -5536,9 +5559,14 @@ private:
             }
             else version (RISCV_Any)
             {
-                asm pure nothrow @nogc
+                version (D_SoftFloat)
+                    return;
+                else
                 {
-                    "fscsr %0" : : "r" (newState);
+                    asm pure nothrow @nogc
+                    {
+                        "fscsr %0" : : "r" (newState);
+                    }
                 }
             }
             else

@@ -847,10 +847,11 @@ static void ix86_function_specific_post_stream_in (struct cl_target_option *);
 static void ix86_function_specific_print (FILE *, int,
 					  struct cl_target_option *);
 static bool ix86_valid_target_attribute_p (tree, tree, tree, int);
-static bool ix86_valid_target_attribute_inner_p (tree, char *[],
+static bool ix86_valid_target_attribute_inner_p (tree, tree, char *[],
 						 struct gcc_options *,
 						 struct gcc_options *,
-						 struct gcc_options *);
+						 struct gcc_options *,
+						 bool);
 static bool ix86_can_inline_p (tree, tree);
 static void ix86_set_current_function (tree);
 static unsigned int ix86_minimum_incoming_stack_boundary (bool);
@@ -5149,10 +5150,11 @@ ix86_function_specific_print (FILE *file, int indent,
    over the list.  */
 
 static bool
-ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
+ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
 				     struct gcc_options *opts,
 				     struct gcc_options *opts_set,
-				     struct gcc_options *enum_opts_set)
+				     struct gcc_options *enum_opts_set,
+				     bool target_clone_attr)
 {
   char *next_optstr;
   bool ret = true;
@@ -5296,8 +5298,11 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_YES ("recip",
 		   OPT_mrecip,
 		   MASK_RECIP),
-
   };
+
+  location_t loc
+    = fndecl == NULL ? UNKNOWN_LOCATION : DECL_SOURCE_LOCATION (fndecl);
+  const char *attr_name = target_clone_attr ? "target_clone" : "target";
 
   /* If this is a list, recurse to get the options.  */
   if (TREE_CODE (args) == TREE_LIST)
@@ -5306,9 +5311,10 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
 
       for (; args; args = TREE_CHAIN (args))
 	if (TREE_VALUE (args)
-	    && !ix86_valid_target_attribute_inner_p (TREE_VALUE (args),
+	    && !ix86_valid_target_attribute_inner_p (fndecl, TREE_VALUE (args),
 						     p_strings, opts, opts_set,
-						     enum_opts_set))
+						     enum_opts_set,
+						     target_clone_attr))
 	  ret = false;
 
       return ret;
@@ -5316,7 +5322,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
 
   else if (TREE_CODE (args) != STRING_CST)
     {
-      error ("attribute %<target%> argument not a string");
+      error_at (loc, "attribute %qs argument is not a string", attr_name);
       return false;
     }
 
@@ -5328,7 +5334,6 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
       char *p = next_optstr;
       char *orig_p = p;
       char *comma = strchr (next_optstr, ',');
-      const char *opt_string;
       size_t len, opt_len;
       int opt;
       bool opt_set_p;
@@ -5374,7 +5379,6 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
 	    {
 	      opt = attrs[i].opt;
 	      mask = attrs[i].mask;
-	      opt_string = attrs[i].string;
 	      break;
 	    }
 	}
@@ -5382,7 +5386,8 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
       /* Process the option.  */
       if (opt == N_OPTS)
 	{
-	  error ("attribute(target(\"%s\")) is unknown", orig_p);
+	  error_at (loc, "attribute %qs argument %qs is unknown",
+		    orig_p, attr_name);
 	  ret = false;
 	}
 
@@ -5410,7 +5415,8 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
 	{
 	  if (p_strings[opt])
 	    {
-	      error ("option(\"%s\") was already specified", opt_string);
+	      error_at (loc, "attribute value %qs was already specified "
+			"in %qs attribute", orig_p, attr_name);
 	      ret = false;
 	    }
 	  else
@@ -5429,7 +5435,8 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
 			global_dc);
 	  else
 	    {
-	      error ("attribute(target(\"%s\")) is unknown", orig_p);
+	      error_at (loc, "attribute value %qs is unknown in %qs attribute",
+			orig_p, attr_name);
 	      ret = false;
 	    }
 	}
@@ -5453,9 +5460,10 @@ release_options_strings (char **option_strings)
 /* Return a TARGET_OPTION_NODE tree of the target options listed or NULL.  */
 
 tree
-ix86_valid_target_attribute_tree (tree args,
+ix86_valid_target_attribute_tree (tree fndecl, tree args,
 				  struct gcc_options *opts,
-				  struct gcc_options *opts_set)
+				  struct gcc_options *opts_set,
+				  bool target_clone_attr)
 {
   const char *orig_arch_string = opts->x_ix86_arch_string;
   const char *orig_tune_string = opts->x_ix86_tune_string;
@@ -5471,8 +5479,9 @@ ix86_valid_target_attribute_tree (tree args,
   memset (&enum_opts_set, 0, sizeof (enum_opts_set));
 
   /* Process each of the options on the chain.  */
-  if (! ix86_valid_target_attribute_inner_p (args, option_strings, opts,
-					     opts_set, &enum_opts_set))
+  if (!ix86_valid_target_attribute_inner_p (fndecl, args, option_strings, opts,
+					    opts_set, &enum_opts_set,
+					    target_clone_attr))
     return error_mark_node;
 
   /* If the changed options are different from the default, rerun
@@ -5545,7 +5554,7 @@ static bool
 ix86_valid_target_attribute_p (tree fndecl,
 			       tree ARG_UNUSED (name),
 			       tree args,
-			       int ARG_UNUSED (flags))
+			       int flags)
 {
   struct gcc_options func_options;
   tree new_target, new_optimize;
@@ -5580,8 +5589,10 @@ ix86_valid_target_attribute_p (tree fndecl,
   cl_target_option_restore (&func_options,
 			    TREE_TARGET_OPTION (target_option_default_node));
 
-  new_target = ix86_valid_target_attribute_tree (args, &func_options,
-						 &global_options_set);
+  /* FLAGS == 1 is used for target_clones attribute.  */
+  new_target
+    = ix86_valid_target_attribute_tree (fndecl, args, &func_options,
+					&global_options_set, flags == 1);
 
   new_optimize = build_optimization_node (&func_options);
 
@@ -28270,68 +28281,34 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
 bool
 ix86_expand_strlen (rtx out, rtx src, rtx eoschar, rtx align)
 {
-  rtx addr, scratch1, scratch2, scratch3, scratch4;
-
-  /* The generic case of strlen expander is long.  Avoid it's
-     expanding unless TARGET_INLINE_ALL_STRINGOPS.  */
-
-  if (TARGET_UNROLL_STRLEN && eoschar == const0_rtx && optimize > 1
-      && !TARGET_INLINE_ALL_STRINGOPS
-      && !optimize_insn_for_size_p ()
-      && (!CONST_INT_P (align) || INTVAL (align) < 4))
-    return false;
-
-  addr = force_reg (Pmode, XEXP (src, 0));
-  scratch1 = gen_reg_rtx (Pmode);
-
-  if (TARGET_UNROLL_STRLEN && eoschar == const0_rtx && optimize > 1
-      && !optimize_insn_for_size_p ())
+if (TARGET_UNROLL_STRLEN
+	   && TARGET_INLINE_ALL_STRINGOPS
+	   && eoschar == const0_rtx
+	   && optimize > 1)
     {
+      /* The generic case of strlen expander is long.  Avoid it's
+	 expanding unless TARGET_INLINE_ALL_STRINGOPS.  */
+      rtx addr = force_reg (Pmode, XEXP (src, 0));
       /* Well it seems that some optimizer does not combine a call like
-         foo(strlen(bar), strlen(bar));
-         when the move and the subtraction is done here.  It does calculate
-         the length just once when these instructions are done inside of
-         output_strlen_unroll().  But I think since &bar[strlen(bar)] is
-         often used and I use one fewer register for the lifetime of
-         output_strlen_unroll() this is better.  */
+	 foo(strlen(bar), strlen(bar));
+	 when the move and the subtraction is done here.  It does calculate
+	 the length just once when these instructions are done inside of
+	 output_strlen_unroll().  But I think since &bar[strlen(bar)] is
+	 often used and I use one fewer register for the lifetime of
+	 output_strlen_unroll() this is better.  */
 
       emit_move_insn (out, addr);
 
       ix86_expand_strlensi_unroll_1 (out, src, align);
 
       /* strlensi_unroll_1 returns the address of the zero at the end of
-         the string, like memchr(), so compute the length by subtracting
-         the start address.  */
+	 the string, like memchr(), so compute the length by subtracting
+	 the start address.  */
       emit_insn (ix86_gen_sub3 (out, out, addr));
+      return true;
     }
   else
-    {
-      rtx unspec;
-
-      /* Can't use this if the user has appropriated eax, ecx, or edi.  */
-      if (fixed_regs[AX_REG] || fixed_regs[CX_REG] || fixed_regs[DI_REG])
-        return false;
-      /* Can't use this for non-default address spaces.  */
-      if (!ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (src)))
-	return false;
-
-      scratch2 = gen_reg_rtx (Pmode);
-      scratch3 = gen_reg_rtx (Pmode);
-      scratch4 = force_reg (Pmode, constm1_rtx);
-
-      emit_move_insn (scratch3, addr);
-      eoschar = force_reg (QImode, eoschar);
-
-      src = replace_equiv_address_nv (src, scratch3);
-
-      /* If .md starts supporting :P, this can be done in .md.  */
-      unspec = gen_rtx_UNSPEC (Pmode, gen_rtvec (4, src, eoschar, align,
-						 scratch4), UNSPEC_SCAS);
-      emit_insn (gen_strlenqi_1 (scratch1, scratch3, unspec));
-      emit_insn (ix86_gen_one_cmpl2 (scratch2, scratch1));
-      emit_insn (ix86_gen_add3 (out, scratch2, constm1_rtx));
-    }
-  return true;
+    return false;
 }
 
 /* For given symbol (function) construct code to compute address of it's PLT
@@ -29802,7 +29779,7 @@ iamcu_alignment (tree type, int align)
    instead of that alignment to align the object.  */
 
 int
-ix86_data_alignment (tree type, int align, bool opt)
+ix86_data_alignment (tree type, unsigned int align, bool opt)
 {
   /* GCC 4.8 and earlier used to incorrectly assume this alignment even
      for symbols from other compilation units or symbols that don't need
@@ -29810,14 +29787,14 @@ ix86_data_alignment (tree type, int align, bool opt)
      those compilers, ensure we don't decrease alignment from what we
      used to assume.  */
 
-  int max_align_compat = MIN (256, MAX_OFILE_ALIGNMENT);
+  unsigned int max_align_compat = MIN (256, MAX_OFILE_ALIGNMENT);
 
   /* A data structure, equal or greater than the size of a cache line
      (64 bytes in the Pentium 4 and other recent Intel processors, including
      processors based on Intel Core microarchitecture) should be aligned
      so that its base address is a multiple of a cache line size.  */
 
-  int max_align
+  unsigned int max_align
     = MIN ((unsigned) ix86_tune_cost->prefetch_block * 8, MAX_OFILE_ALIGNMENT);
 
   if (max_align < BITS_PER_WORD)
@@ -31834,6 +31811,229 @@ add_condition_to_bb (tree function_decl, tree version_decl,
   return bb3;
 }
 
+/* Priority of i386 features, greater value is higher priority.   This is
+   used to decide the order in which function dispatch must happen.  For
+   instance, a version specialized for SSE4.2 should be checked for dispatch
+   before a version for SSE3, as SSE4.2 implies SSE3.  */
+enum feature_priority
+{
+  P_ZERO = 0,
+  P_MMX,
+  P_SSE,
+  P_SSE2,
+  P_SSE3,
+  P_SSSE3,
+  P_PROC_SSSE3,
+  P_SSE4_A,
+  P_PROC_SSE4_A,
+  P_SSE4_1,
+  P_SSE4_2,
+  P_PROC_SSE4_2,
+  P_POPCNT,
+  P_AES,
+  P_PCLMUL,
+  P_AVX,
+  P_PROC_AVX,
+  P_BMI,
+  P_PROC_BMI,
+  P_FMA4,
+  P_XOP,
+  P_PROC_XOP,
+  P_FMA,
+  P_PROC_FMA,
+  P_BMI2,
+  P_AVX2,
+  P_PROC_AVX2,
+  P_AVX512F,
+  P_PROC_AVX512F
+};
+
+/* This is the order of bit-fields in __processor_features in cpuinfo.c */
+enum processor_features
+{
+  F_CMOV = 0,
+  F_MMX,
+  F_POPCNT,
+  F_SSE,
+  F_SSE2,
+  F_SSE3,
+  F_SSSE3,
+  F_SSE4_1,
+  F_SSE4_2,
+  F_AVX,
+  F_AVX2,
+  F_SSE4_A,
+  F_FMA4,
+  F_XOP,
+  F_FMA,
+  F_AVX512F,
+  F_BMI,
+  F_BMI2,
+  F_AES,
+  F_PCLMUL,
+  F_AVX512VL,
+  F_AVX512BW,
+  F_AVX512DQ,
+  F_AVX512CD,
+  F_AVX512ER,
+  F_AVX512PF,
+  F_AVX512VBMI,
+  F_AVX512IFMA,
+  F_AVX5124VNNIW,
+  F_AVX5124FMAPS,
+  F_AVX512VPOPCNTDQ,
+  F_AVX512VBMI2,
+  F_GFNI,
+  F_VPCLMULQDQ,
+  F_AVX512VNNI,
+  F_AVX512BITALG,
+  F_MAX
+};
+
+/* These are the values for vendor types and cpu types  and subtypes
+   in cpuinfo.c.  Cpu types and subtypes should be subtracted by
+   the corresponding start value.  */
+enum processor_model
+{
+  M_INTEL = 1,
+  M_AMD,
+  M_CPU_TYPE_START,
+  M_INTEL_BONNELL,
+  M_INTEL_CORE2,
+  M_INTEL_COREI7,
+  M_AMDFAM10H,
+  M_AMDFAM15H,
+  M_INTEL_SILVERMONT,
+  M_INTEL_KNL,
+  M_AMD_BTVER1,
+  M_AMD_BTVER2,
+  M_AMDFAM17H,
+  M_INTEL_KNM,
+  M_INTEL_GOLDMONT,
+  M_INTEL_GOLDMONT_PLUS,
+  M_INTEL_TREMONT,
+  M_CPU_SUBTYPE_START,
+  M_INTEL_COREI7_NEHALEM,
+  M_INTEL_COREI7_WESTMERE,
+  M_INTEL_COREI7_SANDYBRIDGE,
+  M_AMDFAM10H_BARCELONA,
+  M_AMDFAM10H_SHANGHAI,
+  M_AMDFAM10H_ISTANBUL,
+  M_AMDFAM15H_BDVER1,
+  M_AMDFAM15H_BDVER2,
+  M_AMDFAM15H_BDVER3,
+  M_AMDFAM15H_BDVER4,
+  M_AMDFAM17H_ZNVER1,
+  M_INTEL_COREI7_IVYBRIDGE,
+  M_INTEL_COREI7_HASWELL,
+  M_INTEL_COREI7_BROADWELL,
+  M_INTEL_COREI7_SKYLAKE,
+  M_INTEL_COREI7_SKYLAKE_AVX512,
+  M_INTEL_COREI7_CANNONLAKE,
+  M_INTEL_COREI7_ICELAKE_CLIENT,
+  M_INTEL_COREI7_ICELAKE_SERVER,
+  M_AMDFAM17H_ZNVER2,
+  M_INTEL_COREI7_CASCADELAKE
+};
+
+struct _arch_names_table
+{
+  const char *const name;
+  const enum processor_model model;
+};
+
+static const _arch_names_table arch_names_table[] =
+{
+  {"amd", M_AMD},
+  {"intel", M_INTEL},
+  {"atom", M_INTEL_BONNELL},
+  {"slm", M_INTEL_SILVERMONT},
+  {"core2", M_INTEL_CORE2},
+  {"corei7", M_INTEL_COREI7},
+  {"nehalem", M_INTEL_COREI7_NEHALEM},
+  {"westmere", M_INTEL_COREI7_WESTMERE},
+  {"sandybridge", M_INTEL_COREI7_SANDYBRIDGE},
+  {"ivybridge", M_INTEL_COREI7_IVYBRIDGE},
+  {"haswell", M_INTEL_COREI7_HASWELL},
+  {"broadwell", M_INTEL_COREI7_BROADWELL},
+  {"skylake", M_INTEL_COREI7_SKYLAKE},
+  {"skylake-avx512", M_INTEL_COREI7_SKYLAKE_AVX512},
+  {"cannonlake", M_INTEL_COREI7_CANNONLAKE},
+  {"icelake-client", M_INTEL_COREI7_ICELAKE_CLIENT},
+  {"icelake-server", M_INTEL_COREI7_ICELAKE_SERVER},
+  {"cascadelake", M_INTEL_COREI7_CASCADELAKE},
+  {"bonnell", M_INTEL_BONNELL},
+  {"silvermont", M_INTEL_SILVERMONT},
+  {"goldmont", M_INTEL_GOLDMONT},
+  {"goldmont-plus", M_INTEL_GOLDMONT_PLUS},
+  {"tremont", M_INTEL_TREMONT},
+  {"knl", M_INTEL_KNL},
+  {"knm", M_INTEL_KNM},
+  {"amdfam10h", M_AMDFAM10H},
+  {"barcelona", M_AMDFAM10H_BARCELONA},
+  {"shanghai", M_AMDFAM10H_SHANGHAI},
+  {"istanbul", M_AMDFAM10H_ISTANBUL},
+  {"btver1", M_AMD_BTVER1},
+  {"amdfam15h", M_AMDFAM15H},
+  {"bdver1", M_AMDFAM15H_BDVER1},
+  {"bdver2", M_AMDFAM15H_BDVER2},
+  {"bdver3", M_AMDFAM15H_BDVER3},
+  {"bdver4", M_AMDFAM15H_BDVER4},
+  {"btver2", M_AMD_BTVER2},
+  {"amdfam17h", M_AMDFAM17H},
+  {"znver1", M_AMDFAM17H_ZNVER1},
+  {"znver2", M_AMDFAM17H_ZNVER2},
+};
+
+/* These are the target attribute strings for which a dispatcher is
+   available, from fold_builtin_cpu.  */
+struct _isa_names_table
+{
+  const char *const name;
+  const enum processor_features feature;
+  const enum feature_priority priority;
+};
+
+static const _isa_names_table isa_names_table[] =
+{
+  {"cmov",    F_CMOV,	P_ZERO},
+  {"mmx",     F_MMX,	P_MMX},
+  {"popcnt",  F_POPCNT,	P_POPCNT},
+  {"sse",     F_SSE,	P_SSE},
+  {"sse2",    F_SSE2,	P_SSE2},
+  {"sse3",    F_SSE3,	P_SSE3},
+  {"ssse3",   F_SSSE3,	P_SSSE3},
+  {"sse4a",   F_SSE4_A,	P_SSE4_A},
+  {"sse4.1",  F_SSE4_1,	P_SSE4_1},
+  {"sse4.2",  F_SSE4_2,	P_SSE4_2},
+  {"avx",     F_AVX,	P_AVX},
+  {"fma4",    F_FMA4,	P_FMA4},
+  {"xop",     F_XOP,	P_XOP},
+  {"fma",     F_FMA,	P_FMA},
+  {"avx2",    F_AVX2,	P_AVX2},
+  {"avx512f", F_AVX512F, P_AVX512F},
+  {"bmi",     F_BMI,	P_BMI},
+  {"bmi2",    F_BMI2,	P_BMI2},
+  {"aes",     F_AES,	P_AES},
+  {"pclmul",  F_PCLMUL,	P_PCLMUL},
+  {"avx512vl",F_AVX512VL, P_ZERO},
+  {"avx512bw",F_AVX512BW, P_ZERO},
+  {"avx512dq",F_AVX512DQ, P_ZERO},
+  {"avx512cd",F_AVX512CD, P_ZERO},
+  {"avx512er",F_AVX512ER, P_ZERO},
+  {"avx512pf",F_AVX512PF, P_ZERO},
+  {"avx512vbmi",F_AVX512VBMI, P_ZERO},
+  {"avx512ifma",F_AVX512IFMA, P_ZERO},
+  {"avx5124vnniw",F_AVX5124VNNIW, P_ZERO},
+  {"avx5124fmaps",F_AVX5124FMAPS, P_ZERO},
+  {"avx512vpopcntdq",F_AVX512VPOPCNTDQ,	P_ZERO},
+  {"avx512vbmi2", F_AVX512VBMI2, P_ZERO},
+  {"gfni",	F_GFNI,	P_ZERO},
+  {"vpclmulqdq", F_VPCLMULQDQ, P_ZERO},
+  {"avx512vnni", F_AVX512VNNI, P_ZERO},
+  {"avx512bitalg", F_AVX512BITALG, P_ZERO}
+};
+
 /* This parses the attribute arguments to target in DECL and determines
    the right builtin to use to match the platform specification.
    It returns the priority value for this version decl.  If PREDICATE_LIST
@@ -31852,79 +32052,10 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
   char *tok_str = NULL;
   char *token;
 
-  /* Priority of i386 features, greater value is higher priority.   This is
-     used to decide the order in which function dispatch must happen.  For
-     instance, a version specialized for SSE4.2 should be checked for dispatch
-     before a version for SSE3, as SSE4.2 implies SSE3.  */
-  enum feature_priority
-  {
-    P_ZERO = 0,
-    P_MMX,
-    P_SSE,
-    P_SSE2,
-    P_SSE3,
-    P_SSSE3,
-    P_PROC_SSSE3,
-    P_SSE4_A,
-    P_PROC_SSE4_A,
-    P_SSE4_1,
-    P_SSE4_2,
-    P_PROC_SSE4_2,
-    P_POPCNT,
-    P_AES,
-    P_PCLMUL,
-    P_AVX,
-    P_PROC_AVX,
-    P_BMI,
-    P_PROC_BMI,
-    P_FMA4,
-    P_XOP,
-    P_PROC_XOP,
-    P_FMA,    
-    P_PROC_FMA,
-    P_BMI2,
-    P_AVX2,
-    P_PROC_AVX2,
-    P_AVX512F,
-    P_PROC_AVX512F
-  };
-
   enum feature_priority priority = P_ZERO;
 
-  /* These are the target attribute strings for which a dispatcher is
-     available, from fold_builtin_cpu.  */
-
-  static struct _feature_list
-    {
-      const char *const name;
-      const enum feature_priority priority;
-    }
-  const feature_list[] =
-    {
-      {"mmx", P_MMX},
-      {"sse", P_SSE},
-      {"sse2", P_SSE2},
-      {"sse3", P_SSE3},
-      {"sse4a", P_SSE4_A},
-      {"ssse3", P_SSSE3},
-      {"sse4.1", P_SSE4_1},
-      {"sse4.2", P_SSE4_2},
-      {"popcnt", P_POPCNT},
-      {"aes", P_AES},
-      {"pclmul", P_PCLMUL},
-      {"avx", P_AVX},
-      {"bmi", P_BMI},
-      {"fma4", P_FMA4},
-      {"xop", P_XOP},
-      {"fma", P_FMA},
-      {"bmi2", P_BMI2},
-      {"avx2", P_AVX2},
-      {"avx512f", P_AVX512F}
-    };
-
-
   static unsigned int NUM_FEATURES
-    = sizeof (feature_list) / sizeof (struct _feature_list);
+    = sizeof (isa_names_table) / sizeof (_isa_names_table);
 
   unsigned int i;
 
@@ -31951,8 +32082,9 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
   if (strstr (attrs_str, "arch=") != NULL)
     {
       cl_target_option_save (&cur_target, &global_options);
-      target_node = ix86_valid_target_attribute_tree (attrs, &global_options,
-						      &global_options_set);
+      target_node
+	= ix86_valid_target_attribute_tree (decl, attrs, &global_options,
+					    &global_options_set, 0);
     
       gcc_assert (target_node);
       if (target_node == error_mark_node)
@@ -32123,27 +32255,28 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	}
       for (i = 0; i < NUM_FEATURES; ++i)
 	{
-	  if (strcmp (token, feature_list[i].name) == 0)
+	  if (strcmp (token, isa_names_table[i].name) == 0)
 	    {
 	      if (predicate_list)
 		{
 		  predicate_arg = build_string_literal (
-				  strlen (feature_list[i].name) + 1,
-				  feature_list[i].name);
+				  strlen (isa_names_table[i].name) + 1,
+				  isa_names_table[i].name);
 		  predicate_chain = tree_cons (predicate_decl, predicate_arg,
 					       predicate_chain);
 		}
 	      /* Find the maximum priority feature.  */
-	      if (feature_list[i].priority > priority)
-		priority = feature_list[i].priority;
+	      if (isa_names_table[i].priority > priority)
+		priority = isa_names_table[i].priority;
 
 	      break;
 	    }
 	}
-      if (predicate_list && i == NUM_FEATURES)
+      if (predicate_list && priority == P_ZERO)
 	{
 	  error_at (DECL_SOURCE_LOCATION (decl),
-		    "no dispatcher found for %s", token);
+		    "ISA %qs is not supported in %<target%> attribute, "
+		    "use %<arch=%> syntax", token);
 	  return 0;
 	}
       token = strtok (NULL, ",");
@@ -32677,187 +32810,6 @@ fold_builtin_cpu (tree fndecl, tree *args)
   enum ix86_builtins fn_code = (enum ix86_builtins)
 				DECL_FUNCTION_CODE (fndecl);
   tree param_string_cst = NULL;
-
-  /* This is the order of bit-fields in __processor_features in cpuinfo.c */
-  enum processor_features
-  {
-    F_CMOV = 0,
-    F_MMX,
-    F_POPCNT,
-    F_SSE,
-    F_SSE2,
-    F_SSE3,
-    F_SSSE3,
-    F_SSE4_1,
-    F_SSE4_2,
-    F_AVX,
-    F_AVX2,
-    F_SSE4_A,
-    F_FMA4,
-    F_XOP,
-    F_FMA,
-    F_AVX512F,
-    F_BMI,
-    F_BMI2,
-    F_AES,
-    F_PCLMUL,
-    F_AVX512VL,
-    F_AVX512BW,
-    F_AVX512DQ,
-    F_AVX512CD,
-    F_AVX512ER,
-    F_AVX512PF,
-    F_AVX512VBMI,
-    F_AVX512IFMA,
-    F_AVX5124VNNIW,
-    F_AVX5124FMAPS,
-    F_AVX512VPOPCNTDQ,
-    F_AVX512VBMI2,
-    F_GFNI,
-    F_VPCLMULQDQ,
-    F_AVX512VNNI,
-    F_AVX512BITALG,
-    F_MAX
-  };
-
-  /* These are the values for vendor types and cpu types  and subtypes
-     in cpuinfo.c.  Cpu types and subtypes should be subtracted by
-     the corresponding start value.  */
-  enum processor_model
-  {
-    M_INTEL = 1,
-    M_AMD,
-    M_CPU_TYPE_START,
-    M_INTEL_BONNELL,
-    M_INTEL_CORE2,
-    M_INTEL_COREI7,
-    M_AMDFAM10H,
-    M_AMDFAM15H,
-    M_INTEL_SILVERMONT,
-    M_INTEL_KNL,
-    M_AMD_BTVER1,
-    M_AMD_BTVER2,    
-    M_AMDFAM17H,
-    M_INTEL_KNM,
-    M_INTEL_GOLDMONT,
-    M_INTEL_GOLDMONT_PLUS,
-    M_INTEL_TREMONT,
-    M_CPU_SUBTYPE_START,
-    M_INTEL_COREI7_NEHALEM,
-    M_INTEL_COREI7_WESTMERE,
-    M_INTEL_COREI7_SANDYBRIDGE,
-    M_AMDFAM10H_BARCELONA,
-    M_AMDFAM10H_SHANGHAI,
-    M_AMDFAM10H_ISTANBUL,
-    M_AMDFAM15H_BDVER1,
-    M_AMDFAM15H_BDVER2,
-    M_AMDFAM15H_BDVER3,
-    M_AMDFAM15H_BDVER4,
-    M_AMDFAM17H_ZNVER1,
-    M_INTEL_COREI7_IVYBRIDGE,
-    M_INTEL_COREI7_HASWELL,
-    M_INTEL_COREI7_BROADWELL,
-    M_INTEL_COREI7_SKYLAKE,
-    M_INTEL_COREI7_SKYLAKE_AVX512,
-    M_INTEL_COREI7_CANNONLAKE,
-    M_INTEL_COREI7_ICELAKE_CLIENT,
-    M_INTEL_COREI7_ICELAKE_SERVER,
-    M_AMDFAM17H_ZNVER2,
-    M_INTEL_COREI7_CASCADELAKE
-  };
-
-  static struct _arch_names_table
-    {
-      const char *const name;
-      const enum processor_model model;
-    }
-  const arch_names_table[] =
-    {
-      {"amd", M_AMD},
-      {"intel", M_INTEL},
-      {"atom", M_INTEL_BONNELL},
-      {"slm", M_INTEL_SILVERMONT},
-      {"core2", M_INTEL_CORE2},
-      {"corei7", M_INTEL_COREI7},
-      {"nehalem", M_INTEL_COREI7_NEHALEM},
-      {"westmere", M_INTEL_COREI7_WESTMERE},
-      {"sandybridge", M_INTEL_COREI7_SANDYBRIDGE},
-      {"ivybridge", M_INTEL_COREI7_IVYBRIDGE},
-      {"haswell", M_INTEL_COREI7_HASWELL},
-      {"broadwell", M_INTEL_COREI7_BROADWELL},
-      {"skylake", M_INTEL_COREI7_SKYLAKE},
-      {"skylake-avx512", M_INTEL_COREI7_SKYLAKE_AVX512},
-      {"cannonlake", M_INTEL_COREI7_CANNONLAKE},
-      {"icelake-client", M_INTEL_COREI7_ICELAKE_CLIENT},
-      {"icelake-server", M_INTEL_COREI7_ICELAKE_SERVER},
-      {"cascadelake", M_INTEL_COREI7_CASCADELAKE},
-      {"bonnell", M_INTEL_BONNELL},
-      {"silvermont", M_INTEL_SILVERMONT},
-      {"goldmont", M_INTEL_GOLDMONT},
-      {"goldmont-plus", M_INTEL_GOLDMONT_PLUS},
-      {"tremont", M_INTEL_TREMONT},
-      {"knl", M_INTEL_KNL},
-      {"knm", M_INTEL_KNM},
-      {"amdfam10h", M_AMDFAM10H},
-      {"barcelona", M_AMDFAM10H_BARCELONA},
-      {"shanghai", M_AMDFAM10H_SHANGHAI},
-      {"istanbul", M_AMDFAM10H_ISTANBUL},
-      {"btver1", M_AMD_BTVER1},      
-      {"amdfam15h", M_AMDFAM15H},
-      {"bdver1", M_AMDFAM15H_BDVER1},
-      {"bdver2", M_AMDFAM15H_BDVER2},
-      {"bdver3", M_AMDFAM15H_BDVER3},
-      {"bdver4", M_AMDFAM15H_BDVER4},
-      {"btver2", M_AMD_BTVER2},
-      {"amdfam17h", M_AMDFAM17H},
-      {"znver1", M_AMDFAM17H_ZNVER1},
-      {"znver2", M_AMDFAM17H_ZNVER2},
-    };
-
-  static struct _isa_names_table
-    {
-      const char *const name;
-      const enum processor_features feature;
-    }
-  const isa_names_table[] =
-    {
-      {"cmov",    F_CMOV},
-      {"mmx",     F_MMX},
-      {"popcnt",  F_POPCNT},
-      {"sse",     F_SSE},
-      {"sse2",    F_SSE2},
-      {"sse3",    F_SSE3},
-      {"ssse3",   F_SSSE3},
-      {"sse4a",   F_SSE4_A},
-      {"sse4.1",  F_SSE4_1},
-      {"sse4.2",  F_SSE4_2},
-      {"avx",     F_AVX},
-      {"fma4",    F_FMA4},
-      {"xop",     F_XOP},
-      {"fma",     F_FMA},
-      {"avx2",    F_AVX2},
-      {"avx512f", F_AVX512F},
-      {"bmi",     F_BMI},
-      {"bmi2",    F_BMI2},
-      {"aes",     F_AES},
-      {"pclmul",  F_PCLMUL},
-      {"avx512vl",F_AVX512VL},
-      {"avx512bw",F_AVX512BW},
-      {"avx512dq",F_AVX512DQ},
-      {"avx512cd",F_AVX512CD},
-      {"avx512er",F_AVX512ER},
-      {"avx512pf",F_AVX512PF},
-      {"avx512vbmi",F_AVX512VBMI},
-      {"avx512ifma",F_AVX512IFMA},
-      {"avx5124vnniw",F_AVX5124VNNIW},
-      {"avx5124fmaps",F_AVX5124FMAPS},
-      {"avx512vpopcntdq",F_AVX512VPOPCNTDQ},
-      {"avx512vbmi2", F_AVX512VBMI2},
-      {"gfni", F_GFNI},
-      {"vpclmulqdq", F_VPCLMULQDQ},
-      {"avx512vnni", F_AVX512VNNI},
-      {"avx512bitalg", F_AVX512BITALG}
-    };
 
   tree __processor_model_type = build_processor_model_struct ();
   tree __cpu_model_var = make_var_decl (__processor_model_type,
@@ -39408,7 +39360,9 @@ use_rsqrt_p ()
 static tree
 ix86_builtin_reciprocal (tree fndecl)
 {
-  switch (DECL_FUNCTION_CODE (fndecl))
+  enum ix86_builtins fn_code
+    = (enum ix86_builtins) DECL_FUNCTION_CODE (fndecl);
+  switch (fn_code)
     {
       /* Vectorized version of sqrt to rsqrt conversion.  */
     case IX86_BUILTIN_SQRTPS_NR:

@@ -38,6 +38,8 @@
  * Contains an implementation class for bin_search_tree_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 #ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
@@ -274,4 +276,5 @@ PB_DS_CLASS_C_DEC::
 assert_size(const char* __file, int __line) const
 { PB_DS_DEBUG_VERIFY(recursive_count(m_p_head->m_p_parent) == m_size); }
 
+#endif
 #endif

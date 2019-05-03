@@ -199,7 +199,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<int _Num> struct _Placeholder { };
 
   /** @namespace std::placeholders
-   *  @brief ISO C++11 entities sub-namespace for functional.
+   *  @brief ISO C++ 2011 namespace for std::bind placeholders.
    *  @ingroup binders
    */
   namespace placeholders

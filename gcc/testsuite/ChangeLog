@@ -1,3 +1,199 @@
+2019-05-03  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-reduc-sad-2.c: New testcase.
+
+2019-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89518
+	* gcc.dg/pr89518.c: New testcase.
+
+2019-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87314
+	* gcc.dg/pr87314-1.c: New testcase.
+
+2019-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88963
+	* gcc.dg/tree-ssa/ssa-fre-31.c: Disable forwprop.
+	* gcc.target/i386/pr88963-1.c: New testcase.
+	* gcc.target/i386/pr88963-2.c: Likewise.
+
+2019-05-03  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR target/88809
+	* gcc.target/i386/pr88809.c: Adjust for darwin.
+	* gcc.target/i386/pr88809-2.c: Adjust for i386 and darwin.
+
+2019-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90303
+	* g++.target/i386/pr90303.C: New test.
+
+2019-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89698
+	* g++.dg/tree-ssa/pr89698.C: New testcase.
+
+2019-05-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/ext/instantiate2.C: Remove special-casing for Darwin.
+
+2019-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89653
+	* g++.dg/vect/pr89653.cc: New testcase.
+
+2019-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89509
+	* gcc.dg/torture/restrict-8.c: New testcase.
+
+2019-05-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/tree-prof/section-attr-1.c: Update scan-asm regex
+	for cold section label.
+	* gcc.dg/tree-prof/section-attr-2.c: Likewise.
+	* gcc.dg/tree-prof/section-attr-3.c: Likewise.
+
+2019-05-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/spellcheck-options-5.c: Restrict to Linux and
+	GNU targets.
+
+2019-05-02  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
+
+	* gcc.target/aarch64/sve/dot_1.c: New test for dot product.
+
+2019-05-02  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/funcspec-4.c: Update scanned pattern.
+	* g++.target/i386/pr57362.C: Likewise.
+
+2019-05-02  Martin Liska  <mliska@suse.cz>
+
+	PR target/88809
+	* gcc.target/i386/pr88809.c: New test.
+	* gcc.target/i386/pr88809-2.c: New test.
+
+2019-05-01  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/60144
+	* gfortran.dg/block_name_2.f90: Adjust dg-error.
+	* gfortran.dg/dec_type_print_3.f90.f90: Likewise
+	* gfortran.dg/pr60144.f90: New test. 
+
+2019-05-01  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/90037
+	* g++.dg/tree-ssa/pr88797.C: New test.
+
+2019-05-01  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/cpp0x/decltype9.C: Adjust expected diagnostics.
+
+2019-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89093
+	* gcc.target/aarch64/return_address_sign_3.c: Remove extra space in
+	target attribute.
+
+2019-04-30  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* gcc.dg/sinhatanh-2.c: Count the number of functions.
+	* gcc.dg/sinhatanh-3.c: Likewise.
+
+2019-04-30  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/Werror-13.c: Add new tests for it.
+	* gcc.dg/pragma-diag-6.c: Likewise.
+
+2019-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89093
+	* gcc.target/aarch64/pr89093.c: New test.
+	* gcc.target/aarch64/pr63304_1.c: Remove space from target string.
+
+	PR tree-optimization/89475
+	* gcc.dg/tree-ssa/pr89475.c: New test.
+
+2019-04-30  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/90240
+	Revert:
+	2019-04-23  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/90078
+	* gcc/testsuite/g++.dg/tree-ssa/pr90078.C: New test.
+
+2019-04-29  Vladislav Ivanishin  <vlad@ispras.ru>
+
+        * gcc.dg/uninit-25-gimple.c: New test.
+        * gcc.dg/uninit-25.c: New test.
+        * gcc.dg/uninit-26.c: New test.
+        * gcc.dg/uninit-27-gimple.c: New test.
+
+2019-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90278
+	* gcc.dg/torture/pr90278.c: New testcase.
+
+2019-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90173
+	* g++.dg/cpp1z/class-deduction66.C: Use dg-do compile instead of
+	dg-do run.
+
+2019-04-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89261
+	* gcc.target/i386/pr89261.c: New test.
+
+2019-04-27  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/90258
+	* gcc.dg/completion-5.c: New test.
+	* gcc.target/i386/spellcheck-options-5.c: New test.
+
+2019-04-26  Jim Wilson  <jimw@sifive.com>
+
+	* gcc.target/riscv/load-immediate.c: New.
+
+2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/90243
+	* g++.dg/diagnostic/pr90243.C: New test.
+
+2019-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/90173
+	* g++.dg/cpp1z/class-deduction66.C: New.
+
+2019-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/trailing1.C: New.
+
+2019-04-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/alias-16.c: New test.
+
+2019-04-25  Martin Liska  <mliska@suse.cz>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89929
+	* g++.target/i386/mv28.C: New test.
+	* gcc.target/i386/mvc14.c: Likewise.
+	* g++.target/i386/pr57362.C: Updated.
+
+2019-04-24  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/90037
+	* gcc.dg/tree-ssa/20030710-1.c: Update dump file to scan.
+	* gcc.dg/isolate-2.c: Likewise.
+	* gcc.dg/isolate-4.c: Likewise.
+	* gcc.dg/pr19431.c: Accept either ordering of PHI args.
+	* gcc.dg/pr90037.c: New test.
+
 2019-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/44648

@@ -402,6 +402,9 @@ public:
   /* This function clears all entries in this hash table.  */
   void empty () { if (elements ()) empty_slow (); }
 
+  /* Return true when there are no elements in this hash table.  */
+  bool is_empty () const { return elements () == 0; }
+
   /* This function clears a specified SLOT in a hash table.  It is
      useful when you've already done the lookup and don't want to do it
      again. */
