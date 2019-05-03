@@ -7332,7 +7332,7 @@ dump_var (variable *var)
 static void
 dump_vars (variable_table_type *vars)
 {
-  if (vars->elements () > 0)
+  if (!vars->is_empty ())
     {
       fprintf (dump_file, "Variables:\n");
       vars->traverse <void *, dump_var_tracking_slot> (NULL);
@@ -9060,7 +9060,7 @@ emit_notes_for_changes (rtx_insn *insn, enum emit_note_where where,
   emit_note_data data;
   variable_table_type *htab = shared_hash_htab (vars);
 
-  if (!changed_variables->elements ())
+  if (changed_variables->is_empty ())
     return;
 
   if (MAY_HAVE_DEBUG_BIND_INSNS)
@@ -9538,7 +9538,7 @@ vt_emit_notes (void)
   basic_block bb;
   dataflow_set cur;
 
-  gcc_assert (!changed_variables->elements ());
+  gcc_assert (changed_variables->is_empty ());
 
   /* Free memory occupied by the out hash tables, as they aren't used
      anymore.  */
