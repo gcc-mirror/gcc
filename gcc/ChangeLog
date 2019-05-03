@@ -1,3 +1,11 @@
+2019-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88963
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Rewrite
+	vector loads feeding only BIT_FIELD_REFs to component
+	loads.  Rewrite stores fed by CONSTRUCTORs to component
+	stores.
+
 2019-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* opts.h (finish_options): Remove lang_mask argument.
