@@ -207,6 +207,9 @@ create_tmp_reg_or_ssa_name (tree type, gimple *stmt)
 tree
 canonicalize_constructor_val (tree cval, tree from_decl)
 {
+  if (CONSTANT_CLASS_P (cval))
+    return cval;
+
   tree orig_cval = cval;
   STRIP_NOPS (cval);
   if (TREE_CODE (cval) == POINTER_PLUS_EXPR
@@ -257,8 +260,15 @@ canonicalize_constructor_val (tree cval, tree from_decl)
 	cval = fold_convert (TREE_TYPE (orig_cval), cval);
       return cval;
     }
-  if (TREE_OVERFLOW_P (cval))
-    return drop_tree_overflow (cval);
+  /* In CONSTRUCTORs we may see unfolded constants like (int (*) ()) 0.  */
+  if (TREE_CODE (cval) == INTEGER_CST)
+    {
+      if (TREE_OVERFLOW_P (cval))
+	cval = drop_tree_overflow (cval);
+      if (!useless_type_conversion_p (TREE_TYPE (orig_cval), TREE_TYPE (cval)))
+	cval = fold_convert (TREE_TYPE (orig_cval), cval);
+      return cval;
+    }
   return orig_cval;
 }
 

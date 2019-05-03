@@ -1,5 +1,12 @@
 2019-05-03  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/89698
+	* gimple-fold.c (canonicalize_constructor_val): Early out
+	for constants, handle unfolded INTEGER_CSTs as they appear in
+	C++ virtual table ctors.
+
+2019-05-03  Richard Biener  <rguenther@suse.de>
+
 	* passes.c (execute_function_todo): Remove dead code.
 
 2019-05-02  Segher Boessenkool  <segher@kernel.crashing.org>

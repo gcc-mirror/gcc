@@ -1,3 +1,8 @@
+2019-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89698
+	* g++.dg/tree-ssa/pr89698.C: New testcase.
+
 2019-05-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/ext/instantiate2.C: Remove special-casing for Darwin.
