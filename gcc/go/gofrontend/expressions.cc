@@ -1672,6 +1672,10 @@ class Boolean_expression : public Expression
   { return true; }
 
   bool
+  do_is_zero_value() const
+  { return this->val_ == false; }
+
+  bool
   do_is_static_initializer() const
   { return true; }
 
@@ -2053,6 +2057,10 @@ class Integer_expression : public Expression
   bool
   do_is_constant() const
   { return true; }
+
+  bool
+  do_is_zero_value() const
+  { return mpz_sgn(this->val_) == 0; }
 
   bool
   do_is_static_initializer() const
@@ -2475,6 +2483,13 @@ class Float_expression : public Expression
   { return true; }
 
   bool
+  do_is_zero_value() const
+  {
+    return mpfr_zero_p(this->val_) != 0
+           && mpfr_signbit(this->val_) == 0;
+  }
+
+  bool
   do_is_static_initializer() const
   { return true; }
 
@@ -2684,6 +2699,15 @@ class Complex_expression : public Expression
   bool
   do_is_constant() const
   { return true; }
+
+  bool
+  do_is_zero_value() const
+  {
+    return mpfr_zero_p(mpc_realref(this->val_)) != 0
+           && mpfr_signbit(mpc_realref(this->val_)) == 0
+           && mpfr_zero_p(mpc_imagref(this->val_)) != 0
+           && mpfr_signbit(mpc_imagref(this->val_)) == 0;
+  }
 
   bool
   do_is_static_initializer() const
@@ -2921,6 +2945,10 @@ class Const_expression : public Expression
   bool
   do_is_constant() const
   { return true; }
+
+  bool
+  do_is_zero_value() const
+  { return this->constant_->const_value()->expr()->is_zero_value(); }
 
   bool
   do_is_static_initializer() const
@@ -3290,6 +3318,10 @@ class Nil_expression : public Expression
   { return true; }
 
   bool
+  do_is_zero_value() const
+  { return true; }
+
+  bool
   do_is_static_initializer() const
   { return true; }
 
@@ -3529,6 +3561,28 @@ Type_conversion_expression::do_is_constant() const
       && !type->is_boolean_type()
       && !type->is_string_type())
     return false;
+
+  return true;
+}
+
+// Return whether a type conversion is a zero value.
+
+bool
+Type_conversion_expression::do_is_zero_value() const
+{
+  if (!this->expr_->is_zero_value())
+    return false;
+
+  // Some type conversion from zero value is still not zero value.
+  // For example, []byte("") or interface{}(0).
+  // Conservatively, only report true if the RHS is nil.
+  Type* type = this->type_;
+  if (type->integer_type() == NULL
+      && type->float_type() == NULL
+      && type->complex_type() == NULL
+      && !type->is_boolean_type()
+      && !type->is_string_type())
+    return this->expr_->is_nil_expression();
 
   return true;
 }
@@ -6874,6 +6928,19 @@ String_concat_expression::do_is_constant() const
        ++pe)
     {
       if (!(*pe)->is_constant())
+	return false;
+    }
+  return true;
+}
+
+bool
+String_concat_expression::do_is_zero_value() const
+{
+  for (Expression_list::const_iterator pe = this->exprs_->begin();
+       pe != this->exprs_->end();
+       ++pe)
+    {
+      if (!(*pe)->is_zero_value())
 	return false;
     }
   return true;
@@ -13007,6 +13074,33 @@ Struct_construction_expression::is_constant_struct() const
   return true;
 }
 
+// Return whether this is a zero value.
+
+bool
+Struct_construction_expression::do_is_zero_value() const
+{
+  if (this->vals() == NULL)
+    return true;
+  for (Expression_list::const_iterator pv = this->vals()->begin();
+       pv != this->vals()->end();
+       ++pv)
+    if (*pv != NULL && !(*pv)->is_zero_value())
+      return false;
+
+  const Struct_field_list* fields = this->type_->struct_type()->fields();
+  for (Struct_field_list::const_iterator pf = fields->begin();
+       pf != fields->end();
+       ++pf)
+    {
+      // Interface conversion may cause a zero value being converted
+      // to a non-zero value, like interface{}(0).  Be conservative.
+      if (pf->type()->interface_type() != NULL)
+        return false;
+    }
+
+  return true;
+}
+
 // Return whether this struct can be used as a constant initializer.
 
 bool
@@ -13285,6 +13379,28 @@ Array_construction_expression::is_constant_array() const
 	      || (*pv)->is_nonconstant_composite_literal()))
 	return false;
     }
+  return true;
+}
+
+// Return whether this is a zero value.
+
+bool
+Array_construction_expression::do_is_zero_value() const
+{
+  if (this->vals() == NULL)
+    return true;
+
+  // Interface conversion may cause a zero value being converted
+  // to a non-zero value, like interface{}(0).  Be conservative.
+  if (this->type_->array_type()->element_type()->interface_type() != NULL)
+    return false;
+
+  for (Expression_list::const_iterator pv = this->vals()->begin();
+       pv != this->vals()->end();
+       ++pv)
+    if (*pv != NULL && !(*pv)->is_zero_value())
+      return false;
+
   return true;
 }
 
