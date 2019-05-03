@@ -313,6 +313,14 @@ DEF_GO_RUNTIME(GCWRITEBARRIER, "runtime.gcWriteBarrier",
 DEF_GO_RUNTIME(TYPEDMEMMOVE, "runtime.typedmemmove",
 	       P3(TYPE, POINTER, POINTER), R0())
 
+// Clear memory that contains no pointer.
+DEF_GO_RUNTIME(MEMCLRNOPTR, "runtime.memclrNoHeapPointers",
+               P2(POINTER, UINTPTR), R0())
+
+// Clear memory that contains pointer.
+DEF_GO_RUNTIME(MEMCLRHASPTR, "runtime.memclrHasPointers",
+               P2(POINTER, UINTPTR), R0())
+
 
 // Lock the printer (for print/println).
 DEF_GO_RUNTIME(PRINTLOCK, "runtime.printlock", P0(), R0())

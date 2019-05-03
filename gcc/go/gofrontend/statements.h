@@ -1622,6 +1622,11 @@ class For_range_statement : public Statement
   lower_map_range_clear(Type*, Block*, Expression*, Named_object*,
                         Temporary_statement*, Location);
 
+  Statement*
+  lower_array_range_clear(Gogo*, Type*, Expression*, Block*,
+                          Named_object*, Temporary_statement*,
+                          Location);
+
   // The variable which is set to the index value.
   Expression* index_var_;
   // The variable which is set to the element value.  This may be

@@ -544,6 +544,11 @@ class Expression
   is_constant() const
   { return this->do_is_constant(); }
 
+  // Return whether this is the zero value of its type.
+  bool
+  is_zero_value() const
+  { return this->do_is_zero_value(); }
+
   // Return whether this expression can be used as a static
   // initializer.  This is true for an expression that has only
   // numbers and pointers to global variables or composite literals
@@ -1064,6 +1069,11 @@ class Expression
   // Return whether this is a constant expression.
   virtual bool
   do_is_constant() const
+  { return false; }
+
+  // Return whether this is the zero value of its type.
+  virtual bool
+  do_is_zero_value() const
   { return false; }
 
   // Return whether this expression can be used as a constant
@@ -1600,6 +1610,10 @@ class String_expression : public Expression
   { return true; }
 
   bool
+  do_is_zero_value() const
+  { return this->val_ == ""; }
+
+  bool
   do_is_static_initializer() const
   { return true; }
 
@@ -1693,6 +1707,9 @@ class Type_conversion_expression : public Expression
   do_is_constant() const;
 
   bool
+  do_is_zero_value() const;
+
+  bool
   do_is_static_initializer() const;
 
   bool
@@ -1754,6 +1771,10 @@ class Unsafe_type_conversion_expression : public Expression
  protected:
   int
   do_traverse(Traverse* traverse);
+
+  bool
+  do_is_zero_value() const
+  { return this->expr_->is_zero_value(); }
 
   bool
   do_is_static_initializer() const;
@@ -2150,6 +2171,9 @@ class String_concat_expression : public Expression
 
   bool
   do_is_constant() const;
+
+  bool
+  do_is_zero_value() const;
 
   bool
   do_is_static_initializer() const;
@@ -3570,13 +3594,16 @@ class Struct_construction_expression : public Expression,
 	type_(type)
   { }
 
- // Return whether this is a constant initializer.
+  // Return whether this is a constant initializer.
   bool
   is_constant_struct() const;
 
  protected:
   int
   do_traverse(Traverse* traverse);
+
+  bool
+  do_is_zero_value() const;
 
   bool
   do_is_static_initializer() const;
@@ -3641,6 +3668,9 @@ class Array_construction_expression : public Expression,
 protected:
   virtual int
   do_traverse(Traverse* traverse);
+
+  bool
+  do_is_zero_value() const;
 
   bool
   do_is_static_initializer() const;
