@@ -1,5 +1,10 @@
 2019-05-03  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/87314
+	* gcc.dg/pr87314-1.c: New testcase.
+
+2019-05-03  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/88963
 	* gcc.dg/tree-ssa/ssa-fre-31.c: Disable forwprop.
 	* gcc.target/i386/pr88963-1.c: New testcase.
