@@ -1,5 +1,11 @@
 2019-05-03  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/90316
+	* tree-ssa-pre.c (pass_pre::execute): Re-compute DOM fast queries
+	before running VN.
+
+2019-05-03  Richard Biener  <rguenther@suse.de>
+
 	* tree-vect-stmts.c (get_group_load_store_type): Avoid
 	peeling for gaps by loading only lower halves of vectors
 	if possible.
