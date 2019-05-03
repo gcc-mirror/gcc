@@ -1,5 +1,9 @@
 2019-05-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/61761
+	* testsuite/26_numerics/complex/proj.cc: Don't assume <cmath> defines
+	std::copysign.
+
 	PR libstdc++/52119
 	* include/ext/numeric_traits.h (__glibcxx_min): Avoid integer
 	overflow warning with -Wpedantic -Wsystem-headers.
