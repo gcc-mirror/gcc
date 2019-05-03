@@ -1,3 +1,28 @@
+2019-05-03  Martin Liska  <mliska@suse.cz>
+
+	* hash-map.h: Add is_empty function.
+	* hash-set.h: Likewise.
+	* hash-table.h: Likewise.
+	* dwarf2out.c (dwarf2out_finish): Use is_empty instead of
+	elements () == 0 (and similar usages).
+	* gimple-ssa-store-merging.c (pass_store_merging::terminate_and_process_all_chains): Likewise.
+	* gimplify.c (gimplify_bind_expr): Likewise.
+	(gimplify_switch_expr): Likewise.
+	* hash-map-tests.c (test_map_of_strings_to_int): Likewise.
+	* ipa-icf.c (sem_item_optimizer::remove_symtab_node): Likewise.
+	* postreload-gcse.c (dump_hash_table): Likewise.
+	(gcse_after_reload_main): Likewise.
+	* predict.c (combine_predictions_for_bb): Likewise.
+	* tree-parloops.c (reduction_phi): Likewise.
+	(separate_decls_in_region): Likewise.
+	(transform_to_exit_first_loop): Likewise.
+	(gen_parallel_loop): Likewise.
+	(gather_scalar_reductions): Likewise.
+	(try_create_reduction_list): Likewise.
+	* var-tracking.c (dump_vars): Likewise.
+	(emit_notes_for_changes): Likewise.
+	(vt_emit_notes): Likewise.
+
 2019-05-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90316

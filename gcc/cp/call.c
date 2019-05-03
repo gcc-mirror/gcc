@@ -986,7 +986,7 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
       tree val;
       bool ok;
 
-      if (pset.elements () && field_in_pset (pset, field))
+      if (!pset.is_empty () && field_in_pset (pset, field))
 	continue;
       if (i < CONSTRUCTOR_NELTS (ctor))
 	{

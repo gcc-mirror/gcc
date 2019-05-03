@@ -1252,7 +1252,7 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
       if (dump_file)
 	{
 	  fprintf (dump_file, "Predictions for bb %i\n", bb->index);
-	  if (unlikely_edges.elements () == 0)
+	  if (unlikely_edges.is_empty ())
 	    fprintf (dump_file,
 		     "%i edges in bb %i predicted to even probabilities\n",
 		     nedges, bb->index);

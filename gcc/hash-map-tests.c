@@ -53,7 +53,7 @@ test_map_of_strings_to_int ()
   const char *eric = "half a bee";
 
   /* A fresh hash_map should be empty.  */
-  ASSERT_EQ (0, m.elements ());
+  ASSERT_TRUE (m.is_empty ());
   ASSERT_EQ (NULL, m.get (ostrich));
 
   /* Populate the hash_map.  */

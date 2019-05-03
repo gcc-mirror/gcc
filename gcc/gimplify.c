@@ -1423,7 +1423,7 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 
 		  oacc_declare_returns->remove (t);
 
-		  if (oacc_declare_returns->elements () == 0)
+		  if (oacc_declare_returns->is_empty ())
 		    {
 		      delete oacc_declare_returns;
 		      oacc_declare_returns = NULL;
@@ -2418,7 +2418,7 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
 
       if (gimplify_ctxp->live_switch_vars)
 	{
-	  gcc_assert (gimplify_ctxp->live_switch_vars->elements () == 0);
+	  gcc_assert (gimplify_ctxp->live_switch_vars->is_empty ());
 	  delete gimplify_ctxp->live_switch_vars;
 	}
       gimplify_ctxp->live_switch_vars = saved_live_switch_vars;
