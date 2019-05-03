@@ -1,3 +1,8 @@
+2019-05-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gimplify.c (gomp_oacc_needs_data_present): Return NULL if decl is a
+	Fortran optional argument.
+
 2019-02-01  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* omp-oacc-kernels.c (struct adjust_nested_loop_clauses_wi_info): New.

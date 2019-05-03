@@ -9707,6 +9707,9 @@ gomp_oacc_needs_data_present (tree decl)
 	  || TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) != ARRAY_TYPE))
     return NULL;
 
+  if (omp_is_optional_argument (decl))
+    return NULL;
+
   decl = get_base_address (decl);
 
   for (ctx = gimplify_omp_ctxp->outer_context; ctx; ctx = ctx->outer_context)
