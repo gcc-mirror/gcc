@@ -1,3 +1,25 @@
+2019-05-04  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable.h (_Hashtable<>::rehash): Review comment.
+	* include/bits/hashtable_policy.h
+	(_Prime_rehash_policy::_M_bkt_for_elements): Use __builtin_ceill.
+	(_Power2_rehash_policy::_M_bkt_for_elements): Likewise.
+	(_Power2_rehash_policy::_M_next_bkt): Enforce returning a result not
+	smaller than input value rather than always greater. Preserve
+	_M_next_resize if called with 0 input. Use __builtin_floorl.
+	(_Power2_rehash_policy::_M_need_rehash): Rehash only if number of
+	elements + number of insertions is greater than _M_next_resize. Start
+	with 11 buckets if not told otherwise. Use __builtin_floorl.
+	(_Rehash_base<>::reserve): Use rehash policy _M_bkt_for_elements.
+	* src/c++11/hashtable_c++0x.cc (_Prime_rehash_policy::_M_next_bkt):
+	Preserve _M_next_resize if called with 0 input. Use __builtin_floorl.
+	(_Prime_rehash_policy::_M_need_rehash): Start with 11 buckets if not
+	told otherwise. Use __builtin_floorl.
+	* testsuite/23_containers/unordered_set/hash_policy/71181.cc: Adapt test
+	to also validate _Power2_rehash_policy.
+	* testsuite/23_containers/unordered_set/hash_policy/power2_rehash.cc:
+	Adapt.
+
 2019-05-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/61761
