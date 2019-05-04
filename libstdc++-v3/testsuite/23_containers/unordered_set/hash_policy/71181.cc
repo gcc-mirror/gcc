@@ -22,22 +22,22 @@
 #include <testsuite_hooks.h>
 
 template<typename _USet>
-  void test(int threshold)
+  void
+  test(_USet& us, int threshold)
   {
-    _USet us;
     auto nb_reserved = us.bucket_count();
     us.reserve(nb_reserved);
     auto bkts = us.bucket_count();
-    for (int i = 0; i != threshold; ++i)
+    for (int nb_insert = 1; nb_insert <= threshold; ++nb_insert)
       {
-	if (i >= nb_reserved)
+	if (nb_insert > nb_reserved)
 	  {
 	    nb_reserved = bkts;
 	    us.reserve(nb_reserved);
 	    bkts = us.bucket_count();
 	  }
 
-	us.insert(i);
+	us.insert(nb_insert);
 
 	VERIFY( us.bucket_count() == bkts );
       }
@@ -54,9 +54,22 @@ template<typename _Value>
 		  std::__detail::_Power2_rehash_policy,
 		  std::__detail::_Hashtable_traits<false, true, true>>;
 
+template<typename _USet>
+  void
+  test_cont()
+  {
+    _USet us;
+    test(us, 150);
+
+    us.clear();
+    us.rehash(0);
+
+    test(us, 150);
+  }
+
 int main()
 {
-  test<std::unordered_set<int>>(150);
-  test<unordered_set_power2_rehash<int>>(150);
+  test_cont<std::unordered_set<int>>();
+  test_cont<unordered_set_power2_rehash<int>>();
   return 0;
 }
