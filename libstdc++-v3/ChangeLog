@@ -1,5 +1,14 @@
 2019-05-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/system_error (error_category, error_code)
+	(error_condition): Improve docs.
+	* libsupc++/exception: Add missing @addtogroup Doxygen command.
+	* libsupc++/exception_ptr.h (exception_ptr): Link equality operators
+	to class documentation. Suppress documentation for implementation
+	details.
+	* libsupc++/nested_exception.h (throw_with_nested, rethrow_if_nested):
+	Suppress documentation for implementation details.
+
 	* include/std/system_error (error_code): Remove friend declaration
 	for hash<error_code>.
 	(hash<error_code>::operator()): Use public member functions to access
