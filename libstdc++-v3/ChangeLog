@@ -1,5 +1,13 @@
 2019-05-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/90299
+	* src/c++17/fs_ops.cc (absolute(const path&)): Report an error if the
+	argument is an empty path.
+	(absolute(const path&, error_code&)): Use invalid_argument as error
+	code instead of no_such_file_or_directory.
+	* testsuite/27_io/filesystem/operations/absolute.cc: Check handling
+	of non-existent paths and empty paths with both overloads of absolute.
+
 	* include/std/system_error (error_category, error_code)
 	(error_condition): Improve docs.
 	* libsupc++/exception: Add missing @addtogroup Doxygen command.
