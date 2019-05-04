@@ -77,7 +77,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /** Abstract base class for types defining a category of error codes.
    *
    * An error category defines a context that give meaning to the integer
-   * stored in an `error_code` or `error_category` object. For example,
+   * stored in an `error_code` or `error_condition` object. For example,
    * the standard `errno` constants such a `EINVAL` and `ENOMEM` are
    * associated with the "generic" category and other OS-specific error
    * numbers are associated with the "system" category, but a user-defined
