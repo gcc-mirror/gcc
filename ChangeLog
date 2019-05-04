@@ -1,3 +1,7 @@
+2019-05-04  Roland Illig  <roland.illig@gmx.de>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2019-05-02  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/85574
