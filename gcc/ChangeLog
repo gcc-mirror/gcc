@@ -1,3 +1,8 @@
+2019-05-04  Michael Meissner  <meissner@linux.ibm.com>
+
+	* ChangeLog.ibm: Delete unintentional commit on the wrong branch.
+	* REVISION: Likewise.
+
 2019-05-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90316
