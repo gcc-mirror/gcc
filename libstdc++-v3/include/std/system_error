@@ -193,8 +193,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // DR 804.
   private:
-    friend class hash<error_code>;
-
     int            		_M_value;
     const error_category* 	_M_cat;
   };
@@ -394,13 +392,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_t
       operator()(const error_code& __e) const noexcept
       {
-	const size_t __tmp = std::_Hash_impl::hash(__e._M_value);
-	return std::_Hash_impl::__hash_combine(__e._M_cat, __tmp);
+	const size_t __tmp = std::_Hash_impl::hash(__e.value());
+	return std::_Hash_impl::__hash_combine(&__e.category(), __tmp);
       }
     };
 #endif // _GLIBCXX_COMPATIBILITY_CXX0X
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
   // DR 2686.
   /// std::hash specialization for error_condition.
   template<>
@@ -411,7 +409,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(const error_condition& __e) const noexcept
       {
 	const size_t __tmp = std::_Hash_impl::hash(__e.value());
-	return std::_Hash_impl::__hash_combine(__e.category(), __tmp);
+	return std::_Hash_impl::__hash_combine(&__e.category(), __tmp);
       }
     };
 #endif

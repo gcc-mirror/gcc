@@ -1,3 +1,15 @@
+2019-05-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/system_error (error_code): Remove friend declaration
+	for hash<error_code>.
+	(hash<error_code>::operator()): Use public member functions to access
+	value and category.
+	(hash<error_condition>::operator()): Use address of category, not
+	its object representation.
+	* src/c++11/compatibility-c++0x.cc (hash<error_code>::operator()):
+	Use public member functions to access value and category.
+	* testsuite/19_diagnostics/error_condition/hash.cc: New test.
+
 2019-05-04  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/90277
