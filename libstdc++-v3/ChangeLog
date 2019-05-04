@@ -1,5 +1,6 @@
 2019-05-04  François Dumont  <fdumont@gcc.gnu.org>
 
+	PR libstdc++/90277
 	* include/bits/hashtable.h (_Hashtable<>::rehash): Review comment.
 	* include/bits/hashtable_policy.h
 	(_Prime_rehash_policy::_M_bkt_for_elements): Use __builtin_ceill.
