@@ -1,3 +1,8 @@
+2019-05-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/90344
+	* frontend-passes.c (create_var): Bring into sync with gcc 8.
+
 2019-04-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/87352
