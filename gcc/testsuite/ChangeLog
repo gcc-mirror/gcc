@@ -21,12 +21,6 @@
 	systems.
 	* gcc.dg/tsan/pr88017.c: Likewise.
 
-2019-05-06  Li Jia He  <helijia@linux.ibm.com>
-
-	* gcc.dg/tree-ssa/pr37508.c: Add the no-ssa-phiopt option to skip phi
-	optimization.
-	* gcc.dg/tree-ssa/pr88676-2.c: New testcase.
-
 2019-05-05  Thomas Koenig <tkoenig@gcc.gnu.org>
 
 	PR fortran/90344
