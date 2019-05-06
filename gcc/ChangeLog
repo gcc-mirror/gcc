@@ -1,5 +1,9 @@
 2019-05-06  Richard Biener  <rguenther@suse.de>
 
+	* dwarf2out.c (mem_loc_descriptor): Initialize int_mode.
+
+2019-05-06  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/90316
 	* tree-ssa-alias.c (maybe_skip_until): Pass in target BB,
 	compute target on demand.
