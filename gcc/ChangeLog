@@ -1,3 +1,8 @@
+2019-05-06  Li Jia He  <helijia@linux.ibm.com>
+
+	* tree-ssa-phiopt.c (two_value_replacement): Fix a typo in parameter
+	detection.
+
 2019-05-03  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/89400
