@@ -819,7 +819,8 @@ gori_compute::compute_logical_operands (irange &r, grange_op *s,
   tree op1, op2;
   bool op1_in_chain, op2_in_chain;
   bool ret = true;
-
+  const unsigned depth_limit = 6;	// Max depth of logical recursion.
+  static unsigned depth = 0;		// Current depth of recursion.
 
   irange op1_true, op1_false, op2_true, op2_false;
 
@@ -835,6 +836,17 @@ gori_compute::compute_logical_operands (irange &r, grange_op *s,
   /* If neither operand is derived, then this stmt tells us nothing. */
   if (!op1_in_chain && !op2_in_chain)
     return false;
+
+  // Long chains of nested logical expressions rarely produce good ranges
+  // but can take exponential times to compute since we are recursively
+  // evaluating them for the true and false result.  If the depth is too great 
+  // simply terminate the calculation.  See gcc testcase rvrp-logic-1.c.
+  if (depth > depth_limit)
+    {
+      r.set_varying (TREE_TYPE (name));
+      return true;
+    }
+  depth++;
 
   /* The false path is not always a simple inversion of the true side.
      Calulate ranges for true and false on both sides. */
@@ -872,6 +884,8 @@ gori_compute::compute_logical_operands (irange &r, grange_op *s,
   if (!ret || !logical_combine (r, gimple_expr_code (s), lhs, op1_true,
 				op1_false, op2_true, op2_false))
     r.set_varying (TREE_TYPE (name));
+
+  depth--;
   return true;
 }
 
