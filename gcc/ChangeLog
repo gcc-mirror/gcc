@@ -1,3 +1,8 @@
+2019-05-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_dbx_register_number): Handle
+	FRAME_POINTER_REGNUM, ARG_POINTER_REGNUM, and 64 (which was MQ).
+
 2019-05-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/88709
