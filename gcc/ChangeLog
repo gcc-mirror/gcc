@@ -1,3 +1,16 @@
+2019-05-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89221
+	* config.gcc (i[34567]86-*-*, x86_64-*-*): Move tests for enable_cld
+	and enable_frame_pointer ...
+	* configure.ac: ... here.  Update help strings for
+	--enable-frame-pointer.
+	* configure: Regenerate.
+	* config/i386/i386-options.c (ix86_option_override_internal): Remove
+	USE_X86_64_FRAME_POINTER define, use USE_IX86_FRAME_POINTER instead.
+	* config/i386/sol2.h (USE_IX86_FRAME_POINTER): Remove.
+	(USE_X86_64_FRAME_POINTER): Ditto.
+
 2019-05-06  Martin Liska  <mliska@suse.cz>
 
 	* config.gcc: Append to target_gtfiles and fix indentation.
