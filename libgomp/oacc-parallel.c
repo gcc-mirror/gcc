@@ -275,7 +275,7 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
   acc_dev->openacc.async_set_async_func (acc_async_sync);
 }
 
-/* Legacy entry point, only provide host execution.  */
+/* Legacy entry point (GCC 5).  Only provide host fallback execution.  */
 
 void
 GOACC_parallel (int flags_m, void (*fn) (void *),
@@ -649,11 +649,15 @@ GOACC_wait (int async, int num_waits, ...)
     acc_wait_all_async (async);
 }
 
+/* Legacy entry point (GCC 5).  */
+
 int
 GOACC_get_num_threads (void)
 {
   return 1;
 }
+
+/* Legacy entry point (GCC 5).  */
 
 int
 GOACC_get_thread_num (void)
