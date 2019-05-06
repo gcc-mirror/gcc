@@ -1702,6 +1702,19 @@ ranger_fold (value_range_base *vr, enum tree_code code,
       vr->set_undefined ();
       return;
     }
+  // MAX/MIN of pointers in VRP dumbs everything down to
+  // NULL/NON_NULL/VARYING.  The ranger, because it has sub-ranges,
+  // can sometimes get slightly better ranges.  For now, dumb down the
+  // ranger result so it compares with VRP.
+  if (flag_ranges_mode == RANGES_CHECKING
+      && (code == MAX_EXPR || code == MIN_EXPR)
+      && POINTER_TYPE_P (res.type ())
+      && !res.zero_p ()
+      && !res.non_zero_p ())
+    {
+      vr->set_varying ();
+      return;
+    }
   *vr = irange_to_value_range (res);
 }
 
