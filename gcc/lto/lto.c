@@ -118,7 +118,7 @@ lto_materialize_function (struct cgraph_node *node)
 static void
 materialize_cgraph (void)
 {
-  struct cgraph_node *node; 
+  struct cgraph_node *node;
   timevar_id_t lto_timer;
 
   if (!quiet_flag)
@@ -252,7 +252,7 @@ stream_out_partitions (char *temp_filename, int blen, int min, int max,
 	}
       /* Fork failed; lets do the job ourseleves.  */
       else if (cpid == -1)
-        stream_out_partitions_1 (temp_filename, blen, min, max);
+	stream_out_partitions_1 (temp_filename, blen, min, max);
       else
 	nruns++;
     }
@@ -291,7 +291,8 @@ lto_wpa_write_files (void)
   timevar_push (TV_WHOPR_WPA);
 
   FOR_EACH_VEC_ELT (ltrans_partitions, i, part)
-    lto_stats.num_output_symtab_nodes += lto_symtab_encoder_size (part->encoder);
+    lto_stats.num_output_symtab_nodes
+    += lto_symtab_encoder_size (part->encoder);
 
   timevar_pop (TV_WHOPR_WPA);
 
@@ -324,15 +325,18 @@ lto_wpa_write_files (void)
       sprintf (temp_filename + blen, "%u.o", i);
 
       if (!quiet_flag)
-	fprintf (stderr, " %s (%s %i insns)", temp_filename, part->name, part->insns);
+	fprintf (stderr, " %s (%s %i insns)", temp_filename, part->name,
+		 part->insns);
       if (symtab->dump_file)
 	{
-          lto_symtab_encoder_iterator lsei;
-	  
-	  fprintf (symtab->dump_file, "Writing partition %s to file %s, %i insns\n",
+	  lto_symtab_encoder_iterator lsei;
+
+	  fprintf (symtab->dump_file,
+		   "Writing partition %s to file %s, %i insns\n",
 		   part->name, temp_filename, part->insns);
 	  fprintf (symtab->dump_file, "  Symbols in partition: ");
-	  for (lsei = lsei_start_in_partition (part->encoder); !lsei_end_p (lsei);
+	  for (lsei = lsei_start_in_partition (part->encoder);
+	       !lsei_end_p (lsei);
 	       lsei_next_in_partition (&lsei))
 	    {
 	      symtab_node *node = lsei_node (lsei);
@@ -348,13 +352,15 @@ lto_wpa_write_files (void)
 		  fprintf (symtab->dump_file, "%s ", node->asm_name ());
 		  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
 		  if (cnode
-		      && lto_symtab_encoder_encode_body_p (part->encoder, cnode))
+		      && lto_symtab_encoder_encode_body_p (part->encoder,
+							   cnode))
 		    fprintf (symtab->dump_file, "(body included)");
 		  else
 		    {
 		      varpool_node *vnode = dyn_cast <varpool_node *> (node);
 		      if (vnode
-			  && lto_symtab_encoder_encode_initializer_p (part->encoder, vnode))
+			  && lto_symtab_encoder_encode_initializer_p (part->encoder,
+								      vnode))
 			fprintf (symtab->dump_file, "(initializer included)");
 		    }
 		}
@@ -396,7 +402,7 @@ lto_wpa_write_files (void)
     fatal_error (input_location,
 		 "closing LTRANS output list %s: %m", ltrans_output_list);
 
-  free_ltrans_partitions();
+  free_ltrans_partitions ();
   free (temp_filename);
 
   timevar_pop (TV_WHOPR_WPA_IO);
@@ -634,7 +640,7 @@ lto_main (void)
 	  debuginfo_early_stop ();
 
 	  /* Let the middle end know that we have read and merged all of
-	     the input files.  */ 
+	     the input files.  */
 	  symtab->compile ();
 
 	  timevar_stop (TV_PHASE_OPT_GEN);

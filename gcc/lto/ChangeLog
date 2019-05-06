@@ -1,3 +1,8 @@
+2019-05-06  Martin Liska  <mliska@suse.cz>
+
+	* lto-common.c: Update coding style.
+	* lto.c (materialize_cgraph): Likewise.
+
 2019-05-06  Hrishikesh Kulkarni  <hrishikeshparag@gmail.com>
 	    Martin Liska  <mliska@suse.cz>
 
