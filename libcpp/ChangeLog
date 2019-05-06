@@ -1,3 +1,11 @@
+2019-05-06  Nathan Sidwell  <nathan@acm.org>
+
+	* include/mkdeps.h: Rename struct deps to struct mkdeps.
+	* mkdeps.c: Likewise.
+	* include/cpplib.h (cpp_get_deps): Rename return type..
+	* directives.c (cpp_get_deps): Likewise.
+	* internal.h (struct cpp_reader): Rename deps field type.
+
 2019-04-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* files.c (search_path_exhausted): Fix typo in comment.
