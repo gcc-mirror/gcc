@@ -406,33 +406,6 @@
   return FP_REGNO_P (r);
 })
 
-;; Return 1 if op is a HTM specific SPR register.
-(define_predicate "htm_spr_reg_operand"
-  (match_operand 0 "register_operand")
-{
-  if (!TARGET_HTM)
-    return 0;
-
-  if (SUBREG_P (op))
-    op = SUBREG_REG (op);
-
-  if (!REG_P (op))
-    return 0;
-
-  switch (REGNO (op))
-    {
-      case TFHAR_REGNO:
-      case TFIAR_REGNO:
-      case TEXASR_REGNO:
-	return 1;
-      default:
-	break;
-    }
-  
-  /* Unknown SPR.  */
-  return 0;
-})
-
 ;; Return 1 if op is a general purpose register that is an even register
 ;; which suitable for a load/store quad operation
 ;; Subregs are not allowed here because when they are combine can

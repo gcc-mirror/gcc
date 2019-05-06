@@ -1,5 +1,28 @@
 2019-05-06  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (TFHAR_REGNO, TFIAR_REGNO, TEXASR_REGNO):
+	Delete.
+	* config/rs6000/rs6000.h (FIRST_PSEUDO_REGISTER): Adjust.
+	(DWARF_FRAME_REGISTERS): Adjust.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS, CALL_REALLY_USED_REGISTERS):
+	Adjust.
+	(REG_ALLOC_ORDER): Adjust.
+	(enum reg_class): Delete SPR_REGS.
+	(REG_CLASS_NAMES): Delete SPR_REGS.
+	(REG_CLASS_CONTENTS): Delete SPR_REGS.  Adjust for deleted TM regs.
+	(REGISTER_NAMES): Adjust.
+	(ADDITIONAL_REGISTER_NAMES): Adjust.
+	* config/rs6000/darwin.h (REGISTER_NAMES): Adjust.
+	* config/rs6000/htm.md (htm_mfspr_<mode>, htm_mtspr_<mode>): Adjust.
+	* config/rs6000/predicates.md (htm_spr_reg_operand): Delete.
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Adjust.
+	(htm_spr_regno): Delete.
+	(htm_expand_builtin): Adjust: the HTM builtins now have one fewer
+	argument.
+	(rs6000_dbx_register_number): Adjust.
+
+2019-05-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.h (PRE_GCC3_DWARF_FRAME_REGISTERS): Delete.
 
 2019-05-06  Segher Boessenkool  <segher@kernel.crashing.org>
