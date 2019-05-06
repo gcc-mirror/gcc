@@ -7703,7 +7703,7 @@ trees_out::tree_mergeable (depset *dep)
       if (streaming_p ())
 	{
 	  unsigned is_mod = false;
-	  if (!module_header_p ())
+	  if (!header_module_p ())
 	    is_mod = MAYBE_DECL_MODULE_OWNER (decl) != MODULE_NONE;
 	  u (is_mod);
 	}
@@ -14005,7 +14005,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   /* Write the line maps.  */
   write_locations (to, range_bits, config.num_partitions, &crc);
 
-  config.num_macros = module_header_p () ? write_macros (to, reader, &crc) : 0;
+  config.num_macros = header_module_p () ? write_macros (to, reader, &crc) : 0;
   config.controlling_node = cpp_main_controlling_macro (reader);
 
   /* And finish up.  */
@@ -14913,7 +14913,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
 void
 module_cpp_undef (cpp_reader *reader, location_t loc, cpp_hashnode *node)
 {
-  if (!module_header_p ())
+  if (!header_module_p ())
     {
       /* Turn us off.  */
       struct cpp_callbacks *cb = cpp_get_callbacks (reader);
@@ -15428,7 +15428,7 @@ load_macros (cpp_reader *reader, cpp_hashnode *node, void *)
 void
 finish_module_processing (cpp_reader *reader)
 {
-  if (module_header_p ())
+  if (header_module_p ())
     module_kind &= ~MK_EXPORTING;
 
   if (flag_module_macros)

@@ -4893,7 +4893,7 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 		preamble = MP_NOTHING;
 	      if (exporting)
 		cp_lexer_consume_token (parser->lexer);
-	      if (module_not_header_p ()
+	      if (named_module_p ()
 		  && IDENTIFIER_POINTER (next->u.value)[0] == '_')
 		{
 		  error_at (next->location, "include-translated header unit"
@@ -13399,7 +13399,7 @@ cp_parser_module_name (cp_parser *parser, int kind)
 
   module_state *parent = NULL;
   bool partitioned = false;
-  if (!kind && token->type == CPP_COLON && module_not_header_p ())
+  if (!kind && token->type == CPP_COLON && named_module_p ())
     {
       partitioned = true;
       cp_lexer_consume_token (parser->lexer);

@@ -190,9 +190,9 @@ get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
       if (!create)
 	return NULL;
 
-      /* The partition slot is not needed when we know we're not a
-	 non-header module.  */
-      bool partition_slot = !not_module_p () && !module_header_p ();
+      /* The partition slot is only needed when we know we're a named
+	 module.  */
+      bool partition_slot = named_module_p ();
       unsigned want = ((MODULE_SLOTS_FIXED + partition_slot + (create < 0)
 			+ MODULE_VECTOR_SLOTS_PER_CLUSTER - 1)
 		       / MODULE_VECTOR_SLOTS_PER_CLUSTER);
@@ -3449,7 +3449,7 @@ add_mergeable_decl (tree *gslot, tree decl)
 static void
 record_mergeable_decl (tree *slot, tree name, tree decl)
 {
-  bool partition = module_not_header_p ();
+  bool partition = named_module_p ();
   tree *gslot = get_fixed_binding_slot
     (slot, name, partition ? MODULE_SLOT_PARTITION : MODULE_SLOT_GLOBAL, true);
   add_mergeable_decl (gslot, decl);
@@ -3584,7 +3584,7 @@ check_module_override (tree decl, tree mvec, bool is_friend,
     {
       /* Look in the appropriate mergeable decl slot.  */
       tree mergeable = NULL_TREE;
-      if (module_not_header_p ())
+      if (named_module_p ())
 	mergeable = MODULE_VECTOR_CLUSTER (mvec, MODULE_SLOT_PARTITION
 					   / MODULE_VECTOR_SLOTS_PER_CLUSTER)
 	  .slots[MODULE_SLOT_PARTITION % MODULE_VECTOR_SLOTS_PER_CLUSTER];
@@ -8567,7 +8567,7 @@ make_namespace (tree ctx, tree name, location_t loc,
 		    pos += sprintf (&buf[pos], "_%02x", *ptr);
 	      asm_name = get_identifier_with_length (buf, pos);
 	    }
-	  else if (module_global_p ())
+	  else if (global_purview_p ())
 	    /* We cannot have it here, because there's nothing
 	       unique to mangle into the name.  */
 	    error ("anonymous namespaces cannot be used in"

@@ -6813,20 +6813,25 @@ extern unsigned module_kind;
 
 inline bool module_purview_p ()
 { return module_kind & MK_MODULE; }
+inline bool global_purview_p ()
+{ return module_kind & MK_GLOBAL; }
+
 inline bool not_module_p ()
-{ return !(module_kind & (MK_MODULE | MK_GLOBAL)); }
-inline bool module_header_p ()
+{ return (module_kind & (MK_MODULE | MK_GLOBAL)) == 0; }
+inline bool named_module_p ()
+{ /* The divides are constant shifts!  */
+  return ((module_kind / MK_MODULE) ^ (module_kind / MK_GLOBAL)) & 1;
+}
+inline bool header_module_p ()
 { return (module_kind & (MK_MODULE | MK_GLOBAL)) == (MK_MODULE | MK_GLOBAL); }
-inline bool module_not_header_p ()
-{ return (module_kind & (MK_MODULE | MK_GLOBAL)) == MK_MODULE; }
+
 inline bool module_interface_p ()
 { return module_kind & MK_INTERFACE; }
 inline bool module_partition_p ()
 { return module_kind & MK_PARTITION; }
 inline bool module_has_bmi_p ()
 { return module_kind & (MK_INTERFACE | MK_PARTITION); }
-inline bool module_global_p ()
-{ return module_kind & MK_GLOBAL; }
+
 inline bool module_exporting_p ()
 { return module_kind & MK_EXPORTING; }
 
