@@ -1,3 +1,15 @@
+2019-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/90359
+	Backport from mainline
+	2019-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89655
+	PR bootstrap/89656
+	* vr-values.c (vr_values::update_value_range): If
+	old_vr->varying_p (), don't update it, make new_vr also VARYING
+	and return false.
+
 2019-05-03  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

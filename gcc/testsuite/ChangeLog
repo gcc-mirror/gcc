@@ -1,3 +1,13 @@
+2019-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/90359
+	Backport from mainline
+	2019-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89655
+	PR bootstrap/89656
+	* gcc.c-torture/compile/pr89655.c: New test.
+
 2019-05-03  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

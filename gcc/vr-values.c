@@ -211,7 +211,12 @@ vr_values::update_value_range (const_tree var, value_range *new_vr)
 	 the same.  We may not have is_new when transitioning to
 	 UNDEFINED.  If old_vr->type is VARYING, we shouldn't be
 	 called.  */
-      if (new_vr->type == VR_UNDEFINED)
+      if (old_vr->type == VR_VARYING)
+	{
+	  set_value_range_to_varying (new_vr);
+	  is_new = false;
+	}
+      else if (new_vr->type == VR_UNDEFINED)
 	{
 	  BITMAP_FREE (new_vr->equiv);
 	  set_value_range_to_varying (old_vr);
