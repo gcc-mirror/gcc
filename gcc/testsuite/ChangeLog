@@ -1,3 +1,13 @@
+2019-05-06  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-05-06  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/90312
+	* gcc.dg/asan/pr87930.c: Run the test only on *linux or *gnu
+	systems.
+	* gcc.dg/tsan/pr88017.c: Likewise.
+
 2019-05-04  Michael Meissner  <meissner@linux.ibm.com>
 
 	* ChangeLog.ibm: Delete unintentional commit on the wrong branch.
