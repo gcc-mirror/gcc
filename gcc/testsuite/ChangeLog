@@ -1,5 +1,10 @@
 2019-05-06  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/88828
+	* gcc.target/i386/pr88828-0.c: New testcase.
+
+2019-05-06  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/90328
 	* gcc.dg/torture/pr90328.c: New testcase.
 
