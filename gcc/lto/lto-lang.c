@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "lto-tree.h"
 #include "lto.h"
+#include "lto-common.h"
 #include "stringpool.h"
 #include "attribs.h"
 

@@ -22,7 +22,7 @@
 # The name of the LTO compiler.
 LTO_EXE = lto1$(exeext)
 # The LTO-specific object files inclued in $(LTO_EXE).
-LTO_OBJS = lto/lto-lang.o lto/lto.o lto/lto-object.o attribs.o lto/lto-partition.o lto/lto-symtab.o
+LTO_OBJS = lto/lto-lang.o lto/lto.o lto/lto-object.o attribs.o lto/lto-partition.o lto/lto-symtab.o lto/lto-common.o
 lto_OBJS = $(LTO_OBJS)
 
 # this is only useful in a LTO bootstrap, but this does not work right

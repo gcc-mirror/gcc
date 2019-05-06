@@ -1,3 +1,14 @@
+2019-05-06  Martin Liska  <mliska@suse.cz>
+	    Hrishikesh Kulkarni  <hrishikeshparag@gmail.com>
+
+	* Make-lang.in: Add lto-common.o.
+	* config-lang.in: Likewise for gtfiles.
+	* lto-common.c: New file.
+	* lto-common.h: New file.
+	* lto-lang.c: Include lto-common.h.
+	* lto.c: Move most of the functionality
+	into lto-common.c file.
+
 2019-04-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (do_stream_out): rename to ...
