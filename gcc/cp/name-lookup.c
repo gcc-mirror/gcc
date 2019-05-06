@@ -168,6 +168,27 @@ search_imported_binding_slot (tree *slot, unsigned ix)
   return NULL;
 }
 
+static void
+init_global_partition (module_cluster *cluster, tree decl)
+{
+  mc_slot *mslot;
+
+  if (MAYBE_DECL_MODULE_OWNER (decl) == MODULE_NONE
+      || (TREE_PUBLIC (decl)
+	  && TREE_CODE (decl) == NAMESPACE_DECL
+	  && !DECL_NAMESPACE_ALIAS (decl)))
+    mslot = &cluster[0].slots[MODULE_SLOT_GLOBAL];
+  else
+    mslot = &cluster[MODULE_SLOT_PARTITION
+		     / MODULE_VECTOR_SLOTS_PER_CLUSTER]
+      .slots[MODULE_SLOT_PARTITION
+	     % MODULE_VECTOR_SLOTS_PER_CLUSTER];
+
+  if (*mslot)
+    decl = ovl_make (decl, *mslot);
+  *mslot = decl;
+}
+
 /* Get the fixed binding slot IX.  Creating the vector if CREATE is
    non-zero.  If CREATE is < 0, make sure there is at least 1 spare
    slot for an import.  (It is an error for CREATE < 0 and the slot to
@@ -208,17 +229,6 @@ get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
 	  cluster[0].slots[jx] = NULL_TREE;
 	}
 
-      /* Propagate a non-internal namespace to the global slot.  */
-      if (*slot && TREE_PUBLIC (*slot)
-	  && TREE_CODE (*slot) == NAMESPACE_DECL
-	  && !DECL_NAMESPACE_ALIAS (*slot))
-	cluster[0].slots[MODULE_SLOT_GLOBAL] = *slot;
-
-      /* Propagate existing value to current slot.  */
-      cluster[0].slots[MODULE_SLOT_CURRENT] = *slot;
-
-      *slot = new_vec;
-
       if (partition_slot)
 	{
 	  unsigned off = MODULE_SLOT_PARTITION % MODULE_VECTOR_SLOTS_PER_CLUSTER;
@@ -227,6 +237,27 @@ get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
 	  cluster[ind].indices[off].span = 1;
 	  cluster[ind].slots[off] = NULL_TREE;
 	}
+
+      if (tree orig = *slot)
+	{
+	  /* Propagate existing value to current slot.  */
+	  cluster[0].slots[MODULE_SLOT_CURRENT] = orig;
+
+	  /* Propagate a global & module entities to the global and
+	     partition slots.  */
+	  if (tree type = MAYBE_STAT_TYPE (orig))
+	    init_global_partition (cluster, type);
+
+	  for (ovl_iterator iter (MAYBE_STAT_DECL (orig)); iter; ++iter)
+	    {
+	      tree decl = *iter;
+	      if (!iter.hidden_p ()
+		  || DECL_HIDDEN_FRIEND_P (decl))
+		init_global_partition (cluster, decl);
+	    }
+	}
+
+      *slot = new_vec;
     }
   else
     gcc_checking_assert (create >= 0);
@@ -3513,7 +3544,7 @@ check_mergeable_decl (tree decl, tree ovl, tree tpl, tree ret, tree args)
 }
 
 /* DECL is being pushed.  Check whether it hides or ambiguates
-   somethig seen as an import.  This include decls seen in our own
+   something seen as an import.  This include decls seen in our own
    interface, which is OK.  Also, check for merging a
    global/partition decl.  */
 

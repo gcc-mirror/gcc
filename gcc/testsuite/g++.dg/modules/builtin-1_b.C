@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-ts -fdump-lang-module-uid" }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module-alias-uid" }
 import builtin;
 
 int main ()
@@ -8,5 +8,7 @@ int main ()
   return 0;
 }
 
-// { dg-final { scan-lang-dump {Builtin:-[0-9]* function_decl:'::operator delete \[\]'@\(detached\)} module } }
-// { dg-final { scan-lang-dump {Builtin:-[0-9]* function_decl:'::operator delete'@\(detached\)} module } }
+// { dg-final { scan-lang-dump {Lazily binding '::operator delete \[\]'@'builtin' section:.} module } }
+// { dg-final { scan-lang-dump {Read:-2 matched mergeable decl function_decl:'::operator delete \[\]'} module } }
+// { dg-final { scan-lang-dump {Lazily binding '::operator delete'@'builtin' section:.} module } }
+// { dg-final { scan-lang-dump {Read:-2 matched mergeable decl function_decl:'::operator delete'} module } }

@@ -2636,10 +2636,6 @@ enum tree_tag {
   tt_enum_int,		/* An enum const.  */
   tt_named_decl,  	/* Named decl. */
   tt_anon_decl,		/* Anonymous decl.  */
-  // FIXME: I suspect builtins should be treated as mergeable GM
-  // entities.  Need to make sure we correctly propagate into the GM
-  // slot when creating it though.
-  tt_builtin,		/* A builtin decl.  */
   tt_namespace,		/* Namespace reference.  */
   tt_binfo,		/* A BINFO.  */
   tt_vtable,		/* A vtable.  */
@@ -6728,13 +6724,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	      name = NULL_TREE;
 	  }
 
-	if (DECL_SOURCE_LOCATION (decl) == BUILTINS_LOCATION)
-	  {
-	    gcc_assert (code == tt_named_decl);
-	    code = tt_builtin;
-	    kind = "builtin";
-	  }
-	else if (TREE_CODE (ctx) == NAMESPACE_DECL && owner < MODULE_IMPORT_BASE)
+	if (TREE_CODE (ctx) == NAMESPACE_DECL && owner < MODULE_IMPORT_BASE)
 	  {
 	    /* Look directly into the binding depset, as that's
 	       what importers will observe.  */
@@ -6748,7 +6738,9 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 		&& bind->deps.length () > 1
 		&& TREE_CODE (bind->deps[0]->get_entity ()) == TYPE_DECL)
 	      ident--;
-	    kind = "named decl";
+	    kind = owner == MODULE_NONE ? "GMF" : "purview";
+	    /* Any GMF entities need to be looked up on this module's slot.  */
+	    owner = MODULE_PURVIEW;
 	  }
 	else
 	  {
@@ -6762,13 +6754,8 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	i (code);
 	tree_ctx (ctx, true, decl);
 	tree_node (name);
-	if (code == tt_builtin)
-	  tree_node (TREE_TYPE (decl));
-	else
-	  {
-	    u (owner);
-	    i (ident);
-	  }
+	u (owner);
+	i (ident);
       }
     else
       {
@@ -6776,7 +6763,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	  ;
 	else if (TREE_CODE (ctx) != NAMESPACE_DECL)
 	  tree_ctx (ctx, true, decl);
-	else if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION)
+	else // if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION)
 	  dep_hash->add_dependency (decl, depset::EK_DECL);
 
 	tree_node (name);
@@ -7261,40 +7248,30 @@ trees_in::tree_node ()
     case tt_named_decl:
     case tt_implicit_template:
     case tt_anon_decl:
-    case tt_builtin:
       {
 	/* A named decl.  */
 	unsigned owner;
 	tree ctx = tree_node ();
 	tree name = tree_node ();
-	if (tag == tt_builtin)
+
+	// FIXME: I think owner is only needed for namespace-scope CTX?
+	owner = u ();
+	owner = state->slurp ()->remap_module (owner);
+	int ident = i ();
+	if ((owner != MODULE_NONE
+	     || TREE_CODE (ctx) != NAMESPACE_DECL)
+	    && !get_overrun ())
 	  {
-	    owner = 0;
-	    tree type = tree_node ();
-	    if (!get_overrun ())
-	      res = lookup_by_type (ctx, name, type);
-	  }
-	else
-	  {
-	    // FIXME: I think owner is only needed for namespace-scope CTX?
-	    owner = u ();
-	    owner = state->slurp ()->remap_module (owner);
-	    int ident = i ();
-	    if ((owner != MODULE_NONE
-		 || TREE_CODE (ctx) != NAMESPACE_DECL)
-		&& !get_overrun ())
+	    res = lookup_by_ident (ctx, name, owner, ident);
+	    if (!res)
+	      ;
+	    else if (tag == tt_anon_decl)
+	      res = TYPE_STUB_DECL (TREE_TYPE (res));
+	    else if (tag == tt_implicit_template)
 	      {
-		res = lookup_by_ident (ctx, name, owner, ident);
-		if (!res)
-		  ;
-		else if (tag == tt_anon_decl)
-		  res = TYPE_STUB_DECL (TREE_TYPE (res));
-		else if (tag == tt_implicit_template)
-		  {
-		    int use_tpl = -1;
-		    tree ti = node_template_info (res, use_tpl);
-		    res = TI_TEMPLATE (ti);
-		  }
+		int use_tpl = -1;
+		tree ti = node_template_info (res, use_tpl);
+		res = TI_TEMPLATE (ti);
 	      }
 	  }
 
@@ -7310,8 +7287,7 @@ trees_in::tree_node ()
 		 && owner != state->mod)
 	  mark_used (res, tf_none);
 
-	const char *kind = (tag == tt_builtin ? "Builtin"
-			    : owner != state->mod ? "Imported" : "Named");
+	const char *kind = (owner != state->mod ? "Imported" : "Named");
 	int tag = insert (res);
 	if (res)
 	  {

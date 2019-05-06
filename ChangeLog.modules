@@ -1,6 +1,16 @@
 2019-05-06  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (enum tree_tag): Delete tt_builtin.
+	(trees_out::tree_decl): Builtins are merely GMF entities.
+	(tree_in::tree_node): Delete tt_builtin handling.
+	* name-lookup.c (init_global_partition): New.
+	(get_fixed_binding_slot): Populate global & partition slots.
+	gcc/testsuite/
+	* g++.dg/modules/builtin-1_[ab].C: Adjust scans.
+	* g++.dg/modules/by-name-1.C: Likewise.
+
+	gcc/cp/
 	* cp-tree.h (global_purview_p): New.
 	(module_header_p): Rename to ...
 	(header_module_p): ... this.
