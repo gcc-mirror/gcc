@@ -1,5 +1,12 @@
 2019-05-06  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/88828
+	* tree-ssa-forwprop.c (get_bit_field_ref_def): Split out from...
+	(simplify_vector_constructor): ...here.  Handle constants in
+	the constructor.
+
+2019-05-06  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/90328
 	* tree-data-ref.h (dr_may_alias_p): Pass in the actual loop nest.
 	* tree-data-ref.c (dr_may_alias_p): Check whether the clique
