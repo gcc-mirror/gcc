@@ -18,9 +18,9 @@
 # <http://www.gnu.org/licenses/>.
 
 language="lto"
-compilers="lto1\$(exeext)"
+compilers="lto1\$(exeext) lto-dump\$(exeext)"
 
-gtfiles="\$(srcdir)/lto/lto-tree.h \$(srcdir)/lto/lto-lang.c \$(srcdir)/lto/lto.c \$(srcdir)/lto/lto.h \$(srcdir)/lto/lto-common.h \$(srcdir)/lto/lto-common.c"
+gtfiles="\$(srcdir)/lto/lto-tree.h \$(srcdir)/lto/lto-lang.c \$(srcdir)/lto/lto.c \$(srcdir)/lto/lto.h \$(srcdir)/lto/lto-common.h \$(srcdir)/lto/lto-common.c \$(srcdir)/lto/lto-dump.c"
 
 # LTO is a special front end.  From a user's perspective it is not
 # really a language, but a middle end feature.  However, the GIMPLE

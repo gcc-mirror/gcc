@@ -789,12 +789,6 @@ static GTY(()) tree registered_builtin_types;
 
 /* Language hooks.  */
 
-static unsigned int
-lto_option_lang_mask (void)
-{
-  return CL_LTO;
-}
-
 static bool
 lto_complain_wrong_lang_p (const struct cl_option *option ATTRIBUTE_UNUSED)
 {

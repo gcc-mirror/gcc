@@ -115,6 +115,7 @@ static struct dump_file_info dump_files[TDI_end] =
    in dumpfile.h and opt_info_options below. */
 static const kv_pair<dump_flags_t> dump_options[] =
 {
+  {"none", TDF_NONE},
   {"address", TDF_ADDRESS},
   {"asmname", TDF_ASMNAME},
   {"slim", TDF_SLIM},
@@ -1770,28 +1771,19 @@ gcc::dump_manager::update_dfi_for_opt_info (dump_file_info *dfi) const
   return true;
 }
 
-/* Parse ARG as a dump switch. Return nonzero if it is, and store the
-   relevant details in the dump_files array.  */
+/* Helper routine to parse -<dump format>[=filename]
+   and return the corresponding dump flag.  If POS_P is non-NULL,
+   assign start of filename into *POS_P.  */
 
-int
-gcc::dump_manager::
-dump_switch_p_1 (const char *arg, struct dump_file_info *dfi, bool doglob)
+dump_flags_t
+parse_dump_option (const char *option_value, const char **pos_p)
 {
-  const char *option_value;
   const char *ptr;
   dump_flags_t flags;
 
-  if (doglob && !dfi->glob)
-    return 0;
-
-  option_value = skip_leading_substring (arg, doglob ? dfi->glob : dfi->swtch);
-  if (!option_value)
-    return 0;
-
-  if (*option_value && *option_value != '-' && *option_value != '=')
-    return 0;
-
   ptr = option_value;
+  if (pos_p)
+    *pos_p = NULL;
 
   /* Retain "user-facing" and "internals" messages, but filter out
      those from an opt_problem being re-emitted at the top level
@@ -1805,14 +1797,13 @@ dump_switch_p_1 (const char *arg, struct dump_file_info *dfi, bool doglob)
       const char *end_ptr;
       const char *eq_ptr;
       unsigned length;
-
       while (*ptr == '-')
 	ptr++;
       end_ptr = strchr (ptr, '-');
       eq_ptr = strchr (ptr, '=');
 
       if (eq_ptr && !end_ptr)
-        end_ptr = eq_ptr;
+	end_ptr = eq_ptr;
 
       if (!end_ptr)
 	end_ptr = ptr + strlen (ptr);
@@ -1821,25 +1812,59 @@ dump_switch_p_1 (const char *arg, struct dump_file_info *dfi, bool doglob)
       for (option_ptr = dump_options; option_ptr->name; option_ptr++)
 	if (strlen (option_ptr->name) == length
 	    && !memcmp (option_ptr->name, ptr, length))
-          {
-            flags |= option_ptr->value;
+	  {
+	    flags |= option_ptr->value;
 	    goto found;
-          }
+	  }
 
       if (*ptr == '=')
-        {
+	{
           /* Interpret rest of the argument as a dump filename.  This
              filename overrides other command line filenames.  */
-          if (dfi->pfilename)
-            free (CONST_CAST (char *, dfi->pfilename));
-          dfi->pfilename = xstrdup (ptr + 1);
-          break;
-        }
+	  if (pos_p)
+	    *pos_p = ptr + 1;
+	  break;
+	}
       else
-        warning (0, "ignoring unknown option %q.*s in %<-fdump-%s%>",
-                 length, ptr, dfi->swtch);
-    found:;
+      {
+	warning (0, "ignoring unknown option %q.*s",
+		 length, ptr);
+	flags = TDF_ERROR;
+      }
+    found:
       ptr = end_ptr;
+  }
+
+  return flags;
+}
+
+/* Parse ARG as a dump switch.  Return nonzero if it is, and store the
+   relevant details in the dump_files array.  */
+
+int
+gcc::dump_manager::
+dump_switch_p_1 (const char *arg, struct dump_file_info *dfi, bool doglob)
+{
+  const char *option_value;
+  dump_flags_t flags = TDF_NONE;
+
+  if (doglob && !dfi->glob)
+    return 0;
+
+  option_value = skip_leading_substring (arg, doglob ? dfi->glob : dfi->swtch);
+  if (!option_value)
+    return 0;
+
+  if (*option_value && *option_value != '-' && *option_value != '=')
+    return 0;
+
+  const char *filename;
+  flags = parse_dump_option (option_value, &filename);
+  if (filename)
+    {
+      if (dfi->pfilename)
+  free (CONST_CAST (char *, dfi->pfilename));
+      dfi->pfilename = xstrdup (filename);
     }
 
   dfi->pstate = -1;
