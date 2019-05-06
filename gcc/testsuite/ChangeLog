@@ -1,3 +1,8 @@
+2019-05-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90265 - ICE with generic lambda.
+	* g++.dg/cpp1y/lambda-generic-90265.C: New test.
+
 2019-05-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90358
