@@ -2598,8 +2598,8 @@ stmt_kills_ref_p (gimple *stmt, tree ref)
    case false is returned.  The walk starts with VUSE, one argument of PHI.  */
 
 static bool
-maybe_skip_until (gimple *phi, tree target, ao_ref *ref,
-		  tree vuse, unsigned int *cnt, bitmap *visited,
+maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
+		  ao_ref *ref, tree vuse, unsigned int *cnt, bitmap *visited,
 		  bool abort_on_visited,
 		  void *(*translate)(ao_ref *, tree, void *, bool *),
 		  void *data)
@@ -2615,6 +2615,19 @@ maybe_skip_until (gimple *phi, tree target, ao_ref *ref,
   while (vuse != target)
     {
       gimple *def_stmt = SSA_NAME_DEF_STMT (vuse);
+      /* If we are searching for the target VUSE by walking up to
+         TARGET_BB dominating the original PHI we are finished once
+	 we reach a default def or a definition in a block dominating
+	 that block.  Update TARGET and return.  */
+      if (!target
+	  && (gimple_nop_p (def_stmt)
+	      || dominated_by_p (CDI_DOMINATORS,
+				 target_bb, gimple_bb (def_stmt))))
+	{
+	  target = vuse;
+	  return true;
+	}
+
       /* Recurse for PHI nodes.  */
       if (gimple_code (def_stmt) == GIMPLE_PHI)
 	{
@@ -2698,49 +2711,17 @@ get_continuation_for_phi (gimple *phi, ao_ref *ref,
       arg0 = NULL_TREE;
     }
   /* If not, look if we can reach such candidate by walking defs
-     of a PHI arg without crossing other PHIs.  */
-  if (! arg0)
-    for (i = 0; i < nargs; ++i)
-      {
-	arg0 = PHI_ARG_DEF (phi, i);
-	gimple *def = SSA_NAME_DEF_STMT (arg0);
-	/* Backedges can't work.  */
-	if (dominated_by_p (CDI_DOMINATORS,
-			    gimple_bb (def), phi_bb))
-	  continue;
-	/* See below.  */
-	if (gimple_code (def) == GIMPLE_PHI)
-	  continue;
-	while (! dominated_by_p (CDI_DOMINATORS,
-				 phi_bb, gimple_bb (def)))
-	  {
-	    arg0 = gimple_vuse (def);
-	    if (SSA_NAME_IS_DEFAULT_DEF (arg0))
-	      break;
-	    def = SSA_NAME_DEF_STMT (arg0);
-	    if (gimple_code (def) == GIMPLE_PHI)
-	      {
-		/* Do not try to look through arbitrarily complicated
-		   CFGs.  For those looking for the first VUSE starting
-		   from the end of the immediate dominator of phi_bb
-		   is likely faster.  */
-		arg0 = NULL_TREE;
-		goto next;
-	      }
-	  }
-	break;
-next:;
-      }
-  if (! arg0)
-    return NULL_TREE;
+     until we hit the immediate dominator.  maybe_skip_until will
+     do that for us.  */
+  basic_block dom = get_immediate_dominator (CDI_DOMINATORS, phi_bb);
 
-  /* Then check against the found candidate.  */
+  /* Then check against the (to be) found candidate.  */
   for (i = 0; i < nargs; ++i)
     {
       arg1 = PHI_ARG_DEF (phi, i);
       if (arg1 == arg0)
 	;
-      else if (! maybe_skip_until (phi, arg0, ref, arg1, cnt, visited,
+      else if (! maybe_skip_until (phi, arg0, dom, ref, arg1, cnt, visited,
 				   abort_on_visited,
 				   /* Do not translate when walking over
 				      backedges.  */

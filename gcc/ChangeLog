@@ -1,3 +1,12 @@
+2019-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90316
+	* tree-ssa-alias.c (maybe_skip_until): Pass in target BB,
+	compute target on demand.
+	(get_continuation_for_phi): Remove code walking stmts to
+	get to a target virtual operand which could end up being
+	quadratic.
+
 2019-05-06  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/90312
