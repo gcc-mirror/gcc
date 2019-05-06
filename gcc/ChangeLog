@@ -1,3 +1,9 @@
+2019-05-06  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/90312
+	* config/i386/i386-options.c (ix86_option_override_internal): Error only
+	when -mabi is selected to a non-default version.
+
 2019-05-06  Hrishikesh Kulkarni  <hrishikeshparag@gmail.com>
 	    Martin Liska  <mliska@suse.cz>
 
