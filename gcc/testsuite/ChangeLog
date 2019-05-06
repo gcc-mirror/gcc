@@ -1,3 +1,12 @@
+2019-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/88709
+	PR tree-optimization/90271
+	* gcc.dg/store_merging_26.c: New test.
+	* gcc.dg/store_merging_27.c: New test.
+	* gcc.dg/store_merging_28.c: New test.
+	* gcc.dg/store_merging_29.c: New test.
+
 2019-05-06  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR target/89424
