@@ -14544,7 +14544,7 @@ module_state::do_import (char const *fname, cpp_reader *reader)
       filename = xstrdup (fname);
     }
 
-  if (mrules *deps = cpp_get_deps (reader))
+  if (mkdeps *deps = cpp_get_deps (reader))
     deps_add_module (deps, get_flatname (true), get_flatname (false));
 
   int fd = -1;
@@ -15056,7 +15056,7 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 }
 
 void
-module_preprocess (mrules *deps, module_state *state, int is_module)
+module_preprocess (mkdeps *deps, module_state *state, int is_module)
 {
   if (is_module)
     /* Record the module, so that partition imports resolve
@@ -15110,7 +15110,7 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
 	      declare_module (state, spans.main_start (), true, NULL, reader);
 	      process_deferred_imports (reader);
 	    }
-	  else if (mrules *deps = cpp_get_deps (reader))
+	  else if (mkdeps *deps = cpp_get_deps (reader))
 	    module_preprocess (deps, state, 1);
 	}
     }
@@ -15443,7 +15443,7 @@ finish_module_processing (cpp_reader *reader)
 	{
 	  const char *path = maybe_add_bmi_prefix (state->filename);
 
-	  if (mrules *deps = cpp_get_deps (reader))
+	  if (mkdeps *deps = cpp_get_deps (reader))
 	    deps_add_module (deps, state->get_flatname (true),
 			     state->get_flatname (false), path,
 			     state->is_header ());

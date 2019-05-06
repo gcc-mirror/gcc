@@ -400,10 +400,10 @@ module_preprocess_token (cpp_reader *pfile, cpp_token *tok, void *data_)
     bool want_semi : 1;
     bool got_export : 1;
     location_t header_loc;
-    mrules *deps;
+    mkdeps *deps;
     module_state *module;
 
-    state (mrules *deps)
+    state (mkdeps *deps)
       : depth (0), extern_c (0), mode (msm_start_decl),
       is_import (false), is_header (false), is_translated (false),
       got_colon (false), want_dot (false), want_semi (false),

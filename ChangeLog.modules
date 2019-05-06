@@ -1,5 +1,18 @@
 2019-05-06  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* include/mkdeps.h: Rename struct mrules to struct mkdeps.
+	* mkdeps.c: Likewise.
+	* include/cpplib.h (cpp_get_deps): Rename return type..
+	* directives.c (cpp_get_deps): Likewise.
+	* internal.h (struct cpp_reader): Rename deps field type.
+	gcc/cp/
+	* cp-tree.h (module_preprocess): Adjust first arg type.
+	* module.cc: Rename mrules to mkdeps.
+	* lex.c (module_preprocess_token): Rename mrules->mkdeps.
+	gcc/c-family/
+	* c-opts.c (handle_defered_opts): Rename struct deps to struc mkdeps.
+
 	gcc/cp/
 	* module.cc (enum tree_tag): Delete tt_builtin.
 	(trees_out::tree_decl): Builtins are merely GMF entities.

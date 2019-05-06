@@ -969,7 +969,7 @@ extern void cpp_set_include_chains (cpp_reader *, cpp_dir *, cpp_dir *, int);
 extern cpp_options *cpp_get_options (cpp_reader *);
 extern cpp_callbacks *cpp_get_callbacks (cpp_reader *);
 extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
-extern struct mrules *cpp_get_deps (cpp_reader *);
+extern struct mkdeps *cpp_get_deps (cpp_reader *);
 
 extern const char *cpp_find_header_unit (cpp_reader *, const char *file,
 					 bool angle_p,  location_t);

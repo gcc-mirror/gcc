@@ -29,7 +29,7 @@ along with this program; see the file COPYING3.  If not see
 
 /* Keep this structure local to this file, so clients don't find it
    easy to start making assumptions.  */
-struct mrules
+struct mkdeps
 {
 public:
   /* T has trivial cctor & dtor.  */
@@ -75,11 +75,11 @@ public:
     size_t len;
   };
 
-  mrules ()
+  mkdeps ()
     : module_name (NULL), bmi_name (NULL), is_header_unit (false), quote_lwm (0)
   {
   }
-  ~mrules ()
+  ~mkdeps ()
   {
     unsigned int i;
 
@@ -189,7 +189,7 @@ munge (const char *str, const char *trail = NULL, ...)
 /* If T begins with any of the partial pathnames listed in d->vpathv,
    then advance T to point beyond that pathname.  */
 static const char *
-apply_vpath (struct mrules *d, const char *t)
+apply_vpath (struct mkdeps *d, const char *t)
 {
   if (unsigned len = d->vpath.size ())
     for (unsigned i = len; i--;)
@@ -227,14 +227,14 @@ apply_vpath (struct mrules *d, const char *t)
 
 /* Public routines.  */
 
-struct mrules *
+struct mkdeps *
 deps_init (void)
 {
-  return new mrules ();
+  return new mkdeps ();
 }
 
 void
-deps_free (struct mrules *d)
+deps_free (struct mkdeps *d)
 {
   delete d;
 }
@@ -242,7 +242,7 @@ deps_free (struct mrules *d)
 /* Adds a target T.  We make a copy, so it need not be a permanent
    string.  QUOTE is true if the string should be quoted.  */
 void
-deps_add_target (struct mrules *d, const char *t, int quote)
+deps_add_target (struct mkdeps *d, const char *t, int quote)
 {
   t = apply_vpath (d, t);
   if (!quote)
@@ -258,7 +258,7 @@ deps_add_target (struct mrules *d, const char *t, int quote)
    string as the default target in interpreted as stdin.  The string
    is quoted for MAKE.  */
 void
-deps_add_default_target (struct mrules *d, const char *tgt)
+deps_add_default_target (struct mkdeps *d, const char *tgt)
 {
   /* Only if we have no targets.  */
   if (d->targets.size ())
@@ -288,7 +288,7 @@ deps_add_default_target (struct mrules *d, const char *tgt)
 }
 
 void
-deps_add_dep (struct mrules *d, const char *t)
+deps_add_dep (struct mkdeps *d, const char *t)
 {
   t = apply_vpath (d, t);
 
@@ -296,7 +296,7 @@ deps_add_dep (struct mrules *d, const char *t)
 }
 
 void
-deps_add_vpath (struct mrules *d, const char *vpath)
+deps_add_vpath (struct mkdeps *d, const char *vpath)
 {
   const char *elem, *p;
 
@@ -304,7 +304,7 @@ deps_add_vpath (struct mrules *d, const char *vpath)
     {
       for (p = elem; *p && *p != ':'; p++)
 	continue;
-      mrules::velt elt;
+      mkdeps::velt elt;
       elt.len = p - elem;
       char *str = XNEWVEC (char, elt.len + 1);
       elt.str = str;
@@ -323,7 +323,7 @@ deps_add_vpath (struct mrules *d, const char *vpath)
    specifying BMI as the output file, of type IS_HEADER_UNIT.  */
 
 void
-deps_add_module (struct mrules *d, const char *p, const char *m,
+deps_add_module (struct mkdeps *d, const char *p, const char *m,
 		 const char *bmi, bool is_header_unit)
 {
   size_t p_len = p ? strlen (p) : 0;
@@ -370,7 +370,7 @@ make_write_name (const char *name, FILE *fp, unsigned col, unsigned colmax,
 }
 
 static unsigned
-make_write_vec (const mrules::vec<const char *> &vec, FILE *fp,
+make_write_vec (const mkdeps::vec<const char *> &vec, FILE *fp,
 		unsigned col, unsigned colmax, unsigned quote_lwm = 0,
 		const char *trail = NULL)
 {
@@ -380,7 +380,7 @@ make_write_vec (const mrules::vec<const char *> &vec, FILE *fp,
 }
 
 static void
-make_write (const struct mrules *d, FILE *fp, bool phony, unsigned int colmax)
+make_write (const struct mkdeps *d, FILE *fp, bool phony, unsigned int colmax)
 {
   unsigned column = 0;
   if (colmax && colmax < 34)
@@ -449,7 +449,7 @@ make_write (const struct mrules *d, FILE *fp, bool phony, unsigned int colmax)
 }
 
 void
-deps_write (const struct mrules *d, FILE *fp, bool phony, unsigned int colmax)
+deps_write (const struct mkdeps *d, FILE *fp, bool phony, unsigned int colmax)
 {
   make_write (d, fp, phony, colmax);
 }
@@ -459,7 +459,7 @@ deps_write (const struct mrules *d, FILE *fp, bool phony, unsigned int colmax)
    error number will be in errno.  */
 
 int
-deps_save (struct mrules *deps, FILE *f)
+deps_save (struct mkdeps *deps, FILE *f)
 {
   unsigned int i;
   size_t size;
@@ -491,7 +491,7 @@ deps_save (struct mrules *deps, FILE *f)
    in which case that filename is skipped.  */
 
 int
-deps_restore (struct mrules *deps, FILE *fd, const char *self)
+deps_restore (struct mkdeps *deps, FILE *fd, const char *self)
 {
   size_t size;
   char *buf = NULL;

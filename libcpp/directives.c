@@ -2548,7 +2548,7 @@ cpp_set_callbacks (cpp_reader *pfile, cpp_callbacks *cb)
 }
 
 /* The dependencies structure.  (Creates one if it hasn't already been.)  */
-struct mrules *
+struct mkdeps *
 cpp_get_deps (cpp_reader *pfile)
 {
   if (CPP_OPTION (pfile, deps.style) != DEPS_NONE && !pfile->deps)
