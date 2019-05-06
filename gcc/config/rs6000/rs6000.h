@@ -817,9 +817,6 @@ enum data_align { align_abi, align_opt, align_both };
 
 #define FIRST_PSEUDO_REGISTER 115
 
-/* This must be included for pre gcc 3.0 glibc compatibility.  */
-#define PRE_GCC3_DWARF_FRAME_REGISTERS 77
-
 /* The sfp register and 3 HTM registers
    aren't included in DWARF_FRAME_REGISTERS.  */
 #define DWARF_FRAME_REGISTERS (FIRST_PSEUDO_REGISTER - 4)
