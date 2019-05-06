@@ -1,3 +1,21 @@
+2019-05-06  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386-builtins.c: New file.
+	* config/i386/i386-builtins.h: New file.
+	* config/i386/i386-expand.c: New file.
+	* config/i386/i386-expand.h: New file.
+	* config/i386/i386-features.c: New file.
+	* config/i386/i386-features.h: New file.
+	* config/i386/i386-options.c: New file.
+	* config/i386/i386-options.h: New file.
+	* config.gcc: Add new files into extra_objs and
+	target_gtfiles.
+	* config/i386/i386.c: Split content of the file
+	into newly introduced files.
+	* config/i386/i386.h: Declare common variables
+	and macros.
+	* config/i386/t-i386: Define dependencies for new files.
+
 2019-05-06  Li Jia He  <helijia@linux.ibm.com>
 
 	* tree-ssa-phiopt.c (two_value_replacement): Fix a typo in parameter
