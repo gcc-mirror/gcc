@@ -1,3 +1,7 @@
+2019-05-06  Martin Liska  <mliska@suse.cz>
+
+	* config.gcc: Append to target_gtfiles and fix indentation.
+
 2019-05-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90358
