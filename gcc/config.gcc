@@ -607,12 +607,6 @@ i[34567]86-*-*)
 		echo "This target does not support --with-abi."
 		exit 1
 	fi
-	if test "x$enable_cld" = xyes; then
-		tm_defines="${tm_defines} USE_IX86_CLD=1"
-	fi
-	if test "x$enable_frame_pointer" = xyes; then
-		tm_defines="${tm_defines} USE_IX86_FRAME_POINTER=1"
-	fi
 	;;
 x86_64-*-*)
 	case ${with_abi} in
@@ -633,12 +627,6 @@ x86_64-*-*)
 		echo "Unknown ABI used in --with-abi=$with_abi"
 		exit 1
 	esac
-	if test "x$enable_cld" = xyes; then
-		tm_defines="${tm_defines} USE_IX86_CLD=1"
-	fi
-	if test "x$enable_frame_pointer" = xyes; then
-		tm_defines="${tm_defines} USE_IX86_FRAME_POINTER=1"
-	fi
 	;;
 arm*-*-*)
 	tm_p_file="arm/arm-flags.h ${tm_p_file} arm/aarch-common-protos.h"

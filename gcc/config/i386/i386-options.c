@@ -2198,16 +2198,12 @@ ix86_option_override_internal (bool main_args_p,
 #define USE_IX86_FRAME_POINTER 0
 #endif
 
-#ifndef USE_X86_64_FRAME_POINTER
-#define USE_X86_64_FRAME_POINTER 0
-#endif
-
   /* Set the default values for switches whose default depends on TARGET_64BIT
      in case they weren't overwritten by command line options.  */
   if (TARGET_64BIT_P (opts->x_ix86_isa_flags))
     {
       if (opts->x_optimize >= 1 && !opts_set->x_flag_omit_frame_pointer)
-	opts->x_flag_omit_frame_pointer = !USE_X86_64_FRAME_POINTER;
+	opts->x_flag_omit_frame_pointer = !USE_IX86_FRAME_POINTER;
       if (opts->x_flag_asynchronous_unwind_tables
 	  && !opts_set->x_flag_unwind_tables
 	  && TARGET_64BIT_MS_ABI)
