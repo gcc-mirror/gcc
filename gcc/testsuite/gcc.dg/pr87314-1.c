@@ -3,9 +3,9 @@
 
 int f(){ int a; return &a==(void *)"hello"; }
 int g(){ return "bye"=="hello"; }
-int h() { return "bye"=="hellobye"+5; }
+int h() { return "bye"=="helloooobye"+8; }
 
 /* { dg-final { scan-tree-dump-times "hello" 1 "original" } } */
 /* The test in h() should be retained because the result depends on
    string merging.  */
-/* { dg-final { scan-assembler "hello" } } */
+/* { dg-final { scan-assembler "hellooo" } } */
