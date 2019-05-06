@@ -1,3 +1,9 @@
+2019-05-06  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/89424
+	* config/rs6000/rs6000.c (rs6000_expand_vector_extract): Add
+	handling of V1TImode.
+
 2019-05-06  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/89221
