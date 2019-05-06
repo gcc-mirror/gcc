@@ -1,3 +1,26 @@
+2019-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/88709
+	PR tree-optimization/90271
+	* params.def (PARAM_STORE_MERGING_MAX_SIZE): New parameter.
+	* gimple-ssa-store-merging.c (encode_tree_to_bitpos): Handle
+	non-clobber CONSTRUCTORs with no elts.  Remove useless tmp_int
+	variable.
+	(imm_store_chain_info::coalesce_immediate_stores): Punt if the size
+	of the store merging group is larger than
+	PARAM_STORE_MERGING_MAX_SIZE parameter.
+	(split_group): Add bzero_first argument.  If set, always emit first
+	the first store which must be = {} of the whole area and then for the
+	rest of the stores consider all zero bytes as paddings.
+	(imm_store_chain_info::output_merged_store): Check if first store
+	is = {} of the whole area and if yes, determine which setting of
+	bzero_first for split_group gives smaller number of stores.  Adjust
+	split_group callers.
+	(lhs_valid_for_store_merging_p): Allow decls.
+	(rhs_valid_for_store_merging_p): Allow non-clobber CONTRUCTORs with
+	no elts.
+	(pass_store_merging::process_store): Likewise.
+
 2019-05-06  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR target/89424
