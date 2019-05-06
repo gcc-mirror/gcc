@@ -1,3 +1,8 @@
+2019-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/90173
+	* g++.dg/cpp1z/class-deduction66.C: New.
+
 2019-05-06  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
