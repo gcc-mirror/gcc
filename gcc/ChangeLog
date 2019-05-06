@@ -1,5 +1,12 @@
 2019-05-06  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/90358
+	* tree-vect-stmts.c (get_group_load_store_type): Properly
+	detect unused upper half of load.
+	(vectorizable_load): Likewise.
+
+2019-05-06  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/88828
 	* tree-ssa-forwprop.c (get_bit_field_ref_def): Split out from...
 	(simplify_vector_constructor): ...here.  Handle constants in
