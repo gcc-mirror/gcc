@@ -1071,7 +1071,8 @@ get_int_range (tree arg, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
 	{
 	  /* Try to determine the range of values of the integer argument.  */
 	  irange r;
-	  if (on_demand_get_range_on_stmt (r, arg, call))
+	  if (on_demand_get_range_on_stmt (r, arg, call)
+	      && !r.undefined_p ())
 	    {
 	      HOST_WIDE_INT type_min
 		= (TYPE_UNSIGNED (argtype)
@@ -4103,7 +4104,8 @@ handle_gimple_call (gimple_stmt_iterator *gsi)
 	     and use the greater of the two at level 1 and the smaller
 	     of them at level 2.  */
 	  irange r;
-	  if (on_demand_get_range_on_stmt (r, size, info.callstmt))
+	  if (on_demand_get_range_on_stmt (r, size, info.callstmt)
+	      && !r.undefined_p ())
 	    {
 	      tree max = wide_int_to_tree (TREE_TYPE (size), r.upper_bound ());
 	      tree min = wide_int_to_tree (TREE_TYPE (size), r.lower_bound ());
