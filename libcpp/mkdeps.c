@@ -26,7 +26,7 @@ along with this program; see the file COPYING3.  If not see
 
 /* Keep this structure local to this file, so clients don't find it
    easy to start making assumptions.  */
-struct deps
+struct mkdeps
 {
   const char **targetv;
   unsigned int ntargets;	/* number of slots actually occupied */
@@ -122,7 +122,7 @@ munge (const char *filename)
 /* If T begins with any of the partial pathnames listed in d->vpathv,
    then advance T to point beyond that pathname.  */
 static const char *
-apply_vpath (struct deps *d, const char *t)
+apply_vpath (struct mkdeps *d, const char *t)
 {
   if (d->vpathv)
     {
@@ -163,14 +163,14 @@ apply_vpath (struct deps *d, const char *t)
 
 /* Public routines.  */
 
-struct deps *
+struct mkdeps *
 deps_init (void)
 {
-  return XCNEW (struct deps);
+  return XCNEW (struct mkdeps);
 }
 
 void
-deps_free (struct deps *d)
+deps_free (struct mkdeps *d)
 {
   unsigned int i;
 
@@ -202,7 +202,7 @@ deps_free (struct deps *d)
 /* Adds a target T.  We make a copy, so it need not be a permanent
    string.  QUOTE is true if the string should be quoted.  */
 void
-deps_add_target (struct deps *d, const char *t, int quote)
+deps_add_target (struct mkdeps *d, const char *t, int quote)
 {
   if (d->ntargets == d->targets_size)
     {
@@ -223,7 +223,7 @@ deps_add_target (struct deps *d, const char *t, int quote)
    string as the default target in interpreted as stdin.  The string
    is quoted for MAKE.  */
 void
-deps_add_default_target (struct deps *d, const char *tgt)
+deps_add_default_target (struct mkdeps *d, const char *tgt)
 {
   /* Only if we have no targets.  */
   if (d->ntargets)
@@ -253,7 +253,7 @@ deps_add_default_target (struct deps *d, const char *tgt)
 }
 
 void
-deps_add_dep (struct deps *d, const char *t)
+deps_add_dep (struct mkdeps *d, const char *t)
 {
   t = munge (apply_vpath (d, t));  /* Also makes permanent copy.  */
 
@@ -266,7 +266,7 @@ deps_add_dep (struct deps *d, const char *t)
 }
 
 void
-deps_add_vpath (struct deps *d, const char *vpath)
+deps_add_vpath (struct mkdeps *d, const char *vpath)
 {
   const char *elem, *p;
   char *copy;
@@ -295,7 +295,7 @@ deps_add_vpath (struct deps *d, const char *vpath)
 }
 
 void
-deps_write (const struct deps *d, FILE *fp, unsigned int colmax)
+deps_write (const struct mkdeps *d, FILE *fp, unsigned int colmax)
 {
   unsigned int size, i, column;
 
@@ -346,7 +346,7 @@ deps_write (const struct deps *d, FILE *fp, unsigned int colmax)
 }
 
 void
-deps_phony_targets (const struct deps *d, FILE *fp)
+deps_phony_targets (const struct mkdeps *d, FILE *fp)
 {
   unsigned int i;
 
@@ -364,7 +364,7 @@ deps_phony_targets (const struct deps *d, FILE *fp)
    error number will be in errno.  */
 
 int
-deps_save (struct deps *deps, FILE *f)
+deps_save (struct mkdeps *deps, FILE *f)
 {
   unsigned int i;
 
@@ -393,7 +393,7 @@ deps_save (struct deps *deps, FILE *f)
    in which case that filename is skipped.  */
 
 int
-deps_restore (struct deps *deps, FILE *fd, const char *self)
+deps_restore (struct mkdeps *deps, FILE *fd, const char *self)
 {
   unsigned int i, count;
   size_t num_to_read;
