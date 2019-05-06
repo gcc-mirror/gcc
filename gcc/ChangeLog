@@ -1,3 +1,18 @@
+2019-05-06  Hrishikesh Kulkarni  <hrishikeshparag@gmail.com>
+	    Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Add lto-dump.texi.
+	* cgraph.h: Add new functions get_visibility_string and
+	get_symtab_type_string.
+	* doc/gcc.texi: Include lto-dump section.
+	* doc/lto-dump.texi: New file.
+	* dumpfile.c (dump_switch_p_1): Use parse_dump_option.
+	(parse_dump_option): Factor out this function.
+	* dumpfile.h (enum dump_flag): Add new value TDF_ERROR.
+	(parse_dump_option): Export the function.
+	* symtab.c (symtab_node::get_visibility_string): New function.
+	(symtab_node::get_symtab_type_string): Likewise.
+
 2019-05-06  Martin Liska  <mliska@suse.cz>
 
 	* config/i386/i386-builtins.c: New file.

@@ -560,6 +560,12 @@ offload_handle_link_vars (void)
 #endif
 }
 
+unsigned int
+lto_option_lang_mask (void)
+{
+  return CL_LTO;
+}
+
 /* Main entry point for the GIMPLE front end.  This front end has
    three main personalities:
 

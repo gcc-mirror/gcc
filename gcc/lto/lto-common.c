@@ -1681,6 +1681,10 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
   /* We do not uniquify the pre-loaded cache entries, those are middle-end
      internal types that should not be merged.  */
 
+  typedef int_hash<unsigned, 0, UINT_MAX> code_id_hash;
+  hash_map <code_id_hash, unsigned> hm;
+  unsigned total = 0;
+
   /* Read the global declarations and types.  */
   while (ib_main.p < ib_main.len)
     {
@@ -1730,6 +1734,15 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 		 chains.  */
 	      if (TYPE_P (t))
 		{
+		  /* Map the tree types to their frequencies.  */
+		  if (flag_lto_dump_type_stats)
+		    {
+		      unsigned key = (unsigned) TREE_CODE (t);
+		      unsigned *countp = hm.get (key);
+		      hm.put (key, countp ? (*countp) + 1 : 1);
+		      total++;
+		    }
+
 		  seen_type = true;
 		  num_prevailing_types++;
 		  lto_fixup_prevailing_type (t);
@@ -1775,6 +1788,22 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 	  gcc_assert (t && data_in->reader_cache->nodes.length () == from);
 	}
     }
+
+  /* Dump type statistics.  */
+  if (flag_lto_dump_type_stats)
+    {
+      fprintf (stdout, "       Type     Frequency   Percentage\n\n");
+      for (hash_map<code_id_hash, unsigned>::iterator itr = hm.begin ();
+	   itr != hm.end ();
+	   ++itr)
+	{
+	  std::pair<unsigned, unsigned> p = *itr;
+	  enum tree_code code = (enum tree_code) p.first;
+	  fprintf (stdout, "%14s %6d %12.2f\n", get_tree_code_name (code),
+		   p.second, float (p.second)/total*100);
+	}
+    }
+
   data_in->location_cache.apply_location_cache ();
 
   /* Read in lto_in_decl_state objects.  */
@@ -2073,6 +2102,17 @@ lto_file_read (lto_file *file, FILE *resolution_file, int *count)
  
   memset (&section_list, 0, sizeof (struct lto_section_list)); 
   section_hash_table = lto_obj_build_section_table (file, &section_list);
+
+  /* Dump the details of LTO objects.  */
+  if (flag_lto_dump_objects)
+  {
+    int i=0;
+    fprintf (stdout, "\n    LTO Object Name: %s\n", file->filename);
+    fprintf (stdout, "\nNo.    Offset    Size       Section Name\n\n");
+    for (section = section_list.first; section != NULL; section = section->next)
+      fprintf (stdout, "%2d %8ld %8ld   %s\n",
+	       ++i, section->start, section->len, section->name);
+  }
 
   /* Find all sub modules in the object and put their sections into new hash
      tables in a splay tree. */

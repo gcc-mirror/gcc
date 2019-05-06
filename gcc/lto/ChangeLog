@@ -1,3 +1,17 @@
+2019-05-06  Hrishikesh Kulkarni  <hrishikeshparag@gmail.com>
+	    Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Add lto_dump-related definition.
+	* config-lang.in: Likewise.
+	* lang.opt: Add new language LTODump and options related
+	to LTO dump tool.
+	* lto-common.c (lto_read_decls): Support type statistics dump.
+	(lto_file_read): Likewise for object files.
+	* lto-dump.c: New file.
+	* lto-lang.c (lto_option_lang_mask): Move from ..
+	* lto.c (lto_option_lang_mask): .. here.
+	* lto.h (lto_option_lang_mask): New declaration.
+
 2019-05-06  Martin Liska  <mliska@suse.cz>
 	    Hrishikesh Kulkarni  <hrishikeshparag@gmail.com>
 
