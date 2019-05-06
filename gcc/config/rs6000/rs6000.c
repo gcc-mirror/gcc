@@ -3011,9 +3011,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
   rs6000_regno_regclass[CA_REGNO] = NO_REGS;
   rs6000_regno_regclass[VRSAVE_REGNO] = VRSAVE_REGS;
   rs6000_regno_regclass[VSCR_REGNO] = VRSAVE_REGS;
-  rs6000_regno_regclass[TFHAR_REGNO] = SPR_REGS;
-  rs6000_regno_regclass[TFIAR_REGNO] = SPR_REGS;
-  rs6000_regno_regclass[TEXASR_REGNO] = SPR_REGS;
   rs6000_regno_regclass[ARG_POINTER_REGNUM] = BASE_REGS;
   rs6000_regno_regclass[FRAME_POINTER_REGNUM] = BASE_REGS;
 
@@ -14098,23 +14095,6 @@ htm_spr_num (enum rs6000_builtins code)
   return TEXASRU_SPR;
 }
 
-/* Return the appropriate SPR regno associated with the given builtin.  */
-static inline HOST_WIDE_INT
-htm_spr_regno (enum rs6000_builtins code)
-{
-  if (code == HTM_BUILTIN_GET_TFHAR
-      || code == HTM_BUILTIN_SET_TFHAR)
-    return TFHAR_REGNO;
-  else if (code == HTM_BUILTIN_GET_TFIAR
-	   || code == HTM_BUILTIN_SET_TFIAR)
-    return TFIAR_REGNO;
-  gcc_assert (code == HTM_BUILTIN_GET_TEXASR
-	      || code == HTM_BUILTIN_SET_TEXASR
-	      || code == HTM_BUILTIN_GET_TEXASRU
-	      || code == HTM_BUILTIN_SET_TEXASRU);
-  return TEXASR_REGNO;
-}
-
 /* Return the correct ICODE value depending on whether we are
    setting or reading the HTM SPRs.  */
 static inline enum insn_code
@@ -14231,7 +14211,6 @@ htm_expand_builtin (tree exp, rtx target, bool * expandedp)
 	  {
 	    machine_mode mode = (TARGET_POWERPC64) ? DImode : SImode;
 	    op[nopnds++] = gen_rtx_CONST_INT (mode, htm_spr_num (fcode));
-	    op[nopnds++] = gen_rtx_REG (mode, htm_spr_regno (fcode));
 	  }
 	/* If this builtin accesses a CR, then pass in a scratch
 	   CR as the last operand.  */
@@ -14252,7 +14231,7 @@ htm_expand_builtin (tree exp, rtx target, bool * expandedp)
 	    if (!(attr & RS6000_BTC_VOID))
 	      expected_nopnds += 1;
 	    if (uses_spr)
-	      expected_nopnds += 2;
+	      expected_nopnds += 1;
 
 	    gcc_assert (nopnds == expected_nopnds
 			&& nopnds <= MAX_HTM_OPERANDS);
@@ -36302,12 +36281,6 @@ rs6000_dbx_register_number (unsigned int regno, unsigned int format)
 	return 356;
       if (regno == VSCR_REGNO)
 	return 67;
-      if (regno == TFHAR_REGNO)
-	return 228;
-      if (regno == TFIAR_REGNO)
-	return 229;
-      if (regno == TEXASR_REGNO)
-	return 230;
 
       /* These do not make much sense.  */
       if (regno == FRAME_POINTER_REGNUM)
@@ -36342,12 +36315,6 @@ rs6000_dbx_register_number (unsigned int regno, unsigned int format)
     return 109;
   if (regno == VSCR_REGNO)
     return 110;
-  if (regno == TFHAR_REGNO)
-    return 114;
-  if (regno == TFIAR_REGNO)
-    return 115;
-  if (regno == TEXASR_REGNO)
-    return 116;
 
   if (regno == FRAME_POINTER_REGNUM)
     return 111;

@@ -815,11 +815,10 @@ enum data_align { align_abi, align_opt, align_both };
 
    The 3 HTM registers aren't also included in DWARF_FRAME_REGISTERS.  */
 
-#define FIRST_PSEUDO_REGISTER 115
+#define FIRST_PSEUDO_REGISTER 112
 
-/* The sfp register and 3 HTM registers
-   aren't included in DWARF_FRAME_REGISTERS.  */
-#define DWARF_FRAME_REGISTERS (FIRST_PSEUDO_REGISTER - 4)
+/* The sfp register isn't included in DWARF_FRAME_REGISTERS.  */
+#define DWARF_FRAME_REGISTERS (FIRST_PSEUDO_REGISTER - 1)
 
 /* Use standard DWARF numbering for DWARF debugging information.  */
 #define DBX_REGISTER_NUMBER(REGNO) rs6000_dbx_register_number ((REGNO), 0)
@@ -851,7 +850,7 @@ enum data_align { align_abi, align_opt, align_both };
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    1, 1						   \
-   , 1, 1, 1, 1					   \
+   , 1						   \
 }
 
 /* 1 for registers not available across function calls.
@@ -871,7 +870,7 @@ enum data_align { align_abi, align_opt, align_both };
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    1, 1						   \
-   , 1, 1, 1, 1					   \
+   , 1						   \
 }
 
 /* Like `CALL_USED_REGISTERS' except this macro doesn't require that
@@ -890,7 +889,7 @@ enum data_align { align_abi, align_opt, align_both };
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0						   \
-   , 0, 0, 0, 0					   \
+   , 0						   \
 }
 
 #define TOTAL_ALTIVEC_REGS	(LAST_ALTIVEC_REGNO - FIRST_ALTIVEC_REGNO + 1)
@@ -929,9 +928,6 @@ enum data_align { align_abi, align_opt, align_both };
 	v31 - v20	(saved; order given to save least number)
 	vrsave, vscr	(fixed)
 	sfp		(fixed)
-	tfhar		(fixed)
-	tfiar		(fixed)
-	texasr		(fixed)
 */
 
 #if FIXED_R2 == 1
@@ -973,7 +969,7 @@ enum data_align { align_abi, align_opt, align_both };
    96, 95, 94, 93, 92, 91,					\
    108, 107, 106, 105, 104, 103, 102, 101, 100, 99, 98, 97,	\
    109, 110,							\
-   111, 112, 113, 114						\
+   111								\
 }
 
 /* True if register is floating-point.  */
@@ -1134,7 +1130,6 @@ enum reg_class
   VSX_REGS,
   VRSAVE_REGS,
   VSCR_REGS,
-  SPR_REGS,
   GEN_OR_FLOAT_REGS,
   LINK_REGS,
   CTR_REGS,
@@ -1163,7 +1158,6 @@ enum reg_class
   "VSX_REGS",								\
   "VRSAVE_REGS",							\
   "VSCR_REGS",								\
-  "SPR_REGS",								\
   "GEN_OR_FLOAT_REGS",							\
   "LINK_REGS",								\
   "CTR_REGS",								\
@@ -1199,8 +1193,6 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000000, 0x00002000 },			\
   /* VSCR_REGS.  */							\
   { 0x00000000, 0x00000000, 0x00000000, 0x00004000 },			\
-  /* SPR_REGS.  */							\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00010000 },			\
   /* GEN_OR_FLOAT_REGS.  */						\
   { 0xffffffff, 0xffffffff, 0x00000008, 0x00008000 },			\
   /* LINK_REGS.  */							\
@@ -1222,7 +1214,7 @@ enum reg_class
   /* CA_REGS.  */							\
   { 0x00000000, 0x00000000, 0x00001000, 0x00000000 },			\
   /* ALL_REGS.  */							\
-  { 0xffffffff, 0xffffffff, 0xfffffffe, 0x0001ffff }			\
+  { 0xffffffff, 0xffffffff, 0xfffffffe, 0x0000ffff }			\
 }
 
 /* The same information, inverted:
@@ -2144,10 +2136,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   &rs6000_reg_names[108][0],	/* v31  */				\
   &rs6000_reg_names[109][0],	/* vrsave  */				\
   &rs6000_reg_names[110][0],	/* vscr  */				\
-  &rs6000_reg_names[111][0],	/* sfp  */				\
-  &rs6000_reg_names[112][0],	/* tfhar  */				\
-  &rs6000_reg_names[113][0],	/* tfiar  */				\
-  &rs6000_reg_names[114][0],	/* texasr  */				\
+  &rs6000_reg_names[111][0]	/* sfp  */				\
 }
 
 /* Table of additional register names to use in user input.  */
@@ -2201,8 +2190,6 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   {"vs52", 97}, {"vs53", 98}, {"vs54", 99}, {"vs55", 100},	\
   {"vs56", 101},{"vs57", 102},{"vs58", 103},{"vs59", 104},      \
   {"vs60", 105},{"vs61", 106},{"vs62", 107},{"vs63", 108},	\
-  /* Transactional Memory Facility (HTM) Registers.  */		\
-  {"tfhar",  112}, {"tfiar",  113}, {"texasr",  114},		\
 }
 
 /* This is how to output an element of a case-vector that is relative.  */
