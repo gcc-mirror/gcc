@@ -36309,7 +36309,15 @@ rs6000_dbx_register_number (unsigned int regno, unsigned int format)
       if (regno == TEXASR_REGNO)
 	return 230;
 
-      return regno;
+      /* These do not make much sense.  */
+      if (regno == FRAME_POINTER_REGNUM)
+	return 111;
+      if (regno == ARG_POINTER_REGNUM)
+	return 67;
+      if (regno == 64)
+	return 100;
+
+      gcc_unreachable ();
 #endif
     }
 
@@ -36341,7 +36349,14 @@ rs6000_dbx_register_number (unsigned int regno, unsigned int format)
   if (regno == TEXASR_REGNO)
     return 116;
 
-  return regno;
+  if (regno == FRAME_POINTER_REGNUM)
+    return 111;
+  if (regno == ARG_POINTER_REGNUM)
+    return 67;
+  if (regno == 64)
+    return 64;
+
+  gcc_unreachable ();
 }
 
 /* target hook eh_return_filter_mode */
