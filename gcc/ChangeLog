@@ -1,5 +1,31 @@
 2019-05-06  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (FIRST_ALTIVEC_REGNO, LAST_ALTIVEC_REGNO)
+	(LR_REGNO, CTR_REGNO, CA_REGNO, ARG_POINTER_REGNUM, CR0_REGNO)
+	(CR1_REGNO, CR2_REGNO, CR3_REGNO, CR4_REGNO, CR5_REGNO, CR6_REGNO)
+	(CR7_REGNO, MAX_CR_REGNO, VRSAVE_REGNO, VSCR_REGNO)
+	(FRAME_POINTER_REGNUM): Change numbering.
+	* config/rs6000/rs6000.c (rs6000_reg_names): Adjust.
+	(alt_reg_names): Adjust.
+	(rs6000_conditional_register_usage): Don't mark hard register 64 as
+	fixed.
+	* config/rs6000/rs6000.h (FIRST_PSEUDO_REGISTER): Adjust.
+	(DWARF_FRAME_REGISTERS): Delete.
+	(DWARF2_FRAME_REG_OUT): Fix whitespace.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS, CALL_REALLY_USED_REGISTERS):
+	Adjust.
+	(REG_ALLOC_ORDER): Adjust.
+	(FRAME_POINTER_REGNUM, ARG_POINTER_REGNUM): Adjust.
+	(REG_CLASS_CONTENTS): Adjust.
+	(RETURN_ADDR_RTX): Change comment.
+	(REGNO_OK_FOR_INDEX_P, REGNO_OK_FOR_BASE_P): Use ARG_POINTER_REGNUM
+	instead of 67.
+	(REGISTER_NAMES): Adjust.
+	(ADDITIONAL_REGISTER_NAMES): Adjust.
+	* config/rs6000/darwin.h (REGISTER_NAMES): Adjust.
+
+2019-05-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (TFHAR_REGNO, TFIAR_REGNO, TEXASR_REGNO):
 	Delete.
 	* config/rs6000/rs6000.h (FIRST_PSEUDO_REGISTER): Adjust.
