@@ -1,4 +1,23 @@
-2019-05-03  Jan Hubicka  <hubicka@ucw.cz>
+2019-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90316
+	* tree-ssa-alias.h (get_continuation_for_phi): Take walking
+	limit by reference.
+	(walk_non_aliased_vuses): Take walking limit argument.
+	* tree-ssa-alias.c (maybe_skip_until): Take limit and abort
+	walking if it is reached instead of just counting.
+	(get_continuation_for_phi): Likewise.
+	(walk_non_aliased_vuses): Likewise, instead of leaving counter
+	limiting to the callback.
+	* tree-ssa-sccvn.c (vn_reference_lookup_2): Adjust.
+	(vn_reference_lookup_3): Likewise.
+	(vn_reference_lookup_pieces): Likewise.
+	(vn_reference_lookup): Likewise.
+	* tree-ssa-pre.c (translate_vuse_through_block): Limit walking.
+	* tree-ssa-scopedtables.c (vuse_eq): Adjust.
+	(avail_exprs_stack::lookup_avail_expr): Likewise.
+
+2019-05-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-alias.c (aliasing_component_refs_p): Continue looking
 	for comparaible types in the second direction even if first one
