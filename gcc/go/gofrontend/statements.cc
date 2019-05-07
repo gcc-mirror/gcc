@@ -5485,6 +5485,7 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
   Location loc = this->location();
   Block* temp_block = new Block(enclosing, loc);
 
+  Expression* orig_range_expr = this->range_;
   Named_object* range_object = NULL;
   Temporary_statement* range_temp = NULL;
   if (eval)
@@ -5498,6 +5499,37 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
 	  temp_block->add_statement(range_temp);
 	  this->range_ = NULL;
 	}
+    }
+
+  // Try to match "range clear" patterns and rewrite to simple runtime
+  // calls.
+  if (range_type->map_type() != NULL)
+    {
+      Statement* clear = this->lower_map_range_clear(range_type,
+                                                     enclosing,
+                                                     orig_range_expr,
+                                                     range_object,
+                                                     range_temp, loc);
+      if (clear != NULL)
+        {
+          temp_block->add_statement(clear);
+          return Statement::make_block_statement(temp_block, loc);
+        }
+    }
+  else if (range_type->array_type() != NULL)
+    {
+      // Slice or array.
+      Statement* clear = this->lower_array_range_clear(gogo,
+                                                       range_type,
+                                                       orig_range_expr,
+                                                       temp_block,
+                                                       range_object,
+                                                       range_temp, loc);
+      if (clear != NULL)
+        {
+          temp_block->add_statement(clear);
+          return Statement::make_block_statement(temp_block, loc);
+        }
     }
 
   Temporary_statement* index_temp = Statement::make_temporary(index_type,
@@ -6139,6 +6171,188 @@ For_range_statement::lower_range_channel(Gogo*,
   iter_init->add_statement(s);
 
   *piter_init = iter_init;
+}
+
+// Match
+//
+//   for k := range m { delete(m, k) }
+//
+// Lower it to runtime.mapclear(TYPE, m) on match, return the statement
+// containing the call.  Return NULL otherwise.
+
+Statement*
+For_range_statement::lower_map_range_clear(Type* map_type,
+                                           Block* enclosing,
+                                           Expression* orig_range_expr,
+                                           Named_object* range_object,
+                                           Temporary_statement* range_temp,
+                                           Location loc)
+{
+  if (this->value_var_ != NULL)
+    return NULL;
+  if (this->index_var_ == NULL)
+    return NULL;
+
+  // Require the loop index be a new variable.  We cannot rewrite
+  // if it is used outside of the loop.
+  Var_expression* index_ve = this->index_var_->var_expression();
+  if (index_ve == NULL)
+    return NULL;
+  Named_object* index_no = index_ve->named_object();
+  if (enclosing->bindings()->lookup_local(index_no->name()) != index_no)
+    return NULL;
+
+  // Match the body.  When lowering the builtin delete function, we have
+  // inserted temporaries, so we actually match for
+  //
+  //   tmp1 = m
+  //   tmp2 = k
+  //   runtime.mapdelete(TYPE, tmp1, &tmp2)
+
+  const std::vector<Statement*>* statements = this->statements_->statements();
+  if (statements->size() != 3)
+    return NULL;
+
+  Temporary_statement* ts1 = statements->at(0)->temporary_statement();
+  Temporary_statement* ts2 = statements->at(1)->temporary_statement();
+  Expression_statement* es3 = statements->at(2)->expression_statement();
+  if (ts1 == NULL || ts2 == NULL || es3 == NULL
+      || !Expression::is_same_variable(orig_range_expr, ts1->init())
+      || !Expression::is_same_variable(this->index_var_, ts2->init()))
+    return NULL;
+  Call_expression* call = es3->expr()->call_expression();
+  if (call == NULL)
+    return NULL;
+  Func_expression* fe = call->fn()->func_expression();
+  if (fe == NULL || !fe->is_runtime_function()
+      || fe->runtime_code() != Runtime::MAPDELETE)
+    return NULL;
+  Expression* a1 = call->args()->at(1);
+  a1 = (a1->unsafe_conversion_expression() != NULL
+        ? a1->unsafe_conversion_expression()->expr()
+        : a1);
+  Temporary_reference_expression* tre = a1->temporary_reference_expression();
+  if (tre == NULL || tre->statement() != ts1)
+    return NULL;
+  Expression* a2 = call->args()->at(2);
+  a2 = (a2->conversion_expression() != NULL
+        ? a2->conversion_expression()->expr()
+        : a2);
+  Unary_expression* ue = a2->unary_expression();
+  if (ue == NULL || ue->op() != OPERATOR_AND)
+    return NULL;
+  tre = ue->operand()->temporary_reference_expression();
+  if (tre == NULL || tre->statement() != ts2)
+    return NULL;
+
+  // Everything matches. Rewrite to mapclear(TYPE, MAP).
+  Expression* e1 = Expression::make_type_descriptor(map_type, loc);
+  Expression* e2 = this->make_range_ref(range_object, range_temp, loc);
+  call = Runtime::make_call(Runtime::MAPCLEAR, loc, 2, e1, e2);
+  return Statement::make_statement(call, true);
+}
+
+// Match
+//
+//   for i := range a { a[i] = zero }
+//
+// Lower it to call memclr on match, and return the statement.  Return
+// NULL otherwise.
+
+Statement*
+For_range_statement::lower_array_range_clear(Gogo* gogo,
+                                             Type* array_type,
+                                             Expression* orig_range_expr,
+                                             Block* temp_block,
+                                             Named_object* range_object,
+                                             Temporary_statement* range_temp,
+                                             Location loc)
+{
+  if (this->value_var_ != NULL)
+    return NULL;
+  if (this->index_var_ == NULL)
+    return NULL;
+
+  // Match the body, a single assignment statement a[i] = zero.
+  const std::vector<Statement*>* statements = this->statements_->statements();
+  if (statements->size() != 1)
+    return NULL;
+  Assignment_statement* as = statements->at(0)->assignment_statement();
+  if (as == NULL || !as->rhs()->is_zero_value())
+    return NULL;
+  if (as->lhs()->type()->interface_type() != NULL
+      && as->rhs()->type()->interface_type() == NULL
+      && !as->rhs()->type()->is_nil_type())
+    // Implicit type conversion may change a zero value to non-zero, like
+    // interface{}(0).
+    return NULL;
+  Array_index_expression* aie = as->lhs()->array_index_expression();
+  if (aie == NULL || aie->end() != NULL
+      || !Expression::is_same_variable(orig_range_expr, aie->array())
+      || !Expression::is_same_variable(this->index_var_, aie->start()))
+    return NULL;
+
+  // Everything matches. Rewrite to
+  //
+  //   if len(a) != 0 {
+  //     tmp1 = &a[0]
+  //     tmp2 = len(a)*sizeof(elem(a))
+  //     memclr{NoHeap,Has}Pointers(tmp1, tmp2)
+  //     i = len(a) - 1
+  //   }
+
+  Type* elem_type = array_type->array_type()->element_type();
+  int64_t elme_sz;
+  bool ok = elem_type->backend_type_size(gogo, &elme_sz);
+  if (!ok)
+    return NULL;
+
+  Block* b = new Block(temp_block, loc);
+
+  Expression* ref;
+  if (range_object == NULL && range_temp == NULL)
+    // is_same_variable implies no side effect, so it is ok to copy.
+    ref = orig_range_expr->copy();
+  else
+    ref = this->make_range_ref(range_object, range_temp, loc);
+  Expression* len = this->call_builtin(gogo, "len", ref, loc);
+  Temporary_statement* tslen = Statement::make_temporary(NULL, len, loc);
+  temp_block->add_statement(tslen);
+
+  Expression* zero = Expression::make_integer_ul(0, this->index_var_->type(), loc);
+  ref = ref->copy();
+  Expression* elem = Expression::make_array_index(ref, zero, NULL, NULL, loc);
+  elem->array_index_expression()->set_needs_bounds_check(false);
+  Expression* e1 = Expression::make_unary(OPERATOR_AND, elem, loc);
+  Temporary_statement* ts1 = Statement::make_temporary(NULL, e1, loc);
+  b->add_statement(ts1);
+
+  len = Expression::make_temporary_reference(tslen, loc);
+  Expression* sz = Expression::make_integer_int64(elme_sz, len->type(), loc);
+  Expression* e2 = Expression::make_binary(OPERATOR_MULT, len, sz, loc);
+  Temporary_statement* ts2 = Statement::make_temporary(NULL, e2, loc);
+  b->add_statement(ts2);
+
+  Expression* arg1 = Expression::make_temporary_reference(ts1, loc);
+  Expression* arg2 = Expression::make_temporary_reference(ts2, loc);
+  Runtime::Function code = (elem_type->has_pointer()
+                            ? Runtime::MEMCLRHASPTR
+                            : Runtime::MEMCLRNOPTR);
+  Expression* call = Runtime::make_call(code, loc, 2, arg1, arg2);
+  Statement* cs3 = Statement::make_statement(call, true);
+  b->add_statement(cs3);
+
+  len = Expression::make_temporary_reference(tslen, loc);
+  Expression* one = Expression::make_integer_ul(1, len->type(), loc);
+  Expression* rhs = Expression::make_binary(OPERATOR_MINUS, len, one, loc);
+  Expression* lhs = this->index_var_->copy();
+  Statement* as4 = Statement::make_assignment(lhs, rhs, loc);
+  b->add_statement(as4);
+
+  len = Expression::make_temporary_reference(tslen, loc);
+  zero = zero->copy();
+  Expression* cond = Expression::make_binary(OPERATOR_NOTEQ, len, zero, loc);
+  return Statement::make_if_statement(cond, b, NULL, loc);
 }
 
 // Return the break LABEL_EXPR.

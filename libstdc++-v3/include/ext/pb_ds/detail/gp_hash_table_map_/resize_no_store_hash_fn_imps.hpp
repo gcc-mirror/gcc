@@ -39,6 +39,8 @@
  * hash value is not stored.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
@@ -70,3 +72,4 @@ resize_imp_reassign(entry_pointer p_e, entry_array a_entries_resized,
   __throw_insert_error();
 }
 
+#endif

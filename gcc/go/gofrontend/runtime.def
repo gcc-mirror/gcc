@@ -137,6 +137,9 @@ DEF_GO_RUNTIME(MAPITERINIT, "runtime.mapiterinit", P3(TYPE, MAP, POINTER),
 // Range over a map, moving to the next map entry.
 DEF_GO_RUNTIME(MAPITERNEXT, "runtime.mapiternext", P1(POINTER), R0())
 
+// Clear a map.
+DEF_GO_RUNTIME(MAPCLEAR, "runtime.mapclear", P2(TYPE, MAP), R0())
+
 
 // Make a channel.
 DEF_GO_RUNTIME(MAKECHAN, "runtime.makechan", P2(TYPE, INT), R1(CHAN))
@@ -309,6 +312,14 @@ DEF_GO_RUNTIME(GCWRITEBARRIER, "runtime.gcWriteBarrier",
 // Set *dst = *src for an arbitrary type.
 DEF_GO_RUNTIME(TYPEDMEMMOVE, "runtime.typedmemmove",
 	       P3(TYPE, POINTER, POINTER), R0())
+
+// Clear memory that contains no pointer.
+DEF_GO_RUNTIME(MEMCLRNOPTR, "runtime.memclrNoHeapPointers",
+               P2(POINTER, UINTPTR), R0())
+
+// Clear memory that contains pointer.
+DEF_GO_RUNTIME(MEMCLRHASPTR, "runtime.memclrHasPointers",
+               P2(POINTER, UINTPTR), R0())
 
 
 // Lock the printer (for print/println).

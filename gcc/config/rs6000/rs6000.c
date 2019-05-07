@@ -1464,53 +1464,53 @@ static GTY (()) hash_table<builtin_hasher> *builtin_hash_table;
 /* Default register names.  */
 char rs6000_reg_names[][8] =
 {
+  /* GPRs */
       "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",
       "8",  "9", "10", "11", "12", "13", "14", "15",
      "16", "17", "18", "19", "20", "21", "22", "23",
      "24", "25", "26", "27", "28", "29", "30", "31",
+  /* FPRs */
       "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",
       "8",  "9", "10", "11", "12", "13", "14", "15",
      "16", "17", "18", "19", "20", "21", "22", "23",
      "24", "25", "26", "27", "28", "29", "30", "31",
-     "mq", "lr", "ctr","ap",
+  /* VRs */
       "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",
-      "ca",
-      /* AltiVec registers.  */
-      "0",  "1",  "2",  "3",  "4",  "5",  "6", "7",
-      "8",  "9",  "10", "11", "12", "13", "14", "15",
-      "16", "17", "18", "19", "20", "21", "22", "23",
-      "24", "25", "26", "27", "28", "29", "30", "31",
-      "vrsave", "vscr",
-      /* Soft frame pointer.  */
-      "sfp",
-      /* HTM SPR registers.  */
-      "tfhar", "tfiar", "texasr"
+      "8",  "9", "10", "11", "12", "13", "14", "15",
+     "16", "17", "18", "19", "20", "21", "22", "23",
+     "24", "25", "26", "27", "28", "29", "30", "31",
+  /* lr ctr ca ap */
+     "lr", "ctr", "ca", "ap",
+  /* cr0..cr7 */
+      "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",
+  /* vrsave vscr sfp */
+      "vrsave", "vscr", "sfp",
 };
 
 #ifdef TARGET_REGNAMES
 static const char alt_reg_names[][8] =
 {
-   "%r0",   "%r1",  "%r2",  "%r3",  "%r4",  "%r5",  "%r6",  "%r7",
-   "%r8",   "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",
-  "%r16",  "%r17", "%r18", "%r19", "%r20", "%r21", "%r22", "%r23",
-  "%r24",  "%r25", "%r26", "%r27", "%r28", "%r29", "%r30", "%r31",
-   "%f0",   "%f1",  "%f2",  "%f3",  "%f4",  "%f5",  "%f6",  "%f7",
-   "%f8",   "%f9", "%f10", "%f11", "%f12", "%f13", "%f14", "%f15",
-  "%f16",  "%f17", "%f18", "%f19", "%f20", "%f21", "%f22", "%f23",
-  "%f24",  "%f25", "%f26", "%f27", "%f28", "%f29", "%f30", "%f31",
-    "mq",    "lr",  "ctr",   "ap",
-  "%cr0",  "%cr1", "%cr2", "%cr3", "%cr4", "%cr5", "%cr6", "%cr7",
-   "ca",
-  /* AltiVec registers.  */
-   "%v0",  "%v1",  "%v2",  "%v3",  "%v4",  "%v5",  "%v6", "%v7",
+  /* GPRs */
+   "%r0",  "%r1",  "%r2",  "%r3",  "%r4",  "%r5",  "%r6",  "%r7",
+   "%r8",  "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",
+  "%r16", "%r17", "%r18", "%r19", "%r20", "%r21", "%r22", "%r23",
+  "%r24", "%r25", "%r26", "%r27", "%r28", "%r29", "%r30", "%r31",
+  /* FPRs */
+   "%f0",  "%f1",  "%f2",  "%f3",  "%f4",  "%f5",  "%f6",  "%f7",
+   "%f8",  "%f9", "%f10", "%f11", "%f12", "%f13", "%f14", "%f15",
+  "%f16", "%f17", "%f18", "%f19", "%f20", "%f21", "%f22", "%f23",
+  "%f24", "%f25", "%f26", "%f27", "%f28", "%f29", "%f30", "%f31",
+  /* VRs */
+   "%v0",  "%v1",  "%v2",  "%v3",  "%v4",  "%v5",  "%v6",  "%v7",
    "%v8",  "%v9", "%v10", "%v11", "%v12", "%v13", "%v14", "%v15",
   "%v16", "%v17", "%v18", "%v19", "%v20", "%v21", "%v22", "%v23",
   "%v24", "%v25", "%v26", "%v27", "%v28", "%v29", "%v30", "%v31",
-  "vrsave", "vscr",
-  /* Soft frame pointer.  */
-  "sfp",
-  /* HTM SPR registers.  */
-  "tfhar", "tfiar", "texasr"
+  /* lr ctr ca ap */
+    "lr",  "ctr",   "ca",   "ap",
+  /* cr0..cr7 */
+  "%cr0",  "%cr1", "%cr2", "%cr3", "%cr4", "%cr5", "%cr6", "%cr7",
+  /* vrsave vscr sfp */
+  "vrsave", "vscr", "sfp",
 };
 #endif
 
@@ -3011,9 +3011,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
   rs6000_regno_regclass[CA_REGNO] = NO_REGS;
   rs6000_regno_regclass[VRSAVE_REGNO] = VRSAVE_REGS;
   rs6000_regno_regclass[VSCR_REGNO] = VRSAVE_REGS;
-  rs6000_regno_regclass[TFHAR_REGNO] = SPR_REGS;
-  rs6000_regno_regclass[TFIAR_REGNO] = SPR_REGS;
-  rs6000_regno_regclass[TEXASR_REGNO] = SPR_REGS;
   rs6000_regno_regclass[ARG_POINTER_REGNUM] = BASE_REGS;
   rs6000_regno_regclass[FRAME_POINTER_REGNUM] = BASE_REGS;
 
@@ -6944,6 +6941,10 @@ rs6000_expand_vector_extract (rtx target, rtx vec, rtx elt)
 
       switch (mode)
 	{
+	case E_V1TImode:
+	  emit_move_insn (target, gen_lowpart (TImode, vec));
+	  return;
+
 	case E_V2DFmode:
 	  emit_insn (gen_vsx_extract_v2df_var (target, vec, elt));
 	  return;
@@ -9493,10 +9494,6 @@ rs6000_conditional_register_usage (void)
 
   if (TARGET_DEBUG_TARGET)
     fprintf (stderr, "rs6000_conditional_register_usage called\n");
-
-  /* Set MQ register fixed (already call_used) so that it will not be
-     allocated.  */
-  fixed_regs[64] = 1;
 
   /* 64-bit AIX and Linux reserve GPR13 for thread-private data.  */
   if (TARGET_64BIT)
@@ -14094,23 +14091,6 @@ htm_spr_num (enum rs6000_builtins code)
   return TEXASRU_SPR;
 }
 
-/* Return the appropriate SPR regno associated with the given builtin.  */
-static inline HOST_WIDE_INT
-htm_spr_regno (enum rs6000_builtins code)
-{
-  if (code == HTM_BUILTIN_GET_TFHAR
-      || code == HTM_BUILTIN_SET_TFHAR)
-    return TFHAR_REGNO;
-  else if (code == HTM_BUILTIN_GET_TFIAR
-	   || code == HTM_BUILTIN_SET_TFIAR)
-    return TFIAR_REGNO;
-  gcc_assert (code == HTM_BUILTIN_GET_TEXASR
-	      || code == HTM_BUILTIN_SET_TEXASR
-	      || code == HTM_BUILTIN_GET_TEXASRU
-	      || code == HTM_BUILTIN_SET_TEXASRU);
-  return TEXASR_REGNO;
-}
-
 /* Return the correct ICODE value depending on whether we are
    setting or reading the HTM SPRs.  */
 static inline enum insn_code
@@ -14227,7 +14207,6 @@ htm_expand_builtin (tree exp, rtx target, bool * expandedp)
 	  {
 	    machine_mode mode = (TARGET_POWERPC64) ? DImode : SImode;
 	    op[nopnds++] = gen_rtx_CONST_INT (mode, htm_spr_num (fcode));
-	    op[nopnds++] = gen_rtx_REG (mode, htm_spr_regno (fcode));
 	  }
 	/* If this builtin accesses a CR, then pass in a scratch
 	   CR as the last operand.  */
@@ -14248,7 +14227,7 @@ htm_expand_builtin (tree exp, rtx target, bool * expandedp)
 	    if (!(attr & RS6000_BTC_VOID))
 	      expected_nopnds += 1;
 	    if (uses_spr)
-	      expected_nopnds += 2;
+	      expected_nopnds += 1;
 
 	    gcc_assert (nopnds == expected_nopnds
 			&& nopnds <= MAX_HTM_OPERANDS);
@@ -36269,38 +36248,78 @@ rs6000_init_dwarf_reg_sizes_extra (tree address)
 unsigned int
 rs6000_dbx_register_number (unsigned int regno, unsigned int format)
 {
-  /* Except for the above, we use the internal number for non-DWARF
-     debug information, and also for .eh_frame.  */
-  if ((format == 0 && write_symbols != DWARF2_DEBUG) || format == 2)
-    return regno;
-
   /* On some platforms, we use the standard DWARF register
      numbering for .debug_info and .debug_frame.  */
+  if ((format == 0 && write_symbols == DWARF2_DEBUG) || format == 1)
+    {
 #ifdef RS6000_USE_DWARF_NUMBERING
-  if (regno <= 63)
-    return regno;
-  if (regno == LR_REGNO)
-    return 108;
-  if (regno == CTR_REGNO)
-    return 109;
-  /* Special handling for CR for .debug_frame: rs6000_emit_prologue has
-     translated any combination of CR2, CR3, CR4 saves to a save of CR2.
-     The actual code emitted saves the whole of CR, so we map CR2_REGNO
-     to the DWARF reg for CR.  */
-  if (format == 1 && regno == CR2_REGNO)
-    return 64;
-  if (CR_REGNO_P (regno))
-    return regno - CR0_REGNO + 86;
-  if (regno == CA_REGNO)
-    return 101;  /* XER */
-  if (ALTIVEC_REGNO_P (regno))
-    return regno - FIRST_ALTIVEC_REGNO + 1124;
-  if (regno == VRSAVE_REGNO)
-    return 356;
-  if (regno == VSCR_REGNO)
-    return 67;
+      if (regno <= 31)
+	return regno;
+      if (FP_REGNO_P (regno))
+	return regno - FIRST_FPR_REGNO + 32;
+      if (ALTIVEC_REGNO_P (regno))
+	return regno - FIRST_ALTIVEC_REGNO + 1124;
+      if (regno == LR_REGNO)
+	return 108;
+      if (regno == CTR_REGNO)
+	return 109;
+      if (regno == CA_REGNO)
+	return 101;  /* XER */
+      /* Special handling for CR for .debug_frame: rs6000_emit_prologue has
+	 translated any combination of CR2, CR3, CR4 saves to a save of CR2.
+	 The actual code emitted saves the whole of CR, so we map CR2_REGNO
+	 to the DWARF reg for CR.  */
+      if (format == 1 && regno == CR2_REGNO)
+	return 64;
+      if (CR_REGNO_P (regno))
+	return regno - CR0_REGNO + 86;
+      if (regno == VRSAVE_REGNO)
+	return 356;
+      if (regno == VSCR_REGNO)
+	return 67;
+
+      /* These do not make much sense.  */
+      if (regno == FRAME_POINTER_REGNUM)
+	return 111;
+      if (regno == ARG_POINTER_REGNUM)
+	return 67;
+      if (regno == 64)
+	return 100;
+
+      gcc_unreachable ();
 #endif
-  return regno;
+    }
+
+  /* We use the GCC 7 (and before) internal number for non-DWARF debug
+     information, and also for .eh_frame.  */
+  /* Translate the regnos to their numbers in GCC 7 (and before).  */
+  if (regno <= 31)
+    return regno;
+  if (FP_REGNO_P (regno))
+    return regno - FIRST_FPR_REGNO + 32;
+  if (ALTIVEC_REGNO_P (regno))
+    return regno - FIRST_ALTIVEC_REGNO + 77;
+  if (regno == LR_REGNO)
+    return 65;
+  if (regno == CTR_REGNO)
+    return 66;
+  if (regno == CA_REGNO)
+    return 76;  /* XER */
+  if (CR_REGNO_P (regno))
+    return regno - CR0_REGNO + 68;
+  if (regno == VRSAVE_REGNO)
+    return 109;
+  if (regno == VSCR_REGNO)
+    return 110;
+
+  if (regno == FRAME_POINTER_REGNUM)
+    return 111;
+  if (regno == ARG_POINTER_REGNUM)
+    return 67;
+  if (regno == 64)
+    return 64;
+
+  gcc_unreachable ();
 }
 
 /* target hook eh_return_filter_mode */

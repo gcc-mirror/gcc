@@ -39,6 +39,8 @@
  * and related functions.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::entry_allocator
 PB_DS_CLASS_C_DEC::s_entry_allocator;
@@ -189,3 +191,4 @@ initialize()
   Resize_Policy::notify_cleared();
   ranged_hash_fn_base::notify_resized(m_num_e);
 }
+#endif

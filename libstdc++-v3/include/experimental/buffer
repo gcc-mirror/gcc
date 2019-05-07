@@ -24,6 +24,7 @@
 
 /** @file experimental/buffer
  *  This is a TS C++ Library header.
+ *  @ingroup networking-ts
  */
 
 #ifndef _GLIBCXX_EXPERIMENTAL_BUFFER
@@ -51,9 +52,8 @@ namespace net
 inline namespace v1
 {
 
-  /**
-   * @ingroup networking
-   * @{
+  /** @addtogroup networking-ts
+   *  @{
    */
 
   enum class stream_errc {    // TODO decide values

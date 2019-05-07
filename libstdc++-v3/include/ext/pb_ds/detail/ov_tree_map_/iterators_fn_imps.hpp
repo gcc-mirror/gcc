@@ -38,6 +38,8 @@
  * Contains an implementation class for ov_tree_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::node_const_iterator
 PB_DS_CLASS_C_DEC::
@@ -101,3 +103,4 @@ PB_DS_node_end_imp()
 		  end(),(m_a_metadata == 0) ? 0 : m_a_metadata + m_size);
 }
 
+#endif

@@ -5,6 +5,8 @@
 package runtime
 
 import (
+	"runtime/internal/atomic"
+	"runtime/internal/sys"
 	"unsafe"
 )
 
@@ -66,12 +68,201 @@ import (
 // pointer to memory that holds the value. It follows from this that
 // kindDirectIface can only be set for a type whose representation is
 // simply a pointer. In the current gccgo implementation, this is set
-// only for pointer types (including unsafe.Pointer). In the future it
-// could also be set for other types: channels, maps, functions,
-// single-field structs and single-element arrays whose single field
-// is simply a pointer.
+// for types that are pointer-shaped, including unsafe.Pointer, channels,
+// maps, functions, single-field structs and single-element arrays whose
+// single field is simply a pointer-shaped type.
 
 // For a nil interface value both fields in the interface struct are nil.
+
+// itabs are statically allocated or persistently allocated. They are
+// never freed. For itabs allocated at run time, they are cached in
+// itabTable, so we reuse the same itab for the same (interface, concrete)
+// type pair. The gc runtime prepopulates the cache with statically
+// allocated itabs. Currently we don't do that as we don't have a way to
+// find all the statically allocated itabs.
+
+const itabInitSize = 512
+
+var (
+	itabLock      mutex                               // lock for accessing itab table
+	itabTable     = &itabTableInit                    // pointer to current table
+	itabTableInit = itabTableType{size: itabInitSize} // starter table
+)
+
+// Cache entry type of itab table.
+// For gccgo, this is not the data type we used in the interface header.
+type itab struct {
+	inter   *interfacetype
+	methods [2]unsafe.Pointer // method table. variable sized. first entry is the type descriptor.
+}
+
+func (m *itab) _type() *_type {
+	return (*_type)(m.methods[0])
+}
+
+// Note: change the formula in the mallocgc call in itabAdd if you change these fields.
+type itabTableType struct {
+	size    uintptr             // length of entries array. Always a power of 2.
+	count   uintptr             // current number of filled entries.
+	entries [itabInitSize]*itab // really [size] large
+}
+
+func itabHashFunc(inter *interfacetype, typ *_type) uintptr {
+	// compiler has provided some good hash codes for us.
+	return uintptr(inter.typ.hash ^ typ.hash)
+}
+
+// find finds the given interface/type pair in t.
+// Returns nil if the given interface/type pair isn't present.
+func (t *itabTableType) find(inter *interfacetype, typ *_type) *itab {
+	// Implemented using quadratic probing.
+	// Probe sequence is h(i) = h0 + i*(i+1)/2 mod 2^k.
+	// We're guaranteed to hit all table entries using this probe sequence.
+	mask := t.size - 1
+	h := itabHashFunc(inter, typ) & mask
+	for i := uintptr(1); ; i++ {
+		p := (**itab)(add(unsafe.Pointer(&t.entries), h*sys.PtrSize))
+		// Use atomic read here so if we see m != nil, we also see
+		// the initializations of the fields of m.
+		// m := *p
+		m := (*itab)(atomic.Loadp(unsafe.Pointer(p)))
+		if m == nil {
+			return nil
+		}
+		if m.inter == inter && m._type() == typ {
+			return m
+		}
+		h += i
+		h &= mask
+	}
+}
+
+// itabAdd adds the given itab to the itab hash table.
+// itabLock must be held.
+func itabAdd(m *itab) {
+	// Bugs can lead to calling this while mallocing is set,
+	// typically because this is called while panicing.
+	// Crash reliably, rather than only when we need to grow
+	// the hash table.
+	if getg().m.mallocing != 0 {
+		throw("malloc deadlock")
+	}
+
+	t := itabTable
+	if t.count >= 3*(t.size/4) { // 75% load factor
+		// Grow hash table.
+		// t2 = new(itabTableType) + some additional entries
+		// We lie and tell malloc we want pointer-free memory because
+		// all the pointed-to values are not in the heap.
+		t2 := (*itabTableType)(mallocgc((2+2*t.size)*sys.PtrSize, nil, true))
+		t2.size = t.size * 2
+
+		// Copy over entries.
+		// Note: while copying, other threads may look for an itab and
+		// fail to find it. That's ok, they will then try to get the itab lock
+		// and as a consequence wait until this copying is complete.
+		iterate_itabs(t2.add)
+		if t2.count != t.count {
+			throw("mismatched count during itab table copy")
+		}
+		// Publish new hash table. Use an atomic write: see comment in getitab.
+		atomicstorep(unsafe.Pointer(&itabTable), unsafe.Pointer(t2))
+		// Adopt the new table as our own.
+		t = itabTable
+		// Note: the old table can be GC'ed here.
+	}
+	t.add(m)
+}
+
+// add adds the given itab to itab table t.
+// itabLock must be held.
+func (t *itabTableType) add(m *itab) {
+	// See comment in find about the probe sequence.
+	// Insert new itab in the first empty spot in the probe sequence.
+	mask := t.size - 1
+	h := itabHashFunc(m.inter, m._type()) & mask
+	for i := uintptr(1); ; i++ {
+		p := (**itab)(add(unsafe.Pointer(&t.entries), h*sys.PtrSize))
+		m2 := *p
+		if m2 == m {
+			// A given itab may be used in more than one module
+			// and thanks to the way global symbol resolution works, the
+			// pointed-to itab may already have been inserted into the
+			// global 'hash'.
+			return
+		}
+		if m2 == nil {
+			// Use atomic write here so if a reader sees m, it also
+			// sees the correctly initialized fields of m.
+			// NoWB is ok because m is not in heap memory.
+			// *p = m
+			atomic.StorepNoWB(unsafe.Pointer(p), unsafe.Pointer(m))
+			t.count++
+			return
+		}
+		h += i
+		h &= mask
+	}
+}
+
+// init fills in the m.methods array with all the code pointers for
+// the m.inter/m._type pair. If the type does not implement the interface,
+// it sets m.methods[1] to nil and returns the name of an interface function that is missing.
+// It is ok to call this multiple times on the same m, even concurrently.
+func (m *itab) init() string {
+	inter := m.inter
+	typ := m._type()
+	ni := len(inter.methods) + 1
+	methods := (*[1 << 16]unsafe.Pointer)(unsafe.Pointer(&m.methods[0]))[:ni:ni]
+	var m1 unsafe.Pointer
+
+	ri := 0
+	for li := range inter.methods {
+		lhsMethod := &inter.methods[li]
+		var rhsMethod *method
+
+		for {
+			if ri >= len(typ.methods) {
+				m.methods[1] = nil
+				return *lhsMethod.name
+			}
+
+			rhsMethod = &typ.methods[ri]
+			if (lhsMethod.name == rhsMethod.name || *lhsMethod.name == *rhsMethod.name) &&
+				(lhsMethod.pkgPath == rhsMethod.pkgPath || *lhsMethod.pkgPath == *rhsMethod.pkgPath) {
+				break
+			}
+
+			ri++
+		}
+
+		if !eqtype(lhsMethod.typ, rhsMethod.mtyp) {
+			m.methods[1] = nil
+			return *lhsMethod.name
+		}
+
+		if li == 0 {
+			m1 = rhsMethod.tfn // we'll set m.methods[1] at the end
+		} else {
+			methods[li+1] = rhsMethod.tfn
+		}
+		ri++
+	}
+	m.methods[1] = m1
+	return ""
+}
+
+func iterate_itabs(fn func(*itab)) {
+	// Note: only runs during stop the world or with itabLock held,
+	// so no other locks/atomics needed.
+	t := itabTable
+	for i := uintptr(0); i < t.size; i++ {
+		m := *(**itab)(add(unsafe.Pointer(&t.entries), i*sys.PtrSize))
+		if m != nil {
+			fn(m)
+		}
+	}
+}
 
 // Return the interface method table for a value of type rhs converted
 // to an interface of type lhs.
@@ -97,43 +288,45 @@ func getitab(lhs, rhs *_type, canfail bool) unsafe.Pointer {
 		panic(&TypeAssertionError{nil, rhs, lhs, *lhsi.methods[0].name})
 	}
 
-	methods := make([]unsafe.Pointer, len(lhsi.methods)+1)
-	methods[0] = unsafe.Pointer(rhs)
+	var m *itab
 
-	ri := 0
-	for li := range lhsi.methods {
-		lhsMethod := &lhsi.methods[li]
-		var rhsMethod *method
-
-		for {
-			if ri >= len(rhs.methods) {
-				if canfail {
-					return nil
-				}
-				panic(&TypeAssertionError{nil, rhs, lhs, *lhsMethod.name})
-			}
-
-			rhsMethod = &rhs.methods[ri]
-			if (lhsMethod.name == rhsMethod.name || *lhsMethod.name == *rhsMethod.name) &&
-				(lhsMethod.pkgPath == rhsMethod.pkgPath || *lhsMethod.pkgPath == *rhsMethod.pkgPath) {
-				break
-			}
-
-			ri++
-		}
-
-		if !eqtype(lhsMethod.typ, rhsMethod.mtyp) {
-			if canfail {
-				return nil
-			}
-			panic(&TypeAssertionError{nil, rhs, lhs, *lhsMethod.name})
-		}
-
-		methods[li+1] = unsafe.Pointer(rhsMethod.tfn)
-		ri++
+	// First, look in the existing table to see if we can find the itab we need.
+	// This is by far the most common case, so do it without locks.
+	// Use atomic to ensure we see any previous writes done by the thread
+	// that updates the itabTable field (with atomic.Storep in itabAdd).
+	t := (*itabTableType)(atomic.Loadp(unsafe.Pointer(&itabTable)))
+	if m = t.find(lhsi, rhs); m != nil {
+		goto finish
 	}
 
-	return unsafe.Pointer(&methods[0])
+	// Not found.  Grab the lock and try again.
+	lock(&itabLock)
+	if m = itabTable.find(lhsi, rhs); m != nil {
+		unlock(&itabLock)
+		goto finish
+	}
+
+	// Entry doesn't exist yet. Make a new entry & add it.
+	m = (*itab)(persistentalloc(unsafe.Sizeof(itab{})+uintptr(len(lhsi.methods)-1)*sys.PtrSize, 0, &memstats.other_sys))
+	m.inter = lhsi
+	m.methods[0] = unsafe.Pointer(rhs)
+	m.init()
+	itabAdd(m)
+	unlock(&itabLock)
+finish:
+	if m.methods[1] != nil {
+		return unsafe.Pointer(&m.methods[0])
+	}
+	if canfail {
+		return nil
+	}
+	// this can only happen if the conversion
+	// was already done once using the , ok form
+	// and we have a cached negative result.
+	// The cached result doesn't record which
+	// interface function was missing, so initialize
+	// the itab again to get the missing function name.
+	panic(&TypeAssertionError{nil, rhs, lhs, m.init()})
 }
 
 // Return the interface method table for a value of type rhs converted
@@ -264,7 +457,11 @@ func ifaceE2T2(t *_type, e eface, ret unsafe.Pointer) bool {
 		typedmemclr(t, ret)
 		return false
 	} else {
-		typedmemmove(t, ret, e.data)
+		if isDirectIface(t) {
+			*(*unsafe.Pointer)(ret) = e.data
+		} else {
+			typedmemmove(t, ret, e.data)
+		}
 		return true
 	}
 }
@@ -275,7 +472,11 @@ func ifaceI2T2(t *_type, i iface, ret unsafe.Pointer) bool {
 		typedmemclr(t, ret)
 		return false
 	} else {
-		typedmemmove(t, ret, i.data)
+		if isDirectIface(t) {
+			*(*unsafe.Pointer)(ret) = i.data
+		} else {
+			typedmemmove(t, ret, i.data)
+		}
 		return true
 	}
 }

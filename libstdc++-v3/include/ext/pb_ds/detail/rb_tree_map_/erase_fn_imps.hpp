@@ -38,6 +38,8 @@
  * Contains an implementation for rb_tree_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline bool
 PB_DS_CLASS_C_DEC::
@@ -287,3 +289,4 @@ remove_fixup(node_pointer p_x, node_pointer p_new_x_parent)
   if (p_x != 0)
     p_x->m_red = false;
 }
+#endif

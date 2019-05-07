@@ -48,9 +48,8 @@ namespace net
 inline namespace v1
 {
 
-  /**
-   * @ingroup networking
-   * @{
+  /** @addtogroup networking-ts
+   *  @{
    */
 
   template<typename _CompletionToken, typename _Signature, typename>

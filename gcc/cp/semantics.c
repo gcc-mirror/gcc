@@ -3740,17 +3740,13 @@ finish_id_expression_1 (tree id_expression,
 	   wrong, so just return the identifier.  */
 	return id_expression;
 
-      if (TREE_CODE (decl) == NAMESPACE_DECL)
-	{
-	  error ("use of namespace %qD as expression", decl);
-	  return error_mark_node;
-	}
-      else if (DECL_CLASS_TEMPLATE_P (decl))
+      if (DECL_CLASS_TEMPLATE_P (decl))
 	{
 	  error ("use of class template %qT as expression", decl);
 	  return error_mark_node;
 	}
-      else if (TREE_CODE (decl) == TREE_LIST)
+
+      if (TREE_CODE (decl) == TREE_LIST)
 	{
 	  /* Ambiguous reference to base members.  */
 	  error ("request for member %qD is ambiguous in "

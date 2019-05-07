@@ -1924,26 +1924,12 @@ execute_function_todo (function *fn, void *data)
 
   push_cfun (fn);
 
-  /* Always cleanup the CFG before trying to update SSA.  */
+  /* If we need to cleanup the CFG let it perform a needed SSA update.  */
   if (flags & TODO_cleanup_cfg)
-    {
-      cleanup_tree_cfg (flags & TODO_update_ssa_any);
-
-      /* When cleanup_tree_cfg merges consecutive blocks, it may
-	 perform some simplistic propagation when removing single
-	 valued PHI nodes.  This propagation may, in turn, cause the
-	 SSA form to become out-of-date (see PR 22037).  So, even
-	 if the parent pass had not scheduled an SSA update, we may
-	 still need to do one.  */
-      if (!(flags & TODO_update_ssa_any) && need_ssa_update_p (cfun))
-	flags |= TODO_update_ssa;
-    }
-
-  if (flags & TODO_update_ssa_any)
-    {
-      unsigned update_flags = flags & TODO_update_ssa_any;
-      update_ssa (update_flags);
-    }
+    cleanup_tree_cfg (flags & TODO_update_ssa_any);
+  else if (flags & TODO_update_ssa_any)
+    update_ssa (flags & TODO_update_ssa_any);
+  gcc_assert (!need_ssa_update_p (fn));
 
   if (flag_tree_pta && (flags & TODO_rebuild_alias))
     compute_may_aliases ();

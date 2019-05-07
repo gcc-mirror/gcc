@@ -6052,6 +6052,9 @@ write_module (void)
 {
   int i;
 
+  /* Initialize the column counter. */
+  module_column = 1;
+  
   /* Write the operator interfaces.  */
   mio_lparen ();
 

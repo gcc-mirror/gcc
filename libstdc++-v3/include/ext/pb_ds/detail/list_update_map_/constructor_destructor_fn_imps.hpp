@@ -37,6 +37,8 @@
  * @file list_update_map_/constructor_destructor_fn_imps.hpp
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::entry_allocator
 PB_DS_CLASS_C_DEC::s_entry_allocator;
@@ -134,3 +136,4 @@ PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 ~PB_DS_LU_NAME()
 { deallocate_all(); }
+#endif

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-fre1-details" } */
+/* { dg-options "-O -fdump-tree-fre1-details -fno-tree-forwprop" } */
 /* { dg-additional-options "-fno-common" { target hppa*-*-hpux* } } */
 
 typedef double d128 __attribute__((vector_size(16)));

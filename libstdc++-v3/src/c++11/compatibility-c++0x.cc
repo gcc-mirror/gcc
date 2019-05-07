@@ -117,8 +117,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   size_t
   hash<error_code>::operator()(error_code __e) const
   {
-    const size_t __tmp = std::_Hash_impl::hash(__e._M_value);
-    return std::_Hash_impl::__hash_combine(__e._M_cat, __tmp);
+    const size_t __tmp = std::_Hash_impl::hash(__e.value());
+    return std::_Hash_impl::__hash_combine(&__e.category(), __tmp);
   }
 
   // gcc-4.7.0

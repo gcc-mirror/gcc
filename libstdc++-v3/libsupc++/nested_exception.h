@@ -76,6 +76,8 @@ namespace std
     { return _M_ptr; }
   };
 
+  /// @cond undocumented
+
   template<typename _Except>
     struct _Nested_exception : public _Except, public nested_exception
     {
@@ -106,6 +108,8 @@ namespace std
     __throw_with_nested_impl(_Tp&& __t, false_type)
     { throw std::forward<_Tp>(__t); }
 
+  /// @endcond
+
   /// If @p __t is derived from nested_exception, throws @p __t.
   /// Else, throws an implementation-defined object derived from both.
   template<typename _Tp>
@@ -122,6 +126,8 @@ namespace std
 			    __not_<is_base_of<nested_exception, _Up>>>;
       std::__throw_with_nested_impl(std::forward<_Tp>(__t), __nest{});
     }
+
+  /// @cond undocumented
 
   // Determine if dynamic_cast<const nested_exception&> would be well-formed.
   template<typename _Tp>
@@ -144,6 +150,8 @@ namespace std
   inline void
   __rethrow_if_nested_impl(const void*)
   { }
+
+  /// @endcond
 
   /// If @p __ex is derived from nested_exception, @p __ex.rethrow_nested().
   template<typename _Ex>

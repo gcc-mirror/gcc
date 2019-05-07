@@ -328,8 +328,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   /** @namespace std::this_thread
-   *  @brief ISO C++ 2011 entities sub-namespace for thread.
-   *  30.3.2 Namespace this_thread.
+   *  @brief ISO C++ 2011 namespace for interacting with the current thread
+   *
+   *  C++11 30.3.2 [thread.thread.this] Namespace this_thread.
    */
   namespace this_thread
   {

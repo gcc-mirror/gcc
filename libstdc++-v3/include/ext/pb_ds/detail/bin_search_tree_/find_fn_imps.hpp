@@ -38,6 +38,8 @@
  * Contains an implementation class for bin_search_tree_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::point_const_iterator
 PB_DS_CLASS_C_DEC::
@@ -169,3 +171,4 @@ find(key_const_reference r_key) const
     }
   return point_const_iterator(ret);
 }
+#endif

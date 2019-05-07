@@ -37,8 +37,12 @@
  * @file unordered_iterator/const_iterator.hpp
  * Contains an iterator class used for const ranging over the elements of the
  * table.
+ *
+ * This file is intended to be included inside a class definition, with
+ * PB_DS_CLASS_C_DEC defined to the name of the enclosing class.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
 /// Const range-type iterator.
 class const_iterator_
 : public point_const_iterator_
@@ -109,3 +113,4 @@ protected:
 
   friend class PB_DS_CLASS_C_DEC;
 };
+#endif

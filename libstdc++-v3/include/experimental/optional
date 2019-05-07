@@ -24,22 +24,11 @@
 
 /** @file experimental/optional
  *  This is a TS C++ Library header.
+ *  @ingroup libfund-ts
  */
 
 #ifndef _GLIBCXX_EXPERIMENTAL_OPTIONAL
 #define _GLIBCXX_EXPERIMENTAL_OPTIONAL 1
-
-/**
- * @defgroup experimental Experimental
- *
- * Components specified by various Technical Specifications.
- *
- * As indicated by the std::experimental namespace and the  header paths,
- * the contents of these Technical Specifications are experimental and not
- * part of the C++ standard. As such the interfaces and implementations may
- * change in the future, and there is <STRONG> no guarantee of compatibility
- * between different GCC releases </STRONG> for these features.
- */
 
 #if __cplusplus >= 201402L
 
@@ -63,7 +52,7 @@ inline namespace fundamentals_v1
 {
   /**
    * @defgroup optional Optional values
-   * @ingroup experimental
+   * @ingroup libfund-ts
    *
    * Class template for optional values and surrounding facilities, as
    * described in n3793 "A proposal to add a utility class to represent
@@ -123,6 +112,8 @@ inline namespace fundamentals_v1
     virtual ~bad_optional_access() noexcept = default;
   };
 
+  /// @cond undocumented
+
   void
   __throw_bad_optional_access(const char*)
   __attribute__((__noreturn__));
@@ -131,59 +122,6 @@ inline namespace fundamentals_v1
   inline void
   __throw_bad_optional_access(const char* __s)
   { _GLIBCXX_THROW_OR_ABORT(bad_optional_access(__s)); }
-
-#ifndef __cpp_lib_addressof_constexpr
-  template<typename _Tp, typename = void>
-    struct _Has_addressof_mem : std::false_type { };
-
-  template<typename _Tp>
-    struct _Has_addressof_mem<_Tp,
-         __void_t<decltype( std::declval<const _Tp&>().operator&() )>
-      >
-    : std::true_type { };
-
-  template<typename _Tp, typename = void>
-    struct _Has_addressof_free : std::false_type { };
-
-  template<typename _Tp>
-    struct _Has_addressof_free<_Tp,
-         __void_t<decltype( operator&(std::declval<const _Tp&>()) )>
-      >
-    : std::true_type { };
-
-  /**
-    * @brief Trait that detects the presence of an overloaded unary operator&.
-    *
-    * Practically speaking this detects the presence of such an operator when
-    * called on a const-qualified lvalue (e.g.
-    * declval<const _Tp&>().operator&()).
-    */
-  template<typename _Tp>
-    struct _Has_addressof
-    : std::__or_<_Has_addressof_mem<_Tp>, _Has_addressof_free<_Tp>>::type
-    { };
-
-  /**
-    * @brief An overload that attempts to take the address of an lvalue as a
-    * constant expression. Falls back to __addressof in the presence of an
-    * overloaded addressof operator (unary operator&), in which case the call
-    * will not be a constant expression.
-    */
-  template<typename _Tp>
-    constexpr
-    enable_if_t<!_Has_addressof<_Tp>::value, _Tp*>
-    __constexpr_addressof(_Tp& __t)
-    { return &__t; }
-
-  /**
-    * @brief Fallback overload that defers to __addressof.
-    */
-  template<typename _Tp>
-    inline
-    enable_if_t<_Has_addressof<_Tp>::value, _Tp*>
-    __constexpr_addressof(_Tp& __t)
-    { return std::__addressof(__t); }
-#endif // __cpp_lib_addressof_constexpr
 
   /**
     * @brief Class template that holds the necessary state for @ref optional
@@ -463,9 +401,6 @@ inline namespace fundamentals_v1
       bool _M_engaged = false;
     };
 
-  template<typename _Tp>
-  class optional;
-
   template<typename _Tp, typename _Up>
     using __converts_from_optional =
       __or_<is_constructible<_Tp, const optional<_Up>&>,
@@ -483,6 +418,8 @@ inline namespace fundamentals_v1
 	    is_assignable<_Tp&, optional<_Up>&>,
 	    is_assignable<_Tp&, const optional<_Up>&&>,
 	    is_assignable<_Tp&, optional<_Up>&&>>;
+
+  /// @endcond
 
   /**
     * @brief Class template for optional values.
@@ -709,13 +646,7 @@ inline namespace fundamentals_v1
       // [X.Y.4.5] Observers.
       constexpr const _Tp*
       operator->() const
-      {
-#ifndef __cpp_lib_addressof_constexpr
-	return __constexpr_addressof(this->_M_get());
-#else
-	return std::__addressof(this->_M_get());
-#endif
-      }
+      { return std::__addressof(this->_M_get()); }
 
       _Tp*
       operator->()
@@ -806,6 +737,8 @@ inline namespace fundamentals_v1
 	    : static_cast<_Tp>(std::forward<_Up>(__u));
 	}
     };
+
+  /// @relates experimental::optional @{
 
   // [X.Y.8] Comparisons between optional values.
   template<typename _Tp>
@@ -977,11 +910,14 @@ inline namespace fundamentals_v1
     make_optional(_Tp&& __t)
     { return optional<decay_t<_Tp>> { std::forward<_Tp>(__t) }; }
 
+  // @} relates experimental::optional
   // @} group optional
 } // namespace fundamentals_v1
 } // namespace experimental
 
   // [X.Y.12]
+  /// std::hash partial specialization for experimental::optional
+  /// @relates experimental::optional
   template<typename _Tp>
     struct hash<experimental::optional<_Tp>>
     {

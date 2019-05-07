@@ -1,3 +1,166 @@
+2019-05-07  Li Jia He  <helijia@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/pr37508.c: Add the no-ssa-phiopt option to skip phi
+	optimization.
+	* gcc.dg/tree-ssa/pr88676-2.c: New testcase.
+
+2019-05-06  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90290
+	* gfortran.dg/pr90290.f90: New test.
+
+2019-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/88709
+	PR tree-optimization/90271
+	* gcc.dg/store_merging_26.c: New test.
+	* gcc.dg/store_merging_27.c: New test.
+	* gcc.dg/store_merging_28.c: New test.
+	* gcc.dg/store_merging_29.c: New test.
+
+2019-05-06  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/89424
+	* gcc.target/powerpc/pr89424-0.c: New test.
+	* gcc.target/powerpc/vsx-builtin-13a.c: Define macro PR89424 to
+	enable testing of newly patched capability.
+	* gcc.target/powerpc/vsx-builtin-13b.c: Likewise.
+	* gcc.target/powerpc/vsx-builtin-20a.c: Likewise.
+	* gcc.target/powerpc/vsx-builtin-20b.c: Likewise.
+
+2019-05-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90265 - ICE with generic lambda.
+	* g++.dg/cpp1y/lambda-generic-90265.C: New test.
+
+2019-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90358
+	* gcc.target/i386/pr90358.c: New testcase.
+
+2019-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88828
+	* gcc.target/i386/pr88828-0.c: New testcase.
+
+2019-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90328
+	* gcc.dg/torture/pr90328.c: New testcase.
+
+2019-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/90331
+	* gcc.dg/pr87314-1.c: Align the substring to open up
+	string merging for targets aligning strings to 8 bytes.
+
+2019-05-06  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/90312
+	* gcc.dg/asan/pr87930.c: Run the test only on *linux or *gnu
+	systems.
+	* gcc.dg/tsan/pr88017.c: Likewise.
+
+2019-05-05  Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/90344
+	* gfortran.dg/pr90344.f90: New test
+
+2019-05-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/90269
+	* g++.dg/tree-ssa/ldist-1.C: New file.
+
+2019-05-03  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-reduc-sad-2.c: New testcase.
+
+2019-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89518
+	* gcc.dg/pr89518.c: New testcase.
+
+2019-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87314
+	* gcc.dg/pr87314-1.c: New testcase.
+
+2019-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88963
+	* gcc.dg/tree-ssa/ssa-fre-31.c: Disable forwprop.
+	* gcc.target/i386/pr88963-1.c: New testcase.
+	* gcc.target/i386/pr88963-2.c: Likewise.
+
+2019-05-03  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR target/88809
+	* gcc.target/i386/pr88809.c: Adjust for darwin.
+	* gcc.target/i386/pr88809-2.c: Adjust for i386 and darwin.
+
+2019-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90303
+	* g++.target/i386/pr90303.C: New test.
+
+2019-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89698
+	* g++.dg/tree-ssa/pr89698.C: New testcase.
+
+2019-05-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/ext/instantiate2.C: Remove special-casing for Darwin.
+
+2019-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89653
+	* g++.dg/vect/pr89653.cc: New testcase.
+
+2019-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89509
+	* gcc.dg/torture/restrict-8.c: New testcase.
+
+2019-05-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/tree-prof/section-attr-1.c: Update scan-asm regex
+	for cold section label.
+	* gcc.dg/tree-prof/section-attr-2.c: Likewise.
+	* gcc.dg/tree-prof/section-attr-3.c: Likewise.
+
+2019-05-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/spellcheck-options-5.c: Restrict to Linux and
+	GNU targets.
+
+2019-05-02  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
+
+	* gcc.target/aarch64/sve/dot_1.c: New test for dot product.
+
+2019-05-02  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/funcspec-4.c: Update scanned pattern.
+	* g++.target/i386/pr57362.C: Likewise.
+
+2019-05-02  Martin Liska  <mliska@suse.cz>
+
+	PR target/88809
+	* gcc.target/i386/pr88809.c: New test.
+	* gcc.target/i386/pr88809-2.c: New test.
+
+2019-05-01  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/60144
+	* gfortran.dg/block_name_2.f90: Adjust dg-error.
+	* gfortran.dg/dec_type_print_3.f90.f90: Likewise
+	* gfortran.dg/pr60144.f90: New test. 
+
+2019-05-01  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/90037
+	* g++.dg/tree-ssa/pr88797.C: New test.
+
 2019-05-01  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/cpp0x/decltype9.C: Adjust expected diagnostics.

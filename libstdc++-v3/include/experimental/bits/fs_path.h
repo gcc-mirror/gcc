@@ -72,7 +72,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
 
   /**
-   * @ingroup filesystem-ts
+   * @addtogroup filesystem-ts
    * @{
    */
 
@@ -399,6 +399,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     iterator begin() const;
     iterator end() const;
 
+    /// @cond undocumented
     // Create a basic_string by reading until a null character.
     template<typename _InputIterator,
 	     typename _Traits = std::iterator_traits<_InputIterator>,
@@ -412,6 +413,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	  __str.push_back(__ch);
 	return __str;
       }
+    /// @endcond
 
   private:
     enum class _Type : unsigned char {
@@ -510,6 +512,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     _Type _M_type = _Type::_Multi;
   };
 
+  /// @relates std::experimental::filesystem::path @{
+
   inline void swap(path& __lhs, path& __rhs) noexcept { __lhs.swap(__rhs); }
 
   size_t hash_value(const path& __p) noexcept;
@@ -571,6 +575,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       return __is;
     }
 
+  /// Create a path from a UTF-8-encoded sequence of char
   // TODO constrain with _Path<Source> and __value_type_is_char
   template<typename _Source>
     inline path
@@ -583,6 +588,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
     }
 
+  /// Create a path from a UTF-8-encoded sequence of char
   // TODO constrain with _Path<InputIterator, InputIterator> and __value_type_is_char
   template<typename _InputIterator>
     inline path
@@ -595,6 +601,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
     }
 
+  /// @}
+
+  /// Exception type thrown by the Filesystem TS library
   class filesystem_error : public std::system_error
   {
   public:
@@ -624,6 +633,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     std::string _M_what = _M_gen_what();
   };
 
+  /// @cond undocumented
   struct path::_Cmpt : path
   {
     _Cmpt(string_type __s, _Type __t, size_t __pos)
@@ -732,6 +742,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 		  __gnu_cxx::__normal_iterator<_Iter, _Cont> __last)
 	{ return _S_convert(__first.base(), __last.base()); }
     };
+  /// @endcond
 
   /// An iterator for the components of a path
   class path::iterator

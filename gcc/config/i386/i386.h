@@ -2759,6 +2759,9 @@ struct GTY(()) machine_function {
   /* During SEH output, this is non-null.  */
   struct seh_frame_state * GTY((skip(""))) seh;
 };
+
+extern GTY(()) tree sysv_va_list_type_node;
+extern GTY(()) tree ms_va_list_type_node;
 #endif
 
 #define ix86_stack_locals (cfun->machine->stack_locals)
@@ -2855,6 +2858,12 @@ extern void debug_dispatch_window (int);
 #define SWITCHABLE_TARGET 1
 
 #define TARGET_SUPPORTS_WIDE_INT 1
+
+#if !defined(GENERATOR_FILE) && !defined(IN_LIBGCC2)
+extern enum attr_cpu ix86_schedule;
+
+#define NUM_X86_64_MS_CLOBBERED_REGS 12
+#endif
 
 /*
 Local variables:

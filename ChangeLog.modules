@@ -1,3 +1,7 @@
+2019-05-07  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk r270943.
+
 2019-05-06  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/
@@ -84,7 +88,7 @@
 	* g++.dg/modules/tpl-spec-3_[ab].C: New.
 
 	gcc/cp/
-	* parser.c (cp_parser_explicit_instantiation): Correctl unwind state.
+	* parser.c (cp_parser_explicit_specialization): Correctl unwind state.
 	* decl.c (grokfndecl): Set module ownership after specializationness
 	is known.
 

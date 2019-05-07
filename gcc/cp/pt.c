@@ -18895,7 +18895,8 @@ tsubst_copy_and_build (tree t,
 	    if (thisarg)
 	      {
 		/* Shift the other args over to make room.  */
-		vec_safe_push (call_args, (*call_args)[nargs-1]);
+		tree last = (*call_args)[nargs - 1];
+		vec_safe_push (call_args, last);
 		for (int i = nargs-1; i > 0; --i)
 		  (*call_args)[i] = (*call_args)[i-1];
 		(*call_args)[0] = thisarg;

@@ -38,6 +38,8 @@
  * Contains an implementation class for pat_trie.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
@@ -248,3 +250,4 @@ split_insert_branch(size_type e_ind, a_const_iterator b_it,
   apply_update(m_p_head->m_p_parent, (node_update*)this);
   PB_DS_ASSERT_NODE_VALID(m_p_head->m_p_parent)
 }
+#endif

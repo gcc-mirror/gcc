@@ -24,6 +24,7 @@
 
 /** @file experimental/type_traits
  *  This is a TS C++ Library header.
+ *  @ingroup libfund-ts
  */
 
 //

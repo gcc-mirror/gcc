@@ -108,12 +108,11 @@ public:
   unsigned short quote_lwm;
 };
 
-/* Given a filename, quote characters in that filename which are
-   significant to Make.  Note that it's not possible to quote all such
-   characters - e.g. \n, %, *, ?, [, \ (in some contexts), and ~ are
-   not properly handled.  It isn't possible to get this right in any
-   current version of Make.  (??? Still true?  Old comment referred to
-   3.76.1.)  */
+/* Apply Make quoting to STR, TRAIL etc.  Note that it's not possible
+   to quote all such characters - e.g. \n, %, *, ?, [, \ (in some
+   contexts), and ~ are not properly handled.  It isn't possible to
+   get this right in any current version of Make.  (??? Still true?
+   Old comment referred to 3.76.1.)  */
 
 static const char *
 munge (const char *str, const char *trail = NULL, ...)
@@ -344,6 +343,10 @@ deps_add_module (struct mkdeps *d, const char *p, const char *m,
     d->modules.push (name);
 }
 
+/* Write NAME, with a leading space to FP, a Makefile.  Advance COL as
+   appropriate, wrap at COLMAX, returning new column number.  Iff
+   QUOTE apply quoting.  Append TRAIL.  */
+
 static unsigned
 make_write_name (const char *name, FILE *fp, unsigned col, unsigned colmax,
 		 bool quote = true, const char *trail = NULL)
@@ -369,6 +372,8 @@ make_write_name (const char *name, FILE *fp, unsigned col, unsigned colmax,
   return col;
 }
 
+/* Write all the names in VEC via make_write_name.  */
+
 static unsigned
 make_write_vec (const mkdeps::vec<const char *> &vec, FILE *fp,
 		unsigned col, unsigned colmax, unsigned quote_lwm = 0,
@@ -378,6 +383,9 @@ make_write_vec (const mkdeps::vec<const char *> &vec, FILE *fp,
     col = make_write_name (vec[ix], fp, col, colmax, ix >= quote_lwm, trail);
   return col;
 }
+
+/* Write the dependencies to a Makefile.  If PHONY is true, add
+   .PHONY targets for all the dependencies too.  */
 
 static void
 make_write (const struct mkdeps *d, FILE *fp, bool phony, unsigned int colmax)
@@ -447,6 +455,9 @@ make_write (const struct mkdeps *d, FILE *fp, bool phony, unsigned int colmax)
       fputs ("\n", fp);
     }
 }
+
+/* Write out dependencies according to the selected format (which is
+   only Make at the moment).  */
 
 void
 deps_write (const struct mkdeps *d, FILE *fp, bool phony, unsigned int colmax)

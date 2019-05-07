@@ -2020,7 +2020,7 @@ obj_type_ref_class (const_tree ref)
   ref = TREE_VALUE (TYPE_ARG_TYPES (ref));
   gcc_checking_assert (TREE_CODE (ref) == POINTER_TYPE);
   tree ret = TREE_TYPE (ref);
-  if (!in_lto_p)
+  if (!in_lto_p && !TYPE_STRUCTURAL_EQUALITY_P (ret))
     ret = TYPE_CANONICAL (ret);
   else
     ret = get_odr_type (ret)->type;
@@ -2042,7 +2042,7 @@ get_odr_type (tree type, bool insert)
   int base_id = -1;
 
   type = TYPE_MAIN_VARIANT (type);
-  if (!in_lto_p)
+  if (!in_lto_p && !TYPE_STRUCTURAL_EQUALITY_P (type))
     type = TYPE_CANONICAL (type);
 
   gcc_checking_assert (can_be_name_hashed_p (type)

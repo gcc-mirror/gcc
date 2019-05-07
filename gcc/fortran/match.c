@@ -262,6 +262,8 @@ gfc_match_parens (void)
 
   for (;;)
     {
+      if (count > 0)
+	where = gfc_current_locus;
       c = gfc_next_char_literal (instring);
       if (c == '\n')
 	break;
@@ -281,7 +283,6 @@ gfc_match_parens (void)
       if (c == '(' && quote == ' ')
 	{
 	  count++;
-	  where = gfc_current_locus;
 	}
       if (c == ')' && quote == ' ')
 	{
@@ -292,14 +293,10 @@ gfc_match_parens (void)
 
   gfc_current_locus = old_loc;
 
-  if (count > 0)
+  if (count != 0)
     {
-      gfc_error ("Missing %<)%> in statement at or before %L", &where);
-      return MATCH_ERROR;
-    }
-  if (count < 0)
-    {
-      gfc_error ("Missing %<(%> in statement at or before %L", &where);
+      gfc_error ("Missing %qs in statement at or before %L",
+		 count > 0? ")":"(", &where);
       return MATCH_ERROR;
     }
 
@@ -1495,7 +1492,17 @@ gfc_match_if (gfc_statement *if_type)
 
   old_loc = gfc_current_locus;
 
-  m = gfc_match (" if ( %e", &expr);
+  m = gfc_match (" if ", &expr);
+  if (m != MATCH_YES)
+    return m;
+
+  if (gfc_match_char ('(') != MATCH_YES)
+    {
+      gfc_error ("Missing %<(%> in IF-expression at %C");
+      return MATCH_ERROR;
+    }
+
+  m = gfc_match ("%e", &expr);
   if (m != MATCH_YES)
     return m;
 
@@ -1648,30 +1655,17 @@ gfc_match_if (gfc_statement *if_type)
   if (flag_dec)
     match ("type", gfc_match_print, ST_WRITE)
 
-  /* The gfc_match_assignment() above may have returned a MATCH_NO
-     where the assignment was to a named constant.  Check that
-     special case here.  */
-  m = gfc_match_assignment ();
-  if (m == MATCH_NO)
-   {
-      gfc_error ("Cannot assign to a named constant at %C");
-      gfc_free_expr (expr);
-      gfc_undo_symbols ();
-      gfc_current_locus = old_loc;
-      return MATCH_ERROR;
-   }
-
   /* All else has failed, so give up.  See if any of the matchers has
      stored an error message of some sort.  */
   if (!gfc_error_check ())
-    gfc_error ("Unclassifiable statement in IF-clause at %C");
+    gfc_error ("Syntax error in IF-clause after %C");
 
   gfc_free_expr (expr);
   return MATCH_ERROR;
 
 got_match:
   if (m == MATCH_NO)
-    gfc_error ("Syntax error in IF-clause at %C");
+    gfc_error ("Syntax error in IF-clause after %C");
   if (m != MATCH_YES)
     {
       gfc_free_expr (expr);
@@ -1714,7 +1708,7 @@ gfc_match_else (void)
       || gfc_current_block () == NULL
       || gfc_match_eos () != MATCH_YES)
     {
-      gfc_error ("Unexpected junk after ELSE statement at %C");
+      gfc_error ("Invalid character(s) in ELSE statement after %C");
       return MATCH_ERROR;
     }
 
@@ -1735,30 +1729,58 @@ match
 gfc_match_elseif (void)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
-  gfc_expr *expr;
+  gfc_expr *expr, *then;
+  locus where;
   match m;
 
-  m = gfc_match (" ( %e ) then", &expr);
+  if (gfc_match_char ('(') != MATCH_YES)
+    {
+      gfc_error ("Missing %<(%> in ELSE IF expression at %C");
+      return MATCH_ERROR;
+    }
+
+  m = gfc_match (" %e ", &expr);
   if (m != MATCH_YES)
     return m;
 
-  if (gfc_match_eos () == MATCH_YES)
+  if (gfc_match_char (')') != MATCH_YES)
+    {
+      gfc_error ("Missing %<)%> in ELSE IF expression at %C");
+      goto cleanup;
+    }
+
+  m = gfc_match (" then ", &then);
+
+  where = gfc_current_locus;
+
+  if (m == MATCH_YES && (gfc_match_eos () == MATCH_YES
+			 || (gfc_current_block ()
+			     && gfc_match_name (name) == MATCH_YES)))
     goto done;
+
+  if (gfc_match_eos () == MATCH_YES)
+    {
+      gfc_error ("Missing THEN in ELSE IF statement after %L", &where);
+      goto cleanup;
+    }
 
   if (gfc_match_name (name) != MATCH_YES
       || gfc_current_block () == NULL
       || gfc_match_eos () != MATCH_YES)
     {
-      gfc_error ("Unexpected junk after ELSE IF statement at %C");
+      gfc_error ("Syntax error in ELSE IF statement after %L", &where);
       goto cleanup;
     }
 
   if (strcmp (name, gfc_current_block ()->name) != 0)
     {
-      gfc_error ("Label %qs at %C doesn't match IF label %qs",
-		 name, gfc_current_block ()->name);
+      gfc_error ("Label %qs after %L doesn't match IF label %qs",
+		 name, &where, gfc_current_block ()->name);
       goto cleanup;
     }
+
+  if (m != MATCH_YES)
+    return m;
 
 done:
   new_st.op = EXEC_IF;
@@ -2955,13 +2977,16 @@ gfc_match_stopcode (gfc_statement st)
 {
   gfc_expr *e = NULL;
   match m;
-  bool f95, f03;
+  bool f95, f03, f08;
 
   /* Set f95 for -std=f95.  */
   f95 = (gfc_option.allow_std == GFC_STD_OPT_F95);
 
   /* Set f03 for -std=f2003.  */
   f03 = (gfc_option.allow_std == GFC_STD_OPT_F03);
+
+  /* Set f08 for -std=f2008.  */
+  f08 = (gfc_option.allow_std == GFC_STD_OPT_F08);
 
   /* Look for a blank between STOP and the stop-code for F2008 or later.  */
   if (gfc_current_form != FORM_FIXED && !(f95 || f03))
@@ -3051,8 +3076,8 @@ gfc_match_stopcode (gfc_statement st)
       /* Test for F95 and F2003 style STOP stop-code.  */
       if (e->expr_type != EXPR_CONSTANT && (f95 || f03))
 	{
-	  gfc_error ("STOP code at %L must be a scalar CHARACTER constant or "
-		     "digit[digit[digit[digit[digit]]]]", &e->where);
+	  gfc_error ("STOP code at %L must be a scalar CHARACTER constant "
+		     "or digit[digit[digit[digit[digit]]]]", &e->where);
 	  goto cleanup;
 	}
 
@@ -3061,6 +3086,14 @@ gfc_match_stopcode (gfc_statement st)
       gfc_init_expr_flag = true;
       gfc_reduce_init_expr (e);
       gfc_init_expr_flag = false;
+
+      /* Test for F2008 style STOP stop-code.  */
+      if (e->expr_type != EXPR_CONSTANT && f08)
+	{
+	  gfc_error ("STOP code at %L must be a scalar default CHARACTER or "
+		     "INTEGER constant expression", &e->where);
+	  goto cleanup;
+	}
 
       if (!(e->ts.type == BT_CHARACTER || e->ts.type == BT_INTEGER))
 	{

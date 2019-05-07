@@ -2475,7 +2475,7 @@ sem_item_optimizer::varpool_removal_hook (varpool_node *node, void *data)
 void
 sem_item_optimizer::remove_symtab_node (symtab_node *node)
 {
-  gcc_assert (!m_classes.elements ());
+  gcc_assert (m_classes.is_empty ());
 
   m_removed_items_set.add (node);
 }

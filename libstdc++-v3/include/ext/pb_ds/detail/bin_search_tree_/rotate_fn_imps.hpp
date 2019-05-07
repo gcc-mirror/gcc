@@ -38,6 +38,8 @@
  * Contains imps for rotating nodes.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
@@ -153,3 +155,4 @@ PB_DS_CLASS_C_DEC::
 update_to_top(node_pointer /*p_nd*/, null_node_update_pointer /*p_update*/)
 { }
 
+#endif

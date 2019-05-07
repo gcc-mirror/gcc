@@ -21,6 +21,22 @@
 #include <limits>
 #include <testsuite_hooks.h>
 
+namespace test
+{
+#ifdef _GLIBCXX_USE_C99_MATH_TR1
+  using std::copysign;
+#else
+  bool copysign(float x, float y)
+  { return __builtin_copysignf(x, y); }
+
+  bool copysign(double x, double y)
+  { return __builtin_copysign(x, y); }
+
+  bool copysign(long double x, long double y)
+  { return __builtin_copysignl(x, y); }
+#endif
+}
+
 template<typename T>
 bool eq(const std::complex<T>& x, const std::complex<T>& y)
 {
@@ -28,9 +44,9 @@ bool eq(const std::complex<T>& x, const std::complex<T>& y)
   bool nan_imags = std::isnan(x.imag()) && std::isnan(y.imag());
 
   bool sign_reals
-    = std::copysign(T(1), x.real()) == std::copysign(T(1), y.real());
+    = test::copysign(T(1), x.real()) == test::copysign(T(1), y.real());
   bool sign_imags
-    = std::copysign(T(1), x.imag()) == std::copysign(T(1), y.imag());
+    = test::copysign(T(1), x.imag()) == test::copysign(T(1), y.imag());
 
   return ((x.real() == y.real() && sign_reals) || nan_reals)
     && ((x.imag() == y.imag() && sign_imags) || nan_imags);

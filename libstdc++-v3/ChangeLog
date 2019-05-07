@@ -1,3 +1,257 @@
+2019-05-06  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (add_one_template_type_printer):
+	Add type printer for container types in std::__debug namespace.
+	* testsuite/lib/gdb-test.exp (whatis-regexp-test): New.
+	(gdb-tests): Use distinct parameters for the type of test and use of
+	regex.
+	(gdb-test): Check for regex test even if 'whatis' test.
+	* testsuite/libstdc++-prettyprinters/80276.cc: Adapt for _GLIBCXX_DEBUG
+	mode.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/libfundts.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/whatis.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/whatis2.cc: Likewise.
+
+2019-05-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/system_error (error_category): Fix comment.
+
+	PR libstdc++/90299
+	* src/c++17/fs_ops.cc (absolute(const path&)): Report an error if the
+	argument is an empty path.
+	(absolute(const path&, error_code&)): Use invalid_argument as error
+	code instead of no_such_file_or_directory.
+	* testsuite/27_io/filesystem/operations/absolute.cc: Check handling
+	of non-existent paths and empty paths with both overloads of absolute.
+
+	* include/std/system_error (error_category, error_code)
+	(error_condition): Improve docs.
+	* libsupc++/exception: Add missing @addtogroup Doxygen command.
+	* libsupc++/exception_ptr.h (exception_ptr): Link equality operators
+	to class documentation. Suppress documentation for implementation
+	details.
+	* libsupc++/nested_exception.h (throw_with_nested, rethrow_if_nested):
+	Suppress documentation for implementation details.
+
+	* include/std/system_error (error_code): Remove friend declaration
+	for hash<error_code>.
+	(hash<error_code>::operator()): Use public member functions to access
+	value and category.
+	(hash<error_condition>::operator()): Use address of category, not
+	its object representation.
+	* src/c++11/compatibility-c++0x.cc (hash<error_code>::operator()):
+	Use public member functions to access value and category.
+	* testsuite/19_diagnostics/error_condition/hash.cc: New test.
+
+2019-05-04  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/90277
+	* include/bits/hashtable.h (_Hashtable<>::rehash): Review comment.
+	* include/bits/hashtable_policy.h
+	(_Prime_rehash_policy::_M_bkt_for_elements): Use __builtin_ceill.
+	(_Power2_rehash_policy::_M_bkt_for_elements): Likewise.
+	(_Power2_rehash_policy::_M_next_bkt): Enforce returning a result not
+	smaller than input value rather than always greater. Preserve
+	_M_next_resize if called with 0 input. Use __builtin_floorl.
+	(_Power2_rehash_policy::_M_need_rehash): Rehash only if number of
+	elements + number of insertions is greater than _M_next_resize. Start
+	with 11 buckets if not told otherwise. Use __builtin_floorl.
+	(_Rehash_base<>::reserve): Use rehash policy _M_bkt_for_elements.
+	* src/c++11/hashtable_c++0x.cc (_Prime_rehash_policy::_M_next_bkt):
+	Preserve _M_next_resize if called with 0 input. Use __builtin_floorl.
+	(_Prime_rehash_policy::_M_need_rehash): Start with 11 buckets if not
+	told otherwise. Use __builtin_floorl.
+	* testsuite/23_containers/unordered_set/hash_policy/71181.cc: Adapt test
+	to also validate _Power2_rehash_policy.
+	* testsuite/23_containers/unordered_set/hash_policy/power2_rehash.cc:
+	Adapt.
+
+2019-05-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61761
+	* testsuite/26_numerics/complex/proj.cc: Don't assume <cmath> defines
+	std::copysign.
+
+	PR libstdc++/52119
+	* include/ext/numeric_traits.h (__glibcxx_min): Avoid integer
+	overflow warning with -Wpedantic -Wsystem-headers.
+
+2019-05-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90314
+	* include/bits/c++config (_GLIBCXX_NOEXCEPT_IF): Use variadic macro.
+	* include/bits/move.h (swap): Remove extra parentheses.
+
+	* include/experimental/bits/lfts_config.h: Improve doc markup.
+	* include/experimental/optional: Improve docs.
+	(_Has_addressof_mem, _Has_addressof_free, _Has_addressof)
+	(__constexpr_addressof): Remove.
+	(optional::operator->()): Use std::__addressof().
+	* include/std/optional (optional::operator->()): Adjust whitespace.
+	* testsuite/experimental/optional/constexpr/observers/2.cc: Check
+	that operator-> is still constexpr with overloaded operator&. Change
+	to compile-only test.
+	* testsuite/experimental/optional/constexpr/observers/3.cc: Change to
+	compile-only test.
+
+	* include/bits/shared_ptr.h: Improve docs.
+	* include/bits/shared_ptr_atomic.h: Likewise.
+	* include/bits/unique_ptr.h: Likewise. Adjust whitespace.
+
+	* include/bits/basic_string.h: Fix iterator/index confusion in
+	Doxygen comments.
+	* include/bits/range_access.h: Fix Doxygen warnings.
+	* include/bits/refwrap.h: Do not document implementation details.
+	(ref, cref): Group docs with reference_wrapper.
+	* include/std/fstream: Fix Doxygen markup.
+	* libsupc++/initializer_list (begin, end): Group docs with
+	initializer_list.
+
+	* doc/doxygen/user.cfg.in: Set MARKDOWN_SUPPORT=YES.
+
+	* include/bits/unique_lock.h: Fix/improve doxygen markup.
+	* include/std/mutex: Likewise.
+	* include/std/shared_mutex: Likewise.
+
+	* include/bits/fs_dir.h: Fix/improve doxygen markup.
+	* include/bits/fs_fwd.h: Likewise.
+	* include/bits/fs_ops.h: Likewise.
+	* include/bits/fs_path.h: Likewise.
+	* include/std/filesystem: Likewise.
+
+	* include/experimental/bits/net.h: Fix/improve doxygen markup.
+	* include/experimental/buffer: Likewise.
+	* include/experimental/executor: Likewise.
+	* include/experimental/internet: Likewise.
+	* include/experimental/io_context: Likewise.
+	* include/experimental/net: Likewise.
+	* include/experimental/netfwd: Likewise.
+	* include/experimental/socket: Likewise.
+	* include/experimental/timer: Likewise.
+
+	* doc/doxygen/doxygroups.cc: Move description of experimental group
+	here.
+	* include/experimental/algorithm: Add to libfund-ts doc group.
+	* include/experimental/any: Likewise. Do not document implementation
+	details.
+	* include/experimental/array: Add to libfund-ts doc group.
+	* include/experimental/bits/lfts_config.h: Define libfund-ts doc group
+	for Library Fundamentals.
+	* include/experimental/chrono: Add to libfund-ts doc group.
+	* include/experimental/deque: Likewise.
+	* include/experimental/forward_list: Likewise.
+	* include/experimental/functional: Likewise.
+	* include/experimental/iterator: Likewise.
+	* include/experimental/list: Likewise.
+	* include/experimental/map: Likewise.
+	* include/experimental/memory: Likewise.
+	* include/experimental/memory_resource: Likewise. Improve docs.
+	details.
+	* include/experimental/numeric: Add to libfund-ts doc group.
+	* include/experimental/optional: Likewise.
+	* include/experimental/propagate_const: Likewise.
+	* include/experimental/random: Likewise.
+	* include/experimental/ratio: Likewise.
+	* include/experimental/regex: Likewise.
+	* include/experimental/set: Likewise.
+	* include/experimental/source_location: Likewise.
+	* include/experimental/string: Likewise.
+	* include/experimental/string_view: Likewise.
+	* include/experimental/system_error: Likewise.
+	* include/experimental/tuple: Likewise.
+	* include/experimental/type_traits: Likewise.
+	* include/experimental/unordered_map: Likewise.
+	* include/experimental/unordered_set: Likewise.
+	* include/experimental/utility: Likewise.
+	* include/experimental/vector: Likewise.
+	* testsuite/experimental/any/misc/any_cast_neg.cc: Adjust dg-error.
+	* testsuite/experimental/array/neg.cc: Adjust dg-error.
+	* testsuite/experimental/propagate_const/assignment/move_neg.cc:
+	Likewise.
+	* testsuite/experimental/propagate_const/cons/move_neg.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements2.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements3.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements4.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements5.cc: Likewise.
+
+	* include/experimental/bits/fs_dir.h: Fix Doxygen markup.
+	* include/experimental/bits/fs_fwd.h: Improve docs.
+	* include/experimental/bits/fs_ops.h: fix Doxygen markup.
+	* include/experimental/bits/fs_path.h: Likewise.
+	(path, filesystem_error, u8path): Improve docs.
+	* include/experimental/filesystem: Link to docs for TS.
+
+	* config/allocator/new_allocator_base.h (__allocator_base): Add
+	workaround for Doxygen bug #6945.
+	* include/std/memory: Improve docs. Define group for pointer safety.
+	* include/std/scoped_allocator: Improve docs. Use "undocumented"
+	conditional to suppress documentation for implementation details.
+
+	* include/bits/specfun.h: Improve docs.
+	* include/tr1/cmath: Likewise. Fix nesting of preprocessor conditions
+	and namespaces.
+
+	* doc/doxygen/doxygroups.cc (std::tr2, std::__gnu_cxx): Improve docs.
+	(std::experimental): Add docs.
+	* doc/doxygen/user.cfg.in (PREDEFINED): Expand macros for __cxx11
+	namespace to nothing when generating docs.
+	* include/bits/regex_constants.h (std::regex_constants): Improve docs.
+	* include/std/chrono (std::chrono): Likewise.
+	* include/std/functional (std::placeholders): Likewise.
+	* include/std/thread (std::this_thread): Likewise.
+
+	* include/parallel/settings.h: Fix Doxygen markup.
+
+	* include/ext/pb_ds/detail/bin_search_tree_/*_imps.hpp: Do not define
+	anything unless PB_DS_CLASS_C_DEC is defined.
+	* include/ext/pb_ds/detail/binary_heap_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_base_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/hash_fn/*_imp.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/*_imps.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pairing_heap_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rb_tree_map_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/resize_policy*_imp.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/thin_heap_/*_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/trie_policy*_imp.hpp: Likewise.
+	* include/ext/pb_ds/detail/unordered_iterator/const_iterator.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/unordered_iterator/iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/unordered_iterator/point_const_iterator.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/unordered_iterator/point_iterator.hpp:
+	Likewise.
+
+	* doc/doxygen/user.cfg.in: Regenerate with Doxygen 1.8.14 and set
+	GROUP_NESTED_COMPOUNDS=YES and SORT_BY_SCOPE_NAME=NO. Add various
+	_GLIBCXX_xxx macros and __attribute__(X) to PREDEFINED macros that
+	Doxygen expands.
+
+2019-05-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/abi/post/i386-solaris2.10/baseline_symbols.txt: Regenerate.
+	* config/abi/post/i386-solaris2.10/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/i386-solaris2.11/baseline_symbols.txt: Likewise.
+	* config/abi/post/i386-solaris2.11/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris2.10/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris2.10/sparcv9/baseline_symbols.txt:
+	Likewise.
+	* config/abi/post/sparc-solaris2.11/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris2.11/sparcv9/baseline_symbols.txt:
+	Likewise.
+
 2019-05-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/61761

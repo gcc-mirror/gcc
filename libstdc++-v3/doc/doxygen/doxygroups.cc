@@ -29,13 +29,15 @@
  *  @brief Implementation details not part of the namespace std::tr1 interface.
 */
 /** @namespace std::tr2
- *  @brief ISO C++ TR2 entities toplevel namespace is std::tr2.
+ *  @brief Namespace for non-standard "TR2" extensions.
+ *  @ingroup extensions
 */
 /** @namespace std::tr2::__detail
  *  @brief Implementation details not part of the namespace std::tr2 interface.
 */
 /** @namespace __gnu_cxx
  *  @brief GNU extensions for public use.
+ *  @ingroup extensions
 */
 /** @namespace __gnu_cxx::__detail
  *  @brief Implementation details not part of the namespace __gnu_cxx 
@@ -45,6 +47,9 @@
  *  @brief GNU implemenation details, not for public use or
  *  export. Used only when anonymous namespaces cannot be substituted.
 */
+/** @namespace std::experimental
+ *  @brief Namespace for features defined in ISO Technical Specifications.
+ */
 // // // // // // // // // // // // // // // // // // // // // // // //
 
 /**
@@ -154,4 +159,16 @@ summarized in <a href="tables.html">tables</a>.  */
  *
  * Components for concurrent operations, including threads, mutexes,
  * and condition variables.
+ */
+
+/**
+ * @defgroup experimental Technical Specifications
+ *
+ * Components specified by various Technical Specifications.
+ *
+ * As indicated by the std::experimental namespace and the header paths,
+ * the contents of these Technical Specifications are experimental and not
+ * part of the C++ standard. As such the interfaces and implementations may
+ * change in the future, and there is <STRONG> no guarantee of compatibility
+ * between different GCC releases </STRONG> for these features.
  */

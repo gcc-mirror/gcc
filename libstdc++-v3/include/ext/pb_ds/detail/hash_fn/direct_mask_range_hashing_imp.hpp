@@ -38,6 +38,8 @@
  * Contains a range-hashing policy implementation
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
@@ -56,3 +58,4 @@ PB_DS_CLASS_C_DEC::
 operator()(size_type hash) const
 { return mask_based_base::range_hash(hash); }
 
+#endif
