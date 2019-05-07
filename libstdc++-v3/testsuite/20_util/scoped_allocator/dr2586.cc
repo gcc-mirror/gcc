@@ -1,6 +1,4 @@
-// { dg-do compile { target c++11 } }
-
-// Copyright (C) 2011-2018 Free Software Foundation, Inc.
+// Copyright (C) 2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,30 +15,20 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.4.2.1 [tuple.cnstr] Allocator-extended constructors
+// { dg-do compile { target c++11 } }
 
 #include <memory>
-#include <tuple>
+#include <scoped_allocator>
 
-struct MyAlloc { };
+// DR 2586. Wrong value category used in scoped_allocator_adaptor::construct()
 
-struct Type
-{
-  typedef MyAlloc allocator_type; // uses_allocator<Type, MyAlloc> is true
-
-  explicit Type(int) { }
-
-  Type(std::allocator_arg_t, MyAlloc) { }
-  Type(MyAlloc) { }
+struct X {
+  using allocator_type = std::allocator<X>;
+  X(std::allocator_arg_t, allocator_type&&) { }
+  X(const allocator_type&) { }
 };
 
-void test01()
-{
-  using std::allocator_arg;
-  using std::tuple;
-
-  MyAlloc a;
-
-  tuple<Type> t(allocator_arg, a, 1);
+int main() {
+  std::scoped_allocator_adaptor<std::allocator<X>> sa;
+  sa.construct(sa.allocate(1));
 }
-// { dg-error "failed: .* uses_allocator is true" "" { target *-*-* } 0 }

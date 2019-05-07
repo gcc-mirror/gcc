@@ -181,9 +181,23 @@ void test02()
   test_type empty = make_tuple();
 }
 
+void test03()
+{
+  struct dr2586
+  {
+    using allocator_type = std::allocator<int>;
+    dr2586(std::allocator_arg_t, allocator_type&&) { }
+    dr2586(const allocator_type&) { }
+  };
+
+  const dr2586::allocator_type a;
+  std::tuple<dr2586> t{std::allocator_arg, a};
+}
+
 int main()
 {
   test01();
   test02();
+  test03();
   return 0;
 }
