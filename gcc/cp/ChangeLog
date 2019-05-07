@@ -6,6 +6,12 @@
 	PR c++/88857 - ICE with value-initialization of argument in template.
 	* call.c (convert_like_real): Don't call build_value_init in template.
 
+	2019-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89214 - ICE when initializing aggregates with bases.
+	* typeck2.c (digest_init_r): Warn about object slicing instead of
+	crashing.
+
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
