@@ -57,7 +57,7 @@ extern void deps_add_dep (struct mkdeps *, const char *);
 
 /* Write out a deps buffer to a specified file.  The third argument
    is the number of columns to word-wrap at (0 means don't wrap).  */
-extern void deps_write (const struct mkdeps *, FILE *, unsigned int);
+extern void deps_write (const struct mkdeps *, FILE *, bool, unsigned int);
 
 /* Write out a deps buffer to a file, in a form that can be read back
    with deps_restore.  Returns nonzero on error, in which case the
@@ -69,11 +69,5 @@ extern int deps_save (struct mkdeps *, FILE *);
    the dependency information is just skipped, or it may be a filename,
    in which case that filename is skipped.  */
 extern int deps_restore (struct mkdeps *, FILE *, const char *);
-
-/* For each dependency *except the first*, emit a dummy rule for that
-   file, causing it to depend on nothing.  This is used to work around
-   the intermediate-file deletion misfeature in Make, in some
-   automatic dependency schemes.  */
-extern void deps_phony_targets (const struct mkdeps *, FILE *);
 
 #endif /* ! LIBCPP_MKDEPS_H */
