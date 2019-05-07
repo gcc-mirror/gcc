@@ -1,3 +1,11 @@
+2019-05-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90171 - reorganize usual_deallocation_fn_p
+	* call.c (struct dealloc_info): New.
+	(usual_deallocation_fn_p): Take a dealloc_info*.
+	(aligned_deallocation_fn_p, sized_deallocation_fn_p): Remove.
+	(build_op_delete_call): Adjust.
+
 2019-05-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86485 - -Wmaybe-unused with empty class ?:
