@@ -1,5 +1,13 @@
 2019-05-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/doxygen/doxygroups.cc (std::literals): Add documentation for
+	inline namespace.
+	* include/std/chrono: Improve docs.
+	* include/std/ratio: Do not document implementation details.
+	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Adjust dg-error
+	line numbers.
+	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: Likewise.
+
 	PR libstdc++/89102
 	* doc/xml/manual/intro.xml: Document DR 2408 and 2465 changes.
 	* include/std/chrono (__duration_common_type_wrapper): Replace with ...
