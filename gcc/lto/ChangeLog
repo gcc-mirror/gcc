@@ -1,3 +1,9 @@
+2019-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lto-common.c (lto_file_read): Print section->start as int64_t,
+	section->len as uint64_t.
+	* lto-dump.c (symbol_entry::dump): Print sz as uint64_t.
+
 2019-05-06  Martin Liska  <mliska@suse.cz>
 
 	* lto-common.c: Update coding style.
