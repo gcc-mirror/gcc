@@ -1,3 +1,8 @@
+2019-05-07  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
+
+	* gcc.target/aarch64/sve/sad_1.c: New test for sum of absolute
+	differences.
+
 2019-05-07  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/asm-7.c: New test.

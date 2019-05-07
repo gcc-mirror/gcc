@@ -5973,6 +5973,7 @@ use_mask_by_cond_expr_p (enum tree_code code, internal_fn cond_fn,
   switch (code)
     {
     case DOT_PROD_EXPR:
+    case SAD_EXPR:
       return true;
 
     default:
@@ -5997,6 +5998,17 @@ build_vect_cond_expr (enum tree_code code, tree vop[3], tree mask,
 	tree masked_op1 = make_temp_ssa_name (vectype, NULL, "masked_op1");
 	gassign *select = gimple_build_assign (masked_op1, VEC_COND_EXPR,
 					       mask, vop[1], zero);
+	gsi_insert_before (gsi, select, GSI_SAME_STMT);
+	vop[1] = masked_op1;
+	break;
+      }
+
+    case SAD_EXPR:
+      {
+	tree vectype = TREE_TYPE (vop[1]);
+	tree masked_op1 = make_temp_ssa_name (vectype, NULL, "masked_op1");
+	gassign *select = gimple_build_assign (masked_op1, VEC_COND_EXPR,
+					       mask, vop[1], vop[0]);
 	gsi_insert_before (gsi, select, GSI_SAME_STMT);
 	vop[1] = masked_op1;
 	break;
