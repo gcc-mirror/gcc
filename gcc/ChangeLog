@@ -1,3 +1,13 @@
+2019-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90316
+	* tree-ssa-pre.c (translate_vuse_through_block): When
+	same_valid is NULL do not bother to search for a virtual
+	PHI continuation.
+	(phi_translate_1): When operands changed we cannot keep
+	the same value-number so do not bother to ask whether
+	that's possible from translate_vuse_through_block.
+
 2019-05-07  Martin Liska  <mliska@suse.cz>
 
 	* bitmap.c (bitmap_register): Come up with
