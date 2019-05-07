@@ -1,6 +1,14 @@
 2019-05-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-04-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path::operator=(path&&)): Check for self
+	assignment.
+	* testsuite/27_io/filesystem/path/assign/copy.cc: Test self
+	assignment.
+
+	Backport from mainline
 	2019-03-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/85965

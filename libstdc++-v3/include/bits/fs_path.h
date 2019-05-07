@@ -789,6 +789,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   inline path&
   path::operator=(path&& __p) noexcept
   {
+    if (&__p == this)
+      return *this;
+
     _M_pathname = std::move(__p._M_pathname);
     _M_cmpts = std::move(__p._M_cmpts);
     _M_type = __p._M_type;
