@@ -1,5 +1,8 @@
 2019-05-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/regex.h: Improve docs.
+	* include/bits/regex.tcc: Do not document implementation details.
+
 	* testsuite/19_diagnostics/error_code/hash.cc: New test.
 
 2019-05-06  François Dumont  <fdumont@gcc.gnu.org>
