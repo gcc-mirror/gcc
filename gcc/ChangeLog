@@ -1,3 +1,9 @@
+2019-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR lto/90369
+	* lto-wrapper.c (debug_objcopy): Use the original filename
+	including archive offset for the filename used for -save-temps.
+
 2019-05-07  Li Jia He  <helijia@linux.ibm.com>
 
 	* tree-ssa-phiopt.c (two_value_replacement): Fix a typo in parameter
