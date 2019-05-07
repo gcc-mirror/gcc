@@ -1,3 +1,8 @@
+2019-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc-interface/Makefile.in (install-gcc-specs): Use foreach.
+	Honor DESTDIR.
+
 2019-05-03  Release Manager
 
 	* GCC 9.1.0 released.
