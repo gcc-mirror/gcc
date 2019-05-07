@@ -25981,6 +25981,13 @@ type_dependent_expression_p (tree expression)
       return false;
     }
 
+  /* The type of a non-type template parm declared with a placeholder type
+     depends on the corresponding template argument, even though
+     placeholders are not normally considered dependent.  */
+  if (TREE_CODE (expression) == TEMPLATE_PARM_INDEX
+      && is_auto (TREE_TYPE (expression)))
+    return true;
+
   gcc_assert (TREE_CODE (expression) != TYPE_DECL);
 
   /* Dependent type attributes might not have made it from the decl to
