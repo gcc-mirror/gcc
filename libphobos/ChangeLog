@@ -1,3 +1,12 @@
+2019-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* m4/druntime/os.m4 (DRUNTIME_OS_LINK_SPEC): Only use -z
+	relax=transtls if linker supports it.
+	* configure.ac (enable_libphobos, LIBPHOBOS_SUPPORTED): Move down.
+	(x86_64-*-solaris2.* | i?86-*-solaris2.*): Only
+	mark supported with either gld or ld -z relax=transtls.
+	* configure: Regenerate.
+
 2019-05-02  Maciej W. Rozycki  <macro@wdc.com>
 
 	* std/math.d (IeeeFlags.getIeeeFlags): Handle RISC-V soft-float ABI.
