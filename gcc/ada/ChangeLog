@@ -1,3 +1,8 @@
+2019-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc-interface/Makefile.in (install-gcc-specs): Use foreach.
+	Honor DESTDIR.
+
 2019-04-29  Michael K. Darling  <darlingm@gmail.com>
 
 	* gnatvsn.ads: Bump Library_Version to 10.
