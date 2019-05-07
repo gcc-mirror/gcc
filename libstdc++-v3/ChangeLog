@@ -1,5 +1,8 @@
 2019-05-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_pair.h: Improve docs.
+	* include/std/tuple: Likewise.
+
 	* doc/doxygen/doxygroups.cc (std::literals): Add documentation for
 	inline namespace.
 	* include/std/chrono: Improve docs.
