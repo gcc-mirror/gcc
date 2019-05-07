@@ -480,15 +480,15 @@ ix86_conditional_register_usage (void)
       if (!fixed_regs[i] && !ix86_function_value_regno_p (i))
 	call_used_regs[i] = 0;
 
-  /* For 32-bit targets, squash the REX registers.  */
+  /* For 32-bit targets, disable the REX registers.  */
   if (! TARGET_64BIT)
     {
       for (i = FIRST_REX_INT_REG; i <= LAST_REX_INT_REG; i++)
-	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+	CLEAR_HARD_REG_BIT (accessible_reg_set, i);
       for (i = FIRST_REX_SSE_REG; i <= LAST_REX_SSE_REG; i++)
-	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+	CLEAR_HARD_REG_BIT (accessible_reg_set, i);
       for (i = FIRST_EXT_REX_SSE_REG; i <= LAST_EXT_REX_SSE_REG; i++)
-	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+	CLEAR_HARD_REG_BIT (accessible_reg_set, i);
     }
 
   /*  See the definition of CALL_USED_REGISTERS in i386.h.  */
@@ -510,32 +510,29 @@ ix86_conditional_register_usage (void)
 	SET_HARD_REG_BIT (reg_class_contents[(int)CLOBBERED_REGS], i);
     }
 
-  /* If MMX is disabled, squash the registers.  */
+  /* If MMX is disabled, disable the registers.  */
   if (! TARGET_MMX)
-    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      if (TEST_HARD_REG_BIT (reg_class_contents[(int)MMX_REGS], i))
-	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+    AND_COMPL_HARD_REG_SET (accessible_reg_set,
+			    reg_class_contents[(int) MMX_REGS]);
 
-  /* If SSE is disabled, squash the registers.  */
+  /* If SSE is disabled, disable the registers.  */
   if (! TARGET_SSE)
-    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      if (TEST_HARD_REG_BIT (reg_class_contents[(int)SSE_REGS], i))
-	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+    AND_COMPL_HARD_REG_SET (accessible_reg_set,
+			    reg_class_contents[(int) ALL_SSE_REGS]);
 
-  /* If the FPU is disabled, squash the registers.  */
+  /* If the FPU is disabled, disable the registers.  */
   if (! (TARGET_80387 || TARGET_FLOAT_RETURNS_IN_80387))
-    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      if (TEST_HARD_REG_BIT (reg_class_contents[(int)FLOAT_REGS], i))
-	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+    AND_COMPL_HARD_REG_SET (accessible_reg_set,
+			    reg_class_contents[(int) FLOAT_REGS]);
 
-  /* If AVX512F is disabled, squash the registers.  */
+  /* If AVX512F is disabled, disable the registers.  */
   if (! TARGET_AVX512F)
     {
       for (i = FIRST_EXT_REX_SSE_REG; i <= LAST_EXT_REX_SSE_REG; i++)
-	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+	CLEAR_HARD_REG_BIT (accessible_reg_set, i);
 
-      for (i = FIRST_MASK_REG; i <= LAST_MASK_REG; i++)
-	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+      AND_COMPL_HARD_REG_SET (accessible_reg_set,
+			      reg_class_contents[(int) ALL_MASK_REGS]);
     }
 }
 

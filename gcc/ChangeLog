@@ -1,3 +1,12 @@
+2019-05-07  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* cfgexpand.c (asm_clobber_reg_is_valid): Reject
+	clobbers outside of accessible_reg_set.
+	* config/i386/i386.c (ix86_conditional_register_usage):
+	Disable register sets by clearing corresponding bits in
+	accessible_reg_set.  Do not set corresponding bits in fixed_regs,
+	call_used_regs and don't clear corresponding reg_names array members.
+
 2019-05-07  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-stmts.c (vect_is_simple_cond): When vectype is
