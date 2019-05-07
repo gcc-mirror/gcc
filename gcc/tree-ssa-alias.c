@@ -2601,7 +2601,7 @@ stmt_kills_ref_p (gimple *stmt, tree ref)
 
 static bool
 maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
-		  ao_ref *ref, tree vuse, unsigned int *cnt, bitmap *visited,
+		  ao_ref *ref, tree vuse, unsigned int &limit, bitmap *visited,
 		  bool abort_on_visited,
 		  void *(*translate)(ao_ref *, tree, void *, bool *),
 		  void *data)
@@ -2636,7 +2636,7 @@ maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
 	  /* An already visited PHI node ends the walk successfully.  */
 	  if (bitmap_bit_p (*visited, SSA_NAME_VERSION (PHI_RESULT (def_stmt))))
 	    return !abort_on_visited;
-	  vuse = get_continuation_for_phi (def_stmt, ref, cnt,
+	  vuse = get_continuation_for_phi (def_stmt, ref, limit,
 					   visited, abort_on_visited,
 					   translate, data);
 	  if (!vuse)
@@ -2648,7 +2648,9 @@ maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
       else
 	{
 	  /* A clobbering statement or the end of the IL ends it failing.  */
-	  ++*cnt;
+	  if ((int)limit <= 0)
+	    return false;
+	  --limit;
 	  if (stmt_may_clobber_ref_p_1 (def_stmt, ref))
 	    {
 	      bool disambiguate_only = true;
@@ -2676,12 +2678,13 @@ maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
 /* Starting from a PHI node for the virtual operand of the memory reference
    REF find a continuation virtual operand that allows to continue walking
    statements dominating PHI skipping only statements that cannot possibly
-   clobber REF.  Increments *CNT for each alias disambiguation done.
+   clobber REF.  Decrements LIMIT for each alias disambiguation done
+   and aborts the walk, returning NULL_TREE if it reaches zero.
    Returns NULL_TREE if no suitable virtual operand can be found.  */
 
 tree
 get_continuation_for_phi (gimple *phi, ao_ref *ref,
-			  unsigned int *cnt, bitmap *visited,
+			  unsigned int &limit, bitmap *visited,
 			  bool abort_on_visited,
 			  void *(*translate)(ao_ref *, tree, void *, bool *),
 			  void *data)
@@ -2723,7 +2726,7 @@ get_continuation_for_phi (gimple *phi, ao_ref *ref,
       arg1 = PHI_ARG_DEF (phi, i);
       if (arg1 == arg0)
 	;
-      else if (! maybe_skip_until (phi, arg0, dom, ref, arg1, cnt, visited,
+      else if (! maybe_skip_until (phi, arg0, dom, ref, arg1, limit, visited,
 				   abort_on_visited,
 				   /* Do not translate when walking over
 				      backedges.  */
@@ -2759,18 +2762,22 @@ get_continuation_for_phi (gimple *phi, ao_ref *ref,
    implement optimistic value-numbering for example.  Note that the
    VUSE argument is assumed to be valueized already.
 
+   LIMIT specifies the number of alias queries we are allowed to do,
+   the walk stops when it reaches zero and NULL is returned.  LIMIT
+   is decremented by the number of alias queries (plus adjustments
+   done by the callbacks) upon return.
+
    TODO: Cache the vector of equivalent vuses per ref, vuse pair.  */
 
 void *
 walk_non_aliased_vuses (ao_ref *ref, tree vuse,
-			void *(*walker)(ao_ref *, tree, unsigned int, void *),
+			void *(*walker)(ao_ref *, tree, void *),
 			void *(*translate)(ao_ref *, tree, void *, bool *),
 			tree (*valueize)(tree),
-			void *data)
+			unsigned &limit, void *data)
 {
   bitmap visited = NULL;
   void *res;
-  unsigned int cnt = 0;
   bool translated = false;
 
   timevar_push (TV_ALIAS_STMT_WALK);
@@ -2780,7 +2787,7 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
       gimple *def_stmt;
 
       /* ???  Do we want to account this to TV_ALIAS_STMT_WALK?  */
-      res = (*walker) (ref, vuse, cnt, data);
+      res = (*walker) (ref, vuse, data);
       /* Abort walk.  */
       if (res == (void *)-1)
 	{
@@ -2804,11 +2811,15 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
       if (gimple_nop_p (def_stmt))
 	break;
       else if (gimple_code (def_stmt) == GIMPLE_PHI)
-	vuse = get_continuation_for_phi (def_stmt, ref, &cnt,
+	vuse = get_continuation_for_phi (def_stmt, ref, limit,
 					 &visited, translated, translate, data);
       else
 	{
-	  cnt++;
+	  if ((int)limit <= 0)
+	    {
+	      res = NULL;
+	      break;
+	    }
 	  if (stmt_may_clobber_ref_p_1 (def_stmt, ref))
 	    {
 	      if (!translate)
