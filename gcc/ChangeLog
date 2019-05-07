@@ -1,3 +1,19 @@
+2019-05-07  Martin Liska  <mliska@suse.cz>
+
+	* bitmap.c (bitmap_register): Come up with
+	alloc_descriptor_max_uid and assign it for
+	a new bitmap.
+	(register_overhead): Use get_descriptor as
+	a descriptor.
+	(release_overhead): New.
+	(bitmap_elem_to_freelist): Call it.
+	(bitmap_elt_clear_from): Likewise.
+	(bitmap_obstack_free): Likewise.
+	(bitmap_move): Sensitively release memory.
+	* bitmap.h (struct GTY): Add alloc_descriptor and padding.
+	(bitmap_initialize): Initialize alloc_descriptor to zero.
+	* tree-ssa-pre.c (do_hoist_insertion): Use bitmap_move.
+
 2019-05-07  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_build_slp_tree_2): Bump size whenever
