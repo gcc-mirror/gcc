@@ -1,5 +1,8 @@
 2019-05-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/86485 - -Wmaybe-unused with empty class ?:
+	* typeck.c (build_static_cast_1): Use cp_build_addr_expr.
+
 	* pt.c (type_dependent_expression_p): A non-type template parm with
 	a placeholder type is type-dependent.
 
