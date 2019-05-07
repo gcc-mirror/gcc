@@ -1,6 +1,13 @@
 2019-05-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-01-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88740
+	* testsuite/util/testsuite_hooks.h [stderr] (VERIFY): Use fprintf to
+	write to stderr instead of using printf.
+
+	Backport from mainline
 	2019-04-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90165
