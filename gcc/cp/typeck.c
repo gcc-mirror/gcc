@@ -5916,7 +5916,8 @@ condition_conversion (tree expr)
 }
 
 /* Returns the address of T.  This function will fold away
-   ADDR_EXPR of INDIRECT_REF.  */
+   ADDR_EXPR of INDIRECT_REF.  This is only for low-level usage;
+   most places should use cp_build_addr_expr instead.  */
 
 tree
 build_address (tree t)
@@ -7114,7 +7115,7 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
       base = lookup_base (TREE_TYPE (type), intype,
 			  c_cast_p ? ba_unique : ba_check,
 			  NULL, complain);
-      expr = build_address (expr);
+      expr = cp_build_addr_expr (expr, complain);
 
       if (sanitize_flags_p (SANITIZE_VPTR))
 	{
