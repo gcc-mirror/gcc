@@ -1,3 +1,8 @@
+2019-05-07  Li Jia He  <helijia@linux.ibm.com>
+
+	* tree-ssa-phiopt.c (two_value_replacement): Fix a typo in parameter
+	detection.
+
 2019-05-06  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (FIRST_ALTIVEC_REGNO, LAST_ALTIVEC_REGNO)
