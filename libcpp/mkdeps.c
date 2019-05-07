@@ -281,6 +281,8 @@ deps_add_default_target (struct mkdeps *d, const char *tgt)
 void
 deps_add_dep (struct mkdeps *d, const char *t)
 {
+  gcc_assert (*t);
+
   t = apply_vpath (d, t);
 
   d->deps.push (xstrdup (t));

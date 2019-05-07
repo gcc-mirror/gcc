@@ -1,5 +1,8 @@
 2019-05-07  Nathan Sidwell  <nathan@acm.org>
 
+	* files.c (_cpp_stack_file): Empty filenames aren't dependencies.
+	* mkdeps.c (deps_add_dep): Assert not empty.
+
 	* include/mkdeps.h (deps_write): Add PHONY arg.
 	(deps_phony_targets): Delete.
 	* init.c (cpp_finish): Just call deps_write.
