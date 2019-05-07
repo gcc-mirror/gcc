@@ -1,5 +1,9 @@
 2019-05-07  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/template/pr39425.C: Adjust errors.
+	* g++.old-deja/g++.pt/spec20.C: Adjust errors.
+
 	Merge trunk r270943.
 
 2019-05-06  Nathan Sidwell  <nathan@acm.org>

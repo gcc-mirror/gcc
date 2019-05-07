@@ -17779,8 +17779,8 @@ cp_parser_explicit_specialization (cp_parser* parser)
   /* Let the front end know that we are beginning a specialization.  */
   if (begin_specialization ())
     {
-      /* If the next keyword is `template', we need to figure out whether
-	 or not we're looking a template-declaration.  */
+      /* If the next keyword is `template', we need to figure out
+	 whether or not we're looking a template-declaration.  */
       if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TEMPLATE))
 	{
 	  if (cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_LESS
