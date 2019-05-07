@@ -1,5 +1,38 @@
 2019-05-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/89102
+	* doc/xml/manual/intro.xml: Document DR 2408 and 2465 changes.
+	* include/std/chrono (__duration_common_type_wrapper): Replace with ...
+	(__duration_common_type): New helper.
+	(common_type<chrono::duration<R1, P2>, chrono::duration<R2, P2>>): Use
+	__duration_common_type.
+	(__timepoint_common_type_wrapper): Replace with ...
+	(__timepoint_common_type): New helper.
+	(common_type<chrono::time_point<C, D2>, chrono::time_point<C, D2>>):
+	Use __time_point_common_type.
+	* include/std/type_traits (common_type<>): Define, as per LWG 2408.
+	(__common_type_impl): If either argument is transformed by decay,
+	use the common_type of the decayed types.
+	(__common_type_impl<_Tp, _Up, _Tp, _Up>): If the types are already
+	decayed, use __do_common_type_impl to get the common_type.
+	(common_type<_Tp>): Use common_type<_Tp, _Tp>.
+	(__do_member_type_wrapper, __member_type_wrapper)
+	(__expanded_common_type_wrapper): Remove.
+	(__common_type_pack, __common_type_fold): New helpers.
+	(common_type<_Tp, _Up, _Vp...>): Use new helpers instead of
+	__member_type_wrapper and __expanded_common_type_wrapper.
+	* testsuite/20_util/common_type/requirements/explicit_instantiation.cc:
+	Test zero-length template argument list.
+	* testsuite/20_util/common_type/requirements/sfinae_friendly_1.cc:
+	Test single argument cases and argument types that should decay.
+	* testsuite/20_util/common_type/requirements/sfinae_friendly_2.cc:
+	Adjust expected error.
+	* testsuite/20_util/duration/literals/range_neg.cc: Use zero for
+	dg-error lineno.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Likewise.
+
 	* doc/xml/manual/intro.xml: Fix DR 2537 and DR 2566 confusion.
 
 2019-05-01  Nina Dinka Ranns  <dinka.ranns@gmail.com>
