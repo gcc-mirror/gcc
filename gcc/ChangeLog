@@ -1,3 +1,9 @@
+2019-05-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (aliasing_component_refs_p): Continue looking
+	for comparaible types in the second direction even if first one
+	hits incomparable type.
+
 2019-05-07  Richard Biener  <rguenther@suse.de>
 
 	PR lto/90369
@@ -189,6 +195,7 @@
 	and macros.
 	* config/i386/t-i386: Define dependencies for new files.
 
+>>>>>>> .r270937
 2019-05-03  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/89400

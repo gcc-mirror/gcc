@@ -795,7 +795,7 @@ aliasing_component_refs_p (tree ref1,
   tree base1, base2;
   tree type1, type2;
   tree *refp;
-  int same_p;
+  int same_p, same_p2;
 
   /* Choose bases and base types to search for.  */
   base1 = ref1;
@@ -814,10 +814,7 @@ aliasing_component_refs_p (tree ref1,
 	 && same_type_for_tbaa (TREE_TYPE (*refp), type1) == 0)
     refp = &TREE_OPERAND (*refp, 0);
   same_p = same_type_for_tbaa (TREE_TYPE (*refp), type1);
-  /* If we couldn't compare types we have to bail out.  */
-  if (same_p == -1)
-    return true;
-  else if (same_p == 1)
+  if (same_p == 1)
     {
       poly_int64 offadj, sztmp, msztmp;
       bool reverse;
@@ -827,25 +824,30 @@ aliasing_component_refs_p (tree ref1,
       offset1 -= offadj;
       return ranges_maybe_overlap_p (offset1, max_size1, offset2, max_size2);
     }
+
   /* If we didn't find a common base, try the other way around.  */
   refp = &ref1;
   while (handled_component_p (*refp)
 	 && same_type_for_tbaa (TREE_TYPE (*refp), type2) == 0)
     refp = &TREE_OPERAND (*refp, 0);
-  same_p = same_type_for_tbaa (TREE_TYPE (*refp), type2);
-  /* If we couldn't compare types we have to bail out.  */
-  if (same_p == -1)
-    return true;
-  else if (same_p == 1)
+  same_p2 = same_type_for_tbaa (TREE_TYPE (*refp), type2);
+  if (same_p2 == 1)
     {
       poly_int64 offadj, sztmp, msztmp;
       bool reverse;
+
       get_ref_base_and_extent (*refp, &offadj, &sztmp, &msztmp, &reverse);
       offset1 -= offadj;
       get_ref_base_and_extent (base2, &offadj, &sztmp, &msztmp, &reverse);
       offset2 -= offadj;
-      return ranges_maybe_overlap_p (offset1, max_size1, offset2, max_size2);
+      return ranges_maybe_overlap_p (offset1, max_size1,
+				     offset2, max_size2);
     }
+
+  /* In the remaining test we assume that there is no overlapping type
+     at all.  So if we are unsure, we need to give up.  */
+  if (same_p == -1 || same_p2 == -1)
+    return true;
 
   /* If we have two type access paths B1.path1 and B2.path2 they may
      only alias if either B1 is in B2.path2 or B2 is in B1.path1.
