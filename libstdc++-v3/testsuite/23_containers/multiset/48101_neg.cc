@@ -23,7 +23,7 @@ void
 test01()
 {
   std::multiset<const int> c;		   // { dg-error "here" }
-  std::multiset<int, std::less<long*>> c2; // { dg-error "here" }
+  std::multiset<int, std::less<long*>> c2;
 }
 
 // { dg-error "non-const, non-volatile value_type" "" { target *-*-* } 0 }

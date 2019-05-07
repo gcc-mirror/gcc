@@ -24,7 +24,7 @@ test01()
 {
   using namespace std;
   unordered_multiset<const int, hash<int>> c;		// { dg-error "here" }
-  unordered_multiset<int, equal_to<int>, hash<int>> c2; // { dg-error "here" }
+  unordered_multiset<int, equal_to<int>, hash<int>> c2;
 }
 
 // { dg-error "non-const, non-volatile value_type" "" { target *-*-* } 0 }
