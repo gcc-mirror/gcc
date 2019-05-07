@@ -1,3 +1,19 @@
+2019-05-01  Nina Dinka Ranns  <dinka.ranns@gmail.com>
+
+	Make allocator propagation more consistent for
+	operator+(basic_string) (P1165R1)
+	* include/bits/basic_string.h
+	(operator+(basic_string&&, basic_string&&): Changed resulting
+	allocator to always be the one from the first parameter.
+	* include/bits/basic_string.tcc
+	(operator+(const _CharT*, const basic_string&)): Changed
+	resulting allocator to be SOCCC on the second parameter's allocator.
+	(operator+(_CharT, const basic_string&)): Likewise.
+	* testsuite/21_strings/basic_string/allocator/char/operator_plus.cc:
+	New.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/operator_plus.cc:
+	New.
+
 2019-05-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/regex.h: Improve docs.
