@@ -209,10 +209,22 @@ AC_DEFUN([DRUNTIME_OS_LINK_SPEC],
       # relocs.  Work around by disabling TLS transitions.  Not necessary
       # on 32-bit x86, but cannot be distinguished reliably in specs.
       druntime_ld_prog=`$CC -print-prog-name=ld`
+      druntime_ld_gld=no
+      druntime_ld_relax_transtls=no
       if test -n "$druntime_ld_prog" \
          && $druntime_ld_prog -v 2>&1 | grep GNU > /dev/null 2>&1; then
-        :
+        druntime_ld_gld=yes
       else
+        echo 'int main (void) { return 0; }' > conftest.c
+        save_LDFLAGS="$LDFLAGS"
+        LDFLAGS="$LDFLAGS -Wl,-z,relax=transtls"
+        if $CC $CFLAGS $LDFLAGS -o conftest conftest.c > /dev/null 2>&1; then
+          druntime_ld_relax_transtls=yes
+        fi
+        LDFLAGS="$save_LDFLAGS"
+        rm -f conftest.c conftest
+      fi
+      if test "$druntime_ld_relax_transtls" = "yes"; then
         OS_LINK_SPEC='-z relax=transtls'
       fi
       ;;
