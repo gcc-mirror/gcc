@@ -1060,6 +1060,9 @@
 ;; Map smax to smin and umax to umin.
 (define_code_attr max_opp [(smax "smin") (umax "umin")])
 
+;; Same as above, but louder.
+(define_code_attr MAX_OPP [(smax "SMIN") (umax "UMIN")])
+
 ;; The number of subvectors in an SVE_STRUCT.
 (define_mode_attr vector_count [(VNx32QI "2") (VNx16HI "2")
 				(VNx8SI  "2") (VNx4DI  "2")

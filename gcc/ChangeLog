@@ -1,3 +1,13 @@
+2019-05-07  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
+
+	* config/aarch64/aarch64-sve.md (<su>abd<mode>_3): New define_expand.
+	(aarch64_<su>abd<mode>_3): Likewise.
+	(*aarch64_<su>abd<mode>_3): New define_insn.
+	(<sur>sad<vsi2qi>): New define_expand.
+	* config/aarch64/iterators.md: Added MAX_OPP attribute.
+	* tree-vect-loop.c (use_mask_by_cond_expr_p): Add SAD_EXPR.
+	(build_vect_cond_expr): Likewise.
+
 2019-05-07  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* cfgexpand.c (asm_clobber_reg_is_valid): Reject
