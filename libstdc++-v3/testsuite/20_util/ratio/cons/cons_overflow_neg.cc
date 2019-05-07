@@ -45,7 +45,7 @@ test04()
   std::ratio<1,0> r1 __attribute__((unused)); // { dg-error "required from here" }
 }
 
-// { dg-error "denominator cannot be zero" "" { target *-*-* } 263 }
-// { dg-error "out of range" "" { target *-*-* } 264 }
-// { dg-error "overflow in constant expression" "" { target *-*-* } 59 }
+// { dg-error "denominator cannot be zero" "" { target *-*-* } 0 }
+// { dg-error "out of range" "" { target *-*-* } 0 }
+// { dg-error "overflow in constant expression" "" { target *-*-* } 0 }
 // { dg-prune-output "not a member" }

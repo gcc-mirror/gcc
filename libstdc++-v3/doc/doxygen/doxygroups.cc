@@ -19,6 +19,9 @@
 /** @namespace std
  *  @brief ISO C++ entities toplevel namespace is std.
 */
+/** @namespace std
+ *  @brief ISO C++ inline namespace for literal suffixes.
+*/
 /** @namespace std::__detail
  *  @brief Implementation details not part of the namespace std interface.
 */
