@@ -1034,7 +1034,6 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 		       vec<stmt_vec_info> stmts, unsigned int group_size,
 		       poly_uint64 *max_nunits,
 		       bool *matches, unsigned *npermutes, unsigned *tree_size,
-		       unsigned max_tree_size,
 		       scalar_stmts_to_slp_tree_map_t *bst_map);
 
 static slp_tree
@@ -1042,7 +1041,6 @@ vect_build_slp_tree (vec_info *vinfo,
 		     vec<stmt_vec_info> stmts, unsigned int group_size,
 		     poly_uint64 *max_nunits,
 		     bool *matches, unsigned *npermutes, unsigned *tree_size,
-		     unsigned max_tree_size,
 		     scalar_stmts_to_slp_tree_map_t *bst_map)
 {
   if (slp_tree *leader = bst_map->get (stmts))
@@ -1055,8 +1053,7 @@ vect_build_slp_tree (vec_info *vinfo,
       return *leader;
     }
   slp_tree res = vect_build_slp_tree_2 (vinfo, stmts, group_size, max_nunits,
-					matches, npermutes, tree_size,
-					max_tree_size, bst_map);
+					matches, npermutes, tree_size, bst_map);
   /* Keep a reference for the bst_map use.  */
   if (res)
     res->refcnt++;
@@ -1076,7 +1073,6 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 		       vec<stmt_vec_info> stmts, unsigned int group_size,
 		       poly_uint64 *max_nunits,
 		       bool *matches, unsigned *npermutes, unsigned *tree_size,
-		       unsigned max_tree_size,
 		       scalar_stmts_to_slp_tree_map_t *bst_map)
 {
   unsigned nops, i, this_tree_size = 0;
@@ -1135,6 +1131,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	}
       else
 	return NULL;
+      (*tree_size)++;
       node = vect_create_new_slp_node (stmts);
       return node;
     }
@@ -1151,6 +1148,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
       && DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)))
     {
       *max_nunits = this_max_nunits;
+      (*tree_size)++;
       node = vect_create_new_slp_node (stmts);
       return node;
     }
@@ -1178,9 +1176,6 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 
   stmt_info = stmts[0];
 
-  if (tree_size)
-    max_tree_size -= *tree_size;
-
   /* Create SLP_TREE nodes for the definition node/s.  */
   FOR_EACH_VEC_ELT (oprnds_info, i, oprnd_info)
     {
@@ -1193,23 +1188,10 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	  && oprnd_info->first_dt != vect_induction_def)
         continue;
 
-      if (++this_tree_size > max_tree_size)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION,
-			     vect_location,
-			     "Build SLP failed: SLP tree too large\n");
-	  FOR_EACH_VEC_ELT (children, j, child)
-	    vect_free_slp_tree (child, false);
-	  vect_free_oprnd_info (oprnds_info);
-	  return NULL;
-	}
-
       if ((child = vect_build_slp_tree (vinfo, oprnd_info->def_stmts,
 					group_size, &this_max_nunits,
 					matches, npermutes,
-					&this_tree_size,
-					max_tree_size, bst_map)) != NULL)
+					&this_tree_size, bst_map)) != NULL)
 	{
 	  /* If we have all children of child built up from scalars then just
 	     throw that away and build it up this node from scalars.  */
@@ -1238,6 +1220,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 				     "scalars instead\n");
 		  oprnd_info->def_stmts = vNULL;
 		  SLP_TREE_DEF_TYPE (child) = vect_external_def;
+		  ++this_tree_size;
 		  children.safe_push (child);
 		  continue;
 		}
@@ -1266,6 +1249,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "Building vector operands from scalars\n");
+	  this_tree_size++;
 	  child = vect_create_new_slp_node (oprnd_info->def_stmts);
 	  SLP_TREE_DEF_TYPE (child) = vect_external_def;
 	  children.safe_push (child);
@@ -1355,8 +1339,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	  if ((child = vect_build_slp_tree (vinfo, oprnd_info->def_stmts,
 					    group_size, &this_max_nunits,
 					    tem, npermutes,
-					    &this_tree_size,
-					    max_tree_size, bst_map)) != NULL)
+					    &this_tree_size, bst_map)) != NULL)
 	    {
 	      /* ... so if successful we can apply the operand swapping
 		 to the GIMPLE IL.  This is necessary because for example
@@ -1411,6 +1394,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 					 "scalars instead\n");
 		      oprnd_info->def_stmts = vNULL;
 		      SLP_TREE_DEF_TYPE (child) = vect_external_def;
+		      ++this_tree_size;
 		      children.safe_push (child);
 		      continue;
 		    }
@@ -1434,8 +1418,7 @@ fail:
 
   vect_free_oprnd_info (oprnds_info);
 
-  if (tree_size)
-    *tree_size += this_tree_size;
+  *tree_size += this_tree_size + 1;
   *max_nunits = this_max_nunits;
 
   node = vect_create_new_slp_node (stmts);
@@ -1971,9 +1954,10 @@ vect_analyze_slp_instance (vec_info *vinfo,
   scalar_stmts_to_slp_tree_map_t *bst_map
     = new scalar_stmts_to_slp_tree_map_t ();
   poly_uint64 max_nunits = nunits;
+  unsigned tree_size = 0;
   node = vect_build_slp_tree (vinfo, scalar_stmts, group_size,
 			      &max_nunits, matches, &npermutes,
-			      NULL, max_tree_size, bst_map);
+			      &tree_size, bst_map);
   /* The map keeps a reference on SLP nodes built, release that.  */
   for (scalar_stmts_to_slp_tree_map_t::iterator it = bst_map->begin ();
        it != bst_map->end (); ++it)
@@ -2014,6 +1998,10 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	  SLP_INSTANCE_UNROLLING_FACTOR (new_instance) = unrolling_factor;
 	  SLP_INSTANCE_LOADS (new_instance) = vNULL;
 	  vect_gather_slp_loads (new_instance, node);
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "SLP size %u vs. limit %u.\n",
+			     tree_size, max_tree_size);
 
 	  /* Compute the load permutation.  */
 	  slp_tree load_node;

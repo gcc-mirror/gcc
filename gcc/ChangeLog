@@ -1,5 +1,11 @@
 2019-05-07  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-slp.c (vect_build_slp_tree_2): Bump size whenever
+	we build a SLP node.  Remove max_size and limiting.
+	(vect_analyze_slp_instance): Record and dump size of the SLP graph.
+
+2019-05-07  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/90316
 	* tree-ssa-alias.h (get_continuation_for_phi): Take walking
 	limit by reference.
