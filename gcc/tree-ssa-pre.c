@@ -3533,7 +3533,7 @@ do_hoist_insertion (basic_block block)
     return false;
 
   /* Hack hoitable_set in-place so we can use sorted_array_from_bitmap_set.  */
-  hoistable_set.values = availout_in_some;
+  bitmap_move (&hoistable_set.values, &availout_in_some);
   hoistable_set.expressions = ANTIC_IN (block)->expressions;
 
   /* Now finally construct the topological-ordered expression set.  */

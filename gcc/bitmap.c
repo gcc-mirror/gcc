@@ -36,17 +36,32 @@ static bitmap_element *bitmap_tree_listify_from (bitmap, bitmap_element *);
 void
 bitmap_register (bitmap b MEM_STAT_DECL)
 {
-  bitmap_mem_desc.register_descriptor (b, BITMAP_ORIGIN, false
-				       FINAL_PASS_MEM_STAT);
+  static unsigned alloc_descriptor_max_uid = 1;
+  gcc_assert (b->alloc_descriptor == 0);
+  b->alloc_descriptor = alloc_descriptor_max_uid++;
+
+  bitmap_mem_desc.register_descriptor (b->get_descriptor (), BITMAP_ORIGIN,
+				       false FINAL_PASS_MEM_STAT);
 }
 
 /* Account the overhead.  */
 static void
 register_overhead (bitmap b, size_t amount)
 {
-  if (bitmap_mem_desc.contains_descriptor_for_instance (b))
-    bitmap_mem_desc.register_instance_overhead (amount, b);
+  unsigned *d = b->get_descriptor ();
+  if (bitmap_mem_desc.contains_descriptor_for_instance (d))
+    bitmap_mem_desc.register_instance_overhead (amount, d);
 }
+
+/* Release the overhead.  */
+static void
+release_overhead (bitmap b, size_t amount, bool remove_from_map)
+{
+  unsigned *d = b->get_descriptor ();
+  if (bitmap_mem_desc.contains_descriptor_for_instance (d))
+    bitmap_mem_desc.release_instance_overhead (d, amount, remove_from_map);
+}
+
 
 /* Global data */
 bitmap_element bitmap_zero_bits;  /* An element of all zero bits.  */
@@ -65,7 +80,7 @@ bitmap_elem_to_freelist (bitmap head, bitmap_element *elt)
   bitmap_obstack *bit_obstack = head->obstack;
 
   if (GATHER_STATISTICS)
-    register_overhead (head, -((int)sizeof (bitmap_element)));
+    release_overhead (head, sizeof (bitmap_element), false);
 
   elt->next = NULL;
   elt->indx = -1;
@@ -153,7 +168,7 @@ bitmap_elt_clear_from (bitmap head, bitmap_element *elt)
       int n = 0;
       for (prev = elt; prev; prev = prev->next)
 	n++;
-      register_overhead (head, -sizeof (bitmap_element) * n);
+      release_overhead (head, sizeof (bitmap_element) * n, false);
     }
 
   prev = elt->prev;
@@ -798,7 +813,7 @@ bitmap_obstack_free (bitmap map)
       map->first = (bitmap_element *) map->obstack->heads;
 
       if (GATHER_STATISTICS)
-	register_overhead (map, -((int)sizeof (bitmap_head)));
+	release_overhead (map, sizeof (bitmap_head), true);
 
       map->obstack->heads = map;
     }
@@ -872,16 +887,18 @@ bitmap_move (bitmap to, bitmap from)
 
   bitmap_clear (to);
 
-  *to = *from;
-
+  size_t sz = 0;
   if (GATHER_STATISTICS)
     {
-      size_t sz = 0;
       for (bitmap_element *e = to->first; e; e = e->next)
 	sz += sizeof (bitmap_element);
       register_overhead (to, sz);
-      register_overhead (from, -sz);
     }
+
+  *to = *from;
+
+  if (GATHER_STATISTICS)
+    release_overhead (from, sz, false);
 }
 
 /* Clear a single bit in a bitmap.  Return true if the bit changed.  */
