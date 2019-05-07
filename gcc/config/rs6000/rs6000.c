@@ -6944,6 +6944,10 @@ rs6000_expand_vector_extract (rtx target, rtx vec, rtx elt)
 
       switch (mode)
 	{
+	case E_V1TImode:
+	  emit_move_insn (target, gen_lowpart (TImode, vec));
+	  return;
+
 	case E_V2DFmode:
 	  emit_insn (gen_vsx_extract_v2df_var (target, vec, elt));
 	  return;
