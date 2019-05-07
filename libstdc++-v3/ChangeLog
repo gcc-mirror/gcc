@@ -1,3 +1,7 @@
+2019-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/19_diagnostics/error_code/hash.cc: New test.
+
 2019-05-06  François Dumont  <fdumont@gcc.gnu.org>
 
 	* python/libstdcxx/v6/printers.py (add_one_template_type_printer):
