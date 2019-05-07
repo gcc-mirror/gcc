@@ -1,3 +1,7 @@
+2019-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Fix DR 2537 and DR 2566 confusion.
+
 2019-05-01  Nina Dinka Ranns  <dinka.ranns@gmail.com>
 
 	Make allocator propagation more consistent for
