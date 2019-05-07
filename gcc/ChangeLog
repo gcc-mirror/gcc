@@ -1,5 +1,11 @@
 2019-05-07  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-stmts.c (vect_is_simple_cond): When vectype is
+	not specified still compute a comp_vectype for invariant
+	compares.
+
+2019-05-07  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/90316
 	* tree-ssa-pre.c (translate_vuse_through_block): When
 	same_valid is NULL do not bother to search for a virtual
