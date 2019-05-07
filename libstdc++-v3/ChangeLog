@@ -1,6 +1,11 @@
 2019-05-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-03-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/using.xml: Use link element instead of xref.
+
+	Backport from mainline
 	2019-02-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/intro.xml: Document LWG 2586 status.

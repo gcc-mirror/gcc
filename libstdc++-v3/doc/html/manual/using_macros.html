@@ -116,7 +116,8 @@
         enabled for
         <code class="classname">std::vector&lt;T, std::allocator&lt;T&gt;&gt;</code>
         and only when <code class="classname">std::allocator</code> is derived from
-        <a class="xref" href="memory.html#allocator.impl" title="Implementation">the section called “Implementation”</a>. The annotations
+        <a class="link" href="memory.html#allocator.impl" title="Implementation"><code class="classname">new_allocator</code>
+        or <code class="classname">malloc_allocator</code></a>. The annotations
         must be present on all vector operations or none, so this macro must
         be defined to the same value for all translation units that create,
         destroy or modify vectors.
