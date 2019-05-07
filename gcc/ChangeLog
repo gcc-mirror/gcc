@@ -1,3 +1,17 @@
+2019-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000-protos.h (rs6000_legitimize_reload_address_ptr):
+	Delete declaration.
+	* config/rs6000/rs6000.c (rs6000_legitimize_reload_address): Delete.
+	(rs6000_debug_legitimize_reload_address): Delete.
+	(rs6000_legitimize_reload_address_ptr): Delete.
+	(rs6000_option_override_internal): Adjust.
+	(mem_operand_gpr): Adjust comment.
+	(legitimate_lo_sum_address_p): Ditto.
+	(rs6000_legitimize_reload_address): Delete.
+	(rs6000_debug_legitimize_reload_address): Delete.
+	* config/rs6000/rs6000.h (LEGITIMIZE_RELOAD_ADDRESS): Delete.
+
 2019-05-07  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR target/89765
