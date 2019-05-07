@@ -514,8 +514,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   /// @relates std::experimental::filesystem::path @{
 
+  /// Swap overload for paths
   inline void swap(path& __lhs, path& __rhs) noexcept { __lhs.swap(__rhs); }
 
+  /// Compute a hash value for a path
   size_t hash_value(const path& __p) noexcept;
 
   /// Compare paths
