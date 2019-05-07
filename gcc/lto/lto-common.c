@@ -2111,8 +2111,9 @@ lto_file_read (lto_file *file, FILE *resolution_file, int *count)
     fprintf (stdout, "\n    LTO Object Name: %s\n", file->filename);
     fprintf (stdout, "\nNo.    Offset    Size       Section Name\n\n");
     for (section = section_list.first; section != NULL; section = section->next)
-      fprintf (stdout, "%2d %8ld %8ld   %s\n",
-	       ++i, section->start, section->len, section->name);
+      fprintf (stdout, "%2d %8" PRId64 " %8" PRIu64 "   %s\n",
+	       ++i, (int64_t) section->start, (uint64_t) section->len,
+	       section->name);
   }
 
   /* Find all sub modules in the object and put their sections into new hash

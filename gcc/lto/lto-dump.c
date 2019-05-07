@@ -60,7 +60,8 @@ struct symbol_entry
     const char *type_name = node->get_symtab_type_string ();
     const char *visibility = node->get_visibility_string ();
     size_t sz = get_size ();
-    printf ("%s  %s  %4lu  %s  ", type_name, visibility, sz, name);
+    printf ("%s  %s  %4" PRIu64 "  %s  ", type_name, visibility, (uint64_t) sz,
+	    name);
   }
 };
 
