@@ -18,6 +18,12 @@
 	* parser.c (cp_parser_using_declaration): For an unscoped enum
 	only use its context if it's not a function declaration.
 
+	2019-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89705 - ICE with reference binding with conversion function.
+	* call.c (reference_binding): If the result of the conversion function
+	is a prvalue of non-class type, use the cv-unqualified type.
+
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
