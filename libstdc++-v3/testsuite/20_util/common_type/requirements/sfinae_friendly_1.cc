@@ -159,7 +159,10 @@ namespace std {
   };
 }
 
+static_assert(is_type<std::common_type<int>, int>(), "");
+static_assert(is_type<std::common_type<const int>, int>(), "");
 static_assert(is_type<std::common_type<int, int>, int>(), "");
+static_assert(is_type<std::common_type<const int, int>, int>(), "");
 static_assert(is_type<std::common_type<ScEn, ScEn>, ScEn>(), "");
 static_assert(is_type<std::common_type<UnscEn, UnscEn>, UnscEn>(), "");
 static_assert(is_type<std::common_type<UnscEn, int>, int>(), "");
@@ -180,6 +183,8 @@ static_assert(is_type<std::common_type<int*, const volatile int*>,
 	      const volatile int*>(), "");
 static_assert(is_type<std::common_type<void*, const volatile int*>,
 	      const volatile void*>(), "");
+static_assert(is_type<std::common_type<void>, void>(), "");
+static_assert(is_type<std::common_type<const void>, void>(), "");
 static_assert(is_type<std::common_type<void, void>, void>(), "");
 static_assert(is_type<std::common_type<const void, const void>, void>(), "");
 static_assert(is_type<std::common_type<int&, int&&>, int>(), "");
@@ -315,6 +320,14 @@ static_assert(!has_type<std::common_type<U, S, Abstract, void, D,
 static_assert(!has_type<std::common_type<UConv1, Abstract&&>>(), "");
 static_assert(!has_type<std::common_type<std::initializer_list<int>,
 					 std::initializer_list<long>>>(), "");
+
+// PR libstdc++/89102
+static_assert(!has_type<std::common_type<int() &>>(), "");
+static_assert(!has_type<std::common_type<int() & noexcept>>(), "");
+static_assert(!has_type<std::common_type<int() const>>(), "");
+static_assert(!has_type<std::common_type<int(...) &>>(), "");
+static_assert(!has_type<std::common_type<int(...) & noexcept>>(), "");
+static_assert(!has_type<std::common_type<int(...) const>>(), "");
 
 void test(int i)
 {

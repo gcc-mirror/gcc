@@ -25,7 +25,7 @@ template<typename... Args>
 constexpr
 std::array<typename std::common_type<Args...>::type, 
   sizeof...(Args)>
-make_array(Args&&... args)  // { dg-error "invalid use" }
+make_array(Args&&... args)  // { dg-error "no type.*common_type<>" }
 {
   typedef typename std::common_type<Args...>::type CT;
   return std::array<CT, sizeof...(Args)>{static_cast<CT>
