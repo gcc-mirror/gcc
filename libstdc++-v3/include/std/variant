@@ -1076,6 +1076,17 @@ namespace __variant
 
       using _Traits = __detail::__variant::_Traits<_Types...>;
 
+      template<typename _Tp>
+	struct __is_in_place_tag : false_type { };
+      template<typename _Tp>
+	struct __is_in_place_tag<in_place_type_t<_Tp>> : true_type { };
+      template<size_t _Np>
+	struct __is_in_place_tag<in_place_index_t<_Np>> : true_type { };
+
+      template<typename _Tp>
+	static constexpr bool __not_in_place_tag
+	  = !__is_in_place_tag<decay_t<_Tp>>::value;
+
     public:
       variant() = default;
       variant(const variant& __rhs) = default;
@@ -1087,6 +1098,7 @@ namespace __variant
       template<typename _Tp,
 	       typename = enable_if_t<!is_same_v<decay_t<_Tp>, variant>>,
 	       typename = enable_if_t<(sizeof...(_Types)>0)>,
+	       typename = enable_if_t<__not_in_place_tag<_Tp>>,
 	       typename = enable_if_t<__exactly_once<__accepted_type<_Tp&&>>
 			  && is_constructible_v<__accepted_type<_Tp&&>, _Tp&&>>>
 	constexpr

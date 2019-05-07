@@ -1,6 +1,17 @@
 2019-05-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-04-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90165
+	* include/std/variant (variant::__is_in_place_tag)
+	(variant::__not_in_place_tag): New helpers for variant(T&&)
+	constructor constraint.
+	(variant::variant(T&&)): Use __not_in_place_tag in constraints.
+	* testsuite/20_util/variant/compile.cc: Check variant(T&&) constructor
+	isn't used for in_place_type or in_place_index arguments.
+
+	Backport from mainline
 	2019-04-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90105
