@@ -1146,7 +1146,8 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
   edge e = NULL;
   bool use_oracle;
 
-  *same_valid = true;
+  if (same_valid)
+    *same_valid = true;
 
   if (gimple_bb (phi) != phiblock)
     return vuse;
@@ -1179,7 +1180,7 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
 
   if (e)
     {
-      if (use_oracle)
+      if (use_oracle && same_valid)
 	{
 	  bitmap visited = NULL;
 	  /* Try to find a vuse that dominates this phi node by skipping
@@ -1191,13 +1192,9 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
 	}
       else
 	vuse = NULL_TREE;
-      if (!vuse)
-	{
-	  /* If we didn't find any, the value ID can't stay the same,
-	     but return the translated vuse.  */
-	  *same_valid = false;
-	  vuse = PHI_ARG_DEF (phi, e->dest_idx);
-	}
+      /* If we didn't find any, the value ID can't stay the same.  */
+      if (!vuse && same_valid)
+	*same_valid = false;
       /* ??? We would like to return vuse here as this is the canonical
          upmost vdef that this reference is associated with.  But during
 	 insertion of the references into the hash tables we only ever
@@ -1535,7 +1532,8 @@ phi_translate_1 (bitmap_set_t dest,
 						    ? newoperands : operands,
 						    ref->set, ref->type,
 						    vuse, phiblock, pred,
-						    &same_valid);
+						    changed
+						    ? NULL : &same_valid);
 	    if (newvuse == NULL_TREE)
 	      {
 		newoperands.release ();
