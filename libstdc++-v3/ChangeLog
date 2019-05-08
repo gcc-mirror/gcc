@@ -1,3 +1,13 @@
+2019-05-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2019-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89629
+	* libsupc++/hash_bytes.cc [__SIZEOF_SIZE_T__ == 8] (_Hash_bytes):
+	Use correct type for len_aligned.
+	* testsuite/20_util/hash/89629.cc: New test.
+
 2019-02-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89446
