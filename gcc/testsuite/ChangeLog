@@ -1,3 +1,16 @@
+2019-05-08  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	Backport from mainline.
+	2019-05-06  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/89424
+	* gcc.target/powerpc/pr89424-0.c: New test.
+	* gcc.target/powerpc/vsx-builtin-13a.c: Define macro PR89424 to
+	enable testing of newly patched capability.
+	* gcc.target/powerpc/vsx-builtin-13b.c: Likewise.
+	* gcc.target/powerpc/vsx-builtin-20a.c: Likewise.
+	* gcc.target/powerpc/vsx-builtin-20b.c: Likewise.
+
 2019-05-06  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/90359

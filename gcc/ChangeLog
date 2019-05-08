@@ -1,3 +1,12 @@
+2019-05-08  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	Backport from mainline.
+	2019-05-06  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/89424
+	* config/rs6000/rs6000.c (rs6000_expand_vector_extract): Add
+	handling of V1TImode.
+
 2019-05-06  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/90359
