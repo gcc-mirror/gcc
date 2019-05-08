@@ -920,15 +920,6 @@ global_ranger::terminal_name (tree name)
   return m_gori.terminal_name (name);
 }
 
-// Calculate a range for NAME via it's def chain using IMPORT_RANGE as the
-// range of the terminal name.
-
-bool
-global_ranger::range_from_import (irange &r, tree name, irange &import_range)
-{
-  return m_gori.range_from_import (r, name, import_range);
-}
-
 // This routine will export whatever global ranges are known to GCC
 // SSA_RANGE_NAME_INFO fields.
 

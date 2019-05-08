@@ -157,6 +157,7 @@ public:
   bool has_edge_range_p (edge e, tree name);
   bool outgoing_edge_range_p (irange &r, edge e, tree name,
 			      irange *name_range = NULL);
+protected:
   bool range_from_import (irange &r, tree name, irange &import_range);
 private:
   // Evaluate the range for NAME on stmt S if the lhs has range LHS. 

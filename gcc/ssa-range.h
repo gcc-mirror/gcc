@@ -131,7 +131,6 @@ public:
   virtual bool outgoing_edge_range_p (irange &r, edge e, tree name,
 				      irange *name_range = NULL);
   tree terminal_name (tree name);
-  bool range_from_import (irange &r, tree name, irange &import_range);
 
   void export_global_ranges ();
 

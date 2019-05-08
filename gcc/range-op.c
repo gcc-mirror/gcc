@@ -1548,51 +1548,52 @@ operator_cast::op1_range (irange& r, const irange& lhs,
   tree op2_type = op2.type ();
   irange op_type;
 
-  /* Special case if the LHS is a boolean.  A 0 means the RHS is zero, and a 1
-     means the RHS is non-zero.  */
-  if (TREE_CODE (lhs_type) == BOOLEAN_TYPE)
-    {
-      /* If the LHS is unknown, the result is whatever op2 already is.  */
-      if (!lhs.singleton_p ())
-	{
-	  r = op2;
-	  return true;
-	}
-      /* Boolean casts are weird in GCC. ITs actually an implied mask with 0x01,
-	 so all that is known is whther the rightmost bit is 0 or 1, which 
-	 implies the only known value *not* in the RHS is 0 or -1.  */
-      unsigned prec = TYPE_PRECISION (op2_type);
-      if (lhs.zero_p ())
-	r = irange (op2_type, wi::minus_one (prec), wi::minus_one (prec),
-		    irange::INVERSE);
-      else
-	r = irange (op2_type, wi::zero (prec), wi::zero (prec),
-		    irange::INVERSE);
-      /* And intersect it with what we know about op2.  */
-      r.intersect (op2);
-      return true;
-    }
-  
+ 
   /* If the precision of the LHS is smaller than the precision of the RHS,
      then there would be truncation of the value on the RHS, and so we can tell
      nothing about it.  */
   if (TYPE_PRECISION (lhs_type) < TYPE_PRECISION (op2_type))
     {
-      // If we've been passed an actual value for the RHS rather than the type
-      // see if it fits the LHS, and if so, then we can allow it.
+      /* If we've been passed an actual value for the RHS rather than the type
+	 see if it fits the LHS, and if so, then we can allow it.  */
       r = op2;
       r.cast (lhs_type);
       r.cast (op2_type);
       if (r == op2)
         {
-	  // we know the value of the RHS fits in the LHS type, so convert the
-	  // left hand side and remove any values that arent in OP2.
+	  /* We know the value of the RHS fits in the LHS type, so convert the
+	     left hand side and remove any values that arent in OP2.  */
 	  r = lhs;
 	  r.cast (op2_type);
 	  r.intersect (op2);
+	  return true;
 	}
-      else
-	r = op2;
+      /* Special case if the LHS is a boolean.  A 0 means the RHS is zero,
+	 and a 1 means the RHS is non-zero.  */
+      else if (TREE_CODE (lhs_type) == BOOLEAN_TYPE)
+	{
+	  /* If the LHS is unknown, the result is whatever op2 already is.  */
+	  if (!lhs.singleton_p ())
+	    {
+	      r = op2;
+	      return true;
+	    }
+	  /* Boolean casts are weird in GCC. ITs actually an implied mask with
+	      0x01, so all that is known is whether the rightmost bit is 0 or 1,
+	      which implies the only value *not* in the RHS is 0 or -1.  */
+	  unsigned prec = TYPE_PRECISION (op2_type);
+	  if (lhs.zero_p ())
+	    r = irange (op2_type, wi::minus_one (prec), wi::minus_one (prec),
+			irange::INVERSE);
+	  else
+	    r = irange (op2_type, wi::zero (prec), wi::zero (prec),
+			irange::INVERSE);
+	  /* And intersect it with what we know about op2.  */
+	  r.intersect (op2);
+	  return true;
+	}
+      /* Otherwise we'll have to assume it's whatever we know about op2.  */
+      r = op2;
       return true;
     }
 
