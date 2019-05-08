@@ -7743,8 +7743,9 @@ Builtin_call_expression::do_lower(Gogo*, Named_object* function,
   return this;
 }
 
-// Flatten a builtin call expression.  This turns the arguments of copy and
-// append into temporary expressions.
+// Flatten a builtin call expression.  This turns the arguments of some
+// builtin calls into temporary expressions.  Also expand copy and append
+// to runtime calls.
 
 Expression*
 Builtin_call_expression::do_flatten(Gogo* gogo, Named_object* function,
@@ -7781,6 +7782,85 @@ Builtin_call_expression::do_flatten(Gogo* gogo, Named_object* function,
 		*pa = Expression::make_temporary_reference(temp, loc);
 	      }
 	  }
+
+        // Lower to runtime call.
+        const Expression_list* args = this->args();
+        go_assert(args != NULL && args->size() == 2);
+        Expression* arg1 = args->front();
+        Expression* arg2 = args->back();
+        go_assert(arg1->is_variable());
+        go_assert(arg2->is_variable());
+        bool arg2_is_string = arg2->type()->is_string_type();
+
+        Expression* ret;
+        Type* et = at->array_type()->element_type();
+        if (et->has_pointer())
+          {
+            Expression* td = Expression::make_type_descriptor(et, loc);
+            ret = Runtime::make_call(Runtime::TYPEDSLICECOPY, loc,
+                                     3, td, arg1, arg2);
+          }
+        else
+          {
+            Type* int_type = Type::lookup_integer_type("int");
+            Type* uintptr_type = Type::lookup_integer_type("uintptr");
+
+            // l1 = len(arg1)
+            Named_object* lenfn = gogo->lookup_global("len");
+            Expression* lenref = Expression::make_func_reference(lenfn, NULL, loc);
+            Expression_list* len_args = new Expression_list();
+            len_args->push_back(arg1->copy());
+            Expression* len1 = Expression::make_call(lenref, len_args, false, loc);
+            gogo->lower_expression(function, inserter, &len1);
+            gogo->flatten_expression(function, inserter, &len1);
+            Temporary_statement* l1tmp = Statement::make_temporary(int_type, len1, loc);
+            inserter->insert(l1tmp);
+
+            // l2 = len(arg2)
+            len_args = new Expression_list();
+            len_args->push_back(arg2->copy());
+            Expression* len2 = Expression::make_call(lenref, len_args, false, loc);
+            gogo->lower_expression(function, inserter, &len2);
+            gogo->flatten_expression(function, inserter, &len2);
+            Temporary_statement* l2tmp = Statement::make_temporary(int_type, len2, loc);
+            inserter->insert(l2tmp);
+
+            // n = (l1 < l2 ? l1 : l2)
+            Expression* l1ref = Expression::make_temporary_reference(l1tmp, loc);
+            Expression* l2ref = Expression::make_temporary_reference(l2tmp, loc);
+            Expression* cond = Expression::make_binary(OPERATOR_LT, l1ref, l2ref, loc);
+            Expression* n = Expression::make_conditional(cond,
+                                                         l1ref->copy(),
+                                                         l2ref->copy(),
+                                                         loc);
+            Temporary_statement* ntmp = Statement::make_temporary(NULL, n, loc);
+            inserter->insert(ntmp);
+
+            // sz = n * sizeof(elem_type)
+            Expression* nref = Expression::make_temporary_reference(ntmp, loc);
+            nref = Expression::make_cast(uintptr_type, nref, loc);
+            Expression* sz = Expression::make_type_info(et, TYPE_INFO_SIZE);
+            sz = Expression::make_binary(OPERATOR_MULT, sz, nref, loc);
+
+            // memmove(arg1.ptr, arg2.ptr, sz)
+            Expression* p1 = Expression::make_slice_info(arg1,
+                                                         SLICE_INFO_VALUE_POINTER,
+                                                         loc);
+            Expression* p2 = (arg2_is_string
+                              ? Expression::make_string_info(arg2,
+                                                             STRING_INFO_DATA,
+                                                             loc)
+                              : Expression::make_slice_info(arg2,
+                                                            SLICE_INFO_VALUE_POINTER,
+                                                            loc));
+            Expression* call = Runtime::make_call(Runtime::BUILTIN_MEMMOVE, loc, 3,
+                                                  p1, p2, sz);
+
+            // n is the return value of copy
+            nref = Expression::make_temporary_reference(ntmp, loc);
+            ret = Expression::make_compound(call, nref, loc);
+          }
+        return ret;
       }
       break;
 
@@ -8209,21 +8289,51 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
 
   if (this->is_varargs())
     {
-      // copy(s1tmp[l1tmp:], s2tmp)
-      a1 = Expression::make_temporary_reference(s1tmp, loc);
-      ref = Expression::make_temporary_reference(l1tmp, loc);
-      Expression* nil = Expression::make_nil(loc);
-      a1 = Expression::make_array_index(a1, ref, nil, NULL, loc);
-      a1->array_index_expression()->set_needs_bounds_check(false);
+      if (element_type->has_pointer())
+        {
+          // copy(s1tmp[l1tmp:], s2tmp)
+          a1 = Expression::make_temporary_reference(s1tmp, loc);
+          ref = Expression::make_temporary_reference(l1tmp, loc);
+          Expression* nil = Expression::make_nil(loc);
+          a1 = Expression::make_array_index(a1, ref, nil, NULL, loc);
+          a1->array_index_expression()->set_needs_bounds_check(false);
 
-      a2 = Expression::make_temporary_reference(s2tmp, loc);
+          a2 = Expression::make_temporary_reference(s2tmp, loc);
 
-      Named_object* copyfn = gogo->lookup_global("copy");
-      Expression* copyref = Expression::make_func_reference(copyfn, NULL, loc);
-      call_args = new Expression_list();
-      call_args->push_back(a1);
-      call_args->push_back(a2);
-      call = Expression::make_call(copyref, call_args, false, loc);
+          Named_object* copyfn = gogo->lookup_global("copy");
+          Expression* copyref = Expression::make_func_reference(copyfn, NULL, loc);
+          call_args = new Expression_list();
+          call_args->push_back(a1);
+          call_args->push_back(a2);
+          call = Expression::make_call(copyref, call_args, false, loc);
+        }
+      else
+        {
+          // memmove(&s1tmp[l1tmp], s2tmp.ptr, l2tmp*sizeof(elem))
+          a1 = Expression::make_temporary_reference(s1tmp, loc);
+          ref = Expression::make_temporary_reference(l1tmp, loc);
+          a1 = Expression::make_array_index(a1, ref, NULL, NULL, loc);
+          a1->array_index_expression()->set_needs_bounds_check(false);
+          a1 = Expression::make_unary(OPERATOR_AND, a1, loc);
+
+          a2 = Expression::make_temporary_reference(s2tmp, loc);
+          a2 = (a2->type()->is_string_type()
+                ? Expression::make_string_info(a2,
+                                               STRING_INFO_DATA,
+                                               loc)
+                : Expression::make_slice_info(a2,
+                                              SLICE_INFO_VALUE_POINTER,
+                                              loc));
+
+          Type* uintptr_type = Type::lookup_integer_type("uintptr");
+          ref = Expression::make_temporary_reference(l2tmp, loc);
+          ref = Expression::make_cast(uintptr_type, ref, loc);
+          a3 = Expression::make_type_info(element_type, TYPE_INFO_SIZE);
+          a3 = Expression::make_binary(OPERATOR_MULT, a3, ref, loc);
+
+          call = Runtime::make_call(Runtime::BUILTIN_MEMMOVE, loc, 3,
+                                    a1, a2, a3);
+        }
       gogo->lower_expression(function, inserter, &call);
       gogo->flatten_expression(function, inserter, &call);
       inserter->insert(Statement::make_statement(call, false));
@@ -9666,44 +9776,8 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
       }
 
     case BUILTIN_COPY:
-      {
-	const Expression_list* args = this->args();
-	go_assert(args != NULL && args->size() == 2);
-	Expression* arg1 = args->front();
-	Expression* arg2 = args->back();
-
-	Type* arg1_type = arg1->type();
-	Array_type* at = arg1_type->array_type();
-	go_assert(arg1->is_variable());
-
-	Expression* call;
-
-	Type* arg2_type = arg2->type();
-        go_assert(arg2->is_variable());
-	if (arg2_type->is_string_type())
-	  call = Runtime::make_call(Runtime::SLICESTRINGCOPY, location,
-				    2, arg1, arg2);
-	else
-	  {
-	    Type* et = at->element_type();
-	    if (et->has_pointer())
-	      {
-		Expression* td = Expression::make_type_descriptor(et,
-								  location);
-		call = Runtime::make_call(Runtime::TYPEDSLICECOPY, location,
-					  3, td, arg1, arg2);
-	      }
-	    else
-	      {
-		Expression* sz = Expression::make_type_info(et,
-							    TYPE_INFO_SIZE);
-		call = Runtime::make_call(Runtime::SLICECOPY, location, 3,
-					  arg1, arg2, sz);
-	      }
-	  }
-
-	return call->get_backend(context);
-      }
+      // Handled in Builtin_call_expression::do_flatten.
+      go_unreachable();
 
     case BUILTIN_APPEND:
       // Handled in Builtin_call_expression::flatten_append.
