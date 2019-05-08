@@ -428,6 +428,10 @@ fc-prototypes
 Fortran Var(flag_c_prototypes)
 Generate C prototypes from BIND(C) declarations.
 
+fc-prototypes-external
+Fortran Var(flag_c_prototypes_external)
+Generate C prototypes from non-BIND(C) external procedure definitions.
+
 fd-lines-as-code
 Fortran RejectNegative
 Ignore 'D' in column one in fixed form.
