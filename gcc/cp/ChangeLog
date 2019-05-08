@@ -1,3 +1,27 @@
+2019-05-08  Nathan Sidwell  <nathan@acm.org>
+
+	Kill DECL_SAVED_FUNCTION_DATA .
+	* cp-tree.h (language_function): Remove x_auto_return_pattern.
+	(current_function_auto_return_pattern): Delete.
+	(lang_decl_fn): Replace saved_language_function with
+	saved_auto_return type.
+	(DECL_SAVED_FUNCTION_DATA): Delete.
+	(DECL_SAVED_AUTO_RETURN_TYPE): New.
+	(FNDECL_USED_AUTO): Correct documentation.
+	* decl.c (duplicate_decls): Adjust AUTO return handling.
+	(start_preparsed_function): Replace
+	current_function_auto_return_pattern with
+	DECL_SAVED_AUTO_RETURN_TYPE.  Remove DECL_SAVED_FUNCTION_DATA
+	zapping.
+	(finish_function): Likewise.
+	(save_function_data): Delete.
+	(fndecl_declared_return_type): Reimplement.
+	* mangle.c (write_unqualified_name): Use DECL_SAVED_AUTO_RETURN_TYPE.
+	* method.c (make_thunk, make_alias_for): Likewise.
+	* parser.c (cp_parser_jump_statement): Likewise.
+	* pt.c (do_auto_deduction): Likewise.
+	* typeck.c (check_return_expr): Likewise.
+
 2019-05-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/90171 - reorganize usual_deallocation_fn_p
