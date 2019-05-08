@@ -1,3 +1,9 @@
+2019-05-08  Li Jia He  <helijia@linux.ibm.com>
+
+	PR other/90381
+	* gcc.dg/tree-ssa/pr88676-2.c: Add 'target le' option to limit the
+	test case to run on the little endian machine.
+
 2019-05-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/90356
