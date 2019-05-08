@@ -55,6 +55,7 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
     check_divide_overflow_(true),
     compiling_runtime_(false),
     debug_escape_level_(0),
+    debug_optimization_(false),
     nil_check_size_threshold_(4096),
     verify_types_(),
     interface_types_(),

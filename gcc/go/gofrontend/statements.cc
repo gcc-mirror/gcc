@@ -5512,6 +5512,8 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
                                                      range_temp, loc);
       if (clear != NULL)
         {
+          if (gogo->debug_optimization())
+            go_inform(loc, "map range clear");
           temp_block->add_statement(clear);
           return Statement::make_block_statement(temp_block, loc);
         }
@@ -5527,6 +5529,8 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
                                                        range_temp, loc);
       if (clear != NULL)
         {
+          if (gogo->debug_optimization())
+            go_inform(loc, "array range clear");
           temp_block->add_statement(clear);
           return Statement::make_block_statement(temp_block, loc);
         }
