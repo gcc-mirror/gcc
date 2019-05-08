@@ -16,7 +16,6 @@ main (void)
   CUstream stream1;
   int N = n;
   int a[n];
-  int b[n];
   int c[n];
 
   acc_init (acc_device_nvidia);
@@ -36,13 +35,13 @@ main (void)
       c[i] = 0;
     }
 
-#pragma acc data copy (a, b, c) copyin (N)
+#pragma acc data copy (a, c) copyin (N)
   {
 #pragma acc parallel async (1)
     ;
 
 #pragma acc parallel async (1) num_gangs (320)
-    #pragma loop gang
+    #pragma acc loop gang
     for (int ii = 0; ii < N; ii++)
       c[ii] = (a[ii] + a[N - ii - 1]);
 
