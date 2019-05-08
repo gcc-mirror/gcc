@@ -1,3 +1,7 @@
+2019-05-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* standard.ads.h: New file.
+
 2019-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc-interface/Makefile.in (install-gcc-specs): Use foreach.
