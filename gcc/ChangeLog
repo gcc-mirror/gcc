@@ -1,3 +1,25 @@
+2019-05-09  Alan Modra  <amodra@gmail.com>
+
+	PR target/89271
+	* config/rs6000/rs6000.h (enum reg_class, REG_CLASS_NAMES),
+	(REG_CLASS_CONTENTS): Add GEN_OR_VSX_REGS class.
+	* config/rs6000/rs6000.c (rs6000_register_move_cost): Correct
+	cost for general <-> vsx when direct moves are available.
+	Cost union classes at minimal cost for any reg in the class.
+	Correct calculation for moves between vsx, float, and altivec.
+	Don't return a low cost for moves between special regs.  Don't
+	use hard coded register numbers.
+	(TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS): Define.
+	(rs6000_ira_change_pseudo_allocno_class): New function.
+	* config/rs6000/rs6000.md (movsi_internal1, mov<mode>_internal),
+	(movdi_internal32, movdi_internal64): Remove '*' from vsx register
+	alternatives.
+	(movsi_internal1): Don't disparage vector alternatives.
+	(mov<mode>_internal): Likewise, excepting alternative that
+	will be split.
+	* config/rs6000/vsx.md (vsx_splat_<mode>_reg): Don't disparage
+	we <- b alternative.
+
 2019-05-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/59813

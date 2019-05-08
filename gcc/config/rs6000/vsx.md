@@ -4106,7 +4106,7 @@
 })
 
 (define_insn "vsx_splat_<mode>_reg"
-  [(set (match_operand:VSX_D 0 "vsx_register_operand" "=<VSX_D:VSa>,?we")
+  [(set (match_operand:VSX_D 0 "vsx_register_operand" "=<VSX_D:VSa>,we")
 	(vec_duplicate:VSX_D
 	 (match_operand:<VS_scalar> 1 "gpc_reg_operand" "<VSX_D:VS_64reg>,b")))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
