@@ -3440,14 +3440,15 @@ Type::method_constructor(Gogo*, Type* method_type,
       vals->push_back(Expression::make_unary(OPERATOR_AND, s, bloc));
     }
 
-  Named_object* no =
-    ((this->points_to() != NULL
-      && this->points_to()->is_direct_iface_type()
-      && m->is_value_method())
-     ? m->iface_stub_object()
-     : (m->needs_stub_method()
-        ? m->stub_object()
-        : m->named_object()));
+  bool use_direct_iface_stub =
+    this->points_to() != NULL
+    && this->points_to()->is_direct_iface_type()
+    && m->is_value_method();
+  Named_object* no = (use_direct_iface_stub
+                      ? m->iface_stub_object()
+                      : (m->needs_stub_method()
+                         ? m->stub_object()
+                         : m->named_object()));
 
   Function_type* mtype;
   if (no->is_function())
@@ -3463,7 +3464,8 @@ Type::method_constructor(Gogo*, Type* method_type,
 
   ++p;
   go_assert(p->is_field_name("typ"));
-  bool want_pointer_receiver = !only_value_methods && m->is_value_method();
+  bool want_pointer_receiver = (!only_value_methods && m->is_value_method()
+                                && !use_direct_iface_stub);
   nonmethod_type = mtype->copy_with_receiver_as_param(want_pointer_receiver);
   vals->push_back(Expression::make_type_descriptor(nonmethod_type, bloc));
 
