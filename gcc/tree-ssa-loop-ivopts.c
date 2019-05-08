@@ -4557,22 +4557,25 @@ get_address_cost (struct ivopts_data *data, struct iv_use *use,
 static comp_cost
 get_scaled_computation_cost_at (ivopts_data *data, gimple *at, comp_cost cost)
 {
-   int loop_freq = data->current_loop->header->count.to_frequency (cfun);
-   int bb_freq = gimple_bb (at)->count.to_frequency (cfun);
-   if (loop_freq != 0)
-     {
-       gcc_assert (cost.scratch <= cost.cost);
-       int scaled_cost
-	 = cost.scratch + (cost.cost - cost.scratch) * bb_freq / loop_freq;
+  if (data->speed
+      && data->current_loop->header->count.to_frequency (cfun) > 0)
+    {
+      basic_block bb = gimple_bb (at);
+      gcc_assert (cost.scratch <= cost.cost);
+      int scale_factor = (int)(intptr_t) bb->aux;
+      if (scale_factor == 1)
+	return cost;
 
-       if (dump_file && (dump_flags & TDF_DETAILS))
-	 fprintf (dump_file, "Scaling cost based on bb prob "
-		  "by %2.2f: %d (scratch: %d) -> %d (%d/%d)\n",
-		  1.0f * bb_freq / loop_freq, cost.cost,
-		  cost.scratch, scaled_cost, bb_freq, loop_freq);
+      int scaled_cost
+	= cost.scratch + (cost.cost - cost.scratch) * scale_factor;
 
-       cost.cost = scaled_cost;
-     }
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Scaling cost based on bb prob "
+		 "by %2.2f: %d (scratch: %d) -> %d\n",
+		 1.0f * scale_factor, cost.cost, cost.scratch, scaled_cost);
+
+      cost.cost = scaled_cost;
+    }
 
   return cost;
 }
@@ -6678,9 +6681,8 @@ try_improve_iv_set (struct ivopts_data *data,
     }
 
   iv_ca_delta_commit (data, ivs, best_delta, true);
-  gcc_assert (best_cost == iv_ca_cost (ivs));
   iv_ca_delta_free (&best_delta);
-  return true;
+  return best_cost == iv_ca_cost (ivs);
 }
 
 /* Attempts to find the optimal set of induction variables.  We do simple
@@ -6717,6 +6719,14 @@ find_optimal_iv_set_1 (struct ivopts_data *data, bool originalp)
 	}
     }
 
+  /* If the set has infinite_cost, it can't be optimal.  */
+  if (iv_ca_cost (set).infinite_cost_p ())
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Overflow to infinite cost in try_improve_iv_set.\n");
+      iv_ca_free (&set);
+    }
   return set;
 }
 
@@ -7522,6 +7532,49 @@ loop_body_includes_call (basic_block *body, unsigned num_nodes)
   return false;
 }
 
+/* Determine cost scaling factor for basic blocks in loop.  */
+#define COST_SCALING_FACTOR_BOUND (20)
+
+static void
+determine_scaling_factor (struct ivopts_data *data, basic_block *body)
+{
+  int lfreq = data->current_loop->header->count.to_frequency (cfun);
+  if (!data->speed || lfreq <= 0)
+    return;
+
+  int max_freq = lfreq;
+  for (unsigned i = 0; i < data->current_loop->num_nodes; i++)
+    {
+      body[i]->aux = (void *)(intptr_t) 1;
+      if (max_freq < body[i]->count.to_frequency (cfun))
+	max_freq = body[i]->count.to_frequency (cfun);
+    }
+  if (max_freq > lfreq)
+    {
+      int divisor, factor;
+      /* Check if scaling factor itself needs to be scaled by the bound.  This
+	 is to avoid overflow when scaling cost according to profile info.  */
+      if (max_freq / lfreq > COST_SCALING_FACTOR_BOUND)
+	{
+	  divisor = max_freq;
+	  factor = COST_SCALING_FACTOR_BOUND;
+	}
+      else
+	{
+	  divisor = lfreq;
+	  factor = 1;
+	}
+      for (unsigned i = 0; i < data->current_loop->num_nodes; i++)
+	{
+	  int bfreq = body[i]->count.to_frequency (cfun);
+	  if (bfreq <= lfreq)
+	    continue;
+
+	  body[i]->aux = (void*)(intptr_t) (factor * bfreq / divisor);
+	}
+    }
+}
+
 /* Optimizes the LOOP.  Returns true if anything changed.  */
 
 static bool
@@ -7560,7 +7613,6 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop,
   body = get_loop_body (loop);
   data->body_includes_call = loop_body_includes_call (body, loop->num_nodes);
   renumber_gimple_stmt_uids_in_blocks (body, loop->num_nodes);
-  free (body);
 
   data->loop_single_exit_p = exit != NULL && loop_only_exit_p (loop, exit);
 
@@ -7574,6 +7626,9 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop,
   if (data->vgroups.length () > MAX_CONSIDERED_GROUPS)
     goto finish;
 
+  /* Determine cost scaling factor for basic blocks in loop.  */
+  determine_scaling_factor (data, body);
+
   /* Finds candidates for the induction variables (item 2).  */
   find_iv_candidates (data);
 
@@ -7584,6 +7639,9 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop,
 
   /* Find the optimal set of induction variables (item 3, part 2).  */
   iv_ca = find_optimal_iv_set (data);
+  /* Cleanup basic block aux field.  */
+  for (unsigned i = 0; i < data->current_loop->num_nodes; i++)
+    body[i]->aux = NULL;
   if (!iv_ca)
     goto finish;
   changed = true;
@@ -7599,6 +7657,7 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop,
   remove_unused_ivs (data, toremove);
 
 finish:
+  free (body);
   free_loop_data (data);
 
   return changed;

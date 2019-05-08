@@ -1,3 +1,15 @@
+2019-05-08  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/90240
+	* tree-ssa-loop-ivopts.c (get_scaled_computation_cost_at): Scale cost
+	with respect to scaling factor pre-computed for each basic block.
+	(try_improve_iv_set): Return bool if best_cost equals to iv_ca cost.
+	(find_optimal_iv_set_1): Free iv_ca set if it has infinite_cost.
+	(COST_SCALING_FACTOR_BOUND, determine_scaling_factor): New.
+	(tree_ssa_iv_optimize_loop): Call determine_scaling_factor.  Extend
+	live range for array of loop's basic blocks.  Cleanup aux field of
+	loop's basic blocks.
+
 2019-05-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/90356
