@@ -1,3 +1,10 @@
+2019-05-08  Mihail Ionescu  <mihail.ionescu@arm.com>
+	    Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/88167
+	* gcc.target/arm/pr88167-1.c: New test.
+	* gcc.target/arm/pr88167-2.c: New test.
+
 2018-05-08  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/90078

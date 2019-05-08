@@ -1,3 +1,23 @@
+2019-05-08  Mihail Ionescu  <mihail.ionescu@arm.com>
+	    Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/88167
+	* config/arm/arm.c (thumb1_prologue_unused_call_clobbered_lo_regs): New
+	function.
+	(thumb1_epilogue_unused_call_clobbered_lo_regs): New function.
+	(thumb1_compute_save_core_reg_mask): Don't force a spare work
+	register if both the epilogue and prologue can use call-clobbered
+	regs.
+	(thumb1_unexpanded_epilogue): Use
+	thumb1_epilogue_unused_call_clobbered_lo_regs.  Reverse the logic for
+	picking temporaries for restoring high regs to match that of the
+	prologue where possible.
+	(thumb1_expand_prologue): Add any usable call-clobbered low registers to
+	the list of work registers.  Detect if the return address is still live
+	at the end of the prologue and avoid using it for a work register if so.
+	If the return address is not live, add LR to the list of pushable regs
+	after the first pass.
+
 2019-05-08  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/90078
