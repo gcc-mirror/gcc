@@ -1,3 +1,11 @@
+2019-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90356
+	* gcc.dg/tree-ssa/pr90356-1.c: New test.
+	* gcc.dg/tree-ssa/pr90356-2.c: New test.
+	* gcc.dg/tree-ssa/pr90356-3.c: New test.
+	* gcc.dg/tree-ssa/pr90356-4.c: New test.
+
 2019-05-07  Cherry Zhang  <cherryyz@google.com>
 
 	* go.dg/arrayclear.go: New test.
