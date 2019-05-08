@@ -114,7 +114,7 @@ along with GCC; see the file COPYING3.  If not see
    interface between the GIMPLE and RTL worlds.  */
 
 /* The infinite cost.  */
-#define INFTY 10000000
+#define INFTY 1000000000
 
 /* Returns the expected number of loop iterations for LOOP.
    The average trip count is computed from profile data if it
@@ -180,7 +180,7 @@ struct comp_cost
   comp_cost (): cost (0), complexity (0), scratch (0)
   {}
 
-  comp_cost (int cost, unsigned complexity, int scratch = 0)
+  comp_cost (int64_t cost, unsigned complexity, int64_t scratch = 0)
     : cost (cost), complexity (complexity), scratch (scratch)
   {}
 
@@ -220,16 +220,16 @@ struct comp_cost
   /* Returns true if COST1 is smaller or equal than COST2.  */
   friend bool operator<= (comp_cost cost1, comp_cost cost2);
 
-  int cost;		/* The runtime cost.  */
+  int64_t cost;		/* The runtime cost.  */
   unsigned complexity;  /* The estimate of the complexity of the code for
 			   the computation (in no concrete units --
 			   complexity field should be larger for more
 			   complex expressions and addressing modes).  */
-  int scratch;		/* Scratch used during cost computation.  */
+  int64_t scratch;	/* Scratch used during cost computation.  */
 };
 
 static const comp_cost no_cost;
-static const comp_cost infinite_cost (INFTY, INFTY, INFTY);
+static const comp_cost infinite_cost (INFTY, 0, INFTY);
 
 bool
 comp_cost::infinite_cost_p ()
@@ -243,6 +243,7 @@ operator+ (comp_cost cost1, comp_cost cost2)
   if (cost1.infinite_cost_p () || cost2.infinite_cost_p ())
     return infinite_cost;
 
+  gcc_assert (cost1.cost + cost2.cost < infinite_cost.cost);
   cost1.cost += cost2.cost;
   cost1.complexity += cost2.complexity;
 
@@ -256,6 +257,7 @@ operator- (comp_cost cost1, comp_cost cost2)
     return infinite_cost;
 
   gcc_assert (!cost2.infinite_cost_p ());
+  gcc_assert (cost1.cost - cost2.cost < infinite_cost.cost);
 
   cost1.cost -= cost2.cost;
   cost1.complexity -= cost2.complexity;
@@ -276,6 +278,7 @@ comp_cost::operator+= (HOST_WIDE_INT c)
   if (infinite_cost_p ())
     return *this;
 
+  gcc_assert (this->cost + c < infinite_cost.cost);
   this->cost += c;
 
   return *this;
@@ -287,6 +290,7 @@ comp_cost::operator-= (HOST_WIDE_INT c)
   if (infinite_cost_p ())
     return *this;
 
+  gcc_assert (this->cost - c < infinite_cost.cost);
   this->cost -= c;
 
   return *this;
@@ -295,6 +299,7 @@ comp_cost::operator-= (HOST_WIDE_INT c)
 comp_cost
 comp_cost::operator/= (HOST_WIDE_INT c)
 {
+  gcc_assert (c != 0);
   if (infinite_cost_p ())
     return *this;
 
@@ -309,6 +314,7 @@ comp_cost::operator*= (HOST_WIDE_INT c)
   if (infinite_cost_p ())
     return *this;
 
+  gcc_assert (this->cost * c < infinite_cost.cost);
   this->cost *= c;
 
   return *this;
@@ -638,7 +644,7 @@ struct iv_ca
   comp_cost cand_use_cost;
 
   /* Total cost of candidates.  */
-  unsigned cand_cost;
+  int64_t cand_cost;
 
   /* Number of times each invariant variable is used.  */
   unsigned *n_inv_var_uses;
@@ -4025,16 +4031,16 @@ get_computation_at (struct loop *loop, gimple *at,
    if we're optimizing for speed, amortize it over the per-iteration cost.
    If ROUND_UP_P is true, the result is round up rather than to zero when
    optimizing for speed.  */
-static unsigned
-adjust_setup_cost (struct ivopts_data *data, unsigned cost,
+static int64_t
+adjust_setup_cost (struct ivopts_data *data, int64_t cost,
 		   bool round_up_p = false)
 {
   if (cost == INFTY)
     return cost;
   else if (optimize_loop_for_speed_p (data->current_loop))
     {
-      HOST_WIDE_INT niters = avg_loop_niter (data->current_loop);
-      return ((HOST_WIDE_INT) cost + (round_up_p ? niters - 1 : 0)) / niters;
+      int64_t niters = (int64_t) avg_loop_niter (data->current_loop);
+      return (cost + (round_up_p ? niters - 1 : 0)) / niters;
     }
   else
     return cost;
@@ -4305,7 +4311,7 @@ enum ainc_type
 
 struct ainc_cost_data
 {
-  unsigned costs[AINC_NONE];
+  int64_t costs[AINC_NONE];
 };
 
 static comp_cost
@@ -4566,12 +4572,12 @@ get_scaled_computation_cost_at (ivopts_data *data, gimple *at, comp_cost cost)
       if (scale_factor == 1)
 	return cost;
 
-      int scaled_cost
+      int64_t scaled_cost
 	= cost.scratch + (cost.cost - cost.scratch) * scale_factor;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Scaling cost based on bb prob "
-		 "by %2.2f: %d (scratch: %d) -> %d\n",
+	fprintf (dump_file, "Scaling cost based on bb prob by %2.2f: "
+		 "%" PRId64 " (scratch: %" PRId64 ") -> %" PRId64 "\n",
 		 1.0f * scale_factor, cost.cost, cost.scratch, scaled_cost);
 
       cost.cost = scaled_cost;
@@ -5539,7 +5545,7 @@ determine_group_iv_costs (struct ivopts_data *data)
 		  || group->cost_map[j].cost.infinite_cost_p ())
 		continue;
 
-	      fprintf (dump_file, "  %d\t%d\t%d\t",
+	      fprintf (dump_file, "  %d\t%" PRId64 "\t%d\t",
 		       group->cost_map[j].cand->id,
 		       group->cost_map[j].cost.cost,
 		       group->cost_map[j].cost.complexity);
@@ -5569,7 +5575,7 @@ static void
 determine_iv_cost (struct ivopts_data *data, struct iv_cand *cand)
 {
   comp_cost cost_base;
-  unsigned cost, cost_step;
+  int64_t cost, cost_step;
   tree base;
 
   gcc_assert (cand->iv != NULL);
@@ -6139,11 +6145,11 @@ iv_ca_dump (struct ivopts_data *data, FILE *file, struct iv_ca *ivs)
   unsigned i;
   comp_cost cost = iv_ca_cost (ivs);
 
-  fprintf (file, "  cost: %d (complexity %d)\n", cost.cost,
+  fprintf (file, "  cost: %" PRId64 " (complexity %d)\n", cost.cost,
 	   cost.complexity);
-  fprintf (file, "  cand_cost: %d\n  cand_group_cost: %d (complexity %d)\n",
-	   ivs->cand_cost, ivs->cand_use_cost.cost,
-	   ivs->cand_use_cost.complexity);
+  fprintf (file, "  cand_cost: %" PRId64 "\n  cand_group_cost: "
+	   "%" PRId64 " (complexity %d)\n", ivs->cand_cost,
+	   ivs->cand_use_cost.cost, ivs->cand_use_cost.complexity);
   bitmap_print (file, ivs->cands, "  candidates: ","\n");
 
   for (i = 0; i < ivs->upto; i++)
@@ -6151,9 +6157,9 @@ iv_ca_dump (struct ivopts_data *data, FILE *file, struct iv_ca *ivs)
       struct iv_group *group = data->vgroups[i];
       struct cost_pair *cp = iv_ca_cand_for_group (ivs, group);
       if (cp)
-        fprintf (file, "   group:%d --> iv_cand:%d, cost=(%d,%d)\n",
-		 group->id, cp->cand->id, cp->cost.cost,
-		 cp->cost.complexity);
+        fprintf (file, "   group:%d --> iv_cand:%d, cost=("
+		 "%" PRId64 ",%d)\n", group->id, cp->cand->id,
+		 cp->cost.cost, cp->cost.complexity);
       else
 	fprintf (file, "   group:%d --> ??\n", group->id);
     }
@@ -6751,9 +6757,9 @@ find_optimal_iv_set (struct ivopts_data *data)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "Original cost %d (complexity %d)\n\n",
+      fprintf (dump_file, "Original cost %" PRId64 " (complexity %d)\n\n",
 	       origcost.cost, origcost.complexity);
-      fprintf (dump_file, "Final cost %d (complexity %d)\n\n",
+      fprintf (dump_file, "Final cost %" PRId64 " (complexity %d)\n\n",
 	       cost.cost, cost.complexity);
     }
 
