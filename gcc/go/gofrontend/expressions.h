@@ -2806,7 +2806,7 @@ class Unknown_expression : public Parser_expression
 
   void
   do_dump_expression(Ast_dump_context*) const;
-  
+
  private:
   // The unknown name.
   Named_object* named_object_;
@@ -2832,7 +2832,7 @@ class Index_expression : public Parser_expression
   // Dump an index expression, i.e. an expression of the form
   // expr[expr], expr[expr:expr], or expr[expr:expr:expr] to a dump context.
   static void
-  dump_index_expression(Ast_dump_context*, const Expression* expr, 
+  dump_index_expression(Ast_dump_context*, const Expression* expr,
                         const Expression* start, const Expression* end,
                         const Expression* cap);
 
@@ -2988,7 +2988,7 @@ class Array_index_expression : public Expression
 
   void
   do_dump_expression(Ast_dump_context*) const;
-  
+
  private:
   // The array we are getting a value from.
   Expression* array_;
@@ -3828,7 +3828,7 @@ class Map_construction_expression : public Expression
 
   void
   do_dump_expression(Ast_dump_context*) const;
-  
+
  private:
   // The type of the map to construct.
   Type* type_;
