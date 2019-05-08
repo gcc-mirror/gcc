@@ -160,6 +160,10 @@ struct copy_body_data
      when inlining a call within an OpenMP SIMD-on-SIMT loop.  */
   vec<tree> *dst_simt_vars;
 
+  /* Basic block to which clobbers for local variables from the inline
+     function that need to live in memory should be added.  */
+  basic_block eh_landing_pad_dest;
+
   /* If clobbers for local variables from the inline function
      that need to live in memory should be added to EH landing pads
      outside of the inlined function, this should be the number
