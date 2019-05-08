@@ -1,3 +1,15 @@
+2019-05-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/90277
+	* testsuite/23_containers/unordered_multiset/insert/24061-multiset.cc
+	(test01): Reserve for number of insertions to avoid rehash during test.
+	* testsuite/23_containers/unordered_multimap/insert/24061-multimap.cc
+	(test01): Likewise.
+	* testsuite/23_containers/unordered_multimap/insert/24061-multimap.cc
+	(test01): Likewise.
+	(test02): Likewise.
+	(test03): Likewise.
+
 2019-05-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/bits/fs_path.h: Improve docs.
@@ -127,7 +139,6 @@
 
 2019-05-04  François Dumont  <fdumont@gcc.gnu.org>
 
-	PR libstdc++/90277
 	* include/bits/hashtable.h (_Hashtable<>::rehash): Review comment.
 	* include/bits/hashtable_policy.h
 	(_Prime_rehash_policy::_M_bkt_for_elements): Use __builtin_ceill.
