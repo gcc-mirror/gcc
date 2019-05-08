@@ -1,5 +1,23 @@
 2019-05-08  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
+	PR tree-optimization/90078
+	* tree-ssa-loop-ivopts.c (inttypes.h): Include new header file.
+	(INFTY): Increase the value for infinite cost.
+	(struct comp_cost): Promote type of members to int64_t.
+	(infinite_cost): Don't set complexity in initialization.
+	(comp_cost::operator +,-,+=,-+,/=,*=): Assert when cost computation
+	overflows to infinite_cost.
+	(adjust_setup_cost): Promote type of parameter and cost computation
+	to int64_t.
+	(struct ainc_cost_data, struct iv_ca): Promote type of member to
+	int64_t.
+	(get_scaled_computation_cost_at, determine_iv_cost): Promote type of
+	cost computation to int64_t.
+	(determine_group_iv_costs, iv_ca_dump, find_optimal_iv_set): Use
+	int64_t's format specifier in dump.
+
+2019-05-08  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
 	PR tree-optimization/90240
 	* tree-ssa-loop-ivopts.c (get_scaled_computation_cost_at): Scale cost
 	with respect to scaling factor pre-computed for each basic block.

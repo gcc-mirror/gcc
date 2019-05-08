@@ -1,5 +1,10 @@
 2018-05-08  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
+	PR tree-optimization/90078
+	* g++.dg/tree-ssa/pr90078.C: New test.
+
+2018-05-08  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
 	PR tree-optimization/90240
 	* gfortran.dg/graphite/pr90240.f: New test.
 
