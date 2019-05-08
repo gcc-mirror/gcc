@@ -1,3 +1,8 @@
+2019-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90356
+	* match.pd ((X +/- 0.0) +/- 0.0): Optimize into X +/- 0.0 if possible.
+
 2019-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000-protos.h (rs6000_legitimize_reload_address_ptr):
