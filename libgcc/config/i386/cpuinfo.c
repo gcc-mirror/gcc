@@ -336,7 +336,7 @@ get_available_features (unsigned int ecx, unsigned int edx,
 	set_feature (FEATURE_FMA);
     }
 
-  /* Get Advanced Features at level 7 (eax = 7, ecx = 0). */
+  /* Get Advanced Features at level 7 (eax = 7, ecx = 0/1). */
   if (max_cpuid_level >= 7)
     {
       __cpuid_count (7, 0, eax, ebx, ecx, edx);
@@ -385,6 +385,10 @@ get_available_features (unsigned int ecx, unsigned int edx,
 	    set_feature (FEATURE_AVX5124VNNIW);
 	  if (edx & bit_AVX5124FMAPS)
 	    set_feature (FEATURE_AVX5124FMAPS);
+
+	  __cpuid_count (7, 1, eax, ebx, ecx, edx);
+	  if (eax & bit_AVX512BF16)
+	    set_feature (FEATURE_AVX512BF16);
 	}
     }
 

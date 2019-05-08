@@ -1920,6 +1920,7 @@ enum processor_features
   F_VPCLMULQDQ,
   F_AVX512VNNI,
   F_AVX512BITALG,
+  F_AVX512BF16,
   F_MAX
 };
 
@@ -2064,7 +2065,8 @@ static const _isa_names_table isa_names_table[] =
   {"gfni",	F_GFNI,	P_ZERO},
   {"vpclmulqdq", F_VPCLMULQDQ, P_ZERO},
   {"avx512vnni", F_AVX512VNNI, P_ZERO},
-  {"avx512bitalg", F_AVX512BITALG, P_ZERO}
+  {"avx512bitalg", F_AVX512BITALG, P_ZERO},
+  {"avx512bf16", F_AVX512BF16, P_ZERO}
 };
 
 /* This parses the attribute arguments to target in DECL and determines

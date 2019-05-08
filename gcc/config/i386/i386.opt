@@ -1101,3 +1101,8 @@ Enum(instrument_return) String(nop5) Value(instrument_return_nop5)
 mrecord-return
 Target Report Var(ix86_flag_record_return) Init(0)
 Generate a __return_loc section pointing to all return instrumentation code.
+
+mavx512bf16
+Target Report Mask(ISA_AVX512BF16) Var(ix86_isa_flags2) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and
+AVX512BF16 built-in functions and code generation.

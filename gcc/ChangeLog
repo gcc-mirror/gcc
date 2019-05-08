@@ -3,6 +3,40 @@
 	PR tree-optimization/90356
 	* match.pd ((X +/- 0.0) +/- 0.0): Optimize into X +/- 0.0 if possible.
 
+2019-05-07  Wei Xiao  <wei3.xiao@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512BF16_SET
+	OPTION_MASK_ISA_AVX512BF16_UNSET, OPTION_MASK_ISA2_AVX512BW_UNSET): New.
+	(OPTION_MASK_ISA2_AVX512F_UNSET): Add OPTION_MASK_ISA_AVX512BF16_UNSET.
+	(ix86_handle_option): Handle -mavx512bf16.
+	* config.gcc: Add avx512bf16vlintrin.h and avx512bf16intrin.h
+	to extra_headers.
+	* config/i386/avx512bf16vlintrin.h: New.
+	* config/i386/avx512bf16intrin.h: New.
+	* config/i386/cpuid.h (bit_AVX512BF16): New.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect BF16.
+	* config/i386/i386-builtin-types.def: Add new types.
+	* config/i386/i386-builtin.def: Add new builtins.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__AVX512BF16__.
+	* config/i386/i386-option.c (ix86_target_string): Add -mavx512bf16.
+	(ix86_option_override_internal): Handle BF16.
+	(ix86_valid_target_attribute_inner_p): Ditto.
+	* config/i386/i386-expand.c (ix86_expand_args_builtin): Ditto.
+	* config/i386/i386-builtin.c (enum processor_features): Add
+	F_AVX512BF16.
+	(static const _isa_names_table isa_names_table): Ditto.
+	* config/i386/i386.h (TARGET_AVX512BF16, TARGET_AVX512BF16_P): New.
+	(PTA_AVX512BF16): Ditto.
+	* config/i386/i386.opt: Add -mavx512bf16.
+	* config/i386/immintrin.h: Include avx512bf16intrin.h
+	and avx512bf16vlintrin.h.
+	* config/i386/sse.md (avx512f_cvtne2ps2bf16_<mode><mask_name>,
+	avx512f_cvtneps2bf16_<mode><mask_name>,
+	avx512f_dpbf16ps_<mode><mask_half_name>): New define_insn patterns.
+	* config/i386/subst.md (mask_half): Add new subst.
+	* doc/invoke.texi: Document -mavx512bf16.
+
 2019-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000-protos.h (rs6000_legitimize_reload_address_ptr):
