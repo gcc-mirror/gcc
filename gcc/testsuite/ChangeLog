@@ -1,3 +1,8 @@
+2019-05-07  Cherry Zhang  <cherryyz@google.com>
+
+	* go.dg/arrayclear.go: New test.
+	* go.dg/mapclear.go: New test.
+
 2019-05-07  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR target/89765

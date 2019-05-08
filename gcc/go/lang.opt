@@ -85,6 +85,10 @@ fgo-debug-escape-hash=
 Go Joined RejectNegative Var(go_debug_escape_hash) Init(0)
 -fgo-debug-escape-hash=<string>	Hash value to debug escape analysis.
 
+fgo-debug-optimization
+Go Var(go_debug_optimization) Init(0)
+Emit optimization diagnostics.
+
 o
 Go Joined Separate
 ; Documented in common.opt

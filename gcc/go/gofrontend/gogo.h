@@ -326,6 +326,16 @@ class Gogo
   set_debug_escape_hash(const std::string& s)
   { this->debug_escape_hash_ = s; }
 
+  // Return whether to output optimization diagnostics.
+  bool
+  debug_optimization() const
+  { return this->debug_optimization_; }
+
+  // Set the option to output optimization diagnostics.
+  void
+  set_debug_optimization(bool b)
+  { this->debug_optimization_ = b; }
+
   // Return the size threshold used to determine whether to issue
   // a nil-check for a given pointer dereference. A threshold of -1
   // implies that all potentially faulting dereference ops should
@@ -1075,6 +1085,9 @@ class Gogo
   // -fgo-debug-escape-hash option. The analysis is run only on
   // functions with names that hash to the matching value.
   std::string debug_escape_hash_;
+  // Whether to output optimization diagnostics, from the
+  // -fgo-debug-optimization option.
+  bool debug_optimization_;
   // Nil-check size threshhold.
   int64_t nil_check_size_threshold_;
   // A list of types to verify.
