@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "sreal.h"
 #include "tree-cfgcleanup.h"
+#include "tree-ssa-live.h"
 
 /* I'm not real happy about this, but we need to handle gimple and
    non-gimple trees.  */
@@ -2285,12 +2286,15 @@ update_ssa_across_abnormal_edges (basic_block bb, basic_block ret_bb,
 }
 
 /* Insert clobbers for automatic variables of inlined ID->src_fn
-   function at the start of basic block BB.  */
+   function at the start of basic block ID->eh_landing_pad_dest.  */
 
 static void
-add_clobbers_to_eh_landing_pad (basic_block bb, copy_body_data *id)
+add_clobbers_to_eh_landing_pad (copy_body_data *id)
 {
   tree var;
+  basic_block bb = id->eh_landing_pad_dest;
+  live_vars_map *vars = NULL;
+  unsigned int cnt = 0;
   unsigned int i;
   FOR_EACH_VEC_SAFE_ELT (id->src_cfun->local_decls, i, var)
     if (VAR_P (var)
@@ -2312,12 +2316,47 @@ add_clobbers_to_eh_landing_pad (basic_block bb, copy_body_data *id)
 	    && !is_gimple_reg (new_var)
 	    && auto_var_in_fn_p (new_var, id->dst_fn))
 	  {
+	    if (vars == NULL)
+	      vars = new live_vars_map;
+            vars->put (DECL_UID (var), cnt++);
+	  }
+      }
+  if (vars == NULL)
+    return;
+
+  vec<bitmap_head> live = compute_live_vars (id->src_cfun, vars);
+  FOR_EACH_VEC_SAFE_ELT (id->src_cfun->local_decls, i, var)
+    if (VAR_P (var))
+      {
+	edge e;
+	edge_iterator ei;
+	bool needed = false;
+	unsigned int *v = vars->get (DECL_UID (var));
+	if (v == NULL)
+	  continue;
+	FOR_EACH_EDGE (e, ei, bb->preds)
+	  if ((e->flags & EDGE_EH) != 0
+	      && e->src->index >= id->add_clobbers_to_eh_landing_pads)
+	    {
+	      basic_block src_bb = (basic_block) e->src->aux;
+
+	      if (bitmap_bit_p (&live[src_bb->index], *v))
+		{
+		  needed = true;
+		  break;
+		}
+	    }
+	if (needed)
+	  {
+	    tree new_var = *id->decl_map->get (var);
 	    gimple_stmt_iterator gsi = gsi_after_labels (bb);
 	    tree clobber = build_clobber (TREE_TYPE (new_var));
 	    gimple *clobber_stmt = gimple_build_assign (new_var, clobber);
 	    gsi_insert_before (&gsi, clobber_stmt, GSI_NEW_STMT);
 	  }
       }
+  destroy_live_vars (live);
+  delete vars;
 }
 
 /* Copy edges from BB into its copy constructed earlier, scale profile
@@ -2452,8 +2491,10 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 		  e->probability = profile_probability::never ();
 		if (e->dest->index < id->add_clobbers_to_eh_landing_pads)
 		  {
-		    add_clobbers_to_eh_landing_pad (e->dest, id);
-		    id->add_clobbers_to_eh_landing_pads = 0;
+		    if (id->eh_landing_pad_dest == NULL)
+		      id->eh_landing_pad_dest = e->dest;
+		    else
+		      gcc_assert (id->eh_landing_pad_dest == e->dest);
 		  }
 	      }
         }
@@ -2892,6 +2933,12 @@ copy_cfg_body (copy_body_data * id,
 	|| (bb->index > 0 && bitmap_bit_p (id->blocks_to_copy, bb->index)))
       need_debug_cleanup |= copy_edges_for_bb (bb, num, den, exit_block_map,
 					       abnormal_goto_dest, id);
+
+  if (id->eh_landing_pad_dest)
+    {
+      add_clobbers_to_eh_landing_pad (id);
+      id->eh_landing_pad_dest = NULL;
+    }
 
   if (new_entry)
     {

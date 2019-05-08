@@ -1,3 +1,26 @@
+2019-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/59813
+	PR tree-optimization/89060
+	* tree-ssa-live.h (live_vars_map): New typedef.
+	(compute_live_vars, live_vars_at_stmt, destroy_live_vars): Declare.
+	* tree-ssa-live.c: Include gimple-walk.h and cfganal.h.
+	(struct compute_live_vars_data): New type.
+	(compute_live_vars_visit, compute_live_vars_1, compute_live_vars,
+	live_vars_at_stmt, destroy_live_vars): New functions.
+	* tree-tailcall.c: Include tree-ssa-live.h.
+	(live_vars, live_vars_vec): New global variables.
+	(find_tail_calls): Perform variable life analysis before punting.
+	(tree_optimize_tail_calls_1): Clean up live_vars and live_vars_vec.
+	* tree-inline.h (struct copy_body_data): Add eh_landing_pad_dest
+	member.
+	* tree-inline.c (add_clobbers_to_eh_landing_pad): Remove BB argument.
+	Perform variable life analysis to select variables that really need
+	clobbers added.
+	(copy_edges_for_bb): Don't call add_clobbers_to_eh_landing_pad here,
+	instead set id->eh_landing_pad_dest and assert it is the same.
+	(copy_cfg_body): Call it here if id->eh_landing_pad_dest is non-NULL.
+
 2019-05-08  Mihail Ionescu  <mihail.ionescu@arm.com>
 	    Richard Earnshaw  <rearnsha@arm.com>
 

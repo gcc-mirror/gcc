@@ -1,3 +1,9 @@
+2019-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/59813
+	PR tree-optimization/89060
+	* gcc.dg/tree-ssa/pr89060.c: New test.
+
 2019-05-08  Mihail Ionescu  <mihail.ionescu@arm.com>
 	    Richard Earnshaw  <rearnsha@arm.com>
 
