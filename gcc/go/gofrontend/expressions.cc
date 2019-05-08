@@ -2031,6 +2031,90 @@ Expression::make_string_info(Expression* string, String_info string_info,
   return new String_info_expression(string, string_info, location);
 }
 
+// An expression that represents an string value: a struct with value pointer
+// and length fields.
+
+class String_value_expression : public Expression
+{
+ public:
+  String_value_expression(Expression* valptr, Expression* len, Location location)
+      : Expression(EXPRESSION_STRING_VALUE, location),
+        valptr_(valptr), len_(len)
+  { }
+
+ protected:
+  int
+  do_traverse(Traverse*);
+
+  Type*
+  do_type()
+  { return Type::make_string_type(); }
+
+  void
+  do_determine_type(const Type_context*)
+  { go_unreachable(); }
+
+  Expression*
+  do_copy()
+  {
+    return new String_value_expression(this->valptr_->copy(),
+                                       this->len_->copy(),
+                                       this->location());
+  }
+
+  Bexpression*
+  do_get_backend(Translate_context* context);
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
+ private:
+  // The value pointer.
+  Expression* valptr_;
+  // The length.
+  Expression* len_;
+};
+
+int
+String_value_expression::do_traverse(Traverse* traverse)
+{
+  if (Expression::traverse(&this->valptr_, traverse) == TRAVERSE_EXIT
+      || Expression::traverse(&this->len_, traverse) == TRAVERSE_EXIT)
+    return TRAVERSE_EXIT;
+  return TRAVERSE_CONTINUE;
+}
+
+Bexpression*
+String_value_expression::do_get_backend(Translate_context* context)
+{
+  std::vector<Bexpression*> vals(2);
+  vals[0] = this->valptr_->get_backend(context);
+  vals[1] = this->len_->get_backend(context);
+
+  Gogo* gogo = context->gogo();
+  Btype* btype = Type::make_string_type()->get_backend(gogo);
+  return gogo->backend()->constructor_expression(btype, vals, this->location());
+}
+
+void
+String_value_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->ostream() << "stringvalue(";
+  ast_dump_context->ostream() << "value: ";
+  this->valptr_->dump_expression(ast_dump_context);
+  ast_dump_context->ostream() << ", length: ";
+  this->len_->dump_expression(ast_dump_context);
+  ast_dump_context->ostream() << ")";
+}
+
+Expression*
+Expression::make_string_value(Expression* valptr, Expression* len,
+                              Location location)
+{
+  return new String_value_expression(valptr, len, location);
+}
+
 // Make an integer expression.
 
 class Integer_expression : public Expression
@@ -3702,9 +3786,11 @@ Type_conversion_expression::do_check_types(Gogo*)
 Expression*
 Type_conversion_expression::do_copy()
 {
-  return new Type_conversion_expression(this->type_->copy_expressions(),
-					this->expr_->copy(),
-					this->location());
+  Expression* ret = new Type_conversion_expression(this->type_->copy_expressions(),
+                                                   this->expr_->copy(),
+                                                   this->location());
+  ret->conversion_expression()->set_no_copy(this->no_copy_);
+  return ret;
 }
 
 // Get the backend representation for a type conversion.
@@ -3764,7 +3850,22 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
 
       Runtime::Function code;
       if (e->integer_type()->is_byte())
-        code = Runtime::SLICEBYTETOSTRING;
+        {
+          if (this->no_copy_)
+            {
+              if (gogo->debug_optimization())
+                go_inform(loc, "no copy string([]byte)");
+              Expression* ptr = Expression::make_slice_info(this->expr_,
+                                                            SLICE_INFO_VALUE_POINTER,
+                                                            loc);
+              Expression* len = Expression::make_slice_info(this->expr_,
+                                                            SLICE_INFO_LENGTH,
+                                                            loc);
+              Expression* str = Expression::make_string_value(ptr, len, loc);
+              return str->get_backend(context);
+            }
+          code = Runtime::SLICEBYTETOSTRING;
+        }
       else
         {
           go_assert(e->integer_type()->is_rune());
@@ -6805,6 +6906,15 @@ Expression::comparison(Translate_context* context, Type* result_type,
 
   if (left_type->is_string_type() && right_type->is_string_type())
     {
+      // Mark string([]byte) operands to reuse the backing store.
+      // String comparison does not keep the reference, so it is safe.
+      Type_conversion_expression* lce = left->conversion_expression();
+      if (lce != NULL && lce->expr()->type()->is_slice_type())
+        lce->set_no_copy(true);
+      Type_conversion_expression* rce = right->conversion_expression();
+      if (rce != NULL && rce->expr()->type()->is_slice_type())
+        rce->set_no_copy(true);
+
       if (op == OPERATOR_EQEQ || op == OPERATOR_NOTEQ)
 	{
 	  left = Runtime::make_call(Runtime::EQSTRING, location, 2,
