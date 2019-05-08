@@ -1,3 +1,7 @@
+2019-05-08  Cherry Zhang  <cherryyz@google.com>
+
+	* go.dg/cmpstring.go: New test.
+
 2019-05-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/59813

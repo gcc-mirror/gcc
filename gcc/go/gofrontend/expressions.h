@@ -102,6 +102,7 @@ class Expression
     EXPRESSION_BOOLEAN,
     EXPRESSION_STRING,
     EXPRESSION_STRING_INFO,
+    EXPRESSION_STRING_VALUE,
     EXPRESSION_INTEGER,
     EXPRESSION_FLOAT,
     EXPRESSION_COMPLEX,
@@ -247,6 +248,10 @@ class Expression
 
   static Expression*
   make_string_info(Expression* string, String_info, Location);
+
+  // Make an expression for a string value.
+  static Expression*
+  make_string_value(Expression* valptr, Expression* len, Location);
 
   // Make a character constant expression.  TYPE should be NULL for an
   // abstract type.
@@ -1668,7 +1673,8 @@ class Type_conversion_expression : public Expression
   Type_conversion_expression(Type* type, Expression* expr,
 			     Location location)
     : Expression(EXPRESSION_CONVERSION, location),
-      type_(type), expr_(expr), may_convert_function_types_(false)
+      type_(type), expr_(expr), may_convert_function_types_(false),
+      no_copy_(false)
   { }
 
   // Return the type to which we are converting.
@@ -1688,6 +1694,12 @@ class Type_conversion_expression : public Expression
   {
     this->may_convert_function_types_ = true;
   }
+
+  // Mark string([]byte) conversion to reuse the backing store
+  // without copying.
+  void
+  set_no_copy(bool b)
+  { this->no_copy_ = b; };
 
   // Import a type conversion expression.
   static Expression*
@@ -1751,6 +1763,9 @@ class Type_conversion_expression : public Expression
   // True if this is permitted to convert function types.  This is
   // used internally for method expressions.
   bool may_convert_function_types_;
+  // True if a string([]byte) conversion can reuse the backing store
+  // without copying.  Only used in string([]byte) conversion.
+  bool no_copy_;
 };
 
 // An unsafe type conversion, used to pass values to builtin functions.
