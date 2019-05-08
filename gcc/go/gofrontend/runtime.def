@@ -372,6 +372,10 @@ DEF_GO_RUNTIME(FIELDTRACK, "__go_fieldtrack", P1(POINTER), R0())
 // Unreachable code.
 DEF_GO_RUNTIME(UNREACHABLE, "__builtin_unreachable", P0(), R0())
 
+// Memmove.
+DEF_GO_RUNTIME(BUILTIN_MEMMOVE, "__builtin_memmove",
+               P3(POINTER, POINTER, UINTPTR), R0())
+
 // Remove helper macros.
 #undef ABFT6
 #undef ABFT2
