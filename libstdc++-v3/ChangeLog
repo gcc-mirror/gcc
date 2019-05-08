@@ -1,6 +1,19 @@
 2019-05-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-04-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90105
+	* include/bits/forward_list.tcc (operator==): Do not use operator!= to
+	compare elements.
+	(forward_list<T, A>::sort(Comp)): When elements are equal take the one
+	earlier in the list, so that sort is stable.
+	* testsuite/23_containers/forward_list/operations/90105.cc: New test.
+	* testsuite/23_containers/forward_list/comparable.cc: Test with
+	types that meet the minimum EqualityComparable and LessThanComparable
+	requirements. Remove irrelevant comment.
+
+	Backport from mainline
 	2019-03-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89629
