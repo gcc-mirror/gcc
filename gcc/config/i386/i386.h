@@ -193,6 +193,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_CLDEMOTE_P(x) TARGET_ISA_CLDEMOTE_P(x)
 #define TARGET_PTWRITE	TARGET_ISA_PTWRITE
 #define TARGET_PTWRITE_P(x)	TARGET_ISA_PTWRITE_P(x)
+#define TARGET_AVX512BF16	TARGET_ISA_AVX512BF16
+#define TARGET_AVX512BF16_P(x)	TARGET_ISA_AVX512BF16_P(x)
 
 #define TARGET_LP64	TARGET_ABI_64
 #define TARGET_LP64_P(x)	TARGET_ABI_64_P(x)
@@ -2355,6 +2357,7 @@ const wide_int_bitmask PTA_PCONFIG (0, HOST_WIDE_INT_1U << 7);
 const wide_int_bitmask PTA_WBNOINVD (0, HOST_WIDE_INT_1U << 8);
 const wide_int_bitmask PTA_WAITPKG (0, HOST_WIDE_INT_1U << 9);
 const wide_int_bitmask PTA_PTWRITE (0, HOST_WIDE_INT_1U << 10);
+const wide_int_bitmask PTA_AVX512BF16 (0, HOST_WIDE_INT_1U << 11);
 
 const wide_int_bitmask PTA_CORE2 = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2
   | PTA_SSE3 | PTA_SSSE3 | PTA_CX16 | PTA_FXSR;

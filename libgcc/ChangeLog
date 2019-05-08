@@ -1,3 +1,9 @@
+2019-05-07  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/cpuinfo.c (get_available_features): Detect BF16.
+	* config/i386/cpuinfo.h (enum processor_features): Add
+	FEATURE_AVX512BF16.
+
 2019-04-23  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
 	    Jakub Jelinek  <jakub@redhat.com>

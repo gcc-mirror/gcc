@@ -12,6 +12,23 @@
 	* gcc.dg/tree-ssa/pr90356-3.c: New test.
 	* gcc.dg/tree-ssa/pr90356-4.c: New test.
 
+2019-05-07  Wei Xiao  <wei3.xiao@intel.com>
+
+	* gcc.target/i386/avx512bf16-vcvtne2ps2bf16-1.c: New test.
+	* gcc.target/i386/avx512bf16-vcvtneps2bf16-1.c: New test.
+	* gcc.target/i386/avx512bf16-vdpbf16ps-1.c: New test.
+	* gcc.target/i386/avx512bf16vl-vcvtne2ps2bf16-1.c: New test.
+	* gcc.target/i386/avx512bf16vl-vcvtneps2bf16-1.c: New test.
+	* gcc.target/i386/avx512bf16vl-vdpbf16ps-1.c: New test.
+	* gcc.target/i386/builtin_target.c: Handle avx512bf16.
+	* gcc.target/i386/sse-12.c: Add -mavx512bf16.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+
 2019-05-07  Cherry Zhang  <cherryyz@google.com>
 
 	* go.dg/arrayclear.go: New test.
