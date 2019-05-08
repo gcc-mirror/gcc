@@ -1141,6 +1141,7 @@ enum reg_class
   VRSAVE_REGS,
   VSCR_REGS,
   GEN_OR_FLOAT_REGS,
+  GEN_OR_VSX_REGS,
   LINK_REGS,
   CTR_REGS,
   LINK_OR_CTR_REGS,
@@ -1169,6 +1170,7 @@ enum reg_class
   "VRSAVE_REGS",							\
   "VSCR_REGS",								\
   "GEN_OR_FLOAT_REGS",							\
+  "GEN_OR_VSX_REGS",							\
   "LINK_REGS",								\
   "CTR_REGS",								\
   "LINK_OR_CTR_REGS",							\
@@ -1205,6 +1207,8 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000000, 0x00002000 },			\
   /* GEN_OR_FLOAT_REGS.  */						\
   { 0xffffffff, 0xffffffff, 0x00000000, 0x00004008 },			\
+  /* GEN_OR_VSX_REGS.  */						\
+  { 0xffffffff, 0xffffffff, 0xffffffff, 0x00004008 },			\
   /* LINK_REGS.  */							\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000001 },			\
   /* CTR_REGS.  */							\

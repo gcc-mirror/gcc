@@ -1729,6 +1729,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #define TARGET_REGISTER_MOVE_COST rs6000_register_move_cost
 #undef TARGET_MEMORY_MOVE_COST
 #define TARGET_MEMORY_MOVE_COST rs6000_memory_move_cost
+#undef TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS
+#define TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS \
+  rs6000_ira_change_pseudo_allocno_class
 #undef TARGET_CANNOT_COPY_INSN_P
 #define TARGET_CANNOT_COPY_INSN_P rs6000_cannot_copy_insn_p
 #undef TARGET_RTX_COSTS
@@ -34648,22 +34651,54 @@ rs6000_register_move_cost (machine_mode mode,
 			   reg_class_t from, reg_class_t to)
 {
   int ret;
+  reg_class_t rclass;
 
   if (TARGET_DEBUG_COST)
     dbg_cost_ctrl++;
 
-  /*  Moves from/to GENERAL_REGS.  */
-  if (reg_classes_intersect_p (to, GENERAL_REGS)
-      || reg_classes_intersect_p (from, GENERAL_REGS))
+  /* If we have VSX, we can easily move between FPR or Altivec registers,
+     otherwise we can only easily move within classes.
+     Do this first so we give best-case answers for union classes
+     containing both gprs and vsx regs.  */
+  HARD_REG_SET to_vsx, from_vsx;
+  COPY_HARD_REG_SET (to_vsx, reg_class_contents[to]);
+  AND_HARD_REG_SET (to_vsx, reg_class_contents[VSX_REGS]);
+  COPY_HARD_REG_SET (from_vsx, reg_class_contents[from]);
+  AND_HARD_REG_SET (from_vsx, reg_class_contents[VSX_REGS]);
+  if (!hard_reg_set_empty_p (to_vsx)
+      && !hard_reg_set_empty_p (from_vsx)
+      && (TARGET_VSX
+	  || hard_reg_set_intersect_p (to_vsx, from_vsx)))
     {
-      reg_class_t rclass = from;
+      int reg = FIRST_FPR_REGNO;
+      if (TARGET_VSX
+	  || (TEST_HARD_REG_BIT (to_vsx, FIRST_ALTIVEC_REGNO)
+	      && TEST_HARD_REG_BIT (from_vsx, FIRST_ALTIVEC_REGNO)))
+	reg = FIRST_ALTIVEC_REGNO;
+      ret = 2 * hard_regno_nregs (reg, mode);
+    }
 
-      if (! reg_classes_intersect_p (to, GENERAL_REGS))
-	rclass = to;
-
+  /*  Moves from/to GENERAL_REGS.  */
+  else if ((rclass = from, reg_classes_intersect_p (to, GENERAL_REGS))
+	   || (rclass = to, reg_classes_intersect_p (from, GENERAL_REGS)))
+    {
       if (rclass == FLOAT_REGS || rclass == ALTIVEC_REGS || rclass == VSX_REGS)
-	ret = (rs6000_memory_move_cost (mode, rclass, false)
-	       + rs6000_memory_move_cost (mode, GENERAL_REGS, false));
+	{
+	  if (TARGET_DIRECT_MOVE)
+	    {
+	      if (rs6000_tune == PROCESSOR_POWER9)
+		ret = 2 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
+	      else
+		ret = 4 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
+	      /* SFmode requires a conversion when moving between gprs
+		 and vsx.  */
+	      if (mode == SFmode)
+		ret += 2;
+	    }
+	  else
+	    ret = (rs6000_memory_move_cost (mode, rclass, false)
+		   + rs6000_memory_move_cost (mode, GENERAL_REGS, false));
+	}
 
       /* It's more expensive to move CR_REGS than CR0_REGS because of the
 	 shift.  */
@@ -34676,23 +34711,13 @@ rs6000_register_move_cost (machine_mode mode,
 		|| rs6000_tune == PROCESSOR_POWER7
 		|| rs6000_tune == PROCESSOR_POWER8
 		|| rs6000_tune == PROCESSOR_POWER9)
-	       && reg_classes_intersect_p (rclass, LINK_OR_CTR_REGS))
-        ret = 6 * hard_regno_nregs (0, mode);
+	       && reg_class_subset_p (rclass, SPECIAL_REGS))
+        ret = 6 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
 
       else
 	/* A move will cost one instruction per GPR moved.  */
-	ret = 2 * hard_regno_nregs (0, mode);
+	ret = 2 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
     }
-
-  /* If we have VSX, we can easily move between FPR or Altivec registers.  */
-  else if (VECTOR_MEM_VSX_P (mode)
-	   && reg_classes_intersect_p (to, VSX_REGS)
-	   && reg_classes_intersect_p (from, VSX_REGS))
-    ret = 2 * hard_regno_nregs (FIRST_FPR_REGNO, mode);
-
-  /* Moving between two similar registers is just one instruction.  */
-  else if (reg_classes_intersect_p (to, from))
-    ret = (FLOAT128_2REG_P (mode)) ? 4 : 2;
 
   /* Everything else has to go through GENERAL_REGS.  */
   else
@@ -34744,6 +34769,64 @@ rs6000_memory_move_cost (machine_mode mode, reg_class_t rclass,
     }
 
   return ret;
+}
+
+/* Implement TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS.
+
+   The register allocator chooses GEN_OR_VSX_REGS for the allocno
+   class if GENERAL_REGS and VSX_REGS cost is lower than the memory
+   cost.  This happens a lot when TARGET_DIRECT_MOVE makes the register
+   move cost between GENERAL_REGS and VSX_REGS low.
+
+   It might seem reasonable to use a union class.  After all, if usage
+   of vsr is low and gpr high, it might make sense to spill gpr to vsr
+   rather than memory.  However, in cases where register pressure of
+   both is high, like the cactus_adm spec test, allowing
+   GEN_OR_VSX_REGS as the allocno class results in bad decisions in
+   the first scheduling pass.  This is partly due to an allocno of
+   GEN_OR_VSX_REGS wrongly contributing to the GENERAL_REGS pressure
+   class, which gives too high a pressure for GENERAL_REGS and too low
+   for VSX_REGS.  So, force a choice of the subclass here.
+
+   The best class is also the union if GENERAL_REGS and VSX_REGS have
+   the same cost.  In that case we do use GEN_OR_VSX_REGS as the
+   allocno class, since trying to narrow down the class by regno mode
+   is prone to error.  For example, SImode is allowed in VSX regs and
+   in some cases (eg. gcc.target/powerpc/p9-xxbr-3.c do_bswap32_vect)
+   it would be wrong to choose an allocno of GENERAL_REGS based on
+   SImode.  */
+
+static reg_class_t
+rs6000_ira_change_pseudo_allocno_class (int regno ATTRIBUTE_UNUSED,
+					reg_class_t allocno_class,
+					reg_class_t best_class)
+{
+  switch (allocno_class)
+    {
+    case GEN_OR_VSX_REGS:
+      /* best_class must be a subset of allocno_class.  */
+      gcc_checking_assert (best_class == GEN_OR_VSX_REGS
+			   || best_class == GEN_OR_FLOAT_REGS
+			   || best_class == VSX_REGS
+			   || best_class == ALTIVEC_REGS
+			   || best_class == FLOAT_REGS
+			   || best_class == GENERAL_REGS
+			   || best_class == BASE_REGS);
+      /* Use best_class but choose wider classes when copying from the
+	 wider class to best_class is cheap.  This mimics IRA choice
+	 of allocno class.  */
+      if (best_class == BASE_REGS)
+	return GENERAL_REGS;
+      if (TARGET_VSX
+	  && (best_class == FLOAT_REGS || best_class == ALTIVEC_REGS))
+	return VSX_REGS;
+      return best_class;
+
+    default:
+      break;
+    }
+
+  return allocno_class;
 }
 
 /* Returns a code for a target-specific builtin that implements
