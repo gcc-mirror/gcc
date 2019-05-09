@@ -1,3 +1,10 @@
+2019-05-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/89221
+	* configure.ac (--enable-frame-pointer): Disable by default for
+	GNU systems.
+	* configure: Regenerate.
+
 2019-05-09  Alan Modra  <amodra@gmail.com>
 
 	PR target/89271
