@@ -7638,6 +7638,41 @@ legitimize_pic_address (rtx orig, machine_mode mode, rtx reg, rtx pic_reg,
 }
 
 
+/* Whether a register is callee saved or not.  This is necessary because high
+   registers are marked as caller saved when optimizing for size on Thumb-1
+   targets despite being callee saved in order to avoid using them.  */
+#define callee_saved_reg_p(reg) \
+  (!call_used_regs[reg] \
+   || (TARGET_THUMB1 && optimize_size \
+       && reg >= FIRST_HI_REGNUM && reg <= LAST_HI_REGNUM))
+
+/* Return a mask for the call-clobbered low registers that are unused
+   at the end of the prologue.  */
+static unsigned long
+thumb1_prologue_unused_call_clobbered_lo_regs (void)
+{
+  unsigned long mask = 0;
+  bitmap prologue_live_out = df_get_live_out (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+
+  for (int reg = FIRST_LO_REGNUM; reg <= LAST_LO_REGNUM; reg++)
+    if (!callee_saved_reg_p (reg) && !REGNO_REG_SET_P (prologue_live_out, reg))
+      mask |= 1 << (reg - FIRST_LO_REGNUM);
+  return mask;
+}
+
+/* Similarly for the start of the epilogue.  */
+static unsigned long
+thumb1_epilogue_unused_call_clobbered_lo_regs (void)
+{
+  unsigned long mask = 0;
+  bitmap epilogue_live_in = df_get_live_in (EXIT_BLOCK_PTR_FOR_FN (cfun));
+
+  for (int reg = FIRST_LO_REGNUM; reg <= LAST_LO_REGNUM; reg++)
+    if (!callee_saved_reg_p (reg) && !REGNO_REG_SET_P (epilogue_live_in, reg))
+      mask |= 1 << (reg - FIRST_LO_REGNUM);
+  return mask;
+}
+
 /* Find a spare register to use during the prolog of a function.  */
 
 static int
@@ -7645,44 +7680,15 @@ thumb_find_work_register (unsigned long pushed_regs_mask)
 {
   int reg;
 
+  unsigned long unused_regs
+    = thumb1_prologue_unused_call_clobbered_lo_regs ();
+
   /* Check the argument registers first as these are call-used.  The
      register allocation order means that sometimes r3 might be used
      but earlier argument registers might not, so check them all.  */
-  for (reg = LAST_ARG_REGNUM; reg >= 0; reg --)
-    if (!df_regs_ever_live_p (reg))
+  for (reg = LAST_LO_REGNUM; reg >= FIRST_LO_REGNUM; reg--)
+    if (unused_regs & (1 << (reg - FIRST_LO_REGNUM)))
       return reg;
-
-  /* Before going on to check the call-saved registers we can try a couple
-     more ways of deducing that r3 is available.  The first is when we are
-     pushing anonymous arguments onto the stack and we have less than 4
-     registers worth of fixed arguments(*).  In this case r3 will be part of
-     the variable argument list and so we can be sure that it will be
-     pushed right at the start of the function.  Hence it will be available
-     for the rest of the prologue.
-     (*): ie crtl->args.pretend_args_size is greater than 0.  */
-  if (cfun->machine->uses_anonymous_args
-      && crtl->args.pretend_args_size > 0)
-    return LAST_ARG_REGNUM;
-
-  /* The other case is when we have fixed arguments but less than 4 registers
-     worth.  In this case r3 might be used in the body of the function, but
-     it is not being used to convey an argument into the function.  In theory
-     we could just check crtl->args.size to see how many bytes are
-     being passed in argument registers, but it seems that it is unreliable.
-     Sometimes it will have the value 0 when in fact arguments are being
-     passed.  (See testcase execute/20021111-1.c for an example).  So we also
-     check the args_info.nregs field as well.  The problem with this field is
-     that it makes no allowances for arguments that are passed to the
-     function but which are not used.  Hence we could miss an opportunity
-     when a function has an unused argument in r3.  But it is better to be
-     safe than to be sorry.  */
-  if (! cfun->machine->uses_anonymous_args
-      && crtl->args.size >= 0
-      && crtl->args.size <= (LAST_ARG_REGNUM * UNITS_PER_WORD)
-      && (TARGET_AAPCS_BASED
-	  ? crtl->args.info.aapcs_ncrn < 4
-	  : crtl->args.info.nregs < 4))
-    return LAST_ARG_REGNUM;
 
   /* Otherwise look for a call-saved register that is going to be pushed.  */
   for (reg = LAST_LO_REGNUM; reg > LAST_ARG_REGNUM; reg --)
@@ -19441,13 +19447,6 @@ output_ascii_pseudo_op (FILE *stream, const unsigned char *p, int len)
   fputs ("\"\n", stream);
 }
 
-/* Whether a register is callee saved or not.  This is necessary because high
-   registers are marked as caller saved when optimizing for size on Thumb-1
-   targets despite being callee saved in order to avoid using them.  */
-#define callee_saved_reg_p(reg) \
-  (!call_used_regs[reg] \
-   || (TARGET_THUMB1 && optimize_size \
-       && reg >= FIRST_HI_REGNUM && reg <= LAST_HI_REGNUM))
 
 /* Compute the register save mask for registers 0 through 12
    inclusive.  This code is used by arm_compute_save_core_reg_mask ().  */
@@ -19668,35 +19667,6 @@ arm_compute_save_core_reg_mask (void)
     }
 
   return save_reg_mask;
-}
-
-/* Return a mask for the call-clobbered low registers that are unused
-   at the end of the prologue.  */
-static unsigned long
-thumb1_prologue_unused_call_clobbered_lo_regs (void)
-{
-  unsigned long mask = 0;
-
-  for (int reg = 0; reg <= LAST_LO_REGNUM; reg++)
-    if (!callee_saved_reg_p (reg)
-	&& !REGNO_REG_SET_P (df_get_live_out (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
-			     reg))
-      mask |= 1 << reg;
-  return mask;
-}
-
-/* Similarly for the start of the epilogue.  */
-static unsigned long
-thumb1_epilogue_unused_call_clobbered_lo_regs (void)
-{
-  unsigned long mask = 0;
-
-  for (int reg = 0; reg <= LAST_LO_REGNUM; reg++)
-    if (!callee_saved_reg_p (reg)
-	&& !REGNO_REG_SET_P (df_get_live_in (EXIT_BLOCK_PTR_FOR_FN (cfun)),
-			     reg))
-      mask |= 1 << reg;
-  return mask;
 }
 
 /* Compute a bit mask of which core registers need to be

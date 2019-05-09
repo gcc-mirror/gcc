@@ -1,3 +1,15 @@
+2019-05-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/90405
+	* config/arm/arm.c (callee_saved_reg_p): Move before
+	thumb_find_work_register.
+	(thumb1_prologue_unused_call_clobbered_lo_regs): Move before
+	thumb_find_work_register.  Only call df_get_live_out once.
+	(thumb1_epilogue_unused_call_clobbered_lo_regs): Likewise.
+	(thumb_find_work_register): Use
+	thumb1_prologue_unused_call_clobbered_lo_regs instead of ad hoc
+	algorithms to locate a spare call clobbered reg.
+
 2019-05-09  Martin Liska  <mliska@suse.cz>
 
 	* gimple-pretty-print.c (dump_binary_rhs): Dump MIN_EXPR
