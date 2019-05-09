@@ -1,0 +1,131 @@
+@c Copyright (C) 2018-2019 Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+
+@ignore
+@c man begin COPYRIGHT
+Copyright @copyright{} 2017-2018 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being ``GNU General Public License'' and ``Funding
+Free Software'', the Front-Cover texts being (a) (see below), and with
+the Back-Cover Texts being (b) (see below).  A copy of the license is
+included in the gfdl(7) man page.
+
+(a) The FSF's Front-Cover Text is:
+
+     A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+     You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development.
+@c man end
+@c Set file name and title for the man page.
+@setfilename lto-dump
+@settitle Tool for dumping LTO object files.
+@end ignore
+
+@node lto-dump
+@chapter @command{lto-dump}---Tool for dumping LTO object files.
+
+@menu
+* lto-dump Intro::             Introduction to lto-dump.
+* Invoking lto-dump::          How to use lto-dump.
+@end menu
+
+@node lto-dump Intro
+@section Introduction to @command{lto-dump}
+@c man begin DESCRIPTION
+
+@command{lto-dump} is a tool you can use in conjunction with GCC to
+dump link time optimization object files.
+
+@c man end
+
+@node Invoking lto-dump
+@section Invoking @command{lto-dump}
+
+@smallexample
+Usage: lto-dump @r{[}@var{OPTION}@r{]} ... @var{objfiles}
+@end smallexample
+
+@command{lto-dump} accepts the following options:
+
+@ignore
+@c man begin SYNOPSIS
+lto-dump [@option{-list}]
+     [@option{-demangle}]
+     [@option{-defined-only}]
+     [@option{-print-value}]
+     [@option{-name-sort}]
+     [@option{-size-sort}]
+     [@option{-reverse-sort}]
+     [@option{-no-sort}]
+     [@option{-symbol=}]
+     [@option{-objects}]
+     [@option{-type-stats}]
+     [@option{-tree-stats}]
+     [@option{-gimple-stats}]
+     [@option{-dump-level=}]
+     [@option{-dump-body=}]
+     [@option{-help}] @var{lto-dump}
+@c man end
+@end ignore
+
+@c man begin OPTIONS
+@table @gcctabopt
+@item -list
+Dumps list of details of functions and variables.
+
+@item -demangle
+Dump the demangled output.
+
+@item -defined-only
+Dump only the defined symbols.
+
+@item -print-value
+Dump initial values of the variables.
+
+@item -name-sort
+Sort the symbols alphabetically.
+
+@item -size-sort
+Sort the symbols according to size.
+
+@item -reverse-sort
+Dump the symbols in reverse order.
+
+@item -no-sort
+Dump the symbols in order of occurrence.
+
+@item -symbol=
+Dump the details of specific symbol.
+
+@item -objects
+Dump the details of LTO objects.
+
+@item -type-stats
+Dump the statistics of tree types.
+
+@item -tree-stats
+Dump the statistics of trees.
+
+@item -gimple-stats
+Dump the statistics of gimple statements.
+
+@item -dump-level=
+For deciding the optimization level of body.
+
+@item -dump-body=
+Dump the specific gimple body.
+
+@item -help
+Display the dump tool help.
+
+@end table
+
+@c man end

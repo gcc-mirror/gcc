@@ -24,129 +24,184 @@ along with this program; see the file COPYING3.  If not see
 #include "system.h"
 #include "mkdeps.h"
 
+/* Not set up to just include std::vector et al, here's a simple
+   implementation.  */
+
 /* Keep this structure local to this file, so clients don't find it
    easy to start making assumptions.  */
-struct deps
+struct mkdeps
 {
-  const char **targetv;
-  unsigned int ntargets;	/* number of slots actually occupied */
-  unsigned int targets_size;	/* amt of allocated space - in words */
+public:
+  /* T has trivial cctor & dtor.  */
+  template <typename T>
+  class vec
+  {
+  private:
+    T *ary;
+    unsigned num;
+    unsigned alloc;
 
-  const char **depv;
-  unsigned int ndeps;
-  unsigned int deps_size;
+  public:
+    vec ()
+      : ary (NULL), num (0), alloc (0)
+      {}
+    ~vec ()
+      {
+	XDELETEVEC (ary);
+      }
 
-  const char **vpathv;
-  size_t *vpathlv;
-  unsigned int nvpaths;
-  unsigned int vpaths_size;
+  public:
+    unsigned size () const
+    {
+      return num;
+    }
+    const T &operator[] (unsigned ix) const
+    {
+      return ary[ix];
+    }
+    void push (const T &elt)
+    {
+      if (num == alloc)
+	{
+	  alloc = alloc ? alloc * 2 : 16;
+	  ary = XRESIZEVEC (T, ary, alloc);
+	}
+      ary[num++] = elt;
+    }
+  };
+  struct velt
+  {
+    const char *str;
+    size_t len;
+  };
+
+  mkdeps ()
+    : quote_lwm (0)
+  {
+  }
+  ~mkdeps ()
+  {
+    unsigned int i;
+
+    for (i = targets.size (); i--;)
+      free (const_cast <char *> (targets[i]));
+    for (i = deps.size (); i--;)
+      free (const_cast <char *> (deps[i]));
+    for (i = vpath.size (); i--;)
+      XDELETEVEC (vpath[i].str);
+  }
+
+public:
+  vec<const char *> targets;
+  vec<const char *> deps;
+  vec<velt> vpath;
+
+public:
+  unsigned short quote_lwm;
 };
 
-static const char *munge (const char *);
-
-/* Given a filename, quote characters in that filename which are
-   significant to Make.  Note that it's not possible to quote all such
-   characters - e.g. \n, %, *, ?, [, \ (in some contexts), and ~ are
-   not properly handled.  It isn't possible to get this right in any
-   current version of Make.  (??? Still true?  Old comment referred to
-   3.76.1.)  */
+/* Apply Make quoting to STR, TRAIL etc.  Note that it's not possible
+   to quote all such characters - e.g. \n, %, *, ?, [, \ (in some
+   contexts), and ~ are not properly handled.  It isn't possible to
+   get this right in any current version of Make.  (??? Still true?
+   Old comment referred to 3.76.1.)  */
 
 static const char *
-munge (const char *filename)
+munge (const char *str, const char *trail = NULL, ...)
 {
-  int len;
-  const char *p, *q;
-  char *dst, *buffer;
+  static unsigned alloc;
+  static char *buf;
+  unsigned dst = 0;
+  va_list args;
+  if (trail)
+    va_start (args, trail);
 
-  for (p = filename, len = 0; *p; p++, len++)
+  for (bool first = true; str; first = false)
     {
-      switch (*p)
+      unsigned slashes = 0;
+      char c;
+      for (const char *probe = str; (c = *probe++);)
 	{
-	case ' ':
-	case '\t':
-	  /* GNU make uses a weird quoting scheme for white space.
-	     A space or tab preceded by 2N+1 backslashes represents
-	     N backslashes followed by space; a space or tab
-	     preceded by 2N backslashes represents N backslashes at
-	     the end of a file name; and backslashes in other
-	     contexts should not be doubled.  */
-	  for (q = p - 1; filename <= q && *q == '\\';  q--)
-	    len++;
-	  len++;
-	  break;
+	  if (alloc < dst + 4 + slashes)
+	    {
+	      alloc = alloc * 2 + 32;
+	      buf = XRESIZEVEC (char, buf, alloc);
+	    }
 
-	case '$':
-	  /* '$' is quoted by doubling it.  */
-	  len++;
-	  break;
+	  switch (c)
+	    {
+	    case '\\':
+	      slashes++;
+	      break;
 
-	case '#':
-	  /* '#' is quoted with a backslash.  */
-	  len++;
-	  break;
+	    case '$':
+	      buf[dst++] = '$';
+	      goto def;
+
+	    case ' ':
+	    case '\t':
+	      /* GNU make uses a weird quoting scheme for white space.
+		 A space or tab preceded by 2N+1 backslashes
+		 represents N backslashes followed by space; a space
+		 or tab preceded by 2N backslashes represents N
+		 backslashes at the end of a file name; and
+		 backslashes in other contexts should not be
+		 doubled.  */
+	      while (slashes--)
+		buf[dst++] = '\\';
+	      /* FALLTHROUGH  */
+
+	    case '#':
+	    case ':':
+	      buf[dst++] = '\\';
+	      /* FALLTHROUGH  */
+
+	    default:
+	    def:
+	      slashes = 0;
+	      break;
+	    }
+
+	  buf[dst++] = c;
 	}
+
+      if (first)
+	str = trail;
+      else
+	str = va_arg (args, const char *);
     }
+  if (trail)
+    va_end (args);
 
-  /* Now we know how big to make the buffer.  */
-  buffer = XNEWVEC (char, len + 1);
-
-  for (p = filename, dst = buffer; *p; p++, dst++)
-    {
-      switch (*p)
-	{
-	case ' ':
-	case '\t':
-	  for (q = p - 1; filename <= q && *q == '\\';  q--)
-	    *dst++ = '\\';
-	  *dst++ = '\\';
-	  break;
-
-	case '$':
-	  *dst++ = '$';
-	  break;
-
-	case '#':
-	  *dst++ = '\\';
-	  break;
-
-	default:
-	  /* nothing */;
-	}
-      *dst = *p;
-    }
-
-  *dst = '\0';
-  return buffer;
+  buf[dst] = 0;
+  return buf;
 }
 
 /* If T begins with any of the partial pathnames listed in d->vpathv,
    then advance T to point beyond that pathname.  */
 static const char *
-apply_vpath (struct deps *d, const char *t)
+apply_vpath (struct mkdeps *d, const char *t)
 {
-  if (d->vpathv)
-    {
-      unsigned int i;
-      for (i = 0; i < d->nvpaths; i++)
-	{
-	  if (!filename_ncmp (d->vpathv[i], t, d->vpathlv[i]))
-	    {
-	      const char *p = t + d->vpathlv[i];
-	      if (!IS_DIR_SEPARATOR (*p))
-		goto not_this_one;
+  if (unsigned len = d->vpath.size ())
+    for (unsigned i = len; i--;)
+      {
+	if (!filename_ncmp (d->vpath[i].str, t, d->vpath[i].len))
+	  {
+	    const char *p = t + d->vpath[i].len;
+	    if (!IS_DIR_SEPARATOR (*p))
+	      goto not_this_one;
 
-	      /* Do not simplify $(vpath)/../whatever.  ??? Might not
-		 be necessary. */
-	      if (p[1] == '.' && p[2] == '.' && IS_DIR_SEPARATOR (p[3]))
-		goto not_this_one;
+	    /* Do not simplify $(vpath)/../whatever.  ??? Might not
+	       be necessary. */
+	    if (p[1] == '.' && p[2] == '.' && IS_DIR_SEPARATOR (p[3]))
+	      goto not_this_one;
 
-	      /* found a match */
-	      t = t + d->vpathlv[i] + 1;
-	      break;
-	    }
-	not_this_one:;
-	}
-    }
+	    /* found a match */
+	    t = t + d->vpath[i].len + 1;
+	    break;
+	  }
+      not_this_one:;
+      }
 
   /* Remove leading ./ in any case.  */
   while (t[0] == '.' && IS_DIR_SEPARATOR (t[1]))
@@ -163,70 +218,41 @@ apply_vpath (struct deps *d, const char *t)
 
 /* Public routines.  */
 
-struct deps *
+struct mkdeps *
 deps_init (void)
 {
-  return XCNEW (struct deps);
+  return new mkdeps ();
 }
 
 void
-deps_free (struct deps *d)
+deps_free (struct mkdeps *d)
 {
-  unsigned int i;
-
-  if (d->targetv)
-    {
-      for (i = 0; i < d->ntargets; i++)
-	free ((void *) d->targetv[i]);
-      free (d->targetv);
-    }
-
-  if (d->depv)
-    {
-      for (i = 0; i < d->ndeps; i++)
-	free ((void *) d->depv[i]);
-      free (d->depv);
-    }
-
-  if (d->vpathv)
-    {
-      for (i = 0; i < d->nvpaths; i++)
-	free ((void *) d->vpathv[i]);
-      free (d->vpathv);
-      free (d->vpathlv);
-    }
-
-  free (d);
+  delete d;
 }
 
 /* Adds a target T.  We make a copy, so it need not be a permanent
    string.  QUOTE is true if the string should be quoted.  */
 void
-deps_add_target (struct deps *d, const char *t, int quote)
+deps_add_target (struct mkdeps *d, const char *t, int quote)
 {
-  if (d->ntargets == d->targets_size)
+  t = apply_vpath (d, t);
+  if (!quote)
     {
-      d->targets_size = d->targets_size * 2 + 4;
-      d->targetv = XRESIZEVEC (const char *, d->targetv, d->targets_size);
+      gcc_assert (d->quote_lwm == d->targets.size ());
+      d->quote_lwm++;
     }
 
-  t = apply_vpath (d, t);
-  if (quote)
-    t = munge (t);  /* Also makes permanent copy.  */
-  else
-    t = xstrdup (t);
-
-  d->targetv[d->ntargets++] = t;
+  d->targets.push (xstrdup (t));
 }
 
 /* Sets the default target if none has been given already.  An empty
    string as the default target in interpreted as stdin.  The string
    is quoted for MAKE.  */
 void
-deps_add_default_target (struct deps *d, const char *tgt)
+deps_add_default_target (struct mkdeps *d, const char *tgt)
 {
   /* Only if we have no targets.  */
-  if (d->ntargets)
+  if (d->targets.size ())
     return;
 
   if (tgt[0] == '\0')
@@ -253,110 +279,108 @@ deps_add_default_target (struct deps *d, const char *tgt)
 }
 
 void
-deps_add_dep (struct deps *d, const char *t)
+deps_add_dep (struct mkdeps *d, const char *t)
 {
-  t = munge (apply_vpath (d, t));  /* Also makes permanent copy.  */
+  gcc_assert (*t);
 
-  if (d->ndeps == d->deps_size)
-    {
-      d->deps_size = d->deps_size * 2 + 8;
-      d->depv = XRESIZEVEC (const char *, d->depv, d->deps_size);
-    }
-  d->depv[d->ndeps++] = t;
+  t = apply_vpath (d, t);
+
+  d->deps.push (xstrdup (t));
 }
 
 void
-deps_add_vpath (struct deps *d, const char *vpath)
+deps_add_vpath (struct mkdeps *d, const char *vpath)
 {
   const char *elem, *p;
-  char *copy;
-  size_t len;
 
   for (elem = vpath; *elem; elem = p)
     {
-      for (p = elem; *p && *p != ':'; p++);
-      len = p - elem;
-      copy = XNEWVEC (char, len + 1);
-      memcpy (copy, elem, len);
-      copy[len] = '\0';
+      for (p = elem; *p && *p != ':'; p++)
+	continue;
+      mkdeps::velt elt;
+      elt.len = p - elem;
+      char *str = XNEWVEC (char, elt.len + 1);
+      elt.str = str;
+      memcpy (str, elem, elt.len);
+      str[elt.len] = '\0';
       if (*p == ':')
 	p++;
 
-      if (d->nvpaths == d->vpaths_size)
-	{
-	  d->vpaths_size = d->vpaths_size * 2 + 8;
-	  d->vpathv = XRESIZEVEC (const char *, d->vpathv, d->vpaths_size);
-	  d->vpathlv = XRESIZEVEC (size_t, d->vpathlv, d->vpaths_size);
-	}
-      d->vpathv[d->nvpaths] = copy;
-      d->vpathlv[d->nvpaths] = len;
-      d->nvpaths++;
+      d->vpath.push (elt);
     }
 }
 
-void
-deps_write (const struct deps *d, FILE *fp, unsigned int colmax)
-{
-  unsigned int size, i, column;
+/* Write NAME, with a leading space to FP, a Makefile.  Advance COL as
+   appropriate, wrap at COLMAX, returning new column number.  Iff
+   QUOTE apply quoting.  Append TRAIL.  */
 
-  column = 0;
+static unsigned
+make_write_name (const char *name, FILE *fp, unsigned col, unsigned colmax,
+		 bool quote = true, const char *trail = NULL)
+{
+  if (quote)
+    name = munge (name, trail, NULL);
+  unsigned size = strlen (name);
+
+  if (col)
+    {
+      if (colmax && col + size> colmax)
+	{
+	  fputs (" \\\n", fp);
+	  col = 0;
+	}
+      col++;
+      fputs (" ", fp);
+    }
+
+  col += size;
+  fputs (name, fp);
+
+  return col;
+}
+
+/* Write all the names in VEC via make_write_name.  */
+
+static unsigned
+make_write_vec (const mkdeps::vec<const char *> &vec, FILE *fp,
+		unsigned col, unsigned colmax, unsigned quote_lwm = 0,
+		const char *trail = NULL)
+{
+  for (unsigned ix = 0; ix != vec.size (); ix++)
+    col = make_write_name (vec[ix], fp, col, colmax, ix >= quote_lwm, trail);
+  return col;
+}
+
+/* Write the dependencies to a Makefile.  If PHONY is true, add
+   .PHONY targets for all the dependencies too.  */
+
+static void
+make_write (const struct mkdeps *d, FILE *fp, bool phony, unsigned int colmax)
+{
+  unsigned column = 0;
   if (colmax && colmax < 34)
     colmax = 34;
 
-  for (i = 0; i < d->ntargets; i++)
+  if (d->deps.size ())
     {
-      size = strlen (d->targetv[i]);
-      column += size;
-      if (i)
-	{
-	  if (colmax && column > colmax)
-	    {
-	      fputs (" \\\n ", fp);
-	      column = 1 + size;
-	    }
-	  else
-	    {
-	      putc (' ', fp);
-	      column++;
-	    }
-	}
-      fputs (d->targetv[i], fp);
+      column = make_write_vec (d->targets, fp, 0, colmax, d->quote_lwm);
+      fputs (":", fp);
+      column++;
+      column = make_write_vec (d->deps, fp, column, colmax);
+      fputs ("\n", fp);
+      if (phony)
+	for (unsigned i = 1; i < d->deps.size (); i++)
+	  fprintf (fp, "%s:\n", munge (d->deps[i]));
     }
-
-  putc (':', fp);
-  column++;
-
-  for (i = 0; i < d->ndeps; i++)
-    {
-      size = strlen (d->depv[i]);
-      column += size;
-      if (colmax && column > colmax)
-	{
-	  fputs (" \\\n ", fp);
-	  column = 1 + size;
-	}
-      else
-	{
-	  putc (' ', fp);
-	  column++;
-	}
-      fputs (d->depv[i], fp);
-    }
-  putc ('\n', fp);
 }
 
-void
-deps_phony_targets (const struct deps *d, FILE *fp)
-{
-  unsigned int i;
+/* Write out dependencies according to the selected format (which is
+   only Make at the moment).  */
 
-  for (i = 1; i < d->ndeps; i++)
-    {
-      putc ('\n', fp);
-      fputs (d->depv[i], fp);
-      putc (':', fp);
-      putc ('\n', fp);
-    }
+void
+deps_write (const struct mkdeps *d, FILE *fp, bool phony, unsigned int colmax)
+{
+  make_write (d, fp, phony, colmax);
 }
 
 /* Write out a deps buffer to a file, in a form that can be read back
@@ -364,74 +388,72 @@ deps_phony_targets (const struct deps *d, FILE *fp)
    error number will be in errno.  */
 
 int
-deps_save (struct deps *deps, FILE *f)
+deps_save (struct mkdeps *deps, FILE *f)
 {
   unsigned int i;
+  size_t size;
 
   /* The cppreader structure contains makefile dependences.  Write out this
      structure.  */
 
   /* The number of dependences.  */
-  if (fwrite (&deps->ndeps, sizeof (deps->ndeps), 1, f) != 1)
-      return -1;
+  size = deps->deps.size ();
+  if (fwrite (&size, sizeof (size), 1, f) != 1)
+    return -1;
+
   /* The length of each dependence followed by the string.  */
-  for (i = 0; i < deps->ndeps; i++)
+  for (i = 0; i < deps->deps.size (); i++)
     {
-      size_t num_to_write = strlen (deps->depv[i]);
-      if (fwrite (&num_to_write, sizeof (size_t), 1, f) != 1)
-          return -1;
-      if (fwrite (deps->depv[i], num_to_write, 1, f) != 1)
-          return -1;
+      size = strlen (deps->deps[i]);
+      if (fwrite (&size, sizeof (size), 1, f) != 1)
+	return -1;
+      if (fwrite (deps->deps[i], size, 1, f) != 1)
+	return -1;
     }
 
   return 0;
 }
 
 /* Read back dependency information written with deps_save into
-   the deps buffer.  The third argument may be NULL, in which case
+   the deps sizefer.  The third argument may be NULL, in which case
    the dependency information is just skipped, or it may be a filename,
    in which case that filename is skipped.  */
 
 int
-deps_restore (struct deps *deps, FILE *fd, const char *self)
+deps_restore (struct mkdeps *deps, FILE *fd, const char *self)
 {
-  unsigned int i, count;
-  size_t num_to_read;
-  size_t buf_size = 512;
-  char *buf;
+  size_t size;
+  char *buf = NULL;
+  size_t buf_size = 0;
 
   /* Number of dependences.  */
-  if (fread (&count, 1, sizeof (count), fd) != sizeof (count))
+  if (fread (&size, sizeof (size), 1, fd) != 1)
     return -1;
 
-  buf = XNEWVEC (char, buf_size);
-
   /* The length of each dependence string, followed by the string.  */
-  for (i = 0; i < count; i++)
+  for (unsigned i = size; i--;)
     {
       /* Read in # bytes in string.  */
-      if (fread (&num_to_read, 1, sizeof (size_t), fd) != sizeof (size_t))
+      if (fread (&size, sizeof (size), 1, fd) != 1)
+	return -1;
+
+      if (size >= buf_size)
 	{
-	  free (buf);
-	  return -1;
-	}
-      if (buf_size < num_to_read + 1)
-	{
-	  buf_size = num_to_read + 1 + 127;
+	  buf_size = size + 512;
 	  buf = XRESIZEVEC (char, buf, buf_size);
 	}
-      if (fread (buf, 1, num_to_read, fd) != num_to_read)
+      if (fread (buf, 1, size, fd) != size)
 	{
-	  free (buf);
+	  XDELETEVEC (buf);
 	  return -1;
 	}
-      buf[num_to_read] = '\0';
+      buf[size] = 0;
 
       /* Generate makefile dependencies from .pch if -nopch-deps.  */
       if (self != NULL && filename_cmp (buf, self) != 0)
         deps_add_dep (deps, buf);
     }
 
-  free (buf);
+  XDELETEVEC (buf);
   return 0;
 }

@@ -423,9 +423,22 @@ dump_binary_rhs (pretty_printer *buffer, gassign *gs, int spc,
   enum tree_code code = gimple_assign_rhs_code (gs);
   switch (code)
     {
-    case COMPLEX_EXPR:
     case MIN_EXPR:
     case MAX_EXPR:
+      if (flags & TDF_GIMPLE)
+	{
+	  pp_string (buffer, code == MIN_EXPR ? "__MIN (" : "__MAX (");
+	  dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags,
+			     false);
+	  pp_string (buffer, ", ");
+	  dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags,
+			     false);
+	  pp_string (buffer, ")");
+	  break;
+	}
+      else
+	gcc_fallthrough ();
+    case COMPLEX_EXPR:
     case VEC_WIDEN_MULT_HI_EXPR:
     case VEC_WIDEN_MULT_LO_EXPR:
     case VEC_WIDEN_MULT_EVEN_EXPR:
@@ -2704,6 +2717,10 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent,
 	  fprintf (outf, "%*s__BB(%d", indent, "", bb->index);
 	  if (bb->loop_father->header == bb)
 	    fprintf (outf, ",loop_header(%d)", bb->loop_father->num);
+	  if (bb->count.initialized_p ())
+	    fprintf (outf, ",%s(%d)",
+		     profile_quality_as_string (bb->count.quality ()),
+		     bb->count.value ());
 	  fprintf (outf, "):\n");
 	}
       else
@@ -2760,6 +2777,15 @@ pp_cfg_jump (pretty_printer *buffer, edge e, dump_flags_t flags)
     {
       pp_string (buffer, "goto __BB");
       pp_decimal_int (buffer, e->dest->index);
+      if (e->probability.initialized_p ())
+	{
+	  pp_string (buffer, "(");
+	  pp_string (buffer,
+		     profile_quality_as_string (e->probability.quality ()));
+	  pp_string (buffer, "(");
+	  pp_decimal_int (buffer, e->probability.value ());
+	  pp_string (buffer, "))");
+	}
       pp_semicolon (buffer);
     }
   else

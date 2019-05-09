@@ -6278,9 +6278,6 @@ loop:
   if (flag_dump_fortran_original)
     gfc_dump_parse_tree (gfc_current_ns, stdout);
 
-  if (flag_c_prototypes)
-    gfc_dump_c_prototypes (gfc_current_ns, stdout);
-
   gfc_get_errors (NULL, &errors);
   if (s.state == COMP_MODULE || s.state == COMP_SUBMODULE)
     {
@@ -6332,6 +6329,18 @@ done:
 	gfc_dump_parse_tree (gfc_current_ns, stdout);
 	fputs ("------------------------------------------\n\n", stdout);
       }
+
+  /* Dump C prototypes.  */
+  if (flag_c_prototypes)
+    {
+      for (gfc_current_ns = gfc_global_ns_list; gfc_current_ns;
+	   gfc_current_ns = gfc_current_ns->sibling)
+	gfc_dump_c_prototypes (gfc_current_ns, stdout);
+    }
+
+  /* Dump external prototypes.  */
+  if (flag_c_prototypes_external)
+    gfc_dump_external_c_prototypes (stdout);
 
   /* Do the translation.  */
   translate_all_program_units (gfc_global_ns_list);

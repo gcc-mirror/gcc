@@ -176,7 +176,7 @@ and warnings}.
 
 @item Interoperability Options
 @xref{Interoperability Options,,Options for interoperability}.
-@gccoptlist{-fc-prototypes}
+@gccoptlist{-fc-prototypes -fc-prototypes-external}
 
 @item Code Generation Options
 @xref{Code Gen Options,,Options for code generation conventions}.
@@ -1870,7 +1870,7 @@ shared by @command{gfortran}, @command{gcc}, and other GNU compilers.
 
 @item -fc-prototypes
 @opindex @code{c-prototypes}
-@cindex Generating C prototypes from Fortran source code
+@cindex Generating C prototypes from Fortran BIND(C) enteties
 This option will generate C prototypes from @code{BIND(C)} variable
 declarations, types and procedure interfaces and writes them to
 standard output.  @code{ENUM} is not yet supported.
@@ -1886,6 +1886,32 @@ without an explicit argument list is generated.
 Example of use:
 @smallexample
 $ gfortran -fc-prototypes -fsyntax-only foo.f90 > foo.h
+@end smallexample
+where the C code intended for interoperating with the Fortran code
+then  uses @code{#include "foo.h"}.
+
+@item -fc-prototypes-external
+@opindex @code{c-prototypes-external}
+@cindex Generating C prototypes from external procedures
+This option will generate C prototypes from external functions and
+subroutines and write them to standard output.  This may be useful for
+making sure that C bindings to Fortran code are correct.  This option
+does not generate prototypes for @code{BIND(C)} procedures, use
+@option{-fc-prototypes} for that.
+
+The generated prototypes may need inclusion of an appropriate
+header, such as as @code{<stdint.h>} or @code{<stdlib.h>}.
+
+This is primarily meant for legacy code to ensure that existing C
+bindings match what @command{gfortran} emits.  The generated C
+prototypes should be correct for the current version of the compiler,
+but may not match what other compilers or earlier versions of
+@command{gfortran} need.  For new developments, use of the
+@code{BIND(C)} features is recommended.
+
+Example of use:
+@smallexample
+$ gfortran -fc-prototypes-external -fsyntax-only foo.f > foo.h
 @end smallexample
 where the C code intended for interoperating with the Fortran code
 then  uses @code{#include "foo.h"}.

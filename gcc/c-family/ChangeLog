@@ -1,3 +1,7 @@
+2019-05-06  Nathan Sidwell  <nathan@acm.org>
+
+	* c-opts.c (handle_defered_opts): Rename struct deps to struc mkdeps.
+
 2019-04-30  Nathan Sidwell  <nathan@acm.org>
 
 	* c-common.c (c_common_init_ts): Use MARK_TS_EXP.  Mark SIZEOF_EXPR.

@@ -1691,6 +1691,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct uses_allocator<tuple<_Types...>, _Alloc> : true_type { };
 
   // See stl_pair.h...
+  /** "piecewise construction" using a tuple of arguments for each member.
+   *
+   * @param __first Arguments for the first member of the pair.
+   * @param __second Arguments for the second member of the pair.
+   *
+   * The elements of each tuple will be used as the constructor arguments
+   * for the data members of the pair.
+  */
   template<class _T1, class _T2>
     template<typename... _Args1, typename... _Args2>
       inline

@@ -1,3 +1,11 @@
+2019-05-07  Jim Wilson  <jimw@sifive.com>
+
+	* MAINTAINERS: Remove myself as IA-64 maintainer.
+
+2019-05-04  Roland Illig  <roland.illig@gmx.de>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2019-05-02  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/85574

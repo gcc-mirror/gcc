@@ -102,6 +102,7 @@ class Expression
     EXPRESSION_BOOLEAN,
     EXPRESSION_STRING,
     EXPRESSION_STRING_INFO,
+    EXPRESSION_STRING_VALUE,
     EXPRESSION_INTEGER,
     EXPRESSION_FLOAT,
     EXPRESSION_COMPLEX,
@@ -247,6 +248,10 @@ class Expression
 
   static Expression*
   make_string_info(Expression* string, String_info, Location);
+
+  // Make an expression for a string value.
+  static Expression*
+  make_string_value(Expression* valptr, Expression* len, Location);
 
   // Make a character constant expression.  TYPE should be NULL for an
   // abstract type.
@@ -543,6 +548,11 @@ class Expression
   bool
   is_constant() const
   { return this->do_is_constant(); }
+
+  // Return whether this is the zero value of its type.
+  bool
+  is_zero_value() const
+  { return this->do_is_zero_value(); }
 
   // Return whether this expression can be used as a static
   // initializer.  This is true for an expression that has only
@@ -1064,6 +1074,11 @@ class Expression
   // Return whether this is a constant expression.
   virtual bool
   do_is_constant() const
+  { return false; }
+
+  // Return whether this is the zero value of its type.
+  virtual bool
+  do_is_zero_value() const
   { return false; }
 
   // Return whether this expression can be used as a constant
@@ -1600,6 +1615,10 @@ class String_expression : public Expression
   { return true; }
 
   bool
+  do_is_zero_value() const
+  { return this->val_ == ""; }
+
+  bool
   do_is_static_initializer() const
   { return true; }
 
@@ -1654,7 +1673,8 @@ class Type_conversion_expression : public Expression
   Type_conversion_expression(Type* type, Expression* expr,
 			     Location location)
     : Expression(EXPRESSION_CONVERSION, location),
-      type_(type), expr_(expr), may_convert_function_types_(false)
+      type_(type), expr_(expr), may_convert_function_types_(false),
+      no_copy_(false)
   { }
 
   // Return the type to which we are converting.
@@ -1675,6 +1695,12 @@ class Type_conversion_expression : public Expression
     this->may_convert_function_types_ = true;
   }
 
+  // Mark string([]byte) conversion to reuse the backing store
+  // without copying.
+  void
+  set_no_copy(bool b)
+  { this->no_copy_ = b; };
+
   // Import a type conversion expression.
   static Expression*
   do_import(Import_expression*, Location);
@@ -1691,6 +1717,9 @@ class Type_conversion_expression : public Expression
 
   bool
   do_is_constant() const;
+
+  bool
+  do_is_zero_value() const;
 
   bool
   do_is_static_initializer() const;
@@ -1734,6 +1763,9 @@ class Type_conversion_expression : public Expression
   // True if this is permitted to convert function types.  This is
   // used internally for method expressions.
   bool may_convert_function_types_;
+  // True if a string([]byte) conversion can reuse the backing store
+  // without copying.  Only used in string([]byte) conversion.
+  bool no_copy_;
 };
 
 // An unsafe type conversion, used to pass values to builtin functions.
@@ -1754,6 +1786,10 @@ class Unsafe_type_conversion_expression : public Expression
  protected:
   int
   do_traverse(Traverse* traverse);
+
+  bool
+  do_is_zero_value() const
+  { return this->expr_->is_zero_value(); }
 
   bool
   do_is_static_initializer() const;
@@ -2150,6 +2186,9 @@ class String_concat_expression : public Expression
 
   bool
   do_is_constant() const;
+
+  bool
+  do_is_zero_value() const;
 
   bool
   do_is_static_initializer() const;
@@ -2782,7 +2821,7 @@ class Unknown_expression : public Parser_expression
 
   void
   do_dump_expression(Ast_dump_context*) const;
-  
+
  private:
   // The unknown name.
   Named_object* named_object_;
@@ -2808,7 +2847,7 @@ class Index_expression : public Parser_expression
   // Dump an index expression, i.e. an expression of the form
   // expr[expr], expr[expr:expr], or expr[expr:expr:expr] to a dump context.
   static void
-  dump_index_expression(Ast_dump_context*, const Expression* expr, 
+  dump_index_expression(Ast_dump_context*, const Expression* expr,
                         const Expression* start, const Expression* end,
                         const Expression* cap);
 
@@ -2964,7 +3003,7 @@ class Array_index_expression : public Expression
 
   void
   do_dump_expression(Ast_dump_context*) const;
-  
+
  private:
   // The array we are getting a value from.
   Expression* array_;
@@ -3570,13 +3609,16 @@ class Struct_construction_expression : public Expression,
 	type_(type)
   { }
 
- // Return whether this is a constant initializer.
+  // Return whether this is a constant initializer.
   bool
   is_constant_struct() const;
 
  protected:
   int
   do_traverse(Traverse* traverse);
+
+  bool
+  do_is_zero_value() const;
 
   bool
   do_is_static_initializer() const;
@@ -3641,6 +3683,9 @@ class Array_construction_expression : public Expression,
 protected:
   virtual int
   do_traverse(Traverse* traverse);
+
+  bool
+  do_is_zero_value() const;
 
   bool
   do_is_static_initializer() const;
@@ -3798,7 +3843,7 @@ class Map_construction_expression : public Expression
 
   void
   do_dump_expression(Ast_dump_context*) const;
-  
+
  private:
   // The type of the map to construct.
   Type* type_;

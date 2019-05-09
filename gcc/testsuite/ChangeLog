@@ -1,3 +1,206 @@
+2019-05-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/90405
+	* gcc.target/arm/pr90405.c: New test.
+
+2019-05-09  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/gimplefe-39.c: New test.
+
+2019-05-09  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/gimplefe-37.c: New test.
+	* gcc.dg/gimplefe-33.c: Likewise.
+
+2019-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/90382
+	Revert:
+	2018-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/trailing1.C: New.
+
+2019-05-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90395
+	* gcc.dg/torture/pr90395.c: New testcase.
+
+2019-05-08  Cherry Zhang  <cherryyz@google.com>
+
+	* go.dg/cmpstring.go: New test.
+
+2019-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/59813
+	PR tree-optimization/89060
+	* gcc.dg/tree-ssa/pr89060.c: New test.
+
+2019-05-08  Mihail Ionescu  <mihail.ionescu@arm.com>
+	    Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/88167
+	* gcc.target/arm/pr88167-1.c: New test.
+	* gcc.target/arm/pr88167-2.c: New test.
+
+2018-05-08  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/90078
+	* g++.dg/tree-ssa/pr90078.C: New test.
+
+2018-05-08  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/90240
+	* gfortran.dg/graphite/pr90240.f: New test.
+
+2019-05-08  Li Jia He  <helijia@linux.ibm.com>
+
+	PR other/90381
+	* gcc.dg/tree-ssa/pr88676-2.c: Add 'target le' option to limit the
+	test case to run on the little endian machine.
+
+2019-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90356
+	* gcc.dg/tree-ssa/pr90356-1.c: New test.
+	* gcc.dg/tree-ssa/pr90356-2.c: New test.
+	* gcc.dg/tree-ssa/pr90356-3.c: New test.
+	* gcc.dg/tree-ssa/pr90356-4.c: New test.
+
+2019-05-07  Wei Xiao  <wei3.xiao@intel.com>
+
+	* gcc.target/i386/avx512bf16-vcvtne2ps2bf16-1.c: New test.
+	* gcc.target/i386/avx512bf16-vcvtneps2bf16-1.c: New test.
+	* gcc.target/i386/avx512bf16-vdpbf16ps-1.c: New test.
+	* gcc.target/i386/avx512bf16vl-vcvtne2ps2bf16-1.c: New test.
+	* gcc.target/i386/avx512bf16vl-vcvtneps2bf16-1.c: New test.
+	* gcc.target/i386/avx512bf16vl-vdpbf16ps-1.c: New test.
+	* gcc.target/i386/builtin_target.c: Handle avx512bf16.
+	* gcc.target/i386/sse-12.c: Add -mavx512bf16.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+
+2019-05-07  Cherry Zhang  <cherryyz@google.com>
+
+	* go.dg/arrayclear.go: New test.
+	* go.dg/mapclear.go: New test.
+
+2019-05-07  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/89765
+	* gcc.target/powerpc/pr89765-mc.c: New test.
+	* gcc.target/powerpc/vsx-builtin-10c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-10d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-11c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-11d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-12c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-12d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-13c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-13d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-14c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-14d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-15c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-15d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-16c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-16d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-17c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-17d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-18c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-18d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-19c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-19d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-20c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-20d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-9c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-9d.c: New test.
+
+2019-05-07  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
+
+	* gcc.target/aarch64/sve/sad_1.c: New test for sum of absolute
+	differences.
+
+2019-05-07  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/asm-7.c: New test.
+	* gcc.target/i386/asm-1.c: Update expected error string.
+	* gcc.target/i386/pr62120.c: Ditto.
+
+2019-05-07  Li Jia He  <helijia@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/pr37508.c: Add the no-ssa-phiopt option to skip phi
+	optimization.
+	* gcc.dg/tree-ssa/pr88676-2.c: New testcase.
+
+2019-05-06  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90290
+	* gfortran.dg/pr90290.f90: New test.
+
+2019-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/88709
+	PR tree-optimization/90271
+	* gcc.dg/store_merging_26.c: New test.
+	* gcc.dg/store_merging_27.c: New test.
+	* gcc.dg/store_merging_28.c: New test.
+	* gcc.dg/store_merging_29.c: New test.
+
+2019-05-06  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/89424
+	* gcc.target/powerpc/pr89424-0.c: New test.
+	* gcc.target/powerpc/vsx-builtin-13a.c: Define macro PR89424 to
+	enable testing of newly patched capability.
+	* gcc.target/powerpc/vsx-builtin-13b.c: Likewise.
+	* gcc.target/powerpc/vsx-builtin-20a.c: Likewise.
+	* gcc.target/powerpc/vsx-builtin-20b.c: Likewise.
+
+2019-05-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90265 - ICE with generic lambda.
+	* g++.dg/cpp1y/lambda-generic-90265.C: New test.
+
+2019-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90358
+	* gcc.target/i386/pr90358.c: New testcase.
+
+2019-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88828
+	* gcc.target/i386/pr88828-0.c: New testcase.
+
+2019-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90328
+	* gcc.dg/torture/pr90328.c: New testcase.
+
+2019-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/90331
+	* gcc.dg/pr87314-1.c: Align the substring to open up
+	string merging for targets aligning strings to 8 bytes.
+
+2019-05-06  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/90312
+	* gcc.dg/asan/pr87930.c: Run the test only on *linux or *gnu
+	systems.
+	* gcc.dg/tsan/pr88017.c: Likewise.
+
+2019-05-05  Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/90344
+	* gfortran.dg/pr90344.f90: New test
+
+2019-05-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/90269
+	* g++.dg/tree-ssa/ldist-1.C: New file.
+
 2019-05-03  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/slp-reduc-sad-2.c: New testcase.

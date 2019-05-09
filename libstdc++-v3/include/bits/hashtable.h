@@ -2055,7 +2055,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__buckets != _M_bucket_count)
 	_M_rehash(__buckets, __saved_state);
       else
-	// No rehash, restore previous state to keep a consistent state.
+	// No rehash, restore previous state to keep it consistent with
+	// container state.
 	_M_rehash_policy._M_reset(__saved_state);
     }
 

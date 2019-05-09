@@ -2273,6 +2273,7 @@ get_group_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
 		   == dr_aligned
 		  || alignment_support_scheme == dr_unaligned_supported)
 	      && known_eq (nunits, (group_size - gap) * 2)
+	      && known_eq (nunits, group_size)
 	      && mode_for_vector (elmode, (group_size - gap)).exists (&vmode)
 	      && VECTOR_MODE_P (vmode)
 	      && targetm.vector_mode_supported_p (vmode)
@@ -8550,7 +8551,8 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			    && DR_GROUP_GAP (first_stmt_info) != 0
 			    && known_eq (nunits,
 					 (group_size
-					  - DR_GROUP_GAP (first_stmt_info)) * 2))
+					  - DR_GROUP_GAP (first_stmt_info)) * 2)
+			    && known_eq (nunits, group_size))
 			  ltype = build_vector_type (TREE_TYPE (vectype),
 						     (group_size
 						      - DR_GROUP_GAP
@@ -8862,11 +8864,12 @@ vect_is_simple_cond (tree cond, vec_info *vinfo,
 
   *comp_vectype = vectype1 ? vectype1 : vectype2;
   /* Invariant comparison.  */
-  if (! *comp_vectype && vectype)
+  if (! *comp_vectype)
     {
       tree scalar_type = TREE_TYPE (lhs);
       /* If we can widen the comparison to match vectype do so.  */
       if (INTEGRAL_TYPE_P (scalar_type)
+	  && vectype
 	  && tree_int_cst_lt (TYPE_SIZE (scalar_type),
 			      TYPE_SIZE (TREE_TYPE (vectype))))
 	scalar_type = build_nonstandard_integer_type

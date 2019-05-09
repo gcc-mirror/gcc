@@ -3040,6 +3040,10 @@ find_seed_stmts_for_distribution (struct loop *loop, vec<gimple *> *work_list)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 
+	  /* Ignore clobbers, they do not have true side effects.  */
+	  if (gimple_clobber_p (stmt))
+	    continue;
+
 	  /* If there is a stmt with side-effects bail out - we
 	     cannot and should not distribute this loop.  */
 	  if (gimple_has_side_effects (stmt))

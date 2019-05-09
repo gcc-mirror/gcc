@@ -248,9 +248,6 @@ along with GCC; see the file COPYING3.  If not see
 #define ASAN_REJECT_SPEC \
   DEF_ARCH64_SPEC("%e:-fsanitize=address is not supported in this configuration")
 
-#define USE_IX86_FRAME_POINTER 1
-#define USE_X86_64_FRAME_POINTER 1
-
 #undef NO_PROFILE_COUNTERS
 
 #undef MCOUNT_NAME

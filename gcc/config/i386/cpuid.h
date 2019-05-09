@@ -21,6 +21,9 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+/* %eax */
+#define bit_AVX512BF16	(1 << 5)
+
 /* %ecx */
 #define bit_SSE3	(1 << 0)
 #define bit_PCLMUL	(1 << 1)

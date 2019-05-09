@@ -2347,7 +2347,8 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  bool saved = in_late_binary_op;
 	  in_late_binary_op = true;
 	  c_parser_parse_gimple_body (parser, specs->gimple_or_rtl_pass,
-				      specs->declspec_il);
+				      specs->declspec_il,
+				      specs->entry_bb_count);
 	  in_late_binary_op = saved;
 	}
       else

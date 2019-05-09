@@ -1,3 +1,58 @@
+2019-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/90382
+	Revert:
+	2018-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Fix value assigned to typespec_loc, use
+	min_location.
+
+2019-05-08  Nathan Sidwell  <nathan@acm.org>
+
+	Kill DECL_SAVED_FUNCTION_DATA .
+	* cp-tree.h (language_function): Remove x_auto_return_pattern.
+	(current_function_auto_return_pattern): Delete.
+	(lang_decl_fn): Replace saved_language_function with
+	saved_auto_return type.
+	(DECL_SAVED_FUNCTION_DATA): Delete.
+	(DECL_SAVED_AUTO_RETURN_TYPE): New.
+	(FNDECL_USED_AUTO): Correct documentation.
+	* decl.c (duplicate_decls): Adjust AUTO return handling.
+	(start_preparsed_function): Replace
+	current_function_auto_return_pattern with
+	DECL_SAVED_AUTO_RETURN_TYPE.  Remove DECL_SAVED_FUNCTION_DATA
+	zapping.
+	(finish_function): Likewise.
+	(save_function_data): Delete.
+	(fndecl_declared_return_type): Reimplement.
+	* mangle.c (write_unqualified_name): Use DECL_SAVED_AUTO_RETURN_TYPE.
+	* method.c (make_thunk, make_alias_for): Likewise.
+	* parser.c (cp_parser_jump_statement): Likewise.
+	* pt.c (do_auto_deduction): Likewise.
+	* typeck.c (check_return_expr): Likewise.
+
+2019-05-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90171 - reorganize usual_deallocation_fn_p
+	* call.c (struct dealloc_info): New.
+	(usual_deallocation_fn_p): Take a dealloc_info*.
+	(aligned_deallocation_fn_p, sized_deallocation_fn_p): Remove.
+	(build_op_delete_call): Adjust.
+
+2019-05-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86485 - -Wmaybe-unused with empty class ?:
+	* typeck.c (build_static_cast_1): Use cp_build_addr_expr.
+
+	* pt.c (type_dependent_expression_p): A non-type template parm with
+	a placeholder type is type-dependent.
+
+2019-05-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90265 - ICE with generic lambda.
+	* pt.c (tsubst_copy_and_build): Use a dedicated variable for the last
+	element in the vector.
+
 2019-05-03  Martin Liska  <mliska@suse.cz>
 
 	* call.c (build_aggr_conv): Use is_empty instead of

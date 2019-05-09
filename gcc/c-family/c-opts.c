@@ -1277,18 +1277,15 @@ check_deps_environment_vars (void)
 static void
 handle_deferred_opts (void)
 {
-  size_t i;
-  struct deps *deps;
-
   /* Avoid allocating the deps buffer if we don't need it.
      (This flag may be true without there having been -MT or -MQ
      options, but we'll still need the deps buffer.)  */
   if (!deps_seen)
     return;
 
-  deps = cpp_get_deps (parse_in);
+  struct mkdeps *deps = cpp_get_deps (parse_in);
 
-  for (i = 0; i < deferred_count; i++)
+  for (size_t i = 0; i < deferred_count; i++)
     {
       struct deferred_opt *opt = &deferred_opts[i];
 

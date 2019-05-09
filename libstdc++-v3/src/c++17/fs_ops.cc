@@ -72,6 +72,9 @@ fs::absolute(const path& p)
 					     ec));
   return ret;
 #else
+  if (p.empty())
+    _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot make absolute path", p,
+	  make_error_code(std::errc::invalid_argument)));
   return current_path() / p;
 #endif
 }
@@ -82,7 +85,7 @@ fs::absolute(const path& p, error_code& ec)
   path ret;
   if (p.empty())
     {
-      ec = make_error_code(std::errc::no_such_file_or_directory);
+      ec = make_error_code(std::errc::invalid_argument);
       return ret;
     }
   ec.clear();

@@ -602,7 +602,7 @@ two_value_replacement (basic_block cond_bb, basic_block middle_bb,
       || TREE_CODE (arg1) != INTEGER_CST
       || (tree_int_cst_lt (arg0, arg1)
 	  ? wi::to_widest (arg0) + 1 != wi::to_widest (arg1)
-	  : wi::to_widest (arg1) + 1 != wi::to_widest (arg1)))
+	  : wi::to_widest (arg1) + 1 != wi::to_widest (arg0)))
     return false;
 
   if (!empty_block_p (middle_bb))
