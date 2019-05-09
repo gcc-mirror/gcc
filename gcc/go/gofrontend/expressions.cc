@@ -12158,6 +12158,13 @@ Map_index_expression::do_flatten(Gogo* gogo, Named_object*,
       return Expression::make_error(loc);
     }
 
+  // Avoid copy for string([]byte) conversions used in map keys.
+  // mapaccess doesn't keep the reference, so this is safe.
+  Type_conversion_expression* ce = this->index_->conversion_expression();
+  if (ce != NULL && ce->type()->is_string_type()
+      && ce->expr()->type()->is_slice_type())
+    ce->set_no_copy(true);
+
   if (!Type::are_identical(mt->key_type(), this->index_->type(),
 			   Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
 			   NULL))

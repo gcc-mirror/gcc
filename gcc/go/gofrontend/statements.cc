@@ -1307,6 +1307,13 @@ Tuple_map_assignment_statement::do_lower(Gogo* gogo, Named_object*,
   if (map_type == NULL)
     return Statement::make_error_statement(loc);
 
+  // Avoid copy for string([]byte) conversions used in map keys.
+  // mapaccess doesn't keep the reference, so this is safe.
+  Type_conversion_expression* ce = map_index->index()->conversion_expression();
+  if (ce != NULL && ce->type()->is_string_type()
+      && ce->expr()->type()->is_slice_type())
+    ce->set_no_copy(true);
+
   Block* b = new Block(enclosing, loc);
 
   // Move out any subexpressions to make sure that functions are

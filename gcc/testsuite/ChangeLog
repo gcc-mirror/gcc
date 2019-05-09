@@ -1,3 +1,7 @@
+2019-05-09  Cherry Zhang  <cherryyz@google.com>
+
+	* go.dg/mapstring.go: New test.
+
 2019-05-09  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/90405
