@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 #include "opts.h"
 #include "asan.h"
+#include "profile.h"
 
 /* This file contains functions for building the Control Flow Graph (CFG)
    for a function tree.  */
@@ -7872,13 +7873,32 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
   current_function_decl = fndecl;
   if (flags & TDF_GIMPLE)
     {
+      static bool hotness_bb_param_printed = false;
+      if (profile_info != NULL
+	  && !hotness_bb_param_printed)
+	{
+	  hotness_bb_param_printed = true;
+	  fprintf (file,
+		   "/* --param=gimple-fe-computed-hot-bb-threshold=%" PRId64
+		   " */\n", get_hot_bb_threshold ());
+	}
+
       print_generic_expr (file, TREE_TYPE (TREE_TYPE (fndecl)),
 			  dump_flags | TDF_SLIM);
-      fprintf (file, " __GIMPLE (%s)\n%s (",
+      fprintf (file, " __GIMPLE (%s",
 	       (fun->curr_properties & PROP_ssa) ? "ssa"
 	       : (fun->curr_properties & PROP_cfg) ? "cfg"
-	       : "",
-	       function_name (fun));
+	       : "");
+
+      if (cfun->cfg)
+	{
+	  basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
+	  if (bb->count.initialized_p ())
+	    fprintf (file, ",%s(%d)",
+		     profile_quality_as_string (bb->count.quality ()),
+		     bb->count.value ());
+	  fprintf (file, ")\n%s (", function_name (fun));
+	}
     }
   else
     fprintf (file, "%s %s(", function_name (fun), tmclone ? "[tm-clone] " : "");

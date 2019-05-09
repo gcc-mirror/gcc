@@ -1419,6 +1419,12 @@ DEFPARAM(PARAM_LOOP_VERSIONING_MAX_OUTER_INSNS,
 	 " loops.",
 	 100, 0, 0)
 
+DEFPARAM(PARAM_GIMPLE_FE_COMPUTED_HOT_BB_THRESHOLD,
+	 "gimple-fe-computed-hot-bb-threshold",
+	 "The number of executions of a basic block which is considered hot."
+	 " The parameters is used only in GIMPLE FE.",
+	 0, 0, 0)
+
 /*
 
 Local variables:
