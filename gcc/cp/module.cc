@@ -2624,23 +2624,28 @@ enum tree_tag {
   tt_null,		/* NULL_TREE.  */
   tt_fixed,		/* Fixed vector index.  */
   tt_node,		/* New node.  */
+
   tt_id,  		/* Identifier node.  */
   tt_conv_id,		/* Conversion operator name.  */
   tt_anon_id,		/* Anonymous name.  */
   tt_lambda_id,		/* Lambda name.  */
+
+  tt_typedef,		/* A maybe-implicit typedef.  */
   tt_tinfo_var,		/* Typeinfo object. */
   tt_tinfo_typedef,	/* Typeinfo typedef.  */
-  tt_primary_type,	/* TYPE_DECL for an implicit typedef.  */
-  tt_secondary_type,	/* Qualified type for an implicit typedef.  */
   tt_ptrmem_type,	/* Pointer to member type.  */
+
   tt_enum_int,		/* An enum const.  */
-  tt_named_decl,  	/* Named decl. */
-  tt_anon_decl,		/* Anonymous decl.  */
+
   tt_namespace,		/* Namespace reference.  */
   tt_binfo,		/* A BINFO.  */
   tt_vtable,		/* A vtable.  */
-  tt_template,
-  tt_implicit_template,
+
+  tt_named, 	 	/* Named decl. */
+  tt_anon,		/* Anonymous decl.  */
+  tt_template,		/* The TEMPLATE_RESULT of a template.  */
+  tt_implicit_template, /* An immplicit member template.  */
+
   tt_mergeable		/* Mergeable entity.  */
 };
 
@@ -2800,7 +2805,6 @@ public:
 
 public:
   int insert (tree, walk_kind = WK_normal);
-  int maybe_insert_typeof (tree);
 
 private:
   void start (tree);
@@ -4284,9 +4288,11 @@ trees_out::mark_node (tree decl)
     {
       int use_tpl = -1;
       if (tree ti = node_template_info (decl, use_tpl))
-	if (!use_tpl)
+	if (DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == decl)
 	  decl = TI_TEMPLATE (ti);
     }
+  else
+    gcc_checking_assert (TREE_CODE (decl) == INTEGER_CST);
 
   if (TREE_VISITED (decl))
     gcc_checking_assert (!*tree_map.get (decl)
@@ -4335,18 +4341,6 @@ trees_out::insert (tree t, walk_kind walk)
   else
     slot = --ref_num;
   return slot;
-}
-
-/* If DECL is the TYPE_NAME of its type, insert the type into the map
-   (unless it's already there).  Return the inserted tag, or 0.  */
-
-int
-trees_out::maybe_insert_typeof (tree decl)
-{
-  tree type = TREE_TYPE (decl);
-  if (type && !TREE_VISITED (type) && TYPE_NAME (type) == decl)
-    return insert (type);
-  return 0;
 }
 
 /* Insert T into the backreference array.  Return its back reference
@@ -6617,41 +6611,37 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 
   int use_tpl = -1;
   tree ti = node_template_info (decl, use_tpl);
-  if (ti && !use_tpl)
+  if (ti && DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == decl)
     {
       tree tpl = TI_TEMPLATE (ti);
-      gcc_checking_assert (decl == DECL_TEMPLATE_RESULT (tpl));
       if (streaming_p ())
-	i (tt_template);
+	{
+	  i (tt_template);
+	  dump () && dump ("Writing implicit template %C:%N%S",
+			   TREE_CODE (tpl), tpl, tpl);
+	}
       tree_node (tpl);
+      gcc_checking_assert (TREE_VISITED (decl));
+      if (DECL_IMPLICIT_TYPEDEF_P (decl))
+	gcc_checking_assert (TREE_VISITED (TREE_TYPE (decl)));
       return false;
     }
 
   const char *kind = NULL;
   unsigned owner = MODULE_UNKNOWN;
-
   if (use_tpl > 0)
     {
       /* Some kind of specialization. */
-      tree tpl = TI_TEMPLATE (ti);
-      enum tree_code ctx_code = TREE_CODE (DECL_CONTEXT (tpl));
-      if ((RECORD_OR_UNION_CODE_P (ctx_code) || ctx_code == ENUMERAL_TYPE)
-	  && !DECL_MEMBER_TEMPLATE_P (tpl))
-	// FIXME: The body could be instantiated elsewhere to the context?
-	; /* Implicit member template.  */
-      else
-	{
-	  owner = MAYBE_DECL_MODULE_OWNER (decl);
-	  if (owner >= MODULE_IMPORT_BASE)
-	    owner = (*modules)[owner]->remap;
-	  gcc_assert (!streaming_p ());
-	  depset *dep = dep_hash->add_dependency
-	    (decl, depset::EK_SPECIALIZATION, owner >= MODULE_IMPORT_BASE);
-	  if (use_tpl < 2)
-	    dep->set_implicit_specialization ();
-	  kind = "specialization";
-	  goto insert;
-	}
+      owner = MAYBE_DECL_MODULE_OWNER (decl);
+      if (owner >= MODULE_IMPORT_BASE)
+	owner = (*modules)[owner]->remap;
+      gcc_assert (!streaming_p ());
+      depset *dep = dep_hash->add_dependency
+	(decl, depset::EK_SPECIALIZATION, owner >= MODULE_IMPORT_BASE);
+      if (use_tpl < 2)
+	dep->set_implicit_specialization ();
+      kind = "specialization";
+      goto insert;
     }
 
   {
@@ -6660,15 +6650,6 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
     owner = MAYBE_DECL_MODULE_OWNER (owner_decl);
     if (owner >= MODULE_IMPORT_BASE)
       owner = (*modules)[owner]->remap;
-
-    /* We should not get cross-module references to the pseudo
-       template of a member of a template class.  */
-    // FIXME: Except I clearly do ...
-    gcc_assert (true
-		|| TREE_CODE (decl) != TEMPLATE_DECL
-		|| TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL
-		|| DECL_MEMBER_TEMPLATE_P (decl)
-		|| owner < MODULE_IMPORT_BASE);
 
     tree ctx = CP_DECL_CONTEXT (decl);
     bool is_import = owner >= MODULE_IMPORT_BASE;
@@ -6695,19 +6676,20 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
     tree name = DECL_NAME (decl);
     if (streaming_p ())
       {
-	tree proxy = decl;
-	unsigned code = tt_named_decl;
+	unsigned code = tt_named;
 	int ident = -2;
 
+	tree proxy = decl;
 	if (TREE_CODE (decl) == TEMPLATE_DECL
-	    && RECORD_OR_UNION_CODE_P (TREE_CODE (ctx))
+	    && (RECORD_OR_UNION_CODE_P (TREE_CODE (ctx))
+		|| TREE_CODE (ctx) == ENUMERAL_TYPE)
 	    && !DECL_MEMBER_TEMPLATE_P (decl))
 	  {
+	    /* An implicit member template.  Look for the templated
+	       decl.  */
 	    proxy = DECL_TEMPLATE_RESULT (decl);
 	    code = tt_implicit_template;
 	  }
-
-	gcc_checking_assert (name == DECL_NAME (proxy));
 
 	if (IDENTIFIER_ANON_P (name))
 	  {
@@ -6718,7 +6700,8 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 		name = DECL_NAME (proxy);
 		gcc_checking_assert (MAYBE_DECL_MODULE_OWNER (proxy) == owner);
 		gcc_checking_assert (TYPE_STUB_DECL (TREE_TYPE (proxy)) == decl);
-		code = tt_anon_decl;
+		gcc_checking_assert (code == tt_named);
+		code = tt_anon;
 	      }
 	    else
 	      name = NULL_TREE;
@@ -6763,7 +6746,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	  ;
 	else if (TREE_CODE (ctx) != NAMESPACE_DECL)
 	  tree_ctx (ctx, true, decl);
-	else // if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION)
+	else
 	  dep_hash->add_dependency (decl, depset::EK_DECL);
 
 	tree_node (name);
@@ -6777,20 +6760,28 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
       && dump ("Wrote %s:%d %C:%N@%M", kind, tag, TREE_CODE (decl), decl,
 	       owner == MODULE_UNKNOWN ? NULL : (*modules)[owner]);
 
-  if (tree type = TREE_TYPE (decl))
+  tree proxy = decl;
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
-      /* Make sure the imported type is in the map too.  Otherwise we
-	 get different RECORD_TYPEs for the same type, and things go
-	 south.  */
-      int tag = maybe_insert_typeof (decl);
+      proxy = DECL_TEMPLATE_RESULT (decl);
+
+      tag = insert (proxy);
       if (streaming_p ())
-	{
-	  u (tag != 0);
-	  if (tag)
-	    dump (dumper::TREE)
-	      && dump ("Wrote decl's type:%d %C:%N%S", tag,
-		       TREE_CODE (type), type, type);
-	}
+	dump (dumper::TREE)
+	  && dump ("Wrote template's result:%d %C:%N",
+		   tag, TREE_CODE (proxy), proxy);
+    }
+
+  if (DECL_IMPLICIT_TYPEDEF_P (proxy))
+    {
+      /* Make sure the type is in the map too.  Otherwise we get
+	 different RECORD_TYPEs for the same type, and things go
+	 south.  */
+      proxy = TREE_TYPE (proxy);
+      tag = insert (proxy);
+      if (streaming_p ())
+	dump (dumper::TREE) && dump ("Wrote decl's type:%d %C:%N", tag,
+				     TREE_CODE (proxy), proxy);
     }
 
   return false;
@@ -6805,6 +6796,7 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
 
   if (TYPE_PTRMEMFUNC_P (type))
     {
+      // FIXME: what if this is a typedef?
       tree fn_type = TYPE_PTRMEMFUNC_FN_TYPE (type);
       if (streaming_p ())
 	i (tt_ptrmem_type);
@@ -6817,30 +6809,50 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
   else if (tree name = TYPE_STUB_DECL (type))
     if (DECL_IMPLICIT_TYPEDEF_P (name))
       {
-	/* A new named type -> tt_named_type.  */
-	bool primary = TREE_TYPE (name) == type;
-
 	/* Make sure this is not a named builtin. We should find
 	   those some other way to be canonically correct.  */
 	gcc_assert (DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
+
 	if (streaming_p ())
 	  {
-	    i (primary ? tt_primary_type : tt_secondary_type);
+	    i (tt_typedef);
 	    dump (dumper::TREE)
-	      && dump ("Writing interstitial named type %C:%N%S",
+	      && dump ("Writing implicit typedef %C:%N%S",
 		       TREE_CODE (name), name, name);
 	  }
 	tree_ctx (name, looking_inside, NULL_TREE);
 	if (streaming_p ())
-	  dump (dumper::TREE) && dump ("Wrote named type %C:%N%S",
+	  dump (dumper::TREE) && dump ("Wrote implicit typedef %C:%N%S",
 				       TREE_CODE (name), name, name);
-	if (primary)
-	  return false;
+	if (TREE_VISITED (type))
+	  {
+	    /* We emitted the type node via the name.  */
+	    walk_kind ref = ref_node (type);
+	    gcc_checking_assert (ref == WK_none);
+	    return false;
+	  }
+      }
+  if (false)
+  if (tree name = TYPE_NAME (type))
+    if (name != TYPE_STUB_DECL (type))
+      {
+	if (streaming_p ())
+	  {
+	    dump (dumper::TREE)
+	      && dump ("Writing typedef %C:%N%S",
+		       TREE_CODE (name), name, name);
+	    i (tt_typedef);
+	  }
+	tree_ctx (name, looking_inside, NULL_TREE);
 
-	ref = ref_node (type);
-	if (ref == WK_none)
-	  return true;
-	gcc_assert (ref != WK_mergeable);
+	/* We may have visited the type during the name walk.  */
+	if (TREE_VISITED (type))
+	  {
+	    /* We emitted the type node via the name.  */
+	    walk_kind ref = ref_node (type);
+	    gcc_checking_assert (ref == WK_none);
+	    return false;
+	  }
       }
 
   return true;
@@ -6854,16 +6866,30 @@ trees_out::tree_value (tree t, walk_kind walk)
 {
   if (streaming_p ())
     {
+      if (CHECKING_P && DECL_P (t))
+	{
+	  /* Never start in the middle of a template.  */
+	  int use_tpl = -1;
+	  if (tree ti = node_template_info (t, use_tpl))
+	    gcc_checking_assert (DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti))
+				 != t);
+	}
+
       /* A new node -> tt_node.  */
       unique++;
       if (walk != WK_mergeable)
 	i (tt_node);
+
       u (TREE_CODE (t));
       if (walk != WK_mergeable)
 	start (t);
       // FIXME: If mergeable, mark function parms etc as mergeable too
     }
 
+  /* For a template_decl, we must atomically add its
+     TEMPLATE_DECL_RESULT node.  For an IMPLICIT_TYPEDEF we must
+     atomically add its TREE_TYPE node.  */
+  // FIXME: regular typedefs need something too?
   int tag = insert (t, walk);
   if (streaming_p ())
     dump (dumper::TREE)
@@ -6913,9 +6939,11 @@ trees_out::tree_value (tree t, walk_kind walk)
       tree_node_bools (type);
       tree_node_vals (type);
     }
+
   if (tpl)
     tree_node_vals (tpl);
   tree_node_vals (t);
+
   if (streaming_p ())
     dump (dumper::TREE) && dump ("Written:%d %C:%N", tag, TREE_CODE (t), t);
 }
@@ -7120,22 +7148,12 @@ trees_in::tree_node ()
       }
       break;
 
-    case tt_primary_type:
-    case tt_secondary_type:
-      /* An interstitial type name.  Read the name and then the type again.  */
+    case tt_typedef:
       res = tree_node ();
       dump (dumper::TREE)
-	&& dump ("Read named type %C:%N%S",
+	&& dump ("Read typedef %C:%N%S",
 		 res ? TREE_CODE (res) : ERROR_MARK, res, res);
-      if (!res || TREE_CODE (res) != TYPE_DECL)
-	{
-	  set_overrun ();
-	  res = NULL_TREE;
-	}
-      else if (tag == tt_primary_type)
-	res = TREE_TYPE (res);
-      else
-	res = tree_node ();
+      res = tree_node ();
       break;
 
     case tt_ptrmem_type:
@@ -7245,9 +7263,9 @@ trees_in::tree_node ()
 	}
       break;
 
-    case tt_named_decl:
+    case tt_named:
     case tt_implicit_template:
-    case tt_anon_decl:
+    case tt_anon:
       {
 	/* A named decl.  */
 	unsigned owner;
@@ -7265,7 +7283,7 @@ trees_in::tree_node ()
 	    res = lookup_by_ident (ctx, name, owner, ident);
 	    if (!res)
 	      ;
-	    else if (tag == tt_anon_decl)
+	    else if (tag == tt_anon)
 	      res = TYPE_STUB_DECL (TREE_TYPE (res));
 	    else if (tag == tt_implicit_template)
 	      {
@@ -7294,14 +7312,24 @@ trees_in::tree_node ()
 	    dump (dumper::TREE)
 	      && dump ("%s:%d %C:%N@%M", kind, tag, TREE_CODE (res),
 		       res, (*modules)[owner]);
-	    if (TREE_TYPE (res) && u ())
+
+	    tree proxy = res;
+	    if (TREE_CODE (proxy) == TEMPLATE_DECL)
 	      {
-		/* Insert the type too.  */
-		tree type = TREE_TYPE (res);
-		tag = insert (type);
+		proxy = DECL_TEMPLATE_RESULT (res);
+		tag = insert (proxy);
 		dump (dumper::TREE)
-		  && dump ("Read imported type:%d %C:%N%S", tag,
-			   TREE_CODE (type), type, type);
+		  && dump ("Read templates' result:%d %C:%N", tag,
+			   TREE_CODE (proxy), proxy);
+	      }
+
+	    if (DECL_IMPLICIT_TYPEDEF_P (proxy))
+	      {
+		proxy = TREE_TYPE (proxy);
+		tag = insert (proxy);
+		dump (dumper::TREE)
+		  && dump ("Read decl's type:%d %C:%N", tag,
+			   TREE_CODE (proxy), proxy);
 	      }
 	  }
       }
@@ -10986,7 +11014,6 @@ module_state::read_partitions (unsigned count)
 /* Contents of a cluster.  */
 enum cluster_tag {
   ct_decl,	/* A decl.  */
-  ct_specialization, /* A specialization.  */
   ct_bind,	/* A binding.  */
   ct_horcrux,	/* Preseed reference to unnamed decl.  */
   ct_mergeable,	/* A set of mergeable decls.  */
@@ -11002,7 +11029,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 			     depset::hash &table, unsigned &unnamed,
 			     unsigned *crc_ptr)
 {
-  dump () && dump ("Writing SCC:%u %u depsets", scc[0]->section, size);
+  dump () && dump ("Writing section:%u %u depsets", scc[0]->section, size);
   dump.indent ();
 
   unsigned incoming_unnamed = unnamed;
@@ -11095,11 +11122,13 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		      unsigned tag = sec.insert (u_decl);
 		      dump () && dump ("Inserted:%d horcrux:%u@%u for %N",
 				       tag, index, owner, u_decl);
-		      int type_tag = sec.maybe_insert_typeof (u_decl);
-		      sec.u (type_tag != 0);
-		      if (type_tag)
-			dump () && dump ("Inserted:%d type tag for %N",
-					 type_tag, u_decl);
+		      if (DECL_IMPLICIT_TYPEDEF_P (u_decl))
+			{
+			  tree type = TREE_TYPE (u_decl);
+			  int type_tag = sec.insert (type);
+			  dump () && dump ("Inserted:%d type tag for %N",
+					   type_tag, u_decl);
+			}
 		    }
 		}
 	      else
@@ -11240,7 +11269,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
     gcc_checking_assert (scc[ix]->section == snum);
 
   dump.outdent ();
-  dump () && dump ("Wrote SCC:%u section:%N", scc[0]->section, naming_decl);
+  dump () && dump ("Wrote section:%u named-by:%N", scc[0]->section, naming_decl);
 }
 
 /* Read a cluster from section SNUM.  */
@@ -11376,7 +11405,7 @@ module_state::read_cluster (unsigned snum)
 		    int tag = sec.insert (decl);
 		    dump () && dump ("Inserted:%d horcrux:%u@%u %N", tag,
 				     index, owner, decl);
-		    if (sec.u ())
+		    if (DECL_IMPLICIT_TYPEDEF_P (decl))
 		      {
 			tag = sec.insert (TREE_TYPE (decl));
 			dump () && dump ("Inserted:%d type tag for %N",

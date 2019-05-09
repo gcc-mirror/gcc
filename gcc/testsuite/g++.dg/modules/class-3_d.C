@@ -20,7 +20,7 @@ int main ()
 }
 
 // { dg-final { scan-lang-dump {Imported:-[0-9]* type_decl:'::X@One:2'@One} module } }
-// { dg-final { scan-lang-dump {Read imported type:-[0-9]* record_type:'::X@One:2'} module } }
-// { dg-final { scan-lang-dump {Read named type type_decl:'::X@One:2'} module } }
+// { dg-final { scan-lang-dump {Read decl's type:-[0-9]* record_type:'::X@One:2'} module } }
+// { dg-final { scan-lang-dump {Read typedef type_decl:'::X@One:2'} module } }
 // { dg-final { scan-lang-dump {Imported:-[0-9]* field_decl:'::X@One:2::a'@One} module } }
 // { dg-final { scan-lang-dump {Imported:-[0-9]* field_decl:'::X@One:2::b'@One} module } }

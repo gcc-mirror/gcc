@@ -22,6 +22,5 @@ int main ()
 // { dg-final { scan-lang-dump {>Lazily binding '::foo::TPL'@'foo' section} module } }
 
 // { dg-final { scan-lang-dump {Imported:-[0-9]* template_decl:'::foo::TPL@foo:2'@foo} module } }
-// { dg-final { scan-lang-dump {Imported:-[0-9]* function_decl:'::foo::TPL@bar:3<0x0>::frob<0x0>'@\(detached\)} module } }
 // { dg-final { scan-lang-dump {Reading definition type_decl '::foo::TPL@bar:3<0x0>'} module } }
 // { dg-final { scan-lang-dump {Voldemort decl:0 \[0\] '::foo::TPL@bar:3<0x0>} module } }

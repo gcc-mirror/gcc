@@ -24,7 +24,8 @@ namespace bar
 // { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::TPL@foo:2'@foo} module } }
 
 // { dg-final { scan-lang-dump {Cluster:1 1 depsets\n  \[0\]=specialization definition '::foo::TPL@bar:1<0x0>'} module } }
-// { dg-final { scan-lang-dump {Cluster:3 1 depsets\n  \[0\]=specialization definition '::foo::X@foo:2::frob@bar:1<0x0>'} module } }
-// { dg-final { scan-lang-dump {Wrote:-6 global specialization type_decl:'::foo::TPL@bar:1<0x0>'} module } }
-// { dg-final { scan-lang-dump {Wrote:-9 global specialization function_decl:'::foo::X@foo:2::frob@bar:1<0x0>'} module } }
-// { dg-final { scan-lang-dump {Voldemort:1 '::foo::X@foo:2::frob@bar:1<0x0>'} module } }
+// { dg-final { scan-lang-dump {Cluster:2 1 depsets\n  \[0\]=specialization definition '::foo::TPL@bar:1<0x0>::frob<0x0>'} module } }
+// { dg-final { scan-lang-dump {Cluster:4 1 depsets\n  \[0\]=specialization definition '::foo::X@foo:2::frob@bar:1<0x0>'} module } }
+// { dg-final { scan-lang-dump {Wrote:-8 global specialization type_decl:'::foo::TPL@bar:1<0x0>'} module } }
+// { dg-final { scan-lang-dump {Wrote:-10 global specialization function_decl:'::foo::X@foo:2::frob@bar:1<0x0>'} module } }
+// { dg-final { scan-lang-dump {Voldemort:2 '::foo::X@foo:2::frob@bar:1<0x0>'} module } }

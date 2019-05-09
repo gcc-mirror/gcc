@@ -1,3 +1,24 @@
+2019-05-09  Nathan Sidwell  <nathan@acm.org>
+
+	Atomically mark template's DECL_TEMPLATE_RESULT, IMPLICIT_TYPEDEF's type
+	gcc/cp/
+	* module.cc (enum tree_tag): Replace
+	tt_{primary,secondary}_type with tt_typedef.
+	(trees_out::mark_node): Mark the template_decl.
+	(trees_out::maybe_insert_typeof): Delete.
+	(trees_out::tree_decl): Stream the template_decl, name implicit
+	templates. Always mark result & type.
+	(trees_out::tree_type): Simplify implicit_typedef streaming.
+	(trees_out::tree_value): Assert correct ordering.
+	(trees_in::tree_node): Adjust tt switch.  Insert result & type.
+	(module_state::{read,write}_cluster): Always add voldemort's type.
+	gcc/testsuite/
+	* g++.dg/modules/class-3_[bd].C: Adjust module dump scans.
+	* g++.dg/modules/indirect-[234]_[bc].C: Likewise.
+	* g++.dg/modules/inst-[234]_[ab].C: Likewise.
+	* g++.dg/modules/stdio-1_a.H: Likewise.
+	* g++.dg/modules/using-4_a.C: Likewise.
+
 2019-05-07  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/testsuite/

@@ -10,5 +10,5 @@ int main ()
   return 0;
 }
 
-// { dg-final { scan-lang-dump {Read:-4 new mergeable specialization type_decl:'::TPL'} module } }
-// { dg-final { scan-lang-dump {Reading mergeable:-4 type_decl} module } }
+// { dg-final { scan-lang-dump {Read:-6 new mergeable specialization type_decl:'::TPL'} module } }
+// { dg-final { scan-lang-dump {Reading mergeable:-6 type_decl} module } }

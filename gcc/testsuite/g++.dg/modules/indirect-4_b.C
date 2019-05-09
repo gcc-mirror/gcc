@@ -17,7 +17,7 @@ namespace bar
 
 // { dg-final { scan-lang-dump {Cluster:1 1 depsets\n  \[0\]=specialization definition '::foo::TPL@bar:1<0x1>'} module } }
 // { dg-final { scan-lang-dump {Cluster:2 1 depsets\n  \[0\]=specialization definition '::foo::TPL@bar:1<0x1>::frob@bar:1<0x2>'} module } }
-// { dg-final { scan-lang-dump {Wrote:-6 global specialization type_decl:'::foo::TPL@bar:1<0x1>'} module } }
+// { dg-final { scan-lang-dump {Wrote:-8 global specialization type_decl:'::foo::TPL@bar:1<0x1>'} module } }
 // { dg-final { scan-lang-dump {Inserted:-1 horcrux:0@0 for '::foo::TPL@bar:1<0x1>'} module } }
-// { dg-final { scan-lang-dump {Wrote:-13 global specialization function_decl:'::foo::TPL@bar:1<0x1>::frob@bar:1<0x2>'} module } }
+// { dg-final { scan-lang-dump {Wrote:-16 global specialization function_decl:'::foo::TPL@bar:1<0x1>::frob@bar:1<0x2>'} module } }
 // { dg-final { scan-lang-dump {Writing unnamed\n Unnamed 0 '::foo::TPL@bar:1<0x1>' section:1\n Unnamed 1 '::foo::TPL@bar:1<0x1>::frob@bar:1<0x2>' section:2} module } }
