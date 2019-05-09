@@ -1,3 +1,7 @@
+2019-05-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* cif-code.def (CHKP): Remove.
+
 2019-05-07  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	Backport from mainline.
