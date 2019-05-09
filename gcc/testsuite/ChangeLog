@@ -1,3 +1,8 @@
+2019-05-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/90405
+	* gcc.target/arm/pr90405.c: New test.
+
 2019-05-09  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/gimplefe-39.c: New test.
