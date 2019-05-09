@@ -1,3 +1,21 @@
+2019-05-09  Martin Liska  <mliska@suse.cz>
+
+	* tree-cfg.c (dump_function_to_file): Dump entry BB count.
+	* gimple-pretty-print.c (dump_gimple_bb_header):
+	Dump BB count.
+	(pp_cfg_jump): Dump edge probability.
+	* profile-count.c (profile_quality_as_string): Simplify
+	with a static array.
+	(parse_profile_quality): New function.
+	(profile_count::dump): Simplify with a static array.
+	(profile_count::from_gcov_type): Add new argument.
+	* profile-count.h (parse_profile_quality): Likewise.
+	* predict.h (set_hot_bb_threshold): New.
+	* params.def (PARAM_GIMPLE_FE_COMPUTED_HOT_BB_THRESHOLD):
+	New param.
+	* predict.c (get_hot_bb_threshold): Set from the new param.
+	(set_hot_bb_threshold): New.
+
 2019-05-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90395
