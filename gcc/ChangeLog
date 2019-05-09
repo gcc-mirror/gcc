@@ -1,3 +1,9 @@
+2019-05-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90395
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Do not
+	rewrite vector stores that throw internally.
+
 2019-05-09  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* cif-code.def (CHKP): Remove.
