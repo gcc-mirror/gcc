@@ -1,3 +1,22 @@
+2019-05-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_deque.h
+	(operator==(const _Deque_iterator<>&, const _Deque_iterator<>&)):
+	Make hidden friend.
+	(operator!=(const _Deque_iterator<>&, const _Deque_iterator<>&)):
+	Likewise.
+	(operator<(const _Deque_iterator<>&, const _Deque_iterator<>&)):
+	Likewise.
+	(operator<=(const _Deque_iterator<>&, const _Deque_iterator<>&)):
+	Likewise.
+	(operator>(const _Deque_iterator<>&, const _Deque_iterator<>&)):
+	Likewise.
+	(operator>=(const _Deque_iterator<>&, const _Deque_iterator<>&)):
+	Likewise.
+	(_Deque_iterator<>::operator+(difference_type)): Likewise and allow NRVO
+	copy elision.
+	(_Deque_iterator<>::operator-(difference_type)): Likewise.
+
 2019-05-08  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/90277
