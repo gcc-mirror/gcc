@@ -1,3 +1,8 @@
+2019-05-09  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/88879
+	* sel-sched.c (sel_target_adjust_priority): Remove assert.
+
 2019-05-09  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/90405
