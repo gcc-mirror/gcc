@@ -12197,8 +12197,8 @@ if test "${enable_frame_pointer+set}" = set; then :
 else
 
 case $target_os in
-linux* | darwin[8912]*)
-  # Enable -fomit-frame-pointer by default for Linux and Darwin with DWARF2.
+linux* | gnu* | darwin[8912]*)
+  # Enable -fomit-frame-pointer by default for these systems with DWARF2.
   enable_frame_pointer=no
   ;;
 *)
