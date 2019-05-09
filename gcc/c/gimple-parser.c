@@ -750,7 +750,9 @@ c_parser_gimple_statement (gimple_parser &parser, gimple_seq *seq)
       {
 	tree id = c_parser_peek_token (parser)->value;
 	if (strcmp (IDENTIFIER_POINTER (id), "__ABS") == 0
-	    || strcmp (IDENTIFIER_POINTER (id), "__ABSU") == 0)
+	    || strcmp (IDENTIFIER_POINTER (id), "__ABSU") == 0
+	    || strcmp (IDENTIFIER_POINTER (id), "__MIN") == 0
+	    || strcmp (IDENTIFIER_POINTER (id), "__MAX") == 0)
 	  goto build_unary_expr;
 	break;
       }
@@ -989,6 +991,32 @@ c_parser_gimple_binary_expression (gimple_parser &parser)
   return ret;
 }
 
+/* Parse a gimple parentized binary expression.  */
+
+static c_expr
+c_parser_gimple_parentized_binary_expression (gimple_parser &parser,
+					      location_t op_loc,
+					      tree_code code)
+{
+  struct c_expr ret;
+  ret.set_error ();
+
+  c_parser_consume_token (parser);
+  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+    return ret;
+  c_expr op1 = c_parser_gimple_postfix_expression (parser);
+  if (!c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
+    return ret;
+  c_expr op2 = c_parser_gimple_postfix_expression (parser);
+  if (!c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>"))
+    return ret;
+
+  if (op1.value != error_mark_node && op2.value != error_mark_node)
+    ret.value = build2_loc (op_loc,
+			    code, TREE_TYPE (op1.value), op1.value, op2.value);
+  return ret;
+}
+
 /* Parse gimple unary expression.
 
    gimple-unary-expression:
@@ -1078,6 +1106,14 @@ c_parser_gimple_unary_expression (gimple_parser &parser)
 	      op = c_parser_gimple_postfix_expression (parser);
 	      return parser_build_unary_op (op_loc, ABSU_EXPR, op);
 	    }
+	  else if (strcmp (IDENTIFIER_POINTER (id), "__MIN") == 0)
+	    return c_parser_gimple_parentized_binary_expression (parser,
+								 op_loc,
+								 MIN_EXPR);
+	  else if (strcmp (IDENTIFIER_POINTER (id), "__MAX") == 0)
+	    return c_parser_gimple_parentized_binary_expression (parser,
+								 op_loc,
+								 MAX_EXPR);
 	  else
 	    return c_parser_gimple_postfix_expression (parser);
 	}

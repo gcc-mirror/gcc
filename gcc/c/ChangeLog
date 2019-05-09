@@ -1,5 +1,13 @@
 2019-05-09  Martin Liska  <mliska@suse.cz>
 
+	* gimple-parser.c (c_parser_gimple_statement): Support __MIN and
+	__MAX.
+	(c_parser_gimple_unary_expression): Parse also binary expression
+	__MIN and __MAX.
+	(c_parser_gimple_parentized_binary_expression): New function.
+
+2019-05-09  Martin Liska  <mliska@suse.cz>
+
 	* gimple-parser.c (struct gimple_parser): Add probability.
 	for gimple_parser_edge.
 	(gimple_parser::push_edge): Add new argument probability.
