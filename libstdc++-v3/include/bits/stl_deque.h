@@ -239,23 +239,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return *this;
       }
 
-      _Self
-      operator+(difference_type __n) const _GLIBCXX_NOEXCEPT
-      {
-	_Self __tmp = *this;
-	return __tmp += __n;
-      }
-
       _Self&
       operator-=(difference_type __n) _GLIBCXX_NOEXCEPT
       { return *this += -__n; }
-
-      _Self
-      operator-(difference_type __n) const _GLIBCXX_NOEXCEPT
-      {
-	_Self __tmp = *this;
-	return __tmp -= __n;
-      }
 
       reference
       operator[](difference_type __n) const _GLIBCXX_NOEXCEPT
@@ -273,123 +259,118 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_M_first = *__new_node;
 	_M_last = _M_first + difference_type(_S_buffer_size());
       }
+
+      friend bool
+      operator==(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      { return __x._M_cur == __y._M_cur; }
+
+      // Note: we also provide overloads whose operands are of the same type in
+      // order to avoid ambiguous overload resolution when std::rel_ops operators
+      // are in scope (for additional details, see libstdc++/3628)
+      template<typename _RefR, typename _PtrR>
+	friend bool
+	operator==(const _Self& __x,
+		   const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
+	{ return __x._M_cur == __y._M_cur; }
+
+      friend bool
+      operator!=(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      { return !(__x == __y); }
+
+      template<typename _RefR, typename _PtrR>
+	friend bool
+	operator!=(const _Self& __x,
+		   const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
+	{ return !(__x == __y); }
+
+      friend bool
+      operator<(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      {
+	return (__x._M_node == __y._M_node)
+	  ? (__x._M_cur < __y._M_cur) : (__x._M_node < __y._M_node);
+      }
+
+      template<typename _RefR, typename _PtrR>
+	friend bool
+	operator<(const _Self& __x,
+		  const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
+	{
+	  return (__x._M_node == __y._M_node)
+	    ? (__x._M_cur < __y._M_cur) : (__x._M_node < __y._M_node);
+	}
+
+      friend bool
+      operator>(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      { return __y < __x; }
+
+      template<typename _RefR, typename _PtrR>
+	friend bool
+	operator>(const _Self& __x,
+		  const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
+	{ return __y < __x; }
+
+      friend bool
+      operator<=(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      { return !(__y < __x); }
+
+      template<typename _RefR, typename _PtrR>
+	friend bool
+	operator<=(const _Self& __x,
+		   const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
+	{ return !(__y < __x); }
+
+      friend bool
+      operator>=(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      { return !(__x < __y); }
+
+      template<typename _RefR, typename _PtrR>
+	friend bool
+	operator>=(const _Self& __x,
+		   const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
+	{ return !(__x < __y); }
+
+      friend difference_type
+      operator-(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      {
+	return difference_type(_S_buffer_size())
+	  * (__x._M_node - __y._M_node - 1) + (__x._M_cur - __x._M_first)
+	  + (__y._M_last - __y._M_cur);
+      }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // According to the resolution of DR179 not only the various comparison
+      // operators but also operator- must accept mixed iterator/const_iterator
+      // parameters.
+      template<typename _RefR, typename _PtrR>
+	friend difference_type
+	operator-(const _Self& __x,
+		  const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
+	{
+	  return difference_type(_S_buffer_size())
+	    * (__x._M_node - __y._M_node - 1) + (__x._M_cur - __x._M_first)
+	    + (__y._M_last - __y._M_cur);
+	}
+
+      friend _Self
+      operator+(const _Self& __x, difference_type __n) _GLIBCXX_NOEXCEPT
+      {
+	_Self __tmp = __x;
+	__tmp += __n;
+	return __tmp;
+      }
+
+      friend _Self
+      operator-(const _Self& __x, difference_type __n) _GLIBCXX_NOEXCEPT
+      {
+	_Self __tmp = __x;
+	__tmp -= __n;
+	return __tmp;
+      }
+
+      friend _Self
+      operator+(difference_type __n, const _Self& __x) _GLIBCXX_NOEXCEPT
+      { return __x + __n; }
     };
-
-  // Note: we also provide overloads whose operands are of the same type in
-  // order to avoid ambiguous overload resolution when std::rel_ops operators
-  // are in scope (for additional details, see libstdc++/3628)
-  template<typename _Tp, typename _Ref, typename _Ptr>
-    inline bool
-    operator==(const _Deque_iterator<_Tp, _Ref, _Ptr>& __x,
-	       const _Deque_iterator<_Tp, _Ref, _Ptr>& __y) _GLIBCXX_NOEXCEPT
-    { return __x._M_cur == __y._M_cur; }
-
-  template<typename _Tp, typename _RefL, typename _PtrL,
-	   typename _RefR, typename _PtrR>
-    inline bool
-    operator==(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
-	       const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
-    { return __x._M_cur == __y._M_cur; }
-
-  template<typename _Tp, typename _Ref, typename _Ptr>
-    inline bool
-    operator!=(const _Deque_iterator<_Tp, _Ref, _Ptr>& __x,
-	       const _Deque_iterator<_Tp, _Ref, _Ptr>& __y) _GLIBCXX_NOEXCEPT
-    { return !(__x == __y); }
-
-  template<typename _Tp, typename _RefL, typename _PtrL,
-	   typename _RefR, typename _PtrR>
-    inline bool
-    operator!=(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
-	       const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
-    { return !(__x == __y); }
-
-  template<typename _Tp, typename _Ref, typename _Ptr>
-    inline bool
-    operator<(const _Deque_iterator<_Tp, _Ref, _Ptr>& __x,
-	      const _Deque_iterator<_Tp, _Ref, _Ptr>& __y) _GLIBCXX_NOEXCEPT
-    { return (__x._M_node == __y._M_node) ? (__x._M_cur < __y._M_cur)
-					  : (__x._M_node < __y._M_node); }
-
-  template<typename _Tp, typename _RefL, typename _PtrL,
-	   typename _RefR, typename _PtrR>
-    inline bool
-    operator<(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
-	      const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
-    { return (__x._M_node == __y._M_node) ? (__x._M_cur < __y._M_cur)
-					  : (__x._M_node < __y._M_node); }
-
-  template<typename _Tp, typename _Ref, typename _Ptr>
-    inline bool
-    operator>(const _Deque_iterator<_Tp, _Ref, _Ptr>& __x,
-	      const _Deque_iterator<_Tp, _Ref, _Ptr>& __y) _GLIBCXX_NOEXCEPT
-    { return __y < __x; }
-
-  template<typename _Tp, typename _RefL, typename _PtrL,
-	   typename _RefR, typename _PtrR>
-    inline bool
-    operator>(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
-	      const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
-    { return __y < __x; }
-
-  template<typename _Tp, typename _Ref, typename _Ptr>
-    inline bool
-    operator<=(const _Deque_iterator<_Tp, _Ref, _Ptr>& __x,
-	       const _Deque_iterator<_Tp, _Ref, _Ptr>& __y) _GLIBCXX_NOEXCEPT
-    { return !(__y < __x); }
-
-  template<typename _Tp, typename _RefL, typename _PtrL,
-	   typename _RefR, typename _PtrR>
-    inline bool
-    operator<=(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
-	       const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
-    { return !(__y < __x); }
-
-  template<typename _Tp, typename _Ref, typename _Ptr>
-    inline bool
-    operator>=(const _Deque_iterator<_Tp, _Ref, _Ptr>& __x,
-	       const _Deque_iterator<_Tp, _Ref, _Ptr>& __y) _GLIBCXX_NOEXCEPT
-    { return !(__x < __y); }
-
-  template<typename _Tp, typename _RefL, typename _PtrL,
-	   typename _RefR, typename _PtrR>
-    inline bool
-    operator>=(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
-	       const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
-    { return !(__x < __y); }
-
-  // _GLIBCXX_RESOLVE_LIB_DEFECTS
-  // According to the resolution of DR179 not only the various comparison
-  // operators but also operator- must accept mixed iterator/const_iterator
-  // parameters.
-  template<typename _Tp, typename _Ref, typename _Ptr>
-    inline typename _Deque_iterator<_Tp, _Ref, _Ptr>::difference_type
-    operator-(const _Deque_iterator<_Tp, _Ref, _Ptr>& __x,
-	      const _Deque_iterator<_Tp, _Ref, _Ptr>& __y) _GLIBCXX_NOEXCEPT
-    {
-      return typename _Deque_iterator<_Tp, _Ref, _Ptr>::difference_type
-	(_Deque_iterator<_Tp, _Ref, _Ptr>::_S_buffer_size())
-	* (__x._M_node - __y._M_node - 1) + (__x._M_cur - __x._M_first)
-	+ (__y._M_last - __y._M_cur);
-    }
-
-  template<typename _Tp, typename _RefL, typename _PtrL,
-	   typename _RefR, typename _PtrR>
-    inline typename _Deque_iterator<_Tp, _RefL, _PtrL>::difference_type
-    operator-(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
-	      const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
-    {
-      return typename _Deque_iterator<_Tp, _RefL, _PtrL>::difference_type
-	(_Deque_iterator<_Tp, _RefL, _PtrL>::_S_buffer_size())
-	* (__x._M_node - __y._M_node - 1) + (__x._M_cur - __x._M_first)
-	+ (__y._M_last - __y._M_cur);
-    }
-
-  template<typename _Tp, typename _Ref, typename _Ptr>
-    inline _Deque_iterator<_Tp, _Ref, _Ptr>
-    operator+(ptrdiff_t __n, const _Deque_iterator<_Tp, _Ref, _Ptr>& __x)
-    _GLIBCXX_NOEXCEPT
-    { return __x + __n; }
 
   template<typename _Tp>
     void
@@ -2306,8 +2287,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   */
   template<typename _Tp, typename _Alloc>
     inline bool
-    operator==(const deque<_Tp, _Alloc>& __x,
-                         const deque<_Tp, _Alloc>& __y)
+    operator==(const deque<_Tp, _Alloc>& __x, const deque<_Tp, _Alloc>& __y)
     { return __x.size() == __y.size()
 	     && std::equal(__x.begin(), __x.end(), __y.begin()); }
 
@@ -2324,37 +2304,32 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   */
   template<typename _Tp, typename _Alloc>
     inline bool
-    operator<(const deque<_Tp, _Alloc>& __x,
-	      const deque<_Tp, _Alloc>& __y)
+    operator<(const deque<_Tp, _Alloc>& __x, const deque<_Tp, _Alloc>& __y)
     { return std::lexicographical_compare(__x.begin(), __x.end(),
 					  __y.begin(), __y.end()); }
 
   /// Based on operator==
   template<typename _Tp, typename _Alloc>
     inline bool
-    operator!=(const deque<_Tp, _Alloc>& __x,
-	       const deque<_Tp, _Alloc>& __y)
+    operator!=(const deque<_Tp, _Alloc>& __x, const deque<_Tp, _Alloc>& __y)
     { return !(__x == __y); }
 
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
-    operator>(const deque<_Tp, _Alloc>& __x,
-	      const deque<_Tp, _Alloc>& __y)
+    operator>(const deque<_Tp, _Alloc>& __x, const deque<_Tp, _Alloc>& __y)
     { return __y < __x; }
 
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
-    operator<=(const deque<_Tp, _Alloc>& __x,
-	       const deque<_Tp, _Alloc>& __y)
+    operator<=(const deque<_Tp, _Alloc>& __x, const deque<_Tp, _Alloc>& __y)
     { return !(__y < __x); }
 
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
-    operator>=(const deque<_Tp, _Alloc>& __x,
-	       const deque<_Tp, _Alloc>& __y)
+    operator>=(const deque<_Tp, _Alloc>& __x, const deque<_Tp, _Alloc>& __y)
     { return !(__x < __y); }
 
   /// See std::deque::swap().
