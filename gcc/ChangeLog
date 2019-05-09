@@ -1,5 +1,10 @@
 2019-05-09  Martin Liska  <mliska@suse.cz>
 
+	* gimple-pretty-print.c (dump_binary_rhs): Dump MIN_EXPR
+	and MAX_EXPR in GIMPLE FE format.
+
+2019-05-09  Martin Liska  <mliska@suse.cz>
+
 	* tree-cfg.c (dump_function_to_file): Dump entry BB count.
 	* gimple-pretty-print.c (dump_gimple_bb_header):
 	Dump BB count.
