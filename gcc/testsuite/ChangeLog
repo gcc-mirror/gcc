@@ -1,6 +1,7 @@
 2019-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/90382
+	Revert:
 	2018-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/diagnostic/trailing1.C: New.
