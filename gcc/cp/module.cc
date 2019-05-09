@@ -2829,7 +2829,7 @@ private:
 
 public:
   /* Mark a node for special walking.  */
-  void mark_node (tree);
+  void mark_node (tree, bool outermost = false);
   void mark_mergeable (depset *);
 
 public:
@@ -3623,14 +3623,11 @@ node_template_info (tree decl, int &use)
 	   && (TREE_CODE (decl) == VAR_DECL
 	       || TREE_CODE (decl) == TYPE_DECL
 	       || TREE_CODE (decl) == FUNCTION_DECL
-	       /* || TREE_CODE (decl) == FIELD_DECL
-		  || TREE_CODE (decl) == TEMPLATE_DECL*/))
+	       || TREE_CODE (decl) == FIELD_DECL
+	       || TREE_CODE (decl) == TEMPLATE_DECL))
     {
       use_tpl = DECL_USE_TEMPLATE (decl);
       ti = DECL_TEMPLATE_INFO (decl);
-      gcc_assert (!ti || use_tpl
-		  || TREE_CODE (decl) != TEMPLATE_DECL
-		  || TI_TEMPLATE (ti) == decl);
     }
 
   use = use_tpl;
@@ -3801,11 +3798,7 @@ dumper::impl::nested_name (tree t)
       owner = MAYBE_DECL_MODULE_OWNER (t);
 
       int use_tpl;
-      // FIXME: See avoidance of TEMPLATE_DECL in node_template_info
-      if (TREE_CODE (t) == TEMPLATE_DECL)
-	ti = DECL_TEMPLATE_INFO (t);
-      else
-	ti = node_template_info (t, use_tpl);
+      ti = node_template_info (t, use_tpl);
 
       t = DECL_NAME (t) ? DECL_NAME (t)
 	: HAS_DECL_ASSEMBLER_NAME_P (t) ? DECL_ASSEMBLER_NAME_RAW (t)
@@ -4282,14 +4275,18 @@ trees_out::unmark_trees ()
    times on the same node.  */
 
 void
-trees_out::mark_node (tree decl)
+trees_out::mark_node (tree decl, bool outermost)
 {
   if (DECL_P (decl))
     {
       int use_tpl = -1;
       if (tree ti = node_template_info (decl, use_tpl))
-	if (DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == decl)
-	  decl = TI_TEMPLATE (ti);
+	{
+	  if (!outermost && use_tpl > 0)
+	    return;
+	  if (DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == decl)
+	    decl = TI_TEMPLATE (ti);
+	}
     }
   else
     gcc_checking_assert (TREE_CODE (decl) == INTEGER_CST);
@@ -7676,6 +7673,14 @@ trees_in::fn_parms ()
 /* DEP is a mergeable entity's depset, write out information so we may
    locate an existing declaration /before/ reading in the declaration
    to which it refers.  */
+// FIXME: We only need to deal with writing merge information for:
+// (a)  global module entities
+// (b) module partition entities
+// (c) specializations
+// We do not need to write merge information for (non-specialization)
+// entities in the primary partition.  When loaded there'll be nothing
+// to merge with.  (Subsequent partition loading in an implementation
+// unit will need merging.)
 
 void
 trees_out::tree_mergeable (depset *dep)
@@ -8021,15 +8026,12 @@ trees_in::is_matching_decl (tree existing, tree decl)
 static bool
 has_definition (tree decl)
 {
- again:
+  decl = STRIP_TEMPLATE (decl);
+
   switch (TREE_CODE (decl))
     {
     default:
       break;
-
-    case TEMPLATE_DECL:
-      decl = DECL_TEMPLATE_RESULT (decl);
-      goto again;
 
     case FUNCTION_DECL:
       if (!DECL_INITIAL (decl))
@@ -9192,7 +9194,7 @@ depset::hash::find_dependencies ()
 	walker.tree_ctx (OVL_FUNCTION (decl), false, NULL_TREE);
       else if (!TREE_VISITED (decl))
 	{
-	  walker.mark_node (decl);
+	  walker.mark_node (decl, true);
 	  if (current->has_defn ())
 	    walker.mark_definition (decl);
 	  /* Turn the Sneakoscope on when depending the decl.  */
@@ -9427,7 +9429,10 @@ cluster_cmp (const void *a_, const void *b_)
 	  ? -1 : +1);
 }
 
-/* Reduce graph to SCCS clusters.  */
+/* Reduce graph to SCCS clusters.  SCCS will be populated with the
+   depsets in dependency order.  Each depset's CLUSTER field contains
+   its cluster number.  Each SCC has a unique cluster number, and are
+   contiguous in SCCS. Cluster numbers are otherwise arbitrary.  */
 
 void
 depset::hash::connect (auto_vec<depset *> &sccs)
@@ -11122,12 +11127,22 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		      unsigned tag = sec.insert (u_decl);
 		      dump () && dump ("Inserted:%d horcrux:%u@%u for %N",
 				       tag, index, owner, u_decl);
-		      if (DECL_IMPLICIT_TYPEDEF_P (u_decl))
+
+		      tree proxy = u_decl;
+		      if (TREE_CODE (proxy) == TEMPLATE_DECL)
 			{
-			  tree type = TREE_TYPE (u_decl);
-			  int type_tag = sec.insert (type);
-			  dump () && dump ("Inserted:%d type tag for %N",
-					   type_tag, u_decl);
+			  proxy = DECL_TEMPLATE_RESULT (proxy);
+			  tag = sec.insert (proxy);
+			  dump ()
+			    && dump ("Inserted:%d template result %C:%N",
+				     tag, TREE_CODE (proxy), proxy);
+			}
+		      if (DECL_IMPLICIT_TYPEDEF_P (proxy))
+			{
+			  proxy = TREE_TYPE (proxy);
+			  tag = sec.insert (proxy);
+			  dump () && dump ("Inserted:%d type %C:%N",
+					   tag, TREE_CODE (proxy), proxy);
 			}
 		    }
 		}
@@ -11167,7 +11182,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	{
 	  tree decl = b->get_entity ();
 
-	  sec.mark_node (decl);
+	  sec.mark_node (decl, true);
 	  if (b->has_defn ())
 	    sec.mark_definition (decl);
 	}
@@ -11403,13 +11418,23 @@ module_state::read_cluster (unsigned snum)
 		if (tree decl = uent->slot)
 		  {
 		    int tag = sec.insert (decl);
-		    dump () && dump ("Inserted:%d horcrux:%u@%u %N", tag,
-				     index, owner, decl);
-		    if (DECL_IMPLICIT_TYPEDEF_P (decl))
+		    dump () && dump ("Inserted:%d horcrux:%u@%u %C:%N", tag,
+				     index, owner, TREE_CODE (decl), decl);
+		    tree proxy = decl;
+		    if (TREE_CODE (proxy) == TEMPLATE_DECL)
 		      {
-			tag = sec.insert (TREE_TYPE (decl));
-			dump () && dump ("Inserted:%d type tag for %N",
-					 tag, decl);
+			proxy = DECL_TEMPLATE_RESULT (proxy);
+			tag = sec.insert (proxy);
+			dump ()
+			  && dump ("Inserted:%d template result %C:%N",
+				   tag, TREE_CODE (proxy), proxy);
+		      }
+		    if (DECL_IMPLICIT_TYPEDEF_P (proxy))
+		      {
+			proxy = TREE_TYPE (proxy);
+			tag = sec.insert (proxy);
+			dump () && dump ("Inserted:%d type %C:%N",
+					 tag, TREE_CODE (proxy), proxy);
 		      }
 		  }
 	      }
@@ -13327,11 +13352,18 @@ module_state::sort_mergeables (auto_vec<depset *> &mergeables)
   auto_vec<depset *> sccs;
   table.connect (sccs);
 
-  /* Each mergeable must be its own cluster.  */
-  gcc_assert (sccs.length () == mergeables.length ());
+  unsigned cluster = 0;
+  for (unsigned ix = 0; ix != mergeables.length (); ix++)
+    {
+      depset *dep = sccs[ix]->deps[0];
+      mergeables[ix] = dep;
 
-  for (unsigned ix = mergeables.length (); ix--;)
-    mergeables[ix] = sccs[ix]->deps[0];
+      /* Each mergeable must be its own cluster.  */
+      gcc_assert (sccs[ix]->cluster != cluster);
+      cluster = sccs[ix]->cluster;
+      dump (dumper::MERGE) && dump ("Mergeable %u is %N",
+				    ix, dep->get_entity ());
+    }
 
   dump.outdent ();
 }

@@ -1,5 +1,12 @@
 2019-05-09  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc
+	gcc/testsuite/
+	* g++.dg/modules/indirect-[234]_[bc].C: Adjust module dump scans.
+	* g++.dg/modules/inst-[1234]_[ab].C: Likewise.
+	* g++.dg/modules/vmort-2_c.C: Likewise.
+
 	Atomically mark template's DECL_TEMPLATE_RESULT, IMPLICIT_TYPEDEF's type
 	gcc/cp/
 	* module.cc (enum tree_tag): Replace

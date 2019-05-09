@@ -9,6 +9,6 @@ int main ()
   return 0;
 }
 
-// { dg-final { scan-lang-dump {Read:-6 matched mergeable specialization type_decl:'::TPL<int>'} module } }
+// { dg-final { scan-lang-dump {Read:-10 matched mergeable specialization type_decl:'::TPL<int>'} module } }
 // { dg-final { scan-lang-dump {Deduping '::TPL<int>'} module } }
 // { dg-final { scan-lang-dump {Voldemort decl:0 \[0\] '::TPL<int>'} module } }
