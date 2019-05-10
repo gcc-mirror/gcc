@@ -1,6 +1,10 @@
 2019-05-10  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* decl.c (duplicate_decls): Don't check moduleness on friend decl.
+	* pt.c (tsubst_friend_function): Set module ownership.
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::{read,write}_function_def): Serialize
 	FRIEND_CONTEXT.
 	(trees_{in,out}::{read,write}_class_def): Reattach befriending classes.

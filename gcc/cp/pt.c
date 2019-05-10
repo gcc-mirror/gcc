@@ -10471,6 +10471,8 @@ tsubst_friend_function (tree decl, tree args)
       else
 	new_friend_result_template_info = NULL_TREE;
 
+      set_module_owner (new_friend);
+
       /* Inside pushdecl_namespace_level, we will push into the
 	 current namespace. However, the friend function should go
 	 into the namespace of the template.  */

@@ -1908,7 +1908,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
   if (modules_p ()
       && TREE_CODE (CP_DECL_CONTEXT (olddecl)) == NAMESPACE_DECL
-      && TREE_CODE (olddecl) != NAMESPACE_DECL)
+      && TREE_CODE (olddecl) != NAMESPACE_DECL
+      && !newdecl_is_friend)
     {
       if (!DECL_ARTIFICIAL (olddecl))
 	{
