@@ -4059,6 +4059,7 @@ visit_reference_op_call (tree lhs, gcall *stmt)
       vr2->hashcode = vr1.hashcode;
       vr2->result = lhs;
       vr2->result_vdef = vdef_val;
+      vr2->value_id = 0;
       slot = valid_info->references->find_slot_with_hash (vr2, vr2->hashcode,
 							  INSERT);
       gcc_assert (!*slot);
@@ -6467,6 +6468,7 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
   unsigned region_size = (((unsigned HOST_WIDE_INT)n * num_ssa_names)
 			  / (n_basic_blocks_for_fn (fn) - NUM_FIXED_BLOCKS));
   VN_TOP = create_tmp_var_raw (void_type_node, "vn_top");
+  next_value_id = 1;
 
   vn_ssa_aux_hash = new hash_table <vn_ssa_aux_hasher> (region_size * 2);
   gcc_obstack_init (&vn_ssa_aux_obstack);
