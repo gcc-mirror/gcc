@@ -54,7 +54,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #pragma GCC diagnostic pop
 #endif
 
-  /// Primary template of default_delete, used by unique_ptr
+  /// Primary template of default_delete, used by unique_ptr for single objects
   template<typename _Tp>
     struct default_delete
     {
@@ -63,14 +63,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /** @brief Converting constructor.
        *
-       * Allows conversion from a deleter for arrays of another type, @p _Up,
-       * only if @p _Up* is convertible to @p _Tp*.
+       * Allows conversion from a deleter for objects of another type, `_Up`,
+       * only if `_Up*` is convertible to `_Tp*`.
        */
       template<typename _Up, typename = typename
 	       enable_if<is_convertible<_Up*, _Tp*>::value>::type>
         default_delete(const default_delete<_Up>&) noexcept { }
 
-      /// Calls @c delete @p __ptr
+      /// Calls `delete __ptr`
       void
       operator()(_Tp* __ptr) const
       {
@@ -84,7 +84,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 740 - omit specialization for array objects with a compile time length
-  /// Specialization for arrays, default_delete.
+
+  /// Specialization of default_delete for arrays, used by `unique_ptr<T[]>`
   template<typename _Tp>
     struct default_delete<_Tp[]>
     {
@@ -95,17 +96,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /** @brief Converting constructor.
        *
        * Allows conversion from a deleter for arrays of another type, such as
-       * a const-qualified version of @p _Tp.
+       * a const-qualified version of `_Tp`.
        *
-       * Conversions from types derived from @c _Tp are not allowed because
-       * it is unsafe to @c delete[] an array of derived types through a
+       * Conversions from types derived from `_Tp` are not allowed because
+       * it is undefined to `delete[]` an array of derived types through a
        * pointer to the base type.
        */
       template<typename _Up, typename = typename
 	       enable_if<is_convertible<_Up(*)[], _Tp(*)[]>::value>::type>
         default_delete(const default_delete<_Up[]>&) noexcept { }
 
-      /// Calls @c delete[] @p __ptr
+      /// Calls `delete[] __ptr`
       template<typename _Up>
       typename enable_if<is_convertible<_Up(*)[], _Tp(*)[]>::value>::type
 	operator()(_Up* __ptr) const
@@ -115,6 +116,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	delete [] __ptr;
       }
     };
+
+  /// @cond undocumented
 
   template <typename _Tp, typename _Dp>
     class __uniq_ptr_impl
@@ -158,6 +161,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       tuple<pointer, _Dp> _M_t;
     };
+  /// @endcond
 
   /// 20.7.1.2 unique_ptr for single objects.
   template <typename _Tp, typename _Dp = default_delete<_Tp>>
@@ -688,6 +692,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @relates unique_ptr @{
 
+  /// Swap overload for unique_ptr
   template<typename _Tp, typename _Dp>
     inline
 #if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
@@ -707,6 +712,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	 unique_ptr<_Tp, _Dp>&) = delete;
 #endif
 
+  /// Equality operator for unique_ptr objects, compares the owned pointers.
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
     _GLIBCXX_NODISCARD inline bool
@@ -714,16 +720,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const unique_ptr<_Up, _Ep>& __y)
     { return __x.get() == __y.get(); }
 
+  /// unique_ptr comparison with nullptr
   template<typename _Tp, typename _Dp>
     _GLIBCXX_NODISCARD inline bool
     operator==(const unique_ptr<_Tp, _Dp>& __x, nullptr_t) noexcept
     { return !__x; }
 
+  /// unique_ptr comparison with nullptr
   template<typename _Tp, typename _Dp>
     _GLIBCXX_NODISCARD inline bool
     operator==(nullptr_t, const unique_ptr<_Tp, _Dp>& __x) noexcept
     { return !__x; }
 
+  /// Inequality operator for unique_ptr objects, compares the owned pointers
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
     _GLIBCXX_NODISCARD inline bool
@@ -731,16 +740,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const unique_ptr<_Up, _Ep>& __y)
     { return __x.get() != __y.get(); }
 
+  /// unique_ptr comparison with nullptr
   template<typename _Tp, typename _Dp>
     _GLIBCXX_NODISCARD inline bool
     operator!=(const unique_ptr<_Tp, _Dp>& __x, nullptr_t) noexcept
     { return (bool)__x; }
 
+  /// unique_ptr comparison with nullptr
   template<typename _Tp, typename _Dp>
     _GLIBCXX_NODISCARD inline bool
     operator!=(nullptr_t, const unique_ptr<_Tp, _Dp>& __x) noexcept
     { return (bool)__x; }
 
+  /// Relational operator for unique_ptr objects, compares the owned pointers
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
     _GLIBCXX_NODISCARD inline bool
@@ -753,6 +765,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::less<_CT>()(__x.get(), __y.get());
     }
 
+  /// unique_ptr comparison with nullptr
   template<typename _Tp, typename _Dp>
     _GLIBCXX_NODISCARD inline bool
     operator<(const unique_ptr<_Tp, _Dp>& __x, nullptr_t)
@@ -761,6 +774,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 								 nullptr);
     }
 
+  /// unique_ptr comparison with nullptr
   template<typename _Tp, typename _Dp>
     _GLIBCXX_NODISCARD inline bool
     operator<(nullptr_t, const unique_ptr<_Tp, _Dp>& __x)
@@ -769,6 +783,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 								 __x.get());
     }
 
+  /// Relational operator for unique_ptr objects, compares the owned pointers
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
     _GLIBCXX_NODISCARD inline bool
@@ -776,16 +791,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const unique_ptr<_Up, _Ep>& __y)
     { return !(__y < __x); }
 
+  /// unique_ptr comparison with nullptr
   template<typename _Tp, typename _Dp>
     _GLIBCXX_NODISCARD inline bool
     operator<=(const unique_ptr<_Tp, _Dp>& __x, nullptr_t)
     { return !(nullptr < __x); }
 
+  /// unique_ptr comparison with nullptr
   template<typename _Tp, typename _Dp>
     _GLIBCXX_NODISCARD inline bool
     operator<=(nullptr_t, const unique_ptr<_Tp, _Dp>& __x)
     { return !(__x < nullptr); }
 
+  /// Relational operator for unique_ptr objects, compares the owned pointers
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
     _GLIBCXX_NODISCARD inline bool
@@ -793,6 +811,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      const unique_ptr<_Up, _Ep>& __y)
     { return (__y < __x); }
 
+  /// unique_ptr comparison with nullptr
   template<typename _Tp, typename _Dp>
     _GLIBCXX_NODISCARD inline bool
     operator>(const unique_ptr<_Tp, _Dp>& __x, nullptr_t)
@@ -801,6 +820,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 								 __x.get());
     }
 
+  /// unique_ptr comparison with nullptr
   template<typename _Tp, typename _Dp>
     _GLIBCXX_NODISCARD inline bool
     operator>(nullptr_t, const unique_ptr<_Tp, _Dp>& __x)
@@ -809,6 +829,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 								 nullptr);
     }
 
+  /// Relational operator for unique_ptr objects, compares the owned pointers
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
     _GLIBCXX_NODISCARD inline bool
@@ -816,11 +837,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const unique_ptr<_Up, _Ep>& __y)
     { return !(__x < __y); }
 
+  /// unique_ptr comparison with nullptr
   template<typename _Tp, typename _Dp>
     _GLIBCXX_NODISCARD inline bool
     operator>=(const unique_ptr<_Tp, _Dp>& __x, nullptr_t)
     { return !(__x < nullptr); }
 
+  /// unique_ptr comparison with nullptr
   template<typename _Tp, typename _Dp>
     _GLIBCXX_NODISCARD inline bool
     operator>=(nullptr_t, const unique_ptr<_Tp, _Dp>& __x)

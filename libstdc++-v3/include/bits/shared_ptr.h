@@ -60,7 +60,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-  /// 20.7.2.2.11 shared_ptr I/O
+  // 20.7.2.2.11 shared_ptr I/O
+
+  /// Write the stored pointer to an ostream.
+  /// @relates shared_ptr
   template<typename _Ch, typename _Tr, typename _Tp, _Lock_policy _Lp>
     inline std::basic_ostream<_Ch, _Tr>&
     operator<<(std::basic_ostream<_Ch, _Tr>& __os,
@@ -82,6 +85,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   /// 20.7.2.2.10 shared_ptr get_deleter
+
+  /// If `__p` has a deleter of type `_Del`, return a pointer to it.
   /// @relates shared_ptr
   template<typename _Del, typename _Tp>
     inline _Del*
@@ -106,6 +111,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * A `shared_ptr` also stores another pointer, which is usually
    * (but not always) the same pointer as it owns. The stored pointer
    * can be retrieved by calling the `get()` member function.
+   *
+   * The equality and relational operators for `shared_ptr` only compare
+   * the stored pointer returned by `get()`, not the owned pointer.
+   * To test whether two `shared_ptr` objects share ownership of the same
+   * pointer see `std::shared_ptr::owner_before` and `std::owner_less`.
   */
   template<typename _Tp>
     class shared_ptr : public __shared_ptr<_Tp>
@@ -122,10 +132,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
 
+      /// The type pointed to by the stored pointer, remove_extent_t<_Tp>
       using element_type = typename __shared_ptr<_Tp>::element_type;
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 # define __cpp_lib_shared_ptr_weak_type 201606
+      /// The corresponding weak_ptr type for this shared_ptr
       using weak_type = weak_ptr<_Tp>;
 #endif
       /**
@@ -134,7 +146,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       constexpr shared_ptr() noexcept : __shared_ptr<_Tp>() { }
 
-      shared_ptr(const shared_ptr&) noexcept = default;
+      shared_ptr(const shared_ptr&) noexcept = default; ///< Copy constructor
 
       /**
        *  @brief  Construct a %shared_ptr that owns the pointer @a __p.
@@ -378,8 +390,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend class weak_ptr<_Tp>;
     };
 
-  /// @relates shared_ptr @{
-
 #if __cpp_deduction_guides >= 201606
   template<typename _Tp>
     shared_ptr(weak_ptr<_Tp>) ->  shared_ptr<_Tp>;
@@ -388,36 +398,46 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   // 20.7.2.2.7 shared_ptr comparisons
+
+  /// @relates shared_ptr @{
+
+  /// Equality operator for shared_ptr objects, compares the stored pointers
   template<typename _Tp, typename _Up>
     _GLIBCXX_NODISCARD inline bool
     operator==(const shared_ptr<_Tp>& __a, const shared_ptr<_Up>& __b) noexcept
     { return __a.get() == __b.get(); }
 
+  /// shared_ptr comparison with nullptr
   template<typename _Tp>
     _GLIBCXX_NODISCARD inline bool
     operator==(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
     { return !__a; }
 
+  /// shared_ptr comparison with nullptr
   template<typename _Tp>
     _GLIBCXX_NODISCARD inline bool
     operator==(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
     { return !__a; }
 
+  /// Inequality operator for shared_ptr objects, compares the stored pointers
   template<typename _Tp, typename _Up>
     _GLIBCXX_NODISCARD inline bool
     operator!=(const shared_ptr<_Tp>& __a, const shared_ptr<_Up>& __b) noexcept
     { return __a.get() != __b.get(); }
 
+  /// shared_ptr comparison with nullptr
   template<typename _Tp>
     _GLIBCXX_NODISCARD inline bool
     operator!=(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
     { return (bool)__a; }
 
+  /// shared_ptr comparison with nullptr
   template<typename _Tp>
     _GLIBCXX_NODISCARD inline bool
     operator!=(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
     { return (bool)__a; }
 
+  /// Relational operator for shared_ptr objects, compares the stored pointers
   template<typename _Tp, typename _Up>
     _GLIBCXX_NODISCARD inline bool
     operator<(const shared_ptr<_Tp>& __a, const shared_ptr<_Up>& __b) noexcept
@@ -428,6 +448,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return less<_Vp>()(__a.get(), __b.get());
     }
 
+  /// shared_ptr comparison with nullptr
   template<typename _Tp>
     _GLIBCXX_NODISCARD inline bool
     operator<(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
@@ -436,6 +457,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return less<_Tp_elt*>()(__a.get(), nullptr);
     }
 
+  /// shared_ptr comparison with nullptr
   template<typename _Tp>
     _GLIBCXX_NODISCARD inline bool
     operator<(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
@@ -444,52 +466,62 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return less<_Tp_elt*>()(nullptr, __a.get());
     }
 
+  /// Relational operator for shared_ptr objects, compares the stored pointers
   template<typename _Tp, typename _Up>
     _GLIBCXX_NODISCARD inline bool
     operator<=(const shared_ptr<_Tp>& __a, const shared_ptr<_Up>& __b) noexcept
     { return !(__b < __a); }
 
+  /// shared_ptr comparison with nullptr
   template<typename _Tp>
     _GLIBCXX_NODISCARD inline bool
     operator<=(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
     { return !(nullptr < __a); }
 
+  /// shared_ptr comparison with nullptr
   template<typename _Tp>
     _GLIBCXX_NODISCARD inline bool
     operator<=(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
     { return !(__a < nullptr); }
 
+  /// Relational operator for shared_ptr objects, compares the stored pointers
   template<typename _Tp, typename _Up>
     _GLIBCXX_NODISCARD inline bool
     operator>(const shared_ptr<_Tp>& __a, const shared_ptr<_Up>& __b) noexcept
     { return (__b < __a); }
 
+  /// shared_ptr comparison with nullptr
   template<typename _Tp>
     _GLIBCXX_NODISCARD inline bool
     operator>(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
     { return nullptr < __a; }
 
+  /// shared_ptr comparison with nullptr
   template<typename _Tp>
     _GLIBCXX_NODISCARD inline bool
     operator>(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
     { return __a < nullptr; }
 
+  /// Relational operator for shared_ptr objects, compares the stored pointers
   template<typename _Tp, typename _Up>
     _GLIBCXX_NODISCARD inline bool
     operator>=(const shared_ptr<_Tp>& __a, const shared_ptr<_Up>& __b) noexcept
     { return !(__a < __b); }
 
+  /// shared_ptr comparison with nullptr
   template<typename _Tp>
     _GLIBCXX_NODISCARD inline bool
     operator>=(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
     { return !(__a < nullptr); }
 
+  /// shared_ptr comparison with nullptr
   template<typename _Tp>
     _GLIBCXX_NODISCARD inline bool
     operator>=(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
     { return !(nullptr < __a); }
 
   // 20.7.2.2.8 shared_ptr specialized algorithms.
+
   /// Swap overload for shared_ptr
   template<typename _Tp>
     inline void
@@ -497,6 +529,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { __a.swap(__b); }
 
   // 20.7.2.2.9 shared_ptr casts.
+
   /// Convert type of `shared_ptr`, via `static_cast`
   template<typename _Tp, typename _Up>
     inline shared_ptr<_Tp>
@@ -540,9 +573,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // @}
 
   /**
-   *  @brief  A smart pointer with weak semantics.
+   * @brief  A non-owning observer for a pointer owned by a shared_ptr
    *
-   *  With forwarding constructors and assignment operators.
+   * A weak_ptr provides a safe alternative to a raw pointer when you want
+   * a non-owning reference to an object that is managed by a shared_ptr.
+   *
+   * Unlike a raw pointer, a weak_ptr can be converted to a new shared_ptr
+   * that shares ownership with every other shared_ptr that already owns
+   * the pointer. In other words you can upgrade from a non-owning "weak"
+   * reference to an owning shared_ptr, without having access to any of
+   * the existing shared_ptr objects.
+   *
+   * Also unlike a raw pointer, a weak_ptr does not become "dangling" after
+   * the object it points to has been destroyed. Instead, a weak_ptr
+   * becomes _expired_ and can no longer be converted to a shared_ptr that
+   * owns the freed pointer, so you cannot accidentally access the pointed-to
+   * object after it has been destroyed.
    */
   template<typename _Tp>
     class weak_ptr : public __weak_ptr<_Tp>
@@ -630,20 +676,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp = void>
     struct owner_less;
 
-  /// Void specialization of owner_less
+  /// Void specialization of owner_less compares either shared_ptr or weak_ptr
   template<>
     struct owner_less<void> : _Sp_owner_less<void, void>
     { };
 
   /// Partial specialization of owner_less for shared_ptr.
-  /// @relates shared_ptr
   template<typename _Tp>
     struct owner_less<shared_ptr<_Tp>>
     : public _Sp_owner_less<shared_ptr<_Tp>, weak_ptr<_Tp>>
     { };
 
   /// Partial specialization of owner_less for weak_ptr.
-  /// @relates weak_ptr
   template<typename _Tp>
     struct owner_less<weak_ptr<_Tp>>
     : public _Sp_owner_less<weak_ptr<_Tp>, shared_ptr<_Tp>>
@@ -704,7 +748,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       mutable weak_ptr<_Tp>  _M_weak_this;
     };
 
-  /// @relates unique_ptr @{
+  /// @relates shared_ptr @{
 
   /**
    *  @brief  Create an object that is owned by a shared_ptr.
