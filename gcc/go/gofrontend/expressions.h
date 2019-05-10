@@ -3982,6 +3982,9 @@ class Receive_expression : public Expression
   channel()
   { return this->channel_; }
 
+  static Expression*
+  do_import(Import_expression*, Location);
+
  protected:
   int
   do_traverse(Traverse* traverse)
@@ -4010,12 +4013,19 @@ class Receive_expression : public Expression
     return Expression::make_receive(this->channel_->copy(), this->location());
   }
 
+  int
+  do_inlining_cost() const
+  { return 1; }
+
   bool
   do_must_eval_in_order() const
   { return true; }
 
   Bexpression*
   do_get_backend(Translate_context*);
+
+  void
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
