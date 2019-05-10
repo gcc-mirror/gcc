@@ -1,5 +1,9 @@
 2019-05-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/90385
+	* tree-parloops.c (try_create_reduction_list): Punt on non-SSA_NAME
+	arguments of the exit phis.
+
 	PR c++/90383
 	* tree-inline.h (struct copy_body_data): Add do_not_fold member.
 	* tree-inline.c (remap_gimple_op_r): Avoid folding expressions if
