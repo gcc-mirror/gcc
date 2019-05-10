@@ -16,6 +16,7 @@ class Block;
 class Function;
 class Unnamed_label;
 class Export_function_body;
+class Import_function_body;
 class Assignment_statement;
 class Temporary_statement;
 class Variable_declaration_statement;
@@ -332,8 +333,7 @@ class Statement
   inlining_cost()
   { return this->do_inlining_cost(); }
 
-  // Export data for this statement to BODY.  INDENT is an indentation
-  // level used if the export data requires multiple lines.
+  // Export data for this statement to BODY.
   void
   export_statement(Export_function_body* efb)
   { this->do_export_statement(efb); }
@@ -514,10 +514,8 @@ class Statement
   { return 0x100000; }
 
   // Implemented by child class: write export data for this statement
-  // to the string.  The integer is an indentation level used if the
-  // export data requires multiple lines.  This need only be
-  // implemented by classes that implement do_inlining_cost with a
-  // reasonable value.
+  // to the string.  This need only be implemented by classes that
+  // implement do_inlining_cost with a reasonable value.
   virtual void
   do_export_statement(Export_function_body*)
   { go_unreachable(); }
@@ -746,6 +744,10 @@ class Variable_declaration_statement : public Statement
   var()
   { return this->var_; }
 
+  // Import a variable declaration.
+  static Statement*
+  do_import(Import_function_body*, Location);
+
  protected:
   int
   do_traverse(Traverse*);
@@ -755,6 +757,13 @@ class Variable_declaration_statement : public Statement
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
+
+  int
+  do_inlining_cost()
+  { return 1; }
+
+  void
+  do_export_statement(Export_function_body*);
 
   Statement*
   do_flatten(Gogo*, Named_object*, Block*, Statement_inserter*);

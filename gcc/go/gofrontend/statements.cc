@@ -155,6 +155,8 @@ Statement::import_statement(Import_function_body* ifb, Location loc)
       ifb->advance(6);
       return Statement::make_return_statement(NULL, loc);
     }
+  else if (ifb->match_c_string("var "))
+    return Variable_declaration_statement::do_import(ifb, loc);
 
   Expression* lhs = Expression::import_expression(ifb, loc);
   ifb->require_c_string(" = ");
@@ -406,6 +408,57 @@ Statement*
 Statement::make_variable_declaration(Named_object* var)
 {
   return new Variable_declaration_statement(var);
+}
+
+// Export a variable declaration.
+
+void
+Variable_declaration_statement::do_export_statement(Export_function_body* efb)
+{
+  efb->write_c_string("var ");
+  efb->write_string(Gogo::unpack_hidden_name(this->var_->name()));
+  efb->write_c_string(" ");
+  Variable* var = this->var_->var_value();
+  Type* type = var->type();
+  efb->write_type(type);
+  Expression* init = var->init();
+  if (init != NULL)
+    {
+      efb->write_c_string(" = ");
+
+      go_assert(efb->type_context() == NULL);
+      efb->set_type_context(type);
+
+      init->export_expression(efb);
+
+      efb->set_type_context(NULL);
+    }
+}
+
+// Import a variable declaration.
+
+Statement*
+Variable_declaration_statement::do_import(Import_function_body* ifb,
+					  Location loc)
+{
+  ifb->require_c_string("var ");
+  std::string id = ifb->read_identifier();
+  ifb->require_c_string(" ");
+  Type* type = ifb->read_type();
+  Expression* init = NULL;
+  if (ifb->match_c_string(" = "))
+    {
+      ifb->advance(3);
+      init = Expression::import_expression(ifb, loc);
+      Type_context context(type, false);
+      init->determine_type(&context);
+    }
+  Variable* var = new Variable(type, init, false, false, false, loc);
+  var->set_is_used();
+  // FIXME: The package we are importing does not yet exist, so we
+  // can't pass the correct package here.  It probably doesn't matter.
+  Named_object* no = ifb->block()->bindings()->add_variable(id, NULL, var);
+  return Statement::make_variable_declaration(no);
 }
 
 // Class Temporary_statement.
