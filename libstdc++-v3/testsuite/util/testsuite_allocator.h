@@ -334,7 +334,7 @@ namespace __gnu_test
       int get_personality() const { return personality; }
 
       pointer
-      allocate(size_type n, const void* hint = 0)
+      allocate(size_type n, const void* = 0)
       {
 	pointer p = AllocTraits::allocate(*this, n);
 
