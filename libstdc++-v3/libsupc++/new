@@ -28,7 +28,8 @@
  *
  *  The header @c new defines several functions to manage dynamic memory and
  *  handling memory allocation errors; see
- *  http://gcc.gnu.org/onlinedocs/libstdc++/18_support/howto.html#4 for more.
+ *  https://gcc.gnu.org/onlinedocs/libstdc++/manual/dynamic_memory.html
+ *  for more.
  */
 
 #ifndef _NEW
@@ -211,10 +212,13 @@ namespace std
 #if __cplusplus > 201703L
 namespace std
 {
+  /// Tag type used to declare a class-specific operator delete that can
+  /// invoke the destructor before deallocating the memory.
   struct destroying_delete_t
   {
     explicit destroying_delete_t() = default;
   };
+  /// Tag variable of type destroying_delete_t.
   inline constexpr destroying_delete_t destroying_delete{};
 }
 // Only define the feature test macro if the compiler supports the feature:
