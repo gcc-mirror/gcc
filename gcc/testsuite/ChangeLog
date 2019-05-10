@@ -1,3 +1,8 @@
+2019-05-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/78010 - bogus -Wsuggest-override warning on final function.
+	* g++.dg/warn/Wsuggest-override-2.C: New test.
+
 2019-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/90385

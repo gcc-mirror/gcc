@@ -1,3 +1,8 @@
+2019-05-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/78010 - bogus -Wsuggest-override warning on final function.
+	* class.c (check_for_override): Don't warn for final functions.
+
 2019-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR pch/90326
