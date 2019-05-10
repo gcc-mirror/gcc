@@ -5006,6 +5006,7 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 
   if (e->rank != 0)
     {
+      parmse->force_no_tmp = 1;
       if (fsym->attr.contiguous
 	  && !gfc_is_simply_contiguous (e, false, true))
 	gfc_conv_subref_array_arg (parmse, e, false, fsym->attr.intent,

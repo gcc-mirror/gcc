@@ -1,3 +1,19 @@
+2019-05-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/90093
+	* gfortran.dg/ISO_Fortran_binding_12.f90: New test.
+	* gfortran.dg/ISO_Fortran_binding_12.c: Supplementary code.
+
+	PR fortran/90352
+	* gfortran.dg/iso_c_binding_char_1.f90: New test.
+
+	PR fortran/90355
+	* gfortran.dg/ISO_Fortran_binding_4.f90: Add 'substr' to test
+	the direct passing of substrings as descriptors to bind(C).
+	* gfortran.dg/assign_10.f90: Increase the tree_dump count of
+	'atmp' to account for the setting of the 'span' field.
+	* gfortran.dg/transpose_optimization_2.f90: Ditto.
+
 2019-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/88709
@@ -305,7 +321,7 @@
 	PR fortran/60144
 	* gfortran.dg/block_name_2.f90: Adjust dg-error.
 	* gfortran.dg/dec_type_print_3.f90.f90: Likewise
-	* gfortran.dg/pr60144.f90: New test. 
+	* gfortran.dg/pr60144.f90: New test.
 
 2019-05-01  Jeff Law  <law@redhat.com>
 
