@@ -1,3 +1,7 @@
+2019-05-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* combine.c (combine_simplify_rtx): Don't make IF_THEN_ELSE RTL.
+
 2019-05-09  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* doc/loop.texi: Remove reference to FOR_EACH_LOOP_BREAK.
