@@ -1,3 +1,27 @@
+2019-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* call.c (build_call_a): Use FUNC_OR_METHOD_TYPE_P.
+	* cp-gimplify.c (cp_fold): Likewise.
+	* cp-objcp-common.c (cp_type_dwarf_attribute): Likewise.
+	* cp-tree.h (TYPE_OBJ_P, TYPE_PTROBV_P): Likewise.
+	* cvt.c (perform_qualification_conversions): Likewise.
+	* decl.c (grokdeclarator): Likewise.
+	* decl2.c (build_memfn_type): Likewise.
+	* mangle.c (canonicalize_for_substitution, write_type): Likewise.
+	* parser.c (cp_parser_omp_declare_reduction): Likewise.
+	* pt.c (check_explicit_specialization, uses_deducible_template_parms,
+	check_cv_quals_for_unify, dependent_type_p_r): Likewise.
+	* rtti.c (ptr_initializer): Likewise.
+	* semantics.c (finish_asm_stmt, finish_offsetof,
+	cp_check_omp_declare_reduction): Likewise.
+	* tree.c (cp_build_qualified_type_real,
+	cp_build_type_attribute_variant, cxx_type_hash_eq,
+	cxx_copy_lang_qualifiers, cp_free_lang_data): Likewise.
+	* typeck.c (structural_comptypes, convert_arguments,
+	cp_build_addr_expr_1, unary_complex_lvalue, cp_build_c_cast,
+	cp_build_modify_expr, comp_ptr_ttypes_real, type_memfn_rqual):
+	Likewise.
+
 2019-05-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/78010 - bogus -Wsuggest-override warning on final function.

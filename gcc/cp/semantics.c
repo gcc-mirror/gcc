@@ -1527,8 +1527,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 		  || CP_TYPE_CONST_P (TREE_TYPE (operand))
 		  /* Functions are not modifiable, even though they are
 		     lvalues.  */
-		  || TREE_CODE (TREE_TYPE (operand)) == FUNCTION_TYPE
-		  || TREE_CODE (TREE_TYPE (operand)) == METHOD_TYPE
+		  || FUNC_OR_METHOD_TYPE_P (TREE_TYPE (operand))
 		  /* If it's an aggregate and any field is const, then it is
 		     effectively const.  */
 		  || (CLASS_TYPE_P (TREE_TYPE (operand))
@@ -4141,8 +4140,7 @@ finish_offsetof (tree object_ptr, tree expr, location_t loc)
 	      TREE_OPERAND (expr, 2));
       return error_mark_node;
     }
-  if (TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE
-      || TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE
+  if (FUNC_OR_METHOD_TYPE_P (TREE_TYPE (expr))
       || TREE_TYPE (expr) == unknown_type_node)
     {
       while (TREE_CODE (expr) == COMPONENT_REF
@@ -5538,8 +5536,7 @@ cp_check_omp_declare_reduction (tree udr)
 	  return;
 	}
     }
-  else if (TREE_CODE (type) == FUNCTION_TYPE
-	   || TREE_CODE (type) == METHOD_TYPE
+  else if (FUNC_OR_METHOD_TYPE_P (type)
 	   || TREE_CODE (type) == ARRAY_TYPE)
     {
       error_at (loc, "function or array type %qT in "

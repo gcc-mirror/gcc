@@ -39646,8 +39646,7 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
 			   || id_equal (orig_reduc_id, "max")))))
 	error_at (loc, "predeclared arithmetic type %qT in "
 		       "%<#pragma omp declare reduction%>", type);
-      else if (TREE_CODE (type) == FUNCTION_TYPE
-	       || TREE_CODE (type) == METHOD_TYPE
+      else if (FUNC_OR_METHOD_TYPE_P (type)
 	       || TREE_CODE (type) == ARRAY_TYPE)
 	error_at (loc, "function or array type %qT in "
 		       "%<#pragma omp declare reduction%>", type);

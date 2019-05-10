@@ -2324,8 +2324,7 @@ cp_fold (tree x)
 
       /* Cope with user tricks that amount to offsetof.  */
       if (op0 != error_mark_node
-	  && TREE_CODE (TREE_TYPE (op0)) != FUNCTION_TYPE
-	  && TREE_CODE (TREE_TYPE (op0)) != METHOD_TYPE)
+	  && !FUNC_OR_METHOD_TYPE_P (TREE_TYPE (op0)))
 	{
 	  tree val = get_base_address (op0);
 	  if (val

@@ -1262,8 +1262,7 @@ structural_comptypes (tree t1, tree t2, int strict)
     return false;
   /* Need to check this before TYPE_MAIN_VARIANT.
      FIXME function qualifiers should really change the main variant.  */
-  if (TREE_CODE (t1) == FUNCTION_TYPE
-      || TREE_CODE (t1) == METHOD_TYPE)
+  if (FUNC_OR_METHOD_TYPE_P (t1))
     {
       if (type_memfn_rqual (t1) != type_memfn_rqual (t2))
 	return false;
@@ -4037,8 +4036,7 @@ convert_arguments (tree typelist, vec<tree, va_gc> **values, tree fndecl,
       if (type == 0 || !TYPE_REF_P (type))
 	{
 	  if (TREE_CODE (TREE_TYPE (val)) == ARRAY_TYPE
-	      || TREE_CODE (TREE_TYPE (val)) == FUNCTION_TYPE
-	      || TREE_CODE (TREE_TYPE (val)) == METHOD_TYPE)
+	      || FUNC_OR_METHOD_TYPE_P (TREE_TYPE (val)))
 	    val = decay_conversion (val, complain);
 	}
 
@@ -6022,8 +6020,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 
   /* Anything not already handled and not a true memory reference
      is an error.  */
-  if (TREE_CODE (argtype) != FUNCTION_TYPE
-      && TREE_CODE (argtype) != METHOD_TYPE)
+  if (!FUNC_OR_METHOD_TYPE_P (argtype))
     {
       cp_lvalue_kind kind = lvalue_kind (arg);
       if (kind == clk_none)
@@ -6600,8 +6597,7 @@ unary_complex_lvalue (enum tree_code code, tree arg)
       return arg;
     }
 
-  if (TREE_CODE (TREE_TYPE (arg)) == FUNCTION_TYPE
-      || TREE_CODE (TREE_TYPE (arg)) == METHOD_TYPE
+  if (FUNC_OR_METHOD_TYPE_P (TREE_TYPE (arg))
       || TREE_CODE (arg) == OFFSET_REF)
     return NULL_TREE;
 
@@ -7974,8 +7970,7 @@ cp_build_c_cast (tree type, tree expr, tsubst_flags_t complain)
 	}
     }
 
-  if (TREE_CODE (type) == FUNCTION_TYPE
-      || TREE_CODE (type) == METHOD_TYPE)
+  if (FUNC_OR_METHOD_TYPE_P (type))
     {
       if (complain & tf_error)
         error ("invalid cast to function type %qT", type);
@@ -8328,8 +8323,7 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
       && (TREE_READONLY (lhs) || CP_TYPE_CONST_P (lhstype)
 	  /* Functions are not modifiable, even though they are
 	     lvalues.  */
-	  || TREE_CODE (TREE_TYPE (lhs)) == FUNCTION_TYPE
-	  || TREE_CODE (TREE_TYPE (lhs)) == METHOD_TYPE
+	  || FUNC_OR_METHOD_TYPE_P (TREE_TYPE (lhs))
 	  /* If it's an aggregate and any field is const, then it is
 	     effectively const.  */
 	  || (CLASS_TYPE_P (lhstype)
@@ -9852,7 +9846,7 @@ comp_ptr_ttypes_real (tree to, tree from, int constp)
 
       /* Const and volatile mean something different for function types,
 	 so the usual checks are not appropriate.  */
-      if (TREE_CODE (to) != FUNCTION_TYPE && TREE_CODE (to) != METHOD_TYPE)
+      if (!FUNC_OR_METHOD_TYPE_P (to))
 	{
 	  if (!at_least_as_qualified_p (to, from))
 	    return 0;
@@ -10028,8 +10022,7 @@ cp_type_quals (const_tree type)
 cp_ref_qualifier
 type_memfn_rqual (const_tree type)
 {
-  gcc_assert (TREE_CODE (type) == FUNCTION_TYPE
-              || TREE_CODE (type) == METHOD_TYPE);
+  gcc_assert (FUNC_OR_METHOD_TYPE_P (type));
 
   if (!FUNCTION_REF_QUALIFIED (type))
     return REF_QUAL_NONE;

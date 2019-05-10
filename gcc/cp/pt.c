@@ -2906,8 +2906,7 @@ check_explicit_specialization (tree declarator,
 
   if ((specialization || member_specialization)
       /* This doesn't apply to variable templates.  */
-      && (TREE_CODE (TREE_TYPE (decl)) == FUNCTION_TYPE
-          || TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE))
+      && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (decl)))
     {
       tree t = TYPE_ARG_TYPES (TREE_TYPE (decl));
       for (; t; t = TREE_CHAIN (t))
@@ -20667,8 +20666,7 @@ uses_deducible_template_parms (tree type)
   /* type (T)
      T()
      T(T)  */
-  if (TREE_CODE (type) == FUNCTION_TYPE
-      || TREE_CODE (type) == METHOD_TYPE)
+  if (FUNC_OR_METHOD_TYPE_P (type))
     {
       if (uses_deducible_template_parms (TREE_TYPE (type)))
 	return true;
@@ -21646,8 +21644,7 @@ check_cv_quals_for_unify (int strict, tree arg, tree parm)
 	  It is ok when we're allowing additional CV qualifiers
 	  at the outer level [14.8.2.1]/3,1st bullet.  */
       if ((TYPE_REF_P (arg)
-	   || TREE_CODE (arg) == FUNCTION_TYPE
-	   || TREE_CODE (arg) == METHOD_TYPE)
+	   || FUNC_OR_METHOD_TYPE_P (arg))
 	  && (parm_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE)))
 	return 0;
 
@@ -25290,8 +25287,7 @@ dependent_type_p_r (tree type)
 					   (type)));
   else if (INDIRECT_TYPE_P (type))
     return dependent_type_p (TREE_TYPE (type));
-  else if (TREE_CODE (type) == FUNCTION_TYPE
-	   || TREE_CODE (type) == METHOD_TYPE)
+  else if (FUNC_OR_METHOD_TYPE_P (type))
     {
       tree arg_type;
 

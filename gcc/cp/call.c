@@ -357,8 +357,7 @@ build_call_a (tree function, int n, tree *argarray)
 
   gcc_assert (TYPE_PTR_P (TREE_TYPE (function)));
   fntype = TREE_TYPE (TREE_TYPE (function));
-  gcc_assert (TREE_CODE (fntype) == FUNCTION_TYPE
-	      || TREE_CODE (fntype) == METHOD_TYPE);
+  gcc_assert (FUNC_OR_METHOD_TYPE_P (fntype));
   result_type = TREE_TYPE (fntype);
   /* An rvalue has no cv-qualifiers.  */
   if (SCALAR_TYPE_P (result_type) || VOID_TYPE_P (result_type))

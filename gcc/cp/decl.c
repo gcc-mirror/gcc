@@ -11840,8 +11840,7 @@ grokdeclarator (const cp_declarator *declarator,
     }
 
   if (unqualified_id && TREE_CODE (unqualified_id) == TEMPLATE_ID_EXPR
-      && TREE_CODE (type) != FUNCTION_TYPE
-      && TREE_CODE (type) != METHOD_TYPE
+      && !FUNC_OR_METHOD_TYPE_P (type)
       && !variable_template_p (TREE_OPERAND (unqualified_id, 0)))
     {
       error ("template-id %qD used as a declarator",
@@ -12003,8 +12002,7 @@ grokdeclarator (const cp_declarator *declarator,
 		    name);
 	  storage_class = sc_none;
 	}
-      else if (TREE_CODE (type) == FUNCTION_TYPE
-	       || TREE_CODE (type) == METHOD_TYPE)
+      else if (FUNC_OR_METHOD_TYPE_P (type))
 	{
 	  error_at (sloc, "function %qs cannot be declared %<mutable%>",
 		    name);
@@ -12694,8 +12692,7 @@ grokdeclarator (const cp_declarator *declarator,
 			    declspecs->locations);
 	  }
       }
-    else if (TREE_CODE (type) == FUNCTION_TYPE
-	     || TREE_CODE (type) == METHOD_TYPE)
+    else if (FUNC_OR_METHOD_TYPE_P (type))
       {
 	tree original_name;
 	int publicp = 0;
