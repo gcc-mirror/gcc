@@ -1,3 +1,8 @@
+2019-05-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (visit_reference_op_call): Initialize value-id.
+	(do_rpo_vn): Initialize next_value_id.
+
 2019-05-09  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* cif-code.def (CHKP): Remove.
