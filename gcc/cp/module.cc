@@ -6078,8 +6078,13 @@ trees_out::lang_decl_vals (tree t)
 	    WU (lang->u.fn.ovl_op_code);
 	}
 
+      if (DECL_CLASS_SCOPE_P (t))
+	WT (lang->u.fn.context);
+
       if (lang->u.fn.thunk_p)
 	{
+	  /* The thunked-to function.  */
+	  WT (lang->u.fn.befriending_classes);
 	  if (streaming_p ())
 	    wi (lang->u.fn.u5.fixed_offset);
 	}
@@ -6139,8 +6144,14 @@ trees_in::lang_decl_vals (tree t)
 	      lang->u.fn.ovl_op_code = code;
 	  }
 
+	if (DECL_CLASS_SCOPE_P (t))
+	  RT (lang->u.fn.context);
+
 	if (lang->u.fn.thunk_p)
-	  lang->u.fn.u5.fixed_offset = wi ();
+	  {
+	    RT (lang->u.fn.befriending_classes);
+	    lang->u.fn.u5.fixed_offset = wi ();
+	  }
 	else
 	  RT (lang->u.fn.u5.cloned_function);
 

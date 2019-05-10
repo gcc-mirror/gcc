@@ -1,5 +1,16 @@
 2019-05-10  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* decl.c (duplicate_decls): Check and adjust anticipated builtin
+	decls.
+	* friend.c (do_friend): Set module ownership.
+	* module.cc (tree_{in,out}::lang_decl_vals): Conditionally stream
+	context and befriending classes.
+	* name-lookup.c (init_global_partition): Header unit uses global
+	slot.
+	* parser.c (cp_parser_template_declaration): Conditionalize export
+	warning.
+
 	Partial specializations!
 	gcc/cp/
 	* module.cc (trees_out::tree_mergeable): Correct finding of

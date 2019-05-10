@@ -1926,9 +1926,13 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	      inform (olddecl_loc, "previous declaration %q#D here", olddecl);
 	    }
 	}
-
-      // FIXME: Consider a partition not exporting a definition
-      set_module_owner (olddecl);
+      else
+	{
+	  gcc_checking_assert (!MAYBE_DECL_MODULE_OWNER (olddecl));
+	  if (!global_purview_p ())
+	    error ("declaration %qD conflicts with builtin", newdecl);
+	  set_module_owner (olddecl);
+	}
     }
 
   /* We have committed to returning OLDDECL at this point.  */

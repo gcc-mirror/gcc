@@ -174,6 +174,7 @@ init_global_partition (module_cluster *cluster, tree decl)
   mc_slot *mslot;
 
   if (MAYBE_DECL_MODULE_OWNER (decl) == MODULE_NONE
+      || header_module_p ()
       || (TREE_PUBLIC (decl)
 	  && TREE_CODE (decl) == NAMESPACE_DECL
 	  && !DECL_NAMESPACE_ALIAS (decl)))
