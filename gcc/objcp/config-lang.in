@@ -52,7 +52,6 @@ gtfiles="$(. $srcdir/cp/config-lang.in ; \
 gtfiles="$gtfiles \
 \$(srcdir)/objc/objc-act.h \
 \$(srcdir)/objc/objc-map.h \
-\$(srcdir)/c-family/c-cppbuiltin.c \
 \$(srcdir)/objc/objc-act.c \
 \$(srcdir)/objc/objc-gnu-runtime-abi-01.c \
 \$(srcdir)/objc/objc-next-runtime-abi-01.c \
