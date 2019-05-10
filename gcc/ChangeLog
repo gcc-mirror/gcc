@@ -1,3 +1,14 @@
+2019-05-10  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/90340
+	* doc/invoke.texi: New params.
+	* params.def (PARAM_JUMP_TABLE_MAX_GROWTH_RATIO_FOR_SIZE): New.
+	(PARAM_JUMP_TABLE_MAX_GROWTH_RATIO_FOR_SPEED): Likewise.
+	* tree-switch-conversion.c (jump_table_cluster::can_be_handled):
+	Use it.
+	* tree-switch-conversion.h (struct jump_table_cluster):
+	Likewise.
+
 2019-05-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* combine.c (combine_simplify_rtx): Don't make IF_THEN_ELSE RTL.
