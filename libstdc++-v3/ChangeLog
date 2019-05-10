@@ -1,6 +1,17 @@
 2019-05-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/memory (__uses_alloc_args): Add string-literal to
+	static_assert, to match the one in __uses_alloc.
+	[__cpp_concepts] (_Std_pair): Use C++2a syntax for concept.
+	* testsuite/20_util/polymorphic_allocator/construct_c++2a.cc: Check
+	for recursive uses-allocator construction of nested pairs.
+	* testsuite/20_util/scoped_allocator/construct_pair_c++2a.cc:: Add
+	comment.
+
+	Backport from mainline
 	2019-04-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90239
