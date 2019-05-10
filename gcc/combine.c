@@ -5909,14 +5909,6 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 								 mode, VOIDmode,
 								 cond, cop1),
 					mode);
-	      else
-		return gen_rtx_IF_THEN_ELSE (mode,
-					     simplify_gen_relational (cond_code,
-								      mode,
-								      VOIDmode,
-								      cond,
-								      cop1),
-					     true_rtx, false_rtx);
 
 	      code = GET_CODE (x);
 	      op0_mode = VOIDmode;
