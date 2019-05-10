@@ -1175,6 +1175,20 @@ DEFPARAM (PARAM_CASE_VALUES_THRESHOLD,
 	  "if 0, use the default for the machine.",
           0, 0, 0)
 
+DEFPARAM (PARAM_JUMP_TABLE_MAX_GROWTH_RATIO_FOR_SIZE,
+	  "jump-table-max-growth-ratio-for-size",
+	  "The maximum code size growth ratio when expanding "
+	  "into a jump table (in percent).  The parameter is used when "
+	  "optimizing for size.",
+	  300, 0, 0)
+
+DEFPARAM (PARAM_JUMP_TABLE_MAX_GROWTH_RATIO_FOR_SPEED,
+	  "jump-table-max-growth-ratio-for-speed",
+	  "The maximum code size growth ratio when expanding "
+	  "into a jump table (in percent).  The parameter is used when "
+	  "optimizing for speed.",
+	  800, 0, 0)
+
 /* Data race flags for C++0x memory model compliance.  */
 DEFPARAM (PARAM_ALLOW_STORE_DATA_RACES,
 	  "allow-store-data-races",

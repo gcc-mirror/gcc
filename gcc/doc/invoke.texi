@@ -11889,6 +11889,16 @@ The smallest number of different values for which it is best to use a
 jump-table instead of a tree of conditional branches.  If the value is
 0, use the default for the machine.
 
+@item jump-table-max-growth-ratio-for-size
+The maximum code size growth ratio when expanding
+into a jump table (in percent).  The parameter is used when
+optimizing for size.
+
+@item jump-table-max-growth-ratio-for-speed
+The maximum code size growth ratio when expanding
+into a jump table (in percent).  The parameter is used when
+optimizing for speed.
+
 @item tree-reassoc-width
 Set the maximum number of instructions executed in parallel in
 reassociated tree. This parameter overrides target dependent
