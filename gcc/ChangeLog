@@ -1,5 +1,10 @@
 2019-05-10  Martin Liska  <mliska@suse.cz>
 
+	* config/i386/i386-expand.c (ix86_expand_floorceildf_32):
+	Reapply changes from r269790.
+
+2019-05-10  Martin Liska  <mliska@suse.cz>
+
 	PR middle-end/90340
 	* doc/invoke.texi: New params.
 	* params.def (PARAM_JUMP_TABLE_MAX_GROWTH_RATIO_FOR_SIZE): New.
