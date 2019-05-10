@@ -1556,7 +1556,8 @@ namespace __variant
 #endif
 
       template<size_t _Np, typename _Vp>
-	friend constexpr decltype(auto) __detail::__variant::__get(_Vp&& __v);
+	friend constexpr decltype(auto)
+	__detail::__variant::__get(_Vp&& __v) noexcept;
 
       template<typename _Vp>
 	friend void* __detail::__variant::__get_storage(_Vp&& __v);
