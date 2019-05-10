@@ -28,7 +28,7 @@
 
 	PR fortran/90351
 	PR fortran/90329
-	* gfortran.dg/dump-parse-tree.c: Include version.h.
+	* dump-parse-tree.c: Include version.h.
 	(gfc_dump_external_c_prototypes): New function.
 	(get_c_type_name): Select "char" as a name for a simple char.
 	Adjust to handling external functions. Also handle complex.
