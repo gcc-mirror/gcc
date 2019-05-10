@@ -1996,8 +1996,7 @@ perform_qualification_conversions (tree type, tree expr)
 bool
 tx_safe_fn_type_p (tree t)
 {
-  if (TREE_CODE (t) != FUNCTION_TYPE
-      && TREE_CODE (t) != METHOD_TYPE)
+  if (!FUNC_OR_METHOD_TYPE_P (t))
     return false;
   return !!lookup_attribute ("transaction_safe", TYPE_ATTRIBUTES (t));
 }
