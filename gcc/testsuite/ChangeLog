@@ -1,3 +1,9 @@
+2019-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90383
+	* g++.dg/cpp1y/constexpr-90383-1.C: New test.
+	* g++.dg/cpp1y/constexpr-90383-2.C: New test.
+
 2019-05-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/90093
