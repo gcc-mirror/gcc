@@ -843,14 +843,14 @@ Var_expression::do_address_taken(bool escapes)
 }
 
 // The cost to inline a variable reference.  We currently only support
-// references to parameters.
+// references to parameters and local variables.
 
 int
 Var_expression::do_inlining_cost() const
 {
   if (this->variable_->is_variable())
     {
-      if (this->variable_->var_value()->is_parameter())
+      if (!this->variable_->var_value()->is_global())
 	return 1;
     }
   else if (this->variable_->is_result_variable())
