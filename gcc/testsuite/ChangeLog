@@ -1,3 +1,7 @@
+2019-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/main1.C: New.
+
 2019-05-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/78010 - bogus -Wsuggest-override warning on final function.
