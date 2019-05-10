@@ -1,5 +1,13 @@
 2019-05-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/90397
+	* include/std/variant (_Variant_storage<false, Types...>::_M_storage())
+	(_Variant_storage<true, Types...>::_M_reset()))
+	(_Variant_storage<true, Types...>::_M_storage())): Add noexcept.
+	(__get_storage): Likewise.
+	(variant): Add noexcept to friend declarations for __get and
+	__get_storage.
+
 	PR libstdc++/90388
 	* include/bits/unique_ptr.h (default_delete, default_delete<T[]>):
 	Use _Require for constraints.
