@@ -15423,6 +15423,15 @@ Receive_expression::do_get_backend(Translate_context* context)
   return Expression::make_compound(recv, recv_ref, loc)->get_backend(context);
 }
 
+// Export a receive expression.
+
+void
+Receive_expression::do_export(Export_function_body* efb) const
+{
+  efb->write_c_string("<-");
+  this->channel_->export_expression(efb);
+}
+
 // Dump ast representation for a receive expression.
 
 void
@@ -15430,6 +15439,16 @@ Receive_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
 {
   ast_dump_context->ostream() << " <- " ;
   ast_dump_context->dump_expression(channel_);
+}
+
+// Import a receive expression.
+
+Expression*
+Receive_expression::do_import(Import_expression* imp, Location loc)
+{
+  imp->require_c_string("<-");
+  Expression* expr = Expression::import_expression(imp, loc);
+  return Expression::make_receive(expr, loc);
 }
 
 // Make a receive expression.
@@ -16783,6 +16802,8 @@ Expression::import_expression(Import_expression* imp, Location loc)
       // This handles integers, floats and complex constants.
       return Integer_expression::do_import(imp, loc);
     }
+  else if (imp->match_c_string("<-"))
+    return Receive_expression::do_import(imp, loc);
   else if (imp->match_c_string("$nil")
 	   || (imp->version() < EXPORT_FORMAT_V3
 	       && imp->match_c_string("nil")))
