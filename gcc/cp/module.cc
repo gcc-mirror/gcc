@@ -8201,6 +8201,8 @@ trees_out::write_function_def (tree decl)
   tree_node (DECL_RESULT (decl));
   tree_node (DECL_INITIAL (decl));
   tree_node (DECL_SAVED_TREE (decl));
+  tree_node (DECL_FRIEND_CONTEXT (decl));
+
   if (constexpr_fundef *cexpr = retrieve_constexpr_fundef (decl))
     {
       tree_node (cexpr->decl);
@@ -8224,6 +8226,7 @@ trees_in::read_function_def (tree decl)
   tree result = tree_node ();
   tree initial = tree_node ();
   tree saved = tree_node ();
+  tree context = tree_node ();
   constexpr_fundef cexpr;
 
   cexpr.decl = tree_node ();
@@ -8244,6 +8247,8 @@ trees_in::read_function_def (tree decl)
       DECL_RESULT (decl) = result;
       DECL_INITIAL (decl) = initial;
       DECL_SAVED_TREE (decl) = saved;
+      if (context)
+	SET_DECL_FRIEND_CONTEXT (decl, context);
       if (cexpr.decl)
 	register_constexpr_fundef (cexpr);
       post_process (decl);
@@ -8434,7 +8439,6 @@ trees_out::write_class_def (tree defn)
   if (TYPE_LANG_SPECIFIC (type))
     {
       tree_vec (CLASSTYPE_MEMBER_VEC (type));
-      tree_node (CLASSTYPE_FRIEND_CLASSES (type));
       tree_node (CLASSTYPE_LAMBDA_EXPR (type));
 
       /* TYPE_CONTAINS_VPTR_P looks at the vbase vector, which the
@@ -8468,6 +8472,11 @@ trees_out::write_class_def (tree defn)
       for (; vtables; vtables = TREE_CHAIN (vtables))
 	write_definition (vtables);
 
+      /* Write the friend classes.  */
+      // FIXME: Only TREE_VALUE relevant
+      tree_node (CLASSTYPE_FRIEND_CLASSES (type));
+
+      // FIXME: Only TREE_PURPOSE and TREE_VALUE relevant
       tree_node (CLASSTYPE_DECL_LIST (type));
     }
 
@@ -8559,11 +8568,10 @@ trees_in::read_class_def (tree defn)
   vec<tree_pair_s, va_gc> *vcall_indices = NULL;
   tree key_method = NULL_TREE;
   tree lambda = NULL_TREE;
-  tree friends = NULL_TREE;
+
   if (TYPE_LANG_SPECIFIC (type))
     {
       member_vec = tree_vec ();
-      friends = tree_node ();
       lambda = tree_node ();
 
       int has_vptr = i ();
@@ -8590,7 +8598,6 @@ trees_in::read_class_def (tree defn)
 
       if (TYPE_LANG_SPECIFIC (type))
 	{
-	  CLASSTYPE_FRIEND_CLASSES (type) = friends;
 	  CLASSTYPE_LAMBDA_EXPR (type) = lambda;
 
 	  CLASSTYPE_MEMBER_VEC (type) = member_vec;
@@ -8627,6 +8634,7 @@ trees_in::read_class_def (tree defn)
       for (tree vt = vtables; vt; vt = TREE_CHAIN (vt))
 	read_var_def (vt);
 
+      tree friend_list = tree_node ();
       tree decl_list = tree_node ();
 
       if (!odr)
@@ -8636,7 +8644,18 @@ trees_in::read_class_def (tree defn)
 	  if (!CLASSTYPE_KEY_METHOD (type) && vtables)
 	    vec_safe_push (keyed_classes, type);
 	  CLASSTYPE_VTABLES (type) = vtables;
+	  CLASSTYPE_FRIEND_CLASSES (type) = friend_list;
 	  CLASSTYPE_DECL_LIST (type) = decl_list;
+
+	  for (; friend_list; friend_list = TREE_CHAIN (friend_list))
+	    {
+	      tree f = TREE_VALUE (friend_list);
+
+	      if (TYPE_P (f))
+		CLASSTYPE_BEFRIENDING_CLASSES (f)
+		  = tree_cons (NULL_TREE, type,
+			       CLASSTYPE_BEFRIENDING_CLASSES (f));
+	    }
 	}
     }
 
