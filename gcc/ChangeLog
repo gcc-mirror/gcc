@@ -1,3 +1,8 @@
+2019-05-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (visit_reference_op_call): Initialize value-id.
+	(do_rpo_vn): Initialize next_value_id.
+
 2019-05-10  Martin Liska  <mliska@suse.cz>
 
 	* params.def (PARAM_GIMPLE_FE_COMPUTED_HOT_BB_THRESHOLD):
