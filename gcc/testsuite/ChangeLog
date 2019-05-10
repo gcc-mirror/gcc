@@ -1,3 +1,9 @@
+2019-05-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/x86_64/abi/avx512f/abi-avx512f.exp: Darwin is
+	now tested.
+	* gcc.target/x86_64/abi/avx512f/asm-support-darwin.s: New.
+
 2019-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/diagnostic/main1.C: New.
