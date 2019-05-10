@@ -4282,6 +4282,8 @@ trees_out::mark_node (tree decl, bool outermost)
       int use_tpl = -1;
       if (tree ti = node_template_info (decl, use_tpl))
 	{
+	  // FIXME: don't bail on things that CANNOT have their own
+	  // template header.
 	  if (!outermost && use_tpl > 0)
 	    return;
 	  if (DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == decl)
@@ -7695,11 +7697,22 @@ trees_out::tree_mergeable (depset *dep)
 
   if (is_specialization)
     {
+      // FIXME, perhaps the general template should be held in the depset?
+      /* most_general_template stops at specializations.  We don't
+	 want that.  */
+      tree tpl = decl;
+      tree args = NULL;
+      int use_tpl;
+      while (tree ti = node_template_info (tpl, use_tpl))
+	{
+	  if (!args)
+	    args = TI_ARGS (ti);
+	  tpl = TI_TEMPLATE (ti);
+	}
+
       /* The template will not be a namespace!  */
-      tree_node (most_general_template (decl));
-      int use = -1;
-      tree ti = node_template_info (decl, use);
-      tree_node (TI_ARGS (ti));
+      tree_node (tpl);
+      tree_node (args);
       // FIXME: Do I need to write out parms etc when merging a specialization?
     }
   else
@@ -7881,11 +7894,29 @@ trees_in::tree_mergeable (bool mod_mergeable)
     kind = "unique";
   else if (tree existing = is_specialization
 	   ? (match_mergeable_specialization
-	      (is_specialization < 0 ? TREE_TYPE (decl) : decl, ctx, args))
+	      (is_specialization < 0 ? TREE_TYPE (STRIP_TEMPLATE (decl))
+	       : decl, ctx, args))
 	   : match_mergeable_decl (decl, ctx, name, is_mod, tpl, ret, args))
     {
       if (is_specialization < 0)
-	existing = TYPE_NAME (existing);
+	{
+	  if (TREE_CODE (decl) == TEMPLATE_DECL)
+	    {
+	      // This is a partial specialization, we need to get back
+	      // to its TEMPLATE_DECL
+	      for (tree partial = DECL_TEMPLATE_SPECIALIZATIONS (ctx);
+		   partial; partial = TREE_CHAIN (partial))
+		if (TREE_TYPE (partial) == existing)
+		  {
+		    existing = TREE_VALUE (partial);
+		    break;
+		  }
+	      gcc_assert (TREE_CODE (existing) == TEMPLATE_DECL);
+	    }
+	  else
+	    existing = TYPE_NAME (existing);
+	}
+
       decl = existing;
       mergeables.quick_push (decl);
       if (TREE_CODE (decl) == TEMPLATE_DECL)
@@ -9111,6 +9142,8 @@ specialization_add (bool decl_p, spec_entry *entry, void *data_)
       spec = TYPE_NAME (spec);
     }
 
+  // FIXME only need to register those things that can get a separate
+  // template header.  see mark_node
   if (!(use_tpl & 2))
     return;
 
@@ -9157,13 +9190,46 @@ depset::hash::add_specializations (bool decl_p, bitmap partitions)
     {
       spec_entry *entry = data.second.pop ();
       tree spec = entry->spec;
+      bool is_partial = false;
       if (!decl_p)
-	spec = TYPE_NAME (spec);
+	{
+	  tree partial = DECL_TEMPLATE_SPECIALIZATIONS (entry->tmpl);
+	  for (; partial; partial = TREE_CHAIN (partial))
+	    if (TREE_TYPE (partial) == spec)
+	      break;
+
+	  if (partial)
+	    {
+	      gcc_checking_assert (entry->args == TREE_PURPOSE (partial));
+	      is_partial = true;
+	      /* Get the TEMPLATE_DECL for the partial
+		 specialization.  */
+	      spec = TREE_VALUE (partial);
+	    }
+	  else
+	    spec = TYPE_NAME (spec);
+	}
+#if 0 && CHECKING_P
+      /* The instantiation isn't always on
+	 DECL_TEMPLATE_INSTANTIATIONS, */
+      // FIXME: we probably need to remember this information?
+      /* Verify the specialization is on the
+	 DECL_TEMPLATE_INSTANTIATIONS of the template.  */
+      for (tree cons = DECL_TEMPLATE_INSTANTIATIONS (entry->tmpl);
+	   cons; cons = TREE_CHAIN (cons))
+	if (TREE_VALUE (cons) == entry->spec)
+	  {
+	    gcc_assert (entry->args == TREE_PURPOSE (cons));
+	    goto have_spec;
+	  }
+      gcc_unreachable ();
+    have_spec:;
+#endif
 
       depset *dep = add_dependency (spec, depset::EK_SPECIALIZATION);
       dep->set_first_dep_repurposed ();
       dep->deps.safe_push (reinterpret_cast<depset *> (entry));
-      if (false)
+      if (is_partial)
 	dep->set_flag_bit<DB_PARTIAL_BIT> ();
     }
 }
@@ -11024,6 +11090,12 @@ enum cluster_tag {
   ct_mergeable,	/* A set of mergeable decls.  */
   ct_hwm
 };
+enum ct_decl_flags 
+{
+  cdf_has_definition = 0x1,
+  cdf_is_specialization = 0x2,
+  cdf_is_partial = 0x4,
+};
 
 /* Write the cluster of depsets in SCC[0-SIZE).  These are ordered
    defns < decls < bindings.  Returns number of non-implicit template
@@ -11199,7 +11271,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
       else
 	dump () && dump ("Depset:%u %s %C:%N", ix, b->entity_kind_name (),
 			 TREE_CODE (decl), decl);
-
+      unsigned flags = 0;
       switch (b->get_entity_kind ())
 	{
 	case depset::EK_BINDING:
@@ -11247,6 +11319,11 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  break;
 
 	case depset::EK_SPECIALIZATION:
+	  flags |= cdf_is_specialization;
+	  if (b->is_partial_specialization ())
+	    flags |= cdf_is_partial;
+	  /* FALLTHROUGH.  */
+
 	case depset::EK_DECL:
 	case depset::EK_UNNAMED:
 	  {
@@ -11256,8 +11333,10 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	    if (b->cluster)
 	      dump () && dump ("Voldemort:%u %N", b->cluster - 1, decl);
 	    sec.u (b->cluster);
-	    sec.u (b->has_defn ());
-	    if (b->has_defn ()) 
+	    if (b->has_defn ())
+	      flags |= cdf_has_definition;
+	    sec.u (flags);
+	    if (flags & cdf_has_definition)
 	      sec.write_definition (decl);
 	  }
 	  break;
@@ -11285,6 +11364,39 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
   dump.outdent ();
   dump () && dump ("Wrote section:%u named-by:%N", scc[0]->section, naming_decl);
+}
+
+// FIXME: when DECL didn't go via match_mergeable_specialization we'll
+// need to add it to the hash table too.  */
+
+static void
+install_specialization (tree decl, bool is_partial)
+{
+  // FIXME: see note about most_general_template.  Perhaps we should
+  // be explicitly writing it?
+  int use;
+  tree args = NULL_TREE;
+  tree tpl = decl;
+  while (tree ti = node_template_info (tpl, use))
+    {
+      if (!args)
+	args = TI_ARGS (ti);
+      tpl = TI_TEMPLATE (ti);
+    }
+
+  if (is_partial)
+    {
+      /* Add onto DECL_TEMPLATE_SPECIALIZATIONS.  */
+      tree specs = tree_cons (args, decl, DECL_TEMPLATE_SPECIALIZATIONS (tpl));
+      TREE_TYPE (specs) = TREE_TYPE (DECL_TEMPLATE_RESULT (decl));
+      DECL_TEMPLATE_SPECIALIZATIONS (tpl) = specs;
+      dump (dumper::MERGE) &&
+	dump ("Adding partial specialization %N to %N", decl,
+	      TREE_TYPE (DECL_TEMPLATE_RESULT (tpl)));
+    }
+
+  /* Add onto DECL_TEMPLATE_INSTANTIATIONS.  */
+  // FIXME:do it
 }
 
 /* Read a cluster from section SNUM.  */
@@ -11479,7 +11591,12 @@ module_state::read_cluster (unsigned snum)
 		  sec.set_overrun ();
 	      }
 
-	    if (sec.u () && !sec.get_overrun ())
+	    unsigned flags = sec.u ();
+	    if (sec.get_overrun ())
+	      break;
+	    if (flags & cdf_is_specialization)
+	      install_specialization (decl, flags & cdf_is_partial);
+	    if (flags & cdf_has_definition)
 	      /* A definition.  */
 	      sec.read_definition (decl);
 	  }

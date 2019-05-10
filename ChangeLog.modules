@@ -1,3 +1,20 @@
+2019-05-10  Nathan Sidwell  <nathan@acm.org>
+
+	Partial specializations!
+	gcc/cp/
+	* module.cc (trees_out::tree_mergeable): Correct finding of
+	general template.
+	(trees_in::tree_mergeable): Recover a merged partial
+	specialization.
+	(depset::hash::add_specializations): Deal with partial
+	specializations.
+	(enum ct_decl_flags): New.
+	(module_state::write_cluster): Set specialization flags.
+	(module_state::read_cluster): Install specializations.
+	(install_specialization): New.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-spec-5_[ab].C: New.
+
 2019-05-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
