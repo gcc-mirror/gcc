@@ -1,5 +1,10 @@
 2019-05-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/88709
+	PR tree-optimization/90271
+	* gcc.dg/store_merging_29.c: Allow 4 stores to replace 6 stores on
+	arm*-*-*.
+
 	PR pch/90326
 	* g++.dg/pch/pr90326.C: New test.
 	* g++.dg/pch/pr90326.Hs: New file.
