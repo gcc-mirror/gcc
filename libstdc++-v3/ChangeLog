@@ -1,5 +1,9 @@
 2019-05-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/81266
+	* testsuite/util/thread/all.h: Do not use remove_pointer for
+	std::thread::native_handle_type.
+
 	PR libstdc++/90397
 	* include/std/variant (_Variant_storage<false, Types...>::_M_storage())
 	(_Variant_storage<true, Types...>::_M_reset()))
