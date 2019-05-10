@@ -15533,8 +15533,10 @@ ix86_expand_floorceildf_32 (rtx operand0, rtx operand1, bool do_floor)
           x2 -= 1;
      Compensate.  Ceil:
         if (x2 < x)
-          x2 -= -1;
-        return x2;
+          x2 += 1;
+	if (HONOR_SIGNED_ZEROS (mode))
+	  x2 = copysign (x2, x);
+	return x2;
    */
   machine_mode mode = GET_MODE (operand0);
   rtx xa, TWO52, tmp, one, res, mask;
@@ -15560,17 +15562,16 @@ ix86_expand_floorceildf_32 (rtx operand0, rtx operand1, bool do_floor)
   /* xa = copysign (xa, operand1) */
   ix86_sse_copysign_to_positive (xa, xa, res, mask);
 
-  /* generate 1.0 or -1.0 */
-  one = force_reg (mode,
-	           const_double_from_real_value (do_floor
-						 ? dconst1 : dconstm1, mode));
+  /* generate 1.0 */
+  one = force_reg (mode, const_double_from_real_value (dconst1, mode));
 
   /* Compensate: xa = xa - (xa > operand1 ? 1 : 0) */
   tmp = ix86_expand_sse_compare_mask (UNGT, xa, res, !do_floor);
   emit_insn (gen_rtx_SET (tmp, gen_rtx_AND (mode, one, tmp)));
-  /* We always need to subtract here to preserve signed zero.  */
-  tmp = expand_simple_binop (mode, MINUS,
+  tmp = expand_simple_binop (mode, do_floor ? MINUS : PLUS,
 			     xa, tmp, NULL_RTX, 0, OPTAB_DIRECT);
+  if (!do_floor && HONOR_SIGNED_ZEROS (mode))
+    ix86_sse_copysign_to_positive (tmp, tmp, res, mask);
   emit_move_insn (res, tmp);
 
   emit_label (label);
