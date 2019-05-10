@@ -66,8 +66,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * Allows conversion from a deleter for objects of another type, `_Up`,
        * only if `_Up*` is convertible to `_Tp*`.
        */
-      template<typename _Up, typename = typename
-	       enable_if<is_convertible<_Up*, _Tp*>::value>::type>
+      template<typename _Up,
+	       typename = _Require<is_convertible<_Up*, _Tp*>>>
         default_delete(const default_delete<_Up>&) noexcept { }
 
       /// Calls `delete __ptr`
@@ -102,19 +102,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * it is undefined to `delete[]` an array of derived types through a
        * pointer to the base type.
        */
-      template<typename _Up, typename = typename
-	       enable_if<is_convertible<_Up(*)[], _Tp(*)[]>::value>::type>
+      template<typename _Up,
+	       typename = _Require<is_convertible<_Up(*)[], _Tp(*)[]>>>
         default_delete(const default_delete<_Up[]>&) noexcept { }
 
       /// Calls `delete[] __ptr`
       template<typename _Up>
-      typename enable_if<is_convertible<_Up(*)[], _Tp(*)[]>::value>::type
+	typename enable_if<is_convertible<_Up(*)[], _Tp(*)[]>::value>::type
 	operator()(_Up* __ptr) const
-      {
-	static_assert(sizeof(_Tp)>0,
-		      "can't delete pointer to incomplete type");
-	delete [] __ptr;
-      }
+	{
+	  static_assert(sizeof(_Tp)>0,
+			"can't delete pointer to incomplete type");
+	  delete [] __ptr;
+	}
     };
 
   /// @cond undocumented
@@ -712,7 +712,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	 unique_ptr<_Tp, _Dp>&) = delete;
 #endif
 
-  /// Equality operator for unique_ptr objects, compares the owned pointers.
+  /// Equality operator for unique_ptr objects, compares the owned pointers
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
     _GLIBCXX_NODISCARD inline bool
@@ -848,23 +848,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_NODISCARD inline bool
     operator>=(nullptr_t, const unique_ptr<_Tp, _Dp>& __x)
     { return !(nullptr < __x); }
+  // @} relates unique_ptr
+
+  /// @cond undocumented
+  template<typename _Up, typename _Ptr = typename _Up::pointer,
+	   bool = __poison_hash<_Ptr>::__enable_hash_call>
+    struct __uniq_ptr_hash
+#if ! _GLIBCXX_INLINE_VERSION
+    : private __poison_hash<_Ptr>
+#endif
+    {
+      size_t
+      operator()(const _Up& __u) const
+      noexcept(noexcept(std::declval<hash<_Ptr>>()(std::declval<_Ptr>())))
+      { return hash<_Ptr>()(__u.get()); }
+    };
+
+  template<typename _Up, typename _Ptr>
+    struct __uniq_ptr_hash<_Up, _Ptr, false>
+    : private __poison_hash<_Ptr>
+    { };
+  /// @endcond
 
   /// std::hash specialization for unique_ptr.
   template<typename _Tp, typename _Dp>
     struct hash<unique_ptr<_Tp, _Dp>>
     : public __hash_base<size_t, unique_ptr<_Tp, _Dp>>,
-    private __poison_hash<typename unique_ptr<_Tp, _Dp>::pointer>
-    {
-      size_t
-      operator()(const unique_ptr<_Tp, _Dp>& __u) const noexcept
-      {
-	typedef unique_ptr<_Tp, _Dp> _UP;
-	return std::hash<typename _UP::pointer>()(__u.get());
-      }
-    };
+      public __uniq_ptr_hash<unique_ptr<_Tp, _Dp>>
+    { };
 
 #if __cplusplus > 201103L
-
+  /// @relates unique_ptr @{
 #define __cpp_lib_make_unique 201304
 
   /// @cond undocumented
@@ -899,9 +913,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename... _Args>
     inline typename _MakeUniq<_Tp>::__invalid_type
     make_unique(_Args&&...) = delete;
+  // @} relates unique_ptr
 #endif
 
-  // @} relates unique_ptr
   // @} group pointer_abstractions
 
 #if __cplusplus >= 201703L

@@ -1,5 +1,16 @@
 2019-05-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/90388
+	* include/bits/unique_ptr.h (default_delete, default_delete<T[]>):
+	Use _Require for constraints.
+	(operator>(nullptr_t, const unique_ptr<T,D>&)): Implement exactly as
+	per the standard.
+	(__uniq_ptr_hash): New base class with conditionally-disabled call
+	operator.
+	(hash<unique_ptr<T,D>>): Derive from __uniq_ptr_hash.
+	* testsuite/20_util/default_delete/48631_neg.cc: Adjust dg-error line.
+	* testsuite/20_util/unique_ptr/hash/90388.cc: New test.
+
 	* include/bits/shared_ptr.h: Improve docs.
 	* include/bits/shared_ptr_base.h: Likewise.
 	* include/bits/stl_uninitialized.h: Likewise.
