@@ -3836,7 +3836,7 @@ cp_build_function_call_vec (tree function, vec<tree, va_gc> **params,
           return error_mark_node;
         }
 
-      if (!mark_used (function, complain) && !(complain & tf_error))
+      if (!mark_used (function, complain))
 	return error_mark_node;
       fndecl = function;
 
