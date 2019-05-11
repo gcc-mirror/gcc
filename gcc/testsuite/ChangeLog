@@ -1,3 +1,19 @@
+2019-05-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/90093
+	* gfortran.dg/ISO_Fortran_binding_12.f90: New test.
+	* gfortran.dg/ISO_Fortran_binding_12.c: Supplementary code.
+
+	PR fortran/90352
+	* gfortran.dg/iso_c_binding_char_1.f90: New test.
+
+	PR fortran/90355
+	* gfortran.dg/ISO_Fortran_binding_4.f90: Add 'substr' to test
+	the direct passing of substrings as descriptors to bind(C).
+	* gfortran.dg/assign_10.f90: Increase the tree_dump count of
+	'atmp' to account for the setting of the 'span' field.
+	* gfortran.dg/transpose_optimization_2.f90: Ditto.
 2019-05-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	Backport from mainline.
@@ -90,7 +106,7 @@
 	PR tree-optimization/90240
 	Revert:
 	2019-04-23  Bin Cheng  <bin.cheng@linux.alibaba.com>
- 
+
 	PR tree-optimization/90078
 	* gcc/testsuite/g++.dg/tree-ssa/pr90078.C: New test.
 

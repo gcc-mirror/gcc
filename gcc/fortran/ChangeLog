@@ -1,3 +1,30 @@
+2019-05-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/90093
+	* trans-decl.c (convert_CFI_desc): Test that the dummy is
+	present before doing any of the conversions.
+
+	PR fortran/90352
+	* decl.c (gfc_verify_c_interop_param): Restore the error for
+	charlen > 1 actual arguments passed to bind(C) procs.
+	Clean up trailing white space.
+
+	PR fortran/90355
+	* trans-array.c (gfc_trans_create_temp_array): Set the 'span'
+	field to the element length for all types.
+	(gfc_conv_expr_descriptor): The force_no_tmp flag is used to
+	prevent temporary creation, especially for substrings.
+	* trans-decl.c (gfc_trans_deferred_vars): Rather than assert
+	that the backend decl for the string length is non-null, use it
+	as a condition before calling gfc_trans_vla_type_sizes.
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): 'force_no_tmp'
+	is set before calling gfc_conv_expr_descriptor.
+	* trans.c (get_array_span): Move the code for extracting 'span'
+	from gfc_build_array_ref to this function. This is specific to
+	descriptors that are component and indirect references.
+	* trans.h : Add the force_no_tmp flag bitfield to gfc_se.
+
 2019-05-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
