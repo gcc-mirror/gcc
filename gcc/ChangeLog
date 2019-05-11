@@ -1,3 +1,9 @@
+2019-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/59813
+	* config/aarch64/aarch64.c (aarch64_expand_epilogue): Don't add
+	EH_RETURN_STACKADJ_RTX to sp in sibcall epilogues.
+
 2019-05-11  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (floatdi<X87MODEF:mode>2_i387_with_xmm):
