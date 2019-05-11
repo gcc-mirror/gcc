@@ -48,6 +48,7 @@ main (int argc, char **argv)
     setIsCgo ();
 
   __go_end = (uintptr)_end;
+  runtime_ginit ();
   runtime_cpuinit ();
   runtime_check ();
   runtime_args (argc, (byte **) argv);
