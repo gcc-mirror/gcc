@@ -1,3 +1,29 @@
+2019-05-11  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_bvector.h
+	(operator==(const _Bit_iterator_base&, const _Bit_iterator_base&)):
+	Make hidden friend.
+	(operator<(const _Bit_iterator_base&, const _Bit_iterator_base&)):
+	Likewise.
+	(operator!=(const _Bit_iterator_base&, const _Bit_iterator_base&)):
+	Likewise.
+	(operator>(const _Bit_iterator_base&, const _Bit_iterator_base&)):
+	Likewise.
+	(operator<=(const _Bit_iterator_base&, const _Bit_iterator_base&)):
+	Likewise.
+	(operator>=(const _Bit_iterator_base&, const _Bit_iterator_base&)):
+	Likewise.
+	(operator-(const _Bit_iterator_base&, const _Bit_iterator_base&)):
+	Likewise.
+	(_Bit_iterator::operator+(difference_type)): Likewise and allow NRVO
+	copy elision.
+	(_Bit_iterator::operator-(difference_type)): Likewise.
+	(operator+(ptrdiff_t, const _Bit_iterator&)): Make hidden friend.
+	(_Bit_const_iterator::operator+(difference_type)): Likewise and allow
+	NRVO copy elision.
+	(_Bit_const_iterator::operator-(difference_type)): Likewise.
+	(operator+(ptrdiff_t, const _Bit_const_iterator&)): Make hidden friend.
+
 2019-05-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/81266
