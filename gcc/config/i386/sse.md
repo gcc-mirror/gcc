@@ -1314,10 +1314,10 @@
 ;; from there.
 
 (define_insn_and_split "movdi_to_sse"
-  [(set (match_operand:V4SI 0 "register_operand" "=?x,x")
-	(unspec:V4SI [(match_operand:DI 1 "nonimmediate_operand" "r,m")]
+  [(set (match_operand:V4SI 0 "register_operand" "=x,x,?x")
+	(unspec:V4SI [(match_operand:DI 1 "nonimmediate_operand" "r,m,r")]
 		     UNSPEC_MOVDI_TO_SSE))
-     (clobber (match_scratch:V4SI 2 "=&x,X"))]
+     (clobber (match_scratch:V4SI 2 "=X,X,&x"))]
   "!TARGET_64BIT && TARGET_SSE2 && TARGET_INTER_UNIT_MOVES_TO_VEC"
   "#"
   "&& reload_completed"
@@ -1329,18 +1329,26 @@
 	 Assemble the 64-bit DImode value in an xmm register.  */
       emit_insn (gen_sse2_loadld (operands[0], CONST0_RTX (V4SImode),
 				  gen_lowpart (SImode, operands[1])));
-      emit_insn (gen_sse2_loadld (operands[2], CONST0_RTX (V4SImode),
-				  gen_highpart (SImode, operands[1])));
-      emit_insn (gen_vec_interleave_lowv4si (operands[0], operands[0],
-					     operands[2]));
-   }
+      if (TARGET_SSE4_1)
+        emit_insn (gen_sse4_1_pinsrd (operands[0], operands[0],
+				      gen_highpart (SImode, operands[1]),
+				      GEN_INT (2)));
+      else
+	{
+	  emit_insn (gen_sse2_loadld (operands[2], CONST0_RTX (V4SImode),
+				      gen_highpart (SImode, operands[1])));
+	  emit_insn (gen_vec_interleave_lowv4si (operands[0], operands[0],
+						 operands[2]));
+	}
+  }
  else if (memory_operand (operands[1], DImode))
    emit_insn (gen_vec_concatv2di (gen_lowpart (V2DImode, operands[0]),
 				  operands[1], const0_rtx));
  else
    gcc_unreachable ();
  DONE;
-})
+}
+  [(set_attr "isa" "sse4,*,*")])
 
 (define_split
   [(set (match_operand:V4SF 0 "register_operand")
