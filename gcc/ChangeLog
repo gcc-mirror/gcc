@@ -1,3 +1,9 @@
+2019-05-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (floatdi<X87MODEF:mode>2_i387_with_xmm):
+	Use pinsrd for TARGET_SSE4_1.
+	* config/i386/sse.md (movdi_to_sse): Ditto.
+
 2019-05-10  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (visit_reference_op_call): Initialize value-id.
