@@ -1,3 +1,12 @@
+2019-05-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2019-05-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81266
+	* testsuite/util/thread/all.h: Do not use remove_pointer for
+	std::thread::native_handle_type.
+
 2019-05-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
