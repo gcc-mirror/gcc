@@ -24721,6 +24721,9 @@ debug_stack_info (rs6000_stack_t *info)
 
     fprintf (stderr, "\tsave-strategy       =  %04x\n", info->savres_strategy);
 
+  if (info->abi == ABI_DARWIN)
+    fprintf (stderr, "\tWORLD_SAVE_P        = %5d\n", WORLD_SAVE_P(info));
+
   fprintf (stderr, "\n");
 }
 

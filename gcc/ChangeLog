@@ -1,3 +1,9 @@
+2019-05-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/rs6000.c (debug_stack_info): When -mdebug=stack
+	is given, print the state of the EH "save world" computation for
+	Darwin.
+
 2019-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/59813
