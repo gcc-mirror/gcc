@@ -3149,8 +3149,7 @@
   [(set_attr "movprfx" "*,yes")]
 )
 
-;; Helper expander for aarch64_<su>abd<mode>_3 to save the callers
-;; the hassle of constructing the other arm of the MINUS.
+;; Unpredicated integer absolute difference.
 (define_expand "<su>abd<mode>_3"
   [(use (match_operand:SVE_I 0 "register_operand"))
    (USMAX:SVE_I (match_operand:SVE_I 1 "register_operand")
@@ -3158,9 +3157,8 @@
   "TARGET_SVE"
   {
     rtx pred = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
-    rtx other_arm = gen_rtx_<MAX_OPP> (<MODE>mode, operands[1], operands[2]);
     emit_insn (gen_aarch64_<su>abd<mode>_3 (operands[0], pred, operands[1],
-					    operands[2], other_arm));
+					    operands[2]));
     DONE;
   }
 )
@@ -3174,9 +3172,9 @@
 	     (USMAX:SVE_I
 	       (match_operand:SVE_I 2 "register_operand" "0, w")
 	       (match_operand:SVE_I 3 "register_operand" "w, w"))
-	     (match_operator 4 "aarch64_<max_opp>"
-	       [(match_dup 2)
-		(match_dup 3)]))]
+	     (<max_opp>:SVE_I
+	       (match_dup 2)
+	       (match_dup 3)))]
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   "@
