@@ -1,3 +1,10 @@
+2019-05-12  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* dump-parse-tree.c (get_c_type_name): Use macros for complex type
+	names.
+	* parse.c (gfc_parse_file): Define complex macros, add CPP support
+	when printing C prototypes.
+
 2019-05-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/61968
