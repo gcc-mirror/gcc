@@ -1,3 +1,7 @@
+2019-05-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin-vecsave.S: Set .machine appropriately.
+
 2019-05-07  Hongtao Liu  <hongtao.liu@intel.com>
 
 	* config/i386/cpuinfo.c (get_available_features): Detect BF16.
