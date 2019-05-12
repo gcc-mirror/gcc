@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mfunction-return=keep -mindirect-branch=thunk -fno-pic" } */
+/* { dg-options "-O2 -mfunction-return=keep -mindirect-branch=thunk " } */
+/* { dg-additional-options "-fno-pic" { target { ! *-*-darwin* } } } */
 
 void func0 (void);
 void func1 (void);
@@ -36,7 +37,7 @@ bar (int i)
     }
 }
 
-/* { dg-final { scan-assembler-not "__x86_indirect_thunk" } } */
+/* { dg-final { scan-assembler-not "_?__x86_indirect_thunk" } } */
 /* { dg-final { scan-assembler-not {\t(lfence|pause)} } } */
-/* { dg-final { scan-assembler-not "jmp\[ \t\]*\.LIND" } } */
-/* { dg-final { scan-assembler-not "call\[ \t\]*\.LIND" } } */
+/* { dg-final { scan-assembler-not {jmp[ \t]*\.?LIND} } } */
+/* { dg-final { scan-assembler-not {call[ \t]*\.?LIND} } } */
