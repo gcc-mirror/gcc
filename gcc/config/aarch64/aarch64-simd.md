@@ -716,9 +716,9 @@
 	  (USMAX:VDQ_BHSI
 	    (match_operand:VDQ_BHSI 1 "register_operand" "w")
 	    (match_operand:VDQ_BHSI 2 "register_operand" "w"))
-	  (match_operator 3 "aarch64_<max_opp>"
-	    [(match_dup 1)
-	     (match_dup 2)])))]
+	  (<max_opp>:VDQ_BHSI
+	    (match_dup 1)
+	    (match_dup 2))))]
   "TARGET_SIMD"
   "<su>abd\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "type" "neon_abd<q>")]

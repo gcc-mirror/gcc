@@ -1,3 +1,19 @@
+2019-05-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/md.texi: Document use of code attributes in rtx patterns.
+	* read-md.h (rtx_reader::rtx_alloc_for_name): New member function.
+	* read-rtl.c (find_code): Split out search loops into...
+	(maybe_find_code): ...this new function.
+	(check_code_iterator): Make the error message more informative.
+	(check_code_attribute): New function.
+	(rtx_reader::rtx_alloc_for_name): Likewise.
+	(rtx_reader::read_rtx_code): Use rtx_alloc_for_name.
+	* config/aarch64/predicates.md (aarch64_smin, aarch64_umin): Delete.
+	* config/aarch64/aarch64-simd.md (*aarch64_<su>abd<mode>_3): Use
+	<max_opp> directly as an rtx code instead of via a match_operator.
+	* config/aarch64/aarch64-sve.md (aarch64_<su>abd<mode>_3): Likewise.
+	(<su>abd<mode>_3): Update accordingly.
+
 2019-05-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/rs6000/rs6000.c (debug_stack_info): When -mdebug=stack

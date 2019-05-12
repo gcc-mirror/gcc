@@ -194,22 +194,31 @@ static const compact_insn_name compact_insn_names[] = {
   { NOTE, "cnote" }
 };
 
+/* Return the rtx code for NAME, or UNKNOWN if NAME isn't a valid rtx code.  */
+
+static rtx_code
+maybe_find_code (const char *name)
+{
+  for (int i = 0; i < NUM_RTX_CODE; i++)
+    if (strcmp (GET_RTX_NAME (i), name) == 0)
+      return (rtx_code) i;
+
+  for (int i = 0; i < (signed)ARRAY_SIZE (compact_insn_names); i++)
+    if (strcmp (compact_insn_names[i].name, name) == 0)
+      return compact_insn_names[i].code;
+
+  return UNKNOWN;
+}
+
 /* Implementations of the iterator_group callbacks for codes.  */
 
 static int
 find_code (const char *name)
 {
-  int i;
-
-  for (i = 0; i < NUM_RTX_CODE; i++)
-    if (strcmp (GET_RTX_NAME (i), name) == 0)
-      return i;
-
-  for (i = 0; i < (signed)ARRAY_SIZE (compact_insn_names); i++)
-    if (strcmp (compact_insn_names[i].name, name) == 0)
-      return compact_insn_names[i].code;
-
-  fatal_with_file_and_line ("unknown rtx code `%s'", name);
+  rtx_code code = maybe_find_code (name);
+  if (code == UNKNOWN)
+    fatal_with_file_and_line ("unknown rtx code `%s'", name);
+  return code;
 }
 
 static void
@@ -1306,7 +1315,37 @@ check_code_iterator (struct mapping *iterator)
   for (v = iterator->values->next; v != 0; v = v->next)
     if (strcmp (GET_RTX_FORMAT (bellwether), GET_RTX_FORMAT (v->number)) != 0)
       fatal_with_file_and_line ("code iterator `%s' combines "
-				"different rtx formats", iterator->name);
+				"`%s' and `%s', which have different "
+				"rtx formats", iterator->name,
+				GET_RTX_NAME (bellwether),
+				GET_RTX_NAME (v->number));
+}
+
+/* Check that all values of attribute ATTR are rtx codes that have a
+   consistent format.  Return a representative code.  */
+
+static rtx_code
+check_code_attribute (mapping *attr)
+{
+  rtx_code bellwether = UNKNOWN;
+  for (map_value *v = attr->values; v != 0; v = v->next)
+    {
+      rtx_code code = maybe_find_code (v->string);
+      if (code == UNKNOWN)
+	fatal_with_file_and_line ("code attribute `%s' contains "
+				  "unrecognized rtx code `%s'",
+				  attr->name, v->string);
+      if (bellwether == UNKNOWN)
+	bellwether = code;
+      else if (strcmp (GET_RTX_FORMAT (bellwether),
+		       GET_RTX_FORMAT (code)) != 0)
+	fatal_with_file_and_line ("code attribute `%s' combines "
+				  "`%s' and `%s', which have different "
+				  "rtx formats", attr->name,
+				  GET_RTX_NAME (bellwether),
+				  GET_RTX_NAME (code));
+    }
+  return bellwether;
 }
 
 /* Read an rtx-related declaration from the MD file, given that it
@@ -1467,6 +1506,54 @@ parse_reg_note_name (const char *string)
   fatal_with_file_and_line ("unrecognized REG_NOTE name: `%s'", string);
 }
 
+/* Allocate an rtx for code NAME.  If NAME is a code iterator or code
+   attribute, record its use for later and use one of its possible
+   values as an interim rtx code.  */
+
+rtx
+rtx_reader::rtx_alloc_for_name (const char *name)
+{
+#ifdef GENERATOR_FILE
+  size_t len = strlen (name);
+  if (name[0] == '<' && name[len - 1] == '>')
+    {
+      /* Copy the attribute string into permanent storage, without the
+	 angle brackets around it.  */
+      obstack *strings = get_string_obstack ();
+      obstack_grow0 (strings, name + 1, len - 2);
+      char *deferred_name = XOBFINISH (strings, char *);
+
+      /* Find the name of the attribute.  */
+      const char *attr = strchr (deferred_name, ':');
+      if (!attr)
+	attr = deferred_name;
+
+      /* Find the attribute itself.  */
+      mapping *m = (mapping *) htab_find (codes.attrs, &attr);
+      if (!m)
+	fatal_with_file_and_line ("unknown code attribute `%s'", attr);
+
+      /* Pick the first possible code for now, and record the attribute
+	 use for later.  */
+      rtx x = rtx_alloc (check_code_attribute (m));
+      record_attribute_use (&codes, x, 0, deferred_name);
+      return x;
+    }
+
+  mapping *iterator = (mapping *) htab_find (codes.iterators, &name);
+  if (iterator != 0)
+    {
+      /* Pick the first possible code for now, and record the iterator
+	 use for later.  */
+      rtx x = rtx_alloc (rtx_code (iterator->values->number));
+      record_iterator_use (iterator, x, 0);
+      return x;
+    }
+#endif
+
+  return rtx_alloc (rtx_code (codes.find_builtin (name)));
+}
+
 /* Subroutine of read_rtx and read_nested_rtx.  CODE_NAME is the name of
    either an rtx code or a code iterator.  Parse the rest of the rtx and
    return it.  */
@@ -1475,7 +1562,6 @@ rtx
 rtx_reader::read_rtx_code (const char *code_name)
 {
   RTX_CODE code;
-  struct mapping *iterator = NULL;
   const char *format_ptr;
   struct md_name name;
   rtx return_rtx;
@@ -1509,20 +1595,9 @@ rtx_reader::read_rtx_code (const char *code_name)
       return return_rtx;
     }
 
-  /* If this code is an iterator, build the rtx using the iterator's
-     first value.  */
-#ifdef GENERATOR_FILE
-  iterator = (struct mapping *) htab_find (codes.iterators, &code_name);
-  if (iterator != 0)
-    code = (enum rtx_code) iterator->values->number;
-  else
-    code = (enum rtx_code) codes.find_builtin (code_name);
-#else
-    code = (enum rtx_code) codes.find_builtin (code_name);
-#endif
-
   /* If we end up with an insn expression then we free this space below.  */
-  return_rtx = rtx_alloc (code);
+  return_rtx = rtx_alloc_for_name (code_name);
+  code = GET_CODE (return_rtx);
   format_ptr = GET_RTX_FORMAT (code);
   memset (return_rtx, 0, RTX_CODE_SIZE (code));
   PUT_CODE (return_rtx, code);
@@ -1533,9 +1608,6 @@ rtx_reader::read_rtx_code (const char *code_name)
       m_reuse_rtx_by_id.safe_grow_cleared (reuse_id + 1);
       m_reuse_rtx_by_id[reuse_id] = return_rtx;
     }
-
-  if (iterator)
-    record_iterator_use (iterator, return_rtx, 0);
 
   /* Check for flags. */
   read_flags (return_rtx);

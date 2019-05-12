@@ -337,6 +337,7 @@ class rtx_reader : public md_reader
   ~rtx_reader ();
 
   bool read_rtx (const char *rtx_name, vec<rtx> *rtxen);
+  rtx rtx_alloc_for_name (const char *);
   rtx read_rtx_code (const char *code_name);
   virtual rtx read_rtx_operand (rtx return_rtx, int idx);
   rtx read_nested_rtx ();
