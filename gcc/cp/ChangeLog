@@ -1,3 +1,176 @@
+2019-05-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (cp_build_function_call_vec): When mark_used fails
+	unconditionally return error_mark_node.
+
+2019-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokvardecl): Use an accurate location in error message
+	about main as a global variable.
+
+2019-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* call.c (build_call_a): Use FUNC_OR_METHOD_TYPE_P.
+	* cp-gimplify.c (cp_fold): Likewise.
+	* cp-objcp-common.c (cp_type_dwarf_attribute): Likewise.
+	* cp-tree.h (TYPE_OBJ_P, TYPE_PTROBV_P): Likewise.
+	* cvt.c (perform_qualification_conversions): Likewise.
+	* decl.c (grokdeclarator): Likewise.
+	* decl2.c (build_memfn_type): Likewise.
+	* mangle.c (canonicalize_for_substitution, write_type): Likewise.
+	* parser.c (cp_parser_omp_declare_reduction): Likewise.
+	* pt.c (check_explicit_specialization, uses_deducible_template_parms,
+	check_cv_quals_for_unify, dependent_type_p_r): Likewise.
+	* rtti.c (ptr_initializer): Likewise.
+	* semantics.c (finish_asm_stmt, finish_offsetof,
+	cp_check_omp_declare_reduction): Likewise.
+	* tree.c (cp_build_qualified_type_real,
+	cp_build_type_attribute_variant, cxx_type_hash_eq,
+	cxx_copy_lang_qualifiers, cp_free_lang_data): Likewise.
+	* typeck.c (structural_comptypes, convert_arguments,
+	cp_build_addr_expr_1, unary_complex_lvalue, cp_build_c_cast,
+	cp_build_modify_expr, comp_ptr_ttypes_real, type_memfn_rqual):
+	Likewise.
+
+2019-05-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/78010 - bogus -Wsuggest-override warning on final function.
+	* class.c (check_for_override): Don't warn for final functions.
+
+2019-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/90326
+	* config-lang.in (gtfiles): Remove c-family/c-lex.c, add
+	c-family/c-cppbuiltin.c.
+
+2019-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/90382
+	Revert:
+	2018-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Fix value assigned to typespec_loc, use
+	min_location.
+
+2019-05-08  Nathan Sidwell  <nathan@acm.org>
+
+	Kill DECL_SAVED_FUNCTION_DATA .
+	* cp-tree.h (language_function): Remove x_auto_return_pattern.
+	(current_function_auto_return_pattern): Delete.
+	(lang_decl_fn): Replace saved_language_function with
+	saved_auto_return type.
+	(DECL_SAVED_FUNCTION_DATA): Delete.
+	(DECL_SAVED_AUTO_RETURN_TYPE): New.
+	(FNDECL_USED_AUTO): Correct documentation.
+	* decl.c (duplicate_decls): Adjust AUTO return handling.
+	(start_preparsed_function): Replace
+	current_function_auto_return_pattern with
+	DECL_SAVED_AUTO_RETURN_TYPE.  Remove DECL_SAVED_FUNCTION_DATA
+	zapping.
+	(finish_function): Likewise.
+	(save_function_data): Delete.
+	(fndecl_declared_return_type): Reimplement.
+	* mangle.c (write_unqualified_name): Use DECL_SAVED_AUTO_RETURN_TYPE.
+	* method.c (make_thunk, make_alias_for): Likewise.
+	* parser.c (cp_parser_jump_statement): Likewise.
+	* pt.c (do_auto_deduction): Likewise.
+	* typeck.c (check_return_expr): Likewise.
+
+2019-05-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90171 - reorganize usual_deallocation_fn_p
+	* call.c (struct dealloc_info): New.
+	(usual_deallocation_fn_p): Take a dealloc_info*.
+	(aligned_deallocation_fn_p, sized_deallocation_fn_p): Remove.
+	(build_op_delete_call): Adjust.
+
+2019-05-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86485 - -Wmaybe-unused with empty class ?:
+	* typeck.c (build_static_cast_1): Use cp_build_addr_expr.
+
+	* pt.c (type_dependent_expression_p): A non-type template parm with
+	a placeholder type is type-dependent.
+
+2019-05-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90265 - ICE with generic lambda.
+	* pt.c (tsubst_copy_and_build): Use a dedicated variable for the last
+	element in the vector.
+
+2019-05-03  Martin Liska  <mliska@suse.cz>
+
+	* call.c (build_aggr_conv): Use is_empty instead of
+	elements () == 0 (and similar usages).
+	* parser.c (cp_parser_lambda_introducer): Likewise.
+
+2019-05-02  Nathan Sidwell  <nathan@acm.org>
+
+	* semantics.c (finish_id_expression_1): Remove unreachable code.
+
+2019-05-01  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.h (get_class_binding_direct): Change final arg to
+	bool.
+	(get_class_binding): Likewise.
+	* name-lookup.c (get_class_binding_direct): Replace TYPE_OR_FNS
+	arg with WANT_TYPE bool.  Simplify.
+	(get_class_binding): Adjust final arg.
+	* decl.c (reshape_init_class): Adjust get_class_binding calls.
+
+2019-04-30  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-objcp-common.c (cp_common_init_ts): Use MARK_TS_EXP for _EXPR
+	nodes.  Call c_common_init_ts.
+
+2019-04-29  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (duplicate_decls): Add whitespace, move comments into
+	conditional blocks.
+	* method.c (explain_implicit_non_constexpr): Refactor.
+	* pt.c (check_explicit_specialization): Fix indentation.
+	* semantics.c (process_outer_var_ref): Reformat.
+	(finish_id_expression_1): Use STRIP_TEMPLATE.
+
+2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/90243 - orphaned note in uninstantiated constexpr function
+	* decl.c (check_for_uninitialized_const_var): Suppress notes if no
+	error was shown.
+
+2019-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/90173
+	* decl.c (grokdeclarator): Set type to error_mark_node
+	upon error about template placeholder type non followed
+	by a simple declarator-id.
+
+2019-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Fix value assigned to typespec_loc, use
+	min_location.
+
+2019-04-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90227 - error with template parameter packs.
+	* pt.c (coerce_template_parms): Do add empty pack when
+	require_all_args.
+
+2019-04-24  Richard Biener  <rguenther@suse.de>
+
+	* call.c (null_ptr_cst_p): Order checks according to expensiveness.
+	(conversion_null_warnings): Likewise.
+	* typeck.c (same_type_ignoring_top_level_qualifiers_p): Return
+	early if type1 == type2.
+
+2019-04-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87366 - wrong error with alias template.
+	* typeck.c (structural_comptypes): When comparing_specializations,
+	aliases are unequal.
+	(comptypes): When comparing_specializations, do structural
+	comparison.
+
 2019-04-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/90190 - CTAD with list-constructor.

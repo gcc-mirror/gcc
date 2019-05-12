@@ -187,6 +187,11 @@
 
   ;; For AVX512BITALG support
   UNSPEC_VPSHUFBIT
+
+  ;; For AVX512BF16 support
+  UNSPEC_VCVTNE2PS2BF16
+  UNSPEC_VCVTNEPS2BF16
+  UNSPEC_VDPBF16PS
 ])
 
 (define_c_enum "unspecv" [
@@ -725,6 +730,15 @@
    (V8DI  "qi") (V4DI  "qi") (V2DI  "qi")
    (V16SF "hi") (V8SF  "qi") (V4SF  "qi")
    (V8DF  "qi") (V4DF  "qi") (V2DF  "qi")])
+
+;; Mapping of vector modes to corresponding mask half size
+(define_mode_attr avx512fmaskhalfmode
+  [(V64QI "SI") (V32QI "HI") (V16QI "QI")
+   (V32HI "HI") (V16HI "QI") (V8HI  "QI") (V4HI "QI")
+   (V16SI "QI") (V8SI  "QI") (V4SI  "QI")
+   (V8DI  "QI") (V4DI  "QI") (V2DI  "QI")
+   (V16SF "QI") (V8SF  "QI") (V4SF  "QI")
+   (V8DF  "QI") (V4DF  "QI") (V2DF  "QI")])
 
 ;; Mapping of vector float modes to an integer mode of the same size
 (define_mode_attr sseintvecmode
@@ -1300,10 +1314,10 @@
 ;; from there.
 
 (define_insn_and_split "movdi_to_sse"
-  [(set (match_operand:V4SI 0 "register_operand" "=?x,x")
-	(unspec:V4SI [(match_operand:DI 1 "nonimmediate_operand" "r,m")]
+  [(set (match_operand:V4SI 0 "register_operand" "=x,x,?x")
+	(unspec:V4SI [(match_operand:DI 1 "nonimmediate_operand" "r,m,r")]
 		     UNSPEC_MOVDI_TO_SSE))
-     (clobber (match_scratch:V4SI 2 "=&x,X"))]
+     (clobber (match_scratch:V4SI 2 "=X,X,&x"))]
   "!TARGET_64BIT && TARGET_SSE2 && TARGET_INTER_UNIT_MOVES_TO_VEC"
   "#"
   "&& reload_completed"
@@ -1315,18 +1329,26 @@
 	 Assemble the 64-bit DImode value in an xmm register.  */
       emit_insn (gen_sse2_loadld (operands[0], CONST0_RTX (V4SImode),
 				  gen_lowpart (SImode, operands[1])));
-      emit_insn (gen_sse2_loadld (operands[2], CONST0_RTX (V4SImode),
-				  gen_highpart (SImode, operands[1])));
-      emit_insn (gen_vec_interleave_lowv4si (operands[0], operands[0],
-					     operands[2]));
-   }
+      if (TARGET_SSE4_1)
+        emit_insn (gen_sse4_1_pinsrd (operands[0], operands[0],
+				      gen_highpart (SImode, operands[1]),
+				      GEN_INT (2)));
+      else
+	{
+	  emit_insn (gen_sse2_loadld (operands[2], CONST0_RTX (V4SImode),
+				      gen_highpart (SImode, operands[1])));
+	  emit_insn (gen_vec_interleave_lowv4si (operands[0], operands[0],
+						 operands[2]));
+	}
+  }
  else if (memory_operand (operands[1], DImode))
    emit_insn (gen_vec_concatv2di (gen_lowpart (V2DImode, operands[0]),
 				  operands[1], const0_rtx));
  else
    gcc_unreachable ();
  DONE;
-})
+}
+  [(set_attr "isa" "sse4,*,*")])
 
 (define_split
   [(set (match_operand:V4SF 0 "register_operand")
@@ -22184,3 +22206,90 @@
   "vpshufbitqmb\t{%2, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %2}"
   [(set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_mode_iterator BF16 [V32HI (V16HI "TARGET_AVX512VL") (V8HI "TARGET_AVX512VL")])
+;; Converting from BF to SF
+(define_mode_attr bf16_cvt_2sf
+  [(V32HI  "V16SF") (V16HI  "V8SF") (V8HI  "V4SF")])
+;; Converting from SF to BF
+(define_mode_attr sf_cvt_bf16
+  [(V4SF  "V8HI") (V8SF  "V8HI") (V16SF  "V16HI")])
+;; Mapping from BF to SF
+(define_mode_attr sf_bf16
+  [(V4SF  "V8HI") (V8SF  "V16HI") (V16SF  "V32HI")])
+
+(define_expand "avx512f_cvtne2ps2bf16_<mode>_maskz"
+  [(match_operand:BF16 0 "register_operand")
+   (match_operand:<bf16_cvt_2sf> 1 "register_operand")
+   (match_operand:<bf16_cvt_2sf> 2 "register_operand")
+   (match_operand:<avx512fmaskmode> 3 "register_operand")]
+  "TARGET_AVX512BF16"
+{
+  emit_insn (gen_avx512f_cvtne2ps2bf16_<mode>_mask(operands[0], operands[1],
+    operands[2], CONST0_RTX(<MODE>mode), operands[3]));
+  DONE;
+})
+
+(define_insn "avx512f_cvtne2ps2bf16_<mode><mask_name>"
+  [(set (match_operand:BF16 0 "register_operand" "=v")
+	(unspec:BF16
+	  [(match_operand:<bf16_cvt_2sf> 1 "register_operand" "v")
+	   (match_operand:<bf16_cvt_2sf> 2 "register_operand" "v")]
+        UNSPEC_VCVTNE2PS2BF16))]
+  "TARGET_AVX512BF16"
+  "vcvtne2ps2bf16\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}")
+
+(define_expand "avx512f_cvtneps2bf16_<mode>_maskz"
+  [(match_operand:<sf_cvt_bf16> 0 "register_operand")
+   (match_operand:VF1_AVX512VL 1 "register_operand")
+   (match_operand:<avx512fmaskmode> 2 "register_operand")]
+  "TARGET_AVX512BF16"
+{
+  emit_insn (gen_avx512f_cvtneps2bf16_<mode>_mask(operands[0], operands[1],
+    CONST0_RTX(<sf_cvt_bf16>mode), operands[2]));
+  DONE;
+})
+
+(define_insn "avx512f_cvtneps2bf16_<mode><mask_name>"
+  [(set (match_operand:<sf_cvt_bf16> 0 "register_operand" "=v")
+	(unspec:<sf_cvt_bf16>
+	  [(match_operand:VF1_AVX512VL 1 "register_operand" "v")]
+        UNSPEC_VCVTNEPS2BF16))]
+  "TARGET_AVX512BF16"
+  "vcvtneps2bf16\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}")
+
+(define_expand "avx512f_dpbf16ps_<mode>_maskz"
+  [(match_operand:VF1_AVX512VL 0 "register_operand")
+   (match_operand:VF1_AVX512VL 1 "register_operand")
+   (match_operand:<sf_bf16> 2 "register_operand")
+   (match_operand:<sf_bf16> 3 "register_operand")
+   (match_operand:<avx512fmaskhalfmode> 4 "register_operand")]
+  "TARGET_AVX512BF16"
+{
+  emit_insn (gen_avx512f_dpbf16ps_<mode>_maskz_1(operands[0], operands[1],
+    operands[2], operands[3], CONST0_RTX(<MODE>mode), operands[4]));
+  DONE;
+})
+
+(define_insn "avx512f_dpbf16ps_<mode><maskz_half_name>"
+  [(set (match_operand:VF1_AVX512VL 0 "register_operand" "=v")
+	(unspec:VF1_AVX512VL
+	  [(match_operand:VF1_AVX512VL 1 "register_operand" "0")
+	   (match_operand:<sf_bf16> 2 "register_operand" "v")
+	   (match_operand:<sf_bf16> 3 "register_operand" "v")]
+        UNSPEC_VDPBF16PS))]
+  "TARGET_AVX512BF16"
+  "vdpbf16ps\t{%3, %2, %0<maskz_half_operand4>|%0<maskz_half_operand4>, %2, %3}")
+
+(define_insn "avx512f_dpbf16ps_<mode>_mask"
+  [(set (match_operand:VF1_AVX512VL 0 "register_operand" "=v")
+	(vec_merge:VF1_AVX512VL
+	  (unspec:VF1_AVX512VL
+	    [(match_operand:VF1_AVX512VL 1 "register_operand" "0")
+	     (match_operand:<sf_bf16> 2 "register_operand" "v")
+	     (match_operand:<sf_bf16> 3 "register_operand" "v")]
+             UNSPEC_VDPBF16PS)
+          (match_dup 1)
+          (match_operand:<avx512fmaskhalfmode> 4 "register_operand" "Yk")))]
+  "TARGET_AVX512BF16"
+  "vdpbf16ps\t{%3, %2, %0%{%4%}|%0%{%4%}, %2, %3}")

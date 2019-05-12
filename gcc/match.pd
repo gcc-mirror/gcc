@@ -152,6 +152,28 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (fold_real_zero_addition_p (type, @1, 1))
   (non_lvalue @0)))
 
+/* Even if the fold_real_zero_addition_p can't simplify X + 0.0
+   into X, we can optimize (X + 0.0) + 0.0 or (X + 0.0) - 0.0
+   or (X - 0.0) + 0.0 into X + 0.0 and (X - 0.0) - 0.0 into X - 0.0
+   if not -frounding-math.  For sNaNs the first operation would raise
+   exceptions but turn the result into qNan, so the second operation
+   would not raise it.   */
+(for inner_op (plus minus)
+ (for outer_op (plus minus)
+  (simplify
+   (outer_op (inner_op@3 @0 REAL_CST@1) REAL_CST@2)
+    (if (real_zerop (@1)
+	 && real_zerop (@2)
+	 && !HONOR_SIGN_DEPENDENT_ROUNDING (type))
+     (with { bool inner_plus = ((inner_op == PLUS_EXPR)
+				^ REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (@1)));
+	     bool outer_plus
+	       = ((outer_op == PLUS_EXPR)
+		  ^ REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (@2))); }
+      (if (outer_plus && !inner_plus)
+       (outer_op @0 @2)
+       @3))))))
+
 /* Simplify x - x.
    This is unsafe for certain floats even in non-IEEE formats.
    In IEEE, it is unsafe because it does wrong for NaNs.
@@ -2596,6 +2618,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	       && TYPE_UNSIGNED (TREE_TYPE (@1)))))
    (view_convert @1)))
 
+/* Simplify a view-converted empty constructor.  */
+(simplify
+  (view_convert CONSTRUCTOR@0)
+  (if (TREE_CODE (@0) != SSA_NAME
+       && CONSTRUCTOR_NELTS (@0) == 0)
+   { build_zero_cst (type); }))
+
 /* Re-association barriers around constants and other re-association
    barriers can be removed.  */
 (simplify
@@ -2728,6 +2757,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
   (mult (convert1? (exact_div @0 @@1)) (convert2? @1))
   (convert @0))
+
+/* Simplify (A / B) * B + (A % B) -> A.  */
+(for div (trunc_div ceil_div floor_div round_div)
+     mod (trunc_mod ceil_mod floor_mod round_mod)
+  (simplify
+   (plus:c (mult:c (div @0 @1) @1) (mod @0 @1))
+   @0))
 
 /* ((X /[ex] A) +- B) * A  -->  X +- A * B.  */
 (for op (plus minus)
@@ -3898,7 +3934,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
          equal = (base0 == base1);
        if (equal == 0)
 	 {
-	   if (!DECL_P (base0) || !DECL_P (base1))
+	   HOST_WIDE_INT ioff0 = -1, ioff1 = -1;
+	   off0.is_constant (&ioff0);
+	   off1.is_constant (&ioff1);
+	   if ((DECL_P (base0) && TREE_CODE (base1) == STRING_CST)
+	       || (TREE_CODE (base0) == STRING_CST && DECL_P (base1))
+	       || (TREE_CODE (base0) == STRING_CST
+		   && TREE_CODE (base1) == STRING_CST
+		   && ioff0 >= 0 && ioff1 >= 0
+		   && ioff0 < TREE_STRING_LENGTH (base0)
+		   && ioff1 < TREE_STRING_LENGTH (base1)
+		   /* This is a too conservative test that the STRING_CSTs
+		      will not end up being string-merged.  */
+		   && strncmp (TREE_STRING_POINTER (base0) + ioff0,
+			       TREE_STRING_POINTER (base1) + ioff1,
+			       MIN (TREE_STRING_LENGTH (base0) - ioff0,
+				    TREE_STRING_LENGTH (base1) - ioff1)) != 0))
+	     ;
+	   else if (!DECL_P (base0) || !DECL_P (base1))
 	     equal = 2;
 	   else if (cmp != EQ_EXPR && cmp != NE_EXPR)
 	     equal = 2;

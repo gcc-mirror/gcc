@@ -1146,11 +1146,13 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
   edge e = NULL;
   bool use_oracle;
 
-  *same_valid = true;
+  if (same_valid)
+    *same_valid = true;
 
   if (gimple_bb (phi) != phiblock)
     return vuse;
 
+  unsigned int cnt = PARAM_VALUE (PARAM_SCCVN_MAX_ALIAS_QUERIES_PER_ACCESS);
   use_oracle = ao_ref_init_from_vn_reference (&ref, set, type, operands);
 
   /* Use the alias-oracle to find either the PHI node in this block,
@@ -1159,8 +1161,10 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
   if (gimple_code (phi) == GIMPLE_PHI)
     e = find_edge (block, phiblock);
   else if (use_oracle)
-    while (!stmt_may_clobber_ref_p_1 (phi, &ref))
+    while (cnt > 0
+	   && !stmt_may_clobber_ref_p_1 (phi, &ref))
       {
+	--cnt;
 	vuse = gimple_vuse (phi);
 	phi = SSA_NAME_DEF_STMT (vuse);
 	if (gimple_bb (phi) != phiblock)
@@ -1176,26 +1180,21 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
 
   if (e)
     {
-      if (use_oracle)
+      if (use_oracle && same_valid)
 	{
 	  bitmap visited = NULL;
-	  unsigned int cnt;
 	  /* Try to find a vuse that dominates this phi node by skipping
 	     non-clobbering statements.  */
-	  vuse = get_continuation_for_phi (phi, &ref, &cnt, &visited, false,
+	  vuse = get_continuation_for_phi (phi, &ref, cnt, &visited, false,
 					   NULL, NULL);
 	  if (visited)
 	    BITMAP_FREE (visited);
 	}
       else
 	vuse = NULL_TREE;
-      if (!vuse)
-	{
-	  /* If we didn't find any, the value ID can't stay the same,
-	     but return the translated vuse.  */
-	  *same_valid = false;
-	  vuse = PHI_ARG_DEF (phi, e->dest_idx);
-	}
+      /* If we didn't find any, the value ID can't stay the same.  */
+      if (!vuse && same_valid)
+	*same_valid = false;
       /* ??? We would like to return vuse here as this is the canonical
          upmost vdef that this reference is associated with.  But during
 	 insertion of the references into the hash tables we only ever
@@ -1533,7 +1532,8 @@ phi_translate_1 (bitmap_set_t dest,
 						    ? newoperands : operands,
 						    ref->set, ref->type,
 						    vuse, phiblock, pred,
-						    &same_valid);
+						    changed
+						    ? NULL : &same_valid);
 	    if (newvuse == NULL_TREE)
 	      {
 		newoperands.release ();
@@ -3531,7 +3531,7 @@ do_hoist_insertion (basic_block block)
     return false;
 
   /* Hack hoitable_set in-place so we can use sorted_array_from_bitmap_set.  */
-  hoistable_set.values = availout_in_some;
+  bitmap_move (&hoistable_set.values, &availout_in_some);
   hoistable_set.expressions = ANTIC_IN (block)->expressions;
 
   /* Now finally construct the topological-ordered expression set.  */
@@ -4197,6 +4197,7 @@ pass_pre::execute (function *fun)
   loop_optimizer_init (LOOPS_NORMAL);
   split_critical_edges ();
   scev_initialize ();
+  calculate_dominance_info (CDI_DOMINATORS);
 
   run_rpo_vn (VN_WALK);
 

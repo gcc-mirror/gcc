@@ -24,6 +24,7 @@
 
 /** @file experimental/any
  *  This is a TS C++ Library header.
+ *  @ingroup libfund-ts
  */
 
 #ifndef _GLIBCXX_EXPERIMENTAL_ANY
@@ -49,7 +50,7 @@ inline namespace fundamentals_v1
 {
   /**
    * @defgroup any Type-safe container of any type
-   * @ingroup experimental
+   * @ingroup libfund-ts
    *
    * A type-safe container for single values of value types, as
    * described in n3804 "Any Library Proposal (Revision 3)".
@@ -69,6 +70,7 @@ inline namespace fundamentals_v1
     virtual const char* what() const noexcept { return "bad any_cast"; }
   };
 
+  /// @cond undocumented
   [[gnu::noreturn]] inline void __throw_bad_any_cast()
   {
 #if __cpp_exceptions
@@ -77,6 +79,7 @@ inline namespace fundamentals_v1
     __builtin_abort();
 #endif
   }
+  /// @endcond
 
   /**
    *  @brief A type-safe container of any type.
@@ -410,6 +413,7 @@ inline namespace fundamentals_v1
     }
   // @}
 
+  /// @cond undocumented
   template<typename _Tp>
     void* __any_caster(const any* __any)
     {
@@ -422,6 +426,7 @@ inline namespace fundamentals_v1
       __any->_M_manager(any::_Op_access, __any, &__arg);
       return __arg._M_obj;
     }
+  /// @endcond
 
   /**
    * @brief Access the contained object.

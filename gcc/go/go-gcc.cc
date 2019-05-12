@@ -604,6 +604,15 @@ Gcc_backend::Gcc_backend()
 						NULL_TREE),
 		       false, false);
 
+  // We use __builtin_memmove for copying data.
+  this->define_builtin(BUILT_IN_MEMMOVE, "__builtin_memmove", "memmove",
+		       build_function_type_list(void_type_node,
+						ptr_type_node,
+						const_ptr_type_node,
+						size_type_node,
+						NULL_TREE),
+		       false, false);
+
   // Used by runtime/internal/sys.
   this->define_builtin(BUILT_IN_CTZ, "__builtin_ctz", "ctz",
 		       build_function_type_list(integer_type_node,

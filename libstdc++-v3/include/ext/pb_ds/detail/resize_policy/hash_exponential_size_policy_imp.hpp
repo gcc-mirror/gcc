@@ -38,6 +38,8 @@
  * Contains a resize size policy implementation.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 hash_exponential_size_policy(size_type start_size, size_type grow_factor) :
@@ -88,3 +90,4 @@ get_nearest_smaller_size(size_type size) const
   return ret;
 }
 
+#endif

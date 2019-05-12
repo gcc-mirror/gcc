@@ -1,3 +1,34 @@
+2019-05-07  Nathan Sidwell  <nathan@acm.org>
+
+	* files.c (_cpp_stack_file): Empty filenames aren't dependencies.
+	* mkdeps.c (deps_add_dep): Assert not empty.
+
+	* include/mkdeps.h (deps_write): Add PHONY arg.
+	(deps_phony_targets): Delete.
+	* init.c (cpp_finish): Just call deps_write.
+	* mkdeps.c (struct mkdeps): Add local vector class.  Reimplement
+	vector handling.
+	(munge): Munge to static buffer.
+	(apply_vpath): Adjust vector handling.
+	(deps_init, deps_free): Use new, delete.
+	(deps_add_target): Do not munge here.  Record quoting low water mark.
+	(deps_add_dep): Do not munge here.
+	(deps_add_vpath): Adjust vector handling.
+	(make_write_name): New.  Munge on demand here.
+	(make_write_vec): New.
+	(deps_phony_targets): Delete.
+	(make_write): New.
+	(deps_write): Forward to deps_Write.
+	(deps_save, deps_restore): Adjust vector handling.
+
+2019-05-06  Nathan Sidwell  <nathan@acm.org>
+
+	* include/mkdeps.h: Rename struct deps to struct mkdeps.
+	* mkdeps.c: Likewise.
+	* include/cpplib.h (cpp_get_deps): Rename return type..
+	* directives.c (cpp_get_deps): Likewise.
+	* internal.h (struct cpp_reader): Rename deps field type.
+
 2019-04-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* files.c (search_path_exhausted): Fix typo in comment.

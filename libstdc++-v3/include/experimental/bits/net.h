@@ -24,7 +24,7 @@
 
 /** @file experimental/bits/net.h
  *  This is an internal header file, included by other library headers.
- *  Do not attempt to use it directly. @headername{experimental/networking}
+ *  Do not attempt to use it directly. @headername{experimental/net}
  */
 
 #ifndef _GLIBCXX_EXPERIMENTAL_NET_H
@@ -48,13 +48,14 @@ namespace net
 inline namespace v1
 {
 
-  /**
-   * @ingroup networking
-   * @{
+  /** @addtogroup networking-ts
+   *  @{
    */
 
   template<typename _CompletionToken, typename _Signature, typename>
     class async_result;
+
+  /// @cond undocumented
 
   // A type denoted by DEDUCED in the TS.
   template<typename _CompletionToken, typename _Signature>
@@ -68,25 +69,27 @@ inline namespace v1
       is_constructible<_Tp, _Tp&>, is_constructible<_Tp, const _Tp&&>
       >::type;
 
-    struct __throw_on_error
+  struct __throw_on_error
+  {
+    explicit
+    __throw_on_error(const char* __msg) : _M_msg(__msg) { }
+
+    ~__throw_on_error() noexcept(false)
     {
-      explicit
-      __throw_on_error(const char* __msg) : _M_msg(__msg) { }
+      if (_M_ec)
+	_GLIBCXX_THROW_OR_ABORT(system_error(_M_ec, _M_msg));
+    }
 
-      ~__throw_on_error() noexcept(false)
-      {
-	if (_M_ec)
-	  _GLIBCXX_THROW_OR_ABORT(system_error(_M_ec, _M_msg));
-      }
+    __throw_on_error(const __throw_on_error&) = delete;
+    __throw_on_error& operator=(const __throw_on_error&) = delete;
 
-      __throw_on_error(const __throw_on_error&) = delete;
-      __throw_on_error& operator=(const __throw_on_error&) = delete;
+    operator error_code&() noexcept { return _M_ec; }
 
-      operator error_code&() noexcept { return _M_ec; }
+    const char* _M_msg;
+    error_code _M_ec;
+  };
 
-      const char* _M_msg;
-      error_code _M_ec;
-    };
+  /// @endcond
 
   // Base class for types meeting IntegerSocketOption requirements.
   template<typename _Tp>

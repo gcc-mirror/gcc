@@ -10979,6 +10979,27 @@ Other attributes are defined using:
 (define_code_attr @var{name} [(@var{code1} "@var{value1}") @dots{} (@var{coden} "@var{valuen}")])
 @end smallexample
 
+Instruction patterns can use code attributes as rtx codes, which can be
+useful if two sets of codes act in tandem.  For example, the following
+@code{define_insn} defines two patterns, one calculating a signed absolute
+difference and another calculating an unsigned absolute difference:
+
+@smallexample
+(define_code_iterator any_max [smax umax])
+(define_code_attr paired_min [(smax "smin") (umax "umin")])
+(define_insn @dots{}
+  [(set (match_operand:SI 0 @dots{})
+        (minus:SI (any_max:SI (match_operand:SI 1 @dots{})
+                              (match_operand:SI 2 @dots{}))
+                  (<paired_min>:SI (match_dup 1) (match_dup 2))))]
+  @dots{})
+@end smallexample
+
+The signed version of the instruction uses @code{smax} and @code{smin}
+while the unsigned version uses @code{umax} and @code{umin}.  There
+are no versions that pair @code{smax} with @code{umin} or @code{umax}
+with @code{smin}.
+
 Here's an example of code iterators in action, taken from the MIPS port:
 
 @smallexample

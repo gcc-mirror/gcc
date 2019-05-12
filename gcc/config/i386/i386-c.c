@@ -548,6 +548,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__CLDEMOTE__");
   if (isa_flag2 & OPTION_MASK_ISA_PTWRITE)
     def_or_undef (parse_in, "__PTWRITE__");
+  if (isa_flag2 & OPTION_MASK_ISA_AVX512BF16)
+    def_or_undef (parse_in, "__AVX512BF16__");
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");
@@ -586,8 +588,9 @@ ix86_pragma_target_parse (tree args, tree pop_target)
     }
   else
     {
-      cur_tree = ix86_valid_target_attribute_tree (args, &global_options,
-						   &global_options_set);
+      cur_tree = ix86_valid_target_attribute_tree (NULL_TREE, args,
+						   &global_options,
+						   &global_options_set, 0);
       if (!cur_tree || cur_tree == error_mark_node)
        {
          cl_target_option_restore (&global_options,

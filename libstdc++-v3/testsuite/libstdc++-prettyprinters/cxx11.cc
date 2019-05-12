@@ -64,65 +64,65 @@ int
 main()
 {
   std::forward_list<int> efl;
-// { dg-final { note-test efl "empty std::forward_list" } }
+// { dg-final { regexp-test efl "empty std::(__debug::)?forward_list" } }
 
   std::forward_list<int> &refl = efl;
-// { dg-final { note-test refl "empty std::forward_list" } }
+// { dg-final { regexp-test refl "empty std::(__debug::)?forward_list" } }
 
   std::forward_list<int> fl;
   fl.push_front(2);
   fl.push_front(1);
-// { dg-final { note-test fl {std::forward_list = {[0] = 1, [1] = 2}} } }
+// { dg-final { regexp-test fl {std::(__debug::)?forward_list = {\[0\] = 1, \[1\] = 2}} } }
 
   std::forward_list<int> &rfl = fl;
-// { dg-final { note-test rfl {std::forward_list = {[0] = 1, [1] = 2}} } }
+// { dg-final { regexp-test rfl {std::(__debug::)?forward_list = {\[0\] = 1, \[1\] = 2}} } }
 
   std::unordered_map<int, std::string> eum;
-// { dg-final { note-test eum "std::unordered_map with 0 elements" } }
+// { dg-final { regexp-test eum "std::(__debug::)?unordered_map with 0 elements" } }
   std::unordered_map<int, std::string> &reum = eum;
-// { dg-final { note-test reum "std::unordered_map with 0 elements" } }
+// { dg-final { regexp-test reum "std::(__debug::)?unordered_map with 0 elements" } }
 
   std::unordered_multimap<int, std::string> eumm;
-// { dg-final { note-test eumm "std::unordered_multimap with 0 elements" } }
+// { dg-final { regexp-test eumm "std::(__debug::)?unordered_multimap with 0 elements" } }
   std::unordered_multimap<int, std::string> &reumm = eumm;
-// { dg-final { note-test reumm "std::unordered_multimap with 0 elements" } }
+// { dg-final { regexp-test reumm "std::(__debug::)?unordered_multimap with 0 elements" } }
 
   std::unordered_set<int> eus;
-// { dg-final { note-test eus "std::unordered_set with 0 elements" } }
+// { dg-final { regexp-test eus "std::(__debug::)?unordered_set with 0 elements" } }
   std::unordered_set<int> &reus = eus;
-// { dg-final { note-test reus "std::unordered_set with 0 elements" } }
+// { dg-final { regexp-test reus "std::(__debug::)?unordered_set with 0 elements" } }
 
   std::unordered_multiset<int> eums;
-// { dg-final { note-test eums "std::unordered_multiset with 0 elements" } }
+// { dg-final { regexp-test eums "std::(__debug::)?unordered_multiset with 0 elements" } }
   std::unordered_multiset<int> &reums = eums;
-// { dg-final { note-test reums "std::unordered_multiset with 0 elements" } }
+// { dg-final { regexp-test reums "std::(__debug::)?unordered_multiset with 0 elements" } }
 
   std::unordered_map<int, std::string> uom;
   uom[5] = "three";
   uom[3] = "seven";
-// { dg-final { note-test uom {std::unordered_map with 2 elements = {[3] = "seven", [5] = "three"}} } }
+// { dg-final { regexp-test uom {std::(__debug::)?unordered_map with 2 elements = {\[3\] = "seven", \[5\] = "three"}} } }
 
   std::unordered_map<int, std::string> &ruom = uom;
-// { dg-final { note-test ruom {std::unordered_map with 2 elements = {[3] = "seven", [5] = "three"}} } }
+// { dg-final { regexp-test ruom {std::(__debug::)?unordered_map with 2 elements = {\[3\] = "seven", \[5\] = "three"}} } }
 
   std::unordered_multimap<int, std::string> uomm;
   uomm.insert(std::pair<int, std::string> (5, "three"));
   uomm.insert(std::pair<int, std::string> (5, "seven"));
-// { dg-final { note-test uomm {std::unordered_multimap with 2 elements = {[5] = "seven", [5] = "three"}} } }
+// { dg-final { regexp-test uomm {std::(__debug::)?unordered_multimap with 2 elements = {\[5\] = "seven", \[5\] = "three"}} } }
   std::unordered_multimap<int, std::string> &ruomm = uomm;
-// { dg-final { note-test ruomm {std::unordered_multimap with 2 elements = {[5] = "seven", [5] = "three"}} } }
+// { dg-final { regexp-test ruomm {std::(__debug::)?unordered_multimap with 2 elements = {\[5\] = "seven", \[5\] = "three"}} } }
 
   std::unordered_set<int> uos;
   uos.insert(5);
-// { dg-final { note-test uos {std::unordered_set with 1 element = {[0] = 5}} } }
+// { dg-final { regexp-test uos {std::(__debug::)?unordered_set with 1 element = {\[0\] = 5}} } }
   std::unordered_set<int> &ruos = uos;
-// { dg-final { note-test ruos {std::unordered_set with 1 element = {[0] = 5}} } }
+// { dg-final { regexp-test ruos {std::(__debug::)?unordered_set with 1 element = {\[0\] = 5}} } }
 
   std::unordered_multiset<int> uoms;
   uoms.insert(5);
-// { dg-final { note-test uoms {std::unordered_multiset with 1 element = {[0] = 5}} } }
+// { dg-final { regexp-test uoms {std::(__debug::)?unordered_multiset with 1 element = {\[0\] = 5}} } }
   std::unordered_multiset<int> &ruoms = uoms;
-// { dg-final { note-test ruoms {std::unordered_multiset with 1 element = {[0] = 5}} } }
+// { dg-final { regexp-test ruoms {std::(__debug::)?unordered_multiset with 1 element = {\[0\] = 5}} } }
 
   std::unique_ptr<datum> uptr (new datum);
   uptr->s = "hi bob";

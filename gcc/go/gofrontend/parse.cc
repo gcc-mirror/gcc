@@ -3483,7 +3483,7 @@ Parse::expression(Precedence precedence, bool may_be_sink,
 
       if (is_parenthesized != NULL)
 	*is_parenthesized = false;
-      
+
       Operator op = token->op();
       Location binop_location = token->location();
 
@@ -3576,7 +3576,7 @@ Parse::unary_expr(bool may_be_sink, bool may_be_composite_lit,
 
   // There is a complex parse for <- chan.  The choices are
   // Convert x to type <- chan int:
-  //   (<- chan int)(x)         
+  //   (<- chan int)(x)
   // Receive from (x converted to type chan <- chan int):
   //   (<- chan <- chan int (x))
   // Convert x to type <- chan (<- chan int).

@@ -39,6 +39,8 @@
  *    functions.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 Hash_Fn& 
 PB_DS_CLASS_C_DEC::
@@ -86,3 +88,4 @@ const Resize_Policy&
 PB_DS_CLASS_C_DEC::
 get_resize_policy() const
 { return *this; }
+#endif

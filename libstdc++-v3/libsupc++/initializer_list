@@ -83,6 +83,7 @@ namespace std
    *  @brief  Return an iterator pointing to the first element of
    *          the initializer_list.
    *  @param  __ils  Initializer list.
+   *  @relates initializer_list
    */
   template<class _Tp>
     constexpr const _Tp*
@@ -93,6 +94,7 @@ namespace std
    *  @brief  Return an iterator pointing to one past the last element
    *          of the initializer_list.
    *  @param  __ils  Initializer list.
+   *  @relates initializer_list
    */
   template<class _Tp>
     constexpr const _Tp*

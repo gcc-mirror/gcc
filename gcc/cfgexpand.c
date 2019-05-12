@@ -2874,6 +2874,15 @@ asm_clobber_reg_is_valid (int regno, int nregs, const char *regname)
       error ("PIC register clobbered by %qs in %<asm%>", regname);
       is_valid = false;
     }
+  else if (!in_hard_reg_set_p
+	   (accessible_reg_set, reg_raw_mode[regno], regno))
+    {
+      /* ??? Diagnose during gimplification?  */
+      error ("the register %qs cannot be clobbered in %<asm%>"
+	     " for the current target", regname);
+      is_valid = false;
+    }
+
   /* Clobbering the stack pointer register is deprecated.  GCC expects
      the value of the stack pointer after an asm statement to be the same
      as it was before, so no asm can validly clobber the stack pointer in

@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++17 -lstdc++fs -fchar8_t" }
+// { dg-options "-std=gnu++17 -fchar8_t" }
 // { dg-do run { target c++17 } }
 // { dg-require-filesystem-ts "" }
 
@@ -27,14 +27,15 @@ void
 test01()
 {
   using namespace std::filesystem;
-  const std::string s = "abc";
+  using string_type = std::basic_string<path::value_type>;
+  const string_type s{ 'a', 'b', 'c' };
   path p(s);
 
   VERIFY( p.native() == s );
   VERIFY( p.c_str() == s );
-  VERIFY( static_cast<std::string>(p) == s );
+  VERIFY( static_cast<string_type>(p) == s );
 
-  std::string s2 = p; // implicit conversion
+  string_type s2 = p; // implicit conversion
   VERIFY( s2 == p.native() );
 }
 
@@ -46,7 +47,7 @@ test02()
   path p(s);
 
   auto str = p.string<char>();
-  VERIFY( str == u"abc" );
+  VERIFY( str == "abc" );
   VERIFY( str == p.string() );
 
   auto strw = p.string<wchar_t>();

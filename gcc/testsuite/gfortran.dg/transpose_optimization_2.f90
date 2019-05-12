@@ -61,4 +61,4 @@ end
 ! The check below for temporaries gave 14 and 33 for "parm" and "atmp".
 !
 ! { dg-final { scan-tree-dump-times "parm" 72 "original" } }
-! { dg-final { scan-tree-dump-times "atmp" 12 "original" } }
+! { dg-final { scan-tree-dump-times "atmp" 13 "original" } }

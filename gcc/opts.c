@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr-common.h"
 #include "common/common-target.h"
 #include "spellcheck.h"
+#include "opt-suggestions.h"
 
 static void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
 
@@ -854,6 +855,10 @@ control_options_for_live_patching (struct gcc_options *opts,
     }
 }
 
+/* --help option argument if set.  */
+const char *help_option_argument = NULL;
+
+
 /* After all options at LOC have been read into OPTS and OPTS_SET,
    finalize settings of those options and diagnose incompatible
    combinations.  */
@@ -1578,7 +1583,8 @@ print_filtered_help (unsigned int include_flags,
   for (unsigned i = 0; i < help_tuples.length (); i++)
     {
       const struct cl_option *option = cl_options + help_tuples[i].m_code;
-      printf ("  Known valid arguments for %s option:\n   ", option->opt_text);
+      printf (_("  Known valid arguments for %s option:\n   "),
+	      option->opt_text);
       for (unsigned j = 0; j < help_tuples[i].m_values.length (); j++)
 	printf (" %s", help_tuples[i].m_values[j]);
       printf ("\n\n");
@@ -2052,6 +2058,135 @@ check_alignment_argument (location_t loc, const char *flag, const char *name)
   parse_and_check_align_values (flag, name, align_result, true, loc);
 }
 
+/* Print help when OPT__help_ is set.  */
+
+void
+print_help (struct gcc_options *opts, unsigned int lang_mask)
+{
+  const char *a = help_option_argument;
+  unsigned int include_flags = 0;
+  /* Note - by default we include undocumented options when listing
+     specific classes.  If you only want to see documented options
+     then add ",^undocumented" to the --help= option.  E.g.:
+
+     --help=target,^undocumented  */
+  unsigned int exclude_flags = 0;
+
+  if (lang_mask == CL_DRIVER)
+    return;
+
+  /* Walk along the argument string, parsing each word in turn.
+     The format is:
+     arg = [^]{word}[,{arg}]
+     word = {optimizers|target|warnings|undocumented|
+     params|common|<language>}  */
+  while (*a != 0)
+    {
+      static const struct
+	{
+	  const char *string;
+	  unsigned int flag;
+	}
+      specifics[] =
+	{
+	    { "optimizers", CL_OPTIMIZATION },
+	    { "target", CL_TARGET },
+	    { "warnings", CL_WARNING },
+	    { "undocumented", CL_UNDOCUMENTED },
+	    { "params", CL_PARAMS },
+	    { "joined", CL_JOINED },
+	    { "separate", CL_SEPARATE },
+	    { "common", CL_COMMON },
+	    { NULL, 0 }
+	};
+      unsigned int *pflags;
+      const char *comma;
+      unsigned int lang_flag, specific_flag;
+      unsigned int len;
+      unsigned int i;
+
+      if (*a == '^')
+	{
+	  ++a;
+	  if (*a == '\0')
+	    {
+	      error ("missing argument to %qs", "--help=^");
+	      break;
+	    }
+	  pflags = &exclude_flags;
+	}
+      else
+	pflags = &include_flags;
+
+      comma = strchr (a, ',');
+      if (comma == NULL)
+	len = strlen (a);
+      else
+	len = comma - a;
+      if (len == 0)
+	{
+	  a = comma + 1;
+	  continue;
+	}
+
+      /* Check to see if the string matches an option class name.  */
+      for (i = 0, specific_flag = 0; specifics[i].string != NULL; i++)
+	if (strncasecmp (a, specifics[i].string, len) == 0)
+	  {
+	    specific_flag = specifics[i].flag;
+	    break;
+	  }
+
+      /* Check to see if the string matches a language name.
+	 Note - we rely upon the alpha-sorted nature of the entries in
+	 the lang_names array, specifically that shorter names appear
+	 before their longer variants.  (i.e. C before C++).  That way
+	 when we are attempting to match --help=c for example we will
+	 match with C first and not C++.  */
+      for (i = 0, lang_flag = 0; i < cl_lang_count; i++)
+	if (strncasecmp (a, lang_names[i], len) == 0)
+	  {
+	    lang_flag = 1U << i;
+	    break;
+	  }
+
+      if (specific_flag != 0)
+	{
+	  if (lang_flag == 0)
+	    *pflags |= specific_flag;
+	  else
+	    {
+	      /* The option's argument matches both the start of a
+		 language name and the start of an option class name.
+		 We have a special case for when the user has
+		 specified "--help=c", but otherwise we have to issue
+		 a warning.  */
+	      if (strncasecmp (a, "c", len) == 0)
+		*pflags |= lang_flag;
+	      else
+		warning (0,
+			 "--help argument %q.*s is ambiguous, "
+			 "please be more specific",
+			 len, a);
+	    }
+	}
+      else if (lang_flag != 0)
+	*pflags |= lang_flag;
+      else
+	warning (0,
+		 "unrecognized argument to --help= option: %q.*s",
+		 len, a);
+
+      if (comma == NULL)
+	break;
+      a = comma + 1;
+    }
+
+  if (include_flags)
+    print_specific_help (include_flags, exclude_flags, 0, opts,
+			 lang_mask);
+}
+
 /* Handle target- and language-independent options.  Return zero to
    generate an "unknown option" message.  Only options that need
    extra handling need to be listed here; if you simply want
@@ -2119,131 +2254,7 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT__help_:
       {
-	const char *a = arg;
-	unsigned int include_flags = 0;
-	/* Note - by default we include undocumented options when listing
-	   specific classes.  If you only want to see documented options
-	   then add ",^undocumented" to the --help= option.  E.g.:
-
-	   --help=target,^undocumented  */
-	unsigned int exclude_flags = 0;
-
-	if (lang_mask == CL_DRIVER)
-	  break;
-
-	/* Walk along the argument string, parsing each word in turn.
-	   The format is:
-	   arg = [^]{word}[,{arg}]
-	   word = {optimizers|target|warnings|undocumented|
-		   params|common|<language>}  */
-	while (*a != 0)
-	  {
-	    static const struct
-	    {
-	      const char *string;
-	      unsigned int flag;
-	    }
-	    specifics[] =
-	    {
-	      { "optimizers", CL_OPTIMIZATION },
-	      { "target", CL_TARGET },
-	      { "warnings", CL_WARNING },
-	      { "undocumented", CL_UNDOCUMENTED },
-	      { "params", CL_PARAMS },
-	      { "joined", CL_JOINED },
-	      { "separate", CL_SEPARATE },
-	      { "common", CL_COMMON },
-	      { NULL, 0 }
-	    };
-	    unsigned int *pflags;
-	    const char *comma;
-	    unsigned int lang_flag, specific_flag;
-	    unsigned int len;
-	    unsigned int i;
-
-	    if (*a == '^')
-	      {
-		++a;
-		if (*a == '\0')
-		  {
-		    error_at (loc, "missing argument to %qs", "--help=^");
-		    break;
-		  }
-		pflags = &exclude_flags;
-	      }
-	    else
-	      pflags = &include_flags;
-
-	    comma = strchr (a, ',');
-	    if (comma == NULL)
-	      len = strlen (a);
-	    else
-	      len = comma - a;
-	    if (len == 0)
-	      {
-		a = comma + 1;
-		continue;
-	      }
-
-	    /* Check to see if the string matches an option class name.  */
-	    for (i = 0, specific_flag = 0; specifics[i].string != NULL; i++)
-	      if (strncasecmp (a, specifics[i].string, len) == 0)
-		{
-		  specific_flag = specifics[i].flag;
-		  break;
-		}
-
-	    /* Check to see if the string matches a language name.
-	       Note - we rely upon the alpha-sorted nature of the entries in
-	       the lang_names array, specifically that shorter names appear
-	       before their longer variants.  (i.e. C before C++).  That way
-	       when we are attempting to match --help=c for example we will
-	       match with C first and not C++.  */
-	    for (i = 0, lang_flag = 0; i < cl_lang_count; i++)
-	      if (strncasecmp (a, lang_names[i], len) == 0)
-		{
-		  lang_flag = 1U << i;
-		  break;
-		}
-
-	    if (specific_flag != 0)
-	      {
-		if (lang_flag == 0)
-		  *pflags |= specific_flag;
-		else
-		  {
-		    /* The option's argument matches both the start of a
-		       language name and the start of an option class name.
-		       We have a special case for when the user has
-		       specified "--help=c", but otherwise we have to issue
-		       a warning.  */
-		    if (strncasecmp (a, "c", len) == 0)
-		      *pflags |= lang_flag;
-		    else
-		      warning_at (loc, 0,
-				  "--help argument %q.*s is ambiguous, "
-				  "please be more specific",
-				  len, a);
-		  }
-	      }
-	    else if (lang_flag != 0)
-	      *pflags |= lang_flag;
-	    else
-	      warning_at (loc, 0,
-			  "unrecognized argument to --help= option: %q.*s",
-			  len, a);
-
-	    if (comma == NULL)
-	      break;
-	    a = comma + 1;
-	  }
-
-	if (include_flags)
-	  {
-	    target_option_override_hook ();
-	    print_specific_help (include_flags, exclude_flags, 0, opts,
-				 lang_mask);
-	  }
+	help_option_argument = arg;
 	opts->x_exit_after_options = true;
 	break;
       }
@@ -3087,10 +3098,20 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
   strcpy (new_option + 1, arg);
   option_index = find_opt (new_option, lang_mask);
   if (option_index == OPT_SPECIAL_unknown)
-    error_at (loc, "%<-Werror=%s%>: no option -%s", arg, new_option);
+    {
+      option_proposer op;
+      const char *hint = op.suggest_option (new_option);
+      if (hint)
+	error_at (loc, "%<-W%serror=%s%>: no option %<-%s%>;"
+		  " did you mean %<-%s%>?", value ? "" : "no-",
+		  arg, new_option, hint);
+      else
+	error_at (loc, "%<-W%serror=%s%>: no option %<-%s%>",
+		  value ? "" : "no-", arg, new_option);
+    }
   else if (!(cl_options[option_index].flags & CL_WARNING))
-    error_at (loc, "%<-Werror=%s%>: -%s is not an option that controls "
-	      "warnings", arg, new_option);
+    error_at (loc, "%<-Werror=%s%>: %<-%s%> is not an option that "
+	      "controls warnings", arg, new_option);
   else
     {
       const diagnostic_t kind = value ? DK_ERROR : DK_WARNING;

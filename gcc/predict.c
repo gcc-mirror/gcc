@@ -132,8 +132,8 @@ get_hot_bb_threshold ()
 {
   if (min_count == -1)
     {
-      min_count
-	= profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION);
+      gcov_type t = profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION);
+      set_hot_bb_threshold (t);
       if (dump_file)
 	fprintf (dump_file, "Setting hotness threshold to %" PRId64 ".\n",
 		 min_count);
@@ -1252,7 +1252,7 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
       if (dump_file)
 	{
 	  fprintf (dump_file, "Predictions for bb %i\n", bb->index);
-	  if (unlikely_edges.elements () == 0)
+	  if (unlikely_edges.is_empty ())
 	    fprintf (dump_file,
 		     "%i edges in bb %i predicted to even probabilities\n",
 		     nedges, bb->index);

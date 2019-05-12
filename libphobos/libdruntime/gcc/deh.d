@@ -28,6 +28,7 @@ import gcc.unwind;
 import gcc.unwind.pe;
 import gcc.builtins;
 import gcc.config;
+import gcc.attribute;
 
 extern(C)
 {
@@ -519,10 +520,19 @@ extern(C) void _d_throw(Throwable object)
     terminate("unwind error", __LINE__);
 }
 
+static if (GNU_ARM_EABI_Unwinder)
+{
+    enum personality_fn_attributes = attribute("target", ("general-regs-only"));
+}
+else
+{
+    enum personality_fn_attributes = "";
+}
 
 /**
  * Read and extract information from the LSDA (.gcc_except_table section).
  */
+@personality_fn_attributes
 _Unwind_Reason_Code scanLSDA(const(ubyte)* lsda, _Unwind_Exception_Class exceptionClass,
                              _Unwind_Action actions, _Unwind_Exception* unwindHeader,
                              _Unwind_Context* context, _Unwind_Word cfa,
@@ -772,6 +782,7 @@ int actionTableLookup(_Unwind_Action actions, _Unwind_Exception* unwindHeader,
  * Called when the personality function has found neither a cleanup or handler.
  * To support ARM EABI personality routines, that must also unwind the stack.
  */
+@personality_fn_attributes
 _Unwind_Reason_Code CONTINUE_UNWINDING(_Unwind_Exception* unwindHeader, _Unwind_Context* context)
 {
     static if (GNU_ARM_EABI_Unwinder)
@@ -814,6 +825,7 @@ else
 static if (GNU_ARM_EABI_Unwinder)
 {
     pragma(mangle, PERSONALITY_FUNCTION)
+    @personality_fn_attributes
     extern(C) _Unwind_Reason_Code gdc_personality(_Unwind_State state,
                                                   _Unwind_Exception* unwindHeader,
                                                   _Unwind_Context* context)
@@ -873,6 +885,7 @@ else
     }
 }
 
+@personality_fn_attributes
 private _Unwind_Reason_Code __gdc_personality(_Unwind_Action actions,
                                               _Unwind_Exception_Class exceptionClass,
                                               _Unwind_Exception* unwindHeader,

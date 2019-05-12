@@ -414,8 +414,7 @@ canonicalize_for_substitution (tree node)
       else
 	node = cp_build_qualified_type (TYPE_MAIN_VARIANT (node),
 					cp_type_quals (node));
-      if (TREE_CODE (node) == FUNCTION_TYPE
-	  || TREE_CODE (node) == METHOD_TYPE)
+      if (FUNC_OR_METHOD_TYPE_P (node))
 	{
 	  node = build_ref_qualified_type (node, type_memfn_rqual (orig));
 	  tree r = canonical_eh_spec (TYPE_RAISES_EXCEPTIONS (orig));
@@ -1366,8 +1365,7 @@ write_unqualified_name (tree decl)
 	      type = TREE_TYPE (fn_type);
 	    }
 	  else if (FNDECL_USED_AUTO (decl))
-	    type = (DECL_STRUCT_FUNCTION (decl)->language
-		    ->x_auto_return_pattern);
+	    type = DECL_SAVED_AUTO_RETURN_TYPE (decl);
 	  else
 	    type = DECL_CONV_FN_TYPE (decl);
 	  write_conversion_operator_name (type);
@@ -2071,8 +2069,7 @@ write_type (tree type)
 	  t = cp_build_type_attribute_variant (t, attrs);
 	}
       gcc_assert (t != type);
-      if (TREE_CODE (t) == FUNCTION_TYPE
-	  || TREE_CODE (t) == METHOD_TYPE)
+      if (FUNC_OR_METHOD_TYPE_P (t))
 	{
 	  t = build_ref_qualified_type (t, type_memfn_rqual (type));
 	  if (flag_noexcept_type)
@@ -2103,8 +2100,7 @@ write_type (tree type)
 
       /* See through any typedefs.  */
       type = TYPE_MAIN_VARIANT (type);
-      if (TREE_CODE (type) == FUNCTION_TYPE
-	  || TREE_CODE (type) == METHOD_TYPE)
+      if (FUNC_OR_METHOD_TYPE_P (type))
 	type = cxx_copy_lang_qualifiers (type, type_orig);
 
       /* According to the C++ ABI, some library classes are passed the

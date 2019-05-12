@@ -233,6 +233,18 @@ is compiled into the program.
 Turns on compilation of any @code{debug} code identified by @var{ident}.
 @end table
 
+@item -fno-druntime
+@cindex @option{-fdruntime}
+@cindex @option{-fno-druntime}
+Implements @uref{https://dlang.org/spec/betterc.html}.  Assumes that
+compilation targets an environment without a D runtime library.
+
+This is equivalent to compiling with the following options:
+
+@example
+gdc -nophoboslib -fno-exceptions -fno-moduleinfo -fno-rtti
+@end example
+
 @item -fno-invariants
 @cindex @option{-finvariants}
 @cindex @option{-fno-invariants}
@@ -278,6 +290,13 @@ This is equivalent to compiling with the following options:
 gdc -fno-assert -fbounds-check=safe -fno-invariants \
     -fno-postconditions -fno-preconditions -fno-switch-errors
 @end example
+
+@item -fno-rtti
+@cindex @option{-frtti}
+@cindex @option{-fno-rtti}
+Turns off generation of run-time type information for all user defined types.
+Any code that uses features of the language that require access to this
+information will result in an error.
 
 @item -fno-switch-errors
 @cindex @option{-fswitch-errors}

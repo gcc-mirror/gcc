@@ -118,7 +118,7 @@ make_thunk (tree function, bool this_adjusting,
   DECL_INTERFACE_KNOWN (thunk) = 1;
   DECL_NOT_REALLY_EXTERN (thunk) = 1;
   DECL_COMDAT (thunk) = DECL_COMDAT (function);
-  DECL_SAVED_FUNCTION_DATA (thunk) = NULL;
+  DECL_SAVED_AUTO_RETURN_TYPE (thunk) = NULL;
   /* The thunk itself is not a constructor or destructor, even if
      the thing it is thunking to is.  */
   DECL_CXX_DESTRUCTOR_P (thunk) = 0;
@@ -206,7 +206,7 @@ make_alias_for (tree target, tree newid)
   DECL_TEMPLATE_INSTANTIATED (alias) = 0;
   if (TREE_CODE (alias) == FUNCTION_DECL)
     {
-      DECL_SAVED_FUNCTION_DATA (alias) = NULL;
+      DECL_SAVED_AUTO_RETURN_TYPE (alias) = NULL;
       DECL_CXX_DESTRUCTOR_P (alias) = 0;
       DECL_CXX_CONSTRUCTOR_P (alias) = 0;
       DECL_PENDING_INLINE_P (alias) = 0;
@@ -1884,15 +1884,14 @@ maybe_explain_implicit_delete (tree decl)
 void
 explain_implicit_non_constexpr (tree decl)
 {
-  tree parm_type = TREE_VALUE (FUNCTION_FIRST_USER_PARMTYPE (decl));
-  bool const_p = CP_TYPE_CONST_P (non_reference (parm_type));
+  tree parms = FUNCTION_FIRST_USER_PARMTYPE (decl);
+  bool const_p = CP_TYPE_CONST_P (non_reference (TREE_VALUE (parms)));
   tree inh = DECL_INHERITED_CTOR (decl);
   bool dummy;
   synthesized_method_walk (DECL_CLASS_CONTEXT (decl),
 			   special_function_p (decl), const_p,
 			   NULL, NULL, NULL, &dummy, true,
-			   &inh,
-			   FUNCTION_FIRST_USER_PARMTYPE (decl));
+			   &inh, parms);
 }
 
 /* DECL is an instantiation of an inheriting constructor template.  Deduce

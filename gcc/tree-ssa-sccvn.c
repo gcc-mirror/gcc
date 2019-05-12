@@ -1671,18 +1671,11 @@ vn_reference_lookup_1 (vn_reference_t vr, vn_reference_t *vnresult)
    with the current VUSE and performs the expression lookup.  */
 
 static void *
-vn_reference_lookup_2 (ao_ref *op ATTRIBUTE_UNUSED, tree vuse,
-		       unsigned int cnt, void *vr_)
+vn_reference_lookup_2 (ao_ref *op ATTRIBUTE_UNUSED, tree vuse, void *vr_)
 {
   vn_reference_t vr = (vn_reference_t)vr_;
   vn_reference_s **slot;
   hashval_t hash;
-
-  /* This bounds the stmt walks we perform on reference lookups
-     to O(1) instead of O(N) where N is the number of dominating
-     stores.  */
-  if (cnt > (unsigned) PARAM_VALUE (PARAM_SCCVN_MAX_ALIAS_QUERIES_PER_ACCESS))
-    return (void *)-1;
 
   if (last_vuse_ptr)
     *last_vuse_ptr = vuse;
@@ -2023,8 +2016,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	  last_vuse_ptr = NULL;
 	  tree saved_vuse = vr->vuse;
 	  hashval_t saved_hashcode = vr->hashcode;
-	  void *res = vn_reference_lookup_2 (ref,
-					     gimple_vuse (def_stmt), 0, vr);
+	  void *res = vn_reference_lookup_2 (ref, gimple_vuse (def_stmt), vr);
 	  /* Need to restore vr->vuse and vr->hashcode.  */
 	  vr->vuse = saved_vuse;
 	  vr->hashcode = saved_hashcode;
@@ -2671,13 +2663,14 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
       && vr1.vuse)
     {
       ao_ref r;
+      unsigned limit = PARAM_VALUE (PARAM_SCCVN_MAX_ALIAS_QUERIES_PER_ACCESS);
       vn_walk_kind = kind;
       if (ao_ref_init_from_vn_reference (&r, set, type, vr1.operands))
 	*vnresult =
 	  (vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse,
 						  vn_reference_lookup_2,
 						  vn_reference_lookup_3,
-						  vuse_valueize, &vr1);
+						  vuse_valueize, limit, &vr1);
       gcc_checking_assert (vr1.operands == shared_lookup_references);
     }
 
@@ -2720,6 +2713,7 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
     {
       vn_reference_t wvnresult;
       ao_ref r;
+      unsigned limit = PARAM_VALUE (PARAM_SCCVN_MAX_ALIAS_QUERIES_PER_ACCESS);
       /* Make sure to use a valueized reference if we valueized anything.
          Otherwise preserve the full reference for advanced TBAA.  */
       if (!valuezied_anything
@@ -2733,7 +2727,7 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
 	(vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse,
 						vn_reference_lookup_2,
 						vn_reference_lookup_3,
-						vuse_valueize, &vr1);
+						vuse_valueize, limit, &vr1);
       gcc_checking_assert (vr1.operands == shared_lookup_references);
       if (wvnresult)
 	{
@@ -4065,6 +4059,7 @@ visit_reference_op_call (tree lhs, gcall *stmt)
       vr2->hashcode = vr1.hashcode;
       vr2->result = lhs;
       vr2->result_vdef = vdef_val;
+      vr2->value_id = 0;
       slot = valid_info->references->find_slot_with_hash (vr2, vr2->hashcode,
 							  INSERT);
       gcc_assert (!*slot);
@@ -6473,6 +6468,7 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
   unsigned region_size = (((unsigned HOST_WIDE_INT)n * num_ssa_names)
 			  / (n_basic_blocks_for_fn (fn) - NUM_FIXED_BLOCKS));
   VN_TOP = create_tmp_var_raw (void_type_node, "vn_top");
+  next_value_id = 1;
 
   vn_ssa_aux_hash = new hash_table <vn_ssa_aux_hasher> (region_size * 2);
   gcc_obstack_init (&vn_ssa_aux_obstack);

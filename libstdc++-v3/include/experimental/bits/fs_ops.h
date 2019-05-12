@@ -47,7 +47,7 @@ namespace filesystem
 inline namespace v1
 {
   /**
-   * @ingroup filesystem-ts
+   * @addtogroup filesystem-ts
    * @{
    */
 

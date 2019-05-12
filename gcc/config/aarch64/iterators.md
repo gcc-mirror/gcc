@@ -663,6 +663,9 @@
 			  (QI "b")   (HI "h")
 			  (SI "s")   (DI "d")])
 
+;; Like Vetype, but map to types that are a quarter of the element size.
+(define_mode_attr Vetype_fourth [(VNx4SI "b") (VNx2DI "h")])
+
 ;; Equivalent of "size" for a vector element.
 (define_mode_attr Vesize [(VNx16QI "b")
 			  (VNx8HI  "h") (VNx8HF  "h")
@@ -1029,8 +1032,10 @@
 		      (V2SF "p") (V4SF  "v")
 		      (V4HF "v") (V8HF  "v")])
 
-(define_mode_attr vsi2qi [(V2SI "v8qi") (V4SI "v16qi")])
-(define_mode_attr VSI2QI [(V2SI "V8QI") (V4SI "V16QI")])
+(define_mode_attr vsi2qi [(V2SI "v8qi") (V4SI "v16qi")
+			  (VNx4SI "vnx16qi") (VNx2DI "vnx8hi")])
+(define_mode_attr VSI2QI [(V2SI "V8QI") (V4SI "V16QI")
+			  (VNx4SI "VNx16QI") (VNx2DI "VNx8HI")])
 
 
 ;; Register suffix for DOTPROD input types from the return type.
@@ -1054,6 +1059,9 @@
 
 ;; Map smax to smin and umax to umin.
 (define_code_attr max_opp [(smax "smin") (umax "umin")])
+
+;; Same as above, but louder.
+(define_code_attr MAX_OPP [(smax "SMIN") (umax "UMIN")])
 
 ;; The number of subvectors in an SVE_STRUCT.
 (define_mode_attr vector_count [(VNx32QI "2") (VNx16HI "2")

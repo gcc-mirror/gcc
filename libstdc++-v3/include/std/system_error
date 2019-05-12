@@ -44,6 +44,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  /** @addtogroup diagnostics
+   *  @{
+   */
+
   class error_code;
   class error_condition;
   class system_error;
@@ -70,7 +74,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++17
   inline namespace _V2 {
 
-  /// error_category
+  /** Abstract base class for types defining a category of error codes.
+   *
+   * An error category defines a context that give meaning to the integer
+   * stored in an `error_code` or `error_condition` object. For example,
+   * the standard `errno` constants such a `EINVAL` and `ENOMEM` are
+   * associated with the "generic" category and other OS-specific error
+   * numbers are associated with the "system" category, but a user-defined
+   * category might give different meanings to the same numerical values.
+   */
   class error_category
   {
   public:
@@ -131,18 +143,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
   // DR 890.
-  _GLIBCXX_CONST const error_category& system_category() noexcept;
+
+  /// Error category for `errno` error codes.
   _GLIBCXX_CONST const error_category& generic_category() noexcept;
+
+  /// Error category for other error codes defined by the OS.
+  _GLIBCXX_CONST const error_category& system_category() noexcept;
 
   } // end inline namespace
 
   error_code make_error_code(errc) noexcept;
 
-  template<typename _Tp>
-    struct hash;
-
-  /// error_code
-  // Implementation-specific error identification
+  /** Class error_code
+   *
+   * This class is a value type storing an integer error number and a
+   * category that gives meaning to the error number. Typically this is done
+   * close the the point where the error happens, to capture the original
+   * error value.
+   *
+   * An `error_code` object can be used to store the original error value
+   * emitted by some subsystem, with a category relevant to the subsystem.
+   * For example, errors from POSIX library functions can be represented by
+   * an `errno` value and the "generic" category, but errors from an HTTP
+   * library might be represented by an HTTP response status code (e.g. 404)
+   * and a custom category defined by the library.
+   */
   struct error_code
   {
     error_code() noexcept
@@ -193,13 +218,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // DR 804.
   private:
-    friend class hash<error_code>;
-
     int            		_M_value;
     const error_category* 	_M_cat;
   };
 
   // 19.4.2.6 non-member functions
+
+  /// @relates error_code @{
+
   inline error_code
   make_error_code(errc __e) noexcept
   { return error_code(static_cast<int>(__e), generic_category()); }
@@ -217,10 +243,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator<<(basic_ostream<_CharT, _Traits>& __os, const error_code& __e)
     { return (__os << __e.category().name() << ':' << __e.value()); }
 
+  // @}
+
   error_condition make_error_condition(errc) noexcept;
 
-  /// error_condition
-  // Portable error identification
+  /** Class error_condition
+   *
+   * This class represents error conditions that may be visible at an API
+   * boundary. Different `error_code` values that can occur within a library
+   * or module might map to the same `error_condition`.
+   *
+   * An `error_condition` represents something that the program can test for,
+   * and subsequently take appropriate action.
+   */
   struct error_condition
   {
     error_condition() noexcept
@@ -274,10 +309,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
   // 19.4.3.6 non-member functions
+
+  /// Create an `error_condition` representing a standard `errc` condition.
+  /// @relates error_condition
   inline error_condition
   make_error_condition(errc __e) noexcept
   { return error_condition(static_cast<int>(__e), generic_category()); }
 
+  /// Define an ordering for error_condition objects.
+  /// @relates error_condition
   inline bool
   operator<(const error_condition& __lhs,
 	    const error_condition& __rhs) noexcept
@@ -288,11 +328,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   // 19.4.4 Comparison operators
+
+  /// @relates error_code
   inline bool
   operator==(const error_code& __lhs, const error_code& __rhs) noexcept
   { return (__lhs.category() == __rhs.category()
 	    && __lhs.value() == __rhs.value()); }
 
+  /// @relates error_code
+  /// @relates error_condition
   inline bool
   operator==(const error_code& __lhs, const error_condition& __rhs) noexcept
   {
@@ -300,6 +344,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    || __rhs.category().equivalent(__lhs, __rhs.value()));
   }
 
+  /// @relates error_code
+  /// @relates error_condition
   inline bool
   operator==(const error_condition& __lhs, const error_code& __rhs) noexcept
   {
@@ -307,6 +353,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    || __lhs.category().equivalent(__rhs, __lhs.value()));
   }
 
+  /// @relates error_condition
   inline bool
   operator==(const error_condition& __lhs,
 	     const error_condition& __rhs) noexcept
@@ -315,18 +362,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    && __lhs.value() == __rhs.value());
   }
 
+  /// @relates error_code
   inline bool
   operator!=(const error_code& __lhs, const error_code& __rhs) noexcept
   { return !(__lhs == __rhs); }
 
+  /// @relates error_code
+  /// @relates error_condition
   inline bool
   operator!=(const error_code& __lhs, const error_condition& __rhs) noexcept
   { return !(__lhs == __rhs); }
 
+  /// @relates error_code
+  /// @relates error_condition
   inline bool
   operator!=(const error_condition& __lhs, const error_code& __rhs) noexcept
   { return !(__lhs == __rhs); }
 
+  /// @relates error_condition
   inline bool
   operator!=(const error_condition& __lhs,
 	     const error_condition& __rhs) noexcept
@@ -334,9 +387,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 
   /**
-   *  @brief Thrown to indicate error code of underlying system.
+   * @brief An exception type that includes an `error_code` value.
    *
-   *  @ingroup exceptions
+   * Typically used to report errors from the operating system and other
+   * low-level APIs.
+   *
+   * @ingroup exceptions
    */
   class system_error : public std::runtime_error
   {
@@ -387,6 +443,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifndef _GLIBCXX_COMPATIBILITY_CXX0X
   // DR 1182.
   /// std::hash specialization for error_code.
+  /// @relates error_code
   template<>
     struct hash<error_code>
     : public __hash_base<size_t, error_code>
@@ -394,15 +451,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_t
       operator()(const error_code& __e) const noexcept
       {
-	const size_t __tmp = std::_Hash_impl::hash(__e._M_value);
-	return std::_Hash_impl::__hash_combine(__e._M_cat, __tmp);
+	const size_t __tmp = std::_Hash_impl::hash(__e.value());
+	return std::_Hash_impl::__hash_combine(&__e.category(), __tmp);
       }
     };
 #endif // _GLIBCXX_COMPATIBILITY_CXX0X
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
   // DR 2686.
   /// std::hash specialization for error_condition.
+  /// @relates error_condition
   template<>
     struct hash<error_condition>
     : public __hash_base<size_t, error_condition>
@@ -411,7 +469,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(const error_condition& __e) const noexcept
       {
 	const size_t __tmp = std::_Hash_impl::hash(__e.value());
-	return std::_Hash_impl::__hash_combine(__e.category(), __tmp);
+	return std::_Hash_impl::__hash_combine(&__e.category(), __tmp);
       }
     };
 #endif

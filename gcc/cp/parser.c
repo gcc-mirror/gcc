@@ -10799,7 +10799,7 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	 Optimize for the zero or one explicit captures cases and only create
 	 the hash_set after adding second capture.  */
       bool found = false;
-      if (ids.elements ())
+      if (!ids.is_empty ())
 	found = ids.add (capture_id);
       else if (first_capture_id == NULL_TREE)
 	first_capture_id = capture_id;
@@ -12948,7 +12948,7 @@ cp_parser_jump_statement (cp_parser* parser)
 	/* Build the return-statement.  */
 	if (keyword == RID_CO_RETURN)
 	  statement = finish_co_return_stmt (token->location, expr);
-	else if (current_function_auto_return_pattern && in_discarded_stmt)
+	else if (FNDECL_USED_AUTO (current_function_decl) && in_discarded_stmt)
 	  /* Don't deduce from a discarded return statement.  */;
 	else
 	  statement = finish_return_stmt (expr);
@@ -39722,8 +39722,7 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
 			   || id_equal (orig_reduc_id, "max")))))
 	error_at (loc, "predeclared arithmetic type %qT in "
 		       "%<#pragma omp declare reduction%>", type);
-      else if (TREE_CODE (type) == FUNCTION_TYPE
-	       || TREE_CODE (type) == METHOD_TYPE
+      else if (FUNC_OR_METHOD_TYPE_P (type)
 	       || TREE_CODE (type) == ARRAY_TYPE)
 	error_at (loc, "function or array type %qT in "
 		       "%<#pragma omp declare reduction%>", type);

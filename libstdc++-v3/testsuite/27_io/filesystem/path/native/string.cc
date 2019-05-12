@@ -46,7 +46,7 @@ test02()
   path p(s);
 
   auto str = p.string<char>();
-  VERIFY( str == u"abc" );
+  VERIFY( str == "abc" );
   VERIFY( str == p.string() );
 
   auto strw = p.string<wchar_t>();

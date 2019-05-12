@@ -406,7 +406,7 @@ match_data_constant (gfc_expr **result)
 	 contains the right constant expression.  Check here.  */
       if ((*result)->symtree == NULL
 	  && (*result)->expr_type == EXPR_CONSTANT
-	  && ((*result)->ts.type == BT_INTEGER 
+	  && ((*result)->ts.type == BT_INTEGER
 	      || (*result)->ts.type == BT_REAL))
 	return m;
 
@@ -1493,19 +1493,18 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 
           /* Character strings are only C interoperable if they have a
              length of 1.  */
-          if (sym->ts.type == BT_CHARACTER)
+          if (sym->ts.type == BT_CHARACTER && !sym->attr.dimension)
 	    {
 	      gfc_charlen *cl = sym->ts.u.cl;
 	      if (!cl || !cl->length || cl->length->expr_type != EXPR_CONSTANT
                   || mpz_cmp_si (cl->length->value.integer, 1) != 0)
 		{
-		  if (!gfc_notify_std (GFC_STD_F2018,
-				       "Character argument %qs at %L "
-				       "must be length 1 because "
-				       "procedure %qs is BIND(C)",
-				       sym->name, &sym->declared_at,
-				       sym->ns->proc_name->name))
-		    retval = false;
+		  gfc_error ("Character argument %qs at %L "
+			     "must be length 1 because "
+			     "procedure %qs is BIND(C)",
+			     sym->name, &sym->declared_at,
+			     sym->ns->proc_name->name);
+		  retval = false;
 		}
 	    }
 
@@ -6070,6 +6069,28 @@ cleanup:
   return m;
 }
 
+static bool
+in_module_or_interface(void)
+{
+  if (gfc_current_state () == COMP_MODULE
+      || gfc_current_state () == COMP_SUBMODULE
+      || gfc_current_state () == COMP_INTERFACE)
+    return true;
+
+  if (gfc_state_stack->state == COMP_CONTAINS
+      || gfc_state_stack->state == COMP_FUNCTION
+      || gfc_state_stack->state == COMP_SUBROUTINE)
+    {
+      gfc_state_data *p;
+      for (p = gfc_state_stack->previous; p ; p = p->previous)
+	{
+	  if (p->state == COMP_MODULE || p->state == COMP_SUBMODULE
+	      || p->state == COMP_INTERFACE)
+	    return true;
+	}
+    }
+    return false;
+}
 
 /* Match a prefix associated with a function or subroutine
    declaration.  If the typespec pointer is nonnull, then a typespec
@@ -6102,6 +6123,13 @@ gfc_match_prefix (gfc_typespec *ts)
 	{
 	  if (!gfc_notify_std (GFC_STD_F2008, "MODULE prefix at %C"))
 	    goto error;
+
+	  if (!in_module_or_interface ())
+	    {
+	      gfc_error ("MODULE prefix at %C found outside of a module, "
+			 "submodule, or interface");
+	      goto error;
+	    }
 
 	  current_attr.module_procedure = 1;
 	  found_prefix = true;
@@ -6275,7 +6303,7 @@ gfc_match_formal_arglist (gfc_symbol *progname, int st_flag,
     }
 
   if (gfc_match_char (')') == MATCH_YES)
-  {        
+  {
     if (typeparam)
       {
 	gfc_error_now ("A type parameter list is required at %C");
@@ -7460,7 +7488,7 @@ gfc_match_entry (void)
 	  if (!gfc_add_is_bind_c (&(entry->attr), entry->name,
 				  &(entry->declared_at), 1))
 	    return MATCH_ERROR;
-	
+
 	}
 
       if (!gfc_current_ns->parent

@@ -18,6 +18,7 @@ import (
 //go:linkname acquirep runtime.acquirep
 //go:linkname releasep runtime.releasep
 //go:linkname incidlelocked runtime.incidlelocked
+//go:linkname ginit runtime.ginit
 //go:linkname schedinit runtime.schedinit
 //go:linkname ready runtime.ready
 //go:linkname stopm runtime.stopm
@@ -446,7 +447,7 @@ func releaseSudog(s *sudog) {
 //go:nosplit
 func funcPC(f interface{}) uintptr {
 	i := (*iface)(unsafe.Pointer(&f))
-	r := **(**uintptr)(i.data)
+	r := *(*uintptr)(i.data)
 	if cpu.FunctionDescriptors {
 		// With PPC64 ELF ABI v1 function descriptors the
 		// function address is a pointer to a struct whose
@@ -515,6 +516,15 @@ func cpuinit() {
 	cpu.Initialize(env)
 }
 
+func ginit() {
+	_m_ := &m0
+	_g_ := &g0
+	_m_.g0 = _g_
+	_m_.curg = _g_
+	_g_.m = _m_
+	setg(_g_)
+}
+
 // The bootstrap sequence is:
 //
 //	call osinit
@@ -524,13 +534,7 @@ func cpuinit() {
 //
 // The new G calls runtime·main.
 func schedinit() {
-	_m_ := &m0
-	_g_ := &g0
-	_m_.g0 = _g_
-	_m_.curg = _g_
-	_g_.m = _m_
-	setg(_g_)
-
+	_g_ := getg()
 	sched.maxmcount = 10000
 
 	usestackmaps = probestackmaps()

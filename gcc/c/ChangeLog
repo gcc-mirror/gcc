@@ -1,3 +1,42 @@
+2019-05-09  Martin Liska  <mliska@suse.cz>
+
+	* gimple-parser.c (c_parser_gimple_statement): Support __MIN and
+	__MAX.
+	(c_parser_gimple_unary_expression): Parse also binary expression
+	__MIN and __MAX.
+	(c_parser_gimple_parentized_binary_expression): New function.
+
+2019-05-09  Martin Liska  <mliska@suse.cz>
+
+	* gimple-parser.c (struct gimple_parser): Add probability.
+	for gimple_parser_edge.
+	(gimple_parser::push_edge): Add new argument probability.
+	(c_parser_gimple_parse_bb_spec): Parse also probability
+	if present.
+	(c_parser_parse_gimple_body): Set edge probability.
+	(c_parser_gimple_compound_statement): Consume token
+	before calling c_parser_gimple_goto_stmt.
+	Parse BB counts.
+	(c_parser_gimple_statement): Pass new argument.
+	(c_parser_gimple_goto_stmt): Likewise.
+	(c_parser_gimple_if_stmt): Likewise.
+	(c_parser_gimple_or_rtl_pass_list): Parse hot_bb_threshold.
+	* c-parser.c (c_parser_declaration_or_fndef): Pass
+	hot_bb_threshold argument.
+	* c-tree.h (struct c_declspecs): Add hot_bb_threshold
+	field.
+	(c_parser_gimple_parse_bb_spec_edge_probability): New.
+
+2019-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/90197
+	* c-tree.h (c_finish_loop): Add 2 further location_t arguments.
+	* c-parser.c (c_parser_while_statement): Adjust c_finish_loop caller.
+	(c_parser_do_statement): Likewise.
+	(c_parser_for_statement): Likewise.  Formatting fixes.
+	* c-typeck.c (c_finish_loop): Add COND_LOCUS and INCR_LOCUS arguments,
+	emit DEBUG_BEGIN_STMTs if needed.
+
 2019-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/89888

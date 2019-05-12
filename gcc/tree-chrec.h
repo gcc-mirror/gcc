@@ -85,7 +85,7 @@ extern bool chrec_contains_symbols_defined_in_loop (const_tree, unsigned);
 extern bool chrec_contains_undetermined (const_tree);
 extern bool tree_contains_chrecs (const_tree, int *);
 extern bool evolution_function_is_affine_multivariate_p (const_tree, int);
-extern bool evolution_function_is_univariate_p (const_tree);
+extern bool evolution_function_is_univariate_p (const_tree, int = 0);
 extern unsigned nb_vars_in_chrec (tree);
 extern bool evolution_function_is_invariant_p (tree, int);
 extern bool scev_is_linear_expression (tree);

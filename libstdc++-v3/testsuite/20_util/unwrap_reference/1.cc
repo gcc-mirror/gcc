@@ -28,7 +28,7 @@ template<typename T, typename U = T>
   {
     using std::unwrap_reference;
     using T2 = typename unwrap_reference<T>::type;
-    static_assert(expect_same<T2, typename unwrap_reference<T2>::type>::value);
+    static_assert(expect_same<T2, std::unwrap_reference_t<T2>>::value);
     return expect_same<T2, U>::value;
   }
 

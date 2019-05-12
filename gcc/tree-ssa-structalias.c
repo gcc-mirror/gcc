@@ -7588,9 +7588,12 @@ compute_dependence_clique (void)
       EXECUTE_IF_SET_IN_BITMAP (vi->solution, 0, j, bi)
 	{
 	  varinfo_t oi = get_varinfo (j);
+	  if (oi->head != j)
+	    oi = get_varinfo (oi->head);
 	  if (oi->is_restrict_var)
 	    {
-	      if (restrict_var)
+	      if (restrict_var
+		  && restrict_var != oi)
 		{
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {

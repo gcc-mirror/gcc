@@ -1,3 +1,27 @@
+2019-05-07  Jim Wilson  <jimw@sifive.com>
+
+	* MAINTAINERS: Remove myself as IA-64 maintainer.
+
+2019-05-04  Roland Illig  <roland.illig@gmx.de>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/85574
+	* Makefile.tpl (compare target): Also compare extra-compare
+	files.
+	* Makefile.in: Regenerate.
+
+2019-04-22  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* MAINTAINERS (Various Maintainers): Remove Ayal Zaks and add myself
+	as modulo-scheduler maintainer.
+
+2019-04-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* MAINTAINERS: Add myself as co-maintainer for Darwin.
+
 2019-04-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* MAINTAINERS: Update my email address.

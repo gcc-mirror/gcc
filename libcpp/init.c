@@ -764,14 +764,9 @@ cpp_finish (cpp_reader *pfile, FILE *deps_stream)
   while (pfile->buffer)
     _cpp_pop_buffer (pfile);
 
-  if (CPP_OPTION (pfile, deps.style) != DEPS_NONE
-      && deps_stream)
-    {
-      deps_write (pfile->deps, deps_stream, 72);
-
-      if (CPP_OPTION (pfile, deps.phony_targets))
-	deps_phony_targets (pfile->deps, deps_stream);
-    }
+  if (CPP_OPTION (pfile, deps.style) != DEPS_NONE && deps_stream)
+    deps_write (pfile->deps, deps_stream,
+		CPP_OPTION (pfile, deps.phony_targets), 72);
 
   /* Report on headers that could use multiple include guards.  */
   if (CPP_OPTION (pfile, print_include_names))

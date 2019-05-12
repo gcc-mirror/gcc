@@ -1,3 +1,58 @@
+2019-04-25  Johannes Pfau  <johannespfau@gmail.com>
+
+	* config-lang.in: Do not add target_libs if phobos is disabled.
+
+2019-04-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+	    Robin Dapp  <rdapp@linux.ibm.com>
+
+	* typeinfo.cc (create_typeinfo): Write typeinfo flags as uint.
+
+2019-04-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (d_init_versions): Add D_BetterC, D_ModuleInfo,
+	D_Exceptions, D_TypeInfo as predefined version conditions.
+	* d-codegen.cc (build_bounds_condition): Generate trap if D asserts
+	are turned off.
+	* d-frontend.cc (getTypeInfoType): Add error when -fno-rtti is set.
+	* d-lang.cc (d_init_options): Initialize new front-end options.
+	(d_handle_option): Handle -fdruntime, -fexceptions, and -frtti.
+	(d_post_options): Turn off D runtime features if -fno-druntime is set.
+	* d-spec.cc (lang_specific_driver): Handle -fdruntime.
+	* d-tree.h (have_typeinfo_p): Add prototype.
+	(build_typeinfo): Update prototype.
+	* decl.cc (DeclVisitor::visit(StructDeclaration)): Create typeinfo
+	only if TypeInfo exists.
+	(DeclVisitor::visit(ClassDeclaration)): Likewise.
+	(DeclVisitor::visit(InterfaceDeclaration)): Likewise.
+	(DeclVisitor::visit(EnumDeclaration)): Likewise.
+	* expr.cc: Update all calls to build_typeinfo.
+	* gdc.texi (Runtime Options): Document -fdruntime and -frtti.
+	* lang.opt: Add -fdruntime and -frtti.
+	* modules.cc (build_module_tree): Create module info only if
+	ModuleInfo exists.
+	* toir.cc (IRVisitor::visit(ThrowStatement)): Update test for
+	-fno-exceptions.
+	* typeinfo.cc (create_tinfo_types): Build internal typeinfo classes
+	only if Object exists.
+	(have_typeinfo_p): New function.
+	(class TypeInfoVisitor): Update all calls to build_typeinfo.
+	(build_typeinfo): Add error when -fno-rtti is set.
+
+2019-04-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* decl.cc (DeclVisitor::visit(Import)): Set semanticRun after
+	completion, guard against being called more than once.
+	(DeclVisitor::visit(StructDeclaration)): Likewise.
+	(DeclVisitor::visit(ClassDeclaration)): Likewise.
+	(DeclVisitor::visit(InterfaceDeclaration)): Likewise.
+	(DeclVisitor::visit(VarDeclaration)): Likewise.
+	(DeclVisitor::visit(TypeInfoDeclaration)): Likewise.
+
+2019-04-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* modules.cc (register_module_decl): Don't register unittests against
+	the ModuleInfo symbol for -fbuilding-libphobos-tests.
+
 2019-04-17  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-system.h (POSIX): Define unix as POSIX.

@@ -5913,7 +5913,7 @@ aarch64_expand_epilogue (bool for_sibcall)
     }
 
   /* Stack adjustment for exception handler.  */
-  if (crtl->calls_eh_return)
+  if (crtl->calls_eh_return && !for_sibcall)
     {
       /* We need to unwind the stack by the offset computed by
 	 EH_RETURN_STACKADJ_RTX.  We have already reset the CFA
@@ -12536,10 +12536,6 @@ aarch64_process_one_target_attr (char *arg_str)
   char *str_to_check = (char *) alloca (len + 1);
   strcpy (str_to_check, arg_str);
 
-  /* Skip leading whitespace.  */
-  while (*str_to_check == ' ' || *str_to_check == '\t')
-    str_to_check++;
-
   /* We have something like __attribute__ ((target ("+fp+nosimd"))).
      It is easier to detect and handle it explicitly here rather than going
      through the machinery for the rest of the target attributes in this
@@ -18772,6 +18768,57 @@ aarch64_stack_protect_guard (void)
   return NULL_TREE;
 }
 
+/* Implement TARGET_ASM_FILE_END for AArch64.  This adds the AArch64 GNU NOTE
+   section at the end if needed.  */
+#define GNU_PROPERTY_AARCH64_FEATURE_1_AND	0xc0000000
+#define GNU_PROPERTY_AARCH64_FEATURE_1_BTI	(1U << 0)
+#define GNU_PROPERTY_AARCH64_FEATURE_1_PAC	(1U << 1)
+void
+aarch64_file_end_indicate_exec_stack ()
+{
+  file_end_indicate_exec_stack ();
+
+  unsigned feature_1_and = 0;
+  if (aarch64_bti_enabled ())
+    feature_1_and |= GNU_PROPERTY_AARCH64_FEATURE_1_BTI;
+
+  if (aarch64_ra_sign_scope != AARCH64_FUNCTION_NONE)
+    feature_1_and |= GNU_PROPERTY_AARCH64_FEATURE_1_PAC;
+
+  if (feature_1_and)
+    {
+      /* Generate .note.gnu.property section.  */
+      switch_to_section (get_section (".note.gnu.property",
+				      SECTION_NOTYPE, NULL));
+
+      /* PT_NOTE header: namesz, descsz, type.
+	 namesz = 4 ("GNU\0")
+	 descsz = 16 (Size of the program property array)
+		  [(12 + padding) * Number of array elements]
+	 type   = 5 (NT_GNU_PROPERTY_TYPE_0).  */
+      assemble_align (POINTER_SIZE);
+      assemble_integer (GEN_INT (4), 4, 32, 1);
+      assemble_integer (GEN_INT (ROUND_UP (12, POINTER_BYTES)), 4, 32, 1);
+      assemble_integer (GEN_INT (5), 4, 32, 1);
+
+      /* PT_NOTE name.  */
+      assemble_string ("GNU", 4);
+
+      /* PT_NOTE contents for NT_GNU_PROPERTY_TYPE_0:
+	 type   = GNU_PROPERTY_AARCH64_FEATURE_1_AND
+	 datasz = 4
+	 data   = feature_1_and.  */
+      assemble_integer (GEN_INT (GNU_PROPERTY_AARCH64_FEATURE_1_AND), 4, 32, 1);
+      assemble_integer (GEN_INT (4), 4, 32, 1);
+      assemble_integer (GEN_INT (feature_1_and), 4, 32, 1);
+
+      /* Pad the size of the note to the required alignment.  */
+      assemble_align (POINTER_SIZE);
+    }
+}
+#undef GNU_PROPERTY_AARCH64_FEATURE_1_PAC
+#undef GNU_PROPERTY_AARCH64_FEATURE_1_BTI
+#undef GNU_PROPERTY_AARCH64_FEATURE_1_AND
 
 /* Target-specific selftests.  */
 

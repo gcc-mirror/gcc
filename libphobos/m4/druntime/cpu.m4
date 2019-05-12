@@ -3,6 +3,44 @@
 #
 
 
+# DRUNTIME_CPU_SOURCES
+# -------------------
+# Detect target CPU and add DRUNTIME_CPU_XXX conditionals.
+AC_DEFUN([DRUNTIME_CPU_SOURCES],
+[
+  druntime_target_cpu_parsed=""
+  case "$target_cpu" in
+      aarch64*)
+               druntime_target_cpu_parsed="aarch64"
+               ;;
+      arm*)    druntime_target_cpu_parsed="arm"
+               ;;
+      mips*)   druntime_target_cpu_parsed="mips"
+               ;;
+      powerpc) druntime_target_cpu_parsed="powerpc"
+               ;;
+      powerpc64)
+               druntime_target_cpu_parsed="powerpc64"
+               ;;
+      i[[34567]]86|x86_64)
+               druntime_target_cpu_parsed="x86"
+               ;;
+  esac
+  AM_CONDITIONAL([DRUNTIME_CPU_AARCH64],
+                 [test "$druntime_target_cpu_parsed" = "aarch64"])
+  AM_CONDITIONAL([DRUNTIME_CPU_ARM],
+                 [test "$druntime_target_cpu_parsed" = "arm"])
+  AM_CONDITIONAL([DRUNTIME_CPU_MIPS],
+                 [test "$druntime_target_cpu_parsed" = "mips"])
+  AM_CONDITIONAL([DRUNTIME_CPU_POWERPC],
+                 [test "$druntime_target_cpu_parsed" = "powerpc"])
+  AM_CONDITIONAL([DRUNTIME_CPU_POWERPC64],
+                 [test "$druntime_target_cpu_parsed" = "powerpc64"])
+  AM_CONDITIONAL([DRUNTIME_CPU_X86],
+                 [test "$druntime_target_cpu_parsed" = "x86"])
+])
+
+
 # DRUNTIME_ENABLE_ATOMIC_BUILTINS
 # -------------------------
 # Check support for atomic builtins up to 64 bit.

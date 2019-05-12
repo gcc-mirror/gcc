@@ -411,7 +411,7 @@ parse_lsda_header (struct _Unwind_Context *context, const unsigned char *p,
 _Unwind_Reason_Code
 PERSONALITY_FUNCTION (_Unwind_State, struct _Unwind_Exception *,
 		      struct _Unwind_Context *)
-  __attribute__ ((no_split_stack, flatten));
+  __attribute__ ((no_split_stack, flatten, target ("general-regs-only")));
 
 _Unwind_Reason_Code
 PERSONALITY_FUNCTION (_Unwind_State state,
@@ -604,6 +604,9 @@ __gccgo_personality_dummy (int, _Unwind_Action, _Unwind_Exception_Class,
   __attribute__ ((no_split_stack));
 
 _Unwind_Reason_Code
+#ifdef __ARM_EABI_UNWINDER__
+__attribute__ ((target ("general-regs-only")))
+#endif
 __gccgo_personality_dummy (int version __attribute__ ((unused)),
 		      _Unwind_Action actions __attribute__ ((unused)),
 		      _Unwind_Exception_Class exception_class __attribute__ ((unused)),

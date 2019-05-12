@@ -24,6 +24,7 @@
 
 /** @file experimental/netfwd
  *  This is a TS C++ Library header.
+ *  @ingroup networking-ts
  */
 
 #ifndef _GLIBCXX_EXPERIMENTAL_NETFWD
@@ -48,8 +49,10 @@ namespace net
 inline namespace v1
 {
 
-  /**
-   * @ingroup networking
+  /** @defgroup networking-ts Networking TS
+   *  @ingroup experimental
+   *
+   * ISO/IEC TS 19216:2018	C++ Extensions for Networking
    * @{
    */
 
@@ -93,7 +96,7 @@ inline namespace v1
 namespace ip
 {
   /**
-   * @ingroup networking
+   * @addtogroup networking-ts
    * @{
    */
     class address;

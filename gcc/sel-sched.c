@@ -3331,8 +3331,6 @@ sel_target_adjust_priority (expr_t expr)
   else
     new_priority = priority;
 
-  gcc_assert (new_priority >= 0);
-
   /* If the priority has changed, adjust EXPR_PRIORITY_ADJ accordingly.  */
   EXPR_PRIORITY_ADJ (expr) = new_priority - EXPR_PRIORITY (expr);
 

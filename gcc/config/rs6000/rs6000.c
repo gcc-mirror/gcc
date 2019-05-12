@@ -1368,10 +1368,6 @@ static rtx rs6000_darwin64_record_arg (CUMULATIVE_ARGS *, const_tree,
 static void macho_branch_islands (void);
 static tree get_prev_label (tree);
 #endif
-static rtx rs6000_legitimize_reload_address (rtx, machine_mode, int, int,
-					     int, int *);
-static rtx rs6000_debug_legitimize_reload_address (rtx, machine_mode, int,
-						   int, int, int *);
 static bool rs6000_mode_dependent_address (const_rtx);
 static bool rs6000_debug_mode_dependent_address (const_rtx);
 static bool rs6000_offsettable_memref_p (rtx, machine_mode, bool);
@@ -1391,10 +1387,6 @@ static bool rs6000_debug_can_change_mode_class (machine_mode,
 						reg_class_t);
 static bool rs6000_save_toc_in_prologue_p (void);
 static rtx rs6000_internal_arg_pointer (void);
-
-rtx (*rs6000_legitimize_reload_address_ptr) (rtx, machine_mode, int, int,
-					     int, int *)
-  = rs6000_legitimize_reload_address;
 
 static bool (*rs6000_mode_dependent_address_ptr) (const_rtx)
   = rs6000_mode_dependent_address;
@@ -1464,53 +1456,53 @@ static GTY (()) hash_table<builtin_hasher> *builtin_hash_table;
 /* Default register names.  */
 char rs6000_reg_names[][8] =
 {
+  /* GPRs */
       "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",
       "8",  "9", "10", "11", "12", "13", "14", "15",
      "16", "17", "18", "19", "20", "21", "22", "23",
      "24", "25", "26", "27", "28", "29", "30", "31",
+  /* FPRs */
       "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",
       "8",  "9", "10", "11", "12", "13", "14", "15",
      "16", "17", "18", "19", "20", "21", "22", "23",
      "24", "25", "26", "27", "28", "29", "30", "31",
-     "mq", "lr", "ctr","ap",
+  /* VRs */
       "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",
-      "ca",
-      /* AltiVec registers.  */
-      "0",  "1",  "2",  "3",  "4",  "5",  "6", "7",
-      "8",  "9",  "10", "11", "12", "13", "14", "15",
-      "16", "17", "18", "19", "20", "21", "22", "23",
-      "24", "25", "26", "27", "28", "29", "30", "31",
-      "vrsave", "vscr",
-      /* Soft frame pointer.  */
-      "sfp",
-      /* HTM SPR registers.  */
-      "tfhar", "tfiar", "texasr"
+      "8",  "9", "10", "11", "12", "13", "14", "15",
+     "16", "17", "18", "19", "20", "21", "22", "23",
+     "24", "25", "26", "27", "28", "29", "30", "31",
+  /* lr ctr ca ap */
+     "lr", "ctr", "ca", "ap",
+  /* cr0..cr7 */
+      "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",
+  /* vrsave vscr sfp */
+      "vrsave", "vscr", "sfp",
 };
 
 #ifdef TARGET_REGNAMES
 static const char alt_reg_names[][8] =
 {
-   "%r0",   "%r1",  "%r2",  "%r3",  "%r4",  "%r5",  "%r6",  "%r7",
-   "%r8",   "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",
-  "%r16",  "%r17", "%r18", "%r19", "%r20", "%r21", "%r22", "%r23",
-  "%r24",  "%r25", "%r26", "%r27", "%r28", "%r29", "%r30", "%r31",
-   "%f0",   "%f1",  "%f2",  "%f3",  "%f4",  "%f5",  "%f6",  "%f7",
-   "%f8",   "%f9", "%f10", "%f11", "%f12", "%f13", "%f14", "%f15",
-  "%f16",  "%f17", "%f18", "%f19", "%f20", "%f21", "%f22", "%f23",
-  "%f24",  "%f25", "%f26", "%f27", "%f28", "%f29", "%f30", "%f31",
-    "mq",    "lr",  "ctr",   "ap",
-  "%cr0",  "%cr1", "%cr2", "%cr3", "%cr4", "%cr5", "%cr6", "%cr7",
-   "ca",
-  /* AltiVec registers.  */
-   "%v0",  "%v1",  "%v2",  "%v3",  "%v4",  "%v5",  "%v6", "%v7",
+  /* GPRs */
+   "%r0",  "%r1",  "%r2",  "%r3",  "%r4",  "%r5",  "%r6",  "%r7",
+   "%r8",  "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",
+  "%r16", "%r17", "%r18", "%r19", "%r20", "%r21", "%r22", "%r23",
+  "%r24", "%r25", "%r26", "%r27", "%r28", "%r29", "%r30", "%r31",
+  /* FPRs */
+   "%f0",  "%f1",  "%f2",  "%f3",  "%f4",  "%f5",  "%f6",  "%f7",
+   "%f8",  "%f9", "%f10", "%f11", "%f12", "%f13", "%f14", "%f15",
+  "%f16", "%f17", "%f18", "%f19", "%f20", "%f21", "%f22", "%f23",
+  "%f24", "%f25", "%f26", "%f27", "%f28", "%f29", "%f30", "%f31",
+  /* VRs */
+   "%v0",  "%v1",  "%v2",  "%v3",  "%v4",  "%v5",  "%v6",  "%v7",
    "%v8",  "%v9", "%v10", "%v11", "%v12", "%v13", "%v14", "%v15",
   "%v16", "%v17", "%v18", "%v19", "%v20", "%v21", "%v22", "%v23",
   "%v24", "%v25", "%v26", "%v27", "%v28", "%v29", "%v30", "%v31",
-  "vrsave", "vscr",
-  /* Soft frame pointer.  */
-  "sfp",
-  /* HTM SPR registers.  */
-  "tfhar", "tfiar", "texasr"
+  /* lr ctr ca ap */
+    "lr",  "ctr",   "ca",   "ap",
+  /* cr0..cr7 */
+  "%cr0",  "%cr1", "%cr2", "%cr3", "%cr4", "%cr5", "%cr6", "%cr7",
+  /* vrsave vscr sfp */
+  "vrsave", "vscr", "sfp",
 };
 #endif
 
@@ -1737,6 +1729,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #define TARGET_REGISTER_MOVE_COST rs6000_register_move_cost
 #undef TARGET_MEMORY_MOVE_COST
 #define TARGET_MEMORY_MOVE_COST rs6000_memory_move_cost
+#undef TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS
+#define TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS \
+  rs6000_ira_change_pseudo_allocno_class
 #undef TARGET_CANNOT_COPY_INSN_P
 #define TARGET_CANNOT_COPY_INSN_P rs6000_cannot_copy_insn_p
 #undef TARGET_RTX_COSTS
@@ -3011,9 +3006,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
   rs6000_regno_regclass[CA_REGNO] = NO_REGS;
   rs6000_regno_regclass[VRSAVE_REGNO] = VRSAVE_REGS;
   rs6000_regno_regclass[VSCR_REGNO] = VRSAVE_REGS;
-  rs6000_regno_regclass[TFHAR_REGNO] = SPR_REGS;
-  rs6000_regno_regclass[TFIAR_REGNO] = SPR_REGS;
-  rs6000_regno_regclass[TEXASR_REGNO] = SPR_REGS;
   rs6000_regno_regclass[ARG_POINTER_REGNUM] = BASE_REGS;
   rs6000_regno_regclass[FRAME_POINTER_REGNUM] = BASE_REGS;
 
@@ -4425,8 +4417,6 @@ rs6000_option_override_internal (bool global_init_p)
 	    = rs6000_debug_can_change_mode_class;
 	  rs6000_preferred_reload_class_ptr
 	    = rs6000_debug_preferred_reload_class;
-	  rs6000_legitimize_reload_address_ptr
-	    = rs6000_debug_legitimize_reload_address;
 	  rs6000_mode_dependent_address_ptr
 	    = rs6000_debug_mode_dependent_address;
 	}
@@ -6944,6 +6934,10 @@ rs6000_expand_vector_extract (rtx target, rtx vec, rtx elt)
 
       switch (mode)
 	{
+	case E_V1TImode:
+	  emit_move_insn (target, gen_lowpart (TImode, vec));
+	  return;
+
 	case E_V2DFmode:
 	  emit_insn (gen_vsx_extract_v2df_var (target, vec, elt));
 	  return;
@@ -7662,14 +7656,10 @@ address_offset (rtx op)
 
    Accept direct, indexed, offset, lo_sum and tocref.  Since this is
    a constraint function we know the operand has satisfied a suitable
-   memory predicate.  Also accept some odd rtl generated by reload
-   (see rs6000_legitimize_reload_address for various forms).  It is
-   important that reload rtl be accepted by appropriate constraints
-   but not by the operand predicate.
+   memory predicate.
 
    Offsetting a lo_sum should not be allowed, except where we know by
-   alignment that a 32k boundary is not crossed, but see the ???
-   comment in rs6000_legitimize_reload_address.  Note that by
+   alignment that a 32k boundary is not crossed.  Note that by
    "offsetting" here we mean a further offset to access parts of the
    MEM.  It's fine to have a lo_sum where the inner address is offset
    from a sym, since the same sym+offset will appear in the high part
@@ -8132,8 +8122,7 @@ legitimate_lo_sum_address_p (machine_mode mode, rtx x, int strict)
 	 function says opposite.  In most cases, LRA through different
 	 transformations can generate correct code for address reloads.
 	 It cannot manage only some LO_SUM cases.  So we need to add
-	 code analogous to one in rs6000_legitimize_reload_address for
-	 LOW_SUM here saying that some addresses are still valid.  */
+	 code here saying that some addresses are still valid.  */
       large_toc_ok = (lra_in_progress && TARGET_CMODEL != CMODEL_SMALL
 		      && small_toc_ref (x, VOIDmode));
       if (TARGET_TOC && ! large_toc_ok)
@@ -8911,290 +8900,6 @@ use_toc_relative_ref (rtx sym, machine_mode mode)
 	      && GET_MODE_SIZE (mode) <= POWERPC64_TOC_POINTER_ALIGNMENT));
 }
 
-/* Our implementation of LEGITIMIZE_RELOAD_ADDRESS.  Returns a value to
-   replace the input X, or the original X if no replacement is called for.
-   The output parameter *WIN is 1 if the calling macro should goto WIN,
-   0 if it should not.
-
-   For RS/6000, we wish to handle large displacements off a base
-   register by splitting the addend across an addiu/addis and the mem insn.
-   This cuts number of extra insns needed from 3 to 1.
-
-   On Darwin, we use this to generate code for floating point constants.
-   A movsf_low is generated so we wind up with 2 instructions rather than 3.
-   The Darwin code is inside #if TARGET_MACHO because only then are the
-   machopic_* functions defined.  */
-static rtx
-rs6000_legitimize_reload_address (rtx x, machine_mode mode,
-				  int opnum, int type,
-				  int ind_levels ATTRIBUTE_UNUSED, int *win)
-{
-  bool reg_offset_p = reg_offset_addressing_ok_p (mode);
-  bool quad_offset_p = mode_supports_dq_form (mode);
-
-  /* Nasty hack for vsx_splat_v2df/v2di load from mem, which takes a
-     DFmode/DImode MEM.  Ditto for ISA 3.0 vsx_splat_v4sf/v4si.  */
-  if (reg_offset_p
-      && opnum == 1
-      && ((mode == DFmode && recog_data.operand_mode[0] == V2DFmode)
-	  || (mode == DImode && recog_data.operand_mode[0] == V2DImode)
-	  || (mode == SFmode && recog_data.operand_mode[0] == V4SFmode
-	      && TARGET_P9_VECTOR)
-	  || (mode == SImode && recog_data.operand_mode[0] == V4SImode
-	      && TARGET_P9_VECTOR)))
-    reg_offset_p = false;
-
-  /* We must recognize output that we have already generated ourselves.  */
-  if (GET_CODE (x) == PLUS
-      && GET_CODE (XEXP (x, 0)) == PLUS
-      && REG_P (XEXP (XEXP (x, 0), 0))
-      && CONST_INT_P (XEXP (XEXP (x, 0), 1))
-      && CONST_INT_P (XEXP (x, 1)))
-    {
-      if (TARGET_DEBUG_ADDR)
-	{
-	  fprintf (stderr, "\nlegitimize_reload_address push_reload #1:\n");
-	  debug_rtx (x);
-	}
-      push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
-		   BASE_REG_CLASS, GET_MODE (x), VOIDmode, 0, 0,
-		   opnum, (enum reload_type) type);
-      *win = 1;
-      return x;
-    }
-
-  /* Likewise for (lo_sum (high ...) ...) output we have generated.  */
-  if (GET_CODE (x) == LO_SUM
-      && GET_CODE (XEXP (x, 0)) == HIGH)
-    {
-      if (TARGET_DEBUG_ADDR)
-	{
-	  fprintf (stderr, "\nlegitimize_reload_address push_reload #2:\n");
-	  debug_rtx (x);
-	}
-      push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
-		   BASE_REG_CLASS, Pmode, VOIDmode, 0, 0,
-		   opnum, (enum reload_type) type);
-      *win = 1;
-      return x;
-    }
-
-#if TARGET_MACHO
-  if (DEFAULT_ABI == ABI_DARWIN && flag_pic
-      && GET_CODE (x) == LO_SUM
-      && GET_CODE (XEXP (x, 0)) == PLUS
-      && XEXP (XEXP (x, 0), 0) == pic_offset_table_rtx
-      && GET_CODE (XEXP (XEXP (x, 0), 1)) == HIGH
-      && XEXP (XEXP (XEXP (x, 0), 1), 0) == XEXP (x, 1)
-      && machopic_operand_p (XEXP (x, 1)))
-    {
-      /* Result of previous invocation of this function on Darwin
-	 floating point constant.  */
-      push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
-		   BASE_REG_CLASS, Pmode, VOIDmode, 0, 0,
-		   opnum, (enum reload_type) type);
-      *win = 1;
-      return x;
-    }
-#endif
-
-  if (TARGET_CMODEL != CMODEL_SMALL
-      && reg_offset_p
-      && !quad_offset_p
-      && small_toc_ref (x, VOIDmode))
-    {
-      rtx hi = gen_rtx_HIGH (Pmode, copy_rtx (x));
-      x = gen_rtx_LO_SUM (Pmode, hi, x);
-      if (TARGET_DEBUG_ADDR)
-	{
-	  fprintf (stderr, "\nlegitimize_reload_address push_reload #3:\n");
-	  debug_rtx (x);
-	}
-      push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
-		   BASE_REG_CLASS, Pmode, VOIDmode, 0, 0,
-		   opnum, (enum reload_type) type);
-      *win = 1;
-      return x;
-    }
-
-  if (GET_CODE (x) == PLUS
-      && REG_P (XEXP (x, 0))
-      && HARD_REGISTER_P (XEXP (x, 0))
-      && INT_REG_OK_FOR_BASE_P (XEXP (x, 0), 1)
-      && CONST_INT_P (XEXP (x, 1))
-      && reg_offset_p
-      && (quad_offset_p || !VECTOR_MODE_P (mode) || VECTOR_MEM_NONE_P (mode)))
-    {
-      HOST_WIDE_INT val = INTVAL (XEXP (x, 1));
-      HOST_WIDE_INT low = ((val & 0xffff) ^ 0x8000) - 0x8000;
-      HOST_WIDE_INT high
-	= (((val - low) & 0xffffffff) ^ 0x80000000) - 0x80000000;
-
-      /* Check for 32-bit overflow or quad addresses with one of the
-	 four least significant bits set.  */
-      if (high + low != val
-	  || (quad_offset_p && (low & 0xf)))
-	{
-	  *win = 0;
-	  return x;
-	}
-
-      /* Reload the high part into a base reg; leave the low part
-	 in the mem directly.  */
-
-      x = gen_rtx_PLUS (GET_MODE (x),
-			gen_rtx_PLUS (GET_MODE (x), XEXP (x, 0),
-				      GEN_INT (high)),
-			GEN_INT (low));
-
-      if (TARGET_DEBUG_ADDR)
-	{
-	  fprintf (stderr, "\nlegitimize_reload_address push_reload #4:\n");
-	  debug_rtx (x);
-	}
-      push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
-		   BASE_REG_CLASS, GET_MODE (x), VOIDmode, 0, 0,
-		   opnum, (enum reload_type) type);
-      *win = 1;
-      return x;
-    }
-
-  if (SYMBOL_REF_P (x)
-      && reg_offset_p
-      && !quad_offset_p
-      && (!VECTOR_MODE_P (mode) || VECTOR_MEM_NONE_P (mode))
-#if TARGET_MACHO
-      && DEFAULT_ABI == ABI_DARWIN
-      && (flag_pic || MACHO_DYNAMIC_NO_PIC_P)
-      && machopic_symbol_defined_p (x)
-#else
-      && DEFAULT_ABI == ABI_V4
-      && !flag_pic
-#endif
-      /* Don't do this for TFmode or TDmode, since the result isn't offsettable.
-	 The same goes for DImode without 64-bit gprs and DFmode and DDmode
-	 without fprs.
-	 ??? Assume floating point reg based on mode?  This assumption is
-	 violated by eg. powerpc-linux -m32 compile of gcc.dg/pr28796-2.c
-	 where reload ends up doing a DFmode load of a constant from
-	 mem using two gprs.  Unfortunately, at this point reload
-	 hasn't yet selected regs so poking around in reload data
-	 won't help and even if we could figure out the regs reliably,
-	 we'd still want to allow this transformation when the mem is
-	 naturally aligned.  Since we say the address is good here, we
-	 can't disable offsets from LO_SUMs in mem_operand_gpr.
-	 FIXME: Allow offset from lo_sum for other modes too, when
-	 mem is sufficiently aligned.
-
-	 Also disallow this if the type can go in VMX/Altivec registers, since
-	 those registers do not have d-form (reg+offset) address modes.  */
-      && !reg_addr[mode].scalar_in_vmx_p
-      && mode != TFmode
-      && mode != TDmode
-      && mode != IFmode
-      && mode != KFmode
-      && (mode != TImode || !TARGET_VSX)
-      && mode != PTImode
-      && (mode != DImode || TARGET_POWERPC64)
-      && ((mode != DFmode && mode != DDmode) || TARGET_POWERPC64
-	  || TARGET_HARD_FLOAT))
-    {
-#if TARGET_MACHO
-      if (flag_pic)
-	{
-	  rtx offset = machopic_gen_offset (x);
-	  x = gen_rtx_LO_SUM (GET_MODE (x),
-		gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
-		  gen_rtx_HIGH (Pmode, offset)), offset);
-	}
-      else
-#endif
-	x = gen_rtx_LO_SUM (GET_MODE (x),
-	      gen_rtx_HIGH (Pmode, x), x);
-
-      if (TARGET_DEBUG_ADDR)
-	{
-	  fprintf (stderr, "\nlegitimize_reload_address push_reload #5:\n");
-	  debug_rtx (x);
-	}
-      push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
-		   BASE_REG_CLASS, Pmode, VOIDmode, 0, 0,
-		   opnum, (enum reload_type) type);
-      *win = 1;
-      return x;
-    }
-
-  /* Reload an offset address wrapped by an AND that represents the
-     masking of the lower bits.  Strip the outer AND and let reload
-     convert the offset address into an indirect address.  For VSX,
-     force reload to create the address with an AND in a separate
-     register, because we can't guarantee an altivec register will
-     be used.  */
-  if (VECTOR_MEM_ALTIVEC_P (mode)
-      && GET_CODE (x) == AND
-      && GET_CODE (XEXP (x, 0)) == PLUS
-      && REG_P (XEXP (XEXP (x, 0), 0))
-      && CONST_INT_P (XEXP (XEXP (x, 0), 1))
-      && CONST_INT_P (XEXP (x, 1))
-      && INTVAL (XEXP (x, 1)) == -16)
-    {
-      x = XEXP (x, 0);
-      *win = 1;
-      return x;
-    }
-
-  if (TARGET_TOC
-      && reg_offset_p
-      && !quad_offset_p
-      && SYMBOL_REF_P (x)
-      && use_toc_relative_ref (x, mode))
-    {
-      x = create_TOC_reference (x, NULL_RTX);
-      if (TARGET_CMODEL != CMODEL_SMALL)
-	{
-	  if (TARGET_DEBUG_ADDR)
-	    {
-	      fprintf (stderr, "\nlegitimize_reload_address push_reload #6:\n");
-	      debug_rtx (x);
-	    }
-	  push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
-		       BASE_REG_CLASS, Pmode, VOIDmode, 0, 0,
-		       opnum, (enum reload_type) type);
-	}
-      *win = 1;
-      return x;
-    }
-  *win = 0;
-  return x;
-}
-
-/* Debug version of rs6000_legitimize_reload_address.  */
-static rtx
-rs6000_debug_legitimize_reload_address (rtx x, machine_mode mode,
-					int opnum, int type,
-					int ind_levels, int *win)
-{
-  rtx ret = rs6000_legitimize_reload_address (x, mode, opnum, type,
-					      ind_levels, win);
-  fprintf (stderr,
-	   "\nrs6000_legitimize_reload_address: mode = %s, opnum = %d, "
-	   "type = %d, ind_levels = %d, win = %d, original addr:\n",
-	   GET_MODE_NAME (mode), opnum, type, ind_levels, *win);
-  debug_rtx (x);
-
-  if (x == ret)
-    fprintf (stderr, "Same address returned\n");
-  else if (!ret)
-    fprintf (stderr, "NULL returned\n");
-  else
-    {
-      fprintf (stderr, "New address:\n");
-      debug_rtx (ret);
-    }
-
-  return ret;
-}
-
 /* TARGET_LEGITIMATE_ADDRESS_P recognizes an RTL expression
    that is a valid memory address for an instruction.
    The MODE argument is the machine mode for the MEM expression
@@ -9493,10 +9198,6 @@ rs6000_conditional_register_usage (void)
 
   if (TARGET_DEBUG_TARGET)
     fprintf (stderr, "rs6000_conditional_register_usage called\n");
-
-  /* Set MQ register fixed (already call_used) so that it will not be
-     allocated.  */
-  fixed_regs[64] = 1;
 
   /* 64-bit AIX and Linux reserve GPR13 for thread-private data.  */
   if (TARGET_64BIT)
@@ -14094,23 +13795,6 @@ htm_spr_num (enum rs6000_builtins code)
   return TEXASRU_SPR;
 }
 
-/* Return the appropriate SPR regno associated with the given builtin.  */
-static inline HOST_WIDE_INT
-htm_spr_regno (enum rs6000_builtins code)
-{
-  if (code == HTM_BUILTIN_GET_TFHAR
-      || code == HTM_BUILTIN_SET_TFHAR)
-    return TFHAR_REGNO;
-  else if (code == HTM_BUILTIN_GET_TFIAR
-	   || code == HTM_BUILTIN_SET_TFIAR)
-    return TFIAR_REGNO;
-  gcc_assert (code == HTM_BUILTIN_GET_TEXASR
-	      || code == HTM_BUILTIN_SET_TEXASR
-	      || code == HTM_BUILTIN_GET_TEXASRU
-	      || code == HTM_BUILTIN_SET_TEXASRU);
-  return TEXASR_REGNO;
-}
-
 /* Return the correct ICODE value depending on whether we are
    setting or reading the HTM SPRs.  */
 static inline enum insn_code
@@ -14227,7 +13911,6 @@ htm_expand_builtin (tree exp, rtx target, bool * expandedp)
 	  {
 	    machine_mode mode = (TARGET_POWERPC64) ? DImode : SImode;
 	    op[nopnds++] = gen_rtx_CONST_INT (mode, htm_spr_num (fcode));
-	    op[nopnds++] = gen_rtx_REG (mode, htm_spr_regno (fcode));
 	  }
 	/* If this builtin accesses a CR, then pass in a scratch
 	   CR as the last operand.  */
@@ -14248,7 +13931,7 @@ htm_expand_builtin (tree exp, rtx target, bool * expandedp)
 	    if (!(attr & RS6000_BTC_VOID))
 	      expected_nopnds += 1;
 	    if (uses_spr)
-	      expected_nopnds += 2;
+	      expected_nopnds += 1;
 
 	    gcc_assert (nopnds == expected_nopnds
 			&& nopnds <= MAX_HTM_OPERANDS);
@@ -25038,6 +24721,9 @@ debug_stack_info (rs6000_stack_t *info)
 
     fprintf (stderr, "\tsave-strategy       =  %04x\n", info->savres_strategy);
 
+  if (info->abi == ABI_DARWIN)
+    fprintf (stderr, "\tWORLD_SAVE_P        = %5d\n", WORLD_SAVE_P(info));
+
   fprintf (stderr, "\n");
 }
 
@@ -34968,22 +34654,54 @@ rs6000_register_move_cost (machine_mode mode,
 			   reg_class_t from, reg_class_t to)
 {
   int ret;
+  reg_class_t rclass;
 
   if (TARGET_DEBUG_COST)
     dbg_cost_ctrl++;
 
-  /*  Moves from/to GENERAL_REGS.  */
-  if (reg_classes_intersect_p (to, GENERAL_REGS)
-      || reg_classes_intersect_p (from, GENERAL_REGS))
+  /* If we have VSX, we can easily move between FPR or Altivec registers,
+     otherwise we can only easily move within classes.
+     Do this first so we give best-case answers for union classes
+     containing both gprs and vsx regs.  */
+  HARD_REG_SET to_vsx, from_vsx;
+  COPY_HARD_REG_SET (to_vsx, reg_class_contents[to]);
+  AND_HARD_REG_SET (to_vsx, reg_class_contents[VSX_REGS]);
+  COPY_HARD_REG_SET (from_vsx, reg_class_contents[from]);
+  AND_HARD_REG_SET (from_vsx, reg_class_contents[VSX_REGS]);
+  if (!hard_reg_set_empty_p (to_vsx)
+      && !hard_reg_set_empty_p (from_vsx)
+      && (TARGET_VSX
+	  || hard_reg_set_intersect_p (to_vsx, from_vsx)))
     {
-      reg_class_t rclass = from;
+      int reg = FIRST_FPR_REGNO;
+      if (TARGET_VSX
+	  || (TEST_HARD_REG_BIT (to_vsx, FIRST_ALTIVEC_REGNO)
+	      && TEST_HARD_REG_BIT (from_vsx, FIRST_ALTIVEC_REGNO)))
+	reg = FIRST_ALTIVEC_REGNO;
+      ret = 2 * hard_regno_nregs (reg, mode);
+    }
 
-      if (! reg_classes_intersect_p (to, GENERAL_REGS))
-	rclass = to;
-
+  /*  Moves from/to GENERAL_REGS.  */
+  else if ((rclass = from, reg_classes_intersect_p (to, GENERAL_REGS))
+	   || (rclass = to, reg_classes_intersect_p (from, GENERAL_REGS)))
+    {
       if (rclass == FLOAT_REGS || rclass == ALTIVEC_REGS || rclass == VSX_REGS)
-	ret = (rs6000_memory_move_cost (mode, rclass, false)
-	       + rs6000_memory_move_cost (mode, GENERAL_REGS, false));
+	{
+	  if (TARGET_DIRECT_MOVE)
+	    {
+	      if (rs6000_tune == PROCESSOR_POWER9)
+		ret = 2 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
+	      else
+		ret = 4 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
+	      /* SFmode requires a conversion when moving between gprs
+		 and vsx.  */
+	      if (mode == SFmode)
+		ret += 2;
+	    }
+	  else
+	    ret = (rs6000_memory_move_cost (mode, rclass, false)
+		   + rs6000_memory_move_cost (mode, GENERAL_REGS, false));
+	}
 
       /* It's more expensive to move CR_REGS than CR0_REGS because of the
 	 shift.  */
@@ -34996,23 +34714,13 @@ rs6000_register_move_cost (machine_mode mode,
 		|| rs6000_tune == PROCESSOR_POWER7
 		|| rs6000_tune == PROCESSOR_POWER8
 		|| rs6000_tune == PROCESSOR_POWER9)
-	       && reg_classes_intersect_p (rclass, LINK_OR_CTR_REGS))
-        ret = 6 * hard_regno_nregs (0, mode);
+	       && reg_class_subset_p (rclass, SPECIAL_REGS))
+        ret = 6 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
 
       else
 	/* A move will cost one instruction per GPR moved.  */
-	ret = 2 * hard_regno_nregs (0, mode);
+	ret = 2 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
     }
-
-  /* If we have VSX, we can easily move between FPR or Altivec registers.  */
-  else if (VECTOR_MEM_VSX_P (mode)
-	   && reg_classes_intersect_p (to, VSX_REGS)
-	   && reg_classes_intersect_p (from, VSX_REGS))
-    ret = 2 * hard_regno_nregs (FIRST_FPR_REGNO, mode);
-
-  /* Moving between two similar registers is just one instruction.  */
-  else if (reg_classes_intersect_p (to, from))
-    ret = (FLOAT128_2REG_P (mode)) ? 4 : 2;
 
   /* Everything else has to go through GENERAL_REGS.  */
   else
@@ -35064,6 +34772,64 @@ rs6000_memory_move_cost (machine_mode mode, reg_class_t rclass,
     }
 
   return ret;
+}
+
+/* Implement TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS.
+
+   The register allocator chooses GEN_OR_VSX_REGS for the allocno
+   class if GENERAL_REGS and VSX_REGS cost is lower than the memory
+   cost.  This happens a lot when TARGET_DIRECT_MOVE makes the register
+   move cost between GENERAL_REGS and VSX_REGS low.
+
+   It might seem reasonable to use a union class.  After all, if usage
+   of vsr is low and gpr high, it might make sense to spill gpr to vsr
+   rather than memory.  However, in cases where register pressure of
+   both is high, like the cactus_adm spec test, allowing
+   GEN_OR_VSX_REGS as the allocno class results in bad decisions in
+   the first scheduling pass.  This is partly due to an allocno of
+   GEN_OR_VSX_REGS wrongly contributing to the GENERAL_REGS pressure
+   class, which gives too high a pressure for GENERAL_REGS and too low
+   for VSX_REGS.  So, force a choice of the subclass here.
+
+   The best class is also the union if GENERAL_REGS and VSX_REGS have
+   the same cost.  In that case we do use GEN_OR_VSX_REGS as the
+   allocno class, since trying to narrow down the class by regno mode
+   is prone to error.  For example, SImode is allowed in VSX regs and
+   in some cases (eg. gcc.target/powerpc/p9-xxbr-3.c do_bswap32_vect)
+   it would be wrong to choose an allocno of GENERAL_REGS based on
+   SImode.  */
+
+static reg_class_t
+rs6000_ira_change_pseudo_allocno_class (int regno ATTRIBUTE_UNUSED,
+					reg_class_t allocno_class,
+					reg_class_t best_class)
+{
+  switch (allocno_class)
+    {
+    case GEN_OR_VSX_REGS:
+      /* best_class must be a subset of allocno_class.  */
+      gcc_checking_assert (best_class == GEN_OR_VSX_REGS
+			   || best_class == GEN_OR_FLOAT_REGS
+			   || best_class == VSX_REGS
+			   || best_class == ALTIVEC_REGS
+			   || best_class == FLOAT_REGS
+			   || best_class == GENERAL_REGS
+			   || best_class == BASE_REGS);
+      /* Use best_class but choose wider classes when copying from the
+	 wider class to best_class is cheap.  This mimics IRA choice
+	 of allocno class.  */
+      if (best_class == BASE_REGS)
+	return GENERAL_REGS;
+      if (TARGET_VSX
+	  && (best_class == FLOAT_REGS || best_class == ALTIVEC_REGS))
+	return VSX_REGS;
+      return best_class;
+
+    default:
+      break;
+    }
+
+  return allocno_class;
 }
 
 /* Returns a code for a target-specific builtin that implements
@@ -36269,38 +36035,78 @@ rs6000_init_dwarf_reg_sizes_extra (tree address)
 unsigned int
 rs6000_dbx_register_number (unsigned int regno, unsigned int format)
 {
-  /* Except for the above, we use the internal number for non-DWARF
-     debug information, and also for .eh_frame.  */
-  if ((format == 0 && write_symbols != DWARF2_DEBUG) || format == 2)
-    return regno;
-
   /* On some platforms, we use the standard DWARF register
      numbering for .debug_info and .debug_frame.  */
+  if ((format == 0 && write_symbols == DWARF2_DEBUG) || format == 1)
+    {
 #ifdef RS6000_USE_DWARF_NUMBERING
-  if (regno <= 63)
-    return regno;
-  if (regno == LR_REGNO)
-    return 108;
-  if (regno == CTR_REGNO)
-    return 109;
-  /* Special handling for CR for .debug_frame: rs6000_emit_prologue has
-     translated any combination of CR2, CR3, CR4 saves to a save of CR2.
-     The actual code emitted saves the whole of CR, so we map CR2_REGNO
-     to the DWARF reg for CR.  */
-  if (format == 1 && regno == CR2_REGNO)
-    return 64;
-  if (CR_REGNO_P (regno))
-    return regno - CR0_REGNO + 86;
-  if (regno == CA_REGNO)
-    return 101;  /* XER */
-  if (ALTIVEC_REGNO_P (regno))
-    return regno - FIRST_ALTIVEC_REGNO + 1124;
-  if (regno == VRSAVE_REGNO)
-    return 356;
-  if (regno == VSCR_REGNO)
-    return 67;
+      if (regno <= 31)
+	return regno;
+      if (FP_REGNO_P (regno))
+	return regno - FIRST_FPR_REGNO + 32;
+      if (ALTIVEC_REGNO_P (regno))
+	return regno - FIRST_ALTIVEC_REGNO + 1124;
+      if (regno == LR_REGNO)
+	return 108;
+      if (regno == CTR_REGNO)
+	return 109;
+      if (regno == CA_REGNO)
+	return 101;  /* XER */
+      /* Special handling for CR for .debug_frame: rs6000_emit_prologue has
+	 translated any combination of CR2, CR3, CR4 saves to a save of CR2.
+	 The actual code emitted saves the whole of CR, so we map CR2_REGNO
+	 to the DWARF reg for CR.  */
+      if (format == 1 && regno == CR2_REGNO)
+	return 64;
+      if (CR_REGNO_P (regno))
+	return regno - CR0_REGNO + 86;
+      if (regno == VRSAVE_REGNO)
+	return 356;
+      if (regno == VSCR_REGNO)
+	return 67;
+
+      /* These do not make much sense.  */
+      if (regno == FRAME_POINTER_REGNUM)
+	return 111;
+      if (regno == ARG_POINTER_REGNUM)
+	return 67;
+      if (regno == 64)
+	return 100;
+
+      gcc_unreachable ();
 #endif
-  return regno;
+    }
+
+  /* We use the GCC 7 (and before) internal number for non-DWARF debug
+     information, and also for .eh_frame.  */
+  /* Translate the regnos to their numbers in GCC 7 (and before).  */
+  if (regno <= 31)
+    return regno;
+  if (FP_REGNO_P (regno))
+    return regno - FIRST_FPR_REGNO + 32;
+  if (ALTIVEC_REGNO_P (regno))
+    return regno - FIRST_ALTIVEC_REGNO + 77;
+  if (regno == LR_REGNO)
+    return 65;
+  if (regno == CTR_REGNO)
+    return 66;
+  if (regno == CA_REGNO)
+    return 76;  /* XER */
+  if (CR_REGNO_P (regno))
+    return regno - CR0_REGNO + 68;
+  if (regno == VRSAVE_REGNO)
+    return 109;
+  if (regno == VSCR_REGNO)
+    return 110;
+
+  if (regno == FRAME_POINTER_REGNUM)
+    return 111;
+  if (regno == ARG_POINTER_REGNUM)
+    return 67;
+  if (regno == 64)
+    return 64;
+
+  gcc_unreachable ();
 }
 
 /* target hook eh_return_filter_mode */

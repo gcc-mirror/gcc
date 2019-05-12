@@ -1,3 +1,8 @@
+2019-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/85574
+	* bootstrap-lto.mk (extra-compare): Set to gcc/lto1$(exeext).
+
 2019-04-16  Martin Liska  <mliska@suse.cz>
 
 	* bootstrap-lto-lean.mk: Filter out -flto in STAGEtrain_CFLAGS.

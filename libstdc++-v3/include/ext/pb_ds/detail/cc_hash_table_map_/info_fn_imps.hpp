@@ -39,6 +39,8 @@
  * functions.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
@@ -99,3 +101,4 @@ bool
 PB_DS_CLASS_C_DEC::
 operator!=(const Other_HT_Map_Type& other) const
 { return !operator==(other); }
+#endif

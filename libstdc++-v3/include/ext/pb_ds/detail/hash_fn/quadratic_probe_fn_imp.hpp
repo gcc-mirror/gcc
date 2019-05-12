@@ -38,6 +38,8 @@
  * Contains a probe policy implementation
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
@@ -51,3 +53,4 @@ operator()(size_type i) const
 {
   return (i*  i);
 }
+#endif

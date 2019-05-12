@@ -1,3 +1,17 @@
+2019-05-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Merge trunk r271107.
+
+	gcc/
+	* configure: Regenerated.
+
+	gcc/cp/
+	* cp-objcp-common.c (cp_common_init_ts): Make coroutine
+	keywords MARK_TS_EXP.
+	* parser.c (cp_parser_jump_statement): Update to use
+	FNDECL_USED_AUTO.
+	* coroutines.cc: Likewise.
+
 2019-04-20  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Merge trunk r270468.

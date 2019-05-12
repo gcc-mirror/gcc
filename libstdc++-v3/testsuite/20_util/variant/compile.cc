@@ -144,10 +144,15 @@ void arbitrary_ctor()
   static_assert(noexcept(variant<int, DefaultNoexcept>(DefaultNoexcept{})));
 }
 
+struct none { none() = delete; };
+struct any { template <typename T> any(T&&) {} };
+
 void in_place_index_ctor()
 {
   variant<string, string> a(in_place_index<0>, "a");
   variant<string, string> b(in_place_index<1>, {'a'});
+
+  static_assert(!is_constructible_v<variant<none, any>, std::in_place_index_t<0>>, "PR libstdc++/90165");
 }
 
 void in_place_type_ctor()
@@ -155,6 +160,7 @@ void in_place_type_ctor()
   variant<int, string, int> a(in_place_type<string>, "a");
   variant<int, string, int> b(in_place_type<string>, {'a'});
   static_assert(!is_constructible_v<variant<string, string>, in_place_type_t<string>, const char*>);
+  static_assert(!is_constructible_v<variant<none, any>, std::in_place_type_t<none>>, "PR libstdc++/90165");
 }
 
 void dtor()
@@ -479,6 +485,20 @@ void test_emplace()
   static_assert(has_index_emplace<variant<int>, 0>(0));
   static_assert(!has_type_emplace<variant<AllDeleted>, AllDeleted>(0));
   static_assert(!has_index_emplace<variant<AllDeleted>, 0>(0));
+  static_assert(has_type_emplace<variant<int, AllDeleted>, int>(0));
+  static_assert(has_index_emplace<variant<int, AllDeleted>, 0>(0));
+  static_assert(has_type_emplace<variant<int, vector<int>, AllDeleted>, vector<int>>(0));
+  static_assert(has_index_emplace<variant<int, vector<int>, AllDeleted>, 1>(0));
+
+  // The above tests only check the emplace members are available for
+  // overload resolution. The following odr-uses will instantiate them:
+  variant<int, vector<int>, AllDeleted> v;
+  v.emplace<0>(1);
+  v.emplace<int>(1);
+  v.emplace<1>(1, 1);
+  v.emplace<vector<int>>(1, 1);
+  v.emplace<1>({1, 2, 3, 4});
+  v.emplace<vector<int>>({1, 2, 3, 4});
 }
 
 void test_triviality()
@@ -502,17 +522,17 @@ void test_triviality()
   TEST_TEMPLATE(=default, =default, =default, =default,         ,  true,  true,  true, false)
   TEST_TEMPLATE(=default, =default, =default,         , =default,  true,  true, false,  true)
   TEST_TEMPLATE(=default, =default, =default,         ,         ,  true,  true, false, false)
-  TEST_TEMPLATE(=default, =default,         , =default, =default,  true, false,  true,  true)
+  TEST_TEMPLATE(=default, =default,         , =default, =default,  true, false,  true, false)
   TEST_TEMPLATE(=default, =default,         , =default,         ,  true, false,  true, false)
-  TEST_TEMPLATE(=default, =default,         ,         , =default,  true, false, false,  true)
+  TEST_TEMPLATE(=default, =default,         ,         , =default,  true, false, false, false)
   TEST_TEMPLATE(=default, =default,         ,         ,         ,  true, false, false, false)
-  TEST_TEMPLATE(=default,         , =default, =default, =default, false,  true,  false,  true)
-  TEST_TEMPLATE(=default,         , =default, =default,         , false,  true,  false, false)
+  TEST_TEMPLATE(=default,         , =default, =default, =default, false,  true, false,  true)
+  TEST_TEMPLATE(=default,         , =default, =default,         , false,  true, false, false)
   TEST_TEMPLATE(=default,         , =default,         , =default, false,  true, false,  true)
   TEST_TEMPLATE(=default,         , =default,         ,         , false,  true, false, false)
-  TEST_TEMPLATE(=default,         ,         , =default, =default, false, false,  false,  true)
-  TEST_TEMPLATE(=default,         ,         , =default,         , false, false,  false, false)
-  TEST_TEMPLATE(=default,         ,         ,         , =default, false, false, false,  true)
+  TEST_TEMPLATE(=default,         ,         , =default, =default, false, false, false, false)
+  TEST_TEMPLATE(=default,         ,         , =default,         , false, false, false, false)
+  TEST_TEMPLATE(=default,         ,         ,         , =default, false, false, false, false)
   TEST_TEMPLATE(=default,         ,         ,         ,         , false, false, false, false)
   TEST_TEMPLATE(        , =default, =default, =default, =default, false, false, false, false)
   TEST_TEMPLATE(        , =default, =default, =default,         , false, false, false, false)

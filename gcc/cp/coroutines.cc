@@ -255,7 +255,7 @@ coro_common_keyword_context_valid_p (tree fndecl, location_t kw_loc,
       return false;
     }
 
-  if (current_function_auto_return_pattern)
+  if (FNDECL_USED_AUTO (fndecl))
     {
       // [10.1.6.4, not auto specifier].
       error_at (kw_loc, "%qs cannot be used in"

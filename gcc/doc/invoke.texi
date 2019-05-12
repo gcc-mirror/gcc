@@ -674,6 +674,7 @@ Objective-C and Objective-C++ Dialects}.
 -mabi=@var{name} @gol
 -mapcs-stack-check  -mno-apcs-stack-check @gol
 -mapcs-reentrant  -mno-apcs-reentrant @gol
+-mgeneral-regs-only @gol
 -msched-prolog  -mno-sched-prolog @gol
 -mlittle-endian  -mbig-endian @gol
 -mbe8  -mbe32 @gol
@@ -1273,7 +1274,7 @@ See RS/6000 and PowerPC Options.
 -msse4a  -m3dnow  -m3dnowa  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop @gol
 -madx  -mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mhle  -mlwp @gol
 -mmwaitx  -mclzero  -mpku  -mthreads  -mgfni  -mvaes  -mwaitpkg @gol
--mshstk -mmanual-endbr -mforce-indirect-call  -mavx512vbmi2 @gol
+-mshstk -mmanual-endbr -mforce-indirect-call -mavx512vbmi2 -mavx512bf16 @gol
 -mvpclmulqdq  -mavx512bitalg  -mmovdiri  -mmovdir64b  -mavx512vpopcntdq @gol
 -mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid @gol
 -mrdseed  -msgx @gol
@@ -7964,7 +7965,7 @@ assembler was found to support such directives.
 Force GCC to generate DWARF2+ line number tables internally, if DWARF2+
 line number tables are to be generated.
 
-@item gas-locview-support
+@item -gas-locview-support
 @opindex gas-locview-support
 Inform the compiler that the assembler supports @code{view} assignment
 and reset assertion checking in @code{.loc} directives.
@@ -7972,7 +7973,7 @@ and reset assertion checking in @code{.loc} directives.
 This option will be enabled by default if, at GCC configure time, the
 assembler was found to support them.
 
-@item gno-as-locview-support
+@item -gno-as-locview-support
 Force GCC to assign view numbers internally, if
 @option{-gvariable-location-views} are explicitly requested.
 
@@ -11891,6 +11892,16 @@ Set to 1 to allow, otherwise to 0.
 The smallest number of different values for which it is best to use a
 jump-table instead of a tree of conditional branches.  If the value is
 0, use the default for the machine.
+
+@item jump-table-max-growth-ratio-for-size
+The maximum code size growth ratio when expanding
+into a jump table (in percent).  The parameter is used when
+optimizing for size.
+
+@item jump-table-max-growth-ratio-for-speed
+The maximum code size growth ratio when expanding
+into a jump table (in percent).  The parameter is used when
+optimizing for speed.
 
 @item tree-reassoc-width
 Set the maximum number of instructions executed in parallel in
@@ -17071,6 +17082,12 @@ The default depends on the specific target configuration.  Note that
 the hard-float and soft-float ABIs are not link-compatible; you must
 compile your entire program with the same ABI, and link with a
 compatible set of libraries.
+
+@item -mgeneral-regs-only
+@opindex mgeneral-regs-only
+Generate code which uses only the general-purpose registers.  This will prevent
+the compiler from using floating-point and Advanced SIMD registers but will not
+impose any restrictions on the assembler.
 
 @item -mlittle-endian
 @opindex mlittle-endian
@@ -28038,6 +28055,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mavx512vbmi2
 @opindex mavx512vbmi2
 @need 200
+@itemx -mavx512bf16
+@opindex mavx512bf16
+@need 200
 @itemx -mgfni
 @opindex mgfni
 @need 200
@@ -28080,7 +28100,7 @@ AES, PCLMUL, CLFLUSHOPT, CLWB, FSGSBASE, PTWRITE, RDRND, F16C, FMA, PCONFIG,
 WBNOINVD, FMA4, PREFETCHW, RDPID, PREFETCHWT1, RDSEED, SGX, XOP, LWP,
 3DNow!@:, enhanced 3DNow!@:, POPCNT, ABM, ADX, BMI, BMI2, LZCNT, FXSR, XSAVE,
 XSAVEOPT, XSAVEC, XSAVES, RTM, HLE, TBM, MWAITX, CLZERO, PKU, AVX512VBMI2,
-GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B,
+GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16
 AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, or CLDEMOTE
 extended instruction sets.  Each has a corresponding @option{-mno-} option to
 disable use of these instructions.
@@ -28503,8 +28523,9 @@ By default GCC inlines string operations only when the destination is
 known to be aligned to least a 4-byte boundary.  
 This enables more inlining and increases code
 size, but may improve performance of code that depends on fast
-@code{memcpy}, @code{strlen},
-and @code{memset} for short lengths.
+@code{memcpy} and @code{memset} for short lengths.
+The option enables inline expansion of @code{strlen} for all
+pointer alignments.
 
 @item -minline-stringops-dynamically
 @opindex minline-stringops-dynamically

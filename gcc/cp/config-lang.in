@@ -37,7 +37,7 @@ gtfiles="\
 \$(srcdir)/c-family/c-pragma.h \$(srcdir)/cp/decl.h \
 \$(srcdir)/cp/parser.h \
 \$(srcdir)/c-family/c-common.c \$(srcdir)/c-family/c-format.c \
-\$(srcdir)/c-family/c-lex.c \$(srcdir)/c-family/c-pragma.c \
+\$(srcdir)/c-family/c-cppbuiltin.c \$(srcdir)/c-family/c-pragma.c \
 \$(srcdir)/cp/call.c \$(srcdir)/cp/class.c \$(srcdir)/cp/constexpr.c \
 \$(srcdir)/cp/cp-gimplify.c \
 \$(srcdir)/cp/cp-lang.c \$(srcdir)/cp/cp-objcp-common.c \

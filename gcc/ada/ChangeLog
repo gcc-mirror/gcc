@@ -1,3 +1,25 @@
+2019-05-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* standard.ads.h: New file.
+
+2019-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc-interface/Makefile.in (install-gcc-specs): Use foreach.
+	Honor DESTDIR.
+
+2019-04-29  Michael K. Darling  <darlingm@gmail.com>
+
+	* gnatvsn.ads: Bump Library_Version to 10.
+
+2019-04-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89093
+	* raise-gcc.c (TARGET_ATTRIBUTE): Define.
+	(continue_unwind, personality_body, PERSONALITY_FUNCTION): Add
+	TARGET_ATTRIBUTE.
+
 2019-04-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* libgnat/i-cexten.ads (CFloat_128): New type.

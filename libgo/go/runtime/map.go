@@ -72,6 +72,7 @@ import (
 //go:linkname mapaccess2_fat runtime.mapaccess2_fat
 //go:linkname mapassign runtime.mapassign
 //go:linkname mapdelete runtime.mapdelete
+//go:linkname mapclear runtime.mapclear
 //go:linkname mapiterinit runtime.mapiterinit
 //go:linkname mapiternext runtime.mapiternext
 

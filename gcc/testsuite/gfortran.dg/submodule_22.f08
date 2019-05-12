@@ -40,8 +40,8 @@ end
 
 submodule (mtop:submod:subsubmod) subsubsubmod ! { dg-error "Syntax error in SUBMODULE statement" }
 contains
-  module subroutine sub3
-    r = 2.0
-    s = 2.0
-  end subroutine sub3
+  module subroutine sub3  ! { dg-error "found outside of a module" }
+    r = 2.0               ! { dg-error "Unexpected assignment" }
+    s = 2.0               ! { dg-error "Unexpected assignment" }
+  end subroutine sub3     ! { dg-error "Expecting END PROGRAM statement" }
 end

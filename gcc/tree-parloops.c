@@ -238,7 +238,7 @@ reduction_phi (reduction_info_table_type *reduction_list, gimple *phi)
 {
   struct reduction_info tmpred, *red;
 
-  if (reduction_list->elements () == 0 || phi == NULL)
+  if (reduction_list->is_empty () || phi == NULL)
     return NULL;
 
   if (gimple_uid (phi) == (unsigned int)-1
@@ -1390,7 +1390,7 @@ separate_decls_in_region (edge entry, edge exit,
 	    }
 	}
 
-  if (name_copies.elements () == 0 && reduction_list->elements () == 0)
+  if (name_copies.is_empty () && reduction_list->is_empty ())
     {
       /* It may happen that there is nothing to copy (if there are only
          loop carried and external variables in the loop).  */
@@ -1407,7 +1407,7 @@ separate_decls_in_region (edge entry, edge exit,
       TYPE_NAME (type) = type_name;
 
       name_copies.traverse <tree, add_field_for_name> (type);
-      if (reduction_list && reduction_list->elements () > 0)
+      if (reduction_list && !reduction_list->is_empty ())
 	{
 	  /* Create the fields for reductions.  */
 	  reduction_list->traverse <tree, add_field_for_reduction> (type);
@@ -1430,7 +1430,7 @@ separate_decls_in_region (edge entry, edge exit,
 
       /* Load the calculation from memory (after the join of the threads).  */
 
-      if (reduction_list && reduction_list->elements () > 0)
+      if (reduction_list && !reduction_list->is_empty ())
 	{
 	  reduction_list
 	    ->traverse <struct clsn_data *, create_stores_for_reduction>
@@ -1991,7 +1991,7 @@ transform_to_exit_first_loop (struct loop *loop,
          PHI_RESULT of this phi is the resulting value of the reduction
          variable when exiting the loop.  */
 
-      if (reduction_list->elements () > 0)
+      if (!reduction_list->is_empty ())
 	{
 	  struct reduction_info *red;
 
@@ -2440,7 +2440,7 @@ gen_parallel_loop (struct loop *loop,
     }
 
   /* Generate initializations for reductions.  */
-  if (reduction_list->elements () > 0)
+  if (!reduction_list->is_empty ())
     reduction_list->traverse <struct loop *, initialize_reductions> (loop);
 
   /* Eliminate the references to local variables from the loop.  */
@@ -2476,7 +2476,7 @@ gen_parallel_loop (struct loop *loop,
     loc = gimple_location (cond_stmt);
   create_parallel_loop (loop, create_loop_fn (loc), arg_struct, new_arg_struct,
 			n_threads, loc, oacc_kernels_p);
-  if (reduction_list->elements () > 0)
+  if (!reduction_list->is_empty ())
     create_call_for_reduction (loop, reduction_list, &clsn_data);
 
   scev_reset ();
@@ -2679,7 +2679,7 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
     }
 
  gather_done:
-  if (reduction_list->elements () == 0)
+  if (reduction_list->is_empty ())
     return;
 
   /* As gimple_uid is used by the vectorizer in between vect_analyze_loop_form
@@ -2796,6 +2796,14 @@ try_create_reduction_list (loop_p loop,
 
       if (!virtual_operand_p (val))
 	{
+	  if (TREE_CODE (val) != SSA_NAME)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file,
+			 "  FAILED: exit PHI argument invariant.\n");
+	      return false;
+	    }
+
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "phi is ");
@@ -2806,7 +2814,7 @@ try_create_reduction_list (loop_p loop,
 	      fprintf (dump_file,
 		       "  checking if it is part of reduction pattern:\n");
 	    }
-	  if (reduction_list->elements () == 0)
+	  if (reduction_list->is_empty ())
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file,

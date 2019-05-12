@@ -246,6 +246,11 @@ This runs escape analysis only on functions whose names hash to values
 that match the given suffix @var{n}.  This can be used to binary
 search across functions to uncover escape analysis bugs.
 
+@item -fgo-debug-optimization
+@cindex @option{-fgo-debug-optimization}
+@cindex @option{-fno-go-debug-optimization}
+Output optimization diagnostics.
+
 @item -fgo-c-header=@var{file}
 @cindex @option{-fgo-c-header}
 Write top-level named Go struct definitions to @var{file} as C code.

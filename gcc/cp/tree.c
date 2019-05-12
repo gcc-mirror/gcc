@@ -1308,8 +1308,7 @@ cp_build_qualified_type_real (tree type,
      (in CD1) we always ignore extra cv-quals on functions.  */
   if (type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE)
       && (TYPE_REF_P (type)
-	  || TREE_CODE (type) == FUNCTION_TYPE
-	  || TREE_CODE (type) == METHOD_TYPE))
+	  || FUNC_OR_METHOD_TYPE_P (type)))
     {
       if (TYPE_REF_P (type))
 	bad_quals |= type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
@@ -4725,8 +4724,7 @@ cp_build_type_attribute_variant (tree type, tree attributes)
   tree new_type;
 
   new_type = build_type_attribute_variant (type, attributes);
-  if (TREE_CODE (new_type) == FUNCTION_TYPE
-      || TREE_CODE (new_type) == METHOD_TYPE)
+  if (FUNC_OR_METHOD_TYPE_P (new_type))
     gcc_checking_assert (cxx_type_hash_eq (type, new_type));
 
   /* Making a new main variant of a class type is broken.  */
@@ -4741,8 +4739,7 @@ cp_build_type_attribute_variant (tree type, tree attributes)
 bool
 cxx_type_hash_eq (const_tree typea, const_tree typeb)
 {
-  gcc_assert (TREE_CODE (typea) == FUNCTION_TYPE
-	      || TREE_CODE (typea) == METHOD_TYPE);
+  gcc_assert (FUNC_OR_METHOD_TYPE_P (typea));
 
   if (type_memfn_rqual (typea) != type_memfn_rqual (typeb))
     return false;
@@ -4759,7 +4756,7 @@ tree
 cxx_copy_lang_qualifiers (const_tree typea, const_tree typeb)
 {
   tree type = CONST_CAST_TREE (typea);
-  if (TREE_CODE (type) == FUNCTION_TYPE || TREE_CODE (type) == METHOD_TYPE)
+  if (FUNC_OR_METHOD_TYPE_P (type))
     type = build_cp_fntype_variant (type, type_memfn_rqual (typeb),
 				    TYPE_RAISES_EXCEPTIONS (typeb),
 				    TYPE_HAS_LATE_RETURN_TYPE (typeb));
@@ -5371,8 +5368,7 @@ cp_fix_function_decl_p (tree decl)
 void
 cp_free_lang_data (tree t)
 {
-  if (TREE_CODE (t) == METHOD_TYPE
-      || TREE_CODE (t) == FUNCTION_TYPE)
+  if (FUNC_OR_METHOD_TYPE_P (t))
     {
       /* Default args are not interesting anymore.  */
       tree argtypes = TYPE_ARG_TYPES (t);

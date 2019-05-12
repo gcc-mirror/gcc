@@ -211,6 +211,9 @@ public:
 
   void empty () { m_table.empty(); }
 
+  /* Return true when there are no elements in this hash map.  */
+  bool is_empty () const { return m_table.is_empty (); }
+
   class iterator
   {
   public:

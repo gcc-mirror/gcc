@@ -86,10 +86,7 @@ the direction of traversal and the set of loops visited.  Each loop is
 guaranteed to be visited exactly once, regardless of the changes to the
 loop tree, and the loops may be removed during the traversal.  The newly
 created loops are never traversed, if they need to be visited, this
-must be done separately after their creation.  The @code{FOR_EACH_LOOP}
-macro allocates temporary variables.  If the @code{FOR_EACH_LOOP} loop
-were ended using break or goto, they would not be released;
-@code{FOR_EACH_LOOP_BREAK} macro must be used instead.
+must be done separately after their creation.
 
 Each basic block contains the reference to the innermost loop it belongs
 to (@code{loop_father}).  For this reason, it is only possible to have
