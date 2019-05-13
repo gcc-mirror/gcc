@@ -1,6 +1,14 @@
 2019-05-13  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/90380
+	* gcov.c (handle_cycle): Do not support zero cycle count,
+	it should not be possible.
+	(path_contains_zero_cycle_arc): New function.
+	(circuit): Ignore zero cycle arc counts.
+
+2019-05-13  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/90380
 	* gcov.c (enum loop_type): Remove the enum and
 	the operator.
 	(handle_cycle): Assert that we should not reach
