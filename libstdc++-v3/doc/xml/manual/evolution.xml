@@ -947,4 +947,8 @@ now defaults to zero.
 
 </section>
 
+<section xml:id="api.rel_101"><info><title><constant>10</constant></title></info>
+<para> <classname>__gnu_cxx::array_allocator</classname> removed. </para>
+</section>
+
 </section>

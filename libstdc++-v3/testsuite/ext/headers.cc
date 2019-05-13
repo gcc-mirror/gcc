@@ -24,7 +24,6 @@
 // subdirectory that are meant to be directly included.
 
 #include <ext/algorithm>
-#include <ext/array_allocator.h>
 #include <ext/atomicity.h>
 #include <ext/bitmap_allocator.h>
 #if _GLIBCXX_HAVE_ICONV

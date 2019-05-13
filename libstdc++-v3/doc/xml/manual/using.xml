@@ -719,7 +719,6 @@ compiler supports scalar decimal floating-point types defined via
 <row>
 <entry><filename class="headerfile">ext/algorithm</filename></entry>
 <entry><filename class="headerfile">ext/atomicity.h</filename></entry>
-<entry><filename class="headerfile">ext/array_allocator.h</filename></entry>
 <entry><filename class="headerfile">ext/bitmap_allocator.h</filename></entry>
 <entry><filename class="headerfile">ext/cast.h</filename></entry>
 </row>
