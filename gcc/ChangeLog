@@ -1,3 +1,10 @@
+2019-05-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89221
+	* configure.ac (--enable-frame-pointer):
+	Disable by default for cygwin and mingw.
+	* configure: Regenerate.
+
 2019-05-13  Nathan Sidwell  <nathan@acm.org>
 
 	* dwarf2out.c (breakout_comdat_types): Move comment to correct
