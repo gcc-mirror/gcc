@@ -9,7 +9,7 @@
 #include <altivec.h>
 
 /* Define this after PR89424 is addressed.  */
-#undef PR89424
+#define PR89424
 
 extern void abort (void);
 
