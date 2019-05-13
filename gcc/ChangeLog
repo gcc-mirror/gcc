@@ -1,5 +1,17 @@
 2019-05-13  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/90402
+	* tree-if-conv.c (tree_if_conversion): Value number only
+	the loop body by making the latch an exit of the region
+	as well.
+	* tree-ssa-sccvn.c (process_bb): Add flag whether to skip
+	processing PHIs.
+	(do_rpo_vn): Deal with multiple edges into the entry block
+	that are not backedges inside the region by skipping PHIs
+	of the entry block.
+
+2019-05-13  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/90316
 	* tree-ssa-pre.c (insert_aux): Fold into ...
 	(insert): ... this function.  Use a RPO walk to reduce the
