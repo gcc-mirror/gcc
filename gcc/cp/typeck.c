@@ -3756,14 +3756,12 @@ build_function_call_vec (location_t /*loc*/, vec<location_t> /*arg_loc*/,
 static tree
 cp_build_function_call (tree function, tree params, tsubst_flags_t complain)
 {
-  vec<tree, va_gc> *vec;
   tree ret;
 
-  vec = make_tree_vector ();
+  releasing_vec vec;
   for (; params != NULL_TREE; params = TREE_CHAIN (params))
     vec_safe_push (vec, TREE_VALUE (params));
   ret = cp_build_function_call_vec (function, &vec, complain);
-  release_tree_vector (vec);
   return ret;
 }
 
@@ -3772,17 +3770,15 @@ cp_build_function_call (tree function, tree params, tsubst_flags_t complain)
 tree
 cp_build_function_call_nary (tree function, tsubst_flags_t complain, ...)
 {
-  vec<tree, va_gc> *vec;
   va_list args;
   tree ret, t;
 
-  vec = make_tree_vector ();
+  releasing_vec vec;
   va_start (args, complain);
   for (t = va_arg (args, tree); t != NULL_TREE; t = va_arg (args, tree))
     vec_safe_push (vec, t);
   va_end (args);
   ret = cp_build_function_call_vec (function, &vec, complain);
-  release_tree_vector (vec);
   return ret;
 }
 
@@ -8223,11 +8219,10 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	/* Do the default thing.  */;
       else
 	{
-	  vec<tree, va_gc> *rhs_vec = make_tree_vector_single (rhs);
+	  releasing_vec rhs_vec = make_tree_vector_single (rhs);
 	  result = build_special_member_call (lhs, complete_ctor_identifier,
 					      &rhs_vec, lhstype, LOOKUP_NORMAL,
                                               complain);
-	  release_tree_vector (rhs_vec);
 	  if (result == NULL_TREE)
 	    return error_mark_node;
 	  goto ret;

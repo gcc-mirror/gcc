@@ -847,7 +847,7 @@ perform_member_init (tree member, tree init)
 	 reference member in a constructor’s ctor-initializer (12.6.2)
 	 persists until the constructor exits."  */
       unsigned i; tree t;
-      vec<tree, va_gc> *cleanups = make_tree_vector ();
+      releasing_vec cleanups;
       if (TREE_CODE (init) == TREE_LIST)
 	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
 						tf_warning_or_error);
@@ -871,7 +871,6 @@ perform_member_init (tree member, tree init)
       finish_expr_stmt (init);
       FOR_EACH_VEC_ELT (*cleanups, i, t)
 	push_cleanup (decl, t, false);
-      release_tree_vector (cleanups);
     }
   else if (type_build_ctor_call (type)
 	   || (init && CLASS_TYPE_P (strip_array_types (type))))
@@ -1952,7 +1951,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
       tree elt; unsigned i;
 
       /* Unshare the arguments for the second call.  */
-      vec<tree, va_gc> *parms2 = make_tree_vector ();
+      releasing_vec parms2;
       FOR_EACH_VEC_SAFE_ELT (parms, i, elt)
 	{
 	  elt = break_out_target_exprs (elt);
@@ -1962,7 +1961,6 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
 					    &parms2, binfo, flags,
 					    complain);
       complete = fold_build_cleanup_point_expr (void_type_node, complete);
-      release_tree_vector (parms2);
 
       base = build_special_member_call (exp, base_ctor_identifier,
 					&parms, binfo, flags,

@@ -7590,7 +7590,7 @@ get_tuple_decomp_init (tree decl, unsigned i)
     }
   else
     {
-      vec<tree,va_gc> *args = make_tree_vector_single (e);
+      releasing_vec args (make_tree_vector_single (e));
       fns = lookup_template_function (get__identifier, targs);
       fns = perform_koenig_lookup (fns, args, tf_warning_or_error);
       return finish_call_expr (fns, &args, /*novirt*/false,

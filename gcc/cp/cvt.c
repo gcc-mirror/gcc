@@ -562,10 +562,9 @@ force_rvalue (tree expr, tsubst_flags_t complain)
   tree type = TREE_TYPE (expr);
   if (MAYBE_CLASS_TYPE_P (type) && TREE_CODE (expr) != TARGET_EXPR)
     {
-      vec<tree, va_gc> *args = make_tree_vector_single (expr);
+      releasing_vec args (make_tree_vector_single (expr));
       expr = build_special_member_call (NULL_TREE, complete_ctor_identifier,
 					&args, type, LOOKUP_NORMAL, complain);
-      release_tree_vector (args);
       expr = build_cplus_new (type, expr, complain);
     }
   else
@@ -925,12 +924,11 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	ctor = build_user_type_conversion (type, ctor, flags, complain);
       else
 	{
-	  vec<tree, va_gc> *ctor_vec = make_tree_vector_single (ctor);
+	  releasing_vec ctor_vec (make_tree_vector_single (ctor));
 	  ctor = build_special_member_call (NULL_TREE,
 					    complete_ctor_identifier,
 					    &ctor_vec,
 					    type, flags, complain);
-	  release_tree_vector (ctor_vec);
 	}
       if (ctor)
 	return build_cplus_new (type, ctor, complain);

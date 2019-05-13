@@ -18750,7 +18750,6 @@ tsubst_copy_and_build (tree t,
     case CALL_EXPR:
       {
 	tree function;
-	vec<tree, va_gc> *call_args;
 	unsigned int nargs, i;
 	bool qualified_p;
 	bool koenig_p;
@@ -18818,7 +18817,7 @@ tsubst_copy_and_build (tree t,
 	  }
 
 	nargs = call_expr_nargs (t);
-	call_args = make_tree_vector ();
+	releasing_vec call_args;
 	for (i = 0; i < nargs; ++i)
 	  {
 	    tree arg = CALL_EXPR_ARG (t, i);
@@ -18894,7 +18893,6 @@ tsubst_copy_and_build (tree t,
 	    if (CLASS_TYPE_P (TREE_TYPE (ret)))
 	      CALL_EXPR_RETURN_SLOT_OPT (ret) = true;
 
-	    release_tree_vector (call_args);
 	    RETURN (ret);
 	  }
 
@@ -18927,10 +18925,7 @@ tsubst_copy_and_build (tree t,
 			    (function, args, complain, in_decl, true,
 			     integral_constant_expression_p));
 		if (unq == error_mark_node)
-		  {
-		    release_tree_vector (call_args);
-		    RETURN (error_mark_node);
-		  }
+		  RETURN (error_mark_node);
 
 		if (unq != function)
 		  {
@@ -18985,10 +18980,7 @@ tsubst_copy_and_build (tree t,
 				  "%qD declared here, later in the "
 				  "translation unit", fn);
 			if (in_lambda)
-			  {
-			    release_tree_vector (call_args);
-			    RETURN (error_mark_node);
-			  }
+			  RETURN (error_mark_node);
 		      }
 
 		    function = unq;
@@ -18998,7 +18990,6 @@ tsubst_copy_and_build (tree t,
 	      {
 		if (complain & tf_error)
 		  unqualified_name_lookup_error (function);
-		release_tree_vector (call_args);
 		RETURN (error_mark_node);
 	      }
 	  }
@@ -19007,10 +18998,7 @@ tsubst_copy_and_build (tree t,
 	if (function != NULL_TREE
 	    && DECL_P (function)
 	    && !mark_used (function, complain) && !(complain & tf_error))
-	  {
-	    release_tree_vector (call_args);
-	    RETURN (error_mark_node);
-	  }
+	  RETURN (error_mark_node);
 
 	/* Put back tf_decltype for the actual call.  */
 	complain |= decltype_flag;
@@ -19048,10 +19036,7 @@ tsubst_copy_and_build (tree t,
 						  complain, in_decl),
 					  complain);
 	      if (TREE_CODE (ret) == VIEW_CONVERT_EXPR)
-		{
-		  release_tree_vector (call_args);
-		  RETURN (ret);
-		}
+		RETURN (ret);
 	      break;
 
 	    default:
@@ -19093,8 +19078,6 @@ tsubst_copy_and_build (tree t,
 				  /*disallow_virtual=*/qualified_p,
 				  koenig_p,
 				  complain);
-
-	release_tree_vector (call_args);
 
 	if (ret != error_mark_node)
 	  {
@@ -27314,7 +27297,8 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 
   bool try_list_ctor = false;
 
-  vec<tree,va_gc> *args;
+  releasing_vec rv_args = NULL;
+  vec<tree,va_gc> *&args = *&rv_args;
   if (init == NULL_TREE
       || TREE_CODE (init) == TREE_LIST)
     args = make_tree_vector_from_list (init);
@@ -27486,8 +27470,6 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	inform (input_location, "explicit deduction guides not considered "
 		"for copy-initialization");
     }
-
-  release_tree_vector (args);
 
   return cp_build_qualified_type (TREE_TYPE (call), cp_type_quals (ptype));
 }
