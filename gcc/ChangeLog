@@ -1,5 +1,11 @@
 2019-05-13  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Handle
+	VIEW_CONVERT_EXPR.
+	(vect_build_slp_tree_1): Likewise.
+
+2019-05-13  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/90402
 	* tree-if-conv.c (tree_if_conversion): Value number only
 	the loop body by making the latch an exit of the region
