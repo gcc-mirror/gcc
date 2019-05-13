@@ -1,6 +1,5 @@
 // { dg-options "-g -O0 -std=gnu++17" }
 // { dg-do run { target c++17 } }
-// { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PROFILE" } }
 
 // Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //

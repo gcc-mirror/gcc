@@ -21,7 +21,6 @@
 
 #include <array>
 #include <debug/array>
-#include <profile/array>
 #include <memory>
 
 struct A;
@@ -32,6 +31,3 @@ auto b = std::get<0>(std::move(a));
 
 std::__debug::array<B<A>*, 1> c;
 auto d = std::__debug::get<0>(std::move(c));
-
-std::__profile::array<B<A>*, 1> e;
-auto f = std::__profile::get<0>(std::move(e));

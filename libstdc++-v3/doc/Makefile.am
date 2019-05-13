@@ -336,7 +336,6 @@ xml_sources_manual = \
 	${xml_dir}/manual/policy_data_structures.xml \
 	${xml_dir}/manual/policy_data_structures_biblio.xml \
 	${xml_dir}/manual/prerequisites.xml \
-	${xml_dir}/manual/profile_mode.xml \
 	${xml_dir}/manual/shared_ptr.xml \
 	${xml_dir}/manual/spine.xml \
 	${xml_dir}/manual/status_cxx1998.xml \
