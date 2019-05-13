@@ -1,3 +1,7 @@
+2019-05-13  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* doc/xml/manual/status_cxx2020.xml: Document P0811R3 status.
+
 2019-05-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	Remove Profile Mode, deprecated since 7.1.0
