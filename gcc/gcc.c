@@ -3068,7 +3068,8 @@ execute (void)
   if (!wrapper_string)
     {
       string = find_a_file (&exec_prefixes, commands[0].prog, X_OK, false);
-      commands[0].argv[0] = (string) ? string : commands[0].argv[0];
+      if (string)
+	commands[0].argv[0] = string;
     }
 
   for (n_commands = 1, i = 0; argbuf.iterate (i, &arg); i++)
@@ -3077,8 +3078,7 @@ execute (void)
 #if defined (__MSDOS__) || defined (OS2) || defined (VMS)
 	fatal_error (input_location, "%<-pipe%> not supported");
 #endif
-	argbuf[i] = 0; /* Termination of
-						     command args.  */
+	argbuf[i] = 0; /* Termination of command args.  */
 	commands[n_commands].prog = argbuf[i + 1];
 	commands[n_commands].argv
 	  = &(argbuf.address ())[i + 1];
@@ -6926,8 +6926,8 @@ run_attempt (const char **new_argv, const char *out_temp,
     fatal_error (input_location, "pex_init failed: %m");
 
   errmsg = pex_run (pex, pex_flags, new_argv[0],
-		    CONST_CAST2 (char *const *, const char **, &new_argv[1]), out_temp,
-		    err_temp, &err);
+		    CONST_CAST2 (char *const *, const char **, &new_argv[1]),
+		    out_temp, err_temp, &err);
   if (errmsg != NULL)
     {
       errno = err;
