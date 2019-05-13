@@ -1,3 +1,38 @@
+2019-05-13  Jason Merrill  <jason@redhat.com>
+
+	Use releasing_vec more broadly.
+	* cp-tree.h (struct releasing_vec): Replace get_ref method with
+	operator&.
+	(vec_safe_push, vec_safe_reserve, vec_safe_length, vec_safe_splice):
+	Forwarding functions for releasing_vec.
+	(release_tree_vector): Declare but don't define.
+	* call.c (build_op_delete_call, build_temp, call_copy_ctor)
+	(perform_direct_initialization_if_possible): Use releasing_vec.
+	* constexpr.c (cxx_eval_vec_init_1, cxx_eval_store_expression):
+	Likewise.
+	* cp-gimplify.c (cp_fold): Likewise.
+	* cvt.c (force_rvalue, ocp_convert): Likewise.
+	* decl.c (get_tuple_decomp_init): Likewise.
+	* except.c (build_throw): Likewise.
+	* init.c (perform_member_init, expand_default_init): Likewise.
+	* method.c (do_build_copy_assign, locate_fn_flags): Likewise.
+	* parser.c (cp_parser_userdef_char_literal)
+	(cp_parser_userdef_numeric_literal)
+	(cp_parser_userdef_string_literal)
+	(cp_parser_perform_range_for_lookup)
+	(cp_parser_range_for_member_function, cp_parser_omp_for_loop)
+	(cp_parser_omp_for_loop_init): Likewise.
+	* pt.c (tsubst_copy_and_build, do_class_deduction): Likewise.
+	* semantics.c (calculate_direct_bases, calculate_bases)
+	(finish_omp_barrier, finish_omp_flush, finish_omp_taskwait)
+	(finish_omp_taskyield, finish_omp_cancel)
+	(finish_omp_cancellation_point): Likewise.
+	* tree.c (build_vec_init_elt, strip_typedefs, strip_typedefs_expr)
+	(build_min_non_dep_op_overload): Likewise.
+	* typeck.c (build_function_call_vec, cp_build_function_call_nary)
+	(cp_build_modify_expr): Likewise.
+	* typeck2.c (build_functional_cast): Likewise.
+
 2019-05-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* typeck.c (cp_build_function_call_vec): When mark_used fails

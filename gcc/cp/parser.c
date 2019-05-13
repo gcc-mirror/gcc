@@ -4345,18 +4345,16 @@ cp_parser_userdef_char_literal (cp_parser *parser)
 
   /* Build up a call to the user-defined operator  */
   /* Lookup the name we got back from the id-expression.  */
-  vec<tree, va_gc> *args = make_tree_vector ();
+  releasing_vec args;
   vec_safe_push (args, value);
   decl = lookup_literal_operator (name, args);
   if (!decl || decl == error_mark_node)
     {
       error ("unable to find character literal operator %qD with %qT argument",
 	     name, TREE_TYPE (value));
-      release_tree_vector (args);
       return error_mark_node;
     }
   result = finish_call_expr (decl, &args, false, true, tf_warning_or_error);
-  release_tree_vector (args);
   return result;
 }
 
@@ -4443,11 +4441,10 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
   tree num_string = USERDEF_LITERAL_NUM_STRING (literal);
   tree name = cp_literal_operator_id (IDENTIFIER_POINTER (suffix_id));
   tree decl, result;
-  vec<tree, va_gc> *args;
 
   /* Look for a literal operator taking the exact type of numeric argument
      as the literal value.  */
-  args = make_tree_vector ();
+  releasing_vec args;
   vec_safe_push (args, value);
   decl = lookup_literal_operator (name, args);
   if (decl && decl != error_mark_node)
@@ -4472,30 +4469,26 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
 			"floating literal truncated to zero");
 	}
 
-      release_tree_vector (args);
       return result;
     }
-  release_tree_vector (args);
 
   /* If the numeric argument didn't work, look for a raw literal
      operator taking a const char* argument consisting of the number
      in string format.  */
-  args = make_tree_vector ();
+  args->truncate (0);
   vec_safe_push (args, num_string);
   decl = lookup_literal_operator (name, args);
   if (decl && decl != error_mark_node)
     {
       result = finish_call_expr (decl, &args, false, true,
 				 tf_warning_or_error);
-      release_tree_vector (args);
       return result;
     }
-  release_tree_vector (args);
 
   /* If the raw literal didn't work, look for a non-type template
      function with parameter pack char....  Call the function with
      template parameter characters representing the number.  */
-  args = make_tree_vector ();
+  args->truncate (0);
   decl = lookup_literal_operator (name, args);
   if (decl && decl != error_mark_node)
     {
@@ -4509,11 +4502,8 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
       decl = lookup_template_function (decl, tmpl_args);
       result = finish_call_expr (decl, &args, false, true,
 				 tf_warning_or_error);
-      release_tree_vector (args);
       return result;
     }
-
-  release_tree_vector (args);
 
   /* In C++14 the standard library defines complex number suffixes that
      conflict with GNU extensions.  Prefer them if <complex> is #included.  */
@@ -4602,8 +4592,7 @@ cp_parser_userdef_string_literal (tree literal)
 
   /* Build up a call to the user-defined operator.  */
   /* Lookup the name we got back from the id-expression.  */
-  releasing_vec rargs;
-  vec<tree, va_gc> *&args = rargs.get_ref();
+  releasing_vec args;
   vec_safe_push (args, value);
   vec_safe_push (args, build_int_cst (size_type_node, len));
   decl = lookup_literal_operator (name, args);
@@ -12539,8 +12528,7 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
       else
 	{
 	  /* Use global functions with ADL.  */
-	  vec<tree, va_gc> *vec;
-	  vec = make_tree_vector ();
+	  releasing_vec vec;
 
 	  vec_safe_push (vec, range);
 
@@ -12552,8 +12540,6 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
 					      tf_warning_or_error);
 	  *end = finish_call_expr (member_end, &vec, false, true,
 				   tf_warning_or_error);
-
-	  release_tree_vector (vec);
 	}
 
       /* Last common checks.  */
@@ -12601,19 +12587,17 @@ static tree
 cp_parser_range_for_member_function (tree range, tree identifier)
 {
   tree member, res;
-  vec<tree, va_gc> *vec;
 
   member = finish_class_member_access_expr (range, identifier,
 					    false, tf_warning_or_error);
   if (member == error_mark_node)
     return error_mark_node;
 
-  vec = make_tree_vector ();
+  releasing_vec vec;
   res = finish_call_expr (member, &vec,
 			  /*disallow_virtual=*/false,
 			  /*koenig_p=*/false,
 			  tf_warning_or_error);
-  release_tree_vector (vec);
   return res;
 }
 
@@ -36430,7 +36414,7 @@ cp_parser_omp_for_incr (cp_parser *parser, tree decl)
 static tree
 cp_parser_omp_for_loop_init (cp_parser *parser,
 			     tree &this_pre_body,
-			     vec<tree, va_gc> *&for_block,
+			     releasing_vec &for_block,
 			     tree &init,
 			     tree &orig_init,
 			     tree &decl,
@@ -36851,7 +36835,7 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
   location_t loc_first;
   bool collapse_err = false;
   int i, collapse = 1, ordered = 0, count, nbraces = 0;
-  vec<tree, va_gc> *for_block = make_tree_vector ();
+  releasing_vec for_block;
   auto_vec<tree, 4> orig_inits;
   bool tiling = false;
 
@@ -37240,7 +37224,6 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
       else
 	add_stmt (t);
     }
-  release_tree_vector (for_block);
 
   return ret;
 }

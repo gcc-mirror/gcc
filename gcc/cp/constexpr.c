@@ -3113,11 +3113,10 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
     }
   else if (!init)
     {
-      vec<tree, va_gc> *argvec = make_tree_vector ();
+      releasing_vec argvec;
       init = build_special_member_call (NULL_TREE, complete_ctor_identifier,
 					&argvec, elttype, LOOKUP_NORMAL,
 					complain);
-      release_tree_vector (argvec);
       init = build_aggr_init_expr (elttype, init);
       pre_init = true;
     }
@@ -3740,7 +3739,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
     }
 
   /* And then find the underlying variable.  */
-  vec<tree,va_gc> *refs = make_tree_vector();
+  releasing_vec refs;
   tree object = NULL_TREE;
   for (tree probe = target; object == NULL_TREE; )
     {
@@ -3784,7 +3783,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   type = TREE_TYPE (object);
   bool no_zero_init = true;
 
-  vec<tree,va_gc> *ctors = make_tree_vector ();
+  releasing_vec ctors;
   while (!refs->is_empty())
     {
       if (*valp == NULL_TREE)
@@ -3897,7 +3896,6 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	}
       valp = &cep->value;
     }
-  release_tree_vector (refs);
 
   if (!preeval)
     {
@@ -3941,14 +3939,13 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   bool c = TREE_CONSTANT (init);
   bool s = TREE_SIDE_EFFECTS (init);
   if (!c || s)
-    FOR_EACH_VEC_SAFE_ELT (ctors, i, elt)
+    FOR_EACH_VEC_ELT (*ctors, i, elt)
       {
 	if (!c)
 	  TREE_CONSTANT (elt) = false;
 	if (s)
 	  TREE_SIDE_EFFECTS (elt) = true;
       }
-  release_tree_vector (ctors);
 
   if (*non_constant_p)
     return t;

@@ -3992,7 +3992,7 @@ calculate_direct_bases (tree type, tsubst_flags_t complain)
       || !NON_UNION_CLASS_TYPE_P (type))
     return make_tree_vec (0);
 
-  vec<tree, va_gc> *vector = make_tree_vector ();
+  releasing_vec vector;
   vec<tree, va_gc> *base_binfos = BINFO_BASE_BINFOS (TYPE_BINFO (type));
   tree binfo;
   unsigned i;
@@ -4012,7 +4012,6 @@ calculate_direct_bases (tree type, tsubst_flags_t complain)
   for (i = 0; i < vector->length (); ++i)
     TREE_VEC_ELT (bases_vec, i) = BINFO_TYPE ((*vector)[i]);
 
-  release_tree_vector (vector);
   return bases_vec;
 }
 
@@ -4058,27 +4057,24 @@ calculate_bases (tree type, tsubst_flags_t complain)
       || !NON_UNION_CLASS_TYPE_P (type))
     return make_tree_vec (0);
 
-  vec<tree, va_gc> *vector = make_tree_vector ();
+  releasing_vec vector;
   tree bases_vec = NULL_TREE;
   unsigned i;
   vec<tree, va_gc> *vbases;
-  vec<tree, va_gc> *nonvbases;
   tree binfo;
 
   /* First go through virtual base classes */
   for (vbases = CLASSTYPE_VBASECLASSES (type), i = 0;
        vec_safe_iterate (vbases, i, &binfo); i++)
     {
-      vec<tree, va_gc> *vbase_bases
+      releasing_vec vbase_bases
 	= calculate_bases_helper (BINFO_TYPE (binfo));
       vec_safe_splice (vector, vbase_bases);
-      release_tree_vector (vbase_bases);
     }
 
   /* Now for the non-virtual bases */
-  nonvbases = calculate_bases_helper (type);
+  releasing_vec nonvbases = calculate_bases_helper (type);
   vec_safe_splice (vector, nonvbases);
-  release_tree_vector (nonvbases);
 
   /* Note that during error recovery vector->length can even be zero.  */
   if (vector->length () > 1)
@@ -4092,7 +4088,6 @@ calculate_bases (tree type, tsubst_flags_t complain)
   else
     bases_vec = make_tree_vec (0);
 
-  release_tree_vector (vector);
   return bases_vec;
 }
 
@@ -9002,9 +8997,8 @@ void
 finish_omp_barrier (void)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_GOMP_BARRIER);
-  vec<tree, va_gc> *vec = make_tree_vector ();
+  releasing_vec vec;
   tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
-  release_tree_vector (vec);
   finish_expr_stmt (stmt);
 }
 
@@ -9047,14 +9041,13 @@ void
 finish_omp_flush (int mo)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
-  vec<tree, va_gc> *vec = make_tree_vector ();
+  releasing_vec vec;
   if (mo != MEMMODEL_LAST)
     {
       fn = builtin_decl_explicit (BUILT_IN_ATOMIC_THREAD_FENCE);
       vec->quick_push (build_int_cst (integer_type_node, mo));
     }
   tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
-  release_tree_vector (vec);
   finish_expr_stmt (stmt);
 }
 
@@ -9062,9 +9055,8 @@ void
 finish_omp_taskwait (void)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_GOMP_TASKWAIT);
-  vec<tree, va_gc> *vec = make_tree_vector ();
+  releasing_vec vec;
   tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
-  release_tree_vector (vec);
   finish_expr_stmt (stmt);
 }
 
@@ -9072,9 +9064,8 @@ void
 finish_omp_taskyield (void)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_GOMP_TASKYIELD);
-  vec<tree, va_gc> *vec = make_tree_vector ();
+  releasing_vec vec;
   tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
-  release_tree_vector (vec);
   finish_expr_stmt (stmt);
 }
 
@@ -9097,7 +9088,7 @@ finish_omp_cancel (tree clauses)
 	     "%<parallel%>, %<for%>, %<sections%> or %<taskgroup%> clauses");
       return;
     }
-  vec<tree, va_gc> *vec = make_tree_vector ();
+  releasing_vec vec;
   tree ifc = omp_find_clause (clauses, OMP_CLAUSE_IF);
   if (ifc != NULL_TREE)
     {
@@ -9131,7 +9122,6 @@ finish_omp_cancel (tree clauses)
   vec->quick_push (build_int_cst (integer_type_node, mask));
   vec->quick_push (ifc);
   tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
-  release_tree_vector (vec);
   finish_expr_stmt (stmt);
 }
 
@@ -9154,10 +9144,9 @@ finish_omp_cancellation_point (tree clauses)
 	     "%<parallel%>, %<for%>, %<sections%> or %<taskgroup%> clauses");
       return;
     }
-  vec<tree, va_gc> *vec
+  releasing_vec vec
     = make_tree_vector_single (build_int_cst (integer_type_node, mask));
   tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
-  release_tree_vector (vec);
   finish_expr_stmt (stmt);
 }
 

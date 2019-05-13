@@ -790,7 +790,6 @@ do_build_copy_assign (tree fndecl)
 	   BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
 	{
 	  tree converted_parm;
-	  vec<tree, va_gc> *parmvec;
 
 	  /* We must convert PARM directly to the base class
 	     explicitly since the base class may be ambiguous.  */
@@ -799,7 +798,7 @@ do_build_copy_assign (tree fndecl)
 	  if (move_p)
 	    converted_parm = move (converted_parm);
 	  /* Call the base class assignment operator.  */
-	  parmvec = make_tree_vector_single (converted_parm);
+	  releasing_vec parmvec (make_tree_vector_single (converted_parm));
 	  finish_expr_stmt
 	    (build_special_member_call (current_class_ref,
 					assign_op_identifier,
@@ -807,7 +806,6 @@ do_build_copy_assign (tree fndecl)
 					base_binfo,
 					flags,
                                         tf_warning_or_error));
-	  release_tree_vector (parmvec);
 	}
 
       /* Assign to each of the non-static data members.  */
@@ -993,7 +991,6 @@ locate_fn_flags (tree type, tree name, tree argtype, int flags,
 		 tsubst_flags_t complain)
 {
   tree ob, fn, fns, binfo, rval;
-  vec<tree, va_gc> *args;
 
   if (TYPE_P (type))
     binfo = TYPE_BINFO (type);
@@ -1004,7 +1001,7 @@ locate_fn_flags (tree type, tree name, tree argtype, int flags,
     }
 
   ob = build_stub_object (cp_build_reference_type (type, false));
-  args = make_tree_vector ();
+  releasing_vec args;
   if (argtype)
     {
       if (TREE_CODE (argtype) == TREE_LIST)
@@ -1027,7 +1024,6 @@ locate_fn_flags (tree type, tree name, tree argtype, int flags,
   fns = lookup_fnfields (binfo, name, 0);
   rval = build_new_method_call (ob, fns, &args, binfo, flags, &fn, complain);
 
-  release_tree_vector (args);
   if (fn && rval == error_mark_node)
     return rval;
   else
