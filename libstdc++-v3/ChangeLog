@@ -1,5 +1,13 @@
 2019-05-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/90454.cc path construction from void*
+	* include/bits/fs_path.h (path::_Path): Use remove_pointer so that
+	pointers to void are rejected as well as void.
+	* include/experimental/bits/fs_path.h (path::_Path): Likewise.
+	* testsuite/27_io/filesystem/path/construct/80762.cc: Also check
+	pointers to void.
+	* testsuite/experimental/filesystem/path/construct/80762.cc: Likewise.
+
 	* doc/xml/manual/policy_data_structures.xml: Comment out stray
 	<remark> elements. Fix formatting of bibliography references.
 

@@ -128,11 +128,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       : decltype(__is_path_src(std::declval<_Source>(), 0))
       { };
 
-    template<typename _Tp1, typename _Tp2 = void>
+    template<typename _Tp1, typename _Tp2 = void,
+	     typename _Tp1_nocv = typename remove_cv<_Tp1>::type,
+	     typename _Tp1_noptr = typename remove_pointer<_Tp1>::type>
       using _Path = typename
-	std::enable_if<__and_<__not_<is_same<typename remove_cv<_Tp1>::type,
-					     path>>,
-			      __not_<is_void<_Tp1>>,
+	std::enable_if<__and_<__not_<is_same<_Tp1_nocv, path>>,
+			      __not_<is_void<_Tp1_noptr>>,
 			      __constructible_from<_Tp1, _Tp2>>::value,
 		       path>::type;
 
