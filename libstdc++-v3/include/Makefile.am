@@ -563,7 +563,6 @@ ext_headers = \
 	${ext_srcdir}/aligned_buffer.h \
 	${ext_srcdir}/alloc_traits.h \
 	${ext_srcdir}/atomicity.h \
-	${ext_srcdir}/array_allocator.h \
 	${ext_srcdir}/bitmap_allocator.h \
 	${ext_srcdir}/cast.h \
 	${ext_srcdir}/cmath \

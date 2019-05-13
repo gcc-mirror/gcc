@@ -1,3 +1,24 @@
+2019-05-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Remove array_allocator extension, deprecated since 4.9.0
+	* doc/xml/manual/allocator.xml: Remove documentation for
+	array_allocator.
+	* doc/xml/manual/evolution.xml: Document array_allocator removal.
+	* doc/xml/manual/using.xml: Remove header from documentation.
+	* include/Makefile.am: Remove <ext/array_allocator.h> header.
+	* include/Makefile.in: Regenerate.
+	* include/ext/array_allocator.h: Remove.
+	* include/precompiled/extc++.h: Do not include removed header.
+	* testsuite/ext/array_allocator/1.cc: Remove.
+	* testsuite/ext/array_allocator/2.cc: Remove.
+	* testsuite/ext/array_allocator/26875.cc: Remove.
+	* testsuite/ext/array_allocator/3.cc: Remove.
+	* testsuite/ext/array_allocator/check_deallocate_null.cc: Remove.
+	* testsuite/ext/array_allocator/check_delete.cc: Remove.
+	* testsuite/ext/array_allocator/check_new.cc: Remove.
+	* testsuite/ext/array_allocator/variadic_construct.cc: Remove.
+	* testsuite/ext/headers.cc: Do not include removed header.
+
 2019-05-11  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_bvector.h
