@@ -1,3 +1,11 @@
+2019-05-13  Nathan Sidwell  <nathan@acm.org>
+
+	* dwarf2out.c (breakout_comdat_types): Move comment to correct
+	piece of code.
+	(const_ok_for_output_1): Balance parens around #if/#else/#endif
+	(gen_member_die): Move abstract origin check earlier.  Only VARs
+	can be static_inline_p.  Simplify splicing control flow.
+
 2019-05-13  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_get_and_check_slp_defs): Handle
