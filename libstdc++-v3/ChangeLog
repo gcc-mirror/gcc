@@ -1,4 +1,4 @@
-2019-05-11  Jonathan Wakely  <jwakely@redhat.com>
+2019-05-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	Remove Profile Mode, deprecated since 7.1.0
 	* doc/Makefile.am: Remove XML file for profile mode docs.
