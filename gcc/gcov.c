@@ -696,7 +696,7 @@ handle_cycle (const arc_vector_t &edges, int64_t &count)
   for (unsigned i = 0; i < edges.size (); i++)
     edges[i]->cs_count -= cycle_count;
 
-  gcc_assert (cycle_count >= 0);
+  gcc_assert (cycle_count > 0);
 }
 
 /* Unblock a block U from BLOCKED.  Apart from that, iterate all blocks
@@ -722,6 +722,17 @@ unblock (const block_info *u, block_vector_t &blocked,
     unblock (*it, blocked, block_lists);
 }
 
+/* Return true when PATH contains a zero cycle arc count.  */
+
+static bool
+path_contains_zero_cycle_arc (arc_vector_t &path)
+{
+  for (unsigned i = 0; i < path.size (); i++)
+    if (path[i]->cs_count == 0)
+      return true;
+  return false;
+}
+
 /* Find circuit going to block V, PATH is provisional seen cycle.
    BLOCKED is vector of blocked vertices, BLOCK_LISTS contains vertices
    blocked by a block.  COUNT is accumulated count of the current LINE.
@@ -742,7 +753,9 @@ circuit (block_info *v, arc_vector_t &path, block_info *start,
   for (arc_info *arc = v->succ; arc; arc = arc->succ_next)
     {
       block_info *w = arc->dst;
-      if (w < start || !linfo.has_block (w))
+      if (w < start
+	  || arc->cs_count == 0
+	  || !linfo.has_block (w))
 	continue;
 
       path.push_back (arc);
@@ -752,7 +765,8 @@ circuit (block_info *v, arc_vector_t &path, block_info *start,
 	  handle_cycle (path, count);
 	  loop_found = true;
 	}
-      else if (find (blocked.begin (), blocked.end (), w) == blocked.end ())
+      else if (!path_contains_zero_cycle_arc (path)
+	       &&  find (blocked.begin (), blocked.end (), w) == blocked.end ())
 	loop_found |= circuit (w, path, start, blocked, block_lists, linfo,
 			       count);
 
@@ -765,7 +779,9 @@ circuit (block_info *v, arc_vector_t &path, block_info *start,
     for (arc_info *arc = v->succ; arc; arc = arc->succ_next)
       {
 	block_info *w = arc->dst;
-	if (w < start || !linfo.has_block (w))
+	if (w < start
+	    || arc->cs_count == 0
+	    || !linfo.has_block (w))
 	  continue;
 
 	size_t index
