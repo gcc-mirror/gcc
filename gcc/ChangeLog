@@ -1,3 +1,10 @@
+2019-05-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90316
+	* tree-ssa-pre.c (insert_aux): Fold into ...
+	(insert): ... this function.  Use a RPO walk to reduce the
+	number of required iterations.
+
 2019-05-13  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/90416
