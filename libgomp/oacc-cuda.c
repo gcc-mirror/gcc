@@ -30,6 +30,7 @@
 #include "config.h"
 #include "libgomp.h"
 #include "oacc-int.h"
+#include <assert.h>
 
 void *
 acc_get_current_cuda_device (void)
@@ -62,7 +63,11 @@ acc_get_cuda_stream (int async)
     return NULL;
 
   if (thr && thr->dev && thr->dev->openacc.cuda.get_stream_func)
-    return thr->dev->openacc.cuda.get_stream_func (async);
+    {
+      goacc_aq aq = lookup_goacc_asyncqueue (thr, false, async);
+      if (aq)
+	return thr->dev->openacc.cuda.get_stream_func (aq);
+    }
  
   return NULL;
 }
@@ -79,8 +84,23 @@ acc_set_cuda_stream (int async, void *stream)
 
   thr = goacc_thread ();
 
+  int ret = -1;
   if (thr && thr->dev && thr->dev->openacc.cuda.set_stream_func)
-    return thr->dev->openacc.cuda.set_stream_func (async, stream);
+    {
+      goacc_aq aq = get_goacc_asyncqueue (async);
+      /* Due to not using an asyncqueue for "acc_async_sync", this cannot be
+	 used to change the CUDA stream associated with "acc_async_sync".  */
+      if (!aq)
+	{
+	  assert (async == acc_async_sync);
+	  gomp_debug (0, "Refusing request to set CUDA stream associated"
+		      " with \"acc_async_sync\"\n");
+	  return 0;
+	}
+      gomp_mutex_lock (&thr->dev->openacc.async.lock);
+      ret = thr->dev->openacc.cuda.set_stream_func (aq, stream);
+      gomp_mutex_unlock (&thr->dev->openacc.async.lock);
+    }
 
-  return -1;
+  return ret;
 }
