@@ -1,5 +1,11 @@
 2019-05-13  Martin Liska  <mliska@suse.cz>
 
+	PR tree-optimization/90416
+	* tree-vect-stmts.c (vect_check_load_store_mask): Concatenate
+	string instead of passing the second part as va_arg argument.
+
+2019-05-13  Martin Liska  <mliska@suse.cz>
+
 	PR gcov-profile/90380
 	* gcov.c (handle_cycle): Do not support zero cycle count,
 	it should not be possible.
