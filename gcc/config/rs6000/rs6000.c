@@ -28423,7 +28423,7 @@ rs6000_emit_epilogue (int sibcall)
     restore_saved_lr (0, exit_func);
 
   /* Load exception handler data registers, if needed.  */
-  if (crtl->calls_eh_return)
+  if (!sibcall && crtl->calls_eh_return)
     {
       unsigned int i, regno;
 
@@ -28614,7 +28614,7 @@ rs6000_emit_epilogue (int sibcall)
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
-  if (crtl->calls_eh_return)
+  if (!sibcall && crtl->calls_eh_return)
     {
       rtx sa = EH_RETURN_STACKADJ_RTX;
       emit_insn (gen_add3_insn (sp_reg_rtx, sp_reg_rtx, sa));

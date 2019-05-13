@@ -1,3 +1,10 @@
+2019-05-13  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/90418
+	* config/rs6000/rs6000.c (rs6000_emit_epilogue): Don't load EH
+	data registers in sibcall epilogues.
+	Don't add EH_RETURN_STACKADJ_RTX to sp in sibcall epilogues.
+
 2019-05-13  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/89221
