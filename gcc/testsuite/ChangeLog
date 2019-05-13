@@ -1,3 +1,10 @@
+2019-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.dg/cpp0x/Wattributes1.C: Adjust dg-error line number to fix
+	regression, by matching a note on any line.
+	* g++.dg/cpp0x/Wattributes2.C: Add another copy that checks the
+	correct line number is matched without depending on a library header.
+
 2019-05-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90402
