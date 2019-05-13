@@ -1,5 +1,116 @@
 2019-05-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	Remove Profile Mode, deprecated since 7.1.0
+	* doc/Makefile.am: Remove XML file for profile mode docs.
+	* doc/Makefile.in: Regenerate.
+	* doc/xml/authors.xml: Remove authors of profile mode docs.
+	* doc/xml/manual/appendix_contributing.xml: Remove mention of profile
+	mode.
+	* doc/xml/manual/debug.xml: Likewise.
+	* doc/xml/manual/evolution.xml: Document removal of profile mode.
+	* doc/xml/manual/profile_mode.xml: Remove profile mode docs.
+	* doc/xml/manual/spine.xml: Remove profile mode author credit.
+	* doc/xml/manual/test.xml: Remove docs for dg-require-profile-mode
+	directive.
+	* doc/xml/manual/using.xml: Remove docs for profile mode headers and
+	macro.
+	* doc/html/*: Regenerate.
+	* include/Makefile.am: Remove profile mode headers.
+	* include/Makefile.in: Regenerate.
+	* include/bits/c++config (std::__profile): Remove namespace.
+	[_GLIBCXX_PROFILE]: Remove checks for macro.
+	* include/profile/array: Remove.
+	* include/profile/base.h: Remove.
+	* include/profile/bitset: Remove.
+	* include/profile/deque: Remove.
+	* include/profile/forward_list: Remove.
+	* include/profile/impl/profiler.h: Remove.
+	* include/profile/impl/profiler_algos.h: Remove.
+	* include/profile/impl/profiler_container_size.h: Remove.
+	* include/profile/impl/profiler_hash_func.h: Remove.
+	* include/profile/impl/profiler_hashtable_size.h: Remove.
+	* include/profile/impl/profiler_list_to_slist.h: Remove.
+	* include/profile/impl/profiler_list_to_vector.h: Remove.
+	* include/profile/impl/profiler_map_to_unordered_map.h: Remove.
+	* include/profile/impl/profiler_node.h: Remove.
+	* include/profile/impl/profiler_state.h: Remove.
+	* include/profile/impl/profiler_trace.h: Remove.
+	* include/profile/impl/profiler_vector_size.h: Remove.
+	* include/profile/impl/profiler_vector_to_list.h: Remove.
+	* include/profile/iterator_tracker.h: Remove.
+	* include/profile/list: Remove.
+	* include/profile/map: Remove.
+	* include/profile/map.h: Remove.
+	* include/profile/multimap.h: Remove.
+	* include/profile/multiset.h: Remove.
+	* include/profile/ordered_base.h: Remove.
+	* include/profile/set: Remove.
+	* include/profile/set.h: Remove.
+	* include/profile/unordered_base.h: Remove.
+	* include/profile/unordered_map: Remove.
+	* include/profile/unordered_set: Remove.
+	* include/profile/vector: Remove.
+	* scripts/run_doxygen: Do not process profile mode headers.
+	* testsuite/23_containers/array/element_access/60497.cc: Don't use
+	profile mode type.
+	* testsuite/23_containers/array/specialized_algorithms/swap_cxx17.cc:
+	Remove dg-skip-if for profile mode.
+	* testsuite/23_containers/forward_list/capacity/1.cc: Remove
+	preprocessor check for profile mode.
+	* testsuite/23_containers/list/capacity/29134.cc: Likewise.
+	* testsuite/23_containers/map/modifiers/extract.cc: Remove dg-skip-if
+	for profile mode.
+	* testsuite/23_containers/map/modifiers/insert_or_assign/1.cc:
+	Likewise.
+	* testsuite/23_containers/map/modifiers/try_emplace/1.cc: Likewise.
+	* testsuite/23_containers/multimap/modifiers/extract.cc: Likewise.
+	* testsuite/23_containers/multiset/modifiers/extract.cc: Likewise.
+	* testsuite/23_containers/set/modifiers/extract.cc: Likewise.
+	* testsuite/23_containers/unordered_map/modifiers/extract.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/modifiers/extract.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/modifiers/extract.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/modifiers/extract.cc:
+	Likewise.
+	* testsuite/23_containers/vector/bool/capacity/29134.cc: Remove
+	preprocessor check for profile mode.
+	* testsuite/23_containers/vector/bool/modifiers/insert/31370.cc:
+	Likewise.
+	* testsuite/23_containers/vector/modifiers/insert_vs_emplace.cc:
+	Remove dg-skip-if for profile mode.
+	* testsuite/25_algorithms/binary_search/partitioned.cc: Likewise.
+	* testsuite/25_algorithms/equal_range/partitioned.cc: Likewise.
+	* testsuite/25_algorithms/lexicographical_compare/71545.cc: Likewise.
+	* testsuite/25_algorithms/lower_bound/partitioned.cc: Likewise.
+	* testsuite/25_algorithms/upper_bound/partitioned.cc: Likewise.
+	* testsuite/Makefile.am: Remove profile_flags variable and
+	* testsuite/Makefile.am: Remove profile_flags variable and
+	check-profile target.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/ext/profile/all.cc: Remove.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Remove.
+	* testsuite/ext/profile/profiler_algos.cc: Remove.
+	* testsuite/ext/profile/replace_new.cc: Remove.
+	* testsuite/ext/throw_allocator/deallocate_global.cc: Remove
+	preprocessor check for profile mode.
+	* testsuite/ext/throw_allocator/deallocate_local.cc: Likewise.
+	* testsuite/lib/libstdc++.exp (check_v3_target_profile_mode): Remove.
+	(check_v3_target_normal_mode): Do not check for profile mode macro.
+	* testsuite/libstdc++-prettyprinters/80276.cc: Remove dg-skip-if for
+	profile mode.
+	* testsuite/libstdc++-prettyprinters/compat.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/debug.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/debug_cxx11.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/libfundts.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/whatis.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/whatis2.cc: Likewise.
+
 	Remove array_allocator extension, deprecated since 4.9.0
 	* doc/xml/manual/allocator.xml: Remove documentation for
 	array_allocator.

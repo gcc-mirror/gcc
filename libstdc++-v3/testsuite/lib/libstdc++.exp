@@ -966,30 +966,6 @@ proc check_v3_target_debug_mode { } {
     }]
 }
 
-proc check_v3_target_profile_mode { } {
-    return [check_v3_target_prop_cached et_profile_mode {
-	global tool
-	# Set up and preprocess a C++ test program that depends
-	# on profile mode activated.
-	set src profile_mode[pid].cc
-
-	set f [open $src "w"]
-	puts $f "#ifndef _GLIBCXX_PROFILE"
-	puts $f "#  error No profile mode"
-	puts $f "#endif"
-	close $f
-
-	set lines [v3_target_compile $src /dev/null preprocess ""]
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, preprocessing succeeded.
-	    return 1
-	}
-	return 0
-    }]
-}
-
 proc check_v3_target_normal_mode { } {
     return [check_v3_target_prop_cached et_normal_mode {
 	global tool
@@ -999,9 +975,7 @@ proc check_v3_target_normal_mode { } {
 
 	set f [open $src "w"]
 	puts $f "#include <bits/c++config.h>"
-	puts $f "#if defined(_GLIBCXX_DEBUG) || \\"
-	puts $f "    defined(_GLIBCXX_PROFILE) || \\"
-	puts $f "    defined(_GLIBCXX_PARALLEL)"
+	puts $f "#if defined(_GLIBCXX_DEBUG) || defined(_GLIBCXX_PARALLEL)"
 	puts $f "#  error No normal mode"
 	puts $f "#endif"
 	close $f

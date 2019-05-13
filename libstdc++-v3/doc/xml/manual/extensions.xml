@@ -107,12 +107,6 @@ extensions, be aware of two things:
 	    href="parallel_mode.xml">
 </xi:include>
 
-<!-- Chapter 04 : Profile Mode -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml"
-	    href="profile_mode.xml">
-</xi:include>
-
-
 <!-- XXX -->
 <!-- Allocators -->
 <!-- Chapter 05 : __mt_alloc -->

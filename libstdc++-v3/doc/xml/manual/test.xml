@@ -857,14 +857,8 @@ with specific options, and additional options for 32-bit x86:
 	(as determined by the <literal>_GLIBCXX_PARALLEL</literal> macro).
       </para></listitem>
     </varlistentry>
-    <varlistentry><term><literal>dg-require-profile-mode ""</literal></term>
-      <listitem><para>Skip the test if the Profile Mode is not active
-	(as determined by the <literal>_GLIBCXX_PROFILE</literal> macro).
-      </para></listitem>
-    </varlistentry>
     <varlistentry><term><literal>dg-require-normal-mode ""</literal></term>
-      <listitem><para>Skip the test if any of Debug, Parallel or Profile
-	Mode is active.
+      <listitem><para>Skip the test if Debug or Parallel Mode is active.
       </para></listitem>
     </varlistentry>
     <varlistentry><term><literal>dg-require-atomic-builtins ""</literal></term>
