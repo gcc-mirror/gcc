@@ -1,3 +1,17 @@
+2019-05-14  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-05-13  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/90380
+	* gcov.c (enum loop_type): Remove the enum and
+	the operator.
+	(handle_cycle): Assert that we should not reach
+	a negative count.
+	(circuit): Use loop_found instead of a tri-state loop_type.
+	(get_cycles_count): Do not handle NEGATIVE_LOOP as it can't
+	happen.
+
 2019-05-11  Andreas Tobler <andreast@gcc.gnu.org>
 
 	Backport from mainline.
