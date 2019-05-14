@@ -1251,8 +1251,13 @@ first_map_in_common_1 (struct line_maps *set,
 		       location_t *loc1)
 {
   location_t l0 = *loc0, l1 = *loc1;
-  const struct line_map *map0 = linemap_lookup (set, l0),
-    *map1 = linemap_lookup (set, l1);
+  const struct line_map *map0 = linemap_lookup (set, l0);
+  if (IS_ADHOC_LOC (l0))
+    l0 = get_location_from_adhoc_loc (set, l0);
+
+  const struct line_map *map1 = linemap_lookup (set, l1);
+  if (IS_ADHOC_LOC (l1))
+    l1 = get_location_from_adhoc_loc (set, l1);
 
   while (linemap_macro_expansion_map_p (map0)
 	 && linemap_macro_expansion_map_p (map1)
