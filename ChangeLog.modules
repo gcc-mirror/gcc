@@ -1,3 +1,30 @@
+2019-05-14  Nathan Sidwell  <nathan@acm.org>
+
+	Cleanup merging, friend streaming.
+	gcc/cp/
+	* module.cc (trees_{in,out}::tree_mergeable): Reimplement.
+	(trees_out::tree_value): Significant adjustment.
+	(trees_in::tree_node): Likewise.
+	(trees_{in,out}::tree_node_specific): Move into ...
+	(trees_{in,out}::tree_node_bools): ... here.
+	(trees_out::mark_mergeable): Delete.
+	(trees_{in,out}::insert): Adjust.
+	(trees_{in,out}::lang_vals): New, broken out of ...
+	(trees_node_vals): ... here.  Call them.
+	(trees_out::ref_node): Process mergeable cases.
+	(trees_{in,out}::tpl_parms): Adjust.
+	(trees_{in,out}::{read,write}_class_def): Stream and connect
+	friend lists.
+	(binding_cmp): Order hidden decls.
+	(module_state::write_cluster): Adjust mergeable streaming.
+	(module_State::read_cluster): Hide hidden overloads.
+	* name-lookup.c (extract_module_binding): Don't skip hidden.
+	gcc/testsuite/
+	* g++.dg/modules/builtin-1_a.C: Adjust scans.
+	* g++.dg/modules/class-3_b.C: Likewise.
+	* g++.dg/modules/indirect-[24]_[bc].C: Likewise.
+	* g++.dg/modules/inst-[123]_[bcd].C: Likewise.
+
 2019-05-10  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

@@ -10471,6 +10471,7 @@ tsubst_friend_function (tree decl, tree args)
       else
 	new_friend_result_template_info = NULL_TREE;
 
+      // FIXME: module comes from module of the general template?
       set_module_owner (new_friend);
 
       /* Inside pushdecl_namespace_level, we will push into the

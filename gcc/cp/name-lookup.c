@@ -3976,7 +3976,7 @@ extract_module_binding (tree &binding, tree ns, bitmap partitions)
   /* This TU's bindings.  */
   tree type = MAYBE_STAT_TYPE (*slot);
   slot = &MAYBE_STAT_DECL (*slot);
-  tree value = ovl_skip_hidden (*slot);
+  tree value = *slot;
 
   /* Keep implicit typedef in type slot.  */
   if (value && DECL_IMPLICIT_TYPEDEF_P (value))
