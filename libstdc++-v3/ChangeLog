@@ -1,3 +1,8 @@
+2019-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_allocator.h (NullablePointer::operator bool):
+	Fix return value.
+
 2019-05-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/os/solaris/solaris2.10: Move to ...

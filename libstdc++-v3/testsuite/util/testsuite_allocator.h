@@ -600,7 +600,7 @@ namespace __gnu_test
       NullablePointer() = default;
       NullablePointer(std::nullptr_t) noexcept : value() { }
 
-      explicit operator bool() const noexcept { return value == nullptr; }
+      explicit operator bool() const noexcept { return value != nullptr; }
 
       friend inline bool
       operator==(NullablePointer lhs, NullablePointer rhs) noexcept
