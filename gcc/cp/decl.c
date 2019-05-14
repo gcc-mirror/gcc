@@ -10424,8 +10424,8 @@ grokdeclarator (const cp_declarator *declarator,
 
   location_t typespec_loc = smallest_type_quals_location (type_quals,
 						      declspecs->locations);
-  if (typespec_loc == UNKNOWN_LOCATION)
-    typespec_loc = declspecs->locations[ds_type_spec];
+  typespec_loc = min_location (typespec_loc,
+			       declspecs->locations[ds_type_spec]);
   if (typespec_loc == UNKNOWN_LOCATION)
     typespec_loc = input_location;
 
