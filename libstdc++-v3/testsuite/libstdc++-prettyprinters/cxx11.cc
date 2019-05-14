@@ -24,6 +24,7 @@
 #include <string>
 #include <memory>
 #include <iostream>
+#include "../util/testsuite_allocator.h" // NullablePointer
 
 typedef std::tuple<int, int> ExTuple;
 
@@ -58,21 +59,6 @@ struct datum
 };
 
 std::unique_ptr<datum> global;
-
-struct Deleter
-{
-  // Deleter is not an empty class:
-  int deleter_member = -1;
-  // But pointer is an empty class:
-  struct pointer
-  {
-    pointer(const void* = nullptr) { }
-    explicit operator bool() const noexcept { return false; }
-    friend bool operator==(pointer, pointer) noexcept { return true; }
-    friend bool operator!=(pointer, pointer) noexcept { return false; }
-  };
-  void operator()(pointer) const noexcept { }
-};
 
 int
 main()
@@ -150,6 +136,15 @@ main()
 // { dg-final { regexp-test arrptr {std::unique_ptr.datum \[\]. = {get\(\) = 0x.*}} } }
   std::unique_ptr<data>& rarrptr = arrptr;
 // { dg-final { regexp-test rarrptr {std::unique_ptr.datum \[\]. = {get\(\) = 0x.*}} } }
+
+  struct Deleter
+  {
+    int deleter_member = -1;
+    using pointer = __gnu_test::NullablePointer<void>;
+    void operator()(pointer) const noexcept { }
+  };
+  static_assert( !std::is_empty<Deleter>(), "Deleter is not empty" );
+  static_assert( std::is_empty<Deleter::pointer>(), "but pointer is empty" );
 
   std::unique_ptr<int, Deleter> empty_ptr;
 // { dg-final { note-test empty_ptr {std::unique_ptr<int> = {get() = {<No data fields>}}} } }
