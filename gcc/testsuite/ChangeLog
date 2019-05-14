@@ -3,6 +3,16 @@
 	Backport from mainline.
 	2019-05-02  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc.dg/tree-prof/section-attr-1.c: Update scan-asm regex
+	for cold section label.
+	* gcc.dg/tree-prof/section-attr-2.c: Likewise.
+	* gcc.dg/tree-prof/section-attr-3.c: Likewise.
+
+2019-05-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-05-02  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* g++.dg/ext/instantiate2.C: Remove special-casing for Darwin.
 
 2019-05-11  Paul Thomas  <pault@gcc.gnu.org>
