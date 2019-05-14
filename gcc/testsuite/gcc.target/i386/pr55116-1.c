@@ -1,4 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
+/* { dg-require-effective-target maybe_x32 } */
 /* { dg-options "-O2 -mx32 -maddress-mode=long" } */
 
 int glob_int_arr[100];
