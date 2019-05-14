@@ -1,3 +1,14 @@
+2019-05-14  Nina Dinka Ranns  <dinka.ranns@gmail.com>
+
+	Inconsistency wrt Allocators in basic_string assignment (LWG2579)
+	* include/bits/basic_string.h: (operator=(const basic_string&):
+	Move allocator decision to assign.
+	(assign(const basic_string&)): Move allocator decision here.
+	* testsuite/21_strings/basic_string/allocator/char/copy_assign.cc:
+	Add tests.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/copy_assign.cc:
+	Add tests.
+
 2019-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/util/testsuite_allocator.h (memory_resource)
