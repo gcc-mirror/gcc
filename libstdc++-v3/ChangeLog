@@ -1,5 +1,19 @@
 2019-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/type_traits (__is_nt_convertible_helper): Define it
+	unconditionally, not only for C++20.
+	(__is_nothrow_convertible): Define internal trait for use in C++11.
+	(__is_nt_invocable_impl: Fix by using __is_nothrow_convertible.
+	(is_invocable_r_v, is_nothrow_invocable_r_v): Add missing parameter.
+	* testsuite/20_util/is_nothrow_convertible/value_ext.cc: New test.
+	* testsuite/20_util/is_nothrow_convertible/value.cc: Check with type
+	that has nothrow explicit conversion but potentially-throwing implicit
+	conversion.
+	* testsuite/20_util/is_nothrow_invocable/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_invocable/value_ext.cc: Fix helper
+	function to only consider implicit conversions.
+	* testsuite/20_util/tuple/cons/noexcept_specs.cc: Add comment.
+
 	* include/std/iterator: Include <iosfwd> instead of <istream> and
 	<ostream>.
 
