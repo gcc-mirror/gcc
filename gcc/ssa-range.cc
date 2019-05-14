@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop.h"
 #include "alloc-pool.h"
 #include "vr-values.h"
+#include "dbgcnt.h"
 
 // #define RANGER_SWITCH_NONE
 // #define RANGER_SWITCH_CALC
@@ -958,6 +959,9 @@ global_ranger::export_global_ranges ()
 	    continue;
 	  if (r.undefined_p ())
 	    continue;
+
+	  if (!dbg_cnt (ranger_export_count))
+	    return;
 
 	  set_range_info (name, irange_to_value_range (r));
 	}

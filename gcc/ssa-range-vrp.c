@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "range.h"
 #include "vr-values.h"
 #include "tree-ssa-propagate.h"
+#include "dbgcnt.h"
 
 class irange_misc : public range_misc
 {
@@ -402,6 +403,9 @@ rvrp_engine::fold_and_simplify (gimple_stmt_iterator &gsi)
   // ?? This is only needed for propagate_mark_stmt_for_cleanup.
   // Can we get away with a shallow copy?
   gimple *old_stmt = gimple_copy (stmt);
+
+  if (!dbg_cnt (rvrp_fold_count))
+    return;
 
   if (m_ranger->range_of_stmt (r, stmt))
     changed = rvrp_fold (*m_ranger, stmt, m_touched);
