@@ -1,3 +1,10 @@
+2019-05-14  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com\>
+
+	* internal-fn.def (SIGNBIT): New.
+	* config/aarch64/aarch64-simd.md (signbitv2sf2): New expand
+	defined.
+	(signbitv4sf2): Likewise.
+
 2019-05-14  Chenghua Xu  <paul.hua.gm@gmail.com>
 
 	PR target/90357
