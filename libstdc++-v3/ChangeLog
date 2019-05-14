@@ -1,5 +1,19 @@
 2019-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/std_function.h (_Simple_type_wrapper): Remove.
+	(_Function_handler): Remove partial specializations for void return
+	types and pointers to member.
+	(_Function_handler::_M_manager): Adapt to removal of
+	_Simple_type_wrapper.
+	(_Function_handler::_M_invoke): Use __invoke_r instead of __invoke.
+	* include/std/functional (_Bind_result::__enable_if_void)
+	(_Bind_result::__disable_if_void): Remove sfinae helpers.
+	(_Bind_result::__call): Use __invoke_r and remove overloads for void
+	return types.
+	* include/std/future (__future_base::_Task_state::_M_run)
+	(__future_base::_Task_state::_M_run_delayed): Use __invoke_r and
+	change return type of lambda expressions.
+
 	* include/bits/invoke.h (__invoke_r): Define new function implementing
 	the INVOKE<R> pseudo-function.
 	* testsuite/20_util/function_objects/invoke/1.cc: Add more tests.
