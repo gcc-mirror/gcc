@@ -2792,8 +2792,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
              __call_is_nothrow_<_Fn, _Args...>>::type
     { };
 
-  struct __nonesuch {
-    __nonesuch() = delete;
+  struct __nonesuchbase {};
+  struct __nonesuch : private __nonesuchbase {
     ~__nonesuch() = delete;
     __nonesuch(__nonesuch const&) = delete;
     void operator=(__nonesuch const&) = delete;
