@@ -1,12 +1,34 @@
+2019-05-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (any_div): New code iterator.
+	(paired_mod): New code attribute.
+	(sgnprefix): Handle DIV and UDIV RTXes.
+	(u): Ditto.
+	(<u>divmod<mode>4): Macroize expander from divmod<mode>4
+	and udivmod<mode>4 patterns using any_div code iterator.
+	(divmod splitters): Macroize splitters using any_div code iterator.
+	(*udivmodsi4_pow2_zext_1): Use exactl_log2 in insn condition.
+	(*udivmodsi4_pow2_zext_2): Ditto.
+	(*<u>divmod<mode>4_noext): Macroize insn from *divmod<mode>4_noext
+	and *udivmod<mode>4_noext patterns using any_div code iterator.
+	(*<u>divmod<mode>4_noext_zext_1): Macroize insn from
+	*divmod<mode>4_noext_zext_1 and *udivmod<mode>4_noext_zext_1
+	patterns using any_div code iterator.
+	(*<u>divmod<mode>4_noext_zext_2): Macroize insn from
+	*divmod<mode>4_noext_zext_2 and *udivmod<mode>4_noext_zext_2
+	patterns using any_div code iterator.
+	(<u>divmodhiqi3): Macroize insn from divmodhiqi3 and
+	udivmodhiqi3 patterns using any_extend code iterator.
+
 2019-05-14  Richard Biener  <rguenther@suse.de>
-	H.J. Lu  <hongjiu.lu@intel.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR tree-optimization/88828
 	* tree-ssa-forwprop.c (simplify_vector_constructor): Handle
 	permuting in a single non-constant element not extracted
 	from a vector.
 
-2019-05-14  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com\>
+2019-05-14  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
 
 	* internal-fn.def (SIGNBIT): New.
 	* config/aarch64/aarch64-simd.md (signbitv2sf2): New expand
