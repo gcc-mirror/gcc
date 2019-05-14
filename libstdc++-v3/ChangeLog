@@ -1,5 +1,12 @@
 2019-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* python/libstdcxx/v6/printers.py (UniquePointerPrinter.__init__): Do
+	not assume field called _M_head_impl is the first tuple element.
+	* testsuite/libstdc++-prettyprinters/compat.cc: Make tuple
+	implementation more accurate.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Check unique_ptr with
+	empty pointer type and non-empty deleter.
+
 	LWG 2899 - Make is_move_constructible correct for unique_ptr
 	* include/bits/unique_ptr.h (__uniq_ptr_impl): Add move constructor,
 	move assignment operator.
