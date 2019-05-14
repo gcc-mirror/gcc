@@ -1707,7 +1707,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       size_type
       max_size() const noexcept
-      { return _Base_type::max_size(); }
+      { return _Base_type::max_size() - 3; }
 
       /**
        * @brief Indicates if the %match_results contains no results.
@@ -1953,9 +1953,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 				    const basic_regex<_Cp, _Rp>&,
 				    regex_constants::match_flag_type);
 
+      // Reset contents to __size unmatched sub_match objects
+      // (plus additional objects for prefix, suffix and unmatched sub).
       void
       _M_resize(unsigned int __size)
-      { _Base_type::resize(__size + 3); }
+      { _Base_type::assign(__size + 3, sub_match<_Bi_iter>{}); }
+
+      // Set state to a failed match for the given past-the-end iterator.
+      void
+      _M_establish_failed_match(_Bi_iter __end)
+      {
+	sub_match<_Bi_iter> __sm;
+	__sm.first = __sm.second = __end;
+	_Base_type::assign(3, __sm);
+      }
 
       const_reference
       _M_unmatched_sub() const

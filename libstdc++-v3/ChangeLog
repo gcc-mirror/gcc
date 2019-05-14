@@ -1,5 +1,14 @@
 2019-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/regex.h (match_results::max_size()): Adjust return
+	value to account for prefix/suffix/unmatched subs.
+	(match_results::_M_resize(unsigned int)): Use _Base_type::assign to
+	reset the contained sub matches.
+	(match_results::_M_establish_failed_match(_Bi_iter)): Add new member
+	function to set result state following a failed match.
+	* include/bits/regex.tcc (__regex_algo_impl): Remove loop to set
+	sub_match states after _M_resize. Use _M_establish_failed_match.
+
 	PR libstdc++/69724
 	* include/std/thread (thread::_State_impl, thread::_S_make_state):
 	Replace single _Callable parameter with variadic _Args pack, to
