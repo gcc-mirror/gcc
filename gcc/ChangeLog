@@ -1,3 +1,11 @@
+2019-05-14  Richard Biener  <rguenther@suse.de>
+	H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR tree-optimization/88828
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Handle
+	permuting in a single non-constant element not extracted
+	from a vector.
+
 2019-05-14  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com\>
 
 	* internal-fn.def (SIGNBIT): New.

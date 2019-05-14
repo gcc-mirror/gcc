@@ -1,3 +1,25 @@
+2019-05-14  Richard Biener  <rguenther@suse.de>
+	H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR tree-optimization/88828
+	* gcc.target/i386/pr88828-1.c: New test.
+	* gcc.target/i386/pr88828-1a.c: Likewise.
+	* gcc.target/i386/pr88828-1b.c: Likewise.
+	* gcc.target/i386/pr88828-1c.c: Likewise.
+	* gcc.target/i386/pr88828-4a.c: Likewise.
+	* gcc.target/i386/pr88828-4b.c: Likewise.
+	* gcc.target/i386/pr88828-5a.c: Likewise.
+	* gcc.target/i386/pr88828-5b.c: Likewise.
+	* gcc.target/i386/pr88828-7.c: Likewise.
+	* gcc.target/i386/pr88828-7a.c: Likewise.
+	* gcc.target/i386/pr88828-7b.c: Likewise.
+	* gcc.target/i386/pr88828-8.c: Likewise.
+	* gcc.target/i386/pr88828-8a.c: Likewise.
+	* gcc.target/i386/pr88828-8b.c: Likewise.
+	* gcc.target/i386/pr88828-9.c: Likewise.
+	* gcc.target/i386/pr88828-9a.c: Likewise.
+	* gcc.target/i386/pr88828-9b.c: Likewise.
+
 2019-05-14  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com\>
 
 	* gcc.target/aarch64/signbitv4sf.c: New test.
