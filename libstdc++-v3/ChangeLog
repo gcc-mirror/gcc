@@ -1,5 +1,8 @@
 2019-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/util/testsuite_allocator.h (memory_resource)
+	(default_resource_mgr): Fix indentation.
+
 	* testsuite/20_util/allocator_traits/members/allocate_hint_nonpod.cc:
 	Use operator-> to access raw pointer member.
 	* testsuite/23_containers/vector/59829.cc: Likewise.
