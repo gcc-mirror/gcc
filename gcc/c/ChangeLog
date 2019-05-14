@@ -1,3 +1,12 @@
+2019-05-14  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_statement): Remove
+	questionable auto-promotion to VIEW_CONVERT_EXPR.
+	(c_parser_gimple_typespec): Split out from __MEM parsing.
+	(c_parser_gimple_postfix_expression): Handle __VIEW_CONVERT.
+	* tree-pretty-print.c (dump_generic_node): Dump VIEW_CONVERT_EXPR
+	as __VIEW_CONVERT with -gimple.
+
 2019-05-09  Martin Liska  <mliska@suse.cz>
 
 	* gimple-parser.c (c_parser_gimple_statement): Support __MIN and
