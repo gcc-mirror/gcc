@@ -1,3 +1,9 @@
+2019-05-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR preprocessor/90382
+	* decl.c (grokdeclarator): Fix value assigned to typespec_loc, use
+	min_location.
+
 2019-05-13  Jason Merrill  <jason@redhat.com>
 
 	Use releasing_vec more broadly.

@@ -1,3 +1,8 @@
+2019-05-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR preprocessor/90382
+	* g++.dg/diagnostic/trailing1.C: New test.
+
 2019-05-14  marxin  <mliska@suse.cz>
 
 	PR middle-end/90340
