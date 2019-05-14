@@ -22,11 +22,29 @@
 
 namespace std
 {
-  template<typename T, typename U>
-    struct tuple
+  template<typename T>
+    struct _Head_base : T
+    { };
+
+  template<typename T>
+    struct _Head_base<T*>
     {
-      T _M_head_impl;
+      T* _M_head_impl;
     };
+
+  template<unsigned long, typename ...> struct _Tuple_impl;
+
+  template<typename T, typename U>
+    struct _Tuple_impl<0, T, U> : _Tuple_impl<1, U>, _Head_base<T>
+    { };
+
+  template<typename U>
+    struct _Tuple_impl<1, U> : _Head_base<U>
+    { };
+
+  template<typename T, typename U>
+    struct tuple : _Tuple_impl<0, T, U>
+    { };
 
   template<typename T> struct default_delete { };
 
