@@ -1,3 +1,28 @@
+2019-05-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc: Move *-*-solaris2.10* from obsolete configurations
+	to unsupported ones.
+	Simplify x86_64-*-solaris2.1[0-9]* to x86_64-*-solaris2*.
+	* config.host: Likewise.
+	* config/i386/sol2.h (ASM_COMMENT_START): Remove.
+	* config/sparc/driver-sparc.c (host_detect_local_cpu) [__sun__ &&
+	__svr4__]: Remove "brand" fallback.
+	[!KSTAT_DATA_STRING]: Remove.
+	* configure.ac (gcc_cv_ld_hidden): Simplify *-*-solaris2.1[0-9]*
+	to *-*-solaris2*.
+	(comdat_group): Likewise.
+	(set_have_as_tls): Likewise.
+	(gcc_cv_target_dl_iterate_phdr): Likewise.
+	(gcc_cv_as_shf_merge): Remove Solaris 10/x86 workaround.
+	(gcc_cv_ld_aligned_shf_merge): Remove Solaris 10/SPARC workaround.
+	* configure: Regenerate.
+	* doc/install.texi: Simplify Solaris target triplets.
+	(Specific, i?86-*-solaris2*): Remove Solaris 10 references.
+	(Specific, *-*-solaris2*): Document Solaris 10 removal.
+	Remove Solaris 10 references.
+	Remove obsolete Solaris bug reference.
+	(Specific, sparc-sun-solaris2.10): Remove.
+
 2019-05-14  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (any_div): New code iterator.

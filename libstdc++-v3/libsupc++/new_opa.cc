@@ -68,12 +68,6 @@ aligned_alloc (std::size_t al, std::size_t sz)
 static inline void*
 aligned_alloc (std::size_t al, std::size_t sz)
 {
-#ifdef __sun
-  // Solaris 10 memalign requires that alignment is greater than or equal to
-  // the size of a word.
-  if (al < sizeof(int))
-    al = sizeof(int);
-#endif
   return memalign (al, sz);
 }
 #else // !HAVE__ALIGNED_MALLOC && !HAVE_POSIX_MEMALIGN && !HAVE_MEMALIGN

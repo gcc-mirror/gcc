@@ -1,3 +1,13 @@
+2019-05-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host: Simplify various *-*-solaris2.1[0-9]* to
+	*-*-solaris2*.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+
+	* config/i386/sol2-unwind.h (x86_fallback_frame_state): Remove
+	Solaris 10 and Solaris 11 < snv_125 handling.
+
 2019-05-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/rs6000/darwin-vecsave.S: Set .machine appropriately.
