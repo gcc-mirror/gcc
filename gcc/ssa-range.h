@@ -179,10 +179,11 @@ private:
   typedef global_ranger super;  // Inherited from class for easy changing.
   static const unsigned bump = 2;
   unsigned indent;
-  unsigned counter;
+  unsigned trace_count;		// Current trace index count.
 
-  bool dumping ();
-  bool trailer (const char *caller, bool result, tree name, const irange &r);
+  bool dumping (unsigned counter, bool trailing = false);
+  bool trailer (unsigned counter, const char *caller, bool result, tree name,
+		const irange &r);
 };
 
   

@@ -562,8 +562,13 @@ op_wi (enum tree_code code, irange &r, tree rh_type,
 				    must_be_nonzero_rh,
 				    may_be_nonzero_rh))
 	  {
-	    accumulate_range (r, new_lb, new_ub);
-	    irange_adjust_bit_and_mask (r, s, lh_lb, lh_ub, rh_lb, rh_ub);
+	    // For AND, calculate each subrange separately, and then union
+	    // the results.
+	    irange tmp;
+	    tmp.set_undefined (r.type ());
+	    accumulate_range (tmp, new_lb, new_ub);
+	    irange_adjust_bit_and_mask (tmp, s, lh_lb, lh_ub, rh_lb, rh_ub);
+	    r.union_ (tmp);
 	    return true;
 	  }
 	r.set_varying (type);

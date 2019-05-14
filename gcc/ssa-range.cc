@@ -800,8 +800,7 @@ global_ranger::~global_ranger ()
 {
 }
 
-// Return the range of NAME on entry to block BB in R.  Return false if there
-// is no range other than varying.
+// Return the range of NAME on entry to block BB in R.
 
 void
 global_ranger::range_on_entry (irange &r, basic_block bb, tree name)
@@ -946,24 +945,23 @@ global_ranger::export_global_ranges ()
 	  irange old_range = range_from_ssa (name);
 	  gcc_checking_assert (old_range.intersect (r) == r);
 
-	  if (dump_file)
-	    {
-	      print_generic_expr (dump_file, name , TDF_SLIM);
-	      fprintf (dump_file, " --> ");
-	      r.dump (dump_file);
-	      fprintf (dump_file, "\n");
-	    }
-
 	  // WTF? Can't write non-null pointer ranges?? stupid set_range_info!
-	  if (POINTER_TYPE_P (TREE_TYPE (name)))
-	    continue;
-	  if (r.undefined_p ())
-	    continue;
+	  if (!POINTER_TYPE_P (TREE_TYPE (name)) && !r.undefined_p ())
+	    {
+	      if (!dbg_cnt (ranger_export_count))
+		return;
 
-	  if (!dbg_cnt (ranger_export_count))
-	    return;
-
-	  set_range_info (name, irange_to_value_range (r));
+	      value_range_base vr = irange_to_value_range (r);
+	      set_range_info (name, vr);
+	      if (dump_file)
+		{
+		  print_generic_expr (dump_file, name , TDF_SLIM);
+		  fprintf (dump_file, " --> ");
+		  vr.dump (dump_file);
+		  fprintf (dump_file, "         irange : ");
+		  r.dump (dump_file);
+		}
+	    }
 	}
     }
 }
@@ -1155,19 +1153,21 @@ loop_ranger::range_of_phi (irange &r, gphi *phi, tree name,
 trace_ranger::trace_ranger ()
 {
   indent = 0;
-  counter = 0;
+  trace_count = 0;
 }
 
 // If dumping, return true and print the prefix for the next output line.
 
 inline bool
-trace_ranger::dumping ()
+trace_ranger::dumping (unsigned counter, bool trailing)
 {
-  counter++;
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       // Print counter index as well as INDENT spaces.
-      fprintf (dump_file, "  %-7u", counter);
+      if (!trailing)
+	fprintf (dump_file, " %-7u ", counter);
+      else
+	fprintf (dump_file, "         ");
       unsigned x;
       for (x = 0; x< indent; x++)
         fputc (' ', dump_file);
@@ -1180,13 +1180,14 @@ trace_ranger::dumping ()
 // returning RESULT.
 
 bool
-trace_ranger::trailer (const char *caller, bool result, tree name,
-		       const irange &r)
+trace_ranger::trailer (unsigned counter, const char *caller, bool result,
+		       tree name, const irange &r)
 {
   indent -= bump;
-  if (dumping ())
+  if (dumping (counter, true))
     {
       fputs(result ? "TRUE : " : "FALSE : ", dump_file);
+      fprintf (dump_file, "(%u) ", counter);
       fputs (caller, dump_file);
       fputs (" (",dump_file);
       if (name)
@@ -1209,7 +1210,8 @@ bool
 trace_ranger::range_of_expr (irange &r, tree expr, gimple *s)
 {
   bool res;
-  if (dumping ())
+  unsigned idx = ++trace_count;
+  if (dumping (idx))
     {
       fprintf (dump_file, "range_of_expr (");
       print_generic_expr (dump_file, expr, TDF_SLIM);
@@ -1221,9 +1223,9 @@ trace_ranger::range_of_expr (irange &r, tree expr, gimple *s)
       indent += bump;
     }
 
-  res =  super::range_of_expr (r, expr, s);
+  res = super::range_of_expr (r, expr, s);
 
-  return trailer ("range_of_expr", res, expr, r);
+  return trailer (idx, "range_of_expr", res, expr, r);
 }
 
 // Tracing version of edge range_of_expr.  Call it with printing wrappers.
@@ -1232,7 +1234,8 @@ bool
 trace_ranger::range_of_expr (irange &r, tree expr, edge e)
 {
   bool res;
-  if (dumping ())
+  unsigned idx = ++trace_count;
+  if (dumping (idx))
     {
       fprintf (dump_file, "range_of_expr (");
       print_generic_expr (dump_file, expr, TDF_SLIM);
@@ -1242,7 +1245,7 @@ trace_ranger::range_of_expr (irange &r, tree expr, edge e)
 
   res =  super::range_of_expr (r, expr, e);
 
-  return trailer ("range_of_expr", res, expr, r);
+  return trailer (idx, "range_of_expr", res, expr, r);
 }
 
 // Tracing version of range_on_edge.  Call it with printing wrappers.
@@ -1250,7 +1253,8 @@ trace_ranger::range_of_expr (irange &r, tree expr, edge e)
 void
 trace_ranger::range_on_edge (irange &r, edge e, tree name)
 {
-  if (dumping ())
+  unsigned idx = ++trace_count;
+  if (dumping (idx))
     {
       fprintf (dump_file, "range_on_edge (");
       print_generic_expr (dump_file, name, TDF_SLIM);
@@ -1260,7 +1264,7 @@ trace_ranger::range_on_edge (irange &r, edge e, tree name)
 
   super::range_on_edge (r, e, name);
 
-  trailer ("range_on_edge", true, name, r);
+  trailer (idx, "range_on_edge", true, name, r);
 }
 
 // Tracing version of range_on_entry.  Call it with printing wrappers.
@@ -1268,7 +1272,8 @@ trace_ranger::range_on_edge (irange &r, edge e, tree name)
 void
 trace_ranger::range_on_entry (irange &r, basic_block bb, tree name)
 {
-  if (dumping ())
+  unsigned idx = ++trace_count;
+  if (dumping (idx))
     {
       fprintf (dump_file, "range_on_entry (");
       print_generic_expr (dump_file, name, TDF_SLIM);
@@ -1278,7 +1283,7 @@ trace_ranger::range_on_entry (irange &r, basic_block bb, tree name)
 
   super::range_on_entry (r, bb, name);
 
-  trailer ("range_on_entry", true, name, r);
+  trailer (idx, "range_on_entry", true, name, r);
 }
 
 // Tracing version of range_on_exit.  Call it with printing wrappers.
@@ -1286,7 +1291,8 @@ trace_ranger::range_on_entry (irange &r, basic_block bb, tree name)
 void
 trace_ranger::range_on_exit (irange &r, basic_block bb, tree name)
 {
-  if (dumping ())
+  unsigned idx = ++trace_count;
+  if (dumping (idx))
     {
       fprintf (dump_file, "range_on_exit (");
       print_generic_expr (dump_file, name, TDF_SLIM);
@@ -1296,7 +1302,7 @@ trace_ranger::range_on_exit (irange &r, basic_block bb, tree name)
 
   super::range_on_exit (r, bb, name);
 
-  trailer ("range_on_exit", true, name, r);
+  trailer (idx, "range_on_exit", true, name, r);
 }
 
 // Tracing version of range_of_stmt.  Call it with printing wrappers.
@@ -1305,7 +1311,8 @@ bool
 trace_ranger::range_of_stmt (irange &r, gimple *s, tree name)
 {
   bool res;
-  if (dumping ())
+  unsigned idx = ++trace_count;
+  if (dumping (idx))
     {
       fprintf (dump_file, "range_of_stmt (");
       if (name)
@@ -1315,9 +1322,9 @@ trace_ranger::range_of_stmt (irange &r, gimple *s, tree name)
       indent += bump;
     }
 
-  res =  super::range_of_stmt (r, s, name);
+  res = super::range_of_stmt (r, s, name);
 
-  return trailer ("range_of_stmt", res, name, r);
+  return trailer (idx, "range_of_stmt", res, name, r);
 }
 
 // Tracing version of outgoing_edge_range_p.  Call it with printing wrappers.
@@ -1327,7 +1334,8 @@ trace_ranger::outgoing_edge_range_p (irange &r, edge e, tree name,
 				      irange *name_range)
 {
   bool res;
-  if (dumping ())
+  unsigned idx = ++trace_count;
+  if (dumping (idx))
     {
       fprintf (dump_file, "outgoing_edge_range_p (");
       print_generic_expr (dump_file, name, TDF_SLIM);
@@ -1340,7 +1348,7 @@ trace_ranger::outgoing_edge_range_p (irange &r, edge e, tree name,
       indent += bump;
     }
 
-  res =  super::outgoing_edge_range_p (r, e, name, name_range);
+  res = super::outgoing_edge_range_p (r, e, name, name_range);
 
-  return trailer ("outgoing_edge_range_p", res, name, r);
+  return trailer (idx, "outgoing_edge_range_p", res, name, r);
 }
