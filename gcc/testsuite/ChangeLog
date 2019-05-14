@@ -1,5 +1,8 @@
 2019-05-14  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/68918
+	* g++.dg/cpp0x/decltype71.C: New test.
+
 	PR c++/70156
 	* g++.dg/init/static5.C: New test.
 
