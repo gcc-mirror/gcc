@@ -1,5 +1,8 @@
 2019-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/iterator: Include <iosfwd> instead of <istream> and
+	<ostream>.
+
 	* include/bits/stl_tree.h (_Rb_tree::erase(const Key*, const Key*)):
 	Remove unused, non-standard function.
 
