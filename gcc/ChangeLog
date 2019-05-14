@@ -1,5 +1,10 @@
 2019-05-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (eh_set_lr_<mode>): Merge with following
+	define_split to become a define_insn_and_split.
+
+2019-05-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000-protos.h (rs6000_emit_epilogue): Change
 	arguments.
 	* config/rs6000/rs6000.c (rs6000_emit_epilogue): Change arguments.
