@@ -1,3 +1,11 @@
+2019-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69724
+	* include/std/thread (thread::_State_impl, thread::_S_make_state):
+	Replace single _Callable parameter with variadic _Args pack, to
+	forward them directly to the tuple of decayed copies.
+	* testsuite/30_threads/thread/cons/69724.cc: New test.
+
 2019-05-14  Nina Dinka Ranns  <dinka.ranns@gmail.com>
 
 	Inconsistency wrt Allocators in basic_string assignment (LWG2579)
