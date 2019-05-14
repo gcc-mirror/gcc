@@ -1,3 +1,15 @@
+2019-05-14  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* gimple-ssa-strength-reduction.c (lookup_cand): Adjust index by 1.
+	(alloc_cand_and_find_basis): Ditto.
+	(backtrace_base_for_ref, create_mul_ssa_cand): Remove if-then-else.
+	(create_mul_imm_cand, create_add_ssa_cand): Ditto.
+	(create_add_imm_cand, slsr_process_cast): Ditto.
+	(slsr_process_copy, replace_mult_candidate): Ditto.
+	(replace_rhs_if_not_dup, replace_one_candidate): Ditto.
+	(dump_cand_vec, analyze_candidates_and_replace): Skip NULL element.
+	(pass_strength_reduction::execute): Init the first NULL element.
+
 2019-05-13  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.c (execute): Simplify cond-expr into if.  Reformat comment.
