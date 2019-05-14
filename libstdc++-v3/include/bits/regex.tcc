@@ -59,8 +59,6 @@ namespace __detail
       typename match_results<_BiIter, _Alloc>::_Base_type& __res = __m;
       __m._M_begin = __s;
       __m._M_resize(__re._M_automaton->_M_sub_count());
-      for (auto& __it : __res)
-	__it.matched = false;
 
       bool __ret;
       if ((__re.flags() & regex_constants::__polynomial)
@@ -111,12 +109,7 @@ namespace __detail
 	}
       else
 	{
-	  __m._M_resize(0);
-	  for (auto& __it : __res)
-	    {
-	      __it.matched = false;
-	      __it.first = __it.second = __e;
-	    }
+	  __m._M_establish_failed_match(__e);
 	}
       return __ret;
     }
