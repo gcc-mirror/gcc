@@ -1590,16 +1590,6 @@ proc check_sse_os_support_available { } {
 	# If this is not the right target then we can skip the test.
 	if { !([istarget i?86-*-*] || [istarget x86_64-*-*]) } {
 	    expr 0
-	} elseif { [istarget i?86-*-solaris2*] } {
-	    # The Solaris 2 kernel doesn't save and restore SSE registers
-	    # before Solaris 9 4/04.  Before that, executables die with SIGILL.
-	    check_runtime_nocache sse_os_support_available {
-		int main ()
-		{
-		  asm volatile ("movaps %xmm0,%xmm0");
-		  return 0;
-		}
-	    } "-msse"
 	} else {
 	    expr 1
 	}

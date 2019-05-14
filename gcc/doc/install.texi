@@ -3270,7 +3270,7 @@ information have to.
 @item
 @uref{#alpha-x-x,,alpha*-*-*}
 @item
-@uref{#amd64-x-solaris210,,amd64-*-solaris2.10}
+@uref{#amd64-x-solaris2,,amd64-*-solaris2*}
 @item
 @uref{#arm-x-eabi,,arm-*-eabi}
 @item
@@ -3294,7 +3294,7 @@ information have to.
 @item
 @uref{#ix86-x-linux,,i?86-*-linux*}
 @item
-@uref{#ix86-x-solaris210,,i?86-*-solaris2.10}
+@uref{#ix86-x-solaris2,,i?86-*-solaris2*}
 @item
 @uref{#ia64-x-linux,,ia64-*-linux}
 @item
@@ -3370,8 +3370,6 @@ information have to.
 @item
 @uref{#sparc-sun-solaris2,,sparc-sun-solaris2*}
 @item
-@uref{#sparc-sun-solaris210,,sparc-sun-solaris2.10}
-@item
 @uref{#sparc-x-linux,,sparc-*-linux*}
 @item
 @uref{#sparc64-x-solaris2,,sparc64-*-solaris2*}
@@ -3392,7 +3390,7 @@ information have to.
 @item
 @uref{#x86-64-x-x,,x86_64-*-*, amd64-*-*}
 @item
-@uref{#x86-64-x-solaris210,,x86_64-*-solaris2.1[0-9]*}
+@uref{#x86-64-x-solaris2,,x86_64-*-solaris2*}
 @item
 @uref{#xtensa-x-elf,,xtensa*-*-elf}
 @item
@@ -3474,9 +3472,9 @@ shared libraries.
 @html
 <hr />
 @end html
-@anchor{amd64-x-solaris210}
-@heading amd64-*-solaris2.1[0-9]*
-This is a synonym for @samp{x86_64-*-solaris2.1[0-9]*}.
+@anchor{amd64-x-solaris2}
+@heading amd64-*-solaris2*
+This is a synonym for @samp{x86_64-*-solaris2*}.
 
 @html
 <hr />
@@ -3911,32 +3909,29 @@ found on @uref{http://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
 @html
 <hr />
 @end html
-@anchor{ix86-x-solaris210}
-@heading i?86-*-solaris2.10
-Use this for Solaris 10 or later on x86 and x86-64 systems.  Starting
-with GCC 4.7, there is also a 64-bit @samp{amd64-*-solaris2.1[0-9]*} or
-@samp{x86_64-*-solaris2.1[0-9]*} configuration that corresponds to
+@anchor{ix86-x-solaris2}
+@heading i?86-*-solaris2*
+Use this for Solaris 11 or later on x86 and x86-64 systems.  Starting
+with GCC 4.7, there is also a 64-bit @samp{amd64-*-solaris2*} or
+@samp{x86_64-*-solaris2*} configuration that corresponds to
 @samp{sparcv9-sun-solaris2*}.
 
 It is recommended that you configure GCC to use the GNU assembler.  The
-versions included in Solaris 10, from GNU binutils 2.15 (in
-@file{/usr/sfw/bin/gas}), and Solaris 11, from GNU binutils 2.19 or
+versions included in Solaris 11, from GNU binutils 2.19 or
 newer (also available as @file{/usr/bin/gas} and
 @file{/usr/gnu/bin/as}), work fine.  The current version, from GNU
-binutils 2.29, is known to work, but the version from GNU binutils 2.26
+binutils 2.32, is known to work, but the version from GNU binutils 2.26
 must be avoided.  Recent versions of the Solaris assembler in
 @file{/usr/ccs/bin/as} work almost as well, though.
 @c FIXME: as patch requirements?
 
 For linking, the Solaris linker, is preferred.  If you want to use the GNU
-linker instead, note that due to a packaging bug the version in Solaris
-10, from GNU binutils 2.15 (in @file{/usr/sfw/bin/gld}), cannot be used,
-while the version in Solaris 11, from GNU binutils 2.19 or newer (also
-in @file{/usr/gnu/bin/ld} and @file{/usr/bin/gld}), works, as does the
-latest version, from GNU binutils 2.29.
+linker instead, the version in Solaris 11, from GNU binutils 2.19 or
+newer (also in @file{/usr/gnu/bin/ld} and @file{/usr/bin/gld}), works,
+as does the latest version, from GNU binutils 2.32.
 
 To use GNU @command{as}, configure with the options
-@option{--with-gnu-as --with-as=@//usr/@/sfw/@/bin/@/gas}.  It may be necessary
+@option{--with-gnu-as --with-as=@//usr/@/gnu/@/bin/@/as}.  It may be necessary
 to configure with @option{--without-gnu-ld --with-ld=@//usr/@/ccs/@/bin/@/ld} to
 guarantee use of Sun @command{ld}.
 @c FIXME: why --without-gnu-ld --with-ld?
@@ -4512,16 +4507,11 @@ supported as cross-compilation target only.
 @c alone is too unspecific and must be avoided.
 @anchor{x-x-solaris2}
 @heading *-*-solaris2*
-Support for Solaris 10 has been obsoleted in GCC 9, but can still be
-enabled by configuring with @option{--enable-obsolete}.  Support will be
-removed in GCC 10.  Support for Solaris 9 has been removed in GCC 5.
-Support for Solaris 8 has been removed in GCC 4.8.  Support for Solaris
-7 has been removed in GCC 4.6.
+Support for Solaris 10 has been removed in GCC 10.  Support for Solaris
+9 has been removed in GCC 5.  Support for Solaris 8 has been removed in
+GCC 4.8.  Support for Solaris 7 has been removed in GCC 4.6.
 
-Sun does not ship a C compiler with Solaris 2 before Solaris 10, though
-you can download the Sun Studio compilers for free.  In Solaris 10 and
-11, GCC 3.4.3 is available as @command{/usr/sfw/bin/gcc}.  Solaris 11
-also provides GCC 4.5.2, 4.7.3, and 4.8.2 as
+Solaris 11 provides GCC 4.5.2, 4.7.3, and 4.8.2 as
 @command{/usr/gcc/4.5/bin/gcc} or similar.  Alternatively,
 you can install a pre-built GCC to bootstrap and install GCC.  See the
 @uref{binaries.html,,binaries page} for details.
@@ -4540,21 +4530,8 @@ and proceed as described in @uref{configure.html,,the configure instructions}.
 In addition we strongly recommend specifying an absolute path to invoke
 @command{@var{srcdir}/configure}.
 
-Solaris 10 comes with a number of optional OS packages.  Some of these
-are needed to use GCC fully, namely @code{SUNWarc},
-@code{SUNWbtool}, @code{SUNWesu}, @code{SUNWhea}, @code{SUNWlibm},
-@code{SUNWsprot}, and @code{SUNWtoo}.  If you did not install all
-optional packages when installing Solaris 10, you will need to verify that
-the packages that GCC needs are installed.
-To check whether an optional package is installed, use
-the @command{pkginfo} command.  To add an optional package, use the
-@command{pkgadd} command.  For further details, see the Solaris 10
-documentation.
-
-Starting with Solaris 11, the package management has changed, so you
-need to check for @code{system/header}, @code{system/linker}, and
-@code{developer/assembler} packages.  Checking for and installing
-packages is done with the @command{pkg} command now.
+In Solaris 11, you need to check for @code{system/header},
+@code{system/linker}, and @code{developer/assembler} packages.
 
 Trying to use the linker and other tools in
 @file{/usr/ucb} to install GCC has been observed to cause trouble.
@@ -4567,20 +4544,18 @@ have @file{/usr/xpg4/bin} in your @env{PATH}, we recommend that you place
 
 We recommend the use of the Solaris assembler or the GNU assembler, in
 conjunction with the Solaris linker.  The GNU @command{as}
-versions included in Solaris 10, from GNU binutils 2.15 (in
-@file{/usr/sfw/bin/gas}), and Solaris 11,
+versions included in Solaris 11,
 from GNU binutils 2.19 or newer (also in @file{/usr/bin/gas} and
 @file{/usr/gnu/bin/as}), are known to work.
-The current version, from GNU binutils 2.29,
+The current version, from GNU binutils 2.32,
 is known to work as well.  Note that your mileage may vary
 if you use a combination of the GNU tools and the Solaris tools: while the
 combination GNU @command{as} + Sun @command{ld} should reasonably work,
 the reverse combination Sun @command{as} + GNU @command{ld} may fail to
 build or cause memory corruption at runtime in some cases for C++ programs.
 @c FIXME: still?
-GNU @command{ld} usually works as well, although the version included in
-Solaris 10 cannot be used due to several bugs.  Again, the current
-version (2.29) is known to work, but generally lacks platform specific
+GNU @command{ld} usually works as well.  Again, the current
+version (2.32) is known to work, but generally lacks platform specific
 features, so better stay with Solaris @command{ld}.  To use the LTO linker
 plugin (@option{-fuse-linker-plugin}) with GNU @command{ld}, GNU
 binutils @emph{must} be configured with @option{--enable-largefile}.
@@ -4590,13 +4565,6 @@ you need to have any version of GNU @command{c++filt}, which is part of
 GNU binutils.  @samp{libstdc++} symbol versioning will be disabled if no
 appropriate version is found.  Solaris @command{c++filt} from the Solaris
 Studio compilers does @emph{not} work.
-
-Sun bug 4927647 sometimes causes random spurious testsuite failures
-related to missing diagnostic output.  This bug doesn't affect GCC
-itself, rather it is a kernel bug triggered by the @command{expect}
-program which is used only by the GCC testsuite driver.  When the bug
-causes the @command{expect} program to miss anticipated output, extra
-testsuite failures appear.
 
 @html
 <hr />
@@ -4640,22 +4608,6 @@ not that of GMP or MPFR or MPC).  For example on a Solaris 9 system:
 @smallexample
 % ./configure --build=sparc-sun-solaris2.9 --prefix=xxx
 @end smallexample
-
-@html
-<hr />
-@end html
-@anchor{sparc-sun-solaris210}
-@heading sparc-sun-solaris2.10
-There is a bug in older versions of the Sun assembler which breaks
-thread-local storage (TLS).  A typical error message is
-
-@smallexample
-ld: fatal: relocation error: R_SPARC_TLS_LE_HIX22: file /var/tmp//ccamPA1v.o:
-  symbol <unknown>: bad symbol type SECT: symbol type must be TLS
-@end smallexample
-
-@noindent
-This bug is fixed in Sun patch 118683-03 or later.
 
 @html
 <hr />
@@ -4772,8 +4724,8 @@ both 64-bit x86-64 and 32-bit x86 code (via the @option{-m32} switch).
 @html
 <hr />
 @end html
-@anchor{x86-64-x-solaris210}
-@heading x86_64-*-solaris2.1[0-9]*
+@anchor{x86-64-x-solaris2}
+@heading x86_64-*-solaris2*
 GCC also supports the x86-64 architecture implemented by the AMD64
 processor (@samp{amd64-*-*} is an alias for @samp{x86_64-*-*}) on
 Solaris 10 or later.  Unlike other systems, without special options a

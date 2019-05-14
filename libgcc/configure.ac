@@ -447,7 +447,7 @@ fi
 # Link with -nostartfiles -nodefaultlibs since neither are present while
 # building libgcc.
 case ${host} in
-i?86-*-solaris2* | x86_64-*-solaris2.1[[0-9]]*)
+i?86-*-solaris2* | x86_64-*-solaris2*)
   cat > conftest.s <<EOF
 	.section	.eh_frame,"a",@unwind
 	.zero	4

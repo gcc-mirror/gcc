@@ -1,3 +1,22 @@
+2019-05-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/os/solaris/solaris2.10: Move to ...
+	* config/os/solaris: ... this.
+	* configure.host (os_include_dir): Adapt.
+	(abi_baseline_pair): Remove Solaris 10 handling.
+	* config/abi/post/i386-solaris2.10: Remove.
+	* config/abi/post/sparc-solaris2.10: Remove.
+	* config/abi/post/i386-solaris2.11: Rename to ...
+	* config/abi/post/i386-solaris: ... this.
+	* config/abi/post/sparc-solaris2.11: Rename to ...
+	* config/abi/post/sparc-solaris: ... this.
+
+	* libsupc++/new_opa.cc [_GLIBCXX_HAVE_MEMALIGN] [__sun]: Remove
+	workaround.
+
+	* testsuite/ext/enc_filebuf/char/13598.cc: Remove *-*-solaris2.10
+	xfail.
+
 2019-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/variant (__visit_with_index): Remove typedef.

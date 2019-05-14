@@ -117,11 +117,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX "."
 
-/* The Solaris 10 FCS as doesn't accept "#" comments, while later versions
-   do.  */
-#undef ASM_COMMENT_START
-#define ASM_COMMENT_START "/"
-
 /* The 32-bit Solaris assembler does not support .quad.  Do not use it.  */
 #ifndef HAVE_AS_IX86_QUAD
 #undef ASM_QUAD
