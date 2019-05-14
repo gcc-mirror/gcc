@@ -1231,6 +1231,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_erase_aux(__position);
       }
 #endif
+
       size_type
       erase(const key_type& __x);
 
@@ -1253,8 +1254,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       erase(const_iterator __first, const_iterator __last)
       { _M_erase_aux(__first, __last); }
 #endif
-      void
-      erase(const key_type* __first, const key_type* __last);
 
       void
       clear() _GLIBCXX_NOEXCEPT
@@ -2531,16 +2530,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const size_type __old_size = size();
       _M_erase_aux(__p.first, __p.second);
       return __old_size - size();
-    }
-
-  template<typename _Key, typename _Val, typename _KeyOfValue,
-	   typename _Compare, typename _Alloc>
-    void
-    _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-    erase(const _Key* __first, const _Key* __last)
-    {
-      while (__first != __last)
-	erase(*__first++);
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
