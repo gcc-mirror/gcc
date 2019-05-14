@@ -1,6 +1,12 @@
 2019-05-14  Martin Liska  <mliska@suse.cz>
 
 	PR preprocessor/90382
+	* line-map.c (first_map_in_common_1): Handle ADHOC
+	locations.
+
+2019-05-14  Martin Liska  <mliska@suse.cz>
+
+	PR preprocessor/90382
 	* include/line-map.h (get_data_from_adhoc_loc): Add const to
 	the first argument.
 	(get_location_from_adhoc_loc): Likewise.
