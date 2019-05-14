@@ -27874,8 +27874,9 @@ emit_cfa_restores (rtx cfa_restores)
 /* Emit function epilogue as insns.  */
 
 void
-rs6000_emit_epilogue (int sibcall)
+rs6000_emit_epilogue (enum epilogue_type epilogue_type)
 {
+  int sibcall = (epilogue_type == EPILOGUE_TYPE_SIBCALL);
   rs6000_stack_t *info;
   int restoring_GPRs_inline;
   int restoring_FPRs_inline;
