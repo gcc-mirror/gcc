@@ -2568,7 +2568,7 @@ vect_check_load_store_mask (stmt_vec_info stmt_info, tree mask,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "vector mask type %T",
+			 "vector mask type %T"
 			 " does not match vector data type %T.\n",
 			 mask_vectype, vectype);
 
