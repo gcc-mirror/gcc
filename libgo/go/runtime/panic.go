@@ -53,7 +53,7 @@ var indexError = error(errorString("index out of range"))
 // entire runtime stack for easier debugging.
 
 func panicindex() {
-	name, _, _ := funcfileline(getcallerpc()-1, -1)
+	name, _, _, _ := funcfileline(getcallerpc()-1, -1)
 	if hasPrefix(name, "runtime.") {
 		throw(string(indexError.(errorString)))
 	}
@@ -64,7 +64,7 @@ func panicindex() {
 var sliceError = error(errorString("slice bounds out of range"))
 
 func panicslice() {
-	name, _, _ := funcfileline(getcallerpc()-1, -1)
+	name, _, _, _ := funcfileline(getcallerpc()-1, -1)
 	if hasPrefix(name, "runtime.") {
 		throw(string(sliceError.(errorString)))
 	}
