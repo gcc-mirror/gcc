@@ -138,9 +138,7 @@ namespace __variant
     constexpr variant_alternative_t<_Np, variant<_Types...>> const&&
     get(const variant<_Types...>&&);
 
-  template<bool __use_index=false,
-	   bool __same_return_types = true,
-	   typename _Visitor, typename... _Variants>
+  template<typename _Result_type, typename _Visitor, typename... _Variants>
     constexpr decltype(auto)
     __do_visit(_Visitor&& __visitor, _Variants&&... __variants);
 
@@ -180,8 +178,26 @@ namespace __variant
   struct __variant_cookie {};
   // used for raw visitation with indices passed in
   struct __variant_idx_cookie { using type = __variant_idx_cookie; };
-  // a more explanatory name than 'true'
-  inline constexpr auto __visit_with_index = bool_constant<true>{};
+  // Used to enable deduction (and same-type checking) for std::visit:
+  template<typename> struct __deduce_visit_result { };
+
+  // Visit variants that might be valueless.
+  template<typename _Visitor, typename... _Variants>
+    constexpr void
+    __raw_visit(_Visitor&& __visitor, _Variants&&... __variants)
+    {
+      std::__do_visit<__variant_cookie>(std::forward<_Visitor>(__visitor),
+				        std::forward<_Variants>(__variants)...);
+    }
+
+  // Visit variants that might be valueless, passing indices to the visitor.
+  template<typename _Visitor, typename... _Variants>
+    constexpr void
+    __raw_idx_visit(_Visitor&& __visitor, _Variants&&... __variants)
+    {
+      std::__do_visit<__variant_idx_cookie>(std::forward<_Visitor>(__visitor),
+	  std::forward<_Variants>(__variants)...);
+    }
 
   // _Uninitialized<T> is guaranteed to be a literal type, even if T is not.
   // We have to do this, because [basic.types]p10.5.3 (n4606) is not implemented
@@ -382,13 +398,11 @@ namespace __variant
 
       constexpr void _M_reset_impl()
       {
-	__do_visit([](auto&& __this_mem) mutable
-		   -> __detail::__variant::__variant_cookie
+	__variant::__raw_visit([](auto&& __this_mem) mutable
 	  {
 	    if constexpr (!is_same_v<remove_reference_t<decltype(__this_mem)>,
 			  __variant_cookie>)
 	      std::_Destroy(std::__addressof(__this_mem));
-	    return {};
 	  }, __variant_cast<_Types...>(*this));
       }
 
@@ -473,12 +487,10 @@ namespace __variant
     void __variant_construct(_Tp&& __lhs, _Up&& __rhs)
     {
       __lhs._M_index = __rhs._M_index;
-      __do_visit([&__lhs](auto&& __rhs_mem) mutable
-		 -> __detail::__variant::__variant_cookie
+      __variant::__raw_visit([&__lhs](auto&& __rhs_mem) mutable
         {
 	  __variant_construct_single(std::forward<_Tp>(__lhs),
 	      std::forward<decltype(__rhs_mem)>(__rhs_mem));
-	  return {};
 	}, __variant_cast<_Types...>(std::forward<_Up>(__rhs)));
     }
 
@@ -583,9 +595,8 @@ namespace __variant
       operator=(const _Copy_assign_base& __rhs)
 	  noexcept(_Traits<_Types...>::_S_nothrow_copy_assign)
       {
-	__do_visit<__visit_with_index>([this](auto&& __rhs_mem,
-					      auto __rhs_index) mutable
-	    -> __detail::__variant::__variant_idx_cookie
+	__variant::__raw_idx_visit(
+	  [this](auto&& __rhs_mem, auto __rhs_index) mutable
 	  {
 	    if constexpr (__rhs_index != variant_npos)
 	      {
@@ -611,7 +622,6 @@ namespace __variant
 	      }
 	    else
 	      this->_M_reset();
-	    return {};
 	  }, __variant_cast<_Types...>(__rhs));
 	return *this;
       }
@@ -642,9 +652,8 @@ namespace __variant
       operator=(_Move_assign_base&& __rhs)
 	  noexcept(_Traits<_Types...>::_S_nothrow_move_assign)
       {
-	__do_visit<__visit_with_index>([this](auto&& __rhs_mem,
-					      auto __rhs_index) mutable
-	    -> __detail::__variant::__variant_idx_cookie
+	__variant::__raw_idx_visit(
+	  [this](auto&& __rhs_mem, auto __rhs_index) mutable
 	  {
 	    if constexpr (__rhs_index != variant_npos)
 	      {
@@ -656,7 +665,6 @@ namespace __variant
 	      }
 	    else
 	      this->_M_reset();
-	    return {};
 	  }, __variant_cast<_Types...>(__rhs));
 	return *this;
       }
@@ -786,11 +794,38 @@ namespace __variant
   template<typename _Tp>
     struct _Multi_array<_Tp>
     {
-      constexpr const _Tp&
+      template<typename>
+	struct __untag_result
+	: false_type
+	{ using element_type = _Tp; };
+
+      template <typename... _Args>
+	struct __untag_result<const void(*)(_Args...)>
+	: false_type
+	{ using element_type = void(*)(_Args...); };
+
+      template <typename... _Args>
+	struct __untag_result<__variant_cookie(*)(_Args...)>
+	: false_type
+	{ using element_type = void(*)(_Args...); };
+
+      template <typename... _Args>
+	struct __untag_result<__variant_idx_cookie(*)(_Args...)>
+	: false_type
+	{ using element_type = void(*)(_Args...); };
+
+      template <typename _Res, typename... _Args>
+	struct __untag_result<__deduce_visit_result<_Res>(*)(_Args...)>
+	: true_type
+	{ using element_type = _Res(*)(_Args...); };
+
+      using __result_is_deduced = __untag_result<_Tp>;
+
+      constexpr const typename __untag_result<_Tp>::element_type&
       _M_access() const
       { return _M_data; }
 
-      _Tp _M_data;
+      typename __untag_result<_Tp>::element_type _M_data;
     };
 
   // Partial specialization with rank >= 1.
@@ -811,7 +846,7 @@ namespace __variant
       using _Tp = _Ret(*)(_Visitor, _Variants...);
 
       template<typename... _Args>
-	constexpr const _Tp&
+	constexpr decltype(auto)
 	_M_access(size_t __first_index, _Args... __rest_indices) const
         {
 	  return _M_arr[__first_index + __do_cookie]
@@ -823,37 +858,32 @@ namespace __variant
 
   // Creates a multi-dimensional vtable recursively.
   //
-  // The __same_return_types non-type template parameter specifies whether
-  // to enforce that all visitor invocations return the same type. This is
-  // required by std::visit but not std::visit<R>.
-  //
   // For example,
   // visit([](auto, auto){},
   //       variant<int, char>(),  // typedef'ed as V1
   //       variant<float, double, long double>())  // typedef'ed as V2
   // will trigger instantiations of:
-  // __gen_vtable_impl<true, _Multi_array<void(*)(V1&&, V2&&), 2, 3>,
+  // __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&), 2, 3>,
   //                   tuple<V1&&, V2&&>, std::index_sequence<>>
-  //   __gen_vtable_impl<true, _Multi_array<void(*)(V1&&, V2&&), 3>,
+  //   __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&), 3>,
   //                     tuple<V1&&, V2&&>, std::index_sequence<0>>
-  //     __gen_vtable_impl<true, _Multi_array<void(*)(V1&&, V2&&)>,
+  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
   //                       tuple<V1&&, V2&&>, std::index_sequence<0, 0>>
-  //     __gen_vtable_impl<true, _Multi_array<void(*)(V1&&, V2&&)>,
+  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
   //                       tuple<V1&&, V2&&>, std::index_sequence<0, 1>>
-  //     __gen_vtable_impl<true, _Multi_array<void(*)(V1&&, V2&&)>,
+  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
   //                       tuple<V1&&, V2&&>, std::index_sequence<0, 2>>
-  //   __gen_vtable_impl<true, _Multi_array<void(*)(V1&&, V2&&), 3>,
+  //   __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&), 3>,
   //                     tuple<V1&&, V2&&>, std::index_sequence<1>>
-  //     __gen_vtable_impl<true, _Multi_array<void(*)(V1&&, V2&&)>,
+  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
   //                       tuple<V1&&, V2&&>, std::index_sequence<1, 0>>
-  //     __gen_vtable_impl<true, _Multi_array<void(*)(V1&&, V2&&)>,
+  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
   //                       tuple<V1&&, V2&&>, std::index_sequence<1, 1>>
-  //     __gen_vtable_impl<true, _Multi_array<void(*)(V1&&, V2&&)>,
+  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
   //                       tuple<V1&&, V2&&>, std::index_sequence<1, 2>>
   // The returned multi-dimensional vtable can be fast accessed by the visitor
   // using index calculation.
-  template<bool __same_return_types,
-	   typename _Array_type, typename _Variant_tuple, typename _Index_seq>
+  template<typename _Array_type, typename _Index_seq>
     struct __gen_vtable_impl;
 
   // Defines the _S_apply() member that returns a _Multi_array populated
@@ -863,13 +893,11 @@ namespace __variant
   // This partial specialization builds up the index sequences by recursively
   // calling _S_apply() on the next specialization of __gen_vtable_impl.
   // The base case of the recursion defines the actual function pointers.
-  template<bool __same_return_types,
-	   typename _Result_type, typename _Visitor, size_t... __dimensions,
+  template<typename _Result_type, typename _Visitor, size_t... __dimensions,
 	   typename... _Variants, size_t... __indices>
     struct __gen_vtable_impl<
-        __same_return_types,
 	_Multi_array<_Result_type (*)(_Visitor, _Variants...), __dimensions...>,
-	tuple<_Variants...>, std::index_sequence<__indices...>>
+	std::index_sequence<__indices...>>
     {
       using _Next =
 	  remove_reference_t<typename _Nth_type<sizeof...(__indices),
@@ -905,25 +933,19 @@ namespace __variant
 	static constexpr void
 	_S_apply_single_alt(_Tp& __element, _Tp* __cookie_element = nullptr)
 	{
-	  using _Alternative = variant_alternative_t<__index, _Next>;
 	  if constexpr (__do_cookie)
 	    {
 	      __element = __gen_vtable_impl<
-		__same_return_types,
 		_Tp,
-		tuple<_Variants...>,
 		std::index_sequence<__indices..., __index>>::_S_apply();
 	      *__cookie_element = __gen_vtable_impl<
-		__same_return_types,
 		_Tp,
-		tuple<_Variants...>,
 		std::index_sequence<__indices..., variant_npos>>::_S_apply();
 	    }
 	  else
 	    {
 	      __element = __gen_vtable_impl<
-		__same_return_types,
-		remove_reference_t<decltype(__element)>, tuple<_Variants...>,
+		remove_reference_t<decltype(__element)>,
 		std::index_sequence<__indices..., __index>>::_S_apply();
 	    }
 	}
@@ -932,13 +954,11 @@ namespace __variant
   // This partial specialization is the base case for the recursion.
   // It populates a _Multi_array element with the address of a function
   // that invokes the visitor with the alternatives specified by __indices.
-  template<bool __same_return_types,
-	   typename _Result_type, typename _Visitor, typename... _Variants,
+  template<typename _Result_type, typename _Visitor, typename... _Variants,
 	   size_t... __indices>
     struct __gen_vtable_impl<
-      __same_return_types,
       _Multi_array<_Result_type (*)(_Visitor, _Variants...)>,
-		   tuple<_Variants...>, std::index_sequence<__indices...>>
+		   std::index_sequence<__indices...>>
     {
       using _Array_type =
 	  _Multi_array<_Result_type (*)(_Visitor, _Variants...)>;
@@ -954,50 +974,29 @@ namespace __variant
 	}
 
       static constexpr decltype(auto)
-      __visit_invoke_impl(_Visitor&& __visitor, _Variants... __vars)
+      __visit_invoke(_Visitor&& __visitor, _Variants... __vars)
       {
-	// For raw visitation using indices, pass the indices to the visitor:
 	if constexpr (is_same_v<_Result_type, __variant_idx_cookie>)
-	  return std::__invoke(std::forward<_Visitor>(__visitor),
+	  // For raw visitation using indices, pass the indices to the visitor
+	  // and discard the return value:
+	  std::__invoke(std::forward<_Visitor>(__visitor),
 	      __element_by_index_or_cookie<__indices>(
 		std::forward<_Variants>(__vars))...,
 	      integral_constant<size_t, __indices>()...);
-	// For std::visit<cv void>, cast the result to void:
-	else if constexpr (!__same_return_types &&
-			   std::is_void_v<_Result_type>)
-	  return (void)std::__invoke(std::forward<_Visitor>(__visitor),
+	else if constexpr (is_same_v<_Result_type, __variant_cookie>)
+	  // For raw visitation without indices, and discard the return value:
+	  std::__invoke(std::forward<_Visitor>(__visitor),
 	      __element_by_index_or_cookie<__indices>(
 		std::forward<_Variants>(__vars))...);
-	else
+	else if constexpr (_Array_type::__result_is_deduced::value)
+	  // For the usual std::visit case deduce the return value:
 	  return std::__invoke(std::forward<_Visitor>(__visitor),
 	      __element_by_index_or_cookie<__indices>(
 		std::forward<_Variants>(__vars))...);
-      }
-
-      static constexpr decltype(auto)
-      __do_visit_invoke(_Visitor&& __visitor, _Variants... __vars)
-      {
-	return __visit_invoke_impl(std::forward<_Visitor>(__visitor),
-				   std::forward<_Variants>(__vars)...);
-      }
-
-      // Perform the implicit conversion to _Result_type for std::visit<R>.
-      static constexpr _Result_type
-      __do_visit_invoke_r(_Visitor&& __visitor, _Variants... __vars)
-      {
-	return __visit_invoke_impl(std::forward<_Visitor>(__visitor),
-				   std::forward<_Variants>(__vars)...);
-      }
-
-      static constexpr decltype(auto)
-      __visit_invoke(_Visitor&& __visitor, _Variants... __vars)
-      {
-	if constexpr (__same_return_types)
-	  return __do_visit_invoke(std::forward<_Visitor>(__visitor),
-				   std::forward<_Variants>(__vars)...);
-	else
-	  return __do_visit_invoke_r(std::forward<_Visitor>(__visitor),
-				     std::forward<_Variants>(__vars)...);
+	else // for std::visit<R> use INVOKE<R>
+	  return std::__invoke_r<_Result_type>(
+	      std::forward<_Visitor>(__visitor),
+	      __variant::__get<__indices>(std::forward<_Variants>(__vars))...);
       }
 
       static constexpr auto
@@ -1005,8 +1004,7 @@ namespace __variant
       { return _Array_type{&__visit_invoke}; }
     };
 
-  template<bool __same_return_types,
-	   typename _Result_type, typename _Visitor, typename... _Variants>
+  template<typename _Result_type, typename _Visitor, typename... _Variants>
     struct __gen_vtable
     {
       using _Array_type =
@@ -1014,9 +1012,7 @@ namespace __variant
 		       variant_size_v<remove_reference_t<_Variants>>...>;
 
       static constexpr _Array_type _S_vtable
-	= __gen_vtable_impl<__same_return_types,
-			    _Array_type, tuple<_Variants...>,
-			    std::index_sequence<>>::_S_apply();
+	= __gen_vtable_impl<_Array_type, std::index_sequence<>>::_S_apply();
     };
 
   template<size_t _Np, typename _Tp>
@@ -1147,10 +1143,8 @@ namespace __variant
 				 const variant<_Types...>& __rhs) \
     { \
       bool __ret = true; \
-      __do_visit<__detail::__variant::__visit_with_index>( \
-        [&__ret, &__lhs] \
-		 (auto&& __rhs_mem, auto __rhs_index) mutable \
-		   -> __detail::__variant::__variant_idx_cookie \
+      __detail::__variant::__raw_idx_visit( \
+        [&__ret, &__lhs] (auto&& __rhs_mem, auto __rhs_index) mutable \
         { \
 	  if constexpr (__rhs_index != variant_npos) \
 	    { \
@@ -1164,7 +1158,6 @@ namespace __variant
             } \
           else \
             __ret = (__lhs.index() + 1) __OP (__rhs_index + 1); \
-	  return {}; \
 	}, __rhs); \
       return __ret; \
     } \
@@ -1504,10 +1497,8 @@ namespace __variant
       noexcept((__is_nothrow_swappable<_Types>::value && ...)
 	       && is_nothrow_move_constructible_v<variant>)
       {
-	__do_visit<__detail::__variant::__visit_with_index>(
-	  [this, &__rhs](auto&& __rhs_mem,
-			 auto __rhs_index) mutable
-	    -> __detail::__variant::__variant_idx_cookie
+	__detail::__variant::__raw_idx_visit(
+	  [this, &__rhs](auto&& __rhs_mem, auto __rhs_index) mutable
 	  {
 	    if constexpr (__rhs_index != variant_npos)
 	      {
@@ -1543,7 +1534,6 @@ namespace __variant
 		    this->_M_reset();
 		  }
 	      }
-	    return {};
 	  }, __rhs);
       }
 
@@ -1623,21 +1613,11 @@ namespace __variant
       return __detail::__variant::__get<_Np>(std::move(__v));
     }
 
-  template<bool __use_index,
-	   bool __same_return_types,
-	   typename _Visitor, typename... _Variants>
+  template<typename _Result_type, typename _Visitor, typename... _Variants>
     constexpr decltype(auto)
     __do_visit(_Visitor&& __visitor, _Variants&&... __variants)
     {
-      using _Deduced_type = std::invoke_result<_Visitor,
-	decltype(std::get<0>(std::declval<_Variants>()))...>;
-
-      using _Result_type = typename std::conditional_t<__use_index,
-	__detail::__variant::__variant_idx_cookie,
-	_Deduced_type>::type;
-
       constexpr auto& __vtable = __detail::__variant::__gen_vtable<
-	__same_return_types,
 	_Result_type, _Visitor&&, _Variants&&...>::_S_vtable;
 
       auto __func_ptr = __vtable._M_access(__variants.index()...);
@@ -1652,8 +1632,13 @@ namespace __variant
       if ((__variants.valueless_by_exception() || ...))
 	__throw_bad_variant_access("Unexpected index");
 
-      return __do_visit(std::forward<_Visitor>(__visitor),
-			std::forward<_Variants>(__variants)...);
+      using _Result_type = std::invoke_result_t<_Visitor,
+	decltype(std::get<0>(std::declval<_Variants>()))...>;
+
+      using _Tag = __detail::__variant::__deduce_visit_result<_Result_type>;
+
+      return __do_visit<_Tag>(std::forward<_Visitor>(__visitor),
+			      std::forward<_Variants>(__variants)...);
     }
 
 #if __cplusplus > 201703L
@@ -1664,12 +1649,8 @@ namespace __variant
       if ((__variants.valueless_by_exception() || ...))
 	__throw_bad_variant_access("Unexpected index");
 
-      if constexpr (std::is_void_v<_Res>)
-        (void) __do_visit<false, false>(std::forward<_Visitor>(__visitor),
-					std::forward<_Variants>(__variants)...);
-      else
-	return __do_visit<false, false>(std::forward<_Visitor>(__visitor),
-					std::forward<_Variants>(__variants)...);
+      return __do_visit<_Res>(std::forward<_Visitor>(__visitor),
+			      std::forward<_Variants>(__variants)...);
     }
 #endif
 
@@ -1681,8 +1662,8 @@ namespace __variant
       noexcept((is_nothrow_invocable_v<hash<decay_t<_Types>>, _Types> && ...))
       {
 	size_t __ret;
-	__do_visit([&__t, &__ret](auto&& __t_mem) mutable
-		   -> __detail::__variant::__variant_cookie
+	__detail::__variant::__raw_visit(
+	  [&__t, &__ret](auto&& __t_mem) mutable
 	  {
 	    using _Type = __remove_cvref_t<decltype(__t_mem)>;
 	    if constexpr (!is_same_v<_Type,
@@ -1691,7 +1672,6 @@ namespace __variant
 		      + std::hash<_Type>{}(__t_mem);
 	    else
 	      __ret = std::hash<size_t>{}(__t.index());
-	    return {};
 	  }, __t);
 	return __ret;
       }

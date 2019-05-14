@@ -1,3 +1,39 @@
+2019-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__visit_with_index): Remove typedef.
+	(__deduce_visit_result): New tag type.
+	(__raw_visit, __raw_idx_visit): New helper functions for "raw"
+	visitation of possibly-valueless variants, forwarding to __do_visit
+	with the relevant tag type.
+	(_Variant_storage<false, _Types...>::_M_reset_impl): Use __raw_visit
+	and make lambda return void.
+	(__variant_construct): Likewise.
+	(_Copy_assign_base::operator=, _Move_assign_base::operator=): Use
+	__raw_idx_visit and make lambda return void.
+	(_Multi_array::__untag_result): Add metafunction to check the function
+	pointer type for a tag type that dictates the kind of visitation.
+	(_Multi_array<_Ret(*)(_Visitor, _Variants...), __first, __rest...>):
+	Use decltype(auto) instead of tagged function pointer type.
+	(__gen_vtable_impl): Remove bool non-type parameter and unused
+	_Variant_tuple parameter.
+	(__gen_vtable_impl::__visit_invoke_impl): Remove.
+	(__gen_vtable_impl::__do_visit_invoke): Remove.
+	(__gen_vtable_impl::__do_visit_invoke_r): Remove.
+	(__gen_vtable_impl::__visit_invoke): Use if-constexpr and __invoke_r
+	for the visit<R> case, rather than dispatching to separate functions.
+	(_VARIANT_RELATION_FUNCTION_TEMPLATE): Use __raw_idx_visit and make
+	lambda return void.
+	(variant::swap): Likewise.
+	(__do_visit): Replace two non-type template parameters with a single
+	type parameter, so that the caller must specify the visitor's return
+	type (or one of the tag types).
+	(visit): Deduce a return type from the visitor and use the
+	__deduce_visit_result tag to enforce that all overloads return the
+	same type.
+	(visit<R>): Call __do_visit<R> with explicit result type.
+	(__variant_hash_call_base_impl::operator()): Use __raw_visit and make
+	lambda return void.
+
 2019-05-14  Nina Dinka Ranns  <dinka.ranns@gmail.com>
 
 	nonesuch is insufficiently useless (lwg2996)
