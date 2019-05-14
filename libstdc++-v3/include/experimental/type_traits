@@ -227,9 +227,9 @@ inline namespace fundamentals_v2
 
 template<typename...> using void_t = void;
 
-struct nonesuch
+struct __nonesuchbase {};
+struct nonesuch : private __nonesuchbase
 {
-  nonesuch() = delete;
   ~nonesuch() = delete;
   nonesuch(nonesuch const&) = delete;
   void operator=(nonesuch const&) = delete;

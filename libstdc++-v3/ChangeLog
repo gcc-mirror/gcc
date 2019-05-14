@@ -1,3 +1,22 @@
+2019-05-14  Nina Dinka Ranns  <dinka.ranns@gmail.com>
+
+	nonesuch is insufficiently useless (lwg2996)
+	* include/std/type_traits (struct __nonesuch): Added private base
+	class to make __nonesuch not an aggregate and removed deleted default
+	constructor.
+	* include/bits/stl_pair.h (struct __nonesuch_no_braces): Removed.
+	(operator=(const pair&)): Use __nonesuch instead of
+	__nonesuch_no_braces.
+	(operator=(pair&&)): Likewise
+	* include/std/tuple (operator=(const tuple&)): Use __nonesuch instead
+	of __nonesuch_no_braces.
+	(operator=(tuple&&)): Likewise
+	* include/experimental/type_traits (struct nonesuch): Added private
+	base class to make nonesuch not an aggregate and removed deleted
+	default constructor.
+	* testsuite/20_util/nonesuch/nonesuch.cc: New.
+	* testsuite/experimental/type_traits/nonesuch.cc: New.
+
 2019-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/std_function.h (_Simple_type_wrapper): Remove.
