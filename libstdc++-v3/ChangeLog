@@ -1,5 +1,21 @@
 2019-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/allocator_traits/members/allocate_hint_nonpod.cc:
+	Use operator-> to access raw pointer member.
+	* testsuite/23_containers/vector/59829.cc: Likewise.
+	* testsuite/23_containers/vector/bool/80893.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Use NullablePointer.
+	* testsuite/util/testsuite_allocator.h (NullablePointer): New utility
+	for tests.
+	(PointerBase, PointerBase_void): Derive from NullablePointer and use
+	its constructors and equality operators. Change converting
+	constructors to use operator-> to access private member of the other
+	pointer type.
+	(PointerBase_void::operator->()): Add, for access to private member.
+	(operator-(PointerBase, PointerBase)): Change to hidden friend.
+	(operator==(PointerBase, PointerBase)): Remove.
+	(operator!=(PointerBase, PointerBase)): Remove.
+
 	* python/libstdcxx/v6/printers.py (UniquePointerPrinter.__init__): Do
 	not assume field called _M_head_impl is the first tuple element.
 	* testsuite/libstdc++-prettyprinters/compat.cc: Make tuple
