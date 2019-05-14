@@ -182,7 +182,9 @@ class UniquePointerPrinter:
     def __init__ (self, typename, val):
         self.val = val
         impl_type = val.type.fields()[0].type.tag
-        if is_specialization_of(impl_type, '__uniq_ptr_impl'): # New implementation
+        # Check for new implementations first:
+        if is_specialization_of(impl_type, '__uniq_ptr_data') \
+            or is_specialization_of(impl_type, '__uniq_ptr_impl'):
             self.pointer = val['_M_t']['_M_t']['_M_head_impl']
         elif is_specialization_of(impl_type, 'tuple'):
             self.pointer = val['_M_t']['_M_head_impl']
