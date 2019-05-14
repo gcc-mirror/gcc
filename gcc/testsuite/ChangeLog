@@ -1,3 +1,8 @@
+2019-05-14  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com\>
+
+	* gcc.target/aarch64/signbitv4sf.c: New test.
+	* gcc.target/aarch64/signbitv2sf.c: New test.
+
 2019-05-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* g++.dg/cpp0x/Wattributes1.C: Adjust dg-error line number to fix
