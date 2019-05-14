@@ -1054,8 +1054,8 @@ extern location_t get_combined_adhoc_loc (struct line_maps *,
 					       location_t,
 					       source_range,
 					       void *);
-extern void *get_data_from_adhoc_loc (struct line_maps *, location_t);
-extern location_t get_location_from_adhoc_loc (struct line_maps *,
+extern void *get_data_from_adhoc_loc (const struct line_maps *, location_t);
+extern location_t get_location_from_adhoc_loc (const struct line_maps *,
 						    location_t);
 
 extern source_range get_range_from_loc (line_maps *set, location_t loc);
