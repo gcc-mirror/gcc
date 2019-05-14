@@ -1,3 +1,12 @@
+2019-05-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000-protos.h (rs6000_emit_epilogue): Change
+	arguments.
+	* config/rs6000/rs6000.c (rs6000_emit_epilogue): Change arguments.
+	* config/rs6000/rs6000.md (epilogue_type): New define_enum.
+	(sibcall_epilogue): Adjust.
+	(epilogue): Adjust.
+
 2019-05-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.gcc: Move *-*-solaris2.10* from obsolete configurations
