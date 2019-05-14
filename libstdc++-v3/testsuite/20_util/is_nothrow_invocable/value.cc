@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++17" }
-// { dg-do compile }
+// { dg-do compile { target c++17 } }
 
 #include <type_traits>
 
@@ -151,4 +151,17 @@ void test01()
 		   "would call private member");
   static_assert( ! is_nt_invocable_r<void, F, int, int >(),
 		   "would call private member");
+
+  struct FX {
+    X operator()() const noexcept { return {}; }
+  };
+  static_assert( is_nt_invocable< FX >(), "FX::operator() is nothrow" );
+  static_assert( is_nt_invocable_r<X, FX >(), "no conversion needed" );
+
+  struct Y {
+    explicit Y(X) noexcept; // not viable for implicit conversions
+    Y(...);
+  };
+
+  static_assert( ! is_nt_invocable_r<Y, FX >(), "conversion to Y can throw" );
 }
