@@ -1,5 +1,8 @@
 2019-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_tree.h (_Rb_tree::erase(const Key*, const Key*)):
+	Remove unused, non-standard function.
+
 	* include/bits/regex.h (match_results::max_size()): Adjust return
 	value to account for prefix/suffix/unmatched subs.
 	(match_results::_M_resize(unsigned int)): Use _Base_type::assign to
