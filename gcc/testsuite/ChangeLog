@@ -1,6 +1,15 @@
 2019-05-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-05-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/x86_64/abi/avx512f/abi-avx512f.exp: Darwin is
+	now tested.
+	* gcc.target/x86_64/abi/avx512f/asm-support-darwin.s: New.
+
+2019-05-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-05-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.dg/tree-prof/section-attr-1.c: Update scan-asm regex
