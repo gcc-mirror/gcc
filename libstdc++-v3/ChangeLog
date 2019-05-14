@@ -1,3 +1,22 @@
+2019-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	LWG 2899 - Make is_move_constructible correct for unique_ptr
+	* include/bits/unique_ptr.h (__uniq_ptr_impl): Add move constructor,
+	move assignment operator.
+	(__uniq_ptr_impl::release(), __uniq_ptr_impl::reset(pointer)): Add.
+	(__uniq_ptr_data): New class template with conditionally deleted
+	special members.
+	(unique_ptr, unique_ptr<T[], D>): Change type of data member from
+	__uniq_ptr_impl<T, D> to __uniq_ptr_data<T, D>. Define move
+	constructor and move assignment operator as defaulted.
+	(unique_ptr::release(), unique_ptr<T[], D>::release()): Forward to
+	__uniq_ptr_impl::release().
+	(unique_ptr::reset(pointer), unique_ptr<T[], D>::reset<U>(U)): Forward
+	to __uniq_ptr_impl::reset(pointer).
+	* python/libstdcxx/v6/printers.py (UniquePointerPrinter.__init__):
+	Check for new __uniq_ptr_data type.
+	* testsuite/20_util/unique_ptr/dr2899.cc: New test.
+
 2019-05-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90454.cc path construction from void*
