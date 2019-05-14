@@ -4849,6 +4849,7 @@ mips_split_move (rtx dest, rtx src, enum mips_split_type split_type, rtx insn_)
      can forward SRC for DEST.  This is most useful if the next insn is a
      simple store.   */
   rtx_insn *insn = (rtx_insn *)insn_;
+  struct mips_address_info addr;
   if (insn)
     {
       rtx_insn *next = next_nonnote_nondebug_insn_bb (insn);
@@ -4856,7 +4857,17 @@ mips_split_move (rtx dest, rtx src, enum mips_split_type split_type, rtx insn_)
 	{
 	  rtx set = single_set (next);
 	  if (set && SET_SRC (set) == dest)
-	    validate_change (next, &SET_SRC (set), src, false);
+	    {
+	      if (MEM_P (src))
+		{
+		  rtx tmp = XEXP (src, 0);
+		  mips_classify_address (&addr, tmp, GET_MODE (tmp), true);
+		  if (REGNO (addr.reg) != REGNO (dest))
+		    validate_change (next, &SET_SRC (set), src, false);
+		}
+	      else
+		validate_change (next, &SET_SRC (set), src, false);
+	    }
 	}
     }
 }
