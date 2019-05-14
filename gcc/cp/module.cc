@@ -2700,6 +2700,7 @@ private:
   tree tree_binfo ();
   bool tree_node_bools (tree);
   bool tree_node_vals (tree);
+  tree tree_value (bool);
 
 private:
   tree chained_decls ();  /* Follow DECL_CHAIN.  */
@@ -6224,8 +6225,6 @@ trees_out::lang_type_vals (tree t)
 #define WT(X) (tree_node (X))
   if (streaming_p ())
     WU (lang->align);
-  // FIXME: This is a property of the befriender
-  WT (lang->befriending_classes);
 #undef WU
 #undef WT
 }
@@ -6237,7 +6236,6 @@ trees_in::lang_type_vals (tree t)
 #define RU(X) ((X) = u ())
 #define RT(X) ((X) = tree_node ())
   RU (lang->align);
-  RT (lang->befriending_classes);
 #undef RU
 #undef RT
   return !get_overrun ();
@@ -6910,8 +6908,8 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
   return true;
 }
 
-/* T is a node that must be written by value.  Do that.  REF is
-   needed for consistency checking.  */
+/* T is a node that must be written by value.  WALK indicates the kind
+   of by-valueness.  */
 
 void
 trees_out::tree_value (tree t, walk_kind walk)
@@ -7013,6 +7011,194 @@ trees_out::tree_value (tree t, walk_kind walk)
 
   if (streaming_p ())
     dump (dumper::TREE) && dump ("Written:%d %C:%N", tag, TREE_CODE (t), t);
+}
+
+tree
+trees_in::tree_value (bool is_mergeable_node)
+{
+  tree res = NULL;
+  int tag = 0;
+  tree existing = NULL_TREE;
+  const char *merge_kind = "";
+
+  if (is_mergeable_node)
+    {
+      /* A mergeable entity.  We've already deduped it, but need
+	 to read in the value here.  Either in-place, or as a
+	 dummy.  */
+      tag = i ();
+      if (unsigned (~tag) < back_refs.length ())
+	res = back_refs[~tag];
+      if (!res || !DECL_P (res))
+	res = NULL;
+
+      merge_kind = " new";
+
+      /* Determine if we had already known about this.  */
+      if (res)
+	if (tree *merge = lookup_mergeable (u ()))
+	  {
+	    existing = merge[1];
+	    gcc_checking_assert (merge[existing != NULL_TREE] == res);
+	    if (existing)
+	      {
+		res = merge[0];
+		merge_kind = " merged";
+	      }
+	  }
+
+      // FIXME: Mark function parms as mergeable during this read in.
+    }
+  else
+    {
+      res = start (u ());
+      if (res)
+	/* Insert into map.  */
+	tag = insert (res);
+    }
+
+  if (res)
+    {
+      dump (dumper::TREE)
+	&& dump ("Reading%s:%d %C", merge_kind, tag, TREE_CODE (res));
+
+      if (!is_mergeable_node)
+	if (!tree_node_bools (res))
+	  res = NULL_TREE;
+    }
+
+  tree inner = res;
+  tree existing_inner = existing;
+  if (res && TREE_CODE (res) == TEMPLATE_DECL)
+    {
+      int inner_tag = 0;
+      if (is_mergeable_node)
+	{
+	  inner = DECL_TEMPLATE_RESULT (res);
+	  inner_tag = i ();
+
+	  if (existing_inner)
+	    existing_inner = DECL_TEMPLATE_RESULT (existing_inner);
+	  gcc_checking_assert (back_refs[~inner_tag]
+			       == (existing ? existing_inner : inner));
+	}
+      else
+	{
+	  inner = start (u ());
+	  if (inner)
+	    inner_tag = insert (inner);
+	  else
+	    res = NULL_TREE;
+	}
+      
+      if (res)
+	{
+	  dump (dumper::TREE)
+	    && dump ("Reading%s:%d %C", merge_kind,
+		     inner_tag, TREE_CODE (inner));
+	  if (!is_mergeable_node)
+	    if (!tree_node_bools (inner))
+	      res = NULL_TREE;
+	}
+    }
+
+  tree type = NULL_TREE;
+  if (res && DECL_IMPLICIT_TYPEDEF_P (inner))
+    {
+      int type_tag = 0;
+      if (is_mergeable_node)
+	{
+	  type = TREE_TYPE (inner);
+	  type_tag = i ();
+	  gcc_checking_assert (back_refs[~type_tag]
+			       == (existing ? TREE_TYPE (existing_inner)
+				   : type));
+	}
+      else
+	{
+	  type = start (u ());
+	  if (type)
+	    type_tag = insert (type);
+	  else
+	    res = NULL_TREE;
+	}
+
+      if (res)
+	{
+	  dump (dumper::TREE)
+	    && dump ("Reading%s:%d %C", merge_kind, type_tag, TREE_CODE (type));
+	  if (!is_mergeable_node)
+	    if (!tree_node_bools (type)
+		|| !core_vals (type))
+	      res = NULL_TREE;
+	}
+
+      if (res)
+	if (!lang_vals (type))
+	  res = NULL_TREE;
+
+      if (res)
+	if (!is_mergeable_node)
+	  {
+	    type = finish (type);
+	    back_refs[~type_tag] = type;
+	  }
+    }
+
+  if (!res
+      || (res && !tree_node_vals (res))
+      || (inner != res && !tree_node_vals (inner)))
+    {
+      if (tag)
+	back_refs[~tag] = NULL_TREE;
+      /* Bail.  */
+      return NULL_TREE;
+    }
+
+  dump (dumper::TREE) && dump ("Read:%d %C:%N", tag, TREE_CODE (res), res);
+
+  if (!is_mergeable_node)
+    {
+      tree found = finish (res);
+
+      if (found != res)
+	{
+	  gcc_assert (res == inner && !type);
+
+	  /* Update the mapping.  */
+	  res = found;
+	  back_refs[~tag] = res;
+
+	  dump (dumper::TREE)
+	    && dump ("Remapping:%d to %C:%N%S", tag,
+		     res ? TREE_CODE (res) : ERROR_MARK, res, res);
+	}
+    }
+  else if (existing)
+    {
+      /* RES is the to-be-discarded decl.  Its internal pointers will
+	 be to the EXISTING decl's structure.  Frob it to point to its
+	 own other structures, so loading its definition will alter
+	 it, and not the existing decl.  */
+      dump (dumper::MERGE) && dump ("Deduping %N", existing);
+      if (res != inner)
+	DECL_TEMPLATE_RESULT (res) = inner;
+      if (type)
+	{
+	  TYPE_NAME (type) = inner;
+	  TREE_TYPE (inner) = type;
+	}
+
+      bool matched = is_matching_decl (existing, res);
+      /* Record EXISTING as the skip defn, because that's what we'll
+	 see when reading a definition.  */
+      record_skip_defn (STRIP_TEMPLATE (existing), !matched, false);
+
+      /* And our result is the existing node.  */
+      res = existing;
+    }
+
+  return res;
 }
 
 /* Stream out tree node T.  We automatically create local back
@@ -7465,192 +7651,8 @@ trees_in::tree_node ()
 
     case tt_mergeable:
     case tt_node:
-      {
-	/* A new node.  Stream it in.  */
-	bool is_mergeable_node = tag == tt_mergeable;
-	tree existing = NULL_TREE;
-	const char *merge_kind = "";
-
-	tag = 0;
-	if (is_mergeable_node)
-	  {
-	    /* A mergeable entity.  We've already deduped it, but need
-	       to read in the value here.  Either in-place, or as a
-	       dummy.  */
-	    tag = i ();
-	    if (unsigned (~tag) < back_refs.length ())
-	      res = back_refs[~tag];
-	    if (!res || !DECL_P (res))
-	      res = NULL;
-
-	    merge_kind = " new";
-
-	    /* Determine if we had already known about this.  */
-	    if (res)
-	      if (tree *merge = lookup_mergeable (u ()))
-		{
-		  existing = merge[1];
-		  gcc_checking_assert (merge[existing != NULL_TREE] == res);
-		  if (existing)
-		    {
-		      res = merge[0];
-		      merge_kind = " merged";
-		    }
-		}
-
-	    // FIXME: Mark function parms as mergeable during this read in.
-	  }
-	else
-	  {
-	    res = start (u ());
-	    if (res)
-	      /* Insert into map.  */
-	      tag = insert (res);
-	  }
-
-	if (res)
-	  {
-	    dump (dumper::TREE)
-	      && dump ("Reading%s:%d %C", merge_kind,
-		       tag, TREE_CODE (res));
-
-	    if (!is_mergeable_node)
-	      if (!tree_node_bools (res))
-		res = NULL_TREE;
-	  }
-
-	tree inner = res;
-	tree existing_inner = existing;
-	if (res && TREE_CODE (res) == TEMPLATE_DECL)
-	  {
-	    int inner_tag = 0;
-	    if (is_mergeable_node)
-	      {
-		inner = DECL_TEMPLATE_RESULT (res);
-		inner_tag = i ();
-
-		if (existing_inner)
-		  existing_inner = DECL_TEMPLATE_RESULT (existing_inner);
-		gcc_checking_assert (back_refs[~inner_tag]
-				     == (existing ? existing_inner : inner));
-	      }
-	    else
-	      {
-		inner = start (u ());
-		if (inner)
-		  inner_tag = insert (inner);
-		else
-		  res = NULL_TREE;
-	      }
-	    
-	    if (res)
-	      {
-		dump (dumper::TREE)
-		  && dump ("Reading%s:%d %C", merge_kind,
-			   inner_tag, TREE_CODE (inner));
-		if (!is_mergeable_node)
-		  if (!tree_node_bools (inner))
-		    res = NULL_TREE;
-	      }
-	  }
-
-	tree type = NULL_TREE;
-	if (res && DECL_IMPLICIT_TYPEDEF_P (inner))
-	  {
-	    int type_tag = 0;
-	    if (is_mergeable_node)
-	      {
-		type = TREE_TYPE (inner);
-		type_tag = i ();
-		gcc_checking_assert (back_refs[~type_tag]
-				     == (existing ? TREE_TYPE (existing_inner)
-					 : type));
-	      }
-	    else
-	      {
-		type = start (u ());
-		if (type)
-		  type_tag = insert (type);
-		else
-		  res = NULL_TREE;
-	      }
-
-	    if (res)
-	      {
-		dump (dumper::TREE)
-		  && dump ("Reading%s:%d %C", merge_kind,
-			   type_tag, TREE_CODE (type));
-		if (!is_mergeable_node)
-		  if (!tree_node_bools (type)
-		      || !core_vals (type))
-		    res = NULL_TREE;
-	      }
-
-	    if (res)
-	      if (!lang_vals (type))
-		res = NULL_TREE;
-
-	    if (res)
-	      if (!is_mergeable_node)
-		{
-		  type = finish (type);
-		  back_refs[~type_tag] = type;
-		}
-	  }
-
-	if (!res
-	    || (res && !tree_node_vals (res))
-	    || (inner != res && !tree_node_vals (inner)))
-	  {
-	    if (tag)
-	      back_refs[~tag] = NULL_TREE;
-	    res = NULL_TREE;
-	    break;
-	  }
-
-	dump (dumper::TREE) && dump ("Read:%d %C:%N", tag, TREE_CODE (res), res);
-
-	if (!is_mergeable_node)
-	  {
-	    tree found = finish (res);
-
-	    if (found != res)
-	      {
-		gcc_assert (res == inner && !type);
-		
-		/* Update the mapping.  */
-		res = found;
-		back_refs[~tag] = res;
-
-		dump (dumper::TREE)
-		  && dump ("Remapping:%d to %C:%N%S", tag,
-			   res ? TREE_CODE (res) : ERROR_MARK, res, res);
-	      }
-	  }
-	else if (existing)
-	  {
-	    /* RES is the to-be-discarded decl.  Its internal pointers
-	       will be to the EXISTING decl's structure.  Frob it to
-	       point to its own other structures, so loading its
-	       definition will alter it, and not the existing decl.  */
-	    dump (dumper::MERGE) && dump ("Deduping %N", existing);
-	    if (res != inner)
-	      DECL_TEMPLATE_RESULT (res) = inner;
-	    if (type)
-	      {
-		TYPE_NAME (type) = inner;
-		TREE_TYPE (inner) = type;
-	      }
-
-	    bool matched = is_matching_decl (existing, res);
-	    /* Record EXISTING as the skip defn, because that's what
-	       we'll see when reading a definition.  */
-	    record_skip_defn (STRIP_TEMPLATE (existing), !matched, false);
-
-	    /* And our result is the existing node.  */
-	    res = existing;
-	  }
-      }
+      /* A new node.  Stream it in.  */
+      res = tree_value (tag == tt_mergeable);
       break;
     }
 
