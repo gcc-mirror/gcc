@@ -1796,14 +1796,19 @@
    (set_attr "mode" "DI,TI,TI")])
 
 (define_insn "mmx_psadbw"
-  [(set (match_operand:V1DI 0 "register_operand" "=y")
-        (unspec:V1DI [(match_operand:V8QI 1 "register_operand" "0")
-		      (match_operand:V8QI 2 "nonimmediate_operand" "ym")]
+  [(set (match_operand:V1DI 0 "register_operand" "=y,x,Yv")
+        (unspec:V1DI [(match_operand:V8QI 1 "register_operand" "0,0,Yv")
+		      (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yv")]
 		     UNSPEC_PSADBW))]
-  "TARGET_SSE || TARGET_3DNOW_A"
-  "psadbw\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxshft")
-   (set_attr "mode" "DI")])
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && (TARGET_SSE || TARGET_3DNOW_A)"
+  "@
+   psadbw\t{%2, %0|%0, %2}
+   psadbw\t{%2, %0|%0, %2}
+   vpsadbw\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxshft,sseiadd,sseiadd")
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_insn_and_split "mmx_pmovmskb"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
