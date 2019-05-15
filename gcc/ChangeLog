@@ -1,3 +1,9 @@
+2019-05-15  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/90478
+	* tree-switch-conversion.c (jump_table_cluster::can_be_handled):
+	Check for overflow.
+
 2019-05-15  Richard Biener  <rguenther@suse.de>
 
 	* tree-into-ssa.c (pass_build_ssa::execute): Run
