@@ -70,7 +70,7 @@
 (define_expand "mov<mode>"
   [(set (match_operand:MMXMODE 0 "nonimmediate_operand")
 	(match_operand:MMXMODE 1 "nonimmediate_operand"))]
-  "TARGET_MMX"
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
 {
   ix86_expand_vector_move (<MODE>mode, operands);
   DONE;
@@ -81,7 +81,7 @@
     "=r ,o ,r,r ,m ,?!y,!y,?!y,m  ,r  ,?!y,v,v,v,m,r,v,!y,*x")
 	(match_operand:MMXMODE 1 "nonimm_or_0_operand"
     "rCo,rC,C,rm,rC,C  ,!y,m  ,?!y,?!y,r  ,C,v,m,v,v,r,*x,!y"))]
-  "TARGET_MMX
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
 {
   switch (get_attr_type (insn))
@@ -232,7 +232,7 @@
 (define_expand "movmisalign<mode>"
   [(set (match_operand:MMXMODE 0 "nonimmediate_operand")
 	(match_operand:MMXMODE 1 "nonimmediate_operand"))]
-  "TARGET_MMX"
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
 {
   ix86_expand_vector_move (<MODE>mode, operands);
   DONE;
