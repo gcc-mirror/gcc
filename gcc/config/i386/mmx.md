@@ -984,32 +984,54 @@
    (set_attr "mode" "DI")])
 
 (define_insn "mmx_ashr<mode>3"
-  [(set (match_operand:MMXMODE24 0 "register_operand" "=y")
+  [(set (match_operand:MMXMODE24 0 "register_operand" "=y,x,Yv")
         (ashiftrt:MMXMODE24
-	  (match_operand:MMXMODE24 1 "register_operand" "0")
-	  (match_operand:DI 2 "nonmemory_operand" "yN")))]
-  "TARGET_MMX"
-  "psra<mmxvecsize>\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxshft")
+	  (match_operand:MMXMODE24 1 "register_operand" "0,0,Yv")
+	  (match_operand:DI 2 "nonmemory_operand" "yN,xN,YvN")))]
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+  "@
+   psra<mmxvecsize>\t{%2, %0|%0, %2}
+   psra<mmxvecsize>\t{%2, %0|%0, %2}
+   vpsra<mmxvecsize>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxshft,sseishft,sseishft")
    (set (attr "length_immediate")
      (if_then_else (match_operand 2 "const_int_operand")
        (const_string "1")
        (const_string "0")))
-   (set_attr "mode" "DI")])
+   (set_attr "mode" "DI,TI,TI")])
+
+(define_expand "ashr<mode>3"
+  [(set (match_operand:MMXMODE24 0 "register_operand")
+        (ashiftrt:MMXMODE24
+	  (match_operand:MMXMODE24 1 "register_operand")
+	  (match_operand:DI 2 "nonmemory_operand")))]
+  "TARGET_MMX_WITH_SSE")
 
 (define_insn "mmx_<shift_insn><mode>3"
-  [(set (match_operand:MMXMODE248 0 "register_operand" "=y")
+  [(set (match_operand:MMXMODE248 0 "register_operand" "=y,x,Yv")
         (any_lshift:MMXMODE248
-	  (match_operand:MMXMODE248 1 "register_operand" "0")
-	  (match_operand:DI 2 "nonmemory_operand" "yN")))]
-  "TARGET_MMX"
-  "p<vshift><mmxvecsize>\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxshft")
+	  (match_operand:MMXMODE248 1 "register_operand" "0,0,Yv")
+	  (match_operand:DI 2 "nonmemory_operand" "yN,xN,YvN")))]
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+  "@
+   p<vshift><mmxvecsize>\t{%2, %0|%0, %2}
+   p<vshift><mmxvecsize>\t{%2, %0|%0, %2}
+   vp<vshift><mmxvecsize>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxshft,sseishft,sseishft")
    (set (attr "length_immediate")
      (if_then_else (match_operand 2 "const_int_operand")
        (const_string "1")
        (const_string "0")))
-   (set_attr "mode" "DI")])
+   (set_attr "mode" "DI,TI,TI")])
+
+(define_expand "<shift_insn><mode>3"
+  [(set (match_operand:MMXMODE248 0 "register_operand")
+        (any_lshift:MMXMODE248
+	  (match_operand:MMXMODE248 1 "register_operand")
+	  (match_operand:DI 2 "nonmemory_operand")))]
+  "TARGET_MMX_WITH_SSE")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
