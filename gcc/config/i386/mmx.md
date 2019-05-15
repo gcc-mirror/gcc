@@ -1874,7 +1874,35 @@
   [(UNSPECV_EMMS "emms")
    (UNSPECV_FEMMS "femms")])
 
-(define_insn "mmx_<emms>"
+(define_expand "mmx_<emms>"
+  [(parallel
+    [(unspec_volatile [(const_int 0)] EMMS)
+      (clobber (reg:XF ST0_REG))
+      (clobber (reg:XF ST1_REG))
+      (clobber (reg:XF ST2_REG))
+      (clobber (reg:XF ST3_REG))
+      (clobber (reg:XF ST4_REG))
+      (clobber (reg:XF ST5_REG))
+      (clobber (reg:XF ST6_REG))
+      (clobber (reg:XF ST7_REG))
+      (clobber (reg:DI MM0_REG))
+      (clobber (reg:DI MM1_REG))
+      (clobber (reg:DI MM2_REG))
+      (clobber (reg:DI MM3_REG))
+      (clobber (reg:DI MM4_REG))
+      (clobber (reg:DI MM5_REG))
+      (clobber (reg:DI MM6_REG))
+      (clobber (reg:DI MM7_REG))])]
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+{
+   if (!TARGET_MMX)
+     {
+       emit_insn (gen_nop ());
+       DONE;
+     }
+})
+
+(define_insn "*mmx_<emms>"
   [(unspec_volatile [(const_int 0)] EMMS)
    (clobber (reg:XF ST0_REG))
    (clobber (reg:XF ST1_REG))

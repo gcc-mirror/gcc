@@ -1,6 +1,13 @@
 2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89021
+	* config/i386/mmx.md (mmx_<emms>): Renamed to ...
+	(*mmx_<emms>): This.
+	(mmx_<emms>): New expander.
+
+2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89021
 	* config/i386/mmx.md (sse2_umulv1siv1di3): Add SSE emulation
 	support.
 	(*sse2_umulv1siv1di3): Add SSE2 emulation.
