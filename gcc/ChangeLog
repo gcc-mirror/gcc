@@ -1,4 +1,26 @@
 2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/89021
+	* config/i386/i386-expand.c (ix86_move_vector_high_sse_to_mmx):
+	New function.
+	(ix86_split_mmx_pack): Likewise.
+	* config/i386/i386-protos.h (ix86_move_vector_high_sse_to_mmx):
+	New prototype.
+	(ix86_split_mmx_pack): Likewise.
+	* config/i386/i386.md (mmx_isa): New.
+	(enabled): Also check mmx_isa.
+	* config/i386/mmx.md (any_s_truncate): New code iterator.
+	(s_trunsuffix): New code attr.
+	(mmx_packsswb): Removed.
+	(mmx_packssdw): Likewise.
+	(mmx_packuswb): Likewise.
+	(mmx_pack<s_trunsuffix>swb): New define_insn_and_split to emulate
+	MMX packsswb/packuswb with SSE2.
+	(mmx_packssdw): Likewise.
+	* config/i386/predicates.md (register_mmxmem_operand): New.
+
+2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89021
 	* config/i386/i386-c.c (ix86_target_macros_internal): Define

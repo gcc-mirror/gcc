@@ -49,6 +49,13 @@
   (and (match_code "reg")
        (match_test "MMX_REGNO_P (REGNO (op))")))
 
+;; Match register operands, but include memory operands for
+;; !TARGET_MMX_WITH_SSE.
+(define_predicate "register_mmxmem_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (not (match_test "TARGET_MMX_WITH_SSE"))
+	    (match_operand 0 "memory_operand"))))
+
 ;; True if the operand is an SSE register.
 (define_predicate "sse_reg_operand"
   (and (match_code "reg")

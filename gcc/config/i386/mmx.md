@@ -1046,41 +1046,48 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_insn "mmx_packsswb"
-  [(set (match_operand:V8QI 0 "register_operand" "=y")
-	(vec_concat:V8QI
-	  (ss_truncate:V4QI
-	    (match_operand:V4HI 1 "register_operand" "0"))
-	  (ss_truncate:V4QI
-	    (match_operand:V4HI 2 "nonimmediate_operand" "ym"))))]
-  "TARGET_MMX"
-  "packsswb\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxshft")
-   (set_attr "mode" "DI")])
+;; Used in signed and unsigned truncations with saturation.
+(define_code_iterator any_s_truncate [ss_truncate us_truncate])
+;; Instruction suffix for truncations with saturation.
+(define_code_attr s_trunsuffix [(ss_truncate "s") (us_truncate "u")])
 
-(define_insn "mmx_packssdw"
-  [(set (match_operand:V4HI 0 "register_operand" "=y")
+(define_insn_and_split "mmx_pack<s_trunsuffix>swb"
+  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yv")
+	(vec_concat:V8QI
+	  (any_s_truncate:V4QI
+	    (match_operand:V4HI 1 "register_operand" "0,0,Yv"))
+	  (any_s_truncate:V4QI
+	    (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv"))))]
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+  "@
+   pack<s_trunsuffix>swb\t{%2, %0|%0, %2}
+   #
+   #"
+  "TARGET_MMX_WITH_SSE && reload_completed"
+  [(const_int 0)]
+  "ix86_split_mmx_pack (operands, <any_s_truncate:CODE>); DONE;"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxshft,sselog,sselog")
+   (set_attr "mode" "DI,TI,TI")])
+
+(define_insn_and_split "mmx_packssdw"
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
 	(vec_concat:V4HI
 	  (ss_truncate:V2HI
-	    (match_operand:V2SI 1 "register_operand" "0"))
+	    (match_operand:V2SI 1 "register_operand" "0,0,Yv"))
 	  (ss_truncate:V2HI
-	    (match_operand:V2SI 2 "nonimmediate_operand" "ym"))))]
-  "TARGET_MMX"
-  "packssdw\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxshft")
-   (set_attr "mode" "DI")])
-
-(define_insn "mmx_packuswb"
-  [(set (match_operand:V8QI 0 "register_operand" "=y")
-	(vec_concat:V8QI
-	  (us_truncate:V4QI
-	    (match_operand:V4HI 1 "register_operand" "0"))
-	  (us_truncate:V4QI
-	    (match_operand:V4HI 2 "nonimmediate_operand" "ym"))))]
-  "TARGET_MMX"
-  "packuswb\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxshft")
-   (set_attr "mode" "DI")])
+	    (match_operand:V2SI 2 "register_mmxmem_operand" "ym,x,Yv"))))]
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+  "@
+   packssdw\t{%2, %0|%0, %2}
+   #
+   #"
+  "TARGET_MMX_WITH_SSE && reload_completed"
+  [(const_int 0)]
+  "ix86_split_mmx_pack (operands, SS_TRUNCATE); DONE;"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxshft,sselog,sselog")
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_insn "mmx_punpckhbw"
   [(set (match_operand:V8QI 0 "register_operand" "=y")

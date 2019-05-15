@@ -662,6 +662,60 @@ ix86_expand_vector_move_misalign (machine_mode mode, rtx operands[])
     gcc_unreachable ();
 }
 
+/* Move bits 64:95 to bits 32:63.  */
+
+void
+ix86_move_vector_high_sse_to_mmx (rtx op)
+{
+  rtx mask = gen_rtx_PARALLEL (VOIDmode,
+			       gen_rtvec (4, GEN_INT (0), GEN_INT (2),
+					  GEN_INT (0), GEN_INT (0)));
+  rtx dest = lowpart_subreg (V4SImode, op, GET_MODE (op));
+  op = gen_rtx_VEC_SELECT (V4SImode, dest, mask);
+  rtx insn = gen_rtx_SET (dest, op);
+  emit_insn (insn);
+}
+
+/* Split MMX pack with signed/unsigned saturation with SSE/SSE2.  */
+
+void
+ix86_split_mmx_pack (rtx operands[], enum rtx_code code)
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  rtx op2 = operands[2];
+
+  machine_mode dmode = GET_MODE (op0);
+  machine_mode smode = GET_MODE (op1);
+  machine_mode inner_dmode = GET_MODE_INNER (dmode);
+  machine_mode inner_smode = GET_MODE_INNER (smode);
+
+  /* Get the corresponding SSE mode for destination.  */
+  int nunits = 16 / GET_MODE_SIZE (inner_dmode);
+  machine_mode sse_dmode = mode_for_vector (GET_MODE_INNER (dmode),
+					    nunits).require ();
+  machine_mode sse_half_dmode = mode_for_vector (GET_MODE_INNER (dmode),
+						 nunits / 2).require ();
+
+  /* Get the corresponding SSE mode for source.  */
+  nunits = 16 / GET_MODE_SIZE (inner_smode);
+  machine_mode sse_smode = mode_for_vector (GET_MODE_INNER (smode),
+					    nunits).require ();
+
+  /* Generate SSE pack with signed/unsigned saturation.  */
+  rtx dest = lowpart_subreg (sse_dmode, op0, GET_MODE (op0));
+  op1 = lowpart_subreg (sse_smode, op1, GET_MODE (op1));
+  op2 = lowpart_subreg (sse_smode, op2, GET_MODE (op2));
+
+  op1 = gen_rtx_fmt_e (code, sse_half_dmode, op1);
+  op2 = gen_rtx_fmt_e (code, sse_half_dmode, op2);
+  rtx insn = gen_rtx_SET (dest, gen_rtx_VEC_CONCAT (sse_dmode,
+						    op1, op2));
+  emit_insn (insn);
+
+  ix86_move_vector_high_sse_to_mmx (op0);
+}
+
 /* Helper function of ix86_fixup_binary_operands to canonicalize
    operand order.  Returns true if the operands should be swapped.  */
 
