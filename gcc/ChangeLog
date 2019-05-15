@@ -1,6 +1,15 @@
 2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89021
+	* config/i386/mmx.md (any_logic:mmx_<code><mode>3): Also allow
+	TARGET_MMX_WITH_SSE.
+	(any_logic:<code><mode>3): New.
+	(any_logic:*mmx_<code><mode>3): Also allow TARGET_MMX_WITH_SSE.
+	Add SSE support.
+
+2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89021
 	* config/i386/mmx.md (mmx_ashr<mode>3): Also allow
 	TARGET_MMX_WITH_SSE.  Add SSE emulation.
 	(mmx_<shift_insn><mode>3): Likewise.

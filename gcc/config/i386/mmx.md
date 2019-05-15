@@ -1086,20 +1086,33 @@
 (define_expand "mmx_<code><mode>3"
   [(set (match_operand:MMXMODEI 0 "register_operand")
 	(any_logic:MMXMODEI
-	  (match_operand:MMXMODEI 1 "nonimmediate_operand")
-	  (match_operand:MMXMODEI 2 "nonimmediate_operand")))]
-  "TARGET_MMX"
+	  (match_operand:MMXMODEI 1 "register_mmxmem_operand")
+	  (match_operand:MMXMODEI 2 "register_mmxmem_operand")))]
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+  "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
+
+(define_expand "<code><mode>3"
+  [(set (match_operand:MMXMODEI 0 "register_operand")
+	(any_logic:MMXMODEI
+	  (match_operand:MMXMODEI 1 "register_operand")
+	  (match_operand:MMXMODEI 2 "register_operand")))]
+  "TARGET_MMX_WITH_SSE"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
 (define_insn "*mmx_<code><mode>3"
-  [(set (match_operand:MMXMODEI 0 "register_operand" "=y")
+  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,Yv")
         (any_logic:MMXMODEI
-	  (match_operand:MMXMODEI 1 "nonimmediate_operand" "%0")
-	  (match_operand:MMXMODEI 2 "nonimmediate_operand" "ym")))]
-  "TARGET_MMX && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
-  "p<logic>\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxadd")
-   (set_attr "mode" "DI")])
+	  (match_operand:MMXMODEI 1 "register_mmxmem_operand" "%0,0,Yv")
+	  (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,Yv")))]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
+  "@
+   p<logic>\t{%2, %0|%0, %2}
+   p<logic>\t{%2, %0|%0, %2}
+   vp<logic>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxadd,sselog,sselog")
+   (set_attr "mode" "DI,TI,TI")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
