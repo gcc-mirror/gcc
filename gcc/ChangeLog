@@ -1,3 +1,11 @@
+2019-05-15  Li Jia He  <helijia@linux.ibm.com>
+
+	Backport from mainline.
+	2019-05-07  Li Jia He  <helijia@linux.ibm.com>
+
+	* tree-ssa-phiopt.c (two_value_replacement): Fix a typo in parameter
+	detection.
+
 2019-05-14  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline

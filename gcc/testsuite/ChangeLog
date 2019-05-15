@@ -1,3 +1,12 @@
+2019-05-15  Li Jia He  <helijia@linux.ibm.com>
+
+	Backport from mainline.
+	2019-05-07  Li Jia He  <helijia@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/pr37508.c: Add the no-ssa-phiopt option to skip phi
+	optimization.
+	* gcc.dg/tree-ssa/pr88676-2.c: New testcase.
+
 2019-05-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
