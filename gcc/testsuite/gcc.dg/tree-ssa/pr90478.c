@@ -1,7 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "" } */
 
 typedef struct {
-  long a;
+  long long a;
 } c;
 
 void e();

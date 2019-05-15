@@ -1,4 +1,8 @@
-2019-05-15  Jakub Jelinek  <jakub@redhat.com>
+2019-05-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/90478
+	* gcc.dg/tree-ssa/pr90478.c: Add empty dg-options.  Use long long type
+	instead of long.
 
 	* c-c++-common/gomp/simd8.c: New test.
 
