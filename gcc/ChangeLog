@@ -1,6 +1,41 @@
 2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89021
+	* config/i386/mmx.md (*vec_dupv2sf): Changed to
+	define_insn_and_split to support SSE emulation.
+	(*vec_extractv2sf_0): Likewise.
+	(*vec_extractv2sf_1): Likewise.
+	(*vec_extractv2si_0): Likewise.
+	(*vec_extractv2si_1): Likewise.
+	(*vec_extractv2si_zext_mem): Likewise.
+	(vec_setv2sf): Also allow TARGET_MMX_WITH_SSE.
+	(vec_extractv2sf_1 splitter): Likewise.
+	(vec_extractv2sfsf): Likewise.
+	(vec_setv2si): Likewise.
+	(vec_extractv2si_1 splitter): Likewise.
+	(vec_extractv2sisi): Likewise.
+	(vec_setv4hi): Likewise.
+	(vec_extractv4hihi): Likewise.
+	(vec_setv8qi): Likewise.
+	(vec_extractv8qiqi): Likewise.
+	(vec_extractv2sfsf): Also allow TARGET_MMX_WITH_SSE.  Pass
+	TARGET_MMX_WITH_SSE ix86_expand_vector_extract.
+	(vec_extractv2sisi): Likewise.
+	(vec_extractv4hihi): Likewise.
+	(vec_extractv8qiqi): Likewise.
+	(vec_initv2sfsf): Also allow TARGET_MMX_WITH_SSE.  Pass
+	TARGET_MMX_WITH_SSE to ix86_expand_vector_init.
+	(vec_initv2sisi): Likewise.
+	(vec_initv4hihi): Likewise.
+	(vec_initv8qiqi): Likewise.
+	(vec_setv2si): Also allow TARGET_MMX_WITH_SSE.  Pass
+	TARGET_MMX_WITH_SSE to ix86_expand_vector_set.
+	(vec_setv4hi): Likewise.
+	(vec_setv8qi): Likewise.
+
+2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89021
 	* config/i386/mmx.md (MMXMODE:mov<mode>): Also allow
 	TARGET_MMX_WITH_SSE.
 	(MMXMODE:*mov<mode>_internal): Likewise.
