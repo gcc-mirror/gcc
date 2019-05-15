@@ -1,3 +1,9 @@
+2019-05-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/90461
+        * gfortran.dg/open_errors_2.f90: Add -std=f2008, adjust line number.
+	* gfortran.dg/open_errors_3.f90: New test.
+
 2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89021

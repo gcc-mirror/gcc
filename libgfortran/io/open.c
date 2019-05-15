@@ -515,7 +515,8 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
      Do not error if opening file preconnected to stdin, stdout, stderr.  */
 
   u2 = NULL;
-  if ((opp->common.flags & IOPARM_OPEN_HAS_FILE) != 0)
+  if ((opp->common.flags & IOPARM_OPEN_HAS_FILE) != 0
+      && !(compile_options.allow_std & GFC_STD_F2018))
     u2 = find_file (opp->file, opp->file_len);
   if (u2 != NULL
       && (options.stdin_unit < 0 || u2->unit_number != options.stdin_unit)
