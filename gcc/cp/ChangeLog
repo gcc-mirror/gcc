@@ -1,5 +1,10 @@
 2019-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* cp-tree.h (REFERENCE_VLA_OK): Remove.
+	* lambda.c (build_capture_proxy): Remove use of the above.
+
+2019-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* call.c (perform_overload_resolution, build_new_method_call_1):
 	Use OVL_P; remove redundant TEMPLATE_DECL checks.
 	* decl.c (grokfndecl): Likewise.
