@@ -1,6 +1,11 @@
 2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89021
+	* config/i386/sse.md (ssse3_pmaddubsw): Add SSE emulation.
+
+2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89021
 	* config/i386/sse.md (ssse3_ph<plusminus_mnemonic>dv2si3):
 	Changed to define_insn_and_split to support SSE emulation.
 
