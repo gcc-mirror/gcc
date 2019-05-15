@@ -1406,14 +1406,24 @@
    (set_attr "length_immediate" "1")
    (set_attr "mode" "DI")])
 
-(define_insn "*vec_dupv2si"
-  [(set (match_operand:V2SI 0 "register_operand" "=y")
+(define_insn_and_split "*vec_dupv2si"
+  [(set (match_operand:V2SI 0 "register_operand" "=y,x,Yv,Yw")
 	(vec_duplicate:V2SI
-	  (match_operand:SI 1 "register_operand" "0")))]
-  "TARGET_MMX"
-  "punpckldq\t%0, %0"
-  [(set_attr "type" "mmxcvt")
-   (set_attr "mode" "DI")])
+	  (match_operand:SI 1 "register_operand" "0,0,Yv,r")))]
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+  "@
+   punpckldq\t%0, %0
+   #
+   #
+   #"
+  "TARGET_MMX_WITH_SSE && reload_completed"
+  [(set (match_dup 0)
+	(vec_duplicate:V4SI (match_dup 1)))]
+  "operands[0] = lowpart_subreg (V4SImode, operands[0],
+				 GET_MODE (operands[0]));"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx,x64_avx")
+   (set_attr "type" "mmxcvt,ssemov,ssemov,ssemov")
+   (set_attr "mode" "DI,TI,TI,TI")])
 
 (define_insn "*mmx_concatv2si"
   [(set (match_operand:V2SI 0 "register_operand"     "=y,y")
