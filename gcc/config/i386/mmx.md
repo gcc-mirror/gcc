@@ -1074,14 +1074,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_insn "mmx_andnot<mode>3"
-  [(set (match_operand:MMXMODEI 0 "register_operand" "=y")
+  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,Yv")
 	(and:MMXMODEI
-	  (not:MMXMODEI (match_operand:MMXMODEI 1 "register_operand" "0"))
-	  (match_operand:MMXMODEI 2 "nonimmediate_operand" "ym")))]
-  "TARGET_MMX"
-  "pandn\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxadd")
-   (set_attr "mode" "DI")])
+	  (not:MMXMODEI (match_operand:MMXMODEI 1 "register_operand" "0,0,Yv"))
+	  (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,Yv")))]
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+  "@
+   pandn\t{%2, %0|%0, %2}
+   pandn\t{%2, %0|%0, %2}
+   vpandn\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxadd,sselog,sselog")
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_expand "mmx_<code><mode>3"
   [(set (match_operand:MMXMODEI 0 "register_operand")
