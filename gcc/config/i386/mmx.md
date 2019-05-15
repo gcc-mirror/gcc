@@ -580,14 +580,23 @@
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "V2SF")])
 
-(define_insn "*vec_dupv2sf"
-  [(set (match_operand:V2SF 0 "register_operand" "=y")
+(define_insn_and_split "*vec_dupv2sf"
+  [(set (match_operand:V2SF 0 "register_operand" "=y,x,Yv")
 	(vec_duplicate:V2SF
-	  (match_operand:SF 1 "register_operand" "0")))]
-  "TARGET_MMX"
-  "punpckldq\t%0, %0"
-  [(set_attr "type" "mmxcvt")
-   (set_attr "mode" "DI")])
+	  (match_operand:SF 1 "register_operand" "0,0,Yv")))]
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+  "@
+   punpckldq\t%0, %0
+   #
+   #"
+  "TARGET_MMX_WITH_SSE && reload_completed"
+  [(set (match_dup 0)
+	(vec_duplicate:V4SF (match_dup 1)))]
+  "operands[0] = lowpart_subreg (V4SFmode, operands[0],
+				 GET_MODE (operands[0]));"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxcvt,ssemov,ssemov")
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_insn "*mmx_concatv2sf"
   [(set (match_operand:V2SF 0 "register_operand"     "=y,y")
@@ -605,9 +614,9 @@
   [(match_operand:V2SF 0 "register_operand")
    (match_operand:SF 1 "register_operand")
    (match_operand 2 "const_int_operand")]
-  "TARGET_MMX"
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
 {
-  ix86_expand_vector_set (false, operands[0], operands[1],
+  ix86_expand_vector_set (TARGET_MMX_WITH_SSE, operands[0], operands[1],
 			  INTVAL (operands[2]));
   DONE;
 })
@@ -619,11 +628,13 @@
 	(vec_select:SF
 	  (match_operand:V2SF 1 "nonimmediate_operand" " xm,x,ym,y,m,m")
 	  (parallel [(const_int 0)])))]
-  "TARGET_MMX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (match_dup 1))]
-  "operands[1] = gen_lowpart (SFmode, operands[1]);")
+  "operands[1] = gen_lowpart (SFmode, operands[1]);"
+  [(set_attr "mmx_isa" "*,*,native,native,*,*")])
 
 ;; Avoid combining registers from different units in a single alternative,
 ;; see comment above inline_secondary_memory_needed function in i386.c
@@ -632,7 +643,8 @@
 	(vec_select:SF
 	  (match_operand:V2SF 1 "nonimmediate_operand" " 0,x,x,o,o,o,o")
 	  (parallel [(const_int 1)])))]
-  "TARGET_MMX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
    punpckhdq\t%0, %0
    %vmovshdup\t{%1, %0|%0, %1}
@@ -642,6 +654,7 @@
    #
    #"
   [(set_attr "isa" "*,sse3,noavx,*,*,*,*")
+   (set_attr "mmx_isa" "native,*,*,native,*,*,*")
    (set_attr "type" "mmxcvt,sse,sseshuf1,mmxmov,ssemov,fmov,imov")
    (set (attr "length_immediate")
      (if_then_else (eq_attr "alternative" "2")
@@ -659,7 +672,7 @@
 	(vec_select:SF
 	  (match_operand:V2SF 1 "memory_operand")
 	  (parallel [(const_int 1)])))]
-  "TARGET_MMX && reload_completed"
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && reload_completed"
   [(set (match_dup 0) (match_dup 1))]
   "operands[1] = adjust_address (operands[1], SFmode, 4);")
 
@@ -667,19 +680,20 @@
   [(match_operand:SF 0 "register_operand")
    (match_operand:V2SF 1 "register_operand")
    (match_operand 2 "const_int_operand")]
-  "TARGET_MMX"
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
 {
-  ix86_expand_vector_extract (false, operands[0], operands[1],
-			      INTVAL (operands[2]));
+  ix86_expand_vector_extract (TARGET_MMX_WITH_SSE, operands[0],
+			      operands[1], INTVAL (operands[2]));
   DONE;
 })
 
 (define_expand "vec_initv2sfsf"
   [(match_operand:V2SF 0 "register_operand")
    (match_operand 1)]
-  "TARGET_SSE"
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSE"
 {
-  ix86_expand_vector_init (false, operands[0], operands[1]);
+  ix86_expand_vector_init (TARGET_MMX_WITH_SSE, operands[0],
+			   operands[1]);
   DONE;
 })
 
@@ -1551,9 +1565,9 @@
   [(match_operand:V2SI 0 "register_operand")
    (match_operand:SI 1 "register_operand")
    (match_operand 2 "const_int_operand")]
-  "TARGET_MMX"
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
 {
-  ix86_expand_vector_set (false, operands[0], operands[1],
+  ix86_expand_vector_set (TARGET_MMX_WITH_SSE, operands[0], operands[1],
 			  INTVAL (operands[2]));
   DONE;
 })
@@ -1565,11 +1579,13 @@
 	(vec_select:SI
 	  (match_operand:V2SI 1 "nonimmediate_operand" "xm,x,ym,y,m")
 	  (parallel [(const_int 0)])))]
-  "TARGET_MMX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (match_dup 1))]
-  "operands[1] = gen_lowpart (SImode, operands[1]);")
+  "operands[1] = gen_lowpart (SImode, operands[1]);"
+  [(set_attr "mmx_isa" "*,*,native,native,*")])
 
 ;; Avoid combining registers from different units in a single alternative,
 ;; see comment above inline_secondary_memory_needed function in i386.c
@@ -1578,7 +1594,8 @@
 	(vec_select:SI
 	  (match_operand:V2SI 1 "nonimmediate_operand" " 0,x,x,o,o,o")
 	  (parallel [(const_int 1)])))]
-  "TARGET_MMX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
    punpckhdq\t%0, %0
    %vpshufd\t{$0xe5, %1, %0|%0, %1, 0xe5}
@@ -1587,6 +1604,7 @@
    #
    #"
   [(set_attr "isa" "*,sse2,noavx,*,*,*")
+   (set_attr "mmx_isa" "native,*,*,native,*,*")
    (set_attr "type" "mmxcvt,sseshuf1,sseshuf1,mmxmov,ssemov,imov")
    (set (attr "length_immediate")
      (if_then_else (eq_attr "alternative" "1,2")
@@ -1600,7 +1618,7 @@
 	(vec_select:SI
 	  (match_operand:V2SI 1 "memory_operand")
 	  (parallel [(const_int 1)])))]
-  "TARGET_MMX && reload_completed"
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && reload_completed"
   [(set (match_dup 0) (match_dup 1))]
   "operands[1] = adjust_address (operands[1], SImode, 4);")
 
@@ -1617,25 +1635,27 @@
 {
   operands[1] = adjust_address (operands[1], SImode, INTVAL (operands[2]) * 4);
 }
-  [(set_attr "isa" "*,sse2,*")])
+  [(set_attr "isa" "*,sse2,*")
+   (set_attr "mmx_isa" "native,*,*")])
 
 (define_expand "vec_extractv2sisi"
   [(match_operand:SI 0 "register_operand")
    (match_operand:V2SI 1 "register_operand")
    (match_operand 2 "const_int_operand")]
-  "TARGET_MMX"
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
 {
-  ix86_expand_vector_extract (false, operands[0], operands[1],
-			      INTVAL (operands[2]));
+  ix86_expand_vector_extract (TARGET_MMX_WITH_SSE, operands[0],
+			      operands[1], INTVAL (operands[2]));
   DONE;
 })
 
 (define_expand "vec_initv2sisi"
   [(match_operand:V2SI 0 "register_operand")
    (match_operand 1)]
-  "TARGET_SSE"
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSE"
 {
-  ix86_expand_vector_init (false, operands[0], operands[1]);
+  ix86_expand_vector_init (TARGET_MMX_WITH_SSE, operands[0],
+			   operands[1]);
   DONE;
 })
 
@@ -1643,9 +1663,9 @@
   [(match_operand:V4HI 0 "register_operand")
    (match_operand:HI 1 "register_operand")
    (match_operand 2 "const_int_operand")]
-  "TARGET_MMX"
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
 {
-  ix86_expand_vector_set (false, operands[0], operands[1],
+  ix86_expand_vector_set (TARGET_MMX_WITH_SSE, operands[0], operands[1],
 			  INTVAL (operands[2]));
   DONE;
 })
@@ -1654,19 +1674,20 @@
   [(match_operand:HI 0 "register_operand")
    (match_operand:V4HI 1 "register_operand")
    (match_operand 2 "const_int_operand")]
-  "TARGET_MMX"
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
 {
-  ix86_expand_vector_extract (false, operands[0], operands[1],
-			      INTVAL (operands[2]));
+  ix86_expand_vector_extract (TARGET_MMX_WITH_SSE, operands[0],
+			      operands[1], INTVAL (operands[2]));
   DONE;
 })
 
 (define_expand "vec_initv4hihi"
   [(match_operand:V4HI 0 "register_operand")
    (match_operand 1)]
-  "TARGET_SSE"
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSE"
 {
-  ix86_expand_vector_init (false, operands[0], operands[1]);
+  ix86_expand_vector_init (TARGET_MMX_WITH_SSE, operands[0],
+			   operands[1]);
   DONE;
 })
 
@@ -1674,9 +1695,9 @@
   [(match_operand:V8QI 0 "register_operand")
    (match_operand:QI 1 "register_operand")
    (match_operand 2 "const_int_operand")]
-  "TARGET_MMX"
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
 {
-  ix86_expand_vector_set (false, operands[0], operands[1],
+  ix86_expand_vector_set (TARGET_MMX_WITH_SSE, operands[0], operands[1],
 			  INTVAL (operands[2]));
   DONE;
 })
@@ -1685,19 +1706,20 @@
   [(match_operand:QI 0 "register_operand")
    (match_operand:V8QI 1 "register_operand")
    (match_operand 2 "const_int_operand")]
-  "TARGET_MMX"
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
 {
-  ix86_expand_vector_extract (false, operands[0], operands[1],
-			      INTVAL (operands[2]));
+  ix86_expand_vector_extract (TARGET_MMX_WITH_SSE, operands[0],
+			      operands[1], INTVAL (operands[2]));
   DONE;
 })
 
 (define_expand "vec_initv8qiqi"
   [(match_operand:V8QI 0 "register_operand")
    (match_operand 1)]
-  "TARGET_SSE"
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSE"
 {
-  ix86_expand_vector_init (false, operands[0], operands[1]);
+  ix86_expand_vector_init (TARGET_MMX_WITH_SSE, operands[0],
+			   operands[1]);
   DONE;
 })
 
