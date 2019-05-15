@@ -16233,17 +16233,21 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "ssse3_psign<mode>3"
-  [(set (match_operand:MMXMODEI 0 "register_operand" "=y")
+  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,Yv")
 	(unspec:MMXMODEI
-	  [(match_operand:MMXMODEI 1 "register_operand" "0")
-	   (match_operand:MMXMODEI 2 "nonimmediate_operand" "ym")]
+	  [(match_operand:MMXMODEI 1 "register_operand" "0,0,Yv")
+	   (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,Yv")]
 	  UNSPEC_PSIGN))]
-  "TARGET_SSSE3"
-  "psign<mmxvecsize>\t{%2, %0|%0, %2}";
-  [(set_attr "type" "sselog1")
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"
+  "@
+   psign<mmxvecsize>\t{%2, %0|%0, %2}
+   psign<mmxvecsize>\t{%2, %0|%0, %2}
+   vpsign<mmxvecsize>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set (attr "prefix_rex") (symbol_ref "x86_extended_reg_mentioned_p (insn)"))
-   (set_attr "mode" "DI")])
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_insn "<ssse3_avx2>_palignr<mode>_mask"
   [(set (match_operand:VI1_AVX512 0 "register_operand" "=v")

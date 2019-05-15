@@ -1,6 +1,11 @@
 2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89021
+	* config/i386/sse.md (ssse3_psign<mode>3): Add SSE emulation.
+
+2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89021
 	* config/i386/sse.md (ssse3_pshufbv8qi3): Changed to
 	define_insn_and_split.  Also allow TARGET_MMX_WITH_SSE.  Add
 	SSE emulation.
