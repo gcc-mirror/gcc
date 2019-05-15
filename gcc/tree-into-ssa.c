@@ -2425,6 +2425,12 @@ pass_build_ssa::execute (function *fun)
   bitmap_head *dfs;
   basic_block bb;
 
+  /* Increase the set of variables we can rewrite into SSA form
+     by clearing TREE_ADDRESSABLE and setting DECL_GIMPLE_REG_P
+     and transform the IL to support this.  */
+  if (optimize)
+    execute_update_addresses_taken ();
+
   /* Initialize operand data structures.  */
   init_ssa_operands (fun);
 
