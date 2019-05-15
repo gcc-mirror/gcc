@@ -1348,9 +1348,10 @@
 
 (define_expand "mmx_pshufw"
   [(match_operand:V4HI 0 "register_operand")
-   (match_operand:V4HI 1 "nonimmediate_operand")
+   (match_operand:V4HI 1 "register_mmxmem_operand")
    (match_operand:SI 2 "const_int_operand")]
-  "TARGET_SSE || TARGET_3DNOW_A"
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && (TARGET_SSE || TARGET_3DNOW_A)"
 {
   int mask = INTVAL (operands[2]);
   emit_insn (gen_mmx_pshufw_1 (operands[0], operands[1],
@@ -1362,14 +1363,15 @@
 })
 
 (define_insn "mmx_pshufw_1"
-  [(set (match_operand:V4HI 0 "register_operand" "=y")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,Yv")
         (vec_select:V4HI
-          (match_operand:V4HI 1 "nonimmediate_operand" "ym")
+          (match_operand:V4HI 1 "register_mmxmem_operand" "ym,Yv")
           (parallel [(match_operand 2 "const_0_to_3_operand")
                      (match_operand 3 "const_0_to_3_operand")
                      (match_operand 4 "const_0_to_3_operand")
                      (match_operand 5 "const_0_to_3_operand")])))]
-  "TARGET_SSE || TARGET_3DNOW_A"
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && (TARGET_SSE || TARGET_3DNOW_A)"
 {
   int mask = 0;
   mask |= INTVAL (operands[2]) << 0;
@@ -1378,11 +1380,20 @@
   mask |= INTVAL (operands[5]) << 6;
   operands[2] = GEN_INT (mask);
 
-  return "pshufw\t{%2, %1, %0|%0, %1, %2}";
+  switch (which_alternative)
+    {
+    case 0:
+      return "pshufw\t{%2, %1, %0|%0, %1, %2}";
+    case 1:
+      return "%vpshuflw\t{%2, %1, %0|%0, %1, %2}";
+    default:
+      gcc_unreachable ();
+    }
 }
-  [(set_attr "type" "mmxcvt")
+  [(set_attr "mmx_isa" "native,x64")
+   (set_attr "type" "mmxcvt,sselog")
    (set_attr "length_immediate" "1")
-   (set_attr "mode" "DI")])
+   (set_attr "mode" "DI,TI")])
 
 (define_insn "mmx_pswapdv2si2"
   [(set (match_operand:V2SI 0 "register_operand" "=y")
@@ -1395,16 +1406,54 @@
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "DI")])
 
-(define_insn "*vec_dupv4hi"
-  [(set (match_operand:V4HI 0 "register_operand" "=y")
+(define_insn_and_split "*vec_dupv4hi"
+  [(set (match_operand:V4HI 0 "register_operand" "=y,Yv,Yw")
 	(vec_duplicate:V4HI
 	  (truncate:HI
-	    (match_operand:SI 1 "register_operand" "0"))))]
-  "TARGET_SSE || TARGET_3DNOW_A"
-  "pshufw\t{$0, %0, %0|%0, %0, 0}"
-  [(set_attr "type" "mmxcvt")
-   (set_attr "length_immediate" "1")
-   (set_attr "mode" "DI")])
+	    (match_operand:SI 1 "register_operand" "0,Yv,r"))))]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && (TARGET_SSE || TARGET_3DNOW_A)"
+  "@
+   pshufw\t{$0, %0, %0|%0, %0, 0}
+   #
+   #"
+  "TARGET_MMX_WITH_SSE && reload_completed"
+  [(const_int 0)]
+{
+  rtx op;
+  operands[0] = lowpart_subreg (V8HImode, operands[0],
+				GET_MODE (operands[0]));
+  if (TARGET_AVX2)
+    {
+      operands[1] = lowpart_subreg (HImode, operands[1],
+				    GET_MODE (operands[1]));
+      op = gen_rtx_VEC_DUPLICATE (V8HImode, operands[1]);
+    }
+  else
+    {
+      operands[1] = lowpart_subreg (V8HImode, operands[1],
+				    GET_MODE (operands[1]));
+      rtx mask = gen_rtx_PARALLEL (VOIDmode,
+				   gen_rtvec (8,
+					      GEN_INT (0),
+					      GEN_INT (0),
+					      GEN_INT (0),
+					      GEN_INT (0),
+					      GEN_INT (4),
+					      GEN_INT (5),
+					      GEN_INT (6),
+					      GEN_INT (7)));
+
+      op = gen_rtx_VEC_SELECT (V8HImode, operands[1], mask);
+    }
+  rtx insn = gen_rtx_SET (operands[0], op);
+  emit_insn (insn);
+  DONE;
+}
+  [(set_attr "mmx_isa" "native,x64,x64_avx")
+   (set_attr "type" "mmxcvt,sselog1,ssemov")
+   (set_attr "length_immediate" "1,1,0")
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_insn_and_split "*vec_dupv2si"
   [(set (match_operand:V2SI 0 "register_operand" "=y,x,Yv,Yw")
