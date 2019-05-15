@@ -16302,23 +16302,61 @@
    (set_attr "prefix" "orig,vex,evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "ssse3_palignrdi"
-  [(set (match_operand:DI 0 "register_operand" "=y")
-	(unspec:DI [(match_operand:DI 1 "register_operand" "0")
-		    (match_operand:DI 2 "nonimmediate_operand" "ym")
-		    (match_operand:SI 3 "const_0_to_255_mul_8_operand" "n")]
+(define_insn_and_split "ssse3_palignrdi"
+  [(set (match_operand:DI 0 "register_operand" "=y,x,Yv")
+	(unspec:DI [(match_operand:DI 1 "register_operand" "0,0,Yv")
+		    (match_operand:DI 2 "register_mmxmem_operand" "ym,x,Yv")
+		    (match_operand:SI 3 "const_0_to_255_mul_8_operand" "n,n,n")]
 		   UNSPEC_PALIGNR))]
-  "TARGET_SSSE3"
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"
 {
-  operands[3] = GEN_INT (INTVAL (operands[3]) / 8);
-  return "palignr\t{%3, %2, %0|%0, %2, %3}";
+  switch (which_alternative)
+    {
+    case 0:
+      operands[3] = GEN_INT (INTVAL (operands[3]) / 8);
+      return "palignr\t{%3, %2, %0|%0, %2, %3}";
+    case 1:
+    case 2:
+      return "#";
+    default:
+      gcc_unreachable ();
+    }
 }
-  [(set_attr "type" "sseishft")
+  "TARGET_MMX_WITH_SSE && reload_completed"
+  [(set (match_dup 0)
+	(lshiftrt:V1TI (match_dup 0) (match_dup 3)))]
+{
+  /* Emulate MMX palignrdi with SSE psrldq.  */
+  rtx op0 = lowpart_subreg (V2DImode, operands[0],
+			    GET_MODE (operands[0]));
+  rtx insn;
+  if (TARGET_AVX)
+    insn = gen_vec_concatv2di (op0, operands[2], operands[1]);
+  else
+    {
+      /* NB: SSE can only concatenate OP0 and OP1 to OP0.  */
+      insn = gen_vec_concatv2di (op0, operands[1], operands[2]);
+      emit_insn (insn);
+      /* Swap bits 0:63 with bits 64:127.  */
+      rtx mask = gen_rtx_PARALLEL (VOIDmode,
+				   gen_rtvec (4, GEN_INT (2),
+					      GEN_INT (3),
+					      GEN_INT (0),
+					      GEN_INT (1)));
+      rtx op1 = lowpart_subreg (V4SImode, op0, GET_MODE (op0));
+      rtx op2 = gen_rtx_VEC_SELECT (V4SImode, op1, mask);
+      insn = gen_rtx_SET (op1, op2);
+    }
+  emit_insn (insn);
+  operands[0] = lowpart_subreg (V1TImode, op0, GET_MODE (op0));
+}
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "sseishft")
    (set_attr "atom_unit" "sishuf")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set (attr "prefix_rex") (symbol_ref "x86_extended_reg_mentioned_p (insn)"))
-   (set_attr "mode" "DI")])
+   (set_attr "mode" "DI,TI,TI")])
 
 ;; Mode iterator to handle singularity w/ absence of V2DI and V4DI
 ;; modes for abs instruction on pre AVX-512 targets.
