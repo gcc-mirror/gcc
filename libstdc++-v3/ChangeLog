@@ -1,3 +1,16 @@
+2019-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2019-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90454.cc path construction from void*
+	* include/bits/fs_path.h (path::_Path): Use remove_pointer so that
+	pointers to void are rejected as well as void.
+	* include/experimental/bits/fs_path.h (path::_Path): Likewise.
+	* testsuite/27_io/filesystem/path/construct/80762.cc: Also check
+	pointers to void.
+	* testsuite/experimental/filesystem/path/construct/80762.cc: Likewise.
+
 2019-05-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
