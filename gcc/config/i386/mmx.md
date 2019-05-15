@@ -1335,16 +1335,20 @@
    (set_attr "mode" "DI")])
 
 (define_insn "mmx_pextrw"
-  [(set (match_operand:SI 0 "register_operand" "=r")
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
         (zero_extend:SI
 	  (vec_select:HI
-	    (match_operand:V4HI 1 "register_operand" "y")
-	    (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n")]))))]
-  "TARGET_SSE || TARGET_3DNOW_A"
-  "pextrw\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "mmxcvt")
+	    (match_operand:V4HI 1 "register_operand" "y,Yv")
+	    (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n,n")]))))]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && (TARGET_SSE || TARGET_3DNOW_A)"
+  "@
+   pextrw\t{%2, %1, %0|%0, %1, %2}
+   %vpextrw\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "mmx_isa" "native,x64")
+   (set_attr "type" "mmxcvt,sselog1")
    (set_attr "length_immediate" "1")
-   (set_attr "mode" "DI")])
+   (set_attr "mode" "DI,TI")])
 
 (define_expand "mmx_pshufw"
   [(match_operand:V4HI 0 "register_operand")
