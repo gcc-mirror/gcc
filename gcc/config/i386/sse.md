@@ -4992,16 +4992,64 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_insn "sse_cvtpi2ps"
-  [(set (match_operand:V4SF 0 "register_operand" "=x")
+(define_insn_and_split "sse_cvtpi2ps"
+  [(set (match_operand:V4SF 0 "register_operand" "=x,x,Yv")
 	(vec_merge:V4SF
 	  (vec_duplicate:V4SF
-	    (float:V2SF (match_operand:V2SI 2 "nonimmediate_operand" "ym")))
-	  (match_operand:V4SF 1 "register_operand" "0")
-	  (const_int 3)))]
-  "TARGET_SSE"
-  "cvtpi2ps\t{%2, %0|%0, %2}"
-  [(set_attr "type" "ssecvt")
+	    (float:V2SF (match_operand:V2SI 2 "register_mmxmem_operand" "ym,x,Yv")))
+	  (match_operand:V4SF 1 "register_operand" "0,0,Yv")
+	  (const_int 3)))
+   (clobber (match_scratch:V4SF 3 "=X,x,Yv"))]
+  "TARGET_SSE || TARGET_MMX_WITH_SSE"
+  "@
+   cvtpi2ps\t{%2, %0|%0, %2}
+   #
+   #"
+  "TARGET_MMX_WITH_SSE && reload_completed"
+  [(const_int 0)]
+{
+  rtx op2 = lowpart_subreg (V4SImode, operands[2],
+			    GET_MODE (operands[2]));
+  /* Generate SSE2 cvtdq2ps.  */
+  rtx insn = gen_floatv4siv4sf2 (operands[3], op2);
+  emit_insn (insn);
+
+  /* Merge operands[3] with operands[0].  */
+  rtx mask, op1;
+  if (TARGET_AVX)
+    {
+      mask = gen_rtx_PARALLEL (VOIDmode,
+			       gen_rtvec (4, GEN_INT (0), GEN_INT (1),
+					  GEN_INT (6), GEN_INT (7)));
+      op1 = gen_rtx_VEC_CONCAT (V8SFmode, operands[3], operands[1]);
+      op2 = gen_rtx_VEC_SELECT (V4SFmode, op1, mask);
+      insn = gen_rtx_SET (operands[0], op2);
+    }
+  else
+    {
+      /* NB: SSE can only concatenate OP0 and OP3 to OP0.  */
+      mask = gen_rtx_PARALLEL (VOIDmode,
+			       gen_rtvec (4, GEN_INT (2), GEN_INT (3),
+					  GEN_INT (4), GEN_INT (5)));
+      op1 = gen_rtx_VEC_CONCAT (V8SFmode, operands[0], operands[3]);
+      op2 = gen_rtx_VEC_SELECT (V4SFmode, op1, mask);
+      insn = gen_rtx_SET (operands[0], op2);
+      emit_insn (insn);
+
+      /* Swap bits 0:63 with bits 64:127.  */
+      mask = gen_rtx_PARALLEL (VOIDmode,
+			       gen_rtvec (4, GEN_INT (2), GEN_INT (3),
+					  GEN_INT (0), GEN_INT (1)));
+      rtx dest = lowpart_subreg (V4SImode, operands[0],
+				 GET_MODE (operands[0]));
+      op1 = gen_rtx_VEC_SELECT (V4SImode, dest, mask);
+      insn = gen_rtx_SET (dest, op1);
+    }
+  emit_insn (insn);
+  DONE;
+}
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "ssecvt")
    (set_attr "mode" "V4SF")])
 
 (define_insn "sse_cvtps2pi"
