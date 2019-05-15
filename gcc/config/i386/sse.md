@@ -16420,16 +16420,19 @@
 })
 
 (define_insn "abs<mode>2"
-  [(set (match_operand:MMXMODEI 0 "register_operand" "=y")
+  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,Yv")
 	(abs:MMXMODEI
-	  (match_operand:MMXMODEI 1 "nonimmediate_operand" "ym")))]
-  "TARGET_SSSE3"
-  "pabs<mmxvecsize>\t{%1, %0|%0, %1}";
-  [(set_attr "type" "sselog1")
+	  (match_operand:MMXMODEI 1 "register_mmxmem_operand" "ym,Yv")))]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"
+  "@
+   pabs<mmxvecsize>\t{%1, %0|%0, %1}
+   %vpabs<mmxvecsize>\t{%1, %0|%0, %1}"
+  [(set_attr "mmx_isa" "native,x64")
+   (set_attr "type" "sselog1")
    (set_attr "prefix_rep" "0")
    (set_attr "prefix_extra" "1")
    (set (attr "prefix_rex") (symbol_ref "x86_extended_reg_mentioned_p (insn)"))
-   (set_attr "mode" "DI")])
+   (set_attr "mode" "DI,TI")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
