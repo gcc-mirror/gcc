@@ -1,6 +1,18 @@
 2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89021
+	* config/i386/i386-builtin.def: Enable MMX intrinsics with
+	SSE/SSE2/SSSE3.
+	* config/i386/i386-builtins.c (ix86_init_mmx_sse_builtins):
+	Likewise.
+	* config/i386/i386-expand.c (ix86_expand_builtin): Allow
+	SSE/SSE2/SSSE3 to emulate MMX intrinsics with TARGET_MMX_WITH_SSE.
+	* config/i386/mmintrin.h: Only require SSE2 if __MMX_WITH_SSE__
+	is defined.
+
+2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89021
 	* config/i386/mmx.md (*vec_dupv2sf): Changed to
 	define_insn_and_split to support SSE emulation.
 	(*vec_extractv2sf_0): Likewise.

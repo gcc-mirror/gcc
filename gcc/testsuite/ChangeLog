@@ -1,3 +1,9 @@
+2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89021
+	* gcc.target/i386/pr82483-1.c: Error only on ia32.
+	* gcc.target/i386/pr82483-2.c: Likewise.
+
 2019-05-15  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/90478

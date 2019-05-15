@@ -1058,14 +1058,17 @@ ix86_init_mmx_sse_builtins (void)
 	       VOID_FTYPE_UNSIGNED, IX86_BUILTIN_XABORT);
 
   /* MMX access to the vec_init patterns.  */
-  def_builtin_const (OPTION_MASK_ISA_MMX, 0, "__builtin_ia32_vec_init_v2si",
+  def_builtin_const (OPTION_MASK_ISA_MMX | OPTION_MASK_ISA_SSE2, 0,
+		     "__builtin_ia32_vec_init_v2si",
 		     V2SI_FTYPE_INT_INT, IX86_BUILTIN_VEC_INIT_V2SI);
 
-  def_builtin_const (OPTION_MASK_ISA_MMX, 0, "__builtin_ia32_vec_init_v4hi",
+  def_builtin_const (OPTION_MASK_ISA_MMX | OPTION_MASK_ISA_SSE2, 0,
+		     "__builtin_ia32_vec_init_v4hi",
 		     V4HI_FTYPE_HI_HI_HI_HI,
 		     IX86_BUILTIN_VEC_INIT_V4HI);
 
-  def_builtin_const (OPTION_MASK_ISA_MMX, 0, "__builtin_ia32_vec_init_v8qi",
+  def_builtin_const (OPTION_MASK_ISA_MMX | OPTION_MASK_ISA_SSE2, 0,
+		     "__builtin_ia32_vec_init_v8qi",
 		     V8QI_FTYPE_QI_QI_QI_QI_QI_QI_QI_QI,
 		     IX86_BUILTIN_VEC_INIT_V8QI);
 
@@ -1087,7 +1090,8 @@ ix86_init_mmx_sse_builtins (void)
 		     "__builtin_ia32_vec_ext_v4hi",
 		     HI_FTYPE_V4HI_INT, IX86_BUILTIN_VEC_EXT_V4HI);
 
-  def_builtin_const (OPTION_MASK_ISA_MMX, 0, "__builtin_ia32_vec_ext_v2si",
+  def_builtin_const (OPTION_MASK_ISA_MMX | OPTION_MASK_ISA_SSE2, 0,
+		     "__builtin_ia32_vec_ext_v2si",
 		     SI_FTYPE_V2SI_INT, IX86_BUILTIN_VEC_EXT_V2SI);
 
   def_builtin_const (OPTION_MASK_ISA_SSE2, 0, "__builtin_ia32_vec_ext_v16qi",
