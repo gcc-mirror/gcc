@@ -1,7 +1,7 @@
 /* PR target/82483 */
 /* { dg-do compile } */
 /* { dg-options "-mssse3 -mno-mmx -Wno-psabi" } */
-/* { dg-error "needs isa option" "" { target *-*-* } 0 } */
+/* { dg-error "needs isa option" "" { target ia32 } 0 } */
 
 #include <x86intrin.h>
 

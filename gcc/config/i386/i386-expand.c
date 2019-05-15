@@ -10936,6 +10936,23 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
        == (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4))
       && (isa & (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4)) != 0)
     isa |= (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4);
+  /* Use SSE/SSE2/SSSE3 to emulate MMX intrinsics in 64-bit mode when
+     MMX is disabled.  */
+  if (TARGET_MMX_WITH_SSE)
+    {
+      if (((bisa & (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_MMX))
+	   == (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_MMX))
+	  && (isa & (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_MMX)) != 0)
+	isa |= (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_MMX);
+      if (((bisa & (OPTION_MASK_ISA_SSE2 | OPTION_MASK_ISA_MMX))
+	   == (OPTION_MASK_ISA_SSE2 | OPTION_MASK_ISA_MMX))
+	  && (isa & (OPTION_MASK_ISA_SSE2 | OPTION_MASK_ISA_MMX)) != 0)
+	isa |= (OPTION_MASK_ISA_SSE2 | OPTION_MASK_ISA_MMX);
+      if (((bisa & (OPTION_MASK_ISA_SSSE3 | OPTION_MASK_ISA_MMX))
+	   == (OPTION_MASK_ISA_SSSE3 | OPTION_MASK_ISA_MMX))
+	  && (isa & (OPTION_MASK_ISA_SSSE3 | OPTION_MASK_ISA_MMX)) != 0)
+	isa |= (OPTION_MASK_ISA_SSSE3 | OPTION_MASK_ISA_MMX);
+    }
   if ((bisa & isa) != bisa || (bisa2 & isa2) != bisa2)
     {
       bool add_abi_p = bisa & OPTION_MASK_ISA_64BIT;
