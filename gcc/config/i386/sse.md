@@ -5394,7 +5394,8 @@
   "@
    %vcvtdq2pd\t{%1, %0|%0, %1}
    cvtpi2pd\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssecvt")
+  [(set_attr "mmx_isa" "*,native")
+   (set_attr "type" "ssecvt")
    (set_attr "unit" "*,mmx")
    (set_attr "prefix_data16" "*,1")
    (set_attr "prefix" "maybe_vex,*")
@@ -5408,7 +5409,8 @@
   "@
    * return TARGET_AVX ? \"vcvtpd2dq{x}\t{%1, %0|%0, %1}\" : \"cvtpd2dq\t{%1, %0|%0, %1}\";
    cvtpd2pi\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssecvt")
+  [(set_attr "mmx_isa" "*,native")
+   (set_attr "type" "ssecvt")
    (set_attr "unit" "*,mmx")
    (set_attr "amdfam10_decode" "double")
    (set_attr "athlon_decode" "vector")
@@ -5424,7 +5426,8 @@
   "@
    * return TARGET_AVX ? \"vcvttpd2dq{x}\t{%1, %0|%0, %1}\" : \"cvttpd2dq\t{%1, %0|%0, %1}\";
    cvttpd2pi\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssecvt")
+  [(set_attr "mmx_isa" "*,native")
+   (set_attr "type" "ssecvt")
    (set_attr "unit" "*,mmx")
    (set_attr "amdfam10_decode" "double")
    (set_attr "athlon_decode" "vector")
@@ -7632,6 +7635,10 @@
 	      (const_string "mmxmov")
 	   ]
 	   (const_string "sselog")))
+   (set (attr "mmx_isa")
+     (if_then_else (eq_attr "alternative" "7,8")
+		   (const_string "native")
+		   (const_string "*")))
    (set (attr "prefix_data16")
      (if_then_else (eq_attr "alternative" "3,4")
 		   (const_string "1")
@@ -7667,7 +7674,8 @@
    movss\t{%1, %0|%0, %1}
    punpckldq\t{%2, %0|%0, %2}
    movd\t{%1, %0|%0, %1}"
-  [(set_attr "type" "sselog,ssemov,mmxcvt,mmxmov")
+  [(set_attr "mmx_isa" "*,*,native,native")
+   (set_attr "type" "sselog,ssemov,mmxcvt,mmxmov")
    (set_attr "mode" "V4SF,SF,DI,DI")])
 
 (define_insn "*vec_concatv4sf"
@@ -14967,6 +14975,10 @@
    punpckldq\t{%2, %0|%0, %2}
    movd\t{%1, %0|%0, %1}"
   [(set_attr "isa" "noavx,noavx,avx,avx512dq,noavx,noavx,avx,*,*,*")
+   (set (attr "mmx_isa")
+     (if_then_else (eq_attr "alternative" "8,9")
+		   (const_string "native")
+		   (const_string "*")))
    (set (attr "type")
      (cond [(eq_attr "alternative" "7")
 	      (const_string "ssemov")
@@ -15004,6 +15016,7 @@
    punpckldq\t{%2, %0|%0, %2}
    movd\t{%1, %0|%0, %1}"
   [(set_attr "isa" "sse2,sse2,*,*,*,*")
+   (set_attr "mmx_isa" "*,*,*,*,native,native")
    (set_attr "type" "sselog,ssemov,sselog,ssemov,mmxcvt,mmxmov")
    (set_attr "mode" "TI,TI,V4SF,SF,DI,DI")])
 
@@ -15033,7 +15046,8 @@
   "@
    %vmovq\t{%1, %0|%0, %1}
    movq2dq\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssemov")
+  [(set_attr "mmx_isa" "*,native")
+   (set_attr "type" "ssemov")
    (set_attr "prefix" "maybe_vex,orig")
    (set_attr "mode" "TI")])
 
@@ -15108,6 +15122,7 @@
    %vmovq\t{%1, %0|%0, %1}
    movq2dq\t{%1, %0|%0, %1}"
   [(set_attr "isa" "x64,*,*")
+   (set_attr "mmx_isa" "*,*,native")
    (set_attr "type" "ssemov")
    (set_attr "prefix_rex" "1,*,*")
    (set_attr "prefix" "maybe_vex,maybe_vex,orig")
