@@ -1,3 +1,8 @@
+2019-05-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-pretty-print.c (dump_generic_node): Dump BIT_FIELD_REF
+	as __BIT_FIELD_REF with type with -gimple.
+
 2019-05-15  Vladislav Ivanishin  <vlad@ispras.ru>
 
 	* tree-ssa-uninit.c (is_value_included_in): Remove is_unsigned and merge

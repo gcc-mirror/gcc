@@ -1,3 +1,8 @@
+2019-05-15  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Handle
+	__BIT_FIELD_REF.
+
 2019-05-14  Richard Biener  <rguenther@suse.de>
 
 	* gimple-parser.c (c_parser_gimple_statement): Remove
