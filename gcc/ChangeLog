@@ -1,6 +1,12 @@
 2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89021
+	* config/i386/mmx.md (mmx_pmovmskb): Changed to
+	define_insn_and_split to support SSE emulation.
+
+2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89021
 	* config/i386/mmx.md (mmx_<code>v4hi3): Also check TARGET_MMX
 	and TARGET_MMX_WITH_SSE.
 	(mmx_<code>v8qi3): Likewise.
