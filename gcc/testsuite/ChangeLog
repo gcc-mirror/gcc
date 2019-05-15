@@ -1,6 +1,12 @@
 2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89021
+	* config/i386/i386-builtins.c (bdesc_tm): Enable MMX intrinsics
+	with SSE2.
+
+2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89021
 	* gcc.target/i386/pr82483-1.c: Error only on ia32.
 	* gcc.target/i386/pr82483-2.c: Likewise.
 

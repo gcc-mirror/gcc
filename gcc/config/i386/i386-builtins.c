@@ -384,13 +384,13 @@ ix86_add_new_builtins (HOST_WIDE_INT isa, HOST_WIDE_INT isa2)
    we're lazy.  Add casts to make them fit.  */
 static const struct builtin_description bdesc_tm[] =
 {
-  { OPTION_MASK_ISA_MMX, 0, CODE_FOR_nothing, "__builtin__ITM_WM64", (enum ix86_builtins) BUILT_IN_TM_STORE_M64, UNKNOWN, VOID_FTYPE_PV2SI_V2SI },
-  { OPTION_MASK_ISA_MMX, 0, CODE_FOR_nothing, "__builtin__ITM_WaRM64", (enum ix86_builtins) BUILT_IN_TM_STORE_WAR_M64, UNKNOWN, VOID_FTYPE_PV2SI_V2SI },
-  { OPTION_MASK_ISA_MMX, 0, CODE_FOR_nothing, "__builtin__ITM_WaWM64", (enum ix86_builtins) BUILT_IN_TM_STORE_WAW_M64, UNKNOWN, VOID_FTYPE_PV2SI_V2SI },
-  { OPTION_MASK_ISA_MMX, 0, CODE_FOR_nothing, "__builtin__ITM_RM64", (enum ix86_builtins) BUILT_IN_TM_LOAD_M64, UNKNOWN, V2SI_FTYPE_PCV2SI },
-  { OPTION_MASK_ISA_MMX, 0, CODE_FOR_nothing, "__builtin__ITM_RaRM64", (enum ix86_builtins) BUILT_IN_TM_LOAD_RAR_M64, UNKNOWN, V2SI_FTYPE_PCV2SI },
-  { OPTION_MASK_ISA_MMX, 0, CODE_FOR_nothing, "__builtin__ITM_RaWM64", (enum ix86_builtins) BUILT_IN_TM_LOAD_RAW_M64, UNKNOWN, V2SI_FTYPE_PCV2SI },
-  { OPTION_MASK_ISA_MMX, 0, CODE_FOR_nothing, "__builtin__ITM_RfWM64", (enum ix86_builtins) BUILT_IN_TM_LOAD_RFW_M64, UNKNOWN, V2SI_FTYPE_PCV2SI },
+  { OPTION_MASK_ISA_MMX | OPTION_MASK_ISA_SSE2, 0, CODE_FOR_nothing, "__builtin__ITM_WM64", (enum ix86_builtins) BUILT_IN_TM_STORE_M64, UNKNOWN, VOID_FTYPE_PV2SI_V2SI },
+  { OPTION_MASK_ISA_MMX | OPTION_MASK_ISA_SSE2, 0, CODE_FOR_nothing, "__builtin__ITM_WaRM64", (enum ix86_builtins) BUILT_IN_TM_STORE_WAR_M64, UNKNOWN, VOID_FTYPE_PV2SI_V2SI },
+  { OPTION_MASK_ISA_MMX | OPTION_MASK_ISA_SSE2, 0, CODE_FOR_nothing, "__builtin__ITM_WaWM64", (enum ix86_builtins) BUILT_IN_TM_STORE_WAW_M64, UNKNOWN, VOID_FTYPE_PV2SI_V2SI },
+  { OPTION_MASK_ISA_MMX | OPTION_MASK_ISA_SSE2, 0, CODE_FOR_nothing, "__builtin__ITM_RM64", (enum ix86_builtins) BUILT_IN_TM_LOAD_M64, UNKNOWN, V2SI_FTYPE_PCV2SI },
+  { OPTION_MASK_ISA_MMX | OPTION_MASK_ISA_SSE2, 0, CODE_FOR_nothing, "__builtin__ITM_RaRM64", (enum ix86_builtins) BUILT_IN_TM_LOAD_RAR_M64, UNKNOWN, V2SI_FTYPE_PCV2SI },
+  { OPTION_MASK_ISA_MMX | OPTION_MASK_ISA_SSE2, 0, CODE_FOR_nothing, "__builtin__ITM_RaWM64", (enum ix86_builtins) BUILT_IN_TM_LOAD_RAW_M64, UNKNOWN, V2SI_FTYPE_PCV2SI },
+  { OPTION_MASK_ISA_MMX | OPTION_MASK_ISA_SSE2, 0, CODE_FOR_nothing, "__builtin__ITM_RfWM64", (enum ix86_builtins) BUILT_IN_TM_LOAD_RFW_M64, UNKNOWN, V2SI_FTYPE_PCV2SI },
 
   { OPTION_MASK_ISA_SSE, 0, CODE_FOR_nothing, "__builtin__ITM_WM128", (enum ix86_builtins) BUILT_IN_TM_STORE_M128, UNKNOWN, VOID_FTYPE_PV4SF_V4SF },
   { OPTION_MASK_ISA_SSE, 0, CODE_FOR_nothing, "__builtin__ITM_WaRM128", (enum ix86_builtins) BUILT_IN_TM_STORE_WAR_M128, UNKNOWN, VOID_FTYPE_PV4SF_V4SF },
@@ -408,7 +408,7 @@ static const struct builtin_description bdesc_tm[] =
   { OPTION_MASK_ISA_AVX, 0, CODE_FOR_nothing, "__builtin__ITM_RaWM256", (enum ix86_builtins) BUILT_IN_TM_LOAD_RAW_M256, UNKNOWN, V8SF_FTYPE_PCV8SF },
   { OPTION_MASK_ISA_AVX, 0, CODE_FOR_nothing, "__builtin__ITM_RfWM256", (enum ix86_builtins) BUILT_IN_TM_LOAD_RFW_M256, UNKNOWN, V8SF_FTYPE_PCV8SF },
 
-  { OPTION_MASK_ISA_MMX, 0, CODE_FOR_nothing, "__builtin__ITM_LM64", (enum ix86_builtins) BUILT_IN_TM_LOG_M64, UNKNOWN, VOID_FTYPE_PCVOID },
+  { OPTION_MASK_ISA_MMX | OPTION_MASK_ISA_SSE2, 0, CODE_FOR_nothing, "__builtin__ITM_LM64", (enum ix86_builtins) BUILT_IN_TM_LOG_M64, UNKNOWN, VOID_FTYPE_PCVOID },
   { OPTION_MASK_ISA_SSE, 0, CODE_FOR_nothing, "__builtin__ITM_LM128", (enum ix86_builtins) BUILT_IN_TM_LOG_M128, UNKNOWN, VOID_FTYPE_PCVOID },
   { OPTION_MASK_ISA_AVX, 0, CODE_FOR_nothing, "__builtin__ITM_LM256", (enum ix86_builtins) BUILT_IN_TM_LOG_M256, UNKNOWN, VOID_FTYPE_PCVOID },
 };
