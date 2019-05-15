@@ -1788,14 +1788,30 @@
   [(set_attr "type" "mmxshft")
    (set_attr "mode" "DI")])
 
-(define_insn "mmx_pmovmskb"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec:SI [(match_operand:V8QI 1 "register_operand" "y")]
+(define_insn_and_split "mmx_pmovmskb"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(unspec:SI [(match_operand:V8QI 1 "register_operand" "y,x")]
 		   UNSPEC_MOVMSK))]
-  "TARGET_SSE || TARGET_3DNOW_A"
-  "pmovmskb\t{%1, %0|%0, %1}"
-  [(set_attr "type" "mmxcvt")
-   (set_attr "mode" "DI")])
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && (TARGET_SSE || TARGET_3DNOW_A)"
+  "@
+   pmovmskb\t{%1, %0|%0, %1}
+   #"
+  "TARGET_MMX_WITH_SSE && reload_completed"
+  [(set (match_dup 0)
+        (unspec:SI [(match_dup 1)] UNSPEC_MOVMSK))
+   (set (match_dup 0)
+	(zero_extend:SI (match_dup 2)))]
+{
+  /* Generate SSE pmovmskb and zero-extend from QImode to SImode.  */
+  operands[1] = lowpart_subreg (V16QImode, operands[1],
+				GET_MODE (operands[1]));
+  operands[2] = lowpart_subreg (QImode, operands[0],
+				GET_MODE (operands[0]));
+}
+  [(set_attr "mmx_isa" "native,x64")
+   (set_attr "type" "mmxcvt,ssemov")
+   (set_attr "mode" "DI,TI")])
 
 (define_expand "mmx_maskmovq"
   [(set (match_operand:V8QI 0 "memory_operand")
