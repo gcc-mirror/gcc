@@ -806,7 +806,6 @@ static enum ld_plugin_status
 cleanup_handler (void)
 {
   unsigned int i;
-  int t;
 
   if (debug)
     return LDPS_OK;
