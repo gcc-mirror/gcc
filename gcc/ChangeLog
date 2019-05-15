@@ -1,3 +1,20 @@
+2019-05-15  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backport from mainline
+	2019-04-11  David Edelsohn  <dje.gcc@gmail.com>
+	* xcoffout.h (xcoff_private_rodata_section_name): Declare.
+	* xcoffout.c (xcoff_private_rodata_section_name): Define.
+	* config/rs6000/rs6000.c (rs6000_xcoff_asm_init_sections): Create
+	read_only_private_data_section using coff_private_rodata_section_name.
+	(rs6000_xcoff_file_start): Generate coff_private_rodata_section_name.
+
+	2018-12-04  David Edelsohn  <dje.gcc@gmail.com>
+	2018-12-13  David Edelsohn  <dje.gcc@gmail.com>
+	PR target/61976
+	* config/rs6000/rs6000.c (rs6000_function_arg): Don't pass aggregates
+	in FPRs on AIX. Ensure type is non-NULL.
+	(rs6000_arg_partial_bytes): Same.
+
 2019-05-15  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/arm/t-rtems: Replace -march=armv7-m multilibs with
