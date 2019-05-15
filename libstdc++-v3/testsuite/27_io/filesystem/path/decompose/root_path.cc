@@ -35,10 +35,6 @@ test01()
   VERIFY( p2.root_path() == path("/") );
 }
 
-#undef VERIFY
-#define VERIFY(X) do { if (!(X)) { __builtin_puts("FAIL: " #X); } } while(false)
-#define DUMP(X, Y, Z) do { if (!(Y == Z)) { __builtin_printf("%s %s %s\n", X.c_str(), Y.c_str(), Z.c_str()); } } while(false)
-
 void
 test02()
 {
@@ -48,7 +44,6 @@ test02()
     path rootn = p.root_name();
     path rootd = p.root_directory();
     VERIFY( rootp == (rootn / rootd) );
-    DUMP(p,  rootp , (rootn / rootd) );
   }
 }
 
