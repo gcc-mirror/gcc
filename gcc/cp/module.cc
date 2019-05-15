@@ -2248,6 +2248,7 @@ private:
 				   regular instantiation).  */
     DB_PARTIAL_BIT,		/* A partial instantiation or
 				   specialization.  */
+    DB_HIDDEN_BIT,		/* A hidden binding.  */
   };
 
 public:
@@ -2343,6 +2344,14 @@ public:
   void set_implicit_specialization ()
   {
     set_flag_bit<DB_IMPLICIT_BIT> ();
+  }
+  bool is_hidden_binding () const
+  {
+    return get_flag_bit<DB_HIDDEN_BIT> ();
+  }
+  void set_hidden_binding ()
+  {
+    set_flag_bit<DB_HIDDEN_BIT> ();
   }
 
 public:
@@ -9244,8 +9253,19 @@ depset::hash::add_binding (tree ns, tree value)
 	continue;
 
       bool using_p = iter.using_p ();
-      add_dependency (using_p ? iter.get_using () : decl,
-		      using_p ? depset::EK_USING : depset::EK_DECL);
+      depset *dep = add_dependency (using_p ? iter.get_using () : decl,
+				    using_p ? depset::EK_USING
+				    : depset::EK_DECL);
+      if (iter.hidden_p ())
+	{
+	  /* It is safe to mark the target decl with the hidden bit,
+	     because we cannot have other bindings to this decl in
+	     this TU.  The same is not true for export_p. */
+	  // FIXME: check whether a partition can make the entity
+	  // unhidden, perhaps the right things already happen?
+	  gcc_checking_assert (!using_p);
+	  dep->set_hidden_binding ();
+	}
     }
 
   if (current->deps.length ())
@@ -9523,8 +9543,8 @@ binding_cmp (const void *a_, const void *b_)
     return +1;  /* B first.  */
 
   /* Hidden before non-hidden.  */
-  bool a_hidden = DECL_HIDDEN_P (a_ent);
-  bool b_hidden = DECL_HIDDEN_P (b_ent);
+  bool a_hidden = a->is_hidden_binding ();
+  bool b_hidden = b->is_hidden_binding ();
   if (a_hidden != b_hidden)
     return a_hidden ? -1 : +1;
 
@@ -11302,11 +11322,21 @@ enum cluster_tag {
   ct_mergeable,	/* A set of mergeable decls.  */
   ct_hwm
 };
+
+/* Declaration modifiers.  */
 enum ct_decl_flags 
 {
-  cdf_has_definition = 0x1,
-  cdf_is_specialization = 0x2,
-  cdf_is_partial = 0x4,
+  cdf_has_definition = 0x1,	/* There is a definition (to read)  */
+  cdf_is_specialization = 0x2,  /* Some kind of specialization.  */
+  cdf_is_partial = 0x4,		/* A partial specialization.  */
+};
+
+/* Binding modifiers.  */
+enum ct_bind_flags
+{
+  cbf_export = 0x1,	/* An exported decl.  */
+  cbf_using = 0x2,	/* A using decl.  */
+  cbf_hidden = 0x4,	/* A hidden (friend) decl.  */
 };
 
 /* Write the cluster of depsets in SCC[0-SIZE).  These are ordered
@@ -11492,41 +11522,38 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	    sec.u (ct_bind);
 	    sec.tree_ctx (decl, false, decl);
 	    sec.tree_node (b->get_name ());
+
 	    /* Write in reverse order, so reading will see the exports
 	       first, thus building the overload chain will be
 	       optimized.  */
-	    bool exporting = true;
 	    for (unsigned jx = b->deps.length (); jx--;)
 	      {
 		depset *dep = b->deps[jx];
 		tree decl = dep->get_entity ();
-		bool exp = false;
-		unsigned code = 1;
+		unsigned flags = 0;
 		if (dep->get_entity_kind () == depset::EK_USING)
 		  {
-		    exp = OVL_EXPORT_P (decl);
-		    code = 2 + exp;
+		    flags |= cbf_using;
+		    if (OVL_EXPORT_P (decl))
+		      flags |= cbf_export;
 		    decl = OVL_FUNCTION (decl);
 		  }
-		else if (TREE_CODE (decl) != TYPE_DECL)
-		  exp = DECL_MODULE_EXPORT_P (decl);
+		else
+		  {
+		    if (dep->is_hidden_binding ())
+		      flags |= cbf_hidden;
+		    else if (DECL_MODULE_EXPORT_P (decl))
+		      flags |= cbf_export;
+		  }
 
 		gcc_checking_assert (DECL_P (decl));
 
-		if (exporting && !exp)
-		  {
-		    exporting = false;
-		    sec.i (-1);
-		  }
-
-		sec.i (code);
+		sec.i (flags);
 		sec.tree_node (decl);
 	      }
-	    if (exporting)
-	      sec.u (-1);
 
 	    /* Terminate the list.  */
-	    sec.u (0);
+	    sec.i (-1);
 	  }
 	  break;
 
@@ -11638,70 +11665,72 @@ module_state::read_cluster (unsigned snum)
 	    tree ns = sec.tree_node ();
 	    tree name = sec.tree_node ();
 	    tree decls = NULL_TREE;
-	    tree type = NULL_TREE;
 	    tree visible = NULL_TREE;
+	    tree type = NULL_TREE;
 	    bool dedup = (TREE_PUBLIC (ns)
 			  && (is_primary ()
 			      || is_partition ()
 			      || is_header ()));
 
-	    while (int code = sec.i ())
+	    /* We rely on the bindings being in the reverse order of
+	       the resulting overload set.  */
+	    for (;;)
 	      {
-		if (code < 0)
-		  {
-		    visible = decls;
-		    continue;
-		  }
+		int flags = sec.i ();
+		if (flags < 0)
+		  break;
+
+		if ((flags & cbf_hidden)
+		    && (flags & (cbf_using | cbf_export)))
+		  sec.set_overrun ();
 
 		tree decl = sec.tree_node ();
 		if (sec.get_overrun ())
 		  break;
-		if (code != 1)
+
+		if (decls && TREE_CODE (decl) == TYPE_DECL)
 		  {
-		    /* A using declaration.  */
-		    decls = ovl_make (decl, decls);
-		    OVL_DEDUP_P (decls) = OVL_USING_P (decls) = true;
-		    if (code > 1)
-		      OVL_EXPORT_P (decls) = true;
-		  }
-		else if (TREE_CODE (decl) == TYPE_DECL)
-		  {
-		    if (type || decls)
+		    /* Stat hack.  */
+		    if (type)
 		      sec.set_overrun ();
 		    type = decl;
-		    continue;
-		  }
-		else if (decls
-			 || (dedup && TREE_CODE (decl) == FUNCTION_DECL)
-			 || (TREE_CODE (decl) == TEMPLATE_DECL
-			     && (TREE_CODE (DECL_TEMPLATE_RESULT (decl))
-				 == FUNCTION_DECL)))
-		  {
-		    decls = ovl_make (decl, decls);
-		    if (dedup)
-		      OVL_DEDUP_P (decls) = true;
-		    // FIXME, perhaps we merged with a non-hidden
-		    // decl, and broken the ordering invariant?
-		    if (DECL_HIDDEN_P (decl))
-		      OVL_HIDDEN_P (decls) = true;
 		  }
 		else
-		  decls = decl;
+		  {
+		    if (decls
+			|| (flags & (cbf_hidden | cbf_using))
+			|| (dedup && TREE_CODE (decl) == FUNCTION_DECL)
+			|| DECL_FUNCTION_TEMPLATE_P (decl))
+		      {
+			decls = ovl_make (decl, decls);
+			if (flags & cbf_using)
+			  {
+			    OVL_USING_P (decls) = dedup = true;
+			    if (flags & cbf_export)
+			      OVL_EXPORT_P (decls) = true;
+			  }
+
+			if (flags & cbf_hidden)
+			  OVL_HIDDEN_P (decls) = true;
+			else if (dedup)
+			  OVL_DEDUP_P (decls) = true;
+		      }
+		    else
+		      decls = decl;
+
+		    if (flags & cbf_export)
+		      visible = decls;
+		  }
 	      }
+
+	    if (!decls)
+	      sec.set_overrun ();
+
+	    if (sec.get_overrun ())
+	      break; /* Bail.  */
 
 	    if (is_primary () || is_partition ())
 	      visible = decls;
-
-	    if (!decls)
-	      {
-		decls = type;
-		if (!type)
-		  sec.set_overrun ();
-		else if (DECL_MODULE_EXPORT_P (type)
-			 || (is_primary () || is_partition ()))
-		  visible = decls;
-		type = NULL_TREE;
-	      }
 
 	    dump () && dump ("Binding of %P", ns, name);
 	    if (!set_module_binding (ns, name, mod,
@@ -11711,6 +11740,7 @@ module_state::read_cluster (unsigned snum)
 
 	    if (type && !sec.is_existing_mergeable (type))
 	      add_module_decl (ns, name, type);
+
 	    for (ovl_iterator iter (decls); iter; ++iter)
 	      if (!iter.using_p ())
 		{

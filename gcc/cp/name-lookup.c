@@ -1129,6 +1129,8 @@ name_lookup::adl_namespace_fns (tree scope, bitmap imports, bitmap inst_path)
 		    else
 		      bind = STAT_VISIBLE (bind);
 		  }
+		else
+		  bind = ovl_skip_hidden (bind);
 
 		add_fns (bind);
 	      }

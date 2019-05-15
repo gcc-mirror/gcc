@@ -1,3 +1,16 @@
+2019-05-15  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (depset::DB_HIDDEN_BIT): New, add accessors.
+	(depset::hash::add_binding): Set hidden binding bit.
+	(binding_cmp): Adjust hidden.
+	(enum ct_bind_flags): New.
+	(module_state::{read,write}_cluster): Reimplement binding flag
+	streaming.
+	* name-lookup.c (name_lookup::adl_namespace_fns): Skip hidden.
+	gcc/testsuite/
+	* g++.dg/modules/friend-2_[ab].C: New.
+
 2019-05-14  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
