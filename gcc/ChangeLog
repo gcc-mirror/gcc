@@ -1,6 +1,13 @@
 2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89021
+	* config/i386/sse.md (sse_cvtpi2ps): Changed to
+	define_insn_and_split.  Also allow TARGET_MMX_WITH_SSE.  Add
+	SSE emulation.
+
+2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89021
 	* config/i386/sse.md (sse_cvtps2pi): Add SSE emulation.
 	(sse_cvttps2pi): Likewise.
 
