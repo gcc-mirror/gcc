@@ -16479,10 +16479,7 @@ cp_parser_template_id (cp_parser *parser,
     {
       /* If it's not a class-template or a template-template, it should be
 	 a function-template.  */
-      gcc_assert ((DECL_FUNCTION_TEMPLATE_P (templ)
-		   || TREE_CODE (templ) == OVERLOAD
-		   || TREE_CODE (templ) == FUNCTION_DECL
-		   || BASELINK_P (templ)));
+      gcc_assert (OVL_P (templ) || BASELINK_P (templ));
 
       template_id = lookup_template_function (templ, arguments);
       if (TREE_CODE (template_id) == TEMPLATE_ID_EXPR)

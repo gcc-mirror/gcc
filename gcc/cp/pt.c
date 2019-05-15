@@ -21193,8 +21193,7 @@ resolve_overloaded_unification (tree tparms,
       if (good != 1)
 	good = ok;
     }
-  else if (TREE_CODE (arg) != OVERLOAD
-	   && TREE_CODE (arg) != FUNCTION_DECL)
+  else if (!OVL_P (arg))
     /* If ARG is, for example, "(0, &f)" then its type will be unknown
        -- but the deduction does not succeed because the expression is
        not just the function on its own.  */
@@ -25950,8 +25949,7 @@ type_dependent_expression_p (tree expression)
 	    return true;
 	}
 
-      gcc_assert (TREE_CODE (expression) == OVERLOAD
-		  || TREE_CODE (expression) == FUNCTION_DECL);
+      gcc_assert (OVL_P (expression));
 
       for (lkp_iterator iter (expression); iter; ++iter)
 	if (type_dependent_expression_p (*iter))
