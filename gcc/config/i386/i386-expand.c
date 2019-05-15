@@ -1115,7 +1115,7 @@ predict_jump (int prob)
 
 void
 ix86_split_idivmod (machine_mode mode, rtx operands[],
-		    bool signed_p)
+		    bool unsigned_p)
 {
   rtx_code_label *end_label, *qimode_label;
   rtx div, mod;
@@ -1131,22 +1131,22 @@ ix86_split_idivmod (machine_mode mode, rtx operands[],
       if (GET_MODE (operands[0]) == SImode)
 	{
 	  if (GET_MODE (operands[1]) == SImode)
-	    gen_divmod4_1 = signed_p ? gen_divmodsi4_1 : gen_udivmodsi4_1;
+	    gen_divmod4_1 = unsigned_p ? gen_udivmodsi4_1 : gen_divmodsi4_1;
 	  else
 	    gen_divmod4_1
-	      = signed_p ? gen_divmodsi4_zext_2 : gen_udivmodsi4_zext_2;
+	      = unsigned_p ? gen_udivmodsi4_zext_2 : gen_divmodsi4_zext_2;
 	  gen_zero_extend = gen_zero_extendqisi2;
 	}
       else
 	{
 	  gen_divmod4_1
-	    = signed_p ? gen_divmodsi4_zext_1 : gen_udivmodsi4_zext_1;
+	    = unsigned_p ? gen_udivmodsi4_zext_1 : gen_divmodsi4_zext_1;
 	  gen_zero_extend = gen_zero_extendqidi2;
 	}
       gen_test_ccno_1 = gen_testsi_ccno_1;
       break;
     case E_DImode:
-      gen_divmod4_1 = signed_p ? gen_divmoddi4_1 : gen_udivmoddi4_1;
+      gen_divmod4_1 = unsigned_p ? gen_udivmoddi4_1 : gen_divmoddi4_1;
       gen_test_ccno_1 = gen_testdi_ccno_1;
       gen_zero_extend = gen_zero_extendqidi2;
       break;
@@ -1192,15 +1192,15 @@ ix86_split_idivmod (machine_mode mode, rtx operands[],
   tmp2 = lowpart_subreg (QImode, operands[3], mode);
   emit_insn (gen_udivmodhiqi3 (tmp0, tmp1, tmp2));
 
-  if (signed_p)
-    {
-      div = gen_rtx_DIV (mode, operands[2], operands[3]);
-      mod = gen_rtx_MOD (mode, operands[2], operands[3]);
-    }
-  else
+  if (unsigned_p)
     {
       div = gen_rtx_UDIV (mode, operands[2], operands[3]);
       mod = gen_rtx_UMOD (mode, operands[2], operands[3]);
+    }
+  else
+    {
+      div = gen_rtx_DIV (mode, operands[2], operands[3]);
+      mod = gen_rtx_MOD (mode, operands[2], operands[3]);
     }
   if (mode == SImode)
     {
