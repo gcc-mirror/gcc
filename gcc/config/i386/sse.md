@@ -16175,17 +16175,45 @@
    (set_attr "btver2_decode" "vector")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "ssse3_pshufbv8qi3"
-  [(set (match_operand:V8QI 0 "register_operand" "=y")
-	(unspec:V8QI [(match_operand:V8QI 1 "register_operand" "0")
-		      (match_operand:V8QI 2 "nonimmediate_operand" "ym")]
-		     UNSPEC_PSHUFB))]
-  "TARGET_SSSE3"
-  "pshufb\t{%2, %0|%0, %2}";
-  [(set_attr "type" "sselog1")
+(define_insn_and_split "ssse3_pshufbv8qi3"
+  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yv")
+	(unspec:V8QI [(match_operand:V8QI 1 "register_operand" "0,0,Yv")
+		      (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yv")]
+		     UNSPEC_PSHUFB))
+   (clobber (match_scratch:V4SI 3 "=X,x,Yv"))]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"
+  "@
+   pshufb\t{%2, %0|%0, %2}
+   #
+   #"
+  "TARGET_MMX_WITH_SSE && reload_completed"
+  [(set (match_dup 3) (match_dup 5))
+   (set (match_dup 3)
+	(and:V4SI (match_dup 3) (match_dup 2)))
+   (set (match_dup 0)
+	(unspec:V16QI [(match_dup 1) (match_dup 4)] UNSPEC_PSHUFB))]
+{
+  /* Emulate MMX version of pshufb with SSE version by masking out the
+     bit 3 of the shuffle control byte.  */
+  operands[0] = lowpart_subreg (V16QImode, operands[0],
+				GET_MODE (operands[0]));
+  operands[1] = lowpart_subreg (V16QImode, operands[1],
+				GET_MODE (operands[1]));
+  operands[2] = lowpart_subreg (V4SImode, operands[2],
+				GET_MODE (operands[2]));
+  operands[4] = lowpart_subreg (V16QImode, operands[3],
+				GET_MODE (operands[3]));
+  rtvec par = gen_rtvec (4, GEN_INT (0xf7f7f7f7),
+			 GEN_INT (0xf7f7f7f7),
+			 GEN_INT (0xf7f7f7f7),
+			 GEN_INT (0xf7f7f7f7));
+  rtx vec_const = gen_rtx_CONST_VECTOR (V4SImode, par);
+  operands[5] = force_const_mem (V4SImode, vec_const);
+}
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
    (set_attr "prefix_extra" "1")
    (set (attr "prefix_rex") (symbol_ref "x86_extended_reg_mentioned_p (insn)"))
-   (set_attr "mode" "DI")])
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_insn "<ssse3_avx2>_psign<mode>3"
   [(set (match_operand:VI124_AVX2 0 "register_operand" "=x,x")
