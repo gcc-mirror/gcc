@@ -806,28 +806,34 @@
 	  (lshiftrt:V4SI
 	    (mult:V4SI
 	      (zero_extend:V4SI
-		(match_operand:V4HI 1 "nonimmediate_operand"))
+		(match_operand:V4HI 1 "register_mmxmem_operand"))
 	      (zero_extend:V4SI
-		(match_operand:V4HI 2 "nonimmediate_operand")))
+		(match_operand:V4HI 2 "register_mmxmem_operand")))
 	    (const_int 16))))]
-  "TARGET_SSE || TARGET_3DNOW_A"
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && (TARGET_SSE || TARGET_3DNOW_A)"
   "ix86_fixup_binary_operands_no_copy (MULT, V4HImode, operands);")
 
 (define_insn "*mmx_umulv4hi3_highpart"
-  [(set (match_operand:V4HI 0 "register_operand" "=y")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
 	(truncate:V4HI
 	  (lshiftrt:V4SI
 	    (mult:V4SI
 	      (zero_extend:V4SI
-		(match_operand:V4HI 1 "nonimmediate_operand" "%0"))
+		(match_operand:V4HI 1 "register_mmxmem_operand" "%0,0,Yv"))
 	      (zero_extend:V4SI
-		(match_operand:V4HI 2 "nonimmediate_operand" "ym")))
+		(match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv")))
 	  (const_int 16))))]
-  "(TARGET_SSE || TARGET_3DNOW_A)
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && (TARGET_SSE || TARGET_3DNOW_A)
    && ix86_binary_operator_ok (MULT, V4HImode, operands)"
-  "pmulhuw\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxmul")
-   (set_attr "mode" "DI")])
+  "@
+   pmulhuw\t{%2, %0|%0, %2}
+   pmulhuw\t{%2, %0|%0, %2}
+   vpmulhuw\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxmul,ssemul,ssemul")
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_expand "mmx_pmaddwd"
   [(set (match_operand:V2SI 0 "register_operand")
