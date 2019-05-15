@@ -16117,38 +16117,44 @@
 	      (lshiftrt:V4SI
 		(mult:V4SI
 		  (sign_extend:V4SI
-		    (match_operand:V4HI 1 "nonimmediate_operand"))
+		    (match_operand:V4HI 1 "register_mmxmem_operand"))
 		  (sign_extend:V4SI
-		    (match_operand:V4HI 2 "nonimmediate_operand")))
+		    (match_operand:V4HI 2 "register_mmxmem_operand")))
 		(const_int 14))
 	      (match_dup 3))
 	    (const_int 1))))]
-  "TARGET_SSSE3"
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"
 {
   operands[3] = CONST1_RTX(V4HImode);
   ix86_fixup_binary_operands_no_copy (MULT, V4HImode, operands);
 })
 
 (define_insn "*ssse3_pmulhrswv4hi3"
-  [(set (match_operand:V4HI 0 "register_operand" "=y")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
 	(truncate:V4HI
 	  (lshiftrt:V4SI
 	    (plus:V4SI
 	      (lshiftrt:V4SI
 		(mult:V4SI
 		  (sign_extend:V4SI
-		    (match_operand:V4HI 1 "nonimmediate_operand" "%0"))
+		    (match_operand:V4HI 1 "register_mmxmem_operand" "%0,0,Yv"))
 		  (sign_extend:V4SI
-		    (match_operand:V4HI 2 "nonimmediate_operand" "ym")))
+		    (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv")))
 		(const_int 14))
 	      (match_operand:V4HI 3 "const1_operand"))
 	    (const_int 1))))]
-  "TARGET_SSSE3 && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
-  "pmulhrsw\t{%2, %0|%0, %2}"
-  [(set_attr "type" "sseimul")
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && TARGET_SSSE3
+   && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
+  "@
+   pmulhrsw\t{%2, %0|%0, %2}
+   pmulhrsw\t{%2, %0|%0, %2}
+   vpmulhrsw\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "sseimul")
    (set_attr "prefix_extra" "1")
    (set (attr "prefix_rex") (symbol_ref "x86_extended_reg_mentioned_p (insn)"))
-   (set_attr "mode" "DI")])
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_insn "<ssse3_avx2>_pshufb<mode>3<mask_name>"
   [(set (match_operand:VI1_AVX512 0 "register_operand" "=x,x,v")
