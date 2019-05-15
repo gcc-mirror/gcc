@@ -3,7 +3,7 @@
 /* { dg-options "-O2 -fcf-protection" } */
 /* { dg-final { scan-assembler "endbr" } } */
 /* { dg-final { scan-assembler "fn3:" } } */
-/* { dg-final { scan-assembler "set\[ \t]+fn2,fn1" } } */
+/* { dg-final { scan-assembler "set\[ \t]+fn2,fn1" { target { ! *-*-darwin* } } } } */
 
 static __attribute__((noinline)) int
 fn1 (int x)
