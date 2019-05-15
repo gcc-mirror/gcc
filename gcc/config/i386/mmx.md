@@ -45,7 +45,7 @@
 
 ;; 8 byte integral modes handled by MMX (and by extension, SSE)
 (define_mode_iterator MMXMODEI [V8QI V4HI V2SI])
-(define_mode_iterator MMXMODEI8 [V8QI V4HI V2SI V1DI])
+(define_mode_iterator MMXMODEI8 [V8QI V4HI V2SI (V1DI "TARGET_SSE2")])
 
 ;; All 8-byte vector modes handled by MMX
 (define_mode_iterator MMXMODE [V8QI V4HI V2SI V1DI V2SF])
@@ -688,39 +688,56 @@
 (define_expand "mmx_<plusminus_insn><mode>3"
   [(set (match_operand:MMXMODEI8 0 "register_operand")
 	(plusminus:MMXMODEI8
-	  (match_operand:MMXMODEI8 1 "nonimmediate_operand")
-	  (match_operand:MMXMODEI8 2 "nonimmediate_operand")))]
-  "TARGET_MMX || (TARGET_SSE2 && <MODE>mode == V1DImode)"
+	  (match_operand:MMXMODEI8 1 "register_mmxmem_operand")
+	  (match_operand:MMXMODEI8 2 "register_mmxmem_operand")))]
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+  "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
+
+(define_expand "<plusminus_insn><mode>3"
+  [(set (match_operand:MMXMODEI 0 "register_operand")
+	(plusminus:MMXMODEI
+	  (match_operand:MMXMODEI 1 "register_operand")
+	  (match_operand:MMXMODEI 2 "register_operand")))]
+  "TARGET_MMX_WITH_SSE"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
 (define_insn "*mmx_<plusminus_insn><mode>3"
-  [(set (match_operand:MMXMODEI8 0 "register_operand" "=y")
+  [(set (match_operand:MMXMODEI8 0 "register_operand" "=y,x,Yv")
         (plusminus:MMXMODEI8
-	  (match_operand:MMXMODEI8 1 "nonimmediate_operand" "<comm>0")
-	  (match_operand:MMXMODEI8 2 "nonimmediate_operand" "ym")))]
-  "(TARGET_MMX || (TARGET_SSE2 && <MODE>mode == V1DImode))
+	  (match_operand:MMXMODEI8 1 "register_mmxmem_operand" "<comm>0,0,Yv")
+	  (match_operand:MMXMODEI8 2 "register_mmxmem_operand" "ym,x,Yv")))]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
-  "p<plusminus_mnemonic><mmxvecsize>\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxadd")
-   (set_attr "mode" "DI")])
+  "@
+   p<plusminus_mnemonic><mmxvecsize>\t{%2, %0|%0, %2}
+   p<plusminus_mnemonic><mmxvecsize>\t{%2, %0|%0, %2}
+   vp<plusminus_mnemonic><mmxvecsize>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxadd,sseadd,sseadd")
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_expand "mmx_<plusminus_insn><mode>3"
   [(set (match_operand:MMXMODE12 0 "register_operand")
 	(sat_plusminus:MMXMODE12
-	  (match_operand:MMXMODE12 1 "nonimmediate_operand")
-	  (match_operand:MMXMODE12 2 "nonimmediate_operand")))]
-  "TARGET_MMX"
+	  (match_operand:MMXMODE12 1 "register_mmxmem_operand")
+	  (match_operand:MMXMODE12 2 "register_mmxmem_operand")))]
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
 (define_insn "*mmx_<plusminus_insn><mode>3"
-  [(set (match_operand:MMXMODE12 0 "register_operand" "=y")
+  [(set (match_operand:MMXMODE12 0 "register_operand" "=y,x,Yv")
         (sat_plusminus:MMXMODE12
-	  (match_operand:MMXMODE12 1 "nonimmediate_operand" "<comm>0")
-	  (match_operand:MMXMODE12 2 "nonimmediate_operand" "ym")))]
-  "TARGET_MMX && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
-  "p<plusminus_mnemonic><mmxvecsize>\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxadd")
-   (set_attr "mode" "DI")])
+	  (match_operand:MMXMODE12 1 "register_mmxmem_operand" "<comm>0,0,Yv")
+	  (match_operand:MMXMODE12 2 "register_mmxmem_operand" "ym,x,Yv")))]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
+  "@
+   p<plusminus_mnemonic><mmxvecsize>\t{%2, %0|%0, %2}
+   p<plusminus_mnemonic><mmxvecsize>\t{%2, %0|%0, %2}
+   vp<plusminus_mnemonic><mmxvecsize>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxadd,sseadd,sseadd")
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_expand "mmx_mulv4hi3"
   [(set (match_operand:V4HI 0 "register_operand")
