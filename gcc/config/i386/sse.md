@@ -15690,13 +15690,13 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
-(define_insn "ssse3_ph<plusminus_mnemonic>wv4hi3"
-  [(set (match_operand:V4HI 0 "register_operand" "=y")
+(define_insn_and_split "ssse3_ph<plusminus_mnemonic>wv4hi3"
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
 	(vec_concat:V4HI
 	  (vec_concat:V2HI
 	    (ssse3_plusminus:HI
 	      (vec_select:HI
-		(match_operand:V4HI 1 "register_operand" "0")
+		(match_operand:V4HI 1 "register_operand" "0,0,Yv")
 		(parallel [(const_int 0)]))
 	      (vec_select:HI (match_dup 1) (parallel [(const_int 1)])))
 	    (ssse3_plusminus:HI
@@ -15705,19 +15705,37 @@
 	  (vec_concat:V2HI
 	    (ssse3_plusminus:HI
 	      (vec_select:HI
-		(match_operand:V4HI 2 "nonimmediate_operand" "ym")
+		(match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv")
 		(parallel [(const_int 0)]))
 	      (vec_select:HI (match_dup 2) (parallel [(const_int 1)])))
 	    (ssse3_plusminus:HI
 	      (vec_select:HI (match_dup 2) (parallel [(const_int 2)]))
 	      (vec_select:HI (match_dup 2) (parallel [(const_int 3)]))))))]
-  "TARGET_SSSE3"
-  "ph<plusminus_mnemonic>w\t{%2, %0|%0, %2}"
-  [(set_attr "type" "sseiadd")
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"
+  "@
+   ph<plusminus_mnemonic>w\t{%2, %0|%0, %2}
+   #
+   #"
+  "TARGET_MMX_WITH_SSE && reload_completed"
+  [(const_int 0)]
+{
+  /* Generate SSE version of the operation.  */
+  rtx op0 = lowpart_subreg (V8HImode, operands[0],
+			    GET_MODE (operands[0]));
+  rtx op1 = lowpart_subreg (V8HImode, operands[1],
+			    GET_MODE (operands[1]));
+  rtx op2 = lowpart_subreg (V8HImode, operands[2],
+			    GET_MODE (operands[2]));
+  emit_insn (gen_ssse3_ph<plusminus_mnemonic>wv8hi3 (op0, op1, op2));
+  ix86_move_vector_high_sse_to_mmx (op0);
+  DONE;
+}
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "sseiadd")
    (set_attr "atom_unit" "complex")
    (set_attr "prefix_extra" "1")
    (set (attr "prefix_rex") (symbol_ref "x86_extended_reg_mentioned_p (insn)"))
-   (set_attr "mode" "DI")])
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_insn "avx2_ph<plusminus_mnemonic>dv8si3"
   [(set (match_operand:V8SI 0 "register_operand" "=x")
