@@ -16002,17 +16002,17 @@
    (set_attr "mode" "TI")])
 
 (define_insn "ssse3_pmaddubsw"
-  [(set (match_operand:V4HI 0 "register_operand" "=y")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
 	(ss_plus:V4HI
 	  (mult:V4HI
 	    (zero_extend:V4HI
 	      (vec_select:V4QI
-		(match_operand:V8QI 1 "register_operand" "0")
+		(match_operand:V8QI 1 "register_operand" "0,0,Yv")
 		(parallel [(const_int 0) (const_int 2)
 			   (const_int 4) (const_int 6)])))
 	    (sign_extend:V4HI
 	      (vec_select:V4QI
-		(match_operand:V8QI 2 "nonimmediate_operand" "ym")
+		(match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yv")
 		(parallel [(const_int 0) (const_int 2)
 			   (const_int 4) (const_int 6)]))))
 	  (mult:V4HI
@@ -16024,13 +16024,17 @@
 	      (vec_select:V4QI (match_dup 2)
 		(parallel [(const_int 1) (const_int 3)
 			   (const_int 5) (const_int 7)]))))))]
-  "TARGET_SSSE3"
-  "pmaddubsw\t{%2, %0|%0, %2}"
-  [(set_attr "type" "sseiadd")
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"
+  "@
+   pmaddubsw\t{%2, %0|%0, %2}
+   pmaddubsw\t{%2, %0|%0, %2}
+   vpmaddubsw\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "sseiadd")
    (set_attr "atom_unit" "simul")
    (set_attr "prefix_extra" "1")
    (set (attr "prefix_rex") (symbol_ref "x86_extended_reg_mentioned_p (insn)"))
-   (set_attr "mode" "DI")])
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_mode_iterator PMULHRSW
   [V8HI (V16HI "TARGET_AVX2")])
