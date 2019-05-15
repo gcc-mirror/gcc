@@ -1,3 +1,17 @@
+2019-05-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89021
+	* config/i386/i386.md (*zero_extendsidi2): Add mmx_isa attribute.
+	* config/i386/sse.md (sse2_cvtpi2pd): Ditto.
+	(sse2_cvtpd2pi): Ditto.
+	(sse2_cvttpd2pi): Ditto.
+	(*vec_concatv2sf_sse4_1): Ditto.
+	(*vec_concatv2sf_sse): Ditto.
+	(*vec_concatv2si_sse4_1): Ditto.
+	(*vec_concatv2si): Ditto.
+	(*vec_concatv4si_0): Ditto.
+	(*vec_concatv2di_0): Ditto.
+
 2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89021
