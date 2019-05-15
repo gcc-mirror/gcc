@@ -2653,7 +2653,10 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       break;
 
     case VIEW_CONVERT_EXPR:
-      pp_string (pp, "VIEW_CONVERT_EXPR<");
+      if (flags & TDF_GIMPLE)
+	pp_string (pp, "__VIEW_CONVERT <");
+      else
+	pp_string (pp, "VIEW_CONVERT_EXPR<");
       dump_generic_node (pp, TREE_TYPE (node), spc, flags, false);
       pp_string (pp, ">(");
       dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
