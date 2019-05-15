@@ -1,6 +1,12 @@
 2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89021
+	* config/i386/sse.md (sse_cvtps2pi): Add SSE emulation.
+	(sse_cvttps2pi): Likewise.
+
+2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89021
 	* config/i386/mmx.md (mmx_pshufw): Also check TARGET_MMX and
 	TARGET_MMX_WITH_SSE.
 	(mmx_pshufw_1): Add SSE emulation.

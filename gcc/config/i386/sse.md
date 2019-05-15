@@ -5005,26 +5005,32 @@
    (set_attr "mode" "V4SF")])
 
 (define_insn "sse_cvtps2pi"
-  [(set (match_operand:V2SI 0 "register_operand" "=y")
+  [(set (match_operand:V2SI 0 "register_operand" "=y,Yv")
 	(vec_select:V2SI
-	  (unspec:V4SI [(match_operand:V4SF 1 "nonimmediate_operand" "xm")]
+	  (unspec:V4SI [(match_operand:V4SF 1 "register_mmxmem_operand" "xm,YvBm")]
 		       UNSPEC_FIX_NOTRUNC)
 	  (parallel [(const_int 0) (const_int 1)])))]
-  "TARGET_SSE"
-  "cvtps2pi\t{%1, %0|%0, %q1}"
-  [(set_attr "type" "ssecvt")
-   (set_attr "unit" "mmx")
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSE"
+  "@
+   cvtps2pi\t{%1, %0|%0, %q1}
+   %vcvtps2dq\t{%1, %0|%0, %1}"
+  [(set_attr "mmx_isa" "native,x64")
+   (set_attr "type" "ssecvt")
+   (set_attr "unit" "mmx,*")
    (set_attr "mode" "DI")])
 
 (define_insn "sse_cvttps2pi"
-  [(set (match_operand:V2SI 0 "register_operand" "=y")
+  [(set (match_operand:V2SI 0 "register_operand" "=y,Yv")
 	(vec_select:V2SI
-	  (fix:V4SI (match_operand:V4SF 1 "nonimmediate_operand" "xm"))
+	  (fix:V4SI (match_operand:V4SF 1 "register_mmxmem_operand" "xm,YvBm"))
 	  (parallel [(const_int 0) (const_int 1)])))]
-  "TARGET_SSE"
-  "cvttps2pi\t{%1, %0|%0, %q1}"
-  [(set_attr "type" "ssecvt")
-   (set_attr "unit" "mmx")
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSE"
+  "@
+   cvttps2pi\t{%1, %0|%0, %q1}
+   %vcvttps2dq\t{%1, %0|%0, %1}"
+  [(set_attr "mmx_isa" "native,x64")
+   (set_attr "type" "ssecvt")
+   (set_attr "unit" "mmx,*")
    (set_attr "prefix_rep" "0")
    (set_attr "mode" "SF")])
 
