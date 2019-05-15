@@ -1,3 +1,7 @@
+2019-05-15  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/gimplefe-40.c: Amend.
+
 2019-05-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* lib/target-supports.exp 

@@ -1415,6 +1415,43 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
 		}
 	      break;
 	    }
+	  else if (strcmp (IDENTIFIER_POINTER (id), "__BIT_FIELD_REF") == 0)
+	    {
+	      /* __BIT_FIELD_REF '<' type-name [ ',' number ] '>'
+	                        '(' postfix-expression, integer, integer ')'  */
+	      location_t loc = c_parser_peek_token (parser)->location;
+	      c_parser_consume_token (parser);
+	      tree type = c_parser_gimple_typespec (parser);
+	      if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+		{
+		  c_expr op0 = c_parser_gimple_postfix_expression (parser);
+		  c_parser_skip_until_found (parser, CPP_COMMA,
+					     "expected %<,%>");
+		  c_expr op1 = c_parser_gimple_postfix_expression (parser);
+		  if (TREE_CODE (op1.value) != INTEGER_CST
+		      || !int_fits_type_p (op1.value, bitsizetype))
+		    c_parser_error (parser, "expected constant size");
+		  c_parser_skip_until_found (parser, CPP_COMMA,
+					     "expected %<,%>");
+		  c_expr op2 = c_parser_gimple_postfix_expression (parser);
+		  if (TREE_CODE (op2.value) != INTEGER_CST
+		      || !int_fits_type_p (op2.value, bitsizetype))
+		    c_parser_error (parser, "expected constant offset");
+		  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+					     "expected %<)%>");
+		  if (type
+		      && op0.value != error_mark_node
+		      && TREE_CODE (op1.value) == INTEGER_CST
+		      && TREE_CODE (op2.value) == INTEGER_CST)
+		    expr.value = build3_loc (loc, BIT_FIELD_REF, type,
+					     op0.value,
+					     fold_convert (bitsizetype,
+							   op1.value),
+					     fold_convert (bitsizetype,
+							   op2.value));
+		}
+	      break;
+	    }
 	  else if (strcmp (IDENTIFIER_POINTER (id), "_Literal") == 0)
 	    {
 	      /* _Literal '(' type-name ')' ( [ '-' ] constant | constructor ) */
