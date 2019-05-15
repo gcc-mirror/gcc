@@ -1,7 +1,7 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-fcf-protection" } */
 /* { dg-final { scan-assembler "endbr32|endbr64" } } */
-/* { dg-final { scan-assembler-times "\tcall\[ \t]+puts" 2 } } */
+/* { dg-final { scan-assembler-times "\tcall\[ \t]+_?puts" 2 } } */
 /* { dg-final { scan-assembler-times "notrack call\[ \t]+" 1 } } */
 #include <stdio.h>
 

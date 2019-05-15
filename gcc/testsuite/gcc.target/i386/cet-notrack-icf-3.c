@@ -3,8 +3,8 @@
 /* { dg-options "-O2 -fcf-protection=none" } */
 /* { dg-final { scan-assembler-not "endbr" } } */
 /* { dg-final { scan-assembler-not "fn2:" } } */
-/* { dg-final { scan-assembler "set\[ \t]+fn2,fn1" } } */
-/* { dg-final { scan-assembler "set\[ \t]+fn3,fn1" } } */
+/* { dg-final { scan-assembler "set\[ \t]+fn2,fn1" { target { ! *-*-darwin* } } } } */
+/* { dg-final { scan-assembler "set\[ \t]+fn3,fn1" { target { ! *-*-darwin* } } } } */
 
 int (*foo)(int);
 
