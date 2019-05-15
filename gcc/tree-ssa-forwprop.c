@@ -2102,7 +2102,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 		break;
 	    }
 	  /* Found a suitable vector element.  */
-	  if (j <= 2)
+	  if (j < 2)
 	    {
 	      orig[j] = ref;
 	      if (j)
