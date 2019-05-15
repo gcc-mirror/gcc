@@ -1637,8 +1637,8 @@ namespace __variant
 
       using _Tag = __detail::__variant::__deduce_visit_result<_Result_type>;
 
-      return __do_visit<_Tag>(std::forward<_Visitor>(__visitor),
-			      std::forward<_Variants>(__variants)...);
+      return std::__do_visit<_Tag>(std::forward<_Visitor>(__visitor),
+				   std::forward<_Variants>(__variants)...);
     }
 
 #if __cplusplus > 201703L
@@ -1649,8 +1649,8 @@ namespace __variant
       if ((__variants.valueless_by_exception() || ...))
 	__throw_bad_variant_access("Unexpected index");
 
-      return __do_visit<_Res>(std::forward<_Visitor>(__visitor),
-			      std::forward<_Variants>(__variants)...);
+      return std::__do_visit<_Res>(std::forward<_Visitor>(__visitor),
+				   std::forward<_Variants>(__variants)...);
     }
 #endif
 
