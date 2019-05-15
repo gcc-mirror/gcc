@@ -1,3 +1,7 @@
+2019-05-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* parse.c (gfc_parse_file): Remove translation string markers.
+
 2019-05-12  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* dump-parse-tree.c (get_c_type_name): Use macros for complex type
