@@ -1058,10 +1058,7 @@ build_baselink (tree binfo, tree access_binfo, tree functions, tree optype)
 {
   tree baselink;
 
-  gcc_assert (TREE_CODE (functions) == FUNCTION_DECL
-	      || TREE_CODE (functions) == TEMPLATE_DECL
-	      || TREE_CODE (functions) == TEMPLATE_ID_EXPR
-	      || TREE_CODE (functions) == OVERLOAD);
+  gcc_assert (OVL_P (functions) || TREE_CODE (functions) == TEMPLATE_ID_EXPR);
   gcc_assert (!optype || TYPE_P (optype));
   gcc_assert (TREE_TYPE (functions));
 

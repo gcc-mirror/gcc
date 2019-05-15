@@ -3278,8 +3278,7 @@ write_expression (tree expr)
 
 	    /* Mangle a dependent name as the name, not whatever happens to
 	       be the first function in the overload set.  */
-	    if ((TREE_CODE (fn) == FUNCTION_DECL
-		 || TREE_CODE (fn) == OVERLOAD)
+	    if (OVL_P (fn)
 		&& type_dependent_expression_p_push (expr))
 	      fn = OVL_NAME (fn);
 

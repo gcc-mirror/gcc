@@ -1,3 +1,15 @@
+2019-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* call.c (perform_overload_resolution, build_new_method_call_1):
+	Use OVL_P; remove redundant TEMPLATE_DECL checks.
+	* decl.c (grokfndecl): Likewise.
+	* mangle.c (write_expression): Likewise.
+	* parser.c (cp_parser_template_id): Likewise.
+	* pt.c (resolve_overloaded_unification, type_dependent_expression_p):
+	Likewise.
+	* search.c (build_baselink): Likewise.
+	* tree.c (is_overloaded_fn, dependent_name, maybe_get_fns): Likewise.
+
 2019-05-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR preprocessor/90382
