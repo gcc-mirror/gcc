@@ -1,5 +1,9 @@
 2019-05-15  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* lto-plugin.c (cleanup_handler): Remove unused var.
+
+2019-05-15  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* lto-plugin.c (exec_lto_wrapper): Make the wrapper
 	arguments filename more user-friendly.
 	(file_exists, maybe_unlink): New.
