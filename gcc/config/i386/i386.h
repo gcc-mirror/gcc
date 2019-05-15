@@ -203,6 +203,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_16BIT	TARGET_CODE16
 #define TARGET_16BIT_P(x)	TARGET_CODE16_P(x)
 
+#define TARGET_MMX_WITH_SSE	(TARGET_64BIT && TARGET_SSE2)
+
 #include "config/vxworks-dummy.h"
 
 #include "config/i386/i386-opts.h"

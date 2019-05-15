@@ -18882,7 +18882,8 @@ ix86_set_reg_reg_cost (machine_mode mode)
 	  || (TARGET_AVX && VALID_AVX256_REG_MODE (mode))
 	  || (TARGET_SSE2 && VALID_SSE2_REG_MODE (mode))
 	  || (TARGET_SSE && VALID_SSE_REG_MODE (mode))
-	  || (TARGET_MMX && VALID_MMX_REG_MODE (mode)))
+	  || ((TARGET_MMX || TARGET_MMX_WITH_SSE)
+	      && VALID_MMX_REG_MODE (mode)))
 	units = GET_MODE_SIZE (mode);
     }
 
@@ -20611,7 +20612,7 @@ ix86_vector_mode_supported_p (machine_mode mode)
     return true;
   if (TARGET_AVX512F && VALID_AVX512F_REG_MODE (mode))
     return true;
-  if (TARGET_MMX && VALID_MMX_REG_MODE (mode))
+  if ((TARGET_MMX || TARGET_MMX_WITH_SSE) && VALID_MMX_REG_MODE (mode))
     return true;
   if (TARGET_3DNOW && VALID_MMX_REG_MODE_3DNOW (mode))
     return true;
