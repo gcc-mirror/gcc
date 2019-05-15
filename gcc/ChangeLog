@@ -1,3 +1,13 @@
+2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89021
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__MMX_WITH_SSE__ for TARGET_MMX_WITH_SSE.
+	* config/i386/i386.c (ix86_set_reg_reg_cost): Add support for
+	TARGET_MMX_WITH_SSE with VALID_MMX_REG_MODE.
+	(ix86_vector_mode_supported_p): Likewise.
+	* config/i386/i386.h (TARGET_MMX_WITH_SSE): New.
+
 2019-05-15  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/90478
