@@ -741,19 +741,31 @@
 
 (define_expand "mmx_mulv4hi3"
   [(set (match_operand:V4HI 0 "register_operand")
-        (mult:V4HI (match_operand:V4HI 1 "nonimmediate_operand")
-		   (match_operand:V4HI 2 "nonimmediate_operand")))]
-  "TARGET_MMX"
+        (mult:V4HI (match_operand:V4HI 1 "register_mmxmem_operand")
+		   (match_operand:V4HI 2 "register_mmxmem_operand")))]
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+  "ix86_fixup_binary_operands_no_copy (MULT, V4HImode, operands);")
+
+(define_expand "mulv4hi3"
+  [(set (match_operand:V4HI 0 "register_operand")
+        (mult:V4HI (match_operand:V4HI 1 "register_operand")
+		   (match_operand:V4HI 2 "register_operand")))]
+  "TARGET_MMX_WITH_SSE"
   "ix86_fixup_binary_operands_no_copy (MULT, V4HImode, operands);")
 
 (define_insn "*mmx_mulv4hi3"
-  [(set (match_operand:V4HI 0 "register_operand" "=y")
-        (mult:V4HI (match_operand:V4HI 1 "nonimmediate_operand" "%0")
-		   (match_operand:V4HI 2 "nonimmediate_operand" "ym")))]
-  "TARGET_MMX && ix86_binary_operator_ok (MULT, V4HImode, operands)"
-  "pmullw\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxmul")
-   (set_attr "mode" "DI")])
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
+        (mult:V4HI (match_operand:V4HI 1 "register_mmxmem_operand" "%0,0,Yv")
+		   (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv")))]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && ix86_binary_operator_ok (MULT, V4HImode, operands)"
+  "@
+   pmullw\t{%2, %0|%0, %2}
+   pmullw\t{%2, %0|%0, %2}
+   vpmullw\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxmul,ssemul,ssemul")
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_expand "mmx_smulv4hi3_highpart"
   [(set (match_operand:V4HI 0 "register_operand")
