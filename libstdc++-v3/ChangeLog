@@ -1,3 +1,7 @@
+2019-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (visit, visit<R>): Qualify calls to __do_visit.
+
 2019-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/util/testsuite_allocator.h (NullablePointer::operator bool):
