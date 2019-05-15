@@ -1042,30 +1042,39 @@
 (define_expand "mmx_eq<mode>3"
   [(set (match_operand:MMXMODEI 0 "register_operand")
         (eq:MMXMODEI
-	  (match_operand:MMXMODEI 1 "nonimmediate_operand")
-	  (match_operand:MMXMODEI 2 "nonimmediate_operand")))]
-  "TARGET_MMX"
+	  (match_operand:MMXMODEI 1 "register_mmxmem_operand")
+	  (match_operand:MMXMODEI 2 "register_mmxmem_operand")))]
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
   "ix86_fixup_binary_operands_no_copy (EQ, <MODE>mode, operands);")
 
 (define_insn "*mmx_eq<mode>3"
-  [(set (match_operand:MMXMODEI 0 "register_operand" "=y")
+  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,Yv")
         (eq:MMXMODEI
-	  (match_operand:MMXMODEI 1 "nonimmediate_operand" "%0")
-	  (match_operand:MMXMODEI 2 "nonimmediate_operand" "ym")))]
-  "TARGET_MMX && ix86_binary_operator_ok (EQ, <MODE>mode, operands)"
-  "pcmpeq<mmxvecsize>\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxcmp")
-   (set_attr "mode" "DI")])
+	  (match_operand:MMXMODEI 1 "register_mmxmem_operand" "%0,0,Yv")
+	  (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,Yv")))]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && ix86_binary_operator_ok (EQ, <MODE>mode, operands)"
+  "@
+   pcmpeq<mmxvecsize>\t{%2, %0|%0, %2}
+   pcmpeq<mmxvecsize>\t{%2, %0|%0, %2}
+   vpcmpeq<mmxvecsize>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxcmp,ssecmp,ssecmp")
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_insn "mmx_gt<mode>3"
-  [(set (match_operand:MMXMODEI 0 "register_operand" "=y")
+  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,Yv")
         (gt:MMXMODEI
-	  (match_operand:MMXMODEI 1 "register_operand" "0")
-	  (match_operand:MMXMODEI 2 "nonimmediate_operand" "ym")))]
-  "TARGET_MMX"
-  "pcmpgt<mmxvecsize>\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxcmp")
-   (set_attr "mode" "DI")])
+	  (match_operand:MMXMODEI 1 "register_operand" "0,0,Yv")
+	  (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,Yv")))]
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+  "@
+   pcmpgt<mmxvecsize>\t{%2, %0|%0, %2}
+   pcmpgt<mmxvecsize>\t{%2, %0|%0, %2}
+   vpcmpgt<mmxvecsize>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxcmp,ssecmp,ssecmp")
+   (set_attr "mode" "DI,TI,TI")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
