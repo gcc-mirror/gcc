@@ -1089,87 +1089,129 @@
    (set_attr "type" "mmxshft,sselog,sselog")
    (set_attr "mode" "DI,TI,TI")])
 
-(define_insn "mmx_punpckhbw"
-  [(set (match_operand:V8QI 0 "register_operand" "=y")
+(define_insn_and_split "mmx_punpckhbw"
+  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yv")
 	(vec_select:V8QI
 	  (vec_concat:V16QI
-	    (match_operand:V8QI 1 "register_operand" "0")
-	    (match_operand:V8QI 2 "nonimmediate_operand" "ym"))
+	    (match_operand:V8QI 1 "register_operand" "0,0,Yv")
+	    (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yv"))
           (parallel [(const_int 4) (const_int 12)
                      (const_int 5) (const_int 13)
                      (const_int 6) (const_int 14)
                      (const_int 7) (const_int 15)])))]
-  "TARGET_MMX"
-  "punpckhbw\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxcvt")
-   (set_attr "mode" "DI")])
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+  "@
+   punpckhbw\t{%2, %0|%0, %2}
+   #
+   #"
+  "TARGET_MMX_WITH_SSE && reload_completed"
+  [(const_int 0)]
+  "ix86_split_mmx_punpck (operands, true); DONE;"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxcvt,sselog,sselog")
+   (set_attr "mode" "DI,TI,TI")])
 
-(define_insn "mmx_punpcklbw"
-  [(set (match_operand:V8QI 0 "register_operand" "=y")
+(define_insn_and_split "mmx_punpcklbw"
+  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yv")
 	(vec_select:V8QI
 	  (vec_concat:V16QI
-	    (match_operand:V8QI 1 "register_operand" "0")
-	    (match_operand:V8QI 2 "nonimmediate_operand" "ym"))
+	    (match_operand:V8QI 1 "register_operand" "0,0,Yv")
+	    (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yv"))
           (parallel [(const_int 0) (const_int 8)
                      (const_int 1) (const_int 9)
                      (const_int 2) (const_int 10)
                      (const_int 3) (const_int 11)])))]
-  "TARGET_MMX"
-  "punpcklbw\t{%2, %0|%0, %k2}"
-  [(set_attr "type" "mmxcvt")
-   (set_attr "mode" "DI")])
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+  "@
+   punpcklbw\t{%2, %0|%0, %k2}
+   #
+   #"
+  "TARGET_MMX_WITH_SSE && reload_completed"
+  [(const_int 0)]
+  "ix86_split_mmx_punpck (operands, false); DONE;"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxcvt,sselog,sselog")
+   (set_attr "mode" "DI,TI,TI")])
 
-(define_insn "mmx_punpckhwd"
-  [(set (match_operand:V4HI 0 "register_operand" "=y")
+(define_insn_and_split "mmx_punpckhwd"
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
 	(vec_select:V4HI
 	  (vec_concat:V8HI
-	    (match_operand:V4HI 1 "register_operand" "0")
-	    (match_operand:V4HI 2 "nonimmediate_operand" "ym"))
+	    (match_operand:V4HI 1 "register_operand" "0,0,Yv")
+	    (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv"))
           (parallel [(const_int 2) (const_int 6)
                      (const_int 3) (const_int 7)])))]
-  "TARGET_MMX"
-  "punpckhwd\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxcvt")
-   (set_attr "mode" "DI")])
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+  "@
+   punpckhwd\t{%2, %0|%0, %2}
+   #
+   #"
+  "TARGET_MMX_WITH_SSE && reload_completed"
+  [(const_int 0)]
+  "ix86_split_mmx_punpck (operands, true); DONE;"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxcvt,sselog,sselog")
+   (set_attr "mode" "DI,TI,TI")])
 
-(define_insn "mmx_punpcklwd"
-  [(set (match_operand:V4HI 0 "register_operand" "=y")
+(define_insn_and_split "mmx_punpcklwd"
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
 	(vec_select:V4HI
 	  (vec_concat:V8HI
-	    (match_operand:V4HI 1 "register_operand" "0")
-	    (match_operand:V4HI 2 "nonimmediate_operand" "ym"))
+	    (match_operand:V4HI 1 "register_operand" "0,0,Yv")
+	    (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv"))
           (parallel [(const_int 0) (const_int 4)
                      (const_int 1) (const_int 5)])))]
-  "TARGET_MMX"
-  "punpcklwd\t{%2, %0|%0, %k2}"
-  [(set_attr "type" "mmxcvt")
-   (set_attr "mode" "DI")])
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+  "@
+   punpcklwd\t{%2, %0|%0, %k2}
+   #
+   #"
+  "TARGET_MMX_WITH_SSE && reload_completed"
+  [(const_int 0)]
+  "ix86_split_mmx_punpck (operands, false); DONE;"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxcvt,sselog,sselog")
+   (set_attr "mode" "DI,TI,TI")])
 
-(define_insn "mmx_punpckhdq"
-  [(set (match_operand:V2SI 0 "register_operand" "=y")
+(define_insn_and_split "mmx_punpckhdq"
+  [(set (match_operand:V2SI 0 "register_operand" "=y,x,Yv")
 	(vec_select:V2SI
 	  (vec_concat:V4SI
-	    (match_operand:V2SI 1 "register_operand" "0")
-	    (match_operand:V2SI 2 "nonimmediate_operand" "ym"))
+	    (match_operand:V2SI 1 "register_operand" "0,0,Yv")
+	    (match_operand:V2SI 2 "register_mmxmem_operand" "ym,x,Yv"))
 	  (parallel [(const_int 1)
 		     (const_int 3)])))]
-  "TARGET_MMX"
-  "punpckhdq\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxcvt")
-   (set_attr "mode" "DI")])
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+  "@
+   punpckhdq\t{%2, %0|%0, %2}
+   #
+   #"
+  "TARGET_MMX_WITH_SSE && reload_completed"
+  [(const_int 0)]
+  "ix86_split_mmx_punpck (operands, true); DONE;"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxcvt,sselog,sselog")
+   (set_attr "mode" "DI,TI,TI")])
 
-(define_insn "mmx_punpckldq"
-  [(set (match_operand:V2SI 0 "register_operand" "=y")
+(define_insn_and_split "mmx_punpckldq"
+  [(set (match_operand:V2SI 0 "register_operand" "=y,x,Yv")
 	(vec_select:V2SI
 	  (vec_concat:V4SI
-	    (match_operand:V2SI 1 "register_operand" "0")
-	    (match_operand:V2SI 2 "nonimmediate_operand" "ym"))
+	    (match_operand:V2SI 1 "register_operand" "0,0,Yv")
+	    (match_operand:V2SI 2 "register_mmxmem_operand" "ym,x,Yv"))
 	  (parallel [(const_int 0)
 		     (const_int 2)])))]
-  "TARGET_MMX"
-  "punpckldq\t{%2, %0|%0, %k2}"
-  [(set_attr "type" "mmxcvt")
-   (set_attr "mode" "DI")])
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+  "@
+   punpckldq\t{%2, %0|%0, %k2}
+   #
+   #"
+  "TARGET_MMX_WITH_SSE && reload_completed"
+  [(const_int 0)]
+  "ix86_split_mmx_punpck (operands, false); DONE;"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxcvt,sselog,sselog")
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_expand "mmx_pinsrw"
   [(set (match_operand:V4HI 0 "register_operand")
