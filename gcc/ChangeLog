@@ -1,4 +1,18 @@
 2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89021
+	* config/i386/i386-expand.c (ix86_split_mmx_punpck): New function.
+	* config/i386/i386-protos.h (ix86_split_mmx_punpck): New
+	prototype.
+	* config/i386/mmx.m (mmx_punpckhbw): Changed to
+	define_insn_and_split to support SSE emulation.
+	(mmx_punpcklbw): Likewise.
+	(mmx_punpckhwd): Likewise.
+	(mmx_punpcklwd): Likewise.
+	(mmx_punpckhdq): Likewise.
+	(mmx_punpckldq): Likewise.
+
+2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/89021

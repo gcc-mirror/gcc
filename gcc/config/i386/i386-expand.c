@@ -716,6 +716,83 @@ ix86_split_mmx_pack (rtx operands[], enum rtx_code code)
   ix86_move_vector_high_sse_to_mmx (op0);
 }
 
+/* Split MMX punpcklXX/punpckhXX with SSE punpcklXX.  */
+
+void
+ix86_split_mmx_punpck (rtx operands[], bool high_p)
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  rtx op2 = operands[2];
+  machine_mode mode = GET_MODE (op0);
+  rtx mask;
+  /* The corresponding SSE mode.  */
+  machine_mode sse_mode, double_sse_mode;
+
+  switch (mode)
+    {
+    case E_V8QImode:
+      sse_mode = V16QImode;
+      double_sse_mode = V32QImode;
+      mask = gen_rtx_PARALLEL (VOIDmode,
+			       gen_rtvec (16,
+					  GEN_INT (0), GEN_INT (16),
+					  GEN_INT (1), GEN_INT (17),
+					  GEN_INT (2), GEN_INT (18),
+					  GEN_INT (3), GEN_INT (19),
+					  GEN_INT (4), GEN_INT (20),
+					  GEN_INT (5), GEN_INT (21),
+					  GEN_INT (6), GEN_INT (22),
+					  GEN_INT (7), GEN_INT (23)));
+      break;
+
+    case E_V4HImode:
+      sse_mode = V8HImode;
+      double_sse_mode = V16HImode;
+      mask = gen_rtx_PARALLEL (VOIDmode,
+			       gen_rtvec (8,
+					  GEN_INT (0), GEN_INT (8),
+					  GEN_INT (1), GEN_INT (9),
+					  GEN_INT (2), GEN_INT (10),
+					  GEN_INT (3), GEN_INT (11)));
+      break;
+
+    case E_V2SImode:
+      sse_mode = V4SImode;
+      double_sse_mode = V8SImode;
+      mask = gen_rtx_PARALLEL (VOIDmode,
+			       gen_rtvec (4,
+					  GEN_INT (0), GEN_INT (4),
+					  GEN_INT (1), GEN_INT (5)));
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Generate SSE punpcklXX.  */
+  rtx dest = lowpart_subreg (sse_mode, op0, GET_MODE (op0));
+  op1 = lowpart_subreg (sse_mode, op1, GET_MODE (op1));
+  op2 = lowpart_subreg (sse_mode, op2, GET_MODE (op2));
+
+  op1 = gen_rtx_VEC_CONCAT (double_sse_mode, op1, op2);
+  op2 = gen_rtx_VEC_SELECT (sse_mode, op1, mask);
+  rtx insn = gen_rtx_SET (dest, op2);
+  emit_insn (insn);
+
+  if (high_p)
+    {
+      /* Move bits 64:127 to bits 0:63.  */
+      mask = gen_rtx_PARALLEL (VOIDmode,
+			       gen_rtvec (4, GEN_INT (2), GEN_INT (3),
+					  GEN_INT (0), GEN_INT (0)));
+      dest = lowpart_subreg (V4SImode, dest, GET_MODE (dest));
+      op1 = gen_rtx_VEC_SELECT (V4SImode, dest, mask);
+      insn = gen_rtx_SET (dest, op1);
+      emit_insn (insn);
+    }
+}
+
 /* Helper function of ix86_fixup_binary_operands to canonicalize
    operand order.  Returns true if the operands should be swapped.  */
 
