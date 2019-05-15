@@ -948,40 +948,68 @@
 (define_expand "mmx_<code>v4hi3"
   [(set (match_operand:V4HI 0 "register_operand")
         (smaxmin:V4HI
-	  (match_operand:V4HI 1 "nonimmediate_operand")
-	  (match_operand:V4HI 2 "nonimmediate_operand")))]
-  "TARGET_SSE || TARGET_3DNOW_A"
+	  (match_operand:V4HI 1 "register_mmxmem_operand")
+	  (match_operand:V4HI 2 "register_mmxmem_operand")))]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && (TARGET_SSE || TARGET_3DNOW_A)"
+  "ix86_fixup_binary_operands_no_copy (<CODE>, V4HImode, operands);")
+
+(define_expand "<code>v4hi3"
+  [(set (match_operand:V4HI 0 "register_operand")
+        (smaxmin:V4HI
+	  (match_operand:V4HI 1 "register_operand")
+	  (match_operand:V4HI 2 "register_operand")))]
+  "TARGET_MMX_WITH_SSE"
   "ix86_fixup_binary_operands_no_copy (<CODE>, V4HImode, operands);")
 
 (define_insn "*mmx_<code>v4hi3"
-  [(set (match_operand:V4HI 0 "register_operand" "=y")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
         (smaxmin:V4HI
-	  (match_operand:V4HI 1 "nonimmediate_operand" "%0")
-	  (match_operand:V4HI 2 "nonimmediate_operand" "ym")))]
-  "(TARGET_SSE || TARGET_3DNOW_A)
+	  (match_operand:V4HI 1 "register_mmxmem_operand" "%0,0,Yv")
+	  (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv")))]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && (TARGET_SSE || TARGET_3DNOW_A)
    && ix86_binary_operator_ok (<CODE>, V4HImode, operands)"
-  "p<maxmin_int>w\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxadd")
-   (set_attr "mode" "DI")])
+  "@
+   p<maxmin_int>w\t{%2, %0|%0, %2}
+   p<maxmin_int>w\t{%2, %0|%0, %2}
+   vp<maxmin_int>w\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxadd,sseiadd,sseiadd")
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_expand "mmx_<code>v8qi3"
   [(set (match_operand:V8QI 0 "register_operand")
         (umaxmin:V8QI
-	  (match_operand:V8QI 1 "nonimmediate_operand")
-	  (match_operand:V8QI 2 "nonimmediate_operand")))]
-  "TARGET_SSE || TARGET_3DNOW_A"
+	  (match_operand:V8QI 1 "register_mmxmem_operand")
+	  (match_operand:V8QI 2 "register_mmxmem_operand")))]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && (TARGET_SSE || TARGET_3DNOW_A)"
+  "ix86_fixup_binary_operands_no_copy (<CODE>, V8QImode, operands);")
+
+(define_expand "<code>v8qi3"
+  [(set (match_operand:V8QI 0 "register_operand")
+        (umaxmin:V8QI
+	  (match_operand:V8QI 1 "register_operand")
+	  (match_operand:V8QI 2 "register_operand")))]
+  "TARGET_MMX_WITH_SSE"
   "ix86_fixup_binary_operands_no_copy (<CODE>, V8QImode, operands);")
 
 (define_insn "*mmx_<code>v8qi3"
-  [(set (match_operand:V8QI 0 "register_operand" "=y")
+  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yv")
         (umaxmin:V8QI
-	  (match_operand:V8QI 1 "nonimmediate_operand" "%0")
-	  (match_operand:V8QI 2 "nonimmediate_operand" "ym")))]
-  "(TARGET_SSE || TARGET_3DNOW_A)
+	  (match_operand:V8QI 1 "register_mmxmem_operand" "%0,0,Yv")
+	  (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yv")))]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && (TARGET_SSE || TARGET_3DNOW_A)
    && ix86_binary_operator_ok (<CODE>, V8QImode, operands)"
-  "p<maxmin_int>b\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxadd")
-   (set_attr "mode" "DI")])
+  "@
+   p<maxmin_int>b\t{%2, %0|%0, %2}
+   p<maxmin_int>b\t{%2, %0|%0, %2}
+   vp<maxmin_int>b\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxadd,sseiadd,sseiadd")
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_insn "mmx_ashr<mode>3"
   [(set (match_operand:MMXMODE24 0 "register_operand" "=y,x,Yv")

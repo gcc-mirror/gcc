@@ -1,6 +1,17 @@
 2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89021
+	* config/i386/mmx.md (mmx_<code>v4hi3): Also check TARGET_MMX
+	and TARGET_MMX_WITH_SSE.
+	(mmx_<code>v8qi3): Likewise.
+	(smaxmin:<code>v4hi3): New.
+	(umaxmin:<code>v8qi3): Likewise.
+	(smaxmin:*mmx_<code>v4hi3): Add SSE emulation.
+	(umaxmin:*mmx_<code>v8qi3): Likewise.
+
+2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89021
 	* config/i386/mmx.md (mmx_pinsrw): Also check TARGET_MMX and
 	TARGET_MMX_WITH_SSE.
 	(*mmx_pinsrw): Add SSE emulation.
