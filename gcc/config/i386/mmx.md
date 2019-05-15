@@ -835,11 +835,11 @@
 	  (mult:V2SI
 	    (sign_extend:V2SI
 	      (vec_select:V2HI
-		(match_operand:V4HI 1 "nonimmediate_operand")
+		(match_operand:V4HI 1 "register_mmxmem_operand")
 		(parallel [(const_int 0) (const_int 2)])))
 	    (sign_extend:V2SI
 	      (vec_select:V2HI
-		(match_operand:V4HI 2 "nonimmediate_operand")
+		(match_operand:V4HI 2 "register_mmxmem_operand")
 		(parallel [(const_int 0) (const_int 2)]))))
 	  (mult:V2SI
 	    (sign_extend:V2SI
@@ -848,20 +848,20 @@
 	    (sign_extend:V2SI
 	      (vec_select:V2HI (match_dup 2)
 		(parallel [(const_int 1) (const_int 3)]))))))]
-  "TARGET_MMX"
+  "TARGET_MMX || TARGET_MMX_WITH_SSE"
   "ix86_fixup_binary_operands_no_copy (MULT, V4HImode, operands);")
 
 (define_insn "*mmx_pmaddwd"
-  [(set (match_operand:V2SI 0 "register_operand" "=y")
+  [(set (match_operand:V2SI 0 "register_operand" "=y,x,Yv")
         (plus:V2SI
 	  (mult:V2SI
 	    (sign_extend:V2SI
 	      (vec_select:V2HI
-		(match_operand:V4HI 1 "nonimmediate_operand" "%0")
+		(match_operand:V4HI 1 "register_mmxmem_operand" "%0,0,Yv")
 		(parallel [(const_int 0) (const_int 2)])))
 	    (sign_extend:V2SI
 	      (vec_select:V2HI
-		(match_operand:V4HI 2 "nonimmediate_operand" "ym")
+		(match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv")
 		(parallel [(const_int 0) (const_int 2)]))))
 	  (mult:V2SI
 	    (sign_extend:V2SI
@@ -870,10 +870,15 @@
 	    (sign_extend:V2SI
 	      (vec_select:V2HI (match_dup 2)
 		(parallel [(const_int 1) (const_int 3)]))))))]
-  "TARGET_MMX && ix86_binary_operator_ok (MULT, V4HImode, operands)"
-  "pmaddwd\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxmul")
-   (set_attr "mode" "DI")])
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && ix86_binary_operator_ok (MULT, V4HImode, operands)"
+  "@
+   pmaddwd\t{%2, %0|%0, %2}
+   pmaddwd\t{%2, %0|%0, %2}
+   vpmaddwd\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxmul,sseiadd,sseiadd")
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_expand "mmx_pmulhrwv4hi3"
   [(set (match_operand:V4HI 0 "register_operand")

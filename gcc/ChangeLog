@@ -1,6 +1,12 @@
 2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89021
+	* config/i386/mmx.md (mmx_pmaddwd): Also allow TARGET_MMX_WITH_SSE.
+	(*mmx_pmaddwd): Also allow TARGET_MMX_WITH_SSE.  Add SSE support.
+
+2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89021
 	* config/i386/mmx.md (mmx_smulv4hi3_highpart): Also allow
 	TARGET_MMX_WITH_SSE.
 	(*mmx_smulv4hi3_highpart): Also allow TARGET_MMX_WITH_SSE. Add
