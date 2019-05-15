@@ -1704,50 +1704,55 @@
 	    (plus:V8HI
 	      (plus:V8HI
 		(zero_extend:V8HI
-		  (match_operand:V8QI 1 "nonimmediate_operand"))
+		  (match_operand:V8QI 1 "register_mmxmem_operand"))
 		(zero_extend:V8HI
-		  (match_operand:V8QI 2 "nonimmediate_operand")))
+		  (match_operand:V8QI 2 "register_mmxmem_operand")))
 	      (const_vector:V8HI [(const_int 1) (const_int 1)
 				  (const_int 1) (const_int 1)
 				  (const_int 1) (const_int 1)
 				  (const_int 1) (const_int 1)]))
 	    (const_int 1))))]
-  "TARGET_SSE || TARGET_3DNOW"
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && (TARGET_SSE || TARGET_3DNOW_A)"
   "ix86_fixup_binary_operands_no_copy (PLUS, V8QImode, operands);")
 
 (define_insn "*mmx_uavgv8qi3"
-  [(set (match_operand:V8QI 0 "register_operand" "=y")
+  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yv")
 	(truncate:V8QI
 	  (lshiftrt:V8HI
 	    (plus:V8HI
 	      (plus:V8HI
 		(zero_extend:V8HI
-		  (match_operand:V8QI 1 "nonimmediate_operand" "%0"))
+		  (match_operand:V8QI 1 "register_mmxmem_operand" "%0,0,Yv"))
 		(zero_extend:V8HI
-		  (match_operand:V8QI 2 "nonimmediate_operand" "ym")))
+		  (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yv")))
 	      (const_vector:V8HI [(const_int 1) (const_int 1)
 				  (const_int 1) (const_int 1)
 				  (const_int 1) (const_int 1)
 				  (const_int 1) (const_int 1)]))
 	    (const_int 1))))]
-  "(TARGET_SSE || TARGET_3DNOW)
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && (TARGET_SSE || TARGET_3DNOW_A)
    && ix86_binary_operator_ok (PLUS, V8QImode, operands)"
 {
   /* These two instructions have the same operation, but their encoding
      is different.  Prefer the one that is de facto standard.  */
-  if (TARGET_SSE || TARGET_3DNOW_A)
+  if (TARGET_MMX_WITH_SSE && TARGET_AVX)
+    return "vpavgb\t{%2, %1, %0|%0, %1, %2}";
+  else if (TARGET_SSE || TARGET_3DNOW_A)
     return "pavgb\t{%2, %0|%0, %2}";
   else
     return "pavgusb\t{%2, %0|%0, %2}";
 }
-  [(set_attr "type" "mmxshft")
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxshft,sseiadd,sseiadd")
    (set (attr "prefix_extra")
      (if_then_else
        (not (ior (match_test "TARGET_SSE")
 		 (match_test "TARGET_3DNOW_A")))
        (const_string "1")
        (const_string "*")))
-   (set_attr "mode" "DI")])
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_expand "mmx_uavgv4hi3"
   [(set (match_operand:V4HI 0 "register_operand")
