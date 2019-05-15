@@ -1,6 +1,16 @@
 2019-05-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/path/decompose/root_path.cc: Remove
+	macros accidentally left in.
+	* testsuite/27_io/filesystem/path/native/string-char8_t.cc: Remove
+	unnecessary -lstdc++fs option. Fix test for mingw.
+	* testsuite/experimental/filesystem/path/native/string-char8_t.cc:
+	Fix test for mingw.
+
+	Backport from mainline
 	2019-05-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90454.cc path construction from void*
