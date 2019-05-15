@@ -1307,32 +1307,45 @@
             (match_operand:SI 2 "nonimmediate_operand"))
 	  (match_operand:V4HI 1 "register_operand")
           (match_operand:SI 3 "const_0_to_3_operand")))]
-  "TARGET_SSE || TARGET_3DNOW_A"
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && (TARGET_SSE || TARGET_3DNOW_A)"
 {
   operands[2] = gen_lowpart (HImode, operands[2]);
   operands[3] = GEN_INT (1 << INTVAL (operands[3]));
 })
 
 (define_insn "*mmx_pinsrw"
-  [(set (match_operand:V4HI 0 "register_operand" "=y")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
         (vec_merge:V4HI
           (vec_duplicate:V4HI
-            (match_operand:HI 2 "nonimmediate_operand" "rm"))
-	  (match_operand:V4HI 1 "register_operand" "0")
+            (match_operand:HI 2 "nonimmediate_operand" "rm,rm,rm"))
+	  (match_operand:V4HI 1 "register_operand" "0,0,Yv")
           (match_operand:SI 3 "const_int_operand")))]
-  "(TARGET_SSE || TARGET_3DNOW_A)
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && (TARGET_SSE || TARGET_3DNOW_A)
    && ((unsigned) exact_log2 (INTVAL (operands[3]))
        < GET_MODE_NUNITS (V4HImode))"
 {
   operands[3] = GEN_INT (exact_log2 (INTVAL (operands[3])));
-  if (MEM_P (operands[2]))
-    return "pinsrw\t{%3, %2, %0|%0, %2, %3}";
+  if (TARGET_MMX_WITH_SSE && TARGET_AVX)
+    {
+      if (MEM_P (operands[2]))
+	return "vpinsrw\t{%3, %2, %1, %0|%0, %1, %2, %3}";
+      else
+	return "vpinsrw\t{%3, %k2, %1, %0|%0, %1, %k2, %3}";
+    }
   else
-    return "pinsrw\t{%3, %k2, %0|%0, %k2, %3}";
+    {
+      if (MEM_P (operands[2]))
+	return "pinsrw\t{%3, %2, %0|%0, %2, %3}";
+      else
+	return "pinsrw\t{%3, %k2, %0|%0, %k2, %3}";
+    }
 }
-  [(set_attr "type" "mmxcvt")
+  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+   (set_attr "type" "mmxcvt,sselog,sselog")
    (set_attr "length_immediate" "1")
-   (set_attr "mode" "DI")])
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_insn "mmx_pextrw"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
