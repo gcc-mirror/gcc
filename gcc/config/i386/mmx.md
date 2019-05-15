@@ -239,12 +239,16 @@
 })
 
 (define_insn "sse_movntq"
-  [(set (match_operand:DI 0 "memory_operand" "=m")
-	(unspec:DI [(match_operand:DI 1 "register_operand" "y")]
+  [(set (match_operand:DI 0 "memory_operand" "=m,m")
+	(unspec:DI [(match_operand:DI 1 "register_operand" "y,r")]
 		   UNSPEC_MOVNTQ))]
-  "TARGET_SSE || TARGET_3DNOW_A"
-  "movntq\t{%1, %0|%0, %1}"
-  [(set_attr "type" "mmxmov")
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && (TARGET_SSE || TARGET_3DNOW_A)"
+  "@
+   movntq\t{%1, %0|%0, %1}
+   movnti\t{%1, %0|%0, %1}"
+  [(set_attr "mmx_isa" "native,x64")
+   (set_attr "type" "mmxmov,ssemov")
    (set_attr "mode" "DI")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

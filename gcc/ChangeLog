@@ -1,6 +1,11 @@
 2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89021
+	* config/i386/mmx.md (sse_movntq): Add SSE2 emulation.
+
+2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89021
 	* config/i386/mmx.md (mmx_psadbw): Add SSE emulation.
 
 2019-05-15  H.J. Lu  <hongjiu.lu@intel.com>
