@@ -1112,13 +1112,8 @@ namespace __detail
 	  : _Tp(std::forward<_OtherTp>(__tp))
 	{ }
 
-      static const _Tp&
-      _S_cget(const _Hashtable_ebo_helper& __eboh)
-      { return static_cast<const _Tp&>(__eboh); }
-
-      static _Tp&
-      _S_get(_Hashtable_ebo_helper& __eboh)
-      { return static_cast<_Tp&>(__eboh); }
+      const _Tp& _M_cget() const { return static_cast<const _Tp&>(*this); }
+      _Tp& _M_get() { return static_cast<_Tp&>(*this); }
     };
 
   /// Specialization not using EBO.
@@ -1132,13 +1127,8 @@ namespace __detail
 	  : _M_tp(std::forward<_OtherTp>(__tp))
 	{ }
 
-      static const _Tp&
-      _S_cget(const _Hashtable_ebo_helper& __eboh)
-      { return __eboh._M_tp; }
-
-      static _Tp&
-      _S_get(_Hashtable_ebo_helper& __eboh)
-      { return __eboh._M_tp; }
+      const _Tp& _M_cget() const { return _M_tp; }
+      _Tp& _M_get() { return _M_tp; }
 
     private:
       _Tp _M_tp;
@@ -1229,16 +1219,16 @@ namespace __detail
       void
       _M_swap(_Hash_code_base& __x)
       {
-	std::swap(__ebo_extract_key::_S_get(*this),
-		  __ebo_extract_key::_S_get(__x));
-	std::swap(__ebo_hash::_S_get(*this), __ebo_hash::_S_get(__x));
+	std::swap(__ebo_extract_key::_M_get(),
+		  __x.__ebo_extract_key::_M_get());
+	std::swap(__ebo_hash::_M_get(), __x.__ebo_hash::_M_get());
       }
 
       const _ExtractKey&
-      _M_extract() const { return __ebo_extract_key::_S_cget(*this); }
+      _M_extract() const { return __ebo_extract_key::_M_cget(); }
 
       const _Hash&
-      _M_ranged_hash() const { return __ebo_hash::_S_cget(*this); }
+      _M_ranged_hash() const { return __ebo_hash::_M_cget(); }
     };
 
   // No specialization for ranged hash function while caching hash codes.
@@ -1317,20 +1307,20 @@ namespace __detail
       void
       _M_swap(_Hash_code_base& __x)
       {
-	std::swap(__ebo_extract_key::_S_get(*this),
-		  __ebo_extract_key::_S_get(__x));
-	std::swap(__ebo_h1::_S_get(*this), __ebo_h1::_S_get(__x));
-	std::swap(__ebo_h2::_S_get(*this), __ebo_h2::_S_get(__x));
+	std::swap(__ebo_extract_key::_M_get(),
+		  __x.__ebo_extract_key::_M_get());
+	std::swap(__ebo_h1::_M_get(), __x.__ebo_h1::_M_get());
+	std::swap(__ebo_h2::_M_get(), __x.__ebo_h2::_M_get());
       }
 
       const _ExtractKey&
-      _M_extract() const { return __ebo_extract_key::_S_cget(*this); }
+      _M_extract() const { return __ebo_extract_key::_M_cget(); }
 
       const _H1&
-      _M_h1() const { return __ebo_h1::_S_cget(*this); }
+      _M_h1() const { return __ebo_h1::_M_cget(); }
 
       const _H2&
-      _M_h2() const { return __ebo_h2::_S_cget(*this); }
+      _M_h2() const { return __ebo_h2::_M_cget(); }
     };
 
   /// Specialization: hash function and range-hashing function,
@@ -1397,20 +1387,20 @@ namespace __detail
       void
       _M_swap(_Hash_code_base& __x)
       {
-	std::swap(__ebo_extract_key::_S_get(*this),
-		  __ebo_extract_key::_S_get(__x));
-	std::swap(__ebo_h1::_S_get(*this), __ebo_h1::_S_get(__x));
-	std::swap(__ebo_h2::_S_get(*this), __ebo_h2::_S_get(__x));
+	std::swap(__ebo_extract_key::_M_get(),
+		  __x.__ebo_extract_key::_M_get());
+	std::swap(__ebo_h1::_M_get(), __x.__ebo_h1::_M_get());
+	std::swap(__ebo_h2::_M_get(), __x.__ebo_h2::_M_get());
       }
 
       const _ExtractKey&
-      _M_extract() const { return __ebo_extract_key::_S_cget(*this); }
+      _M_extract() const { return __ebo_extract_key::_M_cget(); }
 
       const _H1&
-      _M_h1() const { return __ebo_h1::_S_cget(*this); }
+      _M_h1() const { return __ebo_h1::_M_cget(); }
 
       const _H2&
-      _M_h2() const { return __ebo_h2::_S_cget(*this); }
+      _M_h2() const { return __ebo_h2::_M_cget(); }
     };
 
   /**
@@ -1471,7 +1461,7 @@ namespace __detail
 	if (_M_cur)
 	  {
 	    std::size_t __bkt
-	      = __base_type::_S_get(*this)(_M_cur->_M_hash_code,
+	      = __base_type::_M_get()(_M_cur->_M_hash_code,
 					   _M_bucket_count);
 	    if (__bkt != _M_bucket)
 	      _M_cur = nullptr;
@@ -1819,11 +1809,11 @@ namespace __detail
     _M_swap(_Hashtable_base& __x)
     {
       __hash_code_base::_M_swap(__x);
-      std::swap(_EqualEBO::_S_get(*this), _EqualEBO::_S_get(__x));
+      std::swap(_EqualEBO::_M_get(), __x._EqualEBO::_M_get());
     }
 
     const _Equal&
-    _M_eq() const { return _EqualEBO::_S_cget(*this); }
+    _M_eq() const { return _EqualEBO::_M_cget(); }
   };
 
   /**
@@ -2021,11 +2011,11 @@ namespace __detail
 
       __node_alloc_type&
       _M_node_allocator()
-      { return __ebo_node_alloc::_S_get(*this); }
+      { return __ebo_node_alloc::_M_get(); }
 
       const __node_alloc_type&
       _M_node_allocator() const
-      { return __ebo_node_alloc::_S_cget(*this); }
+      { return __ebo_node_alloc::_M_cget(); }
 
       template<typename... _Args>
 	__node_type*
