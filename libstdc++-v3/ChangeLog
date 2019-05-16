@@ -1,3 +1,14 @@
+2019-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable_policy.h (_Hash_code_base::_M_swap): Use
+	_S_get accessors for members in EBO helpers.
+	(_Hash_code_base::_M_extract(), _Hash_code_base::_M_ranged_hash())
+	(_Hash_code_base::_M_h1(), _Hash_code_base::_M_h2()): Remove non-const
+	overloads.
+	(_Hashtable_base::_M_swap): Use _S_get accessors for members in EBO
+	helpers.
+	(_Hashtable_base::_M_eq()): Remove non-const overload.
+
 2019-05-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/variant (visit, visit<R>): Qualify calls to __do_visit.
