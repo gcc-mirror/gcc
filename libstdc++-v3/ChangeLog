@@ -1,5 +1,8 @@
 2019-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/c++17/fs_ops.cc (absolute(const path&, error_code&))
+	[_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Remove bogus assertion.
+
 	* include/std/variant (__overload_set): Remove.
 	(_Arr): New helper.
 	(_Build_FUN): New class template to define a single FUN overload,
