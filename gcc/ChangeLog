@@ -1,3 +1,8 @@
+2019-05-16  Richard Biener  <rguenther@suse.de>
+
+	* gimple-pretty-print.c (dump_ternary_rhs): Dump BIT_INSERT_EXPR
+	as __BIT_INSERT with -gimple.
+
 2019-05-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (lower_rec_input_clauses): For if (0) or simdlen (1) set
