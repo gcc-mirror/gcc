@@ -72,6 +72,9 @@ fs::absolute(const path& p)
 					     ec));
   return ret;
 #else
+  if (p.empty())
+    _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot make absolute path", p,
+	  make_error_code(std::errc::invalid_argument)));
   return current_path() / p;
 #endif
 }
@@ -82,7 +85,7 @@ fs::absolute(const path& p, error_code& ec)
   path ret;
   if (p.empty())
     {
-      ec = make_error_code(std::errc::no_such_file_or_directory);
+      ec = make_error_code(std::errc::invalid_argument);
       return ret;
     }
   ec.clear();
@@ -93,6 +96,7 @@ fs::absolute(const path& p, error_code& ec)
     }
 
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  // s must remain null-terminated
   wstring_view s = p.native();
 
   if (p.has_root_directory()) // implies !p.has_root_name()
@@ -104,9 +108,6 @@ fs::absolute(const path& p, error_code& ec)
       __glibcxx_assert(pos != 0);
       s.remove_prefix(std::min(s.length(), pos) - 1);
     }
-
-  // s must be null-terminated
-  __glibcxx_assert(!s.empty() && s.back() == 0);
 
   uint32_t len = 1024;
   wstring buf;
