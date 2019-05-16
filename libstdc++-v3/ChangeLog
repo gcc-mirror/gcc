@@ -1,5 +1,13 @@
 2019-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/variant (_Variant_storage<false, _Types...>::_M_reset):
+	Replace raw visitation with a runtime check for the valueless state
+	and a non-raw visitor.
+	(_Variant_storage<false, _Types...>::_M_reset_impl): Remove.
+	(variant::index()): Remove branch.
+	(variant::swap(variant&)): Use valueless_by_exception() instead of
+	comparing the index to variant_npos, and add likelihood attribute.
+
 	* include/bits/hashtable_policy.h (_Equal_helper): Remove.
 	(_Hashtable_base::_Equal_hash_code): Define new class template.
 	(_Hashtable_base::_M_equals): Use _Equal_hash_code instead of
