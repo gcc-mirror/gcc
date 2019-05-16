@@ -1,3 +1,35 @@
+2019-05-16  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	Backport from mainline.
+	2019-05-07  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/89765
+	* gcc.target/powerpc/pr89765-mc.c: New test.
+	* gcc.target/powerpc/vsx-builtin-10c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-10d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-11c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-11d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-12c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-12d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-13c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-13d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-14c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-14d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-15c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-15d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-16c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-16d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-17c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-17d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-18c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-18d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-19c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-19d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-20c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-20d.c: New test.
+	* gcc.target/powerpc/vsx-builtin-9c.c: New test.
+	* gcc.target/powerpc/vsx-builtin-9d.c: New test.
+
 2019-05-08  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	Backport from mainline.
