@@ -4566,11 +4566,6 @@ Build_recover_thunks::function(Named_object* orig_no)
 Expression*
 Build_recover_thunks::can_recover_arg(Location location)
 {
-  static Named_object* builtin_return_address;
-  if (builtin_return_address == NULL)
-    builtin_return_address =
-      Gogo::declare_builtin_rf_address("__builtin_return_address", true);
-
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
   static Named_object* can_recover;
   if (can_recover == NULL)
@@ -4589,20 +4584,15 @@ Build_recover_thunks::can_recover_arg(Location location)
       can_recover->func_declaration_value()->set_asm_name("runtime.canrecover");
     }
 
-  Expression* fn = Expression::make_func_reference(builtin_return_address,
-						   NULL, location);
-
   Expression* zexpr = Expression::make_integer_ul(0, NULL, location);
-  Expression_list *args = new Expression_list();
-  args->push_back(zexpr);
-
-  Expression* call = Expression::make_call(fn, args, false, location);
+  Expression* call = Runtime::make_call(Runtime::BUILTIN_RETURN_ADDRESS,
+                                        location, 1, zexpr);
   call = Expression::make_unsafe_cast(uintptr_type, call, location);
 
-  args = new Expression_list();
+  Expression_list* args = new Expression_list();
   args->push_back(call);
 
-  fn = Expression::make_func_reference(can_recover, NULL, location);
+  Expression* fn = Expression::make_func_reference(can_recover, NULL, location);
   return Expression::make_call(fn, args, false, location);
 }
 
@@ -4620,33 +4610,6 @@ Gogo::build_recover_thunks()
 {
   Build_recover_thunks build_recover_thunks(this);
   this->traverse(&build_recover_thunks);
-}
-
-// Return a declaration for __builtin_return_address or
-// __builtin_dwarf_cfa.
-
-Named_object*
-Gogo::declare_builtin_rf_address(const char* name, bool hasarg)
-{
-  const Location bloc = Linemap::predeclared_location();
-
-  Typed_identifier_list* param_types = new Typed_identifier_list();
-  if (hasarg)
-    {
-      Type* uint32_type = Type::lookup_integer_type("uint32");
-      param_types->push_back(Typed_identifier("l", uint32_type, bloc));
-    }
-
-  Typed_identifier_list* return_types = new Typed_identifier_list();
-  Type* voidptr_type = Type::make_pointer_type(Type::make_void_type());
-  return_types->push_back(Typed_identifier("", voidptr_type, bloc));
-
-  Function_type* fntype = Type::make_function_type(NULL, param_types,
-						   return_types, bloc);
-  Named_object* ret = Named_object::make_function_declaration(name, NULL,
-							      fntype, bloc);
-  ret->func_declaration_value()->set_asm_name(name);
-  return ret;
 }
 
 // Build a call to the runtime error function.
