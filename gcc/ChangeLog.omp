@@ -1,3 +1,14 @@
+2019-05-16  Julian Brown  <julian@codesourcery.com>
+
+	* omp-oacc-kernels.c (find_omp_for_index_vars_1,
+	find_omp_for_index_vars): New functions.
+	(maybe_build_inner_data_region): Add IDX_VARS argument. Don't add
+	CREATE mapping clauses for loop index variables.  Set TREE_ADDRESSABLE
+	flag on newly-mapped declarations as a side effect.
+	(decompose_kernels_region_body): Call find_omp_for_index_vars.  Don't
+	create PRESENT clause for loop index variables.  Pass index variable
+	set to maybe_build_inner_data_region.
+
 2019-02-01  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* omp-oacc-kernels.c (struct adjust_nested_loop_clauses_wi_info): New.
