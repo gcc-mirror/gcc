@@ -1,3 +1,8 @@
+2019-05-16  Julian Brown  <julian@codesourcery.com>
+
+	* target.c (gomp_map_vars_async): Initialise KEY and OFFSET fields in
+	not-present case.
+
 2019-01-09  Julian Brown  <julian@codesourcery.com>
 
 	* libgomp.texi: Update mentions of OpenACC version to 2.6.  Update

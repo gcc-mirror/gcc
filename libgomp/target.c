@@ -1103,8 +1103,12 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	  if (n == NULL)
 	    {
               if (pragma_kind == GOMP_MAP_VARS_OPENACC_IF_PRESENT)
-                /* No error, continue using the host address.  */
-                continue;
+		{
+		  /* No error, continue using the host address.  */
+		  tgt->list[i].key = NULL;
+		  tgt->list[i].offset = OFFSET_INLINED;
+		  continue;
+		}
 	      gomp_mutex_unlock (&devicep->lock);
 	      gomp_fatal ("use_device_ptr pointer wasn't mapped");
 	    }
