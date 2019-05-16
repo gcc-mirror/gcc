@@ -396,19 +396,16 @@ namespace __variant
 	_M_index(_Np)
 	{ }
 
-      constexpr void _M_reset_impl()
-      {
-	__variant::__raw_visit([](auto&& __this_mem) mutable
-	  {
-	    if constexpr (!is_same_v<remove_reference_t<decltype(__this_mem)>,
-			  __variant_cookie>)
-	      std::_Destroy(std::__addressof(__this_mem));
-	  }, __variant_cast<_Types...>(*this));
-      }
-
       void _M_reset()
       {
-	_M_reset_impl();
+	if (!_M_valid()) [[unlikely]]
+	  return;
+
+	std::__do_visit<void>([](auto&& __this_mem) mutable
+	  {
+	    std::_Destroy(std::__addressof(__this_mem));
+	  }, __variant_cast<_Types...>(*this));
+
 	_M_index = variant_npos;
       }
 
@@ -1485,12 +1482,7 @@ namespace __variant
       { return !this->_M_valid(); }
 
       constexpr size_t index() const noexcept
-      {
-	if (this->_M_index ==
-	    typename _Base::__index_type(variant_npos))
-	  return variant_npos;
-	return this->_M_index;
-      }
+      { return size_t(typename _Base::__index_type(this->_M_index + 1)) - 1; }
 
       void
       swap(variant& __rhs)
@@ -1511,7 +1503,7 @@ namespace __variant
 		  }
 		else
 		  {
-		    if (this->index() != variant_npos)
+		    if (!this->valueless_by_exception()) [[__likely__]]
 		      {
 			auto __tmp(std::move(__rhs_mem));
 			__rhs = std::move(*this);
@@ -1528,7 +1520,7 @@ namespace __variant
 	      }
 	    else
 	      {
-		if (this->index() != variant_npos)
+		if (!this->valueless_by_exception()) [[__likely__]]
 		  {
 		    __rhs = std::move(*this);
 		    this->_M_reset();
