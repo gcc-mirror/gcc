@@ -67,9 +67,37 @@ test02()
 #endif
 }
 
+void
+test03()
+{
+  // PR libstdc++/90299
+  const path p = __gnu_test::nonexistent_path();
+  std::error_code ec;
+  const path pabs = absolute(p, ec);
+  VERIFY( !ec );
+  VERIFY( pabs.is_absolute() );
+
+  const path pabs2 = absolute(p);
+  VERIFY( pabs2 == pabs );
+
+  const path eabs = absolute(path{}, ec);
+  VERIFY( ec == std::errc::invalid_argument );
+  VERIFY( eabs.empty() );
+
+  try {
+    absolute(path{});
+    VERIFY( false );
+  } catch (const std::filesystem::filesystem_error& e) {
+    VERIFY( e.code() == std::errc::invalid_argument );
+    VERIFY( e.path1().empty() );
+    VERIFY( e.path2().empty() );
+  }
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }

@@ -1,3 +1,22 @@
+2019-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2019-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_ops.cc (absolute(const path&, error_code&))
+	[_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Remove bogus assertion.
+
+	Backport from mainline
+	2019-05-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90299
+	* src/c++17/fs_ops.cc (absolute(const path&)): Report an error if the
+	argument is an empty path.
+	(absolute(const path&, error_code&)): Use invalid_argument as error
+	code instead of no_such_file_or_directory.
+	* testsuite/27_io/filesystem/operations/absolute.cc: Check handling
+	of non-existent paths and empty paths with both overloads of absolute.
+
 2019-05-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
