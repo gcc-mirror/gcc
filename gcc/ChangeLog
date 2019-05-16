@@ -1,5 +1,9 @@
 2019-05-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/90484
+	* tree-ssa-scopedtables.c (equal_mem_array_ref_p): Don't assert that
+	sz0 is equal to sz1, instead return false in that case.
+
 	* omp-low.c (lower_rec_input_clauses): If OMP_CLAUSE_IF
 	has non-constant expression, force sctx.lane and use two
 	argument IFN_GOMP_SIMD_LANE instead of single argument.
