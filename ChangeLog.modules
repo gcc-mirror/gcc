@@ -1,3 +1,15 @@
+2019-05-16  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (dumper::operator ()): Add null check.
+	(trees_out::mark_node): Permit fixed nodes.
+	(trees_out::tree_decl, trees_in::tree_node): More anon.
+	* name-lookup.c (mark_pending_on_decl): Fix field marking thinko.
+	(lookup_by_ident): Lookup anon.
+	(get_lookup_ident): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/anon-1_[abc].C: New.
+
 2019-05-15  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

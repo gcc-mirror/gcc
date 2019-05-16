@@ -4058,8 +4058,9 @@ mark_pending_on_decl (tree decl)
       decl = DECL_TEMPLATE_RESULT (decl);
     }
 
-  if (DECL_IMPLICIT_TYPEDEF_P (decl))
-    for (tree member = TYPE_FIELDS (TREE_TYPE (member)); member;
+  if (DECL_IMPLICIT_TYPEDEF_P (decl)
+      && RECORD_OR_UNION_CODE_P (TREE_CODE (TREE_TYPE (decl))))
+    for (tree member = TYPE_FIELDS (TREE_TYPE (decl)); member;
 	 member = TREE_CHAIN (member))
       mark_pending_on_decl (member);
 }
@@ -4275,56 +4276,107 @@ lookup_by_type (tree ctx, tree name, tree type)
 tree
 lookup_by_ident (tree ctx, tree name, unsigned mod, int ident)
 {
+  tree res = NULL_TREE;
+
   if (ident == -2)
-    return CLASS_TYPE_P (ctx) ? TYPE_NAME (CLASSTYPE_AS_BASE (ctx)) : NULL;
+    {
+      if (CLASS_TYPE_P (ctx))
+	res = TYPE_NAME (CLASSTYPE_AS_BASE (ctx));
+    }
+  else if (!name)
+    {
+      if (RECORD_OR_UNION_CODE_P (TREE_CODE (ctx)))
+	for (tree member = TYPE_FIELDS (ctx); member;
+	     member = DECL_CHAIN (member))
+	  if (!DECL_NAME (member) || IDENTIFIER_ANON_P (DECL_NAME (member)))
+	    if (!ident--)
+	      {
+		res = member;
+		break;
+	      }
+    }
+  else if (IDENTIFIER_ANON_P (name))
+    ;
+  else if (tree binding = get_binding_or_decl (ctx, name, mod))
+    {
+      if (TREE_CODE (binding) != OVERLOAD)
+	res = binding;
+      else if (ident < 0)
+	res = MAYBE_STAT_TYPE (binding);
+      else
+	{
+	  binding = MAYBE_STAT_DECL (binding);
+	  for (ovl_iterator iter (binding); iter; ++iter)
+	    if (!ident--)
+	      {
+		res = *iter;
+		break;
+	      }
+	}
+    }
 
-  tree binding = get_binding_or_decl (ctx, name, mod);
-
-  if (!binding)
-    return binding;
-
-  if (TREE_CODE (binding) != OVERLOAD)
-    return binding;
-
-  if (ident < 0)
-    return MAYBE_STAT_TYPE (binding);
-
-  binding = MAYBE_STAT_DECL (binding);
-  for (ovl_iterator iter (binding); iter; ++iter)
-    if (!ident--)
-      return *iter;
-
-  return NULL_TREE;
+  return res;
 }
 
 int
 get_lookup_ident (tree ctx, tree name, unsigned mod, tree decl)
 {
+  int res = 0;
+
   if (name == as_base_identifier)
-    return -2;
+    res = -2;
+  else if (name)
+    {
+      gcc_checking_assert (!IDENTIFIER_ANON_P (name));
 
-  // FIXME: Deal with anon members
-  gcc_checking_assert (name && !IDENTIFIER_ANON_P (name));
+      tree binding = get_binding_or_decl (ctx, name, mod);
 
-  tree binding = get_binding_or_decl (ctx, name, mod);
-
-  gcc_checking_assert (binding);
+      gcc_checking_assert (binding);
   
-  if (binding == decl)
-    return 0;
+      if (binding == decl)
+	res = 0;
+      else
+	{
+	  gcc_checking_assert (TREE_CODE (binding) == OVERLOAD);
+	  if (decl == MAYBE_STAT_TYPE (binding))
+	    res = -1;
+	  else
+	    {
+	      bool found = false;
+	      binding = MAYBE_STAT_DECL (binding);
 
-  gcc_checking_assert (TREE_CODE (binding) == OVERLOAD);
-  if (decl == MAYBE_STAT_TYPE (binding))
-    return -1;
+	      res = 0;
+	      for (ovl_iterator iter (binding); ; ++iter, ++res)
+		if (*iter == decl)
+		  {
+		    found = true;
+		    break;
+		  }
 
-  binding = MAYBE_STAT_DECL (binding);
-  int ident = 0;
+	      gcc_assert (found);
+	    }
+	}
+    }
+  else
+    {
+      /* An anonymous type, sans proxy typedef.  */
+      gcc_checking_assert (RECORD_OR_UNION_CODE_P (TREE_CODE (ctx)));
+      bool found = false;
+      for (tree member = TYPE_FIELDS (ctx); member; member = DECL_CHAIN (member))
+	{
+	  if (member == decl)
+	    {
+	      found = true;
+	      break;
+	    }
+	  if (!DECL_NAME (member) || IDENTIFIER_ANON_P (DECL_NAME (member)))
+	    res++;
+	}
 
-  for (ovl_iterator iter (binding); ; ++iter, ++ident)
-    if (*iter == decl)
-      return ident;
+      gcc_assert (found);
+    }
 
-  gcc_unreachable ();
+  return res;
 }
 
 tree

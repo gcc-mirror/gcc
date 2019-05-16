@@ -4672,10 +4672,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    template parameters at each level.  Each element in the vector is a
    TREE_LIST, whose TREE_VALUE is a PARM_DECL (if the parameter is a
    non-type parameter), or a TYPE_DECL (if the parameter is a type
+   parameter) or a TEMPLATE_DECL (if the parameter is a template
    parameter).  The TREE_PURPOSE is the default value, if any.  The
    TEMPLATE_PARM_INDEX for the parameter is available as the
    DECL_INITIAL (for a PARM_DECL) or as the TREE_TYPE (for a
-   TYPE_DECL). 
+   TYPE_DECL).
 
    FIXME: CONST_CAST_TREE is a hack that hopefully will go away after
    tree is converted to C++ class hiearchy.  */

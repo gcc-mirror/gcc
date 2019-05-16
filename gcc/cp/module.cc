@@ -3994,8 +3994,8 @@ dumper::operator () (const char *format, ...)
 	case 'N': /* Name.  */
 	  {
 	    tree t = va_arg (args, tree);
-	    if (TREE_CODE (t) == OVERLOAD)
-	      t = OVL_FUNCTION (t);
+	    if (t && TREE_CODE (t) == OVERLOAD)
+	      t = OVL_FIRST (t);
 	    fputc ('\'', dumps->stream);
 	    dumps->nested_name (t);
 	    fputc ('\'', dumps->stream);
@@ -4344,11 +4344,12 @@ trees_out::mark_node (tree decl, bool outermost)
 	}
     }
   else
+    /* Needed for enum consts.  */
     gcc_checking_assert (TREE_CODE (decl) == INTEGER_CST);
 
   if (TREE_VISITED (decl))
-    gcc_checking_assert (!*tree_map.get (decl)
-			 || *tree_map.get (decl) > mergeable_lwm);
+    /* Must already be forced, fixed or mergeable.  */
+    gcc_checking_assert (*tree_map.get (decl) >= 0);
   else
     {
       bool existed = tree_map.put (decl, 0);
@@ -6750,11 +6751,11 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	    code = tt_implicit_template;
 	  }
 
-	if (IDENTIFIER_ANON_P (name))
+	if (name && IDENTIFIER_ANON_P (name))
 	  {
 	    if (TREE_CODE (ctx) == NAMESPACE_DECL)
 	      {
-		gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl));
+		gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl) && code == tt_named);
 		proxy = TYPE_NAME (TREE_TYPE (decl));
 		name = DECL_NAME (proxy);
 		gcc_checking_assert (MAYBE_DECL_MODULE_OWNER (proxy) == owner);
@@ -7558,7 +7559,8 @@ trees_in::tree_node ()
 	if (!res)
 	  {
 	    error_at (state->loc, "failed to find %<%E%s%E%s%s%>",
-		      ctx, &"::"[2 * (ctx == global_namespace)], name,
+		      ctx, &"::"[2 * (ctx == global_namespace)],
+		      name ? name : get_identifier ("<anonymous>"),
 		      owner ? "@" : "",
 		      owner ? (*modules)[owner]->get_flatname () : "");
 	    set_overrun ();
@@ -7581,7 +7583,7 @@ trees_in::tree_node ()
 		proxy = DECL_TEMPLATE_RESULT (res);
 		tag = insert (proxy);
 		dump (dumper::TREE)
-		  && dump ("Read templates' result:%d %C:%N", tag,
+		  && dump ("Read templates's result:%d %C:%N", tag,
 			   TREE_CODE (proxy), proxy);
 	      }
 
@@ -13386,6 +13388,8 @@ macro_loc_cmp (const void *a_, const void *b_)
 
 /* Write out the exported defines.  This is two sections, one
    containing the definitions, the other a table of node names.  */
+// FIXME: macros from command line and forced headers are not to be
+// exported.
 
 unsigned
 module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
