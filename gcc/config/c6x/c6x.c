@@ -769,10 +769,12 @@ c6x_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
 		     tree thunk ATTRIBUTE_UNUSED, HOST_WIDE_INT delta,
 		     HOST_WIDE_INT vcall_offset, tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
   rtx xops[5];
   /* The this parameter is passed as the first argument.  */
   rtx this_rtx = gen_rtx_REG (Pmode, REG_A4);
 
+  assemble_start_function (thunk, fnname);
   c6x_current_insn = NULL;
 
   xops[4] = XEXP (DECL_RTL (function), 0);
@@ -851,6 +853,7 @@ c6x_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
       output_asm_insn ("nop 4", xops);
       output_asm_insn ("add .d1 %2, %1, %2", xops);
     }
+  assemble_end_function (thunk, fnname);
 }
 
 /* Return true if EXP goes in small data/bss.  */

@@ -1967,11 +1967,13 @@ csky_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 		      HOST_WIDE_INT vcall_offset,
 		      tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
   const char *thiz = "a0";
   const char *reg0 = "t0";
   const char *reg1 = "t1";
   int maxoff = 4096;		/* Constant range for addi/subi.  */
 
+  assemble_start_function (thunk, fnname);
   final_start_function (emit_barrier (), file, 1);
 
   rtx fnaddr = XEXP (DECL_RTL (function), 0);
@@ -2047,6 +2049,7 @@ csky_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   fprintf (file, "\n");
 
   final_end_function ();
+  assemble_end_function (thunk, fnname);
 }
 
 

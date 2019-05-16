@@ -26997,10 +26997,14 @@ static void
 arm_output_mi_thunk (FILE *file, tree thunk, HOST_WIDE_INT delta,
 		     HOST_WIDE_INT vcall_offset, tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
+
+  assemble_start_function (thunk, fnname);
   if (TARGET_32BIT)
     arm32_output_mi_thunk (file, thunk, delta, vcall_offset, function);
   else
     arm_thumb1_mi_thunk (file, thunk, delta, vcall_offset, function);
+  assemble_end_function (thunk, fnname);
 }
 
 int

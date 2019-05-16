@@ -1512,8 +1512,10 @@ xstormy16_asm_output_mi_thunk (FILE *file,
 			       HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
 			       tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
   int regnum = FIRST_ARGUMENT_REGISTER;
 
+  assemble_start_function (thunk_fndecl, fnname);
   /* There might be a hidden first argument for a returned structure.  */
   if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
     regnum += 1;
@@ -1522,6 +1524,7 @@ xstormy16_asm_output_mi_thunk (FILE *file,
   fputs ("\tjmpf ", file);
   assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
   putc ('\n', file);
+  assemble_end_function (thunk_fndecl, fnname);
 }
 
 /* The purpose of this function is to override the default behavior of
