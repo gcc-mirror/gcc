@@ -1,3 +1,11 @@
+2019-05-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (alias_stats): Add
+	aliasing_component_refs_p_may_alias and
+	aliasing_component_refs_p_no_alias.
+	(dump_alias_stats): Print aliasing_component_refs_p stats.
+	(aliasing_component_refs_p): Update stats.
+
 2019-05-16  Martin Liska  <mliska@suse.cz>
 
 	PR lto/90500
