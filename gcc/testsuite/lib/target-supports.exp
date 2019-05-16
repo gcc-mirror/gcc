@@ -9225,7 +9225,7 @@ proc check_effective_target_cet { } {
 	{
 	  asm ("setssbsy");
 	}
-    } "-O2" ]
+    } "-O2 -fcf-protection" ]
 }
 
 # Return 1 if target supports floating point "infinite"
