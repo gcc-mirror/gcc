@@ -1,3 +1,7 @@
+2019-05-16  Jun Ma  <junma@linux.alibaba.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2019-05-07  Jim Wilson  <jimw@sifive.com>
 
 	* MAINTAINERS: Remove myself as IA-64 maintainer.
