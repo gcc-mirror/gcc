@@ -1,5 +1,12 @@
 2019-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/hashtable_policy.h (_Hashtable_ebo_helper::_S_get):
+	Replace with _M_get non-static member function.
+	(_Hashtable_ebo_helper::_S_cget): Replace with _M_cget non-static
+	member function.
+	(_Hash_code_base, _Local_iterator_base, _Hashtable_base):
+	(_Hashtable_alloc): Adjust to use non-static members of EBO helper.
+
 	* include/bits/hashtable_policy.h (_Hash_code_base::_M_swap): Use
 	_S_get accessors for members in EBO helpers.
 	(_Hash_code_base::_M_extract(), _Hash_code_base::_M_ranged_hash())
