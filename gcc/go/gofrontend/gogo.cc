@@ -2996,6 +2996,57 @@ Gogo::lower_constant(Named_object* no)
   lower.constant(no, false);
 }
 
+// Make implicit type conversions explicit.  Currently only does for
+// interface conversions, so the escape analysis can see them and
+// optimize.
+
+class Add_conversions : public Traverse
+{
+ public:
+  Add_conversions()
+    : Traverse(traverse_statements
+               | traverse_expressions)
+  { }
+
+  int
+  statement(Block*, size_t* pindex, Statement*);
+
+  int
+  expression(Expression**);
+};
+
+// Add explicit conversions in a statement.
+
+int
+Add_conversions::statement(Block*, size_t*, Statement* sorig)
+{
+  sorig->add_conversions();
+  return TRAVERSE_CONTINUE;
+}
+
+// Add explicit conversions in an expression.
+
+int
+Add_conversions::expression(Expression** pexpr)
+{
+  (*pexpr)->add_conversions();
+  return TRAVERSE_CONTINUE;
+}
+
+void
+Gogo::add_conversions()
+{
+  Add_conversions add_conversions;
+  this->traverse(&add_conversions);
+}
+
+void
+Gogo::add_conversions_in_block(Block *b)
+{
+  Add_conversions add_conversions;
+  b->traverse(&add_conversions);
+}
+
 // Traverse the tree to create function descriptors as needed.
 
 class Create_function_descriptors : public Traverse

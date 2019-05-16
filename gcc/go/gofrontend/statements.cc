@@ -324,6 +324,22 @@ Variable_declaration_statement::do_flatten(Gogo* gogo, Named_object* function,
   return this;
 }
 
+// Add explicit type conversions.
+
+void
+Variable_declaration_statement::do_add_conversions()
+{
+  Variable* var = this->var_->var_value();
+  Expression* init = var->init();
+  if (init == NULL)
+    return;
+  Type* lt = var->type();
+  Type* rt = init->type();
+  if (!Type::are_identical(lt, rt, 0, NULL)
+      && lt->interface_type() != NULL)
+    var->set_init(Expression::make_cast(lt, init, this->location()));
+}
+
 // Convert a variable declaration to the backend representation.
 
 Bstatement*
@@ -580,6 +596,20 @@ Temporary_statement::do_flatten(Gogo*, Named_object*, Block*,
 							 this->location());
     }
   return this;
+}
+
+// Add explicit type conversions.
+
+void
+Temporary_statement::do_add_conversions()
+{
+  if (this->init_ == NULL)
+    return;
+  Type* lt = this->type();
+  Type* rt = this->init_->type();
+  if (!Type::are_identical(lt, rt, 0, NULL)
+      && lt->interface_type() != NULL)
+    this->init_ = Expression::make_cast(lt, this->init_, this->location());
 }
 
 // Convert to backend representation.
@@ -958,6 +988,18 @@ Assignment_statement::do_flatten(Gogo*, Named_object*, Block*,
 							this->location());
     }
   return this;
+}
+
+// Add explicit type conversions.
+
+void
+Assignment_statement::do_add_conversions()
+{
+  Type* lt = this->lhs_->type();
+  Type* rt = this->rhs_->type();
+  if (!Type::are_identical(lt, rt, 0, NULL)
+      && lt->interface_type() != NULL)
+    this->rhs_ = Expression::make_cast(lt, this->rhs_, this->location());
 }
 
 // Convert an assignment statement to the backend representation.
@@ -2637,6 +2679,8 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
   // We already ran the determine_types pass, so we need to run it
   // just for the call statement now.  The other types are known.
   call_statement->determine_types();
+
+  gogo->add_conversions_in_block(b);
 
   gogo->flatten_block(function, b);
 
@@ -4541,6 +4585,18 @@ Send_statement::do_flatten(Gogo*, Named_object*, Block*,
 							this->location());
     }
   return this;
+}
+
+// Add explicit type conversions.
+
+void
+Send_statement::do_add_conversions()
+{
+  Type* lt = this->channel_->type()->channel_type()->element_type();
+  Type* rt = this->val_->type();
+  if (!Type::are_identical(lt, rt, 0, NULL)
+      && lt->interface_type() != NULL)
+    this->val_ = Expression::make_cast(lt, this->val_, this->location());
 }
 
 // Convert a send statement to the backend representation.

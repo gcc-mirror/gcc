@@ -2407,9 +2407,11 @@ Escape_analysis_assign::assign(Node* dst, Node* src)
             Type* tt = tce->type();
             if ((ft->is_string_type() && tt->is_slice_type())
                 || (ft->is_slice_type() && tt->is_string_type())
-                || (ft->integer_type() != NULL && tt->is_string_type()))
+                || (ft->integer_type() != NULL && tt->is_string_type())
+                || tt->interface_type() != NULL)
               {
-                // string([]byte), string([]rune), []byte(string), []rune(string), string(rune)
+                // string([]byte), string([]rune), []byte(string), []rune(string), string(rune),
+                // interface(T)
                 this->flows(dst, src);
                 break;
               }
@@ -3151,14 +3153,24 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
           Type* tt = tce->type();
           if ((ft->is_string_type() && tt->is_slice_type())
               || (ft->is_slice_type() && tt->is_string_type())
-              || (ft->integer_type() != NULL && tt->is_string_type()))
+              || (ft->integer_type() != NULL && tt->is_string_type())
+              || tt->interface_type() != NULL)
             {
-              // string([]byte), string([]rune), []byte(string), []rune(string), string(rune)
+              // string([]byte), string([]rune), []byte(string), []rune(string), string(rune),
+              // interface(T)
               src->set_encoding(Node::ESCAPE_HEAP);
               if (debug_level != 0 && osrcesc != src->encoding())
                 go_inform(src->location(), "%s escapes to heap",
                           src->ast_format(gogo).c_str());
               extra_loop_depth = mod_loop_depth;
+              if (tt->interface_type() != NULL
+                  && ft->has_pointer()
+                  && !ft->is_direct_iface_type())
+                // We're converting from a non-direct interface type.
+                // The interface will hold a heap copy of the data
+                // Flow the data to heap. See issue 29353.
+                this->flood(level, this->context_->sink(),
+                            Node::make_node(tce->expr()), -1);
             }
         }
       else if (e->array_index_expression() != NULL
