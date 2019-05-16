@@ -1,3 +1,10 @@
+2019-05-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-affine.c (expr_to_aff_combination): New function split
+	out from...
+	(tree_to_aff_combination): ... here.
+	(aff_combination_expand): Avoid building a GENERIC tree.
+
 2019-05-16  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* cgraphunit.c (cgraph_node::expand_thunk): Remove
