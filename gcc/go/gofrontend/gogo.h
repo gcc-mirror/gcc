@@ -683,6 +683,14 @@ class Gogo
   void
   check_return_statements();
 
+  // Make implicit type conversions explicit.
+  void
+  add_conversions();
+
+  // Make implicit type conversions explicit in a block.
+  void
+  add_conversions_in_block(Block*);
+
   // Analyze the program flow for escape information.
   void
   analyze_escape();

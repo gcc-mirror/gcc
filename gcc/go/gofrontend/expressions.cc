@@ -184,11 +184,10 @@ Expression::convert_for_assignment(Gogo*, Type* lhs_type,
 					   NULL);
   if (!are_identical && lhs_type->interface_type() != NULL)
     {
-      if (rhs_type->interface_type() == NULL)
-        return Expression::convert_type_to_interface(lhs_type, rhs, location);
-      else
-        return Expression::convert_interface_to_interface(lhs_type, rhs, false,
-                                                          location);
+      // Type to interface conversions have been made explicit early.
+      go_assert(rhs_type->interface_type() != NULL);
+      return Expression::convert_interface_to_interface(lhs_type, rhs, false,
+                                                        location);
     }
   else if (!are_identical && rhs_type->interface_type() != NULL)
     return Expression::convert_interface_to_type(lhs_type, rhs, location);
@@ -231,11 +230,12 @@ Expression::convert_for_assignment(Gogo*, Type* lhs_type,
 }
 
 // Return an expression for a conversion from a non-interface type to an
-// interface type.
+// interface type.  If ON_STACK is true, it can allocate the storage on
+// stack.
 
 Expression*
 Expression::convert_type_to_interface(Type* lhs_type, Expression* rhs,
-                                      Location location)
+                                      bool on_stack, Location location)
 {
   Interface_type* lhs_interface_type = lhs_type->interface_type();
   bool lhs_is_empty = lhs_interface_type->is_empty();
@@ -302,9 +302,9 @@ Expression::convert_type_to_interface(Type* lhs_type, Expression* rhs,
     {
       // We are assigning a non-pointer value to the interface; the
       // interface gets a copy of the value in the heap if it escapes.
-      // TODO(cmang): Associate escape state state of RHS with newly
-      // created OBJ.
       obj = Expression::make_heap_expression(rhs, location);
+      if (on_stack)
+        obj->heap_expression()->set_allocate_on_stack();
     }
 
   return Expression::make_interface_value(lhs_type, first_field, obj, location);
@@ -3625,6 +3625,14 @@ Type_conversion_expression::do_flatten(Gogo*, Named_object*,
       inserter->insert(temp);
       this->expr_ = Expression::make_temporary_reference(temp, this->location());
     }
+
+  // For interface conversion, decide if we can allocate on stack.
+  if (this->type()->interface_type() != NULL)
+    {
+      Node* n = Node::make_node(this);
+      if ((n->encoding() & ESCAPE_MASK) == Node::ESCAPE_NONE)
+        this->no_escape_ = true;
+    }
   return this;
 }
 
@@ -3813,11 +3821,19 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
       return gogo->backend()->convert_expression(btype, bexpr, loc);
     }
   else if (type->interface_type() != NULL
+           && expr_type->interface_type() == NULL)
+    {
+      Expression* conversion =
+          Expression::convert_type_to_interface(type, this->expr_,
+                                                this->no_escape_, loc);
+      return conversion->get_backend(context);
+    }
+  else if (type->interface_type() != NULL
 	   || expr_type->interface_type() != NULL)
     {
       Expression* conversion =
           Expression::convert_for_assignment(gogo, type, this->expr_,
-                                             this->location());
+                                             loc);
       return conversion->get_backend(context);
     }
   else if (type->is_string_type()
@@ -8466,6 +8482,10 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
           lhs->array_index_expression()->set_needs_bounds_check(false);
 	  gogo->lower_expression(function, inserter, &lhs);
 	  gogo->flatten_expression(function, inserter, &lhs);
+      Expression* elem = *pa;
+      if (!Type::are_identical(element_type, elem->type(), 0, NULL)
+          && element_type->interface_type() != NULL)
+        elem = Expression::make_cast(element_type, elem, loc);
 	  // The flatten pass runs after the write barrier pass, so we
 	  // need to insert a write barrier here if necessary.
 	  // However, if ASSIGN_LHS is not NULL, we have been called
@@ -8473,12 +8493,12 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
 	  Statement* assign;
 	  if (assign_lhs != NULL
 	      || !gogo->assign_needs_write_barrier(lhs))
-	    assign = Statement::make_assignment(lhs, *pa, loc);
+	    assign = Statement::make_assignment(lhs, elem, loc);
 	  else
 	    {
 	      Function* f = function == NULL ? NULL : function->func_value();
 	      assign = gogo->assign_with_write_barrier(f, NULL, inserter,
-						       lhs, *pa, loc);
+						       lhs, elem, loc);
 	    }
 	  inserter->insert(assign);
 	}
@@ -9840,7 +9860,7 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
 	  Type::make_empty_interface_type(Linemap::predeclared_location());
 
 	Expression* nil = Expression::make_nil(location);
-	nil = Expression::convert_for_assignment(gogo, empty, nil, location);
+        nil = Expression::make_interface_value(empty, nil, nil, location);
 
 	// We need to handle a deferred call to recover specially,
 	// because it changes whether it can recover a panic or not.
@@ -10472,6 +10492,46 @@ Call_expression::do_flatten(Gogo* gogo, Named_object*,
     }
 
   return this;
+}
+
+// Make implicit type conversions explicit.
+
+void
+Call_expression::do_add_conversions()
+{
+  // Skip call that requires a thunk. We generate conversions inside the thunk.
+  if (this->is_concurrent_ || this->is_deferred_)
+    return;
+
+  if (this->args_ == NULL || this->args_->empty())
+    return;
+
+  Function_type* fntype = this->get_function_type();
+  if (fntype == NULL)
+    {
+      go_assert(saw_errors());
+      return;
+    }
+  if (fntype->parameters() == NULL || fntype->parameters()->empty())
+    return;
+
+  Location loc = this->location();
+  Expression_list::iterator pa = this->args_->begin();
+  Typed_identifier_list::const_iterator pp = fntype->parameters()->begin();
+  bool is_interface_method =
+    this->fn_->interface_field_reference_expression() != NULL;
+  if (!is_interface_method && fntype->is_method())
+    {
+      // Skip the receiver argument, which cannot be interface.
+      pa++;
+    }
+  for (; pa != this->args_->end(); ++pa, ++pp)
+    {
+      Type* pt = pp->type();
+      if (!Type::are_identical(pt, (*pa)->type(), 0, NULL)
+          && pt->interface_type() != NULL)
+        *pa = Expression::make_cast(pt, *pa, loc);
+    }
 }
 
 // Get the function type.  This can return NULL in error cases.
@@ -12250,6 +12310,21 @@ Map_index_expression::do_check_types(Gogo*)
     }
 }
 
+// Add explicit type conversions.
+
+void
+Map_index_expression::do_add_conversions()
+{
+  Map_type* mt = this->get_map_type();
+  if (mt == NULL)
+    return;
+  Type* lt = mt->key_type();
+  Type* rt = this->index_->type();
+  if (!Type::are_identical(lt, rt, 0, NULL)
+      && lt->interface_type() != NULL)
+    this->index_ = Expression::make_cast(lt, this->index_, this->location());
+}
+
 // Get the backend representation for a map index.
 
 Bexpression*
@@ -13450,6 +13525,33 @@ Struct_construction_expression::do_flatten(Gogo*, Named_object*,
   return this;
 }
 
+// Make implicit type conversions explicit.
+
+void
+Struct_construction_expression::do_add_conversions()
+{
+  if (this->vals() == NULL)
+    return;
+
+  Location loc = this->location();
+  const Struct_field_list* fields = this->type_->struct_type()->fields();
+  Expression_list::iterator pv = this->vals()->begin();
+  for (Struct_field_list::const_iterator pf = fields->begin();
+       pf != fields->end();
+       ++pf, ++pv)
+    {
+      if (pv == this->vals()->end())
+        break;
+      if (*pv != NULL)
+        {
+          Type* ft = pf->type();
+          if (!Type::are_identical(ft, (*pv)->type(), 0, NULL)
+              && ft->interface_type() != NULL)
+           *pv = Expression::make_cast(ft, *pv, loc);
+        }
+    }
+}
+
 // Return the backend representation for constructing a struct.
 
 Bexpression*
@@ -13696,6 +13798,26 @@ Array_construction_expression::do_flatten(Gogo*, Named_object*,
 	}
     }
   return this;
+}
+
+// Make implicit type conversions explicit.
+
+void
+Array_construction_expression::do_add_conversions()
+{
+  if (this->vals() == NULL)
+    return;
+
+  Type* et = this->type_->array_type()->element_type();
+  if (et->interface_type() == NULL)
+    return;
+
+  Location loc = this->location();
+  for (Expression_list::iterator pv = this->vals()->begin();
+       pv != this->vals()->end();
+       ++pv)
+    if (!Type::are_identical(et, (*pv)->type(), 0, NULL))
+      *pv = Expression::make_cast(et, *pv, loc);
 }
 
 // Get a constructor expression for the array values.
@@ -14219,6 +14341,37 @@ Map_construction_expression::do_copy()
 					  ? NULL
 					  : this->vals_->copy()),
 					 this->location());
+}
+
+// Make implicit type conversions explicit.
+
+void
+Map_construction_expression::do_add_conversions()
+{
+  if (this->vals_ == NULL || this->vals_->empty())
+    return;
+
+  Map_type* mt = this->type_->map_type();
+  Type* kt = mt->key_type();
+  Type* vt = mt->val_type();
+  bool key_is_interface = (kt->interface_type() != NULL);
+  bool val_is_interface = (vt->interface_type() != NULL);
+  if (!key_is_interface && !val_is_interface)
+    return;
+
+  Location loc = this->location();
+  for (Expression_list::iterator pv = this->vals_->begin();
+       pv != this->vals_->end();
+       ++pv)
+    {
+      if (key_is_interface &&
+          !Type::are_identical(kt, (*pv)->type(), 0, NULL))
+        *pv = Expression::make_cast(kt, *pv, loc);
+      ++pv;
+      if (val_is_interface &&
+          !Type::are_identical(vt, (*pv)->type(), 0, NULL))
+        *pv = Expression::make_cast(vt, *pv, loc);
+    }
 }
 
 // Return the backend representation for constructing a map.

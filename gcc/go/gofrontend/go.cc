@@ -142,6 +142,10 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
   if (only_check_syntax)
     return;
 
+  // Make implicit type conversions explicit.
+  ::gogo->add_conversions();
+
+  // Analyze the program flow for escape information.
   ::gogo->analyze_escape();
 
   // Export global identifiers as appropriate.
