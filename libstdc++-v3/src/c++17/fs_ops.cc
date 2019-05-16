@@ -96,6 +96,7 @@ fs::absolute(const path& p, error_code& ec)
     }
 
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  // s must remain null-terminated
   wstring_view s = p.native();
 
   if (p.has_root_directory()) // implies !p.has_root_name()
@@ -107,9 +108,6 @@ fs::absolute(const path& p, error_code& ec)
       __glibcxx_assert(pos != 0);
       s.remove_prefix(std::min(s.length(), pos) - 1);
     }
-
-  // s must be null-terminated
-  __glibcxx_assert(!s.empty() && s.back() == 0);
 
   uint32_t len = 1024;
   wstring buf;
