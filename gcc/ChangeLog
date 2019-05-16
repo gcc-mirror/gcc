@@ -1,3 +1,8 @@
+2019-05-16  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/arm/t-rtems: Replace ARMv7-M multilibs with Cortex-M
+	multilibs.
+
 2019-05-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90424
