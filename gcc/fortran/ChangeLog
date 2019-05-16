@@ -1,3 +1,10 @@
+2019-05-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/90329
+	* trans-decl.c (create_function_arglist): Set
+	DECL_HIDDEN_STRING_LENGTH on hidden string length PARM_DECLs if
+	len is constant.
+
 2019-05-15  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* parse.c (gfc_parse_file): Remove translation string markers.
