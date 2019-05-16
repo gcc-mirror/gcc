@@ -1,20 +1,11 @@
-2019-05-16  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+2019-05-16  Jun Ma <JunMa@linux.alibaba.com>
 
-	* config/arm/t-rtems: Replace ARMv7-M multilibs with Cortex-M
-	multilibs.
-
-2019-05-16  Richard Biener  <rguenther@suse.de>
-
-	PR tree-optimization/90424
-	* tree-ssa.c (non_rewritable_lvalue_p): Handle inserts from
-	aligned subvectors.
-	(execute_update_addresses_taken): Likewise.
-	* tree-cfg.c (verify_gimple_assign_ternary): Likewise.
-
-2019-05-16  Richard Biener  <rguenther@suse.de>
-
-	* gimple-pretty-print.c (dump_ternary_rhs): Dump BIT_INSERT_EXPR
-	as __BIT_INSERT with -gimple.
+	PR tree-optimization/90106
+	* tree-call-cdce.c (shrink_wrap_one_built_in_call_with_conds): Add
+	new parameter as new internal function call, also move it to new
+	basic block.
+	(use_internal_fn): Pass internal function call to
+	shrink_wrap_one_built_in_call_with_conds.
 
 2019-05-15  Jakub Jelinek  <jakub@redhat.com>
 
