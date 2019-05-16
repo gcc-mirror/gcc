@@ -1,3 +1,41 @@
+2019-05-16  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* cgraphunit.c (cgraph_node::expand_thunk): Remove
+	assemble_start_function and assemble_end_function calls.
+	* config/alpha/alpha.c (alpha_output_mi_thunk_osf): Call
+	assemble_start_function and assemble_end_function.
+	* config/arc/arc.c (arc_output_mi_thunk): Likewise.
+	* config/arm/arm.c (arm_output_mi_thunk): Likewise.
+	* config/bfin/bfin.c (bfin_output_mi_thunk): Likewise.
+	* config/c6x/c6x.c (c6x_output_mi_thunk): Likewise.
+	* config/cris/cris.c (cris_asm_output_mi_thunk): Likewise.
+	* config/csky/csky.c (csky_output_mi_thunk): Likewise.
+	* config/epiphany/epiphany.c (epiphany_output_mi_thunk): Likewise.
+	* config/frv/frv.c (frv_asm_output_mi_thunk): Likewise.
+	* config/i386/i386.c (x86_output_mi_thunk): Likewise.
+	* config/ia64/ia64.c (ia64_output_mi_thunk): Likewise.
+	* config/m68k/m68k.c (m68k_output_mi_thunk): Likewise.
+	* config/microblaze/microblaze.c (microblaze_asm_output_mi_thunk):
+	Likewise.
+	* config/mips/mips.c (mips_output_mi_thunk): Likewise.
+	* config/mmix/mmix.c (mmix_asm_output_mi_thunk): Likewise.
+	* config/mn10300/mn10300.c (mn10300_asm_output_mi_thunk): Likewise.
+	* config/nds32/nds32.c (nds32_asm_output_mi_thunk): Likewise.
+	* config/nios2/nios2.c (nios2_asm_output_mi_thunk): Likewise.
+	* config/or1k/or1k.c (or1k_output_mi_thunk): Likewise.
+	* config/pa/pa.c (pa_asm_output_mi_thunk): Likewise.
+	* config/riscv/riscv.c (riscv_output_mi_thunk): Likewise.
+	* config/rs6000/rs6000.c (rs6000_output_mi_thunk): Likewise.
+	* config/s390/s390.c (s390_output_mi_thunk): Likewise.
+	* config/sh/sh.c (sh_output_mi_thunk): Likewise.
+	* config/sparc/sparc.c (sparc_output_mi_thunk): Likewise.
+	* config/spu/spu.c (spu_output_mi_thunk): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_asm_output_mi_thunk):
+	Likewise.
+	* config/tilegx/tilegx.c (tilegx_output_mi_thunk): Likewise.
+	* config/tilepro/tilepro.c (tilepro_asm_output_mi_thunk): Likewise.
+	* config/vax/vax.c (vax_output_mi_thunk): Likewise.
+
 2019-05-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-alias.c (alias_stats): Add
