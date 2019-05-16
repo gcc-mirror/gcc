@@ -161,7 +161,7 @@ namespace __detail
 {
 namespace __variant
 {
-  // Returns the first apparence of _Tp in _Types.
+  // Returns the first appearence of _Tp in _Types.
   // Returns sizeof...(_Types) if _Tp is not in _Types.
   template<typename _Tp, typename... _Types>
     struct __index_of : std::integral_constant<size_t, 0> {};
@@ -727,41 +727,65 @@ namespace __variant
     inline constexpr bool __exactly_once =
       __tuple_count_v<_Tp, tuple<_Types...>> == 1;
 
-  // Takes _Types and create an overloaded _S_fun for each type.
-  // If a type appears more than once in _Types, create only one overload.
-  template<typename... _Types>
-    struct __overload_set
-    { static void _S_fun(); };
+  // Helper used to check for valid conversions that don't involve narrowing.
+  template<typename _Ti> struct _Arr { _Ti _M_x[1]; };
 
-  template<typename _First, typename... _Rest>
-    struct __overload_set<_First, _Rest...> : __overload_set<_Rest...>
+  // Build an imaginary function FUN(Ti) for each alternative type Ti
+  template<size_t _Ind, typename _Tp, typename _Ti,
+	   bool _Ti_is_cv_bool = is_same_v<remove_cv_t<_Ti>, bool>,
+	   typename = void>
+    struct _Build_FUN
     {
-      using __overload_set<_Rest...>::_S_fun;
-      static integral_constant<size_t, sizeof...(_Rest)> _S_fun(_First);
+      // This function means 'using _Build_FUN<I, T, Ti>::_S_fun;' is valid,
+      // but only static functions will be considered in the call below.
+      void _S_fun();
     };
 
-  template<typename... _Rest>
-    struct __overload_set<void, _Rest...> : __overload_set<_Rest...>
+  // ... for which Ti x[] = {std::forward<T>(t)}; is well-formed,
+  template<size_t _Ind, typename _Tp, typename _Ti>
+    struct _Build_FUN<_Ind, _Tp, _Ti, false,
+		      void_t<decltype(_Arr<_Ti>{{std::declval<_Tp>()}})>>
     {
-      using __overload_set<_Rest...>::_S_fun;
+      // This is the FUN function for type _Ti, with index _Ind
+      static integral_constant<size_t, _Ind> _S_fun(_Ti);
     };
 
-  // Helper for variant(_Tp&&) and variant::operator=(_Tp&&).
-  // __accepted_index maps an arbitrary _Tp to an alternative type in _Variant
-  // (or to variant_npos).
+  // ... and if Ti is cv bool, remove_cvref_t<T> is bool.
+  template<size_t _Ind, typename _Tp, typename _Ti>
+    struct _Build_FUN<_Ind, _Tp, _Ti, true,
+		      enable_if_t<is_same_v<__remove_cvref_t<_Tp>, bool>>>
+    {
+      // This is the FUN function for when _Ti is cv bool, with index _Ind
+      static integral_constant<size_t, _Ind> _S_fun(_Ti);
+    };
+
+  template<typename _Tp, typename _Variant,
+	   typename = make_index_sequence<variant_size_v<_Variant>>>
+    struct _Build_FUNs;
+
+  template<typename _Tp, typename... _Ti, size_t... _Ind>
+    struct _Build_FUNs<_Tp, variant<_Ti...>, index_sequence<_Ind...>>
+    : _Build_FUN<_Ind, _Tp, _Ti>...
+    {
+      using _Build_FUN<_Ind, _Tp, _Ti>::_S_fun...;
+    };
+
+  // The index j of the overload FUN(Tj) selected by overload resolution
+  // for FUN(std::forward<_Tp>(t))
+  template<typename _Tp, typename _Variant>
+    using _FUN_type
+      = decltype(_Build_FUNs<_Tp, _Variant>::_S_fun(std::declval<_Tp>()));
+
+  // The index selected for FUN(std::forward<T>(t)), or variant_npos if none.
   template<typename _Tp, typename _Variant, typename = void>
     struct __accepted_index
-    { static constexpr size_t value = variant_npos; };
+    : integral_constant<size_t, variant_npos>
+    { };
 
-  template<typename _Tp, typename... _Types>
-    struct __accepted_index<
-      _Tp, variant<_Types...>,
-      void_t<decltype(__overload_set<_Types...>::_S_fun(std::declval<_Tp>()))>>
-    {
-      static constexpr size_t value = sizeof...(_Types) - 1
-	- decltype(__overload_set<_Types...>::
-		   _S_fun(std::declval<_Tp>()))::value;
-    };
+  template<typename _Tp, typename _Variant>
+    struct __accepted_index<_Tp, _Variant, void_t<_FUN_type<_Tp, _Variant>>>
+    : _FUN_type<_Tp, _Variant>
+    { };
 
   // Returns the raw storage for __v.
   template<typename _Variant>
@@ -1247,8 +1271,8 @@ namespace __variant
 	__exactly_once = __detail::__variant::__exactly_once<_Tp, _Types...>;
 
       template<typename _Tp>
-	static constexpr size_t __accepted_index =
-	  __detail::__variant::__accepted_index<_Tp&&, variant>::value;
+	static constexpr size_t __accepted_index
+	  = __detail::__variant::__accepted_index<_Tp, variant>::value;
 
       template<size_t _Np, typename = enable_if_t<(_Np < sizeof...(_Types))>>
 	using __to_type = variant_alternative_t<_Np, variant>;
@@ -1290,7 +1314,7 @@ namespace __variant
 	constexpr
 	variant(_Tp&& __t)
 	noexcept(is_nothrow_constructible_v<_Tj, _Tp>)
-	: variant(in_place_index<__accepted_index<_Tp&&>>,
+	: variant(in_place_index<__accepted_index<_Tp>>,
 		  std::forward<_Tp>(__t))
 	{ }
 
@@ -1344,7 +1368,7 @@ namespace __variant
 	noexcept(is_nothrow_assignable_v<__accepted_type<_Tp&&>&, _Tp>
 		 && is_nothrow_constructible_v<__accepted_type<_Tp&&>, _Tp>)
 	{
-	  constexpr auto __index = __accepted_index<_Tp&&>;
+	  constexpr auto __index = __accepted_index<_Tp>;
 	  if (index() == __index)
 	    std::get<__index>(*this) = std::forward<_Tp>(__rhs);
 	  else
