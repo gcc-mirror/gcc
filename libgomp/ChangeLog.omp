@@ -1,5 +1,10 @@
 2019-05-16  Julian Brown  <julian@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c-c++-common/kernels-for-index-reuse-1.c: New
+	test.
+
+2019-05-16  Julian Brown  <julian@codesourcery.com>
+
 	* target.c (gomp_map_vars_async): Initialise KEY and OFFSET fields in
 	not-present case.
 
