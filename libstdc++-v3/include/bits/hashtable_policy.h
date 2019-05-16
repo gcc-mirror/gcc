@@ -1403,38 +1403,6 @@ namespace __detail
       _M_h2() const { return __ebo_h2::_M_cget(); }
     };
 
-  /**
-   *  Primary class template _Equal_helper.
-   *
-   */
-  template <typename _Key, typename _Value, typename _ExtractKey,
-	    typename _Equal, typename _HashCodeType,
-	    bool __cache_hash_code>
-  struct _Equal_helper;
-
-  /// Specialization.
-  template<typename _Key, typename _Value, typename _ExtractKey,
-	   typename _Equal, typename _HashCodeType>
-  struct _Equal_helper<_Key, _Value, _ExtractKey, _Equal, _HashCodeType, true>
-  {
-    static bool
-    _S_equals(const _Equal& __eq, const _ExtractKey& __extract,
-	      const _Key& __k, _HashCodeType __c, _Hash_node<_Value, true>* __n)
-    { return __c == __n->_M_hash_code && __eq(__k, __extract(__n->_M_v())); }
-  };
-
-  /// Specialization.
-  template<typename _Key, typename _Value, typename _ExtractKey,
-	   typename _Equal, typename _HashCodeType>
-  struct _Equal_helper<_Key, _Value, _ExtractKey, _Equal, _HashCodeType, false>
-  {
-    static bool
-    _S_equals(const _Equal& __eq, const _ExtractKey& __extract,
-	      const _Key& __k, _HashCodeType, _Hash_node<_Value, false>* __n)
-    { return __eq(__k, __extract(__n->_M_v())); }
-  };
-
-
   /// Partial specialization used when nodes contain a cached hash code.
   template<typename _Key, typename _Value, typename _ExtractKey,
 	   typename _H1, typename _H2, typename _Hash>
@@ -1788,8 +1756,22 @@ namespace __detail
 						     iterator>::type;
   private:
     using _EqualEBO = _Hashtable_ebo_helper<0, _Equal>;
-    using _EqualHelper =  _Equal_helper<_Key, _Value, _ExtractKey, _Equal,
-					__hash_code, __hash_cached::value>;
+
+    template<typename _NodeT>
+      struct _Equal_hash_code
+      {
+       static bool
+       _S_equals(__hash_code, const _NodeT&)
+       { return true; }
+      };
+
+    template<typename _Ptr2>
+      struct _Equal_hash_code<_Hash_node<_Ptr2, true>>
+      {
+       static bool
+       _S_equals(__hash_code __c, const _Hash_node<_Ptr2, true>& __n)
+       { return __c == __n._M_hash_code; }
+      };
 
   protected:
     _Hashtable_base() = default;
@@ -1801,8 +1783,8 @@ namespace __detail
     bool
     _M_equals(const _Key& __k, __hash_code __c, __node_type* __n) const
     {
-      return _EqualHelper::_S_equals(_M_eq(), this->_M_extract(),
-				     __k, __c, __n);
+      return _Equal_hash_code<__node_type>::_S_equals(__c, *__n)
+	&& _M_eq()(__k, this->_M_extract()(__n->_M_v()));
     }
 
     void

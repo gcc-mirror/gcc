@@ -1,5 +1,10 @@
 2019-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/hashtable_policy.h (_Equal_helper): Remove.
+	(_Hashtable_base::_Equal_hash_code): Define new class template.
+	(_Hashtable_base::_M_equals): Use _Equal_hash_code instead of
+	_Equal_helper.
+
 	* include/bits/hashtable_policy.h (_Hashtable_ebo_helper::_S_get):
 	Replace with _M_get non-static member function.
 	(_Hashtable_ebo_helper::_S_cget): Replace with _M_cget non-static
