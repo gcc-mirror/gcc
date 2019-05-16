@@ -775,6 +775,43 @@ flatten_binds (gbind *bind, bool include_toplevel_vars = false)
   return vars;
 }
 
+/* Recursively search BODY_SEQUENCE for 'for' loops, and record their loop
+   indices in IDX_VARS.  */
+
+static void
+find_omp_for_index_vars_1 (gimple_seq body_sequence, hash_set<tree> *idx_vars)
+{
+  gimple_stmt_iterator gsi;
+
+  for (gsi = gsi_start (body_sequence); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      gimple *for_stmt = top_level_omp_for_in_stmt (stmt);
+
+      if (for_stmt)
+	{
+	  tree idx = gimple_omp_for_index (for_stmt, 0);
+	  idx_vars->add (idx);
+	  find_omp_for_index_vars_1 (gimple_omp_body (for_stmt), idx_vars);
+	}
+      else if (gimple_code (stmt) == GIMPLE_BIND)
+	find_omp_for_index_vars_1 (gimple_bind_body (as_a <gbind *> (stmt)),
+				   idx_vars);
+    }
+}
+
+/* Find all loop index variables in a bind.  */
+
+static hash_set<tree>
+find_omp_for_index_vars (gbind *bind)
+{
+  hash_set<tree> idx_vars;
+
+  find_omp_for_index_vars_1 (gimple_bind_body (bind), &idx_vars);
+
+  return idx_vars;
+}
+
 /* Helper function for places where we construct data regions.  Wraps the BODY
    inside a try-finally construct at LOC that calls __builtin_GOACC_data_end
    in its cleanup block.  Returns this try statement.  */
@@ -793,13 +830,15 @@ make_data_region_try_statement (location_t loc, gimple *body)
 
 /* If INNER_BIND_VARS holds variables, build an OpenACC data region with
    location LOC containing BODY and having 'create (var)' clauses for each
-   variable.  If INNER_CLEANUP is present, add a try-finally statement with
-   this cleanup code in the finally block.  Return the new data region, or
-   the original BODY if no data region was needed.  */
+   variable (such variables are also made addressable as a side effect).  If
+   INNER_CLEANUP is present, add a try-finally statement with this cleanup
+   code in the finally block.  Return the new data region, or the original
+   BODY if no data region was needed.  */
 
 static gimple *
 maybe_build_inner_data_region (location_t loc, gimple *body,
-			       tree inner_bind_vars, gimple *inner_cleanup)
+			       tree inner_bind_vars, gimple *inner_cleanup,
+			       hash_set<tree> *idx_vars)
 {
   /* Is this an instantiation of a template?  (In this case, we don't care what
      the generic decl is - just whether the function decl has one.)  */
@@ -831,7 +870,7 @@ maybe_build_inner_data_region (location_t loc, gimple *body,
 	  else
 	    inner_bind_vars = next;
 	}
-      else
+      else if (!idx_vars->contains (v))
 	{
 	  /* Otherwise, build the map clause.  */
 	  tree new_clause = build_omp_clause (loc, OMP_CLAUSE_MAP);
@@ -839,6 +878,7 @@ maybe_build_inner_data_region (location_t loc, gimple *body,
 	  OMP_CLAUSE_DECL (new_clause) = v;
 	  OMP_CLAUSE_SIZE (new_clause) = DECL_SIZE_UNIT (v);
 	  OMP_CLAUSE_CHAIN (new_clause) = inner_data_clauses;
+	  TREE_ADDRESSABLE (v) = 1;
 	  inner_data_clauses = new_clause;
 
 	  prev_mapped_var = v;
@@ -1170,6 +1210,8 @@ decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses)
   tree inner_bind_vars = flatten_binds (kernels_bind);
   gimple_seq body_sequence = gimple_bind_body (kernels_bind);
 
+  hash_set<tree> idx_vars = find_omp_for_index_vars (kernels_bind);
+
   /* All these inner variables will get allocated on the device (below, by
      calling maybe_build_inner_data_region).  Here we create 'present'
      clauses for them and add these clauses to the list of clauses to be
@@ -1177,7 +1219,9 @@ decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses)
   tree present_clauses = kernels_clauses;
   for (tree var = inner_bind_vars; var; var = TREE_CHAIN (var))
     {
-      if (!DECL_ARTIFICIAL (var) && TREE_CODE (var) != CONST_DECL)
+      if (!DECL_ARTIFICIAL (var)
+	  && TREE_CODE (var) != CONST_DECL
+	  && !idx_vars.contains (var))
 	{
 	  tree present_clause = build_omp_clause (loc, OMP_CLAUSE_MAP);
 	  OMP_CLAUSE_SET_MAP_KIND (present_clause, GOMP_MAP_FORCE_PRESENT);
@@ -1356,7 +1400,7 @@ decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses)
   /* If we found variables declared in nested scopes, build a data region to
      map them to the device.  */
   body = maybe_build_inner_data_region (loc, body, inner_bind_vars,
-					inner_cleanup);
+					inner_cleanup, &idx_vars);
 
   return body;
 }
