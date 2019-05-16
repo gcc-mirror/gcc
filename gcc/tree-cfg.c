@@ -4263,8 +4263,17 @@ verify_gimple_assign_ternary (gassign *stmt)
 	}
       if (! ((INTEGRAL_TYPE_P (rhs1_type)
 	      && INTEGRAL_TYPE_P (rhs2_type))
+	     /* Vector element insert.  */
 	     || (VECTOR_TYPE_P (rhs1_type)
-		 && types_compatible_p (TREE_TYPE (rhs1_type), rhs2_type))))
+		 && types_compatible_p (TREE_TYPE (rhs1_type), rhs2_type))
+	     /* Aligned sub-vector insert.  */
+	     || (VECTOR_TYPE_P (rhs1_type)
+		 && VECTOR_TYPE_P (rhs2_type)
+		 && types_compatible_p (TREE_TYPE (rhs1_type),
+					TREE_TYPE (rhs2_type))
+		 && multiple_p (TYPE_VECTOR_SUBPARTS (rhs1_type),
+				TYPE_VECTOR_SUBPARTS (rhs2_type))
+		 && multiple_of_p (bitsizetype, rhs3, TYPE_SIZE (rhs2_type)))))
 	{
 	  error ("not allowed type combination in BIT_INSERT_EXPR");
 	  debug_generic_expr (rhs1_type);
