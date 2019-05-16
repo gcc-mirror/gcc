@@ -1,7 +1,8 @@
 /* { dg-do  run  } */
 /* { dg-options "-O2 -fmath-errno -fdump-tree-cdce-details  -lm" } */
 /* { dg-require-effective-target int32plus } */
-/* { dg-final { scan-tree-dump  "cdce1.c:16: .* function call is shrink-wrapped into error conditions\."  "cdce" } } */
+/* { dg-final { scan-tree-dump  "cdce1.c:17: .* function call is shrink-wrapped into error conditions\."  "cdce" } } */
+/* { dg-final { scan-assembler     "jmp pow" } } */
 /* { dg-require-effective-target large_double } */
 
 #include <stdlib.h>
