@@ -1,3 +1,10 @@
+2019-05-16  Vladislav Ivanishin  <vlad@ispras.ru>
+
+	PR tree-optimization/90394
+	* tree-ssa-uninit.c (is_pred_expr_subset_of): Potentially give false
+	positives rather than ICE for cases where (code2 == NE_EXPR
+	&& code1 == BIT_AND_EXPR).
+
 2019-05-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/90329

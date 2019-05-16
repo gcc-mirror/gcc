@@ -1,3 +1,9 @@
+2019-05-16  Vladislav Ivanishin  <vlad@ispras.ru>
+
+	PR tree-optimization/90394
+	* gcc.dg/uninit-pr90394-1-gimple.c: New test.
+	* gcc.dg/uninit-pr90394.c: New test.
+
 2019-05-16  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/90502

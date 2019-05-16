@@ -1471,7 +1471,7 @@ is_pred_expr_subset_of (pred_info expr1, pred_info expr2)
   if (code2 == NE_EXPR && code1 == NE_EXPR)
     return false;
 
-  if (code2 == NE_EXPR)
+  if (code2 == NE_EXPR && code1 != BIT_AND_EXPR)
     return !is_value_included_in (expr2.pred_rhs, expr1.pred_rhs, code1);
 
   if ((code1 == EQ_EXPR || code1 == BIT_AND_EXPR) && code2 == BIT_AND_EXPR)
