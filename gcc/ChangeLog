@@ -1,3 +1,22 @@
+2019-05-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (lower_rec_input_clauses): If OMP_CLAUSE_IF
+	has non-constant expression, force sctx.lane and use two
+	argument IFN_GOMP_SIMD_LANE instead of single argument.
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Don't DCE
+	two argument IFN_GOMP_SIMD_LANE without lhs.
+	* tree-vectorizer.h (struct _loop_vec_info): Add simd_if_cond
+	member.
+	(LOOP_VINFO_SIMD_IF_COND, LOOP_REQUIRES_VERSIONING_FOR_SIMD_IF_COND):
+	Define.
+	(LOOP_REQUIRES_VERSIONING): Or in
+	LOOP_REQUIRES_VERSIONING_FOR_SIMD_IF_COND.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Initialize
+	simd_if_cond.
+	(vect_analyze_loop_2): Punt if LOOP_VINFO_SIMD_IF_COND is constant 0.
+	* tree-vect-loop-manip.c (vect_loop_versioning): Add runtime check
+	from simd if clause if needed.
+
 2019-05-16  Richard Biener  <rguenther@suse.de>
 
 	* tree-affine.c (expr_to_aff_combination): New function split
