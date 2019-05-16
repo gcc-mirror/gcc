@@ -1,12 +1,13 @@
 /* { dg-do compile { target int128 } } */
-/* { dg-options "-fgimple" } */
+/* { dg-options "-fgimple -Wno-psabi -w" } */
 
 typedef float v4sf __attribute__((vector_size(16)));
-float __GIMPLE (ssa)
+v4sf __GIMPLE (ssa)
 load (const void * p)
 {
   __int128 unsigned _3;
   v4sf _4;
+  v4sf _6;
   float _5;
 
   __BB(2):
@@ -17,5 +18,6 @@ load (const void * p)
 #else
   _5 = 1.0f;
 #endif
-  return _5;
+  _6 = __BIT_INSERT (_4, _5, 0);
+  return _6;
 }

@@ -746,6 +746,7 @@ c_parser_gimple_statement (gimple_parser &parser, gimple_seq *seq)
 	if (strcmp (IDENTIFIER_POINTER (id), "__ABS") == 0
 	    || strcmp (IDENTIFIER_POINTER (id), "__ABSU") == 0
 	    || strcmp (IDENTIFIER_POINTER (id), "__MIN") == 0
+	    || strcmp (IDENTIFIER_POINTER (id), "__BIT_INSERT") == 0
 	    || strcmp (IDENTIFIER_POINTER (id), "__MAX") == 0)
 	  goto build_unary_expr;
 	break;
@@ -1108,6 +1109,37 @@ c_parser_gimple_unary_expression (gimple_parser &parser)
 	    return c_parser_gimple_parentized_binary_expression (parser,
 								 op_loc,
 								 MAX_EXPR);
+	  else if (strcmp (IDENTIFIER_POINTER (id), "__BIT_INSERT") == 0)
+	    {
+	      /* __BIT_INSERT '(' postfix-expression, postfix-expression,
+			          integer ')'  */
+	      location_t loc = c_parser_peek_token (parser)->location;
+	      c_parser_consume_token (parser);
+	      if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+		{
+		  c_expr op0 = c_parser_gimple_postfix_expression (parser);
+		  c_parser_skip_until_found (parser, CPP_COMMA,
+					     "expected %<,%>");
+		  c_expr op1 = c_parser_gimple_postfix_expression (parser);
+		  c_parser_skip_until_found (parser, CPP_COMMA,
+					     "expected %<,%>");
+		  c_expr op2 = c_parser_gimple_postfix_expression (parser);
+		  if (TREE_CODE (op2.value) != INTEGER_CST
+		      || !int_fits_type_p (op2.value, bitsizetype))
+		    c_parser_error (parser, "expected constant offset");
+		  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+					     "expected %<)%>");
+		  if (op0.value != error_mark_node
+		      && op1.value != error_mark_node
+		      && TREE_CODE (op2.value) == INTEGER_CST)
+		    ret.value = build3_loc (loc, BIT_INSERT_EXPR,
+					    TREE_TYPE (op0.value),
+					    op0.value, op1.value,
+					    fold_convert (bitsizetype,
+							  op2.value));
+		}
+	      return ret;
+	    }
 	  else
 	    return c_parser_gimple_postfix_expression (parser);
 	}
