@@ -1,5 +1,17 @@
 2019-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/variant (__overload_set): Remove.
+	(_Arr): New helper.
+	(_Build_FUN): New class template to define a single FUN overload,
+	with specializations to prevent unwanted conversions, as per P0608R3.
+	(_Build_FUNs): New class template to build an overload set of FUN.
+	(_FUN_type): New alias template to perform overload resolution.
+	(__accepted_type): Use integer_constant base for failure case. Use
+	_FUN_type for successful case.
+	(variant::__accepted_index): Use _Tp instead of _Tp&&.
+	(variant::variant(_Tp&&)): Likewise.
+	(variant::operator=(_Tp&&)): Likewise.
+
 	* include/std/variant (_Variant_storage<false, _Types...>::_M_reset):
 	Replace raw visitation with a runtime check for the valueless state
 	and a non-raw visitor.

@@ -102,6 +102,32 @@ void arbitrary_ctor()
   variant<int, string> v("a");
   VERIFY(holds_alternative<string>(v));
   VERIFY(get<1>(v) == "a");
+
+  {
+    // P0608R3
+    variant<string, bool> x = "abc";
+    VERIFY(x.index() == 0);
+  }
+
+  {
+    // P0608R3
+    struct U {
+      U(char16_t c) : c(c) { }
+      char16_t c;
+    };
+    variant<char, U> x = u'\u2043';
+    VERIFY(x.index() == 1);
+    VERIFY(std::get<1>(x).c == u'\u2043');
+
+    struct Double {
+      Double(double& d) : d(d) { }
+      double& d;
+    };
+    double d = 3.14;
+    variant<int, Double> y = d;
+    VERIFY(y.index() == 1);
+    VERIFY(std::get<1>(y).d == d);
+  }
 }
 
 struct ThrowingMoveCtorThrowsCopyCtor
@@ -168,6 +194,27 @@ void arbitrary_assign()
 
   VERIFY(holds_alternative<string>(variant<int, string>("a")));
   VERIFY(get<1>(v) == "a");
+
+  {
+    // P0608R3
+    using T1 = variant<float, int>;
+    T1 v1;
+    v1 = 0;
+    VERIFY(v1.index() == 1);
+
+    using T2 = variant<float, long>;
+    T2 v2;
+    v2 = 0;
+    VERIFY(v2.index() == 1);
+
+    struct big_int {
+      big_int(int) { }
+    };
+    using T3 = variant<float, big_int>;
+    T3 v3;
+    v3 = 0;
+    VERIFY(v3.index() == 1);
+  }
 }
 
 void dtor()
