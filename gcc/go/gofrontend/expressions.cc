@@ -10252,42 +10252,6 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 						  bme->location());
     }
 
-  // Handle a couple of special runtime functions.  In the runtime
-  // package, getcallerpc returns the PC of the caller, and
-  // getcallersp returns the frame pointer of the caller.  Implement
-  // these by turning them into calls to GCC builtin functions.  We
-  // could implement them in normal code, but then we would have to
-  // explicitly unwind the stack.  These functions are intended to be
-  // efficient.  Note that this technique obviously only works for
-  // direct calls, but that is the only way they are used.
-  if (gogo->compiling_runtime() && gogo->package_name() == "runtime")
-    {
-      Func_expression* fe = this->fn_->func_expression();
-      if (fe != NULL
-	  && fe->named_object()->is_function_declaration()
-	  && fe->named_object()->package() == NULL)
-	{
-	  std::string n = Gogo::unpack_hidden_name(fe->named_object()->name());
-	  if ((this->args_ == NULL || this->args_->size() == 0)
-	      && n == "getcallerpc")
-	    {
-	      static Named_object* builtin_return_address;
-              int arg = 0;
-	      return this->lower_to_builtin(&builtin_return_address,
-					    "__builtin_return_address",
-					    &arg);
-	    }
-	  else if ((this->args_ == NULL || this->args_->size() == 0)
-		   && n == "getcallersp")
-	    {
-	      static Named_object* builtin_dwarf_cfa;
-	      return this->lower_to_builtin(&builtin_dwarf_cfa,
-					    "__builtin_dwarf_cfa",
-					    NULL);
-	    }
-	}
-    }
-
   // If this is a call to an imported function for which we have an
   // inlinable function body, add it to the list of functions to give
   // to the backend as inlining opportunities.
@@ -10401,31 +10365,6 @@ Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
   this->varargs_are_lowered_ = true;
 }
 
-// Return a call to __builtin_return_address or __builtin_dwarf_cfa.
-
-Expression*
-Call_expression::lower_to_builtin(Named_object** pno, const char* name,
-				  int* arg)
-{
-  if (*pno == NULL)
-    *pno = Gogo::declare_builtin_rf_address(name, arg != NULL);
-
-  Location loc = this->location();
-
-  Expression* fn = Expression::make_func_reference(*pno, NULL, loc);
-  Expression_list *args = new Expression_list();
-  if (arg != NULL)
-    {
-      Expression* a = Expression::make_integer_ul(*arg, NULL, loc);
-      args->push_back(a);
-    }
-  Expression* call = Expression::make_call(fn, args, false, loc);
-
-  // The builtin functions return void*, but the Go functions return uintptr.
-  Type* uintptr_type = Type::lookup_integer_type("uintptr");
-  return Expression::make_cast(uintptr_type, call, loc);
-}
-
 // Flatten a call with multiple results into a temporary.
 
 Expression*
@@ -10491,7 +10430,123 @@ Call_expression::do_flatten(Gogo* gogo, Named_object*,
       this->args_ = args;
     }
 
+  // Lower to compiler intrinsic if possible.
+  Func_expression* fe = this->fn_->func_expression();
+  if (fe != NULL
+      && (fe->named_object()->is_function_declaration()
+          || fe->named_object()->is_function()))
+    {
+      Expression* ret = this->intrinsify(gogo, inserter);
+      if (ret != NULL)
+        return ret;
+    }
+
   return this;
+}
+
+// Lower a call to a compiler intrinsic if possible.
+// Returns NULL if it is not an intrinsic.
+
+Expression*
+Call_expression::intrinsify(Gogo* gogo,
+                            Statement_inserter* inserter)
+{
+  Func_expression* fe = this->fn_->func_expression();
+  Named_object* no = fe->named_object();
+  std::string name = Gogo::unpack_hidden_name(no->name());
+  std::string package = (no->package() != NULL
+                         ? no->package()->pkgpath()
+                         : gogo->pkgpath());
+  Location loc = this->location();
+
+  Type* int_type = Type::lookup_integer_type("int");
+  Type* uint32_type = Type::lookup_integer_type("uint32");
+  Type* uint64_type = Type::lookup_integer_type("uint64");
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
+
+  if (package == "runtime")
+    {
+      // Handle a couple of special runtime functions.  In the runtime
+      // package, getcallerpc returns the PC of the caller, and
+      // getcallersp returns the frame pointer of the caller.  Implement
+      // these by turning them into calls to GCC builtin functions.  We
+      // could implement them in normal code, but then we would have to
+      // explicitly unwind the stack.  These functions are intended to be
+      // efficient.  Note that this technique obviously only works for
+      // direct calls, but that is the only way they are used.
+      if (name == "getcallerpc"
+          && (this->args_ == NULL || this->args_->size() == 0))
+        {
+          Expression* arg = Expression::make_integer_ul(0, uint32_type, loc);
+          Expression* call =
+            Runtime::make_call(Runtime::BUILTIN_RETURN_ADDRESS, loc,
+                               1, arg);
+          // The builtin functions return void*, but the Go functions return uintptr.
+          return Expression::make_cast(uintptr_type, call, loc);
+        }
+      else if (name == "getcallersp"
+               && (this->args_ == NULL || this->args_->size() == 0))
+
+        {
+          Expression* call =
+            Runtime::make_call(Runtime::BUILTIN_DWARF_CFA, loc, 0);
+          // The builtin functions return void*, but the Go functions return uintptr.
+          return Expression::make_cast(uintptr_type, call, loc);
+        }
+    }
+  else if (package == "runtime/internal/sys")
+    {
+      if (name == "Bswap32"
+          && this->args_ != NULL && this->args_->size() == 1)
+        {
+          Expression* arg = this->args_->front();
+          return Runtime::make_call(Runtime::BUILTIN_BSWAP32, loc, 1, arg);
+        }
+      else if (name == "Bswap64"
+               && this->args_ != NULL && this->args_->size() == 1)
+        {
+          Expression* arg = this->args_->front();
+          return Runtime::make_call(Runtime::BUILTIN_BSWAP64, loc, 1, arg);
+        }
+      else if (name == "Ctz32"
+               && this->args_ != NULL && this->args_->size() == 1)
+        {
+          Expression* arg = this->args_->front();
+          if (!arg->is_variable())
+            {
+              Temporary_statement* ts = Statement::make_temporary(uint32_type, arg, loc);
+              inserter->insert(ts);
+              arg = Expression::make_temporary_reference(ts, loc);
+            }
+          // arg == 0 ? 32 : __builtin_ctz(arg)
+          Expression* zero = Expression::make_integer_ul(0, uint32_type, loc);
+          Expression* cmp = Expression::make_binary(OPERATOR_EQEQ, arg, zero, loc);
+          Expression* c32 = Expression::make_integer_ul(32, int_type, loc);
+          Expression* call = Runtime::make_call(Runtime::BUILTIN_CTZ, loc, 1, arg->copy());
+          call = Expression::make_cast(int_type, call, loc);
+          return Expression::make_conditional(cmp, c32, call, loc);
+        }
+      else if (name == "Ctz64"
+               && this->args_ != NULL && this->args_->size() == 1)
+        {
+          Expression* arg = this->args_->front();
+          if (!arg->is_variable())
+            {
+              Temporary_statement* ts = Statement::make_temporary(uint64_type, arg, loc);
+              inserter->insert(ts);
+              arg = Expression::make_temporary_reference(ts, loc);
+            }
+          // arg == 0 ? 64 : __builtin_ctzll(arg)
+          Expression* zero = Expression::make_integer_ul(0, uint64_type, loc);
+          Expression* cmp = Expression::make_binary(OPERATOR_EQEQ, arg, zero, loc);
+          Expression* c64 = Expression::make_integer_ul(64, int_type, loc);
+          Expression* call = Runtime::make_call(Runtime::BUILTIN_CTZLL, loc, 1, arg->copy());
+          call = Expression::make_cast(int_type, call, loc);
+          return Expression::make_conditional(cmp, c64, call, loc);
+        }
+    }
+
+  return NULL;
 }
 
 // Make implicit type conversions explicit.

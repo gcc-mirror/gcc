@@ -376,6 +376,26 @@ DEF_GO_RUNTIME(UNREACHABLE, "__builtin_unreachable", P0(), R0())
 DEF_GO_RUNTIME(BUILTIN_MEMMOVE, "__builtin_memmove",
                P3(POINTER, POINTER, UINTPTR), R0())
 
+// Various intrinsics.
+
+// Get the caller's PC, used for runtime.getcallerpc.
+DEF_GO_RUNTIME(BUILTIN_RETURN_ADDRESS, "__builtin_return_address",
+               P1(UINT32), R1(POINTER))
+
+// Get the caller's SP, used for runtime.getcallersp.
+DEF_GO_RUNTIME(BUILTIN_DWARF_CFA, "__builtin_dwarf_cfa", P0(),
+               R1(POINTER))
+
+// Swap bytes.
+DEF_GO_RUNTIME(BUILTIN_BSWAP32, "__builtin_bswap32", P1(UINT32),
+               R1(UINT32))
+DEF_GO_RUNTIME(BUILTIN_BSWAP64, "__builtin_bswap64", P1(UINT64),
+               R1(UINT64))
+
+// Count trailing zeros.
+DEF_GO_RUNTIME(BUILTIN_CTZ, "__builtin_ctz", P1(UINT32), R1(INT32))
+DEF_GO_RUNTIME(BUILTIN_CTZLL, "__builtin_ctzll", P1(UINT64), R1(INT32))
+
 // Remove helper macros.
 #undef ABFT6
 #undef ABFT2
