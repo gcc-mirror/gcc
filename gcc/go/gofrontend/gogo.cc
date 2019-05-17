@@ -6052,9 +6052,10 @@ Function::build(Gogo* gogo, Named_object* named_function)
 
 	  // We always pass the receiver to a method as a pointer.  If
 	  // the receiver is declared as a non-pointer type, then we
-	  // copy the value into a local variable.
+	  // copy the value into a local variable.  For direct interface
+          // type we pack the pointer into the type.
 	  if ((*p)->var_value()->is_receiver()
-	      && !(*p)->var_value()->type()->is_direct_iface_type())
+              && (*p)->var_value()->type()->points_to() == NULL)
 	    {
 	      std::string name = (*p)->name() + ".pointer";
 	      Type* var_type = (*p)->var_value()->type();
@@ -6066,14 +6067,19 @@ Function::build(Gogo* gogo, Named_object* named_function)
               parm_bvar = parm_no->get_backend_variable(gogo, named_function);
 
               vars.push_back(bvar);
-	      Expression* parm_ref =
+
+              Expression* parm_ref =
                   Expression::make_var_reference(parm_no, loc);
-              parm_ref =
-                  Expression::make_dereference(parm_ref,
-                                               Expression::NIL_CHECK_NEEDED,
-                                               loc);
-	      if ((*p)->var_value()->is_in_heap())
-		parm_ref = Expression::make_heap_expression(parm_ref, loc);
+              Type* recv_type = (*p)->var_value()->type();
+              if (recv_type->is_direct_iface_type())
+                parm_ref = Expression::pack_direct_iface(recv_type, parm_ref, loc);
+              else
+                parm_ref =
+                    Expression::make_dereference(parm_ref,
+                                                 Expression::NIL_CHECK_NEEDED,
+                                                 loc);
+              if ((*p)->var_value()->is_in_heap())
+                parm_ref = Expression::make_heap_expression(parm_ref, loc);
               var_inits.push_back(parm_ref->get_backend(&context));
 	    }
 	  else if ((*p)->var_value()->is_in_heap())
@@ -7531,7 +7537,7 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
       else
 	{
 	  bool is_parameter = this->is_parameter_;
-	  if (this->is_receiver_ && !type->is_direct_iface_type())
+	  if (this->is_receiver_ && type->points_to() == NULL)
 	    is_parameter = false;
 	  if (this->is_in_heap())
 	    {
