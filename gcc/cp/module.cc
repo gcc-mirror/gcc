@@ -2719,7 +2719,7 @@ private:
 public:
   /* Read a tree node.  */
   tree tree_node ();
-  tree tpl_parms ();
+  tree tpl_header ();
   tree fn_parms ();
 
 public:
@@ -2871,7 +2871,7 @@ public:
 
 public:
   void tree_node (tree);
-  void tpl_parms (tree);
+  void tpl_header (tree);
   void fn_parms (tree);
 
 public:
@@ -6669,6 +6669,11 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
     /* If this is a fixed decl, we're done.  */
     return false;
 
+  if (TREE_CODE (decl) == TEMPLATE_DECL
+      && TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TEMPLATE_PARM)
+    /* These are explicitly written in the template header.  */
+    gcc_unreachable ();
+
   int use_tpl = -1;
   tree ti = node_template_info (decl, use_tpl);
   if (ti && DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == decl)
@@ -6867,31 +6872,40 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
       return false;
     }
   else if (tree name = TYPE_STUB_DECL (type))
-    if (DECL_IMPLICIT_TYPEDEF_P (name))
-      {
-	/* Make sure this is not a named builtin. We should find
-	   those some other way to be canonically correct.  */
-	gcc_assert (DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
+    {
+      if (DECL_IMPLICIT_TYPEDEF_P (name))
+	{
+	  /* Make sure this is not a named builtin. We should find
+	     those some other way to be canonically correct.  */
+	  gcc_assert (DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
 
-	if (streaming_p ())
-	  {
-	    i (tt_typedef);
-	    dump (dumper::TREE)
-	      && dump ("Writing implicit typedef %C:%N%S",
-		       TREE_CODE (name), name, name);
-	  }
-	tree_ctx (name, looking_inside, NULL_TREE);
-	if (streaming_p ())
-	  dump (dumper::TREE) && dump ("Wrote implicit typedef %C:%N%S",
-				       TREE_CODE (name), name, name);
-	if (TREE_VISITED (type))
-	  {
-	    /* We emitted the type node via the name.  */
-	    walk_kind ref = ref_node (type);
-	    gcc_checking_assert (ref == WK_none);
-	    return false;
-	  }
-      }
+	  if (streaming_p ())
+	    {
+	      i (tt_typedef);
+	      dump (dumper::TREE)
+		&& dump ("Writing implicit typedef %C:%N%S",
+			 TREE_CODE (name), name, name);
+	    }
+	  tree_ctx (name, looking_inside, NULL_TREE);
+	  if (streaming_p ())
+	    dump (dumper::TREE) && dump ("Wrote implicit typedef %C:%N%S",
+					 TREE_CODE (name), name, name);
+	  if (TREE_VISITED (type))
+	    {
+	      /* We emitted the type node via the name.  */
+	      walk_kind ref = ref_node (type);
+	      gcc_checking_assert (ref == WK_none);
+	      return false;
+	    }
+	}
+      else if (TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM)
+	{
+	  gcc_assert (type != TYPE_MAIN_VARIANT (type)
+		      && TREE_VISITED (TYPE_MAIN_VARIANT (type))
+		      && TREE_VISITED (name));
+	}
+    }
+
   if (false)
   if (tree name = TYPE_NAME (type))
     if (name != TYPE_STUB_DECL (type))
@@ -6986,33 +7000,39 @@ trees_out::tree_value (tree t, walk_kind walk)
 	}
     }
 
-  if (DECL_IMPLICIT_TYPEDEF_P (inner))
+  if (TREE_CODE (inner) == TYPE_DECL)
     {
       tree type = TREE_TYPE (inner);
 
-      gcc_checking_assert (TYPE_STUB_DECL (type) == inner);
       if (walk != WK_mergeable)
 	if (streaming_p ())
-	  {
-	    u (TREE_CODE (type));
-	    start (type);
-	  }
+	  u (TREE_CODE (type));
 
-      int type_tag = insert (type, walk);
-      if (streaming_p ())
+      bool ttp_parm = TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM;
+
+      if (ttp_parm || DECL_IMPLICIT_TYPEDEF_P (inner))
 	{
-	  dump (dumper::TREE)
-	    && dump ("Writing:%d %C:%N%S", type_tag,
-		     TREE_CODE (type), type, type);
+	  gcc_checking_assert (TYPE_STUB_DECL (type) == (ttp_parm ? t : inner));
 	  if (walk != WK_mergeable)
-	    tree_node_bools (type);
-	  else
-	    i (type_tag);
-	}
-      if (walk != WK_mergeable)
-	core_vals (type);
+	    if (streaming_p ())
+	      start (type);
 
-      lang_vals (type);
+	  int type_tag = insert (type, walk);
+	  if (streaming_p ())
+	    {
+	      dump (dumper::TREE)
+		&& dump ("Writing:%d %C:%N%S", type_tag,
+			 TREE_CODE (type), type, type);
+	      if (walk != WK_mergeable)
+		tree_node_bools (type);
+	      else
+		i (type_tag);
+	    }
+	  if (walk != WK_mergeable)
+	    core_vals (type);
+
+	  lang_vals (type);
+	}
     }
 
   tree_node_vals (t);
@@ -7113,46 +7133,53 @@ trees_in::tree_value (bool is_mergeable_node)
     }
 
   tree type = NULL_TREE;
-  if (res && DECL_IMPLICIT_TYPEDEF_P (inner))
+  if (res && TREE_CODE (inner) == TYPE_DECL)
     {
+      type = TREE_TYPE (inner);
       int type_tag = 0;
-      if (is_mergeable_node)
+      unsigned type_code = !is_mergeable_node ? i () : ERROR_MARK;
+      bool ttp_parm = type_code == TEMPLATE_TEMPLATE_PARM;
+
+      if (ttp_parm || DECL_IMPLICIT_TYPEDEF_P (inner))
 	{
-	  type = TREE_TYPE (inner);
-	  type_tag = i ();
-	  gcc_checking_assert (back_refs[~type_tag]
-			       == (existing ? TREE_TYPE (existing_inner)
-				   : type));
-	}
-      else
-	{
-	  type = start (u ());
-	  if (type)
-	    type_tag = insert (type);
+	  if (is_mergeable_node)
+	    {
+	      type_tag = i ();
+	      gcc_checking_assert (back_refs[~type_tag]
+				   == (existing ? TREE_TYPE (existing_inner)
+				       : type));
+	    }
 	  else
-	    res = NULL_TREE;
-	}
+	    {
+	      type = start (type_code);
+	      if (type)
+		type_tag = insert (type);
+	      else
+		res = NULL_TREE;
+	    }
 
-      if (res)
-	{
-	  dump (dumper::TREE)
-	    && dump ("Reading%s:%d %C", merge_kind, type_tag, TREE_CODE (type));
-	  if (!is_mergeable_node)
-	    if (!tree_node_bools (type)
-		|| !core_vals (type))
+	  if (res)
+	    {
+	      dump (dumper::TREE)
+		&& dump ("Reading%s:%d %C", merge_kind, type_tag,
+			 TREE_CODE (type));
+	      if (!is_mergeable_node)
+		if (!tree_node_bools (type)
+		    || !core_vals (type))
+		  res = NULL_TREE;
+	    }
+
+	  if (res)
+	    if (!lang_vals (type))
 	      res = NULL_TREE;
+
+	  if (res)
+	    if (!is_mergeable_node)
+	      {
+		type = finish (type);
+		back_refs[~type_tag] = type;
+	      }
 	}
-
-      if (res)
-	if (!lang_vals (type))
-	  res = NULL_TREE;
-
-      if (res)
-	if (!is_mergeable_node)
-	  {
-	    type = finish (type);
-	    back_refs[~type_tag] = type;
-	  }
     }
 
   if (!res
@@ -7191,6 +7218,7 @@ trees_in::tree_value (bool is_mergeable_node)
 	 own other structures, so loading its definition will alter
 	 it, and not the existing decl.  */
       dump (dumper::MERGE) && dump ("Deduping %N", existing);
+
       if (res != inner)
 	DECL_TEMPLATE_RESULT (res) = inner;
       if (type)
@@ -7711,14 +7739,11 @@ trees_in::is_skip_defn (tree defn)
 /* PARMS is a LIST, one node per level.
    TREE_VALUE is a TREE_VEC of parm info for that level.
    each ELT is a TREE_LIST
-   TREE_VALUE is PARM_DECL or TYPE_DECL
-   TEMPLATE_PARM_INDEX is DECL_INITIAL or TREE_TYPE.  */
-/* These nodes are NOT put in the map.  */
-// FIXME: I think this means we need to adjust the instantiation table
-// after completing the readin.
+   TREE_VALUE is PARM_DECL, TYPE_DECL or TEMPLATE_DECL
+   TREE_PURPOSE is the default value.  */
 
 void
-trees_out::tpl_parms (tree parms)
+trees_out::tpl_header (tree parms)
 {
   for (; parms; parms = TREE_CHAIN (parms))
     {
@@ -7728,20 +7753,16 @@ trees_out::tpl_parms (tree parms)
 	u (len);
       for (unsigned ix = 0; ix != len; ix++)
 	{
-	  tree val = TREE_VALUE (TREE_VEC_ELT (vec, ix));
+	  tree decl = TREE_VALUE (TREE_VEC_ELT (vec, ix));
 
-	  if (streaming_p ())
-	    {
-	      /* For VAL we only care about its code and flags.  */
-	      u (TREE_CODE (val));
-	      tree_node_bools (val);
-	    }
-
-	  if (TREE_CODE (val) == TEMPLATE_TYPE_PARM
-	      && TEMPLATE_TYPE_PARAMETER_PACK (val))
+	  if (TREE_CODE (decl) == TEMPLATE_TYPE_PARM
+	      && TEMPLATE_TYPE_PARAMETER_PACK (decl))
 	    gcc_unreachable (); // FIXME: Something
 
-	  tree_node (TREE_TYPE (val));
+	  // FIXME: this is the wrong place
+	  if (!TREE_VISITED (decl))
+	    mark_node (decl);
+	  tree_node (decl);
 	}
     }
 
@@ -7751,7 +7772,7 @@ trees_out::tpl_parms (tree parms)
 }
 
 tree
-trees_in::tpl_parms ()
+trees_in::tpl_header ()
 {
   tree parms = NULL_TREE;
   while (unsigned len = u ())
@@ -7759,11 +7780,9 @@ trees_in::tpl_parms ()
       tree vec = make_tree_vec (len);
       for (unsigned ix = 0; ix != len; ix++)
 	{
-	  tree val = start (u ());
-	  if (!val || !tree_node_bools (val))
+	  tree val = tree_node ();
+	  if (!val)
 	    return NULL_TREE;
-
-	  TREE_TYPE (val) = tree_node ();
 
 	  TREE_VEC_ELT (vec, ix) = tree_cons (NULL_TREE, val, NULL_TREE);
 	}
@@ -7894,7 +7913,7 @@ trees_out::tree_mergeable (depset *dep)
 	{
 	  /* A template also needs its template parms for
 	     identification.  */
-	  tpl_parms (DECL_TEMPLATE_PARMS (decl));
+	  tpl_header (DECL_TEMPLATE_PARMS (decl));
 
 	  if (TREE_CODE (inner) == FUNCTION_DECL)
 	    /* And a function template needs the return type.  */
@@ -7996,7 +8015,8 @@ trees_in::tree_mergeable (bool mod_mergeable)
       DECL_NAME (inner) = name;
       if (!is_specialization)
 	{
-	  tpl = tpl_parms ();
+	  // FIXME: What about partial specializations?
+	  tpl = tpl_header ();
 	  if (code == FUNCTION_DECL)
 	    ret = tree_node ();
 	}

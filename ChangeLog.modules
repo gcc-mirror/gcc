@@ -1,3 +1,12 @@
+2019-05-17  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (trees_{in,out}::tpl_parms): Rename to ...
+	(trees_{in,out}::tpl_headr): ... here.  Stream the whole parms.
+	(trees_out::tree_type): Assert no surprising
+	TEMPLATE_TEMPLATE_PARM.
+	(trees_{in,out}::tree_value): Stream template template parms.
+
 2019-05-16  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
