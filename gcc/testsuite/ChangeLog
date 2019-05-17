@@ -1,6 +1,12 @@
 2019-05-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR testsuite/89433
+	* c-c++-common/goacc/routine-2.c: Update, and move some test
+	into...
+	* c-c++-common/goacc/routine-level-of-parallelism-1.c: ... this
+	new file.
+
+	PR testsuite/89433
 	* c-c++-common/goacc/classify-routine.c: Update.
 	* gfortran.dg/goacc/classify-routine.f95: Likewise.
 
