@@ -1100,7 +1100,7 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
       /* Otherwise, just copy the node.  Note that copy_tree_r already
 	 knows not to copy VAR_DECLs, etc., so this is safe.  */
 
-      if (TREE_CODE (*tp) == MEM_REF)
+      if (TREE_CODE (*tp) == MEM_REF && !id->do_not_fold)
 	{
 	  /* We need to re-canonicalize MEM_REFs from inline substitutions
 	     that can happen when a pointer argument is an ADDR_EXPR.
@@ -1326,11 +1326,11 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	      tree type = TREE_TYPE (*tp);
 	      tree ptr = id->do_not_unshare ? *n : unshare_expr (*n);
 	      tree old = *tp;
-	      *tp = gimple_fold_indirect_ref (ptr);
+	      *tp = id->do_not_fold ? NULL : gimple_fold_indirect_ref (ptr);
 	      if (! *tp)
 	        {
 		  type = remap_type (type, id);
-		  if (TREE_CODE (ptr) == ADDR_EXPR)
+		  if (TREE_CODE (ptr) == ADDR_EXPR && !id->do_not_fold)
 		    {
 		      *tp
 		        = fold_indirect_ref_1 (EXPR_LOCATION (ptr), type, ptr);
@@ -1359,7 +1359,7 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	      return NULL;
 	    }
 	}
-      else if (TREE_CODE (*tp) == MEM_REF)
+      else if (TREE_CODE (*tp) == MEM_REF && !id->do_not_fold)
 	{
 	  /* We need to re-canonicalize MEM_REFs from inline substitutions
 	     that can happen when a pointer argument is an ADDR_EXPR.
@@ -1431,7 +1431,8 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 
 	  /* Handle the case where we substituted an INDIRECT_REF
 	     into the operand of the ADDR_EXPR.  */
-	  if (TREE_CODE (TREE_OPERAND (*tp, 0)) == INDIRECT_REF)
+	  if (TREE_CODE (TREE_OPERAND (*tp, 0)) == INDIRECT_REF
+	      && !id->do_not_fold)
 	    {
 	      tree t = TREE_OPERAND (TREE_OPERAND (*tp, 0), 0);
 	      if (TREE_TYPE (t) != TREE_TYPE (*tp))
@@ -6323,6 +6324,7 @@ copy_fn (tree fn, tree& parms, tree& result)
      since front-end specific mechanisms may rely on sharing.  */
   id.regimplify = false;
   id.do_not_unshare = true;
+  id.do_not_fold = true;
 
   /* We're not inside any EH region.  */
   id.eh_lp_nr = 0;
