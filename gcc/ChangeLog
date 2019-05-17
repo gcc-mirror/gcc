@@ -1,3 +1,8 @@
+2019-05-17  Richard Biener  <rguenther@suse.de>
+
+	* gimple-pretty-print.c (dump_ternary_rhs): Handle dumping
+	VEC_PERM_EXPR as __VEC_PERM with -gimple.
+
 2019-05-17  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/s390-builtins.def (s390_vec_sldw_*): Use the

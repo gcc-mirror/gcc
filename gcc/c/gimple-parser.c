@@ -746,8 +746,9 @@ c_parser_gimple_statement (gimple_parser &parser, gimple_seq *seq)
 	if (strcmp (IDENTIFIER_POINTER (id), "__ABS") == 0
 	    || strcmp (IDENTIFIER_POINTER (id), "__ABSU") == 0
 	    || strcmp (IDENTIFIER_POINTER (id), "__MIN") == 0
+	    || strcmp (IDENTIFIER_POINTER (id), "__MAX") == 0
 	    || strcmp (IDENTIFIER_POINTER (id), "__BIT_INSERT") == 0
-	    || strcmp (IDENTIFIER_POINTER (id), "__MAX") == 0)
+	    || strcmp (IDENTIFIER_POINTER (id), "__VEC_PERM") == 0)
 	  goto build_unary_expr;
 	break;
       }
@@ -1012,6 +1013,38 @@ c_parser_gimple_parentized_binary_expression (gimple_parser &parser,
   return ret;
 }
 
+/* Parse a gimple parentized binary expression.  */
+
+static c_expr
+c_parser_gimple_parentized_ternary_expression (gimple_parser &parser,
+					       location_t op_loc,
+					       tree_code code)
+{
+  struct c_expr ret;
+  ret.set_error ();
+
+  c_parser_consume_token (parser);
+  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+    return ret;
+  c_expr op1 = c_parser_gimple_postfix_expression (parser);
+  if (!c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
+    return ret;
+  c_expr op2 = c_parser_gimple_postfix_expression (parser);
+  if (!c_parser_require (parser, CPP_COMMA, "expected %<)%>"))
+    return ret;
+  c_expr op3 = c_parser_gimple_postfix_expression (parser);
+  if (!c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>"))
+    return ret;
+
+  if (op1.value != error_mark_node
+      && op2.value != error_mark_node
+      && op3.value != error_mark_node)
+    ret.value = build3_loc (op_loc,
+			    code, TREE_TYPE (op1.value),
+			    op1.value, op2.value, op3.value);
+  return ret;
+}
+
 /* Parse gimple unary expression.
 
    gimple-unary-expression:
@@ -1109,6 +1142,9 @@ c_parser_gimple_unary_expression (gimple_parser &parser)
 	    return c_parser_gimple_parentized_binary_expression (parser,
 								 op_loc,
 								 MAX_EXPR);
+	  else if (strcmp (IDENTIFIER_POINTER (id), "__VEC_PERM") == 0)
+	    return c_parser_gimple_parentized_ternary_expression
+			(parser, op_loc, VEC_PERM_EXPR);
 	  else if (strcmp (IDENTIFIER_POINTER (id), "__BIT_INSERT") == 0)
 	    {
 	      /* __BIT_INSERT '(' postfix-expression, postfix-expression,
