@@ -465,12 +465,12 @@ namespace __gnu_test
 	  return *this;
   	}
 
-      // postcondition: a.get_personality() == 0
+      // postcondition: LWG2593 a.get_personality() un-changed.
       propagating_allocator(propagating_allocator&& a) noexcept
-      : base_alloc()
-      { swap_base(a); }
+      : base_alloc(std::move(a.base()))
+      { }
 
-      // postcondition: a.get_personality() == 0
+      // postcondition: LWG2593 a.get_personality() un-changed
       propagating_allocator&
       operator=(propagating_allocator&& a) noexcept
       {

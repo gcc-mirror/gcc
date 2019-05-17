@@ -1,3 +1,42 @@
+2019-05-17  François Dumont  <fdumont@gcc.gnu.org>
+
+	Move from state of allocators (LWG2593)
+	* include/bits/stl_deque.h
+	(_Deque_base(_Deque_base&&, false_type)): Remove.
+	(_Deque_base(_Deque_base&&, true_type)): Remove.
+	(_Deque_base(_Deque_base&&)): Adapt.
+	(_Deque_base::_M_move_impl()): Remove.
+	* testsuite/util/testsuite_allocator.h
+	(propagating_allocator(propagating_allocator&&)): Preserve move from
+	state.
+	* testsuite/23_containers/deque/allocator/move_assign.cc (test02):
+	Adapt.
+	* testsuite/23_containers/forward_list/allocator/move_assign.cc (test02):
+	Adapt.
+	* testsuite/23_containers/list/allocator/move_assign.cc (test02): Adapt.
+	* testsuite/23_containers/map/allocator/move_assign.cc (test02): Adapt.
+	* testsuite/23_containers/multimap/allocator/move_assign.cc (test02):
+	Adapt.
+	* testsuite/23_containers/multiset/allocator/move_assign.cc (test02):
+	Adapt.
+	* testsuite/23_containers/set/allocator/move_assign.cc (test02): Adapt.
+	* testsuite/23_containers/unordered_map/allocator/move_assign.cc
+	(test02): Adapt.
+	* testsuite/23_containers/unordered_multimap/allocator/move_assign.cc
+	(test02): Adapt.
+	* testsuite/23_containers/unordered_multiset/allocator/move_assign.cc
+	(test02): Adapt.
+	* testsuite/23_containers/unordered_set/allocator/move_assign.cc
+	(test02): Adapt.
+	* testsuite/23_containers/vector/allocator/move_assign.cc (test02):
+	Adapt.
+	* testsuite/23_containers/vector/bool/allocator/move_assign.cc (test02):
+	Adapt.
+	* testsuite/21_strings/basic_string/allocator/char/move_assign.cc
+	(test02): Adapt.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/move_assign.cc
+	(test02): Adapt.
+
 2019-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++17/fs_ops.cc (absolute(const path&, error_code&))
