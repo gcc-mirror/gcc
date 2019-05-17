@@ -15904,7 +15904,7 @@ c_finish_oacc_routine (struct oacc_routine_data *data, tree fndecl,
   /* Add an "omp declare target" attribute.  */
   DECL_ATTRIBUTES (fndecl)
     = tree_cons (get_identifier ("omp declare target"),
-		 NULL_TREE, DECL_ATTRIBUTES (fndecl));
+		 data->clauses, DECL_ATTRIBUTES (fndecl));
 
   /* Remember that we've used this "#pragma acc routine".  */
   data->fndecl_seen = true;

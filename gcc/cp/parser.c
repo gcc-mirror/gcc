@@ -40292,7 +40292,7 @@ cp_finalize_oacc_routine (cp_parser *parser, tree fndecl, bool is_defn)
       /* Add an "omp declare target" attribute.  */
       DECL_ATTRIBUTES (fndecl)
 	= tree_cons (get_identifier ("omp declare target"),
-		     NULL_TREE, DECL_ATTRIBUTES (fndecl));
+		     parser->oacc_routine->clauses, DECL_ATTRIBUTES (fndecl));
 
       /* Don't unset parser->oacc_routine here: we may still need it to
 	 diagnose wrong usage.  But, remember that we've used this "#pragma acc

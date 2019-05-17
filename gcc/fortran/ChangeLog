@@ -1,3 +1,11 @@
+2019-05-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/89433
+	* f95-lang.c (gfc_attribute_table): Set min_len to -1 for "omp
+	declare target".
+	* trans-decl.c (add_attributes_to_decl): Refer to OpenACC
+	'routine' clauses from "omp declare target" attribute.
+
 2019-05-16  Martin Sebor  <msebor@redhat.com>
 
 	* gfortranspec.c (append_arg): Spell out the word "argument."
