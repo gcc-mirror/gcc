@@ -1,5 +1,13 @@
 2019-05-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.c (restore_saved_cr): Change a boolean
+	argument to be type bool (was int before).
+	(rs6000_emit_epilogue): Simplify some code.  Declare some variables
+	at first use.  Use type bool for some variables.  Fix a theoretical
+	eh_return bug for svr4.
+
+2019-05-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (isa): New attribute.
 	(enabled): New attribute.
 
