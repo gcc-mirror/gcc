@@ -197,6 +197,8 @@ class UniquePointerPrinter:
             self.pointer = tuple_member['_M_head_impl']
         elif head_field.is_base_class:
             self.pointer = tuple_member.cast(head_field.type)
+        else:
+            raise ValueError("Unsupported implementation for tuple in unique_ptr: %s" % impl_type)
 
     def children (self):
         return SmartPtrIterator(self.pointer)

@@ -1,3 +1,12 @@
+2019-05-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90520
+	* python/libstdcxx/v6/printers.py (UniquePointerPrinter.__init__):
+	Raise exception if unique_ptr tuple member has unknown structure.
+	* python/libstdcxx/v6/xmethods.py (UniquePtrGetWorker.__call__):
+	Adjust worker to support new __uniq_ptr_data base class. Do not
+	assume field called _M_head_impl is the first tuple element.
+
 2019-05-17  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_deque.h
