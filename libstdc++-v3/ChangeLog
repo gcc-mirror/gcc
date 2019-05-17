@@ -1,5 +1,14 @@
 2019-05-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/random.h (seed_seq::param): Fix non-reserved name.
+	* include/experimental/type_traits (is_detected_exact)
+	(is_detected_exact_v): Likewise.
+	* include/pstl/execution_defs.h (is_execution_policy)
+	(is_execution_policy_v, __enable_if_execution_policy): Likewise.
+	* include/pstl/execution_impl.h (__policy_traits): Likewise.
+	* testsuite/17_intro/names.cc: Check for more non-reserved names.
+	* testsuite/experimental/names.cc: New test.
+
 	PR libstdc++/85965
 	* include/bits/hashtable.h (_Hashtable::~_Hashtable()): Remove static
 	assertions from the destructor.
