@@ -3009,6 +3009,8 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
   bool version_align = LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo);
   bool version_alias = LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo);
   bool version_niter = LOOP_REQUIRES_VERSIONING_FOR_NITERS (loop_vinfo);
+  tree version_simd_if_cond
+    = LOOP_REQUIRES_VERSIONING_FOR_SIMD_IF_COND (loop_vinfo);
 
   if (check_profitability)
     cond_expr = fold_build2 (GE_EXPR, boolean_type_node, scalar_loop_iters,
@@ -3042,6 +3044,31 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
       vect_create_cond_for_unequal_addrs (loop_vinfo, &cond_expr);
       vect_create_cond_for_lower_bounds (loop_vinfo, &cond_expr);
       vect_create_cond_for_alias_checks (loop_vinfo, &cond_expr);
+    }
+
+  if (version_simd_if_cond)
+    {
+      gcc_assert (dom_info_available_p (CDI_DOMINATORS));
+      if (flag_checking)
+	if (basic_block bb
+	    = gimple_bb (SSA_NAME_DEF_STMT (version_simd_if_cond)))
+	  gcc_assert (bb != loop->header
+		      && dominated_by_p (CDI_DOMINATORS, loop->header, bb)
+		      && (scalar_loop == NULL
+			  || (bb != scalar_loop->header
+			      && dominated_by_p (CDI_DOMINATORS,
+						 scalar_loop->header, bb))));
+      tree zero = build_zero_cst (TREE_TYPE (version_simd_if_cond));
+      tree c = fold_build2 (NE_EXPR, boolean_type_node,
+			    version_simd_if_cond, zero);
+      if (cond_expr)
+        cond_expr = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+				 c, cond_expr);
+      else
+        cond_expr = c;
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "created versioning for simd if condition check.\n");
     }
 
   cond_expr = force_gimple_operand_1 (unshare_expr (cond_expr),
