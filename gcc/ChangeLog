@@ -1,6 +1,6 @@
 2019-05-17  Martin Liska  <mliska@suse.cz>
 
-	PR driver/90495
+	PR driver/90496
 	* toplev.c (output_stack_usage): With LTO and sanitizer it
 	happens that a global ctor (_GLOBAL__sub_I_00099_0_main)
 	has no file location.
