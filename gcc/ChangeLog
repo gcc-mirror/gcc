@@ -1,3 +1,8 @@
+2019-05-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/rs6000.c (macho_branch_islands): Fix bad indent
+	on the generted code.
+
 2019-05-16  Martin Sebor  <msebor@redhat.com>
 
         * builtins.c (expand_builtin_atomic_always_lock_free): Quote
