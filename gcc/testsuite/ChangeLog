@@ -1,6 +1,10 @@
 2019-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/simd8.c: New test.
+
 	2019-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/90385

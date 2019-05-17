@@ -1,6 +1,13 @@
 2019-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (lower_rec_input_clauses): For if (0) or simdlen (1) set
+	max_vf to 1.
+	* omp-expand.c (expand_omp_simd): For if (0) or simdlen (1) clear
+	safelen_int and set loop->dont_vectorize.
+
 	2019-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/90385

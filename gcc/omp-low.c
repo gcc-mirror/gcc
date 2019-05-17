@@ -3811,6 +3811,14 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	      || is_variable_sized (OMP_CLAUSE_DECL (c)))
 	    sctx.max_vf = 1;
 	  break;
+	case OMP_CLAUSE_IF:
+	  if (integer_zerop (OMP_CLAUSE_IF_EXPR (c)))
+	    sctx.max_vf = 1;
+	  break;
+        case OMP_CLAUSE_SIMDLEN:
+	  if (integer_onep (OMP_CLAUSE_SIMDLEN_EXPR (c)))
+	    sctx.max_vf = 1;
+	  break;
 	default:
 	  continue;
 	}
