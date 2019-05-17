@@ -27712,7 +27712,7 @@ load_cr_save (int regno, rtx frame_reg_rtx, int offset, bool exit_func)
 /* Reload CR from REG.  */
 
 static void
-restore_saved_cr (rtx reg, int using_mfcr_multiple, bool exit_func)
+restore_saved_cr (rtx reg, bool using_mfcr_multiple, bool exit_func)
 {
   int count = 0;
   int i;
@@ -27876,15 +27876,6 @@ emit_cfa_restores (rtx cfa_restores)
 void
 rs6000_emit_epilogue (enum epilogue_type epilogue_type)
 {
-  int sibcall = (epilogue_type == EPILOGUE_TYPE_SIBCALL);
-  rs6000_stack_t *info;
-  int restoring_GPRs_inline;
-  int restoring_FPRs_inline;
-  int using_load_multiple;
-  int using_mtcr_multiple;
-  int use_backchain_to_restore_sp;
-  int restore_lr;
-  int strategy;
   HOST_WIDE_INT frame_off = 0;
   rtx sp_reg_rtx = gen_rtx_REG (Pmode, 1);
   rtx frame_reg_rtx = sp_reg_rtx;
@@ -27896,30 +27887,38 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
   machine_mode fp_reg_mode = TARGET_HARD_FLOAT ? DFmode : SFmode;
   int fp_reg_size = 8;
   int i;
-  bool exit_func;
   unsigned ptr_regno;
 
-  info = rs6000_stack_info ();
+  rs6000_stack_t *info = rs6000_stack_info ();
 
-  strategy = info->savres_strategy;
-  using_load_multiple = strategy & REST_MULTIPLE;
-  restoring_FPRs_inline = sibcall || (strategy & REST_INLINE_FPRS);
-  restoring_GPRs_inline = sibcall || (strategy & REST_INLINE_GPRS);
-  using_mtcr_multiple = (rs6000_tune == PROCESSOR_PPC601
-			 || rs6000_tune == PROCESSOR_PPC603
-			 || rs6000_tune == PROCESSOR_PPC750
-			 || optimize_size);
+  if (epilogue_type == EPILOGUE_TYPE_NORMAL && crtl->calls_eh_return)
+    epilogue_type = EPILOGUE_TYPE_EH_RETURN;
+
+  int strategy = info->savres_strategy;
+  bool using_load_multiple = !!(strategy & REST_MULTIPLE);
+  bool restoring_GPRs_inline = !!(strategy & REST_INLINE_GPRS);
+  bool restoring_FPRs_inline = !!(strategy & REST_INLINE_FPRS);
+  if (epilogue_type == EPILOGUE_TYPE_SIBCALL)
+    {
+      restoring_GPRs_inline = true;
+      restoring_FPRs_inline = true;
+    }
+
+  bool using_mtcr_multiple = (rs6000_tune == PROCESSOR_PPC601
+			      || rs6000_tune == PROCESSOR_PPC603
+			      || rs6000_tune == PROCESSOR_PPC750
+			      || optimize_size);
+
   /* Restore via the backchain when we have a large frame, since this
      is more efficient than an addis, addi pair.  The second condition
      here will not trigger at the moment;  We don't actually need a
      frame pointer for alloca, but the generic parts of the compiler
      give us one anyway.  */
-  use_backchain_to_restore_sp = (info->total_size + (info->lr_save_p
-						     ? info->lr_save_offset
-						     : 0) > 32767
-				 || (cfun->calls_alloca
-				     && !frame_pointer_needed));
-  restore_lr = (info->lr_save_p
+  bool use_backchain_to_restore_sp
+    = (info->total_size + (info->lr_save_p ? info->lr_save_offset : 0) > 32767
+       || (cfun->calls_alloca && !frame_pointer_needed));
+
+  bool restore_lr = (info->lr_save_p
 		&& (restoring_FPRs_inline
 		    || (strategy & REST_NOINLINE_FPRS_DOESNT_RESTORE_LR))
 		&& (restoring_GPRs_inline
@@ -27929,10 +27928,7 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
 
   if (WORLD_SAVE_P (info))
     {
-      int i, j;
-      char rname[30];
-      const char *alloc_rname;
-      rtvec p;
+      gcc_assert (epilogue_type != EPILOGUE_TYPE_SIBCALL);
 
       /* eh_rest_world_r10 will return to the location saved in the LR
 	 stack slot (which is not likely to be our caller.)
@@ -27941,19 +27937,31 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
 	 The exception-handling stuff that was here in 2.95 is no
 	 longer necessary.  */
 
+      rtvec p;
       p = rtvec_alloc (9
 		       + 32 - info->first_gp_reg_save
 		       + LAST_ALTIVEC_REGNO + 1 - info->first_altivec_reg_save
 		       + 63 + 1 - info->first_fp_reg_save);
 
-      strcpy (rname, ((crtl->calls_eh_return) ?
-		      "*eh_rest_world_r10" : "*rest_world"));
-      alloc_rname = ggc_strdup (rname);
+      const char *rname;
+      switch (epilogue_type)
+	{
+	case EPILOGUE_TYPE_NORMAL:
+	  rname = ggc_strdup ("*rest_world");
+	  break;
 
-      j = 0;
+	case EPILOGUE_TYPE_EH_RETURN:
+	  rname = ggc_strdup ("*eh_rest_world_r10");
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+
+      int j = 0;
       RTVEC_ELT (p, j++) = ret_rtx;
       RTVEC_ELT (p, j++)
-	= gen_rtx_USE (VOIDmode, gen_rtx_SYMBOL_REF (Pmode, alloc_rname));
+	= gen_rtx_USE (VOIDmode, gen_rtx_SYMBOL_REF (Pmode, rname));
       /* The instruction pattern requires a clobber here;
 	 it is shared with the restVEC helper. */
       RTVEC_ELT (p, j++) = gen_hard_reg_clobber (Pmode, 11);
@@ -27972,6 +27980,7 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
 	  }
       }
 
+      int i;
       for (i = 0; i < 32 - info->first_gp_reg_save; i++)
 	{
 	  rtx reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
@@ -28196,7 +28205,7 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
     }
   else if (info->push_p
 	   && DEFAULT_ABI != ABI_V4
-	   && !crtl->calls_eh_return)
+	   && epilogue_type != EPILOGUE_TYPE_EH_RETURN)
     {
       /* Prevent reordering memory accesses against stack pointer restore.  */
       if (cfun->calls_alloca
@@ -28356,9 +28365,9 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
      function will deallocate the stack, so we don't need to worry
      about the unwinder restoring cr from an invalid stack frame
      location.  */
-  exit_func = (!restoring_FPRs_inline
-	       || (!restoring_GPRs_inline
-		   && info->first_fp_reg_save == 64));
+  bool exit_func = (!restoring_FPRs_inline
+		    || (!restoring_GPRs_inline
+			&& info->first_fp_reg_save == 64));
 
   /* In the ELFv2 ABI we need to restore all call-saved CR fields from
      *separate* slots if the routine calls __builtin_eh_return, so
@@ -28424,7 +28433,7 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
     restore_saved_lr (0, exit_func);
 
   /* Load exception handler data registers, if needed.  */
-  if (!sibcall && crtl->calls_eh_return)
+  if (epilogue_type == EPILOGUE_TYPE_EH_RETURN)
     {
       unsigned int i, regno;
 
@@ -28615,13 +28624,13 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
-  if (!sibcall && crtl->calls_eh_return)
+  if (epilogue_type == EPILOGUE_TYPE_EH_RETURN)
     {
       rtx sa = EH_RETURN_STACKADJ_RTX;
       emit_insn (gen_add3_insn (sp_reg_rtx, sp_reg_rtx, sa));
     }
 
-  if (!sibcall && restoring_FPRs_inline)
+  if (epilogue_type != EPILOGUE_TYPE_SIBCALL && restoring_FPRs_inline)
     {
       if (cfa_restores)
 	{
@@ -28646,7 +28655,7 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
       emit_jump_insn (targetm.gen_simple_return ());
     }
 
-  if (!sibcall && !restoring_FPRs_inline)
+  if (epilogue_type != EPILOGUE_TYPE_SIBCALL && !restoring_FPRs_inline)
     {
       bool lr = (strategy & REST_NOINLINE_FPRS_DOESNT_RESTORE_LR) == 0;
       rtvec p = rtvec_alloc (3 + !!lr + 64 - info->first_fp_reg_save);
@@ -28685,7 +28694,7 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
 
   if (cfa_restores)
     {
-      if (sibcall)
+      if (epilogue_type == EPILOGUE_TYPE_SIBCALL)
 	/* Ensure the cfa_restores are hung off an insn that won't
 	   be reordered above other restores.  */
 	emit_insn (gen_blockage ());
