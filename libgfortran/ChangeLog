@@ -1,3 +1,9 @@
+2019-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/54613
+	* gfortran.map (GFORTRAN_9.2): New symbol version, export
+	_gfortran_{,m,s}findloc0_i2 in it.
+
 2019-05-03  Release Manager
 
 	* GCC 9.1.0 released.
