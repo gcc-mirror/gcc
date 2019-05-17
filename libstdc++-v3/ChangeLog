@@ -1,3 +1,32 @@
+2019-05-17  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_deque.h
+	(_Deque_iterator<>::__ptr_to): Remove, use std::__ptr_rebind.
+	(_Deque_base(_Deque_base&&, const allocator_type&)): New.
+	(_Deque_base::_Deque_impl_data): New.
+	(_Deque_base::_Deque_impl): Inherit latter.
+	(_Deque_base::_Deque_impl::_M_swap_data): Move...
+	(_Deque_base::_Deque_impl_data::_M_swap_data): ... here.
+	(_Deque_base::_Deque_impl()): Add noexcept qualification.
+	(_Deque_base::_Deque_impl(_Deque_impl&&, _Tp_alloc_type&&)): New.
+	(_Deque_base::_Deque_impl::_M_get_Tp_allocator()): Remove static_cast.
+	(deque<>::deque()): Default.
+	(deque<>::deque(deque&&)): Default.
+	(deque<>::deque(deque&&, const allocator_type&, false_type)): New.
+	(deque<>::deque(deque&&, const allocator_type&, true_type)): New.
+	(deque<>::deque(deque&&, const allocator_type&)): Delegate to latters.
+	(deque<>::deque<_It>(_It, _It, const allocator_type&)): Use
+	_M_range_initialize.
+	(deque<>::assign<_It>(_It, _It)): Use _M_assign_aux.
+	(deque<>::resize(size_type, const value_type&)): Share a single
+	implementation.
+	(deque<>::insert<_It>(const_iterator, _It, _It)): Use
+	_M_range_insert_aux.
+	[__cplusplus >= 201103L](_M_initialize_dispatch): Remove.
+	[__cplusplus >= 201103L](_M_assign_dispatch): Remove.
+	[__cplusplus >= 201103L](_M_insert_dispatch): Remove.
+	* testsuite/23_containers/deque/allocator/default_init.cc: New.
+
 2019-05-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90246
