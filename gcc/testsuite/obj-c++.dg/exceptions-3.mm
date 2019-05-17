@@ -27,19 +27,19 @@ int test (id object)
   int dummy = 0;
 
   @try { @throw object; }
-  @catch (int x)          /* { dg-error "@catch parameter is not a known Objective-C class type" } */
+  @catch (int x)          /* { dg-error "'@catch' parameter is not a known Objective-C class type" } */
     {
       dummy++;
     }
 
   @try { @throw object; }
-  @catch (intTypedef x)   /* { dg-error "@catch parameter is not a known Objective-C class type" } */
+  @catch (intTypedef x)   /* { dg-error "'@catch' parameter is not a known Objective-C class type" } */
     {
       dummy++;
     }
 
   @try { @throw object; }
-  @catch (int *x)         /* { dg-error "@catch parameter is not a known Objective-C class type" } */
+  @catch (int *x)         /* { dg-error "'@catch' parameter is not a known Objective-C class type" } */
     {
       dummy++;
     }  
@@ -51,7 +51,7 @@ int test (id object)
     }
 
   @try { @throw object; }
-  @catch (id <MyProtocol> x) /* { dg-error "@catch parameter cannot be protocol-qualified" } */
+  @catch (id <MyProtocol> x) /* { dg-error "'@catch' parameter cannot be protocol-qualified" } */
     {
       dummy++;
     }
@@ -63,13 +63,13 @@ int test (id object)
     }
 
   @try { @throw object; }
-  @catch (MyObject <MyProtocol> *x)  /* { dg-error "@catch parameter cannot be protocol-qualified" } */
+  @catch (MyObject <MyProtocol> *x)  /* { dg-error "'@catch' parameter cannot be protocol-qualified" } */
     {
       dummy++;
     }
 
   @try { @throw object; }
-  @catch (MyObject x)     /* { dg-error "@catch parameter is not a known Objective-C class type" } */
+  @catch (MyObject x)     /* { dg-error "'@catch' parameter is not a known Objective-C class type" } */
     {                     /* { dg-error "no matching function" "" { target *-*-* } .-1 } */
       dummy++;            /* { dg-message "MyObject" "" { target *-*-* } interface_MyObject } */
     }                     /* { dg-message "candidate" "" { target *-*-* } interface_MyObject } */
@@ -86,7 +86,7 @@ int test (id object)
     }
 
   @try { @throw object; }
-  @catch (MyObjectTypedef <MyProtocol> *x) /* { dg-error "@catch parameter cannot be protocol-qualified" } */
+  @catch (MyObjectTypedef <MyProtocol> *x) /* { dg-error "'@catch' parameter cannot be protocol-qualified" } */
     {
       dummy++;
     }
@@ -98,7 +98,7 @@ int test (id object)
     }
 
   @try { @throw object; }
-  @catch (Class x)   /* { dg-error "@catch parameter is not a known Objective-C class type" } */
+  @catch (Class x)   /* { dg-error "'@catch' parameter is not a known Objective-C class type" } */
     {
       dummy++;
     }

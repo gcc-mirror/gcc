@@ -1,3 +1,120 @@
+2019-05-16  Martin Sebor  <msebor@redhat.com>
+
+        * builtins.c (expand_builtin_atomic_always_lock_free): Quote
+        identifiers, keywords, operators, and types in diagnostics.  Correct
+        quoting, spelling, and sentence capitalization issues.
+        (expand_builtin_atomic_is_lock_free): Same.
+        (fold_builtin_next_arg): Same.
+        * cfgexpand.c (expand_one_var): Same.
+        (tree_conflicts_with_clobbers_p): Same.
+        (expand_asm_stmt): Same.
+        (verify_loop_structure): Same.
+        * cgraphunit.c (process_function_and_variable_attributes): Same.
+        * collect-utils.c (collect_execute): Same.
+        * collect2.c (maybe_run_lto_and_relink): Same.
+        (is_lto_object_file): Same.
+        (scan_prog_file): Same.
+        * convert.c (convert_to_real_1): Same.
+        * dwarf2out.c (dwarf2out_begin_prologue): Same.
+        * except.c (verify_eh_tree): Same.
+        * gcc.c (execute): Same.
+        (eval_spec_function): Same.
+        (run_attempt): Same.
+        (driver::set_up_specs): Same.
+        (compare_debug_auxbase_opt_spec_function): Same.
+        * gcov-tool.c (unlink_gcda_file): Same.
+        (do_merge): Same.
+        (do_rewrite): Same.
+        * gcse.c (gcse_or_cprop_is_too_expensive): Same.
+        * gimplify.c (gimplify_asm_expr): Same.
+        (gimplify_adjust_omp_clauses): Same.
+        * hsa-gen.c (gen_hsa_addr_insns): Same.
+        (gen_hsa_insns_for_load): Same.
+        (gen_hsa_cmp_insn_from_gimple): Same.
+        (gen_hsa_insns_for_operation_assignment): Same.
+        (gen_get_level): Same.
+        (gen_hsa_alloca): Same.
+        (omp_simple_builtin::generate): Same.
+        (gen_hsa_atomic_for_builtin): Same.
+        (gen_hsa_insns_for_call): Same.
+        * input.c (dump_location_info): Same.
+        * ipa-devirt.c (compare_virtual_tables): Same.
+        * ira.c (ira_setup_eliminable_regset): Same.
+        * lra-assigns.c (lra_assign): Same.
+        * lra-constraints.c (lra_constraints): Same.
+        * lto-streamer-in.c (lto_input_mode_table): Same.
+        * lto-wrapper.c (get_options_from_collect_gcc_options): Same.
+        (merge_and_complain): Same.
+        (compile_offload_image): Same.
+        (compile_images_for_offload_targets): Same.
+        (debug_objcopy): Same.
+        (run_gcc): Same.
+        (main): Same.
+        * opts.c (print_specific_help): Same.
+        (parse_no_sanitize_attribute): Same.
+        (print_help): Same.
+        (handle_param): Same.
+        * plugin.c (add_new_plugin): Same.
+        (parse_plugin_arg_opt): Same.
+        (try_init_one_plugin): Same.
+        * print-rtl.c (debug_bb_n_slim): Quote identifiers, keywords,
+        operators, and types in diagnostics.  Correct quoting and spelling
+        issues.
+        * read-rtl-function.c (parse_edge_flag_token): Same.
+        (function_reader::parse_enum_value): Same.
+        * reg-stack.c (check_asm_stack_operands): Same.
+        * regcprop.c (validate_value_data): Same.
+        * sched-rgn.c (make_pass_sched_fusion): Same.
+        * stmt.c (check_unique_operand_names): Same.
+        * targhooks.c (default_target_option_pragma_parse): Same.
+        * tlink.c (recompile_files): Same.
+        * toplev.c (process_options): Same.
+        (do_compile): Same.
+        * trans-mem.c (diagnose_tm_1): Same.
+        (ipa_tm_scan_irr_block): Same.
+        (ipa_tm_diagnose_transaction): Same.
+        * tree-cfg.c (verify_address): Same.  Use get_tree_code_name to
+        format a tree code name in a diagnostic.
+        (verify_types_in_gimple_min_lval): Same.
+        (verify_types_in_gimple_reference): Same.
+        (verify_gimple_call): Same.
+        (verify_gimple_assign_unary): Same.
+        (verify_gimple_assign_binary): Same.
+        (verify_gimple_assign_ternary): Same.
+        (verify_gimple_assign_single): Same.
+        (verify_gimple_switch): Same.
+        (verify_gimple_label): Same.
+        (verify_gimple_phi): Same.
+        (verify_gimple_in_seq): Same.
+        (verify_eh_throw_stmt_node): Same.
+        (collect_subblocks): Same.
+        (gimple_verify_flow_info): Same.
+        (do_warn_unused_result): Same.
+        * tree-inline.c (expand_call_inline): Same.
+        * tree-into-ssa.c (update_ssa): Same.
+        * tree.c (tree_int_cst_elt_check_failed): Same.
+        (tree_vec_elt_check_failed): Same.
+        (omp_clause_operand_check_failed): Same.
+        (verify_type_variant): Same.
+        (verify_type): Same.
+        * value-prof.c (verify_histograms): Same.
+        * varasm.c (assemble_start_function): Same.
+
+2019-05-16  Martin Sebor  <msebor@redhat.com>
+
+        * config/i386/i386-expand.c (get_element_number): Quote keywords
+        and other internal names in diagnostics.  Adjust other diagnostic
+        formatting issues noted by -Wformat-diag.
+        * config/i386/i386-features.c
+        (ix86_mangle_function_version_assembler_name): Same.
+        * config/i386/i386-options.c (ix86_handle_abi_attribute): Same.
+        * config/i386/i386.c (ix86_function_type_abi): Same.
+        (ix86_function_ms_hook_prologue): Same.
+        (classify_argument): Same.
+        (ix86_expand_prologue): Same.
+        (ix86_md_asm_adjust): Same.
+        (ix86_memmodel_check): Same.
+
 2019-05-17  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
 
 	* config/mips/mips.c (mips_dwarf_frame_reg_mode): Replace

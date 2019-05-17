@@ -830,7 +830,8 @@ grokfield (const cp_declarator *declarator,
   if (TREE_CODE (value) == TYPE_DECL && init)
     {
       error_at (cp_expr_loc_or_loc (init, DECL_SOURCE_LOCATION (value)),
-		"typedef %qD is initialized (use decltype instead)", value);
+		"typedef %qD is initialized (use %qs instead)",
+		value, "decltype");
       init = NULL_TREE;
     }
 
@@ -1772,12 +1773,13 @@ coerce_delete_type (tree decl, location_t loc)
       else
 	/* A destroying operator delete shall be a class member function named
 	   operator delete.  */
-	error_at (loc, "destroying operator delete must be a member function");
+	error_at (loc,
+		  "destroying %<operator delete%> must be a member function");
       const ovl_op_info_t *op = IDENTIFIER_OVL_OP_INFO (DECL_NAME (decl));
       if (op->flags & OVL_OP_FLAG_VEC)
-	error_at (loc, "operator delete[] cannot be a destroying delete");
+	error_at (loc, "%<operator delete[]%> cannot be a destroying delete");
       if (!usual_deallocation_fn_p (decl))
-	error_at (loc, "destroying operator delete must be a usual "
+	error_at (loc, "destroying %<operator delete%> must be a usual "
 		  "deallocation function");
     }
 

@@ -316,7 +316,7 @@ get_array_length (tree exp, Type *type)
       return d_array_length (exp);
 
     default:
-      error ("can't determine the length of a %qs", type->toChars ());
+      error ("cannot determine the length of a %qs", type->toChars ());
       return error_mark_node;
     }
 }

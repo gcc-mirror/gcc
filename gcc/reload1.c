@@ -2062,7 +2062,7 @@ static void
 spill_failure (rtx_insn *insn, enum reg_class rclass)
 {
   if (asm_noperands (PATTERN (insn)) >= 0)
-    error_for_asm (insn, "can%'t find a register in class %qs while "
+    error_for_asm (insn, "cannot find a register in class %qs while "
 		   "reloading %<asm%>",
 		   reg_class_names[rclass]);
   else

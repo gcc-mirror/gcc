@@ -535,7 +535,7 @@ verify_histograms (void)
 	  {
 	    if (hist->hvalue.stmt != stmt)
 	      {
-		error ("Histogram value statement does not correspond to "
+		error ("histogram value statement does not correspond to "
 		       "the statement it is associated with");
 		debug_gimple_stmt (stmt);
 		dump_histogram_value (stderr, hist);
@@ -547,7 +547,7 @@ verify_histograms (void)
   if (VALUE_HISTOGRAMS (cfun))
     htab_traverse (VALUE_HISTOGRAMS (cfun), visit_hist, &visited_hists);
   if (error_found)
-    internal_error ("verify_histograms failed");
+    internal_error ("%qs failed", __func__);
 }
 
 /* Helper function for verify_histograms.  For each histogram reachable via htab

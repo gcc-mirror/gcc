@@ -826,13 +826,13 @@ do_build_copy_assign (tree fndecl)
 
 	  if (CP_TYPE_CONST_P (expr_type))
 	    {
-	      error ("non-static const member %q#D, can%'t use default "
+	      error ("non-static const member %q#D, cannot use default "
 		     "assignment operator", field);
 	      continue;
 	    }
 	  else if (TYPE_REF_P (expr_type))
 	    {
-	      error ("non-static reference member %q#D, can%'t use "
+	      error ("non-static reference member %q#D, cannot use "
 		     "default assignment operator", field);
 	      continue;
 	    }
@@ -1336,13 +1336,13 @@ walk_field_subobs (tree fields, special_function_kind sfk, tree fnname,
 	  if (CP_TYPE_CONST_P (mem_type) && !CLASS_TYPE_P (mem_type))
 	    {
 	      if (diag)
-		error ("non-static const member %q#D, can%'t use default "
+		error ("non-static const member %q#D, cannot use default "
 		       "assignment operator", field);
 	    }
 	  else if (TYPE_REF_P (mem_type))
 	    {
 	      if (diag)
-		error ("non-static reference member %q#D, can%'t use "
+		error ("non-static reference member %q#D, cannot use "
 		       "default assignment operator", field);
 	    }
 	  else
@@ -2248,8 +2248,8 @@ defaulted_late_check (tree fn)
       if (!CLASSTYPE_TEMPLATE_INSTANTIATION (ctx))
 	{
 	  error ("explicitly defaulted function %q+D cannot be declared "
-		 "as %<constexpr%> because the implicit declaration is not "
-		 "%<constexpr%>:", fn);
+		 "%qs because the implicit declaration is not %qs:",
+		 fn, "constexpr", "constexpr");
 	  explain_implicit_non_constexpr (fn);
 	}
       DECL_DECLARED_CONSTEXPR_P (fn) = false;

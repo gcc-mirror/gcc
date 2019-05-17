@@ -2020,9 +2020,9 @@ cxx_eval_check_shift_p (location_t loc, const constexpr_ctx *ctx,
   if (compare_tree_int (rhs, uprec) >= 0)
     {
       if (!ctx->quiet)
-	permerror (loc, "right operand of shift expression %q+E is >= than "
-		   "the precision of the left operand",
-		   build2_loc (loc, code, type, lhs, rhs));
+	permerror (loc, "right operand of shift expression %q+E is greater "
+		   "than or equal to the precision %wu of the left operand",
+		   build2_loc (loc, code, type, lhs, rhs), uprec);
       return (!flag_permissive || ctx->quiet);
     }
 
@@ -4420,7 +4420,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       if (!ctx->quiet)
 	error_at (cp_expr_loc_or_loc (t, input_location),
 		  "%<constexpr%> evaluation operation count exceeds limit of "
-		  "%wd (use -fconstexpr-ops-limit= to increase the limit)",
+		  "%wd (use %<-fconstexpr-ops-limit=%> to increase the limit)",
 		  constexpr_ops_limit);
       *ctx->constexpr_ops_count = INTTYPE_MINIMUM (HOST_WIDE_INT);
       *non_constant_p = true;
@@ -4957,7 +4957,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	{
 	  if (!ctx->quiet)
 	    error_at (cp_expr_loc_or_loc (t, input_location),
-		      "a reinterpret_cast is not a constant expression");
+		      "%<reinterpret_cast%> is not a constant expression");
 	  *non_constant_p = true;
 	  return t;
 	}
@@ -6116,7 +6116,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       if (REINTERPRET_CAST_P (t))
 	{
 	  if (flags & tf_error)
-	    error_at (loc, "a reinterpret_cast is not a constant expression");
+	    error_at (loc, "%<reinterpret_cast%> is not a constant expression");
 	  return false;
 	}
       /* FALLTHRU */
@@ -6135,7 +6135,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		&& !integer_zerop (from))
 	      {
 		if (flags & tf_error)
-		  error_at (loc, "reinterpret_cast from integer to pointer");
+		  error_at (loc,
+			    "%<reinterpret_cast%> from integer to pointer");
 		return false;
 	      }
 	  }
@@ -6389,7 +6390,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	/* In C++2a virtual calls can be constexpr, don't give up yet.  */
 	return true;
       else if (flags & tf_error)
-	error_at (loc, "virtual functions cannot be constexpr before C++2a");
+	error_at (loc,
+		  "virtual functions cannot be %<constexpr%> before C++2a");
       return false;
 
     case TYPEID_EXPR:
@@ -6401,7 +6403,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	    && TYPE_POLYMORPHIC_P (TREE_TYPE (e)))
           {
             if (flags & tf_error)
-              error_at (loc, "typeid-expression is not a constant expression "
+	      error_at (loc, "%<typeid%> is not a constant expression "
 			"because %qE is of polymorphic type", e);
             return false;
           }

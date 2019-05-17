@@ -7969,7 +7969,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       if (fndecl
 	  && (lookup_attribute ("interrupt",
 				TYPE_ATTRIBUTES (TREE_TYPE (fndecl)))))
-	error ("interrupt service routine can%'t be called directly");
+	error ("interrupt service routine cannot be called directly");
     }
   else
     fndecl = NULL_TREE;
@@ -10761,7 +10761,8 @@ get_element_number (tree vec_type, tree arg)
   if (!tree_fits_uhwi_p (arg)
       || (elt = tree_to_uhwi (arg), elt > max))
     {
-      error ("selector must be an integer constant in the range 0..%wi", max);
+      error ("selector must be an integer constant in the range "
+	     "[0, %wi]", max);
       return 0;
     }
 

@@ -6177,7 +6177,7 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 			    fb_lvalue | fb_mayfail);
       if (tret == GS_ERROR)
 	{
-	  error ("invalid lvalue in asm output %d", i);
+	  error ("invalid lvalue in %<asm%> output %d", i);
 	  ret = tret;
 	}
 
@@ -9835,7 +9835,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		    {
 		      warning_at (OMP_CLAUSE_LOCATION (c), 0,
 				  "incompatible data clause with reduction "
-				  "on %qE; promoting to present_or_copy",
+				  "on %qE; promoting to %<present_or_copy%>",
 				  DECL_NAME (t));
 		      OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_TOFROM);
 		    }

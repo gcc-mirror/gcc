@@ -11,7 +11,7 @@ constexpr int i1 = fn1 (1, -1); // { dg-message "in .constexpr. expansion of " }
 constexpr int
 fn2 (int i, int j)
 {
-  return i << j; // { dg-error "is >= than the precision of the left operand" }
+  return i << j; // { dg-error "is greater than or equal to the precision .. of the left operand" }
 }
 
 constexpr int i2 = fn2 (1, 200); // { dg-message "in .constexpr. expansion of " }
@@ -43,7 +43,7 @@ constexpr int i5 = fn5 (__INT_MAX__, 1);
 constexpr int
 fn6 (unsigned int i, unsigned int j)
 {
-  return i << j; // { dg-error "is >= than the precision of the left operand" }
+  return i << j; // { dg-error "is greater than or equal to the precision .. of the left operand" }
 }
 
 constexpr int i6 = fn6 (1, -1); // { dg-message "in .constexpr. expansion of " }
@@ -67,7 +67,7 @@ constexpr int i8 = fn8 (-1, 1);
 constexpr int
 fn9 (int i, int j)
 {
-  return i >> j;  // { dg-error "is >= than the precision of the left operand" }
+  return i >> j;  // { dg-error "is greater than or equal to the precision .. of the left operand" }
 }
 
 constexpr int i9 = fn9 (1, 200); // { dg-message "in .constexpr. expansion of " }

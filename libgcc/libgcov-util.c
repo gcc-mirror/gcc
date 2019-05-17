@@ -332,7 +332,7 @@ read_gcda_file (const char *filename)
         {
           if (((mask & 0xff) != 0xff))
             {
-              warning (0, "%s:tag `%x' is invalid\n", filename, tag);
+	      warning (0, "%s:tag %qx is invalid", filename, tag);
               break;
             }
           tag_depth--;
@@ -347,7 +347,7 @@ read_gcda_file (const char *filename)
           if (depth && depth < tag_depth)
             {
               if (!GCOV_TAG_IS_SUBTAG (tags[depth - 1], tag))
-                warning (0, "%s:tag `%x' is incorrectly nested\n",
+	        warning (0, "%s:tag %qx is incorrectly nested",
                          filename, tag);
             }
           depth = tag_depth;
@@ -362,18 +362,18 @@ read_gcda_file (const char *filename)
 
           actual_length = gcov_position () - base;
           if (actual_length > length)
-            warning (0, "%s:record size mismatch %lu bytes overread\n",
+	    warning (0, "%s:record size mismatch %lu bytes overread",
                      filename, actual_length - length);
           else if (length > actual_length)
-            warning (0, "%s:record size mismatch %lu bytes unread\n",
+	    warning (0, "%s:record size mismatch %lu bytes unread",
                      filename, length - actual_length);
        }
 
       gcov_sync (base, length);
       if ((error = gcov_is_error ()))
         {
-          warning (0, error < 0 ? "%s:counter overflow at %lu\n" :
-                                  "%s:read error at %lu\n", filename,
+	  warning (0, error < 0 ? "%s:counter overflow at %lu" :
+	                          "%s:read error at %lu", filename,
                    (long unsigned) gcov_position ());
           break;
         }

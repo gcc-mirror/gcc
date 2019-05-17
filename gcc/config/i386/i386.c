@@ -1525,7 +1525,7 @@ ix86_function_type_abi (const_tree fntype)
       static int warned;
       if (TARGET_X32 && !warned)
 	{
-	  error ("X32 does not support ms_abi attribute");
+	  error ("X32 does not support %<ms_abi%> attribute");
 	  warned = 1;
 	}
 
@@ -1559,7 +1559,8 @@ ix86_function_ms_hook_prologue (const_tree fn)
     {
       if (decl_function_context (fn) != NULL_TREE)
 	error_at (DECL_SOURCE_LOCATION (fn),
-		  "ms_hook_prologue is not compatible with nested function");
+		  "%<ms_hook_prologue%> attribute is not compatible "
+		  "with nested function");
       else
         return true;
     }
@@ -2266,7 +2267,7 @@ classify_argument (machine_mode mode, const_tree type,
 		{
 		  warned = true;
 		  inform (input_location,
-			  "the ABI of passing union with long double"
+			  "the ABI of passing union with %<long double%>"
 			  " has changed in GCC 4.4");
 		}
 	      return 0;
@@ -2384,7 +2385,7 @@ classify_argument (machine_mode mode, const_tree type,
 	    {
 	      warned = true;
 	      inform (input_location,
-		      "the ABI of passing structure with complex float"
+		      "the ABI of passing structure with %<complex float%>"
 		      " member has changed in GCC 4.4");
 	    }
 	  classes[1] = X86_64_SSESF_CLASS;
@@ -7787,7 +7788,7 @@ ix86_expand_prologue (void)
       /* Check if profiling is active and we shall use profiling before
          prologue variant. If so sorry.  */
       if (crtl->profile && flag_fentry != 0)
-        sorry ("ms_hook_prologue attribute isn%'t compatible "
+	sorry ("%<ms_hook_prologue%> attribute is not compatible "
 	       "with %<-mfentry%> for 32-bit");
 
       /* In ix86_asm_output_function_label we emitted:
@@ -20655,7 +20656,7 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
       con += 4;
       if (strchr (con, ',') != NULL)
 	{
-	  error ("alternatives not allowed in asm flag output");
+	  error ("alternatives not allowed in %<asm%> flag output");
 	  continue;
 	}
 
@@ -20719,7 +20720,7 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
 	}
       if (code == UNKNOWN)
 	{
-	  error ("unknown asm flag output %qs", constraints[i]);
+	  error ("unknown %<asm%> flag output %qs", constraints[i]);
 	  continue;
 	}
       if (invert)
@@ -20748,7 +20749,7 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
       machine_mode dest_mode = GET_MODE (dest);
       if (!SCALAR_INT_MODE_P (dest_mode))
 	{
-	  error ("invalid type for asm flag output");
+	  error ("invalid type for %<asm%> flag output");
 	  continue;
 	}
 
@@ -21682,13 +21683,15 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
   if (val & IX86_HLE_ACQUIRE && !(is_mm_acquire (model) || strong))
     {
       warning (OPT_Winvalid_memory_model,
-              "HLE_ACQUIRE not used with ACQUIRE or stronger memory model");
+	      "%<HLE_ACQUIRE%> not used with %<ACQUIRE%> or stronger "
+	       "memory model");
       return MEMMODEL_SEQ_CST | IX86_HLE_ACQUIRE;
     }
   if (val & IX86_HLE_RELEASE && !(is_mm_release (model) || strong))
     {
       warning (OPT_Winvalid_memory_model,
-              "HLE_RELEASE not used with RELEASE or stronger memory model");
+	      "%<HLE_RELEASE%> not used with %<RELEASE%> or stronger "
+	       "memory model");
       return MEMMODEL_SEQ_CST | IX86_HLE_RELEASE;
     }
   return val;

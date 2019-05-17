@@ -103,7 +103,7 @@ pch_init (void)
 
   f = fopen (pch_file, "w+b");
   if (f == NULL)
-    fatal_error (input_location, "can%'t create precompiled header %s: %m",
+    fatal_error (input_location, "cannot create precompiled header %s: %m",
 		 pch_file);
   pch_outfile = f;
 
@@ -124,7 +124,7 @@ pch_init (void)
       || fwrite (executable_checksum, 16, 1, f) != 1
       || fwrite (&v, sizeof (v), 1, f) != 1
       || fwrite (target_validity, v.target_data_length, 1, f) != 1)
-    fatal_error (input_location, "can%'t write to %s: %m", pch_file);
+    fatal_error (input_location, "cannot write to %s: %m", pch_file);
 
   /* Let the debugging format deal with the PCHness.  */
   (*debug_hooks->handle_pch) (0);
@@ -182,7 +182,7 @@ c_common_write_pch (void)
 
   if (fseek (pch_outfile, 0, SEEK_SET) != 0
       || fwrite (get_ident (), IDENT_LENGTH, 1, pch_outfile) != 1)
-    fatal_error (input_location, "can%'t write %s: %m", pch_file);
+    fatal_error (input_location, "cannot write %s: %m", pch_file);
 
   fclose (pch_outfile);
 
@@ -208,7 +208,7 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
 
   sizeread = read (fd, ident, IDENT_LENGTH + 16);
   if (sizeread == -1)
-    fatal_error (input_location, "can%'t read %s: %m", name);
+    fatal_error (input_location, "cannot read %s: %m", name);
   else if (sizeread != IDENT_LENGTH + 16)
     {
       if (cpp_get_options (pfile)->warn_invalid_pch)
@@ -249,7 +249,7 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
      executable, so it ought to be long enough that we can read a
      c_pch_validity structure.  */
   if (read (fd, &v, sizeof (v)) != sizeof (v))
-    fatal_error (input_location, "can%'t read %s: %m", name);
+    fatal_error (input_location, "cannot read %s: %m", name);
 
   /* The allowable debug info combinations are that either the PCH file
      was built with the same as is being used now, or the PCH file was
@@ -300,7 +300,7 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
 
     if ((size_t) read (fd, this_file_data, v.target_data_length)
 	!= v.target_data_length)
-      fatal_error (input_location, "can%'t read %s: %m", name);
+      fatal_error (input_location, "cannot read %s: %m", name);
     msg = targetm.pch_valid_p (this_file_data, v.target_data_length);
     free (this_file_data);
     if (msg != NULL)
@@ -406,9 +406,9 @@ c_common_pch_pragma (cpp_reader *pfile, const char *name)
 
   if (!cpp_get_options (pfile)->preprocessed)
     {
-      error ("pch_preprocess pragma should only be used "
+      error ("%<pch_preprocess%> pragma should only be used "
 	     "with %<-fpreprocessed%>");
-      inform (input_location, "use #include instead");
+      inform (input_location, "use %<#include%> instead");
       return;
     }
 

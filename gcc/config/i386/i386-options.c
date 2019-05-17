@@ -3462,7 +3462,8 @@ ix86_handle_abi_attribute (tree *node, tree name, tree, int,
     {
       if (lookup_attribute ("sysv_abi", TYPE_ATTRIBUTES (*node)))
         {
-	  error ("ms_abi and sysv_abi attributes are not compatible");
+	  error ("%qs and %qs attributes are not compatible",
+		 "ms_abi", "sysv_abi");
 	}
 
       return NULL_TREE;
@@ -3471,7 +3472,8 @@ ix86_handle_abi_attribute (tree *node, tree name, tree, int,
     {
       if (lookup_attribute ("ms_abi", TYPE_ATTRIBUTES (*node)))
         {
-	  error ("ms_abi and sysv_abi attributes are not compatible");
+	  error ("%qs and %qs attributes are not compatible",
+		 "ms_abi", "sysv_abi");
 	}
 
       return NULL_TREE;
@@ -3582,7 +3584,7 @@ ix86_handle_interrupt_attribute (tree *node, tree, tree, int, bool *)
     error ("interrupt service routine can only have a pointer argument "
 	   "and an optional integer argument");
   if (! VOID_TYPE_P (return_type))
-    error ("interrupt service routine can%'t have non-void return value");
+    error ("interrupt service routine must return %<void%>");
 
   return NULL_TREE;
 }

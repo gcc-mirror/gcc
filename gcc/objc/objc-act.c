@@ -458,7 +458,7 @@ objc_write_global_declarations (void)
 	  char * const dumpname = concat (dump_base_name, ".decl", NULL);
 	  gen_declaration_file = fopen (dumpname, "w");
 	  if (gen_declaration_file == 0)
-	    fatal_error (input_location, "can%'t open %s: %m", dumpname);
+	    fatal_error (input_location, "cannot open %s: %m", dumpname);
 	  free (dumpname);
 	}
 
@@ -4208,13 +4208,13 @@ objc_begin_catch_clause (tree decl)
     }
   else if (!objc_type_valid_for_messaging (type, false))
     {
-      error ("@catch parameter is not a known Objective-C class type");
+      error ("%<@catch%> parameter is not a known Objective-C class type");
       type = error_mark_node;
     }
   else if (TYPE_HAS_OBJC_INFO (TREE_TYPE (type))
 	   && TYPE_OBJC_PROTOCOL_LIST (TREE_TYPE (type)))
     {
-      error ("@catch parameter cannot be protocol-qualified");
+      error ("%<@catch%> parameter cannot be protocol-qualified");
       type = error_mark_node;
     }
   else if (POINTER_TYPE_P (type) && objc_is_object_id (TREE_TYPE (type)))
@@ -4336,7 +4336,8 @@ objc_build_throw_stmt (location_t loc, tree throw_expr)
       if (cur_try_context == NULL
           || cur_try_context->current_catch == NULL)
 	{
-	  error_at (loc, "%<@throw%> (rethrow) used outside of a @catch block");
+	  error_at (loc,
+		    "%<@throw%> (rethrow) used outside of a %<@catch%> block");
 	  return error_mark_node;
 	}
 
@@ -5411,7 +5412,8 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params,
 		 prototype.  Emit a warning, then keep going (this
 		 will use any method with a matching name, as if the
 		 receiver was of type 'Class').  */
-	      warning (0, "@interface of class %qE not found", class_tree);
+	      warning (0, "%<@interface%> of class %qE not found",
+		       class_tree);
 	    }
 	}
       /* Handle `self' and `super'.  */
@@ -5545,7 +5547,7 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params,
 		     warning, either include an @interface for the
 		     class, or cast the receiver to 'id'.  Note that
 		     rtype is an IDENTIFIER_NODE at this point.  */
-		  warning (0, "@interface of class %qE not found", rtype);
+		  warning (0, "%<@interface%> of class %qE not found", rtype);
 		}
 	    }
 
@@ -5628,11 +5630,9 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params,
       if (!warn_missing_methods)
 	{
 	  warning_at (input_location,
-		      0, "(Messages without a matching method signature");
-	  warning_at (input_location,
-		      0, "will be assumed to return %<id%> and accept");
-	  warning_at (input_location,
-		      0, "%<...%> as arguments.)");
+		      0, "(messages without a matching method signature "
+		      "will be assumed to return %<id%> and accept "
+		      "%<...%> as arguments)");
 	  warn_missing_methods = true;
 	}
     }
@@ -8848,7 +8848,7 @@ get_super_receiver (void)
     }
   else
     {
-      error ("[super ...] must appear in a method context");
+      error ("%<[super ...]%> must appear in a method context");
       return error_mark_node;
     }
 }

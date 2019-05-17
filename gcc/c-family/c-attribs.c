@@ -891,7 +891,7 @@ handle_no_sanitize_attribute (tree *node, tree name, tree args, int,
       tree id = TREE_VALUE (args);
       if (TREE_CODE (id) != STRING_CST)
 	{
-	  error ("no_sanitize argument not a string");
+	  error ("%qE argument not a string", name);
 	  return NULL_TREE;
 	}
 
@@ -1418,8 +1418,8 @@ handle_scalar_storage_order_attribute (tree *node, tree name, tree args,
 
   if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
     {
-      error ("scalar_storage_order is not supported because endianness "
-	    "is not uniform");
+      error ("%qE attribute is not supported because endianness is not uniform",
+	     name);
       return NULL_TREE;
     }
 
@@ -1435,8 +1435,8 @@ handle_scalar_storage_order_attribute (tree *node, tree name, tree args,
 	reverse = BYTES_BIG_ENDIAN;
       else
 	{
-	  error ("scalar_storage_order argument must be one of \"big-endian\""
-		 " or \"little-endian\"");
+	  error ("attribute %qE argument must be one of %qs or %qs",
+		 name, "big-endian", "little-endian");
 	  return NULL_TREE;
 	}
 
@@ -1759,9 +1759,9 @@ handle_mode_attribute (tree *node, tree name, tree args,
 	case MODE_VECTOR_ACCUM:
 	case MODE_VECTOR_UACCUM:
 	  warning (OPT_Wattributes, "specifying vector types with "
-		   "__attribute__ ((mode)) is deprecated");
-	  warning (OPT_Wattributes,
-		   "use __attribute__ ((vector_size)) instead");
+		   "%<__attribute__ ((mode))%> is deprecated");
+	  inform (input_location,
+		  "use %<__attribute__ ((vector_size))%> instead");
 	  valid_mode = vector_mode_valid_p (mode);
 	  break;
 
@@ -2671,7 +2671,8 @@ handle_visibility_attribute (tree *node, tree name, tree args,
     vis = VISIBILITY_PROTECTED;
   else
     {
-      error ("visibility argument must be one of \"default\", \"hidden\", \"protected\" or \"internal\"");
+      error ("attribute %qE argument must be one of %qs, %qs, %qs, or %qs",
+	     name, "default", "hidden", "protected", "internal");
       vis = VISIBILITY_DEFAULT;
     }
 
@@ -2935,8 +2936,8 @@ handle_assume_aligned_attribute (tree *node, tree name, tree args, int,
 	  /* The misalignment specified by the second argument
 	     must be non-negative and less than the alignment.  */
 	  warning (OPT_Wattributes,
-		   "%qE attribute argument %E is not in the range [0, %E)",
-		   name, val, align);
+		   "%qE attribute argument %E is not in the range [0, %wu]",
+		   name, val, tree_to_uhwi (align) - 1);
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
@@ -3083,7 +3084,7 @@ handle_no_limit_stack_attribute (tree *node, tree name,
   else if (DECL_INITIAL (decl))
     {
       error_at (DECL_SOURCE_LOCATION (decl),
-		"can%'t set %qE attribute after definition", name);
+		"cannot set %qE attribute after definition", name);
       *no_add_attrs = true;
     }
   else
@@ -3974,7 +3975,7 @@ handle_no_split_stack_attribute (tree *node, tree name,
   else if (DECL_INITIAL (decl))
     {
       error_at (DECL_SOURCE_LOCATION (decl),
-		"can%'t set %qE attribute after definition", name);
+		"cannot set %qE attribute after definition", name);
       *no_add_attrs = true;
     }
 
@@ -3985,13 +3986,13 @@ handle_no_split_stack_attribute (tree *node, tree name,
    struct attribute_spec.handler.  */
 
 static tree
-handle_returns_nonnull_attribute (tree *node, tree, tree, int,
+handle_returns_nonnull_attribute (tree *node, tree name, tree, int,
 				  bool *no_add_attrs)
 {
   // Even without a prototype we still have a return type we can check.
   if (TREE_CODE (TREE_TYPE (*node)) != POINTER_TYPE)
     {
-      error ("returns_nonnull attribute on a function not returning a pointer");
+      error ("%qE attribute on a function not returning a pointer", name);
       *no_add_attrs = true;
     }
   return NULL_TREE;

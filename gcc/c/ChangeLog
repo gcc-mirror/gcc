@@ -1,3 +1,17 @@
+2019-05-16  Martin Sebor  <msebor@redhat.com>
+
+        * c-decl.c (start_decl): Quote keywords, operators, and
+        types in diagnostics.
+        (finish_decl): Same.
+        * c-parser.c (c_parser_asm_statement): Same.
+        (c_parser_conditional_expression): Same.
+        (c_parser_transaction_cancel): Same.
+        * c-typeck.c (c_common_type): Same.
+        (build_conditional_expr): Same.
+        (digest_init): Same.
+        (process_init_element): Same.
+        (build_binary_op): Same.
+
 2019-05-17  Richard Biener  <rguenther@suse.de>
 
 	* gimple-parser.c (c_parser_gimple_statement): Handle __VEC_PERM.

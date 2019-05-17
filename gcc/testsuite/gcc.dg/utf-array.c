@@ -21,8 +21,8 @@ const char16_t	s16_2[]	= U"ab";	/* { dg-error "from a string literal with type a
 const char16_t	s16_3[]	= L"ab";	/* { dg-error "from a string literal with type array of .(long |short )?(unsigned )?int." "" { target { ! wchar_t_char16_t_compatible } } } */
 const char16_t	s16_4[]	= u8"ab";	/* { dg-error "from a string literal with type array of .char." } */
 
-const char16_t	s16_5[0] = u"ab";	/* { dg-warning "chars is too long" } */
-const char16_t	s16_6[1] = u"ab";	/* { dg-warning "chars is too long" } */
+const char16_t	s16_5[0] = u"ab";	/* { dg-warning " is too long" } */
+const char16_t	s16_6[1] = u"ab";	/* { dg-warning " is too long" } */
 const char16_t	s16_7[2] = u"ab";
 const char16_t	s16_8[3] = u"ab";
 const char16_t	s16_9[4] = u"ab";
@@ -33,11 +33,11 @@ const char32_t	s32_2[]	= U"ab";
 const char32_t	s32_3[]	= L"ab";	/* { dg-error "from a string literal with type array of .(long |short )?(unsigned )?int." "" { target { ! wchar_t_char32_t_compatible } } } */
 const char32_t	s32_4[]	= u8"ab";	/* { dg-error "from a string literal with type array of .char." } */
 
-const char32_t	s32_5[0] = U"ab";	/* { dg-warning "chars is too long" } */
-const char32_t	s32_6[1] = U"ab";	/* { dg-warning "chars is too long" } */
-const char32_t	s32_7[2] = U"ab";	/* { dg-warning "chars is too long" "" { target "m32c-*-*" } } */
-const char32_t	s32_8[3] = U"ab";	/* { dg-warning "chars is too long" "" { target "m32c-*-*" } } */
-const char32_t	s32_9[4] = U"ab";	/* { dg-warning "chars is too long" "" { target "m32c-*-*" } } */
+const char32_t	s32_5[0] = U"ab";	/* { dg-warning " is too long" } */
+const char32_t	s32_6[1] = U"ab";	/* { dg-warning " is too long" } */
+const char32_t	s32_7[2] = U"ab";	/* { dg-warning " is too long" "" { target "m32c-*-*" } } */
+const char32_t	s32_8[3] = U"ab";	/* { dg-warning " is too long" "" { target "m32c-*-*" } } */
+const char32_t	s32_9[4] = U"ab";	/* { dg-warning " is too long" "" { target "m32c-*-*" } } */
 
 const wchar_t	sw_0[]	= "ab";		/* { dg-error "from a string literal with type array of .char." } */
 const wchar_t	sw_1[]	= u"ab";	/* { dg-error "from a string literal with type array of" "" { target { ! wchar_t_char16_t_compatible } } } */

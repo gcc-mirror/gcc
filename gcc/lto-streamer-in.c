@@ -1700,7 +1700,7 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
 		}
 	      /* FALLTHRU */
 	    default:
-	      fatal_error (UNKNOWN_LOCATION, "unsupported mode %s\n", mname);
+	      fatal_error (UNKNOWN_LOCATION, "unsupported mode %qs", mname);
 	      break;
 	    }
 	}

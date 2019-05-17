@@ -936,7 +936,7 @@ is_admissible_throw_operand_or_catch_parameter (tree t, bool is_throw)
 	   && TYPE_REF_P (type)
 	   && TYPE_REF_IS_RVALUE (type))
     {
-      error ("cannot declare catch parameter to be of rvalue "
+      error ("cannot declare %<catch%> parameter to be of rvalue "
 	     "reference type %qT", type);
       return false;
     }

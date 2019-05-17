@@ -4472,7 +4472,7 @@ handle_init_priority_attribute (tree* node,
 
   if (!initp_expr || TREE_CODE (initp_expr) != INTEGER_CST)
     {
-      error ("requested init_priority is not an integer constant");
+      error ("requested %<init_priority%> is not an integer constant");
       cxx_constant_value (initp_expr);
       *no_add_attrs = true;
       return NULL_TREE;
@@ -4502,7 +4502,8 @@ handle_init_priority_attribute (tree* node,
 
   if (pri > MAX_INIT_PRIORITY || pri <= 0)
     {
-      error ("requested init_priority is out of range");
+      error ("requested %<init_priority%> %i is out of range [0, %i]",
+	     pri, MAX_INIT_PRIORITY);
       *no_add_attrs = true;
       return NULL_TREE;
     }
@@ -4512,7 +4513,8 @@ handle_init_priority_attribute (tree* node,
   if (pri <= MAX_RESERVED_INIT_PRIORITY)
     {
       warning
-	(0, "requested init_priority is reserved for internal use");
+	(0, "requested %<init_priority%> %i is reserved for internal use",
+	 pri);
     }
 
   if (SUPPORTS_INIT_PRIORITY)
@@ -5477,7 +5479,7 @@ maybe_warn_zero_as_null_pointer_constant (tree expr, location_t loc)
 void
 lang_check_failed (const char* file, int line, const char* function)
 {
-  internal_error ("lang_* check: failed in %s, at %s:%d",
+  internal_error ("%<lang_*%> check: failed in %s, at %s:%d",
 		  function, trim_filename (file), line);
 }
 #endif /* ENABLE_TREE_CHECKING */

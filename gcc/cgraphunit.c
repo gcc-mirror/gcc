@@ -796,8 +796,8 @@ process_function_and_variable_attributes (cgraph_node *first,
 	  /* redefining extern inline function makes it DECL_UNINLINABLE.  */
 	  && !DECL_UNINLINABLE (decl))
 	warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
-		    "always_inline function might not be inlinable");
-     
+		    "%<always_inline%> function might not be inlinable");
+
       process_common_attributes (node, decl);
     }
   for (vnode = symtab->first_variable (); vnode != first_var;

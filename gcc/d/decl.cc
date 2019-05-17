@@ -463,7 +463,7 @@ public:
 			    fd2->toPrettyChars ());
 		    inform (make_location_t (d->loc),
 			    "use %<alias %s = %s.%s;%> to introduce base class "
-			    "overload set.", fd->toChars (),
+			    "overload set", fd->toChars (),
 			    fd->parent->toChars (), fd->toChars ());
 		  }
 		else

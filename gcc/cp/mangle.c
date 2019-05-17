@@ -2305,11 +2305,11 @@ write_type (tree type)
 	      break;
 
 	    case TYPEOF_TYPE:
-	      sorry ("mangling typeof, use decltype instead");
+	      sorry ("mangling %<typeof%>, use %<decltype%> instead");
 	      break;
 
 	    case UNDERLYING_TYPE:
-	      sorry ("mangling __underlying_type");
+	      sorry ("mangling %<__underlying_type%>");
 	      break;
 
 	    case LANG_TYPE:

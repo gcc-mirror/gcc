@@ -10,7 +10,7 @@ struct X {
 
 struct X
 foo (float *p)
-{ /* { dg-message "note: the ABI of passing structure with complex float member has changed in GCC 4.4" } */
+{ /* { dg-message "note: the ABI of passing structure with 'complex float' member has changed in GCC 4.4" } */
   struct X x;
   x.c = -3;
   __real x.val = p[0];
