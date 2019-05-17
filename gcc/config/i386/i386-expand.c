@@ -10937,8 +10937,10 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       && (isa & (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4)) != 0)
     isa |= (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4);
   /* Use SSE/SSE2/SSSE3 to emulate MMX intrinsics in 64-bit mode when
-     MMX is disabled.  */
-  if (TARGET_MMX_WITH_SSE)
+     MMX is disabled.  NB: Since MMX intrinsics are marked with
+     SSE/SSE2/SSSE3, enable them without SSE/SSE2/SSSE3 if MMX is
+     enabled.  */
+  if (TARGET_MMX || TARGET_MMX_WITH_SSE)
     {
       if (((bisa & (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_MMX))
 	   == (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_MMX))
