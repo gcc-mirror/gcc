@@ -227,14 +227,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Treating Unnecessary <code>decay</code> </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0777r1.pdf">
 	P0777R1
 	</link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 9.1 </entry>
       <entry />
     </row>
 
@@ -702,14 +701,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  A sane <code>variant</code> converting constructor </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0608r3.html">
 	P0608R3
 	</link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 10.1 </entry>
       <entry />
     </row>
 
@@ -863,14 +861,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Make stateful allocator propagation more consistent for <code>operator+(basic_string)</code> </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1165r1.html">
 	P1165R1
 	</link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 10.1 </entry>
       <entry />
     </row>
 
