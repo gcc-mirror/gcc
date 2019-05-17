@@ -1,5 +1,9 @@
 2019-05-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/invoke.h [__cplusplus < 201703L] (__invoke_r<void>):
+	Use _GLIBCXX14_CONSTEXPR because void functions cannot be constexpr
+	in C++11.
+
 	* doc/xml/manual/status_cxx2020.xml: Update P0608R3, P0777R1, and
 	P1165R1 entries.
 	* doc/html/*: Regenerate.

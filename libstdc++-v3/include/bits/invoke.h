@@ -144,7 +144,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // INVOKE<R> when R is cv void
   template<typename _Res, typename _Callable, typename... _Args>
-    constexpr __can_invoke_as_void<_Res, _Callable, _Args...>
+    _GLIBCXX14_CONSTEXPR __can_invoke_as_void<_Res, _Callable, _Args...>
     __invoke_r(_Callable&& __fn, _Args&&... __args)
     {
       using __result = __invoke_result<_Callable, _Args...>;
