@@ -1,3 +1,8 @@
+2019-05-17  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390-builtins.def (s390_vec_sldw_*): Use the
+	vec_sldw insn pattern.
+
 2019-05-17  Richard Biener  <rguenther@suse.de>
 
 	* ccmp.c (expand_ccmp_expr_1): Do not use gimple_assign_rhs_to_tree.
