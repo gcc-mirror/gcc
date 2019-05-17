@@ -32,7 +32,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifdef  HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
-
+#ifdef HAVE_POSIX_SPAWN
+#include <spawn.h>
+extern char **environ;
+#endif
 
 enum { EXEC_SYNCHRONOUS = -2, EXEC_NOERROR = 0, EXEC_SYSTEMFAILED,
        EXEC_CHILDFAILED, EXEC_INVALIDCOMMAND };
@@ -71,7 +74,7 @@ execute_command_line (const char *command, bool wait, int *exitstat,
   /* Flush all I/O units before executing the command.  */
   flush_all_units();
 
-#if defined(HAVE_FORK)
+#if defined(HAVE_POSIX_SPAWN) || defined(HAVE_FORK)
   if (!wait)
     {
       /* Asynchronous execution.  */
@@ -79,14 +82,21 @@ execute_command_line (const char *command, bool wait, int *exitstat,
 
       set_cmdstat (cmdstat, EXEC_NOERROR);
 
-      if ((pid = fork()) < 0)
+#ifdef HAVE_POSIX_SPAWN
+      const char * const argv[] = {"sh", "-c", cmd, NULL};
+      if (posix_spawn (&pid, "/bin/sh", NULL, NULL,
+		       (char * const* restrict) argv, environ))
 	set_cmdstat (cmdstat, EXEC_CHILDFAILED);
+#elif defined(HAVE_FORK)
+      if ((pid = fork()) < 0)
+        set_cmdstat (cmdstat, EXEC_CHILDFAILED);
       else if (pid == 0)
 	{
 	  /* Child process.  */
 	  int res = system (cmd);
 	  _exit (WIFEXITED(res) ? WEXITSTATUS(res) : res);
 	}
+#endif
     }
   else
 #endif
@@ -96,7 +106,7 @@ execute_command_line (const char *command, bool wait, int *exitstat,
 
       if (res == -1)
 	set_cmdstat (cmdstat, EXEC_SYSTEMFAILED);
-#ifndef HAVE_FORK
+#if !defined(HAVE_POSIX_SPAWN) && !defined(HAVE_FORK)
       else if (!wait)
 	set_cmdstat (cmdstat, EXEC_SYNCHRONOUS);
 #endif
