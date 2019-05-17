@@ -10460,9 +10460,16 @@ Call_expression::intrinsify(Gogo* gogo,
   Location loc = this->location();
 
   Type* int_type = Type::lookup_integer_type("int");
+  Type* int32_type = Type::lookup_integer_type("int32");
+  Type* int64_type = Type::lookup_integer_type("int64");
+  Type* uint_type = Type::lookup_integer_type("uint");
   Type* uint32_type = Type::lookup_integer_type("uint32");
   Type* uint64_type = Type::lookup_integer_type("uint64");
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
+  Type* pointer_type = Type::make_pointer_type(Type::make_void_type());
+
+  int int_size = int_type->named_type()->real_type()->integer_type()->bits() / 8;
+  int ptr_size = uintptr_type->named_type()->real_type()->integer_type()->bits() / 8;
 
   if (package == "runtime")
     {
@@ -10543,6 +10550,242 @@ Call_expression::intrinsify(Gogo* gogo,
           Expression* call = Runtime::make_call(Runtime::BUILTIN_CTZLL, loc, 1, arg->copy());
           call = Expression::make_cast(int_type, call, loc);
           return Expression::make_conditional(cmp, c64, call, loc);
+        }
+    }
+  else if (package == "runtime/internal/atomic")
+    {
+      int memorder = __ATOMIC_SEQ_CST;
+
+      if ((name == "Load" || name == "Load64" || name == "Loadint64" || name == "Loadp"
+           || name == "Loaduint" || name == "Loaduintptr" || name == "LoadAcq")
+          && this->args_ != NULL && this->args_->size() == 1)
+        {
+          if (int_size < 8 && (name == "Load64" || name == "Loadint64"))
+            // On 32-bit architectures we need to check alignment.
+            // Not intrinsify for now.
+            return NULL;
+
+          Runtime::Function code;
+          Type* res_type;
+          if (name == "Load")
+            {
+              code = Runtime::ATOMIC_LOAD_4;
+              res_type = uint32_type;
+            }
+          else if (name == "Load64")
+            {
+              code = Runtime::ATOMIC_LOAD_8;
+              res_type = uint64_type;
+            }
+          else if (name == "Loadint64")
+            {
+              code = Runtime::ATOMIC_LOAD_8;
+              res_type = int64_type;
+            }
+          else if (name == "Loaduint")
+            {
+              code = (int_size == 8
+                      ? Runtime::ATOMIC_LOAD_8
+                      : Runtime::ATOMIC_LOAD_4);
+              res_type = uint_type;
+            }
+          else if (name == "Loaduintptr")
+            {
+              code = (ptr_size == 8
+                      ? Runtime::ATOMIC_LOAD_8
+                      : Runtime::ATOMIC_LOAD_4);
+              res_type = uintptr_type;
+            }
+          else if (name == "Loadp")
+            {
+              code = (ptr_size == 8
+                      ? Runtime::ATOMIC_LOAD_8
+                      : Runtime::ATOMIC_LOAD_4);
+              res_type = pointer_type;
+            }
+          else if (name == "LoadAcq")
+            {
+              code = Runtime::ATOMIC_LOAD_4;
+              res_type = uint32_type;
+              memorder = __ATOMIC_ACQUIRE;
+            }
+          else
+            go_unreachable();
+          Expression* a1 = this->args_->front();
+          Expression* a2 = Expression::make_integer_ul(memorder, int32_type, loc);
+          Expression* call = Runtime::make_call(code, loc, 2, a1, a2);
+          return Expression::make_unsafe_cast(res_type, call, loc);
+        }
+
+      if ((name == "Store" || name == "Store64" || name == "StorepNoWB"
+           || name == "Storeuintptr" || name == "StoreRel")
+          && this->args_ != NULL && this->args_->size() == 2)
+        {
+          if (int_size < 8 && name == "Store64")
+            return NULL;
+
+          Runtime::Function code;
+          Expression* a1 = this->args_->at(0);
+          Expression* a2 = this->args_->at(1);
+          if (name == "Store")
+            code = Runtime::ATOMIC_STORE_4;
+          else if (name == "Store64")
+            code = Runtime::ATOMIC_STORE_8;
+          else if (name == "Storeuintptr")
+            code = (ptr_size == 8 ? Runtime::ATOMIC_STORE_8 : Runtime::ATOMIC_STORE_4);
+          else if (name == "StorepNoWB")
+            {
+              code = (ptr_size == 8 ? Runtime::ATOMIC_STORE_8 : Runtime::ATOMIC_STORE_4);
+              a2 = Expression::make_unsafe_cast(uintptr_type, a2, loc);
+              a2 = Expression::make_cast(uint64_type, a2, loc);
+            }
+          else if (name == "StoreRel")
+            {
+              code = Runtime::ATOMIC_STORE_4;
+              memorder = __ATOMIC_RELEASE;
+            }
+          else
+            go_unreachable();
+          Expression* a3 = Expression::make_integer_ul(memorder, int32_type, loc);
+          return Runtime::make_call(code, loc, 3, a1, a2, a3);
+        }
+
+      if ((name == "Xchg" || name == "Xchg64" || name == "Xchguintptr")
+          && this->args_ != NULL && this->args_->size() == 2)
+        {
+          if (int_size < 8 && name == "Xchg64")
+            return NULL;
+
+          Runtime::Function code;
+          Type* res_type;
+          if (name == "Xchg")
+            {
+              code = Runtime::ATOMIC_EXCHANGE_4;
+              res_type = uint32_type;
+            }
+          else if (name == "Xchg64")
+            {
+              code = Runtime::ATOMIC_EXCHANGE_8;
+              res_type = uint64_type;
+            }
+          else if (name == "Xchguintptr")
+            {
+              code = (ptr_size == 8
+                      ? Runtime::ATOMIC_EXCHANGE_8
+                      : Runtime::ATOMIC_EXCHANGE_4);
+              res_type = uintptr_type;
+            }
+          else
+            go_unreachable();
+          Expression* a1 = this->args_->at(0);
+          Expression* a2 = this->args_->at(1);
+          Expression* a3 = Expression::make_integer_ul(memorder, int32_type, loc);
+          Expression* call = Runtime::make_call(code, loc, 3, a1, a2, a3);
+          return Expression::make_cast(res_type, call, loc);
+        }
+
+      if ((name == "Cas" || name == "Cas64" || name == "Casuintptr"
+           || name == "Casp1" || name == "CasRel")
+          && this->args_ != NULL && this->args_->size() == 3)
+        {
+          if (int_size < 8 && name == "Cas64")
+            return NULL;
+
+          Runtime::Function code;
+          Expression* a1 = this->args_->at(0);
+
+          // Builtin cas takes a pointer to the old value.
+          // Store it in a temporary and take the address.
+          Expression* a2 = this->args_->at(1);
+          Temporary_statement* ts = Statement::make_temporary(NULL, a2, loc);
+          inserter->insert(ts);
+          a2 = Expression::make_temporary_reference(ts, loc);
+          a2 = Expression::make_unary(OPERATOR_AND, a2, loc);
+
+          Expression* a3 = this->args_->at(2);
+          if (name == "Cas")
+            code = Runtime::ATOMIC_COMPARE_EXCHANGE_4;
+          else if (name == "Cas64")
+            code = Runtime::ATOMIC_COMPARE_EXCHANGE_8;
+          else if (name == "Casuintptr")
+            code = (ptr_size == 8
+                    ? Runtime::ATOMIC_COMPARE_EXCHANGE_8
+                    : Runtime::ATOMIC_COMPARE_EXCHANGE_4);
+          else if (name == "Casp1")
+            {
+              code = (ptr_size == 8
+                      ? Runtime::ATOMIC_COMPARE_EXCHANGE_8
+                      : Runtime::ATOMIC_COMPARE_EXCHANGE_4);
+              a3 = Expression::make_unsafe_cast(uintptr_type, a3, loc);
+              a3 = Expression::make_cast(uint64_type, a3, loc);
+            }
+          else if (name == "CasRel")
+            {
+              code = Runtime::ATOMIC_COMPARE_EXCHANGE_4;
+              memorder = __ATOMIC_RELEASE;
+            }
+          else
+            go_unreachable();
+          Expression* a4 = Expression::make_boolean(false, loc);
+          Expression* a5 = Expression::make_integer_ul(memorder, int32_type, loc);
+          Expression* a6 = Expression::make_integer_ul(__ATOMIC_RELAXED, int32_type, loc);
+          return Runtime::make_call(code, loc, 6, a1, a2, a3, a4, a5, a6);
+        }
+
+      if ((name == "Xadd" || name == "Xadd64" || name == "Xaddint64"
+           || name == "Xadduintptr")
+          && this->args_ != NULL && this->args_->size() == 2)
+        {
+          if (int_size < 8 && (name == "Xadd64" || name == "Xaddint64"))
+            return NULL;
+
+          Runtime::Function code;
+          Type* res_type;
+          if (name == "Xadd")
+            {
+              code = Runtime::ATOMIC_ADD_FETCH_4;
+              res_type = uint32_type;
+            }
+          else if (name == "Xadd64")
+            {
+              code = Runtime::ATOMIC_ADD_FETCH_8;
+              res_type = uint64_type;
+            }
+          else if (name == "Xaddint64")
+            {
+              code = Runtime::ATOMIC_ADD_FETCH_8;
+              res_type = int64_type;
+            }
+          else if (name == "Xadduintptr")
+            {
+              code = (ptr_size == 8
+                      ? Runtime::ATOMIC_ADD_FETCH_8
+                      : Runtime::ATOMIC_ADD_FETCH_4);
+              res_type = uintptr_type;
+            }
+          else
+            go_unreachable();
+          Expression* a1 = this->args_->at(0);
+          Expression* a2 = this->args_->at(1);
+          Expression* a3 = Expression::make_integer_ul(memorder, int32_type, loc);
+          Expression* call = Runtime::make_call(code, loc, 3, a1, a2, a3);
+          return Expression::make_cast(res_type, call, loc);
+        }
+
+      if ((name == "And8" || name == "Or8")
+          && this->args_ != NULL && this->args_->size() == 2)
+        {
+          Runtime::Function code;
+          if (name == "And8")
+            code = Runtime::ATOMIC_AND_FETCH_1;
+          else if (name == "Or8")
+            code = Runtime::ATOMIC_OR_FETCH_1;
+          else
+            go_unreachable();
+          Expression* a1 = this->args_->at(0);
+          Expression* a2 = this->args_->at(1);
+          Expression* a3 = Expression::make_integer_ul(memorder, int32_type, loc);
+          return Runtime::make_call(code, loc, 3, a1, a2, a3);
         }
     }
 
