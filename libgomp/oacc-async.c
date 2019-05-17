@@ -43,17 +43,6 @@ get_goacc_thread (void)
   return thr;
 }
 
-static struct gomp_device_descr *
-get_goacc_thread_device (void)
-{
-  struct goacc_thread *thr = goacc_thread ();
-
-  if (!thr || !thr->dev)
-    gomp_fatal ("no device active");
-
-  return thr->dev;
-}
-
 static int
 validate_async_val (int async)
 {
@@ -76,7 +65,10 @@ validate_async_val (int async)
 
 /* Return the asyncqueue to be used for OpenACC async-argument ASYNC.  This
    might return NULL if no asyncqueue is to be used.  Otherwise, if CREATE,
-   create the asyncqueue if it doesn't exist yet.  */
+   create the asyncqueue if it doesn't exist yet.
+
+   Unless CREATE, this will not generate any OpenACC Profiling Interface
+   events.  */
 
 attribute_hidden struct goacc_asyncqueue *
 lookup_goacc_asyncqueue (struct goacc_thread *thr, bool create, int async)
@@ -152,14 +144,35 @@ acc_async_test (int async)
   goacc_aq aq = lookup_goacc_asyncqueue (thr, false, async);
   if (!aq)
     return 1;
-  else
-    return thr->dev->openacc.async.test_func (aq);
+
+  acc_prof_info prof_info;
+  acc_api_info api_info;
+  bool profiling_p = GOACC_PROFILING_SETUP_P (thr, &prof_info, &api_info);
+  if (profiling_p)
+    {
+      prof_info.async = async;
+      prof_info.async_queue = prof_info.async;
+    }
+
+  int res = thr->dev->openacc.async.test_func (aq);
+
+  if (profiling_p)
+    {
+      thr->prof_info = NULL;
+      thr->api_info = NULL;
+    }
+
+  return res;
 }
 
 int
 acc_async_test_all (void)
 {
   struct goacc_thread *thr = get_goacc_thread ();
+
+  acc_prof_info prof_info;
+  acc_api_info api_info;
+  bool profiling_p = GOACC_PROFILING_SETUP_P (thr, &prof_info, &api_info);
 
   int ret = 1;
   gomp_mutex_lock (&thr->dev->openacc.async.lock);
@@ -170,6 +183,13 @@ acc_async_test_all (void)
 	break;
       }
   gomp_mutex_unlock (&thr->dev->openacc.async.lock);
+
+  if (profiling_p)
+    {
+      thr->prof_info = NULL;
+      thr->api_info = NULL;
+    }
+
   return ret;
 }
 
@@ -179,8 +199,26 @@ acc_wait (int async)
   struct goacc_thread *thr = get_goacc_thread ();
 
   goacc_aq aq = lookup_goacc_asyncqueue (thr, false, async);
-  if (aq && !thr->dev->openacc.async.synchronize_func (aq))
+  if (!aq)
+    return;
+
+  acc_prof_info prof_info;
+  acc_api_info api_info;
+  bool profiling_p = GOACC_PROFILING_SETUP_P (thr, &prof_info, &api_info);
+  if (profiling_p)
+    {
+      prof_info.async = async;
+      prof_info.async_queue = prof_info.async;
+    }
+
+  if (!thr->dev->openacc.async.synchronize_func (aq))
     gomp_fatal ("wait on %d failed", async);
+
+  if (profiling_p)
+    {
+      thr->prof_info = NULL;
+      thr->api_info = NULL;
+    }
 }
 
 /* acc_async_wait is an OpenACC 1.0 compatibility name for acc_wait.  */
@@ -205,10 +243,19 @@ acc_wait_async (int async1, int async2)
   if (!aq1)
     return;
 
+  acc_prof_info prof_info;
+  acc_api_info api_info;
+  bool profiling_p = GOACC_PROFILING_SETUP_P (thr, &prof_info, &api_info);
+  if (profiling_p)
+    {
+      prof_info.async = async2;
+      prof_info.async_queue = prof_info.async;
+    }
+
   goacc_aq aq2 = lookup_goacc_asyncqueue (thr, true, async2);
   /* An async queue is always synchronized with itself.  */
   if (aq1 == aq2)
-    return;
+    goto out_prof;
 
   if (aq2)
     {
@@ -222,18 +269,35 @@ acc_wait_async (int async1, int async2)
       if (!thr->dev->openacc.async.synchronize_func (aq1))
 	gomp_fatal ("wait on %d failed", async1);
     }
+
+ out_prof:
+  if (profiling_p)
+    {
+      thr->prof_info = NULL;
+      thr->api_info = NULL;
+    }
 }
 
 void
 acc_wait_all (void)
 {
-  struct gomp_device_descr *dev = get_goacc_thread_device ();
+  struct goacc_thread *thr = goacc_thread ();
+
+  acc_prof_info prof_info;
+  acc_api_info api_info;
+  bool profiling_p = GOACC_PROFILING_SETUP_P (thr, &prof_info, &api_info);
 
   bool ret = true;
-  gomp_mutex_lock (&dev->openacc.async.lock);
-  for (goacc_aq_list l = dev->openacc.async.active; l; l = l->next)
-    ret &= dev->openacc.async.synchronize_func (l->aq);
-  gomp_mutex_unlock (&dev->openacc.async.lock);
+  gomp_mutex_lock (&thr->dev->openacc.async.lock);
+  for (goacc_aq_list l = thr->dev->openacc.async.active; l; l = l->next)
+    ret &= thr->dev->openacc.async.synchronize_func (l->aq);
+  gomp_mutex_unlock (&thr->dev->openacc.async.lock);
+
+  if (profiling_p)
+    {
+      thr->prof_info = NULL;
+      thr->api_info = NULL;
+    }
 
   if (!ret)
     gomp_fatal ("wait all failed");
@@ -255,6 +319,15 @@ acc_wait_all_async (int async)
 {
   struct goacc_thread *thr = get_goacc_thread ();
 
+  acc_prof_info prof_info;
+  acc_api_info api_info;
+  bool profiling_p = GOACC_PROFILING_SETUP_P (thr, &prof_info, &api_info);
+  if (profiling_p)
+    {
+      prof_info.async = async;
+      prof_info.async_queue = prof_info.async;
+    }
+
   goacc_aq waiting_queue = lookup_goacc_asyncqueue (thr, true, async);
 
   bool ret = true;
@@ -269,6 +342,12 @@ acc_wait_all_async (int async)
 	ret &= thr->dev->openacc.async.synchronize_func (l->aq);
     }
   gomp_mutex_unlock (&thr->dev->openacc.async.lock);
+
+  if (profiling_p)
+    {
+      thr->prof_info = NULL;
+      thr->api_info = NULL;
+    }
 
   if (!ret)
     gomp_fatal ("wait all async(%d) failed", async);

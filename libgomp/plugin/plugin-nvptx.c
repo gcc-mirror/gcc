@@ -37,6 +37,7 @@
 #include "libgomp-plugin.h"
 #include "oacc-plugin.h"
 #include "gomp-constants.h"
+#include "oacc-int.h"
 
 #include <pthread.h>
 #include <cuda.h>
@@ -903,10 +904,51 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
   // num_gangs		nctaid.x
   // num_workers	ntid.y
   // vector length	ntid.x
+
+  struct goacc_thread *thr = GOMP_PLUGIN_goacc_thread ();
+  acc_prof_info *prof_info = thr->prof_info;
+  acc_event_info enqueue_launch_event_info;
+  acc_api_info *api_info = thr->api_info;
+  bool profiling_p = __builtin_expect (prof_info != NULL, false);
+  if (profiling_p)
+    {
+      prof_info->event_type = acc_ev_enqueue_launch_start;
+
+      enqueue_launch_event_info.launch_event.event_type
+	= prof_info->event_type;
+      enqueue_launch_event_info.launch_event.valid_bytes
+	= _ACC_LAUNCH_EVENT_INFO_VALID_BYTES;
+      enqueue_launch_event_info.launch_event.parent_construct
+	= acc_construct_parallel;
+      enqueue_launch_event_info.launch_event.implicit = 1;
+      enqueue_launch_event_info.launch_event.tool_info = NULL;
+      enqueue_launch_event_info.launch_event.kernel_name = targ_fn->launch->fn;
+      enqueue_launch_event_info.launch_event.num_gangs
+	= dims[GOMP_DIM_GANG];
+      enqueue_launch_event_info.launch_event.num_workers
+	= dims[GOMP_DIM_WORKER];
+      enqueue_launch_event_info.launch_event.vector_length
+	= dims[GOMP_DIM_VECTOR];
+
+      api_info->device_api = acc_device_api_cuda;
+
+      GOMP_PLUGIN_goacc_profiling_dispatch (prof_info, &enqueue_launch_event_info,
+					    api_info);
+    }
+
   CUDA_CALL_ASSERT (cuLaunchKernel, function,
 		    dims[GOMP_DIM_GANG], 1, 1,
 		    dims[GOMP_DIM_VECTOR], dims[GOMP_DIM_WORKER], 1,
 		    0, stream, kargs, 0);
+
+  if (profiling_p)
+    {
+      prof_info->event_type = acc_ev_enqueue_launch_end;
+      enqueue_launch_event_info.launch_event.event_type
+	= prof_info->event_type;
+      GOMP_PLUGIN_goacc_profiling_dispatch (prof_info, &enqueue_launch_event_info,
+					    api_info);
+    }
 
   GOMP_PLUGIN_debug (0, "  %s: kernel %s: finished\n", __FUNCTION__,
 		     targ_fn->launch->fn);
@@ -914,13 +956,67 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 
 void * openacc_get_current_cuda_context (void);
 
+static void
+goacc_profiling_acc_ev_alloc (struct goacc_thread *thr, void *dp, size_t s)
+{
+  acc_prof_info *prof_info = thr->prof_info;
+  acc_event_info data_event_info;
+  acc_api_info *api_info = thr->api_info;
+
+  prof_info->event_type = acc_ev_alloc;
+
+  data_event_info.data_event.event_type = prof_info->event_type;
+  data_event_info.data_event.valid_bytes = _ACC_DATA_EVENT_INFO_VALID_BYTES;
+  data_event_info.data_event.parent_construct = acc_construct_parallel;
+  data_event_info.data_event.implicit = 1;
+  data_event_info.data_event.tool_info = NULL;
+  data_event_info.data_event.var_name = NULL;
+  data_event_info.data_event.bytes = s;
+  data_event_info.data_event.host_ptr = NULL;
+  data_event_info.data_event.device_ptr = dp;
+
+  api_info->device_api = acc_device_api_cuda;
+
+  GOMP_PLUGIN_goacc_profiling_dispatch (prof_info, &data_event_info, api_info);
+}
+
 static void *
 nvptx_alloc (size_t s)
 {
   CUdeviceptr d;
 
   CUDA_CALL_ERET (NULL, cuMemAlloc, &d, s);
+  struct goacc_thread *thr = GOMP_PLUGIN_goacc_thread ();
+  bool profiling_p
+    = __builtin_expect (thr != NULL && thr->prof_info != NULL, false);
+  if (profiling_p)
+    goacc_profiling_acc_ev_alloc (thr, (void *) d, s);
+
   return (void *) d;
+}
+
+static void
+goacc_profiling_acc_ev_free (struct goacc_thread *thr, void *p)
+{
+  acc_prof_info *prof_info = thr->prof_info;
+  acc_event_info data_event_info;
+  acc_api_info *api_info = thr->api_info;
+
+  prof_info->event_type = acc_ev_free;
+
+  data_event_info.data_event.event_type = prof_info->event_type;
+  data_event_info.data_event.valid_bytes = _ACC_DATA_EVENT_INFO_VALID_BYTES;
+  data_event_info.data_event.parent_construct = acc_construct_parallel;
+  data_event_info.data_event.implicit = 1;
+  data_event_info.data_event.tool_info = NULL;
+  data_event_info.data_event.var_name = NULL;
+  data_event_info.data_event.bytes = -1;
+  data_event_info.data_event.host_ptr = NULL;
+  data_event_info.data_event.device_ptr = p;
+
+  api_info->device_api = acc_device_api_cuda;
+
+  GOMP_PLUGIN_goacc_profiling_dispatch (prof_info, &data_event_info, api_info);
 }
 
 static bool
@@ -950,6 +1046,12 @@ nvptx_free (void *p, struct ptx_device *ptx_dev)
     }
 
   CUDA_CALL (cuMemFree, (CUdeviceptr) p);
+  struct goacc_thread *thr = GOMP_PLUGIN_goacc_thread ();
+  bool profiling_p
+    = __builtin_expect (thr != NULL && thr->prof_info != NULL, false);
+  if (profiling_p)
+    goacc_profiling_acc_ev_free (thr, p);
+
   return true;
 }
 
@@ -1335,6 +1437,12 @@ openacc_exec_internal (void (*fn) (void *), int params, size_t mapnum,
 {
   GOMP_PLUGIN_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
 
+  struct goacc_thread *thr = GOMP_PLUGIN_goacc_thread ();
+  acc_prof_info *prof_info = thr->prof_info;
+  acc_event_info data_event_info;
+  acc_api_info *api_info = thr->api_info;
+  bool profiling_p = __builtin_expect (prof_info != NULL, false);
+
   void **hp = alloca (mapnum * sizeof (void *));
   CUdeviceptr dp = 0;
 
@@ -1347,17 +1455,50 @@ openacc_exec_internal (void (*fn) (void *), int params, size_t mapnum,
 	}
       else
 	{
+	  size_t s = mapnum * sizeof (void *);
 	  for (int i = 0; i < mapnum; i++)
 	    hp[i] = (devaddrs[i] ? devaddrs[i] : hostaddrs[i]);
-	  CUDA_CALL_ASSERT (cuMemAlloc, &dp, mapnum * sizeof (void *));
+	  CUDA_CALL_ASSERT (cuMemAlloc, &dp, s);
+	  if (profiling_p)
+	    goacc_profiling_acc_ev_alloc (thr, (void *) dp, s);
 	}
     }
 
   /* Copy the (device) pointers to arguments to the device (dp and hp might in
      fact have the same value on a unified-memory system).  */
   if (!params && mapnum > 0)
-    CUDA_CALL_ASSERT (cuMemcpyHtoD, dp, (void *) hp,
-		      mapnum * sizeof (void *));
+    {
+      if (profiling_p)
+	{
+	  prof_info->event_type = acc_ev_enqueue_upload_start;
+
+	  data_event_info.data_event.event_type = prof_info->event_type;
+	  data_event_info.data_event.valid_bytes
+	    = _ACC_DATA_EVENT_INFO_VALID_BYTES;
+	  data_event_info.data_event.parent_construct
+	    = acc_construct_parallel;
+	  data_event_info.data_event.implicit = 1; /* Always implicit.  */
+	  data_event_info.data_event.tool_info = NULL;
+	  data_event_info.data_event.var_name = NULL;
+	  data_event_info.data_event.bytes = mapnum * sizeof (void *);
+	  data_event_info.data_event.host_ptr = hp;
+	  data_event_info.data_event.device_ptr = (const void *) dp;
+
+	  api_info->device_api = acc_device_api_cuda;
+
+	  GOMP_PLUGIN_goacc_profiling_dispatch (prof_info, &data_event_info,
+						api_info);
+	}
+      CUDA_CALL_ASSERT (cuMemcpyHtoD, dp, (void *) hp,
+			mapnum * sizeof (void *));
+      if (profiling_p)
+	{
+	  prof_info->event_type = acc_ev_enqueue_upload_end;
+	  data_event_info.data_event.event_type = prof_info->event_type;
+	  GOMP_PLUGIN_goacc_profiling_dispatch (prof_info, &data_event_info,
+						api_info);
+	}
+    }
 
   if (params)
     nvptx_exec (fn, mapnum, hostaddrs, devaddrs, dims, targ_mem_desc,
@@ -1378,7 +1519,11 @@ openacc_exec_internal (void (*fn) (void *), int params, size_t mapnum,
     GOMP_PLUGIN_fatal ("cuStreamSynchronize error: %s", cuda_error (r));
 
   if (!params)
-    CUDA_CALL_ASSERT (cuMemFree, dp);
+    {
+      CUDA_CALL_ASSERT (cuMemFree, dp);
+      if (profiling_p)
+	goacc_profiling_acc_ev_free (thr, (void *) dp);
+    }
 }
 
 void
@@ -1415,6 +1560,12 @@ openacc_async_exec_internal (void (*fn) (void *), int params, size_t mapnum,
 {
   GOMP_PLUGIN_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
 
+  struct goacc_thread *thr = GOMP_PLUGIN_goacc_thread ();
+  acc_prof_info *prof_info = thr->prof_info;
+  acc_event_info data_event_info;
+  acc_api_info *api_info = thr->api_info;
+  bool profiling_p = __builtin_expect (prof_info != NULL, false);
+
   void **hp = NULL;
   CUdeviceptr dp = 0;
   void **block = NULL;
@@ -1429,11 +1580,14 @@ openacc_async_exec_internal (void (*fn) (void *), int params, size_t mapnum,
 	}
       else
 	{
+	  size_t s = mapnum * sizeof (void *);
 	  block = (void **) GOMP_PLUGIN_malloc ((mapnum + 2) * sizeof (void *));
 	  hp = block + 2;
 	  for (int i = 0; i < mapnum; i++)
 	    hp[i] = (devaddrs[i] ? devaddrs[i] : hostaddrs[i]);
-	  CUDA_CALL_ASSERT (cuMemAlloc, &dp, mapnum * sizeof (void *));
+	  CUDA_CALL_ASSERT (cuMemAlloc, &dp, s);
+	  if (profiling_p)
+	    goacc_profiling_acc_ev_alloc (thr, (void *) dp, s);
 	}
     }
 
@@ -1441,6 +1595,28 @@ openacc_async_exec_internal (void (*fn) (void *), int params, size_t mapnum,
      fact have the same value on a unified-memory system).  */
   if (!params && mapnum > 0)
     {
+      if (profiling_p)
+	{
+	  prof_info->event_type = acc_ev_enqueue_upload_start;
+
+	  data_event_info.data_event.event_type = prof_info->event_type;
+	  data_event_info.data_event.valid_bytes
+	    = _ACC_DATA_EVENT_INFO_VALID_BYTES;
+	  data_event_info.data_event.parent_construct
+	    = acc_construct_parallel;
+	  data_event_info.data_event.implicit = 1; /* Always implicit.  */
+	  data_event_info.data_event.tool_info = NULL;
+	  data_event_info.data_event.var_name = NULL;
+	  data_event_info.data_event.bytes = mapnum * sizeof (void *);
+	  data_event_info.data_event.host_ptr = hp;
+	  data_event_info.data_event.device_ptr = (const void *) dp;
+
+	  api_info->device_api = acc_device_api_cuda;
+
+	  GOMP_PLUGIN_goacc_profiling_dispatch (prof_info, &data_event_info,
+						api_info);
+	}
+
       CUDA_CALL_ASSERT (cuMemcpyHtoDAsync, dp, (void *) hp,
 			mapnum * sizeof (void *), aq->cuda_stream);
       block[0] = (void *) dp;
@@ -1448,6 +1624,14 @@ openacc_async_exec_internal (void (*fn) (void *), int params, size_t mapnum,
       struct nvptx_thread *nvthd =
 	(struct nvptx_thread *) GOMP_PLUGIN_acc_thread ();
       block[1] = (void *) nvthd->ptx_dev;
+
+      if (profiling_p)
+	{
+	  prof_info->event_type = acc_ev_enqueue_upload_end;
+	  data_event_info.data_event.event_type = prof_info->event_type;
+	  GOMP_PLUGIN_goacc_profiling_dispatch (prof_info, &data_event_info,
+						api_info);
+	}
     }
 
   if (params)

@@ -1,3 +1,58 @@
+2019-05-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* acc_prof.h: New file.
+	* oacc-profiling.c: Likewise.
+	* Makefile.am (nodist_libsubinclude_HEADERS, libgomp_la_SOURCES):
+	Add these, respectively.
+	* Makefile.in: Regenerate.
+	* env.c (initialize_env): Call goacc_profiling_initialize.
+	* oacc-plugin.c (GOMP_PLUGIN_goacc_thread)
+	(GOMP_PLUGIN_goacc_profiling_dispatch): New functions.
+	* oacc-plugin.h (GOMP_PLUGIN_goacc_thread)
+	(GOMP_PLUGIN_goacc_profiling_dispatch): Declare.
+	* libgomp.map (OACC_2.5.1): Add acc_prof_lookup,
+	acc_prof_register, acc_prof_unregister, and acc_register_library.
+	(GOMP_PLUGIN_1.3): Add GOMP_PLUGIN_goacc_profiling_dispatch, and
+	GOMP_PLUGIN_goacc_thread.
+	* oacc-int.h (struct goacc_thread): Add prof_info, api_info,
+	prof_callbacks_enabled members.
+	(goacc_prof_enabled, goacc_profiling_initialize)
+	(_goacc_profiling_dispatch_p, _goacc_profiling_setup_p)
+	(goacc_profiling_dispatch): Declare.
+	(GOACC_PROF_ENABLED, GOACC_PROFILING_DISPATCH_P)
+	(GOACC_PROFILING_SETUP_P): Define.
+	* oacc-async.c (acc_async_test, acc_async_test_all, acc_wait)
+	(acc_wait_async, acc_wait_all, acc_wait_all_async): Update for
+	OpenACC Profiling Interface.
+	* oacc-cuda.c (acc_get_current_cuda_device)
+	(acc_get_current_cuda_context, acc_get_cuda_stream)
+	(acc_set_cuda_stream): Likewise.
+	* oacc-init.c (acc_init_1, goacc_attach_host_thread_to_device)
+	(acc_init, acc_set_device_type, acc_get_device_type)
+	(acc_get_device_num, goacc_lazy_initialize): Likewise.
+	* oacc-mem.c (acc_malloc, acc_free, memcpy_tofrom_device)
+	(acc_deviceptr, acc_hostptr, acc_is_present, acc_map_data)
+	(acc_unmap_data, present_create_copy, delete_copyout)
+	(update_dev_host): Likewise.
+	* oacc-parallel.c (GOACC_parallel_keyed, GOACC_data_start)
+	(GOACC_data_end, GOACC_enter_exit_data, GOACC_update, GOACC_wait):
+	Likewise.
+	* plugin/plugin-nvptx.c (nvptx_exec, nvptx_alloc, nvptx_free)
+	(GOMP_OFFLOAD_openacc_exec, GOMP_OFFLOAD_openacc_async_exec):
+	Likewise.
+	* libgomp.texi: Update.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-dispatch-1.c: New
+	file.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-init-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-parallel-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-valid_bytes-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-version-1.c:
+	Likewise.
+
 2019-07-10  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* target.c (gomp_load_image_to_device): Allow the accelerator to

@@ -104,7 +104,19 @@ acc_malloc (size_t s)
   if (thr->dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
     return malloc (s);
 
-  return thr->dev->alloc_func (thr->dev->target_id, s);
+  acc_prof_info prof_info;
+  acc_api_info api_info;
+  bool profiling_p = GOACC_PROFILING_SETUP_P (thr, &prof_info, &api_info);
+
+  void *res = thr->dev->alloc_func (thr->dev->target_id, s);
+
+  if (profiling_p)
+    {
+      thr->prof_info = NULL;
+      thr->api_info = NULL;
+    }
+
+  return res;
 }
 
 /* OpenACC 2.0a (3.2.16) doesn't specify what to do in the event
@@ -127,6 +139,10 @@ acc_free (void *d)
   if (acc_dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
     return free (d);
 
+  acc_prof_info prof_info;
+  acc_api_info api_info;
+  bool profiling_p = GOACC_PROFILING_SETUP_P (thr, &prof_info, &api_info);
+
   gomp_mutex_lock (&acc_dev->lock);
 
   /* We don't have to call lazy open here, as the ptr value must have
@@ -147,6 +163,12 @@ acc_free (void *d)
 
   if (!acc_dev->free_func (acc_dev->target_id, d))
     gomp_fatal ("error in freeing device memory in %s", __FUNCTION__);
+
+  if (profiling_p)
+    {
+      thr->prof_info = NULL;
+      thr->api_info = NULL;
+    }
 }
 
 static void
@@ -168,11 +190,26 @@ memcpy_tofrom_device (bool from, void *d, void *h, size_t s, int async,
       return;
     }
 
+  acc_prof_info prof_info;
+  acc_api_info api_info;
+  bool profiling_p = GOACC_PROFILING_SETUP_P (thr, &prof_info, &api_info);
+  if (profiling_p)
+    {
+      prof_info.async = async;
+      prof_info.async_queue = prof_info.async;
+    }
+
   goacc_aq aq = get_goacc_asyncqueue (async);
   if (from)
     gomp_copy_dev2host (thr->dev, aq, h, d, s);
   else
     gomp_copy_host2dev (thr->dev, aq, d, h, s, /* TODO: cbuf? */ NULL);
+
+  if (profiling_p)
+    {
+      thr->prof_info = NULL;
+      thr->api_info = NULL;
+    }
 }
 
 void
@@ -217,6 +254,9 @@ acc_deviceptr (void *h)
   if (thr->dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
     return h;
 
+  /* In the following, no OpenACC Profiling Interface events can possibly be
+     generated.  */
+
   gomp_mutex_lock (&dev->lock);
 
   n = lookup_host (dev, h, 1);
@@ -254,6 +294,9 @@ acc_hostptr (void *d)
   if (thr->dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
     return d;
 
+  /* In the following, no OpenACC Profiling Interface events can possibly be
+     generated.  */
+
   gomp_mutex_lock (&acc_dev->lock);
 
   n = lookup_dev (&acc_dev->mem_map, d, 1);
@@ -290,6 +333,9 @@ acc_is_present (void *h, size_t s)
 
   if (thr->dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
     return h != NULL;
+
+  /* In the following, no OpenACC Profiling Interface events can possibly be
+     generated.  */
 
   gomp_mutex_lock (&acc_dev->lock);
 
@@ -335,6 +381,10 @@ acc_map_data (void *h, void *d, size_t s)
 	gomp_fatal ("[%p,+%d]->[%p,+%d] is a bad map",
                     (void *)h, (int)s, (void *)d, (int)s);
 
+      acc_prof_info prof_info;
+      acc_api_info api_info;
+      bool profiling_p = GOACC_PROFILING_SETUP_P (thr, &prof_info, &api_info);
+
       gomp_mutex_lock (&acc_dev->lock);
 
       if (lookup_host (acc_dev, h, s))
@@ -356,6 +406,12 @@ acc_map_data (void *h, void *d, size_t s)
       tgt = gomp_map_vars (acc_dev, mapnum, &hostaddrs, &devaddrs, &sizes,
 			   &kinds, true, GOMP_MAP_VARS_OPENACC);
       tgt->list[0].key->refcount = REFCOUNT_INFINITY;
+
+      if (profiling_p)
+	{
+	  thr->prof_info = NULL;
+	  thr->api_info = NULL;
+	}
     }
 }
 
@@ -371,6 +427,10 @@ acc_unmap_data (void *h)
   /* This is a no-op on shared-memory targets.  */
   if (acc_dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
     return;
+
+  acc_prof_info prof_info;
+  acc_api_info api_info;
+  bool profiling_p = GOACC_PROFILING_SETUP_P (thr, &prof_info, &api_info);
 
   gomp_mutex_lock (&acc_dev->lock);
 
@@ -405,6 +465,12 @@ acc_unmap_data (void *h)
     }
 
   gomp_mutex_unlock (&acc_dev->lock);
+
+  if (profiling_p)
+    {
+      thr->prof_info = NULL;
+      thr->api_info = NULL;
+    }
 }
 
 #define FLAG_PRESENT (1 << 0)
@@ -427,6 +493,15 @@ present_create_copy (unsigned f, void *h, size_t s, int async)
 
   if (acc_dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
     return h;
+
+  acc_prof_info prof_info;
+  acc_api_info api_info;
+  bool profiling_p = GOACC_PROFILING_SETUP_P (thr, &prof_info, &api_info);
+  if (profiling_p)
+    {
+      prof_info.async = async;
+      prof_info.async_queue = prof_info.async;
+    }
 
   gomp_mutex_lock (&acc_dev->lock);
 
@@ -487,6 +562,12 @@ present_create_copy (unsigned f, void *h, size_t s, int async)
       d = (void *) (n->tgt->tgt_start + n->tgt_offset + (uintptr_t) h
 		    - n->host_start);
       gomp_mutex_unlock (&acc_dev->lock);
+    }
+
+  if (profiling_p)
+    {
+      thr->prof_info = NULL;
+      thr->api_info = NULL;
     }
 
   return d;
@@ -569,6 +650,15 @@ delete_copyout (unsigned f, void *h, size_t s, int async, const char *libfnname)
   if (acc_dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
     return;
 
+  acc_prof_info prof_info;
+  acc_api_info api_info;
+  bool profiling_p = GOACC_PROFILING_SETUP_P (thr, &prof_info, &api_info);
+  if (profiling_p)
+    {
+      prof_info.async = async;
+      prof_info.async_queue = prof_info.async;
+    }
+
   gomp_mutex_lock (&acc_dev->lock);
 
   n = lookup_host (acc_dev, h, s);
@@ -627,6 +717,12 @@ delete_copyout (unsigned f, void *h, size_t s, int async, const char *libfnname)
     }
 
   gomp_mutex_unlock (&acc_dev->lock);
+
+  if (profiling_p)
+    {
+      thr->prof_info = NULL;
+      thr->api_info = NULL;
+    }
 }
 
 void
@@ -698,6 +794,15 @@ update_dev_host (int is_dev, void *h, size_t s, int async)
   if (h == NULL)
     return;
 
+  acc_prof_info prof_info;
+  acc_api_info api_info;
+  bool profiling_p = GOACC_PROFILING_SETUP_P (thr, &prof_info, &api_info);
+  if (profiling_p)
+    {
+      prof_info.async = async;
+      prof_info.async_queue = prof_info.async;
+    }
+
   gomp_mutex_lock (&acc_dev->lock);
 
   n = lookup_host (acc_dev, h, s);
@@ -719,6 +824,12 @@ update_dev_host (int is_dev, void *h, size_t s, int async)
     gomp_copy_dev2host (acc_dev, aq, h, d, s);
 
   gomp_mutex_unlock (&acc_dev->lock);
+
+  if (profiling_p)
+    {
+      thr->prof_info = NULL;
+      thr->api_info = NULL;
+    }
 }
 
 void
