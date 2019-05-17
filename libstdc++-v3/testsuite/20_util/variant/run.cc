@@ -128,6 +128,17 @@ void arbitrary_ctor()
     VERIFY(y.index() == 1);
     VERIFY(std::get<1>(y).d == d);
   }
+
+  {
+    // P0608R3
+    variant<float, int> v1 = 'a';
+    VERIFY(std::get<1>(v1) == int('a'));
+    variant<float, long> v2 = 0;
+    VERIFY(std::get<1>(v2) == 0L);
+    struct big_int { big_int(int) { } };
+    variant<float, big_int> v3 = 0;
+    VERIFY(v3.index() == 1);
+  }
 }
 
 struct ThrowingMoveCtorThrowsCopyCtor
