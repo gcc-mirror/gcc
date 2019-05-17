@@ -1593,6 +1593,12 @@ GFORTRAN_9 {
 
 GFORTRAN_9.2 {
   _gfortran_findloc0_i2;
+  _gfortran_findloc0_r10;
   _gfortran_mfindloc0_i2;
+  _gfortran_mfindloc0_r10;
   _gfortran_sfindloc0_i2;
+  _gfortran_sfindloc0_r10;
+  _gfortran_findloc1_r10;
+  _gfortran_mfindloc1_r10;
+  _gfortran_sfindloc1_r10;
 } GFORTRAN_9;
