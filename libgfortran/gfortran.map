@@ -1590,3 +1590,9 @@ GFORTRAN_9 {
   __ieee_arithmetic_MOD_ieee_support_subnormal_8;
   __ieee_arithmetic_MOD_ieee_support_subnormal_noarg;
 } GFORTRAN_8;
+
+GFORTRAN_9.2 {
+  _gfortran_findloc0_i2;
+  _gfortran_mfindloc0_i2;
+  _gfortran_sfindloc0_i2;
+} GFORTRAN_9;
