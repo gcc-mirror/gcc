@@ -2989,7 +2989,8 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	 polymorphic formal arguments.  */
       if (UNLIMITED_POLY (f->sym)
 	  && a->expr->ts.type != BT_DERIVED
-	  && a->expr->ts.type != BT_CLASS)
+	  && a->expr->ts.type != BT_CLASS
+	  && a->expr->ts.type != BT_ASSUMED)
 	gfc_find_vtab (&a->expr->ts);
 
       if (a->expr->expr_type == EXPR_NULL

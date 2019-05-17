@@ -292,11 +292,9 @@ It has subdirectories:
     <term>
       <filename class="directory">include/debug</filename>,
       <filename class="directory">include/parallel</filename>, and
-      <filename class="directory">include/profile</filename>
     </term>
     <listitem>
-      Headers that implement the Debug Mode, Parallel Mode, and Profile Mode
-      extensions.
+      Headers that implement the Debug Mode and Parallel Mode extensions.
     </listitem>
     </varlistentry>
     </variablelist>

@@ -1,6 +1,5 @@
 // { dg-do run { target c++11 } }
 // { dg-options "-g -O0" }
-// { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PROFILE" } }
 
 // Copyright (C) 2011-2019 Free Software Foundation, Inc.
 //
@@ -25,6 +24,7 @@
 #include <string>
 #include <memory>
 #include <iostream>
+#include "../util/testsuite_allocator.h" // NullablePointer
 
 typedef std::tuple<int, int> ExTuple;
 
@@ -136,6 +136,20 @@ main()
 // { dg-final { regexp-test arrptr {std::unique_ptr.datum \[\]. = {get\(\) = 0x.*}} } }
   std::unique_ptr<data>& rarrptr = arrptr;
 // { dg-final { regexp-test rarrptr {std::unique_ptr.datum \[\]. = {get\(\) = 0x.*}} } }
+
+  struct Deleter
+  {
+    int deleter_member = -1;
+    using pointer = __gnu_test::NullablePointer<void>;
+    void operator()(pointer) const noexcept { }
+  };
+  static_assert( !std::is_empty<Deleter>(), "Deleter is not empty" );
+  static_assert( std::is_empty<Deleter::pointer>(), "but pointer is empty" );
+
+  std::unique_ptr<int, Deleter> empty_ptr;
+// { dg-final { note-test empty_ptr {std::unique_ptr<int> = {get() = {<No data fields>}}} } }
+  std::unique_ptr<int, Deleter>& rempty_ptr = empty_ptr;
+// { dg-final { note-test rempty_ptr {std::unique_ptr<int> = {get() = {<No data fields>}}} } }
 
   ExTuple tpl(6,7);
 // { dg-final { note-test tpl {std::tuple containing = {[1] = 6, [2] = 7}} } }

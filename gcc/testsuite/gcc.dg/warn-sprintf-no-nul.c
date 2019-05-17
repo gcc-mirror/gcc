@@ -26,7 +26,7 @@ void sink (int, ...);
 const char a[5] = "12345";    /* { dg-message "declared here" } */
 const char b[6] = "123456";   /* { dg-message "declared here" } */
 const char a2[][3] = {
-  "", "1", "12", "123", "123\000"   /* { dg-warning "initializer-string for array of chars is too long" } */
+  "", "1", "12", "123", "123\000"   /* { dg-warning "initializer-string for array of 'char' is too long" } */
 };
 
 

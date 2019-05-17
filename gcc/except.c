@@ -3412,7 +3412,7 @@ verify_eh_tree (struct function *fun)
 	  count_r++;
 	else
 	  {
-	    error ("region_array is corrupted for region %i", r->index);
+	    error ("%<region_array%> is corrupted for region %i", r->index);
 	    err = true;
 	  }
       }
@@ -3425,7 +3425,7 @@ verify_eh_tree (struct function *fun)
 	  count_lp++;
 	else
 	  {
-	    error ("lp_array is corrupted for lp %i", lp->index);
+	    error ("%<lp_array%> is corrupted for lp %i", lp->index);
 	    err = true;
 	  }
       }
@@ -3437,7 +3437,7 @@ verify_eh_tree (struct function *fun)
     {
       if ((*fun->eh->region_array)[r->index] != r)
 	{
-	  error ("region_array is corrupted for region %i", r->index);
+	  error ("%<region_array%> is corrupted for region %i", r->index);
 	  err = true;
 	}
       if (r->outer != outer)
@@ -3456,7 +3456,7 @@ verify_eh_tree (struct function *fun)
 	{
 	  if ((*fun->eh->lp_array)[lp->index] != lp)
 	    {
-	      error ("lp_array is corrupted for lp %i", lp->index);
+	      error ("%<lp_array%> is corrupted for lp %i", lp->index);
 	      err = true;
 	    }
 	  if (lp->region != r)
@@ -3493,19 +3493,19 @@ verify_eh_tree (struct function *fun)
     }
   if (count_r != nvisited_r)
     {
-      error ("region_array does not match region_tree");
+      error ("%<region_array%> does not match %<region_tree%>");
       err = true;
     }
   if (count_lp != nvisited_lp)
     {
-      error ("lp_array does not match region_tree");
+      error ("%<lp_array%> does not match %<region_tree%>");
       err = true;
     }
 
   if (err)
     {
       dump_eh_tree (stderr, fun);
-      internal_error ("verify_eh_tree failed");
+      internal_error ("%qs failed", __func__);
     }
 }
 

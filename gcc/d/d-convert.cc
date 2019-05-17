@@ -376,7 +376,7 @@ convert_expr (tree exp, Type *etype, Type *totype)
 	}
       else
 	{
-	  error ("can't convert a delegate expression to %qs",
+	  error ("cannot convert a delegate expression to %qs",
 		 totype->toChars ());
 	  return error_mark_node;
 	}
@@ -392,7 +392,7 @@ convert_expr (tree exp, Type *etype, Type *totype)
 	    }
 	  else
 	    {
-	      error ("can't convert struct %qs to %qs",
+	      error ("cannot convert struct %qs to %qs",
 		     etype->toChars (), totype->toChars ());
 	      return error_mark_node;
 	    }
@@ -475,7 +475,7 @@ convert_expr (tree exp, Type *etype, Type *totype)
 
 	  if ((dim * esize) % tsize != 0)
 	    {
-	      error ("cannot cast %qs to %qs since sizes don't line up",
+	      error ("cannot cast %qs to %qs since sizes do not line up",
 		     etype->toChars (), totype->toChars ());
 	      return error_mark_node;
 	    }

@@ -248,16 +248,14 @@ cp_type_dwarf_attribute (const_tree type, int attr)
   switch (attr)
     {
     case DW_AT_reference:
-      if ((TREE_CODE (type) == FUNCTION_TYPE
-	   || TREE_CODE (type) == METHOD_TYPE)
+      if (FUNC_OR_METHOD_TYPE_P (type)
 	  && FUNCTION_REF_QUALIFIED (type)
 	  && !FUNCTION_RVALUE_QUALIFIED (type))
 	return 1;
       break;
 
     case DW_AT_rvalue_reference:
-      if ((TREE_CODE (type) == FUNCTION_TYPE
-	   || TREE_CODE (type) == METHOD_TYPE)
+      if (FUNC_OR_METHOD_TYPE_P (type)
 	  && FUNCTION_REF_QUALIFIED (type)
 	  && FUNCTION_RVALUE_QUALIFIED (type))
 	return 1;

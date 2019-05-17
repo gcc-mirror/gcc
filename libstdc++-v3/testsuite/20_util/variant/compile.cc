@@ -142,6 +142,19 @@ void arbitrary_ctor()
   static_assert(noexcept(variant<int, DefaultNoexcept>(int{})));
   static_assert(!noexcept(variant<int, Empty>(Empty{})));
   static_assert(noexcept(variant<int, DefaultNoexcept>(DefaultNoexcept{})));
+
+  // P0608R3 disallow narrowing conversions and boolean conversions
+  static_assert(!is_constructible_v<variant<float>, int>);
+  static_assert(!is_constructible_v<variant<float, vector<int>>, int>);
+  static_assert(is_constructible_v<variant<float, int>, char>);
+  static_assert(!is_constructible_v<variant<float, char>, int>);
+  static_assert(is_constructible_v<variant<float, long>, int>);
+  struct big_int { big_int(int) { } };
+  static_assert(is_constructible_v<variant<float, big_int>, int>);
+
+  static_assert(!is_constructible_v<variant<int>, unsigned>);
+  static_assert(!is_constructible_v<variant<bool>, int>);
+  static_assert(!is_constructible_v<variant<bool>, void*>);
 }
 
 struct none { none() = delete; };

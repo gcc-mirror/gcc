@@ -1,3 +1,17 @@
+2019-05-16  Martin Sebor  <msebor@redhat.com>
+
+        * gcc-interface/trans.c (check_inlining_for_nested_subprog): Quote
+        reserved names.
+
+2019-05-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* standard.ads.h: New file.
+
+2019-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc-interface/Makefile.in (install-gcc-specs): Use foreach.
+	Honor DESTDIR.
+
 2019-04-29  Michael K. Darling  <darlingm@gmail.com>
 
 	* gnatvsn.ads: Bump Library_Version to 10.

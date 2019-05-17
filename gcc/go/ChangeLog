@@ -1,3 +1,19 @@
+2019-05-16  Cherry Zhang  <cherryyz@google.com>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Define atomic builtins.
+
+2019-05-08  Cherry Zhang  <cherryyz@google.com>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Define memmove builtin.
+
+2019-05-07  Cherry Zhang  <cherryyz@google.com>
+
+	* lang.opt (-fgo-debug-optimization): New option.
+	* go-c.h (struct go_create_gogo_args): Add debug_optimization
+	field.
+	* go-lang.c (go_langhook_init): Set debug_optimization field.
+	* gccgo.texi (Invoking gccgo): Document -fgo-debug-optimization.
+
 2019-03-06  Ian Lance Taylor  <iant@golang.org>
 
 	PR go/89227

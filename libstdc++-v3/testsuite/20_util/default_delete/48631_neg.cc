@@ -26,4 +26,4 @@ struct D : B { };
 D d;
 std::default_delete<B[]> db;
 typedef decltype(db(&d)) type; // { dg-error "no match" }
-// { dg-error "no type" "" { target *-*-* } 111 }
+// { dg-error "no type" "" { target *-*-* } 112 }

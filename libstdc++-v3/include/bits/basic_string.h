@@ -664,35 +664,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_string&
       operator=(const basic_string& __str)
       {
-#if __cplusplus >= 201103L
-	if (_Alloc_traits::_S_propagate_on_copy_assign())
-	  {
-	    if (!_Alloc_traits::_S_always_equal() && !_M_is_local()
-		&& _M_get_allocator() != __str._M_get_allocator())
-	      {
-		// Propagating allocator cannot free existing storage so must
-		// deallocate it before replacing current allocator.
-		if (__str.size() <= _S_local_capacity)
-		  {
-		    _M_destroy(_M_allocated_capacity);
-		    _M_data(_M_local_data());
-		    _M_set_length(0);
-		  }
-		else
-		  {
-		    const auto __len = __str.size();
-		    auto __alloc = __str._M_get_allocator();
-		    // If this allocation throws there are no effects:
-		    auto __ptr = _Alloc_traits::allocate(__alloc, __len + 1);
-		    _M_destroy(_M_allocated_capacity);
-		    _M_data(__ptr);
-		    _M_capacity(__len);
-		    _M_set_length(__len);
-		  }
-	      }
-	    std::__alloc_on_copy(_M_get_allocator(), __str._M_get_allocator());
-	  }
-#endif
 	return this->assign(__str);
       }
 
@@ -1363,6 +1334,35 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_string&
       assign(const basic_string& __str)
       {
+#if __cplusplus >= 201103L
+	if (_Alloc_traits::_S_propagate_on_copy_assign())
+	  {
+	    if (!_Alloc_traits::_S_always_equal() && !_M_is_local()
+		&& _M_get_allocator() != __str._M_get_allocator())
+	      {
+		// Propagating allocator cannot free existing storage so must
+		// deallocate it before replacing current allocator.
+		if (__str.size() <= _S_local_capacity)
+		  {
+		    _M_destroy(_M_allocated_capacity);
+		    _M_data(_M_local_data());
+		    _M_set_length(0);
+		  }
+		else
+		  {
+		    const auto __len = __str.size();
+		    auto __alloc = __str._M_get_allocator();
+		    // If this allocation throws there are no effects:
+		    auto __ptr = _Alloc_traits::allocate(__alloc, __len + 1);
+		    _M_destroy(_M_allocated_capacity);
+		    _M_data(__ptr);
+		    _M_capacity(__len);
+		    _M_set_length(__len);
+		  }
+	      }
+	    std::__alloc_on_copy(_M_get_allocator(), __str._M_get_allocator());
+	  }
+#endif
 	this->_M_assign(__str);
 	return *this;
       }
@@ -6096,11 +6096,21 @@ _GLIBCXX_END_NAMESPACE_CXX11
     operator+(basic_string<_CharT, _Traits, _Alloc>&& __lhs,
 	      basic_string<_CharT, _Traits, _Alloc>&& __rhs)
     {
-      const auto __size = __lhs.size() + __rhs.size();
-      const bool __cond = (__size > __lhs.capacity()
-			   && __size <= __rhs.capacity());
-      return __cond ? std::move(__rhs.insert(0, __lhs))
-	            : std::move(__lhs.append(__rhs));
+#if _GLIBCXX_USE_CXX11_ABI
+      using _Alloc_traits = allocator_traits<_Alloc>;
+      bool __use_rhs = false;
+      if _GLIBCXX17_CONSTEXPR (typename _Alloc_traits::is_always_equal{})
+	__use_rhs = true;
+      else if (__lhs.get_allocator() == __rhs.get_allocator())
+	__use_rhs = true;
+      if (__use_rhs)
+#endif
+	{
+	  const auto __size = __lhs.size() + __rhs.size();
+	  if (__size > __lhs.capacity() && __size <= __rhs.capacity())
+	    return std::move(__rhs.insert(0, __lhs));
+	}
+      return std::move(__lhs.append(__rhs));
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>

@@ -1522,7 +1522,7 @@ public:
       }
     else
       {
-	error ("don't know how to delete %qs", e->e1->toChars ());
+	error ("don%'t know how to delete %qs", e->e1->toChars ());
 	this->result_ = error_mark_node;
       }
   }

@@ -15,5 +15,6 @@ class a {
 
   static const unsigned int value = _rec < 1 >::size;
 
-}
+};
 
+// { dg-prune-output "compilation terminated" }

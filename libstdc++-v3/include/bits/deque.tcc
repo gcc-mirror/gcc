@@ -69,22 +69,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       _Map_pointer __cur;
       __try
-        {
-          for (__cur = this->_M_impl._M_start._M_node;
+	{
+	  for (__cur = this->_M_impl._M_start._M_node;
 	       __cur < this->_M_impl._M_finish._M_node;
 	       ++__cur)
-            std::__uninitialized_default_a(*__cur, *__cur + _S_buffer_size(),
+	    std::__uninitialized_default_a(*__cur, *__cur + _S_buffer_size(),
 					   _M_get_Tp_allocator());
-          std::__uninitialized_default_a(this->_M_impl._M_finish._M_first,
+	  std::__uninitialized_default_a(this->_M_impl._M_finish._M_first,
 					 this->_M_impl._M_finish._M_cur,
 					 _M_get_Tp_allocator());
-        }
+	}
       __catch(...)
-        {
-          std::_Destroy(this->_M_impl._M_start, iterator(*__cur, __cur),
+	{
+	  std::_Destroy(this->_M_impl._M_start, iterator(*__cur, __cur),
 			_M_get_Tp_allocator());
-          __throw_exception_again;
-        }
+	  __throw_exception_again;
+	}
     }
 #endif
 
@@ -99,8 +99,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  if (_Alloc_traits::_S_propagate_on_copy_assign())
 	    {
 	      if (!_Alloc_traits::_S_always_equal()
-	          && _M_get_Tp_allocator() != __x._M_get_Tp_allocator())
-	        {
+		  && _M_get_Tp_allocator() != __x._M_get_Tp_allocator())
+		{
 		  // Replacement allocator cannot free existing storage,
 		  // so deallocate everything and take copy of __x's data.
 		  _M_replace_map(__x, __x.get_allocator());
@@ -141,8 +141,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	if (this->_M_impl._M_start._M_cur != this->_M_impl._M_start._M_first)
 	  {
 	    _Alloc_traits::construct(this->_M_impl,
-	                             this->_M_impl._M_start._M_cur - 1,
-			             std::forward<_Args>(__args)...);
+				     this->_M_impl._M_start._M_cur - 1,
+				     std::forward<_Args>(__args)...);
 	    --this->_M_impl._M_start._M_cur;
 	  }
 	else
@@ -166,8 +166,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    != this->_M_impl._M_finish._M_last - 1)
 	  {
 	    _Alloc_traits::construct(this->_M_impl,
-	                             this->_M_impl._M_finish._M_cur,
-			             std::forward<_Args>(__args)...);
+				     this->_M_impl._M_finish._M_cur,
+				     std::forward<_Args>(__args)...);
 	    ++this->_M_impl._M_finish._M_cur;
 	  }
 	else
@@ -290,13 +290,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_assign_aux(_InputIterator __first, _InputIterator __last,
 		    std::input_iterator_tag)
       {
-        iterator __cur = begin();
-        for (; __first != __last && __cur != end(); ++__cur, (void)++__first)
-          *__cur = *__first;
-        if (__first == __last)
-          _M_erase_at_end(__cur);
-        else
-          _M_range_insert_aux(end(), __first, __last,
+	iterator __cur = begin();
+	for (; __first != __last && __cur != end(); ++__cur, (void)++__first)
+	  *__cur = *__first;
+	if (__first == __last)
+	  _M_erase_at_end(__cur);
+	else
+	  _M_range_insert_aux(end(), __first, __last,
 			      std::__iterator_category(__first));
       }
 
@@ -339,7 +339,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    }
 	}
       else
-        _M_insert_aux(__pos, __n, __x);
+	_M_insert_aux(__pos, __n, __x);
     }
 
 #if __cplusplus >= 201103L
@@ -393,22 +393,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       _Map_pointer __cur;
       __try
-        {
-          for (__cur = this->_M_impl._M_start._M_node;
+	{
+	  for (__cur = this->_M_impl._M_start._M_node;
 	       __cur < this->_M_impl._M_finish._M_node;
 	       ++__cur)
-            std::__uninitialized_fill_a(*__cur, *__cur + _S_buffer_size(),
+	    std::__uninitialized_fill_a(*__cur, *__cur + _S_buffer_size(),
 					__value, _M_get_Tp_allocator());
-          std::__uninitialized_fill_a(this->_M_impl._M_finish._M_first,
+	  std::__uninitialized_fill_a(this->_M_impl._M_finish._M_first,
 				      this->_M_impl._M_finish._M_cur,
 				      __value, _M_get_Tp_allocator());
-        }
+	}
       __catch(...)
-        {
-          std::_Destroy(this->_M_impl._M_start, iterator(*__cur, __cur),
+	{
+	  std::_Destroy(this->_M_impl._M_start, iterator(*__cur, __cur),
 			_M_get_Tp_allocator());
-          __throw_exception_again;
-        }
+	  __throw_exception_again;
+	}
     }
 
   template <typename _Tp, typename _Alloc>
@@ -416,23 +416,23 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       void
       deque<_Tp, _Alloc>::
       _M_range_initialize(_InputIterator __first, _InputIterator __last,
-                          std::input_iterator_tag)
+			  std::input_iterator_tag)
       {
-        this->_M_initialize_map(0);
-        __try
-          {
-            for (; __first != __last; ++__first)
+	this->_M_initialize_map(0);
+	__try
+	  {
+	    for (; __first != __last; ++__first)
 #if __cplusplus >= 201103L
 	      emplace_back(*__first);
 #else
-              push_back(*__first);
+	      push_back(*__first);
 #endif
-          }
-        __catch(...)
-          {
-            clear();
-            __throw_exception_again;
-          }
+	  }
+	__catch(...)
+	  {
+	    clear();
+	    __throw_exception_again;
+	  }
       }
 
   template <typename _Tp, typename _Alloc>
@@ -440,17 +440,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       void
       deque<_Tp, _Alloc>::
       _M_range_initialize(_ForwardIterator __first, _ForwardIterator __last,
-                          std::forward_iterator_tag)
+			  std::forward_iterator_tag)
       {
-        const size_type __n = std::distance(__first, __last);
-        this->_M_initialize_map(_S_check_init_len(__n, _M_get_Tp_allocator()));
+	const size_type __n = std::distance(__first, __last);
+	this->_M_initialize_map(_S_check_init_len(__n, _M_get_Tp_allocator()));
 
-        _Map_pointer __cur_node;
-        __try
-          {
-            for (__cur_node = this->_M_impl._M_start._M_node;
-                 __cur_node < this->_M_impl._M_finish._M_node;
-                 ++__cur_node)
+	_Map_pointer __cur_node;
+	__try
+	  {
+	    for (__cur_node = this->_M_impl._M_start._M_node;
+		 __cur_node < this->_M_impl._M_finish._M_node;
+		 ++__cur_node)
 	      {
 		_ForwardIterator __mid = __first;
 		std::advance(__mid, _S_buffer_size());
@@ -458,17 +458,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 					    _M_get_Tp_allocator());
 		__first = __mid;
 	      }
-            std::__uninitialized_copy_a(__first, __last,
+	    std::__uninitialized_copy_a(__first, __last,
 					this->_M_impl._M_finish._M_first,
 					_M_get_Tp_allocator());
-          }
-        __catch(...)
-          {
-            std::_Destroy(this->_M_impl._M_start,
+	  }
+	__catch(...)
+	  {
+	    std::_Destroy(this->_M_impl._M_start,
 			  iterator(*__cur_node, __cur_node),
 			  _M_get_Tp_allocator());
-            __throw_exception_again;
-          }
+	    __throw_exception_again;
+	  }
       }
 
   // Called only if _M_impl._M_finish._M_cur == _M_impl._M_finish._M_last - 1.
@@ -494,8 +494,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  {
 #if __cplusplus >= 201103L
 	    _Alloc_traits::construct(this->_M_impl,
-	                             this->_M_impl._M_finish._M_cur,
-			             std::forward<_Args>(__args)...);
+				     this->_M_impl._M_finish._M_cur,
+				     std::forward<_Args>(__args)...);
 #else
 	    this->_M_impl.construct(this->_M_impl._M_finish._M_cur, __t);
 #endif
@@ -536,8 +536,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    this->_M_impl._M_start._M_cur = this->_M_impl._M_start._M_last - 1;
 #if __cplusplus >= 201103L
 	    _Alloc_traits::construct(this->_M_impl,
-	                             this->_M_impl._M_start._M_cur,
-			             std::forward<_Args>(__args)...);
+				     this->_M_impl._M_start._M_cur,
+				     std::forward<_Args>(__args)...);
 #else
 	    this->_M_impl.construct(this->_M_impl._M_start._M_cur, __t);
 #endif
@@ -583,8 +583,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       void
       deque<_Tp, _Alloc>::
       _M_range_insert_aux(iterator __pos,
-                          _InputIterator __first, _InputIterator __last,
-                          std::input_iterator_tag)
+			  _InputIterator __first, _InputIterator __last,
+			  std::input_iterator_tag)
       { std::copy(__first, __last, std::inserter(*this, __pos)); }
 
   template <typename _Tp, typename _Alloc>
@@ -592,11 +592,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       void
       deque<_Tp, _Alloc>::
       _M_range_insert_aux(iterator __pos,
-                          _ForwardIterator __first, _ForwardIterator __last,
-                          std::forward_iterator_tag)
+			  _ForwardIterator __first, _ForwardIterator __last,
+			  std::forward_iterator_tag)
       {
-        const size_type __n = std::distance(__first, __last);
-        if (__pos._M_cur == this->_M_impl._M_start._M_cur)
+	const size_type __n = std::distance(__first, __last);
+	if (__pos._M_cur == this->_M_impl._M_start._M_cur)
 	  {
 	    iterator __new_start = _M_reserve_elements_at_front(__n);
 	    __try
@@ -612,7 +612,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		__throw_exception_again;
 	      }
 	  }
-        else if (__pos._M_cur == this->_M_impl._M_finish._M_cur)
+	else if (__pos._M_cur == this->_M_impl._M_finish._M_cur)
 	  {
 	    iterator __new_finish = _M_reserve_elements_at_back(__n);
 	    __try
@@ -629,8 +629,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		__throw_exception_again;
 	      }
 	  }
-        else
-          _M_insert_aux(__pos, __first, __last, __n);
+	else
+	  _M_insert_aux(__pos, __first, __last, __n);
       }
 
   template<typename _Tp, typename _Alloc>
@@ -765,12 +765,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       void
       deque<_Tp, _Alloc>::
       _M_insert_aux(iterator __pos,
-                    _ForwardIterator __first, _ForwardIterator __last,
-                    size_type __n)
+		    _ForwardIterator __first, _ForwardIterator __last,
+		    size_type __n)
       {
-        const difference_type __elemsbefore = __pos - this->_M_impl._M_start;
-        const size_type __length = size();
-        if (static_cast<size_type>(__elemsbefore) < __length / 2)
+	const difference_type __elemsbefore = __pos - this->_M_impl._M_start;
+	const size_type __length = size();
+	if (static_cast<size_type>(__elemsbefore) < __length / 2)
 	  {
 	    iterator __new_start = _M_reserve_elements_at_front(__n);
 	    iterator __old_start = this->_M_impl._M_start;
@@ -807,16 +807,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		__throw_exception_again;
 	      }
 	  }
-        else
-        {
-          iterator __new_finish = _M_reserve_elements_at_back(__n);
-          iterator __old_finish = this->_M_impl._M_finish;
-          const difference_type __elemsafter =
-            difference_type(__length) - __elemsbefore;
-          __pos = this->_M_impl._M_finish - __elemsafter;
-          __try
-            {
-              if (__elemsafter > difference_type(__n))
+	else
+	{
+	  iterator __new_finish = _M_reserve_elements_at_back(__n);
+	  iterator __old_finish = this->_M_impl._M_finish;
+	  const difference_type __elemsafter =
+	    difference_type(__length) - __elemsbefore;
+	  __pos = this->_M_impl._M_finish - __elemsafter;
+	  __try
+	    {
+	      if (__elemsafter > difference_type(__n))
 		{
 		  iterator __finish_n = (this->_M_impl._M_finish
 					 - difference_type(__n));
@@ -828,7 +828,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		  _GLIBCXX_MOVE_BACKWARD3(__pos, __finish_n, __old_finish);
 		  std::copy(__first, __last, __pos);
 		}
-              else
+	      else
 		{
 		  _ForwardIterator __mid = __first;
 		  std::advance(__mid, __elemsafter);
@@ -839,14 +839,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		  this->_M_impl._M_finish = __new_finish;
 		  std::copy(__first, __mid, __pos);
 		}
-            }
-          __catch(...)
-            {
-              _M_destroy_nodes(this->_M_impl._M_finish._M_node + 1,
+	    }
+	  __catch(...)
+	    {
+	      _M_destroy_nodes(this->_M_impl._M_finish._M_node + 1,
 			       __new_finish._M_node + 1);
-              __throw_exception_again;
-            }
-        }
+	      __throw_exception_again;
+	    }
+	}
       }
 
    template<typename _Tp, typename _Alloc>
@@ -884,16 +884,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_reserve_map_at_front(__new_nodes);
       size_type __i;
       __try
-        {
-          for (__i = 1; __i <= __new_nodes; ++__i)
-            *(this->_M_impl._M_start._M_node - __i) = this->_M_allocate_node();
-        }
+	{
+	  for (__i = 1; __i <= __new_nodes; ++__i)
+	    *(this->_M_impl._M_start._M_node - __i) = this->_M_allocate_node();
+	}
       __catch(...)
-        {
-          for (size_type __j = 1; __j < __i; ++__j)
-            _M_deallocate_node(*(this->_M_impl._M_start._M_node - __j));
-          __throw_exception_again;
-        }
+	{
+	  for (size_type __j = 1; __j < __i; ++__j)
+	    _M_deallocate_node(*(this->_M_impl._M_start._M_node - __j));
+	  __throw_exception_again;
+	}
     }
 
   template <typename _Tp, typename _Alloc>
@@ -909,16 +909,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_reserve_map_at_back(__new_nodes);
       size_type __i;
       __try
-        {
-          for (__i = 1; __i <= __new_nodes; ++__i)
-            *(this->_M_impl._M_finish._M_node + __i) = this->_M_allocate_node();
-        }
+	{
+	  for (__i = 1; __i <= __new_nodes; ++__i)
+	    *(this->_M_impl._M_finish._M_node + __i) = this->_M_allocate_node();
+	}
       __catch(...)
-        {
-          for (size_type __j = 1; __j < __i; ++__j)
-            _M_deallocate_node(*(this->_M_impl._M_finish._M_node + __j));
-          __throw_exception_again;
-        }
+	{
+	  for (size_type __j = 1; __j < __i; ++__j)
+	    _M_deallocate_node(*(this->_M_impl._M_finish._M_node + __j));
+	  __throw_exception_again;
+	}
     }
 
   template <typename _Tp, typename _Alloc>
@@ -935,7 +935,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{
 	  __new_nstart = this->_M_impl._M_map + (this->_M_impl._M_map_size
 					 - __new_num_nodes) / 2
-	                 + (__add_at_front ? __nodes_to_add : 0);
+			 + (__add_at_front ? __nodes_to_add : 0);
 	  if (__new_nstart < this->_M_impl._M_start._M_node)
 	    std::copy(this->_M_impl._M_start._M_node,
 		      this->_M_impl._M_finish._M_node + 1,
@@ -948,12 +948,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       else
 	{
 	  size_type __new_map_size = this->_M_impl._M_map_size
-	                             + std::max(this->_M_impl._M_map_size,
+				     + std::max(this->_M_impl._M_map_size,
 						__nodes_to_add) + 2;
 
 	  _Map_pointer __new_map = this->_M_allocate_map(__new_map_size);
 	  __new_nstart = __new_map + (__new_map_size - __new_num_nodes) / 2
-	                 + (__add_at_front ? __nodes_to_add : 0);
+			 + (__add_at_front ? __nodes_to_add : 0);
 	  std::copy(this->_M_impl._M_start._M_node,
 		    this->_M_impl._M_finish._M_node + 1,
 		    __new_nstart);

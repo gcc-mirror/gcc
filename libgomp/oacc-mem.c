@@ -172,18 +172,11 @@ memcpy_tofrom_device (bool from, void *d, void *h, size_t s, int async,
       return;
     }
 
-  if (async > acc_async_sync)
-    thr->dev->openacc.async_set_async_func (async);
-
-  bool ret = (from
-	      ? thr->dev->dev2host_func (thr->dev->target_id, h, d, s)
-	      : thr->dev->host2dev_func (thr->dev->target_id, d, h, s));
-
-  if (async > acc_async_sync)
-    thr->dev->openacc.async_set_async_func (acc_async_sync);
-
-  if (!ret)
-    gomp_fatal ("error in %s", libfnname);
+  goacc_aq aq = get_goacc_asyncqueue (async);
+  if (from)
+    gomp_copy_dev2host (thr->dev, aq, h, d, s);
+  else
+    gomp_copy_host2dev (thr->dev, aq, d, h, s, /* TODO: cbuf? */ NULL);
 }
 
 void
@@ -509,16 +502,12 @@ present_create_copy (unsigned f, void *h, size_t s, int async)
 
       gomp_mutex_unlock (&acc_dev->lock);
 
-      if (async > acc_async_sync)
-	acc_dev->openacc.async_set_async_func (async);
+      goacc_aq aq = get_goacc_asyncqueue (async);
 
-      tgt = gomp_map_vars (acc_dev, mapnum, &hostaddrs, NULL, &s, &kinds, true,
-			   GOMP_MAP_VARS_OPENACC);
+      tgt = gomp_map_vars_async (acc_dev, aq, mapnum, &hostaddrs, NULL, &s,
+				 &kinds, true, GOMP_MAP_VARS_OPENACC);
       /* Initialize dynamic refcount.  */
       tgt->list[0].key->dynamic_refcount = 1;
-
-      if (async > acc_async_sync)
-	acc_dev->openacc.async_set_async_func (acc_async_sync);
 
       gomp_mutex_lock (&acc_dev->lock);
 
@@ -676,13 +665,9 @@ delete_copyout (unsigned f, void *h, size_t s, int async, const char *libfnname)
 
       if (f & FLAG_COPYOUT)
 	{
-	  if (async > acc_async_sync)
-	    acc_dev->openacc.async_set_async_func (async);
-	  acc_dev->dev2host_func (acc_dev->target_id, h, d, s);
-	  if (async > acc_async_sync)
-	    acc_dev->openacc.async_set_async_func (acc_async_sync);
+	  goacc_aq aq = get_goacc_asyncqueue (async);
+	  gomp_copy_dev2host (acc_dev, aq, h, d, s);
 	}
-
       gomp_remove_var (acc_dev, n);
     }
 
@@ -765,16 +750,12 @@ update_dev_host (int is_dev, void *h, size_t s, int async)
   d = (void *) (n->tgt->tgt_start + n->tgt_offset
 		+ (uintptr_t) h - n->host_start);
 
-  if (async > acc_async_sync)
-    acc_dev->openacc.async_set_async_func (async);
+  goacc_aq aq = get_goacc_asyncqueue (async);
 
   if (is_dev)
-    acc_dev->host2dev_func (acc_dev->target_id, d, h, s);
+    gomp_copy_host2dev (acc_dev, aq, d, h, s, /* TODO: cbuf? */ NULL);
   else
-    acc_dev->dev2host_func (acc_dev->target_id, h, d, s);
-
-  if (async > acc_async_sync)
-    acc_dev->openacc.async_set_async_func (acc_async_sync);
+    gomp_copy_dev2host (acc_dev, aq, h, d, s);
 
   gomp_mutex_unlock (&acc_dev->lock);
 }
@@ -805,7 +786,7 @@ acc_update_self_async (void *h, size_t s, int async)
 
 void
 gomp_acc_insert_pointer (size_t mapnum, void **hostaddrs, size_t *sizes,
-			 void *kinds)
+			 void *kinds, int async)
 {
   struct target_mem_desc *tgt;
   struct goacc_thread *thr = goacc_thread ();
@@ -835,8 +816,9 @@ gomp_acc_insert_pointer (size_t mapnum, void **hostaddrs, size_t *sizes,
     }
 
   gomp_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
-  tgt = gomp_map_vars (acc_dev, mapnum, hostaddrs,
-		       NULL, sizes, kinds, true, GOMP_MAP_VARS_OPENACC);
+  goacc_aq aq = get_goacc_asyncqueue (async);
+  tgt = gomp_map_vars_async (acc_dev, aq, mapnum, hostaddrs,
+			     NULL, sizes, kinds, true, GOMP_MAP_VARS_OPENACC);
   gomp_debug (0, "  %s: mappings prepared\n", __FUNCTION__);
 
   /* Initialize dynamic refcount.  */
@@ -930,7 +912,10 @@ gomp_acc_remove_pointer (void *h, size_t s, bool force_copyfrom, int async,
       if (async < acc_async_noval)
 	gomp_unmap_vars (t, true);
       else
-	t->device_descr->openacc.register_async_cleanup_func (t, async);
+	{
+	  goacc_aq aq = get_goacc_asyncqueue (async);
+	  gomp_unmap_vars_async (t, true, aq);
+	}
     }
 
   gomp_mutex_unlock (&acc_dev->lock);

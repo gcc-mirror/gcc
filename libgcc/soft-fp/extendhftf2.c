@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Return an IEEE half converted to IEEE quad
-   Copyright (C) 1997-2018 Free Software Foundation, Inc.
+   Copyright (C) 1997-2019 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -41,7 +41,7 @@ __extendhftf2 (HFtype a)
 
   FP_INIT_EXCEPTIONS;
   FP_UNPACK_RAW_H (A, a);
-#if (2 * _FP_W_TYPE_SIZE) < _FP_FRACBITS_Q
+#if _FP_W_TYPE_SIZE < 64
   FP_EXTEND (Q, H, 4, 1, R, A);
 #else
   FP_EXTEND (Q, H, 2, 1, R, A);

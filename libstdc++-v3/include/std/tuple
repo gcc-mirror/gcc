@@ -832,7 +832,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       tuple&
       operator=(typename conditional<__assignable<const _Elements&...>(),
 				     const tuple&,
-				     const __nonesuch_no_braces&>::type __in)
+				     const __nonesuch&>::type __in)
       noexcept(__nothrow_assignable<const _Elements&...>())
       {
 	this->_M_assign(__in);
@@ -842,7 +842,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       tuple&
       operator=(typename conditional<__assignable<_Elements...>(),
 				     tuple&&,
-				     __nonesuch_no_braces&&>::type __in)
+				     __nonesuch&&>::type __in)
       noexcept(__nothrow_assignable<_Elements...>())
       {
 	this->_M_assign(std::move(__in));
@@ -1243,7 +1243,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       tuple&
       operator=(typename conditional<__assignable<const _T1&, const _T2&>(),
 				     const tuple&,
-				     const __nonesuch_no_braces&>::type __in)
+				     const __nonesuch&>::type __in)
       noexcept(__nothrow_assignable<const _T1&, const _T2&>())
       {
 	this->_M_assign(__in);
@@ -1253,7 +1253,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       tuple&
       operator=(typename conditional<__assignable<_T1, _T2>(),
 				     tuple&&,
-				     __nonesuch_no_braces&&>::type __in)
+				     __nonesuch&&>::type __in)
       noexcept(__nothrow_assignable<_T1, _T2>())
       {
 	this->_M_assign(std::move(__in));
@@ -1691,6 +1691,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct uses_allocator<tuple<_Types...>, _Alloc> : true_type { };
 
   // See stl_pair.h...
+  /** "piecewise construction" using a tuple of arguments for each member.
+   *
+   * @param __first Arguments for the first member of the pair.
+   * @param __second Arguments for the second member of the pair.
+   *
+   * The elements of each tuple will be used as the constructor arguments
+   * for the data members of the pair.
+  */
   template<class _T1, class _T2>
     template<typename... _Args1, typename... _Args2>
       inline
@@ -1748,7 +1756,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       return __make_from_tuple_impl<_Tp>(
         std::forward<_Tuple>(__t),
-	make_index_sequence<tuple_size_v<decay_t<_Tuple>>>{});
+	make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{});
     }
 #endif // C++17
 

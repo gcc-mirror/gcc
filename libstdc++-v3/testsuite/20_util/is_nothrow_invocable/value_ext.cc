@@ -23,13 +23,20 @@ template<typename... T>
   constexpr bool is_nt_invocable()
   { return std::__is_nothrow_invocable<T...>::value; }
 
-  template<typename R, typename... T>
+template<typename R, typename... T>
   constexpr bool is_nt_invocable_conv(std::true_type)
   {
     using result_type = typename std::__invoke_result<T...>::type;
+
+    struct ConvIsNothrow
+    {
+      static void test(std::true_type, R) noexcept;
+      static void test(std::false_type, const result_type&);
+    };
+
     return std::is_void<R>::value
-      || (std::is_convertible<result_type, R>::value
-	  && std::is_nothrow_constructible<R, result_type>::value);
+      || noexcept(ConvIsNothrow::test(std::is_convertible<result_type, R>(),
+				      std::declval<result_type>()));
   }
 
 template<typename R, typename... T>

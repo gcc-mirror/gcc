@@ -1017,14 +1017,11 @@ static bool
 is_value_included_in (tree val, tree boundary, enum tree_code cmpc)
 {
   bool inverted = false;
-  bool is_unsigned;
   bool result;
 
   /* Only handle integer constant here.  */
   if (TREE_CODE (val) != INTEGER_CST || TREE_CODE (boundary) != INTEGER_CST)
     return true;
-
-  is_unsigned = TYPE_UNSIGNED (TREE_TYPE (val));
 
   if (cmpc == GE_EXPR || cmpc == GT_EXPR || cmpc == NE_EXPR)
     {
@@ -1032,30 +1029,14 @@ is_value_included_in (tree val, tree boundary, enum tree_code cmpc)
       inverted = true;
     }
 
-  if (is_unsigned)
-    {
-      if (cmpc == EQ_EXPR)
-	result = tree_int_cst_equal (val, boundary);
-      else if (cmpc == LT_EXPR)
-	result = tree_int_cst_lt (val, boundary);
-      else
-	{
-	  gcc_assert (cmpc == LE_EXPR);
-	  result = tree_int_cst_le (val, boundary);
-	}
-    }
+  if (cmpc == EQ_EXPR)
+    result = tree_int_cst_equal (val, boundary);
+  else if (cmpc == LT_EXPR)
+    result = tree_int_cst_lt (val, boundary);
   else
     {
-      if (cmpc == EQ_EXPR)
-	result = tree_int_cst_equal (val, boundary);
-      else if (cmpc == LT_EXPR)
-	result = tree_int_cst_lt (val, boundary);
-      else
-	{
-	  gcc_assert (cmpc == LE_EXPR);
-	  result = (tree_int_cst_equal (val, boundary)
-		    || tree_int_cst_lt (val, boundary));
-	}
+      gcc_assert (cmpc == LE_EXPR);
+      result = tree_int_cst_le (val, boundary);
     }
 
   if (inverted)
@@ -1490,7 +1471,7 @@ is_pred_expr_subset_of (pred_info expr1, pred_info expr2)
   if (code2 == NE_EXPR && code1 == NE_EXPR)
     return false;
 
-  if (code2 == NE_EXPR)
+  if (code2 == NE_EXPR && code1 != BIT_AND_EXPR)
     return !is_value_included_in (expr2.pred_rhs, expr1.pred_rhs, code1);
 
   if ((code1 == EQ_EXPR || code1 == BIT_AND_EXPR) && code2 == BIT_AND_EXPR)

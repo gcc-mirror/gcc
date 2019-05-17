@@ -3066,10 +3066,12 @@ tree_if_conversion (struct loop *loop, vec<gimple *> *preds)
   ifcvt_local_dce (loop->header);
 
   /* Perform local CSE, this esp. helps the vectorizer analysis if loads
-     and stores are involved.
+     and stores are involved.  CSE only the loop body, not the entry
+     PHIs, those are to be kept in sync with the non-if-converted copy.
      ???  We'll still keep dead stores though.  */
   exit_bbs = BITMAP_ALLOC (NULL);
   bitmap_set_bit (exit_bbs, single_exit (loop)->dest->index);
+  bitmap_set_bit (exit_bbs, loop->latch->index);
   todo |= do_rpo_vn (cfun, loop_preheader_edge (loop), exit_bbs);
   BITMAP_FREE (exit_bbs);
 

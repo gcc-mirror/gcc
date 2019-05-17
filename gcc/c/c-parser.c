@@ -2347,7 +2347,8 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  bool saved = in_late_binary_op;
 	  in_late_binary_op = true;
 	  c_parser_parse_gimple_body (parser, specs->gimple_or_rtl_pass,
-				      specs->declspec_il);
+				      specs->declspec_il,
+				      specs->entry_bb_count);
 	  in_late_binary_op = saved;
 	}
       else
@@ -6400,7 +6401,7 @@ c_parser_asm_statement (c_parser *parser)
 	case RID_VOLATILE:
 	  if (volatile_loc)
 	    {
-	      error_at (loc, "duplicate asm qualifier %qE", token->value);
+	      error_at (loc, "duplicate %<asm%> qualifier %qE", token->value);
 	      inform (volatile_loc, "first seen here");
 	    }
 	  else
@@ -6411,7 +6412,7 @@ c_parser_asm_statement (c_parser *parser)
 	case RID_INLINE:
 	  if (inline_loc)
 	    {
-	      error_at (loc, "duplicate asm qualifier %qE", token->value);
+	      error_at (loc, "duplicate %<asm%> qualifier %qE", token->value);
 	      inform (inline_loc, "first seen here");
 	    }
 	  else
@@ -6422,7 +6423,7 @@ c_parser_asm_statement (c_parser *parser)
 	case RID_GOTO:
 	  if (goto_loc)
 	    {
-	      error_at (loc, "duplicate asm qualifier %qE", token->value);
+	      error_at (loc, "duplicate %<asm%> qualifier %qE", token->value);
 	      inform (goto_loc, "first seen here");
 	    }
 	  else
@@ -6432,7 +6433,7 @@ c_parser_asm_statement (c_parser *parser)
 
 	case RID_CONST:
 	case RID_RESTRICT:
-	  error_at (loc, "%qE is not an asm qualifier", token->value);
+	  error_at (loc, "%qE is not a valid %<asm%> qualifier", token->value);
 	  c_parser_consume_token (parser);
 	  continue;
 
@@ -6790,7 +6791,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
 
       location_t middle_loc = c_parser_peek_token (parser)->location;
       pedwarn (middle_loc, OPT_Wpedantic,
-	       "ISO C forbids omitting the middle term of a ?: expression");
+	       "ISO C forbids omitting the middle term of a %<?:%> expression");
       if (TREE_CODE (cond.value) == EXCESS_PRECISION_EXPR)
 	{
 	  eptype = TREE_TYPE (cond.value);
@@ -19824,8 +19825,8 @@ c_parser_transaction_cancel (c_parser *parser)
 	  && !is_tm_may_cancel_outer (current_function_decl))
 	{
 	  error_at (loc, "outer %<__transaction_cancel%> not "
-		    "within outer %<__transaction_atomic%>");
-	  error_at (loc, "  or a %<transaction_may_cancel_outer%> function");
+		    "within outer %<__transaction_atomic%> or "
+		    "a %<transaction_may_cancel_outer%> function");
 	  goto ret_error;
 	}
     }

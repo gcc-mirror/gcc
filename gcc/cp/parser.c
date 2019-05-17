@@ -1429,7 +1429,7 @@ cp_lexer_start_debugging (cp_lexer* lexer)
 {
   if (!LEXER_DEBUGGING_ENABLED_P)
     fatal_error (input_location,
-		 "LEXER_DEBUGGING_ENABLED_P is not set to true");
+		 "%<LEXER_DEBUGGING_ENABLED_P%> is not set to true");
 
   lexer->debugging_p = true;
   cp_lexer_debug_stream = stderr;
@@ -1442,7 +1442,7 @@ cp_lexer_stop_debugging (cp_lexer* lexer)
 {
   if (!LEXER_DEBUGGING_ENABLED_P)
     fatal_error (input_location,
-		 "LEXER_DEBUGGING_ENABLED_P is not set to true");
+		 "%<LEXER_DEBUGGING_ENABLED_P%> is not set to true");
 
   lexer->debugging_p = false;
   cp_lexer_debug_stream = NULL;
@@ -4479,18 +4479,16 @@ cp_parser_userdef_char_literal (cp_parser *parser)
 
   /* Build up a call to the user-defined operator  */
   /* Lookup the name we got back from the id-expression.  */
-  vec<tree, va_gc> *args = make_tree_vector ();
+  releasing_vec args;
   vec_safe_push (args, value);
   decl = lookup_literal_operator (name, args);
   if (!decl || decl == error_mark_node)
     {
       error ("unable to find character literal operator %qD with %qT argument",
 	     name, TREE_TYPE (value));
-      release_tree_vector (args);
       return error_mark_node;
     }
   result = finish_call_expr (decl, &args, false, true, tf_warning_or_error);
-  release_tree_vector (args);
   return result;
 }
 
@@ -4577,11 +4575,10 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
   tree num_string = USERDEF_LITERAL_NUM_STRING (literal);
   tree name = cp_literal_operator_id (IDENTIFIER_POINTER (suffix_id));
   tree decl, result;
-  vec<tree, va_gc> *args;
 
   /* Look for a literal operator taking the exact type of numeric argument
      as the literal value.  */
-  args = make_tree_vector ();
+  releasing_vec args;
   vec_safe_push (args, value);
   decl = lookup_literal_operator (name, args);
   if (decl && decl != error_mark_node)
@@ -4606,30 +4603,26 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
 			"floating literal truncated to zero");
 	}
 
-      release_tree_vector (args);
       return result;
     }
-  release_tree_vector (args);
 
   /* If the numeric argument didn't work, look for a raw literal
      operator taking a const char* argument consisting of the number
      in string format.  */
-  args = make_tree_vector ();
+  args->truncate (0);
   vec_safe_push (args, num_string);
   decl = lookup_literal_operator (name, args);
   if (decl && decl != error_mark_node)
     {
       result = finish_call_expr (decl, &args, false, true,
 				 tf_warning_or_error);
-      release_tree_vector (args);
       return result;
     }
-  release_tree_vector (args);
 
   /* If the raw literal didn't work, look for a non-type template
      function with parameter pack char....  Call the function with
      template parameter characters representing the number.  */
-  args = make_tree_vector ();
+  args->truncate (0);
   decl = lookup_literal_operator (name, args);
   if (decl && decl != error_mark_node)
     {
@@ -4643,11 +4636,8 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
       decl = lookup_template_function (decl, tmpl_args);
       result = finish_call_expr (decl, &args, false, true,
 				 tf_warning_or_error);
-      release_tree_vector (args);
       return result;
     }
-
-  release_tree_vector (args);
 
   /* In C++14 the standard library defines complex number suffixes that
      conflict with GNU extensions.  Prefer them if <complex> is #included.  */
@@ -4681,7 +4671,7 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
   else if (i14)
     {
       inform (token->location, "add %<using namespace std::complex_literals%> "
-	      "(from <complex>) to enable the C++14 user-defined literal "
+	      "(from %<<complex>%>) to enable the C++14 user-defined literal "
 	      "suffixes");
       if (ext)
 	inform (token->location, "or use %<j%> instead of %<i%> for the "
@@ -4736,8 +4726,7 @@ cp_parser_userdef_string_literal (tree literal)
 
   /* Build up a call to the user-defined operator.  */
   /* Lookup the name we got back from the id-expression.  */
-  releasing_vec rargs;
-  vec<tree, va_gc> *&args = rargs.get_ref();
+  releasing_vec args;
   vec_safe_push (args, value);
   vec_safe_push (args, build_int_cst (size_type_node, len));
   decl = lookup_literal_operator (name, args);
@@ -6685,7 +6674,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 		  == CPP_SCOPE))
 	    {
 	      token = cp_lexer_consume_token (parser->lexer);
-	      error_at (token->location, "decltype evaluates to %qT, "
+	      error_at (token->location, "%<decltype%> evaluates to %qT, "
 			"which is not a class or enumeration type",
 			token->u.tree_check_value->value);
 	      parser->scope = error_mark_node;
@@ -9957,7 +9946,7 @@ cp_parser_question_colon_clause (cp_parser* parser, cp_expr logical_or_expr)
       && token->type == CPP_COLON)
     {
       pedwarn (token->location, OPT_Wpedantic, 
-               "ISO C++ does not allow ?: with omitted middle operand");
+	       "ISO C++ does not allow %<?:%> with omitted middle operand");
       /* Implicit true clause.  */
       expr = NULL_TREE;
       c_inhibit_evaluation_warnings +=
@@ -12814,8 +12803,7 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
       else
 	{
 	  /* Use global functions with ADL.  */
-	  vec<tree, va_gc> *vec;
-	  vec = make_tree_vector ();
+	  releasing_vec vec;
 
 	  vec_safe_push (vec, range);
 
@@ -12827,8 +12815,6 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
 					      tf_warning_or_error);
 	  *end = finish_call_expr (member_end, &vec, false, true,
 				   tf_warning_or_error);
-
-	  release_tree_vector (vec);
 	}
 
       /* Last common checks.  */
@@ -12876,19 +12862,17 @@ static tree
 cp_parser_range_for_member_function (tree range, tree identifier)
 {
   tree member, res;
-  vec<tree, va_gc> *vec;
 
   member = finish_class_member_access_expr (range, identifier,
 					    false, tf_warning_or_error);
   if (member == error_mark_node)
     return error_mark_node;
 
-  vec = make_tree_vector ();
+  releasing_vec vec;
   res = finish_call_expr (member, &vec,
 			  /*disallow_virtual=*/false,
 			  /*koenig_p=*/false,
 			  tf_warning_or_error);
-  release_tree_vector (vec);
   return res;
 }
 
@@ -14931,7 +14915,7 @@ cp_parser_static_assert(cp_parser *parser, bool member_p)
     {
       if (cxx_dialect < cxx17)
 	pedwarn (input_location, OPT_Wpedantic,
-		 "static_assert without a message "
+		 "%<static_assert%> without a message "
 		 "only available with %<-std=c++17%> or %<-std=gnu++17%>");
       /* Eat the ')'  */
       cp_lexer_consume_token (parser->lexer);
@@ -16974,10 +16958,7 @@ cp_parser_template_id (cp_parser *parser,
     {
       /* If it's not a class-template or a template-template, it should be
 	 a function-template.  */
-      gcc_assert ((DECL_FUNCTION_TEMPLATE_P (templ)
-		   || TREE_CODE (templ) == OVERLOAD
-		   || TREE_CODE (templ) == FUNCTION_DECL
-		   || BASELINK_P (templ)));
+      gcc_assert (OVL_P (templ) || BASELINK_P (templ));
 
       template_id = lookup_template_function (templ, arguments);
       if (TREE_CODE (template_id) == TEMPLATE_ID_EXPR)
@@ -20290,14 +20271,15 @@ cp_parser_asm_definition (cp_parser* parser)
 	  case RID_VOLATILE:
 	    if (volatile_loc)
 	      {
-		error_at (loc, "duplicate asm qualifier %qT", token->u.value);
+		error_at (loc, "duplicate %<asm%> qualifier %qT",
+			  token->u.value);
 		inform (volatile_loc, "first seen here");
 	      }
 	    else
 	      {
 		if (!parser->in_function_body)
-		  warning_at (loc, 0, "asm qualifier %qT ignored outside of "
-				      "function body", token->u.value);
+		  warning_at (loc, 0, "%<asm%> qualifier %qT ignored "
+			      "outside of function body", token->u.value);
 		volatile_loc = loc;
 	      }
 	    cp_lexer_consume_token (parser->lexer);
@@ -20306,7 +20288,8 @@ cp_parser_asm_definition (cp_parser* parser)
 	  case RID_INLINE:
 	    if (inline_loc)
 	      {
-		error_at (loc, "duplicate asm qualifier %qT", token->u.value);
+		error_at (loc, "duplicate %<asm%> qualifier %qT",
+			  token->u.value);
 		inform (inline_loc, "first seen here");
 	      }
 	    else
@@ -20319,7 +20302,8 @@ cp_parser_asm_definition (cp_parser* parser)
 	  case RID_GOTO:
 	    if (goto_loc)
 	      {
-		error_at (loc, "duplicate asm qualifier %qT", token->u.value);
+		error_at (loc, "duplicate %<asm%> qualifier %qT",
+			  token->u.value);
 		inform (goto_loc, "first seen here");
 	      }
 	    else
@@ -20331,7 +20315,7 @@ cp_parser_asm_definition (cp_parser* parser)
 
 	  case RID_CONST:
 	  case RID_RESTRICT:
-	    error_at (loc, "%qT is not an asm qualifier", token->u.value);
+	    error_at (loc, "%qT is not an %<asm%> qualifier", token->u.value);
 	    cp_lexer_consume_token (parser->lexer);
 	    continue;
 
@@ -20347,7 +20331,7 @@ cp_parser_asm_definition (cp_parser* parser)
 
   if (!parser->in_function_body && (inline_p || goto_p))
     {
-      error_at (first_loc, "asm qualifier outside of function body");
+      error_at (first_loc, "%<asm%> qualifier outside of function body");
       inline_p = goto_p = false;
     }
 
@@ -20729,7 +20713,7 @@ cp_parser_init_declarator (cp_parser* parser,
 	     on a function-definition.  */
 	  if (asm_specification)
 	    error_at (asm_spec_start_token->location,
-		      "an asm-specification is not allowed "
+		      "an %<asm%> specification is not allowed "
 		      "on a function-definition");
 	  if (attributes)
 	    error_at (attributes_start_token->location,
@@ -28380,12 +28364,12 @@ cp_parser_template_declaration_after_parameters (cp_parser* parser,
 	{
 	  if (cxx_dialect > cxx17)
 	    error ("literal operator template %qD has invalid parameter list;"
-		   "  Expected non-type template parameter pack <char...> "
+		   " expected non-type template parameter pack %<<char...>%> "
 		   "or single non-type parameter of class type",
 		   decl);
 	  else
-	    error ("literal operator template %qD has invalid parameter list."
-		   "  Expected non-type template parameter pack <char...>",
+	    error ("literal operator template %qD has invalid parameter list;"
+		   " expected non-type template parameter pack %<<char...>%>",
 		   decl);
 	}
     }
@@ -36878,7 +36862,7 @@ cp_parser_omp_for_incr (cp_parser *parser, tree decl)
 static tree
 cp_parser_omp_for_loop_init (cp_parser *parser,
 			     tree &this_pre_body,
-			     vec<tree, va_gc> *&for_block,
+			     releasing_vec &for_block,
 			     tree &init,
 			     tree &orig_init,
 			     tree &decl,
@@ -37299,7 +37283,7 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
   location_t loc_first;
   bool collapse_err = false;
   int i, collapse = 1, ordered = 0, count, nbraces = 0;
-  vec<tree, va_gc> *for_block = make_tree_vector ();
+  releasing_vec for_block;
   auto_vec<tree, 4> orig_inits;
   bool tiling = false;
 
@@ -37688,7 +37672,6 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
       else
 	add_stmt (t);
     }
-  release_tree_vector (for_block);
 
   return ret;
 }
@@ -40094,8 +40077,7 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
 			   || id_equal (orig_reduc_id, "max")))))
 	error_at (loc, "predeclared arithmetic type %qT in "
 		       "%<#pragma omp declare reduction%>", type);
-      else if (TREE_CODE (type) == FUNCTION_TYPE
-	       || TREE_CODE (type) == METHOD_TYPE
+      else if (FUNC_OR_METHOD_TYPE_P (type)
 	       || TREE_CODE (type) == ARRAY_TYPE)
 	error_at (loc, "function or array type %qT in "
 		       "%<#pragma omp declare reduction%>", type);
@@ -40103,8 +40085,8 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
 	error_at (loc, "reference type %qT in "
 		       "%<#pragma omp declare reduction%>", type);
       else if (TYPE_QUALS_NO_ADDR_SPACE (type))
-	error_at (loc, "const, volatile or __restrict qualified type %qT in "
-		       "%<#pragma omp declare reduction%>", type);
+	error_at (loc, "%<const%>, %<volatile%> or %<__restrict%>-qualified "
+		  "type %qT in %<#pragma omp declare reduction%>", type);
       else
 	types.safe_push (type);
 
@@ -40955,7 +40937,7 @@ cp_parser_transaction (cp_parser *parser, cp_token *token)
   else if (keyword == RID_ATOMIC_CANCEL)
     {
       /* cancel-and-throw is unimplemented.  */
-      sorry ("atomic_cancel");
+      sorry ("%<atomic_cancel%>");
       noex = NULL_TREE;
     }
   else

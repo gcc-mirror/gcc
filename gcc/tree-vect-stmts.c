@@ -2592,7 +2592,7 @@ vect_check_load_store_mask (stmt_vec_info stmt_info, tree mask,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "vector mask type %T",
+			 "vector mask type %T"
 			 " does not match vector data type %T.\n",
 			 mask_vectype, vectype);
 
@@ -8864,11 +8864,12 @@ vect_is_simple_cond (tree cond, vec_info *vinfo,
 
   *comp_vectype = vectype1 ? vectype1 : vectype2;
   /* Invariant comparison.  */
-  if (! *comp_vectype && vectype)
+  if (! *comp_vectype)
     {
       tree scalar_type = TREE_TYPE (lhs);
       /* If we can widen the comparison to match vectype do so.  */
       if (INTEGRAL_TYPE_P (scalar_type)
+	  && vectype
 	  && tree_int_cst_lt (TYPE_SIZE (scalar_type),
 			      TYPE_SIZE (TREE_TYPE (vectype))))
 	scalar_type = build_nonstandard_integer_type

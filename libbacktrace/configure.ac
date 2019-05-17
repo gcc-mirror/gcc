@@ -333,12 +333,6 @@ else
     # When built as a GCC target library, we can't do a link test.
     AC_EGREP_HEADER([dl_iterate_phdr], [link.h], [have_dl_iterate_phdr=yes],
 		    [have_dl_iterate_phdr=no])
-    case "${host}" in
-    *-*-solaris2.10*)
-        # Avoid dl_iterate_phdr on Solaris 10, where it is in the
-    	# header file but is only in -ldl.
-	have_dl_iterate_phdr=no ;;
-    esac
   else
     AC_CHECK_FUNC([dl_iterate_phdr], [have_dl_iterate_phdr=yes],
 		  [have_dl_iterate_phdr=no])

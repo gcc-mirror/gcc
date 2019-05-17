@@ -403,8 +403,7 @@ canonicalize_for_substitution (tree node)
       else
 	node = cp_build_qualified_type (TYPE_MAIN_VARIANT (node),
 					cp_type_quals (node));
-      if (TREE_CODE (node) == FUNCTION_TYPE
-	  || TREE_CODE (node) == METHOD_TYPE)
+      if (FUNC_OR_METHOD_TYPE_P (node))
 	{
 	  node = build_ref_qualified_type (node, type_memfn_rqual (orig));
 	  tree r = canonical_eh_spec (TYPE_RAISES_EXCEPTIONS (orig));
@@ -2107,8 +2106,7 @@ write_type (tree type)
 	  t = cp_build_type_attribute_variant (t, attrs);
 	}
       gcc_assert (t != type);
-      if (TREE_CODE (t) == FUNCTION_TYPE
-	  || TREE_CODE (t) == METHOD_TYPE)
+      if (FUNC_OR_METHOD_TYPE_P (t))
 	{
 	  t = build_ref_qualified_type (t, type_memfn_rqual (type));
 	  if (flag_noexcept_type)
@@ -2139,8 +2137,7 @@ write_type (tree type)
 
       /* See through any typedefs.  */
       type = TYPE_MAIN_VARIANT (type);
-      if (TREE_CODE (type) == FUNCTION_TYPE
-	  || TREE_CODE (type) == METHOD_TYPE)
+      if (FUNC_OR_METHOD_TYPE_P (type))
 	type = cxx_copy_lang_qualifiers (type, type_orig);
 
       /* According to the C++ ABI, some library classes are passed the
@@ -2345,11 +2342,11 @@ write_type (tree type)
 	      break;
 
 	    case TYPEOF_TYPE:
-	      sorry ("mangling typeof, use decltype instead");
+	      sorry ("mangling %<typeof%>, use %<decltype%> instead");
 	      break;
 
 	    case UNDERLYING_TYPE:
-	      sorry ("mangling __underlying_type");
+	      sorry ("mangling %<__underlying_type%>");
 	      break;
 
 	    case LANG_TYPE:
@@ -3318,8 +3315,7 @@ write_expression (tree expr)
 
 	    /* Mangle a dependent name as the name, not whatever happens to
 	       be the first function in the overload set.  */
-	    if ((TREE_CODE (fn) == FUNCTION_DECL
-		 || TREE_CODE (fn) == OVERLOAD)
+	    if (OVL_P (fn)
 		&& type_dependent_expression_p_push (expr))
 	      fn = OVL_NAME (fn);
 

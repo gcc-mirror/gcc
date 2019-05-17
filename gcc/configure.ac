@@ -2019,8 +2019,8 @@ AC_ARG_ENABLE(frame-pointer,
 		[enable -fno-omit-frame-pointer by default for x86])], [],
 [
 case $target_os in
-linux* | darwin[[8912]]*)
-  # Enable -fomit-frame-pointer by default for Linux and Darwin with DWARF2.
+linux* | gnu* | darwin[[8912]]* | cygwin* | mingw*)
+  # Enable -fomit-frame-pointer by default for these systems with DWARF2.
   enable_frame_pointer=no
   ;;
 *)
@@ -2886,7 +2886,7 @@ else
       hppa64*-*-hpux* | ia64*-*-hpux*)
 	gcc_cv_ld_hidden=yes
 	;;
-      *-*-solaris2.1[0-9]*)
+      *-*-solaris2*)
 	# Support for .hidden in Sun ld appeared in Solaris 9 FCS, but
 	# .symbolic was only added in Solaris 9 12/02.
         gcc_cv_ld_hidden=yes
@@ -3210,27 +3210,12 @@ if test $gcc_cv_as_shf_merge = no; then
     [elf,2,12,0], [--fatal-warnings],
     [.section .rodata.str, "aMS", %progbits, 1])
 fi
-case "$target" in
-  i?86-*-solaris2.10* | x86_64-*-solaris2.10*)
-    # SHF_MERGE support in Solaris 10/x86 ld is broken.
-    if test x"$gnu_ld" = xno; then
-      gcc_cv_as_shf_merge=no
-    fi
-    ;;
-esac
 AC_DEFINE_UNQUOTED(HAVE_GAS_SHF_MERGE,
   [`if test $gcc_cv_as_shf_merge = yes; then echo 1; else echo 0; fi`],
 [Define 0/1 if your assembler supports marking sections with SHF_MERGE flag.])
 
 gcc_cv_ld_aligned_shf_merge=yes
 case "$target" in
-  # While Solaris 10/SPARC ld isn't affected, disable to avoid problems
-  # relinking on Solaris 11 < 11.4.
-  sparc*-*-solaris2.10*)
-    if test x"$gnu_ld" = xno; then
-      gcc_cv_ld_aligned_shf_merge=no
-    fi
-    ;;
   # SHF_MERGE support is broken in Solaris ld up to Solaris 11.3/SPARC for
   # alignment > 1.
   sparc*-*-solaris2.11*)
@@ -3276,7 +3261,7 @@ else
              foo:
 	     '
            ;;
-         i?86-*-solaris2* | x86_64-*-solaris2.1[[0-9]]*)
+         i?86-*-solaris2* | x86_64-*-solaris2*)
 	   conftest_s='
                .group foo,.text%foo,#comdat
                .section .text%foo, "ax", @progbits
@@ -3499,7 +3484,7 @@ foo:	.long	25
 	;;
   i[34567]86-*-* | x86_64-*-*)
     case "$target" in
-      i[34567]86-*-solaris2.* | x86_64-*-solaris2.1[0-9]*)
+      i[34567]86-*-solaris2.* | x86_64-*-solaris2.*)
 	on_solaris=yes
         ;;
       *)
@@ -6232,11 +6217,7 @@ fi
 AC_MSG_CHECKING(dl_iterate_phdr in target C library)
 gcc_cv_target_dl_iterate_phdr=unknown
 case "$target" in
-  # Restrict to Solaris 11+.  While most of the Solaris 11 linker changes
-  # were backported to Solaris 10 Update 10, dl_iterate_phdr only lives in
-  # libdl there, both complicating its use and breaking compatibility
-  # between Solaris 10 updates.
-  *-*-solaris2.1[[1-9]]*)
+  *-*-solaris2*)
     # <link.h> needs both a dl_iterate_phdr declaration and support for
     # compilation with largefile support.
     if grep dl_iterate_phdr $target_header_dir/link.h > /dev/null 2>&1 \

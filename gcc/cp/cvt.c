@@ -88,7 +88,7 @@ cp_convert_to_pointer (tree type, tree expr, bool dofold,
       if (!COMPLETE_TYPE_P (intype))
 	{
 	  if (complain & tf_error)
-	    error_at (loc, "can%'t convert from incomplete type %qH to %qI",
+	    error_at (loc, "cannot convert from incomplete type %qH to %qI",
 		      intype, type);
 	  return error_mark_node;
 	}
@@ -562,10 +562,9 @@ force_rvalue (tree expr, tsubst_flags_t complain)
   tree type = TREE_TYPE (expr);
   if (MAYBE_CLASS_TYPE_P (type) && TREE_CODE (expr) != TARGET_EXPR)
     {
-      vec<tree, va_gc> *args = make_tree_vector_single (expr);
+      releasing_vec args (make_tree_vector_single (expr));
       expr = build_special_member_call (NULL_TREE, complete_ctor_identifier,
 					&args, type, LOOKUP_NORMAL, complain);
-      release_tree_vector (args);
       expr = build_cplus_new (type, expr, complain);
     }
   else
@@ -925,12 +924,11 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	ctor = build_user_type_conversion (type, ctor, flags, complain);
       else
 	{
-	  vec<tree, va_gc> *ctor_vec = make_tree_vector_single (ctor);
+	  releasing_vec ctor_vec (make_tree_vector_single (ctor));
 	  ctor = build_special_member_call (NULL_TREE,
 					    complete_ctor_identifier,
 					    &ctor_vec,
 					    type, flags, complain);
-	  release_tree_vector (ctor_vec);
 	}
       if (ctor)
 	return build_cplus_new (type, ctor, complain);
@@ -1062,14 +1060,14 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
 	  auto_diagnostic_group d;
 	  if (warning_at (loc, OPT_Wunused_result,
 			  "ignoring return value of %qD, "
-			  "declared with attribute warn_unused_result",
+			  "declared with attribute %<warn_unused_result%>",
 			  fn))
 	    inform (DECL_SOURCE_LOCATION (fn), "declared here");
 	}
       else
 	warning_at (loc, OPT_Wunused_result,
 		    "ignoring return value of function "
-		    "declared with attribute warn_unused_result");
+		    "declared with attribute %<warn_unused_result%>");
     }
 }
 
@@ -1822,7 +1820,7 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 	  if (TREE_CODE (cand) == TEMPLATE_DECL)
 	    {
 	      if (complain)
-		error ("default type conversion can%'t deduce template"
+		error ("default type conversion cannot deduce template"
 		       " argument for %qD", cand);
 	      return error_mark_node;
 	    }
@@ -1922,7 +1920,7 @@ type_promotes_to (tree type)
 	{
 	  if (abi_version_crosses (6)
 	      && TYPE_MODE (prom) != TYPE_MODE (type))
-	    warning (OPT_Wabi, "scoped enum %qT passed through ... as "
+	    warning (OPT_Wabi, "scoped enum %qT passed through %<...%> as "
 		     "%qT before %<-fabi-version=6%>, %qT after",
 		     type, prom, ENUM_UNDERLYING_TYPE (type));
 	  if (!abi_version_at_least (6))
@@ -1996,8 +1994,7 @@ perform_qualification_conversions (tree type, tree expr)
 bool
 tx_safe_fn_type_p (tree t)
 {
-  if (TREE_CODE (t) != FUNCTION_TYPE
-      && TREE_CODE (t) != METHOD_TYPE)
+  if (!FUNC_OR_METHOD_TYPE_P (t))
     return false;
   return !!lookup_attribute ("transaction_safe", TYPE_ATTRIBUTES (t));
 }

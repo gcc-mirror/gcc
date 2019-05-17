@@ -240,6 +240,8 @@ int32	runtime_snprintf(byte*, int32, const char*, ...);
 #define runtime_memmove(a, b, s) __builtin_memmove((a), (b), (s))
 String	runtime_gostringnocopy(const byte*)
   __asm__ (GOSYM_PREFIX "runtime.gostringnocopy");
+void	runtime_ginit(void)
+  __asm__ (GOSYM_PREFIX "runtime.ginit");
 void	runtime_schedinit(void)
   __asm__ (GOSYM_PREFIX "runtime.schedinit");
 void	runtime_initsig(bool)
@@ -483,6 +485,7 @@ struct funcfileline_return
   String retfn;
   String retfile;
   intgo retline;
+  intgo retframes;
 };
 
 struct funcfileline_return

@@ -13048,12 +13048,6 @@ else
 fi
 rm -f conftest*
 
-    case "${host}" in
-    *-*-solaris2.10*)
-        # Avoid dl_iterate_phdr on Solaris 10, where it is in the
-    	# header file but is only in -ldl.
-	have_dl_iterate_phdr=no ;;
-    esac
   else
     ac_fn_c_check_func "$LINENO" "dl_iterate_phdr" "ac_cv_func_dl_iterate_phdr"
 if test "x$ac_cv_func_dl_iterate_phdr" = xyes; then :

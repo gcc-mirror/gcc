@@ -6784,7 +6784,7 @@ expand_builtin_atomic_always_lock_free (tree exp)
 
   if (TREE_CODE (arg0) != INTEGER_CST)
     {
-      error ("non-constant argument 1 to __atomic_always_lock_free");
+      error ("non-constant argument 1 to %qs", "__atomic_always_lock_free");
       return const0_rtx;
     }
 
@@ -6826,7 +6826,7 @@ expand_builtin_atomic_is_lock_free (tree exp)
 
   if (!INTEGRAL_TYPE_P (TREE_TYPE (arg0)))
     {
-      error ("non-integer argument 1 to __atomic_is_lock_free");
+      error ("non-integer argument 1 to %qs", "__atomic_is_lock_free");
       return NULL_RTX;
     }
 
@@ -10224,7 +10224,7 @@ fold_builtin_next_arg (tree exp, bool va_start_p)
 
   if (!stdarg_p (fntype))
     {
-      error ("%<va_start%> used in function with fixed args");
+      error ("%<va_start%> used in function with fixed arguments");
       return true;
     }
 

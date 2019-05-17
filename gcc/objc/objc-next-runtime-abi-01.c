@@ -150,7 +150,8 @@ objc_next_runtime_abi_01_init (objc_runtime_hooks *rthooks)
     {
       warning_at (UNKNOWN_LOCATION, OPT_Wall,
 		"%<-fobjc-sjlj-exceptions%> is the only supported exceptions "
-		"system for %<-fnext-runtime%> with %<-fobjc-abi-version%> < 2");
+		"system for %<-fnext-runtime%> with %<-fobjc-abi-version%> "
+		"argument less than 2");
     }
 
   rthooks->initialize = next_runtime_01_initialize;

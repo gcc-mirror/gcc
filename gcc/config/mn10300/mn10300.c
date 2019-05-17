@@ -2585,8 +2585,10 @@ mn10300_asm_output_mi_thunk (FILE *        file,
 			     HOST_WIDE_INT vcall_offset,
 			     tree          function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
   const char * _this;
 
+  assemble_start_function (thunk_fndecl, fnname);
   /* Get the register holding the THIS parameter.  Handle the case
      where there is a hidden first argument for a returned structure.  */
   if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
@@ -2613,6 +2615,7 @@ mn10300_asm_output_mi_thunk (FILE *        file,
   fputs ("\tjmp ", file);
   assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
   putc ('\n', file);
+  assemble_end_function (thunk_fndecl, fnname);
 }
 
 /* Return true if mn10300_output_mi_thunk would be able to output the

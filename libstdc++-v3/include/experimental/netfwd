@@ -96,7 +96,7 @@ inline namespace v1
 namespace ip
 {
   /**
-   * @ingroup networking-ts
+   * @addtogroup networking-ts
    * @{
    */
     class address;

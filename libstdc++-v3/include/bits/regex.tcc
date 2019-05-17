@@ -34,6 +34,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 namespace __detail
 {
+  /// @cond undocumented
+
   // Result of merging regex_match and regex_search.
   //
   // __policy now can be _S_auto (auto dispatch) and _S_alternate (use
@@ -57,8 +59,6 @@ namespace __detail
       typename match_results<_BiIter, _Alloc>::_Base_type& __res = __m;
       __m._M_begin = __s;
       __m._M_resize(__re._M_automaton->_M_sub_count());
-      for (auto& __it : __res)
-	__it.matched = false;
 
       bool __ret;
       if ((__re.flags() & regex_constants::__polynomial)
@@ -109,16 +109,14 @@ namespace __detail
 	}
       else
 	{
-	  __m._M_resize(0);
-	  for (auto& __it : __res)
-	    {
-	      __it.matched = false;
-	      __it.first = __it.second = __e;
-	    }
+	  __m._M_establish_failed_match(__e);
 	}
       return __ret;
     }
-}
+  /// @endcond
+} // namespace __detail
+
+  /// @cond
 
   template<typename _Ch_type>
   template<typename _Fwd_iter>
@@ -352,7 +350,8 @@ namespace __detail
 
   template<typename _Bi_iter, typename _Alloc>
   template<typename _Out_iter>
-    _Out_iter match_results<_Bi_iter, _Alloc>::
+    _Out_iter
+    match_results<_Bi_iter, _Alloc>::
     format(_Out_iter __out,
 	   const match_results<_Bi_iter, _Alloc>::char_type* __fmt_first,
 	   const match_results<_Bi_iter, _Alloc>::char_type* __fmt_last,
@@ -666,6 +665,8 @@ namespace __detail
       else
 	_M_result = nullptr;
     }
+
+  /// @endcond
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

@@ -1527,8 +1527,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 		  || CP_TYPE_CONST_P (TREE_TYPE (operand))
 		  /* Functions are not modifiable, even though they are
 		     lvalues.  */
-		  || TREE_CODE (TREE_TYPE (operand)) == FUNCTION_TYPE
-		  || TREE_CODE (TREE_TYPE (operand)) == METHOD_TYPE
+		  || FUNC_OR_METHOD_TYPE_P (TREE_TYPE (operand))
 		  /* If it's an aggregate and any field is const, then it is
 		     effectively const.  */
 		  || (CLASS_TYPE_P (TREE_TYPE (operand))
@@ -1586,7 +1585,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 	     resolve the overloading.  */
 	  if (TREE_TYPE (operand) == unknown_type_node)
 	    {
-	      error ("type of asm operand %qE could not be determined",
+	      error ("type of %<asm%> operand %qE could not be determined",
 		     TREE_VALUE (t));
 	      operand = error_mark_node;
 	    }
@@ -1668,7 +1667,7 @@ finish_label_decl (tree name)
 {
   if (!at_function_scope_p ())
     {
-      error ("__label__ declarations are only allowed in function scopes");
+      error ("%<__label__%> declarations are only allowed in function scopes");
       return;
     }
 
@@ -3993,7 +3992,7 @@ calculate_direct_bases (tree type, tsubst_flags_t complain)
       || !NON_UNION_CLASS_TYPE_P (type))
     return make_tree_vec (0);
 
-  vec<tree, va_gc> *vector = make_tree_vector ();
+  releasing_vec vector;
   vec<tree, va_gc> *base_binfos = BINFO_BASE_BINFOS (TYPE_BINFO (type));
   tree binfo;
   unsigned i;
@@ -4013,7 +4012,6 @@ calculate_direct_bases (tree type, tsubst_flags_t complain)
   for (i = 0; i < vector->length (); ++i)
     TREE_VEC_ELT (bases_vec, i) = BINFO_TYPE ((*vector)[i]);
 
-  release_tree_vector (vector);
   return bases_vec;
 }
 
@@ -4059,27 +4057,24 @@ calculate_bases (tree type, tsubst_flags_t complain)
       || !NON_UNION_CLASS_TYPE_P (type))
     return make_tree_vec (0);
 
-  vec<tree, va_gc> *vector = make_tree_vector ();
+  releasing_vec vector;
   tree bases_vec = NULL_TREE;
   unsigned i;
   vec<tree, va_gc> *vbases;
-  vec<tree, va_gc> *nonvbases;
   tree binfo;
 
   /* First go through virtual base classes */
   for (vbases = CLASSTYPE_VBASECLASSES (type), i = 0;
        vec_safe_iterate (vbases, i, &binfo); i++)
     {
-      vec<tree, va_gc> *vbase_bases
+      releasing_vec vbase_bases
 	= calculate_bases_helper (BINFO_TYPE (binfo));
       vec_safe_splice (vector, vbase_bases);
-      release_tree_vector (vbase_bases);
     }
 
   /* Now for the non-virtual bases */
-  nonvbases = calculate_bases_helper (type);
+  releasing_vec nonvbases = calculate_bases_helper (type);
   vec_safe_splice (vector, nonvbases);
-  release_tree_vector (nonvbases);
 
   /* Note that during error recovery vector->length can even be zero.  */
   if (vector->length () > 1)
@@ -4093,7 +4088,6 @@ calculate_bases (tree type, tsubst_flags_t complain)
   else
     bases_vec = make_tree_vec (0);
 
-  release_tree_vector (vector);
   return bases_vec;
 }
 
@@ -4105,7 +4099,7 @@ finish_bases (tree type, bool direct)
   if (!processing_template_decl)
     {
       /* Parameter packs can only be used in templates */
-      error ("Parameter pack __bases only valid in template declaration");
+      error ("parameter pack %<__bases%> only valid in template declaration");
       return error_mark_node;
     }
 
@@ -4141,8 +4135,7 @@ finish_offsetof (tree object_ptr, tree expr, location_t loc)
 	      TREE_OPERAND (expr, 2));
       return error_mark_node;
     }
-  if (TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE
-      || TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE
+  if (FUNC_OR_METHOD_TYPE_P (TREE_TYPE (expr))
       || TREE_TYPE (expr) == unknown_type_node)
     {
       while (TREE_CODE (expr) == COMPONENT_REF
@@ -4171,7 +4164,7 @@ finish_offsetof (tree object_ptr, tree expr, location_t loc)
       && CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (object_ptr)))
       && CLASSTYPE_NON_STD_LAYOUT (TREE_TYPE (TREE_TYPE (object_ptr)))
       && cp_unevaluated_operand == 0)
-    warning_at (loc, OPT_Winvalid_offsetof, "offsetof within "
+    warning_at (loc, OPT_Winvalid_offsetof, "%<offsetof%> within "
 		"non-standard-layout type %qT is conditionally-supported",
 		TREE_TYPE (TREE_TYPE (object_ptr)));
   return fold_offsetof (expr);
@@ -5539,8 +5532,7 @@ cp_check_omp_declare_reduction (tree udr)
 	  return;
 	}
     }
-  else if (TREE_CODE (type) == FUNCTION_TYPE
-	   || TREE_CODE (type) == METHOD_TYPE
+  else if (FUNC_OR_METHOD_TYPE_P (type)
 	   || TREE_CODE (type) == ARRAY_TYPE)
     {
       error_at (loc, "function or array type %qT in "
@@ -5555,8 +5547,8 @@ cp_check_omp_declare_reduction (tree udr)
     }
   else if (TYPE_QUALS_NO_ADDR_SPACE (type))
     {
-      error_at (loc, "const, volatile or __restrict qualified type %qT in "
-		     "%<#pragma omp declare reduction%>", type);
+      error_at (loc, "%<const%>, %<volatile%> or %<__restrict%>-qualified "
+		"type %qT in %<#pragma omp declare reduction%>", type);
       return;
     }
 
@@ -9006,9 +8998,8 @@ void
 finish_omp_barrier (void)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_GOMP_BARRIER);
-  vec<tree, va_gc> *vec = make_tree_vector ();
+  releasing_vec vec;
   tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
-  release_tree_vector (vec);
   finish_expr_stmt (stmt);
 }
 
@@ -9051,14 +9042,13 @@ void
 finish_omp_flush (int mo)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
-  vec<tree, va_gc> *vec = make_tree_vector ();
+  releasing_vec vec;
   if (mo != MEMMODEL_LAST)
     {
       fn = builtin_decl_explicit (BUILT_IN_ATOMIC_THREAD_FENCE);
       vec->quick_push (build_int_cst (integer_type_node, mo));
     }
   tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
-  release_tree_vector (vec);
   finish_expr_stmt (stmt);
 }
 
@@ -9066,9 +9056,8 @@ void
 finish_omp_taskwait (void)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_GOMP_TASKWAIT);
-  vec<tree, va_gc> *vec = make_tree_vector ();
+  releasing_vec vec;
   tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
-  release_tree_vector (vec);
   finish_expr_stmt (stmt);
 }
 
@@ -9076,9 +9065,8 @@ void
 finish_omp_taskyield (void)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_GOMP_TASKYIELD);
-  vec<tree, va_gc> *vec = make_tree_vector ();
+  releasing_vec vec;
   tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
-  release_tree_vector (vec);
   finish_expr_stmt (stmt);
 }
 
@@ -9101,7 +9089,7 @@ finish_omp_cancel (tree clauses)
 	     "%<parallel%>, %<for%>, %<sections%> or %<taskgroup%> clauses");
       return;
     }
-  vec<tree, va_gc> *vec = make_tree_vector ();
+  releasing_vec vec;
   tree ifc = omp_find_clause (clauses, OMP_CLAUSE_IF);
   if (ifc != NULL_TREE)
     {
@@ -9135,7 +9123,6 @@ finish_omp_cancel (tree clauses)
   vec->quick_push (build_int_cst (integer_type_node, mask));
   vec->quick_push (ifc);
   tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
-  release_tree_vector (vec);
   finish_expr_stmt (stmt);
 }
 
@@ -9158,10 +9145,9 @@ finish_omp_cancellation_point (tree clauses)
 	     "%<parallel%>, %<for%>, %<sections%> or %<taskgroup%> clauses");
       return;
     }
-  vec<tree, va_gc> *vec
+  releasing_vec vec
     = make_tree_vector_single (build_int_cst (integer_type_node, mask));
   tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
-  release_tree_vector (vec);
   finish_expr_stmt (stmt);
 }
 
@@ -9349,7 +9335,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 	  && TYPE_P (TREE_OPERAND (expr, 0))))
     {
       if (complain & tf_error)
-	error ("argument to decltype must be an expression");
+	error ("argument to %<decltype%> must be an expression");
       return error_mark_node;
     }
 
@@ -9377,7 +9363,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
   if (type_unknown_p (expr))
     {
       if (complain & tf_error)
-	error ("decltype cannot resolve address of overloaded function");
+	error ("%<decltype%> cannot resolve address of overloaded function");
       return error_mark_node;
     }
 

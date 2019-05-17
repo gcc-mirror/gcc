@@ -100,6 +100,7 @@ func reflect_memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr) {
 
 // memmove copies n bytes from "from" to "to".
 //go:noescape
+//extern __builtin_memmove
 func memmove(to, from unsafe.Pointer, n uintptr)
 
 //go:linkname reflect_memmove reflect.memmove

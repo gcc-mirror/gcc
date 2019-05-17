@@ -1702,7 +1702,7 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
         {
           if (lookup_attribute ("naked",
                                 DECL_ATTRIBUTES (current_function_decl)))
-            error ("cannot allocate stack for variable %q+D, naked function.",
+	    error ("cannot allocate stack for variable %q+D, naked function",
                    var);
 
           expand_one_stack_var (origvar);
@@ -2840,7 +2840,8 @@ tree_conflicts_with_clobbers_p (tree t, HARD_REG_SET *clobbered_regs)
 
   if (overlap)
     {
-      error ("asm-specifier for variable %qE conflicts with asm clobber list",
+      error ("%<asm%> specifier for variable %qE conflicts with "
+	     "%<asm%> clobber list",
 	     DECL_NAME (overlap));
 
       /* Reset registerness to stop multiple errors emitted for a single
@@ -2874,6 +2875,15 @@ asm_clobber_reg_is_valid (int regno, int nregs, const char *regname)
       error ("PIC register clobbered by %qs in %<asm%>", regname);
       is_valid = false;
     }
+  else if (!in_hard_reg_set_p
+	   (accessible_reg_set, reg_raw_mode[regno], regno))
+    {
+      /* ??? Diagnose during gimplification?  */
+      error ("the register %qs cannot be clobbered in %<asm%>"
+	     " for the current target", regname);
+      is_valid = false;
+    }
+
   /* Clobbering the stack pointer register is deprecated.  GCC expects
      the value of the stack pointer after an asm statement to be the same
      as it was before, so no asm can validly clobber the stack pointer in
@@ -3253,7 +3263,8 @@ expand_asm_stmt (gasm *stmt)
 	  if (allows_reg && TYPE_MODE (type) != BLKmode)
 	    op = force_reg (TYPE_MODE (type), op);
 	  else if (!allows_mem)
-	    warning (0, "asm operand %d probably doesn%'t match constraints",
+	    warning (0, "%<asm%> operand %d probably does not match "
+		     "constraints",
 		     i + noutputs);
 	  else if (MEM_P (op))
 	    {
@@ -3436,11 +3447,13 @@ expand_asm_stmt (gasm *stmt)
 		 tripping over the under-construction body.  */
 	      for (unsigned k = 0; k < noutputs; ++k)
 		if (reg_overlap_mentioned_p (clobbered_reg, output_rvec[k]))
-		  internal_error ("asm clobber conflict with output operand");
+		  internal_error ("%<asm%> clobber conflict with "
+				  "output operand");
 
 	      for (unsigned k = 0; k < ninputs - ninout; ++k)
 		if (reg_overlap_mentioned_p (clobbered_reg, input_rvec[k]))
-		  internal_error ("asm clobber conflict with input operand");
+		  internal_error ("%<asm%> clobber conflict with "
+				  "input operand");
 	    }
 
 	  XVECEXP (body, 0, i++) = gen_rtx_CLOBBER (VOIDmode, clobbered_reg);

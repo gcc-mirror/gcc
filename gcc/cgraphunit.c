@@ -796,8 +796,8 @@ process_function_and_variable_attributes (cgraph_node *first,
 	  /* redefining extern inline function makes it DECL_UNINLINABLE.  */
 	  && !DECL_UNINLINABLE (decl))
 	warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
-		    "always_inline function might not be inlinable");
-     
+		    "%<always_inline%> function might not be inlinable");
+
       process_common_attributes (node, decl);
     }
   for (vnode = symtab->first_variable (); vnode != first_var;
@@ -1790,7 +1790,6 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       && targetm.asm_out.can_output_mi_thunk (thunk_fndecl, fixed_offset,
 					      virtual_value, alias))
     {
-      const char *fnname;
       tree fn_block;
       tree restype = TREE_TYPE (TREE_TYPE (thunk_fndecl));
 
@@ -1814,7 +1813,6 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	= build_decl (DECL_SOURCE_LOCATION (thunk_fndecl),
 		      RESULT_DECL, 0, restype);
       DECL_CONTEXT (DECL_RESULT (thunk_fndecl)) = thunk_fndecl;
-      fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
 
       /* The back end expects DECL_INITIAL to contain a BLOCK, so we
 	 create one.  */
@@ -1828,12 +1826,10 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       insn_locations_init ();
       set_curr_insn_location (DECL_SOURCE_LOCATION (thunk_fndecl));
       prologue_location = curr_insn_location ();
-      assemble_start_function (thunk_fndecl, fnname);
 
       targetm.asm_out.output_mi_thunk (asm_out_file, thunk_fndecl,
 				       fixed_offset, virtual_value, alias);
 
-      assemble_end_function (thunk_fndecl, fnname);
       insn_locations_finalize ();
       init_insn_lengths ();
       free_after_compilation (cfun);

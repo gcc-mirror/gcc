@@ -44,6 +44,8 @@ go_create_gogo(const struct go_create_gogo_args* args)
   if (args->debug_escape_hash != NULL)
     ::gogo->set_debug_escape_hash(args->debug_escape_hash);
   ::gogo->set_nil_check_size_threshold(args->nil_check_size_threshold);
+  if (args->debug_optimization)
+    ::gogo->set_debug_optimization(args->debug_optimization);
 }
 
 // Parse the input files.
@@ -140,6 +142,10 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
   if (only_check_syntax)
     return;
 
+  // Make implicit type conversions explicit.
+  ::gogo->add_conversions();
+
+  // Analyze the program flow for escape information.
   ::gogo->analyze_escape();
 
   // Export global identifiers as appropriate.

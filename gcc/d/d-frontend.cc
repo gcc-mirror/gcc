@@ -625,7 +625,7 @@ getTypeInfoType (Loc loc, Type *type, Scope *sc)
 	  if (!warned)
 	    {
 	      error_at (make_location_t (loc),
-			"%<object.TypeInfo%> cannot be used with -fno-rtti");
+			"%<object.TypeInfo%> cannot be used with %<-fno-rtti%>");
 	      warned = 1;
 	    }
 	}

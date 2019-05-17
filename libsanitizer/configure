@@ -16659,12 +16659,6 @@ else
 fi
 rm -f conftest*
 
-  case "${host}" in
-  *-*-solaris2.10*)
-    # Avoid dl_iterate_phdr on Solaris 10, where it is in the
-    # header file but is only in -ldl.
-    have_dl_iterate_phdr=no ;;
-  esac
 fi
 if test "$have_dl_iterate_phdr" = "yes"; then
 

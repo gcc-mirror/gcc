@@ -1,5 +1,7 @@
 2019-05-17  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r271338.
+
 	gcc/cp/
 	* module.cc (trees_out::mark_class_member): Add do_defn parm.
 	Mark the definition.

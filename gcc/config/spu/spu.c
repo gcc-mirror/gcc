@@ -7043,8 +7043,10 @@ spu_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 		     HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		     tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
   rtx op[8];
 
+  assemble_start_function (thunk, fnname);
   /* Make sure unwind info is emitted for the thunk if needed.  */
   final_start_function (emit_barrier (), file, 1);
 
@@ -7116,6 +7118,7 @@ spu_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   output_asm_insn ("br\t%0", op);
 
   final_end_function ();
+  assemble_end_function (thunk, fnname);
 }
 
 /* Canonicalize a comparison from one we don't have to one we do have.  */

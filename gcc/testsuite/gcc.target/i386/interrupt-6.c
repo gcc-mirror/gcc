@@ -31,7 +31,7 @@ fn4 (uword_t error_code, void *frame)
   error = error_code;
 }
 
-extern int fn5 (void *) __attribute__ ((interrupt)); /* { dg-error "interrupt service routine can't have non-void return value" } */
+extern int fn5 (void *) __attribute__ ((interrupt)); /* { dg-error "interrupt service routine must return 'void'" } */
 
 int
 fn5 (void *frame)

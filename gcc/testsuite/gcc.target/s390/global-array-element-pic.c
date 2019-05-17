@@ -1,6 +1,6 @@
 /* Test accesses to global array elements in PIC code.  */
 /* { dg-do compile } */
-/* { dg-options "-O1 -fPIC" } */
+/* { dg-options "-O1 -march=z900 -fPIC" } */
 
 extern char a[] __attribute__ ((aligned (2)));
 extern char *b;

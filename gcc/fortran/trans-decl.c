@@ -2512,6 +2512,10 @@ create_function_arglist (gfc_symbol * sym)
 	  DECL_ARG_TYPE (length) = len_type;
 	  TREE_READONLY (length) = 1;
 	  gfc_finish_decl (length);
+	  if (f->sym->ts.u.cl
+	      && f->sym->ts.u.cl->length
+	      && f->sym->ts.u.cl->length->expr_type == EXPR_CONSTANT)
+	    DECL_HIDDEN_STRING_LENGTH (length) = 1;
 
 	  /* Remember the passed value.  */
           if (!f->sym->ts.u.cl ||  f->sym->ts.u.cl->passed_length)
@@ -4278,8 +4282,10 @@ convert_CFI_desc (gfc_wrapped_block * block, gfc_symbol *sym)
   tree CFI_desc_ptr;
   tree dummy_ptr;
   tree tmp;
+  tree present;
   tree incoming;
   tree outgoing;
+  stmtblock_t outer_block;
   stmtblock_t tmpblock;
 
   /* dummy_ptr will be the pointer to the passed array descriptor,
@@ -4303,6 +4309,12 @@ convert_CFI_desc (gfc_wrapped_block * block, gfc_symbol *sym)
       gfc_desc_ptr = gfc_create_var (tmp, "gfc_desc_ptr");
       CFI_desc_ptr = gfc_create_var (pvoid_type_node, "CFI_desc_ptr");
 
+      /* Fix the condition for the presence of the argument.  */
+      gfc_init_block (&outer_block);
+      present = fold_build2_loc (input_location, NE_EXPR,
+				 logical_type_node, dummy_ptr,
+				 build_int_cst (TREE_TYPE (dummy_ptr), 0));
+
       gfc_init_block (&tmpblock);
       /* Pointer to the gfc descriptor.  */
       gfc_add_modify (&tmpblock, gfc_desc_ptr,
@@ -4318,16 +4330,43 @@ convert_CFI_desc (gfc_wrapped_block * block, gfc_symbol *sym)
       /* Set the dummy pointer to point to the gfc_descriptor.  */
       gfc_add_modify (&tmpblock, dummy_ptr,
 		      fold_convert (TREE_TYPE (dummy_ptr), gfc_desc_ptr));
-      incoming = gfc_finish_block (&tmpblock);
 
-      gfc_init_block (&tmpblock);
+      /* The hidden string length is not passed to bind(C) procedures so set
+	 it from the descriptor element length.  */
+      if (sym->ts.type == BT_CHARACTER
+	  && sym->ts.u.cl->backend_decl
+	  && VAR_P (sym->ts.u.cl->backend_decl))
+	{
+	  tmp = build_fold_indirect_ref_loc (input_location, dummy_ptr);
+	  tmp = gfc_conv_descriptor_elem_len (tmp);
+	  gfc_add_modify (&tmpblock, sym->ts.u.cl->backend_decl,
+			  fold_convert (TREE_TYPE (sym->ts.u.cl->backend_decl),
+				        tmp));
+	}
+
+      /* Check that the argument is present before executing the above.  */
+      incoming = build3_v (COND_EXPR, present,
+			   gfc_finish_block (&tmpblock),
+			   build_empty_stmt (input_location));
+      gfc_add_expr_to_block (&outer_block, incoming);
+      incoming = gfc_finish_block (&outer_block);
+
+
       /* Convert the gfc descriptor back to the CFI type before going
-	 out of scope.  */
+	 out of scope, if the CFI type was present at entry.  */
+      gfc_init_block (&outer_block);
+      gfc_init_block (&tmpblock);
+
       tmp = gfc_build_addr_expr (ppvoid_type_node, CFI_desc_ptr);
       outgoing = build_call_expr_loc (input_location,
 			gfor_fndecl_gfc_to_cfi, 2, tmp, gfc_desc_ptr);
       gfc_add_expr_to_block (&tmpblock, outgoing);
-      outgoing = gfc_finish_block (&tmpblock);
+
+      outgoing = build3_v (COND_EXPR, present,
+			   gfc_finish_block (&tmpblock),
+			   build_empty_stmt (input_location));
+      gfc_add_expr_to_block (&outer_block, outgoing);
+      outgoing = gfc_finish_block (&outer_block);
 
       /* Add the lot to the procedure init and finally blocks.  */
       gfc_add_init_cleanup (block, incoming, outgoing);
@@ -4923,9 +4962,9 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 
   for (f = gfc_sym_get_dummy_args (proc_sym); f; f = f->next)
     {
-      if (f->sym && f->sym->tlink == NULL && f->sym->ts.type == BT_CHARACTER)
+      if (f->sym && f->sym->tlink == NULL && f->sym->ts.type == BT_CHARACTER
+	  && f->sym->ts.u.cl->backend_decl)
 	{
-	  gcc_assert (f->sym->ts.u.cl->backend_decl != NULL);
 	  if (TREE_CODE (f->sym->ts.u.cl->backend_decl) == PARM_DECL)
 	    gfc_trans_vla_type_sizes (f->sym, &tmpblock);
 	}

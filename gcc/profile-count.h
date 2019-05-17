@@ -60,6 +60,8 @@ enum profile_quality {
 };
 
 extern const char *profile_quality_as_string (enum profile_quality);
+extern bool parse_profile_quality (const char *value,
+				   profile_quality *quality);
 
 /* The base value for branch probability notes and edge probabilities.  */
 #define REG_BR_PROB_BASE  10000
@@ -149,6 +151,13 @@ class GTY((user)) profile_probability
 
   friend class profile_count;
 public:
+  profile_probability (): m_val (uninitialized_probability),
+    m_quality (profile_guessed)
+  {}
+
+  profile_probability (uint32_t val, profile_quality quality):
+    m_val (val), m_quality (quality)
+  {}
 
   /* Named probabilities.  */
   static profile_probability never ()
@@ -558,6 +567,12 @@ public:
       return initialized_p () && other.initialized_p () && m_val >= other.m_val;
     }
 
+  /* Get the value of the count.  */
+  uint32_t value () const { return m_val; }
+
+  /* Get the quality of the count.  */
+  enum profile_quality quality () const { return m_quality; }
+
   /* Output THIS to F.  */
   void dump (FILE *f) const;
 
@@ -675,7 +690,6 @@ private:
       return ipa_p () == other.ipa_p ();
     }
 public:
-
   /* Used for counters which are expected to be never executed.  */
   static profile_count zero ()
     {
@@ -736,6 +750,9 @@ public:
     {
       return m_quality == profile_precise;
     }
+
+  /* Get the value of the count.  */
+  uint32_t value () const { return m_val; }
 
   /* Get the quality of the count.  */
   enum profile_quality quality () const { return m_quality; }
@@ -1136,7 +1153,8 @@ public:
   /* The profiling runtime uses gcov_type, which is usually 64bit integer.
      Conversions back and forth are used to read the coverage and get it
      into internal representation.  */
-  static profile_count from_gcov_type (gcov_type v);
+  static profile_count from_gcov_type (gcov_type v,
+				       profile_quality quality = profile_precise);
 
   /* LTO streaming support.  */
   static profile_count stream_in (struct lto_input_block *);

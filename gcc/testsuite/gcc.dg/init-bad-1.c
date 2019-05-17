@@ -16,9 +16,9 @@ void h(a)
 
 char s[1] = "x";
 char s1[1] = { "x" };
-char t[1] = "xy"; /* { dg-warning "initializer-string for array of chars is too long" } */
-char t1[1] = { "xy" }; /* { dg-warning "initializer-string for array of chars is too long" } */
-char u[1] = { "x", "x" }; /* { dg-error "excess elements in char array initializer" } */
+char t[1] = "xy"; /* { dg-warning "initializer-string for array of 'char' is too long" } */
+char t1[1] = { "xy" }; /* { dg-warning "initializer-string for array of 'char' is too long" } */
+char u[1] = { "x", "x" }; /* { dg-error "excess elements in 'char' array initializer" } */
 /* { dg-message "near init" "near" { target *-*-* } .-1 } */
 
 int i = { }; /* { dg-error "empty scalar initializer" } */

@@ -132,8 +132,8 @@ get_hot_bb_threshold ()
 {
   if (min_count == -1)
     {
-      min_count
-	= profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION);
+      gcov_type t = profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION);
+      set_hot_bb_threshold (t);
       if (dump_file)
 	fprintf (dump_file, "Setting hotness threshold to %" PRId64 ".\n",
 		 min_count);

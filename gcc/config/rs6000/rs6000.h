@@ -1141,6 +1141,7 @@ enum reg_class
   VRSAVE_REGS,
   VSCR_REGS,
   GEN_OR_FLOAT_REGS,
+  GEN_OR_VSX_REGS,
   LINK_REGS,
   CTR_REGS,
   LINK_OR_CTR_REGS,
@@ -1169,6 +1170,7 @@ enum reg_class
   "VRSAVE_REGS",							\
   "VSCR_REGS",								\
   "GEN_OR_FLOAT_REGS",							\
+  "GEN_OR_VSX_REGS",							\
   "LINK_REGS",								\
   "CTR_REGS",								\
   "LINK_OR_CTR_REGS",							\
@@ -1205,6 +1207,8 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000000, 0x00002000 },			\
   /* GEN_OR_FLOAT_REGS.  */						\
   { 0xffffffff, 0xffffffff, 0x00000000, 0x00004008 },			\
+  /* GEN_OR_VSX_REGS.  */						\
+  { 0xffffffff, 0xffffffff, 0xffffffff, 0x00004008 },			\
   /* LINK_REGS.  */							\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000001 },			\
   /* CTR_REGS.  */							\
@@ -1741,22 +1745,6 @@ typedef struct rs6000_args
    ((((unsigned HOST_WIDE_INT)GET_MODE_MASK (mode)) + 1) >> 1))
 
 
-/* Try a machine-dependent way of reloading an illegitimate address
-   operand.  If we find one, push the reload and jump to WIN.  This
-   macro is used in only one place: `find_reloads_address' in reload.c.
-
-   Implemented on rs6000 by rs6000_legitimize_reload_address.
-   Note that (X) is evaluated twice; this is safe in current usage.  */
-
-#define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)	     \
-do {									     \
-  int win;								     \
-  (X) = rs6000_legitimize_reload_address_ptr ((X), (MODE), (OPNUM),	     \
-			(int)(TYPE), (IND_LEVELS), &win);		     \
-  if ( win )								     \
-    goto WIN;								     \
-} while (0)
-
 #define FIND_BASE_TERM rs6000_find_base_term
 
 /* The register number of the register used to address a table of

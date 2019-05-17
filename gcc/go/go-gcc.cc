@@ -604,6 +604,15 @@ Gcc_backend::Gcc_backend()
 						NULL_TREE),
 		       false, false);
 
+  // We use __builtin_memmove for copying data.
+  this->define_builtin(BUILT_IN_MEMMOVE, "__builtin_memmove", "memmove",
+		       build_function_type_list(void_type_node,
+						ptr_type_node,
+						const_ptr_type_node,
+						size_type_node,
+						NULL_TREE),
+		       false, false);
+
   // Used by runtime/internal/sys.
   this->define_builtin(BUILT_IN_CTZ, "__builtin_ctz", "ctz",
 		       build_function_type_list(integer_type_node,
@@ -767,6 +776,109 @@ Gcc_backend::Gcc_backend()
   this->define_builtin(BUILT_IN_UNREACHABLE, "__builtin_unreachable", NULL,
 		       build_function_type(void_type_node, void_list_node),
 		       true, true);
+
+  // We provide some atomic functions.
+  t = build_function_type_list(uint32_type_node,
+                               ptr_type_node,
+                               integer_type_node,
+                               NULL_TREE);
+  this->define_builtin(BUILT_IN_ATOMIC_LOAD_4, "__atomic_load_4", NULL,
+                       t, false, false);
+
+  t = build_function_type_list(uint64_type_node,
+                               ptr_type_node,
+                               integer_type_node,
+                               NULL_TREE);
+  this->define_builtin(BUILT_IN_ATOMIC_LOAD_8, "__atomic_load_8", NULL,
+                       t, false, false);
+
+  t = build_function_type_list(void_type_node,
+                               ptr_type_node,
+                               uint32_type_node,
+                               integer_type_node,
+                               NULL_TREE);
+  this->define_builtin(BUILT_IN_ATOMIC_STORE_4, "__atomic_store_4", NULL,
+                       t, false, false);
+
+  t = build_function_type_list(void_type_node,
+                               ptr_type_node,
+                               uint64_type_node,
+                               integer_type_node,
+                               NULL_TREE);
+  this->define_builtin(BUILT_IN_ATOMIC_STORE_8, "__atomic_store_8", NULL,
+                       t, false, false);
+
+  t = build_function_type_list(uint32_type_node,
+                               ptr_type_node,
+                               uint32_type_node,
+                               integer_type_node,
+                               NULL_TREE);
+  this->define_builtin(BUILT_IN_ATOMIC_EXCHANGE_4, "__atomic_exchange_4", NULL,
+                       t, false, false);
+
+  t = build_function_type_list(uint64_type_node,
+                               ptr_type_node,
+                               uint64_type_node,
+                               integer_type_node,
+                               NULL_TREE);
+  this->define_builtin(BUILT_IN_ATOMIC_EXCHANGE_8, "__atomic_exchange_8", NULL,
+                       t, false, false);
+
+  t = build_function_type_list(boolean_type_node,
+                               ptr_type_node,
+                               ptr_type_node,
+                               uint32_type_node,
+                               boolean_type_node,
+                               integer_type_node,
+                               integer_type_node,
+                               NULL_TREE);
+  this->define_builtin(BUILT_IN_ATOMIC_COMPARE_EXCHANGE_4,
+                       "__atomic_compare_exchange_4", NULL,
+                       t, false, false);
+
+  t = build_function_type_list(boolean_type_node,
+                               ptr_type_node,
+                               ptr_type_node,
+                               uint64_type_node,
+                               boolean_type_node,
+                               integer_type_node,
+                               integer_type_node,
+                               NULL_TREE);
+  this->define_builtin(BUILT_IN_ATOMIC_COMPARE_EXCHANGE_8,
+                       "__atomic_compare_exchange_8", NULL,
+                       t, false, false);
+
+  t = build_function_type_list(uint32_type_node,
+                               ptr_type_node,
+                               uint32_type_node,
+                               integer_type_node,
+                               NULL_TREE);
+  this->define_builtin(BUILT_IN_ATOMIC_ADD_FETCH_4, "__atomic_add_fetch_4", NULL,
+                       t, false, false);
+
+  t = build_function_type_list(uint64_type_node,
+                               ptr_type_node,
+                               uint64_type_node,
+                               integer_type_node,
+                               NULL_TREE);
+  this->define_builtin(BUILT_IN_ATOMIC_ADD_FETCH_8, "__atomic_add_fetch_8", NULL,
+                       t, false, false);
+
+  t = build_function_type_list(unsigned_char_type_node,
+                               ptr_type_node,
+                               unsigned_char_type_node,
+                               integer_type_node,
+                               NULL_TREE);
+  this->define_builtin(BUILT_IN_ATOMIC_AND_FETCH_1, "__atomic_and_fetch_1", NULL,
+                       t, false, false);
+
+  t = build_function_type_list(unsigned_char_type_node,
+                               ptr_type_node,
+                               unsigned_char_type_node,
+                               integer_type_node,
+                               NULL_TREE);
+  this->define_builtin(BUILT_IN_ATOMIC_OR_FETCH_1, "__atomic_or_fetch_1", NULL,
+                       t, false, false);
 }
 
 // Get an unnamed integer type.

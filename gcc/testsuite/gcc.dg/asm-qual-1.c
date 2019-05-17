@@ -8,7 +8,7 @@ f (void)
 {
   asm volatile ("");
 
-  asm const (""); /* { dg-error {'const' is not an asm qualifier} } */
+  asm const (""); /* { dg-error {'const' is not a valid 'asm' qualifier} } */
 
-  asm restrict (""); /* { dg-error {'restrict' is not an asm qualifier} } */
+  asm restrict (""); /* { dg-error {'restrict' is not a valid 'asm' qualifier} } */
 }

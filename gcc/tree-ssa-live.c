@@ -41,6 +41,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "optinfo.h"
+#include "gimple-walk.h"
+#include "cfganal.h"
 
 static void verify_live_on_entry (tree_live_info_p);
 
@@ -1194,8 +1196,149 @@ calculate_live_ranges (var_map map, bool want_livein)
 
   return live;
 }
+
+/* Data structure for compute_live_vars* functions.  */
 
+struct compute_live_vars_data {
+  /* Vector of bitmaps for live vars indices at the end of basic blocks,
+     indexed by bb->index.  ACTIVE[ENTRY_BLOCK] must be empty bitmap,
+     ACTIVE[EXIT_BLOCK] is used for STOP_AFTER.  */
+  vec<bitmap_head> active;
+  /* Work bitmap of currently live variables.  */
+  bitmap work;
+  /* Set of interesting variables.  Variables with uids not in this
+     hash_map are not tracked.  */
+  live_vars_map *vars;
+};
 
+/* Callback for walk_stmt_load_store_addr_ops.  If OP is a VAR_DECL with
+   uid set in DATA->vars, enter its corresponding index into bitmap
+   DATA->work.  */
+
+static bool
+compute_live_vars_visit (gimple *, tree op, tree, void *pdata)
+{
+  compute_live_vars_data *data = (compute_live_vars_data *) pdata;
+  op = get_base_address (op);
+  if (op && VAR_P (op))
+    if (unsigned int *v = data->vars->get (DECL_UID (op)))
+      bitmap_set_bit (data->work, *v);
+  return false;
+}
+
+/* Helper routine for compute_live_vars, calculating the sets of live
+   variables at the end of BB, leaving the result in DATA->work.
+   If STOP_AFTER is non-NULL, stop processing after that stmt.  */
+
+static void
+compute_live_vars_1 (basic_block bb, compute_live_vars_data *data,
+		     gimple *stop_after)
+{
+  edge e;
+  edge_iterator ei;
+  gimple_stmt_iterator gsi;
+  walk_stmt_load_store_addr_fn visit = compute_live_vars_visit;
+
+  bitmap_clear (data->work);
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    bitmap_ior_into (data->work, &data->active[e->src->index]);
+
+  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    walk_stmt_load_store_addr_ops (gsi_stmt (gsi), data, NULL, NULL, visit);
+  for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+
+      if (gimple_clobber_p (stmt))
+	{
+	  tree lhs = gimple_assign_lhs (stmt);
+	  if (VAR_P (lhs))
+	    if (unsigned int *v = data->vars->get (DECL_UID (lhs)))
+	      bitmap_clear_bit (data->work, *v);
+	}
+      else if (!is_gimple_debug (stmt))
+	walk_stmt_load_store_addr_ops (stmt, data, visit, visit, visit);
+      if (stmt == stop_after)
+	break;
+    }
+}
+
+/* For function FN and live_vars_map (hash map from DECL_UIDs to a dense set of
+   indexes of automatic variables VARS, compute which of those variables are
+   (might be) live at the end of each basic block.  */
+
+vec<bitmap_head>
+compute_live_vars (struct function *fn, live_vars_map *vars)
+{
+  vec<bitmap_head> active;
+
+  /* We approximate the live range of a stack variable by taking the first
+     mention of its name as starting point(s), and by the end-of-scope
+     death clobber added by gimplify as ending point(s) of the range.
+     This overapproximates in the case we for instance moved an address-taken
+     operation upward, without also moving a dereference to it upwards.
+     But it's conservatively correct as a variable never can hold values
+     before its name is mentioned at least once.
+
+     We then do a mostly classical bitmap liveness algorithm.  */
+
+  active.create (last_basic_block_for_fn (fn));
+  active.quick_grow (last_basic_block_for_fn (fn));
+  for (int i = 0; i < last_basic_block_for_fn (fn); i++)
+    bitmap_initialize (&active[i], &bitmap_default_obstack);
+
+  bitmap work = BITMAP_ALLOC (NULL);
+
+  int *rpo = XNEWVEC (int, last_basic_block_for_fn (fn));
+  int n_bbs = pre_and_rev_post_order_compute_fn (fn, NULL, rpo, false);
+
+  bool changed = true;
+  compute_live_vars_data data = { active, work, vars };
+  while (changed)
+    {
+      int i;
+      changed = false;
+      for (i = 0; i < n_bbs; i++)
+	{
+	  basic_block bb = BASIC_BLOCK_FOR_FN (fn, rpo[i]);
+	  compute_live_vars_1 (bb, &data, NULL);
+	  if (bitmap_ior_into (&active[bb->index], work))
+	    changed = true;
+	}
+    }
+
+  free (rpo);
+  BITMAP_FREE (work);
+
+  return active;
+}
+
+/* For ACTIVE computed by compute_live_vars, compute a bitmap of variables
+   live after the STOP_AFTER statement and return that bitmap.  */
+
+bitmap
+live_vars_at_stmt (vec<bitmap_head> &active, live_vars_map *vars,
+		   gimple *stop_after)
+{
+  bitmap work = BITMAP_ALLOC (NULL);
+  compute_live_vars_data data = { active, work, vars };
+  basic_block bb = gimple_bb (stop_after);
+  compute_live_vars_1 (bb, &data, stop_after);
+  return work;
+}
+
+/* Destroy what compute_live_vars has returned when it is no longer needed.  */
+
+void
+destroy_live_vars (vec<bitmap_head> &active)
+{
+  unsigned len = active.length ();
+  for (unsigned i = 0; i < len; i++)
+    bitmap_clear (&active[i]);
+
+  active.release ();
+}
+
 /* Output partition map MAP to file F.  */
 
 void

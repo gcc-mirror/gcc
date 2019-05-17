@@ -1275,7 +1275,7 @@ See RS/6000 and PowerPC Options.
 -msse4a  -m3dnow  -m3dnowa  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop @gol
 -madx  -mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mhle  -mlwp @gol
 -mmwaitx  -mclzero  -mpku  -mthreads  -mgfni  -mvaes  -mwaitpkg @gol
--mshstk -mmanual-endbr -mforce-indirect-call  -mavx512vbmi2 @gol
+-mshstk -mmanual-endbr -mforce-indirect-call -mavx512vbmi2 -mavx512bf16 @gol
 -mvpclmulqdq  -mavx512bitalg  -mmovdiri  -mmovdir64b  -mavx512vpopcntdq @gol
 -mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid @gol
 -mrdseed  -msgx @gol
@@ -11928,6 +11928,16 @@ Set to 1 to allow, otherwise to 0.
 The smallest number of different values for which it is best to use a
 jump-table instead of a tree of conditional branches.  If the value is
 0, use the default for the machine.
+
+@item jump-table-max-growth-ratio-for-size
+The maximum code size growth ratio when expanding
+into a jump table (in percent).  The parameter is used when
+optimizing for size.
+
+@item jump-table-max-growth-ratio-for-speed
+The maximum code size growth ratio when expanding
+into a jump table (in percent).  The parameter is used when
+optimizing for speed.
 
 @item tree-reassoc-width
 Set the maximum number of instructions executed in parallel in
@@ -28093,6 +28103,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mavx512vbmi2
 @opindex mavx512vbmi2
 @need 200
+@itemx -mavx512bf16
+@opindex mavx512bf16
+@need 200
 @itemx -mgfni
 @opindex mgfni
 @need 200
@@ -28135,7 +28148,7 @@ AES, PCLMUL, CLFLUSHOPT, CLWB, FSGSBASE, PTWRITE, RDRND, F16C, FMA, PCONFIG,
 WBNOINVD, FMA4, PREFETCHW, RDPID, PREFETCHWT1, RDSEED, SGX, XOP, LWP,
 3DNow!@:, enhanced 3DNow!@:, POPCNT, ABM, ADX, BMI, BMI2, LZCNT, FXSR, XSAVE,
 XSAVEOPT, XSAVEC, XSAVES, RTM, HLE, TBM, MWAITX, CLZERO, PKU, AVX512VBMI2,
-GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B,
+GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16
 AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, or CLDEMOTE
 extended instruction sets.  Each has a corresponding @option{-mno-} option to
 disable use of these instructions.

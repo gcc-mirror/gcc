@@ -96,6 +96,65 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					std::forward<_Args>(__args)...);
     }
 
+#if __cplusplus >= 201703L
+  // INVOKE<R>: Invoke a callable object and convert the result to R.
+  template<typename _Res, typename _Callable, typename... _Args>
+    constexpr enable_if_t<is_invocable_r_v<_Res, _Callable, _Args...>, _Res>
+    __invoke_r(_Callable&& __fn, _Args&&... __args)
+    noexcept(is_nothrow_invocable_r_v<_Res, _Callable, _Args...>)
+    {
+      using __result = __invoke_result<_Callable, _Args...>;
+      using __type = typename __result::type;
+      using __tag = typename __result::__invoke_type;
+      if constexpr (is_void_v<_Res>)
+	std::__invoke_impl<__type>(__tag{}, std::forward<_Callable>(__fn),
+					std::forward<_Args>(__args)...);
+      else
+	return std::__invoke_impl<__type>(__tag{},
+					  std::forward<_Callable>(__fn),
+					  std::forward<_Args>(__args)...);
+    }
+#else // C++11
+  template<typename _Res, typename _Callable, typename... _Args>
+    using __can_invoke_as_void = __enable_if_t<
+      __and_<is_void<_Res>, __is_invocable<_Callable, _Args...>>::value,
+      _Res
+    >;
+
+  template<typename _Res, typename _Callable, typename... _Args>
+    using __can_invoke_as_nonvoid = __enable_if_t<
+      __and_<__not_<is_void<_Res>>,
+	     is_convertible<typename __invoke_result<_Callable, _Args...>::type,
+			    _Res>
+      >::value,
+      _Res
+    >;
+
+  // INVOKE<R>: Invoke a callable object and convert the result to R.
+  template<typename _Res, typename _Callable, typename... _Args>
+    constexpr __can_invoke_as_nonvoid<_Res, _Callable, _Args...>
+    __invoke_r(_Callable&& __fn, _Args&&... __args)
+    {
+      using __result = __invoke_result<_Callable, _Args...>;
+      using __type = typename __result::type;
+      using __tag = typename __result::__invoke_type;
+      return std::__invoke_impl<__type>(__tag{}, std::forward<_Callable>(__fn),
+					std::forward<_Args>(__args)...);
+    }
+
+  // INVOKE<R> when R is cv void
+  template<typename _Res, typename _Callable, typename... _Args>
+    _GLIBCXX14_CONSTEXPR __can_invoke_as_void<_Res, _Callable, _Args...>
+    __invoke_r(_Callable&& __fn, _Args&&... __args)
+    {
+      using __result = __invoke_result<_Callable, _Args...>;
+      using __type = typename __result::type;
+      using __tag = typename __result::__invoke_type;
+      std::__invoke_impl<__type>(__tag{}, std::forward<_Callable>(__fn),
+				 std::forward<_Args>(__args)...);
+    }
+#endif // C++11
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

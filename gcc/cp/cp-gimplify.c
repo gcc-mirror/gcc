@@ -241,8 +241,10 @@ genericize_cp_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
   tree blab, clab;
   tree exit = NULL;
   tree stmt_list = NULL;
+  tree debug_begin = NULL;
 
-  protected_set_expr_location (incr, start_locus);
+  if (EXPR_LOCATION (incr) == UNKNOWN_LOCATION)
+    protected_set_expr_location (incr, start_locus);
 
   cp_walk_tree (&cond, cp_genericize_r, data, NULL);
   cp_walk_tree (&incr, cp_genericize_r, data, NULL);
@@ -252,6 +254,13 @@ genericize_cp_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
 
   cp_walk_tree (&body, cp_genericize_r, data, NULL);
   *walk_subtrees = 0;
+
+  if (MAY_HAVE_DEBUG_MARKER_STMTS
+      && (!cond || !integer_zerop (cond)))
+    {
+      debug_begin = build0 (DEBUG_BEGIN_STMT, void_type_node);
+      SET_EXPR_LOCATION (debug_begin, cp_expr_loc_or_loc (cond, start_locus));
+    }
 
   if (cond && TREE_CODE (cond) != INTEGER_CST)
     {
@@ -265,10 +274,24 @@ genericize_cp_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
     }
 
   if (exit && cond_is_first)
-    append_to_statement_list (exit, &stmt_list);
+    {
+      append_to_statement_list (debug_begin, &stmt_list);
+      debug_begin = NULL_TREE;
+      append_to_statement_list (exit, &stmt_list);
+    }
   append_to_statement_list (body, &stmt_list);
   finish_bc_block (&stmt_list, bc_continue, clab);
-  append_to_statement_list (incr, &stmt_list);
+  if (incr)
+    {
+      if (MAY_HAVE_DEBUG_MARKER_STMTS)
+	{
+	  tree d = build0 (DEBUG_BEGIN_STMT, void_type_node);
+	  SET_EXPR_LOCATION (d, cp_expr_loc_or_loc (incr, start_locus));
+	  append_to_statement_list (d, &stmt_list);
+	}
+      append_to_statement_list (incr, &stmt_list);
+    }
+  append_to_statement_list (debug_begin, &stmt_list);
   if (exit && !cond_is_first)
     append_to_statement_list (exit, &stmt_list);
 
@@ -1466,10 +1489,10 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	      {
 		auto_diagnostic_group d;
 		if (warning_at (loc, OPT_Wterminate,
-				"throw will always call terminate()")
+				"%<throw%> will always call %<terminate%>")
 		    && cxx_dialect >= cxx11
 		    && DECL_DESTRUCTOR_P (current_function_decl))
-		  inform (loc, "in C++11 destructors default to noexcept");
+		  inform (loc, "in C++11 destructors default to %<noexcept%>");
 	      }
 	  }
 	else
@@ -1481,8 +1504,8 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 		&& (get_defaulted_eh_spec (current_function_decl)
 		    == empty_except_spec))
 	      warning_at (loc, OPT_Wc__11_compat,
-			  "in C++11 this throw will terminate because "
-			  "destructors default to noexcept");
+			  "in C++11 this %<throw%> will call %<terminate%> "
+			  "because destructors default to %<noexcept%>");
 	  }
       }
       break;
@@ -2324,8 +2347,7 @@ cp_fold (tree x)
 
       /* Cope with user tricks that amount to offsetof.  */
       if (op0 != error_mark_node
-	  && TREE_CODE (TREE_TYPE (op0)) != FUNCTION_TYPE
-	  && TREE_CODE (TREE_TYPE (op0)) != METHOD_TYPE)
+	  && !FUNC_OR_METHOD_TYPE_P (TREE_TYPE (op0)))
 	{
 	  tree val = get_base_address (op0);
 	  if (val
@@ -2655,7 +2677,7 @@ cp_fold (tree x)
     case TREE_VEC:
       {
 	bool changed = false;
-	vec<tree, va_gc> *vec = make_tree_vector ();
+	releasing_vec vec;
 	int i, n = TREE_VEC_LENGTH (x);
 	vec_safe_reserve (vec, n);
 
@@ -2674,8 +2696,6 @@ cp_fold (tree x)
 	      TREE_VEC_ELT (r, i) = (*vec)[i];
 	    x = r;
 	  }
-
-	release_tree_vector (vec);
       }
 
       break;

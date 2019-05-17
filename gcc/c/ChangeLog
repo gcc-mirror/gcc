@@ -1,3 +1,71 @@
+2019-05-16  Martin Sebor  <msebor@redhat.com>
+
+        * c-decl.c (start_decl): Quote keywords, operators, and
+        types in diagnostics.
+        (finish_decl): Same.
+        * c-parser.c (c_parser_asm_statement): Same.
+        (c_parser_conditional_expression): Same.
+        (c_parser_transaction_cancel): Same.
+        * c-typeck.c (c_common_type): Same.
+        (build_conditional_expr): Same.
+        (digest_init): Same.
+        (process_init_element): Same.
+        (build_binary_op): Same.
+
+2019-05-17  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_statement): Handle __VEC_PERM.
+	(c_parser_gimple_unary_expression): Likewise.
+	(c_parser_gimple_parentized_ternary_expression): New function.
+
+2019-05-16  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_statement): Handle __BIT_INSERT.
+	(c_parser_gimple_unary_expression): Likewise.
+
+2019-05-15  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Handle
+	__BIT_FIELD_REF.
+
+2019-05-14  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_statement): Remove
+	questionable auto-promotion to VIEW_CONVERT_EXPR.
+	(c_parser_gimple_typespec): Split out from __MEM parsing.
+	(c_parser_gimple_postfix_expression): Handle __VIEW_CONVERT.
+	* tree-pretty-print.c (dump_generic_node): Dump VIEW_CONVERT_EXPR
+	as __VIEW_CONVERT with -gimple.
+
+2019-05-09  Martin Liska  <mliska@suse.cz>
+
+	* gimple-parser.c (c_parser_gimple_statement): Support __MIN and
+	__MAX.
+	(c_parser_gimple_unary_expression): Parse also binary expression
+	__MIN and __MAX.
+	(c_parser_gimple_parentized_binary_expression): New function.
+
+2019-05-09  Martin Liska  <mliska@suse.cz>
+
+	* gimple-parser.c (struct gimple_parser): Add probability.
+	for gimple_parser_edge.
+	(gimple_parser::push_edge): Add new argument probability.
+	(c_parser_gimple_parse_bb_spec): Parse also probability
+	if present.
+	(c_parser_parse_gimple_body): Set edge probability.
+	(c_parser_gimple_compound_statement): Consume token
+	before calling c_parser_gimple_goto_stmt.
+	Parse BB counts.
+	(c_parser_gimple_statement): Pass new argument.
+	(c_parser_gimple_goto_stmt): Likewise.
+	(c_parser_gimple_if_stmt): Likewise.
+	(c_parser_gimple_or_rtl_pass_list): Parse hot_bb_threshold.
+	* c-parser.c (c_parser_declaration_or_fndef): Pass
+	hot_bb_threshold argument.
+	* c-tree.h (struct c_declspecs): Add hot_bb_threshold
+	field.
+	(c_parser_gimple_parse_bb_spec_edge_probability): New.
+
 2019-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/90197

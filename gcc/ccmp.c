@@ -187,12 +187,11 @@ expand_ccmp_next (tree op, tree_code code, rtx prev,
 static rtx
 expand_ccmp_expr_1 (gimple *g, rtx_insn **prep_seq, rtx_insn **gen_seq)
 {
-  tree exp = gimple_assign_rhs_to_tree (g);
-  tree_code code = TREE_CODE (exp);
+  tree_code code = gimple_assign_rhs_code (g);
   basic_block bb = gimple_bb (g);
 
-  tree op0 = TREE_OPERAND (exp, 0);
-  tree op1 = TREE_OPERAND (exp, 1);
+  tree op0 = gimple_assign_rhs1 (g);
+  tree op1 = gimple_assign_rhs2 (g);
   gimple *gs0 = get_gimple_for_ssa_name (op0);
   gimple *gs1 = get_gimple_for_ssa_name (op1);
   rtx tmp;

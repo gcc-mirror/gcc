@@ -34,7 +34,7 @@ test01()
   fld.resize(0);
   VERIFY(fld.empty() == true);
 
-#if defined(_GLIBCXX_DEBUG) || defined(_GLIBCXX_PROFILE)
+#ifdef _GLIBCXX_DEBUG
   using std::_GLIBCXX_STD_C::_Fwd_list_node;
 #else
   using std::_Fwd_list_node;

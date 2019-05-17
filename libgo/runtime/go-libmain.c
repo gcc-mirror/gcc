@@ -225,6 +225,7 @@ gostart (void *arg)
     return NULL;
   runtime_isstarted = true;
 
+  runtime_ginit ();
   runtime_check ();
   runtime_args (a->argc, (byte **) a->argv);
   setncpu (getproccount ());

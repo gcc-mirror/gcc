@@ -8369,6 +8369,7 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
 			HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
 			tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
   static unsigned int current_thunk_number;
   int val_14 = VAL_14_BITS_P (delta);
   unsigned int old_last_address = last_address, nbytes = 0;
@@ -8379,6 +8380,7 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
   xoperands[1] = XEXP (DECL_RTL (thunk_fndecl), 0);
   xoperands[2] = GEN_INT (delta);
 
+  assemble_start_function (thunk_fndecl, fnname);
   final_start_function (emit_barrier (), file, 1);
 
   /* Output the thunk.  We know that the function is in the same
@@ -8596,6 +8598,7 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
   if (old_last_address > last_address)
     last_address = UINT_MAX;
   update_total_code_bytes (nbytes);
+  assemble_end_function (thunk_fndecl, fnname);
 }
 
 /* Only direct calls to static functions are allowed to be sibling (tail)

@@ -1268,7 +1268,9 @@ jump_table_cluster::can_be_handled (const vec<cluster *> &clusters,
     return true;
 
   unsigned HOST_WIDE_INT max_ratio
-    = optimize_insn_for_size_p () ? max_ratio_for_size : max_ratio_for_speed;
+    = (optimize_insn_for_size_p ()
+       ? PARAM_VALUE (PARAM_JUMP_TABLE_MAX_GROWTH_RATIO_FOR_SIZE)
+       : PARAM_VALUE (PARAM_JUMP_TABLE_MAX_GROWTH_RATIO_FOR_SPEED));
   unsigned HOST_WIDE_INT range = get_range (clusters[start]->get_low (),
 					    clusters[end]->get_high ());
   /* Check overflow.  */
@@ -1282,7 +1284,11 @@ jump_table_cluster::can_be_handled (const vec<cluster *> &clusters,
       comparison_count += sc->m_range_p ? 2 : 1;
     }
 
-  return range <= max_ratio * comparison_count;
+  unsigned HOST_WIDE_INT lhs = 100 * range;
+  if (lhs < range)
+    return false;
+
+  return lhs <= max_ratio * comparison_count;
 }
 
 /* Return true if cluster starting at START and ending at END (inclusive)
@@ -1298,11 +1304,6 @@ jump_table_cluster::is_beneficial (const vec<cluster *> &,
 
   return end - start + 1 >= case_values_threshold ();
 }
-
-/* Definition of jump_table_cluster constants.  */
-
-const unsigned HOST_WIDE_INT jump_table_cluster::max_ratio_for_size;
-const unsigned HOST_WIDE_INT jump_table_cluster::max_ratio_for_speed;
 
 /* Find bit tests of given CLUSTERS, where all members of the vector
    are of type simple_cluster.  New clusters are returned.  */

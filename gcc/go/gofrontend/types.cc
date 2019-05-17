@@ -12,6 +12,7 @@
 #include "gogo.h"
 #include "go-diagnostics.h"
 #include "go-encode-id.h"
+#include "go-sha1.h"
 #include "operator.h"
 #include "expressions.h"
 #include "statements.h"
@@ -2776,22 +2777,43 @@ Ptrmask::set_from(Gogo* gogo, Type* type, int64_t ptrsize, int64_t offset)
     }
 }
 
-// Return a symbol name for this ptrmask.  This is used to coalesce
-// identical ptrmasks, which are common.  The symbol name must use
-// only characters that are valid in symbols.  It's nice if it's
-// short.  We convert it to a string that uses only 32 characters,
-// avoiding digits and u and U.
-
+// Return a symbol name for this ptrmask. This is used to coalesce identical
+// ptrmasks, which are common. The symbol name must use only characters that are
+// valid in symbols. It's nice if it's short. For smaller ptrmasks, we convert
+// it to a string that uses only 32 characters, avoiding digits and u and U. For
+// longer pointer masks, apply the same process to the SHA1 digest of the bits,
+// so as to avoid pathologically long symbol names (see related Go issues #32083
+// and #11583 for more on this). To avoid collisions between the two encoding
+// schemes, use a prefix ("X") for the SHA form to disambiguate.
 std::string
 Ptrmask::symname() const
 {
+  const std::vector<unsigned char>* bits(&this->bits_);
+  std::vector<unsigned char> shabits;
+  std::string prefix;
+
+  if (this->bits_.size() > 128)
+    {
+      // Produce a SHA1 digest of the data.
+      Go_sha1_helper* sha1_helper = go_create_sha1_helper();
+      sha1_helper->process_bytes(&this->bits_[0], this->bits_.size());
+      std::string digest = sha1_helper->finish();
+      delete sha1_helper;
+
+      // Redirect the bits vector to the digest, and update the prefix.
+      prefix = "X";
+      for (char c : digest)
+        shabits.push_back((unsigned char) c);
+      bits = &shabits;
+    }
+
   const char chars[33] = "abcdefghijklmnopqrstvwxyzABCDEFG";
   go_assert(chars[32] == '\0');
-  std::string ret;
+  std::string ret(prefix);
   unsigned int b = 0;
   int remaining = 0;
-  for (std::vector<unsigned char>::const_iterator p = this->bits_.begin();
-       p != this->bits_.end();
+  for (std::vector<unsigned char>::const_iterator p = bits->begin();
+       p != bits->end();
        ++p)
     {
       b |= *p << remaining;
@@ -3440,14 +3462,15 @@ Type::method_constructor(Gogo*, Type* method_type,
       vals->push_back(Expression::make_unary(OPERATOR_AND, s, bloc));
     }
 
-  Named_object* no =
-    ((this->points_to() != NULL
-      && this->points_to()->is_direct_iface_type()
-      && m->is_value_method())
-     ? m->iface_stub_object()
-     : (m->needs_stub_method()
-        ? m->stub_object()
-        : m->named_object()));
+  bool use_direct_iface_stub =
+    this->points_to() != NULL
+    && this->points_to()->is_direct_iface_type()
+    && m->is_value_method();
+  Named_object* no = (use_direct_iface_stub
+                      ? m->iface_stub_object()
+                      : (m->needs_stub_method()
+                         ? m->stub_object()
+                         : m->named_object()));
 
   Function_type* mtype;
   if (no->is_function())
@@ -3463,7 +3486,8 @@ Type::method_constructor(Gogo*, Type* method_type,
 
   ++p;
   go_assert(p->is_field_name("typ"));
-  bool want_pointer_receiver = !only_value_methods && m->is_value_method();
+  bool want_pointer_receiver = (!only_value_methods && m->is_value_method()
+                                && !use_direct_iface_stub);
   nonmethod_type = mtype->copy_with_receiver_as_param(want_pointer_receiver);
   vals->push_back(Expression::make_type_descriptor(nonmethod_type, bloc));
 
@@ -4758,10 +4782,15 @@ Function_type::get_backend_fntype(Gogo* gogo)
           // We always pass the address of the receiver parameter, in
           // order to make interface calls work with unknown types,
           // except for direct interface types where the interface call
-          // actually passes value.
+          // actually passes the underlying pointer of the value.
           Type* rtype = this->receiver_->type();
-          if (!rtype->is_direct_iface_type())
-            rtype = Type::make_pointer_type(rtype);
+          if (rtype->points_to() == NULL)
+            {
+              if (rtype->is_direct_iface_type())
+                rtype = Type::make_pointer_type(Type::make_void_type());
+              else
+                rtype = Type::make_pointer_type(rtype);
+            }
           breceiver.btype = rtype->get_backend(gogo);
           breceiver.location = this->receiver_->location();
         }

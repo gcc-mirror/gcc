@@ -3783,6 +3783,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
   tree simt_lane = NULL_TREE, simtrec = NULL_TREE;
   tree ivar = NULL_TREE, lvar = NULL_TREE, uid = NULL_TREE;
   gimple_seq llist[3] = { };
+  tree nonconst_simd_if = NULL_TREE;
 
   copyin_seq = NULL;
   sctx.is_simt = is_simd && omp_find_clause (clauses, OMP_CLAUSE__SIMT_);
@@ -3809,6 +3810,16 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	case OMP_CLAUSE_IN_REDUCTION:
 	  if (TREE_CODE (OMP_CLAUSE_DECL (c)) == MEM_REF
 	      || is_variable_sized (OMP_CLAUSE_DECL (c)))
+	    sctx.max_vf = 1;
+	  break;
+	case OMP_CLAUSE_IF:
+	  if (integer_zerop (OMP_CLAUSE_IF_EXPR (c)))
+	    sctx.max_vf = 1;
+	  else if (TREE_CODE (OMP_CLAUSE_IF_EXPR (c)) != INTEGER_CST)
+	    nonconst_simd_if = OMP_CLAUSE_IF_EXPR (c);
+	  break;
+        case OMP_CLAUSE_SIMDLEN:
+	  if (integer_onep (OMP_CLAUSE_SIMDLEN_EXPR (c)))
 	    sctx.max_vf = 1;
 	  break;
 	default:
@@ -5182,6 +5193,17 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
   if (known_eq (sctx.max_vf, 1U))
     sctx.is_simt = false;
 
+  if (nonconst_simd_if)
+    {
+      if (sctx.lane == NULL_TREE)
+	{
+	  sctx.idx = create_tmp_var (unsigned_type_node);
+	  sctx.lane = create_tmp_var (unsigned_type_node);
+	}
+      /* FIXME: For now.  */
+      sctx.is_simt = false;
+    }
+
   if (sctx.lane || sctx.is_simt)
     {
       uid = create_tmp_var (ptr_type_node, "simduid");
@@ -5211,8 +5233,9 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
     }
   if (sctx.lane)
     {
-      gimple *g
-	= gimple_build_call_internal (IFN_GOMP_SIMD_LANE, 1, uid);
+      gimple *g = gimple_build_call_internal (IFN_GOMP_SIMD_LANE,
+					      1 + (nonconst_simd_if != NULL),
+					      uid, nonconst_simd_if);
       gimple_call_set_lhs (g, sctx.lane);
       gimple_stmt_iterator gsi = gsi_start_1 (gimple_omp_body_ptr (ctx->stmt));
       gsi_insert_before_without_update (&gsi, g, GSI_SAME_STMT);

@@ -4004,7 +4004,8 @@ gcse_or_cprop_is_too_expensive (const char *pass)
   if (memory_request > MAX_GCSE_MEMORY)
     {
       warning (OPT_Wdisabled_optimization,
-	       "%s: %d basic blocks and %d registers; increase --param max-gcse-memory above %d",
+	       "%s: %d basic blocks and %d registers; "
+	       "increase %<--param max-gcse-memory%> above %d",
 	       pass, n_basic_blocks_for_fn (cfun), max_reg_num (),
 	       memory_request);
 

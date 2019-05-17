@@ -1,3 +1,23 @@
+2019-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/54613
+	* gfortran.map (GFORTRAN_9.2): Export _gfortran_{,m,s}findloc{0,1}_r10.
+	* Makefile.am (i_findloc0_c): Add $(srcdir)/generated/findloc0_r10.c.
+	(i_findloc1_c): Add $(srcdir)/generated/findloc1_r10.c.
+	* Makefile.in: Regenerated.
+	* generated/findloc0_r10.c: Generated.
+	* generated/findloc1_r10.c: Generated.
+
+	PR fortran/54613
+	* gfortran.map (GFORTRAN_9.2): New symbol version, export
+	_gfortran_{,m,s}findloc0_i2 in it.
+
+2019-05-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/90461
+        * io/open.c (new_unit): Don't check if the file is already open
+	for F2018.
+
 2019-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.am (gfor_cdir): Remove $(MULTISUBDIR).

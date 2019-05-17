@@ -716,9 +716,9 @@
 	  (USMAX:VDQ_BHSI
 	    (match_operand:VDQ_BHSI 1 "register_operand" "w")
 	    (match_operand:VDQ_BHSI 2 "register_operand" "w"))
-	  (match_operator 3 "aarch64_<max_opp>"
-	    [(match_dup 1)
-	     (match_dup 2)])))]
+	  (<max_opp>:VDQ_BHSI
+	    (match_dup 1)
+	    (match_dup 2))))]
   "TARGET_SIMD"
   "<su>abd\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "type" "neon_abd<q>")]
@@ -934,6 +934,21 @@
   }
   [(set_attr "type" "neon_ins<q>")]
 )
+
+(define_expand "signbit<mode>2"
+  [(use (match_operand:<V_INT_EQUIV> 0 "register_operand"))
+   (use (match_operand:VDQSF 1 "register_operand"))]
+  "TARGET_SIMD"
+{
+  int shift_amount = GET_MODE_UNIT_BITSIZE (<V_INT_EQUIV>mode) - 1;
+  rtx shift_vector = aarch64_simd_gen_const_vector_dup (<V_INT_EQUIV>mode,
+                                                        shift_amount);
+  operands[1] = lowpart_subreg (<V_INT_EQUIV>mode, operands[1], <MODE>mode);
+
+  emit_insn (gen_aarch64_simd_lshr<v_int_equiv> (operands[0], operands[1],
+                                                 shift_vector));
+  DONE;
+})
 
 (define_insn "aarch64_simd_lshr<mode>"
  [(set (match_operand:VDQ_I 0 "register_operand" "=w")

@@ -8,6 +8,6 @@ try
   } catch (...)
   {
   l2: ;            // { dg-error "jump to label 'l2'" }
-                   // { dg-message "enters catch block" "" { target *-*-*} .-1 }
-    goto l1;       // { dg-message "from here|enters try block" }
+                   // { dg-message "enters 'catch' block" "" { target *-*-*} .-1 }
+    goto l1;       // { dg-message "from here|enters 'try' block" }
   }

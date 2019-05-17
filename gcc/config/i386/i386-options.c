@@ -209,7 +209,8 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-mmovdir64b",	OPTION_MASK_ISA_MOVDIR64B },
     { "-mwaitpkg",	OPTION_MASK_ISA_WAITPKG },
     { "-mcldemote",	OPTION_MASK_ISA_CLDEMOTE },
-    { "-mptwrite",	OPTION_MASK_ISA_PTWRITE }
+    { "-mptwrite",	OPTION_MASK_ISA_PTWRITE },
+    { "-mavx512bf16",	OPTION_MASK_ISA_AVX512BF16 }
   };
   static struct ix86_target_opts isa_opts[] =
   {
@@ -919,6 +920,7 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("waitpkg", OPT_mwaitpkg),
     IX86_ATTR_ISA ("cldemote", OPT_mcldemote),
     IX86_ATTR_ISA ("ptwrite",   OPT_mptwrite),
+    IX86_ATTR_ISA ("avx512bf16",   OPT_mavx512bf16),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -2034,6 +2036,10 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit
 		 & OPTION_MASK_ISA_AVX512VPOPCNTDQ))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512VPOPCNTDQ;
+	if (((processor_alias_table[i].flags & PTA_AVX512BF16) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit
+		 & OPTION_MASK_ISA_AVX512BF16))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX512BF16;
 	if (((processor_alias_table[i].flags & PTA_SGX) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_SGX))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_SGX;
@@ -3456,7 +3462,8 @@ ix86_handle_abi_attribute (tree *node, tree name, tree, int,
     {
       if (lookup_attribute ("sysv_abi", TYPE_ATTRIBUTES (*node)))
         {
-	  error ("ms_abi and sysv_abi attributes are not compatible");
+	  error ("%qs and %qs attributes are not compatible",
+		 "ms_abi", "sysv_abi");
 	}
 
       return NULL_TREE;
@@ -3465,7 +3472,8 @@ ix86_handle_abi_attribute (tree *node, tree name, tree, int,
     {
       if (lookup_attribute ("ms_abi", TYPE_ATTRIBUTES (*node)))
         {
-	  error ("ms_abi and sysv_abi attributes are not compatible");
+	  error ("%qs and %qs attributes are not compatible",
+		 "ms_abi", "sysv_abi");
 	}
 
       return NULL_TREE;
@@ -3576,7 +3584,7 @@ ix86_handle_interrupt_attribute (tree *node, tree, tree, int, bool *)
     error ("interrupt service routine can only have a pointer argument "
 	   "and an optional integer argument");
   if (! VOID_TYPE_P (return_type))
-    error ("interrupt service routine can%'t have non-void return value");
+    error ("interrupt service routine must return %<void%>");
 
   return NULL_TREE;
 }

@@ -480,15 +480,15 @@ ix86_conditional_register_usage (void)
       if (!fixed_regs[i] && !ix86_function_value_regno_p (i))
 	call_used_regs[i] = 0;
 
-  /* For 32-bit targets, squash the REX registers.  */
+  /* For 32-bit targets, disable the REX registers.  */
   if (! TARGET_64BIT)
     {
       for (i = FIRST_REX_INT_REG; i <= LAST_REX_INT_REG; i++)
-	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+	CLEAR_HARD_REG_BIT (accessible_reg_set, i);
       for (i = FIRST_REX_SSE_REG; i <= LAST_REX_SSE_REG; i++)
-	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+	CLEAR_HARD_REG_BIT (accessible_reg_set, i);
       for (i = FIRST_EXT_REX_SSE_REG; i <= LAST_EXT_REX_SSE_REG; i++)
-	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+	CLEAR_HARD_REG_BIT (accessible_reg_set, i);
     }
 
   /*  See the definition of CALL_USED_REGISTERS in i386.h.  */
@@ -510,32 +510,29 @@ ix86_conditional_register_usage (void)
 	SET_HARD_REG_BIT (reg_class_contents[(int)CLOBBERED_REGS], i);
     }
 
-  /* If MMX is disabled, squash the registers.  */
+  /* If MMX is disabled, disable the registers.  */
   if (! TARGET_MMX)
-    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      if (TEST_HARD_REG_BIT (reg_class_contents[(int)MMX_REGS], i))
-	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+    AND_COMPL_HARD_REG_SET (accessible_reg_set,
+			    reg_class_contents[(int) MMX_REGS]);
 
-  /* If SSE is disabled, squash the registers.  */
+  /* If SSE is disabled, disable the registers.  */
   if (! TARGET_SSE)
-    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      if (TEST_HARD_REG_BIT (reg_class_contents[(int)SSE_REGS], i))
-	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+    AND_COMPL_HARD_REG_SET (accessible_reg_set,
+			    reg_class_contents[(int) ALL_SSE_REGS]);
 
-  /* If the FPU is disabled, squash the registers.  */
+  /* If the FPU is disabled, disable the registers.  */
   if (! (TARGET_80387 || TARGET_FLOAT_RETURNS_IN_80387))
-    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      if (TEST_HARD_REG_BIT (reg_class_contents[(int)FLOAT_REGS], i))
-	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+    AND_COMPL_HARD_REG_SET (accessible_reg_set,
+			    reg_class_contents[(int) FLOAT_REGS]);
 
-  /* If AVX512F is disabled, squash the registers.  */
+  /* If AVX512F is disabled, disable the registers.  */
   if (! TARGET_AVX512F)
     {
       for (i = FIRST_EXT_REX_SSE_REG; i <= LAST_EXT_REX_SSE_REG; i++)
-	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+	CLEAR_HARD_REG_BIT (accessible_reg_set, i);
 
-      for (i = FIRST_MASK_REG; i <= LAST_MASK_REG; i++)
-	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+      AND_COMPL_HARD_REG_SET (accessible_reg_set,
+			      reg_class_contents[(int) ALL_MASK_REGS]);
     }
 }
 
@@ -1528,7 +1525,7 @@ ix86_function_type_abi (const_tree fntype)
       static int warned;
       if (TARGET_X32 && !warned)
 	{
-	  error ("X32 does not support ms_abi attribute");
+	  error ("X32 does not support %<ms_abi%> attribute");
 	  warned = 1;
 	}
 
@@ -1562,7 +1559,8 @@ ix86_function_ms_hook_prologue (const_tree fn)
     {
       if (decl_function_context (fn) != NULL_TREE)
 	error_at (DECL_SOURCE_LOCATION (fn),
-		  "ms_hook_prologue is not compatible with nested function");
+		  "%<ms_hook_prologue%> attribute is not compatible "
+		  "with nested function");
       else
         return true;
     }
@@ -2269,7 +2267,7 @@ classify_argument (machine_mode mode, const_tree type,
 		{
 		  warned = true;
 		  inform (input_location,
-			  "the ABI of passing union with long double"
+			  "the ABI of passing union with %<long double%>"
 			  " has changed in GCC 4.4");
 		}
 	      return 0;
@@ -2387,7 +2385,7 @@ classify_argument (machine_mode mode, const_tree type,
 	    {
 	      warned = true;
 	      inform (input_location,
-		      "the ABI of passing structure with complex float"
+		      "the ABI of passing structure with %<complex float%>"
 		      " member has changed in GCC 4.4");
 	    }
 	  classes[1] = X86_64_SSESF_CLASS;
@@ -7790,7 +7788,7 @@ ix86_expand_prologue (void)
       /* Check if profiling is active and we shall use profiling before
          prologue variant. If so sorry.  */
       if (crtl->profile && flag_fentry != 0)
-        sorry ("ms_hook_prologue attribute isn%'t compatible "
+	sorry ("%<ms_hook_prologue%> attribute is not compatible "
 	       "with %<-mfentry%> for 32-bit");
 
       /* In ix86_asm_output_function_label we emitted:
@@ -15133,6 +15131,20 @@ ix86_nopic_noplt_attribute_p (rtx call_op)
   return false;
 }
 
+/* Helper to output the jmp/call.  */
+static void
+ix86_output_jmp_thunk_or_indirect (const char *thunk_name, const int regno)
+{
+  if (thunk_name != NULL)
+    {
+      fprintf (asm_out_file, "\tjmp\t");
+      assemble_name (asm_out_file, thunk_name);
+      putc ('\n', asm_out_file);
+    }
+  else
+    output_indirect_thunk (regno);
+}
+
 /* Output indirect branch via a call and return thunk.  CALL_OP is a
    register which contains the branch target.  XASM is the assembly
    template for CALL_OP.  Branch is a tail call if SIBCALL_P is true.
@@ -15171,17 +15183,14 @@ ix86_output_indirect_branch_via_reg (rtx call_op, bool sibcall_p)
     thunk_name = NULL;
 
   if (sibcall_p)
-    {
-      if (thunk_name != NULL)
-	fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
-      else
-	output_indirect_thunk (regno);
-    }
+     ix86_output_jmp_thunk_or_indirect (thunk_name, regno);
   else
     {
       if (thunk_name != NULL)
 	{
-	  fprintf (asm_out_file, "\tcall\t%s\n", thunk_name);
+	  fprintf (asm_out_file, "\tcall\t");
+	  assemble_name (asm_out_file, thunk_name);
+	  putc ('\n', asm_out_file);
 	  return;
 	}
 
@@ -15202,10 +15211,7 @@ ix86_output_indirect_branch_via_reg (rtx call_op, bool sibcall_p)
 
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel1);
 
-      if (thunk_name != NULL)
-	fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
-      else
-	output_indirect_thunk (regno);
+     ix86_output_jmp_thunk_or_indirect (thunk_name, regno);
 
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel2);
 
@@ -15262,10 +15268,7 @@ ix86_output_indirect_branch_via_push (rtx call_op, const char *xasm,
   if (sibcall_p)
     {
       output_asm_insn (push_buf, &call_op);
-      if (thunk_name != NULL)
-	fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
-      else
-	output_indirect_thunk (regno);
+      ix86_output_jmp_thunk_or_indirect (thunk_name, regno);
     }
   else
     {
@@ -15321,10 +15324,7 @@ ix86_output_indirect_branch_via_push (rtx call_op, const char *xasm,
 
       output_asm_insn (push_buf, &call_op);
 
-      if (thunk_name != NULL)
-	fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
-      else
-	output_indirect_thunk (regno);
+      ix86_output_jmp_thunk_or_indirect (thunk_name, regno);
 
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel2);
 
@@ -15423,7 +15423,9 @@ ix86_output_function_return (bool long_p)
 	  indirect_thunk_name (thunk_name, INVALID_REGNUM, need_prefix,
 			       true);
 	  indirect_return_needed |= need_thunk;
-	  fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
+	  fprintf (asm_out_file, "\tjmp\t");
+	  assemble_name (asm_out_file, thunk_name);
+	  putc ('\n', asm_out_file);
 	}
       else
 	output_indirect_thunk (INVALID_REGNUM);
@@ -15463,7 +15465,9 @@ ix86_output_indirect_function_return (rtx ret_op)
 	      indirect_return_via_cx = true;
 	      indirect_thunks_used |= 1 << CX_REG;
 	    }
-	  fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
+	  fprintf (asm_out_file, "\tjmp\t");
+	  assemble_name (asm_out_file, thunk_name);
+	  putc ('\n', asm_out_file);
 	}
       else
 	output_indirect_thunk (regno);
@@ -18879,7 +18883,8 @@ ix86_set_reg_reg_cost (machine_mode mode)
 	  || (TARGET_AVX && VALID_AVX256_REG_MODE (mode))
 	  || (TARGET_SSE2 && VALID_SSE2_REG_MODE (mode))
 	  || (TARGET_SSE && VALID_SSE_REG_MODE (mode))
-	  || (TARGET_MMX && VALID_MMX_REG_MODE (mode)))
+	  || ((TARGET_MMX || TARGET_MMX_WITH_SSE)
+	      && VALID_MMX_REG_MODE (mode)))
 	units = GET_MODE_SIZE (mode);
     }
 
@@ -19755,9 +19760,10 @@ x86_can_output_mi_thunk (const_tree, HOST_WIDE_INT, HOST_WIDE_INT vcall_offset,
    *(*this + vcall_offset) should be added to THIS.  */
 
 static void
-x86_output_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
+x86_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
 		     HOST_WIDE_INT vcall_offset, tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
   rtx this_param = x86_this_parameter (function);
   rtx this_reg, tmp, fnaddr;
   unsigned int tmp_regno;
@@ -19937,9 +19943,11 @@ x86_output_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
      Note that use_thunk calls assemble_start_function et al.  */
   insn = get_insns ();
   shorten_branches (insn);
+  assemble_start_function (thunk_fndecl, fnname);
   final_start_function (insn, file, 1);
   final (insn, file, 1);
   final_end_function ();
+  assemble_end_function (thunk_fndecl, fnname);
 }
 
 static void
@@ -20608,7 +20616,7 @@ ix86_vector_mode_supported_p (machine_mode mode)
     return true;
   if (TARGET_AVX512F && VALID_AVX512F_REG_MODE (mode))
     return true;
-  if (TARGET_MMX && VALID_MMX_REG_MODE (mode))
+  if ((TARGET_MMX || TARGET_MMX_WITH_SSE) && VALID_MMX_REG_MODE (mode))
     return true;
   if (TARGET_3DNOW && VALID_MMX_REG_MODE_3DNOW (mode))
     return true;
@@ -20648,7 +20656,7 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
       con += 4;
       if (strchr (con, ',') != NULL)
 	{
-	  error ("alternatives not allowed in asm flag output");
+	  error ("alternatives not allowed in %<asm%> flag output");
 	  continue;
 	}
 
@@ -20712,7 +20720,7 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
 	}
       if (code == UNKNOWN)
 	{
-	  error ("unknown asm flag output %qs", constraints[i]);
+	  error ("unknown %<asm%> flag output %qs", constraints[i]);
 	  continue;
 	}
       if (invert)
@@ -20741,7 +20749,7 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
       machine_mode dest_mode = GET_MODE (dest);
       if (!SCALAR_INT_MODE_P (dest_mode))
 	{
-	  error ("invalid type for asm flag output");
+	  error ("invalid type for %<asm%> flag output");
 	  continue;
 	}
 
@@ -21675,13 +21683,15 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
   if (val & IX86_HLE_ACQUIRE && !(is_mm_acquire (model) || strong))
     {
       warning (OPT_Winvalid_memory_model,
-              "HLE_ACQUIRE not used with ACQUIRE or stronger memory model");
+	      "%<HLE_ACQUIRE%> not used with %<ACQUIRE%> or stronger "
+	       "memory model");
       return MEMMODEL_SEQ_CST | IX86_HLE_ACQUIRE;
     }
   if (val & IX86_HLE_RELEASE && !(is_mm_release (model) || strong))
     {
       warning (OPT_Winvalid_memory_model,
-              "HLE_RELEASE not used with RELEASE or stronger memory model");
+	      "%<HLE_RELEASE%> not used with %<RELEASE%> or stronger "
+	       "memory model");
       return MEMMODEL_SEQ_CST | IX86_HLE_RELEASE;
     }
   return val;

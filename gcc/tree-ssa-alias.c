@@ -98,6 +98,8 @@ static struct {
   unsigned HOST_WIDE_INT ref_maybe_used_by_call_p_no_alias;
   unsigned HOST_WIDE_INT call_may_clobber_ref_p_may_alias;
   unsigned HOST_WIDE_INT call_may_clobber_ref_p_no_alias;
+  unsigned HOST_WIDE_INT aliasing_component_refs_p_may_alias;
+  unsigned HOST_WIDE_INT aliasing_component_refs_p_no_alias;
 } alias_stats;
 
 void
@@ -122,6 +124,12 @@ dump_alias_stats (FILE *s)
 	   alias_stats.call_may_clobber_ref_p_no_alias,
 	   alias_stats.call_may_clobber_ref_p_no_alias
 	   + alias_stats.call_may_clobber_ref_p_may_alias);
+  fprintf (s, "  aliasing_component_ref_p: "
+	   HOST_WIDE_INT_PRINT_DEC" disambiguations, "
+	   HOST_WIDE_INT_PRINT_DEC" queries\n",
+	   alias_stats.aliasing_component_refs_p_no_alias,
+	   alias_stats.aliasing_component_refs_p_no_alias
+	   + alias_stats.aliasing_component_refs_p_may_alias);
   dump_alias_stats_in_alias_c (s);
 }
 
@@ -822,7 +830,16 @@ aliasing_component_refs_p (tree ref1,
       offset2 -= offadj;
       get_ref_base_and_extent (base1, &offadj, &sztmp, &msztmp, &reverse);
       offset1 -= offadj;
-      return ranges_maybe_overlap_p (offset1, max_size1, offset2, max_size2);
+      if (ranges_maybe_overlap_p (offset1, max_size1, offset2, max_size2))
+	{
+	  ++alias_stats.aliasing_component_refs_p_may_alias;
+	  return true;
+	}
+      else
+	{
+	  ++alias_stats.aliasing_component_refs_p_no_alias;
+	  return false;
+	}
     }
 
   /* If we didn't find a common base, try the other way around.  */
@@ -840,14 +857,25 @@ aliasing_component_refs_p (tree ref1,
       offset1 -= offadj;
       get_ref_base_and_extent (base2, &offadj, &sztmp, &msztmp, &reverse);
       offset2 -= offadj;
-      return ranges_maybe_overlap_p (offset1, max_size1,
-				     offset2, max_size2);
+      if (ranges_maybe_overlap_p (offset1, max_size1, offset2, max_size2))
+	{
+	  ++alias_stats.aliasing_component_refs_p_may_alias;
+	  return true;
+	}
+      else
+	{
+	  ++alias_stats.aliasing_component_refs_p_no_alias;
+	  return false;
+	}
     }
 
   /* In the remaining test we assume that there is no overlapping type
      at all.  So if we are unsure, we need to give up.  */
   if (same_p == -1 || same_p2 == -1)
-    return true;
+    {
+      ++alias_stats.aliasing_component_refs_p_may_alias;
+      return true;
+    }
 
   /* If we have two type access paths B1.path1 and B2.path2 they may
      only alias if either B1 is in B2.path2 or B2 is in B1.path1.
@@ -857,11 +885,19 @@ aliasing_component_refs_p (tree ref1,
      tail of path2.  */
   if (base1_alias_set == ref2_alias_set
       || alias_set_subset_of (base1_alias_set, ref2_alias_set))
-    return true;
+    {
+      ++alias_stats.aliasing_component_refs_p_may_alias;
+      return true;
+    }
   /* If this is ptr vs. decl then we know there is no ptr ... decl path.  */
-  if (!ref2_is_decl)
-    return (base2_alias_set == ref1_alias_set
-	    || alias_set_subset_of (base2_alias_set, ref1_alias_set));
+  if (!ref2_is_decl
+      && (base2_alias_set == ref1_alias_set
+	  || alias_set_subset_of (base2_alias_set, ref1_alias_set)))
+    {
+      ++alias_stats.aliasing_component_refs_p_may_alias;
+      return true;
+    }
+  ++alias_stats.aliasing_component_refs_p_no_alias;
   return false;
 }
 

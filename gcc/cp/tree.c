@@ -698,7 +698,6 @@ static tree
 build_vec_init_elt (tree type, tree init, tsubst_flags_t complain)
 {
   tree inner_type = strip_array_types (type);
-  vec<tree, va_gc> *argvec;
 
   if (integer_zerop (array_type_nelts_total (type))
       || !CLASS_TYPE_P (inner_type))
@@ -711,7 +710,7 @@ build_vec_init_elt (tree type, tree init, tsubst_flags_t complain)
 	      || (same_type_ignoring_top_level_qualifiers_p
 		  (type, TREE_TYPE (init))));
 
-  argvec = make_tree_vector ();
+  releasing_vec argvec;
   if (init)
     {
       tree init_type = strip_array_types (TREE_TYPE (init));
@@ -723,7 +722,6 @@ build_vec_init_elt (tree type, tree init, tsubst_flags_t complain)
   init = build_special_member_call (NULL_TREE, complete_ctor_identifier,
 				    &argvec, inner_type, LOOKUP_NORMAL,
 				    complain);
-  release_tree_vector (argvec);
 
   /* For a trivial constructor, build_over_call creates a TARGET_EXPR.  But
      we don't want one here because we aren't creating a temporary.  */
@@ -1308,8 +1306,7 @@ cp_build_qualified_type_real (tree type,
      (in CD1) we always ignore extra cv-quals on functions.  */
   if (type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE)
       && (TYPE_REF_P (type)
-	  || TREE_CODE (type) == FUNCTION_TYPE
-	  || TREE_CODE (type) == METHOD_TYPE))
+	  || FUNC_OR_METHOD_TYPE_P (type)))
     {
       if (TYPE_REF_P (type))
 	bad_quals |= type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
@@ -1452,7 +1449,7 @@ strip_typedefs (tree t, bool *remove_attributes)
   if (TREE_CODE (t) == TREE_LIST)
     {
       bool changed = false;
-      vec<tree,va_gc> *vec = make_tree_vector ();
+      releasing_vec vec;
       tree r = t;
       for (; t; t = TREE_CHAIN (t))
 	{
@@ -1464,7 +1461,6 @@ strip_typedefs (tree t, bool *remove_attributes)
 	}
       if (changed)
 	r = build_tree_list_vec (vec);
-      release_tree_vector (vec);
       return r;
     }
 
@@ -1752,7 +1748,7 @@ strip_typedefs_expr (tree t, bool *remove_attributes)
 
     case TREE_LIST:
       {
-	vec<tree, va_gc> *vec = make_tree_vector ();
+	releasing_vec vec;
 	bool changed = false;
 	tree it;
 	for (it = t; it; it = TREE_CHAIN (it))
@@ -1771,14 +1767,13 @@ strip_typedefs_expr (tree t, bool *remove_attributes)
 	  }
 	else
 	  r = t;
-	release_tree_vector (vec);
 	return r;
       }
 
     case TREE_VEC:
       {
 	bool changed = false;
-	vec<tree, va_gc> *vec = make_tree_vector ();
+	releasing_vec vec;
 	n = TREE_VEC_LENGTH (t);
 	vec_safe_reserve (vec, n);
 	for (i = 0; i < n; ++i)
@@ -1799,7 +1794,6 @@ strip_typedefs_expr (tree t, bool *remove_attributes)
 	  }
 	else
 	  r = t;
-	release_tree_vector (vec);
 	return r;
       }
 
@@ -2410,8 +2404,7 @@ is_overloaded_fn (tree x)
       || (TREE_CODE (x) == OVERLOAD && !OVL_SINGLE_P (x)))
     return 2;
 
-  return (TREE_CODE (x) == FUNCTION_DECL
-	  || TREE_CODE (x) == OVERLOAD);
+  return OVL_P (x);
 }
 
 /* X is the CALL_EXPR_FN of a CALL_EXPR.  If X represents a dependent name
@@ -2425,7 +2418,7 @@ dependent_name (tree x)
     return x;
   if (TREE_CODE (x) == TEMPLATE_ID_EXPR)
     x = TREE_OPERAND (x, 0);
-  if (TREE_CODE (x) == OVERLOAD || TREE_CODE (x) == FUNCTION_DECL)
+  if (OVL_P (x))
     return OVL_NAME (x);
   return NULL_TREE;
 }
@@ -2457,8 +2450,7 @@ maybe_get_fns (tree from)
   if (TREE_CODE (from) == TEMPLATE_ID_EXPR)
     from = TREE_OPERAND (from, 0);
 
-  if (TREE_CODE (from) == OVERLOAD
-      || TREE_CODE (from) == FUNCTION_DECL)
+  if (OVL_P (from))
     return from;
 
   return NULL;
@@ -3379,7 +3371,6 @@ build_min_non_dep_op_overload (enum tree_code op,
   va_list p;
   int nargs, expected_nargs;
   tree fn, call;
-  vec<tree, va_gc> *args;
 
   non_dep = extract_call_expr (non_dep);
 
@@ -3393,7 +3384,7 @@ build_min_non_dep_op_overload (enum tree_code op,
     expected_nargs += 1;
   gcc_assert (nargs == expected_nargs);
 
-  args = make_tree_vector ();
+  releasing_vec args;
   va_start (p, overload);
 
   if (TREE_CODE (TREE_TYPE (overload)) == FUNCTION_TYPE)
@@ -3423,7 +3414,6 @@ build_min_non_dep_op_overload (enum tree_code op,
 
   va_end (p);
   call = build_min_non_dep_call_vec (non_dep, fn, args);
-  release_tree_vector (args);
 
   tree call_expr = extract_call_expr (call);
   KOENIG_LOOKUP_P (call_expr) = KOENIG_LOOKUP_P (non_dep);
@@ -4505,7 +4495,7 @@ handle_init_priority_attribute (tree* node,
 
   if (!initp_expr || TREE_CODE (initp_expr) != INTEGER_CST)
     {
-      error ("requested init_priority is not an integer constant");
+      error ("requested %<init_priority%> is not an integer constant");
       cxx_constant_value (initp_expr);
       *no_add_attrs = true;
       return NULL_TREE;
@@ -4535,7 +4525,8 @@ handle_init_priority_attribute (tree* node,
 
   if (pri > MAX_INIT_PRIORITY || pri <= 0)
     {
-      error ("requested init_priority is out of range");
+      error ("requested %<init_priority%> %i is out of range [0, %i]",
+	     pri, MAX_INIT_PRIORITY);
       *no_add_attrs = true;
       return NULL_TREE;
     }
@@ -4545,7 +4536,8 @@ handle_init_priority_attribute (tree* node,
   if (pri <= MAX_RESERVED_INIT_PRIORITY)
     {
       warning
-	(0, "requested init_priority is reserved for internal use");
+	(0, "requested %<init_priority%> %i is reserved for internal use",
+	 pri);
     }
 
   if (SUPPORTS_INIT_PRIORITY)
@@ -4748,8 +4740,7 @@ cp_build_type_attribute_variant (tree type, tree attributes)
   tree new_type;
 
   new_type = build_type_attribute_variant (type, attributes);
-  if (TREE_CODE (new_type) == FUNCTION_TYPE
-      || TREE_CODE (new_type) == METHOD_TYPE)
+  if (FUNC_OR_METHOD_TYPE_P (new_type))
     gcc_checking_assert (cxx_type_hash_eq (type, new_type));
 
   /* Making a new main variant of a class type is broken.  */
@@ -4764,8 +4755,7 @@ cp_build_type_attribute_variant (tree type, tree attributes)
 bool
 cxx_type_hash_eq (const_tree typea, const_tree typeb)
 {
-  gcc_assert (TREE_CODE (typea) == FUNCTION_TYPE
-	      || TREE_CODE (typea) == METHOD_TYPE);
+  gcc_assert (FUNC_OR_METHOD_TYPE_P (typea));
 
   if (type_memfn_rqual (typea) != type_memfn_rqual (typeb))
     return false;
@@ -4782,7 +4772,7 @@ tree
 cxx_copy_lang_qualifiers (const_tree typea, const_tree typeb)
 {
   tree type = CONST_CAST_TREE (typea);
-  if (TREE_CODE (type) == FUNCTION_TYPE || TREE_CODE (type) == METHOD_TYPE)
+  if (FUNC_OR_METHOD_TYPE_P (type))
     type = build_cp_fntype_variant (type, type_memfn_rqual (typeb),
 				    TYPE_RAISES_EXCEPTIONS (typeb),
 				    TYPE_HAS_LATE_RETURN_TYPE (typeb));
@@ -5394,8 +5384,7 @@ cp_fix_function_decl_p (tree decl)
 void
 cp_free_lang_data (tree t)
 {
-  if (TREE_CODE (t) == METHOD_TYPE
-      || TREE_CODE (t) == FUNCTION_TYPE)
+  if (FUNC_OR_METHOD_TYPE_P (t))
     {
       /* Default args are not interesting anymore.  */
       tree argtypes = TYPE_ARG_TYPES (t);
@@ -5513,7 +5502,7 @@ maybe_warn_zero_as_null_pointer_constant (tree expr, location_t loc)
 void
 lang_check_failed (const char* file, int line, const char* function)
 {
-  internal_error ("lang_* check: failed in %s, at %s:%d",
+  internal_error ("%<lang_*%> check: failed in %s, at %s:%d",
 		  function, trim_filename (file), line);
 }
 #endif /* ENABLE_TREE_CHECKING */

@@ -2028,10 +2028,11 @@ or1k_expand_atomic_op_qihi (rtx_code code, rtx mem, rtx val,
    (*THIS + VCALL_OFFSET) should be additionally added to THIS.  */
 
 static void
-or1k_output_mi_thunk (FILE *file, tree /* thunk_fndecl */,
+or1k_output_mi_thunk (FILE *file, tree thunk_fndecl,
 		      HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		      tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
   rtx this_rtx, funexp;
   rtx_insn *insn;
 
@@ -2115,9 +2116,11 @@ or1k_output_mi_thunk (FILE *file, tree /* thunk_fndecl */,
      assemble_start_function and assemble_end_function.  */
   insn = get_insns ();
   shorten_branches (insn);
+  assemble_start_function (thunk_fndecl, fnname);
   final_start_function (insn, file, 1);
   final (insn, file, 1);
   final_end_function ();
+  assemble_end_function (thunk_fndecl, fnname);
 
   reload_completed = 0;
   epilogue_completed = 0;

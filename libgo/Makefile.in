@@ -245,16 +245,15 @@ am__objects_3 = runtime/aeshash.lo runtime/go-assert.lo \
 	runtime/go-ffi.lo runtime/go-fieldtrack.lo \
 	runtime/go-matherr.lo runtime/go-memclr.lo \
 	runtime/go-memcmp.lo runtime/go-memequal.lo \
-	runtime/go-memmove.lo runtime/go-nanotime.lo runtime/go-now.lo \
-	runtime/go-nosys.lo runtime/go-reflect-call.lo \
-	runtime/go-runtime-error.lo runtime/go-setenv.lo \
-	runtime/go-signal.lo runtime/go-strslice.lo \
-	runtime/go-typedesc-equal.lo runtime/go-unsafe-pointer.lo \
-	runtime/go-unsetenv.lo runtime/go-unwind.lo \
-	runtime/go-varargs.lo runtime/env_posix.lo runtime/panic.lo \
-	runtime/print.lo runtime/proc.lo runtime/runtime_c.lo \
-	runtime/stack.lo runtime/yield.lo $(am__objects_1) \
-	$(am__objects_2)
+	runtime/go-nanotime.lo runtime/go-now.lo runtime/go-nosys.lo \
+	runtime/go-reflect-call.lo runtime/go-runtime-error.lo \
+	runtime/go-setenv.lo runtime/go-signal.lo \
+	runtime/go-strslice.lo runtime/go-typedesc-equal.lo \
+	runtime/go-unsafe-pointer.lo runtime/go-unsetenv.lo \
+	runtime/go-unwind.lo runtime/go-varargs.lo \
+	runtime/env_posix.lo runtime/panic.lo runtime/print.lo \
+	runtime/proc.lo runtime/runtime_c.lo runtime/stack.lo \
+	runtime/yield.lo $(am__objects_1) $(am__objects_2)
 am_libgo_llgo_la_OBJECTS = $(am__objects_3)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -882,7 +881,6 @@ runtime_files = \
 	runtime/go-memclr.c \
 	runtime/go-memcmp.c \
 	runtime/go-memequal.c \
-	runtime/go-memmove.c \
 	runtime/go-nanotime.c \
 	runtime/go-now.c \
 	runtime/go-nosys.c \
@@ -1337,8 +1335,6 @@ runtime/go-memcmp.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-memequal.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
-runtime/go-memmove.lo: runtime/$(am__dirstamp) \
-	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-nanotime.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-now.lo: runtime/$(am__dirstamp) \
@@ -1431,7 +1427,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-memclr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-memcmp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-memequal.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-memmove.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-nanotime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-nosys.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-now.Plo@am__quote@

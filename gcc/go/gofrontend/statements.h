@@ -16,6 +16,7 @@ class Block;
 class Function;
 class Unnamed_label;
 class Export_function_body;
+class Import_function_body;
 class Assignment_statement;
 class Temporary_statement;
 class Variable_declaration_statement;
@@ -332,11 +333,15 @@ class Statement
   inlining_cost()
   { return this->do_inlining_cost(); }
 
-  // Export data for this statement to BODY.  INDENT is an indentation
-  // level used if the export data requires multiple lines.
+  // Export data for this statement to BODY.
   void
   export_statement(Export_function_body* efb)
   { this->do_export_statement(efb); }
+
+  // Make implicit type conversions explicit.
+  void
+  add_conversions()
+  { this->do_add_conversions(); }
 
   // Read a statement from export data.  The location should be used
   // for the returned statement.  Errors should be reported using the
@@ -514,10 +519,8 @@ class Statement
   { return 0x100000; }
 
   // Implemented by child class: write export data for this statement
-  // to the string.  The integer is an indentation level used if the
-  // export data requires multiple lines.  This need only be
-  // implemented by classes that implement do_inlining_cost with a
-  // reasonable value.
+  // to the string.  This need only be implemented by classes that
+  // implement do_inlining_cost with a reasonable value.
   virtual void
   do_export_statement(Export_function_body*)
   { go_unreachable(); }
@@ -535,6 +538,11 @@ class Statement
   // Implemented by child class: dump ast representation.
   virtual void
   do_dump_statement(Ast_dump_context*) const = 0;
+
+  // Implemented by child class: make implicit conversions explicit.
+  virtual void
+  do_add_conversions()
+  { }
 
   // Traverse an expression in a statement.
   int
@@ -647,6 +655,9 @@ class Assignment_statement : public Statement
   void
   do_dump_statement(Ast_dump_context*) const;
 
+  void
+  do_add_conversions();
+
  private:
   // Left hand side--the lvalue.
   Expression* lhs_;
@@ -719,6 +730,9 @@ class Temporary_statement : public Statement
   void
   do_dump_statement(Ast_dump_context*) const;
 
+  void
+  do_add_conversions();
+
  private:
   // The type of the temporary variable.
   Type* type_;
@@ -746,6 +760,10 @@ class Variable_declaration_statement : public Statement
   var()
   { return this->var_; }
 
+  // Import a variable declaration.
+  static Statement*
+  do_import(Import_function_body*, Location);
+
  protected:
   int
   do_traverse(Traverse*);
@@ -756,6 +774,13 @@ class Variable_declaration_statement : public Statement
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
+  int
+  do_inlining_cost()
+  { return 1; }
+
+  void
+  do_export_statement(Export_function_body*);
+
   Statement*
   do_flatten(Gogo*, Named_object*, Block*, Statement_inserter*);
 
@@ -764,6 +789,9 @@ class Variable_declaration_statement : public Statement
 
   void
   do_dump_statement(Ast_dump_context*) const;
+
+  void
+  do_add_conversions();
 
  private:
   Named_object* var_;
@@ -949,6 +977,9 @@ class Send_statement : public Statement
 
   void
   do_dump_statement(Ast_dump_context*) const;
+
+  void
+  do_add_conversions();
 
  private:
   // The channel on which to send the value.

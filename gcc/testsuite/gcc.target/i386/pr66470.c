@@ -1,5 +1,6 @@
 /* PR target/66470 */
 /* { dg-do compile { target { ! ia32 } } } */
+/* { dg-require-effective-target maybe_x32 } */
 /* { dg-options "-O2 -mx32 -maddress-mode=long" } */
 /* { dg-require-effective-target tls } */
 

@@ -143,7 +143,7 @@ append_arg (const struct cl_decoded_option *arg)
     }
 
   if (g77_newargc == newargsize)
-    fatal_error (input_location, "overflowed output arg list for %qs",
+    fatal_error (input_location, "overflowed output argument list for %qs",
 		 arg->orig_option_with_args_text);
 
   g77_new_decoded_options[g77_newargc++] = *arg;

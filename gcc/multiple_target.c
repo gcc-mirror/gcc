@@ -356,7 +356,7 @@ expand_target_clones (struct cgraph_node *node, bool definition)
     }
 
   if (node->definition
-      && !tree_versionable_function_p (node->decl))
+      && (node->alias || !tree_versionable_function_p (node->decl)))
     {
       auto_diagnostic_group d;
       error_at (DECL_SOURCE_LOCATION (node->decl),
@@ -365,6 +365,9 @@ expand_target_clones (struct cgraph_node *node, bool definition)
       if (lookup_attribute ("noclone", DECL_ATTRIBUTES (node->decl)))
 	reason = G_("function %q+F can never be copied "
 		    "because it has %<noclone%> attribute");
+      else if (node->alias)
+	reason
+	  = "%<target_clones%> cannot be combined with %<alias%> attribute";
       else
 	reason = copy_forbidden (DECL_STRUCT_FUNCTION (node->decl));
       if (reason)

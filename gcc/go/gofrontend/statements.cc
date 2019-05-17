@@ -155,6 +155,8 @@ Statement::import_statement(Import_function_body* ifb, Location loc)
       ifb->advance(6);
       return Statement::make_return_statement(NULL, loc);
     }
+  else if (ifb->match_c_string("var "))
+    return Variable_declaration_statement::do_import(ifb, loc);
 
   Expression* lhs = Expression::import_expression(ifb, loc);
   ifb->require_c_string(" = ");
@@ -322,6 +324,22 @@ Variable_declaration_statement::do_flatten(Gogo* gogo, Named_object* function,
   return this;
 }
 
+// Add explicit type conversions.
+
+void
+Variable_declaration_statement::do_add_conversions()
+{
+  Variable* var = this->var_->var_value();
+  Expression* init = var->init();
+  if (init == NULL)
+    return;
+  Type* lt = var->type();
+  Type* rt = init->type();
+  if (!Type::are_identical(lt, rt, 0, NULL)
+      && lt->interface_type() != NULL)
+    var->set_init(Expression::make_cast(lt, init, this->location()));
+}
+
 // Convert a variable declaration to the backend representation.
 
 Bstatement*
@@ -406,6 +424,57 @@ Statement*
 Statement::make_variable_declaration(Named_object* var)
 {
   return new Variable_declaration_statement(var);
+}
+
+// Export a variable declaration.
+
+void
+Variable_declaration_statement::do_export_statement(Export_function_body* efb)
+{
+  efb->write_c_string("var ");
+  efb->write_string(Gogo::unpack_hidden_name(this->var_->name()));
+  efb->write_c_string(" ");
+  Variable* var = this->var_->var_value();
+  Type* type = var->type();
+  efb->write_type(type);
+  Expression* init = var->init();
+  if (init != NULL)
+    {
+      efb->write_c_string(" = ");
+
+      go_assert(efb->type_context() == NULL);
+      efb->set_type_context(type);
+
+      init->export_expression(efb);
+
+      efb->set_type_context(NULL);
+    }
+}
+
+// Import a variable declaration.
+
+Statement*
+Variable_declaration_statement::do_import(Import_function_body* ifb,
+					  Location loc)
+{
+  ifb->require_c_string("var ");
+  std::string id = ifb->read_identifier();
+  ifb->require_c_string(" ");
+  Type* type = ifb->read_type();
+  Expression* init = NULL;
+  if (ifb->match_c_string(" = "))
+    {
+      ifb->advance(3);
+      init = Expression::import_expression(ifb, loc);
+      Type_context context(type, false);
+      init->determine_type(&context);
+    }
+  Variable* var = new Variable(type, init, false, false, false, loc);
+  var->set_is_used();
+  // FIXME: The package we are importing does not yet exist, so we
+  // can't pass the correct package here.  It probably doesn't matter.
+  Named_object* no = ifb->block()->bindings()->add_variable(id, NULL, var);
+  return Statement::make_variable_declaration(no);
 }
 
 // Class Temporary_statement.
@@ -527,6 +596,20 @@ Temporary_statement::do_flatten(Gogo*, Named_object*, Block*,
 							 this->location());
     }
   return this;
+}
+
+// Add explicit type conversions.
+
+void
+Temporary_statement::do_add_conversions()
+{
+  if (this->init_ == NULL)
+    return;
+  Type* lt = this->type();
+  Type* rt = this->init_->type();
+  if (!Type::are_identical(lt, rt, 0, NULL)
+      && lt->interface_type() != NULL)
+    this->init_ = Expression::make_cast(lt, this->init_, this->location());
 }
 
 // Convert to backend representation.
@@ -905,6 +988,18 @@ Assignment_statement::do_flatten(Gogo*, Named_object*, Block*,
 							this->location());
     }
   return this;
+}
+
+// Add explicit type conversions.
+
+void
+Assignment_statement::do_add_conversions()
+{
+  Type* lt = this->lhs_->type();
+  Type* rt = this->rhs_->type();
+  if (!Type::are_identical(lt, rt, 0, NULL)
+      && lt->interface_type() != NULL)
+    this->rhs_ = Expression::make_cast(lt, this->rhs_, this->location());
 }
 
 // Convert an assignment statement to the backend representation.
@@ -1306,6 +1401,13 @@ Tuple_map_assignment_statement::do_lower(Gogo* gogo, Named_object*,
   Map_type* map_type = map_index->get_map_type();
   if (map_type == NULL)
     return Statement::make_error_statement(loc);
+
+  // Avoid copy for string([]byte) conversions used in map keys.
+  // mapaccess doesn't keep the reference, so this is safe.
+  Type_conversion_expression* ce = map_index->index()->conversion_expression();
+  if (ce != NULL && ce->type()->is_string_type()
+      && ce->expr()->type()->is_slice_type())
+    ce->set_no_copy(true);
 
   Block* b = new Block(enclosing, loc);
 
@@ -2577,6 +2679,8 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
   // We already ran the determine_types pass, so we need to run it
   // just for the call statement now.  The other types are known.
   call_statement->determine_types();
+
+  gogo->add_conversions_in_block(b);
 
   gogo->flatten_block(function, b);
 
@@ -4483,6 +4587,18 @@ Send_statement::do_flatten(Gogo*, Named_object*, Block*,
   return this;
 }
 
+// Add explicit type conversions.
+
+void
+Send_statement::do_add_conversions()
+{
+  Type* lt = this->channel_->type()->channel_type()->element_type();
+  Type* rt = this->val_->type();
+  if (!Type::are_identical(lt, rt, 0, NULL)
+      && lt->interface_type() != NULL)
+    this->val_ = Expression::make_cast(lt, this->val_, this->location());
+}
+
 // Convert a send statement to the backend representation.
 
 Bstatement*
@@ -5512,6 +5628,8 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
                                                      range_temp, loc);
       if (clear != NULL)
         {
+          if (gogo->debug_optimization())
+            go_inform(loc, "map range clear");
           temp_block->add_statement(clear);
           return Statement::make_block_statement(temp_block, loc);
         }
@@ -5527,6 +5645,8 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
                                                        range_temp, loc);
       if (clear != NULL)
         {
+          if (gogo->debug_optimization())
+            go_inform(loc, "array range clear");
           temp_block->add_statement(clear);
           return Statement::make_block_statement(temp_block, loc);
         }

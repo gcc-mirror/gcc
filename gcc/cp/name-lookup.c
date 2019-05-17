@@ -4522,10 +4522,10 @@ cp_binding_level_debug (cp_binding_level *scope, int line, const char *action)
 {
   const char *desc = cp_binding_level_descriptor (scope);
   if (scope->this_entity)
-    verbatim ("%s %<%s(%E)%> %p %d\n", action, desc,
+    verbatim ("%s %<%s(%E)%> %p %d", action, desc,
 	      scope->this_entity, (void *) scope, line);
   else
-    verbatim ("%s %s %p %d\n", action, desc, (void *) scope, line);
+    verbatim ("%s %s %p %d", action, desc, (void *) scope, line);
 }
 
 /* A chain of binding_level structures awaiting reuse.  */
@@ -8905,7 +8905,7 @@ void
 pop_everything (void)
 {
   if (ENABLE_SCOPE_CHECKING)
-    verbatim ("XXX entering pop_everything ()\n");
+    verbatim ("XXX entering %<pop_everything ()%>");
   while (!namespace_bindings_p ())
     {
       if (current_binding_level->kind == sk_class)
@@ -8914,7 +8914,7 @@ pop_everything (void)
 	poplevel (0, 0, 0);
     }
   if (ENABLE_SCOPE_CHECKING)
-    verbatim ("XXX leaving pop_everything ()\n");
+    verbatim ("XXX leaving %<pop_everything ()%>");
 }
 
 /* Emit debugging information for using declarations and directives.

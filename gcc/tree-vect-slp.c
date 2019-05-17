@@ -333,7 +333,7 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char *swap,
       number_of_oprnds = gimple_num_ops (stmt) - 1;
       /* Swap can only be done for cond_expr if asked to, otherwise we
 	 could result in different comparison code to the first stmt.  */
-      if (gimple_assign_rhs_code (stmt) == COND_EXPR
+      if (code == COND_EXPR
 	  && COMPARISON_CLASS_P (gimple_assign_rhs1 (stmt)))
 	{
 	  first_op_cond = true;
@@ -364,6 +364,8 @@ again:
 	}
       else
 	oprnd = gimple_op (stmt_info->stmt, first_op_idx + (swapped ? !i : i));
+      if (TREE_CODE (oprnd) == VIEW_CONVERT_EXPR)
+	oprnd = TREE_OPERAND (oprnd, 0);
 
       oprnd_info = (*oprnds_info)[i];
 
@@ -907,6 +909,7 @@ vect_build_slp_tree_1 (unsigned char *swap,
 	      && TREE_CODE_CLASS (rhs_code) != tcc_unary
 	      && TREE_CODE_CLASS (rhs_code) != tcc_expression
 	      && TREE_CODE_CLASS (rhs_code) != tcc_comparison
+	      && rhs_code != VIEW_CONVERT_EXPR
 	      && rhs_code != CALL_EXPR)
 	    {
 	      if (dump_enabled_p ())

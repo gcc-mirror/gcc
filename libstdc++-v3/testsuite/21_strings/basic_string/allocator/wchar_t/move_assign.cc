@@ -80,7 +80,7 @@ void test02()
   test_type v2(alloc_type(2));
   v2.assign(1, c);
   v2 = std::move(v1);
-  VERIFY(0 == v1.get_allocator().get_personality());
+  VERIFY(1 == v1.get_allocator().get_personality());
   VERIFY(1 == v2.get_allocator().get_personality());
 
   test_type v3(alloc_type(3));
@@ -88,7 +88,7 @@ void test02()
   test_type v4(alloc_type(4));
   v4.assign(100, c);
   v4 = std::move(v3);
-  VERIFY(0 == v3.get_allocator().get_personality());
+  VERIFY(3 == v3.get_allocator().get_personality());
   VERIFY(3 == v4.get_allocator().get_personality());
 
   test_type v5(alloc_type(5));
@@ -96,7 +96,7 @@ void test02()
   test_type v6(alloc_type(6));
   v6.assign(1, c);
   v6 = std::move(v5);
-  VERIFY(0 == v5.get_allocator().get_personality());
+  VERIFY(5 == v5.get_allocator().get_personality());
   VERIFY(5 == v6.get_allocator().get_personality());
 
   test_type v7(alloc_type(7));
@@ -104,7 +104,7 @@ void test02()
   test_type v8(alloc_type(8));
   v8.assign(100, c);
   v8 = std::move(v7);
-  VERIFY(0 == v7.get_allocator().get_personality());
+  VERIFY(7 == v7.get_allocator().get_personality());
   VERIFY(7 == v8.get_allocator().get_personality());
 }
 

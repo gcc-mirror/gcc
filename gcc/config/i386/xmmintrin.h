@@ -1165,7 +1165,68 @@ _m_pshufw (__m64 __A, int const __N)
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_maskmove_si64 (__m64 __A, __m64 __N, char *__P)
 {
+#ifdef __MMX_WITH_SSE__
+  /* Emulate MMX maskmovq with SSE2 maskmovdqu and handle unmapped bits
+     64:127 at address __P.  */
+  typedef long long __v2di __attribute__ ((__vector_size__ (16)));
+  typedef char __v16qi __attribute__ ((__vector_size__ (16)));
+  /* Zero-extend __A and __N to 128 bits.  */
+  __v2di __A128 = __extension__ (__v2di) { ((__v1di) __A)[0], 0 };
+  __v2di __N128 = __extension__ (__v2di) { ((__v1di) __N)[0], 0 };
+
+  /* Check the alignment of __P.  */
+  __SIZE_TYPE__ offset = ((__SIZE_TYPE__) __P) & 0xf;
+  if (offset)
+    {
+      /* If the misalignment of __P > 8, subtract __P by 8 bytes.
+	 Otherwise, subtract __P by the misalignment.  */
+      if (offset > 8)
+	offset = 8;
+      __P = (char *) (((__SIZE_TYPE__) __P) - offset);
+
+      /* Shift __A128 and __N128 to the left by the adjustment.  */
+      switch (offset)
+	{
+	case 1:
+	  __A128 = __builtin_ia32_pslldqi128 (__A128, 8);
+	  __N128 = __builtin_ia32_pslldqi128 (__N128, 8);
+	  break;
+	case 2:
+	  __A128 = __builtin_ia32_pslldqi128 (__A128, 2 * 8);
+	  __N128 = __builtin_ia32_pslldqi128 (__N128, 2 * 8);
+	  break;
+	case 3:
+	  __A128 = __builtin_ia32_pslldqi128 (__A128, 3 * 8);
+	  __N128 = __builtin_ia32_pslldqi128 (__N128, 3 * 8);
+	  break;
+	case 4:
+	  __A128 = __builtin_ia32_pslldqi128 (__A128, 4 * 8);
+	  __N128 = __builtin_ia32_pslldqi128 (__N128, 4 * 8);
+	  break;
+	case 5:
+	  __A128 = __builtin_ia32_pslldqi128 (__A128, 5 * 8);
+	  __N128 = __builtin_ia32_pslldqi128 (__N128, 5 * 8);
+	  break;
+	case 6:
+	  __A128 = __builtin_ia32_pslldqi128 (__A128, 6 * 8);
+	  __N128 = __builtin_ia32_pslldqi128 (__N128, 6 * 8);
+	  break;
+	case 7:
+	  __A128 = __builtin_ia32_pslldqi128 (__A128, 7 * 8);
+	  __N128 = __builtin_ia32_pslldqi128 (__N128, 7 * 8);
+	  break;
+	case 8:
+	  __A128 = __builtin_ia32_pslldqi128 (__A128, 8 * 8);
+	  __N128 = __builtin_ia32_pslldqi128 (__N128, 8 * 8);
+	  break;
+	default:
+	  break;
+	}
+    }
+  __builtin_ia32_maskmovdqu ((__v16qi)__A128, (__v16qi)__N128, __P);
+#else
   __builtin_ia32_maskmovq ((__v8qi)__A, (__v8qi)__N, __P);
+#endif
 }
 
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
