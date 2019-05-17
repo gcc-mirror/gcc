@@ -1,5 +1,9 @@
 2019-05-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/variant/compile.cc: Fix narrowing test for ILP32
+	targets. Add more cases from P0608R3.
+	* testsuite/20_util/variant/run.cc: Add more cases from P0608R3.
+
 	* include/bits/random.h (seed_seq::param): Fix non-reserved name.
 	* include/experimental/type_traits (is_detected_exact)
 	(is_detected_exact_v): Likewise.
