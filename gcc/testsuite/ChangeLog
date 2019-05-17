@@ -2,6 +2,10 @@
 
 	* gcc.dg/gcc_diag-11.c: Remove accidentally committed test.
 
+	* g++.dg/overload/conv-op1.C: Adjust text of expected messages.
+	* g++.dg/ubsan/pr63956.C: Same.
+	* g++.old-deja/g++.pt/assign1.C: Same.
+
 2019-05-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR testsuite/89433
