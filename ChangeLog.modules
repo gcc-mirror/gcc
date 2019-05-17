@@ -1,6 +1,13 @@
 2019-05-17  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::mark_class_member): Add do_defn parm.
+	Mark the definition.
+	(trees_out::mark_class_def): Adjust.
+	(depset::hash::find_dependencies, module_state::write_cluster):
+	Use mark_declaration.
+
+	gcc/cp/
 	* module.cc (trees_out::mark_node): Drop OUTERMOST parm.  Don't
 	consider templateness.
 	(trees_out::mark_declaration): New.

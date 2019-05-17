@@ -2901,8 +2901,8 @@ private:
 
  public:
   /* Serialize various definitions. */
-  void mark_definition (tree decl);
   void write_definition (tree decl);
+  void mark_definition (tree decl);
   void mark_declaration (tree decl);
 
  private:
@@ -2910,7 +2910,7 @@ private:
   void mark_var_def (tree decl);
   void mark_class_def (tree decl);
   void mark_enum_def (tree decl);
-  void mark_class_member (tree decl);
+  void mark_class_member (tree decl, bool do_defn = true);
 
 private:
   void write_var_def (tree decl);
@@ -8671,7 +8671,7 @@ trees_out::write_class_def (tree defn)
 }
 
 void
-trees_out::mark_class_member (tree member)
+trees_out::mark_class_member (tree member, bool do_defn)
 {
   gcc_assert (DECL_P (member));
 
@@ -8688,6 +8688,8 @@ trees_out::mark_class_member (tree member)
     }
 
   mark_declaration (member);
+  if (do_defn && has_definition (member))
+    mark_definition (member);
 }
 
 void
@@ -8698,11 +8700,7 @@ trees_out::mark_class_def (tree defn)
   for (tree member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
     /* Do not mark enum consts here.  */
     if (TREE_CODE (member) != CONST_DECL)
-      {
-	mark_class_member (member);
-	if (has_definition (member))
-	  mark_definition (member);
-      }  
+      mark_class_member (member);
 
   if (TYPE_LANG_SPECIFIC (type))
     {
@@ -8710,15 +8708,15 @@ trees_out::mark_class_def (tree defn)
 	if (as_base != type)
 	  {
 	    tree base_decl = TYPE_NAME (as_base);
-	    mark_node (base_decl);
-	    mark_class_def (base_decl);
+	    mark_declaration (base_decl);
+	    mark_definition (base_decl);
 	  }
 
-      for (tree vtables = CLASSTYPE_VTABLES (type);
-	   vtables; vtables = TREE_CHAIN (vtables))
+      for (tree vtable = CLASSTYPE_VTABLES (type);
+	   vtable; vtable = TREE_CHAIN (vtable))
 	{
-	  mark_node (vtables);
-	  mark_var_def (vtables);
+	  mark_declaration (vtable);
+	  mark_definition (vtable);
 	}
 
       for (tree decls = CLASSTYPE_DECL_LIST (type);
@@ -8735,7 +8733,7 @@ trees_out::mark_class_def (tree defn)
 	      member = TYPE_NAME (member);
 
 	    gcc_assert (DECL_CONTEXT (member) == type);
-	    mark_class_member (member);
+	    mark_class_member (member, false);
 	  }
     }
 }
@@ -9523,7 +9521,7 @@ depset::hash::find_dependencies ()
 	walker.tree_ctx (OVL_FUNCTION (decl), false, NULL_TREE);
       else if (!TREE_VISITED (decl))
 	{
-	  walker.mark_node (decl);
+	  walker.mark_declaration (decl);
 	  if (current->has_defn ())
 	    walker.mark_definition (decl);
 	  /* Turn the Sneakoscope on when depending the decl.  */
@@ -11533,9 +11531,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	{
 	  tree decl = b->get_entity ();
 
-	  // FIXME:do we need this test?
-	  if (!TREE_VISITED (decl))
-	    sec.mark_node (decl);
+	  sec.mark_declaration (decl);
 	  if (b->has_defn ())
 	    sec.mark_definition (decl);
 	}
