@@ -537,13 +537,10 @@ equal_mem_array_ref_p (tree t0, tree t1)
       || maybe_ne (sz1, max1))
     return false;
 
-  if (rev0 != rev1)
+  if (rev0 != rev1 || maybe_ne (sz0, sz1) || maybe_ne (off0, off1))
     return false;
 
-  /* Types were compatible, so this is a sanity check.  */
-  gcc_assert (known_eq (sz0, sz1));
-
-  return known_eq (off0, off1) && operand_equal_p (base0, base1, 0);
+  return operand_equal_p (base0, base1, 0);
 }
 
 /* Compare two hashable_expr structures for equivalence.  They are
