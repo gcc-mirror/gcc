@@ -4760,10 +4760,15 @@ Function_type::get_backend_fntype(Gogo* gogo)
           // We always pass the address of the receiver parameter, in
           // order to make interface calls work with unknown types,
           // except for direct interface types where the interface call
-          // actually passes value.
+          // actually passes the underlying pointer of the value.
           Type* rtype = this->receiver_->type();
-          if (!rtype->is_direct_iface_type())
-            rtype = Type::make_pointer_type(rtype);
+          if (rtype->points_to() == NULL)
+            {
+              if (rtype->is_direct_iface_type())
+                rtype = Type::make_pointer_type(Type::make_void_type());
+              else
+                rtype = Type::make_pointer_type(rtype);
+            }
           breceiver.btype = rtype->get_backend(gogo);
           breceiver.location = this->receiver_->location();
         }

@@ -1063,6 +1063,11 @@ class Expression
   static Expression*
   pack_direct_iface(Type*, Expression*, Location);
 
+  // Return an expression of the underlying pointer for a direct interface
+  // type (the opposite of pack_direct_iface).
+  static Expression*
+  unpack_direct_iface(Expression*, Location);
+
   // Dump an expression to a dump constext.
   void
   dump_expression(Ast_dump_context*) const;
@@ -1229,9 +1234,6 @@ class Expression
 	    ? static_cast<const Expression_class*>(this)
 	    : NULL);
   }
-
-  static Expression*
-  unpack_direct_iface(Expression*, Location);
 
   static Expression*
   get_interface_type_descriptor(Expression*);

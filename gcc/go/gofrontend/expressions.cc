@@ -11263,6 +11263,16 @@ Call_expression::do_get_backend(Translate_context* context)
   else
     has_closure_arg = true;
 
+  Expression* first_arg = NULL;
+  if (!is_interface_method && fntype->is_method())
+    {
+      first_arg = this->args_->front();
+      if (first_arg->type()->points_to() == NULL
+          && first_arg->type()->is_direct_iface_type())
+        first_arg = Expression::unpack_direct_iface(first_arg,
+                                                    first_arg->location());
+    }
+
   int nargs;
   std::vector<Bexpression*> fn_args;
   if (this->args_ == NULL || this->args_->empty())
@@ -11279,7 +11289,7 @@ Call_expression::do_get_backend(Translate_context* context)
 		&& this->args_->size() == 1);
       nargs = 1;
       fn_args.resize(1);
-      fn_args[0] = this->args_->front()->get_backend(context);
+      fn_args[0] = first_arg->get_backend(context);
     }
   else
     {
@@ -11294,7 +11304,7 @@ Call_expression::do_get_backend(Translate_context* context)
       Expression_list::const_iterator pe = this->args_->begin();
       if (!is_interface_method && fntype->is_method())
 	{
-          fn_args[i] = (*pe)->get_backend(context);
+          fn_args[i] = first_arg->get_backend(context);
 	  ++pe;
 	  ++i;
 	}
