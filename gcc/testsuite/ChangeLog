@@ -1,3 +1,8 @@
+2019-05-17  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/global-array-element-pic.c: Add -march=z900.
+	* gcc.target/s390/global-array-element-pic2.c: New test for z10+.
+
 2019-05-17  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/gimplefe-41.c: New testcase.
