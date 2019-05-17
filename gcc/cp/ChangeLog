@@ -1,3 +1,9 @@
+2019-05-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR c++/89433
+	* parser.c (cp_finalize_oacc_routine): Refer to OpenACC 'routine'
+	clauses from "omp declare target" attribute.
+
 2019-05-16  Martin Sebor  <msebor@redhat.com>
 
         * call.c (print_z_candidate): Wrap diagnostic text in a gettext
