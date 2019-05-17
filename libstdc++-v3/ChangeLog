@@ -1,5 +1,32 @@
 2019-05-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/85965
+	* include/bits/hashtable.h (_Hashtable::~_Hashtable()): Remove static
+	assertions from the destructor.
+	* include/bits/hashtable_policy.h (_Hash_code_base::_M_hash_code):
+	Move static_assert for hash function to here.
+	(_Hash_table_base::_M_equals): Move static_assert for equality
+	predicate to here.
+	* include/bits/stl_tree.h (_Rb_tree::_S_value(_Const_Link_type)):
+	Remove.
+	(_Rb_tree::_S_key(_Const_Link_type)): Move assertions here. Access
+	the value directly instead of calling _S_value.
+	(_Rb_tree::_S_value(_Const_Base_ptr)): Remove.
+	(_Rb_tree::_S_key(_Const_Base_ptr)): Do downcast and forward to
+	_S_key(_Const_Link_type).
+	* testsuite/23_containers/set/85965.cc: Check construction,
+	destruction, assignment and size() do not trigger the assertions.
+	* testsuite/23_containers/unordered_set/85965.cc: Likewise.
+	* testsuite/23_containers/map/48101_neg.cc: Call find and adjust
+	expected errors.
+	* testsuite/23_containers/multimap/48101_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/48101_neg.cc: Likewise.
+	* testsuite/23_containers/set/48101_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/48101_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/48101_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/48101_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/48101_neg.cc: Likewise.
+
 	* include/bits/invoke.h [__cplusplus < 201703L] (__invoke_r<void>):
 	Use _GLIBCXX14_CONSTEXPR because void functions cannot be constexpr
 	in C++11.
