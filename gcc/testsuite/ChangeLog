@@ -1,5 +1,11 @@
 2019-05-17  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* gcc.target/x86_64/abi/test_varargs-m128.c: New file.
+	* gcc.target/x86_64/abi/avx/test_varargs-m256.c: Likewise.
+	* gcc.target/x86_64/abi/avx512f/test_varargs-m512.c: Likewise.
+
+2019-05-17  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/90497
 	* gcc.target/i386/pr90497-1.c: New test.
 	* gcc.target/i386/pr90497-2.c: Likewise.
