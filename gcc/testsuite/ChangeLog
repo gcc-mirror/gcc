@@ -1,3 +1,11 @@
+2019-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90303
+	* g++.target/i386/pr90303.C: New test.
+
 2019-05-15  Li Jia He  <helijia@linux.ibm.com>
 
 	Backport from mainline.

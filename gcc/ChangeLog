@@ -1,3 +1,12 @@
+2019-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90303
+	* ipa-devirt.c (obj_type_ref_class, get_odr_type): Don't use
+	TYPE_CANONICAL for TYPE_STRUCTURAL_EQUALITY_P types in !in_lto_p mode.
+
 2019-05-17  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
