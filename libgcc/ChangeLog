@@ -1,3 +1,16 @@
+2019-05-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* soft-fp/extenddftf2.c: Use "_FP_W_TYPE_SIZE < 64" to check if
+	4_FP_W_TYPEs are used for IEEE quad precision.
+	* soft-fp/extendhftf2.c: Likewise.
+	* soft-fp/extendsftf2.c: Likewise.
+	* soft-fp/extendxftf2.c: Likewise.
+	* soft-fp/trunctfdf2.c: Likewise.
+	* soft-fp/trunctfhf2.c: Likewise.
+	* soft-fp/trunctfsf2.c: Likewise.
+	* soft-fp/trunctfxf2.c: Likewise.
+	* config/rs6000/ibm-ldouble.c: Likewise.
+
 2019-05-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.host: Simplify various *-*-solaris2.1[0-9]* to

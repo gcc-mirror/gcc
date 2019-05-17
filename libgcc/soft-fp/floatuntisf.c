@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Convert a 128bit unsigned integer to IEEE single
-   Copyright (C) 2007-2018 Free Software Foundation, Inc.
+   Copyright (C) 2007-2019 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Uros Bizjak (ubizjak@gmail.com).
 

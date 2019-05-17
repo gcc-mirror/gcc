@@ -407,7 +407,7 @@ fmsub (double a, double b, double c)
     FP_UNPACK_RAW_D (C, c);
 
     /* Extend double to quad.  */
-#if (2 * _FP_W_TYPE_SIZE) < _FP_FRACBITS_Q
+#if _FP_W_TYPE_SIZE < 64
     FP_EXTEND(Q,D,4,2,X,A);
     FP_EXTEND(Q,D,4,2,Y,B);
     FP_EXTEND(Q,D,4,2,Z,C);
@@ -436,7 +436,7 @@ fmsub (double a, double b, double c)
     FP_SUB_Q(V,U,Z);
 
     /* Truncate quad to double.  */
-#if (2 * _FP_W_TYPE_SIZE) < _FP_FRACBITS_Q
+#if _FP_W_TYPE_SIZE < 64
     V_f[3] &= 0x0007ffff;
     FP_TRUNC(D,Q,2,4,R,V);
 #else
