@@ -759,13 +759,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_end() const _GLIBCXX_NOEXCEPT
       { return &this->_M_impl._M_header; }
 
-      static const_reference
-      _S_value(_Const_Link_type __x)
-      { return *__x->_M_valptr(); }
-
       static const _Key&
       _S_key(_Const_Link_type __x)
-      { return _KeyOfValue()(_S_value(__x)); }
+      {
+#if __cplusplus >= 201103L
+	// If we're asking for the key we're presumably using the comparison
+	// object, and so this is a good place to sanity check it.
+	static_assert(__is_invocable<_Compare&, const _Key&, const _Key&>{},
+		      "comparison object must be invocable "
+		      "with two arguments of key type");
+# if __cplusplus >= 201703L
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 2542. Missing const requirements for associative containers
+	if constexpr (__is_invocable<_Compare&, const _Key&, const _Key&>{})
+	  static_assert(
+	      is_invocable_v<const _Compare&, const _Key&, const _Key&>,
+	      "comparison object must be invocable as const");
+# endif // C++17
+#endif // C++11
+
+	return _KeyOfValue()(*__x->_M_valptr());
+      }
 
       static _Link_type
       _S_left(_Base_ptr __x) _GLIBCXX_NOEXCEPT
@@ -783,13 +797,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_right(_Const_Base_ptr __x) _GLIBCXX_NOEXCEPT
       { return static_cast<_Const_Link_type>(__x->_M_right); }
 
-      static const_reference
-      _S_value(_Const_Base_ptr __x)
-      { return *static_cast<_Const_Link_type>(__x)->_M_valptr(); }
-
       static const _Key&
       _S_key(_Const_Base_ptr __x)
-      { return _KeyOfValue()(_S_value(__x)); }
+      { return _S_key(static_cast<_Const_Link_type>(__x)); }
 
       static _Base_ptr
       _S_minimum(_Base_ptr __x) _GLIBCXX_NOEXCEPT
@@ -974,21 +984,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       ~_Rb_tree() _GLIBCXX_NOEXCEPT
-      {
-	_M_erase(_M_begin());
-
-#if __cplusplus >= 201103L
-	static_assert(__is_invocable<_Compare&, const _Key&, const _Key&>{},
-		      "comparison object must be invocable "
-		      "with two arguments of key type");
-# if __cplusplus >= 201703L
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 2542. Missing const requirements for associative containers
-	static_assert(is_invocable_v<const _Compare&, const _Key&, const _Key&>,
-		      "comparison object must be invocable as const");
-# endif // C++17
-#endif // C++11
-      }
+      { _M_erase(_M_begin()); }
 
       _Rb_tree&
       operator=(const _Rb_tree& __x);
