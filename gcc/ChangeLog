@@ -1,3 +1,7 @@
+2019-05-17  Richard Biener  <rguenther@suse.de>
+
+	* ccmp.c (expand_ccmp_expr_1): Do not use gimple_assign_rhs_to_tree.
+
 2019-05-17  Martin Liska  <mliska@suse.cz>
 
 	PR driver/90496
