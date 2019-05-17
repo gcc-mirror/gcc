@@ -84,6 +84,7 @@ extern tree oacc_launch_pack (unsigned code, tree device, unsigned op);
 extern tree oacc_replace_fn_attrib_attr (tree attribs, tree dims);
 extern void oacc_replace_fn_attrib (tree fn, tree dims);
 extern void oacc_set_fn_attrib (tree fn, tree clauses, vec<tree> *args);
+extern void oacc_verify_routine_clauses (tree *, location_t);
 extern tree oacc_build_routine_dims (tree clauses);
 extern tree oacc_get_fn_attrib (tree fn);
 extern bool offloading_function_p (tree fn);
