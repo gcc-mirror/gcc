@@ -1,5 +1,13 @@
 2019-05-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/90246
+	* include/std/variant (holds_alternative, get, get_if): Improve
+	static assertion messages.
+	(bad_variant_access::bad_variant_access()): Change default message.
+	(__throw_bad_variant_access(bool)): New overload.
+	(get): Use new overload.
+	(visit, visit<R>): Improve exception message.
+
 	* testsuite/20_util/variant/compile.cc: Fix narrowing test for ILP32
 	targets. Add more cases from P0608R3.
 	* testsuite/20_util/variant/run.cc: Add more cases from P0608R3.
