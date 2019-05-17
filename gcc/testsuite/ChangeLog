@@ -3,6 +3,9 @@
 	Backported from mainline
 	2019-05-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/90385
+	* gfortran.dg/pr90385.f90: New test.
+
 	PR c++/90383
 	* g++.dg/cpp1y/constexpr-90383-1.C: New test.
 	* g++.dg/cpp1y/constexpr-90383-2.C: New test.
