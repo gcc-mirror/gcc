@@ -3,6 +3,10 @@
 	Backported from mainline
 	2019-05-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/90383
+	* g++.dg/cpp1y/constexpr-90383-1.C: New test.
+	* g++.dg/cpp1y/constexpr-90383-2.C: New test.
+
 	PR pch/90326
 	* g++.dg/pch/pr90326.C: New test.
 	* g++.dg/pch/pr90326.Hs: New file.

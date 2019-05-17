@@ -1,6 +1,15 @@
 2019-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90383
+	* tree-inline.h (struct copy_body_data): Add do_not_fold member.
+	* tree-inline.c (remap_gimple_op_r): Avoid folding expressions if
+	id->do_not_fold.
+	(copy_tree_body_r): Likewise.
+	(copy_fn): Set id.do_not_fold to true.
+
 	2019-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/90303
