@@ -11,5 +11,5 @@ void a(void)
 void b(void)
 {
   char x;
-  asm("" : "=@ccbad"(x)); /* { dg-error "unknown asm flag output" } */
+  asm("" : "=@ccbad"(x)); /* { dg-error "unknown 'asm' flag output" } */
 }

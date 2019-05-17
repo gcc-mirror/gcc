@@ -545,7 +545,8 @@ check_asm_stack_operands (rtx_insn *insn)
 	    for (j = 0; j < n_clobbers; j++)
 	      if (REGNO (recog_data.operand[i]) == REGNO (clobber_reg[j]))
 		{
-		  error_for_asm (insn, "output constraint %d cannot be specified together with \"%s\" clobber",
+		  error_for_asm (insn, "output constraint %d cannot be "
+				 "specified together with %qs clobber",
 				 i, reg_names [REGNO (clobber_reg[j])]);
 		  malformed_asm = 1;
 		  break;
@@ -568,7 +569,7 @@ check_asm_stack_operands (rtx_insn *insn)
 
   if (i != LAST_STACK_REG + 1)
     {
-      error_for_asm (insn, "output regs must be grouped at top of stack");
+      error_for_asm (insn, "output registers must be grouped at top of stack");
       malformed_asm = 1;
     }
 
@@ -608,7 +609,8 @@ check_asm_stack_operands (rtx_insn *insn)
   if (i != LAST_STACK_REG + 1)
     {
       error_for_asm (insn,
-		     "implicitly popped regs must be grouped at top of stack");
+		     "implicitly popped registers must be grouped "
+		     "at top of stack");
       malformed_asm = 1;
     }
 
@@ -625,7 +627,8 @@ check_asm_stack_operands (rtx_insn *insn)
   if (i != LAST_STACK_REG + 1)
     {
       error_for_asm (insn,
-		     "explicitly used regs must be grouped at top of stack");
+		     "explicitly used registers must be grouped "
+		     "at top of stack");
       malformed_asm = 1;
     }
 

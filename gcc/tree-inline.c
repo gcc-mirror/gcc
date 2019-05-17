@@ -4615,7 +4615,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 	  /* PR 20090218-1_0.c. Body can be provided by another module. */
 	  && (reason != CIF_BODY_NOT_AVAILABLE || !flag_generate_lto))
 	{
-	  error ("inlining failed in call to always_inline %q+F: %s", fn,
+	  error ("inlining failed in call to %<always_inline%> %q+F: %s", fn,
 		 cgraph_inline_failed_string (reason));
 	  if (gimple_location (stmt) != UNKNOWN_LOCATION)
 	    inform (gimple_location (stmt), "called from here");

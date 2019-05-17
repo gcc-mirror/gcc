@@ -1,3 +1,7 @@
+2019-05-16  Martin Sebor  <msebor@redhat.com>
+
+	* gfortranspec.c (append_arg): Spell out the word "argument."
+
 2019-05-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/90329

@@ -1585,7 +1585,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 	     resolve the overloading.  */
 	  if (TREE_TYPE (operand) == unknown_type_node)
 	    {
-	      error ("type of asm operand %qE could not be determined",
+	      error ("type of %<asm%> operand %qE could not be determined",
 		     TREE_VALUE (t));
 	      operand = error_mark_node;
 	    }
@@ -1667,7 +1667,7 @@ finish_label_decl (tree name)
 {
   if (!at_function_scope_p ())
     {
-      error ("__label__ declarations are only allowed in function scopes");
+      error ("%<__label__%> declarations are only allowed in function scopes");
       return;
     }
 
@@ -4099,7 +4099,7 @@ finish_bases (tree type, bool direct)
   if (!processing_template_decl)
     {
       /* Parameter packs can only be used in templates */
-      error ("Parameter pack __bases only valid in template declaration");
+      error ("parameter pack %<__bases%> only valid in template declaration");
       return error_mark_node;
     }
 
@@ -4164,7 +4164,7 @@ finish_offsetof (tree object_ptr, tree expr, location_t loc)
       && CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (object_ptr)))
       && CLASSTYPE_NON_STD_LAYOUT (TREE_TYPE (TREE_TYPE (object_ptr)))
       && cp_unevaluated_operand == 0)
-    warning_at (loc, OPT_Winvalid_offsetof, "offsetof within "
+    warning_at (loc, OPT_Winvalid_offsetof, "%<offsetof%> within "
 		"non-standard-layout type %qT is conditionally-supported",
 		TREE_TYPE (TREE_TYPE (object_ptr)));
   return fold_offsetof (expr);
@@ -5546,8 +5546,8 @@ cp_check_omp_declare_reduction (tree udr)
     }
   else if (TYPE_QUALS_NO_ADDR_SPACE (type))
     {
-      error_at (loc, "const, volatile or __restrict qualified type %qT in "
-		     "%<#pragma omp declare reduction%>", type);
+      error_at (loc, "%<const%>, %<volatile%> or %<__restrict%>-qualified "
+		"type %qT in %<#pragma omp declare reduction%>", type);
       return;
     }
 
@@ -9334,7 +9334,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 	  && TYPE_P (TREE_OPERAND (expr, 0))))
     {
       if (complain & tf_error)
-	error ("argument to decltype must be an expression");
+	error ("argument to %<decltype%> must be an expression");
       return error_mark_node;
     }
 
@@ -9362,7 +9362,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
   if (type_unknown_p (expr))
     {
       if (complain & tf_error)
-	error ("decltype cannot resolve address of overloaded function");
+	error ("%<decltype%> cannot resolve address of overloaded function");
       return error_mark_node;
     }
 

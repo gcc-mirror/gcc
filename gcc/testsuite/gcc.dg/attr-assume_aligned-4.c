@@ -23,14 +23,14 @@ A (16385) void* fpv_16kp1 (void);    /* { dg-warning ".assume_aligned. attribute
 
 A (32767) void* fpv_32km1 (void);     /* { dg-warning ".assume_aligned. attribute argument 32767 is not a power of 2" } */
 
-A (4, -1) void* fpv_4_m1 (void);      /* { dg-warning ".assume_aligned. attribute argument -1 is not in the range \\\[0, 4\\\)" } */
+A (4, -1) void* fpv_4_m1 (void);      /* { dg-warning ".assume_aligned. attribute argument -1 is not in the range \\\[0, 3]" } */
 
 A (4, 0) void* fpv_4_0 (void);
 A (4, 1) void* fpv_4_1 (void);
 A (4, 2) void* fpv_4_2 (void);
 A (4, 3) void* fpv_4_3 (void);
 
-A (4, 4) void* fpv_4_3 (void);        /* { dg-warning ".assume_aligned. attribute argument 4 is not in the range \\\[0, 4\\\)" } */
+A (4, 4) void* fpv_4_3 (void);        /* { dg-warning ".assume_aligned. attribute argument 4 is not in the range \\\[0, 3]" } */
 
 A (4) void* gpv_4_3 (void);
 A (2) void* gpv_4_3 (void);

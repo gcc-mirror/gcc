@@ -2024,12 +2024,13 @@ check_inlining_for_nested_subprog (tree fndecl)
 
       if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (parent_decl)))
 	{
-	  error_at (loc1, "subprogram %q+F not marked Inline_Always", fndecl);
+	  error_at (loc1, "subprogram %q+F not marked %<Inline_Always%>",
+		    fndecl);
 	  error_at (loc2, "parent subprogram cannot be inlined");
 	}
       else
 	{
-	  warning_at (loc1, OPT_Winline, "subprogram %q+F not marked Inline",
+	  warning_at (loc1, OPT_Winline, "subprogram %q+F not marked %<Inline%>",
 		      fndecl);
 	  warning_at (loc2, OPT_Winline, "parent subprogram cannot be inlined");
 	}

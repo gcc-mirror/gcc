@@ -3310,7 +3310,7 @@ update_ssa (unsigned update_flags)
 
 		  if (SSA_NAME_IN_FREE_LIST (use))
 		    {
-		      error ("statement uses released SSA name:");
+		      error ("statement uses released SSA name");
 		      debug_gimple_stmt (stmt);
 		      fprintf (stderr, "The use of ");
 		      print_generic_expr (stderr, use);

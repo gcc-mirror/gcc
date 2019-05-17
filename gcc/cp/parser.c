@@ -1308,7 +1308,7 @@ cp_lexer_start_debugging (cp_lexer* lexer)
 {
   if (!LEXER_DEBUGGING_ENABLED_P)
     fatal_error (input_location,
-		 "LEXER_DEBUGGING_ENABLED_P is not set to true");
+		 "%<LEXER_DEBUGGING_ENABLED_P%> is not set to true");
 
   lexer->debugging_p = true;
   cp_lexer_debug_stream = stderr;
@@ -1321,7 +1321,7 @@ cp_lexer_stop_debugging (cp_lexer* lexer)
 {
   if (!LEXER_DEBUGGING_ENABLED_P)
     fatal_error (input_location,
-		 "LEXER_DEBUGGING_ENABLED_P is not set to true");
+		 "%<LEXER_DEBUGGING_ENABLED_P%> is not set to true");
 
   lexer->debugging_p = false;
   cp_lexer_debug_stream = NULL;
@@ -4537,7 +4537,7 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
   else if (i14)
     {
       inform (token->location, "add %<using namespace std::complex_literals%> "
-	      "(from <complex>) to enable the C++14 user-defined literal "
+	      "(from %<<complex>%>) to enable the C++14 user-defined literal "
 	      "suffixes");
       if (ext)
 	inform (token->location, "or use %<j%> instead of %<i%> for the "
@@ -6400,7 +6400,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 		  == CPP_SCOPE))
 	    {
 	      token = cp_lexer_consume_token (parser->lexer);
-	      error_at (token->location, "decltype evaluates to %qT, "
+	      error_at (token->location, "%<decltype%> evaluates to %qT, "
 			"which is not a class or enumeration type",
 			token->u.tree_check_value->value);
 	      parser->scope = error_mark_node;
@@ -9671,7 +9671,7 @@ cp_parser_question_colon_clause (cp_parser* parser, cp_expr logical_or_expr)
       && token->type == CPP_COLON)
     {
       pedwarn (token->location, OPT_Wpedantic, 
-               "ISO C++ does not allow ?: with omitted middle operand");
+	       "ISO C++ does not allow %<?:%> with omitted middle operand");
       /* Implicit true clause.  */
       expr = NULL_TREE;
       c_inhibit_evaluation_warnings +=
@@ -14442,7 +14442,7 @@ cp_parser_static_assert(cp_parser *parser, bool member_p)
     {
       if (cxx_dialect < cxx17)
 	pedwarn (input_location, OPT_Wpedantic,
-		 "static_assert without a message "
+		 "%<static_assert%> without a message "
 		 "only available with %<-std=c++17%> or %<-std=gnu++17%>");
       /* Eat the ')'  */
       cp_lexer_consume_token (parser->lexer);
@@ -19818,14 +19818,15 @@ cp_parser_asm_definition (cp_parser* parser)
 	  case RID_VOLATILE:
 	    if (volatile_loc)
 	      {
-		error_at (loc, "duplicate asm qualifier %qT", token->u.value);
+		error_at (loc, "duplicate %<asm%> qualifier %qT",
+			  token->u.value);
 		inform (volatile_loc, "first seen here");
 	      }
 	    else
 	      {
 		if (!parser->in_function_body)
-		  warning_at (loc, 0, "asm qualifier %qT ignored outside of "
-				      "function body", token->u.value);
+		  warning_at (loc, 0, "%<asm%> qualifier %qT ignored "
+			      "outside of function body", token->u.value);
 		volatile_loc = loc;
 	      }
 	    cp_lexer_consume_token (parser->lexer);
@@ -19834,7 +19835,8 @@ cp_parser_asm_definition (cp_parser* parser)
 	  case RID_INLINE:
 	    if (inline_loc)
 	      {
-		error_at (loc, "duplicate asm qualifier %qT", token->u.value);
+		error_at (loc, "duplicate %<asm%> qualifier %qT",
+			  token->u.value);
 		inform (inline_loc, "first seen here");
 	      }
 	    else
@@ -19847,7 +19849,8 @@ cp_parser_asm_definition (cp_parser* parser)
 	  case RID_GOTO:
 	    if (goto_loc)
 	      {
-		error_at (loc, "duplicate asm qualifier %qT", token->u.value);
+		error_at (loc, "duplicate %<asm%> qualifier %qT",
+			  token->u.value);
 		inform (goto_loc, "first seen here");
 	      }
 	    else
@@ -19859,7 +19862,7 @@ cp_parser_asm_definition (cp_parser* parser)
 
 	  case RID_CONST:
 	  case RID_RESTRICT:
-	    error_at (loc, "%qT is not an asm qualifier", token->u.value);
+	    error_at (loc, "%qT is not an %<asm%> qualifier", token->u.value);
 	    cp_lexer_consume_token (parser->lexer);
 	    continue;
 
@@ -19875,7 +19878,7 @@ cp_parser_asm_definition (cp_parser* parser)
 
   if (!parser->in_function_body && (inline_p || goto_p))
     {
-      error_at (first_loc, "asm qualifier outside of function body");
+      error_at (first_loc, "%<asm%> qualifier outside of function body");
       inline_p = goto_p = false;
     }
 
@@ -20257,7 +20260,7 @@ cp_parser_init_declarator (cp_parser* parser,
 	     on a function-definition.  */
 	  if (asm_specification)
 	    error_at (asm_spec_start_token->location,
-		      "an asm-specification is not allowed "
+		      "an %<asm%> specification is not allowed "
 		      "on a function-definition");
 	  if (attributes)
 	    error_at (attributes_start_token->location,
@@ -27913,12 +27916,12 @@ cp_parser_template_declaration_after_parameters (cp_parser* parser,
 	{
 	  if (cxx_dialect > cxx17)
 	    error ("literal operator template %qD has invalid parameter list;"
-		   "  Expected non-type template parameter pack <char...> "
+		   " expected non-type template parameter pack %<<char...>%> "
 		   "or single non-type parameter of class type",
 		   decl);
 	  else
-	    error ("literal operator template %qD has invalid parameter list."
-		   "  Expected non-type template parameter pack <char...>",
+	    error ("literal operator template %qD has invalid parameter list;"
+		   " expected non-type template parameter pack %<<char...>%>",
 		   decl);
 	}
     }
@@ -39634,8 +39637,8 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
 	error_at (loc, "reference type %qT in "
 		       "%<#pragma omp declare reduction%>", type);
       else if (TYPE_QUALS_NO_ADDR_SPACE (type))
-	error_at (loc, "const, volatile or __restrict qualified type %qT in "
-		       "%<#pragma omp declare reduction%>", type);
+	error_at (loc, "%<const%>, %<volatile%> or %<__restrict%>-qualified "
+		  "type %qT in %<#pragma omp declare reduction%>", type);
       else
 	types.safe_push (type);
 
@@ -40486,7 +40489,7 @@ cp_parser_transaction (cp_parser *parser, cp_token *token)
   else if (keyword == RID_ATOMIC_CANCEL)
     {
       /* cancel-and-throw is unimplemented.  */
-      sorry ("atomic_cancel");
+      sorry ("%<atomic_cancel%>");
       noex = NULL_TREE;
     }
   else

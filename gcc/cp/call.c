@@ -3603,7 +3603,7 @@ print_z_candidate (location_t loc, const char *msgstr,
 {
   const char *msg = (msgstr == NULL
 		     ? ""
-		     : ACONCAT ((msgstr, " ", NULL)));
+		     : ACONCAT ((_(msgstr), " ", NULL)));
   tree fn = candidate->fn;
   if (flag_new_inheriting_ctors)
     fn = strip_inheriting_ctors (fn);
@@ -3613,24 +3613,24 @@ print_z_candidate (location_t loc, const char *msgstr,
     {
       cloc = loc;
       if (candidate->num_convs == 3)
-	inform (cloc, "%s%<%D(%T, %T, %T)%> <built-in>", msg, fn,
+	inform (cloc, "%s%<%D(%T, %T, %T)%> (built-in)", msg, fn,
 		candidate->convs[0]->type,
 		candidate->convs[1]->type,
 		candidate->convs[2]->type);
       else if (candidate->num_convs == 2)
-	inform (cloc, "%s%<%D(%T, %T)%> <built-in>", msg, fn,
+	inform (cloc, "%s%<%D(%T, %T)%> (built-in)", msg, fn,
 		candidate->convs[0]->type,
 		candidate->convs[1]->type);
       else
-	inform (cloc, "%s%<%D(%T)%> <built-in>", msg, fn,
+	inform (cloc, "%s%<%D(%T)%> (built-in)", msg, fn,
 		candidate->convs[0]->type);
     }
   else if (TYPE_P (fn))
-    inform (cloc, "%s%qT <conversion>", msg, fn);
+    inform (cloc, "%s%qT (conversion)", msg, fn);
   else if (candidate->viable == -1)
-    inform (cloc, "%s%#qD <near match>", msg, fn);
+    inform (cloc, "%s%#qD (near match)", msg, fn);
   else if (DECL_DELETED_FN (fn))
-    inform (cloc, "%s%#qD <deleted>", msg, fn);
+    inform (cloc, "%s%#qD (deleted)", msg, fn);
   else
     inform (cloc, "%s%#qD", msg, fn);
   if (fn != candidate->fn)
@@ -3763,7 +3763,7 @@ print_z_candidates (location_t loc, struct z_candidate *candidates)
     }
 
   for (; candidates; candidates = candidates->next)
-    print_z_candidate (loc, "candidate:", candidates);
+    print_z_candidate (loc, N_("candidate:"), candidates);
 }
 
 /* USER_SEQ is a user-defined conversion sequence, beginning with a
@@ -5003,7 +5003,8 @@ build_conditional_expr_1 (const op_location_t &loc,
     {
       if (complain & tf_error)
 	pedwarn (loc, OPT_Wpedantic,
-		 "ISO C++ forbids omitting the middle term of a ?: expression");
+		 "ISO C++ forbids omitting the middle term of "
+		 "a %<?:%> expression");
 
       if ((complain & tf_warning) && !truth_value_p (TREE_CODE (arg1)))
 	warn_for_omitted_condop (loc, arg1);
@@ -5276,7 +5277,8 @@ build_conditional_expr_1 (const op_location_t &loc,
 	{
 	  if (complain & tf_error)
 	    {
-	      error_at (loc, "operands to ?: have different types %qT and %qT",
+	      error_at (loc, "operands to %<?:%> have different types "
+			"%qT and %qT",
 			arg2_type, arg3_type);
 	      if (conv2 && !conv2->bad_p && conv3 && !conv3->bad_p)
 		inform (loc, "  and each type can be converted to the other");
@@ -5392,7 +5394,7 @@ build_conditional_expr_1 (const op_location_t &loc,
       if (!any_viable_p)
 	{
           if (complain & tf_error)
-	    error_at (loc, "operands to ?: have different types %qT and %qT",
+	    error_at (loc, "operands to %<?:%> have different types %qT and %qT",
 		      arg2_type, arg3_type);
 	  return error_mark_node;
 	}
@@ -5539,7 +5541,7 @@ build_conditional_expr_1 (const op_location_t &loc,
   if (!result_type)
     {
       if (complain & tf_error)
-        error_at (loc, "operands to ?: have different types %qT and %qT",
+	error_at (loc, "operands to %<?:%> have different types %qT and %qT",
 		  arg2_type, arg3_type);
       return error_mark_node;
     }
@@ -6489,10 +6491,10 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	{
 	  const char *const msg1
 	    = G_("exception cleanup for this placement new selects "
-		 "non-placement operator delete");
+		 "non-placement %<operator delete%>");
 	  const char *const msg2
 	    = G_("%qD is a usual (non-placement) deallocation "
-		 "function in C++14 (or with -fsized-deallocation)");
+		 "function in C++14 (or with %<-fsized-deallocation%>)");
 
 	  /* But if the class has an operator delete (void *), then that is
 	     the usual deallocation function, so we shouldn't complain
@@ -6889,7 +6891,7 @@ maybe_print_user_conv_context (conversion *convs)
     for (conversion *t = convs; t; t = next_conversion (t))
       if (t->kind == ck_user)
 	{
-	  print_z_candidate (0, "  after user-defined conversion:",
+	  print_z_candidate (0, N_("  after user-defined conversion:"),
 			     t->cand);
 	  break;
 	}
@@ -7002,7 +7004,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 				      "from %qH to %qI", TREE_TYPE (expr),
 				      totype);
 	      if (complained)
-		print_z_candidate (loc, "candidate is:", t->cand);
+		print_z_candidate (loc, N_("candidate is:"), t->cand);
 	      expr = convert_like_real (t, expr, fn, argnum,
 					/*issue_conversion_warnings=*/false,
 					/*c_cast_p=*/false,
@@ -7514,8 +7516,9 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 	  if (abi_version_crosses (6)
 	      && TYPE_MODE (TREE_TYPE (prom)) != TYPE_MODE (arg_type)
 	      && (complain & tf_warning))
-	    warning_at (loc, OPT_Wabi, "scoped enum %qT passed through ... as "
-			"%qT before %<-fabi-version=6%>, %qT after", arg_type,
+	    warning_at (loc, OPT_Wabi, "scoped enum %qT passed through %<...%>"
+			"as %qT before %<-fabi-version=6%>, %qT after",
+			arg_type,
 			TREE_TYPE (prom), ENUM_UNDERLYING_TYPE (arg_type));
 	  if (!abi_version_at_least (6))
 	    arg = prom;
@@ -8593,8 +8596,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  if (is_std_init_list (type)
 	      && conv_binds_ref_to_prvalue (convs[1]))
 	    warning_at (loc, OPT_Winit_list_lifetime,
-			"assignment from temporary initializer_list does not "
-			"extend the lifetime of the underlying array");
+			"assignment from temporary %<initializer_list%> does "
+			"not extend the lifetime of the underlying array");
 	  arg = cp_build_fold_indirect_ref (arg);
 	  val = build2 (MODIFY_EXPR, TREE_TYPE (to), to, arg);
 	}
@@ -10740,7 +10743,8 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 	      && warning (OPT_Wconversion, "  for conversion from %qH to %qI",
 			  source, w->second_conv->type)) 
 	    {
-	      inform (input_location, "  because conversion sequence for the argument is better");
+	      inform (input_location, "  because conversion sequence "
+		      "for the argument is better");
 	    }
 	}
       else
@@ -11026,8 +11030,8 @@ tweak:
 			   "though the worst conversion for the first is "
 			   "better than the worst conversion for the second:"))
 		{
-		  print_z_candidate (input_location, _("candidate 1:"), w);
-		  print_z_candidate (input_location, _("candidate 2:"), l);
+		  print_z_candidate (input_location, N_("candidate 1:"), w);
+		  print_z_candidate (input_location, N_("candidate 2:"), l);
 		}
 	    }
 	  else

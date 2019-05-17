@@ -1489,10 +1489,10 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	      {
 		auto_diagnostic_group d;
 		if (warning_at (loc, OPT_Wterminate,
-				"throw will always call terminate()")
+				"%<throw%> will always call %<terminate%>")
 		    && cxx_dialect >= cxx11
 		    && DECL_DESTRUCTOR_P (current_function_decl))
-		  inform (loc, "in C++11 destructors default to noexcept");
+		  inform (loc, "in C++11 destructors default to %<noexcept%>");
 	      }
 	  }
 	else
@@ -1504,8 +1504,8 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 		&& (get_defaulted_eh_spec (current_function_decl)
 		    == empty_except_spec))
 	      warning_at (loc, OPT_Wc__11_compat,
-			  "in C++11 this throw will terminate because "
-			  "destructors default to noexcept");
+			  "in C++11 this %<throw%> will call %<terminate%> "
+			  "because destructors default to %<noexcept%>");
 	  }
       }
       break;

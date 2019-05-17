@@ -11828,9 +11828,9 @@ aarch64_validate_mbranch_protection (const char *const_str)
   enum aarch64_parse_opt_result res =
     aarch64_parse_branch_protection (const_str, &str);
   if (res == AARCH64_PARSE_INVALID_ARG)
-    error ("invalid arg %<%s%> for %<-mbranch-protection=%>", str);
+    error ("invalid argument %<%s%> for %<-mbranch-protection=%>", str);
   else if (res == AARCH64_PARSE_MISSING_ARG)
-    error ("missing arg for %<-mbranch-protection=%>");
+    error ("missing argument for %<-mbranch-protection=%>");
   free (str);
   return res == AARCH64_PARSE_OK;
 }

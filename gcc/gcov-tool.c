@@ -70,7 +70,7 @@ unlink_gcda_file (const char *name,
     ret = remove (name);
 
   if (ret)
-    fatal_error (input_location, "error in removing %s\n", name);
+    fatal_error (input_location, "error in removing %s", name);
 
   return ret;
 }
@@ -220,7 +220,7 @@ do_merge (int argc, char **argv)
         case 'w':
           sscanf (optarg, "%d,%d", &w1, &w2);
           if (w1 < 0 || w2 < 0)
-            fatal_error (input_location, "weights need to be non-negative\n");
+	    fatal_error (input_location, "weights need to be non-negative");
           break;
         default:
           merge_usage ();
@@ -355,7 +355,7 @@ do_rewrite (int argc, char **argv)
             }
 
           if (scale < 0.0)
-            fatal_error (input_location, "scale needs to be non-negative\n");
+	    fatal_error (input_location, "scale needs to be non-negative");
 
           if (normalize_val != 0)
             {

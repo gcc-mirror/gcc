@@ -3063,14 +3063,16 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
 	    case GE_EXPR:
 	      if (warn)
 		warning_at (loc, OPT_Wtype_limits,
-			    "comparison of unsigned expression >= 0 is always true");
+			    "comparison of unsigned expression in %<>= 0%> "
+			    "is always true");
 	      value = truthvalue_true_node;
 	      break;
 
 	    case LT_EXPR:
 	      if (warn)
 		warning_at (loc, OPT_Wtype_limits,
-			    "comparison of unsigned expression < 0 is always false");
+			    "comparison of unsigned expression in %<< 0%> "
+			    "is always false");
 	      value = truthvalue_false_node;
 	      break;
 
@@ -3379,7 +3381,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
       if (TREE_CODE (TREE_TYPE (expr)) == INTEGER_TYPE
 	  && !TYPE_UNSIGNED (TREE_TYPE (expr)))
 	warning_at (EXPR_LOCATION (expr), OPT_Wint_in_bool_context,
-		    "%<<<%> in boolean context, did you mean %<<%> ?");
+		    "%<<<%> in boolean context, did you mean %<<%>?");
       break;
 
     case COND_EXPR:
@@ -3395,7 +3397,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 	      && (!integer_onep (val1)
 		  || !integer_onep (val2)))
 	    warning_at (EXPR_LOCATION (expr), OPT_Wint_in_bool_context,
-			"?: using integer constants in boolean context, "
+			"%<?:%> using integer constants in boolean context, "
 			"the expression will always evaluate to %<true%>");
 	  else if ((TREE_CODE (val1) == INTEGER_CST
 		    && !integer_zerop (val1)
@@ -3404,7 +3406,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 		       && !integer_zerop (val2)
 		       && !integer_onep (val2)))
 	    warning_at (EXPR_LOCATION (expr), OPT_Wint_in_bool_context,
-			"?: using integer constants in boolean context");
+			"%<?:%> using integer constants in boolean context");
 	}
       /* Distribute the conversion into the arms of a COND_EXPR.  */
       if (c_dialect_cxx ())
@@ -8259,9 +8261,9 @@ cb_get_source_date_epoch (cpp_reader *pfile ATTRIBUTE_UNUSED)
   if (errno != 0 || endptr == source_date_epoch || *endptr != '\0'
       || epoch < 0 || epoch > MAX_SOURCE_DATE_EPOCH)
     {
-      error_at (input_location, "environment variable SOURCE_DATE_EPOCH must "
+      error_at (input_location, "environment variable %qs must "
 	        "expand to a non-negative integer less than or equal to %wd",
-		MAX_SOURCE_DATE_EPOCH);
+		"SOURCE_DATE_EPOCH", MAX_SOURCE_DATE_EPOCH);
       return (time_t) -1;
     }
 

@@ -8,8 +8,8 @@ double a = 1.1d;
 /* With FLOAT_CONST_DECIMAL64 switched to ON these would have type
    _Decimal64.  */
 
-double b = VAL;		/* { dg-warning "unsuffixed float constant" } */
-double c = 1.2;		/* { dg-warning "unsuffixed float constant" } */
+double b = VAL;		/* { dg-warning "unsuffixed floating constant" } */
+double c = 1.2;		/* { dg-warning "unsuffixed floating constant" } */
 
 /* With FLOAT_CONST_DECIMAL64 switched to ON these are still binary.  */
 

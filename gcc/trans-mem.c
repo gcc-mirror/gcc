@@ -754,10 +754,10 @@ diagnose_tm_1 (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	 Either that or get the language spec to resurrect __tm_waiver.  */
       if (d->block_flags & DIAG_TM_SAFE)
 	error_at (gimple_location (stmt),
-		  "asm not allowed in atomic transaction");
+		  "%<asm%> not allowed in atomic transaction");
       else if (d->func_flags & DIAG_TM_SAFE)
 	error_at (gimple_location (stmt),
-		  "asm not allowed in %<transaction_safe%> function");
+		  "%<asm%> not allowed in %<transaction_safe%> function");
       break;
 
     case GIMPLE_TRANSACTION:
@@ -4414,7 +4414,8 @@ ipa_tm_scan_irr_block (basic_block bb)
 	    {
 	      tree t = build1 (NOP_EXPR, void_type_node, size_zero_node);
 	      SET_EXPR_LOCATION (t, gimple_location (stmt));
-	      error ("%Kasm not allowed in %<transaction_safe%> function", t);
+	      error ("%K%<asm%> not allowed in %<transaction_safe%> function",
+		     t);
 	    }
 	  return true;
 
@@ -4788,7 +4789,7 @@ ipa_tm_diagnose_transaction (struct cgraph_node *node,
 	      if (gimple_code (stmt) == GIMPLE_ASM)
 		{
 		  error_at (gimple_location (stmt),
-			    "asm not allowed in atomic transaction");
+			    "%<asm%> not allowed in atomic transaction");
 		  continue;
 		}
 

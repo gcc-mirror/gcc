@@ -44,7 +44,7 @@ int test (id object)
       dummy++;
     }
   @catch (id <MyProtocol x) /* { dg-error "expected ... before .x." } */
-    {                       /* { dg-error "@catch parameter cannot be protocol-qualified" "" { target *-*-* } .-1 } */
+    {                       /* { dg-error "'@catch' parameter cannot be protocol-qualified" "" { target *-*-* } .-1 } */
       dummy++;
     }
   @catch MyObject *x       /* { dg-error "expected ... before .MyObject." } */

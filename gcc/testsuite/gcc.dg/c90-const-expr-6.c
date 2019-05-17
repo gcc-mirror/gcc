@@ -7,22 +7,22 @@
 __extension__ typedef __INTPTR_TYPE__ intptr_t;
 
 /* PR 29116.  */
-int n = 0, p[n * 0 + 1]; /* { dg-error "variabl|can't be evaluated" } */
+int n = 0, p[n * 0 + 1]; /* { dg-error "variabl|cannot be evaluated" } */
 
 /* PR 31871.  */
-extern int c[1 + ((intptr_t) (void *) 0)]; /* { dg-error "variab|can't be evaluated" } */
+extern int c[1 + ((intptr_t) (void *) 0)]; /* { dg-error "variab|cannot be evaluated" } */
 
 /* Implicit conversions from floating-point constants are not OK,
    although explicit ones are.  */
-extern int c1[1.0 ? 1 : 0]; /* { dg-error "variab|can't be evaluated" } */
+extern int c1[1.0 ? 1 : 0]; /* { dg-error "variab|cannot be evaluated" } */
 
 extern int c2[(int)1.0 ? 1 : 0];
 
-extern int c3[1.0 && 1]; /* { dg-error "variab|can't be evaluated" } */
+extern int c3[1.0 && 1]; /* { dg-error "variab|cannot be evaluated" } */
 
 extern int c4[(int)1.0 && 1];
 
-extern int c5[1.0 || 1]; /* { dg-error "variab|can't be evaluated" } */
+extern int c5[1.0 || 1]; /* { dg-error "variab|cannot be evaluated" } */
 
 extern int c6[(int)1.0 || 1];
 
@@ -46,7 +46,7 @@ enum f {
 void
 f (int a)
 {
-  int v[1 + ((intptr_t) (void *) 0)]; /* { dg-error "variab|can't be evaluated" } */
+  int v[1 + ((intptr_t) (void *) 0)]; /* { dg-error "variab|cannot be evaluated" } */
   switch (a)
     {
     case (n * 0 + 1): /* { dg-error "constant" } */

@@ -1115,7 +1115,7 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
 	 function anymore.  */
       if (personality && current_unit_personality != personality)
 	sorry ("multiple EH personalities are supported only with assemblers "
-	       "supporting .cfi_personality directive");
+	       "supporting %<.cfi_personality%> directive");
     }
 }
 

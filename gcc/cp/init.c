@@ -3005,7 +3005,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	  pedwarn (cp_expr_loc_or_loc (outer_nelts, input_location), OPT_Wvla,
 		   typedef_variant_p (orig_type)
 		   ? G_("non-constant array new length must be specified "
-			"directly, not by typedef")
+			"directly, not by %<typedef%>")
 		   : G_("non-constant array new length must be specified "
 			"without parentheses around the type-id"));
 	}
@@ -3016,13 +3016,13 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
   if (VOID_TYPE_P (elt_type))
     {
       if (complain & tf_error)
-        error ("invalid type %<void%> for new");
+	error ("invalid type %<void%> for %<new%>");
       return error_mark_node;
     }
 
   if (is_std_init_list (elt_type))
     warning (OPT_Winit_list_lifetime,
-	     "%<new%> of initializer_list does not "
+	     "%<new%> of %<initializer_list%> does not "
 	     "extend the lifetime of the underlying array");
 
   if (abstract_virtuals_error_sfinae (ACU_NEW, elt_type, complain))
@@ -3867,11 +3867,11 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 	  auto_diagnostic_group d;
 	  if (warning (OPT_Wdelete_incomplete,
 			 "possible problem detected in invocation of "
-			 "delete [] operator:"))
+			 "operator %<delete []%>"))
 	    {
 	      cxx_incomplete_type_diagnostic (base, type, DK_WARNING);
 	      inform (input_location, "neither the destructor nor the "
-			"class-specific operator delete [] will be called, "
+			"class-specific operator %<delete []%> will be called, "
 			"even if they are declared when the class is defined");
 	    }
 	}
@@ -4753,14 +4753,14 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 		{
 		  auto_diagnostic_group d;
 		  if (warning (OPT_Wdelete_incomplete,
-				 "possible problem detected in invocation of "
-				 "delete operator:"))
+			       "possible problem detected in invocation of "
+			       "%<operator delete%>"))
 		    {
 		      cxx_incomplete_type_diagnostic (addr, type, DK_WARNING);
 		      inform (input_location,
-				"neither the destructor nor the class-specific "
-				"operator delete will be called, even if they "
-				"are declared when the class is defined");
+			      "neither the destructor nor the class-specific "
+			      "%<operator delete%> will be called, even if "
+			      "they are declared when the class is defined");
 		    }
 		}
 	    }
