@@ -1,6 +1,13 @@
 2019-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-05-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect/vect-simd-1.c: New test.
+	* gcc.dg/vect/vect-simd-2.c: New test.
+	* gcc.dg/vect/vect-simd-3.c: New test.
+	* gcc.dg/vect/vect-simd-4.c: New test.
+
 	2019-05-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/simd8.c: New test.
