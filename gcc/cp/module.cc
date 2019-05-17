@@ -2866,8 +2866,8 @@ private:
   void tree_pair_vec (vec<tree_pair_s, va_gc> *);
 
 public:
-  /* Mark a node for special walking.  */
-  void mark_node (tree, bool outermost = false);
+  /* Mark a node for by-value walking.  */
+  void mark_node (tree);
 
 public:
   void tree_node (tree);
@@ -2903,12 +2903,14 @@ private:
   /* Serialize various definitions. */
   void mark_definition (tree decl);
   void write_definition (tree decl);
+  void mark_declaration (tree decl);
 
  private:
   void mark_function_def (tree decl);
   void mark_var_def (tree decl);
   void mark_class_def (tree decl);
   void mark_enum_def (tree decl);
+  void mark_class_member (tree decl);
 
 private:
   void write_var_def (tree decl);
@@ -4328,24 +4330,10 @@ trees_out::unmark_trees ()
    times on the same node.  */
 
 void
-trees_out::mark_node (tree decl, bool outermost)
+trees_out::mark_node (tree decl)
 {
-  if (DECL_P (decl))
-    {
-      int use_tpl = -1;
-      if (tree ti = node_template_info (decl, use_tpl))
-	{
-	  // FIXME: don't bail on things that CANNOT have their own
-	  // template header.
-	  if (!outermost && use_tpl > 0)
-	    return;
-	  if (DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == decl)
-	    decl = TI_TEMPLATE (ti);
-	}
-    }
-  else
-    /* Needed for enum consts.  */
-    gcc_checking_assert (TREE_CODE (decl) == INTEGER_CST);
+  /* Enum consts are INTEGER_CSTS.  */
+  gcc_checking_assert (DECL_P (decl) || TREE_CODE (decl) == INTEGER_CST);
 
   if (TREE_VISITED (decl))
     /* Must already be forced, fixed or mergeable.  */
@@ -8683,6 +8671,26 @@ trees_out::write_class_def (tree defn)
 }
 
 void
+trees_out::mark_class_member (tree member)
+{
+  gcc_assert (DECL_P (member));
+
+  int use_tpl = -1;
+  if (tree ti = node_template_info (member, use_tpl))
+    {
+      // FIXME: don't bail on things that CANNOT have their own
+      // template header.
+      if (use_tpl > 0)
+	return;
+
+      if (DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == member)
+	member = TI_TEMPLATE (ti);
+    }
+
+  mark_declaration (member);
+}
+
+void
 trees_out::mark_class_def (tree defn)
 {
   gcc_assert (DECL_P (defn));
@@ -8691,10 +8699,10 @@ trees_out::mark_class_def (tree defn)
     /* Do not mark enum consts here.  */
     if (TREE_CODE (member) != CONST_DECL)
       {
-	mark_node (member);
+	mark_class_member (member);
 	if (has_definition (member))
 	  mark_definition (member);
-      }
+      }  
 
   if (TYPE_LANG_SPECIFIC (type))
     {
@@ -8725,8 +8733,9 @@ trees_out::mark_class_def (tree defn)
 	    if (TYPE_P (member))
 	      /* In spite of its name, non-decls appear :(.  */
 	      member = TYPE_NAME (member);
+
 	    gcc_assert (DECL_CONTEXT (member) == type);
-	    mark_node (member);
+	    mark_class_member (member);
 	  }
     }
 }
@@ -8965,6 +8974,13 @@ trees_out::write_definition (tree decl)
       }
       break;
     }
+}
+
+void
+trees_out::mark_declaration (tree decl)
+{
+  // FIXME:Mark the template header
+  mark_node (decl);
 }
 
 /* Mark the body of DECL.  */
@@ -9507,7 +9523,7 @@ depset::hash::find_dependencies ()
 	walker.tree_ctx (OVL_FUNCTION (decl), false, NULL_TREE);
       else if (!TREE_VISITED (decl))
 	{
-	  walker.mark_node (decl, true);
+	  walker.mark_node (decl);
 	  if (current->has_defn ())
 	    walker.mark_definition (decl);
 	  /* Turn the Sneakoscope on when depending the decl.  */
@@ -11517,8 +11533,9 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	{
 	  tree decl = b->get_entity ();
 
+	  // FIXME:do we need this test?
 	  if (!TREE_VISITED (decl))
-	    sec.mark_node (decl, true);
+	    sec.mark_node (decl);
 	  if (b->has_defn ())
 	    sec.mark_definition (decl);
 	}

@@ -1,6 +1,15 @@
 2019-05-17  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::mark_node): Drop OUTERMOST parm.  Don't
+	consider templateness.
+	(trees_out::mark_declaration): New.
+	(trees_out::mark_class_member): New.
+	(trees_out::mark_class_def): Use mark_class_member.
+	(depset::hash::find_dependencies): Adjust.
+	(module_state::write_cluster): Likewise.
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::tpl_parms): Rename to ...
 	(trees_{in,out}::tpl_headr): ... here.  Stream the whole parms.
 	(trees_out::tree_type): Assert no surprising
