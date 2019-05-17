@@ -1,3 +1,7 @@
+2019-05-17  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/gcc_diag-11.c: Remove accidentally committed test.
+
 2019-05-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR testsuite/89433
@@ -71,8 +75,8 @@
         * gcc.dg/debug/pr85252.c: Same.
         * gcc.dg/dfp/cast-bad.c: Same.
         * gcc.dg/format/gcc_diag-1.c: Same.
-        * gcc.dg/format/gcc_diag-11.c: Same.New test.
-        * gcc.dg/gcc_diag-11.c: Same.New test.
+        * gcc.dg/format/gcc_diag-11.c: Same.
+        * gcc.dg/gcc_diag-11.c: Same.
         * gcc.dg/gnu-cond-expr-2.c: Same.
         * gcc.dg/gnu-cond-expr-3.c: Same.
         * gcc.dg/gomp/macro-4.c: Same.
