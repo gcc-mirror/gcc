@@ -1,3 +1,8 @@
+2019-05-17  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/aarch64/aarch64.c (aarch64_output_mi_thunk): Call
+	assemble_start_function and assemble_end_function.
+
 2019-05-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR middle-end/89433
