@@ -1065,7 +1065,7 @@ namespace __variant
     holds_alternative(const variant<_Types...>& __v) noexcept
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
-		    "T should occur for exactly once in alternatives");
+		    "T must occur exactly once in alternatives");
       return __v.index() == __detail::__variant::__index_of_v<_Tp, _Types...>;
     }
 
@@ -1073,7 +1073,7 @@ namespace __variant
     constexpr _Tp& get(variant<_Types...>& __v)
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
-		    "T should occur for exactly once in alternatives");
+		    "T must occur exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp should not be void");
       return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(__v);
     }
@@ -1082,7 +1082,7 @@ namespace __variant
     constexpr _Tp&& get(variant<_Types...>&& __v)
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
-		    "T should occur for exactly once in alternatives");
+		    "T must occur exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp should not be void");
       return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(
 	std::move(__v));
@@ -1092,7 +1092,7 @@ namespace __variant
     constexpr const _Tp& get(const variant<_Types...>& __v)
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
-		    "T should occur for exactly once in alternatives");
+		    "T must occur exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp should not be void");
       return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(__v);
     }
@@ -1101,7 +1101,7 @@ namespace __variant
     constexpr const _Tp&& get(const variant<_Types...>&& __v)
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
-		    "T should occur for exactly once in alternatives");
+		    "T must occur exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp should not be void");
       return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(
 	std::move(__v));
@@ -1139,7 +1139,7 @@ namespace __variant
     get_if(variant<_Types...>* __ptr) noexcept
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
-		    "T should occur for exactly once in alternatives");
+		    "T must occur exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp should not be void");
       return std::get_if<__detail::__variant::__index_of_v<_Tp, _Types...>>(
 	  __ptr);
@@ -1150,7 +1150,7 @@ namespace __variant
     get_if(const variant<_Types...>* __ptr) noexcept
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
-		    "T should occur for exactly once in alternatives");
+		    "T must occur exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp should not be void");
       return std::get_if<__detail::__variant::__index_of_v<_Tp, _Types...>>(
 	  __ptr);
@@ -1213,21 +1213,33 @@ namespace __variant
   class bad_variant_access : public exception
   {
   public:
-    bad_variant_access() noexcept : _M_reason("Unknown reason") { }
+    bad_variant_access() noexcept { }
+
     const char* what() const noexcept override
     { return _M_reason; }
 
   private:
-    bad_variant_access(const char* __reason) : _M_reason(__reason) { }
+    bad_variant_access(const char* __reason) noexcept : _M_reason(__reason) { }
 
-    const char* _M_reason;
+    // Must point to a string with static storage duration:
+    const char* _M_reason = "bad variant access";
 
     friend void __throw_bad_variant_access(const char* __what);
   };
 
+  // Must only be called with a string literal
   inline void
   __throw_bad_variant_access(const char* __what)
   { _GLIBCXX_THROW_OR_ABORT(bad_variant_access(__what)); }
+
+  inline void
+  __throw_bad_variant_access(bool __valueless)
+  {
+    if (__valueless) [[__unlikely__]]
+      __throw_bad_variant_access("std::get: variant is valueless");
+    else
+      __throw_bad_variant_access("std::get: wrong index for variant");
+  }
 
   template<typename... _Types>
     class variant
@@ -1592,7 +1604,7 @@ namespace __variant
       static_assert(_Np < sizeof...(_Types),
 		    "The index should be in [0, number of alternatives)");
       if (__v.index() != _Np)
-	__throw_bad_variant_access("Unexpected index");
+	__throw_bad_variant_access(__v.valueless_by_exception());
       return __detail::__variant::__get<_Np>(__v);
     }
 
@@ -1603,7 +1615,7 @@ namespace __variant
       static_assert(_Np < sizeof...(_Types),
 		    "The index should be in [0, number of alternatives)");
       if (__v.index() != _Np)
-	__throw_bad_variant_access("Unexpected index");
+	__throw_bad_variant_access(__v.valueless_by_exception());
       return __detail::__variant::__get<_Np>(std::move(__v));
     }
 
@@ -1614,7 +1626,7 @@ namespace __variant
       static_assert(_Np < sizeof...(_Types),
 		    "The index should be in [0, number of alternatives)");
       if (__v.index() != _Np)
-	__throw_bad_variant_access("Unexpected index");
+	__throw_bad_variant_access(__v.valueless_by_exception());
       return __detail::__variant::__get<_Np>(__v);
     }
 
@@ -1625,7 +1637,7 @@ namespace __variant
       static_assert(_Np < sizeof...(_Types),
 		    "The index should be in [0, number of alternatives)");
       if (__v.index() != _Np)
-	__throw_bad_variant_access("Unexpected index");
+	__throw_bad_variant_access(__v.valueless_by_exception());
       return __detail::__variant::__get<_Np>(std::move(__v));
     }
 
@@ -1646,7 +1658,7 @@ namespace __variant
     visit(_Visitor&& __visitor, _Variants&&... __variants)
     {
       if ((__variants.valueless_by_exception() || ...))
-	__throw_bad_variant_access("Unexpected index");
+	__throw_bad_variant_access("std::visit: variant is valueless");
 
       using _Result_type = std::invoke_result_t<_Visitor,
 	decltype(std::get<0>(std::declval<_Variants>()))...>;
@@ -1663,7 +1675,7 @@ namespace __variant
     visit(_Visitor&& __visitor, _Variants&&... __variants)
     {
       if ((__variants.valueless_by_exception() || ...))
-	__throw_bad_variant_access("Unexpected index");
+	__throw_bad_variant_access("std::visit<R>: variant is valueless");
 
       return std::__do_visit<_Res>(std::forward<_Visitor>(__visitor),
 				   std::forward<_Variants>(__variants)...);
