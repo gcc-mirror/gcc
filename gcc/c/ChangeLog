@@ -1,6 +1,10 @@
 2019-05-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR c/89433
+	* c-parser.c (c_finish_oacc_routine): Rework checking if already
+	marked with an OpenACC 'routine' directive.
+
+	PR c/89433
 	* c-parser.c (c_parser_oacc_routine): Normalize order of clauses.
 	(c_finish_oacc_routine): Call oacc_verify_routine_clauses.
 

@@ -1,6 +1,11 @@
 2019-05-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR middle-end/89433
+	* omp-general.c (oacc_verify_routine_clauses): Change formal
+	parameters.  Add checking if already marked with an OpenACC
+	'routine' directive.  Adjust all users.
+
+	PR middle-end/89433
 	* omp-general.c (oacc_build_routine_dims): Move some of its
 	processing into...
 	(oacc_verify_routine_clauses): ... this new function.
