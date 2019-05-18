@@ -2939,12 +2939,10 @@ darwin_file_end (void)
       if (flag_objc_abi >= 2)
 	{
 	  flags = 16;
-	  output_section_asm_op
-	    (darwin_sections[objc2_image_info_section]->unnamed.data);
+          switch_to_section (darwin_sections[objc2_image_info_section]);
 	}
       else
-	output_section_asm_op
-	  (darwin_sections[objc_image_info_section]->unnamed.data);
+	switch_to_section (darwin_sections[objc_image_info_section]);
 
       ASM_OUTPUT_ALIGN (asm_out_file, 2);
       fputs ("L_OBJC_ImageInfo:\n", asm_out_file);
