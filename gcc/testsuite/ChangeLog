@@ -1,3 +1,7 @@
+2019-05-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc.dg/instancetype-0.m: New.
+
 2019-05-17  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/gcc_diag-11.c: Remove accidentally committed test.
