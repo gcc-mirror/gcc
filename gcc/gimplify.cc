@@ -227,6 +227,7 @@ struct oacc_array_mapping_info
   tree mapping;
   tree pset;
   tree pointer;
+  tree ref;
 };
 
 struct gimplify_omp_ctx
@@ -11166,6 +11167,9 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		  }
 		if (base_ptr
 		    && OMP_CLAUSE_CODE (base_ptr) == OMP_CLAUSE_MAP
+		    && !(OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+			 && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALLOC
+			     || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER))
 		    && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_TO_PSET
 		    && ((OMP_CLAUSE_MAP_KIND (base_ptr)
 			 == GOMP_MAP_FIRSTPRIVATE_POINTER)
@@ -11184,6 +11188,19 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		    ai.mapping = unshare_expr (c);
 		    ai.pset = pset ? unshare_expr (pset) : NULL;
 		    ai.pointer = unshare_expr (base_ptr);
+		    ai.ref = NULL_TREE;
+		    if (TREE_CODE (base_addr) == INDIRECT_REF
+			&& (TREE_CODE (TREE_TYPE (TREE_OPERAND (base_addr, 0)))
+			    == REFERENCE_TYPE))
+		      {
+			base_addr = TREE_OPERAND (base_addr, 0);
+			tree ref_clause = OMP_CLAUSE_CHAIN (base_ptr);
+			gcc_assert ((OMP_CLAUSE_CODE (ref_clause)
+				     == OMP_CLAUSE_MAP)
+				    && (OMP_CLAUSE_MAP_KIND (ref_clause)
+				        == GOMP_MAP_POINTER));
+			ai.ref = unshare_expr (ref_clause);
+		      }
 		    ctx->decl_data_clause->put (base_addr, ai);
 		  }
 		if (TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE)
@@ -12329,11 +12346,15 @@ gomp_oacc_needs_data_present (tree decl)
       && gimplify_omp_ctxp->region_type != ORT_ACC_KERNELS)
     return NULL;
 
-  if (TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE
-      && TREE_CODE (TREE_TYPE (decl)) != POINTER_TYPE
-      && TREE_CODE (TREE_TYPE (decl)) != RECORD_TYPE
-      && (TREE_CODE (TREE_TYPE (decl)) != POINTER_TYPE
-	  || TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) != ARRAY_TYPE))
+  tree type = TREE_TYPE (decl);
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    type = TREE_TYPE (type);
+
+  if (TREE_CODE (type) != ARRAY_TYPE
+      && TREE_CODE (type) != POINTER_TYPE
+      && TREE_CODE (type) != RECORD_TYPE
+      && (TREE_CODE (type) != POINTER_TYPE
+	  || TREE_CODE (TREE_TYPE (type)) != ARRAY_TYPE))
     return NULL;
 
   decl = get_base_address (decl);
@@ -12487,6 +12508,9 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
     {
       tree mapping = array_info->mapping;
       tree pointer = array_info->pointer;
+      const gomp_map_kind presence_kind
+	= omp_check_optional_argument (decl, false) ? GOMP_MAP_IF_PRESENT
+						    : GOMP_MAP_FORCE_PRESENT;
 
       if (code == OMP_CLAUSE_FIRSTPRIVATE)
 	/* Oops, we have the wrong type of clause.  Rebuild it.  */
@@ -12494,7 +12518,7 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 				   OMP_CLAUSE_MAP);
 
       OMP_CLAUSE_DECL (clause) = unshare_expr (OMP_CLAUSE_DECL (mapping));
-      OMP_CLAUSE_SET_MAP_KIND (clause, GOMP_MAP_FORCE_PRESENT);
+      OMP_CLAUSE_SET_MAP_KIND (clause, presence_kind);
       OMP_CLAUSE_SIZE (clause) = unshare_expr (OMP_CLAUSE_SIZE (mapping));
 
       /* Create a new data clause for the firstprivate pointer.  */
@@ -12531,6 +12555,19 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 
       OMP_CLAUSE_CHAIN (nc) = OMP_CLAUSE_CHAIN (clause);
       OMP_CLAUSE_CHAIN (clause) = psetc ? psetc : nc;
+
+      if (array_info->ref)
+	{
+	  tree refc = build_omp_clause (OMP_CLAUSE_LOCATION (clause),
+					OMP_CLAUSE_MAP);
+	  OMP_CLAUSE_DECL (refc)
+	    = unshare_expr (OMP_CLAUSE_DECL (array_info->ref));
+	  OMP_CLAUSE_SIZE (refc)
+	    = unshare_expr (OMP_CLAUSE_SIZE (array_info->ref));
+	  OMP_CLAUSE_SET_MAP_KIND (refc, GOMP_MAP_POINTER);
+	  OMP_CLAUSE_CHAIN (refc) = OMP_CLAUSE_CHAIN (nc);
+	  OMP_CLAUSE_CHAIN (nc) = refc;
+	}
     }
   else if (code == OMP_CLAUSE_FIRSTPRIVATE && (flags & GOVD_EXPLICIT) == 0)
     OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (clause) = 1;

@@ -1,3 +1,13 @@
+2019-05-19  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (oacc_array_mapping_info): Add REF field.
+	(gimplify_scan_omp_clauses): Initialise above field for data blocks
+	passed by reference.
+	(gomp_oacc_needs_data_present): Handle references.
+	(gimplify_adjust_omp_clauses_1): Handle references and optional
+	arguments for variables declared in lexically-enclosing OpenACC data
+	region.
+
 2019-01-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* params.opt (openacc_kernels): Default to decompose.
