@@ -1,7 +1,14 @@
+2019-05-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/90498
+	* trans-stmt.c (trans_associate_var) Do not use the saved
+	descriptor if the expression is a COMPONENT_REF.
+
 2019-05-15  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	Backport from trunk
-        * parse.c (gfc_parse_file): Remove translation string markers.
+	* parse.c (gfc_parse_file): Remove translation string markers.
 
 2019-05-12  Janne Blomqvist  <jb@gcc.gnu.org>
 
