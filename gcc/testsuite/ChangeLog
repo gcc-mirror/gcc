@@ -1,3 +1,41 @@
+2019-05-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/88821
+	* gfortran.dg/alloc_comp_auto_array_3.f90: Add -O0 to dg-options
+	to make sure the test for internal_pack is retained.
+	* gfortran.dg/assumed_type_2.f90: Split compile and run time
+	tests into this and
+	* gfortran.dg/assumed_type_2a.f90: New file.
+	* gfortran.dg/c_loc_test_22.f90: Likewise.
+	* gfortran.dg/contiguous_3.f90: Likewise.
+	* gfortran.dg/internal_pack_11.f90: Likewise.
+	* gfortran.dg/internal_pack_12.f90: Likewise.
+	* gfortran.dg/internal_pack_16.f90: Likewise.
+	* gfortran.dg/internal_pack_17.f90: Likewise.
+	* gfortran.dg/internal_pack_18.f90: Likewise.
+	* gfortran.dg/internal_pack_4.f90: Likewise.
+	* gfortran.dg/internal_pack_5.f90: Add -O0 to dg-options
+	to make sure the test for internal_pack is retained.
+	* gfortran.dg/internal_pack_6.f90: Split compile and run time
+	tests into this and
+	* gfortran.dg/internal_pack_6a.f90: New file.
+	* gfortran.dg/internal_pack_8.f90: Likewise.
+	* gfortran.dg/missing_optional_dummy_6: Split compile and run time
+	tests into this and
+	* gfortran.dg/missing_optional_dummy_6a.f90: New file.
+	* gfortran.dg/no_arg_check_2.f90: Split compile and run time tests
+	into this and
+	* gfortran.dg/no_arg_check_2a.f90: New file.
+	* gfortran.dg/typebound_assignment_5.f90: Split compile and run time
+	tests into this and
+	* gfortran.dg/typebound_assignment_5a.f90: New file.
+	* gfortran.dg/typebound_assignment_6.f90: Split compile and run time
+	tests into this and
+	* gfortran.dg/typebound_assignment_6a.f90: New file.
+	* gfortran.dg/internal_pack_19.f90: New file.
+	* gfortran.dg/internal_pack_20.f90: New file.
+	* gfortran.dg/internal_pack_21.f90: New file.
+
 2019-05-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* objc.dg/instancetype-0.m: New.
