@@ -7866,6 +7866,23 @@ array_parameter_size (tree desc, gfc_expr *expr, tree *size)
 			   *size, fold_convert (gfc_array_index_type, elem));
 }
 
+/* Helper function - return true if the argument is a pointer.  */
+ 
+static bool
+is_pointer (gfc_expr *e)
+{
+  gfc_symbol *sym;
+
+  if (e->expr_type != EXPR_VARIABLE ||  e->symtree == NULL)
+    return false;
+
+  sym = e->symtree->n.sym;
+  if (sym == NULL)
+    return false;
+
+  return sym->attr.pointer || sym->attr.proc_pointer;
+}
+
 /* Convert an array for passing as an actual parameter.  */
 
 void
@@ -8115,6 +8132,20 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 	  else
 	    gfc_warning (OPT_Warray_temporaries,
 			 "Creating array temporary at %L", &expr->where);
+	}
+
+      /* When optmizing, we can use gfc_conv_subref_array_arg for
+	 making the packing and unpacking operation visible to the
+	 optimizers.  */
+
+      if (g77 && optimize && !optimize_size && expr->expr_type == EXPR_VARIABLE
+	  && !is_pointer (expr) && (fsym == NULL
+				    || fsym->ts.type != BT_ASSUMED))
+	{
+	  gfc_conv_subref_array_arg (se, expr, g77,
+				     fsym ? fsym->attr.intent : INTENT_INOUT,
+				     false, fsym, proc_name, sym);
+	  return;
 	}
 
       ptr = build_call_expr_loc (input_location,
