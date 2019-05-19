@@ -2638,6 +2638,8 @@ as_fn_append ac_func_list " link"
 as_fn_append ac_func_list " symlink"
 as_fn_append ac_func_list " sleep"
 as_fn_append ac_func_list " ttyname"
+as_fn_append ac_func_list " sigaction"
+as_fn_append ac_func_list " waitpid"
 as_fn_append ac_func_list " alarm"
 as_fn_append ac_func_list " access"
 as_fn_append ac_func_list " fork"
@@ -12698,7 +12700,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12701 "configure"
+#line 12703 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12804,7 +12806,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12807 "configure"
+#line 12809 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16870,6 +16872,10 @@ _ACEOF
 
 fi
 done
+
+
+
+
 
 
 

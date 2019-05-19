@@ -1,3 +1,12 @@
+2019-05-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR libfortran/90038
+        * intrinsics/execute_command_line (sigchld_handler): New function.
+        (execute_command_line): Install handler for SIGCHLD.
+        * configure.ac: Check for presence of sigaction and waitpid.
+        * config.h.in: Regenerated.
+        * configure: Regenerated.
+
 2019-05-17  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/90038

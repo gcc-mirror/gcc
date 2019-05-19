@@ -36,6 +36,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <spawn.h>
 extern char **environ;
 #endif
+#if defined(HAVE_POSIX_SPAWN) || defined(HAVE_FORK)
+#include <signal.h>
+#endif
 
 enum { EXEC_SYNCHRONOUS = -2, EXEC_NOERROR = 0, EXEC_SYSTEMFAILED,
        EXEC_CHILDFAILED, EXEC_INVALIDCOMMAND };
@@ -62,6 +65,14 @@ set_cmdstat (int *cmdstat, int value)
 }
 
 
+#if defined(HAVE_WAITPID) && defined(HAVE_SIGACTION)
+static void
+sigchld_handler (int signum __attribute__((unused)))
+{
+  while (waitpid ((pid_t)(-1), NULL, WNOHANG) > 0) {}
+}
+#endif
+
 static void
 execute_command_line (const char *command, bool wait, int *exitstat,
 		      int *cmdstat, char *cmdmsg,
@@ -81,6 +92,20 @@ execute_command_line (const char *command, bool wait, int *exitstat,
       pid_t pid;
 
       set_cmdstat (cmdstat, EXEC_NOERROR);
+
+#if defined(HAVE_SIGACTION) && defined(HAVE_WAITPID)
+      static bool sig_init_saved;
+      bool sig_init = __atomic_load_n (&sig_init_saved, __ATOMIC_RELAXED);
+      if (!sig_init)
+	{
+	  struct sigaction sa;
+	  sa.sa_handler = &sigchld_handler;
+	  sigemptyset(&sa.sa_mask);
+	  sa.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+	  sigaction(SIGCHLD, &sa, 0);
+	  __atomic_store_n (&sig_init_saved, true, __ATOMIC_RELAXED);
+	}
+#endif
 
 #ifdef HAVE_POSIX_SPAWN
       const char * const argv[] = {"sh", "-c", cmd, NULL};
