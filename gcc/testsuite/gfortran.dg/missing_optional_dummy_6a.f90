@@ -1,5 +1,5 @@
-! { dg-do run }
-! { dg-options "-fdump-tree-original" }
+! { dg-do compile }
+! { dg-options "-O0 -fdump-tree-original" }
 !
 ! PR fortran/41907
 !
@@ -46,3 +46,14 @@ contains
   end subroutine scalar2
 
 end program test
+
+! { dg-final { scan-tree-dump-times "scalar2 \\(slr1" 1 "original" } }
+
+! { dg-final { scan-tree-dump-times "= es1 != 0B" 1 "original" } }
+! { dg-final { scan-tree-dump-times "assumed_shape2 \\(es1" 0 "original" } }
+! { dg-final { scan-tree-dump-times "explicit_shape2 \\(es1" 1 "original" } }
+
+! { dg-final { scan-tree-dump-times "= as1 != 0B" 2 "original" } }
+! { dg-final { scan-tree-dump-times "assumed_shape2 \\(as1" 0 "original" } }
+! { dg-final { scan-tree-dump-times "explicit_shape2 \\(as1" 0 "original" } }
+

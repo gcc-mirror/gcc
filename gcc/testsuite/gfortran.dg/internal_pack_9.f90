@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-fdump-tree-original" }
+! { dg-options "-O0 -fdump-tree-original" }
 !
 ! During the discussion of the fix for PR43072, in which unnecessary
 ! calls to internal PACK/UNPACK were being generated, the following,

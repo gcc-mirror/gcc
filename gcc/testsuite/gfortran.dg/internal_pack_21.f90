@@ -1,11 +1,7 @@
 ! { dg-do run }
-!
-! PR fortran/36132
-!
-! Before invalid memory was accessed because an absent, optional
-! argument was packed before passing it as absent actual.
-! Getting it to crash is difficult, but valgrind shows the problem.
-!
+! { dg-options "-O -fdump-tree-original" }
+! Test handling of the optional argument.
+
 MODULE M1
   INTEGER, PARAMETER :: dp=KIND(0.0D0)
 CONTAINS
@@ -24,3 +20,5 @@ END MODULE M1
 USE M1
 CALL S2()
 END
+! { dg-final { scan-tree-dump-times "optional" 4 "original" } }
+! { dg-final { scan-tree-dump-not "_gfortran_internal_unpack" "original" } }

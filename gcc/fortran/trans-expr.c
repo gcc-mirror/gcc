@@ -4576,8 +4576,10 @@ gfc_apply_interface_mapping (gfc_interface_mapping * mapping,
    an actual argument derived type array is copied and then returned
    after the function call.  */
 void
-gfc_conv_subref_array_arg (gfc_se * parmse, gfc_expr * expr, int g77,
-			   sym_intent intent, bool formal_ptr)
+gfc_conv_subref_array_arg (gfc_se *se, gfc_expr * expr, int g77,
+			   sym_intent intent, bool formal_ptr,
+			   const gfc_symbol *fsym, const char *proc_name,
+			   gfc_symbol *sym)
 {
   gfc_se lse;
   gfc_se rse;
@@ -4594,6 +4596,36 @@ gfc_conv_subref_array_arg (gfc_se * parmse, gfc_expr * expr, int g77,
   stmtblock_t body;
   int n;
   int dimen;
+  gfc_se work_se;
+  gfc_se *parmse;
+  bool pass_optional;
+
+  pass_optional = fsym && fsym->attr.optional && sym && sym->attr.optional;
+
+  if (pass_optional)
+    {
+      gfc_init_se (&work_se, NULL);
+      parmse = &work_se;
+    }
+  else
+    parmse = se;
+
+  if (gfc_option.rtcheck & GFC_RTCHECK_ARRAY_TEMPS)
+    {
+      /* We will create a temporary array, so let us warn.  */
+      char * msg;
+
+      if (fsym && proc_name)
+	msg = xasprintf ("An array temporary was created for argument "
+			     "'%s' of procedure '%s'", fsym->name, proc_name);
+      else
+	msg = xasprintf ("An array temporary was created");
+
+      tmp = build_int_cst (logical_type_node, 1);
+      gfc_trans_runtime_check (false, true, tmp, &parmse->pre,
+			       &expr->where, msg);
+      free (msg);
+    }
 
   gfc_init_se (&lse, NULL);
   gfc_init_se (&rse, NULL);
@@ -4847,6 +4879,53 @@ class_array_fcn:
     parmse->expr = gfc_conv_descriptor_data_get (parmse->expr);
   else
     parmse->expr = gfc_build_addr_expr (NULL_TREE, parmse->expr);
+
+  if (pass_optional)
+    {
+      tree present;
+      tree type;
+      stmtblock_t else_block;
+      tree pre_stmts, post_stmts;
+      tree pointer;
+      tree else_stmt;
+
+      /* Make this into
+
+	 if (present (a))
+	   {
+	      parmse->pre;
+	      optional = parse->expr;
+	   }
+         else
+	   optional = NULL;
+         call foo (optional);
+         if (present (a))
+            parmse->post;
+
+      */
+
+      type = TREE_TYPE (parmse->expr);
+      pointer = gfc_create_var (type, "optional");
+      tmp = gfc_conv_expr_present (sym);
+      present = gfc_evaluate_now (tmp, &se->pre);
+      gfc_add_modify (&parmse->pre, pointer, parmse->expr);
+      pre_stmts = gfc_finish_block (&parmse->pre);
+
+      gfc_init_block (&else_block);
+      gfc_add_modify (&else_block, pointer, build_int_cst (type, 0));
+      else_stmt = gfc_finish_block (&else_block);
+
+      tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, present,
+			     pre_stmts, else_stmt);
+      gfc_add_expr_to_block (&se->pre, tmp);
+
+      post_stmts = gfc_finish_block (&parmse->post);
+      tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, present,
+			     post_stmts, build_empty_stmt (input_location));
+      gfc_add_expr_to_block (&se->post, tmp);
+
+      se->expr = pointer;
+    }
 
   return;
 }
