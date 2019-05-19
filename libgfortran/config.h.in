@@ -666,6 +666,9 @@
 /* Define to 1 if you have the `setmode' function. */
 #undef HAVE_SETMODE
 
+/* Define to 1 if you have the `sigaction' function. */
+#undef HAVE_SIGACTION
+
 /* Define to 1 if you have the `sin' function. */
 #undef HAVE_SIN
 
@@ -830,6 +833,9 @@
 
 /* Define to 1 if you have the `vsnprintf' function. */
 #undef HAVE_VSNPRINTF
+
+/* Define to 1 if you have the `waitpid' function. */
+#undef HAVE_WAITPID
 
 /* Define if target has a reliable stat. */
 #undef HAVE_WORKING_STAT
