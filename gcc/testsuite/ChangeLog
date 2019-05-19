@@ -1,5 +1,10 @@
 2019-05-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/78290
+	* gfortran.dg/pr78290.f90: New test.
+
+2019-05-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/88821
 	* gfortran.dg/alloc_comp_auto_array_3.f90: Add -O0 to dg-options
 	to make sure the test for internal_pack is retained.
