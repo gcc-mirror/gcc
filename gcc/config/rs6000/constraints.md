@@ -97,9 +97,6 @@
 ;; There is a mode_attr that resolves to wm for SDmode and wn for SFmode
 (define_register_constraint "wn" "NO_REGS" "No register (NO_REGS).")
 
-(define_register_constraint "wo" "rs6000_constraints[RS6000_CONSTRAINT_wo]"
-  "VSX register if the -mpower9-vector option was used or NO_REGS.")
-
 (define_register_constraint "wp" "rs6000_constraints[RS6000_CONSTRAINT_wp]"
   "VSX register to use for IEEE 128-bit fp TFmode, or NO_REGS.")
 
