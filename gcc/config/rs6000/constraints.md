@@ -145,12 +145,6 @@
   "Memory operand suitable for power8 GPR load fusion"
   (match_operand 0 "fusion_addis_mem_combo_load"))
 
-(define_register_constraint "wH" "rs6000_constraints[RS6000_CONSTRAINT_wH]"
-  "Altivec register to hold 32-bit integers or NO_REGS.")
-
-(define_register_constraint "wI" "rs6000_constraints[RS6000_CONSTRAINT_wI]"
-  "FPR register to hold 32-bit integers or NO_REGS.")
-
 (define_constraint "wL"
   "Int constant that is the element number mfvsrld accesses in a vector."
   (and (match_code "const_int")
