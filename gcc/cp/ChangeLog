@@ -3,6 +3,9 @@
 	* pt.c (convert_template_argument): Add a diagnostic for the
 	[temp.arg]/2 ambiguity case.
 
+	* name-lookup.c (finish_using_directive): Don't issue inform() if the
+	warning didn't trigger.  Add quoting.  Tweak the inform message.
+
 2019-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* cp-tree.h: Remove remnants of CONV_NONCONVERTING.

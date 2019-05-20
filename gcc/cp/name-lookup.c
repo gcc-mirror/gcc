@@ -7258,10 +7258,10 @@ finish_using_directive (tree target, tree attribs)
 	if (current_binding_level->kind == sk_namespace
 	    && is_attribute_p ("strong", name))
 	  {
-	    warning (0, "strong using directive no longer supported");
-	    if (CP_DECL_CONTEXT (target) == current_namespace)
+	    if (warning (0, "%<strong%> using directive no longer supported")
+		&& CP_DECL_CONTEXT (target) == current_namespace)
 	      inform (DECL_SOURCE_LOCATION (target),
-		      "you may use an inline namespace instead");
+		      "you can use an inline namespace instead");
 	  }
 	else
 	  warning (OPT_Wattributes, "%qD attribute directive ignored", name);
