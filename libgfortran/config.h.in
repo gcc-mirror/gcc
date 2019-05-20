@@ -627,6 +627,9 @@
 /* Define to 1 if we have POSIX getpwuid_r which takes 5 arguments. */
 #undef HAVE_POSIX_GETPWUID_R
 
+/* Define to 1 if you have the `posix_spawn' function. */
+#undef HAVE_POSIX_SPAWN
+
 /* Define to 1 if you have the `pow' function. */
 #undef HAVE_POW
 
@@ -662,6 +665,9 @@
 
 /* Define to 1 if you have the `setmode' function. */
 #undef HAVE_SETMODE
+
+/* Define to 1 if you have the `sigaction' function. */
+#undef HAVE_SIGACTION
 
 /* Define to 1 if you have the `sin' function. */
 #undef HAVE_SIN
@@ -827,6 +833,9 @@
 
 /* Define to 1 if you have the `vsnprintf' function. */
 #undef HAVE_VSNPRINTF
+
+/* Define to 1 if you have the `waitpid' function. */
+#undef HAVE_WAITPID
 
 /* Define if target has a reliable stat. */
 #undef HAVE_WORKING_STAT
