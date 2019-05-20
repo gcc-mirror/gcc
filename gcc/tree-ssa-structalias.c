@@ -4900,6 +4900,9 @@ find_func_aliases (struct function *fn, gimple *origt)
 	  if (code == POINTER_PLUS_EXPR)
 	    get_constraint_for_ptr_offset (gimple_assign_rhs1 (t),
 					   gimple_assign_rhs2 (t), &rhsc);
+	  else if (code == POINTER_DIFF_EXPR)
+	    /* The result is not a pointer (part).  */
+	    ;
 	  else if (code == BIT_AND_EXPR
 		   && TREE_CODE (gimple_assign_rhs2 (t)) == INTEGER_CST)
 	    {
@@ -4908,6 +4911,17 @@ find_func_aliases (struct function *fn, gimple *origt)
 	      get_constraint_for_ptr_offset (gimple_assign_rhs1 (t),
 					     NULL_TREE, &rhsc);
 	    }
+	  else if (code == TRUNC_DIV_EXPR
+		   || code == CEIL_DIV_EXPR
+		   || code == FLOOR_DIV_EXPR
+		   || code == ROUND_DIV_EXPR
+		   || code == EXACT_DIV_EXPR
+		   || code == TRUNC_MOD_EXPR
+		   || code == CEIL_MOD_EXPR
+		   || code == FLOOR_MOD_EXPR
+		   || code == ROUND_MOD_EXPR)
+	    /* Division and modulo transfer the pointer from the LHS.  */
+	    get_constraint_for_rhs (gimple_assign_rhs1 (t), &rhsc);
 	  else if ((CONVERT_EXPR_CODE_P (code)
 		    && !(POINTER_TYPE_P (gimple_expr_type (t))
 			 && !POINTER_TYPE_P (TREE_TYPE (rhsop))))

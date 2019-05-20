@@ -1,3 +1,10 @@
+2019-05-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (find_func_aliases): POINTER_DIFF_EXPR
+	doesn't produce pointers.
+	{TRUNC,CEIL,FLOOR,ROUND,EXACT}_{DIV,MOD}_EXPR points to what
+	the first operand points to.
+
 2019-05-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-alias.c (compare_sizes): New function.
