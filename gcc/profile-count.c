@@ -268,7 +268,7 @@ profile_count::to_frequency (struct function *fun) const
 {
   if (!initialized_p ())
     return BB_FREQ_MAX;
-  if (*this == profile_count::zero ())
+  if (*this == zero ())
     return 0;
   gcc_assert (REG_BR_PROB_BASE == BB_FREQ_MAX
 	      && fun->cfg->count_max.initialized_p ());
@@ -287,7 +287,7 @@ profile_count::to_cgraph_frequency (profile_count entry_bb_count) const
 {
   if (!initialized_p () || !entry_bb_count.initialized_p ())
     return CGRAPH_FREQ_BASE;
-  if (*this == profile_count::zero ())
+  if (*this == zero ())
     return 0;
   gcc_checking_assert (entry_bb_count.initialized_p ());
   uint64_t scale;
@@ -310,7 +310,7 @@ profile_count::to_sreal_scale (profile_count in, bool *known) const
     }
   if (known)
     *known = true;
-  if (*this == profile_count::zero ())
+  if (*this == zero ())
     return 0;
 
   if (!in.m_val)
@@ -337,7 +337,7 @@ profile_count::adjust_for_ipa_scaling (profile_count *num,
   if (*num == *den)
     return;
   /* Scaling to zero is always zero.  */
-  if (*num == profile_count::zero ())
+  if (*num == zero ())
     return;
   /* If den is non-zero we are safe.  */
   if (den->force_nonzero () == *den)
@@ -359,9 +359,9 @@ profile_count::combine_with_ipa_count (profile_count ipa)
   ipa = ipa.ipa ();
   if (ipa.nonzero_p ())
     return ipa;
-  if (!ipa.initialized_p () || *this == profile_count::zero ())
+  if (!ipa.initialized_p () || *this == zero ())
     return *this;
-  if (ipa == profile_count::zero ())
+  if (ipa == zero ())
     return this->global0 ();
   return this->global0adjusted ();
 }
@@ -406,6 +406,5 @@ profile_probability::combine_with_count (profile_count count1,
     return *this * count1.probability_in (count1 + count2)
 	   + other * count2.probability_in (count1 + count2);
   else
-    return *this * profile_probability::even ()
-	   + other * profile_probability::even ();
+    return *this * even () + other * even ();
 }
