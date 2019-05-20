@@ -168,11 +168,11 @@ profile_probability::dump (FILE *f) const
         fprintf (f, "always");
       else
         fprintf (f, "%3.1f%%", (double)m_val * 100 / max_probability);
-      if (m_quality == profile_adjusted)
+      if (m_quality == ADJUSTED)
 	fprintf (f, " (adjusted)");
-      else if (m_quality == profile_afdo)
+      else if (m_quality == AFDO)
 	fprintf (f, " (auto FDO)");
-      else if (m_quality == profile_guessed)
+      else if (m_quality == GUESSED)
 	fprintf (f, " (guessed)");
     }
 }
