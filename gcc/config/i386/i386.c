@@ -17297,7 +17297,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   int n_args = gimple_call_num_args (stmt);
   enum ix86_builtins fn_code = (enum ix86_builtins) DECL_FUNCTION_CODE (fndecl);
   tree decl = NULL_TREE;
-  tree arg0, arg1;
+  tree arg0, arg1, arg2;
   enum rtx_code rcode;
   unsigned HOST_WIDE_INT count;
   bool is_vshift;
@@ -17599,6 +17599,32 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	  gsi_replace (gsi, g, false);
 	  return true;
 	}
+      break;
+
+    case IX86_BUILTIN_SHUFPD:
+      arg2 = gimple_call_arg (stmt, 2);
+      if (TREE_CODE (arg2) == INTEGER_CST)
+	{
+	  location_t loc = gimple_location (stmt);
+	  unsigned HOST_WIDE_INT imask = TREE_INT_CST_LOW (arg2);
+	  arg0 = gimple_call_arg (stmt, 0);
+	  arg1 = gimple_call_arg (stmt, 1);
+	  tree itype = long_long_integer_type_node;
+	  tree vtype = build_vector_type (itype, 2); /* V2DI */
+	  tree_vector_builder elts (vtype, 2, 1);
+	  /* Ignore bits other than the lowest 2.  */
+	  elts.quick_push (build_int_cst (itype, imask & 1));
+	  imask >>= 1;
+	  elts.quick_push (build_int_cst (itype, 2 + (imask & 1)));
+	  tree omask = elts.build ();
+	  gimple *g = gimple_build_assign (gimple_call_lhs (stmt),
+					   VEC_PERM_EXPR,
+					   arg0, arg1, omask);
+	  gimple_set_location (g, loc);
+	  gsi_replace (gsi, g, false);
+	  return true;
+	}
+      // Do not error yet, the constant could be propagated later?
       break;
 
     default:
