@@ -23074,7 +23074,7 @@ ix86_run_selftests (void)
 #define TARGET_GET_MULTILIB_ABI_NAME \
   ix86_get_multilib_abi_name
 
-static bool ix86_libc_has_fast_function (int fcode)
+static bool ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
 {
 #ifdef OPTION_GLIBC
   if (OPTION_GLIBC)
