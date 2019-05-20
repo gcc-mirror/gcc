@@ -1,3 +1,10 @@
+2019-05-20  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/90518
+	* gcc.dg/gimplefe-40.c: Restrict to targets with appropriate
+	vector support.
+	* gcc.dg/gimplefe-41.c: Likewise.
+
 2019-05-19  Andrew Pinski  <apinski@marvell.com>
 
 	PR pch/81721
