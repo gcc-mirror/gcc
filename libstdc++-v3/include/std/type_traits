@@ -878,58 +878,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __is_nt_destructible_safe<_Tp>::type
     { };
 
-  struct __do_is_default_constructible_impl
-  {
-    template<typename _Tp, typename = decltype(_Tp())>
-      static true_type __test(int);
-
-    template<typename>
-      static false_type __test(...);
-  };
-
-  template<typename _Tp>
-    struct __is_default_constructible_impl
-    : public __do_is_default_constructible_impl
-    {
-      typedef decltype(__test<_Tp>(0)) type;
-    };
-
-  template<typename _Tp>
-    struct __is_default_constructible_atom
-    : public __and_<__not_<is_void<_Tp>>,
-                    __is_default_constructible_impl<_Tp>>
-    { };
-
-  template<typename _Tp, bool = is_array<_Tp>::value>
-    struct __is_default_constructible_safe;
-
-  // The following technique is a workaround for a current core language
-  // restriction, which does not allow for array types to occur in
-  // functional casts of the form T().  Complete arrays can be default-
-  // constructed, if the element type is default-constructible, but
-  // arrays with unknown bounds are not.
-  template<typename _Tp>
-    struct __is_default_constructible_safe<_Tp, true>
-    : public __and_<__is_array_known_bounds<_Tp>,
-		    __is_default_constructible_atom<typename
-                      remove_all_extents<_Tp>::type>>
-    { };
-
-  template<typename _Tp>
-    struct __is_default_constructible_safe<_Tp, false>
-    : public __is_default_constructible_atom<_Tp>::type
+  /// is_constructible
+  template<typename _Tp, typename... _Args>
+    struct is_constructible
+      : public __bool_constant<__is_constructible(_Tp, _Args...)>
     { };
 
   /// is_default_constructible
   template<typename _Tp>
     struct is_default_constructible
-    : public __is_default_constructible_safe<_Tp>::type
-    { };
-
-  /// is_constructible
-  template<typename _Tp, typename... _Args>
-    struct is_constructible
-      : public __bool_constant<__is_constructible(_Tp, _Args...)>
+    : public is_constructible<_Tp>::type
     { };
 
   template<typename _Tp, bool = __is_referenceable<_Tp>::value>
