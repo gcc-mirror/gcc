@@ -1,5 +1,11 @@
 2019-05-20  Martin Liska  <mliska@suse.cz>
 
+	* profile-count.h: Do not use full qualified
+	names if possible.
+	* profile-count.c (profile_count::to_frequency): Likewise.
+
+2019-05-20  Martin Liska  <mliska@suse.cz>
+
 	* profile-count.h (enum profile_quality): Use capital letters
 	for enum value names.  Use the adjusted names.
 	* profile-count.c: Use the adjusted names.
