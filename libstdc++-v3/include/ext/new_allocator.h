@@ -116,16 +116,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // __p is not permitted to be a null pointer.
       void
-      deallocate(pointer __p, size_type)
+      deallocate(pointer __p, size_type __t)
       {
 #if __cpp_aligned_new
 	if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
 	  {
-	    ::operator delete(__p, std::align_val_t(alignof(_Tp)));
+	    ::operator delete(__p,
+# if __cpp_sized_deallocation
+			      __t * sizeof(_Tp),
+# endif
+			      std::align_val_t(alignof(_Tp)));
 	    return;
 	  }
 #endif
-	::operator delete(__p);
+	::operator delete(__p
+#if __cpp_sized_deallocation
+			  , __t * sizeof(_Tp)
+#endif
+			 );
       }
 
       size_type

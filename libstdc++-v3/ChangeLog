@@ -1,3 +1,8 @@
+2019-05-20  Pádraig Brady  <pbrady@fb.com>
+
+	* libstdc++-v3/include/ext/new_allocator.h (deallocate): Pass the size
+	to the deallocator with -fsized-deallocation.
+
 2019-05-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/experimental/memory_resource/new_delete_resource.cc: Fix
