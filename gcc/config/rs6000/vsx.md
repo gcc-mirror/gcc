@@ -1209,7 +1209,7 @@
 (define_insn "vsx_mov<mode>_64bit"
   [(set (match_operand:VSX_M 0 "nonimmediate_operand"
                "=ZwO,      <VSa>,     <VSa>,     r,         we,        ?wQ,
-                ?&r,       ??r,       ??Y,       <??r>,     wo,        v,
+                ?&r,       ??r,       ??Y,       <??r>,     wa,        v,
                 ?<VSa>,    v,         <??r>,     wZ,        v")
 
 	(match_operand:VSX_M 1 "input_operand" 
@@ -1227,11 +1227,14 @@
                "vecstore,  vecload,   vecsimple, mffgpr,    mftgpr,    load,
                 store,     load,      store,     *,         vecsimple, vecsimple,
                 vecsimple, *,         *,         vecstore,  vecload")
-
    (set_attr "length"
                "4,         4,         4,         8,         4,         8,
                 8,         8,         8,         8,         4,         4,
-                4,         20,        8,         4,         4")])
+                4,         20,        8,         4,         4")
+   (set_attr "isa"
+               "*,         *,         *,         *,         *,         *,
+                *,         *,         *,         *,         p9v,       *,
+                *,         *,         *,         *,         *")])
 
 ;;              VSX store  VSX load   VSX move   GPR load   GPR store  GPR move
 ;;              XXSPLTIB   VSPLTISW   VSX 0/-1   VMX const  GPR const
@@ -1239,7 +1242,7 @@
 (define_insn "*vsx_mov<mode>_32bit"
   [(set (match_operand:VSX_M 0 "nonimmediate_operand"
                "=ZwO,      <VSa>,     <VSa>,     ??r,       ??Y,       <??r>,
-                wo,        v,         ?<VSa>,    v,         <??r>,
+                wa,        v,         ?<VSa>,    v,         <??r>,
                 wZ,        v")
 
 	(match_operand:VSX_M 1 "input_operand" 
@@ -1257,11 +1260,14 @@
                "vecstore,  vecload,   vecsimple, load,      store,    *,
                 vecsimple, vecsimple, vecsimple, *,         *,
                 vecstore,  vecload")
-
    (set_attr "length"
                "4,         4,         4,         16,        16,        16,
                 4,         4,         4,         20,        16,
-                4,         4")])
+                4,         4")
+   (set_attr "isa"
+               "*,         *,         *,         *,         *,         *,
+                p9v,       *,         *,         *,         *,
+                *,         *")])
 
 ;; Explicit  load/store expanders for the builtin functions
 (define_expand "vsx_load_<mode>"
@@ -3199,7 +3205,7 @@
   [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=d,    d,     wr, wr")
 
 	(vec_select:<VS_scalar>
-	 (match_operand:VSX_D 1 "gpc_reg_operand"      "<VSa>, <VSa>, wm, wo")
+	 (match_operand:VSX_D 1 "gpc_reg_operand"      "<VSa>, <VSa>, wm, wa")
 
 	 (parallel
 	  [(match_operand:QI 2 "const_0_to_1_operand"  "wD,    n,     wD, n")])))]
@@ -3248,7 +3254,8 @@
   else
     gcc_unreachable ();
 }
-  [(set_attr "type" "veclogical,mftgpr,mftgpr,vecperm")])
+  [(set_attr "type" "veclogical,mftgpr,mftgpr,vecperm")
+   (set_attr "isa" "*,*,*,p9v")])
 
 ;; Optimize extracting a single scalar element from memory.
 (define_insn_and_split "*vsx_extract_<P:mode>_<VSX_D:mode>_load"
