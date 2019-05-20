@@ -1,3 +1,9 @@
+2019-05-20  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/90263
+	* gcc.c-torture/compile/pr90263.c: New test.
+	* lib/target-supports.exp: Add check_effective_target_glibc.
+
 2019-05-20  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/90518

@@ -3839,6 +3839,8 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
   unsigned HOST_WIDE_INT max_size;
   unsigned HOST_WIDE_INT probable_max_size;
 
+  bool is_move_done;
+
   /* If DEST is not a pointer type, call the normal function.  */
   if (dest_align == 0)
     return NULL_RTX;
@@ -3888,11 +3890,22 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
   if (CALL_EXPR_TAILCALL (exp)
       && (retmode == RETURN_BEGIN || target == const0_rtx))
     method = BLOCK_OP_TAILCALL;
-  if (retmode == RETURN_END && target != const0_rtx)
+  bool use_mempcpy_call = (targetm.libc_has_fast_function (BUILT_IN_MEMPCPY)
+			   && retmode == RETURN_END
+			   && target != const0_rtx);
+  if (use_mempcpy_call)
     method = BLOCK_OP_NO_LIBCALL_RET;
   dest_addr = emit_block_move_hints (dest_mem, src_mem, len_rtx, method,
 				     expected_align, expected_size,
-				     min_size, max_size, probable_max_size);
+				     min_size, max_size, probable_max_size,
+				     use_mempcpy_call, &is_move_done);
+
+  /* Bail out when a mempcpy call would be expanded as libcall and when
+     we have a target that provides a fast implementation
+     of mempcpy routine.  */
+  if (!is_move_done)
+    return NULL_RTX;
+
   if (dest_addr == pc_rtx)
     return NULL_RTX;
 

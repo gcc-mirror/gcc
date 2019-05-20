@@ -9313,6 +9313,17 @@ proc check_effective_target_arm_v8_3a_complex_neon_hw { } {
     } [add_options_for_arm_v8_3a_complex_neon ""]]
 }
 
+# Returns 1 if the target is using glibc, 0 otherwise.
+
+proc check_effective_target_glibc { } {
+    return [check_no_compiler_messages glibc_object assembly {
+  #include <stdlib.h>
+	#if !defined(__GLIBC__)
+	#error undefined
+	#endif
+    }]
+}
+
 # Return 1 if the target plus current options supports a vector
 # complex addition with rotate of half and single float modes, 0 otherwise.
 #
