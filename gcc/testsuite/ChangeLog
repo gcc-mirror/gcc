@@ -1,3 +1,9 @@
+2019-05-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/target_attr_10.c: Add quotes to expected
+	error message.
+	* gcc.target/arm/attr-neon-builtin-fail.c: Likewise.
+
 2019-05-20  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/90263
