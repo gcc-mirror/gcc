@@ -1,8 +1,8 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { vect_double && vect_long_long } } } */
 /* { dg-options "-fgimple -Wno-psabi -w" } */
 
 typedef double __v2df __attribute__ ((__vector_size__ (16)));
-typedef unsigned long __v2di __attribute__ ((__vector_size__ (16)));
+typedef unsigned long long __v2di __attribute__ ((__vector_size__ (16)));
 
 __v2df __GIMPLE (ssa)
 _mm_add_sd (__v2df x, __v2df y)
