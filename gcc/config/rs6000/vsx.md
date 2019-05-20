@@ -3280,14 +3280,15 @@
 (define_insn "*vsx_extract_<mode>_store"
   [(set (match_operand:<VS_scalar> 0 "memory_operand" "=m,Z,wY")
 	(vec_select:<VS_scalar>
-	 (match_operand:VSX_D 1 "register_operand" "d,wv,wb")
+	 (match_operand:VSX_D 1 "register_operand" "d,wv,v")
 	 (parallel [(match_operand:QI 2 "vsx_scalar_64bit" "wD,wD,wD")])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
   "@
    stfd%U0%X0 %1,%0
    stxsdx %x1,%y0
    stxsd %1,%0"
-  [(set_attr "type" "fpstore")])
+  [(set_attr "type" "fpstore")
+   (set_attr "isa" "*,*,p9v")])
 
 ;; Variable V2DI/V2DF extract shift
 (define_insn "vsx_vslo_<mode>"
@@ -3352,7 +3353,7 @@
    (set_attr "type" "fp")])
 
 (define_insn_and_split "*vsx_extract_v4sf_<mode>_load"
-  [(set (match_operand:SF 0 "register_operand" "=f,wv,wb,?r")
+  [(set (match_operand:SF 0 "register_operand" "=f,wv,v,?r")
 	(vec_select:SF
 	 (match_operand:V4SF 1 "memory_operand" "m,Z,m,m")
 	 (parallel [(match_operand:QI 2 "const_0_to_3_operand" "n,n,n,n")])))
@@ -3366,7 +3367,8 @@
 					   operands[3], SFmode);
 }
   [(set_attr "type" "fpload,fpload,fpload,load")
-   (set_attr "length" "8")])
+   (set_attr "length" "8")
+   (set_attr "isa" "*,*,p9v,*")])
 
 ;; Variable V4SF extract
 (define_insn_and_split "vsx_extract_v4sf_var"
