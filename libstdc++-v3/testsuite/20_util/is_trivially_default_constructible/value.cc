@@ -62,4 +62,13 @@ void test01()
 		construct::Nontrivial>(false), "");
   static_assert(test_category<is_trivially_default_constructible, 
 		HasTemplateCtor>(true), "");
+
+  static_assert(test_category<is_trivially_default_constructible,
+		int[]>(false), "PR c++/90532");
+  struct A { };
+  static_assert(test_category<is_trivially_default_constructible,
+		A[]>(false), "PR c++/90532");
+  struct B { B() { } };
+  static_assert(test_category<is_trivially_default_constructible,
+		B[]>(false), "PR c++/90532");
 }

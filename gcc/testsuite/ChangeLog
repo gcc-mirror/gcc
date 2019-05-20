@@ -1,3 +1,11 @@
+2019-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from mainline
+	2019-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/90532 Ensure __is_constructible(T[]) is false
+	* g++.dg/ext/90532.C: New test.
+
 2019-05-16  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	Backport from mainline.
