@@ -1273,8 +1273,6 @@ enum r6000_reg_class_enum {
   RS6000_CONSTRAINT_wA,		/* BASE_REGS if 64-bit.  */
   RS6000_CONSTRAINT_wH,		/* Altivec register for 32-bit integers.  */
   RS6000_CONSTRAINT_wI,		/* VSX register for 32-bit integers.  */
-  RS6000_CONSTRAINT_wJ,		/* VSX register for 8/16-bit integers.  */
-  RS6000_CONSTRAINT_wK,		/* Altivec register for 16/32-bit integers.  */
   RS6000_CONSTRAINT_MAX
 };
 

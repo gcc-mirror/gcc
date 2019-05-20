@@ -3525,7 +3525,7 @@
 (define_insn "vsx_extract_<mode>_p9"
   [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=r,<VSX_EX>")
 	(vec_select:<VS_scalar>
-	 (match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand" "wK,<VSX_EX>")
+	 (match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand" "wH,<VSX_EX>")
 	 (parallel [(match_operand:QI 2 "<VSX_EXTRACT_PREDICATE>" "n,n")])))
    (clobber (match_scratch:SI 3 "=r,X"))]
   "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_VEXTRACTUB"
@@ -3550,7 +3550,8 @@
 	return "vextractu<wd> %0,%1,%2";
     }
 }
-  [(set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")
+   (set_attr "isa" "p9v,*")])
 
 (define_split
   [(set (match_operand:<VS_scalar> 0 "int_reg_operand")
@@ -3580,7 +3581,7 @@
   [(set (match_operand:DI 0 "gpc_reg_operand" "=r,<VSX_EX>")
 	(zero_extend:DI
 	 (vec_select:<VS_scalar>
-	  (match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand" "wK,<VSX_EX>")
+	  (match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand" "wH,<VSX_EX>")
 	  (parallel [(match_operand:QI 2 "const_int_operand" "n,n")]))))
    (clobber (match_scratch:SI 3 "=r,X"))]
   "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_VEXTRACTUB"
@@ -3593,7 +3594,8 @@
 	      (clobber (match_dup 3))])]
 {
   operands[4] = gen_rtx_REG (<VS_scalar>mode, REGNO (operands[0]));
-})
+}
+  [(set_attr "isa" "p9v,*")])
 
 ;; Optimize stores to use the ISA 3.0 scalar store instructions
 (define_insn_and_split "*vsx_extract_<mode>_store_p9"
@@ -3617,9 +3619,9 @@
 (define_insn_and_split  "*vsx_extract_si"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,wHwI,Z")
 	(vec_select:SI
-	 (match_operand:V4SI 1 "gpc_reg_operand" "wJv,wJv,wJv")
+	 (match_operand:V4SI 1 "gpc_reg_operand" "v,v,v")
 	 (parallel [(match_operand:QI 2 "const_0_to_3_operand" "n,n,n")])))
-   (clobber (match_scratch:V4SI 3 "=wJv,wJv,wJv"))]
+   (clobber (match_scratch:V4SI 3 "=v,v,v"))]
   "VECTOR_MEM_VSX_P (V4SImode) && TARGET_DIRECT_MOVE_64BIT && !TARGET_P9_VECTOR"
   "#"
   "&& reload_completed"
@@ -3733,7 +3735,7 @@
 (define_insn_and_split "vsx_extract_<mode>_var"
   [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=r,r,r")
 	(unspec:<VS_scalar>
-	 [(match_operand:VSX_EXTRACT_I 1 "input_operand" "wK,v,m")
+	 [(match_operand:VSX_EXTRACT_I 1 "input_operand" "wH,v,m")
 	  (match_operand:DI 2 "gpc_reg_operand" "r,r,r")]
 	 UNSPEC_VSX_EXTRACT))
    (clobber (match_scratch:DI 3 "=r,r,&b"))
@@ -3746,13 +3748,14 @@
   rs6000_split_vec_extract_var (operands[0], operands[1], operands[2],
 				operands[3], operands[4]);
   DONE;
-})
+}
+  [(set_attr "isa" "p9v,*,*")])
 
 (define_insn_and_split "*vsx_extract_<mode>_<VS_scalar>mode_var"
   [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=r,r,r")
 	(zero_extend:<VS_scalar>
 	 (unspec:<VSX_EXTRACT_I:VS_scalar>
-	  [(match_operand:VSX_EXTRACT_I 1 "input_operand" "wK,v,m")
+	  [(match_operand:VSX_EXTRACT_I 1 "input_operand" "wH,v,m")
 	   (match_operand:DI 2 "gpc_reg_operand" "r,r,r")]
 	  UNSPEC_VSX_EXTRACT)))
    (clobber (match_scratch:DI 3 "=r,r,&b"))
@@ -3767,7 +3770,8 @@
 				operands[1], operands[2],
 				operands[3], operands[4]);
   DONE;
-})
+}
+  [(set_attr "isa" "p9v,*,*")])
 
 ;; VSX_EXTRACT optimizations
 ;; Optimize double d = (double) vec_extract (vi, <n>)
@@ -3951,7 +3955,7 @@
 	  (match_operand:SF 2 "gpc_reg_operand" "ww")
 	  (match_operand:QI 3 "const_0_to_3_operand" "n")]
 	 UNSPEC_VSX_SET))
-   (clobber (match_scratch:SI 4 "=&wJwK"))]
+   (clobber (match_scratch:SI 4 "=&wIwH"))]
   "VECTOR_MEM_VSX_P (V4SFmode) && TARGET_P9_VECTOR && TARGET_POWERPC64"
   "#"
   "&& reload_completed"
@@ -3976,7 +3980,8 @@
   operands[8] = gen_rtx_REG (V4SImode, reg_or_subregno (operands[0]));
 }
   [(set_attr "type" "vecperm")
-   (set_attr "length" "12")])
+   (set_attr "length" "12")
+   (set_attr "isa" "p9v")])
 
 ;; Special case setting 0.0f to a V4SF element
 (define_insn_and_split "*vsx_set_v4sf_p9_zero"
@@ -3986,7 +3991,7 @@
 	  (match_operand:SF 2 "zero_fp_constant" "j")
 	  (match_operand:QI 3 "const_0_to_3_operand" "n")]
 	 UNSPEC_VSX_SET))
-   (clobber (match_scratch:SI 4 "=&wJwK"))]
+   (clobber (match_scratch:SI 4 "=&wIwH"))]
   "VECTOR_MEM_VSX_P (V4SFmode) && TARGET_P9_VECTOR && TARGET_POWERPC64"
   "#"
   "&& reload_completed"
@@ -4001,7 +4006,8 @@
   operands[5] = gen_rtx_REG (V4SImode, reg_or_subregno (operands[0]));
 }
   [(set_attr "type" "vecperm")
-   (set_attr "length" "8")])
+   (set_attr "length" "8")
+   (set_attr "isa" "p9v")])
 
 ;; Optimize x = vec_insert (vec_extract (v2, n), v1, m) if n is the element
 ;; that is in the default scalar position (1 for big endian, 2 for little
@@ -4043,7 +4049,7 @@
 			  [(match_operand:QI 3 "const_0_to_3_operand" "n")]))
 	  (match_operand:QI 4 "const_0_to_3_operand" "n")]
 	 UNSPEC_VSX_SET))
-   (clobber (match_scratch:SI 5 "=&wJwK"))]
+   (clobber (match_scratch:SI 5 "=&wIwH"))]
   "VECTOR_MEM_VSX_P (V4SFmode) && VECTOR_MEM_VSX_P (V4SImode)
    && TARGET_P9_VECTOR && TARGET_POWERPC64
    && (INTVAL (operands[3]) != (BYTES_BIG_ENDIAN ? 1 : 2))"
@@ -4066,7 +4072,8 @@
   operands[7] = gen_lowpart (V4SImode, operands[0]);
   operands[8] = gen_lowpart (V4SImode, operands[1]);
 }
-  [(set_attr "type" "vecperm")])
+  [(set_attr "type" "vecperm")
+   (set_attr "isa" "p9v")])
 
 ;; Expanders for builtins
 (define_expand "vsx_mergel_<mode>"

@@ -1,5 +1,19 @@
 2019-05-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/constraints.md (define_register_constraint "wJ"):
+	Delete.
+	(define_register_constraint "wK"): Delete.
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
+	RS6000_CONSTRAINT_wJ and RS6000_CONSTRAINT_wK.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	* config/rs6000/rs6000.md: Replace "wJ" constraint by "wI" with "p9v".
+	Replace "wK" constraint by "wH" with "p9v".
+	* config/rs6000/vsx.md: Ditto.
+	* doc/md.texi (Machine Constraints): Adjust.
+
+2019-05-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/constraints.md (define_register_constraint "wb"):
 	Delete.
 	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
