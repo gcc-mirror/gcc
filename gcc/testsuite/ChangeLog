@@ -2,6 +2,8 @@
 
 	* g++.dg/ext/utf8-2.C: Accept both "char" and "char8_t" in aka.
 
+	* g++.dg/cpp2a/nontype-class17.C: New test.
+
 2019-05-20  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/Wtype-limits-Wextra.c: Adjust expected output after

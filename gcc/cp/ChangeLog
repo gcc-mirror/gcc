@@ -1,3 +1,8 @@
+2019-05-20  Marek Polacek  <polacek@redhat.com>
+
+	* pt.c (convert_template_argument): Add a diagnostic for the
+	[temp.arg]/2 ambiguity case.
+
 2019-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* cp-tree.h: Remove remnants of CONV_NONCONVERTING.
