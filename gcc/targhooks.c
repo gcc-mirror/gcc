@@ -1651,6 +1651,14 @@ default_libc_has_function (enum function_class fn_class)
   return false;
 }
 
+/* By default assume that libc has not a fast implementation.  */
+
+bool
+default_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
 bool
 gnu_libc_has_function (enum function_class fn_class ATTRIBUTE_UNUSED)
 {
