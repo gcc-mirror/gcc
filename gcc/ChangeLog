@@ -1,3 +1,20 @@
+2019-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/59813
+	PR target/90418
+	* function.h (struct function): Add calls_eh_return member.
+	* gimplify.c (gimplify_call_expr): Set cfun->calls_eh_return when
+	gimplifying __builtin_eh_return call.
+	* tree-inline.c (initialize_cfun): Copy calls_eh_return from src_cfun
+	to cfun.
+	(expand_call_inline): Or in src_cfun->calls_eh_return into
+	dst_cfun->calls_eh_return.
+	* tree-tailcall.c (suitable_for_tail_call_opt_p): Return false if
+	cfun->calls_eh_return.
+	* lto-streamer-in.c (input_struct_function_base): Read calls_eh_return.
+	* lto-streamer-out.c (output_struct_function_base): Write
+	calls_eh_return.
+
 2019-05-20  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR rtl-optimization/43147

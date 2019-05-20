@@ -327,6 +327,9 @@ struct GTY(()) function {
      either as a subroutine or builtin.  */
   unsigned int calls_alloca : 1;
 
+  /* Nonzero if function being compiled can call __builtin_eh_return.  */
+  unsigned int calls_eh_return : 1;
+
   /* Nonzero if function being compiled receives nonlocal gotos
      from nested functions.  */
   unsigned int has_nonlocal_label : 1;
