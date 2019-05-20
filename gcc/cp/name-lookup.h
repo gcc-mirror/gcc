@@ -1,4 +1,4 @@
-/* Declarations for C++ name lookup routines.
+/* Declarations for -*- C++ -*- name lookup routines.
    Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
@@ -317,8 +317,7 @@ extern void cp_emit_debug_info_for_using (tree, tree);
 
 extern void finish_namespace_using_decl (tree, tree, tree);
 extern void finish_local_using_decl (tree, tree, tree);
-extern void finish_namespace_using_directive (tree, tree);
-extern void finish_local_using_directive (tree, tree);
+extern void finish_using_directive (tree, tree);
 extern tree pushdecl (tree, bool is_friend = false);
 extern tree pushdecl_outermost_localscope (tree);
 extern tree pushdecl_top_level (tree, bool is_friend = false);

@@ -1,5 +1,14 @@
 2019-05-20  Nathan Sidwell  <nathan@acm.org>
 
+	* name-lookup.c (finish_namespace_using_directive)
+	(finish_local_using_directive): Merge to ...
+	(finish_using_directive): ... here.  Handle both contexts.
+	* name-lookup.h (finish_namespace_using_directive)
+	(finish_local_using_directive): Replace with ...
+	(finish_using_directive): ... this.
+	* parser.c (cp_parser_using_directive): Adjust.
+	* pt.c (tsubst_expr): Likewise.
+
 	* cp-tree.h (struct lang_decl_ns): Remove usings field.
 	(DECL_NAMESPACE_USING): Delete.
 	* name-lookup.c (name_lookup::search_usings): Use namespace's
