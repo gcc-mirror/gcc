@@ -3199,7 +3199,7 @@ Any VSX register if the @option{-mvsx} option was used or NO_REGS.
 When using any of the register constraints (@code{wa}, @code{wd},
 @code{wf}, @code{wg}, @code{wh}, @code{wi}, @code{wj}, @code{wk},
 @code{wl}, @code{wm}, @code{wp}, @code{wq}, @code{ws},
-@code{wt}, @code{wu}, @code{wv}, @code{ww}, or @code{wy})
+@code{wt}, @code{wv}, @code{ww}, or @code{wy})
 that take VSX registers, you must use @code{%x<n>} in the template so
 that the correct register is used.  Otherwise the register number
 output in the assembly file will be incorrect if an Altivec register
@@ -3294,9 +3294,6 @@ VSX vector register to hold scalar double values or NO_REGS.
 
 @item wt
 VSX vector register to hold 128 bit integer or NO_REGS.
-
-@item wu
-Altivec register to use for float/32-bit int loads/stores  or NO_REGS.
 
 @item wv
 Altivec register to use for double loads/stores  or NO_REGS.
