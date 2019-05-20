@@ -241,7 +241,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* -fsanitize=address is currently only supported for 32-bit.  */
 #define ASAN_REJECT_SPEC \
-  DEF_ARCH64_SPEC("%e:-fsanitize=address is not supported in this configuration")
+  DEF_ARCH64_SPEC("%e-fsanitize=address is not supported in this configuration")
 
 #undef NO_PROFILE_COUNTERS
 
