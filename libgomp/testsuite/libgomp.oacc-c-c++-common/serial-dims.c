@@ -1,7 +1,5 @@
 /* OpenACC dimensions with the serial construct.  */
 
-/* { dg-additional-options "-foffload-force" } */
-
 #include <limits.h>
 #include <openacc.h>
 #include <gomp-constants.h>
@@ -58,10 +56,10 @@ int main ()
     gangs_max = workers_max = vectors_max = INT_MIN;
     gangs_actual = workers_actual = vectors_actual = 1;
 #pragma acc serial
-    /* { dg-warning "region contains gang partitoned code but is not gang partitioned" "" { target *-*-* } 60 } */
-    /* { dg-warning "region contains worker partitoned code but is not worker partitioned" "" { target *-*-* } 60 } */
-    /* { dg-warning "region contains vector partitoned code but is not vector partitioned" "" { target *-*-* } 60 } */
-    /* { dg-warning "using vector_length \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } 60 } */
+    /* { dg-warning "region contains gang partitioned code but is not gang partitioned" "" { target *-*-* } 58 } */
+    /* { dg-warning "region contains worker partitioned code but is not worker partitioned" "" { target *-*-* } 58 } */
+    /* { dg-warning "region contains vector partitioned code but is not vector partitioned" "" { target *-*-* } 58 } */
+    /* { dg-warning "using vector_length \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } 58 } */
     {
       if (acc_on_device (acc_device_nvidia))
 	{

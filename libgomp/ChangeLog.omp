@@ -1,3 +1,10 @@
+2019-05-20  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c: Expect
+	"optimized:" not "note:" in warnings.
+	* testsuite/libgomp.oacc-c-c++-common/serial-dims.c: Fix typos in
+	warnings.
+
 2019-05-16  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/kernels-for-index-reuse-1.c: New
