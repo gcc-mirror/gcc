@@ -4,6 +4,8 @@
 
 	* g++.dg/cpp2a/nontype-class17.C: New test.
 
+	* g++.dg/lookup/strong-using2.C: New test.
+
 2019-05-20  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/Wtype-limits-Wextra.c: Adjust expected output after
