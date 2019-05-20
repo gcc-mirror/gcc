@@ -1,5 +1,11 @@
 2019-05-20  Martin Liska  <mliska@suse.cz>
 
+	* profile-count.c: Add vertical spacing in order
+	to separate functions.
+	* profile-count.h: Likewise.
+
+2019-05-20  Martin Liska  <mliska@suse.cz>
+
 	* profile-count.h: Do not use full qualified
 	names if possible.
 	* profile-count.c (profile_count::to_frequency): Likewise.

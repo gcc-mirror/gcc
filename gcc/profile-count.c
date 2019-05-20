@@ -353,6 +353,7 @@ profile_count::adjust_for_ipa_scaling (profile_count *num,
    if it is nonzero, not changing anything if IPA is uninitialized
    and if IPA is zero, turning THIS into corresponding local profile with
    global0.  */
+
 profile_count
 profile_count::combine_with_ipa_count (profile_count ipa)
 {
@@ -369,6 +370,7 @@ profile_count::combine_with_ipa_count (profile_count ipa)
 /* The profiling runtime uses gcov_type, which is usually 64bit integer.
    Conversions back and forth are used to read the coverage and get it
    into internal representation.  */
+
 profile_count
 profile_count::from_gcov_type (gcov_type v, profile_quality quality)
   {
@@ -382,7 +384,6 @@ profile_count::from_gcov_type (gcov_type v, profile_quality quality)
     ret.m_quality = quality;
     return ret;
   }
-
 
 /* COUNT1 times event happens with *THIS probability, COUNT2 times OTHER
    happens with COUNT2 probablity. Return probablity that either *THIS or
