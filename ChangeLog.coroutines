@@ -1,3 +1,13 @@
+2019-05-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (morph_fn_to_coro): Check if the promise has a CTOR
+	that takes the same param list as the function. use that if so else
+	use CTOR with empty param list.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/func-params-0.C: New.
+
 2019-05-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Merge trunk r271107.
