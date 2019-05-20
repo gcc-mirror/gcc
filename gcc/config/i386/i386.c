@@ -21332,7 +21332,7 @@ ix86_preferred_simd_mode (scalar_mode mode)
    256bit and 128bit vectors.  */
 
 static void
-ix86_autovectorize_vector_sizes (vector_sizes *sizes)
+ix86_autovectorize_vector_sizes (vector_sizes *sizes, bool all)
 {
   if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
     {
@@ -21340,10 +21340,21 @@ ix86_autovectorize_vector_sizes (vector_sizes *sizes)
       sizes->safe_push (32);
       sizes->safe_push (16);
     }
+  else if (TARGET_AVX512F && all)
+    {
+      sizes->safe_push (32);
+      sizes->safe_push (16);
+      sizes->safe_push (64);
+    }
   else if (TARGET_AVX && !TARGET_PREFER_AVX128)
     {
       sizes->safe_push (32);
       sizes->safe_push (16);
+    }
+  else if (TARGET_AVX && all)
+    {
+      sizes->safe_push (16);
+      sizes->safe_push (32);
     }
 }
 

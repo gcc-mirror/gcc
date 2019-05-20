@@ -1316,7 +1316,7 @@ default_split_reduction (machine_mode mode)
    is tried.  */
 
 void
-default_autovectorize_vector_sizes (vector_sizes *)
+default_autovectorize_vector_sizes (vector_sizes *, bool)
 {
 }
 

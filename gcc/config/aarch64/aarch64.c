@@ -14109,7 +14109,7 @@ aarch64_preferred_simd_mode (scalar_mode mode)
 /* Return a list of possible vector sizes for the vectorizer
    to iterate over.  */
 static void
-aarch64_autovectorize_vector_sizes (vector_sizes *sizes)
+aarch64_autovectorize_vector_sizes (vector_sizes *sizes, bool)
 {
   if (TARGET_SVE)
     sizes->safe_push (BYTES_PER_SVE_VECTOR);
