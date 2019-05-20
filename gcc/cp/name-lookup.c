@@ -589,7 +589,7 @@ name_lookup::search_usings (tree scope)
     return true;
 
   bool found = false;
-  if (vec<tree, va_gc> *usings = DECL_NAMESPACE_USING (scope))
+  if (vec<tree, va_gc> *usings = NAMESPACE_LEVEL (scope)->using_directives)
     for (unsigned ix = usings->length (); ix--;)
       found |= search_qualified ((*usings)[ix], true);
 
@@ -651,7 +651,7 @@ name_lookup::queue_namespace (using_queue *queue, int depth, tree scope)
       queue = queue_namespace (queue, depth, (*inlinees)[ix]);
 
   /* Queue its using targets.  */
-  queue = queue_usings (queue, depth, DECL_NAMESPACE_USING (scope));
+  queue = queue_usings (queue, depth, NAMESPACE_LEVEL (scope)->using_directives);
 
   return queue;
 }
@@ -5272,20 +5272,10 @@ has_using_namespace_std_directive_p ()
 {
   /* Look at local using-directives.  */
   for (cp_binding_level *level = current_binding_level;
-       level->kind != sk_namespace;
+       level;
        level = level->level_chain)
     if (using_directives_contain_std_p (level->using_directives))
       return true;
-
-  /* Look at this namespace and its ancestors.  */
-  for (tree scope = current_namespace; scope; scope = CP_DECL_CONTEXT (scope))
-    {
-      if (using_directives_contain_std_p (DECL_NAMESPACE_USING (scope)))
-	return true;
-
-      if (scope == global_namespace)
-	break;
-    }
 
   return false;
 }
@@ -7253,7 +7243,7 @@ finish_namespace_using_directive (tree target, tree attribs)
   if (target == error_mark_node)
     return;
 
-  add_using_namespace (DECL_NAMESPACE_USING (current_namespace),
+  add_using_namespace (current_binding_level->using_directives,
 		       ORIGINAL_NAMESPACE (target));
   emit_debug_info_using_namespace (current_namespace,
 				   ORIGINAL_NAMESPACE (target), false);
@@ -7404,7 +7394,7 @@ push_namespace (tree name, bool make_inline)
 	      SET_DECL_ASSEMBLER_NAME (ns, anon_identifier);
 
 	      if (!make_inline)
-		add_using_namespace (DECL_NAMESPACE_USING (current_namespace),
+		add_using_namespace (current_binding_level->using_directives,
 				     ns);
 	    }
 	  else if (TREE_PUBLIC (current_namespace))
