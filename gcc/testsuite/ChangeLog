@@ -1,3 +1,9 @@
+2019-05-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR pch/81721
+	* g++.dg/pch/operator-1.C: New testcase.
+	* g++.dg/pch/operator-1.Hs: New file.
+
 2019-05-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/90498
