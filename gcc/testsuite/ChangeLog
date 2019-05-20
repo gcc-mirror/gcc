@@ -1,3 +1,8 @@
+2019-05-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR tree-optimization/90106
+	* gcc.dg/cdce3.c: Add hard_float effective target.
+
 2019-05-20  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/torture/pta-ptrarith-3.c: Relax the matched pattern.
