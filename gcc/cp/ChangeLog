@@ -1,3 +1,14 @@
+2019-05-20  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (struct lang_decl_ns): Remove usings field.
+	(DECL_NAMESPACE_USING): Delete.
+	* name-lookup.c (name_lookup::search_usings): Use namespace's
+	binding scope.
+	(name_lookup::queue_namespae): Likewise.
+	(finish_namespace_using_directive, push_namespace): Likewise.
+	(has_using_namespace_std_directive): Just search the entire
+	binding stack.
+
 2019-05-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/90532 Ensure __is_constructible(T[]) is false

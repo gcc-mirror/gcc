@@ -2668,9 +2668,7 @@ struct GTY(()) lang_decl_ns {
   struct lang_decl_base base;
   cp_binding_level *level;
 
-  /* using directives and inline children.  These need to be va_gc,
-     because of PCH.  */
-  vec<tree, va_gc> *usings;
+  /* Inline children.  These need to be va_gc, because of PCH.  */
   vec<tree, va_gc> *inlinees;
 
   /* Hash table of bound decls. It'd be nice to have this inline, but
@@ -3258,10 +3256,6 @@ struct GTY(()) lang_decl {
 /* Whether the namepace is an inline namespace.  */
 #define DECL_NAMESPACE_INLINE_P(NODE) \
   TREE_LANG_FLAG_0 (NAMESPACE_DECL_CHECK (NODE))
-
-/* In a NAMESPACE_DECL, a vector of using directives.  */
-#define DECL_NAMESPACE_USING(NODE) \
-   (LANG_DECL_NS_CHECK (NODE)->usings)
 
 /* In a NAMESPACE_DECL, a vector of inline namespaces.  */
 #define DECL_NAMESPACE_INLINEES(NODE) \
