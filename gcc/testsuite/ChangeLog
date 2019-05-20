@@ -1,3 +1,8 @@
+2019-05-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/90503
+	* gcc.target/i386/pr22076.c (dg-options): Add -mno-sse2.
+
 2019-05-20  Marek Polacek  <polacek@redhat.com>
 
 	CWG 2094 - volatile scalars are trivially copyable.
