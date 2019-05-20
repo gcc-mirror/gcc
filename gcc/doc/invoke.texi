@@ -1364,7 +1364,7 @@ See RS/6000 and PowerPC Options.
 -mvpclmulqdq  -mavx512bitalg  -mmovdiri  -mmovdir64b  -mavx512vpopcntdq @gol
 -mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid @gol
 -mrdseed  -msgx -mavx512vp2intersect -mserialize -mtsxldtrk@gol
--mamx-tile  -mamx-int8  -mamx-bf16@gol
+-mamx-tile  -mamx-int8  -mamx-bf16 -muintr@gol
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy}  -mmemset-strategy=@var{strategy} @gol
@@ -30259,6 +30259,8 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -menqcmd
 @opindex menqcmd
+@itemx -muintr
+@opindex muintr
 @need 200
 @itemx -mtsxldtrk
 @opindex mtsxldtrk
@@ -30300,8 +30302,8 @@ WBNOINVD, FMA4, PREFETCHW, RDPID, PREFETCHWT1, RDSEED, SGX, XOP, LWP,
 3DNow!@:, enhanced 3DNow!@:, POPCNT, ABM, ADX, BMI, BMI2, LZCNT, FXSR, XSAVE,
 XSAVEOPT, XSAVEC, XSAVES, RTM, HLE, TBM, MWAITX, CLZERO, PKU, AVX512VBMI2,
 GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16,
-ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, SERIALIZE
-or CLDEMOTE extended instruction sets.  Each has a corresponding
+ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, SERIALIZE,
+UINTR or CLDEMOTE extended instruction sets.  Each has a corresponding
 @option{-mno-} option to disable use of these instructions.
 
 These extensions are also available as built-in functions: see

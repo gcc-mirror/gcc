@@ -14,7 +14,11 @@
 #define __inline
 
 #ifndef DIFFERENT_PRAGMAS
+#ifdef __x86_64__
+#pragma GCC target ("adx,bmi,bmi2,fsgsbase,fxsr,lwp,lzcnt,popcnt,rdrnd,rdseed,tbm,rtm,serialize,tsxldtrk,uintr,xsaveopt")
+#else
 #pragma GCC target ("adx,bmi,bmi2,fsgsbase,fxsr,lwp,lzcnt,popcnt,rdrnd,rdseed,tbm,rtm,serialize,tsxldtrk,xsaveopt")
+#endif
 #endif
 
 /* popcnintrin.h (POPCNT).  */

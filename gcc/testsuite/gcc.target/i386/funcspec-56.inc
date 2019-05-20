@@ -74,6 +74,7 @@ extern void test_avx512vp2intersect (void)	__attribute__((__target__("avx512vp2i
 extern void test_amx_tile (void)		__attribute__((__target__("amx-tile")));
 extern void test_amx_int8 (void)		__attribute__((__target__("amx-int8")));
 extern void test_amx_bf16 (void)		__attribute__((__target__("amx-bf16")));
+extern void test_uintr (void)			__attribute__((__target__("uintr")));
 
 extern void test_no_sgx (void)			__attribute__((__target__("no-sgx")));
 extern void test_no_avx5124fmaps(void)		__attribute__((__target__("no-avx5124fmaps")));
@@ -149,6 +150,7 @@ extern void test_no_avx512vp2intersect (void)	__attribute__((__target__("no-avx5
 extern void test_no_amx_tile (void)		__attribute__((__target__("no-amx-tile")));
 extern void test_no_amx_int8 (void)		__attribute__((__target__("no-amx-int8")));
 extern void test_no_amx_bf16 (void)		__attribute__((__target__("no-amx-bf16")));
+extern void test_no_uintr (void)		__attribute__((__target__("no-uintr")));
 
 extern void test_arch_nocona (void)		__attribute__((__target__("arch=nocona")));
 extern void test_arch_core2 (void)		__attribute__((__target__("arch=core2")));

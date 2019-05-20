@@ -413,7 +413,7 @@ i[34567]86-*-*)
 		       avx512bf16intrin.h enqcmdintrin.h serializeintrin.h
 		       avx512vp2intersectintrin.h avx512vp2intersectvlintrin.h
 		       tsxldtrkintrin.h amxtileintrin.h amxint8intrin.h
-		       amxbf16intrin.h x86gprintrin.h"
+		       amxbf16intrin.h x86gprintrin.h uintrintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
@@ -449,7 +449,7 @@ x86_64-*-*)
 		       avx512bf16intrin.h enqcmdintrin.h serializeintrin.h
 		       avx512vp2intersectintrin.h avx512vp2intersectvlintrin.h
 		       tsxldtrkintrin.h amxtileintrin.h amxint8intrin.h
-		       amxbf16intrin.h x86gprintrin.h"
+		       amxbf16intrin.h x86gprintrin.h uintrintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h

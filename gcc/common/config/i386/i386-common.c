@@ -163,6 +163,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_ENQCMD_SET OPTION_MASK_ISA2_ENQCMD
 #define OPTION_MASK_ISA2_SERIALIZE_SET OPTION_MASK_ISA2_SERIALIZE
 #define OPTION_MASK_ISA2_TSXLDTRK_SET OPTION_MASK_ISA2_TSXLDTRK
+#define OPTION_MASK_ISA2_UINTR_SET OPTION_MASK_ISA2_UINTR
 
 /* Define a set of ISAs which aren't available when a given ISA is
    disabled.  MMX and SSE ISAs are handled separately.  */
@@ -254,6 +255,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_AMX_TILE_UNSET OPTION_MASK_ISA2_AMX_TILE
 #define OPTION_MASK_ISA2_AMX_INT8_UNSET OPTION_MASK_ISA2_AMX_INT8
 #define OPTION_MASK_ISA2_AMX_BF16_UNSET OPTION_MASK_ISA2_AMX_BF16
+#define OPTION_MASK_ISA2_UINTR_UNSET OPTION_MASK_ISA2_UINTR
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -699,6 +701,19 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_SERIALIZE_UNSET;
 	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_SERIALIZE_UNSET;
+	}
+      return true;
+
+    case OPT_muintr:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_UINTR_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_UINTR_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_UINTR_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_UINTR_UNSET;
 	}
       return true;
 

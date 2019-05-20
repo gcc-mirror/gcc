@@ -701,6 +701,8 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_AVX5124FMAPS);
 	  if (edx & bit_AVX512VP2INTERSECT)
 	    set_feature (FEATURE_AVX512VP2INTERSECT);
+	  if (edx & bit_UINTR)
+	    set_feature (FEATURE_UINTR);
 
 	  __cpuid_count (7, 1, eax, ebx, ecx, edx);
 	  if (eax & bit_AVX512BF16)

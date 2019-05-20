@@ -788,6 +788,10 @@ mptwrite
 Target Report Mask(ISA2_PTWRITE) Var(ix86_isa_flags2) Save
 Support PTWRITE built-in functions and code generation.
 
+muintr
+Target Report Mask(ISA2_UINTR) Var(ix86_isa_flags2) Save
+Support UINTR built-in functions and code generation.
+
 msgx
 Target Report Mask(ISA2_SGX) Var(ix86_isa_flags2) Save
 Support SGX built-in functions and code generation.

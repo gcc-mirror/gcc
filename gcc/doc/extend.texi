@@ -6638,6 +6638,11 @@ Enable/disable the generation of the AMX-INT8 instructions.
 @cindex @code{target("amx-bf16")} function attribute, x86
 Enable/disable the generation of the AMX-BF16 instructions.
 
+@item uintr
+@itemx no-uintr
+@cindex @code{target("uintr")} function attribute, x86
+Enable/disable the generation of the UINTR instructions.
+
 @item cld
 @itemx no-cld
 @cindex @code{target("cld")} function attribute, x86

@@ -10417,6 +10417,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case USHORT_FTYPE_VOID:
     case UINT64_FTYPE_VOID:
     case UINT_FTYPE_VOID:
+    case UINT8_FTYPE_VOID:
     case UNSIGNED_FTYPE_VOID:
       nargs = 0;
       klass = load;
@@ -11203,6 +11204,19 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 
       pat = gen_rtx_EQ (QImode, gen_rtx_REG (CCCmode, FLAGS_REG),
 			const0_rtx);
+      emit_insn (gen_rtx_SET (target, pat));
+
+      return target;
+
+    case IX86_BUILTIN_TESTUI:
+      emit_insn (gen_testui ());
+
+      if (target == 0
+	  || !register_operand (target, QImode))
+	target = gen_reg_rtx (QImode);
+
+      pat = gen_rtx_LTU (QImode, gen_rtx_REG (CCCmode, FLAGS_REG),
+			 const0_rtx);
       emit_insn (gen_rtx_SET (target, pat));
 
       return target;

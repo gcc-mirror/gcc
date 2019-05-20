@@ -76,6 +76,8 @@
 
 #include <tsxldtrkintrin.h>
 
+#include <uintrintrin.h>
+
 #include <waitpkgintrin.h>
 
 #include <wbnoinvdintrin.h>
