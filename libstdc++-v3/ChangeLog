@@ -1,3 +1,8 @@
+2019-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/names.cc: Only include Networking TS headers
+	on targets with the necessary Gthreads support.
+
 2019-05-20  Marek Polacek  <polacek@redhat.com>
 
 	CWG 2094 - volatile scalars are trivially copyable.
