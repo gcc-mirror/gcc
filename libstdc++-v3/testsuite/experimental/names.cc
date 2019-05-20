@@ -22,7 +22,9 @@
 
 #include "../17_intro/names.cc"
 // Filesystem
-#include <experimental/filesystem>
+#if __has_include(<experimental/filesystem>)
+# include <experimental/filesystem>
+#endif
 // Library Fundamentals
 #include <experimental/algorithm>
 #include <experimental/any>
