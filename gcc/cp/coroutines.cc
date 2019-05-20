@@ -1932,13 +1932,30 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* Do a placement new constructor for the promise type (we never call the
      new operator, just the constructor on the object in place in the frame.
+     
+     First try to find a constructor with the same parameter list as the
+     original function (if it has params), failing that find a constructor
+     with no parameter list.
   */
-  /* TODO: We should first see if there's a ctor that takes the function
-     params list.  If that fails, we should fall back to the empty arg
-     list.  */
-  r = build_special_member_call(p, complete_ctor_identifier, NULL,
-				promise_type, LOOKUP_NORMAL,
-				tf_warning_or_error);
+
+  if (DECL_ARGUMENTS (orig))
+    {
+      vec<tree, va_gc>* args = make_tree_vector ();
+      tree arg;
+      for (arg = DECL_ARGUMENTS (orig); arg != NULL; arg = DECL_CHAIN (arg))
+        vec_safe_push (args, arg);
+      r = build_special_member_call(p, complete_ctor_identifier, &args,
+				    promise_type, LOOKUP_NORMAL,
+				    tf_none);
+      release_tree_vector (args);
+    }
+  else
+    r = NULL_TREE;
+    
+  if (r == NULL_TREE || r == error_mark_node)
+    r = build_special_member_call(p, complete_ctor_identifier, NULL,
+				  promise_type, LOOKUP_NORMAL,
+				  tf_warning_or_error);
   add_stmt (r);
 
   /* Set up a new bind context for the GRO.  */
