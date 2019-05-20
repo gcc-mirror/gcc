@@ -1,3 +1,8 @@
+2019-05-20  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c: Expect
+	"optimized:" not "note:" in warnings.
+
 2021-04-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* oacc-mem.c (goacc_enter_data_internal): Unlock mutex before calling
