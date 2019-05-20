@@ -1,3 +1,15 @@
+2019-05-20  Jeff Law  <law@redhat.com>
+
+	Backported from mainline
+	2019-05-17  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* g++.dg/eh/o32-fp.C: New.
+	* gcc.target/mips/dwarfregtable-1.c: New.
+	* gcc.target/mips/dwarfregtable-2.c: New.
+	* gcc.target/mips/dwarfregtable-3.c: New.
+	* gcc.target/mips/dwarfregtable-4.c: New.
+	* gcc.target/mips/dwarfregtable.h: New.
+
 2019-05-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from mainline
