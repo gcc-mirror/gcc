@@ -2,6 +2,11 @@
 
 	PR testsuite/90503
 	* gcc.target/i386/pr22076.c (dg-options): Add -mno-sse2.
+	Remove -flax-vector-conversions.
+	(dg-additional-options): Remove.
+	(test): Change to void.  Declare m0 and m1 as __m64 and
+	cast initializer in a proper way.  Do not return result.
+	(dg-final): Scan for 2 instances of movq.
 
 2019-05-20  Marek Polacek  <polacek@redhat.com>
 
