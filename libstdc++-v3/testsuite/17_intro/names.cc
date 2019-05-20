@@ -187,4 +187,9 @@
 #undef y
 #endif
 
+#ifdef __sun__
+// See https://gcc.gnu.org/ml/libstdc++/2019-05/msg00175.html
+#undef ptr
+#endif
+
 #include <bits/stdc++.h>
