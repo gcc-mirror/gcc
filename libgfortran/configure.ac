@@ -314,8 +314,8 @@ if test "${hardwire_newlib:-0}" -eq 1; then
 else
    AC_CHECK_FUNCS_ONCE(getrusage times mkstemp strtof strtold snprintf \
    ftruncate chsize chdir getentropy getlogin gethostname kill link symlink \
-   sleep ttyname \
-   alarm access fork setmode fcntl writev \
+   sleep ttyname sigaction waitpid \
+   alarm access fork posix_spawn setmode fcntl writev \
    gettimeofday stat fstat lstat getpwuid vsnprintf dup \
    getcwd localtime_r gmtime_r getpwuid_r ttyname_r clock_gettime \
    getgid getpid getuid geteuid umask getegid \
