@@ -1,5 +1,19 @@
 2019-05-20  Martin Liska  <mliska@suse.cz>
 
+	PR middle-end/90263
+	* builtins.c (expand_builtin_memory_copy_args): When having a
+	target with fast mempcpy implementation do now use memcpy.
+	* config/i386/i386.c (ix86_libc_has_fast_function): New.
+	(TARGET_LIBC_HAS_FAST_FUNCTION): Likewise.
+	* doc/tm.texi: Likewise.
+	* doc/tm.texi.in: Likewise.
+	* target.def:
+	* expr.c (emit_block_move_hints): Add 2 new arguments.
+	* expr.h (emit_block_move_hints): Bail out when libcall
+	to memcpy would be used.
+
+2019-05-20  Martin Liska  <mliska@suse.cz>
+
 	* profile-count.c: Add vertical spacing in order
 	to separate functions.
 	* profile-count.h: Likewise.

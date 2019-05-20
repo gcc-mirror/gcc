@@ -5594,6 +5594,11 @@ This hook determines whether a function from a class of functions
 @var{fn_class} is present at the runtime.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_LIBC_HAS_FAST_FUNCTION (int @var{fcode})
+This hook determines whether a function from a class of functions
+@var{fn_class} has a fast implementation.
+@end deftypefn
+
 @defmac NEXT_OBJC_RUNTIME
 Set this macro to 1 to use the "NeXT" Objective-C message sending conventions
 by default.  This calling convention involves passing the object, the selector

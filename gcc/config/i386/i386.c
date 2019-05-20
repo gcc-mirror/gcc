@@ -23063,6 +23063,21 @@ ix86_run_selftests (void)
 #define TARGET_GET_MULTILIB_ABI_NAME \
   ix86_get_multilib_abi_name
 
+static bool ix86_libc_has_fast_function (int fcode)
+{
+#ifdef OPTION_GLIBC
+  if (OPTION_GLIBC)
+    return (built_in_function)fcode == BUILT_IN_MEMPCPY;
+  else
+    return false;
+#else
+  return false;
+#endif
+}
+
+#undef TARGET_LIBC_HAS_FAST_FUNCTION
+#define TARGET_LIBC_HAS_FAST_FUNCTION ix86_libc_has_fast_function
+
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS
 #define TARGET_RUN_TARGET_SELFTESTS selftest::ix86_run_selftests
