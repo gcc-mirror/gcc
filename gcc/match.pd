@@ -5374,3 +5374,86 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (bit_and:elt_type
        (BIT_FIELD_REF:elt_type @0 { size; } { pos; })
        { elt; })))))))
+
+(simplify
+ (vec_perm @0 @1 VECTOR_CST@2)
+ (with
+  {
+    tree op0 = @0, op1 = @1, op2 = @2;
+
+    /* Build a vector of integers from the tree mask.  */
+    vec_perm_builder builder;
+    if (!tree_to_vec_perm_builder (&builder, op2))
+      return NULL_TREE;
+
+    /* Create a vec_perm_indices for the integer vector.  */
+    poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (type);
+    bool single_arg = (op0 == op1);
+    vec_perm_indices sel (builder, single_arg ? 1 : 2, nelts);
+  }
+  (if (sel.series_p (0, 1, 0, 1))
+   { op0; }
+   (if (sel.series_p (0, 1, nelts, 1))
+    { op1; }
+    (with
+     {
+       if (!single_arg)
+         {
+	   if (sel.all_from_input_p (0))
+	     op1 = op0;
+	   else if (sel.all_from_input_p (1))
+	     {
+	       op0 = op1;
+	       sel.rotate_inputs (1);
+	     }
+         }
+       gassign *def;
+       tree cop0 = op0, cop1 = op1;
+       if (TREE_CODE (op0) == SSA_NAME
+           && (def = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (op0)))
+	   && gimple_assign_rhs_code (def) == CONSTRUCTOR)
+	 cop0 = gimple_assign_rhs1 (def);
+       if (TREE_CODE (op1) == SSA_NAME
+           && (def = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (op1)))
+	   && gimple_assign_rhs_code (def) == CONSTRUCTOR)
+	 cop1 = gimple_assign_rhs1 (def);
+
+       tree t;
+    }
+    (if ((TREE_CODE (cop0) == VECTOR_CST
+	  || TREE_CODE (cop0) == CONSTRUCTOR)
+	 && (TREE_CODE (cop1) == VECTOR_CST
+	     || TREE_CODE (cop1) == CONSTRUCTOR)
+	 && (t = fold_vec_perm (type, cop0, cop1, sel)))
+     { t; }
+     (with
+      {
+	bool changed = (op0 == op1 && !single_arg);
+
+	/* Generate a canonical form of the selector.  */
+	if (sel.encoding () != builder)
+	  {
+	    /* Some targets are deficient and fail to expand a single
+	       argument permutation while still allowing an equivalent
+	       2-argument version.  */
+	    tree oldop2 = op2;
+	    if (sel.ninputs () == 2
+	       || can_vec_perm_const_p (TYPE_MODE (type), sel, false))
+	      op2 = vec_perm_indices_to_tree (TREE_TYPE (op2), sel);
+	    else
+	      {
+	        vec_perm_indices sel2 (builder, 2, nelts);
+	        if (can_vec_perm_const_p (TYPE_MODE (type), sel2, false))
+	          op2 = vec_perm_indices_to_tree (TREE_TYPE (op2), sel2);
+	        else
+	          /* Not directly supported with either encoding,
+		     so use the preferred form.  */
+		  op2 = vec_perm_indices_to_tree (TREE_TYPE (op2), sel);
+	      }
+	    /* Differences in the encoder do not necessarily mean
+	       differences in the resulting vector.  */
+	    changed = !operand_equal_p (op2, oldop2, 0);
+	  }
+      }
+      (if (changed)
+       (vec_perm { op0; } { op1; } { op2; })))))))))
