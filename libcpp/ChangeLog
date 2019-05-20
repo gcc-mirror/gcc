@@ -1,3 +1,9 @@
+2019-05-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR pch/81721
+	* lex.c (cpp_token_val_index <case SPELL_OPERATOR>): If tok->flags
+	has NAMED_OP set, then return CPP_TOKEN_FLD_NODE.
+
 2019-05-14  Martin Liska  <mliska@suse.cz>
 
 	PR preprocessor/90382
