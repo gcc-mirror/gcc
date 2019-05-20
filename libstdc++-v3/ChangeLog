@@ -1,3 +1,8 @@
+2019-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/memory_resource/new_delete_resource.cc: Fix
+	test by passing correct alignment to deallocate function.
+
 2019-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90520
