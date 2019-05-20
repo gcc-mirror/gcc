@@ -4168,7 +4168,7 @@
 (define_insn_and_split "vsx_splat_v4sf"
   [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa,wa,wa")
 	(vec_duplicate:V4SF
-	 (match_operand:SF 1 "splat_input_operand" "Z,wy,r")))]
+	 (match_operand:SF 1 "splat_input_operand" "Z,wa,r")))]
   "TARGET_P9_VECTOR"
   "@
    lxvwsx %x0,%y1
@@ -4182,7 +4182,8 @@
 		      (const_int 0)] UNSPEC_VSX_XXSPLTW))]
   ""
   [(set_attr "type" "vecload,vecperm,mftgpr")
-   (set_attr "length" "4,8,4")])
+   (set_attr "length" "4,8,4")
+   (set_attr "isa" "*,p8v,*")])
 
 ;; V4SF/V4SI splat from a vector element
 (define_insn "vsx_xxspltw_<mode>"

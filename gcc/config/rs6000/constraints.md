@@ -118,9 +118,6 @@
 (define_register_constraint "wx" "rs6000_constraints[RS6000_CONSTRAINT_wx]"
   "Floating point register if the STFIWX instruction is enabled or NO_REGS.")
 
-(define_register_constraint "wy" "rs6000_constraints[RS6000_CONSTRAINT_wy]"
-  "FP or VSX register to perform ISA 2.07 float ops or NO_REGS.")
-
 (define_register_constraint "wz" "rs6000_constraints[RS6000_CONSTRAINT_wz]"
   "Floating point register if the LFIWZX instruction is enabled or NO_REGS.")
 
