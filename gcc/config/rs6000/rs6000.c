@@ -2523,7 +2523,6 @@ rs6000_debug_reg_global (void)
 	   "wr reg_class = %s\n"
 	   "ws reg_class = %s\n"
 	   "wt reg_class = %s\n"
-	   "wu reg_class = %s\n"
 	   "wv reg_class = %s\n"
 	   "ww reg_class = %s\n"
 	   "wx reg_class = %s\n"
@@ -2552,7 +2551,6 @@ rs6000_debug_reg_global (void)
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wr]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_ws]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wt]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wu]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wv]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_ww]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wx]],
@@ -3181,7 +3179,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	wr - GPR if 64-bit mode is permitted.
 	ws - Register class to do ISA 2.06 DF operations.
 	wt - VSX register for TImode in VSX registers.
-	wu - Altivec register for ISA 2.07 VSX SF/SI load/stores.
 	wv - Altivec register for ISA 2.06 VSX DF/DI load/stores.
 	ww - Register class to do SF conversions in with VSX operations.
 	wx - Float register if we can do 32-bit int stores.
@@ -3236,7 +3233,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 
   if (TARGET_P8_VECTOR)						/* SFmode  */
     {
-      rs6000_constraints[RS6000_CONSTRAINT_wu] = ALTIVEC_REGS;
       rs6000_constraints[RS6000_CONSTRAINT_wy] = VSX_REGS;
       rs6000_constraints[RS6000_CONSTRAINT_ww] = VSX_REGS;
     }

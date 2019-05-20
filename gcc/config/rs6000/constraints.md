@@ -109,9 +109,6 @@
 (define_register_constraint "wt" "rs6000_constraints[RS6000_CONSTRAINT_wt]"
   "VSX vector register to hold 128 bit integer or NO_REGS.")
 
-(define_register_constraint "wu" "rs6000_constraints[RS6000_CONSTRAINT_wu]"
-  "Altivec register to use for float/32-bit int loads/stores  or NO_REGS.")
-
 (define_register_constraint "wv" "rs6000_constraints[RS6000_CONSTRAINT_wv]"
   "Altivec register to use for double loads/stores  or NO_REGS.")
 
