@@ -1,5 +1,12 @@
 2019-05-20  Marek Polacek  <polacek@redhat.com>
 
+	CWG 2094 - volatile scalars are trivially copyable.
+	PR c++/85679
+	* tree.c (trivially_copyable_p): Don't check CP_TYPE_VOLATILE_P for
+	scalar types.
+
+2019-05-20  Marek Polacek  <polacek@redhat.com>
+
 	* pt.c (convert_template_argument): Add a diagnostic for the
 	[temp.arg]/2 ambiguity case.
 
