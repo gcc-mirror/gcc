@@ -1205,6 +1205,8 @@ is_xible_helper (enum tree_code code, tree to, tree from, bool trivial)
     expr = assignable_expr (to, from);
   else if (trivial && from && TREE_CHAIN (from))
     return error_mark_node; // only 0- and 1-argument ctors can be trivial
+  else if (TREE_CODE (to) == ARRAY_TYPE && !TYPE_DOMAIN (to))
+    return error_mark_node; // can't construct an array of unknown bound
   else
     expr = constructible_expr (to, from);
   return expr;
