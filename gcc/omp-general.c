@@ -469,7 +469,7 @@ omp_max_vf (void)
     return 1;
 
   auto_vector_sizes sizes;
-  targetm.vectorize.autovectorize_vector_sizes (&sizes);
+  targetm.vectorize.autovectorize_vector_sizes (&sizes, true);
   if (!sizes.is_empty ())
     {
       poly_uint64 vf = 0;

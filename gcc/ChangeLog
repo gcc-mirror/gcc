@@ -1,3 +1,34 @@
+2019-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfgloop.h (struct loop): Add simdlen member.
+	* cfgloopmanip.c (copy_loop_info): Copy simdlen as well.
+	* omp-expand.c (expand_omp_simd): Set it if simdlen clause is present.
+	* tree-vect-loop.c (vect_analyze_loop): Pass loop->simdlen != 0
+	as new argument to autovectorize_vector_sizes target hook.  If
+	loop->simdlen, pick up vector size where the vectorization factor
+	is equal to loop->simd, and if there is none, fall back to the first
+	successful one.
+	(vect_transform_loop): Adjust autovectorize_vector_sizes target hook
+	caller.
+	* omp-low.c (omp_clause_aligned_alignment): Likewise.
+	* omp-general.c (omp_max_vf): Likewise.
+	* optabs-query.c (can_vec_mask_load_store_p): Likewise.
+	* tree-vect-slp.c (vect_slp_bb): Likewise.
+	* target.def (autovectorize_vector_sizes): Add ALL argument and
+	document it.
+	* doc/tm.texi: Adjust documentation.
+	* targhooks.c (default_autovectorize_vector_sizes): Add bool argument.
+	* targhooks.h (default_autovectorize_vector_sizes): Likewise.
+	* config/aarch64/aarch64.c (aarch64_autovectorize_vector_sizes): Add
+	bool argument.
+	* config/arc/arc.c (arc_autovectorize_vector_sizes): Likewise.
+	* config/arm/arm.c (arm_autovectorize_vector_sizes): Likewise.
+	* config/mips/mips.c (mips_autovectorize_vector_sizes): Likewise.
+	* config/i386/i386.c (ix86_autovectorize_vector_sizes): Likewise.  If
+	true and TARGET_AVX512F or TARGET_AVX, push 3 or 2 sizes even if
+	preferred vector size is not 512-bit or 256-bit, just put those
+	unpreferred ones last.
+
 2019-05-20  Martin Liska  <mliska@suse.cz>
 
 	* targhooks.c (default_libc_has_fast_function): New function.

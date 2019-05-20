@@ -1016,6 +1016,7 @@ copy_loop_info (struct loop *loop, struct loop *target)
   target->nb_iterations_estimate = loop->nb_iterations_estimate;
   target->estimate_state = loop->estimate_state;
   target->safelen = loop->safelen;
+  target->simdlen = loop->simdlen;
   target->constraints = loop->constraints;
   target->can_be_parallel = loop->can_be_parallel;
   target->warned_aggressive_loop_optimizations

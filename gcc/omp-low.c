@@ -3600,7 +3600,7 @@ omp_clause_aligned_alignment (tree clause)
   unsigned int al = 1;
   opt_scalar_mode mode_iter;
   auto_vector_sizes sizes;
-  targetm.vectorize.autovectorize_vector_sizes (&sizes);
+  targetm.vectorize.autovectorize_vector_sizes (&sizes, true);
   poly_uint64 vs = 0;
   for (unsigned int i = 0; i < sizes.length (); ++i)
     vs = ordered_max (vs, sizes[i]);
