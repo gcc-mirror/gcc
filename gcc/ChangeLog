@@ -1,3 +1,9 @@
+2019-05-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (refs_may_alias_p_2): Break out from ...
+	(refs_may_alias_p_1): ... here; update stats.
+	(refs_may_alias_p): Do not update stats here.
+
 2019-05-20  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (find_func_aliases): POINTER_DIFF_EXPR

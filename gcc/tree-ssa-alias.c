@@ -1470,8 +1470,8 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 
 /* Return true, if the two memory references REF1 and REF2 may alias.  */
 
-bool
-refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
+static bool
+refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
 {
   tree base1, base2;
   poly_int64 offset1 = 0, offset2 = 0;
@@ -1628,6 +1628,20 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
   gcc_unreachable ();
 }
 
+/* Return true, if the two memory references REF1 and REF2 may alias
+   and update statistics.  */
+
+bool
+refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
+{
+  bool res = refs_may_alias_p_2 (ref1, ref2, tbaa_p);
+  if (res)
+    ++alias_stats.refs_may_alias_p_may_alias;
+  else
+    ++alias_stats.refs_may_alias_p_no_alias;
+  return res;
+}
+
 static bool
 refs_may_alias_p (tree ref1, ao_ref *ref2, bool tbaa_p)
 {
@@ -1640,15 +1654,9 @@ bool
 refs_may_alias_p (tree ref1, tree ref2, bool tbaa_p)
 {
   ao_ref r1, r2;
-  bool res;
   ao_ref_init (&r1, ref1);
   ao_ref_init (&r2, ref2);
-  res = refs_may_alias_p_1 (&r1, &r2, tbaa_p);
-  if (res)
-    ++alias_stats.refs_may_alias_p_may_alias;
-  else
-    ++alias_stats.refs_may_alias_p_no_alias;
-  return res;
+  return refs_may_alias_p_1 (&r1, &r2, tbaa_p);
 }
 
 /* Returns true if there is a anti-dependence for the STORE that
