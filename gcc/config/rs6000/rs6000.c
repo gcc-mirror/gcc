@@ -2528,8 +2528,6 @@ rs6000_debug_reg_global (void)
 	   "wx reg_class = %s\n"
 	   "wz reg_class = %s\n"
 	   "wA reg_class = %s\n"
-	   "wH reg_class = %s\n"
-	   "wI reg_class = %s\n"
 	   "\n",
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_d]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_f]],
@@ -2554,9 +2552,7 @@ rs6000_debug_reg_global (void)
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_ww]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wx]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wz]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wA]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wH]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wI]]);
+	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wA]]);
 
   nl = "\n";
   for (m = 0; m < NUM_MACHINE_MODES; ++m)
@@ -3180,9 +3176,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	wv - Altivec register for ISA 2.06 VSX DF/DI load/stores.
 	ww - Register class to do SF conversions in with VSX operations.
 	wx - Float register if we can do 32-bit int stores.
-	wz - Float register if we can do 32-bit unsigned int loads.
-	wH - Altivec register if SImode is allowed in VSX registers.
-	wI - Float register if SImode is allowed in VSX registers.  */
+	wz - Float register if we can do 32-bit unsigned int loads.  */
 
   if (TARGET_HARD_FLOAT)
     {
@@ -3249,13 +3243,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
   /* Support for new direct moves (ISA 3.0 + 64bit).  */
   if (TARGET_DIRECT_MOVE_128)
     rs6000_constraints[RS6000_CONSTRAINT_we] = VSX_REGS;
-
-  /* Support small integers in VSX registers.  */
-  if (TARGET_P8_VECTOR)
-    {
-      rs6000_constraints[RS6000_CONSTRAINT_wH] = ALTIVEC_REGS;
-      rs6000_constraints[RS6000_CONSTRAINT_wI] = FLOAT_REGS;
-    }
 
   /* Set up the reload helper and direct move functions.  */
   if (TARGET_VSX || TARGET_ALTIVEC)

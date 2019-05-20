@@ -3325,12 +3325,6 @@ Memory operand suitable for power8 GPR load fusion
 @item wG
 Memory operand suitable for TOC fusion memory references.
 
-@item wH
-Altivec register if @option{-mvsx-small-integer}.
-
-@item wI
-Floating point register if @option{-mvsx-small-integer}.
-
 @item wL
 Int constant that is the element number that the MFVSRLD instruction.
 targets.

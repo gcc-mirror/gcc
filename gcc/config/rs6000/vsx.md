@@ -3525,7 +3525,7 @@
 (define_insn "vsx_extract_<mode>_p9"
   [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=r,<VSX_EX>")
 	(vec_select:<VS_scalar>
-	 (match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand" "wH,<VSX_EX>")
+	 (match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand" "v,<VSX_EX>")
 	 (parallel [(match_operand:QI 2 "<VSX_EXTRACT_PREDICATE>" "n,n")])))
    (clobber (match_scratch:SI 3 "=r,X"))]
   "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_VEXTRACTUB"
@@ -3581,7 +3581,7 @@
   [(set (match_operand:DI 0 "gpc_reg_operand" "=r,<VSX_EX>")
 	(zero_extend:DI
 	 (vec_select:<VS_scalar>
-	  (match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand" "wH,<VSX_EX>")
+	  (match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand" "v,<VSX_EX>")
 	  (parallel [(match_operand:QI 2 "const_int_operand" "n,n")]))))
    (clobber (match_scratch:SI 3 "=r,X"))]
   "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_VEXTRACTUB"
@@ -3617,7 +3617,7 @@
 	(match_dup 3))])
 
 (define_insn_and_split  "*vsx_extract_si"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,wHwI,Z")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,wa,Z")
 	(vec_select:SI
 	 (match_operand:V4SI 1 "gpc_reg_operand" "v,v,v")
 	 (parallel [(match_operand:QI 2 "const_0_to_3_operand" "n,n,n")])))
@@ -3664,7 +3664,8 @@
   DONE;
 }
   [(set_attr "type" "mftgpr,vecperm,fpstore")
-   (set_attr "length" "8")])
+   (set_attr "length" "8")
+   (set_attr "isa" "*,p8v,*")])
 
 (define_insn_and_split  "*vsx_extract_<mode>_p8"
   [(set (match_operand:<VS_scalar> 0 "nonimmediate_operand" "=r")
@@ -3735,7 +3736,7 @@
 (define_insn_and_split "vsx_extract_<mode>_var"
   [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=r,r,r")
 	(unspec:<VS_scalar>
-	 [(match_operand:VSX_EXTRACT_I 1 "input_operand" "wH,v,m")
+	 [(match_operand:VSX_EXTRACT_I 1 "input_operand" "v,v,m")
 	  (match_operand:DI 2 "gpc_reg_operand" "r,r,r")]
 	 UNSPEC_VSX_EXTRACT))
    (clobber (match_scratch:DI 3 "=r,r,&b"))
@@ -3755,7 +3756,7 @@
   [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=r,r,r")
 	(zero_extend:<VS_scalar>
 	 (unspec:<VSX_EXTRACT_I:VS_scalar>
-	  [(match_operand:VSX_EXTRACT_I 1 "input_operand" "wH,v,m")
+	  [(match_operand:VSX_EXTRACT_I 1 "input_operand" "v,v,m")
 	   (match_operand:DI 2 "gpc_reg_operand" "r,r,r")]
 	  UNSPEC_VSX_EXTRACT)))
    (clobber (match_scratch:DI 3 "=r,r,&b"))
@@ -3955,7 +3956,7 @@
 	  (match_operand:SF 2 "gpc_reg_operand" "ww")
 	  (match_operand:QI 3 "const_0_to_3_operand" "n")]
 	 UNSPEC_VSX_SET))
-   (clobber (match_scratch:SI 4 "=&wIwH"))]
+   (clobber (match_scratch:SI 4 "=&wa"))]
   "VECTOR_MEM_VSX_P (V4SFmode) && TARGET_P9_VECTOR && TARGET_POWERPC64"
   "#"
   "&& reload_completed"
@@ -3991,7 +3992,7 @@
 	  (match_operand:SF 2 "zero_fp_constant" "j")
 	  (match_operand:QI 3 "const_0_to_3_operand" "n")]
 	 UNSPEC_VSX_SET))
-   (clobber (match_scratch:SI 4 "=&wIwH"))]
+   (clobber (match_scratch:SI 4 "=&wa"))]
   "VECTOR_MEM_VSX_P (V4SFmode) && TARGET_P9_VECTOR && TARGET_POWERPC64"
   "#"
   "&& reload_completed"
@@ -4049,7 +4050,7 @@
 			  [(match_operand:QI 3 "const_0_to_3_operand" "n")]))
 	  (match_operand:QI 4 "const_0_to_3_operand" "n")]
 	 UNSPEC_VSX_SET))
-   (clobber (match_scratch:SI 5 "=&wIwH"))]
+   (clobber (match_scratch:SI 5 "=&wa"))]
   "VECTOR_MEM_VSX_P (V4SFmode) && VECTOR_MEM_VSX_P (V4SImode)
    && TARGET_P9_VECTOR && TARGET_POWERPC64
    && (INTVAL (operands[3]) != (BYTES_BIG_ENDIAN ? 1 : 2))"
