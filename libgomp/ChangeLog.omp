@@ -1,3 +1,8 @@
+2019-05-20  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c: Expect
+	"optimized:" not "note:" in warnings.
+
 2018-10-04  Cesar Philippidis  <cesar@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 
