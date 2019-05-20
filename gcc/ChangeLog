@@ -1,5 +1,10 @@
 2019-05-20  Martin Liska  <mliska@suse.cz>
 
+	* targhooks.c (default_libc_has_fast_function): New function.
+	* targhooks.h (default_libc_has_fast_function): Likewise.
+
+2019-05-20  Martin Liska  <mliska@suse.cz>
+
 	PR middle-end/90263
 	* builtins.c (expand_builtin_memory_copy_args): When having a
 	target with fast mempcpy implementation do now use memcpy.
