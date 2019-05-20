@@ -9532,7 +9532,7 @@ mips_dwarf_frame_reg_mode (int regno)
 {
   machine_mode mode = default_dwarf_frame_reg_mode (regno);
 
-  if (FP_REG_P (regno) && mips_abi == ABI_32 && TARGET_FLOAT64)
+  if (FP_REG_P (regno) && mips_abi == ABI_32 && !TARGET_FLOAT32)
     mode = SImode;
 
   return mode;
