@@ -2023,28 +2023,30 @@
 
 ;; Slightly prefer vperm, since the target does not overlap the source
 (define_insn "altivec_vperm_<mode>_direct"
-  [(set (match_operand:VM 0 "register_operand" "=v,?wo")
-	(unspec:VM [(match_operand:VM 1 "register_operand" "v,wo")
+  [(set (match_operand:VM 0 "register_operand" "=v,?wa")
+	(unspec:VM [(match_operand:VM 1 "register_operand" "v,wa")
 		    (match_operand:VM 2 "register_operand" "v,0")
-		    (match_operand:V16QI 3 "register_operand" "v,wo")]
+		    (match_operand:V16QI 3 "register_operand" "v,wa")]
 		   UNSPEC_VPERM))]
   "TARGET_ALTIVEC"
   "@
    vperm %0,%1,%2,%3
    xxperm %x0,%x1,%x3"
-  [(set_attr "type" "vecperm")])
+  [(set_attr "type" "vecperm")
+   (set_attr "isa" "*,p9v")])
 
 (define_insn "altivec_vperm_v8hiv16qi"
-  [(set (match_operand:V16QI 0 "register_operand" "=v,?wo")
-	(unspec:V16QI [(match_operand:V8HI 1 "register_operand" "v,wo")
+  [(set (match_operand:V16QI 0 "register_operand" "=v,?wa")
+	(unspec:V16QI [(match_operand:V8HI 1 "register_operand" "v,wa")
    	               (match_operand:V8HI 2 "register_operand" "v,0")
-		       (match_operand:V16QI 3 "register_operand" "v,wo")]
+		       (match_operand:V16QI 3 "register_operand" "v,wa")]
 		   UNSPEC_VPERM))]
   "TARGET_ALTIVEC"
   "@
    vperm %0,%1,%2,%3
    xxperm %x0,%x1,%x3"
-  [(set_attr "type" "vecperm")])
+  [(set_attr "type" "vecperm")
+   (set_attr "isa" "*,p9v")])
 
 (define_expand "altivec_vperm_<mode>_uns"
   [(set (match_operand:VM 0 "register_operand")
@@ -2062,16 +2064,17 @@
 })
 
 (define_insn "*altivec_vperm_<mode>_uns_internal"
-  [(set (match_operand:VM 0 "register_operand" "=v,?wo")
-	(unspec:VM [(match_operand:VM 1 "register_operand" "v,wo")
+  [(set (match_operand:VM 0 "register_operand" "=v,?wa")
+	(unspec:VM [(match_operand:VM 1 "register_operand" "v,wa")
 		    (match_operand:VM 2 "register_operand" "v,0")
-		    (match_operand:V16QI 3 "register_operand" "v,wo")]
+		    (match_operand:V16QI 3 "register_operand" "v,wa")]
 		   UNSPEC_VPERM_UNS))]
   "TARGET_ALTIVEC"
   "@
    vperm %0,%1,%2,%3
    xxperm %x0,%x1,%x3"
-  [(set_attr "type" "vecperm")])
+  [(set_attr "type" "vecperm")
+   (set_attr "isa" "*,p9v")])
 
 (define_expand "vec_permv16qi"
   [(set (match_operand:V16QI 0 "register_operand")
@@ -2088,16 +2091,17 @@
 })
 
 (define_insn "*altivec_vpermr_<mode>_internal"
-  [(set (match_operand:VM 0 "register_operand" "=v,?wo")
-	(unspec:VM [(match_operand:VM 1 "register_operand" "v,wo")
+  [(set (match_operand:VM 0 "register_operand" "=v,?wa")
+	(unspec:VM [(match_operand:VM 1 "register_operand" "v,wa")
 		    (match_operand:VM 2 "register_operand" "v,0")
-		    (match_operand:V16QI 3 "register_operand" "v,wo")]
+		    (match_operand:V16QI 3 "register_operand" "v,wa")]
 		   UNSPEC_VPERMR))]
   "TARGET_P9_VECTOR"
   "@
    vpermr %0,%1,%2,%3
    xxpermr %x0,%x1,%x3"
-  [(set_attr "type" "vecperm")])
+  [(set_attr "type" "vecperm")
+   (set_attr "isa" "*,p9v")])
 
 (define_insn "altivec_vrfip"		; ceil
   [(set (match_operand:V4SF 0 "register_operand" "=v")
@@ -3245,28 +3249,30 @@
   "")
 
 (define_insn "vperm_v8hiv4si"
-  [(set (match_operand:V4SI 0 "register_operand" "=v,?wo")
-        (unspec:V4SI [(match_operand:V8HI 1 "register_operand" "v,wo")
+  [(set (match_operand:V4SI 0 "register_operand" "=v,?wa")
+        (unspec:V4SI [(match_operand:V8HI 1 "register_operand" "v,wa")
 		      (match_operand:V4SI 2 "register_operand" "v,0")
-		      (match_operand:V16QI 3 "register_operand" "v,wo")]
+		      (match_operand:V16QI 3 "register_operand" "v,wa")]
                   UNSPEC_VPERMSI))]
   "TARGET_ALTIVEC"
   "@
    vperm %0,%1,%2,%3
    xxperm %x0,%x1,%x3"
-  [(set_attr "type" "vecperm")])
+  [(set_attr "type" "vecperm")
+   (set_attr "isa" "*,p9v")])
 
 (define_insn "vperm_v16qiv8hi"
-  [(set (match_operand:V8HI 0 "register_operand" "=v,?wo")
-        (unspec:V8HI [(match_operand:V16QI 1 "register_operand" "v,wo")
+  [(set (match_operand:V8HI 0 "register_operand" "=v,?wa")
+        (unspec:V8HI [(match_operand:V16QI 1 "register_operand" "v,wa")
 		      (match_operand:V8HI 2 "register_operand" "v,0")
-		      (match_operand:V16QI 3 "register_operand" "v,wo")]
+		      (match_operand:V16QI 3 "register_operand" "v,wa")]
                   UNSPEC_VPERMHI))]
   "TARGET_ALTIVEC"
   "@
    vperm %0,%1,%2,%3
    xxperm %x0,%x1,%x3"
-  [(set_attr "type" "vecperm")])
+  [(set_attr "type" "vecperm")
+   (set_attr "isa" "*,p9v")])
 
 
 (define_expand "vec_unpacku_hi_v16qi"

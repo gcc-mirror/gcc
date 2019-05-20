@@ -1,5 +1,5 @@
-! { dg-do run }
-! { dg-options "-fdump-tree-original" }
+! { dg-do compile }
+! { dg-options "-O0 -fdump-tree-original" }
 !
 ! PR fortran/49074
 ! ICE on defined assignment with class arrays.

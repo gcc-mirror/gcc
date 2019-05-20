@@ -2254,7 +2254,8 @@ vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo,
 
   /* Autodetect first vector size we try.  */
   current_vector_size = 0;
-  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes);
+  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes,
+						loop->simdlen != 0);
   unsigned int next_size = 0;
 
   DUMP_VECT_SCOPE ("analyze_loop_nest");
@@ -2273,6 +2274,8 @@ vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo,
 
   unsigned n_stmts = 0;
   poly_uint64 autodetected_vector_size = 0;
+  opt_loop_vec_info first_loop_vinfo = opt_loop_vec_info::success (NULL);
+  poly_uint64 first_vector_size = 0;
   while (1)
     {
       /* Check the CFG characteristics of the loop (nesting, entry/exit).  */
@@ -2283,6 +2286,7 @@ vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo,
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "bad loop form.\n");
+	  gcc_checking_assert (first_loop_vinfo == NULL);
 	  return loop_vinfo;
 	}
 
@@ -2296,10 +2300,27 @@ vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo,
 	{
 	  LOOP_VINFO_VECTORIZABLE_P (loop_vinfo) = 1;
 
-	  return loop_vinfo;
+	  if (loop->simdlen
+	      && maybe_ne (LOOP_VINFO_VECT_FACTOR (loop_vinfo),
+			   (unsigned HOST_WIDE_INT) loop->simdlen))
+	    {
+	      if (first_loop_vinfo == NULL)
+		{
+		  first_loop_vinfo = loop_vinfo;
+		  first_vector_size = current_vector_size;
+		  loop->aux = NULL;
+		}
+	      else
+		delete loop_vinfo;
+	    }
+	  else
+	    {
+	      delete first_loop_vinfo;
+	      return loop_vinfo;
+	    }
 	}
-
-      delete loop_vinfo;
+      else
+	delete loop_vinfo;
 
       if (next_size == 0)
 	autodetected_vector_size = current_vector_size;
@@ -2308,10 +2329,31 @@ vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo,
 	  && known_eq (vector_sizes[next_size], autodetected_vector_size))
 	next_size += 1;
 
-      if (fatal
-	  || next_size == vector_sizes.length ()
+      if (fatal)
+	{
+	  gcc_checking_assert (first_loop_vinfo == NULL);
+	  return opt_loop_vec_info::propagate_failure (res);
+	}
+
+      if (next_size == vector_sizes.length ()
 	  || known_eq (current_vector_size, 0U))
-	return opt_loop_vec_info::propagate_failure (res);
+	{
+	  if (first_loop_vinfo)
+	    {
+	      current_vector_size = first_vector_size;
+	      loop->aux = (loop_vec_info) first_loop_vinfo;
+	      if (dump_enabled_p ())
+		{
+		  dump_printf_loc (MSG_NOTE, vect_location,
+				   "***** Choosing vector size ");
+		  dump_dec (MSG_NOTE, current_vector_size);
+		  dump_printf (MSG_NOTE, "\n");
+		}
+	      return first_loop_vinfo;
+	    }
+	  else
+	    return opt_loop_vec_info::propagate_failure (res);
+	}
 
       /* Try the next biggest vector size.  */
       current_vector_size = vector_sizes[next_size++];
@@ -8670,7 +8712,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   if (epilogue)
     {
       auto_vector_sizes vector_sizes;
-      targetm.vectorize.autovectorize_vector_sizes (&vector_sizes);
+      targetm.vectorize.autovectorize_vector_sizes (&vector_sizes, false);
       unsigned int next_size = 0;
 
       /* Note LOOP_VINFO_NITERS_KNOWN_P and LOOP_VINFO_INT_NITERS work

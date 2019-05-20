@@ -56,9 +56,6 @@
 (define_register_constraint "wa" "rs6000_constraints[RS6000_CONSTRAINT_wa]"
   "Any VSX register if the -mvsx option was used or NO_REGS.")
 
-(define_register_constraint "wb" "rs6000_constraints[RS6000_CONSTRAINT_wb]"
-  "Altivec register if the -mpower9-dform option was used or NO_REGS.")
-
 ;; NOTE: For compatibility, "wc" is reserved to represent individual CR bits.
 ;; It is currently used for that purpose in LLVM.
 
@@ -97,9 +94,6 @@
 ;; There is a mode_attr that resolves to wm for SDmode and wn for SFmode
 (define_register_constraint "wn" "NO_REGS" "No register (NO_REGS).")
 
-(define_register_constraint "wo" "rs6000_constraints[RS6000_CONSTRAINT_wo]"
-  "VSX register if the -mpower9-vector option was used or NO_REGS.")
-
 (define_register_constraint "wp" "rs6000_constraints[RS6000_CONSTRAINT_wp]"
   "VSX register to use for IEEE 128-bit fp TFmode, or NO_REGS.")
 
@@ -115,9 +109,6 @@
 (define_register_constraint "wt" "rs6000_constraints[RS6000_CONSTRAINT_wt]"
   "VSX vector register to hold 128 bit integer or NO_REGS.")
 
-(define_register_constraint "wu" "rs6000_constraints[RS6000_CONSTRAINT_wu]"
-  "Altivec register to use for float/32-bit int loads/stores  or NO_REGS.")
-
 (define_register_constraint "wv" "rs6000_constraints[RS6000_CONSTRAINT_wv]"
   "Altivec register to use for double loads/stores  or NO_REGS.")
 
@@ -126,9 +117,6 @@
 
 (define_register_constraint "wx" "rs6000_constraints[RS6000_CONSTRAINT_wx]"
   "Floating point register if the STFIWX instruction is enabled or NO_REGS.")
-
-(define_register_constraint "wy" "rs6000_constraints[RS6000_CONSTRAINT_wy]"
-  "FP or VSX register to perform ISA 2.07 float ops or NO_REGS.")
 
 (define_register_constraint "wz" "rs6000_constraints[RS6000_CONSTRAINT_wz]"
   "Floating point register if the LFIWZX instruction is enabled or NO_REGS.")
@@ -156,18 +144,6 @@
 (define_memory_constraint "wF"
   "Memory operand suitable for power8 GPR load fusion"
   (match_operand 0 "fusion_addis_mem_combo_load"))
-
-(define_register_constraint "wH" "rs6000_constraints[RS6000_CONSTRAINT_wH]"
-  "Altivec register to hold 32-bit integers or NO_REGS.")
-
-(define_register_constraint "wI" "rs6000_constraints[RS6000_CONSTRAINT_wI]"
-  "FPR register to hold 32-bit integers or NO_REGS.")
-
-(define_register_constraint "wJ" "rs6000_constraints[RS6000_CONSTRAINT_wJ]"
-  "FPR register to hold 8/16-bit integers or NO_REGS.")
-
-(define_register_constraint "wK" "rs6000_constraints[RS6000_CONSTRAINT_wK]"
-  "Altivec register to hold 8/16-bit integers or NO_REGS.")
 
 (define_constraint "wL"
   "Int constant that is the element number mfvsrld accesses in a vector."

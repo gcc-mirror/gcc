@@ -1,3 +1,35 @@
+2019-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/90532 Ensure __is_constructible(T[]) is false
+	* include/std/type_traits (__do_is_default_constructible_impl)
+	(__is_default_constructible_atom, __is_default_constructible_safe):
+	Remove.
+	(is_default_constructible): Use is_constructible.
+	* testsuite/20_util/is_constructible/value.cc: Check int[] case.
+	* testsuite/20_util/is_default_constructible/value.cc: Likewise.
+	* testsuite/20_util/is_trivially_constructible/value.cc: Likewise.
+	* testsuite/20_util/is_trivially_default_constructible/value.cc:
+	Likewise.
+
+2019-05-20  Pádraig Brady  <pbrady@fb.com>
+
+	* libstdc++-v3/include/ext/new_allocator.h (deallocate): Pass the size
+	to the deallocator with -fsized-deallocation.
+
+2019-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/memory_resource/new_delete_resource.cc: Fix
+	test by passing correct alignment to deallocate function.
+
+2019-05-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90520
+	* python/libstdcxx/v6/printers.py (UniquePointerPrinter.__init__):
+	Raise exception if unique_ptr tuple member has unknown structure.
+	* python/libstdcxx/v6/xmethods.py (UniquePtrGetWorker.__call__):
+	Adjust worker to support new __uniq_ptr_data base class. Do not
+	assume field called _M_head_impl is the first tuple element.
+
 2019-05-17  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_deque.h

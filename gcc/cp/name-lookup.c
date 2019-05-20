@@ -6544,7 +6544,8 @@ static bool
 has_using_namespace_std_directive_p ()
 {
   for (cp_binding_level *level = current_binding_level;
-       level; level = level->level_chain)
+       level;
+       level = level->level_chain)
     if (using_directives_contain_std_p (level->using_directives))
       return true;
 

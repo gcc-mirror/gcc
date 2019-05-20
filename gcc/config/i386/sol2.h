@@ -55,7 +55,8 @@ along with GCC; see the file COPYING3.  If not see
 #define CPP_SPEC "%(cpp_subtarget)"
 
 #undef CC1_SPEC
-#define CC1_SPEC "%(cc1_cpu) " ASAN_CC1_SPEC
+#define CC1_SPEC "%(cc1_cpu) " ASAN_CC1_SPEC \
+  " %{mx32:%e-mx32 is not supported on Solaris}"
 
 /* GNU as understands --32 and --64, but the native Solaris
    assembler requires -xarch=generic or -xarch=generic64 instead.  */
@@ -241,7 +242,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* -fsanitize=address is currently only supported for 32-bit.  */
 #define ASAN_REJECT_SPEC \
-  DEF_ARCH64_SPEC("%e:-fsanitize=address is not supported in this configuration")
+  DEF_ARCH64_SPEC("%e-fsanitize=address is not supported in this configuration")
 
 #undef NO_PROFILE_COUNTERS
 

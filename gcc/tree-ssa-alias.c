@@ -735,6 +735,48 @@ ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
   ref->volatile_p = false;
 }
 
+/* S1 and S2 are TYPE_SIZE or DECL_SIZE.  Compare them:
+   Return -1 if S1 < S2
+   Return 1 if S1 > S2
+   Return 0 if equal or incomparable.  */
+
+static int
+compare_sizes (tree s1, tree s2)
+{
+  if (!s1 || !s2)
+    return 0;
+
+  poly_uint64 size1 = poly_int_tree_p (s1, &size1);
+  poly_uint64 size2 = poly_int_tree_p (s2, &size2);
+
+  if (!poly_int_tree_p (s1, &size1) || !poly_int_tree_p (s2, &size2))
+    return 0;
+  if (known_lt (size1, size2))
+    return -1;
+  if (known_lt (size2, size1))
+    return 1;
+  return 0;
+}
+
+/* Compare TYPE1 and TYPE2 by its size.
+   Return -1 if size of TYPE1 < size of TYPE2
+   Return 1 if size of TYPE1 > size of TYPE2
+   Return 0 if types are of equal sizes or we can not compare them.  */
+
+static int
+compare_type_sizes (tree type1, tree type2)
+{
+  /* Be conservative for arrays and vectors.  We want to support partial
+     overlap on int[3] and int[3] as tested in gcc.dg/torture/alias-2.c.  */
+  while (TREE_CODE (type1) == ARRAY_TYPE
+	 || TREE_CODE (type1) == VECTOR_TYPE)
+    type1 = TREE_TYPE (type1);
+  while (TREE_CODE (type2) == ARRAY_TYPE
+	 || TREE_CODE (type2) == VECTOR_TYPE)
+    type2 = TREE_TYPE (type2);
+  return compare_sizes (TYPE_SIZE (type1), TYPE_SIZE (type2));
+}
+
 /* Return 1 if TYPE1 and TYPE2 are to be considered equivalent for the
    purpose of TBAA.  Return 0 if they are distinct and -1 if we cannot
    decide.  */
@@ -803,7 +845,7 @@ aliasing_component_refs_p (tree ref1,
   tree base1, base2;
   tree type1, type2;
   tree *refp;
-  int same_p, same_p2;
+  int same_p1 = 0, same_p2 = 0;
 
   /* Choose bases and base types to search for.  */
   base1 = ref1;
@@ -816,65 +858,93 @@ aliasing_component_refs_p (tree ref1,
   type2 = TREE_TYPE (base2);
 
   /* Now search for the type1 in the access path of ref2.  This
-     would be a common base for doing offset based disambiguation on.  */
-  refp = &ref2;
-  while (handled_component_p (*refp)
-	 && same_type_for_tbaa (TREE_TYPE (*refp), type1) == 0)
-    refp = &TREE_OPERAND (*refp, 0);
-  same_p = same_type_for_tbaa (TREE_TYPE (*refp), type1);
-  if (same_p == 1)
+     would be a common base for doing offset based disambiguation on.
+     This however only makes sense if type2 is big enough to hold type1.  */
+  int cmp_outer = compare_type_sizes (type2, type1);
+  if (cmp_outer >= 0)
     {
-      poly_int64 offadj, sztmp, msztmp;
-      bool reverse;
-      get_ref_base_and_extent (*refp, &offadj, &sztmp, &msztmp, &reverse);
-      offset2 -= offadj;
-      get_ref_base_and_extent (base1, &offadj, &sztmp, &msztmp, &reverse);
-      offset1 -= offadj;
-      if (ranges_maybe_overlap_p (offset1, max_size1, offset2, max_size2))
+      refp = &ref2;
+      while (true)
 	{
-	  ++alias_stats.aliasing_component_refs_p_may_alias;
-	  return true;
+	  /* We walk from inner type to the outer types. If type we see is
+	     already too large to be part of type1, terminate the search.  */
+	  int cmp = compare_type_sizes (type1, TREE_TYPE (*refp));
+	  if (cmp < 0)
+	    break;
+	  /* If types may be of same size, see if we can decide about their
+	     equality.  */
+	  if (cmp >= 0)
+	    {
+	      same_p2 = same_type_for_tbaa (TREE_TYPE (*refp), type1);
+	      if (same_p2 != 0)
+		break;
+	    }
+	  if (!handled_component_p (*refp))
+	    break;
+	  refp = &TREE_OPERAND (*refp, 0);
 	}
-      else
+      if (same_p2 == 1)
 	{
-	  ++alias_stats.aliasing_component_refs_p_no_alias;
-	  return false;
+	  poly_int64 offadj, sztmp, msztmp;
+	  bool reverse;
+	  get_ref_base_and_extent (*refp, &offadj, &sztmp, &msztmp, &reverse);
+	  offset2 -= offadj;
+	  get_ref_base_and_extent (base1, &offadj, &sztmp, &msztmp, &reverse);
+	  offset1 -= offadj;
+	  if (ranges_maybe_overlap_p (offset1, max_size1, offset2, max_size2))
+	    {
+	      ++alias_stats.aliasing_component_refs_p_may_alias;
+	      return true;
+	    }
+	  else
+	    {
+	      ++alias_stats.aliasing_component_refs_p_no_alias;
+	      return false;
+	    }
 	}
     }
 
   /* If we didn't find a common base, try the other way around.  */
-  refp = &ref1;
-  while (handled_component_p (*refp)
-	 && same_type_for_tbaa (TREE_TYPE (*refp), type2) == 0)
-    refp = &TREE_OPERAND (*refp, 0);
-  same_p2 = same_type_for_tbaa (TREE_TYPE (*refp), type2);
-  if (same_p2 == 1)
+  if (cmp_outer <= 0)
     {
-      poly_int64 offadj, sztmp, msztmp;
-      bool reverse;
-
-      get_ref_base_and_extent (*refp, &offadj, &sztmp, &msztmp, &reverse);
-      offset1 -= offadj;
-      get_ref_base_and_extent (base2, &offadj, &sztmp, &msztmp, &reverse);
-      offset2 -= offadj;
-      if (ranges_maybe_overlap_p (offset1, max_size1, offset2, max_size2))
+      refp = &ref1;
+      while (true)
 	{
-	  ++alias_stats.aliasing_component_refs_p_may_alias;
-	  return true;
+	  int cmp = compare_type_sizes (type2, TREE_TYPE (*refp));
+	  if (cmp < 0)
+	    break;
+	  /* If types may be of same size, see if we can decide about their
+	     equality.  */
+	  if (cmp >= 0)
+	    {
+	      same_p1 = same_type_for_tbaa (TREE_TYPE (*refp), type2);
+	      if (same_p1 != 0)
+		break;
+	    }
+	  if (!handled_component_p (*refp))
+	    break;
+	  refp = &TREE_OPERAND (*refp, 0);
 	}
-      else
+      if (same_p1 == 1)
 	{
-	  ++alias_stats.aliasing_component_refs_p_no_alias;
-	  return false;
-	}
-    }
+	  poly_int64 offadj, sztmp, msztmp;
+	  bool reverse;
 
-  /* In the remaining test we assume that there is no overlapping type
-     at all.  So if we are unsure, we need to give up.  */
-  if (same_p == -1 || same_p2 == -1)
-    {
-      ++alias_stats.aliasing_component_refs_p_may_alias;
-      return true;
+	  get_ref_base_and_extent (*refp, &offadj, &sztmp, &msztmp, &reverse);
+	  offset1 -= offadj;
+	  get_ref_base_and_extent (base2, &offadj, &sztmp, &msztmp, &reverse);
+	  offset2 -= offadj;
+	  if (ranges_maybe_overlap_p (offset1, max_size1, offset2, max_size2))
+	    {
+	      ++alias_stats.aliasing_component_refs_p_may_alias;
+	      return true;
+	    }
+	  else
+	    {
+	      ++alias_stats.aliasing_component_refs_p_no_alias;
+	      return false;
+	    }
+	}
     }
 
   /* If we have two type access paths B1.path1 and B2.path2 they may
@@ -883,15 +953,19 @@ aliasing_component_refs_p (tree ref1,
      a part that we do not see.  So we can only disambiguate now
      if there is no B2 in the tail of path1 and no B1 on the
      tail of path2.  */
-  if (base1_alias_set == ref2_alias_set
-      || alias_set_subset_of (base1_alias_set, ref2_alias_set))
+  if (compare_type_sizes (TREE_TYPE (ref2), type1) >= 0
+      && (same_p2 == -1
+          || base1_alias_set == ref2_alias_set
+          || alias_set_subset_of (base1_alias_set, ref2_alias_set)))
     {
       ++alias_stats.aliasing_component_refs_p_may_alias;
       return true;
     }
   /* If this is ptr vs. decl then we know there is no ptr ... decl path.  */
   if (!ref2_is_decl
-      && (base2_alias_set == ref1_alias_set
+      && compare_type_sizes (TREE_TYPE (ref1), type2) >= 0
+      && (same_p1 == -1
+	  || base2_alias_set == ref1_alias_set
 	  || alias_set_subset_of (base2_alias_set, ref1_alias_set)))
     {
       ++alias_stats.aliasing_component_refs_p_may_alias;
@@ -1221,16 +1295,13 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   /* If the size of the access relevant for TBAA through the pointer
      is bigger than the size of the decl we can't possibly access the
      decl via that pointer.  */
-  if (DECL_SIZE (base2) && COMPLETE_TYPE_P (TREE_TYPE (ptrtype1))
-      && poly_int_tree_p (DECL_SIZE (base2))
-      && poly_int_tree_p (TYPE_SIZE (TREE_TYPE (ptrtype1)))
-      /* ???  This in turn may run afoul when a decl of type T which is
+  if (/* ???  This in turn may run afoul when a decl of type T which is
 	 a member of union type U is accessed through a pointer to
 	 type U and sizeof T is smaller than sizeof U.  */
-      && TREE_CODE (TREE_TYPE (ptrtype1)) != UNION_TYPE
+      TREE_CODE (TREE_TYPE (ptrtype1)) != UNION_TYPE
       && TREE_CODE (TREE_TYPE (ptrtype1)) != QUAL_UNION_TYPE
-      && known_lt (wi::to_poly_widest (DECL_SIZE (base2)),
-		   wi::to_poly_widest (TYPE_SIZE (TREE_TYPE (ptrtype1)))))
+      && compare_sizes (DECL_SIZE (base2),
+		        TYPE_SIZE (TREE_TYPE (ptrtype1))) < 0)
     return false;
 
   if (!ref2)
@@ -1399,8 +1470,8 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 
 /* Return true, if the two memory references REF1 and REF2 may alias.  */
 
-bool
-refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
+static bool
+refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
 {
   tree base1, base2;
   poly_int64 offset1 = 0, offset2 = 0;
@@ -1557,6 +1628,20 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
   gcc_unreachable ();
 }
 
+/* Return true, if the two memory references REF1 and REF2 may alias
+   and update statistics.  */
+
+bool
+refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
+{
+  bool res = refs_may_alias_p_2 (ref1, ref2, tbaa_p);
+  if (res)
+    ++alias_stats.refs_may_alias_p_may_alias;
+  else
+    ++alias_stats.refs_may_alias_p_no_alias;
+  return res;
+}
+
 static bool
 refs_may_alias_p (tree ref1, ao_ref *ref2, bool tbaa_p)
 {
@@ -1569,15 +1654,9 @@ bool
 refs_may_alias_p (tree ref1, tree ref2, bool tbaa_p)
 {
   ao_ref r1, r2;
-  bool res;
   ao_ref_init (&r1, ref1);
   ao_ref_init (&r2, ref2);
-  res = refs_may_alias_p_1 (&r1, &r2, tbaa_p);
-  if (res)
-    ++alias_stats.refs_may_alias_p_may_alias;
-  else
-    ++alias_stats.refs_may_alias_p_no_alias;
-  return res;
+  return refs_may_alias_p_1 (&r1, &r2, tbaa_p);
 }
 
 /* Returns true if there is a anti-dependence for the STORE that

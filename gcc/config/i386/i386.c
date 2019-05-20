@@ -21332,7 +21332,7 @@ ix86_preferred_simd_mode (scalar_mode mode)
    256bit and 128bit vectors.  */
 
 static void
-ix86_autovectorize_vector_sizes (vector_sizes *sizes)
+ix86_autovectorize_vector_sizes (vector_sizes *sizes, bool all)
 {
   if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
     {
@@ -21340,10 +21340,21 @@ ix86_autovectorize_vector_sizes (vector_sizes *sizes)
       sizes->safe_push (32);
       sizes->safe_push (16);
     }
+  else if (TARGET_AVX512F && all)
+    {
+      sizes->safe_push (32);
+      sizes->safe_push (16);
+      sizes->safe_push (64);
+    }
   else if (TARGET_AVX && !TARGET_PREFER_AVX128)
     {
       sizes->safe_push (32);
       sizes->safe_push (16);
+    }
+  else if (TARGET_AVX && all)
+    {
+      sizes->safe_push (16);
+      sizes->safe_push (32);
     }
 }
 
@@ -23062,6 +23073,21 @@ ix86_run_selftests (void)
 #undef TARGET_GET_MULTILIB_ABI_NAME
 #define TARGET_GET_MULTILIB_ABI_NAME \
   ix86_get_multilib_abi_name
+
+static bool ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
+{
+#ifdef OPTION_GLIBC
+  if (OPTION_GLIBC)
+    return (built_in_function)fcode == BUILT_IN_MEMPCPY;
+  else
+    return false;
+#else
+  return false;
+#endif
+}
+
+#undef TARGET_LIBC_HAS_FAST_FUNCTION
+#define TARGET_LIBC_HAS_FAST_FUNCTION ix86_libc_has_fast_function
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

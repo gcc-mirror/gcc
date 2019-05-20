@@ -286,7 +286,7 @@ loop optimizer		Zdenek Dvorak		<ook@ucw.cz>
 LTO			Richard Biener		<rguenther@suse.de>
 LTO plugin		Cary Coutant		<ccoutant@gmail.com>
 Plugin			Le-Chun Wu		<lcwu@google.com>
-register allocation	Peter Bergner		<bergner@vnet.ibm.com>
+register allocation	Peter Bergner		<bergner@linux.ibm.com>
 register allocation	Kenneth Zadeck		<zadeck@naturalbridge.com>
 register allocation	Seongbae Park		<seongbae.park@gmail.com>
 RTL optimizers		Steven Bosscher		<steven@gcc.gnu.org>

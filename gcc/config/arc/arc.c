@@ -480,7 +480,7 @@ arc_preferred_simd_mode (scalar_mode mode)
    TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES.  */
 
 static void
-arc_autovectorize_vector_sizes (vector_sizes *sizes)
+arc_autovectorize_vector_sizes (vector_sizes *sizes, bool)
 {
   if (TARGET_PLUS_QMACW)
     {

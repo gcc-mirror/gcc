@@ -1,3 +1,22 @@
+2019-05-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR libfortran/90038
+        * intrinsics/execute_command_line (sigchld_handler): New function.
+        (execute_command_line): Install handler for SIGCHLD.
+        * configure.ac: Check for presence of sigaction and waitpid.
+        * config.h.in: Regenerated.
+        * configure: Regenerated.
+
+2019-05-17  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/90038
+	* configure.ac (AC_CHECK_FUNCS_ONCE): Check for posix_spawn.
+	* intrinsics/execute_command_line (execute_command_line): Use
+	posix_spawn.
+	* Makefile.in: Regenerated.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+
 2019-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/54613

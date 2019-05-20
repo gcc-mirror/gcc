@@ -4974,6 +4974,13 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	  && loop->safelen > 1)
 	{
 	  loop->force_vectorize = true;
+	  if (simdlen && tree_fits_uhwi_p (OMP_CLAUSE_SIMDLEN_EXPR (simdlen)))
+	    {
+	      unsigned HOST_WIDE_INT v
+		= tree_to_uhwi (OMP_CLAUSE_SIMDLEN_EXPR (simdlen));
+	      if (v < INT_MAX && v <= (unsigned HOST_WIDE_INT) loop->safelen)
+		loop->simdlen = v;
+	    }
 	  cfun->has_force_vectorize_loops = true;
 	}
       else if (dont_vectorize)

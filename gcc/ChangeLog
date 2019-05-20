@@ -1,3 +1,248 @@
+2019-05-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (refs_may_alias_p_2): Break out from ...
+	(refs_may_alias_p_1): ... here; update stats.
+	(refs_may_alias_p): Do not update stats here.
+
+2019-05-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (find_func_aliases): POINTER_DIFF_EXPR
+	doesn't produce pointers.
+	{TRUNC,CEIL,FLOOR,ROUND,EXACT}_{DIV,MOD}_EXPR points to what
+	the first operand points to.
+
+2019-05-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (compare_sizes): New function.
+	(sompare_type_sizes): New function
+	(aliasing_component_refs_p): Use it.
+	(indirect_ref_may_alias_decl_p): Likewise.
+
+2019-05-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/i386/sol2.h (CC1_SPEC): Reject -mx32.
+
+2019-05-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2.h (LIBTSAN_EARLY_SPEC): Remove : after %e.
+	(LIBLSAN_EARLY_SPEC): Likewise.
+	* config/i386/sol2.h (ASAN_REJECT_SPEC): Likewise.
+
+2019-05-20  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386.c (ix86_libc_has_fast_function):
+	Add ATTRIBUTE_UNUSED for the argument.
+
+2019-05-20  Richard Biener  <rguenther@suse.de>
+
+	* gimple-match-head.c: Include vec-perm-indices.h.
+	* generic-match-head.c: Likewise.
+	* fold-const.h (fold_vec_perm): Declare when vec-perm-indices.h
+	is included.
+	* fold-const.c (fold_vec_perm): Export.
+	(fold_ternary_loc): Move non-constant folding of VEC_PERM_EXPR...
+	(match.pd): ...here.
+
+2019-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfgloop.h (struct loop): Add simdlen member.
+	* cfgloopmanip.c (copy_loop_info): Copy simdlen as well.
+	* omp-expand.c (expand_omp_simd): Set it if simdlen clause is present.
+	* tree-vect-loop.c (vect_analyze_loop): Pass loop->simdlen != 0
+	as new argument to autovectorize_vector_sizes target hook.  If
+	loop->simdlen, pick up vector size where the vectorization factor
+	is equal to loop->simd, and if there is none, fall back to the first
+	successful one.
+	(vect_transform_loop): Adjust autovectorize_vector_sizes target hook
+	caller.
+	* omp-low.c (omp_clause_aligned_alignment): Likewise.
+	* omp-general.c (omp_max_vf): Likewise.
+	* optabs-query.c (can_vec_mask_load_store_p): Likewise.
+	* tree-vect-slp.c (vect_slp_bb): Likewise.
+	* target.def (autovectorize_vector_sizes): Add ALL argument and
+	document it.
+	* doc/tm.texi: Adjust documentation.
+	* targhooks.c (default_autovectorize_vector_sizes): Add bool argument.
+	* targhooks.h (default_autovectorize_vector_sizes): Likewise.
+	* config/aarch64/aarch64.c (aarch64_autovectorize_vector_sizes): Add
+	bool argument.
+	* config/arc/arc.c (arc_autovectorize_vector_sizes): Likewise.
+	* config/arm/arm.c (arm_autovectorize_vector_sizes): Likewise.
+	* config/mips/mips.c (mips_autovectorize_vector_sizes): Likewise.
+	* config/i386/i386.c (ix86_autovectorize_vector_sizes): Likewise.  If
+	true and TARGET_AVX512F or TARGET_AVX, push 3 or 2 sizes even if
+	preferred vector size is not 512-bit or 256-bit, just put those
+	unpreferred ones last.
+
+2019-05-20  Martin Liska  <mliska@suse.cz>
+
+	* targhooks.c (default_libc_has_fast_function): New function.
+	* targhooks.h (default_libc_has_fast_function): Likewise.
+
+2019-05-20  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/90263
+	* builtins.c (expand_builtin_memory_copy_args): When having a
+	target with fast mempcpy implementation do now use memcpy.
+	* config/i386/i386.c (ix86_libc_has_fast_function): New.
+	(TARGET_LIBC_HAS_FAST_FUNCTION): Likewise.
+	* doc/tm.texi: Likewise.
+	* doc/tm.texi.in: Likewise.
+	* target.def:
+	* expr.c (emit_block_move_hints): Add 2 new arguments.
+	* expr.h (emit_block_move_hints): Bail out when libcall
+	to memcpy would be used.
+
+2019-05-20  Martin Liska  <mliska@suse.cz>
+
+	* profile-count.c: Add vertical spacing in order
+	to separate functions.
+	* profile-count.h: Likewise.
+
+2019-05-20  Martin Liska  <mliska@suse.cz>
+
+	* profile-count.h: Do not use full qualified
+	names if possible.
+	* profile-count.c (profile_count::to_frequency): Likewise.
+
+2019-05-20  Martin Liska  <mliska@suse.cz>
+
+	* profile-count.h (enum profile_quality): Use capital letters
+	for enum value names.  Use the adjusted names.
+	* profile-count.c: Use the adjusted names.
+
+2019-05-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (define_register_constraint "wH"):
+	Delete.
+	(define_register_constraint "wI"): Delete.
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
+	RS6000_CONSTRAINT_wH and RS6000_CONSTRAINT_wI.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	* config/rs6000/rs6000.md: Replace "wH" and "wI" constraints by "v"
+	resp. "d", or with "wa" as appropriate, all with "p8v".
+	* config/rs6000/vsx.md: Ditto.
+	* doc/md.texi (Machine Constraints): Adjust.
+
+2019-05-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (define_register_constraint "wy"):
+	Delete.
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
+	RS6000_CONSTRAINT_wy.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	* config/rs6000/rs6000.md: Replace "wy" constraint by "wa" with "p8v".
+	Use "<Fisa>" as "isa" in all alternatives that use "<Fv2>".
+	(define_mode_attr Fisa): New.
+	* config/rs6000/vsx.md: Replace "wy" constraint by "wa" with "p8v".
+	* doc/md.texi (Machine Constraints): Adjust.
+
+2019-05-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (define_register_constraint "wu"):
+	Delete.
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
+	RS6000_CONSTRAINT_wu.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	* config/rs6000/rs6000.md: Replace "wu" constraint by "v" or "wa",
+	both with "p8v".
+	(define_mode_attr Fa): Delete.
+	* config/rs6000/vsx.md: Ditto.
+	* doc/md.texi (Machine Constraints): Adjust.
+
+2019-05-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (define_register_constraint "wJ"):
+	Delete.
+	(define_register_constraint "wK"): Delete.
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
+	RS6000_CONSTRAINT_wJ and RS6000_CONSTRAINT_wK.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	* config/rs6000/rs6000.md: Replace "wJ" constraint by "wI" with "p9v".
+	Replace "wK" constraint by "wH" with "p9v".
+	* config/rs6000/vsx.md: Ditto.
+	* doc/md.texi (Machine Constraints): Adjust.
+
+2019-05-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (define_register_constraint "wb"):
+	Delete.
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
+	RS6000_CONSTRAINT_wb.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	* config/rs6000/rs6000.md: Replace "wb" constraint by "v" with "p9v".
+	* config/rs6000/vsx.md: Ditto.
+	* doc/md.texi (Machine Constraints): Adjust.
+
+2019-05-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (define_register_constraint "wo"):
+	Delete.
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
+	RS6000_CONSTRAINT_wo.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	* config/rs6000/rs6000.md: Replace "wo" constraint by "wa" with "p9v".
+	* config/rs6000/altivec.md: Ditto.
+	* doc/md.texi (Machine Constraints): Adjust.
+
+2019-05-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-c.c (darwin_register_objc_includes): Do not
+	prepend the sysroot when building gnu-runtime header search
+	paths.
+
+2019-05-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_file_end): Use switch_to_section ()
+	instead of direct output of the asm.
+
+2019-05-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (restore_saved_cr): Change a boolean
+	argument to be type bool (was int before).
+	(rs6000_emit_epilogue): Simplify some code.  Declare some variables
+	at first use.  Use type bool for some variables.  Fix a theoretical
+	eh_return bug for svr4.
+
+2019-05-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (isa): New attribute.
+	(enabled): New attribute.
+
+2019-05-17  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/aarch64/aarch64.c (aarch64_output_mi_thunk): Call
+	assemble_start_function and assemble_end_function.
+
+2019-05-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/89433
+	* omp-general.c (oacc_verify_routine_clauses): Change formal
+	parameters.  Add checking if already marked with an OpenACC
+	'routine' directive.  Adjust all users.
+
+	PR middle-end/89433
+	* omp-general.c (oacc_build_routine_dims): Move some of its
+	processing into...
+	(oacc_verify_routine_clauses): ... this new function.
+	* omp-general.h (oacc_verify_routine_clauses): New prototype.
+
+2019-05-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/rs6000.c (machopic_output_stub): Adjust the
+	formating of picbase labels to match other ports.
+
+2019-05-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/rs6000.c (macho_branch_islands): Fix bad indent
+	in the generated code.
+
 2019-05-16  Martin Sebor  <msebor@redhat.com>
 
         * builtins.c (expand_builtin_atomic_always_lock_free): Quote

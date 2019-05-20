@@ -5594,6 +5594,11 @@ This hook determines whether a function from a class of functions
 @var{fn_class} is present at the runtime.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_LIBC_HAS_FAST_FUNCTION (int @var{fcode})
+This hook determines whether a function from a class of functions
+@var{fn_class} has a fast implementation.
+@end deftypefn
+
 @defmac NEXT_OBJC_RUNTIME
 Set this macro to 1 to use the "NeXT" Objective-C message sending conventions
 by default.  This calling convention involves passing the object, the selector
@@ -6016,11 +6021,13 @@ against lower halves of vectors recursively until the specified mode is
 reached.  The default is @var{mode} which means no splitting.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES (vector_sizes *@var{sizes})
+@deftypefn {Target Hook} void TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES (vector_sizes *@var{sizes}, bool @var{all})
 If the mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is not
 the only one that is worth considering, this hook should add all suitable
 vector sizes to @var{sizes}, in order of decreasing preference.  The first
 one should be the size of @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.
+If @var{all} is true, add suitable vector sizes even when they are generally
+not expected to be worthwhile.
 
 The hook does not need to do anything if the vector returned by
 @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is the only one relevant

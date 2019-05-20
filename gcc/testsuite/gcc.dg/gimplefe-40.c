@@ -1,4 +1,4 @@
-/* { dg-do compile { target int128 } } */
+/* { dg-do compile { target { int128 && vect_float } } } */
 /* { dg-options "-fgimple -Wno-psabi -w" } */
 
 typedef float v4sf __attribute__((vector_size(16)));

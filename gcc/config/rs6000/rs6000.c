@@ -2508,7 +2508,6 @@ rs6000_debug_reg_global (void)
 	   "f  reg_class = %s\n"
 	   "v  reg_class = %s\n"
 	   "wa reg_class = %s\n"
-	   "wb reg_class = %s\n"
 	   "wd reg_class = %s\n"
 	   "we reg_class = %s\n"
 	   "wf reg_class = %s\n"
@@ -2519,29 +2518,21 @@ rs6000_debug_reg_global (void)
 	   "wk reg_class = %s\n"
 	   "wl reg_class = %s\n"
 	   "wm reg_class = %s\n"
-	   "wo reg_class = %s\n"
 	   "wp reg_class = %s\n"
 	   "wq reg_class = %s\n"
 	   "wr reg_class = %s\n"
 	   "ws reg_class = %s\n"
 	   "wt reg_class = %s\n"
-	   "wu reg_class = %s\n"
 	   "wv reg_class = %s\n"
 	   "ww reg_class = %s\n"
 	   "wx reg_class = %s\n"
-	   "wy reg_class = %s\n"
 	   "wz reg_class = %s\n"
 	   "wA reg_class = %s\n"
-	   "wH reg_class = %s\n"
-	   "wI reg_class = %s\n"
-	   "wJ reg_class = %s\n"
-	   "wK reg_class = %s\n"
 	   "\n",
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_d]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_f]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_v]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wa]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wb]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wd]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_we]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wf]],
@@ -2552,23 +2543,16 @@ rs6000_debug_reg_global (void)
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wk]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wl]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wm]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wo]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wp]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wq]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wr]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_ws]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wt]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wu]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wv]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_ww]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wx]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wy]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wz]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wA]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wH]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wI]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wJ]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wK]]);
+	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wA]]);
 
   nl = "\n";
   for (m = 0; m < NUM_MACHINE_MODES; ++m)
@@ -3189,16 +3173,10 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	wr - GPR if 64-bit mode is permitted.
 	ws - Register class to do ISA 2.06 DF operations.
 	wt - VSX register for TImode in VSX registers.
-	wu - Altivec register for ISA 2.07 VSX SF/SI load/stores.
 	wv - Altivec register for ISA 2.06 VSX DF/DI load/stores.
 	ww - Register class to do SF conversions in with VSX operations.
 	wx - Float register if we can do 32-bit int stores.
-	wy - Register class to do ISA 2.07 SF operations.
-	wz - Float register if we can do 32-bit unsigned int loads.
-	wH - Altivec register if SImode is allowed in VSX registers.
-	wI - Float register if SImode is allowed in VSX registers.
-	wJ - Float register if QImode/HImode are allowed in VSX registers.
-	wK - Altivec register if QImode/HImode are allowed in VSX registers.  */
+	wz - Float register if we can do 32-bit unsigned int loads.  */
 
   if (TARGET_HARD_FLOAT)
     {
@@ -3245,11 +3223,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
     }
 
   if (TARGET_P8_VECTOR)						/* SFmode  */
-    {
-      rs6000_constraints[RS6000_CONSTRAINT_wu] = ALTIVEC_REGS;
-      rs6000_constraints[RS6000_CONSTRAINT_wy] = VSX_REGS;
-      rs6000_constraints[RS6000_CONSTRAINT_ww] = VSX_REGS;
-    }
+    rs6000_constraints[RS6000_CONSTRAINT_ww] = VSX_REGS;
   else if (TARGET_VSX)
     rs6000_constraints[RS6000_CONSTRAINT_ww] = FLOAT_REGS;
 
@@ -3266,30 +3240,9 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	rs6000_constraints[RS6000_CONSTRAINT_wp] = VSX_REGS;	/* TFmode  */
     }
 
-  if (TARGET_P9_VECTOR)
-    {
-      /* Support for new D-form instructions.  */
-      rs6000_constraints[RS6000_CONSTRAINT_wb] = ALTIVEC_REGS;
-
-      /* Support for ISA 3.0 (power9) vectors.  */
-      rs6000_constraints[RS6000_CONSTRAINT_wo] = VSX_REGS;
-    }
-
   /* Support for new direct moves (ISA 3.0 + 64bit).  */
   if (TARGET_DIRECT_MOVE_128)
     rs6000_constraints[RS6000_CONSTRAINT_we] = VSX_REGS;
-
-  /* Support small integers in VSX registers.  */
-  if (TARGET_P8_VECTOR)
-    {
-      rs6000_constraints[RS6000_CONSTRAINT_wH] = ALTIVEC_REGS;
-      rs6000_constraints[RS6000_CONSTRAINT_wI] = FLOAT_REGS;
-      if (TARGET_P9_VECTOR)
-	{
-	  rs6000_constraints[RS6000_CONSTRAINT_wJ] = FLOAT_REGS;
-	  rs6000_constraints[RS6000_CONSTRAINT_wK] = ALTIVEC_REGS;
-	}
-    }
 
   /* Set up the reload helper and direct move functions.  */
   if (TARGET_VSX || TARGET_ALTIVEC)
@@ -27712,7 +27665,7 @@ load_cr_save (int regno, rtx frame_reg_rtx, int offset, bool exit_func)
 /* Reload CR from REG.  */
 
 static void
-restore_saved_cr (rtx reg, int using_mfcr_multiple, bool exit_func)
+restore_saved_cr (rtx reg, bool using_mfcr_multiple, bool exit_func)
 {
   int count = 0;
   int i;
@@ -27876,15 +27829,6 @@ emit_cfa_restores (rtx cfa_restores)
 void
 rs6000_emit_epilogue (enum epilogue_type epilogue_type)
 {
-  int sibcall = (epilogue_type == EPILOGUE_TYPE_SIBCALL);
-  rs6000_stack_t *info;
-  int restoring_GPRs_inline;
-  int restoring_FPRs_inline;
-  int using_load_multiple;
-  int using_mtcr_multiple;
-  int use_backchain_to_restore_sp;
-  int restore_lr;
-  int strategy;
   HOST_WIDE_INT frame_off = 0;
   rtx sp_reg_rtx = gen_rtx_REG (Pmode, 1);
   rtx frame_reg_rtx = sp_reg_rtx;
@@ -27896,30 +27840,38 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
   machine_mode fp_reg_mode = TARGET_HARD_FLOAT ? DFmode : SFmode;
   int fp_reg_size = 8;
   int i;
-  bool exit_func;
   unsigned ptr_regno;
 
-  info = rs6000_stack_info ();
+  rs6000_stack_t *info = rs6000_stack_info ();
 
-  strategy = info->savres_strategy;
-  using_load_multiple = strategy & REST_MULTIPLE;
-  restoring_FPRs_inline = sibcall || (strategy & REST_INLINE_FPRS);
-  restoring_GPRs_inline = sibcall || (strategy & REST_INLINE_GPRS);
-  using_mtcr_multiple = (rs6000_tune == PROCESSOR_PPC601
-			 || rs6000_tune == PROCESSOR_PPC603
-			 || rs6000_tune == PROCESSOR_PPC750
-			 || optimize_size);
+  if (epilogue_type == EPILOGUE_TYPE_NORMAL && crtl->calls_eh_return)
+    epilogue_type = EPILOGUE_TYPE_EH_RETURN;
+
+  int strategy = info->savres_strategy;
+  bool using_load_multiple = !!(strategy & REST_MULTIPLE);
+  bool restoring_GPRs_inline = !!(strategy & REST_INLINE_GPRS);
+  bool restoring_FPRs_inline = !!(strategy & REST_INLINE_FPRS);
+  if (epilogue_type == EPILOGUE_TYPE_SIBCALL)
+    {
+      restoring_GPRs_inline = true;
+      restoring_FPRs_inline = true;
+    }
+
+  bool using_mtcr_multiple = (rs6000_tune == PROCESSOR_PPC601
+			      || rs6000_tune == PROCESSOR_PPC603
+			      || rs6000_tune == PROCESSOR_PPC750
+			      || optimize_size);
+
   /* Restore via the backchain when we have a large frame, since this
      is more efficient than an addis, addi pair.  The second condition
      here will not trigger at the moment;  We don't actually need a
      frame pointer for alloca, but the generic parts of the compiler
      give us one anyway.  */
-  use_backchain_to_restore_sp = (info->total_size + (info->lr_save_p
-						     ? info->lr_save_offset
-						     : 0) > 32767
-				 || (cfun->calls_alloca
-				     && !frame_pointer_needed));
-  restore_lr = (info->lr_save_p
+  bool use_backchain_to_restore_sp
+    = (info->total_size + (info->lr_save_p ? info->lr_save_offset : 0) > 32767
+       || (cfun->calls_alloca && !frame_pointer_needed));
+
+  bool restore_lr = (info->lr_save_p
 		&& (restoring_FPRs_inline
 		    || (strategy & REST_NOINLINE_FPRS_DOESNT_RESTORE_LR))
 		&& (restoring_GPRs_inline
@@ -27929,10 +27881,7 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
 
   if (WORLD_SAVE_P (info))
     {
-      int i, j;
-      char rname[30];
-      const char *alloc_rname;
-      rtvec p;
+      gcc_assert (epilogue_type != EPILOGUE_TYPE_SIBCALL);
 
       /* eh_rest_world_r10 will return to the location saved in the LR
 	 stack slot (which is not likely to be our caller.)
@@ -27941,19 +27890,31 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
 	 The exception-handling stuff that was here in 2.95 is no
 	 longer necessary.  */
 
+      rtvec p;
       p = rtvec_alloc (9
 		       + 32 - info->first_gp_reg_save
 		       + LAST_ALTIVEC_REGNO + 1 - info->first_altivec_reg_save
 		       + 63 + 1 - info->first_fp_reg_save);
 
-      strcpy (rname, ((crtl->calls_eh_return) ?
-		      "*eh_rest_world_r10" : "*rest_world"));
-      alloc_rname = ggc_strdup (rname);
+      const char *rname;
+      switch (epilogue_type)
+	{
+	case EPILOGUE_TYPE_NORMAL:
+	  rname = ggc_strdup ("*rest_world");
+	  break;
 
-      j = 0;
+	case EPILOGUE_TYPE_EH_RETURN:
+	  rname = ggc_strdup ("*eh_rest_world_r10");
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+
+      int j = 0;
       RTVEC_ELT (p, j++) = ret_rtx;
       RTVEC_ELT (p, j++)
-	= gen_rtx_USE (VOIDmode, gen_rtx_SYMBOL_REF (Pmode, alloc_rname));
+	= gen_rtx_USE (VOIDmode, gen_rtx_SYMBOL_REF (Pmode, rname));
       /* The instruction pattern requires a clobber here;
 	 it is shared with the restVEC helper. */
       RTVEC_ELT (p, j++) = gen_hard_reg_clobber (Pmode, 11);
@@ -27972,6 +27933,7 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
 	  }
       }
 
+      int i;
       for (i = 0; i < 32 - info->first_gp_reg_save; i++)
 	{
 	  rtx reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
@@ -28196,7 +28158,7 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
     }
   else if (info->push_p
 	   && DEFAULT_ABI != ABI_V4
-	   && !crtl->calls_eh_return)
+	   && epilogue_type != EPILOGUE_TYPE_EH_RETURN)
     {
       /* Prevent reordering memory accesses against stack pointer restore.  */
       if (cfun->calls_alloca
@@ -28356,9 +28318,9 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
      function will deallocate the stack, so we don't need to worry
      about the unwinder restoring cr from an invalid stack frame
      location.  */
-  exit_func = (!restoring_FPRs_inline
-	       || (!restoring_GPRs_inline
-		   && info->first_fp_reg_save == 64));
+  bool exit_func = (!restoring_FPRs_inline
+		    || (!restoring_GPRs_inline
+			&& info->first_fp_reg_save == 64));
 
   /* In the ELFv2 ABI we need to restore all call-saved CR fields from
      *separate* slots if the routine calls __builtin_eh_return, so
@@ -28424,7 +28386,7 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
     restore_saved_lr (0, exit_func);
 
   /* Load exception handler data registers, if needed.  */
-  if (!sibcall && crtl->calls_eh_return)
+  if (epilogue_type == EPILOGUE_TYPE_EH_RETURN)
     {
       unsigned int i, regno;
 
@@ -28615,13 +28577,13 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
-  if (!sibcall && crtl->calls_eh_return)
+  if (epilogue_type == EPILOGUE_TYPE_EH_RETURN)
     {
       rtx sa = EH_RETURN_STACKADJ_RTX;
       emit_insn (gen_add3_insn (sp_reg_rtx, sp_reg_rtx, sa));
     }
 
-  if (!sibcall && restoring_FPRs_inline)
+  if (epilogue_type != EPILOGUE_TYPE_SIBCALL && restoring_FPRs_inline)
     {
       if (cfa_restores)
 	{
@@ -28646,7 +28608,7 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
       emit_jump_insn (targetm.gen_simple_return ());
     }
 
-  if (!sibcall && !restoring_FPRs_inline)
+  if (epilogue_type != EPILOGUE_TYPE_SIBCALL && !restoring_FPRs_inline)
     {
       bool lr = (strategy & REST_NOINLINE_FPRS_DOESNT_RESTORE_LR) == 0;
       rtvec p = rtvec_alloc (3 + !!lr + 64 - info->first_fp_reg_save);
@@ -28685,7 +28647,7 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
 
   if (cfa_restores)
     {
-      if (sibcall)
+      if (epilogue_type == EPILOGUE_TYPE_SIBCALL)
 	/* Ensure the cfa_restores are hung off an insn that won't
 	   be reordered above other restores.  */
 	emit_insn (gen_blockage ());
@@ -32986,7 +32948,7 @@ macho_branch_islands (void)
 	}
       else
 	{
-	  strcat (tmp_buf, ":\nlis r12,hi16(");
+	  strcat (tmp_buf, ":\n\tlis r12,hi16(");
 	  strcat (tmp_buf, name_buf);
 	  strcat (tmp_buf, ")\n\tori r12,r12,lo16(");
 	  strcat (tmp_buf, name_buf);
@@ -33039,7 +33001,7 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
   unsigned int length;
   char *symbol_name, *lazy_ptr_name;
   char *local_label_0;
-  static int label = 0;
+  static unsigned label = 0;
 
   /* Lose our funky encoding stuff so it doesn't contaminate the stub.  */
   symb = (*targetm.strip_name_encoding) (symb);
@@ -33065,8 +33027,8 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
       fprintf (file, "\t.indirect_symbol %s\n", symbol_name);
 
       label++;
-      local_label_0 = XALLOCAVEC (char, sizeof ("\"L00000000000$spb\""));
-      sprintf (local_label_0, "\"L%011d$spb\"", label);
+      local_label_0 = XALLOCAVEC (char, 16);
+      sprintf (local_label_0, "L%u$spb", label);
 
       fprintf (file, "\tmflr r0\n");
       if (TARGET_LINK_STACK)

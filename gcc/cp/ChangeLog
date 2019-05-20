@@ -1,3 +1,44 @@
+2019-05-20  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (finish_namespace_using_directive)
+	(finish_local_using_directive): Merge to ...
+	(finish_using_directive): ... here.  Handle both contexts.
+	* name-lookup.h (finish_namespace_using_directive)
+	(finish_local_using_directive): Replace with ...
+	(finish_using_directive): ... this.
+	* parser.c (cp_parser_using_directive): Adjust.
+	* pt.c (tsubst_expr): Likewise.
+
+	* cp-tree.h (struct lang_decl_ns): Remove usings field.
+	(DECL_NAMESPACE_USING): Delete.
+	* name-lookup.c (name_lookup::search_usings): Use namespace's
+	binding scope.
+	(name_lookup::queue_namespae): Likewise.
+	(finish_namespace_using_directive, push_namespace): Likewise.
+	(has_using_namespace_std_directive): Just search the entire
+	binding stack.
+
+2019-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/90532 Ensure __is_constructible(T[]) is false
+	* method.c (is_xible_helper): Return error_mark_node for construction
+	of an array of unknown bound.
+
+2019-05-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR c++/89433
+	* parser.c (cp_finalize_oacc_routine): Rework checking if already
+	marked with an OpenACC 'routine' directive.
+
+	PR c++/89433
+	* parser.c (cp_parser_oacc_routine)
+	(cp_parser_late_parsing_oacc_routine): Normalize order of clauses.
+	(cp_finalize_oacc_routine): Call oacc_verify_routine_clauses.
+
+	PR c++/89433
+	* parser.c (cp_finalize_oacc_routine): Refer to OpenACC 'routine'
+	clauses from "omp declare target" attribute.
+
 2019-05-16  Martin Sebor  <msebor@redhat.com>
 
         * call.c (print_z_candidate): Wrap diagnostic text in a gettext

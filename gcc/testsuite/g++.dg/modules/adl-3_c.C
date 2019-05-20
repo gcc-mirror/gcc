@@ -28,7 +28,7 @@ int main ()
   if (fn (x) != 2) // { dg-error "not declared in" }
     return 1;
 
-  // { dg-regexp "\[^\n]*adl-3_b.C:8:13: error: 'fn' was not declared in this scope\n" }
+  // { dg-regexp "\n\[^\n]*adl-3_b.C:8:13: error: 'fn' was not declared in this scope$" }
   if (TPL (x) != 2) // { dg-message "required from here" }
     return 2;
 

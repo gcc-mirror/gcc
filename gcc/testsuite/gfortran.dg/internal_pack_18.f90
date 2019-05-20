@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-additional-options "-fdump-tree-original" }
+! { dg-additional-options "-O0 -fdump-tree-original" }
 ! PR 57992 - this was packed/unpacked unnecessarily.
 ! Original case by Tobias Burnus.
 subroutine test

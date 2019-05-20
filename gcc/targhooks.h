@@ -110,7 +110,7 @@ default_builtin_support_vector_misalignment (machine_mode mode,
 					     int, bool);
 extern machine_mode default_preferred_simd_mode (scalar_mode mode);
 extern machine_mode default_split_reduction (machine_mode);
-extern void default_autovectorize_vector_sizes (vector_sizes *);
+extern void default_autovectorize_vector_sizes (vector_sizes *, bool);
 extern opt_machine_mode default_get_mask_mode (poly_uint64, poly_uint64);
 extern bool default_empty_mask_is_expensive (unsigned);
 extern void *default_init_cost (struct loop *);
@@ -205,6 +205,7 @@ extern unsigned int default_case_values_threshold (void);
 extern bool default_have_conditional_execution (void);
 
 extern bool default_libc_has_function (enum function_class);
+extern bool default_libc_has_fast_function (int fcode);
 extern bool no_c99_libc_has_function (enum function_class);
 extern bool gnu_libc_has_function (enum function_class);
 

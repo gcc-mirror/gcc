@@ -1,3 +1,121 @@
+2019-05-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/58321
+	* gcc.target/i386/memcpy-strategy-3.c: Adjust count for Darwin and
+	add a comment as to the reason for the difference.
+	* gcc.target/i386/memset-strategy-1.c: Likewise.
+
+2019-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/90532 Ensure __is_constructible(T[]) is false
+	* g++.dg/ext/90532.C: New test.
+
+2019-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/avx512f-simd-1.c: New test.
+
+2019-05-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/target_attr_10.c: Add quotes to expected
+	error message.
+	* gcc.target/arm/attr-neon-builtin-fail.c: Likewise.
+
+2019-05-20  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/90263
+	* gcc.c-torture/compile/pr90263.c: New test.
+	* lib/target-supports.exp: Add check_effective_target_glibc.
+
+2019-05-20  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/90518
+	* gcc.dg/gimplefe-40.c: Restrict to targets with appropriate
+	vector support.
+	* gcc.dg/gimplefe-41.c: Likewise.
+
+2019-05-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR pch/81721
+	* g++.dg/pch/operator-1.C: New testcase.
+	* g++.dg/pch/operator-1.Hs: New file.
+
+2019-05-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/90498
+	* gfortran.dg/associate_48.f90 : New test.
+
+2019-05-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/78290
+	* gfortran.dg/pr78290.f90: New test.
+
+2019-05-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/88821
+	* gfortran.dg/alloc_comp_auto_array_3.f90: Add -O0 to dg-options
+	to make sure the test for internal_pack is retained.
+	* gfortran.dg/assumed_type_2.f90: Split compile and run time
+	tests into this and
+	* gfortran.dg/assumed_type_2a.f90: New file.
+	* gfortran.dg/c_loc_test_22.f90: Likewise.
+	* gfortran.dg/contiguous_3.f90: Likewise.
+	* gfortran.dg/internal_pack_11.f90: Likewise.
+	* gfortran.dg/internal_pack_12.f90: Likewise.
+	* gfortran.dg/internal_pack_16.f90: Likewise.
+	* gfortran.dg/internal_pack_17.f90: Likewise.
+	* gfortran.dg/internal_pack_18.f90: Likewise.
+	* gfortran.dg/internal_pack_4.f90: Likewise.
+	* gfortran.dg/internal_pack_5.f90: Add -O0 to dg-options
+	to make sure the test for internal_pack is retained.
+	* gfortran.dg/internal_pack_6.f90: Split compile and run time
+	tests into this and
+	* gfortran.dg/internal_pack_6a.f90: New file.
+	* gfortran.dg/internal_pack_8.f90: Likewise.
+	* gfortran.dg/missing_optional_dummy_6: Split compile and run time
+	tests into this and
+	* gfortran.dg/missing_optional_dummy_6a.f90: New file.
+	* gfortran.dg/no_arg_check_2.f90: Split compile and run time tests
+	into this and
+	* gfortran.dg/no_arg_check_2a.f90: New file.
+	* gfortran.dg/typebound_assignment_5.f90: Split compile and run time
+	tests into this and
+	* gfortran.dg/typebound_assignment_5a.f90: New file.
+	* gfortran.dg/typebound_assignment_6.f90: Split compile and run time
+	tests into this and
+	* gfortran.dg/typebound_assignment_6a.f90: New file.
+	* gfortran.dg/internal_pack_19.f90: New file.
+	* gfortran.dg/internal_pack_20.f90: New file.
+	* gfortran.dg/internal_pack_21.f90: New file.
+
+2019-05-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc.dg/instancetype-0.m: New.
+
+2019-05-17  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/gcc_diag-11.c: Remove accidentally committed test.
+
+	* g++.dg/overload/conv-op1.C: Adjust text of expected messages.
+	* g++.dg/ubsan/pr63956.C: Same.
+	* g++.old-deja/g++.pt/assign1.C: Same.
+
+2019-05-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/89433
+	* c-c++-common/goacc/routine-5.c: Update.
+	* c-c++-common/goacc/routine-level-of-parallelism-1.c: Likewise.
+	* c-c++-common/goacc/routine-level-of-parallelism-2.c: New file.
+
+	PR testsuite/89433
+	* c-c++-common/goacc/routine-2.c: Update, and move some test
+	into...
+	* c-c++-common/goacc/routine-level-of-parallelism-1.c: ... this
+	new file.
+
+	PR testsuite/89433
+	* c-c++-common/goacc/classify-routine.c: Update.
+	* gfortran.dg/goacc/classify-routine.f95: Likewise.
+
 2019-05-16  Martin Sebor  <msebor@redhat.com>
 
         * c-c++-common/Wbool-operation-1.c: Adjust text of expected diagnostics.
@@ -54,8 +172,8 @@
         * gcc.dg/debug/pr85252.c: Same.
         * gcc.dg/dfp/cast-bad.c: Same.
         * gcc.dg/format/gcc_diag-1.c: Same.
-        * gcc.dg/format/gcc_diag-11.c: Same.New test.
-        * gcc.dg/gcc_diag-11.c: Same.New test.
+        * gcc.dg/format/gcc_diag-11.c: Same.
+        * gcc.dg/gcc_diag-11.c: Same.
         * gcc.dg/gnu-cond-expr-2.c: Same.
         * gcc.dg/gnu-cond-expr-3.c: Same.
         * gcc.dg/gomp/macro-4.c: Same.
@@ -357,7 +475,7 @@
 
 2019-05-15  Iain Sandoe  <iain@sandoe.co.uk>
 
-	* lib/target-supports.exp 
+	* lib/target-supports.exp
 	(check_effective_target_powerpc_p8vector_ok): No support for Darwin.
 	(check_effective_target_powerpc_p9vector_ok): Likewise.
 	(check_effective_target_powerpc_float128_sw_ok): Likewise.

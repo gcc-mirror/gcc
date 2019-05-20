@@ -2,7 +2,7 @@
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 template <class T>
-struct S {  // { dg-error "const member\[^\n\r\]*can't use default assignment operator" }
+struct S {  // { dg-error "const member\[^\n\r\]*cannot use default assignment operator" }
   S();
   T t;
 };

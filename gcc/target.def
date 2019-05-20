@@ -1899,12 +1899,14 @@ DEFHOOK
 the only one that is worth considering, this hook should add all suitable\n\
 vector sizes to @var{sizes}, in order of decreasing preference.  The first\n\
 one should be the size of @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.\n\
+If @var{all} is true, add suitable vector sizes even when they are generally\n\
+not expected to be worthwhile.\n\
 \n\
 The hook does not need to do anything if the vector returned by\n\
 @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is the only one relevant\n\
 for autovectorization.  The default implementation does nothing.",
  void,
- (vector_sizes *sizes),
+ (vector_sizes *sizes, bool all),
  default_autovectorize_vector_sizes)
 
 /* Function to get a target mode for a vector mask.  */
@@ -2546,6 +2548,13 @@ DEFHOOK
 @var{fn_class} is present at the runtime.",
  bool, (enum function_class fn_class),
  default_libc_has_function)
+
+DEFHOOK
+(libc_has_fast_function,
+ "This hook determines whether a function from a class of functions\n\
+@var{fn_class} has a fast implementation.",
+ bool, (int fcode),
+ default_libc_has_fast_function)
 
 /* True if new jumps cannot be created, to replace existing ones or
    not, at the current point in the compilation.  */
