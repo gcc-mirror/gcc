@@ -1,5 +1,9 @@
 2019-05-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/i386/sol2.h (CC1_SPEC): Reject -mx32.
+
+2019-05-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config/sol2.h (LIBTSAN_EARLY_SPEC): Remove : after %e.
 	(LIBLSAN_EARLY_SPEC): Likewise.
 	* config/i386/sol2.h (ASAN_REJECT_SPEC): Likewise.
