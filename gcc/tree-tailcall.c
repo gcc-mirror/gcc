@@ -140,6 +140,7 @@ suitable_for_tail_opt_p (void)
 
   return true;
 }
+
 /* Returns false when the function is not suitable for tail call optimization
    for some reason (e.g. if it takes variable number of arguments).
    This test must pass in addition to suitable_for_tail_opt_p in order to make
@@ -166,6 +167,11 @@ suitable_for_tail_call_opt_p (void)
      any called function.  ??? We really should represent this
      properly in the CFG so that this needn't be special cased.  */
   if (cfun->calls_setjmp)
+    return false;
+
+  /* Various targets don't handle tail calls correctly in functions
+     that call __builtin_eh_return.  */
+  if (cfun->calls_eh_return)
     return false;
 
   /* ??? It is OK if the argument of a function is taken in some cases,
