@@ -1,3 +1,8 @@
+2019-05-20  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/Wtype-limits-Wextra.c: Adjust expected output after
+	recent diagnostic cleanups.
+
 2019-05-20  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR tree-optimization/90106
