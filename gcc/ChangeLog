@@ -1,3 +1,8 @@
+2019-05-20  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386.c (ix86_libc_has_fast_function):
+	Add ATTRIBUTE_UNUSED for the argument.
+
 2019-05-20  Richard Biener  <rguenther@suse.de>
 
 	* gimple-match-head.c: Include vec-perm-indices.h.
