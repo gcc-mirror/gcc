@@ -2508,7 +2508,6 @@ rs6000_debug_reg_global (void)
 	   "f  reg_class = %s\n"
 	   "v  reg_class = %s\n"
 	   "wa reg_class = %s\n"
-	   "wb reg_class = %s\n"
 	   "wd reg_class = %s\n"
 	   "we reg_class = %s\n"
 	   "wf reg_class = %s\n"
@@ -2540,7 +2539,6 @@ rs6000_debug_reg_global (void)
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_f]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_v]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wa]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wb]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wd]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_we]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wf]],
@@ -3263,10 +3261,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
       if (FLOAT128_IEEE_P (TFmode))
 	rs6000_constraints[RS6000_CONSTRAINT_wp] = VSX_REGS;	/* TFmode  */
     }
-
-  /* Support for new D-form instructions.  */
-  if (TARGET_P9_VECTOR)
-    rs6000_constraints[RS6000_CONSTRAINT_wb] = ALTIVEC_REGS;
 
   /* Support for new direct moves (ISA 3.0 + 64bit).  */
   if (TARGET_DIRECT_MOVE_128)

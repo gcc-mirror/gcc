@@ -3246,9 +3246,6 @@ asm ("xsaddqp %x0,%x1,%x2"
 @noindent
 is incorrect.
 
-@item wb
-Altivec register if @option{-mcpu=power9} is used or NO_REGS.
-
 @item wd
 VSX vector register to hold vector double data or NO_REGS.
 
