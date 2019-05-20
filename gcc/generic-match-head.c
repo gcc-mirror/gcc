@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "ssa.h"
 #include "cgraph.h"
+#include "vec-perm-indices.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "tree-dfa.h"

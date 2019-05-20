@@ -1,3 +1,13 @@
+2019-05-20  Richard Biener  <rguenther@suse.de>
+
+	* gimple-match-head.c: Include vec-perm-indices.h.
+	* generic-match-head.c: Likewise.
+	* fold-const.h (fold_vec_perm): Declare when vec-perm-indices.h
+	is included.
+	* fold-const.c (fold_vec_perm): Export.
+	(fold_ternary_loc): Move non-constant folding of VEC_PERM_EXPR...
+	(match.pd): ...here.
+
 2019-05-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* cfgloop.h (struct loop): Add simdlen member.
