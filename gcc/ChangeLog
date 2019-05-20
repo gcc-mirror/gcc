@@ -1,3 +1,10 @@
+2019-05-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (compare_sizes): New function.
+	(sompare_type_sizes): New function
+	(aliasing_component_refs_p): Use it.
+	(indirect_ref_may_alias_decl_p): Likewise.
+
 2019-05-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/i386/sol2.h (CC1_SPEC): Reject -mx32.
