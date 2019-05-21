@@ -103,9 +103,6 @@
 (define_register_constraint "wx" "rs6000_constraints[RS6000_CONSTRAINT_wx]"
   "Floating point register if the STFIWX instruction is enabled or NO_REGS.")
 
-(define_register_constraint "wz" "rs6000_constraints[RS6000_CONSTRAINT_wz]"
-  "Floating point register if the LFIWZX instruction is enabled or NO_REGS.")
-
 (define_register_constraint "wA" "rs6000_constraints[RS6000_CONSTRAINT_wA]"
   "BASE_REGS if 64-bit instructions are enabled or NO_REGS.")
 

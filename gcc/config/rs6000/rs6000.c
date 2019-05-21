@@ -2521,7 +2521,6 @@ rs6000_debug_reg_global (void)
 	   "wv reg_class = %s\n"
 	   "ww reg_class = %s\n"
 	   "wx reg_class = %s\n"
-	   "wz reg_class = %s\n"
 	   "wA reg_class = %s\n"
 	   "\n",
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_d]],
@@ -2541,7 +2540,6 @@ rs6000_debug_reg_global (void)
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wv]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_ww]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wx]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wz]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wA]]);
 
   nl = "\n";
@@ -3160,8 +3158,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	wt - VSX register for TImode in VSX registers.
 	wv - Altivec register for ISA 2.06 VSX DF/DI load/stores.
 	ww - Register class to do SF conversions in with VSX operations.
-	wx - Float register if we can do 32-bit int stores.
-	wz - Float register if we can do 32-bit unsigned int loads.  */
+	wx - Float register if we can do 32-bit int stores.  */
 
   if (TARGET_HARD_FLOAT)
     {
@@ -3201,9 +3198,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 
   if (TARGET_STFIWX)
     rs6000_constraints[RS6000_CONSTRAINT_wx] = FLOAT_REGS;	/* DImode  */
-
-  if (TARGET_LFIWZX)
-    rs6000_constraints[RS6000_CONSTRAINT_wz] = FLOAT_REGS;	/* DImode  */
 
   if (TARGET_FLOAT128_TYPE)
     {
