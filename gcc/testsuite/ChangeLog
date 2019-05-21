@@ -1,5 +1,9 @@
 2019-05-21  Martin Liska  <mliska@suse.cz>
 
+	* gcc.dg/pr90263.c: Add -O2.
+
+2019-05-21  Martin Liska  <mliska@suse.cz>
+
 	* gcc.target/powerpc/ppc64-abi-warn-1.c: Wrap a type.
 	* gcc.target/powerpc/pr80315-1.c: Use new interval format.
 	* gcc.target/powerpc/pr80315-2.c: Likewise.
