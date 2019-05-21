@@ -3289,9 +3289,6 @@ FP or VSX register to perform float operations under @option{-mvsx} or NO_REGS.
 @item wx
 Floating point register if the STFIWX instruction is enabled or NO_REGS.
 
-@item wz
-Floating point register if the LFIWZX instruction is enabled or NO_REGS.
-
 @item wA
 Address base register if 64-bit instructions are enabled or NO_REGS.
 
