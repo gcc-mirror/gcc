@@ -3882,15 +3882,16 @@ pushdecl_outermost_localscope (tree x)
   return ret;
 }
 
-/* Process a local-scope or namespace-scope using declaration.
-   FIXME
-   is the nominated scope to search for NAME.  VALUE_P and TYPE_P
-   point to the binding for NAME in the current scope and are
-   updated.  */
+/* Process a local-scope or namespace-scope using declaration.  LOOKUP
+   is the result of qualified lookup (both value & type are
+   significant).  FN_SCOPE_P indicates if we're at function-scope (as
+   opposed to namespace-scope).  *VALUE_P and *TYPE_P are the current
+   bindings, which are altered to reflect the newly brought in
+   declarations.  */
 
 static bool
 do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
-			 bool insert_p, tree *value_p, tree *type_p)
+			 tree *value_p, tree *type_p)
 {
   tree value = *value_p;
   tree type = *type_p;
@@ -3957,7 +3958,7 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 		}
 	    }
 
-	  if (!found && insert_p)
+	  if (!found)
 	    /* Unlike the decl-pushing case we don't drop anticipated
 	       builtins here.  They don't cause a problem, and we'd
 	       like to match them with a future declaration.  */
@@ -3972,7 +3973,7 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
       diagnose_name_conflict (lookup.value, value);
       failed = true;
     }
-  else if (insert_p)
+  else
     value = lookup.value;
 
   if (lookup.type && lookup.type != type)
@@ -3982,21 +3983,18 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 	  diagnose_name_conflict (lookup.type, type);
 	  failed = true;
 	}
-      else if (insert_p)
+      else
 	type = lookup.type;
     }
 
-  if (insert_p)
+  /* If value is empty, shift any class or enumeration name back.  */
+  if (!value)
     {
-      /* If value is empty, shift any class or enumeration name back.  */
-      if (!value)
-	{
-	  value = type;
-	  type = NULL_TREE;
-	}
-      *value_p = value;
-      *type_p = type;
+      value = type;
+      type = NULL_TREE;
     }
+  *value_p = value;
+  *type_p = type;
 
   return failed;
 }
@@ -5080,7 +5078,7 @@ finish_nonmember_using_decl (tree scope, tree name)
       tree value = MAYBE_STAT_DECL (*slot);
       tree type = MAYBE_STAT_TYPE (*slot);
 
-      do_nonmember_using_decl (lookup, false, true, &value, &type);
+      do_nonmember_using_decl (lookup, false, &value, &type);
 
       if (STAT_HACK_P (*slot))
 	{
@@ -5110,7 +5108,7 @@ finish_nonmember_using_decl (tree scope, tree name)
       /* DR 36 questions why using-decls at function scope may not be
 	 duplicates.  Disallow it, as C++11 claimed and PR 20420
 	 implemented.  */
-      do_nonmember_using_decl (lookup, true, true, &value, &type);
+      do_nonmember_using_decl (lookup, true, &value, &type);
 
       if (!value)
 	;
@@ -5123,7 +5121,6 @@ finish_nonmember_using_decl (tree scope, tree name)
 	}
       else
 	/* Install the new binding.  */
-	// FIXME: Short circuit P_L_B
 	push_local_binding (name, value, true);
 
       if (!type)
