@@ -1253,7 +1253,6 @@ enum r6000_reg_class_enum {
   RS6000_CONSTRAINT_we,		/* VSX register if ISA 3.0 vector. */
   RS6000_CONSTRAINT_wf,		/* VSX register for V4SF */
   RS6000_CONSTRAINT_wg,		/* FPR register for -mmfpgpr */
-  RS6000_CONSTRAINT_wh,		/* FPR register for direct moves.  */
   RS6000_CONSTRAINT_wi,		/* FPR/VSX register to hold DImode */
   RS6000_CONSTRAINT_wj,		/* FPR/VSX register for DImode direct moves. */
   RS6000_CONSTRAINT_wk,		/* FPR/VSX register for DFmode direct moves. */
