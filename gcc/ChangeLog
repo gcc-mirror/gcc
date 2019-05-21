@@ -1,3 +1,9 @@
+2019-05-21  James Clarke  <jrtc27@jrtc27.com>
+
+	PR bootstrap/87338
+	* dwarf2out.c (dwarf2out_inline_entry): Use ASM_OUTPUT_DEBUG_LABEL
+	instead of ASM_GENERATE_INTERNAL_LABEL and ASM_OUTPUT_LABEL.
+
 2019-05-21  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/cpuid.h (__cpuid): For 32bit targets, zero
