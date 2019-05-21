@@ -380,7 +380,7 @@ def main():
   if len(args) == 1 and args[0] == '-':
     input = sys.stdin
   elif len(args) == 1:
-    input = open(args[0], 'rb')
+    input = open(args[0])
   else:
     error("too many arguments; for more details run with -h")
 
@@ -442,7 +442,7 @@ def main():
     shutil.copymode(args[0], tmp)
 
     # Open the temp file, clearing contents.
-    out = open(tmp, 'wb')
+    out = open(tmp, 'w')
   else:
     tmp = None
     out = sys.stdout
