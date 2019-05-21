@@ -1,3 +1,16 @@
+2019-05-21  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.h (struct cp_binding_level): Drop usings field.
+	(finish_namespace_using_decl, finish_local_using_decl): Replace with ...
+	(finish_nonmember_using_decl): ... this.
+	* name-lookup.c (push_using_decl_1, push_using_decl):
+	(do_nonmember_using_decl): ... here.  Add INSERT_P arg.  Reimplement.
+	(validate_nonmember_using_decl, finish_namespace_using_decl)
+	(finish_local_using_decl): Replace with ...
+	(finish_nonmember_using_decl): ... this.  Drop DECL parm.
+	* parser.c (cp_parser_using_declaration): Don't do lookup here.
+	* pt.c (tsubst_expr): Do not do using decl lookup here.
+
 2019-05-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl2.c (cpp_check) <IS_ASSIGNMENT_OPERATOR>: New case.

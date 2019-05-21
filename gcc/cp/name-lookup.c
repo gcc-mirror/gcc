@@ -3829,42 +3829,6 @@ make_lambda_name (void)
   return get_identifier (buf);
 }
 
-/* Insert another USING_DECL into the current binding level, returning
-   this declaration. If this is a redeclaration, do nothing, and
-   return NULL_TREE if this not in namespace scope (in namespace
-   scope, a using decl might extend any previous bindings).  */
-
-static tree
-push_using_decl_1 (tree scope, tree name)
-{
-  tree decl;
-
-  gcc_assert (TREE_CODE (scope) == NAMESPACE_DECL);
-  gcc_assert (identifier_p (name));
-  for (decl = current_binding_level->usings; decl; decl = DECL_CHAIN (decl))
-    if (USING_DECL_SCOPE (decl) == scope && DECL_NAME (decl) == name)
-      break;
-  if (decl)
-    return namespace_bindings_p () ? decl : NULL_TREE;
-  decl = build_lang_decl (USING_DECL, name, NULL_TREE);
-  USING_DECL_SCOPE (decl) = scope;
-  DECL_CHAIN (decl) = current_binding_level->usings;
-  current_binding_level->usings = decl;
-  return decl;
-}
-
-/* Wrapper for push_using_decl_1.  */
-
-static tree
-push_using_decl (tree scope, tree name)
-{
-  tree ret;
-  timevar_start (TV_NAME_LOOKUP);
-  ret = push_using_decl_1 (scope, name);
-  timevar_stop (TV_NAME_LOOKUP);
-  return ret;
-}
-
 /* Same as pushdecl, but define X in binding-level LEVEL.  We rely on the
    caller to set DECL_CONTEXT properly.
 
@@ -3918,91 +3882,19 @@ pushdecl_outermost_localscope (tree x)
   return ret;
 }
 
-/* Check a non-member using-declaration. Return the name and scope
-   being used, and the USING_DECL, or NULL_TREE on failure.  */
-
-static tree
-validate_nonmember_using_decl (tree decl, tree scope, tree name)
-{
-  /* [namespace.udecl]
-       A using-declaration for a class member shall be a
-       member-declaration.  */
-  if (TYPE_P (scope))
-    {
-      error ("%qT is not a namespace or unscoped enum", scope);
-      return NULL_TREE;
-    }
-  else if (scope == error_mark_node)
-    return NULL_TREE;
-
-  if (TREE_CODE (decl) == TEMPLATE_ID_EXPR)
-    {
-      /* 7.3.3/5
-	   A using-declaration shall not name a template-id.  */
-      error ("a using-declaration cannot specify a template-id.  "
-	     "Try %<using %D%>", name);
-      return NULL_TREE;
-    }
-
-  if (TREE_CODE (decl) == NAMESPACE_DECL)
-    {
-      error ("namespace %qD not allowed in using-declaration", decl);
-      return NULL_TREE;
-    }
-
-  if (TREE_CODE (decl) == SCOPE_REF)
-    {
-      /* It's a nested name with template parameter dependent scope.
-	 This can only be using-declaration for class member.  */
-      error ("%qT is not a namespace", TREE_OPERAND (decl, 0));
-      return NULL_TREE;
-    }
-
-  decl = OVL_FIRST (decl);
-
-  /* Make a USING_DECL.  */
-  tree using_decl = push_using_decl (scope, name);
-
-  if (using_decl == NULL_TREE
-      && at_function_scope_p ()
-      && VAR_P (decl))
-    /* C++11 7.3.3/10.  */
-    error ("%qD is already declared in this scope", name);
-  
-  return using_decl;
-}
-
-/* Process a local-scope or namespace-scope using declaration.  SCOPE
+/* Process a local-scope or namespace-scope using declaration.
+   FIXME
    is the nominated scope to search for NAME.  VALUE_P and TYPE_P
    point to the binding for NAME in the current scope and are
    updated.  */
 
-static void
-do_nonmember_using_decl (tree scope, tree name, tree *value_p, tree *type_p)
+static bool
+do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
+			 bool insert_p, tree *value_p, tree *type_p)
 {
-  name_lookup lookup (name, 0);
-
-  if (!qualified_namespace_lookup (scope, &lookup))
-    {
-      error ("%qD not declared", name);
-      return;
-    }
-  else if (TREE_CODE (lookup.value) == TREE_LIST)
-    {
-      error ("reference to %qD is ambiguous", name);
-      print_candidates (lookup.value);
-      lookup.value = NULL_TREE;
-    }
-
-  if (lookup.type && TREE_CODE (lookup.type) == TREE_LIST)
-    {
-      error ("reference to %qD is ambiguous", name);
-      print_candidates (lookup.type);
-      lookup.type = NULL_TREE;
-    }
-
   tree value = *value_p;
   tree type = *type_p;
+  bool failed = false;
 
   /* Shift the old and new bindings around so we're comparing class and
      enumeration names to each other.  */
@@ -4018,79 +3910,95 @@ do_nonmember_using_decl (tree scope, tree name, tree *value_p, tree *type_p)
       lookup.value = NULL_TREE;
     }
 
-  if (lookup.value && lookup.value != value)
+  if (!lookup.value)
+    /* Nothing.  */;
+  else if (OVL_P (lookup.value) && (!value || OVL_P (value)))
     {
-      /* Check for using functions.  */
-      if (OVL_P (lookup.value) && (!value || OVL_P (value)))
+      for (lkp_iterator usings (lookup.value); usings; ++usings)
 	{
-	  for (lkp_iterator usings (lookup.value); usings; ++usings)
+	  tree new_fn = *usings;
+
+	  /* [namespace.udecl]
+
+	     If a function declaration in namespace scope or block
+	     scope has the same name and the same parameter types as a
+	     function introduced by a using declaration the program is
+	     ill-formed.  */
+	  bool found = false;
+	  for (ovl_iterator old (value); !found && old; ++old)
 	    {
-	      tree new_fn = *usings;
+	      tree old_fn = *old;
 
-	      /* [namespace.udecl]
-
-		 If a function declaration in namespace scope or block
-		 scope has the same name and the same parameter types as a
-		 function introduced by a using declaration the program is
-		 ill-formed.  */
-	      bool found = false;
-	      for (ovl_iterator old (value); !found && old; ++old)
+	      if (new_fn == old_fn)
 		{
-		  tree old_fn = *old;
-
-		  if (new_fn == old_fn)
-		    /* The function already exists in the current
-		       namespace.  */
-		    found = true;
-		  else if (old.using_p ())
-		    continue; /* This is a using decl. */
-		  else if (old.hidden_p () && !DECL_HIDDEN_FRIEND_P (old_fn))
-		    continue; /* This is an anticipated builtin.  */
-		  else if (!matching_fn_p (new_fn, old_fn))
-		    continue; /* Parameters do not match.  */
-		  else if (decls_match (new_fn, old_fn))
-		    found = true;
-		  else
-		    {
-		      diagnose_name_conflict (new_fn, old_fn);
-		      found = true;
-		    }
+		  /* The function already exists in the current
+		     namespace.  */
+		  found = true;
+		  break;
 		}
-
-	      if (!found)
-		/* Unlike the overload case we don't drop anticipated
-		   builtins here.  They don't cause a problem, and
-		   we'd like to match them with a future
-		   declaration.  */
-		value = ovl_insert (new_fn, value, true);
+	      else if (old.using_p ())
+		continue; /* This is a using decl. */
+	      else if (old.hidden_p () && !DECL_HIDDEN_FRIEND_P (old_fn))
+		continue; /* This is an anticipated builtin.  */
+	      else if (!matching_fn_p (new_fn, old_fn))
+		continue; /* Parameters do not match.  */
+	      else if (decls_match (new_fn, old_fn))
+		{
+		  /* Extern "C" in different namespaces.  */
+		  found = true;
+		  break;
+		}
+	      else
+		{
+		  diagnose_name_conflict (new_fn, old_fn);
+		  failed = true;
+		  found = true;
+		  break;
+		}
 	    }
+
+	  if (!found && insert_p)
+	    /* Unlike the decl-pushing case we don't drop anticipated
+	       builtins here.  They don't cause a problem, and we'd
+	       like to match them with a future declaration.  */
+	    value = ovl_insert (new_fn, value, true);
 	}
-      else if (value
-	       /* Ignore anticipated builtins.  */
-	       && !anticipated_builtin_p (value)
-	       && !decls_match (lookup.value, value))
-	diagnose_name_conflict (lookup.value, value);
-      else
-	value = lookup.value;
     }
+  else if (value
+	   /* Ignore anticipated builtins.  */
+	   && !anticipated_builtin_p (value)
+	   && (fn_scope_p || !decls_match (lookup.value, value)))
+    {
+      diagnose_name_conflict (lookup.value, value);
+      failed = true;
+    }
+  else if (insert_p)
+    value = lookup.value;
 
   if (lookup.type && lookup.type != type)
     {
       if (type && !decls_match (lookup.type, type))
-	diagnose_name_conflict (lookup.type, type);
-      else
+	{
+	  diagnose_name_conflict (lookup.type, type);
+	  failed = true;
+	}
+      else if (insert_p)
 	type = lookup.type;
     }
 
-  /* If bind->value is empty, shift any class or enumeration name back.  */
-  if (!value)
+  if (insert_p)
     {
-      value = type;
-      type = NULL_TREE;
+      /* If value is empty, shift any class or enumeration name back.  */
+      if (!value)
+	{
+	  value = type;
+	  type = NULL_TREE;
+	}
+      *value_p = value;
+      *type_p = type;
     }
 
-  *value_p = value;
-  *type_p = type;
+  return failed;
 }
 
 /* Returns true if ANCESTOR encloses DESCENDANT, including matching.
@@ -5120,84 +5028,115 @@ pushdecl_namespace_level (tree x, bool is_friend)
   return t;
 }
 
-/* Process a using-declaration appearing in namespace scope.  */
+/* Process a using declaration in non-class scope.  */
 
 void
-finish_namespace_using_decl (tree decl, tree scope, tree name)
+finish_nonmember_using_decl (tree scope, tree name)
 {
-  tree orig_decl = decl;
+  gcc_checking_assert (current_binding_level->kind != sk_class);
+  gcc_checking_assert (identifier_p (name));
 
-  gcc_checking_assert (current_binding_level->kind == sk_namespace
-		       && !processing_template_decl);
-  decl = validate_nonmember_using_decl (decl, scope, name);
-  if (decl == NULL_TREE)
-    return;
+  name_lookup lookup (name, 0);
 
-  tree *slot = find_namespace_slot (current_namespace, name, true);
-  tree val = slot ? MAYBE_STAT_DECL (*slot) : NULL_TREE;
-  tree type = slot ? MAYBE_STAT_TYPE (*slot) : NULL_TREE;
-  do_nonmember_using_decl (scope, name, &val, &type);
-  if (STAT_HACK_P (*slot))
+  if (TREE_CODE (scope) != NAMESPACE_DECL)
     {
-      STAT_DECL (*slot) = val;
-      STAT_TYPE (*slot) = type;
+      error ("%qE is not a namespace or unscoped enum", scope);
+      return;
     }
-  else if (type)
-    *slot = stat_hack (val, type);
-  else
-    *slot = val;
 
-  /* Emit debug info.  */
-  cp_emit_debug_info_for_using (orig_decl, current_namespace);
-}
+  qualified_namespace_lookup (scope, &lookup);
 
-/* Process a using-declaration at function scope.  */
-
-void
-finish_local_using_decl (tree decl, tree scope, tree name)
-{
-  tree orig_decl = decl;
-
-  gcc_checking_assert (current_binding_level->kind != sk_class
-		       && current_binding_level->kind != sk_namespace);
-  decl = validate_nonmember_using_decl (decl, scope, name);
-  if (decl == NULL_TREE)
-    return;
-
-  add_decl_expr (decl);
-
-  cxx_binding *binding = find_local_binding (current_binding_level, name);
-  tree value = binding ? binding->value : NULL_TREE;
-  tree type = binding ? binding->type : NULL_TREE;
-
-  do_nonmember_using_decl (scope, name, &value, &type);
-
-  if (!value)
-    ;
-  else if (binding && value == binding->value)
-    ;
-  else if (binding && binding->value && TREE_CODE (value) == OVERLOAD)
+  if (!lookup.value)
     {
-      update_local_overload (IDENTIFIER_BINDING (name), value);
-      IDENTIFIER_BINDING (name)->value = value;
+      error ("%qD has not been declared in %qE", name, scope);
+      return;
     }
-  else
-    /* Install the new binding.  */
-    push_local_binding (name, value, true);
 
-  if (!type)
-    ;
-  else if (binding && type == binding->type)
-    ;
-  else
+  if (TREE_CODE (lookup.value) == TREE_LIST
+      /* But we can (independently) have ambiguous implicit typedefs.  */
+      || (lookup.type && TREE_CODE (lookup.type) == TREE_LIST))
     {
-      push_local_binding (name, type, true);
-      set_identifier_type_value (name, type);
+      error ("reference to %qD is ambiguous", name);
+      print_candidates (TREE_CODE (lookup.value) == TREE_LIST
+			? lookup.value : lookup.type);
+      return;
+    }
+
+  if (TREE_CODE (lookup.value) == NAMESPACE_DECL)
+    {
+      error ("using-declaration may not name namespace %qD", lookup.value);
+      return;
     }
 
   /* Emit debug info.  */
   if (!processing_template_decl)
-    cp_emit_debug_info_for_using (orig_decl, current_scope ());
+    cp_emit_debug_info_for_using (lookup.value,
+				  current_binding_level->this_entity);
+
+  if (current_binding_level->kind == sk_namespace)
+    {
+      tree *slot = find_namespace_slot (current_namespace, name, true);
+
+      tree value = MAYBE_STAT_DECL (*slot);
+      tree type = MAYBE_STAT_TYPE (*slot);
+
+      do_nonmember_using_decl (lookup, false, true, &value, &type);
+
+      if (STAT_HACK_P (*slot))
+	{
+	  STAT_DECL (*slot) = value;
+	  STAT_TYPE (*slot) = type;
+	}
+      else if (type)
+	*slot = stat_hack (value, type);
+      else
+	*slot = value;
+    }
+  else
+    {
+      tree using_decl = build_lang_decl (USING_DECL, name, NULL_TREE);
+      USING_DECL_SCOPE (using_decl) = scope;
+      add_decl_expr (using_decl);
+
+      cxx_binding *binding = find_local_binding (current_binding_level, name);
+      tree value = NULL;
+      tree type = NULL;
+      if (binding)
+	{
+	  value = binding->value;
+	  type = binding->type;
+	}
+
+      /* DR 36 questions why using-decls at function scope may not be
+	 duplicates.  Disallow it, as C++11 claimed and PR 20420
+	 implemented.  */
+      do_nonmember_using_decl (lookup, true, true, &value, &type);
+
+      if (!value)
+	;
+      else if (binding && value == binding->value)
+	;
+      else if (binding && binding->value && TREE_CODE (value) == OVERLOAD)
+	{
+	  update_local_overload (IDENTIFIER_BINDING (name), value);
+	  IDENTIFIER_BINDING (name)->value = value;
+	}
+      else
+	/* Install the new binding.  */
+	// FIXME: Short circuit P_L_B
+	push_local_binding (name, value, true);
+
+      if (!type)
+	;
+      else if (binding && type == binding->type)
+	;
+      else
+	{
+	  push_local_binding (name, type, true);
+	  set_identifier_type_value (name, type);
+	}
+    }
+
 }
 
 /* Return the declarations that are members of the namespace NS.  */

@@ -19519,24 +19519,7 @@ cp_parser_using_declaration (cp_parser* parser,
 	    finish_member_declaration (decl);
 	}
       else
-	{
-	  decl = cp_parser_lookup_name_simple (parser,
-					       identifier,
-					       token->location);
-	  if (decl == error_mark_node)
-	    cp_parser_name_lookup_error (parser, identifier,
-					 decl, NLE_NULL,
-					 token->location);
-	  else if (check_for_bare_parameter_packs (decl))
-	    {
-	      cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
-	      return false;
-	    }
-	  else if (!at_namespace_scope_p ())
-	    finish_local_using_decl (decl, qscope, identifier);
-	  else
-	    finish_namespace_using_decl (decl, qscope, identifier);
-	}
+	finish_nonmember_using_decl (qscope, identifier);
     }
 
   if (!access_declaration_p
