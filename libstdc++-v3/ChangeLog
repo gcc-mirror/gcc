@@ -1,3 +1,9 @@
+2019-05-21  Thomas Rodgers  <trodgers@redhat.com>
+
+	LWG 3062 - Unnecessary decay_t in is_execution_policy_v
+	* include/pstl/execution_defs.h (__enable_if_execution_policy):
+	Use std::__remove_cvref_t when building with GCC.
+
 2019-05-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90252
