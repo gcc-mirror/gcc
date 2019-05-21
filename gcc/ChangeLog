@@ -1,3 +1,11 @@
+2019-05-21  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backported from mainline
+	2019-05-16  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/arm/t-rtems: Replace ARMv7-M multilibs with Cortex-M
+	multilibs.
+
 2019-05-20  Jeff Law  <law@redhat.com>
 
 	Backport from mainline
