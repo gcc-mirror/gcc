@@ -1,6 +1,6 @@
 /* Verify whether math functions are simplified.  */
 /* { dg-require-effective-target c99_runtime } */
-/* { dg-require-weak } */
+/* { dg-require-weak "" } */
 double sin(double);
 double floor(double);
 float 
