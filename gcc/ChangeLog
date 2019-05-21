@@ -1,3 +1,11 @@
+2019-05-21  Vladislav Ivanishin  <vlad@ispras.ru>
+
+	* tree-ssa-uninit.c (value_sat_pred_p): This new function is a wrapper
+	around is_value_included_in that knows how to handle BIT_AND_EXPR.
+	(is_pred_expr_subset_of): Use the new function.  Handle more cases where
+	code1 == EQ_EXPR and where code1 == BIT_AND_EXPR and thus fix some false
+	positives.
+
 2019-05-21  Martin Liska  <mliska@suse.cz>
 
 	* config/rs6000/driver-rs6000.c (elf_platform): Do not use
