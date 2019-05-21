@@ -1,3 +1,10 @@
+2019-05-21  Alexandre Oliva <aoliva@redhat.com>
+
+	* tree-ssa-threadupdate.c (struct ssa_local_info_t): Add
+	field template_last_to_copy.
+	(ssa_create_duplicates): Set it, and use it.  Attempt to
+	preserve more debug stmts.
+
 2019-05-21  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (VF1_AVX2): New mode iterator.
