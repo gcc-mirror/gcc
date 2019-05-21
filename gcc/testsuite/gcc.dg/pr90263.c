@@ -1,4 +1,5 @@
 /* PR middle-end/90263 */
+/* { dg-do compile } */
 /* { dg-require-effective-target glibc } */
 
 int *f (int *p, int *q, long n)
