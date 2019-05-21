@@ -74,9 +74,6 @@
 (define_register_constraint "wi" "rs6000_constraints[RS6000_CONSTRAINT_wi]"
   "FP or VSX register to hold 64-bit integers for VSX insns or NO_REGS.")
 
-(define_register_constraint "wl" "rs6000_constraints[RS6000_CONSTRAINT_wl]"
-  "Floating point register if the LFIWAX instruction is enabled or NO_REGS.")
-
 ;; NO_REGs register constraint, used to merge mov{sd,sf}, since movsd can use
 ;; direct move directly, and movsf can't to move between the register sets.
 ;; There is a mode_attr that resolves to wa for SDmode and wn for SFmode
