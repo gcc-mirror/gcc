@@ -1,3 +1,8 @@
+2019-05-21  Marek Polacek  <polacek@redhat.com>
+
+	DR 1940 - static_assert in anonymous unions.
+	* g++.dg/DRs/dr1940.C: New test.
+
 2019-05-21  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/90547
