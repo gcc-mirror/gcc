@@ -5596,12 +5596,12 @@ end program atomic
 @code{EXECUTE_COMMAND_LINE} runs a shell command, synchronously or
 asynchronously.
 
-The @code{COMMAND} argument is passed to the shell and executed, using
-the C library's @code{system} call.  (The shell is @code{sh} on Unix
-systems, and @code{cmd.exe} on Windows.)  If @code{WAIT} is present
-and has the value false, the execution of the command is asynchronous
-if the system supports it; otherwise, the command is executed
-synchronously.
+The @code{COMMAND} argument is passed to the shell and executed (The
+shell is @code{sh} on Unix systems, and @code{cmd.exe} on Windows.).
+If @code{WAIT} is present and has the value false, the execution of
+the command is asynchronous if the system supports it; otherwise, the
+command is executed synchronously using the C library's @code{system}
+call.
 
 The three last arguments allow the user to get status information.  After
 synchronous execution, @code{EXITSTAT} contains the integer exit code of
@@ -5612,6 +5612,10 @@ if the command line was executed (whatever its exit status was).
 Note that the @code{system} function need not be thread-safe. It is
 the responsibility of the user to ensure that @code{system} is not
 called concurrently.
+
+For asynchronous execution on supported targets, the POSIX
+@code{posix_spawn} or @code{fork} functions are used.  Also, a signal
+handler for the @code{SIGCHLD} signal is installed.
 
 @item @emph{Standard}:
 Fortran 2008 and later

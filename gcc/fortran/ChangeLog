@@ -1,3 +1,10 @@
+2019-05-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	Backport from trunk
+	PR libfortran/90038
+	* intrinsic.texi (EXECUTE_COMMAND_LINE): Explain new
+	wait=.false. implementation.
+
 2019-05-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
