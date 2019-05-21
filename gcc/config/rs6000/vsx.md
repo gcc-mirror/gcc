@@ -3198,10 +3198,8 @@
 
 (define_insn "vsx_extract_<mode>"
   [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=d,    d,     wr, wr")
-
 	(vec_select:<VS_scalar>
-	 (match_operand:VSX_D 1 "gpc_reg_operand"      "<VSa>, <VSa>, wm, wa")
-
+	 (match_operand:VSX_D 1 "gpc_reg_operand"      "<VSa>, <VSa>, wa, wa")
 	 (parallel
 	  [(match_operand:QI 2 "const_0_to_1_operand"  "wD,    n,     wD, n")])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
@@ -3250,7 +3248,7 @@
     gcc_unreachable ();
 }
   [(set_attr "type" "veclogical,mftgpr,mftgpr,vecperm")
-   (set_attr "isa" "*,*,*,p9v")])
+   (set_attr "isa" "*,*,p8v,p9v")])
 
 ;; Optimize extracting a single scalar element from memory.
 (define_insn_and_split "*vsx_extract_<P:mode>_<VSX_D:mode>_load"
