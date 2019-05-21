@@ -1,5 +1,12 @@
 2019-05-20  Thomas Rodgers  <trodgers@redhat.com>
 
+	PR libstdc++/90252
+	* testsuite/lib/libstdc++.exp (check_effective_target_tbb-backend):
+	Changed v3_target_compile check from preprocess to executable.
+	Added "-ltbb" to v3_target_compile flags.
+
+2019-05-20  Thomas Rodgers  <trodgers@redhat.com>
+
 	* testsuite/lib/libstdc++.exp (check_effective_target_tbb-backend):
 	Add check for Thread Building Blocks 2018 or later.
 
