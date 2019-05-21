@@ -1,3 +1,21 @@
+2019-05-21  Martin Liska  <mliska@suse.cz>
+
+	* config/rs6000/driver-rs6000.c (elf_platform): Do not use
+	an extra newline.
+	* config/rs6000/rs6000-c.c (rs6000_pragma_longcal): Wrap pragma in %<%>.
+	(altivec_resolve_overloaded_builtin): Likewise for vec_lvsl and
+	vec_lvsr.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Quote a C type.
+	(rs6000_function_arg): Likewise.
+	(rs6000_expand_set_fpscr_drn_builtin): Remove trailing dot.
+	(rs6000_expand_ternop_builtin): Use interval syntax.
+	(get_element_number): Likewise.
+	(altivec_expand_builtin): Likewise.
+	(rs6000_get_function_versions_dispatcher): Quote target_clones.
+
+Fix test-suite.
+
 2019-05-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/59813
