@@ -34657,8 +34657,14 @@ rs6000_register_move_cost (machine_mode mode,
 	{
 	  if (TARGET_DIRECT_MOVE)
 	    {
+	      /* Keep the cost for direct moves above that for within
+		 a register class even if the actual processor cost is
+		 comparable.  We do this because a direct move insn
+		 can't be a nop, whereas with ideal register
+		 allocation a move within the same class might turn
+		 out to be a nop.  */
 	      if (rs6000_tune == PROCESSOR_POWER9)
-		ret = 2 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
+		ret = 3 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
 	      else
 		ret = 4 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
 	      /* SFmode requires a conversion when moving between gprs

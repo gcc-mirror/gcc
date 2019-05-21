@@ -1,3 +1,11 @@
+2019-05-21  Alan Modra  <amodra@gmail.com>
+
+	PR target/90545
+	* config/rs6000/rs6000.c (rs6000_register_move_cost): Increase
+	power9 direct move cost.
+	* testsuite/gcc.target/powerpc/fold-vec-splats-floatdouble.c:
+	Correct comments and rename functions to suit parameters.
+
 2019-05-21  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/90510
