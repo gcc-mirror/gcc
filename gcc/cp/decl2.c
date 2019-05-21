@@ -4249,6 +4249,8 @@ cpp_check (tree t, cpp_operation op)
 	}
       case IS_ABSTRACT:
 	return DECL_PURE_VIRTUAL_P (t);
+      case IS_ASSIGNMENT_OPERATOR:
+	return DECL_ASSIGNMENT_OPERATOR_P (t);
       case IS_CONSTRUCTOR:
 	return DECL_CONSTRUCTOR_P (t);
       case IS_DESTRUCTOR:

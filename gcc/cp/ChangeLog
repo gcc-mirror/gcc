@@ -1,3 +1,7 @@
+2019-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl2.c (cpp_check) <IS_ASSIGNMENT_OPERATOR>: New case.
+
 2019-05-20  Marek Polacek  <polacek@redhat.com>
 
 	CWG 2094 - volatile scalars are trivially copyable.
