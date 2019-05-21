@@ -279,6 +279,9 @@
 (define_mode_iterator VF1
   [(V16SF "TARGET_AVX512F") (V8SF "TARGET_AVX") V4SF])
 
+(define_mode_iterator VF1_AVX2
+  [(V16SF "TARGET_AVX512F") (V8SF "TARGET_AVX2") V4SF])
+
 ;; 128- and 256-bit SF vector modes
 (define_mode_iterator VF1_128_256
   [(V8SF "TARGET_AVX") V4SF])
@@ -3522,6 +3525,15 @@
 
   operands[4] = gen_reg_rtx (<MODE>mode);
 })
+
+(define_expand "signbit<mode>2"
+  [(set (match_operand:<sseintvecmode> 0 "register_operand")
+	(lshiftrt:<sseintvecmode>
+	  (subreg:<sseintvecmode>
+	    (match_operand:VF1_AVX2 1 "register_operand") 0)
+	  (match_dup 2)))]
+  "TARGET_SSE2"
+  "operands[2] = GEN_INT (GET_MODE_UNIT_BITSIZE (<MODE>mode)-1);")
 
 ;; Also define scalar versions.  These are used for abs, neg, and
 ;; conditional move.  Using subregs into vector modes causes register

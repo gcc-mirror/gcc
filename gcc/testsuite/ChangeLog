@@ -1,3 +1,7 @@
+2019-05-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/vect-signbitf.c: New test.
+
 2019-05-21  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/lookup/using53.C: Adjust diagnostic.
