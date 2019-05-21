@@ -1,5 +1,10 @@
 2019-05-21  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/90252
+	* testsuite/lib/libstdc++.exp (check_effective_target_tbb-backend):
+	Use "additional_flags" to pass -ltbb to v3_target_compile command.
+	Use check_v3_target_prop_cached to cache the result of the test.
+
 	* doc/xml/manual/shared_ptr.xml: Fix names of lock policy constants.
 
 2019-05-20  Thomas Rodgers  <trodgers@redhat.com>
