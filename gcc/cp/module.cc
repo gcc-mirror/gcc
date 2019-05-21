@@ -2902,8 +2902,7 @@ private:
  public:
   /* Serialize various definitions. */
   void write_definition (tree decl);
-  void mark_definition (tree decl);
-  void mark_declaration (tree decl);
+  void mark_declaration (tree decl, bool do_defn);
 
  private:
   void mark_function_def (tree decl);
@@ -8687,9 +8686,7 @@ trees_out::mark_class_member (tree member, bool do_defn)
 	member = TI_TEMPLATE (ti);
     }
 
-  mark_declaration (member);
-  if (do_defn && has_definition (member))
-    mark_definition (member);
+  mark_declaration (member, do_defn && has_definition (member));
 }
 
 void
@@ -8706,18 +8703,11 @@ trees_out::mark_class_def (tree defn)
     {
       if (tree as_base = CLASSTYPE_AS_BASE (type))
 	if (as_base != type)
-	  {
-	    tree base_decl = TYPE_NAME (as_base);
-	    mark_declaration (base_decl);
-	    mark_definition (base_decl);
-	  }
+	  mark_declaration (TYPE_NAME (as_base), true);
 
       for (tree vtable = CLASSTYPE_VTABLES (type);
 	   vtable; vtable = TREE_CHAIN (vtable))
-	{
-	  mark_declaration (vtable);
-	  mark_definition (vtable);
-	}
+	mark_declaration (vtable, true);
 
       for (tree decls = CLASSTYPE_DECL_LIST (type);
 	   decls; decls = TREE_CHAIN (decls))
@@ -8975,17 +8965,14 @@ trees_out::write_definition (tree decl)
 }
 
 void
-trees_out::mark_declaration (tree decl)
+trees_out::mark_declaration (tree decl, bool do_defn)
 {
-  // FIXME:Mark the template header
+  // FIXME:Mark the template header?
   mark_node (decl);
-}
 
-/* Mark the body of DECL.  */
+  if (!do_defn)
+    return;
 
-void
-trees_out::mark_definition (tree decl)
-{
  again:
   switch (TREE_CODE (decl))
     {
@@ -9521,9 +9508,8 @@ depset::hash::find_dependencies ()
 	walker.tree_ctx (OVL_FUNCTION (decl), false, NULL_TREE);
       else if (!TREE_VISITED (decl))
 	{
-	  walker.mark_declaration (decl);
-	  if (current->has_defn ())
-	    walker.mark_definition (decl);
+	  walker.mark_declaration (decl, current->has_defn ());
+
 	  /* Turn the Sneakoscope on when depending the decl.  */
 	  sneakoscope = true;
 	  walker.tree_ctx (decl, false, NULL_TREE);
@@ -11531,9 +11517,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	{
 	  tree decl = b->get_entity ();
 
-	  sec.mark_declaration (decl);
-	  if (b->has_defn ())
-	    sec.mark_definition (decl);
+	  sec.mark_declaration (decl, b->has_defn ());
 	}
     }
 

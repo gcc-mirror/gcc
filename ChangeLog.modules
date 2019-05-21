@@ -1,5 +1,10 @@
 2019-05-21  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_out::mark_declaration): Add do_defn parm, mark
+	definition if set.  Adjust callers.
+	(trees_out::mark_definition): Merge into mark_declaration.
+
 	Merge trunk r271478.
 
 	Merge trunk r271467.
