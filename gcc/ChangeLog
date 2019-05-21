@@ -1,3 +1,12 @@
+2019-05-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90510
+	* fold-const.c (fold_read_from_vector): New function.
+	* fold-const.h (fold_read_from_vector): Declare.
+	* match.pd (VEC_PERM_EXPR): Build BIT_INSERT_EXPRs for
+	single-element insert permutations.  Canonicalize selector
+	further and fix issue with last commit.
+
 2019-05-21  Vladislav Ivanishin  <vlad@ispras.ru>
 
 	* tree-cfg.h (split_critical_edges): Add for_edge_insertion_p

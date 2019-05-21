@@ -100,6 +100,7 @@ extern tree fold_bit_and_mask (tree, tree, enum tree_code,
 			       tree, enum tree_code, tree, tree,
 			       tree, enum tree_code, tree, tree, tree *);
 extern tree fold_read_from_constant_string (tree);
+extern tree fold_read_from_vector (tree, poly_uint64);
 #if GCC_VEC_PERN_INDICES_H
 extern tree fold_vec_perm (tree, tree, tree, const vec_perm_indices &);
 #endif

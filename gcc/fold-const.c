@@ -13793,6 +13793,28 @@ fold_read_from_constant_string (tree exp)
   return NULL;
 }
 
+/* Folds a read from vector element at IDX of vector ARG.  */
+
+tree
+fold_read_from_vector (tree arg, poly_uint64 idx)
+{
+  unsigned HOST_WIDE_INT i;
+  if (known_lt (idx, TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg)))
+      && known_ge (idx, 0u)
+      && idx.is_constant (&i))
+    {
+      if (TREE_CODE (arg) == VECTOR_CST)
+	return VECTOR_CST_ELT (arg, i);
+      else if (TREE_CODE (arg) == CONSTRUCTOR)
+	{
+	  if (i >= CONSTRUCTOR_NELTS (arg))
+	    return build_zero_cst (TREE_TYPE (TREE_TYPE (arg)));
+	  return CONSTRUCTOR_ELT (arg, i)->value;
+	}
+    }
+  return NULL_TREE;
+}
+
 /* Return the tree for neg (ARG0) when ARG0 is known to be either
    an integer constant, real, or fixed-point constant.
 

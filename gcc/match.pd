@@ -5406,6 +5406,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	       op0 = op1;
 	       sel.rotate_inputs (1);
 	     }
+	   else if (known_ge (poly_uint64 (sel[0]), nelts))
+	     {
+	       std::swap (op0, op1);
+	       sel.rotate_inputs (1);
+	     }
          }
        gassign *def;
        tree cop0 = op0, cop1 = op1;
@@ -5429,9 +5434,46 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (with
       {
 	bool changed = (op0 == op1 && !single_arg);
+	tree ins = NULL_TREE;
+	unsigned at = 0;
+
+	/* See if the permutation is performing a single element
+	   insert from a CONSTRUCTOR or constant and use a BIT_INSERT_EXPR
+	   in that case.  But only if the vector mode is supported,
+	   otherwise this is invalid GIMPLE.  */
+        if (TYPE_MODE (type) != BLKmode
+	    && (TREE_CODE (cop0) == VECTOR_CST
+		|| TREE_CODE (cop0) == CONSTRUCTOR
+		|| TREE_CODE (cop1) == VECTOR_CST
+		|| TREE_CODE (cop1) == CONSTRUCTOR))
+          {
+	    if (sel.series_p (1, 1, nelts + 1, 1))
+	      {
+	        /* After canonicalizing the first elt to come from the
+		   first vector we only can insert the first elt from
+		   the first vector.  */
+	        at = 0;
+		ins = fold_read_from_vector (cop0, 0);
+	        op0 = op1;
+	      }
+	    else
+	      {
+	        unsigned int encoded_nelts = sel.encoding ().encoded_nelts ();
+		for (at = 0; at < encoded_nelts; ++at)
+		  if (maybe_ne (sel[at], at))
+		    break;
+		if (at < encoded_nelts && sel.series_p (at + 1, 1, at + 1, 1))
+		  {
+		    if (known_lt (at, nelts))
+		      ins = fold_read_from_vector (cop0, sel[at]);
+		    else
+		      ins = fold_read_from_vector (cop1, sel[at] - nelts);
+		  }
+	      }
+	  }
 
 	/* Generate a canonical form of the selector.  */
-	if (sel.encoding () != builder)
+	if (!ins && sel.encoding () != builder)
 	  {
 	    /* Some targets are deficient and fail to expand a single
 	       argument permutation while still allowing an equivalent
@@ -5450,10 +5492,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		     so use the preferred form.  */
 		  op2 = vec_perm_indices_to_tree (TREE_TYPE (op2), sel);
 	      }
-	    /* Differences in the encoder do not necessarily mean
-	       differences in the resulting vector.  */
-	    changed = !operand_equal_p (op2, oldop2, 0);
+	    if (!operand_equal_p (op2, oldop2, 0))
+	      changed = true;
 	  }
       }
-      (if (changed)
-       (vec_perm { op0; } { op1; } { op2; })))))))))
+      (if (ins)
+       (bit_insert { op0; } { ins; }
+         { bitsize_int (at * tree_to_uhwi (TYPE_SIZE (TREE_TYPE (type)))); })
+       (if (changed)
+        (vec_perm { op0; } { op1; } { op2; }))))))))))
