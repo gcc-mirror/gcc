@@ -1,7 +1,7 @@
 2019-05-16  Martin Sebor  <msebor@redhat.com>
 
-        * gcc-interface/trans.c (check_inlining_for_nested_subprog): Quote
-        reserved names.
+	* gcc-interface/trans.c (check_inlining_for_nested_subprog): Quote
+	reserved names.
 
 2019-05-08  Arnaud Charlet  <charlet@adacore.com>
 
