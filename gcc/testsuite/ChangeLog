@@ -1,3 +1,40 @@
+2019-05-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/Wattribute-alias.c: Pass emtpy arg to dg-require-ifunc.
+
+	* gcc.c-torture/execute/20030125-1.c: Pass emtpy arg to dg-require-weak.
+
+	* gcc.dg/torture/ftrapv-2.c: Pass empty arg to dg-require-fork.
+
+	* gcc.target/i386/pr84723-1.c: Remove dg-require-ifunc.
+	* gcc.target/i386/pr84723-2.c: Likewise.
+	* gcc.target/i386/pr84723-3.c: Likewise.
+	* gcc.target/i386/pr84723-4.c: Likewise.
+	* gcc.target/i386/pr84723-5.c: Likewise.
+
+2019-05-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/67958
+	* gcc.target/i386/pr32219-1.c: Adjust scan-asms for Darwin, comment
+	the differences.
+	* gcc.target/i386/pr32219-2.c: Likewise.
+	* gcc.target/i386/pr32219-3.c: Likewise.
+	* gcc.target/i386/pr32219-4.c: Likewise.
+	* gcc.target/i386/pr32219-5.c: Likewise.
+	* gcc.target/i386/pr32219-6.c: Likewise.
+	* gcc.target/i386/pr32219-7.c: Likewise.
+	* gcc.target/i386/pr32219-8.c: Likewise.
+
+2019-05-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/63891
+	* gcc.dg/darwin-weakimport-3.c: Adjust options and explain
+	the reasons.
+
+2019-05-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/vect-signbitf.c: New test.
+
 2019-05-21  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/lookup/using53.C: Adjust diagnostic.

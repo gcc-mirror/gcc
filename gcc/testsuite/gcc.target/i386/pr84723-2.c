@@ -1,6 +1,5 @@
 /* PR middle-end/84723 */
 /* { dg-do compile } */
-/* { dg-require-ifunc } */
 /* { dg-options "-O2" } */
 
 __attribute__((target_clones ("avx", "default")))

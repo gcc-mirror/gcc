@@ -1,3 +1,27 @@
+2019-05-21  Alexandre Oliva <aoliva@redhat.com>
+
+	* tree-ssa-threadupdate.c (struct ssa_local_info_t): Add
+	field template_last_to_copy.
+	(ssa_create_duplicates): Set it, and use it.  Attempt to
+	preserve more debug stmts.
+
+2019-05-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (VF1_AVX2): New mode iterator.
+	(signbit<mode>2): New expander
+
+2019-05-21  James Clarke  <jrtc27@jrtc27.com>
+
+	PR bootstrap/87338
+	* dwarf2out.c (dwarf2out_inline_entry): Use ASM_OUTPUT_DEBUG_LABEL
+	instead of ASM_GENERATE_INTERNAL_LABEL and ASM_OUTPUT_LABEL.
+
+2019-05-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/cpuid.h (__cpuid): For 32bit targets, zero
+	%ebx and %ecx bafore calling cpuid with leaf 1 or
+	non-constant leaf argument.
+
 2019-05-21  Alan Modra  <amodra@gmail.com>
 
 	PR target/90545

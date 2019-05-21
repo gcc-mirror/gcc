@@ -1,5 +1,10 @@
 2019-05-21  Nathan Sidwell  <nathan@acm.org>
 
+	* name-lookup.c (do_nonmember_using_decl): Drop INSERT_P
+	parameter.  Document.
+	(finish_nonmember_using_decl): Adjust do_nonmember_using_decl
+	calls.  Remove stray FIXME comment.
+
 	* name-lookup.h (struct cp_binding_level): Drop usings field.
 	(finish_namespace_using_decl, finish_local_using_decl): Replace with ...
 	(finish_nonmember_using_decl): ... this.

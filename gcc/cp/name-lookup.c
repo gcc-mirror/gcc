@@ -5101,10 +5101,12 @@ pushdecl_outermost_localscope (tree x)
   return ret;
 }
 
-/* Process a local-scope or namespace-scope using declaration.  SCOPE
-   is the nominated scope to search for NAME.  VALUE_P and TYPE_P
-   point to the binding for NAME in the current scope and are
-   updated.  */
+/* Process a local-scope or namespace-scope using declaration.  LOOKUP
+   is the result of qualified lookup (both value & type are
+   significant).  FN_SCOPE_P indicates if we're at function-scope (as
+   opposed to namespace-scope).  *VALUE_P and *TYPE_P are the current
+   bindings, which are altered to reflect the newly brought in
+   declarations.  */
 
 static bool
 do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
@@ -6444,7 +6446,6 @@ finish_nonmember_using_decl (tree scope, tree name)
 	}
       else
 	/* Install the new binding.  */
-	// FIXME: Short circuit P_L_B
 	push_local_binding (name, value, true);
 
       if (!type)
