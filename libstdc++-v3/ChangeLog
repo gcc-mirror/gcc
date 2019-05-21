@@ -1,3 +1,8 @@
+2019-05-20  Thomas Rodgers  <trodgers@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (check_effective_target_tbb-backend):
+	Add check for Thread Building Blocks 2018 or later.
+
 2019-05-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/experimental/names.cc: Only include Networking TS headers
