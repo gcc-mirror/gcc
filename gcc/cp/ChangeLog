@@ -1,3 +1,10 @@
+2019-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67184
+	PR c++/69445
+	* call.c (build_over_call): Devirtualize when the final overrider
+	comes from the base.
+
 2019-05-21  Nathan Sidwell  <nathan@acm.org>
 
 	* name-lookup.c (do_nonmember_using_decl): Drop INSERT_P
