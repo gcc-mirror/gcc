@@ -1,3 +1,7 @@
+2019-05-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/shared_ptr.xml: Fix names of lock policy constants.
+
 2019-05-20  Thomas Rodgers  <trodgers@redhat.com>
 
 	PR libstdc++/90252
