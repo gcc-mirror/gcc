@@ -1,5 +1,10 @@
 2019-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* parser.c (cp_parser_template_declaration_after_parameters): Use
+	DECL_SOURCE_LOCATION in literal operator template errors.
+
+2019-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/67184
 	PR c++/69445
 	* call.c (build_over_call): Devirtualize when the final overrider
