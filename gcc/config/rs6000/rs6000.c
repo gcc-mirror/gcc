@@ -2513,7 +2513,6 @@ rs6000_debug_reg_global (void)
 	   "wf reg_class = %s\n"
 	   "wg reg_class = %s\n"
 	   "wi reg_class = %s\n"
-	   "wj reg_class = %s\n"
 	   "wk reg_class = %s\n"
 	   "wl reg_class = %s\n"
 	   "wm reg_class = %s\n"
@@ -2537,7 +2536,6 @@ rs6000_debug_reg_global (void)
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wf]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wg]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wi]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wj]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wk]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wl]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wm]],
@@ -3162,7 +3160,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	wf - Preferred register class for V4SFmode.
 	wg - Float register for power6x move insns.
 	wi - FP or VSX register to hold 64-bit integers for VSX insns.
-	wj - FP or VSX register to hold 64-bit integers for direct moves.
 	wk - FP or VSX register to hold 64-bit doubles for direct moves.
 	wl - Float register if we can do 32-bit signed int loads.
 	wm - VSX register for ISA 2.07 direct move operations.
@@ -3205,8 +3202,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 
   if (TARGET_DIRECT_MOVE)
     {
-      rs6000_constraints[RS6000_CONSTRAINT_wj]			/* DImode  */
-	= rs6000_constraints[RS6000_CONSTRAINT_wi];
       rs6000_constraints[RS6000_CONSTRAINT_wk]			/* DFmode  */
 	= rs6000_constraints[RS6000_CONSTRAINT_ws];
       rs6000_constraints[RS6000_CONSTRAINT_wm] = VSX_REGS;

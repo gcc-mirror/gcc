@@ -74,9 +74,6 @@
 (define_register_constraint "wi" "rs6000_constraints[RS6000_CONSTRAINT_wi]"
   "FP or VSX register to hold 64-bit integers for VSX insns or NO_REGS.")
 
-(define_register_constraint "wj" "rs6000_constraints[RS6000_CONSTRAINT_wj]"
-  "FP or VSX register to hold 64-bit integers for direct moves or NO_REGS.")
-
 (define_register_constraint "wk" "rs6000_constraints[RS6000_CONSTRAINT_wk]"
   "FP or VSX register to hold 64-bit doubles for direct moves or NO_REGS.")
 
