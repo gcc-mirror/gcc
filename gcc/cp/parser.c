@@ -27895,14 +27895,16 @@ cp_parser_template_declaration_after_parameters (cp_parser* parser,
       if (!ok)
 	{
 	  if (cxx_dialect > cxx17)
-	    error ("literal operator template %qD has invalid parameter list;"
-		   " expected non-type template parameter pack %<<char...>%> "
-		   "or single non-type parameter of class type",
-		   decl);
+	    error_at (DECL_SOURCE_LOCATION (decl), "literal operator "
+		      "template %qD has invalid parameter list; expected "
+		      "non-type template parameter pack %<<char...>%> or "
+		      "single non-type parameter of class type",
+		      decl);
 	  else
-	    error ("literal operator template %qD has invalid parameter list;"
-		   " expected non-type template parameter pack %<<char...>%>",
-		   decl);
+	    error_at (DECL_SOURCE_LOCATION (decl), "literal operator "
+		      "template %qD has invalid parameter list; expected "
+		      "non-type template parameter pack %<<char...>%>",
+		      decl);
 	}
     }
 
