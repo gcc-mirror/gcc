@@ -1,3 +1,8 @@
+2019-05-20  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (gimplify_adjust_omp_clauses_1): Support implied no_alloc
+	and optional arguments based on mappings in enclosing data regions.
+
 2019-05-19  Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.cc (oacc_array_mapping_info): Add REF field.

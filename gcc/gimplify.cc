@@ -12508,9 +12508,12 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
     {
       tree mapping = array_info->mapping;
       tree pointer = array_info->pointer;
-      const gomp_map_kind presence_kind
-	= omp_check_optional_argument (decl, false) ? GOMP_MAP_IF_PRESENT
-						    : GOMP_MAP_FORCE_PRESENT;
+      gomp_map_kind presence_kind = GOMP_MAP_FORCE_PRESENT;
+      bool no_alloc = (OMP_CLAUSE_CODE (mapping) == OMP_CLAUSE_MAP
+		       && OMP_CLAUSE_MAP_KIND (mapping) == GOMP_MAP_IF_PRESENT);
+
+      if (no_alloc || omp_check_optional_argument (decl, false))
+        presence_kind = GOMP_MAP_IF_PRESENT;
 
       if (code == OMP_CLAUSE_FIRSTPRIVATE)
 	/* Oops, we have the wrong type of clause.  Rebuild it.  */
@@ -12525,7 +12528,8 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
       tree nc = build_omp_clause (OMP_CLAUSE_LOCATION (clause),
 				  OMP_CLAUSE_MAP);
       OMP_CLAUSE_DECL (nc) = unshare_expr (OMP_CLAUSE_DECL (pointer));
-      OMP_CLAUSE_SET_MAP_KIND (nc, GOMP_MAP_POINTER);
+      OMP_CLAUSE_SET_MAP_KIND (nc, no_alloc ? GOMP_MAP_FIRSTPRIVATE_POINTER
+					    : GOMP_MAP_POINTER);
 
       /* For GOMP_MAP_FIRSTPRIVATE_POINTER, this is a bias, not a size.  */
       OMP_CLAUSE_SIZE (nc) = unshare_expr (OMP_CLAUSE_SIZE (pointer));
