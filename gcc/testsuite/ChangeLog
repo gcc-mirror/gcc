@@ -1,3 +1,8 @@
+2019-05-21  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/pr90500-1.c: Add missing '""'.
+	* gcc.target/i386/pr90500-2.c: Likewise.
+
 2019-05-21  Vladislav Ivanishin  <vlad@ispras.ru>
 
 	* gcc.dg/uninit-28-gimple.c: New test.
