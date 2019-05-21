@@ -1,5 +1,19 @@
 2019-05-21  Vladislav Ivanishin  <vlad@ispras.ru>
 
+	* tree-cfg.h (split_critical_edges): Add for_edge_insertion_p
+	parameter with default value false to declaration.
+	(split_edges_for_insertion): New inline function.  Wrapper for
+	split_critical_edges with for_edge_insertion_p = true.
+	* tree-cfg.c (split_critical_edges): Don't split non-critical
+	edges if for_edge_insertion_p is false.  Fix whitespace.
+	* tree-ssa-pre.c (pass_pre::execute): Call
+	split_edges_for_insertion instead of split_critical_edges.
+	* gcc/tree-ssa-tail-merge.c (tail_merge_optimize): Ditto.
+	* gcc/tree-ssa-sink.c (pass_sink_code::execute): Ditto.
+	(pass_data_sink_code): Update function name in the comment.
+
+2019-05-21  Vladislav Ivanishin  <vlad@ispras.ru>
+
 	* tree-ssa-uninit.c (value_sat_pred_p): This new function is a wrapper
 	around is_value_included_in that knows how to handle BIT_AND_EXPR.
 	(is_pred_expr_subset_of): Use the new function.  Handle more cases where

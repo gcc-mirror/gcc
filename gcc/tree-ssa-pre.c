@@ -4183,7 +4183,7 @@ pass_pre::execute (function *fun)
   /* This has to happen before VN runs because
      loop_optimizer_init may create new phis, etc.  */
   loop_optimizer_init (LOOPS_NORMAL);
-  split_critical_edges ();
+  split_edges_for_insertion ();
   scev_initialize ();
   calculate_dominance_info (CDI_DOMINATORS);
 
