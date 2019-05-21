@@ -1581,34 +1581,33 @@ proc check_effective_target_random_device { } {
 
 # Return 1 if tbb parallel backend is available
 proc check_effective_target_tbb-backend { } {
-    global cxxflags
+    return [check_v3_target_prop_cached et_tbb {
+        # Set up and compile a C++ test program that depends on tbb
+        set src tbb_backend[pid].cc
+        set exe tbb_backend[pid].x
 
-    # Set up and preprocess a C++ test program that depends
-    # on tbb
-    set src tbb_backend[pid].cc
-    set exe tbb_backend[pid].x
-    
-    set f [open $src "w"]
-    puts $f "#include <tbb/tbb.h>"
-    puts $f "#if TBB_INTERFACE_VERSION < 10000"
-    puts $f "#  error Intel(R) Threading Building Blocks 2018 is required; older versions are not supported."
-    puts $f "#endif"
-    puts $f "int main ()"
-    puts $f "{"
-    puts $f "  return 0;"
-    puts $f "}"
-    close $f
-    
-    set lines [v3_target_compile $src $exe executable "-ltbb"]
-    file delete $src
+        set f [open $src "w"]
+        puts $f "#include <tbb/tbb.h>"
+        puts $f "#if TBB_INTERFACE_VERSION < 10000"
+        puts $f "#  error Intel(R) Threading Building Blocks 2018 is required; older versions are not supported."
+        puts $f "#endif"
+        puts $f "int main ()"
+        puts $f "{"
+        puts $f "  return 0;"
+        puts $f "}"
+        close $f
 
-    if [string match "" $lines] {
-	# No error message, preprocessing succeeded.
-	verbose "check_v3_tbb-backend: `1'" 2
-	return 1
-    }
-    verbose "check_v3_tbb-backend: `0'" 2
-    return 0
+        set lines [v3_target_compile $src $exe executable "additional_flags=-std=c++17 additional_flags=-ltbb"]
+        file delete $src
+
+        if [string match "" $lines] {
+            # No error message, compilation succeeded.
+            verbose "check_v3_tbb-backend: `1'" 2
+            return 1
+        }
+        verbose "check_v3_tbb-backend: `0'" 2
+        return 0
+    }]
 }
 
 set additional_prunes ""
