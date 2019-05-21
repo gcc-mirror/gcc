@@ -1,3 +1,14 @@
+2019-05-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (define_register_constraint "wh"):
+	Delete.
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
+	RS6000_CONSTRAINT_wh.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	* config/rs6000/rs6000.md: Replace "wh" constraint by "wa" with "p8v".
+	* doc/md.texi (Machine Constraints): Adjust.
+
 2019-05-21  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/90547
