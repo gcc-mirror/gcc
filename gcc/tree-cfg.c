@@ -8932,10 +8932,11 @@ struct cfg_hooks gimple_cfg_hooks = {
 };
 
 
-/* Split all critical edges.  */
+/* Split all critical edges.  Split some extra (not necessarily critical) edges
+   if FOR_EDGE_INSERTION_P is true.  */
 
 unsigned int
-split_critical_edges (void)
+split_critical_edges (bool for_edge_insertion_p /* = false */)
 {
   basic_block bb;
   edge e;
@@ -8958,11 +8959,12 @@ split_critical_edges (void)
 	     end by control flow statements, such as RESX.
 	     Go ahead and split them too.  This matches the logic in
 	     gimple_find_edge_insert_loc.  */
-	  else if ((!single_pred_p (e->dest)
-	            || !gimple_seq_empty_p (phi_nodes (e->dest))
-		    || e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
+	  else if (for_edge_insertion_p
+		   && (!single_pred_p (e->dest)
+		       || !gimple_seq_empty_p (phi_nodes (e->dest))
+		       || e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 		   && e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
-	           && !(e->flags & EDGE_ABNORMAL))
+		   && !(e->flags & EDGE_ABNORMAL))
 	    {
 	      gimple_stmt_iterator gsi;
 

@@ -6281,44 +6281,31 @@ void
 finish_nonmember_using_decl (tree scope, tree name)
 {
   gcc_checking_assert (current_binding_level->kind != sk_class);
+  gcc_checking_assert (identifier_p (name));
 
   name_lookup lookup (name, 0);
-  bool is_enum = UNSCOPED_ENUM_P (scope);
-
-  if (is_enum)
-    {
-      lookup.value = lookup_enum_member (scope, name);
-      scope = CP_DECL_CONTEXT (TYPE_NAME (scope));
-    }
 
   if (TREE_CODE (scope) != NAMESPACE_DECL)
     {
-      error ("%qE is not a namespace", scope);
+      error ("%qE is not a namespace or unscoped enum", scope);
       return;
     }
 
-  gcc_checking_assert (identifier_p (name));
-
-  if (!is_enum)
-    qualified_namespace_lookup (scope, &lookup);
+  qualified_namespace_lookup (scope, &lookup);
 
   if (!lookup.value)
     {
-      error ("%qD not found in %qE", name, scope);
+      error ("%qD has not been declared in %qE", name, scope);
       return;
     }
 
-  if (TREE_CODE (lookup.value) == TREE_LIST)
+  if (TREE_CODE (lookup.value) == TREE_LIST
+      /* But we can (independently) have ambiguous implicit typedefs.  */
+      || (lookup.type && TREE_CODE (lookup.type) == TREE_LIST))
     {
       error ("reference to %qD is ambiguous", name);
-      print_candidates (lookup.value);
-      return;
-    }
-
-  if (lookup.type && TREE_CODE (lookup.type) == TREE_LIST)
-    {
-      error ("reference to %qD is ambiguous", name);
-      print_candidates (lookup.type);
+      print_candidates (TREE_CODE (lookup.value) == TREE_LIST
+			? lookup.value : lookup.type);
       return;
     }
 
@@ -6470,7 +6457,6 @@ finish_nonmember_using_decl (tree scope, tree name)
 	  set_identifier_type_value (name, type);
 	}
     }
-
 }
 
 /* Return the declarations that are members of the namespace NS.  */
@@ -8532,10 +8518,10 @@ finish_using_directive (tree target, tree attribs)
 	if (current_binding_level->kind == sk_namespace
 	    && is_attribute_p ("strong", name))
 	  {
-	    warning (0, "strong using directive no longer supported");
-	    if (CP_DECL_CONTEXT (target) == current_namespace)
+	    if (warning (0, "%<strong%> using directive no longer supported")
+		&& CP_DECL_CONTEXT (target) == current_namespace)
 	      inform (DECL_SOURCE_LOCATION (target),
-		      "you may use an inline namespace instead");
+		      "you can use an inline namespace instead");
 	  }
 	else
 	  warning (OPT_Wattributes, "%qD attribute directive ignored", name);

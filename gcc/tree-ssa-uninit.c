@@ -1045,6 +1045,26 @@ is_value_included_in (tree val, tree boundary, enum tree_code cmpc)
   return result;
 }
 
+/* Returns whether VAL satisfies (x CMPC BOUNDARY) predicate.  CMPC can be
+   either one of the range comparison codes ({GE,LT,EQ,NE}_EXPR and the like),
+   or BIT_AND_EXPR.  EXACT_P is only meaningful for the latter.  It modifies the
+   question from whether VAL & BOUNDARY != 0 to whether VAL & BOUNDARY == VAL.
+   For other values of CMPC, EXACT_P is ignored.  */
+
+static bool
+value_sat_pred_p (tree val, tree boundary, enum tree_code cmpc,
+		  bool exact_p = false)
+{
+  if (cmpc != BIT_AND_EXPR)
+    return is_value_included_in (val, boundary, cmpc);
+
+  wi::tree_to_wide_ref andw = wi::to_wide (val) & wi::to_wide (boundary);
+  if (exact_p)
+    return andw == wi::to_wide (val);
+  else
+    return andw.to_uhwi ();
+}
+
 /* Returns true if PRED is common among all the predicate
    chains (PREDS) (and therefore can be factored out).
    NUM_PRED_CHAIN is the size of array PREDS.  */
@@ -1471,18 +1491,15 @@ is_pred_expr_subset_of (pred_info expr1, pred_info expr2)
   if (code2 == NE_EXPR && code1 == NE_EXPR)
     return false;
 
-  if (code2 == NE_EXPR && code1 != BIT_AND_EXPR)
-    return !is_value_included_in (expr2.pred_rhs, expr1.pred_rhs, code1);
+  if (code2 == NE_EXPR)
+    return !value_sat_pred_p (expr2.pred_rhs, expr1.pred_rhs, code1);
 
-  if ((code1 == EQ_EXPR || code1 == BIT_AND_EXPR) && code2 == BIT_AND_EXPR)
-    return (wi::to_wide (expr1.pred_rhs)
-	    == (wi::to_wide (expr1.pred_rhs) & wi::to_wide (expr2.pred_rhs)));
+  if (code1 == EQ_EXPR)
+    return value_sat_pred_p (expr1.pred_rhs, expr2.pred_rhs, code2);
 
-  if (code1 != code2)
-    return false;
-
-  if (is_value_included_in (expr1.pred_rhs, expr2.pred_rhs, code2))
-    return true;
+  if (code1 == code2)
+    return value_sat_pred_p (expr1.pred_rhs, expr2.pred_rhs, code2,
+			     code1 == BIT_AND_EXPR);
 
   return false;
 }

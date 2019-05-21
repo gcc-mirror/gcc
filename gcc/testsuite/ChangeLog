@@ -1,3 +1,83 @@
+2019-05-21  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/using53.C: Adjust diagnostic.
+
+2019-05-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90510
+	* gcc.target/i386/pr90510.c: New testcase.
+
+2019-05-21  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/pr90500-1.c: Add missing '""'.
+	* gcc.target/i386/pr90500-2.c: Likewise.
+
+2019-05-21  Vladislav Ivanishin  <vlad@ispras.ru>
+
+	* gcc.dg/uninit-28-gimple.c: New test.
+	* gcc.dg/uninit-29-gimple.c: New test.
+	* gcc.dg/uninit-30-gimple.c: New test.
+	* gcc.dg/uninit-31-gimple.c: New test.
+
+2019-05-21  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/pr90263.c: Add -O2.
+
+2019-05-21  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/powerpc/ppc64-abi-warn-1.c: Wrap a type.
+	* gcc.target/powerpc/pr80315-1.c: Use new interval format.
+	* gcc.target/powerpc/pr80315-2.c: Likewise.
+	* gcc.target/powerpc/pr80315-3.c: Likewise.
+	* gcc.target/powerpc/pr80315-4.c: Likewise.
+	* gcc.target/powerpc/warn-lvsl-lvsr.c: Wrap builtin names.
+
+2019-05-21  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/90551
+	* pr90263.c: Move from gcc.c-torture/compile
+	into gcc.dg.
+
+2019-05-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/90503
+	* gcc.target/i386/pr22076.c (dg-options): Add -mno-sse2.
+	Remove -flax-vector-conversions.
+	(dg-additional-options): Remove.
+	(test): Change to void.  Declare m0 and m1 as __m64 and
+	cast initializer in a proper way.  Do not return result.
+	(dg-final): Scan for 2 instances of movq.
+
+2019-05-20  Marek Polacek  <polacek@redhat.com>
+
+	CWG 2094 - volatile scalars are trivially copyable.
+	PR c++/85679
+	* g++.dg/ext/is_trivially_constructible1.C: Change the expected result
+	for volatile int.
+	* g++.dg/ext/is_trivially_copyable.C: New test.
+
+2019-05-20  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/ext/utf8-2.C: Accept both "char" and "char8_t" in aka.
+
+	* g++.dg/cpp2a/nontype-class17.C: New test.
+
+	* g++.dg/lookup/strong-using2.C: New test.
+
+2019-05-20  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/Wtype-limits-Wextra.c: Adjust expected output after
+	recent diagnostic cleanups.
+
+2019-05-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR tree-optimization/90106
+	* gcc.dg/cdce3.c: Add hard_float effective target.
+
+2019-05-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/torture/pta-ptrarith-3.c: Relax the matched pattern.
+
 2019-05-20  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR testsuite/58321

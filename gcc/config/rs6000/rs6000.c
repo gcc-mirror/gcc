@@ -4228,7 +4228,7 @@ rs6000_option_override_internal (bool global_init_p)
       if (main_target_opt != NULL
 	  && (main_target_opt->x_rs6000_long_double_type_size
 	      != default_long_double_size))
-	error ("target attribute or pragma changes long double size");
+	error ("target attribute or pragma changes %<long double%> size");
       else
 	rs6000_long_double_type_size = default_long_double_size;
     }
@@ -4263,9 +4263,11 @@ rs6000_option_override_internal (bool global_init_p)
 	    {
 	      warned_change_long_double = true;
 	      if (TARGET_IEEEQUAD)
-		warning (OPT_Wpsabi, "Using IEEE extended precision long double");
+		warning (OPT_Wpsabi, "Using IEEE extended precision "
+			 "%<long double%>");
 	      else
-		warning (OPT_Wpsabi, "Using IBM extended precision long double");
+		warning (OPT_Wpsabi, "Using IBM extended precision "
+			 "%<long double%>");
 	    }
 	}
     }
@@ -11744,7 +11746,7 @@ rs6000_function_arg (cumulative_args_t cum_v, machine_mode mode,
 		{
 		  warned = true;
 		  inform (input_location,
-			  "the ABI of passing homogeneous float aggregates"
+			  "the ABI of passing homogeneous %<float%> aggregates"
 			  " has changed in GCC 5");
 		}
 	    }
@@ -13180,7 +13182,7 @@ rs6000_expand_set_fpscr_drn_builtin (enum insn_code icode, tree exp)
     /* Builtin not supported in 32-bit mode.  */
     fatal_error (input_location,
 		 "%<__builtin_set_fpscr_drn%> is not supported "
-		 "in 32-bit mode.");
+		 "in 32-bit mode");
 
   if (rs6000_isa_flags & OPTION_MASK_SOFT_FLOAT)
     {
@@ -14203,7 +14205,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
       if (TREE_CODE (arg2) != INTEGER_CST
 	  || wi::geu_p (wi::to_wide (arg2), 16))
 	{
-	  error ("argument 3 must be in the range 0..15");
+	  error ("argument 3 must be in the range [0, 15]");
 	  return CONST0_RTX (tmode);
 	}
     }
@@ -14336,7 +14338,7 @@ get_element_number (tree vec_type, tree arg)
   if (!tree_fits_uhwi_p (arg)
       || (elt = tree_to_uhwi (arg), elt > max))
     {
-      error ("selector must be an integer constant in the range 0..%wi", max);
+      error ("selector must be an integer constant in the range [0, %wi]", max);
       return 0;
     }
 
@@ -14656,7 +14658,7 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
 
       if (TREE_CODE (arg1) != INTEGER_CST || TREE_INT_CST_LOW (arg1) > 12)
 	{
-	  error ("second argument to %qs must be 0..12", "vec_vextract4b");
+	  error ("second argument to %qs must be [0, 12]", "vec_vextract4b");
 	  return expand_call (exp, target, false);
 	}
       break;
@@ -14671,7 +14673,7 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
 
       if (TREE_CODE (arg2) != INTEGER_CST || TREE_INT_CST_LOW (arg2) > 12)
 	{
-	  error ("third argument to %qs must be 0..12", "vec_vinsert4b");
+	  error ("third argument to %qs must be [0, 12]", "vec_vinsert4b");
 	  return expand_call (exp, target, false);
 	}
       break;
@@ -34655,8 +34657,14 @@ rs6000_register_move_cost (machine_mode mode,
 	{
 	  if (TARGET_DIRECT_MOVE)
 	    {
+	      /* Keep the cost for direct moves above that for within
+		 a register class even if the actual processor cost is
+		 comparable.  We do this because a direct move insn
+		 can't be a nop, whereas with ideal register
+		 allocation a move within the same class might turn
+		 out to be a nop.  */
 	      if (rs6000_tune == PROCESSOR_POWER9)
-		ret = 2 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
+		ret = 3 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
 	      else
 		ret = 4 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
 	      /* SFmode requires a conversion when moving between gprs
@@ -37203,7 +37211,7 @@ rs6000_get_function_versions_dispatcher (void *decl)
 
 #ifndef TARGET_LIBC_PROVIDES_HWCAP_IN_TCB
   error_at (DECL_SOURCE_LOCATION (default_node->decl),
-	    "target_clones attribute needs GLIBC (2.23 and newer) that "
+	    "%<target_clones%> attribute needs GLIBC (2.23 and newer) that "
 	    "exports hardware capability bits");
 #else
 

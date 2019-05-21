@@ -4121,7 +4121,8 @@ trivially_copyable_p (const_tree t)
 	    && !TYPE_HAS_COMPLEX_MOVE_ASSIGN (t)
 	    && TYPE_HAS_TRIVIAL_DESTRUCTOR (t));
   else
-    return !CP_TYPE_VOLATILE_P (t) && scalarish_type_p (t);
+    /* CWG 2094 makes volatile-qualified scalars trivially copyable again.  */
+    return scalarish_type_p (t);
 }
 
 /* Returns 1 iff type T is a trivial type, as defined in [basic.types] and

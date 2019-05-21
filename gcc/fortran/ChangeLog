@@ -1,3 +1,9 @@
+2019-05-20  Mark Eggleston  <markeggleston@codethink.com>
+
+	* gfortran.texi: Remove reference to the ASSIGN statement, capitalise
+	complex, state that padding is with spaces and modify the Hollerith
+	constant examples.
+
 2019-05-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/90498

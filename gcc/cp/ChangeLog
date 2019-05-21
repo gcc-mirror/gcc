@@ -1,3 +1,39 @@
+2019-05-21  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.h (struct cp_binding_level): Drop usings field.
+	(finish_namespace_using_decl, finish_local_using_decl): Replace with ...
+	(finish_nonmember_using_decl): ... this.
+	* name-lookup.c (push_using_decl_1, push_using_decl):
+	(do_nonmember_using_decl): ... here.  Add INSERT_P arg.  Reimplement.
+	(validate_nonmember_using_decl, finish_namespace_using_decl)
+	(finish_local_using_decl): Replace with ...
+	(finish_nonmember_using_decl): ... this.  Drop DECL parm.
+	* parser.c (cp_parser_using_declaration): Don't do lookup here.
+	* pt.c (tsubst_expr): Do not do using decl lookup here.
+
+2019-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl2.c (cpp_check) <IS_ASSIGNMENT_OPERATOR>: New case.
+
+2019-05-20  Marek Polacek  <polacek@redhat.com>
+
+	CWG 2094 - volatile scalars are trivially copyable.
+	PR c++/85679
+	* tree.c (trivially_copyable_p): Don't check CP_TYPE_VOLATILE_P for
+	scalar types.
+
+2019-05-20  Marek Polacek  <polacek@redhat.com>
+
+	* pt.c (convert_template_argument): Add a diagnostic for the
+	[temp.arg]/2 ambiguity case.
+
+	* name-lookup.c (finish_using_directive): Don't issue inform() if the
+	warning didn't trigger.  Add quoting.  Tweak the inform message.
+
+2019-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.h: Remove remnants of CONV_NONCONVERTING.
+
 2019-05-20  Nathan Sidwell  <nathan@acm.org>
 
 	* name-lookup.c (finish_namespace_using_directive)

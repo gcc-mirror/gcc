@@ -263,12 +263,10 @@ elf_platform (void)
 	  for (i = 0; i < ARRAY_SIZE (rs6000_supported_cpu_names); i++)
 	    candidates.safe_push (rs6000_supported_cpu_names[i]);
 	  candidates_list_and_hint (cpu, s, candidates);
-	  fatal_error (
-	    input_location,
-	    "Unsupported cpu name returned from kernel for "
-	    "%<-mcpu=native%>: %s\n"
-	    "Please use an explicit cpu name.  Valid cpu names are: %s",
-	    cpu, s);
+	  error ("unsupported cpu name returned from kernel "
+		 "for %<-mcpu=native%>: %s", cpu);
+	  fatal_error (input_location, "please use an explicit cpu name; "
+		       "valid cpu names are: %s", s);
 	}
     }
   return NULL;

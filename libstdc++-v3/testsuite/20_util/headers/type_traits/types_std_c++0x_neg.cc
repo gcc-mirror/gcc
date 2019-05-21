@@ -22,11 +22,11 @@
 namespace gnu
 {
   // C++11 changes from TR1.
-  using std::has_trivial_constructor; // { dg-error "not found in" }
-  using std::has_trivial_default_constructor; // { dg-error "not found in" }
-  using std::has_nothrow_constructor; // { dg-error "not found in" }
-  using std::has_trivial_copy;	      // { dg-error "not found in" }
-  using std::has_trivial_copy_constructor; // { dg-error "not found in" }
-  using std::has_trivial_copy_assign; // { dg-error "not found in" }
-  using std::has_nothrow_copy;	      // { dg-error "not found in" }
+  using std::has_trivial_constructor; // { dg-error "has not been declared" }
+  using std::has_trivial_default_constructor; // { dg-error "has not been declared" }
+  using std::has_nothrow_constructor; // { dg-error "has not been declared" }
+  using std::has_trivial_copy;	      // { dg-error "has not been declared" }
+  using std::has_trivial_copy_constructor; // { dg-error "has not been declared" }
+  using std::has_trivial_copy_assign; // { dg-error "has not been declared" }
+  using std::has_nothrow_copy;	      // { dg-error "has not been declared" }
 }

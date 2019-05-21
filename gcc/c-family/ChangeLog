@@ -1,3 +1,10 @@
+2019-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.h (enum cpp_operation): Add IS_ASSIGNMENT_OPERATOR.
+	* c-ada-spec.c (print_assignment_operator): New function.
+	(dump_ada_declaration) <FUNCTION_DECL>: Call it do dump explicit copy
+	assignment operators declared as methods and filter out the others.
+
 2019-05-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR c/89433

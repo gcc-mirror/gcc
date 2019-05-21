@@ -50,8 +50,5 @@ void
 f ()
 {
   using N::i;
-  using N::i;       // DR 36? { dg-error "redeclaration" }
-
-  using N::Q;
-  using N::Q;       // DR 36? { dg-error "redeclaration" }
+  using N::i;       // { dg-error "redeclaration" }
 }

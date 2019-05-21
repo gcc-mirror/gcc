@@ -1,3 +1,83 @@
+2019-05-21  Alan Modra  <amodra@gmail.com>
+
+	PR target/90545
+	* config/rs6000/rs6000.c (rs6000_register_move_cost): Increase
+	power9 direct move cost.
+	* testsuite/gcc.target/powerpc/fold-vec-splats-floatdouble.c:
+	Correct comments and rename functions to suit parameters.
+
+2019-05-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90510
+	* fold-const.c (fold_read_from_vector): New function.
+	* fold-const.h (fold_read_from_vector): Declare.
+	* match.pd (VEC_PERM_EXPR): Build BIT_INSERT_EXPRs for
+	single-element insert permutations.  Canonicalize selector
+	further and fix issue with last commit.
+
+2019-05-21  Vladislav Ivanishin  <vlad@ispras.ru>
+
+	* tree-cfg.h (split_critical_edges): Add for_edge_insertion_p
+	parameter with default value false to declaration.
+	(split_edges_for_insertion): New inline function.  Wrapper for
+	split_critical_edges with for_edge_insertion_p = true.
+	* tree-cfg.c (split_critical_edges): Don't split non-critical
+	edges if for_edge_insertion_p is false.  Fix whitespace.
+	* tree-ssa-pre.c (pass_pre::execute): Call
+	split_edges_for_insertion instead of split_critical_edges.
+	* gcc/tree-ssa-tail-merge.c (tail_merge_optimize): Ditto.
+	* gcc/tree-ssa-sink.c (pass_sink_code::execute): Ditto.
+	(pass_data_sink_code): Update function name in the comment.
+
+2019-05-21  Vladislav Ivanishin  <vlad@ispras.ru>
+
+	* tree-ssa-uninit.c (value_sat_pred_p): This new function is a wrapper
+	around is_value_included_in that knows how to handle BIT_AND_EXPR.
+	(is_pred_expr_subset_of): Use the new function.  Handle more cases where
+	code1 == EQ_EXPR and where code1 == BIT_AND_EXPR and thus fix some false
+	positives.
+
+2019-05-21  Martin Liska  <mliska@suse.cz>
+
+	* config/rs6000/driver-rs6000.c (elf_platform): Do not use
+	an extra newline.
+	* config/rs6000/rs6000-c.c (rs6000_pragma_longcal): Wrap pragma in %<%>.
+	(altivec_resolve_overloaded_builtin): Likewise for vec_lvsl and
+	vec_lvsr.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Quote a C type.
+	(rs6000_function_arg): Likewise.
+	(rs6000_expand_set_fpscr_drn_builtin): Remove trailing dot.
+	(rs6000_expand_ternop_builtin): Use interval syntax.
+	(get_element_number): Likewise.
+	(altivec_expand_builtin): Likewise.
+	(rs6000_get_function_versions_dispatcher): Quote target_clones.
+
+Fix test-suite.
+
+2019-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/59813
+	PR target/90418
+	* function.h (struct function): Add calls_eh_return member.
+	* gimplify.c (gimplify_call_expr): Set cfun->calls_eh_return when
+	gimplifying __builtin_eh_return call.
+	* tree-inline.c (initialize_cfun): Copy calls_eh_return from src_cfun
+	to cfun.
+	(expand_call_inline): Or in src_cfun->calls_eh_return into
+	dst_cfun->calls_eh_return.
+	* tree-tailcall.c (suitable_for_tail_call_opt_p): Return false if
+	cfun->calls_eh_return.
+	* lto-streamer-in.c (input_struct_function_base): Read calls_eh_return.
+	* lto-streamer-out.c (output_struct_function_base): Write
+	calls_eh_return.
+
+2019-05-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR rtl-optimization/43147
+	* config/i386/i386.c (ix86_gimple_fold_builtin): Handle
+	IX86_BUILTIN_SHUFPD.
+
 2019-05-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-alias.c (refs_may_alias_p_2): Break out from ...

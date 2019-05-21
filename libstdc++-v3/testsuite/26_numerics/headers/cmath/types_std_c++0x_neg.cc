@@ -22,27 +22,27 @@
 namespace gnu
 {
   // C++11 changes from TR1.
-  using std::assoc_laguerre;	// { dg-error "not found in" }
-  using std::assoc_legendre;	// { dg-error "not found in" }
-  using std::beta;		// { dg-error "not found in" }
-  using std::comp_ellint_1;	// { dg-error "not found in" }
-  using std::comp_ellint_2;	// { dg-error "not found in" }
-  using std::comp_ellint_3;	// { dg-error "not found in" }
-  using std::conf_hyperg;	// { dg-error "not found in" }
-  using std::cyl_bessel_i;	// { dg-error "not found in" }
-  using std::cyl_bessel_j;	// { dg-error "not found in" }
-  using std::cyl_bessel_k;	// { dg-error "not found in" }
-  using std::cyl_neumann;	// { dg-error "not found in" }
-  using std::ellint_1;		// { dg-error "not found in" }
-  using std::ellint_2;		// { dg-error "not found in" }
-  using std::ellint_3;		// { dg-error "not found in" }
-  using std::expint;		// { dg-error "not found in" }
-  using std::hermite;		// { dg-error "not found in" }
-  using std::hyperg;		// { dg-error "not found in" }
-  using std::laguerre;		// { dg-error "not found in" }
-  using std::legendre;		// { dg-error "not found in" }
-  using std::riemann_zeta;	// { dg-error "not found in" }
-  using std::sph_bessel;	// { dg-error "not found in" }
-  using std::sph_legendre;	// { dg-error "not found in" }
-  using std::sph_neumann;	// { dg-error "not found in" }
+  using std::assoc_laguerre;	// { dg-error "has not been declared" }
+  using std::assoc_legendre;	// { dg-error "has not been declared" }
+  using std::beta;		// { dg-error "has not been declared" }
+  using std::comp_ellint_1;	// { dg-error "has not been declared" }
+  using std::comp_ellint_2;	// { dg-error "has not been declared" }
+  using std::comp_ellint_3;	// { dg-error "has not been declared" }
+  using std::conf_hyperg;	// { dg-error "has not been declared" }
+  using std::cyl_bessel_i;	// { dg-error "has not been declared" }
+  using std::cyl_bessel_j;	// { dg-error "has not been declared" }
+  using std::cyl_bessel_k;	// { dg-error "has not been declared" }
+  using std::cyl_neumann;	// { dg-error "has not been declared" }
+  using std::ellint_1;		// { dg-error "has not been declared" }
+  using std::ellint_2;		// { dg-error "has not been declared" }
+  using std::ellint_3;		// { dg-error "has not been declared" }
+  using std::expint;		// { dg-error "has not been declared" }
+  using std::hermite;		// { dg-error "has not been declared" }
+  using std::hyperg;		// { dg-error "has not been declared" }
+  using std::laguerre;		// { dg-error "has not been declared" }
+  using std::legendre;		// { dg-error "has not been declared" }
+  using std::riemann_zeta;	// { dg-error "has not been declared" }
+  using std::sph_bessel;	// { dg-error "has not been declared" }
+  using std::sph_legendre;	// { dg-error "has not been declared" }
+  using std::sph_neumann;	// { dg-error "has not been declared" }
 }
