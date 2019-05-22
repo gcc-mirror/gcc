@@ -1,3 +1,8 @@
+2019-05-22  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/vect-signbitf.c (dg-final): Improve
+	scan-assembler-not string to avoid false matching on 32bit targets.
+
 2019-05-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/88483
@@ -32,8 +37,7 @@
 2019-05-22  Martin Liska  <mliska@suse.cz>
 
 	PR testsuite/90564
-	* gcc.target/powerpc/pr80315-1.c: Add one extra \ to escape
-	brackets.
+	* gcc.target/powerpc/pr80315-1.c: Add one extra \ to escape brackets.
 	* gcc.target/powerpc/pr80315-2.c: Likewise.
 	* gcc.target/powerpc/pr80315-3.c: Likewise.
 	* gcc.target/powerpc/pr80315-4.c: Likewise.
@@ -46,8 +50,7 @@
 2019-05-22  Martin Liska  <mliska@suse.cz>
 
 	PR lto/90500
-	* gcc.target/i386/pr90500-1.c: Make the test-case valid
-	now.
+	* gcc.target/i386/pr90500-1.c: Make the test-case valid now.
 
 2019-05-22  Richard Biener  <rguenther@suse.de>
 
