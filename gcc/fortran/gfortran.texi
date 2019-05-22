@@ -1576,6 +1576,7 @@ additional compatibility extensions along with those enabled by
 * X format descriptor without count field::
 * Commas in FORMAT specifications::
 * Missing period in FORMAT specifications::
+* Default widths for F@comma{} G and I format descriptors::
 * I/O item lists::
 * @code{Q} exponent-letter::
 * BOZ literal constants::
@@ -1781,6 +1782,22 @@ discouraged.
        READ(*,10) value
 10     FORMAT ('F4')
 @end smallexample
+
+@node Default widths for F@comma{} G and I format descriptors
+@subsection Default widths for @code{F}, @code{G} and @code{I} format descriptors
+
+To support legacy codes, GNU Fortran allows width to be omitted from format
+specifications if and only if @option{-fdec-format-defaults} is given on the
+command line.  Default widths will be used. This is considered non-conforming
+code and is discouraged.
+
+@smallexample
+       REAL :: value1
+       INTEGER :: value2
+       WRITE(*,10) value1, value1, value2
+10     FORMAT ('F, G, I')
+@end smallexample
+
 
 @node I/O item lists
 @subsection I/O item lists
