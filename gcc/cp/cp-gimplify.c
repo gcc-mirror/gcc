@@ -593,7 +593,7 @@ gimplify_must_not_throw_expr (tree *expr_p, gimple_seq *pre_p)
    non-empty CONSTRUCTORs get reduced properly, and we leave the
    return slot optimization alone because it isn't a copy.  */
 
-static bool
+bool
 simple_empty_class_p (tree type, tree op, tree_code code)
 {
   if (TREE_CODE (op) == COMPOUND_EXPR)
