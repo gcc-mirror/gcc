@@ -1838,6 +1838,17 @@ mark_vtable_entries (tree decl)
     }
 }
 
+/* Adjust the TLS model on variable DECL if need be, typically after
+   the linkage of DECL has been modified.  */
+
+static void
+adjust_var_decl_tls_model (tree decl)
+{
+  if (CP_DECL_THREAD_LOCAL_P (decl)
+      && !lookup_attribute ("tls_model", DECL_ATTRIBUTES (decl)))
+    set_decl_tls_model (decl, decl_default_tls_model (decl));
+}
+
 /* Set DECL up to have the closest approximation of "initialized common"
    linkage available.  */
 
@@ -1888,6 +1899,9 @@ comdat_linkage (tree decl)
 
   if (TREE_PUBLIC (decl))
     DECL_COMDAT (decl) = 1;
+
+  if (VAR_P (decl))
+    adjust_var_decl_tls_model (decl);
 }
 
 /* For win32 we also want to put explicit instantiations in
@@ -1926,6 +1940,8 @@ maybe_make_one_only (tree decl)
 	  /* Mark it needed so we don't forget to emit it.  */
           node->forced_by_abi = true;
 	  TREE_USED (decl) = 1;
+
+	  adjust_var_decl_tls_model (decl);
 	}
     }
 }
