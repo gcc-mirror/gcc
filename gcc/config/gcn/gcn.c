@@ -3062,6 +3062,10 @@ gcn_asm_trampoline_template (FILE *f)
 static void
 gcn_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 {
+  if (TARGET_GCN5_PLUS)
+    sorry ("nested function trampolines not supported on GCN5 due to"
+           " non-executable stacks");
+
   emit_block_move (m_tramp, assemble_trampoline_template (),
 		   GEN_INT (TRAMPOLINE_SIZE), BLOCK_OP_NORMAL);
 
