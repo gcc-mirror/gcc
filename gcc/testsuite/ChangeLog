@@ -20,6 +20,11 @@
 
 2019-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* g++.dg/cpp0x/udlit-tmpl-arg-neg2.C: Check locations too.
+	* g++.dg/cpp0x/udlit-tmpl-parms-neg.C: Likewise.
+
+2019-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/67184
 	PR c++/69445
 	* g++.dg/other/final3.C: New.
