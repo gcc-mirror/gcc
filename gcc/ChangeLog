@@ -1,3 +1,7 @@
+2019-05-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_trampoline_init): Call "sorry" on GCN5.
+
 2019-05-22  Jason Merrill  <jason@redhat.com>
 
 	* gimplify.c (gimplify_cond_expr): Don't check TREE_ADDRESSABLE.
