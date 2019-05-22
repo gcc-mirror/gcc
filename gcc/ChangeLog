@@ -1,3 +1,19 @@
+2019-05-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/88483
+	* config/i386/i386-options.c (ix86_init_machine_status): Set
+	stack_frame_required to true.
+	* config/i386/i386.c (ix86_get_frame_size): New function.
+	(ix86_frame_pointer_required): Replace get_frame_size with
+	ix86_get_frame_size.
+	(ix86_compute_frame_layout): Likewise.
+	(ix86_find_max_used_stack_alignment): Changed to void.  Set
+	stack_frame_required.
+	(ix86_finalize_stack_frame_flags): Always call
+	ix86_find_max_used_stack_alignment.  Replace get_frame_size with
+	ix86_get_frame_size.
+	* config/i386/i386.h (machine_function): Add stack_frame_required.
+
 2019-05-22  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (sse_cvtpi2ps): Use TARGET_MMX in insn condition.

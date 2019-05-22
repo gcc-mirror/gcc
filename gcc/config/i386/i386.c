@@ -5012,6 +5012,19 @@ ix86_can_use_return_insn_p (void)
 	  && (frame.nregs + frame.nsseregs) == 0);
 }
 
+/* Return stack frame size.  get_frame_size () returns used stack slots
+   during compilation, which may be optimized out later.  If stack frame
+   is needed, stack_frame_required should be true.  */
+
+static HOST_WIDE_INT
+ix86_get_frame_size (void)
+{
+  if (cfun->machine->stack_frame_required)
+    return get_frame_size ();
+  else
+    return 0;
+}
+
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms may
    be accessed via the stack pointer) in functions that seem suitable.  */
@@ -5035,7 +5048,7 @@ ix86_frame_pointer_required (void)
 
   /* Win64 SEH, very large frames need a frame-pointer as maximum stack
      allocation is 4GB.  */
-  if (TARGET_64BIT_MS_ABI && get_frame_size () > SEH_MAX_FRAME_SIZE)
+  if (TARGET_64BIT_MS_ABI && ix86_get_frame_size () > SEH_MAX_FRAME_SIZE)
     return true;
 
   /* SSE saves require frame-pointer when stack is misaligned.  */
@@ -5842,7 +5855,7 @@ ix86_compute_frame_layout (void)
   unsigned HOST_WIDE_INT stack_alignment_needed;
   HOST_WIDE_INT offset;
   unsigned HOST_WIDE_INT preferred_alignment;
-  HOST_WIDE_INT size = get_frame_size ();
+  HOST_WIDE_INT size = ix86_get_frame_size ();
   HOST_WIDE_INT to_allocate;
 
   /* m->call_ms2sysv is initially enabled in ix86_expand_call for all 64-bit
@@ -7436,11 +7449,11 @@ output_probe_stack_range (rtx reg, rtx end)
   return "";
 }
 
-/* Return true if stack frame is required.  Update STACK_ALIGNMENT
-   to the largest alignment, in bits, of stack slot used if stack
-   frame is required and CHECK_STACK_SLOT is true.  */
+/* Set stack_frame_required to false if stack frame isn't required.
+   Update STACK_ALIGNMENT to the largest alignment, in bits, of stack
+   slot used if stack frame is required and CHECK_STACK_SLOT is true.  */
 
-static bool
+static void
 ix86_find_max_used_stack_alignment (unsigned int &stack_alignment,
 				    bool check_stack_slot)
 {
@@ -7489,7 +7502,7 @@ ix86_find_max_used_stack_alignment (unsigned int &stack_alignment,
 	  }
     }
 
-  return require_stack_frame;
+  cfun->machine->stack_frame_required = require_stack_frame;
 }
 
 /* Finalize stack_realign_needed and frame_pointer_needed flags, which
@@ -7519,6 +7532,14 @@ ix86_finalize_stack_frame_flags (void)
       return;
     }
 
+  /* It is always safe to compute max_used_stack_alignment.  We
+     compute it only if 128-bit aligned load/store may be generated
+     on misaligned stack slot which will lead to segfault. */
+  bool check_stack_slot
+    = (stack_realign || crtl->max_used_stack_slot_alignment >= 128);
+  ix86_find_max_used_stack_alignment (stack_alignment,
+				      check_stack_slot);
+
   /* If the only reason for frame_pointer_needed is that we conservatively
      assumed stack realignment might be needed or -fno-omit-frame-pointer
      is used, but in the end nothing that needed the stack alignment had
@@ -7538,12 +7559,11 @@ ix86_finalize_stack_frame_flags (void)
 	   && flag_exceptions
 	   && cfun->can_throw_non_call_exceptions)
       && !ix86_frame_pointer_required ()
-      && get_frame_size () == 0
+      && ix86_get_frame_size () == 0
       && ix86_nsaved_sseregs () == 0
       && ix86_varargs_gpr_size + ix86_varargs_fpr_size == 0)
     {
-      if (ix86_find_max_used_stack_alignment (stack_alignment,
-					      stack_realign))
+      if (cfun->machine->stack_frame_required)
 	{
 	  /* Stack frame is required.  If stack alignment needed is less
 	     than incoming stack boundary, don't realign stack.  */
@@ -7631,17 +7651,14 @@ ix86_finalize_stack_frame_flags (void)
 	  recompute_frame_layout_p = true;
 	}
     }
-  else if (crtl->max_used_stack_slot_alignment >= 128)
+  else if (crtl->max_used_stack_slot_alignment >= 128
+	   && cfun->machine->stack_frame_required)
     {
       /* We don't need to realign stack.  max_used_stack_alignment is
 	 used to decide how stack frame should be aligned.  This is
-	 independent of any psABIs nor 32-bit vs 64-bit.  It is always
-	 safe to compute max_used_stack_alignment.  We compute it only
-	 if 128-bit aligned load/store may be generated on misaligned
-	 stack slot which will lead to segfault.   */
-      if (ix86_find_max_used_stack_alignment (stack_alignment, true))
-	cfun->machine->max_used_stack_alignment
-	  = stack_alignment / BITS_PER_UNIT;
+	 independent of any psABIs nor 32-bit vs 64-bit.  */
+      cfun->machine->max_used_stack_alignment
+	= stack_alignment / BITS_PER_UNIT;
     }
 
   if (crtl->stack_realign_needed != stack_realign)
