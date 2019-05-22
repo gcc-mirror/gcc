@@ -1,3 +1,10 @@
+2019-05-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* trans-stmt.c (gfc_trans_critical): Use size_type_node for
+	gfor_fndecl_caf_lock and gfor_fndecl_caf_unlock calls.
+	(gfc_trans_allocate): Use size_type_node for gfor_fndecl_caf_sync_all
+	call.
+
 2019-05-22  Jeff Law  <law@redhat.com>
 	    Mark Eggleston  <mark.eggleston@codethink.com>
 
