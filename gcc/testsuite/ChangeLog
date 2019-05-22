@@ -1,3 +1,11 @@
+2019-05-22  Uroš Bizjak  <ubizjak@gmail.com>
+
+	Backported from mainline
+	2019-05-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/90547
+	* gcc.target/i386/pr90547.c: New test.
+
 2019-05-20  Jeff Law  <law@redhat.com>
 
 	Backported from mainline
