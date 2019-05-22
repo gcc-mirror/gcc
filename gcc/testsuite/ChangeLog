@@ -1,3 +1,8 @@
+2019-05-22  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp1y/udlit-char-template-neg.C: Expect the error on a
+	different line.  Check the column number too.
+
 2019-05-22  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/vect-signbitf.c (dg-final): Improve
