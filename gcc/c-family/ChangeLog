@@ -1,3 +1,9 @@
+2019-05-22  Martin Liska  <mliska@suse.cz>
+
+	PR lto/90500
+	* c-attribs.c (handle_copy_attribute): Do not copy
+	target_clones attribute.
+
 2019-05-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.h (enum cpp_operation): Add IS_ASSIGNMENT_OPERATOR.
