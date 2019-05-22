@@ -1,5 +1,8 @@
 2019-05-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/20408 - unnecessary code for empty struct.
+	* call.c (build_call_a): Use simple_empty_class_p.
+
 	PR c++/86485 - -Wmaybe-unused with empty class ?:
 	* cp-gimplify.c (simple_empty_class_p): Also true for MODIFY_EXPR.
 
