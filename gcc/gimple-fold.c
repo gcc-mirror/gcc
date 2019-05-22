@@ -7329,6 +7329,7 @@ arith_code_with_undefined_signed_overflow (tree_code code)
 {
   switch (code)
     {
+    case ABS_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
     case MULT_EXPR:
@@ -7361,12 +7362,15 @@ rewrite_to_defined_overflow (gimple *stmt)
   tree lhs = gimple_assign_lhs (stmt);
   tree type = unsigned_type_for (TREE_TYPE (lhs));
   gimple_seq stmts = NULL;
-  for (unsigned i = 1; i < gimple_num_ops (stmt); ++i)
-    {
-      tree op = gimple_op (stmt, i);
-      op = gimple_convert (&stmts, type, op);
-      gimple_set_op (stmt, i, op);
-    }
+  if (gimple_assign_rhs_code (stmt) == ABS_EXPR)
+    gimple_assign_set_rhs_code (stmt, ABSU_EXPR);
+  else
+    for (unsigned i = 1; i < gimple_num_ops (stmt); ++i)
+      {
+	tree op = gimple_op (stmt, i);
+	op = gimple_convert (&stmts, type, op);
+	gimple_set_op (stmt, i, op);
+      }
   gimple_assign_set_lhs (stmt, make_ssa_name (type, stmt));
   if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
     gimple_assign_set_rhs_code (stmt, PLUS_EXPR);

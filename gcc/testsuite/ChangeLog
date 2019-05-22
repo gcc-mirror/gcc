@@ -1,3 +1,7 @@
+2019-05-22  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-lim-13.c: New testcase.
+
 2019-05-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR middle-end/90553

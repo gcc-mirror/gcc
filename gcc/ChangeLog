@@ -1,3 +1,10 @@
+2019-05-22  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (arith_code_with_undefined_signed_overflow):
+	Add ABS_EXPR.
+	(rewrite_to_defined_overflow): Handle rewriting ABS_EXPR
+	as ABSU_EXPR.
+
 2019-05-22  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.h (ASM_OPT_ANY): Define.
