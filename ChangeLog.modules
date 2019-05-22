@@ -1,3 +1,16 @@
+2019-05-22  Nathan Sidwell  <nathan@acm.org>
+
+	Stream binfos properly (again).
+	gcc/cp/
+	* module.cc (trees_out::mark_node): Binfos may be marked.
+	(trees_{in,out}::start): Binfos may be streamed.
+	(trees_{in,out}::core_vals): Likewise.
+	(trees_{in,out}::tree_node): Reachable binfos may always be
+	inserted.
+	(trees_{in,out}::{read,write}_binfos): Delete.
+	(trees_out::mark_class_def): Mark the binfo heirarchy.
+	(trees_{in,out}::{read,write}_class_def): Stream binfos here.
+
 2019-05-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
