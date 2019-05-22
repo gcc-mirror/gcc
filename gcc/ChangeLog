@@ -1,3 +1,8 @@
+2019-05-22  Martin Liska  <mliska@suse.cz>
+
+	PR lto/90500
+	* doc/extend.texi: Document the change.
+
 2019-05-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90450
