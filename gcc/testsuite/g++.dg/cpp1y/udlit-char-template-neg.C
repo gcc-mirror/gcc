@@ -2,7 +2,7 @@
 
 template<typename CharT, CharT... String>
   int
-  operator"" _script()
-  { return 42; } // { dg-error "literal operator template|has invalid parameter list" }
+  operator"" _script() // { dg-error "3:literal operator template" }
+  { return 42; }
 
 int i = "hi!"_script;
