@@ -1,5 +1,5 @@
 /* { dg-require-effective-target vsx_hw { target powerpc*-*-* } } */
-/* { dg-additional-options "-mcpu=power7" { target powerpc*-*-* } } */
+/* { dg-additional-options "-mcpu=power7 -mno-power9-vector -mno-power8-vector" { target powerpc*-*-* } } */
 
 #include "tree-vect.h"
 

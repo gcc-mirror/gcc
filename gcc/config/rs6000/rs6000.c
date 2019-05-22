@@ -5632,6 +5632,36 @@ rs6000_builtin_md_vectorized_function (tree fndecl, tree type_out,
 /* Default CPU string for rs6000*_file_start functions.  */
 static const char *rs6000_default_cpu;
 
+#ifdef USING_ELFOS_H
+static const char *rs6000_machine;
+
+static const char *
+rs6000_machine_from_flags (void)
+{
+  if ((rs6000_isa_flags & (ISA_3_0_MASKS_SERVER & ~ISA_2_7_MASKS_SERVER)) != 0)
+    return "power9";
+  if ((rs6000_isa_flags & (ISA_2_7_MASKS_SERVER & ~ISA_2_6_MASKS_SERVER)) != 0)
+    return "power8";
+  if ((rs6000_isa_flags & (ISA_2_6_MASKS_SERVER & ~ISA_2_5_MASKS_SERVER)) != 0)
+    return "power7";
+  if ((rs6000_isa_flags & (ISA_2_5_MASKS_SERVER & ~ISA_2_4_MASKS)) != 0)
+    return "power6";
+  if ((rs6000_isa_flags & (ISA_2_4_MASKS & ~ISA_2_1_MASKS)) != 0)
+    return "power5";
+  if ((rs6000_isa_flags & ISA_2_1_MASKS) != 0)
+    return "power4";
+  if ((rs6000_isa_flags & OPTION_MASK_POWERPC64) != 0)
+    return "ppc64";
+  return "ppc";
+}
+
+static void
+emit_asm_machine (void)
+{
+  fprintf (asm_out_file, "\t.machine %s\n", rs6000_machine);
+}
+#endif
+
 /* Do anything needed at the start of the asm file.  */
 
 static void
@@ -5697,27 +5727,10 @@ rs6000_file_start (void)
     }
 
 #ifdef USING_ELFOS_H
+  rs6000_machine = rs6000_machine_from_flags ();
   if (!(rs6000_default_cpu && rs6000_default_cpu[0])
       && !global_options_set.x_rs6000_cpu_index)
-    {
-      fputs ("\t.machine ", asm_out_file);
-      if ((rs6000_isa_flags & OPTION_MASK_MODULO) != 0)
-	fputs ("power9\n", asm_out_file);
-      else if ((rs6000_isa_flags & OPTION_MASK_DIRECT_MOVE) != 0)
-	fputs ("power8\n", asm_out_file);
-      else if ((rs6000_isa_flags & OPTION_MASK_POPCNTD) != 0)
-	fputs ("power7\n", asm_out_file);
-      else if ((rs6000_isa_flags & OPTION_MASK_CMPB) != 0)
-	fputs ("power6\n", asm_out_file);
-      else if ((rs6000_isa_flags & OPTION_MASK_POPCNTB) != 0)
-	fputs ("power5\n", asm_out_file);
-      else if ((rs6000_isa_flags & OPTION_MASK_MFCRF) != 0)
-	fputs ("power4\n", asm_out_file);
-      else if ((rs6000_isa_flags & OPTION_MASK_POWERPC64) != 0)
-	fputs ("ppc64\n", asm_out_file);
-      else
-	fputs ("ppc\n", asm_out_file);
-    }
+    emit_asm_machine ();
 #endif
 
   if (DEFAULT_ABI == ABI_ELFv2)
@@ -27504,7 +27517,17 @@ static void
 rs6000_output_function_prologue (FILE *file)
 {
   if (!cfun->is_thunk)
-    rs6000_output_savres_externs (file);
+    {
+      rs6000_output_savres_externs (file);
+#ifdef USING_ELFOS_H
+      const char *curr_machine = rs6000_machine_from_flags ();
+      if (rs6000_machine != curr_machine)
+	{
+	  rs6000_machine = curr_machine;
+	  emit_asm_machine ();
+	}
+#endif
+    }
 
   /* ELFv2 ABI r2 setup code and local entry point.  This must follow
      immediately after the global entry point label.  */
