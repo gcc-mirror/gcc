@@ -57,17 +57,20 @@
 
 /* Enabling "fp" just enables "fp".
    Disabling "fp" also disables "simd", "crypto", "fp16", "aes", "sha2",
-   "sha3", sm3/sm4 and "sve".  */
-AARCH64_OPT_EXTENSION("fp", AARCH64_FL_FP, 0, AARCH64_FL_SIMD | AARCH64_FL_CRYPTO | AARCH64_FL_F16 | AARCH64_FL_AES | AARCH64_FL_SHA2 | AARCH64_FL_SHA3 | AARCH64_FL_SM4 | AARCH64_FL_SVE, false, "fp")
+   "sha3", sm3/sm4, "sve", "sve2", "sve2-aes", "sve2-sha3", "sve2-sm4", and
+   "bitperm".  */
+AARCH64_OPT_EXTENSION("fp", AARCH64_FL_FP, 0, AARCH64_FL_SIMD | AARCH64_FL_CRYPTO | AARCH64_FL_F16 | AARCH64_FL_AES | AARCH64_FL_SHA2 | AARCH64_FL_SHA3 | AARCH64_FL_SM4 | AARCH64_FL_SVE | AARCH64_FL_SVE2 | AARCH64_FL_SVE2_AES | AARCH64_FL_SVE2_SHA3 | AARCH64_FL_SVE2_SM4 | AARCH64_FL_SVE2_BITPERM, false, "fp")
 
 /* Enabling "simd" also enables "fp".
    Disabling "simd" also disables "crypto", "dotprod", "aes", "sha2", "sha3",
-   "sm3/sm4" and "sve".  */
-AARCH64_OPT_EXTENSION("simd", AARCH64_FL_SIMD, AARCH64_FL_FP, AARCH64_FL_CRYPTO | AARCH64_FL_DOTPROD | AARCH64_FL_AES | AARCH64_FL_SHA2 | AARCH64_FL_SHA3 | AARCH64_FL_SM4 | AARCH64_FL_SVE, false, "asimd")
+   "sm3/sm4", "sve", "sve2", "sve2-aes", "sve2-sha3", "sve2-sm4", and "bitperm".
+   */
+AARCH64_OPT_EXTENSION("simd", AARCH64_FL_SIMD, AARCH64_FL_FP, AARCH64_FL_CRYPTO | AARCH64_FL_DOTPROD | AARCH64_FL_AES | AARCH64_FL_SHA2 | AARCH64_FL_SHA3 | AARCH64_FL_SM4 | AARCH64_FL_SVE | AARCH64_FL_SVE2 | AARCH64_FL_SVE2_AES | AARCH64_FL_SVE2_SHA3 | AARCH64_FL_SVE2_SM4 | AARCH64_FL_SVE2_BITPERM, false, "asimd")
 
 /* Enabling "crypto" also enables "fp", "simd", "aes" and "sha2".
-   Disabling "crypto" disables "crypto", "aes", "sha2", "sha3" and "sm3/sm4".  */
-AARCH64_OPT_EXTENSION("crypto", AARCH64_FL_CRYPTO, AARCH64_FL_FP | AARCH64_FL_SIMD | AARCH64_FL_AES | AARCH64_FL_SHA2, AARCH64_FL_AES | AARCH64_FL_SHA2 |AARCH64_FL_SHA3 | AARCH64_FL_SM4, true, "aes pmull sha1 sha2")
+   Disabling "crypto" disables "crypto", "aes", "sha2", "sha3" and "sm3/sm4",
+   "sve2-aes", "sve2-sha3", "sve2-sm4".  */
+AARCH64_OPT_EXTENSION("crypto", AARCH64_FL_CRYPTO, AARCH64_FL_FP | AARCH64_FL_SIMD | AARCH64_FL_AES | AARCH64_FL_SHA2, AARCH64_FL_AES | AARCH64_FL_SHA2 | AARCH64_FL_SHA3 | AARCH64_FL_SM4 | AARCH64_FL_SVE2_AES | AARCH64_FL_SVE2_SHA3 | AARCH64_FL_SVE2_SM4, true, "aes pmull sha1 sha2")
 
 /* Enabling or disabling "crc" only changes "crc".  */
 AARCH64_OPT_EXTENSION("crc", AARCH64_FL_CRC, 0, 0, false, "crc32")
@@ -76,8 +79,9 @@ AARCH64_OPT_EXTENSION("crc", AARCH64_FL_CRC, 0, 0, false, "crc32")
 AARCH64_OPT_EXTENSION("lse", AARCH64_FL_LSE, 0, 0, false, "atomics")
 
 /* Enabling "fp16" also enables "fp".
-   Disabling "fp16" disables "fp16", "fp16fml" and "sve".  */
-AARCH64_OPT_EXTENSION("fp16", AARCH64_FL_F16, AARCH64_FL_FP, AARCH64_FL_F16FML | AARCH64_FL_SVE, false, "fphp asimdhp")
+   Disabling "fp16" disables "fp16", "fp16fml", "sve", "sve2", "sve2-aes",
+   "sve2-sha3", "sve2-sm4", and "bitperm".  */
+AARCH64_OPT_EXTENSION("fp16", AARCH64_FL_F16, AARCH64_FL_FP, AARCH64_FL_F16FML | AARCH64_FL_SVE | AARCH64_FL_SVE2 | AARCH64_FL_SVE2_AES | AARCH64_FL_SVE2_SHA3 | AARCH64_FL_SVE2_SM4 | AARCH64_FL_SVE2_BITPERM, false, "fphp asimdhp")
 
 /* Enabling or disabling "rcpc" only changes "rcpc".  */
 AARCH64_OPT_EXTENSION("rcpc", AARCH64_FL_RCPC, 0, 0, false, "lrcpc")
@@ -91,28 +95,29 @@ AARCH64_OPT_EXTENSION("rdma", AARCH64_FL_RDMA, AARCH64_FL_FP | AARCH64_FL_SIMD, 
 AARCH64_OPT_EXTENSION("dotprod", AARCH64_FL_DOTPROD, AARCH64_FL_SIMD, 0, false, "asimddp")
 
 /* Enabling "aes" also enables "simd".
-   Disabling "aes" just disables "aes".  */
-AARCH64_OPT_EXTENSION("aes", AARCH64_FL_AES, AARCH64_FL_SIMD, 0, false, "aes")
+   Disabling "aes" disables "aes" and "sve2-aes'.  */
+AARCH64_OPT_EXTENSION("aes", AARCH64_FL_AES, AARCH64_FL_SIMD, AARCH64_FL_SVE2_AES, false, "aes")
 
 /* Enabling "sha2" also enables "simd".
    Disabling "sha2" just disables "sha2".  */
 AARCH64_OPT_EXTENSION("sha2", AARCH64_FL_SHA2, AARCH64_FL_SIMD, 0, false, "sha1 sha2")
 
 /* Enabling "sha3" enables "simd" and "sha2".
-   Disabling "sha3" just disables "sha3".  */
-AARCH64_OPT_EXTENSION("sha3", AARCH64_FL_SHA3, AARCH64_FL_SIMD | AARCH64_FL_SHA2, 0, false, "sha3 sha512")
+   Disabling "sha3" disables "sha3" and "sve2-sha3".  */
+AARCH64_OPT_EXTENSION("sha3", AARCH64_FL_SHA3, AARCH64_FL_SIMD | AARCH64_FL_SHA2, AARCH64_FL_SVE2_SHA3, false, "sha3 sha512")
 
 /* Enabling "sm4" also enables "simd".
-   Disabling "sm4" just disables "sm4".  */
-AARCH64_OPT_EXTENSION("sm4", AARCH64_FL_SM4, AARCH64_FL_SIMD, 0, false, "sm3 sm4")
+   Disabling "sm4" disables "sm4" and "sve2-sm4".  */
+AARCH64_OPT_EXTENSION("sm4", AARCH64_FL_SM4, AARCH64_FL_SIMD, AARCH64_FL_SVE2_SM4, false, "sm3 sm4")
 
 /* Enabling "fp16fml" also enables "fp" and "fp16".
    Disabling "fp16fml" just disables "fp16fml".  */
 AARCH64_OPT_EXTENSION("fp16fml", AARCH64_FL_F16FML, AARCH64_FL_FP | AARCH64_FL_F16, 0, false, "asimdfml")
 
 /* Enabling "sve" also enables "fp16", "fp" and "simd".
-   Disabling "sve" just disables "sve".  */
-AARCH64_OPT_EXTENSION("sve", AARCH64_FL_SVE, AARCH64_FL_FP | AARCH64_FL_SIMD | AARCH64_FL_F16, 0, false, "sve")
+   Disabling "sve" disables "sve", "sve2", "sve2-aes", "sve2-sha3", "sve2-sm4"
+   and "bitperm".  */
+AARCH64_OPT_EXTENSION("sve", AARCH64_FL_SVE, AARCH64_FL_FP | AARCH64_FL_SIMD | AARCH64_FL_F16, AARCH64_FL_SVE2 | AARCH64_FL_SVE2_AES | AARCH64_FL_SVE2_SHA3 | AARCH64_FL_SVE2_SM4 | AARCH64_FL_SVE2_BITPERM, false, "sve")
 
 /* Enabling/Disabling "profile" does not enable/disable any other feature.  */
 AARCH64_OPT_EXTENSION("profile", AARCH64_FL_PROFILE, 0, 0, false, "")
@@ -131,5 +136,26 @@ AARCH64_OPT_EXTENSION("ssbs", AARCH64_FL_SSBS, 0, 0, false, "")
 
 /* Enabling/Disabling "predres" only changes "predres".  */
 AARCH64_OPT_EXTENSION("predres", AARCH64_FL_PREDRES, 0, 0, false, "")
+
+/* Enabling "sve2" also enables "sve", "fp16", "fp", and "simd".
+   Disabling "sve2" disables "sve2", "sve2-aes", "sve2-sha3", "sve2-sm4", and
+   "bitperm".  */
+AARCH64_OPT_EXTENSION("sve2", AARCH64_FL_SVE2, AARCH64_FL_SVE | AARCH64_FL_FP | AARCH64_FL_SIMD | AARCH64_FL_F16, AARCH64_FL_SVE2_AES | AARCH64_FL_SVE2_SHA3 | AARCH64_FL_SVE2_SM4 | AARCH64_FL_SVE2_BITPERM, false, "")
+
+/* Enabling "sve2-sm4" also enables "sm4", "simd", "fp16", "fp", "sve", and
+   "sve2". Disabling "sve2-sm4" just disables "sve2-sm4".  */
+AARCH64_OPT_EXTENSION("sve2-sm4", AARCH64_FL_SVE2_SM4, AARCH64_FL_SM4 | AARCH64_FL_SIMD | AARCH64_FL_F16 | AARCH64_FL_FP | AARCH64_FL_SVE | AARCH64_FL_SVE2, 0, false, "")
+
+/* Enabling "sve2-aes" also enables "aes", "simd", "fp16", "fp", "sve", and
+   "sve2". Disabling "sve2-aes" just disables "sve2-aes".  */
+AARCH64_OPT_EXTENSION("sve2-aes", AARCH64_FL_SVE2_AES, AARCH64_FL_AES | AARCH64_FL_SIMD | AARCH64_FL_F16 | AARCH64_FL_FP | AARCH64_FL_SVE | AARCH64_FL_SVE2, 0, false, "")
+
+/* Enabling "sve2-sha3" also enables "sha3", "simd", "fp16", "fp", "sve", and
+   "sve2". Disabling "sve2-sha3" just disables "sve2-sha3".  */
+AARCH64_OPT_EXTENSION("sve2-sha3", AARCH64_FL_SVE2_SHA3, AARCH64_FL_SHA3 | AARCH64_FL_SIMD | AARCH64_FL_F16 | AARCH64_FL_FP | AARCH64_FL_SVE | AARCH64_FL_SVE2, 0, false, "")
+
+/* Enabling "bitperm" also enables "simd", "fp16", "fp", "sve", and "sve2".
+   Disabling "bitperm" just disables "bitperm".  */
+AARCH64_OPT_EXTENSION("bitperm", AARCH64_FL_SVE2_BITPERM, AARCH64_FL_SIMD | AARCH64_FL_F16 | AARCH64_FL_FP | AARCH64_FL_SVE | AARCH64_FL_SVE2, 0, false, "")
 
 #undef AARCH64_OPT_EXTENSION

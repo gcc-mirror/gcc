@@ -1,3 +1,29 @@
+2019-05-22  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* common/config/aarch64/aarch64-common.c
+	(struct aarch64_option_extension, struct processor_name_to_arch,
+	struct arch_to_arch_name, aarch64_parse_extension, opt_ext_cmp,
+	aarch64_contains_opt,
+	aarch64_get_extension_string_for_isa_flags): Change type of
+	variables storing flags to uint64_t.
+	* config/aarch64/aarch64-option-extensions.def (sve2, sve2-sm4,
+	sve2-aes, sve2-sha3, bitperm): New optional SVE2 extension flags.
+	* config/aarch64/aarch64.c (struct processor,
+	aarch64_parse_arch, aarch64_parse_cpu, aarch64_validate_mcpu,
+	aarch64_validate_march, aarch64_override_options,
+	aarch64_option_print, aarch64_handle_attr_isa_flags,
+	aarch64_declare_function_name, aarch64_start_file): Make flag
+	variables uint64_t.
+	* config/aarch64/aarch64.h (AARCH64_FL_SVE2, AARCH64_FL_SVE2_AES,
+	AARCH64_FL_SVE2_SM4, AARCH64_FL_SVE2_SHA3,
+	AARCH64_FL_SVE2_BITPERM): New macro feature flags.
+	* config/aarch64/aarch64.opt (aarch64_isa_flags): Make uint64_t.
+	* config/aarch64/driver-aarch64.c
+	(struct aarch64_arch_extension, struct aarch64_core_data,
+	struct aarch64_arch_driver_info, host_detect_local_cpu): Make
+	flag variables uint64_t.
+	* doc/invoke.texi: Add documentation for new arguments.
+
 2019-05-22  Richard Biener  <rguenther@suse.de>
 
 	* alias.c (ao_ref_from_mem): Move stack-slot sharing

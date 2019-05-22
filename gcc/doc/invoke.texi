@@ -16008,6 +16008,17 @@ generation.  This option is enabled by default for @option{-march=armv8.5-a}.
 Enable the Armv8-a Execution and Data Prediction Restriction instructions.
 This option is only to enable the extension at the assembler level and does
 not affect code generation.  This option is enabled by default for
+@item sve2
+Enable the Armv8-a Scalable Vector Extension 2.  This also enables SVE
+instructions.
+@item bitperm
+Enable SVE2 bitperm instructions.  This also enables SVE2 instructions.
+@item sve2-sm4
+Enable SVE2 sm4 instructions.  This also enables SVE2 instructions.
+@item sve2-aes
+Enable SVE2 aes instructions.  This also enables SVE2 instructions.
+@item sve2-sha3
+Enable SVE2 sha3 instructions.  This also enables SVE2 instructions.
 @option{-march=armv8.5-a}.
 
 @end table

@@ -32,7 +32,7 @@ std::string aarch64_get_extension_string_for_isa_flags (unsigned long,
 struct aarch64_arch_extension
 {
   const char *ext;
-  unsigned int flag;
+  uint64_t flag;
   const char *feat_string;
 };
 
@@ -52,7 +52,7 @@ struct aarch64_core_data
   unsigned char implementer_id; /* Exactly 8 bits */
   unsigned int part_no; /* 12 bits + 12 bits */
   unsigned variant;
-  const unsigned long flags;
+  const uint64_t flags;
 };
 
 #define AARCH64_BIG_LITTLE(BIG, LITTLE) \
@@ -75,7 +75,7 @@ struct aarch64_arch_driver_info
 {
   const char* id;
   const char* name;
-  const unsigned long flags;
+  const uint64_t flags;
 };
 
 #define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH_REV, FLAGS) \
@@ -179,8 +179,8 @@ host_detect_local_cpu (int argc, const char **argv)
   unsigned int variants[2] = { ALL_VARIANTS, ALL_VARIANTS };
   unsigned int n_variants = 0;
   bool processed_exts = false;
-  unsigned long extension_flags = 0;
-  unsigned long default_flags = 0;
+  uint64_t extension_flags = 0;
+  uint64_t default_flags = 0;
 
   gcc_assert (argc);
 

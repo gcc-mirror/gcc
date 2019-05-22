@@ -192,6 +192,13 @@ extern unsigned aarch64_architecture_version;
 /* Execution and Data Prediction Restriction instructions supported.  */
 #define AARCH64_FL_PREDRES    (1 << 27)
 
+/* SVE2 instruction supported.  */
+#define AARCH64_FL_SVE2		(1 << 28)
+#define AARCH64_FL_SVE2_AES	(1 << 29)
+#define AARCH64_FL_SVE2_SM4	(1 << 30)
+#define AARCH64_FL_SVE2_SHA3	(1ULL << 31)
+#define AARCH64_FL_SVE2_BITPERM	(1ULL << 32)
+
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
 
