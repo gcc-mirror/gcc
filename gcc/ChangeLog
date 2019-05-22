@@ -1,3 +1,9 @@
+2019-05-22  Richard Biener  <rguenther@suse.de>
+
+	* alias.c (ao_ref_from_mem): Move stack-slot sharing
+	rewrite ...
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): ... here.
+
 2019-05-22  Martin Liska  <mliska@suse.cz>
 
 	PR lto/90500
