@@ -1,3 +1,7 @@
+2019-05-22  Jason Merrill  <jason@redhat.com>
+
+	* gimplify.c (gimplify_cond_expr): Don't check TREE_ADDRESSABLE.
+
 2019-05-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/88483
