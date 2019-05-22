@@ -1,3 +1,8 @@
+2019-05-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/90553
+	* gcc.dg/torture/pr90553.c: New test.
+
 2019-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67184
