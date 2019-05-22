@@ -1,5 +1,10 @@
 2019-05-22  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (depset::hash::hash): Create worklist.
+	(depset::tarjan::tarjan): Create stack.
+	(depset::depset): Create deps.
+
 	Stream binfos properly (again).
 	gcc/cp/
 	* module.cc (trees_out::mark_node): Binfos may be marked.

@@ -2447,14 +2447,15 @@ public:
 
   public:
     hash (size_t size)
-      : parent (size), worklist (), current (NULL),
+      : parent (size), current (NULL),
 	for_mergeable (false), sneakoscope (false),
 	bad_refs (false)
     {
-      worklist.reserve (size);
+      worklist.create (size);
     }
     ~hash ()
     {
+      worklist.release ();
     }
 
   public:
@@ -2494,12 +2495,14 @@ public:
     unsigned index;
 
     tarjan (auto_vec<depset *> &result)
-      : result (&result), stack (), index (0)
+      : result (&result), index (0)
     {
+      stack.create (50);
     }
     ~tarjan () 
     {
       gcc_assert (!stack.length ());
+      stack.release ();
     }
 
   public:
@@ -2509,13 +2512,15 @@ public:
 
 inline
 depset::depset (tree entity)
-  :entity (entity), discriminator (0), deps (), cluster (0), section (0)
+  :entity (entity), discriminator (0), cluster (0), section (0)
 {
+  deps.create (0);
 }
 
 inline
 depset::~depset ()
 {
+  deps.release ();
 }
 
 const char *
