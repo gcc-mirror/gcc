@@ -1,3 +1,16 @@
+2019-05-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2019-05-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90557
+	* src/c++17/fs_path.cc (path::_List::operator=(const _List&)): Fix
+	reversed arguments to uninitialized_copy_n.
+	* testsuite/27_io/filesystem/path/assign/copy.cc: Check that source
+	is unchanged by copy assignment.
+	* testsuite/util/testsuite_fs.h (compare_paths): Use std::equal to
+	compare path components.
+
 2019-05-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from mainline
