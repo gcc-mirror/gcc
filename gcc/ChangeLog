@@ -1,3 +1,18 @@
+2019-05-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	Backported from mainline
+	2019-05-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/cpuid.h (__cpuid): For 32bit targets, zero
+	%ebx and %ecx bafore calling cpuid with leaf 1 or
+	non-constant leaf argument.
+
+	2019-05-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/90547
+	* config/i386/i386.md (anddi_1 to andsi_1_zext splitter):
+	Avoid calling gen_lowpart with CONST operand.
+
 2019-05-21  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	Backported from mainline
