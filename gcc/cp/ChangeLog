@@ -1,3 +1,8 @@
+2019-05-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86485 - -Wmaybe-unused with empty class ?:
+	* cp-gimplify.c (simple_empty_class_p): Also true for MODIFY_EXPR.
+
 2019-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* parser.c (cp_parser_template_declaration_after_parameters): Use
