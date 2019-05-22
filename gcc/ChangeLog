@@ -1,5 +1,13 @@
 2019-05-22  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/90450
+	* tree-ssa-loop-im.c (struct im_mem_ref): Add ref_decomposed.
+	(mem_ref_hasher::equal): Check it.
+	(mem_ref_alloc): Initialize it.
+	(gather_mem_refs_stmt): Set it.
+
+2019-05-22  Richard Biener  <rguenther@suse.de>
+
 	* gimple-fold.c (arith_code_with_undefined_signed_overflow):
 	Add ABS_EXPR.
 	(rewrite_to_defined_overflow): Handle rewriting ABS_EXPR
