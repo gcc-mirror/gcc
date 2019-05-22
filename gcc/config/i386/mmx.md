@@ -1521,8 +1521,7 @@
 
       op = gen_rtx_VEC_SELECT (V8HImode, operands[1], mask);
     }
-  rtx insn = gen_rtx_SET (operands[0], op);
-  emit_insn (insn);
+  emit_insn (gen_rtx_SET (operands[0], op));
   DONE;
 }
   [(set_attr "mmx_isa" "native,x64,x64_avx")

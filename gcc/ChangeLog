@@ -1,3 +1,7 @@
+2019-05-22  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (sse_cvtpi2ps): Use TARGET_MMX in insn condition.
+
 2019-05-22  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* common/config/aarch64/aarch64-common.c
