@@ -2754,6 +2754,9 @@ struct GTY(()) machine_function {
   /* If true, ENDBR is queued at function entrance.  */
   BOOL_BITFIELD endbr_queued_at_entrance : 1;
 
+  /* True if the function needs a stack frame.  */
+  BOOL_BITFIELD stack_frame_required : 1;
+
   /* The largest alignment, in bytes, of stack slot actually used.  */
   unsigned int max_used_stack_alignment;
 
