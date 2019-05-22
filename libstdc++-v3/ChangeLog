@@ -1,5 +1,13 @@
 2019-05-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/90557
+	* src/c++17/fs_path.cc (path::_List::operator=(const _List&)): Fix
+	reversed arguments to uninitialized_copy_n.
+	* testsuite/27_io/filesystem/path/assign/copy.cc: Check that source
+	is unchanged by copy assignment.
+	* testsuite/util/testsuite_fs.h (compare_paths): Use std::equal to
+	compare path components.
+
 	PR libstdc++/77691
 	* include/experimental/memory_resource: Add system header pragma and
 	do not define anything unless compiled as C++14 or later.
