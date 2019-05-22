@@ -1241,11 +1241,6 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  preprocess_constraints (insn);
 	  process_single_reg_class_operands (false, freq);
 
-	  /* See which defined values die here.  */
-	  FOR_EACH_INSN_DEF (def, insn)
-	    if (!call_p || !DF_REF_FLAGS_IS_SET (def, DF_REF_MAY_CLOBBER))
-	      mark_ref_dead (def);
-
 	  if (call_p)
 	    {
 	      /* Try to find a SET in the CALL_INSN_FUNCTION_USAGE, and from
@@ -1308,6 +1303,17 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		    ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a)++;
 		}
 	    }
+
+	  /* See which defined values die here.  Note that we include
+	     the call insn in the lifetimes of these values, so we don't
+	     mistakenly consider, for e.g. an addressing mode with a
+	     side-effect like a post-increment fetching the address,
+	     that the use happens before the call, and the def to happen
+	     after the call: we believe both to happen before the actual
+	     call.  (We don't handle return-values here.)  */
+	  FOR_EACH_INSN_DEF (def, insn)
+	    if (!call_p || !DF_REF_FLAGS_IS_SET (def, DF_REF_MAY_CLOBBER))
+	      mark_ref_dead (def);
 
 	  make_early_clobber_and_input_conflicts ();
 

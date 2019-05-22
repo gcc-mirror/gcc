@@ -1,5 +1,9 @@
 2019-05-22  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR middle-end/90553
+	* ira-lives.c (process_bb_node_lives): Consider defs
+	for a call insn to be die before the call, not after.
+
 	* function.c (assign_parm_setup_block): Raise alignment of
 	stacked parameter only for STRICT_ALIGNMENT targets.
 
