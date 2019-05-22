@@ -1,3 +1,12 @@
+2019-05-22  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/90564
+	* gcc.target/powerpc/pr80315-1.c: Add one extra \ to escape
+	brackets.
+	* gcc.target/powerpc/pr80315-2.c: Likewise.
+	* gcc.target/powerpc/pr80315-3.c: Likewise.
+	* gcc.target/powerpc/pr80315-4.c: Likewise.
+
 2019-05-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR testsuite/27221
