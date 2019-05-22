@@ -1,3 +1,8 @@
+2019-05-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* function.c (assign_parm_setup_block): Raise alignment of
+	stacked parameter only for STRICT_ALIGNMENT targets.
+
 2019-05-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/constraints.md (define_register_constraint "wz"):
