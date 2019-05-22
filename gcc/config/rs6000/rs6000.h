@@ -70,6 +70,12 @@
 #define PPC405_ERRATUM77 0
 #endif
 
+#if CHECKING_P
+#define ASM_OPT_ANY ""
+#else
+#define ASM_OPT_ANY " -many"
+#endif
+
 /* Common ASM definitions used by ASM_SPEC among the various targets for
    handling -mcpu=xxx switches.  There is a parallel list in driver-rs6000.c to
    provide the default assembler options if the user uses -mcpu=native, so if
@@ -137,8 +143,8 @@
 	    mvsx: -mpower7; \
 	    mpowerpc64: -mppc64;: %(asm_default)}; \
   :%eMissing -mcpu option in ASM_CPU_SPEC?\n} \
-%{mvsx: -mvsx -maltivec; maltivec: -maltivec} \
--many"
+%{mvsx: -mvsx -maltivec; maltivec: -maltivec}" \
+ASM_OPT_ANY
 
 #define CPP_DEFAULT_SPEC ""
 

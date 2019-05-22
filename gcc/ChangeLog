@@ -1,3 +1,19 @@
+2019-05-22  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.h (ASM_OPT_ANY): Define.
+	(ASM_CPU_SPEC): Conditionally add -many.
+	* config/rs6000/rs6000.c (rs6000_machine): New static var.
+	(rs6000_machine_from_flags, emit_asm_machine): New functions..
+	(rs6000_file_start): ..extracted from here, and modified to
+	test all ISA bits.
+	(rs6000_output_function_prologue): Emit .machine as necessary.
+	* testsuite/gcc.target/powerpc/ppc32-abi-dfp-1.c: Don't use
+	power mnemonics.
+	* testsuite/gcc.dg/vect/O3-pr70130.c: Disable default options
+	added by check_vect_support_and_set_flags.
+	* testsuite/gcc.dg/vect/pr48765.c: Likewise.
+	* testsuite/gfortran.dg/vect/pr45714-b.f: Likewise.
+
 2019-05-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR middle-end/90553
