@@ -1,3 +1,8 @@
+2019-05-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/27221
+	* g++.dg/ext/alignof2.C: XFAIL for 32bit Darwin.
+
 2019-05-22  Martin Liska  <mliska@suse.cz>
 
 	PR lto/90500
