@@ -1,3 +1,21 @@
+2019-05-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/77691
+	* include/experimental/memory_resource: Add system header pragma and
+	do not define anything unless compiled as C++14 or later.
+	(__resource_adaptor_common::__guaranteed_alignment): Remove.
+	(__resource_adaptor_imp::do_allocate): If the requested alignment
+	is a fundamental alignment then either allocate directly from _M_alloc
+	or call the new _M_allocate function.
+	(__resource_adaptor_imp::do_deallocate): Likewise for deallocation.
+	(__resource_adaptor_imp::_M_allocate): New function that uses a copy
+	of the allocator rebound to a POD type with the specified alignment.
+	(__resource_adaptor_imp::_M_deallocate): Likewise for deallocation.
+	* testsuite/experimental/memory_resource/new_delete_resource.cc:
+	Adjust expected allocation sizes.
+	* testsuite/experimental/memory_resource/resource_adaptor.cc: Remove
+	xfail for Solaris x86.
+
 2019-05-21  Thomas Rodgers  <trodgers@redhat.com>
 
 	LWG 3062 - Unnecessary decay_t in is_execution_policy_v
