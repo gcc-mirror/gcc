@@ -1,3 +1,7 @@
+2019-05-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gfortran.dg/coarray_lock_7.f90: Fix output patterns.
+
 2019-05-22  Mark Eggleston  <mark.eggleston@codethink.com>
 
 	PR fortran/89100
