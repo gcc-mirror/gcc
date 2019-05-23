@@ -1,4 +1,4 @@
-! { dg-do run  }
+! { dg-do run { target fd_truncate } }
 !
 ! Functional test of User Defined Derived Type IO, Formatted WRITE/READ
 !
