@@ -10,7 +10,7 @@ inline int baz (int i)
 }
 
 export template <typename T>
-int foo (T t)
+inline int foo (T t)
 {
   return baz (t);
 }

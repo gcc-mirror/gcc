@@ -13094,6 +13094,9 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
   if (!DECL_DELETED_FN (r))
     DECL_INITIAL (r) = NULL_TREE;
   DECL_CONTEXT (r) = ctx;
+  /* This instantiation comes from this TU.  */
+  DECL_MODULE_OWNER (r)
+    = module_purview_p () ? MODULE_PURVIEW : MODULE_NONE;
 
   /* Handle explicit(dependent-expr).  */
   if (DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P (t))

@@ -1,5 +1,32 @@
 2019-05-23  Nathan Sidwell  <nathan@acm.org>
 
+	Template template parms, and a bunch of other stuff
+	gcc/cp/
+	* cp-tree.h (DECL_TEMPLATE_INFO): Augment docs.
+	* module.cc (depset::clear_flag_bit): New.
+	(depset::is_unreached): Replace is_implicit_specialization.
+	(depset::is_marked): Replace is_first_dep_repurposed.
+	(dumper::impl::nested_name): Template args may be NULL.
+	(trees_{in,out}::core_vals): Template decl result & args streamed
+	with decl.
+	(trees_out::tree_decl): TTPs by value.
+	(trees_{in,out}::tree_value): Reorder body streaming, stream more
+	template bits.
+	(trees_out::tree_mergeable): Redo specialization tagging.
+	(trees_out::mark_class_def): Only mark decls on decl list.
+	(trees_out::mark_declaration): Simplify.
+	(depset::hash::add_dependency): Deal with reaching unreached.
+	(specialization_add): Grab all instantiations from this TU.
+	(depset::hash::add_specialiazations): Determing is_unreached.
+	(depset::hash::find_dependencies): Iterate until no more unreached
+	reached.
+	(module_state::write_unnamed): Adjust.
+	* pt.c (tsubst_function_decl): Set DECL_MODULE_OWNER.
+	gcc/testsuite/
+	* g++.dg/modules/ttp-1_[ab].C: New.
+	* g++.dg/modules/indirect-[234]_[bc].C: Adjust scans.
+	* g++.dg/modules/inst-[24]_ab.C: Likewise.
+
 	gcc/cp/
 	* module.cc (dumper::impl::nested_name): Cope with TTPs.
 	(depset:hash::connect): Return the vec.

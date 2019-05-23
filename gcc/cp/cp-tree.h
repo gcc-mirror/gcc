@@ -3456,7 +3456,10 @@ struct GTY(()) lang_decl {
    an instantiation of a template -- but, from the point of view of
    the language, each instantiation of S results in a wholly unrelated
    global function f.  In this case, DECL_TEMPLATE_INFO for S<int>::f
-   will be non-NULL, but DECL_USE_TEMPLATE will be zero.  */
+   will be non-NULL, but DECL_USE_TEMPLATE will be zero.
+
+   In a friend declaration, TI_TEMPLATE can be an overload set, or
+   identifier.  */
 #define DECL_TEMPLATE_INFO(NODE) \
   (DECL_LANG_SPECIFIC (VAR_TEMPL_TYPE_FIELD_OR_FUNCTION_DECL_CHECK (NODE)) \
    ->u.min.template_info)
