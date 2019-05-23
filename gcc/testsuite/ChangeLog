@@ -1,3 +1,7 @@
+2019-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/is-constant-evaluated8.C: New test.
+
 2019-05-23  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gfortran.dg/dec_io_1.f90, gfortran.dg/dtio_1.f90,
