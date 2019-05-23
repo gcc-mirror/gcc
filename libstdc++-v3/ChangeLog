@@ -1,3 +1,15 @@
+2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90220
+	* include/experimental/any (__any_caster): Constrain to only be
+	callable for object types. Use remove_cv_t instead of decay_t.
+	If the type decays or isn't copy constructible, compare the manager
+	function to a dummy specialization.
+	(__any_caster): Add overload constrained for non-object types.
+	(any::_Manager_internal<_Op>): Add dummy specialization.
+	* testsuite/experimental/any/misc/any_cast.cc: Test function types
+	and array types.
+
 2019-05-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90557
