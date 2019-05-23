@@ -1221,6 +1221,14 @@ requirements of the license of GCC.
     <listitem><para>Use rvalues for deleters.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr2921"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2921">2921</link>:
+       <emphasis><code>packaged_task</code> and type-erased allocators
+       </emphasis>
+    </term>
+    <listitem><para>For C++17 mode, remove the constructors taking
+      an allocator argument.
+    </para></listitem></varlistentry>
+
     <varlistentry xml:id="manual.bugs.dr2942"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2942">2942</link>:
        <emphasis>LWG 2873's resolution missed
          <code>weak_ptr::owner_before</code>

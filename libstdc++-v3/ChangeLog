@@ -1,3 +1,19 @@
+2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document LWG DR 2921 change.
+	* doc/xml/manual/intro.xml: Likewise.
+	* include/std/future (__create_task_state): Add default arguments
+	to make providing an allocator optional.
+	(packaged_task::packaged_task(F&&)): Call __create_task_state directly
+	instead of delegating to another constructor.
+	(packaged_task::packaged_task(allocator_arg_t, const A&, ...)): Do not
+	define allocator-extended constructors for C++17 and later.
+	* testsuite/30_threads/packaged_task/cons/alloc.cc: Only run test for
+	C++11 and C++14.
+	* testsuite/30_threads/packaged_task/cons/alloc2.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/alloc_min.cc: Likewise.
+	* testsuite/30_threads/packaged_task/uses_allocator.cc: Likewise.
+
 2019-05-23  Hans-Peter Nilsson  <hp@axis.com>
 
 	* testsuite/26_numerics/random/poisson_distribution/operators/values.cc:
