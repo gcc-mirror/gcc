@@ -1,5 +1,9 @@
 2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/html/*: Regenerate.
+
+2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
 	Backport from mainline
 	2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
 

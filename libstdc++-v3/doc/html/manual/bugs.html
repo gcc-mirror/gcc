@@ -492,10 +492,20 @@
        </em></span>
     </span></dt><dd><p>Avoid using <code class="code">dynamic_cast</code> when it would be
     ill-formed.
+    </p></dd><dt><a id="manual.bugs.dr2537"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2537" target="_top">2537</a>:
+       <span class="emphasis"><em>Constructors for <code class="code">priority_queue</code> taking allocators
+	 should call <code class="code">make_heap</code>
+       </em></span>
+    </span></dt><dd><p>Call <code class="code">make_heap</code>.
     </p></dd><dt><a id="manual.bugs.dr2583"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2583" target="_top">2583</a>:
        <span class="emphasis"><em>There is no way to supply an allocator for <code class="code">basic_string(str, pos)</code>
        </em></span>
     </span></dt><dd><p>Add new constructor
+    </p></dd><dt><a id="manual.bugs.dr2586"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2586" target="_top">2586</a>:
+       <span class="emphasis"><em>Wrong value category used in <code class="code">scoped_allocator_adaptor::construct()</code>
+       </em></span>
+    </span></dt><dd><p>Change internal helper for uses-allocator construction
+      to always check using const lvalue allocators.
     </p></dd><dt><a id="manual.bugs.dr2684"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2684" target="_top">2684</a>:
        <span class="emphasis"><em><code class="code">priority_queue</code> lacking comparator typedef
        </em></span>
