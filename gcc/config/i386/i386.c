@@ -19124,7 +19124,8 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
   rtx mask;
   enum rtx_code code = GET_CODE (x);
   enum rtx_code outer_code = (enum rtx_code) outer_code_i;
-  const struct processor_costs *cost = speed ? ix86_cost : &ix86_size_cost;
+  const struct processor_costs *cost
+    = speed ? ix86_tune_cost : &ix86_size_cost;
   int src_cost;
 
   switch (code)
