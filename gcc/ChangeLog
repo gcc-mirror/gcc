@@ -1,3 +1,8 @@
+2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/90592
+	* doc/extend.texi (Function Names): Add missing word.
+
 2019-05-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88440

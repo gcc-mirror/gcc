@@ -10830,7 +10830,7 @@ evaluates to the empty string.
 backward compatibility with old versions of GCC.
 
 In C, @code{__PRETTY_FUNCTION__} is yet another name for
-@code{__func__}, except that at file (or, in C++, namespace scope),
+@code{__func__}, except that at file scope (or, in C++, namespace scope),
 it evaluates to the string @code{"top level"}.  In addition, in C++,
 @code{__PRETTY_FUNCTION__} contains the signature of the function as
 well as its bare name.  For example, this program:
