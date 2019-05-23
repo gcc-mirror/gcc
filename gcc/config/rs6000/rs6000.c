@@ -26180,7 +26180,7 @@ split_stack_arg_pointer_used_p (void)
 /* Return whether we need to emit an ELFv2 global entry point prologue.  */
 
 static bool
-rs6000_global_entry_point_needed_p (void)
+rs6000_global_entry_point_prologue_needed_p (void)
 {
   /* Only needed for the ELFv2 ABI.  */
   if (DEFAULT_ABI != ABI_ELFv2)
@@ -26189,6 +26189,10 @@ rs6000_global_entry_point_needed_p (void)
   /* With -msingle-pic-base, we assume the whole program shares the same
      TOC, so no global entry point prologues are needed anywhere.  */
   if (TARGET_SINGLE_PIC_BASE)
+    return false;
+
+  /* PC-relative functions never generate a global entry point prologue.  */
+  if (rs6000_pcrel_p (cfun))
     return false;
 
   /* Ensure we have a global entry point for thunks.   ??? We could
@@ -27547,10 +27551,9 @@ rs6000_output_function_prologue (FILE *file)
 
   /* ELFv2 ABI r2 setup code and local entry point.  This must follow
      immediately after the global entry point label.  */
-  if (rs6000_global_entry_point_needed_p ())
+  if (rs6000_global_entry_point_prologue_needed_p ())
     {
       const char *name = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
-
       (*targetm.asm_out.internal_label) (file, "LCF", rs6000_pic_labelno);
 
       if (TARGET_CMODEL != CMODEL_LARGE)
@@ -27599,6 +27602,19 @@ rs6000_output_function_prologue (FILE *file)
       fputs (",.-", file);
       assemble_name (file, name);
       fputs ("\n", file);
+    }
+
+  else if (rs6000_pcrel_p (cfun))
+    {
+      const char *name = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
+      /* All functions compiled to use PC-relative addressing will
+	 have a .localentry value of 0 or 1.  For now we set it to
+	 1 all the time, indicating that the function may clobber
+	 the TOC register r2.  Later we may optimize this by setting
+	 it to 0 if the function is a leaf and does not clobber r2.  */
+      fputs ("\t.localentry\t", file);
+      assemble_name (file, name);
+      fputs (",1\n", file);
     }
 
   /* Output -mprofile-kernel code.  This needs to be done here instead of
@@ -33335,7 +33351,8 @@ rs6000_elf_declare_function_name (FILE *file, const char *name, tree decl)
   ASM_OUTPUT_TYPE_DIRECTIVE (file, name, "function");
   ASM_DECLARE_RESULT (file, DECL_RESULT (decl));
 
-  if (TARGET_CMODEL == CMODEL_LARGE && rs6000_global_entry_point_needed_p ())
+  if (TARGET_CMODEL == CMODEL_LARGE
+      && rs6000_global_entry_point_prologue_needed_p ())
     {
       char buf[256];
 

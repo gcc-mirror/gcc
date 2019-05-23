@@ -1,3 +1,14 @@
+2019-05-23  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_global_entry_point_needed_p):
+	Rename to rs6000_global_entry_point_prologue_needed_p.  Return
+	false for PC-relative functions.
+	(rs6000_output_function_prologue): Change called function name to
+	rs6000_global_entry_point_prologue_needed_p.  Emit ".localentry
+	name,1" for PC-relative functions.
+	(rs6000_elf_declare_function_name): Change called function name to
+	rs6000_global_entry_point_prologue_needed_p.
+
 2019-05-23  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/90552
