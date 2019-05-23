@@ -115,6 +115,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "tree-vectorizer.h"
 #include "tree-eh.h"
+#include "gimple-fold.h"
 
 
 #define MAX_DATAREFS_NUM \
@@ -1028,6 +1029,7 @@ generate_memset_builtin (struct loop *loop, partition *partition)
   fn = build_fold_addr_expr (builtin_decl_implicit (BUILT_IN_MEMSET));
   fn_call = gimple_build_call (fn, 3, mem, val, nb_bytes);
   gsi_insert_after (&gsi, fn_call, GSI_CONTINUE_LINKING);
+  fold_stmt (&gsi);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1071,6 +1073,7 @@ generate_memcpy_builtin (struct loop *loop, partition *partition)
   fn = build_fold_addr_expr (builtin_decl_implicit (kind));
   fn_call = gimple_build_call (fn, 3, dest, src, nb_bytes);
   gsi_insert_after (&gsi, fn_call, GSI_CONTINUE_LINKING);
+  fold_stmt (&gsi);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -2769,7 +2772,8 @@ finalize_partitions (struct loop *loop, vec<struct partition *> *partitions,
 
 static int
 distribute_loop (struct loop *loop, vec<gimple *> stmts,
-		 control_dependences *cd, int *nb_calls, bool *destroy_p)
+		 control_dependences *cd, int *nb_calls, bool *destroy_p,
+		 bool only_patterns_p)
 {
   ddrs_table = new hash_table<ddr_hasher> (389);
   struct graph *rdg;
@@ -2843,7 +2847,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
 
   /* If we are only distributing patterns but did not detect any,
      simply bail out.  */
-  if (!flag_tree_loop_distribution
+  if (only_patterns_p
       && !any_builtin)
     {
       nbp = 0;
@@ -2855,7 +2859,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
      a loop into pieces, separated by builtin calls.  That is, we
      only want no or a single loop body remaining.  */
   struct partition *into;
-  if (!flag_tree_loop_distribution)
+  if (only_patterns_p)
     {
       for (i = 0; partitions.iterate (i, &into); ++i)
 	if (!partition_builtin_p (into))
@@ -3085,7 +3089,6 @@ prepare_perfect_loop_nest (struct loop *loop)
 	 && loop_outer (outer)
 	 && outer->inner == loop && loop->next == NULL
 	 && single_exit (outer)
-	 && optimize_loop_for_speed_p (outer)
 	 && !chrec_contains_symbols_defined_in_loop (niters, outer->num)
 	 && (niters = number_of_latch_executions (outer)) != NULL_TREE
 	 && niters != chrec_dont_know)
@@ -3139,9 +3142,11 @@ pass_loop_distribution::execute (function *fun)
      walking to innermost loops.  */
   FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
     {
-      /* Don't distribute multiple exit edges loop, or cold loop.  */
+      /* Don't distribute multiple exit edges loop, or cold loop when
+         not doing pattern detection.  */
       if (!single_exit (loop)
-	  || !optimize_loop_for_speed_p (loop))
+	  || (!flag_tree_loop_distribute_patterns
+	      && !optimize_loop_for_speed_p (loop)))
 	continue;
 
       /* Don't distribute loop if niters is unknown.  */
@@ -3169,9 +3174,10 @@ pass_loop_distribution::execute (function *fun)
 
 	  bool destroy_p;
 	  int nb_generated_loops, nb_generated_calls;
-	  nb_generated_loops = distribute_loop (loop, work_list, cd,
-						&nb_generated_calls,
-						&destroy_p);
+	  nb_generated_loops
+	    = distribute_loop (loop, work_list, cd, &nb_generated_calls,
+			       &destroy_p, (!optimize_loop_for_speed_p (loop)
+					    || !flag_tree_loop_distribution));
 	  if (destroy_p)
 	    loops_to_be_destroyed.safe_push (loop);
 

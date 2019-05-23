@@ -1,3 +1,39 @@
+2019-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88440
+	* gcc.dg/tree-ssa/ldist-37.c: New testcase.
+	* gcc.dg/tree-ssa/ldist-38.c: Likewise.
+	* gcc.dg/vect/vect.exp: Add -fno-tree-loop-distribute-patterns.
+	* gcc.dg/tree-ssa/ldist-37.c: Adjust.
+	* gcc.dg/tree-ssa/ldist-38.c: Likewise.
+	* g++.dg/tree-ssa/pr78847.C: Likewise.
+	* gcc.dg/autopar/pr39500-1.c: Likewise.
+	* gcc.dg/autopar/reduc-1char.c: Likewise.
+	* gcc.dg/autopar/reduc-7.c: Likewise.
+	* gcc.dg/tree-ssa/ivopts-lt-2.c: Likewise.
+	* gcc.dg/tree-ssa/ivopts-lt.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-dse-1.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-dse-2.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-dse-3.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-dse-4.c: Likewise.
+	* gcc.dg/tree-ssa/prefetch-7.c: Likewise.
+	* gcc.dg/tree-ssa/prefetch-8.c: Likewise.
+	* gcc.dg/tree-ssa/prefetch-9.c: Likewise.
+	* gcc.dg/tree-ssa/scev-11.c: Likewise.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-31.c: Likewise.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-33.c: Likewise.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-31.c: Likewise.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-33.c: Likewise.
+	* gcc.target/i386/pr30970.c: Likewise.
+	* gcc.target/i386/vect-double-1.c: Likewise.
+	* gcc.target/i386/vect-double-2.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-2.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-26.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-28.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-32.c: Likewise.
+	* gfortran.dg/vect/vect-5.f90: Likewise.
+	* gfortran.dg/vect/vect-8.f90: Likewise.
+
 2019-05-23  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/90570

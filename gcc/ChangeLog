@@ -1,3 +1,16 @@
+2019-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88440
+	* opts.c (default_options_table): Enable -ftree-loop-distribute-patterns
+	at -O[2s]+.
+	* tree-loop-distribution.c (generate_memset_builtin): Fold the
+	generated call.
+	(generate_memcpy_builtin): Likewise.
+	(distribute_loop): Pass in whether to only distribute patterns.
+	(prepare_perfect_loop_nest): Also allow size optimization.
+	(pass_loop_distribution::execute): When optimizing a loop
+	nest for size allow pattern replacement.
+
 2019-05-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/90568
