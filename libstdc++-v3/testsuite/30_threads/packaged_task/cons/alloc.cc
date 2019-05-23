@@ -1,6 +1,5 @@
-// { dg-do run }
+// { dg-do run { target { c++11_only || c++14_only } } }
 // { dg-options "-pthread"  }
-// { dg-require-effective-target c++11 }
 // { dg-require-effective-target pthread }
 // { dg-require-gthreads "" }
 
