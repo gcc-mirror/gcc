@@ -1,6 +1,7 @@
-// { dg-do run { target c++11 } }
+// { dg-options "-std=gnu++2a" }
+// { dg-do run { target c++2a } }
 
-// Copyright (C) 2007-2019 Free Software Foundation, Inc.
+// Copyright (C) 2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,7 +18,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.6.6.2 Template class shared_ptr [util.smartptr.shared]
+// Template class shared_ptr [util.smartptr.shared]
 
 #include <memory>
 #include <testsuite_hooks.h>
@@ -48,44 +49,47 @@ test01()
   bool test = true;
 
   std::shared_ptr<A> a;
-  std::shared_ptr<bool> b1(a, &test);
+  std::shared_ptr<bool> b1(std::move(a), &test);
   VERIFY( b1.use_count() == 0 );
-  VERIFY( a.get() == 0 );
   VERIFY( b1.get() == &test );
+  VERIFY( a.use_count() == 0 );
+  VERIFY( a == nullptr );
 
   std::shared_ptr<bool> b2(b1);
   VERIFY( b2.use_count() == 0 );
-  VERIFY( b1.get() == b2.get() );
+  VERIFY( b1 == b2 );
 }
 
 void
 test02()
 {
   std::shared_ptr<A> a(new A);
-  std::shared_ptr<int> i1(a, &a->i);
-  VERIFY( i1.use_count() == 2 );
+  std::shared_ptr<int> i1(std::move(a), &a->i);
+  VERIFY( i1.use_count() == 1 );
+  VERIFY( i1 != nullptr );
+  VERIFY( a.use_count() == 0 );
+  VERIFY( a == nullptr );
 
   std::shared_ptr<int> i2(i1);
-  VERIFY( i2.use_count() == 3 );
+  VERIFY( i2.use_count() == 2 );
   VERIFY( i2.get() == &a->i );
 }
 
 void
 test03()
 {
-  std::shared_ptr<B> b(new B);
-  std::shared_ptr<A> a1(b, b.get());
-  std::shared_ptr<A> a2(b, &b->a);
-  VERIFY( a2.use_count() == 3 );
-  VERIFY( a1 == b );
-  VERIFY( a2 != b );
-  VERIFY( a1.get() != a2.get() );
-
-  std::shared_ptr<A> a3(a1);
-  VERIFY( a3 == b );
-
-  a3 = a2;
-  VERIFY( a3.get() == &b->a );
+  std::shared_ptr<B> b1(new B);
+  std::shared_ptr<B> b2(b1);
+  std::shared_ptr<A> a1(std::move(b1), b1.get());
+  std::shared_ptr<A> a2(b2, &b2->a);
+  VERIFY( a2.use_count() == 2 );
+  VERIFY( a1 != nullptr );
+  VERIFY( a2 != nullptr );
+  VERIFY( a1 != a2 );
+  VERIFY( b1.use_count() == 0 );
+  VERIFY( b2.use_count() == 0 );
+  VERIFY( b1 == nullptr );
+  VERIFY( b2 == nullptr );
 }
 
 int

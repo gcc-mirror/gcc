@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++17" }
-// { dg-do compile { target c++17 } }
+// { dg-do run { target c++17 } }
 
 // Copyright (C) 2016-2019 Free Software Foundation, Inc.
 //
@@ -21,12 +21,14 @@
 // 20.11.2.2.9 shared_ptr casts [util.smartptr.shared.cast]
 
 #include <memory>
+#include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
 struct MyP { virtual ~MyP() { }; };
 struct MyDP : MyP { };
 
-int main()
+void
+test01()
 {
   using __gnu_test::check_ret_type;
   using std::shared_ptr;
@@ -36,7 +38,28 @@ int main()
   shared_ptr<const int> spci;
   shared_ptr<MyP> spa;
 
-  check_ret_type<shared_ptr<void> >(reinterpret_pointer_cast<void>(spd));
-  check_ret_type<shared_ptr<const short> >(reinterpret_pointer_cast<const short>(spci));
-  check_ret_type<shared_ptr<MyDP> >(reinterpret_pointer_cast<MyDP>(spa));
+  check_ret_type<shared_ptr<void>>(reinterpret_pointer_cast<void>(spd));
+  check_ret_type<shared_ptr<const short>>(reinterpret_pointer_cast<const short>(spci));
+  check_ret_type<shared_ptr<MyDP>>(reinterpret_pointer_cast<MyDP>(spa));
+}
+
+void
+test02()
+{
+  using std::shared_ptr;
+  using std::reinterpret_pointer_cast;
+
+  int* ptr = new int(2);
+  shared_ptr<int> pi(ptr);
+  auto pl = reinterpret_pointer_cast<long>(pi);
+  VERIFY(pi.use_count() == 2);
+  VERIFY(pl.use_count() == 2);
+  VERIFY(pi.get() == ptr);
+  VERIFY(reinterpret_cast<int*>(pl.get()) == ptr);
+}
+
+int main()
+{
+  test01();
+  test02();
 }

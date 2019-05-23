@@ -1158,11 +1158,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_ptr(0), _M_refcount(__p, std::move(__d), std::move(__a))
 	{ }
 
+      // Aliasing constructor
       template<typename _Yp>
 	__shared_ptr(const __shared_ptr<_Yp, _Lp>& __r,
 		     element_type* __p) noexcept
 	: _M_ptr(__p), _M_refcount(__r._M_refcount) // never throws
 	{ }
+
+      // Aliasing constructor
+      template<typename _Yp>
+	__shared_ptr(__shared_ptr<_Yp, _Lp>&& __r,
+		     element_type* __p) noexcept
+	: _M_ptr(__p), _M_refcount()
+	{
+	  _M_refcount._M_swap(__r._M_refcount);
+	  __r._M_ptr = 0;
+	}
 
       __shared_ptr(const __shared_ptr&) noexcept = default;
       __shared_ptr& operator=(const __shared_ptr&) noexcept = default;
