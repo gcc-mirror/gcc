@@ -1,3 +1,7 @@
+2019-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt78.ad[sb]: New test.
+
 2019-05-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR rtl-optimisation/64895
