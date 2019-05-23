@@ -1,3 +1,12 @@
+2019-05-23  Jan Hubicka  <jh@suse.cz>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/90576
+	* tree-ssa-alias.c (compare_sizes): Remove dead calls to
+	poly_int_tree_p.
+	(aliasing_component_refs_p): Fix three way size compare conditional;
+	give up earlier in case we can not decide on equivalence.
+
 2019-05-23  Bill Schmidt  <wschmidt@linux.ibm.com>
 	    Michael Meissner  <meissner@linux.ibm.com>
 	    Segher Boessenkool  <segher@kernel.crashing.org>
