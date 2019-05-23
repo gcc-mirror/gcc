@@ -68,7 +68,7 @@ namespace __variant
 } // namespace __variant
 } // namespace __detail
 
-#define __cpp_lib_variant 201603
+#define __cpp_lib_variant 201606L
 
   template<typename... _Types> class tuple;
   template<typename... _Types> class variant;
