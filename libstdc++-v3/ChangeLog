@@ -1,5 +1,21 @@
 2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/intro.xml: Document LWG DR 2996 change.
+	* doc/html/*: Regenerate.
+	* include/bits/shared_ptr.h (shared_ptr(shared_ptr&&, T*)): Add
+	rvalue aliasing constructor.
+	(static_pointer_cast, const_pointer, dynamic_pointer_cast)
+	(reinterpret_pointer_cast): Add overloads taking rvalues.
+	* include/bits/shared_ptr_base.h (__shared_ptr(__shared_ptr&&, T*)):
+	Add rvalue aliasing constructor.
+	* testsuite/20_util/shared_ptr/casts/1.cc: Change "compile" test to
+	"run" and check return values as well as types.
+	* testsuite/20_util/shared_ptr/casts/reinterpret.cc: Likewise.
+	* testsuite/20_util/shared_ptr/casts/rval.cc: New test.
+	* testsuite/20_util/shared_ptr/cons/alias-rval.cc: New test.
+	* testsuite/20_util/shared_ptr/cons/alias.cc: Remove unused return
+	values.
+
 	* doc/xml/manual/evolution.xml: Document LWG DR 2921 change.
 	* doc/xml/manual/intro.xml: Likewise.
 	* include/std/future (__create_task_state): Add default arguments

@@ -1237,6 +1237,14 @@ requirements of the license of GCC.
     <listitem><para>Add noexcept.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr2996"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2996">2996</link>:
+       <emphasis>Missing rvalue overloads for
+         <code>shared_ptr</code> operations
+       </emphasis>
+    </term>
+    <listitem><para>Add additional constructor and cast overloads.
+    </para></listitem></varlistentry>
+
     <varlistentry xml:id="manual.bugs.dr2993"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2993">2993</link>:
        <emphasis><code>reference_wrapper&lt;T&gt;</code> conversion from <code>T&amp;&amp;</code>
        </emphasis>
