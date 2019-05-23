@@ -1,3 +1,8 @@
+2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* init.c (std_placement_new_fn_p): Remove outdated TODO comment that
+	was resolved by r254694.
+
 2019-05-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/20408 - unnecessary code for empty struct.
