@@ -4166,7 +4166,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    checks in ascending code order.  */
 #define CP_AGGREGATE_TYPE_P(TYPE)				\
   (TREE_CODE (TYPE) == VECTOR_TYPE				\
-   ||TREE_CODE (TYPE) == ARRAY_TYPE				\
+   || TREE_CODE (TYPE) == ARRAY_TYPE				\
    || (CLASS_TYPE_P (TYPE) && !CLASSTYPE_NON_AGGREGATE (TYPE)))
 
 /* Nonzero for a class type means that the class type has a
