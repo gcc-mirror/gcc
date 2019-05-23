@@ -1,3 +1,9 @@
+2019-05-23  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/90570
+	* gimplify.c (gimplify_target_expr): Skip TREE_STATIC target
+	expression similarly to gimplify_decl_expr.
+
 2019-05-23  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* cse.c (cse_dump_path): s/dump_file/f.
