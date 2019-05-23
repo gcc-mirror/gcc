@@ -1,3 +1,8 @@
+2019-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90510
+	* brig.dg/test/gimple/packed.hsail: Adjust.
+
 2019-05-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp2a/is-constant-evaluated8.C: New test.
