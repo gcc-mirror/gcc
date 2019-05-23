@@ -1,3 +1,13 @@
+2019-05-23  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	* gfortran.dg/fmt_f_default_field_width_1.f90: Hide REAL(16) behind
+	__GFC_REAL_16__.  Add -cpp to dg-options.
+	* gfortran.dg/fmt_f_default_field_width_2.f90: Ditto.
+	* gfortran.dg/fmt_f_default_field_width_3.f90: Ditto.
+	* gfortran.dg/fmt_g_default_field_width_1.f90: Ditto.
+	* gfortran.dg/fmt_g_default_field_width_2.f90: Ditto.
+	* gfortran.dg/fmt_g_default_field_width_3.f90: Ditto.
+
 2019-05-23  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* gcc.target/powerpc/cpu-future.c: New test.
