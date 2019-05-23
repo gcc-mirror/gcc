@@ -4296,6 +4296,15 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_isa_flags &= ~OPTION_MASK_FLOAT128_HW;
     }
 
+  /* -mpcrel requires the prefixed load/store support on FUTURE systems.  */
+  if (!TARGET_FUTURE && TARGET_PCREL)
+    {
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_PCREL) != 0)
+	error ("%qs requires %qs", "-mpcrel", "-mcpu=future");
+
+      rs6000_isa_flags &= ~OPTION_MASK_PCREL;
+    }
+
   /* Print the options after updating the defaults.  */
   if (TARGET_DEBUG_REG || TARGET_DEBUG_TARGET)
     rs6000_print_isa_options (stderr, 0, "after defaults", rs6000_isa_flags);
@@ -36274,6 +36283,7 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "modulo",			OPTION_MASK_MODULO,		false, true  },
   { "mulhw",			OPTION_MASK_MULHW,		false, true  },
   { "multiple",			OPTION_MASK_MULTIPLE,		false, true  },
+  { "pcrel",			OPTION_MASK_PCREL,		false, true  },
   { "popcntb",			OPTION_MASK_POPCNTB,		false, true  },
   { "popcntd",			OPTION_MASK_POPCNTD,		false, true  },
   { "power8-fusion",		OPTION_MASK_P8_FUSION,		false, true  },
@@ -38111,6 +38121,34 @@ static bool
 rs6000_save_toc_in_prologue_p (void)
 {
   return (cfun && cfun->machine && cfun->machine->save_toc_in_prologue);
+}
+
+/* Return whether we should generate PC-relative code for FNDECL.  */
+bool
+rs6000_fndecl_pcrel_p (const_tree fndecl)
+{
+  if (DEFAULT_ABI != ABI_ELFv2)
+    return false;
+
+  struct cl_target_option *opts = target_opts_for_fn (fndecl);
+
+  return ((opts->x_rs6000_isa_flags & OPTION_MASK_PCREL) != 0
+	  && TARGET_CMODEL == CMODEL_MEDIUM);
+}
+
+/* Return whether we should generate PC-relative code for *FN.  */
+bool
+rs6000_pcrel_p (struct function *fn)
+{
+  if (DEFAULT_ABI != ABI_ELFv2)
+    return false;
+
+  /* Optimize usual case.  */
+  if (fn == cfun)
+    return ((rs6000_isa_flags & OPTION_MASK_PCREL) != 0
+	    && TARGET_CMODEL == CMODEL_MEDIUM);
+
+  return rs6000_fndecl_pcrel_p (fn->decl);
 }
 
 #ifdef HAVE_GAS_HIDDEN
