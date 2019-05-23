@@ -1,3 +1,8 @@
+2019-05-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/26_numerics/random/poisson_distribution/operators/values.cc:
+	Don't run the libstdc++/83237 part on simulator targets.
+
 2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Add feature test macro for
