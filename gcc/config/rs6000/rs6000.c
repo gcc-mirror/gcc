@@ -4436,6 +4436,7 @@ rs6000_option_override_internal (bool global_init_p)
 			&& rs6000_tune != PROCESSOR_POWER7
 			&& rs6000_tune != PROCESSOR_POWER8
 			&& rs6000_tune != PROCESSOR_POWER9
+			&& rs6000_tune != PROCESSOR_FUTURE
 			&& rs6000_tune != PROCESSOR_PPCA2
 			&& rs6000_tune != PROCESSOR_CELL
 			&& rs6000_tune != PROCESSOR_PPC476);
@@ -4449,6 +4450,7 @@ rs6000_option_override_internal (bool global_init_p)
 				 || rs6000_tune == PROCESSOR_POWER7
 				 || rs6000_tune == PROCESSOR_POWER8
 				 || rs6000_tune == PROCESSOR_POWER9
+				 || rs6000_tune == PROCESSOR_FUTURE
 				 || rs6000_tune == PROCESSOR_PPCE500MC
 				 || rs6000_tune == PROCESSOR_PPCE500MC64
 				 || rs6000_tune == PROCESSOR_PPCE5500
@@ -4749,6 +4751,7 @@ rs6000_option_override_internal (bool global_init_p)
 	break;
 
       case PROCESSOR_POWER9:
+      case PROCESSOR_FUTURE:
 	rs6000_cost = &power9_cost;
 	break;
 
@@ -5638,6 +5641,9 @@ static const char *rs6000_machine;
 static const char *
 rs6000_machine_from_flags (void)
 {
+  if ((rs6000_isa_flags & (ISA_FUTURE_MASKS_SERVER & ~ISA_3_0_MASKS_SERVER))
+      != 0)
+    return "future";
   if ((rs6000_isa_flags & (ISA_3_0_MASKS_SERVER & ~ISA_2_7_MASKS_SERVER)) != 0)
     return "power9";
   if ((rs6000_isa_flags & (ISA_2_7_MASKS_SERVER & ~ISA_2_6_MASKS_SERVER)) != 0)
@@ -9109,6 +9115,7 @@ rs6000_reassociation_width (unsigned int opc ATTRIBUTE_UNUSED,
     {
     case PROCESSOR_POWER8:
     case PROCESSOR_POWER9:
+    case PROCESSOR_FUTURE:
       if (DECIMAL_FLOAT_MODE_P (mode))
 	return 1;
       if (VECTOR_MODE_P (mode))
@@ -30183,7 +30190,8 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 	   some cycles later.  */
 
 	/* Separate a load from a narrower, dependent store.  */
-	if ((rs6000_sched_groups || rs6000_tune == PROCESSOR_POWER9)
+	if ((rs6000_sched_groups || rs6000_tune == PROCESSOR_POWER9
+	     || rs6000_tune == PROCESSOR_FUTURE)
 	    && GET_CODE (PATTERN (insn)) == SET
 	    && GET_CODE (PATTERN (dep_insn)) == SET
 	    && MEM_P (XEXP (PATTERN (insn), 1))
@@ -30221,6 +30229,7 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 		 || rs6000_tune == PROCESSOR_POWER7
 		 || rs6000_tune == PROCESSOR_POWER8
 		 || rs6000_tune == PROCESSOR_POWER9
+		 || rs6000_tune == PROCESSOR_FUTURE
                  || rs6000_tune == PROCESSOR_CELL)
                 && recog_memoized (dep_insn)
                 && (INSN_CODE (dep_insn) >= 0))
@@ -30800,6 +30809,7 @@ rs6000_issue_rate (void)
   case PROCESSOR_POWER8:
     return 7;
   case PROCESSOR_POWER9:
+  case PROCESSOR_FUTURE:
     return 6;
   default:
     return 1;
@@ -34652,7 +34662,8 @@ rs6000_register_move_cost (machine_mode mode,
 		 can't be a nop, whereas with ideal register
 		 allocation a move within the same class might turn
 		 out to be a nop.  */
-	      if (rs6000_tune == PROCESSOR_POWER9)
+	      if (rs6000_tune == PROCESSOR_POWER9
+		  || rs6000_tune == PROCESSOR_FUTURE)
 		ret = 3 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
 	      else
 		ret = 4 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
@@ -36254,6 +36265,7 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "float128",			OPTION_MASK_FLOAT128_KEYWORD,	false, true  },
   { "float128-hardware",	OPTION_MASK_FLOAT128_HW,	false, true  },
   { "fprnd",			OPTION_MASK_FPRND,		false, true  },
+  { "future",			OPTION_MASK_FUTURE,		false, true  },
   { "hard-dfp",			OPTION_MASK_DFP,		false, true  },
   { "htm",			OPTION_MASK_HTM,		false, true  },
   { "isel",			OPTION_MASK_ISEL,		false, true  },

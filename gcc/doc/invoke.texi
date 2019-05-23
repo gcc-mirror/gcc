@@ -24088,8 +24088,8 @@ Supported values for @var{cpu_type} are @samp{401}, @samp{403},
 @samp{e6500}, @samp{ec603e}, @samp{G3}, @samp{G4}, @samp{G5},
 @samp{titan}, @samp{power3}, @samp{power4}, @samp{power5}, @samp{power5+},
 @samp{power6}, @samp{power6x}, @samp{power7}, @samp{power8},
-@samp{power9}, @samp{powerpc}, @samp{powerpc64}, @samp{powerpc64le},
-@samp{rs64}, and @samp{native}.
+@samp{power9}, @samp{future}, @samp{powerpc}, @samp{powerpc64},
+@samp{powerpc64le}, @samp{rs64}, and @samp{native}.
 
 @option{-mcpu=powerpc}, @option{-mcpu=powerpc64}, and
 @option{-mcpu=powerpc64le} specify pure 32-bit PowerPC (either

@@ -138,6 +138,7 @@
   mcpu=e5500: -me5500; \
   mcpu=e6500: -me6500; \
   mcpu=titan: -mtitan; \
+  mcpu=future: -mfuture; \
   !mcpu*: %{mpower9-vector: -mpower9; \
 	    mpower8-vector|mcrypto|mdirect-move|mhtm: -mpower8; \
 	    mvsx: -mpower7; \
@@ -524,6 +525,7 @@ extern int rs6000_vector_align[];
 #define MASK_STRICT_ALIGN		OPTION_MASK_STRICT_ALIGN
 #define MASK_UPDATE			OPTION_MASK_UPDATE
 #define MASK_VSX			OPTION_MASK_VSX
+#define MASK_FUTURE			OPTION_MASK_FUTURE
 
 #ifndef IN_LIBGCC2
 #define MASK_POWERPC64			OPTION_MASK_POWERPC64
