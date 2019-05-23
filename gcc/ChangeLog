@@ -1,3 +1,23 @@
+2019-05-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/90462
+	* diagnostic-format-json.cc: Include "selftest.h".
+	(json_from_expanded_location): Only add "file" key for non-NULL
+	file strings.
+	(json_from_location_range): Don't add "start" and "finish"
+	children if they are UNKNOWN_LOCATION.
+	(selftest::test_unknown_location): New selftest.
+	(selftest::test_bad_endpoints): New selftest.
+	(selftest::diagnostic_format_json_cc_tests): New function.
+	* json.cc (json::object::get): New function.
+	(selftest::test_object_get): New selftest.
+	(selftest::json_cc_tests): Call it.
+	* json.h (json::object::get): New decl.
+	* selftest-run-tests.c (selftest::run_tests): Call
+	selftest::diagnostic_format_json_cc_tests.
+	* selftest.h (selftest::diagnostic_format_json_cc_tests): New
+	decl.
+
 2019-05-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
             Andrew Stubbs  <amd@codesourcery.com>
 

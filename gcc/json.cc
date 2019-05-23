@@ -99,6 +99,22 @@ object::set (const char *key, value *v)
     m_map.put (xstrdup (key), v);
 }
 
+/* Get the json::value * for KEY.
+
+   The object retains ownership of the value.  */
+
+value *
+object::get (const char *key) const
+{
+  gcc_assert (key);
+
+  value **ptr = const_cast <map_t &> (m_map).get (key);
+  if (ptr)
+    return *ptr;
+  else
+    return NULL;
+}
+
 /* class json::array, a subclass of json::value, representing
    an ordered collection of values.  */
 
@@ -240,6 +256,18 @@ assert_print_eq (const json::value &jv, const char *expected_json)
   ASSERT_STREQ (expected_json, pp_formatted_text (&pp));
 }
 
+/* Verify that object::get works as expected.  */
+
+static void
+test_object_get ()
+{
+  object obj;
+  value *val = new json::string ("value");
+  obj.set ("foo", val);
+  ASSERT_EQ (obj.get ("foo"), val);
+  ASSERT_EQ (obj.get ("not-present"), NULL);
+}
+
 /* Verify that JSON objects are written correctly.  We can't test more than
    one key/value pair, as we don't impose a guaranteed ordering.  */
 
@@ -306,6 +334,7 @@ test_writing_literals ()
 void
 json_cc_tests ()
 {
+  test_object_get ();
   test_writing_objects ();
   test_writing_arrays ();
   test_writing_numbers ();

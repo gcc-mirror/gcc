@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "diagnostic.h"
 #include "json.h"
+#include "selftest.h"
 
 /* The top-level JSON array of pending diagnostics.  */
 
@@ -45,7 +46,8 @@ json_from_expanded_location (location_t loc)
 {
   expanded_location exploc = expand_location (loc);
   json::object *result = new json::object ();
-  result->set ("file", new json::string (exploc.file));
+  if (exploc.file)
+    result->set ("file", new json::string (exploc.file));
   result->set ("line", new json::number (exploc.line));
   result->set ("column", new json::number (exploc.column));
   return result;
@@ -66,9 +68,11 @@ json_from_location_range (const location_range *loc_range, unsigned range_idx)
 
   json::object *result = new json::object ();
   result->set ("caret", json_from_expanded_location (caret_loc));
-  if (start_loc != caret_loc)
+  if (start_loc != caret_loc
+      && start_loc != UNKNOWN_LOCATION)
     result->set ("start", json_from_expanded_location (start_loc));
-  if (finish_loc != caret_loc)
+  if (finish_loc != caret_loc
+      && finish_loc != UNKNOWN_LOCATION)
     result->set ("finish", json_from_expanded_location (finish_loc));
 
   if (loc_range->m_label)
@@ -262,3 +266,53 @@ diagnostic_output_format_init (diagnostic_context *context,
       break;
     }
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* We shouldn't call json_from_expanded_location on UNKNOWN_LOCATION,
+   but verify that we handle this gracefully.  */
+
+static void
+test_unknown_location ()
+{
+  delete json_from_expanded_location (UNKNOWN_LOCATION);
+}
+
+/* Verify that we gracefully handle attempts to serialize bad
+   compound locations.  */
+
+static void
+test_bad_endpoints ()
+{
+  location_t bad_endpoints
+    = make_location (BUILTINS_LOCATION,
+		     UNKNOWN_LOCATION, UNKNOWN_LOCATION);
+
+  location_range loc_range;
+  loc_range.m_loc = bad_endpoints;
+  loc_range.m_range_display_kind = SHOW_RANGE_WITH_CARET;
+  loc_range.m_label = NULL;
+
+  json::object *obj = json_from_location_range (&loc_range, 0);
+  /* We should have a "caret" value, but no "start" or "finish" values.  */
+  ASSERT_TRUE (obj != NULL);
+  ASSERT_TRUE (obj->get ("caret") != NULL);
+  ASSERT_TRUE (obj->get ("start") == NULL);
+  ASSERT_TRUE (obj->get ("finish") == NULL);
+  delete obj;
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+diagnostic_format_json_cc_tests ()
+{
+  test_unknown_location ();
+  test_bad_endpoints ();
+}
+
+} // namespace selftest
+
+#endif /* #if CHECKING_P */

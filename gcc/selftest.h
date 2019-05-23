@@ -218,6 +218,7 @@ extern void bitmap_c_tests ();
 extern void cgraph_c_tests ();
 extern void convert_c_tests ();
 extern void diagnostic_c_tests ();
+extern void diagnostic_format_json_cc_tests ();
 extern void diagnostic_show_locus_c_tests ();
 extern void dumpfile_c_tests ();
 extern void edit_context_c_tests ();
