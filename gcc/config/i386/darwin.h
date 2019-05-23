@@ -132,7 +132,8 @@ extern int darwin_emit_branch_islands;
 #define CC1_SPEC "%(cc1_cpu) \
   %{!mkernel:%{!static:%{!mdynamic-no-pic:-fPIC}}} \
   %{g: %{!fno-eliminate-unused-debug-symbols: -feliminate-unused-debug-symbols }} \
-  %{mx32:%eDarwin is not an mx32 platform}" \
+  %{mx32:%eDarwin is not an mx32 platform} \
+  %{mfentry*:%eDarwin does not support -mfentry or associated options}" \
   DARWIN_CC1_SPEC
 
 #undef ASM_SPEC
