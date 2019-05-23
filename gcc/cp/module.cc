@@ -2485,18 +2485,19 @@ public:
     void add_specializations (bool, bitmap partitions);
     void find_dependencies ();
     bool finalize_dependencies ();
-    void connect (auto_vec<depset *> &);
+    vec<depset *> connect ();
   };
 
 public:
   struct tarjan {
-    auto_vec<depset *> *result;
+    vec<depset *> result;
     vec<depset *> stack;
     unsigned index;
 
-    tarjan (auto_vec<depset *> &result)
-      : result (&result), index (0)
+    tarjan (unsigned size)
+      : index (0)
     {
+      result.create (size);
       stack.create (50);
     }
     ~tarjan () 
@@ -3305,7 +3306,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   /* Add writable bindings to hash table.  */
   static void sort_mergeables (auto_vec<depset *> &mergeables);
 
-  static unsigned write_bindings (elf_out *to, auto_vec<depset *> &depsets,
+  static unsigned write_bindings (elf_out *to, vec<depset *> depsets,
 				  depset::hash &table, unsigned *crc_ptr);
   bool read_bindings (auto_vec<tree> &spaces, unsigned, const range_t &range);
 
@@ -3318,7 +3319,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool read_cluster (unsigned snum);
 
  private:
-  void write_unnamed (elf_out *to, auto_vec<depset *> &depsets,
+  void write_unnamed (elf_out *to, vec<depset *> depsets,
 		      depset::hash &, unsigned count, unsigned *crc_ptr);
   bool read_unnamed (unsigned count, const range_t &range);
 
@@ -3835,16 +3836,21 @@ dumper::impl::nested_name (tree t)
 {
   tree ti = NULL_TREE;
   unsigned owner = MODULE_NONE;
+  bool ttp = false;
 
   if (t && TREE_CODE (t) == TREE_BINFO)
     t = BINFO_TYPE (t);
 
   if (t && TYPE_P (t))
-    t = TYPE_NAME (t);
+    {
+      if (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM)
+	ttp = true;
+      t = TYPE_NAME (t);
+    }
 
   if (t && DECL_P (t))
     {
-      if (t == global_namespace)
+      if (t == global_namespace || ttp)
 	;
       else if (tree ctx = DECL_CONTEXT (t))
 	if (TREE_CODE (ctx) == TRANSLATION_UNIT_DECL
@@ -9595,7 +9601,7 @@ depset::tarjan::connect (depset *v)
 	  p = stack.pop ();
 	  p->cluster = num;
 	  p->section = 0;
-	  result->quick_push (p);
+	  result.quick_push (p);
 	}
       while (p != v);
     }
@@ -9665,13 +9671,12 @@ cluster_cmp (const void *a_, const void *b_)
    its cluster number.  Each SCC has a unique cluster number, and are
    contiguous in SCCS. Cluster numbers are otherwise arbitrary.  */
 
-void
-depset::hash::connect (auto_vec<depset *> &sccs)
+vec<depset *>
+depset::hash::connect ()
 {
-  sccs.reserve (size ());
-
-  tarjan connector (sccs);
-  auto_vec<depset *> deps (size ());
+  tarjan connector (size ());
+  vec<depset *> deps;
+  deps.create (size ());
   iterator end (this->end ());
   for (iterator iter (begin ()); iter != end; ++iter)
     deps.quick_push (*iter);
@@ -9698,6 +9703,9 @@ depset::hash::connect (auto_vec<depset *> &sccs)
       if (!v->cluster)
 	connector.connect (v);
     }
+
+  deps.release ();
+  return connector.result;
 }
 
 bool
@@ -11946,7 +11954,7 @@ module_state::read_namespaces (auto_vec<tree> &spaces)
      u:section - section number of binding. */
 
 unsigned
-module_state::write_bindings (elf_out *to, auto_vec<depset *> &sccs,
+module_state::write_bindings (elf_out *to, vec<depset *> sccs,
 			      depset::hash &table, unsigned *crc_p)
 {
   dump () && dump ("Writing binding table");
@@ -12024,7 +12032,7 @@ module_state::read_bindings (auto_vec<tree> &spaces, unsigned num,
    Each entry is a section number.  */
 
 void
-module_state::write_unnamed (elf_out *to, auto_vec<depset *> &depsets,
+module_state::write_unnamed (elf_out *to, vec<depset *> depsets,
 			     depset::hash &table,
 			     unsigned count, unsigned *crc_p)
 {
@@ -13648,8 +13656,7 @@ module_state::sort_mergeables (auto_vec<depset *> &mergeables)
     table.add_mergeable (mergeables[ix]);
   table.find_dependencies ();
 
-  auto_vec<depset *> sccs;
-  table.connect (sccs);
+  vec<depset *> sccs = table.connect ();
 
   unsigned cluster = 0;
   for (unsigned ix = 0; ix != mergeables.length (); ix++)
@@ -13663,6 +13670,8 @@ module_state::sort_mergeables (auto_vec<depset *> &mergeables)
       dump (dumper::MERGE) && dump ("Mergeable %u is %N",
 				    ix, dep->get_entity ());
     }
+
+  sccs.release ();
 
   dump.outdent ();
 }
@@ -14205,8 +14214,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
     }
 
   /* Determine Strongy Connected Components.  */
-  auto_vec<depset *> sccs (table.size ());
-  table.connect (sccs);
+  vec<depset *> sccs = table.connect ();
 
   unsigned crc = 0;
   unsigned range_bits = prepare_locations ();
@@ -14349,6 +14357,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   /* Human-readable info.  */
   write_readme (to, config.opt_str, config.controlling_node);
+
+  sccs.release ();
 
   trees_out::instrument ();
   dump () && dump ("Wrote %u sections", to->get_section_limit ());

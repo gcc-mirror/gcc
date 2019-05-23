@@ -1,3 +1,12 @@
+2019-05-23  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (dumper::impl::nested_name): Cope with TTPs.
+	(depset:hash::connect): Return the vec.
+	(depset::tarjan): Create and return the vec.
+	(module_state::write_{bindings,unnamed}): SCCS are in a vec.
+	(module_state::write): Likewise.
+
 2019-05-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
