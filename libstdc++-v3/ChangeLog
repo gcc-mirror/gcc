@@ -1,5 +1,11 @@
 2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/function_objects/invoke/1.cc: Move C++17-specific
+	tests to ...
+	* testsuite/20_util/function_objects/invoke/3.cc: New test.
+	* testsuite/23_containers/unordered_set/allocator/ext_ptr.cc: Change
+	"compile" test to "run".
+
 	* doc/xml/manual/intro.xml: Document LWG DR 2996 change.
 	* doc/html/*: Regenerate.
 	* include/bits/shared_ptr.h (shared_ptr(shared_ptr&&, T*)): Add
