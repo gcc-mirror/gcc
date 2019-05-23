@@ -1,5 +1,9 @@
 2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/any (__any_caster): Use RTTI if comparing
+	addresses fails, to support non-unique addresses in shared libraries.
+	* include/std/any (__any_caster): Likewise.
+
 	PR libstdc++/90220
 	* include/experimental/any (__any_caster): Constrain to only be
 	callable for object types. Use remove_cv_t instead of decay_t.

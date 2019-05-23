@@ -432,11 +432,18 @@ inline namespace fundamentals_v1
       // is explicitly specialized and has a no-op _S_manage function.
       using _Vp = conditional_t<__and_<__does_not_decay, __is_copyable>::value,
 				_Up, any::_Op>;
-      if (__any->_M_manager != &any::_Manager<_Vp>::_S_manage)
-	return nullptr;
-      any::_Arg __arg;
-      __any->_M_manager(any::_Op_access, __any, &__arg);
-      return __arg._M_obj;
+      // First try comparing function addresses, which works without RTTI
+      if (__any->_M_manager == &any::_Manager<_Vp>::_S_manage
+#if __cpp_rtti
+	  || __any->type() == typeid(_Tp)
+#endif
+	  )
+	{
+	  any::_Arg __arg;
+	  __any->_M_manager(any::_Op_access, __any, &__arg);
+	  return __arg._M_obj;
+	}
+      return nullptr;
     }
 
   // This overload exists so that std::any_cast<void(*)()>(a) is well-formed.
