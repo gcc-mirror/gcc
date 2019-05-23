@@ -657,7 +657,7 @@ Feature-testing recommendations for C++</a>.
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0040r3.html" target="_top">
 	P0040R3
 	</a>
-      </td><td align="center"> 7.1 </td><td align="left"><code class="code"> </code></td></tr><tr><td align="left"> <code class="code">shared_ptr::weak_type</code></td><td align="left">
+      </td><td align="center"> 7.1 </td><td align="left"><code class="code">__cpp_lib_raw_memory_algorithms &gt;= 201606L</code></td></tr><tr><td align="left"> <code class="code">shared_ptr::weak_type</code></td><td align="left">
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0163r0.html" target="_top">
 	P0163R0
 	</a>
@@ -811,7 +811,19 @@ Feature-testing recommendations for C++</a>.
 	P0067R5
 	</a>
       </td><td align="center"> 8 (only integral types supported) </td><td align="left"><code class="code"> __has_include(&lt;charconv&gt;) </code>
-             <code class="code"> __cpp_lib_to_chars &gt;= 201611 </code></td></tr></tbody></table></div></div><br class="table-break" /><p>
+             <code class="code"> __cpp_lib_to_chars &gt;= 201611 </code></td></tr><tr><td align="left"> Homogeneous interface for variant, any and optional </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0032r3.pdf" target="_top">
+	P0032R3
+	</a>
+      </td><td align="center"> 7.1  </td><td align="left">
+             <code class="code"> __cpp_lib_any &gt;= 201606 </code>,
+             <code class="code"> __cpp_lib_optional &gt;= 201606 </code>,
+             <code class="code"> __cpp_lib_variant &gt;= 201606 </code>
+      </td></tr><tr><td align="left"> Making Optional Greater Equal Again </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0307r2.pdf" target="_top">
+	P0307R2
+	</a>
+      </td><td align="center"> 7.1  </td><td align="left"> <code class="code"> __cpp_lib_optional &gt;= 201606 </code> </td></tr></tbody></table></div></div><br class="table-break" /><p>
 Note 1: This feature is supported in GCC 7.1 and 7.2 but before GCC 7.3 the
 <code class="code">__cpp_lib</code> macro is not defined, and compilation will fail if the
 header is included without using <code class="option">-std</code> to enable C++17 support.

@@ -827,6 +827,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 #if __cplusplus > 201402L
+# define __cpp_lib_raw_memory_algorithms 201606L
+
   template <typename _ForwardIterator>
     inline void
     uninitialized_default_construct(_ForwardIterator __first,

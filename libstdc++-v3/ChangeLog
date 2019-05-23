@@ -1,3 +1,17 @@
+2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from mainline
+	2019-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Document P0032R3 and P0307R2
+	status.
+	* include/bits/stl_uninitialized.h (__cpp_lib_raw_memory_algorithms):
+	Define.
+	* include/std/any (__cpp_lib_any): Define as 201606L, because P0032R3
+	changes are supported.
+	* include/std/optional (__cpp_lib_optional): Likewise.
+	* include/std/variant (__cpp_lib_variant): Likewise.
+
 2019-05-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
