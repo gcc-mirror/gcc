@@ -90,6 +90,7 @@ class object : public value
   void print (pretty_printer *pp) const FINAL OVERRIDE;
 
   void set (const char *key, value *v);
+  value *get (const char *key) const;
 
  private:
   typedef hash_map <char *, value *,

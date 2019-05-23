@@ -1,3 +1,8 @@
+2019-05-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/90462
+	* g++.dg/pr90462.C: New test.
+
 2019-05-22  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/cpp1y/udlit-char-template-neg.C: Expect the error on a
