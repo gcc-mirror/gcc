@@ -1,3 +1,10 @@
+2019-05-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gfortran.dg/dec_io_1.f90, gfortran.dg/dtio_1.f90,
+	gfortran.dg/dtio_12.f90, gfortran.dg/fmt_en.f90,
+	gfortran.dg/namelist_89.f90: Gate test on effective_target
+	fd_truncate.
+
 2019-05-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/90462
