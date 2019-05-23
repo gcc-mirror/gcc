@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-fdec -fno-dec-format-defaults" }
+! { dg-options "-cpp -fdec -fno-dec-format-defaults" }
 !
 ! Test case for the default field widths not enabled.
 !
@@ -8,11 +8,14 @@
 !
 
 program test
+    implicit none
     character(50) :: buffer
 
     real(4) :: real_4
     real(8) :: real_8
+#ifdef __GFC_REAL_16__
     real(16) :: real_16
+#endif
     integer :: len
     character(*), parameter :: fmt = "(A, G, A)"
 
@@ -28,6 +31,8 @@ program test
     real_8 = 4.18
     write(buffer, fmt) ':',real_8,':' ! { dg-error "Positive width required" }
 
+#ifdef __GFC_REAL_16__
     real_16 = 4.18
     write(buffer, fmt) ':',real_16,':' ! { dg-error "Positive width required" }
+#endif
 end
