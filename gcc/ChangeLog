@@ -1,3 +1,10 @@
+2019-05-23  Martin Liska  <mliska@suse.cz>
+
+	PR c++/90587
+	* tree-ssa-uninit.c (value_sat_pred_p): The result of &
+	operation points to a temporary (pointed via tree_to_wide_ref)
+	that is out of scope after the &.
+
 2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/90592
