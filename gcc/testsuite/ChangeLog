@@ -1,3 +1,7 @@
+2019-05-23  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/cpu-future.c: New test.
+
 2019-05-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88440

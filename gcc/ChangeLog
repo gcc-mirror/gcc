@@ -1,3 +1,33 @@
+2019-05-23  Bill Schmidt  <wschmidt@linux.ibm.com>
+	    Michael Meissner  <meissner@linux.ibm.com>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config.gcc: Add future cpu.
+	* config/rs6000/driver-rs6000.c (asm_names): Add future cpu.
+	* config/rs6000/rs6000-cpus.def (ISA_FUTURE_MASKS_SERVER): New
+	#define.
+	(POWERPC_MASKS): Add OPTION_MASK_FUTURE.
+	(RS6000_CPU): New instantiation for future cpu.
+	* config/rs6000/rs6000-opts.h (enum processor_type): Add
+	PROCESSOR_FUTURE.
+	* config/rs6000/rs6000-string.c (expand_compare_loop): Treat
+	PROCESSOR_FUTURE like PROCESSOR_POWER9 for now.
+	* config/rs6000/rs6000-tables.opt: Regenerate.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Treat
+	PROCESSOR_FUTURE similarly to PROCESSOR_POWER9 for now.
+	(rs6000_machine_from_flags): Handle future cpu.
+	(rs6000_reassociation_width): Treat PROCESSOR_FUTURE like
+	PROCESSOR_POWER9 for now.
+	(rs6000_adjust_cost): Likewise.
+	(rs6000_issue_rate): Likewise.
+	(rs6000_register_move_cost): Likewise.
+	(rs6000_opt_masks): Add entry for future.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Add future cpu.
+	(MASK_FUTURE): New #define.
+	* config/rs6000/rs6000.md (define_attr "cpu"): Add future cpu.
+	* config/rs6000/rs6000.opt (mfuture): New target option.
+	* doc/invoke.texi (mcpu): Add future cpu.
+
 2019-05-23  Martin Liska  <mliska@suse.cz>
 
 	PR c++/90587
