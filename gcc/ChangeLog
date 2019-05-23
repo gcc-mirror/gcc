@@ -1975,7 +1975,6 @@ Fix test-suite.
 	and macros.
 	* config/i386/t-i386: Define dependencies for new files.
 
->>>>>>> .r270937
 2019-05-03  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/89400
