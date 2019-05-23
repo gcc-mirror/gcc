@@ -2992,13 +2992,17 @@ public:
   };
 
 private:
-  auto_vec<span> spans;
+  vec<span> spans;
 
 public:
   loc_spans ()
   {
+    spans.create (20);
   }
-  ~loc_spans () {}
+  ~loc_spans ()
+  {
+    spans.release ();
+  }
 
 public:
   span &operator[] (unsigned ix)
@@ -12610,7 +12614,8 @@ module_state::write_locations (elf_out *to, unsigned max_rager,
   dump.indent ();
 
   range_t num_maps (0, 0);
-  auto_vec<const char *> filenames;
+  vec<const char *> filenames;
+  filenames.create (20);
 
   /* Count the maps and determine the unique filenames.  */
   for (unsigned ix = loc_spans::SPAN_MAIN; ix != spans.length (); ix++)
@@ -12835,6 +12840,8 @@ module_state::write_locations (elf_out *to, unsigned max_rager,
     gcc_assert (macro_num == num_maps.second);
   }
 
+  filenames.release ();
+
   sec.end (to, to->name (MOD_SNAME_PFX ".loc"), crc_p);
   dump.outdent ();
 }
@@ -12852,7 +12859,8 @@ module_state::read_locations ()
   /* Read the filename table.  */
   unsigned len = sec.u ();
   dump () && dump ("%u source file names", len);
-  auto_vec<const char *> filenames (len);
+  vec<const char *> filenames;
+  filenames.create (len);
   for (unsigned ix = 0; ix != len; ix++)
     {
       size_t l;
@@ -12997,6 +13005,8 @@ module_state::read_locations ()
       spans.close ();
   }
 
+  filenames.release ();
+  
   dump.outdent ();
   if (!sec.end (from ()))
     return false;
