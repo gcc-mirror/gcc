@@ -1,5 +1,7 @@
 2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* cp-tree.h (CP_AGGREGATE_TYPE_P): Fix whitespace.
+
 	* init.c (std_placement_new_fn_p): Remove outdated TODO comment that
 	was resolved by r254694.
 
