@@ -2682,10 +2682,10 @@ class trees_in : public bytes_in {
 
 private:
   module_state *state;		/* Module being imported.  */
-  auto_vec<tree> back_refs;	/* Back references.  */
-  auto_vec<tree> mergeables;	/* (Duplicate) mergeable decls.  */
-  auto_vec<intptr_t> skip_defns; /* Definitions to skip.  */
-  auto_vec<tree> post_decls;	/* Decls to post process.  */
+  vec<tree> back_refs;		/* Back references.  */
+  vec<tree> mergeables;		/* (Duplicate) mergeable decls.  */
+  vec<intptr_t> skip_defns;	/* Definitions to skip.  */
+  vec<tree> post_decls;		/* Decls to post process.  */
   bool for_mergeable;
 
 public:
@@ -2800,12 +2800,20 @@ private:
 };
 
 trees_in::trees_in (module_state *state)
-  :parent (), state (state), back_refs (500), for_mergeable (false)
+  :parent (), state (state), for_mergeable (false)
 {
+  back_refs.create (500);
+  mergeables.create (0);
+  skip_defns.create (0);
+  post_decls.create (0);
 }
 
 trees_in::~trees_in ()
 {
+  back_refs.release ();
+  mergeables.release ();
+  skip_defns.release ();
+  post_decls.release ();
 }
 
 /* Tree stream writer.  */
