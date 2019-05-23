@@ -1,3 +1,20 @@
+2019-05-23  Bill Schmidt  <wschmidt@linux.ibm.com>
+	    Michael Meissner  <meissner@linux.ibm.com>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000-cpus.def (ISA_FUTURE_MASKS_SERVER): Add
+	OPTION_MASK_PCREL.
+	(POWERPC_MASKS): Add OPTION_MASK_PCREL.
+	* config/rs6000/rs6000-protos.h (rs6000_pcrel_p): New prototype.
+	(rs6000_fndecl_pcrel_p): Likewise.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Report
+	error if -mpcrel is requested without -mcpu=future.
+	(rs6000_opt_masks): Add entry for pcrel.
+	(rs6000_fndecl_pcrel_p): New function.
+	(rs6000_pcrel_p): Likewise.
+	* config/rs6000/rs6000.opt (mpcrel): New option.
+	* doc/invoke.texi: Document -mpcrel and -mno-pcrel.
+
 2019-05-23  Jan Hubicka  <jh@suse.cz>
 	    Martin Liska  <mliska@suse.cz>
 

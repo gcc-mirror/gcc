@@ -573,3 +573,7 @@ Target Undocumented Var(rs6000_speculate_indirect_jumps) Init(1) Save
 mfuture
 Target Report Mask(FUTURE) Var(rs6000_isa_flags)
 Use instructions for a future architecture.
+
+mpcrel
+Target Report Mask(PCREL) Var(rs6000_isa_flags)
+Generate (do not generate) pc-relative memory addressing.
