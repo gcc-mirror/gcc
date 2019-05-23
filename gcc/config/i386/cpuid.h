@@ -167,10 +167,27 @@
 #define signature_VORTEX_ecx	0x436f5320
 #define signature_VORTEX_edx	0x36387865
 
+#ifndef __x86_64__
+/* At least one cpu (Winchip 2) does not set %ebx and %ecx
+   for cpuid leaf 1. Forcibly zero the two registers before
+   calling cpuid as a precaution.  */
+#define __cpuid(level, a, b, c, d)			\
+  do {							\
+    if (__builtin_constant_p (level) && (level) != 1)	\
+      __asm__ ("cpuid\n\t"				\
+	      : "=a" (a), "=b" (b), "=c" (c), "=d" (d)	\
+	      : "0" (level));				\
+    else						\
+      __asm__ ("cpuid\n\t"				\
+	      : "=a" (a), "=b" (b), "=c" (c), "=d" (d)	\
+	      : "0" (level), "1" (0), "2" (0));		\
+  } while (0)
+#else
 #define __cpuid(level, a, b, c, d)			\
   __asm__ ("cpuid\n\t"					\
 	   : "=a" (a), "=b" (b), "=c" (c), "=d" (d)	\
 	   : "0" (level))
+#endif
 
 #define __cpuid_count(level, count, a, b, c, d)		\
   __asm__ ("cpuid\n\t"					\
