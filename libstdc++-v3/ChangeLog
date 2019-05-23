@@ -1,5 +1,9 @@
 2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2017.xml: Add feature test macro for
+	P0040R3.
+	* doc/html/*: Regenerate.
+
 	* include/experimental/any (__any_caster): Use RTTI if comparing
 	addresses fails, to support non-unique addresses in shared libraries.
 	* include/std/any (__any_caster): Likewise.
