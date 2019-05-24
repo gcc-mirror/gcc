@@ -1,3 +1,11 @@
+2019-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90106
+	PR testsuite/90517
+	* gcc.dg/cdce1.c: Don't scan-assembler, instead -fdump-tree-optimized
+	and scan-tree-dump for tail call.
+	* gcc.dg/cdce2.c: Likewise.
+
 2019-05-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/i386/pconfig-1.c: Scan for the string in the generated
