@@ -23,4 +23,4 @@ int f9 (S x, S y) { return x >= y; }
 int f10 (S x, S y) { return x < y; }
 int f11 (S x, S y) { return x <= y; }
 
-/* { dg-final { scan-assembler-times {\mset} 12 } } */
+/* { dg-final { scan-assembler-times {\tset} 12 } } */
