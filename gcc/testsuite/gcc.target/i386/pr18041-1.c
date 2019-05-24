@@ -9,5 +9,5 @@ foo (struct B *b)
     b->bit0 = b->bit0 | b->bit1;
 }
 
-/* { dg-final { scan-assembler-times "and" 1 } } */
-/* { dg-final { scan-assembler-times "or" 1 } } */
+/* { dg-final { scan-assembler-times {\tand[l|q]} 1 } } */
+/* { dg-final { scan-assembler-times {\tor[l|q]} 1 } } */
