@@ -1,19 +1,25 @@
+2019-05-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/falign-functions-2.c: Skip for Darwin.
+	* gcc.target/i386/pr70738-7.c: Likewise.
+	* gcc.target/i386/pr24414.c: Likewise.
+
 2019-05-23  Iain Sandoe  <iain@sandoe.co.uk>
 
-       * lib/target-supports.exp (check_effective_target_mfentry): New.
-       * gcc.target/i386/fentry-override.c: Require effective target mfentry.
-       * gcc/testsuite/gcc.target/i386/fentry.c: Likewise
-       * gcc.target/i386/fentryname1.c: Likewise
-       * gcc.target/i386/fentryname2.c: Likewise
-       * gcc.target/i386/fentryname3.c: Likewise
-       * gcc.target/i386/nop-mcount.c: Likewise
-       * gcc.target/i386/pr82699-2.c: Likewise
-       * gcc.target/i386/pr82699-4.c: Likewise
-       * gcc.target/i386/pr82699-5.c: Likewise
-       * gcc.target/i386/pr82699-6.c: Likewise
-       * gcc.target/i386/returninst1.c: Likewise
-       * gcc.target/i386/returninst2.c: Likewise
-       * gcc.target/i386/returninst3.c : Likewise
+	* lib/target-supports.exp (check_effective_target_mfentry): New.
+	* gcc.target/i386/fentry-override.c: Require effective target mfentry.
+	* gcc/testsuite/gcc.target/i386/fentry.c: Likewise
+	* gcc.target/i386/fentryname1.c: Likewise
+	* gcc.target/i386/fentryname2.c: Likewise
+	* gcc.target/i386/fentryname3.c: Likewise
+	* gcc.target/i386/nop-mcount.c: Likewise
+	* gcc.target/i386/pr82699-2.c: Likewise
+	* gcc.target/i386/pr82699-4.c: Likewise
+	* gcc.target/i386/pr82699-5.c: Likewise
+	* gcc.target/i386/pr82699-6.c: Likewise
+	* gcc.target/i386/returninst1.c: Likewise
+	* gcc.target/i386/returninst2.c: Likewise
+	* gcc.target/i386/returninst3.c : Likewise
 
 2019-05-23  Bill Schmidt  <wschmidt@linux.ibm.com>
 

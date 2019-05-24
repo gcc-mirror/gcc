@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
+/* { dg-skip-if "asm insert mismatches ABI for Darwin" { *-*-darwin* } } */
 int test;
 
 int
