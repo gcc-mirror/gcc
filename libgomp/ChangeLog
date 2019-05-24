@@ -1,3 +1,20 @@
+2019-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/90585
+	* plugin/plugin-hsa.c: Include gstdint.h.  Include inttypes.h only if
+	HAVE_INTTYPES_H is defined.
+	(print_uint64_t): New typedef.
+	(PRIu64): Define if HAVE_INTTYPES_H is not defined.
+	(print_kernel_dispatch, run_kernel): Use PRIu64 macro instead of
+	"lu", cast uint64_t HSA_DEBUG and fprintf arguments to print_uint64_t.
+	(release_kernel_dispatch): Likewise.  Cast shadow->debug to uintptr_t
+	before casting to void *.
+	* plugin/plugin-nvptx.c: Include gstdint.h instead of stdint.h.
+	* oacc-mem.c: Don't include config.h nor stdint.h.
+	* target.c: Don't include config.h.
+	* oacc-cuda.c: Likewise.
+	* oacc-host.c: Don't include stdint.h.
+
 2019-05-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/90527
