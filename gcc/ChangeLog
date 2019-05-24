@@ -1,3 +1,11 @@
+2019-05-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/90530
+	* config/pa/pa.c (pa_can_change_mode_class): Accept mode changes from
+	DImode to SImode in floating-point registers on 64-bit target.
+	* config/pa/pa.md (umulsidi3): Change nonimmediate_operand to
+	register_operand in xmpyu patterns.
+
 2019-05-24  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
