@@ -37,8 +37,6 @@ struct B : A
   A a;
 };
 
-void deletefunc(A* p) { delete p; }
-
 // 20.6.6.2.1 shared_ptr constructors [util.smartptr.shared.const]
 
 // Aliasing constructors
@@ -63,29 +61,33 @@ test01()
 void
 test02()
 {
-  std::shared_ptr<A> a(new A);
+  A* ptr = new A;
+  ptr->i = 100;
+  std::shared_ptr<A> a(ptr);
   std::shared_ptr<int> i1(std::move(a), &a->i);
   VERIFY( i1.use_count() == 1 );
-  VERIFY( i1 != nullptr );
+  VERIFY( *i1 == 100 );
   VERIFY( a.use_count() == 0 );
   VERIFY( a == nullptr );
 
   std::shared_ptr<int> i2(i1);
   VERIFY( i2.use_count() == 2 );
-  VERIFY( i2.get() == &a->i );
+  VERIFY( i2.get() == &ptr->i );
 }
 
 void
 test03()
 {
   std::shared_ptr<B> b1(new B);
+  b1->i = 100;
+  b1->a.i = 200;
   std::shared_ptr<B> b2(b1);
   std::shared_ptr<A> a1(std::move(b1), b1.get());
-  std::shared_ptr<A> a2(b2, &b2->a);
+  std::shared_ptr<A> a2(std::move(b2), &b2->a);
+  VERIFY( a1.use_count() == 2 );
   VERIFY( a2.use_count() == 2 );
-  VERIFY( a1 != nullptr );
-  VERIFY( a2 != nullptr );
-  VERIFY( a1 != a2 );
+  VERIFY( a1->i == 100 );
+  VERIFY( a2->i == 200 );
   VERIFY( b1.use_count() == 0 );
   VERIFY( b2.use_count() == 0 );
   VERIFY( b1 == nullptr );

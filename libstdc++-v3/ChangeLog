@@ -1,3 +1,8 @@
+2019-05-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/shared_ptr/cons/alias-rval.cc: Fix test.
+	* testsuite/20_util/shared_ptr/cons/alias.cc: Remove unused function.
+
 2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/function_objects/invoke/1.cc: Move C++17-specific
