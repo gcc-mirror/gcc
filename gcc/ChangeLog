@@ -1,3 +1,15 @@
+2019-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/90607
+	* tree-loop-distribution.c (struct partition): Add location
+	member.
+	(partition_alloc): Initialize all fields.
+	(generate_memset_builtin): Use the location recorded in the
+	partition for the generated call.
+	(generate_memcpy_builtin): Likewise.
+	(classify_partition): Record the location of a single store
+	as location for the partition.
+
 2019-05-24  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn.c (gcn_expand_prologue): Use gen_addsi3_scalar_carry
