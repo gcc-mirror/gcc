@@ -1,3 +1,13 @@
+2019-05-24  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	PR target/90588
+	* common/config/aarch64/aarch64-common.c
+	(aarch64_rewrite_selected_cpu): Change local temporary variable
+	type from unsigned long to uint64_t.
+	* config/aarch64/aarch64-protos.h (aarch64_parse_extension,
+	aarch64_get_extension_string_for_isa_flags): Change declaration to
+	match new definition by replacing unsigned long with uint64_t.
+
 2019-05-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/90568

@@ -541,7 +541,7 @@ aarch64_rewrite_selected_cpu (const char *name)
       || a_to_an->arch == aarch64_no_arch)
     fatal_error (input_location, "unknown value %qs for %<-mcpu%>", name);
 
-  unsigned long extensions = p_to_a->flags;
+  uint64_t extensions = p_to_a->flags;
   aarch64_parse_extension (extension_str.c_str (), &extensions, NULL);
 
   std::string outstr = a_to_an->arch_name
