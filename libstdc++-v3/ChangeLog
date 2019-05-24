@@ -1,5 +1,9 @@
 2019-05-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/numeric (midpoint(T*, T*)): Fix incorrect result.
+	* testsuite/26_numerics/midpoint/pointer.cc: Change "compile" test
+	to "run".
+
 	* testsuite/20_util/shared_ptr/cons/alias-rval.cc: Fix test.
 	* testsuite/20_util/shared_ptr/cons/alias.cc: Remove unused function.
 
