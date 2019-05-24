@@ -36,8 +36,6 @@ struct B : A
   A a;
 };
 
-void deletefunc(A* p) { delete p; }
-
 // 20.6.6.2.1 shared_ptr constructors [util.smartptr.shared.const]
 
 // Aliasing constructors
