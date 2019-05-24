@@ -1,6 +1,13 @@
 2019-05-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-05-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/numeric (midpoint(T*, T*)): Fix incorrect result.
+	* testsuite/26_numerics/midpoint/pointer.cc: Change "compile" test
+	to "run".
+
+	Backport from mainline
 	2019-05-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/random.h (seed_seq::param): Fix non-reserved name.
