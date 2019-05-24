@@ -5319,8 +5319,8 @@
 
 (define_insn "umulsidi3"
   [(set (match_operand:DI 0 "register_operand" "=f")
-	(mult:DI (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "f"))
-		 (zero_extend:DI (match_operand:SI 2 "nonimmediate_operand" "f"))))]
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "f"))
+		 (zero_extend:DI (match_operand:SI 2 "register_operand" "f"))))]
   "TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT"
   "xmpyu %1,%2,%0"
   [(set_attr "type" "fpmuldbl")
@@ -5328,7 +5328,7 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=f")
-	(mult:DI (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "f"))
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "f"))
 		 (match_operand:DI 2 "uint32_operand" "f")))]
   "TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT && !TARGET_64BIT"
   "xmpyu %1,%R2,%0"
@@ -5337,7 +5337,7 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=f")
-	(mult:DI (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "f"))
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "f"))
 		 (match_operand:DI 2 "uint32_operand" "f")))]
   "TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT && TARGET_64BIT"
   "xmpyu %1,%2R,%0"
