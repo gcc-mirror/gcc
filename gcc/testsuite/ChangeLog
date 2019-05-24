@@ -1,3 +1,11 @@
+2019-05-24  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-05-23  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/90570
+	* g++.dg/asan/pr90570.C: New test.
+
 2019-05-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt78.ad[sb]: New test.

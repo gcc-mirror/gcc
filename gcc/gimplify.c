@@ -6662,6 +6662,7 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	    }
 	  if (asan_poisoned_variables
 	      && DECL_ALIGN (temp) <= MAX_SUPPORTED_STACK_ALIGNMENT
+	      && !TREE_STATIC (temp)
 	      && dbg_cnt (asan_use_after_scope)
 	      && !gimplify_omp_ctxp)
 	    {
