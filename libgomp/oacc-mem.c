@@ -27,11 +27,9 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "openacc.h"
-#include "config.h"
 #include "libgomp.h"
 #include "gomp-constants.h"
 #include "oacc-int.h"
-#include <stdint.h>
 #include <string.h>
 #include <assert.h>
 

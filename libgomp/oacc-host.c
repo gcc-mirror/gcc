@@ -32,7 +32,6 @@
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <stdint.h>
 
 static struct gomp_device_descr host_dispatch;
 

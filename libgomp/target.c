@@ -25,7 +25,6 @@
 
 /* This file contains the support of offloading.  */
 
-#include "config.h"
 #include "libgomp.h"
 #include "oacc-plugin.h"
 #include "oacc-int.h"
