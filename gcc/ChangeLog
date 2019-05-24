@@ -1,3 +1,11 @@
+2019-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90568
+	* config/i386/x86-tune-sched.c (ix86_macro_funsion_pair_p): Call
+	gen_attr_type just once instead of 4-7 times.  Formatting fixes.
+	Handle stack_protect_test_<mode> codegen similarly to corresponding
+	sub instruction.
+
 2019-05-23  Iain Sandoe  <iain@sandoe.co.uk>
 
        * config/i386/darwin.h: Reject -mfentry*.
