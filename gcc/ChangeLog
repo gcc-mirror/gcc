@@ -1,3 +1,9 @@
+2019-05-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-run.c (main): Set a non-zero return value if the
+	kernel does not exit cleanly.
+	* config/gcn/gcn.md (gcn_return): Insert s_waitcnt before s_dcache_wb.
+
 2019-05-24  Jason Merrill  <jason@redhat.com>
 
 	Revert:
