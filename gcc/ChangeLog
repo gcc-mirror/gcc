@@ -1,3 +1,8 @@
+2019-05-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_expand_prologue): Use gen_addsi3_scalar_carry
+	for lo-part.
+
 2019-05-24  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	PR target/90588
