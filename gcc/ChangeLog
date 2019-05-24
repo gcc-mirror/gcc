@@ -1,3 +1,12 @@
+2019-05-24  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-05-23  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/90570
+	* gimplify.c (gimplify_target_expr): Skip TREE_STATIC target
+	expression similarly to gimplify_decl_expr.
+
 2019-05-22  Uroš Bizjak  <ubizjak@gmail.com>
 
 	Backported from mainline
