@@ -1,5 +1,8 @@
 2019-05-24  Jakub Jelinek  <jakub@redhat.com>
 
+	* testsuite/libgomp.c-c++-common/lastprivate-conditional-1.c: New test.
+	* testsuite/libgomp.c-c++-common/lastprivate-conditional-2.c: New test.
+
 	PR libgomp/90585
 	* plugin/plugin-hsa.c: Include gstdint.h.  Include inttypes.h only if
 	HAVE_INTTYPES_H is defined.
