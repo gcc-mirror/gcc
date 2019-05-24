@@ -126,9 +126,9 @@ TESTS = $(am__append_4) $(am__append_6) $(am__append_8) \
 	$(am__append_11) $(am__append_12) $(am__append_18) \
 	$(am__EXEEXT_11)
 @HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_1 = libbacktrace_elf_for_test.la
-@NATIVE_TRUE@am__append_2 = test_elf test_xcoff_32 test_xcoff_64 \
-@NATIVE_TRUE@	test_pecoff test_unknown unittest unittest_alloc \
-@NATIVE_TRUE@	btest
+@NATIVE_TRUE@am__append_2 = test_elf_32 test_elf_64 test_xcoff_32 \
+@NATIVE_TRUE@	test_xcoff_64 test_pecoff test_unknown unittest \
+@NATIVE_TRUE@	unittest_alloc btest
 @NATIVE_TRUE@am__append_3 = allocfail
 @NATIVE_TRUE@am__append_4 = allocfail.sh
 @HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_5 = b2test
@@ -206,10 +206,11 @@ libbacktrace_noformat_la_OBJECTS =  \
 @NATIVE_TRUE@am__EXEEXT_1 = allocfail$(EXEEXT)
 @HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__EXEEXT_2 = b2test$(EXEEXT)
 @HAVE_DWZ_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__EXEEXT_3 = b3test$(EXEEXT)
-@NATIVE_TRUE@am__EXEEXT_4 = test_elf$(EXEEXT) test_xcoff_32$(EXEEXT) \
-@NATIVE_TRUE@	test_xcoff_64$(EXEEXT) test_pecoff$(EXEEXT) \
-@NATIVE_TRUE@	test_unknown$(EXEEXT) unittest$(EXEEXT) \
-@NATIVE_TRUE@	unittest_alloc$(EXEEXT) btest$(EXEEXT)
+@NATIVE_TRUE@am__EXEEXT_4 = test_elf_32$(EXEEXT) test_elf_64$(EXEEXT) \
+@NATIVE_TRUE@	test_xcoff_32$(EXEEXT) test_xcoff_64$(EXEEXT) \
+@NATIVE_TRUE@	test_pecoff$(EXEEXT) test_unknown$(EXEEXT) \
+@NATIVE_TRUE@	unittest$(EXEEXT) unittest_alloc$(EXEEXT) \
+@NATIVE_TRUE@	btest$(EXEEXT)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@am__EXEEXT_5 = btest_lto$(EXEEXT)
 @NATIVE_TRUE@am__EXEEXT_6 = btest_alloc$(EXEEXT) stest$(EXEEXT) \
 @NATIVE_TRUE@	stest_alloc$(EXEEXT)
@@ -320,10 +321,16 @@ stest_OBJECTS = $(am_stest_OBJECTS)
 @NATIVE_TRUE@am_stest_alloc_OBJECTS = $(am__objects_8)
 stest_alloc_OBJECTS = $(am_stest_alloc_OBJECTS)
 @NATIVE_TRUE@stest_alloc_DEPENDENCIES = libbacktrace_alloc.la
-@NATIVE_TRUE@am_test_elf_OBJECTS = test_format.$(OBJEXT) \
+@NATIVE_TRUE@am_test_elf_32_OBJECTS = test_format.$(OBJEXT) \
 @NATIVE_TRUE@	testlib.$(OBJEXT)
-test_elf_OBJECTS = $(am_test_elf_OBJECTS)
-@NATIVE_TRUE@test_elf_DEPENDENCIES = libbacktrace_noformat.la elf.lo
+test_elf_32_OBJECTS = $(am_test_elf_32_OBJECTS)
+@NATIVE_TRUE@test_elf_32_DEPENDENCIES = libbacktrace_noformat.la \
+@NATIVE_TRUE@	elf_32.lo
+@NATIVE_TRUE@am_test_elf_64_OBJECTS = test_format.$(OBJEXT) \
+@NATIVE_TRUE@	testlib.$(OBJEXT)
+test_elf_64_OBJECTS = $(am_test_elf_64_OBJECTS)
+@NATIVE_TRUE@test_elf_64_DEPENDENCIES = libbacktrace_noformat.la \
+@NATIVE_TRUE@	elf_64.lo
 @NATIVE_TRUE@am_test_pecoff_OBJECTS = test_format.$(OBJEXT) \
 @NATIVE_TRUE@	testlib.$(OBJEXT)
 test_pecoff_OBJECTS = $(am_test_pecoff_OBJECTS)
@@ -436,10 +443,11 @@ SOURCES = $(libbacktrace_la_SOURCES) $(EXTRA_libbacktrace_la_SOURCES) \
 	$(ctesta_alloc_SOURCES) $(ctestg_SOURCES) \
 	$(ctestg_alloc_SOURCES) $(edtest_SOURCES) \
 	$(edtest_alloc_SOURCES) $(stest_SOURCES) \
-	$(stest_alloc_SOURCES) $(test_elf_SOURCES) \
-	$(test_pecoff_SOURCES) $(test_unknown_SOURCES) \
-	$(test_xcoff_32_SOURCES) $(test_xcoff_64_SOURCES) \
-	$(ttest_SOURCES) $(ttest_alloc_SOURCES) $(unittest_SOURCES) \
+	$(stest_alloc_SOURCES) $(test_elf_32_SOURCES) \
+	$(test_elf_64_SOURCES) $(test_pecoff_SOURCES) \
+	$(test_unknown_SOURCES) $(test_xcoff_32_SOURCES) \
+	$(test_xcoff_64_SOURCES) $(ttest_SOURCES) \
+	$(ttest_alloc_SOURCES) $(unittest_SOURCES) \
 	$(unittest_alloc_SOURCES) $(ztest_SOURCES) \
 	$(ztest_alloc_SOURCES)
 am__can_run_installinfo = \
@@ -870,8 +878,10 @@ BUILDTESTS = $(am__append_2) $(am__append_9) $(am__append_10) \
 @HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@libbacktrace_elf_for_test_la_LIBADD = $(BACKTRACE_FILE) elf_for_test.lo \
 @HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@	$(VIEW_FILE) $(ALLOC_FILE)
 
-@NATIVE_TRUE@test_elf_SOURCES = test_format.c testlib.c
-@NATIVE_TRUE@test_elf_LDADD = libbacktrace_noformat.la elf.lo
+@NATIVE_TRUE@test_elf_32_SOURCES = test_format.c testlib.c
+@NATIVE_TRUE@test_elf_32_LDADD = libbacktrace_noformat.la elf_32.lo
+@NATIVE_TRUE@test_elf_64_SOURCES = test_format.c testlib.c
+@NATIVE_TRUE@test_elf_64_LDADD = libbacktrace_noformat.la elf_64.lo
 @NATIVE_TRUE@test_xcoff_32_SOURCES = test_format.c testlib.c
 @NATIVE_TRUE@test_xcoff_32_LDADD = libbacktrace_noformat.la xcoff_32.lo
 @NATIVE_TRUE@test_xcoff_64_SOURCES = test_format.c testlib.c
@@ -1130,9 +1140,13 @@ stest_alloc$(EXEEXT): $(stest_alloc_OBJECTS) $(stest_alloc_DEPENDENCIES) $(EXTRA
 	@rm -f stest_alloc$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(stest_alloc_OBJECTS) $(stest_alloc_LDADD) $(LIBS)
 
-test_elf$(EXEEXT): $(test_elf_OBJECTS) $(test_elf_DEPENDENCIES) $(EXTRA_test_elf_DEPENDENCIES) 
-	@rm -f test_elf$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_elf_OBJECTS) $(test_elf_LDADD) $(LIBS)
+test_elf_32$(EXEEXT): $(test_elf_32_OBJECTS) $(test_elf_32_DEPENDENCIES) $(EXTRA_test_elf_32_DEPENDENCIES) 
+	@rm -f test_elf_32$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_elf_32_OBJECTS) $(test_elf_32_LDADD) $(LIBS)
+
+test_elf_64$(EXEEXT): $(test_elf_64_OBJECTS) $(test_elf_64_DEPENDENCIES) $(EXTRA_test_elf_64_DEPENDENCIES) 
+	@rm -f test_elf_64$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_elf_64_OBJECTS) $(test_elf_64_LDADD) $(LIBS)
 
 test_pecoff$(EXEEXT): $(test_pecoff_OBJECTS) $(test_pecoff_DEPENDENCIES) $(EXTRA_test_pecoff_DEPENDENCIES) 
 	@rm -f test_pecoff$(EXEEXT)
@@ -1596,9 +1610,16 @@ btest_gnudebuglink.log: btest_gnudebuglink
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_elf.log: test_elf$(EXEEXT)
-	@p='test_elf$(EXEEXT)'; \
-	b='test_elf'; \
+test_elf_32.log: test_elf_32$(EXEEXT)
+	@p='test_elf_32$(EXEEXT)'; \
+	b='test_elf_32'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_elf_64.log: test_elf_64$(EXEEXT)
+	@p='test_elf_64$(EXEEXT)'; \
+	b='test_elf_64'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1906,6 +1927,15 @@ uninstall-am:
 @HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@		$< \
 @HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@		> $@.tmp
 @HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@	mv $@.tmp $@
+
+@NATIVE_TRUE@elf_%.c: elf.c
+@NATIVE_TRUE@	SEARCH='#error "Unknown BACKTRACE_ELF_SIZE"'; \
+@NATIVE_TRUE@	REPLACE='#undef BACKTRACE_ELF_SIZE\
+@NATIVE_TRUE@	#define BACKTRACE_ELF_SIZE'; \
+@NATIVE_TRUE@	$(SED) "s/^$$SEARCH\$$/$$REPLACE $*/" \
+@NATIVE_TRUE@		$< \
+@NATIVE_TRUE@		> $@.tmp
+@NATIVE_TRUE@	mv $@.tmp $@
 
 @NATIVE_TRUE@xcoff_%.c: xcoff.c
 @NATIVE_TRUE@	SEARCH='#error "Unknown BACKTRACE_XCOFF_SIZE"'; \
