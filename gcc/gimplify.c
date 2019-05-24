@@ -3990,12 +3990,10 @@ gimplify_cond_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
       tree result;
 
       /* If either an rvalue is ok or we do not require an lvalue, create the
-	 temporary.  We cannot do that if the type is addressable, but
-	 that should have been avoided before we got here.  */
+	 temporary.  But we cannot do that if the type is addressable.  */
       if (((fallback & fb_rvalue) || !(fallback & fb_lvalue))
-	  && (flag_checking || !TREE_ADDRESSABLE (type)))
+	  && !TREE_ADDRESSABLE (type))
 	{
-	  gcc_assert (!TREE_ADDRESSABLE (type));
 	  if (gimplify_ctxp->allow_rhs_cond_expr
 	      /* If either branch has side effects or could trap, it can't be
 		 evaluated unconditionally.  */

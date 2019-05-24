@@ -1,3 +1,8 @@
+2019-05-24  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	* gimplify.c (gimplify_cond_expr): Don't check TREE_ADDRESSABLE.
+
 2019-05-24  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/90607
