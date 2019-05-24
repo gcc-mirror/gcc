@@ -1,3 +1,8 @@
+2019-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/90607
+	* gcc.dg/pr53265.c: Amend for new expected diagnostic.
+
 2019-05-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/90106

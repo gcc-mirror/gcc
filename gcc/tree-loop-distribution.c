@@ -636,6 +636,7 @@ struct partition
   bitmap stmts;
   /* True if the partition defines variable which is used outside of loop.  */
   bool reduction_p;
+  location_t loc;
   enum partition_kind kind;
   enum partition_type type;
   /* Data references in the partition.  */
@@ -653,7 +654,9 @@ partition_alloc (void)
   partition *partition = XCNEW (struct partition);
   partition->stmts = BITMAP_ALLOC (NULL);
   partition->reduction_p = false;
+  partition->loc = UNKNOWN_LOCATION;
   partition->kind = PKIND_NORMAL;
+  partition->type = PTYPE_PARALLEL;
   partition->datarefs = BITMAP_ALLOC (NULL);
   return partition;
 }
@@ -1028,6 +1031,7 @@ generate_memset_builtin (struct loop *loop, partition *partition)
 
   fn = build_fold_addr_expr (builtin_decl_implicit (BUILT_IN_MEMSET));
   fn_call = gimple_build_call (fn, 3, mem, val, nb_bytes);
+  gimple_set_location (fn_call, partition->loc);
   gsi_insert_after (&gsi, fn_call, GSI_CONTINUE_LINKING);
   fold_stmt (&gsi);
 
@@ -1072,6 +1076,7 @@ generate_memcpy_builtin (struct loop *loop, partition *partition)
 				  false, GSI_CONTINUE_LINKING);
   fn = build_fold_addr_expr (builtin_decl_implicit (kind));
   fn_call = gimple_build_call (fn, 3, dest, src, nb_bytes);
+  gimple_set_location (fn_call, partition->loc);
   gsi_insert_after (&gsi, fn_call, GSI_CONTINUE_LINKING);
   fold_stmt (&gsi);
 
@@ -1705,6 +1710,8 @@ classify_partition (loop_p loop, struct graph *rdg, partition *partition,
   /* Find single load/store data references for builtin partition.  */
   if (!find_single_drs (loop, rdg, partition, &single_st, &single_ld))
     return;
+
+  partition->loc = gimple_location (DR_STMT (single_st));
 
   /* Classify the builtin kind.  */
   if (single_ld == NULL)
