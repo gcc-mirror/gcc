@@ -343,6 +343,9 @@ enum omp_clause_code {
   /* Internal clause: temporary for task reductions.  */
   OMP_CLAUSE__REDUCTEMP_,
 
+  /* Internal clause: temporary for lastprivate(conditional:).  */
+  OMP_CLAUSE__CONDTEMP_,
+
   /* OpenACC/OpenMP clause: if (scalar-expression).  */
   OMP_CLAUSE_IF,
 
