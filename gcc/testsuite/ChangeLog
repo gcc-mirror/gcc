@@ -1,3 +1,7 @@
+2019-05-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/pr82659-3.c: Require alias support.
+
 2019-05-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90572 - wrong disambiguation in friend declaration.
