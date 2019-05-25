@@ -1,5 +1,10 @@
 2019-05-25  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc.target/i386/pr89261.c: Test that the alignment required
+	by the test correctly produces the expected error on Darwin.
+
+2019-05-25  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc.target/i386/pr82659-3.c: Require alias support.
 
 2019-05-25  Marek Polacek  <polacek@redhat.com>
