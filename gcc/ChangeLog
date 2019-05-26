@@ -1,3 +1,8 @@
+2019-05-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/invoke.texi (x86 Options, -mvect8-ret-in-mem): Remove
+	pre-Solaris 11 referene and most Studio compiler details.
+
 2019-05-24  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/90530
