@@ -15568,7 +15568,7 @@
   "mwait"
   [(set_attr "length" "3")])
 
-(define_insn "sse3_monitor_<mode>"
+(define_insn "@sse3_monitor_<mode>"
   [(unspec_volatile [(match_operand:P 0 "register_operand" "a")
 		     (match_operand:SI 1 "register_operand" "c")
 		     (match_operand:SI 2 "register_operand" "d")]

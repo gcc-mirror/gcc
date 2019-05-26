@@ -27,10 +27,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cfghooks.h"
 #include "tm_p.h"
+#include "target.h"
 #include "insn-config.h"
 #include "insn-attr.h"
+#include "insn-opinit.h"
 #include "recog.h"
-#include "target.h"
 
 /* Return the maximum number of instructions a cpu can issue.  */
 
@@ -541,8 +542,7 @@ ix86_macro_fusion_pair_p (rtx_insn *condgen, rtx_insn *condjmp)
 
   condgen_type = get_attr_type (condgen);
   if (condgen_type == TYPE_MULTI
-      && (INSN_CODE (condgen) == CODE_FOR_stack_protect_test_di
-	  || INSN_CODE (condgen) == CODE_FOR_stack_protect_test_si)
+      && INSN_CODE (condgen) == code_for_stack_protect_test_1 (ptr_mode)
       && TARGET_FUSE_ALU_AND_BRANCH)
     {
       /* stack_protect_test_<mode> ends with a sub, which subtracts

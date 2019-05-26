@@ -1,3 +1,84 @@
+2019-05-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (@leave_<mode>): New expander.
+	(*leave): Rename from leave.
+	(*leave_rex64): Rename from leave_rex64.
+	(@monitorx_<mode>): Rename from monitorx_<mode>.
+	(@clzero_<mode>): Rename from clzero_<mode>.
+	* config/i386/sse.md (@sse3_monitor_<mode>): Rename from
+	sse3_monitor_<mode>.
+	* config/i386/i386.c (*ix86_gen_leave): Remove indirect function.
+	(*ix86_gen_monitor): Ditto.
+	(*ix86_gen_monitorx): Ditto.
+	(*ix86_gen_clzero): Ditto.
+	(*ix86_gen_one_cmpl2): Ditto.
+	(ix86_emit_leave): Use gen_leave instead of ix86_gen_leave.
+	* config/i386/i386-expand.c (ix86_expand_builtin)
+	<case IX86_BUILTIN_MONITOR>: Use gen_sse3_monitor
+	instead of ix86_gen_monitor.
+	<case IX86_BUILTIN_MONITORX>: Use gen_monitorx
+	instead of ix86_gen_monitorx.
+	<case IX86_BUILTIN_CLZERO>: Use gen_clzero
+	instead of ix86_gen_clzero.
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Do not initialize ix86_gen_leave, ix86_gen_monitor,
+	ix86_gen_monitorx, ix86_gen_clzero and ix86_gen_one_cmpl2.
+
+2019-05-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (@tls_global_dynamic_64_<mode>):
+	Rename from tls_global_dynamic_64_<mode>.
+	(@tls_local_dynamic_base_64_<mode>): Rename from
+	tls_local_dynamic_base_64_<mode>.
+	* config/i386/i386.c (*ix86_gen_tls_global_dynamic_64):
+	Remove indirect function.
+	(*ix86_gen_tls_local_dynamic_base_64): Ditto.
+	(legitimize_tls_address): Use gen_tls_global_dynamic_64 function
+	instead of ix86_gen_tls_global_dynamic_64.
+	Use gen_tls_local_dynamic_base_64 instead of
+	ix86_gen_tls_local_dynamic_base_64.
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Do not initialize ix86_gen_tls_global_dynamic_64 and
+	ix86_gen_tls_local_dynamic_base_64.
+
+2019-05-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (@pro_epilogue_adjust_stack_add_<mode>)
+	Rename from pro_epilogue_adjust_stack_<mode>_add.
+	(@pro_epilogue_adjust_stack_sub_<mode>)
+	Rename from pro_epilogue_adjust_stack_<mode>_sub.
+	(@allocate_stack_worker_probe_<mode>):
+	Rename from allocate_stack_worker_probe_<mode>.
+	(allocate_stack): Use gen_allocate_stack_worker_probe.
+	(probe_stack): Use gen_probe_stack_1.
+	(@probe_stack_1_<mode>): Rename from probe_stack_<mode>.
+	(@adjust_stack_and_probe_<mode>): Rename from
+	adjust_stack_and_probe<mode>.
+	(@probe_stack_range_<mode>): Rename from probe_stack_range<mode>.
+	(stack_protect_set): Use gen_stack_protect_set_1.
+	(@stack_protect_set_1_<mode>): Rename from stack_protect_set_<mode>.
+	(stack_protect_test): Use gen_stack_protect_test_1.
+	(@stack_protect_test_1_<mode>): Rename from stack_protect_test_<mode>.
+	* config/i386/i386.c (*ix86_gen_allocate_stack_worker):
+	Remove indirect function.
+	(*ix86_gen_adjust_stack_and_probe): Ditto.
+	(*ix86_gen_probe_stack_range): Ditto.
+	(pro_epilogue_adjust_stack): Use gen_pro_epilogue_adjust_stack_add
+	instead of gen_pro_epilogue_adjust_stack_{si,di}_add.
+	(ix86_adjust_stack_and_probe_stack_clash): Use
+	gen_adjust_stack_and_probe instead of ix86_gen_adjust_stack_and_probe.
+	(ix86_adjust_stack_and_probe): Ditto.
+	(ix86_emit_probe_stack_range): Use gen_probe_stack_range instead
+	of ix86_gen_probe_stack_range.
+	(ix86_expand_prologue):  Use gen_pro_epilogue_adjust_stack_sub
+	instead of gen_pro_epilogue_adjust_stack_{si,di}_sub.
+	* config/i386/x86-tune-sched.c (ix86_macro_fusion_pair_p):
+	Include insn-opinit.h.  Use code_for_stack_protect_test_1 instead of
+	CODE_FOR_stack_protect_test_{si,di}.
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Do not initialize ix86_gen_allocate_stack_worker,
+	ix86_gen_adjust_stack_and_probe and ix86_gen_probe_stack_range.
+
 2019-05-26  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/invoke.texi (Link Options): Many editorial changes around
