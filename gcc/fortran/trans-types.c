@@ -3010,6 +3010,10 @@ get_formal_from_actual_arglist (gfc_symbol *sym, gfc_actual_arglist *actual_args
 		{
 		  s->attr.dimension = 1;
 		  s->as = gfc_get_array_spec ();
+		  s->as->rank = 1;
+		  s->as->lower[0] = gfc_get_int_expr (gfc_index_integer_kind,
+						      &a->expr->where, 1);
+		  s->as->upper[0] = NULL;
 		  s->as->type = AS_ASSUMED_SIZE;
 		}
 	    }
