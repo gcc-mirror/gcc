@@ -1,3 +1,9 @@
+2019-05-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/90539
+	* trans-types.c (get_formal_from_actual_arglist): Set rank
+	and lower bound for assumed size arguments.
+
 2019-05-22  Andrew Stubbs  <ams@codesourcery.com>
 
 	* trans-stmt.c (gfc_trans_critical): Use size_type_node for
