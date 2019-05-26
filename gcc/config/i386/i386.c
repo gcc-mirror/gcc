@@ -349,20 +349,10 @@ enum processor_type ix86_arch;
 /* True if processor has SSE prefetch instruction.  */
 unsigned char x86_prefetch_sse;
 
-rtx (*ix86_gen_leave) (void);
 rtx (*ix86_gen_add3) (rtx, rtx, rtx);
 rtx (*ix86_gen_sub3) (rtx, rtx, rtx);
 rtx (*ix86_gen_sub3_carry) (rtx, rtx, rtx, rtx, rtx);
-rtx (*ix86_gen_one_cmpl2) (rtx, rtx);
-rtx (*ix86_gen_monitor) (rtx, rtx, rtx);
-rtx (*ix86_gen_monitorx) (rtx, rtx, rtx);
-rtx (*ix86_gen_clzero) (rtx);
 rtx (*ix86_gen_andsp) (rtx, rtx, rtx);
-rtx (*ix86_gen_allocate_stack_worker) (rtx, rtx);
-rtx (*ix86_gen_adjust_stack_and_probe) (rtx, rtx, rtx);
-rtx (*ix86_gen_probe_stack_range) (rtx, rtx, rtx);
-rtx (*ix86_gen_tls_global_dynamic_64) (rtx, rtx, rtx);
-rtx (*ix86_gen_tls_local_dynamic_base_64) (rtx, rtx);
 
 /* Preferred alignment for stack boundary in bits.  */
 unsigned int ix86_preferred_stack_boundary;
@@ -6551,34 +6541,29 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
 			   int style, bool set_cfa)
 {
   struct machine_function *m = cfun->machine;
+  rtx addend = offset;
   rtx insn;
   bool add_frame_related_expr = false;
 
-  if (Pmode == SImode)
-    insn = gen_pro_epilogue_adjust_stack_si_add (dest, src, offset);
-  else if (x86_64_immediate_operand (offset, DImode))
-    insn = gen_pro_epilogue_adjust_stack_di_add (dest, src, offset);
-  else
+  if (!x86_64_immediate_operand (offset, Pmode))
     {
-      rtx tmp;
       /* r11 is used by indirect sibcall return as well, set before the
 	 epilogue and used after the epilogue.  */
       if (style)
-        tmp = gen_rtx_REG (DImode, R11_REG);
+        addend = gen_rtx_REG (Pmode, R11_REG);
       else
 	{
 	  gcc_assert (src != hard_frame_pointer_rtx
 		      && dest != hard_frame_pointer_rtx);
-	  tmp = hard_frame_pointer_rtx;
+	  addend = hard_frame_pointer_rtx;
 	}
-      insn = emit_insn (gen_rtx_SET (tmp, offset));
+      emit_insn (gen_rtx_SET (addend, offset));
       if (style < 0)
 	add_frame_related_expr = true;
-
-      insn = gen_pro_epilogue_adjust_stack_di_add (dest, src, tmp);
     }
 
-  insn = emit_insn (insn);
+  insn = emit_insn (gen_pro_epilogue_adjust_stack_add
+		    (Pmode, dest, src, addend));
   if (style >= 0)
     ix86_add_queued_cfa_restore_notes (insn);
 
@@ -7078,8 +7063,8 @@ ix86_adjust_stack_and_probe_stack_clash (HOST_WIDE_INT size,
 
       /* Step 3: the loop.  */
       rtx size_rtx = GEN_INT (rounded_size);
-      insn = emit_insn (ix86_gen_adjust_stack_and_probe (sr.reg, sr.reg,
-							 size_rtx));
+      insn = emit_insn (gen_adjust_stack_and_probe (Pmode, sr.reg, sr.reg,
+						    size_rtx));
       if (m->fs.cfa_reg == stack_pointer_rtx)
 	{
 	  m->fs.cfa_offset += rounded_size;
@@ -7232,7 +7217,7 @@ ix86_adjust_stack_and_probe (HOST_WIDE_INT size,
 	 adjusts SP and probes to PROBE_INTERVAL + N * PROBE_INTERVAL for
 	 values of N from 1 until it is equal to ROUNDED_SIZE.  */
 
-      emit_insn (ix86_gen_adjust_stack_and_probe (sr.reg, sr.reg, size_rtx));
+      emit_insn (gen_adjust_stack_and_probe (Pmode, sr.reg, sr.reg, size_rtx));
 
 
       /* Step 4: adjust SP and probe at PROBE_INTERVAL + SIZE if we cannot
@@ -7390,7 +7375,8 @@ ix86_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size,
          probes at FIRST + N * PROBE_INTERVAL for values of N from 1
          until it is equal to ROUNDED_SIZE.  */
 
-      emit_insn (ix86_gen_probe_stack_range (sr.reg, sr.reg, GEN_INT (-last)));
+      emit_insn
+	(gen_probe_stack_range (Pmode, sr.reg, sr.reg, GEN_INT (-last)));
 
 
       /* Step 4: probe at FIRST + SIZE if we cannot assert at compile-time
@@ -8182,7 +8168,6 @@ ix86_expand_prologue (void)
     {
       rtx eax = gen_rtx_REG (Pmode, AX_REG);
       rtx r10 = NULL;
-      rtx (*adjust_stack_insn)(rtx, rtx, rtx);
       const bool sp_is_cfa_reg = (m->fs.cfa_reg == stack_pointer_rtx);
       bool eax_live = ix86_eax_live_at_start_p ();
       bool r10_live = false;
@@ -8203,7 +8188,8 @@ ix86_expand_prologue (void)
 	      RTX_FRAME_RELATED_P (insn) = 1;
 	      add_reg_note (insn, REG_FRAME_RELATED_EXPR,
 			    gen_rtx_SET (stack_pointer_rtx,
-					 plus_constant (Pmode, stack_pointer_rtx,
+					 plus_constant (Pmode,
+							stack_pointer_rtx,
 							-UNITS_PER_WORD)));
 	    }
 	}
@@ -8220,21 +8206,18 @@ ix86_expand_prologue (void)
 	      RTX_FRAME_RELATED_P (insn) = 1;
 	      add_reg_note (insn, REG_FRAME_RELATED_EXPR,
 			    gen_rtx_SET (stack_pointer_rtx,
-					 plus_constant (Pmode, stack_pointer_rtx,
+					 plus_constant (Pmode,
+							stack_pointer_rtx,
 							-UNITS_PER_WORD)));
 	    }
 	}
 
       emit_move_insn (eax, GEN_INT (allocate));
-      emit_insn (ix86_gen_allocate_stack_worker (eax, eax));
+      emit_insn (gen_allocate_stack_worker_probe (Pmode, eax, eax));
 
       /* Use the fact that AX still contains ALLOCATE.  */
-      adjust_stack_insn = (Pmode == DImode
-			   ? gen_pro_epilogue_adjust_stack_di_sub
-			   : gen_pro_epilogue_adjust_stack_si_sub);
-
-      insn = emit_insn (adjust_stack_insn (stack_pointer_rtx,
-					   stack_pointer_rtx, eax));
+      insn = emit_insn (gen_pro_epilogue_adjust_stack_sub
+			(Pmode, stack_pointer_rtx, stack_pointer_rtx, eax));
 
       if (sp_is_cfa_reg || TARGET_SEH)
 	{
@@ -8412,8 +8395,9 @@ static void
 ix86_emit_leave (rtx_insn *insn)
 {
   struct machine_function *m = cfun->machine;
+
   if (!insn)
-    insn = emit_insn (ix86_gen_leave ());
+    insn = emit_insn (gen_leave (word_mode));
 
   ix86_add_queued_cfa_restore_notes (insn);
 
@@ -10827,7 +10811,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 
 	      start_sequence ();
 	      emit_call_insn
-		(ix86_gen_tls_global_dynamic_64 (rax, x, caddr));
+		(gen_tls_global_dynamic_64 (Pmode, rax, x, caddr));
 	      insns = get_insns ();
 	      end_sequence ();
 
@@ -10881,7 +10865,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 
 	      start_sequence ();
 	      emit_call_insn
-		(ix86_gen_tls_local_dynamic_base_64 (rax, caddr));
+		(gen_tls_local_dynamic_base_64 (Pmode, rax, caddr));
 	      insns = get_insns ();
 	      end_sequence ();
 
