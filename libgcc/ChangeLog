@@ -1,3 +1,7 @@
+2019-05-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-unwind.h (pa32_fallback_frame_state): Add cast.
+
 2019-05-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* soft-fp/extenddftf2.c: Use "_FP_W_TYPE_SIZE < 64" to check if
