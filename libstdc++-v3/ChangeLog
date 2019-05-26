@@ -1,3 +1,8 @@
+2019-05-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Update pointer to
+	C++ standard at ansi.org.
+
 2019-05-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/numeric (midpoint(T*, T*)): Fix incorrect result.
