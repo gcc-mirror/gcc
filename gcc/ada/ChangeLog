@@ -1,5 +1,10 @@
 2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (maybe_pad_type): Issue the warning for the
+	specific case of component types preferably.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Identifier_to_gnu): Minor tweaks.
 	(gnat_to_gnu): Do not convert the result if it is a reference to an
 	unconstrained array used as the prefix of an attribute reference that
