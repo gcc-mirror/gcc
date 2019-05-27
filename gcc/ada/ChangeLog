@@ -1,5 +1,10 @@
 2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Call_to_gnu): Use the unpadded type when
+	putting back an intermediate conversion the type of the actuals.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gnat_to_gnu) <Shift operations>: Convert the
 	count to the unsigned version of its base type before proceeding.
 
