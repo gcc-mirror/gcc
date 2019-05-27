@@ -2552,21 +2552,6 @@ ix86_option_override_internal (bool main_args_p,
   if (!TARGET_64BIT_P (opts->x_ix86_isa_flags) && !opts->x_flag_split_stack)
     targetm.expand_builtin_va_start = NULL;
 
-  if (Pmode == DImode)
-    {
-      ix86_gen_add3 = gen_adddi3;
-      ix86_gen_sub3 = gen_subdi3;
-      ix86_gen_sub3_carry = gen_subdi3_carry;
-      ix86_gen_andsp = gen_anddi3;
-    }
-  else
-    {
-      ix86_gen_add3 = gen_addsi3;
-      ix86_gen_sub3 = gen_subsi3;
-      ix86_gen_sub3_carry = gen_subsi3_carry;
-      ix86_gen_andsp = gen_andsi3;
-    }
-
 #ifdef USE_IX86_CLD
   /* Use -mcld by default for 32-bit code if configured with --enable-cld.  */
   if (!TARGET_64BIT_P (opts->x_ix86_isa_flags))

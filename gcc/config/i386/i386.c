@@ -349,11 +349,6 @@ enum processor_type ix86_arch;
 /* True if processor has SSE prefetch instruction.  */
 unsigned char x86_prefetch_sse;
 
-rtx (*ix86_gen_add3) (rtx, rtx, rtx);
-rtx (*ix86_gen_sub3) (rtx, rtx, rtx);
-rtx (*ix86_gen_sub3_carry) (rtx, rtx, rtx, rtx, rtx);
-rtx (*ix86_gen_andsp) (rtx, rtx, rtx);
-
 /* Preferred alignment for stack boundary in bits.  */
 unsigned int ix86_preferred_stack_boundary;
 
@@ -1647,8 +1642,7 @@ ix86_init_large_pic_reg (unsigned int tmp_regno)
   emit_insn (gen_set_rip_rex64 (pic_offset_table_rtx,
 				label));
   emit_insn (gen_set_got_offset_rex64 (tmp_reg, label));
-  emit_insn (ix86_gen_add3 (pic_offset_table_rtx,
-			    pic_offset_table_rtx, tmp_reg));
+  emit_insn (gen_add2_insn (pic_offset_table_rtx, tmp_reg));
   const char *name = LABEL_NAME (label);
   PUT_CODE (label, NOTE);
   NOTE_KIND (label) = NOTE_INSN_DELETED_LABEL;
@@ -7746,6 +7740,20 @@ ix86_emit_outlined_ms2sysv_save (const struct ix86_frame &frame)
   RTX_FRAME_RELATED_P (insn) = true;
 }
 
+/* Generate and return an insn body to AND X with Y.  */
+
+static rtx_insn *
+gen_and2_insn (rtx x, rtx y)
+{
+  enum insn_code icode = optab_handler (and_optab, GET_MODE (x));
+
+  gcc_assert (insn_operand_matches (icode, 0, x));
+  gcc_assert (insn_operand_matches (icode, 1, x));
+  gcc_assert (insn_operand_matches (icode, 2, y));
+
+  return GEN_FCN (icode) (x, x, y);
+}
+
 /* Expand the prologue into a bunch of separate insns.  */
 
 void
@@ -7901,9 +7909,8 @@ ix86_expand_prologue (void)
       m->fs.cfa_offset = 0;
 
       /* Align the stack.  */
-      insn = emit_insn (ix86_gen_andsp (stack_pointer_rtx,
-					stack_pointer_rtx,
-					GEN_INT (-align_bytes)));
+      insn = emit_insn (gen_and2_insn (stack_pointer_rtx,
+				       GEN_INT (-align_bytes)));
       RTX_FRAME_RELATED_P (insn) = 1;
 
       /* Replicate the return address on the stack so that return
@@ -8007,9 +8014,8 @@ ix86_expand_prologue (void)
 				   GEN_INT (-allocate), -1, false);
 
       /* Align the stack.  */
-      insn = emit_insn (ix86_gen_andsp (stack_pointer_rtx,
-					stack_pointer_rtx,
-					GEN_INT (-align_bytes)));
+      insn = emit_insn (gen_and2_insn (stack_pointer_rtx,
+				       GEN_INT (-align_bytes)));
       m->fs.sp_offset = ROUND_UP (m->fs.sp_offset, align_bytes);
       m->fs.sp_realigned_offset = m->fs.sp_offset
 					      - frame.stack_realign_allocate;
@@ -8258,7 +8264,7 @@ ix86_expand_prologue (void)
   /* If we havn't already set up the frame pointer, do so now.  */
   if (frame_pointer_needed && !m->fs.fp_valid)
     {
-      insn = ix86_gen_add3 (hard_frame_pointer_rtx, stack_pointer_rtx,
+      insn = gen_add3_insn (hard_frame_pointer_rtx, stack_pointer_rtx,
 			    GEN_INT (frame.stack_pointer_offset
 				     - frame.hard_frame_pointer_offset));
       insn = emit_insn (insn);
@@ -9291,7 +9297,7 @@ ix86_expand_split_stack_prologue (void)
       scratch_reg = gen_rtx_REG (Pmode, scratch_regno);
       if (!TARGET_64BIT || x86_64_immediate_operand (offset, Pmode))
 	{
-	  /* We don't use ix86_gen_add3 in this case because it will
+	  /* We don't use gen_add in this case because it will
 	     want to split to lea, but when not optimizing the insn
 	     will not be split after this point.  */
 	  emit_insn (gen_rtx_SET (scratch_reg,
@@ -9301,8 +9307,7 @@ ix86_expand_split_stack_prologue (void)
       else
 	{
 	  emit_move_insn (scratch_reg, offset);
-	  emit_insn (ix86_gen_add3 (scratch_reg, scratch_reg,
-				    stack_pointer_rtx));
+	  emit_insn (gen_add2_insn (scratch_reg, stack_pointer_rtx));
 	}
       current = scratch_reg;
     }
@@ -9379,7 +9384,7 @@ ix86_expand_split_stack_prologue (void)
 	      LABEL_PRESERVE_P (label) = 1;
 	      emit_insn (gen_set_rip_rex64 (reg10, label));
 	      emit_insn (gen_set_got_offset_rex64 (reg11, label));
-	      emit_insn (ix86_gen_add3 (reg10, reg10, reg11));
+	      emit_insn (gen_add2_insn (reg10, reg11));
 	      x = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, split_stack_fn_large),
 				  UNSPEC_GOT);
 	      x = gen_rtx_CONST (Pmode, x);
@@ -10954,7 +10959,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	{
 	  base = get_thread_pointer (Pmode, true);
 	  dest = gen_reg_rtx (Pmode);
-	  emit_insn (ix86_gen_sub3 (dest, base, off));
+	  emit_insn (gen_sub3_insn (dest, base, off));
 	}
       break;
 
@@ -10974,7 +10979,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	{
 	  base = get_thread_pointer (Pmode, true);
 	  dest = gen_reg_rtx (Pmode);
-	  emit_insn (ix86_gen_sub3 (dest, base, off));
+	  emit_insn (gen_sub3_insn (dest, base, off));
 	}
       break;
 
