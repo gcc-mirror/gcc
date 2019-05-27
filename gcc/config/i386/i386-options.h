@@ -55,11 +55,6 @@ extern tree (*ix86_veclib_handler) (combined_fn, tree, tree);
 extern tree ix86_veclibabi_svml (combined_fn, tree, tree);
 extern tree ix86_veclibabi_acml (combined_fn, tree, tree);
 
-extern rtx (*ix86_gen_add3) (rtx, rtx, rtx);
-extern rtx (*ix86_gen_sub3) (rtx, rtx, rtx);
-extern rtx (*ix86_gen_sub3_carry) (rtx, rtx, rtx, rtx, rtx);
-extern rtx (*ix86_gen_andsp) (rtx, rtx, rtx);
-
 enum ix86_function_specific_strings
 {
   IX86_FUNCTION_SPECIFIC_ARCH,

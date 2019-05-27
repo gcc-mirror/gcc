@@ -5380,8 +5380,7 @@ ix86_split_long_move (rtx operands[])
 	  if (nparts == 3)
 	    {
 	      if (TARGET_128BIT_LONG_DOUBLE && mode == XFmode)
-                emit_insn (ix86_gen_add3 (stack_pointer_rtx,
-					  stack_pointer_rtx, GEN_INT (-4)));
+                emit_insn (gen_add2_insn (stack_pointer_rtx, GEN_INT (-4)));
 	      emit_move_insn (part[0][2], part[1][2]);
 	    }
 	  else if (nparts == 4)
@@ -7789,7 +7788,7 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
 			       QImode, 1, end_0_label);
 
       /* Increment the address.  */
-      emit_insn (ix86_gen_add3 (out, out, const1_rtx));
+      emit_insn (gen_add2_insn (out, const1_rtx));
 
       /* Not needed with an alignment of 2 */
       if (align != 2)
@@ -7799,7 +7798,7 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
 	  emit_cmp_and_jump_insns (mem, const0_rtx, EQ, NULL, QImode, 1,
 				   end_0_label);
 
-	  emit_insn (ix86_gen_add3 (out, out, const1_rtx));
+	  emit_insn (gen_add2_insn (out, const1_rtx));
 
 	  emit_label (align_3_label);
 	}
@@ -7807,7 +7806,7 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
       emit_cmp_and_jump_insns (mem, const0_rtx, EQ, NULL, QImode, 1,
 			       end_0_label);
 
-      emit_insn (ix86_gen_add3 (out, out, const1_rtx));
+      emit_insn (gen_add2_insn (out, const1_rtx));
     }
 
   /* Generate loop to check 4 bytes at a time.  It is not a good idea to
@@ -7817,7 +7816,7 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
 
   mem = change_address (src, SImode, out);
   emit_move_insn (scratch, mem);
-  emit_insn (ix86_gen_add3 (out, out, GEN_INT (4)));
+  emit_insn (gen_add2_insn (out, GEN_INT (4)));
 
   /* This formula yields a nonzero result iff one of the bytes is zero.
      This saves three branches inside loop and many cycles.  */
@@ -7871,7 +7870,7 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
 
        /* Not in the first two.  Move two bytes forward.  */
        emit_insn (gen_lshrsi3 (tmpreg, tmpreg, GEN_INT (16)));
-       emit_insn (ix86_gen_add3 (out, out, const2_rtx));
+       emit_insn (gen_add2_insn (out, const2_rtx));
 
        emit_label (end_2_label);
 
@@ -7882,7 +7881,7 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
   emit_insn (gen_addqi3_cconly_overflow (tmpreg, tmpreg));
   tmp = gen_rtx_REG (CCmode, FLAGS_REG);
   cmp = gen_rtx_LTU (VOIDmode, tmp, const0_rtx);
-  emit_insn (ix86_gen_sub3_carry (out, out, GEN_INT (3), tmp, cmp));
+  emit_insn (gen_sub3_carry (Pmode, out, out, GEN_INT (3), tmp, cmp));
 
   emit_label (end_0_label);
 }
@@ -7915,7 +7914,7 @@ if (TARGET_UNROLL_STRLEN
       /* strlensi_unroll_1 returns the address of the zero at the end of
 	 the string, like memchr(), so compute the length by subtracting
 	 the start address.  */
-      emit_insn (ix86_gen_sub3 (out, out, addr));
+      emit_insn (gen_sub2_insn (out, addr));
       return true;
     }
   else
@@ -7938,7 +7937,7 @@ construct_plt_address (rtx symbol)
   unspec = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, symbol), UNSPEC_PLTOFF);
 
   emit_move_insn (tmp, gen_rtx_CONST (Pmode, unspec));
-  emit_insn (ix86_gen_add3 (tmp, tmp, pic_offset_table_rtx));
+  emit_insn (gen_add2_insn (tmp, pic_offset_table_rtx));
   return tmp;
 }
 

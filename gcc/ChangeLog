@@ -1,3 +1,27 @@
+2019-05-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_gen_add3): Remove indirect function.
+	(*ix86_gen_sub3): Ditto.
+	(*ix86_gen_sub3_carry): Ditto.
+	(*ix86_gen_one_cmpl2): Ditto.
+	(*ix86_gen_andsp): Ditto.
+	(ix86_init_large_pic_reg): Use gen_add2_insn instead of ix86_gen_add3.
+	(gen_and2_insn): New static function.
+	(ix86_expand_prologue): Use gen_and2_insn instead of ix86_gen_andsp.
+	Use gen_add3_insn instead of ix86_gen_add3.
+	(ix86_expand_split_stack_prologue): Use gen_add2_insn
+	instead of ix86_gen_add3.
+	(legitimize_tls_address): Use gen_add2_insn instead of ix86_gen_add3.
+	Use gen_sub3_insn instead of ix86_gen_sub3.
+	* config/i386-expand.c (ix86_split_long_move): Use gen_add2_insn
+	instead of ix86_gen_add3.
+	(ix86_expand_strlensi_unroll_1): Use gen_add2_insn instead of
+	ix86_gen_add3.  Use gen_sub3_insn instead of ix86_gen_sub3.
+	(construct_plt_address): Use gen_add2_insn instead of ix86_gen_add3.
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Do not initialize ix86_gen_add3, ix86_gen_sub3, ix86_gen_sub3_carry,
+	ix86_gen_one_cmpl2 and ix86_gen_andsp.
+
 2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2out.c (resolve_args_picking_1): Deal with DW_OP_GNU_addr_index
@@ -21,29 +45,32 @@
 
 2019-05-26  Uroš Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386.md (@leave_<mode>): New expander.
+	* config/i386/i386.md (@sub<mode>3_carry): Rename
+	from sub<mode>3_carry.
+	(@leave_<mode>): New expander.
 	(*leave): Rename from leave.
 	(*leave_rex64): Rename from leave_rex64.
 	(@monitorx_<mode>): Rename from monitorx_<mode>.
 	(@clzero_<mode>): Rename from clzero_<mode>.
-	* config/i386/sse.md (@sse3_monitor_<mode>): Rename from
-	sse3_monitor_<mode>.
-	* config/i386/i386.c (*ix86_gen_leave): Remove indirect function.
+	* config/i386/sse.md (@sse3_monitor_<mode>): Rename
+	from sse3_monitor_<mode>.
+	* config/i386/i386.c (ix86_gen_sub3_carry): Remove indirect function.
+	(*ix86_gen_leave): Ditto.
 	(*ix86_gen_monitor): Ditto.
 	(*ix86_gen_monitorx): Ditto.
 	(*ix86_gen_clzero): Ditto.
-	(*ix86_gen_one_cmpl2): Ditto.
 	(ix86_emit_leave): Use gen_leave instead of ix86_gen_leave.
-	* config/i386/i386-expand.c (ix86_expand_builtin)
-	<case IX86_BUILTIN_MONITOR>: Use gen_sse3_monitor
-	instead of ix86_gen_monitor.
+	* config/i386/i386-expand.c (ix86_expand_strlensi_unroll_1):
+	Use gen_sub3_carry instead of ix86_gen_sub3_carry.
+	(ix86_expand_builtin) <case IX86_BUILTIN_MONITOR>:
+	Use gen_sse3_monitor instead of ix86_gen_monitor.
 	<case IX86_BUILTIN_MONITORX>: Use gen_monitorx
 	instead of ix86_gen_monitorx.
 	<case IX86_BUILTIN_CLZERO>: Use gen_clzero
 	instead of ix86_gen_clzero.
 	* config/i386/i386-options.c (ix86_option_override_internal):
-	Do not initialize ix86_gen_leave, ix86_gen_monitor,
-	ix86_gen_monitorx, ix86_gen_clzero and ix86_gen_one_cmpl2.
+	Do not initialize ix86_gen_leave, ix86_gen_sub3_carry,
+	ix86_gen_monitor, ix86_gen_monitorx and ix86_gen_clzero.
 
 2019-05-26  Uroš Bizjak  <ubizjak@gmail.com>
 
