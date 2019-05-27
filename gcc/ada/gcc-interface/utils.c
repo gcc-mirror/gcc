@@ -1519,13 +1519,13 @@ built:
 	 generated for some other corresponding source entity.  */
       if (Comes_From_Source (gnat_entity))
 	{
-	  if (Present (gnat_error_node))
-	    post_error_ne_tree ("{^ }bits of & unused?",
-				gnat_error_node, gnat_entity,
-				size_diffop (size, orig_size));
-	  else if (is_component_type)
+	  if (is_component_type)
 	    post_error_ne_tree ("component of& padded{ by ^ bits}?",
 				gnat_entity, gnat_entity,
+				size_diffop (size, orig_size));
+	  else if (Present (gnat_error_node))
+	    post_error_ne_tree ("{^ }bits of & unused?",
+				gnat_error_node, gnat_entity,
 				size_diffop (size, orig_size));
 	}
     }
