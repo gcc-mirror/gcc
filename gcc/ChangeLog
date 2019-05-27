@@ -1,3 +1,9 @@
+2019-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (lower_omp_1) <case GIMPLE_ASSIGN>: Look through ordered,
+	critical, taskgroup and section regions when looking for a region
+	with non-NULL lastprivate_conditional_map.
+
 2019-05-27  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_gen_add3): Remove indirect function.
