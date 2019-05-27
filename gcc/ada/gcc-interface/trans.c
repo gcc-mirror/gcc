@@ -7422,7 +7422,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	enum tree_code code = gnu_codes[kind];
 	bool ignore_lhs_overflow = false;
 	location_t saved_location = input_location;
-	tree gnu_type;
+	tree gnu_type, gnu_max_shift = NULL_TREE;
 
 	/* Fix operations set up for boolean types in GNU_CODES above.  */
 	if (Is_Modular_Integer_Type (Underlying_Type (Etype (gnat_node))))
@@ -7444,6 +7444,17 @@ gnat_to_gnu (Node_Id gnat_node)
 	gnu_lhs = gnat_to_gnu (Left_Opnd (gnat_node));
 	gnu_rhs = gnat_to_gnu (Right_Opnd (gnat_node));
 	gnu_type = gnu_result_type = get_unpadded_type (Etype (gnat_node));
+
+	/* If this is a shift, take the count as unsigned since that is what
+	   most machines do and will generate simpler adjustments below.  */
+	if (IN (kind, N_Op_Shift))
+	  {
+	    tree gnu_count_type
+	      = gnat_unsigned_type_for (get_base_type (TREE_TYPE (gnu_rhs)));
+	    gnu_rhs = convert (gnu_count_type, gnu_rhs);
+	    gnu_max_shift
+	      = convert (TREE_TYPE (gnu_rhs), TYPE_SIZE (gnu_type));
+	  }
 
 	/* Pending generic support for efficient vector logical operations in
 	   GCC, convert vectors to their representative array type view and
@@ -7468,25 +7479,20 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	/* If this is a shift whose count is not guaranteed to be correct,
 	   we need to adjust the shift count.  */
-	if (IN (kind, N_Op_Shift) && !Shift_Count_OK (gnat_node))
-	  {
-	    tree gnu_count_type = get_base_type (TREE_TYPE (gnu_rhs));
-	    tree gnu_max_shift
-	      = convert (gnu_count_type, TYPE_SIZE (gnu_type));
-
-	    if (kind == N_Op_Rotate_Left || kind == N_Op_Rotate_Right)
-	      gnu_rhs = build_binary_op (TRUNC_MOD_EXPR, gnu_count_type,
-					 gnu_rhs, gnu_max_shift);
-	    else if (kind == N_Op_Shift_Right_Arithmetic)
-	      gnu_rhs
-		= build_binary_op
-		  (MIN_EXPR, gnu_count_type,
-		   build_binary_op (MINUS_EXPR,
-				    gnu_count_type,
-				    gnu_max_shift,
-				    build_int_cst (gnu_count_type, 1)),
-		   gnu_rhs);
-	  }
+	if ((kind == N_Op_Rotate_Left || kind == N_Op_Rotate_Right)
+	    && !Shift_Count_OK (gnat_node))
+	  gnu_rhs = build_binary_op (TRUNC_MOD_EXPR, TREE_TYPE (gnu_rhs),
+				     gnu_rhs, gnu_max_shift);
+	else if (kind == N_Op_Shift_Right_Arithmetic
+		 && !Shift_Count_OK (gnat_node))
+	  gnu_rhs
+	    = build_binary_op (MIN_EXPR, TREE_TYPE (gnu_rhs),
+			       build_binary_op (MINUS_EXPR,
+						TREE_TYPE (gnu_rhs),
+						gnu_max_shift,
+						build_int_cst
+						(TREE_TYPE (gnu_rhs), 1)),
+			       gnu_rhs);
 
 	/* For right shifts, the type says what kind of shift to do,
 	   so we may need to choose a different type.  In this case,
@@ -7533,18 +7539,15 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	/* If this is a logical shift with the shift count not verified,
 	   we must return zero if it is too large.  We cannot compensate
-	   above in this case.  */
+	   beforehand in this case.  */
 	if ((kind == N_Op_Shift_Left || kind == N_Op_Shift_Right)
 	    && !Shift_Count_OK (gnat_node))
 	  gnu_result
-	    = build_cond_expr
-	      (gnu_type,
-	       build_binary_op (GE_EXPR, boolean_type_node,
-				gnu_rhs,
-				convert (TREE_TYPE (gnu_rhs),
-					 TYPE_SIZE (gnu_type))),
-	       build_int_cst (gnu_type, 0),
-	       gnu_result);
+	    = build_cond_expr (gnu_type,
+			       build_binary_op (GE_EXPR, boolean_type_node,
+						gnu_rhs, gnu_max_shift),
+			       build_int_cst (gnu_type, 0),
+			       gnu_result);
       }
       break;
 

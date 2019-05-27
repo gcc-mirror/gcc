@@ -1,3 +1,8 @@
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <Shift operations>: Convert the
+	count to the unsigned version of its base type before proceeding.
+
 2019-05-16  Martin Sebor  <msebor@redhat.com>
 
 	* gcc-interface/trans.c (check_inlining_for_nested_subprog): Quote
