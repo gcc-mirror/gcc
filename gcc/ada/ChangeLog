@@ -1,5 +1,12 @@
 2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Gigi_Types_Compatible): New predicate.
+	(Identifier_to_gnu): Use it to assert that the type of the identifier
+	and that of its entity are compatible for gigi.  Rename a couple of
+	local variables and separate the processing of the result type.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Call_to_gnu): Use the unpadded type when
 	putting back an intermediate conversion the type of the actuals.
 
