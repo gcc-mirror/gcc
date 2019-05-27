@@ -128,7 +128,7 @@ if test "$with_libffi" != no; then
 fi
 AC_SUBST(LIBFFI)
 AC_SUBST(LIBFFIINCS)
-AM_CONDITIONAL(USE_LIBFFI, test "$with_liffi" != "no")
+AM_CONDITIONAL(USE_LIBFFI, test "$with_libffi" != "no")
 
 # See if the user wants to configure without libatomic. This is useful if we are
 # on an architecture for which libgo does not need an atomic support library and
