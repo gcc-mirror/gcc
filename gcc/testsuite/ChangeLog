@@ -1,5 +1,9 @@
 2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/array4.ads: New test.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/aliased2.adb: New test.
 
 2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
