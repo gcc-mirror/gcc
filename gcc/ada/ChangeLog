@@ -1,5 +1,11 @@
 2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Call_to_gnu): Do not initialize the temporary
+	created out of addressability concerns if it's for the _Init parameter
+	of an initialization procedure.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (maybe_pad_type): Issue the warning for the
 	specific case of component types preferably.
 

@@ -5310,13 +5310,23 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  /* Create an explicit temporary holding the copy.  */
 	  if (atomic_p)
 	    gnu_name = build_atomic_load (gnu_name, sync);
-	  gnu_temp
-	    = create_init_temporary ("A", gnu_name, &gnu_stmt, gnat_actual);
 
-	  /* But initialize it on the fly like for an implicit temporary as
-	     we aren't necessarily having a statement list.  */
-	  gnu_name = build_compound_expr (TREE_TYPE (gnu_name), gnu_stmt,
-					  gnu_temp);
+	  /* Do not initialize it for the _Init parameter of an initialization
+	     procedure since no data is meant to be passed in.  */
+	  if (Ekind (gnat_formal) == E_Out_Parameter
+	      && Is_Entity_Name (Name (gnat_node))
+	      && Is_Init_Proc (Entity (Name (gnat_node))))
+	    gnu_name = gnu_temp = create_temporary ("A", TREE_TYPE (gnu_name));
+
+	  /* Initialize it on the fly like for an implicit temporary in the
+	     other cases, as we don't necessarily have a statement list.  */
+	  else
+	    {
+	      gnu_temp = create_init_temporary ("A", gnu_name, &gnu_stmt,
+						gnat_actual);
+	      gnu_name = build_compound_expr (TREE_TYPE (gnu_name), gnu_stmt,
+					      gnu_temp);
+	    }
 
 	  /* Set up to move the copy back to the original if needed.  */
 	  if (!in_param)
