@@ -1,5 +1,22 @@
 2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/ada-builtin-types.def: New file.
+	* gcc-interface/ada-builtins.def: Likewise.
+	* gcc-interface/ada-tree.h (BUILT_IN_LIKELY): New macro.
+	(BUILT_IN_UNLIKELY): Likewise.
+	* gcc-interface/trans.c (independent_iterations_p): Initialize the
+	auto-vector to 16 elements.
+	(Call_to_gnu): Remove local variable and change the vector of actual
+	parameters to an auto-vector.  Do not convert actual parameters to
+	the argument type for front-end built-in functions.  Add support for
+	front-end built-in functions.
+	(build_noreturn_cond): Use internal instead of built-in function.
+	* gcc-interface/utils.c (c_builtin_type): Include ada-builtin-types.def
+	(install_builtin_function_types): Likewise.
+	(install_builtin_functions): Include ada-builtins.def first.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (maybe_pad_type): Issue the warning for the
 	specific case of component types preferably.
 

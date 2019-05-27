@@ -3307,7 +3307,7 @@ independent_iterations_p (tree stmt_list)
 {
   tree_stmt_iterator tsi;
   bitmap params = BITMAP_GGC_ALLOC();
-  auto_vec<tree> rhs;
+  auto_vec<tree, 16> rhs;
   tree iter;
   int i;
 
@@ -5029,8 +5029,10 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
   tree gnu_subprog_type = TREE_TYPE (gnu_subprog);
   /* The return type of the FUNCTION_TYPE.  */
   tree gnu_result_type = TREE_TYPE (gnu_subprog_type);
-  tree gnu_subprog_addr = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_subprog);
-  vec<tree, va_gc> *gnu_actual_vec = NULL;
+  const bool frontend_builtin
+    = (TREE_CODE (gnu_subprog) == FUNCTION_DECL
+       && DECL_BUILT_IN_CLASS (gnu_subprog) == BUILT_IN_FRONTEND);
+  auto_vec<tree, 16> gnu_actual_vec;
   tree gnu_name_list = NULL_TREE;
   tree gnu_stmt_list = NULL_TREE;
   tree gnu_after_list = NULL_TREE;
@@ -5487,16 +5489,56 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 				     build_int_cst (type_for_size, 0),
 				     false);
 	    }
-	  else
+
+	  /* If this is a front-end built-in function, there is no need to
+	     convert to the type used to pass the argument.  */
+	  else if (!frontend_builtin)
 	    gnu_actual = convert (DECL_ARG_TYPE (gnu_formal), gnu_actual);
 	}
 
-      vec_safe_push (gnu_actual_vec, gnu_actual);
+      gnu_actual_vec.safe_push (gnu_actual);
     }
 
-  gnu_call
-    = build_call_vec (gnu_result_type, gnu_subprog_addr, gnu_actual_vec);
-  CALL_EXPR_BY_DESCRIPTOR (gnu_call) = by_descriptor;
+  if (frontend_builtin)
+    {
+      tree pred_cst = build_int_cst (integer_type_node, PRED_BUILTIN_EXPECT);
+      enum internal_fn icode = IFN_BUILTIN_EXPECT;
+
+      switch (DECL_FUNCTION_CODE (gnu_subprog))
+	{
+	case BUILT_IN_EXPECT:
+	  break;
+	case BUILT_IN_LIKELY:
+	  gnu_actual_vec.safe_push (boolean_true_node);
+	  break;
+	case BUILT_IN_UNLIKELY:
+	  gnu_actual_vec.safe_push (boolean_false_node);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      gnu_actual_vec.safe_push (pred_cst);
+
+      gnu_call
+	= build_call_expr_internal_loc_array (UNKNOWN_LOCATION,
+					      icode,
+					      gnu_result_type,
+					      gnu_actual_vec.length (),
+					      gnu_actual_vec.begin ());
+    }
+  else
+    {
+      gnu_call
+        = build_call_array_loc (UNKNOWN_LOCATION,
+				gnu_result_type,
+				build_unary_op (ADDR_EXPR, NULL_TREE,
+						gnu_subprog),
+				gnu_actual_vec.length (),
+			        gnu_actual_vec.begin ());
+      CALL_EXPR_BY_DESCRIPTOR (gnu_call) = by_descriptor;
+    }
+
   set_expr_location_from_node (gnu_call, gnat_node);
 
   /* If we have created a temporary for the return value, initialize it.  */
@@ -6320,24 +6362,17 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
 
    The compiler will automatically predict the last edge leading to a call
    to a noreturn function as very unlikely taken.  This function makes it
-   possible to expand the prediction to predecessors in case the condition
+   possible to extend the prediction to predecessors in case the condition
    is made up of several short-circuit operators.  */
 
 static tree
 build_noreturn_cond (tree cond)
 {
-  tree fn = builtin_decl_explicit (BUILT_IN_EXPECT);
-  tree arg_types = TYPE_ARG_TYPES (TREE_TYPE (fn));
-  tree pred_type = TREE_VALUE (arg_types);
-  tree expected_type = TREE_VALUE (TREE_CHAIN (arg_types));
-
-  tree t = build_call_expr (fn, 3,
-			    fold_convert (pred_type, cond),
-			    build_int_cst (expected_type, 0),
-			    build_int_cst (integer_type_node,
-					   PRED_NORETURN));
-
-  return build1 (NOP_EXPR, boolean_type_node, t);
+  tree pred_cst = build_int_cst (integer_type_node, PRED_NORETURN);
+  return
+    build_call_expr_internal_loc (UNKNOWN_LOCATION, IFN_BUILTIN_EXPECT,
+				  boolean_type_node, 3, cond,
+				  boolean_false_node, pred_cst);
 }
 
 /* Subroutine of gnat_to_gnu to translate GNAT_RANGE, a node representing a
