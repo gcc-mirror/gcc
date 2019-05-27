@@ -1110,11 +1110,12 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
     }
   else
     {
-      /* We want to use the Actual_Subtype if it has already been elaborated,
-	 otherwise the Etype.  Avoid using Actual_Subtype for packed arrays to
-	 simplify things.  */
+      /* We use the Actual_Subtype only if it has already been elaborated,
+	 as we may be invoked precisely during its elaboration, otherwise
+	 the Etype.  Avoid using it for packed arrays to simplify things.  */
       if ((Ekind (gnat_entity) == E_Constant
-	   || Ekind (gnat_entity) == E_Variable || Is_Formal (gnat_entity))
+	   || Ekind (gnat_entity) == E_Variable
+	   || Is_Formal (gnat_entity))
 	  && !(Is_Array_Type (Etype (gnat_entity))
 	       && Present (Packed_Array_Impl_Type (Etype (gnat_entity))))
 	  && Present (Actual_Subtype (gnat_entity))
@@ -8681,7 +8682,11 @@ gnat_to_gnu (Node_Id gnat_node)
 	  declaration, return the result unmodified because we want to use the
 	  return slot optimization in this case.
 
-       5. Finally, if the type of the result is already correct.  */
+       5. If this is a reference to an unconstrained array which is used as the
+	  prefix of an attribute reference that requires an lvalue, return the
+	  result unmodified because we want return the original bounds.
+
+       6. Finally, if the type of the result is already correct.  */
 
   if (Present (Parent (gnat_node))
       && (lhs_or_actual_p (gnat_node)
@@ -8730,11 +8735,17 @@ gnat_to_gnu (Node_Id gnat_node)
   else if (gnu_result == error_mark_node || gnu_result_type == void_type_node)
     gnu_result = error_mark_node;
 
-  else if (Present (Parent (gnat_node))
+  else if (TREE_CODE (gnu_result) == CALL_EXPR
+	   && Present (Parent (gnat_node))
 	   && (Nkind (Parent (gnat_node)) == N_Object_Declaration
 	       || Nkind (Parent (gnat_node)) == N_Object_Renaming_Declaration)
-	   && TREE_CODE (gnu_result) == CALL_EXPR
 	   && return_type_with_variable_size_p (TREE_TYPE (gnu_result)))
+    ;
+
+  else if (TREE_CODE (gnu_result) == UNCONSTRAINED_ARRAY_REF
+	   && Present (Parent (gnat_node))
+	   && Nkind (Parent (gnat_node)) == N_Attribute_Reference
+	   && lvalue_required_for_attribute_p (Parent (gnat_node)))
     ;
 
   else if (TREE_TYPE (gnu_result) != gnu_result_type)
