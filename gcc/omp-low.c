@@ -10627,14 +10627,21 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       goto regimplify;
 
     case GIMPLE_ASSIGN:
-      if (ctx && ctx->lastprivate_conditional_map)
+      for (omp_context *up = ctx; up; up = up->outer)
 	{
+	  if (gimple_code (up->stmt) == GIMPLE_OMP_ORDERED
+	      || gimple_code (up->stmt) == GIMPLE_OMP_CRITICAL
+	      || gimple_code (up->stmt) == GIMPLE_OMP_TASKGROUP
+	      || gimple_code (up->stmt) == GIMPLE_OMP_SECTION)
+	    continue;
+	  else if (!up->lastprivate_conditional_map)
+	    break;
 	  tree lhs = get_base_address (gimple_assign_lhs (stmt));
 	  if (DECL_P (lhs))
-	    if (tree *v = ctx->lastprivate_conditional_map->get (lhs))
+	    if (tree *v = up->lastprivate_conditional_map->get (lhs))
 	      {
 		tree clauses
-		  = gimple_omp_for_clauses (as_a <gomp_for *> (ctx->stmt));
+		  = gimple_omp_for_clauses (as_a <gomp_for *> (up->stmt));
 		tree c = omp_find_clause (clauses, OMP_CLAUSE__CONDTEMP_);
 		c = omp_find_clause (OMP_CLAUSE_CHAIN (c),
 				     OMP_CLAUSE__CONDTEMP_);
