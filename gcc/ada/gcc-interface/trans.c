@@ -1021,6 +1021,42 @@ fold_constant_decl_in_expr (tree exp)
   gcc_unreachable ();
 }
 
+/* Return true if TYPE and DEF_TYPE are compatible GNAT types for Gigi.  */
+
+static bool
+Gigi_Types_Compatible (Entity_Id type, Entity_Id def_type)
+{
+  /* The trivial case.  */
+  if (type == def_type)
+    return true;
+
+  /* A class-wide type is equivalent to a subtype of itself.  */
+  if (Is_Class_Wide_Type (type))
+    return true;
+
+  /* A packed array type is compatible with its implementation type.  */
+  if (Is_Packed (def_type) && type == Packed_Array_Impl_Type (def_type))
+    return true;
+
+  /* If both types are Itypes, one may be a copy of the other.  */
+  if (Is_Itype (def_type) && Is_Itype (type))
+    return true;
+
+  /* If the type is incomplete and comes from a limited context, then also
+     consider its non-limited view.  */
+  if (Is_Incomplete_Type (def_type)
+      && From_Limited_With (def_type)
+      && Present (Non_Limited_View (def_type)))
+    return Gigi_Types_Compatible (type, Non_Limited_View (def_type));
+
+  /* If the type is incomplete/private, then also consider its full view.  */
+  if (Is_Incomplete_Or_Private_Type (def_type)
+      && Present (Full_View (def_type)))
+    return Gigi_Types_Compatible (type, Full_View (def_type));
+
+  return false;
+}
+
 /* Subroutine of gnat_to_gnu to translate gnat_node, an N_Identifier,
    to a GCC tree, which is returned.  GNU_RESULT_TYPE_P is a pointer
    to where we should place the result type.  */
@@ -1028,55 +1064,31 @@ fold_constant_decl_in_expr (tree exp)
 static tree
 Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 {
-  Node_Id gnat_temp, gnat_temp_type;
-  tree gnu_result, gnu_result_type;
-
-  /* Whether we should require an lvalue for GNAT_NODE.  Needed in
-     specific circumstances only, so evaluated lazily.  < 0 means
-     unknown, > 0 means known true, 0 means known false.  */
-  int require_lvalue = -1;
-
+  /* The entity of GNAT_NODE and its type.  */
+  Node_Id gnat_entity = (Nkind (gnat_node) == N_Defining_Identifier
+			 || Nkind (gnat_node) == N_Defining_Operator_Symbol)
+			? gnat_node : Entity (gnat_node);
+  Node_Id gnat_entity_type = Etype (gnat_entity);
   /* If GNAT_NODE is a constant, whether we should use the initialization
      value instead of the constant entity, typically for scalars with an
      address clause when the parent doesn't require an lvalue.  */
   bool use_constant_initializer = false;
+  /* Whether we should require an lvalue for GNAT_NODE.  Needed in
+     specific circumstances only, so evaluated lazily.  < 0 means
+     unknown, > 0 means known true, 0 means known false.  */
+  int require_lvalue = -1;
+  Node_Id gnat_result_type;
+  tree gnu_result, gnu_result_type;
 
   /* If the Etype of this node is not the same as that of the Entity, then
      something went wrong, probably in generic instantiation.  However, this
      does not apply to types.  Since we sometime have strange Ekind's, just
-     do this test for objects.  Moreover, if the Etype of the Entity is private
-     or incomplete coming from a limited context, the Etype of the N_Identifier
-     is allowed to be the full/non-limited view and we also consider a packed
-     array type to be the same as the original type.  Similarly, a CW type is
-     equivalent to a subtype of itself.  Finally, if the types are Itypes, one
-     may be a copy of the other, which is also legal.  */
-  gnat_temp = ((Nkind (gnat_node) == N_Defining_Identifier
-		|| Nkind (gnat_node) == N_Defining_Operator_Symbol)
-	       ? gnat_node : Entity (gnat_node));
-  gnat_temp_type = Etype (gnat_temp);
-
-  gcc_assert (Etype (gnat_node) == gnat_temp_type
-	      || (Is_Packed (gnat_temp_type)
-		  && (Etype (gnat_node)
-		      == Packed_Array_Impl_Type (gnat_temp_type)))
-	      || (Is_Class_Wide_Type (Etype (gnat_node)))
-	      || (Is_Incomplete_Or_Private_Type (gnat_temp_type)
-		  && Present (Full_View (gnat_temp_type))
-		  && ((Etype (gnat_node) == Full_View (gnat_temp_type))
-		      || (Is_Packed (Full_View (gnat_temp_type))
-			  && (Etype (gnat_node)
-			      == Packed_Array_Impl_Type
-			           (Full_View (gnat_temp_type))))))
-	      || (Is_Incomplete_Type (gnat_temp_type)
-		  && From_Limited_With (gnat_temp_type)
-		  && Present (Non_Limited_View (gnat_temp_type))
-		  && Etype (gnat_node) == Non_Limited_View (gnat_temp_type))
-	      || (Is_Itype (Etype (gnat_node)) && Is_Itype (gnat_temp_type))
-	      || !(Ekind (gnat_temp) == E_Variable
-		   || Ekind (gnat_temp) == E_Component
-		   || Ekind (gnat_temp) == E_Constant
-		   || Ekind (gnat_temp) == E_Loop_Parameter
-		   || Is_Formal (gnat_temp)));
+     do this test for objects, except for discriminants because their type
+     may have been changed to a subtype by Exp_Ch3.Adjust_Discriminants.  */
+  gcc_assert (!Is_Object (gnat_entity)
+	      || Ekind (gnat_entity) == E_Discriminant
+	      || Etype (gnat_node) == gnat_entity_type
+	      || Gigi_Types_Compatible (Etype (gnat_node), gnat_entity_type));
 
   /* If this is a reference to a deferred constant whose partial view is an
      unconstrained private type, the proper type is on the full view of the
@@ -1086,36 +1098,36 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
      attribute Position, generated for dispatching code (see Make_DT in
      exp_disp,adb). In that case we need the type itself, not is parent,
      in particular if it is a derived type  */
-  if (Ekind (gnat_temp) == E_Constant
-      && Is_Private_Type (gnat_temp_type)
-      && (Has_Unknown_Discriminants (gnat_temp_type)
-	  || (Present (Full_View (gnat_temp_type))
- 	      && Has_Discriminants (Full_View (gnat_temp_type))))
-      && Present (Full_View (gnat_temp)))
+  if (Ekind (gnat_entity) == E_Constant
+      && Is_Private_Type (gnat_entity_type)
+      && (Has_Unknown_Discriminants (gnat_entity_type)
+	  || (Present (Full_View (gnat_entity_type))
+ 	      && Has_Discriminants (Full_View (gnat_entity_type))))
+      && Present (Full_View (gnat_entity)))
     {
-      gnat_temp = Full_View (gnat_temp);
-      gnat_temp_type = Etype (gnat_temp);
+      gnat_entity = Full_View (gnat_entity);
+      gnat_result_type = Etype (gnat_entity);
     }
   else
     {
       /* We want to use the Actual_Subtype if it has already been elaborated,
 	 otherwise the Etype.  Avoid using Actual_Subtype for packed arrays to
 	 simplify things.  */
-      if ((Ekind (gnat_temp) == E_Constant
-	   || Ekind (gnat_temp) == E_Variable || Is_Formal (gnat_temp))
-	  && !(Is_Array_Type (Etype (gnat_temp))
-	       && Present (Packed_Array_Impl_Type (Etype (gnat_temp))))
-	  && Present (Actual_Subtype (gnat_temp))
-	  && present_gnu_tree (Actual_Subtype (gnat_temp)))
-	gnat_temp_type = Actual_Subtype (gnat_temp);
+      if ((Ekind (gnat_entity) == E_Constant
+	   || Ekind (gnat_entity) == E_Variable || Is_Formal (gnat_entity))
+	  && !(Is_Array_Type (Etype (gnat_entity))
+	       && Present (Packed_Array_Impl_Type (Etype (gnat_entity))))
+	  && Present (Actual_Subtype (gnat_entity))
+	  && present_gnu_tree (Actual_Subtype (gnat_entity)))
+	gnat_result_type = Actual_Subtype (gnat_entity);
       else
-	gnat_temp_type = Etype (gnat_node);
+	gnat_result_type = Etype (gnat_node);
     }
 
   /* Expand the type of this identifier first, in case it is an enumeral
      literal, which only get made when the type is expanded.  There is no
      order-of-elaboration issue here.  */
-  gnu_result_type = get_unpadded_type (gnat_temp_type);
+  gnu_result_type = get_unpadded_type (gnat_result_type);
 
   /* If this is a non-imported elementary constant with an address clause,
      retrieve the value instead of a pointer to be dereferenced unless
@@ -1125,10 +1137,10 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
      statement alternative or a record discriminant.  There is no possible
      volatile-ness short-circuit here since Volatile constants must be
      imported per C.6.  */
-  if (Ekind (gnat_temp) == E_Constant
-      && Is_Elementary_Type (gnat_temp_type)
-      && !Is_Imported (gnat_temp)
-      && Present (Address_Clause (gnat_temp)))
+  if (Ekind (gnat_entity) == E_Constant
+      && Is_Elementary_Type (gnat_result_type)
+      && !Is_Imported (gnat_entity)
+      && Present (Address_Clause (gnat_entity)))
     {
       require_lvalue
 	= lvalue_required_p (gnat_node, gnu_result_type, true, false);
@@ -1139,13 +1151,13 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
     {
       /* If this is a deferred constant, the initializer is attached to
 	 the full view.  */
-      if (Present (Full_View (gnat_temp)))
-	gnat_temp = Full_View (gnat_temp);
+      if (Present (Full_View (gnat_entity)))
+	gnat_entity = Full_View (gnat_entity);
 
-      gnu_result = gnat_to_gnu (Expression (Declaration_Node (gnat_temp)));
+      gnu_result = gnat_to_gnu (Expression (Declaration_Node (gnat_entity)));
     }
   else
-    gnu_result = gnat_to_gnu_entity (gnat_temp, NULL_TREE, false);
+    gnu_result = gnat_to_gnu_entity (gnat_entity, NULL_TREE, false);
 
   /* Some objects (such as parameters passed by reference, globals of
      variable size, and renamed objects) actually represent the address
@@ -1184,7 +1196,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 
 	  if ((TREE_CODE (gnu_result) == INDIRECT_REF
 	       || TREE_CODE (gnu_result) == UNCONSTRAINED_ARRAY_REF)
-	      && No (Address_Clause (gnat_temp)))
+	      && No (Address_Clause (gnat_entity)))
 	    TREE_THIS_NOTRAP (gnu_result) = 1;
 
 	  if (read_only)
@@ -1218,9 +1230,9 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
   /* But for a constant renaming we couldn't do that incrementally for its
      definition because of the need to return an lvalue so, if the present
      context doesn't itself require an lvalue, we try again here.  */
-  else if (Ekind (gnat_temp) == E_Constant
-	   && Is_Elementary_Type (gnat_temp_type)
-	   && Present (Renamed_Object (gnat_temp)))
+  else if (Ekind (gnat_entity) == E_Constant
+	   && Is_Elementary_Type (gnat_result_type)
+	   && Present (Renamed_Object (gnat_entity)))
     {
       if (require_lvalue < 0)
 	require_lvalue
@@ -1236,10 +1248,10 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
      avoid problematic conversions to the nominal subtype.  But remove any
      padding from the resulting type.  */
   if (FUNC_OR_METHOD_TYPE_P (TREE_TYPE (gnu_result))
-      || Is_Constr_Subt_For_UN_Aliased (gnat_temp_type)
-      || (Ekind (gnat_temp) == E_Constant
-	  && Present (Full_View (gnat_temp))
-	  && Has_Discriminants (gnat_temp_type)
+      || Is_Constr_Subt_For_UN_Aliased (gnat_result_type)
+      || (Ekind (gnat_entity) == E_Constant
+	  && Present (Full_View (gnat_entity))
+	  && Has_Discriminants (gnat_result_type)
 	  && TREE_CODE (gnu_result) == CONSTRUCTOR))
     {
       gnu_result_type = TREE_TYPE (gnu_result);
