@@ -1,3 +1,16 @@
+2019-05-27  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR tree-optimization/88440
+	* gcc.target/aarch64/sve/index_offset_1.c: Add -fno-tree-loop-distribute-patterns.
+	* gcc.target/aarch64/sve/single_1.c: Likewise.
+	* gcc.target/aarch64/sve/single_2.c: Likewise.
+	* gcc.target/aarch64/sve/single_3.c: Likewise.
+	* gcc.target/aarch64/sve/single_4.c: Likewise.
+	* gcc.target/aarch64/sve/vec_init_1.c: Likewise.
+	* gcc.target/aarch64/vect-fmovd-zero.c: Likewise.
+	* gcc.target/aarch64/vect-fmovf-zero.c: Likewise.
+	* gcc.target/arm/ivopts.c: Likewise.
+
 2019-05-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90637
