@@ -6386,21 +6386,62 @@ expand_omp_sections (struct omp_region *region)
   vin = gimple_omp_sections_control (sections_stmt);
   tree clauses = gimple_omp_sections_clauses (sections_stmt);
   tree reductmp = omp_find_clause (clauses, OMP_CLAUSE__REDUCTEMP_);
-  if (reductmp)
+  tree condtmp = omp_find_clause (clauses, OMP_CLAUSE__CONDTEMP_);
+  tree cond_var = NULL_TREE;
+  if (reductmp || condtmp)
     {
-      tree reductions = OMP_CLAUSE_DECL (reductmp);
-      gcc_assert (TREE_CODE (reductions) == SSA_NAME);
-      gimple *g = SSA_NAME_DEF_STMT (reductions);
-      reductions = gimple_assign_rhs1 (g);
-      OMP_CLAUSE_DECL (reductmp) = reductions;
-      gimple_stmt_iterator gsi = gsi_for_stmt (g);
+      tree reductions = null_pointer_node, mem = null_pointer_node;
+      tree memv = NULL_TREE, condtemp = NULL_TREE;
+      gimple_stmt_iterator gsi = gsi_none ();
+      gimple *g = NULL;
+      if (reductmp)
+	{
+	  reductions = OMP_CLAUSE_DECL (reductmp);
+	  gcc_assert (TREE_CODE (reductions) == SSA_NAME);
+	  g = SSA_NAME_DEF_STMT (reductions);
+	  reductions = gimple_assign_rhs1 (g);
+	  OMP_CLAUSE_DECL (reductmp) = reductions;
+	  gsi = gsi_for_stmt (g);
+	}
+      else
+	gsi = si;
+      if (condtmp)
+	{
+	  condtemp = OMP_CLAUSE_DECL (condtmp);
+	  tree c = omp_find_clause (OMP_CLAUSE_CHAIN (condtmp),
+				    OMP_CLAUSE__CONDTEMP_);
+	  cond_var = OMP_CLAUSE_DECL (c);
+	  tree type = TREE_TYPE (condtemp);
+	  memv = create_tmp_var (type);
+	  TREE_ADDRESSABLE (memv) = 1;
+	  unsigned cnt = 0;
+	  for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
+		&& OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c))
+	      ++cnt;
+	  unsigned HOST_WIDE_INT sz
+	    = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (type))) * cnt;
+	  expand_omp_build_assign (&gsi, memv, build_int_cst (type, sz),
+				   false);
+	  mem = build_fold_addr_expr (memv);
+	}
       t = build_int_cst (unsigned_type_node, len - 1);
       u = builtin_decl_explicit (BUILT_IN_GOMP_SECTIONS2_START);
-      stmt = gimple_build_call (u, 3, t, reductions, null_pointer_node);
+      stmt = gimple_build_call (u, 3, t, reductions, mem);
       gimple_call_set_lhs (stmt, vin);
       gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
-      gsi_remove (&gsi, true);
-      release_ssa_name (gimple_assign_lhs (g));
+      if (condtmp)
+	{
+	  expand_omp_build_assign (&gsi, condtemp, memv, false);
+	  tree t = build2 (PLUS_EXPR, TREE_TYPE (cond_var),
+			   vin, build_one_cst (TREE_TYPE (cond_var)));
+	  expand_omp_build_assign (&gsi, cond_var, t, false);
+	}
+      if (reductmp)
+	{
+	  gsi_remove (&gsi, true);
+	  release_ssa_name (gimple_assign_lhs (g));
+	}
     }
   else if (!is_combined_parallel (region))
     {
@@ -6416,7 +6457,7 @@ expand_omp_sections (struct omp_region *region)
       u = builtin_decl_explicit (BUILT_IN_GOMP_SECTIONS_NEXT);
       stmt = gimple_build_call (u, 0);
     }
-  if (!reductmp)
+  if (!reductmp && !condtmp)
     {
       gimple_call_set_lhs (stmt, vin);
       gsi_insert_after (&si, stmt, GSI_SAME_STMT);
@@ -6508,7 +6549,13 @@ expand_omp_sections (struct omp_region *region)
       bfn_decl = builtin_decl_explicit (BUILT_IN_GOMP_SECTIONS_NEXT);
       stmt = gimple_build_call (bfn_decl, 0);
       gimple_call_set_lhs (stmt, vnext);
-      gsi_insert_after (&si, stmt, GSI_SAME_STMT);
+      gsi_insert_before (&si, stmt, GSI_SAME_STMT);
+      if (cond_var)
+	{
+	  tree t = build2 (PLUS_EXPR, TREE_TYPE (cond_var),
+			   vnext, build_one_cst (TREE_TYPE (cond_var)));
+	  expand_omp_build_assign (&si, cond_var, t, false);
+	}
       gsi_remove (&si, true);
 
       single_succ_edge (l1_bb)->flags = EDGE_FALLTHRU;
