@@ -17893,6 +17893,8 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 	case DW_OP_push_object_address:
 	case DW_OP_call_frame_cfa:
 	case DW_OP_GNU_variable_value:
+	case DW_OP_GNU_addr_index:
+	case DW_OP_GNU_const_index:
 	  ++frame_offset_;
 	  break;
 
