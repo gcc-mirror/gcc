@@ -1,5 +1,11 @@
 2019-05-27  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/90637
+	* tree-ssa-sink.c (statement_sink_location): Honor the
+	computed sink location for single-uses.
+
+2019-05-27  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/90610
 	* match.pd (vec_perm): Avoid clobbering op0 when not generating
 	a bit-insert.
