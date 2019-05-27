@@ -51,7 +51,7 @@ extern _Bool Continued (uint32_t *w)
   __asm__ (GOSYM_PREFIX "syscall.WaitStatus.Continued");
 
 _Bool
-Continued (uint32_t *w)
+Continued (uint32_t *w __attribute__ ((unused)))
 {
   return WIFCONTINUED (*w) != 0;
 }
