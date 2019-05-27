@@ -1,3 +1,14 @@
+2019-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/90615
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-31b.c: Add
+	-fno-tree-loop-distribute-patterns.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-33.c: Likewise.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-76a.c: Likewise.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-76b.c: Likewise.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-76c.c: Likewise.
+	* gcc.target/powerpc/vsx-vectorize-1.c: Likewise.
+
 2019-05-26  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/i386/pr39013-1.c: Adjust scan-asms for PIE to
