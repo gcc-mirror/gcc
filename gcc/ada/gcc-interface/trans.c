@@ -4575,7 +4575,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	 since the parent is a procedure call, so put it back here.  Note that
 	 we might have a dummy type here if the actual is the dereference of a
 	 pointer to it, but that's OK if the formal is passed by reference.  */
-      tree gnu_actual_type = gnat_to_gnu_type (Etype (gnat_actual));
+      tree gnu_actual_type = get_unpadded_type (Etype (gnat_actual));
       if (TYPE_IS_DUMMY_P (gnu_actual_type))
 	gcc_assert (is_true_formal_parm && DECL_BY_REF_P (gnu_formal));
       else if (suppress_type_conversion
