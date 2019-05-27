@@ -5877,6 +5877,7 @@ enum c_builtin_type
 				ARG6, ARG7) NAME,
 #define DEF_POINTER_TYPE(NAME, TYPE) NAME,
 #include "builtin-types.def"
+#include "ada-builtin-types.def"
 #undef DEF_PRIMITIVE_TYPE
 #undef DEF_FUNCTION_TYPE_0
 #undef DEF_FUNCTION_TYPE_1
@@ -6025,6 +6026,7 @@ install_builtin_function_types (void)
   builtin_types[(int) ENUM] = build_pointer_type (builtin_types[(int) TYPE]);
 
 #include "builtin-types.def"
+#include "ada-builtin-types.def"
 
 #undef DEF_PRIMITIVE_TYPE
 #undef DEF_FUNCTION_TYPE_0
@@ -6574,7 +6576,10 @@ static int flag_isoc94 = 0;
 static int flag_isoc99 = 0;
 static int flag_isoc11 = 0;
 
-/* Install what the common builtins.def offers.  */
+/* Install what the common builtins.def offers plus our local additions.
+
+   Note that ada-builtins.def is included first so that locally redefined
+   built-in functions take precedence over the commonly defined ones.  */
 
 static void
 install_builtin_functions (void)
@@ -6587,6 +6592,10 @@ install_builtin_functions (void)
                    builtin_types[(int) LIBTYPE],                        \
                    BOTH_P, FALLBACK_P, NONANSI_P,                       \
                    built_in_attributes[(int) ATTRS], IMPLICIT);
+#define DEF_ADA_BUILTIN(ENUM, NAME, TYPE, ATTRS)		\
+  DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_FRONTEND, TYPE, BT_LAST, \
+	       false, false, false, ATTRS, true, true)
+#include "ada-builtins.def"
 #include "builtins.def"
 }
 
