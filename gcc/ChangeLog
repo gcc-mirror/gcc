@@ -1,3 +1,7 @@
+2019-05-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (STACK_SIZE_MODE): Define.
+
 2019-05-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90637

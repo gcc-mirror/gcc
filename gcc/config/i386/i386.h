@@ -1947,6 +1947,10 @@ do {							\
 #define STACK_SAVEAREA_MODE(LEVEL)			\
   ((LEVEL) == SAVE_NONLOCAL ? (TARGET_64BIT ? TImode : DImode) : Pmode)
 
+/* Specify the machine_mode of the size increment
+   operand of an 'allocate_stack' named pattern.  */
+#define STACK_SIZE_MODE Pmode
+
 /* A C expression whose value is zero if pointers that need to be extended
    from being `POINTER_SIZE' bits wide to `Pmode' are sign-extended and
    greater then zero if they are zero-extended and less then zero if the
