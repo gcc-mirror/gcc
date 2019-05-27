@@ -1,5 +1,11 @@
 2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Call_to_gnu): Do not initialize the temporary
+	created out of addressability concerns if it's for the _Init parameter
+	of an initialization procedure.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/ada-builtin-types.def: New file.
 	* gcc-interface/ada-builtins.def: Likewise.
 	* gcc-interface/ada-tree.h (BUILT_IN_LIKELY): New macro.
