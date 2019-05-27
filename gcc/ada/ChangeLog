@@ -1,5 +1,12 @@
 2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Identifier_to_gnu): Minor tweaks.
+	(gnat_to_gnu): Do not convert the result if it is a reference to an
+	unconstrained array used as the prefix of an attribute reference that
+	requires an lvalue.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Gigi_Types_Compatible): New predicate.
 	(Identifier_to_gnu): Use it to assert that the type of the identifier
 	and that of its entity are compatible for gigi.  Rename a couple of
