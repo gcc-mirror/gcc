@@ -5370,7 +5370,6 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 static void
 lower_lastprivate_conditional_clauses (tree *clauses, omp_context *ctx)
 {
-  struct omp_for_data fd;
   tree iter_type = NULL_TREE;
   tree cond_ptr = NULL_TREE;
   tree iter_var = NULL_TREE;
@@ -5380,8 +5379,15 @@ lower_lastprivate_conditional_clauses (tree *clauses, omp_context *ctx)
       {
 	if (iter_type == NULL)
 	  {
-	    omp_extract_for_data (as_a <gomp_for *> (ctx->stmt), &fd, NULL);
-	    iter_type = unsigned_type_for (fd.iter_type);
+	    if (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR)
+	      {
+		struct omp_for_data fd;
+		omp_extract_for_data (as_a <gomp_for *> (ctx->stmt), &fd,
+				      NULL);
+		iter_type = unsigned_type_for (fd.iter_type);
+	      }
+	    else if (gimple_code (ctx->stmt) == GIMPLE_OMP_SECTIONS)
+	      iter_type = unsigned_type_node;
 	    cond_ptr = create_tmp_var_raw (build_pointer_type (iter_type));
 	    DECL_CONTEXT (cond_ptr) = current_function_decl;
 	    DECL_SEEN_IN_BIND_EXPR_P (cond_ptr) = 1;
@@ -6739,7 +6745,7 @@ lower_omp_sections (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   gomp_sections *stmt;
   gimple *t;
   gbind *new_stmt, *bind;
-  gimple_seq ilist, dlist, olist, tred_dlist = NULL, new_body;
+  gimple_seq ilist, dlist, olist, tred_dlist = NULL, clist = NULL, new_body;
 
   stmt = as_a <gomp_sections *> (gsi_stmt (*gsi_p));
 
@@ -6771,6 +6777,12 @@ lower_omp_sections (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   lower_rec_input_clauses (gimple_omp_sections_clauses (stmt),
       			   &ilist, &dlist, ctx, NULL);
 
+  control = create_tmp_var (unsigned_type_node, ".section");
+  gimple_omp_sections_set_control (stmt, control);
+
+  tree *clauses_ptr = gimple_omp_sections_clauses_ptr (stmt);
+  lower_lastprivate_conditional_clauses (clauses_ptr, ctx);
+
   new_body = gimple_omp_body (stmt);
   gimple_omp_set_body (stmt, NULL);
   tgsi = gsi_start (new_body);
@@ -6792,7 +6804,7 @@ lower_omp_sections (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	{
 	  gimple_seq l = NULL;
 	  lower_lastprivate_clauses (gimple_omp_sections_clauses (stmt), NULL,
-				     NULL, &l, NULL, ctx);
+				     &ilist, &l, &clist, ctx);
 	  gsi_insert_seq_after (&tgsi, l, GSI_CONTINUE_LINKING);
 	  gimple_omp_section_set_last (sec_start);
 	}
@@ -6806,7 +6818,17 @@ lower_omp_sections (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   olist = NULL;
   lower_reduction_clauses (gimple_omp_sections_clauses (stmt), &olist,
-			   NULL, ctx);
+			   &clist, ctx);
+  if (clist)
+    {
+      tree fndecl = builtin_decl_explicit (BUILT_IN_GOMP_ATOMIC_START);
+      gcall *g = gimple_build_call (fndecl, 0);
+      gimple_seq_add_stmt (&olist, g);
+      gimple_seq_add_seq (&olist, clist);
+      fndecl = builtin_decl_explicit (BUILT_IN_GOMP_ATOMIC_END);
+      g = gimple_build_call (fndecl, 0);
+      gimple_seq_add_stmt (&olist, g);
+    }
 
   block = make_node (BLOCK);
   new_stmt = gimple_build_bind (NULL, NULL, block);
@@ -6824,9 +6846,7 @@ lower_omp_sections (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   gimple_seq_add_stmt (&new_body, gimple_build_omp_sections_switch ());
   gimple_seq_add_stmt (&new_body, bind);
 
-  control = create_tmp_var (unsigned_type_node, ".section");
   t = gimple_build_omp_continue (control, control);
-  gimple_omp_sections_set_control (stmt, control);
   gimple_seq_add_stmt (&new_body, t);
 
   gimple_seq_add_seq (&new_body, olist);
@@ -10640,8 +10660,11 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  if (DECL_P (lhs))
 	    if (tree *v = up->lastprivate_conditional_map->get (lhs))
 	      {
-		tree clauses
-		  = gimple_omp_for_clauses (as_a <gomp_for *> (up->stmt));
+		tree clauses;
+		if (gimple_code (up->stmt) == GIMPLE_OMP_FOR)
+		  clauses = gimple_omp_for_clauses (up->stmt);
+		else
+		  clauses = gimple_omp_sections_clauses (up->stmt);
 		tree c = omp_find_clause (clauses, OMP_CLAUSE__CONDTEMP_);
 		c = omp_find_clause (OMP_CLAUSE_CHAIN (c),
 				     OMP_CLAUSE__CONDTEMP_);

@@ -8143,7 +8143,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	    }
 	  if (OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c))
 	    {
-	      if (code == OMP_FOR)
+	      if (code == OMP_FOR || code == OMP_SECTIONS)
 		flags |= GOVD_LASTPRIVATE_CONDITIONAL;
 	      else
 		{

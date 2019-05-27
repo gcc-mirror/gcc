@@ -1,5 +1,14 @@
 2019-05-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* gimplify.c (gimplify_scan_omp_clauses): Allow lastprivate conditional
+	on sections construct.
+	* omp-low.c (lower_lastprivate_conditional_clauses): Handle sections
+	construct.
+	(lower_omp_sections): Handle lastprivate conditional.
+	(lower_omp_1) <case GIMPLE_ASSIGN>: Handle sections construct with
+	lastprivate_conditional_map.
+	* omp-expand.c (expand_omp_sections): Handle lastprivate conditional.
+
 	* omp-low.c (lower_omp_1) <case GIMPLE_ASSIGN>: Look through ordered,
 	critical, taskgroup and section regions when looking for a region
 	with non-NULL lastprivate_conditional_map.
