@@ -878,7 +878,7 @@ mostlyclean-local:
 
 # check-go-tool runs `go test cmd/go` in our environment.
 @NATIVE_TRUE@check-go-tool: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
-@NATIVE_TRUE@	-chmod -R u+w check-go-dir
+@NATIVE_TRUE@	if test -d check-go-dir; then chmod -R u+w check-go-dir; fi
 @NATIVE_TRUE@	rm -rf check-go-dir cmd_go-testlog
 @NATIVE_TRUE@	$(MKDIR_P) check-go-dir/src/cmd/go
 @NATIVE_TRUE@	cp $(cmdsrcdir)/go/*.go check-go-dir/src/cmd/go/
