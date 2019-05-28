@@ -1,3 +1,8 @@
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (intrin_arglists_compatible_p): Do not return
+	false if the internal builtin uses a variable list.
+
 2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Call_to_gnu): Do not initialize the temporary
