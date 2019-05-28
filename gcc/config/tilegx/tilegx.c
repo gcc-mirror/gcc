@@ -4993,8 +4993,7 @@ tilegx_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   /* Run just enough of rest_of_compilation to get the insns emitted.
      There's not really enough bulk here to make other passes such as
-     instruction scheduling worth while.  Note that use_thunk calls
-     assemble_start_function and assemble_end_function.
+     instruction scheduling worth while.
 
      We don't currently bundle, but the instruciton sequence is all
      serial except for the tail call, so we're only wasting one cycle.

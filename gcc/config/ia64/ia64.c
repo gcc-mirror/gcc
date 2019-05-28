@@ -11033,8 +11033,7 @@ ia64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 
   /* Run just enough of rest_of_compilation to get the insns emitted.
      There's not really enough bulk here to make other passes such as
-     instruction scheduling worth while.  Note that use_thunk calls
-     assemble_start_function and assemble_end_function.  */
+     instruction scheduling worth while.  */
 
   emit_all_insn_group_barriers (NULL);
   insn = get_insns ();

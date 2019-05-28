@@ -19972,8 +19972,7 @@ x86_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
     }
   emit_barrier ();
 
-  /* Emit just enough of rest_of_compilation to get the insns emitted.
-     Note that use_thunk calls assemble_start_function et al.  */
+  /* Emit just enough of rest_of_compilation to get the insns emitted.  */
   insn = get_insns ();
   shorten_branches (insn);
   assemble_start_function (thunk_fndecl, fnname);
