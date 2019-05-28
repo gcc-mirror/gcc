@@ -1,3 +1,8 @@
+2019-05-28  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (duplicate_decls): Assert a template newdecl has no
+	specializations.
+
 2019-05-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90548 - ICE with generic lambda and empty pack.
