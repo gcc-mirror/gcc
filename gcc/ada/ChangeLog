@@ -1,5 +1,13 @@
 2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (components_to_record): Set a name on the type
+	created for the REP part, if any.
+	* gcc-interface/utils.c (finish_record_type): Only take the maximum
+	when merging sizes for a variant part at offset 0.
+	(merge_sizes): Rename has_rep parameter into max.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (gnat_internal_attribute_table): Add support
 	for stack_protect attribute.
 	(handle_stack_protect_attribute): New static function.
