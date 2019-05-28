@@ -9174,9 +9174,9 @@ intrin_arglists_compatible_p (intrin_binding_t * inb)
       if (!ada_type && !btin_type)
 	break;
 
-      /* If one list is shorter than the other, they fail to match.  */
-      if (!ada_type || !btin_type)
-	return false;
+      /* If the internal builtin uses a variable list, accept anything.  */
+      if (!btin_type)
+	break;
 
       /* If we're done with the Ada args and not with the internal builtin
 	 args, or the other way around, complain.  */
