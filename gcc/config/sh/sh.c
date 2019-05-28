@@ -10940,8 +10940,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   emit_barrier ();
 
   /* Run just enough of rest_of_compilation to do scheduling and get
-     the insns emitted.  Note that use_thunk calls
-     assemble_start_function and assemble_end_function.  */
+     the insns emitted.  */
 
   insns = get_insns ();
 

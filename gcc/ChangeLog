@@ -1,3 +1,17 @@
+2019-05-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/alpha/alpha.c [TARGET_ABI_OSF] (alpha_output_mi_thunk_osf):
+	Remove obsolete use_thunk reference.
+	* config/i386/i386.c (x86_output_mi_thunk): Likewise.
+	* config/ia64/ia64.c (ia64_output_mi_thunk): Likewise.
+	* config/nios2/nios2.c (nios2_asm_output_mi_thunk): Likewise.
+	* config/or1k/or1k.c (or1k_output_mi_thunk): Likewise.
+	* config/rs6000/rs6000.c (rs6000_output_mi_thunk): Likewise.
+	* config/sh/sh.c (sh_output_mi_thunk): Likewise.
+	* config/sparc/sparc.c (sparc_output_mi_thunk): Likewise.
+	* config/tilegx/tilegx.c (tilegx_output_mi_thunk): Likewise.
+	* config/tilepro/tilepro.c (tilepro_asm_output_mi_thunk): Likewise.
+
 2019-05-28  Nathan Sidwell  <nathan@acm.org>
 
 	* tree.h (IDENTIFIER_ANON_P): New.
