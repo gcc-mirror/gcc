@@ -856,7 +856,7 @@ control_options_for_live_patching (struct gcc_options *opts,
 }
 
 /* --help option argument if set.  */
-const char *help_option_argument = NULL;
+vec<const char *> help_option_arguments;
 
 
 /* After all options at LOC have been read into OPTS and OPTS_SET,
@@ -2062,7 +2062,8 @@ check_alignment_argument (location_t loc, const char *flag, const char *name)
 /* Print help when OPT__help_ is set.  */
 
 void
-print_help (struct gcc_options *opts, unsigned int lang_mask)
+print_help (struct gcc_options *opts, unsigned int lang_mask,
+	    const char *help_option_argument)
 {
   const char *a = help_option_argument;
   unsigned int include_flags = 0;
@@ -2255,7 +2256,7 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT__help_:
       {
-	help_option_argument = arg;
+	help_option_arguments.safe_push (arg);
 	opts->x_exit_after_options = true;
 	break;
       }
