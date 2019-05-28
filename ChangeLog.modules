@@ -1,5 +1,8 @@
 2019-05-28  Nathan Sidwell  <nathan@acm.org>
 
+	* decl.c (duplicate_decls): Assert a template newdecl has no
+	specializations.
+
 	Revert inadvertent commits.
 	gcc/cp/
 	* pt.c (push_template_decl_real): Here.
