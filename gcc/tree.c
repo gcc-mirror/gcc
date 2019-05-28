@@ -11670,7 +11670,7 @@ build_call_expr (tree fndecl, int n, ...)
    It will get gimplified later into an ordinary internal function.  */
 
 tree
-build_call_expr_internal_loc_array (location_t loc, internal_fn ifn,
+build_call_expr_internal_loc_array (location_t loc, enum internal_fn ifn,
 				    tree type, int n, const tree *args)
 {
   tree t = build_call_1 (type, NULL_TREE, n);
