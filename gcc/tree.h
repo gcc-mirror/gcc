@@ -932,6 +932,11 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define TREE_DEPRECATED(NODE) \
   ((NODE)->base.deprecated_flag)
 
+/* Nonzero indicates an IDENTIFIER_NODE that names an anonymous
+   aggregate, (as created by anon_aggr_name_format).  */
+#define IDENTIFIER_ANON_P(NODE) \
+  (IDENTIFIER_NODE_CHECK (NODE)->base.private_flag)
+
 /* Nonzero in an IDENTIFIER_NODE if the name is a local alias, whose
    uses are to be substituted for uses of the TREE_CHAINed identifier.  */
 #define IDENTIFIER_TRANSPARENT_ALIAS(NODE) \
@@ -5441,9 +5446,9 @@ target_opts_for_fn (const_tree fndecl)
 
 /* For anonymous aggregate types, we need some sort of name to
    hold on to.  In practice, this should not appear, but it should
-   not be harmful if it does.  */
-extern const char *anon_aggrname_format();
-extern bool anon_aggrname_p (const_tree);
+   not be harmful if it does.  Identifiers returned will be
+   IDENTIFIER_ANON_P.  */
+extern tree make_anon_name ();
 
 /* The tree and const_tree overload templates.   */
 namespace wi

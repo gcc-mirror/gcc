@@ -1937,7 +1937,7 @@ enum languages { lang_c, lang_cplusplus };
 
 /* Nonzero if NODE has no name for linkage purposes.  */
 #define TYPE_UNNAMED_P(NODE) \
-  (OVERLOAD_TYPE_P (NODE) && anon_aggrname_p (TYPE_LINKAGE_IDENTIFIER (NODE)))
+  (OVERLOAD_TYPE_P (NODE) && IDENTIFIER_ANON_P (TYPE_LINKAGE_IDENTIFIER (NODE)))
 
 /* The _DECL for this _TYPE.  */
 #define TYPE_MAIN_DECL(NODE) (TYPE_STUB_DECL (TYPE_MAIN_VARIANT (NODE)))
@@ -6350,7 +6350,6 @@ extern tree strip_fnptr_conv			(tree);
 
 /* in name-lookup.c */
 extern void maybe_push_cleanup_level		(tree);
-extern tree make_anon_name			(void);
 extern tree maybe_push_decl			(tree);
 extern tree current_decl_namespace		(void);
 

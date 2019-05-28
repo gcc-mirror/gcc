@@ -1,3 +1,15 @@
+2019-05-28  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (make_anon_name): Drop declaration.
+	(TYPE_UNNAMED_P): Use IDENTIFIER_ANON_P.
+	* cp-lang.c (cxx_dwarf_name): Likewise.
+	* class.c (find_flexarrays): Likewise.
+	* decl.c (name_unnamed_type, xref_tag_1): Likewise.
+	* error.c (dump_aggr_type): Likewise.
+	* pt.c (push_template_decl_real): Likewise.
+	* name-lookup.c (consider_binding_level): Likewise.
+	(anon_cnt, make_anon_name): Delete.
+
 2019-05-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90572 - wrong disambiguation in friend declaration.
