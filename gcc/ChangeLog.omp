@@ -1,3 +1,13 @@
+2019-05-28  Julian Brown  <julian@codesourcery.com>
+
+	* omp-low.c (mark_oacc_gangprivate): Add CTX parameter.  Use to look up
+	correct decl to add attribute to.
+	(lower_omp_for): Move "oacc gangprivate" processing from here...
+	(process_oacc_gangprivate_1): ...to here. New function.
+	(lower_omp_target): Update call to mark_oacc_gangprivate.
+	(execute_lower_omp): Call process_oacc_gangprivate_1 for each OMP
+	context.
+
 2019-05-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* tree-vrp.c (extract_range_from_unary_expr): Set a varying range
