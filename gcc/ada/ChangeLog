@@ -1,5 +1,10 @@
 2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gnat_to_gnu): Remove superfluous tests on
+	Backend_Overflow_Checks_On_Target and rework comments.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (walk_nesting_tree): New static function.
 	(finalize_nrv): Use it to walk the entire nesting tree.
 
