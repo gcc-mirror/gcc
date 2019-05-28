@@ -6458,23 +6458,16 @@ prepend_one_attribute (struct attrib **attr_list,
 static void
 prepend_one_attribute_pragma (struct attrib **attr_list, Node_Id gnat_pragma)
 {
-  const Node_Id gnat_arg = Pragma_Argument_Associations (gnat_pragma);
-  tree gnu_arg0 = NULL_TREE, gnu_arg1 = NULL_TREE;
+  const Node_Id gnat_arg = First (Pragma_Argument_Associations (gnat_pragma));
+  Node_Id gnat_next_arg = Next (gnat_arg);
+  tree gnu_arg1 = NULL_TREE, gnu_arg_list = NULL_TREE;
   enum attrib_type etype;
 
   /* Map the pragma at hand.  Skip if this isn't one we know how to handle.  */
   switch (Get_Pragma_Id (Chars (Pragma_Identifier (gnat_pragma))))
     {
-    case Pragma_Machine_Attribute:
-      etype = ATTR_MACHINE_ATTRIBUTE;
-      break;
-
     case Pragma_Linker_Alias:
       etype = ATTR_LINK_ALIAS;
-      break;
-
-    case Pragma_Linker_Section:
-      etype = ATTR_LINK_SECTION;
       break;
 
     case Pragma_Linker_Constructor:
@@ -6485,12 +6478,20 @@ prepend_one_attribute_pragma (struct attrib **attr_list, Node_Id gnat_pragma)
       etype = ATTR_LINK_DESTRUCTOR;
       break;
 
-    case Pragma_Weak_External:
-      etype = ATTR_WEAK_EXTERNAL;
+    case Pragma_Linker_Section:
+      etype = ATTR_LINK_SECTION;
+      break;
+
+    case Pragma_Machine_Attribute:
+      etype = ATTR_MACHINE_ATTRIBUTE;
       break;
 
     case Pragma_Thread_Local_Storage:
       etype = ATTR_THREAD_LOCAL_STORAGE;
+      break;
+
+    case Pragma_Weak_External:
+      etype = ATTR_WEAK_EXTERNAL;
       break;
 
     default:
@@ -6498,45 +6499,37 @@ prepend_one_attribute_pragma (struct attrib **attr_list, Node_Id gnat_pragma)
     }
 
   /* See what arguments we have and turn them into GCC trees for attribute
-     handlers.  These expect identifier for strings.  We handle at most two
-     arguments and static expressions only.  */
-  if (Present (gnat_arg) && Present (First (gnat_arg)))
+     handlers.  The first one is always expected to be a string meant to be
+     turned into an identifier.  The next ones are all static expressions,
+     among which strings meant to be turned into an identifier, except for
+     a couple of specific attributes that require raw strings.  */
+  if (Present (gnat_next_arg))
     {
-      Node_Id gnat_arg0 = Next (First (gnat_arg));
-      Node_Id gnat_arg1 = Empty;
+      gnu_arg1 = gnat_to_gnu (Expression (gnat_next_arg));
+      gcc_assert (TREE_CODE (gnu_arg1) == STRING_CST);
 
-      if (Present (gnat_arg0)
-	  && Is_OK_Static_Expression (Expression (gnat_arg0)))
+      const char *const p = TREE_STRING_POINTER (gnu_arg1);
+      const bool string_args
+	= strcmp (p, "target") == 0 || strcmp (p, "target_clones") == 0;
+      gnu_arg1 = get_identifier (p);
+      if (IDENTIFIER_LENGTH (gnu_arg1) == 0)
+	return;
+      gnat_next_arg = Next (gnat_next_arg);
+
+      while (Present (gnat_next_arg))
 	{
-	  gnu_arg0 = gnat_to_gnu (Expression (gnat_arg0));
-
-	  if (TREE_CODE (gnu_arg0) == STRING_CST)
-	    {
-	      gnu_arg0 = get_identifier (TREE_STRING_POINTER (gnu_arg0));
-	      if (IDENTIFIER_LENGTH (gnu_arg0) == 0)
-		return;
-	    }
-
-	  gnat_arg1 = Next (gnat_arg0);
-	}
-
-      if (Present (gnat_arg1)
-	  && Is_OK_Static_Expression (Expression (gnat_arg1)))
-	{
-	  gnu_arg1 = gnat_to_gnu (Expression (gnat_arg1));
-
-	  if (TREE_CODE (gnu_arg1) == STRING_CST)
-	   gnu_arg1 = get_identifier (TREE_STRING_POINTER (gnu_arg1));
+	  tree gnu_arg = gnat_to_gnu (Expression (gnat_next_arg));
+	  if (TREE_CODE (gnu_arg) == STRING_CST && !string_args)
+	    gnu_arg = get_identifier (TREE_STRING_POINTER (gnu_arg));
+	  gnu_arg_list
+	    = chainon (gnu_arg_list, build_tree_list (NULL_TREE, gnu_arg));
+	  gnat_next_arg = Next (gnat_next_arg);
 	}
     }
 
-  /* Prepend to the list.  Make a list of the argument we might have, as GCC
-     expects it.  */
-  prepend_one_attribute (attr_list, etype, gnu_arg0,
-			 gnu_arg1
-			 ? build_tree_list (NULL_TREE, gnu_arg1) : NULL_TREE,
-			 Present (Next (First (gnat_arg)))
-			 ? Expression (Next (First (gnat_arg))) : gnat_pragma);
+  prepend_one_attribute (attr_list, etype, gnu_arg1, gnu_arg_list,
+			 Present (Next (gnat_arg))
+			 ? Expression (Next (gnat_arg)) : gnat_pragma);
 }
 
 /* Prepend to ATTR_LIST the list of attributes for GNAT_ENTITY, if any.  */

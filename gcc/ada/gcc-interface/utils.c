@@ -93,12 +93,27 @@ static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
 static tree handle_stack_protect_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noinline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noclone_attribute (tree *, tree, tree, int, bool *);
+static tree handle_noicf_attribute (tree *, tree, tree, int, bool *);
+static tree handle_noipa_attribute (tree *, tree, tree, int, bool *);
 static tree handle_leaf_attribute (tree *, tree, tree, int, bool *);
 static tree handle_always_inline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_malloc_attribute (tree *, tree, tree, int, bool *);
 static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
+static tree handle_flatten_attribute (tree *, tree, tree, int, bool *);
+static tree handle_used_attribute (tree *, tree, tree, int, bool *);
+static tree handle_cold_attribute (tree *, tree, tree, int, bool *);
+static tree handle_hot_attribute (tree *, tree, tree, int, bool *);
+static tree handle_target_attribute (tree *, tree, tree, int, bool *);
+static tree handle_target_clones_attribute (tree *, tree, tree, int, bool *);
 static tree handle_vector_size_attribute (tree *, tree, tree, int, bool *);
 static tree handle_vector_type_attribute (tree *, tree, tree, int, bool *);
+
+static const struct attribute_spec::exclusions attr_cold_hot_exclusions[] =
+{
+  { "cold", true,  true,  true  },
+  { "hot" , true,  true,  true  },
+  { NULL  , false, false, false }
+};
 
 /* Fake handler for attributes we don't properly support, typically because
    they'd require dragging a lot of the common-c front-end circuitry.  */
@@ -130,30 +145,49 @@ const struct attribute_spec gnat_internal_attribute_table[] =
     handle_noinline_attribute, NULL },
   { "noclone",      0, 0,  true,  false, false, false,
     handle_noclone_attribute, NULL },
+  { "no_icf",       0, 0,  true,  false, false, false,
+    handle_noicf_attribute, NULL },
+  { "noipa",        0, 0,  true,  false, false, false,
+    handle_noipa_attribute, NULL },
   { "leaf",         0, 0,  true,  false, false, false,
     handle_leaf_attribute, NULL },
   { "always_inline",0, 0,  true,  false, false, false,
     handle_always_inline_attribute, NULL },
   { "malloc",       0, 0,  true,  false, false, false,
     handle_malloc_attribute, NULL },
-  { "type generic", 0, 0,  false, true, true, false,
+  { "type generic", 0, 0,  false, true,  true,  false,
     handle_type_generic_attribute, NULL },
 
-  { "vector_size",  1, 1,  false, true, false,  false,
+  { "flatten",      0, 0,  true,  false, false, false,
+    handle_flatten_attribute, NULL },
+  { "used",         0, 0,  true,  false, false, false,
+    handle_used_attribute, NULL },
+  { "cold",         0, 0,  true,  false, false, false,
+    handle_cold_attribute, attr_cold_hot_exclusions },
+  { "hot",          0, 0,  true,  false, false, false,
+    handle_hot_attribute, attr_cold_hot_exclusions },
+  { "target",       1, -1, true,  false, false, false,
+    handle_target_attribute, NULL },
+  { "target_clones",1, -1, true,  false, false, false,
+    handle_target_clones_attribute, NULL },
+
+  { "vector_size",  1, 1,  false, true,  false, false,
     handle_vector_size_attribute, NULL },
-  { "vector_type",  0, 0,  false, true, false,  false,
+  { "vector_type",  0, 0,  false, true,  false, false,
     handle_vector_type_attribute, NULL },
-  { "may_alias",    0, 0, false, true, false, false, NULL, NULL },
+  { "may_alias",    0, 0,  false, true,  false, false,
+    NULL, NULL },
 
   /* ??? format and format_arg are heavy and not supported, which actually
      prevents support for stdio builtins, which we however declare as part
      of the common builtins.def contents.  */
-  { "format",     3, 3,  false, true,  true,  false, fake_attribute_handler,
-    NULL },
-  { "format_arg", 1, 1,  false, true,  true,  false, fake_attribute_handler,
-    NULL },
+  { "format",       3, 3,  false, true,  true,  false,
+    fake_attribute_handler, NULL },
+  { "format_arg",   1, 1,  false, true,  true,  false,
+    fake_attribute_handler, NULL },
 
-  { NULL,         0, 0, false, false, false, false, NULL, NULL }
+  { NULL,           0, 0,  false, false, false, false,
+    NULL, NULL }
 };
 
 /* Associates a GNAT tree node to a GCC tree node. It is used in
@@ -3397,8 +3431,6 @@ begin_subprog_body (tree subprog_decl)
   for (param_decl = DECL_ARGUMENTS (subprog_decl); param_decl;
        param_decl = DECL_CHAIN (param_decl))
     DECL_CONTEXT (param_decl) = subprog_decl;
-
-  make_decl_rtl (subprog_decl);
 }
 
 /* Finish translating the current subprogram and set its BODY.  */
@@ -6393,6 +6425,38 @@ handle_noclone_attribute (tree *node, tree name,
   return NULL_TREE;
 }
 
+/* Handle a "no_icf" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_noicf_attribute (tree *node, tree name,
+			tree ARG_UNUSED (args),
+			int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "noipa" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_noipa_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 /* Handle a "leaf" attribute; arguments as in
    struct attribute_spec.handler.  */
 
@@ -6480,6 +6544,166 @@ handle_type_generic_attribute (tree *node, tree ARG_UNUSED (name),
   /* Ensure we have a variadic function.  */
   gcc_assert (!prototype_p (*node) || stdarg_p (*node));
 
+  return NULL_TREE;
+}
+
+/* Handle a "flatten" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_flatten_attribute (tree *node, tree name,
+			  tree args ATTRIBUTE_UNUSED,
+			  int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    /* Do nothing else, just set the attribute.  We'll get at
+       it later with lookup_attribute.  */
+    ;
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "used" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_used_attribute (tree *pnode, tree name, tree ARG_UNUSED (args),
+		       int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  tree node = *pnode;
+
+  if (TREE_CODE (node) == FUNCTION_DECL
+      || (VAR_P (node) && TREE_STATIC (node))
+      || (TREE_CODE (node) == TYPE_DECL))
+    {
+      TREE_USED (node) = 1;
+      DECL_PRESERVE_P (node) = 1;
+      if (VAR_P (node))
+	DECL_READ_P (node) = 1;
+    }
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "cold" and attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_cold_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+		       int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL
+      || TREE_CODE (*node) == LABEL_DECL)
+    {
+      /* Attribute cold processing is done later with lookup_attribute.  */
+    }
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "hot" and attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_hot_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+		      int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL
+      || TREE_CODE (*node) == LABEL_DECL)
+    {
+      /* Attribute hot processing is done later with lookup_attribute.  */
+    }
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "target" attribute.  */
+
+static tree
+handle_target_attribute (tree *node, tree name, tree args, int flags,
+			 bool *no_add_attrs)
+{
+  /* Ensure we have a function type.  */
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+  else if (lookup_attribute ("target_clones", DECL_ATTRIBUTES (*node)))
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
+		   "with %qs attribute", name, "target_clones");
+      *no_add_attrs = true;
+    }
+  else if (!targetm.target_option.valid_attribute_p (*node, name, args, flags))
+    *no_add_attrs = true;
+
+  /* Check that there's no empty string in values of the attribute.  */
+  for (tree t = args; t != NULL_TREE; t = TREE_CHAIN (t))
+    {
+      tree value = TREE_VALUE (t);
+      if (TREE_CODE (value) == STRING_CST
+	  && TREE_STRING_LENGTH (value) == 1
+	  && TREE_STRING_POINTER (value)[0] == '\0')
+	{
+	  warning (OPT_Wattributes, "empty string in attribute %<target%>");
+	  *no_add_attrs = true;
+	}
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "target_clones" attribute.  */
+
+static tree
+handle_target_clones_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+			  int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  /* Ensure we have a function type.  */
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    {
+      if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (*node)))
+	{
+	  warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
+		   "with %qs attribute", name, "always_inline");
+	  *no_add_attrs = true;
+	}
+      else if (lookup_attribute ("target", DECL_ATTRIBUTES (*node)))
+	{
+	  warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
+		   "with %qs attribute", name, "target");
+	  *no_add_attrs = true;
+	}
+      else
+	/* Do not inline functions with multiple clone targets.  */
+	DECL_UNINLINABLE (*node) = 1;
+    }
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
   return NULL_TREE;
 }
 
