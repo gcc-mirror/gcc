@@ -1,5 +1,9 @@
 2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/opt79.ad[sb]: New test.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/specs/discr5.ads: New test.
 
 2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
