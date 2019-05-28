@@ -778,6 +778,7 @@ lvalue_required_for_attribute_p (Node_Id gnat_node)
     case Attr_Range_Length:
     case Attr_Length:
     case Attr_Object_Size:
+    case Attr_Size:
     case Attr_Value_Size:
     case Attr_Component_Size:
     case Attr_Descriptor_Size:
@@ -797,7 +798,6 @@ lvalue_required_for_attribute_p (Node_Id gnat_node)
     case Attr_Unrestricted_Access:
     case Attr_Code_Address:
     case Attr_Pool_Address:
-    case Attr_Size:
     case Attr_Alignment:
     case Attr_Bit_Position:
     case Attr_Position:
@@ -1112,12 +1112,15 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
     {
       /* We use the Actual_Subtype only if it has already been elaborated,
 	 as we may be invoked precisely during its elaboration, otherwise
-	 the Etype.  Avoid using it for packed arrays to simplify things.  */
+	 the Etype.  Avoid using it for packed arrays to simplify things,
+	 except in a return statement because we need the actual size and
+	 the front-end does not make it explicit in this case.  */
       if ((Ekind (gnat_entity) == E_Constant
 	   || Ekind (gnat_entity) == E_Variable
 	   || Is_Formal (gnat_entity))
 	  && !(Is_Array_Type (Etype (gnat_entity))
-	       && Present (Packed_Array_Impl_Type (Etype (gnat_entity))))
+	       && Present (Packed_Array_Impl_Type (Etype (gnat_entity)))
+	       && Nkind (Parent (gnat_node)) != N_Simple_Return_Statement)
 	  && Present (Actual_Subtype (gnat_entity))
 	  && present_gnu_tree (Actual_Subtype (gnat_entity)))
 	gnat_result_type = Actual_Subtype (gnat_entity);
@@ -2314,21 +2317,24 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
     case Attr_Object_Size:
     case Attr_Value_Size:
     case Attr_Max_Size_In_Storage_Elements:
-      gnu_expr = gnu_prefix;
-
-      /* Remove NOPs and conversions between original and packable version
-	 from GNU_EXPR, and conversions from GNU_PREFIX.  We use GNU_EXPR
-	 to see if a COMPONENT_REF was involved.  */
-      while (TREE_CODE (gnu_expr) == NOP_EXPR
-	     || (TREE_CODE (gnu_expr) == VIEW_CONVERT_EXPR
-		 && TREE_CODE (TREE_TYPE (gnu_expr)) == RECORD_TYPE
-		 && TREE_CODE (TREE_TYPE (TREE_OPERAND (gnu_expr, 0)))
+      /* Strip NOPs, conversions between original and packable versions, and
+	 unpadding from GNU_PREFIX.  Note that we cannot simply strip every
+	 VIEW_CONVERT_EXPR because some of them may give the actual size, e.g.
+	 for nominally unconstrained packed array.  We use GNU_EXPR to see
+	 if a COMPONENT_REF was involved.  */
+      while (CONVERT_EXPR_P (gnu_prefix)
+	     || TREE_CODE (gnu_prefix) == NON_LVALUE_EXPR
+	     || (TREE_CODE (gnu_prefix) == VIEW_CONVERT_EXPR
+		 && TREE_CODE (TREE_TYPE (gnu_prefix)) == RECORD_TYPE
+		 && TREE_CODE (TREE_TYPE (TREE_OPERAND (gnu_prefix, 0)))
 		    == RECORD_TYPE
-		 && TYPE_NAME (TREE_TYPE (gnu_expr))
-		    == TYPE_NAME (TREE_TYPE (TREE_OPERAND (gnu_expr, 0)))))
-	gnu_expr = TREE_OPERAND (gnu_expr, 0);
-
-      gnu_prefix = remove_conversions (gnu_prefix, true);
+		 && TYPE_NAME (TREE_TYPE (gnu_prefix))
+		    == TYPE_NAME (TREE_TYPE (TREE_OPERAND (gnu_prefix, 0)))))
+	gnu_prefix = TREE_OPERAND (gnu_prefix, 0);
+      gnu_expr = gnu_prefix;
+      if (TREE_CODE (gnu_prefix) == COMPONENT_REF
+	  && TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (gnu_prefix, 0))))
+	gnu_prefix = TREE_OPERAND (gnu_prefix, 0);
       prefix_unused = true;
       gnu_type = TREE_TYPE (gnu_prefix);
 
@@ -2391,7 +2397,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       /* Deal with a self-referential size by qualifying the size with the
 	 object or returning the maximum size for a type.  */
       if (TREE_CODE (gnu_prefix) != TYPE_DECL)
-	gnu_result = SUBSTITUTE_PLACEHOLDER_IN_EXPR (gnu_result, gnu_expr);
+	gnu_result = SUBSTITUTE_PLACEHOLDER_IN_EXPR (gnu_result, gnu_prefix);
       else if (CONTAINS_PLACEHOLDER_P (gnu_result))
 	gnu_result = max_size (gnu_result, true);
 
