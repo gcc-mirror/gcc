@@ -1,3 +1,8 @@
+2019-05-28  Jeff Law  <law@redhat.com>
+
+	* testsuite/gcc.target/sh/pr50749-qihisi-predec-3.c: Disable
+	loop distribution.
+
 2019-05-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/p9-dimode1.c: Don't restrict to -m64.  Check for
