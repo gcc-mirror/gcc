@@ -10169,25 +10169,36 @@ oacc_record_vars_in_bind (omp_context *ctx, tree bindvars)
    semantics are correct.  */
 
 static void
-mark_oacc_gangprivate (vec<tree> *decls)
+mark_oacc_gangprivate (vec<tree> *decls, omp_context *ctx)
 {
   int i;
   tree decl;
 
   FOR_EACH_VEC_ELT (*decls, i, decl)
-    if (!lookup_attribute ("oacc gangprivate", DECL_ATTRIBUTES (decl)))
-      {
-	if (dump_file && (dump_flags & TDF_DETAILS))
-	  {
-	    fprintf (dump_file,
-		     "Setting 'oacc gangprivate' attribute for decl:");
-	    print_generic_decl (dump_file, decl, TDF_SLIM);
-	    fputc ('\n', dump_file);
-	  }
-	DECL_ATTRIBUTES (decl)
-	  = tree_cons (get_identifier ("oacc gangprivate"),
-		       NULL, DECL_ATTRIBUTES (decl));
-      }
+    {
+      for (omp_context *thisctx = ctx; thisctx; thisctx = thisctx->outer)
+	{
+	  tree inner_decl = maybe_lookup_decl (decl, thisctx);
+	  if (inner_decl)
+	    {
+	      decl = inner_decl;
+	      break;
+	    }
+	}
+      if (!lookup_attribute ("oacc gangprivate", DECL_ATTRIBUTES (decl)))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file,
+		       "Setting 'oacc gangprivate' attribute for decl:");
+	      print_generic_decl (dump_file, decl, TDF_SLIM);
+	      fputc ('\n', dump_file);
+	    }
+	  DECL_ATTRIBUTES (decl)
+	    = tree_cons (get_identifier ("oacc gangprivate"),
+			 NULL, DECL_ATTRIBUTES (decl));
+	}
+    }
 }
 
 /* Gimplify a GIMPLE_OMP_CRITICAL statement.  This is a relatively simple
@@ -11444,20 +11455,7 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   /* Add OpenACC partitioning and reduction markers just before the loop.  */
   if (oacc_head)
-    {
-      gimple_seq_add_seq (&body, oacc_head);
-
-      unsigned level_total = 0;
-      omp_context *thisctx;
-
-      for (thisctx = ctx; thisctx; thisctx = thisctx->outer)
-        level_total += thisctx->oacc_partitioning_levels;
-
-      /* If the current context and parent contexts are distributed over a
-	 total of one parallelism level, we have gang partitioning.  */
-      if (level_total == 1)
-        mark_oacc_gangprivate (ctx->oacc_addressable_var_decls);
-    }
+    gimple_seq_add_seq (&body, oacc_head);
 
   lower_omp_for_lastprivate (&fd, &body, &dlist, &clist, ctx);
 
@@ -12646,7 +12644,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   if (offloaded)
     {
-      mark_oacc_gangprivate (ctx->oacc_addressable_var_decls);
+      mark_oacc_gangprivate (ctx->oacc_addressable_var_decls, ctx);
 
       /* Declare all the variables created by mapping and the variables
 	 declared in the scope of the target body.  */
@@ -13723,6 +13721,24 @@ lower_omp_teams (gimple_stmt_iterator *gsi_p, omp_context *ctx)
     TREE_USED (block) = 1;
 }
 
+static int
+process_oacc_gangprivate_1 (splay_tree_node node, void *data)
+{
+  omp_context *ctx = (omp_context *) node->value;
+  unsigned level_total = 0;
+  omp_context *thisctx;
+
+  for (thisctx = ctx; thisctx; thisctx = thisctx->outer)
+    level_total += thisctx->oacc_partitioning_levels;
+
+  /* If the current context and parent contexts are distributed over a
+     total of one parallelism level, we have gang partitioning.  */
+  if (level_total == 1)
+    mark_oacc_gangprivate (ctx->oacc_addressable_var_decls, ctx);
+
+  return 0;
+}
+
 /* Callback for lower_omp_1.  Return non-NULL if *tp needs to be
    regimplified.  If DATA is non-NULL, lower_omp_1 is outside
    of OMP context, but with task_shared_vars set.  */
@@ -14116,6 +14132,7 @@ execute_lower_omp (void)
 
   if (all_contexts)
     {
+      splay_tree_foreach (all_contexts, process_oacc_gangprivate_1, NULL);
       splay_tree_delete (all_contexts);
       all_contexts = NULL;
     }
