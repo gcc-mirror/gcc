@@ -1274,7 +1274,7 @@ See RS/6000 and PowerPC Options.
 -msse4a  -m3dnow  -m3dnowa  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop @gol
 -madx  -mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mhle  -mlwp @gol
 -mmwaitx  -mclzero  -mpku  -mthreads  -mgfni  -mvaes  -mwaitpkg @gol
--mshstk -mmanual-endbr -mforce-indirect-call -mavx512vbmi2 -mavx512bf16 @gol
+-mshstk -mmanual-endbr -mforce-indirect-call  -mavx512vbmi2 -mavx512bf16 -menqcmd @gol
 -mvpclmulqdq  -mavx512bitalg  -mmovdiri  -mmovdir64b  -mavx512vpopcntdq @gol
 -mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid @gol
 -mrdseed  -msgx @gol
@@ -28095,6 +28095,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mmovdir64b
 @opindex mmovdir64b
 @need 200
+@itemx -menqcmd
+@opindex menqcmd
+@need 200
 @itemx -mavx512vpopcntdq
 @opindex mavx512vpopcntdq
 @need 200
@@ -28116,8 +28119,8 @@ AES, PCLMUL, CLFLUSHOPT, CLWB, FSGSBASE, PTWRITE, RDRND, F16C, FMA, PCONFIG,
 WBNOINVD, FMA4, PREFETCHW, RDPID, PREFETCHWT1, RDSEED, SGX, XOP, LWP,
 3DNow!@:, enhanced 3DNow!@:, POPCNT, ABM, ADX, BMI, BMI2, LZCNT, FXSR, XSAVE,
 XSAVEOPT, XSAVEC, XSAVES, RTM, HLE, TBM, MWAITX, CLZERO, PKU, AVX512VBMI2,
-GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16
-AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, or CLDEMOTE
+GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16,
+ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, or CLDEMOTE
 extended instruction sets.  Each has a corresponding @option{-mno-} option to
 disable use of these instructions.
 

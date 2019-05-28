@@ -210,7 +210,8 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-mwaitpkg",	OPTION_MASK_ISA_WAITPKG },
     { "-mcldemote",	OPTION_MASK_ISA_CLDEMOTE },
     { "-mptwrite",	OPTION_MASK_ISA_PTWRITE },
-    { "-mavx512bf16",	OPTION_MASK_ISA_AVX512BF16 }
+    { "-mavx512bf16",	OPTION_MASK_ISA_AVX512BF16 },
+    { "-menqcmd",       OPTION_MASK_ISA_ENQCMD }
   };
   static struct ix86_target_opts isa_opts[] =
   {
@@ -921,6 +922,7 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("cldemote", OPT_mcldemote),
     IX86_ATTR_ISA ("ptwrite",   OPT_mptwrite),
     IX86_ATTR_ISA ("avx512bf16",   OPT_mavx512bf16),
+    IX86_ATTR_ISA ("enqcmd", OPT_menqcmd),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
