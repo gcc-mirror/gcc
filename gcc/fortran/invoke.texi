@@ -117,16 +117,16 @@ by type.  Explanations are in the following sections.
 @item Fortran Language Options
 @xref{Fortran Dialect Options,,Options controlling Fortran dialect}.
 @gccoptlist{-fall-intrinsics -fbackslash -fcray-pointer -fd-lines-as-code @gol
--fd-lines-as-comments @gol
--fdec -fdec-structure -fdec-intrinsic-ints -fdec-static -fdec-math @gol
--fdec-include -fdefault-double-8 -fdefault-integer-8 -fdefault-real-8 @gol
--fdefault-real-10 -fdefault-real-16 -fdollar-ok -ffixed-line-length-@var{n} @gol
--ffixed-line-length-none -fpad-source -ffree-form -ffree-line-length-@var{n} @gol
--ffree-line-length-none -fimplicit-none -finteger-4-integer-8 @gol
--fmax-identifier-length -fmodule-private -ffixed-form -fno-range-check @gol
--fopenacc -fopenmp -freal-4-real-10 -freal-4-real-16 -freal-4-real-8 @gol
--freal-8-real-10 -freal-8-real-16 -freal-8-real-4 -std=@var{std}
--ftest-forall-temp
+-fd-lines-as-comments -fdec -fdec-structure -fdec-intrinsic-ints @gol
+-fdec-static -fdec-math -fdec-include -fdec-format-defaults @gol
+-fdefault-double-8 -fdefault-integer-8 -fdefault-real-8 -fdefault-real-10 @gol
+-fdefault-real-16 -fdollar-ok -ffixed-line-length-@var{n} @gol
+-ffixed-line-length-none -fpad-source -ffree-form @gol
+-ffree-line-length-@var{n} -ffree-line-length-none @gol
+-fimplicit-none -finteger-4-integer-8 -fmax-identifier-length @gol
+-fmodule-private -ffixed-form -fno-range-check -fopenacc -fopenmp @gol
+-freal-4-real-10 -freal-4-real-16 -freal-4-real-8 -freal-8-real-10 @gol
+-freal-8-real-16 -freal-8-real-4 -std=@var{std} -ftest-forall-temp
 }
 
 @item Preprocessing Options
@@ -282,6 +282,11 @@ the storage of variables and other objects.
 Enable parsing of INCLUDE as a statement in addition to parsing it as
 INCLUDE line.  When parsed as INCLUDE statement, INCLUDE does not have to
 be on a single line and can use line continuations.
+
+@item -fdec-format-defaults
+@opindex @code{fdec-format-defaults}
+Enable format specifiers F, G and I to be used without width specifiers,
+default widths will be used instead.
 
 @item -fdollar-ok
 @opindex @code{fdollar-ok}

@@ -71,47 +71,50 @@ static hash_set<tree> *asan_poisoned_variables = NULL;
 
 enum gimplify_omp_var_data
 {
-  GOVD_SEEN = 1,
-  GOVD_EXPLICIT = 2,
-  GOVD_SHARED = 4,
-  GOVD_PRIVATE = 8,
-  GOVD_FIRSTPRIVATE = 16,
-  GOVD_LASTPRIVATE = 32,
-  GOVD_REDUCTION = 64,
-  GOVD_LOCAL = 128,
-  GOVD_MAP = 256,
-  GOVD_DEBUG_PRIVATE = 512,
-  GOVD_PRIVATE_OUTER_REF = 1024,
-  GOVD_LINEAR = 2048,
-  GOVD_ALIGNED = 4096,
+  GOVD_SEEN = 0x000001,
+  GOVD_EXPLICIT = 0x000002,
+  GOVD_SHARED = 0x000004,
+  GOVD_PRIVATE = 0x000008,
+  GOVD_FIRSTPRIVATE = 0x000010,
+  GOVD_LASTPRIVATE = 0x000020,
+  GOVD_REDUCTION = 0x000040,
+  GOVD_LOCAL = 0x00080,
+  GOVD_MAP = 0x000100,
+  GOVD_DEBUG_PRIVATE = 0x000200,
+  GOVD_PRIVATE_OUTER_REF = 0x000400,
+  GOVD_LINEAR = 0x000800,
+  GOVD_ALIGNED = 0x001000,
 
   /* Flag for GOVD_MAP: don't copy back.  */
-  GOVD_MAP_TO_ONLY = 8192,
+  GOVD_MAP_TO_ONLY = 0x002000,
 
   /* Flag for GOVD_LINEAR or GOVD_LASTPRIVATE: no outer reference.  */
-  GOVD_LINEAR_LASTPRIVATE_NO_OUTER = 16384,
+  GOVD_LINEAR_LASTPRIVATE_NO_OUTER = 0x004000,
 
-  GOVD_MAP_0LEN_ARRAY = 32768,
+  GOVD_MAP_0LEN_ARRAY = 0x008000,
 
   /* Flag for GOVD_MAP, if it is always, to or always, tofrom mapping.  */
-  GOVD_MAP_ALWAYS_TO = 65536,
+  GOVD_MAP_ALWAYS_TO = 0x010000,
 
   /* Flag for shared vars that are or might be stored to in the region.  */
-  GOVD_WRITTEN = 131072,
+  GOVD_WRITTEN = 0x020000,
 
   /* Flag for GOVD_MAP, if it is a forced mapping.  */
-  GOVD_MAP_FORCE = 262144,
+  GOVD_MAP_FORCE = 0x040000,
 
   /* Flag for GOVD_MAP: must be present already.  */
-  GOVD_MAP_FORCE_PRESENT = 524288,
+  GOVD_MAP_FORCE_PRESENT = 0x080000,
 
   /* Flag for GOVD_MAP: only allocate.  */
-  GOVD_MAP_ALLOC_ONLY = 1048576,
+  GOVD_MAP_ALLOC_ONLY = 0x100000,
 
   /* Flag for GOVD_MAP: only copy back.  */
-  GOVD_MAP_FROM_ONLY = 2097152,
+  GOVD_MAP_FROM_ONLY = 0x200000,
 
-  GOVD_NONTEMPORAL = 4194304,
+  GOVD_NONTEMPORAL = 0x400000,
+
+  /* Flag for GOVD_LASTPRIVATE: conditional modifier.  */
+  GOVD_LASTPRIVATE_CONDITIONAL = 0x800000,
 
   GOVD_DATA_SHARE_CLASS = (GOVD_SHARED | GOVD_PRIVATE | GOVD_FIRSTPRIVATE
 			   | GOVD_LASTPRIVATE | GOVD_REDUCTION | GOVD_LINEAR
@@ -6666,6 +6669,7 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	    }
 	  if (asan_poisoned_variables
 	      && DECL_ALIGN (temp) <= MAX_SUPPORTED_STACK_ALIGNMENT
+	      && !TREE_STATIC (temp)
 	      && dbg_cnt (asan_use_after_scope)
 	      && !gimplify_omp_ctxp)
 	    {
@@ -8138,9 +8142,17 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c) = 0;
 	    }
 	  if (OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c))
-	    sorry_at (OMP_CLAUSE_LOCATION (c),
-		      "%<conditional%> modifier on %<lastprivate%> clause "
-		      "not supported yet");
+	    {
+	      if (code == OMP_FOR || code == OMP_SECTIONS)
+		flags |= GOVD_LASTPRIVATE_CONDITIONAL;
+	      else
+		{
+		  sorry_at (OMP_CLAUSE_LOCATION (c),
+			    "%<conditional%> modifier on %<lastprivate%> "
+			    "clause not supported yet");
+		  OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c) = 0;
+		}
+	    }
 	  if (outer_ctx
 	      && (outer_ctx->region_type == ORT_COMBINED_PARALLEL
 		  || ((outer_ctx->region_type & ORT_COMBINED_TEAMS)
@@ -10769,7 +10781,22 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 			  1 + (TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt))
 			       != 1));
 	  if (n != NULL && (n->value & GOVD_DATA_SHARE_CLASS) != 0)
-	    omp_notice_variable (gimplify_omp_ctxp, decl, true);
+	    {
+	      omp_notice_variable (gimplify_omp_ctxp, decl, true);
+	      if (n->value & GOVD_LASTPRIVATE_CONDITIONAL)
+		for (tree c3 = omp_find_clause (OMP_FOR_CLAUSES (for_stmt),
+						OMP_CLAUSE_LASTPRIVATE);
+		     c3; c3 = omp_find_clause (OMP_CLAUSE_CHAIN (c3),
+					       OMP_CLAUSE_LASTPRIVATE))
+		  if (OMP_CLAUSE_DECL (c3) == decl)
+		    {
+		      warning_at (OMP_CLAUSE_LOCATION (c3), 0,
+				  "conditional %<lastprivate%> on loop "
+				  "iterator %qD ignored", decl);
+		      OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c3) = 0;
+		      n->value &= ~GOVD_LASTPRIVATE_CONDITIONAL;
+		    }
+	    }
 	  else if (TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)) == 1)
 	    {
 	      c = build_omp_clause (input_location, OMP_CLAUSE_LINEAR);
@@ -11004,7 +11031,24 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	    }
 	}
       else if (omp_is_private (gimplify_omp_ctxp, decl, 0))
-	omp_notice_variable (gimplify_omp_ctxp, decl, true);
+	{
+	  omp_notice_variable (gimplify_omp_ctxp, decl, true);
+	  splay_tree_node n = splay_tree_lookup (gimplify_omp_ctxp->variables,
+						 (splay_tree_key) decl);
+	  if (n && (n->value & GOVD_LASTPRIVATE_CONDITIONAL))
+	    for (tree c3 = omp_find_clause (OMP_FOR_CLAUSES (for_stmt),
+					    OMP_CLAUSE_LASTPRIVATE);
+		 c3; c3 = omp_find_clause (OMP_CLAUSE_CHAIN (c3),
+					   OMP_CLAUSE_LASTPRIVATE))
+	      if (OMP_CLAUSE_DECL (c3) == decl)
+		{
+		  warning_at (OMP_CLAUSE_LOCATION (c3), 0,
+			      "conditional %<lastprivate%> on loop "
+			      "iterator %qD ignored", decl);
+		  OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c3) = 0;
+		  n->value &= ~GOVD_LASTPRIVATE_CONDITIONAL;
+		}
+	}
       else
 	omp_add_variable (gimplify_omp_ctxp, decl, GOVD_PRIVATE | GOVD_SEEN);
 

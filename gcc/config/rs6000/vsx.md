@@ -275,11 +275,6 @@
 			     (V2DF	"V4DF")
 			     (V1TI	"V2TI")])
 
-;; Map register class for 64-bit element in 128-bit vector for direct moves
-;; to/from gprs
-(define_mode_attr VS_64dm [(V2DF	"wk")
-			   (V2DI	"wj")])
-
 ;; Map register class for 64-bit element in 128-bit vector for normal register
 ;; to register moves
 (define_mode_attr VS_64reg [(V2DF	"ws")
@@ -3203,10 +3198,8 @@
 
 (define_insn "vsx_extract_<mode>"
   [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=d,    d,     wr, wr")
-
 	(vec_select:<VS_scalar>
-	 (match_operand:VSX_D 1 "gpc_reg_operand"      "<VSa>, <VSa>, wm, wa")
-
+	 (match_operand:VSX_D 1 "gpc_reg_operand"      "<VSa>, <VSa>, wa, wa")
 	 (parallel
 	  [(match_operand:QI 2 "const_0_to_1_operand"  "wD,    n,     wD, n")])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
@@ -3255,7 +3248,7 @@
     gcc_unreachable ();
 }
   [(set_attr "type" "veclogical,mftgpr,mftgpr,vecperm")
-   (set_attr "isa" "*,*,*,p9v")])
+   (set_attr "isa" "*,*,p8v,p9v")])
 
 ;; Optimize extracting a single scalar element from memory.
 (define_insn_and_split "*vsx_extract_<P:mode>_<VSX_D:mode>_load"
@@ -4158,12 +4151,13 @@
   [(set (match_operand:V4SI 0 "vsx_register_operand" "=wa,we")
 	(vec_duplicate:V4SI
 	 (truncate:SI
-	  (match_operand:DI 1 "gpc_reg_operand" "wj,r"))))]
+	  (match_operand:DI 1 "gpc_reg_operand" "wi,r"))))]
   "VECTOR_MEM_VSX_P (V4SImode) && TARGET_DIRECT_MOVE_64BIT"
   "@
    xxspltw %x0,%x1,1
    mtvsrws %x0,%1"
-  [(set_attr "type" "vecperm")])
+  [(set_attr "type" "vecperm")
+   (set_attr "isa" "p8v,*")])
 
 ;; V4SF splat (ISA 3.0)
 (define_insn_and_split "vsx_splat_v4sf"

@@ -177,7 +177,7 @@ unsigned aarch64_architecture_version;
 enum aarch64_processor aarch64_tune = cortexa53;
 
 /* Mask to specify which instruction scheduling options should be used.  */
-unsigned long aarch64_tune_flags = 0;
+uint64_t aarch64_tune_flags = 0;
 
 /* Global flag for PC relative loads.  */
 bool aarch64_pcrelative_literal_loads;
@@ -1139,7 +1139,7 @@ struct processor
   enum aarch64_processor sched_core;
   enum aarch64_arch arch;
   unsigned architecture_version;
-  const unsigned long flags;
+  const uint64_t flags;
   const struct tune_params *const tune;
 };
 
@@ -11043,7 +11043,7 @@ static void initialize_aarch64_code_model (struct gcc_options *);
 
 static enum aarch64_parse_opt_result
 aarch64_parse_arch (const char *to_parse, const struct processor **res,
-		    unsigned long *isa_flags, std::string *invalid_extension)
+		    uint64_t *isa_flags, std::string *invalid_extension)
 {
   const char *ext;
   const struct processor *arch;
@@ -11066,7 +11066,7 @@ aarch64_parse_arch (const char *to_parse, const struct processor **res,
       if (strlen (arch->name) == len
 	  && strncmp (arch->name, to_parse, len) == 0)
 	{
-	  unsigned long isa_temp = arch->flags;
+	  uint64_t isa_temp = arch->flags;
 
 	  if (ext != NULL)
 	    {
@@ -11098,7 +11098,7 @@ aarch64_parse_arch (const char *to_parse, const struct processor **res,
 
 static enum aarch64_parse_opt_result
 aarch64_parse_cpu (const char *to_parse, const struct processor **res,
-		   unsigned long *isa_flags, std::string *invalid_extension)
+		   uint64_t *isa_flags, std::string *invalid_extension)
 {
   const char *ext;
   const struct processor *cpu;
@@ -11120,7 +11120,7 @@ aarch64_parse_cpu (const char *to_parse, const struct processor **res,
     {
       if (strlen (cpu->name) == len && strncmp (cpu->name, to_parse, len) == 0)
 	{
-	  unsigned long isa_temp = cpu->flags;
+	  uint64_t isa_temp = cpu->flags;
 
 
 	  if (ext != NULL)
@@ -11705,7 +11705,7 @@ aarch64_print_hint_for_extensions (const std::string &str)
 
 static bool
 aarch64_validate_mcpu (const char *str, const struct processor **res,
-		       unsigned long *isa_flags)
+		       uint64_t *isa_flags)
 {
   std::string invalid_extension;
   enum aarch64_parse_opt_result parse_res
@@ -11846,7 +11846,7 @@ aarch64_validate_mbranch_protection (const char *const_str)
 
 static bool
 aarch64_validate_march (const char *str, const struct processor **res,
-			 unsigned long *isa_flags)
+			 uint64_t *isa_flags)
 {
   std::string invalid_extension;
   enum aarch64_parse_opt_result parse_res
@@ -11961,8 +11961,8 @@ aarch64_convert_sve_vector_bits (aarch64_sve_vector_bits_enum value)
 static void
 aarch64_override_options (void)
 {
-  unsigned long cpu_isa = 0;
-  unsigned long arch_isa = 0;
+  uint64_t cpu_isa = 0;
+  uint64_t arch_isa = 0;
   aarch64_isa_flags = 0;
 
   bool valid_cpu = true;
@@ -12202,7 +12202,7 @@ aarch64_option_print (FILE *file, int indent, struct cl_target_option *ptr)
 {
   const struct processor *cpu
     = aarch64_get_tune_cpu (ptr->x_explicit_tune_core);
-  unsigned long isa_flags = ptr->x_aarch64_isa_flags;
+  uint64_t isa_flags = ptr->x_aarch64_isa_flags;
   const struct processor *arch = aarch64_get_arch (ptr->x_explicit_arch);
   std::string extension
     = aarch64_get_extension_string_for_isa_flags (isa_flags, arch->flags);
@@ -12455,7 +12455,7 @@ static bool
 aarch64_handle_attr_isa_flags (char *str)
 {
   enum aarch64_parse_opt_result parse_res;
-  unsigned long isa_flags = aarch64_isa_flags;
+  uint64_t isa_flags = aarch64_isa_flags;
 
   /* We allow "+nothing" in the beginning to clear out all architectural
      features if the user wants to handpick specific features.  */
@@ -15299,7 +15299,7 @@ aarch64_declare_function_name (FILE *stream, const char* name,
   const struct processor *this_arch
     = aarch64_get_arch (targ_options->x_explicit_arch);
 
-  unsigned long isa_flags = targ_options->x_aarch64_isa_flags;
+  uint64_t isa_flags = targ_options->x_aarch64_isa_flags;
   std::string extension
     = aarch64_get_extension_string_for_isa_flags (isa_flags,
 						  this_arch->flags);
@@ -15340,7 +15340,7 @@ aarch64_start_file (void)
 
   const struct processor *default_arch
     = aarch64_get_arch (default_options->x_explicit_arch);
-  unsigned long default_isa_flags = default_options->x_aarch64_isa_flags;
+  uint64_t default_isa_flags = default_options->x_aarch64_isa_flags;
   std::string extension
     = aarch64_get_extension_string_for_isa_flags (default_isa_flags,
 						  default_arch->flags);

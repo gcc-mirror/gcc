@@ -195,7 +195,7 @@ template<typename _Tp>
     enable_if_t<__and_v<is_object<_Tp>, bool_constant<sizeof(_Tp) != 0>>, _Tp*>
     midpoint(_Tp* __a, _Tp* __b) noexcept
     {
-      return __a > __b ? __b + (__a - __b) / 2 : __a + (__b - __a) / 2;
+      return __a  + (__b - __a) / 2;
     }
 #endif // C++20
 

@@ -1106,3 +1106,7 @@ mavx512bf16
 Target Report Mask(ISA_AVX512BF16) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and
 AVX512BF16 built-in functions and code generation.
+
+menqcmd
+Target Report Mask(ISA_ENQCMD) Var(ix86_isa_flags2) Save
+Support ENQCMD built-in functions and code generation.

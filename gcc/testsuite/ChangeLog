@@ -1,3 +1,370 @@
+2019-05-28  Jeff Law  <law@redhat.com>
+
+	* testsuite/gcc.target/sh/pr50749-qihisi-predec-3.c: Disable
+	loop distribution.
+
+2019-05-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/p9-dimode1.c: Don't restrict to -m64.  Check for
+	all mtvsr*, not just mtvsrd.  Use "wa" instead of "wi" constraints.
+	* gcc.target/powerpc/p9-dimode2.c: Ditto.
+
+2019-05-28  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/90555
+	* gcc.dg/ipa/pr90555.c: New test.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/machine_attr1.ad[sb]: New test.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt79.ad[sb]: New test.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/discr5.ads: New test.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/prefetch1.ad[sb]: New test.
+
+2019-05-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/pr22076.c: Adjust options to
+	match codegen expected by the scan-asms.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/array4.ads: New test.
+
+2019-05-27  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR tree-optimization/88440
+	* gcc.target/aarch64/sve/index_offset_1.c: Add
+	-fno-tree-loop-distribute-patterns.
+	* gcc.target/aarch64/sve/single_1.c: Likewise.
+	* gcc.target/aarch64/sve/single_2.c: Likewise.
+	* gcc.target/aarch64/sve/single_3.c: Likewise.
+	* gcc.target/aarch64/sve/single_4.c: Likewise.
+	* gcc.target/aarch64/sve/vec_init_1.c: Likewise.
+	* gcc.target/aarch64/vect-fmovd-zero.c: Likewise.
+	* gcc.target/aarch64/vect-fmovf-zero.c: Likewise.
+	* gcc.target/arm/ivopts.c: Likewise.
+
+2019-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90637
+	* gcc.dg/gomp/pr90637.c: New testcase.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/expect2.adb: New test.
+	* gnat.dg/expect2_pkg.ads: New helper.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aliased2.adb: New test.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/limited_with7.ad[sb]: New test.
+	* gnat.dg/limited_with7_pkg.ads: New helper.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/unchecked_convert13.adb: New test.
+
+2019-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/90615
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-31b.c: Add
+	-fno-tree-loop-distribute-patterns.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-33.c: Likewise.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-76a.c: Likewise.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-76b.c: Likewise.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-76c.c: Likewise.
+	* gcc.target/powerpc/vsx-vectorize-1.c: Likewise.
+
+2019-05-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/pr39013-1.c: Adjust scan-asms for PIE to
+	account for PIC code on Darwin.
+	* gcc.target/i386/pr39013-2.c: Likewise.
+	* gcc.target/i386/pr64317.c: Likewise.
+
+2019-05-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/pr59874-3.c: Use the spelling of popcnt
+	expected for Darwin.
+
+2019-05-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/pr89261.c: Test that the alignment required
+	by the test correctly produces the expected error on Darwin.
+
+2019-05-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/pr82659-3.c: Require alias support.
+
+2019-05-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90572 - wrong disambiguation in friend declaration.
+	* g++.dg/cpp2a/typename16.C: New test.
+	* g++.dg/parse/friend13.C: New test.
+
+2019-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/lastprivate-conditional-2.c (foo): Don't expect
+	sorry for omp for.
+	* c-c++-common/gomp/lastprivate-conditional-3.c: New test.
+
+2019-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/90607
+	* gcc.dg/pr53265.c: Amend for new expected diagnostic.
+
+2019-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90106
+	PR testsuite/90517
+	* gcc.dg/cdce1.c: Don't scan-assembler, instead -fdump-tree-optimized
+	and scan-tree-dump for tail call.
+	* gcc.dg/cdce2.c: Likewise.
+
+2019-05-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/pconfig-1.c: Scan for the string in the generated
+	code, not in comments or miscellaneous directives.
+	* gcc.target/i386/pr18041-1.c: Likewise.
+	* gcc.target/i386/pr18041-2.c: Likewise.
+	* gcc.target/i386/wbinvd-1.c: Likewise.
+	* gcc.target/i386/wbnoinvd-1.c: Likewise.
+	* gcc.target/i386/pr66819-3.c: Specifically, check that there is no
+	call to "bar".
+	* gcc.target/i386/pr66819-4.c: Likewise.
+	* gcc.target/i386/pr82662.c
+	* gcc.target/i386/ptwrite2.c: Make the checks look for the specific
+	destination register, don't try the m32 test on m64 targets.
+
+2019-05-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/pr67985-2.c: Adjust label checks for
+	Darwin.
+	* gcc.target/i386/pr77881.c: Likewise.
+
+2019-05-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/falign-functions-2.c: Skip for Darwin.
+	* gcc.target/i386/pr70738-7.c: Likewise.
+	* gcc.target/i386/pr24414.c: Likewise.
+
+2019-05-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/target-supports.exp (check_effective_target_mfentry): New.
+	* gcc.target/i386/fentry-override.c: Require effective target mfentry.
+	* gcc/testsuite/gcc.target/i386/fentry.c: Likewise
+	* gcc.target/i386/fentryname1.c: Likewise
+	* gcc.target/i386/fentryname2.c: Likewise
+	* gcc.target/i386/fentryname3.c: Likewise
+	* gcc.target/i386/nop-mcount.c: Likewise
+	* gcc.target/i386/pr82699-2.c: Likewise
+	* gcc.target/i386/pr82699-4.c: Likewise
+	* gcc.target/i386/pr82699-5.c: Likewise
+	* gcc.target/i386/pr82699-6.c: Likewise
+	* gcc.target/i386/returninst1.c: Likewise
+	* gcc.target/i386/returninst2.c: Likewise
+	* gcc.target/i386/returninst3.c : Likewise
+
+2019-05-23  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/localentry-1.c: New file.
+
+2019-05-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/90552
+	* gcc.target/i386/pr90552.c: New test.
+
+2019-05-23  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	* gfortran.dg/fmt_f_default_field_width_1.f90: Hide REAL(16) behind
+	__GFC_REAL_16__.  Add -cpp to dg-options.
+	* gfortran.dg/fmt_f_default_field_width_2.f90: Ditto.
+	* gfortran.dg/fmt_f_default_field_width_3.f90: Ditto.
+	* gfortran.dg/fmt_g_default_field_width_1.f90: Ditto.
+	* gfortran.dg/fmt_g_default_field_width_2.f90: Ditto.
+	* gfortran.dg/fmt_g_default_field_width_3.f90: Ditto.
+
+2019-05-23  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/cpu-future.c: New test.
+
+2019-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88440
+	* gcc.dg/tree-ssa/ldist-37.c: New testcase.
+	* gcc.dg/tree-ssa/ldist-38.c: Likewise.
+	* gcc.dg/vect/vect.exp: Add -fno-tree-loop-distribute-patterns.
+	* gcc.dg/tree-ssa/ldist-37.c: Adjust.
+	* gcc.dg/tree-ssa/ldist-38.c: Likewise.
+	* g++.dg/tree-ssa/pr78847.C: Likewise.
+	* gcc.dg/autopar/pr39500-1.c: Likewise.
+	* gcc.dg/autopar/reduc-1char.c: Likewise.
+	* gcc.dg/autopar/reduc-7.c: Likewise.
+	* gcc.dg/tree-ssa/ivopts-lt-2.c: Likewise.
+	* gcc.dg/tree-ssa/ivopts-lt.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-dse-1.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-dse-2.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-dse-3.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-dse-4.c: Likewise.
+	* gcc.dg/tree-ssa/prefetch-7.c: Likewise.
+	* gcc.dg/tree-ssa/prefetch-8.c: Likewise.
+	* gcc.dg/tree-ssa/prefetch-9.c: Likewise.
+	* gcc.dg/tree-ssa/scev-11.c: Likewise.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-31.c: Likewise.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-33.c: Likewise.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-31.c: Likewise.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-33.c: Likewise.
+	* gcc.target/i386/pr30970.c: Likewise.
+	* gcc.target/i386/vect-double-1.c: Likewise.
+	* gcc.target/i386/vect-double-2.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-2.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-26.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-28.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-32.c: Likewise.
+	* gfortran.dg/vect/vect-5.f90: Likewise.
+	* gfortran.dg/vect/vect-8.f90: Likewise.
+
+2019-05-23  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/90570
+	* g++.dg/asan/pr90570.C: New test.
+
+2019-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt78.ad[sb]: New test.
+
+2019-05-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR rtl-optimisation/64895
+	* gcc.target/i386/fuse-caller-save-rec.c: Remove XFAILs.
+	* gcc.target/i386/fuse-caller-save.c: Likewise.
+	* gcc.target/i386/fuse-caller-save-xmm.c: Adjust tests for
+	PIC cases, remove XFAILs.
+
+2019-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90510
+	* brig.dg/test/gimple/packed.hsail: Adjust.
+
+2019-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/is-constant-evaluated8.C: New test.
+
+2019-05-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gfortran.dg/dec_io_1.f90, gfortran.dg/dtio_1.f90,
+	gfortran.dg/dtio_12.f90, gfortran.dg/fmt_en.f90,
+	gfortran.dg/namelist_89.f90: Gate test on effective_target
+	fd_truncate.
+
+2019-05-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/90462
+	* g++.dg/pr90462.C: New test.
+
+2019-05-22  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp1y/udlit-char-template-neg.C: Expect the error on a
+	different line.  Check the column number too.
+
+2019-05-22  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/vect-signbitf.c (dg-final): Improve
+	scan-assembler-not string to avoid false matching on 32bit targets.
+
+2019-05-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/88483
+	* gcc.target/i386/stackalign/pr88483-1.c: New test.
+	* gcc.target/i386/stackalign/pr88483-2.c: Likewise.
+
+2019-05-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gfortran.dg/coarray_lock_7.f90: Fix output patterns.
+
+2019-05-22  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/89100
+	* gfortran.dg/fmt_f_default_field_width_1.f90: New test.
+	* gfortran.dg/fmt_f_default_field_width_2.f90: New test.
+	* gfortran.dg/fmt_f_default_field_width_3.f90: New test.
+	* gfortran.dg/fmt_g_default_field_width_1.f90: New test.
+	* gfortran.dg/fmt_g_default_field_width_2.f90: New test.
+	* gfortran.dg/fmt_g_default_field_width_3.f90: New test.
+	* gfortran.dg/fmt_i_default_field_width_1.f90: New test.
+	* gfortran.dg/fmt_i_default_field_width_2.f90: New test.
+	* gfortran.dg/fmt_i_default_field_width_3.f90: New test.
+
+2019-05-22  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/90564
+	* gcc.target/powerpc/pr80315-1.c: Remove usage of quotes.
+	* gcc.target/powerpc/pr80315-2.c: Likewise.
+	* gcc.target/powerpc/pr80315-3.c: Likewise.
+	* gcc.target/powerpc/pr80315-4.c: Likewise.
+
+2019-05-22  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/90564
+	* gcc.target/powerpc/pr80315-1.c: Add one extra \ to escape brackets.
+	* gcc.target/powerpc/pr80315-2.c: Likewise.
+	* gcc.target/powerpc/pr80315-3.c: Likewise.
+	* gcc.target/powerpc/pr80315-4.c: Likewise.
+
+2019-05-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/27221
+	* g++.dg/ext/alignof2.C: XFAIL for 32bit Darwin.
+
+2019-05-22  Martin Liska  <mliska@suse.cz>
+
+	PR lto/90500
+	* gcc.target/i386/pr90500-1.c: Make the test-case valid now.
+
+2019-05-22  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-lim-13.c: New testcase.
+
+2019-05-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/90553
+	* gcc.dg/torture/pr90553.c: New test.
+
+2019-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/udlit-tmpl-arg-neg2.C: Check locations too.
+	* g++.dg/cpp0x/udlit-tmpl-parms-neg.C: Likewise.
+
+2019-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67184
+	PR c++/69445
+	* g++.dg/other/final3.C: New.
+	* g++.dg/other/final4.C: Likewise.
+	* g++.dg/other/final5.C: Likewise.
+
+2019-05-21  Marek Polacek  <polacek@redhat.com>
+
+	DR 1940 - static_assert in anonymous unions.
+	* g++.dg/DRs/dr1940.C: New test.
+
+2019-05-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/90547
+	* gcc.target/i386/pr90547.c: New test.
+
 2019-05-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/Wattribute-alias.c: Pass emtpy arg to dg-require-ifunc.
@@ -4224,6 +4591,17 @@
 
 	PR target/89290
 	* gcc.target/i386/pr89290.c: New test.
+
+2019-01-23  Xuepeng Guo  <xuepeng.guo@intel.com>
+
+	* gcc.target/i386/enqcmd.c: New test.
+	* gcc.target/i386/enqcmds.c: Likewise.
+	* g++.dg/other/i386-2.C: Add -menqcmd.
+	* g++.dg/other/i386-3.C: Likewise.
+	* gcc.target/i386/sse-12.c: Likewise.
+	* gcc.target/i386/sse-13.c: Likewise.
+	* gcc.target/i386/sse-14.c: Likewise.
+	* gcc.target/i386/sse-23.c: Likewise.
 
 2019-01-23  Xiong Hu Luo  <luoxhu@linux.vnet.ibm.com>
 

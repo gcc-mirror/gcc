@@ -235,17 +235,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Aliasing constructor
 
       /**
-       *  @brief  Constructs a %shared_ptr instance that stores @a __p
-       *          and shares ownership with @a __r.
-       *  @param  __r  A %shared_ptr.
-       *  @param  __p  A pointer that will remain valid while @a *__r is valid.
-       *  @post   get() == __p && use_count() == __r.use_count()
+       *  @brief  Constructs a `shared_ptr` instance that stores `__p`
+       *          and shares ownership with `__r`.
+       *  @param  __r  A `shared_ptr`.
+       *  @param  __p  A pointer that will remain valid while `*__r` is valid.
+       *  @post   `get() == __p && use_count() == __r.use_count()`
        *
-       *  This can be used to construct a @c shared_ptr to a sub-object
-       *  of an object managed by an existing @c shared_ptr.
+       *  This can be used to construct a `shared_ptr` to a sub-object
+       *  of an object managed by an existing `shared_ptr`. The complete
+       *  object will remain valid while any `shared_ptr` owns it, even
+       *  if they don't store a pointer to the complete object.
        *
        * @code
-       * shared_ptr< pair<int,int> > pii(new pair<int,int>());
+       * shared_ptr<pair<int,int>> pii(new pair<int,int>());
        * shared_ptr<int> pi(pii, &pii->first);
        * assert(pii.use_count() == 2);
        * @endcode
@@ -254,6 +256,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	shared_ptr(const shared_ptr<_Yp>& __r, element_type* __p) noexcept
 	: __shared_ptr<_Tp>(__r, __p) { }
 
+#if __cplusplus > 201703L
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2996. Missing rvalue overloads for shared_ptr operations
+      /**
+       *  @brief  Constructs a `shared_ptr` instance that stores `__p`
+       *          and shares ownership with `__r`.
+       *  @param  __r  A `shared_ptr`.
+       *  @param  __p  A pointer that will remain valid while `*__r` is valid.
+       *  @post   `get() == __p && !__r.use_count() && !__r.get()`
+       *
+       *  This can be used to construct a `shared_ptr` to a sub-object
+       *  of an object managed by an existing `shared_ptr`. The complete
+       *  object will remain valid while any `shared_ptr` owns it, even
+       *  if they don't store a pointer to the complete object.
+       *
+       * @code
+       * shared_ptr<pair<int,int>> pii(new pair<int,int>());
+       * shared_ptr<int> pi1(pii, &pii->first);
+       * assert(pii.use_count() == 2);
+       * shared_ptr<int> pi2(std::move(pii), &pii->second);
+       * assert(pii.use_count() == 0);
+       * @endcode
+       */
+      template<typename _Yp>
+	shared_ptr(shared_ptr<_Yp>&& __r, element_type* __p) noexcept
+	: __shared_ptr<_Tp>(std::move(__r), __p) { }
+#endif
       /**
        *  @brief  If @a __r is empty, constructs an empty %shared_ptr;
        *          otherwise construct a %shared_ptr that shares ownership
@@ -568,7 +597,53 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _Sp = shared_ptr<_Tp>;
       return _Sp(__r, reinterpret_cast<typename _Sp::element_type*>(__r.get()));
     }
-#endif
+
+#if __cplusplus > 201703L
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2996. Missing rvalue overloads for shared_ptr operations
+
+  /// Convert type of `shared_ptr` rvalue, via `static_cast`
+  template<typename _Tp, typename _Up>
+    inline shared_ptr<_Tp>
+    static_pointer_cast(shared_ptr<_Up>&& __r) noexcept
+    {
+      using _Sp = shared_ptr<_Tp>;
+      return _Sp(std::move(__r),
+		 static_cast<typename _Sp::element_type*>(__r.get()));
+    }
+
+  /// Convert type of `shared_ptr` rvalue, via `const_cast`
+  template<typename _Tp, typename _Up>
+    inline shared_ptr<_Tp>
+    const_pointer_cast(shared_ptr<_Up>&& __r) noexcept
+    {
+      using _Sp = shared_ptr<_Tp>;
+      return _Sp(std::move(__r),
+		 const_cast<typename _Sp::element_type*>(__r.get()));
+    }
+
+  /// Convert type of `shared_ptr` rvalue, via `dynamic_cast`
+  template<typename _Tp, typename _Up>
+    inline shared_ptr<_Tp>
+    dynamic_pointer_cast(shared_ptr<_Up>&& __r) noexcept
+    {
+      using _Sp = shared_ptr<_Tp>;
+      if (auto* __p = dynamic_cast<typename _Sp::element_type*>(__r.get()))
+	return _Sp(std::move(__r), __p);
+      return _Sp();
+    }
+
+  /// Convert type of `shared_ptr` rvalue, via `reinterpret_cast`
+  template<typename _Tp, typename _Up>
+    inline shared_ptr<_Tp>
+    reinterpret_pointer_cast(shared_ptr<_Up>&& __r) noexcept
+    {
+      using _Sp = shared_ptr<_Tp>;
+      return _Sp(std::move(__r),
+		 reinterpret_cast<typename _Sp::element_type*>(__r.get()));
+    }
+#endif // C++20
+#endif // C++17
 
   // @}
 

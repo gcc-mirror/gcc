@@ -452,6 +452,10 @@ fdec-include
 Fortran Var(flag_dec_include)
 Enable legacy parsing of INCLUDE as statement.
 
+fdec-format-defaults
+Fortran Var(flag_dec_format_defaults)
+Enable default widths for i, f and g format specifiers.
+
 fdec-intrinsic-ints
 Fortran Var(flag_dec_intrinsic_ints)
 Enable kind-specific variants of integer intrinsic functions.

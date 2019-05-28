@@ -1,5 +1,5 @@
 ! { dg-require-effective-target vect_int }
-! { dg-additional-options "--param vect-max-peeling-for-alignment=0" }
+! { dg-additional-options "-fno-tree-loop-distribute-patterns --param vect-max-peeling-for-alignment=0" }
 
         Subroutine foo (N, M)
         Integer N

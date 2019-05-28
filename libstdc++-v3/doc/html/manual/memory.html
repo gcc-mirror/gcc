@@ -541,7 +541,7 @@ not be conforming for <code class="classname">shared_ptr</code> to have an
 extra template parameter, even if it had a default value.  The
 available policies are:
     </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
-       <code class="constant">_S_Atomic</code>
+       <code class="constant">_S_atomic</code>
        </p><p>
 Selected when GCC supports a builtin atomic compare-and-swap operation
 on the target processor (see <a class="link" href="http://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html" target="_top">Atomic
@@ -549,13 +549,13 @@ Builtins</a>.)  The reference counts are maintained using a lock-free
 algorithm and GCC's atomic builtins, which provide the required memory
 synchronisation.
        </p></li><li class="listitem"><p>
-       <code class="constant">_S_Mutex</code>
+       <code class="constant">_S_mutex</code>
        </p><p>
 The _Sp_counted_base specialization for this policy contains a mutex,
 which is locked in add_ref_lock(). This policy is used when GCC's atomic
 builtins aren't available so explicit memory barriers are needed in places.
        </p></li><li class="listitem"><p>
-       <code class="constant">_S_Single</code>
+       <code class="constant">_S_single</code>
        </p><p>
 This policy uses a non-reentrant add_ref_lock() with no locking. It is
 used when libstdc++ is built without <code class="literal">--enable-threads</code>.

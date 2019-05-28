@@ -305,9 +305,7 @@ static tree
 gcn_handle_amdgpu_hsa_kernel_attribute (tree *node, tree name,
 					tree args, int, bool *no_add_attrs)
 {
-  if (FUNC_OR_METHOD_TYPE_P (*node)
-      && TREE_CODE (*node) != FIELD_DECL
-      && TREE_CODE (*node) != TYPE_DECL)
+  if (!FUNC_OR_METHOD_TYPE_P (*node))
     {
       warning (OPT_Wattributes, "%qE attribute only applies to functions",
 	       name);
@@ -2826,9 +2824,9 @@ gcn_expand_prologue ()
       emit_move_insn (fp_lo, gen_rtx_REG (SImode, 0));
       emit_insn (gen_andsi3_scc (fp_hi, gen_rtx_REG (SImode, 1),
 				 gen_int_mode (0xffff, SImode)));
-      emit_insn (gen_addsi3_scc (fp_lo, fp_lo, wave_offset));
-      emit_insn (gen_addcsi3_scalar_zero (fp_hi, fp_hi,
-					  gen_rtx_REG (BImode, SCC_REG)));
+      rtx scc = gen_rtx_REG (BImode, SCC_REG);
+      emit_insn (gen_addsi3_scalar_carry (fp_lo, fp_lo, wave_offset, scc));
+      emit_insn (gen_addcsi3_scalar_zero (fp_hi, fp_hi, scc));
 
       if (sp_adjust > 0)
 	emit_insn (gen_adddi3_scc (sp, fp, gen_int_mode (sp_adjust, DImode)));
@@ -3062,6 +3060,10 @@ gcn_asm_trampoline_template (FILE *f)
 static void
 gcn_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 {
+  if (TARGET_GCN5_PLUS)
+    sorry ("nested function trampolines not supported on GCN5 due to"
+           " non-executable stacks");
+
   emit_block_move (m_tramp, assemble_trampoline_template (),
 		   GEN_INT (TRAMPOLINE_SIZE), BLOCK_OP_NORMAL);
 
@@ -3159,20 +3161,6 @@ gcn_valid_cvt_p (machine_mode from, machine_mode to, enum gcn_cvt_t op)
 	  || (to == SFmode && (from == SImode || from == HFmode
 			       || from == DFmode))
 	  || (to == DFmode && (from == SImode || from == SFmode)));
-}
-
-/* Implement both TARGET_ASM_CONSTRUCTOR and TARGET_ASM_DESTRUCTOR.
-
-   The current loader does not support running code outside "main".  This
-   hook implementation can be replaced or removed when that changes.  */
-
-void
-gcn_disable_constructors (rtx symbol, int priority __attribute__ ((unused)))
-{
-  tree d = SYMBOL_REF_DECL (symbol);
-  location_t l = d ? DECL_SOURCE_LOCATION (d) : UNKNOWN_LOCATION;
-
-  sorry_at (l, "GCN does not support static constructors or destructors");
 }
 
 /* }}}  */
@@ -5991,10 +5979,6 @@ print_operand (FILE *file, rtx x, int code)
 #define TARGET_ARG_PARTIAL_BYTES gcn_arg_partial_bytes
 #undef  TARGET_ASM_ALIGNED_DI_OP
 #define TARGET_ASM_ALIGNED_DI_OP "\t.8byte\t"
-#undef  TARGET_ASM_CONSTRUCTOR
-#define TARGET_ASM_CONSTRUCTOR gcn_disable_constructors
-#undef  TARGET_ASM_DESTRUCTOR
-#define TARGET_ASM_DESTRUCTOR gcn_disable_constructors
 #undef  TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START output_file_start
 #undef  TARGET_ASM_FUNCTION_PROLOGUE

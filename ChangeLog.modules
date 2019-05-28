@@ -1,4 +1,12 @@
+2019-05-28  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk r271702.
+
 2019-05-23  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (loc_spans): Make spans a vec.
+	(module_state::{read,write}_locations): Use vec.
 
 	gcc/cp/
 	* module.cc (trees_in): Replace auto_vec with vec.

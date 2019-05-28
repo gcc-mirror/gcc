@@ -152,9 +152,15 @@ constexpr bool is_execution_policy_v = __pstl::execution::is_execution_policy<_T
 namespace __internal
 {
 template <class _ExecPolicy, class _Tp>
+#if _GLIBCXX_RELEASE >= 9
+using __enable_if_execution_policy =
+    typename std::enable_if<__pstl::execution::is_execution_policy<std::__remove_cvref_t<_ExecPolicy>>::value,
+                            _Tp>::type;
+#else
 using __enable_if_execution_policy =
     typename std::enable_if<__pstl::execution::is_execution_policy<typename std::decay<_ExecPolicy>::type>::value,
                             _Tp>::type;
+#endif
 } // namespace __internal
 
 } // namespace __pstl

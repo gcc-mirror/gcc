@@ -1,3 +1,124 @@
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (handle_stack_protect_attribute): Move around.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst (Machine_Attribute):
+	Document additional optional parameters.
+	* sem_prag.adb (Analyze_Pragma) <Pragma_Machine_Attribute>: Accept
+	more than one optional parameter.
+	* gcc-interface/decl.c (prepend_one_attribute_pragma): Alphabetize
+	the list of supported pragmas.  Simplify the handling of parameters
+	and add support for more than one optional parameter.
+	* gcc-interface/utils.c (attr_cold_hot_exclusions): New constant.
+	(gnat_internal_attribute_table): Add entry for no_icf, noipa, flatten,
+	used, cold, hot, target and target_clones.
+	(begin_subprog_body): Do not create the RTL for the subprogram here.
+	(handle_noicf_attribute): New static function.
+	(handle_noipa_attribute): Likewise.
+	(handle_flatten_attribute): Likewise.
+	(handle_used_attribute): Likewise.
+	(handle_cold_attribute): Likewise.
+	(handle_hot_attribute): Likewise.
+	(handle_target_attribute): Likewise.
+	(handle_target_clones_attribute): Likewise.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (lvalue_required_for_attribute_p): Return 0
+	for 'Size too.
+	(Identifier_to_gnu): Use the actual subtype for a reference to a
+	packed array in a return statement.
+	(Attribute_to_gnu) <Attr_Size>: Do not strip VIEW_CONVERT_EXPRs from
+	the prefix in every case.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu): Remove superfluous tests on
+	Backend_Overflow_Checks_On_Target and rework comments.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (walk_nesting_tree): New static function.
+	(finalize_nrv): Use it to walk the entire nesting tree.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Subtype>: Remove
+	obsolete test on Is_For_Access_Subtype.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (components_to_record): Set a name on the type
+	created for the REP part, if any.
+	* gcc-interface/utils.c (finish_record_type): Only take the maximum
+	when merging sizes for a variant part at offset 0.
+	(merge_sizes): Rename has_rep parameter into max.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (gnat_internal_attribute_table): Add support
+	for stack_protect attribute.
+	(handle_stack_protect_attribute): New static function.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (intrin_arglists_compatible_p): Do not return
+	false if the internal builtin uses a variable list.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Call_to_gnu): Do not initialize the temporary
+	created out of addressability concerns if it's for the _Init parameter
+	of an initialization procedure.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-builtin-types.def: New file.
+	* gcc-interface/ada-builtins.def: Likewise.
+	* gcc-interface/ada-tree.h (BUILT_IN_LIKELY): New macro.
+	(BUILT_IN_UNLIKELY): Likewise.
+	* gcc-interface/trans.c (independent_iterations_p): Initialize the
+	auto-vector to 16 elements.
+	(Call_to_gnu): Remove local variable and change the vector of actual
+	parameters to an auto-vector.  Do not convert actual parameters to
+	the argument type for front-end built-in functions.  Add support for
+	front-end built-in functions.
+	(build_noreturn_cond): Use internal instead of built-in function.
+	* gcc-interface/utils.c (c_builtin_type): Include ada-builtin-types.def
+	(install_builtin_function_types): Likewise.
+	(install_builtin_functions): Include ada-builtins.def first.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (maybe_pad_type): Issue the warning for the
+	specific case of component types preferably.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Identifier_to_gnu): Minor tweaks.
+	(gnat_to_gnu): Do not convert the result if it is a reference to an
+	unconstrained array used as the prefix of an attribute reference that
+	requires an lvalue.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Gigi_Types_Compatible): New predicate.
+	(Identifier_to_gnu): Use it to assert that the type of the identifier
+	and that of its entity are compatible for gigi.  Rename a couple of
+	local variables and separate the processing of the result type.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Call_to_gnu): Use the unpadded type when
+	putting back an intermediate conversion the type of the actuals.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <Shift operations>: Convert the
+	count to the unsigned version of its base type before proceeding.
+
 2019-05-16  Martin Sebor  <msebor@redhat.com>
 
 	* gcc-interface/trans.c (check_inlining_for_nested_subprog): Quote

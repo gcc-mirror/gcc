@@ -1,3 +1,41 @@
+2019-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/lastprivate_conditional_4.c: New test.
+
+	* testsuite/libgomp.c-c++-common/lastprivate-conditional-3.c: New test.
+
+	PR libgomp/90641
+	* work.c (gomp_init_work_share): Instead of aligning final ordered
+	value to multiples of long long alignment, align to that the
+	first part (ordered team ids) and if inline_ordered_team_ids
+	is not on a long long alignment boundary within the structure,
+	use __alignof__ (long long) - 1 pad size always.
+	* loop.c (GOMP_loop_start): Fix *mem computation if
+	inline_ordered_team_ids is not aligned on long long alignment boundary
+	within the structure.
+	* loop-ull.c (GOMP_loop_ull_start): Likewise.
+	* sections.c (GOMP_sections2_start): Likewise.
+
+2019-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/lastprivate-conditional-1.c: New test.
+	* testsuite/libgomp.c-c++-common/lastprivate-conditional-2.c: New test.
+
+	PR libgomp/90585
+	* plugin/plugin-hsa.c: Include gstdint.h.  Include inttypes.h only if
+	HAVE_INTTYPES_H is defined.
+	(print_uint64_t): New typedef.
+	(PRIu64): Define if HAVE_INTTYPES_H is not defined.
+	(print_kernel_dispatch, run_kernel): Use PRIu64 macro instead of
+	"lu", cast uint64_t HSA_DEBUG and fprintf arguments to print_uint64_t.
+	(release_kernel_dispatch): Likewise.  Cast shadow->debug to uintptr_t
+	before casting to void *.
+	* plugin/plugin-nvptx.c: Include gstdint.h instead of stdint.h.
+	* oacc-mem.c: Don't include config.h nor stdint.h.
+	* target.c: Don't include config.h.
+	* oacc-cuda.c: Likewise.
+	* oacc-host.c: Don't include stdint.h.
+
 2019-05-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/90527

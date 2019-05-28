@@ -1,3 +1,112 @@
+2019-05-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Update pointer to
+	C++ standard at ansi.org.
+
+2019-05-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/numeric (midpoint(T*, T*)): Fix incorrect result.
+	* testsuite/26_numerics/midpoint/pointer.cc: Change "compile" test
+	to "run".
+
+	* testsuite/20_util/shared_ptr/cons/alias-rval.cc: Fix test.
+	* testsuite/20_util/shared_ptr/cons/alias.cc: Remove unused function.
+
+2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/function_objects/invoke/1.cc: Move C++17-specific
+	tests to ...
+	* testsuite/20_util/function_objects/invoke/3.cc: New test.
+	* testsuite/23_containers/unordered_set/allocator/ext_ptr.cc: Change
+	"compile" test to "run".
+
+	* doc/xml/manual/intro.xml: Document LWG DR 2996 change.
+	* doc/html/*: Regenerate.
+	* include/bits/shared_ptr.h (shared_ptr(shared_ptr&&, T*)): Add
+	rvalue aliasing constructor.
+	(static_pointer_cast, const_pointer, dynamic_pointer_cast)
+	(reinterpret_pointer_cast): Add overloads taking rvalues.
+	* include/bits/shared_ptr_base.h (__shared_ptr(__shared_ptr&&, T*)):
+	Add rvalue aliasing constructor.
+	* testsuite/20_util/shared_ptr/casts/1.cc: Change "compile" test to
+	"run" and check return values as well as types.
+	* testsuite/20_util/shared_ptr/casts/reinterpret.cc: Likewise.
+	* testsuite/20_util/shared_ptr/casts/rval.cc: New test.
+	* testsuite/20_util/shared_ptr/cons/alias-rval.cc: New test.
+	* testsuite/20_util/shared_ptr/cons/alias.cc: Remove unused return
+	values.
+
+	* doc/xml/manual/evolution.xml: Document LWG DR 2921 change.
+	* doc/xml/manual/intro.xml: Likewise.
+	* include/std/future (__create_task_state): Add default arguments
+	to make providing an allocator optional.
+	(packaged_task::packaged_task(F&&)): Call __create_task_state directly
+	instead of delegating to another constructor.
+	(packaged_task::packaged_task(allocator_arg_t, const A&, ...)): Do not
+	define allocator-extended constructors for C++17 and later.
+	* testsuite/30_threads/packaged_task/cons/alloc.cc: Only run test for
+	C++11 and C++14.
+	* testsuite/30_threads/packaged_task/cons/alloc2.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/alloc_min.cc: Likewise.
+	* testsuite/30_threads/packaged_task/uses_allocator.cc: Likewise.
+
+2019-05-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/26_numerics/random/poisson_distribution/operators/values.cc:
+	Don't run the libstdc++/83237 part on simulator targets.
+
+2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Add feature test macro for
+	P0040R3.
+	* doc/html/*: Regenerate.
+
+	* include/experimental/any (__any_caster): Use RTTI if comparing
+	addresses fails, to support non-unique addresses in shared libraries.
+	* include/std/any (__any_caster): Likewise.
+
+	PR libstdc++/90220
+	* include/experimental/any (__any_caster): Constrain to only be
+	callable for object types. Use remove_cv_t instead of decay_t.
+	If the type decays or isn't copy constructible, compare the manager
+	function to a dummy specialization.
+	(__any_caster): Add overload constrained for non-object types.
+	(any::_Manager_internal<_Op>): Add dummy specialization.
+	* testsuite/experimental/any/misc/any_cast.cc: Test function types
+	and array types.
+
+2019-05-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90557
+	* src/c++17/fs_path.cc (path::_List::operator=(const _List&)): Fix
+	reversed arguments to uninitialized_copy_n.
+	* testsuite/27_io/filesystem/path/assign/copy.cc: Check that source
+	is unchanged by copy assignment.
+	* testsuite/util/testsuite_fs.h (compare_paths): Use std::equal to
+	compare path components.
+
+	PR libstdc++/77691
+	* include/experimental/memory_resource: Add system header pragma and
+	do not define anything unless compiled as C++14 or later.
+	(__resource_adaptor_common::__guaranteed_alignment): Remove.
+	(__resource_adaptor_imp::do_allocate): If the requested alignment
+	is a fundamental alignment then either allocate directly from _M_alloc
+	or call the new _M_allocate function.
+	(__resource_adaptor_imp::do_deallocate): Likewise for deallocation.
+	(__resource_adaptor_imp::_M_allocate): New function that uses a copy
+	of the allocator rebound to a POD type with the specified alignment.
+	(__resource_adaptor_imp::_M_deallocate): Likewise for deallocation.
+	* testsuite/experimental/memory_resource/new_delete_resource.cc:
+	Adjust expected allocation sizes.
+	* testsuite/experimental/memory_resource/resource_adaptor.cc: Remove
+	xfail for Solaris x86.
+
+2019-05-21  Thomas Rodgers  <trodgers@redhat.com>
+
+	LWG 3062 - Unnecessary decay_t in is_execution_policy_v
+	* include/pstl/execution_defs.h (__enable_if_execution_policy):
+	Use std::__remove_cvref_t when building with GCC.
+
 2019-05-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90252

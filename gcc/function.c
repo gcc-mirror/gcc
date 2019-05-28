@@ -2912,7 +2912,11 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
   size_stored = CEIL_ROUND (size, UNITS_PER_WORD);
   if (stack_parm == 0)
     {
-      SET_DECL_ALIGN (parm, MAX (DECL_ALIGN (parm), BITS_PER_WORD));
+      HOST_WIDE_INT parm_align
+	= (STRICT_ALIGNMENT
+	   ? MAX (DECL_ALIGN (parm), BITS_PER_WORD) : DECL_ALIGN (parm));
+
+      SET_DECL_ALIGN (parm, parm_align);
       if (DECL_ALIGN (parm) > MAX_SUPPORTED_STACK_ALIGNMENT)
 	{
 	  rtx allocsize = gen_int_mode (size_stored, Pmode);

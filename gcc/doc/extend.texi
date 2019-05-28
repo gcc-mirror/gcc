@@ -2749,7 +2749,8 @@ or variable) must match the kind of symbol to which the argument refers.
 The @code{copy} attribute copies only syntactic and semantic attributes
 but not attributes that affect a symbol's linkage or visibility such as
 @code{alias}, @code{visibility}, or @code{weak}.  The @code{deprecated}
-attribute is also not copied.  @xref{Common Type Attributes}.
+and @code{target_clones} attribute are also not copied.
+@xref{Common Type Attributes}.
 @xref{Common Variable Attributes}.
 
 For example, the @var{StrongAlias} macro below makes use of the @code{alias}
@@ -10829,7 +10830,7 @@ evaluates to the empty string.
 backward compatibility with old versions of GCC.
 
 In C, @code{__PRETTY_FUNCTION__} is yet another name for
-@code{__func__}, except that at file (or, in C++, namespace scope),
+@code{__func__}, except that at file scope (or, in C++, namespace scope),
 it evaluates to the string @code{"top level"}.  In addition, in C++,
 @code{__PRETTY_FUNCTION__} contains the signature of the function as
 well as its bare name.  For example, this program:

@@ -2512,12 +2512,7 @@ rs6000_debug_reg_global (void)
 	   "we reg_class = %s\n"
 	   "wf reg_class = %s\n"
 	   "wg reg_class = %s\n"
-	   "wh reg_class = %s\n"
 	   "wi reg_class = %s\n"
-	   "wj reg_class = %s\n"
-	   "wk reg_class = %s\n"
-	   "wl reg_class = %s\n"
-	   "wm reg_class = %s\n"
 	   "wp reg_class = %s\n"
 	   "wq reg_class = %s\n"
 	   "wr reg_class = %s\n"
@@ -2526,7 +2521,6 @@ rs6000_debug_reg_global (void)
 	   "wv reg_class = %s\n"
 	   "ww reg_class = %s\n"
 	   "wx reg_class = %s\n"
-	   "wz reg_class = %s\n"
 	   "wA reg_class = %s\n"
 	   "\n",
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_d]],
@@ -2537,12 +2531,7 @@ rs6000_debug_reg_global (void)
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_we]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wf]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wg]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wh]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wi]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wj]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wk]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wl]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wm]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wp]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wq]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wr]],
@@ -2551,7 +2540,6 @@ rs6000_debug_reg_global (void)
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wv]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_ww]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wx]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wz]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wA]]);
 
   nl = "\n";
@@ -3163,20 +3151,14 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	wd - Preferred register class for V2DFmode.
 	wf - Preferred register class for V4SFmode.
 	wg - Float register for power6x move insns.
-	wh - FP register for direct move instructions.
 	wi - FP or VSX register to hold 64-bit integers for VSX insns.
-	wj - FP or VSX register to hold 64-bit integers for direct moves.
-	wk - FP or VSX register to hold 64-bit doubles for direct moves.
-	wl - Float register if we can do 32-bit signed int loads.
-	wm - VSX register for ISA 2.07 direct move operations.
 	wn - always NO_REGS.
 	wr - GPR if 64-bit mode is permitted.
 	ws - Register class to do ISA 2.06 DF operations.
 	wt - VSX register for TImode in VSX registers.
 	wv - Altivec register for ISA 2.06 VSX DF/DI load/stores.
 	ww - Register class to do SF conversions in with VSX operations.
-	wx - Float register if we can do 32-bit int stores.
-	wz - Float register if we can do 32-bit unsigned int loads.  */
+	wx - Float register if we can do 32-bit int stores.  */
 
   if (TARGET_HARD_FLOAT)
     {
@@ -3203,19 +3185,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
   if (TARGET_MFPGPR)						/* DFmode  */
     rs6000_constraints[RS6000_CONSTRAINT_wg] = FLOAT_REGS;
 
-  if (TARGET_LFIWAX)
-    rs6000_constraints[RS6000_CONSTRAINT_wl] = FLOAT_REGS;	/* DImode  */
-
-  if (TARGET_DIRECT_MOVE)
-    {
-      rs6000_constraints[RS6000_CONSTRAINT_wh] = FLOAT_REGS;
-      rs6000_constraints[RS6000_CONSTRAINT_wj]			/* DImode  */
-	= rs6000_constraints[RS6000_CONSTRAINT_wi];
-      rs6000_constraints[RS6000_CONSTRAINT_wk]			/* DFmode  */
-	= rs6000_constraints[RS6000_CONSTRAINT_ws];
-      rs6000_constraints[RS6000_CONSTRAINT_wm] = VSX_REGS;
-    }
-
   if (TARGET_POWERPC64)
     {
       rs6000_constraints[RS6000_CONSTRAINT_wr] = GENERAL_REGS;
@@ -3229,9 +3198,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 
   if (TARGET_STFIWX)
     rs6000_constraints[RS6000_CONSTRAINT_wx] = FLOAT_REGS;	/* DImode  */
-
-  if (TARGET_LFIWZX)
-    rs6000_constraints[RS6000_CONSTRAINT_wz] = FLOAT_REGS;	/* DImode  */
 
   if (TARGET_FLOAT128_TYPE)
     {
@@ -4330,6 +4296,15 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_isa_flags &= ~OPTION_MASK_FLOAT128_HW;
     }
 
+  /* -mpcrel requires the prefixed load/store support on FUTURE systems.  */
+  if (!TARGET_FUTURE && TARGET_PCREL)
+    {
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_PCREL) != 0)
+	error ("%qs requires %qs", "-mpcrel", "-mcpu=future");
+
+      rs6000_isa_flags &= ~OPTION_MASK_PCREL;
+    }
+
   /* Print the options after updating the defaults.  */
   if (TARGET_DEBUG_REG || TARGET_DEBUG_TARGET)
     rs6000_print_isa_options (stderr, 0, "after defaults", rs6000_isa_flags);
@@ -4470,6 +4445,7 @@ rs6000_option_override_internal (bool global_init_p)
 			&& rs6000_tune != PROCESSOR_POWER7
 			&& rs6000_tune != PROCESSOR_POWER8
 			&& rs6000_tune != PROCESSOR_POWER9
+			&& rs6000_tune != PROCESSOR_FUTURE
 			&& rs6000_tune != PROCESSOR_PPCA2
 			&& rs6000_tune != PROCESSOR_CELL
 			&& rs6000_tune != PROCESSOR_PPC476);
@@ -4483,6 +4459,7 @@ rs6000_option_override_internal (bool global_init_p)
 				 || rs6000_tune == PROCESSOR_POWER7
 				 || rs6000_tune == PROCESSOR_POWER8
 				 || rs6000_tune == PROCESSOR_POWER9
+				 || rs6000_tune == PROCESSOR_FUTURE
 				 || rs6000_tune == PROCESSOR_PPCE500MC
 				 || rs6000_tune == PROCESSOR_PPCE500MC64
 				 || rs6000_tune == PROCESSOR_PPCE5500
@@ -4783,6 +4760,7 @@ rs6000_option_override_internal (bool global_init_p)
 	break;
 
       case PROCESSOR_POWER9:
+      case PROCESSOR_FUTURE:
 	rs6000_cost = &power9_cost;
 	break;
 
@@ -5666,6 +5644,39 @@ rs6000_builtin_md_vectorized_function (tree fndecl, tree type_out,
 /* Default CPU string for rs6000*_file_start functions.  */
 static const char *rs6000_default_cpu;
 
+#ifdef USING_ELFOS_H
+static const char *rs6000_machine;
+
+static const char *
+rs6000_machine_from_flags (void)
+{
+  if ((rs6000_isa_flags & (ISA_FUTURE_MASKS_SERVER & ~ISA_3_0_MASKS_SERVER))
+      != 0)
+    return "future";
+  if ((rs6000_isa_flags & (ISA_3_0_MASKS_SERVER & ~ISA_2_7_MASKS_SERVER)) != 0)
+    return "power9";
+  if ((rs6000_isa_flags & (ISA_2_7_MASKS_SERVER & ~ISA_2_6_MASKS_SERVER)) != 0)
+    return "power8";
+  if ((rs6000_isa_flags & (ISA_2_6_MASKS_SERVER & ~ISA_2_5_MASKS_SERVER)) != 0)
+    return "power7";
+  if ((rs6000_isa_flags & (ISA_2_5_MASKS_SERVER & ~ISA_2_4_MASKS)) != 0)
+    return "power6";
+  if ((rs6000_isa_flags & (ISA_2_4_MASKS & ~ISA_2_1_MASKS)) != 0)
+    return "power5";
+  if ((rs6000_isa_flags & ISA_2_1_MASKS) != 0)
+    return "power4";
+  if ((rs6000_isa_flags & OPTION_MASK_POWERPC64) != 0)
+    return "ppc64";
+  return "ppc";
+}
+
+static void
+emit_asm_machine (void)
+{
+  fprintf (asm_out_file, "\t.machine %s\n", rs6000_machine);
+}
+#endif
+
 /* Do anything needed at the start of the asm file.  */
 
 static void
@@ -5731,27 +5742,10 @@ rs6000_file_start (void)
     }
 
 #ifdef USING_ELFOS_H
+  rs6000_machine = rs6000_machine_from_flags ();
   if (!(rs6000_default_cpu && rs6000_default_cpu[0])
       && !global_options_set.x_rs6000_cpu_index)
-    {
-      fputs ("\t.machine ", asm_out_file);
-      if ((rs6000_isa_flags & OPTION_MASK_MODULO) != 0)
-	fputs ("power9\n", asm_out_file);
-      else if ((rs6000_isa_flags & OPTION_MASK_DIRECT_MOVE) != 0)
-	fputs ("power8\n", asm_out_file);
-      else if ((rs6000_isa_flags & OPTION_MASK_POPCNTD) != 0)
-	fputs ("power7\n", asm_out_file);
-      else if ((rs6000_isa_flags & OPTION_MASK_CMPB) != 0)
-	fputs ("power6\n", asm_out_file);
-      else if ((rs6000_isa_flags & OPTION_MASK_POPCNTB) != 0)
-	fputs ("power5\n", asm_out_file);
-      else if ((rs6000_isa_flags & OPTION_MASK_MFCRF) != 0)
-	fputs ("power4\n", asm_out_file);
-      else if ((rs6000_isa_flags & OPTION_MASK_POWERPC64) != 0)
-	fputs ("ppc64\n", asm_out_file);
-      else
-	fputs ("ppc\n", asm_out_file);
-    }
+    emit_asm_machine ();
 #endif
 
   if (DEFAULT_ABI == ABI_ELFv2)
@@ -9130,6 +9124,7 @@ rs6000_reassociation_width (unsigned int opc ATTRIBUTE_UNUSED,
     {
     case PROCESSOR_POWER8:
     case PROCESSOR_POWER9:
+    case PROCESSOR_FUTURE:
       if (DECIMAL_FLOAT_MODE_P (mode))
 	return 1;
       if (VECTOR_MODE_P (mode))
@@ -26185,7 +26180,7 @@ split_stack_arg_pointer_used_p (void)
 /* Return whether we need to emit an ELFv2 global entry point prologue.  */
 
 static bool
-rs6000_global_entry_point_needed_p (void)
+rs6000_global_entry_point_prologue_needed_p (void)
 {
   /* Only needed for the ELFv2 ABI.  */
   if (DEFAULT_ABI != ABI_ELFv2)
@@ -26194,6 +26189,10 @@ rs6000_global_entry_point_needed_p (void)
   /* With -msingle-pic-base, we assume the whole program shares the same
      TOC, so no global entry point prologues are needed anywhere.  */
   if (TARGET_SINGLE_PIC_BASE)
+    return false;
+
+  /* PC-relative functions never generate a global entry point prologue.  */
+  if (rs6000_pcrel_p (cfun))
     return false;
 
   /* Ensure we have a global entry point for thunks.   ??? We could
@@ -27538,14 +27537,23 @@ static void
 rs6000_output_function_prologue (FILE *file)
 {
   if (!cfun->is_thunk)
-    rs6000_output_savres_externs (file);
+    {
+      rs6000_output_savres_externs (file);
+#ifdef USING_ELFOS_H
+      const char *curr_machine = rs6000_machine_from_flags ();
+      if (rs6000_machine != curr_machine)
+	{
+	  rs6000_machine = curr_machine;
+	  emit_asm_machine ();
+	}
+#endif
+    }
 
   /* ELFv2 ABI r2 setup code and local entry point.  This must follow
      immediately after the global entry point label.  */
-  if (rs6000_global_entry_point_needed_p ())
+  if (rs6000_global_entry_point_prologue_needed_p ())
     {
       const char *name = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
-
       (*targetm.asm_out.internal_label) (file, "LCF", rs6000_pic_labelno);
 
       if (TARGET_CMODEL != CMODEL_LARGE)
@@ -27594,6 +27602,19 @@ rs6000_output_function_prologue (FILE *file)
       fputs (",.-", file);
       assemble_name (file, name);
       fputs ("\n", file);
+    }
+
+  else if (rs6000_pcrel_p (cfun))
+    {
+      const char *name = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
+      /* All functions compiled to use PC-relative addressing will
+	 have a .localentry value of 0 or 1.  For now we set it to
+	 1 all the time, indicating that the function may clobber
+	 the TOC register r2.  Later we may optimize this by setting
+	 it to 0 if the function is a leaf and does not clobber r2.  */
+      fputs ("\t.localentry\t", file);
+      assemble_name (file, name);
+      fputs (",1\n", file);
     }
 
   /* Output -mprofile-kernel code.  This needs to be done here instead of
@@ -30194,7 +30215,8 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 	   some cycles later.  */
 
 	/* Separate a load from a narrower, dependent store.  */
-	if ((rs6000_sched_groups || rs6000_tune == PROCESSOR_POWER9)
+	if ((rs6000_sched_groups || rs6000_tune == PROCESSOR_POWER9
+	     || rs6000_tune == PROCESSOR_FUTURE)
 	    && GET_CODE (PATTERN (insn)) == SET
 	    && GET_CODE (PATTERN (dep_insn)) == SET
 	    && MEM_P (XEXP (PATTERN (insn), 1))
@@ -30232,6 +30254,7 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 		 || rs6000_tune == PROCESSOR_POWER7
 		 || rs6000_tune == PROCESSOR_POWER8
 		 || rs6000_tune == PROCESSOR_POWER9
+		 || rs6000_tune == PROCESSOR_FUTURE
                  || rs6000_tune == PROCESSOR_CELL)
                 && recog_memoized (dep_insn)
                 && (INSN_CODE (dep_insn) >= 0))
@@ -30811,6 +30834,7 @@ rs6000_issue_rate (void)
   case PROCESSOR_POWER8:
     return 7;
   case PROCESSOR_POWER9:
+  case PROCESSOR_FUTURE:
     return 6;
   default:
     return 1;
@@ -33327,7 +33351,8 @@ rs6000_elf_declare_function_name (FILE *file, const char *name, tree decl)
   ASM_OUTPUT_TYPE_DIRECTIVE (file, name, "function");
   ASM_DECLARE_RESULT (file, DECL_RESULT (decl));
 
-  if (TARGET_CMODEL == CMODEL_LARGE && rs6000_global_entry_point_needed_p ())
+  if (TARGET_CMODEL == CMODEL_LARGE
+      && rs6000_global_entry_point_prologue_needed_p ())
     {
       char buf[256];
 
@@ -34663,7 +34688,8 @@ rs6000_register_move_cost (machine_mode mode,
 		 can't be a nop, whereas with ideal register
 		 allocation a move within the same class might turn
 		 out to be a nop.  */
-	      if (rs6000_tune == PROCESSOR_POWER9)
+	      if (rs6000_tune == PROCESSOR_POWER9
+		  || rs6000_tune == PROCESSOR_FUTURE)
 		ret = 3 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
 	      else
 		ret = 4 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
@@ -36265,6 +36291,7 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "float128",			OPTION_MASK_FLOAT128_KEYWORD,	false, true  },
   { "float128-hardware",	OPTION_MASK_FLOAT128_HW,	false, true  },
   { "fprnd",			OPTION_MASK_FPRND,		false, true  },
+  { "future",			OPTION_MASK_FUTURE,		false, true  },
   { "hard-dfp",			OPTION_MASK_DFP,		false, true  },
   { "htm",			OPTION_MASK_HTM,		false, true  },
   { "isel",			OPTION_MASK_ISEL,		false, true  },
@@ -36273,6 +36300,7 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "modulo",			OPTION_MASK_MODULO,		false, true  },
   { "mulhw",			OPTION_MASK_MULHW,		false, true  },
   { "multiple",			OPTION_MASK_MULTIPLE,		false, true  },
+  { "pcrel",			OPTION_MASK_PCREL,		false, true  },
   { "popcntb",			OPTION_MASK_POPCNTB,		false, true  },
   { "popcntd",			OPTION_MASK_POPCNTD,		false, true  },
   { "power8-fusion",		OPTION_MASK_P8_FUSION,		false, true  },
@@ -38110,6 +38138,34 @@ static bool
 rs6000_save_toc_in_prologue_p (void)
 {
   return (cfun && cfun->machine && cfun->machine->save_toc_in_prologue);
+}
+
+/* Return whether we should generate PC-relative code for FNDECL.  */
+bool
+rs6000_fndecl_pcrel_p (const_tree fndecl)
+{
+  if (DEFAULT_ABI != ABI_ELFv2)
+    return false;
+
+  struct cl_target_option *opts = target_opts_for_fn (fndecl);
+
+  return ((opts->x_rs6000_isa_flags & OPTION_MASK_PCREL) != 0
+	  && TARGET_CMODEL == CMODEL_MEDIUM);
+}
+
+/* Return whether we should generate PC-relative code for *FN.  */
+bool
+rs6000_pcrel_p (struct function *fn)
+{
+  if (DEFAULT_ABI != ABI_ELFv2)
+    return false;
+
+  /* Optimize usual case.  */
+  if (fn == cfun)
+    return ((rs6000_isa_flags & OPTION_MASK_PCREL) != 0
+	    && TARGET_CMODEL == CMODEL_MEDIUM);
+
+  return rs6000_fndecl_pcrel_p (fn->decl);
 }
 
 #ifdef HAVE_GAS_HIDDEN

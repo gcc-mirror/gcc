@@ -2486,7 +2486,8 @@ handle_copy_attribute (tree *node, tree name, tree args,
 	      || is_attribute_p ("noinline", atname)
 	      || is_attribute_p ("visibility", atname)
 	      || is_attribute_p ("weak", atname)
-	      || is_attribute_p ("weakref", atname))
+	      || is_attribute_p ("weakref", atname)
+	      || is_attribute_p ("target_clones", atname))
 	    continue;
 
 	  /* Attribute leaf only applies to extern functions.

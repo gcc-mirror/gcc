@@ -226,6 +226,9 @@ public:
   /* Verifies that trees T1 and T2 do correspond.  */
   bool compare_variable_decl (tree t1, tree t2);
 
+  /* Compare loop information for basic blocks BB1 and BB2.  */
+  bool compare_loops (basic_block bb1, basic_block bb2);
+
   /* Return true if types are compatible for polymorphic call analysis.
      COMPARE_PTR indicates if polymorphic type comparsion should be
      done for pointers, too.  */

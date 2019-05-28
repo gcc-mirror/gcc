@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target mfentry } */
 /* { dg-options "-pg -mfentry -mfentry-name=foo" } */
 /* { dg-final { scan-assembler "call.*foo" } } */
 /* { dg-final { scan-assembler "call.*bar" } } */

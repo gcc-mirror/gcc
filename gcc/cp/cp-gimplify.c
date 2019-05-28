@@ -593,20 +593,21 @@ gimplify_must_not_throw_expr (tree *expr_p, gimple_seq *pre_p)
    non-empty CONSTRUCTORs get reduced properly, and we leave the
    return slot optimization alone because it isn't a copy.  */
 
-static bool
-simple_empty_class_p (tree type, tree op)
+bool
+simple_empty_class_p (tree type, tree op, tree_code code)
 {
+  if (TREE_CODE (op) == COMPOUND_EXPR)
+    return simple_empty_class_p (type, TREE_OPERAND (op, 1), code);
   return
-    ((TREE_CODE (op) == COMPOUND_EXPR
-      && simple_empty_class_p (type, TREE_OPERAND (op, 1)))
-     || TREE_CODE (op) == EMPTY_CLASS_EXPR
+    (TREE_CODE (op) == EMPTY_CLASS_EXPR
+     || code == MODIFY_EXPR
      || is_gimple_lvalue (op)
      || INDIRECT_REF_P (op)
      || (TREE_CODE (op) == CONSTRUCTOR
-	 && CONSTRUCTOR_NELTS (op) == 0
-	 && !TREE_CLOBBER_P (op))
+	 && CONSTRUCTOR_NELTS (op) == 0)
      || (TREE_CODE (op) == CALL_EXPR
 	 && !CALL_EXPR_RETURN_SLOT_OPT (op)))
+    && !TREE_CLOBBER_P (op)
     && is_really_empty_class (type, /*ignore_vptr*/true);
 }
 
@@ -715,7 +716,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  TREE_OPERAND (*expr_p, 1) = build1 (VIEW_CONVERT_EXPR,
 					      TREE_TYPE (op0), op1);
 
-	else if (simple_empty_class_p (TREE_TYPE (op0), op1))
+	else if (simple_empty_class_p (TREE_TYPE (op0), op1, code))
 	  {
 	    /* Remove any copies of empty classes.  Also drop volatile
 	       variables on the RHS to avoid infinite recursion from

@@ -746,8 +746,8 @@ compare_sizes (tree s1, tree s2)
   if (!s1 || !s2)
     return 0;
 
-  poly_uint64 size1 = poly_int_tree_p (s1, &size1);
-  poly_uint64 size2 = poly_int_tree_p (s2, &size2);
+  poly_uint64 size1;
+  poly_uint64 size2;
 
   if (!poly_int_tree_p (s1, &size1) || !poly_int_tree_p (s2, &size2))
     return 0;
@@ -873,7 +873,7 @@ aliasing_component_refs_p (tree ref1,
 	    break;
 	  /* If types may be of same size, see if we can decide about their
 	     equality.  */
-	  if (cmp >= 0)
+	  if (cmp == 0)
 	    {
 	      same_p2 = same_type_for_tbaa (TREE_TYPE (*refp), type1);
 	      if (same_p2 != 0)
@@ -915,7 +915,7 @@ aliasing_component_refs_p (tree ref1,
 	    break;
 	  /* If types may be of same size, see if we can decide about their
 	     equality.  */
-	  if (cmp >= 0)
+	  if (cmp == 0)
 	    {
 	      same_p1 = same_type_for_tbaa (TREE_TYPE (*refp), type2);
 	      if (same_p1 != 0)
@@ -947,6 +947,13 @@ aliasing_component_refs_p (tree ref1,
 	}
     }
 
+  /* In the following code we make an assumption that the types in access
+     paths do not overlap and thus accesses alias only if one path can be
+     continuation of another.  If we was not able to decide about equivalence,
+     we need to give up.  */
+  if (same_p1 == -1 || same_p2 == -1)
+    return true;
+
   /* If we have two type access paths B1.path1 and B2.path2 they may
      only alias if either B1 is in B2.path2 or B2 is in B1.path1.
      But we can still have a path that goes B1.path1...B2.path2 with
@@ -954,8 +961,7 @@ aliasing_component_refs_p (tree ref1,
      if there is no B2 in the tail of path1 and no B1 on the
      tail of path2.  */
   if (compare_type_sizes (TREE_TYPE (ref2), type1) >= 0
-      && (same_p2 == -1
-          || base1_alias_set == ref2_alias_set
+      && (base1_alias_set == ref2_alias_set
           || alias_set_subset_of (base1_alias_set, ref2_alias_set)))
     {
       ++alias_stats.aliasing_component_refs_p_may_alias;
@@ -964,8 +970,7 @@ aliasing_component_refs_p (tree ref1,
   /* If this is ptr vs. decl then we know there is no ptr ... decl path.  */
   if (!ref2_is_decl
       && compare_type_sizes (TREE_TYPE (ref1), type2) >= 0
-      && (same_p1 == -1
-	  || base2_alias_set == ref1_alias_set
+      && (base2_alias_set == ref1_alias_set
 	  || alias_set_subset_of (base2_alias_set, ref1_alias_set)))
     {
       ++alias_stats.aliasing_component_refs_p_may_alias;

@@ -4,7 +4,7 @@ foo (int *p)
   int a = -1, b = -1, c = -1, d = -1, e = -1, f = -1, g = -1, h = -1;
   int i;
   #pragma omp parallel
-  #pragma omp for lastprivate (conditional: a) /* { dg-message "not supported yet" } */
+  #pragma omp for lastprivate (conditional: a)
   for (i = 0; i < 32; i++)
     if (p[i])
       a = i;

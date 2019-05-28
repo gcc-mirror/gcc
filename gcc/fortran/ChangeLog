@@ -1,3 +1,29 @@
+2019-05-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/90539
+	* trans-types.c (get_formal_from_actual_arglist): Set rank
+	and lower bound for assumed size arguments.
+
+2019-05-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* trans-stmt.c (gfc_trans_critical): Use size_type_node for
+	gfor_fndecl_caf_lock and gfor_fndecl_caf_unlock calls.
+	(gfc_trans_allocate): Use size_type_node for gfor_fndecl_caf_sync_all
+	call.
+
+2019-05-22  Jeff Law  <law@redhat.com>
+	    Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/89100
+	* gfortran.texi: Add Default widths for F, G and I format
+	descriptors to Extensions section.
+	* invoke.texi: Add -fdec-format-defaults
+	* io.c (check_format): Use default widths for i, f and g when
+	flag_dec_format_defaults is enabled.
+	* lang.opt: Add new option.
+	* options.c (set_dec_flags): Add SET_BITFLAG for
+	flag_dec_format_defaults.
+
 2019-05-21  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/90038

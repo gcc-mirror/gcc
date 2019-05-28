@@ -207,7 +207,7 @@ ECHO_ENV = PATH=`echo $(abs_builddir):$${PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,
 
 # check-go-tool runs `go test cmd/go` in our environment.
 check-go-tool: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
-	-chmod -R u+w check-go-dir
+	if test -d check-go-dir; then chmod -R u+w check-go-dir; fi
 	rm -rf check-go-dir cmd_go-testlog
 	$(MKDIR_P) check-go-dir/src/cmd/go
 	cp $(cmdsrcdir)/go/*.go check-go-dir/src/cmd/go/

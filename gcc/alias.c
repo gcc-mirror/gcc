@@ -307,18 +307,6 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
 	    && TREE_CODE (TMR_BASE (base)) == SSA_NAME)))
     return false;
 
-  /* If this is a reference based on a partitioned decl replace the
-     base with a MEM_REF of the pointer representative we
-     created during stack slot partitioning.  */
-  if (VAR_P (base)
-      && ! is_global_var (base)
-      && cfun->gimple_df->decls_to_pointers != NULL)
-    {
-      tree *namep = cfun->gimple_df->decls_to_pointers->get (base);
-      if (namep)
-	ref->base = build_simple_mem_ref (*namep);
-    }
-
   ref->ref_alias_set = MEM_ALIAS_SET (mem);
 
   /* If MEM_OFFSET or MEM_SIZE are unknown what we got from MEM_EXPR

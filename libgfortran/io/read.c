@@ -635,6 +635,12 @@ read_decimal (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
 
   w = f->u.w;
 
+  /* This is a legacy extension, and the frontend will only allow such cases
+   * through when -fdec-format-defaults is passed.
+   */
+  if (w == DEFAULT_WIDTH)
+    w = default_width_for_integer (length);
+
   p = read_block_form (dtp, &w);
 
   if (p == NULL)

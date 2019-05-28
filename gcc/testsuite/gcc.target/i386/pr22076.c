@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fomit-frame-pointer -mmmx -mno-sse2" } */
+/* { dg-additional-options "-fno-common" { target *-*-darwin* } } */
+/* { dg-additional-options "-mdynamic-no-pic" { target { ia32 && *-*-darwin* } } } */
 
 #include <mmintrin.h>
 

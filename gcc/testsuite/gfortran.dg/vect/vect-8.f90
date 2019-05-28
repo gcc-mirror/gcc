@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! { dg-require-effective-target vect_double }
-! { dg-additional-options "-finline-matmul-limit=0" }
+! { dg-additional-options "-fno-tree-loop-distribute-patterns -finline-matmul-limit=0" }
 
 module lfk_prec
  integer, parameter :: dp=kind(1.d0)

@@ -393,7 +393,7 @@ build_call_a (tree function, int n, tree *argarray)
       {
 	tree arg = CALL_EXPR_ARG (function, i);
 	if (is_empty_class (TREE_TYPE (arg))
-	    && ! TREE_ADDRESSABLE (TREE_TYPE (arg)))
+	    && simple_empty_class_p (TREE_TYPE (arg), arg, INIT_EXPR))
 	  {
 	    tree t = build0 (EMPTY_CLASS_EXPR, TREE_TYPE (arg));
 	    arg = build2 (COMPOUND_EXPR, TREE_TYPE (t), arg, t);
@@ -8244,7 +8244,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       /* See if the function member or the whole class type is declared
 	 final and the call can be devirtualized.  */
       if (DECL_FINAL_P (fn)
-	  || CLASSTYPE_FINAL (TYPE_METHOD_BASETYPE (TREE_TYPE (fn))))
+	  || CLASSTYPE_FINAL (TREE_TYPE (argtype)))
 	flags |= LOOKUP_NONVIRTUAL;
 
       /* [class.mfct.nonstatic]: If a nonstatic member function of a class

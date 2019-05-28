@@ -128,19 +128,15 @@ build_lambda_object (tree lambda_expr)
 tree
 begin_lambda_type (tree lambda)
 {
-  tree type;
+  /* Lambda names are nearly but not quite anonymous.  */
+  tree name = make_anon_name ();
+  IDENTIFIER_LAMBDA_P (name) = true;
 
-  {
-    /* Lambda names are nearly but not quite anonymous.  */
-    tree name = make_anon_name ();
-    IDENTIFIER_LAMBDA_P (name) = true;
-
-    /* Create the new RECORD_TYPE for this lambda.  */
-    type = xref_tag (/*tag_code=*/record_type, name,
-                     /*scope=*/ts_lambda, /*template_header_p=*/false);
-    if (type == error_mark_node)
-      return error_mark_node;
-  }
+  /* Create the new RECORD_TYPE for this lambda.  */
+  tree type = xref_tag (/*tag_code=*/record_type, name,
+			/*scope=*/ts_lambda, /*template_header_p=*/false);
+  if (type == error_mark_node)
+    return error_mark_node;
 
   /* Designate it as a struct so that we can use aggregate initialization.  */
   CLASSTYPE_DECLARED_CLASS (type) = false;

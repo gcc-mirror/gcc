@@ -349,21 +349,6 @@ enum processor_type ix86_arch;
 /* True if processor has SSE prefetch instruction.  */
 unsigned char x86_prefetch_sse;
 
-rtx (*ix86_gen_leave) (void);
-rtx (*ix86_gen_add3) (rtx, rtx, rtx);
-rtx (*ix86_gen_sub3) (rtx, rtx, rtx);
-rtx (*ix86_gen_sub3_carry) (rtx, rtx, rtx, rtx, rtx);
-rtx (*ix86_gen_one_cmpl2) (rtx, rtx);
-rtx (*ix86_gen_monitor) (rtx, rtx, rtx);
-rtx (*ix86_gen_monitorx) (rtx, rtx, rtx);
-rtx (*ix86_gen_clzero) (rtx);
-rtx (*ix86_gen_andsp) (rtx, rtx, rtx);
-rtx (*ix86_gen_allocate_stack_worker) (rtx, rtx);
-rtx (*ix86_gen_adjust_stack_and_probe) (rtx, rtx, rtx);
-rtx (*ix86_gen_probe_stack_range) (rtx, rtx, rtx);
-rtx (*ix86_gen_tls_global_dynamic_64) (rtx, rtx, rtx);
-rtx (*ix86_gen_tls_local_dynamic_base_64) (rtx, rtx);
-
 /* Preferred alignment for stack boundary in bits.  */
 unsigned int ix86_preferred_stack_boundary;
 
@@ -1657,8 +1642,7 @@ ix86_init_large_pic_reg (unsigned int tmp_regno)
   emit_insn (gen_set_rip_rex64 (pic_offset_table_rtx,
 				label));
   emit_insn (gen_set_got_offset_rex64 (tmp_reg, label));
-  emit_insn (ix86_gen_add3 (pic_offset_table_rtx,
-			    pic_offset_table_rtx, tmp_reg));
+  emit_insn (gen_add2_insn (pic_offset_table_rtx, tmp_reg));
   const char *name = LABEL_NAME (label);
   PUT_CODE (label, NOTE);
   NOTE_KIND (label) = NOTE_INSN_DELETED_LABEL;
@@ -5012,6 +4996,19 @@ ix86_can_use_return_insn_p (void)
 	  && (frame.nregs + frame.nsseregs) == 0);
 }
 
+/* Return stack frame size.  get_frame_size () returns used stack slots
+   during compilation, which may be optimized out later.  If stack frame
+   is needed, stack_frame_required should be true.  */
+
+static HOST_WIDE_INT
+ix86_get_frame_size (void)
+{
+  if (cfun->machine->stack_frame_required)
+    return get_frame_size ();
+  else
+    return 0;
+}
+
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms may
    be accessed via the stack pointer) in functions that seem suitable.  */
@@ -5035,7 +5032,7 @@ ix86_frame_pointer_required (void)
 
   /* Win64 SEH, very large frames need a frame-pointer as maximum stack
      allocation is 4GB.  */
-  if (TARGET_64BIT_MS_ABI && get_frame_size () > SEH_MAX_FRAME_SIZE)
+  if (TARGET_64BIT_MS_ABI && ix86_get_frame_size () > SEH_MAX_FRAME_SIZE)
     return true;
 
   /* SSE saves require frame-pointer when stack is misaligned.  */
@@ -5842,7 +5839,7 @@ ix86_compute_frame_layout (void)
   unsigned HOST_WIDE_INT stack_alignment_needed;
   HOST_WIDE_INT offset;
   unsigned HOST_WIDE_INT preferred_alignment;
-  HOST_WIDE_INT size = get_frame_size ();
+  HOST_WIDE_INT size = ix86_get_frame_size ();
   HOST_WIDE_INT to_allocate;
 
   /* m->call_ms2sysv is initially enabled in ix86_expand_call for all 64-bit
@@ -6538,34 +6535,29 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
 			   int style, bool set_cfa)
 {
   struct machine_function *m = cfun->machine;
+  rtx addend = offset;
   rtx insn;
   bool add_frame_related_expr = false;
 
-  if (Pmode == SImode)
-    insn = gen_pro_epilogue_adjust_stack_si_add (dest, src, offset);
-  else if (x86_64_immediate_operand (offset, DImode))
-    insn = gen_pro_epilogue_adjust_stack_di_add (dest, src, offset);
-  else
+  if (!x86_64_immediate_operand (offset, Pmode))
     {
-      rtx tmp;
       /* r11 is used by indirect sibcall return as well, set before the
 	 epilogue and used after the epilogue.  */
       if (style)
-        tmp = gen_rtx_REG (DImode, R11_REG);
+        addend = gen_rtx_REG (Pmode, R11_REG);
       else
 	{
 	  gcc_assert (src != hard_frame_pointer_rtx
 		      && dest != hard_frame_pointer_rtx);
-	  tmp = hard_frame_pointer_rtx;
+	  addend = hard_frame_pointer_rtx;
 	}
-      insn = emit_insn (gen_rtx_SET (tmp, offset));
+      emit_insn (gen_rtx_SET (addend, offset));
       if (style < 0)
 	add_frame_related_expr = true;
-
-      insn = gen_pro_epilogue_adjust_stack_di_add (dest, src, tmp);
     }
 
-  insn = emit_insn (insn);
+  insn = emit_insn (gen_pro_epilogue_adjust_stack_add
+		    (Pmode, dest, src, addend));
   if (style >= 0)
     ix86_add_queued_cfa_restore_notes (insn);
 
@@ -7065,8 +7057,8 @@ ix86_adjust_stack_and_probe_stack_clash (HOST_WIDE_INT size,
 
       /* Step 3: the loop.  */
       rtx size_rtx = GEN_INT (rounded_size);
-      insn = emit_insn (ix86_gen_adjust_stack_and_probe (sr.reg, sr.reg,
-							 size_rtx));
+      insn = emit_insn (gen_adjust_stack_and_probe (Pmode, sr.reg, sr.reg,
+						    size_rtx));
       if (m->fs.cfa_reg == stack_pointer_rtx)
 	{
 	  m->fs.cfa_offset += rounded_size;
@@ -7219,7 +7211,7 @@ ix86_adjust_stack_and_probe (HOST_WIDE_INT size,
 	 adjusts SP and probes to PROBE_INTERVAL + N * PROBE_INTERVAL for
 	 values of N from 1 until it is equal to ROUNDED_SIZE.  */
 
-      emit_insn (ix86_gen_adjust_stack_and_probe (sr.reg, sr.reg, size_rtx));
+      emit_insn (gen_adjust_stack_and_probe (Pmode, sr.reg, sr.reg, size_rtx));
 
 
       /* Step 4: adjust SP and probe at PROBE_INTERVAL + SIZE if we cannot
@@ -7377,7 +7369,8 @@ ix86_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size,
          probes at FIRST + N * PROBE_INTERVAL for values of N from 1
          until it is equal to ROUNDED_SIZE.  */
 
-      emit_insn (ix86_gen_probe_stack_range (sr.reg, sr.reg, GEN_INT (-last)));
+      emit_insn
+	(gen_probe_stack_range (Pmode, sr.reg, sr.reg, GEN_INT (-last)));
 
 
       /* Step 4: probe at FIRST + SIZE if we cannot assert at compile-time
@@ -7436,11 +7429,11 @@ output_probe_stack_range (rtx reg, rtx end)
   return "";
 }
 
-/* Return true if stack frame is required.  Update STACK_ALIGNMENT
-   to the largest alignment, in bits, of stack slot used if stack
-   frame is required and CHECK_STACK_SLOT is true.  */
+/* Set stack_frame_required to false if stack frame isn't required.
+   Update STACK_ALIGNMENT to the largest alignment, in bits, of stack
+   slot used if stack frame is required and CHECK_STACK_SLOT is true.  */
 
-static bool
+static void
 ix86_find_max_used_stack_alignment (unsigned int &stack_alignment,
 				    bool check_stack_slot)
 {
@@ -7489,7 +7482,7 @@ ix86_find_max_used_stack_alignment (unsigned int &stack_alignment,
 	  }
     }
 
-  return require_stack_frame;
+  cfun->machine->stack_frame_required = require_stack_frame;
 }
 
 /* Finalize stack_realign_needed and frame_pointer_needed flags, which
@@ -7519,6 +7512,14 @@ ix86_finalize_stack_frame_flags (void)
       return;
     }
 
+  /* It is always safe to compute max_used_stack_alignment.  We
+     compute it only if 128-bit aligned load/store may be generated
+     on misaligned stack slot which will lead to segfault. */
+  bool check_stack_slot
+    = (stack_realign || crtl->max_used_stack_slot_alignment >= 128);
+  ix86_find_max_used_stack_alignment (stack_alignment,
+				      check_stack_slot);
+
   /* If the only reason for frame_pointer_needed is that we conservatively
      assumed stack realignment might be needed or -fno-omit-frame-pointer
      is used, but in the end nothing that needed the stack alignment had
@@ -7538,12 +7539,11 @@ ix86_finalize_stack_frame_flags (void)
 	   && flag_exceptions
 	   && cfun->can_throw_non_call_exceptions)
       && !ix86_frame_pointer_required ()
-      && get_frame_size () == 0
+      && ix86_get_frame_size () == 0
       && ix86_nsaved_sseregs () == 0
       && ix86_varargs_gpr_size + ix86_varargs_fpr_size == 0)
     {
-      if (ix86_find_max_used_stack_alignment (stack_alignment,
-					      stack_realign))
+      if (cfun->machine->stack_frame_required)
 	{
 	  /* Stack frame is required.  If stack alignment needed is less
 	     than incoming stack boundary, don't realign stack.  */
@@ -7631,17 +7631,14 @@ ix86_finalize_stack_frame_flags (void)
 	  recompute_frame_layout_p = true;
 	}
     }
-  else if (crtl->max_used_stack_slot_alignment >= 128)
+  else if (crtl->max_used_stack_slot_alignment >= 128
+	   && cfun->machine->stack_frame_required)
     {
       /* We don't need to realign stack.  max_used_stack_alignment is
 	 used to decide how stack frame should be aligned.  This is
-	 independent of any psABIs nor 32-bit vs 64-bit.  It is always
-	 safe to compute max_used_stack_alignment.  We compute it only
-	 if 128-bit aligned load/store may be generated on misaligned
-	 stack slot which will lead to segfault.   */
-      if (ix86_find_max_used_stack_alignment (stack_alignment, true))
-	cfun->machine->max_used_stack_alignment
-	  = stack_alignment / BITS_PER_UNIT;
+	 independent of any psABIs nor 32-bit vs 64-bit.  */
+      cfun->machine->max_used_stack_alignment
+	= stack_alignment / BITS_PER_UNIT;
     }
 
   if (crtl->stack_realign_needed != stack_realign)
@@ -7741,6 +7738,20 @@ ix86_emit_outlined_ms2sysv_save (const struct ix86_frame &frame)
 
   insn = emit_insn (gen_rtx_PARALLEL (VOIDmode, v));
   RTX_FRAME_RELATED_P (insn) = true;
+}
+
+/* Generate and return an insn body to AND X with Y.  */
+
+static rtx_insn *
+gen_and2_insn (rtx x, rtx y)
+{
+  enum insn_code icode = optab_handler (and_optab, GET_MODE (x));
+
+  gcc_assert (insn_operand_matches (icode, 0, x));
+  gcc_assert (insn_operand_matches (icode, 1, x));
+  gcc_assert (insn_operand_matches (icode, 2, y));
+
+  return GEN_FCN (icode) (x, x, y);
 }
 
 /* Expand the prologue into a bunch of separate insns.  */
@@ -7898,9 +7909,8 @@ ix86_expand_prologue (void)
       m->fs.cfa_offset = 0;
 
       /* Align the stack.  */
-      insn = emit_insn (ix86_gen_andsp (stack_pointer_rtx,
-					stack_pointer_rtx,
-					GEN_INT (-align_bytes)));
+      insn = emit_insn (gen_and2_insn (stack_pointer_rtx,
+				       GEN_INT (-align_bytes)));
       RTX_FRAME_RELATED_P (insn) = 1;
 
       /* Replicate the return address on the stack so that return
@@ -8004,9 +8014,8 @@ ix86_expand_prologue (void)
 				   GEN_INT (-allocate), -1, false);
 
       /* Align the stack.  */
-      insn = emit_insn (ix86_gen_andsp (stack_pointer_rtx,
-					stack_pointer_rtx,
-					GEN_INT (-align_bytes)));
+      insn = emit_insn (gen_and2_insn (stack_pointer_rtx,
+				       GEN_INT (-align_bytes)));
       m->fs.sp_offset = ROUND_UP (m->fs.sp_offset, align_bytes);
       m->fs.sp_realigned_offset = m->fs.sp_offset
 					      - frame.stack_realign_allocate;
@@ -8165,7 +8174,6 @@ ix86_expand_prologue (void)
     {
       rtx eax = gen_rtx_REG (Pmode, AX_REG);
       rtx r10 = NULL;
-      rtx (*adjust_stack_insn)(rtx, rtx, rtx);
       const bool sp_is_cfa_reg = (m->fs.cfa_reg == stack_pointer_rtx);
       bool eax_live = ix86_eax_live_at_start_p ();
       bool r10_live = false;
@@ -8186,7 +8194,8 @@ ix86_expand_prologue (void)
 	      RTX_FRAME_RELATED_P (insn) = 1;
 	      add_reg_note (insn, REG_FRAME_RELATED_EXPR,
 			    gen_rtx_SET (stack_pointer_rtx,
-					 plus_constant (Pmode, stack_pointer_rtx,
+					 plus_constant (Pmode,
+							stack_pointer_rtx,
 							-UNITS_PER_WORD)));
 	    }
 	}
@@ -8203,21 +8212,18 @@ ix86_expand_prologue (void)
 	      RTX_FRAME_RELATED_P (insn) = 1;
 	      add_reg_note (insn, REG_FRAME_RELATED_EXPR,
 			    gen_rtx_SET (stack_pointer_rtx,
-					 plus_constant (Pmode, stack_pointer_rtx,
+					 plus_constant (Pmode,
+							stack_pointer_rtx,
 							-UNITS_PER_WORD)));
 	    }
 	}
 
       emit_move_insn (eax, GEN_INT (allocate));
-      emit_insn (ix86_gen_allocate_stack_worker (eax, eax));
+      emit_insn (gen_allocate_stack_worker_probe (Pmode, eax, eax));
 
       /* Use the fact that AX still contains ALLOCATE.  */
-      adjust_stack_insn = (Pmode == DImode
-			   ? gen_pro_epilogue_adjust_stack_di_sub
-			   : gen_pro_epilogue_adjust_stack_si_sub);
-
-      insn = emit_insn (adjust_stack_insn (stack_pointer_rtx,
-					   stack_pointer_rtx, eax));
+      insn = emit_insn (gen_pro_epilogue_adjust_stack_sub
+			(Pmode, stack_pointer_rtx, stack_pointer_rtx, eax));
 
       if (sp_is_cfa_reg || TARGET_SEH)
 	{
@@ -8258,7 +8264,7 @@ ix86_expand_prologue (void)
   /* If we havn't already set up the frame pointer, do so now.  */
   if (frame_pointer_needed && !m->fs.fp_valid)
     {
-      insn = ix86_gen_add3 (hard_frame_pointer_rtx, stack_pointer_rtx,
+      insn = gen_add3_insn (hard_frame_pointer_rtx, stack_pointer_rtx,
 			    GEN_INT (frame.stack_pointer_offset
 				     - frame.hard_frame_pointer_offset));
       insn = emit_insn (insn);
@@ -8395,8 +8401,9 @@ static void
 ix86_emit_leave (rtx_insn *insn)
 {
   struct machine_function *m = cfun->machine;
+
   if (!insn)
-    insn = emit_insn (ix86_gen_leave ());
+    insn = emit_insn (gen_leave (word_mode));
 
   ix86_add_queued_cfa_restore_notes (insn);
 
@@ -9290,7 +9297,7 @@ ix86_expand_split_stack_prologue (void)
       scratch_reg = gen_rtx_REG (Pmode, scratch_regno);
       if (!TARGET_64BIT || x86_64_immediate_operand (offset, Pmode))
 	{
-	  /* We don't use ix86_gen_add3 in this case because it will
+	  /* We don't use gen_add in this case because it will
 	     want to split to lea, but when not optimizing the insn
 	     will not be split after this point.  */
 	  emit_insn (gen_rtx_SET (scratch_reg,
@@ -9300,8 +9307,7 @@ ix86_expand_split_stack_prologue (void)
       else
 	{
 	  emit_move_insn (scratch_reg, offset);
-	  emit_insn (ix86_gen_add3 (scratch_reg, scratch_reg,
-				    stack_pointer_rtx));
+	  emit_insn (gen_add2_insn (scratch_reg, stack_pointer_rtx));
 	}
       current = scratch_reg;
     }
@@ -9378,7 +9384,7 @@ ix86_expand_split_stack_prologue (void)
 	      LABEL_PRESERVE_P (label) = 1;
 	      emit_insn (gen_set_rip_rex64 (reg10, label));
 	      emit_insn (gen_set_got_offset_rex64 (reg11, label));
-	      emit_insn (ix86_gen_add3 (reg10, reg10, reg11));
+	      emit_insn (gen_add2_insn (reg10, reg11));
 	      x = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, split_stack_fn_large),
 				  UNSPEC_GOT);
 	      x = gen_rtx_CONST (Pmode, x);
@@ -10810,7 +10816,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 
 	      start_sequence ();
 	      emit_call_insn
-		(ix86_gen_tls_global_dynamic_64 (rax, x, caddr));
+		(gen_tls_global_dynamic_64 (Pmode, rax, x, caddr));
 	      insns = get_insns ();
 	      end_sequence ();
 
@@ -10864,7 +10870,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 
 	      start_sequence ();
 	      emit_call_insn
-		(ix86_gen_tls_local_dynamic_base_64 (rax, caddr));
+		(gen_tls_local_dynamic_base_64 (Pmode, rax, caddr));
 	      insns = get_insns ();
 	      end_sequence ();
 
@@ -10953,7 +10959,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	{
 	  base = get_thread_pointer (Pmode, true);
 	  dest = gen_reg_rtx (Pmode);
-	  emit_insn (ix86_gen_sub3 (dest, base, off));
+	  emit_insn (gen_sub3_insn (dest, base, off));
 	}
       break;
 
@@ -10973,7 +10979,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	{
 	  base = get_thread_pointer (Pmode, true);
 	  dest = gen_reg_rtx (Pmode);
-	  emit_insn (ix86_gen_sub3 (dest, base, off));
+	  emit_insn (gen_sub3_insn (dest, base, off));
 	}
       break;
 
@@ -19107,7 +19113,8 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
   rtx mask;
   enum rtx_code code = GET_CODE (x);
   enum rtx_code outer_code = (enum rtx_code) outer_code_i;
-  const struct processor_costs *cost = speed ? ix86_cost : &ix86_size_cost;
+  const struct processor_costs *cost
+    = speed ? ix86_tune_cost : &ix86_size_cost;
   int src_cost;
 
   switch (code)

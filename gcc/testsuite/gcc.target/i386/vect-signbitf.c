@@ -19,12 +19,12 @@ main (void)
 
   /* check results:  */
   for (i = 0; i < N; i++)
-    if (__builtin_signbit (a[i]) && !r[i])
+    if (__builtin_signbitf (a[i]) && !r[i])
       abort ();
 
   return 0;
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
-/* { dg-final { scan-assembler-not "-2147483648" } } */
+/* { dg-final { scan-assembler-not "\\$-2147483648" } } */
 /* { dg-final { scan-assembler "psrld" } } */

@@ -5780,6 +5780,8 @@ push_template_decl_real (tree decl, bool is_friend)
       if (tmpl == error_mark_node)
 	return error_mark_node;
 
+      //      decl = DECL_TEMPLATE_RESULT (tmpl);
+
       /* Hide template friend classes that haven't been declared yet.  */
       if (is_friend && TREE_CODE (decl) == TYPE_DECL)
 	{

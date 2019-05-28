@@ -1,3 +1,9 @@
+2019-05-27  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (check-go-tool): Only chmod check-go-dir if it
+	exists.
+	* Makefile.in: Regenerate.
+
 2019-02-28  Ian Lance Taylor  <iant@golang.org>
 
 	PR go/89406

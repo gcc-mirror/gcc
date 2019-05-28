@@ -28069,9 +28069,19 @@ cp_parser_constructor_declarator_p (cp_parser *parser, cp_parser_flags flags,
 	  parser->num_template_parameter_lists = 0;
 
 	  /* Look for the type-specifier.  It's not optional, but its typename
-	     might be.  */
+	     might be.  Unless this is a friend declaration; we don't want to
+	     treat
+
+	       friend S (T::fn)(int);
+
+	     as a constructor, but with P0634, we might assume a type when
+	     looking for the type-specifier.  It is actually a function named
+	     `T::fn' that takes one parameter (of type `int') and returns a
+	     value of type `S'.  Constructors can be friends, but they must
+	     use a qualified name.  */
 	  cp_parser_type_specifier (parser,
-				    (flags & ~CP_PARSER_FLAGS_OPTIONAL),
+				    (friend_p ? CP_PARSER_FLAGS_NONE
+				     : (flags & ~CP_PARSER_FLAGS_OPTIONAL)),
 				    /*decl_specs=*/NULL,
 				    /*is_declarator=*/true,
 				    /*declares_class_or_enum=*/NULL,
@@ -28371,14 +28381,16 @@ cp_parser_template_declaration_after_parameters (cp_parser* parser,
       if (!ok)
 	{
 	  if (cxx_dialect > cxx17)
-	    error ("literal operator template %qD has invalid parameter list;"
-		   " expected non-type template parameter pack %<<char...>%> "
-		   "or single non-type parameter of class type",
-		   decl);
+	    error_at (DECL_SOURCE_LOCATION (decl), "literal operator "
+		      "template %qD has invalid parameter list; expected "
+		      "non-type template parameter pack %<<char...>%> or "
+		      "single non-type parameter of class type",
+		      decl);
 	  else
-	    error ("literal operator template %qD has invalid parameter list;"
-		   " expected non-type template parameter pack %<<char...>%>",
-		   decl);
+	    error_at (DECL_SOURCE_LOCATION (decl), "literal operator "
+		      "template %qD has invalid parameter list; expected "
+		      "non-type template parameter pack %<<char...>%>",
+		      decl);
 	}
     }
 

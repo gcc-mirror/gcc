@@ -26,15 +26,6 @@ struct abstract {
 
 static_assert( noexcept(std::__invoke(std::declval<abstract>())),
     "It should be possible to use abstract types with INVOKE" );
-#if __cpp_lib_invoke
-// std::invoke is only defined since C++17.
-static_assert( noexcept(std::invoke(std::declval<abstract>())),
-    "It should be possible to use abstract types with INVOKE" );
-
-// The std::__invoke_r extension only has a noexcept-specifier for >= C++17.
-static_assert( noexcept(std::__invoke_r<void>(std::declval<abstract>())),
-    "It should be possible to use abstract types with INVOKE<R>" );
-#endif
 
 struct F {
   void operator()() &;
@@ -48,19 +39,3 @@ static_assert( !noexcept(std::__invoke(std::declval<F&>())), "" );
 static_assert( noexcept(std::__invoke(std::declval<F>())), "" );
 static_assert( !noexcept(std::__invoke(std::declval<F>(), 1)), "" );
 static_assert( noexcept(std::__invoke(std::declval<F>(), 1, 2)), "" );
-
-#if __cpp_lib_invoke
-static_assert( !noexcept(std::invoke(std::declval<F&>())), "" );
-static_assert( noexcept(std::invoke(std::declval<F>())), "" );
-static_assert( !noexcept(std::invoke(std::declval<F>(), 1)), "" );
-static_assert( noexcept(std::invoke(std::declval<F>(), 1, 2)), "" );
-
-static_assert( !noexcept(std::__invoke_r<void>(std::declval<F&>())), "" );
-static_assert( noexcept(std::__invoke_r<void>(std::declval<F>())), "" );
-static_assert( !noexcept(std::__invoke_r<int>(std::declval<F>(), 1)), "" );
-static_assert( !noexcept(std::__invoke_r<void>(std::declval<F>(), 1)), "" );
-static_assert( !noexcept(std::__invoke_r<long>(std::declval<F>(), 1)), "" );
-static_assert( noexcept(std::__invoke_r<void>(std::declval<F>(), 1, 2)), "" );
-static_assert( noexcept(std::__invoke_r<void*>(std::declval<F>(), 1, 2)), "" );
-static_assert( noexcept(std::__invoke_r<D>(std::declval<F>(), 1, 2)), "" );
-#endif

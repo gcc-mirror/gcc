@@ -955,6 +955,11 @@ now defaults to zero.
 </itemizedlist>
 </para>
 
+<para>
+  The <classname>std::packaged_task</classname> constructors taking
+  an allocator argument are only defined for C++11 and C++14.
+</para>
+
 </section>
 
 </section>

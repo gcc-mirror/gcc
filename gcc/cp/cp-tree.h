@@ -4281,7 +4281,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    checks in ascending code order.  */
 #define CP_AGGREGATE_TYPE_P(TYPE)				\
   (TREE_CODE (TYPE) == VECTOR_TYPE				\
-   ||TREE_CODE (TYPE) == ARRAY_TYPE				\
+   || TREE_CODE (TYPE) == ARRAY_TYPE				\
    || (CLASS_TYPE_P (TYPE) && !CLASSTYPE_NON_AGGREGATE (TYPE)))
 
 /* Nonzero for a class type means that the class type has a
@@ -7786,6 +7786,7 @@ extern tree cp_fully_fold_init			(tree);
 extern void clear_fold_cache			(void);
 extern tree lookup_hotness_attribute		(tree);
 extern tree process_stmt_hotness_attribute	(tree, location_t);
+extern bool simple_empty_class_p		(tree, tree, tree_code);
 
 /* in name-lookup.c */
 extern tree strip_using_decl                    (tree);

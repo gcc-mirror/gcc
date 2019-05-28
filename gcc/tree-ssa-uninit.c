@@ -1058,7 +1058,7 @@ value_sat_pred_p (tree val, tree boundary, enum tree_code cmpc,
   if (cmpc != BIT_AND_EXPR)
     return is_value_included_in (val, boundary, cmpc);
 
-  wi::tree_to_wide_ref andw = wi::to_wide (val) & wi::to_wide (boundary);
+  wide_int andw = wi::to_wide (val) & wi::to_wide (boundary);
   if (exact_p)
     return andw == wi::to_wide (val);
   else

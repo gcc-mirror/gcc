@@ -2848,8 +2848,7 @@ malloc_alignment ()
 }
 
 /* Determine whether an allocation function is a namespace-scope
-   non-replaceable placement new function. See DR 1748.
-   TODO: Enable in all standard modes.  */
+   non-replaceable placement new function. See DR 1748.  */
 static bool
 std_placement_new_fn_p (tree alloc_fn)
 {
