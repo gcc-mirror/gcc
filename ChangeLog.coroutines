@@ -1,5 +1,12 @@
 2019-05-28  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+	* coroutines.cc (build_actor_fn): Wrap call expressions in
+	expression statements where needed.
+	(morph_fn_to_coro): Likewise.
+
+2019-05-28  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/
 	* tree.c (build_call_expr_internal_loc_array): Make the argument
 	list match the declaration.

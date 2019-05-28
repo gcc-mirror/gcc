@@ -1213,6 +1213,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 				     create_anon_label_with_ctx (loc, actor));
   add_stmt (ddeflab);
   tree b = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
+  b = build_stmt (loc, EXPR_STMT, b);
+  b = maybe_cleanup_point_expr_void (b);
   add_stmt (b);
 
   short unsigned lab_num = 3;
@@ -1224,6 +1226,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
       add_stmt (b);
       b = build_call_expr_internal_loc (loc, IFN_CO_ACTOR, void_type_node, 1,
 					l_num);
+      b = build_stmt (loc, EXPR_STMT, b);
+      b = maybe_cleanup_point_expr_void (b);
       add_stmt (b);
       b = build1 (GOTO_EXPR, void_type_node, CASE_LABEL (ddeflab));
       add_stmt (b);
@@ -1247,6 +1251,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 				  create_anon_label_with_ctx (loc, actor));
   add_stmt (rdeflab);
   b = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
+  b = build_stmt (loc, EXPR_STMT, b);
+  b = maybe_cleanup_point_expr_void (b);
   add_stmt (b);
 
   lab_num = 2;
@@ -1259,6 +1265,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
       add_stmt (b);
       b = build_call_expr_internal_loc (loc, IFN_CO_ACTOR, void_type_node, 1,
 					l_num);
+      b = build_stmt (loc, EXPR_STMT, b);
+      b = maybe_cleanup_point_expr_void (b);
       add_stmt (b);
       b = build1 (GOTO_EXPR, void_type_node, CASE_LABEL (rdeflab));
       add_stmt (b);
@@ -1403,6 +1411,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   tree free_coro_fr
     = build_call_expr_loc (loc,
 			   builtin_decl_explicit (BUILT_IN_FREE), 1, actor_fp);
+  free_coro_fr = build_stmt (loc, EXPR_STMT, free_coro_fr);
+  free_coro_fr = maybe_cleanup_point_expr_void (free_coro_fr);
   tree free_list = NULL;
   append_to_statement_list (free_coro_fr, &free_list);
 
@@ -1411,6 +1421,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   append_to_statement_list (r, &goto_ret_list);
 
   r = build3 (COND_EXPR, void_type_node, fnf2_x, free_list, goto_ret_list);
+  r = build_stmt (loc, EXPR_STMT, r);
+  r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);
 
   /* This is the eventual (or suspend) return point.  */
@@ -1843,6 +1855,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 			   TYPE_SIZE_UNIT (coro_frame_type));
   allocated = build1 (CONVERT_EXPR, coro_frame_ptr, allocated);
   r = build2 (INIT_EXPR, TREE_TYPE (coro_fp), coro_fp, allocated);
+  r = build_stmt (fn_start, EXPR_STMT, r);
+  r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);
 
   /* Test for NULL and quit.  */
