@@ -1,5 +1,10 @@
 2019-05-28  Nathan Sidwell  <nathan@acm.org>
 
+	Revert inadvertent commits.
+	gcc/cp/
+	* pt.c (push_template_decl_real): Here.
+	* decl.c (duplicate_decls): Here.
+
 	Merge trunk r271702.
 
 2019-05-23  Nathan Sidwell  <nathan@acm.org>
