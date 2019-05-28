@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "tree-eh.h"
 #include "builtins.h"
+#include "cfgloop.h"
 
 #include "ipa-icf-gimple.h"
 
@@ -605,6 +606,40 @@ func_checker::compare_variable_decl (tree t1, tree t2)
   return return_with_debug (ret);
 }
 
+/* Compare loop information for basic blocks BB1 and BB2.  */
+
+bool
+func_checker::compare_loops (basic_block bb1, basic_block bb2)
+{
+  if ((bb1->loop_father == NULL) != (bb2->loop_father == NULL))
+    return return_false ();
+
+  struct loop *l1 = bb1->loop_father;
+  struct loop *l2 = bb2->loop_father;
+  if (l1 == NULL)
+    return true;
+
+  if ((bb1 == l1->header) != (bb2 == l2->header))
+    return return_false_with_msg ("header");
+  if ((bb1 == l1->latch) != (bb2 == l2->latch))
+    return return_false_with_msg ("latch");
+  if (l1->simdlen != l2->simdlen)
+    return return_false_with_msg ("simdlen");
+  if (l1->safelen != l2->safelen)
+    return return_false_with_msg ("safelen");
+  if (l1->can_be_parallel != l2->can_be_parallel)
+    return return_false_with_msg ("can_be_parallel");
+  if (l1->dont_vectorize != l2->dont_vectorize)
+    return return_false_with_msg ("dont_vectorize");
+  if (l1->force_vectorize != l2->force_vectorize)
+    return return_false_with_msg ("force_vectorize");
+  if (l1->unroll != l2->unroll)
+    return return_false_with_msg ("unroll");
+  if (!compare_variable_decl (l1->simduid, l2->simduid))
+    return return_false_with_msg ("simduid");
+
+  return true;
+}
 
 /* Function visits all gimple labels and creates corresponding
    mapping between basic blocks and labels.  */
@@ -725,6 +760,9 @@ func_checker::compare_bb (sem_bb *bb1, sem_bb *bb2)
     }
 
   if (!gsi_end_p (gsi2))
+    return return_false ();
+
+  if (!compare_loops (bb1->bb, bb2->bb))
     return return_false ();
 
   return true;
