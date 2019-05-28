@@ -1,5 +1,27 @@
 2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* doc/gnat_rm/implementation_defined_pragmas.rst (Machine_Attribute):
+	Document additional optional parameters.
+	* sem_prag.adb (Analyze_Pragma) <Pragma_Machine_Attribute>: Accept
+	more than one optional parameter.
+	* gcc-interface/decl.c (prepend_one_attribute_pragma): Alphabetize
+	the list of supported pragmas.  Simplify the handling of parameters
+	and add support for more than one optional parameter.
+	* gcc-interface/utils.c (attr_cold_hot_exclusions): New constant.
+	(gnat_internal_attribute_table): Add entry for no_icf, noipa, flatten,
+	used, cold, hot, target and target_clones.
+	(begin_subprog_body): Do not create the RTL for the subprogram here.
+	(handle_noicf_attribute): New static function.
+	(handle_noipa_attribute): Likewise.
+	(handle_flatten_attribute): Likewise.
+	(handle_used_attribute): Likewise.
+	(handle_cold_attribute): Likewise.
+	(handle_hot_attribute): Likewise.
+	(handle_target_attribute): Likewise.
+	(handle_target_clones_attribute): Likewise.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (lvalue_required_for_attribute_p): Return 0
 	for 'Size too.
 	(Identifier_to_gnu): Use the actual subtype for a reference to a
