@@ -1,5 +1,14 @@
 2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (lvalue_required_for_attribute_p): Return 0
+	for 'Size too.
+	(Identifier_to_gnu): Use the actual subtype for a reference to a
+	packed array in a return statement.
+	(Attribute_to_gnu) <Attr_Size>: Do not strip VIEW_CONVERT_EXPRs from
+	the prefix in every case.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gnat_to_gnu): Remove superfluous tests on
 	Backend_Overflow_Checks_On_Target and rework comments.
 
