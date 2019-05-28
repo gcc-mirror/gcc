@@ -6364,6 +6364,22 @@ handle_noreturn_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   return NULL_TREE;
 }
 
+/* Handle a "stack_protect" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_stack_protect_attribute (tree *node, tree name, tree, int,
+				bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 /* Handle a "noinline" attribute; arguments as in
    struct attribute_spec.handler.  */
 
@@ -6384,22 +6400,6 @@ handle_noinline_attribute (tree *node, tree name,
 	DECL_UNINLINABLE (*node) = 1;
     }
   else
-    {
-      warning (OPT_Wattributes, "%qE attribute ignored", name);
-      *no_add_attrs = true;
-    }
-
-  return NULL_TREE;
-}
-
-/* Handle a "stack_protect" attribute; arguments as in
-   struct attribute_spec.handler.  */
-
-static tree
-handle_stack_protect_attribute (tree *node, tree name, tree, int,
-				bool *no_add_attrs)
-{
-  if (TREE_CODE (*node) != FUNCTION_DECL)
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
