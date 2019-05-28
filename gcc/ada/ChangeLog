@@ -1,5 +1,9 @@
 2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (handle_stack_protect_attribute): Move around.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* doc/gnat_rm/implementation_defined_pragmas.rst (Machine_Attribute):
 	Document additional optional parameters.
 	* sem_prag.adb (Analyze_Pragma) <Pragma_Machine_Attribute>: Accept
