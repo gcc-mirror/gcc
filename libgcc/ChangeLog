@@ -1,3 +1,9 @@
+2019-05-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sparc/sol2-unwind.h [__arch64__] (sparc64_is_sighandler):
+	Remove Solaris 9 and 10 support.
+	(sparc_is_sighandler): Likewise.
+
 2019-05-26  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/linux-unwind.h (pa32_fallback_frame_state): Add cast.
