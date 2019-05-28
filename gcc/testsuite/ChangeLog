@@ -1,3 +1,8 @@
+2019-05-28  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
+
+	* gcc.target/aarch64/sve/mask_load_slp_1.c: New test for SLP
+	vectorized masked loads.
+
 2019-05-28  Jeff Law  <law@redhat.com>
 
 	* testsuite/gcc.target/sh/pr50749-qihisi-predec-3.c: Disable

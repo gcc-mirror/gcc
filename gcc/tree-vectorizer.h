@@ -396,7 +396,7 @@ typedef struct _loop_vec_info : public vec_info {
   /* Condition under which this loop is analyzed and versioned.  */
   tree num_iters_assumptions;
 
-  /* Threshold of number of iterations below which vectorzation will not be
+  /* Threshold of number of iterations below which vectorization will not be
      performed. It is calculated from MIN_PROFITABLE_ITERS and
      PARAM_MIN_VECT_LOOP_BOUND.  */
   unsigned int th;
@@ -946,6 +946,9 @@ struct _stmt_vec_info {
      and OPERATION_BITS without changing the result.  */
   unsigned int operation_precision;
   signop operation_sign;
+
+  /* True if this is only suitable for SLP vectorization.  */
+  bool slp_vect_only_p;
 };
 
 /* Information about a gather/scatter call.  */
@@ -1041,6 +1044,7 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_NUM_SLP_USES(S)	(S)->num_slp_uses
 #define STMT_VINFO_REDUC_TYPE(S)	(S)->reduc_type
 #define STMT_VINFO_REDUC_DEF(S)		(S)->reduc_def
+#define STMT_VINFO_SLP_VECT_ONLY(S)     (S)->slp_vect_only_p
 
 #define DR_GROUP_FIRST_ELEMENT(S) \
   (gcc_checking_assert ((S)->dr_aux.dr), (S)->first_element)

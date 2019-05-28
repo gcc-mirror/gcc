@@ -100,7 +100,7 @@ init_internal_fns ()
 /* Create static initializers for the information returned by
    direct_internal_fn.  */
 #define not_direct { -2, -2, false }
-#define mask_load_direct { -1, 2, false }
+#define mask_load_direct { -1, 2, true }
 #define load_lanes_direct { -1, -1, false }
 #define mask_load_lanes_direct { -1, -1, false }
 #define gather_load_direct { -1, -1, false }
