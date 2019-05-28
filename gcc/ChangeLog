@@ -1,3 +1,10 @@
+2019-05-28  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/90555
+	* ipa-icf-gimple.c (func_checker::compare_loops): New function.
+	* ipa-icf-gimple.h (func_checker::compare_loops): Likewise.
+	(func_checker::compare_bb): Call compare_loops.
+
 2019-05-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (gimplify_scan_omp_clauses): Allow lastprivate conditional
