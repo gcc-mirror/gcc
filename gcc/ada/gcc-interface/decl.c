@@ -8162,6 +8162,8 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
 	gnu_field_list = gnu_rep_list;
       else
 	{
+	  TYPE_NAME (gnu_rep_type)
+	    = create_concat_name (gnat_record_type, "REP");
 	  TYPE_REVERSE_STORAGE_ORDER (gnu_rep_type)
 	    = TYPE_REVERSE_STORAGE_ORDER (gnu_record_type);
 	  finish_record_type (gnu_rep_type, gnu_rep_list, 1, debug_info);
