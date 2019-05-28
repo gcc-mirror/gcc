@@ -90,6 +90,7 @@ static tree handle_novops_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
 static tree handle_sentinel_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
+static tree handle_stack_protect_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noinline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noclone_attribute (tree *, tree, tree, int, bool *);
 static tree handle_leaf_attribute (tree *, tree, tree, int, bool *);
@@ -123,6 +124,8 @@ const struct attribute_spec gnat_internal_attribute_table[] =
     handle_sentinel_attribute, NULL },
   { "noreturn",     0, 0,  true,  false, false, false,
     handle_noreturn_attribute, NULL },
+  { "stack_protect",0, 0, true,  false, false, false,
+    handle_stack_protect_attribute, NULL },
   { "noinline",     0, 0,  true,  false, false, false,
     handle_noinline_attribute, NULL },
   { "noclone",      0, 0,  true,  false, false, false,
@@ -6349,6 +6352,22 @@ handle_noinline_attribute (tree *node, tree name,
 	DECL_UNINLINABLE (*node) = 1;
     }
   else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "stack_protect" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_stack_protect_attribute (tree *node, tree name, tree, int,
+				bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
