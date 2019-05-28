@@ -1,3 +1,14 @@
+2019-05-28  Nathan Sidwell  <nathan@acm.org>
+
+	* tree.h (IDENTIFIER_ANON_P): New.
+	(anon_aggrname_format, anon_aggname_p): Don't declare.
+	(make_anon_name): Declare.
+	* lto-streamer-out.c (DFS::DFS_write_tree_body): Use IDENTIFIER_ANON_P.
+	(hash_tree): Likewise.
+	* tree-streamer-out.c (write_ts_decl_minimal_tree): Likewise.
+	* tree.c (anon_aggrname_p, anon_aggrname_format): Delete.
+	(anon_cnt, make_anon_name): New.
+
 2019-05-28  Martin Liska  <mliska@suse.cz>
 
 	PR other/90315

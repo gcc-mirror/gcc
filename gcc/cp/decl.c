@@ -10233,15 +10233,12 @@ name_unnamed_type (tree type, tree decl)
 
   /* Replace the anonymous name with the real name everywhere.  */
   for (tree t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
-    {
-      if (anon_aggrname_p (TYPE_IDENTIFIER (t)))
-	/* We do not rename the debug info representing the
-	   unnamed tagged type because the standard says in
-	   [dcl.typedef] that the naming applies only for
-	   linkage purposes.  */
-	/*debug_hooks->set_name (t, decl);*/
-	TYPE_NAME (t) = decl;
-    }
+    if (IDENTIFIER_ANON_P (TYPE_IDENTIFIER (t)))
+      /* We do not rename the debug info representing the unnamed
+	 tagged type because the standard says in [dcl.typedef] that
+	 the naming applies only for linkage purposes.  */
+      /*debug_hooks->set_name (t, decl);*/
+      TYPE_NAME (t) = decl;
 
   if (TYPE_LANG_SPECIFIC (type))
     TYPE_WAS_UNNAMED (type) = 1;
@@ -14061,7 +14058,7 @@ xref_tag_1 (enum tag_types tag_code, tree name,
   /* In case of anonymous name, xref_tag is only called to
      make type node and push name.  Name lookup is not required.  */
   tree t = NULL_TREE;
-  if (scope != ts_lambda && !anon_aggrname_p (name))
+  if (scope != ts_lambda && !IDENTIFIER_ANON_P (name))
     t = lookup_and_check_tag  (tag_code, name, scope, template_header_p);
   
   if (t == error_mark_node)

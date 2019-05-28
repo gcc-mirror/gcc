@@ -5501,7 +5501,7 @@ push_template_decl_real (tree decl, bool is_friend)
       if (DECL_CLASS_SCOPE_P (decl))
 	member_template_p = true;
       if (TREE_CODE (decl) == TYPE_DECL
-	  && anon_aggrname_p (DECL_NAME (decl)))
+	  && IDENTIFIER_ANON_P (DECL_NAME (decl)))
 	{
 	  error ("template class without a name");
 	  return error_mark_node;
