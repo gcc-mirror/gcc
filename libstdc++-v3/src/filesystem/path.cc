@@ -393,7 +393,7 @@ path::_M_split_cmpts()
 	      _M_add_root_dir(0);
 	    }
 	}
-      else if (pos == len) // got root directory only
+      else if (len == 1) // got root directory only
 	{
 	  _M_type = _Type::_Root_dir;
 	  return;
