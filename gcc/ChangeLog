@@ -7540,6 +7540,37 @@ Fix test-suite.
 	* tree-ssa-dom.c (test_for_singularity): Fix a comment typo.
 	* vr-values.c (find_case_label_ranges): Fix a comment typo.
 
+2019-01-23  Xuepeng Guo  <xuepeng.guo@intel.com>
+
+	* common/config/i386/i386-common.c
+	(OPTION_MASK_ISA_ENQCMD_SET,
+	OPTION_MASK_ISA_ENQCMD_UNSET): New macros.
+	(ix86_handle_option): Handle -menqcmd.
+	* config.gcc (enqcmdintrin.h): New header file.
+	* config/i386/cpuid.h (bit_ENQCMD): New bit.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Handle
+	-menqcmd.
+	* config/i386/i386-builtin-types.def ((INT, PVOID, PCVOID)): New
+	function type.
+	* config/i386/i386-builtin.def (__builtin_ia32_enqcmd,
+	__builtin_ia32_enqcmds): New builtins.
+	* config/i386/i386-c.c (__ENQCMD__): New macro.
+	* config/i386/i386-option.c (ix86_target_string): Add
+	-menqcmd.
+	(ix86_valid_target_attribute_inner_p): Likewise.
+	* config/i386/i386-expand.c
+	(ix86_expand_builtin): Expand IX86_BUILTIN_ENQCMD and
+	IX86_BUILTIN_ENQCMDS.
+	* config/i386/i386.h (TARGET_ENQCMD): New.
+	* config/i386/i386.md (UNSPECV_ENQCMD, UNSPECV_ENQCMDS): New.
+	(@enqcmd<enqcmd_sfx>_<mode>): New insn pattern.
+	(movdir64b_<mode>): Parameterize to enable share expansion code
+	with ENQCMD in function ix86_expand_builtin.
+	* config/i386/i386.opt: Add -menqcmd.
+	* config/i386/immintrin.h: Include enqcmdintrin.h.
+	* config/i386/enqcmdintrin.h: New intrinsic file.
+	* doc/invoke.texi: Add -menqcmd.
+
 2019-01-23  Bin Cheng  <bin.cheng@arm.com>
 	    Steve Ellcey <sellcey@marvell.com>
 

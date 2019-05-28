@@ -11313,6 +11313,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       emit_move_insn (target, op0);
       return target;
 
+    case IX86_BUILTIN_ENQCMD:
+    case IX86_BUILTIN_ENQCMDS:
     case IX86_BUILTIN_MOVDIR64B:
 
       arg0 = CALL_EXPR_ARG (exp, 0);
@@ -11328,11 +11330,33 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       }
       op1 = gen_rtx_MEM (XImode, op1);
 
-      insn = (TARGET_64BIT
-		? gen_movdir64b_di (op0, op1)
-		: gen_movdir64b_si (op0, op1));
-      emit_insn (insn);
-      return 0;
+      if (fcode == IX86_BUILTIN_MOVDIR64B)
+	{
+	  emit_insn (gen_movdir64b (Pmode, op0, op1));
+	  return 0;
+	}
+      else
+	{
+	  rtx pat;
+
+	  target = gen_reg_rtx (SImode);
+	  emit_move_insn (target, const0_rtx);
+	  target = gen_rtx_SUBREG (QImode, target, 0);
+
+	  if (fcode == IX86_BUILTIN_ENQCMD)
+	    pat = gen_enqcmd (UNSPECV_ENQCMD, Pmode, op0, op1);
+	  else
+	    pat = gen_enqcmd (UNSPECV_ENQCMDS, Pmode, op0, op1);
+
+	  emit_insn (pat);
+
+	  emit_insn (gen_rtx_SET (gen_rtx_STRICT_LOW_PART (VOIDmode, target),
+				  gen_rtx_fmt_ee (EQ, QImode,
+						  SET_DEST (pat),
+						  const0_rtx)));
+
+	  return SUBREG_REG (target);
+	}
 
     case IX86_BUILTIN_FXSAVE:
     case IX86_BUILTIN_FXRSTOR:

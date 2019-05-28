@@ -4560,6 +4560,17 @@
 	PR target/89290
 	* gcc.target/i386/pr89290.c: New test.
 
+2019-01-23  Xuepeng Guo  <xuepeng.guo@intel.com>
+
+	* gcc.target/i386/enqcmd.c: New test.
+	* gcc.target/i386/enqcmds.c: Likewise.
+	* g++.dg/other/i386-2.C: Add -menqcmd.
+	* g++.dg/other/i386-3.C: Likewise.
+	* gcc.target/i386/sse-12.c: Likewise.
+	* gcc.target/i386/sse-13.c: Likewise.
+	* gcc.target/i386/sse-14.c: Likewise.
+	* gcc.target/i386/sse-23.c: Likewise.
+
 2019-01-23  Xiong Hu Luo  <luoxhu@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/crypto-builtin-1.c
