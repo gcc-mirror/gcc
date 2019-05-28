@@ -1,5 +1,11 @@
 2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (gnat_internal_attribute_table): Add support
+	for stack_protect attribute.
+	(handle_stack_protect_attribute): New static function.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (intrin_arglists_compatible_p): Do not return
 	false if the internal builtin uses a variable list.
 
