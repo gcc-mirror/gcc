@@ -3373,7 +3373,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	     Unchecked_Union (it must be an Itype), just return the type.  */
 	  if (Has_Discriminants (gnat_entity)
 	      && Stored_Constraint (gnat_entity) != No_Elist
-	      && !Is_For_Access_Subtype (gnat_entity)
 	      && Is_Record_Type (gnat_base_type)
 	      && !Is_Unchecked_Union (gnat_base_type))
 	    {
