@@ -1,6 +1,14 @@
 2019-05-28  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2019-02-28  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR testsuite/89441
+	* g++.dg/ipa/pr89009.C: Update symbol visibility.
+
+2019-05-28  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2019-02-11  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/89009
