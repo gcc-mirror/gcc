@@ -1,3 +1,8 @@
+2019-05-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90548 - ICE with generic lambda and empty pack.
+	* g++.dg/cpp1y/lambda-generic-90548.C: New test.
+
 2019-05-28  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
 
 	* gcc.target/aarch64/sve/mask_load_slp_1.c: New test for SLP
