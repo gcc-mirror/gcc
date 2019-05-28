@@ -1,3 +1,8 @@
+2019-05-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_fs.h (compare_paths): Use three-argument
+	form of std::equals for C++11 compatibility.
+
 2019-05-26  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/appendix_contributing.xml: Update pointer to
