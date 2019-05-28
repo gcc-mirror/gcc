@@ -4569,10 +4569,6 @@ output_deferred_profile_counters (void)
 void
 hppa_profile_hook (int label_no)
 {
-  /* We use SImode for the address of the function in both 32 and
-     64-bit code to avoid having to provide DImode versions of the
-     lcla2 and load_offset_label_address insn patterns.  */
-  rtx reg = gen_reg_rtx (SImode);
   rtx_code_label *label_rtx = gen_label_rtx ();
   int reg_parm_stack_space = REG_PARM_STACK_SPACE (NULL_TREE);
   rtx arg_bytes, begin_label_rtx, mcount, sym;
@@ -4604,18 +4600,13 @@ hppa_profile_hook (int label_no)
   if (!use_mcount_pcrel_call)
     {
       /* The address of the function is loaded into %r25 with an instruction-
-	 relative sequence that avoids the use of relocations.  The sequence
-	 is split so that the load_offset_label_address instruction can
-	 occupy the delay slot of the call to _mcount.  */
+	 relative sequence that avoids the use of relocations.  We use SImode
+	 for the address of the function in both 32 and 64-bit code to avoid
+	 having to provide DImode versions of the lcla2 pattern.  */
       if (TARGET_PA_20)
-	emit_insn (gen_lcla2 (reg, label_rtx));
+	emit_insn (gen_lcla2 (gen_rtx_REG (SImode, 25), label_rtx));
       else
-	emit_insn (gen_lcla1 (reg, label_rtx));
-
-      emit_insn (gen_load_offset_label_address (gen_rtx_REG (SImode, 25), 
-						reg,
-						begin_label_rtx,
-						label_rtx));
+	emit_insn (gen_lcla1 (gen_rtx_REG (SImode, 25), label_rtx));
     }
 
   if (!NO_DEFERRED_PROFILE_COUNTERS)
