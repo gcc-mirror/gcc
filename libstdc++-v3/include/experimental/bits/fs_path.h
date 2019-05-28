@@ -195,7 +195,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     path(path&& __p) noexcept
     : _M_pathname(std::move(__p._M_pathname)), _M_type(__p._M_type)
     {
-      _M_split_cmpts();
+      if (_M_type == _Type::_Multi)
+	_M_split_cmpts();
       __p.clear();
     }
 
@@ -490,7 +491,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	return _S_convert_loc(__s.data(), __s.data() + __s.size(), __loc);
       }
 
-    bool _S_is_dir_sep(value_type __ch)
+    static bool _S_is_dir_sep(value_type __ch)
     {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
       return __ch == L'/' || __ch == preferred_separator;
