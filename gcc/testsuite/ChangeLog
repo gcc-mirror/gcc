@@ -1,6 +1,13 @@
 2019-05-28  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2019-04-20  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.dg/ipa/pr89009.C: Add dg-require-effective-target fpic.
+
+2019-05-28  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2019-02-28  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR testsuite/89441
