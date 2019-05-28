@@ -3534,6 +3534,20 @@ finalize_nrv_unc_r (tree *tp, int *walk_subtrees, void *data)
   return NULL_TREE;
 }
 
+/* Apply FUNC to all the sub-trees of nested functions in NODE.  FUNC is called
+   with the DATA and the address of each sub-tree.  If FUNC returns a non-NULL
+   value, the traversal is stopped.  */
+
+static void
+walk_nesting_tree (struct cgraph_node *node, walk_tree_fn func, void *data)
+{
+  for (node = node->nested; node; node = node->next_nested)
+    {
+      walk_tree_without_duplicates (&DECL_SAVED_TREE (node->decl), func, data);
+      walk_nesting_tree (node, func, data);
+    }
+}
+
 /* Finalize the Named Return Value optimization for FNDECL.  The NRV bitmap
    contains the candidates for Named Return Value and OTHER is a list of
    the other return values.  GNAT_RET is a representative return node.  */
@@ -3541,7 +3555,6 @@ finalize_nrv_unc_r (tree *tp, int *walk_subtrees, void *data)
 static void
 finalize_nrv (tree fndecl, bitmap nrv, vec<tree, va_gc> *other, Node_Id gnat_ret)
 {
-  struct cgraph_node *node;
   struct nrv_data data;
   walk_tree_fn func;
   unsigned int i;
@@ -3562,10 +3575,7 @@ finalize_nrv (tree fndecl, bitmap nrv, vec<tree, va_gc> *other, Node_Id gnat_ret
     return;
 
   /* Prune also the candidates that are referenced by nested functions.  */
-  node = cgraph_node::get_create (fndecl);
-  for (node = node->nested; node; node = node->next_nested)
-    walk_tree_without_duplicates (&DECL_SAVED_TREE (node->decl), prune_nrv_r,
-				  &data);
+  walk_nesting_tree (cgraph_node::get_create (fndecl), prune_nrv_r, &data);
   if (bitmap_empty_p (nrv))
     return;
 
