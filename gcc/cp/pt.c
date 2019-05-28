@@ -18856,6 +18856,9 @@ tsubst_copy_and_build (tree t,
 	   the thunk template for a generic lambda.  */
 	if (CALL_FROM_THUNK_P (t))
 	  {
+	    /* Now that we've expanded any packs, the number of call args
+	       might be different.  */
+	    unsigned int cargs = call_args->length ();
 	    tree thisarg = NULL_TREE;
 	    if (TREE_CODE (function) == COMPONENT_REF)
 	      {
@@ -18869,7 +18872,7 @@ tsubst_copy_and_build (tree t,
 	    /* We aren't going to do normal overload resolution, so force the
 	       template-id to resolve.  */
 	    function = resolve_nondeduced_context (function, complain);
-	    for (unsigned i = 0; i < nargs; ++i)
+	    for (unsigned i = 0; i < cargs; ++i)
 	      {
 		/* In a thunk, pass through args directly, without any
 		   conversions.  */
@@ -18880,12 +18883,18 @@ tsubst_copy_and_build (tree t,
 	      }
 	    if (thisarg)
 	      {
-		/* Shift the other args over to make room.  */
-		tree last = (*call_args)[nargs - 1];
-		vec_safe_push (call_args, last);
-		for (int i = nargs-1; i > 0; --i)
-		  (*call_args)[i] = (*call_args)[i-1];
-		(*call_args)[0] = thisarg;
+		/* If there are no other args, just push 'this'.  */
+		if (cargs == 0)
+		  vec_safe_push (call_args, thisarg);
+		else
+		  {
+		    /* Otherwise, shift the other args over to make room.  */
+		    tree last = (*call_args)[cargs - 1];
+		    vec_safe_push (call_args, last);
+		    for (int i = cargs - 1; i > 0; --i)
+		      (*call_args)[i] = (*call_args)[i - 1];
+		    (*call_args)[0] = thisarg;
+		  }
 	      }
 	    ret = build_call_a (function, call_args->length (),
 				call_args->address ());

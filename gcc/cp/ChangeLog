@@ -1,3 +1,11 @@
+2019-05-28  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2019-05-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90548 - ICE with generic lambda and empty pack.
+	* pt.c (tsubst_copy_and_build): Handle pack expansion properly.
+
 2019-05-25  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline
