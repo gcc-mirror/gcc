@@ -1271,7 +1271,7 @@ create_data_ref (edge nest, loop_p loop, tree memref, gimple *stmt,
   return dr;
 }
 
-/*  A helper function computes order between two tree epxressions T1 and T2.
+/*  A helper function computes order between two tree expressions T1 and T2.
     This is used in comparator functions sorting objects based on the order
     of tree expressions.  The function returns -1, 0, or 1.  */
 

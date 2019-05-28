@@ -2863,10 +2863,12 @@ strip_conversion (tree op)
 }
 
 /* Return true if vectorizable_* routines can handle statements STMT1_INFO
-   and STMT2_INFO being in a single group.  */
+   and STMT2_INFO being in a single group.  When ALLOW_SLP_P, masked loads can
+   be grouped in SLP mode.  */
 
 static bool
-can_group_stmts_p (stmt_vec_info stmt1_info, stmt_vec_info stmt2_info)
+can_group_stmts_p (stmt_vec_info stmt1_info, stmt_vec_info stmt2_info,
+		   bool allow_slp_p)
 {
   if (gimple_assign_single_p (stmt1_info->stmt))
     return gimple_assign_single_p (stmt2_info->stmt);
@@ -2888,7 +2890,8 @@ can_group_stmts_p (stmt_vec_info stmt1_info, stmt_vec_info stmt2_info)
 	 like those created by build_mask_conversion.  */
       tree mask1 = gimple_call_arg (call1, 2);
       tree mask2 = gimple_call_arg (call2, 2);
-      if (!operand_equal_p (mask1, mask2, 0))
+      if (!operand_equal_p (mask1, mask2, 0)
+          && (ifn == IFN_MASK_STORE || !allow_slp_p))
 	{
 	  mask1 = strip_conversion (mask1);
 	  if (!mask1)
@@ -2974,7 +2977,7 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	      || data_ref_compare_tree (DR_BASE_ADDRESS (dra),
 					DR_BASE_ADDRESS (drb)) != 0
 	      || data_ref_compare_tree (DR_OFFSET (dra), DR_OFFSET (drb)) != 0
-	      || !can_group_stmts_p (stmtinfo_a, stmtinfo_b))
+	      || !can_group_stmts_p (stmtinfo_a, stmtinfo_b, true))
 	    break;
 
 	  /* Check that the data-refs have the same constant size.  */
@@ -3058,6 +3061,13 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	  DR_GROUP_FIRST_ELEMENT (stmtinfo_b) = stmtinfo_a;
 	  DR_GROUP_NEXT_ELEMENT (lastinfo) = stmtinfo_b;
 	  lastinfo = stmtinfo_b;
+
+	  STMT_VINFO_SLP_VECT_ONLY (stmtinfo_a)
+	    = !can_group_stmts_p (stmtinfo_a, stmtinfo_b, false);
+
+	  if (dump_enabled_p () && STMT_VINFO_SLP_VECT_ONLY (stmtinfo_a))
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Load suitable for SLP vectorization only.\n");
 
 	  if (init_b == init_prev
 	      && !to_fixup.add (DR_GROUP_FIRST_ELEMENT (stmtinfo_a))

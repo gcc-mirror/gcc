@@ -1,3 +1,23 @@
+2019-05-28  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
+
+	* internal-fn.c: Marked mask_load_direct as vectorizable.
+	* tree-data-ref.c (data_ref_compare_tree): Fixed comment typo.
+	* tree-vect-data-refs.c (can_group_stmts_p): Allow masked loads to be
+	combined even if masks different with allow_slp_p param.
+	(vect_analyze_data_ref_accesses): Mark SLP only vectorizable groups.
+	* tree-vect-loop.c (vect_dissolve_slp_only_groups): New function to
+	dissolve SLP-only vectorizable groups when SLP has been discarded.
+	(vect_analyze_loop_2): Call vect_dissolve_slp_only_groups when needed.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Check masked loads
+	masks.
+	(vect_build_slp_tree_1): Fixed comment typo.
+	(vect_build_slp_tree_2): Include masks from masked loads in SLP tree.
+	* tree-vect-stmts.c (vectorizable_load): Allow vectorizaion of masked
+	loads for SLP only.
+	* tree-vectorizer.h (_stmt_vec_info): Added flag for SLP-only
+	vectorizable.
+	* tree-vectorizer.c (vec_info::new_stmt_vec_info): Likewise.
+
 2019-05-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/alpha/alpha.c [TARGET_ABI_OSF] (alpha_output_mi_thunk_osf):
