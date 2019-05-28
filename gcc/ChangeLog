@@ -1,5 +1,15 @@
 2019-05-28  Martin Liska  <mliska@suse.cz>
 
+	PR other/90315
+	* opts-global.c (decode_options): Print help for all
+	help_option_arguments.
+	* opts.c (print_help): Add new argument.
+	(common_handle_option): Remember all values into
+	help_option_arguments.
+	* opts.h (print_help): Add new argument.
+
+2019-05-28  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/90555
 	* ipa-icf-gimple.c (func_checker::compare_loops): New function.
 	* ipa-icf-gimple.h (func_checker::compare_loops): Likewise.
