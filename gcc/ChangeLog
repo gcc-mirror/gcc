@@ -1,3 +1,33 @@
+2019-05-29  Bill Schmidt  <wschmidt@linux.ibm.com>
+	    Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_call_template_1): Handle pcrel
+	calls here...
+	(rs6000_indirect_call_template_1): ...and here.
+	(rs6000_pltseq_template): Handle plt_pcrel34.  Rework tocsave,
+	plt16_ha, plt16_lo, mtctr indirect calls.  Use
+	rs6000_pltseq_enum.
+	(rs6000_decl_ok_for_sibcall): New function.
+	(rs6000_function_ok_for_sibcall): Refactor.
+	(rs6000_longcall_ref): Use UNSPEC_PLT_PCREL when pcrel.
+	(rs6000_call_aix): Don't emit toc restore rtl for indirect calls
+	when pcrel.  Reorganize.
+	(rs6000_sibcall_aix): Don't add r2 to function usage when pcrel.
+	* rs6000.h (rs6000_pltseq_enum): New enum.
+	* rs6000.md (UNSPEC_PLT_PCREL): New unspec.
+	(*pltseq_tocsave): Use rs6000_pltseq_enum.
+	(*pltseq_plt16_ha): Likewise.
+	(*pltseq_plt16_lo): Likewise.
+	(*pltseq_mtctr): Likewise.
+	(*pltseq_plt_pcrel): New insn.
+	(*call_local_aix): Handle @notoc calls.
+	(*call_value_local_aix): Likewise.
+	(*call_nonlocal_aix): Adjust lengths for pcrel calls.
+	(*call_value_nonlocal_aix): Likewise.
+	(*call_indirect_pcrel): New insn.
+	(*call_value_indirect_pcrel): Likewise.
+
+
 2019-05-29  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (*save_multiple<mode>): Rename from

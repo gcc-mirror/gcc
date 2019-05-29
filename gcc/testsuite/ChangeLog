@@ -1,3 +1,8 @@
+2019-05-29  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/notoc-direct-1.c: New.
+	* gcc.target/powerpc/pcrel-sibcall-1.c: New.
+
 2019-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/90598
