@@ -1,3 +1,8 @@
+2019-05-28  Bill Schmidt  <wschmidt@linux.ibm.com>
+	    Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000-cpus.def (OTHER_FUTURES_MASK): New #define.
+
 2019-05-28  Michael Meissner  <meissner@linux.ibm.com>
 
 	* rtl.h (LABEL_REF_P): New #define.
