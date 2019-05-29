@@ -1,6 +1,6 @@
-# Makefile fragment for building LIBGCC for the Renesas RX target.
-# Copyright (C) 2008-2019 Free Software Foundation, Inc.
-# Contributed by Red Hat.
+# Makefile fragment for building GCC for the rx-linux.
+# Copyright (C) 2019 Yoshinori Sato
+# Based on t-rx
 #
 # This file is part of GCC.
 #
@@ -18,18 +18,17 @@
 # License along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+# Enable multilibs:
 
-# Add functions required by the RX ABI which are not part of
-# the normal libgcc sources:
+MULTILIB_OPTIONS    =
+MULTILIB_DIRNAMES   =
 
-LIB2ADD = $(srcdir)/config/rx/rx-abi-functions.c
-HOST_LIBGCC2_CFLAGS += -DDF=SF
+MULTILIB_MATCHES    = nofpu=mnofpu  nofpu=mcpu?rx200  nofpu=mcpu?RX200
 
+MULTILIB_EXCEPTIONS =
+MULTILIB_EXTRA_OPTS =
 
-# We need special handling of the floating point conversion
-# routines, to allow for the varying size of a double:
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib
 
-FPBIT = true
-ifeq ($(double_type_size),64)
-DPBIT = true
-endif
+EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o

@@ -1438,10 +1438,14 @@ bit_count (unsigned int x)
   return (x + (x >> 16)) & 0x3f;
 }
 
+#if defined(TARGET_SAVE_ACC_REGISTER)
 #define MUST_SAVE_ACC_REGISTER			\
   (TARGET_SAVE_ACC_REGISTER			\
    && (is_interrupt_func (NULL_TREE)		\
        || is_fast_interrupt_func (NULL_TREE)))
+#else
+#define MUST_SAVE_ACC_REGISTER 0
+#endif
 
 /* Returns either the lowest numbered and highest numbered registers that
    occupy the call-saved area of the stack frame, if the registers are

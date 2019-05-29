@@ -1,3 +1,16 @@
+2019-05-29  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* config.gcc (rx-*-linux*): New target.
+	* config/rx/elf.opt: New file.
+	* config/rx/linux.h: Likewise.
+	* config/rx/t-linux: Likewise.
+	* config/rx/rx.c (TARGET_SAVE_ACC_REGISTER): If not defined,
+	make it zero.
+	* config/rx/rx.h (ASM_APP_ON): Allow to be overridden.
+	(ASM_APP_OFF): Likewise.
+	* config/rx/rx.opt: Drop -msim and -mas100-syntax, they were
+	moved elsewhere.
+
 2019-05-29  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-alias.c (same_type_for_tbaa): Return ture if main

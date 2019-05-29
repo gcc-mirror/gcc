@@ -1,3 +1,8 @@
+2019-05-29  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* config.host (rx-*-linux*): Add new case.
+	* config/rx/t-rx (HOST_LIBGCC2_CFLAGS): Force DFmode to SFmode.
+
 2019-05-29  Sam Tebbs  <sam.tebbs@arm.com>
 
 	* config/aarch64/aarch64-unwind.h (aarch64_cie_signed_with_b_key): New
