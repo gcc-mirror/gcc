@@ -1,3 +1,13 @@
+2019-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/90543
+	* optc-save-gen.awk: In cl_optimization_print, use correct condition
+	for var_opt_string printing.  In cl_optimization_print_diff, print
+	(null) instead of invoking undefined behavior if one of the
+	var_opt_string pointers is NULL and use && instead of first || in the
+	guarding condition.  For var_target_other options, handle const char *
+	target variables similarly to const char * optimize node variables.
+
 2019-05-29  Sam Tebbs  <sam.tebbs@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (aarch64_builtins): Add
