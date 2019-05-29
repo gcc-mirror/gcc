@@ -1052,6 +1052,10 @@ is_a_helper <rtx_note *>::test (rtx_insn *insn)
 #define CONSTANT_P(X)   \
   (GET_RTX_CLASS (GET_CODE (X)) == RTX_CONST_OBJ)
 
+/* 1 if X is a LABEL_REF.  */
+#define LABEL_REF_P(X)  \
+  (GET_CODE (X) == LABEL_REF)
+
 /* 1 if X can be used to represent an object.  */
 #define OBJECT_P(X)							\
   ((GET_RTX_CLASS (GET_CODE (X)) & RTX_OBJ_MASK) == RTX_OBJ_RESULT)
