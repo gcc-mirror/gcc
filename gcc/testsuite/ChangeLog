@@ -1,5 +1,11 @@
 2019-05-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/gomp/lastprivate-conditional-2.c (foo): Don't expect
+	sorry on lastprivate conditional on parallel for.
+	* c-c++-common/gomp/lastprivate-conditional-3.c (foo): Add tests for
+	lastprivate conditional warnings on parallel for constructs.
+	* c-c++-common/gomp/lastprivate-conditional-4.c: New test.
+
 	PR c/90628
 	* c-c++-common/builtin-arith-overflow-3.c: New test.
 

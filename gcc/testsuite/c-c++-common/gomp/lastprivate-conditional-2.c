@@ -17,7 +17,7 @@ foo (int *p)
   for (i = 0; i < 32; i++)
     if (p[i])
       c = i;
-  #pragma omp parallel for lastprivate (conditional: d) /* { dg-message "not supported yet" } */
+  #pragma omp parallel for lastprivate (conditional: d)
   for (i = 0; i < 32; i++)
     if (p[i])
       d = i;

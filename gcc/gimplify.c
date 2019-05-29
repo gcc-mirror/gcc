@@ -205,6 +205,7 @@ struct gimplify_omp_ctx
   struct gimplify_omp_ctx *outer_context;
   splay_tree variables;
   hash_set<tree> *privatized_types;
+  tree clauses;
   /* Iteration variables in an OMP_FOR.  */
   vec<tree> loop_iter_var;
   location_t location;
@@ -8054,7 +8055,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
   struct gimplify_omp_ctx *ctx, *outer_ctx;
   tree c;
   hash_map<tree, tree> *struct_map_to_clause = NULL;
-  tree *prev_list_p = NULL;
+  tree *prev_list_p = NULL, *orig_list_p = list_p;
   int handled_depend_iterators = -1;
   int nowait = -1;
 
@@ -8143,7 +8144,9 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	    }
 	  if (OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c))
 	    {
-	      if (code == OMP_FOR || code == OMP_SECTIONS)
+	      if (code == OMP_FOR
+		  || code == OMP_SECTIONS
+		  || region_type == ORT_COMBINED_PARALLEL)
 		flags |= GOVD_LASTPRIVATE_CONDITIONAL;
 	      else
 		{
@@ -9312,6 +9315,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	list_p = &OMP_CLAUSE_CHAIN (c);
     }
 
+  ctx->clauses = *orig_list_p;
   gimplify_omp_ctxp = ctx;
   if (struct_map_to_clause)
     delete struct_map_to_clause;
@@ -9455,6 +9459,9 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
   tree clause;
   bool private_debug;
 
+  if (gimplify_omp_ctxp->region_type == ORT_COMBINED_PARALLEL
+      && (flags & GOVD_LASTPRIVATE_CONDITIONAL) != 0)
+    flags = GOVD_SHARED | GOVD_SEEN | GOVD_WRITTEN;
   if (flags & (GOVD_EXPLICIT | GOVD_LOCAL))
     return 0;
   if ((flags & GOVD_SEEN) == 0)
@@ -9697,6 +9704,34 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 			   omp_find_stores_op, &wi);
 	}
     }
+
+  if (ctx->region_type == ORT_WORKSHARE
+      && ctx->outer_context
+      && ctx->outer_context->region_type == ORT_COMBINED_PARALLEL)
+    {
+      for (c = ctx->outer_context->clauses; c; c = OMP_CLAUSE_CHAIN (c))
+	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
+	    && OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c))
+	  {
+	    decl = OMP_CLAUSE_DECL (c);
+	    splay_tree_node n
+	      = splay_tree_lookup (ctx->outer_context->variables,
+				   (splay_tree_key) decl);
+	    gcc_checking_assert (!splay_tree_lookup (ctx->variables,
+						     (splay_tree_key) decl));
+	    omp_add_variable (ctx, decl, n->value);
+	    tree c2 = copy_node (c);
+	    OMP_CLAUSE_CHAIN (c2) = *list_p;
+	    *list_p = c2;
+	    if ((n->value & GOVD_FIRSTPRIVATE) == 0)
+	      continue;
+	    c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
+				   OMP_CLAUSE_FIRSTPRIVATE);
+	    OMP_CLAUSE_DECL (c2) = decl;
+	    OMP_CLAUSE_CHAIN (c2) = *list_p;
+	    *list_p = c2;
+	  }
+    }
   while ((c = *list_p) != NULL)
     {
       splay_tree_node n;
@@ -9723,6 +9758,10 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	  decl = OMP_CLAUSE_DECL (c);
 	  n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
 	  remove = !(n->value & GOVD_SEEN);
+	  if ((n->value & GOVD_LASTPRIVATE_CONDITIONAL) != 0
+	      && code == OMP_PARALLEL
+	      && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE)
+	    remove = true;
 	  if (! remove)
 	    {
 	      bool shared = OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED;
@@ -9771,6 +9810,8 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	      && DECL_P (decl)
 	      && omp_shared_to_firstprivate_optimizable_decl_p (decl))
 	    omp_mark_stores (gimplify_omp_ctxp->outer_context, decl);
+	  if (OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c) && code == OMP_PARALLEL)
+	    remove = true;
 	  break;
 
 	case OMP_CLAUSE_ALIGNED:
