@@ -1,3 +1,18 @@
+2019-05-29  Sam Tebbs  <sam.tebbs@arm.com>
+
+	* config/aarch64/aarch64-unwind.h (aarch64_cie_signed_with_b_key): New
+	function.
+	* config/aarch64/aarch64-unwind.h (aarch64_post_extract_frame_addr,
+	aarch64_post_frob_eh_handler_addr): Add	check for b-key.
+	* config/aarch64/aarch64-unwind-h (aarch64_post_extract_frame_addr,
+	aarch64_post_frob_eh_handler_addr, aarch64_post_frob_update_context):
+	Rename RA_A_SIGNED_BIT to RA_SIGNED_BIT.
+	* unwind-dw2-fde.c (get_cie_encoding): Add check for 'B' in augmentation
+	string.
+	* unwind-dw2.c (extract_cie_info): Add check for 'B' in augmentation
+	string.
+	(RA_A_SIGNED_BIT): Rename to RA_SIGNED_BIT.
+
 2019-05-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sparc/sol2-unwind.h [__arch64__] (sparc64_is_sighandler):
