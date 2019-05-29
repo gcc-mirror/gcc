@@ -758,6 +758,13 @@ fsign-zero
 Fortran Var(flag_sign_zero) Init(1)
 Apply negative sign to zero values.
 
+ftail-call-workaround
+Frotran Alias(ftail-call-workaround=,1,0)
+
+ftail-call-workaround=
+Fortran RejectNegative Joined UInteger IntegerRange(0, 2) Var(flag_tail_call_workaround) Init(1)
+Disallow tail call optimization when a calling routine may have omitted character lenghts.
+
 funderscoring
 Fortran Var(flag_underscoring) Init(1)
 Append underscores to externally visible names.

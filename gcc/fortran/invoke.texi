@@ -181,7 +181,8 @@ and warnings}.
 @item Code Generation Options
 @xref{Code Gen Options,,Options for code generation conventions}.
 @gccoptlist{-faggressive-function-elimination -fblas-matmul-limit=@var{n} @gol
--fbounds-check -fcheck-array-temporaries @gol
+-fbounds-check -ftail-call-workaround -ftail-call-workaround=@var{n} @gol
+-fcheck-array-temporaries @gol
 -fcheck=@var{<all|array-temps|bounds|do|mem|pointer|recursion>} @gol
 -fcoarray=@var{<none|single|lib>} -fexternal-blas -ff2c
 -ffrontend-loop-interchange @gol
@@ -1616,6 +1617,39 @@ warnings for generated array temporaries.
 @opindex @code{fbounds-check}
 @c Note: This option is also referred in gcc's manpage
 Deprecated alias for @option{-fcheck=bounds}.
+
+@item -ftail-call-workaround
+@itemx -ftail-call-workaround=@var{n}
+@opindex @code{tail-call-workaround}
+Some C interfaces to Fortran codes violate the gfortran ABI by
+omitting the hidden character length arguments as described in
+@xref{Argument passing conventions}.  This can lead to crashes
+because pushing arguments for tail calls can overflow the stack.
+
+To provide a workaround for existing binary packages, this option
+disables tail call optimization for gfortran procedures with character
+arguments.  With @option{-ftail-call-workaround=2} tail call optimization
+is disabled in all gfortran procedures with character arguments,
+with @option{-ftail-call-workaround=1} or equivalent
+@option{-ftail-call-workaround} only in gfortran procedures with character
+arguments that call implicitly prototyped procedures.
+
+Using this option can lead to problems including crashes due to
+insufficient stack space.
+
+It is @emph{very strongly} recommended to fix the code in question.
+The @option{-fc-prototypes-external} option can be used to generate
+prototypes which conform to gfortran's ABI, for inclusion in the
+source code.
+
+Support for this option will likely be withdrawn in a future release
+of gfortran.
+
+The negative form, @option{-fno-tail-call-workaround} or equivalent
+@option{-ftail-call-workaround=0}, can be used to disable this option.
+
+Default is currently @option{-ftail-call-workaround}, this will change
+in future releases.
 
 @item -fcheck-array-temporaries
 @opindex @code{fcheck-array-temporaries}
