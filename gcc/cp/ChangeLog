@@ -1,3 +1,15 @@
+2019-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	P1091R3 - Extending structured bindings to be more like var decls
+	P1381R1 - Reference capture of structured bindings
+	* decl.c (cp_maybe_mangle_decomp): Handle TREE_STATIC decls even at
+	function scope.
+	(cp_finish_decomp): Copy over various decl properties from decl to
+	v[i] in the tuple case.
+	(grokdeclarator): Allow static, thread_local and __thread for C++2a
+	and use pedwarn instead of error for older standard revisions.
+	Make other structured binding diagnostic messages more i18n friendly.
+
 2019-05-28  Nathan Sidwell  <nathan@acm.org>
 
 	* decl.c (duplicate_decls): Assert a template newdecl has no
