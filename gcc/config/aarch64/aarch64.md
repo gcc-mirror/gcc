@@ -7244,3 +7244,6 @@
 
 ;; SVE.
 (include "aarch64-sve.md")
+
+;; SVE2.
+(include "aarch64-sve2.md")

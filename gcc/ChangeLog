@@ -1,3 +1,13 @@
+2019-05-29  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
+
+	* config/aarch64/aarch64-c.c: Added TARGET_SVE2.
+	* config/aarch64/aarch64-sve2.md: New file.
+	(<u>avg<mode>3_floor): New pattern.
+	(<u>avg<mode>3_ceil): Likewise.
+	(*<sur>h<addsub><mode>): Likewise.
+	* config/aarch64/aarch64.h: Added AARCH64_ISA_SVE2 and TARGET_SVE2.
+	* config/aarch64/aarch64.md: Include aarch64-sve2.md.
+
 2019-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/90543
