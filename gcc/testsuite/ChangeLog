@@ -1,3 +1,14 @@
+2019-05-29  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
+
+	* gcc.target/aarch64/sve2/aarch64-sve2.exp: New file, regression driver
+	for AArch64 SVE2.
+	* gcc.target/aarch64/sve2/average_1.c: New test.
+	* lib/target-supports.exp (check_effective_target_aarch64_sve2): New
+	helper.
+	(check_effective_target_aarch64_sve1_only): Likewise.
+	(check_effective_target_aarch64_sve2_hw): Likewise.
+	(check_effective_target_vect_avg_qi): Check for SVE1 only.
+
 2019-05-29  Sam Tebbs  <sam.tebbs@arm.com>
 
 	* gcc.target/aarch64/return_address_sign_b_1.c: New file.

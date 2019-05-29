@@ -232,6 +232,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_V8_2	   (aarch64_isa_flags & AARCH64_FL_V8_2)
 #define AARCH64_ISA_F16		   (aarch64_isa_flags & AARCH64_FL_F16)
 #define AARCH64_ISA_SVE            (aarch64_isa_flags & AARCH64_FL_SVE)
+#define AARCH64_ISA_SVE2	   (aarch64_isa_flags & AARCH64_FL_SVE2)
 #define AARCH64_ISA_V8_3	   (aarch64_isa_flags & AARCH64_FL_V8_3)
 #define AARCH64_ISA_DOTPROD	   (aarch64_isa_flags & AARCH64_FL_DOTPROD)
 #define AARCH64_ISA_AES	           (aarch64_isa_flags & AARCH64_FL_AES)
@@ -276,6 +277,9 @@ extern unsigned aarch64_architecture_version;
 
 /* SVE instructions, enabled through +sve.  */
 #define TARGET_SVE (AARCH64_ISA_SVE)
+
+/* SVE2 instructions, enabled through +sve2.  */
+#define TARGET_SVE2 (AARCH64_ISA_SVE2)
 
 /* ARMv8.3-A features.  */
 #define TARGET_ARMV8_3	(AARCH64_ISA_V8_3)
