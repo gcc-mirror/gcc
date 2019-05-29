@@ -1,3 +1,47 @@
+2019-05-29  Sam Tebbs  <sam.tebbs@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_builtins): Add
+	AARCH64_PAUTH_BUILTIN_AUTIB1716 and AARCH64_PAUTH_BUILTIN_PACIB1716.
+	* config/aarch64/aarch64-builtins.c (aarch64_init_pauth_hint_builtins):
+	Add autib1716 and pacib1716 initialisation.
+	* config/aarch64/aarch64-builtins.c (aarch64_expand_builtin): Add checks
+	for autib1716 and pacib1716.
+	* config/aarch64/aarch64-protos.h (aarch64_key_type,
+	aarch64_post_cfi_startproc): Define.
+	* config/aarch64/aarch64-protos.h (aarch64_ra_sign_key): Define extern.
+	* config/aarch64/aarch64.c (aarch64_handle_standard_branch_protection,
+	aarch64_handle_pac_ret_protection): Set default sign key to A.
+	* config/aarch64/aarch64.c (aarch64_expand_epilogue,
+	aarch64_expand_prologue): Add check for b-key.
+	* config/aarch64/aarch64.c (aarch64_ra_sign_key,
+	aarch64_post_cfi_startproc, aarch64_handle_pac_ret_b_key): Define.
+	* config/aarch64/aarch64.h (TARGET_ASM_POST_CFI_STARTPROC): Define.
+	* config/aarch64/aarch64.c (aarch64_pac_ret_subtypes): Add "b-key".
+	* config/aarch64/aarch64.md (unspec): Add UNSPEC_AUTIA1716,
+	UNSPEC_AUTIB1716, UNSPEC_AUTIASP, UNSPEC_AUTIBSP, UNSPEC_PACIA1716,
+	UNSPEC_PACIB1716, UNSPEC_PACIASP, UNSPEC_PACIBSP.
+	* config/aarch64/aarch64.md (do_return): Add check for b-key.
+	* config/aarch64/aarch64.md (<pauth_mnem_prefix>sp): Replace
+	pauth_hint_num_a with pauth_hint_num.
+	* config/aarch64/aarch64.md (<pauth_mnem_prefix>1716): Replace
+	pauth_hint_num_a with pauth_hint_num.
+	* config/aarch64/aarch64.opt (msign-return-address=): Deprecate.
+	* config/aarch64/iterators.md (PAUTH_LR_SP): Add UNSPEC_AUTIASP,
+	UNSPEC_AUTIBSP, UNSPEC_PACIASP, UNSPEC_PACIBSP.
+	* config/aarch64/iterators.md (PAUTH_17_16): Add UNSPEC_AUTIA1716,
+	UNSPEC_AUTIB1716, UNSPEC_PACIA1716, UNSPEC_PACIB1716.
+	* config/aarch64/iterators.md (pauth_mnem_prefix): Add UNSPEC_AUTIA1716,
+	UNSPEC_AUTIB1716, UNSPEC_PACIA1716, UNSPEC_PACIB1716, UNSPEC_AUTIASP,
+	UNSPEC_AUTIBSP, UNSPEC_PACIASP, UNSPEC_PACIBSP.
+	* config/aarch64/iterators.md (pauth_hint_num_a): Replace
+	UNSPEC_PACI1716 and UNSPEC_AUTI1716 with UNSPEC_PACIA1716 and
+	UNSPEC_AUTIA1716 respectively.
+	* config/aarch64/iterators.md (pauth_hint_num_a): Rename to pauth_hint_num
+	and add UNSPEC_PACIBSP, UNSPEC_AUTIBSP, UNSPEC_PACIB1716, UNSPEC_AUTIB1716.
+	* doc/invoke.texi (-mbranch-protection): Add b-key type.
+	* config/aarch64/aarch64-bti-insert.c (aarch64_pac_insn_p): Rename
+	UNSPEC_PACISP to UNSPEC_PACIASP and UNSPEC_PACIBSP.
+
 2019-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (struct gimplify_omp_ctx): Add clauses member.

@@ -632,7 +632,8 @@ Objective-C and Objective-C++ Dialects}.
 -mlow-precision-recip-sqrt  -mlow-precision-sqrt  -mlow-precision-div @gol
 -mpc-relative-literal-loads @gol
 -msign-return-address=@var{scope} @gol
--mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}]|@var{bti} @gol
+-mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}
++@var{b-key}]|@var{bti} @gol
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}  @gol
 -moverride=@var{string}  -mverbose-cost-dump @gol
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{sysreg} @gol
@@ -15900,7 +15901,7 @@ functions, and @samp{all}, which enables pointer signing for all functions.  The
 default value is @samp{none}. This option has been deprecated by
 -mbranch-protection.
 
-@item -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}]|@var{bti}
+@item -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}+@var{b-key}]|@var{bti}
 @opindex mbranch-protection
 Select the branch protection features to use.
 @samp{none} is the default and turns off all types of branch protection.
@@ -15911,7 +15912,8 @@ level.
 level: signing functions that save the return address to memory (non-leaf
 functions will practically always do this) using the a-key.  The optional
 argument @samp{leaf} can be used to extend the signing to include leaf
-functions.
+functions.  The optional argument @samp{b-key} can be used to sign the functions
+with the B-key instead of the A-key.
 @samp{bti} turns on branch target identification mechanism.
 
 @item -msve-vector-bits=@var{bits}
