@@ -303,18 +303,38 @@ particular release.
       <code class="classname">minstd_rand0</code>.
    </p><p>
       <span class="emphasis"><em> 26.5.6 [rand.device] </em></span>
-      The default <code class="code">token</code> argument to the
-      <code class="classname">random_device</code> constructor is
-      <code class="literal">"default"</code>. Other valid arguments are
-      <code class="literal">"/dev/random"</code> and <code class="literal">"/dev/urandom"</code>,
-      which determine the character special file to read random bytes from.
-      The <code class="literal">"default"</code> token will read bytes from a hardware
-      RNG if available (currently this only supports the IA-32 RDRAND
-      instruction) otherwise it is equivalent to
-      <code class="literal">"/dev/urandom"</code>.
+      The <code class="code">token</code> parameter of the
+      <code class="classname">random_device</code> constructor can be used to select
+      a specific source of random bytes. The valid token values are shown
+      in the list below.
+      The default constructor uses the token <code class="literal">"default"</code>.
+      </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">"default"</code></span></dt><dd>
+          Select the first available source from the other entries below.
+          This is the only token that is always valid.
+        </dd><dt><span class="term"><code class="literal">"rand_s"</code></span></dt><dd>
+          Use the MSVCRT <code class="function">rand_s</code> function.
+          This token is only valid for mingw-w64 targets.
+        </dd><dt><span class="term"><code class="literal">"rdseed"</code>, </span><span class="term"><code class="literal">"rdrand"</code> or <code class="literal">"rdrnd"</code></span></dt><dd>
+          Use the IA-32 <code class="literal">RDSEED</code> or <code class="literal">RDRAND</code>
+          instruction to read from an on-chip hardware random number generator.
+          These tokens are only valid for x86 and x86_64 targets when both
+          the assembler and CPU support the corresponding instruction.
+        </dd><dt><span class="term"><code class="literal">"/dev/urandom"</code>, </span><span class="term"><code class="literal">"/dev/random"</code></span></dt><dd>
+          Use the named character special file to read random bytes from.
+          These tokens are only valid when the device files are present
+          and readable by the current user.
+        </dd><dt><span class="term"><code class="literal">"mt19937"</code>, </span><span class="term">seed value</span></dt><dd>
+          When no source of nondeterministic random numbers is available a
+          <code class="classname">mersenne_twister_engine</code> will be used.
+          An integer seed value can be used as the token and will be converted
+          to an <code class="code">unsigned long</code> using <code class="function">strtoul</code>.
+          These tokens are only valid when no other source of random bytes
+          is available.
+        </dd></dl></div><p>
       An exception of type <code class="classname">runtime_error</code> will be
-      thrown if a <code class="classname">random_device</code> object cannot open
-      or read from the source of random bytes.
+      thrown if a <code class="classname">random_device</code> object is constructed
+      with an invalid token, or if it cannot open or read from the source
+      of random bytes.
    </p><p>
       <span class="emphasis"><em>26.5.8.1 [rand.dist.general]</em></span>
       The algorithms used by the distributions should be documented here.

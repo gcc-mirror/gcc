@@ -1,3 +1,46 @@
+2019-05-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85494 use rdseed and rand_s in std::random_device
+	* acinclude.m4 (GLIBCXX_CHECK_X86_RDSEED): Define macro to check if
+	the assembler supports rdseed.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Use GLIBCXX_CHECK_X86_RDSEED.
+	* config/os/mingw32-w64/os_defines.h (_GLIBCXX_USE_CRT_RAND_S): Define.
+	* doc/html/*: Regenerate.
+	* doc/xml/manual/status_cxx2011.xml: Document new tokens.
+	* include/bits/random.h (random_device::random_device()): Always call
+	_M_init rather than _M_init_pretr1.
+	(random_device::random_device(const string&)): Likewise.
+	(random_device::operator()()): Always call _M_getval().
+	(random_device::_M_file): Replace first member of union with an
+	anonymous struct, with _M_file as its first member.
+	* src/c++11/random.cc [_GLIBCXX_X86_RDRAND] (USE_RDRAND): Define.
+	[_GLIBCXX_X86_RDSEED] (USE_RDSEED): Define.
+	(USE_MT19937): Define if none of the above are defined.
+	(USE_POSIX_FILE_IO): Define.
+	(_M_strtoul): Remove.
+	[USE_RDSEED] (__x86_rdseed): Define new function.
+	[_GLIBCXX_USE_CRT_RAND_S] (__winxp_rand_s): Define new function.
+	(random_device::_M_init(const string&)): Initialize new union members.
+	Add support for "rdseed" and "rand_s" tokens. Decide what the
+	"default" token does according to which USE_* macros are defined.
+	[USE_POSIX_FILE_IO]: Store a file descriptor.
+	[USE_MT19937]: Forward to _M_init_pretr1 instead.
+	(random_device::_M_init_pretr1(const string&)) [USE_MT19937]: Inline
+	code from _M_strtoul.
+	[!USE_MT19937]: Call _M_init, transforming the old default token or
+	numeric tokens to "default".
+	(random_device::_M_fini()) [USE_POSIX_FILE_IO]: Use close not fclose.
+	(random_device::_M_getval()): Use new union members to obtain a
+	random number from the stored function pointer or file descriptor.
+	[USE_MT19937]: Obtain a value from the mt19937 engine.
+	(random_device::_M_getval_pretr1()): Call _M_getval().
+	(random_device::_M_getentropy()) [USE_POSIX_FILE_IO]: Use _M_fd
+	instead of fileno.
+	[!USE_MT19937] (mersenne_twister): Do not instantiate when not needed.
+	* testsuite/26_numerics/random/random_device/85494.cc: New test.
+
 2019-05-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90634

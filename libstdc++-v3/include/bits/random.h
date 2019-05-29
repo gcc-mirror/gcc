@@ -1602,20 +1602,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // constructors, destructors and member functions
 
-#ifdef _GLIBCXX_USE_DEV_RANDOM
     random_device() { _M_init("default"); }
 
     explicit
     random_device(const std::string& __token) { _M_init(__token); }
 
+#if defined _GLIBCXX_USE_DEV_RANDOM
     ~random_device()
     { _M_fini(); }
-#else
-    random_device() { _M_init_pretr1("mt19937"); }
-
-    explicit
-    random_device(const std::string& __token)
-    { _M_init_pretr1(__token); }
 #endif
 
     static constexpr result_type
@@ -1638,13 +1632,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     result_type
     operator()()
-    {
-#ifdef _GLIBCXX_USE_DEV_RANDOM
-      return this->_M_getval();
-#else
-      return this->_M_getval_pretr1();
-#endif
-    }
+    { return this->_M_getval(); }
 
     // No copy functions.
     random_device(const random_device&) = delete;
@@ -1662,7 +1650,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     union
     {
-      void*      _M_file;
+      struct
+      {
+	void*      _M_file;
+	result_type (*_M_func)(void*);
+	int _M_fd;
+      };
       mt19937    _M_mt;
     };
   };

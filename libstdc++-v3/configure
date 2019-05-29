@@ -79870,6 +79870,47 @@ $as_echo "#define _GLIBCXX_X86_RDRAND 1" >>confdefs.h
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_x86_rdrand" >&5
 $as_echo "$ac_cv_x86_rdrand" >&6; }
 
+# Check if assembler supports rdseed opcode.
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for rdseed support in assembler" >&5
+$as_echo_n "checking for rdseed support in assembler... " >&6; }
+  if test "${ac_cv_x86_rdseed+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  ac_cv_x86_rdseed=no
+  case "$target" in
+    i?86-*-* | \
+    x86_64-*-*)
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm("rdseed %eax");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_x86_rdseed=yes
+else
+  ac_cv_x86_rdseed=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  esac
+
+fi
+
+  if test $ac_cv_x86_rdseed = yes; then
+
+$as_echo "#define _GLIBCXX_X86_RDSEED 1" >>confdefs.h
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_x86_rdseed" >&5
+$as_echo "$ac_cv_x86_rdseed" >&6; }
+
 
 # This depends on GLIBCXX_ENABLE_SYMVERS and GLIBCXX_IS_NATIVE.
 
