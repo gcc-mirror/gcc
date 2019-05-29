@@ -1,3 +1,13 @@
+2019-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (struct gimplify_omp_ctx): Add clauses member.
+	(gimplify_scan_omp_clauses): Initialize ctx->clauses.
+	(gimplify_adjust_omp_clauses_1): Transform lastprivate conditional
+	explicit clause on combined parallel into implicit shared clause.
+	(gimplify_adjust_omp_clauses): Move lastprivate conditional clause
+	and firstprivate if the decl has one too from combined parallel to
+	the worksharing construct.
+
 2019-05-28  Bill Schmidt  <wschmidt@linux.ibm.com>
 	    Michael Meissner  <meissner@linux.ibm.com>
 
