@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts" }
 
-export module frob;
+export module frob; // { dg-error "failed writing module 'frob' to 'frob.gcm':" }
 // { dg-module-bmi !frob }
 
 namespace {
@@ -17,4 +17,3 @@ static int frob ()
 
 export int f (int = frob ()); // { dg-error "references internal linkage" }
 int goof (X &); // { dg-error "references internal linkage" }
-// { dg-prune-output "failed to write" }

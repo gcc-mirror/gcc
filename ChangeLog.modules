@@ -1,3 +1,22 @@
+2019-05-29  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (maybe_add_bmi_prefix): Replace FORCE with LEN_P.
+	Set it.
+	(create_dirs): Input is guarantueed unique.
+	(module_state::check_read): Show full BMI filename in errors.
+	(finish_module_processing): Likewise. Rename output atomically.
+	gcc/testsuite/
+	* g++.dg/modules/atom-decl-3.C: Adjust diagnostics.
+	* g++.dg/modules/atom-preamble-3.C: Likewise.
+	* g++.dg/modules/bad-mapper-[13].C: Likewise.
+	* g++.dg/modules/circ-1_c.C: Likewise.
+	* g++.dg/modules/flag-1_b.C: Likewise.
+	* g++.dg/modules/import-2.C: Likewise.
+	* g++.dg/modules/internal-1.C: Likewise.
+	* g++.dg/modules/mod-stamp-1_d.C: Likewise.
+	* g++.dg/modules/p0713-3.C: Likewise.
+
 2019-05-28  Nathan Sidwell  <nathan@acm.org>
 
 	* decl.c (duplicate_decls): Assert a template newdecl has no

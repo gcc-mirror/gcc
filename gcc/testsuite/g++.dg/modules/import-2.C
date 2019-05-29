@@ -5,7 +5,7 @@
 // { dg-module-bmi "!bill" }
 
 import bill;
-// { dg-error {failed to read module 'bill.[^']*'} "" { target *-*-* } 0 }
+// { dg-regexp "In module imported at \[^\n]*import-2.C:7:.:\nbill: error: failed reading from 'bill.gcm': \[^\n]*\n" }
 
 // { dg-prune-output "fatal error:" }
 // { dg-prune-output "compilation terminated" }

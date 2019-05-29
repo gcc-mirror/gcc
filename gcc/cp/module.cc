@@ -4168,64 +4168,52 @@ set_bmi_repo (char *r)
    we are.  */
 
 static const char *
-maybe_add_bmi_prefix (const char *to, bool force = false)
+maybe_add_bmi_prefix (const char *to, size_t *len_p = NULL)
 {
-  bool prefix = bmi_repo && !IS_ABSOLUTE_PATH (to);
+  size_t len = len_p || bmi_repo_length ? strlen (to) : 0;
 
-  if (prefix || force)
+  if (bmi_repo_length && !IS_ABSOLUTE_PATH (to))
     {
-      size_t len = strlen (to);
-      size_t pos = 0;
-
       if (bmi_path_alloc < bmi_repo_length + len + 2)
 	{
 	  XDELETEVEC (bmi_path);
 	  bmi_path_alloc = bmi_repo_length + len * 2 + 2;
 	  bmi_path = XNEWVEC (char, bmi_path_alloc);
-	  bmi_path[0] = 0;
-	}
 
-      if (prefix && !bmi_path[0])
-	{
 	  memcpy (bmi_path, bmi_repo, bmi_repo_length);
 	  bmi_path[bmi_repo_length] = DIR_SEPARATOR;
-	  pos = bmi_repo_length + 1;
 	}
 
-      memcpy (&bmi_path[pos], to, len + 1);
+      memcpy (&bmi_path[bmi_repo_length + 1], to, len + 1);
+      len += bmi_repo_length + 1;
       to = bmi_path;
     }
-  
+
+  if (len_p)
+    *len_p = len;
+
   return to;
 }
 
 /* Try and create the directories of PATH.  */
 
-static bool
-create_dirs (const char *path)
+static void
+create_dirs (char *path)
 {
-  if (path != bmi_path)
-    maybe_add_bmi_prefix (path, true);
-
   /* Try and create the missing directories.  */
-  for (  char *base = bmi_path; *base; base++)
+  for (char *base = path; *base; base++)
     if (IS_DIR_SEPARATOR (*base))
       {
 	char sep = *base;
 	*base = 0;
-	int failed = mkdir (bmi_path, S_IRWXU | S_IRWXG | S_IRWXO);
+	int failed = mkdir (path, S_IRWXU | S_IRWXG | S_IRWXO);
 	*base = sep;
 	if (failed
 	    /* Maybe racing with another creator (of a *different*
 	       submodule).  */
 	    && errno != EEXIST)
-	  return false;
+	  break;
       }
-
-  if (path != bmi_path)
-    bmi_path[0] = 0;
-
-  return true;
 }
 
 /* If BMI path TO begins with the prefix, return a pointer to the
@@ -14697,10 +14685,9 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
 	error_at (loc, "failed to load binding %<%E%s%E@%s%>: %s",
 		  ns, &"::"[ns == global_namespace ? 2 : 0], id,
 		  get_flatname (), err);
-      else if (filename)
-	error_at  (loc, "failed to read module %qs: %s", filename, err);
       else
-	error_at  (loc, "failed to read module: %s", err);
+	error_at  (loc, "failed reading from %qs: %s",
+		   filename ? maybe_add_bmi_prefix (filename) : "UNKNOWN", err);
 
       if (e == EMFILE
 	  || e == ENFILE
@@ -15950,10 +15937,6 @@ finish_module_processing (cpp_reader *reader)
       if (flag_module_only)
 	warning (0, "%<-fmodule-only%> used for non-interface");
     }
-  else if (errorcount)
-    /* Report location of the module decl, not the module itself.  */
-    warning_at (state->from_loc, 0,
-		"not writing module %qs due to errors", state->get_flatname ());
   else
     {
       int fd = -1;
@@ -15964,46 +15947,70 @@ finish_module_processing (cpp_reader *reader)
 	 the line table preparation and writing logic.  */
       linemap_add (line_table, LC_ENTER, false, "", 0);
 
+      /* We write to a tmpname, and then atomically rename.  */
+      const char *path = NULL;
+      char *tmp_name = NULL;
+
       if (state->filename)
 	{
-	  const char *path = maybe_add_bmi_prefix (state->filename);
+	  size_t len = 0;
+	  path = maybe_add_bmi_prefix (state->filename, &len);
+	  tmp_name = XNEWVEC (char, len + 3);
+	  memcpy (tmp_name, path, len);
+	  strcpy (&tmp_name[len], "~");
 
 	  if (mkdeps *deps = cpp_get_deps (reader))
 	    deps_add_module (deps, state->get_flatname (true),
 			     state->get_flatname (false), path,
 			     state->is_header ());
 
-	  for (unsigned again = 2; ; again--)
-	    {
-	      // FIXME: write a temporary and then rename it, to avoid
-	      // race conditions
-	      fd = open (path, O_RDWR | O_CREAT | O_TRUNC | O_CLOEXEC,
-			 S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
-	      e = errno;
-	      if (fd >= 0 || !again || e != ENOENT)
-		break;
-	      create_dirs (path);
-	    }
+	  if (!errorcount)
+	    for (unsigned again = 2; ; again--)
+	      {
+		fd = open (tmp_name, O_RDWR | O_CREAT | O_TRUNC | O_CLOEXEC,
+			   S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+		e = errno;
+		if (fd >= 0 || !again || e != ENOENT)
+		  break;
+		create_dirs (tmp_name);
+	      }
 	}
       unsigned n = dump.push (state);
       state->announce ("creating");
 
-      elf_out to (fd, e);
-      if (to.begin ())
-	state->write (&to, reader);
-      if (!to.end ())
-	error_at (state->from_loc, "failed to write module %<%s%s%>: %s",
-		  state->get_flatname (true), state->get_flatname (false),
-		  to.get_error (state->filename));
+      if (errorcount)
+	warning_at (state->from_loc, 0,
+		    "not writing module %<%s%s%> due to errors",
+		    state->get_flatname (true), state->get_flatname (false));
+      else
+	{
+	  elf_out to (fd, e);
+	  if (to.begin ())
+	    state->write (&to, reader);
+	  if (to.end ())
+	    if (rename (tmp_name, path))
+	      to.set_error (errno);
 
-      dump.pop (n);
+	  if (to.get_error ())
+	    error_at (state->from_loc,
+		      "failed writing module %<%s%s%> to %qs: %s",
+		      state->get_flatname (true), state->get_flatname (false),
+		      path ? path : "UNKNOWN", to.get_error (state->filename));
+	}
+
       if (!errorcount)
 	module_mapper::export_done (state);
+      else if (path)
+	{
+	  /* We failed, attempt to erase all evidence we even tried.  */
+	  unlink (tmp_name);
+	  unlink (path);
+	  XDELETEVEC (tmp_name);
+	}
+
+      dump.pop (n);
       ggc_collect ();
     }
-
-  if (state && state->mod == MODULE_PURVIEW && state->filename && errorcount)
-    unlink (state->filename);
 
   /* We're done with the macro tables now.  */
   vec_free (macro_exports);
