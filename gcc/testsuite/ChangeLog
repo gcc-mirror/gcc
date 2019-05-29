@@ -1,3 +1,7 @@
+2019-05-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa/alias-access-spath-1.c: new testcase.
+
 2019-05-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/89875
