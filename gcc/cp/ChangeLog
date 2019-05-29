@@ -1,3 +1,9 @@
+2019-05-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/89875
+	* parser.c (cp_parser_sizeof_operand): When the type-id production
+	did not work out commit to the tentative parse.
+
 2019-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	P1091R3 - Extending structured bindings to be more like var decls

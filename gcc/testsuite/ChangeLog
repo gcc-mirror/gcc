@@ -1,7 +1,13 @@
+2019-05-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/89875
+	* g++.dg/cpp0x/decltype-pr66548.C: Remove xfail.
+	* g++.dg/template/sizeof-template-argument.C: Adjust expected error.
+
 2019-05-29  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
 
-	* gcc.target/aarch64/sve2/aarch64-sve2.exp: New file, regression driver
-	for AArch64 SVE2.
+	* gcc.target/aarch64/sve2/aarch64-sve2.exp: New file, regression
+	driver for AArch64 SVE2.
 	* gcc.target/aarch64/sve2/average_1.c: New test.
 	* lib/target-supports.exp (check_effective_target_aarch64_sve2): New
 	helper.
