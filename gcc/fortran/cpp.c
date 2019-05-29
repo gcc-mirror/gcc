@@ -222,14 +222,14 @@ void
 gfc_cpp_add_dep (const char *name, bool system)
 {
   if (!gfc_cpp_option.deps_skip_system || !system)
-    if (mrules *deps = cpp_get_deps (cpp_in))
+    if (mkdeps *deps = cpp_get_deps (cpp_in))
       deps_add_dep (deps, name);
 }
 
 void
 gfc_cpp_add_target (const char *name)
 {
-  if (mrules *deps = cpp_get_deps (cpp_in))
+  if (mkdeps *deps = cpp_get_deps (cpp_in))
     deps_add_target (deps, name, 0);
 }
 
@@ -607,7 +607,7 @@ gfc_cpp_init (void)
 	    cpp_assert (cpp_in, opt->arg);
 	}
       else if (opt->code == OPT_MT || opt->code == OPT_MQ)
-	if (mrules *deps = cpp_get_deps (cpp_in))
+	if (mkdeps *deps = cpp_get_deps (cpp_in))
 	  deps_add_target (deps, opt->arg, opt->code == OPT_MQ);
     }
 

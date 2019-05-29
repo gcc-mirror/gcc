@@ -2658,7 +2658,7 @@ Compile as a header unit.
 
 @item -fmodule-only
 @opindex fmodule-only
-Only emit the module BMI, inhibiting any object file.
+Only emit the module CMI, inhibiting any object file.
 
 @item -fforce-module-macros
 @opindex fforce-module-macros
@@ -30003,15 +30003,20 @@ work in progress.  The implementation is not complete, and the
 specification is a moving target.  Syntax, semantics and command-line
 options are not stable.}
 
-A module interface unit creates a Binary Module Interface (BMI) file,
+A module interface unit creates a Compiled Module Interface (CMI) file,
 encoding the exported declarations of the module.  Importing a module
-reads in the BMI.  The dependency graph of imports is a Directed
+reads in the CMI.  The dependency graph of imports is a Directed
 Acyclic Graph (DAG).
 
-A BMI may be a pathname containing subdirectories.  When creating an
-output BMI any missing directory components are created in a manner
-that is safe for concurrent builds creating multiple, different, BMIs
-within a common subdirectory graph.
+A CMI filename may be a pathname containing subdirectories.  When
+creating an output CMI any missing directory components are created in
+a manner that is safe for concurrent builds creating multiple,
+different, CMIs within a common subdirectory graph.
+
+CMI contents are written to a temporary file, which is then atomically
+renamed.  Observers will either see old contents (if there is an
+existing file), or complete new contents.  They will not observe the
+CMI during its creation.
 
 As this is not a standard part of C++, you need to use the
 @option{-fmodules-ts} option to enable it.
@@ -30054,8 +30059,8 @@ The @option{-fmodule-mapper} family of options are described below.
 @cindex C++ Module Mapper
 
 An module mapper provides a line-based server or file that the
-compiler queries to determine the mapping between module names and BMI
-files.  It is also used to build BMIs on demand.  A mapper may be
+compiler queries to determine the mapping between module names and CMI
+files.  It is also used to build CMIs on demand.  A mapper may be
 specified with the @option{-fmodule-mapper=@var{val}} option or
 @env{CXX_MODULE_MAPPER} environment variable.  The value may have
 one of the following forms:
@@ -30094,7 +30099,7 @@ cause the compiler to read stdin or write stdout.
 A mapping file consisting of space-separated module-name, filename
 pairs, one per line.  Only the mappings for the direct imports and any
 module export name need be provided.  If other mappings are provided,
-they override those stored in any imported BMI files.  A repository
+they override those stored in any imported CMI files.  A repository
 root may be specified in the mapping file by using @samp{$root} as the
 module name in the first active line.
 
@@ -30126,13 +30131,14 @@ should accept and respond to the following commands:
 @table @gcctabopt
 
 @item DONE @var{module}
-The compilation has completed the interface of @var{module}.
-There is no response.  Note that the compilation may not have
-completed the object-file generation of the interface unit.
+The compilation has completed the interface of @var{module}.  There is
+no response.  It is now safe to read the generated CMI.  Note that the
+compilation may not have completed the object-file generation of the
+interface unit.
 
 @item EXPORT @var{module}
-The compilation is of a module interface unit, and will generate a BMI
-for @var{module}.  The response should be @samp{OK @var{bmipath}}.
+The compilation is of a module interface unit, and will generate a CMI
+for @var{module}.  The response should be @samp{OK @var{cmipath}}.
 
 @item HELLO @var{ver} @var{kind} @var{ident}
 This is the first command.  It informs the server of the name of the
@@ -30141,7 +30147,7 @@ source being compiled.  Response is either @samp{HELLO
 
 @item IMPORT @var{module}
 A query for an import (including for a module implementation unit).
-The response is @samp{OK @var{bmipath}} to indicate a BMI file.  If
+The response is @samp{OK @var{cmipath}} to indicate a CMI file.  If
 the request is not fulfilable, the response is @samp{ERROR
 [@var{msg}]}.  Usually an error response will cause compilation to
 terminate.
@@ -30175,8 +30181,8 @@ The following metavariables were used:
 
 @table @gcctabopt
 
-@item @var{bmipath}
-Pathname of a BMI file.
+@item @var{cmipath}
+Pathname of a CMI file.
 
 @item @var{from}
 The source path of the file containing the import or include.
@@ -30210,13 +30216,13 @@ When delivering paths to the compiler, paths relative to the a
 repository-root directory should be used.  This server informs the
 compiler of this root in the initial handshake, using a path relative
 to the compiler's working directory, or an absolute one.  Compilers
-may embed the path of a direct import BMI file into an output BMI.
+may embed the path of a direct import CMI file into an output CMI.
 This path will be relative to the repository.  Such a path reduces the
 server traffic, but requires the build system to recreate the same
 directory structure within the repository across a parellelized build
 system.
 
-The default mapper generates BMI files in the current directory,
+The default mapper generates CMI files in the current directory,
 appending a @samp{.gcm} suffix to the module name.  Header unit names
 append @samp{.gcmu}.  They may also contain directory separators.
 
@@ -30230,11 +30236,11 @@ provide their own mappers.
 
 Modules affect preprocessing because of header units and include
 translation.  Some uses of the preprocessor as a separate step will
-either not produce a correct output, or require BMIs to be available.
+either not produce a correct output, or require CMIs to be available.
 
 Header units import macros.  These macros can affect later conditional
 inclusion, which therefore can cascade to differing import sets.  When
-preprocessing, it is necessary to load the BMI.  If a header unit is
+preprocessing, it is necessary to load the CMI.  If a header unit is
 unavailable, the preprocessor will issue a warning and continue (when
 no just preprocessing, an error is emitted).  Detecting such imports
 requires preprocessor tokenization of the input stream to phase 4

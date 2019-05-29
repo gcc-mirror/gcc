@@ -4676,7 +4676,9 @@ build_template_decl (tree decl, tree parms, bool member_template_p)
   tree tmpl = build_lang_decl (TEMPLATE_DECL, DECL_NAME (decl), NULL_TREE);
   SET_DECL_LANGUAGE (tmpl, DECL_LANGUAGE (decl));
   DECL_TEMPLATE_PARMS (tmpl) = parms;
+  DECL_TEMPLATE_RESULT (tmpl) = decl;
   DECL_CONTEXT (tmpl) = DECL_CONTEXT (decl);
+  TREE_TYPE (tmpl) = TREE_TYPE (decl);
   DECL_SOURCE_LOCATION (tmpl) = DECL_SOURCE_LOCATION (decl);
   DECL_MEMBER_TEMPLATE_P (tmpl) = member_template_p;
 
@@ -5022,8 +5024,6 @@ process_partial_specialization (tree decl)
   // Build the template decl.
   tree tmpl = build_template_decl (decl, current_template_parms,
 				   DECL_MEMBER_TEMPLATE_P (maintmpl));
-  TREE_TYPE (tmpl) = type;
-  DECL_TEMPLATE_RESULT (tmpl) = decl;
   SET_DECL_TEMPLATE_SPECIALIZATION (tmpl);
   DECL_TEMPLATE_INFO (tmpl) = build_template_info (maintmpl, specargs);
   DECL_PRIMARY_TEMPLATE (tmpl) = maintmpl;
@@ -5695,8 +5695,6 @@ push_template_decl_real (tree decl, bool is_friend)
 	  new_tmpl
 	    = build_template_decl (decl, current_template_parms,
 				   member_template_p);
-	  DECL_TEMPLATE_RESULT (new_tmpl) = decl;
-	  TREE_TYPE (new_tmpl) = TREE_TYPE (decl);
 	  DECL_TI_TEMPLATE (decl) = new_tmpl;
 	  SET_DECL_TEMPLATE_SPECIALIZATION (new_tmpl);
 	  DECL_TEMPLATE_INFO (new_tmpl)
@@ -5766,27 +5764,35 @@ push_template_decl_real (tree decl, bool is_friend)
 	}
     }
 
-  DECL_TEMPLATE_RESULT (tmpl) = decl;
-  TREE_TYPE (tmpl) = TREE_TYPE (decl);
+  gcc_checking_assert (DECL_TEMPLATE_RESULT (tmpl) == decl);
 
-  /* Push template declarations for global functions and types.  Note
-     that we do not try to push a global template friend declared in a
-     template class; such a thing may well depend on the template
-     parameters of the class.  */
-  if (new_template_p && !ctx
-      && !(is_friend && template_class_depth (current_class_type) > 0))
+
+  if (new_template_p)
     {
-      tmpl = pushdecl_namespace_level (tmpl, is_friend);
-      if (tmpl == error_mark_node)
-	return error_mark_node;
-
-      /* Hide template friend classes that haven't been declared yet.  */
-      if (is_friend && TREE_CODE (decl) == TYPE_DECL)
+      /* Push template declarations for global functions and types.
+	 Note that we do not try to push a global template friend
+	 declared in a template class; such a thing may well depend on
+	 the template parameters of the class and we'll push it when
+	 instantiating the befriending class.  */
+      if (!ctx
+	  && !(is_friend && template_class_depth (current_class_type) > 0))
 	{
-	  DECL_ANTICIPATED (tmpl) = 1;
-	  DECL_FRIEND_P (tmpl) = 1;
+	  tmpl = pushdecl_namespace_level (tmpl, is_friend);
+	  if (tmpl == error_mark_node)
+	    return error_mark_node;
+
+	  /* Hide template friend classes that haven't been declared yet.  */
+	  // FIXME: See pushtag, can we copy from the TYPE_DECL?
+	  if (is_friend && TREE_CODE (decl) == TYPE_DECL)
+	    {
+	      DECL_ANTICIPATED (tmpl) = 1;
+	      DECL_FRIEND_P (tmpl) = 1;
+	    }
 	}
     }
+  else
+    /* The type may have been completed, or (erroneously) changed.  */
+    TREE_TYPE (tmpl) = TREE_TYPE (decl);
 
   if (is_primary)
     {
@@ -5863,8 +5869,6 @@ add_inherited_template_parms (tree fn, tree inherited)
   tree tmpl = build_template_decl (fn, parms, /*member*/true);
   tree args = template_parms_to_args (parms);
   DECL_TEMPLATE_INFO (fn) = build_template_info (tmpl, args);
-  TREE_TYPE (tmpl) = TREE_TYPE (fn);
-  DECL_TEMPLATE_RESULT (tmpl) = fn;
   DECL_ARTIFICIAL (tmpl) = true;
   DECL_PRIMARY_TEMPLATE (tmpl) = tmpl;
   return tmpl;
@@ -27308,8 +27312,6 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
   DECL_NONCONVERTING_P (ded_fn) = explicit_p;
   tree ded_tmpl = build_template_decl (ded_fn, tparms, /*member*/false);
   DECL_ARTIFICIAL (ded_tmpl) = true;
-  DECL_TEMPLATE_RESULT (ded_tmpl) = ded_fn;
-  TREE_TYPE (ded_tmpl) = TREE_TYPE (ded_fn);
   DECL_TEMPLATE_INFO (ded_fn) = build_template_info (ded_tmpl, targs);
   DECL_PRIMARY_TEMPLATE (ded_tmpl) = ded_tmpl;
   if (DECL_P (ctor))

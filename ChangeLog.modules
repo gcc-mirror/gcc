@@ -1,6 +1,19 @@
 2019-05-29  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* decl.c (duplicate_decls): Remove duplicate assert.
+	* pt.c (build_template_decl): Set RESULT & TYPE of the template
+	here ...
+	(process_partial_specialization): ... not here ...
+	(add_inherited_template_parms): ... nor here ...
+	(push_template_decl_Real): ... nor here.  Refactor.
+	gcc/
+	* doc/invoke.texi (C++ Modules): Document atomicity.
+	gcc/fortran/
+	* cpp.c (gfc_cpp_add_dep, gfc_cpp_add_target, gfc_cpp_init):
+	Rename mrules to mkdeps.
+
+	gcc/cp/
 	* module.cc (maybe_add_bmi_prefix): Replace FORCE with LEN_P.
 	Set it.
 	(create_dirs): Input is guarantueed unique.

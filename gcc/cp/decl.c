@@ -2055,7 +2055,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       tree old_result = DECL_TEMPLATE_RESULT (olddecl);
       tree new_result = DECL_TEMPLATE_RESULT (newdecl);
       TREE_TYPE (olddecl) = TREE_TYPE (old_result);
-      gcc_assert (!DECL_TEMPLATE_SPECIALIZATIONS (newdecl));
 
       /* The new decl should not already have gathered any
 	 specializations.  */
