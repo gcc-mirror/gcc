@@ -1,3 +1,13 @@
+2019-05-29  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*save_multiple<mode>): Rename from
+	save_multiple<mode>.
+	(*restore_multiple<mode>): Rename from restore_multiple<mode>.
+	(*restore_multiple_and_return<mode>): Rename from
+	restore_multiple_and_return<mode>.
+	(*restore_multiple_leave_return<mode>): Rename from
+	restore_multiple_leave_return<mode>.
+
 2019-05-29  Yoshinori Sato  <ysato@users.sourceforge.jp>
 
 	* config.gcc (rx-*-linux*): New target.
