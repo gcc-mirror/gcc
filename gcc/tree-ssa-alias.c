@@ -787,6 +787,10 @@ same_type_for_tbaa (tree type1, tree type2)
   type1 = TYPE_MAIN_VARIANT (type1);
   type2 = TYPE_MAIN_VARIANT (type2);
 
+  /* Handle the most common case first.  */
+  if (type1 == type2)
+    return 1;
+
   /* If we would have to do structural comparison bail out.  */
   if (TYPE_STRUCTURAL_EQUALITY_P (type1)
       || TYPE_STRUCTURAL_EQUALITY_P (type2))
