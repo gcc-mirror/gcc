@@ -2513,6 +2513,17 @@ create_function_arglist (gfc_symbol * sym)
 	  TREE_READONLY (length) = 1;
 	  gfc_finish_decl (length);
 
+	  /* Marking the length DECL_HIDDEN_STRING_LENGTH will lead
+	     to tail calls being disabled.  Only do that if we
+	     potentially have broken callers.  */
+	  if (flag_tail_call_workaround
+	      && f->sym->ts.u.cl
+	      && f->sym->ts.u.cl->length
+	      && f->sym->ts.u.cl->length->expr_type == EXPR_CONSTANT
+	      && (flag_tail_call_workaround == 2
+		  || f->sym->ns->implicit_interface_calls))
+	    DECL_HIDDEN_STRING_LENGTH (length) = 1;
+
 	  /* Remember the passed value.  */
           if (!f->sym->ts.u.cl ||  f->sym->ts.u.cl->passed_length)
             {
