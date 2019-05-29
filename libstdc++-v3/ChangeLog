@@ -1,5 +1,7 @@
 2019-05-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/util/testsuite_api.h: Remove names of unused parameters.
+
 	PR libstdc++/85494 use rdseed and rand_s in std::random_device
 	* acinclude.m4 (GLIBCXX_CHECK_X86_RDSEED): Define macro to check if
 	the assembler supports rdseed.
