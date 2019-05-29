@@ -1,5 +1,8 @@
 2019-05-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/90628
+	* c-c++-common/builtin-arith-overflow-3.c: New test.
+
 	P1091R3 - Extending structured bindings to be more like var decls
 	P1381R1 - Reference capture of structured bindings
 	* g++.dg/cpp1z/decomp3.C (test): For static, expect only warning
