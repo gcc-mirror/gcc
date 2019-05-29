@@ -5995,6 +5995,13 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 			"has pointer to boolean type", fndecl);
 	      return false;
 	    }
+	  else if (TYPE_READONLY (TREE_TYPE (TREE_TYPE (args[2]))))
+	    {
+	      error_at (ARG_LOCATION (2), "argument 3 in call to function %qE "
+			"has pointer to %<const%> type (%qT)", fndecl,
+			TREE_TYPE (args[2]));
+	      return false;
+	    }
 	  return true;
 	}
       return false;
