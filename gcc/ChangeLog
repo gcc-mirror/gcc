@@ -1,3 +1,7 @@
+2019-05-28  Michael Meissner  <meissner@linux.ibm.com>
+
+	* rtl.h (LABEL_REF_P): New #define.
+
 2019-05-28  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (hppa_profile_hook): Remove offset adjustment.
