@@ -1,3 +1,24 @@
+2019-05-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/90539
+	* gfortran.h (gfc_has_dimen_vector_ref): Add prototype.
+	* trans.h (gfc_conv_subref_array_arg): Add argument check_contiguous.
+	(gfc_conv_is_contiguous_expr): Add prototype.
+	* frontend-passes.c (has_dimen_vector_ref): Remove prototype,
+	rename to
+	(gfc_has_dimen_vector_ref): New function name.
+	(matmul_temp_args): Use gfc_has_dimen_vector_ref.
+	(inline_matmul_assign): Likewise.
+	* trans-array.c (gfc_conv_array_parameter): Also check for absence
+	of a vector subscript before calling gfc_conv_subref_array_arg.
+	Pass additional argument to gfc_conv_subref_array_arg.
+	* trans-expr.c (gfc_conv_subref_array_arg): Add argument
+	check_contiguous. If that is true, check if the argument
+	is contiguous and do not repack in that case.
+	* trans-intrinsic.c (gfc_conv_intrinsic_is_contiguous): Split
+	away most of the work into, and call
+	(gfc_conv_intrinsic_is_coniguous_expr): New function.
+
 2019-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/90329
