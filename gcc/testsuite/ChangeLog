@@ -1,3 +1,15 @@
+2019-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	P1091R3 - Extending structured bindings to be more like var decls
+	P1381R1 - Reference capture of structured bindings
+	* g++.dg/cpp1z/decomp3.C (test): For static, expect only warning
+	instead of error and only for c++17_down.  Add a thread_local test.
+	(z2): Add a __thread test.
+	* g++.dg/cpp2a/decomp1.C: New test.
+	* g++.dg/cpp2a/decomp1-aux.cc: New file.
+	* g++.dg/cpp2a/decomp2.C: New test.
+	* g++.dg/cpp2a/decomp3.C: New test.
+
 2019-05-29  Martin Liska  <mliska@suse.cz>
 
 	PR testsuite/90657
