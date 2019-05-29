@@ -1,5 +1,9 @@
 2019-05-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/85494
+	* testsuite/26_numerics/random/random_device/cons/token.cc: Fix test
+	that fails on mingw-w64.
+
 	PR libstdc++/88881
 	* src/c++17/fs_ops.cc [_GLIBCXX_FILESYSTEM_IS_WINDOWS]
 	(status(const path&, error_code&)): Use parent_path() to remove
