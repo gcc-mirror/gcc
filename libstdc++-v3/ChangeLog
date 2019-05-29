@@ -1,5 +1,8 @@
 2019-05-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/c++17/fs_path.cc (path::parent_path()): Create whole path at
+	once instead of building it iteratively.
+
 	* testsuite/util/testsuite_api.h: Remove names of unused parameters.
 
 	PR libstdc++/85494 use rdseed and rand_s in std::random_device
