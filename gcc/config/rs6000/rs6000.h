@@ -1490,6 +1490,15 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 #define CALL_LONG		0x00000008	/* always call indirect */
 #define CALL_LIBCALL		0x00000010	/* libcall */
 
+/* Identify PLT sequence for rs6000_pltseq_template.  */
+enum rs6000_pltseq_enum {
+  RS6000_PLTSEQ_TOCSAVE,
+  RS6000_PLTSEQ_PLT16_HA,
+  RS6000_PLTSEQ_PLT16_LO,
+  RS6000_PLTSEQ_MTCTR,
+  RS6000_PLTSEQ_PLT_PCREL34
+};
+
 #define IS_V4_FP_ARGS(OP) \
   ((INTVAL (OP) & (CALL_V4_CLEAR_FP_ARGS | CALL_V4_SET_FP_ARGS)) != 0)
 

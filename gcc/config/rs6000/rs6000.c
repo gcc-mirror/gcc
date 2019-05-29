@@ -21267,8 +21267,10 @@ rs6000_call_template_1 (rtx *operands, unsigned int funop, bool sibcall)
 	   (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT && flag_pic == 2
 	    ? "+32768" : ""));
 
-  static char str[32];  /* 2 spare */
-  if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
+  static char str[32];  /* 1 spare */
+  if (rs6000_pcrel_p (cfun))
+    sprintf (str, "b%s %s@notoc%s", sibcall ? "" : "l", z, arg);
+  else if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
     sprintf (str, "b%s %s%s%s", sibcall ? "" : "l", z, arg,
 	     sibcall ? "" : "\n\tnop");
   else if (DEFAULT_ABI == ABI_V4)
@@ -21332,6 +21334,16 @@ rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
 
   /* Currently, funop is either 0 or 1.  The maximum string is always
      a !speculate 64-bit __tls_get_addr call.
+
+     ABI_ELFv2, pcrel:
+     . 27	.reloc .,R_PPC64_TLSGD,%2\n\t
+     . 35	.reloc .,R_PPC64_PLTSEQ_NOTOC,%z1\n\t
+     .  9	crset 2\n\t
+     . 27	.reloc .,R_PPC64_TLSGD,%2\n\t
+     . 36	.reloc .,R_PPC64_PLTCALL_NOTOC,%z1\n\t
+     .  8	beq%T1l-
+     .---
+     .142
 
      ABI_AIX:
      .  9	ld 2,%3\n\t
@@ -21398,23 +21410,31 @@ rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
 	    gcc_unreachable ();
 	}
 
+      const char *notoc = rs6000_pcrel_p (cfun) ? "_NOTOC" : "";
       const char *addend = (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT
 			    && flag_pic == 2 ? "+32768" : "");
       if (!speculate)
 	{
 	  s += sprintf (s,
-			"%s.reloc .,R_PPC%s_PLTSEQ,%%z%u%s\n\t",
-			tls, rel64, funop, addend);
+			"%s.reloc .,R_PPC%s_PLTSEQ%s,%%z%u%s\n\t",
+			tls, rel64, notoc, funop, addend);
 	  s += sprintf (s, "crset 2\n\t");
 	}
       s += sprintf (s,
-		    "%s.reloc .,R_PPC%s_PLTCALL,%%z%u%s\n\t",
-		    tls, rel64, funop, addend);
+		    "%s.reloc .,R_PPC%s_PLTCALL%s,%%z%u%s\n\t",
+		    tls, rel64, notoc, funop, addend);
     }
   else if (!speculate)
     s += sprintf (s, "crset 2\n\t");
 
-  if (DEFAULT_ABI == ABI_AIX)
+  if (rs6000_pcrel_p (cfun))
+    {
+      if (speculate)
+	sprintf (s, "b%%T%ul", funop);
+      else
+	sprintf (s, "beq%%T%ul-", funop);
+    }
+  else if (DEFAULT_ABI == ABI_AIX)
     {
       if (speculate)
 	sprintf (s,
@@ -21467,63 +21487,71 @@ rs6000_indirect_sibcall_template (rtx *operands, unsigned int funop)
 }
 
 #if HAVE_AS_PLTSEQ
-/* Output indirect call insns.
-   WHICH is 0 for tocsave, 1 for plt16_ha, 2 for plt16_lo, 3 for mtctr.  */
+/* Output indirect call insns.  WHICH identifies the type of sequence.  */
 const char *
 rs6000_pltseq_template (rtx *operands, int which)
 {
   const char *rel64 = TARGET_64BIT ? "64" : "";
-  char tls[28];
+  char tls[30];
   tls[0] = 0;
   if (TARGET_TLS_MARKERS && GET_CODE (operands[3]) == UNSPEC)
     {
+      char off = which == RS6000_PLTSEQ_PLT_PCREL34 ? '8' : '4';
       if (XINT (operands[3], 1) == UNSPEC_TLSGD)
-	sprintf (tls, ".reloc .,R_PPC%s_TLSGD,%%3\n\t",
-		 rel64);
+	sprintf (tls, ".reloc .-%c,R_PPC%s_TLSGD,%%3\n\t",
+		 off, rel64);
       else if (XINT (operands[3], 1) == UNSPEC_TLSLD)
-	sprintf (tls, ".reloc .,R_PPC%s_TLSLD,%%&\n\t",
-		 rel64);
+	sprintf (tls, ".reloc .-%c,R_PPC%s_TLSLD,%%&\n\t",
+		 off, rel64);
       else
 	gcc_unreachable ();
     }
 
   gcc_assert (DEFAULT_ABI == ABI_ELFv2 || DEFAULT_ABI == ABI_V4);
-  static char str[96];  /* 15 spare */
-  const char *off = WORDS_BIG_ENDIAN ? "+2" : "";
+  static char str[96];  /* 10 spare */
+  char off = WORDS_BIG_ENDIAN ? '2' : '4';
   const char *addend = (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT
 			&& flag_pic == 2 ? "+32768" : "");
   switch (which)
     {
-    case 0:
+    case RS6000_PLTSEQ_TOCSAVE:
       sprintf (str,
-	       "%s.reloc .,R_PPC%s_PLTSEQ,%%z2\n\t"
-	       "st%s",
-	       tls, rel64, TARGET_64BIT ? "d 2,24(1)" : "w 2,12(1)");
+	       "st%s\n\t"
+	       "%s.reloc .-4,R_PPC%s_PLTSEQ,%%z2",
+	       TARGET_64BIT ? "d 2,24(1)" : "w 2,12(1)",
+	       tls, rel64);
       break;
-    case 1:
+    case RS6000_PLTSEQ_PLT16_HA:
       if (DEFAULT_ABI == ABI_V4 && !flag_pic)
 	sprintf (str,
-		 "%s.reloc .%s,R_PPC%s_PLT16_HA,%%z2\n\t"
-		 "lis %%0,0",
+		 "lis %%0,0\n\t"
+		 "%s.reloc .-%c,R_PPC%s_PLT16_HA,%%z2",
 		 tls, off, rel64);
       else
 	sprintf (str,
-		 "%s.reloc .%s,R_PPC%s_PLT16_HA,%%z2%s\n\t"
-		 "addis %%0,%%1,0",
+		 "addis %%0,%%1,0\n\t"
+		 "%s.reloc .-%c,R_PPC%s_PLT16_HA,%%z2%s",
 		 tls, off, rel64, addend);
       break;
-    case 2:
+    case RS6000_PLTSEQ_PLT16_LO:
       sprintf (str,
-	       "%s.reloc .%s,R_PPC%s_PLT16_LO%s,%%z2%s\n\t"
-	       "l%s %%0,0(%%1)",
-	       tls, off, rel64, TARGET_64BIT ? "_DS" : "", addend,
-	       TARGET_64BIT ? "d" : "wz");
+	       "l%s %%0,0(%%1)\n\t"
+	       "%s.reloc .-%c,R_PPC%s_PLT16_LO%s,%%z2%s",
+	       TARGET_64BIT ? "d" : "wz",
+	       tls, off, rel64, TARGET_64BIT ? "_DS" : "", addend);
       break;
-    case 3:
+    case RS6000_PLTSEQ_MTCTR:
       sprintf (str,
-	       "%s.reloc .,R_PPC%s_PLTSEQ,%%z2%s\n\t"
-	       "mtctr %%1",
+	       "mtctr %%1\n\t"
+	       "%s.reloc .-4,R_PPC%s_PLTSEQ,%%z2%s",
 	       tls, rel64, addend);
+      break;
+    case RS6000_PLTSEQ_PLT_PCREL34:
+      sprintf (str,
+	       "pl%s %%0,0(0),1\n\t"
+	       "%s.reloc .-8,R_PPC%s_PLT_PCREL34_NOTOC,%%z2",
+	       TARGET_64BIT ? "d" : "wz",
+	       tls, rel64);
       break;
     default:
       gcc_unreachable ();
@@ -24703,6 +24731,52 @@ rs6000_return_addr (int count, rtx frame)
   return get_hard_reg_initial_val (Pmode, LR_REGNO);
 }
 
+/* Helper function for rs6000_function_ok_for_sibcall.  */
+
+static bool
+rs6000_decl_ok_for_sibcall (tree decl)
+{
+  /* Sibcalls are always fine for the Darwin ABI.  */
+  if (DEFAULT_ABI == ABI_DARWIN)
+    return true;
+
+  if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
+    {
+      /* Under the AIX or ELFv2 ABIs we can't allow calls to non-local
+	 functions, because the callee may have a different TOC pointer to
+	 the caller and there's no way to ensure we restore the TOC when
+	 we return.  */
+      if (!decl || DECL_EXTERNAL (decl) || DECL_WEAK (decl)
+	  || !(*targetm.binds_local_p) (decl))
+	return false;
+
+      /* Similarly, if the caller preserves the TOC pointer and the callee
+	 doesn't (or vice versa), proper TOC setup or restoration will be
+	 missed.  For example, suppose A, B, and C are in the same binary
+	 and A -> B -> C.  A and B preserve the TOC pointer but C does not,
+	 and B -> C is eligible as a sibcall.  A will call B through its
+	 local entry point, so A will not restore its TOC itself.  B calls
+	 C with a sibcall, so it will not restore the TOC.  C does not
+	 preserve the TOC, so it may clobber r2 with impunity.  Returning
+	 from C will result in a corrupted TOC for A.  */
+      else if (rs6000_fndecl_pcrel_p (decl) != rs6000_pcrel_p (cfun))
+	return false;
+
+      else
+	return true;
+    }
+
+  /*  With the secure-plt SYSV ABI we can't make non-local calls when
+      -fpic/PIC because the plt call stubs use r30.  */
+  if (DEFAULT_ABI != ABI_V4
+      || (TARGET_SECURE_PLT
+	  && flag_pic
+	  && (!decl || !((*targetm.binds_local_p) (decl)))))
+    return false;
+
+  return true;
+}
+
 /* Say whether a function is a candidate for sibcall handling or not.  */
 
 static bool
@@ -24748,22 +24822,7 @@ rs6000_function_ok_for_sibcall (tree decl, tree exp)
 	return false;
     }
 
-  /* Under the AIX or ELFv2 ABIs we can't allow calls to non-local
-     functions, because the callee may have a different TOC pointer to
-     the caller and there's no way to ensure we restore the TOC when
-     we return.  With the secure-plt SYSV ABI we can't make non-local
-     calls when -fpic/PIC because the plt call stubs use r30.  */
-  if (DEFAULT_ABI == ABI_DARWIN
-      || ((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
-	  && decl
-	  && !DECL_EXTERNAL (decl)
-	  && !DECL_WEAK (decl)
-	  && (*targetm.binds_local_p) (decl))
-      || (DEFAULT_ABI == ABI_V4
-	  && (!TARGET_SECURE_PLT
-	      || !flag_pic
-	      || (decl
-		  && (*targetm.binds_local_p) (decl)))))
+  if (rs6000_decl_ok_for_sibcall (decl))
     {
       tree attr_list = TYPE_ATTRIBUTES (fntype);
 
@@ -32591,12 +32650,18 @@ rs6000_longcall_ref (rtx call_ref, rtx arg)
   if (TARGET_PLTSEQ)
     {
       rtx base = const0_rtx;
-      int regno;
-      if (DEFAULT_ABI == ABI_ELFv2)
+      int regno = 12;
+      if (rs6000_pcrel_p (cfun))
 	{
-	  base = gen_rtx_REG (Pmode, TOC_REGISTER);
-	  regno = 12;
+	  rtx reg = gen_rtx_REG (Pmode, regno);
+	  rtx u = gen_rtx_UNSPEC (Pmode, gen_rtvec (3, base, call_ref, arg),
+				  UNSPEC_PLT_PCREL);
+	  emit_insn (gen_rtx_SET (reg, u));
+	  return reg;
 	}
+
+      if (DEFAULT_ABI == ABI_ELFv2)
+	base = gen_rtx_REG (Pmode, TOC_REGISTER);
       else
 	{
 	  if (flag_pic)
@@ -37705,37 +37770,38 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
   if (!SYMBOL_REF_P (func)
       || (DEFAULT_ABI == ABI_AIX && !SYMBOL_REF_FUNCTION_P (func)))
     {
-      /* Save the TOC into its reserved slot before the call,
-	 and prepare to restore it after the call.  */
-      rtx stack_toc_offset = GEN_INT (RS6000_TOC_SAVE_SLOT);
-      rtx stack_toc_unspec = gen_rtx_UNSPEC (Pmode,
-					     gen_rtvec (1, stack_toc_offset),
-					     UNSPEC_TOCSLOT);
-      toc_restore = gen_rtx_SET (toc_reg, stack_toc_unspec);
-
-      /* Can we optimize saving the TOC in the prologue or
-	 do we need to do it at every call?  */
-      if (TARGET_SAVE_TOC_INDIRECT && !cfun->calls_alloca)
-	cfun->machine->save_toc_in_prologue = true;
-      else
+      if (!rs6000_pcrel_p (cfun))
 	{
-	  rtx stack_ptr = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
-	  rtx stack_toc_mem = gen_frame_mem (Pmode,
-					     gen_rtx_PLUS (Pmode, stack_ptr,
-							   stack_toc_offset));
-	  MEM_VOLATILE_P (stack_toc_mem) = 1;
-	  if (is_pltseq_longcall)
-	    {
-	      /* Use USPEC_PLTSEQ here to emit every instruction in an
-		 inline PLT call sequence with a reloc, enabling the
-		 linker to edit the sequence back to a direct call
-		 when that makes sense.  */
-	      rtvec v = gen_rtvec (3, toc_reg, func_desc, tlsarg);
-	      rtx mark_toc_reg = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
-	      emit_insn (gen_rtx_SET (stack_toc_mem, mark_toc_reg));
-	    }
+	  /* Save the TOC into its reserved slot before the call,
+	     and prepare to restore it after the call.  */
+	  rtx stack_toc_offset = GEN_INT (RS6000_TOC_SAVE_SLOT);
+	  rtx stack_toc_unspec = gen_rtx_UNSPEC (Pmode,
+						 gen_rtvec (1, stack_toc_offset),
+						 UNSPEC_TOCSLOT);
+	  toc_restore = gen_rtx_SET (toc_reg, stack_toc_unspec);
+
+	  /* Can we optimize saving the TOC in the prologue or
+	     do we need to do it at every call?  */
+	  if (TARGET_SAVE_TOC_INDIRECT && !cfun->calls_alloca)
+	    cfun->machine->save_toc_in_prologue = true;
 	  else
-	    emit_move_insn (stack_toc_mem, toc_reg);
+	    {
+	      rtx stack_ptr = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
+	      rtx stack_toc_mem = gen_frame_mem (Pmode,
+						 gen_rtx_PLUS (Pmode, stack_ptr,
+							       stack_toc_offset));
+	      MEM_VOLATILE_P (stack_toc_mem) = 1;
+	      if (HAVE_AS_PLTSEQ
+		  && DEFAULT_ABI == ABI_ELFv2
+		  && GET_CODE (func_desc) == SYMBOL_REF)
+		{
+		  rtvec v = gen_rtvec (3, toc_reg, func_desc, tlsarg);
+		  rtx mark_toc_reg = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
+		  emit_insn (gen_rtx_SET (stack_toc_mem, mark_toc_reg));
+		}
+	      else
+		emit_move_insn (stack_toc_mem, toc_reg);
+	    }
 	}
 
       if (DEFAULT_ABI == ABI_ELFv2)
@@ -37812,10 +37878,12 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
     }
   else
     {
-      /* Direct calls use the TOC: for local calls, the callee will
-	 assume the TOC register is set; for non-local calls, the
-	 PLT stub needs the TOC register.  */
-      abi_reg = toc_reg;
+      /* No TOC register needed for calls from PC-relative callers.  */
+      if (!rs6000_pcrel_p (cfun))
+	/* Direct calls use the TOC: for local calls, the callee will
+	   assume the TOC register is set; for non-local calls, the
+	   PLT stub needs the TOC register.  */
+	abi_reg = toc_reg;
       func_addr = func;
     }
 
@@ -37865,7 +37933,9 @@ rs6000_sibcall_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
   insn = emit_call_insn (insn);
 
   /* Note use of the TOC register.  */
-  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), gen_rtx_REG (Pmode, TOC_REGNUM));
+  if (!rs6000_pcrel_p (cfun))
+    use_reg (&CALL_INSN_FUNCTION_USAGE (insn),
+	     gen_rtx_REG (Pmode, TOC_REGNUM));
 }
 
 /* Expand code to perform a call under the SYSV4 ABI.  */
