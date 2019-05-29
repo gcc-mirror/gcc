@@ -4976,10 +4976,12 @@ bfin_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
 		      tree thunk ATTRIBUTE_UNUSED, HOST_WIDE_INT delta,
 		      HOST_WIDE_INT vcall_offset, tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
   rtx xops[3];
   /* The this parameter is passed as the first argument.  */
   rtx this_rtx = gen_rtx_REG (Pmode, REG_R0);
 
+  assemble_start_function (thunk, fnname);
   /* Adjust the this parameter by a fixed constant.  */
   if (delta)
     {
@@ -5034,6 +5036,7 @@ bfin_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
   xops[0] = XEXP (DECL_RTL (function), 0);
   if (1 || !flag_pic || (*targetm.binds_local_p) (function))
     output_asm_insn ("jump.l\t%P0", xops);
+  assemble_end_function (thunk, fnname);
 }
 
 /* Codes for all the Blackfin builtins.  */

@@ -415,11 +415,11 @@ convert_to_real_1 (tree type, tree expr, bool fold_p)
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      error ("pointer value used where a floating point value was expected");
+      error ("pointer value used where a floating point was expected");
       return convert_to_real_1 (type, integer_zero_node, fold_p);
 
     default:
-      error ("aggregate value used where a float was expected");
+      error ("aggregate value used where a floating point was expected");
       return convert_to_real_1 (type, integer_zero_node, fold_p);
     }
 }
@@ -1029,7 +1029,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
     case VECTOR_TYPE:
       if (!tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (TREE_TYPE (expr))))
 	{
-	  error ("can%'t convert a vector of type %qT"
+	  error ("cannot convert a vector of type %qT"
 		 " to type %qT which has different size",
 		 TREE_TYPE (expr), type);
 	  return error_mark_node;
@@ -1166,7 +1166,7 @@ convert_to_vector (tree type, tree expr)
     case VECTOR_TYPE:
       if (!tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (TREE_TYPE (expr))))
 	{
-	  error ("can%'t convert a value of type %qT"
+	  error ("cannot convert a value of type %qT"
 		 " to vector type %qT which has different size",
 		 TREE_TYPE (expr), type);
 	  return error_mark_node;
@@ -1174,7 +1174,7 @@ convert_to_vector (tree type, tree expr)
       return build1 (VIEW_CONVERT_EXPR, type, expr);
 
     default:
-      error ("can%'t convert value to a vector");
+      error ("cannot convert value to a vector");
       return error_mark_node;
     }
 }

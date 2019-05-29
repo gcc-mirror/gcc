@@ -59,7 +59,7 @@ struct Alloc
   void deallocate(pointer p, std::size_t n)
   {
     if (n)
-      std::allocator<T>().deallocate(p.value, n);
+      std::allocator<T>().deallocate(p.operator->(), n);
   }
 };
 

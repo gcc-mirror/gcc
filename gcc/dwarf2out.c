@@ -1115,7 +1115,7 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
 	 function anymore.  */
       if (personality && current_unit_personality != personality)
 	sorry ("multiple EH personalities are supported only with assemblers "
-	       "supporting .cfi_personality directive");
+	       "supporting %<.cfi_personality%> directive");
     }
 }
 
@@ -8576,11 +8576,12 @@ break_out_comdat_types (dw_die_ref die)
         /* Break out nested types into their own type units.  */
         break_out_comdat_types (c);
 
-        /* Create a new type unit DIE as the root for the new tree, and
-           add it to the list of comdat types.  */
+        /* Create a new type unit DIE as the root for the new tree.  */
         unit = new_die (DW_TAG_type_unit, NULL, NULL);
         add_AT_unsigned (unit, DW_AT_language,
                          get_AT_unsigned (comp_unit_die (), DW_AT_language));
+
+	/* Add the new unit's type DIE into the comdat type list.  */
         type_node = ggc_cleared_alloc<comdat_type_node> ();
         type_node->root_die = unit;
         type_node->next = comdat_type_list;
@@ -14509,11 +14510,10 @@ const_ok_for_output_1 (rtx rtl)
 		"non-delegitimized UNSPEC %s (%d) found in variable location",
 		((XINT (rtl, 1) >= 0 && XINT (rtl, 1) < NUM_UNSPEC_VALUES)
 		 ? unspec_strings[XINT (rtl, 1)] : "unknown"),
-		XINT (rtl, 1));
 #else
 		"non-delegitimized UNSPEC %d found in variable location",
-		XINT (rtl, 1));
 #endif
+		XINT (rtl, 1));
       expansion_failed (NULL_TREE, rtl,
 			"UNSPEC hasn't been delegitimized.\n");
       return false;
@@ -17906,6 +17906,8 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 	case DW_OP_push_object_address:
 	case DW_OP_call_frame_cfa:
 	case DW_OP_GNU_variable_value:
+	case DW_OP_GNU_addr_index:
+	case DW_OP_GNU_const_index:
 	  ++frame_offset_;
 	  break;
 
@@ -25161,18 +25163,19 @@ gen_member_die (tree type, dw_die_ref context_die)
 			     context_die);
     }
 
-  /* Now output info about the data members and type members.  */
+  /* Now output info about the members. */
   for (member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
     {
-      struct vlr_context vlr_ctx = { type, NULL_TREE };
-      bool static_inline_p
-	= (TREE_STATIC (member)
-	   && (lang_hooks.decls.decl_dwarf_attribute (member, DW_AT_inline)
-	       != -1));
-
       /* Ignore clones.  */
       if (DECL_ABSTRACT_ORIGIN (member))
 	continue;
+
+      struct vlr_context vlr_ctx = { type, NULL_TREE };
+      bool static_inline_p
+	= (VAR_P (member)
+	   && TREE_STATIC (member)
+	   && (lang_hooks.decls.decl_dwarf_attribute (member, DW_AT_inline)
+	       != -1));
 
       /* If we thought we were generating minimal debug info for TYPE
 	 and then changed our minds, some of the member declarations
@@ -25183,11 +25186,14 @@ gen_member_die (tree type, dw_die_ref context_die)
 	{
 	  /* Handle inline static data members, which only have in-class
 	     declarations.  */
-	  dw_die_ref ref = NULL; 
+	  bool splice = true;
+
+	  dw_die_ref ref = NULL;
 	  if (child->die_tag == DW_TAG_variable
 	      && child->die_parent == comp_unit_die ())
 	    {
 	      ref = get_AT_ref (child, DW_AT_specification);
+
 	      /* For C++17 inline static data members followed by redundant
 		 out of class redeclaration, we might get here with
 		 child being the DIE created for the out of class
@@ -25206,17 +25212,17 @@ gen_member_die (tree type, dw_die_ref context_die)
 		  ref = NULL;
 		  static_inline_p = false;
 		}
+
+	      if (!ref)
+		{
+		  reparent_child (child, context_die);
+		  if (dwarf_version < 5)
+		    child->die_tag = DW_TAG_member;
+		  splice = false;
+		}
 	    }
 
-	  if (child->die_tag == DW_TAG_variable
-	      && child->die_parent == comp_unit_die ()
-	      && ref == NULL)
-	    {
-	      reparent_child (child, context_die);
-	      if (dwarf_version < 5)
-		child->die_tag = DW_TAG_member;
-	    }
-	  else
+	  if (splice)
 	    splice_child_die (context_die, child);
 	}
 
@@ -27670,11 +27676,8 @@ dwarf2out_inline_entry (tree block)
   if (cur_line_info_table)
     ied->view = cur_line_info_table->view;
 
-  char label[MAX_ARTIFICIAL_LABEL_BYTES];
-
-  ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_INLINE_ENTRY_LABEL,
-			       BLOCK_NUMBER (block));
-  ASM_OUTPUT_LABEL (asm_out_file, label);
+  ASM_OUTPUT_DEBUG_LABEL (asm_out_file, BLOCK_INLINE_ENTRY_LABEL,
+			  BLOCK_NUMBER (block));
 }
 
 /* Called from finalize_size_functions for size functions so that their body

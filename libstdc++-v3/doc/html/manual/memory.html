@@ -222,19 +222,6 @@
 	 <code class="function">new</code>/<code class="function">delete</code> this is
 	 taken care of elsewhere).
        </p></li><li class="listitem"><p>
-       <code class="classname">array_allocator</code>
-       </p><p>
-	 Allows allocations of known and fixed sizes using existing
-	 global or external storage allocated via construction of
-	 <code class="classname">std::tr1::array</code> objects. By using this
-	 allocator, fixed size containers (including
-	 <code class="classname">std::string</code>) can be used without
-	 instances calling <code class="function">::operator new</code> and
-	 <code class="function">::operator delete</code>. This capability
-	 allows the use of STL abstractions without runtime
-	 complications or overhead, even in situations such as program
-	 startup. For usage examples, please consult the testsuite.
-       </p></li><li class="listitem"><p>
        <code class="classname">debug_allocator</code>
        </p><p>
 	 A wrapper around an arbitrary allocator A.  It passes on
@@ -300,14 +287,14 @@
        </p><p>
 	 A high-performance fixed-size allocator with
 	 exponentially-increasing allocations. It has its own
-	 <a class="link" href="mt_allocator.html" title="Chapter 20. The mt_allocator">chapter</a>
+	 <a class="link" href="mt_allocator.html" title="Chapter 19. The mt_allocator">chapter</a>
          in the documentation.
        </p></li><li class="listitem"><p>
        <code class="classname">bitmap_allocator</code>
        </p><p>
 	 A high-performance allocator that uses a bit-map to keep track
 	 of the used and unused memory locations. It has its own
-	 <a class="link" href="bitmap_allocator.html" title="Chapter 21. The bitmap_allocator">chapter</a>
+	 <a class="link" href="bitmap_allocator.html" title="Chapter 20. The bitmap_allocator">chapter</a>
          in the documentation.
        </p></li></ol></div></div><div class="bibliography"><div class="titlepage"><div><div><h4 class="title"><a id="allocator.biblio"></a>Bibliography</h4></div></div></div><div class="biblioentry"><a id="id-1.3.4.4.4.3.9.2"></a><p><span class="citetitle"><em class="citetitle">
     ISO/IEC 14882:1998 Programming languages - C++
@@ -554,7 +541,7 @@ not be conforming for <code class="classname">shared_ptr</code> to have an
 extra template parameter, even if it had a default value.  The
 available policies are:
     </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
-       <code class="constant">_S_Atomic</code>
+       <code class="constant">_S_atomic</code>
        </p><p>
 Selected when GCC supports a builtin atomic compare-and-swap operation
 on the target processor (see <a class="link" href="http://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html" target="_top">Atomic
@@ -562,13 +549,13 @@ Builtins</a>.)  The reference counts are maintained using a lock-free
 algorithm and GCC's atomic builtins, which provide the required memory
 synchronisation.
        </p></li><li class="listitem"><p>
-       <code class="constant">_S_Mutex</code>
+       <code class="constant">_S_mutex</code>
        </p><p>
 The _Sp_counted_base specialization for this policy contains a mutex,
 which is locked in add_ref_lock(). This policy is used when GCC's atomic
 builtins aren't available so explicit memory barriers are needed in places.
        </p></li><li class="listitem"><p>
-       <code class="constant">_S_Single</code>
+       <code class="constant">_S_single</code>
        </p><p>
 This policy uses a non-reentrant add_ref_lock() with no locking. It is
 used when libstdc++ is built without <code class="literal">--enable-threads</code>.

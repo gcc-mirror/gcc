@@ -1,3 +1,78 @@
+2019-05-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/90539
+	* trans-types.c (get_formal_from_actual_arglist): Set rank
+	and lower bound for assumed size arguments.
+
+2019-05-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* trans-stmt.c (gfc_trans_critical): Use size_type_node for
+	gfor_fndecl_caf_lock and gfor_fndecl_caf_unlock calls.
+	(gfc_trans_allocate): Use size_type_node for gfor_fndecl_caf_sync_all
+	call.
+
+2019-05-22  Jeff Law  <law@redhat.com>
+	    Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/89100
+	* gfortran.texi: Add Default widths for F, G and I format
+	descriptors to Extensions section.
+	* invoke.texi: Add -fdec-format-defaults
+	* io.c (check_format): Use default widths for i, f and g when
+	flag_dec_format_defaults is enabled.
+	* lang.opt: Add new option.
+	* options.c (set_dec_flags): Add SET_BITFLAG for
+	flag_dec_format_defaults.
+
+2019-05-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/90038
+	* intrinsic.texi (EXECUTE_COMMAND_LINE): Explain new
+	wait=.false. implementation.
+
+2019-05-20  Mark Eggleston  <markeggleston@codethink.com>
+
+	* gfortran.texi: Remove reference to the ASSIGN statement, capitalise
+	complex, state that padding is with spaces and modify the Hollerith
+	constant examples.
+
+2019-05-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/90498
+	* trans-stmt.c (trans_associate_var) Do not use the saved
+	descriptor if the expression is a COMPONENT_REF.
+
+2019-05-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/90329
+	* invoke.texi: Document -fbroken-callers.
+	* lang.opt: Add -fbroken-callers.
+	* trans-decl.c (create_function_arglist): Only set
+	DECL_HIDDEN_STRING_LENGTH if flag_broken_callers is set.
+
+2019-05-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/89433
+	* f95-lang.c (gfc_attribute_table): Set min_len to -1 for "omp
+	declare target".
+	* trans-decl.c (add_attributes_to_decl): Refer to OpenACC
+	'routine' clauses from "omp declare target" attribute.
+
+2019-05-16  Martin Sebor  <msebor@redhat.com>
+
+	* gfortranspec.c (append_arg): Spell out the word "argument."
+
+2019-05-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/90329
+	* trans-decl.c (create_function_arglist): Set
+	DECL_HIDDEN_STRING_LENGTH on hidden string length PARM_DECLs if
+	len is constant.
+
+2019-05-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* parse.c (gfc_parse_file): Remove translation string markers.
+
 2019-05-12  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* dump-parse-tree.c (get_c_type_name): Use macros for complex type

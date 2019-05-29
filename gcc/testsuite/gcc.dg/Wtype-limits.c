@@ -21,22 +21,22 @@ void a (unsigned char x)
 }
 
 void b (unsigned short x)
-{                    /* { dg-warning "comparison of unsigned expression < 0 is always false" "" { target { ! int32plus } } .+1 } */
+{                    /* { dg-warning "comparison of unsigned expression in '< 0' is always false" "" { target { ! int32plus } } .+1 } */
   if (x < 0)  return;/* { dg-warning "comparison is always false due to limited range of data type" "" { target { int32plus } } } */
-                     /* { dg-warning "comparison of unsigned expression >= 0 is always true" "" { target { ! int32plus } } .+1 } */
+                     /* { dg-warning "comparison of unsigned expression in '>= 0' is always true" "" { target { ! int32plus } } .+1 } */
   if (x >= 0) return;/* { dg-warning "comparison is always true due to limited range of data type" "" { target { int32plus } } } */  
-                     /* { dg-warning "comparison of unsigned expression < 0 is always false" "" { target { ! int32plus } } .+1 } */
+                     /* { dg-warning "comparison of unsigned expression in '< 0' is always false" "" { target { ! int32plus } } .+1 } */
   if (0 > x)  return;/* { dg-warning "comparison is always false due to limited range of data type" "" { target { int32plus } } } */
-                     /* { dg-warning "comparison of unsigned expression >= 0 is always true" "" { target { ! int32plus } } .+1 } */
+                     /* { dg-warning "comparison of unsigned expression in '>= 0' is always true" "" { target { ! int32plus } } .+1 } */
   if (0 <= x) return;/* { dg-warning "comparison is always true due to limited range of data type" "" { target { int32plus } } } */
 }
 
 void c (unsigned int x)
 {
-  if (x < 0)  return;/* { dg-warning "comparison of unsigned expression < 0 is always false" } */
-  if (x >= 0) return;/* { dg-warning "comparison of unsigned expression >= 0 is always true" } */
-  if (0 > x)  return;/* { dg-warning "comparison of unsigned expression < 0 is always false" } */
-  if (0 <= x) return;/* { dg-warning "comparison of unsigned expression >= 0 is always true" } */
+  if (x < 0)  return;/* { dg-warning "comparison of unsigned expression in '< 0' is always false" } */
+  if (x >= 0) return;/* { dg-warning "comparison of unsigned expression in '>= 0' is always true" } */
+  if (0 > x)  return;/* { dg-warning "comparison of unsigned expression in '< 0' is always false" } */
+  if (0 <= x) return;/* { dg-warning "comparison of unsigned expression in '>= 0' is always true" } */
   if (1U >= 0) return;
   if (1U < 0) return;
   if (0 <= 1U) return;
@@ -45,18 +45,18 @@ void c (unsigned int x)
 
 void d (unsigned long x)
 {
-  if (x < 0)  return;/* { dg-warning "comparison of unsigned expression < 0 is always false" } */
-  if (x >= 0) return;/* { dg-warning "comparison of unsigned expression >= 0 is always true" } */
-  if (0 > x)  return;/* { dg-warning "comparison of unsigned expression < 0 is always false" } */
-  if (0 <= x) return;/* { dg-warning "comparison of unsigned expression >= 0 is always true" } */
+  if (x < 0)  return;/* { dg-warning "comparison of unsigned expression in '< 0' is always false" } */
+  if (x >= 0) return;/* { dg-warning "comparison of unsigned expression in '>= 0' is always true" } */
+  if (0 > x)  return;/* { dg-warning "comparison of unsigned expression in '< 0' is always false" } */
+  if (0 <= x) return;/* { dg-warning "comparison of unsigned expression in '>= 0' is always true" } */
 }
 
 void e (unsigned long long x)
 {
-  if (x < 0)  return;/* { dg-warning "comparison of unsigned expression < 0 is always false" } */
-  if (x >= 0) return;/* { dg-warning "comparison of unsigned expression >= 0 is always true" } */
-  if (0 > x)  return;/* { dg-warning "comparison of unsigned expression < 0 is always false" } */
-  if (0 <= x) return;/* { dg-warning "comparison of unsigned expression >= 0 is always true" } */
+  if (x < 0)  return;/* { dg-warning "comparison of unsigned expression in '< 0' is always false" } */
+  if (x >= 0) return;/* { dg-warning "comparison of unsigned expression in '>= 0' is always true" } */
+  if (0 > x)  return;/* { dg-warning "comparison of unsigned expression in '< 0' is always false" } */
+  if (0 <= x) return;/* { dg-warning "comparison of unsigned expression in '>= 0' is always true" } */
 }
 
 int test (int x) 

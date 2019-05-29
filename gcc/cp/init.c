@@ -847,7 +847,7 @@ perform_member_init (tree member, tree init)
 	 reference member in a constructor’s ctor-initializer (12.6.2)
 	 persists until the constructor exits."  */
       unsigned i; tree t;
-      vec<tree, va_gc> *cleanups = make_tree_vector ();
+      releasing_vec cleanups;
       if (TREE_CODE (init) == TREE_LIST)
 	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
 						tf_warning_or_error);
@@ -871,7 +871,6 @@ perform_member_init (tree member, tree init)
       finish_expr_stmt (init);
       FOR_EACH_VEC_ELT (*cleanups, i, t)
 	push_cleanup (decl, t, false);
-      release_tree_vector (cleanups);
     }
   else if (type_build_ctor_call (type)
 	   || (init && CLASS_TYPE_P (strip_array_types (type))))
@@ -1952,7 +1951,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
       tree elt; unsigned i;
 
       /* Unshare the arguments for the second call.  */
-      vec<tree, va_gc> *parms2 = make_tree_vector ();
+      releasing_vec parms2;
       FOR_EACH_VEC_SAFE_ELT (parms, i, elt)
 	{
 	  elt = break_out_target_exprs (elt);
@@ -1962,7 +1961,6 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
 					    &parms2, binfo, flags,
 					    complain);
       complete = fold_build_cleanup_point_expr (void_type_node, complete);
-      release_tree_vector (parms2);
 
       base = build_special_member_call (exp, base_ctor_identifier,
 					&parms, binfo, flags,
@@ -2850,8 +2848,7 @@ malloc_alignment ()
 }
 
 /* Determine whether an allocation function is a namespace-scope
-   non-replaceable placement new function. See DR 1748.
-   TODO: Enable in all standard modes.  */
+   non-replaceable placement new function. See DR 1748.  */
 static bool
 std_placement_new_fn_p (tree alloc_fn)
 {
@@ -3007,7 +3004,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	  pedwarn (cp_expr_loc_or_loc (outer_nelts, input_location), OPT_Wvla,
 		   typedef_variant_p (orig_type)
 		   ? G_("non-constant array new length must be specified "
-			"directly, not by typedef")
+			"directly, not by %<typedef%>")
 		   : G_("non-constant array new length must be specified "
 			"without parentheses around the type-id"));
 	}
@@ -3018,13 +3015,13 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
   if (VOID_TYPE_P (elt_type))
     {
       if (complain & tf_error)
-        error ("invalid type %<void%> for new");
+	error ("invalid type %<void%> for %<new%>");
       return error_mark_node;
     }
 
   if (is_std_init_list (elt_type))
     warning (OPT_Winit_list_lifetime,
-	     "%<new%> of initializer_list does not "
+	     "%<new%> of %<initializer_list%> does not "
 	     "extend the lifetime of the underlying array");
 
   if (abstract_virtuals_error_sfinae (ACU_NEW, elt_type, complain))
@@ -3869,11 +3866,11 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 	  auto_diagnostic_group d;
 	  if (warning (OPT_Wdelete_incomplete,
 			 "possible problem detected in invocation of "
-			 "delete [] operator:"))
+			 "operator %<delete []%>"))
 	    {
 	      cxx_incomplete_type_diagnostic (base, type, DK_WARNING);
 	      inform (input_location, "neither the destructor nor the "
-			"class-specific operator delete [] will be called, "
+			"class-specific operator %<delete []%> will be called, "
 			"even if they are declared when the class is defined");
 	    }
 	}
@@ -4755,14 +4752,14 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 		{
 		  auto_diagnostic_group d;
 		  if (warning (OPT_Wdelete_incomplete,
-				 "possible problem detected in invocation of "
-				 "delete operator:"))
+			       "possible problem detected in invocation of "
+			       "%<operator delete%>"))
 		    {
 		      cxx_incomplete_type_diagnostic (addr, type, DK_WARNING);
 		      inform (input_location,
-				"neither the destructor nor the class-specific "
-				"operator delete will be called, even if they "
-				"are declared when the class is defined");
+			      "neither the destructor nor the class-specific "
+			      "%<operator delete%> will be called, even if "
+			      "they are declared when the class is defined");
 		    }
 		}
 	    }

@@ -5071,6 +5071,7 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 		      HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		      tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
   rtx this_slot, offset, addr, mem, tmp;
   rtx_insn *insn;
 
@@ -5147,9 +5148,11 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   /* Run just enough of rest_of_compilation.  */
   insn = get_insns ();
   split_all_insns_noflow ();
+  assemble_start_function (thunk, fnname);
   final_start_function (insn, file, 1);
   final (insn, file, 1);
   final_end_function ();
+  assemble_end_function (thunk, fnname);
 
   /* Clean up the vars set above.  */
   reload_completed = 0;

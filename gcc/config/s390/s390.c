@@ -12864,9 +12864,11 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 		      HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		      tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
   rtx op[10];
   int nonlocal = 0;
 
+  assemble_start_function (thunk, fnname);
   /* Make sure unwind info is emitted for the thunk if needed.  */
   final_start_function (emit_barrier (), file, 1);
 
@@ -13120,6 +13122,7 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	}
     }
   final_end_function ();
+  assemble_end_function (thunk, fnname);
 }
 
 /* Output either an indirect jump or a an indirect call

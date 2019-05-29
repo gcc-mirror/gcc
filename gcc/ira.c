@@ -2326,7 +2326,7 @@ ira_setup_eliminable_regset (void)
 	      SET_HARD_REG_BIT (ira_no_alloc_regs, eliminables[i].from);
 	}
       else if (cannot_elim)
-	error ("%s cannot be used in asm here",
+	error ("%s cannot be used in %<asm%> here",
 	       reg_names[eliminables[i].from]);
       else
 	df_set_regs_ever_live (eliminables[i].from, true);
@@ -2340,7 +2340,7 @@ ira_setup_eliminable_regset (void)
 	    SET_HARD_REG_BIT (ira_no_alloc_regs, HARD_FRAME_POINTER_REGNUM);
 	}
       else if (frame_pointer_needed)
-	error ("%s cannot be used in asm here",
+	error ("%s cannot be used in %<asm%> here",
 	       reg_names[HARD_FRAME_POINTER_REGNUM]);
       else
 	df_set_regs_ever_live (HARD_FRAME_POINTER_REGNUM, true);

@@ -563,7 +563,6 @@ ext_headers = \
 	${ext_srcdir}/aligned_buffer.h \
 	${ext_srcdir}/alloc_traits.h \
 	${ext_srcdir}/atomicity.h \
-	${ext_srcdir}/array_allocator.h \
 	${ext_srcdir}/bitmap_allocator.h \
 	${ext_srcdir}/cast.h \
 	${ext_srcdir}/cmath \
@@ -920,45 +919,6 @@ parallel_headers = \
 	${parallel_srcdir}/unique_copy.h \
 	${parallel_srcdir}/workstealing.h
 
-# Profile mode headers
-profile_srcdir = ${glibcxx_srcdir}/include/profile
-profile_builddir = ./profile
-profile_headers = \
-	${profile_srcdir}/array \
-	${profile_srcdir}/base.h \
-	${profile_srcdir}/unordered_base.h \
-	${profile_srcdir}/unordered_map \
-	${profile_srcdir}/unordered_set \
-	${profile_srcdir}/vector \
-	${profile_srcdir}/bitset \
-	${profile_srcdir}/deque \
-	${profile_srcdir}/forward_list \
-	${profile_srcdir}/list \
-	${profile_srcdir}/map \
-	${profile_srcdir}/map.h \
-	${profile_srcdir}/multimap.h \
-	${profile_srcdir}/multiset.h \
-	${profile_srcdir}/ordered_base.h \
-	${profile_srcdir}/set \
-	${profile_srcdir}/set.h \
-	${profile_srcdir}/iterator_tracker.h
-profile_impl_srcdir = ${glibcxx_srcdir}/include/profile/impl
-profile_impl_builddir = ./profile/impl
-profile_impl_headers = \
-	${profile_impl_srcdir}/profiler.h \
-	${profile_impl_srcdir}/profiler_algos.h \
-	${profile_impl_srcdir}/profiler_container_size.h \
-	${profile_impl_srcdir}/profiler_hash_func.h \
-	${profile_impl_srcdir}/profiler_hashtable_size.h \
-	${profile_impl_srcdir}/profiler_map_to_unordered_map.h \
-	${profile_impl_srcdir}/profiler_node.h \
-	${profile_impl_srcdir}/profiler_state.h \
-	${profile_impl_srcdir}/profiler_trace.h \
-	${profile_impl_srcdir}/profiler_vector_size.h \
-	${profile_impl_srcdir}/profiler_vector_to_list.h \
-	${profile_impl_srcdir}/profiler_list_to_vector.h \
-	${profile_impl_srcdir}/profiler_list_to_slist.h
-
 # Some "C" header schemes require the "C" compatibility headers.
 # For --enable-cheaders=c_std
 if GLIBCXX_C_HEADERS_COMPATIBILITY
@@ -1044,7 +1004,7 @@ allstamped = \
 	stamp-std stamp-bits stamp-bits-sup stamp-pstl stamp-c_base stamp-c_compatibility \
 	stamp-backward stamp-ext stamp-pb stamp-tr1 stamp-tr2 stamp-decimal \
 	stamp-experimental stamp-experimental-bits stamp-debug stamp-parallel \
-	stamp-profile stamp-profile-impl stamp-host
+	stamp-host
 
 # List of all files that are created by explicit building, editing, or
 # catenation.
@@ -1191,16 +1151,6 @@ stamp-parallel: ${parallel_headers}
 	@-mkdir -p ${parallel_builddir}
 	@-cd ${parallel_builddir} && $(LN_S) $? . 2>/dev/null
 	@$(STAMP) stamp-parallel
-
-stamp-profile: ${profile_headers}
-	@-mkdir -p ${profile_builddir}
-	@-cd ${profile_builddir} && $(LN_S) $? . 2>/dev/null
-	@$(STAMP) stamp-profile
-
-stamp-profile-impl: ${profile_impl_headers}
-	@-mkdir -p ${profile_impl_builddir}
-	@-cd ${profile_impl_builddir} && $(LN_S) $? . 2>/dev/null
-	@$(STAMP) stamp-profile-impl
 
 stamp-${host_alias}:
 	@-mkdir -p ${host_builddir}
@@ -1499,12 +1449,6 @@ install-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${parallel_builddir}
 	for file in ${parallel_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${parallel_builddir}; done
-	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${profile_builddir}
-	for file in ${profile_headers}; do \
-	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${profile_builddir}; done
-	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${profile_impl_builddir}
-	for file in ${profile_impl_headers}; do \
-	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${profile_impl_builddir}; done
 	$(mkinstalldirs) $(DESTDIR)${host_installdir}
 	for file in ${host_headers} ${bits_host_headers} ${host_headers_extra} \
 	 ${thread_host_headers}; do \

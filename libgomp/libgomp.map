@@ -476,6 +476,14 @@ OACC_2.5 {
 	acc_update_self_async_array_h_;
 } OACC_2.0.1;
 
+OACC_2.5.1 {
+  global:
+	acc_prof_lookup;
+	acc_prof_register;
+	acc_prof_unregister;
+	acc_register_library;
+} OACC_2.5;
+
 GOACC_2.0 {
   global:
 	GOACC_data_end;
@@ -515,3 +523,9 @@ GOMP_PLUGIN_1.2 {
   global:
 	GOMP_PLUGIN_acc_default_dim;
 } GOMP_PLUGIN_1.1;
+
+GOMP_PLUGIN_1.3 {
+  global:
+	GOMP_PLUGIN_goacc_profiling_dispatch;
+	GOMP_PLUGIN_goacc_thread;
+} GOMP_PLUGIN_1.2;

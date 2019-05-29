@@ -117,16 +117,16 @@ by type.  Explanations are in the following sections.
 @item Fortran Language Options
 @xref{Fortran Dialect Options,,Options controlling Fortran dialect}.
 @gccoptlist{-fall-intrinsics -fbackslash -fcray-pointer -fd-lines-as-code @gol
--fd-lines-as-comments @gol
--fdec -fdec-structure -fdec-intrinsic-ints -fdec-static -fdec-math @gol
--fdec-include -fdefault-double-8 -fdefault-integer-8 -fdefault-real-8 @gol
--fdefault-real-10 -fdefault-real-16 -fdollar-ok -ffixed-line-length-@var{n} @gol
--ffixed-line-length-none -fpad-source -ffree-form -ffree-line-length-@var{n} @gol
--ffree-line-length-none -fimplicit-none -finteger-4-integer-8 @gol
--fmax-identifier-length -fmodule-private -ffixed-form -fno-range-check @gol
--fopenacc -fopenmp -freal-4-real-10 -freal-4-real-16 -freal-4-real-8 @gol
--freal-8-real-10 -freal-8-real-16 -freal-8-real-4 -std=@var{std}
--ftest-forall-temp
+-fd-lines-as-comments -fdec -fdec-structure -fdec-intrinsic-ints @gol
+-fdec-static -fdec-math -fdec-include -fdec-format-defaults @gol
+-fdefault-double-8 -fdefault-integer-8 -fdefault-real-8 -fdefault-real-10 @gol
+-fdefault-real-16 -fdollar-ok -ffixed-line-length-@var{n} @gol
+-ffixed-line-length-none -fpad-source -ffree-form @gol
+-ffree-line-length-@var{n} -ffree-line-length-none @gol
+-fimplicit-none -finteger-4-integer-8 -fmax-identifier-length @gol
+-fmodule-private -ffixed-form -fno-range-check -fopenacc -fopenmp @gol
+-freal-4-real-10 -freal-4-real-16 -freal-4-real-8 -freal-8-real-10 @gol
+-freal-8-real-16 -freal-8-real-4 -std=@var{std} -ftest-forall-temp
 }
 
 @item Preprocessing Options
@@ -181,7 +181,7 @@ and warnings}.
 @item Code Generation Options
 @xref{Code Gen Options,,Options for code generation conventions}.
 @gccoptlist{-faggressive-function-elimination -fblas-matmul-limit=@var{n} @gol
--fbounds-check -fcheck-array-temporaries @gol
+-fbounds-check -fbroken-callers -fcheck-array-temporaries @gol
 -fcheck=@var{<all|array-temps|bounds|do|mem|pointer|recursion>} @gol
 -fcoarray=@var{<none|single|lib>} -fexternal-blas -ff2c
 -ffrontend-loop-interchange @gol
@@ -282,6 +282,11 @@ the storage of variables and other objects.
 Enable parsing of INCLUDE as a statement in addition to parsing it as
 INCLUDE line.  When parsed as INCLUDE statement, INCLUDE does not have to
 be on a single line and can use line continuations.
+
+@item -fdec-format-defaults
+@opindex @code{fdec-format-defaults}
+Enable format specifiers F, G and I to be used without width specifiers,
+default widths will be used instead.
 
 @item -fdollar-ok
 @opindex @code{fdollar-ok}
@@ -1616,6 +1621,34 @@ warnings for generated array temporaries.
 @opindex @code{fbounds-check}
 @c Note: This option is also referred in gcc's manpage
 Deprecated alias for @option{-fcheck=bounds}.
+
+@item -fbroken-callers
+@opindex @code{broken-callers}
+Some C interfaces to Fortran codes violate the gfortran ABI by
+omitting the hidden character length arguments as described in
+@xref{Argument passing conventions}.  This can lead to crashes
+because pushing arguments for tail calls can overflow the stack.
+
+To provide a workaround for existing binary packages, this option
+disables tail call optimization for gfortran procedures with character
+arguments.
+
+Using this option can lead to problems including crashes due to
+insufficient stack space.
+
+It is @emph{very strongly} recommended to fix the code in question.
+The @option{-fc-prototypes-external} option can be used to generate
+prototypes which conform to gfortran's ABI, for inclusion in the
+source code.
+
+Support for this option will likely be withdrawn in a future release
+of gfortran.
+
+The negative form, @option{-fno-broken-callers}, can be used to
+disable this option.
+
+Default is currently @option{-fbroken-callers}, this will change
+in future releases.
 
 @item -fcheck-array-temporaries
 @opindex @code{fcheck-array-temporaries}

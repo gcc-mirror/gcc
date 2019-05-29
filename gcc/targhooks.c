@@ -1316,7 +1316,7 @@ default_split_reduction (machine_mode mode)
    is tried.  */
 
 void
-default_autovectorize_vector_sizes (vector_sizes *)
+default_autovectorize_vector_sizes (vector_sizes *, bool)
 {
 }
 
@@ -1600,7 +1600,7 @@ default_target_option_pragma_parse (tree ARG_UNUSED (args),
      do not have the "target" pragma.  */
   if (args)
     warning (OPT_Wpragmas,
-	     "#pragma GCC target is not supported for this machine");
+	     "%<#pragma GCC target%> is not supported for this machine");
 
   return false;
 }
@@ -1648,6 +1648,14 @@ default_libc_has_function (enum function_class fn_class)
       || fn_class == function_c99_math_complex)
     return true;
 
+  return false;
+}
+
+/* By default assume that libc has not a fast implementation.  */
+
+bool
+default_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
+{
   return false;
 }
 

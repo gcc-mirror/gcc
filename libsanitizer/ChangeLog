@@ -1,3 +1,14 @@
+2019-05-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/90639
+	* tsan/tsan_rtl_ppc64.S: Add ".machine altivec".
+
+2019-05-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (have_dl_iterate_phdr): Remove *-*-solaris2.10*
+	handling.
+	* configure: Regenerate.
+
 2019-04-08  Martin Liska  <mliska@suse.cz>
 
 	* LOCAL_PATCHES: Add revision.

@@ -5713,6 +5713,9 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
   gfc_ref *ref, *part_ref = NULL;
   gfc_symbol *sym;
 
+  if (expr->expr_type == EXPR_ARRAY)
+    return true;
+
   if (expr->expr_type == EXPR_FUNCTION)
     {
       if (expr->value.function.esym)

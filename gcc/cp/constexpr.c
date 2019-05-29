@@ -2020,9 +2020,9 @@ cxx_eval_check_shift_p (location_t loc, const constexpr_ctx *ctx,
   if (compare_tree_int (rhs, uprec) >= 0)
     {
       if (!ctx->quiet)
-	permerror (loc, "right operand of shift expression %q+E is >= than "
-		   "the precision of the left operand",
-		   build2_loc (loc, code, type, lhs, rhs));
+	permerror (loc, "right operand of shift expression %q+E is greater "
+		   "than or equal to the precision %wu of the left operand",
+		   build2_loc (loc, code, type, lhs, rhs), uprec);
       return (!flag_permissive || ctx->quiet);
     }
 
@@ -3113,11 +3113,10 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
     }
   else if (!init)
     {
-      vec<tree, va_gc> *argvec = make_tree_vector ();
+      releasing_vec argvec;
       init = build_special_member_call (NULL_TREE, complete_ctor_identifier,
 					&argvec, elttype, LOOKUP_NORMAL,
 					complain);
-      release_tree_vector (argvec);
       init = build_aggr_init_expr (elttype, init);
       pre_init = true;
     }
@@ -3740,7 +3739,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
     }
 
   /* And then find the underlying variable.  */
-  vec<tree,va_gc> *refs = make_tree_vector();
+  releasing_vec refs;
   tree object = NULL_TREE;
   for (tree probe = target; object == NULL_TREE; )
     {
@@ -3784,7 +3783,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   type = TREE_TYPE (object);
   bool no_zero_init = true;
 
-  vec<tree,va_gc> *ctors = make_tree_vector ();
+  releasing_vec ctors;
   while (!refs->is_empty())
     {
       if (*valp == NULL_TREE)
@@ -3897,7 +3896,6 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	}
       valp = &cep->value;
     }
-  release_tree_vector (refs);
 
   if (!preeval)
     {
@@ -3941,14 +3939,13 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   bool c = TREE_CONSTANT (init);
   bool s = TREE_SIDE_EFFECTS (init);
   if (!c || s)
-    FOR_EACH_VEC_SAFE_ELT (ctors, i, elt)
+    FOR_EACH_VEC_ELT (*ctors, i, elt)
       {
 	if (!c)
 	  TREE_CONSTANT (elt) = false;
 	if (s)
 	  TREE_SIDE_EFFECTS (elt) = true;
       }
-  release_tree_vector (ctors);
 
   if (*non_constant_p)
     return t;
@@ -4423,7 +4420,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       if (!ctx->quiet)
 	error_at (cp_expr_loc_or_loc (t, input_location),
 		  "%<constexpr%> evaluation operation count exceeds limit of "
-		  "%wd (use -fconstexpr-ops-limit= to increase the limit)",
+		  "%wd (use %<-fconstexpr-ops-limit=%> to increase the limit)",
 		  constexpr_ops_limit);
       *ctx->constexpr_ops_count = INTTYPE_MINIMUM (HOST_WIDE_INT);
       *non_constant_p = true;
@@ -4960,7 +4957,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	{
 	  if (!ctx->quiet)
 	    error_at (cp_expr_loc_or_loc (t, input_location),
-		      "a reinterpret_cast is not a constant expression");
+		      "%<reinterpret_cast%> is not a constant expression");
 	  *non_constant_p = true;
 	  return t;
 	}
@@ -6119,7 +6116,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       if (REINTERPRET_CAST_P (t))
 	{
 	  if (flags & tf_error)
-	    error_at (loc, "a reinterpret_cast is not a constant expression");
+	    error_at (loc, "%<reinterpret_cast%> is not a constant expression");
 	  return false;
 	}
       /* FALLTHRU */
@@ -6138,7 +6135,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		&& !integer_zerop (from))
 	      {
 		if (flags & tf_error)
-		  error_at (loc, "reinterpret_cast from integer to pointer");
+		  error_at (loc,
+			    "%<reinterpret_cast%> from integer to pointer");
 		return false;
 	      }
 	  }
@@ -6392,7 +6390,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	/* In C++2a virtual calls can be constexpr, don't give up yet.  */
 	return true;
       else if (flags & tf_error)
-	error_at (loc, "virtual functions cannot be constexpr before C++2a");
+	error_at (loc,
+		  "virtual functions cannot be %<constexpr%> before C++2a");
       return false;
 
     case TYPEID_EXPR:
@@ -6404,7 +6403,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	    && TYPE_POLYMORPHIC_P (TREE_TYPE (e)))
           {
             if (flags & tf_error)
-              error_at (loc, "typeid-expression is not a constant expression "
+	      error_at (loc, "%<typeid%> is not a constant expression "
 			"because %qE is of polymorphic type", e);
             return false;
           }

@@ -24,8 +24,10 @@ test01()
 {
   using namespace std;
   unordered_multimap<int, int, equal_to<int>, hash<int>> c2;
+  c2.find(2); // { dg-error "here" }
 }
 
 // { dg-error "hash function must be invocable" "" { target *-*-* } 0 }
 // { dg-error "key equality predicate must be invocable" "" { target *-*-* } 0 }
 // { dg-prune-output "use of deleted function" }
+// { dg-prune-output "no match for call" }

@@ -134,6 +134,8 @@
 
 #include <avx512bf16intrin.h>
 
+#include <enqcmdintrin.h>
+
 #include <rdseedintrin.h>
 
 #include <prfchwintrin.h>

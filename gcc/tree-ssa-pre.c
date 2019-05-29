@@ -3601,92 +3601,80 @@ do_hoist_insertion (basic_block block)
   return new_stuff;
 }
 
-/* Do a dominator walk on the control flow graph, and insert computations
-   of values as necessary for PRE and hoisting.  */
-
-static bool
-insert_aux (basic_block block, bool do_pre, bool do_hoist)
-{
-  basic_block son;
-  bool new_stuff = false;
-
-  if (block)
-    {
-      basic_block dom;
-      dom = get_immediate_dominator (CDI_DOMINATORS, block);
-      if (dom)
-	{
-	  unsigned i;
-	  bitmap_iterator bi;
-	  bitmap_set_t newset;
-
-	  /* First, update the AVAIL_OUT set with anything we may have
-	     inserted higher up in the dominator tree.  */
-	  newset = NEW_SETS (dom);
-	  if (newset)
-	    {
-	      /* Note that we need to value_replace both NEW_SETS, and
-		 AVAIL_OUT. For both the case of NEW_SETS, the value may be
-		 represented by some non-simple expression here that we want
-		 to replace it with.  */
-	      FOR_EACH_EXPR_ID_IN_SET (newset, i, bi)
-		{
-		  pre_expr expr = expression_for_id (i);
-		  bitmap_value_replace_in_set (NEW_SETS (block), expr);
-		  bitmap_value_replace_in_set (AVAIL_OUT (block), expr);
-		}
-	    }
-
-	  /* Insert expressions for partial redundancies.  */
-	  if (do_pre && !single_pred_p (block))
-	    {
-	      new_stuff |= do_pre_regular_insertion (block, dom);
-	      if (do_partial_partial)
-		new_stuff |= do_pre_partial_partial_insertion (block, dom);
-	    }
-
-	  /* Insert expressions for hoisting.  */
-	  if (do_hoist && EDGE_COUNT (block->succs) >= 2)
-	    new_stuff |= do_hoist_insertion (block);
-	}
-    }
-  for (son = first_dom_son (CDI_DOMINATORS, block);
-       son;
-       son = next_dom_son (CDI_DOMINATORS, son))
-    {
-      new_stuff |= insert_aux (son, do_pre, do_hoist);
-    }
-
-  return new_stuff;
-}
-
 /* Perform insertion of partially redundant and hoistable values.  */
 
 static void
 insert (void)
 {
-  bool new_stuff = true;
   basic_block bb;
-  int num_iterations = 0;
 
   FOR_ALL_BB_FN (bb, cfun)
     NEW_SETS (bb) = bitmap_set_new ();
 
-  while (new_stuff)
+  int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+  int rpo_num = pre_and_rev_post_order_compute (NULL, rpo, false);
+
+  int num_iterations = 0;
+  bool changed;
+  do
     {
       num_iterations++;
       if (dump_file && dump_flags & TDF_DETAILS)
 	fprintf (dump_file, "Starting insert iteration %d\n", num_iterations);
-      new_stuff = insert_aux (ENTRY_BLOCK_PTR_FOR_FN (cfun), flag_tree_pre,
-			      flag_code_hoisting);
+
+      changed = false;
+      for (int idx = 0; idx < rpo_num; ++idx)
+	{
+	  basic_block block = BASIC_BLOCK_FOR_FN (cfun, rpo[idx]);
+	  basic_block dom = get_immediate_dominator (CDI_DOMINATORS, block);
+	  if (dom)
+	    {
+	      unsigned i;
+	      bitmap_iterator bi;
+	      bitmap_set_t newset;
+
+	      /* First, update the AVAIL_OUT set with anything we may have
+		 inserted higher up in the dominator tree.  */
+	      newset = NEW_SETS (dom);
+	      if (newset)
+		{
+		  /* Note that we need to value_replace both NEW_SETS, and
+		     AVAIL_OUT. For both the case of NEW_SETS, the value may be
+		     represented by some non-simple expression here that we want
+		     to replace it with.  */
+		  FOR_EACH_EXPR_ID_IN_SET (newset, i, bi)
+		    {
+		      pre_expr expr = expression_for_id (i);
+		      bitmap_value_replace_in_set (NEW_SETS (block), expr);
+		      bitmap_value_replace_in_set (AVAIL_OUT (block), expr);
+		    }
+		}
+
+	      /* Insert expressions for partial redundancies.  */
+	      if (flag_tree_pre && !single_pred_p (block))
+		{
+		  changed |= do_pre_regular_insertion (block, dom);
+		  if (do_partial_partial)
+		    changed |= do_pre_partial_partial_insertion (block, dom);
+		}
+
+	      /* Insert expressions for hoisting.  */
+	      if (flag_code_hoisting && EDGE_COUNT (block->succs) >= 2)
+		changed |= do_hoist_insertion (block);
+	    }
+	}
 
       /* Clear the NEW sets before the next iteration.  We have already
-         fully propagated its contents.  */
-      if (new_stuff)
+	 fully propagated its contents.  */
+      if (changed)
 	FOR_ALL_BB_FN (bb, cfun)
 	  bitmap_set_free (NEW_SETS (bb));
     }
+  while (changed);
+
   statistics_histogram_event (cfun, "insert iterations", num_iterations);
+
+  free (rpo);
 }
 
 
@@ -4195,7 +4183,7 @@ pass_pre::execute (function *fun)
   /* This has to happen before VN runs because
      loop_optimizer_init may create new phis, etc.  */
   loop_optimizer_init (LOOPS_NORMAL);
-  split_critical_edges ();
+  split_edges_for_insertion ();
   scev_initialize ();
   calculate_dominance_info (CDI_DOMINATORS);
 

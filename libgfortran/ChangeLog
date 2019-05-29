@@ -1,3 +1,66 @@
+2019-05-22  Jeff Law  <law@redhat.com>
+
+	PR fortran/89100
+	* io/format.c (parse_format_list): set default width when the
+	IOPARM_DT_DEC_EXT flag is set for i, f and g.
+	* io/io.h: add default_width_for_integer, default_width_for_float
+	and default_precision_for_float.
+	* io/write.c (write_boz): extra parameter giving length of data
+	corresponding to the type's kind.
+	(write_b): pass data length as extra parameter in calls to
+	write_boz.
+	(write_o): pass data length as extra parameter in calls to
+	write_boz.
+	(write_z): pass data length as extra parameter in calls to
+	write_boz.
+	(size_from_kind): also set size is default width is set.
+	* io/write_float.def (build_float_string): new paramter inserted
+	before result parameter. If default width use values passed
+	instead of the values in fnode.
+	(FORMAT_FLOAT): macro modified to check for default width and
+	calls to build_float_string to pass in default width.
+	(get_float_string): set width and precision to defaults when
+	needed.
+
+2019-05-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR libfortran/90038
+        * intrinsics/execute_command_line (sigchld_handler): New function.
+        (execute_command_line): Install handler for SIGCHLD.
+        * configure.ac: Check for presence of sigaction and waitpid.
+        * config.h.in: Regenerated.
+        * configure: Regenerated.
+
+2019-05-17  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/90038
+	* configure.ac (AC_CHECK_FUNCS_ONCE): Check for posix_spawn.
+	* intrinsics/execute_command_line (execute_command_line): Use
+	posix_spawn.
+	* Makefile.in: Regenerated.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+
+2019-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/54613
+	* gfortran.map (GFORTRAN_9.2): Export _gfortran_{,m,s}findloc{0,1}_r10.
+	* Makefile.am (i_findloc0_c): Add $(srcdir)/generated/findloc0_r10.c.
+	(i_findloc1_c): Add $(srcdir)/generated/findloc1_r10.c.
+	* Makefile.in: Regenerated.
+	* generated/findloc0_r10.c: Generated.
+	* generated/findloc1_r10.c: Generated.
+
+	PR fortran/54613
+	* gfortran.map (GFORTRAN_9.2): New symbol version, export
+	_gfortran_{,m,s}findloc0_i2 in it.
+
+2019-05-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/90461
+        * io/open.c (new_unit): Don't check if the file is already open
+	for F2018.
+
 2019-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.am (gfor_cdir): Remove $(MULTISUBDIR).

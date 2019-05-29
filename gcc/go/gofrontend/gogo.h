@@ -683,6 +683,14 @@ class Gogo
   void
   check_return_statements();
 
+  // Make implicit type conversions explicit.
+  void
+  add_conversions();
+
+  // Make implicit type conversions explicit in a block.
+  void
+  add_conversions_in_block(Block*);
+
   // Analyze the program flow for escape information.
   void
   analyze_escape();
@@ -755,11 +763,6 @@ class Gogo
   // Build thunks for functions which call recover.
   void
   build_recover_thunks();
-
-  // Return a declaration for __builtin_return_address or
-  // __builtin_dwarf_cfa.
-  static Named_object*
-  declare_builtin_rf_address(const char* name, bool hasarg);
 
   // Simplify statements which might use thunks: go and defer
   // statements.

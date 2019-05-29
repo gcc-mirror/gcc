@@ -1576,12 +1576,13 @@ gfc_trans_critical (gfc_code *code)
 
   if (flag_coarray == GFC_FCOARRAY_LIB)
     {
+      tree zero_size = build_zero_cst (size_type_node);
       token = gfc_get_symbol_decl (code->resolved_sym);
       token = GFC_TYPE_ARRAY_CAF_TOKEN (TREE_TYPE (token));
       tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_lock, 7,
-				 token, integer_zero_node, integer_one_node,
+				 token, zero_size, integer_one_node,
 				 null_pointer_node, null_pointer_node,
-				 null_pointer_node, integer_zero_node);
+				 null_pointer_node, zero_size);
       gfc_add_expr_to_block (&block, tmp);
 
       /* It guarantees memory consistency within the same segment */
@@ -1601,10 +1602,11 @@ gfc_trans_critical (gfc_code *code)
 
   if (flag_coarray == GFC_FCOARRAY_LIB)
     {
+      tree zero_size = build_zero_cst (size_type_node);
       tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_unlock, 6,
-				 token, integer_zero_node, integer_one_node,
+				 token, zero_size, integer_one_node,
 				 null_pointer_node, null_pointer_node,
-				 integer_zero_node);
+				 zero_size);
       gfc_add_expr_to_block (&block, tmp);
 
       /* It guarantees memory consistency within the same segment */
@@ -1858,7 +1860,8 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	    {
 	      if (e->symtree
 		  && DECL_LANG_SPECIFIC (e->symtree->n.sym->backend_decl)
-		 && GFC_DECL_SAVED_DESCRIPTOR (e->symtree->n.sym->backend_decl))
+		  && GFC_DECL_SAVED_DESCRIPTOR (e->symtree->n.sym->backend_decl)
+		  && TREE_CODE (target_expr) != COMPONENT_REF)
 		/* Use the original class descriptor stored in the saved
 		   descriptor to get the target_expr.  */
 		target_expr =
@@ -6771,9 +6774,10 @@ gfc_trans_allocate (gfc_code * code)
   if (needs_caf_sync)
     {
       /* Add a sync all after the allocation has been executed.  */
+      tree zero_size = build_zero_cst (size_type_node);
       tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sync_all,
 				 3, null_pointer_node, null_pointer_node,
-				 integer_zero_node);
+				 zero_size);
       gfc_add_expr_to_block (&post, tmp);
     }
 

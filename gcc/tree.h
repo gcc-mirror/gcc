@@ -904,6 +904,11 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   (TREE_CHECK2 (NODE, VAR_DECL, \
 		RESULT_DECL)->decl_common.decl_nonshareable_flag)
 
+/* In a PARM_DECL, set for Fortran hidden string length arguments that some
+   buggy callers don't pass to the callee.  */
+#define DECL_HIDDEN_STRING_LENGTH(NODE) \
+  (TREE_CHECK (NODE, PARM_DECL)->decl_common.decl_nonshareable_flag)
+
 /* In a CALL_EXPR, means that the call is the jump from a thunk to the
    thunked-to function.  */
 #define CALL_FROM_THUNK_P(NODE) (CALL_EXPR_CHECK (NODE)->base.protected_flag)
@@ -926,6 +931,11 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    deprecated feature by __attribute__((deprecated)).  */
 #define TREE_DEPRECATED(NODE) \
   ((NODE)->base.deprecated_flag)
+
+/* Nonzero indicates an IDENTIFIER_NODE that names an anonymous
+   aggregate, (as created by anon_aggr_name_format).  */
+#define IDENTIFIER_ANON_P(NODE) \
+  (IDENTIFIER_NODE_CHECK (NODE)->base.private_flag)
 
 /* Nonzero in an IDENTIFIER_NODE if the name is a local alias, whose
    uses are to be substituted for uses of the TREE_CHAINed identifier.  */
@@ -1434,7 +1444,7 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_DECL(NODE)      					\
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (OMP_CLAUSE_CHECK (NODE),	\
 					      OMP_CLAUSE_PRIVATE,	\
-					      OMP_CLAUSE__REDUCTEMP_), 0)
+					      OMP_CLAUSE__CONDTEMP_), 0)
 #define OMP_CLAUSE_HAS_LOCATION(NODE) \
   (LOCATION_LOCUS ((OMP_CLAUSE_CHECK (NODE))->omp_clause.locus)		\
   != UNKNOWN_LOCATION)
@@ -5436,9 +5446,9 @@ target_opts_for_fn (const_tree fndecl)
 
 /* For anonymous aggregate types, we need some sort of name to
    hold on to.  In practice, this should not appear, but it should
-   not be harmful if it does.  */
-extern const char *anon_aggrname_format();
-extern bool anon_aggrname_p (const_tree);
+   not be harmful if it does.  Identifiers returned will be
+   IDENTIFIER_ANON_P.  */
+extern tree make_anon_name ();
 
 /* The tree and const_tree overload templates.   */
 namespace wi

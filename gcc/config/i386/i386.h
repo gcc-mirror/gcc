@@ -195,6 +195,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_PTWRITE_P(x)	TARGET_ISA_PTWRITE_P(x)
 #define TARGET_AVX512BF16	TARGET_ISA_AVX512BF16
 #define TARGET_AVX512BF16_P(x)	TARGET_ISA_AVX512BF16_P(x)
+#define TARGET_ENQCMD	TARGET_ISA_ENQCMD
+#define TARGET_ENQCMD_P(x) TARGET_ISA_ENQCMD_P(x)
 
 #define TARGET_LP64	TARGET_ABI_64
 #define TARGET_LP64_P(x)	TARGET_ABI_64_P(x)
@@ -202,6 +204,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_X32_P(x)	TARGET_ABI_X32_P(x)
 #define TARGET_16BIT	TARGET_CODE16
 #define TARGET_16BIT_P(x)	TARGET_CODE16_P(x)
+
+#define TARGET_MMX_WITH_SSE	(TARGET_64BIT && TARGET_SSE2)
 
 #include "config/vxworks-dummy.h"
 
@@ -1945,6 +1949,10 @@ do {							\
 #define STACK_SAVEAREA_MODE(LEVEL)			\
   ((LEVEL) == SAVE_NONLOCAL ? (TARGET_64BIT ? TImode : DImode) : Pmode)
 
+/* Specify the machine_mode of the size increment
+   operand of an 'allocate_stack' named pattern.  */
+#define STACK_SIZE_MODE Pmode
+
 /* A C expression whose value is zero if pointers that need to be extended
    from being `POINTER_SIZE' bits wide to `Pmode' are sign-extended and
    greater then zero if they are zero-extended and less then zero if the
@@ -2751,6 +2759,9 @@ struct GTY(()) machine_function {
 
   /* If true, ENDBR is queued at function entrance.  */
   BOOL_BITFIELD endbr_queued_at_entrance : 1;
+
+  /* True if the function needs a stack frame.  */
+  BOOL_BITFIELD stack_frame_required : 1;
 
   /* The largest alignment, in bytes, of stack slot actually used.  */
   unsigned int max_used_stack_alignment;

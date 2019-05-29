@@ -934,6 +934,11 @@ class Expression
   flatten(Gogo* gogo, Named_object* function, Statement_inserter* inserter)
   { return this->do_flatten(gogo, function, inserter); }
 
+  // Make implicit type conversions explicit.
+  void
+  add_conversions()
+  { this->do_add_conversions(); }
+
   // Determine the real type of an expression with abstract integer,
   // floating point, or complex type.  TYPE_CONTEXT describes the
   // expected type.
@@ -1019,6 +1024,13 @@ class Expression
                                  Expression* rhs, bool for_type_guard,
                                  Location);
 
+  // Return an expression for a conversion from a non-interface type to an
+  // interface type.  If ON_STACK is true, it can allocate the storage on
+  // stack.
+  static Expression*
+  convert_type_to_interface(Type* lhs_type, Expression* rhs,
+                            bool on_stack, Location);
+
   // Return a backend expression implementing the comparison LEFT OP RIGHT.
   // TYPE is the type of both sides.
   static Bexpression*
@@ -1051,6 +1063,11 @@ class Expression
   static Expression*
   pack_direct_iface(Type*, Expression*, Location);
 
+  // Return an expression of the underlying pointer for a direct interface
+  // type (the opposite of pack_direct_iface).
+  static Expression*
+  unpack_direct_iface(Expression*, Location);
+
   // Dump an expression to a dump constext.
   void
   dump_expression(Ast_dump_context*) const;
@@ -1070,6 +1087,10 @@ class Expression
   do_flatten(Gogo*, Named_object*, Statement_inserter*)
   { return this; }
 
+  // Make implicit type conversions explicit.
+  virtual void
+  do_add_conversions()
+  { }
 
   // Return whether this is a constant expression.
   virtual bool
@@ -1213,12 +1234,6 @@ class Expression
 	    ? static_cast<const Expression_class*>(this)
 	    : NULL);
   }
-
-  static Expression*
-  convert_type_to_interface(Type*, Expression*, Location);
-
-  static Expression*
-  unpack_direct_iface(Expression*, Location);
 
   static Expression*
   get_interface_type_descriptor(Expression*);
@@ -1674,7 +1689,7 @@ class Type_conversion_expression : public Expression
 			     Location location)
     : Expression(EXPRESSION_CONVERSION, location),
       type_(type), expr_(expr), may_convert_function_types_(false),
-      no_copy_(false)
+      no_copy_(false), no_escape_(false)
   { }
 
   // Return the type to which we are converting.
@@ -1766,6 +1781,10 @@ class Type_conversion_expression : public Expression
   // True if a string([]byte) conversion can reuse the backing store
   // without copying.  Only used in string([]byte) conversion.
   bool no_copy_;
+  // True if a conversion to interface does not escape, so it does
+  // not need a heap allocation.  Only used in type-to-interface
+  // conversion.
+  bool no_escape_;
 };
 
 // An unsafe type conversion, used to pass values to builtin functions.
@@ -2402,12 +2421,15 @@ class Call_expression : public Expression
   void
   do_dump_expression(Ast_dump_context*) const;
 
+  void
+  do_add_conversions();
+
  private:
   bool
   check_argument_type(int, const Type*, const Type*, Location, bool);
 
   Expression*
-  lower_to_builtin(Named_object**, const char*, int*);
+  intrinsify(Gogo*, Statement_inserter*);
 
   Expression*
   interface_method_function(Interface_field_reference_expression*,
@@ -3162,6 +3184,9 @@ class Map_index_expression : public Expression
   void
   do_dump_expression(Ast_dump_context*) const;
 
+  void
+  do_add_conversions();
+
  private:
   // The map we are looking into.
   Expression* map_;
@@ -3648,6 +3673,9 @@ class Struct_construction_expression : public Expression,
   void
   do_dump_expression(Ast_dump_context*) const;
 
+  void
+  do_add_conversions();
+
  private:
   // The type of the struct to construct.
   Type* type_;
@@ -3720,6 +3748,9 @@ protected:
 
   virtual void
   dump_slice_storage_expression(Ast_dump_context*) const { }
+
+  void
+  do_add_conversions();
 
  private:
   // The type of the array to construct.
@@ -3843,6 +3874,9 @@ class Map_construction_expression : public Expression
 
   void
   do_dump_expression(Ast_dump_context*) const;
+
+  void
+  do_add_conversions();
 
  private:
   // The type of the map to construct.

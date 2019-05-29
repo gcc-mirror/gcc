@@ -550,7 +550,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_3_PLUS, OPT_fpredictive_commoning, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fsplit_loops, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fsplit_paths, NULL, 1 },
-    { OPT_LEVELS_3_PLUS, OPT_ftree_loop_distribute_patterns, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_ftree_loop_distribute_patterns, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_loop_distribution, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_loop_vectorize, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_partial_pre, NULL, 1 },
@@ -856,7 +856,7 @@ control_options_for_live_patching (struct gcc_options *opts,
 }
 
 /* --help option argument if set.  */
-const char *help_option_argument = NULL;
+vec<const char *> help_option_arguments;
 
 
 /* After all options at LOC have been read into OPTS and OPTS_SET,
@@ -1671,7 +1671,8 @@ print_specific_help (unsigned int include_flags,
 	    description = _("The following options take joined arguments");
 	  else
 	    {
-	      internal_error ("unrecognized include_flags 0x%x passed to print_specific_help",
+	      internal_error ("unrecognized %<include_flags 0x%x%> passed "
+			      "to %<print_specific_help%>",
 			      include_flags);
 	      return;
 	    }
@@ -1982,7 +1983,7 @@ parse_no_sanitize_attribute (char *value)
 
       if (sanitizer_opts[i].name == NULL)
 	warning (OPT_Wattributes,
-		 "%<%s%> attribute directive ignored", q);
+		 "%qs attribute directive ignored", q);
 
       q = strtok (NULL, ",");
     }
@@ -2061,7 +2062,8 @@ check_alignment_argument (location_t loc, const char *flag, const char *name)
 /* Print help when OPT__help_ is set.  */
 
 void
-print_help (struct gcc_options *opts, unsigned int lang_mask)
+print_help (struct gcc_options *opts, unsigned int lang_mask,
+	    const char *help_option_argument)
 {
   const char *a = help_option_argument;
   unsigned int include_flags = 0;
@@ -2165,7 +2167,7 @@ print_help (struct gcc_options *opts, unsigned int lang_mask)
 		*pflags |= lang_flag;
 	      else
 		warning (0,
-			 "--help argument %q.*s is ambiguous, "
+			 "%<--help%> argument %q.*s is ambiguous, "
 			 "please be more specific",
 			 len, a);
 	    }
@@ -2174,7 +2176,7 @@ print_help (struct gcc_options *opts, unsigned int lang_mask)
 	*pflags |= lang_flag;
       else
 	warning (0,
-		 "unrecognized argument to --help= option: %q.*s",
+		 "unrecognized argument to %<--help=%> option: %q.*s",
 		 len, a);
 
       if (comma == NULL)
@@ -2254,7 +2256,7 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT__help_:
       {
-	help_option_argument = arg;
+	help_option_arguments.safe_push (arg);
 	opts->x_exit_after_options = true;
 	break;
       }
@@ -2831,8 +2833,8 @@ handle_param (struct gcc_options *opts, struct gcc_options *opts_set,
   arg = xstrdup (carg);
   equal = strchr (arg, '=');
   if (!equal)
-    error_at (loc, "%s: --param arguments should be of the form NAME=VALUE",
-	      arg);
+    error_at (loc, "%s: %qs arguments should be of the form NAME=VALUE",
+	      arg, "--param");
   else
     {
       *equal = '\0';
@@ -2842,10 +2844,10 @@ handle_param (struct gcc_options *opts, struct gcc_options *opts_set,
 	{
 	  const char *suggestion = find_param_fuzzy (arg);
 	  if (suggestion)
-	    error_at (loc, "invalid --param name %qs; did you mean %qs?",
-		      arg, suggestion);
+	    error_at (loc, "invalid %qs name %qs; did you mean %qs?",
+		      "--param", arg, suggestion);
 	  else
-	    error_at (loc, "invalid --param name %qs", arg);
+	    error_at (loc, "invalid %qs name %qs", "--param", arg);
 	}
       else
 	{
@@ -2853,7 +2855,7 @@ handle_param (struct gcc_options *opts, struct gcc_options *opts_set,
 	    value = integral_argument (equal + 1);
 
 	  if (value == -1)
-	    error_at (loc, "invalid --param value %qs", equal + 1);
+	    error_at (loc, "invalid %qs value %qs", "--param", equal + 1);
 	  else
 	    set_param_value (arg, value,
 			     opts->x_param_values, opts_set->x_param_values);

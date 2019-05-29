@@ -119,6 +119,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @cond undocumented
 
+  // Manages the pointer and deleter of a unique_ptr
   template <typename _Tp, typename _Dp>
     class __uniq_ptr_impl
     {
@@ -153,13 +154,74 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __uniq_ptr_impl(pointer __p, _Del&& __d)
 	: _M_t(__p, std::forward<_Del>(__d)) { }
 
+      __uniq_ptr_impl(__uniq_ptr_impl&& __u) noexcept
+      : _M_t(std::move(__u._M_t))
+      { __u._M_ptr() = nullptr; }
+
+      __uniq_ptr_impl& operator=(__uniq_ptr_impl&& __u) noexcept
+      {
+	reset(__u.release());
+	_M_deleter() = std::forward<_Dp>(__u._M_deleter());
+	return *this;
+      }
+
       pointer&   _M_ptr() { return std::get<0>(_M_t); }
       pointer    _M_ptr() const { return std::get<0>(_M_t); }
       _Dp&       _M_deleter() { return std::get<1>(_M_t); }
       const _Dp& _M_deleter() const { return std::get<1>(_M_t); }
 
+      void reset(pointer __p) noexcept
+      {
+	const pointer __old_p = _M_ptr();
+	_M_ptr() = __p;
+	if (__old_p)
+	  _M_deleter()(__old_p);
+      }
+
+      pointer release() noexcept
+      {
+	pointer __p = _M_ptr();
+	_M_ptr() = nullptr;
+	return __p;
+      }
+
     private:
       tuple<pointer, _Dp> _M_t;
+    };
+
+  // Defines move construction + assignment as either defaulted or deleted.
+  template <typename _Tp, typename _Dp,
+	    bool = is_move_constructible<_Dp>::value,
+	    bool = is_move_assignable<_Dp>::value>
+    struct __uniq_ptr_data : __uniq_ptr_impl<_Tp, _Dp>
+    {
+      using __uniq_ptr_impl<_Tp, _Dp>::__uniq_ptr_impl;
+      __uniq_ptr_data(__uniq_ptr_data&&) = default;
+      __uniq_ptr_data& operator=(__uniq_ptr_data&&) = default;
+    };
+
+  template <typename _Tp, typename _Dp>
+    struct __uniq_ptr_data<_Tp, _Dp, true, false> : __uniq_ptr_impl<_Tp, _Dp>
+    {
+      using __uniq_ptr_impl<_Tp, _Dp>::__uniq_ptr_impl;
+      __uniq_ptr_data(__uniq_ptr_data&&) = default;
+      __uniq_ptr_data& operator=(__uniq_ptr_data&&) = delete;
+    };
+
+  template <typename _Tp, typename _Dp>
+    struct __uniq_ptr_data<_Tp, _Dp, false, true> : __uniq_ptr_impl<_Tp, _Dp>
+    {
+      using __uniq_ptr_impl<_Tp, _Dp>::__uniq_ptr_impl;
+      __uniq_ptr_data(__uniq_ptr_data&&) = delete;
+      __uniq_ptr_data& operator=(__uniq_ptr_data&&) = default;
+    };
+
+  template <typename _Tp, typename _Dp>
+    struct __uniq_ptr_data<_Tp, _Dp, false, false> : __uniq_ptr_impl<_Tp, _Dp>
+    {
+      using __uniq_ptr_impl<_Tp, _Dp>::__uniq_ptr_impl;
+      __uniq_ptr_data(__uniq_ptr_data&&) = delete;
+      __uniq_ptr_data& operator=(__uniq_ptr_data&&) = delete;
     };
   /// @endcond
 
@@ -171,7 +233,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	using _DeleterConstraint =
 	  typename __uniq_ptr_impl<_Tp, _Up>::_DeleterConstraint::type;
 
-      __uniq_ptr_impl<_Tp, _Dp> _M_t;
+      __uniq_ptr_data<_Tp, _Dp> _M_t;
 
     public:
       using pointer	  = typename __uniq_ptr_impl<_Tp, _Dp>::pointer;
@@ -255,8 +317,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Move constructors.
 
       /// Move constructor.
-      unique_ptr(unique_ptr&& __u) noexcept
-      : _M_t(__u.release(), std::forward<deleter_type>(__u.get_deleter())) { }
+      unique_ptr(unique_ptr&&) = default;
 
       /** @brief Converting constructor from another type
        *
@@ -298,24 +359,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /** @brief Move assignment operator.
        *
-       * @param __u  The object to transfer ownership from.
-       *
-       * Invokes the deleter first if this object owns a pointer.
+       * Invokes the deleter if this object owns a pointer.
        */
-      unique_ptr&
-      operator=(unique_ptr&& __u) noexcept
-      {
-	reset(__u.release());
-	get_deleter() = std::forward<deleter_type>(__u.get_deleter());
-	return *this;
-      }
+      unique_ptr& operator=(unique_ptr&&) = default;
 
       /** @brief Assignment from another type.
        *
        * @param __u  The object to transfer ownership from, which owns a
        *             convertible pointer to a non-array object.
        *
-       * Invokes the deleter first if this object owns a pointer.
+       * Invokes the deleter if this object owns a pointer.
        */
       template<typename _Up, typename _Ep>
         typename enable_if< __and_<
@@ -380,11 +433,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// Release ownership of any stored pointer.
       pointer
       release() noexcept
-      {
-	pointer __p = get();
-	_M_t._M_ptr() = pointer();
-	return __p;
-      }
+      { return _M_t.release(); }
 
       /** @brief Replace the stored pointer.
        *
@@ -397,10 +446,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	static_assert(__is_invocable<deleter_type&, pointer>::value,
 		      "unique_ptr's deleter must be invocable with a pointer");
-	using std::swap;
-	swap(_M_t._M_ptr(), __p);
-	if (__p != pointer())
-	  get_deleter()(std::move(__p));
+	_M_t.reset(std::move(__p));
       }
 
       /// Exchange the pointer and deleter with another object.
@@ -427,7 +473,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _DeleterConstraint =
 	typename __uniq_ptr_impl<_Tp, _Up>::_DeleterConstraint::type;
 
-      __uniq_ptr_impl<_Tp, _Dp> _M_t;
+      __uniq_ptr_data<_Tp, _Dp> _M_t;
 
       template<typename _Up>
 	using __remove_cv = typename remove_cv<_Up>::type;
@@ -536,8 +582,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				 _DelUnref&&>) = delete;
 
       /// Move constructor.
-      unique_ptr(unique_ptr&& __u) noexcept
-      : _M_t(__u.release(), std::forward<deleter_type>(__u.get_deleter())) { }
+      unique_ptr(unique_ptr&&) = default;
 
       /// Creates a unique_ptr that owns nothing.
       template<typename _Del = _Dp, typename = _DeleterConstraint<_Del>>
@@ -564,24 +609,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /** @brief Move assignment operator.
        *
-       * @param __u  The object to transfer ownership from.
-       *
-       * Invokes the deleter first if this object owns a pointer.
+       * Invokes the deleter if this object owns a pointer.
        */
       unique_ptr&
-      operator=(unique_ptr&& __u) noexcept
-      {
-	reset(__u.release());
-	get_deleter() = std::forward<deleter_type>(__u.get_deleter());
-	return *this;
-      }
+      operator=(unique_ptr&&) = default;
 
       /** @brief Assignment from another type.
        *
        * @param __u  The object to transfer ownership from, which owns a
        *             convertible pointer to an array object.
        *
-       * Invokes the deleter first if this object owns a pointer.
+       * Invokes the deleter if this object owns a pointer.
        */
       template<typename _Up, typename _Ep>
 	typename
@@ -638,11 +676,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// Release ownership of any stored pointer.
       pointer
       release() noexcept
-      {
-	pointer __p = get();
-	_M_t._M_ptr() = pointer();
-	return __p;
-      }
+      { return _M_t.release(); }
 
       /** @brief Replace the stored pointer.
        *
@@ -664,18 +698,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                >>
       void
       reset(_Up __p) noexcept
-      {
-	pointer __ptr = __p;
-	using std::swap;
-	swap(_M_t._M_ptr(), __ptr);
-	if (__ptr != nullptr)
-	  get_deleter()(__ptr);
-      }
+      { _M_t.reset(std::move(__p)); }
 
       void reset(nullptr_t = nullptr) noexcept
-      {
-        reset(pointer());
-      }
+      { reset(pointer()); }
 
       /// Exchange the pointer and deleter with another object.
       void

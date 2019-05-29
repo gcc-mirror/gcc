@@ -439,7 +439,10 @@ statement_sink_location (gimple *stmt, basic_block frombb,
 	  if (sinkbb == frombb)
 	    return false;
 
-	  *togsi = gsi_for_stmt (use);
+	  if (sinkbb == gimple_bb (use))
+	    *togsi = gsi_for_stmt (use);
+	  else
+	    *togsi = gsi_after_labels (sinkbb);
 
 	  return true;
 	}
@@ -610,7 +613,7 @@ const pass_data pass_data_sink_code =
   "sink", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
   TV_TREE_SINK, /* tv_id */
-  /* PROP_no_crit_edges is ensured by running split_critical_edges in
+  /* PROP_no_crit_edges is ensured by running split_edges_for_insertion in
      pass_data_sink_code::execute ().  */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */
@@ -636,7 +639,7 @@ unsigned int
 pass_sink_code::execute (function *fun)
 {
   loop_optimizer_init (LOOPS_NORMAL);
-  split_critical_edges ();
+  split_edges_for_insertion ();
   connect_infinite_loops_to_exit ();
   memset (&sink_stats, 0, sizeof (sink_stats));
   calculate_dominance_info (CDI_DOMINATORS);

@@ -212,7 +212,7 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       bp_pack_var_len_unsigned (bp, EH_LANDING_PAD_NR (expr));
     }
 
-  if (TREE_CODE (expr) == FIELD_DECL)
+  else if (TREE_CODE (expr) == FIELD_DECL)
     {
       bp_pack_value (bp, DECL_PACKED (expr), 1);
       bp_pack_value (bp, DECL_NONADDRESSABLE_P (expr), 1);
@@ -220,11 +220,14 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       bp_pack_value (bp, expr->decl_common.off_align, 8);
     }
 
-  if (VAR_P (expr))
+  else if (VAR_P (expr))
     {
       bp_pack_value (bp, DECL_HAS_DEBUG_EXPR_P (expr), 1);
       bp_pack_value (bp, DECL_NONLOCAL_FRAME (expr), 1);
     }
+
+  else if (TREE_CODE (expr) == PARM_DECL)
+    bp_pack_value (bp, DECL_HIDDEN_STRING_LENGTH (expr), 1);
 
   if (TREE_CODE (expr) == RESULT_DECL
       || TREE_CODE (expr) == PARM_DECL
@@ -576,7 +579,7 @@ write_ts_decl_minimal_tree_pointers (struct output_block *ob, tree expr,
   /* Drop names that were created for anonymous entities.  */
   if (DECL_NAME (expr)
       && TREE_CODE (DECL_NAME (expr)) == IDENTIFIER_NODE
-      && anon_aggrname_p (DECL_NAME (expr)))
+      && IDENTIFIER_ANON_P (DECL_NAME (expr)))
     stream_write_tree (ob, NULL_TREE, ref_p);
   else
     stream_write_tree (ob, DECL_NAME (expr), ref_p);

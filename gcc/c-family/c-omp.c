@@ -974,7 +974,7 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 				{
 				  error_at (elocus,
 					    "increment is not constant 1 or "
-					    "-1 for != condition");
+					    "-1 for %<!=%> condition");
 				  fail = true;
 				}
 			    }
@@ -992,7 +992,7 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 			{
 			  error_at (elocus,
 				    "increment is not constant 1 or -1 for"
-				    " != condition");
+				    " %<!=%> condition");
 			  fail = true;
 			}
 		    }

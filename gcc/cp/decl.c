@@ -2025,9 +2025,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       tree old_result = DECL_TEMPLATE_RESULT (olddecl);
       tree new_result = DECL_TEMPLATE_RESULT (newdecl);
       TREE_TYPE (olddecl) = TREE_TYPE (old_result);
-      DECL_TEMPLATE_SPECIALIZATIONS (olddecl)
-	= chainon (DECL_TEMPLATE_SPECIALIZATIONS (olddecl),
-		   DECL_TEMPLATE_SPECIALIZATIONS (newdecl));
+
+      /* The new decl should not already have gathered any
+	 specializations.  */
+      gcc_assert (!DECL_TEMPLATE_SPECIALIZATIONS (newdecl));
 
       DECL_ATTRIBUTES (old_result)
 	= (*targetm.merge_decl_attributes) (old_result, new_result);
@@ -3228,32 +3229,32 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 	{
 	case sk_try:
 	  if (!saw_eh)
-	    inf = N_("enters try block");
+	    inf = G_("  enters %<try%> block");
 	  saw_eh = true;
 	  break;
 
 	case sk_catch:
 	  if (!saw_eh)
-	    inf = N_("enters catch block");
+	    inf = G_("  enters %<catch%> block");
 	  saw_eh = true;
 	  break;
 
 	case sk_omp:
 	  if (!saw_omp)
-	    inf = N_("enters OpenMP structured block");
+	    inf = G_("  enters OpenMP structured block");
 	  saw_omp = true;
 	  break;
 
 	case sk_transaction:
 	  if (!saw_tm)
-	    inf = N_("enters synchronized or atomic statement");
+	    inf = G_("  enters synchronized or atomic statement");
 	  saw_tm = true;
 	  break;
 
 	case sk_block:
 	  if (!saw_cxif && level_for_constexpr_if (b->level_chain))
 	    {
-	      inf = N_("enters constexpr if statement");
+	      inf = G_("  enters %<constexpr if%> statement");
 	      loc = EXPR_LOCATION (b->level_chain->this_entity);
 	      saw_cxif = true;
 	    }
@@ -3269,7 +3270,7 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 	    complained = identify_goto (decl, input_location, locus, DK_ERROR);
 	  identified = 2;
 	  if (complained)
-	    inform (loc, "  %s", inf);
+	    inform (loc, inf);
 	}
     }
 
@@ -3364,7 +3365,7 @@ check_goto (tree decl)
 	      identified = 2;
 	    }
 	  if (complained)
-	    inform (DECL_SOURCE_LOCATION (bad), "  enters catch block");
+	    inform (DECL_SOURCE_LOCATION (bad), "  enters %<catch%> block");
 	  saw_catch = true;
 	}
       else if (complained)
@@ -3382,13 +3383,13 @@ check_goto (tree decl)
   if (complained)
     {
       if (ent->in_try_scope)
-	inform (input_location, "  enters try block");
+	inform (input_location, "  enters %<try%> block");
       else if (ent->in_catch_scope && !saw_catch)
-	inform (input_location, "  enters catch block");
+	inform (input_location, "  enters %<catch%> block");
       else if (ent->in_transaction_scope)
 	inform (input_location, "  enters synchronized or atomic statement");
       else if (ent->in_constexpr_if)
-	inform (input_location, "  enters %<constexpr%> if statement");
+	inform (input_location, "  enters %<constexpr if%> statement");
     }
 
   if (ent->in_omp_scope)
@@ -5078,7 +5079,8 @@ start_decl (const cp_declarator *declarator,
       && TREE_CODE (decl) == TYPE_DECL)
     {
       error_at (DECL_SOURCE_LOCATION (decl),
-		"typedef %qD is initialized (use decltype instead)", decl);
+		"typedef %qD is initialized (use %qs instead)",
+		decl, "decltype");
       return error_mark_node;
     }
 
@@ -7020,8 +7022,8 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	return;
       if (TREE_CODE (type) == FUNCTION_TYPE)
 	{
-	  error ("initializer for %<decltype(auto) %D%> has function type "
-		 "(did you forget the %<()%> ?)", decl);
+	  error ("initializer for %<decltype(auto) %D%> has function type; "
+		 "did you forget the %<()%>?", decl);
 	  TREE_TYPE (decl) = error_mark_node;
 	  return;
 	}
@@ -7590,7 +7592,7 @@ get_tuple_decomp_init (tree decl, unsigned i)
     }
   else
     {
-      vec<tree,va_gc> *args = make_tree_vector_single (e);
+      releasing_vec args (make_tree_vector_single (e));
       fns = lookup_template_function (get__identifier, targs);
       fns = perform_koenig_lookup (fns, args, tf_warning_or_error);
       return finish_call_expr (fns, &args, /*novirt*/false,
@@ -8918,9 +8920,7 @@ grokfndecl (tree ctype,
 	     the information in the TEMPLATE_ID_EXPR.  */
 	  SET_DECL_IMPLICIT_INSTANTIATION (decl);
 
-	  gcc_assert (identifier_p (fns)
-		      || TREE_CODE (fns) == OVERLOAD
-		      || TREE_CODE (fns) == FUNCTION_DECL);
+	  gcc_assert (identifier_p (fns) || OVL_P (fns));
 	  DECL_TEMPLATE_INFO (decl) = build_template_info (fns, args);
 
 	  for (t = TYPE_ARG_TYPES (TREE_TYPE (decl)); t; t = TREE_CHAIN (t))
@@ -10234,15 +10234,12 @@ name_unnamed_type (tree type, tree decl)
 
   /* Replace the anonymous name with the real name everywhere.  */
   for (tree t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
-    {
-      if (anon_aggrname_p (TYPE_IDENTIFIER (t)))
-	/* We do not rename the debug info representing the
-	   unnamed tagged type because the standard says in
-	   [dcl.typedef] that the naming applies only for
-	   linkage purposes.  */
-	/*debug_hooks->set_name (t, decl);*/
-	TYPE_NAME (t) = decl;
-    }
+    if (IDENTIFIER_ANON_P (TYPE_IDENTIFIER (t)))
+      /* We do not rename the debug info representing the unnamed
+	 tagged type because the standard says in [dcl.typedef] that
+	 the naming applies only for linkage purposes.  */
+      /*debug_hooks->set_name (t, decl);*/
+      TYPE_NAME (t) = decl;
 
   if (TYPE_LANG_SPECIFIC (type))
     TYPE_WAS_UNNAMED (type) = 1;
@@ -10424,8 +10421,8 @@ grokdeclarator (const cp_declarator *declarator,
 
   location_t typespec_loc = smallest_type_quals_location (type_quals,
 						      declspecs->locations);
-  if (typespec_loc == UNKNOWN_LOCATION)
-    typespec_loc = declspecs->locations[ds_type_spec];
+  typespec_loc = min_location (typespec_loc,
+			       declspecs->locations[ds_type_spec]);
   if (typespec_loc == UNKNOWN_LOCATION)
     typespec_loc = input_location;
 
@@ -11571,7 +11568,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  error ("friend declaration not in class definition");
 		if (current_function_decl && funcdef_flag)
 		  {
-		    error ("can%'t define friend function %qs in a local "
+		    error ("cannot define friend function %qs in a local "
 			   "class definition", name);
 		    friendp = 0;
 		  }
@@ -13614,7 +13611,7 @@ grok_op_properties (tree decl, bool complain)
   if (operator_code == COND_EXPR)
     {
       /* 13.4.0.3 */
-      error_at (loc, "ISO C++ prohibits overloading operator ?:");
+      error_at (loc, "ISO C++ prohibits overloading %<operator ?:%>");
       return false;
     }
 
@@ -14062,7 +14059,7 @@ xref_tag_1 (enum tag_types tag_code, tree name,
   /* In case of anonymous name, xref_tag is only called to
      make type node and push name.  Name lookup is not required.  */
   tree t = NULL_TREE;
-  if (scope != ts_lambda && !anon_aggrname_p (name))
+  if (scope != ts_lambda && !IDENTIFIER_ANON_P (name))
     t = lookup_and_check_tag  (tag_code, name, scope, template_header_p);
   
   if (t == error_mark_node)

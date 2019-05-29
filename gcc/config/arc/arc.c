@@ -480,7 +480,7 @@ arc_preferred_simd_mode (scalar_mode mode)
    TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES.  */
 
 static void
-arc_autovectorize_vector_sizes (vector_sizes *sizes)
+arc_autovectorize_vector_sizes (vector_sizes *sizes, bool)
 {
   if (TARGET_PLUS_QMACW)
     {
@@ -7314,12 +7314,15 @@ arc_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 		     HOST_WIDE_INT vcall_offset,
 		     tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
   int mi_delta = delta;
   const char *const mi_op = mi_delta < 0 ? "sub" : "add";
   int shift = 0;
   int this_regno
     = aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function) ? 1 : 0;
   rtx fnaddr;
+
+  assemble_start_function (thunk, fnname);
 
   if (mi_delta < 0)
     mi_delta = - mi_delta;
@@ -7384,6 +7387,7 @@ arc_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	fputs ("@plt\n", file);
     }
   fputc ('\n', file);
+  assemble_end_function (thunk, fnname);
 }
 
 /* Return true if a 32 bit "long_call" should be generated for

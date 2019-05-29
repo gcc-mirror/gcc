@@ -159,7 +159,7 @@ stream_out (char *temp_filename, lto_symtab_encoder_t encoder, int part)
 {
   lto_file *file = lto_obj_file_open (temp_filename, true);
   if (!file)
-    fatal_error (input_location, "lto_obj_file_open() failed");
+    fatal_error (input_location, "%<lto_obj_file_open()%> failed");
   lto_set_current_out_file (file);
 
   gcc_assert (!dump_file);

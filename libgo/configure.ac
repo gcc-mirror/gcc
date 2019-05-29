@@ -128,7 +128,7 @@ if test "$with_libffi" != no; then
 fi
 AC_SUBST(LIBFFI)
 AC_SUBST(LIBFFIINCS)
-AM_CONDITIONAL(USE_LIBFFI, test "$with_liffi" != "no")
+AM_CONDITIONAL(USE_LIBFFI, test "$with_libffi" != "no")
 
 # See if the user wants to configure without libatomic. This is useful if we are
 # on an architecture for which libgo does not need an atomic support library and
@@ -397,7 +397,7 @@ case "$target" in
 	# msghdr in <sys/socket.h>.
 	OSCFLAGS="$OSCFLAGS -D_XOPEN_SOURCE=500"
 	;;
-    *-*-solaris2.1[[01]])
+    *-*-solaris2.*)
 	# Solaris 10+ needs this so struct msghdr gets the msg_control
 	# etc. fields in <sys/socket.h> (_XPG4_2).  _XOPEN_SOURCE=600 as
 	# above doesn't work with C99.

@@ -263,12 +263,10 @@ elf_platform (void)
 	  for (i = 0; i < ARRAY_SIZE (rs6000_supported_cpu_names); i++)
 	    candidates.safe_push (rs6000_supported_cpu_names[i]);
 	  candidates_list_and_hint (cpu, s, candidates);
-	  fatal_error (
-	    input_location,
-	    "Unsupported cpu name returned from kernel for "
-	    "%<-mcpu=native%>: %s\n"
-	    "Please use an explicit cpu name.  Valid cpu names are: %s",
-	    cpu, s);
+	  error ("unsupported cpu name returned from kernel "
+		 "for %<-mcpu=native%>: %s", cpu);
+	  fatal_error (input_location, "please use an explicit cpu name; "
+		       "valid cpu names are: %s", s);
 	}
     }
   return NULL;
@@ -459,6 +457,7 @@ static const struct asm_name asm_names[] = {
   { "630",	"-m620" },
   { "970",	"-m970" },
   { "G5",	"-m970" },
+  { "future",	"-mfuture" },
   { NULL,	"\
   %{mvsx: -mpwr6; \
     maltivec: -m970; \
@@ -522,6 +521,7 @@ static const struct asm_name asm_names[] = {
   { "e5500",	"-me5500" },
   { "e6500",	"-me6500" },
   { "titan",	"-mtitan" },
+  { "future",	"-mfuture" },
   { NULL,	"\
 %{mpower9-vector: -mpower9; \
   mpower8-vector|mcrypto|mdirect-move|mhtm: -mpower8; \

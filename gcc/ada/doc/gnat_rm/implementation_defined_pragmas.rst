@@ -3766,18 +3766,19 @@ Syntax:
   pragma Machine_Attribute (
        [Entity         =>] LOCAL_NAME,
        [Attribute_Name =>] static_string_EXPRESSION
-    [, [Info           =>] static_EXPRESSION] );
+    [, [Info           =>] static_EXPRESSION {, static_EXPRESSION}] );
 
 
 Machine-dependent attributes can be specified for types and/or
 declarations.  This pragma is semantically equivalent to
 :samp:`__attribute__(({attribute_name}))` (if ``info`` is not
 specified) or :samp:`__attribute__(({attribute_name(info})))`
-in GNU C, where *attribute_name* is recognized by the
-compiler middle-end or the ``TARGET_ATTRIBUTE_TABLE`` machine
-specific macro.  A string literal for the optional parameter ``info``
-is transformed into an identifier, which may make this pragma unusable
-for some attributes.
+or :samp:`__attribute__(({attribute_name(info,...})))` in GNU C,
+where *attribute_name* is recognized by the compiler middle-end
+or the ``TARGET_ATTRIBUTE_TABLE`` machine specific macro.  Note
+that a string literal for the optional parameter ``info`` or the
+following ones is transformed by default into an identifier,
+which may make this pragma unusable for some attributes.
 For further information see :title:`GNU Compiler Collection (GCC) Internals`.
 
 Pragma Main

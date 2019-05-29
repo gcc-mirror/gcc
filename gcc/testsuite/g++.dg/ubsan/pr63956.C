@@ -11,7 +11,7 @@ fn1 (int a, int b)
   if (b != 2)
     a <<= b;
     // { dg-error "5 << -2.. is negative" "" { target *-*-* } .-1 }
-    // { dg-error "is >= than the precision of the left operand" "" { target *-*-* } .-2 }
+    // { dg-error "is greater than or equal to the precision .. of the left operand" "" { target *-*-* } .-2 }
     // { dg-error "-2 << 4.. is negative" "" { target *-*-* } .-3 }
   return a;
 }
@@ -34,7 +34,7 @@ fn2 (int a, int b)
   if (b != 2)
     a >>= b;
     // { dg-error "4 >> -1.. is negative" "" { target *-*-* } .-1 }
-    // { dg-error "is >= than the precision of the left operand" "" { target *-*-* } .-2 }
+    // { dg-error "is greater than or equal to the precision .. of the left operand" "" { target *-*-* } .-2 }
 
   return a;
 }

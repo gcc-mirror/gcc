@@ -1,3 +1,8 @@
+2019-05-16  Martin Sebor  <msebor@redhat.com>
+
+        * lto-dump.c (lto_main): Same.
+        * lto.c (stream_out): Same.
+
 2019-05-10  Martin Liska  <mliska@suse.cz>
 
 	* Make-lang.in: Use program_transform_name for lto-dump.

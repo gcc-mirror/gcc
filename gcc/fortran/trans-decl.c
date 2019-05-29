@@ -1400,12 +1400,7 @@ add_attributes_to_decl (symbol_attribute sym_attr, tree list)
 	list = chainon (list, attr);
       }
 
-  if (sym_attr.omp_declare_target_link)
-    list = tree_cons (get_identifier ("omp declare target link"),
-		      NULL_TREE, list);
-  else if (sym_attr.omp_declare_target)
-    list = tree_cons (get_identifier ("omp declare target"),
-		      NULL_TREE, list);
+  tree clauses = NULL_TREE;
 
   if (sym_attr.oacc_routine_lop != OACC_ROUTINE_LOP_NONE)
     {
@@ -1430,10 +1425,19 @@ add_attributes_to_decl (symbol_attribute sym_attr, tree list)
 	  gcc_unreachable ();
 	}
       tree c = build_omp_clause (UNKNOWN_LOCATION, code);
+      OMP_CLAUSE_CHAIN (c) = clauses;
+      clauses = c;
 
-      tree dims = oacc_build_routine_dims (c);
+      tree dims = oacc_build_routine_dims (clauses);
       list = oacc_replace_fn_attrib_attr (list, dims);
     }
+
+  if (sym_attr.omp_declare_target_link)
+    list = tree_cons (get_identifier ("omp declare target link"),
+		      NULL_TREE, list);
+  else if (sym_attr.omp_declare_target)
+    list = tree_cons (get_identifier ("omp declare target"),
+		      clauses, list);
 
   return list;
 }
@@ -2512,6 +2516,14 @@ create_function_arglist (gfc_symbol * sym)
 	  DECL_ARG_TYPE (length) = len_type;
 	  TREE_READONLY (length) = 1;
 	  gfc_finish_decl (length);
+
+	  /* Marking the length DECL_HIDDEN_STRING_LENGTH will lead
+	     to tail calls being disabled.  Only do that if we
+	     potentially have broken callers.  */
+	  if (flag_broken_callers && f->sym->ts.u.cl
+	      && f->sym->ts.u.cl->length
+	      && f->sym->ts.u.cl->length->expr_type == EXPR_CONSTANT)
+	    DECL_HIDDEN_STRING_LENGTH (length) = 1;
 
 	  /* Remember the passed value.  */
           if (!f->sym->ts.u.cl ||  f->sym->ts.u.cl->passed_length)

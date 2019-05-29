@@ -1049,11 +1049,15 @@ vax_output_mi_thunk (FILE * file,
 		     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
 		     tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
+
+  assemble_start_function (thunk, fnname);
   fprintf (file, "\t.word 0x0ffc\n\taddl2 $" HOST_WIDE_INT_PRINT_DEC, delta);
   asm_fprintf (file, ",4(%Rap)\n");
   fprintf (file, "\tjmp ");
   assemble_name (file,  XSTR (XEXP (DECL_RTL (function), 0), 0));
   fprintf (file, "+2\n");
+  assemble_end_function (thunk, fnname);
 }
 
 static rtx

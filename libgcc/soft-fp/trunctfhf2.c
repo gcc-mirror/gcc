@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Truncate IEEE quad into IEEE half.
-   Copyright (C) 1997-2018 Free Software Foundation, Inc.
+   Copyright (C) 1997-2019 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -40,7 +40,7 @@ __trunctfhf2 (TFtype a)
 
   FP_INIT_ROUNDMODE;
   FP_UNPACK_SEMIRAW_Q (A, a);
-#if (2 * _FP_W_TYPE_SIZE) < _FP_FRACBITS_Q
+#if _FP_W_TYPE_SIZE < 64
   FP_TRUNC (H, Q, 1, 4, R, A);
 #else
   FP_TRUNC (H, Q, 1, 2, R, A);

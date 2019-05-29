@@ -47,15 +47,17 @@
    whether or not new function declarations receive a longcall
    attribute by default.  */
 
-#define SYNTAX_ERROR(gmsgid) do {					\
-  warning (OPT_Wpragmas, gmsgid);					\
-  warning (OPT_Wpragmas, "ignoring malformed #pragma longcall");	\
-  return;								\
-} while (0)
-
 void
 rs6000_pragma_longcall (cpp_reader *pfile ATTRIBUTE_UNUSED)
 {
+#define SYNTAX_ERROR(gmsgid) do {					\
+  warning (OPT_Wpragmas, gmsgid);					\
+  warning (OPT_Wpragmas, "ignoring malformed %<#pragma longcall%>");	\
+  return;								\
+} while (0)
+
+
+
   tree x, n;
 
   /* If we get here, generic code has already scanned the directive
@@ -72,7 +74,7 @@ rs6000_pragma_longcall (cpp_reader *pfile ATTRIBUTE_UNUSED)
     SYNTAX_ERROR ("number must be 0 or 1");
 
   if (pragma_lex (&x) != CPP_EOF)
-    warning (OPT_Wpragmas, "junk at end of #pragma longcall");
+    warning (OPT_Wpragmas, "junk at end of %<#pragma longcall%>");
 
   rs6000_default_long_calls = (n == integer_one_node);
 }
@@ -6140,11 +6142,11 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
   /* vec_lvsl and vec_lvsr are deprecated for use with LE element order.  */
   if (fcode == ALTIVEC_BUILTIN_VEC_LVSL && !BYTES_BIG_ENDIAN)
     warning (OPT_Wdeprecated,
-	     "vec_lvsl is deprecated for little endian; use "
+	     "%<vec_lvsl%> is deprecated for little endian; use "
 	     "assignment for unaligned loads and stores");
   else if (fcode == ALTIVEC_BUILTIN_VEC_LVSR && !BYTES_BIG_ENDIAN)
     warning (OPT_Wdeprecated,
-	     "vec_lvsr is deprecated for little endian; use "
+	     "%<vec_lvsr%> is deprecated for little endian; use "
 	     "assignment for unaligned loads and stores");
 
   if (fcode == ALTIVEC_BUILTIN_VEC_MUL)
@@ -6846,7 +6848,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	{
           if (TYPE_READONLY (TREE_TYPE (type))
 	      && !TYPE_READONLY (TREE_TYPE (decl_type)))
-	    warning (0, "passing arg %d of %qE discards qualifiers from "
+	    warning (0, "passing argument %d of %qE discards qualifiers from "
 		        "pointer target type", n + 1, fndecl);
 	  type = build_pointer_type (build_qualified_type (TREE_TYPE (type),
 							   0));

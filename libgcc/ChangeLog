@@ -1,3 +1,40 @@
+2019-05-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sparc/sol2-unwind.h [__arch64__] (sparc64_is_sighandler):
+	Remove Solaris 9 and 10 support.
+	(sparc_is_sighandler): Likewise.
+
+2019-05-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-unwind.h (pa32_fallback_frame_state): Add cast.
+
+2019-05-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* soft-fp/extenddftf2.c: Use "_FP_W_TYPE_SIZE < 64" to check if
+	4_FP_W_TYPEs are used for IEEE quad precision.
+	* soft-fp/extendhftf2.c: Likewise.
+	* soft-fp/extendsftf2.c: Likewise.
+	* soft-fp/extendxftf2.c: Likewise.
+	* soft-fp/trunctfdf2.c: Likewise.
+	* soft-fp/trunctfhf2.c: Likewise.
+	* soft-fp/trunctfsf2.c: Likewise.
+	* soft-fp/trunctfxf2.c: Likewise.
+	* config/rs6000/ibm-ldouble.c: Likewise.
+
+2019-05-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host: Simplify various *-*-solaris2.1[0-9]* to
+	*-*-solaris2*.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+
+	* config/i386/sol2-unwind.h (x86_fallback_frame_state): Remove
+	Solaris 10 and Solaris 11 < snv_125 handling.
+
+2019-05-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin-vecsave.S: Set .machine appropriately.
+
 2019-05-07  Hongtao Liu  <hongtao.liu@intel.com>
 
 	* config/i386/cpuinfo.c (get_available_features): Detect BF16.

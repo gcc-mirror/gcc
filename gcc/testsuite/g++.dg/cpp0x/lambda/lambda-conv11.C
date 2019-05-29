@@ -4,7 +4,7 @@
 void foo()
 {
   int i;
-  static_cast<void(*)()>([i]{});  // { dg-error "invalid static_cast" }
-  static_cast<void(*)()>([=]{});  // { dg-error "invalid static_cast" }
-  static_cast<void(*)()>([&]{});  // { dg-error "invalid static_cast" }
+  static_cast<void(*)()>([i]{});  // { dg-error "invalid 'static_cast'" }
+  static_cast<void(*)()>([=]{});  // { dg-error "invalid 'static_cast'" }
+  static_cast<void(*)()>([&]{});  // { dg-error "invalid 'static_cast'" }
 }

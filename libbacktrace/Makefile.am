@@ -130,6 +130,15 @@ elf_for_test.c: elf.c
 endif HAVE_OBJCOPY_DEBUGLINK
 endif HAVE_ELF
 
+elf_%.c: elf.c
+	SEARCH='#error "Unknown BACKTRACE_ELF_SIZE"'; \
+	REPLACE='#undef BACKTRACE_ELF_SIZE\
+	#define BACKTRACE_ELF_SIZE'; \
+	$(SED) "s/^$$SEARCH\$$/$$REPLACE $*/" \
+		$< \
+		> $@.tmp
+	mv $@.tmp $@
+
 xcoff_%.c: xcoff.c
 	SEARCH='#error "Unknown BACKTRACE_XCOFF_SIZE"'; \
 	REPLACE='#undef BACKTRACE_XCOFF_SIZE\
@@ -139,10 +148,15 @@ xcoff_%.c: xcoff.c
 		> $@.tmp
 	mv $@.tmp $@
 
-test_elf_SOURCES = test_format.c testlib.c
-test_elf_LDADD = libbacktrace_noformat.la elf.lo
+test_elf_32_SOURCES = test_format.c testlib.c
+test_elf_32_LDADD = libbacktrace_noformat.la elf_32.lo
 
-BUILDTESTS += test_elf
+BUILDTESTS += test_elf_32
+
+test_elf_64_SOURCES = test_format.c testlib.c
+test_elf_64_LDADD = libbacktrace_noformat.la elf_64.lo
+
+BUILDTESTS += test_elf_64
 
 test_xcoff_32_SOURCES = test_format.c testlib.c
 test_xcoff_32_LDADD = libbacktrace_noformat.la xcoff_32.lo

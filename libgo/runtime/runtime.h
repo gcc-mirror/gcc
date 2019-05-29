@@ -485,6 +485,7 @@ struct funcfileline_return
   String retfn;
   String retfile;
   intgo retline;
+  intgo retframes;
 };
 
 struct funcfileline_return

@@ -1,3 +1,23 @@
+2019-05-24  Nathan Sidwell  <nathan@acm.org>
+
+	* types.cc (fixup_anonymous_offset): Use IDENTIFIER_ANON_P.
+	(layout_aggregate_members): Use make_anon_name.
+
+2019-05-16  Martin Sebor  <msebor@redhat.com>
+
+        * d-builtins.cc (d_init_builtins): Quote keywords, operators,
+        and types in diagnostics.
+        * d-codegen.cc (get_array_length): Same.  Replace can't with cannot.
+        * d-convert.cc (convert_expr): Same.
+        * d-frontend.cc (getTypeInfoType): Quote an option name in
+        a diagnostic.
+        * d-lang.cc (d_handle_option): Same.
+        (d_parse_file): Same.
+        * decl.cc: Remove a trailing period from a diagnostic.
+        * expr.cc: Use a directive for an apostrophe.
+        * toir.cc: Quote keywords, operators, and types in diagnostics.
+        * typeinfo.cc (build_typeinfo): Quote an option name in a diagnostic.
+
 2019-04-25  Johannes Pfau  <johannespfau@gmail.com>
 
 	* config-lang.in: Do not add target_libs if phobos is disabled.

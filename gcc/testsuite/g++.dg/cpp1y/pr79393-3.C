@@ -18,7 +18,7 @@ struct B : virtual A
 };
 
 B::~B () {
-  throw 1; // { dg-warning "will always call terminate" }
+  throw 1; // { dg-warning "will always call 'terminate'" }
 }
 
 struct C : virtual A

@@ -1,3 +1,56 @@
+2019-05-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR c/89433
+	* c-parser.c (c_finish_oacc_routine): Rework checking if already
+	marked with an OpenACC 'routine' directive.
+
+	PR c/89433
+	* c-parser.c (c_parser_oacc_routine): Normalize order of clauses.
+	(c_finish_oacc_routine): Call oacc_verify_routine_clauses.
+
+	PR c/89433
+	* c-parser.c (c_finish_oacc_routine): Refer to OpenACC 'routine'
+	clauses from "omp declare target" attribute.
+
+2019-05-16  Martin Sebor  <msebor@redhat.com>
+
+        * c-decl.c (start_decl): Quote keywords, operators, and
+        types in diagnostics.
+        (finish_decl): Same.
+        * c-parser.c (c_parser_asm_statement): Same.
+        (c_parser_conditional_expression): Same.
+        (c_parser_transaction_cancel): Same.
+        * c-typeck.c (c_common_type): Same.
+        (build_conditional_expr): Same.
+        (digest_init): Same.
+        (process_init_element): Same.
+        (build_binary_op): Same.
+
+2019-05-17  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_statement): Handle __VEC_PERM.
+	(c_parser_gimple_unary_expression): Likewise.
+	(c_parser_gimple_parentized_ternary_expression): New function.
+
+2019-05-16  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_statement): Handle __BIT_INSERT.
+	(c_parser_gimple_unary_expression): Likewise.
+
+2019-05-15  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Handle
+	__BIT_FIELD_REF.
+
+2019-05-14  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_statement): Remove
+	questionable auto-promotion to VIEW_CONVERT_EXPR.
+	(c_parser_gimple_typespec): Split out from __MEM parsing.
+	(c_parser_gimple_postfix_expression): Handle __VIEW_CONVERT.
+	* tree-pretty-print.c (dump_generic_node): Dump VIEW_CONVERT_EXPR
+	as __VIEW_CONVERT with -gimple.
+
 2019-05-09  Martin Liska  <mliska@suse.cz>
 
 	* gimple-parser.c (c_parser_gimple_statement): Support __MIN and

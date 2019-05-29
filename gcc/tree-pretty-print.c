@@ -466,6 +466,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
     case OMP_CLAUSE__REDUCTEMP_:
       name = "_reductemp_";
       goto print_remap;
+    case OMP_CLAUSE__CONDTEMP_:
+      name = "_condtemp_";
+      goto print_remap;
     case OMP_CLAUSE_TO_DECLARE:
       name = "to";
       goto print_remap;
@@ -2111,13 +2114,39 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       break;
 
     case BIT_FIELD_REF:
-      pp_string (pp, "BIT_FIELD_REF <");
-      dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_string (pp, ", ");
-      dump_generic_node (pp, TREE_OPERAND (node, 1), spc, flags, false);
-      pp_string (pp, ", ");
-      dump_generic_node (pp, TREE_OPERAND (node, 2), spc, flags, false);
-      pp_greater (pp);
+      if (flags & TDF_GIMPLE)
+	{
+	  pp_string (pp, "__BIT_FIELD_REF <");
+	  dump_generic_node (pp, TREE_TYPE (node),
+			     spc, flags | TDF_SLIM, false);
+	  if (TYPE_ALIGN (TREE_TYPE (node))
+	      != TYPE_ALIGN (TYPE_MAIN_VARIANT (TREE_TYPE (node))))
+	    {
+	      pp_string (pp, ", ");
+	      pp_decimal_int (pp, TYPE_ALIGN (TREE_TYPE (node)));
+	    }
+	  pp_greater (pp);
+	  pp_string (pp, " (");
+	  dump_generic_node (pp, TREE_OPERAND (node, 0), spc,
+			     flags | TDF_SLIM, false);
+	  pp_string (pp, ", ");
+	  dump_generic_node (pp, TREE_OPERAND (node, 1), spc,
+			     flags | TDF_SLIM, false);
+	  pp_string (pp, ", ");
+	  dump_generic_node (pp, TREE_OPERAND (node, 2), spc,
+			     flags | TDF_SLIM, false);
+	  pp_right_paren (pp);
+	}
+      else
+	{
+	  pp_string (pp, "BIT_FIELD_REF <");
+	  dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
+	  pp_string (pp, ", ");
+	  dump_generic_node (pp, TREE_OPERAND (node, 1), spc, flags, false);
+	  pp_string (pp, ", ");
+	  dump_generic_node (pp, TREE_OPERAND (node, 2), spc, flags, false);
+	  pp_greater (pp);
+	}
       break;
 
     case BIT_INSERT_EXPR:
@@ -2653,7 +2682,10 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       break;
 
     case VIEW_CONVERT_EXPR:
-      pp_string (pp, "VIEW_CONVERT_EXPR<");
+      if (flags & TDF_GIMPLE)
+	pp_string (pp, "__VIEW_CONVERT <");
+      else
+	pp_string (pp, "VIEW_CONVERT_EXPR<");
       dump_generic_node (pp, TREE_TYPE (node), spc, flags, false);
       pp_string (pp, ">(");
       dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);

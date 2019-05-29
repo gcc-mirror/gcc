@@ -879,7 +879,7 @@ init_asm_output (const char *name)
 		     asm_file_name);
       if (asm_out_file == 0)
 	fatal_error (UNKNOWN_LOCATION,
-		     "can%'t open %qs for writing: %m", asm_file_name);
+		     "cannot open %qs for writing: %m", asm_file_name);
     }
 
   if (!flag_syntax_only)
@@ -1019,7 +1019,7 @@ output_stack_usage (void)
 
       fprintf (stack_usage_file,
 	       "%s:%d:%d:%s\t" HOST_WIDE_INT_PRINT_DEC"\t%s\n",
-	       lbasename (loc.file),
+	       loc.file == NULL ? "(artificial)" : lbasename (loc.file),
 	       loc.line,
 	       loc.column,
 	       name,
@@ -1056,7 +1056,7 @@ open_auxiliary_file (const char *ext)
   filename = concat (aux_base_name, ".", ext, NULL);
   file = fopen (filename, "w");
   if (!file)
-    fatal_error (input_location, "can%'t open %s for writing: %m", filename);
+    fatal_error (input_location, "cannot open %s for writing: %m", filename);
   free (filename);
   return file;
 }
@@ -1666,7 +1666,7 @@ process_options (void)
       aux_info_file = fopen (aux_info_file_name, "w");
       if (aux_info_file == 0)
 	fatal_error (UNKNOWN_LOCATION,
-		     "can%'t open %s: %m", aux_info_file_name);
+		     "cannot open %s: %m", aux_info_file_name);
     }
 
   if (!targetm_common.have_named_sections)
@@ -1737,7 +1737,7 @@ process_options (void)
     {
       warning_at (UNKNOWN_LOCATION, 0,
 		  "%<-fstack-check=%> and %<-fstack-clash_protection%> are "
-		  "mutually exclusive.  Disabling %<-fstack-check=%>");
+		  "mutually exclusive; disabling %<-fstack-check=%>");
       flag_stack_check = NO_STACK_CHECK;
     }
 
@@ -2180,7 +2180,7 @@ do_compile ()
 	 on the squared numbers.  */
       if (mpfr_set_emin (2 * (min_exp - 1))
 	  || mpfr_set_emax (2 * (max_exp + 1)))
-	sorry ("mpfr not configured to handle all float modes");
+	sorry ("mpfr not configured to handle all floating modes");
 
       /* Set up the back-end if requested.  */
       if (!no_backend)

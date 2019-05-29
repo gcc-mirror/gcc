@@ -356,23 +356,6 @@
      </listitem>
      <listitem>
        <para>
-       <classname>array_allocator</classname>
-       </para>
-       <para>
-	 Allows allocations of known and fixed sizes using existing
-	 global or external storage allocated via construction of
-	 <classname>std::tr1::array</classname> objects. By using this
-	 allocator, fixed size containers (including
-	 <classname>std::string</classname>) can be used without
-	 instances calling <function>::operator new</function> and
-	 <function>::operator delete</function>. This capability
-	 allows the use of STL abstractions without runtime
-	 complications or overhead, even in situations such as program
-	 startup. For usage examples, please consult the testsuite.
-       </para>
-     </listitem>
-     <listitem>
-       <para>
        <classname>debug_allocator</classname>
        </para>
        <para>

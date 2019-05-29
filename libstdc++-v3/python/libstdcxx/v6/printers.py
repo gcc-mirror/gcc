@@ -182,12 +182,23 @@ class UniquePointerPrinter:
     def __init__ (self, typename, val):
         self.val = val
         impl_type = val.type.fields()[0].type.tag
-        if is_specialization_of(impl_type, '__uniq_ptr_impl'): # New implementation
-            self.pointer = val['_M_t']['_M_t']['_M_head_impl']
+        # Check for new implementations first:
+        if is_specialization_of(impl_type, '__uniq_ptr_data') \
+            or is_specialization_of(impl_type, '__uniq_ptr_impl'):
+            tuple_member = val['_M_t']['_M_t']
         elif is_specialization_of(impl_type, 'tuple'):
-            self.pointer = val['_M_t']['_M_head_impl']
+            tuple_member = val['_M_t']
         else:
             raise ValueError("Unsupported implementation for unique_ptr: %s" % impl_type)
+        tuple_impl_type = tuple_member.type.fields()[0].type # _Tuple_impl
+        tuple_head_type = tuple_impl_type.fields()[1].type   # _Head_base
+        head_field = tuple_head_type.fields()[0]
+        if head_field.name == '_M_head_impl':
+            self.pointer = tuple_member['_M_head_impl']
+        elif head_field.is_base_class:
+            self.pointer = tuple_member.cast(head_field.type)
+        else:
+            raise ValueError("Unsupported implementation for tuple in unique_ptr: %s" % impl_type)
 
     def children (self):
         return SmartPtrIterator(self.pointer)

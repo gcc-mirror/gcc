@@ -60,11 +60,6 @@ type sigctxt struct {
 }
 
 func (c *sigctxt) sigcode() uint64 {
-	if c.info == nil {
-		// This can happen on Solaris 10.  We don't know the
-		// code, just avoid a misleading value.
-		return _SI_USER + 1
-	}
 	return uint64(c.info.si_code)
 }
 

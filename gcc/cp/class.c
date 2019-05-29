@@ -3403,18 +3403,19 @@ check_field_decls (tree t, tree *access_decls,
 {
   tree *field;
   tree *next;
-  bool has_pointers;
-  bool any_default_members;
   int cant_pack = 0;
   int field_access = -1;
 
   /* Assume there are no access declarations.  */
   *access_decls = NULL_TREE;
   /* Assume this class has no pointer members.  */
-  has_pointers = false;
+  bool has_pointers = false;
   /* Assume none of the members of this class have default
      initializations.  */
-  any_default_members = false;
+  bool any_default_members = false;
+  /* Assume none of the non-static data members are of non-volatile literal
+     type.  */
+  bool found_nv_literal_p = false;
 
   for (field = &TYPE_FIELDS (t); *field; field = next)
     {
@@ -3498,13 +3499,19 @@ check_field_decls (tree t, tree *access_decls,
       if (TREE_PRIVATE (x) || TREE_PROTECTED (x))
 	CLASSTYPE_NON_AGGREGATE (t) = 1;
 
-      /* If at least one non-static data member is non-literal, the whole
-         class becomes non-literal.  Per Core/1453, volatile non-static
-	 data members and base classes are also not allowed.
+      /* If it is not a union and at least one non-static data member is
+	 non-literal, the whole class becomes non-literal.  Per Core/1453,
+	 volatile non-static data members and base classes are also not allowed.
+	 If it is a union, we might set CLASSTYPE_LITERAL_P after we've seen all
+	 members.
 	 Note: if the type is incomplete we will complain later on.  */
-      if (COMPLETE_TYPE_P (type)
-	  && (!literal_type_p (type) || CP_TYPE_VOLATILE_P (type))) 
-        CLASSTYPE_LITERAL_P (t) = false;
+      if (COMPLETE_TYPE_P (type))
+	{
+	  if (!literal_type_p (type) || CP_TYPE_VOLATILE_P (type))
+	    CLASSTYPE_LITERAL_P (t) = false;
+	  else
+	    found_nv_literal_p = true;
+	}
 
       /* A standard-layout class is a class that:
 	 ...
@@ -3676,6 +3683,11 @@ check_field_decls (tree t, tree *access_decls,
 	permerror (DECL_SOURCE_LOCATION (x),
 		   "field %q#D with same name as class", x);
     }
+
+  /* Per CWG 2096, a type is a literal type if it is a union, and at least
+     one of its non-static data members is of non-volatile literal type.  */
+  if (TREE_CODE (t) == UNION_TYPE && found_nv_literal_p)
+    CLASSTYPE_LITERAL_P (t) = true;
 
   /* Effective C++ rule 11: if a class has dynamic memory held by pointers,
      it should also define a copy constructor and an assignment operator to
@@ -6573,7 +6585,7 @@ find_flexarrays (tree t, flexmems_t *fmem, bool base_p,
       if (TREE_CODE (fld) == TYPE_DECL
 	  && DECL_IMPLICIT_TYPEDEF_P (fld)
 	  && CLASS_TYPE_P (TREE_TYPE (fld))
-	  && anon_aggrname_p (DECL_NAME (fld)))
+	  && IDENTIFIER_ANON_P (DECL_NAME (fld)))
 	{
 	  /* Check the nested unnamed type referenced via a typedef
 	     independently of FMEM (since it's not a data member of

@@ -46,8 +46,10 @@ void test01()
 
   static_assert(test_property<is_trivially_copyable, 
 		int>(true), "");
+  // Changed in CWG 2094, which made volatile-qualified scalars trivially
+  // copyable.
   static_assert(test_property<is_trivially_copyable,
-		volatile int>(false), "");
+		volatile int>(true), "");
   static_assert(test_property<is_trivially_copyable, 
 		TType>(true), "");
   static_assert(test_property<is_trivially_copyable, 

@@ -6401,7 +6401,7 @@ c_parser_asm_statement (c_parser *parser)
 	case RID_VOLATILE:
 	  if (volatile_loc)
 	    {
-	      error_at (loc, "duplicate asm qualifier %qE", token->value);
+	      error_at (loc, "duplicate %<asm%> qualifier %qE", token->value);
 	      inform (volatile_loc, "first seen here");
 	    }
 	  else
@@ -6412,7 +6412,7 @@ c_parser_asm_statement (c_parser *parser)
 	case RID_INLINE:
 	  if (inline_loc)
 	    {
-	      error_at (loc, "duplicate asm qualifier %qE", token->value);
+	      error_at (loc, "duplicate %<asm%> qualifier %qE", token->value);
 	      inform (inline_loc, "first seen here");
 	    }
 	  else
@@ -6423,7 +6423,7 @@ c_parser_asm_statement (c_parser *parser)
 	case RID_GOTO:
 	  if (goto_loc)
 	    {
-	      error_at (loc, "duplicate asm qualifier %qE", token->value);
+	      error_at (loc, "duplicate %<asm%> qualifier %qE", token->value);
 	      inform (goto_loc, "first seen here");
 	    }
 	  else
@@ -6433,7 +6433,7 @@ c_parser_asm_statement (c_parser *parser)
 
 	case RID_CONST:
 	case RID_RESTRICT:
-	  error_at (loc, "%qE is not an asm qualifier", token->value);
+	  error_at (loc, "%qE is not a valid %<asm%> qualifier", token->value);
 	  c_parser_consume_token (parser);
 	  continue;
 
@@ -6791,7 +6791,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
 
       location_t middle_loc = c_parser_peek_token (parser)->location;
       pedwarn (middle_loc, OPT_Wpedantic,
-	       "ISO C forbids omitting the middle term of a ?: expression");
+	       "ISO C forbids omitting the middle term of a %<?:%> expression");
       if (TREE_CODE (cond.value) == EXCESS_PRECISION_EXPR)
 	{
 	  eptype = TREE_TYPE (cond.value);
@@ -15801,6 +15801,9 @@ c_parser_oacc_routine (c_parser *parser, enum pragma_context context)
       data.clauses
 	= c_parser_oacc_all_clauses (parser, OACC_ROUTINE_CLAUSE_MASK,
 				     "#pragma acc routine");
+      /* The clauses are in reverse order; fix that to make later diagnostic
+	 emission easier.  */
+      data.clauses = nreverse (data.clauses);
 
       if (TREE_CODE (decl) != FUNCTION_DECL)
 	{
@@ -15815,6 +15818,9 @@ c_parser_oacc_routine (c_parser *parser, enum pragma_context context)
       data.clauses
 	= c_parser_oacc_all_clauses (parser, OACC_ROUTINE_CLAUSE_MASK,
 				     "#pragma acc routine");
+      /* The clauses are in reverse order; fix that to make later diagnostic
+	 emission easier.  */
+      data.clauses = nreverse (data.clauses);
 
       /* Emit a helpful diagnostic if there's another pragma following this
 	 one.  Also don't allow a static assertion declaration, as in the
@@ -15878,33 +15884,39 @@ c_finish_oacc_routine (struct oacc_routine_data *data, tree fndecl,
       return;
     }
 
-  if (oacc_get_fn_attrib (fndecl))
+  int compatible
+    = oacc_verify_routine_clauses (fndecl, &data->clauses, data->loc,
+				   "#pragma acc routine");
+  if (compatible < 0)
     {
-      error_at (data->loc,
-		"%<#pragma acc routine%> already applied to %qD", fndecl);
       data->error_seen = true;
       return;
     }
-
-  if (TREE_USED (fndecl) || (!is_defn && DECL_SAVED_TREE (fndecl)))
+  if (compatible > 0)
     {
-      error_at (data->loc,
-		TREE_USED (fndecl)
-		? G_("%<#pragma acc routine%> must be applied before use")
-		: G_("%<#pragma acc routine%> must be applied before "
-		     "definition"));
-      data->error_seen = true;
-      return;
     }
+  else
+    {
+      if (TREE_USED (fndecl) || (!is_defn && DECL_SAVED_TREE (fndecl)))
+	{
+	  error_at (data->loc,
+		    TREE_USED (fndecl)
+		    ? G_("%<#pragma acc routine%> must be applied before use")
+		    : G_("%<#pragma acc routine%> must be applied before"
+			 " definition"));
+	  data->error_seen = true;
+	  return;
+	}
 
-  /* Process the routine's dimension clauses.  */
-  tree dims = oacc_build_routine_dims (data->clauses);
-  oacc_replace_fn_attrib (fndecl, dims);
+      /* Set the routine's level of parallelism.  */
+      tree dims = oacc_build_routine_dims (data->clauses);
+      oacc_replace_fn_attrib (fndecl, dims);
 
-  /* Add an "omp declare target" attribute.  */
-  DECL_ATTRIBUTES (fndecl)
-    = tree_cons (get_identifier ("omp declare target"),
-		 NULL_TREE, DECL_ATTRIBUTES (fndecl));
+      /* Add an "omp declare target" attribute.  */
+      DECL_ATTRIBUTES (fndecl)
+	= tree_cons (get_identifier ("omp declare target"),
+		     data->clauses, DECL_ATTRIBUTES (fndecl));
+    }
 
   /* Remember that we've used this "#pragma acc routine".  */
   data->fndecl_seen = true;
@@ -19825,8 +19837,8 @@ c_parser_transaction_cancel (c_parser *parser)
 	  && !is_tm_may_cancel_outer (current_function_decl))
 	{
 	  error_at (loc, "outer %<__transaction_cancel%> not "
-		    "within outer %<__transaction_atomic%>");
-	  error_at (loc, "  or a %<transaction_may_cancel_outer%> function");
+		    "within outer %<__transaction_atomic%> or "
+		    "a %<transaction_may_cancel_outer%> function");
 	  goto ret_error;
 	}
     }

@@ -144,41 +144,7 @@ x86_fallback_frame_state (struct _Unwind_Context *context,
   mcontext_t *mctx;
   long new_cfa;
 
-  if (/* Solaris 10
-	-----------
-	   <__sighndlr+0>:      push   %ebp
-	   <__sighndlr+1>:      mov    %esp,%ebp
-	   <__sighndlr+3>:      pushl  0x10(%ebp)
-	   <__sighndlr+6>:      pushl  0xc(%ebp)
-	   <__sighndlr+9>:      pushl  0x8(%ebp)
-	   <__sighndlr+12>:     call   *0x14(%ebp)
-	   <__sighndlr+15>:     add    $0xc,%esp     <--- PC
-	   <__sighndlr+18>:     leave
-	   <__sighndlr+19>:     ret  */
-	 (*(unsigned long *)(pc - 15) == 0xffec8b55
-	  && *(unsigned long *)(pc - 11) == 0x75ff1075
-	  && *(unsigned long *)(pc - 7)  == 0x0875ff0c
-	  && *(unsigned long *)(pc - 3)  == 0x831455ff
-	  && *(unsigned long *)(pc + 1)  == 0xc3c90cc4)
-
-      || /* Solaris 11 before snv_125
-	   --------------------------
-	  <__sighndlr+0>       	push   %ebp
-	  <__sighndlr+1>       	mov    %esp,%ebp
-	  <__sighndlr+4>      	pushl  0x10(%ebp)
-	  <__sighndlr+6>      	pushl  0xc(%ebp)
-	  <__sighndlr+9>      	pushl  0x8(%ebp)
-	  <__sighndlr+12>      	call   *0x14(%ebp)
-	  <__sighndlr+15>	add    $0xc,%esp
-	  <__sighndlr+18>      	leave                <--- PC
-	  <__sighndlr+19>      	ret  */
-	 (*(unsigned long *)(pc - 18) == 0xffec8b55
-	  && *(unsigned long *)(pc - 14) == 0x7fff107f
-	  && *(unsigned long *)(pc - 10)  == 0x0875ff0c
-	  && *(unsigned long *)(pc - 6)  == 0x83145fff
-	  && *(unsigned long *)(pc - 1)  == 0xc3c90cc4)
-
-      || /* Solaris 11 since snv_125
+  if (/* Solaris 11 since snv_125
 	   -------------------------
 	  <__sighndlr+0>       	push   %ebp
 	  <__sighndlr+1>       	mov    %esp,%ebp

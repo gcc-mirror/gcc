@@ -1,6 +1,7 @@
 ! { dg-do run }
+! { dg-options "-std=f2008" }
 ! { dg-shouldfail "runtime error" }
-! { dg-output "At line 13.*File already opened" }
+! { dg-output "At line 14.*File already opened" }
 
 ! PR 65563 - this used to segfault for some versions.
   variable_1 = 0

@@ -550,6 +550,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__PTWRITE__");
   if (isa_flag2 & OPTION_MASK_ISA_AVX512BF16)
     def_or_undef (parse_in, "__AVX512BF16__");
+  if (TARGET_MMX_WITH_SSE)
+    def_or_undef (parse_in, "__MMX_WITH_SSE__");
+  if (isa_flag2 & OPTION_MASK_ISA_ENQCMD)
+    def_or_undef (parse_in, "__ENQCMD__");
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");

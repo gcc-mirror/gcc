@@ -39,7 +39,7 @@ void test (Class x, Class <MyProtocol> y, id w, id <MyProtocol> z, NotKnown *a, 
 
   /* If a class is specified by name, the @interface must be available
      to check what it responds to.  */
-  [NotKnown classMethod]; /* { dg-warning ".interface of class .NotKnown. not found" } */
+  [NotKnown classMethod]; /* { dg-warning "'.interface' of class .NotKnown. not found" } */
 
 
   /* "id w" means that "w" responds to anything, both class and
@@ -70,7 +70,7 @@ void test (Class x, Class <MyProtocol> y, id w, id <MyProtocol> z, NotKnown *a, 
      because they expect the compiler to do type-checking; the
      @interface must be available to do this check, otherwise the
      compiler does not know what "a" responds to.  */
-  [a instanceMethod];  /* { dg-warning ".interface of class .NotKnown. not found" } */
+  [a instanceMethod];  /* { dg-warning "'.interface' of class .NotKnown. not found" } */
 
   /* But, if you cast it to "id", then you're disabling type-checking
      and the warnings should go away.  */

@@ -1,7 +1,3 @@
-// Before Solaris 11, iconv -f ISO-8859-1 -t ISO-8859-1 fails with
-// Not supported ISO-8859-1 to ISO-8859-1
-//
-// { dg-do run { xfail *-*-solaris2.10 } }
 // { dg-require-iconv "ISO-8859-1" }
 
 // Copyright (C) 2004-2019 Free Software Foundation, Inc.

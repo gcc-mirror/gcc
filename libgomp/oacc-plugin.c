@@ -29,16 +29,22 @@
 #include "libgomp.h"
 #include "oacc-plugin.h"
 #include "oacc-int.h"
+#include "acc_prof.h"
 
+/* This plugin function is now obsolete.  */
 void
-GOMP_PLUGIN_async_unmap_vars (void *ptr, int async)
+GOMP_PLUGIN_async_unmap_vars (void *ptr __attribute__((unused)),
+			      int async __attribute__((unused)))
 {
-  struct target_mem_desc *tgt = ptr;
-  struct gomp_device_descr *devicep = tgt->device_descr;
+  gomp_fatal ("invalid plugin function");
+}
 
-  devicep->openacc.async_set_async_func (async);
-  gomp_unmap_vars (tgt, true);
-  devicep->openacc.async_set_async_func (acc_async_sync);
+/* Return the TLS data for the current thread.  */
+
+struct goacc_thread *
+GOMP_PLUGIN_goacc_thread (void)
+{
+  return goacc_thread ();
 }
 
 /* Return the target-specific part of the TLS data for the current thread.  */
@@ -59,4 +65,12 @@ GOMP_PLUGIN_acc_default_dim (unsigned int i)
       return -1;
     }
   return goacc_default_dims[i];
+}
+
+void
+GOMP_PLUGIN_goacc_profiling_dispatch (acc_prof_info *prof_info,
+				      acc_event_info *event_info,
+				      acc_api_info *api_info)
+{
+  goacc_profiling_dispatch (prof_info, event_info, api_info);
 }

@@ -320,7 +320,8 @@ lto_main (void)
 	node->get_untransformed_body ();
       if (!GATHER_STATISTICS)
 	warning_at (input_location, 0,
-		    "Not configured with --enable-gather-detailed-mem-stats.");
+		    "Not configured with "
+		    "%<--enable-gather-detailed-mem-stats%>.");
       else
 	dump_gimple_statistics ();
     }
@@ -329,7 +330,8 @@ lto_main (void)
       /* Dump tree statistics.  */
       if (!GATHER_STATISTICS)
 	warning_at (input_location, 0,
-		    "Not configured with --enable-gather-detailed-mem-stats.");
+		    "Not configured with "
+		    "%<--enable-gather-detailed-mem-stats%>.");
       else
 	{
 	  printf ("Tree Statistics\n");

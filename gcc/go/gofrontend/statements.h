@@ -338,6 +338,11 @@ class Statement
   export_statement(Export_function_body* efb)
   { this->do_export_statement(efb); }
 
+  // Make implicit type conversions explicit.
+  void
+  add_conversions()
+  { this->do_add_conversions(); }
+
   // Read a statement from export data.  The location should be used
   // for the returned statement.  Errors should be reported using the
   // Import_function_body's location method.
@@ -534,6 +539,11 @@ class Statement
   virtual void
   do_dump_statement(Ast_dump_context*) const = 0;
 
+  // Implemented by child class: make implicit conversions explicit.
+  virtual void
+  do_add_conversions()
+  { }
+
   // Traverse an expression in a statement.
   int
   traverse_expression(Traverse*, Expression**);
@@ -645,6 +655,9 @@ class Assignment_statement : public Statement
   void
   do_dump_statement(Ast_dump_context*) const;
 
+  void
+  do_add_conversions();
+
  private:
   // Left hand side--the lvalue.
   Expression* lhs_;
@@ -717,6 +730,9 @@ class Temporary_statement : public Statement
   void
   do_dump_statement(Ast_dump_context*) const;
 
+  void
+  do_add_conversions();
+
  private:
   // The type of the temporary variable.
   Type* type_;
@@ -773,6 +789,9 @@ class Variable_declaration_statement : public Statement
 
   void
   do_dump_statement(Ast_dump_context*) const;
+
+  void
+  do_add_conversions();
 
  private:
   Named_object* var_;
@@ -958,6 +977,9 @@ class Send_statement : public Statement
 
   void
   do_dump_statement(Ast_dump_context*) const;
+
+  void
+  do_add_conversions();
 
  private:
   // The channel on which to send the value.

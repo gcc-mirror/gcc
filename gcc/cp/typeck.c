@@ -3756,14 +3756,12 @@ build_function_call_vec (location_t /*loc*/, vec<location_t> /*arg_loc*/,
 static tree
 cp_build_function_call (tree function, tree params, tsubst_flags_t complain)
 {
-  vec<tree, va_gc> *vec;
   tree ret;
 
-  vec = make_tree_vector ();
+  releasing_vec vec;
   for (; params != NULL_TREE; params = TREE_CHAIN (params))
     vec_safe_push (vec, TREE_VALUE (params));
   ret = cp_build_function_call_vec (function, &vec, complain);
-  release_tree_vector (vec);
   return ret;
 }
 
@@ -3772,17 +3770,15 @@ cp_build_function_call (tree function, tree params, tsubst_flags_t complain)
 tree
 cp_build_function_call_nary (tree function, tsubst_flags_t complain, ...)
 {
-  vec<tree, va_gc> *vec;
   va_list args;
   tree ret, t;
 
-  vec = make_tree_vector ();
+  releasing_vec vec;
   va_start (args, complain);
   for (t = va_arg (args, tree); t != NULL_TREE; t = va_arg (args, tree))
     vec_safe_push (vec, t);
   va_end (args);
   ret = cp_build_function_call_vec (function, &vec, complain);
-  release_tree_vector (vec);
   return ret;
 }
 
@@ -4891,7 +4887,7 @@ cp_build_binary_op (const op_location_t &location,
 	  && c_inhibit_evaluation_warnings == 0
 	  && (FLOAT_TYPE_P (type0) || FLOAT_TYPE_P (type1)))
 	warning (OPT_Wfloat_equal,
-		 "comparing floating point with == or != is unsafe");
+		 "comparing floating point with %<==%> or %<!=%> is unsafe");
       if (complain & tf_warning)
 	{
 	  tree stripped_orig_op0 = tree_strip_any_location_wrapper (orig_op0);
@@ -6278,7 +6274,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 	  if (TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE
 	      && (complain & tf_warning)
 	      && warning_at (location, OPT_Wbool_operation,
-			     "%<~%> on an expression of type bool"))
+			     "%<~%> on an expression of type %<bool%>"))
 	    inform (location, "did you mean to use logical not (%<!%>)?");
 	  arg = cp_perform_integral_promotions (arg, complain);
 	}
@@ -6946,13 +6942,15 @@ check_for_casting_away_constness (tree src_type, tree dest_type,
       
     case STATIC_CAST_EXPR:
       if (complain & tf_error)
-	error ("static_cast from type %qT to type %qT casts away qualifiers",
+	error ("%<static_cast%> from type %qT to type %qT casts away "
+	       "qualifiers",
 	       src_type, dest_type);
       return true;
       
     case REINTERPRET_CAST_EXPR:
       if (complain & tf_error)
-	error ("reinterpret_cast from type %qT to type %qT casts away qualifiers",
+	error ("%<reinterpret_cast%> from type %qT to type %qT casts away "
+	       "qualifiers",
 	       src_type, dest_type);
       return true;
 
@@ -7405,7 +7403,7 @@ build_static_cast (tree type, tree oexpr, tsubst_flags_t complain)
 
   if (complain & tf_error)
     {
-      error ("invalid static_cast from type %qT to type %qT",
+      error ("invalid %<static_cast%> from type %qT to type %qT",
 	     TREE_TYPE (expr), type);
       if ((TYPE_PTR_P (type) || TYPE_REF_P (type))
 	  && CLASS_TYPE_P (TREE_TYPE (type))
@@ -7742,7 +7740,7 @@ build_const_cast_1 (tree dst_type, tree expr, tsubst_flags_t complain,
   if (!INDIRECT_TYPE_P (dst_type) && !TYPE_PTRDATAMEM_P (dst_type))
     {
       if (complain & tf_error)
-	error ("invalid use of const_cast with type %qT, "
+	error ("invalid use of %<const_cast%> with type %qT, "
 	       "which is not a pointer, "
 	       "reference, nor a pointer-to-data-member type", dst_type);
       return error_mark_node;
@@ -7751,8 +7749,9 @@ build_const_cast_1 (tree dst_type, tree expr, tsubst_flags_t complain,
   if (TREE_CODE (TREE_TYPE (dst_type)) == FUNCTION_TYPE)
     {
       if (complain & tf_error)
-	error ("invalid use of const_cast with type %qT, which is a pointer "
-	       "or reference to a function type", dst_type);
+	error ("invalid use of %<const_cast%> with type %qT, "
+	       "which is a pointer or reference to a function type",
+	       dst_type);
       return error_mark_node;
     }
 
@@ -7792,7 +7791,8 @@ build_const_cast_1 (tree dst_type, tree expr, tsubst_flags_t complain,
       else
 	{
 	  if (complain & tf_error)
-	    error ("invalid const_cast of an rvalue of type %qT to type %qT",
+	    error ("invalid %<const_cast%> of an rvalue of type %qT "
+		   "to type %qT",
 		   src_type, dst_type);
 	  return error_mark_node;
 	}
@@ -7861,7 +7861,7 @@ build_const_cast_1 (tree dst_type, tree expr, tsubst_flags_t complain,
     }
 
   if (complain & tf_error)
-    error ("invalid const_cast from type %qT to type %qT",
+    error ("invalid %<const_cast%> from type %qT to type %qT",
 	   src_type, dst_type);
   return error_mark_node;
 }
@@ -8223,11 +8223,10 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	/* Do the default thing.  */;
       else
 	{
-	  vec<tree, va_gc> *rhs_vec = make_tree_vector_single (rhs);
+	  releasing_vec rhs_vec = make_tree_vector_single (rhs);
 	  result = build_special_member_call (lhs, complete_ctor_identifier,
 					      &rhs_vec, lhstype, LOOKUP_NORMAL,
                                               complain);
-	  release_tree_vector (rhs_vec);
 	  if (result == NULL_TREE)
 	    return error_mark_node;
 	  goto ret;
@@ -9265,7 +9264,7 @@ maybe_warn_about_returning_address_of_local (tree retval)
 		    "returning reference to temporary");
       else if (is_std_init_list (valtype))
 	warning_at (loc, OPT_Winit_list_lifetime,
-		    "returning temporary initializer_list does not extend "
+		    "returning temporary %<initializer_list%> does not extend "
 		    "the lifetime of the underlying array");
       return true;
     }
@@ -9303,7 +9302,7 @@ maybe_warn_about_returning_address_of_local (tree retval)
 			whats_returned);
       else if (is_std_init_list (valtype))
 	w = warning_at (loc, OPT_Winit_list_lifetime,
-			"returning local initializer_list variable %qD "
+			"returning local %<initializer_list%> variable %qD "
 			"does not extend the lifetime of the underlying array",
 			whats_returned);
       else if (TREE_CODE (whats_returned) == LABEL_DECL)
@@ -9659,7 +9658,7 @@ check_return_expr (tree retval, bool *no_warning)
       && ! flag_check_new
       && retval && null_ptr_cst_p (retval))
     warning (0, "%<operator new%> must not return NULL unless it is "
-	     "declared %<throw()%> (or -fcheck-new is in effect)");
+	     "declared %<throw()%> (or %<-fcheck-new%> is in effect)");
 
   /* Effective C++ rule 15.  See also start_function.  */
   if (warn_ecpp

@@ -118,14 +118,17 @@ GOMP_sections2_start (unsigned count, uintptr_t *reductions, void **mem)
       if (mem)
 	{
 	  uintptr_t size = (uintptr_t) *mem;
+#define INLINE_ORDERED_TEAM_IDS_OFF \
+  ((offsetof (struct gomp_work_share, inline_ordered_team_ids)		\
+    + __alignof__ (long long) - 1) & ~(__alignof__ (long long) - 1))
 	  if (size > (sizeof (struct gomp_work_share)
-		      - offsetof (struct gomp_work_share,
-				  inline_ordered_team_ids)))
-	    thr->ts.work_share->ordered_team_ids
-	      = gomp_malloc_cleared (size);
+		      - INLINE_ORDERED_TEAM_IDS_OFF))
+	    *mem
+	      = (void *) (thr->ts.work_share->ordered_team_ids
+			  = gomp_malloc_cleared (size));
 	  else
-	    memset (thr->ts.work_share->ordered_team_ids, '\0', size);
-	  *mem = (void *) thr->ts.work_share->ordered_team_ids;
+	    *mem = memset (((char *) thr->ts.work_share)
+			   + INLINE_ORDERED_TEAM_IDS_OFF, '\0', size);
 	}
       gomp_work_share_init_done ();
     }
@@ -138,7 +141,18 @@ GOMP_sections2_start (unsigned count, uintptr_t *reductions, void **mem)
 						  first_reductions);
 	}
       if (mem)
-	*mem = (void *) thr->ts.work_share->ordered_team_ids;
+	{
+	  if ((offsetof (struct gomp_work_share, inline_ordered_team_ids)
+	       & (__alignof__ (long long) - 1)) == 0)
+	    *mem = (void *) thr->ts.work_share->ordered_team_ids;
+	  else
+	    {
+	      uintptr_t p = (uintptr_t) thr->ts.work_share->ordered_team_ids;
+	      p += __alignof__ (long long) - 1;
+	      p &= ~(__alignof__ (long long) - 1);
+	      *mem = (void *) p;
+	    }
+	}
     }
 
 #ifdef HAVE_SYNC_BUILTINS

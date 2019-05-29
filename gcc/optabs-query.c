@@ -593,7 +593,7 @@ can_vec_mask_load_store_p (machine_mode mode,
     return true;
 
   auto_vector_sizes vector_sizes;
-  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes);
+  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes, true);
   for (unsigned int i = 0; i < vector_sizes.length (); ++i)
     {
       poly_uint64 cur = vector_sizes[i];

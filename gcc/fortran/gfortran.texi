@@ -1576,6 +1576,7 @@ additional compatibility extensions along with those enabled by
 * X format descriptor without count field::
 * Commas in FORMAT specifications::
 * Missing period in FORMAT specifications::
+* Default widths for F@comma{} G and I format descriptors::
 * I/O item lists::
 * @code{Q} exponent-letter::
 * BOZ literal constants::
@@ -1782,6 +1783,22 @@ discouraged.
 10     FORMAT ('F4')
 @end smallexample
 
+@node Default widths for F@comma{} G and I format descriptors
+@subsection Default widths for @code{F}, @code{G} and @code{I} format descriptors
+
+To support legacy codes, GNU Fortran allows width to be omitted from format
+specifications if and only if @option{-fdec-format-defaults} is given on the
+command line.  Default widths will be used. This is considered non-conforming
+code and is discouraged.
+
+@smallexample
+       REAL :: value1
+       INTEGER :: value2
+       WRITE(*,10) value1, value1, value2
+10     FORMAT ('F, G, I')
+@end smallexample
+
+
 @node I/O item lists
 @subsection I/O item lists
 @cindex I/O item lists
@@ -1901,13 +1918,13 @@ in I/O operations.
 @cindex Hollerith constants
 
 GNU Fortran supports Hollerith constants in assignments, function
-arguments, and @code{DATA} and @code{ASSIGN} statements.  A Hollerith
-constant is written as a string of characters preceded by an integer
-constant indicating the character count, and the letter @code{H} or
-@code{h}, and stored in bytewise fashion in a numeric (@code{INTEGER},
-@code{REAL}, or @code{complex}) or @code{LOGICAL} variable.  The
-constant will be padded or truncated to fit the size of the variable in
-which it is stored.
+arguments, and @code{DATA} statements.  A Hollerith constant is written
+as a string of characters preceded by an integer constant indicating the
+character count, and the letter @code{H} or @code{h}, and stored in
+bytewise fashion in a numeric (@code{INTEGER}, @code{REAL}, or
+@code{COMPLEX}) or @code{LOGICAL} variable.  The constant will be padded
+with spaces or truncated to fit the size of the variable in which it is
+stored.
 
 Examples of valid uses of Hollerith constants:
 @smallexample
@@ -1917,11 +1934,13 @@ Examples of valid uses of Hollerith constants:
       call foo (4h abc)
 @end smallexample
 
-Invalid Hollerith constants examples:
+Examples of Hollerith constants:
 @smallexample
       integer*4 a
+      a = 0H         ! Invalid, at least one character is needed.
+      a = 4HAB12     ! Valid
       a = 8H12345678 ! Valid, but the Hollerith constant will be truncated.
-      a = 0H         ! At least one character is needed.
+      a = 3Hxyz      ! Valid, but the Hollerith constant will be padded.
 @end smallexample
 
 In general, Hollerith constants were used to provide a rudimentary

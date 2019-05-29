@@ -10796,6 +10796,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 		    HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		    tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
   CUMULATIVE_ARGS cum;
   int structure_value_byref = 0;
   rtx this_rtx, this_value, sibcall, funexp;
@@ -10939,8 +10940,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   emit_barrier ();
 
   /* Run just enough of rest_of_compilation to do scheduling and get
-     the insns emitted.  Note that use_thunk calls
-     assemble_start_function and assemble_end_function.  */
+     the insns emitted.  */
 
   insns = get_insns ();
 
@@ -10953,9 +10953,11 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   sh_reorg ();
   shorten_branches (insns);
+  assemble_start_function (thunk_fndecl, fnname);
   final_start_function (insns, file, 1);
   final (insns, file, 1);
   final_end_function ();
+  assemble_end_function (thunk_fndecl, fnname);
 
   reload_completed = 0;
   epilogue_completed = 0;

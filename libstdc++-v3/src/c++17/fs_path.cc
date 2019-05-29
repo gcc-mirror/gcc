@@ -278,8 +278,8 @@ path::_List::operator=(const _List& other)
 	    to[i]._M_pathname.reserve(from[i]._M_pathname.length());
 	  if (newsize > oldsize)
 	    {
-	      std::uninitialized_copy_n(to + oldsize, newsize - oldsize,
-					from + oldsize);
+	      std::uninitialized_copy_n(from + oldsize, newsize - oldsize,
+					to + oldsize);
 	      impl->_M_size = newsize;
 	    }
 	  else if (newsize < oldsize)

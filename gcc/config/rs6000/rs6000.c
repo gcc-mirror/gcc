@@ -2508,67 +2508,39 @@ rs6000_debug_reg_global (void)
 	   "f  reg_class = %s\n"
 	   "v  reg_class = %s\n"
 	   "wa reg_class = %s\n"
-	   "wb reg_class = %s\n"
 	   "wd reg_class = %s\n"
 	   "we reg_class = %s\n"
 	   "wf reg_class = %s\n"
 	   "wg reg_class = %s\n"
-	   "wh reg_class = %s\n"
 	   "wi reg_class = %s\n"
-	   "wj reg_class = %s\n"
-	   "wk reg_class = %s\n"
-	   "wl reg_class = %s\n"
-	   "wm reg_class = %s\n"
-	   "wo reg_class = %s\n"
 	   "wp reg_class = %s\n"
 	   "wq reg_class = %s\n"
 	   "wr reg_class = %s\n"
 	   "ws reg_class = %s\n"
 	   "wt reg_class = %s\n"
-	   "wu reg_class = %s\n"
 	   "wv reg_class = %s\n"
 	   "ww reg_class = %s\n"
 	   "wx reg_class = %s\n"
-	   "wy reg_class = %s\n"
-	   "wz reg_class = %s\n"
 	   "wA reg_class = %s\n"
-	   "wH reg_class = %s\n"
-	   "wI reg_class = %s\n"
-	   "wJ reg_class = %s\n"
-	   "wK reg_class = %s\n"
 	   "\n",
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_d]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_f]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_v]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wa]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wb]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wd]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_we]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wf]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wg]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wh]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wi]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wj]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wk]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wl]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wm]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wo]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wp]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wq]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wr]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_ws]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wt]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wu]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wv]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_ww]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wx]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wy]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wz]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wA]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wH]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wI]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wJ]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wK]]);
+	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wA]]);
 
   nl = "\n";
   for (m = 0; m < NUM_MACHINE_MODES; ++m)
@@ -3179,26 +3151,14 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	wd - Preferred register class for V2DFmode.
 	wf - Preferred register class for V4SFmode.
 	wg - Float register for power6x move insns.
-	wh - FP register for direct move instructions.
 	wi - FP or VSX register to hold 64-bit integers for VSX insns.
-	wj - FP or VSX register to hold 64-bit integers for direct moves.
-	wk - FP or VSX register to hold 64-bit doubles for direct moves.
-	wl - Float register if we can do 32-bit signed int loads.
-	wm - VSX register for ISA 2.07 direct move operations.
 	wn - always NO_REGS.
 	wr - GPR if 64-bit mode is permitted.
 	ws - Register class to do ISA 2.06 DF operations.
 	wt - VSX register for TImode in VSX registers.
-	wu - Altivec register for ISA 2.07 VSX SF/SI load/stores.
 	wv - Altivec register for ISA 2.06 VSX DF/DI load/stores.
 	ww - Register class to do SF conversions in with VSX operations.
-	wx - Float register if we can do 32-bit int stores.
-	wy - Register class to do ISA 2.07 SF operations.
-	wz - Float register if we can do 32-bit unsigned int loads.
-	wH - Altivec register if SImode is allowed in VSX registers.
-	wI - Float register if SImode is allowed in VSX registers.
-	wJ - Float register if QImode/HImode are allowed in VSX registers.
-	wK - Altivec register if QImode/HImode are allowed in VSX registers.  */
+	wx - Float register if we can do 32-bit int stores.  */
 
   if (TARGET_HARD_FLOAT)
     {
@@ -3225,19 +3185,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
   if (TARGET_MFPGPR)						/* DFmode  */
     rs6000_constraints[RS6000_CONSTRAINT_wg] = FLOAT_REGS;
 
-  if (TARGET_LFIWAX)
-    rs6000_constraints[RS6000_CONSTRAINT_wl] = FLOAT_REGS;	/* DImode  */
-
-  if (TARGET_DIRECT_MOVE)
-    {
-      rs6000_constraints[RS6000_CONSTRAINT_wh] = FLOAT_REGS;
-      rs6000_constraints[RS6000_CONSTRAINT_wj]			/* DImode  */
-	= rs6000_constraints[RS6000_CONSTRAINT_wi];
-      rs6000_constraints[RS6000_CONSTRAINT_wk]			/* DFmode  */
-	= rs6000_constraints[RS6000_CONSTRAINT_ws];
-      rs6000_constraints[RS6000_CONSTRAINT_wm] = VSX_REGS;
-    }
-
   if (TARGET_POWERPC64)
     {
       rs6000_constraints[RS6000_CONSTRAINT_wr] = GENERAL_REGS;
@@ -3245,19 +3192,12 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
     }
 
   if (TARGET_P8_VECTOR)						/* SFmode  */
-    {
-      rs6000_constraints[RS6000_CONSTRAINT_wu] = ALTIVEC_REGS;
-      rs6000_constraints[RS6000_CONSTRAINT_wy] = VSX_REGS;
-      rs6000_constraints[RS6000_CONSTRAINT_ww] = VSX_REGS;
-    }
+    rs6000_constraints[RS6000_CONSTRAINT_ww] = VSX_REGS;
   else if (TARGET_VSX)
     rs6000_constraints[RS6000_CONSTRAINT_ww] = FLOAT_REGS;
 
   if (TARGET_STFIWX)
     rs6000_constraints[RS6000_CONSTRAINT_wx] = FLOAT_REGS;	/* DImode  */
-
-  if (TARGET_LFIWZX)
-    rs6000_constraints[RS6000_CONSTRAINT_wz] = FLOAT_REGS;	/* DImode  */
 
   if (TARGET_FLOAT128_TYPE)
     {
@@ -3266,30 +3206,9 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	rs6000_constraints[RS6000_CONSTRAINT_wp] = VSX_REGS;	/* TFmode  */
     }
 
-  if (TARGET_P9_VECTOR)
-    {
-      /* Support for new D-form instructions.  */
-      rs6000_constraints[RS6000_CONSTRAINT_wb] = ALTIVEC_REGS;
-
-      /* Support for ISA 3.0 (power9) vectors.  */
-      rs6000_constraints[RS6000_CONSTRAINT_wo] = VSX_REGS;
-    }
-
   /* Support for new direct moves (ISA 3.0 + 64bit).  */
   if (TARGET_DIRECT_MOVE_128)
     rs6000_constraints[RS6000_CONSTRAINT_we] = VSX_REGS;
-
-  /* Support small integers in VSX registers.  */
-  if (TARGET_P8_VECTOR)
-    {
-      rs6000_constraints[RS6000_CONSTRAINT_wH] = ALTIVEC_REGS;
-      rs6000_constraints[RS6000_CONSTRAINT_wI] = FLOAT_REGS;
-      if (TARGET_P9_VECTOR)
-	{
-	  rs6000_constraints[RS6000_CONSTRAINT_wJ] = FLOAT_REGS;
-	  rs6000_constraints[RS6000_CONSTRAINT_wK] = ALTIVEC_REGS;
-	}
-    }
 
   /* Set up the reload helper and direct move functions.  */
   if (TARGET_VSX || TARGET_ALTIVEC)
@@ -4275,7 +4194,7 @@ rs6000_option_override_internal (bool global_init_p)
       if (main_target_opt != NULL
 	  && (main_target_opt->x_rs6000_long_double_type_size
 	      != default_long_double_size))
-	error ("target attribute or pragma changes long double size");
+	error ("target attribute or pragma changes %<long double%> size");
       else
 	rs6000_long_double_type_size = default_long_double_size;
     }
@@ -4310,9 +4229,11 @@ rs6000_option_override_internal (bool global_init_p)
 	    {
 	      warned_change_long_double = true;
 	      if (TARGET_IEEEQUAD)
-		warning (OPT_Wpsabi, "Using IEEE extended precision long double");
+		warning (OPT_Wpsabi, "Using IEEE extended precision "
+			 "%<long double%>");
 	      else
-		warning (OPT_Wpsabi, "Using IBM extended precision long double");
+		warning (OPT_Wpsabi, "Using IBM extended precision "
+			 "%<long double%>");
 	    }
 	}
     }
@@ -4373,6 +4294,15 @@ rs6000_option_override_internal (bool global_init_p)
 	error ("%qs requires %qs", "%<-mfloat128-hardware%>", "-m64");
 
       rs6000_isa_flags &= ~OPTION_MASK_FLOAT128_HW;
+    }
+
+  /* -mpcrel requires the prefixed load/store support on FUTURE systems.  */
+  if (!TARGET_FUTURE && TARGET_PCREL)
+    {
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_PCREL) != 0)
+	error ("%qs requires %qs", "-mpcrel", "-mcpu=future");
+
+      rs6000_isa_flags &= ~OPTION_MASK_PCREL;
     }
 
   /* Print the options after updating the defaults.  */
@@ -4515,6 +4445,7 @@ rs6000_option_override_internal (bool global_init_p)
 			&& rs6000_tune != PROCESSOR_POWER7
 			&& rs6000_tune != PROCESSOR_POWER8
 			&& rs6000_tune != PROCESSOR_POWER9
+			&& rs6000_tune != PROCESSOR_FUTURE
 			&& rs6000_tune != PROCESSOR_PPCA2
 			&& rs6000_tune != PROCESSOR_CELL
 			&& rs6000_tune != PROCESSOR_PPC476);
@@ -4528,6 +4459,7 @@ rs6000_option_override_internal (bool global_init_p)
 				 || rs6000_tune == PROCESSOR_POWER7
 				 || rs6000_tune == PROCESSOR_POWER8
 				 || rs6000_tune == PROCESSOR_POWER9
+				 || rs6000_tune == PROCESSOR_FUTURE
 				 || rs6000_tune == PROCESSOR_PPCE500MC
 				 || rs6000_tune == PROCESSOR_PPCE500MC64
 				 || rs6000_tune == PROCESSOR_PPCE5500
@@ -4828,6 +4760,7 @@ rs6000_option_override_internal (bool global_init_p)
 	break;
 
       case PROCESSOR_POWER9:
+      case PROCESSOR_FUTURE:
 	rs6000_cost = &power9_cost;
 	break;
 
@@ -5711,6 +5644,39 @@ rs6000_builtin_md_vectorized_function (tree fndecl, tree type_out,
 /* Default CPU string for rs6000*_file_start functions.  */
 static const char *rs6000_default_cpu;
 
+#ifdef USING_ELFOS_H
+static const char *rs6000_machine;
+
+static const char *
+rs6000_machine_from_flags (void)
+{
+  if ((rs6000_isa_flags & (ISA_FUTURE_MASKS_SERVER & ~ISA_3_0_MASKS_SERVER))
+      != 0)
+    return "future";
+  if ((rs6000_isa_flags & (ISA_3_0_MASKS_SERVER & ~ISA_2_7_MASKS_SERVER)) != 0)
+    return "power9";
+  if ((rs6000_isa_flags & (ISA_2_7_MASKS_SERVER & ~ISA_2_6_MASKS_SERVER)) != 0)
+    return "power8";
+  if ((rs6000_isa_flags & (ISA_2_6_MASKS_SERVER & ~ISA_2_5_MASKS_SERVER)) != 0)
+    return "power7";
+  if ((rs6000_isa_flags & (ISA_2_5_MASKS_SERVER & ~ISA_2_4_MASKS)) != 0)
+    return "power6";
+  if ((rs6000_isa_flags & (ISA_2_4_MASKS & ~ISA_2_1_MASKS)) != 0)
+    return "power5";
+  if ((rs6000_isa_flags & ISA_2_1_MASKS) != 0)
+    return "power4";
+  if ((rs6000_isa_flags & OPTION_MASK_POWERPC64) != 0)
+    return "ppc64";
+  return "ppc";
+}
+
+static void
+emit_asm_machine (void)
+{
+  fprintf (asm_out_file, "\t.machine %s\n", rs6000_machine);
+}
+#endif
+
 /* Do anything needed at the start of the asm file.  */
 
 static void
@@ -5776,27 +5742,10 @@ rs6000_file_start (void)
     }
 
 #ifdef USING_ELFOS_H
+  rs6000_machine = rs6000_machine_from_flags ();
   if (!(rs6000_default_cpu && rs6000_default_cpu[0])
       && !global_options_set.x_rs6000_cpu_index)
-    {
-      fputs ("\t.machine ", asm_out_file);
-      if ((rs6000_isa_flags & OPTION_MASK_MODULO) != 0)
-	fputs ("power9\n", asm_out_file);
-      else if ((rs6000_isa_flags & OPTION_MASK_DIRECT_MOVE) != 0)
-	fputs ("power8\n", asm_out_file);
-      else if ((rs6000_isa_flags & OPTION_MASK_POPCNTD) != 0)
-	fputs ("power7\n", asm_out_file);
-      else if ((rs6000_isa_flags & OPTION_MASK_CMPB) != 0)
-	fputs ("power6\n", asm_out_file);
-      else if ((rs6000_isa_flags & OPTION_MASK_POPCNTB) != 0)
-	fputs ("power5\n", asm_out_file);
-      else if ((rs6000_isa_flags & OPTION_MASK_MFCRF) != 0)
-	fputs ("power4\n", asm_out_file);
-      else if ((rs6000_isa_flags & OPTION_MASK_POWERPC64) != 0)
-	fputs ("ppc64\n", asm_out_file);
-      else
-	fputs ("ppc\n", asm_out_file);
-    }
+    emit_asm_machine ();
 #endif
 
   if (DEFAULT_ABI == ABI_ELFv2)
@@ -9175,6 +9124,7 @@ rs6000_reassociation_width (unsigned int opc ATTRIBUTE_UNUSED,
     {
     case PROCESSOR_POWER8:
     case PROCESSOR_POWER9:
+    case PROCESSOR_FUTURE:
       if (DECIMAL_FLOAT_MODE_P (mode))
 	return 1;
       if (VECTOR_MODE_P (mode))
@@ -11791,7 +11741,7 @@ rs6000_function_arg (cumulative_args_t cum_v, machine_mode mode,
 		{
 		  warned = true;
 		  inform (input_location,
-			  "the ABI of passing homogeneous float aggregates"
+			  "the ABI of passing homogeneous %<float%> aggregates"
 			  " has changed in GCC 5");
 		}
 	    }
@@ -13227,7 +13177,7 @@ rs6000_expand_set_fpscr_drn_builtin (enum insn_code icode, tree exp)
     /* Builtin not supported in 32-bit mode.  */
     fatal_error (input_location,
 		 "%<__builtin_set_fpscr_drn%> is not supported "
-		 "in 32-bit mode.");
+		 "in 32-bit mode");
 
   if (rs6000_isa_flags & OPTION_MASK_SOFT_FLOAT)
     {
@@ -14250,7 +14200,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
       if (TREE_CODE (arg2) != INTEGER_CST
 	  || wi::geu_p (wi::to_wide (arg2), 16))
 	{
-	  error ("argument 3 must be in the range 0..15");
+	  error ("argument 3 must be in the range [0, 15]");
 	  return CONST0_RTX (tmode);
 	}
     }
@@ -14383,7 +14333,7 @@ get_element_number (tree vec_type, tree arg)
   if (!tree_fits_uhwi_p (arg)
       || (elt = tree_to_uhwi (arg), elt > max))
     {
-      error ("selector must be an integer constant in the range 0..%wi", max);
+      error ("selector must be an integer constant in the range [0, %wi]", max);
       return 0;
     }
 
@@ -14703,7 +14653,7 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
 
       if (TREE_CODE (arg1) != INTEGER_CST || TREE_INT_CST_LOW (arg1) > 12)
 	{
-	  error ("second argument to %qs must be 0..12", "vec_vextract4b");
+	  error ("second argument to %qs must be [0, 12]", "vec_vextract4b");
 	  return expand_call (exp, target, false);
 	}
       break;
@@ -14718,7 +14668,7 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
 
       if (TREE_CODE (arg2) != INTEGER_CST || TREE_INT_CST_LOW (arg2) > 12)
 	{
-	  error ("third argument to %qs must be 0..12", "vec_vinsert4b");
+	  error ("third argument to %qs must be [0, 12]", "vec_vinsert4b");
 	  return expand_call (exp, target, false);
 	}
       break;
@@ -26230,7 +26180,7 @@ split_stack_arg_pointer_used_p (void)
 /* Return whether we need to emit an ELFv2 global entry point prologue.  */
 
 static bool
-rs6000_global_entry_point_needed_p (void)
+rs6000_global_entry_point_prologue_needed_p (void)
 {
   /* Only needed for the ELFv2 ABI.  */
   if (DEFAULT_ABI != ABI_ELFv2)
@@ -26239,6 +26189,10 @@ rs6000_global_entry_point_needed_p (void)
   /* With -msingle-pic-base, we assume the whole program shares the same
      TOC, so no global entry point prologues are needed anywhere.  */
   if (TARGET_SINGLE_PIC_BASE)
+    return false;
+
+  /* PC-relative functions never generate a global entry point prologue.  */
+  if (rs6000_pcrel_p (cfun))
     return false;
 
   /* Ensure we have a global entry point for thunks.   ??? We could
@@ -27583,14 +27537,23 @@ static void
 rs6000_output_function_prologue (FILE *file)
 {
   if (!cfun->is_thunk)
-    rs6000_output_savres_externs (file);
+    {
+      rs6000_output_savres_externs (file);
+#ifdef USING_ELFOS_H
+      const char *curr_machine = rs6000_machine_from_flags ();
+      if (rs6000_machine != curr_machine)
+	{
+	  rs6000_machine = curr_machine;
+	  emit_asm_machine ();
+	}
+#endif
+    }
 
   /* ELFv2 ABI r2 setup code and local entry point.  This must follow
      immediately after the global entry point label.  */
-  if (rs6000_global_entry_point_needed_p ())
+  if (rs6000_global_entry_point_prologue_needed_p ())
     {
       const char *name = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
-
       (*targetm.asm_out.internal_label) (file, "LCF", rs6000_pic_labelno);
 
       if (TARGET_CMODEL != CMODEL_LARGE)
@@ -27639,6 +27602,19 @@ rs6000_output_function_prologue (FILE *file)
       fputs (",.-", file);
       assemble_name (file, name);
       fputs ("\n", file);
+    }
+
+  else if (rs6000_pcrel_p (cfun))
+    {
+      const char *name = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
+      /* All functions compiled to use PC-relative addressing will
+	 have a .localentry value of 0 or 1.  For now we set it to
+	 1 all the time, indicating that the function may clobber
+	 the TOC register r2.  Later we may optimize this by setting
+	 it to 0 if the function is a leaf and does not clobber r2.  */
+      fputs ("\t.localentry\t", file);
+      assemble_name (file, name);
+      fputs (",1\n", file);
     }
 
   /* Output -mprofile-kernel code.  This needs to be done here instead of
@@ -27712,7 +27688,7 @@ load_cr_save (int regno, rtx frame_reg_rtx, int offset, bool exit_func)
 /* Reload CR from REG.  */
 
 static void
-restore_saved_cr (rtx reg, int using_mfcr_multiple, bool exit_func)
+restore_saved_cr (rtx reg, bool using_mfcr_multiple, bool exit_func)
 {
   int count = 0;
   int i;
@@ -27874,16 +27850,8 @@ emit_cfa_restores (rtx cfa_restores)
 /* Emit function epilogue as insns.  */
 
 void
-rs6000_emit_epilogue (int sibcall)
+rs6000_emit_epilogue (enum epilogue_type epilogue_type)
 {
-  rs6000_stack_t *info;
-  int restoring_GPRs_inline;
-  int restoring_FPRs_inline;
-  int using_load_multiple;
-  int using_mtcr_multiple;
-  int use_backchain_to_restore_sp;
-  int restore_lr;
-  int strategy;
   HOST_WIDE_INT frame_off = 0;
   rtx sp_reg_rtx = gen_rtx_REG (Pmode, 1);
   rtx frame_reg_rtx = sp_reg_rtx;
@@ -27895,30 +27863,38 @@ rs6000_emit_epilogue (int sibcall)
   machine_mode fp_reg_mode = TARGET_HARD_FLOAT ? DFmode : SFmode;
   int fp_reg_size = 8;
   int i;
-  bool exit_func;
   unsigned ptr_regno;
 
-  info = rs6000_stack_info ();
+  rs6000_stack_t *info = rs6000_stack_info ();
 
-  strategy = info->savres_strategy;
-  using_load_multiple = strategy & REST_MULTIPLE;
-  restoring_FPRs_inline = sibcall || (strategy & REST_INLINE_FPRS);
-  restoring_GPRs_inline = sibcall || (strategy & REST_INLINE_GPRS);
-  using_mtcr_multiple = (rs6000_tune == PROCESSOR_PPC601
-			 || rs6000_tune == PROCESSOR_PPC603
-			 || rs6000_tune == PROCESSOR_PPC750
-			 || optimize_size);
+  if (epilogue_type == EPILOGUE_TYPE_NORMAL && crtl->calls_eh_return)
+    epilogue_type = EPILOGUE_TYPE_EH_RETURN;
+
+  int strategy = info->savres_strategy;
+  bool using_load_multiple = !!(strategy & REST_MULTIPLE);
+  bool restoring_GPRs_inline = !!(strategy & REST_INLINE_GPRS);
+  bool restoring_FPRs_inline = !!(strategy & REST_INLINE_FPRS);
+  if (epilogue_type == EPILOGUE_TYPE_SIBCALL)
+    {
+      restoring_GPRs_inline = true;
+      restoring_FPRs_inline = true;
+    }
+
+  bool using_mtcr_multiple = (rs6000_tune == PROCESSOR_PPC601
+			      || rs6000_tune == PROCESSOR_PPC603
+			      || rs6000_tune == PROCESSOR_PPC750
+			      || optimize_size);
+
   /* Restore via the backchain when we have a large frame, since this
      is more efficient than an addis, addi pair.  The second condition
      here will not trigger at the moment;  We don't actually need a
      frame pointer for alloca, but the generic parts of the compiler
      give us one anyway.  */
-  use_backchain_to_restore_sp = (info->total_size + (info->lr_save_p
-						     ? info->lr_save_offset
-						     : 0) > 32767
-				 || (cfun->calls_alloca
-				     && !frame_pointer_needed));
-  restore_lr = (info->lr_save_p
+  bool use_backchain_to_restore_sp
+    = (info->total_size + (info->lr_save_p ? info->lr_save_offset : 0) > 32767
+       || (cfun->calls_alloca && !frame_pointer_needed));
+
+  bool restore_lr = (info->lr_save_p
 		&& (restoring_FPRs_inline
 		    || (strategy & REST_NOINLINE_FPRS_DOESNT_RESTORE_LR))
 		&& (restoring_GPRs_inline
@@ -27928,10 +27904,7 @@ rs6000_emit_epilogue (int sibcall)
 
   if (WORLD_SAVE_P (info))
     {
-      int i, j;
-      char rname[30];
-      const char *alloc_rname;
-      rtvec p;
+      gcc_assert (epilogue_type != EPILOGUE_TYPE_SIBCALL);
 
       /* eh_rest_world_r10 will return to the location saved in the LR
 	 stack slot (which is not likely to be our caller.)
@@ -27940,19 +27913,31 @@ rs6000_emit_epilogue (int sibcall)
 	 The exception-handling stuff that was here in 2.95 is no
 	 longer necessary.  */
 
+      rtvec p;
       p = rtvec_alloc (9
 		       + 32 - info->first_gp_reg_save
 		       + LAST_ALTIVEC_REGNO + 1 - info->first_altivec_reg_save
 		       + 63 + 1 - info->first_fp_reg_save);
 
-      strcpy (rname, ((crtl->calls_eh_return) ?
-		      "*eh_rest_world_r10" : "*rest_world"));
-      alloc_rname = ggc_strdup (rname);
+      const char *rname;
+      switch (epilogue_type)
+	{
+	case EPILOGUE_TYPE_NORMAL:
+	  rname = ggc_strdup ("*rest_world");
+	  break;
 
-      j = 0;
+	case EPILOGUE_TYPE_EH_RETURN:
+	  rname = ggc_strdup ("*eh_rest_world_r10");
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+
+      int j = 0;
       RTVEC_ELT (p, j++) = ret_rtx;
       RTVEC_ELT (p, j++)
-	= gen_rtx_USE (VOIDmode, gen_rtx_SYMBOL_REF (Pmode, alloc_rname));
+	= gen_rtx_USE (VOIDmode, gen_rtx_SYMBOL_REF (Pmode, rname));
       /* The instruction pattern requires a clobber here;
 	 it is shared with the restVEC helper. */
       RTVEC_ELT (p, j++) = gen_hard_reg_clobber (Pmode, 11);
@@ -27971,6 +27956,7 @@ rs6000_emit_epilogue (int sibcall)
 	  }
       }
 
+      int i;
       for (i = 0; i < 32 - info->first_gp_reg_save; i++)
 	{
 	  rtx reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
@@ -28195,7 +28181,7 @@ rs6000_emit_epilogue (int sibcall)
     }
   else if (info->push_p
 	   && DEFAULT_ABI != ABI_V4
-	   && !crtl->calls_eh_return)
+	   && epilogue_type != EPILOGUE_TYPE_EH_RETURN)
     {
       /* Prevent reordering memory accesses against stack pointer restore.  */
       if (cfun->calls_alloca
@@ -28355,9 +28341,9 @@ rs6000_emit_epilogue (int sibcall)
      function will deallocate the stack, so we don't need to worry
      about the unwinder restoring cr from an invalid stack frame
      location.  */
-  exit_func = (!restoring_FPRs_inline
-	       || (!restoring_GPRs_inline
-		   && info->first_fp_reg_save == 64));
+  bool exit_func = (!restoring_FPRs_inline
+		    || (!restoring_GPRs_inline
+			&& info->first_fp_reg_save == 64));
 
   /* In the ELFv2 ABI we need to restore all call-saved CR fields from
      *separate* slots if the routine calls __builtin_eh_return, so
@@ -28423,7 +28409,7 @@ rs6000_emit_epilogue (int sibcall)
     restore_saved_lr (0, exit_func);
 
   /* Load exception handler data registers, if needed.  */
-  if (crtl->calls_eh_return)
+  if (epilogue_type == EPILOGUE_TYPE_EH_RETURN)
     {
       unsigned int i, regno;
 
@@ -28614,13 +28600,13 @@ rs6000_emit_epilogue (int sibcall)
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
-  if (crtl->calls_eh_return)
+  if (epilogue_type == EPILOGUE_TYPE_EH_RETURN)
     {
       rtx sa = EH_RETURN_STACKADJ_RTX;
       emit_insn (gen_add3_insn (sp_reg_rtx, sp_reg_rtx, sa));
     }
 
-  if (!sibcall && restoring_FPRs_inline)
+  if (epilogue_type != EPILOGUE_TYPE_SIBCALL && restoring_FPRs_inline)
     {
       if (cfa_restores)
 	{
@@ -28645,7 +28631,7 @@ rs6000_emit_epilogue (int sibcall)
       emit_jump_insn (targetm.gen_simple_return ());
     }
 
-  if (!sibcall && !restoring_FPRs_inline)
+  if (epilogue_type != EPILOGUE_TYPE_SIBCALL && !restoring_FPRs_inline)
     {
       bool lr = (strategy & REST_NOINLINE_FPRS_DOESNT_RESTORE_LR) == 0;
       rtvec p = rtvec_alloc (3 + !!lr + 64 - info->first_fp_reg_save);
@@ -28684,7 +28670,7 @@ rs6000_emit_epilogue (int sibcall)
 
   if (cfa_restores)
     {
-      if (sibcall)
+      if (epilogue_type == EPILOGUE_TYPE_SIBCALL)
 	/* Ensure the cfa_restores are hung off an insn that won't
 	   be reordered above other restores.  */
 	emit_insn (gen_blockage ());
@@ -29240,6 +29226,7 @@ rs6000_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 			HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 			tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
   rtx this_rtx, funexp;
   rtx_insn *insn;
 
@@ -29309,13 +29296,14 @@ rs6000_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   /* Run just enough of rest_of_compilation to get the insns emitted.
      There's not really enough bulk here to make other passes such as
-     instruction scheduling worth while.  Note that use_thunk calls
-     assemble_start_function and assemble_end_function.  */
+     instruction scheduling worth while.  */
   insn = get_insns ();
   shorten_branches (insn);
+  assemble_start_function (thunk_fndecl, fnname);
   final_start_function (insn, file, 1);
   final (insn, file, 1);
   final_end_function ();
+  assemble_end_function (thunk_fndecl, fnname);
 
   reload_completed = 0;
   epilogue_completed = 0;
@@ -30226,7 +30214,8 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 	   some cycles later.  */
 
 	/* Separate a load from a narrower, dependent store.  */
-	if ((rs6000_sched_groups || rs6000_tune == PROCESSOR_POWER9)
+	if ((rs6000_sched_groups || rs6000_tune == PROCESSOR_POWER9
+	     || rs6000_tune == PROCESSOR_FUTURE)
 	    && GET_CODE (PATTERN (insn)) == SET
 	    && GET_CODE (PATTERN (dep_insn)) == SET
 	    && MEM_P (XEXP (PATTERN (insn), 1))
@@ -30264,6 +30253,7 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 		 || rs6000_tune == PROCESSOR_POWER7
 		 || rs6000_tune == PROCESSOR_POWER8
 		 || rs6000_tune == PROCESSOR_POWER9
+		 || rs6000_tune == PROCESSOR_FUTURE
                  || rs6000_tune == PROCESSOR_CELL)
                 && recog_memoized (dep_insn)
                 && (INSN_CODE (dep_insn) >= 0))
@@ -30843,6 +30833,7 @@ rs6000_issue_rate (void)
   case PROCESSOR_POWER8:
     return 7;
   case PROCESSOR_POWER9:
+  case PROCESSOR_FUTURE:
     return 6;
   default:
     return 1;
@@ -32982,7 +32973,7 @@ macho_branch_islands (void)
 	}
       else
 	{
-	  strcat (tmp_buf, ":\nlis r12,hi16(");
+	  strcat (tmp_buf, ":\n\tlis r12,hi16(");
 	  strcat (tmp_buf, name_buf);
 	  strcat (tmp_buf, ")\n\tori r12,r12,lo16(");
 	  strcat (tmp_buf, name_buf);
@@ -33035,7 +33026,7 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
   unsigned int length;
   char *symbol_name, *lazy_ptr_name;
   char *local_label_0;
-  static int label = 0;
+  static unsigned label = 0;
 
   /* Lose our funky encoding stuff so it doesn't contaminate the stub.  */
   symb = (*targetm.strip_name_encoding) (symb);
@@ -33061,8 +33052,8 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
       fprintf (file, "\t.indirect_symbol %s\n", symbol_name);
 
       label++;
-      local_label_0 = XALLOCAVEC (char, sizeof ("\"L00000000000$spb\""));
-      sprintf (local_label_0, "\"L%011d$spb\"", label);
+      local_label_0 = XALLOCAVEC (char, 16);
+      sprintf (local_label_0, "L%u$spb", label);
 
       fprintf (file, "\tmflr r0\n");
       if (TARGET_LINK_STACK)
@@ -33359,7 +33350,8 @@ rs6000_elf_declare_function_name (FILE *file, const char *name, tree decl)
   ASM_OUTPUT_TYPE_DIRECTIVE (file, name, "function");
   ASM_DECLARE_RESULT (file, DECL_RESULT (decl));
 
-  if (TARGET_CMODEL == CMODEL_LARGE && rs6000_global_entry_point_needed_p ())
+  if (TARGET_CMODEL == CMODEL_LARGE
+      && rs6000_global_entry_point_prologue_needed_p ())
     {
       char buf[256];
 
@@ -34689,8 +34681,15 @@ rs6000_register_move_cost (machine_mode mode,
 	{
 	  if (TARGET_DIRECT_MOVE)
 	    {
-	      if (rs6000_tune == PROCESSOR_POWER9)
-		ret = 2 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
+	      /* Keep the cost for direct moves above that for within
+		 a register class even if the actual processor cost is
+		 comparable.  We do this because a direct move insn
+		 can't be a nop, whereas with ideal register
+		 allocation a move within the same class might turn
+		 out to be a nop.  */
+	      if (rs6000_tune == PROCESSOR_POWER9
+		  || rs6000_tune == PROCESSOR_FUTURE)
+		ret = 3 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
 	      else
 		ret = 4 * hard_regno_nregs (FIRST_GPR_REGNO, mode);
 	      /* SFmode requires a conversion when moving between gprs
@@ -36291,6 +36290,7 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "float128",			OPTION_MASK_FLOAT128_KEYWORD,	false, true  },
   { "float128-hardware",	OPTION_MASK_FLOAT128_HW,	false, true  },
   { "fprnd",			OPTION_MASK_FPRND,		false, true  },
+  { "future",			OPTION_MASK_FUTURE,		false, true  },
   { "hard-dfp",			OPTION_MASK_DFP,		false, true  },
   { "htm",			OPTION_MASK_HTM,		false, true  },
   { "isel",			OPTION_MASK_ISEL,		false, true  },
@@ -36299,6 +36299,7 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "modulo",			OPTION_MASK_MODULO,		false, true  },
   { "mulhw",			OPTION_MASK_MULHW,		false, true  },
   { "multiple",			OPTION_MASK_MULTIPLE,		false, true  },
+  { "pcrel",			OPTION_MASK_PCREL,		false, true  },
   { "popcntb",			OPTION_MASK_POPCNTB,		false, true  },
   { "popcntd",			OPTION_MASK_POPCNTD,		false, true  },
   { "power8-fusion",		OPTION_MASK_P8_FUSION,		false, true  },
@@ -37237,7 +37238,7 @@ rs6000_get_function_versions_dispatcher (void *decl)
 
 #ifndef TARGET_LIBC_PROVIDES_HWCAP_IN_TCB
   error_at (DECL_SOURCE_LOCATION (default_node->decl),
-	    "target_clones attribute needs GLIBC (2.23 and newer) that "
+	    "%<target_clones%> attribute needs GLIBC (2.23 and newer) that "
 	    "exports hardware capability bits");
 #else
 
@@ -38136,6 +38137,34 @@ static bool
 rs6000_save_toc_in_prologue_p (void)
 {
   return (cfun && cfun->machine && cfun->machine->save_toc_in_prologue);
+}
+
+/* Return whether we should generate PC-relative code for FNDECL.  */
+bool
+rs6000_fndecl_pcrel_p (const_tree fndecl)
+{
+  if (DEFAULT_ABI != ABI_ELFv2)
+    return false;
+
+  struct cl_target_option *opts = target_opts_for_fn (fndecl);
+
+  return ((opts->x_rs6000_isa_flags & OPTION_MASK_PCREL) != 0
+	  && TARGET_CMODEL == CMODEL_MEDIUM);
+}
+
+/* Return whether we should generate PC-relative code for *FN.  */
+bool
+rs6000_pcrel_p (struct function *fn)
+{
+  if (DEFAULT_ABI != ABI_ELFv2)
+    return false;
+
+  /* Optimize usual case.  */
+  if (fn == cfun)
+    return ((rs6000_isa_flags & OPTION_MASK_PCREL) != 0
+	    && TARGET_CMODEL == CMODEL_MEDIUM);
+
+  return rs6000_fndecl_pcrel_p (fn->decl);
 }
 
 #ifdef HAVE_GAS_HIDDEN

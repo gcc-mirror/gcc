@@ -45,7 +45,7 @@ if ![check_vect_support_and_set_flags] {
 }
 
 # These flags are used for all targets.
-lappend DEFAULT_VECTCFLAGS "-ftree-vectorize" "-fno-vect-cost-model" "-fno-common"
+lappend DEFAULT_VECTCFLAGS "-ftree-vectorize" "-fno-tree-loop-distribute-patterns" "-fno-vect-cost-model" "-fno-common"
 
 # Initialize `dg'.
 dg-init

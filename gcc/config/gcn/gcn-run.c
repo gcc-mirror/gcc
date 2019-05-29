@@ -66,7 +66,9 @@ bool debug = false;
 
 hsa_agent_t device = { 0 };
 hsa_queue_t *queue = NULL;
-uint64_t kernel = 0;
+uint64_t init_array_kernel = 0;
+uint64_t fini_array_kernel = 0;
+uint64_t main_kernel = 0;
 hsa_executable_t executable = { 0 };
 
 hsa_region_t kernargs_region = { 0 };
@@ -427,14 +429,30 @@ load_image (const char *filename)
   XHSA (hsa_fns.hsa_executable_freeze_fn (executable, ""),
 	"Freeze GCN executable");
 
-  /* Locate the "main" function, and read the kernel's properties.  */
+  /* Locate the "_init_array" function, and read the kernel's properties.  */
   hsa_executable_symbol_t symbol;
+  XHSA (hsa_fns.hsa_executable_get_symbol_fn (executable, NULL, "_init_array",
+					      device, 0, &symbol),
+	"Find '_init_array' function");
+  XHSA (hsa_fns.hsa_executable_symbol_get_info_fn
+	    (symbol, HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_OBJECT, &init_array_kernel),
+	"Extract '_init_array' kernel object kernel object");
+
+  /* Locate the "_fini_array" function, and read the kernel's properties.  */
+  XHSA (hsa_fns.hsa_executable_get_symbol_fn (executable, NULL, "_fini_array",
+					      device, 0, &symbol),
+	"Find '_fini_array' function");
+  XHSA (hsa_fns.hsa_executable_symbol_get_info_fn
+	    (symbol, HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_OBJECT, &fini_array_kernel),
+	"Extract '_fini_array' kernel object kernel object");
+
+  /* Locate the "main" function, and read the kernel's properties.  */
   XHSA (hsa_fns.hsa_executable_get_symbol_fn (executable, NULL, "main",
 					      device, 0, &symbol),
 	"Find 'main' function");
   XHSA (hsa_fns.hsa_executable_symbol_get_info_fn
-	    (symbol, HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_OBJECT, &kernel),
-	"Extract kernel object");
+	    (symbol, HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_OBJECT, &main_kernel),
+	"Extract 'main' kernel object");
   XHSA (hsa_fns.hsa_executable_symbol_get_info_fn
 	    (symbol, HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_KERNARG_SEGMENT_SIZE,
 	     &kernarg_segment_size),
@@ -684,7 +702,7 @@ gomp_print_output (struct kernargs *kernargs, bool final)
 /* Execute an already-loaded kernel on the device.  */
 
 static void
-run (void *kernargs)
+run (uint64_t kernel, void *kernargs)
 {
   /* A "signal" is used to launch and monitor the kernel.  */
   hsa_signal_t signal;
@@ -822,14 +840,23 @@ main (int argc, char *argv[])
   kernargs->heap_ptr = (int64_t) &kernargs->heap;
   kernargs->heap.size = heap_size;
 
+  /* Run constructors on the GPU.  */
+  run (init_array_kernel, kernargs);
+
   /* Run the kernel on the GPU.  */
-  run (kernargs);
+  run (main_kernel, kernargs);
   unsigned int return_value =
     (unsigned int) kernargs->output_data.return_value;
 
+  /* Run destructors on the GPU.  */
+  run (fini_array_kernel, kernargs);
+
   unsigned int upper = (return_value & ~0xffff) >> 16;
   if (upper == 0xcafe)
-    printf ("Kernel exit value was never set\n");
+    {
+      printf ("Kernel exit value was never set\n");
+      return_value = 0xff;
+    }
   else if (upper == 0xffff)
     ; /* Set by exit.  */
   else if (upper == 0)

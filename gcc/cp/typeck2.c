@@ -360,7 +360,7 @@ abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
 	     "be used in throw-expression", type);
       break;
     case ACU_CATCH:
-      error ("cannot declare catch parameter to be of abstract "
+      error ("cannot declare %<catch%> parameter to be of abstract "
 	     "class type %qT", type);
       break;
     default:
@@ -380,7 +380,7 @@ abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
       FOR_EACH_VEC_ELT (*pure, ix, fn)
 	if (! DECL_CLONED_FUNCTION_P (fn)
 	    || DECL_COMPLETE_DESTRUCTOR_P (fn))
-	  inform (DECL_SOURCE_LOCATION (fn), "\t%#qD", fn);
+	  inform (DECL_SOURCE_LOCATION (fn), "    %#qD", fn);
 
       /* Now truncate the vector.  This leaves it non-null, so we know
 	 there are pure virtuals, but empty so we don't list them out
@@ -1164,8 +1164,8 @@ digest_init_r (tree type, tree init, int nested, int flags,
 		 be invalid.  */
 	      if (size < TREE_STRING_LENGTH (stripped_init))
 		{
-		  permerror (loc, "initializer-string for array "
-			     "of chars is too long");
+		  permerror (loc, "initializer-string for %qT is too long",
+			     type);
 
 		  init = build_string (size,
 				       TREE_STRING_POINTER (stripped_init));
@@ -2173,7 +2173,6 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
 
   /* The type to which we are casting.  */
   tree type;
-  vec<tree, va_gc> *parmvec;
 
   if (error_operand_p (exp) || parms == error_mark_node)
     return error_mark_node;
@@ -2216,7 +2215,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
 	  if (type == error_mark_node)
 	    {
 	      if (complain & tf_error)
-		error ("cannot deduce template arguments for %qT from ()",
+		error ("cannot deduce template arguments for %qT from %<()%>",
 		       anode);
 	      return error_mark_node;
 	    }
@@ -2295,12 +2294,11 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
     }
 
   /* Call the constructor.  */
-  parmvec = make_tree_vector ();
+  releasing_vec parmvec;
   for (; parms != NULL_TREE; parms = TREE_CHAIN (parms))
     vec_safe_push (parmvec, TREE_VALUE (parms));
   exp = build_special_member_call (NULL_TREE, complete_ctor_identifier,
 				   &parmvec, type, LOOKUP_NORMAL, complain);
-  release_tree_vector (parmvec);
 
   if (exp == error_mark_node)
     return error_mark_node;

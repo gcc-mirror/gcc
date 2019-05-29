@@ -49,7 +49,7 @@ void test02()
   v2.push_back(T());
   v2 = std::move(v1);
   VERIFY( it == v2.begin() );
-  VERIFY(0 == v1.get_allocator().get_personality());
+  VERIFY(1 == v1.get_allocator().get_personality());
   VERIFY(1 == v2.get_allocator().get_personality());
 }
 

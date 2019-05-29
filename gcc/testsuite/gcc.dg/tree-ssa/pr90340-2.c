@@ -1,5 +1,5 @@
 /* { dg-do compile { target { { x86_64-*-* aarch64-*-* ia64-*-* powerpc64-*-* } && lp64 } } } */
-/* { dg-options "-Os --param jump-table-max-growth-ratio-for-size=200 -fdump-tree-switchlower1" } */
+/* { dg-options "-Os --param jump-table-max-growth-ratio-for-size=200 --param case-values-threshold=5 -fdump-tree-switchlower1" } */
 
 int a;
 

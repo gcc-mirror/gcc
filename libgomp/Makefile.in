@@ -217,7 +217,7 @@ am_libgomp_la_OBJECTS = alloc.lo atomic.lo barrier.lo critical.lo \
 	target.lo splay-tree.lo libgomp-plugin.lo oacc-parallel.lo \
 	oacc-host.lo oacc-init.lo oacc-mem.lo oacc-async.lo \
 	oacc-plugin.lo oacc-cuda.lo priority_queue.lo affinity-fmt.lo \
-	teams.lo $(am__objects_1)
+	teams.lo oacc-profiling.lo $(am__objects_1)
 libgomp_la_OBJECTS = $(am_libgomp_la_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -551,7 +551,7 @@ libgomp_la_SOURCES = alloc.c atomic.c barrier.c critical.c env.c \
 	affinity.c target.c splay-tree.c libgomp-plugin.c \
 	oacc-parallel.c oacc-host.c oacc-init.c oacc-mem.c \
 	oacc-async.c oacc-plugin.c oacc-cuda.c priority_queue.c \
-	affinity-fmt.c teams.c $(am__append_3)
+	affinity-fmt.c teams.c oacc-profiling.c $(am__append_3)
 
 # Nvidia PTX OpenACC plugin.
 @PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_version_info = -version-info $(libtool_VERSION)
@@ -575,7 +575,7 @@ libgomp_la_SOURCES = alloc.c atomic.c barrier.c critical.c env.c \
 @PLUGIN_HSA_TRUE@libgomp_plugin_hsa_la_LIBADD = libgomp.la $(PLUGIN_HSA_LIBS)
 @PLUGIN_HSA_TRUE@libgomp_plugin_hsa_la_LIBTOOLFLAGS = --tag=disable-static
 nodist_noinst_HEADERS = libgomp_f.h
-nodist_libsubinclude_HEADERS = omp.h openacc.h
+nodist_libsubinclude_HEADERS = omp.h openacc.h acc_prof.h
 @USE_FORTRAN_TRUE@nodist_finclude_HEADERS = omp_lib.h omp_lib.f90 omp_lib.mod omp_lib_kinds.mod \
 @USE_FORTRAN_TRUE@	openacc_lib.h openacc.f90 openacc.mod openacc_kinds.mod
 
@@ -753,6 +753,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oacc-mem.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oacc-parallel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oacc-plugin.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oacc-profiling.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ordered.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parallel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/priority_queue.Plo@am__quote@

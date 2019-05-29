@@ -947,7 +947,7 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
       if (warning_at (DECL_SOURCE_LOCATION
 			(TYPE_NAME (DECL_CONTEXT (vtable->decl))), OPT_Wodr,
 		      "virtual table of type %qD violates "
-		      "one definition rule  ",
+		      "one definition rule",
 		      DECL_CONTEXT (vtable->decl)))
 	{
 	  if (TREE_CODE (ref1->referred->decl) == FUNCTION_DECL)

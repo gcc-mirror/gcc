@@ -2662,6 +2662,7 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, profile_count count)
   cfun->va_list_gpr_size = src_cfun->va_list_gpr_size;
   cfun->va_list_fpr_size = src_cfun->va_list_fpr_size;
   cfun->has_nonlocal_label = src_cfun->has_nonlocal_label;
+  cfun->calls_eh_return = src_cfun->calls_eh_return;
   cfun->stdarg = src_cfun->stdarg;
   cfun->after_inlining = src_cfun->after_inlining;
   cfun->can_throw_non_call_exceptions
@@ -4615,7 +4616,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 	  /* PR 20090218-1_0.c. Body can be provided by another module. */
 	  && (reason != CIF_BODY_NOT_AVAILABLE || !flag_generate_lto))
 	{
-	  error ("inlining failed in call to always_inline %q+F: %s", fn,
+	  error ("inlining failed in call to %<always_inline%> %q+F: %s", fn,
 		 cgraph_inline_failed_string (reason));
 	  if (gimple_location (stmt) != UNKNOWN_LOCATION)
 	    inform (gimple_location (stmt), "called from here");
@@ -4778,6 +4779,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   src_properties = id->src_cfun->curr_properties & prop_mask;
   if (src_properties != prop_mask)
     dst_cfun->curr_properties &= src_properties | ~prop_mask;
+  dst_cfun->calls_eh_return |= id->src_cfun->calls_eh_return;
 
   gcc_assert (!id->src_cfun->after_inlining);
 

@@ -482,7 +482,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    5: CLASS_TYPE_P (in RECORD_TYPE and UNION_TYPE)
       ENUM_FIXED_UNDERLYING_TYPE_P (in ENUMERAL_TYPE)
       AUTO_IS_DECLTYPE (in TEMPLATE_TYPE_PARM)
-      REFERENCE_VLA_OK (in REFERENCE_TYPE)
    6: TYPE_DEPENDENT_P_VALID
 
    Usage of DECL_LANG_FLAG_?:
@@ -890,15 +889,25 @@ struct releasing_vec
   vec_t *operator-> () const { return v; }
   vec_t *get() const { return v; }
   operator vec_t *() const { return v; }
-  tree& operator[] (unsigned i) const { return (*v)[i]; }
+  vec_t ** operator& () { return &v; }
 
-  /* Necessary for use with vec** and vec*& interfaces.  */
-  vec_t *&get_ref () { return v; }
+  /* Breaks pointer/value consistency for convenience.  */
+  tree& operator[] (unsigned i) const { return (*v)[i]; }
 
   ~releasing_vec() { release_tree_vector (v); }
 private:
   vec_t *v;
 };
+/* Forwarding functions for vec_safe_* that might reallocate.  */
+inline tree* vec_safe_push (releasing_vec& r, const tree &t CXX_MEM_STAT_INFO)
+{ return vec_safe_push (*&r, t PASS_MEM_STAT); }
+inline bool vec_safe_reserve (releasing_vec& r, unsigned n, bool e = false CXX_MEM_STAT_INFO)
+{ return vec_safe_reserve (*&r, n, e PASS_MEM_STAT); }
+inline unsigned vec_safe_length (releasing_vec &r)
+{ return r->length(); }
+inline void vec_safe_splice (releasing_vec &r, vec<tree, va_gc> *p CXX_MEM_STAT_INFO)
+{ vec_safe_splice (*&r, p PASS_MEM_STAT); }
+void release_tree_vector (releasing_vec &); // cause link error
 
 struct GTY(()) tree_template_decl {
   struct tree_decl_common common;
@@ -1928,7 +1937,7 @@ enum languages { lang_c, lang_cplusplus };
 
 /* Nonzero if NODE has no name for linkage purposes.  */
 #define TYPE_UNNAMED_P(NODE) \
-  (OVERLOAD_TYPE_P (NODE) && anon_aggrname_p (TYPE_LINKAGE_IDENTIFIER (NODE)))
+  (OVERLOAD_TYPE_P (NODE) && IDENTIFIER_ANON_P (TYPE_LINKAGE_IDENTIFIER (NODE)))
 
 /* The _DECL for this _TYPE.  */
 #define TYPE_MAIN_DECL(NODE) (TYPE_STUB_DECL (TYPE_MAIN_VARIANT (NODE)))
@@ -2676,9 +2685,7 @@ struct GTY(()) lang_decl_ns {
   struct lang_decl_base base;
   cp_binding_level *level;
 
-  /* using directives and inline children.  These need to be va_gc,
-     because of PCH.  */
-  vec<tree, va_gc> *usings;
+  /* Inline children.  These need to be va_gc, because of PCH.  */
   vec<tree, va_gc> *inlinees;
 
   /* Hash table of bound decls. It'd be nice to have this inline, but
@@ -3267,10 +3274,6 @@ struct GTY(()) lang_decl {
 #define DECL_NAMESPACE_INLINE_P(NODE) \
   TREE_LANG_FLAG_0 (NAMESPACE_DECL_CHECK (NODE))
 
-/* In a NAMESPACE_DECL, a vector of using directives.  */
-#define DECL_NAMESPACE_USING(NODE) \
-   (LANG_DECL_NS_CHECK (NODE)->usings)
-
 /* In a NAMESPACE_DECL, a vector of inline namespaces.  */
 #define DECL_NAMESPACE_INLINEES(NODE) \
    (LANG_DECL_NS_CHECK (NODE)->inlinees)
@@ -3720,11 +3723,6 @@ struct GTY(()) lang_decl {
   (INDIRECT_REF_P (NODE)				\
    && TREE_TYPE (TREE_OPERAND (NODE, 0))		\
    && TYPE_REF_P (TREE_TYPE (TREE_OPERAND ((NODE), 0))))
-
-/* True if NODE is a REFERENCE_TYPE which is OK to instantiate to be a
-   reference to VLA type, because it's used for VLA capture.  */
-#define REFERENCE_VLA_OK(NODE) \
-  (TYPE_LANG_FLAG_5 (REFERENCE_TYPE_CHECK (NODE)))
 
 #define NEW_EXPR_USE_GLOBAL(NODE) \
   TREE_LANG_FLAG_0 (NEW_EXPR_CHECK (NODE))
@@ -4185,7 +4183,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    checks in ascending code order.  */
 #define CP_AGGREGATE_TYPE_P(TYPE)				\
   (TREE_CODE (TYPE) == VECTOR_TYPE				\
-   ||TREE_CODE (TYPE) == ARRAY_TYPE				\
+   || TREE_CODE (TYPE) == ARRAY_TYPE				\
    || (CLASS_TYPE_P (TYPE) && !CLASSTYPE_NON_AGGREGATE (TYPE)))
 
 /* Nonzero for a class type means that the class type has a
@@ -5547,9 +5545,8 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 #define CONV_CONST       4
 #define CONV_REINTERPRET 8
 #define CONV_PRIVATE	 16
-/* #define CONV_NONCONVERTING 32 */
-#define CONV_FORCE_TEMP  64
-#define CONV_FOLD	 128
+#define CONV_FORCE_TEMP  32
+#define CONV_FOLD	 64
 #define CONV_OLD_CONVERT (CONV_IMPLICIT | CONV_STATIC | CONV_CONST \
 			  | CONV_REINTERPRET)
 #define CONV_C_CAST      (CONV_IMPLICIT | CONV_STATIC | CONV_CONST \
@@ -6395,7 +6392,6 @@ extern tree strip_fnptr_conv			(tree);
 
 /* in name-lookup.c */
 extern void maybe_push_cleanup_level		(tree);
-extern tree make_anon_name			(void);
 extern tree maybe_push_decl			(tree);
 extern tree current_decl_namespace		(void);
 
@@ -7626,6 +7622,7 @@ extern tree cp_fully_fold_init			(tree);
 extern void clear_fold_cache			(void);
 extern tree lookup_hotness_attribute		(tree);
 extern tree process_stmt_hotness_attribute	(tree, location_t);
+extern bool simple_empty_class_p		(tree, tree, tree_code);
 
 /* in name-lookup.c */
 extern tree strip_using_decl                    (tree);

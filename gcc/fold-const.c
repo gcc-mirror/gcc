@@ -9015,7 +9015,7 @@ vec_cst_ctor_to_array (tree arg, unsigned int nelts, tree *elts)
    selector.  Return the folded VECTOR_CST or CONSTRUCTOR if successful,
    NULL_TREE otherwise.  */
 
-static tree
+tree
 fold_vec_perm (tree type, tree arg0, tree arg1, const vec_perm_indices &sel)
 {
   unsigned int i;
@@ -11763,7 +11763,10 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
       return NULL_TREE;
 
     case VEC_PERM_EXPR:
-      if (TREE_CODE (arg2) == VECTOR_CST)
+      /* Perform constant folding of BIT_INSERT_EXPR.  */
+      if (TREE_CODE (arg2) == VECTOR_CST
+	  && TREE_CODE (op0) == VECTOR_CST
+	  && TREE_CODE (op1) == VECTOR_CST)
 	{
 	  /* Build a vector of integers from the tree mask.  */
 	  vec_perm_builder builder;
@@ -11774,61 +11777,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	  poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (type);
 	  bool single_arg = (op0 == op1);
 	  vec_perm_indices sel (builder, single_arg ? 1 : 2, nelts);
-
-	  /* Check for cases that fold to OP0 or OP1 in their original
-	     element order.  */
-	  if (sel.series_p (0, 1, 0, 1))
-	    return op0;
-	  if (sel.series_p (0, 1, nelts, 1))
-	    return op1;
-
-	  if (!single_arg)
-	    {
-	      if (sel.all_from_input_p (0))
-		op1 = op0;
-	      else if (sel.all_from_input_p (1))
-		{
-		  op0 = op1;
-		  sel.rotate_inputs (1);
-		}
-	    }
-
-	  if ((TREE_CODE (op0) == VECTOR_CST
-	       || TREE_CODE (op0) == CONSTRUCTOR)
-	      && (TREE_CODE (op1) == VECTOR_CST
-		  || TREE_CODE (op1) == CONSTRUCTOR))
-	    {
-	      tree t = fold_vec_perm (type, op0, op1, sel);
-	      if (t != NULL_TREE)
-		return t;
-	    }
-
-	  bool changed = (op0 == op1 && !single_arg);
-
-	  /* Generate a canonical form of the selector.  */
-	  if (arg2 == op2 && sel.encoding () != builder)
-	    {
-	      /* Some targets are deficient and fail to expand a single
-		 argument permutation while still allowing an equivalent
-		 2-argument version.  */
-	      if (sel.ninputs () == 2
-		  || can_vec_perm_const_p (TYPE_MODE (type), sel, false))
-		op2 = vec_perm_indices_to_tree (TREE_TYPE (arg2), sel);
-	      else
-		{
-		  vec_perm_indices sel2 (builder, 2, nelts);
-		  if (can_vec_perm_const_p (TYPE_MODE (type), sel2, false))
-		    op2 = vec_perm_indices_to_tree (TREE_TYPE (arg2), sel2);
-		  else
-		    /* Not directly supported with either encoding,
-		       so use the preferred form.  */
-		    op2 = vec_perm_indices_to_tree (TREE_TYPE (arg2), sel);
-		}
-	      changed = true;
-	    }
-
-	  if (changed)
-	    return build3_loc (loc, VEC_PERM_EXPR, type, op0, op1, op2);
+	  return fold_vec_perm (type, op0, op1, sel);
 	}
       return NULL_TREE;
 
@@ -13842,6 +13791,28 @@ fold_read_from_constant_string (tree exp)
 				    [TREE_INT_CST_LOW (index)]));
     }
   return NULL;
+}
+
+/* Folds a read from vector element at IDX of vector ARG.  */
+
+tree
+fold_read_from_vector (tree arg, poly_uint64 idx)
+{
+  unsigned HOST_WIDE_INT i;
+  if (known_lt (idx, TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg)))
+      && known_ge (idx, 0u)
+      && idx.is_constant (&i))
+    {
+      if (TREE_CODE (arg) == VECTOR_CST)
+	return VECTOR_CST_ELT (arg, i);
+      else if (TREE_CODE (arg) == CONSTRUCTOR)
+	{
+	  if (i >= CONSTRUCTOR_NELTS (arg))
+	    return build_zero_cst (TREE_TYPE (TREE_TYPE (arg)));
+	  return CONSTRUCTOR_ELT (arg, i)->value;
+	}
+    }
+  return NULL_TREE;
 }
 
 /* Return the tree for neg (ARG0) when ARG0 is known to be either

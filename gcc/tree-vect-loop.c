@@ -819,6 +819,7 @@ _loop_vec_info::_loop_vec_info (struct loop *loop_in, vec_info_shared *shared)
     max_vectorization_factor (0),
     mask_skip_niters (NULL_TREE),
     mask_compare_type (NULL_TREE),
+    simd_if_cond (NULL_TREE),
     unaligned_dr (NULL),
     peeling_for_alignment (0),
     ptr_mask (0),
@@ -862,6 +863,26 @@ _loop_vec_info::_loop_vec_info (struct loop *loop_in, vec_info_shared *shared)
 	  gimple *stmt = gsi_stmt (si);
 	  gimple_set_uid (stmt, 0);
 	  add_stmt (stmt);
+	  /* If .GOMP_SIMD_LANE call for the current loop has 2 arguments, the
+	     second argument is the #pragma omp simd if (x) condition, when 0,
+	     loop shouldn't be vectorized, when non-zero constant, it should
+	     be vectorized normally, otherwise versioned with vectorized loop
+	     done if the condition is non-zero at runtime.  */
+	  if (loop_in->simduid
+	      && is_gimple_call (stmt)
+	      && gimple_call_internal_p (stmt)
+	      && gimple_call_internal_fn (stmt) == IFN_GOMP_SIMD_LANE
+	      && gimple_call_num_args (stmt) >= 2
+	      && TREE_CODE (gimple_call_arg (stmt, 0)) == SSA_NAME
+	      && (loop_in->simduid
+		  == SSA_NAME_VAR (gimple_call_arg (stmt, 0))))
+	    {
+	      tree arg = gimple_call_arg (stmt, 1);
+	      if (integer_zerop (arg) || TREE_CODE (arg) == SSA_NAME)
+		simd_if_cond = arg;
+	      else
+		gcc_assert (integer_nonzerop (arg));
+	    }
 	}
     }
 }
@@ -1753,6 +1774,50 @@ vect_get_datarefs_in_loop (loop_p loop, basic_block *bbs,
   return opt_result::success ();
 }
 
+/* Look for SLP-only access groups and turn each individual access into its own
+   group.  */
+static void
+vect_dissolve_slp_only_groups (loop_vec_info loop_vinfo)
+{
+  unsigned int i;
+  struct data_reference *dr;
+
+  DUMP_VECT_SCOPE ("vect_dissolve_slp_only_groups");
+
+  vec<data_reference_p> datarefs = loop_vinfo->shared->datarefs;
+  FOR_EACH_VEC_ELT (datarefs, i, dr)
+    {
+      gcc_assert (DR_REF (dr));
+      stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (DR_STMT (dr));
+
+      /* Check if the load is a part of an interleaving chain.  */
+      if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
+	{
+	  stmt_vec_info first_element = DR_GROUP_FIRST_ELEMENT (stmt_info);
+	  unsigned int group_size = DR_GROUP_SIZE (first_element);
+
+	  /* Check if SLP-only groups.  */
+	  if (!STMT_SLP_TYPE (stmt_info)
+	      && STMT_VINFO_SLP_VECT_ONLY (first_element))
+	    {
+	      /* Dissolve the group.  */
+	      STMT_VINFO_SLP_VECT_ONLY (first_element) = false;
+
+	      stmt_vec_info vinfo = first_element;
+	      while (vinfo)
+		{
+		  stmt_vec_info next = DR_GROUP_NEXT_ELEMENT (vinfo);
+		  DR_GROUP_FIRST_ELEMENT (vinfo) = vinfo;
+		  DR_GROUP_NEXT_ELEMENT (vinfo) = NULL;
+		  DR_GROUP_SIZE (vinfo) = 1;
+		  DR_GROUP_GAP (vinfo) = group_size - 1;
+		  vinfo = next;
+		}
+	    }
+	}
+    }
+}
+
 /* Function vect_analyze_loop_2.
 
    Apply a set of analyses on LOOP, and create a loop_vec_info struct
@@ -1768,6 +1833,11 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal, unsigned *n_stmts)
 
   /* The first group of checks is independent of the vector size.  */
   fatal = true;
+
+  if (LOOP_VINFO_SIMD_IF_COND (loop_vinfo)
+      && integer_zerop (LOOP_VINFO_SIMD_IF_COND (loop_vinfo)))
+    return opt_result::failure_at (vect_location,
+				   "not vectorized: simd if(0)\n");
 
   /* Find all data references in the loop (which correspond to vdefs/vuses)
      and analyze their evolution in the loop.  */
@@ -1963,6 +2033,9 @@ start_over:
 	  goto again;
 	}
     }
+
+  /* Dissolve SLP-only groups.  */
+  vect_dissolve_slp_only_groups (loop_vinfo);
 
   /* Scan all the remaining operations in the loop that are not subject
      to SLP and make sure they are vectorizable.  */
@@ -2228,7 +2301,8 @@ vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo,
 
   /* Autodetect first vector size we try.  */
   current_vector_size = 0;
-  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes);
+  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes,
+						loop->simdlen != 0);
   unsigned int next_size = 0;
 
   DUMP_VECT_SCOPE ("analyze_loop_nest");
@@ -2247,6 +2321,8 @@ vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo,
 
   unsigned n_stmts = 0;
   poly_uint64 autodetected_vector_size = 0;
+  opt_loop_vec_info first_loop_vinfo = opt_loop_vec_info::success (NULL);
+  poly_uint64 first_vector_size = 0;
   while (1)
     {
       /* Check the CFG characteristics of the loop (nesting, entry/exit).  */
@@ -2257,6 +2333,7 @@ vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo,
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "bad loop form.\n");
+	  gcc_checking_assert (first_loop_vinfo == NULL);
 	  return loop_vinfo;
 	}
 
@@ -2270,10 +2347,27 @@ vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo,
 	{
 	  LOOP_VINFO_VECTORIZABLE_P (loop_vinfo) = 1;
 
-	  return loop_vinfo;
+	  if (loop->simdlen
+	      && maybe_ne (LOOP_VINFO_VECT_FACTOR (loop_vinfo),
+			   (unsigned HOST_WIDE_INT) loop->simdlen))
+	    {
+	      if (first_loop_vinfo == NULL)
+		{
+		  first_loop_vinfo = loop_vinfo;
+		  first_vector_size = current_vector_size;
+		  loop->aux = NULL;
+		}
+	      else
+		delete loop_vinfo;
+	    }
+	  else
+	    {
+	      delete first_loop_vinfo;
+	      return loop_vinfo;
+	    }
 	}
-
-      delete loop_vinfo;
+      else
+	delete loop_vinfo;
 
       if (next_size == 0)
 	autodetected_vector_size = current_vector_size;
@@ -2282,10 +2376,31 @@ vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo,
 	  && known_eq (vector_sizes[next_size], autodetected_vector_size))
 	next_size += 1;
 
-      if (fatal
-	  || next_size == vector_sizes.length ()
+      if (fatal)
+	{
+	  gcc_checking_assert (first_loop_vinfo == NULL);
+	  return opt_loop_vec_info::propagate_failure (res);
+	}
+
+      if (next_size == vector_sizes.length ()
 	  || known_eq (current_vector_size, 0U))
-	return opt_loop_vec_info::propagate_failure (res);
+	{
+	  if (first_loop_vinfo)
+	    {
+	      current_vector_size = first_vector_size;
+	      loop->aux = (loop_vec_info) first_loop_vinfo;
+	      if (dump_enabled_p ())
+		{
+		  dump_printf_loc (MSG_NOTE, vect_location,
+				   "***** Choosing vector size ");
+		  dump_dec (MSG_NOTE, current_vector_size);
+		  dump_printf (MSG_NOTE, "\n");
+		}
+	      return first_loop_vinfo;
+	    }
+	  else
+	    return opt_loop_vec_info::propagate_failure (res);
+	}
 
       /* Try the next biggest vector size.  */
       current_vector_size = vector_sizes[next_size++];
@@ -8644,7 +8759,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   if (epilogue)
     {
       auto_vector_sizes vector_sizes;
-      targetm.vectorize.autovectorize_vector_sizes (&vector_sizes);
+      targetm.vectorize.autovectorize_vector_sizes (&vector_sizes, false);
       unsigned int next_size = 0;
 
       /* Note LOOP_VINFO_NITERS_KNOWN_P and LOOP_VINFO_INT_NITERS work

@@ -756,7 +756,6 @@ build_throw (tree exp)
       if (CLASS_TYPE_P (temp_type))
 	{
 	  int flags = LOOKUP_NORMAL | LOOKUP_ONLYCONVERTING;
-	  vec<tree, va_gc> *exp_vec;
 	  bool converted = false;
 
 	  /* Under C++0x [12.8/16 class.copy], a thrown lvalue is sometimes
@@ -767,12 +766,11 @@ build_throw (tree exp)
 	      && !CP_TYPE_VOLATILE_P (TREE_TYPE (exp)))
 	    {
 	      tree moved = move (exp);
-	      exp_vec = make_tree_vector_single (moved);
+	      releasing_vec exp_vec (make_tree_vector_single (moved));
 	      moved = (build_special_member_call
 		       (object, complete_ctor_identifier, &exp_vec,
 			TREE_TYPE (object), flags|LOOKUP_PREFER_RVALUE,
 			tf_none));
-	      release_tree_vector (exp_vec);
 	      if (moved != error_mark_node)
 		{
 		  exp = moved;
@@ -783,11 +781,10 @@ build_throw (tree exp)
 	  /* Call the copy constructor.  */
 	  if (!converted)
 	    {
-	      exp_vec = make_tree_vector_single (exp);
+	      releasing_vec exp_vec (make_tree_vector_single (exp));
 	      exp = (build_special_member_call
 		     (object, complete_ctor_identifier, &exp_vec,
 		      TREE_TYPE (object), flags, tf_warning_or_error));
-	      release_tree_vector (exp_vec);
 	    }
 
 	  if (exp == error_mark_node)
@@ -939,7 +936,7 @@ is_admissible_throw_operand_or_catch_parameter (tree t, bool is_throw)
 	   && TYPE_REF_P (type)
 	   && TYPE_REF_IS_RVALUE (type))
     {
-      error ("cannot declare catch parameter to be of rvalue "
+      error ("cannot declare %<catch%> parameter to be of rvalue "
 	     "reference type %qT", type);
       return false;
     }

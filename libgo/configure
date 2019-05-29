@@ -13712,7 +13712,7 @@ $as_echo "#define USE_LIBFFI 1" >>confdefs.h
 fi
 
 
- if test "$with_liffi" != "no"; then
+ if test "$with_libffi" != "no"; then
   USE_LIBFFI_TRUE=
   USE_LIBFFI_FALSE='#'
 else
@@ -14138,7 +14138,7 @@ case "$target" in
 	# msghdr in <sys/socket.h>.
 	OSCFLAGS="$OSCFLAGS -D_XOPEN_SOURCE=500"
 	;;
-    *-*-solaris2.1[01])
+    *-*-solaris2.*)
 	# Solaris 10+ needs this so struct msghdr gets the msg_control
 	# etc. fields in <sys/socket.h> (_XPG4_2).  _XOPEN_SOURCE=600 as
 	# above doesn't work with C99.

@@ -2592,7 +2592,7 @@ vect_check_load_store_mask (stmt_vec_info stmt_info, tree mask,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "vector mask type %T",
+			 "vector mask type %T"
 			 " does not match vector data type %T.\n",
 			 mask_vectype, vectype);
 
@@ -7622,14 +7622,6 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (!scalar_dest)
 	return false;
 
-      if (slp_node != NULL)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "SLP of masked loads not supported.\n");
-	  return false;
-	}
-
       int mask_index = internal_fn_mask_index (ifn);
       if (mask_index >= 0)
 	{
@@ -7711,6 +7703,15 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
       first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
       group_size = DR_GROUP_SIZE (first_stmt_info);
+
+      /* Refuse non-SLP vectorization of SLP-only groups.  */
+      if (!slp && STMT_VINFO_SLP_VECT_ONLY (first_stmt_info))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "cannot vectorize load in non-SLP mode.\n");
+	  return false;
+	}
 
       if (slp && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
 	slp_perm = true;
@@ -8389,8 +8390,19 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 					  simd_lane_access_p,
 					  byte_offset, bump);
 	  if (mask)
-	    vec_mask = vect_get_vec_def_for_operand (mask, stmt_info,
-						     mask_vectype);
+	    {
+	      if (slp_node)
+		{
+		  auto_vec<tree> ops (1);
+		  auto_vec<vec<tree> > vec_defs (1);
+		  ops.quick_push (mask);
+		  vect_get_slp_defs (ops, slp_node, &vec_defs);
+		  vec_mask = vec_defs[0][0];
+		}
+	      else
+		vec_mask = vect_get_vec_def_for_operand (mask, stmt_info,
+							 mask_vectype);
+	    }
 	}
       else
 	{

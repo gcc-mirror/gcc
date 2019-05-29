@@ -325,6 +325,14 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char *swap,
 	{
 	  internal_fn ifn = gimple_call_internal_fn (stmt);
 	  commutative_op = first_commutative_argument (ifn);
+
+	  /* Masked load, only look at mask.  */
+	  if (ifn == IFN_MASK_LOAD)
+	    {
+	      number_of_oprnds = 1;
+	      /* Mask operand index.  */
+	      first_op_idx = 5;
+	    }
 	}
     }
   else if (gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt))
@@ -333,7 +341,7 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char *swap,
       number_of_oprnds = gimple_num_ops (stmt) - 1;
       /* Swap can only be done for cond_expr if asked to, otherwise we
 	 could result in different comparison code to the first stmt.  */
-      if (gimple_assign_rhs_code (stmt) == COND_EXPR
+      if (code == COND_EXPR
 	  && COMPARISON_CLASS_P (gimple_assign_rhs1 (stmt)))
 	{
 	  first_op_cond = true;
@@ -364,6 +372,8 @@ again:
 	}
       else
 	oprnd = gimple_op (stmt_info->stmt, first_op_idx + (swapped ? !i : i));
+      if (TREE_CODE (oprnd) == VIEW_CONVERT_EXPR)
+	oprnd = TREE_OPERAND (oprnd, 0);
 
       oprnd_info = (*oprnds_info)[i];
 
@@ -624,7 +634,7 @@ vect_two_operations_perm_ok_p (vec<stmt_vec_info> stmts,
    is false then this indicates the comparison could not be
    carried out or the stmts will never be vectorized by SLP.
 
-   Note COND_EXPR is possibly ismorphic to another one after swapping its
+   Note COND_EXPR is possibly isomorphic to another one after swapping its
    operands.  Set SWAP[i] to 1 if stmt I is COND_EXPR and isomorphic to
    the first stmt by swapping the two operands of comparison; set SWAP[i]
    to 2 if stmt I is isormorphic to the first stmt by inverting the code
@@ -907,6 +917,7 @@ vect_build_slp_tree_1 (unsigned char *swap,
 	      && TREE_CODE_CLASS (rhs_code) != tcc_unary
 	      && TREE_CODE_CLASS (rhs_code) != tcc_expression
 	      && TREE_CODE_CLASS (rhs_code) != tcc_comparison
+	      && rhs_code != VIEW_CONVERT_EXPR
 	      && rhs_code != CALL_EXPR)
 	    {
 	      if (dump_enabled_p ())
@@ -1143,14 +1154,23 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 			      &this_max_nunits, matches, &two_operators))
     return NULL;
 
-  /* If the SLP node is a load, terminate the recursion.  */
+  /* If the SLP node is a load, terminate the recursion unless masked.  */
   if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
       && DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)))
     {
-      *max_nunits = this_max_nunits;
-      (*tree_size)++;
-      node = vect_create_new_slp_node (stmts);
-      return node;
+      if (gcall *stmt = dyn_cast <gcall *> (stmt_info->stmt))
+	{
+	  /* Masked load.  */
+	  gcc_assert (gimple_call_internal_p (stmt, IFN_MASK_LOAD));
+	  nops = 1;
+	}
+      else
+	{
+	  *max_nunits = this_max_nunits;
+	  (*tree_size)++;
+	  node = vect_create_new_slp_node (stmts);
+	  return node;
+	}
     }
 
   /* Get at the operands, verifying they are compatible.  */
@@ -2980,7 +3000,7 @@ vect_slp_bb (basic_block bb)
 
   /* Autodetect first vector size we try.  */
   current_vector_size = 0;
-  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes);
+  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes, false);
   unsigned int next_size = 0;
 
   gsi = gsi_start_bb (bb);

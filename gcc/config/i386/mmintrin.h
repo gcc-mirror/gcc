@@ -29,7 +29,9 @@
 
 #if defined __x86_64__ && !defined __SSE__ || !defined __MMX__
 #pragma GCC push_options
-#ifdef __x86_64__
+#ifdef __MMX_WITH_SSE__
+#pragma GCC target("sse2")
+#elif defined __x86_64__
 #pragma GCC target("sse,mmx")
 #else
 #pragma GCC target("mmx")
@@ -315,7 +317,11 @@ _m_paddd (__m64 __m1, __m64 __m2)
 /* Add the 64-bit values in M1 to the 64-bit values in M2.  */
 #ifndef __SSE2__
 #pragma GCC push_options
+#ifdef __MMX_WITH_SSE__
+#pragma GCC target("sse2")
+#else
 #pragma GCC target("sse2,mmx")
+#endif
 #define __DISABLE_SSE2__
 #endif /* __SSE2__ */
 
@@ -427,7 +433,11 @@ _m_psubd (__m64 __m1, __m64 __m2)
 /* Add the 64-bit values in M1 to the 64-bit values in M2.  */
 #ifndef __SSE2__
 #pragma GCC push_options
+#ifdef __MMX_WITH_SSE__
+#pragma GCC target("sse2")
+#else
 #pragma GCC target("sse2,mmx")
+#endif
 #define __DISABLE_SSE2__
 #endif /* __SSE2__ */
 

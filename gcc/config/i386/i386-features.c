@@ -2447,7 +2447,7 @@ ix86_mangle_function_version_assembler_name (tree decl, tree id)
       && lookup_attribute ("gnu_inline",
 			   DECL_ATTRIBUTES (decl)))
     error_at (DECL_SOURCE_LOCATION (decl),
-	      "function versions cannot be marked as gnu_inline,"
+	      "function versions cannot be marked as %<gnu_inline%>,"
 	      " bodies have to be generated");
 
   if (DECL_VIRTUAL_P (decl)

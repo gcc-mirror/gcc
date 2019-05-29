@@ -31,7 +31,7 @@ TargetSave
 const char *x_aarch64_override_tune_string
 
 TargetVariable
-unsigned long aarch64_isa_flags = 0
+uint64_t aarch64_isa_flags = 0
 
 TargetVariable
 unsigned aarch64_enable_bti = 2

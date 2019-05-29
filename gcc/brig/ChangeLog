@@ -1,3 +1,12 @@
+2019-05-16  Martin Sebor  <msebor@redhat.com>
+
+        * brigfrontend/brig-control-handler.cc
+        (brig_directive_control_handler::operator): Remove trailing newline
+        from a diagnostic.
+        * brigfrontend/brig-module-handler.cc
+        (brig_directive_module_handler::operator): Remove a duplicated space
+        from a diagnostic.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

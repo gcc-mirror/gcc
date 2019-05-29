@@ -24,6 +24,7 @@
 
 using std::experimental::any;
 using std::experimental::any_cast;
+using std::experimental::bad_any_cast;
 
 void test01()
 {
@@ -56,7 +57,6 @@ void test01()
 
 void test02()
 {
-  using std::experimental::bad_any_cast;
   any x(1);
   auto p = any_cast<double>(&x);
   VERIFY(p == nullptr);
@@ -105,7 +105,7 @@ void test03()
   MoveDeleted&& md3 = any_cast<MoveDeleted&&>(any(std::move(md)));
 }
 
-void test04()
+void test05()
 {
   // PR libstdc++/69321
   struct noncopyable {
@@ -117,10 +117,60 @@ void test04()
   VERIFY( p == nullptr );
 }
 
+void test06()
+{
+  // The contained value of a std::any is always an object type,
+  // but any_cast does not forbid checking for function types.
+
+  any a(1);
+  void (*p1)() = any_cast<void()>(&a);
+  VERIFY( p1 == nullptr );
+  int (*p2)(int) = any_cast<int(int)>(&a);
+  VERIFY( p2 == nullptr );
+  int (*p3)() = any_cast<int()>(&const_cast<const any&>(a));
+  VERIFY( p3 == nullptr );
+
+  try {
+    any_cast<int(&)()>(a);
+    VERIFY( false );
+  } catch (const bad_any_cast&) {
+  }
+
+  try {
+    any_cast<int(&)()>(std::move(a));
+    VERIFY( false );
+  } catch (const bad_any_cast&) {
+  }
+
+  try {
+    any_cast<int(&)()>(const_cast<const any&>(a));
+    VERIFY( false );
+  } catch (const bad_any_cast&) {
+  }
+}
+
+void test07()
+{
+  int arr[3];
+  any a(arr);
+  VERIFY( a.type() == typeid(int*) );	// contained value is decayed
+
+  int (*p1)[3] = any_cast<int[3]>(&a);
+  VERIFY( a.type() != typeid(int[3]) ); // so any_cast should return nullptr
+  VERIFY( p1 == nullptr );
+  int (*p2)[] = any_cast<int[]>(&a);
+  VERIFY( a.type() != typeid(int[]) );	// so any_cast should return nullptr
+  VERIFY( p2 == nullptr );
+  const int (*p3)[] = any_cast<int[]>(&const_cast<const any&>(a));
+  VERIFY( p3 == nullptr );
+}
+
 int main()
 {
   test01();
   test02();
   test03();
-  test04();
+  test05();
+  test06();
+  test07();
 }

@@ -47,7 +47,7 @@ __extension__ int a15[10] = {[2 ... 1] = 4 }; /* { dg-error "31:empty index rang
 __extension__ int a16[10] = {[2 ... 100] = 4 }; /* { dg-error "31:array index range in initializer exceeds array bounds" } */
 int a17[] = { .B = 1 }; /* { dg-error "15:field name not in record or union initializer" } */
 int a18[] = { e }; /* { dg-error "15:initializer element is not constant" } */
-char a19[1] = { "x", "x" }; /* { dg-error "22:excess elements in char array initializer" } */
+char a19[1] = { "x", "x" }; /* { dg-error "22:excess elements in 'char' array initializer" } */
 
 void
 bar (void)

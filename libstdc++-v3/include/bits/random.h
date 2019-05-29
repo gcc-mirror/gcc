@@ -6080,9 +6080,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     size_t size() const noexcept
     { return _M_v.size(); }
 
-    template<typename OutputIterator>
+    template<typename _OutputIterator>
       void
-      param(OutputIterator __dest) const
+      param(_OutputIterator __dest) const
       { std::copy(_M_v.begin(), _M_v.end(), __dest); }
 
     // no copy functions

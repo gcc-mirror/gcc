@@ -37,7 +37,6 @@
 # include <ext/aligned_buffer.h>
 #endif
 #include <ext/alloc_traits.h>
-#include <ext/array_allocator.h>
 #include <ext/atomicity.h>
 #include <ext/bitmap_allocator.h>
 #include <ext/cast.h>

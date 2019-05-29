@@ -1590,16 +1590,6 @@ proc check_sse_os_support_available { } {
 	# If this is not the right target then we can skip the test.
 	if { !([istarget i?86-*-*] || [istarget x86_64-*-*]) } {
 	    expr 0
-	} elseif { [istarget i?86-*-solaris2*] } {
-	    # The Solaris 2 kernel doesn't save and restore SSE registers
-	    # before Solaris 9 4/04.  Before that, executables die with SIGILL.
-	    check_runtime_nocache sse_os_support_available {
-		int main ()
-		{
-		  asm volatile ("movaps %xmm0,%xmm0");
-		  return 0;
-		}
-	    } "-msse"
 	} else {
 	    expr 1
 	}
@@ -5065,13 +5055,13 @@ proc check_effective_target_powerpc_p8vector_ok { } {
 	     || [istarget powerpc*-*-aix5.2*] } {
 	    return 0
 	}
+	# Darwin doesn't run on power8, so far.
+	if { [istarget *-*-darwin*] } {
+	    return 0
+	}
 	return [check_no_compiler_messages powerpc_p8vector_ok object {
 	    int main (void) {
-#ifdef __MACH__
-		asm volatile ("xxlorc vs0,vs0,vs0");
-#else
 		asm volatile ("xxlorc 0,0,0");
-#endif
 		return 0;
 	    }
 	} "-mpower8-vector"]
@@ -5090,6 +5080,10 @@ proc check_effective_target_powerpc_p9vector_ok { } {
 	if { [istarget powerpc*-*-aix4*]
 	     || [istarget powerpc*-*-aix5.1*] 
 	     || [istarget powerpc*-*-aix5.2*] } {
+	    return 0
+	}
+	# Darwin doesn't run on power9, so far.
+	if { [istarget *-*-darwin*] } {
 	    return 0
 	}
 	return [check_no_compiler_messages powerpc_p9vector_ok object {
@@ -5142,6 +5136,10 @@ proc check_effective_target_powerpc_float128_sw_ok { } {
 	     || [istarget powerpc*-*-aix5.2*] } {
 	    return 0
 	}
+	# Darwin doesn't have VSX, so no soft support for float128.
+	if { [istarget *-*-darwin*] } {
+	    return 0
+	}
 	return [check_no_compiler_messages powerpc_float128_sw_ok object {
 		volatile __float128 x = 1.0q;
 		volatile __float128 y = 2.0q;
@@ -5166,6 +5164,10 @@ proc check_effective_target_powerpc_float128_hw_ok { } {
 	if { [istarget powerpc*-*-aix4*]
 	     || [istarget powerpc*-*-aix5.1*] 
 	     || [istarget powerpc*-*-aix5.2*] } {
+	    return 0
+	}
+	# Darwin doesn't run on any machine with float128 h/w so far.
+	if { [istarget *-*-darwin*] } {
 	    return 0
 	}
 	return [check_no_compiler_messages powerpc_float128_hw_ok object {
@@ -5224,13 +5226,14 @@ proc check_effective_target_powerpc_vsx_ok { } {
 	     || [istarget powerpc*-*-aix6*] } {
 	    return 0
 	}
+	# Darwin doesn't have VSX, even if it's used with an assembler
+	# which recognises the insns.
+	if { [istarget *-*-darwin*] } {
+	    return 0
+	}
 	return [check_no_compiler_messages powerpc_vsx_ok object {
 	    int main (void) {
-#ifdef __MACH__
-		asm volatile ("xxlor vs0,vs0,vs0");
-#else
 		asm volatile ("xxlor 0,0,0");
-#endif
 		return 0;
 	    }
 	} "-mvsx"]
@@ -9222,7 +9225,7 @@ proc check_effective_target_cet { } {
 	{
 	  asm ("setssbsy");
 	}
-    } "-O2" ]
+    } "-O2 -fcf-protection" ]
 }
 
 # Return 1 if target supports floating point "infinite"
@@ -9310,6 +9313,17 @@ proc check_effective_target_arm_v8_3a_complex_neon_hw { } {
     } [add_options_for_arm_v8_3a_complex_neon ""]]
 }
 
+# Returns 1 if the target is using glibc, 0 otherwise.
+
+proc check_effective_target_glibc { } {
+    return [check_no_compiler_messages glibc_object assembly {
+  #include <stdlib.h>
+	#if !defined(__GLIBC__)
+	#error undefined
+	#endif
+    }]
+}
+
 # Return 1 if the target plus current options supports a vector
 # complex addition with rotate of half and single float modes, 0 otherwise.
 #
@@ -9344,4 +9358,15 @@ proc check_effective_target_llvm_binutils { } {
     return [check_cached_effective_target llvm_binutils {
 	      expr { [istarget amdgcn*-*-*]
 		     || [check_effective_target_offload_gcn] }}]
+}
+
+# Return 1 if the compiler supports '-mfentry'.
+
+proc check_effective_target_mfentry { } {
+    if { !([istarget i?86-*-*] || [istarget x86_64-*-*]) } {
+        return 0
+    }
+    return [check_no_compiler_messages mfentry object {
+	        void foo (void) { }
+    } "-mfentry"]
 }

@@ -117,7 +117,7 @@ constexpr parallel_unsequenced_policy par_unseq{};
 constexpr unsequenced_policy unseq{};
 
 // 2.3, Execution policy type trait
-template <class T>
+template <class _Tp>
 struct is_execution_policy : std::false_type
 {
 };
@@ -142,8 +142,8 @@ struct is_execution_policy<__pstl::execution::unsequenced_policy> : std::true_ty
 };
 
 #if __PSTL_CPP14_VARIABLE_TEMPLATES_PRESENT
-template <class T>
-constexpr bool is_execution_policy_v = __pstl::execution::is_execution_policy<T>::value;
+template <class _Tp>
+constexpr bool is_execution_policy_v = __pstl::execution::is_execution_policy<_Tp>::value;
 #endif
 
 } // namespace v1
@@ -151,10 +151,16 @@ constexpr bool is_execution_policy_v = __pstl::execution::is_execution_policy<T>
 
 namespace __internal
 {
-template <class ExecPolicy, class T>
+template <class _ExecPolicy, class _Tp>
+#if _GLIBCXX_RELEASE >= 9
 using __enable_if_execution_policy =
-    typename std::enable_if<__pstl::execution::is_execution_policy<typename std::decay<ExecPolicy>::type>::value,
-                            T>::type;
+    typename std::enable_if<__pstl::execution::is_execution_policy<std::__remove_cvref_t<_ExecPolicy>>::value,
+                            _Tp>::type;
+#else
+using __enable_if_execution_policy =
+    typename std::enable_if<__pstl::execution::is_execution_policy<typename std::decay<_ExecPolicy>::type>::value,
+                            _Tp>::type;
+#endif
 } // namespace __internal
 
 } // namespace __pstl

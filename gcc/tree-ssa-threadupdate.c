@@ -235,6 +235,12 @@ struct ssa_local_info_t
      and sharing a template for that block is considerably more difficult.  */
   basic_block template_block;
 
+  /* If we append debug stmts to the template block after creating it,
+     this iterator won't be the last one in the block, and further
+     copies of the template block shouldn't get debug stmts after
+     it.  */
+  gimple_stmt_iterator template_last_to_copy;
+
   /* Blocks duplicated for the thread.  */
   bitmap duplicate_blocks;
 
@@ -1124,6 +1130,8 @@ ssa_create_duplicates (struct redirection_data **slot,
       create_block_for_threading ((*path)[1]->e->src, rd, 0,
 				  &local_info->duplicate_blocks);
       local_info->template_block = rd->dup_blocks[0];
+      local_info->template_last_to_copy
+	= gsi_last_bb (local_info->template_block);
 
       /* We do not create any outgoing edges for the template.  We will
 	 take care of that in a later traversal.  That way we do not
@@ -1131,12 +1139,72 @@ ssa_create_duplicates (struct redirection_data **slot,
     }
   else
     {
+      gimple_seq seq = NULL;
+      if (gsi_stmt (local_info->template_last_to_copy)
+	  != gsi_stmt (gsi_last_bb (local_info->template_block)))
+	seq = gsi_split_seq_after (local_info->template_last_to_copy);
       create_block_for_threading (local_info->template_block, rd, 0,
 				  &local_info->duplicate_blocks);
+      if (seq)
+	gsi_insert_seq_after (&local_info->template_last_to_copy,
+			      seq, GSI_SAME_STMT);
 
       /* Go ahead and wire up outgoing edges and update PHIs for the duplicate
 	 block.   */
       ssa_fix_duplicate_block_edges (rd, local_info);
+    }
+
+  if (MAY_HAVE_DEBUG_STMTS)
+    {
+      /* Copy debug stmts from each NO_COPY src block to the block
+	 that would have been its predecessor, if we can append to it
+	 (we can't add stmts after a block-ending stmt), or prepending
+	 to the duplicate of the successor, if there is one.  If
+	 there's no duplicate successor, we'll mostly drop the blocks
+	 on the floor; propagate_threaded_block_debug_into, called
+	 elsewhere, will consolidate and preserve the effects of the
+	 binds, but none of the markers.  */
+      gimple_stmt_iterator copy_to = gsi_last_bb (rd->dup_blocks[0]);
+      if (!gsi_end_p (copy_to))
+	{
+	  if (stmt_ends_bb_p (gsi_stmt (copy_to)))
+	    {
+	      if (rd->dup_blocks[1])
+		copy_to = gsi_after_labels (rd->dup_blocks[1]);
+	      else
+		copy_to = gsi_none ();
+	    }
+	  else
+	    gsi_next (&copy_to);
+	}
+      for (unsigned int i = 2, j = 0; i < path->length (); i++)
+	if ((*path)[i]->type == EDGE_NO_COPY_SRC_BLOCK
+	    && gsi_bb (copy_to))
+	  {
+	    for (gimple_stmt_iterator gsi = gsi_start_bb ((*path)[i]->e->src);
+		 !gsi_end_p (gsi); gsi_next (&gsi))
+	      {
+		if (!is_gimple_debug (gsi_stmt (gsi)))
+		  continue;
+		gimple *stmt = gsi_stmt (gsi);
+		gimple *copy = gimple_copy (stmt);
+		gsi_insert_before (&copy_to, copy, GSI_SAME_STMT);
+	      }
+	  }
+	else if ((*path)[i]->type == EDGE_COPY_SRC_BLOCK
+		 || (*path)[i]->type == EDGE_COPY_SRC_JOINER_BLOCK)
+	  {
+	    j++;
+	    gcc_assert (j < 2);
+	    copy_to = gsi_last_bb (rd->dup_blocks[j]);
+	    if (!gsi_end_p (copy_to))
+	      {
+		if (stmt_ends_bb_p (gsi_stmt (copy_to)))
+		  copy_to = gsi_none ();
+		else
+		  gsi_next (&copy_to);
+	      }
+	  }
     }
 
   /* Keep walking the hash table.  */

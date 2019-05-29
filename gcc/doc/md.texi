@@ -3197,9 +3197,9 @@ Altivec vector register
 Any VSX register if the @option{-mvsx} option was used or NO_REGS.
 
 When using any of the register constraints (@code{wa}, @code{wd},
-@code{wf}, @code{wg}, @code{wh}, @code{wi}, @code{wj}, @code{wk},
-@code{wl}, @code{wm}, @code{wo}, @code{wp}, @code{wq}, @code{ws},
-@code{wt}, @code{wu}, @code{wv}, @code{ww}, or @code{wy})
+@code{wf}, @code{wg}, @code{wi},
+@code{wp}, @code{wq}, @code{ws},
+@code{wt}, @code{wv}, or @code{ww})
 that take VSX registers, you must use @code{%x<n>} in the template so
 that the correct register is used.  Otherwise the register number
 output in the assembly file will be incorrect if an Altivec register
@@ -3246,9 +3246,6 @@ asm ("xsaddqp %x0,%x1,%x2"
 @noindent
 is incorrect.
 
-@item wb
-Altivec register if @option{-mcpu=power9} is used or NO_REGS.
-
 @item wd
 VSX vector register to hold vector double data or NO_REGS.
 
@@ -3262,29 +3259,11 @@ VSX vector register to hold vector float data or NO_REGS.
 @item wg
 If @option{-mmfpgpr} was used, a floating point register or NO_REGS.
 
-@item wh
-Floating point register if direct moves are available, or NO_REGS.
-
 @item wi
 FP or VSX register to hold 64-bit integers for VSX insns or NO_REGS.
 
-@item wj
-FP or VSX register to hold 64-bit integers for direct moves or NO_REGS.
-
-@item wk
-FP or VSX register to hold 64-bit doubles for direct moves or NO_REGS.
-
-@item wl
-Floating point register if the LFIWAX instruction is enabled or NO_REGS.
-
-@item wm
-VSX register if direct move instructions are enabled, or NO_REGS.
-
 @item wn
 No register (NO_REGS).
-
-@item wo
-VSX register to use for ISA 3.0 vector instructions, or NO_REGS.
 
 @item wp
 VSX register to use for IEEE 128-bit floating point TFmode, or NO_REGS.
@@ -3301,9 +3280,6 @@ VSX vector register to hold scalar double values or NO_REGS.
 @item wt
 VSX vector register to hold 128 bit integer or NO_REGS.
 
-@item wu
-Altivec register to use for float/32-bit int loads/stores  or NO_REGS.
-
 @item wv
 Altivec register to use for double loads/stores  or NO_REGS.
 
@@ -3312,12 +3288,6 @@ FP or VSX register to perform float operations under @option{-mvsx} or NO_REGS.
 
 @item wx
 Floating point register if the STFIWX instruction is enabled or NO_REGS.
-
-@item wy
-FP or VSX register to perform ISA 2.07 float ops or NO_REGS.
-
-@item wz
-Floating point register if the LFIWZX instruction is enabled or NO_REGS.
 
 @item wA
 Address base register if 64-bit instructions are enabled or NO_REGS.
@@ -3336,18 +3306,6 @@ Memory operand suitable for power8 GPR load fusion
 
 @item wG
 Memory operand suitable for TOC fusion memory references.
-
-@item wH
-Altivec register if @option{-mvsx-small-integer}.
-
-@item wI
-Floating point register if @option{-mvsx-small-integer}.
-
-@item wJ
-FP register if @option{-mvsx-small-integer} and @option{-mpower9-vector}.
-
-@item wK
-Altivec register if @option{-mvsx-small-integer} and @option{-mpower9-vector}.
 
 @item wL
 Int constant that is the element number that the MFVSRLD instruction.

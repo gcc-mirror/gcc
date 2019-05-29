@@ -90,14 +90,30 @@ static tree handle_novops_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
 static tree handle_sentinel_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
+static tree handle_stack_protect_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noinline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noclone_attribute (tree *, tree, tree, int, bool *);
+static tree handle_noicf_attribute (tree *, tree, tree, int, bool *);
+static tree handle_noipa_attribute (tree *, tree, tree, int, bool *);
 static tree handle_leaf_attribute (tree *, tree, tree, int, bool *);
 static tree handle_always_inline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_malloc_attribute (tree *, tree, tree, int, bool *);
 static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
+static tree handle_flatten_attribute (tree *, tree, tree, int, bool *);
+static tree handle_used_attribute (tree *, tree, tree, int, bool *);
+static tree handle_cold_attribute (tree *, tree, tree, int, bool *);
+static tree handle_hot_attribute (tree *, tree, tree, int, bool *);
+static tree handle_target_attribute (tree *, tree, tree, int, bool *);
+static tree handle_target_clones_attribute (tree *, tree, tree, int, bool *);
 static tree handle_vector_size_attribute (tree *, tree, tree, int, bool *);
 static tree handle_vector_type_attribute (tree *, tree, tree, int, bool *);
+
+static const struct attribute_spec::exclusions attr_cold_hot_exclusions[] =
+{
+  { "cold", true,  true,  true  },
+  { "hot" , true,  true,  true  },
+  { NULL  , false, false, false }
+};
 
 /* Fake handler for attributes we don't properly support, typically because
    they'd require dragging a lot of the common-c front-end circuitry.  */
@@ -123,34 +139,55 @@ const struct attribute_spec gnat_internal_attribute_table[] =
     handle_sentinel_attribute, NULL },
   { "noreturn",     0, 0,  true,  false, false, false,
     handle_noreturn_attribute, NULL },
+  { "stack_protect",0, 0, true,  false, false, false,
+    handle_stack_protect_attribute, NULL },
   { "noinline",     0, 0,  true,  false, false, false,
     handle_noinline_attribute, NULL },
   { "noclone",      0, 0,  true,  false, false, false,
     handle_noclone_attribute, NULL },
+  { "no_icf",       0, 0,  true,  false, false, false,
+    handle_noicf_attribute, NULL },
+  { "noipa",        0, 0,  true,  false, false, false,
+    handle_noipa_attribute, NULL },
   { "leaf",         0, 0,  true,  false, false, false,
     handle_leaf_attribute, NULL },
   { "always_inline",0, 0,  true,  false, false, false,
     handle_always_inline_attribute, NULL },
   { "malloc",       0, 0,  true,  false, false, false,
     handle_malloc_attribute, NULL },
-  { "type generic", 0, 0,  false, true, true, false,
+  { "type generic", 0, 0,  false, true,  true,  false,
     handle_type_generic_attribute, NULL },
 
-  { "vector_size",  1, 1,  false, true, false,  false,
+  { "flatten",      0, 0,  true,  false, false, false,
+    handle_flatten_attribute, NULL },
+  { "used",         0, 0,  true,  false, false, false,
+    handle_used_attribute, NULL },
+  { "cold",         0, 0,  true,  false, false, false,
+    handle_cold_attribute, attr_cold_hot_exclusions },
+  { "hot",          0, 0,  true,  false, false, false,
+    handle_hot_attribute, attr_cold_hot_exclusions },
+  { "target",       1, -1, true,  false, false, false,
+    handle_target_attribute, NULL },
+  { "target_clones",1, -1, true,  false, false, false,
+    handle_target_clones_attribute, NULL },
+
+  { "vector_size",  1, 1,  false, true,  false, false,
     handle_vector_size_attribute, NULL },
-  { "vector_type",  0, 0,  false, true, false,  false,
+  { "vector_type",  0, 0,  false, true,  false, false,
     handle_vector_type_attribute, NULL },
-  { "may_alias",    0, 0, false, true, false, false, NULL, NULL },
+  { "may_alias",    0, 0,  false, true,  false, false,
+    NULL, NULL },
 
   /* ??? format and format_arg are heavy and not supported, which actually
      prevents support for stdio builtins, which we however declare as part
      of the common builtins.def contents.  */
-  { "format",     3, 3,  false, true,  true,  false, fake_attribute_handler,
-    NULL },
-  { "format_arg", 1, 1,  false, true,  true,  false, fake_attribute_handler,
-    NULL },
+  { "format",       3, 3,  false, true,  true,  false,
+    fake_attribute_handler, NULL },
+  { "format_arg",   1, 1,  false, true,  true,  false,
+    fake_attribute_handler, NULL },
 
-  { NULL,         0, 0, false, false, false, false, NULL, NULL }
+  { NULL,           0, 0,  false, false, false, false,
+    NULL, NULL }
 };
 
 /* Associates a GNAT tree node to a GCC tree node. It is used in
@@ -1530,13 +1567,13 @@ built:
 	 generated for some other corresponding source entity.  */
       if (Comes_From_Source (gnat_entity))
 	{
-	  if (Present (gnat_error_node))
-	    post_error_ne_tree ("{^ }bits of & unused?",
-				gnat_error_node, gnat_entity,
-				size_diffop (size, orig_size));
-	  else if (is_component_type)
+	  if (is_component_type)
 	    post_error_ne_tree ("component of& padded{ by ^ bits}?",
 				gnat_entity, gnat_entity,
+				size_diffop (size, orig_size));
+	  else if (Present (gnat_error_node))
+	    post_error_ne_tree ("{^ }bits of & unused?",
+				gnat_error_node, gnat_entity,
 				size_diffop (size, orig_size));
 	}
     }
@@ -1860,6 +1897,9 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
       else
 	this_ada_size = this_size;
 
+      const bool variant_part = (TREE_CODE (type) == QUAL_UNION_TYPE);
+      const bool variant_part_at_zero = variant_part && integer_zerop (pos);
+
       /* Clear DECL_BIT_FIELD for the cases layout_decl does not handle.  */
       if (DECL_BIT_FIELD (field)
 	  && operand_equal_p (this_size, TYPE_SIZE (type), 0))
@@ -1901,9 +1941,7 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
       /* Clear DECL_BIT_FIELD_TYPE for a variant part at offset 0, it's simply
 	 not supported by the DECL_BIT_FIELD_REPRESENTATIVE machinery because
 	 the variant part is always the last field in the list.  */
-      if (DECL_INTERNAL_P (field)
-	  && TREE_CODE (TREE_TYPE (field)) == QUAL_UNION_TYPE
-	  && integer_zerop (pos))
+      if (variant_part_at_zero)
 	DECL_BIT_FIELD_TYPE (field) = NULL_TREE;
 
       /* If we still have DECL_BIT_FIELD set at this point, we know that the
@@ -1938,18 +1976,18 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 	case RECORD_TYPE:
 	  /* Since we know here that all fields are sorted in order of
 	     increasing bit position, the size of the record is one
-	     higher than the ending bit of the last field processed
-	     unless we have a rep clause, since in that case we might
-	     have a field outside a QUAL_UNION_TYPE that has a higher ending
-	     position.  So use a MAX in that case.  Also, if this field is a
-	     QUAL_UNION_TYPE, we need to take into account the previous size in
-	     the case of empty variants.  */
+	     higher than the ending bit of the last field processed,
+	     unless we have a variant part at offset 0, since in this
+	     case we might have a field outside the variant part that
+	     has a higher ending position; so use a MAX in this case.
+	     Also, if this field is a QUAL_UNION_TYPE, we need to take
+	     into account the previous size in the case of empty variants.  */
 	  ada_size
-	    = merge_sizes (ada_size, pos, this_ada_size,
-			   TREE_CODE (type) == QUAL_UNION_TYPE, rep_level > 0);
+	    = merge_sizes (ada_size, pos, this_ada_size, variant_part,
+			   variant_part_at_zero);
 	  size
-	    = merge_sizes (size, pos, this_size,
-			   TREE_CODE (type) == QUAL_UNION_TYPE, rep_level > 0);
+	    = merge_sizes (size, pos, this_size, variant_part,
+			   variant_part_at_zero);
 	  break;
 
 	default:
@@ -2230,13 +2268,12 @@ rest_of_record_type_compilation (tree record_type)
 /* Utility function of above to merge LAST_SIZE, the previous size of a record
    with FIRST_BIT and SIZE that describe a field.  SPECIAL is true if this
    represents a QUAL_UNION_TYPE in which case we must look for COND_EXPRs and
-   replace a value of zero with the old size.  If HAS_REP is true, we take the
+   replace a value of zero with the old size.  If MAX is true, we take the
    MAX of the end position of this field with LAST_SIZE.  In all other cases,
    we use FIRST_BIT plus SIZE.  Return an expression for the size.  */
 
 static tree
-merge_sizes (tree last_size, tree first_bit, tree size, bool special,
-	     bool has_rep)
+merge_sizes (tree last_size, tree first_bit, tree size, bool special, bool max)
 {
   tree type = TREE_TYPE (last_size);
   tree new_size;
@@ -2244,7 +2281,7 @@ merge_sizes (tree last_size, tree first_bit, tree size, bool special,
   if (!special || TREE_CODE (size) != COND_EXPR)
     {
       new_size = size_binop (PLUS_EXPR, first_bit, size);
-      if (has_rep)
+      if (max)
 	new_size = size_binop (MAX_EXPR, last_size, new_size);
     }
 
@@ -2253,11 +2290,11 @@ merge_sizes (tree last_size, tree first_bit, tree size, bool special,
 			    integer_zerop (TREE_OPERAND (size, 1))
 			    ? last_size : merge_sizes (last_size, first_bit,
 						       TREE_OPERAND (size, 1),
-						       1, has_rep),
+						       1, max),
 			    integer_zerop (TREE_OPERAND (size, 2))
 			    ? last_size : merge_sizes (last_size, first_bit,
 						       TREE_OPERAND (size, 2),
-						       1, has_rep));
+						       1, max));
 
   /* We don't need any NON_VALUE_EXPRs and they can confuse us (especially
      when fed through SUBSTITUTE_IN_EXPR) into thinking that a constant
@@ -3394,8 +3431,6 @@ begin_subprog_body (tree subprog_decl)
   for (param_decl = DECL_ARGUMENTS (subprog_decl); param_decl;
        param_decl = DECL_CHAIN (param_decl))
     DECL_CONTEXT (param_decl) = subprog_decl;
-
-  make_decl_rtl (subprog_decl);
 }
 
 /* Finish translating the current subprogram and set its BODY.  */
@@ -5877,6 +5912,7 @@ enum c_builtin_type
 				ARG6, ARG7) NAME,
 #define DEF_POINTER_TYPE(NAME, TYPE) NAME,
 #include "builtin-types.def"
+#include "ada-builtin-types.def"
 #undef DEF_PRIMITIVE_TYPE
 #undef DEF_FUNCTION_TYPE_0
 #undef DEF_FUNCTION_TYPE_1
@@ -6025,6 +6061,7 @@ install_builtin_function_types (void)
   builtin_types[(int) ENUM] = build_pointer_type (builtin_types[(int) TYPE]);
 
 #include "builtin-types.def"
+#include "ada-builtin-types.def"
 
 #undef DEF_PRIMITIVE_TYPE
 #undef DEF_FUNCTION_TYPE_0
@@ -6327,6 +6364,22 @@ handle_noreturn_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   return NULL_TREE;
 }
 
+/* Handle a "stack_protect" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_stack_protect_attribute (tree *node, tree name, tree, int,
+				bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 /* Handle a "noinline" attribute; arguments as in
    struct attribute_spec.handler.  */
 
@@ -6362,6 +6415,38 @@ static tree
 handle_noclone_attribute (tree *node, tree name,
 			  tree ARG_UNUSED (args),
 			  int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "no_icf" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_noicf_attribute (tree *node, tree name,
+			tree ARG_UNUSED (args),
+			int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "noipa" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_noipa_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
@@ -6459,6 +6544,166 @@ handle_type_generic_attribute (tree *node, tree ARG_UNUSED (name),
   /* Ensure we have a variadic function.  */
   gcc_assert (!prototype_p (*node) || stdarg_p (*node));
 
+  return NULL_TREE;
+}
+
+/* Handle a "flatten" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_flatten_attribute (tree *node, tree name,
+			  tree args ATTRIBUTE_UNUSED,
+			  int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    /* Do nothing else, just set the attribute.  We'll get at
+       it later with lookup_attribute.  */
+    ;
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "used" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_used_attribute (tree *pnode, tree name, tree ARG_UNUSED (args),
+		       int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  tree node = *pnode;
+
+  if (TREE_CODE (node) == FUNCTION_DECL
+      || (VAR_P (node) && TREE_STATIC (node))
+      || (TREE_CODE (node) == TYPE_DECL))
+    {
+      TREE_USED (node) = 1;
+      DECL_PRESERVE_P (node) = 1;
+      if (VAR_P (node))
+	DECL_READ_P (node) = 1;
+    }
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "cold" and attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_cold_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+		       int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL
+      || TREE_CODE (*node) == LABEL_DECL)
+    {
+      /* Attribute cold processing is done later with lookup_attribute.  */
+    }
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "hot" and attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_hot_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+		      int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL
+      || TREE_CODE (*node) == LABEL_DECL)
+    {
+      /* Attribute hot processing is done later with lookup_attribute.  */
+    }
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "target" attribute.  */
+
+static tree
+handle_target_attribute (tree *node, tree name, tree args, int flags,
+			 bool *no_add_attrs)
+{
+  /* Ensure we have a function type.  */
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+  else if (lookup_attribute ("target_clones", DECL_ATTRIBUTES (*node)))
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
+		   "with %qs attribute", name, "target_clones");
+      *no_add_attrs = true;
+    }
+  else if (!targetm.target_option.valid_attribute_p (*node, name, args, flags))
+    *no_add_attrs = true;
+
+  /* Check that there's no empty string in values of the attribute.  */
+  for (tree t = args; t != NULL_TREE; t = TREE_CHAIN (t))
+    {
+      tree value = TREE_VALUE (t);
+      if (TREE_CODE (value) == STRING_CST
+	  && TREE_STRING_LENGTH (value) == 1
+	  && TREE_STRING_POINTER (value)[0] == '\0')
+	{
+	  warning (OPT_Wattributes, "empty string in attribute %<target%>");
+	  *no_add_attrs = true;
+	}
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "target_clones" attribute.  */
+
+static tree
+handle_target_clones_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+			  int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  /* Ensure we have a function type.  */
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    {
+      if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (*node)))
+	{
+	  warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
+		   "with %qs attribute", name, "always_inline");
+	  *no_add_attrs = true;
+	}
+      else if (lookup_attribute ("target", DECL_ATTRIBUTES (*node)))
+	{
+	  warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
+		   "with %qs attribute", name, "target");
+	  *no_add_attrs = true;
+	}
+      else
+	/* Do not inline functions with multiple clone targets.  */
+	DECL_UNINLINABLE (*node) = 1;
+    }
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
   return NULL_TREE;
 }
 
@@ -6574,7 +6819,10 @@ static int flag_isoc94 = 0;
 static int flag_isoc99 = 0;
 static int flag_isoc11 = 0;
 
-/* Install what the common builtins.def offers.  */
+/* Install what the common builtins.def offers plus our local additions.
+
+   Note that ada-builtins.def is included first so that locally redefined
+   built-in functions take precedence over the commonly defined ones.  */
 
 static void
 install_builtin_functions (void)
@@ -6587,6 +6835,10 @@ install_builtin_functions (void)
                    builtin_types[(int) LIBTYPE],                        \
                    BOTH_P, FALLBACK_P, NONANSI_P,                       \
                    built_in_attributes[(int) ATTRS], IMPLICIT);
+#define DEF_ADA_BUILTIN(ENUM, NAME, TYPE, ATTRS)		\
+  DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_FRONTEND, TYPE, BT_LAST, \
+	       false, false, false, ATTRS, true, true)
+#include "ada-builtins.def"
 #include "builtins.def"
 }
 

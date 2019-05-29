@@ -6512,7 +6512,7 @@ cse_dump_path (struct cse_basic_block_data *data, int nsets, FILE *f)
   fprintf (f, ";; Following path with %d sets: ", nsets);
   for (path_entry = 0; path_entry < data->path_size; path_entry++)
     fprintf (f, "%d ", (data->path[path_entry].bb)->index);
-  fputc ('\n', dump_file);
+  fputc ('\n', f);
   fflush (f);
 }
 

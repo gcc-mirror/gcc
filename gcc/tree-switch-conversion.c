@@ -1284,7 +1284,11 @@ jump_table_cluster::can_be_handled (const vec<cluster *> &clusters,
       comparison_count += sc->m_range_p ? 2 : 1;
     }
 
-  return 100 * range <= max_ratio * comparison_count;
+  unsigned HOST_WIDE_INT lhs = 100 * range;
+  if (lhs < range)
+    return false;
+
+  return lhs <= max_ratio * comparison_count;
 }
 
 /* Return true if cluster starting at START and ending at END (inclusive)

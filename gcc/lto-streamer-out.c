@@ -782,7 +782,7 @@ DFS::DFS_write_tree_body (struct output_block *ob,
       /* Drop names that were created for anonymous entities.  */
       if (DECL_NAME (expr)
 	  && TREE_CODE (DECL_NAME (expr)) == IDENTIFIER_NODE
-	  && anon_aggrname_p (DECL_NAME (expr)))
+	  && IDENTIFIER_ANON_P (DECL_NAME (expr)))
 	;
       else
 	DFS_follow_tree_edge (DECL_NAME (expr));
@@ -1211,7 +1211,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
       /* Drop names that were created for anonymous entities.  */
       if (DECL_NAME (t)
 	  && TREE_CODE (DECL_NAME (t)) == IDENTIFIER_NODE
-	  && anon_aggrname_p (DECL_NAME (t)))
+	  && IDENTIFIER_ANON_P (DECL_NAME (t)))
 	;
       else
 	visit (DECL_NAME (t));
@@ -2029,6 +2029,7 @@ output_struct_function_base (struct output_block *ob, struct function *fn)
   bp_pack_value (&bp, fn->has_forced_label_in_static, 1);
   bp_pack_value (&bp, fn->calls_alloca, 1);
   bp_pack_value (&bp, fn->calls_setjmp, 1);
+  bp_pack_value (&bp, fn->calls_eh_return, 1);
   bp_pack_value (&bp, fn->has_force_vectorize_loops, 1);
   bp_pack_value (&bp, fn->has_simduid_loops, 1);
   bp_pack_value (&bp, fn->va_list_fpr_size, 8);

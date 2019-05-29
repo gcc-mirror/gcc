@@ -45,14 +45,14 @@ __asm__ ("\t.globl\t" #NAME "_asm\n\t"					\
 	 #NAME "_asm:\n\t"						\
 	 "lis 11,gparms@ha\n\t"						\
 	 "la 11,gparms@l(11)\n\t"					\
-	 "st 3,0(11)\n\t"						\
-	 "st 4,4(11)\n\t"						\
-	 "st 5,8(11)\n\t"						\
-	 "st 6,12(11)\n\t"						\
-	 "st 7,16(11)\n\t"						\
-	 "st 8,20(11)\n\t"						\
-	 "st 9,24(11)\n\t"						\
-	 "st 10,28(11)\n\t"						\
+	 "stw 3,0(11)\n\t"						\
+	 "stw 4,4(11)\n\t"						\
+	 "stw 5,8(11)\n\t"						\
+	 "stw 6,12(11)\n\t"						\
+	 "stw 7,16(11)\n\t"						\
+	 "stw 8,20(11)\n\t"						\
+	 "stw 9,24(11)\n\t"						\
+	 "stw 10,28(11)\n\t"						\
 	 "stfd 1,32(11)\n\t"						\
 	 "stfd 2,40(11)\n\t"						\
 	 "stfd 3,48(11)\n\t"						\

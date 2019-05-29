@@ -743,17 +743,18 @@ c_common_type (tree t1, tree t2)
     {
       if (code1 == VECTOR_TYPE || code2 == VECTOR_TYPE)
 	{
-	  error ("can%'t mix operands of decimal float and vector types");
+	  error ("cannot mix operands of decimal floating and vector types");
 	  return error_mark_node;
 	}
       if (code1 == COMPLEX_TYPE || code2 == COMPLEX_TYPE)
 	{
-	  error ("can%'t mix operands of decimal float and complex types");
+	  error ("cannot mix operands of decimal floating and complex types");
 	  return error_mark_node;
 	}
       if (code1 == REAL_TYPE && code2 == REAL_TYPE)
 	{
-	  error ("can%'t mix operands of decimal float and other float types");
+	  error ("cannot mix operands of decimal floating "
+		 "and other floating types");
 	  return error_mark_node;
 	}
     }
@@ -5253,13 +5254,13 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 			/* OK */;
 		      else if (unsigned_op2)
 			warning_at (op1_loc, OPT_Wsign_compare,
-				    "operand of ?: changes signedness from "
+				    "operand of %<?:%> changes signedness from "
 				    "%qT to %qT due to unsignedness of other "
 				    "operand", TREE_TYPE (orig_op1),
 				    TREE_TYPE (orig_op2));
 		      else
 			warning_at (op2_loc, OPT_Wsign_compare,
-				    "operand of ?: changes signedness from "
+				    "operand of %<?:%> changes signedness from "
 				    "%qT to %qT due to unsignedness of other "
 				    "operand", TREE_TYPE (orig_op2),
 				    TREE_TYPE (orig_op1));
@@ -7764,13 +7765,13 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 		 that is counted in the length of the constant.  */
 	      if (compare_tree_int (TYPE_SIZE_UNIT (type), len - unit) < 0)
 		pedwarn_init (init_loc, 0,
-			      ("initializer-string for array of chars "
-			       "is too long"));
+			      ("initializer-string for array of %qT "
+			       "is too long"), typ1);
 	      else if (warn_cxx_compat
 		       && compare_tree_int (TYPE_SIZE_UNIT (type), len) < 0)
 		warning_at (init_loc, OPT_Wc___compat,
-			    ("initializer-string for array chars "
-			     "is too long for C++"));
+			    ("initializer-string for array of %qT "
+			     "is too long for C++"), typ1);
 	      if (compare_tree_int (TYPE_SIZE_UNIT (type), len) < 0)
 		{
 		  unsigned HOST_WIDE_INT size
@@ -9888,7 +9889,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
       && integer_zerop (constructor_unfilled_index))
     {
       if (constructor_stack->replacement_value.value)
-	error_init (loc, "excess elements in char array initializer");
+	error_init (loc, "excess elements in %<char%> array initializer");
       constructor_stack->replacement_value = value;
       return;
     }
@@ -11937,7 +11938,7 @@ build_binary_op (location_t location, enum tree_code code,
       if (FLOAT_TYPE_P (type0) || FLOAT_TYPE_P (type1))
 	warning_at (location,
 		    OPT_Wfloat_equal,
-		    "comparing floating point with == or != is unsafe");
+		    "comparing floating point with %<==%> or %<!=%> is unsafe");
       /* Result of comparison is always int,
 	 but don't convert the args to int!  */
       build_type = integer_type_node;

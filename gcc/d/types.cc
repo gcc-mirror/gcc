@@ -239,7 +239,7 @@ fixup_anonymous_offset (tree fields, tree offset)
       /* Traverse all nested anonymous aggregates to update their offset.
 	 Set the anonymous decl offset to its first member.  */
       tree ftype = TREE_TYPE (fields);
-      if (TYPE_NAME (ftype) && anon_aggrname_p (TYPE_IDENTIFIER (ftype)))
+      if (TYPE_NAME (ftype) && IDENTIFIER_ANON_P (TYPE_IDENTIFIER (ftype)))
 	{
 	  tree vfields = TYPE_FIELDS (ftype);
 	  fixup_anonymous_offset (vfields, offset);
@@ -324,12 +324,7 @@ layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
       AnonDeclaration *ad = sym->isAnonDeclaration ();
       if (ad != NULL)
 	{
-	  /* Use a counter to create anonymous type names.  */
-	  static int anon_cnt = 0;
-	  char buf[32];
-	  sprintf (buf, anon_aggrname_format (), anon_cnt++);
-
-	  tree ident = get_identifier (buf);
+	  tree ident = make_anon_name ();
 	  tree type = make_node (ad->isunion ? UNION_TYPE : RECORD_TYPE);
 	  ANON_AGGR_TYPE_P (type) = 1;
 	  d_keep (type);

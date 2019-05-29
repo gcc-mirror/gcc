@@ -11,8 +11,8 @@ const char a3[3] = "12\0";
 const char a8[8] = "1234567\0";
 const char a9[9] = "12345678\0";
 
-const char ax[9] = "12345678\0\0\0\0";   /* { dg-warning "initializer-string for array of chars is too long" } */
-const char ay[9] = "\00012345678\0\0\0\0";   /* { dg-warning "initializer-string for array of chars is too long" } */
+const char ax[9] = "12345678\0\0\0\0";   /* { dg-warning "initializer-string for array of 'char' is too long" } */
+const char ay[9] = "\00012345678\0\0\0\0";   /* { dg-warning "initializer-string for array of 'char' is too long" } */
 
 
 int len1 (void)

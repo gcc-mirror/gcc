@@ -1663,7 +1663,7 @@ warn_for_omitted_condop (location_t location, tree cond)
       || (TREE_TYPE (cond) != NULL_TREE
 	  && TREE_CODE (TREE_TYPE (cond)) == BOOLEAN_TYPE))
       warning_at (location, OPT_Wparentheses,
-		"the omitted middle operand in ?: will always be %<true%>, "
+		"the omitted middle operand in %<?:%> will always be %<true%>, "
 		"suggest explicit middle operand");
 }
 
@@ -1762,7 +1762,7 @@ lvalue_error (location_t loc, enum lvalue_use use)
       error_at (loc, "lvalue required as unary %<&%> operand");
       break;
     case lv_asm:
-      error_at (loc, "lvalue required in asm statement");
+      error_at (loc, "lvalue required in %<asm%> statement");
       break;
     default:
       gcc_unreachable ();
