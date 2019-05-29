@@ -21889,21 +21889,21 @@
   "vpopcnt<ssemodesuffix>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}")
 
 ;; Save multiple registers out-of-line.
-(define_insn "save_multiple<mode>"
+(define_insn "*save_multiple<mode>"
   [(match_parallel 0 "save_multiple"
     [(use (match_operand:P 1 "symbol_operand"))])]
   "TARGET_SSE && TARGET_64BIT"
   "call\t%P1")
 
 ;; Restore multiple registers out-of-line.
-(define_insn "restore_multiple<mode>"
+(define_insn "*restore_multiple<mode>"
   [(match_parallel 0 "restore_multiple"
     [(use (match_operand:P 1 "symbol_operand"))])]
   "TARGET_SSE && TARGET_64BIT"
   "call\t%P1")
 
 ;; Restore multiple registers out-of-line and return.
-(define_insn "restore_multiple_and_return<mode>"
+(define_insn "*restore_multiple_and_return<mode>"
   [(match_parallel 0 "restore_multiple"
     [(return)
      (use (match_operand:P 1 "symbol_operand"))
@@ -21914,7 +21914,7 @@
 
 ;; Restore multiple registers out-of-line when hard frame pointer is used,
 ;; perform the leave operation prior to returning (from the function).
-(define_insn "restore_multiple_leave_return<mode>"
+(define_insn "*restore_multiple_leave_return<mode>"
   [(match_parallel 0 "restore_multiple"
     [(return)
      (use (match_operand:P 1 "symbol_operand"))
