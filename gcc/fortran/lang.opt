@@ -397,10 +397,6 @@ fblas-matmul-limit=
 Fortran RejectNegative Joined UInteger Var(flag_blas_matmul_limit) Init(30)
 -fblas-matmul-limit=<n>	Size of the smallest matrix for which matmul will use BLAS.
 
-fbroken-callers
-Fortran Var(flag_broken_callers) Init(1)
-Disallow tail call optimization when a calling routine may have omitted character lenghts.
-
 fcheck-array-temporaries
 Fortran
 Produce a warning at runtime if a array temporary has been created for a procedure argument.
@@ -765,6 +761,13 @@ Fortran Var(flag_short_enums)
 fsign-zero
 Fortran Var(flag_sign_zero) Init(1)
 Apply negative sign to zero values.
+
+ftail-call-workaround
+Frotran Alias(ftail-call-workaround=,1,0)
+
+ftail-call-workaround=
+Fortran RejectNegative Joined UInteger IntegerRange(0, 2) Var(flag_tail_call_workaround) Init(1)
+Disallow tail call optimization when a calling routine may have omitted character lenghts.
 
 funderscoring
 Fortran Var(flag_underscoring) Init(1)
