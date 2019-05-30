@@ -10609,7 +10609,8 @@ grokdeclarator (const cp_declarator *declarator,
      D1 ( parameter-declaration-clause) ...  */
   if (funcdef_flag && innermost_code != cdk_function)
     {
-      error ("function definition does not declare parameters");
+      error_at (declarator->id_loc,
+		"function definition does not declare parameters");
       return error_mark_node;
     }
 
@@ -10617,7 +10618,8 @@ grokdeclarator (const cp_declarator *declarator,
       && innermost_code != cdk_function
       && ! (ctype && !declspecs->any_specifiers_p))
     {
-      error ("declaration of %qD as non-function", dname);
+      error_at (declarator->id_loc,
+		"declaration of %qD as non-function", dname);
       return error_mark_node;
     }
 
@@ -10626,7 +10628,8 @@ grokdeclarator (const cp_declarator *declarator,
       if (UDLIT_OPER_P (dname)
 	  && innermost_code != cdk_function)
 	{
-	  error ("declaration of %qD as non-function", dname);
+	  error_at (declarator->id_loc,
+		    "declaration of %qD as non-function", dname);
 	  return error_mark_node;
 	}
 
@@ -10634,12 +10637,14 @@ grokdeclarator (const cp_declarator *declarator,
 	{
 	  if (typedef_p)
 	    {
-	      error ("declaration of %qD as %<typedef%>", dname);
+	      error_at (declarator->id_loc,
+			"declaration of %qD as %<typedef%>", dname);
 	      return error_mark_node;
 	    }
 	  else if (decl_context == PARM || decl_context == CATCHPARM)
 	    {
-	      error ("declaration of %qD as parameter", dname);
+	      error_at (declarator->id_loc,
+			"declaration of %qD as parameter", dname);
 	      return error_mark_node;
 	    }
 	}
