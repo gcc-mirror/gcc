@@ -2131,6 +2131,16 @@ extract_range_from_unary_expr (value_range_base *vr,
       tree inner_type = op0_type;
       tree outer_type = type;
 
+      /* Do not trust the range information when converting from a reference
+	 type to a integral type, since the reference might be a type-punned
+	 integer that could take the value zero.  */
+      if (TREE_CODE (inner_type) == REFERENCE_TYPE
+	  && !POINTER_TYPE_P (outer_type))
+	{
+	  vr->set_varying ();
+	  return;
+	}
+
       /* If the expression involves a pointer, we are only interested in
 	 determining if it evaluates to NULL [0, 0] or non-NULL (~[0, 0]).
 
