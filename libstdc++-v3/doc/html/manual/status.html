@@ -374,26 +374,25 @@ particular release.
       is subject to change at any time. Any use of
       <code class="classname">native_handle</code> is inherently non-portable and
       not guaranteed to work between major releases of GCC.
-      </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><code class="classname">thread</code>: The native handle type is
-            a typedef for <code class="code">__gthread_t</code> i.e. <code class="code">pthread_t</code>
-            when GCC is configured with the <code class="literal">posix</code> thread
-            model. The value of the native handle is undefined for a thread
+      </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="classname">thread</code></span></dt><dd>
+            The native handle type is a typedef for <code class="code">__gthread_t</code>
+            i.e. <code class="code">pthread_t</code> when GCC is configured with the
+            <code class="literal">posix</code> thread model.
+            The value of the native handle is undefined for a thread
             which is not joinable.
-         </p></li><li class="listitem"><p><code class="classname">mutex</code> and
-            <code class="classname">timed_mutex</code>:
+         </dd><dt><span class="term"><code class="classname">mutex</code>, </span><span class="term"><code class="classname">timed_mutex</code></span></dt><dd>
             The native handle type is <code class="code">__gthread_mutex_t*</code> i.e.
             <code class="code">pthread_mutex_t*</code> for the <code class="literal">posix</code>
             thread model.
-         </p></li><li class="listitem"><p><code class="classname">recursive_mutex</code> and
-         <code class="classname">recursive_timed_mutex</code>:
+         </dd><dt><span class="term"><code class="classname">recursive_mutex</code>, </span><span class="term"><code class="classname">recursive_timed_mutex</code></span></dt><dd>
             The native handle type is <code class="code">__gthread_recursive_mutex_t*</code>
             i.e. <code class="code">pthread_mutex_t*</code> for the <code class="literal">posix</code>
             thread model.
-         </p></li><li class="listitem"><p><code class="classname">condition_variable</code>: The native
-            handle type is <code class="code">__gthread_cond_t*</code> i.e.
+         </dd><dt><span class="term"><code class="classname">condition_variable</code></span></dt><dd>
+            The native handle type is <code class="code">__gthread_cond_t*</code> i.e.
             <code class="code">pthread_cond_t*</code> for the <code class="literal">posix</code>
             thread model.
-         </p></li></ul></div><p>
+         </dd></dl></div><p>
    </p><p>
       <span class="emphasis"><em>30.6.1 [futures.overview]/2</em></span>
       <code class="code">launch</code> is a scoped enumeration type with
@@ -945,7 +944,11 @@ and test for <code class="code">__STDCPP_MATH_SPEC_FUNCS__ &gt;= 201003L</code>.
       <code class="classname">variant</code> supports over-aligned types.
    </p><p>
       <span class="emphasis"><em>23.7.10 [variant.bad.access]</em></span>
-      <code class="code">what()</code> returns <code class="literal">"Unexpected index"</code>.
+      <code class="code">what()</code> returns one of the strings
+      <code class="literal">"std::get: variant is valueless"</code>,
+      <code class="literal">"std::get: wrong index for variant"</code>,
+      <code class="literal">"std::visit: variant is valueless"</code>,
+      or <code class="literal">"std::visit&lt;R&gt;: variant is valueless"</code>.
    </p><p>
       <span class="emphasis"><em>23.12.5.2 [memory.resource.pool.options]</em></span>
       Let S equal <code class="code">numeric_limits&lt;size_t&gt;::digits</code>.
@@ -998,7 +1001,7 @@ and test for <code class="code">__STDCPP_MATH_SPEC_FUNCS__ &gt;= 201003L</code>.
    </p><p>
       <span class="emphasis"><em>30.10.2.1 [fs.conform.9945]</em></span>
       The behavior of the filesystem library implementation will depend on
-      the target operating system. Some features will not be not supported
+      the target operating system. Some features will not be supported
       on some targets.
    </p><p>
       <span class="emphasis"><em>30.10.5 [fs.filesystem.syn]</em></span>

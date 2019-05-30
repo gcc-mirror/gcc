@@ -1,3 +1,12 @@
+2019-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Use <variablelist> for
+	documentation of implementation-defined types for [thread.req.native].
+	* doc/xml/manual/status_cxx2017.xml: Update documentation of
+	implementation-defined strings for [variant.bad.access]. Fix typo in
+	documentation of implementation-defined support for [fs.conform.9945].
+	* doc/html/*: Regenerate.
+
 2019-05-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/85494

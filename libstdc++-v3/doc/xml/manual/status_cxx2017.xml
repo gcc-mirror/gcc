@@ -1043,7 +1043,11 @@ and test for <code>__STDCPP_MATH_SPEC_FUNCS__ >= 201003L</code>.
 
    <para>
       <emphasis>23.7.10 [variant.bad.access]</emphasis>
-      <code>what()</code> returns <literal>"Unexpected index"</literal>.
+      <code>what()</code> returns one of the strings
+      <literal>"std::get: variant is valueless"</literal>,
+      <literal>"std::get: wrong index for variant"</literal>,
+      <literal>"std::visit: variant is valueless"</literal>,
+      or <literal>"std::visit&lt;R&gt;: variant is valueless"</literal>.
    </para>
 
    <para>
@@ -1117,7 +1121,7 @@ and test for <code>__STDCPP_MATH_SPEC_FUNCS__ >= 201003L</code>.
    <para>
       <emphasis>30.10.2.1 [fs.conform.9945]</emphasis>
       The behavior of the filesystem library implementation will depend on
-      the target operating system. Some features will not be not supported
+      the target operating system. Some features will not be supported
       on some targets.
    </para>
 
