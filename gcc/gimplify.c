@@ -116,6 +116,8 @@ enum gimplify_omp_var_data
   /* Flag for GOVD_LASTPRIVATE: conditional modifier.  */
   GOVD_LASTPRIVATE_CONDITIONAL = 0x800000,
 
+  GOVD_CONDTEMP = 0x1000000,
+
   GOVD_DATA_SHARE_CLASS = (GOVD_SHARED | GOVD_PRIVATE | GOVD_FIRSTPRIVATE
 			   | GOVD_LASTPRIVATE | GOVD_REDUCTION | GOVD_LINEAR
 			   | GOVD_LOCAL)
@@ -9527,6 +9529,11 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
     code = OMP_CLAUSE_LASTPRIVATE;
   else if (flags & (GOVD_ALIGNED | GOVD_NONTEMPORAL))
     return 0;
+  else if (flags & GOVD_CONDTEMP)
+    {
+      code = OMP_CLAUSE__CONDTEMP_;
+      gimple_add_tmp_var (decl);
+    }
   else
     gcc_unreachable ();
 
@@ -11523,6 +11530,36 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
     }
   else
     gimplify_seq_add_stmt (pre_p, gfor);
+
+  if (TREE_CODE (orig_for_stmt) == OMP_FOR)
+    {
+      struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
+      unsigned lastprivate_conditional = 0;
+      while (ctx
+	     && (ctx->region_type == ORT_TARGET_DATA
+		 || ctx->region_type == ORT_TASKGROUP))
+	ctx = ctx->outer_context;
+      if (ctx && (ctx->region_type & ORT_PARALLEL) != 0)
+	for (tree c = gimple_omp_for_clauses (gfor);
+	     c; c = OMP_CLAUSE_CHAIN (c))
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
+	      && OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c))
+	    ++lastprivate_conditional;
+      if (lastprivate_conditional)
+	{
+	  struct omp_for_data fd;
+	  omp_extract_for_data (gfor, &fd, NULL);
+	  tree type = build_array_type_nelts (unsigned_type_for (fd.iter_type),
+					      lastprivate_conditional);
+	  tree var = create_tmp_var_raw (type);
+	  tree c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE__CONDTEMP_);
+	  OMP_CLAUSE_DECL (c) = var;
+	  OMP_CLAUSE_CHAIN (c) = gimple_omp_for_clauses (gfor);
+	  gimple_omp_for_set_clauses (gfor, c);
+	  omp_add_variable (ctx, var, GOVD_CONDTEMP | GOVD_SEEN);
+	}
+    }
+
   if (ret != GS_ALL_DONE)
     return GS_ERROR;
   *expr_p = NULL_TREE;

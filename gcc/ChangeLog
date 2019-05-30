@@ -1,3 +1,33 @@
+2019-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (enum gimplify_omp_var_data): Add GOVD_CONDTEMP.
+	(gimplify_adjust_omp_clauses_1): Handle GOVD_CONDTEMP.
+	(gimplify_omp_for): If worksharing loop with lastprivate conditional
+	is nested inside of parallel region, add _condtemp_ clause to both.
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Ignore OMP_CLAUSE__CONDTEMP_ instead of
+	assertion failure.
+	* omp-general.h (struct omp_for_data): Add have_pointer_condtemp
+	member.
+	* omp-general.c (omp_extract_for_data): Compute it.
+	* omp-low.c (scan_sharing_clauses): Handle OMP_CLAUSE__CONDTEMP_.
+	(lower_rec_input_clauses): Likewise.
+	(lower_lastprivate_conditional_clauses): If OMP_CLAUSE__CONDTEMP_
+	clause is already present, just add one further one after it.
+	(lower_lastprivate_clauses): Handle cond_ptr with array type.
+	(lower_send_shared_vars): Clear _condtemp_ vars.
+	(lower_omp_1) <case GIMPLE_ASSIGN>: Handle target data like critical
+	or section or taskgroup.
+	* omp-expand.c (determine_parallel_type): Disallow combining only if
+	first OMP_CLAUSE__CONDTEMP_ has pointer type.  Disallow combining
+	of parallel sections if OMP_CLAUSE__CONDTEMP_ is present.
+	(expand_omp_for_generic, expand_omp_for_static_nochunk,
+	expand_omp_for_static_chunk, expand_omp_for): Use
+	fd->have_pointer_condtemp instead of fd->lastprivate_conditional to
+	determine if a special set of API routines are needed and if condtemp
+	needs to be initialized, while always initialize cond_var if
+	fd->lastprivate_conditional is non-zero.
+
 2019-05-30  Bill Schmidt  <wschmidt@linux.ibm.com>
 	    Michael Meissner  <meissner@linux.ibm.com>
 
