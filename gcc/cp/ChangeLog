@@ -1,3 +1,7 @@
+2019-05-30  Marek Polacek  <polacek@redhat.com>
+
+	* cp-tree.h (TYPE_HAS_NONTRIVIAL_DESTRUCTOR): Fix a typo.
+
 2019-05-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokdeclarator): Use declarator->id_loc in five

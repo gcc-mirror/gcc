@@ -4295,7 +4295,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* Nonzero for _TYPE node means that this type does not have a trivial
    destructor.  Therefore, destroying an object of this type will
    involve a call to a destructor.  This can apply to objects of
-   ARRAY_TYPE is the type of the elements needs a destructor.  */
+   ARRAY_TYPE if the type of the elements needs a destructor.  */
 #define TYPE_HAS_NONTRIVIAL_DESTRUCTOR(NODE) \
   (TYPE_LANG_FLAG_4 (NODE))
 
