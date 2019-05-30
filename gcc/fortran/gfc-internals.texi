@@ -119,6 +119,8 @@ not accurately reflect the status of the most recent GNU Fortran compiler.
 * Frontend Data Structures::
                            Data structures used by the frontend
 * Object Orientation::     Internals of Fortran 2003 OOP features.
+* Translating to GENERIC::
+                           Generating the intermediate language for later stages.
 * LibGFortran::            The LibGFortran Runtime Library.
 * GNU Free Documentation License::
                            How you can copy and share this manual.
@@ -724,6 +726,147 @@ operator call is replaced with an internally generated @code{GENERIC}
 type-bound procedure call to the respective definition and that call is
 further processed.
 
+@c ---------------------------------------------------------------------
+@c - Translating to GENERIC
+@c ---------------------------------------------------------------------
+
+@node Translating to GENERIC
+@chapter Generating the intermediate language for later stages.
+
+This chapter deals with the transformation of gfortran's frontend data
+structures to the intermediate language used by the later stages of
+the compiler, the so-called middle end.
+
+Data structures relating to this are found in the source files
+@file{trans*.h} and @file{trans-*.c}.
+
+@menu
+* Basic Data Structures::       Basic data structures.
+* Converting Expressions::      Converting expressions to tree.
+* Translating Statements::      Translating statements.
+* Accessing Declarations::      Accessing declarations.
+@end menu
+
+@node Basic Data Structures
+@section Basic data structures
+
+Gfortran creates GENERIC as an intermediate language for the
+middle-end. Details about GENERIC can be found in the GCC manual.
+
+The basic data structure of GENERIC is a @code{tree}. Everything in
+GENERIC is a @code{tree}, including types and statements.  Fortunately
+for the gfortran programmer, @code{tree} variables are
+garbage-collected, so doing memory management for them is not
+necessary.
+
+@code{tree} expressions are built using functions such as, for
+example, @code{fold_build2_loc}.  For two tree variables @code{a} and
+@code{b}, both of which have the type @code{gfc_arry_index_type},
+calculation @code{c = a * b} would be done by
+
+@smallexample
+c = fold_build2_loc (input_location, MULT_EXPR,
+                     gfc_array_index_type, a, b);
+@end smallexample
+
+The types have to agree, otherwise internal compiler errors will occur
+at a later stage.  Expressions can be converted to a different type
+using @code{fold_convert}.
+
+Accessing individual members in the @code{tree} structures should not
+be done. Rather, access should be done via macros.
+
+One basic data structure is the @code{stmtblock_t} struct. This is
+used for holding a list of statements, expressed as @code{tree}
+expressions.  If a block is created using @code{gfc_start_block}, it
+has its own scope for variables; if it is created using
+@code{gfc_init_block}, it does not have its own scope.
+
+It is possible to
+@itemize @bullet
+@item Add an expression to the end of a block using
+      @code{gfc_add_expr_to_block}
+@item Add an expression to the beginning of a block using
+      @code{void gfc_prepend_expr_to_block}
+@item Make a block into a single @code{tree} using
+      @code{gfc_finish_block}.  For example, this is needed to put the
+      contents of a block into the @code{if} or @code{else} branch of
+      a @code{COND_EXPR}.
+@end itemize
+
+Variables are also @code{tree} expressions, they can be created using
+@code{gfc_create_var}. Assigning to a variable can be done with
+@code{gfc_add_modify}.
+
+An example: Creating a default integer type variable in the current
+scope with the prefix ``everything'' in the @code{stmt_block}
+@code{block} and assigning the value 42 would be
+
+@smallexample
+tree var, *block;
+/* Initialize block somewhere here.  */
+var = gfc_create_var (integer_type_node, "everything");
+gfc_add_modify (block, var, build_int_cst (integer_type_node, 42));
+@end smallexample
+
+@node Converting Expressions
+@section Converting Expressons to tree
+
+Converting expressions to @code{tree} is done by functions called
+@code{gfc_conv_*}.
+
+The central data structure for a GENERIC expression is the
+@code{gfc_se} structure.  Its @code{expr} member is a @code{tree} that
+holds the value of the expression.  A @code{gfc_se} structure is
+initialized using @code{gfc_init_se}; it needs to be embedded in an
+outer @code{gfc_se}.
+
+Evaluating Fortran expressions often require things to be done before
+and after evaluation of the expression, for example code for the
+allocation of a temporary variable and its subsequent deallocation.
+Therefore, @code{gfc_se} contains the members @code{pre} and
+@code{post}, which point to @code{stmt_block} blocks for code that
+needs to be executed before and after evaluation of the expression.
+
+When using a local @code{gfc_se} to convert some expression, it is
+often necessary to add the generated @code{pre} and @code{post} blocks
+to the @code{pre} or @code{post} blocks of the outer @code{gfc_se}.
+Code like this (lifted from @file{trans-expr.c}) is fairly common:
+
+@smallexample
+gfc_se cont_se;
+tree cont_var;
+
+/* cont_var = is_contiguous (expr); .  */
+gfc_init_se (&cont_se, parmse);
+gfc_conv_is_contiguous_expr (&cont_se, expr);
+gfc_add_block_to_block (&se->pre, &(&cont_se)->pre);
+gfc_add_modify (&se->pre, cont_var, cont_se.expr);
+gfc_add_block_to_block (&se->pre, &(&cont_se)->post);
+@end smallexample
+
+Conversion functions which need a @code{gfc_se} structure will have a
+corresponding argument.
+
+@code{gfc_se} also contains pointers to a @code{gfc_ss} and a
+@code{gfc_loopinfo} structure.  These are needed by the scalarizer.
+
+@node Translating Statements
+@section Translating statements
+Translating statements to @code{tree} is done by functions called
+@code{gfc_trans_*}.  These functions usually get passed a
+@code{gfc_code} structure, evaluate any expressions and then
+return a @code{tree} structure.
+
+@node Accessing Declarations
+@section Accessing declarations
+
+@code{gfc_symbol}, @code{gfc_charlen} and other front-end structures
+contain a @code{backend_decl} variable, which contains the @code{tree}
+used for accessing that entity in the middle-end.
+
+Accessing declarations is usually done by functions called
+@code{gfc_get*}.
 
 @c ---------------------------------------------------------------------
 @c LibGFortran
