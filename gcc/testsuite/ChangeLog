@@ -1,4 +1,9 @@
-2019-05-31  Paolo Carlini  <paolo.carlini@oracle.com>
+2019-05-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/pr86257.c: Require native TLS support.
+	* gcc.target/i386/stack-prot-sym.c: Likewise.
+
+2019-05-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/cpp0x/alias-decl-18.C: Test location too.
 	* g++.dg/cpp0x/udlit-nofunc-neg.C: Likewise.
