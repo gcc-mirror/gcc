@@ -1,6 +1,14 @@
 2019-05-30  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-05-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/darwin.h: Reject -mfentry*.
+	* doc/sourcebuild.texi: Document mfentry target support.
+
+2019-05-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-05-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/82920

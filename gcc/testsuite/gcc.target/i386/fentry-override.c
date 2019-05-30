@@ -1,5 +1,6 @@
 /* Test -mfentry override */
 /* { dg-do compile { target { *-*-linux* && { ! ia32 } } } } */
+/* { dg-require-effective-target mfentry } */
 /* { dg-options "-mfentry" } */
 /* { dg-final { scan-assembler-not "__fentry__" } } */
 /* Origin: Andi Kleen */
