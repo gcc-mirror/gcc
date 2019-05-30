@@ -1,6 +1,23 @@
 2019-05-30  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-05-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/82920
+	* g++.dg/cet-notrack-1.C: Adjust scan assembler for Darwin.
+	* gcc.target/i386/cet-notrack-5a.c: Likewise.
+	* gcc.target/i386/cet-notrack-5b.c: Likewise.
+	* gcc.target/i386/cet-notrack-6b.c: Likewise.
+	* gcc.target/i386/cet-notrack-icf-1.c: Likewise.
+	* gcc.target/i386/cet-notrack-icf-2.c: Likewise.
+	* gcc.target/i386/cet-notrack-icf-3.c: Likewise.
+	* gcc.target/i386/cet-notrack-icf-4.c: Likewise.
+	* gcc.target/i386/cet-sjlj-3.c: Likewise.
+	* gcc.target/i386/cet-sjlj-5.c: Likewise.
+
+2019-05-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-05-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/82920
