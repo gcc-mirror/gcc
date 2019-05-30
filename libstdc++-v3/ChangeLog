@@ -1,5 +1,12 @@
 2019-05-30  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/diagnostics.xml: Update list of headers that define
+	exception classes.
+	* doc/xml/manual/support.xml: Rewrite advice around NULL. Rewrite
+	section about new/delete overloads. Improve section on verbose
+	terminate handler.
+	* doc/html/*: Regenerate.
+
 	* doc/xml/manual/status_cxx2020.xml: Add feature-test macro for
 	P0811R3. Change status of P1353R0.
 	* doc/html/*: Regenerate.
