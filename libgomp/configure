@@ -653,6 +653,7 @@ link_gomp
 XLDFLAGS
 XCFLAGS
 config_path
+CPU_COUNT
 LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_FALSE
 LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE
 LIBGOMP_BUILD_VERSIONED_SHLIB_GNU_FALSE
@@ -11393,7 +11394,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11396 "configure"
+#line 11397 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11499,7 +11500,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11502 "configure"
+#line 11503 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15376,7 +15377,7 @@ fi
 
 # Plugins for offload execution, configure.ac fragment.  -*- mode: autoconf -*-
 #
-# Copyright (C) 2014-2018 Free Software Foundation, Inc.
+# Copyright (C) 2014-2019 Free Software Foundation, Inc.
 #
 # Contributed by Mentor Embedded.
 #
@@ -15824,8 +15825,7 @@ for ac_func in aligned_alloc posix_memalign memalign _aligned_malloc
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
-eval as_val=\$$as_ac_var
-   if test "x$as_val" = x""yes; then :
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
   cat >>confdefs.h <<_ACEOF
 #define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
 _ACEOF
@@ -16904,6 +16904,101 @@ if test $enable_symvers = gnu; then
 $as_echo "#define LIBGOMP_GNU_SYMBOL_VERSIONING 1" >>confdefs.h
 
 fi
+
+# Determine cpu count to limit testsuite parallelism.
+                  { $as_echo "$as_me:${as_lineno-$LINENO}: checking the number of available CPUs" >&5
+$as_echo_n "checking the number of available CPUs... " >&6; }
+      CPU_COUNT="0"
+
+      # Try generic methods
+
+      # 'getconf' is POSIX utility, but '_NPROCESSORS_ONLN' and
+      # 'NPROCESSORS_ONLN' are platform-specific
+      command -v getconf >/dev/null 2>&1 && \
+        CPU_COUNT=`getconf _NPROCESSORS_ONLN 2>/dev/null || getconf NPROCESSORS_ONLN 2>/dev/null` || CPU_COUNT="0"
+      if test "$CPU_COUNT" -gt "0" 2>/dev/null || ! command -v nproc >/dev/null 2>&1; then :
+  : # empty
+else
+          # 'nproc' is part of GNU Coreutils and is widely available
+        CPU_COUNT=`OMP_NUM_THREADS='' nproc 2>/dev/null` || CPU_COUNT=`nproc 2>/dev/null` || CPU_COUNT="0"
+
+fi
+      if test "$CPU_COUNT" -gt "0" 2>/dev/null; then :
+  : # empty
+else
+          # Try platform-specific preferred methods
+        case $host_os in #(
+            *linux*) :
+    CPU_COUNT=`lscpu -p 2>/dev/null | $EGREP -e '^[0-9]+,' -c` || CPU_COUNT="0" ;; #(
+            *darwin*) :
+    CPU_COUNT=`sysctl -n hw.logicalcpu 2>/dev/null` || CPU_COUNT="0" ;; #(
+            freebsd*) :
+    command -v sysctl >/dev/null 2>&1 && CPU_COUNT=`sysctl -n kern.smp.cpus 2>/dev/null` || CPU_COUNT="0" ;; #(
+            netbsd*) :
+    command -v sysctl >/dev/null 2>&1 && CPU_COUNT=`sysctl -n hw.ncpuonline 2>/dev/null` || CPU_COUNT="0" ;; #(
+            solaris*) :
+    command -v psrinfo >/dev/null 2>&1 && CPU_COUNT=`psrinfo 2>/dev/null | $EGREP -e '^[0-9].*on-line' -c 2>/dev/null` || CPU_COUNT="0" ;; #(
+            mingw*) :
+    CPU_COUNT=`ls -qpU1 /proc/registry/HKEY_LOCAL_MACHINE/HARDWARE/DESCRIPTION/System/CentralProcessor/ 2>/dev/null | $EGREP -e '^[0-9]+/' -c` || CPU_COUNT="0" ;; #(
+            msys*) :
+    CPU_COUNT=`ls -qpU1 /proc/registry/HKEY_LOCAL_MACHINE/HARDWARE/DESCRIPTION/System/CentralProcessor/ 2>/dev/null | $EGREP -e '^[0-9]+/' -c` || CPU_COUNT="0" ;; #(
+            cygwin*) :
+    CPU_COUNT=`ls -qpU1 /proc/registry/HKEY_LOCAL_MACHINE/HARDWARE/DESCRIPTION/System/CentralProcessor/ 2>/dev/null | $EGREP -e '^[0-9]+/' -c` || CPU_COUNT="0"         ;; #(
+  *) :
+     ;;
+esac
+fi
+      if test "$CPU_COUNT" -gt "0" 2>/dev/null || ! command -v sysctl >/dev/null 2>&1; then :
+  : # empty
+else
+          # Try less preferred generic method
+        # 'hw.ncpu' exist on many platforms, but not on GNU/Linux
+        CPU_COUNT=`sysctl -n hw.ncpu 2>/dev/null` || CPU_COUNT="0"
+
+fi
+      if test "$CPU_COUNT" -gt "0" 2>/dev/null; then :
+  : # empty
+else
+        # Try platform-specific fallback methods
+      # They can be less accurate and slower then preferred methods
+        case $host_os in #(
+            *linux*) :
+    CPU_COUNT=`$EGREP -e '^processor' -c /proc/cpuinfo 2>/dev/null` || CPU_COUNT="0" ;; #(
+            *darwin*) :
+    CPU_COUNT=`system_profiler SPHardwareDataType 2>/dev/null | $EGREP -i -e 'number of cores:'|cut -d : -f 2 -s|tr -d ' '` || CPU_COUNT="0" ;; #(
+            freebsd*) :
+    CPU_COUNT=`dmesg 2>/dev/null| $EGREP -e '^cpu[0-9]+: '|sort -u|$EGREP -e '^' -c` || CPU_COUNT="0" ;; #(
+            netbsd*) :
+    CPU_COUNT=`command -v cpuctl >/dev/null 2>&1 && cpuctl list 2>/dev/null| $EGREP -e '^[0-9]+ .* online ' -c` || \
+                           CPU_COUNT=`dmesg 2>/dev/null| $EGREP -e '^cpu[0-9]+ at'|sort -u|$EGREP -e '^' -c` || CPU_COUNT="0" ;; #(
+            solaris*) :
+    command -v kstat >/dev/null 2>&1 && CPU_COUNT=`kstat -m cpu_info -s state -p 2>/dev/null | $EGREP -c -e 'on-line'` || \
+                           CPU_COUNT=`kstat -m cpu_info 2>/dev/null | $EGREP -c -e 'module: cpu_info'` || CPU_COUNT="0" ;; #(
+            mingw*) :
+    if CPU_COUNT=`reg query 'HKLM\\Hardware\\Description\\System\\CentralProcessor' 2>/dev/null | $EGREP -e '\\\\[0-9]+$' -c`; then :
+                          : # empty
+else
+  test "$NUMBER_OF_PROCESSORS" -gt "0" 2>/dev/null && CPU_COUNT="$NUMBER_OF_PROCESSORS"
+fi ;; #(
+            msys*) :
+    test "$NUMBER_OF_PROCESSORS" -gt "0" 2>/dev/null && CPU_COUNT="$NUMBER_OF_PROCESSORS" ;; #(
+            cygwin*) :
+    test "$NUMBER_OF_PROCESSORS" -gt "0" 2>/dev/null && CPU_COUNT="$NUMBER_OF_PROCESSORS"         ;; #(
+  *) :
+     ;;
+esac
+fi
+      if test "x$CPU_COUNT" != "x0" && test "$CPU_COUNT" -gt 0 2>/dev/null; then :
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CPU_COUNT" >&5
+$as_echo "$CPU_COUNT" >&6; }
+
+else
+                        CPU_COUNT="1"
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: unable to detect (assuming 1)" >&5
+$as_echo "unable to detect (assuming 1)" >&6; }
+
+fi
+
 
 # Get target configury.
 . ${srcdir}/configure.tgt

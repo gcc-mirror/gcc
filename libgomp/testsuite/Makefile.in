@@ -91,6 +91,7 @@ target_triplet = @target@
 subdir = testsuite
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/ax_count_cpus.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../config/futex.m4 \
@@ -143,6 +144,7 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
+CPU_COUNT = @CPU_COUNT@
 CUDA_DRIVER_INCLUDE = @CUDA_DRIVER_INCLUDE@
 CUDA_DRIVER_LIB = @CUDA_DRIVER_LIB@
 CYGPATH_W = @CYGPATH_W@
@@ -521,11 +523,11 @@ distclean-DEJAGNU:
 distclean-am: distclean-DEJAGNU
 check-am:
 	@if test -n "$(filter -j%, $(MFLAGS))"; then \
-	  num_cpus=1; \
+	  num_cpus=@CPU_COUNT@; \
 	  if type -p getconf 2>/dev/null >/dev/null; then \
 	    num_cpus=`getconf _NPROCESSORS_ONLN 2>/dev/null`; \
 	    case "$$num_cpus" in \
-	      '' | 0* | *[!0-9]*) num_cpus=1;; \
+	      '' | 0* | *[!0-9]*) num_cpus=@CPU_COUNT@;; \
 	    esac; \
 	  fi; \
 	  if test $$num_cpus -gt 8 && test -z "$$OMP_NUM_THREADS"; then \
