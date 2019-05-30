@@ -1,3 +1,7 @@
+2019-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* lang.opt (ftail-call-workaround=): Fix a typo - lenghts to lengths.
+
 2019-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/90329

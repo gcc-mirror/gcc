@@ -1,3 +1,8 @@
+2019-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-predcom.c (is_inv_store_elimination_chain): Fix a typo - lenght
+	to length.
+
 2019-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/90329
