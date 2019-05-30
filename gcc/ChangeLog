@@ -1,3 +1,18 @@
+2019-05-30  Bill Schmidt  <wschmidt@linux.ibm.com>
+	    Michael Meissner  <meissner@linux.ibm.com>
+
+	* rs6000-cpus.def (OTHER_FUSION_MASKS): New #define.
+	(ISA_3_0_MASKS_SERVER): Mask off OTHER_FUSION_MASKS.
+	(ISA_3_0_MASKS_IEEE): Remove OPTION_MASK_DIRECT_MOVE.
+	(ISA_FUTURE_MASKS_SERVER): Add OPTION_MASK_PREFIXED_ADDR.
+	(OTHER_FUTURE_MASKS): Likewise.
+	(POWERPC_MASKS): Likewise.
+	* rs6000.c (rs6000_option_override_internal): Error if -mpcrel is
+	specified without -mprefixed-addr or -mcpu=future.  Error if
+	-mprefixed-addr is specified without -mcpu=future.
+	(rs6000_opt_masks): Add entry for prefixed-addr.
+	* rs6000.opt (mprefixed-addr): New option.
+
 2019-05-30  Sam Tebbs  <sam.tebbs@arm.com>
 
 	* aarch64/aarch64.c (aarch64_post_cfi_startproc): Add 
