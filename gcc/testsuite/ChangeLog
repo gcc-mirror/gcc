@@ -1,3 +1,7 @@
+2019-05-30  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+	* gcc.target/aarch64/sve/fabd_1.c: New.
+
 2019-05-30  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/i386/pr86257.c: Require native TLS support.

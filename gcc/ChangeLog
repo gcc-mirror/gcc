@@ -1,3 +1,7 @@
+2019-05-30  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+	* config/aarch64/aarch64-sve.md (*fabd<mode>3): New.
+
 2019-05-30  Bill Schmidt  <wschmidt@linux.ibm.com>
 	    Michael Meissner  <meissner@linux.ibm.com>
 
