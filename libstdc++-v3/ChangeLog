@@ -1,3 +1,12 @@
+2019-05-30  Nina Dinka Ranns  <dinka.ranns@gmail.com>
+
+	LWG2788 basic_string spurious use of a default constructible allocator
+	* include/bits/basic_string.tcc [_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::_M_replace_dispatch): Construct temporary string with
+	the current allocator.
+	* testsuite/21_strings/basic_string/allocator/char/lwg2788.cc: New.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/lwg2788.cc: New.
+
 2019-05-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/diagnostics.xml: Update list of headers that define
