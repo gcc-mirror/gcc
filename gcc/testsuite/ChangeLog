@@ -1,6 +1,28 @@
 2019-05-30  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-05-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/82920
+	* gcc.target/i386/cet-sjlj-6b.c: Require effective target x32.
+	* gcc.target/i386/pr52146.c: Likewise.
+	* gcc.target/i386/pr52698.c: Likewise.
+	* gcc.target/i386/pr52857-1.c: Likewise.
+	* gcc.target/i386/pr52857-2.c: Likewise.
+	* gcc.target/i386/pr52876.c: Likewise.
+	* gcc.target/i386/pr53698.c: Likewise.
+	* gcc.target/i386/pr54157.c: Likewise.
+	* gcc.target/i386/pr55049-1.c: Likewise.
+	* gcc.target/i386/pr55093.c: Likewise.
+	* gcc.target/i386/pr55116-1.c: Likewise.
+	* gcc.target/i386/pr55116-2.c: Likewise.
+	* gcc.target/i386/pr55597.c: Likewise.
+	* gcc.target/i386/pr59929.c: Likewise.
+	* gcc.target/i386/pr66470.c: Likewise.
+
+2019-05-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-05-12  Iain Sandoe  <iain@sandoe.co.uk>
 	    Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
