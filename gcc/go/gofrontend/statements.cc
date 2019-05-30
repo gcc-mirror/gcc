@@ -2682,8 +2682,6 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
 
   gogo->add_conversions_in_block(b);
 
-  gogo->flatten_block(function, b);
-
   if (may_call_recover
       || recover_arg != NULL
       || this->classification() == STATEMENT_GO)
@@ -2706,6 +2704,8 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
 	    ce->set_recover_arg(recover_arg);
 	}
     }
+
+  gogo->flatten_block(function, b);
 
   // That is all the thunk has to do.
   gogo->finish_function(location);
