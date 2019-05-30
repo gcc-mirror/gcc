@@ -28583,6 +28583,20 @@ ix86_nopic_noplt_attribute_p (rtx call_op)
   return false;
 }
 
+/* Helper to output the jmp/call.  */
+static void
+ix86_output_jmp_thunk_or_indirect (const char *thunk_name, const int regno)
+{
+  if (thunk_name != NULL)
+    {
+      fprintf (asm_out_file, "\tjmp\t");
+      assemble_name (asm_out_file, thunk_name);
+      putc ('\n', asm_out_file);
+    }
+  else
+    output_indirect_thunk (regno);
+}
+
 /* Output indirect branch via a call and return thunk.  CALL_OP is a
    register which contains the branch target.  XASM is the assembly
    template for CALL_OP.  Branch is a tail call if SIBCALL_P is true.
@@ -28621,17 +28635,14 @@ ix86_output_indirect_branch_via_reg (rtx call_op, bool sibcall_p)
     thunk_name = NULL;
 
   if (sibcall_p)
-    {
-      if (thunk_name != NULL)
-	fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
-      else
-	output_indirect_thunk (regno);
-    }
+     ix86_output_jmp_thunk_or_indirect (thunk_name, regno);
   else
     {
       if (thunk_name != NULL)
 	{
-	  fprintf (asm_out_file, "\tcall\t%s\n", thunk_name);
+	  fprintf (asm_out_file, "\tcall\t");
+	  assemble_name (asm_out_file, thunk_name);
+	  putc ('\n', asm_out_file);
 	  return;
 	}
 
@@ -28652,10 +28663,7 @@ ix86_output_indirect_branch_via_reg (rtx call_op, bool sibcall_p)
 
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel1);
 
-      if (thunk_name != NULL)
-	fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
-      else
-	output_indirect_thunk (regno);
+     ix86_output_jmp_thunk_or_indirect (thunk_name, regno);
 
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel2);
 
@@ -28712,10 +28720,7 @@ ix86_output_indirect_branch_via_push (rtx call_op, const char *xasm,
   if (sibcall_p)
     {
       output_asm_insn (push_buf, &call_op);
-      if (thunk_name != NULL)
-	fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
-      else
-	output_indirect_thunk (regno);
+      ix86_output_jmp_thunk_or_indirect (thunk_name, regno);
     }
   else
     {
@@ -28771,10 +28776,7 @@ ix86_output_indirect_branch_via_push (rtx call_op, const char *xasm,
 
       output_asm_insn (push_buf, &call_op);
 
-      if (thunk_name != NULL)
-	fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
-      else
-	output_indirect_thunk (regno);
+      ix86_output_jmp_thunk_or_indirect (thunk_name, regno);
 
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel2);
 
@@ -28873,7 +28875,9 @@ ix86_output_function_return (bool long_p)
 	  indirect_thunk_name (thunk_name, INVALID_REGNUM, need_prefix,
 			       true);
 	  indirect_return_needed |= need_thunk;
-	  fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
+	  fprintf (asm_out_file, "\tjmp\t");
+	  assemble_name (asm_out_file, thunk_name);
+	  putc ('\n', asm_out_file);
 	}
       else
 	output_indirect_thunk (INVALID_REGNUM);
@@ -28913,7 +28917,9 @@ ix86_output_indirect_function_return (rtx ret_op)
 	      indirect_return_via_cx = true;
 	      indirect_thunks_used |= 1 << CX_REG;
 	    }
-	  fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
+	  fprintf (asm_out_file, "\tjmp\t");
+	  assemble_name (asm_out_file, thunk_name);
+	  putc ('\n', asm_out_file);
 	}
       else
 	output_indirect_thunk (regno);
