@@ -168,6 +168,7 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
   fd->have_nowait = distribute || simd;
   fd->have_ordered = false;
   fd->have_reductemp = false;
+  fd->have_pointer_condtemp = false;
   fd->lastprivate_conditional = 0;
   fd->tiling = NULL_TREE;
   fd->collapse = 1;
@@ -225,6 +226,10 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
       case OMP_CLAUSE_LASTPRIVATE:
 	if (OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (t))
 	  fd->lastprivate_conditional++;
+	break;
+      case OMP_CLAUSE__CONDTEMP_:
+	if (POINTER_TYPE_P (TREE_TYPE (OMP_CLAUSE_DECL (t))))
+	  fd->have_pointer_condtemp = true;
 	break;
       default:
 	break;
