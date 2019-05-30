@@ -1,3 +1,13 @@
+2019-05-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Call AX_COUNT_CPUS.
+	Substitute CPU_COUNT.
+	* testsuite/Makefile.am (check-am): Use CPU_COUNT as processor
+	count fallback.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* Makefile.in, testsuite/Makefile.in: Regenerate.
+
 2019-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c-c++-common/lastprivate_conditional_4.c: Rename

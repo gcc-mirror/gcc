@@ -1,3 +1,7 @@
+2019-05-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* ax_count_cpus.m4: New file.
+
 2019-05-02  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/85574
