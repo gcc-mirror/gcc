@@ -1,3 +1,8 @@
+2019-05-30  Martin Liska  <mliska@suse.cz>
+
+	* gdbinit.in: Fix 'ptc' command.  Add trt
+	that prints TREE_TYPE($).
+
 2019-05-29  Bill Schmidt  <wschmidt@linux.ibm.com>
 	    Alan Modra  <amodra@gmail.com>
 
