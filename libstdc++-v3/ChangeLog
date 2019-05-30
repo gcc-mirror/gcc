@@ -1,5 +1,9 @@
 2019-05-30  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2020.xml: Add feature-test macro for
+	P0811R3. Change status of P1353R0.
+	* doc/html/*: Regenerate.
+
 	* doc/xml/manual/status_cxx2011.xml: Use <variablelist> for
 	documentation of implementation-defined types for [thread.req.native].
 	* doc/xml/manual/status_cxx2017.xml: Update documentation of
