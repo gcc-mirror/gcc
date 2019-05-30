@@ -1,3 +1,14 @@
+2019-05-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/alias-decl-18.C: Test location too.
+	* g++.dg/cpp0x/udlit-nofunc-neg.C: Likewise.
+	* g++.dg/parse/crash59.C: Likewise.
+	* g++.dg/parse/error38.C: Likewise.
+	* g++.dg/parse/error39.C: Likewise.
+	* g++.dg/template/crash31.C: Likewise.
+	* g++.dg/template/operator8.C: Likewise.
+	* g++.dg/template/operator9.C: Likewise.
+
 2019-05-29  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* gcc.target/powerpc/notoc-direct-1.c: New.
