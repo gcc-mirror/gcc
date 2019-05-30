@@ -1,3 +1,9 @@
+2019-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Fix typo in documentation of
+	implementation-defined support for [fs.conform.9945].
+	* doc/html/*: Regenerate.
+
 2019-05-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90634
