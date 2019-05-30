@@ -21,26 +21,36 @@
   <section xml:id="std.diagnostics.exceptions.api"><info><title>API Reference</title></info>
     
     <para>
-      All exception objects are defined in one of the standard header
-      files: <filename>exception</filename>,
-      <filename>stdexcept</filename>, <filename>new</filename>, and
-      <filename>typeinfo</filename>.
+      Most exception classes are defined in one of the standard headers
+      <filename class="headerfile">&lt;exception&gt;</filename>,
+      <filename class="headerfile">&lt;stdexcept&gt;</filename>,
+      <filename class="headerfile">&lt;new&gt;</filename>, and
+      <filename class="headerfile">&lt;typeinfo&gt;</filename>.
+      The C++ 2011 revision of the standard added more exception types
+      in the headers
+      <filename class="headerfile">&lt;functional&gt;</filename>,
+      <filename class="headerfile">&lt;future&gt;</filename>,
+      <filename class="headerfile">&lt;regex&gt;</filename>, and
+      <filename class="headerfile">&lt;system_error&gt;</filename>.
+      The C++ 2017 revision of the standard added more exception types
+      in the headers
+      <filename class="headerfile">&lt;any&gt;</filename>,
+      <filename class="headerfile">&lt;filesystem&gt;</filename>,
+      <filename class="headerfile">&lt;optional&gt;</filename>, and
+      <filename class="headerfile">&lt;variant&gt;</filename>.
     </para>
 
     <para>
-      The base exception object is <classname>exception</classname>,
-      located in <filename>exception</filename>. This object has no
-      <classname>string</classname> member.
+      All exceptions thrown by the library have a base class of type
+      <classname>std::exception</classname>,
+      defined in <filename class="headerfile">&lt;exception&gt;</filename>.
+      This type has no <classname>std::string</classname> member.
     </para>
 
     <para>
       Derived from this are several classes that may have a
-      <classname>string</classname> member: a full hierarchy can be
+      <classname>std::string</classname> member. A full hierarchy can be
       found in the source documentation.
-    </para>
-    
-    <para>
-      Full API details.
     </para>
     
     <!-- Doxygen XML: api/group__exceptions.xml -->
