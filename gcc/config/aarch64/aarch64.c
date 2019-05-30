@@ -15370,7 +15370,7 @@ aarch64_declare_function_name (FILE *stream, const char* name,
 void
 aarch64_post_cfi_startproc (FILE *f, tree ignored ATTRIBUTE_UNUSED)
 {
-  if (aarch64_return_address_signing_enabled ()
+  if (!cfun->is_thunk && aarch64_return_address_signing_enabled ()
       && aarch64_ra_sign_key == AARCH64_KEY_B)
 	asm_fprintf (f, "\t.cfi_b_key_frame\n");
 }
