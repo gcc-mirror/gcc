@@ -3367,6 +3367,9 @@ Zero
 @item P
 Constant whose negation is a signed 16-bit constant
 
+@item eI
+Signed 34-bit integer constant if prefixed instructions are supported.
+
 @item G
 Floating point constant that can be loaded into a register with one
 instruction per word

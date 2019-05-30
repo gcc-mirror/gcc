@@ -2502,3 +2502,17 @@ extern GTY(()) tree rs6000_builtin_decls[RS6000_BUILTIN_COUNT];
 #if (GCC_VERSION >= 3000)
 #pragma GCC poison TARGET_FLOAT128 OPTION_MASK_FLOAT128 MASK_FLOAT128
 #endif
+
+/* Whether a given VALUE is a valid 16- or 34-bit signed offset.  EXTRA is the
+   amount that we can't touch at the high end of the range (typically if the
+   address is split into smaller addresses, the extra covers the addresses
+   which might be generated when the insn is split).  */
+#define SIGNED_16BIT_OFFSET_P(VALUE, EXTRA)				\
+  IN_RANGE (VALUE,							\
+	    -(HOST_WIDE_INT_1 << 15),					\
+	    (HOST_WIDE_INT_1 << 15) - 1 - (EXTRA))
+
+#define SIGNED_34BIT_OFFSET_P(VALUE, EXTRA)				\
+  IN_RANGE (VALUE,							\
+	    -(HOST_WIDE_INT_1 << 33),					\
+	    (HOST_WIDE_INT_1 << 33) - 1 - (EXTRA))

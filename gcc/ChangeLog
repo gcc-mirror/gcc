@@ -1,3 +1,12 @@
+2019-05-30  Bill Schmidt  <wschmidt@linux.ibm.com>
+	    Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/constraints.md (eI): New constraint.
+	* config/rs6000/predicates.md (cint34_operand): New predicate.
+	* config/rs6000/rs6000.h (SIGNED_16BIT_OFFSET_P): New #define.
+	(SIGNED_34BIT_OFFSET_P): Likewise.
+	* doc/md.texi (eI): Document constraint.
+
 2019-05-30  Sylvia Taylor  <sylvia.taylor@arm.com>
 
 	* config/aarch64/aarch64-sve.md (*fabd<mode>3): New.
