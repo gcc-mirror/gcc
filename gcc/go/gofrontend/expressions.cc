@@ -10432,7 +10432,8 @@ Call_expression::do_flatten(Gogo* gogo, Named_object*,
 
   // Lower to compiler intrinsic if possible.
   Func_expression* fe = this->fn_->func_expression();
-  if (fe != NULL
+  if (!this->is_concurrent_ && !this->is_deferred_
+      && fe != NULL
       && (fe->named_object()->is_function_declaration()
           || fe->named_object()->is_function()))
     {
@@ -10470,6 +10471,73 @@ Call_expression::intrinsify(Gogo* gogo,
 
   int int_size = int_type->named_type()->real_type()->integer_type()->bits() / 8;
   int ptr_size = uintptr_type->named_type()->real_type()->integer_type()->bits() / 8;
+
+  if (package == "sync/atomic")
+    {
+      // sync/atomic functions and runtime/internal/atomic functions
+      // are very similar. In order not to duplicate code, we just
+      // redirect to the latter and let the code below to handle them.
+      // In case there is no equivalent functions (slight variance
+      // in types), we just make an artificial name (begin with '$').
+      // Note: no StorePointer, SwapPointer, and CompareAndSwapPointer,
+      // as they need write barriers.
+      if (name == "LoadInt32")
+        name = "$Loadint32";
+      else if (name == "LoadInt64")
+        name = "Loadint64";
+      else if (name == "LoadUint32")
+        name = "Load";
+      else if (name == "LoadUint64")
+        name = "Load64";
+      else if (name == "LoadUintptr")
+        name = "Loaduintptr";
+      else if (name == "LoadPointer")
+        name = "Loadp";
+      else if (name == "StoreInt32")
+        name = "$Storeint32";
+      else if (name == "StoreInt64")
+        name = "$Storeint64";
+      else if (name == "StoreUint32")
+        name = "Store";
+      else if (name == "StoreUint64")
+        name = "Store64";
+      else if (name == "StoreUintptr")
+        name = "Storeuintptr";
+      else if (name == "AddInt32")
+        name = "$Xaddint32";
+      else if (name == "AddInt64")
+        name = "Xaddint64";
+      else if (name == "AddUint32")
+        name = "Xadd";
+      else if (name == "AddUint64")
+        name = "Xadd64";
+      else if (name == "AddUintptr")
+        name = "Xadduintptr";
+      else if (name == "SwapInt32")
+        name = "$Xchgint32";
+      else if (name == "SwapInt64")
+        name = "$Xchgint64";
+      else if (name == "SwapUint32")
+        name = "Xchg";
+      else if (name == "SwapUint64")
+        name = "Xchg64";
+      else if (name == "SwapUintptr")
+        name = "Xchguintptr";
+      else if (name == "CompareAndSwapInt32")
+        name = "$Casint32";
+      else if (name == "CompareAndSwapInt64")
+        name = "$Casint64";
+      else if (name == "CompareAndSwapUint32")
+        name = "Cas";
+      else if (name == "CompareAndSwapUint64")
+        name = "Cas64";
+      else if (name == "CompareAndSwapUintptr")
+        name = "Casuintptr";
+      else
+        return NULL;
+
+      package = "runtime/internal/atomic";
+    }
 
   if (package == "runtime")
     {
@@ -10557,7 +10625,8 @@ Call_expression::intrinsify(Gogo* gogo,
       int memorder = __ATOMIC_SEQ_CST;
 
       if ((name == "Load" || name == "Load64" || name == "Loadint64" || name == "Loadp"
-           || name == "Loaduint" || name == "Loaduintptr" || name == "LoadAcq")
+           || name == "Loaduint" || name == "Loaduintptr" || name == "LoadAcq"
+           || name == "$Loadint32")
           && this->args_ != NULL && this->args_->size() == 1)
         {
           if (int_size < 8 && (name == "Load64" || name == "Loadint64"))
@@ -10576,6 +10645,11 @@ Call_expression::intrinsify(Gogo* gogo,
             {
               code = Runtime::ATOMIC_LOAD_8;
               res_type = uint64_type;
+            }
+          else if (name == "$Loadint32")
+            {
+              code = Runtime::ATOMIC_LOAD_4;
+              res_type = int32_type;
             }
           else if (name == "Loadint64")
             {
@@ -10618,10 +10692,11 @@ Call_expression::intrinsify(Gogo* gogo,
         }
 
       if ((name == "Store" || name == "Store64" || name == "StorepNoWB"
-           || name == "Storeuintptr" || name == "StoreRel")
+           || name == "Storeuintptr" || name == "StoreRel"
+           || name == "$Storeint32" || name == "$Storeint64")
           && this->args_ != NULL && this->args_->size() == 2)
         {
-          if (int_size < 8 && name == "Store64")
+          if (int_size < 8 && (name == "Store64" || name == "$Storeint64"))
             return NULL;
 
           Runtime::Function code;
@@ -10630,6 +10705,10 @@ Call_expression::intrinsify(Gogo* gogo,
           if (name == "Store")
             code = Runtime::ATOMIC_STORE_4;
           else if (name == "Store64")
+            code = Runtime::ATOMIC_STORE_8;
+          else if (name == "$Storeint32")
+            code = Runtime::ATOMIC_STORE_4;
+          else if (name == "$Storeint64")
             code = Runtime::ATOMIC_STORE_8;
           else if (name == "Storeuintptr")
             code = (ptr_size == 8 ? Runtime::ATOMIC_STORE_8 : Runtime::ATOMIC_STORE_4);
@@ -10650,10 +10729,11 @@ Call_expression::intrinsify(Gogo* gogo,
           return Runtime::make_call(code, loc, 3, a1, a2, a3);
         }
 
-      if ((name == "Xchg" || name == "Xchg64" || name == "Xchguintptr")
+      if ((name == "Xchg" || name == "Xchg64" || name == "Xchguintptr"
+           || name == "$Xchgint32" || name == "$Xchgint64")
           && this->args_ != NULL && this->args_->size() == 2)
         {
-          if (int_size < 8 && name == "Xchg64")
+          if (int_size < 8 && (name == "Xchg64" || name == "Xchgint64"))
             return NULL;
 
           Runtime::Function code;
@@ -10667,6 +10747,16 @@ Call_expression::intrinsify(Gogo* gogo,
             {
               code = Runtime::ATOMIC_EXCHANGE_8;
               res_type = uint64_type;
+            }
+          else if (name == "$Xchgint32")
+            {
+              code = Runtime::ATOMIC_EXCHANGE_4;
+              res_type = int32_type;
+            }
+          else if (name == "$Xchgint64")
+            {
+              code = Runtime::ATOMIC_EXCHANGE_8;
+              res_type = int64_type;
             }
           else if (name == "Xchguintptr")
             {
@@ -10685,10 +10775,11 @@ Call_expression::intrinsify(Gogo* gogo,
         }
 
       if ((name == "Cas" || name == "Cas64" || name == "Casuintptr"
-           || name == "Casp1" || name == "CasRel")
+           || name == "Casp1" || name == "CasRel"
+           || name == "$Casint32" || name == "$Casint64")
           && this->args_ != NULL && this->args_->size() == 3)
         {
-          if (int_size < 8 && name == "Cas64")
+          if (int_size < 8 && (name == "Cas64" || name == "$Casint64"))
             return NULL;
 
           Runtime::Function code;
@@ -10706,6 +10797,10 @@ Call_expression::intrinsify(Gogo* gogo,
           if (name == "Cas")
             code = Runtime::ATOMIC_COMPARE_EXCHANGE_4;
           else if (name == "Cas64")
+            code = Runtime::ATOMIC_COMPARE_EXCHANGE_8;
+          else if (name == "$Casint32")
+            code = Runtime::ATOMIC_COMPARE_EXCHANGE_4;
+          else if (name == "$Casint64")
             code = Runtime::ATOMIC_COMPARE_EXCHANGE_8;
           else if (name == "Casuintptr")
             code = (ptr_size == 8
@@ -10733,7 +10828,7 @@ Call_expression::intrinsify(Gogo* gogo,
         }
 
       if ((name == "Xadd" || name == "Xadd64" || name == "Xaddint64"
-           || name == "Xadduintptr")
+           || name == "Xadduintptr" || name == "$Xaddint32")
           && this->args_ != NULL && this->args_->size() == 2)
         {
           if (int_size < 8 && (name == "Xadd64" || name == "Xaddint64"))
@@ -10750,6 +10845,11 @@ Call_expression::intrinsify(Gogo* gogo,
             {
               code = Runtime::ATOMIC_ADD_FETCH_8;
               res_type = uint64_type;
+            }
+          else if (name == "$Xaddint32")
+            {
+              code = Runtime::ATOMIC_ADD_FETCH_4;
+              res_type = int32_type;
             }
           else if (name == "Xaddint64")
             {
