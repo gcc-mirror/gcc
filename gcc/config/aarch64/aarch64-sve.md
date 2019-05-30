@@ -2528,6 +2528,19 @@
   "<sve_fp_op>\t%0.<Vetype>, %1/m, %2.<Vetype>"
 )
 
+(define_insn "*fabd<mode>3"
+  [(set (match_operand:SVE_F 0 "register_operand" "=w")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
+	   (abs:SVE_F
+	    (minus:SVE_F
+		(match_operand:SVE_F 2 "register_operand" "0")
+		(match_operand:SVE_F 3 "register_operand" "w")))]
+	UNSPEC_MERGE_PTRUE))]
+  "TARGET_SVE"
+  "fabd\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>"
+)
+
 ;; Unpredicated FRINTy.
 (define_expand "<frint_pattern><mode>2"
   [(set (match_operand:SVE_F 0 "register_operand")
