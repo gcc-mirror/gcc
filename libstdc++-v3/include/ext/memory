@@ -65,13 +65,10 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  using std::ptrdiff_t;
-  using std::pair;
-  using std::__iterator_category;
   using std::_Temporary_buffer;
 
   template<typename _InputIter, typename _Size, typename _ForwardIter>
-    pair<_InputIter, _ForwardIter>
+    std::pair<_InputIter, _ForwardIter>
     __uninitialized_copy_n(_InputIter __first, _Size __count,
 			   _ForwardIter __result, std::input_iterator_tag)
     {
@@ -80,7 +77,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  for (; __count > 0 ; --__count, ++__first, ++__cur)
 	    std::_Construct(&*__cur, *__first);
-	  return pair<_InputIter, _ForwardIter>(__first, __cur);
+	  return std::pair<_InputIter, _ForwardIter>(__first, __cur);
 	}
       __catch(...)
 	{
@@ -90,22 +87,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _RandomAccessIter, typename _Size, typename _ForwardIter>
-    inline pair<_RandomAccessIter, _ForwardIter>
+    inline std::pair<_RandomAccessIter, _ForwardIter>
     __uninitialized_copy_n(_RandomAccessIter __first, _Size __count,
 			   _ForwardIter __result,
 			   std::random_access_iterator_tag)
     {
       _RandomAccessIter __last = __first + __count;
-      return (pair<_RandomAccessIter, _ForwardIter>
+      return (std::pair<_RandomAccessIter, _ForwardIter>
 	      (__last, std::uninitialized_copy(__first, __last, __result)));
     }
 
   template<typename _InputIter, typename _Size, typename _ForwardIter>
-    inline pair<_InputIter, _ForwardIter>
+    inline std::pair<_InputIter, _ForwardIter>
     __uninitialized_copy_n(_InputIter __first, _Size __count,
 			   _ForwardIter __result)
-    { return __gnu_cxx::__uninitialized_copy_n(__first, __count, __result,
-					       __iterator_category(__first)); }
+    {
+      return __gnu_cxx::__uninitialized_copy_n(__first, __count, __result,
+	  std::__iterator_category(__first));
+    }
 
   /**
    *  @brief Copies the range [first,last) into result.
@@ -118,18 +117,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  Like copy(), but does not require an initialized output range.
   */
   template<typename _InputIter, typename _Size, typename _ForwardIter>
-    inline pair<_InputIter, _ForwardIter>
+    inline std::pair<_InputIter, _ForwardIter>
     uninitialized_copy_n(_InputIter __first, _Size __count,
 			 _ForwardIter __result)
-    { return __gnu_cxx::__uninitialized_copy_n(__first, __count, __result,
-					       __iterator_category(__first)); }
+    {
+      return __gnu_cxx::__uninitialized_copy_n(__first, __count, __result,
+	  std::__iterator_category(__first));
+    }
 
 
   // An alternative version of uninitialized_copy_n that constructs
   // and destroys objects with a user-provided allocator.
   template<typename _InputIter, typename _Size, typename _ForwardIter,
            typename _Allocator>
-    pair<_InputIter, _ForwardIter>
+    std::pair<_InputIter, _ForwardIter>
     __uninitialized_copy_n_a(_InputIter __first, _Size __count,
 			     _ForwardIter __result,
 			     _Allocator __alloc)
@@ -139,7 +140,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  for (; __count > 0 ; --__count, ++__first, ++__cur)
 	    __alloc.construct(&*__cur, *__first);
-	  return pair<_InputIter, _ForwardIter>(__first, __cur);
+	  return std::pair<_InputIter, _ForwardIter>(__first, __cur);
 	}
       __catch(...)
 	{
@@ -150,7 +151,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _InputIter, typename _Size, typename _ForwardIter,
            typename _Tp>
-    inline pair<_InputIter, _ForwardIter>
+    inline std::pair<_InputIter, _ForwardIter>
     __uninitialized_copy_n_a(_InputIter __first, _Size __count,
 			     _ForwardIter __result,
 			     std::allocator<_Tp>)

@@ -1,3 +1,28 @@
+2019-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/backward/hashtable.h (size_t, ptrdiff_t)
+	(forward_iterator_tag, input_iterator_tag, _Construct, _Destroy)
+	(distance, vector, pair, __iterator_category): Remove
+	using-declarations that add these names to namespace __gnu_cxx.
+	* include/ext/bitmap_allocator.h (size_t, ptrdiff_t): Likewise.
+	* include/ext/debug_allocator.h (size_t): Likewise.
+	* include/ext/functional (size_t, unary_function, binary_function)
+	(mem_fun1_t, const_mem_fun1_t, mem_fun1_ref_t, const_mem_fun1_ref_t):
+	Likewise.
+	* include/ext/malloc_allocator.h (size_t, ptrdiff_t): Likewise.
+	* include/ext/memory (ptrdiff_t, pair, __iterator_category): Likewise.
+	* include/ext/mt_allocator.h (size_t, ptrdiff_t): Likewise.
+	* include/ext/new_allocator.h (size_t, ptrdiff_t): Likewise.
+	* include/ext/numeric (iota): Fix outdated comment.
+	* include/ext/pool_allocator.h (size_t, ptrdiff_t): Likewise.
+	* include/ext/rb_tree (_Rb_tree, allocator): Likewise.
+	* include/ext/rope (size_t, ptrdiff_t, allocator, _Destroy): Likewise.
+	* include/ext/ropeimpl.h (size_t, printf, basic_ostream)
+	(__throw_length_error, _Destroy, std::__uninitialized_fill_n_a):
+	Likewise.
+	* include/ext/slist (size_t, ptrdiff_t, _Construct, _Destroy)
+	(allocator, __true_type, __false_type): Likewise.
+
 2019-05-31  Antony Polukhin  <antoshkka@gmail.com>
 
 	PR libstdc++/71579

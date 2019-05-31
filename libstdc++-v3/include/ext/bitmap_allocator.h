@@ -46,9 +46,6 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  using std::size_t;
-  using std::ptrdiff_t;
-
   namespace __detail
   {
     /** @class  __mini_vector bitmap_allocator.h bitmap_allocator.h
@@ -77,8 +74,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	typedef _Tp* pointer;
 	typedef _Tp& reference;
 	typedef const _Tp& const_reference;
-	typedef size_t size_type;
-	typedef ptrdiff_t difference_type;
+	typedef std::size_t size_type;
+	typedef std::ptrdiff_t difference_type;
 	typedef pointer iterator;
 
       private:
@@ -223,13 +220,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       struct __mv_iter_traits<_Tp*>
       {
 	typedef _Tp value_type;
-	typedef ptrdiff_t difference_type;
+	typedef std::ptrdiff_t difference_type;
       };
 
     enum 
       { 
 	bits_per_byte = 8,
-	bits_per_block = sizeof(size_t) * size_t(bits_per_byte) 
+	bits_per_block = sizeof(std::size_t) * std::size_t(bits_per_byte)
       };
 
     template<typename _ForwardIterator, typename _Tp, typename _Compare>
@@ -265,7 +262,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  passed to the function.
      */
     template<typename _AddrPair>
-      inline size_t
+      inline std::size_t
       __num_blocks(_AddrPair __ap)
       { return (__ap.second - __ap.first) + 1; }
 
@@ -273,9 +270,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  passed to the function.
      */
     template<typename _AddrPair>
-      inline size_t
+      inline std::size_t
       __num_bitmaps(_AddrPair __ap)
-      { return __num_blocks(__ap) / size_t(bits_per_block); }
+      { return __num_blocks(__ap) / std::size_t(bits_per_block); }
 
     // _Tp should be a pointer type.
     template<typename _Tp>
@@ -336,7 +333,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	typedef typename __detail::__mini_vector<_Block_pair> _BPVector;
 	typedef typename _BPVector::difference_type _Counter_type;
 
-	size_t* _M_pbitmap;
+	std::size_t* _M_pbitmap;
 	_Counter_type _M_data_offset;
 
       public:
@@ -346,6 +343,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	bool 
 	operator()(_Block_pair __bp) throw()
 	{
+	  using std::size_t;
 	  // Set the _rover to the last physical location bitmap,
 	  // which is the bitmap which belongs to the first free
 	  // block. Thus, the bitmaps are in exact reverse order of
@@ -377,13 +375,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return false;
 	}
     
-	size_t*
+	std::size_t*
 	_M_get() const throw()
 	{ return _M_pbitmap; }
 
 	_Counter_type
 	_M_offset() const throw()
-	{ return _M_data_offset * size_t(bits_per_block); }
+	{ return _M_data_offset * std::size_t(bits_per_block); }
       };
 
     /** @class  _Bitmap_counter bitmap_allocator.h bitmap_allocator.h
@@ -402,8 +400,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	typedef _Tp pointer;
 
 	_BPVector& _M_vbp;
-	size_t* _M_curr_bmap;
-	size_t* _M_last_bmap_in_block;
+	std::size_t* _M_curr_bmap;
+	std::size_t* _M_last_bmap_in_block;
 	_Index_type _M_curr_index;
     
       public:
@@ -424,7 +422,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 
 	  _M_curr_index = __index;
-	  _M_curr_bmap = reinterpret_cast<size_t*>
+	  _M_curr_bmap = reinterpret_cast<std::size_t*>
 	    (_M_vbp[_M_curr_index].first) - 1;
 	  
 	  _GLIBCXX_DEBUG_ASSERT(__index <= (long)_M_vbp.size() - 1);
@@ -432,14 +430,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_last_bmap_in_block = _M_curr_bmap
 	    - ((_M_vbp[_M_curr_index].second 
 		- _M_vbp[_M_curr_index].first + 1) 
-	       / size_t(bits_per_block) - 1);
+	       / std::size_t(bits_per_block) - 1);
 	}
     
 	// Dangerous Function! Use with extreme care. Pass to this
 	// function ONLY those values that are known to be correct,
 	// otherwise this will mess up big time.
 	void
-	_M_set_internal_bitmap(size_t* __new_internal_marker) throw()
+	_M_set_internal_bitmap(std::size_t* __new_internal_marker) throw()
 	{ _M_curr_bmap = __new_internal_marker; }
     
 	bool
@@ -461,7 +459,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return *this;
 	}
     
-	size_t*
+	std::size_t*
 	_M_get() const throw()
 	{ return _M_curr_bmap; }
     
@@ -472,8 +470,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Index_type
 	_M_offset() const throw()
 	{
-	  return size_t(bits_per_block)
-	    * ((reinterpret_cast<size_t*>(this->_M_base()) 
+	  return std::size_t(bits_per_block)
+	    * ((reinterpret_cast<std::size_t*>(this->_M_base())
 		- _M_curr_bmap) - 1);
 	}
     
@@ -486,9 +484,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  corresponding bit in the bit-map.
      */
     inline void 
-    __bit_allocate(size_t* __pbmap, size_t __pos) throw()
+    __bit_allocate(std::size_t* __pbmap, std::size_t __pos) throw()
     {
-      size_t __mask = 1 << __pos;
+      std::size_t __mask = 1 << __pos;
       __mask = ~__mask;
       *__pbmap &= __mask;
     }
@@ -497,18 +495,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  corresponding bit in the bit-map.
      */
     inline void 
-    __bit_free(size_t* __pbmap, size_t __pos) throw()
+    __bit_free(std::size_t* __pbmap, std::size_t __pos) throw()
     {
-      size_t __mask = 1 << __pos;
+      std::size_t __mask = 1 << __pos;
       *__pbmap |= __mask;
     }
   } // namespace __detail
 
   /** @brief  Generic Version of the bsf instruction.
    */
-  inline size_t 
-  _Bit_scan_forward(size_t __num)
-  { return static_cast<size_t>(__builtin_ctzl(__num)); }
+  inline std::size_t
+  _Bit_scan_forward(std::size_t __num)
+  { return static_cast<std::size_t>(__builtin_ctzl(__num)); }
 
   /** @class  free_list bitmap_allocator.h bitmap_allocator.h
    *
@@ -518,7 +516,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class free_list
   {
   public:
-    typedef size_t* 				value_type;
+    typedef std::size_t* 			value_type;
     typedef __detail::__mini_vector<value_type> vector_type;
     typedef vector_type::iterator 		iterator;
     typedef __mutex				__mutex_type;
@@ -527,8 +525,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct _LT_pointer_compare
     {
       bool
-      operator()(const size_t* __pui, 
-		 const size_t __cui) const throw()
+      operator()(const std::size_t* __pui,
+		 const std::size_t __cui) const throw()
       { return *__pui < __cui; }
     };
 
@@ -559,7 +557,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  or larger blocks from the free list.
      */
     void
-    _M_validate(size_t* __addr) throw()
+    _M_validate(std::size_t* __addr) throw()
     {
       vector_type& __free_list = _M_get_free_list();
       const vector_type::size_type __max_size = 64;
@@ -605,10 +603,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  false.
      */
     bool 
-    _M_should_i_give(size_t __block_size, 
-		     size_t __required_size) throw()
+    _M_should_i_give(std::size_t __block_size,
+		     std::size_t __required_size) throw()
     {
-      const size_t __max_wastage_percentage = 36;
+      const std::size_t __max_wastage_percentage = 36;
       if (__block_size >= __required_size && 
 	  (((__block_size - __required_size) * 100 / __block_size)
 	   < __max_wastage_percentage))
@@ -625,14 +623,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  by a call to the _M_get function.
      */
     inline void 
-    _M_insert(size_t* __addr) throw()
+    _M_insert(std::size_t* __addr) throw()
     {
 #if defined __GTHREADS
       __scoped_lock __bfl_lock(_M_get_mutex());
 #endif
       // Call _M_validate to decide what should be done with
       // this particular free list.
-      this->_M_validate(reinterpret_cast<size_t*>(__addr) - 1);
+      this->_M_validate(reinterpret_cast<std::size_t*>(__addr) - 1);
       // See discussion as to why this is 1!
     }
     
@@ -644,8 +642,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  @return  A pointer to the new memory block of size at least
      *  equal to that requested.
      */
-    size_t*
-    _M_get(size_t __sz) _GLIBCXX_THROW(std::bad_alloc);
+    std::size_t*
+    _M_get(std::size_t __sz) _GLIBCXX_THROW(std::bad_alloc);
 
     /** @brief  This function just clears the internal Free List, and
      *  gives back all the memory to the OS.
@@ -684,8 +682,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class bitmap_allocator : private free_list
     {
     public:
-      typedef size_t    		size_type;
-      typedef ptrdiff_t 		difference_type;
+      typedef std::size_t    		size_type;
+      typedef std::ptrdiff_t 		difference_type;
       typedef _Tp*        		pointer;
       typedef const _Tp*  		const_pointer;
       typedef _Tp&        		reference;
@@ -706,7 +704,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
     private:
-      template<size_t _BSize, size_t _AlignSize>
+      template<std::size_t _BSize, std::size_t _AlignSize>
         struct aligned_size
 	{
 	  enum
@@ -765,6 +763,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void 
       _S_refill_pool() _GLIBCXX_THROW(std::bad_alloc)
       {
+	using std::size_t;
 #if defined _GLIBCXX_DEBUG
 	_S_check_for_free_blocks();
 #endif
@@ -798,7 +797,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       static _BPVector _S_mem_blocks;
-      static size_t _S_block_size;
+      static std::size_t _S_block_size;
       static __detail::_Bitmap_counter<_Alloc_block*> _S_last_request;
       static typename _BPVector::size_type _S_last_dealloc_index;
 #if defined __GTHREADS
@@ -823,6 +822,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       pointer 
       _M_allocate_single_object() _GLIBCXX_THROW(std::bad_alloc)
       {
+	using std::size_t;
 #if defined __GTHREADS
 	__scoped_lock __bit_lock(_S_mut);
 #endif
@@ -913,6 +913,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void 
       _M_deallocate_single_object(pointer __p) throw()
       {
+	using std::size_t;
 #if defined __GTHREADS
 	__scoped_lock __bit_lock(_S_mut);
 #endif
@@ -1109,8 +1110,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bitmap_allocator<_Tp>::_S_mem_blocks;
 
   template<typename _Tp>
-    size_t bitmap_allocator<_Tp>::_S_block_size = 
-    2 * size_t(__detail::bits_per_block);
+    std::size_t bitmap_allocator<_Tp>::_S_block_size
+      = 2 * std::size_t(__detail::bits_per_block);
 
   template<typename _Tp>
     typename bitmap_allocator<_Tp>::_BPVector::size_type 
