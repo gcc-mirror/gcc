@@ -248,13 +248,12 @@ am__objects_3 = runtime/aeshash.lo runtime/go-assert.lo \
 	runtime/go-nanotime.lo runtime/go-now.lo runtime/go-nosys.lo \
 	runtime/go-reflect-call.lo runtime/go-runtime-error.lo \
 	runtime/go-setenv.lo runtime/go-signal.lo \
-	runtime/go-strslice.lo runtime/go-typedesc-equal.lo \
-	runtime/go-unsafe-pointer.lo runtime/go-unsetenv.lo \
-	runtime/go-unwind.lo runtime/go-varargs.lo \
-	runtime/env_posix.lo runtime/panic.lo runtime/print.lo \
-	runtime/proc.lo runtime/runtime_c.lo runtime/stack.lo \
-	runtime/yield.lo runtime/go-context.lo $(am__objects_1) \
-	$(am__objects_2)
+	runtime/go-strslice.lo runtime/go-unsafe-pointer.lo \
+	runtime/go-unsetenv.lo runtime/go-unwind.lo \
+	runtime/go-varargs.lo runtime/env_posix.lo runtime/panic.lo \
+	runtime/print.lo runtime/proc.lo runtime/runtime_c.lo \
+	runtime/stack.lo runtime/yield.lo runtime/go-context.lo \
+	$(am__objects_1) $(am__objects_2)
 am_libgo_llgo_la_OBJECTS = $(am__objects_3)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -526,7 +525,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -904,7 +902,6 @@ runtime_files = \
 	runtime/go-setenv.c \
 	runtime/go-signal.c \
 	runtime/go-strslice.c \
-	runtime/go-typedesc-equal.c \
 	runtime/go-unsafe-pointer.c \
 	runtime/go-unsetenv.c \
 	runtime/go-unwind.c \
@@ -1367,8 +1364,6 @@ runtime/go-signal.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-strslice.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
-runtime/go-typedesc-equal.lo: runtime/$(am__dirstamp) \
-	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-unsafe-pointer.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-unsetenv.lo: runtime/$(am__dirstamp) \
@@ -1454,7 +1449,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-setenv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-signal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-strslice.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-typedesc-equal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-unsafe-pointer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-unsetenv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-unwind.Plo@am__quote@
