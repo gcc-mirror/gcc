@@ -1,5 +1,16 @@
 2019-05-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/90682
+	* libsupc++/eh_term_handler.cc: Include eh_term_handler.h to get
+	definition of _GLIBCXX_DEFAULT_TERM_HANDLER.
+	* libsupc++/eh_term_handler.h: New header defining
+	_GLIBCXX_DEFAULT_TERM_HANDLER.
+	* libsupc++/eh_terminate.cc: Include eh_term_handler.h.
+	(set_terminate): Restore default handler when argument is null.
+	(set_unexpected): Likewise.
+	* testsuite/18_support/set_terminate.cc: New test.
+	* testsuite/18_support/set_unexpected.cc: New test.
+
 	* include/backward/hashtable.h (size_t, ptrdiff_t)
 	(forward_iterator_tag, input_iterator_tag, _Construct, _Destroy)
 	(distance, vector, pair, __iterator_category): Remove
