@@ -8146,17 +8146,29 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	    }
 	  if (OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c))
 	    {
-	      if (code == OMP_FOR
-		  || code == OMP_SECTIONS
-		  || region_type == ORT_COMBINED_PARALLEL)
-		flags |= GOVD_LASTPRIVATE_CONDITIONAL;
-	      else
+	      splay_tree_node n = NULL;
+	      if (code == OMP_SIMD
+		  && outer_ctx
+		  && outer_ctx->region_type == ORT_WORKSHARE)
+		{
+		  n = splay_tree_lookup (outer_ctx->variables,
+					 (splay_tree_key) decl);
+		  if (n == NULL
+		      && outer_ctx->outer_context
+		      && (outer_ctx->outer_context->region_type
+			  == ORT_COMBINED_PARALLEL))
+		    n = splay_tree_lookup (outer_ctx->outer_context->variables,
+					   (splay_tree_key) decl);
+		}
+	      if (n && (n->value & GOVD_LASTPRIVATE_CONDITIONAL) != 0)
 		{
 		  sorry_at (OMP_CLAUSE_LOCATION (c),
 			    "%<conditional%> modifier on %<lastprivate%> "
 			    "clause not supported yet");
 		  OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c) = 0;
 		}
+	      else
+		flags |= GOVD_LASTPRIVATE_CONDITIONAL;
 	    }
 	  if (outer_ctx
 	      && (outer_ctx->region_type == ORT_COMBINED_PARALLEL
@@ -11557,6 +11569,28 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	  OMP_CLAUSE_CHAIN (c) = gimple_omp_for_clauses (gfor);
 	  gimple_omp_for_set_clauses (gfor, c);
 	  omp_add_variable (ctx, var, GOVD_CONDTEMP | GOVD_SEEN);
+	}
+    }
+  else if (TREE_CODE (orig_for_stmt) == OMP_SIMD)
+    {
+      unsigned lastprivate_conditional = 0;
+      for (tree c = gimple_omp_for_clauses (gfor); c; c = OMP_CLAUSE_CHAIN (c))
+	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
+	    && OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c))
+	  ++lastprivate_conditional;
+      if (lastprivate_conditional)
+	{
+	  struct omp_for_data fd;
+	  omp_extract_for_data (gfor, &fd, NULL);
+	  tree type = unsigned_type_for (fd.iter_type);
+	  while (lastprivate_conditional--)
+	    {
+	      tree c = build_omp_clause (UNKNOWN_LOCATION,
+					 OMP_CLAUSE__CONDTEMP_);
+	      OMP_CLAUSE_DECL (c) = create_tmp_var (type);
+	      OMP_CLAUSE_CHAIN (c) = gimple_omp_for_clauses (gfor);
+	      gimple_omp_for_set_clauses (gfor, c);
+	    }
 	}
     }
 

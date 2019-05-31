@@ -1,5 +1,25 @@
 2019-05-31  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree.h (OMP_CLAUSE__CONDTEMP__ITER): Define.
+	* gimplify.c (gimplify_scan_omp_clauses): Allow lastprivate conditional
+	on OMP_SIMD if not nested inside of worksharing loop that also has
+	lastprivate conditional clause for the same decl.
+	(gimplify_omp_for): Add _condtemp_ clauses to OMP_SIMD if needed.
+	* omp-low.c (scan_sharing_clauses): Handle OMP_CLAUSE__CONDTEMP_ also
+	on simd.
+	(lower_rec_input_clauses): Likewise.  Handle lastprivate conditional
+	on simd construct.
+	(lower_lastprivate_conditional_clauses): Handle lastprivate conditional
+	on simd construct.
+	(lower_lastprivate_clauses): Likewise.
+	(lower_omp_sections): Call lower_lastprivate_conditional_clauses before
+	calling lower_rec_input_clauses.
+	(lower_omp_for): Likewise.
+	(lower_omp_1): Use first rather than second OMP_CLAUSE__CONDTEMP_
+	clause on simd construct.
+	* omp-expand.c (expand_omp_simd): Initialize cond_var if
+	OMP_CLAUSE__CONDTEMP_ clause is present.
+
 	* omp-low.c (lower_rec_simd_input_clauses): Set TREE_THIS_NOTRAP on
 	ivar and lvar.
 

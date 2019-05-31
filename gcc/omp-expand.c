@@ -4908,7 +4908,10 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 			      OMP_CLAUSE_IF);
   tree simdlen = omp_find_clause (gimple_omp_for_clauses (fd->for_stmt),
 				  OMP_CLAUSE_SIMDLEN);
+  tree condtemp = omp_find_clause (gimple_omp_for_clauses (fd->for_stmt),
+				   OMP_CLAUSE__CONDTEMP_);
   tree n1, n2;
+  tree cond_var = condtemp ? OMP_CLAUSE_DECL (condtemp) : NULL_TREE;
 
   if (safelen)
     {
@@ -5038,6 +5041,18 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	    expand_omp_build_assign (&gsi, fd->loops[i].v, t);
 	  }
     }
+  if (cond_var)
+    {
+      if (POINTER_TYPE_P (type)
+	  || TREE_CODE (n1) != INTEGER_CST
+	  || fd->loop.cond_code != LT_EXPR
+	  || tree_int_cst_sgn (n1) != 1)
+	expand_omp_build_assign (&gsi, cond_var,
+				 build_one_cst (TREE_TYPE (cond_var)));
+      else
+	expand_omp_build_assign (&gsi, cond_var,
+				 fold_convert (TREE_TYPE (cond_var), n1));
+    }
 
   /* Remove the GIMPLE_OMP_FOR statement.  */
   gsi_remove (&gsi, true);
@@ -5102,6 +5117,19 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 			  fd->loops[i].v, t);
 	      expand_omp_build_assign (&gsi, fd->loops[i].v, t);
 	    }
+	}
+      if (cond_var)
+	{
+	  if (POINTER_TYPE_P (type)
+	      || TREE_CODE (n1) != INTEGER_CST
+	      || fd->loop.cond_code != LT_EXPR
+	      || tree_int_cst_sgn (n1) != 1)
+	    t = fold_build2 (PLUS_EXPR, TREE_TYPE (cond_var), cond_var,
+			     build_one_cst (TREE_TYPE (cond_var)));
+	  else
+	    t = fold_build2 (PLUS_EXPR, TREE_TYPE (cond_var), cond_var,
+			     fold_convert (TREE_TYPE (cond_var), step));
+	  expand_omp_build_assign (&gsi, cond_var, t);
 	}
 
       /* Remove GIMPLE_OMP_CONTINUE.  */

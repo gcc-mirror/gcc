@@ -8,7 +8,7 @@ foo (int *p)
   for (i = 0; i < 32; i++)
     if (p[i])
       a = i;
-  #pragma omp simd lastprivate (conditional: b) /* { dg-message "not supported yet" } */
+  #pragma omp simd lastprivate (conditional: b)
   for (i = 0; i < 32; i++)
     if (p[i])
       b = i;
