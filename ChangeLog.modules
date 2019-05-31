@@ -1,3 +1,16 @@
+2019-05-31  Nathan Sidwell  <nathan@acm.org>
+
+	Non-template friends of templates.
+	gcc/cp/
+	* module.cc (trees_{in,out}::{read,write}_class_def): Stream
+	friend lists and decl lists specially.
+	(trees_out::mark_class_def): Mark local friend decls.
+	(depset::hash::add_specializations): Don't add non-specializations
+	that are in the table.
+	* pt.c (push_template_decl_real): Mark non-pushed friend templates.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-friend-1_[ab].C: New.
+
 2019-05-29  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

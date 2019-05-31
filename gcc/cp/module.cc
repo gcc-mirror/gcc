@@ -8611,14 +8611,44 @@ trees_out::write_class_def (tree defn)
 	write_definition (vtables);
 
       /* Write the friend classes.  */
-      // FIXME: Only TREE_VALUE relevant
-      tree_node (CLASSTYPE_FRIEND_CLASSES (type));
-      // FIXME: Only PURPOSE & VALUE relevant.  VALUE is a list whose
-      // VALUE s needed.
-      tree_node (DECL_FRIENDLIST (defn));
+      for (tree friends = CLASSTYPE_FRIEND_CLASSES (type);
+	   friends; friends = TREE_CHAIN (friends))
+	/* TREE_VALUE is what we want.  */
+	tree_node (TREE_VALUE (friends));
+      /* End of friends.  */
+      tree_node (NULL_TREE);
 
-      // FIXME: Only TREE_PURPOSE and TREE_VALUE relevant
-      tree_node (CLASSTYPE_DECL_LIST (type));
+      /* Write the friend functions.  */
+      for (tree friends = DECL_FRIENDLIST (defn);
+	   friends; friends = TREE_CHAIN (friends))
+	{
+	  /* Name of these friends.  */
+	  tree_node (TREE_PURPOSE (friends));
+	  for (tree decls = TREE_VALUE (friends);
+	       decls; decls = TREE_CHAIN (decls))
+	    tree_node (TREE_VALUE (decls));
+	  /* End of these friends called this.  */
+	  tree_node (NULL_TREE);
+	}
+      /* End of friends.  */
+      tree_node (NULL_TREE);
+
+      /* Write the decl list.  */
+      for (tree decls = CLASSTYPE_DECL_LIST (type); decls;
+	   decls = TREE_CHAIN (decls))
+	{
+	  tree decl = TREE_VALUE (decls);
+	  tree_node (decl);
+	  tree_node (TREE_PURPOSE (decls));
+	  /* It is only in partitions that we need to record whether
+	     the friend is local, as that's the only place we (may)
+	     need to rewrite the class -- into the primary
+	     interface.  */
+	  if (streaming_p () && state->is_partition () && !TREE_PURPOSE (decls))
+	    u (TREE_CHAIN (decl) == void_type_node);
+	}
+      /* End of decls.  */
+      tree_node (NULL_TREE);
     }
 
   // FIXME: lang->nested_udts
@@ -8681,25 +8711,31 @@ trees_out::mark_class_def (tree defn)
 
       for (tree decls = CLASSTYPE_DECL_LIST (type);
 	   decls; decls = TREE_CHAIN (decls))
-	/* Friends have NULL purpose.  (That's not true, friends are
-	   needed for a healthy life!)  */
-	// FIXME: I'll bet friends of templates need some kind of marking?
-	if (TREE_PURPOSE (decls))
-	  {
-	    /* There may be decls here, that are not on the member vector.
-	       for instance forward declarations of member tagged types.  */
-	    tree member = TREE_VALUE (decls);
-	    if (TYPE_P (member))
-	      /* In spite of its name, non-decls appear :(.  */
-	      member = TYPE_NAME (member);
+	{
+	  tree decl = TREE_VALUE (decls);
 
-	    /* Static asserts are on this chain too.  */
-	    if (DECL_P (member))
-	      {
-		gcc_assert (DECL_CONTEXT (member) == type);
-		mark_class_member (member, false);
-	      }
-	  }
+	  if (TREE_PURPOSE (decls))
+	    {
+	      /* There may be decls here, that are not on the member vector.
+		 for instance forward declarations of member tagged types.  */
+	      if (TYPE_P (decl))
+		/* In spite of its name, non-decls appear :(.  */
+		decl = TYPE_NAME (decl);
+
+	      /* Static asserts are on this chain too.  */
+	      if (DECL_P (decl))
+		{
+		  gcc_assert (DECL_CONTEXT (decl) == type);
+		  mark_class_member (decl, false);
+		}
+	    }
+	  else
+	    /* A friend declaration.  If we're a template, and this
+	       friend is either a template or a dependent decl, it's
+	       local to us.  Such have their DECL_CHAIN set.  */
+	    if (DECL_CHAIN (decl) == void_type_node)
+	      mark_class_member (decl, true);
+	}
     }
 }
 
@@ -8802,9 +8838,36 @@ trees_in::read_class_def (tree defn)
       for (tree vt = vtables; vt; vt = TREE_CHAIN (vt))
 	read_var_def (vt);
 
-      tree friend_classes = tree_node ();
-      tree friend_functions = tree_node ();
-      tree decl_list = tree_node ();
+      // FIXME: We should be able to reverse the lists in the writer
+      tree friend_classes = NULL_TREE;
+      while (tree val = tree_node ())
+	friend_classes = tree_cons (NULL_TREE, val, friend_classes);
+      friend_classes = nreverse (friend_classes);
+
+      tree friend_functions = NULL_TREE;
+      while (tree name = tree_node ())
+	{
+	  tree val = NULL_TREE;
+	  while (tree decl = tree_node ())
+	    val = tree_cons (NULL_TREE, decl, val);
+	  nreverse (val);
+	  friend_functions = tree_cons (name, val, friend_functions);
+	}
+      friend_functions = nreverse (friend_functions);
+
+      tree decl_list = NULL_TREE;
+      while (tree decl = tree_node ())
+	{
+	  tree purpose = tree_node ();
+	  if (state->is_partition () && !purpose)
+	    if (u ())
+	      {
+		gcc_assert (!DECL_CHAIN (decl));
+		DECL_CHAIN (decl) = void_type_node;
+	      }
+	  decl_list = tree_cons (purpose, decl, decl_list);
+	}
+      decl_list = nreverse (decl_list);
 
       if (!odr)
 	{
@@ -9463,6 +9526,13 @@ depset::hash::add_specializations (bool decl_p, bitmap partitions)
 	}
       else
 	use_tpl = DECL_USE_TEMPLATE (spec);
+
+      if (!use_tpl)
+	/* Not a specialization after all.  This happens when friends
+	   of templates are instantiated and discovered to match an
+	   existing decl.  That decl then replaces the friend
+	   instantiation.  */
+	continue;
 
       bool needs_reaching = false;
       if (use_tpl == 1)

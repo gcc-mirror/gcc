@@ -30224,7 +30224,7 @@ system.
 
 The default mapper generates CMI files in the current directory,
 appending a @samp{.gcm} suffix to the module name.  Header unit names
-append @samp{.gcmu}.  They may also contain directory separators.
+append @samp{.gchm}.  They may also contain directory separators.
 
 The mapper protocol was published as ``A Module Mapper''
 @uref{http//wg21.link/p1184}.  It is intended that build systems will

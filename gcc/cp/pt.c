@@ -5789,6 +5789,14 @@ push_template_decl_real (tree decl, bool is_friend)
 	      DECL_FRIEND_P (tmpl) = 1;
 	    }
 	}
+      else if (!ctx && is_friend)
+	{
+	  // FIXME: what does non-null CTX signify?
+	  // Presumably dependent contexts are in the same boat?
+	  gcc_checking_assert (!DECL_CHAIN (tmpl)
+			       && !DECL_CHAIN (decl));
+	  (is_primary ? DECL_CHAIN (tmpl) : DECL_CHAIN (decl)) = void_type_node;
+	}
     }
   else
     /* The type may have been completed, or (erroneously) changed.  */
