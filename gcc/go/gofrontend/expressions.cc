@@ -1052,6 +1052,7 @@ Temporary_reference_expression*
 Expression::make_temporary_reference(Temporary_statement* statement,
 				     Location location)
 {
+  statement->add_use();
   return new Temporary_reference_expression(statement, location);
 }
 
@@ -8286,23 +8287,87 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
   Temporary_statement* l2tmp = NULL;
   Expression_list* add = NULL;
   Expression* len2;
+  Call_expression* makecall = NULL;
   if (this->is_varargs())
     {
       go_assert(args->size() == 2);
 
-      // s2tmp := s2
-      s2tmp = Statement::make_temporary(NULL, args->back(), loc);
-      inserter->insert(s2tmp);
+      std::pair<Call_expression*, Temporary_statement*> p =
+        Expression::find_makeslice_call(args->back());
+      makecall = p.first;
+      if (makecall != NULL)
+        {
+          // We are handling
+          // 	append(s, make([]T, len[, cap])...))
+          // which has already been lowered to
+          // 	append(s, runtime.makeslice(T, len, cap)).
+          // We will optimize this to directly zeroing the tail,
+          // instead of allocating a new slice then copy.
 
-      // l2tmp := len(s2tmp)
-      lenref = Expression::make_func_reference(lenfn, NULL, loc);
-      call_args = new Expression_list();
-      call_args->push_back(Expression::make_temporary_reference(s2tmp, loc));
-      len = Expression::make_call(lenref, call_args, false, loc);
-      gogo->lower_expression(function, inserter, &len);
-      gogo->flatten_expression(function, inserter, &len);
-      l2tmp = Statement::make_temporary(int_type, len, loc);
-      inserter->insert(l2tmp);
+          // Retrieve the length. Cannot reference s2 as we will remove
+          // the makeslice call.
+          Expression* len_arg = makecall->args()->at(1);
+          len_arg = Expression::make_cast(int_type, len_arg, loc);
+          l2tmp = Statement::make_temporary(int_type, len_arg, loc);
+          inserter->insert(l2tmp);
+
+          Expression* cap_arg = makecall->args()->at(2);
+          cap_arg = Expression::make_cast(int_type, cap_arg, loc);
+          Temporary_statement* c2tmp =
+            Statement::make_temporary(int_type, cap_arg, loc);
+          inserter->insert(c2tmp);
+
+          // Check bad len/cap here.
+          // if len2 < 0 { panicmakeslicelen(); }
+          len2 = Expression::make_temporary_reference(l2tmp, loc);
+          Expression* zero = Expression::make_integer_ul(0, int_type, loc);
+          Expression* cond = Expression::make_binary(OPERATOR_LT, len2,
+                                                     zero, loc);
+          Expression* arg =
+            Expression::make_integer_ul(RUNTIME_ERROR_MAKE_SLICE_LEN_OUT_OF_BOUNDS,
+                                        NULL, loc);
+          Expression* call = Runtime::make_call(Runtime::RUNTIME_ERROR,
+                                                loc, 1, arg);
+          cond = Expression::make_conditional(cond, call, zero->copy(), loc);
+          gogo->lower_expression(function, inserter, &cond);
+          gogo->flatten_expression(function, inserter, &cond);
+          Statement* s = Statement::make_statement(cond, false);
+          inserter->insert(s);
+
+          // if cap2 < 0 { panicmakeslicecap(); }
+          Expression* cap2 = Expression::make_temporary_reference(c2tmp, loc);
+          cond = Expression::make_binary(OPERATOR_LT, cap2,
+                                         zero->copy(), loc);
+          arg = Expression::make_integer_ul(RUNTIME_ERROR_MAKE_SLICE_CAP_OUT_OF_BOUNDS,
+                                            NULL, loc);
+          call = Runtime::make_call(Runtime::RUNTIME_ERROR, loc, 1, arg);
+          cond = Expression::make_conditional(cond, call, zero->copy(), loc);
+          gogo->lower_expression(function, inserter, &cond);
+          gogo->flatten_expression(function, inserter, &cond);
+          s = Statement::make_statement(cond, false);
+          inserter->insert(s);
+
+          // Remove the original makeslice call.
+          Temporary_statement* ts = p.second;
+          if (ts != NULL && ts->uses() == 1)
+            ts->set_init(Expression::make_nil(loc));
+        }
+      else
+        {
+          // s2tmp := s2
+          s2tmp = Statement::make_temporary(NULL, args->back(), loc);
+          inserter->insert(s2tmp);
+
+          // l2tmp := len(s2tmp)
+          lenref = Expression::make_func_reference(lenfn, NULL, loc);
+          call_args = new Expression_list();
+          call_args->push_back(Expression::make_temporary_reference(s2tmp, loc));
+          len = Expression::make_call(lenref, call_args, false, loc);
+          gogo->lower_expression(function, inserter, &len);
+          gogo->flatten_expression(function, inserter, &len);
+          l2tmp = Statement::make_temporary(int_type, len, loc);
+          inserter->insert(l2tmp);
+        }
 
       // len2 = l2tmp
       len2 = Expression::make_temporary_reference(l2tmp, loc);
@@ -8422,52 +8487,92 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
       inserter->insert(assign);
     }
 
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
+
   if (this->is_varargs())
     {
-      if (element_type->has_pointer())
+      if (makecall != NULL)
         {
-          // copy(s1tmp[l1tmp:], s2tmp)
-          a1 = Expression::make_temporary_reference(s1tmp, loc);
-          ref = Expression::make_temporary_reference(l1tmp, loc);
-          Expression* nil = Expression::make_nil(loc);
-          a1 = Expression::make_array_index(a1, ref, nil, NULL, loc);
-          a1->array_index_expression()->set_needs_bounds_check(false);
-
-          a2 = Expression::make_temporary_reference(s2tmp, loc);
-
-          Named_object* copyfn = gogo->lookup_global("copy");
-          Expression* copyref = Expression::make_func_reference(copyfn, NULL, loc);
-          call_args = new Expression_list();
-          call_args->push_back(a1);
-          call_args->push_back(a2);
-          call = Expression::make_call(copyref, call_args, false, loc);
-        }
-      else
-        {
-          // memmove(&s1tmp[l1tmp], s2tmp.ptr, l2tmp*sizeof(elem))
+          // memclr(&s1tmp[l1tmp], l2tmp*sizeof(elem))
           a1 = Expression::make_temporary_reference(s1tmp, loc);
           ref = Expression::make_temporary_reference(l1tmp, loc);
           a1 = Expression::make_array_index(a1, ref, NULL, NULL, loc);
           a1->array_index_expression()->set_needs_bounds_check(false);
           a1 = Expression::make_unary(OPERATOR_AND, a1, loc);
 
-          a2 = Expression::make_temporary_reference(s2tmp, loc);
-          a2 = (a2->type()->is_string_type()
-                ? Expression::make_string_info(a2,
-                                               STRING_INFO_DATA,
-                                               loc)
-                : Expression::make_slice_info(a2,
-                                              SLICE_INFO_VALUE_POINTER,
-                                              loc));
-
-          Type* uintptr_type = Type::lookup_integer_type("uintptr");
           ref = Expression::make_temporary_reference(l2tmp, loc);
           ref = Expression::make_cast(uintptr_type, ref, loc);
-          a3 = Expression::make_type_info(element_type, TYPE_INFO_SIZE);
-          a3 = Expression::make_binary(OPERATOR_MULT, a3, ref, loc);
+          a2 = Expression::make_type_info(element_type, TYPE_INFO_SIZE);
+          a2 = Expression::make_binary(OPERATOR_MULT, a2, ref, loc);
 
-          call = Runtime::make_call(Runtime::BUILTIN_MEMMOVE, loc, 3,
-                                    a1, a2, a3);
+          Runtime::Function code = (element_type->has_pointer()
+                                    ? Runtime::MEMCLRHASPTR
+                                    : Runtime::MEMCLRNOPTR);
+          call = Runtime::make_call(code, loc, 2, a1, a2);
+
+          if (element_type->has_pointer())
+            {
+              // For a slice containing pointers, growslice already zeroed
+              // the memory. We only need to zero in non-growing case.
+              // Note: growslice does not zero the memory in non-pointer case.
+              Expression* left =
+                Expression::make_temporary_reference(ntmp, loc);
+              left = Expression::make_cast(uint_type, left, loc);
+              Expression* right =
+                Expression::make_temporary_reference(c1tmp, loc);
+              right = Expression::make_cast(uint_type, right, loc);
+              Expression* cond =
+                Expression::make_binary(OPERATOR_GT, left, right, loc);
+              Expression* zero = Expression::make_integer_ul(0, int_type, loc);
+              call = Expression::make_conditional(cond, call, zero, loc);
+            }
+        }
+      else
+        {
+          if (element_type->has_pointer())
+            {
+              // copy(s1tmp[l1tmp:], s2tmp)
+              a1 = Expression::make_temporary_reference(s1tmp, loc);
+              ref = Expression::make_temporary_reference(l1tmp, loc);
+              Expression* nil = Expression::make_nil(loc);
+              a1 = Expression::make_array_index(a1, ref, nil, NULL, loc);
+              a1->array_index_expression()->set_needs_bounds_check(false);
+
+              a2 = Expression::make_temporary_reference(s2tmp, loc);
+
+              Named_object* copyfn = gogo->lookup_global("copy");
+              Expression* copyref = Expression::make_func_reference(copyfn, NULL, loc);
+              call_args = new Expression_list();
+              call_args->push_back(a1);
+              call_args->push_back(a2);
+              call = Expression::make_call(copyref, call_args, false, loc);
+            }
+          else
+            {
+              // memmove(&s1tmp[l1tmp], s2tmp.ptr, l2tmp*sizeof(elem))
+              a1 = Expression::make_temporary_reference(s1tmp, loc);
+              ref = Expression::make_temporary_reference(l1tmp, loc);
+              a1 = Expression::make_array_index(a1, ref, NULL, NULL, loc);
+              a1->array_index_expression()->set_needs_bounds_check(false);
+              a1 = Expression::make_unary(OPERATOR_AND, a1, loc);
+
+              a2 = Expression::make_temporary_reference(s2tmp, loc);
+              a2 = (a2->type()->is_string_type()
+                    ? Expression::make_string_info(a2,
+                                                   STRING_INFO_DATA,
+                                                   loc)
+                    : Expression::make_slice_info(a2,
+                                                  SLICE_INFO_VALUE_POINTER,
+                                                  loc));
+
+              ref = Expression::make_temporary_reference(l2tmp, loc);
+              ref = Expression::make_cast(uintptr_type, ref, loc);
+              a3 = Expression::make_type_info(element_type, TYPE_INFO_SIZE);
+              a3 = Expression::make_binary(OPERATOR_MULT, a3, ref, loc);
+
+              call = Runtime::make_call(Runtime::BUILTIN_MEMMOVE, loc, 3,
+                                        a1, a2, a3);
+            }
         }
       gogo->lower_expression(function, inserter, &call);
       gogo->flatten_expression(function, inserter, &call);
@@ -16538,6 +16643,45 @@ Expression::make_slice_value(Type* at, Expression* valmem, Expression* len,
 	    || (at->array_type()->element_type()
 		== valmem->type()->points_to()));
   return new Slice_value_expression(at, valmem, len, cap, location);
+}
+
+// Look through the expression of a Slice_value_expression's valmem to
+// find an call to makeslice.  If found, return the call expression and
+// the containing temporary statement (if any).
+
+std::pair<Call_expression*, Temporary_statement*>
+Expression::find_makeslice_call(Expression* expr)
+{
+  Unsafe_type_conversion_expression* utce =
+    expr->unsafe_conversion_expression();
+  if (utce != NULL)
+    expr = utce->expr();
+
+  Slice_value_expression* sve = expr->slice_value_expression();
+  if (sve == NULL)
+    return std::make_pair<Call_expression*, Temporary_statement*>(NULL, NULL);
+  expr = sve->valmem();
+
+  utce = expr->unsafe_conversion_expression();
+  if (utce != NULL)
+    expr = utce->expr();
+
+  Temporary_reference_expression* tre = expr->temporary_reference_expression();
+  Temporary_statement* ts = (tre != NULL ? tre->statement() : NULL);
+  if (ts != NULL && ts->init() != NULL && !ts->assigned()
+      && !ts->is_address_taken())
+    expr = ts->init();
+
+  Call_expression* call = expr->call_expression();
+  if (call == NULL)
+    return std::make_pair<Call_expression*, Temporary_statement*>(NULL, NULL);
+
+  Func_expression* fe = call->fn()->func_expression();
+  if (fe != NULL
+      && fe->runtime_code() == Runtime::MAKESLICE)
+    return std::make_pair(call, ts);
+
+  return std::make_pair<Call_expression*, Temporary_statement*>(NULL, NULL);
 }
 
 // An expression that evaluates to some characteristic of a non-empty interface.

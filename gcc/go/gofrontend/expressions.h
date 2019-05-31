@@ -1068,6 +1068,11 @@ class Expression
   static Expression*
   unpack_direct_iface(Expression*, Location);
 
+  // Look through the expression of a Slice_value_expression's valmem to
+  // find an call to makeslice.
+  static std::pair<Call_expression*, Temporary_statement*>
+  find_makeslice_call(Expression*);
+
   // Dump an expression to a dump constext.
   void
   dump_expression(Ast_dump_context*) const;

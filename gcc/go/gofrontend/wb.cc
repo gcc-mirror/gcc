@@ -41,9 +41,6 @@ class Mark_address_taken : public Traverse
   expression(Expression**);
 
  private:
-  Call_expression*
-  find_makeslice_call(Expression*);
-
   // General IR.
   Gogo* gogo_;
   // The function we are traversing.
@@ -100,31 +97,6 @@ Mark_address_taken::statement(Block* block, size_t* pindex, Statement* s)
   return TRAVERSE_CONTINUE;
 }
 
-// Look through the expression of a Slice_value_expression's valmem to
-// find an call to makeslice.
-
-Call_expression*
-Mark_address_taken::find_makeslice_call(Expression* expr)
-{
-  Unsafe_type_conversion_expression* utce =
-    expr->unsafe_conversion_expression();
-  if (utce != NULL)
-    expr = utce->expr();
-
-  Call_expression* call = expr->call_expression();
-  if (call == NULL)
-    return NULL;
-
-  Func_expression* fe = call->fn()->func_expression();
-  if (fe != NULL && fe->runtime_code() == Runtime::MAKESLICE)
-    return call;
-
-  // We don't worry about MAKESLICE64 bcause we don't want to use a
-  // stack allocation for a large slice anyhow.
-
-  return NULL;
-}
-
 // Mark variable addresses taken.
 
 int
@@ -173,7 +145,10 @@ Mark_address_taken::expression(Expression** pexpr)
   Slice_value_expression* sve = expr->slice_value_expression();
   if (sve != NULL)
     {
-      Call_expression* call = this->find_makeslice_call(sve->valmem());
+      std::pair<Call_expression*, Temporary_statement*> p =
+        Expression::find_makeslice_call(sve);
+      Call_expression* call = p.first;
+      Temporary_statement* ts = p.second;
       if (call != NULL
 	  && Node::make_node(call)->encoding() == Node::ESCAPE_NONE)
         {
@@ -203,6 +178,8 @@ Mark_address_taken::expression(Expression** pexpr)
 		Expression::make_slice_value(expr->type(), ptr, len_arg,
 					     cap_arg, loc);
               *pexpr = slice;
+              if (ts != NULL && ts->uses() == 1)
+                ts->set_init(Expression::make_nil(loc));
             }
         }
     }
