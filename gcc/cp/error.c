@@ -738,14 +738,7 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
       name = DECL_NAME (name);
     }
 
-  if (!name || IDENTIFIER_ANON_P (name))
-    {
-      if (flags & TFF_CLASS_KEY_OR_ENUM)
-	pp_string (pp, M_("<unnamed>"));
-      else
-	pp_printf (pp, M_("<unnamed %s>"), variety);
-    }
-  else if (LAMBDA_TYPE_P (t))
+  if (LAMBDA_TYPE_P (t))
     {
       /* A lambda's "type" is essentially its signature.  */
       pp_string (pp, M_("<lambda"));
@@ -755,8 +748,16 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
 			 flags);
       pp_greater (pp);
     }
+  else if (!name || IDENTIFIER_ANON_P (name))
+    {
+      if (flags & TFF_CLASS_KEY_OR_ENUM)
+	pp_string (pp, M_("<unnamed>"));
+      else
+	pp_printf (pp, M_("<unnamed %s>"), variety);
+    }
   else
     pp_cxx_tree_identifier (pp, name);
+
   if (tmplate)
     dump_template_parms (pp, TYPE_TEMPLATE_INFO (t),
 			 !CLASSTYPE_USE_TEMPLATE (t),

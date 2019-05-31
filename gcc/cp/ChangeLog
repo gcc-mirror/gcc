@@ -1,3 +1,17 @@
+2019-05-31  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (IDENTIFIER_LAMBDA_P): New.
+	(TYPE_ANON_P): New.
+	(LAMBDA_TYPE_P, TYPE_UNNAMED_P):  Likewise.
+	(LAMBDANAME_PREFIX, LAMBDANAME_FORMAT): Delete.
+	(make_lambda_name): Don't declare.
+	* error.c (dump_aggr_type): Check for lambdas before other
+	anonymous names.
+	* lambda.c (begin_lambda_type): Use make_anon_name.
+	* cp-lang.c (cxx_dwarf_name): Lambda names smell anonymous.
+	* mangle.c (write_local_name): Likewise.
+	* name-lookup.c (lambda_cnt, make_lambda_name): Delete.
+
 2019-05-30  Marek Polacek  <polacek@redhat.com>
 
 	* cp-tree.h (TYPE_HAS_NONTRIVIAL_DESTRUCTOR): Fix a typo.

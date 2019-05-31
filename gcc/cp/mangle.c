@@ -2004,8 +2004,7 @@ write_local_name (tree function, const tree local_entity,
       write_name (entity, /*ignore_local_scope=*/1);
       if (DECL_DISCRIMINATOR_P (local_entity)
 	  && !(TREE_CODE (local_entity) == TYPE_DECL
-	       && (LAMBDA_TYPE_P (TREE_TYPE (local_entity))
-		   || TYPE_UNNAMED_P (TREE_TYPE (local_entity)))))
+	       && TYPE_ANON_P (TREE_TYPE (local_entity))))
 	write_discriminator (discriminator_for_local_entity (local_entity));
     }
 }
