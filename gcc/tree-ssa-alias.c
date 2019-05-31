@@ -822,6 +822,16 @@ same_type_for_tbaa (tree type1, tree type2)
   return 0;
 }
 
+/* Return true if TYPE is a composite type (i.e. we may apply one of handled
+   components on it).  */
+
+static bool
+type_has_components_p (tree type)
+{
+  return AGGREGATE_TYPE_P (type) || VECTOR_TYPE_P (type)
+	 || TREE_CODE (type) == COMPLEX_TYPE;
+}
+
 /* Determine if the two component references REF1 and REF2 which are
    based on access types TYPE1 and TYPE2 and of which at least one is based
    on an indirect reference may alias.  REF2 is the only one that can
@@ -965,6 +975,7 @@ aliasing_component_refs_p (tree ref1,
      if there is no B2 in the tail of path1 and no B1 on the
      tail of path2.  */
   if (compare_type_sizes (TREE_TYPE (ref2), type1) >= 0
+      && type_has_components_p (TREE_TYPE (ref2))
       && (base1_alias_set == ref2_alias_set
           || alias_set_subset_of (base1_alias_set, ref2_alias_set)))
     {
@@ -974,6 +985,7 @@ aliasing_component_refs_p (tree ref1,
   /* If this is ptr vs. decl then we know there is no ptr ... decl path.  */
   if (!ref2_is_decl
       && compare_type_sizes (TREE_TYPE (ref1), type2) >= 0
+      && type_has_components_p (TREE_TYPE (ref1))
       && (base2_alias_set == ref1_alias_set
 	  || alias_set_subset_of (base2_alias_set, ref1_alias_set)))
     {
