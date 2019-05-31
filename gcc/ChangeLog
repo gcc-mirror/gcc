@@ -1,3 +1,8 @@
+2019-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (lower_rec_simd_input_clauses): Set TREE_THIS_NOTRAP on
+	ivar and lvar.
+
 2019-05-31  Xiong Hu Luo  <luoxhu@linux.ibm.com>
 
 	PR c/43673
