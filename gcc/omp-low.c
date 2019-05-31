@@ -3728,6 +3728,8 @@ lower_rec_simd_input_clauses (tree new_var, omp_context *ctx,
 		     NULL_TREE, NULL_TREE);
       lvar = build4 (ARRAY_REF, TREE_TYPE (new_var), avar, sctx->lane,
 		     NULL_TREE, NULL_TREE);
+      TREE_THIS_NOTRAP (ivar) = 1;
+      TREE_THIS_NOTRAP (lvar) = 1;
     }
   if (DECL_P (new_var))
     {
