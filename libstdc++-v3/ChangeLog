@@ -1,3 +1,19 @@
+2019-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (random_device::_M_init(const char*, size_t)):
+	Add new private member function.
+	* src/c++11/cow-string-inst.cc (random_device::_M_init(const string&))
+	(random_device::_M_init_pretr1(const string&)): Call new private
+	member with string data.
+	* src/c++11/random.cc (random_device::_M_init(const char*, size_t)):
+	Define.
+	* testsuite/26_numerics/random/random_device/cons/default-cow.cc: New
+	test using COW strings.
+	* testsuite/26_numerics/random/random_device/cons/default.cc: Generate
+	a value from the device.
+	* testsuite/26_numerics/random/random_device/cons/token.cc: Likewise.
+	Fix typo in token string.
+
 2019-05-30  Nina Dinka Ranns  <dinka.ranns@gmail.com>
 
 	LWG2788 basic_string spurious use of a default constructible allocator

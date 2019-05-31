@@ -1648,6 +1648,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     result_type _M_getval_pretr1();
     double _M_getentropy() const noexcept;
 
+    void _M_init(const char*, size_t); // not exported from the shared library
+
     union
     {
       struct

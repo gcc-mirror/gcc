@@ -293,6 +293,18 @@ namespace std _GLIBCXX_VISIBILITY(default)
 #endif
   }
 
+  // Called by old ABI version of random_device::_M_init(const std::string&).
+  void
+  random_device::_M_init(const char* s, size_t len)
+  {
+    const std::string token(s, len);
+#ifdef USE_MT19937
+    _M_init_pretr1(token);
+#else
+    _M_init(token);
+#endif
+  }
+
   void
   random_device::_M_fini()
   {
