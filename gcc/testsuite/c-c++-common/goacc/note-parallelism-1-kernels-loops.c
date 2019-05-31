@@ -11,10 +11,10 @@ main ()
 {
   int x, y, z;
 
-#pragma acc kernels /* { dg-message "note: assigned OpenACC seq loop parallelism" } */
+#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
  /* Strangely indented to keep this similar to other test cases.  */
  {
-  for (x = 0; x < 10; x++) /* { dg-message "note: beginning .parloops. region in OpenACC .kernels. construct" } */
+  for (x = 0; x < 10; x++) /* { dg-message "optimized: beginning .parloops. region in OpenACC .kernels. construct" } */
     ;
 
   for (x = 0; x < 10; x++)
