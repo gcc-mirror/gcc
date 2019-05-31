@@ -1,3 +1,46 @@
+2019-05-31  Antony Polukhin  <antoshkka@gmail.com>
+
+	PR libstdc++/71579
+	* include/std/type_traits __type_identity, __is_complete_or_unbounded):
+	New helpers for checking preconditions in traits.
+	(is_trivial, is_trivially_copyable, is_standard_layout, is_pod)
+	(is_literal_type, is_empty, is_polymorphic, is_final, is_abstract)
+	(is_destructible, is_nothrow_destructible, is_constructible)
+	(is_default_constructible, is_copy_constructible)
+	(is_move_constructible, is_nothrow_default_constructible)
+	(is_nothrow_constructible, is_nothrow_copy_constructible)
+	(is_nothrow_move_constructible, is_copy_assignable, is_move_assignable)
+	(is_nothrow_assignable, is_nothrow_copy_assignable)
+	(is_nothrow_move_assignable, is_trivially_constructible)
+	(is_trivially_copy_constructible, is_trivially_move_constructible)
+	is_trivially_assignable, is_trivially_copy_assignable)
+	(is_trivially_move_assignable, is_trivially_destructible)
+	(alignment_of, is_swappable, is_nothrow_swappable, is_invocable)
+	(is_invocable_r, is_nothrow_invocable)
+	(has_unique_object_representations, is_aggregate): Add static_asserts
+	to make sure that type traits are not misused with incomplete types.
+	(__is_constructible_impl, __is_nothrow_default_constructible_impl)
+	(__is_nothrow_constructible_impl, __is_nothrow_assignable_impl): New
+	base characteristics without assertions that can be reused in other
+	traits.
+	* testsuite/20_util/is_complete_or_unbounded/memoization.cc: New test.
+	* testsuite/20_util/is_complete_or_unbounded/memoization_neg.cc: New
+	test.
+	* testsuite/20_util/is_complete_or_unbounded/value.cc: New test.
+	* testsuite/20_util/is_abstract/incomplete_neg.cc: New test.
+	* testsuite/20_util/is_aggregate/incomplete_neg.cc: New test.
+	* testsuite/20_util/is_class/value.cc: Check incomplete type.
+	* testsuite/20_util/is_function/value.cc: Likewise.
+	* testsuite/20_util/is_move_constructible/incomplete_neg.cc: New test.
+	* testsuite/20_util/is_nothrow_move_assignable/incomplete_neg.cc: New
+	test.
+	* testsuite/20_util/is_polymorphic/incomplete_neg.cc: New test.
+	* testsuite/20_util/is_reference/value.cc: Check incomplete types.
+	* testsuite/20_util/is_unbounded_array/value.cc: Likewise.
+	* testsuite/20_util/is_union/value.cc: Likewise.
+	* testsuite/20_util/is_void/value.cc: Likewise.
+	* testsuite/util/testsuite_tr1.h: Add incomplete union type.
+
 2019-05-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/random.h (random_device::_M_init(const char*, size_t)):

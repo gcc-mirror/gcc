@@ -33,8 +33,11 @@ void test01()
   static_assert(test_category<is_reference, int&&>(true), "");
   static_assert(test_category<is_reference, ClassType&&>(true), "");
   static_assert(test_category<is_reference, int(&&)(int)>(true), "");
+  static_assert(test_category<is_reference, IncompleteClass&>(true), "");
+  static_assert(test_category<is_reference, const IncompleteClass&>(true), "");
 
   // Sanity check.
   static_assert(test_category<is_reference, ClassType>(false), "");
+  static_assert(test_category<is_reference, IncompleteClass>(false), "");
 }
 
