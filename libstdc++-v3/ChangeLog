@@ -1,3 +1,7 @@
+2019-05-31  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/allocator.xml: Move hoard.org back to http.
+
 2019-05-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/tuple (tuple<>): Add noexcept to allocator-extended
