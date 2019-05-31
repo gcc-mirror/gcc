@@ -1,3 +1,18 @@
+2019-05-30  Bill Schmidt  <wschmidt@linux.ibm.com>
+	    Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/predicates.md (pcrel_address): New define_predicate.
+	(prefixed_mem_operand): Likewise.
+	(non_prefixed_mem_operand): Likewise.
+	* config/rs6000/rs6000-protos.h (rs6000_prefixed_address): New
+	prototype.
+	* config/rs6000/rs6000.c (print_operand_address): Handle
+	PC-relative addresses.
+	(mode_supports_prefixed_address_p): New function.
+	(rs6000_prefixed_address): New function.
+	* config/rs6000/rs6000.h (SYMBOL_FLAG_PCREL): New #define.
+	(SYMBOL_REF_PCREL_P): Likewise.
+
 2019-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (enum gimplify_omp_var_data): Add GOVD_CONDTEMP.

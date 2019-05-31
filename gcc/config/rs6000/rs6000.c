@@ -21085,6 +21085,30 @@ print_operand_address (FILE *file, rtx x)
 {
   if (REG_P (x))
     fprintf (file, "0(%s)", reg_names[ REGNO (x) ]);
+
+  /* Is it a pc-relative address?  */
+  else if (pcrel_address (x, Pmode))
+    {
+      HOST_WIDE_INT offset;
+
+      if (GET_CODE (x) == CONST)
+	x = XEXP (x, 0);
+
+      if (GET_CODE (x) == PLUS)
+	{
+	  offset = INTVAL (XEXP (x, 1));
+	  x = XEXP (x, 0);
+	}
+      else
+	offset = 0;
+
+      output_addr_const (file, x);
+
+      if (offset)
+	fprintf (file, "%+" PRId64, offset);
+
+      fputs ("@pcrel", file);
+    }
   else if (SYMBOL_REF_P (x) || GET_CODE (x) == CONST
 	   || GET_CODE (x) == LABEL_REF)
     {
@@ -21569,6 +21593,71 @@ rs6000_pltseq_template (rtx *operands, int which)
 }
 #endif
 
+/* Helper function to return whether a MODE can do prefixed loads/stores.
+   VOIDmode is used when we are loading the pc-relative address into a base
+   register, but we are not using it as part of a memory operation.  As modes
+   add support for prefixed memory, they will be added here.  */
+
+static bool
+mode_supports_prefixed_address_p (machine_mode mode)
+{
+  return mode == VOIDmode;
+}
+
+/* Function to return true if ADDR is a valid prefixed memory address that uses
+   mode MODE.  */
+
+bool
+rs6000_prefixed_address (rtx addr, machine_mode mode)
+{
+  if (!TARGET_PREFIXED_ADDR || !mode_supports_prefixed_address_p (mode))
+    return false;
+
+  /* Check for PC-relative addresses.  */
+  if (pcrel_address (addr, Pmode))
+    return true;
+
+  /* Check for prefixed memory addresses that have a large numeric offset,
+     or an offset that can't be used for a DS/DQ-form memory operation.  */
+  if (GET_CODE (addr) == PLUS)
+    {
+      rtx op0 = XEXP (addr, 0);
+      rtx op1 = XEXP (addr, 1);
+
+      if (!base_reg_operand (op0, Pmode) || !CONST_INT_P (op1))
+	return false;
+
+      HOST_WIDE_INT value = INTVAL (op1);
+      if (!SIGNED_34BIT_OFFSET_P (value, 0))
+	return false;
+
+      /* Offset larger than 16-bits?  */
+      if (!SIGNED_16BIT_OFFSET_P (value, 0))
+	return true;
+
+      /* DQ instruction (bottom 4 bits must be 0) for vectors.  */
+      HOST_WIDE_INT mask;
+      if (GET_MODE_SIZE (mode) >= 16)
+	mask = 15;
+
+      /* DS instruction (bottom 2 bits must be 0).  For 32-bit integers, we
+	 need to use DS instructions if we are sign-extending the value with
+	 LWA.  For 32-bit floating point, we need DS instructions to load and
+	 store values to the traditional Altivec registers.  */
+      else if (GET_MODE_SIZE (mode) >= 4)
+	mask = 3;
+
+      /* QImode/HImode has no restrictions.  */
+      else
+	return true;
+
+      /* Return true if we must use a prefixed instruction.  */
+      return (value & mask) != 0;
+    }
+
+  return false;
+}
+
 #if defined (HAVE_GAS_HIDDEN) && !TARGET_MACHO
 /* Emit an assembler directive to set symbol visibility for DECL to
    VISIBILITY_TYPE.  */
