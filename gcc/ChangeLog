@@ -1,3 +1,8 @@
+2019-05-31  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd (X/[ex]D<Y/[ex]D): Handle negative denominator.
+	((size_t)(A /[ex] B) CMP C): New transformation.
+
 2019-05-31  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* doc/md.texi: Document define_insn_and_rewrite.

@@ -1497,7 +1497,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (cmp (exact_div @0 INTEGER_CST@2) (exact_div @1 @2))
   (if (wi::gt_p (wi::to_wide (@2), 0, TYPE_SIGN (TREE_TYPE (@2))))
-   (cmp @0 @1))))
+   (cmp @0 @1)
+   (if (wi::lt_p (wi::to_wide (@2), 0, TYPE_SIGN (TREE_TYPE (@2))))
+    (cmp @1 @0)))))
 
 /* X / C1 op C2 into a simple range test.  */
 (for cmp (simple_comparison)
@@ -3632,6 +3634,33 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 					TYPE_SIGN (TREE_TYPE (@2)))
 			      != (cmp == LT_EXPR || cmp == LE_EXPR), type); }
      (cmp @0 { wide_int_to_tree (TREE_TYPE (@0), prod); }))))))
+
+/* Fold (size_t)(A /[ex] B) CMP C to (size_t)A CMP (size_t)B * C or A CMP' 0.
+
+   For small C (less than max/B), this is (size_t)A CMP (size_t)B * C.
+   For large C (more than min/B+2^size), this is also true, with the
+   multiplication computed modulo 2^size.
+   For intermediate C, this just tests the sign of A.  */
+(for cmp  (lt le gt ge)
+     cmp2 (ge ge lt lt)
+ (simplify
+  (cmp (convert (exact_div @0 INTEGER_CST@1)) INTEGER_CST@2)
+  (if (tree_nop_conversion_p (TREE_TYPE (@0), TREE_TYPE (@2))
+       && TYPE_UNSIGNED (TREE_TYPE (@2)) && !TYPE_UNSIGNED (TREE_TYPE (@0))
+       && wi::gt_p (wi::to_wide (@1), 0, TYPE_SIGN (TREE_TYPE (@1))))
+   (with
+    {
+      tree utype = TREE_TYPE (@2);
+      wide_int denom = wi::to_wide (@1);
+      wide_int right = wi::to_wide (@2);
+      wide_int smax = wi::sdiv_trunc (wi::max_value (TREE_TYPE (@0)), denom);
+      wide_int smin = wi::sdiv_trunc (wi::min_value (TREE_TYPE (@0)), denom);
+      bool small = wi::leu_p (right, smax);
+      bool large = wi::geu_p (right, smin);
+    }
+    (if (small || large)
+     (cmp (convert:utype @0) (mult @2 (convert @1)))
+     (cmp2 @0 { build_zero_cst (TREE_TYPE (@0)); }))))))
 
 /* Unordered tests if either argument is a NaN.  */
 (simplify
