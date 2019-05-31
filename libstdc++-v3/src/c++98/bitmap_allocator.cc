@@ -28,6 +28,8 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  using std::size_t;
+
   namespace __detail
   {
     template class __mini_vector<

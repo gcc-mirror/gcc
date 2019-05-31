@@ -1,5 +1,7 @@
 2019-05-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/c++98/bitmap_allocator.cc: Add using-declaration for size_t.
+
 	PR libstdc++/90682
 	* libsupc++/eh_term_handler.cc: Include eh_term_handler.h to get
 	definition of _GLIBCXX_DEFAULT_TERM_HANDLER.
