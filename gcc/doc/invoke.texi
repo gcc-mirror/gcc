@@ -388,7 +388,7 @@ Objective-C and Objective-C++ Dialects}.
 -fno-eliminate-unused-debug-types @gol
 -femit-struct-debug-baseonly  -femit-struct-debug-reduced @gol
 -femit-struct-debug-detailed@r{[}=@var{spec-list}@r{]} @gol
--feliminate-unused-debug-symbols  -femit-class-debug-always @gol
+-fno-eliminate-unused-debug-symbols  -femit-class-debug-always @gol
 -fno-merge-debug-strings  -fno-dwarf2-cfi-asm @gol
 -fvar-tracking  -fvar-tracking-assignments}
 
@@ -7828,10 +7828,11 @@ confusion with @option{-gdwarf-@var{level}}.
 Instead use an additional @option{-g@var{level}} option to change the
 debug level for DWARF.
 
-@item -feliminate-unused-debug-symbols
+@item -fno-eliminate-unused-debug-symbols
 @opindex feliminate-unused-debug-symbols
-Produce debugging information in stabs format (if that is supported),
-for only symbols that are actually used.
+@opindex fno-eliminate-unused-debug-symbols
+By default, no debug information is produced for symbols that are not actually
+used. Use this option if you want debug information for all symbols.
 
 @item -femit-class-debug-always
 @opindex femit-class-debug-always
