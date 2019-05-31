@@ -1,3 +1,20 @@
+2019-05-31  Thomas De Schampheleire  <thomas.de_schampheleire@nokia.com>
+
+	PR debug/86964
+	* g++.dg/debug/dwarf2/fesd-any.C: Use
+	-fno-eliminate-unused-debug-symbols.
+	* g++.dg/debug/dwarf2/fesd-baseonly.C: Likewise.
+	* g++.dg/debug/dwarf2/fesd-none.C: Likewise.
+	* g++.dg/debug/dwarf2/fesd-reduced.C: Likewise.
+	* g++.dg/debug/dwarf2/fesd-sys.C: Likewise.
+	* g++.dg/debug/dwarf2/inline-var-1.C: Likewise.
+	* g++.dg/debug/enum-2.C: Likewise.
+	* gcc.dg/debug/dwarf2/fesd-any.c: Likewise.
+	* gcc.dg/debug/dwarf2/fesd-baseonly.c: Likewise.
+	* gcc.dg/debug/dwarf2/fesd-none.c: Likewise.
+	* gcc.dg/debug/dwarf2/fesd-reduced.c: Likewise.
+	* gcc.dg/debug/dwarf2/fesd-sys.c: Likewise.
+
 2019-05-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/90671
