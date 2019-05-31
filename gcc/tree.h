@@ -1752,6 +1752,10 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE__GRIDDIM__GROUP(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__GRIDDIM_), 1)
 
+/* _CONDTEMP_ holding temporary with iteration count.  */
+#define OMP_CLAUSE__CONDTEMP__ITER(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__CONDTEMP_)->base.public_flag)
+
 /* SSA_NAME accessors.  */
 
 /* Whether SSA_NAME NODE is a virtual operand.  This simply caches the

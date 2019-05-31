@@ -1,5 +1,10 @@
 2019-05-31  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/gomp/lastprivate-conditional-2.c (foo): Don't expect
+	a sorry on lastprivate conditional on simd construct.
+	* gcc.dg/vect/vect-simd-6.c: New test.
+	* gcc.dg/vect/vect-simd-7.c: New test.
+
 	* gcc.dg/vect/vect-simd-5.c: New test.
 
 2019-05-31  Xiong Hu Luo  <luoxhu@linux.ibm.com>
