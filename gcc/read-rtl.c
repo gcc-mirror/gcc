@@ -286,9 +286,11 @@ apply_subst_iterator (rtx rt, unsigned int, int value)
     return;
   gcc_assert (GET_CODE (rt) == DEFINE_INSN
 	      || GET_CODE (rt) == DEFINE_INSN_AND_SPLIT
+	      || GET_CODE (rt) == DEFINE_INSN_AND_REWRITE
 	      || GET_CODE (rt) == DEFINE_EXPAND);
 
-  int attrs = GET_CODE (rt) == DEFINE_INSN_AND_SPLIT ? 7 : 4;
+  int attrs = (GET_CODE (rt) == DEFINE_INSN_AND_SPLIT ? 7
+	       : GET_CODE (rt) == DEFINE_INSN_AND_REWRITE ? 6 : 4);
   attrs_vec = XVEC (rt, attrs);
 
   /* If we've already added attribute 'current_iterator_name', then we
@@ -549,6 +551,7 @@ add_condition_to_rtx (rtx x, const char *extra)
       break;
 
     case DEFINE_INSN_AND_SPLIT:
+    case DEFINE_INSN_AND_REWRITE:
       XSTR (x, 2) = add_condition_to_string (XSTR (x, 2), extra);
       XSTR (x, 4) = add_condition_to_string (XSTR (x, 4), extra);
       break;
@@ -632,6 +635,7 @@ named_rtx_p (rtx x)
     case DEFINE_EXPAND:
     case DEFINE_INSN:
     case DEFINE_INSN_AND_SPLIT:
+    case DEFINE_INSN_AND_REWRITE:
       return true;
 
     default:
@@ -1837,8 +1841,8 @@ rtx_reader::read_rtx_operand (rtx return_rtx, int idx)
 	    break;
 	  }
 
-	/* The output template slot of a DEFINE_INSN,
-	   DEFINE_INSN_AND_SPLIT, or DEFINE_PEEPHOLE automatically
+	/* The output template slot of a DEFINE_INSN, DEFINE_INSN_AND_SPLIT,
+	   DEFINE_INSN_AND_REWRITE or DEFINE_PEEPHOLE automatically
 	   gets a star inserted as its first character, if it is
 	   written with a brace block instead of a string constant.  */
 	star_if_braced = (format_ptr[idx] == 'T');
@@ -1855,7 +1859,8 @@ rtx_reader::read_rtx_operand (rtx return_rtx, int idx)
 	if (*stringbuf == '\0'
 	    && idx == 0
 	    && (GET_CODE (return_rtx) == DEFINE_INSN
-		|| GET_CODE (return_rtx) == DEFINE_INSN_AND_SPLIT))
+		|| GET_CODE (return_rtx) == DEFINE_INSN_AND_SPLIT
+		|| GET_CODE (return_rtx) == DEFINE_INSN_AND_REWRITE))
 	  {
 	    struct obstack *string_obstack = get_string_obstack ();
 	    char line_name[20];

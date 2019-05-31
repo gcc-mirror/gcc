@@ -936,6 +936,12 @@ DEF_RTL_EXPR(DEFINE_SPLIT, "define_split", "EsES", RTX_EXTRA)
    7: optionally, a vector of attributes for this insn.  */
 DEF_RTL_EXPR(DEFINE_INSN_AND_SPLIT, "define_insn_and_split", "sEsTsESV", RTX_EXTRA)
 
+/* A form of define_insn_and_split in which the split insn pattern (operand 5)
+   is determined automatically by replacing match_operands with match_dups
+   and match_operators with match_op_dups.  The operands are the same as
+   define_insn_and_split but with operand 5 removed.  */
+DEF_RTL_EXPR(DEFINE_INSN_AND_REWRITE, "define_insn_and_rewrite", "sEsTsSV", RTX_EXTRA)
+
 /* Definition of an RTL peephole operation.
    Follows the same arguments as define_split.  */
 DEF_RTL_EXPR(DEFINE_PEEPHOLE2, "define_peephole2", "EsES", RTX_EXTRA)
