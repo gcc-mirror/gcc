@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-mdejagnu-cpu=future -O2" } */
 /* { dg-require-effective-target powerpc_elfv2 } */
+/* { dg-require-effective-target powerpc_future_ok } */
 
 /* Test that calls generated from PC-relative code are
    annotated with @notoc.  */
