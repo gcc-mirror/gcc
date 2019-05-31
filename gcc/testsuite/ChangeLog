@@ -1,3 +1,8 @@
+2019-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90671
+	* gcc.dg/torture/pr90671.c: New test.
+
 2019-05-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/cpp0x/pr84497.C: Require alias support.

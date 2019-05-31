@@ -1,3 +1,11 @@
+2019-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90671
+	* tree-ssa-threadupdate.c (ssa_create_duplicates): If
+	template_block used to be empty on the first call, don't use
+	gsi_split_seq_after and gsi_insert_seq_after, but remember whole
+	seq with bb_seq and set it with set_bb_seq.
+
 2019-05-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/i386/darwin.h (ASM_OUTPUT_MAX_SKIP_ALIGN): New.
