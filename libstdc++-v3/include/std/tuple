@@ -898,9 +898,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       tuple() = default;
       // No-op allocator constructors.
       template<typename _Alloc>
-	tuple(allocator_arg_t, const _Alloc&) { }
+	tuple(allocator_arg_t, const _Alloc&) noexcept { }
       template<typename _Alloc>
-	tuple(allocator_arg_t, const _Alloc&, const tuple&) { }
+	tuple(allocator_arg_t, const _Alloc&, const tuple&) noexcept { }
     };
 
   /// Partial specialization, 2-element tuple.
@@ -925,11 +925,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _U1, typename _U2>
-    static constexpr bool __nothrow_constructible()
-    {
-      return __and_<is_nothrow_constructible<_T1, _U1>,
-			is_nothrow_constructible<_T2, _U2>>::value;
-    }
+	static constexpr bool __nothrow_constructible()
+	{
+	  return __and_<is_nothrow_constructible<_T1, _U1>,
+			    is_nothrow_constructible<_T2, _U2>>::value;
+	}
+
+      static constexpr bool __nothrow_default_constructible()
+      {
+	return __and_<is_nothrow_default_constructible<_T1>,
+		      is_nothrow_default_constructible<_T2>>::value;
+      }
 
     public:
       template <typename _U1 = _T1,
@@ -939,8 +945,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                                      __is_implicitly_default_constructible<_U2>>
                                    ::value, bool>::type = true>
 	constexpr tuple()
-	noexcept(__and_<is_nothrow_default_constructible<_T1>,
-			is_nothrow_default_constructible<_T2>>::value)
+	noexcept(__nothrow_default_constructible())
 	: _Inherited() { }
 
       template <typename _U1 = _T1,
@@ -954,8 +959,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                              __is_implicitly_default_constructible<_U2>>>>
                   ::value, bool>::type = false>
 	explicit constexpr tuple()
-	noexcept(__and_<is_nothrow_default_constructible<_T1>,
-			is_nothrow_default_constructible<_T2>>::value)
+	noexcept(__nothrow_default_constructible())
 	: _Inherited() { }
 
       // Shortcut for the cases where constructors taking _T1, _T2
@@ -1108,7 +1112,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                  && _TCC<_Dummy>::template
                    _ImplicitlyConvertibleTuple<_T1, _T2>(),
                bool>::type=true>
-
 	tuple(allocator_arg_t __tag, const _Alloc& __a,
 	      const _T1& __a1, const _T2& __a2)
 	: _Inherited(__tag, __a, __a1, __a2) { }
