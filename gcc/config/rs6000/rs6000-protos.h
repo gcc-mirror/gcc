@@ -154,6 +154,7 @@ extern align_flags rs6000_loop_align (rtx);
 extern void rs6000_split_logical (rtx [], enum rtx_code, bool, bool, bool);
 extern bool rs6000_pcrel_p (struct function *);
 extern bool rs6000_fndecl_pcrel_p (const_tree);
+extern bool rs6000_prefixed_address (rtx, machine_mode);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
