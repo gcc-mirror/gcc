@@ -1,3 +1,7 @@
+2019-05-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/darwin.h (ASM_OUTPUT_MAX_SKIP_ALIGN): New.
+
 2019-05-30  Bill Schmidt  <wschmidt@linux.ibm.com>
 	    Michael Meissner  <meissner@linux.ibm.com>
 
