@@ -1,3 +1,8 @@
+2019-05-31  Michael Forney  <mforney@mforney.org>
+
+	* cp-demangle.c: Don't define CP_DYNAMIC_ARRAYS if __STDC_NO_VLA__
+	is non-zero.
+
 2019-04-30  Ben L  <bobsayshilol@live.co.uk>
 
 	* d-demangle.c (dlang_parse_assocarray): Correctly handle error result.
