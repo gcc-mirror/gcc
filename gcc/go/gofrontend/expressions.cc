@@ -3842,11 +3842,20 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
       mpz_t intval;
       Numeric_constant nc;
       if (this->expr_->numeric_constant_value(&nc)
-	  && nc.to_int(&intval)
-	  && mpz_fits_ushort_p(intval))
+	  && nc.to_int(&intval))
 	{
 	  std::string s;
-	  Lex::append_char(mpz_get_ui(intval), true, &s, loc);
+          unsigned int x;
+          if (mpz_fits_uint_p(intval))
+            x = mpz_get_ui(intval);
+          else
+            {
+              char* s = mpz_get_str(NULL, 16, intval);
+              go_warning_at(loc, 0,
+                            "unicode code point 0x%s out of range in string", s);
+              x = 0xfffd;
+            }
+	  Lex::append_char(x, true, &s, loc);
 	  mpz_clear(intval);
 	  Expression* se = Expression::make_string(s, loc);
 	  return se->get_backend(context);
