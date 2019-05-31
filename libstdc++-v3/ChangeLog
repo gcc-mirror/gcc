@@ -1,5 +1,13 @@
 2019-05-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/tuple (tuple<>): Add noexcept to allocator-extended
+	constructors.
+	(tuple<T1, T2>::__nothrow_default_constructible()): New helper
+	function.
+	(tuple<T1, T2>::tuple(), explicit tuple<T1, T2>::tuple()): Use helper.
+
+2019-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
 	* src/c++98/bitmap_allocator.cc: Add using-declaration for size_t.
 
 	PR libstdc++/90682
