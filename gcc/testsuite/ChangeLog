@@ -1,5 +1,9 @@
 2019-05-31  Marc Glisse  <marc.glisse@inria.fr>
 
+	* g++.dg/tree-ssa/cprop-vcond.C: New file.
+
+2019-05-31  Marc Glisse  <marc.glisse@inria.fr>
+
 	* gcc.dg/tree-ssa/cmpexactdiv-3.c: New file.
 	* gcc.dg/tree-ssa/cmpexactdiv-4.c: New file.
 	* gcc.dg/Walloca-13.c: Xfail.
