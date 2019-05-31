@@ -1043,6 +1043,9 @@ Assignment_statement*
 Statement::make_assignment(Expression* lhs, Expression* rhs,
 			   Location location)
 {
+  Temporary_reference_expression* tre = lhs->temporary_reference_expression();
+  if (tre != NULL)
+    tre->statement()->set_assigned();
   return new Assignment_statement(lhs, rhs, location);
 }
 
