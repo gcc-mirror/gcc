@@ -2920,6 +2920,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (integer_zerop (@0))
    @2)))
 
+/* Sink unary operations to constant branches, but only if we do fold it to
+   constants.  */
+(for op (negate bit_not abs absu)
+ (simplify
+  (op (vec_cond @0 VECTOR_CST@1 VECTOR_CST@2))
+  (with
+   {
+     tree cst1, cst2;
+     cst1 = const_unop (op, type, @1);
+     if (cst1)
+       cst2 = const_unop (op, type, @2);
+   }
+   (if (cst1 && cst2)
+    (vec_cond @0 { cst1; } { cst2; })))))
+
 /* Simplification moved from fold_cond_expr_with_comparison.  It may also
    be extended.  */
 /* This pattern implements two kinds simplification:
