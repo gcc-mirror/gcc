@@ -69,17 +69,6 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  using std::size_t;
-  using std::ptrdiff_t;
-  using std::forward_iterator_tag;
-  using std::input_iterator_tag;
-  using std::_Construct;
-  using std::_Destroy;
-  using std::distance;
-  using std::vector;
-  using std::pair;
-  using std::__iterator_category;
-
   template<class _Val>
     struct _Hashtable_node
     {
@@ -112,10 +101,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					_ExtractKey, _EqualKey, _Alloc>
         const_iterator;
       typedef _Hashtable_node<_Val> _Node;
-      typedef forward_iterator_tag iterator_category;
+      typedef std::forward_iterator_tag iterator_category;
       typedef _Val value_type;
-      typedef ptrdiff_t difference_type;
-      typedef size_t size_type;
+      typedef std::ptrdiff_t difference_type;
+      typedef std::size_t size_type;
       typedef _Val& reference;
       typedef _Val* pointer;
       
@@ -164,10 +153,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         const_iterator;
       typedef _Hashtable_node<_Val> _Node;
 
-      typedef forward_iterator_tag iterator_category;
+      typedef std::forward_iterator_tag iterator_category;
       typedef _Val value_type;
-      typedef ptrdiff_t difference_type;
-      typedef size_t size_type;
+      typedef std::ptrdiff_t difference_type;
+      typedef std::size_t size_type;
       typedef const _Val& reference;
       typedef const _Val* pointer;
       
@@ -272,8 +261,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _HashFcn hasher;
       typedef _EqualKey key_equal;
 
-      typedef size_t            size_type;
-      typedef ptrdiff_t         difference_type;
+      typedef std::size_t            size_type;
+      typedef std::ptrdiff_t         difference_type;
       typedef value_type*       pointer;
       typedef const value_type* const_pointer;
       typedef value_type&       reference;
@@ -299,7 +288,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       typedef typename _Alloc::template rebind<_Node>::other _Node_Alloc;
       typedef typename _Alloc::template rebind<_Node*>::other _Nodeptr_Alloc;
-      typedef vector<_Node*, _Nodeptr_Alloc> _Vector_type;
+      typedef std::vector<_Node*, _Nodeptr_Alloc> _Vector_type;
 
       _Node_Alloc _M_node_allocator;
 
@@ -445,7 +434,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __result;
       }
 
-      pair<iterator, bool>
+      std::pair<iterator, bool>
       insert_unique(const value_type& __obj)
       {
 	resize(_M_num_elements + 1);
@@ -459,7 +448,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return insert_equal_noresize(__obj);
       }
 
-      pair<iterator, bool>
+      std::pair<iterator, bool>
       insert_unique_noresize(const value_type& __obj);
 
       iterator
@@ -468,17 +457,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<class _InputIterator>
         void
         insert_unique(_InputIterator __f, _InputIterator __l)
-        { insert_unique(__f, __l, __iterator_category(__f)); }
+        { insert_unique(__f, __l, std::__iterator_category(__f)); }
 
       template<class _InputIterator>
         void
         insert_equal(_InputIterator __f, _InputIterator __l)
-        { insert_equal(__f, __l, __iterator_category(__f)); }
+        { insert_equal(__f, __l, std::__iterator_category(__f)); }
 
       template<class _InputIterator>
         void
         insert_unique(_InputIterator __f, _InputIterator __l,
-		      input_iterator_tag)
+		      std::input_iterator_tag)
         {
 	  for ( ; __f != __l; ++__f)
 	    insert_unique(*__f);
@@ -487,7 +476,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<class _InputIterator>
         void
         insert_equal(_InputIterator __f, _InputIterator __l,
-		     input_iterator_tag)
+		     std::input_iterator_tag)
         {
 	  for ( ; __f != __l; ++__f)
 	    insert_equal(*__f);
@@ -496,9 +485,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<class _ForwardIterator>
         void
         insert_unique(_ForwardIterator __f, _ForwardIterator __l,
-		      forward_iterator_tag)
+		      std::forward_iterator_tag)
         {
-	  size_type __n = distance(__f, __l);
+	  size_type __n = std::distance(__f, __l);
 	  resize(_M_num_elements + __n);
 	  for ( ; __n > 0; --__n, ++__f)
 	    insert_unique_noresize(*__f);
@@ -507,9 +496,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<class _ForwardIterator>
         void
         insert_equal(_ForwardIterator __f, _ForwardIterator __l,
-		     forward_iterator_tag)
+		     std::forward_iterator_tag)
         {
-	  size_type __n = distance(__f, __l);
+	  size_type __n = std::distance(__f, __l);
 	  resize(_M_num_elements + __n);
 	  for ( ; __n > 0; --__n, ++__f)
 	    insert_equal_noresize(*__f);
@@ -555,10 +544,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __result;
       }
 
-      pair<iterator, iterator>
+      std::pair<iterator, iterator>
       equal_range(const key_type& __key);
 
-      pair<const_iterator, const_iterator>
+      std::pair<const_iterator, const_iterator>
       equal_range(const key_type& __key) const;
 
       size_type
@@ -605,11 +594,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_bkt_num_key(_M_get_key(__obj)); }
 
       size_type
-      _M_bkt_num_key(const key_type& __key, size_t __n) const
+      _M_bkt_num_key(const key_type& __key, std::size_t __n) const
       { return _M_hash(__key) % __n; }
 
       size_type
-      _M_bkt_num(const value_type& __obj, size_t __n) const
+      _M_bkt_num(const value_type& __obj, std::size_t __n) const
       { return _M_bkt_num_key(_M_get_key(__obj), __n); }
 
       _Node*
@@ -712,7 +701,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__ht1._M_buckets.size() != __ht2._M_buckets.size())
 	return false;
 
-      for (size_t __n = 0; __n < __ht1._M_buckets.size(); ++__n)
+      for (std::size_t __n = 0; __n < __ht1._M_buckets.size(); ++__n)
 	{
 	  _Node* __cur1 = __ht1._M_buckets[__n];
 	  _Node* __cur2 = __ht2._M_buckets[__n];
@@ -757,7 +746,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { __ht1.swap(__ht2); }
 
   template<class _Val, class _Key, class _HF, class _Ex, class _Eq, class _All>
-    pair<typename hashtable<_Val, _Key, _HF, _Ex, _Eq, _All>::iterator, bool>
+    std::pair<typename hashtable<_Val, _Key, _HF, _Ex, _Eq, _All>::iterator,
+	      bool>
     hashtable<_Val, _Key, _HF, _Ex, _Eq, _All>::
     insert_unique_noresize(const value_type& __obj)
     {
@@ -766,13 +756,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       
       for (_Node* __cur = __first; __cur; __cur = __cur->_M_next)
 	if (_M_equals(_M_get_key(__cur->_M_val), _M_get_key(__obj)))
-	  return pair<iterator, bool>(iterator(__cur, this), false);
+	  return std::pair<iterator, bool>(iterator(__cur, this), false);
       
       _Node* __tmp = _M_new_node(__obj);
       __tmp->_M_next = __first;
       _M_buckets[__n] = __tmp;
       ++_M_num_elements;
-      return pair<iterator, bool>(iterator(__tmp, this), true);
+      return std::pair<iterator, bool>(iterator(__tmp, this), true);
     }
 
   template<class _Val, class _Key, class _HF, class _Ex, class _Eq, class _All>
@@ -822,12 +812,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<class _Val, class _Key, class _HF, class _Ex, class _Eq, class _All>
-    pair<typename hashtable<_Val, _Key, _HF, _Ex, _Eq, _All>::iterator,
-	 typename hashtable<_Val, _Key, _HF, _Ex, _Eq, _All>::iterator>
+    std::pair<typename hashtable<_Val, _Key, _HF, _Ex, _Eq, _All>::iterator,
+	      typename hashtable<_Val, _Key, _HF, _Ex, _Eq, _All>::iterator>
     hashtable<_Val, _Key, _HF, _Ex, _Eq, _All>::
     equal_range(const key_type& __key)
     {
-      typedef pair<iterator, iterator> _Pii;
+      typedef std::pair<iterator, iterator> _Pii;
       const size_type __n = _M_bkt_num_key(__key);
 
       for (_Node* __first = _M_buckets[__n]; __first;
@@ -848,12 +838,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<class _Val, class _Key, class _HF, class _Ex, class _Eq, class _All>
-    pair<typename hashtable<_Val, _Key, _HF, _Ex, _Eq, _All>::const_iterator,
-	 typename hashtable<_Val, _Key, _HF, _Ex, _Eq, _All>::const_iterator>
+    std::pair<
+	typename hashtable<_Val, _Key, _HF, _Ex, _Eq, _All>::const_iterator,
+	typename hashtable<_Val, _Key, _HF, _Ex, _Eq, _All>::const_iterator>
     hashtable<_Val, _Key, _HF, _Ex, _Eq, _All>::
     equal_range(const key_type& __key) const
     {
-      typedef pair<const_iterator, const_iterator> _Pii;
+      typedef std::pair<const_iterator, const_iterator> _Pii;
       const size_type __n = _M_bkt_num_key(__key);
 
       for (const _Node* __first = _M_buckets[__n]; __first;
