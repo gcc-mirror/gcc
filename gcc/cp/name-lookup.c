@@ -3797,22 +3797,6 @@ constructor_name_p (tree name, tree type)
   return false;
 }
 
-/* This code is practically identical to that for creating anonymous
-   names, but is just used for lambdas instead.  This isn't really
-   necessary, but it's convenient to avoid mistaking lambdas for other
-   unnamed types.  */
-
-static GTY(()) int lambda_cnt = 0;
-
-tree
-make_lambda_name (void)
-{
-  char buf[32];
-
-  sprintf (buf, LAMBDANAME_FORMAT, lambda_cnt++);
-  return get_identifier (buf);
-}
-
 /* Same as pushdecl, but define X in binding-level LEVEL.  We rely on the
    caller to set DECL_CONTEXT properly.
 
