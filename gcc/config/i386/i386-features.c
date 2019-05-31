@@ -1911,10 +1911,7 @@ rest_of_insert_endbranch (void)
 	      continue;
 	    }
 
-	  if ((LABEL_P (insn) && LABEL_PRESERVE_P (insn))
-	      || (NOTE_P (insn)
-		  && NOTE_KIND (insn) == NOTE_INSN_DELETED_LABEL))
-	    /* TODO.  Check /s bit also.  */
+	  if (LABEL_P (insn) && LABEL_PRESERVE_P (insn))
 	    {
 	      cet_eb = gen_nop_endbr ();
 	      emit_insn_after (cet_eb, insn);

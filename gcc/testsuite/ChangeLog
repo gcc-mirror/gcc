@@ -1,3 +1,10 @@
+2019-05-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89355
+	* gcc.target/i386/cet-label-3.c: New test.
+	* gcc.target/i386/cet-label-4.c: Likewise.
+	* gcc.target/i386/cet-label-5.c: Likewise.
+
 2019-05-31  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
 
 	* gcc.target/mips/msa-fmadd.c: New.

@@ -1,3 +1,10 @@
+2019-05-31  H.J. Lu  <hongjiu.lu@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/89355
+	* config/i386/i386-features.c (rest_of_insert_endbranch): Remove
+	NOTE_INSN_DELETED_LABEL check.
+
 2019-05-31  Prachi Godbole  <prachi.godbole@imgtec.com>
             Robert Suchanek  <robert.suchanek@mips.com>
 
