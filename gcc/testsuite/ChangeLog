@@ -1,3 +1,14 @@
+2019-05-31  Bill Schmidt  <wschmidt@linux.ibm.com>
+	    Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/cpu-future.c: Require powerpc_future_ok.
+	* gcc.target/powerpc/localentry-1.c: Likewise.
+	* gcc.target/powerpc/localentry-direct-1.c: Likewise.
+	* gcc.target/powerpc/notoc-direct-1.c: Likewise.
+	* gcc.target/powerpc/pcrel-sibcall-1.c: Likewise.
+	* lib/target-supports.exp (check_powerpc_future_hw_available): New.
+	(check_effective_target_powerpc_future_ok): New.
+
 2019-05-31  Thomas De Schampheleire  <thomas.de_schampheleire@nokia.com>
 
 	PR debug/86964

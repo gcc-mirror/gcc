@@ -2140,6 +2140,25 @@ proc check_p9modulo_hw_available { } {
     }]
 }
 
+
+# Return 1 if the target supports executing FUTURE instructions, 0 otherwise.
+# Cache the result.  It is assumed that if a simulator does not support the
+# FUTURE instructions, that it will generate an error and this test will fail.
+
+proc check_powerpc_future_hw_available { } {
+    return [check_cached_effective_target powerpc_future_hw_available {
+	check_runtime_nocache powerpc_future_hw_available {
+	    int main()
+	    {
+		/* Set e first and use +r to check if pli actually works.  */
+		long e = -1;
+		asm ("pli %0,%1" : "+r" (e) : "n" (0x12345));
+		return (e == 0x12345);
+	    }
+	} "-mfuture"
+    }]
+}
+
 # Return 1 if the target supports executing __float128 on PowerPC via software
 # emulation, 0 otherwise.  Cache the result.
 
@@ -5152,6 +5171,24 @@ proc check_effective_target_powerpc_p9modulo_ok { } {
 		return (r == 2);
 	    }
 	} "-mmodulo"]
+    } else {
+	return 0
+    }
+}
+
+# Return 1 if this is a PowerPC target supporting -mfuture.
+# Limit this to 64-bit linux systems for now until other
+# targets support FUTURE.
+
+proc check_effective_target_powerpc_future_ok { } {
+    if { ([istarget powerpc64*-*-linux*]) } {
+	return [check_no_compiler_messages powerpc_future_ok object {
+	    int main (void) {
+		long e;
+		asm ("pli %0,%1" : "=r" (e) : "n" (0x12345));
+		return e;
+	    }
+	} "-mfuture"]
     } else {
 	return 0
     }
