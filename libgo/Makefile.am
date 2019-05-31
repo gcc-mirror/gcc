@@ -481,6 +481,7 @@ runtime_files = \
 	runtime/runtime_c.c \
 	runtime/stack.c \
 	runtime/yield.c \
+	runtime/go-context.S \
 	$(rtems_task_variable_add_file) \
 	$(runtime_getncpu_file)
 
