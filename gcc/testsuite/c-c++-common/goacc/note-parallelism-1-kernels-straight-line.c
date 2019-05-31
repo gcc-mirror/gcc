@@ -29,19 +29,19 @@ main ()
 
 #pragma acc kernels /* { dg-warning "region contains gang partitoned code but is not gang partitioned" } */
   {
-    x = 0; /* { dg-message "note: beginning .gang-single. region in OpenACC .kernels. construct" } */
+    x = 0; /* { dg-message "optimized: beginning .gang-single. region in OpenACC .kernels. construct" } */
     y = x < 10;
     z = x++;
     ;
 
     y = 0;
     z = y < 10;
-    x -= f_g (y++); /* { dg-message "note: assigned OpenACC gang worker vector loop parallelism" } */
+    x -= f_g (y++); /* { dg-message "optimized: assigned OpenACC gang worker vector loop parallelism" } */
     ;
 
-    x = f_w (0); /* { dg-message "note: assigned OpenACC worker vector loop parallelism" } */
-    z = f_v (x < 10); /* { dg-message "note: assigned OpenACC vector loop parallelism" } */
-    y -= f_s (x++); /* { dg-message "note: assigned OpenACC seq loop parallelism" } */
+    x = f_w (0); /* { dg-message "optimized: assigned OpenACC worker vector loop parallelism" } */
+    z = f_v (x < 10); /* { dg-message "optimized: assigned OpenACC vector loop parallelism" } */
+    y -= f_s (x++); /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
     ;
 
     x = 0;
@@ -53,20 +53,20 @@ main ()
     ;
 
     x = 0;
-    y += f_s (x < 10); /* { dg-message "note: assigned OpenACC seq loop parallelism" } */
+    y += f_s (x < 10); /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
     x++;
     y = 0;
-    y += f_v (y < 10); /* { dg-message "note: assigned OpenACC vector loop parallelism" } */
+    y += f_v (y < 10); /* { dg-message "optimized: assigned OpenACC vector loop parallelism" } */
     y++;
     z = 0;
-    y += f_w (z < 10); /* { dg-message "note: assigned OpenACC worker vector loop parallelism" } */
+    y += f_w (z < 10); /* { dg-message "optimized: assigned OpenACC worker vector loop parallelism" } */
     z++;
     ;
 
     x = 0;
-    y *= f_g ( /* { dg-message "note: assigned OpenACC gang worker vector loop parallelism" } */
-	      f_w (x < 10) /* { dg-message "note: assigned OpenACC worker vector loop parallelism" } */
-	      + f_g (x < 10) /* { dg-message "note: assigned OpenACC gang worker vector loop parallelism" } */
+    y *= f_g ( /* { dg-message "optimized: assigned OpenACC gang worker vector loop parallelism" } */
+	      f_w (x < 10) /* { dg-message "optimized: assigned OpenACC worker vector loop parallelism" } */
+	      + f_g (x < 10) /* { dg-message "optimized: assigned OpenACC gang worker vector loop parallelism" } */
 	      );
     x++;
     y = 0;
