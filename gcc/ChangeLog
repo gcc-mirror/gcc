@@ -1,3 +1,21 @@
+2019-05-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/md.texi: Document define_insn_and_rewrite.
+	* rtl.def (DEFINE_INSN_AND_REWRITE): New rtx code.
+	* gensupport.c (queue_elem): Update comment.
+	(replace_operands_with_dups): New function.
+	(gen_rewrite_sequence): Likewise.
+	(process_rtx): Handle DEFINE_INSN_AND_REWRITE.
+	* read-rtl.c (apply_subst_iterator): Likewise.
+	(add_condition_to_rtx, named_rtx_p): Likewise.
+	(rtx_reader::read_rtx_operand): Likewise.
+	* config/aarch64/aarch64-sve.md
+	(while_ult<GPI:mode><PRED_ALL:mode>_cc): Rename to...
+	(*while_ult<GPI:mode><PRED_ALL:mode>_cc): ...this and use
+	define_insn_and_rewrite.
+	(*cond_<optab><mode>_any): Turn into define_insn_and_rewrites.
+	Remove separate define_split.
+
 2019-05-31  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-alias.c (type_has_components_p): New function.
