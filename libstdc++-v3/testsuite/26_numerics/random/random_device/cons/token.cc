@@ -30,10 +30,9 @@ void
 test01()
 {
   std::random_device x("default");
-
-  VERIFY( x.min() == std::numeric_limits<std::random_device::result_type>::min() );
-  VERIFY( x.max() == std::numeric_limits<std::random_device::result_type>::max() );
-
+  using result_type = std::random_device::result_type;
+  VERIFY( x.min() == std::numeric_limits<result_type>::min() );
+  VERIFY( x.max() == std::numeric_limits<result_type>::max() );
 }
 
 void
@@ -42,6 +41,7 @@ test02()
 #ifdef _GLIBCXX_USE_DEV_RANDOM
   std::random_device x1("/dev/urandom");
   std::random_device x2("/dev/random");
+  VERIFY( x1() != x2() );
 #endif
 }
 
@@ -50,7 +50,7 @@ test03()
 {
   // At least one of these tokens should be valid.
   const std::string tokens[] = {
-    "rdseed", "rdrand", "rand_s", "/dev/urandom", "/dev/random", "mt19337"
+    "rdseed", "rdrand", "rand_s", "/dev/urandom", "/dev/random", "mt19937"
   };
   int count = 0;
   for (const std::string& token : tokens)
@@ -71,21 +71,25 @@ void
 test04()
 {
   bool can_use_mt19937 = true;
+  std::random_device::result_type xval;
   try
   {
     std::random_device x("mt19937");
+    xval = x();
   }
   catch (const std::runtime_error&)
   {
     can_use_mt19937 = false;
   }
 
-  // If "mt19337" is a valid token then numeric seeds should be too.
+  // If "mt19937" is a valid token then numeric seeds should be too.
   if (can_use_mt19937)
   {
     std::random_device x1("0");
     std::random_device x2("1234");
     std::random_device x3("0xc0fefe");
+    VERIFY( xval != x1() );
+    VERIFY( x2() != x3() );
   }
 }
 

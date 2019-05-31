@@ -1,10 +1,9 @@
+// { dg-options "-D_GLIBCXX_USE_CXX11_ABI=0" }
 // { dg-do run { target c++11 } }
 // { dg-require-effective-target random_device }
 // { dg-require-cstdint "" }
 //
-// 2008-11-24  Edward M. Smith-Rowland <3dw4rd@verizon.net>
-//
-// Copyright (C) 2008-2019 Free Software Foundation, Inc.
+// Copyright (C) 2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,16 +29,10 @@ void
 test01()
 {
   std::random_device x;
-
-  using result_type = std::random_device::result_type;
-  VERIFY( x.min() == std::numeric_limits<result_type>::min() );
-  VERIFY( x.max() == std::numeric_limits<result_type>::max() );
-
-  result_type n [[gnu::unused]] = x();
+  auto n [[gnu::unused]] = x();
 }
 
 int main()
 {
   test01();
-  return 0;
 }
