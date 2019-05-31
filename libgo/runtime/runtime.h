@@ -78,9 +78,7 @@ typedef	struct	_panic			Panic;
 
 typedef struct	__go_ptr_type		PtrType;
 typedef struct	__go_func_type		FuncType;
-typedef struct	__go_interface_type	InterfaceType;
 typedef struct	__go_map_type		MapType;
-typedef struct	__go_channel_type	ChanType;
 
 typedef struct  tracebackg	Traceback;
 
