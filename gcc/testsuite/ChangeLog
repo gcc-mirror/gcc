@@ -1,5 +1,9 @@
 2019-05-31  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* g++.dg/cpp0x/pr84497.C: Require alias support.
+
+2019-05-31  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc.target/i386/falign-functions-3.c: Adjust align syntax
 	and label for Darwin.
 	* gcc.target/i386/attr-aligned-2.c: Adjust align syntax for
