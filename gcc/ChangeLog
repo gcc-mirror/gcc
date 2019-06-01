@@ -1,3 +1,8 @@
+2019-06-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/90694
+	* tree-pretty-print.c (dump_generic_node): Add parentheses.
+
 2019-05-31  Jan Hubicka  <jh@suse.cz>
 
 	* alias.c: Include ipa-utils.h.

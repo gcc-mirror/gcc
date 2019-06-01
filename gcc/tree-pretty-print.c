@@ -1679,9 +1679,17 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	  {
 	    if (TREE_CODE (TREE_OPERAND (node, 0)) != ADDR_EXPR)
 	      {
+		/* Enclose pointers to arrays in parentheses.  */
+		tree op0 = TREE_OPERAND (node, 0);
+		tree op0type = TREE_TYPE (op0);
+		if (POINTER_TYPE_P (op0type)
+		    && TREE_CODE (TREE_TYPE (op0type)) == ARRAY_TYPE)
+		  pp_left_paren (pp);
 		pp_star (pp);
-		dump_generic_node (pp, TREE_OPERAND (node, 0),
-				   spc, flags, false);
+		dump_generic_node (pp, op0, spc, flags, false);
+		if (POINTER_TYPE_P (op0type)
+		    && TREE_CODE (TREE_TYPE (op0type)) == ARRAY_TYPE)
+		  pp_right_paren (pp);
 	      }
 	    else
 	      dump_generic_node (pp,
