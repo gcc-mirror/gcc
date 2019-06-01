@@ -1,3 +1,15 @@
+2019-06-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	gcc/cp
+
+	PR c++/85254
+	* class.c (fixup_type_variants): Handle CLASSTYPE_FINAL.
+
+	testsuite/
+
+	PR c++/85254
+	* g++.dg/ext/is_final.C: Amend.
+
 2019-05-31  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (IDENTIFIER_LAMBDA_P): New.
