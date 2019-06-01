@@ -1592,6 +1592,25 @@ fix = {
 		"#define UINTMAX_C(v) (v ## ULL)";
 };
 
+/*  The SDK included with XCode 10.2 has the file <sys/ucred.h> that uses the
+    C11 _Atomic keyword (exposing it to C++ code).  The work-around here follows
+    the header in declaring the entity volatile when _Atomic is not available.
+*/
+fix = {
+    hackname  = darwin_ucred__Atomic;
+    mach      = "*-*-darwin*";
+    files     = sys/ucred.h;
+    select    = "_Atomic";
+    c_fix     = wrap;
+    c_fix_arg = "#if (__STDC_VERSION__ < 201112L) || defined(__cplusplus)\n"
+		"# define _Atomic volatile\n"
+		"#endif\n";
+    c_fix_arg = "#if (__STDC_VERSION__ < 201112L) || defined(__cplusplus)\n"
+		"# undef _Atomic\n"
+		"#endif\n";
+    test_text = ""; /* Don't provide this for wrap fixes.  */
+};
+
 /*
  *  Fix <c_asm.h> on Digital UNIX V4.0:
  *  It contains a prototype for a DEC C internal asm() function,

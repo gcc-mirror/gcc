@@ -1,3 +1,23 @@
+2019-06-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-05-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR bootstrap/89864
+	* inclhack.def (darwin_ucred__Atomic): Do not supply test_text
+	for wrap fixes.
+	* fixincl.x: Regenerated.
+
+	Backport from mainline.
+	2019-04-18  Erik Schnetter  <schnetter@gmail.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+		    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR bootstrap/89864
+	* inclhack.def (darwin_ucred__Atomic): New, work around _Atomic keyword
+	use in headers included by C++.
+	* fixincl.x: Regenerated.
+
 2019-02-22  Release Manager
 
 	* GCC 8.3.0 released.
