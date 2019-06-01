@@ -1,3 +1,10 @@
+2019-06-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/90698
+	* gcc.target/i386/pr49866.c: XFAIL for Darwin.
+	* gcc.target/i386/pr63538.c: Likewise.
+	* gcc.target/i386/pr61599-1.c: Skip for Darwin.
+
 2019-06-01  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/90694
