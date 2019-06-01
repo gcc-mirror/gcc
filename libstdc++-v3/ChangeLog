@@ -1,3 +1,10 @@
+2019-06-01   Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2018-12-22 Iain Sandoe <iain@sandoe.co.uk>
+
+	* /config/os/bsd/darwin/ppc-extra.ver: Append long double symbols.
+
 2019-05-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Fix typo in documentation of
