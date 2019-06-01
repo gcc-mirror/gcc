@@ -1,3 +1,10 @@
+2019-05-31  Jan Hubicka  <jh@suse.cz>
+
+	* alias.c: Include ipa-utils.h.
+	(get_alias_set): Try to complete ODR type via ODR type hash lookup.
+	* ipa-devirt.c (prevailing_odr_type): New.
+	* ipa-utils.h (previaling_odr_type): Declare.
+
 2019-05-31  H.J. Lu  <hongjiu.lu@intel.com>
 	    Hongtao Liu  <hongtao.liu@intel.com>
 

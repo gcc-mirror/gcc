@@ -2170,6 +2170,20 @@ get_odr_type (tree type, bool insert)
   return val;
 }
 
+/* Return type that in ODR type hash prevailed TYPE.  Be careful and punt
+   on ODR violations.  */
+
+tree
+prevailing_odr_type (tree type)
+{
+  odr_type t = get_odr_type (type, false);
+  if (!t || t->odr_violated)
+    return type;
+  return t->type;
+}
+
+/* Return true if we reported some ODR violation on TYPE.  */
+
 bool
 odr_type_violation_reported_p (tree type)
 {

@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfganal.h"
 #include "rtl-iter.h"
 #include "cgraph.h"
+#include "ipa-utils.h"
 
 /* The aliasing API provided here solves related but different problems:
 
@@ -1007,6 +1008,14 @@ get_alias_set (tree t)
 	    reference.safe_push (false);
 	}
       p = TYPE_MAIN_VARIANT (p);
+
+      /* In LTO for C++ programs we can turn in complete types to complete
+	 using ODR name lookup.  */
+      if (in_lto_p && TYPE_STRUCTURAL_EQUALITY_P (p) && odr_type_p (p))
+	{
+	  p = prevailing_odr_type (p);
+	  gcc_checking_assert (TYPE_MAIN_VARIANT (p) == p);
+	}
 
       /* Make void * compatible with char * and also void **.
 	 Programs are commonly violating TBAA by this.
