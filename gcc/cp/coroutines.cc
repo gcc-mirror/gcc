@@ -1146,10 +1146,15 @@ transform_await_wrapper (tree *stmt, int *do_subtree, void *d)
 }
 
 /* The actor transform.  */
+typedef struct __param_info {
+  tree field_id;
+  vec<tree *> *body_uses;
+} __param_info_t;
 
 static void
 build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
-	        tree fnbody, tree orig, 
+	        tree fnbody, tree orig,
+	        hash_map<tree, __param_info_t> *param_uses,
 		tree initial_await, tree final_await, unsigned body_count)
 {
   verify_stmt_tree (fnbody);
@@ -1190,6 +1195,31 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   DECL_CONTEXT (actor_begin_label) = actor;
 
   tree actor_frame = build1 (INDIRECT_REF, coro_frame_type, actor_fp);
+
+  /* Re-write param references in the body, no code should be generated
+     here.  */
+  if (DECL_ARGUMENTS (orig) && param_uses != NULL)
+    {
+      tree arg;
+      for (arg = DECL_ARGUMENTS (orig); arg != NULL; arg = DECL_CHAIN (arg))
+	{
+	  bool existed;
+	  __param_info_t &parm = param_uses->get_or_insert (arg, &existed);
+	  if (parm.field_id == NULL_TREE)
+	    continue; /* Wasn't used.  */
+	  tree fld_ref = lookup_member (coro_frame_type, parm.field_id,
+					/*protect*/1,  /*want_type*/ 0,
+					tf_warning_or_error);
+	  tree fld_idx = build3 (COMPONENT_REF, TREE_TYPE (arg),
+				 actor_frame, fld_ref, NULL_TREE);
+	  int i;
+	  tree *puse;
+	  FOR_EACH_VEC_ELT (*parm.body_uses, i, puse)
+	    {
+	      *puse = fld_idx;
+	    }
+	}
+    }
 
   tree resume_idx_name = get_identifier ("__resume_at");
   tree rat_field = lookup_member (coro_frame_type, resume_idx_name, 1, 0,
@@ -1644,6 +1674,46 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
   return NULL_TREE;
 }
 
+/* For figuring out what param usage we have.  */
+struct __param_frame_data {
+  tree *field_list;
+  hash_map<tree, __param_info_t> *param_uses;
+  location_t loc;
+  bool param_seen;
+};
+
+static tree
+register_param_uses (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
+{
+  struct __param_frame_data *data = (struct __param_frame_data *) d;
+
+  if (TREE_CODE (*stmt) != PARM_DECL)
+    return NULL_TREE;
+
+  bool existed;
+  __param_info_t &parm = data->param_uses->get_or_insert (*stmt, &existed);
+  gcc_checking_assert (existed);
+
+  if (parm.field_id == NULL_TREE)
+    {
+      tree ptype = DECL_ARG_TYPE (*stmt);
+      tree pname = DECL_NAME (*stmt);
+      size_t namsize = sizeof ("__parm.") + IDENTIFIER_LENGTH (pname) + 1;
+      char *buf = (char *) alloca (namsize);
+      snprintf (buf, namsize, "__parm.%s", IDENTIFIER_POINTER (pname));
+      parm.field_id = get_identifier (buf);
+      tree decl = build_decl (data->loc, FIELD_DECL, parm.field_id, ptype);
+      DECL_CHAIN (decl) = *data->field_list; *data->field_list = decl;
+      vec_alloc (parm.body_uses, 4);
+      parm.body_uses->quick_push (stmt);
+      data->param_seen = true;
+    }
+  else
+    parm.body_uses->safe_push (stmt);
+
+  return NULL_TREE;
+}
+
 /* Here we:
    a) Check that the function and promise type are valid for a
       coroutine.
@@ -1815,8 +1885,50 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   register_await_info (final_await, final_suspend_type,
 		       fin_susp_name, fin_hand_name);
 
-  TYPE_FIELDS (coro_frame_type) = field_list;
+  /* Now add in fields for function params (if there are any) that are used
+     within the function body.  This is conservative; we can't tell at this
+     stage if such uses might be optimised away, or if they might turn out not
+     to persist across any suspend points.  Of course, even if they don't
+     persist across suspend points, when the actor is out of line the saved
+     frame version is still needed.  */
+  hash_map<tree, __param_info_t> *param_uses = NULL;
+  if (DECL_ARGUMENTS (orig))
+    {
+      /* Build a hash map with an entry for each param.
+	  The key is the param tree.
+	  Then we have an entry for the frame field name.
+	  Then a cache for the field ref when we come to use it.
+	  Then a tree list of the uses.
+	  The second two entries start out empty - and only get populated
+	  when we see uses.  */
+      param_uses = new hash_map<tree, __param_info_t>;
+      tree arg;
+      for (arg = DECL_ARGUMENTS (orig); arg != NULL; arg = DECL_CHAIN (arg))
+	{
+	  bool existed;
+	  __param_info_t &parm = param_uses->get_or_insert (arg, &existed);
+	  gcc_checking_assert (!existed);
+	  parm.field_id = NULL_TREE;
+	  parm.body_uses = NULL;
+        }
 
+      /* We don't need to revisit nodes.  */
+      visited = new hash_set<tree>;
+      struct __param_frame_data param_data =
+        { &field_list, param_uses, fn_start, false };
+      cp_walk_tree (&fnbody, register_param_uses, &param_data, visited);
+      delete visited;
+      /* If no uses were seen, act as if there were no params.  */
+      if (!param_data.param_seen)
+        {
+          delete param_uses;
+          param_uses = NULL;
+        }
+    }
+
+  /* Tie off the struct for now, so that we can build offsets to the
+     known entries.  */
+  TYPE_FIELDS (coro_frame_type) = field_list;
   TYPE_BINFO (coro_frame_type) = make_tree_binfo (0);
   BINFO_OFFSET (TYPE_BINFO (coro_frame_type)) = size_zero_node;
   BINFO_TYPE (TYPE_BINFO (coro_frame_type)) = coro_frame_type;
@@ -1957,7 +2069,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   if (DECL_ARGUMENTS (orig))
     {
-      vec<tree, va_gc>* args = make_tree_vector ();
+      vec<tree, va_gc> *args = make_tree_vector ();
       tree arg;
       for (arg = DECL_ARGUMENTS (orig); arg != NULL; arg = DECL_CHAIN (arg))
         vec_safe_push (args, arg);
@@ -1974,6 +2086,32 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 				  promise_type, LOOKUP_NORMAL,
 				  tf_warning_or_error);
   add_stmt (r);
+
+  /* Copy in any of the function params we found to be used.  */
+  if (DECL_ARGUMENTS (orig) && param_uses != NULL)
+    {
+      tree arg;
+      for (arg = DECL_ARGUMENTS (orig); arg != NULL; arg = DECL_CHAIN (arg))
+	{
+	  bool existed;
+	  __param_info_t &parm = param_uses->get_or_insert (arg, &existed);
+	  if (parm.field_id == NULL_TREE)
+	    continue; /* Wasn't used.  */
+	  tree fld_ref = lookup_member (coro_frame_type, parm.field_id,
+					/*protect*/1,  /*want_type*/ 0,
+					tf_warning_or_error);
+	  tree fld_idx = build_class_member_access_expr (deref_fp, fld_ref,
+						         NULL_TREE, false,
+						         tf_warning_or_error);
+	  r = build_modify_expr (fn_start, fld_idx, DECL_ARG_TYPE (arg),
+				 INIT_EXPR, DECL_SOURCE_LOCATION (arg),
+				 arg, DECL_ARG_TYPE (arg));
+	  r = build1 (CONVERT_EXPR, void_type_node, r);
+	  r = build_stmt (fn_start, EXPR_STMT, r);
+	  r = maybe_cleanup_point_expr_void (r);
+	  add_stmt (r);
+	}
+    }
 
   /* Set up a new bind context for the GRO.  */
   tree gro_context_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
@@ -2077,7 +2215,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   push_deferring_access_checks (dk_no_check);
 
   /* Actor...  */
-  build_actor_fn (fn_start, coro_frame_type, actor, fnbody, orig,
+  build_actor_fn (fn_start, coro_frame_type, actor, fnbody, orig, param_uses,
 		  initial_await, final_await, body_aw_points.count);
   
   /* Destroyer ... */

@@ -1,6 +1,19 @@
 2019-06-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (build_actor_fn): Rewrite uses of params in the
+	original function body with references to the saved frame version.
+	(struct __param_frame_data): New struct.
+	(register_param_uses): New function.
+	(morph_fn_to_coro): Record any params used within the original
+	function body.  Make and initialise space for them in the frame.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/func-params-1.C: New test.
+
+2019-06-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (morph_fn_to_coro): Manage the visited sets so
 	that they don't hang around for the entire duration of the func.
 
