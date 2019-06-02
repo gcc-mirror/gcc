@@ -4922,15 +4922,35 @@ class_array_fcn:
 	  gfc_se cont_se, array_se;
 	  stmtblock_t if_block, else_block;
 	  tree if_stmt, else_stmt;
+	  mpz_t size;
+	  bool size_set;
 
 	  cont_var = gfc_create_var (boolean_type_node, "contiguous");
 
-	  /* cont_var = is_contiguous (expr); .  */
-	  gfc_init_se (&cont_se, parmse);
-	  gfc_conv_is_contiguous_expr (&cont_se, expr);
-	  gfc_add_block_to_block (&se->pre, &(&cont_se)->pre);
-	  gfc_add_modify (&se->pre, cont_var, cont_se.expr);
-	  gfc_add_block_to_block (&se->pre, &(&cont_se)->post);
+	  /* If the size is known to be one at compile-time, set
+	     cont_var to true unconditionally.  This may look
+	     inelegant, but we're only doing this during
+	     optimization, so the statements will be optimized away,
+	     and this saves complexity here.  */
+
+	  size_set = gfc_array_size (expr, &size);
+	  if (size_set && mpz_cmp_ui (size, 1) == 0)
+	    {
+	      gfc_add_modify (&se->pre, cont_var,
+			      build_one_cst (boolean_type_node));
+	    }
+	  else
+	    {
+	      /* cont_var = is_contiguous (expr); .  */
+	      gfc_init_se (&cont_se, parmse);
+	      gfc_conv_is_contiguous_expr (&cont_se, expr);
+	      gfc_add_block_to_block (&se->pre, &(&cont_se)->pre);
+	      gfc_add_modify (&se->pre, cont_var, cont_se.expr);
+	      gfc_add_block_to_block (&se->pre, &(&cont_se)->post);
+	    }
+
+	  if (size_set)
+	    mpz_clear (size);
 
 	  /* arrayse->expr = descriptor of a.  */
 	  gfc_init_se (&array_se, se);
@@ -4953,7 +4973,9 @@ class_array_fcn:
 
 	  /* And put the above into an if statement.  */
 	  pre_stmts = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-				      cont_var, if_stmt, else_stmt);
+				       gfc_likely (cont_var,
+						   PRED_FORTRAN_CONTIGUOUS),
+				       if_stmt, else_stmt);
 	}
       else
 	{
@@ -4976,11 +4998,11 @@ class_array_fcn:
 	  gfc_add_modify (&else_block, pointer, build_int_cst (type, 0));
 	  else_stmt = gfc_finish_block (&else_block);
 
-	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, present_var,
+	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+				 gfc_likely (present_var,
+					     PRED_FORTRAN_ABSENT_DUMMY),
 				 pre_stmts, else_stmt);
 	  gfc_add_expr_to_block (&se->pre, tmp);
-
-
 	}
       else
 	gfc_add_expr_to_block (&se->pre, pre_stmts);
@@ -4995,9 +5017,16 @@ class_array_fcn:
 	  tmp = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
 				 cont_var,
 				 build_zero_cst (boolean_type_node));
+	  tmp = gfc_unlikely (tmp, PRED_FORTRAN_CONTIGUOUS);
+
 	  if (pass_optional)
-	    post_cond = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
-					 boolean_type_node, present_var, tmp);
+	    {
+	      tree present_likely = gfc_likely (present_var,
+						PRED_FORTRAN_ABSENT_DUMMY);
+	      post_cond = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
+					   boolean_type_node, present_likely,
+					   tmp);
+	    }
 	  else
 	    post_cond = tmp;
 	}

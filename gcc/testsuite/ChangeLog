@@ -1,3 +1,8 @@
+2019-06-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/90539
+	* gfortran.dg/internal_pack_24.f90: New test.
+
 2019-06-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/90698
