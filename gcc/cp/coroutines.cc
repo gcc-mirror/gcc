@@ -1800,8 +1800,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* Now insert the data for any body await points.  */
   struct __susp_frame_data body_aw_points = { &field_list, handle_type, 0 };
   /* we don't want to duplicate.  */
-  hash_set<tree> pset;
-  cp_walk_tree (&fnbody, register_awaits, &body_aw_points, &pset);
+  hash_set<tree> *visited = new hash_set<tree>;
+  cp_walk_tree (&fnbody, register_awaits, &body_aw_points, visited);
+  delete visited;
 
   /* Final suspend is mandated.  */
   tree fin_susp_name = get_identifier ("__fs");

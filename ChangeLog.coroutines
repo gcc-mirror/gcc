@@ -1,6 +1,12 @@
 2019-06-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (morph_fn_to_coro): Manage the visited sets so
+	that they don't hang around for the entire duration of the func.
+
+2019-06-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (build_actor_fn): Verify trees before and after.
 
 2019-06-02  Iain Sandoe  <iain@sandoe.co.uk>
