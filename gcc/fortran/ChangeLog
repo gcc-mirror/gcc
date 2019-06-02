@@ -1,6 +1,15 @@
+2019-06-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/90539
+	* trans-expr.c (gfc_conv_subref_array_arg): If the size of the
+	expression can be determined to be one, treat it as contiguous.
+	Set likelyhood of presence of an actual argument according to
+	PRED_FORTRAN_ABSENT_DUMMY and likelyhood of being contiguous
+	according to PRED_FORTRAN_CONTIGUOUS.
+
 2019-05-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
-    * gfc-internals.texi (Translating to GENERIC): New chapter.
+	* gfc-internals.texi (Translating to GENERIC): New chapter.
 
 2019-05-30  Marek Polacek  <polacek@redhat.com>
 

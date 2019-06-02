@@ -1,3 +1,8 @@
+2019-06-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/90539
+	* predict.def (PRED_FORTRAN_CONTIGUOUS): New predictor.
+
 2019-06-01  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/90694
