@@ -1152,6 +1152,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 	        tree fnbody, tree orig, 
 		tree initial_await, tree final_await, unsigned body_count)
 {
+  verify_stmt_tree (fnbody);
   /* Some things we inherit from the original function.  */
   tree coro_frame_ptr = build_pointer_type (coro_frame_type);
   tree handle_type = DECL_COROUTINE_HANDLE_TYPE (orig);
@@ -1453,6 +1454,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 
   finish_compound_stmt (stmt);
   DECL_SAVED_TREE (actor) = pop_stmt_list (actor_outer);
+  verify_stmt_tree (DECL_SAVED_TREE (actor));
 }
 
 /* The prototype 'destroy' function :

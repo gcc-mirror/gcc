@@ -1,6 +1,11 @@
 2019-06-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (build_actor_fn): Verify trees before and after.
+
+2019-06-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* decl.c (emit_coro_helper): Ensure that the folder cache is
 	clear before we fold each routine.
 
