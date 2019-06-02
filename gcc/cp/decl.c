@@ -15993,6 +15993,8 @@ emit_coro_helper (tree helper)
   cfun->language = ggc_cleared_alloc<language_function> ();
   poplevel (1, 0, 1);
   maybe_save_function_definition (helper);
+  /* Things get weird if we don't start fresh.  */
+  clear_fold_cache ();
   cp_fold_function (helper);
   DECL_CONTEXT (DECL_RESULT (helper)) = helper;
   BLOCK_SUPERCONTEXT (DECL_INITIAL (helper)) = helper;
