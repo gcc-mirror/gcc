@@ -3197,7 +3197,7 @@ Altivec vector register
 Any VSX register if the @option{-mvsx} option was used or NO_REGS.
 
 When using any of the register constraints (@code{wa}, @code{wd},
-@code{wf}, @code{wg}, @code{wi},
+@code{wf}, @code{wi},
 @code{wp}, @code{wq}, @code{ws},
 @code{wt}, @code{wv}, or @code{ww})
 that take VSX registers, you must use @code{%x<n>} in the template so
@@ -3255,9 +3255,6 @@ were used or NO_REGS.
 
 @item wf
 VSX vector register to hold vector float data or NO_REGS.
-
-@item wg
-If @option{-mmfpgpr} was used, a floating point register or NO_REGS.
 
 @item wi
 FP or VSX register to hold 64-bit integers for VSX insns or NO_REGS.

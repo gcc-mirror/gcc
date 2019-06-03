@@ -68,9 +68,6 @@
 (define_register_constraint "wf" "rs6000_constraints[RS6000_CONSTRAINT_wf]"
   "VSX vector register to hold vector float data or NO_REGS.")
 
-(define_register_constraint "wg" "rs6000_constraints[RS6000_CONSTRAINT_wg]"
-  "If -mmfpgpr was used, a floating point register or NO_REGS.")
-
 (define_register_constraint "wi" "rs6000_constraints[RS6000_CONSTRAINT_wi]"
   "FP or VSX register to hold 64-bit integers for VSX insns or NO_REGS.")
 

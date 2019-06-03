@@ -2511,7 +2511,6 @@ rs6000_debug_reg_global (void)
 	   "wd reg_class = %s\n"
 	   "we reg_class = %s\n"
 	   "wf reg_class = %s\n"
-	   "wg reg_class = %s\n"
 	   "wi reg_class = %s\n"
 	   "wp reg_class = %s\n"
 	   "wq reg_class = %s\n"
@@ -2530,7 +2529,6 @@ rs6000_debug_reg_global (void)
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wd]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_we]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wf]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wg]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wi]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wp]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wq]],
@@ -3150,7 +3148,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	wc - Reserved to represent individual CR bits (used in LLVM).
 	wd - Preferred register class for V2DFmode.
 	wf - Preferred register class for V4SFmode.
-	wg - Float register for power6x move insns.
 	wi - FP or VSX register to hold 64-bit integers for VSX insns.
 	wn - always NO_REGS.
 	wr - GPR if 64-bit mode is permitted.
@@ -3181,9 +3178,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
      collapse multiple insn patterns.  */
   if (TARGET_ALTIVEC)
     rs6000_constraints[RS6000_CONSTRAINT_v] = ALTIVEC_REGS;
-
-  if (TARGET_MFPGPR)						/* DFmode  */
-    rs6000_constraints[RS6000_CONSTRAINT_wg] = FLOAT_REGS;
 
   if (TARGET_POWERPC64)
     {
