@@ -3883,6 +3883,13 @@ proc add_options_for_arm_neon_softfp_fp16 { flags } {
     return "$flags $et_arm_neon_softfp_fp16_flags"
 }
 
+proc add_options_for_aarch64_sve { flags } {
+    if { ![istarget aarch64*-*-*] || [check_effective_target_aarch64_sve] } {
+        return "$flags"
+    }
+    return "$flags -march=armv8.2-a+sve"
+}
+
 # Return 1 if this is an ARM target supporting the FP16 alternative
 # format.  Some multilibs may be incompatible with the options needed.  Also
 # set et_arm_neon_fp16_flags to the best options to add.
@@ -4360,7 +4367,7 @@ proc check_effective_target_aarch64_sve_hw { } {
 	  asm volatile ("ptrue p0.b");
 	  return 0;
 	}
-    }]
+    } [add_options_for_aarch64_sve ""]]
 }
 
 # Return true if this is an AArch64 target that can run SVE2 code.
@@ -4396,7 +4403,7 @@ proc aarch64_sve_hw_bits { bits } {
 	    __builtin_abort ();
 	  return 0;
 	}
-    }]]
+    }] [add_options_for_aarch64_sve ""]]
 }
 
 # Return true if this is an AArch64 target that can run SVE code and
