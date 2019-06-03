@@ -1,3 +1,8 @@
+2019-06-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_map.h (map): Disable static assert for C++98 mode.
+	* include/bits/stl_multimap.h (multimap): Likewise.
+
 2019-06-03  François Dumont  <fdumont@gcc.gnu.org>
 
 	Rename variables and cleanup comments.
