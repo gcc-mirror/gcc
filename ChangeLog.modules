@@ -1,5 +1,9 @@
 2019-06-03  Nathan Sidwell  <nathan@acm.org>
 
+	Template friends of templates.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-tpl-friend-1_[ab].C: New.
+
 	Non-template friends of templates.
 	gcc/testsuite/
 	* g++.dg/modules/tpl-friend-4_[ab].C: New.
