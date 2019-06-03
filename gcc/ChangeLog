@@ -1,3 +1,10 @@
+2019-06-03  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR middle-end/64242
+	* builtins.c (expand_builtin_longjmp): Add frame clobbers and schedule
+	block.
+	(expand_builtin_nonlocal_goto): Likewise.
+
 2019-06-03  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_asm_output_alias): Declare.
