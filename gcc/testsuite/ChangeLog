@@ -1,3 +1,10 @@
+2019-06-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/ssadv16qi.c: Add +nodotprod to pragma.
+	* gcc.target/aarch64/usadv16qi.c: Likewise.
+	* gcc.target/aarch64/ssadv16qi-dotprod.c: New test.
+	* gcc.target/aarch64/usadv16qi-dotprod.c: Likewise.
+
 2019-06-03  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* lib/target-supports.exp (add_options_for_aarch64_sve): New procedure.

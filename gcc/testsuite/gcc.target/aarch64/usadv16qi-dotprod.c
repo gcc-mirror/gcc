@@ -1,7 +1,9 @@
 /* { dg-do compile } */
-/* { dg-options "-O3" } */
+/* { dg-require-effective-target arm_v8_2a_dotprod_neon_ok } */
+/* { dg-add-options arm_v8_2a_dotprod_neon }  */
+/* { dg-additional-options "-O3" } */
 
-#pragma GCC target "+nosve+nodotprod"
+#pragma GCC target "+nosve"
 
 #define N 1024
 
@@ -24,6 +26,5 @@ int foo (void)
 /* { dg-final { scan-assembler-not {\tusubl2\t} } } */
 /* { dg-final { scan-assembler-not {\tabs\t} } } */
 
-/* { dg-final { scan-assembler {\tuabdl2\t} } } */
-/* { dg-final { scan-assembler {\tuabal\t} } } */
-/* { dg-final { scan-assembler {\tuadalp\t} } } */
+/* { dg-final { scan-assembler {\tuabd\t} } } */
+/* { dg-final { scan-assembler {\tudot\t} } } */

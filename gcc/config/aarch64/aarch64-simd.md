@@ -710,7 +710,7 @@
 ;; So (ABS:QI (minus:QI 64 -128)) == (ABS:QI (192 or -64 signed)) == 64.
 ;; Whereas SABD would return 192 (-64 signed) on the above example.
 ;; Use MINUS ([us]max (op1, op2), [us]min (op1, op2)) instead.
-(define_insn "*aarch64_<su>abd<mode>_3"
+(define_insn "aarch64_<su>abd<mode>_3"
   [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
 	(minus:VDQ_BHSI
 	  (USMAX:VDQ_BHSI
@@ -764,7 +764,16 @@
 ;; UABAL	tmp.8h, op1.16b, op2.16b
 ;; UADALP	op3.4s, tmp.8h
 ;; MOV		op0, op3 // should be eliminated in later passes.
-;; The signed version just uses the signed variants of the above instructions.
+;;
+;; For TARGET_DOTPROD we do:
+;; MOV	tmp1.16b, #1 // Can be CSE'd and hoisted out of loops.
+;; UABD	tmp2.16b, op1.16b, op2.16b
+;; UDOT	op3.4s, tmp2.16b, tmp1.16b
+;; MOV	op0, op3 // RA will tie the operands of UDOT appropriately.
+;;
+;; The signed version just uses the signed variants of the above instructions
+;; but for TARGET_DOTPROD still emits a UDOT as the absolute difference is
+;; unsigned.
 
 (define_expand "<sur>sadv16qi"
   [(use (match_operand:V4SI 0 "register_operand"))
@@ -773,6 +782,15 @@
    (use (match_operand:V4SI 3 "register_operand"))]
   "TARGET_SIMD"
   {
+    if (TARGET_DOTPROD)
+      {
+	rtx ones = force_reg (V16QImode, CONST1_RTX (V16QImode));
+	rtx abd = gen_reg_rtx (V16QImode);
+	emit_insn (gen_aarch64_<sur>abdv16qi_3 (abd, operands[1], operands[2]));
+	emit_insn (gen_aarch64_udotv16qi (operands[0], operands[3],
+					  abd, ones));
+	DONE;
+      }
     rtx reduc = gen_reg_rtx (V8HImode);
     emit_insn (gen_aarch64_<sur>abdl2v16qi_3 (reduc, operands[1],
 					       operands[2]));
