@@ -1,3 +1,8 @@
+2019-06-03  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR driver/90684
+	* opts.c (parse_and_check_align_values): Allow 4 alignment values.
+
 2019-06-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/iterators.md (MAX_OPP): New code attr.
