@@ -1,3 +1,4 @@
+
 /* C++ modules.  Experimental!
    Copyright (C) 2017-2019 Free Software Foundation, Inc.
    Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
@@ -159,12 +160,12 @@ Classes used:
 // correct.  They are usually the same, except when 'typedef struct {} foo'
 
 /* In expermental (trunk) sources, MODULE_VERSION is a #define passed
-   in from the Makefile.  It records the modification date of the our
+   in from the Makefile.  It records the modification date of the
    source directory -- that's the only way to stay sane.  In release
-   sources, we use the compiler's major.minor versioning.  While the
-   format might not change between at least minor versions, it seems
-   simplest to tie the two together.  Experimental and
-   non-experimental versions are unordered WRT each other.  */
+   sources, we (plan to) use the compiler's major.minor versioning.
+   While the format might not change between at minor versions, it
+   seems simplest to tie the two together.  There's no concept of
+   inter-version compatibility.  */
 #define IS_EXPERIMENTAL(V) ((V) >= (1U << 20))
 #define MODULE_MAJOR(V) ((V) / 10000)
 #define MODULE_MINOR(V) ((V) % 10000)
@@ -2248,6 +2249,7 @@ private:
 				   specialization.  */
     DB_UNREACHED_BIT,		/* A yet-to-be reached entity.  */
     DB_HIDDEN_BIT,		/* A hidden binding.  */
+    DB_FRIEND_BIT,		/* An injected friend of a template.  */
   };
 
 public:
@@ -2340,13 +2342,17 @@ public:
   {
     return get_flag_bit<DB_UNREACHED_BIT> ();
   }
-  bool is_partial_specialization () const
+  bool is_partial () const
   {
     return get_flag_bit<DB_PARTIAL_BIT> ();
   }
-  bool is_hidden_binding () const
+  bool is_hidden () const
   {
     return get_flag_bit<DB_HIDDEN_BIT> ();
+  }
+  bool is_friend () const
+  {
+    return get_flag_bit<DB_FRIEND_BIT> ();
   }
 
 public:
@@ -2669,7 +2675,7 @@ enum tree_tag {
   tt_anon,		/* Anonymous decl.  */
   tt_template,		/* The TEMPLATE_RESULT of a template.  */
   tt_implicit_template, /* An immplicit member template.  */
-
+  tt_friend_template,   /* A friend of a template class.  */
   tt_mergeable		/* Mergeable entity.  */
 };
 
@@ -2826,9 +2832,10 @@ private:
   auto_vec<depset *> *mergeable;	/* Mergeable depsets.  */
   depset::hash *dep_hash;    	/* Dependency table.  */
   int ref_num;			/* Back reference number.  */
+  unsigned section;
 
 public:
-  trees_out (allocator *, module_state *, depset::hash &deps);
+  trees_out (allocator *, module_state *, depset::hash &deps, unsigned sec = 0);
   ~trees_out ();
 
 private:
@@ -2951,9 +2958,10 @@ unsigned trees_out::refs;
 unsigned trees_out::nulls;
 unsigned trees_out::records;
 
-trees_out::trees_out (allocator *mem, module_state *state, depset::hash &deps)
+trees_out::trees_out (allocator *mem, module_state *state, depset::hash &deps,
+		      unsigned section)
   :parent (mem), state (state), tree_map (500), mergeable (NULL),
-   dep_hash (&deps), ref_num (0)
+   dep_hash (&deps), ref_num (0), section (section)
 {
 }
 
@@ -3910,7 +3918,8 @@ dumper::impl::nested_name (tree t)
   if (owner != MODULE_NONE)
     {
       const module_state *mod = (*modules)[owner];
-      fprintf (stream, "@%s:%d", mod ? mod->get_flatname () : "", owner);
+      fprintf (stream, "@%s:%d", !mod ? "" : !mod->name ? "(unnamed)"
+	       : mod->get_flatname (), owner);
     }
 
   if (ti)
@@ -6709,6 +6718,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
   int use_tpl = -1;
   tree ti = node_template_info (decl, use_tpl);
   /* TI_TEMPLATE is not a TEMPLATE_DECL for (some) friends.  */
+  // FIXME: Why?
   if (ti && TREE_CODE (TI_TEMPLATE (ti)) == TEMPLATE_DECL
       && DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == decl)
     {
@@ -6716,13 +6726,52 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
       if (streaming_p ())
 	{
 	  i (tt_template);
-	  dump () && dump ("Writing implicit template %C:%N%S",
-			   TREE_CODE (tpl), tpl, tpl);
+	  dump (dumper::TREE)
+	    && dump ("Writing implicit template %C:%N%S",
+		     TREE_CODE (tpl), tpl, tpl);
 	}
       tree_node (tpl);
       gcc_checking_assert (TREE_VISITED (decl));
       if (DECL_IMPLICIT_TYPEDEF_P (decl))
 	gcc_checking_assert (TREE_VISITED (TREE_TYPE (decl)));
+      return false;
+    }
+
+  if (TREE_CODE (decl) == TEMPLATE_DECL
+      && DECL_CHAIN (decl)
+      && RECORD_OR_UNION_CODE_P (TREE_CODE (DECL_CHAIN (decl))))
+    {
+      /* A (local template) friend of a template.  */
+      if (streaming_p ())
+	{
+	  i (tt_friend_template);
+	  dump (dumper::TREE)
+	    && dump ("Writing friend template %C:%N", TREE_CODE (decl), decl);
+	}
+
+      tree klass = DECL_CHAIN (decl);
+      tree_node (klass);
+
+      if (streaming_p ())
+	{
+	  unsigned ix = 0;
+	  for (tree decls = CLASSTYPE_DECL_LIST (klass);;
+	       decls = TREE_CHAIN (decls))
+	    if (!TREE_PURPOSE (decls))
+	      {
+		tree frnd = TREE_VALUE (decls);
+		if (TREE_CODE (frnd) != TEMPLATE_DECL)
+		  frnd = DECL_TI_TEMPLATE (frnd);
+		if (frnd == decl)
+		  break;
+		ix++;
+	      }
+	  u (ix);
+	  dump (dumper::TREE)
+	    && dump ("Wrote friend %N[%u], %C:%N",
+		     klass, ix, TREE_CODE (decl), decl);
+	}
+
       return false;
     }
 
@@ -6812,15 +6861,18 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	    /* Look directly into the binding depset, as that's
 	       what importers will observe.  */
 	    depset *bind = dep_hash->find_binding (ctx, name);
-	    if (bind)
-	      for (ident = bind->deps.length (); ident--;)
-		if (bind->deps[ident]->get_entity () == proxy)
-		  break;
-	    gcc_checking_assert (ident >= 0);
-	    if (bind
-		&& bind->deps.length () > 1
-		&& TREE_CODE (bind->deps[0]->get_entity ()) == TYPE_DECL)
+	    /* Only reference earlier bindings.  */
+	    gcc_assert (bind && bind->section < section);
+
+	    for (ident = bind->deps.length (); ident--;)
+	      if (bind->deps[ident]->get_entity () == proxy)
+		break;
+	    gcc_assert (ident >= 0);
+
+	    if (bind->deps.length () > 1
+		&& DECL_IMPLICIT_TYPEDEF_P (bind->deps[0]->get_entity ()))
 	      ident--;
+
 	    kind = owner == MODULE_NONE ? "GMF" : "purview";
 	    /* Any GMF entities need to be looked up on this module's slot.  */
 	    owner = MODULE_PURVIEW;
@@ -7609,6 +7661,31 @@ trees_in::tree_node ()
 	  res = DECL_TEMPLATE_RESULT (tpl);
 	  dump (dumper::TREE)
 	    && dump ("Read template %C:%N", TREE_CODE (res), res);
+	}
+      break;
+
+    case tt_friend_template:
+      /* A (local template) friend of a template class.  */
+      if (tree klass = tree_node ())
+	{
+	  unsigned ix = u ();
+	  unsigned u = ix;
+	  for (tree decls = CLASSTYPE_DECL_LIST (klass);
+	       decls; decls = TREE_CHAIN (decls))
+	    if (!TREE_PURPOSE (decls) && !u--)
+	      {
+		res = TREE_VALUE (decls);
+		break;
+	      }
+
+	  if (res)
+	    {
+	      if (TREE_CODE (res) != TEMPLATE_DECL)
+		res = DECL_TI_TEMPLATE (res);
+	      dump (dumper::TREE)
+		&& dump ("Read friend %N[%d] %C:%N",
+			 klass, ix, TREE_CODE (res), res);
+	    }
 	}
       break;
 
@@ -8645,7 +8722,16 @@ trees_out::write_class_def (tree defn)
 	     need to rewrite the class -- into the primary
 	     interface.  */
 	  if (streaming_p () && state->is_partition () && !TREE_PURPOSE (decls))
-	    u (TREE_CHAIN (decl) == void_type_node);
+	    {
+	      tree frnd = decl;
+	      if (TREE_CODE (frnd) == TEMPLATE_DECL)
+		;
+	      else if (!DECL_TEMPLATE_INFO (frnd))
+		frnd = NULL;
+	      else
+		frnd = DECL_TI_TEMPLATE (frnd);
+	      u (frnd && TREE_CHAIN (frnd) == type);
+	    }
 	}
       /* End of decls.  */
       tree_node (NULL_TREE);
@@ -8730,11 +8816,21 @@ trees_out::mark_class_def (tree defn)
 		}
 	    }
 	  else
-	    /* A friend declaration.  If we're a template, and this
-	       friend is either a template or a dependent decl, it's
-	       local to us.  Such have their DECL_CHAIN set.  */
-	    if (DECL_CHAIN (decl) == void_type_node)
-	      mark_class_member (decl, true);
+	    {
+	      /* A friend declaration.  If we're a template, and this
+		 friend is either a template or a dependent decl, it's
+		 local to us.  Such have their DECL_CHAIN set to the
+		 befriending type.  */
+	      tree frnd = decl;
+	      if (TREE_CODE (frnd) == TEMPLATE_DECL)
+		;
+	      else if (!DECL_TEMPLATE_INFO (frnd))
+		frnd = NULL;
+	      else
+		frnd = DECL_TI_TEMPLATE (frnd);
+	      if (frnd && DECL_CHAIN (frnd) == type)
+		mark_class_member (frnd, true);
+	    }
 	}
     }
 }
@@ -8862,8 +8958,11 @@ trees_in::read_class_def (tree defn)
 	  if (state->is_partition () && !purpose)
 	    if (u ())
 	      {
-		gcc_assert (!DECL_CHAIN (decl));
-		DECL_CHAIN (decl) = void_type_node;
+		tree frnd = decl;
+		if (TREE_CODE (frnd) != TEMPLATE_DECL)
+		  frnd = DECL_TI_TEMPLATE (frnd);
+		gcc_assert (!DECL_CHAIN (frnd));
+		DECL_CHAIN (frnd) = type;
 	      }
 	  decl_list = tree_cons (purpose, decl, decl_list);
 	}
@@ -9250,6 +9349,14 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	  if (!dep->is_import ())
 	    worklist.safe_push (dep);
 	}
+      else if (ek == EK_DECL && dep->get_entity_kind () == EK_SPECIALIZATION)
+	{
+	  /* decl is a friend of a template instantiation.  These
+	     have some of the properties of regular decls.  */
+	  dump (dumper::DEPEND)
+	    && dump ("Template friend %N discovered", decl);
+	  dep->set_flag_bit<DB_FRIEND_BIT> ();
+	}
       else
 	/* Make sure we have consistent categorization.  */
 	gcc_checking_assert (dep->get_entity_kind () == ek);
@@ -9527,13 +9634,6 @@ depset::hash::add_specializations (bool decl_p, bitmap partitions)
       else
 	use_tpl = DECL_USE_TEMPLATE (spec);
 
-      if (!use_tpl)
-	/* Not a specialization after all.  This happens when friends
-	   of templates are instantiated and discovered to match an
-	   existing decl.  That decl then replaces the friend
-	   instantiation.  */
-	continue;
-
       bool needs_reaching = false;
       if (use_tpl == 1)
 	/* Implicit instantiations only walked if we reach them.  */
@@ -9603,9 +9703,25 @@ depset::hash::find_dependencies ()
 		walker.tree_mergeable (current);
 	      else if (current->get_entity_kind () == EK_USING)
 		walker.tree_ctx (OVL_FUNCTION (decl), false, NULL_TREE);
-	      else if (!TREE_VISITED (decl))
+	      else if (TREE_VISITED (decl))
+		/* A global tree.  */;
+	      else
 		{
 		  walker.mark_declaration (decl, current->has_defn ());
+
+		  if (current->get_entity_kind () == EK_SPECIALIZATION
+		      // FIXME: as with tree mergeable, why are some unmarked?
+		      && current->is_marked ())
+		    {
+		      /* Even though specializations end up keyed to
+		         their primary template, we need to explicitly
+		         make them depend on both that and the
+		         args.  */
+		      spec_entry *entry
+			= reinterpret_cast <spec_entry *> (current->deps[0]);
+		      walker.tree_node (entry->tmpl);
+		      walker.tree_node (entry->args);
+		    }
 
 		  /* Turn the Sneakoscope on when depending the decl.  */
 		  sneakoscope = true;
@@ -9677,8 +9793,8 @@ binding_cmp (const void *a_, const void *b_)
     return +1;  /* B first.  */
 
   /* Hidden before non-hidden.  */
-  bool a_hidden = a->is_hidden_binding ();
-  bool b_hidden = b->is_hidden_binding ();
+  bool a_hidden = a->is_hidden ();
+  bool b_hidden = b->is_hidden ();
   if (a_hidden != b_hidden)
     return a_hidden ? -1 : +1;
 
@@ -11471,6 +11587,7 @@ enum ct_decl_flags
   cdf_has_definition = 0x1,	/* There is a definition (to read)  */
   cdf_is_specialization = 0x2,  /* Some kind of specialization.  */
   cdf_is_partial = 0x4,		/* A partial specialization.  */
+  cdf_is_friend = 0x8,		/* A template friend specialization.  */
 };
 
 /* Binding modifiers.  */
@@ -11513,6 +11630,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	refs_unnamed_p = true;
 
       if (b->get_entity_kind () == depset::EK_UNNAMED
+	  // FIXME: Should friend specializations be voldemorty?
 	  || b->get_entity_kind () == depset::EK_SPECIALIZATION)
 	{
 	  /* There is no binding for this decl.  It is therefore not
@@ -11542,7 +11660,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   if (mergeables.length () > 1)
     sort_mergeables (mergeables);
 
-  trees_out sec (to, this, table);
+  trees_out sec (to, this, table, scc[0]->section);
   sec.begin ();
 
   if (refs_unnamed_p)
@@ -11681,7 +11799,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		  }
 		else
 		  {
-		    if (dep->is_hidden_binding ())
+		    if (dep->is_hidden ())
 		      flags |= cbf_hidden;
 		    else if (DECL_MODULE_EXPORT_P (decl))
 		      flags |= cbf_export;
@@ -11700,8 +11818,10 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
 	case depset::EK_SPECIALIZATION:
 	  flags |= cdf_is_specialization;
-	  if (b->is_partial_specialization ())
+	  if (b->is_partial ())
 	    flags |= cdf_is_partial;
+	  if (b->is_friend ())
+	    flags |= cdf_is_friend;
 	  /* FALLTHROUGH.  */
 
 	case depset::EK_DECL:
@@ -14411,9 +14531,11 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   /* Find the set of decls we must write out.  */
   depset::hash table (DECL_NAMESPACE_BINDINGS (global_namespace)->size () * 8);
-  table.add_writables (global_namespace, partitions);
+  /* Add the specializations before the writables, so that we can
+     detect injected friend specializations.  */
   table.add_specializations (true, partitions);
   table.add_specializations (false, partitions);
+  table.add_writables (global_namespace, partitions);
   table.find_dependencies ();
   // FIXME: Find reachable GMF entities from non-emitted pieces.  It'd
   // be nice to have a flag telling us this walk's necessary.  Even
@@ -14487,22 +14609,31 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	  && dump ("Cluster imported entity %N", base[0]->get_entity ());
       else
 	{
+	  dump (dumper::CLUSTER)
+	    && dump ("Cluster:%u %u depsets", config.sec_range.second, size);
+
 	  /* Save the size in the first member's cluster slot.  */
 	  base[0]->cluster = size;
-	  /* Set the section number.  */
-	  for (unsigned jx = size; jx--;)
-	    base[jx]->section = config.sec_range.second;
-	  if (dump (dumper::CLUSTER))
+
+	  for (unsigned jx = 0; jx != size; jx++)
 	    {
-	      dump ("Cluster:%u %u depsets", config.sec_range.second, size);
-	      for (unsigned jx = 0; jx != size; jx++)
-		if (base[jx]->is_binding ())
-		  dump ("  [%u]=%s %P", jx, base[jx]->entity_kind_name (),
-			base[jx]->get_entity (), base[jx]->get_name ());
-		else
-		  dump ("  [%u]=%s %s %N", jx, base[jx]->entity_kind_name (),
-			base[jx]->has_defn () ? "definition" : "declaration",
-			base[jx]->get_entity ());
+	      depset *dep = base[jx];
+
+	      /* Set the section number.  */
+	      dep->section = config.sec_range.second;
+
+	      if (dump (dumper::CLUSTER))
+		{
+		  tree decl = dep->get_entity ();
+
+		  if (dep->is_binding ())
+		    dump ("  [%u]=%s %P", jx, dep->entity_kind_name (),
+			  decl, dep->get_name ());
+		  else
+		    dump ("  [%u]=%s %s %N", jx, dep->entity_kind_name (),
+			  dep->has_defn () ? "definition" : "declaration",
+			  dep->get_entity ());
+		}
 	    }
 
 	  config.sec_range.second++;

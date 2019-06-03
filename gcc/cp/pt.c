@@ -5795,7 +5795,9 @@ push_template_decl_real (tree decl, bool is_friend)
 	  // Presumably dependent contexts are in the same boat?
 	  gcc_checking_assert (!DECL_CHAIN (tmpl)
 			       && !DECL_CHAIN (decl));
-	  (is_primary ? DECL_CHAIN (tmpl) : DECL_CHAIN (decl)) = void_type_node;
+	  /* Record these decls as belonging to the current class.
+	     They're not chained onto anything else.  */
+	  DECL_CHAIN (tmpl) = current_scope ();
 	}
     }
   else

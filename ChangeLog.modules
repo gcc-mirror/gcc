@@ -1,3 +1,30 @@
+2019-06-03  Nathan Sidwell  <nathan@acm.org>
+
+	Non-template friends of templates.
+	gcc/cp/
+	* module.cc (depset::disc_bits): Add DB_FRIEND.
+	(depset::is_friend): New.
+	(enum tree_tag): Add tt_friend_template.
+	(trees_out): Add section field, init it.
+	(trees_out::tree_decl): Deal with template friends.  Assert lazy
+	ordering.
+	(trees_in::tree_node): Add tt_friend_template support.
+	(trees_{in,out}::{read,write,mark}_class_def):  Deal with friend
+	templates.
+	(depset::hash::add_dependency): Notice friend templates.
+	(depset::hash::add_specializations): Add non-specializations.
+	(depset::hash::find_dependencies): Specializations depend on their
+	template & args.
+	(enum ct_decl_flags): Add cdf_is_friend.
+	(module_state::write_cluster): Set it.
+	(module_state::write): Add specializations before bindings.
+	Expand cluster dump.
+	* pt.c (push_template_decl_real): Friend template's DECL_CHAIN
+	points at the befriending class.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-friend-2_[ab].C: New.
+	* g++.dg/modules/tpl-friend-1_a.C: Adjust scans.
+
 2019-05-31  Nathan Sidwell  <nathan@acm.org>
 
 	Non-template friends of templates.
