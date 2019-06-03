@@ -87,6 +87,27 @@ Expression::do_export(Export_function_body*) const
   go_unreachable();
 }
 
+// Write a name to the export data.
+
+void
+Expression::export_name(Export_function_body* efb, const Named_object* no)
+{
+  if (no->package() != NULL)
+    {
+      char buf[50];
+      snprintf(buf, sizeof buf, "<p%d>", efb->package_index(no->package()));
+      efb->write_c_string(buf);
+    }
+
+  if (!Gogo::is_hidden_name(no->name()))
+    efb->write_string(no->name());
+  else
+    {
+      efb->write_c_string(".");
+      efb->write_string(Gogo::unpack_hidden_name(no->name()));
+    }
+}
+
 // Give an error saying that the value of the expression is not used.
 
 void
@@ -842,29 +863,16 @@ Var_expression::do_address_taken(bool escapes)
     }
 }
 
-// The cost to inline a variable reference.  We currently only support
-// references to parameters and local variables.
-
-int
-Var_expression::do_inlining_cost() const
-{
-  if (this->variable_->is_variable())
-    {
-      if (!this->variable_->var_value()->is_global())
-	return 1;
-    }
-  else if (this->variable_->is_result_variable())
-    return 1;
-
-  return 0x100000;
-}
-
 // Export a reference to a variable.
 
 void
 Var_expression::do_export(Export_function_body* efb) const
 {
-  efb->write_string(Gogo::unpack_hidden_name(this->variable_->name()));
+  Named_object* no = this->variable_;
+  if (no->is_result_variable() || !no->var_value()->is_global())
+    efb->write_string(Gogo::unpack_hidden_name(no->name()));
+  else
+    Expression::export_name(efb, no);
 }
 
 // Get the backend representation for a reference to a variable.
@@ -17535,26 +17543,55 @@ Expression::import_expression(Import_expression* imp, Location loc)
     }
   if (ifb->saw_error())
     return Expression::make_error(loc);
-  std::string id = ifb->read_identifier();
-  if (id.empty())
+  return Expression::import_identifier(ifb, loc);
+}
+
+// Import an identifier in an expression.  This is a reference to a
+// variable or function.
+
+Expression*
+Expression::import_identifier(Import_function_body* ifb, Location loc)
+{
+  std::string id;
+  Package* pkg;
+  bool is_exported;
+  if (!Import::read_qualified_identifier(ifb, &id, &pkg, &is_exported))
     {
       if (!ifb->saw_error())
-	go_error_at(imp->location(),
-		    "import error: expected identifier at %lu",
+	go_error_at(ifb->location(),
+		    "import error for %qs: bad qualified identifier at %lu",
+		    ifb->name().c_str(),
 		    static_cast<unsigned long>(ifb->off()));
       ifb->set_saw_error();
       return Expression::make_error(loc);
     }
-  Named_object* var = ifb->block()->bindings()->lookup(id);
-  if (var == NULL)
+
+  Named_object* no = NULL;
+  if (pkg == NULL && is_exported)
+    no = ifb->block()->bindings()->lookup(id);
+  if (no == NULL)
+    {
+      const Package* ipkg = pkg;
+      if (ipkg == NULL)
+	ipkg = ifb->function()->package();
+      if (!is_exported)
+	id = '.' + ipkg->pkgpath() + '.' + id;
+      no = ipkg->bindings()->lookup(id);
+    }
+  if (no == NULL)
+    no = ifb->gogo()->lookup_global(id.c_str());
+
+  if (no == NULL)
     {
       if (!ifb->saw_error())
-	go_error_at(imp->location(), "import error: lookup of %qs failed",
-		    id.c_str());
+	go_error_at(ifb->location(),
+		    "import error for %qs: lookup of %qs failed",
+		    ifb->name().c_str(), id.c_str());
       ifb->set_saw_error();
       return Expression::make_error(loc);
     }
-  return Expression::make_var_reference(var, loc);
+
+  return Expression::make_var_reference(no, loc);
 }
 
 // Class Expression_list.

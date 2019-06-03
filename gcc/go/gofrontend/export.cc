@@ -11,6 +11,7 @@
 
 #include "gogo.h"
 #include "types.h"
+#include "expressions.h"
 #include "statements.h"
 #include "export.h"
 
@@ -89,13 +90,88 @@ typedef Unordered_map_hash(const Type*, int, Type_hash_alias_identical,
 
 static Type_refs type_refs;
 
+// A traversal class to collect functions and global variables
+// referenced by inlined functions.
+
+class Collect_references_from_inline : public Traverse
+{
+ public:
+  Collect_references_from_inline(Unordered_set(Named_object*)* exports,
+				 std::vector<Named_object*>* check_inline_refs)
+    : Traverse(traverse_expressions),
+      exports_(exports), check_inline_refs_(check_inline_refs)
+  { }
+
+  int
+  expression(Expression**);
+
+ private:
+  // The set of named objects to export.
+  Unordered_set(Named_object*)* exports_;
+  // Functions we are exporting with inline bodies that need to be checked.
+  std::vector<Named_object*>* check_inline_refs_;
+};
+
+int
+Collect_references_from_inline::expression(Expression** pexpr)
+{
+  const Expression* expr = *pexpr;
+
+  const Var_expression* ve = expr->var_expression();
+  if (ve != NULL)
+    {
+      Named_object* no = ve->named_object();
+      if (no->is_variable() && no->var_value()->is_global())
+	{
+	  this->exports_->insert(no);
+	  no->var_value()->set_is_referenced_by_inline();
+	}
+      return TRAVERSE_CONTINUE;
+    }
+
+  const Func_expression* fe = expr->func_expression();
+  if (fe != NULL)
+    {
+      Named_object* no = fe->named_object();
+      std::pair<Unordered_set(Named_object*)::iterator, bool> ins =
+	this->exports_->insert(no);
+
+      if (no->is_function())
+	no->func_value()->set_is_referenced_by_inline();
+
+      // If ins.second is false then this object was already in
+      // exports_, in which case it was already added to
+      // check_inline_refs_ the first time we added it to exports_, so
+      // we don't need to add it again.
+      if (ins.second
+	  && no->is_function()
+	  && no->func_value()->export_for_inlining())
+	this->check_inline_refs_->push_back(no);
+
+      return TRAVERSE_CONTINUE;
+    }
+
+  return TRAVERSE_CONTINUE;
+}
+
 // A functor to sort Named_object pointers by name.
 
 struct Sort_bindings
 {
   bool
   operator()(const Named_object* n1, const Named_object* n2) const
-  { return n1->name() < n2->name(); }
+  {
+    if (n1->package() != n2->package())
+      {
+	if (n1->package() == NULL)
+	  return true;
+	if (n2->package() == NULL)
+	  return false;
+	return n1->package()->pkgpath() < n2->package()->pkgpath();
+      }
+
+    return n1->name() < n2->name();
+  }
 };
 
 // Return true if we should export NO.
@@ -153,17 +229,26 @@ Export::export_globals(const std::string& package_name,
   if (saw_errors())
     return;
 
-  // Export the symbols in sorted order.  That will reduce cases where
-  // irrelevant changes to the source code affect the exported
-  // interface.
-  std::vector<Named_object*> exports;
-  exports.reserve(bindings->size_definitions());
+  // EXPORTS is the set of objects to export.  CHECK_INLINE_REFS is a
+  // list of exported function with inline bodies that need to be
+  // checked for references to other objects.  Every function on
+  // CHECK_INLINE_REFS is also on EXPORTS.
+  Unordered_set(Named_object*) exports;
+  std::vector<Named_object*> check_inline_refs;
 
   for (Bindings::const_definitions_iterator p = bindings->begin_definitions();
        p != bindings->end_definitions();
        ++p)
-    if (should_export(*p))
-      exports.push_back(*p);
+    {
+      if (should_export(*p))
+	{
+	  exports.insert(*p);
+
+	  if ((*p)->is_function()
+	      && (*p)->func_value()->export_for_inlining())
+	    check_inline_refs.push_back(*p);
+	}
+    }
 
   for (Bindings::const_declarations_iterator p =
 	 bindings->begin_declarations();
@@ -174,15 +259,47 @@ Export::export_globals(const std::string& package_name,
       // supporting C code.  We do not export type declarations.
       if (p->second->is_function_declaration()
 	  && should_export(p->second))
-	exports.push_back(p->second);
+	exports.insert(p->second);
     }
 
-  std::sort(exports.begin(), exports.end(), Sort_bindings());
+  // Look through the bodies of the functions in CHECK_INLINE_REFS to
+  // find other names we may need to export, to satisfy those
+  // references.  Use CHECKED to skip checking function bodies more
+  // than once.
+  Unordered_set(Named_object*) checked;
+  Collect_references_from_inline refs(&exports, &check_inline_refs);
+  while (!check_inline_refs.empty())
+    {
+      Named_object* no = check_inline_refs.back();
+      check_inline_refs.pop_back();
+      std::pair<Unordered_set(Named_object*)::iterator, bool> ins =
+	checked.insert(no);
+      if (ins.second)
+	{
+	  // This traversal may add new objects to EXPORTS and new
+	  // functions to CHECK_INLINE_REFS.
+	  no->func_value()->block()->traverse(&refs);
+	}
+    }
+
+  // Export the symbols in sorted order.  That will reduce cases where
+  // irrelevant changes to the source code affect the exported
+  // interface.
+  std::vector<Named_object*> sorted_exports;
+  sorted_exports.reserve(exports.size());
+
+  for (Unordered_set(Named_object*)::const_iterator p = exports.begin();
+       p != exports.end();
+       ++p)
+    sorted_exports.push_back(*p);
+
+  std::sort(sorted_exports.begin(), sorted_exports.end(), Sort_bindings());
 
   // Assign indexes to all exported types and types referenced by
   // exported types, and collect all packages mentioned.
   Unordered_set(const Package*) type_imports;
-  int unexported_type_index = this->prepare_types(&exports, &type_imports);
+  int unexported_type_index = this->prepare_types(&sorted_exports,
+						  &type_imports);
 
   // Although the export data is readable, at least this version is,
   // it is conceptually a binary format.  Start with a four byte
@@ -223,8 +340,8 @@ Export::export_globals(const std::string& package_name,
   this->write_types(unexported_type_index);
 
   // Write out the non-type export data.
-  for (std::vector<Named_object*>::const_iterator p = exports.begin();
-       p != exports.end();
+  for (std::vector<Named_object*>::const_iterator p = sorted_exports.begin();
+       p != sorted_exports.end();
        ++p)
     {
       if (!(*p)->is_type())
@@ -591,6 +708,7 @@ Export::write_imports(const std::map<std::string, Package*>& imports,
 
   std::sort(sorted_imports.begin(), sorted_imports.end(), import_compare);
 
+  int package_index = 1;
   for (std::vector<std::pair<std::string, Package*> >::const_iterator p =
 	 sorted_imports.begin();
        p != sorted_imports.end();
@@ -604,7 +722,8 @@ Export::write_imports(const std::map<std::string, Package*>& imports,
       this->write_string(p->first);
       this->write_c_string("\"\n");
 
-      this->packages_.insert(p->second);
+      this->packages_[p->second] = package_index;
+      package_index++;
     }
 
   // Write out a separate list of indirectly imported packages.
@@ -631,6 +750,9 @@ Export::write_imports(const std::map<std::string, Package*>& imports,
       this->write_c_string(" ");
       this->write_string((*p)->pkgpath());
       this->write_c_string("\n");
+
+      this->packages_[*p] = package_index;
+      package_index++;
     }
 }
 
@@ -981,6 +1103,19 @@ Export::write_unsigned(unsigned value)
   char buf[100];
   snprintf(buf, sizeof buf, "%u", value);
   this->write_c_string(buf);
+}
+
+// Return the index of a package.
+
+int
+Export::package_index(const Package* pkg) const
+{
+  Unordered_map(const Package *, int)::const_iterator p =
+    this->packages_.find(pkg);
+  go_assert(p != this->packages_.end());
+  int index = p->second;
+  go_assert(index != 0);
+  return index;
 }
 
 // Return the index of a type.
