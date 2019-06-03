@@ -951,6 +951,21 @@ Feature-testing recommendations for C++</link>.
       <entry align="center"> 9.1 </entry>
       <entry />
     </row>
+
+    <row>
+      <entry>
+        Mandating the Standard Library:
+        Clause 21 - Containers library
+      </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1463r1.pdf">
+        P1463R1
+	</link>
+      </entry>
+      <entry align="center"> 10 </entry>
+      <entry/>
+    </row>
+
   </tbody>
 </tgroup>
 </table>

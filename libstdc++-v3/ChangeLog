@@ -1,3 +1,29 @@
+2019-06-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Document P1463R1 status.
+	* include/bits/forward_list.h [__cplusplus > 201703]: Enable
+	allocator::value_type assertion for C++2a.
+	* include/bits/hashtable.h: Likewise.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* testsuite/23_containers/deque/48101-3_neg.cc: New test.
+	* testsuite/23_containers/forward_list/48101-3_neg.cc: New test.
+	* testsuite/23_containers/list/48101-3_neg.cc: New test.
+	* testsuite/23_containers/map/48101-3_neg.cc: New test.
+	* testsuite/23_containers/multimap/48101-3_neg.cc: New test.
+	* testsuite/23_containers/multiset/48101-3_neg.cc: New test.
+	* testsuite/23_containers/set/48101-3_neg.cc: New test.
+	* testsuite/23_containers/unordered_map/48101-3_neg.cc: New test.
+	* testsuite/23_containers/unordered_multimap/48101-3_neg.cc: New test.
+	* testsuite/23_containers/unordered_multiset/48101-3_neg.cc: New test.
+	* testsuite/23_containers/unordered_set/48101-3_neg.cc: New test.
+	* testsuite/23_containers/vector/48101-3_neg.cc: New test.
+
 2019-05-31  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/allocator.xml: Move hoard.org back to http.
