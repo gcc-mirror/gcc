@@ -1,3 +1,31 @@
+2019-06-03  Aldy Hernandez  <aldyh@redhat.com>
+	* tree-vrp.h (value_range_base::nonzero_p): New.
+	(value_range_base::set_nonnull): Rename to...
+	(value_range_base::set_nonzero): ...this.
+	(value_range_base::set_null): Rename to...
+	(value_range_base::set_zero): ...this.
+	(value_range::set_nonnull): Remove.
+	(value_range::set_null): Remove.
+	* tree-vrp.c (range_is_null): Remove.
+	(range_is_nonnull): Remove.
+	(extract_range_from_binary_expr): Use value_range_base::*zero_p
+	instead of range_is_*null.
+	(extract_range_from_unary_expr): Same.
+	(value_range_base::set_nonnull): Rename to...
+	(value_range_base::set_nonzero): ...this.
+	(value_range::set_nonnull): Remove.
+	(value_range_base::set_null): Rename to...
+	(value_range_base::set_zero): ...this.
+	(value_range::set_null): Remove.
+	(extract_range_from_binary_expr): Rename set_*null uses to
+	set_*zero.
+	(extract_range_from_unary_expr): Same.
+	(union_helper): Same.
+	* vr-values.c (get_value_range): Use set_*zero instead of
+	set_*null.
+	(vr_values::extract_range_from_binary_expr): Same.
+	(vr_values::extract_range_basic): Same.
+
 2019-06-03  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR driver/90684

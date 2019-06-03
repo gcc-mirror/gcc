@@ -776,32 +776,19 @@ value_range::set (tree val)
   set (VR_RANGE, val, val, NULL);
 }
 
-/* Set value range VR to a non-NULL range of type TYPE.  */
+/* Set value range VR to a nonzero range of type TYPE.  */
 
 void
-value_range_base::set_nonnull (tree type)
+value_range_base::set_nonzero (tree type)
 {
   tree zero = build_int_cst (type, 0);
   set (VR_ANTI_RANGE, zero, zero);
 }
 
-void
-value_range::set_nonnull (tree type)
-{
-  tree zero = build_int_cst (type, 0);
-  set (VR_ANTI_RANGE, zero, zero, NULL);
-}
-
-/* Set value range VR to a NULL range of type TYPE.  */
+/* Set value range VR to a ZERO range of type TYPE.  */
 
 void
-value_range_base::set_null (tree type)
-{
-  set (build_int_cst (type, 0));
-}
-
-void
-value_range::set_null (tree type)
+value_range_base::set_zero (tree type)
 {
   set (build_int_cst (type, 0));
 }
@@ -828,22 +815,6 @@ vrp_bitmap_equal_p (const_bitmap b1, const_bitmap b2)
 	      && (!b2 || bitmap_empty_p (b2)))
 	  || (b1 && b2
 	      && bitmap_equal_p (b1, b2)));
-}
-
-/* Return true if VR is [0, 0].  */
-
-static inline bool
-range_is_null (const value_range_base *vr)
-{
-  return vr->zero_p ();
-}
-
-static inline bool
-range_is_nonnull (const value_range_base *vr)
-{
-  return (vr->kind () == VR_ANTI_RANGE
-	  && vr->min () == vr->max ()
-	  && integer_zerop (vr->min ()));
 }
 
 /* Return true if max and min of VR are INTEGER_CST.  It's not necessary
@@ -1583,9 +1554,9 @@ extract_range_from_binary_expr (value_range_base *vr,
      code is EXACT_DIV_EXPR.  We could mask out bits in the resulting
      range, but then we also need to hack up vrp_union.  It's just
      easier to special case when vr0 is ~[0,0] for EXACT_DIV_EXPR.  */
-  if (code == EXACT_DIV_EXPR && range_is_nonnull (&vr0))
+  if (code == EXACT_DIV_EXPR && vr0.nonzero_p ())
     {
-      vr->set_nonnull (expr_type);
+      vr->set_nonzero (expr_type);
       return;
     }
 
@@ -1663,9 +1634,9 @@ extract_range_from_binary_expr (value_range_base *vr,
 	     If both are null, then the result is null. Otherwise they
 	     are varying.  */
 	  if (!range_includes_zero_p (&vr0) && !range_includes_zero_p (&vr1))
-	    vr->set_nonnull (expr_type);
-	  else if (range_is_null (&vr0) && range_is_null (&vr1))
-	    vr->set_null (expr_type);
+	    vr->set_nonzero (expr_type);
+	  else if (vr0.zero_p () && vr1.zero_p ())
+	    vr->set_zero (expr_type);
 	  else
 	    vr->set_varying ();
 	}
@@ -1692,9 +1663,9 @@ extract_range_from_binary_expr (value_range_base *vr,
 	      && (flag_delete_null_pointer_checks
 		  || (range_int_cst_p (&vr1)
 		      && !tree_int_cst_sign_bit (vr1.max ()))))
-	    vr->set_nonnull (expr_type);
-	  else if (range_is_null (&vr0) && range_is_null (&vr1))
-	    vr->set_null (expr_type);
+	    vr->set_nonzero (expr_type);
+	  else if (vr0.zero_p () && vr1.zero_p ())
+	    vr->set_zero (expr_type);
 	  else
 	    vr->set_varying ();
 	}
@@ -1703,9 +1674,9 @@ extract_range_from_binary_expr (value_range_base *vr,
 	  /* For pointer types, we are really only interested in asserting
 	     whether the expression evaluates to non-NULL.  */
 	  if (!range_includes_zero_p (&vr0) && !range_includes_zero_p (&vr1))
-	    vr->set_nonnull (expr_type);
-	  else if (range_is_null (&vr0) || range_is_null (&vr1))
-	    vr->set_null (expr_type);
+	    vr->set_nonzero (expr_type);
+	  else if (vr0.zero_p () || vr1.zero_p ())
+	    vr->set_zero (expr_type);
 	  else
 	    vr->set_varying ();
 	}
@@ -1898,7 +1869,7 @@ extract_range_from_binary_expr (value_range_base *vr,
       bool extra_range_p;
 
       /* Special case explicit division by zero as undefined.  */
-      if (range_is_null (&vr1))
+      if (vr1.zero_p ())
 	{
 	  vr->set_undefined ();
 	  return;
@@ -1937,7 +1908,7 @@ extract_range_from_binary_expr (value_range_base *vr,
     }
   else if (code == TRUNC_MOD_EXPR)
     {
-      if (range_is_null (&vr1))
+      if (vr1.zero_p ())
 	{
 	  vr->set_undefined ();
 	  return;
@@ -2141,9 +2112,9 @@ extract_range_from_unary_expr (value_range_base *vr,
       if (POINTER_TYPE_P (type) || POINTER_TYPE_P (op0_type))
 	{
 	  if (!range_includes_zero_p (&vr0))
-	    vr->set_nonnull (type);
-	  else if (range_is_null (&vr0))
-	    vr->set_null (type);
+	    vr->set_nonzero (type);
+	  else if (vr0.zero_p ())
+	    vr->set_zero (type);
 	  else
 	    vr->set_varying ();
 	  return;
@@ -6152,7 +6123,7 @@ value_range_base::union_helper (const value_range_base *vr0,
 		vr1->kind (), vr1->min (), vr1->max ());
 
   /* Work on a temporary so we can still use vr0 when union returns varying.  */
-  value_range tem;
+  value_range_base tem;
   tem.set_and_canonicalize (vr0type, vr0min, vr0max);
 
   /* Failed to find an efficient meet.  Before giving up and setting
@@ -6162,7 +6133,7 @@ value_range_base::union_helper (const value_range_base *vr0,
       && range_includes_zero_p (vr0) == 0
       && range_includes_zero_p (vr1) == 0)
     {
-      tem.set_nonnull (vr0->type ());
+      tem.set_nonzero (vr0->type ());
       return tem;
     }
 
