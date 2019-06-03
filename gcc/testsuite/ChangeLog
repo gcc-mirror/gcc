@@ -1,3 +1,8 @@
+2019-06-03  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
+
+	PR tree-optimization/90681
+	* gfortran.dg/vect/pr90681.f: New test.
+
 2019-06-03  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/90713
