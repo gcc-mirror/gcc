@@ -1,3 +1,9 @@
+2019-06-03  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/debug/enum-1.c: Add -fno-eliminate-unused-debug-symbols
+	on AIX.
+	* g++.dg/debug/enum-1.C: Same.
+
 2019-06-03  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR middle-end/64242
