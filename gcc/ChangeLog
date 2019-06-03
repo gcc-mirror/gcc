@@ -1,3 +1,9 @@
+2019-06-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90716
+	* tree-loop-distribution.c (destroy_loop): Process blocks in
+	correct order.
+
 2019-06-03  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR target/88837
