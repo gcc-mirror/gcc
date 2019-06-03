@@ -1,5 +1,13 @@
 2019-06-03  Nathan Sidwell  <nathan@acm.org>
 
+	Non-template friends of templates.
+	gcc/cp/
+	* module.cc (has_definition): Use DECL_SAVED_TREE.
+	(trees_{in,out}::{read,write}_class_def): Stream definitions of
+	local friends.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-friend-3_[ab].C: New.
+
 	Merge trunk r271874.
 
 	Non-template friends of templates.

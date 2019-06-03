@@ -8414,7 +8414,7 @@ has_definition (tree decl)
       break;
 
     case FUNCTION_DECL:
-      if (!DECL_INITIAL (decl))
+      if (!DECL_SAVED_TREE (decl))
 	/* Not defined.  */
 	break;
 
@@ -8717,11 +8717,7 @@ trees_out::write_class_def (tree defn)
 	  tree decl = TREE_VALUE (decls);
 	  tree_node (decl);
 	  tree_node (TREE_PURPOSE (decls));
-	  /* It is only in partitions that we need to record whether
-	     the friend is local, as that's the only place we (may)
-	     need to rewrite the class -- into the primary
-	     interface.  */
-	  if (streaming_p () && state->is_partition () && !TREE_PURPOSE (decls))
+	  if (!TREE_PURPOSE (decls))
 	    {
 	      tree frnd = decl;
 	      if (TREE_CODE (frnd) == TEMPLATE_DECL)
@@ -8730,7 +8726,18 @@ trees_out::write_class_def (tree defn)
 		frnd = NULL;
 	      else
 		frnd = DECL_TI_TEMPLATE (frnd);
-	      u (frnd && TREE_CHAIN (frnd) == type);
+
+	      if (frnd)
+		{
+		  bool local_friend = frnd && TREE_CHAIN (frnd) == type;
+		  bool has_def = local_friend && has_definition (frnd);
+
+		  if (streaming_p ())
+		    u (unsigned (local_friend) * 2 | unsigned (has_def));
+
+		  if (has_def)
+		    write_definition (frnd);
+		}
 	    }
 	}
       /* End of decls.  */
@@ -8828,6 +8835,7 @@ trees_out::mark_class_def (tree defn)
 		frnd = NULL;
 	      else
 		frnd = DECL_TI_TEMPLATE (frnd);
+
 	      if (frnd && DECL_CHAIN (frnd) == type)
 		mark_class_member (frnd, true);
 	    }
@@ -8955,15 +8963,33 @@ trees_in::read_class_def (tree defn)
       while (tree decl = tree_node ())
 	{
 	  tree purpose = tree_node ();
-	  if (state->is_partition () && !purpose)
-	    if (u ())
-	      {
-		tree frnd = decl;
-		if (TREE_CODE (frnd) != TEMPLATE_DECL)
-		  frnd = DECL_TI_TEMPLATE (frnd);
-		gcc_assert (!DECL_CHAIN (frnd));
-		DECL_CHAIN (frnd) = type;
-	      }
+	  if (!purpose)
+	    {
+	      tree frnd = decl;
+	      if (TREE_CODE (frnd) == TEMPLATE_DECL)
+		;
+	      else if (!DECL_TEMPLATE_INFO (frnd))
+		frnd = NULL;
+	      else
+		frnd = DECL_TI_TEMPLATE (frnd);
+
+	      if (frnd)
+		{
+		  unsigned local = u ();
+		  bool local_friend = (local >> 1) & 1;
+		  bool has_def = local & 1;
+
+		  if (local_friend)
+		    {
+		      gcc_assert (!DECL_CHAIN (frnd));
+		      DECL_CHAIN (frnd) = type;
+		    }
+
+		  if (has_def)
+		    if (!read_definition (frnd))
+		      break;
+		}
+	    }
 	  decl_list = tree_cons (purpose, decl, decl_list);
 	}
       decl_list = nreverse (decl_list);
