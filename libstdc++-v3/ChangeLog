@@ -1,3 +1,8 @@
+2019-06-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple (make_from_tuple): Use remove_reference_t instead
+	of decay_t (P0777R1).
+
 2019-05-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Fix typo in documentation of
