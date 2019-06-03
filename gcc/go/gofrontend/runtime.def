@@ -212,6 +212,10 @@ DEF_GO_RUNTIME(GROWSLICE, "runtime.growslice",
 // Register roots (global variables) for the garbage collector.
 DEF_GO_RUNTIME(REGISTER_GC_ROOTS, "runtime.registerGCRoots", P1(POINTER), R0())
 
+// Register type descriptors.
+DEF_GO_RUNTIME(REGISTER_TYPE_DESCRIPTORS, "runtime.registerTypeDescriptors",
+               P2(INT, POINTER), R0())
+
 
 // Allocate memory.
 DEF_GO_RUNTIME(NEW, "runtime.newobject", P1(TYPE), R1(POINTER))
