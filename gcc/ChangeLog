@@ -1,3 +1,10 @@
+2019-06-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/iterators.md (MAX_OPP): New code attr.
+	* config/aarch64/aarch64-simd.md (*aarch64_<su>abd<mode>_3): Rename to...
+	(aarch64_<su>abd<mode>_3): ... This.
+	(<sur>sadv16qi): Add TARGET_DOTPROD expansion.
+
 2019-06-03  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (ao_ref_init_from_vn_reference): Get original
