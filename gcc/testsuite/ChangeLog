@@ -1,3 +1,31 @@
+2019-06-03  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/88837
+	* gcc.target/aarch64/sve/init_1.c: New test.
+	* gcc.target/aarch64/sve/init_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/init_2.c: Likewise.
+	* gcc.target/aarch64/sve/init_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/init_3.c: Likewise.
+	* gcc.target/aarch64/sve/init_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/init_4.c: Likewise.
+	* gcc.target/aarch64/sve/init_4_run.c: Likewise.
+	* gcc.target/aarch64/sve/init_5.c: Likewise.
+	* gcc.target/aarch64/sve/init_5_run.c: Likewise.
+	* gcc.target/aarch64/sve/init_6.c: Likewise.
+	* gcc.target/aarch64/sve/init_6_run.c: Likewise.
+	* gcc.target/aarch64/sve/init_7.c: Likewise.
+	* gcc.target/aarch64/sve/init_7_run.c: Likewise.
+	* gcc.target/aarch64/sve/init_8.c: Likewise.
+	* gcc.target/aarch64/sve/init_8_run.c: Likewise.
+	* gcc.target/aarch64/sve/init_9.c: Likewise.
+	* gcc.target/aarch64/sve/init_9_run.c: Likewise.
+	* gcc.target/aarch64/sve/init_10.c: Likewise.
+	* gcc.target/aarch64/sve/init_10_run.c: Likewise.
+	* gcc.target/aarch64/sve/init_11.c: Likewise.
+	* gcc.target/aarch64/sve/init_11_run.c: Likewise.
+	* gcc.target/aarch64/sve/init_12.c: Likewise.
+	* gcc.target/aarch64/sve/init_12_run.c: Likewise.
+
 2019-06-03  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
 
 	PR tree-optimization/90681

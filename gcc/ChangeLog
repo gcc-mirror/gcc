@@ -1,3 +1,17 @@
+2019-06-03  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/88837
+	* vector-builder.h (vector_builder::count_dups): New method.
+	* config/aarch64/aarch64-protos.h (aarch64_expand_sve_vector_init):
+	Declare prototype.
+	* config/aarch64/aarch64/sve.md (aarch64_sve_rev64<mode>): Use @.
+	(vec_init<mode><Vel>): New pattern.
+	* config/aarch64/aarch64.c (emit_insr): New function.
+	(aarch64_sve_expand_vector_init_handle_trailing_constants): Likewise.
+	(aarch64_sve_expand_vector_init_insert_elems): Likewise.
+	(aarch64_sve_expand_vector_init_handle_trailing_same_elem): Likewise.
+	(aarch64_sve_expand_vector_init): Define two overloaded functions.
+
 2019-06-03  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
 
 	PR tree-optimization/90681
