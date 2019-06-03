@@ -57,7 +57,7 @@ __go_makecontext:
 	addq	%rcx, %rdx
 
 	// Align the SP, and push a dummy return address.
-	andq	$~0xfULL, %rdx
+	andq	$~0xf, %rdx
 	subq	$8, %rdx
 	movq	$0, (%rdx)
 
