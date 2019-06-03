@@ -7473,30 +7473,22 @@ gpr_or_gpr_p (rtx op0, rtx op1)
 bool
 direct_move_p (rtx op0, rtx op1)
 {
-  int regno0, regno1;
-
   if (!REG_P (op0) || !REG_P (op1))
     return false;
 
-  if (!TARGET_DIRECT_MOVE && !TARGET_MFPGPR)
+  if (!TARGET_DIRECT_MOVE)
     return false;
 
-  regno0 = REGNO (op0);
-  regno1 = REGNO (op1);
+  int regno0 = REGNO (op0);
+  int regno1 = REGNO (op1);
   if (!HARD_REGISTER_NUM_P (regno0) || !HARD_REGISTER_NUM_P (regno1))
     return false;
 
-  if (INT_REGNO_P (regno0))
-    return (TARGET_DIRECT_MOVE) ? VSX_REGNO_P (regno1) : FP_REGNO_P (regno1);
+  if (INT_REGNO_P (regno0) && VSX_REGNO_P (regno1))
+    return true;
 
-  else if (INT_REGNO_P (regno1))
-    {
-      if (TARGET_MFPGPR && FP_REGNO_P (regno0))
-	return true;
-
-      else if (TARGET_DIRECT_MOVE && VSX_REGNO_P (regno0))
-	return true;
-    }
+  if (VSX_REGNO_P (regno0) && INT_REGNO_P (regno1))
+    return true;
 
   return false;
 }
@@ -19078,12 +19070,6 @@ rs6000_secondary_reload_simple_move (enum rs6000_reg_type to_type,
       if (mode == SDmode)
 	return true;
     }
-
-  /* Power6+: MFTGPR or MFFGPR.  */
-  else if (TARGET_MFPGPR && TARGET_POWERPC64 && size == 8
-      && ((to_type == GPR_REG_TYPE && from_type == FPR_REG_TYPE)
-	  || (to_type == FPR_REG_TYPE && from_type == GPR_REG_TYPE)))
-    return true;
 
   /* Move to/from SPR.  */
   else if ((size == 4 || (TARGET_POWERPC64 && size == 8))
@@ -36452,7 +36438,7 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "htm",			OPTION_MASK_HTM,		false, true  },
   { "isel",			OPTION_MASK_ISEL,		false, true  },
   { "mfcrf",			OPTION_MASK_MFCRF,		false, true  },
-  { "mfpgpr",			OPTION_MASK_MFPGPR,		false, true  },
+  { "mfpgpr",			0,				false, true  },
   { "modulo",			OPTION_MASK_MODULO,		false, true  },
   { "mulhw",			OPTION_MASK_MULHW,		false, true  },
   { "multiple",			OPTION_MASK_MULTIPLE,		false, true  },

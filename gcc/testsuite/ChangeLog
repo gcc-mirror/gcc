@@ -1,3 +1,7 @@
+2019-06-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/mmfpgpr.c: Delete.
+
 2019-06-03  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/debug/enum-1.c: Add -fno-eliminate-unused-debug-symbols

@@ -1076,7 +1076,7 @@ See RS/6000 and PowerPC Options.
 -mpowerpc-gfxopt  -mno-powerpc-gfxopt @gol
 -mmfcrf  -mno-mfcrf  -mpopcntb  -mno-popcntb  -mpopcntd  -mno-popcntd @gol
 -mfprnd  -mno-fprnd @gol
--mcmpb  -mno-cmpb  -mmfpgpr  -mno-mfpgpr  -mhard-dfp  -mno-hard-dfp @gol
+-mcmpb  -mno-cmpb  -mhard-dfp  -mno-hard-dfp @gol
 -mfull-toc   -mminimal-toc  -mno-fp-in-toc  -mno-sum-in-toc @gol
 -m64  -m32  -mxl-compat  -mno-xl-compat  -mpe @gol
 -malign-power  -malign-natural @gol
@@ -24014,8 +24014,6 @@ These @samp{-m} options are defined for the IBM RS/6000 and PowerPC:
 @need 800
 @itemx -mcmpb
 @itemx -mno-cmpb
-@itemx -mmfpgpr
-@itemx -mno-mfpgpr
 @itemx -mhard-dfp
 @itemx -mno-hard-dfp
 @opindex mpowerpc-gpopt
@@ -24034,8 +24032,6 @@ These @samp{-m} options are defined for the IBM RS/6000 and PowerPC:
 @opindex mno-fprnd
 @opindex mcmpb
 @opindex mno-cmpb
-@opindex mmfpgpr
-@opindex mno-mfpgpr
 @opindex mhard-dfp
 @opindex mno-hard-dfp
 You use these options to specify which instructions are available on the
@@ -24069,10 +24065,6 @@ processors that support the PowerPC V2.03 architecture.
 The @option{-mcmpb} option allows GCC to generate the compare bytes
 instruction implemented on the POWER6 processor and other processors
 that support the PowerPC V2.05 architecture.
-The @option{-mmfpgpr} option allows GCC to generate the FP move to/from
-general-purpose register instructions implemented on the POWER6X
-processor and other processors that support the extended PowerPC V2.05
-architecture.
 The @option{-mhard-dfp} option allows GCC to generate the decimal
 floating-point instructions implemented on some POWER processors.
 
