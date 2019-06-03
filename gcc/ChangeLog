@@ -1,3 +1,14 @@
+2019-06-03  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_asm_output_alias): Declare.
+	(aarch64_asm_output_external): Declare.
+	* config/aarch64/aarch64.c (aarch64_asm_output_variant_pcs): New.
+	(aarch64_declare_function_name): Call aarch64_asm_output_variant_pcs.
+	(aarch64_asm_output_alias): New.
+	(aarch64_asm_output_external): New.
+	* config/aarch64/aarch64.h (ASM_OUTPUT_DEF_FROM_DECLS): Define.
+	(ASM_OUTPUT_EXTERNAL): Define.
+
 2019-06-03  Aldy Hernandez  <aldyh@redhat.com>
 	* tree-vrp.h (value_range_base::nonzero_p): New.
 	(value_range_base::set_nonnull): Rename to...

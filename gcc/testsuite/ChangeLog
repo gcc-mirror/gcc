@@ -1,3 +1,10 @@
+2019-06-03  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gcc.target/aarch64/pcs_attribute-2.c: New test.
+	* gcc.target/aarch64/torture/simd-abi-4.c: Check .variant_pcs support.
+	* lib/target-supports.exp (check_effective_target_aarch64_variant_pcs):
+	New.
+
 2019-06-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/ssadv16qi.c: Add +nodotprod to pragma.

@@ -516,6 +516,15 @@ extern unsigned aarch64_architecture_version;
 #define ASM_DECLARE_FUNCTION_NAME(STR, NAME, DECL)	\
   aarch64_declare_function_name (STR, NAME, DECL)
 
+/* Output assembly strings for alias definition.  */
+#define ASM_OUTPUT_DEF_FROM_DECLS(STR, DECL, TARGET) \
+  aarch64_asm_output_alias (STR, DECL, TARGET)
+
+/* Output assembly strings for undefined extern symbols.  */
+#undef ASM_OUTPUT_EXTERNAL
+#define ASM_OUTPUT_EXTERNAL(STR, DECL, NAME) \
+  aarch64_asm_output_external (STR, DECL, NAME)
+
 /* Output assembly strings after .cfi_startproc is emitted.  */
 #define ASM_POST_CFI_STARTPROC  aarch64_post_cfi_startproc
 
