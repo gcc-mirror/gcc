@@ -1,5 +1,10 @@
 2019-06-03  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (friend_from_decl_list): New.
+	(trees_out::{tree_decl,{write,mark}_class_def}): Use it.
+	(trees_in::{tree_node,read_class_def}): Likewise.
+
 	Template friends of templates.
 	gcc/testsuite/
 	* g++.dg/modules/tpl-tpl-friend-1_[ab].C: New.

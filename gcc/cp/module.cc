@@ -4245,6 +4245,29 @@ maybe_strip_bmi_prefix (char *to)
   return to;
 }
 
+/* Given a CLASSTYPE_DECL_LIST VALUE get the friend decl, if that's
+   what this is.  */
+
+static tree
+friend_from_decl_list (tree frnd)
+{
+  if (TYPE_P (frnd))
+    {
+      if (!CLASSTYPE_TEMPLATE_INFO (frnd))
+	frnd = NULL_TREE;
+      else
+	frnd = CLASSTYPE_TI_TEMPLATE (frnd);
+    }
+  else if (TREE_CODE (frnd) == TEMPLATE_DECL)
+    ;
+  else if (!DECL_TEMPLATE_INFO (frnd))
+    frnd = NULL;
+  else
+    frnd = DECL_TI_TEMPLATE (frnd);
+
+  return frnd;
+}
+
 /* Instrumentation gathered writing bytes.  */
 
 void
@@ -6759,11 +6782,11 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	       decls = TREE_CHAIN (decls))
 	    if (!TREE_PURPOSE (decls))
 	      {
-		tree frnd = TREE_VALUE (decls);
-		if (TREE_CODE (frnd) != TEMPLATE_DECL)
-		  frnd = DECL_TI_TEMPLATE (frnd);
-		if (frnd == decl)
-		  break;
+		if (tree frnd = friend_from_decl_list (TREE_VALUE (decls)))
+		  if (frnd == decl)
+		    break;
+
+		/* Count every friend to make streaming in simpler.  */
 		ix++;
 	      }
 	  u (ix);
@@ -8718,27 +8741,17 @@ trees_out::write_class_def (tree defn)
 	  tree_node (decl);
 	  tree_node (TREE_PURPOSE (decls));
 	  if (!TREE_PURPOSE (decls))
-	    {
-	      tree frnd = decl;
-	      if (TREE_CODE (frnd) == TEMPLATE_DECL)
-		;
-	      else if (!DECL_TEMPLATE_INFO (frnd))
-		frnd = NULL;
-	      else
-		frnd = DECL_TI_TEMPLATE (frnd);
+	    if (tree frnd = friend_from_decl_list (TREE_VALUE (decls)))
+	      {
+		bool local_friend = frnd && TREE_CHAIN (frnd) == type;
+		bool has_def = local_friend && has_definition (frnd);
 
-	      if (frnd)
-		{
-		  bool local_friend = frnd && TREE_CHAIN (frnd) == type;
-		  bool has_def = local_friend && has_definition (frnd);
+		if (streaming_p ())
+		  u (unsigned (local_friend) * 2 | unsigned (has_def));
 
-		  if (streaming_p ())
-		    u (unsigned (local_friend) * 2 | unsigned (has_def));
-
-		  if (has_def)
-		    write_definition (frnd);
-		}
-	    }
+		if (has_def)
+		  write_definition (frnd);
+	      }
 	}
       /* End of decls.  */
       tree_node (NULL_TREE);
@@ -8822,21 +8835,13 @@ trees_out::mark_class_def (tree defn)
 		  mark_class_member (decl, false);
 		}
 	    }
-	  else
+	  else if (tree frnd = friend_from_decl_list (decl))
 	    {
 	      /* A friend declaration.  If we're a template, and this
 		 friend is either a template or a dependent decl, it's
 		 local to us.  Such have their DECL_CHAIN set to the
 		 befriending type.  */
-	      tree frnd = decl;
-	      if (TREE_CODE (frnd) == TEMPLATE_DECL)
-		;
-	      else if (!DECL_TEMPLATE_INFO (frnd))
-		frnd = NULL;
-	      else
-		frnd = DECL_TI_TEMPLATE (frnd);
-
-	      if (frnd && DECL_CHAIN (frnd) == type)
+	      if (DECL_CHAIN (frnd) == type)
 		mark_class_member (frnd, true);
 	    }
 	}
@@ -8964,32 +8969,22 @@ trees_in::read_class_def (tree defn)
 	{
 	  tree purpose = tree_node ();
 	  if (!purpose)
-	    {
-	      tree frnd = decl;
-	      if (TREE_CODE (frnd) == TEMPLATE_DECL)
-		;
-	      else if (!DECL_TEMPLATE_INFO (frnd))
-		frnd = NULL;
-	      else
-		frnd = DECL_TI_TEMPLATE (frnd);
+	    if (tree frnd = friend_from_decl_list (decl))
+	      {
+		unsigned local = u ();
+		bool local_friend = (local >> 1) & 1;
+		bool has_def = local & 1;
 
-	      if (frnd)
-		{
-		  unsigned local = u ();
-		  bool local_friend = (local >> 1) & 1;
-		  bool has_def = local & 1;
+		if (local_friend)
+		  {
+		    gcc_assert (!DECL_CHAIN (frnd));
+		    DECL_CHAIN (frnd) = type;
+		  }
 
-		  if (local_friend)
-		    {
-		      gcc_assert (!DECL_CHAIN (frnd));
-		      DECL_CHAIN (frnd) = type;
-		    }
-
-		  if (has_def)
-		    if (!read_definition (frnd))
-		      break;
-		}
-	    }
+		if (has_def)
+		  if (!read_definition (frnd))
+		    break;
+	      }
 	  decl_list = tree_cons (purpose, decl, decl_list);
 	}
       decl_list = nreverse (decl_list);
