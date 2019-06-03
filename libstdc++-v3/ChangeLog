@@ -1,3 +1,9 @@
+2019-06-03  François Dumont  <fdumont@gcc.gnu.org>
+
+	Rename variables and cleanup comments.
+	* include/bits/hashtable_policy.h
+	* include/bits/hashtable.h
+
 2019-06-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2020.xml: Add missing row for P0920R2.
