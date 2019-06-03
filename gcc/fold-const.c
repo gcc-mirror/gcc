@@ -3508,10 +3508,10 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 		     positives for GENERIC.  */
 		  || (c0->index
 		      && (TREE_CODE (c0->index) != INTEGER_CST 
-			  || !compare_tree_int (c0->index, i)))
+			  || compare_tree_int (c0->index, i)))
 		  || (c1->index
 		      && (TREE_CODE (c1->index) != INTEGER_CST 
-			  || !compare_tree_int (c1->index, i))))
+			  || compare_tree_int (c1->index, i))))
 		return 0;
 	    }
 	  return 1;
