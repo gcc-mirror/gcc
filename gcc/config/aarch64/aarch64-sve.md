@@ -863,7 +863,7 @@
   "revb\t%0.h, %1/m, %2.h"
 )
 
-(define_insn "*aarch64_sve_rev<mode>"
+(define_insn "@aarch64_sve_rev<mode>"
   [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
 	(unspec:SVE_ALL [(match_operand:SVE_ALL 1 "register_operand" "w")]
 			UNSPEC_REV))]
@@ -3198,6 +3198,17 @@
     rtx diff = gen_reg_rtx (<VSI2QI>mode);
     emit_insn (gen_<sur>abd<vsi2qi>_3 (diff, operands[1], operands[2]));
     emit_insn (gen_udot_prod<vsi2qi> (operands[0], diff, ones, operands[3]));
+    DONE;
+  }
+)
+
+;; Standard pattern name vec_init<mode><Vel>.
+(define_expand "vec_init<mode><Vel>"
+  [(match_operand:SVE_ALL 0 "register_operand" "")
+    (match_operand 1 "" "")]
+  "TARGET_SVE"
+  {
+    aarch64_sve_expand_vector_init (operands[0], operands[1]);
     DONE;
   }
 )
