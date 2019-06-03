@@ -1563,6 +1563,14 @@
 	optimization.
 	* gcc.dg/tree-ssa/pr88676-2.c: New testcase.
 
+2019-05-06  H.J. Lu  <hongjiu.lu@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/89750
+	PR target/86444
+	* gcc.target/i386/avx512f-vcomisd-2.c: New.
+	* gcc.target/i386/avx512f-vcomisd-2.c: Likewise.
+
 2019-05-06  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/90290

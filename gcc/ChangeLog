@@ -2576,6 +2576,14 @@ Fix test-suite.
 	* tree-ssa-phiopt.c (two_value_replacement): Fix a typo in parameter
 	detection.
 
+2019-05-06  H.J. Lu  <hongjiu.lu@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/89750
+	PR target/86444
+	* config/i386/i386-expand.c (ix86_expand_sse_comi_round):
+	Modified, original implementation isn't correct.
+
 2019-05-06  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (FIRST_ALTIVEC_REGNO, LAST_ALTIVEC_REGNO)
