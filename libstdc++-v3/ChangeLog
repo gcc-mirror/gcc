@@ -1,5 +1,12 @@
 2019-06-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/90686
+	* doc/xml/manual/status_cxx2014.xml: Document what's missing from
+	<experimental/memory_resource>.
+	* doc/xml/manual/status_cxx2020.xml: Document status of P1285R0,
+	P0339R6, P0340R3, P1164R1 and P1357R1.
+	* doc/html/*: Regenerate.
+
 	* doc/xml/manual/status_cxx2020.xml: Document P1463R1 status.
 	* include/bits/forward_list.h [__cplusplus > 201703]: Enable
 	allocator::value_type assertion for C++2a.

@@ -509,7 +509,7 @@ not in any particular release.
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3916.pdf" target="_top">
 	  N3916
 	</a>
-      </td><td align="left">Polymorphic memory resources</td><td align="left">Partial</td><td align="left">Library Fundamentals TS</td></tr><tr><td align="left">
+      </td><td align="left">Polymorphic memory resources</td><td align="left">Partial (missing pool resource and buffer resource classes)</td><td align="left">Library Fundamentals TS</td></tr><tr><td align="left">
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3920.html" target="_top">
 	  N3920
 	</a>
@@ -1347,11 +1347,11 @@ Feature-testing recommendations for C++</a>.
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1248r1.html" target="_top">
 	P1248R1
 	</a>
-      </td><td align="center"> </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">  Improving Completeness Requirements for Type Traits </td><td align="left">
+      </td><td align="center"> </td><td align="left"> </td></tr><tr bgcolor="#B0B0B0"><td align="left">  Improving Completeness Requirements for Type Traits </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1285r0.pdf" target="_top">
 	P1285R0
 	</a>
-      </td><td align="center"> </td><td align="left"> </td></tr><tr><td align="left">  Well-behaved interpolation for numbers and pointers </td><td align="left">
+      </td><td align="center"> Partial </td><td align="left"> </td></tr><tr><td align="left">  Well-behaved interpolation for numbers and pointers </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0811r3.html" target="_top">
 	P0811R3
 	</a>
@@ -1359,7 +1359,88 @@ Feature-testing recommendations for C++</a>.
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1353r0.html" target="_top">
 	P1353R0
 	</a>
-      </td><td align="center"> 9.1 </td><td align="left"> </td></tr></tbody></table></div></div><br class="table-break" /><p>
+      </td><td align="center"> 9.1 </td><td align="left"> </td></tr><tr><td align="left">
+        <code class="classname">polymorphic_allocator&lt;&gt;</code>
+        as a vocabulary type
+      </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0339r6.pdf" target="_top">
+        P0339R6
+	</a>
+      </td><td align="center"> 9.1 </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Making std::underlying_type SFINAE-friendly </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0340r3.html" target="_top">
+        P0340R3
+	</a>
+      </td><td align="center"> 9.1 </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">
+        I Stream, You Stream, We All Stream for
+        <code class="classname">istream_iterator</code>
+      </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0738r2.html" target="_top">
+        P0738R2
+	</a>
+      </td><td align="center"> </td><td align="left"> </td></tr><tr><td align="left">
+        Mandating the Standard Library:
+        Clause 16 - Language support library
+      </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1458r1.pdf" target="_top">
+        P1458R1
+	</a>
+      </td><td align="center"> </td><td align="left"> Note 1 </td></tr><tr><td align="left">
+        Mandating the Standard Library:
+        Clause 18 - Diagnostics library
+      </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1458r1.pdf" target="_top">
+        P1459R1
+	</a>
+      </td><td align="center"> </td><td align="left"> Note 1 </td></tr><tr><td align="left">
+        Mandating the Standard Library:
+        Clause 20 - Strings library
+      </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1462r1.html" target="_top">
+        P1462R1
+	</a>
+      </td><td align="center"> </td><td align="left"> Note 1 </td></tr><tr><td align="left">
+        Mandating the Standard Library:
+        Clause 21 - Containers library
+      </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1463r1.pdf" target="_top">
+        P1463R1
+	</a>
+      </td><td align="center"> 10 </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">
+        Mandating the Standard Library:
+        Clause 22 - Iterators library
+      </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1464r1.pdf" target="_top">
+        P1464R1
+	</a>
+      </td><td align="center"> </td><td align="left"> </td></tr><tr><td align="left"> Make <code class="code">create_directory()</code> Intuitive </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1164r1.pdf" target="_top">
+        P1164R1
+	</a>
+      </td><td align="center"> 8.3 </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">
+        Target Vectorization Policies from Parallelism V2 TS to C++20
+      </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1001r2.html" target="_top">
+        P1001R2
+	</a>
+      </td><td align="center"> </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Signed ssize() functions, unsigned size() functions </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1227r2.html" target="_top">
+        P1227R2
+	</a>
+      </td><td align="center"> </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Ranges Design Cleanup </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1252r2.pdf" target="_top">
+        P1252R2
+	</a>
+      </td><td align="center"> </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">
+        Usability Enhancements for <code class="classname">std::span</code>
+      </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1024r3.pdf" target="_top">
+        P1024R3
+	</a>
+      </td><td align="center"> </td><td align="left"> </td></tr><tr><td align="left"> Traits for [Un]bounded Arrays </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1357r1.pdf" target="_top">
+        P1357R1
+	</a>
+      </td><td align="center"> 9.1 </td><td align="left"> <code class="code">__cpp_lib_bounded_array_traits &gt;= 201902L</code> </td></tr></tbody></table></div></div><br class="table-break" /><p>
 Note 1: The changes in the proposal either do not affect the code in libstdc++,
 or the changes are not required for conformance.
 </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="iso.2020.specific"></a>Implementation Specific Behavior</h4></div></div></div><p>For behaviour which is also specified by previous standards,
