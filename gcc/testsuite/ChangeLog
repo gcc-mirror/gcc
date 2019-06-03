@@ -1,5 +1,9 @@
 2019-06-03  Richard Biener  <rguenther@suse.de>
 
+	* gcc.dg/tree-ssa/alias-access-path-1.c: Scan fre1.
+
+2019-06-03  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/90716
 	* gcc.dg/guality/pr90716.c: New testcase.
 
