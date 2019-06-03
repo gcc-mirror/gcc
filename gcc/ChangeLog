@@ -11,6 +11,10 @@
 
 2019-06-03  Martin Liska  <mliska@suse.cz>
 
+	* doc/generic.texi: Remove Java Trees.
+
+2019-06-03  Martin Liska  <mliska@suse.cz>
+
 	* fold-const.c (operand_equal_p): Fix typo as compare_tree_int
 	returns 0 when operands are equal.
 
