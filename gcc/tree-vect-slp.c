@@ -661,6 +661,7 @@ vect_build_slp_tree_1 (unsigned char *swap,
   machine_mode optab_op2_mode;
   machine_mode vec_mode;
   stmt_vec_info first_load = NULL, prev_first_load = NULL;
+  bool load_p = false;
 
   /* For every stmt in NODE find its def stmt/s.  */
   stmt_vec_info stmt_info;
@@ -714,13 +715,16 @@ vect_build_slp_tree_1 (unsigned char *swap,
       if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
 	{
 	  rhs_code = CALL_EXPR;
-	  if ((gimple_call_internal_p (call_stmt)
-	       && (!vectorizable_internal_fn_p
-		   (gimple_call_internal_fn (call_stmt))))
-	      || gimple_call_tail_p (call_stmt)
-	      || gimple_call_noreturn_p (call_stmt)
-	      || !gimple_call_nothrow_p (call_stmt)
-	      || gimple_call_chain (call_stmt))
+
+	  if (gimple_call_internal_p (stmt, IFN_MASK_LOAD))
+	    load_p = true;
+	  else if ((gimple_call_internal_p (call_stmt)
+		    && (!vectorizable_internal_fn_p
+			(gimple_call_internal_fn (call_stmt))))
+		   || gimple_call_tail_p (call_stmt)
+		   || gimple_call_noreturn_p (call_stmt)
+		   || !gimple_call_nothrow_p (call_stmt)
+		   || gimple_call_chain (call_stmt))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -732,7 +736,10 @@ vect_build_slp_tree_1 (unsigned char *swap,
 	    }
 	}
       else
-	rhs_code = gimple_assign_rhs_code (stmt);
+	{
+	  rhs_code = gimple_assign_rhs_code (stmt);
+	  load_p = TREE_CODE_CLASS (rhs_code) == tcc_reference;
+	}
 
       /* Check the operation.  */
       if (i == 0)
@@ -899,7 +906,7 @@ vect_build_slp_tree_1 (unsigned char *swap,
         } /* Grouped access.  */
       else
 	{
-	  if (TREE_CODE_CLASS (rhs_code) == tcc_reference)
+	  if (load_p)
 	    {
 	      /* Not grouped load.  */
 	      if (dump_enabled_p ())

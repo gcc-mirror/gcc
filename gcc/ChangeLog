@@ -1,3 +1,10 @@
+2019-06-03  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
+
+	PR tree-optimization/90681
+	* internal-fn.c (mask_load_direct): Mark as non-vectorizable again.
+	* tree-vect-slp.c (vect_build_slp_tree_1): Add masked loads as a
+	special case for SLP, but fail on non-groupped loads.
+
 2019-06-03  Martin Liska  <mliska@suse.cz>
 
 	* cfg.c (debug): Use TDF_DETAILS for debug and
