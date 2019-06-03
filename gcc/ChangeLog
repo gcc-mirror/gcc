@@ -1,5 +1,25 @@
 2019-06-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.h (MASK_MFPGPR): Delete.
+	* config/rs6000/rs6000.c (direct_move_p): Adjust.
+	(rs6000_secondary_reload_simple_move): Adjust.
+	(rs6000_opt_masks): Neuter the "mfpgpr" option.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Adjust.
+	* config/rs6000/rs6000-cpus.def (ISA_2_5_MASKS_EMBEDDED): Adjust
+	comment.
+	(power6x): Adjust.
+	* config/rs6000/rs6000.md (floatsi<mode>2_lfiwax): Adjust.
+	(floatunssi<mode>2_lfiwzx): Adjust.
+	(fix_trunc<mode>si2_stfiwx): Adjust.
+	(fixuns_trunc<mode>si2_stfiwx): Adjust.
+	* config/rs6000/rs6000.opt (mno-mfpgpr): New.
+	(mfpgpr): Mark as deprecated.
+	* doc/extend.texi (PowerPC Function Attributes): Delete mfpgpr.
+	(Basic PowerPC Built-in Functions Available on ISA 2.05): Adjust.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Delete -mmfpgpr.
+
+2019-06-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/constraints.md (define_register_constraint "wg"):
 	Delete.
 	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
