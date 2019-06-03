@@ -1,3 +1,8 @@
+2019-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_unqualified_id): Use build_min_nt_loc in
+	five places.
+
 2019-06-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR c++/85254
