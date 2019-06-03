@@ -268,7 +268,6 @@ Callers (intgo skip, struct __go_open_array pc)
 struct callersRaw_data
 {
   uintptr* pcbuf;
-  int skip;
   int index;
   int max;
 };
@@ -279,12 +278,6 @@ struct callersRaw_data
 static int callback_raw (void *data, uintptr_t pc)
 {
   struct callersRaw_data *arg = (struct callersRaw_data *) data;
-
-  if (arg->skip > 0)
-    {
-      --arg->skip;
-      return 0;
-    }
 
   /* On the call to backtrace_simple the pc value was most likely
      decremented if there was a normal call, since the pc referred to
@@ -306,13 +299,12 @@ static int callback_raw (void *data, uintptr_t pc)
 /* runtime_callersRaw is similar to runtime_callers() above, but
    it returns raw PC values as opposed to file/func/line locations. */
 int32
-runtime_callersRaw (int32 skip, uintptr *pcbuf, int32 m)
+runtime_callersRaw (uintptr *pcbuf, int32 m)
 {
   struct callersRaw_data data;
   struct backtrace_state* state;
 
   data.pcbuf = pcbuf;
-  data.skip = skip + 1;
   data.index = 0;
   data.max = m;
   runtime_xadd (&__go_runtime_in_callers, 1);
