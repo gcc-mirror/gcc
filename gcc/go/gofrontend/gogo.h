@@ -617,6 +617,11 @@ class Gogo
     this->gc_roots_.push_back(expr);
   }
 
+  // Add a type to the descriptor list.
+  void
+  add_type_descriptor(Type* type)
+  { this->type_descriptors_.push_back(type); }
+
   // Traverse the tree.  See the Traverse class.
   void
   traverse(Traverse*);
@@ -901,6 +906,14 @@ class Gogo
   std::string
   type_descriptor_name(Type*, Named_type*);
 
+  // Return the name of the type descriptor list symbol of a package.
+  std::string
+  type_descriptor_list_symbol(Package*);
+
+  // Return the name of the list of all type descriptor lists.
+  std::string
+  typelists_symbol();
+
   // Return the assembler name for the GC symbol for a type.
   std::string
   gc_symbol_name(Type*);
@@ -966,6 +979,15 @@ class Gogo
   register_gc_vars(const std::vector<Named_object*>&,
                    std::vector<Bstatement*>&,
                    Bfunction* init_bfunction);
+
+  // Build the list of type descriptors.
+  void
+  build_type_descriptor_list();
+
+  // Register the type descriptors with the runtime.
+  void
+  register_type_descriptors(std::vector<Bstatement*>&,
+                            Bfunction* init_bfunction);
 
   void
   propagate_writebarrierrec();
@@ -1108,6 +1130,8 @@ class Gogo
   std::vector<Analysis_set> analysis_sets_;
   // A list of objects to add to the GC roots.
   std::vector<Expression*> gc_roots_;
+  // A list of type descriptors that we need to register.
+  std::vector<Type*> type_descriptors_;
   // A list of function declarations with imported bodies that we may
   // want to inline.
   std::vector<Named_object*> imported_inlinable_functions_;

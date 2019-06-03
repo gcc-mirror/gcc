@@ -146,6 +146,12 @@
 // and is named __go_init_main.  For other packages it is
 // PKGPATH..import.
 //
+// In each pacakge there is a list of all the type descriptors defined
+// in this package.  The name of the list is PKGPATH..types.
+//
+// In the main package it gathers all the type descriptor lists in a
+// single list, named go..typelists.
+//
 // The type literal encoding is essentially a single line version of
 // the type literal, such as "struct { pkgpath.i int; J int }".  In
 // this representation unexported names use their pkgpath, exported
@@ -983,6 +989,23 @@ Gogo::type_descriptor_name(Type* type, Named_type* nt)
   ret.append("..d");
 
   return ret;
+}
+
+// Return the name of the type descriptor list symbol of a package.
+
+std::string
+Gogo::type_descriptor_list_symbol(Package* pkg)
+{
+  return pkg->pkgpath_symbol() + "..types";
+}
+
+// Return the name of the list of all type descriptor lists.  This is
+// only used in the main package.
+
+std::string
+Gogo::typelists_symbol()
+{
+  return "go..typelists";
 }
 
 // Return the name for the GC symbol for a type.  This is used to
