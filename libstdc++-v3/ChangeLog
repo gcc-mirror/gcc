@@ -1,5 +1,9 @@
 2019-06-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2020.xml: Add missing row for P0920R2.
+	Fix bgcolor for P0340R3.
+	* doc/html/*: Regenerate.
+
 	PR libstdc++/90686
 	* doc/xml/manual/status_cxx2014.xml: Document what's missing from
 	<experimental/memory_resource>.
