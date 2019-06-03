@@ -1,5 +1,11 @@
 2019-06-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/90700
+	* include/std/tuple
+	(tuple(allocator_arg_t, const A&, const tuple<UTypes...>&)): Fix
+	value category of template argument to _TC::_NonNestedTuple.
+	* testsuite/20_util/tuple/cons/90700.cc: New test.
+
 	PR libstdc++/90686
 	* doc/xml/manual/status_cxx2014.xml: Document what's missing from
 	<experimental/memory_resource>.

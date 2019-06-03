@@ -758,7 +758,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                   && _TMCT<_UElements...>::template
                     _ImplicitlyConvertibleTuple<_UElements...>()
                   && _TNTC<_Dummy>::template
-                    _NonNestedTuple<tuple<_UElements...>&&>(),
+                    _NonNestedTuple<const tuple<_UElements...>&>(),
         bool>::type=true>
 	tuple(allocator_arg_t __tag, const _Alloc& __a,
 	      const tuple<_UElements...>& __in)
@@ -773,7 +773,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                   && !_TMCT<_UElements...>::template
                     _ImplicitlyConvertibleTuple<_UElements...>()
                   && _TNTC<_Dummy>::template
-                    _NonNestedTuple<tuple<_UElements...>&&>(),
+                    _NonNestedTuple<const tuple<_UElements...>&>(),
         bool>::type=false>
 	explicit tuple(allocator_arg_t __tag, const _Alloc& __a,
 	      const tuple<_UElements...>& __in)
