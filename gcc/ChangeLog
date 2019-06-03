@@ -1,3 +1,15 @@
+2019-06-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (define_register_constraint "wg"):
+	Delete.
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
+	RS6000_CONSTRAINT_wg.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	* config/rs6000/rs6000.md (*mov<mode>_softfloat32, *movdi_internal64):
+	Delete "wg" alternatives.
+	* doc/md.texi (Machine Constraints): Adjust.
+
 2019-06-03  Alan Modra  <amodra@gmail.com>
 
 	* bb-reorder.c (copy_bb_p): Don't overflow size calculation.
