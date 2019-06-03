@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-fre3 -fno-tree-sra" } */
+/* { dg-options "-O2 -fdump-tree-fre1 -fno-tree-sra" } */
+
 struct foo
 {
   int val;
@@ -18,4 +19,4 @@ test ()
   return barptr->val2;
 }
 
-/* { dg-final { scan-tree-dump-times "return 123" 1 "fre3"} } */
+/* { dg-final { scan-tree-dump-times "return 123" 1 "fre1"} } */

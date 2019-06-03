@@ -1,3 +1,14 @@
+2019-06-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (ao_ref_init_from_vn_reference): Get original
+	full reference tree and record in ref->ref.
+	(vn_reference_lookup_3): Pass in original ref to
+	ao_ref_init_from_vn_reference.
+	(vn_reference_lookup): Likewise.
+	* tree-ssa-sccvn.h (ao_ref_init_from_vn_reference): Adjust prototype.
+	* tree-ssa-alias.c (nonoverlapping_component_refs_of_decl_p):
+	Handle non-decl bases in the original reference.
+
 2019-06-03  Martin Liska  <mliska@suse.cz>
 
 	* fold-const.c (operand_equal_p): Fix typo as compare_tree_int

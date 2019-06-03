@@ -1013,7 +1013,8 @@ nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
     }
   if (TREE_CODE (ref1) == MEM_REF)
     {
-      if (!integer_zerop (TREE_OPERAND (ref1, 1)))
+      if (!integer_zerop (TREE_OPERAND (ref1, 1))
+	  || TREE_CODE (TREE_OPERAND (ref1, 0)) != ADDR_EXPR)
 	return false;
       ref1 = TREE_OPERAND (TREE_OPERAND (ref1, 0), 0);
     }
@@ -1026,7 +1027,8 @@ nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
     }
   if (TREE_CODE (ref2) == MEM_REF)
     {
-      if (!integer_zerop (TREE_OPERAND (ref2, 1)))
+      if (!integer_zerop (TREE_OPERAND (ref2, 1))
+	  || TREE_CODE (TREE_OPERAND (ref2, 0)) != ADDR_EXPR)
 	return false;
       ref2 = TREE_OPERAND (TREE_OPERAND (ref2, 0), 0);
     }
