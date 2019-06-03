@@ -1,5 +1,12 @@
 2019-06-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/90686
+	* doc/xml/manual/status_cxx2014.xml: Document what's missing from
+	<experimental/memory_resource>.
+	* doc/xml/manual/status_cxx2020.xml: Document status of P0777R1,
+	P0339R6, P0340R3, P1164R1 and P1357R1.
+	* doc/html/*: Regenerate.
+
 	* include/std/tuple (make_from_tuple): Use remove_reference_t instead
 	of decay_t (P0777R1).
 
