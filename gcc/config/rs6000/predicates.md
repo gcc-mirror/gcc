@@ -302,6 +302,16 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 15)")))
 
+;; Return 1 if op is a 34-bit constant integer.
+(define_predicate "cint34_operand"
+  (match_code "const_int")
+{
+  if (!TARGET_PREFIXED_ADDR)
+    return 0;
+
+  return SIGNED_34BIT_OFFSET_P (INTVAL (op), 0);
+})
+
 ;; Return 1 if op is a register that is not special.
 ;; Disallow (SUBREG:SF (REG:SI)) and (SUBREG:SI (REG:SF)) on VSX systems where
 ;; you need to be careful in moving a SFmode to SImode and vice versa due to
@@ -1611,6 +1621,45 @@
 
   return GET_CODE (op) == UNSPEC && XINT (op, 1) == UNSPEC_TOCREL;
 })
+
+;; Return true if the operand is a pc-relative address.
+(define_predicate "pcrel_address"
+  (match_code "label_ref,symbol_ref,const")
+{
+  if (!TARGET_PCREL)
+    return false;
+
+  /* Discard any CONST's.  */
+  if (GET_CODE (op) == CONST)
+    op = XEXP (op, 0);
+
+  /* Validate offset.  */
+  if (GET_CODE (op) == PLUS)
+    {
+      rtx op0 = XEXP (op, 0);
+      rtx op1 = XEXP (op, 1);
+
+      if (!CONST_INT_P (op1) || !SIGNED_34BIT_OFFSET_P (INTVAL (op1), 0))
+	return false;
+
+      op = op0;
+    }
+
+  return LABEL_REF_P (op) || SYMBOL_REF_PCREL_P (op);
+})
+
+;; Return 1 if op is a prefixed memory operand
+(define_predicate "prefixed_mem_operand"
+  (match_code "mem")
+{
+  return rs6000_prefixed_address (XEXP (op, 0), GET_MODE (op));
+})
+
+;; Return 1 if op is a memory operand that is not a prefixed memory
+;; operand.
+(define_predicate "non_prefixed_mem_operand"
+  (and (match_operand 0 "memory_operand")
+       (not (match_operand 0 "prefixed_mem_operand"))))
 
 ;; Match the first insn (addis) in fusing the combination of addis and loads to
 ;; GPR registers on power8.

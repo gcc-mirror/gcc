@@ -125,8 +125,10 @@
 )
 
 (define_c_enum "unspec" [
-    UNSPEC_AUTI1716
-    UNSPEC_AUTISP
+    UNSPEC_AUTIA1716
+    UNSPEC_AUTIB1716
+    UNSPEC_AUTIASP
+    UNSPEC_AUTIBSP
     UNSPEC_CASESI
     UNSPEC_CRC32B
     UNSPEC_CRC32CB
@@ -169,8 +171,10 @@
     UNSPEC_LD4_LANE
     UNSPEC_MB
     UNSPEC_NOP
-    UNSPEC_PACI1716
-    UNSPEC_PACISP
+    UNSPEC_PACIA1716
+    UNSPEC_PACIB1716
+    UNSPEC_PACIASP
+    UNSPEC_PACIBSP
     UNSPEC_PRLG_STK
     UNSPEC_REV
     UNSPEC_RBIT
@@ -739,8 +743,12 @@
     if (aarch64_return_address_signing_enabled ()
 	&& TARGET_ARMV8_3
 	&& !crtl->calls_eh_return)
-      return "retaa";
-
+      {
+	if (aarch64_ra_sign_key == AARCH64_KEY_B)
+	  return "retab";
+	else
+	  return "retaa";
+      }
     return "ret";
   }
   [(set_attr "type" "branch")]
@@ -6811,7 +6819,7 @@
   [(set (reg:DI R30_REGNUM)
 	(unspec:DI [(reg:DI R30_REGNUM) (reg:DI SP_REGNUM)] PAUTH_LR_SP))]
   ""
-  "hint\t<pauth_hint_num_a> // <pauth_mnem_prefix>asp";
+  "hint\t<pauth_hint_num> // <pauth_mnem_prefix>sp";
 )
 
 ;; Signing/Authenticating X17 using X16 as the salt.
@@ -6820,7 +6828,7 @@
   [(set (reg:DI R17_REGNUM)
 	(unspec:DI [(reg:DI R17_REGNUM) (reg:DI R16_REGNUM)] PAUTH_17_16))]
   ""
-  "hint\t<pauth_hint_num_a> // <pauth_mnem_prefix>a1716";
+  "hint\t<pauth_hint_num> // <pauth_mnem_prefix>1716";
 )
 
 ;; Stripping the signature in R30.
@@ -7236,3 +7244,6 @@
 
 ;; SVE.
 (include "aarch64-sve.md")
+
+;; SVE2.
+(include "aarch64-sve2.md")

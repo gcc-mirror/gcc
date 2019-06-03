@@ -67,9 +67,9 @@ namespace __gnu_test
       throw test_fs::filesystem_error(
 	  "distance(begin1, end1) != distance(begin2, end2)", p1, p2,
 	  std::make_error_code(std::errc::invalid_argument) );
-    if (!std::equal(p1.begin(), p1.end(), p2.begin(), p2.end()))
+    if (!std::equal(p1.begin(), p1.end(), p2.begin()))
       throw test_fs::filesystem_error(
-	  "!equal(begin1, end1, begin2, end2)", p1, p2,
+	  "!equal(begin1, end1, begin2)", p1, p2,
 	  std::make_error_code(std::errc::invalid_argument) );
 
   }

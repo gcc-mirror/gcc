@@ -20,5 +20,5 @@ END MODULE M1
 USE M1
 CALL S2()
 END
-! { dg-final { scan-tree-dump-times "optional" 4 "original" } }
+! { dg-final { scan-tree-dump-times "arg_ptr" 5 "original" } }
 ! { dg-final { scan-tree-dump-not "_gfortran_internal_unpack" "original" } }

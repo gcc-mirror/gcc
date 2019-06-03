@@ -334,6 +334,9 @@ get_cie_encoding (const struct dwarf_cie *cie)
       /* LSDA encoding.  */
       else if (*aug == 'L')
 	p++;
+      /* aarch64 b-key pointer authentication.  */
+      else if (*aug == 'B')
+	p++;
       /* Otherwise end of string, or unknown augmentation.  */
       else
 	return DW_EH_PE_absptr;

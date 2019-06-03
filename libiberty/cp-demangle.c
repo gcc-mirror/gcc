@@ -192,9 +192,9 @@ static void d_init_info (const char *, int, size_t, struct d_info *);
 #else
 #ifdef __STDC__
 #ifdef __STDC_VERSION__
-#if __STDC_VERSION__ >= 199901L
+#if __STDC_VERSION__ >= 199901L && !__STDC_NO_VLA__
 #define CP_DYNAMIC_ARRAYS
-#endif /* __STDC__VERSION >= 199901L */
+#endif /* __STDC_VERSION__ >= 199901L && !__STDC_NO_VLA__ */
 #endif /* defined (__STDC_VERSION__) */
 #endif /* defined (__STDC__) */
 #endif /* ! defined (__GNUC__) */

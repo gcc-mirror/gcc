@@ -3627,21 +3627,24 @@ static const int RUNTIME_ERROR_STRING_SLICE_OUT_OF_BOUNDS = 5;
 // locations.
 static const int RUNTIME_ERROR_NIL_DEREFERENCE = 6;
 
-// Slice length or capacity out of bounds in make: negative or
-// overflow or length greater than capacity.
-static const int RUNTIME_ERROR_MAKE_SLICE_OUT_OF_BOUNDS = 7;
+// Slice length out of bounds in make: negative or overflow
+// or length greater than capacity.
+static const int RUNTIME_ERROR_MAKE_SLICE_LEN_OUT_OF_BOUNDS = 7;
+
+// Slice capacity out of bounds in make: negative.
+static const int RUNTIME_ERROR_MAKE_SLICE_CAP_OUT_OF_BOUNDS = 8;
 
 // Map capacity out of bounds in make: negative or overflow.
-static const int RUNTIME_ERROR_MAKE_MAP_OUT_OF_BOUNDS = 8;
+static const int RUNTIME_ERROR_MAKE_MAP_OUT_OF_BOUNDS = 9;
 
 // Channel capacity out of bounds in make: negative or overflow.
-static const int RUNTIME_ERROR_MAKE_CHAN_OUT_OF_BOUNDS = 9;
+static const int RUNTIME_ERROR_MAKE_CHAN_OUT_OF_BOUNDS = 10;
 
 // Division by zero.
-static const int RUNTIME_ERROR_DIVISION_BY_ZERO = 10;
+static const int RUNTIME_ERROR_DIVISION_BY_ZERO = 11;
 
 // Go statement with nil function.
-static const int RUNTIME_ERROR_GO_NIL = 11;
+static const int RUNTIME_ERROR_GO_NIL = 12;
 
 // This is used by some of the langhooks.
 extern Gogo* go_get_gogo();

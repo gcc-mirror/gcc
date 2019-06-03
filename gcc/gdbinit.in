@@ -113,7 +113,7 @@ Works only when an inferior is executing.
 end
 
 define ptc
-output (enum tree_code) $.common.code
+output (enum tree_code) $.base.code
 echo \n
 end
 
@@ -199,6 +199,14 @@ end
 
 document pcfun
 Print current function.
+end
+
+define trt
+print ($.typed.type)
+end
+
+document trt
+Print TREE_TYPE of the tree node that is $
 end
 
 define break-on-diagnostic

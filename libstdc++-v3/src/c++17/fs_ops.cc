@@ -1395,23 +1395,19 @@ fs::status(const fs::path& p, error_code& ec) noexcept
 #if ! defined __MINGW64_VERSION_MAJOR || __MINGW64_VERSION_MAJOR < 6
   // stat() fails if there's a trailing slash (PR 88881)
   path p2;
-  if (p.has_relative_path())
+  if (p.has_relative_path() && !p.has_filename())
     {
-      wstring_view s = p.native();
-      const auto len = s.find_last_not_of(L"/\\") + wstring_view::size_type(1);
-      if (len != 0 && len != s.length())
+      __try
 	{
-	  __try
-	    {
-	      p2.assign(s.substr(0, len));
-	    }
-	  __catch(const bad_alloc&)
-	    {
-	      ec = std::make_error_code(std::errc::not_enough_memory);
-	      return status;
-	    }
+	  p2 = p.parent_path();
 	  str = p2.c_str();
 	}
+      __catch(const bad_alloc&)
+	{
+	  ec = std::make_error_code(std::errc::not_enough_memory);
+	  return status;
+	}
+      str = p2.c_str();
     }
 #endif
 #endif
@@ -1440,8 +1436,31 @@ fs::file_status
 fs::symlink_status(const fs::path& p, std::error_code& ec) noexcept
 {
   file_status status;
+  auto str = p.c_str();
+
+#if _GLIBCXX_FILESYSTEM_IS_WINDOWS
+#if ! defined __MINGW64_VERSION_MAJOR || __MINGW64_VERSION_MAJOR < 6
+  // stat() fails if there's a trailing slash (PR 88881)
+  path p2;
+  if (p.has_relative_path() && !p.has_filename())
+    {
+      __try
+	{
+	  p2 = p.parent_path();
+	  str = p2.c_str();
+	}
+      __catch(const bad_alloc&)
+	{
+	  ec = std::make_error_code(std::errc::not_enough_memory);
+	  return status;
+	}
+      str = p2.c_str();
+    }
+#endif
+#endif
+
   stat_type st;
-  if (posix::lstat(p.c_str(), &st))
+  if (posix::lstat(str, &st))
     {
       int err = errno;
       ec.assign(err, std::generic_category());

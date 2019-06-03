@@ -78,9 +78,7 @@ typedef	struct	_panic			Panic;
 
 typedef struct	__go_ptr_type		PtrType;
 typedef struct	__go_func_type		FuncType;
-typedef struct	__go_interface_type	InterfaceType;
 typedef struct	__go_map_type		MapType;
-typedef struct	__go_channel_type	ChanType;
 
 typedef struct  tracebackg	Traceback;
 
@@ -510,3 +508,20 @@ bool probestackmaps(void)
 // older versions of glibc when a SIGPROF signal arrives while
 // collecting a backtrace.
 extern uint32 __go_runtime_in_callers;
+
+// Cheaper context switch functions.  Currently only defined on
+// Linux/AMD64.
+#if defined(__x86_64__) && defined(__linux__) && !defined(__CET__)
+typedef struct {
+	uint64 regs[8];
+} __go_context_t;
+int __go_getcontext(__go_context_t*);
+int __go_setcontext(__go_context_t*);
+void __go_makecontext(__go_context_t*, void (*)(), void*, size_t);
+#else
+#define __go_context_t	ucontext_t
+#define __go_getcontext(c)	getcontext(c)
+#define __go_setcontext(c)	setcontext(c)
+#define __go_makecontext(c, fn, sp, size) \
+	((c)->uc_stack.ss_sp = sp, (c)->uc_stack.ss_size = size, makecontext(c, fn, 0))
+#endif

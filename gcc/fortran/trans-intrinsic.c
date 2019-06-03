@@ -2832,14 +2832,23 @@ static void
 gfc_conv_intrinsic_is_contiguous (gfc_se * se, gfc_expr * expr)
 {
   gfc_expr *arg;
+  arg = expr->value.function.actual->expr;
+  gfc_conv_is_contiguous_expr (se, arg);
+  se->expr = fold_convert (gfc_typenode_for_spec (&expr->ts), se->expr);
+}
+
+/* This function does the work for gfc_conv_intrinsic_is_contiguous,
+   plus it can be called directly.  */
+
+void
+gfc_conv_is_contiguous_expr (gfc_se *se, gfc_expr *arg)
+{
   gfc_ss *ss;
   gfc_se argse;
   tree desc, tmp, stride, extent, cond;
   int i;
   tree fncall0;
   gfc_array_spec *as;
-
-  arg = expr->value.function.actual->expr;
 
   if (arg->ts.type == BT_CLASS)
     gfc_add_class_array_ref (arg);
@@ -2878,7 +2887,7 @@ gfc_conv_intrinsic_is_contiguous (gfc_se * se, gfc_expr * expr)
       cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
 			      stride, build_int_cst (TREE_TYPE (stride), 1));
 
-      for (i = 0; i < expr->value.function.actual->expr->rank - 1; i++)
+      for (i = 0; i < arg->rank - 1; i++)
 	{
 	  tmp = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[i]);
 	  extent = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[i]);
@@ -2896,7 +2905,7 @@ gfc_conv_intrinsic_is_contiguous (gfc_se * se, gfc_expr * expr)
 	  cond = fold_build2_loc (input_location, TRUTH_AND_EXPR,
 				  boolean_type_node, cond, tmp);
 	}
-      se->expr = convert (gfc_typenode_for_spec (&expr->ts), cond);
+      se->expr = cond;
     }
 }
 

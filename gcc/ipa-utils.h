@@ -92,6 +92,7 @@ void warn_types_mismatch (tree t1, tree t2, location_t loc1 = UNKNOWN_LOCATION,
 bool odr_or_derived_type_p (const_tree t);
 bool odr_types_equivalent_p (tree type1, tree type2);
 bool odr_type_violation_reported_p (tree type);
+tree prevailing_odr_type (tree type);
 
 /* Return vector containing possible targets of polymorphic call E.
    If COMPLETEP is non-NULL, store true if the list is complete. 

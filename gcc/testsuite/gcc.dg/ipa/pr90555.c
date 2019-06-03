@@ -1,6 +1,5 @@
-/* { dg-do compile } */
-/* { dg-options "-fopenmp-simd -O2 -mavx512f -fdump-ipa-icf" } */
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-options "-fopenmp-simd -O2 -mavx512f -fdump-ipa-icf" } */
 
 #define N 1024
 int a[N];

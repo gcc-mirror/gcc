@@ -1104,15 +1104,13 @@ destroy_loop (struct loop *loop)
 
   gimple_stmt_iterator dst_gsi = gsi_after_labels (exit->dest);
   bool safe_p = single_pred_p (exit->dest);
-  i = nbbs;
-  do
+  for (unsigned i = 0; i < nbbs; ++i)
     {
       /* We have made sure to not leave any dangling uses of SSA
          names defined in the loop.  With the exception of virtuals.
 	 Make sure we replace all uses of virtual defs that will remain
 	 outside of the loop with the bare symbol as delete_basic_block
 	 will release them.  */
-      --i;
       for (gphi_iterator gsi = gsi_start_phis (bbs[i]); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
@@ -1147,7 +1145,6 @@ destroy_loop (struct loop *loop)
 	    gsi_next (&gsi);
 	}
     }
-  while (i != 0);
 
   redirect_edge_pred (exit, src);
   exit->flags &= ~(EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);

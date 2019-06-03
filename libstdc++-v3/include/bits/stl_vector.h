@@ -397,7 +397,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if __cplusplus >= 201103L
       static_assert(is_same<typename remove_cv<_Tp>::type, _Tp>::value,
 	  "std::vector must have a non-const, non-volatile value_type");
-# ifdef __STRICT_ANSI__
+# if __cplusplus > 201703L || defined __STRICT_ANSI__
       static_assert(is_same<typename _Alloc::value_type, _Tp>::value,
 	  "std::vector must have the same value_type as its allocator");
 # endif

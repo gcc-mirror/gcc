@@ -16867,6 +16867,19 @@ mips_expand_builtin_insn (enum insn_code icode, unsigned int nops,
       std::swap (ops[1], ops[2]);
       break;
 
+    case CODE_FOR_msa_maddv_b:
+    case CODE_FOR_msa_maddv_h:
+    case CODE_FOR_msa_maddv_w:
+    case CODE_FOR_msa_maddv_d:
+    case CODE_FOR_msa_fmadd_w:
+    case CODE_FOR_msa_fmadd_d:
+    case CODE_FOR_msa_fmsub_w:
+    case CODE_FOR_msa_fmsub_d:
+      /* fma(a, b, c) results into (a * b + c), however builtin_msa_fmadd expects
+	 it to be (a + b * c).  Swap the 1st and 3rd operands.  */
+      std::swap (ops[1], ops[3]);
+      break;
+
     case CODE_FOR_msa_slli_b:
     case CODE_FOR_msa_slli_h:
     case CODE_FOR_msa_slli_w:

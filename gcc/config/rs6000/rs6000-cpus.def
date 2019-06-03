@@ -56,26 +56,35 @@
 				 | OPTION_MASK_QUAD_MEMORY		\
 				 | OPTION_MASK_QUAD_MEMORY_ATOMIC)
 
+/* ISA masks setting fusion options.  */
+#define OTHER_FUSION_MASKS	(OPTION_MASK_P8_FUSION			\
+				 | OPTION_MASK_P8_FUSION_SIGN)
+
 /* Add ISEL back into ISA 3.0, since it is supposed to be a win.  Do not add
    FLOAT128_HW here until we are ready to make -mfloat128 on by default.  */
-#define ISA_3_0_MASKS_SERVER	(ISA_2_7_MASKS_SERVER			\
-				 | OPTION_MASK_ISEL			\
-				 | OPTION_MASK_MODULO			\
-				 | OPTION_MASK_P9_MINMAX		\
-				 | OPTION_MASK_P9_MISC			\
-				 | OPTION_MASK_P9_VECTOR)
+#define ISA_3_0_MASKS_SERVER	((ISA_2_7_MASKS_SERVER			\
+				  | OPTION_MASK_ISEL			\
+				  | OPTION_MASK_MODULO			\
+				  | OPTION_MASK_P9_MINMAX		\
+				  | OPTION_MASK_P9_MISC			\
+				  | OPTION_MASK_P9_VECTOR)		\
+				 & ~OTHER_FUSION_MASKS)
 
 /* Support for the IEEE 128-bit floating point hardware requires a lot of the
    VSX instructions that are part of ISA 3.0.  */
 #define ISA_3_0_MASKS_IEEE	(OPTION_MASK_VSX			\
 				 | OPTION_MASK_P8_VECTOR		\
-				 | OPTION_MASK_P9_VECTOR		\
-				 | OPTION_MASK_DIRECT_MOVE)
+				 | OPTION_MASK_P9_VECTOR)
 
 /* Support for a future processor's features.  */
 #define ISA_FUTURE_MASKS_SERVER	(ISA_3_0_MASKS_SERVER			\
 				 | OPTION_MASK_FUTURE			\
-				 | OPTION_MASK_PCREL)
+				 | OPTION_MASK_PCREL			\
+				 | OPTION_MASK_PREFIXED_ADDR)
+
+/* Flags that need to be turned off if -mno-future.  */
+#define OTHER_FUTURE_MASKS	(OPTION_MASK_PCREL			\
+				 | OPTION_MASK_PREFIXED_ADDR)
 
 /* Flags that need to be turned off if -mno-power9-vector.  */
 #define OTHER_P9_VECTOR_MASKS	(OPTION_MASK_FLOAT128_HW		\
@@ -136,6 +145,7 @@
 				 | OPTION_MASK_POWERPC64		\
 				 | OPTION_MASK_PPC_GFXOPT		\
 				 | OPTION_MASK_PPC_GPOPT		\
+				 | OPTION_MASK_PREFIXED_ADDR		\
 				 | OPTION_MASK_QUAD_MEMORY		\
 				 | OPTION_MASK_QUAD_MEMORY_ATOMIC	\
 				 | OPTION_MASK_RECIP_PRECISION		\

@@ -35,61 +35,15 @@
 
 #ifdef  _GLIBCXX_USE_C99_STDINT_TR1
 #include <random>
-#if defined __i386__ || defined __x86_64__
-# include <cpuid.h>
-#endif
-#include <cstdio>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
   void
   random_device::_M_init(const std::string& token)
-  {
-    const char *fname = token.c_str();
-
-    if (token == "default")
-      {
-#if (defined __i386__ || defined __x86_64__) && defined _GLIBCXX_X86_RDRAND
-	unsigned int eax, ebx, ecx, edx;
-	// Check availability of cpuid and, for now at least, also the
-	// CPU signature for Intel's
-	if (__get_cpuid_max(0, &ebx) > 0 && ebx == signature_INTEL_ebx)
-	  {
-	    __cpuid(1, eax, ebx, ecx, edx);
-	    if (ecx & bit_RDRND)
-	      {
-		_M_file = nullptr;
-		return;
-	      }
-	  }
-#endif
-
-	fname = "/dev/urandom";
-      }
-    else if (token != "/dev/urandom" && token != "/dev/random")
-    fail:
-      std::__throw_runtime_error(__N("random_device::"
-				     "random_device(const std::string&)"));
-
-    _M_file = static_cast<void*>(std::fopen(fname, "rb"));
-    if (!_M_file)
-      goto fail;
-  }
+  { _M_init(token.c_str(), token.length()); }
 
   void
   random_device::_M_init_pretr1(const std::string& token)
-  {
-    unsigned long __seed = 5489UL;
-    if (token != "mt19937")
-      {
-	const char* __nptr = token.c_str();
-	char* __endptr;
-	__seed = std::strtoul(__nptr, &__endptr, 0);
-	if (*__nptr == '\0' || *__endptr != '\0')
-	  std::__throw_runtime_error(__N("random_device::random_device"
-					 "(const std::string&)"));
-      }
-    _M_mt.seed(__seed);
-  }
+  { _M_init(token.c_str(), token.length()); }
 } // namespace
 #endif

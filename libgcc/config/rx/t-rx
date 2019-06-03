@@ -23,6 +23,7 @@
 # the normal libgcc sources:
 
 LIB2ADD = $(srcdir)/config/rx/rx-abi-functions.c
+HOST_LIBGCC2_CFLAGS += -DDF=SF
 
 
 # We need special handling of the floating point conversion

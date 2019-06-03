@@ -2,5 +2,6 @@
 
 struct A
 {
-    template<operator+> void foo() {}   // { dg-error "identifier|parameter|template arguments" }
+    template<operator+> void foo() {}   // { dg-error "14:declaration" }
+  // { dg-error "expected|template" "" { target *-*-* } .-1 }
 };

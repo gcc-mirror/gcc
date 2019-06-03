@@ -1,5 +1,7 @@
 2019-06-03  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r271874.
+
 	Non-template friends of templates.
 	gcc/cp/
 	* module.cc (depset::disc_bits): Add DB_FRIEND.

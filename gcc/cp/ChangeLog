@@ -1,3 +1,65 @@
+2019-06-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/85254
+	* class.c (fixup_type_variants): Handle CLASSTYPE_FINAL.
+
+2019-05-31  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (IDENTIFIER_LAMBDA_P): New.
+	(TYPE_ANON_P): New.
+	(LAMBDA_TYPE_P, TYPE_UNNAMED_P):  Likewise.
+	(LAMBDANAME_PREFIX, LAMBDANAME_FORMAT): Delete.
+	(make_lambda_name): Don't declare.
+	* error.c (dump_aggr_type): Check for lambdas before other
+	anonymous names.
+	* lambda.c (begin_lambda_type): Use make_anon_name.
+	* cp-lang.c (cxx_dwarf_name): Lambda names smell anonymous.
+	* mangle.c (write_local_name): Likewise.
+	* name-lookup.c (lambda_cnt, make_lambda_name): Delete.
+
+2019-05-30  Marek Polacek  <polacek@redhat.com>
+
+	* cp-tree.h (TYPE_HAS_NONTRIVIAL_DESTRUCTOR): Fix a typo.
+
+2019-05-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use declarator->id_loc in five
+	error_at calls.
+
+2019-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90598
+	* tree.c (lvalue_kind): Return clk_none for expressions with
+	with VOID_TYPE_P.
+
+2019-05-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/89875
+	* parser.c (cp_parser_sizeof_operand): When the type-id production
+	did not work out commit to the tentative parse.
+
+2019-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	P1091R3 - Extending structured bindings to be more like var decls
+	P1381R1 - Reference capture of structured bindings
+	* decl.c (cp_maybe_mangle_decomp): Handle TREE_STATIC decls even at
+	function scope.
+	(cp_finish_decomp): Copy over various decl properties from decl to
+	v[i] in the tuple case.
+	(grokdeclarator): Allow static, thread_local and __thread for C++2a
+	and use pedwarn instead of error for older standard revisions.
+	Make other structured binding diagnostic messages more i18n friendly.
+
+2019-05-28  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (duplicate_decls): Assert a template newdecl has no
+	specializations.
+
+2019-05-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90548 - ICE with generic lambda and empty pack.
+	* pt.c (tsubst_copy_and_build): Handle pack expansion properly.
+
 2019-05-28  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (make_anon_name): Drop declaration.

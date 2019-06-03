@@ -500,7 +500,7 @@
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="https://www.hoard.org">
+	      xlink:href="http://hoard.org">
       The Hoard Memory Allocator
 	</link>
       </title>

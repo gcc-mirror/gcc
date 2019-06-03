@@ -675,7 +675,7 @@ class Temporary_statement : public Statement
   Temporary_statement(Type* type, Expression* init, Location location)
     : Statement(STATEMENT_TEMPORARY, location),
       type_(type), init_(init), bvariable_(NULL), is_address_taken_(false),
-      value_escapes_(false)
+      value_escapes_(false), assigned_(false), uses_(0)
   { }
 
   // Return the type of the temporary variable.
@@ -686,6 +686,17 @@ class Temporary_statement : public Statement
   Expression*
   init() const
   { return this->init_; }
+
+  // Set the initializer.
+  void
+  set_init(Expression* expr)
+  { this->init_ = expr; }
+
+  // Whether something takes the address of this temporary
+  // variable.
+  bool
+  is_address_taken()
+  { return this->is_address_taken_; }
 
   // Record that something takes the address of this temporary
   // variable.
@@ -702,6 +713,26 @@ class Temporary_statement : public Statement
   void
   set_value_escapes()
   { this->value_escapes_ = true; }
+
+  // Whether this temporary variable is assigned (after initialization).
+  bool
+  assigned()
+  { return this->assigned_; }
+
+  // Record that this temporary variable is assigned.
+  void
+  set_assigned()
+  { this->assigned_ = true; }
+
+  // Number of uses of this temporary variable.
+  int
+  uses()
+  { return this->uses_; }
+
+  // Add one use of this temporary variable.
+  void
+  add_use()
+  { this->uses_++; }
 
   // Return the temporary variable.  This should not be called until
   // after the statement itself has been converted.
@@ -745,6 +776,10 @@ class Temporary_statement : public Statement
   // True if the value assigned to this temporary variable escapes.
   // This is used for select statements.
   bool value_escapes_;
+  // True if this temporary variable is assigned (after initialization).
+  bool assigned_;
+  // Number of uses of this temporary variable.
+  int uses_;
 };
 
 // A variable declaration.  This marks the point in the code where a

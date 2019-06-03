@@ -995,7 +995,7 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 bool
 ao_ref_init_from_vn_reference (ao_ref *ref,
 			       alias_set_type set, tree type,
-			       vec<vn_reference_op_s> ops)
+			       vec<vn_reference_op_s> ops, tree orig_ref)
 {
   vn_reference_op_t op;
   unsigned i;
@@ -1149,7 +1149,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
   if (base == NULL_TREE)
     return false;
 
-  ref->ref = NULL_TREE;
+  ref->ref = orig_ref;
   ref->base = base;
   ref->ref_alias_set = set;
   if (base_alias_set != -1)
@@ -1976,7 +1976,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	{
 	  lhs_ref_ok = ao_ref_init_from_vn_reference (&lhs_ref,
 						      get_alias_set (lhs),
-						      TREE_TYPE (lhs), lhs_ops);
+						      TREE_TYPE (lhs), lhs_ops,
+						      lhs);
 	  if (lhs_ref_ok
 	      && !refs_may_alias_p_1 (ref, &lhs_ref, true))
 	    {
@@ -2718,7 +2719,7 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
          Otherwise preserve the full reference for advanced TBAA.  */
       if (!valuezied_anything
 	  || !ao_ref_init_from_vn_reference (&r, vr1.set, vr1.type,
-					     vr1.operands))
+					     vr1.operands, op))
 	ao_ref_init (&r, op);
       if (! tbaa_p)
 	r.ref_alias_set = r.base_alias_set = 0;

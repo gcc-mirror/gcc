@@ -787,6 +787,10 @@ same_type_for_tbaa (tree type1, tree type2)
   type1 = TYPE_MAIN_VARIANT (type1);
   type2 = TYPE_MAIN_VARIANT (type2);
 
+  /* Handle the most common case first.  */
+  if (type1 == type2)
+    return 1;
+
   /* If we would have to do structural comparison bail out.  */
   if (TYPE_STRUCTURAL_EQUALITY_P (type1)
       || TYPE_STRUCTURAL_EQUALITY_P (type2))
@@ -816,6 +820,16 @@ same_type_for_tbaa (tree type1, tree type2)
 
   /* The types are known to be not equal.  */
   return 0;
+}
+
+/* Return true if TYPE is a composite type (i.e. we may apply one of handled
+   components on it).  */
+
+static bool
+type_has_components_p (tree type)
+{
+  return AGGREGATE_TYPE_P (type) || VECTOR_TYPE_P (type)
+	 || TREE_CODE (type) == COMPLEX_TYPE;
 }
 
 /* Determine if the two component references REF1 and REF2 which are
@@ -961,6 +975,7 @@ aliasing_component_refs_p (tree ref1,
      if there is no B2 in the tail of path1 and no B1 on the
      tail of path2.  */
   if (compare_type_sizes (TREE_TYPE (ref2), type1) >= 0
+      && type_has_components_p (TREE_TYPE (ref2))
       && (base1_alias_set == ref2_alias_set
           || alias_set_subset_of (base1_alias_set, ref2_alias_set)))
     {
@@ -970,6 +985,7 @@ aliasing_component_refs_p (tree ref1,
   /* If this is ptr vs. decl then we know there is no ptr ... decl path.  */
   if (!ref2_is_decl
       && compare_type_sizes (TREE_TYPE (ref1), type2) >= 0
+      && type_has_components_p (TREE_TYPE (ref1))
       && (base2_alias_set == ref1_alias_set
 	  || alias_set_subset_of (base2_alias_set, ref1_alias_set)))
     {
@@ -997,7 +1013,8 @@ nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
     }
   if (TREE_CODE (ref1) == MEM_REF)
     {
-      if (!integer_zerop (TREE_OPERAND (ref1, 1)))
+      if (!integer_zerop (TREE_OPERAND (ref1, 1))
+	  || TREE_CODE (TREE_OPERAND (ref1, 0)) != ADDR_EXPR)
 	return false;
       ref1 = TREE_OPERAND (TREE_OPERAND (ref1, 0), 0);
     }
@@ -1010,7 +1027,8 @@ nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
     }
   if (TREE_CODE (ref2) == MEM_REF)
     {
-      if (!integer_zerop (TREE_OPERAND (ref2, 1)))
+      if (!integer_zerop (TREE_OPERAND (ref2, 1))
+	  || TREE_CODE (TREE_OPERAND (ref2, 0)) != ADDR_EXPR)
 	return false;
       ref2 = TREE_OPERAND (TREE_OPERAND (ref2, 0), 0);
     }

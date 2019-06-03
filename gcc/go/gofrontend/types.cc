@@ -2802,8 +2802,13 @@ Ptrmask::symname() const
 
       // Redirect the bits vector to the digest, and update the prefix.
       prefix = "X";
-      for (char c : digest)
-        shabits.push_back((unsigned char) c);
+      for (std::string::const_iterator p = digest.begin();
+           p != digest.end();
+           ++p)
+        {
+          unsigned char c = *p;
+          shabits.push_back(c);
+        }
       bits = &shabits;
     }
 

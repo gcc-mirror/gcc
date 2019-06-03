@@ -210,6 +210,11 @@
   (and (match_code "const_int")
        (match_test "((- (unsigned HOST_WIDE_INT) ival) + 0x8000) < 0x10000")))
 
+;; 34-bit signed integer constant
+(define_constraint "eI"
+  "34-bit constant integer that can be loaded with PADDI"
+  (match_operand 0 "cint34_operand"))
+
 ;; Floating-point constraints.  These two are defined so that insn
 ;; length attributes can be calculated exactly.
 

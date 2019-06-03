@@ -50,8 +50,6 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  using std::size_t;
-
   /**
    *  @brief  A meta-allocator with debugging bits.
    *  @ingroup allocators
@@ -103,7 +101,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       size_type _S_extra()
       {
-	const size_t __obj_size = sizeof(value_type);
+	const std::size_t __obj_size = sizeof(value_type);
 	return (sizeof(size_type) + __obj_size - 1) / __obj_size; 
       }
 

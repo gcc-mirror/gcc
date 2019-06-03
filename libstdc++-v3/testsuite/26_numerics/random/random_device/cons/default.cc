@@ -21,8 +21,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 26.4.6 class random_device [rand.device]
-// 26.4.2.2 Concept RandomNumberEngine [rand.concept.eng]
+// C++11 26.5.6 class random_device [rand.device]
 
 #include <random>
 #include <testsuite_hooks.h>
@@ -32,8 +31,11 @@ test01()
 {
   std::random_device x;
 
-  VERIFY( x.min() == std::numeric_limits<std::random_device::result_type>::min() );
-  VERIFY( x.max() == std::numeric_limits<std::random_device::result_type>::max() );
+  using result_type = std::random_device::result_type;
+  VERIFY( x.min() == std::numeric_limits<result_type>::min() );
+  VERIFY( x.max() == std::numeric_limits<result_type>::max() );
+
+  result_type n [[gnu::unused]] = x();
 }
 
 int main()

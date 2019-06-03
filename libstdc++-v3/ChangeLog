@@ -1,3 +1,256 @@
+2019-06-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Add missing row for P0920R2.
+	Fix bgcolor for P0340R3.
+	* doc/html/*: Regenerate.
+
+	PR libstdc++/90686
+	* doc/xml/manual/status_cxx2014.xml: Document what's missing from
+	<experimental/memory_resource>.
+	* doc/xml/manual/status_cxx2020.xml: Document status of P1285R0,
+	P0339R6, P0340R3, P1164R1 and P1357R1.
+	* doc/html/*: Regenerate.
+
+	* doc/xml/manual/status_cxx2020.xml: Document P1463R1 status.
+	* include/bits/forward_list.h [__cplusplus > 201703]: Enable
+	allocator::value_type assertion for C++2a.
+	* include/bits/hashtable.h: Likewise.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* testsuite/23_containers/deque/48101-3_neg.cc: New test.
+	* testsuite/23_containers/forward_list/48101-3_neg.cc: New test.
+	* testsuite/23_containers/list/48101-3_neg.cc: New test.
+	* testsuite/23_containers/map/48101-3_neg.cc: New test.
+	* testsuite/23_containers/multimap/48101-3_neg.cc: New test.
+	* testsuite/23_containers/multiset/48101-3_neg.cc: New test.
+	* testsuite/23_containers/set/48101-3_neg.cc: New test.
+	* testsuite/23_containers/unordered_map/48101-3_neg.cc: New test.
+	* testsuite/23_containers/unordered_multimap/48101-3_neg.cc: New test.
+	* testsuite/23_containers/unordered_multiset/48101-3_neg.cc: New test.
+	* testsuite/23_containers/unordered_set/48101-3_neg.cc: New test.
+	* testsuite/23_containers/vector/48101-3_neg.cc: New test.
+
+2019-05-31  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/allocator.xml: Move hoard.org back to http.
+
+2019-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple (tuple<>): Add noexcept to allocator-extended
+	constructors.
+	(tuple<T1, T2>::__nothrow_default_constructible()): New helper
+	function.
+	(tuple<T1, T2>::tuple(), explicit tuple<T1, T2>::tuple()): Use helper.
+
+2019-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++98/bitmap_allocator.cc: Add using-declaration for size_t.
+
+	PR libstdc++/90682
+	* libsupc++/eh_term_handler.cc: Include eh_term_handler.h to get
+	definition of _GLIBCXX_DEFAULT_TERM_HANDLER.
+	* libsupc++/eh_term_handler.h: New header defining
+	_GLIBCXX_DEFAULT_TERM_HANDLER.
+	* libsupc++/eh_terminate.cc: Include eh_term_handler.h.
+	(set_terminate): Restore default handler when argument is null.
+	(set_unexpected): Likewise.
+	* testsuite/18_support/set_terminate.cc: New test.
+	* testsuite/18_support/set_unexpected.cc: New test.
+
+	* include/backward/hashtable.h (size_t, ptrdiff_t)
+	(forward_iterator_tag, input_iterator_tag, _Construct, _Destroy)
+	(distance, vector, pair, __iterator_category): Remove
+	using-declarations that add these names to namespace __gnu_cxx.
+	* include/ext/bitmap_allocator.h (size_t, ptrdiff_t): Likewise.
+	* include/ext/debug_allocator.h (size_t): Likewise.
+	* include/ext/functional (size_t, unary_function, binary_function)
+	(mem_fun1_t, const_mem_fun1_t, mem_fun1_ref_t, const_mem_fun1_ref_t):
+	Likewise.
+	* include/ext/malloc_allocator.h (size_t, ptrdiff_t): Likewise.
+	* include/ext/memory (ptrdiff_t, pair, __iterator_category): Likewise.
+	* include/ext/mt_allocator.h (size_t, ptrdiff_t): Likewise.
+	* include/ext/new_allocator.h (size_t, ptrdiff_t): Likewise.
+	* include/ext/numeric (iota): Fix outdated comment.
+	* include/ext/pool_allocator.h (size_t, ptrdiff_t): Likewise.
+	* include/ext/rb_tree (_Rb_tree, allocator): Likewise.
+	* include/ext/rope (size_t, ptrdiff_t, allocator, _Destroy): Likewise.
+	* include/ext/ropeimpl.h (size_t, printf, basic_ostream)
+	(__throw_length_error, _Destroy, std::__uninitialized_fill_n_a):
+	Likewise.
+	* include/ext/slist (size_t, ptrdiff_t, _Construct, _Destroy)
+	(allocator, __true_type, __false_type): Likewise.
+
+2019-05-31  Antony Polukhin  <antoshkka@gmail.com>
+
+	PR libstdc++/71579
+	* include/std/type_traits __type_identity, __is_complete_or_unbounded):
+	New helpers for checking preconditions in traits.
+	(is_trivial, is_trivially_copyable, is_standard_layout, is_pod)
+	(is_literal_type, is_empty, is_polymorphic, is_final, is_abstract)
+	(is_destructible, is_nothrow_destructible, is_constructible)
+	(is_default_constructible, is_copy_constructible)
+	(is_move_constructible, is_nothrow_default_constructible)
+	(is_nothrow_constructible, is_nothrow_copy_constructible)
+	(is_nothrow_move_constructible, is_copy_assignable, is_move_assignable)
+	(is_nothrow_assignable, is_nothrow_copy_assignable)
+	(is_nothrow_move_assignable, is_trivially_constructible)
+	(is_trivially_copy_constructible, is_trivially_move_constructible)
+	is_trivially_assignable, is_trivially_copy_assignable)
+	(is_trivially_move_assignable, is_trivially_destructible)
+	(alignment_of, is_swappable, is_nothrow_swappable, is_invocable)
+	(is_invocable_r, is_nothrow_invocable)
+	(has_unique_object_representations, is_aggregate): Add static_asserts
+	to make sure that type traits are not misused with incomplete types.
+	(__is_constructible_impl, __is_nothrow_default_constructible_impl)
+	(__is_nothrow_constructible_impl, __is_nothrow_assignable_impl): New
+	base characteristics without assertions that can be reused in other
+	traits.
+	* testsuite/20_util/is_complete_or_unbounded/memoization.cc: New test.
+	* testsuite/20_util/is_complete_or_unbounded/memoization_neg.cc: New
+	test.
+	* testsuite/20_util/is_complete_or_unbounded/value.cc: New test.
+	* testsuite/20_util/is_abstract/incomplete_neg.cc: New test.
+	* testsuite/20_util/is_aggregate/incomplete_neg.cc: New test.
+	* testsuite/20_util/is_class/value.cc: Check incomplete type.
+	* testsuite/20_util/is_function/value.cc: Likewise.
+	* testsuite/20_util/is_move_constructible/incomplete_neg.cc: New test.
+	* testsuite/20_util/is_nothrow_move_assignable/incomplete_neg.cc: New
+	test.
+	* testsuite/20_util/is_polymorphic/incomplete_neg.cc: New test.
+	* testsuite/20_util/is_reference/value.cc: Check incomplete types.
+	* testsuite/20_util/is_unbounded_array/value.cc: Likewise.
+	* testsuite/20_util/is_union/value.cc: Likewise.
+	* testsuite/20_util/is_void/value.cc: Likewise.
+	* testsuite/util/testsuite_tr1.h: Add incomplete union type.
+
+2019-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (random_device::_M_init(const char*, size_t)):
+	Add new private member function.
+	* src/c++11/cow-string-inst.cc (random_device::_M_init(const string&))
+	(random_device::_M_init_pretr1(const string&)): Call new private
+	member with string data.
+	* src/c++11/random.cc (random_device::_M_init(const char*, size_t)):
+	Define.
+	* testsuite/26_numerics/random/random_device/cons/default-cow.cc: New
+	test using COW strings.
+	* testsuite/26_numerics/random/random_device/cons/default.cc: Generate
+	a value from the device.
+	* testsuite/26_numerics/random/random_device/cons/token.cc: Likewise.
+	Fix typo in token string.
+
+2019-05-30  Nina Dinka Ranns  <dinka.ranns@gmail.com>
+
+	LWG2788 basic_string spurious use of a default constructible allocator
+	* include/bits/basic_string.tcc [_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::_M_replace_dispatch): Construct temporary string with
+	the current allocator.
+	* testsuite/21_strings/basic_string/allocator/char/lwg2788.cc: New.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/lwg2788.cc: New.
+
+2019-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/diagnostics.xml: Update list of headers that define
+	exception classes.
+	* doc/xml/manual/support.xml: Rewrite advice around NULL. Rewrite
+	section about new/delete overloads. Improve section on verbose
+	terminate handler.
+	* doc/html/*: Regenerate.
+
+	* doc/xml/manual/status_cxx2020.xml: Add feature-test macro for
+	P0811R3. Change status of P1353R0.
+	* doc/html/*: Regenerate.
+
+	* doc/xml/manual/status_cxx2011.xml: Use <variablelist> for
+	documentation of implementation-defined types for [thread.req.native].
+	* doc/xml/manual/status_cxx2017.xml: Update documentation of
+	implementation-defined strings for [variant.bad.access]. Fix typo in
+	documentation of implementation-defined support for [fs.conform.9945].
+	* doc/html/*: Regenerate.
+
+2019-05-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85494
+	* testsuite/26_numerics/random/random_device/cons/token.cc: Fix test
+	that fails on mingw-w64.
+
+	PR libstdc++/88881
+	* src/c++17/fs_ops.cc [_GLIBCXX_FILESYSTEM_IS_WINDOWS]
+	(status(const path&, error_code&)): Use parent_path() to remove
+	trailing slash.
+	(symlink_status(const path&, error_code&)): Duplicate workaround for
+	bug in _wstat for paths with trailing slash.
+	* testsuite/27_io/filesystem/operations/remove_all.cc: Check path
+	with trailing slash.
+	* testsuite/27_io/filesystem/operations/status.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/symlink_status.cc: Likewise.
+
+	* src/c++17/fs_path.cc (path::parent_path()): Create whole path at
+	once instead of building it iteratively.
+
+	* testsuite/util/testsuite_api.h: Remove names of unused parameters.
+
+	PR libstdc++/85494 use rdseed and rand_s in std::random_device
+	* acinclude.m4 (GLIBCXX_CHECK_X86_RDSEED): Define macro to check if
+	the assembler supports rdseed.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Use GLIBCXX_CHECK_X86_RDSEED.
+	* config/os/mingw32-w64/os_defines.h (_GLIBCXX_USE_CRT_RAND_S): Define.
+	* doc/html/*: Regenerate.
+	* doc/xml/manual/status_cxx2011.xml: Document new tokens.
+	* include/bits/random.h (random_device::random_device()): Always call
+	_M_init rather than _M_init_pretr1.
+	(random_device::random_device(const string&)): Likewise.
+	(random_device::operator()()): Always call _M_getval().
+	(random_device::_M_file): Replace first member of union with an
+	anonymous struct, with _M_file as its first member.
+	* src/c++11/random.cc [_GLIBCXX_X86_RDRAND] (USE_RDRAND): Define.
+	[_GLIBCXX_X86_RDSEED] (USE_RDSEED): Define.
+	(USE_MT19937): Define if none of the above are defined.
+	(USE_POSIX_FILE_IO): Define.
+	(_M_strtoul): Remove.
+	[USE_RDSEED] (__x86_rdseed): Define new function.
+	[_GLIBCXX_USE_CRT_RAND_S] (__winxp_rand_s): Define new function.
+	(random_device::_M_init(const string&)): Initialize new union members.
+	Add support for "rdseed" and "rand_s" tokens. Decide what the
+	"default" token does according to which USE_* macros are defined.
+	[USE_POSIX_FILE_IO]: Store a file descriptor.
+	[USE_MT19937]: Forward to _M_init_pretr1 instead.
+	(random_device::_M_init_pretr1(const string&)) [USE_MT19937]: Inline
+	code from _M_strtoul.
+	[!USE_MT19937]: Call _M_init, transforming the old default token or
+	numeric tokens to "default".
+	(random_device::_M_fini()) [USE_POSIX_FILE_IO]: Use close not fclose.
+	(random_device::_M_getval()): Use new union members to obtain a
+	random number from the stored function pointer or file descriptor.
+	[USE_MT19937]: Obtain a value from the mt19937 engine.
+	(random_device::_M_getval_pretr1()): Call _M_getval().
+	(random_device::_M_getentropy()) [USE_POSIX_FILE_IO]: Use _M_fd
+	instead of fileno.
+	[!USE_MT19937] (mersenne_twister): Do not instantiate when not needed.
+	* testsuite/26_numerics/random/random_device/85494.cc: New test.
+
+2019-05-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90634
+	* include/experimental/bits/fs_path.h (path::path(path&&)): Only call
+	_M_split_cmpts() for a path with multiple components.
+	(path::_S_is_dir_sep()): Add missing 'static' keyword to function.
+	* src/filesystem/path.cc (path::_M_split_cmpts()): Count number of
+	components and reserve space in vector. Return early when there is
+	only one component.
+	* testsuite/27_io/filesystem/path/construct/90634.cc: New test.
+	* testsuite/experimental/filesystem/path/construct/90634.cc: New test.
+
+	* testsuite/util/testsuite_fs.h (compare_paths): Use three-argument
+	form of std::equals for C++11 compatibility.
+
 2019-05-26  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/appendix_contributing.xml: Update pointer to

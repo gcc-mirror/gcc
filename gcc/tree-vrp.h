@@ -46,8 +46,8 @@ public:
 
   void set (value_range_kind, tree, tree);
   void set (tree);
-  void set_nonnull (tree);
-  void set_null (tree);
+  void set_nonzero (tree);
+  void set_zero (tree);
 
   enum value_range_kind kind () const;
   tree min () const;
@@ -72,6 +72,7 @@ public:
   bool may_contain_p (tree) const;
   void set_and_canonicalize (enum value_range_kind, tree, tree);
   bool zero_p () const;
+  bool nonzero_p () const;
   bool singleton_p (tree *result = NULL) const;
   void dump (FILE *) const;
 
@@ -118,8 +119,6 @@ class GTY((user)) value_range : public value_range_base
   /* Deep-copies equiv bitmap argument.  */
   void set (value_range_kind, tree, tree, bitmap = NULL);
   void set (tree);
-  void set_nonnull (tree);
-  void set_null (tree);
 
   bool operator== (const value_range &) const /* = delete */;
   bool operator!= (const value_range &) const /* = delete */;
@@ -218,6 +217,16 @@ inline bool
 value_range_base::zero_p () const
 {
   return (m_kind == VR_RANGE
+	  && integer_zerop (m_min)
+	  && integer_zerop (m_max));
+}
+
+/* Return TRUE if range is nonzero.  */
+
+inline bool
+value_range_base::nonzero_p () const
+{
+  return (m_kind == VR_ANTI_RANGE
 	  && integer_zerop (m_min)
 	  && integer_zerop (m_max));
 }

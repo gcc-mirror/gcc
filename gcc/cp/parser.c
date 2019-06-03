@@ -29418,6 +29418,8 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
     {
       tree type = NULL_TREE;
 
+      tentative_firewall firewall (parser);
+
       /* We can't be sure yet whether we're looking at a type-id or an
 	 expression.  */
       cp_parser_parse_tentatively (parser);
@@ -29445,11 +29447,15 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
       /* If all went well, then we're done.  */
       if (cp_parser_parse_definitely (parser))
 	expr = type;
-    }
+      else
+	{
+	  /* Commit to the tentative_firewall so we get syntax errors.  */
+	  cp_parser_commit_to_tentative_parse (parser);
 
-  /* If the type-id production did not work out, then we must be
-     looking at the unary-expression production.  */
-  if (!expr)
+	  expr = cp_parser_unary_expression (parser);
+	}
+    }
+  else
     expr = cp_parser_unary_expression (parser);
 
   /* Go back to evaluating expressions.  */

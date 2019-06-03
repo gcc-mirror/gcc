@@ -64,9 +64,6 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  using std::_Rb_tree;
-  using std::allocator;
-
   // Class rb_tree is not part of the C++ standard.  It is provided for
   // compatibility with the HP STL.
 
@@ -76,11 +73,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @doctodo
    */
   template <class _Key, class _Value, class _KeyOfValue, class _Compare,
-	    class _Alloc = allocator<_Value> >
+	    class _Alloc = std::allocator<_Value> >
     struct rb_tree
-    : public _Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc>
+    : public std::_Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc>
     {
-      typedef _Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc> _Base;
+      typedef std::_Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc> _Base;
       typedef typename _Base::allocator_type allocator_type;
 
       rb_tree(const _Compare& __comp = _Compare(),

@@ -4579,7 +4579,7 @@ void
 gfc_conv_subref_array_arg (gfc_se *se, gfc_expr * expr, int g77,
 			   sym_intent intent, bool formal_ptr,
 			   const gfc_symbol *fsym, const char *proc_name,
-			   gfc_symbol *sym)
+			   gfc_symbol *sym, bool check_contiguous)
 {
   gfc_se lse;
   gfc_se rse;
@@ -4602,7 +4602,7 @@ gfc_conv_subref_array_arg (gfc_se *se, gfc_expr * expr, int g77,
 
   pass_optional = fsym && fsym->attr.optional && sym && sym->attr.optional;
 
-  if (pass_optional)
+  if (pass_optional || check_contiguous)
     {
       gfc_init_se (&work_se, NULL);
       parmse = &work_se;
@@ -4880,50 +4880,165 @@ class_array_fcn:
   else
     parmse->expr = gfc_build_addr_expr (NULL_TREE, parmse->expr);
 
-  if (pass_optional)
+  /* Basically make this into
+     
+     if (present)
+       {
+	 if (contiguous)
+	   {
+	     pointer = a;
+	   }
+	 else
+	   {
+	     parmse->pre();
+	     pointer = parmse->expr;
+	   }
+       }
+     else
+       pointer = NULL;
+
+     foo (pointer);
+     if (present && !contiguous)
+	   se->post();
+
+     */
+
+  if (pass_optional || check_contiguous)
     {
-      tree present;
       tree type;
       stmtblock_t else_block;
       tree pre_stmts, post_stmts;
       tree pointer;
       tree else_stmt;
-
-      /* Make this into
-
-	 if (present (a))
-	   {
-	      parmse->pre;
-	      optional = parse->expr;
-	   }
-         else
-	   optional = NULL;
-         call foo (optional);
-         if (present (a))
-            parmse->post;
-
-      */
+      tree present_var = NULL_TREE;
+      tree cont_var = NULL_TREE;
+      tree post_cond;
 
       type = TREE_TYPE (parmse->expr);
-      pointer = gfc_create_var (type, "optional");
-      tmp = gfc_conv_expr_present (sym);
-      present = gfc_evaluate_now (tmp, &se->pre);
-      gfc_add_modify (&parmse->pre, pointer, parmse->expr);
-      pre_stmts = gfc_finish_block (&parmse->pre);
+      pointer = gfc_create_var (type, "arg_ptr");
 
-      gfc_init_block (&else_block);
-      gfc_add_modify (&else_block, pointer, build_int_cst (type, 0));
-      else_stmt = gfc_finish_block (&else_block);
+      if (check_contiguous)
+	{
+	  gfc_se cont_se, array_se;
+	  stmtblock_t if_block, else_block;
+	  tree if_stmt, else_stmt;
+	  mpz_t size;
+	  bool size_set;
 
-      tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, present,
-			     pre_stmts, else_stmt);
-      gfc_add_expr_to_block (&se->pre, tmp);
+	  cont_var = gfc_create_var (boolean_type_node, "contiguous");
+
+	  /* If the size is known to be one at compile-time, set
+	     cont_var to true unconditionally.  This may look
+	     inelegant, but we're only doing this during
+	     optimization, so the statements will be optimized away,
+	     and this saves complexity here.  */
+
+	  size_set = gfc_array_size (expr, &size);
+	  if (size_set && mpz_cmp_ui (size, 1) == 0)
+	    {
+	      gfc_add_modify (&se->pre, cont_var,
+			      build_one_cst (boolean_type_node));
+	    }
+	  else
+	    {
+	      /* cont_var = is_contiguous (expr); .  */
+	      gfc_init_se (&cont_se, parmse);
+	      gfc_conv_is_contiguous_expr (&cont_se, expr);
+	      gfc_add_block_to_block (&se->pre, &(&cont_se)->pre);
+	      gfc_add_modify (&se->pre, cont_var, cont_se.expr);
+	      gfc_add_block_to_block (&se->pre, &(&cont_se)->post);
+	    }
+
+	  if (size_set)
+	    mpz_clear (size);
+
+	  /* arrayse->expr = descriptor of a.  */
+	  gfc_init_se (&array_se, se);
+	  gfc_conv_expr_descriptor (&array_se, expr);
+	  gfc_add_block_to_block (&se->pre, &(&array_se)->pre);
+	  gfc_add_block_to_block (&se->pre, &(&array_se)->post);
+
+	  /* if_stmt = { pointer = &a[0]; } .  */
+	  gfc_init_block (&if_block);
+	  tmp = gfc_conv_array_data (array_se.expr);
+	  tmp = fold_convert (type, tmp);
+	  gfc_add_modify (&if_block, pointer, tmp);
+	  if_stmt = gfc_finish_block (&if_block);
+
+	  /* else_stmt = { parmse->pre(); pointer = parmse->expr; } .  */
+	  gfc_init_block (&else_block);
+	  gfc_add_block_to_block (&else_block, &parmse->pre);
+	  gfc_add_modify (&else_block, pointer, parmse->expr);
+	  else_stmt = gfc_finish_block (&else_block);
+
+	  /* And put the above into an if statement.  */
+	  pre_stmts = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+				       gfc_likely (cont_var,
+						   PRED_FORTRAN_CONTIGUOUS),
+				       if_stmt, else_stmt);
+	}
+      else
+	{
+	  /* pointer = pramse->expr;  .  */
+	  gfc_add_modify (&parmse->pre, pointer, parmse->expr);
+	  pre_stmts = gfc_finish_block (&parmse->pre);
+	}
+
+      if (pass_optional)
+	{
+	  present_var = gfc_create_var (boolean_type_node, "present");
+
+	  /* present_var = present(sym); .  */
+	  tmp = gfc_conv_expr_present (sym);
+	  tmp = fold_convert (boolean_type_node, tmp);
+	  gfc_add_modify (&se->pre, present_var, tmp);
+
+	  /* else_stmt = { pointer = NULL; } .  */
+	  gfc_init_block (&else_block);
+	  gfc_add_modify (&else_block, pointer, build_int_cst (type, 0));
+	  else_stmt = gfc_finish_block (&else_block);
+
+	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+				 gfc_likely (present_var,
+					     PRED_FORTRAN_ABSENT_DUMMY),
+				 pre_stmts, else_stmt);
+	  gfc_add_expr_to_block (&se->pre, tmp);
+	}
+      else
+	gfc_add_expr_to_block (&se->pre, pre_stmts);
 
       post_stmts = gfc_finish_block (&parmse->post);
-      tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, present,
+
+      /* Put together the post stuff, plus the optional
+	 deallocation.  */
+      if (check_contiguous)
+	{
+	  /* !cont_var.  */
+	  tmp = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
+				 cont_var,
+				 build_zero_cst (boolean_type_node));
+	  tmp = gfc_unlikely (tmp, PRED_FORTRAN_CONTIGUOUS);
+
+	  if (pass_optional)
+	    {
+	      tree present_likely = gfc_likely (present_var,
+						PRED_FORTRAN_ABSENT_DUMMY);
+	      post_cond = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
+					   boolean_type_node, present_likely,
+					   tmp);
+	    }
+	  else
+	    post_cond = tmp;
+	}
+      else
+	{
+	  gcc_assert (pass_optional);
+	  post_cond = present_var;
+	}
+
+      tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, post_cond,
 			     post_stmts, build_empty_stmt (input_location));
       gfc_add_expr_to_block (&se->post, tmp);
-
       se->expr = pointer;
     }
 

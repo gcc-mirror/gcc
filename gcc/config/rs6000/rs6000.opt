@@ -574,6 +574,10 @@ mfuture
 Target Report Mask(FUTURE) Var(rs6000_isa_flags)
 Use instructions for a future architecture.
 
+mprefixed-addr
+Target Undocumented Mask(PREFIXED_ADDR) Var(rs6000_isa_flags)
+Generate (do not generate) prefixed memory instructions.
+
 mpcrel
 Target Report Mask(PCREL) Var(rs6000_isa_flags)
 Generate (do not generate) pc-relative memory addressing.

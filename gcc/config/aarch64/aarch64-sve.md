@@ -863,7 +863,7 @@
   "revb\t%0.h, %1/m, %2.h"
 )
 
-(define_insn "*aarch64_sve_rev<mode>"
+(define_insn "@aarch64_sve_rev<mode>"
   [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
 	(unspec:SVE_ALL [(match_operand:SVE_ALL 1 "register_operand" "w")]
 			UNSPEC_REV))]
@@ -1345,7 +1345,7 @@
 ;; WHILELO sets the flags in the same way as a PTEST with a PTRUE GP.
 ;; Handle the case in which both results are useful.  The GP operand
 ;; to the PTEST isn't needed, so we allow it to be anything.
-(define_insn_and_split "while_ult<GPI:mode><PRED_ALL:mode>_cc"
+(define_insn_and_rewrite "*while_ult<GPI:mode><PRED_ALL:mode>_cc"
   [(set (reg:CC CC_REGNUM)
 	(compare:CC
 	  (unspec:SI [(match_operand:PRED_ALL 1)
@@ -1364,12 +1364,8 @@
   ;; Force the compiler to drop the unused predicate operand, so that we
   ;; don't have an unnecessary PTRUE.
   "&& !CONSTANT_P (operands[1])"
-  [(const_int 0)]
   {
-    emit_insn (gen_while_ult<GPI:mode><PRED_ALL:mode>_cc
-	       (operands[0], CONSTM1_RTX (<MODE>mode),
-		operands[2], operands[3]));
-    DONE;
+    operands[1] = CONSTM1_RTX (<MODE>mode);
   }
 )
 
@@ -2003,7 +1999,7 @@
 )
 
 ;; Synthetic predications with select unmatched.
-(define_insn "*cond_<optab><mode>_any"
+(define_insn_and_rewrite "*cond_<optab><mode>_any"
   [(set (match_operand:SVE_I 0 "register_operand" "=&w")
 	(unspec:SVE_I
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
@@ -2012,11 +2008,20 @@
 	     (match_operand:SVE_I 3 "register_operand" "w"))
 	   (match_operand:SVE_I 4 "register_operand"   "w")]
 	  UNSPEC_SEL))]
-  "TARGET_SVE"
+  "TARGET_SVE
+   && !(rtx_equal_p (operands[0], operands[4])
+        || rtx_equal_p (operands[2], operands[4])
+        || rtx_equal_p (operands[3], operands[4]))"
   "#"
+  "&& reload_completed"
+  {
+    emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[2],
+					     operands[4], operands[1]));
+    operands[4] = operands[2] = operands[0];
+  }
 )
 
-(define_insn "*cond_<optab><mode>_any"
+(define_insn_and_rewrite "*cond_<optab><mode>_any"
   [(set (match_operand:SVE_SDI 0 "register_operand" "=&w")
 	(unspec:SVE_SDI
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
@@ -2025,33 +2030,17 @@
 	     (match_operand:SVE_SDI 3 "register_operand" "w"))
 	   (match_operand:SVE_SDI 4 "register_operand"   "w")]
 	  UNSPEC_SEL))]
-  "TARGET_SVE"
-  "#"
-)
-
-(define_split
-  [(set (match_operand:SVE_I 0 "register_operand")
-	(unspec:SVE_I
-	  [(match_operand:<VPRED> 1 "register_operand")
-	   (match_operator:SVE_I 5 "aarch64_sve_any_binary_operator"
-	     [(match_operand:SVE_I 2 "register_operand")
-	      (match_operand:SVE_I 3 "register_operand")])
-	   (match_operand:SVE_I 4 "register_operand")]
-	  UNSPEC_SEL))]
-  "TARGET_SVE && reload_completed
+  "TARGET_SVE
    && !(rtx_equal_p (operands[0], operands[4])
         || rtx_equal_p (operands[2], operands[4])
         || rtx_equal_p (operands[3], operands[4]))"
-  ; Not matchable by any one insn or movprfx insn.  We need a separate select.
-  [(set (match_dup 0)
-	(unspec:SVE_I [(match_dup 1) (match_dup 2) (match_dup 4)]
-                      UNSPEC_SEL))
-   (set (match_dup 0)
-	(unspec:SVE_I
-	  [(match_dup 1)
-	   (match_op_dup 5 [(match_dup 0) (match_dup 3)])
-           (match_dup 0)]
-	  UNSPEC_SEL))]
+  "#"
+  "&& reload_completed"
+  {
+    emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[2],
+					     operands[4], operands[1]));
+    operands[4] = operands[2] = operands[0];
+  }
 )
 
 ;; Set operand 0 to the last active element in operand 3, or to tied
@@ -2528,6 +2517,19 @@
   "<sve_fp_op>\t%0.<Vetype>, %1/m, %2.<Vetype>"
 )
 
+(define_insn "*fabd<mode>3"
+  [(set (match_operand:SVE_F 0 "register_operand" "=w")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
+	   (abs:SVE_F
+	    (minus:SVE_F
+		(match_operand:SVE_F 2 "register_operand" "0")
+		(match_operand:SVE_F 3 "register_operand" "w")))]
+	UNSPEC_MERGE_PTRUE))]
+  "TARGET_SVE"
+  "fabd\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>"
+)
+
 ;; Unpredicated FRINTy.
 (define_expand "<frint_pattern><mode>2"
   [(set (match_operand:SVE_F 0 "register_operand")
@@ -2944,7 +2946,7 @@
 )
 
 ;; Synthetic predication of floating-point operations with select unmatched.
-(define_insn_and_split "*cond_<optab><mode>_any"
+(define_insn_and_rewrite "*cond_<optab><mode>_any"
   [(set (match_operand:SVE_F 0 "register_operand" "=&w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
@@ -2961,14 +2963,11 @@
         || rtx_equal_p (operands[2], operands[4])
         || rtx_equal_p (operands[3], operands[4]))"
   ; Not matchable by any one insn or movprfx insn.  We need a separate select.
-  [(set (match_dup 0)
-	(unspec:SVE_F [(match_dup 1) (match_dup 2) (match_dup 4)] UNSPEC_SEL))
-   (set (match_dup 0)
-	(unspec:SVE_F
-	  [(match_dup 1)
-	   (unspec:SVE_F [(match_dup 0) (match_dup 3)] SVE_COND_FP_BINARY)
-           (match_dup 0)]
-	  UNSPEC_SEL))]
+  {
+    emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[2],
+					     operands[4], operands[1]));
+    operands[4] = operands[2] = operands[0];
+  }
 )
 
 ;; Predicated floating-point ternary operations with select.
@@ -3031,7 +3030,7 @@
 
 ;; Predicated floating-point ternary operations in which the value for
 ;; inactive lanes is distinct from the other inputs.
-(define_insn_and_split "*cond_<optab><mode>_any"
+(define_insn_and_rewrite "*cond_<optab><mode>_any"
   [(set (match_operand:SVE_F 0 "register_operand" "=&w, &w, ?&w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
@@ -3053,16 +3052,11 @@
   "&& reload_completed
    && !CONSTANT_P (operands[5])
    && !rtx_equal_p (operands[0], operands[5])"
-  [(set (match_dup 0)
-	(unspec:SVE_F [(match_dup 1) (match_dup 4) (match_dup 5)] UNSPEC_SEL))
-   (set (match_dup 0)
-	(unspec:SVE_F
-	  [(match_dup 1)
-	   (unspec:SVE_F [(match_dup 2) (match_dup 3) (match_dup 0)]
-			 SVE_COND_FP_TERNARY)
-           (match_dup 0)]
-	  UNSPEC_SEL))]
-  ""
+  {
+    emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[4],
+					     operands[5], operands[1]));
+    operands[5] = operands[4] = operands[0];
+  }
   [(set_attr "movprfx" "yes")]
 )
 
@@ -3204,6 +3198,17 @@
     rtx diff = gen_reg_rtx (<VSI2QI>mode);
     emit_insn (gen_<sur>abd<vsi2qi>_3 (diff, operands[1], operands[2]));
     emit_insn (gen_udot_prod<vsi2qi> (operands[0], diff, ones, operands[3]));
+    DONE;
+  }
+)
+
+;; Standard pattern name vec_init<mode><Vel>.
+(define_expand "vec_init<mode><Vel>"
+  [(match_operand:SVE_ALL 0 "register_operand" "")
+    (match_operand 1 "" "")]
+  "TARGET_SVE"
+  {
+    aarch64_sve_expand_vector_init (operands[0], operands[1]);
     DONE;
   }
 )

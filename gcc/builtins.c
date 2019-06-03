@@ -1137,15 +1137,20 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
 	emit_insn (targetm.gen_nonlocal_goto (value, lab, stack, fp));
       else
 	{
-	  lab = copy_to_reg (lab);
-
 	  emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
 	  emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
+
+	  lab = copy_to_reg (lab);
 
 	  /* Restore the frame pointer and stack pointer.  We must use a
 	     temporary since the setjmp buffer may be a local.  */
 	  fp = copy_to_reg (fp);
 	  emit_stack_restore (SAVE_NONLOCAL, stack);
+
+	  /* Ensure the frame pointer move is not optimized.  */
+	  emit_insn (gen_blockage ());
+	  emit_clobber (hard_frame_pointer_rtx);
+	  emit_clobber (frame_pointer_rtx);
 	  emit_move_insn (hard_frame_pointer_rtx, fp);
 
 	  emit_use (hard_frame_pointer_rtx);
@@ -1284,15 +1289,20 @@ expand_builtin_nonlocal_goto (tree exp)
     emit_insn (targetm.gen_nonlocal_goto (const0_rtx, r_label, r_sp, r_fp));
   else
     {
-      r_label = copy_to_reg (r_label);
-
       emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
       emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
+
+      r_label = copy_to_reg (r_label);
 
       /* Restore the frame pointer and stack pointer.  We must use a
 	 temporary since the setjmp buffer may be a local.  */
       r_fp = copy_to_reg (r_fp);
       emit_stack_restore (SAVE_NONLOCAL, r_sp);
+
+      /* Ensure the frame pointer move is not optimized.  */
+      emit_insn (gen_blockage ());
+      emit_clobber (hard_frame_pointer_rtx);
+      emit_clobber (frame_pointer_rtx);
       emit_move_insn (hard_frame_pointer_rtx, r_fp);
 
       /* USE of hard_frame_pointer_rtx added for consistency;

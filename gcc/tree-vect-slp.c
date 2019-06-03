@@ -325,6 +325,14 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char *swap,
 	{
 	  internal_fn ifn = gimple_call_internal_fn (stmt);
 	  commutative_op = first_commutative_argument (ifn);
+
+	  /* Masked load, only look at mask.  */
+	  if (ifn == IFN_MASK_LOAD)
+	    {
+	      number_of_oprnds = 1;
+	      /* Mask operand index.  */
+	      first_op_idx = 5;
+	    }
 	}
     }
   else if (gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt))
@@ -626,7 +634,7 @@ vect_two_operations_perm_ok_p (vec<stmt_vec_info> stmts,
    is false then this indicates the comparison could not be
    carried out or the stmts will never be vectorized by SLP.
 
-   Note COND_EXPR is possibly ismorphic to another one after swapping its
+   Note COND_EXPR is possibly isomorphic to another one after swapping its
    operands.  Set SWAP[i] to 1 if stmt I is COND_EXPR and isomorphic to
    the first stmt by swapping the two operands of comparison; set SWAP[i]
    to 2 if stmt I is isormorphic to the first stmt by inverting the code
@@ -653,6 +661,7 @@ vect_build_slp_tree_1 (unsigned char *swap,
   machine_mode optab_op2_mode;
   machine_mode vec_mode;
   stmt_vec_info first_load = NULL, prev_first_load = NULL;
+  bool load_p = false;
 
   /* For every stmt in NODE find its def stmt/s.  */
   stmt_vec_info stmt_info;
@@ -706,13 +715,16 @@ vect_build_slp_tree_1 (unsigned char *swap,
       if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
 	{
 	  rhs_code = CALL_EXPR;
-	  if ((gimple_call_internal_p (call_stmt)
-	       && (!vectorizable_internal_fn_p
-		   (gimple_call_internal_fn (call_stmt))))
-	      || gimple_call_tail_p (call_stmt)
-	      || gimple_call_noreturn_p (call_stmt)
-	      || !gimple_call_nothrow_p (call_stmt)
-	      || gimple_call_chain (call_stmt))
+
+	  if (gimple_call_internal_p (stmt, IFN_MASK_LOAD))
+	    load_p = true;
+	  else if ((gimple_call_internal_p (call_stmt)
+		    && (!vectorizable_internal_fn_p
+			(gimple_call_internal_fn (call_stmt))))
+		   || gimple_call_tail_p (call_stmt)
+		   || gimple_call_noreturn_p (call_stmt)
+		   || !gimple_call_nothrow_p (call_stmt)
+		   || gimple_call_chain (call_stmt))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -724,7 +736,10 @@ vect_build_slp_tree_1 (unsigned char *swap,
 	    }
 	}
       else
-	rhs_code = gimple_assign_rhs_code (stmt);
+	{
+	  rhs_code = gimple_assign_rhs_code (stmt);
+	  load_p = TREE_CODE_CLASS (rhs_code) == tcc_reference;
+	}
 
       /* Check the operation.  */
       if (i == 0)
@@ -891,7 +906,7 @@ vect_build_slp_tree_1 (unsigned char *swap,
         } /* Grouped access.  */
       else
 	{
-	  if (TREE_CODE_CLASS (rhs_code) == tcc_reference)
+	  if (load_p)
 	    {
 	      /* Not grouped load.  */
 	      if (dump_enabled_p ())
@@ -1146,14 +1161,23 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 			      &this_max_nunits, matches, &two_operators))
     return NULL;
 
-  /* If the SLP node is a load, terminate the recursion.  */
+  /* If the SLP node is a load, terminate the recursion unless masked.  */
   if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
       && DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)))
     {
-      *max_nunits = this_max_nunits;
-      (*tree_size)++;
-      node = vect_create_new_slp_node (stmts);
-      return node;
+      if (gcall *stmt = dyn_cast <gcall *> (stmt_info->stmt))
+	{
+	  /* Masked load.  */
+	  gcc_assert (gimple_call_internal_p (stmt, IFN_MASK_LOAD));
+	  nops = 1;
+	}
+      else
+	{
+	  *max_nunits = this_max_nunits;
+	  (*tree_size)++;
+	  node = vect_create_new_slp_node (stmts);
+	  return node;
+	}
     }
 
   /* Get at the operands, verifying they are compatible.  */
