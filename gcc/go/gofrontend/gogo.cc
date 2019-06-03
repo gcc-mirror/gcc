@@ -5182,7 +5182,7 @@ Function::Function(Function_type* type, Named_object* enclosing, Block* block,
     calls_recover_(false), is_recover_thunk_(false), has_recover_thunk_(false),
     calls_defer_retaddr_(false), is_type_specific_function_(false),
     in_unique_section_(false), export_for_inlining_(false),
-    is_inline_only_(false)
+    is_inline_only_(false), is_referenced_by_inline_(false)
 {
 }
 
@@ -5534,12 +5534,12 @@ Function::defer_stack(Location location)
 // Export the function.
 
 void
-Function::export_func(Export* exp, const std::string& name) const
+Function::export_func(Export* exp, const Named_object* no) const
 {
   Block* block = NULL;
   if (this->export_for_inlining())
     block = this->block_;
-  Function::export_func_with_type(exp, name, this->type_, this->results_,
+  Function::export_func_with_type(exp, no, this->type_, this->results_,
 				  this->is_method() && this->nointerface(),
 				  block, this->location_);
 }
@@ -5547,7 +5547,7 @@ Function::export_func(Export* exp, const std::string& name) const
 // Export a function with a type.
 
 void
-Function::export_func_with_type(Export* exp, const std::string& name,
+Function::export_func_with_type(Export* exp, const Named_object* no,
 				const Function_type* fntype,
 				Function::Results* result_vars,
 				bool nointerface, Block* block, Location loc)
@@ -5571,7 +5571,21 @@ Function::export_func_with_type(Export* exp, const std::string& name,
       exp->write_c_string(") ");
     }
 
-  exp->write_string(name);
+  if (no->package() != NULL && !fntype->is_method())
+    {
+      char buf[50];
+      snprintf(buf, sizeof buf, "<p%d>", exp->package_index(no->package()));
+      exp->write_c_string(buf);
+    }
+
+  const std::string& name(no->name());
+  if (!Gogo::is_hidden_name(name))
+    exp->write_string(name);
+  else
+    {
+      exp->write_c_string(".");
+      exp->write_string(Gogo::unpack_hidden_name(name));
+    }
 
   exp->write_c_string(" (");
   const Typed_identifier_list* parameters = fntype->parameters();
@@ -5677,8 +5691,9 @@ Function::export_func_with_type(Export* exp, const std::string& name,
 
 // Import a function.
 
-void
+bool
 Function::import_func(Import* imp, std::string* pname,
+		      Package** ppkg, bool* pis_exported,
 		      Typed_identifier** preceiver,
 		      Typed_identifier_list** pparameters,
 		      Typed_identifier_list** presults,
@@ -5711,7 +5726,13 @@ Function::import_func(Import* imp, std::string* pname,
       imp->require_c_string(") ");
     }
 
-  *pname = imp->read_identifier();
+  if (!Import::read_qualified_identifier(imp, pname, ppkg, pis_exported))
+    {
+      go_error_at(imp->location(),
+		  "import error at %d: bad function name in export data",
+		  imp->pos());
+      return false;
+    }
 
   Typed_identifier_list* parameters;
   *is_varargs = false;
@@ -5812,11 +5833,13 @@ Function::import_func(Import* imp, std::string* pname,
 	{
 	  go_error_at(imp->location(), "invalid inline function length %s",
 		      lenstr.c_str());
-	  return;
+	  return false;
 	}
 
       *body = imp->read(static_cast<size_t>(llen));
     }
+
+  return true;
 }
 
 // Get the backend representation.
@@ -5829,7 +5852,10 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
       unsigned int flags = 0;
       bool is_init_fn = false;
       if (no->package() != NULL)
-        ;
+	{
+	  // Functions defined in other packages must be visible.
+	  flags |= Backend::function_is_visible;
+	}
       else if (this->enclosing_ != NULL || Gogo::is_thunk(no))
         ;
       else if (Gogo::unpack_hidden_name(no->name()) == "init"
@@ -5876,6 +5902,11 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
 	}
       else
 	asm_name = gogo->function_asm_name(no->name(), no->package(), rtype);
+
+      // If an inline body refers to this function, then it
+      // needs to be visible in the symbol table.
+      if (this->is_referenced_by_inline_)
+	flags |= Backend::function_is_visible;
 
       // If a function calls the predeclared recover function, we
       // can't inline it, because recover behaves differently in a
@@ -7015,7 +7046,8 @@ Variable::Variable(Type* type, Expression* init, bool is_global,
     type_from_init_tuple_(false), type_from_range_index_(false),
     type_from_range_value_(false), type_from_chan_element_(false),
     is_type_switch_var_(false), determined_type_(false),
-    in_unique_section_(false), toplevel_decl_(NULL)
+    in_unique_section_(false), is_referenced_by_inline_(false),
+    toplevel_decl_(NULL)
 {
   go_assert(type != NULL || init != NULL);
   go_assert(!is_parameter || init == NULL);
@@ -7497,11 +7529,25 @@ Variable::get_init_block(Gogo* gogo, Named_object* function,
 // Export the variable
 
 void
-Variable::export_var(Export* exp, const std::string& name) const
+Variable::export_var(Export* exp, const Named_object* no) const
 {
   go_assert(this->is_global_);
   exp->write_c_string("var ");
-  exp->write_string(name);
+  if (no->package() != NULL)
+    {
+      char buf[50];
+      snprintf(buf, sizeof buf, "<p%d>", exp->package_index(no->package()));
+      exp->write_c_string(buf);
+    }
+
+  if (!Gogo::is_hidden_name(no->name()))
+    exp->write_string(no->name());
+  else
+    {
+      exp->write_c_string(".");
+      exp->write_string(Gogo::unpack_hidden_name(no->name()));
+    }
+
   exp->write_c_string(" ");
   exp->write_type(this->type());
   exp->write_c_string("\n");
@@ -7509,15 +7555,23 @@ Variable::export_var(Export* exp, const std::string& name) const
 
 // Import a variable.
 
-void
-Variable::import_var(Import* imp, std::string* pname, Type** ptype)
+bool
+Variable::import_var(Import* imp, std::string* pname, Package** ppkg,
+		     bool* pis_exported, Type** ptype)
 {
   imp->require_c_string("var ");
-  *pname = imp->read_identifier();
+  if (!Import::read_qualified_identifier(imp, pname, ppkg, pis_exported))
+    {
+      go_error_at(imp->location(),
+		  "import error at %d: bad variable name in export data",
+		  imp->pos());
+      return false;
+    }
   imp->require_c_string(" ");
   *ptype = imp->read_type();
   imp->require_semicolon_if_old_version();
   imp->require_c_string("\n");
+  return true;
 }
 
 // Convert a variable to the backend representation.
@@ -7566,6 +7620,18 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
 	      // This is because go:linkname doesn't work on variables.
 	      if (gogo->compiling_runtime()
 		  && var_name == "runtime.writeBarrier")
+		is_hidden = false;
+
+	      // If an inline body refers to this variable, then it
+	      // needs to be visible in the symbol table.
+	      if (this->is_referenced_by_inline_)
+		is_hidden = false;
+
+	      // If this variable is in a different package, then it
+	      // can't be treated as a hidden symbol.  This case can
+	      // arise when an inlined function refers to a
+	      // package-scope unexported variable.
+	      if (package != NULL)
 		is_hidden = false;
 
 	      bvar = backend->global_variable(var_name,
@@ -8145,11 +8211,11 @@ Named_object::export_named_object(Export* exp) const
       break;
 
     case NAMED_OBJECT_FUNC_DECLARATION:
-      this->func_declaration_value()->export_func(exp, this->name_);
+      this->func_declaration_value()->export_func(exp, this);
       break;
 
     case NAMED_OBJECT_VAR:
-      this->var_value()->export_var(exp, this->name_);
+      this->var_value()->export_var(exp, this);
       break;
 
     case NAMED_OBJECT_RESULT_VAR:
@@ -8157,7 +8223,7 @@ Named_object::export_named_object(Export* exp) const
       go_unreachable();
 
     case NAMED_OBJECT_FUNC:
-      this->func_value()->export_func(exp, this->name_);
+      this->func_value()->export_func(exp, this);
       break;
     }
 }

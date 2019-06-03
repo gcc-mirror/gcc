@@ -288,8 +288,8 @@ Import::find_object_export_data(const std::string& filename,
 
 Import::Import(Stream* stream, Location location)
   : gogo_(NULL), stream_(stream), location_(location), package_(NULL),
-    add_to_globals_(false), type_data_(), type_pos_(0), type_offsets_(),
-    builtin_types_((- SMALLEST_BUILTIN_CODE) + 1),
+    add_to_globals_(false), packages_(), type_data_(), type_pos_(0),
+    type_offsets_(), builtin_types_((- SMALLEST_BUILTIN_CODE) + 1),
     types_(), version_(EXPORT_FORMAT_UNKNOWN)
 {
 }
@@ -487,6 +487,8 @@ Import::read_one_import()
   Package* p = this->gogo_->register_package(pkgpath, "",
 					     Linemap::unknown_location());
   p->set_package_name(package_name, this->location());
+
+  this->packages_.push_back(p);
 }
 
 // Read an indirectimport line.
@@ -503,6 +505,8 @@ Import::read_one_indirect_import()
   Package* p = this->gogo_->register_package(pkgpath, "",
 					     Linemap::unknown_location());
   p->set_package_name(package_name, this->location());
+
+  this->packages_.push_back(p);
 }
 
 // Read the list of import control functions and/or init graph.
@@ -721,12 +725,19 @@ void
 Import::import_var()
 {
   std::string name;
+  Package* vpkg;
+  bool is_exported;
   Type* type;
-  Variable::import_var(this, &name, &type);
+  if (!Variable::import_var(this, &name, &vpkg, &is_exported, &type))
+    return;
+  if (vpkg == NULL)
+    vpkg = this->package_;
+  if (!is_exported)
+    name = '.' + vpkg->pkgpath() + '.' + name;
   Variable* var = new Variable(type, NULL, true, false, false,
 			       this->location_);
   Named_object* no;
-  no = this->package_->add_variable(name, var);
+  no = vpkg->add_variable(name, var);
   if (this->add_to_globals_)
     this->gogo_->add_dot_import_object(no);
 }
@@ -735,18 +746,26 @@ Import::import_var()
 // THIS->PACKAGE_, but it will be different for a method associated
 // with a type defined in a different package.
 
-Named_object*
+void
 Import::import_func(Package* package)
 {
   std::string name;
+  Package* fpkg;
+  bool is_exported;
   Typed_identifier* receiver;
   Typed_identifier_list* parameters;
   Typed_identifier_list* results;
   bool is_varargs;
   bool nointerface;
   std::string body;
-  Function::import_func(this, &name, &receiver, &parameters, &results,
-			&is_varargs, &nointerface, &body);
+  if (!Function::import_func(this, &name, &fpkg, &is_exported, &receiver,
+			     &parameters, &results, &is_varargs, &nointerface,
+			     &body))
+    return;
+  if (fpkg == NULL)
+    fpkg = package;
+  if (!is_exported)
+    name = '.' + fpkg->pkgpath() + '.' + name;
   Function_type *fntype = Type::make_function_type(receiver, parameters,
 						   results, this->location_);
   if (is_varargs)
@@ -768,13 +787,13 @@ Import::import_func(Package* package)
 	rtype = rtype->points_to();
 
       if (rtype->is_error_type())
-	return NULL;
+	return;
       else if (rtype->named_type() != NULL)
-	no = rtype->named_type()->add_method_declaration(name, package, fntype,
+	no = rtype->named_type()->add_method_declaration(name, fpkg, fntype,
 							 loc);
       else if (rtype->forward_declaration_type() != NULL)
 	no = rtype->forward_declaration_type()->add_method_declaration(name,
-								       package,
+								       fpkg,
 								       fntype,
 								       loc);
       else
@@ -782,7 +801,7 @@ Import::import_func(Package* package)
     }
   else
     {
-      no = package->add_function_declaration(name, fntype, loc);
+      no = fpkg->add_function_declaration(name, fntype, loc);
       if (this->add_to_globals_)
 	this->gogo_->add_dot_import_object(no);
     }
@@ -791,8 +810,6 @@ Import::import_func(Package* package)
     no->func_declaration_value()->set_nointerface();
   if (!body.empty() && !no->func_declaration_value()->has_imported_body())
     no->func_declaration_value()->set_imported_body(this, body);
-
-  return no;
 }
 
 // Read a type definition and initialize the entry in this->types_.
@@ -1231,6 +1248,60 @@ Import::read_identifier()
       stream->advance(1);
     }
   return ret;
+}
+
+// Read a possibly qualified identifier from IMP.  The qualification
+// is <pID>, where ID is a package number.  If the name has a leading
+// '.', it is not exported; otherwise, it is.  Set *NAME, *PKG and
+// *IS_EXPORTED.  Reports whether the read succeeded.
+
+bool
+Import::read_qualified_identifier(Import_expression* imp, std::string* name,
+				  Package** pkg, bool* is_exported)
+{
+  *pkg = NULL;
+  if (imp->match_c_string("<p"))
+    {
+      imp->advance(2);
+      char buf[50];
+      char *pbuf = &buf[0];
+      while (true)
+	{
+	  int next = imp->peek_char();
+	  if (next == -1 || static_cast<size_t>(pbuf - buf) >= sizeof buf - 1)
+	    return false;
+	  if (next == '>')
+	    {
+	      imp->advance(1);
+	      break;
+	    }
+	  *pbuf = static_cast<char>(next);
+	  ++pbuf;
+	  imp->advance(1);
+	}
+
+      *pbuf = '\0';
+      char *end;
+      long index = strtol(buf, &end, 10);
+      if (*end != '\0'
+	  || index <= 0
+	  || static_cast<size_t>(index) > imp->max_package_index())
+	return false;
+
+      *pkg = imp->package_at_index(index);
+      go_assert(*pkg != NULL);
+    }
+
+  *is_exported = true;
+  if (imp->match_c_string("."))
+    {
+      imp->advance(1);
+      *is_exported = false;
+    }
+
+  *name = imp->read_identifier();
+
+  return !name->empty();
 }
 
 // Read a name from the stream.
