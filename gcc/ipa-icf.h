@@ -190,9 +190,6 @@ public:
   /* Dump function for debugging purpose.  */
   DEBUG_FUNCTION void dump (void);
 
-  /* Initialize semantic item by info reachable during LTO WPA phase.  */
-  virtual void init_wpa (void) = 0;
-
   /* Semantic item initialization function.  */
   virtual void init (void) = 0;
 
@@ -325,10 +322,6 @@ public:
 
   ~sem_function ();
 
-  inline virtual void init_wpa (void)
-  {
-  }
-
   virtual void init (void);
   virtual bool equals_wpa (sem_item *item,
 			   hash_map <symtab_node *, sem_item *> &ignored_nodes);
@@ -431,8 +424,6 @@ public:
       Bitmap STACK is used for memory allocation.  */
 
   sem_variable (varpool_node *_node, bitmap_obstack *stack);
-
-  inline virtual void init_wpa (void) {}
 
   /* Semantic variable initialization function.  */
   inline virtual void init (void)
