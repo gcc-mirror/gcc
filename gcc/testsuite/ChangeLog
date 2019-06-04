@@ -1,5 +1,10 @@
 2019-06-04  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/90726
+	* gcc.dg/pr90726.c: New testcase.
+
+2019-06-04  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/90738
 	* gcc.dg/torture/pr90738.c: New testcase.
 
