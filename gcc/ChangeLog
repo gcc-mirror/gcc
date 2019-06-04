@@ -1,5 +1,20 @@
 2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/vsx.md (define_mode_attr VSr4): Delete.
+	(define_mode_attr VSr5): Delete.
+	(define_mode_attr VStype_sqrt): Delete.
+	(define_mode_iterator VSX_SPDP): Delete.
+	(define_mode_attr VS_spdp_res): Delete.
+	(define_mode_attr VS_spdp_insn): Delete.
+	(define_mode_attr VS_spdp_type): Delete.
+	(*vsx_sqrt<mode>2): Adjust.
+	(vsx_<VS_spdp_insn>): Delete, split to...
+	(vsx_xscvdpsp): ... this.  New.  And...
+	(vsx_xvcvspdp): ... this.  New.  And...
+	(vsx_xvcvdpsp): ... this.  New.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (define_mode_attr sd): Add values for V4SF
 	and V2DF.
 	* config/rs6000/vsx.md (define_mode_attr VSs): Delete.

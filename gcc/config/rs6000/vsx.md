@@ -118,18 +118,6 @@
 			 (KF	"wq")
 			 (TF	"wp")])
 
-;; Map the register class for sp<->dp float conversions, destination
-(define_mode_attr VSr4	[(SF	"wa")
-			 (DF	"f")
-			 (V2DF  "wa")
-			 (V4SF	"v")])
-
-;; Map the register class for sp<->dp float conversions, source
-(define_mode_attr VSr5	[(SF	"wa")
-			 (DF	"f")
-			 (V2DF  "v")
-			 (V4SF	"wa")])
-
 ;; The VSX register class that a type can occupy, even if it is not the
 ;; preferred register class (VSr is the preferred register class that will get
 ;; allocated first).
@@ -212,29 +200,6 @@
 (define_mode_attr VStype_div	[(V2DF "vecdiv")
 				 (V4SF "vecfdiv")
 				 (DF   "ddiv")])
-
-;; Appropriate type for sqrt ops.  For now, just lump the vector sqrt with
-;; the scalar sqrt
-(define_mode_attr VStype_sqrt	[(V2DF "dsqrt")
-				 (V4SF "ssqrt")
-				 (DF   "dsqrt")])
-
-;; Iterator and modes for sp<->dp conversions
-;; Because scalar SF values are represented internally as double, use the
-;; V4SF type to represent this than SF.
-(define_mode_iterator VSX_SPDP [DF V4SF V2DF])
-
-(define_mode_attr VS_spdp_res [(DF	"V4SF")
-			       (V4SF	"V2DF")
-			       (V2DF	"V4SF")])
-
-(define_mode_attr VS_spdp_insn [(DF	"xscvdpsp")
-				(V4SF	"xvcvspdp")
-				(V2DF	"xvcvdpsp")])
-
-(define_mode_attr VS_spdp_type [(DF	"fp")
-				(V4SF	"vecdouble")
-				(V2DF	"vecdouble")])
 
 ;; Map the scalar mode for a vector type
 (define_mode_attr VS_scalar [(V1TI	"TI")
@@ -1831,7 +1796,7 @@
         (sqrt:VSX_F (match_operand:VSX_F 1 "vsx_register_operand" "wa")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvsqrt<sd>p %x0,%x1"
-  [(set_attr "type" "<VStype_sqrt>")])
+  [(set_attr "type" "<sd>sqrt")])
 
 (define_insn "*vsx_rsqrte<mode>2"
   [(set (match_operand:VSX_F 0 "vsx_register_operand" "=wa")
@@ -2149,13 +2114,29 @@
 ;; Don't use xscvspdp and xscvdpsp for scalar conversions, since the normal
 ;; scalar single precision instructions internally use the double format.
 ;; Prefer the altivec registers, since we likely will need to do a vperm
-(define_insn "vsx_<VS_spdp_insn>"
-  [(set (match_operand:<VS_spdp_res> 0 "vsx_register_operand" "=<VSr4>,?wa")
-	(unspec:<VS_spdp_res> [(match_operand:VSX_SPDP 1 "vsx_register_operand" "<VSr5>,wa")]
+(define_insn "vsx_xscvdpsp"
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=f,?wa")
+	(unspec:V4SF [(match_operand:DF 1 "vsx_register_operand" "f,wa")]
 			      UNSPEC_VSX_CVSPDP))]
-  "VECTOR_UNIT_VSX_P (<MODE>mode)"
-  "<VS_spdp_insn> %x0,%x1"
-  [(set_attr "type" "<VS_spdp_type>")])
+  "VECTOR_UNIT_VSX_P (DFmode)"
+  "xscvdpsp %x0,%x1"
+  [(set_attr "type" "fp")])
+
+(define_insn "vsx_xvcvspdp"
+  [(set (match_operand:V2DF 0 "vsx_register_operand" "=v,?wa")
+	(unspec:V2DF [(match_operand:V4SF 1 "vsx_register_operand" "wa,wa")]
+			      UNSPEC_VSX_CVSPDP))]
+  "VECTOR_UNIT_VSX_P (V4SFmode)"
+  "xvcvspdp %x0,%x1"
+  [(set_attr "type" "vecdouble")])
+
+(define_insn "vsx_xvcvdpsp"
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa,?wa")
+	(unspec:V4SF [(match_operand:V2DF 1 "vsx_register_operand" "v,wa")]
+			      UNSPEC_VSX_CVSPDP))]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+  "xvcvdpsp %x0,%x1"
+  [(set_attr "type" "vecdouble")])
 
 ;; xscvspdp, represent the scalar SF type as V4SF
 (define_insn "vsx_xscvspdp"
