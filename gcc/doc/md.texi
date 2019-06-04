@@ -3197,7 +3197,7 @@ Altivec vector register
 Any VSX register if the @option{-mvsx} option was used or NO_REGS.
 
 When using any of the register constraints (@code{wa}, @code{wd}, @code{wf},
-@code{wp}, @code{wq}, @code{ws}, or @code{ww})
+@code{wp}, @code{wq}, or @code{ww})
 that take VSX registers, you must use @code{%x<n>} in the template so
 that the correct register is used.  Otherwise the register number
 output in the assembly file will be incorrect if an Altivec register
@@ -3265,9 +3265,6 @@ VSX register to use for IEEE 128-bit floating point, or NO_REGS.
 
 @item wr
 General purpose register if 64-bit instructions are enabled or NO_REGS.
-
-@item ws
-VSX vector register to hold scalar double values or NO_REGS.
 
 @item ww
 FP or VSX register to perform float operations under @option{-mvsx} or NO_REGS.
