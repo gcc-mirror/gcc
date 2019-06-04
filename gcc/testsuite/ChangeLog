@@ -1,3 +1,10 @@
+2019-06-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-05-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/ext/instantiate2.C: Remove special-casing for Darwin.
+
 2019-05-28  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
