@@ -2164,8 +2164,8 @@
 ;; scalar single precision instructions internally use the double format.
 ;; Prefer the altivec registers, since we likely will need to do a vperm
 (define_insn "vsx_<VS_spdp_insn>"
-  [(set (match_operand:<VS_spdp_res> 0 "vsx_register_operand" "=<VSr4>,?<VSa>")
-	(unspec:<VS_spdp_res> [(match_operand:VSX_SPDP 1 "vsx_register_operand" "<VSr5>,<VSa>")]
+  [(set (match_operand:<VS_spdp_res> 0 "vsx_register_operand" "=<VSr4>,?wa")
+	(unspec:<VS_spdp_res> [(match_operand:VSX_SPDP 1 "vsx_register_operand" "<VSr5>,wa")]
 			      UNSPEC_VSX_CVSPDP))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "<VS_spdp_insn> %x0,%x1"
@@ -3269,7 +3269,7 @@
 
 ;; Variable V2DI/V2DF extract
 (define_insn_and_split "vsx_extract_<mode>_var"
-  [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=v,<VSa>,r")
+  [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=v,wa,r")
 	(unspec:<VS_scalar> [(match_operand:VSX_D 1 "input_operand" "v,m,m")
 			     (match_operand:DI 2 "gpc_reg_operand" "r,r,r")]
 			    UNSPEC_VSX_EXTRACT))
