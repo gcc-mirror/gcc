@@ -1,3 +1,9 @@
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/vsx.md (define_mode_attr VSr2): Delete.
+	(rest of file): Replace all <VSa>, <VSr>, <VSr2>, and <VSr3> that are
+	used with VSX_B, VSX_D, or VSX_F, with just "wa".
+
 2019-06-04  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR target/78263
