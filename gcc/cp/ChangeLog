@@ -1,3 +1,8 @@
+2019-06-04  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (lookup_type_scope_1): Reimplement, handle local
+	and namespace scopes separately.
+
 2019-06-04  Harald van Dijk  <harald@gigawatt.nl>
 
 	PR c++/60531 - Wrong error about unresolved overloaded function
