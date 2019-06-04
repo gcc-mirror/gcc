@@ -1,10 +1,13 @@
 2019-06-04  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/tpl-friend-5_[ab].C: New.
+
 	gcc/cp/
 	* name-lookup.c (lookup_type_scope_1): Look in imported slots too.
 	gcc/testsuite/
 	* g++.dg/modules/class-8_[ab].C: New.
-
+ 
 	gcc/cp/
 	* name-lookup.c (lookup_type_scope_1): Reimplement, handle local
 	and namespace scopes separately.
