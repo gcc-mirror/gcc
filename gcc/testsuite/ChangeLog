@@ -1,3 +1,10 @@
+2019-06-04  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/78263
+	* g++.target/powerpc: New directory.
+	* g++.target/powerpc/powerpc.exp: New test driver.
+	* g++.target/powerpc/undef-bool-3.C: New.
+
 2019-06-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/lastprivate-conditional-2.c (foo): Don't expect

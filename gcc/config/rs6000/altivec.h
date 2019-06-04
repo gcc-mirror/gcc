@@ -37,10 +37,12 @@
 /* If __APPLE_ALTIVEC__ is defined, the compiler supports 'vector',
    'pixel' and 'bool' as context-sensitive AltiVec keywords (in 
    non-AltiVec contexts, they revert to their original meanings,
-   if any), so we do not need to define them as macros.  */
+   if any), so we do not need to define them as macros.  Also,
+   avoid defining them as macros for C++ with strict ANSI, as
+   this is not compatible.  */
 
-#if !defined(__APPLE_ALTIVEC__)
-/* You are allowed to undef these for C++ compatibility.  */
+#if !defined(__APPLE_ALTIVEC__) \
+    && (!defined(__STRICT_ANSI__) || !defined(__cplusplus))
 #define vector __vector
 #define pixel __pixel
 #define bool __bool
