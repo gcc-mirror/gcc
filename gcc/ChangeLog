@@ -1,5 +1,10 @@
 2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (define_attr "isa"): Add p9kf and p9tf.
+	(define_attr "enabled"): Handle those new isa values.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/vsx.md (define_mode_attr VSr4): Delete.
 	(define_mode_attr VSr5): Delete.
 	(define_mode_attr VStype_sqrt): Delete.
