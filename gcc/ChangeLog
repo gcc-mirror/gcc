@@ -1,3 +1,9 @@
+2019-06-04  Alan Modra  <amodra@gmail.com>
+
+	PR target/90689
+	* config/rs6000/rs6000.c (rs6000_call_aix): Correct r271753 merge
+	error.
+
 2019-06-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.h (MASK_MFPGPR): Delete.

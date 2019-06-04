@@ -37870,9 +37870,7 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 						 gen_rtx_PLUS (Pmode, stack_ptr,
 							       stack_toc_offset));
 	      MEM_VOLATILE_P (stack_toc_mem) = 1;
-	      if (HAVE_AS_PLTSEQ
-		  && DEFAULT_ABI == ABI_ELFv2
-		  && GET_CODE (func_desc) == SYMBOL_REF)
+	      if (is_pltseq_longcall)
 		{
 		  rtvec v = gen_rtvec (3, toc_reg, func_desc, tlsarg);
 		  rtx mark_toc_reg = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
