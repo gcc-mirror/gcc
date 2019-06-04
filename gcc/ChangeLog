@@ -1,5 +1,10 @@
 2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/vsx.md (vsx_<VS_spdp_insn>): Use wa instead of <VSa>.
+	(vsx_extract_<mode>_var): Ditto.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/vsx.md: Replace all <VSa> that are used with VSX_TI
 	with just "wa".
 
