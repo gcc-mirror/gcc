@@ -1,5 +1,12 @@
 2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (define_mode_attr sd): Add values for V4SF
+	and V2DF.
+	* config/rs6000/vsx.md (define_mode_attr VSs): Delete.
+	(rest of file): Adjust.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/vsx.md (vsx_<VS_spdp_insn>): Use wa instead of <VSa>.
 	(vsx_extract_<mode>_var): Ditto.
 
