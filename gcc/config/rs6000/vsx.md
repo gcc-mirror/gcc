@@ -275,11 +275,6 @@
 			     (V2DF	"V4DF")
 			     (V1TI	"V2TI")])
 
-;; Map register class for 64-bit element in 128-bit vector for normal register
-;; to register moves
-(define_mode_attr VS_64reg [(V2DF	"wa")
-			    (V2DI	"wa")])
-
 ;; Iterators for loading constants with xxspltib
 (define_mode_iterator VSINT_84  [V4SI V2DI DI SI])
 (define_mode_iterator VSINT_842 [V8HI V4SI V2DI])
@@ -3252,7 +3247,7 @@
 
 ;; Optimize extracting a single scalar element from memory.
 (define_insn_and_split "*vsx_extract_<P:mode>_<VSX_D:mode>_load"
-  [(set (match_operand:<VS_scalar> 0 "register_operand" "=<VSX_D:VS_64reg>,wr")
+  [(set (match_operand:<VS_scalar> 0 "register_operand" "=wa,wr")
 	(vec_select:<VSX_D:VS_scalar>
 	 (match_operand:VSX_D 1 "memory_operand" "m,m")
 	 (parallel [(match_operand:QI 2 "const_0_to_1_operand" "n,n")])))
@@ -4118,7 +4113,7 @@
 (define_insn "vsx_splat_<mode>_reg"
   [(set (match_operand:VSX_D 0 "vsx_register_operand" "=<VSX_D:VSa>,we")
 	(vec_duplicate:VSX_D
-	 (match_operand:<VS_scalar> 1 "gpc_reg_operand" "<VSX_D:VS_64reg>,b")))]
+	 (match_operand:<VS_scalar> 1 "gpc_reg_operand" "wa,b")))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
   "@
    xxpermdi %x0,%x1,%x1,0
