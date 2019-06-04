@@ -7875,15 +7875,95 @@ lookup_type_scope_1 (tree name, tag_scope scope)
   tree ns = b->this_entity;
   if (tree *slot = find_namespace_slot (ns, name))
     {
-      // FIXME: look in module vector.
-      /* If this is the kind of thing we're looking for, we're done.  */
-      if (tree type = MAYBE_STAT_TYPE (*slot))
-	if (qualify_lookup (type, LOOKUP_PREFER_TYPES))
-	  return type;
+      tree bind = *slot;
 
-      if (tree decl = MAYBE_STAT_DECL (*slot))
-	if (qualify_lookup (decl, LOOKUP_PREFER_TYPES))
-	  return decl;
+      if (TREE_CODE (bind) == MODULE_VECTOR)
+	bind = MODULE_VECTOR_CLUSTER (bind, 0).slots[MODULE_SLOT_CURRENT];
+
+      if (bind)
+	{
+	  /* If this is the kind of thing we're looking for, we're done.  */
+	  if (tree type = MAYBE_STAT_TYPE (bind))
+	    if (qualify_lookup (type, LOOKUP_PREFER_TYPES))
+	      return type;
+
+	  tree decl = MAYBE_STAT_DECL (*slot);
+	  if (qualify_lookup (decl, LOOKUP_PREFER_TYPES))
+	    return decl;
+	}
+
+      if (TREE_CODE (*slot) == MODULE_VECTOR)
+	{
+	  /* We could be redeclaring a global module entity, (from GMF
+   	     or header unit), or from another partition, or
+   	     specializing an imported template.  */
+	  bitmap imports = get_import_bitmap ();
+	  module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (*slot);
+
+	  /* Scan the imported bindings.  */
+	  unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (*slot);
+	  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_IMPORT_BASE)
+	    {
+	      ix--;
+	      cluster++;
+	    }
+
+	  /* Do this in forward order, so we load modules in an order
+	     the user expects.  */
+	  for (; ix--; cluster++)
+	    for (unsigned jx = 0; jx != MODULE_VECTOR_SLOTS_PER_CLUSTER; jx++)
+	      {
+		/* Are we importing this module?  */
+		if (unsigned base = cluster->indices[jx].base)
+		  if (unsigned span = cluster->indices[jx].span)
+		    do
+		      if (bitmap_bit_p (imports, base))
+			goto found;
+		    while (++base, --span);
+		continue;
+
+	      found:;
+		/* Is it loaded?  */
+		if (cluster->slots[jx].is_lazy ())
+		  {
+		    gcc_assert (cluster->indices[jx].span == 1);
+		    lazy_load_binding (cluster->indices[jx].base,
+				       ns, name, &cluster->slots[jx], true);
+		  }
+		tree bind = cluster->slots[jx];
+		if (!bind)
+		  /* Load errors could mean there's nothing here.  */
+		  continue;
+
+		/* Extract what we can see from here.  If there's no
+		   stat_hack, then everything was exported.  */
+		tree type = NULL_TREE;
+
+		// FIXME: Isn't STAT_HACK_P always true?  Or does its
+		// lack imply everything is visible?
+		if (STAT_HACK_P (bind))
+		  {
+		    if (STAT_TYPE_VISIBLE_P (bind))
+		      type = STAT_TYPE (bind);
+		    bind = STAT_VISIBLE (bind);
+		  }
+
+		if (type && qualify_lookup (type, LOOKUP_PREFER_TYPES))
+		  return type;
+
+		if (bind && qualify_lookup (bind, LOOKUP_PREFER_TYPES))
+		  return bind;
+	      }
+
+	  if (!module_purview_p ())
+	    {
+	      /* We're in the global module, perhaps there's a tag
+		 there?  */
+	      // FIXME: This isn't quite right, if we find something
+	      // here, from the language PoV we're not supposed to
+	      // know it?
+	    }
+	}
     }
 
   return NULL_TREE;
