@@ -2512,7 +2512,6 @@ rs6000_debug_reg_global (void)
 	   "wp reg_class = %s\n"
 	   "wq reg_class = %s\n"
 	   "wr reg_class = %s\n"
-	   "ww reg_class = %s\n"
 	   "wx reg_class = %s\n"
 	   "wA reg_class = %s\n"
 	   "\n",
@@ -2524,7 +2523,6 @@ rs6000_debug_reg_global (void)
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wp]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wq]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wr]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_ww]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wx]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wA]]);
 
@@ -3136,7 +3134,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	wc - Reserved to represent individual CR bits (used in LLVM).
 	wn - always NO_REGS.
 	wr - GPR if 64-bit mode is permitted.
-	ww - Register class to do SF conversions in with VSX operations.
 	wx - Float register if we can do 32-bit int stores.  */
 
   if (TARGET_HARD_FLOAT)
@@ -3158,11 +3155,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
       rs6000_constraints[RS6000_CONSTRAINT_wr] = GENERAL_REGS;
       rs6000_constraints[RS6000_CONSTRAINT_wA] = BASE_REGS;
     }
-
-  if (TARGET_P8_VECTOR)						/* SFmode  */
-    rs6000_constraints[RS6000_CONSTRAINT_ww] = VSX_REGS;
-  else if (TARGET_VSX)
-    rs6000_constraints[RS6000_CONSTRAINT_ww] = FLOAT_REGS;
 
   if (TARGET_STFIWX)
     rs6000_constraints[RS6000_CONSTRAINT_wx] = FLOAT_REGS;	/* DImode  */
