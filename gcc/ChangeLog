@@ -1,5 +1,16 @@
 2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (SFDF, SFDF2): Adjust comments.
+	(define_mode_attr sd): New.
+	(define_mode_attr s): New.
+	(define_mode_attr Ftrad): Delete.
+	(define_mode_attr Fvsx): Delete.
+	(define_mode_attr Fs): Delete.
+	(rest of file): Use the new mode attributes.
+	* config.rs6000/vsx.md: Use the new mode attributes.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/vsx.md: Replace all <VSa> that are used with VSX_W
 	with just "wa".
 
