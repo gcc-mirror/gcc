@@ -1,3 +1,9 @@
+2019-06-04  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* name-lookup.c (lookup_type_scope_1): Reimplement, handle local
+	and namespace scopes separately.
+
 2019-06-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
