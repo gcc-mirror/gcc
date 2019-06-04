@@ -35,7 +35,7 @@ struct B {
   struct ::Q {        // { dg-error "global qual" } ::Q not a member of B
     int m;
   };
-  int A::fn() {       // { dg-error "cannot define member" } A::fn not a member of B
+  int A::fn() {       // { dg-error "7:cannot define member" } A::fn not a member of B
     return 0;
   }
   void fn(struct ::Q &);
