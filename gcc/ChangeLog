@@ -1,5 +1,16 @@
 2019-06-04  Martin Liska  <mliska@suse.cz>
 
+	* ipa-icf.c (sem_item_optimizer::add_item_to_class): Count
+	number of references.
+	(sem_item_optimizer::do_congruence_step):
+	(sem_item_optimizer::worklist_push): Dump how references
+	a class has.
+	(sem_item_optimizer::worklist_pop): Use heap.
+	(sem_item_optimizer::process_cong_reduction): Likewise.
+	* ipa-icf.h: Use fibonacci_heap insteam of std::list.
+
+2019-06-04  Martin Liska  <mliska@suse.cz>
+
 	* ipa-icf.h (struct sem_usage_pair_hash): New.
 	(sem_usage_pair_hash::hash): Likewise.
 	(sem_usage_pair_hash::equal): Likewise.
