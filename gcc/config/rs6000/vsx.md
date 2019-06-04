@@ -4612,7 +4612,7 @@
 ;;  (The lt bit is set if operand 1 is negative.  The eq bit is set
 ;;   if any of the conditions tested by operand 2 are satisfied.
 ;;   The gt and unordered bits are cleared to zero.)
-(define_expand "xststdc<Fvsx>"
+(define_expand "xststdc<sd>p"
   [(set (match_dup 3)
 	(compare:CCFP
 	 (unspec:SFDF
@@ -4647,7 +4647,7 @@
 })
 
 ;; The VSX Scalar Test Negative Double- and Single-Precision
-(define_expand "xststdcneg<Fvsx>"
+(define_expand "xststdcneg<sd>p"
   [(set (match_dup 2)
 	(compare:CCFP
 	 (unspec:SFDF
@@ -4676,7 +4676,7 @@
   "xststdcqp %0,%1,%2"
   [(set_attr "type" "fpcompare")])
 
-(define_insn "*xststdc<Fvsx>"
+(define_insn "*xststdc<sd>p"
   [(set (match_operand:CCFP 0 "" "=y")
 	(compare:CCFP
 	 (unspec:SFDF [(match_operand:SFDF 1 "vsx_register_operand" "wa")
@@ -4684,7 +4684,7 @@
 	  UNSPEC_VSX_STSTDC)
 	 (match_operand:SI 3 "zero_constant" "j")))]
   "TARGET_P9_VECTOR"
-  "xststdc<Fvsx> %0,%x1,%2"
+  "xststdc<sd>p %0,%x1,%2"
   [(set_attr "type" "fpcompare")])
 
 ;; VSX Vector Extract Exponent Double and Single Precision
