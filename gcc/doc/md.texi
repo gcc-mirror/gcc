@@ -3196,9 +3196,8 @@ Altivec vector register
 @item wa
 Any VSX register if the @option{-mvsx} option was used or NO_REGS.
 
-When using any of the register constraints (@code{wa},
-@code{wp}, or @code{wq},
-that take VSX registers, you must use @code{%x<n>} in the template so
+When using the register constraint @code{wa}
+that takes VSX registers, you must use @code{%x<n>} in the template so
 that the correct register is used.  Otherwise the register number
 output in the assembly file will be incorrect if an Altivec register
 is an operand of a VSX instruction that expects VSX register
@@ -3250,12 +3249,6 @@ were used or NO_REGS.
 
 @item wn
 No register (NO_REGS).
-
-@item wp
-VSX register to use for IEEE 128-bit floating point TFmode, or NO_REGS.
-
-@item wq
-VSX register to use for IEEE 128-bit floating point, or NO_REGS.
 
 @item wr
 General purpose register if 64-bit instructions are enabled or NO_REGS.

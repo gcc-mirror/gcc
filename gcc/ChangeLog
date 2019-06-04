@@ -1,5 +1,20 @@
 2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/constraints.md (define_register_constraint "wp"):
+	Delete.
+	(define_register_constraint "wq"): Delete.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
+	RS6000_CONSTRAINT_wp and RS6000_CONSTRAINT_wq.
+	* config/rs6000/vsx.md (define_mode_attr VSr3): Delete.
+	(define_mode_attr VSa): Delete.
+	(define_mode_attr VSisa): New.
+	(rest of file): Adjust.
+	* doc/md.texi (Machine Constraints): Adjust.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (define_attr "isa"): Add p9kf and p9tf.
 	(define_attr "enabled"): Handle those new isa values.
 

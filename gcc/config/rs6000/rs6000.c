@@ -2509,8 +2509,6 @@ rs6000_debug_reg_global (void)
 	   "v  reg_class = %s\n"
 	   "wa reg_class = %s\n"
 	   "we reg_class = %s\n"
-	   "wp reg_class = %s\n"
-	   "wq reg_class = %s\n"
 	   "wr reg_class = %s\n"
 	   "wx reg_class = %s\n"
 	   "wA reg_class = %s\n"
@@ -2520,8 +2518,6 @@ rs6000_debug_reg_global (void)
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_v]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wa]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_we]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wp]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wq]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wr]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wx]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wA]]);
@@ -3158,13 +3154,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 
   if (TARGET_STFIWX)
     rs6000_constraints[RS6000_CONSTRAINT_wx] = FLOAT_REGS;	/* DImode  */
-
-  if (TARGET_FLOAT128_TYPE)
-    {
-      rs6000_constraints[RS6000_CONSTRAINT_wq] = VSX_REGS;	/* KFmode  */
-      if (FLOAT128_IEEE_P (TFmode))
-	rs6000_constraints[RS6000_CONSTRAINT_wp] = VSX_REGS;	/* TFmode  */
-    }
 
   /* Support for new direct moves (ISA 3.0 + 64bit).  */
   if (TARGET_DIRECT_MOVE_128)
