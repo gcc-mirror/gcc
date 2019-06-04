@@ -1,3 +1,9 @@
+2019-06-04  Harald van Dijk  <harald@gigawatt.nl>
+
+	PR c++/60531 - Wrong error about unresolved overloaded function
+	* typeck.c (cp_build_binary_op): See if overload can be resolved.
+	(cp_build_unary_op): Ditto.
+
 2019-06-04  Jason Merrill  <jason@redhat.com>
 
 	Reduce accumulated garbage in constexpr evaluation.

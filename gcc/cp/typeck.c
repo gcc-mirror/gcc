@@ -4396,10 +4396,6 @@ cp_build_binary_op (const op_location_t &location,
   /* True if both operands have arithmetic type.  */
   bool arithmetic_types_p;
 
-  /* Apply default conversions.  */
-  op0 = orig_op0;
-  op1 = orig_op1;
-
   /* Remember whether we're doing / or %.  */
   bool doing_div_or_mod = false;
 
@@ -4408,6 +4404,10 @@ cp_build_binary_op (const op_location_t &location,
 
   /* Tree holding instrumentation expression.  */
   tree instrument_expr = NULL_TREE;
+
+  /* Apply default conversions.  */
+  op0 = resolve_nondeduced_context (orig_op0, complain);
+  op1 = resolve_nondeduced_context (orig_op1, complain);
 
   if (code == TRUTH_AND_EXPR || code == TRUTH_ANDIF_EXPR
       || code == TRUTH_OR_EXPR || code == TRUTH_ORIF_EXPR
@@ -6216,11 +6216,13 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
   if (!arg || error_operand_p (arg))
     return error_mark_node;
 
+  arg = resolve_nondeduced_context (arg, complain);
+
   if ((invalid_op_diag
        = targetm.invalid_unary_op ((code == UNARY_PLUS_EXPR
 				    ? CONVERT_EXPR
 				    : code),
-				   TREE_TYPE (xarg))))
+				   TREE_TYPE (arg))))
     {
       if (complain & tf_error)
 	error (invalid_op_diag);
