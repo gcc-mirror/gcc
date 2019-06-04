@@ -1,3 +1,13 @@
+2019-06-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90738
+	* gcc.dg/torture/pr90738.c: New testcase.
+
+	Revert
+	2019-06-03  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/alias-access-path-1.c: Scan fre1.
+
 2019-06-04  Martin Liska  <mliska@suse.cz>
 
 	* c-c++-common/goacc/acc-icf.c: Change scanned pattern.
