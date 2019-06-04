@@ -1,3 +1,8 @@
+2019-06-04  Martin Liska  <mliska@suse.cz>
+
+	* value-prof.c (dump_histogram_value): Fix typo.
+	(gimple_mod_subtract_transform): Likewise.
+
 2019-06-04  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/90726
