@@ -1,5 +1,17 @@
 2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/constraints.md (define_register_constraint "wv"):
+	Delete.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
+	RS6000_CONSTRAINT_wv.
+	* config/rs6000/rs6000.md: Adjust.
+	* config/rs6000/vsx.md: Adjust.
+	* doc/md.texi (Machine Constraints): Adjust.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/constraints.md (define_register_constraint "wi"):
 	Delete.
 	(define_register_constraint "wt"): Delete.

@@ -85,9 +85,6 @@
 (define_register_constraint "ws" "rs6000_constraints[RS6000_CONSTRAINT_ws]"
   "VSX vector register to hold scalar double values or NO_REGS.")
 
-(define_register_constraint "wv" "rs6000_constraints[RS6000_CONSTRAINT_wv]"
-  "Altivec register to use for double loads/stores  or NO_REGS.")
-
 (define_register_constraint "ww" "rs6000_constraints[RS6000_CONSTRAINT_ww]"
   "FP or VSX register to perform float operations under -mvsx or NO_REGS.")
 
