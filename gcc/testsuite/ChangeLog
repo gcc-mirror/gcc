@@ -1,3 +1,8 @@
+2019-06-04  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/goacc/acc-icf.c: Change scanned pattern.
+	* gfortran.dg/goacc/pr78027.f90: Likewise.
+
 2019-06-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/mmfpgpr.c: Delete.
