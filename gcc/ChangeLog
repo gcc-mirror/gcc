@@ -1,3 +1,35 @@
+2019-06-04  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.h (struct sem_usage_pair_hash): New.
+	(sem_usage_pair_hash::hash): Likewise.
+	(sem_usage_pair_hash::equal): Likewise.
+	(struct sem_usage_hash): Likewise.
+	* ipa-icf.c (sem_item::sem_item): Initialize
+	referenced_by_count.
+	(sem_item::add_reference): Register a reference
+	in ref_map and not in target->usages.
+	(sem_item::setup): Remove initialization of
+	dead vectors.
+	(sem_item::~sem_item): Remove usage of dead vectors.
+	(sem_item::dump): Remove dump of references.
+	(sem_item_optimizer::sem_item_optimizer): Initialize
+	m_references.
+	(sem_item_optimizer::read_section): Remove useless
+	dump.
+	(sem_item_optimizer::parse_funcs_and_vars): Likewise here.
+	(sem_item_optimizer::build_graph): Pass m_references
+	to ::add_reference.
+	(sem_item_optimizer::verify_classes): Remove usage of dead
+	vectors.
+	(sem_item_optimizer::traverse_congruence_split): Return true
+	when a class is split.
+	(sem_item_optimizer::do_congruence_step_for_index): Use
+	hash_map for look up of (sem_item *, index). That brings
+	significant speed up.
+	(sem_item_optimizer::do_congruence_step): Return true
+	when a split is done.
+	(congruence_class::is_class_used): Use referenced_by_count.
+
 2019-06-04  Alan Modra  <amodra@gmail.com>
 
 	PR target/90689
