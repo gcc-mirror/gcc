@@ -1,3 +1,11 @@
+2019-06-04  Jason Merrill  <jason@redhat.com>
+
+	Reduce accumulated garbage in constexpr evaluation.
+	* constexpr.c (cxx_eval_call_expression): ggc_free any bindings we
+	don't save.
+	(cxx_eval_increment_expression): ggc_free the MODIFY_EXPR after
+	evaluating it.
+
 2019-06-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (CP_OMP_CLAUSE_INFO): Allow for any clauses up to _condvar_

@@ -1733,6 +1733,29 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
   bool non_constant_args = false;
   cxx_bind_parameters_in_call (ctx, t, &new_call,
 			       non_constant_p, overflow_p, &non_constant_args);
+
+  /* We build up the bindings list before we know whether we already have this
+     call cached.  If we don't end up saving these bindings, ggc_free them when
+     this function exits.  */
+  struct free_bindings
+  {
+    tree &bindings;
+    bool do_free;
+    free_bindings (tree &b): bindings (b), do_free(true) { }
+    void preserve () { do_free = false; }
+    ~free_bindings () {
+      if (do_free)
+	{
+	  while (bindings)
+	    {
+	      tree b = bindings;
+	      bindings = TREE_CHAIN (bindings);
+	      ggc_free (b);
+	    }
+	}
+    }
+  } fb (new_call.bindings);
+
   if (*non_constant_p)
     return t;
 
@@ -1760,6 +1783,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	     slot can move in the call to cxx_eval_builtin_function_call.  */
 	  *slot = entry = ggc_alloc<constexpr_call> ();
 	  *entry = new_call;
+	  fb.preserve ();
 	}
       /* Calls that are in progress have their result set to NULL,
 	 so that we can detect circular dependencies.  */
@@ -4002,6 +4026,7 @@ cxx_eval_increment_expression (const constexpr_ctx *ctx, tree t,
   tree store = build2 (MODIFY_EXPR, type, op, mod);
   cxx_eval_constant_expression (ctx, store,
 				true, non_constant_p, overflow_p);
+  ggc_free (store);
 
   /* And the value of the expression.  */
   if (code == PREINCREMENT_EXPR || code == PREDECREMENT_EXPR)
