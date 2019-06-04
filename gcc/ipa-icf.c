@@ -52,7 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 */
 
 #include "config.h"
-#define INCLUDE_LIST
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -2544,9 +2543,6 @@ sem_item_optimizer::execute (void)
   if (dump_file)
     fprintf (dump_file, "Dump after hash based groups\n");
   dump_cong_classes ();
-
-  for (unsigned int i = 0; i < m_items.length(); i++)
-    m_items[i]->init_wpa ();
 
   subdivide_classes_by_equality (true);
 
