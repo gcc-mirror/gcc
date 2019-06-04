@@ -6460,81 +6460,66 @@ lookup_name_prefer_type (tree name, int prefer_type)
 static tree
 lookup_type_scope_1 (tree name, tag_scope scope)
 {
-  cxx_binding *iter = NULL;
-  tree val = NULL_TREE;
-  cp_binding_level *level = NULL;
+  cp_binding_level *b = current_binding_level;
 
-  /* Look in non-namespace scope first.  */
-  if (current_binding_level->kind != sk_namespace)
-    iter = outer_binding (name, NULL, /*class_p=*/ true);
-  for (; iter; iter = outer_binding (name, iter, /*class_p=*/ true))
+  if (b->kind != sk_namespace)
+    /* Look in non-namespace scopes.  */
+    for (cxx_binding *iter = NULL;
+	 (iter = outer_binding (name, iter, /*class_p=*/ true)); )
+      {
+	/* First check we're supposed to be looking in this scope --
+	   if we're not, we're done.  */
+	for (; b != iter->scope; b = b->level_chain)
+	  if (!(b->kind == sk_cleanup
+		|| b->kind == sk_template_parms
+		|| b->kind == sk_function_parms
+		|| (b->kind == sk_class
+		    && scope == ts_within_enclosing_non_class)))
+	    return NULL_TREE;
+
+	/* Check if this is the kind of thing we're looking for.  If
+	   SCOPE is TS_CURRENT, also make sure it doesn't come from
+	   base class.  For ITER->VALUE, we can simply use
+	   INHERITED_VALUE_BINDING_P.  For ITER->TYPE, we have to
+	   use our own check.
+
+	   We check ITER->TYPE before ITER->VALUE in order to handle
+	     typedef struct C {} C;
+	   correctly.  */
+	if (tree type = iter->type)
+	  if ((scope != ts_current
+	       || LOCAL_BINDING_P (iter)
+	       || DECL_CONTEXT (type) == iter->scope->this_entity)
+	      && qualify_lookup (iter->type, LOOKUP_PREFER_TYPES))
+	    return iter->type;
+
+	if ((scope != ts_current
+	     || !INHERITED_VALUE_BINDING_P (iter))
+	    && qualify_lookup (iter->value, LOOKUP_PREFER_TYPES))
+	  return iter->value;
+      }
+
+  /* Now check if we can look in namespace scope.  */
+  for (; b->kind != sk_namespace; b = b->level_chain)
+    if (!(b->kind == sk_cleanup
+	  || b->kind == sk_template_parms
+	  || b->kind == sk_function_parms
+	  || (b->kind == sk_class
+	      && scope == ts_within_enclosing_non_class)))
+      return NULL_TREE;
+
+  /* Look in the innermost namespace.  */
+  tree ns = b->this_entity;
+  if (tree *slot = find_namespace_slot (ns, name))
     {
-      /* Check if this is the kind of thing we're looking for.
-	 If SCOPE is TS_CURRENT, also make sure it doesn't come from
-	 base class.  For ITER->VALUE, we can simply use
-	 INHERITED_VALUE_BINDING_P.  For ITER->TYPE, we have to use
-	 our own check.
+      /* If this is the kind of thing we're looking for, we're done.  */
+      if (tree type = MAYBE_STAT_TYPE (*slot))
+	if (qualify_lookup (type, LOOKUP_PREFER_TYPES))
+	  return type;
 
-	 We check ITER->TYPE before ITER->VALUE in order to handle
-	   typedef struct C {} C;
-	 correctly.  */
-
-      if (qualify_lookup (iter->type, LOOKUP_PREFER_TYPES)
-	  && (scope != ts_current
-	      || LOCAL_BINDING_P (iter)
-	      || DECL_CONTEXT (iter->type) == iter->scope->this_entity))
-	val = iter->type;
-      else if ((scope != ts_current
-		|| !INHERITED_VALUE_BINDING_P (iter))
-	       && qualify_lookup (iter->value, LOOKUP_PREFER_TYPES))
-	val = iter->value;
-
-      if (val)
-	break;
-    }
-
-  /* Look in namespace scope.  */
-  if (val)
-    level = iter->scope;
-  else
-    {
-      tree ns = current_decl_namespace ();
-
-      if (tree *slot = find_namespace_slot (ns, name))
-	{
-	  /* If this is the kind of thing we're looking for, we're done.  */
-	  if (tree type = MAYBE_STAT_TYPE (*slot))
-	    if (qualify_lookup (type, LOOKUP_PREFER_TYPES))
-	      val = type;
-	  if (!val)
-	    {
-	      if (tree decl = MAYBE_STAT_DECL (*slot))
-		if (qualify_lookup (decl, LOOKUP_PREFER_TYPES))
-		  val = decl;
-	    }
-	  level = NAMESPACE_LEVEL (ns);
-	}
-    }
-
-  /* Type found, check if it is in the allowed scopes, ignoring cleanup
-     and template parameter scopes.  */
-  if (val)
-    {
-      cp_binding_level *b = current_binding_level;
-      while (b)
-	{
-	  if (level == b)
-	    return val;
-
-	  if (b->kind == sk_cleanup || b->kind == sk_template_parms
-	      || b->kind == sk_function_parms)
-	    b = b->level_chain;
-	  else if (b->kind == sk_class
-		   && scope == ts_within_enclosing_non_class)
-	    b = b->level_chain;
-	  else
-	    break;
-	}
+      if (tree decl = MAYBE_STAT_DECL (*slot))
+	if (qualify_lookup (decl, LOOKUP_PREFER_TYPES))
+	  return decl;
     }
 
   return NULL_TREE;
