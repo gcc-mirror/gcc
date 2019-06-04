@@ -1,5 +1,22 @@
 2019-06-04  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/90726
+	* tree-chrec.c (chrec_contains_symbols): Add to visited.
+	(tree_contains_chrecs): Likewise.
+	(chrec_contains_symbols_defined_in_loop): Move here and avoid
+	exponential behaivor from ...
+	* tree-scalar-evolution.c (chrec_contains_symbols_defined_in_loop):
+	... here.
+	(expression_expensive_p): Avoid exponential behavior and compute
+	expanded size, rejecting any expansion.
+	* tree-ssa-loop-ivopts.c (abnormal_ssa_name_p): Remove.
+	(idx_contains_abnormal_ssa_name_p): Likewise.
+	(contains_abnormal_ssa_name_p_1): New helper for walk_tree.
+	(contains_abnormal_ssa_name_p): Simplify and use
+	walk_tree_without_duplicates.
+
+2019-06-04  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/90738
 	Revert
 	2019-06-03  Richard Biener  <rguenther@suse.de>
