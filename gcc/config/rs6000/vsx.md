@@ -114,13 +114,13 @@
 			 (V4SF  "wf")
 			 (V2DI  "wd")
 			 (V2DF  "wd")
-			 (DI	"wi")
+			 (DI	"wa")
 			 (DF    "ws")
 			 (SF	"ww")
 			 (TF	"wp")
 			 (KF	"wq")
 			 (V1TI  "v")
-			 (TI    "wt")])
+			 (TI    "wa")])
 
 ;; Map the register class used for float<->int conversions (floating point side)
 ;; VSr2 is the preferred register class, VSr3 is any register class that will
@@ -129,7 +129,7 @@
 			 (V4SF  "wf")
 			 (DF    "ws")
 			 (SF	"ww")
-			 (DI	"wi")
+			 (DI	"wa")
 			 (KF	"wq")
 			 (TF	"wp")])
 
@@ -137,7 +137,7 @@
 			 (V4SF  "wa")
 			 (DF    "ws")
 			 (SF	"ww")
-			 (DI	"wi")
+			 (DI	"wa")
 			 (KF	"wq")
 			 (TF	"wp")])
 
@@ -162,11 +162,11 @@
 			 (V4SF  "wa")
 			 (V2DI  "wa")
 			 (V2DF  "wa")
-			 (DI	"wi")
+			 (DI	"wa")
 			 (DF    "ws")
 			 (SF	"ww")
 			 (V1TI	"wa")
-			 (TI    "wt")
+			 (TI    "wa")
 			 (TF	"wp")
 			 (KF	"wq")])
 
@@ -278,7 +278,7 @@
 ;; Map register class for 64-bit element in 128-bit vector for normal register
 ;; to register moves
 (define_mode_attr VS_64reg [(V2DF	"ws")
-			    (V2DI	"wi")])
+			    (V2DI	"wa")])
 
 ;; Iterators for loading constants with xxspltib
 (define_mode_iterator VSINT_84  [V4SI V2DI DI SI])
@@ -4151,7 +4151,7 @@
   [(set (match_operand:V4SI 0 "vsx_register_operand" "=wa,we")
 	(vec_duplicate:V4SI
 	 (truncate:SI
-	  (match_operand:DI 1 "gpc_reg_operand" "wi,r"))))]
+	  (match_operand:DI 1 "gpc_reg_operand" "wa,r"))))]
   "VECTOR_MEM_VSX_P (V4SImode) && TARGET_DIRECT_MOVE_64BIT"
   "@
    xxspltw %x0,%x1,1
