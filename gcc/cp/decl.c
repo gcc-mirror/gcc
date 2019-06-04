@@ -11873,6 +11873,8 @@ grokdeclarator (const cp_declarator *declarator,
       unqualified_id = dname;
     }
 
+  location_t loc = declarator ? declarator->id_loc : input_location;
+
   /* If TYPE is a FUNCTION_TYPE, but the function name was explicitly
      qualified with a class-name, turn it into a METHOD_TYPE, unless
      we know that the function is static.  We take advantage of this
@@ -11898,8 +11900,7 @@ grokdeclarator (const cp_declarator *declarator,
 	      friendp = 0;
 	    }
 	  else
-	    permerror (declarator->id_loc, 
-		       "extra qualification %<%T::%> on member %qs",
+	    permerror (loc, "extra qualification %<%T::%> on member %qs",
 		       ctype, name);
 	}
       else if (/* If the qualifying type is already complete, then we
@@ -11928,19 +11929,19 @@ grokdeclarator (const cp_declarator *declarator,
 	  if (current_class_type
 	      && (!friendp || funcdef_flag || initialized))
 	    {
-	      error (funcdef_flag || initialized
-		     ? G_("cannot define member function %<%T::%s%> "
-			  "within %qT")
-		     : G_("cannot declare member function %<%T::%s%> "
-			  "within %qT"),
-		     ctype, name, current_class_type);
+	      error_at (loc, funcdef_flag || initialized
+			? G_("cannot define member function %<%T::%s%> "
+			     "within %qT")
+			: G_("cannot declare member function %<%T::%s%> "
+			     "within %qT"),
+			ctype, name, current_class_type);
 	      return error_mark_node;
 	    }
 	}
       else if (typedef_p && current_class_type)
 	{
-	  error ("cannot declare member %<%T::%s%> within %qT",
-		 ctype, name, current_class_type);
+	  error_at (loc, "cannot declare member %<%T::%s%> within %qT",
+		    ctype, name, current_class_type);
 	  return error_mark_node;
 	}
     }
@@ -12052,8 +12053,6 @@ grokdeclarator (const cp_declarator *declarator,
 	  storage_class = sc_none;
 	}
     }
-
-  location_t loc = declarator ? declarator->id_loc : input_location;
 
   /* If this is declaring a typedef name, return a TYPE_DECL.  */
   if (typedef_p && decl_context != TYPENAME)

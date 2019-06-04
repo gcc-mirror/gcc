@@ -1,3 +1,8 @@
+2019-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use declarator->id_loc in two
+	additional places.
+
 2019-06-04  Nathan Sidwell  <nathan@acm.org>
 
 	* name-lookup.c (lookup_type_scope_1): Reimplement, handle local

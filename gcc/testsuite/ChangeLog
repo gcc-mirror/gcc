@@ -1,3 +1,15 @@
+2019-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/concepts/pr60573.C: Test locations too.
+	* g++.dg/cpp0x/deleted13.C: Likewise.
+	* g++.dg/parse/error29.C: Likewise.
+	* g++.dg/parse/qualified4.C: Likewise.
+	* g++.dg/template/crash96.C Likewise.
+	* g++.old-deja/g++.brendan/crash22.C Likewise.
+	* g++.old-deja/g++.brendan/crash23.C Likewise.
+	* g++.old-deja/g++.law/visibility10.C Likewise.
+	* g++.old-deja/g++.other/decl5.C: Likewise.
+
 2019-06-04  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR target/78263

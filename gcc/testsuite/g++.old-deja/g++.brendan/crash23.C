@@ -10,6 +10,6 @@ public:
     void f ();
     void g (int);
   };
-  void B::f () {}// { dg-error "" } .*
-  void B::g (int val) {}// { dg-error "" } .*
+  void B::f () {}// { dg-error "8:cannot define" } .*
+  void B::g (int val) {}// { dg-error "8:cannot define" } .*
 };
