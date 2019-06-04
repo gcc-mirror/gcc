@@ -2509,7 +2509,6 @@ rs6000_debug_reg_global (void)
 	   "v  reg_class = %s\n"
 	   "wa reg_class = %s\n"
 	   "we reg_class = %s\n"
-	   "wf reg_class = %s\n"
 	   "wp reg_class = %s\n"
 	   "wq reg_class = %s\n"
 	   "wr reg_class = %s\n"
@@ -2522,7 +2521,6 @@ rs6000_debug_reg_global (void)
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_v]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wa]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_we]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wf]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wp]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wq]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wr]],
@@ -3136,7 +3134,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	v  - Altivec register.
 	wa - Any VSX register.
 	wc - Reserved to represent individual CR bits (used in LLVM).
-	wf - Preferred register class for V4SFmode.
 	wn - always NO_REGS.
 	wr - GPR if 64-bit mode is permitted.
 	ww - Register class to do SF conversions in with VSX operations.
@@ -3149,10 +3146,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
     }
 
   if (TARGET_VSX)
-    {
-      rs6000_constraints[RS6000_CONSTRAINT_wa] = VSX_REGS;
-      rs6000_constraints[RS6000_CONSTRAINT_wf] = VSX_REGS;	/* V4SFmode  */
-    }
+    rs6000_constraints[RS6000_CONSTRAINT_wa] = VSX_REGS;
 
   /* Add conditional constraints based on various options, to allow us to
      collapse multiple insn patterns.  */

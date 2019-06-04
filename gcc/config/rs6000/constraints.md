@@ -62,9 +62,6 @@
 (define_register_constraint "we" "rs6000_constraints[RS6000_CONSTRAINT_we]"
   "VSX register if the -mpower9-vector -m64 options were used or NO_REGS.")
 
-(define_register_constraint "wf" "rs6000_constraints[RS6000_CONSTRAINT_wf]"
-  "VSX vector register to hold vector float data or NO_REGS.")
-
 ;; NO_REGs register constraint, used to merge mov{sd,sf}, since movsd can use
 ;; direct move directly, and movsf can't to move between the register sets.
 ;; There is a mode_attr that resolves to wa for SDmode and wn for SFmode
