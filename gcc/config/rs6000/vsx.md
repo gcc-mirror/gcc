@@ -468,7 +468,7 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "*vsx_le_perm_load_<mode>"
-  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=<VSa>")
+  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wa")
         (match_operand:VSX_W 1 "indexed_or_indirect_operand" "Z"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
@@ -705,7 +705,7 @@
 
 (define_insn "*vsx_le_perm_store_<mode>"
   [(set (match_operand:VSX_W 0 "indexed_or_indirect_operand" "=Z")
-        (match_operand:VSX_W 1 "vsx_register_operand" "+<VSa>"))]
+        (match_operand:VSX_W 1 "vsx_register_operand" "+wa"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
   [(set_attr "type" "vecstore")
@@ -2983,9 +2983,9 @@
   [(set_attr "type" "vecperm")])
 
 (define_insn "*vsx_xxpermdi4_le_<mode>"
-  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=<VSa>")
+  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wa")
         (vec_select:VSX_W
-          (match_operand:VSX_W 1 "vsx_register_operand" "<VSa>")
+          (match_operand:VSX_W 1 "vsx_register_operand" "wa")
           (parallel [(const_int 2) (const_int 3)
                      (const_int 0) (const_int 1)])))]
   "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (<MODE>mode)"
@@ -3032,7 +3032,7 @@
   [(set_attr "type" "vecload")])
 
 (define_insn "*vsx_lxvd2x4_le_<mode>"
-  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=<VSa>")
+  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wa")
         (vec_select:VSX_W
           (match_operand:VSX_W 1 "memory_operand" "Z")
           (parallel [(const_int 2) (const_int 3)
@@ -3083,7 +3083,7 @@
 (define_insn "*vsx_stxvd2x4_le_<mode>"
   [(set (match_operand:VSX_W 0 "memory_operand" "=Z")
         (vec_select:VSX_W
-          (match_operand:VSX_W 1 "vsx_register_operand" "<VSa>")
+          (match_operand:VSX_W 1 "vsx_register_operand" "wa")
           (parallel [(const_int 2) (const_int 3)
                      (const_int 0) (const_int 1)])))]
   "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (<MODE>mode) && !TARGET_P9_VECTOR"
@@ -4156,10 +4156,10 @@
 
 ;; V4SF/V4SI splat from a vector element
 (define_insn "vsx_xxspltw_<mode>"
-  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=<VSa>")
+  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wa")
 	(vec_duplicate:VSX_W
 	 (vec_select:<VS_scalar>
-	  (match_operand:VSX_W 1 "vsx_register_operand" "<VSa>")
+	  (match_operand:VSX_W 1 "vsx_register_operand" "wa")
 	  (parallel
 	   [(match_operand:QI 2 "u5bit_cint_operand" "n")]))))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
@@ -4172,8 +4172,8 @@
   [(set_attr "type" "vecperm")])
 
 (define_insn "vsx_xxspltw_<mode>_direct"
-  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=<VSa>")
-        (unspec:VSX_W [(match_operand:VSX_W 1 "vsx_register_operand" "<VSa>")
+  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wa")
+        (unspec:VSX_W [(match_operand:VSX_W 1 "vsx_register_operand" "wa")
                        (match_operand:QI 2 "u5bit_cint_operand" "i")]
                       UNSPEC_VSX_XXSPLTW))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
@@ -4208,11 +4208,11 @@
 
 ;; V4SF/V4SI interleave
 (define_insn "vsx_xxmrghw_<mode>"
-  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wa,?<VSa>")
+  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wa")
         (vec_select:VSX_W
 	  (vec_concat:<VS_double>
-	    (match_operand:VSX_W 1 "vsx_register_operand" "wa,<VSa>")
-	    (match_operand:VSX_W 2 "vsx_register_operand" "wa,<VSa>"))
+	    (match_operand:VSX_W 1 "vsx_register_operand" "wa")
+	    (match_operand:VSX_W 2 "vsx_register_operand" "wa"))
 	  (parallel [(const_int 0) (const_int 4)
 		     (const_int 1) (const_int 5)])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
@@ -4225,11 +4225,11 @@
   [(set_attr "type" "vecperm")])
 
 (define_insn "vsx_xxmrglw_<mode>"
-  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wa,?<VSa>")
+  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wa")
 	(vec_select:VSX_W
 	  (vec_concat:<VS_double>
-	    (match_operand:VSX_W 1 "vsx_register_operand" "wa,<VSa>")
-	    (match_operand:VSX_W 2 "vsx_register_operand" "wa,?<VSa>"))
+	    (match_operand:VSX_W 1 "vsx_register_operand" "wa")
+	    (match_operand:VSX_W 2 "vsx_register_operand" "wa"))
 	  (parallel [(const_int 2) (const_int 6)
 		     (const_int 3) (const_int 7)])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
